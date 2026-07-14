@@ -16,6 +16,7 @@ from __future__ import annotations
 import argparse
 import copy
 import datetime as dt
+from dataclasses import dataclass
 import fcntl
 import hashlib
 import json
@@ -32,7 +33,7 @@ import subprocess
 import sys
 import tempfile
 import time
-from typing import Any, Callable
+from typing import Any, Callable, IO
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -99,7 +100,21 @@ DISK_RESERVE_BYTES = 150_000_000_000
 MIN_SCRATCH_BYTES = 12_000_000_000
 MAX_DECLARED_SCRATCH_BYTES = 140_000_000_000
 PROCESS_BUDGET_BYTES = 78_000_000_000
+# Concurrent-pool admission (RAM-budget-gated lanes).  The reservation sum plus
+# this headroom must stay under PROCESS_BUDGET_BYTES for a new lane to admit.
+SAFETY_MARGIN_BYTES = 6_000_000_000              # INFERRED admission headroom.
+# Hard cap on concurrent children (bounds ps/fd cost).  Env-overridable; the
+# 0.5B tier RAM-limits to ~6-7 lanes at 78 GB regardless of this ceiling.
+MAX_LANES = max(1, int(os.environ.get("DOCTOR_V5_MAX_LANES", "8")))
+RESIDENCY_FLOOR_BYTES = 4_000_000_000            # Lower clamp on a reservation.
+RESIDENCY_BASE_WORKING_BYTES = 9_000_000_000     # MEASURED-derived 0.5B floor.
+RESIDENCY_DENSE_FACTOR = 2.0                     # INFERRED f32 dense of bf16.
+RESIDENCY_SHARD_FACTOR = 2.0                     # INFERRED streaming shard window.
 MAX_AUTOMATIC_ATTEMPTS = 3
+# Consecutive resource-driven stops for ONE cell before it escalates to
+# blocked-execution (so the MAX_AUTOMATIC_ATTEMPTS ceiling applies and the pool
+# cannot re-admit + OOM-kill + reset the same cell forever).
+MAX_RESOURCE_STOPS = 5
 PAUSE_RC = 131
 RESOURCE_RC = 75
 ADOPT_RC = 132
@@ -115,6 +130,26 @@ QUEUE_STATUSES = {
     "blocked-state",
 }
 _STOP = False
+
+# MEASURED-in-flight per-tier residency, keyed by model_label.  Seeded once from
+# the persisted child-resource log at supervisor start and updated live from each
+# tick's sampled tree RSS.  Turns INFERRED reservation projections into MEASURED
+# self-calibration as soon as one cell of a tier runs, with no schema change.
+_OBSERVED_TIER_RSS: dict[str, int] = {}
+
+
+@dataclass
+class LiveCell:
+    """Handle for one concurrently running cell child in the RAM-budget pool."""
+    execution: dict[str, Any]
+    process: subprocess.Popen[Any]
+    process_pgid: int
+    spawn_identity: tuple[str, str]
+    process_identity: tuple[str, str]
+    lease: IO[Any]                 # Per-child HEAVY_LOCK fd, NOT flocked.
+    reserved_bytes: int
+    max_tree_rss_bytes: int
+    last_resource_probe: float
 
 
 COHORT = (
@@ -895,9 +930,9 @@ def _base_state(plan: dict[str, Any]) -> dict[str, Any]:
         "schema": STATE_SCHEMA, "version": VERSION,
         "plan_sha256": plan["plan_sha256"], "created_at": now, "updated_at": now,
         "status": "compiled", "control_mode": "run", "supervisor_pid": None,
-        "active_cell": None, "active_child": None, "last_resource_gate": None,
+        "active_cells": [], "active_children": {}, "last_resource_gate": None,
         "last_child_resource_sample": None, "max_child_tree_rss_bytes": 0,
-        "last_resource_stop": None,
+        "last_resource_stop": None, "resource_stop_counts": {},
         "last_scan": None, "last_reporter_sync": None,
         "cells": {row["cell_id"]: _state_row() for row in plan["cells"]},
         "report_checkpoints": {"sub-120B": None, "120B": None},
@@ -966,19 +1001,31 @@ def _validate_state(state: Any, plan: dict[str, Any]) -> list[str]:
             or not isinstance(child_sample.get("tree_rss_bytes"), int)
             or child_sample["tree_rss_bytes"] < 0):
         errors.append("last child resource sample state is invalid")
-    active_child = state.get("active_child")
-    if active_child is not None and (
-            not isinstance(active_child, dict)
-            or active_child.get("process_budget_bytes") != PROCESS_BUDGET_BYTES
-            or active_child.get("pgid") != active_child.get("pid")
-            or not isinstance(active_child.get("process_started"), str)
-            or active_child.get("handshake_pending") not in {True, False}
-            or (active_child.get("handshake_pending") is False
-                and (not isinstance(active_child.get("process_command_sha256"), str)
-                     or SHA256_RE.fullmatch(
-                         active_child["process_command_sha256"]
-                     ) is None))):
-        errors.append("active child state is invalid")
+    active_children = state.get("active_children")
+    if not isinstance(active_children, dict):
+        errors.append("active children state is invalid")
+    else:
+        for key, record in active_children.items():
+            if not isinstance(record, dict) \
+                    or record.get("cell_id") != key or key not in rows \
+                    or record.get("process_budget_bytes") != PROCESS_BUDGET_BYTES \
+                    or record.get("pgid") != record.get("pid") \
+                    or not isinstance(record.get("process_started"), str) \
+                    or record.get("handshake_pending") not in {True, False} \
+                    or (record.get("handshake_pending") is False
+                        and (not isinstance(record.get("process_command_sha256"), str)
+                             or SHA256_RE.fullmatch(
+                                 record["process_command_sha256"]
+                             ) is None)) \
+                    or isinstance(record.get("reserved_bytes"), bool) \
+                    or not isinstance(record.get("reserved_bytes"), int) \
+                    or record["reserved_bytes"] <= 0 \
+                    or record["reserved_bytes"] > PROCESS_BUDGET_BYTES:
+                errors.append(f"active child state is invalid: {key}")
+    active_cells = state.get("active_cells")
+    expected_active = sorted(active_children) if isinstance(active_children, dict) else []
+    if not isinstance(active_cells, list) or active_cells != expected_active:
+        errors.append("active cells state is invalid")
     return errors
 
 
@@ -1190,8 +1237,8 @@ def _campaign_projection(plan: dict[str, Any], state: dict[str, Any]) -> dict[st
     campaign: dict[str, Any] = {
         "schema": CAMPAIGN_SCHEMA, "version": VERSION, "generated_at": _now(),
         "plan_sha256": plan["plan_sha256"], "queue_status": state["status"],
-        "control_mode": state["control_mode"], "active_cell": state["active_cell"],
-        "active_child": state["active_child"], "counts": counts,
+        "control_mode": state["control_mode"], "active_cells": state["active_cells"],
+        "active_children": state["active_children"], "counts": counts,
         "last_resource_gate": state["last_resource_gate"],
         "last_scan": state["last_scan"], "last_reporter_sync": state["last_reporter_sync"],
         "report_groups": _report_groups(plan, state),
@@ -1220,6 +1267,16 @@ def _save_state(plan: dict[str, Any], state: dict[str, Any],
         raise CampaignError("refusing to save invalid state: " + "; ".join(errors))
     _atomic_json(STATE, state)
     _publish_campaign(plan, state)
+
+
+def _sync_active_cells(state: dict[str, Any]) -> None:
+    """Keep the published active-cell list in lock-step with active_children.
+
+    The invariant active_cells == sorted(active_children) is asserted by
+    _validate_state; every mutation of the set funnels through here so any plain
+    _save_state persists a crash-consistent plural set with no drift counter.
+    """
+    state["active_cells"] = sorted(state["active_children"])
 
 
 def _append_reporter_sync(row: dict[str, Any]) -> None:
@@ -1910,7 +1967,16 @@ def _prepare_execution(cell: dict[str, Any]) -> dict[str, Any]:
     blockers: list[str] = []
     spec_path = _resolve_workspace_path(cell["runtime_spec_path"], must_exist=False)
     spec_doc = _read_json(spec_path)
-    runtime, inputs, spec_errors = _validate_runtime_spec(cell, spec_doc, spec_path)
+    # Structural verification only (presence + size + sha format), NOT a content
+    # re-hash of the model-sized source shards.  _scan_runnable_heads prepares
+    # EVERY runnable chain-head on EVERY admission scan; content-hashing each
+    # cell's multi-GB source here pegged a core and made the pre-admission scan
+    # never return (last_scan stayed null, no cell ever launched).  Source-shard
+    # content is rehashed at execution by the worker (the strand builder and the
+    # GC-authority path both defer shard hashing to execution for the same
+    # reason), so the scheduler scan stays O(stat) instead of O(source bytes).
+    runtime, inputs, spec_errors = _validate_runtime_spec(cell, spec_doc, spec_path,
+                                                          verify_inputs=False)
     blockers.extend(spec_errors)
     output_dir = RESULTS / cell["cell_id"]
     registry_path = output_dir / "adapter_registry.json"
@@ -1957,7 +2023,11 @@ def _prepare_execution(cell: dict[str, Any]) -> dict[str, Any]:
             except Exception as exc:
                 blockers.append(f"request builder failed: {type(exc).__name__}: {exc}")
         if isinstance(request, dict):
-            request_errors = adapter_abi.validate_request(request, registry, verify_files=True)
+            # verify_files=False for the same reason as the runtime-spec check
+            # above: the request artifact rows include the model-sized source
+            # shards, and content-rehashing them on every admission scan is what
+            # busy-spun the pre-admission scan.  Execution rehashes them.
+            request_errors = adapter_abi.validate_request(request, registry, verify_files=False)
             blockers.extend(f"request: {row}" for row in request_errors)
             authorization = request.get("authorization", {})
             if authorization.get("operator_greenlight_sha256") != cell["cell_identity_sha256"]:
@@ -2172,6 +2242,81 @@ def _execution_resource_gate(plan: dict[str, Any], state: dict[str, Any],
     return gate
 
 
+def _projected_residency_bytes(cell: dict[str, Any]) -> int:
+    """Projected peak process-tree residency for one cell (admission estimate).
+
+    Calibration: 0.5B source ~1 GB -> 9 + 2 = 11 GB, matching the MEASURED
+    ~10.5 GB peak.  14B/32B/72B/120B clamp near the budget and self-limit to a
+    single lane.  Every tier except 0.5B is INFERRED until its first cell runs.
+    """
+    manifest = cell["parameter_manifest"]
+    if cell["admission"]["whole_parent_residency_assumed"]:   # <=16B tiers.
+        projected = RESIDENCY_BASE_WORKING_BYTES + math.ceil(
+            manifest["source_weight_bytes"] * RESIDENCY_DENSE_FACTOR
+        )
+    else:                                                     # streaming >16B.
+        projected = RESIDENCY_BASE_WORKING_BYTES + math.ceil(
+            manifest["largest_source_shard_bytes"] * RESIDENCY_SHARD_FACTOR
+        )
+    projected = max(RESIDENCY_FLOOR_BYTES, projected)
+    # Clamp so a single largest cell ALWAYS admits into an empty pool.
+    return min(PROCESS_BUDGET_BYTES - SAFETY_MARGIN_BYTES, projected)
+
+
+def _seed_observed_tier_residency(plan: dict[str, Any]) -> None:
+    """Seed MEASURED per-tier residency once from the persisted child log."""
+    _OBSERVED_TIER_RSS.clear()
+    if not CHILD_RESOURCE_LOG.exists():
+        return
+    label_by_cell = {cell["cell_id"]: cell["model_label"] for cell in plan["cells"]}
+    try:
+        with CHILD_RESOURCE_LOG.open("r", encoding="utf-8") as handle:
+            for line in handle:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    row = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if not isinstance(row, dict):
+                    continue
+                label = label_by_cell.get(row.get("cell_id"))
+                value = row.get("tree_rss_bytes")
+                if label is None or isinstance(value, bool) \
+                        or not isinstance(value, int) or value < 0:
+                    continue
+                if value > _OBSERVED_TIER_RSS.get(label, 0):
+                    _OBSERVED_TIER_RSS[label] = value
+    except OSError:
+        return
+
+
+def _observed_tier_residency(model_label: str) -> int | None:
+    """Max tree RSS MEASURED for this tier so far, or None if never measured."""
+    value = _OBSERVED_TIER_RSS.get(model_label)
+    return value if isinstance(value, int) and value > 0 else None
+
+
+def _cell_reservation(cell: dict[str, Any]) -> int:
+    """RAM the pool charges for a cell: max(projection, MEASURED tier peak).
+
+    Self-calibrating: as soon as one cell of a tier has recorded a tree RSS the
+    reservation becomes MEASURED, using data the pipeline already persists.
+    """
+    projected = _projected_residency_bytes(cell)
+    observed = _observed_tier_residency(cell["model_label"])
+    if observed is not None:
+        projected = max(projected, observed)
+    return max(RESIDENCY_FLOOR_BYTES,
+               min(PROCESS_BUDGET_BYTES - SAFETY_MARGIN_BYTES, projected))
+
+
+def _reserved_total(live_cells: dict[str, "LiveCell"]) -> int:
+    """Live reservation sum, recomputed on demand so there is no drift counter."""
+    return sum(live.reserved_bytes for live in live_cells.values())
+
+
 def _validate_disposition(cell: dict[str, Any], plan: dict[str, Any]) \
         -> tuple[dict[str, Any] | None, list[str]]:
     path = _resolve_workspace_path(cell["disposition_path"], must_exist=False)
@@ -2250,7 +2395,7 @@ def _scan(plan: dict[str, Any], state: dict[str, Any]) \
             _append_event("cell-disposition", cell_id=cell["cell_id"],
                           status=disposition["status"],
                           disposition_sha256=disposition["disposition_sha256"])
-            _save_state(plan, state, "running", active_cell=None)
+            _save_state(plan, state, "running")
             _sync_reporter(plan, state, reason=f"terminal:{cell['cell_id']}")
             continue
         ready, dependency_blockers = _dependency_state(cell, state)
@@ -2270,6 +2415,67 @@ def _scan(plan: dict[str, Any], state: dict[str, Any]) \
     return None, blockers
 
 
+def _scan_runnable_heads(plan: dict[str, Any], state: dict[str, Any]) \
+        -> tuple[list[dict[str, Any]], dict[str, list[str]]]:
+    """Generalized _scan: collect EVERY runnable chain-head, not just the first.
+
+    Body is identical to _scan (same disposition sealing, blocked-dependency
+    marking, _prepare_execution, per-cell blocker recording) except it appends
+    each runnable execution and continues.  Because the linear dependency chain
+    makes at most one branch per (model, rate) runnable at once, distinct heads
+    come from distinct GC-chains, so the control->static->conditional->full
+    serialization and cross-rate independence fall straight out unchanged.
+    """
+    blockers: dict[str, list[str]] = {}
+    heads: list[dict[str, Any]] = []
+    for cell in plan["cells"]:
+        row = state["cells"][cell["cell_id"]]
+        if row["status"] in TERMINAL or row["status"] == "running":
+            continue
+        if cell["cell_id"] in state["active_children"]:
+            continue  # Belt-and-suspenders: a launched lane is never re-admitted.
+        if row["status"] == "blocked-execution" \
+                and row["attempts"] >= MAX_AUTOMATIC_ATTEMPTS:
+            retained = row["blockers"] or [
+                f"automatic retry ceiling reached ({MAX_AUTOMATIC_ATTEMPTS})"
+            ]
+            row["blockers"] = retained
+            blockers[cell["cell_id"]] = retained
+            continue
+        disposition, disposition_errors = _validate_disposition(cell, plan)
+        if disposition_errors:
+            row["blockers"] = disposition_errors
+            blockers[cell["cell_id"]] = disposition_errors
+            continue
+        if isinstance(disposition, dict):
+            row.update({
+                "status": disposition["status"], "completed_at": _now(),
+                "disposition_sha256": disposition["disposition_sha256"],
+                "blockers": [], "error": None,
+            })
+            _append_event("cell-disposition", cell_id=cell["cell_id"],
+                          status=disposition["status"],
+                          disposition_sha256=disposition["disposition_sha256"])
+            _save_state(plan, state, "running")
+            _sync_reporter(plan, state, reason=f"terminal:{cell['cell_id']}")
+            continue
+        ready, dependency_blockers = _dependency_state(cell, state)
+        if not ready:
+            row["status"] = "blocked-dependency"
+            row["blockers"] = dependency_blockers
+            blockers[cell["cell_id"]] = dependency_blockers
+            continue
+        row["status"] = "pending"
+        execution = _prepare_execution(cell)
+        if execution["blockers"]:
+            row["blockers"] = execution["blockers"]
+            blockers[cell["cell_id"]] = execution["blockers"]
+            continue
+        row["blockers"] = []
+        heads.append(execution)
+    return heads, blockers
+
+
 def _acquire_heavy_lease() -> Any | None:
     HEAVY_LOCK.parent.mkdir(parents=True, exist_ok=True)
     lease = HEAVY_LOCK.open("a+")
@@ -2279,6 +2485,20 @@ def _acquire_heavy_lease() -> Any | None:
         lease.close()
         return None
     return lease
+
+
+def _open_child_lease() -> IO[Any]:
+    """Per-child HEAVY_LOCK fd, NOT flocked.
+
+    flock is advisory and per open-file-description, so N children can each hold
+    their own non-flocked fd to the same HEAVY_LOCK inode and every worker
+    _validate_heavy_lease (which only os.fstats the inherited fd and compares
+    st_dev/st_ino) still passes.  The fd VALUE is placed only in the environment,
+    never in command_sha256 or any receipt, so the flock becoming pure in-memory
+    accounting is invisible to every integrity hash.
+    """
+    HEAVY_LOCK.parent.mkdir(parents=True, exist_ok=True)
+    return HEAVY_LOCK.open("a+")
 
 
 def _process_group_rows(pgid: int) -> list[dict[str, Any]]:
@@ -2424,11 +2644,13 @@ def _terminate(process: subprocess.Popen[Any], *, expected_pgid: int,
         process.wait(timeout=5)
 
 
-def _recover_recorded_active_child(plan: dict[str, Any], state: dict[str, Any]) -> bool:
-    """Reap a process group durably recorded before a prior supervisor died."""
-    record = state.get("active_child")
-    if record is None:
-        return False
+def _reap_recorded_child(record: Any, state: dict[str, Any]) -> None:
+    """Reap ONE process group durably recorded before a prior supervisor died.
+
+    Byte-for-byte the same identity/PGID validation and SIGTERM-then-SIGKILL
+    escalation the singular recovery used, factored out so the plural recovery
+    can loop it over every active_children entry.
+    """
     if not isinstance(record, dict):
         raise CampaignError("recorded active child is invalid")
     pid, pgid, started = record.get("pid"), record.get("pgid"), record.get(
@@ -2478,11 +2700,56 @@ def _recover_recorded_active_child(plan: dict[str, Any], state: dict[str, Any]) 
     row = state["cells"][cell_id]
     if row["status"] == "running":
         row["status"] = "pending"
-    state["active_child"] = None
     _append_event("recorded-child-reaped", cell_id=cell_id, pid=pid, pgid=pgid,
                   handshake_pending=record.get("handshake_pending"))
-    _save_state(plan, state, "running", active_cell=None)
-    return True
+
+
+def _reap_recorded_children(plan: dict[str, Any], state: dict[str, Any]) -> int:
+    """Reap every process group recorded before a prior supervisor died."""
+    records = state.get("active_children")
+    if not isinstance(records, dict):
+        raise CampaignError("recorded active children are invalid")
+    reaped = 0
+    for record in list(records.values()):
+        _reap_recorded_child(record, state)
+        reaped += 1
+    if records:
+        state["active_children"] = {}
+        _sync_active_cells(state)
+        _save_state(plan, state, "running")
+    return reaped
+
+
+def _reset_orphaned_running_cells(plan: dict[str, Any], state: dict[str, Any]) -> int:
+    """One-time startup sweep: reset every cell left status=='running' that has no
+    live child recorded in active_children back to 'pending'.
+
+    Admission flips a row to 'running' and PERSISTS it before _launch_cell records
+    the child under active_children (which happens only after an up-to-5s spawn
+    identity handshake), and a raise on the completion path (e.g. an ADOPT_RC
+    revalidation failure, or a _commit_complete save routed through _abort_pool)
+    can leave a row 'running' after _release_cell already dropped its child.  In
+    both cases the cell is 'running' with nothing alive: _reap_recorded_children
+    only revisits active_children entries, and _scan/_scan_runnable_heads skip
+    status=='running', so the cell (and every GC-chain successor that depends on
+    it) would stall forever.  This runs after the reap, when the supervisor holds
+    no live children, so any remaining 'running' row is provably orphaned.
+    """
+    active = state.get("active_children")
+    if not isinstance(active, dict):
+        raise CampaignError("recorded active children are invalid")
+    reset: list[str] = []
+    for cell_id, row in state["cells"].items():
+        if row.get("status") == "running" and cell_id not in active:
+            row["status"] = "pending"
+            row["blockers"] = []
+            reset.append(cell_id)
+    if reset:
+        _sync_active_cells(state)
+        for cell_id in reset:
+            _append_event("orphaned-running-reset", cell_id=cell_id)
+        _save_state(plan, state, "running")
+    return len(reset)
 
 
 def _control_responsive_wait(plan: dict[str, Any], seconds: float) -> None:
@@ -2528,37 +2795,43 @@ def _resource_stop_receipt(plan: dict[str, Any], execution: dict[str, Any], *, r
             "receipt_sha256": receipt["receipt_sha256"], "reason": reason}
 
 
-def _run_external(plan: dict[str, Any], state: dict[str, Any],
-                  execution: dict[str, Any]) -> int:
+def _launch_cell(plan: dict[str, Any], state: dict[str, Any],
+                 execution: dict[str, Any], reserved_bytes: int) -> "LiveCell | int":
+    """Non-blocking launch of one cell child; the poll step advances it.
+
+    Returns a LiveCell for a real running child (the caller charges its
+    reservation) or an int terminal-at-launch outcome (ADOPT_RC, RESOURCE_RC,
+    PAUSE_RC, 130, or an early real returncode) for which nothing is charged.
+    The spawned command, environment keys/semantics, and both identity
+    handshakes are byte-identical to the former serial _run_external.
+    """
     cell = execution["cell"]
-    lease = None
-    while lease is None:
-        mode = _load_control(plan)["mode"]
-        if _STOP or mode == "drain":
-            return 130
-        if mode == "pause":
-            return PAUSE_RC
-        lease = _acquire_heavy_lease()
-        if lease is None:
-            _save_state(plan, state, "waiting-heavy-lease", active_cell=cell["cell_id"])
-            time.sleep(CONTROL_POLL_SECONDS)
+    # Mid-flight adopt: complete, source-bound artifacts need no subprocess.
+    if execution["result_path"].exists() and execution["receipt_path"].exists():
+        _, _, errors = _validate_outputs(execution)
+        if not errors:
+            return ADOPT_RC
+    # Control gate once (NOT a spin loop); the pool loop owns the cadence.
+    mode = _load_control(plan)["mode"]
+    if _STOP or mode == "drain":
+        return 130
+    if mode == "pause":
+        return PAUSE_RC
+    # Disk/pressure/swap/thermal gate stays here, per cell, at launch.
+    gate = _execution_resource_gate(plan, state, execution)
+    state["last_resource_gate"] = gate
+    if not gate["ok"]:
+        return RESOURCE_RC
+    command = execution["command"]
+    if not isinstance(command, list):
+        raise CampaignError("typed command invariant failed")
+    lease = _open_child_lease()
     process: subprocess.Popen[Any] | None = None
     process_pgid: int | None = None
     spawn_identity: tuple[str, str] | None = None
     process_identity: tuple[str, str] | None = None
+    live_pgid: int | None = None
     try:
-        if execution["result_path"].exists() and execution["receipt_path"].exists():
-            _, _, errors = _validate_outputs(execution)
-            if not errors:
-                return ADOPT_RC
-        gate = _execution_resource_gate(plan, state, execution)
-        state["last_resource_gate"] = gate
-        if not gate["ok"]:
-            _save_state(plan, state, "waiting-resources", active_cell=cell["cell_id"])
-            return RESOURCE_RC
-        command = execution["command"]
-        if not isinstance(command, list):
-            raise CampaignError("typed command invariant failed")
         environment = os.environ.copy()
         environment["PYTHONUNBUFFERED"] = "1"
         environment[ram_scheduler.HEAVY_LEASE_FD_ENV] = str(lease.fileno())
@@ -2569,146 +2842,461 @@ def _run_external(plan: dict[str, Any], state: dict[str, Any],
                 stderr=subprocess.STDOUT, start_new_session=True, shell=False,
                 close_fds=True, env=environment, pass_fds=(lease.fileno(),),
             )
-            process_pgid = process.pid
-            identity_deadline = time.monotonic() + 5
-            while time.monotonic() < identity_deadline and process.poll() is None:
-                try:
-                    live_pgid = os.getpgid(process.pid)
-                except ProcessLookupError:
-                    live_pgid = None
-                spawn_identity = _process_identity(process.pid)
-                if live_pgid == process_pgid and spawn_identity is not None:
-                    break
-                time.sleep(0.05)
-            if process.poll() is not None:
-                return int(process.returncode)
-            if spawn_identity is None or live_pgid != process_pgid:
-                raise CampaignError("spawned adapter process start/PGID is invalid")
-            if len(command) < 2 or str(execution["request_path"]) not in command:
-                raise CampaignError("typed adapter command omits adapter/request argv binding")
-            state["active_child"] = {
-                "cell_id": cell["cell_id"], "pid": process.pid, "pgid": process_pgid,
-                "command_sha256": _hash_value(command),
-                "request_sha256": execution["request"]["request_sha256"],
-                "started_at": _now(),
-                "process_started": spawn_identity[1],
-                "process_command_sha256": None, "handshake_pending": True,
-                "process_budget_bytes": PROCESS_BUDGET_BYTES,
-                "max_tree_rss_bytes": 0,
-            }
-            _save_state(plan, state, "running-cell", active_cell=cell["cell_id"])
-            process_identity = _stable_child_identity(
-                process, expected_pgid=process_pgid,
-                required_argv_tokens=(command[1], str(execution["request_path"])),
-            )
-            if process_identity is None:
-                return int(process.returncode)
-            if process_identity[1] != spawn_identity[1]:
-                raise CampaignError("spawned adapter start identity changed during handshake")
-            state["active_child"].update({
-                "process_started": process_identity[1],
-                "process_command_sha256": hashlib.sha256(
-                    process_identity[0].encode("utf-8")
-                ).hexdigest(),
-                "handshake_pending": False,
-            })
-            _save_state(plan, state, "running-cell", active_cell=cell["cell_id"])
-            last_resource_probe = time.monotonic()
-            max_tree_rss = 0
-            while process.poll() is None:
-                time.sleep(CONTROL_POLL_SECONDS)
-                mode = _load_control(plan)["mode"]
-                if _STOP or mode == "drain":
-                    _terminate(process, expected_pgid=process_pgid,
-                               expected_identity=process_identity)
-                    return 130
-                if mode == "pause":
-                    _terminate(process, expected_pgid=process_pgid,
-                               expected_identity=process_identity)
-                    return PAUSE_RC
-                try:
-                    sample = _sample_child_tree(process.pid, process_pgid, process_identity)
-                except CampaignError:
-                    if process.poll() is not None:
-                        break
-                    raise
-                sample.update({"cell_id": cell["cell_id"],
-                               "plan_sha256": plan["plan_sha256"],
-                               "request_sha256": execution["request"]["request_sha256"],
-                               "process_budget_bytes": PROCESS_BUDGET_BYTES})
-                max_tree_rss = max(max_tree_rss, sample["tree_rss_bytes"])
-                sample["max_tree_rss_bytes"] = max_tree_rss
-                sample["at_or_over_budget"] = sample["tree_rss_bytes"] >= PROCESS_BUDGET_BYTES
-                _append_child_resource_sample(sample)
-                state["last_child_resource_sample"] = sample
-                state["max_child_tree_rss_bytes"] = max(
-                    state["max_child_tree_rss_bytes"], max_tree_rss
-                )
-                state["active_child"]["max_tree_rss_bytes"] = max_tree_rss
-                if sample["at_or_over_budget"]:
-                    _terminate(process, expected_pgid=process_pgid,
-                               expected_identity=process_identity)
-                    stop = _resource_stop_receipt(
-                        plan, execution,
-                        reason="child_tree_rss_at_or_over_process_budget",
-                        sample=sample, max_rss_bytes=max_tree_rss,
-                        process_identity=process_identity,
-                    )
-                    state["last_resource_stop"] = stop
-                    _append_event("resource-stop", cell_id=cell["cell_id"], **stop)
-                    return RESOURCE_RC
-                now = time.monotonic()
-                if now - last_resource_probe >= RESOURCE_POLL_SECONDS:
-                    gate = _execution_resource_gate(plan, state, execution)
-                    last_resource_probe = now
-                    state["last_resource_gate"] = gate
-                    if not gate["ok"]:
-                        _terminate(process, expected_pgid=process_pgid,
-                                   expected_identity=process_identity)
-                        stop = _resource_stop_receipt(
-                            plan, execution,
-                            reason="pressure_swap_power_thermal_or_disk_gate",
-                            sample=sample, max_rss_bytes=max_tree_rss,
-                            process_identity=process_identity,
-                        )
-                        state["last_resource_stop"] = stop
-                        _append_event("resource-stop", cell_id=cell["cell_id"], **stop)
-                        return RESOURCE_RC
-                    _save_state(plan, state)
+        process_pgid = process.pid
+        identity_deadline = time.monotonic() + 5
+        while time.monotonic() < identity_deadline and process.poll() is None:
+            try:
+                live_pgid = os.getpgid(process.pid)
+            except ProcessLookupError:
+                live_pgid = None
+            spawn_identity = _process_identity(process.pid)
+            if live_pgid == process_pgid and spawn_identity is not None:
+                break
+            time.sleep(0.05)
+        if process.poll() is not None:
+            lease.close()
             return int(process.returncode)
-    finally:
-        active_exception = sys.exc_info()[1]
-        cleanup_error: BaseException | None = None
+        if spawn_identity is None or live_pgid != process_pgid:
+            raise CampaignError("spawned adapter process start/PGID is invalid")
+        if len(command) < 2 or str(execution["request_path"]) not in command:
+            raise CampaignError("typed adapter command omits adapter/request argv binding")
+        state["active_children"][cell["cell_id"]] = {
+            "cell_id": cell["cell_id"], "pid": process.pid, "pgid": process_pgid,
+            "command_sha256": _hash_value(command),
+            "request_sha256": execution["request"]["request_sha256"],
+            "started_at": _now(),
+            "process_started": spawn_identity[1],
+            "process_command_sha256": None, "handshake_pending": True,
+            "process_budget_bytes": PROCESS_BUDGET_BYTES,
+            "max_tree_rss_bytes": 0,
+            "reserved_bytes": reserved_bytes,
+        }
+        _sync_active_cells(state)
+        _save_state(plan, state, "running-cell")
+        process_identity = _stable_child_identity(
+            process, expected_pgid=process_pgid,
+            required_argv_tokens=(command[1], str(execution["request_path"])),
+        )
+        if process_identity is None:
+            state["active_children"].pop(cell["cell_id"], None)
+            _sync_active_cells(state)
+            _save_state(plan, state)
+            lease.close()
+            return int(process.returncode)
+        if process_identity[1] != spawn_identity[1]:
+            raise CampaignError("spawned adapter start identity changed during handshake")
+        state["active_children"][cell["cell_id"]].update({
+            "process_started": process_identity[1],
+            "process_command_sha256": hashlib.sha256(
+                process_identity[0].encode("utf-8")
+            ).hexdigest(),
+            "handshake_pending": False,
+        })
+        _save_state(plan, state, "running-cell")
+        return LiveCell(
+            execution=execution, process=process, process_pgid=process_pgid,
+            spawn_identity=spawn_identity, process_identity=process_identity,
+            lease=lease, reserved_bytes=reserved_bytes, max_tree_rss_bytes=0,
+            # H3: back-date the first probe by one interval so a fresh lane
+            # re-gates on swap/pressure/disk on its FIRST poll tick instead of
+            # running unmonitored for a full RESOURCE_POLL_SECONDS.
+            last_resource_probe=time.monotonic() - RESOURCE_POLL_SECONDS,
+        )
+    except BaseException:
+        # Fail-closed: terminate and drop THIS child before propagating so a
+        # single lane's identity/gate error never leaks a process or a lease.
         try:
             if process is not None and process_pgid is not None:
-                _terminate(
-                    process, expected_pgid=process_pgid,
-                    expected_identity=process_identity or spawn_identity,
-                )
-        except BaseException as exc:
-            cleanup_error = exc
+                _terminate(process, expected_pgid=process_pgid,
+                           expected_identity=process_identity or spawn_identity)
+        except BaseException:
+            pass
+        state["active_children"].pop(cell["cell_id"], None)
+        _sync_active_cells(state)
         try:
-            state["active_child"] = None
-            _save_state(plan, state)
-        except BaseException as exc:
-            if cleanup_error is None:
-                cleanup_error = exc
-        try:
-            fcntl.flock(lease.fileno(), fcntl.LOCK_UN)
-        except BaseException as exc:
-            if cleanup_error is None:
-                cleanup_error = exc
-        finally:
             lease.close()
-        if cleanup_error is not None:
-            if active_exception is not None:
-                raise cleanup_error from active_exception
-            raise cleanup_error
+        except OSError:
+            pass
+        raise
+
+
+def _child_tree_from_rows(live: "LiveCell",
+                          rows_by_pgid: dict[int, list[dict[str, Any]]]) -> dict[str, Any]:
+    """Per-child identity guards + tree RSS from one shared ps snapshot.
+
+    Mirrors _sample_child_tree's guards exactly (fail-closed on any mismatch)
+    but buckets a pre-taken snapshot instead of shelling out per child.
+    """
+    root_pid = live.process.pid
+    expected_pgid = live.process_pgid
+    expected_identity = live.process_identity
+    if expected_pgid != root_pid or _process_identity(root_pid) != expected_identity:
+        raise CampaignError("child root process identity changed during resource monitoring")
+    try:
+        observed_pgid = os.getpgid(root_pid)
+    except ProcessLookupError as exc:
+        raise CampaignError("child root vanished during resource monitoring") from exc
+    if observed_pgid != expected_pgid:
+        raise CampaignError("child process group identity changed")
+    rows = sorted(rows_by_pgid.get(expected_pgid, []), key=lambda row: row["pid"])
+    if not any(row["pid"] == root_pid for row in rows) \
+            or any(row["pgid"] != expected_pgid for row in rows):
+        raise CampaignError("child process tree sample does not contain the bound root")
+    total = sum(row["rss_bytes"] for row in rows)
+    return {"sampled_at": _now(), "root_pid": root_pid, "pgid": expected_pgid,
+            "process_count": len(rows), "tree_rss_bytes": total, "processes": rows}
+
+
+def _sample_active_children(live_cells: dict[str, "LiveCell"]) \
+        -> tuple[dict[str, dict[str, Any]], int]:
+    """One shared ps snapshot -> per-cell samples + aggregate tree RSS.
+
+    A single snapshot gives a consistent cross-child instant for the aggregate
+    and cuts N ps calls to 1.  Cells whose process is finishing are skipped;
+    a live-process identity mismatch fails closed exactly as _sample_child_tree.
+    """
+    try:
+        process = subprocess.run(
+            ["ps", "-axo", "pid=,ppid=,pgid=,rss=,state="], capture_output=True,
+            text=True, timeout=5, check=True,
+        )
+    except (OSError, subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
+        raise CampaignError(f"cannot sample child process group: {exc}") from exc
+    rows_by_pgid: dict[int, list[dict[str, Any]]] = {}
+    for raw in process.stdout.splitlines():
+        fields = raw.split()
+        if len(fields) != 5:
+            continue
+        try:
+            pid, ppid, observed_pgid, rss_kib = map(int, fields[:4])
+        except ValueError:
+            continue
+        rows_by_pgid.setdefault(observed_pgid, []).append(
+            {"pid": pid, "ppid": ppid, "pgid": observed_pgid,
+             "rss_bytes": rss_kib * 1024, "state": fields[4]}
+        )
+    samples: dict[str, dict[str, Any]] = {}
+    aggregate = 0
+    for cell_id, live in live_cells.items():
+        if live.process.poll() is not None:
+            continue  # Finishing; _finalize_cell handles it this tick.
+        try:
+            sample = _child_tree_from_rows(live, rows_by_pgid)
+        except CampaignError:
+            if live.process.poll() is not None:
+                continue  # Raced a clean exit; finalize, do not fail closed.
+            raise
+        samples[cell_id] = sample
+        aggregate += sample["tree_rss_bytes"]
+    return samples, aggregate
+
+
+def _record_resource_stop(state: dict[str, Any], cell_id: str, *,
+                          sole_live: bool) -> str | None:
+    """Bound a cell's resource-driven retries so the pool cannot admit -> OOM-kill
+    -> reset it forever (which blocks campaign completion).
+
+    A cell whose real residency alone reaches the RAM budget is shed as the SOLE
+    live lane; retrying it in isolation can never succeed, so it escalates on that
+    first stop.  A cell that merely loses repeated aggregate/pressure contention
+    escalates after MAX_RESOURCE_STOPS consecutive resource-stops.  Escalation
+    flips it to blocked-execution so the existing MAX_AUTOMATIC_ATTEMPTS ceiling
+    surfaces it to a human instead of deadlocking the campaign.  The count is
+    tracked in state and cleared when the cell later completes.  Returns the
+    blocker string on escalation, else None (caller resets the row to pending).
+    """
+    counts = state.setdefault("resource_stop_counts", {})
+    count = int(counts.get(cell_id, 0)) + 1
+    counts[cell_id] = count
+    if not (sole_live or count >= MAX_RESOURCE_STOPS):
+        return None
+    detail = ("its residency alone reaches the process RAM budget as the sole live lane"
+              if sole_live else
+              f"{count} consecutive resource-stops reached the bound ({MAX_RESOURCE_STOPS})")
+    blocker = f"resource-stop ceiling reached: {detail}"
+    row = state["cells"][cell_id]
+    row["status"] = "blocked-execution"
+    row["error"] = blocker
+    row["blockers"] = [blocker]
+    counts.pop(cell_id, None)
+    _append_event("resource-stop-escalated", cell_id=cell_id,
+                  consecutive_stops=count, sole_live=sole_live, blocker=blocker)
+    return blocker
+
+
+def _clear_resource_stop(state: dict[str, Any], cell_id: str) -> None:
+    """Reset a cell's consecutive resource-stop counter after real progress."""
+    counts = state.get("resource_stop_counts")
+    if isinstance(counts, dict):
+        counts.pop(cell_id, None)
+
+
+def _enforce_pool_budget(plan: dict[str, Any], state: dict[str, Any],
+                         live_cells: dict[str, "LiveCell"],
+                         samples_by_cell: dict[str, dict[str, Any]],
+                         aggregate: int) -> list[str]:
+    """Record each sample, then stop victims while the SUMMED tree RSS is over budget.
+
+    The hard OOM guard: a strict generalization of the old per-child check
+    (tree_rss >= budget) to the aggregate, terminating the largest-RSS lane
+    first for greatest relief until the sum drops under PROCESS_BUDGET_BYTES.
+    """
+    for cell_id, sample in samples_by_cell.items():
+        live = live_cells.get(cell_id)
+        if live is None:
+            continue
+        execution = live.execution
+        sample.update({
+            "cell_id": cell_id, "plan_sha256": plan["plan_sha256"],
+            "request_sha256": execution["request"]["request_sha256"],
+            "process_budget_bytes": PROCESS_BUDGET_BYTES,
+        })
+        live.max_tree_rss_bytes = max(live.max_tree_rss_bytes, sample["tree_rss_bytes"])
+        sample["max_tree_rss_bytes"] = live.max_tree_rss_bytes
+        sample["at_or_over_budget"] = aggregate >= PROCESS_BUDGET_BYTES
+        _append_child_resource_sample(sample)
+        state["last_child_resource_sample"] = sample
+        state["max_child_tree_rss_bytes"] = max(
+            state["max_child_tree_rss_bytes"], live.max_tree_rss_bytes
+        )
+        if cell_id in state["active_children"]:
+            state["active_children"][cell_id]["max_tree_rss_bytes"] = live.max_tree_rss_bytes
+        label = execution["cell"]["model_label"]
+        if sample["tree_rss_bytes"] > _OBSERVED_TIER_RSS.get(label, 0):
+            _OBSERVED_TIER_RSS[label] = sample["tree_rss_bytes"]  # MEASURED calibration.
+    stopped: list[str] = []
+    while aggregate >= PROCESS_BUDGET_BYTES and live_cells:
+        victim_id = max(
+            (cid for cid in samples_by_cell if cid in live_cells),
+            key=lambda cid: samples_by_cell[cid]["tree_rss_bytes"], default=None,
+        )
+        if victim_id is None:
+            break
+        victim = live_cells[victim_id]
+        sample = samples_by_cell[victim_id]
+        _terminate(victim.process, expected_pgid=victim.process_pgid,
+                   expected_identity=victim.process_identity)
+        stop = _resource_stop_receipt(
+            plan, victim.execution,
+            reason="pool_tree_rss_at_or_over_process_budget",
+            sample=sample, max_rss_bytes=victim.max_tree_rss_bytes,
+            process_identity=victim.process_identity,
+        )
+        state["last_resource_stop"] = stop
+        _append_event("resource-stop", cell_id=victim_id, **stop)
+        # M2: a cell shed as the SOLE live lane (its residency alone reaches the
+        # budget) or that keeps losing aggregate contention must not be re-admitted
+        # forever; escalate it once the resource-stop ceiling is reached.
+        sole_live = len(live_cells) == 1
+        if _record_resource_stop(state, victim_id, sole_live=sole_live) is None:
+            state["cells"][victim_id]["status"] = "pending"
+        _release_cell(state, live_cells, victim)
+        aggregate -= sample["tree_rss_bytes"]
+        del samples_by_cell[victim_id]
+        stopped.append(victim_id)
+    # H3: the fixed PROCESS_BUDGET_BYTES aggregate is blind to swap and to
+    # non-child residency (a co-resident 'mop' process + the OS share the box, and
+    # the 18 GB headroom is their only cushion).  Take ONE shared snapshot per tick
+    # from the SAME source the admission/execution gate uses and, under real memory
+    # pressure or ANY swap, shed the single largest-RSS lane for incremental relief.
+    # Fail safe: an unreadable snapshot is treated as pressure so the guard never
+    # goes blind (a conservative single-lane shed, mirroring the gate's fail-closed
+    # swap/pressure fields).
+    if live_cells and samples_by_cell:
+        try:
+            snapshot = ram_scheduler.resource_snapshot(str(ROOT))
+        except Exception as exc:
+            snapshot = {"error": f"{type(exc).__name__}: {exc}"}
+        pressure = snapshot.get("pressure_level")
+        swap_mb = snapshot.get("swap_used_mb")
+        swap_nonzero = (isinstance(swap_mb, bool) or not isinstance(swap_mb, (int, float))
+                        or not math.isfinite(float(swap_mb)) or float(swap_mb) != 0)
+        under_pressure = "error" in snapshot or pressure != 1 or swap_nonzero
+        if under_pressure:
+            victim_id = max(
+                (cid for cid in samples_by_cell if cid in live_cells),
+                key=lambda cid: samples_by_cell[cid]["tree_rss_bytes"], default=None,
+            )
+            if victim_id is not None:
+                victim = live_cells[victim_id]
+                sample = samples_by_cell[victim_id]
+                _terminate(victim.process, expected_pgid=victim.process_pgid,
+                           expected_identity=victim.process_identity)
+                stop = _resource_stop_receipt(
+                    plan, victim.execution,
+                    reason="system_memory_pressure_or_swap",
+                    sample=sample, max_rss_bytes=victim.max_tree_rss_bytes,
+                    process_identity=victim.process_identity,
+                )
+                state["last_resource_stop"] = stop
+                _append_event("resource-stop", cell_id=victim_id, **stop)
+                sole_live = len(live_cells) == 1
+                if _record_resource_stop(state, victim_id, sole_live=sole_live) is None:
+                    state["cells"][victim_id]["status"] = "pending"
+                _release_cell(state, live_cells, victim)
+                del samples_by_cell[victim_id]
+                stopped.append(victim_id)
+    if stopped:
+        _save_state(plan, state, "waiting-resources")
+    return stopped
+
+
+def _release_cell(state: dict[str, Any], live_cells: dict[str, "LiveCell"],
+                  live: "LiveCell") -> None:
+    """Close the (non-flocked) lease and drop the cell from every live index.
+
+    No fcntl: there is no flock to release.  reserved_total is always recomputed
+    from live_cells, so a cell MUST leave live_cells in the same step its lease
+    closes; every terminate path funnels through here to avoid leaking budget.
+    """
+    cell_id = live.execution["cell"]["cell_id"]
+    try:
+        live.lease.close()
+    except OSError:
+        pass
+    state["active_children"].pop(cell_id, None)
+    live_cells.pop(cell_id, None)
+    _sync_active_cells(state)
+
+
+def _apply_cell_exit(plan: dict[str, Any], state: dict[str, Any],
+                     execution: dict[str, Any], rc: int,
+                     live_cells: dict[str, "LiveCell"] | None = None) -> None:
+    """Serial-tail rc handling for a cell that produced a terminal outcome.
+
+    live_cells (the OTHER still-running lanes, if any) is threaded through only so
+    _commit_complete can keep them monitored across its blocking reporter sync
+    (M1).  It is None for callers with no live pool in scope.
+    """
+    cell_id = execution["cell"]["cell_id"]
+    row = state["cells"][cell_id]
+    row["last_exit_code"] = rc
+    if rc == ADOPT_RC:
+        result, receipt, errors = _validate_outputs(execution)
+        if errors or not isinstance(result, dict) or not isinstance(receipt, dict):
+            raise CampaignError("adoptable artifacts changed during validation")
+        _commit_complete(plan, state, execution, result, receipt, live_cells)
+        return
+    if rc == PAUSE_RC:
+        # Pause/drain are re-observed at the loop top, which quiesces the pool.
+        row["status"] = "pending"
+        _save_state(plan, state)
+        return
+    if rc == RESOURCE_RC:
+        row["status"] = "pending"
+        _save_state(plan, state, "waiting-resources")
+        return
+    if rc == 130:
+        row["status"] = "pending"
+        _save_state(plan, state)
+        return
+    if rc != 0:
+        row["status"] = "blocked-execution"
+        row["error"] = f"typed adapter exited with status {rc}"
+        row["blockers"] = [row["error"]]
+        _append_event("cell-exit", cell_id=cell_id, exit_code=rc)
+        _save_state(plan, state, "running")
+        # Do not deadlock the campaign on one failed implementation.
+        return
+    result, receipt, errors = _validate_outputs(execution)
+    if errors or not isinstance(result, dict) or not isinstance(receipt, dict):
+        row["status"] = "blocked-execution"
+        row["error"] = "invalid output artifacts: " + "; ".join(errors)
+        row["blockers"] = list(errors)
+        _save_state(plan, state, "running")
+        return
+    _commit_complete(plan, state, execution, result, receipt, live_cells)
+
+
+def _finalize_cell(plan: dict[str, Any], state: dict[str, Any],
+                   live_cells: dict[str, "LiveCell"], live: "LiveCell",
+                   rc: int) -> None:
+    """Reap the exited child, release it, then apply serial-tail rc handling."""
+    try:
+        _terminate(live.process, expected_pgid=live.process_pgid,
+                   expected_identity=live.process_identity or live.spawn_identity)
+    except CampaignError:
+        pass  # Best-effort: the child already exited (poll() was not None).
+    _release_cell(state, live_cells, live)
+    # live_cells now holds only the OTHER lanes; pass it so a reporter sync on the
+    # completion path keeps them budget-monitored + control-responsive (M1).
+    _apply_cell_exit(plan, state, live.execution, rc, live_cells)
+
+
+def _drain_pool(plan: dict[str, Any], state: dict[str, Any],
+                live_cells: dict[str, "LiveCell"], *, target_status: str) -> None:
+    """Terminate and release EVERY live child (drain/pause quiesce path).
+
+    Each child is reaped and released even if a peer's terminate raises, so the
+    pool is fully quiesced; the first error is re-raised afterward (fail-closed).
+    """
+    _append_event("pool-quiesce", target_status=target_status,
+                  child_count=len(live_cells))
+    pending_error: BaseException | None = None
+    for cell_id in list(live_cells):
+        live = live_cells[cell_id]
+        try:
+            _terminate(live.process, expected_pgid=live.process_pgid,
+                       expected_identity=live.process_identity or live.spawn_identity)
+        except BaseException as exc:
+            if pending_error is None:
+                pending_error = exc
+        finally:
+            row = state["cells"].get(cell_id)
+            if row is not None and row["status"] == "running":
+                row["status"] = "pending"
+            _release_cell(state, live_cells, live)
+    if pending_error is not None:
+        raise pending_error
+
+
+def _abort_pool(state: dict[str, Any], live_cells: dict[str, "LiveCell"]) -> None:
+    """Best-effort terminate+release of every live child on a fatal error path."""
+    for cell_id in list(live_cells):
+        live = live_cells[cell_id]
+        try:
+            _terminate(live.process, expected_pgid=live.process_pgid,
+                       expected_identity=live.process_identity or live.spawn_identity)
+        except BaseException:
+            pass
+        finally:
+            row = state["cells"].get(cell_id)
+            if row is not None and row["status"] == "running":
+                row["status"] = "pending"
+            _release_cell(state, live_cells, live)
+
+
+def _guard_live_pool(plan: dict[str, Any], state: dict[str, Any],
+                     live_cells: dict[str, "LiveCell"] | None) -> None:
+    """Re-monitor the still-live pool around a long BLOCKING call (M1).
+
+    The completion path runs _sync_reporter synchronously (up to
+    REPORTER_SYNC_TIMEOUT_SECONDS) while OTHER lanes keep running.  Bracketing
+    that call with this guard means the live lanes are neither left over-budget
+    (one fresh sample + the OOM/pressure guard sheds a lane that grew during the
+    sync) nor left running dark against a stop request (control is re-observed and
+    a requested drain/pause quiesces the pool immediately).  A lane that raced a
+    clean exit is left for the poll loop to finalize, not failed closed here.
+    """
+    if not live_cells:
+        return
+    try:
+        samples, aggregate = _sample_active_children(live_cells)
+        _enforce_pool_budget(plan, state, live_cells, samples, aggregate)
+    except CampaignError:
+        pass  # A lane is finishing; the poll loop finalizes it next tick.
+    mode = _load_control(plan)["mode"]
+    state["control_mode"] = mode
+    if (_STOP or mode == "drain") and live_cells:
+        _drain_pool(plan, state, live_cells, target_status="drained")
+    elif mode == "pause" and live_cells:
+        _drain_pool(plan, state, live_cells, target_status="paused")
 
 
 def _commit_complete(plan: dict[str, Any], state: dict[str, Any],
                      execution: dict[str, Any], result: dict[str, Any],
-                     receipt: dict[str, Any]) -> None:
+                     receipt: dict[str, Any],
+                     live_cells: dict[str, "LiveCell"] | None = None) -> None:
     cell_id = execution["cell"]["cell_id"]
     row = state["cells"][cell_id]
     row.update({
@@ -2719,12 +3307,20 @@ def _commit_complete(plan: dict[str, Any], state: dict[str, Any],
         "result_sha256": result["result_sha256"],
         "execution_receipt_sha256": receipt["receipt_sha256"],
     })
+    _clear_resource_stop(state, cell_id)  # Real progress resets the M2 counter.
     _append_event("cell-complete", cell_id=cell_id,
                   result_sha256=result["result_sha256"],
                   execution_receipt_sha256=receipt["receipt_sha256"])
-    _save_state(plan, state, "running", active_cell=None)
+    # active_cells is maintained by the pool via _sync_active_cells; do not pass
+    # the singular active_cell kwarg here so a commit never clobbers the plural
+    # bookkeeping of the other concurrently running lanes.
+    _save_state(plan, state, "running")
+    # M1: bracket the (up to 300s) reporter sync so the OTHER live lanes are not
+    # left dark or over budget while it blocks the loop.
+    _guard_live_pool(plan, state, live_cells)
     if _sync_reporter(plan, state, reason=f"terminal:{cell_id}"):
         _reconcile_lifecycle(plan, state, successor_only=execution["cell"])
+    _guard_live_pool(plan, state, live_cells)
 
 
 def run_queue(nonce: str) -> int:
@@ -2737,125 +3333,204 @@ def run_queue(nonce: str) -> int:
             fcntl.flock(singleton.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError as exc:
             raise CampaignError("another Ultra supervisor holds the singleton lease") from exc
-        _atomic_json(PID_FILE, _pid_record(plan, nonce))
-        state = _load_state(plan)
-        _recover_recorded_active_child(plan, state)
-        state["supervisor_pid"] = os.getpid()
-        state["error"] = None
-        _save_state(plan, state, "running")
-        _append_event("supervisor-start", pid=os.getpid())
-        _sync_reporter(plan, state, reason="queue-start-or-resume")
-        _reconcile_lifecycle(plan, state)
-        while True:
-            live_plan = _load_plan()
-            if live_plan["plan_sha256"] != plan["plan_sha256"]:
-                raise CampaignError("campaign plan changed while supervisor was running")
-            mode = _load_control(plan)["mode"]
-            state["control_mode"] = mode
-            if _STOP or mode == "drain":
-                _save_state(plan, state, "drained", supervisor_pid=None,
-                            active_cell=None, active_child=None)
-                _append_event("supervisor-drained", pid=os.getpid())
-                return 0
-            if mode == "pause":
-                _save_state(plan, state, "paused", active_cell=None, active_child=None)
-                time.sleep(CONTROL_POLL_SECONDS)
-                continue
-            # Crash recovery and reporter retries are detached queue work too.
-            # A missing reporter checkpoint retains payloads; it never authorizes
-            # deletion or prevents independent cells from being considered.
-            last_sync = state.get("last_reporter_sync")
-            if _reconcile_lifecycle(plan, state) == 0 \
-                    and isinstance(last_sync, dict) and last_sync.get("ok") is False:
-                if _sync_reporter(plan, state, reason="lifecycle-reconcile"):
-                    _reconcile_lifecycle(plan, state)
-            if all(row["status"] in TERMINAL for row in state["cells"].values()):
-                groups = _report_groups(plan, state)
-                reports_sealed = all(
-                    group["ready_for_verified_report"]
-                    and group["verified_report_checkpoint"] is not None
-                    for group in groups
-                )
-                if not reports_sealed:
-                    _sync_reporter(plan, state, reason="terminal-completeness-retry")
+        # One supervisor-lifetime exclusive flock on HEAVY_LOCK preserves the
+        # machine-wide "one heavy owner" guarantee against OTHER tools (studio_run,
+        # processing_queue, audit_ladder).  Children get their own NON-flocked fds
+        # (flock is per-OFD) so internal concurrency is governed purely by the RAM
+        # budget while cross-tool exclusion is retained.
+        heavy_owner = _acquire_heavy_lease()
+        if heavy_owner is None:
+            raise CampaignError("another heavy tool holds the studio heavy lease")
+        live_cells: dict[str, LiveCell] = {}
+        state: dict[str, Any] | None = None
+        try:
+            _atomic_json(PID_FILE, _pid_record(plan, nonce))
+            state = _load_state(plan)
+            _reap_recorded_children(plan, state)
+            # H2: with no live children held, reset any cell orphaned in the
+            # 'running' state (a crash in the launch window before it was recorded
+            # in active_children, or a raise on the completion path after its child
+            # was released) so it and its GC-chain successors do not stall forever.
+            _reset_orphaned_running_cells(plan, state)
+            state["supervisor_pid"] = os.getpid()
+            state["error"] = None
+            _save_state(plan, state, "running")
+            _append_event("supervisor-start", pid=os.getpid())
+            _sync_reporter(plan, state, reason="queue-start-or-resume")
+            _reconcile_lifecycle(plan, state)
+            _seed_observed_tier_residency(plan)
+            while True:
+                live_plan = _load_plan()
+                if live_plan["plan_sha256"] != plan["plan_sha256"]:
+                    raise CampaignError("campaign plan changed while supervisor was running")
+                mode = _load_control(plan)["mode"]
+                state["control_mode"] = mode
+                if _STOP or mode == "drain":
+                    _drain_pool(plan, state, live_cells, target_status="drained")
+                    _save_state(plan, state, "drained", supervisor_pid=None,
+                                active_children={}, active_cells=[])
+                    _append_event("supervisor-drained", pid=os.getpid())
+                    return 0
+                if mode == "pause":
+                    _drain_pool(plan, state, live_cells, target_status="paused")
+                    _save_state(plan, state, "paused",
+                                active_children={}, active_cells=[])
+                    _control_responsive_wait(plan, CONTROL_POLL_SECONDS)
+                    continue
+                # ADVANCE EXISTING CHILDREN: one shared RSS snapshot, aggregate
+                # OOM guard, per-lane disk re-gate, then finalize any that exited.
+                if live_cells:
+                    samples, aggregate = _sample_active_children(live_cells)
+                    _enforce_pool_budget(plan, state, live_cells, samples, aggregate)
+                    now = time.monotonic()
+                    for cell_id in list(live_cells):
+                        live = live_cells.get(cell_id)
+                        if live is None:
+                            continue
+                        if now - live.last_resource_probe < RESOURCE_POLL_SECONDS:
+                            continue
+                        live.last_resource_probe = now
+                        if live.process.poll() is not None:
+                            continue
+                        gate = _execution_resource_gate(plan, state, live.execution)
+                        state["last_resource_gate"] = gate
+                        if not gate["ok"]:
+                            sample = samples.get(cell_id) or {"pgid": live.process_pgid}
+                            _terminate(live.process, expected_pgid=live.process_pgid,
+                                       expected_identity=live.process_identity)
+                            stop = _resource_stop_receipt(
+                                plan, live.execution,
+                                reason="pressure_swap_power_thermal_or_disk_gate",
+                                sample=sample, max_rss_bytes=live.max_tree_rss_bytes,
+                                process_identity=live.process_identity,
+                            )
+                            state["last_resource_stop"] = stop
+                            _append_event("resource-stop", cell_id=cell_id, **stop)
+                            state["cells"][cell_id]["status"] = "pending"
+                            _release_cell(state, live_cells, live)
+                        else:
+                            _save_state(plan, state)
+                    for cell_id in list(live_cells):
+                        live = live_cells.get(cell_id)
+                        if live is None:
+                            continue
+                        rc = live.process.poll()
+                        if rc is not None:
+                            _finalize_cell(plan, state, live_cells, live, int(rc))
+                # LIFECYCLE GC each tick (preserves GC-chain ordering + source
+                # binding).  A missing reporter checkpoint retains payloads; it
+                # never authorizes deletion or blocks independent cells.
+                last_sync = state.get("last_reporter_sync")
+                if _reconcile_lifecycle(plan, state) == 0 \
+                        and isinstance(last_sync, dict) and last_sync.get("ok") is False:
+                    if _sync_reporter(plan, state, reason="lifecycle-reconcile"):
+                        _reconcile_lifecycle(plan, state)
+                # CAMPAIGN COMPLETE only when the pool is empty AND all terminal.
+                if not live_cells \
+                        and all(row["status"] in TERMINAL for row in state["cells"].values()):
                     groups = _report_groups(plan, state)
                     reports_sealed = all(
                         group["ready_for_verified_report"]
                         and group["verified_report_checkpoint"] is not None
                         for group in groups
                     )
-                if not reports_sealed:
+                    if not reports_sealed:
+                        _sync_reporter(plan, state, reason="terminal-completeness-retry")
+                        groups = _report_groups(plan, state)
+                        reports_sealed = all(
+                            group["ready_for_verified_report"]
+                            and group["verified_report_checkpoint"] is not None
+                            for group in groups
+                        )
+                    if not reports_sealed:
+                        _save_state(plan, state, "waiting-prerequisites",
+                                    active_children={}, active_cells=[])
+                        _control_responsive_wait(plan, PREREQUISITE_POLL_SECONDS)
+                        continue
+                    _save_state(plan, state, "complete", supervisor_pid=None,
+                                active_children={}, active_cells=[])
+                    _append_event("campaign-complete", plan_sha256=plan["plan_sha256"])
+                    return 0
+                # ADMISSION: greedily fill free lanes with runnable chain-heads
+                # (plan priority order = small models first) while the live
+                # reservation sum plus the safety margin stays under budget.
+                admitted_any = False
+                if len(live_cells) < MAX_LANES:
+                    heads, blockers = _scan_runnable_heads(plan, state)
+                    state["last_scan"] = {
+                        "at": _now(), "blocked_cell_count": len(blockers),
+                        "runnable_cell": heads[0]["cell"]["cell_id"] if heads else None,
+                        "runnable_cell_count": len(heads),
+                        "blockers_sha256": _hash_value(blockers),
+                    }
+                    for execution in heads:
+                        if len(live_cells) >= MAX_LANES:
+                            break
+                        cell = execution["cell"]
+                        cell_id = cell["cell_id"]
+                        if cell_id in state["active_children"] or cell_id in live_cells:
+                            continue
+                        reserve = _cell_reservation(cell)
+                        if _reserved_total(live_cells) + reserve + SAFETY_MARGIN_BYTES \
+                                > PROCESS_BUDGET_BYTES:
+                            continue  # Try the next (smaller) head; no head-of-line block.
+                        # Adopt complete, source-bound artifacts before spawning.
+                        if execution["result_path"].exists() \
+                                and execution["receipt_path"].exists():
+                            result, receipt, errors = _validate_outputs(execution)
+                            if not errors and isinstance(result, dict) \
+                                    and isinstance(receipt, dict):
+                                _commit_complete(plan, state, execution, result,
+                                                 receipt, live_cells)
+                                admitted_any = True
+                                continue
+                        row = state["cells"][cell_id]
+                        row["status"] = "running"
+                        row["attempts"] += 1
+                        row["started_at"] = row["started_at"] or _now()
+                        row["runtime_spec_sha256"] = execution["runtime"]["sha256"]
+                        row["registry_sha256"] = execution["registry"]["registry_sha256"]
+                        row["request_sha256"] = execution["request"]["request_sha256"]
+                        _save_state(plan, state, "running-cell")
+                        outcome = _launch_cell(plan, state, execution, reserve)
+                        if isinstance(outcome, LiveCell):
+                            live_cells[cell_id] = outcome
+                            admitted_any = True
+                        else:
+                            _apply_cell_exit(plan, state, execution, int(outcome),
+                                             live_cells)
+                            admitted_any = True
+                # TICK CADENCE: a live pool samples every control cadence (fast,
+                # keeps RSS sampling + drain/pause responsive).  H1: whenever NO
+                # child is live the loop must back off at least one poll interval
+                # even when admitted_any is True, otherwise a terminal-at-launch
+                # admission (e.g. _launch_cell returning RESOURCE_RC before spawn,
+                # which _apply_cell_exit resets to pending) re-enters with zero
+                # delay and busy-spins at 100% CPU under disk/thermal/swap
+                # pressure.  _control_responsive_wait re-observes control each
+                # inner tick so drain/pause stay responsive during the backoff.
+                if live_cells:
+                    _control_responsive_wait(plan, CONTROL_POLL_SECONDS)
+                else:
                     _save_state(plan, state, "waiting-prerequisites",
-                                active_cell=None, active_child=None)
+                                active_children={}, active_cells=[])
                     _control_responsive_wait(plan, PREREQUISITE_POLL_SECONDS)
-                    continue
-                _save_state(plan, state, "complete", supervisor_pid=None,
-                            active_cell=None, active_child=None)
-                _append_event("campaign-complete", plan_sha256=plan["plan_sha256"])
-                return 0
-            execution, blockers = _scan(plan, state)
-            state["last_scan"] = {
-                "at": _now(), "blocked_cell_count": len(blockers),
-                "runnable_cell": execution["cell"]["cell_id"] if execution else None,
-                "blockers_sha256": _hash_value(blockers),
-            }
-            if execution is None:
-                _save_state(plan, state, "waiting-prerequisites", active_cell=None)
-                _control_responsive_wait(plan, PREREQUISITE_POLL_SECONDS)
-                continue
-            cell = execution["cell"]
-            row = state["cells"][cell["cell_id"]]
-            # Adopt complete, source-bound artifacts left by a terminated supervisor.
-            if execution["result_path"].exists() and execution["receipt_path"].exists():
-                result, receipt, errors = _validate_outputs(execution)
-                if not errors and isinstance(result, dict) and isinstance(receipt, dict):
-                    _commit_complete(plan, state, execution, result, receipt)
-                    continue
-            row["status"] = "running"
-            row["attempts"] += 1
-            row["started_at"] = row["started_at"] or _now()
-            row["runtime_spec_sha256"] = execution["runtime"]["sha256"]
-            row["registry_sha256"] = execution["registry"]["registry_sha256"]
-            row["request_sha256"] = execution["request"]["request_sha256"]
-            _save_state(plan, state, "running-cell", active_cell=cell["cell_id"])
-            rc = _run_external(plan, state, execution)
-            row["last_exit_code"] = rc
-            if rc == ADOPT_RC:
-                result, receipt, errors = _validate_outputs(execution)
-                if errors or not isinstance(result, dict) or not isinstance(receipt, dict):
-                    raise CampaignError("adoptable artifacts changed during validation")
-                _commit_complete(plan, state, execution, result, receipt)
-                continue
-            if rc == PAUSE_RC:
-                row["status"] = "pending"
-                _save_state(plan, state, "paused")
-                continue
-            if rc == RESOURCE_RC:
-                row["status"] = "pending"
-                _save_state(plan, state, "waiting-resources")
-                _control_responsive_wait(plan, RESOURCE_POLL_SECONDS)
-                continue
-            if rc == 130:
-                row["status"] = "pending"
-                _save_state(plan, state, "drained", supervisor_pid=None,
-                            active_cell=None, active_child=None)
-                return 0
-            if rc != 0:
-                row["status"] = "blocked-execution"
-                row["error"] = f"typed adapter exited with status {rc}"
-                row["blockers"] = [row["error"]]
-                _append_event("cell-exit", cell_id=cell["cell_id"], exit_code=rc)
-                _save_state(plan, state, "running", active_cell=None)
-                # Do not deadlock the campaign on one failed implementation.
-                continue
-            result, receipt, errors = _validate_outputs(execution)
-            if errors or not isinstance(result, dict) or not isinstance(receipt, dict):
-                row["status"] = "blocked-execution"
-                row["error"] = "invalid output artifacts: " + "; ".join(errors)
-                row["blockers"] = list(errors)
-                _save_state(plan, state, "running", active_cell=None)
-                continue
-            _commit_complete(plan, state, execution, result, receipt)
+        except BaseException:
+            # Fail-closed: terminate every live child before propagating, then
+            # best-effort persist the quiesced set so recovery is clean.
+            if state is not None:
+                _abort_pool(state, live_cells)
+                try:
+                    _save_state(plan, state)
+                except BaseException:
+                    pass
+            raise
+        finally:
+            try:
+                fcntl.flock(heavy_owner.fileno(), fcntl.LOCK_UN)
+            except OSError:
+                pass
+            heavy_owner.close()
 
 
 def _process_identity(pid: Any) -> tuple[str, str] | None:
@@ -3935,7 +4610,7 @@ def status() -> int:
         "active": _owner_alive(owner, plan),
         "pid": owner.get("pid") if isinstance(owner, dict) else None,
         "plan_sha256": plan["plan_sha256"], "queue_status": state["status"],
-        "control_mode": _load_control(plan)["mode"], "active_cell": state["active_cell"],
+        "control_mode": _load_control(plan)["mode"], "active_cells": state["active_cells"],
         "counts": campaign["counts"], "report_groups": campaign["report_groups"],
         "timing": campaign["timing"],
         "last_resource_gate": state["last_resource_gate"],
@@ -4300,9 +4975,60 @@ def selftest() -> int:
             except ProcessLookupError:
                 pass
             child.wait(timeout=5)
-    # Exercise the production supervisor path at a low synthetic RSS ceiling.
-    # It must stop and reap the bound group, durable-receipt the cutoff, clear
-    # active_child, and release the shared lease for immediate reacquisition.
+    # A blocked first head must not stop _scan_runnable_heads from collecting a
+    # later runnable head from a different (model, rate) GC-chain concurrently.
+    heads_state = _base_state(plan)
+    original_prepare = globals()["_prepare_execution"]
+    original_disposition = globals()["_validate_disposition"]
+    heads_codec_seen = 0
+
+    def fake_prepare_heads(cell: dict[str, Any]) -> dict[str, Any]:
+        nonlocal heads_codec_seen
+        heads_codec_seen += 1
+        if heads_codec_seen == 1:
+            return {"cell": cell, "blockers": ["adapter absent"]}
+        return {"cell": cell, "blockers": []}
+
+    try:
+        globals()["_prepare_execution"] = fake_prepare_heads
+        globals()["_validate_disposition"] = lambda cell, current: (None, [])
+        runnable_heads, blocked_heads = _scan_runnable_heads(plan, heads_state)
+        assert len(runnable_heads) >= 2
+        assert all(head["cell"]["branch"] == "codec_control" for head in runnable_heads)
+        assert first_codec["cell_id"] in blocked_heads
+        head_cells = {head["cell"]["cell_id"] for head in runnable_heads}
+        assert first_codec["cell_id"] not in head_cells
+        # Distinct heads are all chain-heads from distinct (model, rate) chains.
+        assert len({(head["cell"]["model_label"], head["cell"]["rate_id"])
+                    for head in runnable_heads}) == len(runnable_heads)
+    finally:
+        globals()["_prepare_execution"] = original_prepare
+        globals()["_validate_disposition"] = original_disposition
+    # RAM-budget reservation math.  Every tier's reservation stays within
+    # [FLOOR, ceiling] and always admits into an empty pool (deadlock guard).
+    # The 0.5B tier packs several lanes; a whole-residency large tier (14B)
+    # self-limits to one; a MEASURED tier peak overrides a lower projection and
+    # is itself clamped so the single-cell admission guarantee still holds.
+    ceiling = PROCESS_BUDGET_BYTES - SAFETY_MARGIN_BYTES
+    small_cell = next(row for row in plan["cells"] if row["model_label"] == "0.5B")
+    whole_large = next(row for row in plan["cells"] if row["model_label"] == "14B")
+    _OBSERVED_TIER_RSS.clear()
+    for probe in (small_cell, whole_large):
+        reserve = _cell_reservation(probe)
+        assert RESIDENCY_FLOOR_BYTES <= reserve <= ceiling
+        assert reserve + SAFETY_MARGIN_BYTES <= PROCESS_BUDGET_BYTES  # Admits empty.
+    small_reserve = _cell_reservation(small_cell)
+    assert 2 * small_reserve + SAFETY_MARGIN_BYTES <= PROCESS_BUDGET_BYTES  # >=2 lanes.
+    large_reserve = _cell_reservation(whole_large)
+    assert 2 * large_reserve + SAFETY_MARGIN_BYTES > PROCESS_BUDGET_BYTES    # 1 lane.
+    _OBSERVED_TIER_RSS[small_cell["model_label"]] = PROCESS_BUDGET_BYTES  # Above ceiling.
+    assert _cell_reservation(small_cell) == ceiling
+    _OBSERVED_TIER_RSS.clear()
+    # Exercise the concurrent pool primitives at a low synthetic RSS ceiling.
+    # _launch_cell must spawn one lane and record it under active_children
+    # (plural); a single enforcement tick over the aggregate must stop and reap
+    # the bound group, durable-receipt the pool cutoff, empty active_children,
+    # and release the per-child lease so the shared inode is immediately free.
     with tempfile.TemporaryDirectory(dir=ROOT / "scratch") as raw:
         runtime_root = Path(raw)
         output_dir = runtime_root / "result"
@@ -4343,12 +5069,45 @@ def selftest() -> int:
             "PROCESS_BUDGET_BYTES": 20_000_000,
             "_execution_resource_gate": lambda *_args, **_kwargs: {"ok": True},
         })
+        # Pin a healthy system snapshot so the H3 swap/pressure shed cannot fire on
+        # a host that is itself under memory pressure; the aggregate tree-RSS guard
+        # is the deterministic shedder exercised here.
+        _saved_snapshot = ram_scheduler.resource_snapshot
+        ram_scheduler.resource_snapshot = lambda *_a, **_k: {
+            "pressure_level": 1, "swap_used_mb": 0,
+        }
         try:
-            cutoff_rc = _run_external(plan, cutoff_state, execution)
-            assert cutoff_rc == RESOURCE_RC
-            assert cutoff_state["active_child"] is None
+            live_cells: dict[str, LiveCell] = {}
+            outcome = _launch_cell(plan, cutoff_state, execution, 12_000_000)
+            assert isinstance(outcome, LiveCell)
+            live_cells[cutoff_cell["cell_id"]] = outcome
+            assert cutoff_cell["cell_id"] in cutoff_state["active_children"]
+            assert cutoff_state["active_cells"] == [cutoff_cell["cell_id"]]
+            assert _reserved_total(live_cells) == 12_000_000
+            stopped: list[str] = []
+            deadline = time.monotonic() + 20
+            while time.monotonic() < deadline and not stopped:
+                samples, aggregate = _sample_active_children(live_cells)
+                stopped = _enforce_pool_budget(
+                    plan, cutoff_state, live_cells, samples, aggregate
+                )
+                if not stopped:
+                    time.sleep(0.1)
+            assert stopped == [cutoff_cell["cell_id"]]
+            assert not live_cells
+            assert cutoff_state["active_children"] == {}
+            assert cutoff_state["active_cells"] == []
+            assert _reserved_total(live_cells) == 0
+            # M2: this lane's residency alone reaches the budget and it is the SOLE
+            # live cell when shed, so it escalates to blocked-execution (retrying it
+            # in isolation can never fit) instead of looping pending forever.  Its
+            # consecutive resource-stop counter is cleared on escalation.
+            assert cutoff_state["cells"][cutoff_cell["cell_id"]]["status"] \
+                == "blocked-execution"
+            assert cutoff_state["resource_stop_counts"].get(
+                cutoff_cell["cell_id"]) is None
             assert cutoff_state["last_resource_stop"]["reason"] \
-                == "child_tree_rss_at_or_over_process_budget"
+                == "pool_tree_rss_at_or_over_process_budget"
             cutoff_receipt = _read_json(output_dir / "resource_stop.json")
             assert cutoff_receipt["process_budget_bytes"] == 20_000_000
             stopped_pgid = cutoff_receipt["trigger_sample"]["pgid"]
@@ -4359,8 +5118,9 @@ def selftest() -> int:
             assert reacquired is not None
             fcntl.flock(reacquired.fileno(), fcntl.LOCK_UN)
             reacquired.close()
-            # If the root execs again after the stable handshake, monitoring must
-            # fail closed but finally still reap the start-time/PGID-bound group.
+            # If the root execs again after the stable handshake, per-tick
+            # identity re-verification must fail closed; the pool then reaps the
+            # start-time/PGID-bound group and empties active_children (plural).
             globals()["PROCESS_BUDGET_BYTES"] = 1_000_000_000
             exec_output = runtime_root / "exec-change-result"
             exec_output.mkdir()
@@ -4387,13 +5147,36 @@ def selftest() -> int:
                 "receipt_path": exec_output / "execution_receipt.json",
                 "checkpoint_path": exec_output / "checkpoint.json",
             }
+            exec_cells: dict[str, LiveCell] = {}
+            exec_outcome = _launch_cell(plan, exec_state, exec_execution, 12_000_000)
+            assert isinstance(exec_outcome, LiveCell)
+            exec_cells[cutoff_cell["cell_id"]] = exec_outcome
+            raised = False
             try:
-                _run_external(plan, exec_state, exec_execution)
-                raise AssertionError("post-handshake exec identity change was accepted")
-            except CampaignError as exc:
-                assert "identity changed" in str(exc)
+                deadline = time.monotonic() + 20
+                while time.monotonic() < deadline:
+                    try:
+                        _sample_active_children(exec_cells)
+                    except CampaignError as exc:
+                        assert "identity" in str(exc)
+                        raised = True
+                        break
+                    time.sleep(0.1)
+            finally:
+                # Fail-closed cleanup: terminate + release the bound group.
+                for cid in list(exec_cells):
+                    live = exec_cells[cid]
+                    try:
+                        _terminate(live.process, expected_pgid=live.process_pgid,
+                                   expected_identity=live.process_identity
+                                   or live.spawn_identity)
+                    except CampaignError:
+                        pass
+                    _release_cell(exec_state, exec_cells, live)
+            assert raised
             exec_pid = int(exec_pid_file.read_text(encoding="utf-8"))
-            assert exec_state["active_child"] is None
+            assert exec_state["active_children"] == {}
+            assert exec_state["active_cells"] == []
             assert _process_identity(exec_pid) is None
             assert not any(not str(row.get("state", "")).startswith("Z")
                            for row in _process_group_rows(exec_pid))
@@ -4402,6 +5185,7 @@ def selftest() -> int:
             fcntl.flock(reacquired.fileno(), fcntl.LOCK_UN)
             reacquired.close()
         finally:
+            ram_scheduler.resource_snapshot = _saved_snapshot
             globals().update(replaced_globals)
     print("doctor_v5_ultra_queue.py selftest OK")
     return 0
