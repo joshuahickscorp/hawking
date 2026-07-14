@@ -19,15 +19,25 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 CONTROL = ROOT / "reports" / "condense" / "doctor_v5_ultra" / "control.json"
+STATE = ROOT / "reports" / "condense" / "doctor_v5_ultra" / "queue_state.json"
 QUEUE = ROOT / "tools" / "condense" / "doctor_v5_ultra_queue.py"
+
+
+def _should_resume(control: object, state: object) -> bool:
+    return isinstance(control, dict) and control.get("mode") == "run" \
+        and not (isinstance(state, dict) and state.get("status") == "complete")
 
 
 def main() -> int:
     try:
-        mode = json.loads(CONTROL.read_text()).get("mode")
+        control = json.loads(CONTROL.read_text())
     except (OSError, ValueError):
         return 0
-    if mode != "run":
+    try:
+        state = json.loads(STATE.read_text())
+    except (OSError, ValueError):
+        state = {}
+    if not _should_resume(control, state):
         return 0
     return subprocess.run(
         [sys.executable, str(QUEUE), "start"], cwd=str(ROOT), check=False
