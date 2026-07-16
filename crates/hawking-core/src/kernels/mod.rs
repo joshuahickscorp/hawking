@@ -11027,6 +11027,19 @@ mod metal_dispatch {
         Ok(unsafe { *(out.contents() as *const u32) })
     }
 
+    /// Runtime stride probe for the 40-byte compact compute-for-memory table.
+    #[cfg(feature = "tq")]
+    pub(crate) fn strand_bitslice_compact_entry_sizeof(ctx: &MetalContext) -> Result<u32> {
+        let out = ctx.new_buffer(std::mem::size_of::<u32>());
+        ctx.dispatch_threads(
+            "strand_bitslice_compact_entry_sizeof",
+            (1, 1, 1),
+            (1, 1, 1),
+            |enc| enc.set_buffer(0, Some(&out), 0),
+        )?;
+        Ok(unsafe { *(out.contents() as *const u32) })
+    }
+
     /// Decode a STRAND/TQ tensor's trellis-coded payload to its Q12 weights on the
     /// GPU via the G4 bitslice kernel, returning a `Vec<i32>` of length `total`.
     ///
@@ -11255,9 +11268,10 @@ mod metal_dispatch {
             let seed_hi = (gpu.rht_seed >> 32) as u32;
             let x_base_elems = (x_off_bytes / std::mem::size_of::<f32>()) as u32;
             let n_blocks = gpu.rht_n_blocks.max(1);
+            let n_tg = n_blocks.div_ceil(TG).max(1);
             tcb.dispatch_threads(
                 "strand_rht_forward_cols",
-                (n_blocks * TG, 1, 1),
+                (n_tg * TG, 1, 1),
                 (TG, 1, 1),
                 |enc| {
                     enc.set_buffer(0, Some(x_buf), 0);
@@ -11276,23 +11290,30 @@ mod metal_dispatch {
         } else {
             (x_buf, x_off_bytes as u64)
         };
-        tcb.dispatch_threads(
-            "strand_bitslice_gemv_partials",
-            (gpu.n_tg_partials * TG, 1, 1),
-            (TG, 1, 1),
-            |enc| {
-                enc.set_buffer(0, Some(&gpu.w_buf), 0);
-                enc.set_buffer(1, Some(act_buf), act_off);
-                enc.set_buffer(2, Some(&gpu.partials_buf), 0);
-                enc.set_buffer(3, Some(&gpu.tbl_buf), 0);
-                enc.set_u32(4, gpu.n_blocks);
-                enc.set_u32(5, gpu.cols);
-                enc.set_u32(6, gpu.k_bits);
-                enc.set_u32(7, gpu.l_bits);
-                enc.set_buffer(8, Some(&gpu.lut_buf), 0);
+        let kernel = match gpu.runtime_path {
+            crate::tq_gpu::TqRuntimePath::Stored => "strand_bitslice_gemv_partials",
+            crate::tq_gpu::TqRuntimePath::CompactMetadata => {
+                "strand_bitslice_gemv_partials_compact"
+            }
+            crate::tq_gpu::TqRuntimePath::HashedQuantile => "strand_bitslice_gemv_partials_hashed",
+            crate::tq_gpu::TqRuntimePath::ComputedAcklam => {
+                "strand_bitslice_gemv_partials_computed"
+            }
+        };
+        tcb.dispatch_threads(kernel, (gpu.n_tg_partials * TG, 1, 1), (TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(&gpu.w_buf), 0);
+            enc.set_buffer(1, Some(act_buf), act_off);
+            enc.set_buffer(2, Some(&gpu.partials_buf), 0);
+            enc.set_buffer(3, Some(&gpu.tbl_buf), 0);
+            enc.set_u32(4, gpu.n_blocks);
+            enc.set_u32(5, gpu.cols);
+            enc.set_u32(6, gpu.k_bits);
+            enc.set_u32(7, gpu.l_bits);
+            enc.set_buffer(8, Some(&gpu.lut_buf), 0);
+            if gpu.shmem_bytes != 0 {
                 enc.set_threadgroup_memory_length(0, gpu.shmem_bytes);
-            },
-        )
+            }
+        })
     }
 
     /// The OUTL sparse-correction pass (GAP 1): `y[row] += resid * x_raw[col]` over
@@ -11408,6 +11429,141 @@ mod metal_dispatch {
             },
         )?;
         strand_outlier_correct_tcb(tcb, gpu, x_buf, x_off_bytes, out_buf, out_off_bytes)
+    }
+
+    /// Shared B=1..=8 TQ batch-major projection for speculative verification.
+    /// One Metal thread decodes one 256-weight block once, then reuses the
+    /// decoded f32 weight across all activation rows. `x_buf` and `out_buf` are
+    /// contiguous `(batch, cols)` / `(batch, rows)` arena buffers. The optional
+    /// RHT-cols transform, OUTL correction, runtime codebook path, and residual
+    /// accumulate semantics are the same recipe components as the GEMV path.
+    #[cfg(feature = "tq")]
+    fn strand_bitslice_gemm_small_tcb_inner(
+        tcb: &mut TokenCommandBuffer<'_>,
+        gpu: &crate::tq_gpu::TqGpuReady,
+        x_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+        batch: usize,
+        accumulate: bool,
+    ) -> Result<()> {
+        if !(1..=8).contains(&batch) {
+            return Err(Error::Kernel(format!(
+                "strand_bitslice_gemm_small_tcb: batch must be in 1..=8 (got {batch})"
+            )));
+        }
+        const TG: u32 = 256;
+        let batch_u32 = batch as u32;
+
+        // RHT-cols over the batch-major activation matrix. Each work item owns
+        // one 256-wide block, preserving the scalar kernel's butterfly order.
+        if gpu.rht_mode == 2 {
+            let rht_x = gpu.rht_x_buf.as_ref().ok_or_else(|| {
+                Error::Metal("RhtMode::Cols TqGpuReady missing batched rht_x_buf".into())
+            })?;
+            let seed_lo = (gpu.rht_seed & 0xffff_ffff) as u32;
+            let seed_hi = (gpu.rht_seed >> 32) as u32;
+            let work = gpu.rht_n_blocks.saturating_mul(batch_u32);
+            let n_tg = work.div_ceil(TG).max(1);
+            tcb.dispatch_threads(
+                "strand_rht_forward_cols_batched",
+                (n_tg * TG, 1, 1),
+                (TG, 1, 1),
+                |enc| {
+                    enc.set_buffer(0, Some(x_buf), 0);
+                    enc.set_buffer(1, Some(rht_x), 0);
+                    enc.set_u32(2, gpu.cols);
+                    enc.set_u32(3, seed_lo);
+                    enc.set_u32(4, seed_hi);
+                    enc.set_u32(5, batch_u32);
+                },
+            )?;
+        }
+        let act_buf = if gpu.rht_mode == 2 {
+            gpu.rht_x_buf.as_ref().unwrap()
+        } else {
+            x_buf
+        };
+
+        tcb.dispatch_threads(
+            gpu.runtime_path.small_batch_kernel_name(),
+            (gpu.n_tg_partials * TG, 1, 1),
+            (TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(&gpu.w_buf), 0);
+                enc.set_buffer(1, Some(act_buf), 0);
+                enc.set_buffer(2, Some(&gpu.partials_buf), 0);
+                enc.set_buffer(3, Some(&gpu.tbl_buf), 0);
+                enc.set_u32(4, gpu.n_blocks);
+                enc.set_u32(5, gpu.cols);
+                enc.set_u32(6, gpu.k_bits);
+                enc.set_u32(7, gpu.l_bits);
+                enc.set_buffer(8, Some(&gpu.lut_buf), 0);
+                enc.set_u32(9, batch_u32);
+                if gpu.shmem_bytes != 0 {
+                    enc.set_threadgroup_memory_length(0, gpu.shmem_bytes);
+                }
+            },
+        )?;
+
+        let n_out = gpu.rows.saturating_mul(batch_u32);
+        let n_tg_reduce = n_out.div_ceil(TG).max(1);
+        let reduce_kernel = if accumulate {
+            "strand_bitslice_reduce_rows_small_batch_accum"
+        } else {
+            "strand_bitslice_reduce_rows_small_batch"
+        };
+        tcb.dispatch_threads(reduce_kernel, (n_tg_reduce * TG, 1, 1), (TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(&gpu.partials_buf), 0);
+            enc.set_buffer(1, Some(out_buf), 0);
+            enc.set_u32(2, gpu.rows);
+            enc.set_u32(3, gpu.bpr);
+            enc.set_u32(4, gpu.n_blocks);
+            enc.set_u32(5, batch_u32);
+        })?;
+
+        if gpu.n_outl != 0 {
+            let work = gpu.n_outl.saturating_mul(batch_u32);
+            let n_tg = work.div_ceil(TG).max(1);
+            tcb.dispatch_threads(
+                "strand_outlier_correct_batched",
+                (n_tg * TG, 1, 1),
+                (TG, 1, 1),
+                |enc| {
+                    enc.set_buffer(0, Some(&gpu.outl_buf), 0);
+                    enc.set_buffer(1, Some(out_buf), 0);
+                    enc.set_buffer(2, Some(x_buf), 0);
+                    enc.set_u32(3, gpu.n_outl);
+                    enc.set_u32(4, gpu.rows);
+                    enc.set_u32(5, gpu.cols);
+                    enc.set_u32(6, batch_u32);
+                },
+            )?;
+        }
+        Ok(())
+    }
+
+    /// Overwrite-form B=1..=8 TQ batch-major GEMM.
+    #[cfg(feature = "tq")]
+    pub(crate) fn strand_bitslice_gemm_small_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        gpu: &crate::tq_gpu::TqGpuReady,
+        x_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+        batch: usize,
+    ) -> Result<()> {
+        strand_bitslice_gemm_small_tcb_inner(tcb, gpu, x_buf, out_buf, batch, false)
+    }
+
+    /// Accumulate-form B=1..=8 TQ batch-major GEMM for the residual second pass.
+    #[cfg(feature = "tq")]
+    pub(crate) fn strand_bitslice_gemm_small_tcb_accum(
+        tcb: &mut TokenCommandBuffer<'_>,
+        gpu: &crate::tq_gpu::TqGpuReady,
+        x_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+        batch: usize,
+    ) -> Result<()> {
+        strand_bitslice_gemm_small_tcb_inner(tcb, gpu, x_buf, out_buf, batch, true)
     }
 
     /// Fused TQ decode-and-GEMM: decode a STRAND-encoded weight matrix from
@@ -11772,10 +11928,12 @@ mod tests {
 /// no-outlier two-part bake is the artifact this serving path reproduces
 /// bit-faithfully; an RHT-cols/OUTL bake (what `residual_bake.py` emits today)
 /// would need those serving steps wired separately — see the report.
-#[cfg(all(target_os = "macos", feature = "tq"))]
+#[cfg(all(test, target_os = "macos", feature = "tq"))]
 mod residual_serve_tests {
     use crate::metal::{MetalContext, PinnedBuffer, TokenCommandBuffer};
-    use crate::tq_gpu::{bake_bitslice_entries, TqGpuReady, TqPreparedGpu};
+    use crate::tq_gpu::{
+        bake_bitslice_entries, bake_compact_bitslice_entries, TqGpuReady, TqPreparedGpu,
+    };
     use strand_quant::decode::decode_tensor_fixed;
     use strand_quant::encode::{encode_tensor, EncodedTensor};
     use strand_quant::TrellisConfig;
@@ -11800,9 +11958,11 @@ mod residual_serve_tests {
         cols: usize,
     ) -> TqPreparedGpu {
         let entries = bake_bitslice_entries(enc, cfg).expect("scalar bake (n<=256 per block)");
+        let compact_entries = bake_compact_bitslice_entries(enc, cfg).expect("compact scalar bake");
         TqPreparedGpu {
             payload: enc.bits.clone(),
             entries,
+            compact_entries,
             lut_q12: cfg.codebook().into_owned(),
             k_bits: cfg.k_bits,
             l_bits: cfg.l_bits,
@@ -11945,6 +12105,55 @@ mod residual_serve_tests {
             "[residual_serve] PASS — GPU two-part GEMV == decoded-sum across {} cases; worst max_abs={worst_abs:.3e} worst max_rel={worst_rel:.3e}",
             cases.len()
         );
+    }
+
+    #[test]
+    fn tq_runtime_paths_are_gpu_bit_identical() {
+        let Ok(ctx) = MetalContext::new() else {
+            eprintln!("[tq_runtime_path] no Metal device; skipping policy parity gate");
+            return;
+        };
+        let (rows, cols) = (8usize, 512usize);
+        let cfg = TrellisConfig::for_bpw_l(3.0, 10);
+        let w = synth_w(rows * cols, 0xF10F5);
+        let enc = strand_quant::encode::encode_tensor_with(
+            &w,
+            &cfg,
+            &strand_quant::encode::EncodeOpts {
+                tail_biting: true,
+                affine_min: true,
+                ..Default::default()
+            },
+        );
+        let prepared = prepare(&enc, &cfg, rows, cols);
+        let x = synth_x(cols, 0xC0DE);
+        let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(&x));
+
+        let mut reference: Option<Vec<u32>> = None;
+        for path in [
+            crate::TqRuntimePath::Stored,
+            crate::TqRuntimePath::CompactMetadata,
+            crate::TqRuntimePath::HashedQuantile,
+            crate::TqRuntimePath::ComputedAcklam,
+        ] {
+            let gpu = prepared
+                .upload_to_gpu_with_path(&ctx, path)
+                .unwrap_or_else(|e| panic!("{path:?} upload failed: {e}"));
+            let out = ctx.new_buffer(rows * std::mem::size_of::<f32>());
+            let mut tcb = TokenCommandBuffer::new(&ctx);
+            super::strand_bitslice_gemv_tcb(&mut tcb, &gpu, &x_buf, 0, &out, 0)
+                .unwrap_or_else(|e| panic!("{path:?} dispatch failed: {e}"));
+            tcb.commit_and_wait().unwrap();
+            let bits: Vec<u32> = read_back(&out, rows)
+                .into_iter()
+                .map(f32::to_bits)
+                .collect();
+            if let Some(want) = &reference {
+                assert_eq!(&bits, want, "{path:?} changed fused GEMV float bits");
+            } else {
+                reference = Some(bits);
+            }
+        }
     }
 
     /// Guard that the residual term is actually LIVE: the two-part serve must

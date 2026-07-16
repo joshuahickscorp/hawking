@@ -1,5 +1,229 @@
 use crate::{Error, Result};
-use std::sync::Arc;
+use std::sync::atomic::{AtomicU64, Ordering as AtomicOrdering};
+use std::sync::{Arc, Mutex as StdMutex, OnceLock};
+
+// ── Physical-evidence attribution scope ────────────────────────────────────
+
+/// Immutable identity shared by the probe's OS signpost and every Metal
+/// command-buffer/encoder label created during one measured phase.
+///
+/// The interval id is deliberately computed by the probe *before* work starts;
+/// the final interval hash cannot exist until the ending clocks are sampled.
+/// Keeping both ids in the emitted JSON binds that predeclared identity to the
+/// completed interval without relying on timestamp enclosure for attribution.
+#[derive(Debug, Clone)]
+pub struct PhysicalTraceIdentity {
+    pub interval_id: String,
+    pub run_nonce: String,
+    pub phase: String,
+    pub role: String,
+    pub batch: Option<usize>,
+    pub iteration: usize,
+}
+
+impl PhysicalTraceIdentity {
+    pub fn new(
+        interval_id: String,
+        run_nonce: String,
+        phase: String,
+        role: String,
+        batch: Option<usize>,
+        iteration: usize,
+    ) -> Result<Self> {
+        fn is_sha256(value: &str) -> bool {
+            value.len() == 64
+                && value
+                    .bytes()
+                    .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte))
+        }
+        fn safe(value: &str) -> bool {
+            !value.is_empty()
+                && value
+                    .bytes()
+                    .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'-' | b'.'))
+        }
+        if !is_sha256(&interval_id) || !is_sha256(&run_nonce) {
+            return Err(Error::Metal(
+                "physical trace interval id and run nonce must be lowercase SHA-256".into(),
+            ));
+        }
+        if !safe(&phase) || !safe(&role) {
+            return Err(Error::Metal(
+                "physical trace phase and role contain unsafe label bytes".into(),
+            ));
+        }
+        Ok(Self {
+            interval_id,
+            run_nonce,
+            phase,
+            role,
+            batch,
+            iteration,
+        })
+    }
+
+    fn base_label(&self) -> String {
+        format!(
+            "hawking.physical.v1|interval_id={}|run_nonce={}|phase={}|role={}|batch={}|iteration={}",
+            self.interval_id,
+            self.run_nonce,
+            self.phase,
+            self.role,
+            self.batch
+                .map(|value| value.to_string())
+                .unwrap_or_else(|| "none".to_owned()),
+            self.iteration,
+        )
+    }
+}
+
+struct PhysicalTraceState {
+    identity: PhysicalTraceIdentity,
+    next_command: AtomicU64,
+    next_encoder: AtomicU64,
+}
+
+static ACTIVE_PHYSICAL_TRACE: OnceLock<StdMutex<Option<Arc<PhysicalTraceState>>>> = OnceLock::new();
+
+fn active_physical_trace() -> &'static StdMutex<Option<Arc<PhysicalTraceState>>> {
+    ACTIVE_PHYSICAL_TRACE.get_or_init(|| StdMutex::new(None))
+}
+
+#[derive(Clone)]
+struct PhysicalCommandIdentity {
+    state: Arc<PhysicalTraceState>,
+    command_index: u64,
+}
+
+fn physical_command_label(kind: &str) -> Option<(PhysicalCommandIdentity, String)> {
+    let state = active_physical_trace().lock().ok()?.clone()?;
+    let command_index = state.next_command.fetch_add(1, AtomicOrdering::Relaxed);
+    let label = format!(
+        "{}|kind={kind}|command_index={command_index}",
+        state.identity.base_label(),
+    );
+    Some((
+        PhysicalCommandIdentity {
+            state,
+            command_index,
+        },
+        label,
+    ))
+}
+
+fn physical_encoder_label(command: &PhysicalCommandIdentity, kind: &str, kernel: &str) -> String {
+    let encoder_index = command
+        .state
+        .next_encoder
+        .fetch_add(1, AtomicOrdering::Relaxed);
+    let safe_kernel: String = kernel
+        .chars()
+        .map(|ch| {
+            if ch.is_ascii_alphanumeric() || matches!(ch, '_' | '-' | '.') {
+                ch
+            } else {
+                '_'
+            }
+        })
+        .collect();
+    format!(
+        "{}|kind={kind}|command_index={}|encoder_index={encoder_index}|kernel={safe_kernel}",
+        command.state.identity.base_label(),
+        command.command_index,
+    )
+}
+
+#[cfg(target_os = "macos")]
+mod physical_signpost {
+    use std::ffi::{c_char, CString};
+
+    extern "C" {
+        fn hawking_physical_signpost_begin(interval_id: u64, identity: *const c_char);
+        fn hawking_physical_signpost_end(interval_id: u64, identity: *const c_char);
+    }
+
+    pub struct Interval {
+        name: CString,
+        id: u64,
+    }
+
+    impl Interval {
+        pub fn begin(name: String, interval_id: &str) -> std::result::Result<Self, String> {
+            let name = CString::new(name).map_err(|_| "signpost name contains NUL".to_owned())?;
+            let mut id = u64::from_str_radix(&interval_id[..16], 16)
+                .map_err(|_| "invalid signpost interval id".to_owned())?;
+            // 0 and u64::MAX are reserved by os_signpost.
+            if id == 0 || id == u64::MAX {
+                id = 1;
+            }
+            unsafe {
+                hawking_physical_signpost_begin(id, name.as_ptr());
+            }
+            Ok(Self { name, id })
+        }
+    }
+
+    impl Drop for Interval {
+        fn drop(&mut self) {
+            unsafe {
+                hawking_physical_signpost_end(self.id, self.name.as_ptr());
+            }
+        }
+    }
+}
+
+/// RAII scope for exact physical attribution. Only one scope may be active in
+/// a process: a second scope fails closed instead of mixing Metal events.
+pub struct PhysicalTraceGuard {
+    state: Arc<PhysicalTraceState>,
+    #[cfg(target_os = "macos")]
+    _signpost: physical_signpost::Interval,
+}
+
+impl PhysicalTraceGuard {
+    pub fn begin(identity: PhysicalTraceIdentity) -> Result<Self> {
+        let state = Arc::new(PhysicalTraceState {
+            identity,
+            next_command: AtomicU64::new(0),
+            next_encoder: AtomicU64::new(0),
+        });
+        let mut active = active_physical_trace()
+            .lock()
+            .map_err(|_| Error::Metal("physical trace mutex poisoned".into()))?;
+        if active.is_some() {
+            return Err(Error::Metal(
+                "a physical trace interval is already active".into(),
+            ));
+        }
+        #[cfg(target_os = "macos")]
+        let signpost = physical_signpost::Interval::begin(
+            state.identity.base_label(),
+            &state.identity.interval_id,
+        )
+        .map_err(Error::Metal)?;
+        *active = Some(state.clone());
+        drop(active);
+        Ok(Self {
+            state,
+            #[cfg(target_os = "macos")]
+            _signpost: signpost,
+        })
+    }
+}
+
+impl Drop for PhysicalTraceGuard {
+    fn drop(&mut self) {
+        if let Ok(mut active) = active_physical_trace().lock() {
+            if active
+                .as_ref()
+                .is_some_and(|current| Arc::ptr_eq(current, &self.state))
+            {
+                *active = None;
+            }
+        }
+        // `_signpost` drops after this method and emits the exact matching end.
+    }
+}
 
 /// Embedded shader sources. Compiled at runtime via
 /// `MTLDevice::newLibraryWithSource:` -- shipping a single binary with
@@ -494,6 +718,7 @@ mod imp {
     pub struct CommandBatch<'a> {
         ctx: &'a MetalContext,
         cmd: &'a CommandBufferRef,
+        physical_trace: Option<PhysicalCommandIdentity>,
     }
 
     struct Inner {
@@ -728,8 +953,7 @@ mod imp {
                 .new_library_with_source(&src, &opts)
                 .map_err(|e| Error::Metal(format!("shader compile: {e}")))?;
             // Resolve at construction so hot-path checks are a single bool load.
-            let effective =
-                trace_dispatch || std::env::var_os("HAWKING_TRACE_DISPATCH").is_some();
+            let effective = trace_dispatch || std::env::var_os("HAWKING_TRACE_DISPATCH").is_some();
             Ok(Self {
                 inner: Arc::new(Inner {
                     device,
@@ -952,8 +1176,16 @@ mod imp {
 
             let pipe = self.pipeline(fn_name)?;
             let cmd = self.inner.queue.new_command_buffer();
+            let physical_trace = physical_command_label("command_buffer");
+            if let Some((_, label)) = physical_trace.as_ref() {
+                cmd.set_label(label);
+            }
             let enc = cmd.new_compute_command_encoder();
-            enc.set_label(fn_name);
+            if let Some((command, _)) = physical_trace.as_ref() {
+                enc.set_label(&physical_encoder_label(command, "compute_encoder", fn_name));
+            } else {
+                enc.set_label(fn_name);
+            }
             enc.set_compute_pipeline_state(&pipe);
             encode(enc);
             enc.dispatch_threads(
@@ -987,7 +1219,15 @@ mod imp {
             };
 
             let cmd = self.inner.queue.new_command_buffer();
-            let mut batch = CommandBatch { ctx: self, cmd };
+            let physical_trace = physical_command_label("command_buffer");
+            if let Some((_, label)) = physical_trace.as_ref() {
+                cmd.set_label(label);
+            }
+            let mut batch = CommandBatch {
+                ctx: self,
+                cmd,
+                physical_trace: physical_trace.map(|(identity, _)| identity),
+            };
             encode(&mut batch)?;
             let CommandBatch { cmd, .. } = batch;
             cmd.commit();
@@ -1016,7 +1256,11 @@ mod imp {
         ) -> Result<()> {
             let pipe = self.ctx.pipeline(fn_name)?;
             let enc = self.cmd.new_compute_command_encoder();
-            enc.set_label(fn_name);
+            if let Some(command) = self.physical_trace.as_ref() {
+                enc.set_label(&physical_encoder_label(command, "compute_encoder", fn_name));
+            } else {
+                enc.set_label(fn_name);
+            }
             enc.set_compute_pipeline_state(&pipe);
             encode(enc);
             enc.dispatch_threads(
@@ -1113,6 +1357,8 @@ mod imp {
         /// v2.2.0-L7: live in `ProdCbGpu` mode. `None` in other modes or
         /// when the device doesn't support the timestamp counter set.
         prod_cb_tracer: Option<ProdCbTracer>,
+        /// Physical-evidence identity for the pending Metal command buffer.
+        physical_trace: Option<PhysicalCommandIdentity>,
         /// P0.1 spike: active concurrent encoder. When `Some`, dispatches
         /// route into this shared encoder instead of creating per-dispatch
         /// encoders. Only set under `Off` / `CpuEncode` trace modes by
@@ -1132,6 +1378,10 @@ mod imp {
     impl<'ctx> TokenCommandBuffer<'ctx> {
         pub fn new(ctx: &'ctx MetalContext) -> Self {
             let cmd = ctx.inner.queue.new_command_buffer().to_owned();
+            let physical_trace = physical_command_label("command_buffer");
+            if let Some((_, label)) = physical_trace.as_ref() {
+                cmd.set_label(label);
+            }
             let mode = TcbTraceMode::from_env();
             let prod_cb_tracer = if mode == TcbTraceMode::ProdCbGpu {
                 ProdCbTracer::try_new(&ctx.inner.device)
@@ -1144,6 +1394,7 @@ mod imp {
                 mode,
                 tcb_samples: Vec::new(),
                 prod_cb_tracer,
+                physical_trace: physical_trace.map(|(identity, _)| identity),
                 concurrent_encoder: None,
                 dispatch_count: 0,
             }
@@ -1193,7 +1444,15 @@ mod imp {
                 .as_ref()
                 .ok_or_else(|| Error::Metal("TokenCommandBuffer already committed".into()))?;
             let enc = cmd.compute_command_encoder_with_dispatch_type(MTLDispatchType::Concurrent);
-            enc.set_label("concurrent_group");
+            if let Some(command) = self.physical_trace.as_ref() {
+                enc.set_label(&physical_encoder_label(
+                    command,
+                    "compute_encoder",
+                    "concurrent_group",
+                ));
+            } else {
+                enc.set_label("concurrent_group");
+            }
             self.concurrent_encoder = Some(enc.to_owned());
             Ok(())
         }
@@ -1277,7 +1536,11 @@ mod imp {
                 .ok_or_else(|| Error::Metal("TokenCommandBuffer already committed".into()))?;
             let pipe = self.ctx.pipeline(fn_name)?;
             let enc = cmd.new_compute_command_encoder();
-            enc.set_label(fn_name);
+            if let Some(command) = self.physical_trace.as_ref() {
+                enc.set_label(&physical_encoder_label(command, "compute_encoder", fn_name));
+            } else {
+                enc.set_label(fn_name);
+            }
             enc.set_compute_pipeline_state(&pipe);
             encode(enc);
             enc.dispatch_threads(
@@ -1346,7 +1609,11 @@ mod imp {
             } else {
                 cmd.new_compute_command_encoder()
             };
-            enc.set_label(fn_name);
+            if let Some(command) = self.physical_trace.as_ref() {
+                enc.set_label(&physical_encoder_label(command, "compute_encoder", fn_name));
+            } else {
+                enc.set_label(fn_name);
+            }
             enc.set_compute_pipeline_state(&pipe);
             encode(enc);
             enc.dispatch_threads(
@@ -1383,9 +1650,17 @@ mod imp {
         ) -> Result<()> {
             let t0_cpu = Instant::now();
             let dedicated = self.ctx.inner.queue.new_command_buffer();
+            let physical_trace = physical_command_label("command_buffer");
+            if let Some((_, label)) = physical_trace.as_ref() {
+                dedicated.set_label(label);
+            }
             let pipe = self.ctx.pipeline(fn_name)?;
             let enc = dedicated.new_compute_command_encoder();
-            enc.set_label(fn_name);
+            if let Some((command, _)) = physical_trace.as_ref() {
+                enc.set_label(&physical_encoder_label(command, "compute_encoder", fn_name));
+            } else {
+                enc.set_label(fn_name);
+            }
             enc.set_compute_pipeline_state(&pipe);
             encode(enc);
             enc.dispatch_threads(
@@ -1434,7 +1709,14 @@ mod imp {
             }
             if self.mode == TcbTraceMode::SplitCbGpu {
                 let dedicated = self.ctx.inner.queue.new_command_buffer();
+                let physical_trace = physical_command_label("command_buffer");
+                if let Some((_, label)) = physical_trace.as_ref() {
+                    dedicated.set_label(label);
+                }
                 let blit = dedicated.new_blit_command_encoder();
+                if let Some((command, _)) = physical_trace.as_ref() {
+                    blit.set_label(&physical_encoder_label(command, "blit_encoder", "copy"));
+                }
                 blit.copy_from_buffer(src, src_offset, dst, dst_offset, size);
                 blit.end_encoding();
                 dedicated.commit();
@@ -1446,6 +1728,9 @@ mod imp {
                 .as_ref()
                 .ok_or_else(|| Error::Metal("TokenCommandBuffer already committed".into()))?;
             let blit = cmd.new_blit_command_encoder();
+            if let Some(command) = self.physical_trace.as_ref() {
+                blit.set_label(&physical_encoder_label(command, "blit_encoder", "copy"));
+            }
             blit.copy_from_buffer(src, src_offset, dst, dst_offset, size);
             blit.end_encoding();
             Ok(())

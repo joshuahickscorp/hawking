@@ -143,10 +143,11 @@ impl SpecGovernor {
     ///
     /// `accepted` is `true` when the verify forward accepted at least one draft
     /// token this cycle (in the live loop: `first_reject > 0` / `na > 0`). Call
-    /// this once per cycle *even while disabled* -- pass the would-be outcome of
-    /// the draft you did not run if you can cheaply estimate it, or simply pass
-    /// `false`; either way the window keeps tracking and the cooldown counts
-    /// down. The return value is the post-update [`is_enabled`](Self::is_enabled).
+    /// this once per cycle *even while disabled* only when an exact shadow
+    /// outcome exists. If the proposal was not evaluated, call
+    /// [`tick_disabled`](Self::tick_disabled) instead; absence of evidence is not
+    /// a rejection. The return value is the post-update
+    /// [`is_enabled`](Self::is_enabled).
     pub fn step(&mut self, accepted: bool) -> bool {
         // 1. roll the window, maintaining the O(1) true-count.
         if self.accepted.len() >= self.window {
@@ -191,6 +192,20 @@ impl SpecGovernor {
             }
         }
 
+        self.is_enabled()
+    }
+
+    /// Advance only the disabled-state dwell, without fabricating an acceptance
+    /// outcome. Use this when a proposer was not run and no exact counterfactual
+    /// result exists. A dwell tick can make the slot eligible for re-evaluation,
+    /// but cannot re-enable it: re-entry still requires a real observation via
+    /// [`step`](Self::step).
+    pub fn tick_disabled(&mut self) -> bool {
+        if let GovState::Cooldown { remaining } = self.state {
+            self.state = GovState::Cooldown {
+                remaining: remaining.saturating_sub(1),
+            };
+        }
         self.is_enabled()
     }
 
@@ -261,6 +276,26 @@ mod tests {
         assert!(gov.step(false)); // 4
         assert!(!gov.step(false), "5th consecutive miss disables");
         assert!(matches!(gov.state(), GovState::Cooldown { .. }));
+    }
+
+    #[test]
+    fn disabled_tick_does_not_poison_acceptance_window() {
+        let mut gov = SpecGovernor::with_thresholds(4, 0.50, 0.50, 2, 2);
+        assert!(gov.step(true));
+        assert!(gov.step(true));
+        assert!(gov.step(false));
+        assert!(!gov.step(false));
+        let rate = gov.accept_rate();
+        let observed = gov.observed();
+
+        assert!(!gov.tick_disabled());
+        assert!(!gov.tick_disabled());
+        assert_eq!(gov.accept_rate(), rate);
+        assert_eq!(gov.observed(), observed);
+
+        // Dwell expiry alone is not evidence. A real shadow accept can re-arm.
+        assert!(!gov.is_enabled());
+        assert!(gov.step(true));
     }
 
     #[test]

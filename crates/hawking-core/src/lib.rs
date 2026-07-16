@@ -2,8 +2,8 @@
 pub mod attn;
 pub mod backend;
 pub mod cache;
-pub mod json_constrain;
 pub mod gguf;
+pub mod json_constrain;
 pub mod kernel_bench;
 pub mod kernels;
 pub mod metal;
@@ -28,10 +28,15 @@ pub mod tq;
 /// held bit-identical to the `tq`/strand-quant CPU oracle. Behind `tq`.
 #[cfg(feature = "tq")]
 pub(crate) mod tq_gpu;
+#[cfg(all(feature = "tq", target_os = "macos"))]
+pub use tq_gpu::{gpu_decode_q12, TqDeviceHarness};
 /// Public, `BitsliceEntry`-free entry point to the TQ GPU bitslice decode (the
 /// parity gate's surface). macOS + `tq` only.
-#[cfg(all(feature = "tq", target_os = "macos"))]
-pub use tq_gpu::gpu_decode_q12;
+#[cfg(feature = "tq")]
+pub use tq_gpu::{
+    TqCodebookSource, TqGpuAdmission, TqGpuIneligibility, TqMetadataMode, TqRuntimePath,
+    TqRuntimeRecipe, TqRuntimeTraffic,
+};
 pub mod vocab_prune;
 
 mod error;

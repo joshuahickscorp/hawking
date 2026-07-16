@@ -1052,6 +1052,7 @@ name = "hawking-core"
 version = "0.2.2"
 dependencies = [
  "bytemuck",
+ "cc",
  "half",
  "memmap2",
  "metal 0.29.0",
