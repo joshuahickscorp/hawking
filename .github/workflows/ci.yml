@@ -19,6 +19,10 @@ jobs:
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Canonical compatibility loaders verify retired commands against the
+          # pinned baseline commit, so CI must include repository history.
+          fetch-depth: 0
 
       - name: Install Rust (stable + rustfmt + clippy)
         uses: dtolnay/rust-toolchain@stable
@@ -27,6 +31,11 @@ jobs:
 
       - name: Cache cargo registry + target
         uses: Swatinem/rust-cache@v2
+
+      - name: Condensation contract
+        run: |
+          python3 tools/repo_shape.py --check
+          python3 tools/condense/doctor_v5_profiles.py selftest
 
       # No `--all`: it descends into the workspace-excluded vendor/ crates (the
       # absorbed STRAND quant track), which keep their upstream formatting. Plain
@@ -70,7 +79,7 @@ jobs:
 
       - uses: pnpm/action-setup@v4
         with:
-          version: 9
+          version: 10
 
       - uses: actions/setup-node@v4
         with:
