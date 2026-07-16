@@ -49,9 +49,20 @@ once unbounded wall-clock converts every time-wall. Update the Proven column as 
 | HIDE M3: own the .tq format | 5.5 | 8.5 | 9.0 | GATED (no e2e coherent-token receipt) | - |
 | HIDE M4: grammar-guaranteed tool calls | 3.0 | 7.0 | 7.5 | MEASURED-LAB scaffold, adversarially verified (parser + parse/lint/dedup/dispatch loop + schema-aware jump-forward grammar + prompt-lookup, 39 owned tests; 6 review findings, 4 fixed w/ regression tests, 2 pre-existing edit.rs bugs reported); still GATED on decode-loop wiring + first-try-valid receipt | agentic_tool_system_audit_2026_07_11.md |
 | HIDE ship-readiness (Tauri, executor, tests) | 7.0 | 8.5 | 9.0 | MEASURED-LAB (signed 18 MB DMG on disk) | - |
-| The thesis gate (can the local model code) | 0 | 7.0 | 7.5 | UNPROVEN (hawking-eval built, never run) | - |
+| The thesis gate (can the local model code) | 3.0 | 7.0 | 7.5 | MEASURED-LAB (R0/R1: 14/15 = 93.3% exec-grounded pass@1, Wilson95 70.2-98.8%, Qwen2.5-7B-Q4_K served) | reports/eval/thesis_gate_qwen7b_q4km.json |
 
 North-star overall: proven 3.25 / bounded ceiling 6.33 / maximal ceiling ~8.4.
+
+BOX CORRECTION (2026-07-16, Wave 1 on-box): the delivered box is NOT the M1 Ultra 128 GB / 8 TB this
+report and the audit assume. It is a Mac Studio M3 Ultra: 28-core CPU (20 perf), 60-core GPU, 96 GB unified
+memory, Metal 4, ~800 GB/s, and only ~162 GB free on a 926 GB internal SSD (no 8 TB volume). Bandwidth and
+GPU meet or beat the M1 Ultra plan, but memory is 96 not 128 GB and usable disk is ~150 GB not 8 TB. Scope
+consequence: the frontier-resident moonshot (gate 2) and the RAM-cliff demo are DISK-WALLED for parent
+staging (a 235B/405B/671B bf16 parent does not fit in 150 GB free; only stream-bake is possible), and 671B
+@84 GB will not fit RESIDENT on 96 GB (retire it here). Moonshot gate 1 (doctor recovery 7B-32B) is
+download-gated not dead: 7B + 14B bf16 parents are now staged (see Wave 1). The size_frontier.DEVICES
+`m1ultra` row (112 GB budget / 8 TB) is wrong for this box and needs an `m3ultra` row (~80 GB weight budget,
+~150 GB disk stage limit, 800 GB/s); pending.
 
 ## 2. Open gates (answer these to move the scoreboard)
 
@@ -75,8 +86,9 @@ North-star overall: proven 3.25 / bounded ceiling 6.33 / maximal ceiling ~8.4.
 |---|---|---|---|
 | Qwen2.5-3B-Q4_K_M decode tok/s (single-stream) | 31.03 (a4_clean_walltime.json) | - | bandwidth-bound; projection ~150-165 until run |
 | Aggregate tok/s at max continuous batch | ~48 (B=8, conservative) | - | the re-headlined metric on 128 GB |
-| 7B doctor recovery, best recovered eff-bpw @ <=+2% | none (swap-died) | - | the moonshot gate 1 headline |
-| Native .tq decode tok/s (resident 70B) | none | - | microbench B / SPINE-4 |
+| 7B doctor recovery, best recovered eff-bpw @ <=+2% | none (swap-died) | - | the moonshot gate 1 headline; 7B+14B bf16 now staged |
+| Thesis gate pass@1 (exec-grounded smoke, 15 Python tasks) | none | 14/15 = 93.3% (Qwen2.5-7B-Q4_K, debug serve) | Wilson95 70.2-98.8%; 1 fail = quant token glitch `count_ vowels`; next tier = EvalPlus + Rust-via-cargo |
+| Native .tq decode tok/s (resident 70B) | none | - | microbench B / SPINE-4; GGUF serve path proven coherent this wave |
 | RAM-cliff tok/s vs control box Q4_K | none | - | the money demo |
 | Energy J/tok at the cliff | none | - | the energy moat |
 
@@ -85,6 +97,34 @@ North-star overall: proven 3.25 / bounded ceiling 6.33 / maximal ceiling ~8.4.
 Append one paragraph per wave: what ran, verdict, category movement, next lever. No wave ends without a
 committed (approved) artifact.
 
+- Wave 1 (2026-07-16, FIRST on-box session, M3 Ultra 96 GB): invoked via /goal with the added directive to
+  fold in docs/plans/HIDE_CONDENSER_GOAL_PROMPT.md (the HIDE SOTA build ladder). ORIENT surfaced the material
+  box-reality finding: the delivered box is an M3 Ultra 96 GB / ~162 GB-free, not the M1 Ultra 128 GB / 8 TB
+  the whole doc stack assumes (see BOX CORRECTION above); this walls the frontier-resident + RAM-cliff
+  moonshots on disk and retires 671B-resident on 96 GB, and it routes the highest-leverage work onto the
+  box-cheap spine (thesis gate + HIDE condenser Phase A), which is exactly where the added directive points.
+  RAN, all verified on-box: (1) cargo build --workspace GREEN (21.7s incremental, exit 0). (2) With operator
+  approval to "stage parents in parallel", staged bf16 7B (Qwen2.5-7B-Instruct, 14 GB) + 14B
+  (Qwen2.5-14B-Instruct, 28 GB) via tools/condense/procure.py (hf accelerators blocked by PEP 668, used the
+  standard path); disk 162 -> 153 GB free, moonshot gate 1 now download-unblocked. (3) SERVE PATH PROVEN
+  end to end: hawking serve --weights Qwen2.5-7B-Q4_K_M.gguf on 127.0.0.1, /v1/chat/completions returned
+  coherent correct Rust (fn add -> a + b), finish_reason stop, temp=0 greedy, no template corruption -> the
+  shared prerequisite for the thesis gate, microbench B, and HIDE M3 serve-coherence. (4) THESIS GATE RUN
+  (SPINE-1, ahead of the moonshots per spine order): built an execution-grounded harness
+  (tools/eval/thesis_gate.py + a 15-task original Python smoke corpus) because the frontier read is unanimous
+  that substring/self-judge scoring is dead and only execution is a real accept signal; hawking-eval's
+  existing scorer is substring-based so this harness supersedes it for the honest number. Result: 14/15 =
+  93.3% pass@1, Wilson95 70.2-98.8%, receipt reports/eval/thesis_gate_qwen7b_q4km.json. The single fail was a
+  REAL quant defect (the Q4_K 7B emitted `def count_ vowels(` with a space in the identifier, a token glitch),
+  not a harness bug (verified by re-probing the raw output). VERDICT: thesis gate moves UNPROVEN(0) ->
+  MEASURED-LAB 3.0; the local 7B-Q4_K can code easy Python at ~93% on this box, directionally answering the
+  gate's core question, but this is R0/R1: a small smoke corpus, Python not Rust, debug build, no independent
+  reproduction yet. NOT a public WIN. CATEGORY MOVEMENT: thesis gate 0 -> 3.0 (MEASURED-LAB); serve-coherence
+  proven (feeds Native .tq serve / HIDE M3 once a .tq is baked). NEXT LEVER: (a) write the m3ultra device row;
+  (b) thesis-gate tier 2 = EvalPlus HumanEval+ subset + a Rust-via-cargo corpus (the honest harder number);
+  (c) HIDE condenser B1 (OpenAI tool round-trip fix) in parallel; (d) with 7B bf16 staged, microbench A
+  (MPS-bf16 vs CPU-bf16 doctor) and moonshot gate 1's first doctor pass become runnable. No commit made;
+  local only, pending operator approval.
 - Wave C (2026-07-11, wiring + hardening): with operator approval, committed the scaffold
   (commit 79f54420, 11 files, 47 tests) then landed three wiring/hardening pieces (commit
   14909a97, 469 insertions): (1) MCP REGISTRATION - `register_mcp_servers` resiliently connects a

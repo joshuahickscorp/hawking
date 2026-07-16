@@ -1,0 +1,107 @@
+{
+  "gate": "thesis_gate_v0_execution_grounded",
+  "grade": "MEASURED-LAB (R0/R1: first on-box number, below R3, not a public WIN)",
+  "endpoint": "http://127.0.0.1:8899",
+  "model_label": "qwen2.5-7b-instruct-q4km-debug-m3ultra",
+  "corpus": "tools/eval/thesis_smoke_corpus_v0.jsonl",
+  "n": 15,
+  "passes": 14,
+  "pass_at_1": 0.9333,
+  "wilson95": [
+    0.7018,
+    0.9881
+  ],
+  "total_generation_s": 68.6,
+  "results": [
+    {
+      "id": "t01_add",
+      "passed": true,
+      "reason": "ok",
+      "gen_s": 1.69
+    },
+    {
+      "id": "t02_is_prime",
+      "passed": true,
+      "reason": "ok",
+      "gen_s": 4.31
+    },
+    {
+      "id": "t03_fib",
+      "passed": true,
+      "reason": "ok",
+      "gen_s": 3.48
+    },
+    {
+      "id": "t04_reverse_words",
+      "passed": true,
+      "reason": "ok",
+      "gen_s": 3.17
+    },
+    {
+      "id": "t05_two_sum",
+      "passed": true,
+      "reason": "ok",
+      "gen_s": 5.63
+    },
+    {
+      "id": "t06_gcd",
+      "passed": true,
+      "reason": "ok",
+      "gen_s": 3.45
+    },
+    {
+      "id": "t07_is_palindrome",
+      "passed": true,
+      "reason": "ok",
+      "gen_s": 3.98
+    },
+    {
+      "id": "t08_count_vowels",
+      "passed": false,
+      "reason": "SyntaxError: expected '('",
+      "gen_s": 3.84
+    },
+    {
+      "id": "t09_flatten",
+      "passed": true,
+      "reason": "ok",
+      "gen_s": 4.04
+    },
+    {
+      "id": "t10_max_subarray",
+      "passed": true,
+      "reason": "ok",
+      "gen_s": 4.63
+    },
+    {
+      "id": "t11_roman",
+      "passed": true,
+      "reason": "ok",
+      "gen_s": 7.79
+    },
+    {
+      "id": "t12_merge_sorted",
+      "passed": true,
+      "reason": "ok",
+      "gen_s": 6.17
+    },
+    {
+      "id": "t13_anagram",
+      "passed": true,
+      "reason": "ok",
+      "gen_s": 5.16
+    },
+    {
+      "id": "t14_binary_search",
+      "passed": true,
+      "reason": "ok",
+      "gen_s": 6.09
+    },
+    {
+      "id": "t15_word_count",
+      "passed": true,
+      "reason": "ok",
+      "gen_s": 5.18
+    }
+  ]
+}
