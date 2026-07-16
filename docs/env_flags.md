@@ -34,6 +34,7 @@ pass — see `docs/ARCHIVE_INDEX.md` for retrieval instructions.)
 | `HAWKING_QWEN_INT4_KV_EXPERIMENTAL` | OFF | force-enable the broken per-row path | for redesign only |
 | `HAWKING_QWEN_INT4_KV_PC` | (being wired) | **per-CHANNEL int4 KV** | **−75% KV, cosine 0.998** — the live compression lever; needs PPL gate |
 | `HAWKING_QWEN_TQ` | OFF | trellis (sub-4-bit) FFN from `<weights>.tq` | ~3.34 bpw weights but **decode-slower**; existing `.tq` is a 19 MB partial |
+| `HAWKING_TQ_RUNTIME_PATH=stored\|compact\|hashed\|computed` | `stored` | choose how the same TQ bytes are interpreted at runtime: expanded LUT baseline, 40-byte compact block metadata, hashed i16 quantiles, or full computed Acklam codebook | research A/B only; file bytes and encoding are unchanged; no speed claim until post-ladder parity/perf receipts |
 | `HAWKING_QWEN_W4A8`, `HAWKING_QWEN_AWQ` | OFF | 4-bit weight / 8-bit activation | quality-blocked (held) |
 
 ## Spec-decode / Event-Horizon (NET-NEGATIVE for speed — default OFF)

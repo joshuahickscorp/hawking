@@ -1,4 +1,3 @@
-
 pub const QUANTILE_SHIFT: u32 = 12;
 
 const QUANTILE_CLAMP_Q12: i32 = 6 * (1 << QUANTILE_SHIFT);
@@ -79,7 +78,7 @@ pub fn build_quantile_lut_f64(l_bits: u32) -> Vec<i32> {
     for s in 0..n {
         let p = (s as f64 + 0.5) / denom;
         let q = inv_norm_cdf(p);
-        
+
         let scaled = (q * (1u32 << QUANTILE_SHIFT) as f64).round();
         let v = if scaled.is_finite() {
             scaled as i64
@@ -95,7 +94,7 @@ pub fn build_quantile_lut_f64(l_bits: u32) -> Vec<i32> {
 }
 
 #[inline]
-fn hash_state(s: usize, l_bits: u32) -> usize {
+pub fn hash_state(s: usize, l_bits: u32) -> usize {
     let mask = (1usize << l_bits) - 1;
     let r = (l_bits / 2).max(1) as usize;
     let mut h = s & mask;
@@ -104,6 +103,23 @@ fn hash_state(s: usize, l_bits: u32) -> usize {
     h = (h ^ (h >> r)) & mask;
     h = h.wrapping_mul(0x9E37_79B9_7F4A_7C15) & mask;
     h & mask
+}
+
+/// State-indexed Q12 codebook value obtained by computing the deterministic
+/// state-to-rank permutation and gathering from the monotone quantile table.
+/// This is byte-identical to `codebook_lut(l_bits)[state]`, but exposes the
+/// useful middle point between a full state-indexed LUT and full Acklam compute.
+#[inline]
+pub fn qcb_hashed(state: usize, l_bits: u32) -> i32 {
+    quantile_lut(l_bits)[hash_state(state, l_bits)]
+}
+
+/// Materialise the codebook through [`qcb_hashed`]. Encoder and vector paths use
+/// this compatibility form; scalar decoders call `qcb_hashed` directly.
+pub fn codebook_lut_hashed(l_bits: u32) -> Vec<i32> {
+    use crate::lut_tables::{FROZEN_MAX_L, FROZEN_MIN_L};
+    let l = l_bits.clamp(FROZEN_MIN_L, FROZEN_MAX_L);
+    (0..1usize << l).map(|s| qcb_hashed(s, l)).collect()
 }
 
 pub fn build_codebook_lut_f64(l_bits: u32) -> Vec<i32> {
@@ -320,24 +336,28 @@ mod tests {
     #[test]
     fn lut_is_monotone_and_symmetric() {
         let lut = build_quantile_lut_f64(10);
-        
+
         for w in lut.windows(2) {
-            assert!(w[1] >= w[0], "quantile LUT not monotone: {} then {}", w[0], w[1]);
+            assert!(
+                w[1] >= w[0],
+                "quantile LUT not monotone: {} then {}",
+                w[0],
+                w[1]
+            );
         }
-        
+
         let n = lut.len();
         for s in 0..n {
             let a = lut[s];
             let b = lut[n - 1 - s];
             assert!((a + b).abs() <= 2, "not antisymmetric at s={s}: {a} vs {b}");
         }
-        
+
         assert!(lut[n / 2].abs() <= (1 << QUANTILE_SHIFT) / 256);
     }
 
     #[test]
     fn lut_generation_is_deterministic() {
-        
         assert_eq!(build_quantile_lut_f64(8), build_quantile_lut_f64(8));
         assert_eq!(build_quantile_lut_f64(12), build_quantile_lut_f64(12));
         assert_eq!(build_codebook_lut_f64(9), build_codebook_lut_f64(9));
@@ -345,21 +365,27 @@ mod tests {
 
     #[test]
     fn frozen_tables_match_f64_generators() {
-        
         use crate::lut_tables::{CODEBOOK_LUTS, FROZEN_MAX_L, FROZEN_MIN_L, QUANTILE_LUTS};
         for l in FROZEN_MIN_L..=FROZEN_MAX_L {
             let i = (l - FROZEN_MIN_L) as usize;
-            assert_eq!(QUANTILE_LUTS[i], build_quantile_lut_f64(l).as_slice(), "quantile L={l}");
-            assert_eq!(CODEBOOK_LUTS[i], build_codebook_lut_f64(l).as_slice(), "codebook L={l}");
+            assert_eq!(
+                QUANTILE_LUTS[i],
+                build_quantile_lut_f64(l).as_slice(),
+                "quantile L={l}"
+            );
+            assert_eq!(
+                CODEBOOK_LUTS[i],
+                build_codebook_lut_f64(l).as_slice(),
+                "codebook L={l}"
+            );
         }
-        
+
         assert_eq!(quantile_lut(10), build_quantile_lut_f64(10).as_slice());
         assert_eq!(codebook_lut(10), build_codebook_lut_f64(10).as_slice());
     }
 
     #[test]
     fn frozen_lut_golden_hash() {
-        
         use crate::lut_tables::{CODEBOOK_LUTS, LUT_GOLDEN_HASH, QUANTILE_LUTS};
         let mut h: u64 = 0xcbf2_9ce4_8422_2325;
         for t in QUANTILE_LUTS.iter().chain(CODEBOOK_LUTS.iter()) {
@@ -370,12 +396,14 @@ mod tests {
                 }
             }
         }
-        assert_eq!(h, LUT_GOLDEN_HASH, "frozen LUT golden hash mismatch (table drift)");
+        assert_eq!(
+            h, LUT_GOLDEN_HASH,
+            "frozen LUT golden hash mismatch (table drift)"
+        );
     }
 
     #[test]
     fn hash_is_a_bijection() {
-        
         for l in [4u32, 8, 10] {
             let n = 1usize << l;
             let mut seen = vec![false; n];
@@ -385,29 +413,33 @@ mod tests {
                 assert!(!seen[h], "hash collision at L={l}: state {s} -> {h}");
                 seen[h] = true;
             }
-            assert!(seen.iter().all(|&b| b), "hash did not cover all ranks at L={l}");
+            assert!(
+                seen.iter().all(|&b| b),
+                "hash did not cover all ranks at L={l}"
+            );
         }
     }
 
     #[test]
     fn codebook_successors_spread_across_distribution() {
-        
         let l = 10u32;
         let k = 3u32;
         let cb = codebook_lut(l);
         let mask = (1usize << l) - 1;
-        let full_range = (cb.iter().copied().max().unwrap() - cb.iter().copied().min().unwrap()) as f64;
+        let full_range =
+            (cb.iter().copied().max().unwrap() - cb.iter().copied().min().unwrap()) as f64;
         let mut avg_spread = 0.0f64;
         let trials = 64usize;
         for s in 0..trials {
             let succ: Vec<i32> = (0..(1usize << k))
                 .map(|i| cb[((s << k) | i) & mask])
                 .collect();
-            let spread = (succ.iter().copied().max().unwrap() - succ.iter().copied().min().unwrap()) as f64;
+            let spread =
+                (succ.iter().copied().max().unwrap() - succ.iter().copied().min().unwrap()) as f64;
             avg_spread += spread;
         }
         avg_spread /= trials as f64;
-        
+
         assert!(
             avg_spread > 0.25 * full_range,
             "successor spread {avg_spread:.0} too small vs full range {full_range:.0}",
@@ -416,7 +448,6 @@ mod tests {
 
     #[test]
     fn inv_norm_cdf_known_points() {
-
         assert!(inv_norm_cdf(0.5).abs() < 1e-9);
         assert!((inv_norm_cdf(0.975) - 1.959963985).abs() < 1e-4);
         assert!((inv_norm_cdf(0.8413447) - 1.0).abs() < 1e-3);
@@ -431,10 +462,18 @@ mod tests {
         // were transcribed correctly from the f64 source of truth.
         let scale = (1u128 << ACKLAM_FB) as f64;
         for (i, &a) in ACKLAM_A.iter().enumerate() {
-            assert_eq!(ACKLAM_A_Q[i], (a * scale).round() as i128, "A[{i}] baked coeff wrong");
+            assert_eq!(
+                ACKLAM_A_Q[i],
+                (a * scale).round() as i128,
+                "A[{i}] baked coeff wrong"
+            );
         }
         for (i, &b) in ACKLAM_B.iter().enumerate() {
-            assert_eq!(ACKLAM_B_Q[i], (b * scale).round() as i128, "B[{i}] baked coeff wrong");
+            assert_eq!(
+                ACKLAM_B_Q[i],
+                (b * scale).round() as i128,
+                "B[{i}] baked coeff wrong"
+            );
         }
     }
 
@@ -475,7 +514,10 @@ mod tests {
             }
             let t = TAIL_LEFT_LEN[(l - FROZEN_MIN_L) as usize];
             assert_eq!(t, left, "TAIL_LEFT_LEN wrong (left) at L={l}");
-            assert_eq!(t, right, "tail asymmetric count at L={l}: left={left} right={right}");
+            assert_eq!(
+                t, right,
+                "tail asymmetric count at L={l}: left={left} right={right}"
+            );
         }
     }
 

@@ -220,6 +220,19 @@ pub(crate) struct TqServe {
     pub res_cpu: Option<(Vec<i32>, crate::tq::RhtMode, u64)>,
 }
 
+/// Fail-closed visibility surface for external Appendix runners. It reveals no
+/// weight data; it only proves how many projection owners were admitted to the
+/// Metal TQ path and which runtime interpretation their shared artifact uses.
+#[cfg(all(feature = "tq", target_os = "macos"))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct TqGpuProofCoverage {
+    pub expected_all_linear: usize,
+    pub mapped: usize,
+    pub gpu_resident: usize,
+    pub residual_gpu_resident: usize,
+    pub runtime_path: crate::tq_gpu::TqRuntimePath,
+}
+
 pub struct QwenDense {
     pub config: QwenConfig,
     pub tokenizer: Tokenizer,
@@ -4657,6 +4670,41 @@ impl QwenDense {
         Ok(())
     }
 
+    /// Build and report the exact TQ ownership used by both greedy and batched
+    /// verification. Mixed runtime interpretations are rejected because a
+    /// parity receipt must name one hardware path unambiguously.
+    #[cfg(all(feature = "tq", target_os = "macos"))]
+    pub fn tq_gpu_proof_coverage(&mut self) -> Result<TqGpuProofCoverage> {
+        self.ensure_tq_cache()?;
+        let map = self
+            .tq_ffn
+            .as_ref()
+            .ok_or_else(|| Error::Model("TQ proof coverage requested without a TQ map".into()))?;
+        let first = map
+            .values()
+            .find_map(|serve| serve.gpu.as_ref())
+            .ok_or_else(|| {
+                Error::Model("TQ proof coverage has zero GPU-resident projections".into())
+            })?;
+        let runtime_path = first.runtime_path;
+        if map
+            .values()
+            .filter_map(|serve| serve.gpu.as_ref())
+            .any(|gpu| gpu.runtime_path != runtime_path)
+        {
+            return Err(Error::Model(
+                "TQ proof coverage contains mixed runtime interpretations".into(),
+            ));
+        }
+        Ok(TqGpuProofCoverage {
+            expected_all_linear: self.config.n_layers * TQ_LINEAR_KINDS.len(),
+            mapped: map.len(),
+            gpu_resident: map.values().filter(|serve| serve.gpu.is_some()).count(),
+            residual_gpu_resident: map.values().filter(|serve| serve.gpu_res.is_some()).count(),
+            runtime_path,
+        })
+    }
+
     /// Track E: load static per-channel scales for LM_HEAD W4A8.
     /// JSON schema produced by `tests/w4a8_per_channel_calibrate.rs`:
     ///   { "model": ..., "site": "lm_head_input_post_final_norm",
@@ -7824,6 +7872,12 @@ impl QwenDense {
             }
         }
 
+        // Admit/build the artifact side map before borrowing the resident Metal
+        // state. Previously this batched route could silently stay on GGUF even
+        // after greedy decode had admitted the same TQ projections.
+        #[cfg(feature = "tq")]
+        self.ensure_tq_cache()?;
+
         let ctx = self
             .metal_ctx
             .as_ref()
@@ -7973,6 +8027,8 @@ impl QwenDense {
         // (skips per-element header decode → the +40% single-path lever on the
         // batched verify forward). Keyed by tensor mmap offset.
         let predec_cache = self.q4k_predec_cache.as_ref();
+        #[cfg(feature = "tq")]
+        let tq_ffn_ref = self.tq_ffn.as_ref();
 
         let mut tcb = TokenCommandBuffer::new(ctx);
 
@@ -8017,46 +8073,102 @@ impl QwenDense {
             ($tref:expr, $pinned_f16:expr, $rows:expr, $cols:expr,
              $x_batch:expr, $x_stride:expr,
              $out_batch:expr, $out_stride:expr) => {{
-                match $tref.dtype {
-                    GgmlType::Q4_K => {
-                        // Contiguous layout: (B, cols) f32 → (B, rows) f32.
-                        // Requires x_stride = cols*f32 and out_stride = rows*f32.
-                        debug_assert_eq!(
-                            $x_stride,
-                            $cols * f32_bytes,
-                            "batched_proj: Q4_K requires contiguous x_stride"
-                        );
-                        debug_assert_eq!(
-                            $out_stride,
-                            $rows * f32_bytes,
-                            "batched_proj: Q4_K requires contiguous out_stride"
-                        );
-                        if let Some(scales) = predec_cache.and_then(|c| c.get(&$tref.offset)) {
-                            // P1-A: rows>cols (ffn gate/up) → predec-MMA twin
-                            // (Option B, the shipped win). Other shapes keep the
-                            // tuned predec kernel (MMA loses on square/wide).
-                            if mma_on && $rows > $cols {
-                                kernels::gemm_q4_k_m_batched_v3w_mma_predec_pinned_tcb(
+                let mut __tq_served = false;
+                #[cfg(feature = "tq")]
+                if let Some(__tq) = tq_ffn_ref.and_then(|m| m.get(&$tref.offset)) {
+                    if let Some(__gpu) = __tq.gpu.as_ref() {
+                        if (__tq.out_features, __tq.in_features) != ($rows, $cols) {
+                            return Err(Error::Model(format!(
+                                "batched TQ projection shape ({},{}) != requested ({},{})",
+                                __tq.out_features, __tq.in_features, $rows, $cols
+                            )));
+                        }
+                        if $x_stride != $cols * f32_bytes || $out_stride != $rows * f32_bytes {
+                            return Err(Error::Model(
+                                "batched TQ projection requires contiguous batch-major buffers"
+                                    .into(),
+                            ));
+                        }
+                        kernels::strand_bitslice_gemm_small_tcb(
+                            &mut tcb, __gpu, $x_batch, $out_batch, b,
+                        )?;
+                        if let Some(__gpu_res) = __tq.gpu_res.as_ref() {
+                            kernels::strand_bitslice_gemm_small_tcb_accum(
+                                &mut tcb, __gpu_res, $x_batch, $out_batch, b,
+                            )?;
+                        }
+                        __tq_served = true;
+                    }
+                }
+                if !__tq_served {
+                    match $tref.dtype {
+                        GgmlType::Q4_K => {
+                            // Contiguous layout: (B, cols) f32 → (B, rows) f32.
+                            // Requires x_stride = cols*f32 and out_stride = rows*f32.
+                            debug_assert_eq!(
+                                $x_stride,
+                                $cols * f32_bytes,
+                                "batched_proj: Q4_K requires contiguous x_stride"
+                            );
+                            debug_assert_eq!(
+                                $out_stride,
+                                $rows * f32_bytes,
+                                "batched_proj: Q4_K requires contiguous out_stride"
+                            );
+                            if let Some(scales) = predec_cache.and_then(|c| c.get(&$tref.offset)) {
+                                // P1-A: rows>cols (ffn gate/up) → predec-MMA twin
+                                // (Option B, the shipped win). Other shapes keep the
+                                // tuned predec kernel (MMA loses on square/wide).
+                                if mma_on && $rows > $cols {
+                                    kernels::gemm_q4_k_m_batched_v3w_mma_predec_pinned_tcb(
+                                        &mut tcb,
+                                        mmap_buf,
+                                        $tref.offset,
+                                        $tref.byte_size,
+                                        scales,
+                                        0,
+                                        $rows,
+                                        $cols,
+                                        b,
+                                        $x_batch,
+                                        $out_batch,
+                                    )?;
+                                } else if b <= 4 {
+                                    kernels::gemm_q4_k_m_batched_v4r_predec_pinned_tcb(
+                                        &mut tcb,
+                                        mmap_buf,
+                                        $tref.offset,
+                                        $tref.byte_size,
+                                        scales,
+                                        0,
+                                        $rows,
+                                        $cols,
+                                        b,
+                                        $x_batch,
+                                        $out_batch,
+                                    )?;
+                                } else {
+                                    kernels::gemm_q4_k_m_batched_v3w_predec_pinned_tcb(
+                                        &mut tcb,
+                                        mmap_buf,
+                                        $tref.offset,
+                                        $tref.byte_size,
+                                        scales,
+                                        0,
+                                        $rows,
+                                        $cols,
+                                        b,
+                                        $x_batch,
+                                        $out_batch,
+                                    )?;
+                                }
+                            } else if mma_on && $rows > $cols {
+                                // Option A: predec-off parity anchor for rows>cols.
+                                kernels::gemm_q4_k_m_batched_v3w_mma_pinned_tcb(
                                     &mut tcb,
                                     mmap_buf,
                                     $tref.offset,
                                     $tref.byte_size,
-                                    scales,
-                                    0,
-                                    $rows,
-                                    $cols,
-                                    b,
-                                    $x_batch,
-                                    $out_batch,
-                                )?;
-                            } else if b <= 4 {
-                                kernels::gemm_q4_k_m_batched_v4r_predec_pinned_tcb(
-                                    &mut tcb,
-                                    mmap_buf,
-                                    $tref.offset,
-                                    $tref.byte_size,
-                                    scales,
-                                    0,
                                     $rows,
                                     $cols,
                                     b,
@@ -8064,13 +8176,11 @@ impl QwenDense {
                                     $out_batch,
                                 )?;
                             } else {
-                                kernels::gemm_q4_k_m_batched_v3w_predec_pinned_tcb(
+                                kernels::gemm_q4_k_m_batched_v3w_pinned_tcb(
                                     &mut tcb,
                                     mmap_buf,
                                     $tref.offset,
                                     $tref.byte_size,
-                                    scales,
-                                    0,
                                     $rows,
                                     $cols,
                                     b,
@@ -8078,66 +8188,41 @@ impl QwenDense {
                                     $out_batch,
                                 )?;
                             }
-                        } else if mma_on && $rows > $cols {
-                            // Option A: predec-off parity anchor for rows>cols.
-                            kernels::gemm_q4_k_m_batched_v3w_mma_pinned_tcb(
-                                &mut tcb,
-                                mmap_buf,
-                                $tref.offset,
-                                $tref.byte_size,
-                                $rows,
-                                $cols,
-                                b,
-                                $x_batch,
-                                $out_batch,
-                            )?;
-                        } else {
-                            kernels::gemm_q4_k_m_batched_v3w_pinned_tcb(
-                                &mut tcb,
-                                mmap_buf,
-                                $tref.offset,
-                                $tref.byte_size,
-                                $rows,
-                                $cols,
-                                b,
-                                $x_batch,
-                                $out_batch,
-                            )?;
                         }
-                    }
-                    GgmlType::Q6_K => {
-                        for bi in 0..b {
-                            kernels::gemv_q6_k_pinned_off_tcb(
-                                &mut tcb,
-                                mmap_buf,
-                                $tref.offset,
-                                $tref.byte_size,
-                                $rows,
-                                $cols,
-                                $x_batch,
-                                bi * $x_stride,
-                                $out_batch,
-                                bi * $out_stride,
-                            )?;
+                        GgmlType::Q6_K => {
+                            for bi in 0..b {
+                                kernels::gemv_q6_k_pinned_off_tcb(
+                                    &mut tcb,
+                                    mmap_buf,
+                                    $tref.offset,
+                                    $tref.byte_size,
+                                    $rows,
+                                    $cols,
+                                    $x_batch,
+                                    bi * $x_stride,
+                                    $out_batch,
+                                    bi * $out_stride,
+                                )?;
+                            }
                         }
-                    }
-                    _ => {
-                        let buf_f16 = $pinned_f16.ok_or_else(|| {
-                            Error::Metal(
-                                "batched_proj: non-Q4_K/Q6_K dtype and no f16 fallback".into(),
-                            )
-                        })?;
-                        for bi in 0..b {
-                            kernels::gemv_f16_metal_buf_off_tcb(
-                                &mut tcb,
-                                buf_f16,
-                                $rows,
-                                $cols,
-                                $x_batch,
-                                bi * $x_stride,
-                                $out_batch,
-                                bi * $out_stride,
-                            )?;
+                        _ => {
+                            let buf_f16 = $pinned_f16.ok_or_else(|| {
+                                Error::Metal(
+                                    "batched_proj: non-Q4_K/Q6_K dtype and no f16 fallback".into(),
+                                )
+                            })?;
+                            for bi in 0..b {
+                                kernels::gemv_f16_metal_buf_off_tcb(
+                                    &mut tcb,
+                                    buf_f16,
+                                    $rows,
+                                    $cols,
+                                    $x_batch,
+                                    bi * $x_stride,
+                                    $out_batch,
+                                    bi * $out_stride,
+                                )?;
+                            }
                         }
                     }
                 }
@@ -8376,7 +8461,19 @@ impl QwenDense {
                 final_norm_buf
             };
 
-            let did_fuse_ffn_tail = if let (Some(q4k_buf), Some(scales)) = (
+            #[cfg(feature = "tq")]
+            let tq_owns_ffn_down = tq_ffn_ref
+                .and_then(|m| m.get(&layer.ffn_down.offset))
+                .and_then(|s| s.gpu.as_ref())
+                .is_some();
+            #[cfg(not(feature = "tq"))]
+            let tq_owns_ffn_down = false;
+
+            let did_fuse_ffn_tail = if tq_owns_ffn_down {
+                // The Q4_K tail fusion embeds a different weight source. Keep
+                // SwiGLU separate so the admitted TQ projection owns ffn_down.
+                false
+            } else if let (Some(q4k_buf), Some(scales)) = (
                 layer.pinned.ffn_down_q4k.as_ref(),
                 layer.pinned.ffn_down_q4k_predec.as_ref(),
             ) {
@@ -8419,7 +8516,18 @@ impl QwenDense {
                 // ffn_down: prefer requant'd Q4_K buffer if active (~31% BW
                 // saving on the largest weight per layer); else go through
                 // the standard projection dispatcher.
-                if let Some(q4k_buf) = layer.pinned.ffn_down_q4k.as_ref() {
+                if tq_owns_ffn_down {
+                    batched_proj!(
+                        layer.ffn_down,
+                        layer.pinned.ffn_down_f16.as_ref(),
+                        h,
+                        intermediate,
+                        &arena.ffn_act_buf_batch,
+                        int_bytes,
+                        &arena.ffn_down_buf_batch,
+                        h_bytes
+                    );
+                } else if let Some(q4k_buf) = layer.pinned.ffn_down_q4k.as_ref() {
                     let blocks_per_row = intermediate / 256;
                     let row_bytes = blocks_per_row * 144;
                     kernels::gemm_q4_k_m_batched_v3w_pinned_tcb(
@@ -10167,9 +10275,12 @@ mod bsize_verify_diag {
         // Build a residual TqGpuReady from the in-process residual encode.
         let res_prep = {
             let entries = crate::tq_gpu::bake_bitslice_entries(&enc_r, &cfg_r).expect("bake res");
+            let compact_entries = crate::tq_gpu::bake_compact_bitslice_entries(&enc_r, &cfg_r)
+                .expect("compact bake res");
             crate::tq_gpu::TqPreparedGpu {
                 payload: enc_r.bits.clone(),
                 entries,
+                compact_entries,
                 lut_q12: cfg_r.codebook().into_owned(),
                 k_bits: cfg_r.k_bits,
                 l_bits: cfg_r.l_bits,

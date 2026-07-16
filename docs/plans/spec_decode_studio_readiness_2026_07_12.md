@@ -23,14 +23,19 @@ the old dormant capture/train/bench sequence.
 | Is there any proposal worth a fresh oracle? | `reports/oracle/spec_accept_warmstart.json` is explicitly an **ESTIMATE**; pooled warm suffix tau is **3.402** versus cold **2.514**, with wide session spread. | User-history warm-start is the only near-term proposal worth a real tokenizer/exact-target oracle. It is not live evidence. |
 | Is batched verification one target forward? | `crates/hawking-core/src/speculate/router.rs` records B=1..8 verifier costs of **1.0, 2.20, 2.70, 3.25, 3.62, 3.77, 4.00, 4.15** greedy-forward equivalents. | One command buffer is not one forward's wall cost. Any tau-only gate is incomplete. |
 
-## The correctness blocker: TQ parity does not exist yet
+## The correctness gate: implementation exists; TQ parity does not yet exist
 
 The single-token Qwen greedy path consults `tq_ffn` and dispatches the Hawking
 bitslice tensors in `crates/hawking-core/src/model/qwen_dense.rs`. The
-`forward_tokens_batch_tcb` implementation used by `forward_tokens_verify` does
-not currently consult that TQ ownership map. It dispatches from the parent GGUF
-tensor representation. Therefore, a condensed/Doctor `.tq` target and the
-current batched verifier are not proven to represent the same distribution.
+`forward_tokens_batch_tcb` implementation used by `forward_tokens_verify` now
+consults that same ownership map and routes all TQ-owned projections through a
+batch-major B=1..8 bitslice path. It carries stored/compact/hashed/computed
+runtime modes, RHT-cols, OUTL, and residual passes, and bypasses the incompatible
+Q4 fused-down kernel when TQ owns `ffn_down`.
+
+That is implementation evidence, not parity evidence. No device run has occurred
+while the active ladder owns the machine, so a condensed/Doctor `.tq` target and
+the new batched verifier are still not proven to represent the same distribution.
 
 The existing `crates/hawking-core/tests/event_horizon_parity_prop.rs` is not
 that proof. It is hard-coded to a lowercase 3B GGUF path, returns success when
@@ -53,13 +58,17 @@ A `one_pass_verifier: true` Boolean is not evidence for that invariant.
   as TODO and supports only the CPU fallback.
 - Production Event Horizon currently wires the n-gram and suffix proposers;
   the retrieval implementation is not registered in the production Qwen loop.
-- The router uses a fixed historical verifier curve and does not consume the
-  timing fields already present in `StepObservation`. Its disabled-slot path
-  records pessimistic failures rather than shadow outcomes, so a disabled arm
-  cannot honestly relearn and re-arm.
+- Appendix C upgraded the pure router core to accept a validated measured
+  verifier curve, consume per-B verifier/proposal/retokenize/sync timing, and
+  advance disabled dwell without inventing failures. The production Qwen loop
+  still supplies a placeholder target cost and zero timing observations, so
+  post-ladder wiring and receipts remain blockers; the scaffold is not a speed
+  claim or an enabled re-entry path.
 - The old `spec_revive.py` invoked incompatible command-line interfaces and
   could report `spec lane complete` after late-phase failures. There is no
   validated condensed capture -> head training -> dual-runtime runner today.
+  A narrower P0/P1 runner now exists for TQ parity and verifier-cost evidence;
+  it does not launch a proposer, train a head, or enable re-entry.
 
 ## Encoded admission contract
 
@@ -85,9 +94,10 @@ even declare the evidence ready:
    - recomputed speedup LCB >= **1.10 separately in every workload class**;
    - dual-residency peak <= **78 GiB**, zero swap, and normal memory pressure;
    - source commit recorded.
-4. A real checkpointed experiment runner. This is intentionally encoded as
-   `RUNNER_IMPLEMENTED = False`, so even perfect synthetic receipts cannot
-   launch dormant code.
+4. A real checkpointed full speculative experiment runner. This remains encoded
+   as `RUNNER_IMPLEMENTED = False`, so even perfect synthetic receipts cannot
+   launch dormant proposal/training code. The dedicated `spec_tq_runner.py`
+   covers only prerequisite P0/P1 target parity and verifier-cost measurement.
 
 The checker rejects missing data, skipped tests, optimistic cost arithmetic,
 malformed fields, and non-finite values. Its synthetic self-test performs no
@@ -103,19 +113,21 @@ entire artifact, so run it only outside an active bandwidth-heavy ladder.
 
 ## Research sequence after the current ladders
 
-### Immediate implementation
+### Immediate post-run execution
 
-1. **Make the batched verifier TQ-native.** Route every projection in
-   `forward_tokens_batch_tcb` through the same TQ ownership/strictness rules as
-   single-token greedy. Missing TQ coverage must error in proof mode, never
-   fall back silently to GGUF.
-2. **Replace the skip-green parity harness.** Accept explicit GGUF/TQ paths,
-   fail when assets are absent, execute 20 x 256 non-skipped cases, exercise
-   B=1..8 directly, and emit the hash-bound parity receipt atomically.
+1. **Run the implemented TQ-native proof path.** Build
+   `hawking-tq-spec-probe`, derive a hash-bound corpus token-prompt set, and let
+   `spec_tq_runner.py` acquire the lease. Proof mode requires every q/k/v/o/
+   gate/up/down projection to be TQ-owned and GPU-resident; absent assets or
+   coverage fail rather than skip.
+2. **Execute the non-skipping parity matrix.** Run 20 x at least 256 cases for
+   B=1..8 and each runtime interpretation, with single-token TQ greedy as the
+   oracle. Zero mismatch and zero skip are mandatory.
 3. **Measure the M3 Ultra verifier curve without a proposer.** Normalize each B
    against the same target's single-token greedy latency and record median,
-   confidence bound, p95, peak memory, pressure, swap, commit, and thermal
-   state. This is the cheapest honest oracle.
+   confidence bound, p95, energy, GPU time, bytes, peak memory, pressure, swap,
+   commit, and thermal state. The strict finalizer requires separately bound
+   physical counter sources. This is the cheapest honest oracle.
 4. **Run a real-token warm-history acceptance trace.** Use the target tokenizer
    and held-out sessions; charge only suffix-recomputed tokens, prefix-cache
    overlap, misses, and lookup time. Stop if any workload cannot clear the

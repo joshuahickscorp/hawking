@@ -1,6 +1,6 @@
 use crate::codebook::QUANTILE_SHIFT;
 use crate::encode::EncodedTensor;
-use crate::trellis::{read_bits, TrellisConfig};
+use crate::trellis::{read_bits, CodebookMode, TrellisConfig};
 
 pub const SCALE_SHIFT: u32 = 16;
 
@@ -34,12 +34,25 @@ pub fn eff_min_q(min_base_q: i32, code: u8) -> i32 {
 }
 
 pub fn decode_tensor_fixed(enc: &EncodedTensor, cfg: &TrellisConfig) -> Vec<i32> {
-    // Codebook sourced per `cfg.codebook_mode`. `StoredLut` borrows the frozen
-    // `&'static` table (zero alloc); `ComputedAcklam` materialises the identical
-    // integers via the pure-integer Acklam path. Byte-for-byte the same scalar
-    // codebook either way (Variant A is contract-tested exact).
-    let lut = cfg.codebook();
-    decode_tensor_fixed_with_lut(enc, cfg, &lut)
+    // Vector trellises can carry an arbitrary learned `state * d` LUT and
+    // therefore retain the slice-based compatibility path. The scalar Gaussian
+    // path can genuinely exchange memory traffic for integer work in its hot loop.
+    if cfg.vec_dim() > 1 {
+        let lut = cfg.codebook();
+        return decode_tensor_fixed_with_lut_vec(enc, cfg, &lut);
+    }
+    match cfg.codebook_mode {
+        CodebookMode::StoredLut => {
+            let lut = crate::codebook::codebook_lut(cfg.l_bits);
+            decode_tensor_fixed_scalar_with(enc, cfg, |state| lut[state])
+        }
+        CodebookMode::HashedQuantile => decode_tensor_fixed_scalar_with(enc, cfg, |state| {
+            crate::codebook::qcb_hashed(state, cfg.l_bits)
+        }),
+        CodebookMode::ComputedAcklam => decode_tensor_fixed_scalar_with(enc, cfg, |state| {
+            crate::codebook::qcb(state, cfg.l_bits)
+        }),
+    }
 }
 
 pub fn decode_tensor_fixed_with_lut(
@@ -50,6 +63,17 @@ pub fn decode_tensor_fixed_with_lut(
     if cfg.vec_dim() > 1 {
         return decode_tensor_fixed_with_lut_vec(enc, cfg, lut);
     }
+    decode_tensor_fixed_scalar_with(enc, cfg, |state| lut[state])
+}
+
+fn decode_tensor_fixed_scalar_with<F>(
+    enc: &EncodedTensor,
+    cfg: &TrellisConfig,
+    mut qcb: F,
+) -> Vec<i32>
+where
+    F: FnMut(usize) -> i32,
+{
     use crate::encode::{n_sub_blocks, unpack_sub_scales, unpack_sub_scales_or_unity, SUB_BLOCK};
 
     let mask = cfg.state_mask();
@@ -94,7 +118,7 @@ pub fn decode_tensor_fixed_with_lut(
             bit_cursor += k as usize;
             state = ((state << k) | sym) & mask;
 
-            let q = lut[state];
+            let q = qcb(state);
 
             let es = eff[i / SUB_BLOCK];
             let off = offs.get(i / SUB_BLOCK).copied().unwrap_or(0);
@@ -154,16 +178,35 @@ impl<'a> WordBitReader<'a> {
 }
 
 pub fn decode_lean(enc: &EncodedTensor, cfg: &TrellisConfig) -> Vec<i32> {
-    // Codebook sourced per `cfg.codebook_mode` (see `decode_tensor_fixed`); the
-    // scalar codebook is byte-identical under either mode (Variant A exact).
-    let lut = cfg.codebook();
-    decode_lean_with_lut(enc, cfg, &lut)
+    if cfg.vec_dim() > 1 {
+        let lut = cfg.codebook();
+        return decode_tensor_fixed_with_lut_vec(enc, cfg, &lut);
+    }
+    match cfg.codebook_mode {
+        CodebookMode::StoredLut => {
+            let lut = crate::codebook::codebook_lut(cfg.l_bits);
+            decode_lean_scalar_with(enc, cfg, |state| lut[state])
+        }
+        CodebookMode::HashedQuantile => decode_lean_scalar_with(enc, cfg, |state| {
+            crate::codebook::qcb_hashed(state, cfg.l_bits)
+        }),
+        CodebookMode::ComputedAcklam => {
+            decode_lean_scalar_with(enc, cfg, |state| crate::codebook::qcb(state, cfg.l_bits))
+        }
+    }
 }
 
 pub fn decode_lean_with_lut(enc: &EncodedTensor, cfg: &TrellisConfig, lut: &[i32]) -> Vec<i32> {
     if cfg.vec_dim() > 1 {
         return decode_tensor_fixed_with_lut_vec(enc, cfg, lut);
     }
+    decode_lean_scalar_with(enc, cfg, |state| lut[state])
+}
+
+fn decode_lean_scalar_with<F>(enc: &EncodedTensor, cfg: &TrellisConfig, mut qcb: F) -> Vec<i32>
+where
+    F: FnMut(usize) -> i32,
+{
     use crate::encode::{n_sub_blocks, unpack_sub_scales, unpack_sub_scales_or_unity, SUB_BLOCK};
 
     let mask = cfg.state_mask();
@@ -215,7 +258,7 @@ pub fn decode_lean_with_lut(enc: &EncodedTensor, cfg: &TrellisConfig, lut: &[i32
             for (sb, &es) in eff.iter().enumerate() {
                 let base = sb * ns;
                 for s in 0..ns {
-                    folded[base + s] = reconstruct_q(es, lut[s]);
+                    folded[base + s] = reconstruct_q(es, qcb(s));
                 }
             }
             for i in 0..blk.n as usize {
@@ -229,7 +272,7 @@ pub fn decode_lean_with_lut(enc: &EncodedTensor, cfg: &TrellisConfig, lut: &[i32
             for i in 0..blk.n as usize {
                 let sym = reader.pop(k) & input_mask;
                 state = ((state << k) | sym) & mask;
-                let q = lut[state];
+                let q = qcb(state);
                 let es = eff[i / SUB_BLOCK];
                 let off = offs.get(i / SUB_BLOCK).copied().unwrap_or(0);
                 out.push(reconstruct_q(es, q) + off);
@@ -389,6 +432,23 @@ mod lean_tests {
                 }
             }
         }
+    }
+
+    #[test]
+    fn scalar_decode_sources_are_bit_identical() {
+        let base = TrellisConfig::for_bpw_l(3.0, 10);
+        let weights: Vec<f32> = (0..1537)
+            .map(|i| ((i as f32 + 17.0) * 0.019).sin())
+            .collect();
+        let enc = encode_tensor(&weights, &base);
+        let stored = base.with_codebook_mode(CodebookMode::StoredLut);
+        let hashed = base.with_codebook_mode(CodebookMode::HashedQuantile);
+        let computed = base.with_codebook_mode(CodebookMode::ComputedAcklam);
+        let want = decode_lean(&enc, &stored);
+        assert_eq!(decode_lean(&enc, &hashed), want);
+        assert_eq!(decode_lean(&enc, &computed), want);
+        assert_eq!(decode_tensor_fixed(&enc, &hashed), want);
+        assert_eq!(decode_tensor_fixed(&enc, &computed), want);
     }
 
     #[test]

@@ -203,6 +203,76 @@ impl Default for EncodeOpts {
     }
 }
 
+/// Explicit controls for the opt-in CPU block-parallel encoder.
+///
+/// This type and its encoder entry points only exist in builds compiled with
+/// `--features block-parallel`. Merely compiling the feature does not alter any
+/// existing `encode_tensor*` entry point or runtime default.
+#[cfg(feature = "block-parallel")]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct BlockParallelConfig {
+    /// Maximum number of scoped CPU workers used for one tensor.
+    pub threads: usize,
+    /// Below this number of blocks, retain the canonical serial path. This
+    /// avoids thread setup overhead on small tensors without changing bytes.
+    pub min_blocks: usize,
+    /// Cap for aggregate Viterbi scratch owned by scoped workers. Worker count
+    /// is reduced before allocation. One canonical serial scratch buffer is the
+    /// irreducible floor even when it is larger than this parallelism budget.
+    pub scratch_budget_bytes: usize,
+}
+
+#[cfg(feature = "block-parallel")]
+impl BlockParallelConfig {
+    pub fn new(threads: usize) -> Result<Self, BlockParallelError> {
+        if threads == 0 {
+            return Err(BlockParallelError::ZeroThreads);
+        }
+        Ok(Self {
+            threads,
+            min_blocks: threads.saturating_mul(2).max(2),
+            scratch_budget_bytes: 512 * 1024 * 1024,
+        })
+    }
+
+    pub fn with_min_blocks(mut self, min_blocks: usize) -> Self {
+        self.min_blocks = min_blocks.max(1);
+        self
+    }
+
+    pub fn with_scratch_budget_bytes(mut self, scratch_budget_bytes: usize) -> Self {
+        self.scratch_budget_bytes = scratch_budget_bytes.max(1);
+        self
+    }
+}
+
+/// Fail-closed reasons for the opt-in block-parallel path.
+#[cfg(feature = "block-parallel")]
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum BlockParallelError {
+    ZeroThreads,
+    /// One-pass PSI feeds each block's entropy into later blocks. Reordering it
+    /// would change the experiment, so this mode is deliberately rejected.
+    RollingEntropyDependency,
+    WorkerPanic,
+}
+
+#[cfg(feature = "block-parallel")]
+impl core::fmt::Display for BlockParallelError {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        match self {
+            Self::ZeroThreads => f.write_str("block-parallel threads must be greater than zero"),
+            Self::RollingEntropyDependency => f.write_str(
+                "one-pass rolling entropy bonus is block-order dependent and cannot be parallelized byte-identically",
+            ),
+            Self::WorkerPanic => f.write_str("a block-parallel encoder worker panicked"),
+        }
+    }
+}
+
+#[cfg(feature = "block-parallel")]
+impl std::error::Error for BlockParallelError {}
+
 pub fn encode_tensor(weights: &[f32], cfg: &TrellisConfig) -> EncodedTensor {
     encode_tensor_with(weights, cfg, &EncodeOpts::default())
 }
@@ -575,6 +645,430 @@ pub fn encode_tensor_with_lut_metric_search(
         tail_biting: opts.tail_biting,
         has_affine_min: opts.affine_min,
     }
+}
+
+#[cfg(feature = "block-parallel")]
+struct ParallelBlock {
+    bits: Vec<u8>,
+    bit_len: usize,
+    meta: BlockMeta,
+}
+
+#[cfg(feature = "block-parallel")]
+fn assemble_parallel_blocks(
+    encoded: Vec<ParallelBlock>,
+    total: usize,
+    cfg: &TrellisConfig,
+    opts: &EncodeOpts,
+) -> EncodedTensor {
+    // `encoded` is in source-block order. Keep the historical cross-block bit
+    // cursor and push routine so byte layout, including byte-boundary carry,
+    // remains identical to the serial encoder.
+    let mut bits = Vec::new();
+    let mut bit_cursor = 0usize;
+    let mut blocks = Vec::with_capacity(encoded.len());
+    for block in encoded {
+        let mut local_cursor = 0usize;
+        while local_cursor < block.bit_len {
+            let sym = read_bits(&block.bits, local_cursor, cfg.k_bits);
+            push_bits(&mut bits, &mut bit_cursor, sym, cfg.k_bits);
+            local_cursor += cfg.k_bits as usize;
+        }
+        blocks.push(block.meta);
+    }
+    EncodedTensor {
+        bits,
+        blocks,
+        total,
+        has_rht_seed: false,
+        tail_biting: opts.tail_biting,
+        has_affine_min: opts.affine_min,
+    }
+}
+
+#[cfg(feature = "block-parallel")]
+fn effective_block_workers(
+    weights_len: usize,
+    cfg: &TrellisConfig,
+    parallel: BlockParallelConfig,
+    scratch_words_per_worker: usize,
+) -> usize {
+    let n_blocks = weights_len.div_ceil(cfg.block_len);
+    if n_blocks == 0 || n_blocks < parallel.min_blocks {
+        return 1;
+    }
+    let scratch_bytes = scratch_words_per_worker
+        .saturating_mul(core::mem::size_of::<u32>())
+        .max(1);
+    let memory_workers = (parallel.scratch_budget_bytes / scratch_bytes).max(1);
+    parallel.threads.min(n_blocks).min(memory_workers).max(1)
+}
+
+#[cfg(feature = "block-parallel")]
+fn encode_scalar_block_parallel(
+    weights: &[f32],
+    cfg: &TrellisConfig,
+    opts: &EncodeOpts,
+    lut: &[i32],
+    f32_metric: bool,
+    f32_search: bool,
+    total_bonuses: &[f64],
+    parallel: BlockParallelConfig,
+) -> Result<Vec<ParallelBlock>, BlockParallelError> {
+    let num_states = cfg.num_states();
+    let scratch_words = cfg.block_len.saturating_mul(num_states);
+    let workers = effective_block_workers(weights.len(), cfg, parallel, scratch_words);
+    let n_blocks = weights.len().div_ceil(cfg.block_len);
+    debug_assert_eq!(total_bonuses.len(), n_blocks);
+
+    if workers == 1 {
+        let mut back_buf = vec![u32::MAX; scratch_words];
+        let mut out = Vec::with_capacity(n_blocks);
+        for (bi, chunk) in weights.chunks(cfg.block_len).enumerate() {
+            out.push(encode_scalar_parallel_block(
+                chunk,
+                cfg,
+                opts,
+                lut,
+                f32_metric,
+                f32_search,
+                total_bonuses[bi],
+                &mut back_buf,
+            ));
+        }
+        return Ok(out);
+    }
+
+    std::thread::scope(|scope| {
+        let blocks_per_worker = n_blocks.div_ceil(workers);
+        let mut handles = Vec::with_capacity(workers);
+        for worker in 0..workers {
+            let block_start = worker * blocks_per_worker;
+            let block_end = (block_start + blocks_per_worker).min(n_blocks);
+            if block_start == block_end {
+                continue;
+            }
+            let weight_start = block_start * cfg.block_len;
+            let weight_end = (block_end * cfg.block_len).min(weights.len());
+            let worker_weights = &weights[weight_start..weight_end];
+            let worker_bonuses = &total_bonuses[block_start..block_end];
+            handles.push(scope.spawn(move || {
+                let mut back_buf = vec![u32::MAX; scratch_words];
+                worker_weights
+                    .chunks(cfg.block_len)
+                    .zip(worker_bonuses.iter().copied())
+                    .map(|(chunk, total_bonus)| {
+                        encode_scalar_parallel_block(
+                            chunk,
+                            cfg,
+                            opts,
+                            lut,
+                            f32_metric,
+                            f32_search,
+                            total_bonus,
+                            &mut back_buf,
+                        )
+                    })
+                    .collect::<Vec<_>>()
+            }));
+        }
+
+        let mut out = Vec::with_capacity(n_blocks);
+        // Handles were created for monotonically increasing, disjoint ranges;
+        // joining and extending in that same order is the canonical gather.
+        let mut worker_panicked = false;
+        for handle in handles {
+            match handle.join() {
+                Ok(mut part) => out.append(&mut part),
+                Err(_) => worker_panicked = true,
+            }
+        }
+        if worker_panicked {
+            Err(BlockParallelError::WorkerPanic)
+        } else {
+            Ok(out)
+        }
+    })
+}
+
+#[cfg(feature = "block-parallel")]
+#[allow(clippy::too_many_arguments)]
+fn encode_scalar_parallel_block(
+    chunk: &[f32],
+    cfg: &TrellisConfig,
+    opts: &EncodeOpts,
+    lut: &[i32],
+    f32_metric: bool,
+    f32_search: bool,
+    total_bonus: f64,
+    back_buf: &mut Vec<u32>,
+) -> ParallelBlock {
+    // Keep every operation and its order within one block identical to the
+    // canonical loop above. Parallelism exists only across independent blocks.
+    let scale_q = if f32_search {
+        choose_scale_q_f32(chunk, lut, cfg)
+    } else {
+        choose_scale_q(chunk, lut, cfg)
+    };
+    let mults = if opts.adaptive {
+        if f32_search {
+            choose_sub_scales_f32(chunk, scale_q, lut, cfg)
+        } else {
+            choose_sub_scales(chunk, scale_q, lut, cfg)
+        }
+    } else {
+        vec![SUB_SCALE_UNITY; n_sub_blocks(chunk.len())]
+    };
+    let (min_base_q, min_codes) = if opts.affine_min {
+        if f32_search {
+            choose_affine_min_f32(chunk, scale_q, &mults, lut, cfg)
+        } else {
+            choose_affine_min(chunk, scale_q, &mults, lut, cfg)
+        }
+    } else {
+        (0, Vec::new())
+    };
+    let mins_eff: Vec<i32> = min_codes
+        .iter()
+        .map(|&c| crate::decode::eff_min_q(min_base_q, c))
+        .collect();
+    let (path, init_state) = viterbi_path_buf(
+        chunk,
+        scale_q,
+        &mults,
+        &mins_eff,
+        lut,
+        cfg,
+        opts.tail_biting,
+        f32_metric,
+        total_bonus,
+        back_buf,
+    );
+    parallel_block_from_path(
+        path,
+        BlockMeta {
+            scale_q,
+            sub_scales: if opts.adaptive || opts.affine_min {
+                pack_sub_scales(&mults)
+            } else {
+                Vec::new()
+            },
+            min_base_q,
+            mins: if opts.affine_min {
+                pack_sub_scales(&min_codes)
+            } else {
+                Vec::new()
+            },
+            init_state: init_state as u32,
+            n: chunk.len() as u32,
+        },
+        cfg,
+    )
+}
+
+#[cfg(feature = "block-parallel")]
+fn parallel_block_from_path(path: Vec<u32>, meta: BlockMeta, cfg: &TrellisConfig) -> ParallelBlock {
+    // Do not retain a u32 per weight until the canonical gather. Packing each
+    // independent block immediately bounds retained path memory to payload size
+    // (k bits/symbol) while the gather below still owns cross-block bit carry.
+    let bit_len = path.len().saturating_mul(cfg.k_bits as usize);
+    let mut bits = Vec::with_capacity(bit_len.div_ceil(8));
+    let mut bit_cursor = 0usize;
+    for sym in path {
+        push_bits(&mut bits, &mut bit_cursor, sym as usize, cfg.k_bits);
+    }
+    ParallelBlock {
+        bits,
+        bit_len,
+        meta,
+    }
+}
+
+/// Encode a tensor with block-level CPU parallelism while preserving canonical
+/// block order and exact serial arithmetic within every block.
+///
+/// This is a separate, explicit entry point. Existing encoder calls are never
+/// redirected. One-pass rolling PSI is rejected because it is genuinely
+/// block-order dependent; two-pass PSI is supported because its per-block bonus
+/// is fully known before the parallel second pass.
+#[cfg(feature = "block-parallel")]
+pub fn encode_tensor_with_block_parallel(
+    weights: &[f32],
+    cfg: &TrellisConfig,
+    opts: &EncodeOpts,
+    parallel: BlockParallelConfig,
+) -> Result<EncodedTensor, BlockParallelError> {
+    if parallel.threads == 0 {
+        return Err(BlockParallelError::ZeroThreads);
+    }
+    let scalar = cfg.codebook();
+    let lut = if cfg.vec_dim() > 1 {
+        vector_lut_from_scalar(&scalar, cfg.vec_dim())
+    } else {
+        scalar.to_vec()
+    };
+    encode_tensor_with_lut_block_parallel(weights, cfg, opts, &lut, parallel)
+}
+
+/// Custom-LUT counterpart to [`encode_tensor_with_block_parallel`].
+#[cfg(feature = "block-parallel")]
+pub fn encode_tensor_with_lut_block_parallel(
+    weights: &[f32],
+    cfg: &TrellisConfig,
+    opts: &EncodeOpts,
+    lut: &[i32],
+    parallel: BlockParallelConfig,
+) -> Result<EncodedTensor, BlockParallelError> {
+    if parallel.threads == 0 {
+        return Err(BlockParallelError::ZeroThreads);
+    }
+    if opts.entropy_bonus_scale != 0.0 && !opts.entropy_bonus_two_pass {
+        return Err(BlockParallelError::RollingEntropyDependency);
+    }
+
+    if cfg.vec_dim() > 1 {
+        return encode_vector_block_parallel(weights, cfg, opts, lut, parallel);
+    }
+
+    let f32_metric = f32_metric_from_env();
+    let f32_search = f32_metric && f32_search_from_env();
+    let n_blocks = weights.len().div_ceil(cfg.block_len);
+    let total_bonuses = if opts.entropy_bonus_scale != 0.0 && opts.entropy_bonus_two_pass {
+        let pass1_opts = EncodeOpts {
+            silence_bonus: 0.0,
+            entropy_bonus_scale: 0.0,
+            entropy_bonus_two_pass: false,
+            ..*opts
+        };
+        let pass1 =
+            encode_tensor_with_lut_block_parallel(weights, cfg, &pass1_opts, lut, parallel)?;
+        (0..pass1.blocks.len())
+            .map(|bi| {
+                let syms = extract_block_symbols(&pass1, bi, cfg);
+                opts.silence_bonus
+                    + opts.entropy_bonus_scale * compute_block_entropy(&syms, cfg.k_bits as u8)
+            })
+            .collect()
+    } else {
+        vec![opts.silence_bonus; n_blocks]
+    };
+    let encoded = encode_scalar_block_parallel(
+        weights,
+        cfg,
+        opts,
+        lut,
+        f32_metric,
+        f32_search,
+        &total_bonuses,
+        parallel,
+    )?;
+    Ok(assemble_parallel_blocks(encoded, weights.len(), cfg, opts))
+}
+
+#[cfg(feature = "block-parallel")]
+fn encode_vector_block_parallel(
+    weights: &[f32],
+    cfg: &TrellisConfig,
+    opts: &EncodeOpts,
+    lut: &[i32],
+    parallel: BlockParallelConfig,
+) -> Result<EncodedTensor, BlockParallelError> {
+    let d = cfg.vec_dim();
+    let num_states = cfg.num_states();
+    debug_assert_eq!(lut.len(), num_states * d, "vector LUT must be [2^L * d]");
+    let max_steps = cfg.num_steps(cfg.block_len);
+    let scratch_words = max_steps.saturating_mul(num_states);
+    let workers = effective_block_workers(weights.len(), cfg, parallel, scratch_words);
+    let n_blocks = weights.len().div_ceil(cfg.block_len);
+
+    let encode_range = |range_weights: &[f32]| {
+        let mut back_buf = vec![u32::MAX; scratch_words];
+        range_weights
+            .chunks(cfg.block_len)
+            .map(|chunk| {
+                let scale_q = choose_scale_q_vec(chunk, lut, cfg);
+                let mults = if opts.adaptive {
+                    choose_sub_scales_vec(chunk, scale_q, lut, cfg)
+                } else {
+                    vec![SUB_SCALE_UNITY; n_sub_blocks(chunk.len())]
+                };
+                let (min_base_q, min_codes) = if opts.affine_min {
+                    choose_affine_min_vec(chunk, scale_q, &mults, lut, cfg)
+                } else {
+                    (0, Vec::new())
+                };
+                let mins_eff: Vec<i32> = min_codes
+                    .iter()
+                    .map(|&c| crate::decode::eff_min_q(min_base_q, c))
+                    .collect();
+                let (path, init_state) = viterbi_path_buf_vec(
+                    chunk,
+                    scale_q,
+                    &mults,
+                    &mins_eff,
+                    lut,
+                    cfg,
+                    opts.tail_biting,
+                    &mut back_buf,
+                );
+                parallel_block_from_path(
+                    path,
+                    BlockMeta {
+                        scale_q,
+                        sub_scales: if opts.adaptive || opts.affine_min {
+                            pack_sub_scales(&mults)
+                        } else {
+                            Vec::new()
+                        },
+                        min_base_q,
+                        mins: if opts.affine_min {
+                            pack_sub_scales(&min_codes)
+                        } else {
+                            Vec::new()
+                        },
+                        init_state: init_state as u32,
+                        n: chunk.len() as u32,
+                    },
+                    cfg,
+                )
+            })
+            .collect::<Vec<_>>()
+    };
+
+    let encoded = if workers == 1 {
+        encode_range(weights)
+    } else {
+        std::thread::scope(|scope| {
+            let blocks_per_worker = n_blocks.div_ceil(workers);
+            let mut handles = Vec::with_capacity(workers);
+            for worker in 0..workers {
+                let block_start = worker * blocks_per_worker;
+                let block_end = (block_start + blocks_per_worker).min(n_blocks);
+                if block_start == block_end {
+                    continue;
+                }
+                let weight_start = block_start * cfg.block_len;
+                let weight_end = (block_end * cfg.block_len).min(weights.len());
+                let range_weights = &weights[weight_start..weight_end];
+                let encode_range = &encode_range;
+                handles.push(scope.spawn(move || encode_range(range_weights)));
+            }
+            let mut out = Vec::with_capacity(n_blocks);
+            let mut worker_panicked = false;
+            for handle in handles {
+                match handle.join() {
+                    Ok(mut part) => out.append(&mut part),
+                    Err(_) => worker_panicked = true,
+                }
+            }
+            if worker_panicked {
+                Err(BlockParallelError::WorkerPanic)
+            } else {
+                Ok(out)
+            }
+        })?
+    };
+    Ok(assemble_parallel_blocks(encoded, weights.len(), cfg, opts))
 }
 
 pub fn vector_lut_from_scalar(scalar: &[i32], d: usize) -> Vec<i32> {

@@ -54,3 +54,10 @@ Models beyond 120B are separate admission campaigns, not silent extensions of th
 current 320-cell matrix. The scaffold records DeepSeek-V4-Flash, Kimi-K2.6, and
 DeepSeek-V4-Pro as gated horizons; none is downloaded or executed without its own
 architecture, source, disk, and streamed-receipt authority.
+
+The separate default-off acceleration contract is documented in
+`docs/plans/DOCTOR_V5_POST120_ACCELERATION.md`. It binds the exact GPT-OSS 10x4
+matrix and the complete post-120B single-device profile/parallel/overlap/reuse/
+RAM/swap/lifecycle/native/Metal/quality/rollback ideology without importing or
+mutating the live campaign. Named higher-tier cells remain templates until exact
+architecture, parameter, source, and admission authorities exist.
