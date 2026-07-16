@@ -7,21 +7,26 @@
 # `security set-key-partition-list` works non-interactively, so codesign
 # never pops a password dialog.
 #
-# Source material (key + cert) lives in the tailor repo's gitignored
-# secrets folder — see README.md ("Signing identity" section).
+# Source material is always explicit; this script never guesses another local
+# repository or a machine-specific secret path.
 #
-# Usage: ./setup-signing-keychain.sh
+# Usage:
+#   STRAND_SIGNING_KEY=/secure/key.pem \
+#   STRAND_SIGNING_CER=/secure/developer-id.cer \
+#   ./setup-signing-keychain.sh
 # Then:  security find-identity -v -p codesigning   # should list the identity
 # Undo:  security delete-keychain /tmp/strand-signing.keychain
 
 set -euo pipefail
 
-KEY="${STRAND_SIGNING_KEY:-/Users/scammermike/Downloads/tailor/deploy/secrets/tailor-signing.key}"
-CER="${STRAND_SIGNING_CER:-/Users/scammermike/Downloads/tailor/deploy/secrets/developerID_application.cer}"
+KEY="${STRAND_SIGNING_KEY:-}"
+CER="${STRAND_SIGNING_CER:-}"
 KC="/tmp/strand-signing.keychain"
 INTERMEDIATE_URL="https://www.apple.com/certificateauthority/DeveloperIDG2CA.cer"
 INTERMEDIATE="/tmp/DeveloperIDG2CA.cer"
 
+[ -n "$KEY" ] || { echo "✗ STRAND_SIGNING_KEY is required"; exit 1; }
+[ -n "$CER" ] || { echo "✗ STRAND_SIGNING_CER is required"; exit 1; }
 [ -f "$KEY" ] || { echo "✗ private key not found: $KEY"; exit 1; }
 [ -f "$CER" ] || { echo "✗ certificate not found: $CER"; exit 1; }
 

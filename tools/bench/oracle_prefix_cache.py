@@ -18,10 +18,10 @@ semantic cache lever ("THE FIRST MOVE"):
       because the bible insists on a verify before trusting a near-hit, the
       "verified" rate (near-hit AND exact-prefix-confirmable).
 
-Tokenisation mirrors tools/bench/spec_oracle_on_transcripts.sh: shell out to
-$TOKENIZE_BIN (default llama-tokenize) against the Qwen2.5-3B gguf. If that
-binary is unavailable we fall back to a whitespace/byte tokenizer so the tool
-is never blocked (the fallback is clearly flagged in the output).
+Tokenisation shells out to $TOKENIZE_BIN (default llama-tokenize) against the
+Qwen2.5-3B gguf. If that binary is unavailable we fall back to a
+whitespace/byte tokenizer so the tool is never blocked (the fallback is
+clearly flagged in the output).
 
 TURNKEY on real data. Two input modes:
 

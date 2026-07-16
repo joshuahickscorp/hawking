@@ -8,6 +8,9 @@ repository.workspace = true
 authors.workspace = true
 description = "Security infrastructure scaffold for HIDE"
 
+[lib]
+path = "lib.rs"
+
 [dependencies]
 hide-core = { path = "../hide-core" }
 serde = { workspace = true }

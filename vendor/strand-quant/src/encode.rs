@@ -11,9 +11,7 @@ use std::sync::OnceLock;
 static METAL: OnceLock<Option<crate::metal_backend::MetalViterbi>> = OnceLock::new();
 #[cfg(target_os = "macos")]
 fn metal_viterbi() -> Option<&'static crate::metal_backend::MetalViterbi> {
-    METAL
-        .get_or_init(|| crate::metal_backend::MetalViterbi::new())
-        .as_ref()
+    METAL.get_or_init(|| crate::metal_backend::MetalViterbi::new()).as_ref()
 }
 
 pub const SUB_BLOCK: usize = 32;
@@ -62,11 +60,7 @@ pub fn unpack_sub_scales(bytes: &[u8], n: usize) -> Vec<u8> {
         for b in 0..6 {
             let bit_idx = cursor + b;
             let byte = bit_idx >> 3;
-            let bit = if byte < bytes.len() {
-                (bytes[byte] >> (bit_idx & 7)) & 1
-            } else {
-                0
-            };
+            let bit = if byte < bytes.len() { (bytes[byte] >> (bit_idx & 7)) & 1 } else { 0 };
             v |= bit << b;
         }
         out.push(v);
@@ -113,11 +107,7 @@ impl EncodedTensor {
         if self.total == 0 {
             return 0.0;
         }
-        let payload_bits: usize = self
-            .blocks
-            .iter()
-            .map(|b| cfg.num_steps(b.n as usize) * cfg.k_bits as usize)
-            .sum();
+        let payload_bits: usize = self.blocks.iter().map(|b| cfg.num_steps(b.n as usize) * cfg.k_bits as usize).sum();
         payload_bits as f64 / self.total as f64
     }
 
@@ -142,19 +132,11 @@ impl EncodedTensor {
             let n_sub = n_sub_blocks(b.n as usize);
             // Affine side-info carries one i32 min_base_q per block in addition
             // to the packed 6-bit per-subblock min codes.
-            let affine = if self.has_affine_min {
-                32 + 6 * n_sub
-            } else {
-                0
-            };
+            let affine = if self.has_affine_min { 32 + 6 * n_sub } else { 0 };
             let nk = cfg.num_steps(b.n as usize) * cfg.k_bits as usize;
             let tail_bit = self.tail_biting && nk >= cfg.l_bits as usize;
             let init_bits = if tail_bit { 0 } else { cfg.l_bits as usize };
-            let adaptive = if b.sub_scales.is_empty() {
-                0
-            } else {
-                6 * n_sub
-            };
+            let adaptive = if b.sub_scales.is_empty() { 0 } else { 6 * n_sub };
             bits += 32 + adaptive + affine + init_bits;
         }
         bits
@@ -164,11 +146,7 @@ impl EncodedTensor {
         if self.total == 0 {
             return 0.0;
         }
-        let payload: usize = self
-            .blocks
-            .iter()
-            .map(|b| cfg.num_steps(b.n as usize) * cfg.k_bits as usize)
-            .sum();
+        let payload: usize = self.blocks.iter().map(|b| cfg.num_steps(b.n as usize) * cfg.k_bits as usize).sum();
         let side = self.block_side_bits(cfg);
         let rht = if self.has_rht_seed { RHT_SEED_BITS } else { 0 };
         (payload + side + rht) as f64 / self.total as f64
@@ -192,14 +170,7 @@ pub struct EncodeOpts {
 
 impl Default for EncodeOpts {
     fn default() -> Self {
-        EncodeOpts {
-            adaptive: true,
-            tail_biting: false,
-            affine_min: false,
-            silence_bonus: 0.0,
-            entropy_bonus_scale: 0.0,
-            entropy_bonus_two_pass: false,
-        }
+        EncodeOpts { adaptive: true, tail_biting: false, affine_min: false, silence_bonus: 0.0, entropy_bonus_scale: 0.0, entropy_bonus_two_pass: false }
     }
 }
 
@@ -228,11 +199,7 @@ impl BlockParallelConfig {
         if threads == 0 {
             return Err(BlockParallelError::ZeroThreads);
         }
-        Ok(Self {
-            threads,
-            min_blocks: threads.saturating_mul(2).max(2),
-            scratch_budget_bytes: 512 * 1024 * 1024,
-        })
+        Ok(Self { threads, min_blocks: threads.saturating_mul(2).max(2), scratch_budget_bytes: 512 * 1024 * 1024 })
     }
 
     pub fn with_min_blocks(mut self, min_blocks: usize) -> Self {
@@ -262,9 +229,7 @@ impl core::fmt::Display for BlockParallelError {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         match self {
             Self::ZeroThreads => f.write_str("block-parallel threads must be greater than zero"),
-            Self::RollingEntropyDependency => f.write_str(
-                "one-pass rolling entropy bonus is block-order dependent and cannot be parallelized byte-identically",
-            ),
+            Self::RollingEntropyDependency => f.write_str("one-pass rolling entropy bonus is block-order dependent and cannot be parallelized byte-identically"),
             Self::WorkerPanic => f.write_str("a block-parallel encoder worker panicked"),
         }
     }
@@ -278,14 +243,7 @@ pub fn encode_tensor(weights: &[f32], cfg: &TrellisConfig) -> EncodedTensor {
 }
 
 pub fn encode_tensor_opts(weights: &[f32], cfg: &TrellisConfig, adaptive: bool) -> EncodedTensor {
-    encode_tensor_with(
-        weights,
-        cfg,
-        &EncodeOpts {
-            adaptive,
-            ..Default::default()
-        },
-    )
+    encode_tensor_with(weights, cfg, &EncodeOpts { adaptive, ..Default::default() })
 }
 
 pub fn compute_block_entropy(syms: &[u32], k_bits: u8) -> f64 {
@@ -344,11 +302,7 @@ pub fn extract_block_symbols(enc: &EncodedTensor, b: usize, cfg: &TrellisConfig)
     syms
 }
 
-pub fn encode_tensor_with(
-    weights: &[f32],
-    cfg: &TrellisConfig,
-    opts: &EncodeOpts,
-) -> EncodedTensor {
+pub fn encode_tensor_with(weights: &[f32], cfg: &TrellisConfig, opts: &EncodeOpts) -> EncodedTensor {
     if cfg.vec_dim() > 1 {
         // Scalar codebook sourced per `cfg.codebook_mode` (byte-identical under
         // either mode, Variant A exact), then expanded to the vector LUT.
@@ -357,10 +311,7 @@ pub fn encode_tensor_with(
         return encode_tensor_with_lut(weights, cfg, opts, &lut);
     }
 
-    let gpu_eligible = !opts.tail_biting
-        && !opts.affine_min
-        && std::env::var_os("STRAND_NO_GPU").is_none()
-        && !f32_metric_from_env();
+    let gpu_eligible = !opts.tail_biting && !opts.affine_min && std::env::var_os("STRAND_NO_GPU").is_none() && !f32_metric_from_env();
 
     #[cfg(target_os = "macos")]
     if gpu_eligible {
@@ -372,11 +323,7 @@ pub fn encode_tensor_with(
     encode_tensor_with_cpu(weights, cfg, opts)
 }
 
-fn encode_tensor_with_cpu(
-    weights: &[f32],
-    cfg: &TrellisConfig,
-    opts: &EncodeOpts,
-) -> EncodedTensor {
+fn encode_tensor_with_cpu(weights: &[f32], cfg: &TrellisConfig, opts: &EncodeOpts) -> EncodedTensor {
     // Codebook sourced per `cfg.codebook_mode`. Under `ComputedAcklam` this is a
     // freshly materialised `Vec` whose entries are byte-identical to the frozen
     // table (Variant A), so every encode metric below is unchanged. The encoder
@@ -393,41 +340,16 @@ pub fn f32_search_from_env() -> bool {
     matches!(std::env::var_os("STRAND_F32_SEARCH"), Some(v) if v == "1")
 }
 
-pub fn encode_tensor_with_lut(
-    weights: &[f32],
-    cfg: &TrellisConfig,
-    opts: &EncodeOpts,
-    lut: &[i32],
-) -> EncodedTensor {
+pub fn encode_tensor_with_lut(weights: &[f32], cfg: &TrellisConfig, opts: &EncodeOpts, lut: &[i32]) -> EncodedTensor {
     let f32_metric = f32_metric_from_env();
-    encode_tensor_with_lut_metric_search(
-        weights,
-        cfg,
-        opts,
-        lut,
-        f32_metric,
-        f32_metric && f32_search_from_env(),
-    )
+    encode_tensor_with_lut_metric_search(weights, cfg, opts, lut, f32_metric, f32_metric && f32_search_from_env())
 }
 
-pub fn encode_tensor_with_lut_metric(
-    weights: &[f32],
-    cfg: &TrellisConfig,
-    opts: &EncodeOpts,
-    lut: &[i32],
-    f32_metric: bool,
-) -> EncodedTensor {
+pub fn encode_tensor_with_lut_metric(weights: &[f32], cfg: &TrellisConfig, opts: &EncodeOpts, lut: &[i32], f32_metric: bool) -> EncodedTensor {
     encode_tensor_with_lut_metric_search(weights, cfg, opts, lut, f32_metric, false)
 }
 
-pub fn encode_tensor_with_lut_metric_search(
-    weights: &[f32],
-    cfg: &TrellisConfig,
-    opts: &EncodeOpts,
-    lut: &[i32],
-    f32_metric: bool,
-    f32_search: bool,
-) -> EncodedTensor {
+pub fn encode_tensor_with_lut_metric_search(weights: &[f32], cfg: &TrellisConfig, opts: &EncodeOpts, lut: &[i32], f32_metric: bool, f32_search: bool) -> EncodedTensor {
     if cfg.vec_dim() > 1 {
         return encode_tensor_with_lut_vec(weights, cfg, opts, lut);
     }
@@ -435,20 +357,8 @@ pub fn encode_tensor_with_lut_metric_search(
     let psi_active = opts.entropy_bonus_scale != 0.0;
 
     if psi_active && opts.entropy_bonus_two_pass {
-        let pass1_opts = EncodeOpts {
-            silence_bonus: 0.0,
-            entropy_bonus_scale: 0.0,
-            entropy_bonus_two_pass: false,
-            ..*opts
-        };
-        let pass1 = encode_tensor_with_lut_metric_search(
-            weights,
-            cfg,
-            &pass1_opts,
-            lut,
-            f32_metric,
-            f32_search,
-        );
+        let pass1_opts = EncodeOpts { silence_bonus: 0.0, entropy_bonus_scale: 0.0, entropy_bonus_two_pass: false, ..*opts };
+        let pass1 = encode_tensor_with_lut_metric_search(weights, cfg, &pass1_opts, lut, f32_metric, f32_search);
 
         let compressibilities: Vec<f64> = (0..pass1.blocks.len())
             .map(|b| {
@@ -464,11 +374,7 @@ pub fn encode_tensor_with_lut_metric_search(
         let mut back_buf: Vec<u32> = vec![u32::MAX; cfg.block_len * num_states];
 
         for (bi, chunk) in weights.chunks(cfg.block_len).enumerate() {
-            let scale_q = if f32_search {
-                choose_scale_q_f32(chunk, lut, cfg)
-            } else {
-                choose_scale_q(chunk, lut, cfg)
-            };
+            let scale_q = if f32_search { choose_scale_q_f32(chunk, lut, cfg) } else { choose_scale_q(chunk, lut, cfg) };
             let mults = if opts.adaptive {
                 if f32_search {
                     choose_sub_scales_f32(chunk, scale_q, lut, cfg)
@@ -487,54 +393,25 @@ pub fn encode_tensor_with_lut_metric_search(
             } else {
                 (0, Vec::new())
             };
-            let mins_eff: Vec<i32> = min_codes
-                .iter()
-                .map(|&c| crate::decode::eff_min_q(min_base_q, c))
-                .collect();
+            let mins_eff: Vec<i32> = min_codes.iter().map(|&c| crate::decode::eff_min_q(min_base_q, c)).collect();
 
             let entropy_bonus = opts.entropy_bonus_scale * compressibilities[bi];
             let total_bonus = opts.silence_bonus + entropy_bonus;
-            let (path, init_state) = viterbi_path_buf(
-                chunk,
-                scale_q,
-                &mults,
-                &mins_eff,
-                lut,
-                cfg,
-                opts.tail_biting,
-                f32_metric,
-                total_bonus,
-                &mut back_buf,
-            );
+            let (path, init_state) = viterbi_path_buf(chunk, scale_q, &mults, &mins_eff, lut, cfg, opts.tail_biting, f32_metric, total_bonus, &mut back_buf);
             for &sym in &path {
                 push_bits(&mut bits, &mut bit_cursor, sym as usize, cfg.k_bits);
             }
             blocks.push(BlockMeta {
                 scale_q,
-                sub_scales: if opts.adaptive || opts.affine_min {
-                    pack_sub_scales(&mults)
-                } else {
-                    Vec::new()
-                },
+                sub_scales: if opts.adaptive || opts.affine_min { pack_sub_scales(&mults) } else { Vec::new() },
                 min_base_q,
-                mins: if opts.affine_min {
-                    pack_sub_scales(&min_codes)
-                } else {
-                    Vec::new()
-                },
+                mins: if opts.affine_min { pack_sub_scales(&min_codes) } else { Vec::new() },
                 init_state: init_state as u32,
                 n: chunk.len() as u32,
             });
         }
 
-        return EncodedTensor {
-            bits,
-            blocks,
-            total: weights.len(),
-            has_rht_seed: false,
-            tail_biting: opts.tail_biting,
-            has_affine_min: opts.affine_min,
-        };
+        return EncodedTensor { bits, blocks, total: weights.len(), has_rht_seed: false, tail_biting: opts.tail_biting, has_affine_min: opts.affine_min };
     }
 
     let mut bits = Vec::new();
@@ -550,11 +427,7 @@ pub fn encode_tensor_with_lut_metric_search(
     let mut rolling_filled = 0usize;
 
     for chunk in weights.chunks(cfg.block_len) {
-        let scale_q = if f32_search {
-            choose_scale_q_f32(chunk, lut, cfg)
-        } else {
-            choose_scale_q(chunk, lut, cfg)
-        };
+        let scale_q = if f32_search { choose_scale_q_f32(chunk, lut, cfg) } else { choose_scale_q(chunk, lut, cfg) };
         let mults = if opts.adaptive {
             if f32_search {
                 choose_sub_scales_f32(chunk, scale_q, lut, cfg)
@@ -573,18 +446,13 @@ pub fn encode_tensor_with_lut_metric_search(
         } else {
             (0, Vec::new())
         };
-        let mins_eff: Vec<i32> = min_codes
-            .iter()
-            .map(|&c| crate::decode::eff_min_q(min_base_q, c))
-            .collect();
+        let mins_eff: Vec<i32> = min_codes.iter().map(|&c| crate::decode::eff_min_q(min_base_q, c)).collect();
 
         let entropy_bonus = if psi_active {
             let rolling_mean = if rolling_filled == 0 {
                 0.0
             } else {
-                let sum: f64 = rolling_buf[..rolling_filled.min(ROLLING_WINDOW)]
-                    .iter()
-                    .sum();
+                let sum: f64 = rolling_buf[..rolling_filled.min(ROLLING_WINDOW)].iter().sum();
                 sum / rolling_filled.min(ROLLING_WINDOW) as f64
             };
             opts.entropy_bonus_scale * rolling_mean
@@ -593,18 +461,7 @@ pub fn encode_tensor_with_lut_metric_search(
         };
 
         let total_bonus = opts.silence_bonus + entropy_bonus;
-        let (path, init_state) = viterbi_path_buf(
-            chunk,
-            scale_q,
-            &mults,
-            &mins_eff,
-            lut,
-            cfg,
-            opts.tail_biting,
-            f32_metric,
-            total_bonus,
-            &mut back_buf,
-        );
+        let (path, init_state) = viterbi_path_buf(chunk, scale_q, &mults, &mins_eff, lut, cfg, opts.tail_biting, f32_metric, total_bonus, &mut back_buf);
 
         if psi_active {
             let syms: Vec<u32> = path.iter().copied().collect();
@@ -621,30 +478,15 @@ pub fn encode_tensor_with_lut_metric_search(
         }
         blocks.push(BlockMeta {
             scale_q,
-            sub_scales: if opts.adaptive || opts.affine_min {
-                pack_sub_scales(&mults)
-            } else {
-                Vec::new()
-            },
+            sub_scales: if opts.adaptive || opts.affine_min { pack_sub_scales(&mults) } else { Vec::new() },
             min_base_q,
-            mins: if opts.affine_min {
-                pack_sub_scales(&min_codes)
-            } else {
-                Vec::new()
-            },
+            mins: if opts.affine_min { pack_sub_scales(&min_codes) } else { Vec::new() },
             init_state: init_state as u32,
             n: chunk.len() as u32,
         });
     }
 
-    EncodedTensor {
-        bits,
-        blocks,
-        total: weights.len(),
-        has_rht_seed: false,
-        tail_biting: opts.tail_biting,
-        has_affine_min: opts.affine_min,
-    }
+    EncodedTensor { bits, blocks, total: weights.len(), has_rht_seed: false, tail_biting: opts.tail_biting, has_affine_min: opts.affine_min }
 }
 
 #[cfg(feature = "block-parallel")]
@@ -655,12 +497,7 @@ struct ParallelBlock {
 }
 
 #[cfg(feature = "block-parallel")]
-fn assemble_parallel_blocks(
-    encoded: Vec<ParallelBlock>,
-    total: usize,
-    cfg: &TrellisConfig,
-    opts: &EncodeOpts,
-) -> EncodedTensor {
+fn assemble_parallel_blocks(encoded: Vec<ParallelBlock>, total: usize, cfg: &TrellisConfig, opts: &EncodeOpts) -> EncodedTensor {
     // `encoded` is in source-block order. Keep the historical cross-block bit
     // cursor and push routine so byte layout, including byte-boundary carry,
     // remains identical to the serial encoder.
@@ -676,30 +513,16 @@ fn assemble_parallel_blocks(
         }
         blocks.push(block.meta);
     }
-    EncodedTensor {
-        bits,
-        blocks,
-        total,
-        has_rht_seed: false,
-        tail_biting: opts.tail_biting,
-        has_affine_min: opts.affine_min,
-    }
+    EncodedTensor { bits, blocks, total, has_rht_seed: false, tail_biting: opts.tail_biting, has_affine_min: opts.affine_min }
 }
 
 #[cfg(feature = "block-parallel")]
-fn effective_block_workers(
-    weights_len: usize,
-    cfg: &TrellisConfig,
-    parallel: BlockParallelConfig,
-    scratch_words_per_worker: usize,
-) -> usize {
+fn effective_block_workers(weights_len: usize, cfg: &TrellisConfig, parallel: BlockParallelConfig, scratch_words_per_worker: usize) -> usize {
     let n_blocks = weights_len.div_ceil(cfg.block_len);
     if n_blocks == 0 || n_blocks < parallel.min_blocks {
         return 1;
     }
-    let scratch_bytes = scratch_words_per_worker
-        .saturating_mul(core::mem::size_of::<u32>())
-        .max(1);
+    let scratch_bytes = scratch_words_per_worker.saturating_mul(core::mem::size_of::<u32>()).max(1);
     let memory_workers = (parallel.scratch_budget_bytes / scratch_bytes).max(1);
     parallel.threads.min(n_blocks).min(memory_workers).max(1)
 }
@@ -725,16 +548,7 @@ fn encode_scalar_block_parallel(
         let mut back_buf = vec![u32::MAX; scratch_words];
         let mut out = Vec::with_capacity(n_blocks);
         for (bi, chunk) in weights.chunks(cfg.block_len).enumerate() {
-            out.push(encode_scalar_parallel_block(
-                chunk,
-                cfg,
-                opts,
-                lut,
-                f32_metric,
-                f32_search,
-                total_bonuses[bi],
-                &mut back_buf,
-            ));
+            out.push(encode_scalar_parallel_block(chunk, cfg, opts, lut, f32_metric, f32_search, total_bonuses[bi], &mut back_buf));
         }
         return Ok(out);
     }
@@ -757,18 +571,7 @@ fn encode_scalar_block_parallel(
                 worker_weights
                     .chunks(cfg.block_len)
                     .zip(worker_bonuses.iter().copied())
-                    .map(|(chunk, total_bonus)| {
-                        encode_scalar_parallel_block(
-                            chunk,
-                            cfg,
-                            opts,
-                            lut,
-                            f32_metric,
-                            f32_search,
-                            total_bonus,
-                            &mut back_buf,
-                        )
-                    })
+                    .map(|(chunk, total_bonus)| encode_scalar_parallel_block(chunk, cfg, opts, lut, f32_metric, f32_search, total_bonus, &mut back_buf))
                     .collect::<Vec<_>>()
             }));
         }
@@ -793,23 +596,10 @@ fn encode_scalar_block_parallel(
 
 #[cfg(feature = "block-parallel")]
 #[allow(clippy::too_many_arguments)]
-fn encode_scalar_parallel_block(
-    chunk: &[f32],
-    cfg: &TrellisConfig,
-    opts: &EncodeOpts,
-    lut: &[i32],
-    f32_metric: bool,
-    f32_search: bool,
-    total_bonus: f64,
-    back_buf: &mut Vec<u32>,
-) -> ParallelBlock {
+fn encode_scalar_parallel_block(chunk: &[f32], cfg: &TrellisConfig, opts: &EncodeOpts, lut: &[i32], f32_metric: bool, f32_search: bool, total_bonus: f64, back_buf: &mut Vec<u32>) -> ParallelBlock {
     // Keep every operation and its order within one block identical to the
     // canonical loop above. Parallelism exists only across independent blocks.
-    let scale_q = if f32_search {
-        choose_scale_q_f32(chunk, lut, cfg)
-    } else {
-        choose_scale_q(chunk, lut, cfg)
-    };
+    let scale_q = if f32_search { choose_scale_q_f32(chunk, lut, cfg) } else { choose_scale_q(chunk, lut, cfg) };
     let mults = if opts.adaptive {
         if f32_search {
             choose_sub_scales_f32(chunk, scale_q, lut, cfg)
@@ -828,37 +618,15 @@ fn encode_scalar_parallel_block(
     } else {
         (0, Vec::new())
     };
-    let mins_eff: Vec<i32> = min_codes
-        .iter()
-        .map(|&c| crate::decode::eff_min_q(min_base_q, c))
-        .collect();
-    let (path, init_state) = viterbi_path_buf(
-        chunk,
-        scale_q,
-        &mults,
-        &mins_eff,
-        lut,
-        cfg,
-        opts.tail_biting,
-        f32_metric,
-        total_bonus,
-        back_buf,
-    );
+    let mins_eff: Vec<i32> = min_codes.iter().map(|&c| crate::decode::eff_min_q(min_base_q, c)).collect();
+    let (path, init_state) = viterbi_path_buf(chunk, scale_q, &mults, &mins_eff, lut, cfg, opts.tail_biting, f32_metric, total_bonus, back_buf);
     parallel_block_from_path(
         path,
         BlockMeta {
             scale_q,
-            sub_scales: if opts.adaptive || opts.affine_min {
-                pack_sub_scales(&mults)
-            } else {
-                Vec::new()
-            },
+            sub_scales: if opts.adaptive || opts.affine_min { pack_sub_scales(&mults) } else { Vec::new() },
             min_base_q,
-            mins: if opts.affine_min {
-                pack_sub_scales(&min_codes)
-            } else {
-                Vec::new()
-            },
+            mins: if opts.affine_min { pack_sub_scales(&min_codes) } else { Vec::new() },
             init_state: init_state as u32,
             n: chunk.len() as u32,
         },
@@ -877,11 +645,7 @@ fn parallel_block_from_path(path: Vec<u32>, meta: BlockMeta, cfg: &TrellisConfig
     for sym in path {
         push_bits(&mut bits, &mut bit_cursor, sym as usize, cfg.k_bits);
     }
-    ParallelBlock {
-        bits,
-        bit_len,
-        meta,
-    }
+    ParallelBlock { bits, bit_len, meta }
 }
 
 /// Encode a tensor with block-level CPU parallelism while preserving canonical
@@ -892,33 +656,18 @@ fn parallel_block_from_path(path: Vec<u32>, meta: BlockMeta, cfg: &TrellisConfig
 /// block-order dependent; two-pass PSI is supported because its per-block bonus
 /// is fully known before the parallel second pass.
 #[cfg(feature = "block-parallel")]
-pub fn encode_tensor_with_block_parallel(
-    weights: &[f32],
-    cfg: &TrellisConfig,
-    opts: &EncodeOpts,
-    parallel: BlockParallelConfig,
-) -> Result<EncodedTensor, BlockParallelError> {
+pub fn encode_tensor_with_block_parallel(weights: &[f32], cfg: &TrellisConfig, opts: &EncodeOpts, parallel: BlockParallelConfig) -> Result<EncodedTensor, BlockParallelError> {
     if parallel.threads == 0 {
         return Err(BlockParallelError::ZeroThreads);
     }
     let scalar = cfg.codebook();
-    let lut = if cfg.vec_dim() > 1 {
-        vector_lut_from_scalar(&scalar, cfg.vec_dim())
-    } else {
-        scalar.to_vec()
-    };
+    let lut = if cfg.vec_dim() > 1 { vector_lut_from_scalar(&scalar, cfg.vec_dim()) } else { scalar.to_vec() };
     encode_tensor_with_lut_block_parallel(weights, cfg, opts, &lut, parallel)
 }
 
 /// Custom-LUT counterpart to [`encode_tensor_with_block_parallel`].
 #[cfg(feature = "block-parallel")]
-pub fn encode_tensor_with_lut_block_parallel(
-    weights: &[f32],
-    cfg: &TrellisConfig,
-    opts: &EncodeOpts,
-    lut: &[i32],
-    parallel: BlockParallelConfig,
-) -> Result<EncodedTensor, BlockParallelError> {
+pub fn encode_tensor_with_lut_block_parallel(weights: &[f32], cfg: &TrellisConfig, opts: &EncodeOpts, lut: &[i32], parallel: BlockParallelConfig) -> Result<EncodedTensor, BlockParallelError> {
     if parallel.threads == 0 {
         return Err(BlockParallelError::ZeroThreads);
     }
@@ -934,45 +683,23 @@ pub fn encode_tensor_with_lut_block_parallel(
     let f32_search = f32_metric && f32_search_from_env();
     let n_blocks = weights.len().div_ceil(cfg.block_len);
     let total_bonuses = if opts.entropy_bonus_scale != 0.0 && opts.entropy_bonus_two_pass {
-        let pass1_opts = EncodeOpts {
-            silence_bonus: 0.0,
-            entropy_bonus_scale: 0.0,
-            entropy_bonus_two_pass: false,
-            ..*opts
-        };
-        let pass1 =
-            encode_tensor_with_lut_block_parallel(weights, cfg, &pass1_opts, lut, parallel)?;
+        let pass1_opts = EncodeOpts { silence_bonus: 0.0, entropy_bonus_scale: 0.0, entropy_bonus_two_pass: false, ..*opts };
+        let pass1 = encode_tensor_with_lut_block_parallel(weights, cfg, &pass1_opts, lut, parallel)?;
         (0..pass1.blocks.len())
             .map(|bi| {
                 let syms = extract_block_symbols(&pass1, bi, cfg);
-                opts.silence_bonus
-                    + opts.entropy_bonus_scale * compute_block_entropy(&syms, cfg.k_bits as u8)
+                opts.silence_bonus + opts.entropy_bonus_scale * compute_block_entropy(&syms, cfg.k_bits as u8)
             })
             .collect()
     } else {
         vec![opts.silence_bonus; n_blocks]
     };
-    let encoded = encode_scalar_block_parallel(
-        weights,
-        cfg,
-        opts,
-        lut,
-        f32_metric,
-        f32_search,
-        &total_bonuses,
-        parallel,
-    )?;
+    let encoded = encode_scalar_block_parallel(weights, cfg, opts, lut, f32_metric, f32_search, &total_bonuses, parallel)?;
     Ok(assemble_parallel_blocks(encoded, weights.len(), cfg, opts))
 }
 
 #[cfg(feature = "block-parallel")]
-fn encode_vector_block_parallel(
-    weights: &[f32],
-    cfg: &TrellisConfig,
-    opts: &EncodeOpts,
-    lut: &[i32],
-    parallel: BlockParallelConfig,
-) -> Result<EncodedTensor, BlockParallelError> {
+fn encode_vector_block_parallel(weights: &[f32], cfg: &TrellisConfig, opts: &EncodeOpts, lut: &[i32], parallel: BlockParallelConfig) -> Result<EncodedTensor, BlockParallelError> {
     let d = cfg.vec_dim();
     let num_states = cfg.num_states();
     debug_assert_eq!(lut.len(), num_states * d, "vector LUT must be [2^L * d]");
@@ -987,45 +714,17 @@ fn encode_vector_block_parallel(
             .chunks(cfg.block_len)
             .map(|chunk| {
                 let scale_q = choose_scale_q_vec(chunk, lut, cfg);
-                let mults = if opts.adaptive {
-                    choose_sub_scales_vec(chunk, scale_q, lut, cfg)
-                } else {
-                    vec![SUB_SCALE_UNITY; n_sub_blocks(chunk.len())]
-                };
-                let (min_base_q, min_codes) = if opts.affine_min {
-                    choose_affine_min_vec(chunk, scale_q, &mults, lut, cfg)
-                } else {
-                    (0, Vec::new())
-                };
-                let mins_eff: Vec<i32> = min_codes
-                    .iter()
-                    .map(|&c| crate::decode::eff_min_q(min_base_q, c))
-                    .collect();
-                let (path, init_state) = viterbi_path_buf_vec(
-                    chunk,
-                    scale_q,
-                    &mults,
-                    &mins_eff,
-                    lut,
-                    cfg,
-                    opts.tail_biting,
-                    &mut back_buf,
-                );
+                let mults = if opts.adaptive { choose_sub_scales_vec(chunk, scale_q, lut, cfg) } else { vec![SUB_SCALE_UNITY; n_sub_blocks(chunk.len())] };
+                let (min_base_q, min_codes) = if opts.affine_min { choose_affine_min_vec(chunk, scale_q, &mults, lut, cfg) } else { (0, Vec::new()) };
+                let mins_eff: Vec<i32> = min_codes.iter().map(|&c| crate::decode::eff_min_q(min_base_q, c)).collect();
+                let (path, init_state) = viterbi_path_buf_vec(chunk, scale_q, &mults, &mins_eff, lut, cfg, opts.tail_biting, &mut back_buf);
                 parallel_block_from_path(
                     path,
                     BlockMeta {
                         scale_q,
-                        sub_scales: if opts.adaptive || opts.affine_min {
-                            pack_sub_scales(&mults)
-                        } else {
-                            Vec::new()
-                        },
+                        sub_scales: if opts.adaptive || opts.affine_min { pack_sub_scales(&mults) } else { Vec::new() },
                         min_base_q,
-                        mins: if opts.affine_min {
-                            pack_sub_scales(&min_codes)
-                        } else {
-                            Vec::new()
-                        },
+                        mins: if opts.affine_min { pack_sub_scales(&min_codes) } else { Vec::new() },
                         init_state: init_state as u32,
                         n: chunk.len() as u32,
                     },
@@ -1082,12 +781,7 @@ pub fn vector_lut_from_scalar(scalar: &[i32], d: usize) -> Vec<i32> {
     out
 }
 
-pub fn encode_tensor_with_lut_vec(
-    weights: &[f32],
-    cfg: &TrellisConfig,
-    opts: &EncodeOpts,
-    lut: &[i32],
-) -> EncodedTensor {
+pub fn encode_tensor_with_lut_vec(weights: &[f32], cfg: &TrellisConfig, opts: &EncodeOpts, lut: &[i32]) -> EncodedTensor {
     let d = cfg.vec_dim();
     let num_states = cfg.num_states();
     debug_assert_eq!(lut.len(), num_states * d, "vector LUT must be [2^L * d]");
@@ -1101,68 +795,29 @@ pub fn encode_tensor_with_lut_vec(
 
     for chunk in weights.chunks(cfg.block_len) {
         let scale_q = choose_scale_q_vec(chunk, lut, cfg);
-        let mults = if opts.adaptive {
-            choose_sub_scales_vec(chunk, scale_q, lut, cfg)
-        } else {
-            vec![SUB_SCALE_UNITY; n_sub_blocks(chunk.len())]
-        };
-        let (min_base_q, min_codes) = if opts.affine_min {
-            choose_affine_min_vec(chunk, scale_q, &mults, lut, cfg)
-        } else {
-            (0, Vec::new())
-        };
-        let mins_eff: Vec<i32> = min_codes
-            .iter()
-            .map(|&c| crate::decode::eff_min_q(min_base_q, c))
-            .collect();
+        let mults = if opts.adaptive { choose_sub_scales_vec(chunk, scale_q, lut, cfg) } else { vec![SUB_SCALE_UNITY; n_sub_blocks(chunk.len())] };
+        let (min_base_q, min_codes) = if opts.affine_min { choose_affine_min_vec(chunk, scale_q, &mults, lut, cfg) } else { (0, Vec::new()) };
+        let mins_eff: Vec<i32> = min_codes.iter().map(|&c| crate::decode::eff_min_q(min_base_q, c)).collect();
 
-        let (path, init_state) = viterbi_path_buf_vec(
-            chunk,
-            scale_q,
-            &mults,
-            &mins_eff,
-            lut,
-            cfg,
-            opts.tail_biting,
-            &mut back_buf,
-        );
+        let (path, init_state) = viterbi_path_buf_vec(chunk, scale_q, &mults, &mins_eff, lut, cfg, opts.tail_biting, &mut back_buf);
         for &sym in &path {
             push_bits(&mut bits, &mut bit_cursor, sym as usize, cfg.k_bits);
         }
         blocks.push(BlockMeta {
             scale_q,
-            sub_scales: if opts.adaptive || opts.affine_min {
-                pack_sub_scales(&mults)
-            } else {
-                Vec::new()
-            },
+            sub_scales: if opts.adaptive || opts.affine_min { pack_sub_scales(&mults) } else { Vec::new() },
             min_base_q,
-            mins: if opts.affine_min {
-                pack_sub_scales(&min_codes)
-            } else {
-                Vec::new()
-            },
+            mins: if opts.affine_min { pack_sub_scales(&min_codes) } else { Vec::new() },
             init_state: init_state as u32,
             n: chunk.len() as u32,
         });
     }
 
-    EncodedTensor {
-        bits,
-        blocks,
-        total: weights.len(),
-        has_rht_seed: false,
-        tail_biting: opts.tail_biting,
-        has_affine_min: opts.affine_min,
-    }
+    EncodedTensor { bits, blocks, total: weights.len(), has_rht_seed: false, tail_biting: opts.tail_biting, has_affine_min: opts.affine_min }
 }
 
 #[cfg(target_os = "macos")]
-fn encode_tensor_with_metal(
-    weights: &[f32],
-    cfg: &TrellisConfig,
-    opts: &EncodeOpts,
-) -> Option<EncodedTensor> {
+fn encode_tensor_with_metal(weights: &[f32], cfg: &TrellisConfig, opts: &EncodeOpts) -> Option<EncodedTensor> {
     let m = metal_viterbi()?;
     // Codebook sourced per `cfg.codebook_mode`. Under `ComputedAcklam` this is a
     // freshly materialised `Vec` whose entries are byte-identical to the frozen
@@ -1199,27 +854,15 @@ fn encode_tensor_with_metal(
     let mut offset = 0usize;
     for chunk in weights.chunks(cfg.block_len) {
         let scale_q = choose_scale_q(chunk, lut, cfg);
-        let mults = if opts.adaptive {
-            choose_sub_scales(chunk, scale_q, lut, cfg)
-        } else {
-            vec![SUB_SCALE_UNITY; n_sub_blocks(chunk.len())]
-        };
+        let mults = if opts.adaptive { choose_sub_scales(chunk, scale_q, lut, cfg) } else { vec![SUB_SCALE_UNITY; n_sub_blocks(chunk.len())] };
         let levels_f32 = build_levels(scale_q, &mults);
-        preps.push(BlockPrep {
-            chunk_offset: offset,
-            chunk_len: chunk.len(),
-            scale_q,
-            mults,
-            levels_f32,
-        });
+        preps.push(BlockPrep { chunk_offset: offset, chunk_len: chunk.len(), scale_q, mults, levels_f32 });
         offset += chunk.len();
     }
 
     const MAX_BACK_BYTES: usize = 512 * 1024 * 1024;
     let bytes_per_block = cfg.block_len * num_states * std::mem::size_of::<u32>();
-    let batch_size = (MAX_BACK_BYTES / bytes_per_block.max(1))
-        .max(64)
-        .min(n_blocks);
+    let batch_size = (MAX_BACK_BYTES / bytes_per_block.max(1)).max(64).min(n_blocks);
 
     let input_mask = (1usize << cfg.k_bits) - 1;
     let mut all_paths: Vec<Vec<u32>> = vec![Vec::new(); n_blocks];
@@ -1229,39 +872,19 @@ fn encode_tensor_with_metal(
     while bi_base < n_blocks {
         let bi_end = (bi_base + batch_size).min(n_blocks);
         let w_start = preps[bi_base].chunk_offset;
-        let w_end = if bi_end < n_blocks {
-            preps[bi_end].chunk_offset
-        } else {
-            weights.len()
-        };
+        let w_end = if bi_end < n_blocks { preps[bi_end].chunk_offset } else { weights.len() };
         let batch_weights = &weights[w_start..w_end];
         let batch_lens: Vec<usize> = preps[bi_base..bi_end].iter().map(|p| p.chunk_len).collect();
 
-        let sub_levels: Vec<f32> = preps[bi_base..bi_end]
-            .iter()
-            .flat_map(|p| p.levels_f32.iter().copied())
-            .collect();
-        let gpu = m.run_blocks(
-            batch_weights,
-            &sub_levels,
-            &batch_lens,
-            cfg.block_len,
-            num_states,
-            cfg.k_bits as u32,
-        )?;
+        let sub_levels: Vec<f32> = preps[bi_base..bi_end].iter().flat_map(|p| p.levels_f32.iter().copied()).collect();
+        let gpu = m.run_blocks(batch_weights, &sub_levels, &batch_lens, cfg.block_len, num_states, cfg.k_bits as u32)?;
         let mbl = gpu.max_block_len;
 
         for (i, prep) in preps[bi_base..bi_end].iter().enumerate() {
             let blen = prep.chunk_len;
             let fc_base = i * num_states;
             let back_base = i * mbl * num_states;
-            let terminal = (0..num_states)
-                .min_by(|&a, &b| {
-                    gpu.final_cost[fc_base + a]
-                        .partial_cmp(&gpu.final_cost[fc_base + b])
-                        .unwrap_or(std::cmp::Ordering::Equal)
-                })
-                .unwrap_or(0);
+            let terminal = (0..num_states).min_by(|&a, &b| gpu.final_cost[fc_base + a].partial_cmp(&gpu.final_cost[fc_base + b]).unwrap_or(std::cmp::Ordering::Equal)).unwrap_or(0);
             let mut path = vec![0u32; blen];
             let mut state = terminal;
             for step in (0..blen).rev() {
@@ -1283,11 +906,7 @@ fn encode_tensor_with_metal(
         }
         blocks.push(BlockMeta {
             scale_q: prep.scale_q,
-            sub_scales: if opts.adaptive || opts.affine_min {
-                pack_sub_scales(&prep.mults)
-            } else {
-                Vec::new()
-            },
+            sub_scales: if opts.adaptive || opts.affine_min { pack_sub_scales(&prep.mults) } else { Vec::new() },
             min_base_q: 0,
             mins: Vec::new(),
             init_state: all_init_states[bi] as u32,
@@ -1295,14 +914,7 @@ fn encode_tensor_with_metal(
         });
     }
 
-    Some(EncodedTensor {
-        bits,
-        blocks,
-        total: weights.len(),
-        has_rht_seed: false,
-        tail_biting: false,
-        has_affine_min: false,
-    })
+    Some(EncodedTensor { bits, blocks, total: weights.len(), has_rht_seed: false, tail_biting: false, has_affine_min: false })
 }
 
 #[inline]
@@ -1322,9 +934,7 @@ pub(crate) fn choose_scale_q(weights: &[f32], lut: &[i32], cfg: &TrellisConfig) 
     let q_max = if q_max > 0.0 { q_max } else { 1.0 };
     let seed = absmax / q_max;
 
-    const MULTS: [f64; 11] = [
-        0.55, 0.65, 0.75, 0.85, 0.92, 1.0, 1.08, 1.18, 1.30, 1.45, 1.65,
-    ];
+    const MULTS: [f64; 11] = [0.55, 0.65, 0.75, 0.85, 0.92, 1.0, 1.08, 1.18, 1.30, 1.45, 1.65];
     let mut best_scale = seed;
     let mut best_mse = f64::INFINITY;
     for &m in &MULTS {
@@ -1340,12 +950,7 @@ pub(crate) fn choose_scale_q(weights: &[f32], lut: &[i32], cfg: &TrellisConfig) 
     scale_q.clamp(i32::MIN as f64, i32::MAX as f64) as i32
 }
 
-pub(crate) fn choose_sub_scales(
-    chunk: &[f32],
-    scale_q: i32,
-    lut: &[i32],
-    cfg: &TrellisConfig,
-) -> Vec<u8> {
+pub(crate) fn choose_sub_scales(chunk: &[f32], scale_q: i32, lut: &[i32], cfg: &TrellisConfig) -> Vec<u8> {
     let n_sub = n_sub_blocks(chunk.len());
     let mut mults = Vec::with_capacity(n_sub);
     for sb in 0..n_sub {
@@ -1375,13 +980,7 @@ pub(crate) fn choose_sub_scales(
     mults
 }
 
-pub(crate) fn choose_affine_min(
-    chunk: &[f32],
-    scale_q: i32,
-    mults: &[u8],
-    lut: &[i32],
-    cfg: &TrellisConfig,
-) -> (i32, Vec<u8>) {
+pub(crate) fn choose_affine_min(chunk: &[f32], scale_q: i32, mults: &[u8], lut: &[i32], cfg: &TrellisConfig) -> (i32, Vec<u8>) {
     let n_sub = n_sub_blocks(chunk.len());
     let means: Vec<f64> = (0..n_sub)
         .map(|sb| {
@@ -1395,10 +994,7 @@ pub(crate) fn choose_affine_min(
             }
         })
         .collect();
-    let base_abs = means
-        .iter()
-        .copied()
-        .fold(0.0f64, |b, m| if m.abs() > b { m.abs() } else { b });
+    let base_abs = means.iter().copied().fold(0.0f64, |b, m| if m.abs() > b { m.abs() } else { b });
     if base_abs < 1e-12 {
         return (0, vec![0u8; n_sub]);
     }
@@ -1432,13 +1028,7 @@ fn greedy_replay_mse(weights: &[f32], scale_real: f64, lut: &[i32], cfg: &Trelli
     greedy_replay_mse_off(weights, scale_real, 0.0, lut, cfg)
 }
 
-fn greedy_replay_mse_off(
-    weights: &[f32],
-    scale_real: f64,
-    offset: f64,
-    lut: &[i32],
-    cfg: &TrellisConfig,
-) -> f64 {
+fn greedy_replay_mse_off(weights: &[f32], scale_real: f64, offset: f64, lut: &[i32], cfg: &TrellisConfig) -> f64 {
     let mut state = 0usize;
     let mut acc = 0.0f64;
     for &w in weights {
@@ -1473,13 +1063,7 @@ fn round_pos_f32_to_i32(x: f32) -> i32 {
     r.min(i32::MAX as i64) as i32
 }
 
-fn greedy_replay_mse_off_f32(
-    weights: &[f32],
-    scale: f32,
-    offset: f32,
-    lut: &[i32],
-    cfg: &TrellisConfig,
-) -> f32 {
+fn greedy_replay_mse_off_f32(weights: &[f32], scale: f32, offset: f32, lut: &[i32], cfg: &TrellisConfig) -> f32 {
     let mut state = 0usize;
     let mut acc = 0.0f32;
     for &w in weights {
@@ -1527,9 +1111,7 @@ pub(crate) fn choose_scale_q_f32(weights: &[f32], lut: &[i32], cfg: &TrellisConf
     };
     let seed = absmax / q_max;
 
-    const MULTS_F32: [f32; 11] = [
-        0.55, 0.65, 0.75, 0.85, 0.92, 1.0, 1.08, 1.18, 1.30, 1.45, 1.65,
-    ];
+    const MULTS_F32: [f32; 11] = [0.55, 0.65, 0.75, 0.85, 0.92, 1.0, 1.08, 1.18, 1.30, 1.45, 1.65];
     let mut best_scale = seed;
     let mut best_mse = f32::INFINITY;
     for &m in &MULTS_F32 {
@@ -1543,12 +1125,7 @@ pub(crate) fn choose_scale_q_f32(weights: &[f32], lut: &[i32], cfg: &TrellisConf
     round_pos_f32_to_i32(best_scale * 65536.0f32)
 }
 
-pub(crate) fn choose_sub_scales_f32(
-    chunk: &[f32],
-    scale_q: i32,
-    lut: &[i32],
-    cfg: &TrellisConfig,
-) -> Vec<u8> {
+pub(crate) fn choose_sub_scales_f32(chunk: &[f32], scale_q: i32, lut: &[i32], cfg: &TrellisConfig) -> Vec<u8> {
     let n_sub = n_sub_blocks(chunk.len());
     let mut mults = Vec::with_capacity(n_sub);
     for sb in 0..n_sub {
@@ -1578,13 +1155,7 @@ pub(crate) fn choose_sub_scales_f32(
     mults
 }
 
-pub(crate) fn choose_affine_min_f32(
-    chunk: &[f32],
-    scale_q: i32,
-    mults: &[u8],
-    lut: &[i32],
-    cfg: &TrellisConfig,
-) -> (i32, Vec<u8>) {
+pub(crate) fn choose_affine_min_f32(chunk: &[f32], scale_q: i32, mults: &[u8], lut: &[i32], cfg: &TrellisConfig) -> (i32, Vec<u8>) {
     let n_sub = n_sub_blocks(chunk.len());
     let means: Vec<f32> = (0..n_sub)
         .map(|sb| {
@@ -1602,10 +1173,7 @@ pub(crate) fn choose_affine_min_f32(
             }
         })
         .collect();
-    let base_abs = means
-        .iter()
-        .copied()
-        .fold(0.0f32, |b, m| if m.abs() > b { m.abs() } else { b });
+    let base_abs = means.iter().copied().fold(0.0f32, |b, m| if m.abs() > b { m.abs() } else { b });
     if base_abs < 1e-12f32 {
         return (0, vec![0u8; n_sub]);
     }
@@ -1664,48 +1232,21 @@ fn viterbi_path_buf(
     }
 
     if f32_metric {
-        let sub_levels_f32: Vec<Vec<f32>> = sub_levels
-            .iter()
-            .map(|v| v.iter().map(|&x| x as f32).collect())
-            .collect();
+        let sub_levels_f32: Vec<Vec<f32>> = sub_levels.iter().map(|v| v.iter().map(|&x| x as f32).collect()).collect();
         if !can_tail_bite {
             return backtrack_buf_f32(weights, &sub_levels_f32, cfg, None, None, back_buf);
         }
         let (final_s, _) = viterbi_forward_f32(weights, &sub_levels_f32, cfg, None);
-        let path = backtrack_buf_f32(
-            weights,
-            &sub_levels_f32,
-            cfg,
-            Some(final_s),
-            Some(final_s),
-            back_buf,
-        );
+        let path = backtrack_buf_f32(weights, &sub_levels_f32, cfg, Some(final_s), Some(final_s), back_buf);
         return (path.0, final_s);
     }
 
     if silence_bonus != 0.0 {
         if !can_tail_bite {
-            return backtrack_buf_with_bonus(
-                weights,
-                &sub_levels,
-                cfg,
-                None,
-                None,
-                silence_bonus,
-                back_buf,
-            );
+            return backtrack_buf_with_bonus(weights, &sub_levels, cfg, None, None, silence_bonus, back_buf);
         }
-        let (final_s, _) =
-            viterbi_forward_with_bonus(weights, &sub_levels, cfg, None, silence_bonus);
-        let path = backtrack_buf_with_bonus(
-            weights,
-            &sub_levels,
-            cfg,
-            Some(final_s),
-            Some(final_s),
-            silence_bonus,
-            back_buf,
-        );
+        let (final_s, _) = viterbi_forward_with_bonus(weights, &sub_levels, cfg, None, silence_bonus);
+        let path = backtrack_buf_with_bonus(weights, &sub_levels, cfg, Some(final_s), Some(final_s), silence_bonus, back_buf);
         return (path.0, final_s);
     }
 
@@ -1714,24 +1255,11 @@ fn viterbi_path_buf(
     }
 
     let (final_s, _) = viterbi_forward(weights, &sub_levels, cfg, None);
-    let path = backtrack_buf(
-        weights,
-        &sub_levels,
-        cfg,
-        Some(final_s),
-        Some(final_s),
-        back_buf,
-    );
+    let path = backtrack_buf(weights, &sub_levels, cfg, Some(final_s), Some(final_s), back_buf);
     (path.0, final_s)
 }
 
-pub(crate) fn build_sub_levels(
-    scale_q: i32,
-    mults: &[u8],
-    mins_eff: &[i32],
-    lut: &[i32],
-    num_states: usize,
-) -> Vec<Vec<f64>> {
+pub(crate) fn build_sub_levels(scale_q: i32, mults: &[u8], mins_eff: &[i32], lut: &[i32], num_states: usize) -> Vec<Vec<f64>> {
     let q_to_real = 1.0f64 / (1u32 << QUANTILE_SHIFT) as f64;
     mults
         .iter()
@@ -1739,9 +1267,7 @@ pub(crate) fn build_sub_levels(
         .map(|(j, &m)| {
             let es = eff_scale_q(scale_q, m);
             let off = *mins_eff.get(j).unwrap_or(&0);
-            (0..num_states)
-                .map(|s| ((reconstruct_q(es, lut[s]) + off) as f64) * q_to_real)
-                .collect::<Vec<f64>>()
+            (0..num_states).map(|s| ((reconstruct_q(es, lut[s]) + off) as f64) * q_to_real).collect::<Vec<f64>>()
         })
         .collect()
 }
@@ -1764,13 +1290,7 @@ gen_step_dist!(step_dist_f32, f32);
 macro_rules! gen_relax_step {
     ($name:ident, $ty:ty, $vty:ty) => {
         #[inline]
-        fn $name(
-            cost: &[$ty],
-            dist: &[$ty],
-            next_cost: &mut [$ty],
-            mut back_row: Option<&mut [u32]>,
-            k: usize,
-        ) {
+        fn $name(cost: &[$ty], dist: &[$ty], next_cost: &mut [$ty], mut back_row: Option<&mut [u32]>, k: usize) {
             let num_states = cost.len();
             let num_inputs = 1usize << k;
             let n_groups = num_states >> k;
@@ -1781,8 +1301,7 @@ macro_rules! gen_relax_step {
                     let ns_base = g << k;
                     for off in (0..num_inputs).step_by(4) {
                         let i0 = ns_base + off;
-                        let d_v =
-                            <$vty>::from([dist[i0], dist[i0 + 1], dist[i0 + 2], dist[i0 + 3]]);
+                        let d_v = <$vty>::from([dist[i0], dist[i0 + 1], dist[i0 + 2], dist[i0 + 3]]);
                         let mut best_v = <$vty>::splat(cost[g]) + d_v;
                         let mut best_t = <$vty>::splat(0 as $ty);
                         for t in 1..num_inputs {
@@ -1830,12 +1349,7 @@ gen_relax_step!(relax_step_f32, f32, f32x4);
 
 macro_rules! gen_viterbi_sweeps {
     ($forward:ident, $backtrack:ident, $dist_fn:ident, $relax:ident, $pick:ident, $ty:ty) => {
-        fn $forward(
-            weights: &[f32],
-            sub_levels: &[Vec<$ty>],
-            cfg: &TrellisConfig,
-            pin_start: Option<usize>,
-        ) -> (usize, $ty) {
+        fn $forward(weights: &[f32], sub_levels: &[Vec<$ty>], cfg: &TrellisConfig, pin_start: Option<usize>) -> (usize, $ty) {
             let num_states = cfg.num_states();
             let inf = <$ty>::INFINITY;
             let mut cost: Vec<$ty> = match pin_start {
@@ -1857,14 +1371,7 @@ macro_rules! gen_viterbi_sweeps {
             $pick(&cost)
         }
 
-        fn $backtrack(
-            weights: &[f32],
-            sub_levels: &[Vec<$ty>],
-            cfg: &TrellisConfig,
-            pin_start: Option<usize>,
-            final_s: Option<usize>,
-            back_buf: &mut [u32],
-        ) -> (Vec<u32>, usize) {
+        fn $backtrack(weights: &[f32], sub_levels: &[Vec<$ty>], cfg: &TrellisConfig, pin_start: Option<usize>, final_s: Option<usize>, back_buf: &mut [u32]) -> (Vec<u32>, usize) {
             let n = weights.len();
             let num_states = cfg.num_states();
             let inf = <$ty>::INFINITY;
@@ -1897,22 +1404,8 @@ macro_rules! gen_viterbi_sweeps {
         }
     };
 }
-gen_viterbi_sweeps!(
-    viterbi_forward,
-    backtrack_buf,
-    step_dist_f64,
-    relax_step_f64,
-    pick_terminal,
-    f64
-);
-gen_viterbi_sweeps!(
-    viterbi_forward_f32,
-    backtrack_buf_f32,
-    step_dist_f32,
-    relax_step_f32,
-    pick_terminal_f32,
-    f32
-);
+gen_viterbi_sweeps!(viterbi_forward, backtrack_buf, step_dist_f64, relax_step_f64, pick_terminal, f64);
+gen_viterbi_sweeps!(viterbi_forward_f32, backtrack_buf_f32, step_dist_f32, relax_step_f32, pick_terminal_f32, f32);
 
 fn pick_terminal_f32(cost: &[f32]) -> (usize, f32) {
     let mut final_s = 0usize;
@@ -1939,13 +1432,7 @@ fn pick_terminal(cost: &[f64]) -> (usize, f64) {
     (final_s, best)
 }
 
-fn viterbi_forward_with_bonus(
-    weights: &[f32],
-    sub_levels: &[Vec<f64>],
-    cfg: &TrellisConfig,
-    pin_start: Option<usize>,
-    silence_bonus: f64,
-) -> (usize, f64) {
+fn viterbi_forward_with_bonus(weights: &[f32], sub_levels: &[Vec<f64>], cfg: &TrellisConfig, pin_start: Option<usize>, silence_bonus: f64) -> (usize, f64) {
     let num_states = cfg.num_states();
     let k = cfg.k_bits as usize;
     let num_inputs = 1usize << k;
@@ -2064,12 +1551,7 @@ fn backtrack_buf_with_bonus(
     (path, s)
 }
 
-fn viterbi_forward_reference(
-    weights: &[f32],
-    sub_levels: &[Vec<f64>],
-    cfg: &TrellisConfig,
-    pin_start: Option<usize>,
-) -> (usize, f64) {
+fn viterbi_forward_reference(weights: &[f32], sub_levels: &[Vec<f64>], cfg: &TrellisConfig, pin_start: Option<usize>) -> (usize, f64) {
     let num_states = cfg.num_states();
     let inf = f64::INFINITY;
     let mut cost = match pin_start {
@@ -2104,12 +1586,7 @@ fn viterbi_forward_reference(
                     let lv = f64x4::from([lvl[off], lvl[off + 1], lvl[off + 2], lvl[off + 3]]);
                     let d_v = target_v - lv;
                     let nc_v = c_v + d_v * d_v;
-                    let old_v = f64x4::from([
-                        nc_dst[off],
-                        nc_dst[off + 1],
-                        nc_dst[off + 2],
-                        nc_dst[off + 3],
-                    ]);
+                    let old_v = f64x4::from([nc_dst[off], nc_dst[off + 1], nc_dst[off + 2], nc_dst[off + 3]]);
                     let nc_a = nc_v.to_array();
                     let old_a = old_v.to_array();
                     for lane in 0..4 {
@@ -2140,14 +1617,7 @@ fn viterbi_forward_reference(
 }
 
 #[allow(clippy::ptr_arg)]
-fn backtrack_buf_reference(
-    weights: &[f32],
-    sub_levels: &[Vec<f64>],
-    cfg: &TrellisConfig,
-    pin_start: Option<usize>,
-    final_s: Option<usize>,
-    back_buf: &mut Vec<u32>,
-) -> (Vec<u32>, usize) {
+fn backtrack_buf_reference(weights: &[f32], sub_levels: &[Vec<f64>], cfg: &TrellisConfig, pin_start: Option<usize>, final_s: Option<usize>, back_buf: &mut Vec<u32>) -> (Vec<u32>, usize) {
     let n = weights.len();
     let num_states = cfg.num_states();
     let inf = f64::INFINITY;
@@ -2228,16 +1698,7 @@ fn backtrack_buf_reference(
 }
 
 #[allow(clippy::too_many_arguments)]
-fn viterbi_path_buf_reference(
-    weights: &[f32],
-    scale_q: i32,
-    mults: &[u8],
-    mins_eff: &[i32],
-    lut: &[i32],
-    cfg: &TrellisConfig,
-    tail_biting: bool,
-    back_buf: &mut Vec<u32>,
-) -> (Vec<u32>, usize) {
+fn viterbi_path_buf_reference(weights: &[f32], scale_q: i32, mults: &[u8], mins_eff: &[i32], lut: &[i32], cfg: &TrellisConfig, tail_biting: bool, back_buf: &mut Vec<u32>) -> (Vec<u32>, usize) {
     let n = weights.len();
     let num_states = cfg.num_states();
     if n == 0 {
@@ -2254,24 +1715,12 @@ fn viterbi_path_buf_reference(
         return backtrack_buf_reference(weights, &sub_levels, cfg, None, None, back_buf);
     }
     let (final_s, _) = viterbi_forward_reference(weights, &sub_levels, cfg, None);
-    let path = backtrack_buf_reference(
-        weights,
-        &sub_levels,
-        cfg,
-        Some(final_s),
-        Some(final_s),
-        back_buf,
-    );
+    let path = backtrack_buf_reference(weights, &sub_levels, cfg, Some(final_s), Some(final_s), back_buf);
     (path.0, final_s)
 }
 
 #[doc(hidden)]
-pub fn encode_tensor_with_lut_reference(
-    weights: &[f32],
-    cfg: &TrellisConfig,
-    opts: &EncodeOpts,
-    lut: &[i32],
-) -> EncodedTensor {
+pub fn encode_tensor_with_lut_reference(weights: &[f32], cfg: &TrellisConfig, opts: &EncodeOpts, lut: &[i32]) -> EncodedTensor {
     if cfg.vec_dim() > 1 {
         return encode_tensor_with_lut_vec_reference(weights, cfg, opts, lut);
     }
@@ -2283,80 +1732,32 @@ pub fn encode_tensor_with_lut_reference(
 
     for chunk in weights.chunks(cfg.block_len) {
         let scale_q = choose_scale_q(chunk, lut, cfg);
-        let mults = if opts.adaptive {
-            choose_sub_scales(chunk, scale_q, lut, cfg)
-        } else {
-            vec![SUB_SCALE_UNITY; n_sub_blocks(chunk.len())]
-        };
-        let (min_base_q, min_codes) = if opts.affine_min {
-            choose_affine_min(chunk, scale_q, &mults, lut, cfg)
-        } else {
-            (0, Vec::new())
-        };
-        let mins_eff: Vec<i32> = min_codes
-            .iter()
-            .map(|&c| crate::decode::eff_min_q(min_base_q, c))
-            .collect();
-        let (path, init_state) = viterbi_path_buf_reference(
-            chunk,
-            scale_q,
-            &mults,
-            &mins_eff,
-            lut,
-            cfg,
-            opts.tail_biting,
-            &mut back_buf,
-        );
+        let mults = if opts.adaptive { choose_sub_scales(chunk, scale_q, lut, cfg) } else { vec![SUB_SCALE_UNITY; n_sub_blocks(chunk.len())] };
+        let (min_base_q, min_codes) = if opts.affine_min { choose_affine_min(chunk, scale_q, &mults, lut, cfg) } else { (0, Vec::new()) };
+        let mins_eff: Vec<i32> = min_codes.iter().map(|&c| crate::decode::eff_min_q(min_base_q, c)).collect();
+        let (path, init_state) = viterbi_path_buf_reference(chunk, scale_q, &mults, &mins_eff, lut, cfg, opts.tail_biting, &mut back_buf);
         for &sym in &path {
             push_bits(&mut bits, &mut bit_cursor, sym as usize, cfg.k_bits);
         }
         blocks.push(BlockMeta {
             scale_q,
-            sub_scales: if opts.adaptive || opts.affine_min {
-                pack_sub_scales(&mults)
-            } else {
-                Vec::new()
-            },
+            sub_scales: if opts.adaptive || opts.affine_min { pack_sub_scales(&mults) } else { Vec::new() },
             min_base_q,
-            mins: if opts.affine_min {
-                pack_sub_scales(&min_codes)
-            } else {
-                Vec::new()
-            },
+            mins: if opts.affine_min { pack_sub_scales(&min_codes) } else { Vec::new() },
             init_state: init_state as u32,
             n: chunk.len() as u32,
         });
     }
 
-    EncodedTensor {
-        bits,
-        blocks,
-        total: weights.len(),
-        has_rht_seed: false,
-        tail_biting: opts.tail_biting,
-        has_affine_min: opts.affine_min,
-    }
+    EncodedTensor { bits, blocks, total: weights.len(), has_rht_seed: false, tail_biting: opts.tail_biting, has_affine_min: opts.affine_min }
 }
 
 #[inline]
-fn vec_level_real(
-    scale_real: f64,
-    off_real: f64,
-    lut: &[i32],
-    d: usize,
-    s: usize,
-    j: usize,
-) -> f64 {
+fn vec_level_real(scale_real: f64, off_real: f64, lut: &[i32], d: usize, s: usize, j: usize) -> f64 {
     scale_real * (lut[s * d + j] as f64) / (1u32 << QUANTILE_SHIFT) as f64 + off_real
 }
 
-fn greedy_replay_sse_vec_off(
-    chunk: &[f32],
-    scale_real: f64,
-    off_real: f64,
-    lut: &[i32],
-    cfg: &TrellisConfig,
-) -> f64 {
+fn greedy_replay_sse_vec_off(chunk: &[f32], scale_real: f64, off_real: f64, lut: &[i32], cfg: &TrellisConfig) -> f64 {
     let d = cfg.vec_dim();
     let n = chunk.len();
     let n_steps = n.div_ceil(d);
@@ -2395,14 +1796,11 @@ fn choose_scale_q_vec(chunk: &[f32], lut: &[i32], cfg: &TrellisConfig) -> i32 {
     if absmax == 0.0 {
         return 0;
     }
-    let q_max =
-        lut.iter().fold(0.0f64, |m, &q| m.max((q as f64).abs())) / (1u32 << QUANTILE_SHIFT) as f64;
+    let q_max = lut.iter().fold(0.0f64, |m, &q| m.max((q as f64).abs())) / (1u32 << QUANTILE_SHIFT) as f64;
     let q_max = if q_max > 0.0 { q_max } else { 1.0 };
     let seed = absmax / q_max;
 
-    const MULTS: [f64; 11] = [
-        0.55, 0.65, 0.75, 0.85, 0.92, 1.0, 1.08, 1.18, 1.30, 1.45, 1.65,
-    ];
+    const MULTS: [f64; 11] = [0.55, 0.65, 0.75, 0.85, 0.92, 1.0, 1.08, 1.18, 1.30, 1.45, 1.65];
     let mut best_scale = seed;
     let mut best_sse = f64::INFINITY;
     for &m in &MULTS {
@@ -2447,13 +1845,7 @@ fn choose_sub_scales_vec(chunk: &[f32], scale_q: i32, lut: &[i32], cfg: &Trellis
     mults
 }
 
-fn choose_affine_min_vec(
-    chunk: &[f32],
-    scale_q: i32,
-    mults: &[u8],
-    lut: &[i32],
-    cfg: &TrellisConfig,
-) -> (i32, Vec<u8>) {
+fn choose_affine_min_vec(chunk: &[f32], scale_q: i32, mults: &[u8], lut: &[i32], cfg: &TrellisConfig) -> (i32, Vec<u8>) {
     let n_sub = n_sub_blocks(chunk.len());
     let means: Vec<f64> = (0..n_sub)
         .map(|sb| {
@@ -2467,10 +1859,7 @@ fn choose_affine_min_vec(
             }
         })
         .collect();
-    let base_abs = means
-        .iter()
-        .copied()
-        .fold(0.0f64, |b, m| if m.abs() > b { m.abs() } else { b });
+    let base_abs = means.iter().copied().fold(0.0f64, |b, m| if m.abs() > b { m.abs() } else { b });
     if base_abs < 1e-12 {
         return (0, vec![0u8; n_sub]);
     }
@@ -2502,15 +1891,7 @@ fn choose_affine_min_vec(
 
 #[inline]
 #[allow(clippy::too_many_arguments)]
-fn step_state_dist(
-    chunk: &[f32],
-    base_i: usize,
-    present: usize,
-    sub_levels: &[Vec<f64>],
-    d: usize,
-    num_states: usize,
-    dist: &mut [f64],
-) {
+fn step_state_dist(chunk: &[f32], base_i: usize, present: usize, sub_levels: &[Vec<f64>], d: usize, num_states: usize, dist: &mut [f64]) {
     for s in 0..num_states {
         let mut e = 0.0f64;
         for j in 0..present {
@@ -2524,13 +1905,7 @@ fn step_state_dist(
     }
 }
 
-fn build_sub_levels_vec(
-    scale_q: i32,
-    mults: &[u8],
-    mins_eff: &[i32],
-    lut: &[i32],
-    cfg: &TrellisConfig,
-) -> Vec<Vec<f64>> {
+fn build_sub_levels_vec(scale_q: i32, mults: &[u8], mins_eff: &[i32], lut: &[i32], cfg: &TrellisConfig) -> Vec<Vec<f64>> {
     let d = cfg.vec_dim();
     let num_states = cfg.num_states();
     let q_to_real = 1.0f64 / (1u32 << QUANTILE_SHIFT) as f64;
@@ -2552,16 +1927,7 @@ fn build_sub_levels_vec(
 }
 
 #[allow(clippy::too_many_arguments)]
-fn viterbi_path_buf_vec(
-    chunk: &[f32],
-    scale_q: i32,
-    mults: &[u8],
-    mins_eff: &[i32],
-    lut: &[i32],
-    cfg: &TrellisConfig,
-    tail_biting: bool,
-    back_buf: &mut Vec<u32>,
-) -> (Vec<u32>, usize) {
+fn viterbi_path_buf_vec(chunk: &[f32], scale_q: i32, mults: &[u8], mins_eff: &[i32], lut: &[i32], cfg: &TrellisConfig, tail_biting: bool, back_buf: &mut Vec<u32>) -> (Vec<u32>, usize) {
     let d = cfg.vec_dim();
     let n = chunk.len();
     let num_states = cfg.num_states();
@@ -2585,23 +1951,11 @@ fn viterbi_path_buf_vec(
     }
 
     let (final_s, _) = vec_forward(chunk, &sub_levels, cfg, None);
-    let path = vec_backtrack(
-        chunk,
-        &sub_levels,
-        cfg,
-        Some(final_s),
-        Some(final_s),
-        back_buf,
-    );
+    let path = vec_backtrack(chunk, &sub_levels, cfg, Some(final_s), Some(final_s), back_buf);
     (path.0, final_s)
 }
 
-fn vec_forward(
-    chunk: &[f32],
-    sub_levels: &[Vec<f64>],
-    cfg: &TrellisConfig,
-    pin_start: Option<usize>,
-) -> (usize, f64) {
+fn vec_forward(chunk: &[f32], sub_levels: &[Vec<f64>], cfg: &TrellisConfig, pin_start: Option<usize>) -> (usize, f64) {
     let d = cfg.vec_dim();
     let n = chunk.len();
     let n_steps = n.div_ceil(d);
@@ -2628,14 +1982,7 @@ fn vec_forward(
     pick_terminal(&cost)
 }
 
-fn vec_backtrack(
-    chunk: &[f32],
-    sub_levels: &[Vec<f64>],
-    cfg: &TrellisConfig,
-    pin_start: Option<usize>,
-    final_s: Option<usize>,
-    back_buf: &mut [u32],
-) -> (Vec<u32>, usize) {
+fn vec_backtrack(chunk: &[f32], sub_levels: &[Vec<f64>], cfg: &TrellisConfig, pin_start: Option<usize>, final_s: Option<usize>, back_buf: &mut [u32]) -> (Vec<u32>, usize) {
     let d = cfg.vec_dim();
     let n = chunk.len();
     let n_steps = n.div_ceil(d);
@@ -2671,12 +2018,7 @@ fn vec_backtrack(
     (path, s)
 }
 
-fn vec_forward_reference(
-    chunk: &[f32],
-    sub_levels: &[Vec<f64>],
-    cfg: &TrellisConfig,
-    pin_start: Option<usize>,
-) -> (usize, f64) {
+fn vec_forward_reference(chunk: &[f32], sub_levels: &[Vec<f64>], cfg: &TrellisConfig, pin_start: Option<usize>) -> (usize, f64) {
     let d = cfg.vec_dim();
     let n = chunk.len();
     let n_steps = n.div_ceil(d);
@@ -2717,14 +2059,7 @@ fn vec_forward_reference(
     pick_terminal(&cost)
 }
 
-fn vec_backtrack_reference(
-    chunk: &[f32],
-    sub_levels: &[Vec<f64>],
-    cfg: &TrellisConfig,
-    pin_start: Option<usize>,
-    final_s: Option<usize>,
-    back_buf: &mut [u32],
-) -> (Vec<u32>, usize) {
+fn vec_backtrack_reference(chunk: &[f32], sub_levels: &[Vec<f64>], cfg: &TrellisConfig, pin_start: Option<usize>, final_s: Option<usize>, back_buf: &mut [u32]) -> (Vec<u32>, usize) {
     let d = cfg.vec_dim();
     let n = chunk.len();
     let n_steps = n.div_ceil(d);
@@ -2780,16 +2115,7 @@ fn vec_backtrack_reference(
 }
 
 #[allow(clippy::too_many_arguments)]
-fn viterbi_path_buf_vec_reference(
-    chunk: &[f32],
-    scale_q: i32,
-    mults: &[u8],
-    mins_eff: &[i32],
-    lut: &[i32],
-    cfg: &TrellisConfig,
-    tail_biting: bool,
-    back_buf: &mut Vec<u32>,
-) -> (Vec<u32>, usize) {
+fn viterbi_path_buf_vec_reference(chunk: &[f32], scale_q: i32, mults: &[u8], mins_eff: &[i32], lut: &[i32], cfg: &TrellisConfig, tail_biting: bool, back_buf: &mut Vec<u32>) -> (Vec<u32>, usize) {
     let d = cfg.vec_dim();
     let n = chunk.len();
     let num_states = cfg.num_states();
@@ -2808,24 +2134,12 @@ fn viterbi_path_buf_vec_reference(
         return vec_backtrack_reference(chunk, &sub_levels, cfg, None, None, back_buf);
     }
     let (final_s, _) = vec_forward_reference(chunk, &sub_levels, cfg, None);
-    let path = vec_backtrack_reference(
-        chunk,
-        &sub_levels,
-        cfg,
-        Some(final_s),
-        Some(final_s),
-        back_buf,
-    );
+    let path = vec_backtrack_reference(chunk, &sub_levels, cfg, Some(final_s), Some(final_s), back_buf);
     (path.0, final_s)
 }
 
 #[doc(hidden)]
-pub fn encode_tensor_with_lut_vec_reference(
-    weights: &[f32],
-    cfg: &TrellisConfig,
-    opts: &EncodeOpts,
-    lut: &[i32],
-) -> EncodedTensor {
+pub fn encode_tensor_with_lut_vec_reference(weights: &[f32], cfg: &TrellisConfig, opts: &EncodeOpts, lut: &[i32]) -> EncodedTensor {
     let d = cfg.vec_dim();
     let num_states = cfg.num_states();
     debug_assert_eq!(lut.len(), num_states * d, "vector LUT must be [2^L * d]");
@@ -2838,57 +2152,22 @@ pub fn encode_tensor_with_lut_vec_reference(
 
     for chunk in weights.chunks(cfg.block_len) {
         let scale_q = choose_scale_q_vec(chunk, lut, cfg);
-        let mults = if opts.adaptive {
-            choose_sub_scales_vec(chunk, scale_q, lut, cfg)
-        } else {
-            vec![SUB_SCALE_UNITY; n_sub_blocks(chunk.len())]
-        };
-        let (min_base_q, min_codes) = if opts.affine_min {
-            choose_affine_min_vec(chunk, scale_q, &mults, lut, cfg)
-        } else {
-            (0, Vec::new())
-        };
-        let mins_eff: Vec<i32> = min_codes
-            .iter()
-            .map(|&c| crate::decode::eff_min_q(min_base_q, c))
-            .collect();
-        let (path, init_state) = viterbi_path_buf_vec_reference(
-            chunk,
-            scale_q,
-            &mults,
-            &mins_eff,
-            lut,
-            cfg,
-            opts.tail_biting,
-            &mut back_buf,
-        );
+        let mults = if opts.adaptive { choose_sub_scales_vec(chunk, scale_q, lut, cfg) } else { vec![SUB_SCALE_UNITY; n_sub_blocks(chunk.len())] };
+        let (min_base_q, min_codes) = if opts.affine_min { choose_affine_min_vec(chunk, scale_q, &mults, lut, cfg) } else { (0, Vec::new()) };
+        let mins_eff: Vec<i32> = min_codes.iter().map(|&c| crate::decode::eff_min_q(min_base_q, c)).collect();
+        let (path, init_state) = viterbi_path_buf_vec_reference(chunk, scale_q, &mults, &mins_eff, lut, cfg, opts.tail_biting, &mut back_buf);
         for &sym in &path {
             push_bits(&mut bits, &mut bit_cursor, sym as usize, cfg.k_bits);
         }
         blocks.push(BlockMeta {
             scale_q,
-            sub_scales: if opts.adaptive || opts.affine_min {
-                pack_sub_scales(&mults)
-            } else {
-                Vec::new()
-            },
+            sub_scales: if opts.adaptive || opts.affine_min { pack_sub_scales(&mults) } else { Vec::new() },
             min_base_q,
-            mins: if opts.affine_min {
-                pack_sub_scales(&min_codes)
-            } else {
-                Vec::new()
-            },
+            mins: if opts.affine_min { pack_sub_scales(&min_codes) } else { Vec::new() },
             init_state: init_state as u32,
             n: chunk.len() as u32,
         });
     }
 
-    EncodedTensor {
-        bits,
-        blocks,
-        total: weights.len(),
-        has_rht_seed: false,
-        tail_biting: opts.tail_biting,
-        has_affine_min: opts.affine_min,
-    }
+    EncodedTensor { bits, blocks, total: weights.len(), has_rht_seed: false, tail_biting: opts.tail_biting, has_affine_min: opts.affine_min }
 }

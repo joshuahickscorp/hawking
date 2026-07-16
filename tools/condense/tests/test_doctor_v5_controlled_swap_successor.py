@@ -19,7 +19,57 @@ import doctor_v5_controlled_swap_successor as successor
 class ControlledSwapSuccessorTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
+        cls.predecessor_fixture = tempfile.TemporaryDirectory(dir=successor.ROOT)
+        fixture = Path(cls.predecessor_fixture.name)
+        cls.saved_marker = successor.v1.MARKER
+        cls.saved_overlay = successor.stacked.DEFAULT_OVERLAY
+        overlay_path = fixture / "stacked_overlay.json"
+        marker_path = fixture / "accelerated_marker.json"
+        reference = {"path": "fixture", "sha256": "a" * 64, "bytes": 1}
+        overlay = {
+            "schema": successor.stacked.SCHEMA,
+            "version": successor.stacked.VERSION,
+            "mode": "pending_only_opt_in",
+            "policy": {
+                "process_budget_bytes": successor.stacked.PROCESS_BUDGET_BYTES,
+                "minimum_margin_bytes": successor.stacked.MIN_DYNAMIC_MARGIN_BYTES,
+            },
+            "promotion": {
+                "automatic_live_redeployment_permitted": False,
+                "requires_zero_active_children": True,
+                "requires_terminal_seal_subset_match": True,
+                "requires_live_observer_structural_readiness": True,
+            },
+            "source_bindings": {
+                "plan": reference, "campaign": reference,
+                "queue_state": reference, "child_resources": reference,
+                "observer_source": reference,
+                "observer_state_at_stage": reference, "plan_sha256": "fixture",
+            },
+            "simulation": {
+                "schema": successor.stacked.SIMULATION_SCHEMA,
+                "gpt_oss_120b_execution_ready": False,
+                "projection_only_120b": True,
+            },
+        }
+        overlay["overlay_sha256"] = successor.stacked._hash_value(overlay)
+        overlay_path.write_text(json.dumps(overlay, sort_keys=True), encoding="utf-8")
+        marker = {
+            "schema": successor.v1.MARKER_SCHEMA,
+            "overlay_path": str(overlay_path.resolve()),
+            "overlay_sha256": overlay["overlay_sha256"],
+        }
+        marker["marker_sha256"] = successor._hash_value(marker)
+        marker_path.write_text(json.dumps(marker, sort_keys=True), encoding="utf-8")
+        successor.v1.MARKER = marker_path
+        successor.stacked.DEFAULT_OVERLAY = overlay_path
         cls.marker, cls.overlay = successor._predecessor_documents()
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        successor.v1.MARKER = cls.saved_marker
+        successor.stacked.DEFAULT_OVERLAY = cls.saved_overlay
+        cls.predecessor_fixture.cleanup()
 
     def policy(self) -> dict:
         stage = successor.STAGE_ROOT

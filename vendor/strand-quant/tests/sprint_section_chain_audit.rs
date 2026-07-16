@@ -26,11 +26,7 @@ use std::sync::atomic::{AtomicU64, Ordering};
 static COUNTER: AtomicU64 = AtomicU64::new(0);
 
 fn tmp_path(tag: &str) -> PathBuf {
-    std::env::temp_dir().join(format!(
-        "strand-sprint-audit-{tag}-{}-{}.strand",
-        std::process::id(),
-        COUNTER.fetch_add(1, Ordering::Relaxed)
-    ))
+    std::env::temp_dir().join(format!("strand-sprint-audit-{tag}-{}-{}.strand", std::process::id(), COUNTER.fetch_add(1, Ordering::Relaxed)))
 }
 
 struct TmpFile(PathBuf);
@@ -52,27 +48,11 @@ fn two_tensor_archive() -> Vec<u8> {
     let shape_b = [900u64];
     let tensors = [
         PackedTensorV2 {
-            base: PackedTensor {
-                name: "model.layers.0.q_proj",
-                shape: &shape_a,
-                rht_seed: 0,
-                l_bits: cfg.l_bits as u8,
-                k_bits: cfg.k_bits as u8,
-                vec_dim: cfg.vec_dim() as u8,
-                enc: &enc_a,
-            },
+            base: PackedTensor { name: "model.layers.0.q_proj", shape: &shape_a, rht_seed: 0, l_bits: cfg.l_bits as u8, k_bits: cfg.k_bits as u8, vec_dim: cfg.vec_dim() as u8, enc: &enc_a },
             block_len: cfg.block_len as u32,
         },
         PackedTensorV2 {
-            base: PackedTensor {
-                name: "model.layers.0.down_proj",
-                shape: &shape_b,
-                rht_seed: 0,
-                l_bits: cfg.l_bits as u8,
-                k_bits: cfg.k_bits as u8,
-                vec_dim: cfg.vec_dim() as u8,
-                enc: &enc_b,
-            },
+            base: PackedTensor { name: "model.layers.0.down_proj", shape: &shape_b, rht_seed: 0, l_bits: cfg.l_bits as u8, k_bits: cfg.k_bits as u8, vec_dim: cfg.vec_dim() as u8, enc: &enc_b },
             block_len: cfg.block_len as u32,
         },
     ];
@@ -80,10 +60,7 @@ fn two_tensor_archive() -> Vec<u8> {
 }
 
 fn sample_outl() -> Vec<Option<OutlierWire>> {
-    vec![
-        Some(OutlierWire::from_selection(1024, vec![700, 3, 511], vec![-127, 5, 127], 0.3125, 8)),
-        None,
-    ]
+    vec![Some(OutlierWire::from_selection(1024, vec![700, 3, 511], vec![-127, 5, 127], 0.3125, 8)), None]
 }
 
 /// Every block's scale_q in archive tensor/block order — the stream SDSQ codes.

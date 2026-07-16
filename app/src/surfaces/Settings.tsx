@@ -8,8 +8,7 @@ import { sendIntent, TRANSPORT_KIND } from "../ipc";
 import { useStore } from "../store";
 import { intent } from "../wire";
 import { Icon } from "../shell/icons";
-import { useFocusTrap } from "../shell/a11y";
-import { checkForUpdate } from "../shell/updater";
+import { checkForUpdate, useFocusTrap } from "../shell/policies";
 
 const SHORTCUTS: [string, string][] = [
   ["Command palette", "Cmd P"],

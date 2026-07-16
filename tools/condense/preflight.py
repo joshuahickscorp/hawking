@@ -426,12 +426,13 @@ def check_staged_models():
     _say(True, f"staged local ladder: {staged or '(none)'}")
     if missing:
         _say(True, f"not yet staged (go will skip them): {missing} — download via "
-                    f"BASELINES.md's manifest when disk allows")
+                    f"docs/RESEARCH.md's manifest when disk allows")
     return True   # informational only; missing parents don't fail preflight (go skips them)
 
 
 def check_receipt_harness():
-    r = subprocess.run(["python3.12", "tools/condense/receipt_verify.py",
+    r = subprocess.run(["python3.12", "-m", "tools.condense", "legacy",
+                        "receipt_verify",
                         "receipts/official/qwen-05b-tq3.json"], capture_output=True, text=True)
     ok = r.returncode == 0
     _say(ok, "receipt harness verifies" if ok else f"receipt_verify FAILED:\n{r.stderr[-400:]}")
@@ -449,9 +450,9 @@ def check_procurement():
     _say(xet, "hf_xet (Xet dedup + parallel range gets)" if xet else
          "hf_xet MISSING - pip install hf_xet (slower on Xet repos)")
     if not (xfer and xet):
-        _say(True, "procurement DEGRADED but usable; export HF_HUB_ENABLE_HF_TRANSFER=1 and see procure.py")
+        _say(True, "procurement DEGRADED but usable; export HF_HUB_ENABLE_HF_TRANSFER=1")
     else:
-        _say(True, "procurement path FASTEST-SOTA (link-bound); use tools/condense/procure.py")
+        _say(True, "procurement path FASTEST-SOTA (link-bound); use `python -m tools.condense legacy procure`")
     return True
 
 
@@ -534,7 +535,7 @@ def main():
     ok = ok and summary_ok
     print(f"\n{'='*60}", file=sys.stderr)
     if ok:
-        print("PREFLIGHT GREEN — safe to run: python3.12 tools/condense/studio_run.py go", file=sys.stderr)
+        print("PREFLIGHT GREEN — safe to run: python3.12 -m tools.condense legacy studio_run go", file=sys.stderr)
     else:
         failed = [n for n, v in results.items() if not v]
         if not summary_ok:

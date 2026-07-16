@@ -48,13 +48,8 @@ mod tests;
 
 pub use codebook::{quantile_lut, QUANTILE_SHIFT};
 pub use decode::decode_tensor;
-pub use encode::{
-    encode_tensor, encode_tensor_opts, encode_tensor_with, EncodeOpts, EncodedTensor,
-};
+pub use encode::{encode_tensor, encode_tensor_opts, encode_tensor_with, EncodeOpts, EncodedTensor};
 #[cfg(feature = "block-parallel")]
-pub use encode::{
-    encode_tensor_with_block_parallel, encode_tensor_with_lut_block_parallel, BlockParallelConfig,
-    BlockParallelError,
-};
+pub use encode::{encode_tensor_with_block_parallel, encode_tensor_with_lut_block_parallel, BlockParallelConfig, BlockParallelError};
 pub use rht::{rht_forward, rht_forward_rows, rht_inverse, rht_inverse_rows, RhtConfig};
 pub use trellis::{CodebookMode, TrellisConfig};

@@ -52,26 +52,10 @@ fn simulate(enc: &strand_quant::encode::EncodedTensor, k: usize, bg: usize) -> V
 
 #[test]
 fn staged_tile_mapping_is_a_bijection_onto_the_output() {
-    for cfg in [
-        TrellisConfig::for_bpw(3.0),
-        TrellisConfig::for_bpw_l(2.0, 12),
-        TrellisConfig::for_bpw(2.0),
-        TrellisConfig::for_bpw(4.0),
-    ] {
+    for cfg in [TrellisConfig::for_bpw(3.0), TrellisConfig::for_bpw_l(2.0, 12), TrellisConfig::for_bpw(2.0), TrellisConfig::for_bpw(4.0)] {
         let k = cfg.k_bits as usize;
         let bg = pick_bg(cfg.l_bits);
-        for &total in &[
-            256usize,
-            512,
-            768,
-            700,
-            1000,
-            4097,
-            65537,
-            bg * 256,
-            bg * 256 + 1,
-            bg * 256 * 3 + 137,
-        ] {
+        for &total in &[256usize, 512, 768, 700, 1000, 4097, 65537, bg * 256, bg * 256 + 1, bg * 256 * 3 + 137] {
             let w: Vec<f32> = (0..total).map(|i| ((i as f32) * 0.0137).sin() * 0.5).collect();
             let enc = encode_tensor(&w, &cfg);
             let plans = block_plans(&enc, k);
@@ -79,14 +63,7 @@ fn staged_tile_mapping_is_a_bijection_onto_the_output() {
             let mut written = vec![0u8; total];
 
             for f in simulate(&enc, k, bg) {
-                assert!(
-                    f.span <= bg * 256,
-                    "span {} > tile capacity {} (k={k} L={} total={total} base={})",
-                    f.span,
-                    bg * 256,
-                    cfg.l_bits,
-                    f.base_block
-                );
+                assert!(f.span <= bg * 256, "span {} > tile capacity {} (k={k} L={} total={total} base={})", f.span, bg * 256, cfg.l_bits, f.base_block);
                 for local in 0..bg {
                     let blk = f.base_block + local;
                     if blk >= nb {
@@ -95,11 +72,7 @@ fn staged_tile_mapping_is_a_bijection_onto_the_output() {
                     let n = plans[blk].n;
                     for j in 0..n {
                         let tile_slot = local * 256 + j;
-                        assert!(
-                            tile_slot < f.span,
-                            "tile_slot {tile_slot} >= span {} (block {blk} j={j})",
-                            f.span
-                        );
+                        assert!(tile_slot < f.span, "tile_slot {tile_slot} >= span {} (block {blk} j={j})", f.span);
                         let via_tile = f.obase0 + tile_slot;
                         let truth = plans[blk].out_off + j;
                         assert_eq!(
@@ -108,20 +81,12 @@ fn staged_tile_mapping_is_a_bijection_onto_the_output() {
                              tile->global {via_tile} != true {truth}",
                             cfg.l_bits
                         );
-                        assert_eq!(
-                            written[truth], 0,
-                            "double-write at {truth} (block {blk} j={j})"
-                        );
+                        assert_eq!(written[truth], 0, "double-write at {truth} (block {blk} j={j})");
                         written[truth] = 1;
                     }
                 }
             }
-            assert!(
-                written.iter().all(|&b| b == 1),
-                "not every output written: k={k} L={} total={total} first-miss={:?}",
-                cfg.l_bits,
-                written.iter().position(|&b| b == 0)
-            );
+            assert!(written.iter().all(|&b| b == 1), "not every output written: k={k} L={} total={total} first-miss={:?}", cfg.l_bits, written.iter().position(|&b| b == 0));
         }
     }
 }

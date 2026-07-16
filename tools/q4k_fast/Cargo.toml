@@ -10,7 +10,7 @@ description = "Offline tool to re-lay GGUF Q4_K tensors into Q4K_FAST sidecar fi
 
 [[bin]]
 name = "q4k_fast_recompute"
-path = "src/main.rs"
+path = "main.rs"
 
 [dependencies]
 anyhow = { workspace = true }

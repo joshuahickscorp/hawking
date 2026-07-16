@@ -1,4 +1,3 @@
-
 use crate::block_walk::{block_init_state, exceeds_max_sub, SideInfo, WordReader};
 use crate::loader::StrandModel;
 use strand_quant::codebook::codebook_lut;
@@ -28,7 +27,7 @@ pub fn decode_q12_fast_with_lut(enc: &EncodedTensor, cfg: &TrellisConfig, lut: &
     let input_mask = cfg.num_inputs() - 1;
     let num_states = cfg.num_states();
     debug_assert_eq!(lut.len(), num_states, "scalar LUT must have num_states entries");
-    
+
     let fold = SUB_BLOCK >= num_states;
 
     if exceeds_max_sub(enc) {
@@ -47,11 +46,9 @@ pub fn decode_q12_fast_with_lut(enc: &EncodedTensor, cfg: &TrellisConfig, lut: &
         let (eff, off) = (side.eff(), side.off());
         let n_sub = side.n_sub;
 
-        let mut state =
-            block_init_state(blk, &enc.bits, out.len() * (k as usize), cfg, enc.tail_biting);
+        let mut state = block_init_state(blk, &enc.bits, out.len() * (k as usize), cfg, enc.tail_biting);
 
         if fold {
-            
             folded.clear();
             folded.resize(n_sub * num_states, 0);
             for (sb, &es) in eff.iter().enumerate() {
@@ -67,7 +64,7 @@ pub fn decode_q12_fast_with_lut(enc: &EncodedTensor, cfg: &TrellisConfig, lut: &
                 while i < end {
                     let sym = reader.pop(k) & input_mask;
                     state = ((state << k) | sym) & mask;
-                    
+
                     let v = unsafe { *folded.get_unchecked(base + state) };
                     out.push(v + o);
                     i += 1;
@@ -81,7 +78,7 @@ pub fn decode_q12_fast_with_lut(enc: &EncodedTensor, cfg: &TrellisConfig, lut: &
                 while i < end {
                     let sym = reader.pop(k) & input_mask;
                     state = ((state << k) | sym) & mask;
-                    
+
                     let q = unsafe { *lut_ptr.add(state) };
                     out.push(reconstruct_q(es, q) + o);
                     i += 1;
@@ -167,33 +164,16 @@ mod tests {
     use strand_quant::format::{write_strand_v2, PackedTensor, PackedTensorV2};
     use strand_quant::TrellisConfig;
 
-    fn write_tiny_v2(
-        name: &str,
-        rows: u64,
-        cols: u64,
-        cfg: &TrellisConfig,
-        enc: &EncodedTensor,
-    ) -> std::path::PathBuf {
+    fn write_tiny_v2(name: &str, rows: u64, cols: u64, cfg: &TrellisConfig, enc: &EncodedTensor) -> std::path::PathBuf {
         let shape = [rows, cols];
         let pt = PackedTensorV2 {
-            base: PackedTensor {
-                name,
-                shape: &shape,
-                rht_seed: 0,
-                l_bits: cfg.l_bits as u8,
-                k_bits: cfg.k_bits as u8,
-                vec_dim: cfg.vec_dim() as u8,
-                enc,
-            },
+            base: PackedTensor { name, shape: &shape, rht_seed: 0, l_bits: cfg.l_bits as u8, k_bits: cfg.k_bits as u8, vec_dim: cfg.vec_dim() as u8, enc },
             block_len: cfg.block_len as u32,
         };
         let buf = write_strand_v2(&[pt], [0u8; 32], true).expect("write_strand_v2");
         let mut path = std::env::temp_dir();
         let pid = std::process::id();
-        let uniq = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .map(|d| d.as_nanos())
-            .unwrap_or(0);
+        let uniq = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_nanos()).unwrap_or(0);
         path.push(format!("strand_gemv_{name}_{pid}_{uniq}.strand"));
         let mut f = std::fs::File::create(&path).expect("create temp .strand");
         f.write_all(&buf).expect("write temp .strand");
@@ -232,12 +212,7 @@ mod tests {
         let y_ref = crate::matvec(&enc, &cfg, None, rows, cols, &x);
         assert_eq!(y_runtime.len(), y_ref.len());
         for o in 0..rows {
-            assert!(
-                (y_runtime[o] - y_ref[o]).abs() < 1e-6,
-                "row {o}: {} vs {}",
-                y_runtime[o],
-                y_ref[o]
-            );
+            assert!((y_runtime[o] - y_ref[o]).abs() < 1e-6, "row {o}: {} vs {}", y_runtime[o], y_ref[o]);
         }
 
         let _ = std::fs::remove_file(&path);
@@ -268,41 +243,15 @@ mod tests {
             (TrellisConfig::for_bpw_l(3.0, 5), true),
         ];
         for (cfg, fold_expected) in configs {
-            assert_eq!(
-                strand_quant::encode::SUB_BLOCK >= cfg.num_states(),
-                fold_expected,
-                "fold gate mismatch for L={}",
-                cfg.l_bits
-            );
+            assert_eq!(strand_quant::encode::SUB_BLOCK >= cfg.num_states(), fold_expected, "fold gate mismatch for L={}", cfg.l_bits);
             for seed in 0..96u64 {
                 let n = 1 + (seed as usize * 37) % 2048;
-                let w: Vec<f32> = (0..n)
-                    .map(|i| ((i as f32 + seed as f32) * 0.0137).sin() * 0.5)
-                    .collect();
+                let w: Vec<f32> = (0..n).map(|i| ((i as f32 + seed as f32) * 0.0137).sin() * 0.5).collect();
                 let variants = [
                     encode_tensor(&w, &cfg),
-                    encode_tensor_with(
-                        &w,
-                        &cfg,
-                        &EncodeOpts { tail_biting: true, ..Default::default() },
-                    ),
-                    encode_tensor_with(
-                        &w,
-                        &cfg,
-                        &EncodeOpts {
-                            affine_min: true,
-                            ..Default::default()
-                        },
-                    ),
-                    encode_tensor_with(
-                        &w,
-                        &cfg,
-                        &EncodeOpts {
-                            tail_biting: true,
-                            affine_min: true,
-                            ..Default::default()
-                        },
-                    ),
+                    encode_tensor_with(&w, &cfg, &EncodeOpts { tail_biting: true, ..Default::default() }),
+                    encode_tensor_with(&w, &cfg, &EncodeOpts { affine_min: true, ..Default::default() }),
+                    encode_tensor_with(&w, &cfg, &EncodeOpts { tail_biting: true, affine_min: true, ..Default::default() }),
                 ];
                 for enc in &variants {
                     assert_eq!(

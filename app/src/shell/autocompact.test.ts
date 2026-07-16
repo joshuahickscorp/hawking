@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { shouldCompact, nextPolicyState, INITIAL_POLICY, type CompactPolicyState } from "./autocompact";
+import { shouldCompact, nextPolicyState, INITIAL_POLICY, type CompactPolicyState } from "./policies";
 
 const armed: CompactPolicyState = { lastFiredOccupancy: -1, armed: true };
 

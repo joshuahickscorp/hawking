@@ -22,14 +22,14 @@ CONDENSE = ROOT / "tools" / "condense"
 sys.path.insert(0, str(CONDENSE))
 
 import doctor_v5_stacked_admission as stacked  # noqa: E402
-import doctor_v5_single_device_sprint_audit as sprint_audit  # noqa: E402
+import doctor_v5_local_observer as local_observer  # noqa: E402
 import ram_scheduler  # noqa: E402
 
 SCHEMA = "hawking.strand.native-probe-admission.v1"
 GENERATOR_SCHEMA = "hawking.strand.native-probe-launcher.v1"
 HEAVY_LOCK = ROOT / "reports" / "cron" / "studio_heavy.lock"
 GENERATOR_SOURCE = Path(__file__).resolve()
-OWNER_PATTERN_SOURCE = (CONDENSE / "doctor_v5_single_device_sprint_audit.py").resolve()
+OWNER_PATTERN_SOURCE = (CONDENSE / "doctor_v5_local_observer.py").resolve()
 
 
 class ProbeAdmissionError(RuntimeError):
@@ -139,7 +139,7 @@ def active_heavy_owners_fail_closed() -> list[dict[str, Any]]:
             continue
         if pid != own_pid and any(
             pattern.search(command)
-            for pattern in sprint_audit.HEAVY_COMMAND_PATTERNS
+            for pattern in local_observer.HEAVY_COMMAND_PATTERNS
         ):
             owners.append({"pid": pid, "command": command})
     return owners

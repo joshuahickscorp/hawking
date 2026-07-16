@@ -1,4 +1,3 @@
-
 use strand_quant::codebook::{build_codebook_lut_f64, build_quantile_lut_f64};
 use strand_quant::trellis::TrellisConfig;
 

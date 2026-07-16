@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # §1-gated paired lever bench — the reusable harness every Tier-1 lever runs.
 #
-# Generalizes path_to_50_verify.sh: arbitrary A/B (+ optional C) env deltas on
-# top of the locked Qwen fast-path, run as
+# Accepts arbitrary A/B (+ optional C) environment deltas on top of the locked
+# Qwen fast-path, run as
 #   1. PARITY   — greedy temp=0 bit-identical token check (B,C vs A).
 #   2. BENCH    — interleaved paired decode_tps trials (A,B,A,B,... cancels
 #                 thermal drift; agent-open is fine for paired deltas, see

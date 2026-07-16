@@ -11,7 +11,7 @@
 # Non-destructive. GPU jobs run SEQUENTIALLY (SSM then Qwen per prompt).
 set -u
 
-REPO="${REPO:-$HOME/Downloads/hawking}"; cd "$REPO" || exit 2
+REPO="${REPO:-$(CDPATH= cd -- "$(dirname "$0")/../.." && pwd)}"; cd "$REPO" || exit 2
 SSM="${SSM:-models/rwkv7-g1-04-sft-Q4_K_M.gguf}"
 QWEN="${QWEN:-models/qwen2.5-3b-instruct-q4_k_m.gguf}"
 BIN="${BIN:-./target/release/hawking}"

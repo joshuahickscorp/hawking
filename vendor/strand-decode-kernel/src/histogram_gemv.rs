@@ -1,62 +1,25 @@
-
-use crate::block_walk::{
-    block_init_state, block_plans, exceeds_max_sub, BlockPlan, SideInfo, WordReader,
-};
+use crate::block_walk::{block_init_state, block_plans, exceeds_max_sub, BlockPlan, SideInfo, WordReader};
 use rayon::prelude::*;
 use strand_quant::codebook::codebook_lut;
 use strand_quant::decode::reconstruct_q;
 use strand_quant::encode::{EncodedTensor, SUB_BLOCK};
 use strand_quant::TrellisConfig;
 
-pub fn histogram_gemm(
-    enc: &EncodedTensor,
-    cfg: &TrellisConfig,
-    lut: Option<&[i32]>,
-    out_features: usize,
-    in_features: usize,
-    xs: &[f32],
-    batch: usize,
-) -> Vec<f32> {
+pub fn histogram_gemm(enc: &EncodedTensor, cfg: &TrellisConfig, lut: Option<&[i32]>, out_features: usize, in_features: usize, xs: &[f32], batch: usize) -> Vec<f32> {
     histogram_gemm_impl(enc, cfg, lut, out_features, in_features, xs, batch, false)
 }
 
-pub fn histogram_gemm_scalar(
-    enc: &EncodedTensor,
-    cfg: &TrellisConfig,
-    lut: Option<&[i32]>,
-    out_features: usize,
-    in_features: usize,
-    xs: &[f32],
-    batch: usize,
-) -> Vec<f32> {
+pub fn histogram_gemm_scalar(enc: &EncodedTensor, cfg: &TrellisConfig, lut: Option<&[i32]>, out_features: usize, in_features: usize, xs: &[f32], batch: usize) -> Vec<f32> {
     histogram_gemm_impl(enc, cfg, lut, out_features, in_features, xs, batch, true)
 }
 
-pub fn histogram_matvec(
-    enc: &EncodedTensor,
-    cfg: &TrellisConfig,
-    lut: Option<&[i32]>,
-    out_features: usize,
-    in_features: usize,
-    x: &[f32],
-) -> Vec<f32> {
+pub fn histogram_matvec(enc: &EncodedTensor, cfg: &TrellisConfig, lut: Option<&[i32]>, out_features: usize, in_features: usize, x: &[f32]) -> Vec<f32> {
     histogram_gemm(enc, cfg, lut, out_features, in_features, x, 1)
 }
 
-pub fn histogram_dot_q12(
-    enc: &EncodedTensor,
-    cfg: &TrellisConfig,
-    lut: Option<&[i32]>,
-    out_features: usize,
-    in_features: usize,
-    xq: &[i32],
-) -> Vec<i64> {
+pub fn histogram_dot_q12(enc: &EncodedTensor, cfg: &TrellisConfig, lut: Option<&[i32]>, out_features: usize, in_features: usize, xq: &[i32]) -> Vec<i64> {
     assert_eq!(xq.len(), in_features, "xq must have in_features entries");
-    assert_eq!(
-        enc.total,
-        out_features * in_features,
-        "encoded weight count != out_features * in_features"
-    );
+    assert_eq!(enc.total, out_features * in_features, "encoded weight count != out_features * in_features");
     if cfg.vec_dim() > 1 || exceeds_max_sub(enc) {
         return dot_q12_reference(enc, cfg, lut, out_features, in_features, xq);
     }
@@ -152,14 +115,7 @@ pub fn histogram_dot_q12(
     y
 }
 
-pub fn dot_q12_reference(
-    enc: &EncodedTensor,
-    cfg: &TrellisConfig,
-    lut: Option<&[i32]>,
-    out_features: usize,
-    in_features: usize,
-    xq: &[i32],
-) -> Vec<i64> {
+pub fn dot_q12_reference(enc: &EncodedTensor, cfg: &TrellisConfig, lut: Option<&[i32]>, out_features: usize, in_features: usize, xq: &[i32]) -> Vec<i64> {
     assert_eq!(xq.len(), in_features, "xq must have in_features entries");
     let w = crate::decode_weights_q12(enc, cfg, lut);
     assert_eq!(w.len(), out_features * in_features, "decoded weight count mismatch");
@@ -179,7 +135,7 @@ pub fn dot_q12_reference(
 pub struct HistogramStats {
     pub weights: u64,
     pub regions: u64,
-    
+
     pub occupied: u64,
 }
 
@@ -187,21 +143,14 @@ impl HistogramStats {
     pub fn avg_region_len(&self) -> f64 {
         self.weights as f64 / (self.regions.max(1)) as f64
     }
-    
+
     pub fn mul_ratio(&self) -> f64 {
         self.occupied as f64 / (self.weights.max(1)) as f64
     }
 }
 
-pub fn histogram_stats(
-    enc: &EncodedTensor,
-    cfg: &TrellisConfig,
-    in_features: usize,
-) -> HistogramStats {
-    assert!(
-        cfg.vec_dim() == 1 && !exceeds_max_sub(enc),
-        "histogram_stats instruments the fast walk only"
-    );
+pub fn histogram_stats(enc: &EncodedTensor, cfg: &TrellisConfig, in_features: usize) -> HistogramStats {
+    assert!(cfg.vec_dim() == 1 && !exceeds_max_sub(enc), "histogram_stats instruments the fast walk only");
     let num_states = cfg.num_states();
     let mask = cfg.state_mask();
     let k = cfg.k_bits;
@@ -277,23 +226,10 @@ pub fn histogram_stats(
 }
 
 #[allow(clippy::too_many_arguments)]
-fn histogram_gemm_impl(
-    enc: &EncodedTensor,
-    cfg: &TrellisConfig,
-    lut: Option<&[i32]>,
-    out_features: usize,
-    in_features: usize,
-    xs: &[f32],
-    batch: usize,
-    force_scalar: bool,
-) -> Vec<f32> {
+fn histogram_gemm_impl(enc: &EncodedTensor, cfg: &TrellisConfig, lut: Option<&[i32]>, out_features: usize, in_features: usize, xs: &[f32], batch: usize, force_scalar: bool) -> Vec<f32> {
     assert!(batch >= 1, "batch must be >= 1");
     assert_eq!(xs.len(), batch * in_features, "xs must be batch x in_features");
-    assert_eq!(
-        enc.total,
-        out_features * in_features,
-        "encoded weight count != out_features * in_features"
-    );
+    assert_eq!(enc.total, out_features * in_features, "encoded weight count != out_features * in_features");
     if cfg.vec_dim() > 1 || exceeds_max_sub(enc) {
         return crate::fused::fused_gemm(enc, cfg, lut, out_features, in_features, xs, batch);
     }
@@ -321,22 +257,13 @@ fn histogram_gemm_impl(
         while b_off < batch {
             let rem = batch - b_off;
             let step = if rem >= 64 {
-                hist_chunk::<64, 16>(
-                    enc, cfg, lut_resolved, &plans, in_features, batch, b_off, &xt, r0, yg,
-                    force_scalar,
-                );
+                hist_chunk::<64, 16>(enc, cfg, lut_resolved, &plans, in_features, batch, b_off, &xt, r0, yg, force_scalar);
                 64
             } else if rem >= 16 {
-                hist_chunk::<16, 4>(
-                    enc, cfg, lut_resolved, &plans, in_features, batch, b_off, &xt, r0, yg,
-                    force_scalar,
-                );
+                hist_chunk::<16, 4>(enc, cfg, lut_resolved, &plans, in_features, batch, b_off, &xt, r0, yg, force_scalar);
                 16
             } else if rem >= 4 {
-                hist_chunk::<4, 1>(
-                    enc, cfg, lut_resolved, &plans, in_features, batch, b_off, &xt, r0, yg,
-                    force_scalar,
-                );
+                hist_chunk::<4, 1>(enc, cfg, lut_resolved, &plans, in_features, batch, b_off, &xt, r0, yg, force_scalar);
                 4
             } else {
                 hist_rows::<1>(enc, cfg, lut_resolved, &plans, in_features, batch, b_off, &xt, r0, yg);
@@ -367,7 +294,6 @@ fn hist_chunk<const B: usize, const NV: usize>(
     {
         if !force_scalar {
             unsafe {
-                
                 hist_rows_neon::<B, NV>(enc, cfg, lut, plans, in_features, batch, b_off, xt, r0, yg);
             }
             return;
@@ -379,16 +305,7 @@ fn hist_chunk<const B: usize, const NV: usize>(
 
 #[allow(clippy::too_many_arguments)]
 #[inline]
-fn flush_hist<const B: usize>(
-    touched: &mut Vec<u32>,
-    stamp: &mut [u32],
-    epoch: &mut u32,
-    bucket: &[f32],
-    lut: &[i32],
-    es: i32,
-    off: i32,
-    acc: &mut [f32; B],
-) {
+fn flush_hist<const B: usize>(touched: &mut Vec<u32>, stamp: &mut [u32], epoch: &mut u32, bucket: &[f32], lut: &[i32], es: i32, off: i32, acc: &mut [f32; B]) {
     if touched.is_empty() {
         return;
     }
@@ -410,18 +327,7 @@ fn flush_hist<const B: usize>(
 }
 
 #[allow(clippy::too_many_arguments)]
-fn hist_rows<const B: usize>(
-    enc: &EncodedTensor,
-    cfg: &TrellisConfig,
-    lut: &[i32],
-    plans: &[BlockPlan],
-    in_features: usize,
-    batch: usize,
-    b_off: usize,
-    xt: &[f32],
-    r0: usize,
-    yg: &mut [f32],
-) {
+fn hist_rows<const B: usize>(enc: &EncodedTensor, cfg: &TrellisConfig, lut: &[i32], plans: &[BlockPlan], in_features: usize, batch: usize, b_off: usize, xt: &[f32], r0: usize, yg: &mut [f32]) {
     let mask = cfg.state_mask();
     let k = cfg.k_bits;
     let input_mask = cfg.num_inputs() - 1;
@@ -486,7 +392,7 @@ fn hist_rows<const B: usize>(
                     break 'blocks;
                 }
                 let xb = &xt[col * batch + b_off..col * batch + b_off + B];
-                
+
                 let rb = &mut bucket[state * B..state * B + B];
                 if stamp[state] != epoch {
                     stamp[state] = epoch;
@@ -499,10 +405,7 @@ fn hist_rows<const B: usize>(
                 }
                 col += 1;
                 if col == in_features {
-                    flush_hist::<B>(
-                        &mut touched, &mut stamp, &mut epoch, &bucket, lut, cur_es, cur_off,
-                        &mut acc,
-                    );
+                    flush_hist::<B>(&mut touched, &mut stamp, &mut epoch, &bucket, lut, cur_es, cur_off, &mut acc);
                     let yo = row_rel * batch + b_off;
                     yg[yo..yo + B].copy_from_slice(&acc);
                     acc = [0.0f32; B];
@@ -617,8 +520,12 @@ unsafe fn hist_rows_neon<const B: usize, const NV: usize>(
                 state = ((state << k) | sym) & mask;
                 let g = plan.out_off + i;
                 i += 1;
-                if g < g0 { continue; }
-                if g >= g1 { break 'blocks; }
+                if g < g0 {
+                    continue;
+                }
+                if g >= g1 {
+                    break 'blocks;
+                }
                 let xp = xt.as_ptr().add(col * batch + b_off);
                 let rp = bptr.add(state * B);
                 if *stamp.get_unchecked(state) != epoch {
@@ -666,7 +573,6 @@ mod tests {
     }
 
     fn synth_xq(n: usize, seed: u64) -> Vec<i32> {
-        
         (0..n)
             .map(|i| {
                 let h = (i as u64).wrapping_mul(0x9E3779B97F4A7C15).wrapping_add(seed);
@@ -677,13 +583,7 @@ mod tests {
 
     #[test]
     fn histogram_dot_q12_bit_equal_reference() {
-        let configs = [
-            TrellisConfig::for_bpw(3.0),       
-            TrellisConfig::for_bpw(2.0),       
-            TrellisConfig::for_bpw(4.0),       
-            TrellisConfig::for_bpw_l(2.0, 5),  
-            TrellisConfig::for_bpw_l(2.0, 12), 
-        ];
+        let configs = [TrellisConfig::for_bpw(3.0), TrellisConfig::for_bpw(2.0), TrellisConfig::for_bpw(4.0), TrellisConfig::for_bpw_l(2.0, 5), TrellisConfig::for_bpw_l(2.0, 12)];
         let shapes = [(8usize, 256usize), (37, 300), (64, 200), (5, 512), (3, 97)];
         for cfg in &configs {
             for &(rows, cols) in &shapes {
@@ -693,21 +593,13 @@ mod tests {
                     encode_tensor(&w, cfg),
                     encode_tensor_with(&w, cfg, &EncodeOpts { tail_biting: true, ..Default::default() }),
                     encode_tensor_with(&w, cfg, &EncodeOpts { affine_min: true, ..Default::default() }),
-                    encode_tensor_with(
-                        &w,
-                        cfg,
-                        &EncodeOpts { tail_biting: true, affine_min: true, ..Default::default() },
-                    ),
+                    encode_tensor_with(&w, cfg, &EncodeOpts { tail_biting: true, affine_min: true, ..Default::default() }),
                 ];
                 let xq = synth_xq(cols, 7);
                 for enc in &variants {
                     let y_h = histogram_dot_q12(enc, cfg, None, rows, cols, &xq);
                     let y_r = dot_q12_reference(enc, cfg, None, rows, cols, &xq);
-                    assert_eq!(
-                        y_h, y_r,
-                        "integer histogram != reference dot: L={} k={} rows={rows} cols={cols} tail={} affine={}",
-                        cfg.l_bits, cfg.k_bits, enc.tail_biting, enc.has_affine_min
-                    );
+                    assert_eq!(y_h, y_r, "integer histogram != reference dot: L={} k={} rows={rows} cols={cols} tail={} affine={}", cfg.l_bits, cfg.k_bits, enc.tail_biting, enc.has_affine_min);
                 }
             }
         }
@@ -715,20 +607,12 @@ mod tests {
 
     #[test]
     fn histogram_gemm_within_tolerance_of_fused() {
-        let configs = [
-            TrellisConfig::for_bpw(3.0),
-            TrellisConfig::for_bpw_l(2.0, 12),
-            TrellisConfig::for_bpw_l(2.0, 5), 
-        ];
+        let configs = [TrellisConfig::for_bpw(3.0), TrellisConfig::for_bpw_l(2.0, 12), TrellisConfig::for_bpw_l(2.0, 5)];
         for cfg in &configs {
             for &(rows, cols) in &[(16usize, 256usize), (37, 300), (9, 1024)] {
                 let n = rows * cols;
                 let w: Vec<f32> = (0..n).map(|i| ((i as f32) * 0.011).sin() * 0.6).collect();
-                let enc = encode_tensor_with(
-                    &w,
-                    cfg,
-                    &EncodeOpts { tail_biting: true, affine_min: true, ..Default::default() },
-                );
+                let enc = encode_tensor_with(&w, cfg, &EncodeOpts { tail_biting: true, affine_min: true, ..Default::default() });
                 let wq = crate::decode_weights_q12(&enc, cfg, None);
                 let inv = 1.0f32 / 4096.0;
                 for &batch in &[1usize, 4, 16] {
@@ -766,14 +650,10 @@ mod tests {
     #[test]
     fn histogram_columns_bit_equal_matvec() {
         let cfg = TrellisConfig::for_bpw(3.0);
-        let (rows, cols) = (37usize, 300usize); 
+        let (rows, cols) = (37usize, 300usize);
         let n = rows * cols;
         let w: Vec<f32> = (0..n).map(|i| (i as f32 * 0.0091).sin() * 0.4).collect();
-        let enc = encode_tensor_with(
-            &w,
-            &cfg,
-            &EncodeOpts { tail_biting: true, affine_min: true, ..Default::default() },
-        );
+        let enc = encode_tensor_with(&w, &cfg, &EncodeOpts { tail_biting: true, affine_min: true, ..Default::default() });
         for &batch in &[1usize, 3, 4, 5, 8, 16, 21, 64, 65] {
             let mut xs = Vec::with_capacity(batch * cols);
             for b in 0..batch {
@@ -784,11 +664,7 @@ mod tests {
                 let xb = &xs[b * cols..(b + 1) * cols];
                 let y1 = histogram_matvec(&enc, &cfg, None, rows, cols, xb);
                 for o in 0..rows {
-                    assert_eq!(
-                        y[o * batch + b].to_bits(),
-                        y1[o].to_bits(),
-                        "gemm col {b} row {o} != matvec (batch={batch})"
-                    );
+                    assert_eq!(y[o * batch + b].to_bits(), y1[o].to_bits(), "gemm col {b} row {o} != matvec (batch={batch})");
                 }
             }
         }
@@ -801,10 +677,7 @@ mod tests {
             for &(rows, cols) in &[(16usize, 256usize), (37, 300)] {
                 let n = rows * cols;
                 let w: Vec<f32> = (0..n).map(|i| ((i as f32) * 0.0113).sin() * 0.6).collect();
-                for opts in [
-                    EncodeOpts::default(),
-                    EncodeOpts { tail_biting: true, affine_min: true, ..Default::default() },
-                ] {
+                for opts in [EncodeOpts::default(), EncodeOpts { tail_biting: true, affine_min: true, ..Default::default() }] {
                     let enc = encode_tensor_with(&w, cfg, &opts);
                     for &batch in &[4usize, 5, 16, 21, 64] {
                         let mut xs = Vec::with_capacity(batch * cols);
@@ -814,13 +687,7 @@ mod tests {
                         let y_n = histogram_gemm(&enc, cfg, None, rows, cols, &xs, batch);
                         let y_s = histogram_gemm_scalar(&enc, cfg, None, rows, cols, &xs, batch);
                         for (i, (a, b)) in y_n.iter().zip(y_s.iter()).enumerate() {
-                            assert_eq!(
-                                a.to_bits(),
-                                b.to_bits(),
-                                "NEON vs scalar histogram diverged at {i}: L={} k={} batch={batch}",
-                                cfg.l_bits,
-                                cfg.k_bits
-                            );
+                            assert_eq!(a.to_bits(), b.to_bits(), "NEON vs scalar histogram diverged at {i}: L={} k={} batch={batch}", cfg.l_bits, cfg.k_bits);
                         }
                     }
                 }
@@ -834,8 +701,7 @@ mod tests {
         let (rows, cols) = (6usize, 128usize);
         let w: Vec<f32> = (0..rows * cols).map(|i| (i as f32 * 0.017).sin()).collect();
         let enc = encode_tensor(&w, &cfg);
-        let vlut: Vec<i32> =
-            (0..cfg.num_states() * cfg.vec_dim()).map(|i| ((i * 37) % 8192) as i32 - 4096).collect();
+        let vlut: Vec<i32> = (0..cfg.num_states() * cfg.vec_dim()).map(|i| ((i * 37) % 8192) as i32 - 4096).collect();
         let x = synth_x(cols, 4.0);
         let y_h = histogram_matvec(&enc, &cfg, Some(&vlut), rows, cols, &x);
         let y_f = fused_matvec(&enc, &cfg, Some(&vlut), rows, cols, &x);
@@ -843,11 +709,7 @@ mod tests {
             assert_eq!(y_h[o].to_bits(), y_f[o].to_bits(), "float fallback row {o}");
         }
         let xq = synth_xq(cols, 11);
-        assert_eq!(
-            histogram_dot_q12(&enc, &cfg, Some(&vlut), rows, cols, &xq),
-            dot_q12_reference(&enc, &cfg, Some(&vlut), rows, cols, &xq),
-            "integer fallback"
-        );
+        assert_eq!(histogram_dot_q12(&enc, &cfg, Some(&vlut), rows, cols, &xq), dot_q12_reference(&enc, &cfg, Some(&vlut), rows, cols, &xq), "integer fallback");
     }
 
     #[test]
@@ -855,11 +717,7 @@ mod tests {
         let cfg = TrellisConfig::for_bpw(3.0);
         let (rows, cols) = (16usize, 512usize);
         let w: Vec<f32> = (0..rows * cols).map(|i| ((i as f32) * 0.031).sin() * 0.7).collect();
-        let enc = encode_tensor_with(
-            &w,
-            &cfg,
-            &EncodeOpts { affine_min: true, ..Default::default() },
-        );
+        let enc = encode_tensor_with(&w, &cfg, &EncodeOpts { affine_min: true, ..Default::default() });
         let s = histogram_stats(&enc, &cfg, cols);
         assert_eq!(s.weights, (rows * cols) as u64);
         assert!(s.regions >= rows as u64, "row ends force at least one region per row");

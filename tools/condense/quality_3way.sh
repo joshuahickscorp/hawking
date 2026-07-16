@@ -16,7 +16,7 @@ MODEL=scratch/qwen-05b
 PY=python3.12
 CALIB=/tmp/ppl_3way_calib.txt
 
-cat docs/plans/condense_master_plan_2026_06_22.md docs/plans/native_tq_serving_impl.md 2>/dev/null \
+cat docs/RESEARCH.md docs/plans/tq_compute_for_memory_appendix_2026_07_14.md 2>/dev/null \
   | head -c 8000 > "$CALIB"
 [ -s "$CALIB" ] || { echo "calib text empty" >&2; exit 2; }
 
@@ -30,8 +30,9 @@ jget() { $PY -c "import sys,json;print(json.load(sys.stdin)['ppl'])" 2>/dev/null
 lppl() { llama-perplexity -m "$1" -f "$CALIB" -c 512 2>&1 | grep -o 'PPL = [0-9.]*' | tail -1 | grep -o '[0-9.]*'; }
 
 echo "[3way] Hawking f16 + ${LBL} (transformers) ..." >&2
-hf=$(PPL_TEXT=$CALIB $PY tools/condense/ppl_bench.py "$MODEL" - f16 2>/dev/null | jget)
-hc=$(PPL_TEXT=$CALIB $PY tools/condense/ppl_bench.py "$MODEL" "$COND" "$LBL" 2>/dev/null | jget)
+hf=$(PPL_TEXT=$CALIB $PY -m tools.condense legacy ppl_bench "$MODEL" - f16 2>/dev/null | jget)
+hc=$(PPL_TEXT=$CALIB $PY -m tools.condense legacy ppl_bench \
+  "$MODEL" "$COND" "$LBL" 2>/dev/null | jget)
 echo "[3way] llama f16 + Q4_K (llama-perplexity) ..." >&2
 lf=$(lppl scratch/qwen-05b-f16.gguf); lq=$(lppl scratch/qwen-05b-q4km.gguf)
 

@@ -1,4 +1,3 @@
-
 use strand_quant::codebook::codebook_lut;
 use strand_quant::decode::{decode_lean, decode_tensor_fixed};
 use strand_quant::encode::{pack_sub_scales, BlockMeta, EncodedTensor};
@@ -26,20 +25,18 @@ fn ref_decode(enc: &EncodedTensor, cfg: &TrellisConfig, lut: &[i32]) -> Vec<i32>
     let mask = (1usize << l) - 1;
     let imask = (1usize << k) - 1;
     let mut out = Vec::with_capacity(enc.total);
-    let mut cursor = 0usize; 
+    let mut cursor = 0usize;
 
     for blk in &enc.blocks {
         let n = blk.n as usize;
         let n_sub = n.div_ceil(32);
         let scodes = ref_unpack6(&blk.sub_scales, n_sub);
-        let mcodes: Vec<u8> =
-            if enc.has_affine_min { ref_unpack6(&blk.mins, n_sub) } else { Vec::new() };
+        let mcodes: Vec<u8> = if enc.has_affine_min { ref_unpack6(&blk.mins, n_sub) } else { Vec::new() };
 
         let mut state = if enc.tail_biting && n * k as usize >= l as usize {
             let mut s = 0usize;
             for i in 0..n {
-                s = ((s << k) | (ref_read_bits(&enc.bits, cursor + i * k as usize, k) & imask))
-                    & mask;
+                s = ((s << k) | (ref_read_bits(&enc.bits, cursor + i * k as usize, k) & imask)) & mask;
             }
             s
         } else {
@@ -89,15 +86,7 @@ fn pack_symbols(syms: &[usize], k: u32) -> Vec<u8> {
 }
 
 #[allow(clippy::too_many_arguments)]
-fn make_tensor(
-    block_syms: &[Vec<usize>],
-    k: u32,
-    init_states: &[u32],
-    scale_qs: &[i32],
-    sub_codes: &[Vec<u8>],
-    tail_biting: bool,
-    affine: Option<(&[i32], &[Vec<u8>])>, 
-) -> EncodedTensor {
+fn make_tensor(block_syms: &[Vec<usize>], k: u32, init_states: &[u32], scale_qs: &[i32], sub_codes: &[Vec<u8>], tail_biting: bool, affine: Option<(&[i32], &[Vec<u8>])>) -> EncodedTensor {
     let all_syms: Vec<usize> = block_syms.iter().flatten().copied().collect();
     let bits = pack_symbols(&all_syms, k);
     let mut blocks = Vec::new();
@@ -109,23 +98,9 @@ fn make_tensor(
             Some((bases, codes)) => (bases[b], pack_sub_scales(&codes[b])),
             None => (0, Vec::new()),
         };
-        blocks.push(BlockMeta {
-            scale_q: scale_qs[b],
-            sub_scales: pack_sub_scales(&sub_codes[b]),
-            min_base_q,
-            mins,
-            init_state: init_states[b],
-            n: n as u32,
-        });
+        blocks.push(BlockMeta { scale_q: scale_qs[b], sub_scales: pack_sub_scales(&sub_codes[b]), min_base_q, mins, init_state: init_states[b], n: n as u32 });
     }
-    EncodedTensor {
-        bits,
-        blocks,
-        total,
-        has_rht_seed: false,
-        tail_biting,
-        has_affine_min: affine.is_some(),
-    }
+    EncodedTensor { bits, blocks, total, has_rht_seed: false, tail_biting, has_affine_min: affine.is_some() }
 }
 
 fn assert_three_way(enc: &EncodedTensor, cfg: &TrellisConfig, ctx: &str) {
@@ -146,38 +121,27 @@ fn exhaustive_state_stream_equivalence() {
         let cfg = TrellisConfig::new(l, k, 256);
         assert_eq!((cfg.l_bits, cfg.k_bits), (l, k), "config clamped unexpectedly");
         let n_states = 1usize << l;
-        let n_max = 12 / k as usize; 
+        let n_max = 12 / k as usize;
         let mut tier = 0u64;
         for n in 1..=n_max {
             let n_streams = 1usize << (n * k as usize);
             for init in 0..n_states {
                 for stream in 0..n_streams {
-                    let syms: Vec<usize> =
-                        (0..n).map(|i| (stream >> (i * k as usize)) & ((1 << k) - 1)).collect();
+                    let syms: Vec<usize> = (0..n).map(|i| (stream >> (i * k as usize)) & ((1 << k) - 1)).collect();
                     let scale = SCALES[(init + stream) % SCALES.len()];
-                    let enc = make_tensor(
-                        &[syms],
-                        k,
-                        &[init as u32],
-                        &[scale],
-                        &[vec![63u8]], 
-                        false,
-                        None,
-                    );
+                    let enc = make_tensor(&[syms], k, &[init as u32], &[scale], &[vec![63u8]], false, None);
                     assert_three_way(&enc, &cfg, &format!("L={l} k={k} n={n} init={init} stream={stream}"));
                     tier += 1;
                 }
             }
         }
-        
-        let expect: u64 = (1..=n_max)
-            .map(|n| (n_states as u64) * (1u64 << (n * k as usize)))
-            .sum();
+
+        let expect: u64 = (1..=n_max).map(|n| (n_states as u64) * (1u64 << (n * k as usize))).sum();
         assert_eq!(tier, expect, "coverage drifted at L={l} k={k}");
         covered += tier;
     }
     eprintln!("exhaustive (state x stream), non-tail-biting: {covered} tensors");
-    
+
     assert_eq!(covered, 87_360 + 74_880 + 174_720 + 149_760);
 }
 
@@ -191,34 +155,21 @@ fn exhaustive_state_stream_equivalence_tail_biting() {
         for n in 1..=n_max {
             let n_streams = 1usize << (n * k as usize);
             let nk = n * k as usize;
-            let states: Vec<usize> =
-                if nk >= l as usize { vec![0, n_states - 1] } else { (0..n_states).collect() };
+            let states: Vec<usize> = if nk >= l as usize { vec![0, n_states - 1] } else { (0..n_states).collect() };
             for stream in 0..n_streams {
-                let syms: Vec<usize> =
-                    (0..n).map(|i| (stream >> (i * k as usize)) & ((1 << k) - 1)).collect();
+                let syms: Vec<usize> = (0..n).map(|i| (stream >> (i * k as usize)) & ((1 << k) - 1)).collect();
                 let mut first: Option<Vec<i32>> = None;
                 for &init in &states {
                     let scale = SCALES[(stream + n) % SCALES.len()];
-                    let enc = make_tensor(
-                        std::slice::from_ref(&syms),
-                        k,
-                        &[init as u32],
-                        &[scale],
-                        &[vec![63u8]],
-                        true,
-                        None,
-                    );
+                    let enc = make_tensor(std::slice::from_ref(&syms), k, &[init as u32], &[scale], &[vec![63u8]], true, None);
                     assert_three_way(&enc, &cfg, &format!("TB L={l} k={k} n={n} init={init} stream={stream}"));
                     covered += 1;
-                    
+
                     if nk >= l as usize {
                         let out = decode_lean(&enc, &cfg);
                         match &first {
                             None => first = Some(out),
-                            Some(f) => assert_eq!(
-                                &out, f,
-                                "tail-bitten output depends on stored init_state (L={l} k={k} n={n})"
-                            ),
+                            Some(f) => assert_eq!(&out, f, "tail-bitten output depends on stored init_state (L={l} k={k} n={n})"),
                         }
                     }
                 }
@@ -234,21 +185,12 @@ fn exhaustive_sub_scale_codes() {
     for (l, k) in [(4u32, 2u32), (5, 3)] {
         let cfg = TrellisConfig::new(l, k, 256);
         let n = 33usize;
-        
-        let syms: Vec<usize> =
-            (0..n).map(|i| (i.wrapping_mul(2654435761) >> 7) & ((1 << k) - 1)).collect();
+
+        let syms: Vec<usize> = (0..n).map(|i| (i.wrapping_mul(2654435761) >> 7) & ((1 << k) - 1)).collect();
         for c0 in 0u8..64 {
             for c1 in 0u8..64 {
-                let scale = SCALES[(c0 as usize * 64 + c1 as usize) % 4]; 
-                let enc = make_tensor(
-                    std::slice::from_ref(&syms),
-                    k,
-                    &[3],
-                    &[scale],
-                    &[vec![c0, c1]],
-                    false,
-                    None,
-                );
+                let scale = SCALES[(c0 as usize * 64 + c1 as usize) % 4];
+                let enc = make_tensor(std::slice::from_ref(&syms), k, &[3], &[scale], &[vec![c0, c1]], false, None);
                 assert_three_way(&enc, &cfg, &format!("subscale L={l} k={k} c0={c0} c1={c1}"));
                 covered += 1;
             }
@@ -267,15 +209,7 @@ fn exhaustive_affine_min_codes() {
     for &base in &bases {
         for m0 in 0u8..64 {
             for m1 in 0u8..64 {
-                let enc = make_tensor(
-                    std::slice::from_ref(&syms),
-                    2,
-                    &[9],
-                    &[1 << 16],
-                    &[vec![63, 17]],
-                    false,
-                    Some((&[base], &[vec![m0, m1]])),
-                );
+                let enc = make_tensor(std::slice::from_ref(&syms), 2, &[9], &[1 << 16], &[vec![63, 17]], false, Some((&[base], &[vec![m0, m1]])));
                 assert_three_way(&enc, &cfg, &format!("affine base={base} m0={m0} m1={m1}"));
                 covered += 1;
             }
@@ -300,11 +234,7 @@ fn boundary_geometries_three_way() {
                     let mut bases = Vec::new();
                     let mut minc: Vec<Vec<u8>> = Vec::new();
                     for (b, &n) in lens.iter().enumerate() {
-                        let syms: Vec<usize> = (0..n)
-                            .map(|i| {
-                                ((i + b * 977).wrapping_mul(2654435761) >> 9) & ((1 << k) - 1)
-                            })
-                            .collect();
+                        let syms: Vec<usize> = (0..n).map(|i| ((i + b * 977).wrapping_mul(2654435761) >> 9) & ((1 << k) - 1)).collect();
                         block_syms.push(syms);
                         inits.push(((b * 7 + tail_len) % (1 << l)) as u32);
                         scales.push(SCALES[(b + tail_len + l as usize) % SCALES.len()]);
@@ -314,13 +244,8 @@ fn boundary_geometries_three_way() {
                         minc.push((0..ns).map(|s| ((s * 23 + b * 5) % 64) as u8).collect());
                     }
                     let aff = if affine { Some((&bases[..], &minc[..])) } else { None };
-                    let enc =
-                        make_tensor(&block_syms, k, &inits, &scales, &subc, tail, aff);
-                    assert_three_way(
-                        &enc,
-                        &cfg,
-                        &format!("geom L={l} k={k} tail={tail} affine={affine} tail_len={tail_len}"),
-                    );
+                    let enc = make_tensor(&block_syms, k, &inits, &scales, &subc, tail, aff);
+                    assert_three_way(&enc, &cfg, &format!("geom L={l} k={k} tail={tail} affine={affine} tail_len={tail_len}"));
                     covered += 1;
                 }
             }

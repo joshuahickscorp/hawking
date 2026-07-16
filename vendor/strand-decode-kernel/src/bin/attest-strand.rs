@@ -20,11 +20,7 @@ impl ReconFile {
         let bytes = std::fs::read(path).expect("recon-check: read recon safetensors");
         let hdr_len = u64::from_le_bytes(bytes[0..8].try_into().unwrap()) as usize;
         let header = String::from_utf8(bytes[8..8 + hdr_len].to_vec()).expect("header utf8");
-        ReconFile {
-            bytes,
-            header,
-            data_start: 8 + hdr_len,
-        }
+        ReconFile { bytes, header, data_start: 8 + hdr_len }
     }
 
     fn tensor_bytes(&self, name: &str) -> Option<&[u8]> {
@@ -37,9 +33,7 @@ impl ReconFile {
         let rest = &obj[dpos..];
         let lb = rest.find('[')?;
         let rb = rest.find(']')?;
-        let mut it = rest[lb + 1..rb]
-            .split(',')
-            .map(|t| t.trim().parse::<usize>().ok());
+        let mut it = rest[lb + 1..rb].split(',').map(|t| t.trim().parse::<usize>().ok());
         let a = it.next()??;
         let b = it.next()??;
         self.bytes.get(self.data_start + a..self.data_start + b)
@@ -57,67 +51,37 @@ fn main() {
             "--roots" => print_roots = true,
             "--recon-check" => {
                 i += 1;
-                recon_check = Some(
-                    args.get(i)
-                        .expect("--recon-check needs a recon.safetensors path")
-                        .clone(),
-                );
+                recon_check = Some(args.get(i).expect("--recon-check needs a recon.safetensors path").clone());
             }
             _ => positional.push(&args[i]),
         }
         i += 1;
     }
-    let path = positional.first().expect(
-        "usage: attest-strand <archive.strand> [--roots] [--recon-check <recon.safetensors>]",
-    );
+    let path = positional.first().expect("usage: attest-strand <archive.strand> [--roots] [--recon-check <recon.safetensors>]");
 
     let model = StrandModel::open(Path::new(path)).expect("attest-strand: open .strand v2 archive");
     let hdr = model.header();
     let n = hdr.tensors.len();
-    let file_len = std::fs::metadata(path.as_str())
-        .expect("stat archive")
-        .len();
+    let file_len = std::fs::metadata(path.as_str()).expect("stat archive").len();
     println!("archive          {path}");
-    println!(
-        "tensors          {n}   strict={}   source_sha256={}",
-        hdr.all_strict(),
-        hex(&hdr.source_sha256)
-    );
+    println!("tensors          {n}   strict={}   source_sha256={}", hdr.all_strict(), hex(&hdr.source_sha256));
     assert!(n > 0, "attest-strand: archive contains no tensors");
 
     let n_weights: u64 = hdr.tensors.iter().map(|t| t.total as u64).sum();
-    println!(
-        "BILLING          file_len={file_len} B  n_weights={n_weights}  bytes/weight={:.4}  (whole file incl. OUTL+SPRV sections)",
-        file_len as f64 / n_weights.max(1) as f64
-    );
+    println!("BILLING          file_len={file_len} B  n_weights={n_weights}  bytes/weight={:.4}  (whole file incl. OUTL+SPRV sections)", file_len as f64 / n_weights.max(1) as f64);
 
     match model.outl_section() {
-        Some(o) => println!(
-            "outliers         OUTL section present: {}/{} tensors carry a channel, {} entries total",
-            o.n_with_channel(),
-            n,
-            o.total_entries()
-        ),
-        None => println!(
-            "outliers         NO OUTL section — bulk-only archive (quality-bearing for outlier-channel configs ONLY when re-baked)"
-        ),
+        Some(o) => println!("outliers         OUTL section present: {}/{} tensors carry a channel, {} entries total", o.n_with_channel(), n, o.total_entries()),
+        None => println!("outliers         NO OUTL section — bulk-only archive (quality-bearing for outlier-channel configs ONLY when re-baked)"),
     }
 
     match read_sprv(path.as_str()) {
         Ok(Some(sprv)) => {
-            let lut_for = |tensor: &strand_quant::format::OwnedTensorV2| {
-                model.lut_for(&tensor.base.name).map(|lut| lut.to_vec())
-            };
-            verify_archive_with(path.as_str(), VerifyDepth::Vectors, &lut_for)
-                .expect("attest-strand: SPRV self-verification FAILED");
-            println!(
-                "sprv             trailer present (v2, R2 descriptor binding): self-verify (Vectors) PASS; stored model_root={}",
-                hex(&sprv.model_root)
-            );
+            let lut_for = |tensor: &strand_quant::format::OwnedTensorV2| model.lut_for(&tensor.base.name).map(|lut| lut.to_vec());
+            verify_archive_with(path.as_str(), VerifyDepth::Vectors, &lut_for).expect("attest-strand: SPRV self-verification FAILED");
+            println!("sprv             trailer present (v2, R2 descriptor binding): self-verify (Vectors) PASS; stored model_root={}", hex(&sprv.model_root));
         }
-        Ok(None) => println!(
-            "sprv             NO SPRV trailer — roots below are computed, not attested in-file"
-        ),
+        Ok(None) => println!("sprv             NO SPRV trailer — roots below are computed, not attested in-file"),
         Err(e) => panic!("attest-strand: SPRV trailer present but corrupt: {e}"),
     }
 
@@ -134,24 +98,13 @@ fn main() {
         };
         let th = &hdr.tensors[i];
         let name = th.name.clone();
-        let enc = model
-            .encoded_tensor_checked(&name)
-            .unwrap_or_else(|e| panic!("attest-strand: reconstruct {name}: {e}"));
+        let enc = model.encoded_tensor_checked(&name).unwrap_or_else(|e| panic!("attest-strand: reconstruct {name}: {e}"));
         let cfg = model.config_for(th);
-        let lut = model
-            .lut_for(&name)
-            .unwrap_or_else(|e| panic!("attest-strand: resolve LUT for {name}: {e}"));
+        let lut = model.lut_for(&name).unwrap_or_else(|e| panic!("attest-strand: resolve LUT for {name}: {e}"));
         let q_fixed = decode_tensor_fixed_with_lut(&enc, &cfg, lut);
         let q_lean = decode_lean_with_lut(&enc, &cfg, lut);
-        assert_eq!(
-            q_fixed, q_lean,
-            "DETERMINISM VIOLATION: fixed vs lean decode differ on {name}"
-        );
-        assert_eq!(
-            q_fixed.len(),
-            th.total,
-            "decoded count != header total on {name}"
-        );
+        assert_eq!(q_fixed, q_lean, "DETERMINISM VIOLATION: fixed vs lean decode differ on {name}");
+        assert_eq!(q_fixed.len(), th.total, "decoded count != header total on {name}");
         let nz = q_fixed.iter().filter(|&&q| q != 0).count();
         assert!(nz > 0, "degenerate all-zero Q12 stream in {name}");
         let mn = q_fixed.iter().copied().min().unwrap();
@@ -171,18 +124,10 @@ fn main() {
         let recon = ReconFile::open(recon_path);
         let mut checked = 0usize;
         for th in &hdr.tensors {
-            let got = patched_weights(&model, &th.name)
-                .unwrap_or_else(|e| panic!("recon-check: patched decode {}: {e}", th.name));
-            let want = recon.tensor_bytes(&th.name).unwrap_or_else(|| {
-                panic!("recon-check: tensor {} missing in {recon_path}", th.name)
-            });
+            let got = patched_weights(&model, &th.name).unwrap_or_else(|e| panic!("recon-check: patched decode {}: {e}", th.name));
+            let want = recon.tensor_bytes(&th.name).unwrap_or_else(|| panic!("recon-check: tensor {} missing in {recon_path}", th.name));
             if want.len() != got.len() * 4 {
-                eprintln!(
-                    "RECON-CHECK FAIL {}: {} archive weights vs {} recon bytes",
-                    th.name,
-                    got.len(),
-                    want.len()
-                );
+                eprintln!("RECON-CHECK FAIL {}: {} archive weights vs {} recon bytes", th.name, got.len(), want.len());
                 std::process::exit(1);
             }
             let mut got_bytes = Vec::with_capacity(want.len());
@@ -190,16 +135,8 @@ fn main() {
                 got_bytes.extend_from_slice(&v.to_le_bytes());
             }
             if got_bytes != want {
-                let first_bad = got_bytes
-                    .iter()
-                    .zip(want.iter())
-                    .position(|(a, b)| a != b)
-                    .unwrap_or(0);
-                eprintln!(
-                    "RECON-CHECK FAIL {}: byte mismatch at offset {first_bad} (weight {})",
-                    th.name,
-                    first_bad / 4
-                );
+                let first_bad = got_bytes.iter().zip(want.iter()).position(|(a, b)| a != b).unwrap_or(0);
+                eprintln!("RECON-CHECK FAIL {}: byte mismatch at offset {first_bad} (weight {})", th.name, first_bad / 4);
                 std::process::exit(1);
             }
             checked += 1;
@@ -212,13 +149,9 @@ fn main() {
 
     let mut roots: Vec<(String, [u8; 32])> = Vec::with_capacity(n);
     for th in &hdr.tensors {
-        let enc = model
-            .encoded_tensor_checked(&th.name)
-            .unwrap_or_else(|e| panic!("attest-strand: reconstruct {}: {e}", th.name));
+        let enc = model.encoded_tensor_checked(&th.name).unwrap_or_else(|e| panic!("attest-strand: reconstruct {}: {e}", th.name));
         let cfg = model.config_for(th);
-        let lut = model
-            .lut_for(&th.name)
-            .unwrap_or_else(|e| panic!("attest-strand: resolve LUT for {}: {e}", th.name));
+        let lut = model.lut_for(&th.name).unwrap_or_else(|e| panic!("attest-strand: resolve LUT for {}: {e}", th.name));
         let r = tensor_root(&enc, &cfg, lut);
         if print_roots {
             println!("tensor_root {}  {}", hex(&r), th.name);
@@ -228,10 +161,7 @@ fn main() {
     let mroot = model_root_from_tensor_roots(roots.iter().map(|(name, r)| (name.as_str(), *r)));
 
     if let Ok(Some(sprv)) = read_sprv(path.as_str()) {
-        assert_eq!(
-            mroot, sprv.model_root,
-            "attest-strand: recomputed model_root differs from the SPRV-stored root"
-        );
+        assert_eq!(mroot, sprv.model_root, "attest-strand: recomputed model_root differs from the SPRV-stored root");
         println!("model_root {}  (matches SPRV stored root)", hex(&mroot));
     } else {
         println!("model_root {}", hex(&mroot));

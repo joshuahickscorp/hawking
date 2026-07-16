@@ -151,10 +151,7 @@ impl DbiaSection {
 
     /// Total bf16 bias entries across all tensors.
     pub fn total_entries(&self) -> usize {
-        self.tensors
-            .iter()
-            .filter_map(|t| t.as_ref().map(|w| w.c_bits.len()))
-            .sum()
+        self.tensors.iter().filter_map(|t| t.as_ref().map(|w| w.c_bits.len())).sum()
     }
 }
 
@@ -171,10 +168,7 @@ fn out_features_of(shape: &[u64]) -> Option<usize> {
     shape.first().map(|&d| d as usize)
 }
 
-fn dbia_section_bytes(
-    wires: &[Option<DebiasWire>],
-    out_features: &[usize],
-) -> Result<Vec<u8>, String> {
+fn dbia_section_bytes(wires: &[Option<DebiasWire>], out_features: &[usize]) -> Result<Vec<u8>, String> {
     debug_assert_eq!(wires.len(), out_features.len());
     let mut o = Vec::new();
     o.extend_from_slice(DBIA_MAGIC);
@@ -192,21 +186,12 @@ fn dbia_section_bytes(
             }
             Some(w) => {
                 if w.c_bits.len() != out {
-                    return Err(format!(
-                        "dbia: tensor record {i}: correction has {} rows, tensor has out_features {out}",
-                        w.c_bits.len()
-                    ));
+                    return Err(format!("dbia: tensor record {i}: correction has {} rows, tensor has out_features {out}", w.c_bits.len()));
                 }
                 if w.c_bits.is_empty() {
-                    return Err(format!(
-                        "dbia: tensor record {i}: Some(empty) is ambiguous — use None for absent"
-                    ));
+                    return Err(format!("dbia: tensor record {i}: Some(empty) is ambiguous — use None for absent"));
                 }
-                let len: u32 = w
-                    .c_bits
-                    .len()
-                    .try_into()
-                    .map_err(|_| format!("dbia: tensor record {i}: too many rows for u32 len"))?;
+                let len: u32 = w.c_bits.len().try_into().map_err(|_| format!("dbia: tensor record {i}: too many rows for u32 len"))?;
                 o.extend_from_slice(&len.to_le_bytes());
                 o.extend_from_slice(&0u32.to_le_bytes()); // reserved
                 for &b in &w.c_bits {
@@ -226,16 +211,12 @@ pub fn append_dbia(path: impl AsRef<Path>, wires: &[Option<DebiasWire>]) -> Resu
     let buf = fs::read(path).map_err(|e| format!("dbia: read {path:?}: {e}"))?;
 
     if buf.len() >= DBIA_TRAILER_BYTES && &buf[buf.len() - 4..] == &SPRV_MAGIC[..] {
-        return Err(
-            "dbia: file already has an SPRV trailer — DBIA must be appended BEFORE SPRV \
+        return Err("dbia: file already has an SPRV trailer — DBIA must be appended BEFORE SPRV \
              (sections stack as OUTL then DBIA then SPRV, SPRV outermost)"
-                .into(),
-        );
+            .into());
     }
     match read_dbia_bytes(&buf, true) {
-        Ok(Some(_)) => {
-            return Err("dbia: file already has a DBIA section (double-append rejected)".into())
-        }
+        Ok(Some(_)) => return Err("dbia: file already has a DBIA section (double-append rejected)".into()),
         Err(e) => {
             return Err(format!(
                 "dbia: file ends in DBIA magic but the section is invalid — refusing to \
@@ -247,22 +228,11 @@ pub fn append_dbia(path: impl AsRef<Path>, wires: &[Option<DebiasWire>]) -> Resu
 
     let hdr = read_strand_v2_header(&buf)?;
     if wires.len() != hdr.tensors.len() {
-        return Err(format!(
-            "dbia: {} wire records, archive has {} tensors",
-            wires.len(),
-            hdr.tensors.len()
-        ));
+        return Err(format!("dbia: {} wire records, archive has {} tensors", wires.len(), hdr.tensors.len()));
     }
-    let out_features: Vec<usize> = hdr
-        .tensors
-        .iter()
-        .map(|t| out_features_of(&t.shape).unwrap_or(0))
-        .collect();
+    let out_features: Vec<usize> = hdr.tensors.iter().map(|t| out_features_of(&t.shape).unwrap_or(0)).collect();
     let section = dbia_section_bytes(wires, &out_features)?;
-    let dbia_bytes: u32 = section
-        .len()
-        .try_into()
-        .map_err(|_| format!("dbia: section is {} bytes — exceeds the u32 field", section.len()))?;
+    let dbia_bytes: u32 = section.len().try_into().map_err(|_| format!("dbia: section is {} bytes — exceeds the u32 field", section.len()))?;
 
     let dbia_offset = page_align(buf.len());
     let lead_pad = dbia_offset - buf.len();
@@ -277,27 +247,16 @@ pub fn append_dbia(path: impl AsRef<Path>, wires: &[Option<DebiasWire>]) -> Resu
     tail.extend_from_slice(&dbia_bytes.to_le_bytes());
     tail.extend_from_slice(DBIA_MAGIC);
 
-    let mut f = fs::OpenOptions::new()
-        .append(true)
-        .open(path)
-        .map_err(|e| format!("dbia: open {path:?} for append: {e}"))?;
+    let mut f = fs::OpenOptions::new().append(true).open(path).map_err(|e| format!("dbia: open {path:?} for append: {e}"))?;
     f.write_all(&tail).map_err(|e| format!("dbia: append to {path:?}: {e}"))?;
     Ok(())
 }
 
-fn parse_dbia_section(
-    buf: &[u8],
-    dbia_offset: usize,
-    dbia_bytes: usize,
-    trailer_end: usize,
-) -> Result<DbiaSection, String> {
+fn parse_dbia_section(buf: &[u8], dbia_offset: usize, dbia_bytes: usize, trailer_end: usize) -> Result<DbiaSection, String> {
     if dbia_offset % PAGE != 0 {
         return Err(format!("dbia: dbia_offset {dbia_offset} not page-aligned"));
     }
-    let min_end = dbia_offset
-        .checked_add(dbia_bytes)
-        .and_then(|x| x.checked_add(DBIA_TRAILER_BYTES))
-        .ok_or("dbia: dbia_offset + dbia_bytes overflows")?;
+    let min_end = dbia_offset.checked_add(dbia_bytes).and_then(|x| x.checked_add(DBIA_TRAILER_BYTES)).ok_or("dbia: dbia_offset + dbia_bytes overflows")?;
     if min_end > trailer_end || trailer_end % PAGE != 0 {
         return Err(format!(
             "dbia: section [{dbia_offset}, +{dbia_bytes}] + trailer does not fit the \
@@ -308,10 +267,7 @@ fn parse_dbia_section(
         return Err("dbia: section shorter than the 32-byte header".into());
     }
     // padding between section end and the trailer must be zero (byte-stability)
-    if buf[dbia_offset + dbia_bytes..trailer_end - DBIA_TRAILER_BYTES]
-        .iter()
-        .any(|&b| b != 0)
-    {
+    if buf[dbia_offset + dbia_bytes..trailer_end - DBIA_TRAILER_BYTES].iter().any(|&b| b != 0) {
         return Err("dbia: nonzero bytes in section padding".into());
     }
 
@@ -327,10 +283,7 @@ fn parse_dbia_section(
     }
     let n_tensors = u32::from_le_bytes(s[8..12].try_into().unwrap()) as usize;
     if n_tensors != v2.tensors.len() {
-        return Err(format!(
-            "dbia: section n_tensors {n_tensors} != archive's {}",
-            v2.tensors.len()
-        ));
+        return Err(format!("dbia: section n_tensors {n_tensors} != archive's {}", v2.tensors.len()));
     }
     let flags = u32::from_le_bytes(s[12..16].try_into().unwrap());
     if flags != 0 {
@@ -361,9 +314,7 @@ fn parse_dbia_section(
         }
         let out = out_features_of(&desc.shape).unwrap_or(0);
         if len != out {
-            return Err(format!(
-                "dbia: tensor record {i}: len {len} != tensor out_features {out}"
-            ));
+            return Err(format!("dbia: tensor record {i}: len {len} != tensor out_features {out}"));
         }
         let raw = take(&mut p, len * 2)?;
         let mut c_bits = Vec::with_capacity(len);
@@ -395,9 +346,7 @@ pub fn read_dbia_bytes(buf: &[u8], strict: bool) -> Result<Option<DbiaSection>, 
             let parse = (|| -> Result<DbiaSection, String> {
                 let dbia_offset = u64::from_le_bytes(t[0..8].try_into().unwrap());
                 let dbia_bytes = u32::from_le_bytes(t[8..12].try_into().unwrap());
-                let dbia_offset: usize = dbia_offset
-                    .try_into()
-                    .map_err(|_| "dbia: dbia_offset exceeds address space".to_string())?;
+                let dbia_offset: usize = dbia_offset.try_into().map_err(|_| "dbia: dbia_offset exceeds address space".to_string())?;
                 parse_dbia_section(buf, dbia_offset, dbia_bytes as usize, end)
             })();
             return match parse {
@@ -405,10 +354,7 @@ pub fn read_dbia_bytes(buf: &[u8], strict: bool) -> Result<Option<DbiaSection>, 
                 Err(e) if strict => Err(e),
                 Err(_) => Ok(None),
             };
-        } else if magic == &SPRV_MAGIC[..]
-            || magic == &OUTL_MAGIC[..]
-            || magic == &RSLT_MAGIC[..]
-        {
+        } else if magic == &SPRV_MAGIC[..] || magic == &OUTL_MAGIC[..] || magic == &RSLT_MAGIC[..] {
             // Every stacked section's trailer stores its own section start at [0..8].
             // Step back to it and keep looking for DBIA underneath.
             let off = u64::from_le_bytes(t[0..8].try_into().unwrap());
@@ -445,11 +391,7 @@ mod tests {
     static COUNTER: AtomicU64 = AtomicU64::new(0);
 
     fn tmp_path(tag: &str) -> PathBuf {
-        std::env::temp_dir().join(format!(
-            "strand-dbia-{tag}-{}-{}.strand",
-            std::process::id(),
-            COUNTER.fetch_add(1, Ordering::Relaxed)
-        ))
+        std::env::temp_dir().join(format!("strand-dbia-{tag}-{}-{}.strand", std::process::id(), COUNTER.fetch_add(1, Ordering::Relaxed)))
     }
 
     struct TmpFile(PathBuf);
@@ -472,27 +414,11 @@ mod tests {
         let shape_b = [3u64, 300u64];
         let tensors = [
             PackedTensorV2 {
-                base: PackedTensor {
-                    name: "model.layers.0.q_proj",
-                    shape: &shape_a,
-                    rht_seed: 0,
-                    l_bits: cfg.l_bits as u8,
-                    k_bits: cfg.k_bits as u8,
-                    vec_dim: cfg.vec_dim() as u8,
-                    enc: &enc_a,
-                },
+                base: PackedTensor { name: "model.layers.0.q_proj", shape: &shape_a, rht_seed: 0, l_bits: cfg.l_bits as u8, k_bits: cfg.k_bits as u8, vec_dim: cfg.vec_dim() as u8, enc: &enc_a },
                 block_len: cfg.block_len as u32,
             },
             PackedTensorV2 {
-                base: PackedTensor {
-                    name: "model.layers.0.down_proj",
-                    shape: &shape_b,
-                    rht_seed: 0,
-                    l_bits: cfg.l_bits as u8,
-                    k_bits: cfg.k_bits as u8,
-                    vec_dim: cfg.vec_dim() as u8,
-                    enc: &enc_b,
-                },
+                base: PackedTensor { name: "model.layers.0.down_proj", shape: &shape_b, rht_seed: 0, l_bits: cfg.l_bits as u8, k_bits: cfg.k_bits as u8, vec_dim: cfg.vec_dim() as u8, enc: &enc_b },
                 block_len: cfg.block_len as u32,
             },
         ];
@@ -513,11 +439,7 @@ mod tests {
         for &v in &[0.0f32, 1.0, -1.0, 0.5, 2.0, -0.25, 7.125e-2_f32] {
             let b = f32_to_bf16_round(v);
             // top 16 bits of an exactly-representable value, possibly +1 from rounding
-            assert_eq!(
-                bf16_to_f32(b).to_bits() >> 16,
-                f32_to_bf16_round(bf16_to_f32(b)) as u32,
-                "bf16 must be a fixed point of the round"
-            );
+            assert_eq!(bf16_to_f32(b).to_bits() >> 16, f32_to_bf16_round(bf16_to_f32(b)) as u32, "bf16 must be a fixed point of the round");
         }
         // ties-to-even: 0x0000_8000 (exactly half a bf16 ulp above an even mantissa)
         // rounds DOWN (stays even); one ulp up rounds to even as well.
@@ -548,10 +470,7 @@ mod tests {
         assert_eq!(w0.c_bits.len(), 4);
         // decode matches the bf16 round of the inputs
         let got: Vec<u32> = w0.dequant().map(|v| v.to_bits()).collect();
-        let want: Vec<u32> = [1.5e-3f32, -2.0e-4, 0.0, 7.125e-2]
-            .iter()
-            .map(|&v| bf16_to_f32(f32_to_bf16_round(v)).to_bits())
-            .collect();
+        let want: Vec<u32> = [1.5e-3f32, -2.0e-4, 0.0, 7.125e-2].iter().map(|&v| bf16_to_f32(f32_to_bf16_round(v)).to_bits()).collect();
         assert_eq!(got, want);
         assert!(back.tensors[1].is_none());
         assert_eq!(back.n_with_correction(), 1);

@@ -18,9 +18,9 @@ The single-stream mode above measures GENERIC PLD (τ=1.43 on code,
 reports/oracle/spec_accept.json). L3.1 asks a different question: does
 warm-starting the draft index on a USER's OWN prior token stream lift τ above
 the generic baseline (per-user specialization)? We proxy a "user" with a
-git-history coding session (tools/bench/make_git_session_corpus.py): a sequence
-of turns iterating on a working set. We split each session into a warm prior
-slice (seed the draft index) and a held-out later slice (measure τ).
+git-history coding session: a sequence of turns iterating on a working set. We
+split each session into a warm prior slice (seed the draft index) and a held-out
+later slice (measure τ).
 
 Honesty guard against double-counting the SHIPPED, default-on prefix cache
 (L1.2): consecutive turns share a long exact prefix (re-sent files) that the
@@ -379,7 +379,7 @@ def main():
                     help="single-stream mode: llama-tokenize -f dump (id -> 'piece' per line)")
     ap.add_argument("--sessions", metavar="DIR",
                     help="L3.1 warm-start mode: dir of per-session .jsonl "
-                         "(tools/bench/make_git_session_corpus.py output)")
+                         "(one ordered request record per line)")
     ap.add_argument("--model", default="models/qwen2.5-3b-instruct-q4_k_m.gguf",
                     help="gguf for llama-tokenize (sessions mode)")
     ap.add_argument("--tokenize-bin", default=os.environ.get("TOKENIZE_BIN", "llama-tokenize"))

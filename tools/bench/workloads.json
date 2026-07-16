@@ -1,0 +1,129 @@
+{
+  "schema_version": 1,
+  "profiles": {
+    "cache_miss_taxonomy": {
+      "name": "cache_miss_taxonomy",
+      "kind": "cache_miss_taxonomy",
+      "description": "Exact, near-prefix, and divergent-prefix requests to force explicit cache-hit/miss reasons.",
+      "prompt_token_targets": [4096, 8192, 32768],
+      "concurrency": [1, 2, 4],
+      "decode_tokens": 64,
+      "temperature": 0.0,
+      "shared_context": [
+        "Exact prefix block: same repo context and same system instruction.",
+        "Near prefix block: one metadata field changes while most tokens remain identical.",
+        "Divergent prefix block: early tokens differ so the prefix cache must reject reuse."
+      ],
+      "user_templates": [
+        "Request {request_id}: classify this as exact, near, or divergent prefix reuse.",
+        "Request {request_id}: explain which cache miss reason should be recorded."
+      ],
+      "success_metrics": [
+        "prefix_cache_hit_rate",
+        "cache_miss_reason_counts",
+        "saved_prefill_tokens",
+        "output_parity"
+      ]
+    },
+    "long_prompt_burst": {
+      "name": "long_prompt_burst",
+      "kind": "shared_agent",
+      "description": "Many concurrent long prompts to expose prefill monopolization and cache pressure.",
+      "prompt_token_targets": [8192, 32768, 65536],
+      "concurrency": [1, 2, 4, 8, 16, 32],
+      "decode_tokens": 64,
+      "temperature": 0.0,
+      "shared_context": [
+        "Long-context document shard: design notes, benchmark output, issue triage, and implementation constraints.",
+        "Repeated system instruction: answer precisely, preserve code behavior, cite metrics, avoid unsupported claims.",
+        "Apple UMA constraint: model memory, KV memory, and cached state all share the same physical memory budget."
+      ],
+      "user_templates": [
+        "Request {request_id}: answer a narrow question from this large shared context in less than 10 bullets.",
+        "Request {request_id}: extract the highest-risk scheduler issue from the long context.",
+        "Request {request_id}: state whether this long prompt should block short interactive requests."
+      ],
+      "success_metrics": [
+        "prefill_queue_wait_p95_ms",
+        "ttft_p95_ms",
+        "chunk_count",
+        "short_request_starvation_ms"
+      ]
+    },
+    "mixed_latency": {
+      "name": "mixed_latency",
+      "kind": "mixed_latency",
+      "description": "One long prefill class mixed with short interactive requests to test starvation and fairness.",
+      "prompt_token_targets": [1024, 65536],
+      "concurrency": [2, 4, 8, 16],
+      "decode_tokens": 96,
+      "temperature": 0.0,
+      "shared_context": [
+        "Short chat context: user asks a small local coding question.",
+        "Long agent context: full repo summary, previous tool traces, benchmark instructions, and serving roadmap.",
+        "Fairness target: short requests should continue to receive decode turns while long prefills progress in chunks."
+      ],
+      "user_templates": [
+        "Request {request_id}: give the next action only.",
+        "Request {request_id}: produce a concise status update.",
+        "Request {request_id}: explain whether chunked prefill would help this case."
+      ],
+      "success_metrics": [
+        "short_ttft_p95_ms",
+        "long_ttft_p95_ms",
+        "queue_wait_p95_ms",
+        "aggregate_tokens_per_second"
+      ]
+    },
+    "shared_agent": {
+      "name": "shared_agent",
+      "kind": "shared_agent",
+      "description": "Repeated coding-agent turns with a large shared system/repo prefix and small user deltas.",
+      "prompt_token_targets": [8192, 32768, 65536],
+      "concurrency": [1, 2, 4, 8, 16],
+      "decode_tokens": 128,
+      "temperature": 0.0,
+      "shared_context": [
+        "Repository map: crates/hawking-core, crates/hawking-serve, tools/bench, tools/training, docs/plans.",
+        "Project policy: Apple-first serving, Metal-focused runtime work, no unsupported backend assumptions.",
+        "Agent memory: preserve existing user edits, measure before public claims, report P95 latency.",
+        "Serving goal: repeated turns should reuse prompt state rather than rebuilding the shared context."
+      ],
+      "user_templates": [
+        "Turn {request_id}: inspect the serving plan and identify the next concrete implementation step.",
+        "Turn {request_id}: continue from the previous turn and explain what cache/state should be reused.",
+        "Turn {request_id}: summarize risks for this Apple-local long-context workload."
+      ],
+      "success_metrics": [
+        "ttft_p95_ms",
+        "aggregate_tokens_per_second",
+        "prefix_cache_hit_rate",
+        "prompt_tokens_recomputed",
+        "resident_state_bytes"
+      ]
+    },
+    "spec_decode_gate": {
+      "name": "spec_decode_gate",
+      "kind": "spec_decode_gate",
+      "description": "Speculative decoding on/off matrix for Apple-local net-win gating.",
+      "prompt_token_targets": [1024, 8192],
+      "concurrency": [1, 2, 4],
+      "decode_tokens": 256,
+      "temperature": 0.0,
+      "shared_context": [
+        "Spec decode gate: drafting must improve accepted tokens/sec and must not regress P95 latency.",
+        "Apple-local caveat: small fast models may not amortize draft overhead on Metal."
+      ],
+      "user_templates": [
+        "Request {request_id}: continue this deterministic text with a concise technical explanation.",
+        "Request {request_id}: repeat the relevant constraint and finish the sentence."
+      ],
+      "success_metrics": [
+        "accepted_tokens_per_second",
+        "draft_accept_rate",
+        "ttft_p95_ms",
+        "output_parity"
+      ]
+    }
+  }
+}

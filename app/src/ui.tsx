@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
-import { useFocusTrap } from "./shell/a11y";
+import { useFocusTrap } from "./shell/policies";
 
 // Shared UI primitives still used by the VS Code shell. (The old doctrine primitives —
 // Volume/Mark/LightEdge/ModeRail/StatusPill — were retired with the concrete design.)

@@ -3,11 +3,11 @@
   collapsible bottom panel hosting the integrated terminal. State (open tabs, active path, diff) is
   owned by App and threaded through.
 */
-import { EditorGroup } from "../surfaces/ide/Editor";
-import { Terminal } from "../surfaces/ide/Terminal";
-import type { DiffDoc } from "../surfaces/ide/types";
+import { EditorGroup } from "../surfaces/Editor";
+import { Terminal } from "../surfaces/Terminal";
+import type { DiffDoc } from "../surfaces/types";
 import { Icon } from "./icons";
-import { StateTimeline } from "./StateTimeline";
+import { StateTimeline } from "./components";
 
 export function EditorArea({
   openPath,

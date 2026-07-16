@@ -8,10 +8,10 @@ import { sendIntent } from "../ipc";
 import { useStore } from "../store";
 import { intent } from "../wire";
 import { Icon } from "../shell/icons";
-import { Radiate } from "../shell/Radiate";
-import type { DiffChipPatch, PlanPatch } from "./chat/parts";
-import { SteerBar } from "./chat/SteerBar";
-import { Conversation } from "./chat/Conversation";
+import { Radiate } from "../shell/components";
+import type { DiffChipPatch, PlanPatch } from "./ChatParts";
+import { SteerBar } from "./ChatSteerBar";
+import { Conversation } from "./ChatConversation";
 
 const STEERABLE = new Set(["planning", "executing", "paused", "awaiting"]);
 

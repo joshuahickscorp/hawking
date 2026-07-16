@@ -2,7 +2,7 @@
 """
 tools/spec/replay_oracle.py — Track 6.2 offline replay oracle.
 
-Reads verifier traces produced by capture_traces.sh and evaluates candidate
+Reads verifier traces produced by `tools/spec/run.py capture` and evaluates candidate
 draft policies WITHOUT running the model.  Each trace contains the ground-truth
 greedy token sequence; the oracle simulates what a given draft policy would
 have proposed and whether the verifier would have accepted it.
@@ -35,7 +35,7 @@ USAGE:
   python3 tools/spec/replay_oracle.py --traces traces.jsonl --k 4 --min-freq 2 --json out.json
 
 COMMAND-LINE FLAGS:
-  --traces FILE      JSONL traces file from capture_traces.sh (required)
+  --traces FILE      JSONL traces file from the canonical capture runner (required)
   --policy LIST      comma-separated list of policies to evaluate
                      (default: ngram,last-repeat,unigram)
   --k INT            draft depth per verify step (default: 3)

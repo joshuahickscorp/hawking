@@ -1,10 +1,6 @@
-
 #![allow(unsafe_code)]
 
-use metal::{
-    Buffer, CommandQueue, CompileOptions, ComputePipelineState, Device, MTLResourceOptions,
-    MTLSize, NSUInteger,
-};
+use metal::{Buffer, CommandQueue, CompileOptions, ComputePipelineState, Device, MTLResourceOptions, MTLSize, NSUInteger};
 
 use strand_quant::codebook::codebook_lut;
 use strand_quant::decode::eff_scale_q;
@@ -35,19 +31,18 @@ kernel void strand_blockentry_sizeof(device uint* out [[buffer(0)]]) {
 #[repr(C)]
 #[derive(Clone, Copy, Debug)]
 pub struct BlockEntry {
-    
     pub bit_offset: u32,
-    
+
     pub init_state: u32,
-    
+
     pub scale_q: i32,
-    
+
     pub eff: [i32; 8],
-    
+
     pub n: u16,
-    
+
     pub d: u16,
-    
+
     pub _pad: u32,
 }
 
@@ -55,14 +50,13 @@ pub struct StrandGpu {
     device: Device,
     queue: CommandQueue,
     fused: ComputePipelineState,
-    
+
     #[allow(dead_code)]
     predec: ComputePipelineState,
     blockentry_sizeof: ComputePipelineState,
 }
 
 impl StrandGpu {
-    
     pub fn new() -> Option<Self> {
         let device = Device::system_default()?;
         let opts = CompileOptions::new();
@@ -92,13 +86,7 @@ impl StrandGpu {
         let blockentry_sizeof = pipeline(&probe_lib, "strand_blockentry_sizeof")?;
         let queue = device.new_command_queue();
 
-        Some(Self {
-            device,
-            queue,
-            fused,
-            predec,
-            blockentry_sizeof,
-        })
+        Some(Self { device, queue, fused, predec, blockentry_sizeof })
     }
 
     pub fn gpu_blockentry_sizeof(&self) -> u32 {
@@ -118,15 +106,9 @@ impl StrandGpu {
 
     fn upload<T: Copy>(&self, data: &[T]) -> Buffer {
         let byte_len = (data.len() * std::mem::size_of::<T>()).max(4);
-        let buf = self
-            .device
-            .new_buffer(byte_len as NSUInteger, MTLResourceOptions::StorageModeShared);
+        let buf = self.device.new_buffer(byte_len as NSUInteger, MTLResourceOptions::StorageModeShared);
         unsafe {
-            std::ptr::copy_nonoverlapping(
-                data.as_ptr() as *const u8,
-                buf.contents() as *mut u8,
-                data.len() * std::mem::size_of::<T>(),
-            );
+            std::ptr::copy_nonoverlapping(data.as_ptr() as *const u8, buf.contents() as *mut u8, data.len() * std::mem::size_of::<T>());
         }
         buf
     }
@@ -136,8 +118,7 @@ impl StrandGpu {
     }
 
     fn alloc_shared(&self, byte_len: usize) -> Buffer {
-        self.device
-            .new_buffer(byte_len.max(4) as NSUInteger, MTLResourceOptions::StorageModeShared)
+        self.device.new_buffer(byte_len.max(4) as NSUInteger, MTLResourceOptions::StorageModeShared)
     }
 
     fn read_f32(&self, buf: &Buffer, len: usize) -> Vec<f32> {
@@ -146,24 +127,10 @@ impl StrandGpu {
     }
 
     #[allow(clippy::too_many_arguments)]
-    pub fn gemv_fused(
-        &self,
-        payload: &[u8],
-        tbl: &[BlockEntry],
-        lut: &[i32],
-        rows: u32,
-        cols: u32,
-        k_bits: u32,
-        l_bits: u32,
-        x_rht: &[f32],
-    ) -> Vec<f32> {
+    pub fn gemv_fused(&self, payload: &[u8], tbl: &[BlockEntry], lut: &[i32], rows: u32, cols: u32, k_bits: u32, l_bits: u32, x_rht: &[f32]) -> Vec<f32> {
         assert_eq!(cols % 256, 0, "cols must be a multiple of 256 (STRICT deploy)");
         let bpr = cols / 256;
-        assert_eq!(
-            tbl.len() as u32,
-            rows * bpr,
-            "block table must be row-major with stride bpr"
-        );
+        assert_eq!(tbl.len() as u32, rows * bpr, "block table must be row-major with stride bpr");
         assert_eq!(x_rht.len() as u32, cols, "x_rht length must equal cols");
 
         let w_buf = self.upload(payload);
@@ -204,18 +171,7 @@ impl StrandGpu {
     }
 
     #[allow(clippy::too_many_arguments)]
-    pub fn bench_gemv(
-        &self,
-        payload: &[u8],
-        tbl: &[BlockEntry],
-        lut: &[i32],
-        rows: u32,
-        cols: u32,
-        k_bits: u32,
-        l_bits: u32,
-        x_rht: &[f32],
-        iters: usize,
-    ) -> f64 {
+    pub fn bench_gemv(&self, payload: &[u8], tbl: &[BlockEntry], lut: &[i32], rows: u32, cols: u32, k_bits: u32, l_bits: u32, x_rht: &[f32], iters: usize) -> f64 {
         let bpr = cols / 256;
         assert_eq!(tbl.len() as u32, rows * bpr);
         let w_buf = self.upload(payload);
@@ -272,17 +228,11 @@ impl StrandGpu {
             for (uint i = gid; i < n; i += gsz) acc += a[i];
             out[gid] = acc;
         }"#;
-        let lib = self
-            .device
-            .new_library_with_source(SRC, &CompileOptions::new())
-            .expect("peak_read compile");
+        let lib = self.device.new_library_with_source(SRC, &CompileOptions::new()).expect("peak_read compile");
         let f = lib.get_function("peak_read", None).expect("peak_read fn");
-        let pipe = self
-            .device
-            .new_compute_pipeline_state_with_function(&f)
-            .expect("peak_read pipeline");
+        let pipe = self.device.new_compute_pipeline_state_with_function(&f).expect("peak_read pipeline");
         let a = self.alloc_shared(n_floats * 4);
-        let gsz: u32 = 1 << 16; 
+        let gsz: u32 = 1 << 16;
         let out = self.alloc_shared(gsz as usize * 4);
         let n_buf = self.upload_scalar(n_floats as u32);
         let gsz_buf = self.upload_scalar(gsz);
@@ -318,11 +268,7 @@ pub fn bake_block_entries(hdr: &TensorHeaderV2, enc: &EncodedTensor) -> Vec<Bloc
          4-bit needs a parallel eff_min_q off[8] + kernel add"
     );
     assert_eq!(hdr.vec_dim, 1, "deploy kernel is scalar (vec_dim=1); B.7 vector trellis is future work");
-    assert_eq!(
-        hdr.table.len(),
-        enc.blocks.len(),
-        "table/blocks length mismatch"
-    );
+    assert_eq!(hdr.table.len(), enc.blocks.len(), "table/blocks length mismatch");
 
     let mut out = Vec::with_capacity(enc.blocks.len());
     for (rec, blk) in hdr.table.iter().zip(enc.blocks.iter()) {
@@ -334,25 +280,12 @@ pub fn bake_block_entries(hdr: &TensorHeaderV2, enc: &EncodedTensor) -> Vec<Bloc
         }
         debug_assert_eq!(rec.scale_q, blk.scale_q);
         debug_assert_eq!(rec.init_state, blk.init_state);
-        out.push(BlockEntry {
-            bit_offset: rec.bit_offset as u32,
-            init_state: rec.init_state,
-            scale_q: rec.scale_q,
-            eff,
-            n: blk.n as u16,
-            d: hdr.vec_dim as u16,
-            _pad: 0,
-        });
+        out.push(BlockEntry { bit_offset: rec.bit_offset as u32, init_state: rec.init_state, scale_q: rec.scale_q, eff, n: blk.n as u16, d: hdr.vec_dim as u16, _pad: 0 });
     }
     out
 }
 
-pub fn gpu_matvec_named(
-    gpu: &StrandGpu,
-    model: &StrandModel,
-    name: &str,
-    x_rht: &[f32],
-) -> Option<Vec<f32>> {
+pub fn gpu_matvec_named(gpu: &StrandGpu, model: &StrandModel, name: &str, x_rht: &[f32]) -> Option<Vec<f32>> {
     let hdr = model.tensor_header(name)?.clone();
     if hdr.shape.len() < 2 {
         return None;
@@ -367,16 +300,7 @@ pub fn gpu_matvec_named(
     let payload = model.view(name)?.payload.to_vec();
     let tbl = bake_block_entries(&hdr, &enc);
     let lut = codebook_lut(cfg.l_bits);
-    Some(gpu.gemv_fused(
-        &payload,
-        &tbl,
-        lut,
-        rows,
-        cols,
-        cfg.k_bits,
-        cfg.l_bits,
-        x_rht,
-    ))
+    Some(gpu.gemv_fused(&payload, &tbl, lut, rows, cols, cfg.k_bits, cfg.l_bits, x_rht))
 }
 
 use crate::block_walk::{block_init_state, block_plans, SideInfo};
@@ -387,7 +311,6 @@ const BITSLICE_MSL: &str = include_str!("../shaders/strand_bitslice.metal");
 #[repr(C)]
 #[derive(Clone, Copy, Debug)]
 pub struct BitsliceEntry {
-
     pub bit_offset: u32,
 
     pub init_state: u32,
@@ -414,9 +337,9 @@ pub struct BitsliceGpu {
     decode_computed: ComputePipelineState,
 
     gemv_partials: ComputePipelineState,
-    
+
     reduce_rows: ComputePipelineState,
-    
+
     gemm_partials_b4: ComputePipelineState,
     gemm_partials_b16: ComputePipelineState,
     gemm_partials_b64: ComputePipelineState,
@@ -429,7 +352,6 @@ pub struct BitsliceGpu {
 }
 
 impl BitsliceGpu {
-    
     pub fn new() -> Option<Self> {
         let device = Device::system_default()?;
         let opts = CompileOptions::new();
@@ -473,12 +395,7 @@ impl BitsliceGpu {
         };
 
         let gpu_sz = gpu.gpu_entry_sizeof();
-        assert_eq!(
-            gpu_sz as usize,
-            std::mem::size_of::<BitsliceEntry>(),
-            "GPU sizeof(BitsliceEntry)={gpu_sz} != host {} — tbl stride would diverge",
-            std::mem::size_of::<BitsliceEntry>()
-        );
+        assert_eq!(gpu_sz as usize, std::mem::size_of::<BitsliceEntry>(), "GPU sizeof(BitsliceEntry)={gpu_sz} != host {} — tbl stride would diverge", std::mem::size_of::<BitsliceEntry>());
         Some(gpu)
     }
 
@@ -498,22 +415,15 @@ impl BitsliceGpu {
 
     fn upload<T: Copy>(&self, data: &[T]) -> Buffer {
         let byte_len = (data.len() * std::mem::size_of::<T>()).max(4);
-        let buf = self
-            .device
-            .new_buffer(byte_len as NSUInteger, MTLResourceOptions::StorageModeShared);
+        let buf = self.device.new_buffer(byte_len as NSUInteger, MTLResourceOptions::StorageModeShared);
         unsafe {
-            std::ptr::copy_nonoverlapping(
-                data.as_ptr() as *const u8,
-                buf.contents() as *mut u8,
-                data.len() * std::mem::size_of::<T>(),
-            );
+            std::ptr::copy_nonoverlapping(data.as_ptr() as *const u8, buf.contents() as *mut u8, data.len() * std::mem::size_of::<T>());
         }
         buf
     }
 
     fn alloc(&self, byte_len: usize) -> Buffer {
-        self.device
-            .new_buffer(byte_len.max(4) as NSUInteger, MTLResourceOptions::StorageModeShared)
+        self.device.new_buffer(byte_len.max(4) as NSUInteger, MTLResourceOptions::StorageModeShared)
     }
 
     fn upload_payload(&self, bits: &[u8]) -> Buffer {
@@ -527,15 +437,7 @@ impl BitsliceGpu {
         buf
     }
 
-    pub fn decode_q12(
-        &self,
-        payload: &[u8],
-        tbl: &[BitsliceEntry],
-        lut: &[i32],
-        total: usize,
-        k_bits: u32,
-        l_bits: u32,
-    ) -> Vec<i32> {
+    pub fn decode_q12(&self, payload: &[u8], tbl: &[BitsliceEntry], lut: &[i32], total: usize, k_bits: u32, l_bits: u32) -> Vec<i32> {
         assert_eq!(lut.len(), 1usize << l_bits, "LUT must have 2^L entries");
         let w_buf = self.upload_payload(payload);
         let out_buf = self.alloc(total * 4);
@@ -556,11 +458,7 @@ impl BitsliceGpu {
         enc.set_buffer(5, Some(&l_buf), 0);
         enc.set_buffer(6, Some(&lut_buf), 0);
         enc.set_threadgroup_memory_length(0, ((1usize << l_bits) * 4) as NSUInteger);
-        let groups = MTLSize {
-            width: (tbl.len() as u64).div_ceil(256) as NSUInteger,
-            height: 1,
-            depth: 1,
-        };
+        let groups = MTLSize { width: (tbl.len() as u64).div_ceil(256) as NSUInteger, height: 1, depth: 1 };
         let tpg = MTLSize { width: 256, height: 1, depth: 1 };
         enc.dispatch_thread_groups(groups, tpg);
         enc.end_encoding();
@@ -576,15 +474,7 @@ impl BitsliceGpu {
     /// synthesises each codebook value inline (integer Acklam) instead of
     /// gathering a staged `2^L` LUT — only the tiny `tail` prefix is uploaded.
     /// `tail` must be `strand_quant::codebook::tail_left_prefix_q12(l_bits)`.
-    pub fn decode_q12_computed(
-        &self,
-        payload: &[u8],
-        tbl: &[BitsliceEntry],
-        tail: &[i32],
-        total: usize,
-        k_bits: u32,
-        l_bits: u32,
-    ) -> Vec<i32> {
+    pub fn decode_q12_computed(&self, payload: &[u8], tbl: &[BitsliceEntry], tail: &[i32], total: usize, k_bits: u32, l_bits: u32) -> Vec<i32> {
         assert!(l_bits <= 16, "computed codebook kernel asserts L <= 16, got {l_bits}");
         let w_buf = self.upload_payload(payload);
         let out_buf = self.alloc(total * 4);
@@ -607,11 +497,7 @@ impl BitsliceGpu {
         enc.set_buffer(6, Some(&tail_buf), 0);
         enc.set_buffer(7, Some(&tlen_buf), 0);
         // No threadgroup staging: the codebook is computed per state.
-        let groups = MTLSize {
-            width: (tbl.len() as u64).div_ceil(256) as NSUInteger,
-            height: 1,
-            depth: 1,
-        };
+        let groups = MTLSize { width: (tbl.len() as u64).div_ceil(256) as NSUInteger, height: 1, depth: 1 };
         let tpg = MTLSize { width: 256, height: 1, depth: 1 };
         enc.dispatch_thread_groups(groups, tpg);
         enc.end_encoding();
@@ -622,16 +508,7 @@ impl BitsliceGpu {
         unsafe { std::slice::from_raw_parts(ptr, total) }.to_vec()
     }
 
-    pub fn bench_decode(
-        &self,
-        payload: &[u8],
-        tbl: &[BitsliceEntry],
-        lut: &[i32],
-        total: usize,
-        k_bits: u32,
-        l_bits: u32,
-        iters: usize,
-    ) -> f64 {
+    pub fn bench_decode(&self, payload: &[u8], tbl: &[BitsliceEntry], lut: &[i32], total: usize, k_bits: u32, l_bits: u32, iters: usize) -> f64 {
         let w_buf = self.upload_payload(payload);
         let out_buf = self.alloc(total * 4);
         let tbl_buf = self.upload(tbl);
@@ -639,11 +516,7 @@ impl BitsliceGpu {
         let k_buf = self.upload(&[k_bits]);
         let l_buf = self.upload(&[l_bits]);
         let lut_buf = self.upload(lut);
-        let groups = MTLSize {
-            width: (tbl.len() as u64).div_ceil(256) as NSUInteger,
-            height: 1,
-            depth: 1,
-        };
+        let groups = MTLSize { width: (tbl.len() as u64).div_ceil(256) as NSUInteger, height: 1, depth: 1 };
         let tpg = MTLSize { width: 256, height: 1, depth: 1 };
         let mut best = f64::INFINITY;
         for _ in 0..iters {
@@ -678,16 +551,7 @@ impl BitsliceGpu {
     /// (`bake_bitslice_entries_vec`). Output is `total` Q12 ints, byte-identical to
     /// `decode_tensor_fixed_with_lut_vec`.
     #[allow(clippy::too_many_arguments)]
-    pub fn decode_q12_vec(
-        &self,
-        payload: &[u8],
-        tbl: &[BitsliceEntry],
-        lut: &[i32],
-        total: usize,
-        k_bits: u32,
-        l_bits: u32,
-        d: usize,
-    ) -> Vec<i32> {
+    pub fn decode_q12_vec(&self, payload: &[u8], tbl: &[BitsliceEntry], lut: &[i32], total: usize, k_bits: u32, l_bits: u32, d: usize) -> Vec<i32> {
         assert_eq!(lut.len(), (1usize << l_bits) * d, "vec LUT must have 2^L * d entries");
         let w_buf = self.upload_payload(payload);
         let out_buf = self.alloc(total * 4);
@@ -708,11 +572,7 @@ impl BitsliceGpu {
         enc.set_buffer(5, Some(&l_buf), 0);
         enc.set_buffer(6, Some(&lut_buf), 0);
         enc.set_threadgroup_memory_length(0, ((1usize << l_bits) * d * 4) as NSUInteger);
-        let groups = MTLSize {
-            width: (tbl.len() as u64).div_ceil(256) as NSUInteger,
-            height: 1,
-            depth: 1,
-        };
+        let groups = MTLSize { width: (tbl.len() as u64).div_ceil(256) as NSUInteger, height: 1, depth: 1 };
         let tpg = MTLSize { width: 256, height: 1, depth: 1 };
         enc.dispatch_thread_groups(groups, tpg);
         enc.end_encoding();
@@ -724,17 +584,7 @@ impl BitsliceGpu {
     }
 
     #[allow(clippy::too_many_arguments)]
-    pub fn bench_decode_vec(
-        &self,
-        payload: &[u8],
-        tbl: &[BitsliceEntry],
-        lut: &[i32],
-        total: usize,
-        k_bits: u32,
-        l_bits: u32,
-        d: usize,
-        iters: usize,
-    ) -> f64 {
+    pub fn bench_decode_vec(&self, payload: &[u8], tbl: &[BitsliceEntry], lut: &[i32], total: usize, k_bits: u32, l_bits: u32, d: usize, iters: usize) -> f64 {
         let w_buf = self.upload_payload(payload);
         let out_buf = self.alloc(total * 4);
         let tbl_buf = self.upload(tbl);
@@ -742,11 +592,7 @@ impl BitsliceGpu {
         let k_buf = self.upload(&[k_bits]);
         let l_buf = self.upload(&[l_bits]);
         let lut_buf = self.upload(lut);
-        let groups = MTLSize {
-            width: (tbl.len() as u64).div_ceil(256) as NSUInteger,
-            height: 1,
-            depth: 1,
-        };
+        let groups = MTLSize { width: (tbl.len() as u64).div_ceil(256) as NSUInteger, height: 1, depth: 1 };
         let tpg = MTLSize { width: 256, height: 1, depth: 1 };
         let mut best = f64::INFINITY;
         for _ in 0..iters {
@@ -777,18 +623,7 @@ impl BitsliceGpu {
     /// Vector-d fused y=Wx, B=1. Two passes: `_vec` gemv partials then the (d-agnostic)
     /// row reduce. Returns `rows` floats.
     #[allow(clippy::too_many_arguments)]
-    pub fn matvec_vec(
-        &self,
-        payload: &[u8],
-        tbl: &[BitsliceEntry],
-        lut: &[i32],
-        rows: u32,
-        cols: u32,
-        k_bits: u32,
-        l_bits: u32,
-        d: usize,
-        x: &[f32],
-    ) -> Vec<f32> {
+    pub fn matvec_vec(&self, payload: &[u8], tbl: &[BitsliceEntry], lut: &[i32], rows: u32, cols: u32, k_bits: u32, l_bits: u32, d: usize, x: &[f32]) -> Vec<f32> {
         assert_eq!(cols % 256, 0, "bitslice matvec_vec: cols must be a multiple of 256");
         assert_eq!(x.len() as u32, cols, "x length must equal cols");
         let bpr = cols / 256;
@@ -800,19 +635,7 @@ impl BitsliceGpu {
     }
 
     #[allow(clippy::too_many_arguments)]
-    pub fn bench_matvec_vec(
-        &self,
-        payload: &[u8],
-        tbl: &[BitsliceEntry],
-        lut: &[i32],
-        rows: u32,
-        cols: u32,
-        k_bits: u32,
-        l_bits: u32,
-        d: usize,
-        x: &[f32],
-        iters: usize,
-    ) -> f64 {
+    pub fn bench_matvec_vec(&self, payload: &[u8], tbl: &[BitsliceEntry], lut: &[i32], rows: u32, cols: u32, k_bits: u32, l_bits: u32, d: usize, x: &[f32], iters: usize) -> f64 {
         let bufs = self.matvec_buffers(payload, tbl, lut, rows, cols, k_bits, l_bits, x);
         let mut best = f64::INFINITY;
         for _ in 0..iters {
@@ -826,14 +649,7 @@ impl BitsliceGpu {
         best
     }
 
-    fn matvec_dispatch_vec(
-        &self,
-        b: &BitsliceMatvecBufs,
-        n_blocks: u32,
-        rows: u32,
-        l_bits: u32,
-        d: usize,
-    ) {
+    fn matvec_dispatch_vec(&self, b: &BitsliceMatvecBufs, n_blocks: u32, rows: u32, l_bits: u32, d: usize) {
         let cmd = self.queue.new_command_buffer();
         {
             let enc = cmd.new_compute_command_encoder();
@@ -848,11 +664,7 @@ impl BitsliceGpu {
             enc.set_buffer(7, Some(&b.l), 0);
             enc.set_buffer(8, Some(&b.lut), 0);
             enc.set_threadgroup_memory_length(0, ((1usize << l_bits) * d * 4) as NSUInteger);
-            let groups = MTLSize {
-                width: (n_blocks as u64).div_ceil(256) as NSUInteger,
-                height: 1,
-                depth: 1,
-            };
+            let groups = MTLSize { width: (n_blocks as u64).div_ceil(256) as NSUInteger, height: 1, depth: 1 };
             let tpg = MTLSize { width: 256, height: 1, depth: 1 };
             enc.dispatch_thread_groups(groups, tpg);
             enc.end_encoding();
@@ -864,11 +676,7 @@ impl BitsliceGpu {
             enc.set_buffer(1, Some(&b.y), 0);
             enc.set_buffer(2, Some(&b.rows), 0);
             enc.set_buffer(3, Some(&b.bpr), 0);
-            let groups = MTLSize {
-                width: (rows as u64).div_ceil(256) as NSUInteger,
-                height: 1,
-                depth: 1,
-            };
+            let groups = MTLSize { width: (rows as u64).div_ceil(256) as NSUInteger, height: 1, depth: 1 };
             let tpg = MTLSize { width: 256, height: 1, depth: 1 };
             enc.dispatch_thread_groups(groups, tpg);
             enc.end_encoding();
@@ -879,19 +687,8 @@ impl BitsliceGpu {
 }
 
 impl BitsliceGpu {
-
     #[allow(clippy::too_many_arguments)]
-    pub fn matvec(
-        &self,
-        payload: &[u8],
-        tbl: &[BitsliceEntry],
-        lut: &[i32],
-        rows: u32,
-        cols: u32,
-        k_bits: u32,
-        l_bits: u32,
-        x: &[f32],
-    ) -> Vec<f32> {
+    pub fn matvec(&self, payload: &[u8], tbl: &[BitsliceEntry], lut: &[i32], rows: u32, cols: u32, k_bits: u32, l_bits: u32, x: &[f32]) -> Vec<f32> {
         assert_eq!(cols % 256, 0, "bitslice matvec: cols must be a multiple of 256");
         assert_eq!(x.len() as u32, cols, "x length must equal cols");
         let bpr = cols / 256;
@@ -903,18 +700,7 @@ impl BitsliceGpu {
     }
 
     #[allow(clippy::too_many_arguments)]
-    pub fn bench_matvec(
-        &self,
-        payload: &[u8],
-        tbl: &[BitsliceEntry],
-        lut: &[i32],
-        rows: u32,
-        cols: u32,
-        k_bits: u32,
-        l_bits: u32,
-        x: &[f32],
-        iters: usize,
-    ) -> f64 {
+    pub fn bench_matvec(&self, payload: &[u8], tbl: &[BitsliceEntry], lut: &[i32], rows: u32, cols: u32, k_bits: u32, l_bits: u32, x: &[f32], iters: usize) -> f64 {
         let bufs = self.matvec_buffers(payload, tbl, lut, rows, cols, k_bits, l_bits, x);
         let mut best = f64::INFINITY;
         for _ in 0..iters {
@@ -928,17 +714,7 @@ impl BitsliceGpu {
         best
     }
 
-    fn matvec_buffers(
-        &self,
-        payload: &[u8],
-        tbl: &[BitsliceEntry],
-        lut: &[i32],
-        rows: u32,
-        cols: u32,
-        k_bits: u32,
-        l_bits: u32,
-        x: &[f32],
-    ) -> BitsliceMatvecBufs {
+    fn matvec_buffers(&self, payload: &[u8], tbl: &[BitsliceEntry], lut: &[i32], rows: u32, cols: u32, k_bits: u32, l_bits: u32, x: &[f32]) -> BitsliceMatvecBufs {
         BitsliceMatvecBufs {
             w: self.upload_payload(payload),
             x: self.upload(x),
@@ -970,11 +746,7 @@ impl BitsliceGpu {
             enc.set_buffer(7, Some(&b.l), 0);
             enc.set_buffer(8, Some(&b.lut), 0);
             enc.set_threadgroup_memory_length(0, ((1usize << l_bits) * 4) as NSUInteger);
-            let groups = MTLSize {
-                width: (n_blocks as u64).div_ceil(256) as NSUInteger,
-                height: 1,
-                depth: 1,
-            };
+            let groups = MTLSize { width: (n_blocks as u64).div_ceil(256) as NSUInteger, height: 1, depth: 1 };
             let tpg = MTLSize { width: 256, height: 1, depth: 1 };
             enc.dispatch_thread_groups(groups, tpg);
             enc.end_encoding();
@@ -986,11 +758,7 @@ impl BitsliceGpu {
             enc.set_buffer(1, Some(&b.y), 0);
             enc.set_buffer(2, Some(&b.rows), 0);
             enc.set_buffer(3, Some(&b.bpr), 0);
-            let groups = MTLSize {
-                width: (rows as u64).div_ceil(256) as NSUInteger,
-                height: 1,
-                depth: 1,
-            };
+            let groups = MTLSize { width: (rows as u64).div_ceil(256) as NSUInteger, height: 1, depth: 1 };
             let tpg = MTLSize { width: 256, height: 1, depth: 1 };
             enc.dispatch_thread_groups(groups, tpg);
             enc.end_encoding();
@@ -1048,27 +816,12 @@ impl BitsliceGpu {
     /// Pre-prepare one tensor of a token pass (upload payload/tbl/lut/x, alloc partials/y).
     /// Mirrors `matvec_buffers` exactly so the two execution shapes time identical work.
     #[allow(clippy::too_many_arguments)]
-    pub fn prepare_token_tensor(
-        &self,
-        payload: &[u8],
-        tbl: &[BitsliceEntry],
-        lut: &[i32],
-        rows: u32,
-        cols: u32,
-        k_bits: u32,
-        l_bits: u32,
-        x: &[f32],
-    ) -> MatvecToken {
+    pub fn prepare_token_tensor(&self, payload: &[u8], tbl: &[BitsliceEntry], lut: &[i32], rows: u32, cols: u32, k_bits: u32, l_bits: u32, x: &[f32]) -> MatvecToken {
         assert_eq!(cols % 256, 0, "prepare_token_tensor: cols must be a multiple of 256");
         assert_eq!(x.len() as u32, cols, "x length must equal cols");
         let bpr = cols / 256;
         assert_eq!(tbl.len() as u32, rows * bpr, "tbl must cover rows*bpr blocks");
-        MatvecToken {
-            bufs: self.matvec_buffers(payload, tbl, lut, rows, cols, k_bits, l_bits, x),
-            n_blocks: tbl.len() as u32,
-            rows,
-            l_bits,
-        }
+        MatvecToken { bufs: self.matvec_buffers(payload, tbl, lut, rows, cols, k_bits, l_bits, x), n_blocks: tbl.len() as u32, rows, l_bits }
     }
 
     fn encode_token_tensor(&self, cmd: &metal::CommandBufferRef, t: &MatvecToken) {
@@ -1086,11 +839,7 @@ impl BitsliceGpu {
             enc.set_buffer(7, Some(&b.l), 0);
             enc.set_buffer(8, Some(&b.lut), 0);
             enc.set_threadgroup_memory_length(0, ((1usize << t.l_bits) * 4) as NSUInteger);
-            let groups = MTLSize {
-                width: (t.n_blocks as u64).div_ceil(256) as NSUInteger,
-                height: 1,
-                depth: 1,
-            };
+            let groups = MTLSize { width: (t.n_blocks as u64).div_ceil(256) as NSUInteger, height: 1, depth: 1 };
             let tpg = MTLSize { width: 256, height: 1, depth: 1 };
             enc.dispatch_thread_groups(groups, tpg);
             enc.end_encoding();
@@ -1102,11 +851,7 @@ impl BitsliceGpu {
             enc.set_buffer(1, Some(&b.y), 0);
             enc.set_buffer(2, Some(&b.rows), 0);
             enc.set_buffer(3, Some(&b.bpr), 0);
-            let groups = MTLSize {
-                width: (t.rows as u64).div_ceil(256) as NSUInteger,
-                height: 1,
-                depth: 1,
-            };
+            let groups = MTLSize { width: (t.rows as u64).div_ceil(256) as NSUInteger, height: 1, depth: 1 };
             let tpg = MTLSize { width: 256, height: 1, depth: 1 };
             enc.dispatch_thread_groups(groups, tpg);
             enc.end_encoding();
@@ -1148,18 +893,7 @@ impl BitsliceGpu {
     }
 
     #[allow(clippy::too_many_arguments)]
-    pub fn gemm(
-        &self,
-        payload: &[u8],
-        tbl: &[BitsliceEntry],
-        lut: &[i32],
-        rows: u32,
-        cols: u32,
-        k_bits: u32,
-        l_bits: u32,
-        xs: &[f32],
-        batch: usize,
-    ) -> Vec<f32> {
+    pub fn gemm(&self, payload: &[u8], tbl: &[BitsliceEntry], lut: &[i32], rows: u32, cols: u32, k_bits: u32, l_bits: u32, xs: &[f32], batch: usize) -> Vec<f32> {
         assert_eq!(cols % 256, 0, "bitslice gemm: cols must be a multiple of 256");
         assert_eq!(xs.len(), batch * cols as usize, "xs must be batch x in_features");
         let bpr = cols / 256;
@@ -1171,19 +905,7 @@ impl BitsliceGpu {
     }
 
     #[allow(clippy::too_many_arguments)]
-    pub fn bench_gemm(
-        &self,
-        payload: &[u8],
-        tbl: &[BitsliceEntry],
-        lut: &[i32],
-        rows: u32,
-        cols: u32,
-        k_bits: u32,
-        l_bits: u32,
-        xs: &[f32],
-        batch: usize,
-        iters: usize,
-    ) -> f64 {
+    pub fn bench_gemm(&self, payload: &[u8], tbl: &[BitsliceEntry], lut: &[i32], rows: u32, cols: u32, k_bits: u32, l_bits: u32, xs: &[f32], batch: usize, iters: usize) -> f64 {
         let bufs = self.gemm_buffers(payload, tbl, lut, rows, cols, k_bits, l_bits, xs, batch);
         let mut best = f64::INFINITY;
         for _ in 0..iters {
@@ -1198,19 +920,7 @@ impl BitsliceGpu {
     }
 
     #[allow(clippy::too_many_arguments)]
-    fn gemm_buffers(
-        &self,
-        payload: &[u8],
-        tbl: &[BitsliceEntry],
-        lut: &[i32],
-        rows: u32,
-        cols: u32,
-        k_bits: u32,
-        l_bits: u32,
-        xs: &[f32],
-        batch: usize,
-    ) -> BitsliceGemmBufs {
-        
+    fn gemm_buffers(&self, payload: &[u8], tbl: &[BitsliceEntry], lut: &[i32], rows: u32, cols: u32, k_bits: u32, l_bits: u32, xs: &[f32], batch: usize) -> BitsliceGemmBufs {
         let cols_u = cols as usize;
         let mut xt = vec![0.0f32; xs.len()];
         for b in 0..batch {
@@ -1235,14 +945,7 @@ impl BitsliceGpu {
         }
     }
 
-    fn gemm_dispatch(
-        &self,
-        b: &BitsliceGemmBufs,
-        n_blocks: u32,
-        rows: u32,
-        l_bits: u32,
-        batch: usize,
-    ) {
+    fn gemm_dispatch(&self, b: &BitsliceGemmBufs, n_blocks: u32, rows: u32, l_bits: u32, batch: usize) {
         let cmd = self.queue.new_command_buffer();
         {
             let enc = cmd.new_compute_command_encoder();
@@ -1257,11 +960,7 @@ impl BitsliceGpu {
             enc.set_buffer(7, Some(&b.l), 0);
             enc.set_buffer(8, Some(&b.lut), 0);
             enc.set_threadgroup_memory_length(0, ((1usize << l_bits) * 4) as NSUInteger);
-            let groups = MTLSize {
-                width: (n_blocks as u64).div_ceil(256) as NSUInteger,
-                height: 1,
-                depth: 1,
-            };
+            let groups = MTLSize { width: (n_blocks as u64).div_ceil(256) as NSUInteger, height: 1, depth: 1 };
             let tpg = MTLSize { width: 256, height: 1, depth: 1 };
             enc.dispatch_thread_groups(groups, tpg);
             enc.end_encoding();
@@ -1318,12 +1017,7 @@ pub struct BitslicePrepared {
 }
 
 impl BitsliceGpu {
-    
-    pub fn prepare(
-        &self,
-        enc: &EncodedTensor,
-        cfg: &strand_quant::TrellisConfig,
-    ) -> Option<BitslicePrepared> {
+    pub fn prepare(&self, enc: &EncodedTensor, cfg: &strand_quant::TrellisConfig) -> Option<BitslicePrepared> {
         if cfg.vec_dim() > 1 {
             return None;
         }
@@ -1364,11 +1058,7 @@ impl BitsliceGpu {
         enc.set_buffer(5, Some(&p.l_buf), 0);
         enc.set_buffer(6, Some(&p.lut), 0);
         enc.set_threadgroup_memory_length(0, ((1usize << p.l_bits) * 4) as NSUInteger);
-        let groups = MTLSize {
-            width: (p.n_blocks as u64).div_ceil(256) as NSUInteger,
-            height: 1,
-            depth: 1,
-        };
+        let groups = MTLSize { width: (p.n_blocks as u64).div_ceil(256) as NSUInteger, height: 1, depth: 1 };
         let tpg = MTLSize { width: 256, height: 1, depth: 1 };
         enc.dispatch_thread_groups(groups, tpg);
         enc.end_encoding();
@@ -1387,11 +1077,7 @@ impl BitsliceGpu {
         enc.set_buffer(5, Some(&p.l_buf), 0);
         enc.set_buffer(6, Some(&p.lut), 0);
         enc.set_threadgroup_memory_length(0, ((1usize << p.l_bits) * 4) as NSUInteger);
-        let groups = MTLSize {
-            width: (p.n_blocks as u64).div_ceil(256) as NSUInteger,
-            height: 1,
-            depth: 1,
-        };
+        let groups = MTLSize { width: (p.n_blocks as u64).div_ceil(256) as NSUInteger, height: 1, depth: 1 };
         let tpg = MTLSize { width: 256, height: 1, depth: 1 };
         enc.dispatch_thread_groups(groups, tpg);
         enc.end_encoding();
@@ -1408,7 +1094,6 @@ impl BitsliceGpu {
 }
 
 impl BitslicePrepared {
-    
     pub fn total(&self) -> usize {
         self.total
     }
@@ -1424,18 +1109,11 @@ impl BitslicePrepared {
 
     pub fn gpu_bytes(&self) -> usize {
         let padded_payload = self.payload_len.div_ceil(4) * 4 + 8;
-        padded_payload
-            + self.n_blocks as usize * std::mem::size_of::<BitsliceEntry>()
-            + self.lut_len * 4
-            + self.total * 4
-            + 3 * 4 
+        padded_payload + self.n_blocks as usize * std::mem::size_of::<BitsliceEntry>() + self.lut_len * 4 + self.total * 4 + 3 * 4
     }
 }
 
-pub fn bake_bitslice_entries(
-    enc: &EncodedTensor,
-    cfg: &strand_quant::TrellisConfig,
-) -> Option<Vec<BitsliceEntry>> {
+pub fn bake_bitslice_entries(enc: &EncodedTensor, cfg: &strand_quant::TrellisConfig) -> Option<Vec<BitsliceEntry>> {
     if enc.blocks.iter().any(|b| b.n > 256) {
         return None;
     }
@@ -1449,15 +1127,7 @@ pub fn bake_bitslice_entries(
         eff[..side.n_sub].copy_from_slice(side.eff());
         off[..side.n_sub].copy_from_slice(side.off());
         let init = block_init_state(blk, &enc.bits, plan.start_bit, cfg, enc.tail_biting);
-        out.push(BitsliceEntry {
-            bit_offset: plan.start_bit as u32,
-            init_state: init as u32,
-            out_off: plan.out_off as u32,
-            n: blk.n,
-            eff,
-            off,
-            d: 1,
-        });
+        out.push(BitsliceEntry { bit_offset: plan.start_bit as u32, init_state: init as u32, out_off: plan.out_off as u32, n: blk.n, eff, off, d: 1 });
     }
     Some(out)
 }
@@ -1467,10 +1137,7 @@ pub fn bake_bitslice_entries(
 /// `start_bit` accumulates `n_steps * k`, NOT `n * k`), while `out_off` still
 /// accumulates the true output count `n`. The init-state walk (tail-biting) reads
 /// `n_steps` symbols. This mirrors `decode_tensor_fixed_with_lut_vec` exactly.
-pub fn bake_bitslice_entries_vec(
-    enc: &EncodedTensor,
-    cfg: &strand_quant::TrellisConfig,
-) -> Option<Vec<BitsliceEntry>> {
+pub fn bake_bitslice_entries_vec(enc: &EncodedTensor, cfg: &strand_quant::TrellisConfig) -> Option<Vec<BitsliceEntry>> {
     if enc.blocks.iter().any(|b| b.n > 256) {
         return None;
     }
@@ -1507,35 +1174,18 @@ pub fn bake_bitslice_entries_vec(
             blk.init_state as usize & mask
         };
 
-        out.push(BitsliceEntry {
-            bit_offset: start_bit as u32,
-            init_state: init as u32,
-            out_off: out_off as u32,
-            n: blk.n,
-            eff,
-            off,
-            d: d as u32,
-        });
+        out.push(BitsliceEntry { bit_offset: start_bit as u32, init_state: init as u32, out_off: out_off as u32, n: blk.n, eff, off, d: d as u32 });
         start_bit += n_steps * k;
         out_off += n;
     }
     Some(out)
 }
 
-pub fn bitslice_decode_q12(
-    gpu: &BitsliceGpu,
-    enc: &EncodedTensor,
-    cfg: &strand_quant::TrellisConfig,
-) -> Vec<i32> {
+pub fn bitslice_decode_q12(gpu: &BitsliceGpu, enc: &EncodedTensor, cfg: &strand_quant::TrellisConfig) -> Vec<i32> {
     bitslice_decode_q12_with_lut(gpu, enc, cfg, codebook_lut(cfg.l_bits))
 }
 
-pub fn bitslice_decode_q12_with_lut(
-    gpu: &BitsliceGpu,
-    enc: &EncodedTensor,
-    cfg: &strand_quant::TrellisConfig,
-    lut: &[i32],
-) -> Vec<i32> {
+pub fn bitslice_decode_q12_with_lut(gpu: &BitsliceGpu, enc: &EncodedTensor, cfg: &strand_quant::TrellisConfig, lut: &[i32]) -> Vec<i32> {
     if cfg.vec_dim() > 1 {
         return decode_lean_with_lut(enc, cfg, lut);
     }
@@ -1550,11 +1200,7 @@ pub fn bitslice_decode_q12_with_lut(
 /// is byte-identical to [`bitslice_decode_q12`] on the frozen Gaussian codebook.
 /// Falls back to the CPU lean decoder for the vector path (which uses an arbitrary
 /// LUT that is not the computed Gaussian codebook) or when the bake is rejected.
-pub fn bitslice_decode_q12_computed(
-    gpu: &BitsliceGpu,
-    enc: &EncodedTensor,
-    cfg: &strand_quant::TrellisConfig,
-) -> Vec<i32> {
+pub fn bitslice_decode_q12_computed(gpu: &BitsliceGpu, enc: &EncodedTensor, cfg: &strand_quant::TrellisConfig) -> Vec<i32> {
     if cfg.vec_dim() > 1 {
         return decode_lean_with_lut(enc, cfg, codebook_lut(cfg.l_bits));
     }
@@ -1574,33 +1220,16 @@ mod tests {
     use strand_quant::format::{write_strand_v2, PackedTensor, PackedTensorV2};
     use strand_quant::TrellisConfig;
 
-    fn write_tiny_v2(
-        name: &str,
-        rows: u64,
-        cols: u64,
-        cfg: &TrellisConfig,
-        enc: &EncodedTensor,
-    ) -> std::path::PathBuf {
+    fn write_tiny_v2(name: &str, rows: u64, cols: u64, cfg: &TrellisConfig, enc: &EncodedTensor) -> std::path::PathBuf {
         let shape = [rows, cols];
         let pt = PackedTensorV2 {
-            base: PackedTensor {
-                name,
-                shape: &shape,
-                rht_seed: 0,
-                l_bits: cfg.l_bits as u8,
-                k_bits: cfg.k_bits as u8,
-                vec_dim: cfg.vec_dim() as u8,
-                enc,
-            },
+            base: PackedTensor { name, shape: &shape, rht_seed: 0, l_bits: cfg.l_bits as u8, k_bits: cfg.k_bits as u8, vec_dim: cfg.vec_dim() as u8, enc },
             block_len: cfg.block_len as u32,
         };
         let buf = write_strand_v2(&[pt], [0u8; 32], true).expect("write_strand_v2");
         let mut path = std::env::temp_dir();
         let pid = std::process::id();
-        let uniq = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .map(|d| d.as_nanos())
-            .unwrap_or(0);
+        let uniq = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_nanos()).unwrap_or(0);
         path.push(format!("strand_metal_{name}_{pid}_{uniq}.strand"));
         let mut f = std::fs::File::create(&path).expect("create temp .strand");
         f.write_all(&buf).expect("write temp .strand");
@@ -1645,23 +1274,11 @@ mod tests {
             for &c in probe_cols.iter().filter(|&&c| c < cols_u) {
                 let mut x_rht = vec![0.0f32; cols_u];
                 x_rht[c] = 1.0;
-                let y = gpu.gemv_fused(
-                    &payload,
-                    &tbl,
-                    lut,
-                    rows as u32,
-                    cols as u32,
-                    cfg.k_bits,
-                    cfg.l_bits,
-                    &x_rht,
-                );
+                let y = gpu.gemv_fused(&payload, &tbl, lut, rows as u32, cols as u32, cfg.k_bits, cfg.l_bits, &x_rht);
                 for r in 0..rows as usize {
                     let recovered = (y[r] * 4096.0).round() as i32;
                     let expected = cpu_q12[r * cols_u + c];
-                    assert_eq!(
-                        recovered, expected,
-                        "rows={rows} cols={cols} row={r} col={c}: GPU Q12 {recovered} != CPU {expected}"
-                    );
+                    assert_eq!(recovered, expected, "rows={rows} cols={cols} row={r} col={c}: GPU Q12 {recovered} != CPU {expected}");
                 }
             }
 
@@ -1689,12 +1306,7 @@ mod tests {
         assert_eq!(y_gpu.len(), y_cpu.len());
         for r in 0..rows as usize {
             let denom = y_cpu[r].abs().max(1e-3);
-            assert!(
-                (y_gpu[r] - y_cpu[r]).abs() / denom < 1e-4,
-                "row {r}: GPU {} vs CPU {} (rel)",
-                y_gpu[r],
-                y_cpu[r]
-            );
+            assert!((y_gpu[r] - y_cpu[r]).abs() / denom < 1e-4, "row {r}: GPU {} vs CPU {} (rel)", y_gpu[r], y_cpu[r]);
         }
         let _ = std::fs::remove_file(&path);
     }
@@ -1720,39 +1332,17 @@ mod tests {
         for cfg in configs {
             for seed in 0..8u64 {
                 let n = 1 + (seed as usize * 211) % 2048;
-                let w: Vec<f32> = (0..n)
-                    .map(|i| ((i as f32 + seed as f32) * 0.0137).sin() * 0.5)
-                    .collect();
+                let w: Vec<f32> = (0..n).map(|i| ((i as f32 + seed as f32) * 0.0137).sin() * 0.5).collect();
                 let variants = [
                     encode_tensor(&w, &cfg),
-                    encode_tensor_with(
-                        &w,
-                        &cfg,
-                        &EncodeOpts { tail_biting: true, ..Default::default() },
-                    ),
-                    encode_tensor_with(
-                        &w,
-                        &cfg,
-                        &EncodeOpts { affine_min: true, ..Default::default() },
-                    ),
-                    encode_tensor_with(
-                        &w,
-                        &cfg,
-                        &EncodeOpts {
-                            tail_biting: true,
-                            affine_min: true,
-                            ..Default::default()
-                        },
-                    ),
+                    encode_tensor_with(&w, &cfg, &EncodeOpts { tail_biting: true, ..Default::default() }),
+                    encode_tensor_with(&w, &cfg, &EncodeOpts { affine_min: true, ..Default::default() }),
+                    encode_tensor_with(&w, &cfg, &EncodeOpts { tail_biting: true, affine_min: true, ..Default::default() }),
                 ];
                 for enc in &variants {
                     let got = bitslice_decode_q12(&gpu, enc, &cfg);
                     let want = decode_tensor_fixed(enc, &cfg);
-                    assert_eq!(
-                        got, want,
-                        "bitslice GPU diverged: k={} L={} n={n} seed={seed} tail={} affine={}",
-                        cfg.k_bits, cfg.l_bits, enc.tail_biting, enc.has_affine_min
-                    );
+                    assert_eq!(got, want, "bitslice GPU diverged: k={} L={} n={n} seed={seed} tail={} affine={}", cfg.k_bits, cfg.l_bits, enc.tail_biting, enc.has_affine_min);
                 }
             }
         }
@@ -1777,34 +1367,22 @@ mod tests {
             let lut = codebook_lut(cfg.l_bits);
 
             for &batch in &[4usize, 16, 64] {
-                
                 let mut xs = vec![0.0f32; batch * cols];
                 let probe: Vec<usize> = (0..batch).map(|b| (7 * b + 3) % cols).collect();
                 for (b, &c) in probe.iter().enumerate() {
                     xs[b * cols + c] = 1.0;
                 }
-                let y = gpu.gemm(
-                    &enc.bits, &tbl, lut, rows as u32, cols as u32, cfg.k_bits, cfg.l_bits,
-                    &xs, batch,
-                );
+                let y = gpu.gemm(&enc.bits, &tbl, lut, rows as u32, cols as u32, cfg.k_bits, cfg.l_bits, &xs, batch);
                 for r in 0..rows {
                     for (b, &c) in probe.iter().enumerate() {
                         let recovered = (y[r * batch + b] * 4096.0).round() as i32;
                         let expected = want[r * cols + c];
-                        assert_eq!(
-                            recovered, expected,
-                            "GEMM one-hot Q12 diverged: k={} L={} B={batch} r={r} c={c}",
-                            cfg.k_bits, cfg.l_bits
-                        );
+                        assert_eq!(recovered, expected, "GEMM one-hot Q12 diverged: k={} L={} B={batch} r={r} c={c}", cfg.k_bits, cfg.l_bits);
                     }
                 }
 
-                let xs: Vec<f32> =
-                    (0..batch * cols).map(|i| ((i as f32) * 0.031).cos()).collect();
-                let y = gpu.gemm(
-                    &enc.bits, &tbl, lut, rows as u32, cols as u32, cfg.k_bits, cfg.l_bits,
-                    &xs, batch,
-                );
+                let xs: Vec<f32> = (0..batch * cols).map(|i| ((i as f32) * 0.031).cos()).collect();
+                let y = gpu.gemm(&enc.bits, &tbl, lut, rows as u32, cols as u32, cfg.k_bits, cfg.l_bits, &xs, batch);
                 let inv = 1.0f32 / 4096.0;
                 for r in 0..rows {
                     for b in 0..batch {
@@ -1818,11 +1396,7 @@ mod tests {
                             acc += p;
                         }
                         let denom = acc.abs().max(1e-3);
-                        assert!(
-                            (y[r * batch + b] - acc).abs() / denom < 1e-3,
-                            "GEMM y diverged: k={} L={} B={batch} r={r} b={b}: GPU {} vs CPU {acc}",
-                            cfg.k_bits, cfg.l_bits, y[r * batch + b]
-                        );
+                        assert!((y[r * batch + b] - acc).abs() / denom < 1e-3, "GEMM y diverged: k={} L={} B={batch} r={r} b={b}: GPU {} vs CPU {acc}", cfg.k_bits, cfg.l_bits, y[r * batch + b]);
                     }
                 }
             }
@@ -1841,29 +1415,14 @@ mod tests {
 
         let mut prepared = Vec::new();
         let mut wants = Vec::new();
-        for (i, cfg) in [
-            TrellisConfig::for_bpw(3.0),
-            TrellisConfig::for_bpw_l(2.0, 12),
-            TrellisConfig::for_bpw_l(2.0, 5),
-        ]
-        .into_iter()
-        .enumerate()
-        {
+        for (i, cfg) in [TrellisConfig::for_bpw(3.0), TrellisConfig::for_bpw_l(2.0, 12), TrellisConfig::for_bpw_l(2.0, 5)].into_iter().enumerate() {
             let n = 700 + i * 531;
             let w: Vec<f32> = (0..n).map(|j| ((j as f32) * 0.0117).sin() * 0.4).collect();
-            let enc = encode_tensor_with(
-                &w,
-                &cfg,
-                &EncodeOpts { tail_biting: true, affine_min: true, ..Default::default() },
-            );
+            let enc = encode_tensor_with(&w, &cfg, &EncodeOpts { tail_biting: true, affine_min: true, ..Default::default() });
             let want = decode_tensor_fixed(&enc, &cfg);
             let p = gpu.prepare(&enc, &cfg).expect("prepare");
             assert!(p.gpu_bytes() > 0);
-            assert_eq!(
-                gpu.decode_q12_prepared(&p),
-                want,
-                "prepared GPU decode diverged (cfg {i})"
-            );
+            assert_eq!(gpu.decode_q12_prepared(&p), want, "prepared GPU decode diverged (cfg {i})");
             prepared.push(p);
             wants.push(want);
         }

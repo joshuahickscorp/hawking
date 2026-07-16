@@ -1,4 +1,4 @@
-# Default sample prompts for ngram_baseline.sh
+# Default sample prompts for `python3 tools/spec/run.py ngram`
 # One prompt per line. Lines starting with # are comments.
 # These are diverse prompts spanning code, prose, and Q&A to get a realistic
 # oracle estimate across workload types.

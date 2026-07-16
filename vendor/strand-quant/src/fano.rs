@@ -1,10 +1,7 @@
 use wide::{f64x4, CmpLt};
 
 use crate::decode::eff_min_q;
-use crate::encode::{
-    build_sub_levels, choose_affine_min, choose_scale_q, choose_sub_scales, n_sub_blocks,
-    pack_sub_scales, BlockMeta, EncodeOpts, EncodedTensor, SUB_BLOCK, SUB_SCALE_UNITY,
-};
+use crate::encode::{build_sub_levels, choose_affine_min, choose_scale_q, choose_sub_scales, n_sub_blocks, pack_sub_scales, BlockMeta, EncodeOpts, EncodedTensor, SUB_BLOCK, SUB_SCALE_UNITY};
 use crate::trellis::{push_bits, TrellisConfig};
 
 const PRUNE_MARGIN: f64 = 1e-9;
@@ -36,17 +33,8 @@ impl PruneReport {
     }
 }
 
-pub fn encode_tensor_pruned(
-    weights: &[f32],
-    cfg: &TrellisConfig,
-    opts: &EncodeOpts,
-    lut: &[i32],
-) -> (EncodedTensor, PruneReport) {
-    assert_eq!(
-        cfg.vec_dim(),
-        1,
-        "encode_tensor_pruned: scalar trellis only (vec_dim == 1)"
-    );
+pub fn encode_tensor_pruned(weights: &[f32], cfg: &TrellisConfig, opts: &EncodeOpts, lut: &[i32]) -> (EncodedTensor, PruneReport) {
+    assert_eq!(cfg.vec_dim(), 1, "encode_tensor_pruned: scalar trellis only (vec_dim == 1)");
     let num_states = cfg.num_states();
     let mut bits = Vec::new();
     let mut bit_cursor = 0usize;
@@ -58,20 +46,9 @@ pub fn encode_tensor_pruned(
 
     for chunk in weights.chunks(cfg.block_len) {
         let scale_q = choose_scale_q(chunk, lut, cfg);
-        let mults = if opts.adaptive {
-            choose_sub_scales(chunk, scale_q, lut, cfg)
-        } else {
-            vec![SUB_SCALE_UNITY; n_sub_blocks(chunk.len())]
-        };
-        let (min_base_q, min_codes) = if opts.affine_min {
-            choose_affine_min(chunk, scale_q, &mults, lut, cfg)
-        } else {
-            (0, Vec::new())
-        };
-        let mins_eff: Vec<i32> = min_codes
-            .iter()
-            .map(|&c| eff_min_q(min_base_q, c))
-            .collect();
+        let mults = if opts.adaptive { choose_sub_scales(chunk, scale_q, lut, cfg) } else { vec![SUB_SCALE_UNITY; n_sub_blocks(chunk.len())] };
+        let (min_base_q, min_codes) = if opts.affine_min { choose_affine_min(chunk, scale_q, &mults, lut, cfg) } else { (0, Vec::new()) };
+        let mins_eff: Vec<i32> = min_codes.iter().map(|&c| eff_min_q(min_base_q, c)).collect();
         let sub_levels = build_sub_levels(scale_q, &mults, &mins_eff, lut, num_states);
 
         let ub = greedy_path_cost(chunk, &sub_levels, cfg);
@@ -106,33 +83,11 @@ pub fn encode_tensor_pruned(
         let (path, init_state, win_cost, expanded, total) = if can_tail_bite {
             let s1 = pruned_sweep(chunk, &sub_levels, cfg, None, None, ub_eff, &rem);
             let inf_rem = vec![0.0f64; n];
-            let mut s2 = pruned_sweep(
-                chunk,
-                &sub_levels,
-                cfg,
-                Some((s1.terminal, &mut back_buf)),
-                Some(s1.terminal),
-                f64::INFINITY,
-                &inf_rem,
-            );
+            let mut s2 = pruned_sweep(chunk, &sub_levels, cfg, Some((s1.terminal, &mut back_buf)), Some(s1.terminal), f64::INFINITY, &inf_rem);
             let (path, init_state) = s2.traceback.take().expect("pass 2 records");
-            (
-                path,
-                init_state,
-                s2.start_cost,
-                s1.expanded + s2.expanded,
-                s1.total + s2.total,
-            )
+            (path, init_state, s2.start_cost, s1.expanded + s2.expanded, s1.total + s2.total)
         } else {
-            let mut s = pruned_sweep(
-                chunk,
-                &sub_levels,
-                cfg,
-                Some((usize::MAX, &mut back_buf)),
-                None,
-                ub_eff,
-                &rem,
-            );
+            let mut s = pruned_sweep(chunk, &sub_levels, cfg, Some((usize::MAX, &mut back_buf)), None, ub_eff, &rem);
             let (path, init_state) = s.traceback.take().expect("recording sweep");
             (path, init_state, s.start_cost, s.expanded, s.total)
         };
@@ -142,41 +97,16 @@ pub fn encode_tensor_pruned(
         }
         blocks.push(BlockMeta {
             scale_q,
-            sub_scales: if opts.adaptive || opts.affine_min {
-                pack_sub_scales(&mults)
-            } else {
-                Vec::new()
-            },
+            sub_scales: if opts.adaptive || opts.affine_min { pack_sub_scales(&mults) } else { Vec::new() },
             min_base_q,
-            mins: if opts.affine_min {
-                pack_sub_scales(&min_codes)
-            } else {
-                Vec::new()
-            },
+            mins: if opts.affine_min { pack_sub_scales(&min_codes) } else { Vec::new() },
             init_state: init_state as u32,
             n: n as u32,
         });
-        report.blocks.push(BlockPruneStat {
-            n: n as u32,
-            win_cost,
-            greedy_ub: ub,
-            floor: floor_total,
-            expanded,
-            total,
-        });
+        report.blocks.push(BlockPruneStat { n: n as u32, win_cost, greedy_ub: ub, floor: floor_total, expanded, total });
     }
 
-    (
-        EncodedTensor {
-            bits,
-            blocks,
-            total: weights.len(),
-            has_rht_seed: false,
-            tail_biting: opts.tail_biting,
-            has_affine_min: opts.affine_min,
-        },
-        report,
-    )
+    (EncodedTensor { bits, blocks, total: weights.len(), has_rht_seed: false, tail_biting: opts.tail_biting, has_affine_min: opts.affine_min }, report)
 }
 
 #[inline]
@@ -232,15 +162,7 @@ struct SweepResult {
     total: u64,
 }
 
-fn pruned_sweep(
-    weights: &[f32],
-    sub_levels: &[Vec<f64>],
-    cfg: &TrellisConfig,
-    record: Option<(usize, &mut [u32])>,
-    final_s: Option<usize>,
-    ub_eff: f64,
-    rem: &[f64],
-) -> SweepResult {
+fn pruned_sweep(weights: &[f32], sub_levels: &[Vec<f64>], cfg: &TrellisConfig, record: Option<(usize, &mut [u32])>, final_s: Option<usize>, ub_eff: f64, rem: &[f64]) -> SweepResult {
     let n = weights.len();
     let num_states = cfg.num_states();
     let k = cfg.k_bits as usize;
@@ -268,9 +190,7 @@ fn pruned_sweep(
     for (i, &w) in weights.iter().enumerate() {
         let target = w as f64;
         let levels = &sub_levels[i / SUB_BLOCK];
-        let row: Option<&mut [u32]> = back
-            .as_deref_mut()
-            .map(|b| &mut b[i * num_states..(i + 1) * num_states]);
+        let row: Option<&mut [u32]> = back.as_deref_mut().map(|b| &mut b[i * num_states..(i + 1) * num_states]);
         let mut row = row;
 
         for g in 0..n_groups {
@@ -383,13 +303,7 @@ fn pruned_sweep(
         (path, s)
     });
 
-    SweepResult {
-        terminal,
-        start_cost,
-        traceback,
-        expanded,
-        total,
-    }
+    SweepResult { terminal, start_cost, traceback, expanded, total }
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -400,10 +314,7 @@ pub struct FanoParams {
 
 impl Default for FanoParams {
     fn default() -> Self {
-        FanoParams {
-            bias_scale: 1.0,
-            budget_mult: 8.0,
-        }
+        FanoParams { bias_scale: 1.0, budget_mult: 8.0 }
     }
 }
 
@@ -434,18 +345,9 @@ impl Ord for Ord64 {
     }
 }
 
-pub fn encode_tensor_fano(
-    weights: &[f32],
-    cfg: &TrellisConfig,
-    opts: &EncodeOpts,
-    lut: &[i32],
-    params: &FanoParams,
-) -> (EncodedTensor, FanoReport) {
+pub fn encode_tensor_fano(weights: &[f32], cfg: &TrellisConfig, opts: &EncodeOpts, lut: &[i32], params: &FanoParams) -> (EncodedTensor, FanoReport) {
     assert_eq!(cfg.vec_dim(), 1, "encode_tensor_fano: scalar trellis only");
-    assert!(
-        !opts.tail_biting,
-        "encode_tensor_fano: tail-biting unsupported"
-    );
+    assert!(!opts.tail_biting, "encode_tensor_fano: tail-biting unsupported");
     let num_states = cfg.num_states();
     let num_inputs = cfg.num_inputs();
     let mut bits = Vec::new();
@@ -459,29 +361,14 @@ pub fn encode_tensor_fano(
 
     for chunk in weights.chunks(cfg.block_len) {
         let scale_q = choose_scale_q(chunk, lut, cfg);
-        let mults = if opts.adaptive {
-            choose_sub_scales(chunk, scale_q, lut, cfg)
-        } else {
-            vec![SUB_SCALE_UNITY; n_sub_blocks(chunk.len())]
-        };
-        let (min_base_q, min_codes) = if opts.affine_min {
-            choose_affine_min(chunk, scale_q, &mults, lut, cfg)
-        } else {
-            (0, Vec::new())
-        };
-        let mins_eff: Vec<i32> = min_codes
-            .iter()
-            .map(|&c| eff_min_q(min_base_q, c))
-            .collect();
+        let mults = if opts.adaptive { choose_sub_scales(chunk, scale_q, lut, cfg) } else { vec![SUB_SCALE_UNITY; n_sub_blocks(chunk.len())] };
+        let (min_base_q, min_codes) = if opts.affine_min { choose_affine_min(chunk, scale_q, &mults, lut, cfg) } else { (0, Vec::new()) };
+        let mins_eff: Vec<i32> = min_codes.iter().map(|&c| eff_min_q(min_base_q, c)).collect();
         let sub_levels = build_sub_levels(scale_q, &mults, &mins_eff, lut, num_states);
 
         let n = chunk.len();
         let greedy_ub = greedy_path_cost(chunk, &sub_levels, cfg);
-        let bias = if n > 0 {
-            params.bias_scale * greedy_ub / n as f64
-        } else {
-            0.0
-        };
+        let bias = if n > 0 { params.bias_scale * greedy_ub / n as f64 } else { 0.0 };
         let budget = ((params.budget_mult * n as f64).ceil() as u64).max(n as u64);
 
         let table = (n + 1) * num_states;
@@ -496,14 +383,8 @@ pub fn encode_tensor_fano(
         }
 
         let mut arena: Vec<FanoNode> = Vec::with_capacity(4 * n + 4);
-        arena.push(FanoNode {
-            state: 0,
-            step: 0,
-            sym: 0,
-            parent: u32::MAX,
-        });
-        let mut heap: std::collections::BinaryHeap<(std::cmp::Reverse<Ord64>, u32)> =
-            std::collections::BinaryHeap::new();
+        arena.push(FanoNode { state: 0, step: 0, sym: 0, parent: u32::MAX });
+        let mut heap: std::collections::BinaryHeap<(std::cmp::Reverse<Ord64>, u32)> = std::collections::BinaryHeap::new();
         heap.push((std::cmp::Reverse(Ord64(0.0)), 0));
         let mut node_cost: Vec<f64> = vec![0.0];
 
@@ -547,12 +428,7 @@ pub fn encode_tensor_fano(
                     continue;
                 }
                 let nidx = arena.len() as u32;
-                arena.push(FanoNode {
-                    state: ns as u32,
-                    step: (step + 1) as u32,
-                    sym: inp as u8,
-                    parent: idx,
-                });
+                arena.push(FanoNode { state: ns as u32, step: (step + 1) as u32, sym: inp as u8, parent: idx });
                 node_cost.push(nc);
                 let adj = nc - bias * (step + 1) as f64;
                 heap.push((std::cmp::Reverse(Ord64(adj)), nidx));
@@ -599,39 +475,16 @@ pub fn encode_tensor_fano(
         }
         blocks.push(BlockMeta {
             scale_q,
-            sub_scales: if opts.adaptive || opts.affine_min {
-                pack_sub_scales(&mults)
-            } else {
-                Vec::new()
-            },
+            sub_scales: if opts.adaptive || opts.affine_min { pack_sub_scales(&mults) } else { Vec::new() },
             min_base_q,
-            mins: if opts.affine_min {
-                pack_sub_scales(&min_codes)
-            } else {
-                Vec::new()
-            },
+            mins: if opts.affine_min { pack_sub_scales(&min_codes) } else { Vec::new() },
             init_state: 0,
             n: n as u32,
         });
-        report.blocks.push(BlockFanoStat {
-            n: n as u32,
-            pops,
-            budget_exhausted,
-            path_cost,
-        });
+        report.blocks.push(BlockFanoStat { n: n as u32, pops, budget_exhausted, path_cost });
     }
 
-    (
-        EncodedTensor {
-            bits,
-            blocks,
-            total: weights.len(),
-            has_rht_seed: false,
-            tail_biting: false,
-            has_affine_min: opts.affine_min,
-        },
-        report,
-    )
+    (EncodedTensor { bits, blocks, total: weights.len(), has_rht_seed: false, tail_biting: false, has_affine_min: opts.affine_min }, report)
 }
 
 fn walk_path(arena: &[FanoNode], idx: u32, len: usize) -> Vec<u32> {
@@ -690,17 +543,7 @@ mod tests {
             let lut = codebook_lut(cfg.l_bits);
             for &n in &[1024usize, 257, 17] {
                 let w = normal_vec(n, 0xFA90_0000 + (k as u64) << 8 | l as u64);
-                for opts in [
-                    EncodeOpts::default(),
-                    EncodeOpts {
-                        adaptive: true,
-                        tail_biting: true,
-                        affine_min: false,
-                        silence_bonus: 0.0,
-                        entropy_bonus_scale: 0.0,
-                        entropy_bonus_two_pass: false,
-                    },
-                ] {
+                for opts in [EncodeOpts::default(), EncodeOpts { adaptive: true, tail_biting: true, affine_min: false, silence_bonus: 0.0, entropy_bonus_scale: 0.0, entropy_bonus_two_pass: false }] {
                     let (pruned, rep) = encode_tensor_pruned(&w, &cfg, &opts, lut);
                     let live = encode_tensor_with_lut(&w, &cfg, &opts, lut);
                     assert_eq!(pruned, live, "k={k} l={l} n={n} tb={}", opts.tail_biting);
@@ -723,10 +566,7 @@ mod tests {
         let exact = encode_tensor_with_lut(&w, &cfg, &opts, lut);
         let r_exact = rel_rms(&w, &decode_tensor(&exact, &cfg));
         let r_fano = rel_rms(&w, &recon);
-        assert!(
-            r_fano < r_exact * 2.0,
-            "fano rel-RMS {r_fano} vs viterbi {r_exact}"
-        );
+        assert!(r_fano < r_exact * 2.0, "fano rel-RMS {r_fano} vs viterbi {r_exact}");
         assert_eq!(rep.blocks.len(), enc.blocks.len());
     }
 

@@ -5,7 +5,11 @@
 # practical overnight failure mode: if the ladder exits before the frontier is
 # actually exhausted, plant an autopilot inject if possible and relaunch.
 set -uo pipefail
-cd "$HOME/Downloads/hawking" || exit 2
+SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)" || exit 2
+REPO="${REPO:-$(CDPATH= cd -- "$SCRIPT_DIR/../.." && pwd -P)}"
+cd "$REPO" || exit 2
+REPO="$(pwd -P)"
+export REPO
 
 RUN="${RUN:-7b_frontier}"
 INTERVAL="${KEEPALIVE_INTERVAL:-300}"
@@ -50,7 +54,7 @@ while true; do
       ./run_7b_frontier.sh launch >> "$LOG" 2>&1 || true
     fi
   else
-    python3.12 tools/condense/frontier_autopilot.py \
+    python3.12 -m tools.condense frontier.autopilot \
       --outbase "reports/cron/${RUN}" --emit-inject >> "$LOG" 2>&1 || true
     if run_done_marker && [ ! -f "$INJECT" ]; then
       echo "$(date '+%H:%M:%S') frontier done and autopilot has no inject; keepalive exit" >> "$LOG"

@@ -1,8 +1,6 @@
 use memmap2::Mmap;
 use strand_quant::encode::{BlockMeta, EncodedTensor, SUB_BLOCK};
-use strand_quant::format::{
-    flags_v2, read_strand_v2_header, BlockOffsetRecord, StrandV2Header, TensorHeaderV2,
-};
+use strand_quant::format::{flags_v2, read_strand_v2_header, BlockOffsetRecord, StrandV2Header, TensorHeaderV2};
 use strand_quant::outlier_wire::{read_outl_bytes, OutlSection, OutlierWire};
 use strand_quant::selfdesc::{read_sdsc_bytes, Sdsc};
 use strand_quant::sideinfo_wire::{apply_sdsq_to_header, read_sdsq_bytes};
@@ -69,19 +67,13 @@ impl StrandModel {
         let outl = read_outl_bytes(&mmap, true)?;
         if let Some(o) = &outl {
             if o.tensors.len() != header.tensors.len() {
-                return Err(format!(
-                    "strand loader: OUTL section has {} records, archive has {} tensors",
-                    o.tensors.len(),
-                    header.tensors.len()
-                ));
+                return Err(format!("strand loader: OUTL section has {} records, archive has {} tensors", o.tensors.len(), header.tensors.len()));
             }
         }
         let sdsc = read_sdsc_bytes(&mmap, true)?;
         let has_vector = header.tensors.iter().any(|t| t.vec_dim > 1);
         if has_vector && sdsc.is_none() {
-            return Err(
-                "strand loader: vector archive has no archive-bound SDSC tensor LUTs".into(),
-            );
+            return Err("strand loader: vector archive has no archive-bound SDSC tensor LUTs".into());
         }
         if let Some(section) = &sdsc {
             for (index, tensor) in header.tensors.iter().enumerate() {
@@ -97,12 +89,7 @@ impl StrandModel {
                 }
             }
         }
-        Ok(Self {
-            mmap,
-            header,
-            outl,
-            sdsc,
-        })
+        Ok(Self { mmap, header, outl, sdsc })
     }
 
     pub fn header(&self) -> &StrandV2Header {
@@ -130,56 +117,28 @@ impl StrandModel {
     /// canonical deterministic table; vector archives may use only their
     /// source- and ordinal-bound SDSC record.
     pub fn lut_for(&self, name: &str) -> Result<&[i32], String> {
-        let index = self
-            .header
-            .tensors
-            .iter()
-            .position(|t| t.name == name)
-            .ok_or_else(|| format!("strand loader: no tensor {name:?}"))?;
+        let index = self.header.tensors.iter().position(|t| t.name == name).ok_or_else(|| format!("strand loader: no tensor {name:?}"))?;
         let tensor = &self.header.tensors[index];
         if tensor.vec_dim <= 1 {
             return Ok(strand_quant::codebook::codebook_lut(tensor.l_bits as u32));
         }
-        let section = self
-            .sdsc
-            .as_ref()
-            .ok_or_else(|| format!("strand loader: vector tensor {name:?} has no SDSC section"))?;
+        let section = self.sdsc.as_ref().ok_or_else(|| format!("strand loader: vector tensor {name:?} has no SDSC section"))?;
         Ok(&section.tensor_lut(index)?.entries)
     }
 
     pub fn view(&self, name: &str) -> Option<TensorView<'_>> {
         let hdr = self.tensor_header(name)?;
-        let payload = self
-            .mmap
-            .get(hdr.payload_offset..hdr.payload_offset + hdr.payload_bytes)?;
-        let sideinfo = if hdr.sideinfo_offset == 0 {
-            &[][..]
-        } else {
-            self.mmap
-                .get(hdr.sideinfo_offset..hdr.sideinfo_offset + hdr.sideinfo_bytes)?
-        };
-        Some(TensorView {
-            hdr,
-            payload,
-            sideinfo,
-            table: &hdr.table,
-        })
+        let payload = self.mmap.get(hdr.payload_offset..hdr.payload_offset + hdr.payload_bytes)?;
+        let sideinfo = if hdr.sideinfo_offset == 0 { &[][..] } else { self.mmap.get(hdr.sideinfo_offset..hdr.sideinfo_offset + hdr.sideinfo_bytes)? };
+        Some(TensorView { hdr, payload, sideinfo, table: &hdr.table })
     }
 
     pub fn config_for(&self, h: &TensorHeaderV2) -> TrellisConfig {
-        TrellisConfig {
-            l_bits: h.l_bits as u32,
-            k_bits: h.k_bits as u32,
-            block_len: h.block_len as usize,
-            vec_dim: h.vec_dim as u32,
-            codebook_mode: CodebookMode::StoredLut,
-        }
+        TrellisConfig { l_bits: h.l_bits as u32, k_bits: h.k_bits as u32, block_len: h.block_len as usize, vec_dim: h.vec_dim as u32, codebook_mode: CodebookMode::StoredLut }
     }
 
     pub fn encoded_tensor_checked(&self, name: &str) -> Result<EncodedTensor, String> {
-        let v = self
-            .view(name)
-            .ok_or_else(|| format!("strand loader: no tensor {name:?} or region out of bounds"))?;
+        let v = self.view(name).ok_or_else(|| format!("strand loader: no tensor {name:?} or region out of bounds"))?;
         encoded_tensor_from_view(v.hdr, v.payload, v.sideinfo)
     }
 
@@ -188,11 +147,7 @@ impl StrandModel {
     }
 }
 
-pub fn encoded_tensor_from_view(
-    hdr: &TensorHeaderV2,
-    payload: &[u8],
-    sideinfo: &[u8],
-) -> Result<EncodedTensor, String> {
+pub fn encoded_tensor_from_view(hdr: &TensorHeaderV2, payload: &[u8], sideinfo: &[u8]) -> Result<EncodedTensor, String> {
     let total = hdr.total;
     let n_blocks = hdr.n_blocks;
     let block_len = hdr.block_len as usize;
@@ -224,10 +179,7 @@ pub fn encoded_tensor_from_view(
         let ss_bytes = (6 * n_sub).div_ceil(8);
 
         let sub_scales = if has_sideinfo {
-            let s = sideinfo
-                .get(ss_cursor..ss_cursor + ss_bytes)
-                .ok_or("strand loader: EOF sub_scales")?
-                .to_vec();
+            let s = sideinfo.get(ss_cursor..ss_cursor + ss_bytes).ok_or("strand loader: EOF sub_scales")?.to_vec();
             ss_cursor += ss_bytes;
             s
         } else {
@@ -236,49 +188,25 @@ pub fn encoded_tensor_from_view(
 
         let (min_base_q, mins) = if let Some(mb) = mins_half_base {
             let off = mb + b * 4;
-            let mbq = sideinfo
-                .get(off..off + 4)
-                .map(|s| i32::from_le_bytes(s.try_into().unwrap()))
-                .ok_or("strand loader: EOF min_base_q")?;
-            let mins = sideinfo
-                .get(mins_cursor..mins_cursor + ss_bytes)
-                .ok_or("strand loader: EOF mins")?
-                .to_vec();
+            let mbq = sideinfo.get(off..off + 4).map(|s| i32::from_le_bytes(s.try_into().unwrap())).ok_or("strand loader: EOF min_base_q")?;
+            let mins = sideinfo.get(mins_cursor..mins_cursor + ss_bytes).ok_or("strand loader: EOF mins")?.to_vec();
             mins_cursor += ss_bytes;
             (mbq, mins)
         } else {
             (0i32, Vec::new())
         };
 
-        blocks.push(BlockMeta {
-            scale_q: rec.scale_q,
-            sub_scales,
-            min_base_q,
-            mins,
-            init_state: rec.init_state,
-            n: nb as u32,
-        });
+        blocks.push(BlockMeta { scale_q: rec.scale_q, sub_scales, min_base_q, mins, init_state: rec.init_state, n: nb as u32 });
     }
 
-    Ok(EncodedTensor {
-        bits: payload.to_vec(),
-        blocks,
-        total,
-        has_rht_seed: hdr.has_rht_seed,
-        tail_biting: hdr.tail_biting,
-        has_affine_min,
-    })
+    Ok(EncodedTensor { bits: payload.to_vec(), blocks, total, has_rht_seed: hdr.has_rht_seed, tail_biting: hdr.tail_biting, has_affine_min })
 }
 
 impl StrandModel {
     pub fn prepared_tensor(&self, name: &str) -> Option<crate::prepared::PreparedTensor> {
         let hdr = self.tensor_header(name)?;
         let cfg = self.config_for(hdr);
-        let shape = if hdr.shape.len() >= 2 {
-            Some((hdr.shape[0] as usize, hdr.shape[1] as usize))
-        } else {
-            None
-        };
+        let shape = if hdr.shape.len() >= 2 { Some((hdr.shape[0] as usize, hdr.shape[1] as usize)) } else { None };
         let enc = self.encoded_tensor(name)?;
         let mut p = crate::prepared::PreparedTensor::new(enc, cfg);
         if let Some((o, i)) = shape {
@@ -300,33 +228,16 @@ mod tests {
     use strand_quant::encode::{encode_tensor, encode_tensor_with, EncodeOpts};
     use strand_quant::format::{write_strand_v2, PackedTensor, PackedTensorV2};
 
-    fn write_tiny_v2(
-        name: &str,
-        rows: u64,
-        cols: u64,
-        cfg: &TrellisConfig,
-        enc: &EncodedTensor,
-    ) -> std::path::PathBuf {
+    fn write_tiny_v2(name: &str, rows: u64, cols: u64, cfg: &TrellisConfig, enc: &EncodedTensor) -> std::path::PathBuf {
         let shape = [rows, cols];
         let pt = PackedTensorV2 {
-            base: PackedTensor {
-                name,
-                shape: &shape,
-                rht_seed: 0,
-                l_bits: cfg.l_bits as u8,
-                k_bits: cfg.k_bits as u8,
-                vec_dim: cfg.vec_dim() as u8,
-                enc,
-            },
+            base: PackedTensor { name, shape: &shape, rht_seed: 0, l_bits: cfg.l_bits as u8, k_bits: cfg.k_bits as u8, vec_dim: cfg.vec_dim() as u8, enc },
             block_len: cfg.block_len as u32,
         };
         let buf = write_strand_v2(&[pt], [0u8; 32], true).expect("write_strand_v2");
         let mut path = std::env::temp_dir();
         let pid = std::process::id();
-        let uniq = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .map(|d| d.as_nanos())
-            .unwrap_or(0);
+        let uniq = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_nanos()).unwrap_or(0);
         path.push(format!("strand_loader_{name}_{pid}_{uniq}.strand"));
         let mut f = std::fs::File::create(&path).expect("create temp .strand");
         f.write_all(&buf).expect("write temp .strand");
@@ -342,44 +253,23 @@ mod tests {
     fn unique_path(tag: &str) -> std::path::PathBuf {
         let mut path = std::env::temp_dir();
         let pid = std::process::id();
-        let uniq = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .map(|d| d.as_nanos())
-            .unwrap_or(0);
+        let uniq = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_nanos()).unwrap_or(0);
         path.push(format!("strand_sdsq_gate_{tag}_{pid}_{uniq}.strand"));
         path
     }
 
-    fn write_multi_v2(
-        names: &[&str],
-        encs: &[EncodedTensor],
-        cfg: &TrellisConfig,
-        packed: bool,
-        tag: &str,
-    ) -> std::path::PathBuf {
+    fn write_multi_v2(names: &[&str], encs: &[EncodedTensor], cfg: &TrellisConfig, packed: bool, tag: &str) -> std::path::PathBuf {
         use strand_quant::format::write_strand_v2_packed;
         let shape = [4u64, 256u64];
         let pts: Vec<PackedTensorV2> = names
             .iter()
             .zip(encs.iter())
             .map(|(name, enc)| PackedTensorV2 {
-                base: PackedTensor {
-                    name,
-                    shape: &shape,
-                    rht_seed: 0,
-                    l_bits: cfg.l_bits as u8,
-                    k_bits: cfg.k_bits as u8,
-                    vec_dim: cfg.vec_dim() as u8,
-                    enc,
-                },
+                base: PackedTensor { name, shape: &shape, rht_seed: 0, l_bits: cfg.l_bits as u8, k_bits: cfg.k_bits as u8, vec_dim: cfg.vec_dim() as u8, enc },
                 block_len: cfg.block_len as u32,
             })
             .collect();
-        let buf = if packed {
-            write_strand_v2_packed(&pts, [0u8; 32], true).expect("write_strand_v2_packed")
-        } else {
-            write_strand_v2(&pts, [0u8; 32], true).expect("write_strand_v2")
-        };
+        let buf = if packed { write_strand_v2_packed(&pts, [0u8; 32], true).expect("write_strand_v2_packed") } else { write_strand_v2(&pts, [0u8; 32], true).expect("write_strand_v2") };
         let path = unique_path(tag);
         let mut f = std::fs::File::create(&path).expect("create temp .strand");
         f.write_all(&buf).expect("write temp .strand");
@@ -392,16 +282,11 @@ mod tests {
         use strand_quant::sideinfo_wire::append_sdsq;
 
         // Two tensors so the SDSQ stream exercises tensor-then-block ordering.
-        let names = [
-            "model.layers.0.q_proj.weight",
-            "model.layers.0.down_proj.weight",
-        ];
+        let names = ["model.layers.0.q_proj.weight", "model.layers.0.down_proj.weight"];
         let cfg = TrellisConfig::for_bpw(2.0);
         let encs: Vec<EncodedTensor> = (0..2)
             .map(|t| {
-                let w: Vec<f32> = (0..1024)
-                    .map(|i| ((i as f32 + 17.0 * t as f32) * 0.0137).sin() * 0.6)
-                    .collect();
+                let w: Vec<f32> = (0..1024).map(|i| ((i as f32 + 17.0 * t as f32) * 0.0137).sin() * 0.6).collect();
                 encode_tensor(&w, &cfg)
             })
             .collect();
@@ -413,10 +298,7 @@ mod tests {
 
         // The scale_q the producer feeds append_sdsq: tensor-then-block order, the
         // SAME order write_strand_v2_packed laid the (scale_q-less) table in.
-        let scale_q: Vec<i32> = encs
-            .iter()
-            .flat_map(|e| e.blocks.iter().map(|b| b.scale_q))
-            .collect();
+        let scale_q: Vec<i32> = encs.iter().flat_map(|e| e.blocks.iter().map(|b| b.scale_q)).collect();
         append_sdsq(&packed, &scale_q).expect("append SDSQ");
 
         // Prove the on-disk seek table actually shrank (the bpw win) AND the flag is set.
@@ -424,25 +306,11 @@ mod tests {
         let packed_bytes = std::fs::read(&packed).unwrap();
         let lh = strand_quant::format::read_strand_v2_header(&legacy_bytes).unwrap();
         let ph = strand_quant::format::read_strand_v2_header(&packed_bytes).unwrap();
-        assert_eq!(
-            lh.flags & flags_v2::SCALEQ_IN_SDSQ,
-            0,
-            "legacy must NOT set the flag"
-        );
-        assert_ne!(
-            ph.flags & flags_v2::SCALEQ_IN_SDSQ,
-            0,
-            "packed MUST set the flag"
-        );
+        assert_eq!(lh.flags & flags_v2::SCALEQ_IN_SDSQ, 0, "legacy must NOT set the flag");
+        assert_ne!(ph.flags & flags_v2::SCALEQ_IN_SDSQ, 0, "packed MUST set the flag");
         // Legacy table parsed scale_q from disk; packed left 0 placeholders (pre-apply).
-        assert!(
-            lh.tensors[0].table.iter().any(|r| r.scale_q != 0),
-            "legacy inline scale_q"
-        );
-        assert!(
-            ph.tensors[0].table.iter().all(|r| r.scale_q == 0),
-            "packed header (no SDSQ apply) must show 0-placeholder scale_q"
-        );
+        assert!(lh.tensors[0].table.iter().any(|r| r.scale_q != 0), "legacy inline scale_q");
+        assert!(ph.tensors[0].table.iter().all(|r| r.scale_q == 0), "packed header (no SDSQ apply) must show 0-placeholder scale_q");
 
         // Open both via the DEPLOY READ PATH (StrandModel applies SDSQ on load).
         let m_legacy = StrandModel::open(&legacy).expect("open legacy");
@@ -453,18 +321,11 @@ mod tests {
             // scale_q sourced from SDSQ in the packed model must equal the inline one.
             let lt = m_legacy.tensor_header(name).unwrap();
             let pt = m_packed.tensor_header(name).unwrap();
-            assert_eq!(
-                lt.table.iter().map(|r| r.scale_q).collect::<Vec<_>>(),
-                pt.table.iter().map(|r| r.scale_q).collect::<Vec<_>>(),
-                "SDSQ-sourced scale_q must equal inline scale_q for {name}"
-            );
+            assert_eq!(lt.table.iter().map(|r| r.scale_q).collect::<Vec<_>>(), pt.table.iter().map(|r| r.scale_q).collect::<Vec<_>>(), "SDSQ-sourced scale_q must equal inline scale_q for {name}");
 
             let el = m_legacy.encoded_tensor(name).expect("legacy enc");
             let ep = m_packed.encoded_tensor(name).expect("packed enc");
-            assert_eq!(
-                el.blocks, ep.blocks,
-                "EncodedTensor.blocks must match for {name}"
-            );
+            assert_eq!(el.blocks, ep.blocks, "EncodedTensor.blocks must match for {name}");
 
             // The load-bearing assertion: dequantized integer reconstruct identical.
             let ql = decode_tensor_fixed(&el, &m_legacy.config_for(lt));
@@ -474,10 +335,7 @@ mod tests {
                 max_abs_diff = max_abs_diff.max((*a as i64 - *b as i64).abs());
             }
         }
-        assert_eq!(
-            max_abs_diff, 0,
-            "maxabsdiff between legacy and SDSQ-packed reconstruct"
-        );
+        assert_eq!(max_abs_diff, 0, "maxabsdiff between legacy and SDSQ-packed reconstruct");
 
         let _ = std::fs::remove_file(&legacy);
         let _ = std::fs::remove_file(&packed);
@@ -497,10 +355,7 @@ mod tests {
             Ok(_) => panic!("packed archive without SDSQ must hard-error"),
             Err(e) => e.to_string(),
         };
-        assert!(
-            msg.contains("SCALEQ_IN_SDSQ") || msg.contains("SDSQ"),
-            "error must name the missing SDSQ section, got: {msg}"
-        );
+        assert!(msg.contains("SCALEQ_IN_SDSQ") || msg.contains("SDSQ"), "error must name the missing SDSQ section, got: {msg}");
 
         let _ = std::fs::remove_file(&packed_no_sdsq);
     }
@@ -600,14 +455,9 @@ mod tests {
 
     #[test]
     fn encoded_tensor_with_affine_min_round_trips() {
-        let weights: Vec<f32> = (0..1024)
-            .map(|i| ((i as f32) * 0.017).sin() * 0.9 - 0.1)
-            .collect();
+        let weights: Vec<f32> = (0..1024).map(|i| ((i as f32) * 0.017).sin() * 0.9 - 0.1).collect();
         let cfg = TrellisConfig::for_bpw(4.0);
-        let opts = EncodeOpts {
-            affine_min: true,
-            ..Default::default()
-        };
+        let opts = EncodeOpts { affine_min: true, ..Default::default() };
         let enc = encode_tensor_with(&weights, &cfg, &opts);
 
         if !enc.has_affine_min {

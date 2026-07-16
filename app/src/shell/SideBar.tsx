@@ -8,7 +8,7 @@ import { useEffect, useRef, useState } from "react";
 import { sendIntent } from "../ipc";
 import { useStore, type ContextManifest } from "../store";
 import { intent } from "../wire";
-import { Explorer } from "../surfaces/ide/Explorer";
+import { Explorer } from "../surfaces/Explorer";
 
 const fmtTok = (n: number) =>
   n >= 1_000_000 ? `${(n / 1_000_000).toFixed(n % 1_000_000 ? 1 : 0)}M` : n >= 1000 ? `${Math.round(n / 1000)}K` : `${n}`;

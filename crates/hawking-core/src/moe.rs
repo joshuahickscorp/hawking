@@ -13,11 +13,7 @@ pub fn topk_gate(logits: &mut [f32], top_k: usize, normalize: bool) -> Vec<(usiz
     softmax_inplace(logits);
     let mut idx: Vec<usize> = (0..logits.len()).collect();
     idx.sort_by(|&a, &b| logits[b].partial_cmp(&logits[a]).unwrap());
-    let mut out: Vec<(usize, f32)> = idx
-        .into_iter()
-        .take(top_k)
-        .map(|i| (i, logits[i]))
-        .collect();
+    let mut out: Vec<(usize, f32)> = idx.into_iter().take(top_k).map(|i| (i, logits[i])).collect();
     if normalize {
         let sum: f32 = out.iter().map(|(_, w)| *w).sum();
         if sum > 0.0 {
@@ -34,15 +30,7 @@ pub fn topk_gate(logits: &mut [f32], top_k: usize, normalize: bool) -> Vec<(usiz
 /// `gate_w`, `up_w`, `down_w` are row-major:
 ///   gate_w / up_w: (intermediate, hidden)
 ///   down_w:        (hidden, intermediate)
-pub fn expert_ffn(
-    x: &[f32],
-    gate_w: &[f32],
-    up_w: &[f32],
-    down_w: &[f32],
-    hidden: usize,
-    intermediate: usize,
-    out: &mut [f32],
-) -> Result<()> {
+pub fn expert_ffn(x: &[f32], gate_w: &[f32], up_w: &[f32], down_w: &[f32], hidden: usize, intermediate: usize, out: &mut [f32]) -> Result<()> {
     debug_assert_eq!(x.len(), hidden);
     debug_assert_eq!(out.len(), hidden);
 
@@ -69,14 +57,7 @@ pub struct ExpertWeights<'a> {
 ///
 /// `experts[i]` corresponds to expert id `i`. Only the experts in
 /// comes from `topk_gate`.
-pub fn moe_forward_token(
-    x: &[f32],
-    routes: &[(usize, f32)],
-    experts: &[ExpertWeights],
-    hidden: usize,
-    intermediate: usize,
-    out: &mut [f32],
-) -> Result<()> {
+pub fn moe_forward_token(x: &[f32], routes: &[(usize, f32)], experts: &[ExpertWeights], hidden: usize, intermediate: usize, out: &mut [f32]) -> Result<()> {
     debug_assert_eq!(out.len(), hidden);
     for v in out.iter_mut() {
         *v = 0.0;
@@ -84,15 +65,7 @@ pub fn moe_forward_token(
     let mut tmp = vec![0.0f32; hidden];
     for (eid, w) in routes {
         let e = &experts[*eid];
-        expert_ffn(
-            x,
-            e.gate_w,
-            e.up_w,
-            e.down_w,
-            hidden,
-            intermediate,
-            &mut tmp,
-        )?;
+        expert_ffn(x, e.gate_w, e.up_w, e.down_w, hidden, intermediate, &mut tmp)?;
         for i in 0..hidden {
             out[i] += w * tmp[i];
         }
@@ -102,24 +75,10 @@ pub fn moe_forward_token(
 
 /// Add the contribution of N "shared" experts (always-on, no routing).
 /// DeepSeek-V2-Lite has 2 shared experts; Qwen3-MoE has 0.
-pub fn add_shared_experts(
-    x: &[f32],
-    shared: &[ExpertWeights],
-    hidden: usize,
-    intermediate: usize,
-    out: &mut [f32],
-) -> Result<()> {
+pub fn add_shared_experts(x: &[f32], shared: &[ExpertWeights], hidden: usize, intermediate: usize, out: &mut [f32]) -> Result<()> {
     let mut tmp = vec![0.0f32; hidden];
     for e in shared {
-        expert_ffn(
-            x,
-            e.gate_w,
-            e.up_w,
-            e.down_w,
-            hidden,
-            intermediate,
-            &mut tmp,
-        )?;
+        expert_ffn(x, e.gate_w, e.up_w, e.down_w, hidden, intermediate, &mut tmp)?;
         for i in 0..hidden {
             out[i] += tmp[i];
         }

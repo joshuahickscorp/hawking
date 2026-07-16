@@ -13,8 +13,8 @@ execution plan:
 One run, offline. Output lands in artifacts/calibration/v2_lite_corpus/ as
 int8-quantized parquet shards. Idempotent per-shard — crashed runs resume.
 
-Backend: HuggingFace transformers + MPS. See tools/training/README.md for
-why this and not MLX/llama-cpp/dismantle's own engine.
+Backend: HuggingFace transformers + MPS. Use
+`python3 tools/ops.py training show corpus-build` for the canonical invocation.
 
 Usage:
     python3 tools/training/build_corpus.py \\
@@ -145,9 +145,8 @@ def iter_chat_sequences(
     """Yield rendered chat strings up to `limit`, skipping the first
     `skip_rows` of the underlying dataset.
 
-    Wall-clock optimization #5 (2026-05-22): the autonomous corpus
-    watchdog at `tools/training/run_corpus_autonomous.sh` historically
-    re-started this iterator at row 0 on every crash + restart, which
+    Wall-clock optimization #5 (2026-05-22): an early autonomous wrapper
+    historically restarted this iterator at row 0 on every crash, which
     produced ~60% duplicate sequences across the 4,512-row 2026-05-21
     corpus. Future captures should pass `--skip-rows N` where N is
     `heartbeat['rows_consumed']` so resumption walks forward instead of

@@ -6,30 +6,19 @@ use crate::trellis::{read_bits, TrellisConfig};
 #[test]
 fn larger_block_len_amortizes_fixed_trellis_sideinfo() {
     let w = normal_vec(8192, 0xB10C_1E00);
-    let small = TrellisConfig::for_bpw(1.0)
-        .with_vec_dim(8)
-        .with_block_len(256);
-    let large = TrellisConfig::for_bpw(1.0)
-        .with_vec_dim(8)
-        .with_block_len(2048);
+    let small = TrellisConfig::for_bpw(1.0).with_vec_dim(8).with_block_len(256);
+    let large = TrellisConfig::for_bpw(1.0).with_vec_dim(8).with_block_len(2048);
     let es = encode_tensor(&w, &small);
     let el = encode_tensor(&w, &large);
     assert_eq!(es.payload_bpw(&small), 0.125);
     assert_eq!(el.payload_bpw(&large), 0.125);
-    assert!(
-        el.total_bpw(&large) < es.total_bpw(&small),
-        "larger blocks must amortize side-info: small={} large={}",
-        es.total_bpw(&small),
-        el.total_bpw(&large),
-    );
+    assert!(el.total_bpw(&large) < es.total_bpw(&small), "larger blocks must amortize side-info: small={} large={}", es.total_bpw(&small), el.total_bpw(&large),);
 }
 
 struct Lcg(u64);
 impl Lcg {
     fn new(seed: u64) -> Self {
-        Lcg(seed
-            .wrapping_mul(6364136223846793005)
-            .wrapping_add(1442695040888963407))
+        Lcg(seed.wrapping_mul(6364136223846793005).wrapping_add(1442695040888963407))
     }
     fn next_u64(&mut self) -> u64 {
         self.0 = self.0.wrapping_add(0x9E3779B97F4A7C15);
@@ -70,9 +59,7 @@ fn uniform_quantize_mse(weights: &[f32], b: u32) -> f64 {
     if absmax == 0.0 || levels < 2 {
         return 0.0;
     }
-    const MULTS: [f64; 11] = [
-        0.55, 0.65, 0.75, 0.85, 0.92, 1.0, 1.08, 1.18, 1.30, 1.45, 1.65,
-    ];
+    const MULTS: [f64; 11] = [0.55, 0.65, 0.75, 0.85, 0.92, 1.0, 1.08, 1.18, 1.30, 1.45, 1.65];
     let mut best = f64::INFINITY;
     for &m in &MULTS {
         let clip = absmax * m;
@@ -150,19 +137,13 @@ fn encode_decode_path_consistency() {
     }
 
     let got = decode_tensor_fixed(&enc, &cfg);
-    assert_eq!(
-        got, expected,
-        "decoder diverged from the encoder's implied path"
-    );
+    assert_eq!(got, expected, "decoder diverged from the encoder's implied path");
     assert_eq!(got.len(), weights.len());
 
     let recon = decode_tensor(&enc, &cfg);
     let m = mse(&weights, &recon);
     let signal = weights.iter().map(|x| (*x as f64).powi(2)).sum::<f64>() / weights.len() as f64;
-    assert!(
-        m < signal * 0.5,
-        "reconstruction MSE {m} not below half signal energy {signal}"
-    );
+    assert!(m < signal * 0.5, "reconstruction MSE {m} not below half signal energy {signal}");
 }
 
 #[test]
@@ -200,10 +181,7 @@ fn mechanism_trellis_beats_uniform_at_iso_bits() {
             uni_sum += uni;
             tre_sum += tre;
 
-            assert!(
-                tre < uni,
-                "trellis MSE {tre:.6} not below uniform MSE {uni:.6} at {b} bpw (seed {seed:#x})",
-            );
+            assert!(tre < uni, "trellis MSE {tre:.6} not below uniform MSE {uni:.6} at {b} bpw (seed {seed:#x})",);
         }
         let uni = uni_sum / SEEDS.len() as f64;
         let tre = tre_sum / SEEDS.len() as f64;
@@ -232,10 +210,7 @@ fn scale_shift_and_quantile_shift_are_sane() {
     assert_eq!(SCALE_SHIFT, 16);
     assert_eq!(QUANTILE_SHIFT, 12);
 
-    assert_eq!(
-        reconstruct_q(1 << SCALE_SHIFT, 1 << QUANTILE_SHIFT),
-        1 << QUANTILE_SHIFT
-    );
+    assert_eq!(reconstruct_q(1 << SCALE_SHIFT, 1 << QUANTILE_SHIFT), 1 << QUANTILE_SHIFT);
     assert_eq!(reconstruct_q(0, 12345), 0);
 }
 
@@ -303,27 +278,14 @@ fn adaptive_scales_beat_single_scale_on_nonstationary_weights() {
 
     let flat = encode_tensor_opts(&w, &cfg, false);
     let adapt = encode_tensor_opts(&w, &cfg, true);
-    assert!(
-        flat.blocks.iter().all(|block| block.sub_scales.is_empty()),
-        "single-scale mode must use the canonical absent side-info stream"
-    );
-    assert!(
-        flat.total_bpw(&cfg) < adapt.total_bpw(&cfg),
-        "single-scale billing must exclude adaptive sub-scale codes"
-    );
+    assert!(flat.blocks.iter().all(|block| block.sub_scales.is_empty()), "single-scale mode must use the canonical absent side-info stream");
+    assert!(flat.total_bpw(&cfg) < adapt.total_bpw(&cfg), "single-scale billing must exclude adaptive sub-scale codes");
     let mse_flat = mse(&w, &decode_tensor(&flat, &cfg));
     let mse_adapt = mse(&w, &decode_tensor(&adapt, &cfg));
 
-    assert!(
-        mse_adapt < mse_flat,
-        "adaptive sub-scales ({mse_adapt:.3e}) did not beat single-scale ({mse_flat:.3e})"
-    );
+    assert!(mse_adapt < mse_flat, "adaptive sub-scales ({mse_adapt:.3e}) did not beat single-scale ({mse_flat:.3e})");
 
-    assert!(
-        adapt.total_bpw(&cfg) < 4.5,
-        "adaptive total bpw {} exceeded 4.5",
-        adapt.total_bpw(&cfg)
-    );
+    assert!(adapt.total_bpw(&cfg) < 4.5, "adaptive total bpw {} exceeded 4.5", adapt.total_bpw(&cfg));
 }
 
 #[test]
@@ -337,20 +299,14 @@ fn rht_then_quant_then_inverse_tracks_input() {
     let fwd = rht_forward(&w, &rcfg);
     let id = rht_inverse(&fwd, &rcfg);
     let id_err = mse(&w, &id);
-    assert!(
-        id_err < 1e-6,
-        "RHT round-trip not identity: mse {id_err:.3e}"
-    );
+    assert!(id_err < 1e-6, "RHT round-trip not identity: mse {id_err:.3e}");
 
     let enc = encode_tensor(&fwd, &tcfg);
     let recon_inc = decode_tensor(&enc, &tcfg);
     let recon = rht_inverse(&recon_inc, &rcfg);
     let m = mse(&w, &recon);
     let signal = w.iter().map(|x| (*x as f64).powi(2)).sum::<f64>() / w.len() as f64;
-    assert!(
-        m < signal * 0.2,
-        "RHT+quant+inverse mse {m:.3e} not well below signal {signal:.3e}"
-    );
+    assert!(m < signal * 0.2, "RHT+quant+inverse mse {m:.3e} not well below signal {signal:.3e}");
 }
 
 use crate::encode::{encode_tensor_with, EncodeOpts};
@@ -366,14 +322,7 @@ fn replay_fixed(enc: &crate::EncodedTensor, cfg: &TrellisConfig) -> Vec<i32> {
     for blk in &enc.blocks {
         let n_sub = n_sub_blocks(blk.n as usize);
         let mults = unpack_sub_scales(&blk.sub_scales, n_sub);
-        let offs: Vec<i32> = if enc.has_affine_min {
-            unpack_sub_scales(&blk.mins, n_sub)
-                .iter()
-                .map(|&c| eff_min_q(blk.min_base_q, c))
-                .collect()
-        } else {
-            Vec::new()
-        };
+        let offs: Vec<i32> = if enc.has_affine_min { unpack_sub_scales(&blk.mins, n_sub).iter().map(|&c| eff_min_q(blk.min_base_q, c)).collect() } else { Vec::new() };
         let nk = (blk.n as usize) * (k as usize);
         let start = if enc.tail_biting && nk >= cfg.l_bits as usize {
             let mut s = 0usize;
@@ -404,21 +353,14 @@ fn replay_fixed(enc: &crate::EncodedTensor, cfg: &TrellisConfig) -> Vec<i32> {
 fn tail_biting_round_trips_and_drops_init_state_bits() {
     let weights = normal_vec(2048, 0x7A11_B171);
     let cfg = TrellisConfig::for_bpw(3.0);
-    let opts = EncodeOpts {
-        tail_biting: true,
-        ..Default::default()
-    };
+    let opts = EncodeOpts { tail_biting: true, ..Default::default() };
     let enc = encode_tensor_with(&weights, &cfg, &opts);
     assert!(enc.tail_biting);
 
     let a = decode_tensor_fixed(&enc, &cfg);
     let b = decode_tensor_fixed(&enc, &cfg);
     assert_eq!(a, b, "tail-biting decode not deterministic");
-    assert_eq!(
-        a,
-        replay_fixed(&enc, &cfg),
-        "decoder diverged from tail-biting replay"
-    );
+    assert_eq!(a, replay_fixed(&enc, &cfg), "decoder diverged from tail-biting replay");
     assert_eq!(a.len(), weights.len());
 
     let mask = cfg.state_mask();
@@ -433,29 +375,15 @@ fn tail_biting_round_trips_and_drops_init_state_bits() {
             end = ((end << k) | sym) & mask;
         }
         if (blk.n as usize) * (k as usize) >= cfg.l_bits as usize {
-            assert_eq!(
-                blk.init_state as usize & mask,
-                end,
-                "tail-biting start state != end state"
-            );
+            assert_eq!(blk.init_state as usize & mask, end, "tail-biting start state != end state");
         }
     }
 
-    let nt = encode_tensor_with(
-        &weights,
-        &cfg,
-        &EncodeOpts {
-            tail_biting: false,
-            ..Default::default()
-        },
-    );
+    let nt = encode_tensor_with(&weights, &cfg, &EncodeOpts { tail_biting: false, ..Default::default() });
     let n_blocks = enc.blocks.len() as f64;
     let saved_bpw = nt.total_bpw(&cfg) - enc.total_bpw(&cfg);
     let expected = (cfg.l_bits as f64 * n_blocks) / weights.len() as f64;
-    assert!(
-        (saved_bpw - expected).abs() < 1e-9,
-        "tail-biting saved {saved_bpw} bpw, expected {expected}"
-    );
+    assert!((saved_bpw - expected).abs() < 1e-9, "tail-biting saved {saved_bpw} bpw, expected {expected}");
 }
 
 #[test]
@@ -464,21 +392,10 @@ fn tail_biting_short_final_block_decodes_correctly() {
         for &bpw in &[2u32, 3, 4] {
             let w = normal_vec(n, 0x7A11_0000 ^ (n as u64) ^ ((bpw as u64) << 32));
             let cfg = TrellisConfig::for_bpw_l(bpw as f64, 12);
-            let enc = encode_tensor_with(
-                &w,
-                &cfg,
-                &EncodeOpts {
-                    tail_biting: true,
-                    ..Default::default()
-                },
-            );
+            let enc = encode_tensor_with(&w, &cfg, &EncodeOpts { tail_biting: true, ..Default::default() });
             let d = decode_tensor_fixed(&enc, &cfg);
             assert_eq!(d.len(), n, "n={n} bpw={bpw}: wrong length");
-            assert_eq!(
-                d,
-                replay_fixed(&enc, &cfg),
-                "tail-biting short-block decode diverged (n={n}, bpw={bpw})"
-            );
+            assert_eq!(d, replay_fixed(&enc, &cfg), "tail-biting short-block decode diverged (n={n}, bpw={bpw})");
             assert_eq!(d, decode_tensor_fixed(&enc, &cfg), "not deterministic");
         }
     }
@@ -496,50 +413,27 @@ fn affine_min_round_trips_and_helps_offset_data() {
         .collect();
     let cfg = TrellisConfig::for_bpw(4.0);
 
-    let off = EncodeOpts {
-        affine_min: false,
-        tail_biting: true,
-        ..Default::default()
-    };
-    let on = EncodeOpts {
-        affine_min: true,
-        tail_biting: true,
-        ..Default::default()
-    };
+    let off = EncodeOpts { affine_min: false, tail_biting: true, ..Default::default() };
+    let on = EncodeOpts { affine_min: true, tail_biting: true, ..Default::default() };
     let e_off = encode_tensor_with(&w, &cfg, &off);
     let e_on = encode_tensor_with(&w, &cfg, &on);
     assert!(e_on.has_affine_min && !e_off.has_affine_min);
 
     let d = decode_tensor_fixed(&e_on, &cfg);
     assert_eq!(d, decode_tensor_fixed(&e_on, &cfg));
-    assert_eq!(
-        d,
-        replay_fixed(&e_on, &cfg),
-        "affine-min decoder diverged from replay"
-    );
+    assert_eq!(d, replay_fixed(&e_on, &cfg), "affine-min decoder diverged from replay");
 
     let m_off = mse(&w, &decode_tensor(&e_off, &cfg));
     let m_on = mse(&w, &decode_tensor(&e_on, &cfg));
-    assert!(
-        m_on < m_off,
-        "affine-min ({m_on:.4e}) did not beat no-offset ({m_off:.4e}) on DC-offset data"
-    );
+    assert!(m_on < m_off, "affine-min ({m_on:.4e}) did not beat no-offset ({m_off:.4e}) on DC-offset data");
 
     let bpw = e_on.total_bpw(&cfg);
-    assert!(
-        bpw < 4.64,
-        "affine-min+tail-biting bpw {bpw} exceeded the fully billed bound"
-    );
+    assert!(bpw < 4.64, "affine-min+tail-biting bpw {bpw} exceeded the fully billed bound");
 
     // Affine mode adds exactly one i32 min_base_q per block plus one 6-bit
     // code per subblock.  Pin this so logical density cannot omit the base.
-    let expected_extra_bits: usize = e_on
-        .blocks
-        .iter()
-        .map(|b| 32 + 6 * n_sub_blocks(b.n as usize))
-        .sum();
-    let measured_extra_bits =
-        ((e_on.total_bpw(&cfg) - e_off.total_bpw(&cfg)) * n as f64).round() as usize;
+    let expected_extra_bits: usize = e_on.blocks.iter().map(|b| 32 + 6 * n_sub_blocks(b.n as usize)).sum();
+    let measured_extra_bits = ((e_on.total_bpw(&cfg) - e_off.total_bpw(&cfg)) * n as f64).round() as usize;
     assert_eq!(measured_extra_bits, expected_extra_bits);
 }
 
@@ -575,25 +469,11 @@ fn levers_compose_and_stay_deterministic() {
     let n = 3072usize;
     let w = normal_vec(n, 0xC0FF_EE42);
     let cfg = TrellisConfig::for_bpw_l(4.0, 12);
-    let opts = EncodeOpts {
-        adaptive: true,
-        tail_biting: true,
-        affine_min: true,
-        silence_bonus: 0.0,
-        ..Default::default()
-    };
+    let opts = EncodeOpts { adaptive: true, tail_biting: true, affine_min: true, silence_bonus: 0.0, ..Default::default() };
     let enc = encode_tensor_with(&w, &cfg, &opts);
     let d = decode_tensor_fixed(&enc, &cfg);
-    assert_eq!(
-        d,
-        decode_tensor_fixed(&enc, &cfg),
-        "composed levers not deterministic"
-    );
-    assert_eq!(
-        d,
-        replay_fixed(&enc, &cfg),
-        "composed-lever decoder diverged from replay"
-    );
+    assert_eq!(d, decode_tensor_fixed(&enc, &cfg), "composed levers not deterministic");
+    assert_eq!(d, replay_fixed(&enc, &cfg), "composed-lever decoder diverged from replay");
     assert_eq!(d.len(), n);
 
     let f = decode_tensor(&enc, &cfg);
@@ -630,20 +510,11 @@ fn b1_d1_vector_path_byte_identical_to_scalar() {
 
         let enc_lut = encode_tensor_with_lut(&weights, &cfg, &EncodeOpts::default(), scalar_lut);
         let dec_lut = decode_tensor_fixed_with_lut(&enc_lut, &cfg, scalar_lut);
-        assert_eq!(
-            enc_lut, enc_ref,
-            "d=1 explicit-LUT encode diverged from scalar (k={k})"
-        );
-        assert_eq!(
-            dec_lut, dec_ref,
-            "d=1 explicit-LUT decode diverged from scalar (k={k})"
-        );
+        assert_eq!(enc_lut, enc_ref, "d=1 explicit-LUT encode diverged from scalar (k={k})");
+        assert_eq!(dec_lut, dec_ref, "d=1 explicit-LUT decode diverged from scalar (k={k})");
 
         let bcast = vector_lut_from_scalar(scalar_lut, 1);
-        assert_eq!(
-            bcast, scalar_lut,
-            "broadcast at d=1 must equal the scalar LUT"
-        );
+        assert_eq!(bcast, scalar_lut, "broadcast at d=1 must equal the scalar LUT");
     }
 }
 
@@ -656,11 +527,7 @@ fn b1_d2_round_trips_and_is_deterministic() {
     assert_eq!(cfg.k_bits, 4);
 
     let lut = train_state_vector_lut(&weights, cfg.l_bits, 2, 0xABCD, 40);
-    assert_eq!(
-        lut.len(),
-        cfg.num_states() * 2,
-        "vector LUT must be [2^L * d]"
-    );
+    assert_eq!(lut.len(), cfg.num_states() * 2, "vector LUT must be [2^L * d]");
 
     let enc = encode_tensor_with_lut(&weights, &cfg, &EncodeOpts::default(), &lut);
 
@@ -672,26 +539,16 @@ fn b1_d2_round_trips_and_is_deterministic() {
     let enc2 = encode_tensor_with_lut(&weights, &cfg, &EncodeOpts::default(), &lut);
     assert_eq!(enc, enc2, "d=2 re-encode changed the bits");
 
-    assert!(
-        (enc.payload_bpw(&cfg) - 2.0).abs() < 1e-12,
-        "d=2 payload bpw != k/d"
-    );
+    assert!((enc.payload_bpw(&cfg) - 2.0).abs() < 1e-12, "d=2 payload bpw != k/d");
     let total_syms = enc.index_symbols(&cfg).len();
-    let expected_syms: usize = enc
-        .blocks
-        .iter()
-        .map(|blk| (blk.n as usize).div_ceil(2))
-        .sum();
+    let expected_syms: usize = enc.blocks.iter().map(|blk| (blk.n as usize).div_ceil(2)).sum();
     assert_eq!(total_syms, expected_syms, "symbol count != sum ceil(n/2)");
 
     let to_real = 1.0f64 / (1u32 << QUANTILE_SHIFT) as f64;
     let recon: Vec<f32> = a.iter().map(|&q| (q as f32) * to_real as f32).collect();
     let m = mse(&weights, &recon);
     let signal = weights.iter().map(|x| (*x as f64).powi(2)).sum::<f64>() / weights.len() as f64;
-    assert!(
-        m < signal,
-        "d=2 reconstruction MSE {m} not below signal energy {signal}"
-    );
+    assert!(m < signal, "d=2 reconstruction MSE {m} not below signal energy {signal}");
 
     let recon_pub: Vec<f32> = a.iter().map(|&q| (q as f32) * (1.0 / 4096.0)).collect();
     for (&q, &x) in a.iter().zip(&recon_pub) {
@@ -708,11 +565,7 @@ fn b1_d_partial_final_block_exact_length() {
         let lut = train_state_vector_lut(&weights, cfg.l_bits, d, 7, 25);
         let enc = encode_tensor_with_lut(&weights, &cfg, &EncodeOpts::default(), &lut);
         let dec = decode_tensor_fixed_with_lut(&enc, &cfg, &lut);
-        assert_eq!(
-            dec.len(),
-            n,
-            "d={d} partial-final-block decode wrong length"
-        );
+        assert_eq!(dec.len(), n, "d={d} partial-final-block decode wrong length");
 
         assert_eq!(dec, decode_tensor_fixed_with_lut(&enc, &cfg, &lut));
     }
@@ -723,28 +576,18 @@ fn b1_d2_tail_biting_round_trips() {
     let weights = normal_vec(1024, 0x0B1D_0004);
     let cfg = TrellisConfig::for_bpw(4.0).with_vec_dim(2);
     let lut = train_state_vector_lut(&weights, cfg.l_bits, 2, 99, 30);
-    let opts = EncodeOpts {
-        tail_biting: true,
-        ..Default::default()
-    };
+    let opts = EncodeOpts { tail_biting: true, ..Default::default() };
     let enc = encode_tensor_with_lut(&weights, &cfg, &opts, &lut);
     assert!(enc.tail_biting);
     let a = decode_tensor_fixed_with_lut(&enc, &cfg, &lut);
-    assert_eq!(
-        a,
-        decode_tensor_fixed_with_lut(&enc, &cfg, &lut),
-        "tail-biting decode not deterministic"
-    );
+    assert_eq!(a, decode_tensor_fixed_with_lut(&enc, &cfg, &lut), "tail-biting decode not deterministic");
     assert_eq!(a.len(), weights.len());
 
     let enc_nt = encode_tensor_with_lut(&weights, &cfg, &EncodeOpts::default(), &lut);
     let b = decode_tensor_fixed_with_lut(&enc_nt, &cfg, &lut);
     let m_tb = q12_mse(&weights, &a);
     let m_nt = q12_mse(&weights, &b);
-    assert!(
-        m_tb < m_nt * 1.5 + 1e-9,
-        "tail-biting MSE {m_tb} >> non-tail-biting {m_nt}"
-    );
+    assert!(m_tb < m_nt * 1.5 + 1e-9, "tail-biting MSE {m_tb} >> non-tail-biting {m_nt}");
 }
 
 fn b1_iso_bpw_scalar_vs_vector(rate: u32, d: u32, n: usize, seed: u64) -> (f64, f64) {
@@ -759,10 +602,7 @@ fn b1_iso_bpw_scalar_vs_vector(rate: u32, d: u32, n: usize, seed: u64) -> (f64, 
     let mse_s = q12_mse(&weights, &dec_s);
 
     let k_vec = rate * d;
-    assert!(
-        k_vec <= TrellisConfig::MAX_K,
-        "k=rate*d exceeds MAX_K — pick a feasible rate/d"
-    );
+    assert!(k_vec <= TrellisConfig::MAX_K, "k=rate*d exceeds MAX_K — pick a feasible rate/d");
     let cfg_v = TrellisConfig::for_bpw_l(k_vec as f64, cfg_s.l_bits).with_vec_dim(d);
     assert_eq!(cfg_v.k_bits, k_vec);
     assert_eq!(cfg_v.l_bits, cfg_s.l_bits);
@@ -770,10 +610,7 @@ fn b1_iso_bpw_scalar_vs_vector(rate: u32, d: u32, n: usize, seed: u64) -> (f64, 
     assert!((enc_s.payload_bpw(&cfg_s) - rate as f64).abs() < 1e-12);
     let lut_v = train_state_vector_lut(&weights, cfg_v.l_bits, d as usize, 0x5EED_2222, 60);
     let enc_v = encode_tensor_with_lut(&weights, &cfg_v, &EncodeOpts::default(), &lut_v);
-    assert!(
-        (enc_v.payload_bpw(&cfg_v) - rate as f64).abs() < 1e-12,
-        "vector payload != iso rate"
-    );
+    assert!((enc_v.payload_bpw(&cfg_v) - rate as f64).abs() < 1e-12, "vector payload != iso rate");
     let dec_v = decode_tensor_fixed_with_lut(&enc_v, &cfg_v, &lut_v);
     let mse_v = q12_mse(&weights, &dec_v);
 
@@ -790,10 +627,7 @@ fn b1_rung1_learned_d2_beats_scalar_at_iso_bpw() {
         "[B1 Rung-1] d=2 @ R=2 iso-bpw: scalar MSE {mse_s2:.6e}, vector MSE {mse_v2:.6e}, \
          gain {gain_db_2:.3} dB (full-VQ ceiling +0.41 dB)"
     );
-    assert!(
-        mse_v2 < mse_s2,
-        "learned d=2 trellis did NOT beat scalar at R=2 (scalar {mse_s2:.6e} vs vector {mse_v2:.6e})"
-    );
+    assert!(mse_v2 < mse_s2, "learned d=2 trellis did NOT beat scalar at R=2 (scalar {mse_s2:.6e} vs vector {mse_v2:.6e})");
 }
 
 #[test]
@@ -808,15 +642,9 @@ fn b1_rung1_learned_d4_beats_scalar_at_iso_bpw() {
         "[B1 Rung-1] @ R=1 iso-bpw: scalar MSE {mse_s1:.6e}; d=2 MSE {mse_v2:.6e} ({gain_db_2:.3} dB); \
          d=4 MSE {mse_v4:.6e} ({gain_db_4:.3} dB) — captured gain should grow with d"
     );
-    assert!(
-        mse_v4 < mse_s1,
-        "learned d=4 trellis did NOT beat scalar at R=1 (scalar {mse_s1:.6e} vs d=4 {mse_v4:.6e})"
-    );
+    assert!(mse_v4 < mse_s1, "learned d=4 trellis did NOT beat scalar at R=1 (scalar {mse_s1:.6e} vs d=4 {mse_v4:.6e})");
 
-    assert!(
-        gain_db_4 >= gain_db_2 - 0.05,
-        "d=4 captured LESS than d=2 ({gain_db_4:.3} dB vs {gain_db_2:.3} dB) — space-filling ordering violated"
-    );
+    assert!(gain_db_4 >= gain_db_2 - 0.05, "d=4 captured LESS than d=2 ({gain_db_4:.3} dB vs {gain_db_2:.3} dB) — space-filling ordering violated");
 }
 
 // ---------------------------------------------------------------------------
@@ -839,53 +667,19 @@ fn assert_codebook_modes_identical(weights: &[f32], cfg: &TrellisConfig, opts: &
     let enc_h = encode_tensor_with(weights, &cfg_hashed, opts);
     let enc_c = encode_tensor_with(weights, &cfg_computed, opts);
 
-    assert_eq!(
-        enc_s, enc_h,
-        "L={} k={}: hashed EncodedTensor diverged",
-        cfg.l_bits, cfg.k_bits
-    );
+    assert_eq!(enc_s, enc_h, "L={} k={}: hashed EncodedTensor diverged", cfg.l_bits, cfg.k_bits);
 
     // Same emitted payload + side info, field for field.
-    assert_eq!(
-        enc_s.bits, enc_c.bits,
-        "L={} k={}: payload bits diverged",
-        cfg.l_bits, cfg.k_bits
-    );
-    assert_eq!(
-        enc_s.total, enc_c.total,
-        "L={} k={}: total diverged",
-        cfg.l_bits, cfg.k_bits
-    );
-    assert_eq!(
-        enc_s.has_affine_min, enc_c.has_affine_min,
-        "L={} k={}: affine flag diverged",
-        cfg.l_bits, cfg.k_bits
-    );
-    assert_eq!(
-        enc_s.tail_biting, enc_c.tail_biting,
-        "L={} k={}: tail-biting flag diverged",
-        cfg.l_bits, cfg.k_bits
-    );
-    assert_eq!(
-        enc_s.blocks.len(),
-        enc_c.blocks.len(),
-        "L={} k={}: block count diverged",
-        cfg.l_bits,
-        cfg.k_bits
-    );
+    assert_eq!(enc_s.bits, enc_c.bits, "L={} k={}: payload bits diverged", cfg.l_bits, cfg.k_bits);
+    assert_eq!(enc_s.total, enc_c.total, "L={} k={}: total diverged", cfg.l_bits, cfg.k_bits);
+    assert_eq!(enc_s.has_affine_min, enc_c.has_affine_min, "L={} k={}: affine flag diverged", cfg.l_bits, cfg.k_bits);
+    assert_eq!(enc_s.tail_biting, enc_c.tail_biting, "L={} k={}: tail-biting flag diverged", cfg.l_bits, cfg.k_bits);
+    assert_eq!(enc_s.blocks.len(), enc_c.blocks.len(), "L={} k={}: block count diverged", cfg.l_bits, cfg.k_bits);
     for (bi, (a, b)) in enc_s.blocks.iter().zip(&enc_c.blocks).enumerate() {
-        assert_eq!(
-            a, b,
-            "L={} k={} block {bi}: block side-info diverged",
-            cfg.l_bits, cfg.k_bits
-        );
+        assert_eq!(a, b, "L={} k={} block {bi}: block side-info diverged", cfg.l_bits, cfg.k_bits);
     }
     // The whole struct, for good measure (EncodedTensor: PartialEq).
-    assert_eq!(
-        enc_s, enc_c,
-        "L={} k={}: EncodedTensor diverged",
-        cfg.l_bits, cfg.k_bits
-    );
+    assert_eq!(enc_s, enc_c, "L={} k={}: EncodedTensor diverged", cfg.l_bits, cfg.k_bits);
 
     // Decode must also be byte-identical — both that the two modes agree with each
     // other, AND that decoding ONE encoding under the other mode is unchanged
@@ -897,31 +691,11 @@ fn assert_codebook_modes_identical(weights: &[f32], cfg: &TrellisConfig, opts: &
     let d_sh = decode_tensor_fixed(&enc_s, &cfg_hashed);
     let d_sc = decode_tensor_fixed(&enc_s, &cfg_computed); // stored bits, computed decode
     let d_cs = decode_tensor_fixed(&enc_c, &cfg_stored); // computed bits, stored decode
-    assert_eq!(
-        d_ss, d_cc,
-        "L={} k={}: decode diverged across modes",
-        cfg.l_bits, cfg.k_bits
-    );
-    assert_eq!(
-        d_ss, d_hh,
-        "L={} k={}: hashed decode diverged",
-        cfg.l_bits, cfg.k_bits
-    );
-    assert_eq!(
-        d_ss, d_sh,
-        "L={} k={}: hashed decode of stored bits diverged",
-        cfg.l_bits, cfg.k_bits
-    );
-    assert_eq!(
-        d_ss, d_sc,
-        "L={} k={}: computed decode of stored bits diverged",
-        cfg.l_bits, cfg.k_bits
-    );
-    assert_eq!(
-        d_ss, d_cs,
-        "L={} k={}: stored decode of computed bits diverged",
-        cfg.l_bits, cfg.k_bits
-    );
+    assert_eq!(d_ss, d_cc, "L={} k={}: decode diverged across modes", cfg.l_bits, cfg.k_bits);
+    assert_eq!(d_ss, d_hh, "L={} k={}: hashed decode diverged", cfg.l_bits, cfg.k_bits);
+    assert_eq!(d_ss, d_sh, "L={} k={}: hashed decode of stored bits diverged", cfg.l_bits, cfg.k_bits);
+    assert_eq!(d_ss, d_sc, "L={} k={}: computed decode of stored bits diverged", cfg.l_bits, cfg.k_bits);
+    assert_eq!(d_ss, d_cs, "L={} k={}: stored decode of computed bits diverged", cfg.l_bits, cfg.k_bits);
 }
 
 #[test]
@@ -937,13 +711,7 @@ fn computed_codebook_encode_decode_equivalence_matrix() {
     // grid only where it is cheap; a single representative grid entry at high L).
     let weights = normal_vec(320, 0xC0DE_B007_F00Du64);
     // (adaptive, tail_biting, affine_min) headline lever combinations.
-    let full_grid: &[(bool, bool, bool)] = &[
-        (false, false, false),
-        (true, false, false),
-        (true, true, false),
-        (true, false, true),
-        (true, true, true),
-    ];
+    let full_grid: &[(bool, bool, bool)] = &[(false, false, false), (true, false, false), (true, true, false), (true, false, true), (true, true, true)];
     let cheap_grid: &[(bool, bool, bool)] = &[(true, true, true)];
     // Cover L up to 12 across the full k range and option grid. Every codebook
     // *value* at every state for L up to 14 is already proven bit-identical by
@@ -956,18 +724,9 @@ fn computed_codebook_encode_decode_equivalence_matrix() {
             let cfg = TrellisConfig::new(l, k, 128);
             // Full option grid only where the Viterbi table is small; one
             // representative (all-levers) combo otherwise.
-            let grid = if (l as u64) * (1u64 << k) <= (12 << 3) {
-                full_grid
-            } else {
-                cheap_grid
-            };
+            let grid = if (l as u64) * (1u64 << k) <= (12 << 3) { full_grid } else { cheap_grid };
             for &(adaptive, tail_biting, affine_min) in grid {
-                let opts = EncodeOpts {
-                    adaptive,
-                    tail_biting,
-                    affine_min,
-                    ..Default::default()
-                };
+                let opts = EncodeOpts { adaptive, tail_biting, affine_min, ..Default::default() };
                 assert_codebook_modes_identical(&weights, &cfg, &opts);
             }
         }
@@ -975,12 +734,7 @@ fn computed_codebook_encode_decode_equivalence_matrix() {
     // Highest-width smoke cell: prove the L=13 and L=14 paths are wired too.
     for l in [13u32, 14] {
         let cfg = TrellisConfig::new(l, 2, 128);
-        let opts = EncodeOpts {
-            adaptive: true,
-            tail_biting: true,
-            affine_min: true,
-            ..Default::default()
-        };
+        let opts = EncodeOpts { adaptive: true, tail_biting: true, affine_min: true, ..Default::default() };
         assert_codebook_modes_identical(&weights, &cfg, &opts);
     }
 }
@@ -992,20 +746,12 @@ fn scalar_decode_sources_are_bit_identical() {
     // through the selected stored/hash/computed branch on one edge-rich tensor.
     let weights = normal_vec(257, 0xA11C_E5EED);
     let stored = TrellisConfig::new(6, 2, 64).with_codebook_mode(CodebookMode::StoredLut);
-    let opts = EncodeOpts {
-        adaptive: true,
-        tail_biting: true,
-        affine_min: true,
-        ..Default::default()
-    };
+    let opts = EncodeOpts { adaptive: true, tail_biting: true, affine_min: true, ..Default::default() };
     let encoded = encode_tensor_with(&weights, &stored, &opts);
     let expected = decode_tensor_fixed(&encoded, &stored);
     for mode in [CodebookMode::HashedQuantile, CodebookMode::ComputedAcklam] {
         let candidate = decode_tensor_fixed(&encoded, &stored.with_codebook_mode(mode));
-        assert_eq!(
-            candidate, expected,
-            "scalar decode source diverged: {mode:?}"
-        );
+        assert_eq!(candidate, expected, "scalar decode source diverged: {mode:?}");
     }
 }
 
@@ -1025,11 +771,7 @@ fn computed_codebook_exhaustive_small_trellis_equivalence() {
                     }
                     // small block to exercise more block boundaries
                     let cfg = TrellisConfig::new(l, k, 64);
-                    let opts = EncodeOpts {
-                        adaptive: true,
-                        tail_biting: true,
-                        ..Default::default()
-                    };
+                    let opts = EncodeOpts { adaptive: true, tail_biting: true, ..Default::default() };
                     assert_codebook_modes_identical(&w, &cfg, &opts);
                 }
             }
@@ -1053,12 +795,7 @@ fn computed_codebook_gpu_eligible_path_identical() {
         for k in [2u32, 4] {
             let cfg = TrellisConfig::new(l, k, 256);
             // adaptive on, the other levers off => GPU-eligible.
-            let opts = EncodeOpts {
-                adaptive: true,
-                tail_biting: false,
-                affine_min: false,
-                ..Default::default()
-            };
+            let opts = EncodeOpts { adaptive: true, tail_biting: false, affine_min: false, ..Default::default() };
             assert_codebook_modes_identical(&weights, &cfg, &opts);
         }
     }
@@ -1071,26 +808,10 @@ fn computed_codebook_cfg_codebook_helper_matches_frozen() {
     for l in TrellisConfig::MIN_L..=TrellisConfig::MAX_L {
         let cfg = TrellisConfig::new(l, 2, 256);
         let stored = cfg.with_codebook_mode(CodebookMode::StoredLut).codebook();
-        let hashed = cfg
-            .with_codebook_mode(CodebookMode::HashedQuantile)
-            .codebook();
-        let computed = cfg
-            .with_codebook_mode(CodebookMode::ComputedAcklam)
-            .codebook();
-        assert_eq!(
-            stored.as_ref(),
-            codebook_lut(l),
-            "stored helper != frozen, L={l}"
-        );
-        assert_eq!(
-            hashed.as_ref(),
-            codebook_lut(l),
-            "hashed helper != frozen, L={l}"
-        );
-        assert_eq!(
-            computed.as_ref(),
-            codebook_lut(l),
-            "computed helper != frozen, L={l}"
-        );
+        let hashed = cfg.with_codebook_mode(CodebookMode::HashedQuantile).codebook();
+        let computed = cfg.with_codebook_mode(CodebookMode::ComputedAcklam).codebook();
+        assert_eq!(stored.as_ref(), codebook_lut(l), "stored helper != frozen, L={l}");
+        assert_eq!(hashed.as_ref(), codebook_lut(l), "hashed helper != frozen, L={l}");
+        assert_eq!(computed.as_ref(), codebook_lut(l), "computed helper != frozen, L={l}");
     }
 }

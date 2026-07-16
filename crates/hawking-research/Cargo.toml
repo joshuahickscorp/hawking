@@ -8,6 +8,9 @@ repository.workspace = true
 authors.workspace = true
 description = "Headless research lab, ingestion, and knowledge graph scaffold for HIDE"
 
+[lib]
+path = "lib.rs"
+
 [dependencies]
 hide-core = { path = "../hide-core" }
 hawking-orch = { path = "../hawking-orch" }

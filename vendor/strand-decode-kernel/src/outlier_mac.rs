@@ -2,19 +2,14 @@
 use crate::gemv::decode_q12_fast;
 use crate::gemv::decode_q12_fast_with_lut;
 use crate::loader::StrandModel;
-use strand_quant::rht::{
-    rht_forward_cols_inplace, rht_forward_rows_inplace, rht_inverse_cols_inplace,
-    rht_inverse_rows_inplace, RhtConfig,
-};
+use strand_quant::rht::{rht_forward_cols_inplace, rht_forward_rows_inplace, rht_inverse_cols_inplace, rht_inverse_rows_inplace, RhtConfig};
 
 fn in_features_of(shape: &[u64]) -> Option<usize> {
     shape.last().map(|&d| d as usize)
 }
 
 pub fn patched_weights(model: &StrandModel, name: &str) -> Result<Vec<f32>, String> {
-    let hdr = model
-        .tensor_header(name)
-        .ok_or_else(|| format!("outlier_mac: no tensor {name:?}"))?;
+    let hdr = model.tensor_header(name).ok_or_else(|| format!("outlier_mac: no tensor {name:?}"))?;
     let cfg = model.config_for(hdr);
     let enc = model.encoded_tensor_checked(name)?;
     let q12 = decode_q12_fast_with_lut(&enc, &cfg, model.lut_for(name)?);
@@ -22,8 +17,7 @@ pub fn patched_weights(model: &StrandModel, name: &str) -> Result<Vec<f32>, Stri
     let mut w: Vec<f32> = q12.iter().map(|&q| (q as f32) * (1.0 / 4096.0)).collect();
 
     if hdr.has_rht_seed {
-        let in_features = in_features_of(&hdr.shape)
-            .ok_or_else(|| format!("outlier_mac: tensor {name:?} has empty shape"))?;
+        let in_features = in_features_of(&hdr.shape).ok_or_else(|| format!("outlier_mac: tensor {name:?} has empty shape"))?;
         let rcfg = RhtConfig::from_seed(hdr.rht_seed);
         if hdr.rht_cols {
             rht_inverse_cols_inplace(&mut w, &rcfg, in_features);
@@ -36,10 +30,7 @@ pub fn patched_weights(model: &StrandModel, name: &str) -> Result<Vec<f32>, Stri
         for (i, v) in wire.dequant_vals() {
             let i = i as usize;
             if i >= w.len() {
-                return Err(format!(
-                    "outlier_mac: tensor {name:?} outlier index {i} out of range ({})",
-                    w.len()
-                ));
+                return Err(format!("outlier_mac: tensor {name:?} outlier index {i} out of range ({})", w.len()));
             }
             w[i] = v;
         }
@@ -48,16 +39,13 @@ pub fn patched_weights(model: &StrandModel, name: &str) -> Result<Vec<f32>, Stri
 }
 
 pub fn bulk_weights(model: &StrandModel, name: &str) -> Result<Vec<f32>, String> {
-    let hdr = model
-        .tensor_header(name)
-        .ok_or_else(|| format!("outlier_mac: no tensor {name:?}"))?;
+    let hdr = model.tensor_header(name).ok_or_else(|| format!("outlier_mac: no tensor {name:?}"))?;
     let cfg = model.config_for(hdr);
     let enc = model.encoded_tensor_checked(name)?;
     let q12 = decode_q12_fast_with_lut(&enc, &cfg, model.lut_for(name)?);
     let mut w: Vec<f32> = q12.iter().map(|&q| (q as f32) * (1.0 / 4096.0)).collect();
     if hdr.has_rht_seed {
-        let in_features = in_features_of(&hdr.shape)
-            .ok_or_else(|| format!("outlier_mac: tensor {name:?} has empty shape"))?;
+        let in_features = in_features_of(&hdr.shape).ok_or_else(|| format!("outlier_mac: tensor {name:?} has empty shape"))?;
         let rcfg = RhtConfig::from_seed(hdr.rht_seed);
         if hdr.rht_cols {
             rht_inverse_cols_inplace(&mut w, &rcfg, in_features);
@@ -80,44 +68,29 @@ pub fn outlier_residuals(model: &StrandModel, name: &str) -> Result<Vec<OutlierR
     let Some(wire) = model.outlier(name) else {
         return Ok(Vec::new());
     };
-    let hdr = model
-        .tensor_header(name)
-        .ok_or_else(|| format!("outlier_mac: no tensor {name:?}"))?;
-    let in_features = in_features_of(&hdr.shape)
-        .ok_or_else(|| format!("outlier_mac: tensor {name:?} has empty shape"))?;
+    let hdr = model.tensor_header(name).ok_or_else(|| format!("outlier_mac: no tensor {name:?}"))?;
+    let in_features = in_features_of(&hdr.shape).ok_or_else(|| format!("outlier_mac: tensor {name:?} has empty shape"))?;
     let bulk = bulk_weights(model, name)?;
     let mut out = Vec::with_capacity(wire.entries.len());
     for (i, val) in wire.dequant_vals() {
         let i = i as usize;
         if i >= bulk.len() {
-            return Err(format!(
-                "outlier_mac: tensor {name:?} outlier index {i} out of range ({})",
-                bulk.len()
-            ));
+            return Err(format!("outlier_mac: tensor {name:?} outlier index {i} out of range ({})", bulk.len()));
         }
-        out.push(OutlierResidual {
-            row: (i / in_features) as u32,
-            col: (i % in_features) as u32,
-            resid: val - bulk[i],
-        });
+        out.push(OutlierResidual { row: (i / in_features) as u32, col: (i % in_features) as u32, resid: val - bulk[i] });
     }
     Ok(out)
 }
 
 pub fn matvec_patched(model: &StrandModel, name: &str, x: &[f32]) -> Result<Vec<f32>, String> {
-    let hdr = model
-        .tensor_header(name)
-        .ok_or_else(|| format!("outlier_mac: no tensor {name:?}"))?;
+    let hdr = model.tensor_header(name).ok_or_else(|| format!("outlier_mac: no tensor {name:?}"))?;
     if hdr.shape.len() < 2 {
         return Err(format!("outlier_mac: tensor {name:?} is not 2-D"));
     }
     let out_features = hdr.shape[0] as usize;
     let in_features = hdr.shape[1] as usize;
     if x.len() != in_features {
-        return Err(format!(
-            "outlier_mac: x has {} elements, tensor {name:?} expects {in_features}",
-            x.len()
-        ));
+        return Err(format!("outlier_mac: x has {} elements, tensor {name:?} expects {in_features}", x.len()));
     }
     let w = patched_weights(model, name)?;
     let mut y = vec![0.0f32; out_features];
@@ -132,35 +105,21 @@ pub fn matvec_patched(model: &StrandModel, name: &str, x: &[f32]) -> Result<Vec<
     Ok(y)
 }
 
-pub fn matvec_rht(
-    model: &StrandModel,
-    name: &str,
-    x: &[f32],
-    residuals: Option<&[OutlierResidual]>,
-) -> Result<Vec<f32>, String> {
-    let hdr = model
-        .tensor_header(name)
-        .ok_or_else(|| format!("outlier_mac: no tensor {name:?}"))?;
+pub fn matvec_rht(model: &StrandModel, name: &str, x: &[f32], residuals: Option<&[OutlierResidual]>) -> Result<Vec<f32>, String> {
+    let hdr = model.tensor_header(name).ok_or_else(|| format!("outlier_mac: no tensor {name:?}"))?;
     if hdr.shape.len() < 2 {
         return Err(format!("outlier_mac: tensor {name:?} is not 2-D"));
     }
     let out_features = hdr.shape[0] as usize;
     let in_features = hdr.shape[1] as usize;
     if x.len() != in_features {
-        return Err(format!(
-            "outlier_mac: x has {} elements, tensor {name:?} expects {in_features}",
-            x.len()
-        ));
+        return Err(format!("outlier_mac: x has {} elements, tensor {name:?} expects {in_features}", x.len()));
     }
     let cfg = model.config_for(hdr);
     let enc = model.encoded_tensor_checked(name)?;
     let q12 = decode_q12_fast_with_lut(&enc, &cfg, model.lut_for(name)?);
     if q12.len() != out_features * in_features {
-        return Err(format!(
-            "outlier_mac: tensor {name:?} decoded {} weights, shape says {}",
-            q12.len(),
-            out_features * in_features
-        ));
+        return Err(format!("outlier_mac: tensor {name:?} decoded {} weights, shape says {}", q12.len(), out_features * in_features));
     }
 
     let inv = 1.0f32 / 4096.0;
@@ -227,9 +186,7 @@ mod tests {
     use super::*;
     use std::io::Write as _;
     use strand_quant::encode::encode_tensor;
-    use strand_quant::format::{
-        write_strand_v2, write_strand_v2_rht, PackedTensor, PackedTensorV2,
-    };
+    use strand_quant::format::{write_strand_v2, write_strand_v2_rht, PackedTensor, PackedTensorV2};
     use strand_quant::outlier_wire::{append_outl, idx_bits_for, OutlierWire};
     use strand_quant::rht::{rht_forward, rht_forward_cols, rht_forward_rows, RhtConfig};
     use strand_quant::TrellisConfig;
@@ -244,19 +201,10 @@ mod tests {
     }
 
     fn test_weights(n: usize, seed: u64) -> Vec<f32> {
-        (0..n)
-            .map(|i| ((i as f32 + seed as f32) * 0.0137).sin() * 0.5)
-            .collect()
+        (0..n).map(|i| ((i as f32 + seed as f32) * 0.0137).sin() * 0.5).collect()
     }
 
-    fn bake_fixture(
-        name: &str,
-        rows: usize,
-        cols: usize,
-        outlier_pct: f64,
-        use_rht: bool,
-        use_cols: bool,
-    ) -> (std::path::PathBuf, Vec<f32>) {
+    fn bake_fixture(name: &str, rows: usize, cols: usize, outlier_pct: f64, use_rht: bool, use_cols: bool) -> (std::path::PathBuf, Vec<f32>) {
         let cfg = TrellisConfig::for_bpw_l(2.0, 8);
         let gt = test_weights(rows * cols, 0xC0FFEE);
         let n = gt.len();
@@ -265,23 +213,12 @@ mod tests {
         let outliers: Option<(Vec<usize>, Vec<f32>, Vec<i32>, f32)> = if outlier_pct > 0.0 {
             let k = ((outlier_pct / 100.0) * n as f64).round() as usize;
             let mut order: Vec<usize> = (0..n).collect();
-            order.sort_unstable_by(|&a, &b| {
-                gt[b]
-                    .abs()
-                    .partial_cmp(&gt[a].abs())
-                    .unwrap_or(std::cmp::Ordering::Equal)
-            });
+            order.sort_unstable_by(|&a, &b| gt[b].abs().partial_cmp(&gt[a].abs()).unwrap_or(std::cmp::Ordering::Equal));
             let idx: Vec<usize> = order[..k].to_vec();
             let omax = idx.iter().fold(0f32, |m, &i| m.max(gt[i].abs())).max(1e-12);
             let levels = ((1i64 << (ob - 1)) - 1) as f32;
-            let vals: Vec<f32> = idx
-                .iter()
-                .map(|&i| (gt[i] / omax * levels).round() / levels * omax)
-                .collect();
-            let codes: Vec<i32> = idx
-                .iter()
-                .map(|&i| (gt[i] / omax * levels).round() as i32)
-                .collect();
+            let vals: Vec<f32> = idx.iter().map(|&i| (gt[i] / omax * levels).round() / levels * omax).collect();
+            let codes: Vec<i32> = idx.iter().map(|&i| (gt[i] / omax * levels).round() as i32).collect();
             Some((idx, vals, codes, omax))
         } else {
             None
@@ -329,20 +266,9 @@ mod tests {
             },
             block_len: cfg.block_len as u32,
         };
-        let buf = if use_cols {
-            write_strand_v2_rht(&[pt], [0u8; 32], true, false, &[true]).expect("write v2 cols")
-        } else {
-            write_strand_v2(&[pt], [0u8; 32], true).expect("write v2")
-        };
+        let buf = if use_cols { write_strand_v2_rht(&[pt], [0u8; 32], true, false, &[true]).expect("write v2 cols") } else { write_strand_v2(&[pt], [0u8; 32], true).expect("write v2") };
         let mut path = std::env::temp_dir();
-        path.push(format!(
-            "strand_outlmac_{name}_{}_{}.strand",
-            std::process::id(),
-            std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .map(|d| d.as_nanos())
-                .unwrap_or(0)
-        ));
+        path.push(format!("strand_outlmac_{name}_{}_{}.strand", std::process::id(), std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_nanos()).unwrap_or(0)));
         let mut f = std::fs::File::create(&path).expect("create temp .strand");
         f.write_all(&buf).expect("write temp .strand");
         f.sync_all().ok();
@@ -356,12 +282,7 @@ mod tests {
 
     #[test]
     fn patched_decode_byte_equals_recon_path() {
-        for &(rows, cols, pct, rht) in &[
-            (4usize, 256usize, 1.0f64, true),
-            (4, 256, 1.0, false),
-            (3, 512, 2.0, true),
-            (4, 256, 0.0, true),
-        ] {
+        for &(rows, cols, pct, rht) in &[(4usize, 256usize, 1.0f64, true), (4, 256, 1.0, false), (3, 512, 2.0, true), (4, 256, 0.0, true)] {
             let name = "model.layers.0.mlp.down_proj.weight";
             let (path, recon) = bake_fixture(name, rows, cols, pct, rht, false);
             let model = StrandModel::open(&path).expect("open");
@@ -369,10 +290,7 @@ mod tests {
             assert_eq!(got.len(), recon.len());
             let bits_got: Vec<u32> = got.iter().map(|v| v.to_bits()).collect();
             let bits_want: Vec<u32> = recon.iter().map(|v| v.to_bits()).collect();
-            assert_eq!(
-                bits_got, bits_want,
-                "patched decode != recon path (rows={rows} cols={cols} pct={pct} rht={rht})"
-            );
+            assert_eq!(bits_got, bits_want, "patched decode != recon path (rows={rows} cols={cols} pct={pct} rht={rht})");
             let _ = std::fs::remove_file(&path);
         }
     }
@@ -397,29 +315,17 @@ mod tests {
 
         let y_pat = matvec_patched(&model, name, &x).expect("matvec_patched");
         for o in 0..rows {
-            assert_eq!(
-                y_pat[o].to_bits(),
-                y_ref[o].to_bits(),
-                "matvec_patched must be bit-equal to the recon GEMV (row {o})"
-            );
+            assert_eq!(y_pat[o].to_bits(), y_ref[o].to_bits(), "matvec_patched must be bit-equal to the recon GEMV (row {o})");
         }
 
         let res = outlier_residuals(&model, name).expect("residuals");
         assert!(!res.is_empty(), "fixture must exercise the sparse term");
         let y_rht = matvec_rht(&model, name, &x, Some(&res)).expect("matvec_rht");
         let y_rht2 = matvec_rht(&model, name, &x, None).expect("matvec_rht (recompute)");
-        assert_eq!(
-            y_rht, y_rht2,
-            "residual precompute must not change the result"
-        );
+        assert_eq!(y_rht, y_rht2, "residual precompute must not change the result");
         for o in 0..rows {
             let scale = y_ref[o].abs().max(1.0);
-            assert!(
-                (y_rht[o] - y_ref[o]).abs() / scale < 1e-4,
-                "matvec_rht diverged at row {o}: {} vs {}",
-                y_rht[o],
-                y_ref[o]
-            );
+            assert!((y_rht[o] - y_ref[o]).abs() / scale < 1e-4, "matvec_rht diverged at row {o}: {} vs {}", y_rht[o], y_ref[o]);
         }
         let _ = std::fs::remove_file(&path);
     }
@@ -434,9 +340,7 @@ mod tests {
         let cfg = model.config_for(hdr);
         let enc = model.encoded_tensor_checked(name).unwrap();
         let q12 = decode_q12_fast(&enc, &cfg);
-        let x: Vec<f32> = (0..cols)
-            .map(|i| ((i as f32) * 0.013).sin() + 0.1)
-            .collect();
+        let x: Vec<f32> = (0..cols).map(|i| ((i as f32) * 0.013).sin() + 0.1).collect();
 
         let mut y_ref = vec![0.0f32; rows];
         for o in 0..rows {
@@ -449,21 +353,12 @@ mod tests {
         let mut y_naive = vec![0.0f32; rows];
         for o in 0..rows {
             let qrow = &q12[o * cols..(o + 1) * cols];
-            y_naive[o] = qrow
-                .iter()
-                .zip(&x_rht)
-                .map(|(&q, xv)| (q as f32) * inv * xv)
-                .sum();
+            y_naive[o] = qrow.iter().zip(&x_rht).map(|(&q, xv)| (q as f32) * inv * xv).sum();
         }
 
-        assert!(
-            (y_naive[0] - y_ref[0]).abs() / y_ref[0].abs().max(1.0) < 1e-2,
-            "row 0 should roughly match (it shares the sign prefix)"
-        );
+        assert!((y_naive[0] - y_ref[0]).abs() / y_ref[0].abs().max(1.0) < 1e-2, "row 0 should roughly match (it shares the sign prefix)");
 
-        let worst = (1..rows)
-            .map(|o| (y_naive[o] - y_ref[o]).abs() / y_ref[o].abs().max(1e-3))
-            .fold(0.0f32, f32::max);
+        let worst = (1..rows).map(|o| (y_naive[o] - y_ref[o]).abs() / y_ref[o].abs().max(1e-3)).fold(0.0f32, f32::max);
         assert!(
             worst > 0.05,
             "single-rotation recipe unexpectedly matched multirow output \
@@ -473,10 +368,7 @@ mod tests {
         let y_fixed = matvec_rht(&model, name, &x, None).expect("matvec_rht");
         for o in 0..rows {
             let scale = y_ref[o].abs().max(1.0);
-            assert!(
-                (y_fixed[o] - y_ref[o]).abs() / scale < 1e-4,
-                "matvec_rht must match the reference at row {o}"
-            );
+            assert!((y_fixed[o] - y_ref[o]).abs() / scale < 1e-4, "matvec_rht must match the reference at row {o}");
         }
         let _ = std::fs::remove_file(&path);
     }
@@ -491,20 +383,12 @@ mod tests {
         let (path, recon) = bake_fixture(name, rows, cols, 0.0, false, true);
         let model = StrandModel::open(&path).expect("open");
         let hdr = model.tensor_header(name).unwrap();
-        assert!(
-            hdr.rht_cols,
-            "col archive must carry the rht_cols flag (bit 3)"
-        );
-        assert!(
-            hdr.has_rht_seed,
-            "col archive must still carry the RHT seed"
-        );
+        assert!(hdr.rht_cols, "col archive must carry the rht_cols flag (bit 3)");
+        assert!(hdr.has_rht_seed, "col archive must still carry the RHT seed");
         let cfg = model.config_for(hdr);
         let enc = model.encoded_tensor_checked(name).unwrap();
         let q12 = decode_q12_fast(&enc, &cfg);
-        let x: Vec<f32> = (0..cols)
-            .map(|i| ((i as f32) * 0.013).sin() + 0.1)
-            .collect();
+        let x: Vec<f32> = (0..cols).map(|i| ((i as f32) * 0.013).sin() + 0.1).collect();
 
         // spatial reference: bake_fixture already applied rht_inverse_cols to `recon`.
         let mut y_ref = vec![0.0f32; rows];
@@ -519,29 +403,17 @@ mod tests {
         let worst = (0..rows)
             .map(|o| {
                 let qrow = &q12[o * cols..(o + 1) * cols];
-                let y: f32 = qrow
-                    .iter()
-                    .zip(&x_rht)
-                    .map(|(&q, xv)| (q as f32) * inv * xv)
-                    .sum();
+                let y: f32 = qrow.iter().zip(&x_rht).map(|(&q, xv)| (q as f32) * inv * xv).sum();
                 (y - y_ref[o]).abs() / y_ref[o].abs().max(1e-3)
             })
             .fold(0.0f32, f32::max);
-        assert!(
-            worst < 1e-2,
-            "col-RHT single rotation must serve ALL rows (worst rel err {worst})"
-        );
+        assert!(worst < 1e-2, "col-RHT single rotation must serve ALL rows (worst rel err {worst})");
 
         // and the production decoder col path agrees with the spatial reference.
         let y_fixed = matvec_rht(&model, name, &x, None).expect("matvec_rht");
         for o in 0..rows {
             let scale = y_ref[o].abs().max(1.0);
-            assert!(
-                (y_fixed[o] - y_ref[o]).abs() / scale < 1e-3,
-                "matvec_rht col path diverged at row {o}: {} vs {}",
-                y_fixed[o],
-                y_ref[o]
-            );
+            assert!((y_fixed[o] - y_ref[o]).abs() / scale < 1e-3, "matvec_rht col path diverged at row {o}: {} vs {}", y_fixed[o], y_ref[o]);
         }
         let _ = std::fs::remove_file(&path);
     }

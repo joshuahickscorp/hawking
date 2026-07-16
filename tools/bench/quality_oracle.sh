@@ -34,8 +34,7 @@
 #   `dismantle batch-hash --prompts P.txt` OFF vs ON, diff the hash columns.)
 #
 # LOGIT COSINE — the deeper metric, NOT measured here (documented gap):
-#   `dismantle` has no logit-export path (see tools/bench/llama_logits_to_npy.py
-#   header: "dismantle generate cannot export logits"). The only full-vocab
+#   `dismantle generate` has no logit-export path. The only full-vocab
 #   logit dumper on this machine is llama.cpp's --save-all-logits, which runs
 #   llama.cpp NOT the dismantle lever, so it cannot measure dismantle's f16
 #   logit shift. The plan-1.2 logit-cosine>=~0.999 gate therefore needs a
@@ -318,8 +317,8 @@ overall = max(verdicts, key=lambda v: order[v])
 print()
 print("== logit-cosine gate (plan 1.2) ==")
 print(f"  REQUIRED >= {logit_gate} but UNMEASURED: `dismantle` has no logit-export")
-print("  path (tools/bench/llama_logits_to_npy.py header). Measuring it needs a")
-print("  logit-dump flag in `dismantle generate`; llama.cpp --save-all-logits")
+print("  path. Measuring it needs a logit-dump flag in `dismantle generate`;")
+print("  llama.cpp --save-all-logits")
 print("  runs llama.cpp not the dismantle lever, so it cannot gate this lever.")
 print()
 print(f"==> OVERALL: {overall}  (lever={lever})")
@@ -347,4 +346,3 @@ hr
 echo "  quality_oracle DONE (exit $rc: 0=PASS 1=WARN/opt-in 2=FAIL 3=ERROR). JSON: $OUT"
 hr
 exit $rc
-

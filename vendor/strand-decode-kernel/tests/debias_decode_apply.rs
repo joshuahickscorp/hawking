@@ -133,11 +133,7 @@ impl Sm64 {
 static COUNTER: AtomicU64 = AtomicU64::new(0);
 
 fn tmp_path(tag: &str) -> PathBuf {
-    std::env::temp_dir().join(format!(
-        "strand-dbia-apply-{tag}-{}-{}.strand",
-        std::process::id(),
-        COUNTER.fetch_add(1, Ordering::Relaxed)
-    ))
+    std::env::temp_dir().join(format!("strand-dbia-apply-{tag}-{}-{}.strand", std::process::id(), COUNTER.fetch_add(1, Ordering::Relaxed)))
 }
 
 struct TmpFile(PathBuf);
@@ -157,9 +153,7 @@ fn rht_seed_for(name: &str) -> u64 {
 }
 
 fn gt_weights(n: usize, seed: u64) -> Vec<f32> {
-    (0..n)
-        .map(|i| ((i as f32 + seed as f32) * 0.0137).sin() * 0.5)
-        .collect()
+    (0..n).map(|i| ((i as f32 + seed as f32) * 0.0137).sin() * 0.5).collect()
 }
 
 /// Returns (archive_path, recon_weights_row_major) for a single 2-D tensor `[rows,cols]`.
@@ -167,13 +161,7 @@ fn gt_weights(n: usize, seed: u64) -> Vec<f32> {
 /// `outlier_mac::patched_weights`). When `outlier_pct > 0`, an OUTL section is appended
 /// and the recon has the exact dequantised outlier values spliced in (so the recon equals
 /// what `patched_weights` reconstructs, bit-for-bit).
-fn bake(
-    name: &str,
-    rows: usize,
-    cols: usize,
-    outlier_pct: f64,
-    use_rht: bool,
-) -> (PathBuf, Vec<f32>) {
+fn bake(name: &str, rows: usize, cols: usize, outlier_pct: f64, use_rht: bool) -> (PathBuf, Vec<f32>) {
     let cfg = TrellisConfig::for_bpw_l(2.0, 8);
     let gt = gt_weights(rows * cols, 0xC0FFEE);
     let n = gt.len();
@@ -182,14 +170,11 @@ fn bake(
     let outliers: Option<(Vec<usize>, Vec<f32>, Vec<i32>, f32)> = if outlier_pct > 0.0 {
         let k = (((outlier_pct / 100.0) * n as f64).round() as usize).max(1);
         let mut order: Vec<usize> = (0..n).collect();
-        order.sort_unstable_by(|&a, &b| {
-            gt[b].abs().partial_cmp(&gt[a].abs()).unwrap_or(std::cmp::Ordering::Equal)
-        });
+        order.sort_unstable_by(|&a, &b| gt[b].abs().partial_cmp(&gt[a].abs()).unwrap_or(std::cmp::Ordering::Equal));
         let idx: Vec<usize> = order[..k.min(n)].to_vec();
         let omax = idx.iter().fold(0f32, |m, &i| m.max(gt[i].abs())).max(1e-12);
         let levels = ((1i64 << (ob - 1)) - 1) as f32;
-        let vals: Vec<f32> =
-            idx.iter().map(|&i| (gt[i] / omax * levels).round() / levels * omax).collect();
+        let vals: Vec<f32> = idx.iter().map(|&i| (gt[i] / omax * levels).round() / levels * omax).collect();
         let codes: Vec<i32> = idx.iter().map(|&i| (gt[i] / omax * levels).round() as i32).collect();
         Some((idx, vals, codes, omax))
     } else {
@@ -204,11 +189,7 @@ fn bake(
     }
 
     let seed = rht_seed_for(name);
-    let work = if use_rht {
-        rht_forward_rows(&bulk, &RhtConfig::from_seed(seed), cols)
-    } else {
-        bulk.clone()
-    };
+    let work = if use_rht { rht_forward_rows(&bulk, &RhtConfig::from_seed(seed), cols) } else { bulk.clone() };
     let mut enc: EncodedTensor = encode_tensor(&work, &cfg);
     enc.has_rht_seed = use_rht;
 
@@ -227,15 +208,7 @@ fn bake(
 
     let shape = [rows as u64, cols as u64];
     let pt = PackedTensorV2 {
-        base: PackedTensor {
-            name,
-            shape: &shape,
-            rht_seed: if use_rht { seed } else { 0 },
-            l_bits: cfg.l_bits as u8,
-            k_bits: cfg.k_bits as u8,
-            vec_dim: cfg.vec_dim() as u8,
-            enc: &enc,
-        },
+        base: PackedTensor { name, shape: &shape, rht_seed: if use_rht { seed } else { 0 }, l_bits: cfg.l_bits as u8, k_bits: cfg.k_bits as u8, vec_dim: cfg.vec_dim() as u8, enc: &enc },
         block_len: cfg.block_len as u32,
     };
     let buf = write_strand_v2(&[pt], [0u8; 32], true).expect("write v2");
@@ -300,11 +273,7 @@ fn apply_on_matvec_patched_is_bit_exact_and_deterministic() {
         // (2) equals base + dequant(c), bit-for-bit, spelled out the documented way.
         for o in 0..rows {
             let want = base[o] + ref_bf16_to_f32(c_bits[o]);
-            assert_eq!(
-                y1[o].to_bits(),
-                want.to_bits(),
-                "row {o}: apply != base + dequant(c) (rows={rows} cols={cols})"
-            );
+            assert_eq!(y1[o].to_bits(), want.to_bits(), "row {o}: apply != base + dequant(c) (rows={rows} cols={cols})");
         }
     }
 }
@@ -315,11 +284,7 @@ fn apply_on_matvec_patched_is_bit_exact_and_deterministic() {
 #[test]
 fn absent_or_zero_correction_is_byte_identical_to_today() {
     // cols must be a multiple of block_len (=256), per the STRICT-deploy invariant.
-    for &(rows, cols, pct, rht) in &[
-        (4usize, 256usize, 0.0f64, true),
-        (4, 256, 1.5, true),
-        (3, 512, 0.0, false),
-    ] {
+    for &(rows, cols, pct, rht) in &[(4usize, 256usize, 0.0f64, true), (4, 256, 1.5, true), (3, 512, 0.0, false)] {
         let name = "model.layers.1.self_attn.q_proj.weight";
         let (path, _recon) = bake(name, rows, cols, pct, rht);
         let _g = TmpFile(path.clone());
@@ -335,11 +300,7 @@ fn absent_or_zero_correction_is_byte_identical_to_today() {
         let mut y = base.clone();
         apply_debias_epilogue(&mut y, &zero_bits);
         for o in 0..rows {
-            assert_eq!(
-                y[o].to_bits(),
-                base[o].to_bits(),
-                "row {o}: zero correction perturbed a decode bit (rows={rows} cols={cols})"
-            );
+            assert_eq!(y[o].to_bits(), base[o].to_bits(), "row {o}: zero correction perturbed a decode bit (rows={rows} cols={cols})");
         }
     }
 }
@@ -370,11 +331,7 @@ fn apply_is_output_row_order_invariant_on_real_decode() {
             rev[o] += ref_bf16_to_f32(c_bits[o]);
         }
         for o in 0..rows {
-            assert_eq!(
-                fwd[o].to_bits(),
-                rev[o].to_bits(),
-                "row {o}: per-row apply depends on order — would break threaded-decode parity"
-            );
+            assert_eq!(fwd[o].to_bits(), rev[o].to_bits(), "row {o}: per-row apply depends on order — would break threaded-decode parity");
         }
     }
 }
@@ -410,11 +367,7 @@ fn bias_applies_after_inner_plus_residual_byte_stable() {
         apply_debias_epilogue(&mut y_a, &c_bits);
         let mut y_b = inner_plus_resid.clone();
         apply_debias_epilogue(&mut y_b, &c_bits);
-        assert_eq!(
-            y_a.iter().map(|v| v.to_bits()).collect::<Vec<_>>(),
-            y_b.iter().map(|v| v.to_bits()).collect::<Vec<_>>(),
-            "bias-after-residual not byte-stable"
-        );
+        assert_eq!(y_a.iter().map(|v| v.to_bits()).collect::<Vec<_>>(), y_b.iter().map(|v| v.to_bits()).collect::<Vec<_>>(), "bias-after-residual not byte-stable");
         for o in 0..rows {
             let want = inner_plus_resid[o] + ref_bf16_to_f32(c_bits[o]);
             assert_eq!(y_a[o].to_bits(), want.to_bits(), "row {o}: wrong epilogue composition");
@@ -500,10 +453,7 @@ fn bias_add_does_not_widen_cross_path_gap() {
             // MAC-path difference, never amplified by the correction.
             let gap_before = (y_patched[o] as f64 - y_rht[o] as f64).abs();
             let gap_after = (yp[o] as f64 - yr[o] as f64).abs();
-            assert!(
-                (gap_after - gap_before).abs() <= 1e-6 * (1.0 + gap_before),
-                "row {o}: bias add widened the cross-path gap ({gap_before} -> {gap_after})"
-            );
+            assert!((gap_after - gap_before).abs() <= 1e-6 * (1.0 + gap_before), "row {o}: bias add widened the cross-path gap ({gap_before} -> {gap_after})");
         }
     }
 }

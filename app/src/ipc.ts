@@ -151,6 +151,7 @@ const MOCK_MANIFEST = {
 // Courtyard mock: a believable retrospective digest + a session list so Home is ALIVE with no backend.
 // Deterministic (no Math.random) so re-renders never churn the heatmap.
 const HM_COLS = 18;
+const MOCK_WORKSPACE = import.meta.env.VITE_HIDE_WORKSPACE ?? ".";
 const MOCK_HEATMAP = Array.from({ length: HM_COLS * 7 }, (_, i) => {
   const col = Math.floor(i / 7);
   const row = i % 7;
@@ -162,7 +163,7 @@ const MOCK_HEATMAP = Array.from({ length: HM_COLS * 7 }, (_, i) => {
 
 const MOCK_HOME = {
   user: { name: "Joshua-Hicks", plan: "Max" },
-  workspace: { root: "/Users/scammermike/Downloads/hawking", repo: "hawking", branch: "main", worktrees: [] as string[] },
+  workspace: { root: MOCK_WORKSPACE, repo: "hawking", branch: "main", worktrees: [] as string[] },
   digest: {
     sessions: 1182,
     messages: 119695,

@@ -1,15 +1,10 @@
 #![allow(unsafe_code)]
 
-use metal::{
-    Buffer, CommandQueue, CompileOptions, Device, MTLResourceOptions, MTLSize, NSUInteger,
-};
+use metal::{Buffer, CommandQueue, CompileOptions, Device, MTLResourceOptions, MTLSize, NSUInteger};
 
 use crate::codebook::codebook_lut;
 use crate::decode::eff_min_q;
-use crate::encode::{
-    build_sub_levels, choose_affine_min, choose_scale_q, choose_sub_scales, n_sub_blocks,
-    pack_sub_scales, BlockMeta, EncodeOpts, EncodedTensor, SUB_BLOCK, SUB_SCALE_UNITY,
-};
+use crate::encode::{build_sub_levels, choose_affine_min, choose_scale_q, choose_sub_scales, n_sub_blocks, pack_sub_scales, BlockMeta, EncodeOpts, EncodedTensor, SUB_BLOCK, SUB_SCALE_UNITY};
 use crate::trellis::{push_bits, TrellisConfig};
 
 const TROPICAL_MSL: &str = include_str!("../shaders/strand_tropical_encode.metal");
@@ -112,18 +107,8 @@ impl TropicalEncoder {
         let max_threads = pipeline.max_total_threads_per_threadgroup() as usize;
         let max_tg_bytes = device.max_threadgroup_memory_length() as usize;
         let queue = device.new_command_queue();
-        eprintln!(
-            "[strand-quant] tropical encode ready: {} (max_threads_per_tg={max_threads}, tg_mem={max_tg_bytes}B, fast-math OFF, scale-search lane compiled)",
-            device.name(),
-        );
-        Some(Self {
-            device,
-            queue,
-            pipeline,
-            search_pipeline,
-            max_threads,
-            max_tg_bytes,
-        })
+        eprintln!("[strand-quant] tropical encode ready: {} (max_threads_per_tg={max_threads}, tg_mem={max_tg_bytes}B, fast-math OFF, scale-search lane compiled)", device.name(),);
+        Some(Self { device, queue, pipeline, search_pipeline, max_threads, max_tg_bytes })
     }
 
     pub fn supports(&self, cfg: &TrellisConfig) -> bool {
@@ -139,24 +124,12 @@ impl TropicalEncoder {
         }
     }
 
-    pub fn encode_tensor(
-        &self,
-        weights: &[f32],
-        cfg: &TrellisConfig,
-        opts: &EncodeOpts,
-    ) -> Option<EncodedTensor> {
+    pub fn encode_tensor(&self, weights: &[f32], cfg: &TrellisConfig, opts: &EncodeOpts) -> Option<EncodedTensor> {
         if !self.supports(cfg) {
             return None;
         }
         if weights.is_empty() {
-            return Some(EncodedTensor {
-                bits: Vec::new(),
-                blocks: Vec::new(),
-                total: 0,
-                has_rht_seed: false,
-                tail_biting: opts.tail_biting,
-                has_affine_min: opts.affine_min,
-            });
+            return Some(EncodedTensor { bits: Vec::new(), blocks: Vec::new(), total: 0, has_rht_seed: false, tail_biting: opts.tail_biting, has_affine_min: opts.affine_min });
         }
 
         let num_states = cfg.num_states();
@@ -192,14 +165,7 @@ impl TropicalEncoder {
             t_pack += t0.elapsed().as_secs_f64();
 
             let t0 = std::time::Instant::now();
-            let out = self.run_batch_full(
-                &weights[w_start..w_end],
-                &blens,
-                cfg,
-                opts,
-                n_sub_max,
-                &lut_buf,
-            )?;
+            let out = self.run_batch_full(&weights[w_start..w_end], &blens, cfg, opts, n_sub_max, &lut_buf)?;
             t_gpu += t0.elapsed().as_secs_f64();
 
             let t0 = std::time::Instant::now();
@@ -212,17 +178,9 @@ impl TropicalEncoder {
                 let m_off = i * n_sub_max;
                 blocks_meta.push(BlockMeta {
                     scale_q: out.scales[i],
-                    sub_scales: if opts.adaptive || opts.affine_min {
-                        pack_sub_scales(&out.mults[m_off..m_off + n_sub])
-                    } else {
-                        Vec::new()
-                    },
+                    sub_scales: if opts.adaptive || opts.affine_min { pack_sub_scales(&out.mults[m_off..m_off + n_sub]) } else { Vec::new() },
                     min_base_q: out.min_bases[i],
-                    mins: if opts.affine_min {
-                        pack_sub_scales(&out.min_codes[m_off..m_off + n_sub])
-                    } else {
-                        Vec::new()
-                    },
+                    mins: if opts.affine_min { pack_sub_scales(&out.min_codes[m_off..m_off + n_sub]) } else { Vec::new() },
                     init_state: out.inits[i],
                     n: blen as u32,
                 });
@@ -236,31 +194,19 @@ impl TropicalEncoder {
             eprintln!(
                 "[tropical timing/full-gpu] N={} pack={:.3}s ({:.0}%) gpu={:.3}s ({:.0}%) assemble={:.3}s ({:.0}%)",
                 weights.len(),
-                t_pack, 100.0 * t_pack / tot,
-                t_gpu, 100.0 * t_gpu / tot,
-                t_asm, 100.0 * t_asm / tot,
+                t_pack,
+                100.0 * t_pack / tot,
+                t_gpu,
+                100.0 * t_gpu / tot,
+                t_asm,
+                100.0 * t_asm / tot,
             );
         }
 
-        Some(EncodedTensor {
-            bits,
-            blocks: blocks_meta,
-            total: weights.len(),
-            has_rht_seed: false,
-            tail_biting: opts.tail_biting,
-            has_affine_min: opts.affine_min,
-        })
+        Some(EncodedTensor { bits, blocks: blocks_meta, total: weights.len(), has_rht_seed: false, tail_biting: opts.tail_biting, has_affine_min: opts.affine_min })
     }
 
-    fn run_batch_full(
-        &self,
-        batch_weights: &[f32],
-        blens: &[usize],
-        cfg: &TrellisConfig,
-        opts: &EncodeOpts,
-        n_sub_max: usize,
-        lut_buf: &Buffer,
-    ) -> Option<FullBatchOut> {
+    fn run_batch_full(&self, batch_weights: &[f32], blens: &[usize], cfg: &TrellisConfig, opts: &EncodeOpts, n_sub_max: usize, lut_buf: &Buffer) -> Option<FullBatchOut> {
         let n = blens.len();
         let num_states = cfg.num_states();
         let mbl = cfg.block_len;
@@ -313,23 +259,10 @@ impl TropicalEncoder {
         let tp_buf = self.upload(&tropical_params);
 
         let lv_stride = n_sub_max * num_states;
-        let levels_buf = self.device.new_buffer(
-            (n * lv_stride * std::mem::size_of::<f32>()).max(4) as NSUInteger,
-            MTLResourceOptions::StorageModePrivate,
-        );
-        let back_buf = self.device.new_buffer(
-            (n * mbl * num_states).max(4) as NSUInteger,
-            MTLResourceOptions::StorageModePrivate,
-        );
+        let levels_buf = self.device.new_buffer((n * lv_stride * std::mem::size_of::<f32>()).max(4) as NSUInteger, MTLResourceOptions::StorageModePrivate);
+        let back_buf = self.device.new_buffer((n * mbl * num_states).max(4) as NSUInteger, MTLResourceOptions::StorageModePrivate);
 
-        let dev_cost_buf = self.device.new_buffer(
-            if dev_cost_rows {
-                (n * 2 * num_states * std::mem::size_of::<f32>()) as NSUInteger
-            } else {
-                4
-            },
-            MTLResourceOptions::StorageModePrivate,
-        );
+        let dev_cost_buf = self.device.new_buffer(if dev_cost_rows { (n * 2 * num_states * std::mem::size_of::<f32>()) as NSUInteger } else { 4 }, MTLResourceOptions::StorageModePrivate);
 
         let path_buf = self.alloc_shared(n * mbl);
         let init_buf = self.alloc_shared(n * std::mem::size_of::<u32>());
@@ -358,20 +291,8 @@ impl TropicalEncoder {
             enc.set_threadgroup_memory_length(0, shf_bytes);
             enc.set_threadgroup_memory_length(1, shi_bytes);
             enc.set_threadgroup_memory_length(2, shw_bytes);
-            let tg = SEARCH_TG_THREADS
-                .min(self.search_pipeline.max_total_threads_per_threadgroup() as usize);
-            enc.dispatch_thread_groups(
-                MTLSize {
-                    width: n as NSUInteger,
-                    height: 1,
-                    depth: 1,
-                },
-                MTLSize {
-                    width: tg as NSUInteger,
-                    height: 1,
-                    depth: 1,
-                },
-            );
+            let tg = SEARCH_TG_THREADS.min(self.search_pipeline.max_total_threads_per_threadgroup() as usize);
+            enc.dispatch_thread_groups(MTLSize { width: n as NSUInteger, height: 1, depth: 1 }, MTLSize { width: tg as NSUInteger, height: 1, depth: 1 });
             enc.end_encoding();
         }
 
@@ -386,26 +307,11 @@ impl TropicalEncoder {
             enc.set_buffer(5, Some(&init_buf), 0);
             enc.set_buffer(6, Some(&dev_cost_buf), 0);
 
-            let cost_bytes = if dev_cost_rows {
-                16
-            } else {
-                (num_states * std::mem::size_of::<f32>()) as NSUInteger
-            };
+            let cost_bytes = if dev_cost_rows { 16 } else { (num_states * std::mem::size_of::<f32>()) as NSUInteger };
             enc.set_threadgroup_memory_length(0, cost_bytes);
             enc.set_threadgroup_memory_length(1, cost_bytes);
             enc.set_threadgroup_memory_length(2, 16);
-            enc.dispatch_thread_groups(
-                MTLSize {
-                    width: n as NSUInteger,
-                    height: 1,
-                    depth: 1,
-                },
-                MTLSize {
-                    width: tg_threads as NSUInteger,
-                    height: 1,
-                    depth: 1,
-                },
-            );
+            enc.dispatch_thread_groups(MTLSize { width: n as NSUInteger, height: 1, depth: 1 }, MTLSize { width: tg_threads as NSUInteger, height: 1, depth: 1 });
             enc.end_encoding();
         }
 
@@ -422,24 +328,12 @@ impl TropicalEncoder {
         })
     }
 
-    pub fn encode_tensor_prep_cpu(
-        &self,
-        weights: &[f32],
-        cfg: &TrellisConfig,
-        opts: &EncodeOpts,
-    ) -> Option<EncodedTensor> {
+    pub fn encode_tensor_prep_cpu(&self, weights: &[f32], cfg: &TrellisConfig, opts: &EncodeOpts) -> Option<EncodedTensor> {
         if !self.supports(cfg) {
             return None;
         }
         if weights.is_empty() {
-            return Some(EncodedTensor {
-                bits: Vec::new(),
-                blocks: Vec::new(),
-                total: 0,
-                has_rht_seed: false,
-                tail_biting: opts.tail_biting,
-                has_affine_min: opts.affine_min,
-            });
+            return Some(EncodedTensor { bits: Vec::new(), blocks: Vec::new(), total: 0, has_rht_seed: false, tail_biting: opts.tail_biting, has_affine_min: opts.affine_min });
         }
 
         let num_states = cfg.num_states();
@@ -463,13 +357,11 @@ impl TropicalEncoder {
             let w_end = (bi_end * cfg.block_len).min(weights.len());
 
             let t0 = std::time::Instant::now();
-            let preps =
-                prep_blocks_parallel(&weights[w_start..w_end], cfg, opts, num_states, n_sub_max);
+            let preps = prep_blocks_parallel(&weights[w_start..w_end], cfg, opts, num_states, n_sub_max);
             t_prep += t0.elapsed().as_secs_f64();
 
             let t0 = std::time::Instant::now();
-            let (paths, inits) =
-                self.run_batch(&weights[w_start..w_end], &preps, cfg, n_sub_max)?;
+            let (paths, inits) = self.run_batch(&weights[w_start..w_end], &preps, cfg, n_sub_max)?;
             t_gpu += t0.elapsed().as_secs_f64();
 
             let t0 = std::time::Instant::now();
@@ -480,17 +372,9 @@ impl TropicalEncoder {
                 }
                 blocks_meta.push(BlockMeta {
                     scale_q: prep.scale_q,
-                    sub_scales: if opts.adaptive || opts.affine_min {
-                        pack_sub_scales(&prep.mults)
-                    } else {
-                        Vec::new()
-                    },
+                    sub_scales: if opts.adaptive || opts.affine_min { pack_sub_scales(&prep.mults) } else { Vec::new() },
                     min_base_q: prep.min_base_q,
-                    mins: if opts.affine_min {
-                        pack_sub_scales(&prep.min_codes)
-                    } else {
-                        Vec::new()
-                    },
+                    mins: if opts.affine_min { pack_sub_scales(&prep.min_codes) } else { Vec::new() },
                     init_state: inits[i],
                     n: prep.blen as u32,
                 });
@@ -504,29 +388,19 @@ impl TropicalEncoder {
             eprintln!(
                 "[tropical timing] N={} prep={:.3}s ({:.0}%) gpu={:.3}s ({:.0}%) assemble={:.3}s ({:.0}%)",
                 weights.len(),
-                t_prep, 100.0 * t_prep / tot,
-                t_gpu, 100.0 * t_gpu / tot,
-                t_asm, 100.0 * t_asm / tot,
+                t_prep,
+                100.0 * t_prep / tot,
+                t_gpu,
+                100.0 * t_gpu / tot,
+                t_asm,
+                100.0 * t_asm / tot,
             );
         }
 
-        Some(EncodedTensor {
-            bits,
-            blocks: blocks_meta,
-            total: weights.len(),
-            has_rht_seed: false,
-            tail_biting: opts.tail_biting,
-            has_affine_min: opts.affine_min,
-        })
+        Some(EncodedTensor { bits, blocks: blocks_meta, total: weights.len(), has_rht_seed: false, tail_biting: opts.tail_biting, has_affine_min: opts.affine_min })
     }
 
-    fn run_batch(
-        &self,
-        batch_weights: &[f32],
-        preps: &[BlockPrep],
-        cfg: &TrellisConfig,
-        n_sub_max: usize,
-    ) -> Option<(Vec<u8>, Vec<u32>)> {
+    fn run_batch(&self, batch_weights: &[f32], preps: &[BlockPrep], cfg: &TrellisConfig, n_sub_max: usize) -> Option<(Vec<u8>, Vec<u32>)> {
         let n = preps.len();
         let num_states = cfg.num_states();
         let mbl = cfg.block_len;
@@ -549,19 +423,9 @@ impl TropicalEncoder {
         }
         let lv_buf = self.upload(&lv_flat);
 
-        let back_buf = self.device.new_buffer(
-            (n * mbl * num_states).max(4) as NSUInteger,
-            MTLResourceOptions::StorageModePrivate,
-        );
+        let back_buf = self.device.new_buffer((n * mbl * num_states).max(4) as NSUInteger, MTLResourceOptions::StorageModePrivate);
 
-        let dev_cost_buf = self.device.new_buffer(
-            if dev_cost_rows {
-                (n * 2 * num_states * std::mem::size_of::<f32>()) as NSUInteger
-            } else {
-                4
-            },
-            MTLResourceOptions::StorageModePrivate,
-        );
+        let dev_cost_buf = self.device.new_buffer(if dev_cost_rows { (n * 2 * num_states * std::mem::size_of::<f32>()) as NSUInteger } else { 4 }, MTLResourceOptions::StorageModePrivate);
 
         let params: Vec<TropicalParams> = preps
             .iter()
@@ -592,26 +456,11 @@ impl TropicalEncoder {
         enc.set_buffer(5, Some(&init_buf), 0);
         enc.set_buffer(6, Some(&dev_cost_buf), 0);
 
-        let cost_bytes = if dev_cost_rows {
-            16
-        } else {
-            (num_states * std::mem::size_of::<f32>()) as NSUInteger
-        };
+        let cost_bytes = if dev_cost_rows { 16 } else { (num_states * std::mem::size_of::<f32>()) as NSUInteger };
         enc.set_threadgroup_memory_length(0, cost_bytes);
         enc.set_threadgroup_memory_length(1, cost_bytes);
         enc.set_threadgroup_memory_length(2, 16);
-        enc.dispatch_thread_groups(
-            MTLSize {
-                width: n as NSUInteger,
-                height: 1,
-                depth: 1,
-            },
-            MTLSize {
-                width: tg_threads as NSUInteger,
-                height: 1,
-                depth: 1,
-            },
-        );
+        enc.dispatch_thread_groups(MTLSize { width: n as NSUInteger, height: 1, depth: 1 }, MTLSize { width: tg_threads as NSUInteger, height: 1, depth: 1 });
         enc.end_encoding();
         cmd.commit();
         cmd.wait_until_completed();
@@ -623,26 +472,16 @@ impl TropicalEncoder {
 
     fn upload<T: Copy>(&self, data: &[T]) -> Buffer {
         let byte_len = data.len() * std::mem::size_of::<T>();
-        let buf = self.device.new_buffer(
-            byte_len.max(4) as NSUInteger,
-            MTLResourceOptions::StorageModeShared,
-        );
+        let buf = self.device.new_buffer(byte_len.max(4) as NSUInteger, MTLResourceOptions::StorageModeShared);
 
         unsafe {
-            std::ptr::copy_nonoverlapping(
-                data.as_ptr() as *const u8,
-                buf.contents() as *mut u8,
-                byte_len,
-            );
+            std::ptr::copy_nonoverlapping(data.as_ptr() as *const u8, buf.contents() as *mut u8, byte_len);
         }
         buf
     }
 
     fn alloc_shared(&self, byte_len: usize) -> Buffer {
-        self.device.new_buffer(
-            byte_len.max(4) as NSUInteger,
-            MTLResourceOptions::StorageModeShared,
-        )
+        self.device.new_buffer(byte_len.max(4) as NSUInteger, MTLResourceOptions::StorageModeShared)
     }
 
     fn read_u8(&self, buf: &Buffer, len: usize) -> Option<Vec<u8>> {
@@ -687,38 +526,18 @@ struct FullBatchOut {
     min_codes: Vec<u8>,
 }
 
-fn prep_blocks_parallel(
-    weights: &[f32],
-    cfg: &TrellisConfig,
-    opts: &EncodeOpts,
-    num_states: usize,
-    n_sub_max: usize,
-) -> Vec<BlockPrep> {
+fn prep_blocks_parallel(weights: &[f32], cfg: &TrellisConfig, opts: &EncodeOpts, num_states: usize, n_sub_max: usize) -> Vec<BlockPrep> {
     let lut = codebook_lut(cfg.l_bits);
     let chunks: Vec<&[f32]> = weights.chunks(cfg.block_len).collect();
     let n = chunks.len();
-    let nthreads = std::thread::available_parallelism()
-        .map(|p| p.get())
-        .unwrap_or(1)
-        .min(n.max(1));
+    let nthreads = std::thread::available_parallelism().map(|p| p.get()).unwrap_or(1).min(n.max(1));
     let per = n.div_ceil(nthreads);
 
     let prep_one = |chunk: &[f32]| -> BlockPrep {
         let scale_q = choose_scale_q(chunk, lut, cfg);
-        let mults = if opts.adaptive {
-            choose_sub_scales(chunk, scale_q, lut, cfg)
-        } else {
-            vec![SUB_SCALE_UNITY; n_sub_blocks(chunk.len())]
-        };
-        let (min_base_q, min_codes) = if opts.affine_min {
-            choose_affine_min(chunk, scale_q, &mults, lut, cfg)
-        } else {
-            (0, Vec::new())
-        };
-        let mins_eff: Vec<i32> = min_codes
-            .iter()
-            .map(|&c| eff_min_q(min_base_q, c))
-            .collect();
+        let mults = if opts.adaptive { choose_sub_scales(chunk, scale_q, lut, cfg) } else { vec![SUB_SCALE_UNITY; n_sub_blocks(chunk.len())] };
+        let (min_base_q, min_codes) = if opts.affine_min { choose_affine_min(chunk, scale_q, &mults, lut, cfg) } else { (0, Vec::new()) };
+        let mins_eff: Vec<i32> = min_codes.iter().map(|&c| eff_min_q(min_base_q, c)).collect();
 
         let sub_levels = build_sub_levels(scale_q, &mults, &mins_eff, lut, num_states);
         let mut levels_f32 = vec![0.0f32; n_sub_max * num_states];
@@ -729,15 +548,7 @@ fn prep_blocks_parallel(
         }
         let nk = cfg.num_steps(chunk.len()) * cfg.k_bits as usize;
         let tail_bite = opts.tail_biting && nk >= cfg.l_bits as usize;
-        BlockPrep {
-            blen: chunk.len(),
-            scale_q,
-            mults,
-            min_base_q,
-            min_codes,
-            levels_f32,
-            tail_bite,
-        }
+        BlockPrep { blen: chunk.len(), scale_q, mults, min_base_q, min_codes, levels_f32, tail_bite }
     };
 
     if nthreads <= 1 {
@@ -753,7 +564,5 @@ fn prep_blocks_parallel(
             });
         }
     });
-    out.into_iter()
-        .map(|p| p.expect("prep slot filled"))
-        .collect()
+    out.into_iter().map(|p| p.expect("prep slot filled")).collect()
 }

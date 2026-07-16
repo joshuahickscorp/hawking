@@ -42,9 +42,7 @@
 //! diverge.
 
 use strand_quant::decode::{eff_min_q, eff_scale_q};
-use strand_quant::encode::{
-    n_sub_blocks, unpack_sub_scales, unpack_sub_scales_or_unity, EncodedTensor,
-};
+use strand_quant::encode::{n_sub_blocks, unpack_sub_scales, unpack_sub_scales_or_unity, EncodedTensor};
 use strand_quant::trellis::read_bits;
 use strand_quant::TrellisConfig;
 
@@ -104,10 +102,7 @@ fn pack_eight_codes(codes: &[u8]) -> [u32; 2] {
     for (dst, &src) in bytes.iter_mut().zip(codes.iter()) {
         *dst = src & 0x3f;
     }
-    [
-        u32::from_le_bytes(bytes[..4].try_into().unwrap()),
-        u32::from_le_bytes(bytes[4..].try_into().unwrap()),
-    ]
+    [u32::from_le_bytes(bytes[..4].try_into().unwrap()), u32::from_le_bytes(bytes[4..].try_into().unwrap())]
 }
 
 /// Per-block bitstream plan: where this block's symbols start, where its outputs
@@ -128,11 +123,7 @@ fn block_plans(enc: &EncodedTensor, k: usize) -> Vec<BlockPlan> {
     let mut prefix_n = 0usize;
     for blk in &enc.blocks {
         let n = blk.n as usize;
-        plans.push(BlockPlan {
-            start_bit: prefix_n * k,
-            out_off: prefix_n,
-            n,
-        });
+        plans.push(BlockPlan { start_bit: prefix_n * k, out_off: prefix_n, n });
         prefix_n += n;
     }
     plans
@@ -144,13 +135,7 @@ fn block_plans(enc: &EncodedTensor, k: usize) -> Vec<BlockPlan> {
 /// replays that walk here; otherwise the stored `init_state` is used. Doing it
 /// at bake means the kernel NEVER prescans. Verbatim port of
 /// `block_walk::block_init_state` (scalar path).
-fn block_init_state(
-    blk: &strand_quant::encode::BlockMeta,
-    bits: &[u8],
-    start_bit: usize,
-    cfg: &TrellisConfig,
-    tail_biting: bool,
-) -> usize {
+fn block_init_state(blk: &strand_quant::encode::BlockMeta, bits: &[u8], start_bit: usize, cfg: &TrellisConfig, tail_biting: bool) -> usize {
     let mask = cfg.state_mask();
     let k = cfg.k_bits;
     let input_mask = cfg.num_inputs() - 1;
@@ -185,11 +170,7 @@ struct SideInfo {
 impl SideInfo {
     fn hoist(blk: &strand_quant::encode::BlockMeta, has_affine: bool) -> Self {
         let n_sub = n_sub_blocks(blk.n as usize);
-        debug_assert!(
-            n_sub <= 8,
-            "bitslice bake: block has {n_sub} sub-blocks (> 8); n={} exceeds the 256-weight block",
-            blk.n
-        );
+        debug_assert!(n_sub <= 8, "bitslice bake: block has {n_sub} sub-blocks (> 8); n={} exceeds the 256-weight block", blk.n);
         let mut eff = [0i32; 8];
         let mut off = [0i32; 8];
         let mults = unpack_sub_scales_or_unity(&blk.sub_scales, n_sub);
@@ -216,10 +197,7 @@ impl SideInfo {
 /// [`block_plans`], `eff[8]`/`off[8]` via [`SideInfo::hoist`], and tail-biting
 /// `init_state` recovery via [`block_init_state`]. `d` is hardcoded to 1 — the
 /// vector path is [`bake_bitslice_entries_vec`].
-pub(crate) fn bake_bitslice_entries(
-    enc: &EncodedTensor,
-    cfg: &TrellisConfig,
-) -> Option<Vec<BitsliceEntry>> {
+pub(crate) fn bake_bitslice_entries(enc: &EncodedTensor, cfg: &TrellisConfig) -> Option<Vec<BitsliceEntry>> {
     if enc.blocks.iter().any(|b| b.n > 256) {
         return None;
     }
@@ -237,15 +215,7 @@ pub(crate) fn bake_bitslice_entries(
         // construction (the plan is a prefix sum over `blk.n`); assert it so the
         // two derivations can never silently drift.
         debug_assert_eq!(plan.n, blk.n as usize, "block_plans n != BlockMeta.n");
-        out.push(BitsliceEntry {
-            bit_offset: plan.start_bit as u32,
-            init_state: init as u32,
-            out_off: plan.out_off as u32,
-            n: blk.n,
-            eff,
-            off,
-            d: 1,
-        });
+        out.push(BitsliceEntry { bit_offset: plan.start_bit as u32, init_state: init as u32, out_off: plan.out_off as u32, n: blk.n, eff, off, d: 1 });
     }
     Some(out)
 }
@@ -254,10 +224,7 @@ pub(crate) fn bake_bitslice_entries(
 /// are inherited from the expanded bake; only the representation of scale/min
 /// side information changes. An absent sub-scale stream means exact unity (63),
 /// matching the canonical CPU decoder rather than decoding as zero.
-pub(crate) fn bake_compact_bitslice_entries(
-    enc: &EncodedTensor,
-    cfg: &TrellisConfig,
-) -> Option<Vec<CompactBitsliceEntry>> {
+pub(crate) fn bake_compact_bitslice_entries(enc: &EncodedTensor, cfg: &TrellisConfig) -> Option<Vec<CompactBitsliceEntry>> {
     if cfg.vec_dim() != 1 {
         return None;
     }
@@ -269,22 +236,14 @@ pub(crate) fn bake_compact_bitslice_entries(
             return None;
         }
         let mults = unpack_sub_scales_or_unity(&blk.sub_scales, n_sub);
-        let mins = if enc.has_affine_min {
-            unpack_sub_scales(&blk.mins, n_sub)
-        } else {
-            Vec::new()
-        };
+        let mins = if enc.has_affine_min { unpack_sub_scales(&blk.mins, n_sub) } else { Vec::new() };
         out.push(CompactBitsliceEntry {
             bit_offset: seek.bit_offset,
             init_state: seek.init_state,
             out_off: seek.out_off,
             n: seek.n,
             scale_q: blk.scale_q,
-            min_base_q: if enc.has_affine_min {
-                blk.min_base_q
-            } else {
-                0
-            },
+            min_base_q: if enc.has_affine_min { blk.min_base_q } else { 0 },
             mult_codes: pack_eight_codes(&mults),
             min_codes: pack_eight_codes(&mins),
         });
@@ -301,10 +260,7 @@ pub(crate) fn bake_compact_bitslice_entries(
 /// CPU `decode_tensor_fixed_with_lut_vec`). Carried for completeness — the model
 /// path asserts `d == 1`.
 #[cfg_attr(not(test), allow(dead_code))]
-pub(crate) fn bake_bitslice_entries_vec(
-    enc: &EncodedTensor,
-    cfg: &TrellisConfig,
-) -> Option<Vec<BitsliceEntry>> {
+pub(crate) fn bake_bitslice_entries_vec(enc: &EncodedTensor, cfg: &TrellisConfig) -> Option<Vec<BitsliceEntry>> {
     if enc.blocks.iter().any(|b| b.n > 256) {
         return None;
     }
@@ -340,15 +296,7 @@ pub(crate) fn bake_bitslice_entries_vec(
             blk.init_state as usize & mask
         };
 
-        out.push(BitsliceEntry {
-            bit_offset: start_bit as u32,
-            init_state: init as u32,
-            out_off: out_off as u32,
-            n: blk.n,
-            eff,
-            off,
-            d: d as u32,
-        });
+        out.push(BitsliceEntry { bit_offset: start_bit as u32, init_state: init as u32, out_off: out_off as u32, n: blk.n, eff, off, d: d as u32 });
         start_bit += n_steps * k;
         out_off += n;
     }
@@ -364,20 +312,14 @@ pub(crate) fn bake_bitslice_entries_vec(
 /// dispatch itself carries the runtime `sizeof(BitsliceEntry)` probe and errors if
 /// the host/GPU table stride disagrees. macOS + `tq` only.
 #[cfg(target_os = "macos")]
-pub fn gpu_decode_q12(
-    ctx: &crate::metal::MetalContext,
-    enc: &EncodedTensor,
-    cfg: &TrellisConfig,
-) -> Option<crate::Result<Vec<i32>>> {
+pub fn gpu_decode_q12(ctx: &crate::metal::MetalContext, enc: &EncodedTensor, cfg: &TrellisConfig) -> Option<crate::Result<Vec<i32>>> {
     if cfg.vec_dim() > 1 {
         return None;
     }
     let tbl = bake_bitslice_entries(enc, cfg)?;
     // The codebook the CPU oracle uses (== codebook_lut(l_bits) for StoredLut).
     let lut = cfg.codebook();
-    Some(crate::kernels::decode_strand_bitslice(
-        ctx, &enc.bits, &tbl, &lut, enc.total, cfg.k_bits, cfg.l_bits,
-    ))
+    Some(crate::kernels::decode_strand_bitslice(ctx, &enc.bits, &tbl, &lut, enc.total, cfg.k_bits, cfg.l_bits))
 }
 
 /// Runtime-only interpretation of the same `.tq` bytes. The default remains the
@@ -428,39 +370,14 @@ pub struct TqRuntimeRecipe {
 }
 
 impl TqRuntimeRecipe {
-    pub const STORED: Self = Self {
-        metadata: TqMetadataMode::Expanded,
-        codebook: TqCodebookSource::Stored,
-    };
-    pub const COMPACT: Self = Self {
-        metadata: TqMetadataMode::Compact,
-        codebook: TqCodebookSource::Stored,
-    };
-    pub const HASHED: Self = Self {
-        metadata: TqMetadataMode::Expanded,
-        codebook: TqCodebookSource::HashedQuantile,
-    };
-    pub const COMPUTED: Self = Self {
-        metadata: TqMetadataMode::Expanded,
-        codebook: TqCodebookSource::ComputedAcklam,
-    };
-    pub const COMPACT_HASHED: Self = Self {
-        metadata: TqMetadataMode::Compact,
-        codebook: TqCodebookSource::HashedQuantile,
-    };
-    pub const COMPACT_COMPUTED: Self = Self {
-        metadata: TqMetadataMode::Compact,
-        codebook: TqCodebookSource::ComputedAcklam,
-    };
+    pub const STORED: Self = Self { metadata: TqMetadataMode::Expanded, codebook: TqCodebookSource::Stored };
+    pub const COMPACT: Self = Self { metadata: TqMetadataMode::Compact, codebook: TqCodebookSource::Stored };
+    pub const HASHED: Self = Self { metadata: TqMetadataMode::Expanded, codebook: TqCodebookSource::HashedQuantile };
+    pub const COMPUTED: Self = Self { metadata: TqMetadataMode::Expanded, codebook: TqCodebookSource::ComputedAcklam };
+    pub const COMPACT_HASHED: Self = Self { metadata: TqMetadataMode::Compact, codebook: TqCodebookSource::HashedQuantile };
+    pub const COMPACT_COMPUTED: Self = Self { metadata: TqMetadataMode::Compact, codebook: TqCodebookSource::ComputedAcklam };
 
-    pub const RESEARCH_MATRIX: [Self; 6] = [
-        Self::STORED,
-        Self::COMPACT,
-        Self::HASHED,
-        Self::COMPUTED,
-        Self::COMPACT_HASHED,
-        Self::COMPACT_COMPUTED,
-    ];
+    pub const RESEARCH_MATRIX: [Self; 6] = [Self::STORED, Self::COMPACT, Self::HASHED, Self::COMPUTED, Self::COMPACT_HASHED, Self::COMPACT_COMPUTED];
 }
 
 impl TqRuntimePath {
@@ -472,10 +389,7 @@ impl TqRuntimePath {
             "compact" | "compact-metadata" => Ok(Self::CompactMetadata),
             "hashed" | "hashed-quantile" => Ok(Self::HashedQuantile),
             "computed" | "computed-acklam" | "acklam" => Ok(Self::ComputedAcklam),
-            other => Err(format!(
-                "{name}={other:?} is invalid; expected stored|compact|hashed|computed",
-                name = Self::ENV
-            )),
+            other => Err(format!("{name}={other:?} is invalid; expected stored|compact|hashed|computed", name = Self::ENV)),
         }
     }
 
@@ -598,10 +512,7 @@ impl TqRuntimeTraffic {
     /// write/read roundtrip. Activation and output bytes remain separate because
     /// their physical cache behavior depends on projection scheduling.
     pub fn compressed_runtime_bytes_for(self, recipe: TqRuntimeRecipe) -> usize {
-        self.payload_bytes
-            .saturating_add(self.metadata_bytes_for(recipe))
-            .saturating_add(self.staged_codebook_bytes_for(recipe))
-            .saturating_add(self.partial_roundtrip_bytes)
+        self.payload_bytes.saturating_add(self.metadata_bytes_for(recipe)).saturating_add(self.staged_codebook_bytes_for(recipe)).saturating_add(self.partial_roundtrip_bytes)
     }
 
     pub fn compressed_runtime_bpw_for(self, recipe: TqRuntimeRecipe) -> f64 {
@@ -615,9 +526,7 @@ impl TqRuntimeTraffic {
     /// Logical compressed-weight-side traffic for one projection invocation.
     /// Activation reads and output writes are intentionally reported elsewhere.
     pub fn weight_path_bytes(self, path: TqRuntimePath) -> usize {
-        self.payload_bytes
-            .saturating_add(self.metadata_bytes(path))
-            .saturating_add(self.staged_codebook_bytes(path))
+        self.payload_bytes.saturating_add(self.metadata_bytes(path)).saturating_add(self.staged_codebook_bytes(path))
     }
 
     pub fn weight_path_bpw(self, path: TqRuntimePath) -> f64 {
@@ -694,16 +603,10 @@ impl TqPreparedGpu {
         // Step 1: bake the per-block BitsliceEntry seek table.
         // bake_bitslice_entries returns None only when a block has n > 256, which
         // the GPU scalar kernel does not support; treat that as Unimplemented.
-        let entries = bake_bitslice_entries(&st.enc, cfg).ok_or(
-            crate::Error::Unimplemented(
-                "TqPreparedGpu::from_strand_tensor: tensor has a block with n > 256 (vec_dim > 1 or oversized block — scalar GPU kernel unsupported)",
-            ),
-        )?;
-        let compact_entries = bake_compact_bitslice_entries(&st.enc, cfg).ok_or(
-            crate::Error::Unimplemented(
-                "TqPreparedGpu::from_strand_tensor: compact table requires scalar blocks no larger than 256 weights",
-            ),
-        )?;
+        let entries = bake_bitslice_entries(&st.enc, cfg)
+            .ok_or(crate::Error::Unimplemented("TqPreparedGpu::from_strand_tensor: tensor has a block with n > 256 (vec_dim > 1 or oversized block — scalar GPU kernel unsupported)"))?;
+        let compact_entries =
+            bake_compact_bitslice_entries(&st.enc, cfg).ok_or(crate::Error::Unimplemented("TqPreparedGpu::from_strand_tensor: compact table requires scalar blocks no larger than 256 weights"))?;
 
         // Step 2: freeze the Q12 Gaussian codebook LUT (2^l_bits entries).
         // cfg.codebook() returns Cow<'static, [i32]>; .into_owned() is zero-copy
@@ -760,13 +663,9 @@ impl TqPreparedGpu {
             payload_bytes: self.payload.len(),
             expanded_table_bytes: blocks.saturating_mul(std::mem::size_of::<BitsliceEntry>()),
             compact_table_bytes: blocks.saturating_mul(std::mem::size_of::<CompactBitsliceEntry>()),
-            stored_codebook_bytes: (1usize << self.l_bits)
-                .saturating_mul(std::mem::size_of::<i32>()),
-            hashed_quantile_bytes: (1usize << self.l_bits)
-                .saturating_mul(std::mem::size_of::<i16>()),
-            computed_tail_bytes: strand_quant::codebook::tail_left_prefix_q12(self.l_bits)
-                .len()
-                .saturating_mul(std::mem::size_of::<i32>()),
+            stored_codebook_bytes: (1usize << self.l_bits).saturating_mul(std::mem::size_of::<i32>()),
+            hashed_quantile_bytes: (1usize << self.l_bits).saturating_mul(std::mem::size_of::<i16>()),
+            computed_tail_bytes: strand_quant::codebook::tail_left_prefix_q12(self.l_bits).len().saturating_mul(std::mem::size_of::<i32>()),
             threadgroups,
             partial_roundtrip_bytes: blocks.saturating_mul(2 * std::mem::size_of::<f32>()),
         }
@@ -776,28 +675,12 @@ impl TqPreparedGpu {
     /// Decode-only kernels are more general; this gate is specifically for the
     /// row-major scalar 256-weight GEMV path used during token generation.
     pub fn gpu_admission(&self) -> TqGpuAdmission {
-        assess_gpu_gemv_geometry(
-            &self.entries,
-            self.compact_entries.len(),
-            self.rows,
-            self.cols,
-            self.k_bits,
-        )
+        assess_gpu_gemv_geometry(&self.entries, self.compact_entries.len(), self.rows, self.cols, self.k_bits)
     }
 }
 
-fn assess_gpu_gemv_geometry(
-    entries: &[BitsliceEntry],
-    compact_entries: usize,
-    rows: usize,
-    cols: usize,
-    k_bits: u32,
-) -> TqGpuAdmission {
-    let expected_blocks = if cols % 256 == 0 {
-        rows.saturating_mul(cols / 256)
-    } else {
-        rows.saturating_mul(cols.div_ceil(256))
-    };
+fn assess_gpu_gemv_geometry(entries: &[BitsliceEntry], compact_entries: usize, rows: usize, cols: usize, k_bits: u32) -> TqGpuAdmission {
+    let expected_blocks = if cols % 256 == 0 { rows.saturating_mul(cols / 256) } else { rows.saturating_mul(cols.div_ceil(256)) };
     let reason = if cols % 256 != 0 {
         Some(TqGpuIneligibility::ColumnsNotMultipleOf256)
     } else if entries.len() != expected_blocks {
@@ -819,14 +702,7 @@ fn assess_gpu_gemv_geometry(
             }
         })
     };
-    TqGpuAdmission {
-        eligible: reason.is_none(),
-        reason,
-        rows,
-        cols,
-        blocks: entries.len(),
-        expected_blocks,
-    }
+    TqGpuAdmission { eligible: reason.is_none(), reason, rows, cols, blocks: entries.len(), expected_blocks }
 }
 
 /// Resolve a `StrandTensor`'s OUTL section into `(row, col, resid)` sparse
@@ -844,11 +720,7 @@ fn build_outlier_entries(st: &crate::tq::StrandTensor) -> Vec<OutlierEntry> {
     let inv = crate::tq::q12_to_f32();
     let in_features = st.in_features;
     // Bulk weights in the UN-rotated domain (the domain outliers are defined in).
-    let mut bulk: Vec<f32> = st
-        .decode_q12_raw()
-        .iter()
-        .map(|&q| q as f32 * inv)
-        .collect();
+    let mut bulk: Vec<f32> = st.decode_q12_raw().iter().map(|&q| q as f32 * inv).collect();
     match st.rht_mode {
         crate::tq::RhtMode::None => {}
         crate::tq::RhtMode::Cols => {
@@ -944,52 +816,27 @@ impl TqDeviceHarness {
     /// Build the device harness from a parsed `.tq` tensor and a deterministic
     /// activation. This fails closed on unsupported geometry or record-stride
     /// disagreement before any benchmark sample can be emitted.
-    pub fn prepare(
-        ctx: &crate::metal::MetalContext,
-        tensor: &crate::tq::StrandTensor,
-        runtime_path: TqRuntimePath,
-        activation: &[f32],
-    ) -> crate::Result<Self> {
+    pub fn prepare(ctx: &crate::metal::MetalContext, tensor: &crate::tq::StrandTensor, runtime_path: TqRuntimePath, activation: &[f32]) -> crate::Result<Self> {
         if activation.len() != tensor.in_features {
-            return Err(crate::Error::Model(format!(
-                "TQ device harness activation length {} != tensor cols {}",
-                activation.len(),
-                tensor.in_features
-            )));
+            return Err(crate::Error::Model(format!("TQ device harness activation length {} != tensor cols {}", activation.len(), tensor.in_features)));
         }
         let prepared = TqPreparedGpu::from_strand_tensor(tensor)?;
         let traffic = prepared.runtime_traffic();
         let admission = prepared.gpu_admission();
         if !admission.eligible {
-            return Err(crate::Error::Unimplemented(
-                "TQ device harness requires admitted canonical fused-GEMV geometry",
-            ));
+            return Err(crate::Error::Unimplemented("TQ device harness requires admitted canonical fused-GEMV geometry"));
         }
-        let (host_entry_bytes, gpu_entry_bytes) = if runtime_path == TqRuntimePath::CompactMetadata
-        {
-            (
-                std::mem::size_of::<CompactBitsliceEntry>(),
-                crate::kernels::strand_bitslice_compact_entry_sizeof(ctx)? as usize,
-            )
+        let (host_entry_bytes, gpu_entry_bytes) = if runtime_path == TqRuntimePath::CompactMetadata {
+            (std::mem::size_of::<CompactBitsliceEntry>(), crate::kernels::strand_bitslice_compact_entry_sizeof(ctx)? as usize)
         } else {
-            (
-                std::mem::size_of::<BitsliceEntry>(),
-                crate::kernels::strand_bitslice_entry_sizeof(ctx)? as usize,
-            )
+            (std::mem::size_of::<BitsliceEntry>(), crate::kernels::strand_bitslice_entry_sizeof(ctx)? as usize)
         };
         if host_entry_bytes != gpu_entry_bytes {
-            return Err(crate::Error::Kernel(format!(
-                "TQ device harness record stride mismatch: host={host_entry_bytes}, GPU={gpu_entry_bytes}"
-            )));
+            return Err(crate::Error::Kernel(format!("TQ device harness record stride mismatch: host={host_entry_bytes}, GPU={gpu_entry_bytes}")));
         }
         let ready = prepared.upload_to_gpu_with_path(ctx, runtime_path)?;
         let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(activation));
-        let out_buf = ctx.new_buffer(
-            tensor
-                .out_features
-                .max(1)
-                .saturating_mul(std::mem::size_of::<f32>()),
-        );
+        let out_buf = ctx.new_buffer(tensor.out_features.max(1).saturating_mul(std::mem::size_of::<f32>()));
         Ok(Self {
             blocks: prepared.entries.len(),
             rows: prepared.rows,
@@ -1012,22 +859,14 @@ impl TqDeviceHarness {
     /// Stored, compact, hashed, and computed paths each use their own decode-only
     /// kernel so exactness is established before float GEMV reduction.
     pub fn decode_q12(&self, ctx: &crate::metal::MetalContext) -> crate::Result<Vec<i32>> {
-        self.prepared
-            .decode_q12_on_gpu_with_path(ctx, self.runtime_path)
+        self.prepared.decode_q12_on_gpu_with_path(ctx, self.runtime_path)
     }
 
     /// Execute one fused GEMV trial through the production TQ TCB path. Returns
     /// the shared-buffer output plus the number of encoded kernel dispatches.
     pub fn run_gemv(&self, ctx: &crate::metal::MetalContext) -> crate::Result<(Vec<f32>, usize)> {
         let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
-        crate::kernels::strand_bitslice_gemv_tcb(
-            &mut tcb,
-            &self.ready,
-            &self.x_buf,
-            0,
-            &self.out_buf,
-            0,
-        )?;
+        crate::kernels::strand_bitslice_gemv_tcb(&mut tcb, &self.ready, &self.x_buf, 0, &self.out_buf, 0)?;
         let dispatches = tcb.dispatch_count();
         tcb.commit_and_wait()?;
         let ptr = self.out_buf.contents() as *const f32;
@@ -1044,40 +883,16 @@ impl TqDeviceHarness {
     /// and uploaded artifact, making it impossible for a one-pass projection to
     /// be mislabeled as residual evidence.  Both harnesses must describe the
     /// same projection geometry and explicit runtime policy.
-    pub fn run_gemv_two_pass(
-        &self,
-        ctx: &crate::metal::MetalContext,
-        residual: &Self,
-    ) -> crate::Result<(Vec<f32>, usize)> {
+    pub fn run_gemv_two_pass(&self, ctx: &crate::metal::MetalContext, residual: &Self) -> crate::Result<(Vec<f32>, usize)> {
         if self.rows != residual.rows || self.cols != residual.cols {
-            return Err(crate::Error::Model(format!(
-                "TQ residual harness geometry {}x{} != base geometry {}x{}",
-                residual.rows, residual.cols, self.rows, self.cols
-            )));
+            return Err(crate::Error::Model(format!("TQ residual harness geometry {}x{} != base geometry {}x{}", residual.rows, residual.cols, self.rows, self.cols)));
         }
         if self.runtime_path != residual.runtime_path {
-            return Err(crate::Error::Model(format!(
-                "TQ residual runtime {:?} != base runtime {:?}",
-                residual.runtime_path, self.runtime_path
-            )));
+            return Err(crate::Error::Model(format!("TQ residual runtime {:?} != base runtime {:?}", residual.runtime_path, self.runtime_path)));
         }
         let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
-        crate::kernels::strand_bitslice_gemv_tcb(
-            &mut tcb,
-            &self.ready,
-            &self.x_buf,
-            0,
-            &self.out_buf,
-            0,
-        )?;
-        crate::kernels::strand_bitslice_gemv_tcb_accum(
-            &mut tcb,
-            &residual.ready,
-            &self.x_buf,
-            0,
-            &self.out_buf,
-            0,
-        )?;
+        crate::kernels::strand_bitslice_gemv_tcb(&mut tcb, &self.ready, &self.x_buf, 0, &self.out_buf, 0)?;
+        crate::kernels::strand_bitslice_gemv_tcb_accum(&mut tcb, &residual.ready, &self.x_buf, 0, &self.out_buf, 0)?;
         let dispatches = tcb.dispatch_count();
         tcb.commit_and_wait()?;
         let ptr = self.out_buf.contents() as *const f32;
@@ -1091,86 +906,41 @@ impl TqPreparedGpu {
     /// Decode-only device oracle for an explicit runtime policy. Unlike the
     /// fused path this admits arbitrary baked block boundaries supported by the
     /// scalar table, because it does not apply the row reducer.
-    pub fn decode_q12_on_gpu_with_path(
-        &self,
-        ctx: &crate::metal::MetalContext,
-        runtime_path: TqRuntimePath,
-    ) -> crate::Result<Vec<i32>> {
-        let (kernel, table_bytes, host_entry_bytes, gpu_entry_bytes) =
-            if runtime_path == TqRuntimePath::CompactMetadata {
-                let bytes = unsafe {
-                    std::slice::from_raw_parts(
-                        self.compact_entries.as_ptr() as *const u8,
-                        std::mem::size_of_val(self.compact_entries.as_slice()),
-                    )
-                };
-                (
-                    "strand_bitslice_decode_compact",
-                    bytes,
-                    std::mem::size_of::<CompactBitsliceEntry>(),
-                    crate::kernels::strand_bitslice_compact_entry_sizeof(ctx)? as usize,
-                )
-            } else {
-                let bytes = unsafe {
-                    std::slice::from_raw_parts(
-                        self.entries.as_ptr() as *const u8,
-                        std::mem::size_of_val(self.entries.as_slice()),
-                    )
-                };
-                let kernel = match runtime_path {
-                    TqRuntimePath::Stored => "strand_bitslice_decode",
-                    TqRuntimePath::HashedQuantile => "strand_bitslice_decode_hashed",
-                    TqRuntimePath::ComputedAcklam => "strand_bitslice_decode_computed",
-                    TqRuntimePath::CompactMetadata => unreachable!(),
-                };
-                (
-                    kernel,
-                    bytes,
-                    std::mem::size_of::<BitsliceEntry>(),
-                    crate::kernels::strand_bitslice_entry_sizeof(ctx)? as usize,
-                )
+    pub fn decode_q12_on_gpu_with_path(&self, ctx: &crate::metal::MetalContext, runtime_path: TqRuntimePath) -> crate::Result<Vec<i32>> {
+        let (kernel, table_bytes, host_entry_bytes, gpu_entry_bytes) = if runtime_path == TqRuntimePath::CompactMetadata {
+            let bytes = unsafe { std::slice::from_raw_parts(self.compact_entries.as_ptr() as *const u8, std::mem::size_of_val(self.compact_entries.as_slice())) };
+            ("strand_bitslice_decode_compact", bytes, std::mem::size_of::<CompactBitsliceEntry>(), crate::kernels::strand_bitslice_compact_entry_sizeof(ctx)? as usize)
+        } else {
+            let bytes = unsafe { std::slice::from_raw_parts(self.entries.as_ptr() as *const u8, std::mem::size_of_val(self.entries.as_slice())) };
+            let kernel = match runtime_path {
+                TqRuntimePath::Stored => "strand_bitslice_decode",
+                TqRuntimePath::HashedQuantile => "strand_bitslice_decode_hashed",
+                TqRuntimePath::ComputedAcklam => "strand_bitslice_decode_computed",
+                TqRuntimePath::CompactMetadata => unreachable!(),
             };
+            (kernel, bytes, std::mem::size_of::<BitsliceEntry>(), crate::kernels::strand_bitslice_entry_sizeof(ctx)? as usize)
+        };
         if host_entry_bytes != gpu_entry_bytes {
-            return Err(crate::Error::Kernel(format!(
-                "TQ {runtime_path:?} decode record stride mismatch: host={host_entry_bytes}, GPU={gpu_entry_bytes}"
-            )));
+            return Err(crate::Error::Kernel(format!("TQ {runtime_path:?} decode record stride mismatch: host={host_entry_bytes}, GPU={gpu_entry_bytes}")));
         }
 
         let padded_len = self.payload.len().div_ceil(4) * 4 + 8;
         let mut padded = vec![0u8; padded_len];
         padded[..self.payload.len()].copy_from_slice(&self.payload);
         let w_buf = ctx.new_buffer_with_bytes(&padded);
-        let out_buf = ctx.new_buffer(
-            self.rows
-                .saturating_mul(self.cols)
-                .max(1)
-                .saturating_mul(std::mem::size_of::<i32>()),
-        );
+        let out_buf = ctx.new_buffer(self.rows.saturating_mul(self.cols).max(1).saturating_mul(std::mem::size_of::<i32>()));
         let tbl_buf = ctx.new_buffer_with_bytes(table_bytes);
         let (codebook_buf, shmem_bytes, tail_len) = match runtime_path {
-            TqRuntimePath::Stored | TqRuntimePath::CompactMetadata => (
-                ctx.new_buffer_with_bytes(bytemuck::cast_slice::<i32, u8>(&self.lut_q12)),
-                ((1usize << self.l_bits) * std::mem::size_of::<i32>()) as u64,
-                0u32,
-            ),
+            TqRuntimePath::Stored | TqRuntimePath::CompactMetadata => {
+                (ctx.new_buffer_with_bytes(bytemuck::cast_slice::<i32, u8>(&self.lut_q12)), ((1usize << self.l_bits) * std::mem::size_of::<i32>()) as u64, 0u32)
+            }
             TqRuntimePath::HashedQuantile => {
-                let quantiles: Vec<i16> = strand_quant::codebook::quantile_lut(self.l_bits)
-                    .iter()
-                    .map(|&q| i16::try_from(q).expect("TQ Q12 quantile exceeds i16"))
-                    .collect();
-                (
-                    ctx.new_buffer_with_bytes(bytemuck::cast_slice::<i16, u8>(&quantiles)),
-                    ((1usize << self.l_bits) * std::mem::size_of::<i16>()) as u64,
-                    0u32,
-                )
+                let quantiles: Vec<i16> = strand_quant::codebook::quantile_lut(self.l_bits).iter().map(|&q| i16::try_from(q).expect("TQ Q12 quantile exceeds i16")).collect();
+                (ctx.new_buffer_with_bytes(bytemuck::cast_slice::<i16, u8>(&quantiles)), ((1usize << self.l_bits) * std::mem::size_of::<i16>()) as u64, 0u32)
             }
             TqRuntimePath::ComputedAcklam => {
                 let tail = strand_quant::codebook::tail_left_prefix_q12(self.l_bits);
-                let buffer = if tail.is_empty() {
-                    ctx.new_buffer(std::mem::size_of::<i32>())
-                } else {
-                    ctx.new_buffer_with_bytes(bytemuck::cast_slice::<i32, u8>(&tail))
-                };
+                let buffer = if tail.is_empty() { ctx.new_buffer(std::mem::size_of::<i32>()) } else { ctx.new_buffer_with_bytes(bytemuck::cast_slice::<i32, u8>(&tail)) };
                 (buffer, 0, tail.len() as u32)
             }
         };
@@ -1182,38 +952,19 @@ impl TqPreparedGpu {
             enc.set_buffer(0, Some(&w_buf), 0);
             enc.set_buffer(1, Some(&out_buf), 0);
             enc.set_buffer(2, Some(&tbl_buf), 0);
-            enc.set_bytes(
-                3,
-                std::mem::size_of::<u32>() as u64,
-                &n_blocks as *const u32 as *const _,
-            );
-            enc.set_bytes(
-                4,
-                std::mem::size_of::<u32>() as u64,
-                &self.k_bits as *const u32 as *const _,
-            );
-            enc.set_bytes(
-                5,
-                std::mem::size_of::<u32>() as u64,
-                &self.l_bits as *const u32 as *const _,
-            );
+            enc.set_bytes(3, std::mem::size_of::<u32>() as u64, &n_blocks as *const u32 as *const _);
+            enc.set_bytes(4, std::mem::size_of::<u32>() as u64, &self.k_bits as *const u32 as *const _);
+            enc.set_bytes(5, std::mem::size_of::<u32>() as u64, &self.l_bits as *const u32 as *const _);
             enc.set_buffer(6, Some(&codebook_buf), 0);
             if runtime_path == TqRuntimePath::ComputedAcklam {
-                enc.set_bytes(
-                    7,
-                    std::mem::size_of::<u32>() as u64,
-                    &tail_len as *const u32 as *const _,
-                );
+                enc.set_bytes(7, std::mem::size_of::<u32>() as u64, &tail_len as *const u32 as *const _);
             }
             if shmem_bytes != 0 {
                 enc.set_threadgroup_memory_length(0, shmem_bytes);
             }
         })?;
         let ptr = out_buf.contents() as *const i32;
-        Ok(
-            unsafe { std::slice::from_raw_parts(ptr, self.rows.saturating_mul(self.cols)) }
-                .to_vec(),
-        )
+        Ok(unsafe { std::slice::from_raw_parts(ptr, self.rows.saturating_mul(self.cols)) }.to_vec())
     }
 
     /// Upload all weight buffers to GPU memory and pre-compute dispatch constants.
@@ -1226,23 +977,15 @@ impl TqPreparedGpu {
     /// Explicit-policy twin used by autotuners and A/B gates. It avoids mutating
     /// process-global environment state and makes the selected interpretation a
     /// field of the returned [`TqGpuReady`].
-    pub fn upload_to_gpu_with_path(
-        &self,
-        ctx: &crate::metal::MetalContext,
-        runtime_path: TqRuntimePath,
-    ) -> crate::Result<TqGpuReady> {
+    pub fn upload_to_gpu_with_path(&self, ctx: &crate::metal::MetalContext, runtime_path: TqRuntimePath) -> crate::Result<TqGpuReady> {
         // The fused GEMV reduction assumes row-major 256-weight blocks. Decode-only
         // supports ragged blocks, but silently feeding them to this row reduction
         // mixes rows or drops a tail. Refuse and let the model use its CPU fallback.
         let admission = self.gpu_admission();
         if !admission.eligible {
             return Err(crate::Error::Unimplemented(match admission.reason {
-                Some(TqGpuIneligibility::ColumnsNotMultipleOf256) => {
-                    "TQ GPU GEMV requires cols % 256 == 0"
-                }
-                Some(_) => {
-                    "TQ GPU GEMV requires canonical row-major scalar 256-weight block geometry"
-                }
+                Some(TqGpuIneligibility::ColumnsNotMultipleOf256) => "TQ GPU GEMV requires cols % 256 == 0",
+                Some(_) => "TQ GPU GEMV requires canonical row-major scalar 256-weight block geometry",
                 None => "TQ GPU GEMV admission failed without a reason",
             }));
         }
@@ -1250,35 +993,18 @@ impl TqPreparedGpu {
             let gpu_size = crate::kernels::strand_bitslice_compact_entry_sizeof(ctx)? as usize;
             let host_size = std::mem::size_of::<CompactBitsliceEntry>();
             if gpu_size != host_size {
-                return Err(crate::Error::Kernel(format!(
-                    "TQ compact table stride mismatch: GPU={gpu_size}, host={host_size}"
-                )));
+                return Err(crate::Error::Kernel(format!("TQ compact table stride mismatch: GPU={gpu_size}, host={host_size}")));
             }
-            let bytes = unsafe {
-                std::slice::from_raw_parts(
-                    self.compact_entries.as_ptr() as *const u8,
-                    std::mem::size_of_val(self.compact_entries.as_slice()),
-                )
-            };
+            let bytes = unsafe { std::slice::from_raw_parts(self.compact_entries.as_ptr() as *const u8, std::mem::size_of_val(self.compact_entries.as_slice())) };
             ctx.new_buffer_with_bytes(bytes)
         } else {
-            let bytes = unsafe {
-                std::slice::from_raw_parts(
-                    self.entries.as_ptr() as *const u8,
-                    std::mem::size_of_val(self.entries.as_slice()),
-                )
-            };
+            let bytes = unsafe { std::slice::from_raw_parts(self.entries.as_ptr() as *const u8, std::mem::size_of_val(self.entries.as_slice())) };
             ctx.new_buffer_with_bytes(bytes)
         };
         let lut_buf = match runtime_path {
-            TqRuntimePath::Stored | TqRuntimePath::CompactMetadata => {
-                ctx.new_buffer_with_bytes(bytemuck::cast_slice::<i32, u8>(&self.lut_q12))
-            }
+            TqRuntimePath::Stored | TqRuntimePath::CompactMetadata => ctx.new_buffer_with_bytes(bytemuck::cast_slice::<i32, u8>(&self.lut_q12)),
             TqRuntimePath::HashedQuantile => {
-                let quantiles: Vec<i16> = strand_quant::codebook::quantile_lut(self.l_bits)
-                    .iter()
-                    .map(|&q| i16::try_from(q).expect("TQ Q12 quantile exceeds i16"))
-                    .collect();
+                let quantiles: Vec<i16> = strand_quant::codebook::quantile_lut(self.l_bits).iter().map(|&q| i16::try_from(q).expect("TQ Q12 quantile exceeds i16")).collect();
                 ctx.new_buffer_with_bytes(bytemuck::cast_slice::<i16, u8>(&quantiles))
             }
             TqRuntimePath::ComputedAcklam => {
@@ -1305,20 +1031,15 @@ impl TqPreparedGpu {
         let l_bits = self.l_bits;
         let bpr = cols / 256;
         let shmem_bytes = match runtime_path {
-            TqRuntimePath::Stored | TqRuntimePath::CompactMetadata => {
-                ((1usize << l_bits) * std::mem::size_of::<i32>()) as u64
-            }
-            TqRuntimePath::HashedQuantile => {
-                ((1usize << l_bits) * std::mem::size_of::<i16>()) as u64
-            }
+            TqRuntimePath::Stored | TqRuntimePath::CompactMetadata => ((1usize << l_bits) * std::mem::size_of::<i32>()) as u64,
+            TqRuntimePath::HashedQuantile => ((1usize << l_bits) * std::mem::size_of::<i16>()) as u64,
             TqRuntimePath::ComputedAcklam => 0,
         };
         const TG: u32 = 256;
         let n_tg_partials = n_blocks.div_ceil(TG).max(1);
         let n_tg_reduce = rows.div_ceil(TG).max(1);
         const MAX_VERIFY_BATCH: usize = 8;
-        let partials_buf =
-            ctx.new_buffer(n_blocks as usize * MAX_VERIFY_BATCH * std::mem::size_of::<f32>());
+        let partials_buf = ctx.new_buffer(n_blocks as usize * MAX_VERIFY_BATCH * std::mem::size_of::<f32>());
 
         // RHT-cols activation transform scratch. The GPU `strand_rht_forward_cols`
         // kernel is hardcoded to the 256-wide Hadamard block, which is bit-exact to
@@ -1330,20 +1051,13 @@ impl TqPreparedGpu {
         // re-bake `--no-rht`. None/Rows need no activation scratch here.
         let (rht_x_buf, rht_n_blocks) = if self.rht_mode == 2 {
             if cols % 256 != 0 {
-                return Err(crate::Error::Unimplemented(
-                    "TQ GPU RhtMode::Cols requires in_features % 256 == 0 (GPU FWHT is 256-wide); re-bake --no-rht or serve on CPU",
-                ));
+                return Err(crate::Error::Unimplemented("TQ GPU RhtMode::Cols requires in_features % 256 == 0 (GPU FWHT is 256-wide); re-bake --no-rht or serve on CPU"));
             }
-            (
-                Some(ctx.new_buffer(cols as usize * MAX_VERIFY_BATCH * std::mem::size_of::<f32>())),
-                cols / 256,
-            )
+            (Some(ctx.new_buffer(cols as usize * MAX_VERIFY_BATCH * std::mem::size_of::<f32>())), cols / 256)
         } else if self.rht_mode == 1 {
             // Per-row RHT (the ~1 tok/s wall) is not served on GPU; no baked
             // artifact uses it and the bitslice path targets Cols. Refuse loudly.
-            return Err(crate::Error::Unimplemented(
-                "TQ GPU RhtMode::Rows is not served on the GPU bitslice path (eval-only on CPU)",
-            ));
+            return Err(crate::Error::Unimplemented("TQ GPU RhtMode::Rows is not served on the GPU bitslice path (eval-only on CPU)"));
         } else {
             (None, 0)
         };
@@ -1354,12 +1068,7 @@ impl TqPreparedGpu {
             // dislikes 0-byte buffers); n_outl == 0 means the kernel is skipped.
             ctx.new_buffer(std::mem::size_of::<OutlierEntry>())
         } else {
-            let bytes: &[u8] = unsafe {
-                std::slice::from_raw_parts(
-                    self.outliers.as_ptr() as *const u8,
-                    std::mem::size_of_val(self.outliers.as_slice()),
-                )
-            };
+            let bytes: &[u8] = unsafe { std::slice::from_raw_parts(self.outliers.as_ptr() as *const u8, std::mem::size_of_val(self.outliers.as_slice())) };
             ctx.new_buffer_with_bytes(bytes)
         };
         let n_outl = self.outliers.len() as u32;
@@ -1398,48 +1107,17 @@ mod tests {
     fn every_runtime_path_has_decode_and_fused_kernel_sources() {
         let shader = include_str!("../shaders/strand_bitslice.metal");
         for (path, decode, fused) in [
-            (
-                TqRuntimePath::Stored,
-                "strand_bitslice_decode(",
-                "strand_bitslice_gemv_partials(",
-            ),
-            (
-                TqRuntimePath::CompactMetadata,
-                "strand_bitslice_decode_compact(",
-                "strand_bitslice_gemv_partials_compact(",
-            ),
-            (
-                TqRuntimePath::HashedQuantile,
-                "strand_bitslice_decode_hashed(",
-                "strand_bitslice_gemv_partials_hashed(",
-            ),
-            (
-                TqRuntimePath::ComputedAcklam,
-                "strand_bitslice_decode_computed(",
-                "strand_bitslice_gemv_partials_computed(",
-            ),
+            (TqRuntimePath::Stored, "strand_bitslice_decode(", "strand_bitslice_gemv_partials("),
+            (TqRuntimePath::CompactMetadata, "strand_bitslice_decode_compact(", "strand_bitslice_gemv_partials_compact("),
+            (TqRuntimePath::HashedQuantile, "strand_bitslice_decode_hashed(", "strand_bitslice_gemv_partials_hashed("),
+            (TqRuntimePath::ComputedAcklam, "strand_bitslice_decode_computed(", "strand_bitslice_gemv_partials_computed("),
         ] {
-            assert!(
-                shader.contains(decode),
-                "missing Metal decode oracle {decode}"
-            );
+            assert!(shader.contains(decode), "missing Metal decode oracle {decode}");
             assert!(shader.contains(fused), "missing Metal fused kernel {fused}");
-            assert!(
-                shader.contains(path.small_batch_kernel_name()),
-                "missing Metal small-batch kernel {}",
-                path.small_batch_kernel_name()
-            );
+            assert!(shader.contains(path.small_batch_kernel_name()), "missing Metal small-batch kernel {}", path.small_batch_kernel_name());
         }
-        for kernel in [
-            "strand_rht_forward_cols_batched(",
-            "strand_outlier_correct_batched(",
-            "strand_bitslice_reduce_rows_small_batch(",
-            "strand_bitslice_reduce_rows_small_batch_accum(",
-        ] {
-            assert!(
-                shader.contains(kernel),
-                "missing Metal batch support {kernel}"
-            );
+        for kernel in ["strand_rht_forward_cols_batched(", "strand_outlier_correct_batched(", "strand_bitslice_reduce_rows_small_batch(", "strand_bitslice_reduce_rows_small_batch_accum("] {
+            assert!(shader.contains(kernel), "missing Metal batch support {kernel}");
         }
     }
 
@@ -1451,14 +1129,7 @@ mod tests {
     /// `w = (eff[j>>5]*q)>>16 + off[j>>5]` (the i64 `reconstruct_q` product) at
     /// `out_off + j`. `lut` must be `cfg.codebook()` (== `codebook_lut(l_bits)` for
     /// the default `StoredLut` mode the GPU binds).
-    fn host_walk_decode(
-        payload: &[u8],
-        tbl: &[BitsliceEntry],
-        lut: &[i32],
-        total: usize,
-        k_bits: u32,
-        l_bits: u32,
-    ) -> Vec<i32> {
+    fn host_walk_decode(payload: &[u8], tbl: &[BitsliceEntry], lut: &[i32], total: usize, k_bits: u32, l_bits: u32) -> Vec<i32> {
         let state_mask = (1usize << l_bits) - 1;
         let input_mask = (1usize << k_bits) - 1;
         let k = k_bits as usize;
@@ -1490,14 +1161,7 @@ mod tests {
         ((words[sb >> 2] >> ((sb & 3) * 8)) & 0x3f) as u8
     }
 
-    fn host_walk_decode_compact(
-        payload: &[u8],
-        tbl: &[CompactBitsliceEntry],
-        lut: &[i32],
-        total: usize,
-        k_bits: u32,
-        l_bits: u32,
-    ) -> Vec<i32> {
+    fn host_walk_decode_compact(payload: &[u8], tbl: &[CompactBitsliceEntry], lut: &[i32], total: usize, k_bits: u32, l_bits: u32) -> Vec<i32> {
         let state_mask = (1usize << l_bits) - 1;
         let input_mask = (1usize << k_bits) - 1;
         let mut out = vec![0i32; total];
@@ -1511,17 +1175,14 @@ mod tests {
                 let sb = j >> 5;
                 let es = eff_scale_q(e.scale_q, compact_code(e.mult_codes, sb));
                 let off = eff_min_q(e.min_base_q, compact_code(e.min_codes, sb));
-                out[e.out_off as usize + j] =
-                    ((((es as i64) * (lut[state] as i64)) >> 16) as i32) + off;
+                out[e.out_off as usize + j] = ((((es as i64) * (lut[state] as i64)) >> 16) as i32) + off;
             }
         }
         out
     }
 
     fn synth_w(n: usize, seed: u64) -> Vec<f32> {
-        (0..n)
-            .map(|i| ((i as f32 + seed as f32) * 0.0137).sin() * 0.5)
-            .collect()
+        (0..n).map(|i| ((i as f32 + seed as f32) * 0.0137).sin() * 0.5).collect()
     }
 
     /// The structural invariants of the baked table: `eff[s]` is exactly the
@@ -1530,12 +1191,7 @@ mod tests {
     /// prefix recompute. Run across the encode-lever matrix.
     #[test]
     fn bake_table_fields_match_recompute() {
-        let configs = [
-            TrellisConfig::for_bpw(3.0),
-            TrellisConfig::for_bpw(2.0),
-            TrellisConfig::for_bpw(4.0),
-            TrellisConfig::for_bpw_l(2.0, 12),
-        ];
+        let configs = [TrellisConfig::for_bpw(3.0), TrellisConfig::for_bpw(2.0), TrellisConfig::for_bpw(4.0), TrellisConfig::for_bpw_l(2.0, 12)];
         for cfg in configs {
             for seed in 0..6u64 {
                 let n = 1 + (seed as usize * 173) % 2050;
@@ -1549,49 +1205,22 @@ mod tests {
                 for (b, (blk, e)) in enc.blocks.iter().zip(tbl.iter()).enumerate() {
                     // out_off / bit_offset / n match a fresh prefix sum.
                     assert_eq!(e.n, blk.n, "cfg k{} L{} blk{b}: n", cfg.k_bits, cfg.l_bits);
-                    assert_eq!(
-                        e.out_off as usize, prefix_n,
-                        "cfg k{} L{} blk{b}: out_off",
-                        cfg.k_bits, cfg.l_bits
-                    );
-                    assert_eq!(
-                        e.bit_offset as usize,
-                        prefix_n * k,
-                        "cfg k{} L{} blk{b}: bit_offset",
-                        cfg.k_bits,
-                        cfg.l_bits
-                    );
+                    assert_eq!(e.out_off as usize, prefix_n, "cfg k{} L{} blk{b}: out_off", cfg.k_bits, cfg.l_bits);
+                    assert_eq!(e.bit_offset as usize, prefix_n * k, "cfg k{} L{} blk{b}: bit_offset", cfg.k_bits, cfg.l_bits);
                     assert_eq!(e.d, 1, "scalar bake d==1");
 
                     // eff[s] == eff_scale_q(scale_q, code[s]); tail slots zero.
                     let n_sub = n_sub_blocks(blk.n as usize);
                     let codes = unpack_sub_scales(&blk.sub_scales, n_sub);
                     for s in 0..n_sub {
-                        assert_eq!(
-                            e.eff[s],
-                            eff_scale_q(blk.scale_q, codes[s]),
-                            "cfg k{} L{} blk{b} sub{s}: eff",
-                            cfg.k_bits,
-                            cfg.l_bits
-                        );
+                        assert_eq!(e.eff[s], eff_scale_q(blk.scale_q, codes[s]), "cfg k{} L{} blk{b} sub{s}: eff", cfg.k_bits, cfg.l_bits);
                     }
                     for s in n_sub..8 {
-                        assert_eq!(
-                            e.eff[s], 0,
-                            "cfg k{} L{} blk{b} sub{s}: eff tail not zero",
-                            cfg.k_bits, cfg.l_bits
-                        );
+                        assert_eq!(e.eff[s], 0, "cfg k{} L{} blk{b} sub{s}: eff tail not zero", cfg.k_bits, cfg.l_bits);
                     }
                     // 3-bit (and the other non-affine deploy configs) => off all zero.
-                    assert!(
-                        !enc.has_affine_min,
-                        "for_bpw configs must have affine-min off"
-                    );
-                    assert_eq!(
-                        e.off, [0i32; 8],
-                        "cfg k{} L{} blk{b}: off",
-                        cfg.k_bits, cfg.l_bits
-                    );
+                    assert!(!enc.has_affine_min, "for_bpw configs must have affine-min off");
+                    assert_eq!(e.off, [0i32; 8], "cfg k{} L{} blk{b}: off", cfg.k_bits, cfg.l_bits);
 
                     prefix_n += blk.n as usize;
                 }
@@ -1627,49 +1256,15 @@ mod tests {
                 let w = synth_w(n, seed);
                 let variants = [
                     ("plain", encode_tensor(&w, &cfg)),
-                    (
-                        "tail_biting",
-                        encode_tensor_with(
-                            &w,
-                            &cfg,
-                            &EncodeOpts {
-                                tail_biting: true,
-                                ..Default::default()
-                            },
-                        ),
-                    ),
-                    (
-                        "affine_min",
-                        encode_tensor_with(
-                            &w,
-                            &cfg,
-                            &EncodeOpts {
-                                affine_min: true,
-                                ..Default::default()
-                            },
-                        ),
-                    ),
-                    (
-                        "tail+affine",
-                        encode_tensor_with(
-                            &w,
-                            &cfg,
-                            &EncodeOpts {
-                                tail_biting: true,
-                                affine_min: true,
-                                ..Default::default()
-                            },
-                        ),
-                    ),
+                    ("tail_biting", encode_tensor_with(&w, &cfg, &EncodeOpts { tail_biting: true, ..Default::default() })),
+                    ("affine_min", encode_tensor_with(&w, &cfg, &EncodeOpts { affine_min: true, ..Default::default() })),
+                    ("tail+affine", encode_tensor_with(&w, &cfg, &EncodeOpts { tail_biting: true, affine_min: true, ..Default::default() })),
                 ];
                 for (label, enc) in &variants {
                     let tbl = bake_bitslice_entries(enc, &cfg).expect("bake");
-                    let got =
-                        host_walk_decode(&enc.bits, &tbl, &lut, enc.total, cfg.k_bits, cfg.l_bits);
+                    let got = host_walk_decode(&enc.bits, &tbl, &lut, enc.total, cfg.k_bits, cfg.l_bits);
                     let compact = bake_compact_bitslice_entries(enc, &cfg).expect("compact bake");
-                    let got_compact = host_walk_decode_compact(
-                        &enc.bits, &compact, &lut, enc.total, cfg.k_bits, cfg.l_bits,
-                    );
+                    let got_compact = host_walk_decode_compact(&enc.bits, &compact, &lut, enc.total, cfg.k_bits, cfg.l_bits);
                     let want = decode_tensor_fixed(enc, &cfg);
                     assert_eq!(
                         got, want,
@@ -1677,11 +1272,7 @@ mod tests {
                          tail={} affine={}",
                         cfg.k_bits, cfg.l_bits, enc.tail_biting, enc.has_affine_min
                     );
-                    assert_eq!(
-                        got_compact, want,
-                        "compact host-walk diverged: variant={label} k={} L={} n={n} seed={seed}",
-                        cfg.k_bits, cfg.l_bits
-                    );
+                    assert_eq!(got_compact, want, "compact host-walk diverged: variant={label} k={} L={} n={n} seed={seed}", cfg.k_bits, cfg.l_bits);
                 }
             }
         }
@@ -1699,21 +1290,11 @@ mod tests {
         let lut = cfg.codebook();
         let n = 1024usize;
         let w = synth_w(n, 99);
-        let enc = encode_tensor_with(
-            &w,
-            &cfg,
-            &EncodeOpts {
-                affine_min: true,
-                ..Default::default()
-            },
-        );
+        let enc = encode_tensor_with(&w, &cfg, &EncodeOpts { affine_min: true, ..Default::default() });
         assert!(enc.has_affine_min, "expected affine-min encode");
         let tbl = bake_bitslice_entries(&enc, &cfg).expect("bake");
         let any_off = tbl.iter().any(|e| e.off.iter().any(|&o| o != 0));
-        assert!(
-            any_off,
-            "affine-min encode produced an all-zero off[] table — off-fold not exercised"
-        );
+        assert!(any_off, "affine-min encode produced an all-zero off[] table — off-fold not exercised");
         let got = host_walk_decode(&enc.bits, &tbl, &lut, enc.total, cfg.k_bits, cfg.l_bits);
         let want = decode_tensor_fixed(&enc, &cfg);
         assert_eq!(got, want, "affine-min host-walk diverged from oracle");
@@ -1742,14 +1323,8 @@ mod tests {
         for (b, (blk, e)) in enc.blocks.iter().zip(tbl.iter()).enumerate() {
             assert_eq!(e.d, d as u32, "blk{b}: d");
             assert_eq!(e.n, blk.n, "blk{b}: n");
-            assert_eq!(
-                e.out_off as usize, exp_out_off,
-                "blk{b}: out_off (true count)"
-            );
-            assert_eq!(
-                e.bit_offset as usize, exp_start_bit,
-                "blk{b}: bit_offset (n_steps*k)"
-            );
+            assert_eq!(e.out_off as usize, exp_out_off, "blk{b}: out_off (true count)");
+            assert_eq!(e.bit_offset as usize, exp_start_bit, "blk{b}: bit_offset (n_steps*k)");
             let n_steps = (blk.n as usize).div_ceil(d);
             exp_start_bit += n_steps * k;
             exp_out_off += blk.n as usize;
@@ -1770,22 +1345,10 @@ mod tests {
 
     #[test]
     fn runtime_path_parser_is_strict_and_default_safe() {
-        assert_eq!(
-            TqRuntimePath::parse("stored").unwrap(),
-            TqRuntimePath::Stored
-        );
-        assert_eq!(
-            TqRuntimePath::parse("compact").unwrap(),
-            TqRuntimePath::CompactMetadata
-        );
-        assert_eq!(
-            TqRuntimePath::parse("hashed").unwrap(),
-            TqRuntimePath::HashedQuantile
-        );
-        assert_eq!(
-            TqRuntimePath::parse("computed").unwrap(),
-            TqRuntimePath::ComputedAcklam
-        );
+        assert_eq!(TqRuntimePath::parse("stored").unwrap(), TqRuntimePath::Stored);
+        assert_eq!(TqRuntimePath::parse("compact").unwrap(), TqRuntimePath::CompactMetadata);
+        assert_eq!(TqRuntimePath::parse("hashed").unwrap(), TqRuntimePath::HashedQuantile);
+        assert_eq!(TqRuntimePath::parse("computed").unwrap(), TqRuntimePath::ComputedAcklam);
         assert!(TqRuntimePath::parse("magic").is_err());
     }
 
@@ -1804,10 +1367,7 @@ mod tests {
             partial_roundtrip_bytes: 8,
         };
         assert_eq!(traffic.weight_path_bpw(TqRuntimePath::Stored), 5.625);
-        assert_eq!(
-            traffic.weight_path_bpw(TqRuntimePath::CompactMetadata),
-            4.25
-        );
+        assert_eq!(traffic.weight_path_bpw(TqRuntimePath::CompactMetadata), 4.25);
     }
 
     #[test]
@@ -1826,22 +1386,10 @@ mod tests {
         };
         assert_eq!(TqRuntimeRecipe::RESEARCH_MATRIX.len(), 6);
         assert_eq!(TqRuntimePath::Stored.recipe(), TqRuntimeRecipe::STORED);
-        assert_eq!(
-            TqRuntimePath::CompactMetadata.recipe(),
-            TqRuntimeRecipe::COMPACT
-        );
-        assert_eq!(
-            traffic.compressed_runtime_bytes_for(TqRuntimeRecipe::COMPACT_HASHED),
-            96 + 40 + 32 + 8
-        );
-        assert_eq!(
-            traffic.compressed_runtime_bytes_for(TqRuntimeRecipe::COMPACT_COMPUTED),
-            96 + 40 + 4 + 8
-        );
-        assert!(
-            traffic.compressed_runtime_bpw_for(TqRuntimeRecipe::COMPACT_COMPUTED)
-                < traffic.compressed_runtime_bpw_for(TqRuntimeRecipe::STORED)
-        );
+        assert_eq!(TqRuntimePath::CompactMetadata.recipe(), TqRuntimeRecipe::COMPACT);
+        assert_eq!(traffic.compressed_runtime_bytes_for(TqRuntimeRecipe::COMPACT_HASHED), 96 + 40 + 32 + 8);
+        assert_eq!(traffic.compressed_runtime_bytes_for(TqRuntimeRecipe::COMPACT_COMPUTED), 96 + 40 + 4 + 8);
+        assert!(traffic.compressed_runtime_bpw_for(TqRuntimeRecipe::COMPACT_COMPUTED) < traffic.compressed_runtime_bpw_for(TqRuntimeRecipe::STORED));
     }
 
     #[test]
@@ -1862,63 +1410,31 @@ mod tests {
                 partial_roundtrip_bytes: 8 * 513,
             };
             let stored = traffic.compressed_runtime_bytes_for(TqRuntimeRecipe::STORED);
-            assert!(
-                traffic.compressed_runtime_bytes_for(TqRuntimeRecipe::COMPACT) < stored,
-                "compact metadata failed to save bytes at L={l_bits}"
-            );
-            assert!(
-                traffic.compressed_runtime_bytes_for(TqRuntimeRecipe::HASHED) < stored,
-                "hashed quantiles failed to save bytes at L={l_bits}"
-            );
-            assert!(
-                traffic.compressed_runtime_bytes_for(TqRuntimeRecipe::COMPUTED) < stored,
-                "computed tails failed to save bytes at L={l_bits}"
-            );
-            assert!(
-                traffic.compressed_runtime_bytes_for(TqRuntimeRecipe::COMPACT_HASHED)
-                    < traffic.compressed_runtime_bytes_for(TqRuntimeRecipe::HASHED)
-            );
-            assert!(
-                traffic.compressed_runtime_bytes_for(TqRuntimeRecipe::COMPACT_COMPUTED)
-                    < traffic.compressed_runtime_bytes_for(TqRuntimeRecipe::COMPUTED)
-            );
+            assert!(traffic.compressed_runtime_bytes_for(TqRuntimeRecipe::COMPACT) < stored, "compact metadata failed to save bytes at L={l_bits}");
+            assert!(traffic.compressed_runtime_bytes_for(TqRuntimeRecipe::HASHED) < stored, "hashed quantiles failed to save bytes at L={l_bits}");
+            assert!(traffic.compressed_runtime_bytes_for(TqRuntimeRecipe::COMPUTED) < stored, "computed tails failed to save bytes at L={l_bits}");
+            assert!(traffic.compressed_runtime_bytes_for(TqRuntimeRecipe::COMPACT_HASHED) < traffic.compressed_runtime_bytes_for(TqRuntimeRecipe::HASHED));
+            assert!(traffic.compressed_runtime_bytes_for(TqRuntimeRecipe::COMPACT_COMPUTED) < traffic.compressed_runtime_bytes_for(TqRuntimeRecipe::COMPUTED));
         }
     }
 
     #[test]
     fn gpu_admission_explains_ragged_and_corrupt_geometry() {
-        let entry = BitsliceEntry {
-            bit_offset: 0,
-            init_state: 0,
-            out_off: 0,
-            n: 256,
-            eff: [0; 8],
-            off: [0; 8],
-            d: 1,
-        };
+        let entry = BitsliceEntry { bit_offset: 0, init_state: 0, out_off: 0, n: 256, eff: [0; 8], off: [0; 8], d: 1 };
         let accepted = assess_gpu_gemv_geometry(&[entry], 1, 1, 256, 3);
         assert!(accepted.eligible);
         assert_eq!(accepted.expected_blocks, 1);
 
         let ragged = assess_gpu_gemv_geometry(&[entry], 1, 1, 896, 3);
         assert!(!ragged.eligible);
-        assert_eq!(
-            ragged.reason,
-            Some(TqGpuIneligibility::ColumnsNotMultipleOf256)
-        );
+        assert_eq!(ragged.reason, Some(TqGpuIneligibility::ColumnsNotMultipleOf256));
         assert_eq!(ragged.expected_blocks, 4);
 
         let short = BitsliceEntry { n: 255, ..entry };
         let malformed = assess_gpu_gemv_geometry(&[short], 1, 1, 256, 3);
-        assert_eq!(
-            malformed.reason,
-            Some(TqGpuIneligibility::BlockLengthNot256 { block: 0 })
-        );
+        assert_eq!(malformed.reason, Some(TqGpuIneligibility::BlockLengthNot256 { block: 0 }));
         let compact_missing = assess_gpu_gemv_geometry(&[entry], 0, 1, 256, 3);
-        assert_eq!(
-            compact_missing.reason,
-            Some(TqGpuIneligibility::CompactBlockCountMismatch)
-        );
+        assert_eq!(compact_missing.reason, Some(TqGpuIneligibility::CompactBlockCountMismatch));
     }
 
     #[test]
@@ -1926,14 +1442,7 @@ mod tests {
         let cfg = TrellisConfig::new(7, 3, 256);
         let enc = EncodedTensor {
             bits: vec![0; 96],
-            blocks: vec![strand_quant::encode::BlockMeta {
-                scale_q: 1 << 16,
-                sub_scales: Vec::new(),
-                min_base_q: 0,
-                mins: Vec::new(),
-                init_state: 0,
-                n: 256,
-            }],
+            blocks: vec![strand_quant::encode::BlockMeta { scale_q: 1 << 16, sub_scales: Vec::new(), min_base_q: 0, mins: Vec::new(), init_state: 0, n: 256 }],
             total: 256,
             has_affine_min: false,
             tail_biting: false,

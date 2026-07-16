@@ -31,8 +31,7 @@
 use strand_quant::decode::decode_tensor_fixed;
 use strand_quant::encode::{encode_tensor_with, EncodeOpts};
 use strand_quant::gate_utils::{is_quantizable_linear, rht_seed_for};
-use strand_quant::rht::{rht_forward_cols, rht_forward_rows, rht_inverse_cols, rht_inverse_rows,
-    RhtConfig};
+use strand_quant::rht::{rht_forward_cols, rht_forward_rows, rht_inverse_cols, rht_inverse_rows, RhtConfig};
 use strand_quant::safetensor_io::SafeTensors;
 use strand_quant::TrellisConfig;
 
@@ -84,21 +83,9 @@ struct Score {
     aw_err: f64, // activation(column-energy)-weighted relative error
 }
 
-fn score_variant(
-    gt: &[f32],
-    in_f: usize,
-    cfg: &TrellisConfig,
-    opts: &EncodeOpts,
-    seed: u64,
-    cols: bool,
-    col_energy: &[f32],
-) -> Score {
+fn score_variant(gt: &[f32], in_f: usize, cfg: &TrellisConfig, opts: &EncodeOpts, seed: u64, cols: bool, col_energy: &[f32]) -> Score {
     let rcfg = RhtConfig::from_seed(seed);
-    let work = if cols {
-        rht_forward_cols(gt, &rcfg, in_f)
-    } else {
-        rht_forward_rows(gt, &rcfg, in_f)
-    };
+    let work = if cols { rht_forward_cols(gt, &rcfg, in_f) } else { rht_forward_rows(gt, &rcfg, in_f) };
     let enc = encode_tensor_with(&work, cfg, opts);
     let q12 = decode_tensor_fixed(&enc, cfg);
     let mut recon: Vec<f32> = q12.iter().map(|&q| (q as f32) * (1.0 / 4096.0)).collect();
@@ -121,32 +108,18 @@ fn score_variant(
             awp += (gt[idx] as f64) * (gt[idx] as f64) * e;
         }
     }
-    Score {
-        rel_rms: if pw > 0.0 { (se / pw).sqrt() * 100.0 } else { 0.0 },
-        aw_err: if awp > 0.0 { (awe / awp).sqrt() * 100.0 } else { 0.0 },
-    }
+    Score { rel_rms: if pw > 0.0 { (se / pw).sqrt() * 100.0 } else { 0.0 }, aw_err: if awp > 0.0 { (awe / awp).sqrt() * 100.0 } else { 0.0 } }
 }
 
 fn main() {
     let (input, bits, l, k, only) = parse();
-    let cfg = if l != 0 {
-        TrellisConfig::for_bpw_l(bits as f64, l)
-    } else {
-        TrellisConfig::for_bpw(bits as f64)
-    };
+    let cfg = if l != 0 { TrellisConfig::for_bpw_l(bits as f64, l) } else { TrellisConfig::for_bpw(bits as f64) };
     let opts = EncodeOpts { adaptive: true, ..EncodeOpts::default() };
     let st = SafeTensors::open(&input).expect("open safetensors");
 
     // Pick one representative tensor per projection class from layer 0 (cheap, structural).
-    let want_suffixes = [
-        "self_attn.q_proj.weight",
-        "self_attn.k_proj.weight",
-        "self_attn.v_proj.weight",
-        "self_attn.o_proj.weight",
-        "mlp.gate_proj.weight",
-        "mlp.up_proj.weight",
-        "mlp.down_proj.weight",
-    ];
+    let want_suffixes =
+        ["self_attn.q_proj.weight", "self_attn.k_proj.weight", "self_attn.v_proj.weight", "self_attn.o_proj.weight", "mlp.gate_proj.weight", "mlp.up_proj.weight", "mlp.down_proj.weight"];
     let mut names: Vec<String> = st
         .tensors
         .keys()
@@ -163,14 +136,8 @@ fn main() {
     names.sort();
 
     println!("gate-rht-seedsearch — Wave-4 bet 4: deterministic RHT seed/basis search");
-    println!(
-        "  model={input}  bits={bits} (k={},L={})  seed-bank={k} x {{row,col}} = {} variants/tensor",
-        cfg.k_bits, cfg.l_bits, 2 * k
-    );
-    println!(
-        "\n{:<34} {:>9} {:>9}  {:>9} {:>9}  {:>10}",
-        "tensor", "def relRMS", "def AWerr", "best relRMS", "best AWerr", "best variant"
-    );
+    println!("  model={input}  bits={bits} (k={},L={})  seed-bank={k} x {{row,col}} = {} variants/tensor", cfg.k_bits, cfg.l_bits, 2 * k);
+    println!("\n{:<34} {:>9} {:>9}  {:>9} {:>9}  {:>10}", "tensor", "def relRMS", "def AWerr", "best relRMS", "best AWerr", "best variant");
     println!("{}", "-".repeat(92));
 
     let mut agg_def_aw = 0.0f64;
@@ -212,10 +179,7 @@ fn main() {
             }
         }
         let short = name.replace("model.layers.0.", "L0.");
-        println!(
-            "{short:<34} {:>8.3}% {:>8.3}%  {:>8.3}% {:>8.3}%  {best_label:>10}",
-            def.rel_rms, def.aw_err, best.rel_rms, best.aw_err
-        );
+        println!("{short:<34} {:>8.3}% {:>8.3}%  {:>8.3}% {:>8.3}%  {best_label:>10}", def.rel_rms, def.aw_err, best.rel_rms, best.aw_err);
         agg_def_aw += def.aw_err;
         agg_best_aw += best.aw_err;
         if best.aw_err < def.aw_err - 1e-9 && !best_label.starts_with("default") {
@@ -224,13 +188,8 @@ fn main() {
     }
 
     let n = names.len().max(1) as f64;
-    let rel_gain = if agg_def_aw > 0.0 {
-        100.0 * (agg_def_aw - agg_best_aw) / agg_def_aw
-    } else {
-        0.0
-    };
-    println!("\n  mean AW-err: default {:.4}%  best-of-bank {:.4}%  -> {rel_gain:+.3}% proxy gain",
-        agg_def_aw / n, agg_best_aw / n);
+    let rel_gain = if agg_def_aw > 0.0 { 100.0 * (agg_def_aw - agg_best_aw) / agg_def_aw } else { 0.0 };
+    println!("\n  mean AW-err: default {:.4}%  best-of-bank {:.4}%  -> {rel_gain:+.3}% proxy gain", agg_def_aw / n, agg_best_aw / n);
     if any_gain && rel_gain > 0.5 {
         println!(
             "  verdict: seed/basis search shows >0.5% activation-weighted proxy gain — worth a\n\

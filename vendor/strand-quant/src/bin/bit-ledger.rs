@@ -24,10 +24,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Mutex;
 use std::time::Instant;
 
-use strand_quant::encode::{
-    encode_tensor_with, n_sub_blocks, unpack_sub_scales_or_unity, EncodeOpts, EncodedTensor,
-    RHT_SEED_BITS, SUB_BLOCK,
-};
+use strand_quant::encode::{encode_tensor_with, n_sub_blocks, unpack_sub_scales_or_unity, EncodeOpts, EncodedTensor, RHT_SEED_BITS, SUB_BLOCK};
 use strand_quant::format::BlockOffsetRecord;
 use strand_quant::gate_utils::{is_quantizable_linear, rht_seed_for};
 use strand_quant::outlier_wire::{idx_bits_for, OutlierWire};
@@ -49,11 +46,7 @@ enum TClass {
 
 impl TClass {
     fn of(name: &str) -> TClass {
-        if name.ends_with("q_proj.weight")
-            || name.ends_with("k_proj.weight")
-            || name.ends_with("v_proj.weight")
-            || name.ends_with("o_proj.weight")
-        {
+        if name.ends_with("q_proj.weight") || name.ends_with("k_proj.weight") || name.ends_with("v_proj.weight") || name.ends_with("o_proj.weight") {
             TClass::Attn
         } else if name.ends_with("gate_proj.weight") || name.ends_with("up_proj.weight") {
             TClass::FfnUpGate
@@ -259,17 +252,7 @@ struct TensorAnalysis {
 }
 
 #[allow(clippy::too_many_arguments)]
-fn analyze_one(
-    name: &str,
-    gt: &[f32],
-    in_features: usize,
-    cfg: &TrellisConfig,
-    use_rht: bool,
-    affine_min: bool,
-    tail_biting: bool,
-    outlier_pct: f64,
-    outlier_bits: u32,
-) -> TensorAnalysis {
+fn analyze_one(name: &str, gt: &[f32], in_features: usize, cfg: &TrellisConfig, use_rht: bool, affine_min: bool, tail_biting: bool, outlier_pct: f64, outlier_bits: u32) -> TensorAnalysis {
     let n_total = gt.len();
 
     // --- Outlier extraction (mirror quantize-model::quantize_one exactly) ---
@@ -279,20 +262,12 @@ fn analyze_one(
             None
         } else {
             let mut order: Vec<usize> = (0..n_total).collect();
-            order.sort_unstable_by(|&a, &b| {
-                gt[b]
-                    .abs()
-                    .partial_cmp(&gt[a].abs())
-                    .unwrap_or(std::cmp::Ordering::Equal)
-            });
+            order.sort_unstable_by(|&a, &b| gt[b].abs().partial_cmp(&gt[a].abs()).unwrap_or(std::cmp::Ordering::Equal));
             let idx: Vec<usize> = order[..k].to_vec();
             let omax = idx.iter().fold(0f32, |m, &i| m.max(gt[i].abs())).max(1e-12);
             let ob = outlier_bits.clamp(2, 16);
             let levels = ((1i64 << (ob - 1)) - 1) as f32;
-            let codes: Vec<i32> = idx
-                .iter()
-                .map(|&i| (gt[i] / omax * levels).round() as i32)
-                .collect();
+            let codes: Vec<i32> = idx.iter().map(|&i| (gt[i] / omax * levels).round() as i32).collect();
             Some(OutlierWire::from_selection(n_total, idx, codes, omax, ob))
         }
     } else {
@@ -319,12 +294,7 @@ fn analyze_one(
         job_gt.to_vec()
     };
 
-    let opts = EncodeOpts {
-        adaptive: true,
-        tail_biting,
-        affine_min,
-        ..EncodeOpts::default()
-    };
+    let opts = EncodeOpts { adaptive: true, tail_biting, affine_min, ..EncodeOpts::default() };
     let enc: EncodedTensor = encode_tensor_with(&work, cfg, &opts);
 
     // --- Raw bit decomposition (exact) ---
@@ -409,12 +379,7 @@ fn analyze_one(
         ent.val_bits = outlier_bits.clamp(2, 16);
     }
 
-    TensorAnalysis {
-        name: name.to_string(),
-        class: TClass::of(name),
-        raw,
-        ent,
-    }
+    TensorAnalysis { name: name.to_string(), class: TClass::of(name), raw, ent }
 }
 
 fn block_mode(codes: &[u8]) -> u8 {
@@ -460,11 +425,7 @@ fn build_component_reports(raw: &RawBits, ent: &EntColl) -> Vec<CompReport> {
         let (hd, _nd) = ent.scale_delta.entropy();
         // delta has one fewer symbol per tensor; bill against block count for parity
         let best_h = h0.min(hd);
-        let predictor = if hd < h0 {
-            "prev-block delta"
-        } else {
-            "order-0"
-        };
+        let predictor = if hd < h0 { "prev-block delta" } else { "order-0" };
         let nsym = n0 as f64;
         let raw_bps = 32.0;
         let raw_bpw = raw.scale as f64 / nw;
@@ -503,9 +464,7 @@ fn build_component_reports(raw: &RawBits, ent: &EntColl) -> Vec<CompReport> {
             recoverable_b_per_w: (raw_bpw - ent_bpw).max(0.0),
             entropy_bits_per_sym: best_h,
             raw_bits_per_sym: 6.0,
-            note: format!(
-                "predictor={predictor}, H_pool={h_pool:.2}, H_ctx={h_ctx:.2}, H_super={h_super:.2}"
-            ),
+            note: format!("predictor={predictor}, H_pool={h_pool:.2}, H_ctx={h_ctx:.2}, H_super={h_super:.2}"),
         });
     }
 
@@ -593,9 +552,7 @@ fn parse_args() -> Args {
         rht: true,
         affine_mode_on: None, // auto
         tail_biting: false,
-        threads: std::thread::available_parallelism()
-            .map(|n| n.get())
-            .unwrap_or(4),
+        threads: std::thread::available_parallelism().map(|n| n.get()).unwrap_or(4),
         only: None,
         outlier_pct: 0.0,
         outlier_bits: 8,
@@ -620,16 +577,8 @@ fn parse_args() -> Args {
             "--tail-biting" => a.tail_biting = true,
             "--threads" => a.threads = it.next().expect("--threads").parse().expect("threads int"),
             "--only" => a.only = Some(it.next().expect("--only needs a substr")),
-            "--outlier-channel" => {
-                a.outlier_pct = it
-                    .next()
-                    .expect("--outlier-channel PCT")
-                    .parse()
-                    .expect("f64")
-            }
-            "--outlier-bits" => {
-                a.outlier_bits = it.next().expect("--outlier-bits N").parse().expect("int")
-            }
+            "--outlier-channel" => a.outlier_pct = it.next().expect("--outlier-channel PCT").parse().expect("f64"),
+            "--outlier-bits" => a.outlier_bits = it.next().expect("--outlier-bits N").parse().expect("int"),
             "--csv" => a.csv = Some(it.next().expect("--csv needs a path")),
             "--md" => a.md = Some(it.next().expect("--md needs a path")),
             "-h" | "--help" => {
@@ -644,15 +593,8 @@ fn parse_args() -> Args {
         }
     }
     assert!(!a.input.is_empty(), "--in is required");
-    assert!(
-        (1..=TrellisConfig::MAX_K).contains(&a.bits),
-        "--bits must be in 1..={}",
-        TrellisConfig::MAX_K,
-    );
-    assert!(
-        a.outlier_pct.is_finite() && (0.0..=100.0).contains(&a.outlier_pct),
-        "--outlier-channel must be a finite percentage in 0..=100"
-    );
+    assert!((1..=TrellisConfig::MAX_K).contains(&a.bits), "--bits must be in 1..={}", TrellisConfig::MAX_K,);
+    assert!(a.outlier_pct.is_finite() && (0.0..=100.0).contains(&a.outlier_pct), "--outlier-channel must be a finite percentage in 0..=100");
     a
 }
 
@@ -664,18 +606,22 @@ fn main() {
     let args = parse_args();
     let t0 = Instant::now();
 
-    let cfg = if args.l != 0 {
-        TrellisConfig::for_bpw_l(args.bits as f64, args.l)
-    } else {
-        TrellisConfig::for_bpw(args.bits as f64)
-    };
+    let cfg = if args.l != 0 { TrellisConfig::for_bpw_l(args.bits as f64, args.l) } else { TrellisConfig::for_bpw(args.bits as f64) };
     let affine_min = args.affine_mode_on.unwrap_or(args.bits >= 4);
     let tail_biting = args.tail_biting || affine_min;
 
     eprintln!(
         "[bit-ledger] in={} bits={} L={} k={} rht={} affine_min={} tail_biting={} outlier_pct={} outlier_bits={} threads={} GPU={}",
-        args.input, args.bits, cfg.l_bits, cfg.k_bits, args.rht, affine_min, tail_biting,
-        args.outlier_pct, args.outlier_bits, args.threads,
+        args.input,
+        args.bits,
+        cfg.l_bits,
+        cfg.k_bits,
+        args.rht,
+        affine_min,
+        tail_biting,
+        args.outlier_pct,
+        args.outlier_bits,
+        args.threads,
         if std::env::var_os("STRAND_NO_GPU").is_some() { "OFF(NO_GPU)" } else { "auto" }
     );
 
@@ -686,22 +632,13 @@ fn main() {
         gt: Vec<f32>,
         in_features: usize,
     }
-    let only_match = |n: &str| {
-        args.only
-            .as_ref()
-            .map(|s| n.contains(s.as_str()))
-            .unwrap_or(true)
-    };
+    let only_match = |n: &str| args.only.as_ref().map(|s| n.contains(s.as_str())).unwrap_or(true);
     let mut jobs: Vec<Job> = Vec::new();
     for name in &st.order {
         let t = &st.tensors[name];
         if is_quantizable_linear(name, &t.shape) && only_match(name) {
             let in_features = *t.shape.last().unwrap() as usize;
-            jobs.push(Job {
-                name: name.clone(),
-                gt: st.to_f32(t),
-                in_features,
-            });
+            jobs.push(Job { name: name.clone(), gt: st.to_f32(t), in_features });
         }
     }
     eprintln!("[bit-ledger] {} quantizable linear tensors", jobs.len());
@@ -719,17 +656,7 @@ fn main() {
                     break;
                 }
                 let job = &jobs[i];
-                let ta = analyze_one(
-                    &job.name,
-                    &job.gt,
-                    job.in_features,
-                    &cfg,
-                    args.rht,
-                    affine_min,
-                    tail_biting,
-                    args.outlier_pct,
-                    args.outlier_bits,
-                );
+                let ta = analyze_one(&job.name, &job.gt, job.in_features, &cfg, args.rht, affine_min, tail_biting, args.outlier_pct, args.outlier_bits);
                 let d = done.fetch_add(1, Ordering::Relaxed) + 1;
                 eprintln!("[bit-ledger] [{d}/{}] {}", jobs.len(), job.name);
                 results.lock().unwrap().push(ta);
@@ -738,12 +665,7 @@ fn main() {
     });
 
     let mut analyses = results.into_inner().unwrap();
-    let order_idx: HashMap<&str, usize> = st
-        .order
-        .iter()
-        .enumerate()
-        .map(|(i, n)| (n.as_str(), i))
-        .collect();
+    let order_idx: HashMap<&str, usize> = st.order.iter().enumerate().map(|(i, n)| (n.as_str(), i)).collect();
     analyses.sort_by_key(|a| order_idx[a.name.as_str()]);
 
     // --- Aggregate per-class and whole-model ---
@@ -753,10 +675,7 @@ fn main() {
     let mut model_ent = EntColl::new(cfg.l_bits);
     for a in &analyses {
         class_raw.entry(a.class).or_default().merge(&a.raw);
-        class_ent
-            .entry(a.class)
-            .or_insert_with(|| EntColl::new(cfg.l_bits))
-            .merge(&a.ent);
+        class_ent.entry(a.class).or_insert_with(|| EntColl::new(cfg.l_bits)).merge(&a.ent);
         model_raw.merge(&a.raw);
         model_ent.merge(&a.ent);
     }
@@ -803,12 +722,7 @@ fn main() {
     for a in &analyses {
         csv.push_str(&row("tensor", &a.name, a.class.label(), &a.raw));
     }
-    for cls in [
-        TClass::Attn,
-        TClass::FfnUpGate,
-        TClass::FfnDown,
-        TClass::Other,
-    ] {
+    for cls in [TClass::Attn, TClass::FfnUpGate, TClass::FfnDown, TClass::Other] {
         if let Some(r) = class_raw.get(&cls) {
             csv.push_str(&row("class", cls.label(), cls.label(), r));
         }
@@ -838,10 +752,7 @@ fn main() {
     }
     push_ent(&mut csv, "WHOLE_MODEL", &model_raw, &model_ent);
 
-    let csv_path = args
-        .csv
-        .clone()
-        .unwrap_or_else(|| format!("bit-ledger-q{}-l{}.csv", args.bits, cfg.l_bits));
+    let csv_path = args.csv.clone().unwrap_or_else(|| format!("bit-ledger-q{}-l{}.csv", args.bits, cfg.l_bits));
     fs::write(&csv_path, &csv).expect("write CSV");
     eprintln!("[bit-ledger] wrote {csv_path}");
 
@@ -862,79 +773,29 @@ fn main() {
     let total_deploy = total_encoded + model_raw.v2_table as f64 / nw;
 
     println!("\n================ BIT LEDGER — WHOLE MODEL ================");
-    println!(
-        "config: q{} L={} k={} rht={} affine_min={} tail_biting={} outlier_pct={}",
-        args.bits, cfg.l_bits, cfg.k_bits, args.rht, affine_min, tail_biting, args.outlier_pct
-    );
-    println!(
-        "weights={} blocks={}",
-        model_raw.n_weights, model_raw.n_blocks
-    );
+    println!("config: q{} L={} k={} rht={} affine_min={} tail_biting={} outlier_pct={}", args.bits, cfg.l_bits, cfg.k_bits, args.rht, affine_min, tail_biting, args.outlier_pct);
+    println!("weights={} blocks={}", model_raw.n_weights, model_raw.n_blocks);
     println!("\n-- raw bit spend (bpw) --");
-    println!(
-        "  payload      {:>9}",
-        fmt_bpw(model_raw.payload as f64 / nw)
-    );
+    println!("  payload      {:>9}", fmt_bpw(model_raw.payload as f64 / nw));
     println!("  scale        {:>9}", fmt_bpw(model_raw.scale as f64 / nw));
-    println!(
-        "  sub_scale    {:>9}",
-        fmt_bpw(model_raw.sub_scale as f64 / nw)
-    );
-    println!(
-        "  init_state   {:>9}",
-        fmt_bpw(model_raw.init_state as f64 / nw)
-    );
-    println!(
-        "  affine_min   {:>9}",
-        fmt_bpw(model_raw.affine_min as f64 / nw)
-    );
-    println!(
-        "  rht_seed     {:>9}",
-        fmt_bpw(model_raw.rht_seed as f64 / nw)
-    );
-    println!(
-        "  header       {:>9}",
-        fmt_bpw(model_raw.header_const as f64 / nw)
-    );
-    println!(
-        "  outl_pos     {:>9}",
-        fmt_bpw(model_raw.outl_pos as f64 / nw)
-    );
-    println!(
-        "  outl_val     {:>9}",
-        fmt_bpw(model_raw.outl_val as f64 / nw)
-    );
-    println!(
-        "  outl_hdr     {:>9}",
-        fmt_bpw(model_raw.outl_header as f64 / nw)
-    );
-    println!(
-        "  v2_table     {:>9}  (deploy-only)",
-        fmt_bpw(model_raw.v2_table as f64 / nw)
-    );
+    println!("  sub_scale    {:>9}", fmt_bpw(model_raw.sub_scale as f64 / nw));
+    println!("  init_state   {:>9}", fmt_bpw(model_raw.init_state as f64 / nw));
+    println!("  affine_min   {:>9}", fmt_bpw(model_raw.affine_min as f64 / nw));
+    println!("  rht_seed     {:>9}", fmt_bpw(model_raw.rht_seed as f64 / nw));
+    println!("  header       {:>9}", fmt_bpw(model_raw.header_const as f64 / nw));
+    println!("  outl_pos     {:>9}", fmt_bpw(model_raw.outl_pos as f64 / nw));
+    println!("  outl_val     {:>9}", fmt_bpw(model_raw.outl_val as f64 / nw));
+    println!("  outl_hdr     {:>9}", fmt_bpw(model_raw.outl_header as f64 / nw));
+    println!("  v2_table     {:>9}  (deploy-only)", fmt_bpw(model_raw.v2_table as f64 / nw));
     println!("  ----");
     println!("  TOTAL encoded {:>9} bpw", fmt_bpw(total_encoded));
-    println!(
-        "  TOTAL deploy  {:>9} bpw (incl v2 table)",
-        fmt_bpw(total_deploy)
-    );
+    println!("  TOTAL deploy  {:>9} bpw (incl v2 table)", fmt_bpw(total_deploy));
 
     println!("\n-- entropy microscope: recoverable bpw per component --");
-    println!(
-        "  {:<12} {:>10} {:>10} {:>10} {:>12}  {}",
-        "component", "raw_bpw", "ent_bpw", "recov_bpw", "H_bits/sym", "note"
-    );
+    println!("  {:<12} {:>10} {:>10} {:>10} {:>12}  {}", "component", "raw_bpw", "ent_bpw", "recov_bpw", "H_bits/sym", "note");
     let mut c2_scale_sub = 0.0f64;
     for c in &reports {
-        println!(
-            "  {:<12} {:>10} {:>10} {:>10} {:>12}  {}",
-            c.label,
-            fmt_bpw(c.raw_b_per_w),
-            fmt_bpw(c.ent_b_per_w),
-            fmt_bpw(c.recoverable_b_per_w),
-            format!("{:.3}", c.entropy_bits_per_sym),
-            c.note
-        );
+        println!("  {:<12} {:>10} {:>10} {:>10} {:>12}  {}", c.label, fmt_bpw(c.raw_b_per_w), fmt_bpw(c.ent_b_per_w), fmt_bpw(c.recoverable_b_per_w), format!("{:.3}", c.entropy_bits_per_sym), c.note);
         if c.label == "scale" || c.label == "sub_scale" {
             c2_scale_sub += c.recoverable_b_per_w;
         }
@@ -943,53 +804,21 @@ fn main() {
     // --- GATE VERDICT ---
     // map §3.3: implement C2 only if >=0.01 B/w from scale/sub-scale,
     // or >=0.04 B/w incl. stream-mode table.
-    let recov_init = reports
-        .iter()
-        .find(|c| c.label == "init_state")
-        .map(|c| c.recoverable_b_per_w)
-        .unwrap_or(0.0);
-    let recov_op = reports
-        .iter()
-        .find(|c| c.label == "outl_pos")
-        .map(|c| c.recoverable_b_per_w)
-        .unwrap_or(0.0);
-    let recov_ov = reports
-        .iter()
-        .find(|c| c.label == "outl_val")
-        .map(|c| c.recoverable_b_per_w)
-        .unwrap_or(0.0);
+    let recov_init = reports.iter().find(|c| c.label == "init_state").map(|c| c.recoverable_b_per_w).unwrap_or(0.0);
+    let recov_op = reports.iter().find(|c| c.label == "outl_pos").map(|c| c.recoverable_b_per_w).unwrap_or(0.0);
+    let recov_ov = reports.iter().find(|c| c.label == "outl_val").map(|c| c.recoverable_b_per_w).unwrap_or(0.0);
     let v2_bpw = model_raw.v2_table as f64 / nw;
     let c2_with_stream = c2_scale_sub + v2_bpw; // stream-mode can drop the whole v2 table
 
     println!("\n-- GATE (map §3.3): C2 ships iff scale/sub >= 0.01 B/w OR incl-stream-table >= 0.04 B/w --");
-    println!(
-        "  recoverable scale+sub_scale   = {} B/w",
-        fmt_bpw(c2_scale_sub)
-    );
-    println!(
-        "  + stream-mode v2-table drop    = {} B/w (table itself {})",
-        fmt_bpw(c2_with_stream),
-        fmt_bpw(v2_bpw)
-    );
-    println!(
-        "  recoverable init_state        = {} B/w",
-        fmt_bpw(recov_init)
-    );
-    println!(
-        "  recoverable outl_pos          = {} B/w",
-        fmt_bpw(recov_op)
-    );
-    println!(
-        "  recoverable outl_val          = {} B/w",
-        fmt_bpw(recov_ov)
-    );
+    println!("  recoverable scale+sub_scale   = {} B/w", fmt_bpw(c2_scale_sub));
+    println!("  + stream-mode v2-table drop    = {} B/w (table itself {})", fmt_bpw(c2_with_stream), fmt_bpw(v2_bpw));
+    println!("  recoverable init_state        = {} B/w", fmt_bpw(recov_init));
+    println!("  recoverable outl_pos          = {} B/w", fmt_bpw(recov_op));
+    println!("  recoverable outl_val          = {} B/w", fmt_bpw(recov_ov));
     let gate_scale_sub = c2_scale_sub >= 0.01;
     let gate_stream = c2_with_stream >= 0.04;
-    let verdict = if gate_scale_sub || gate_stream {
-        "CLEARS GATE"
-    } else {
-        "FAILS GATE"
-    };
+    let verdict = if gate_scale_sub || gate_stream { "CLEARS GATE" } else { "FAILS GATE" };
     println!("  VERDICT: C2 {verdict}  (scale/sub>=0.01: {gate_scale_sub}; incl-stream>=0.04: {gate_stream})");
 
     eprintln!("[bit-ledger] done in {:.1}s", t0.elapsed().as_secs_f64());
@@ -997,31 +826,12 @@ fn main() {
     if let Some(md) = &args.md {
         let mut s = String::new();
         s.push_str(&format!("# bit-ledger q{} L={}\n\n", args.bits, cfg.l_bits));
-        s.push_str(&format!(
-            "weights={} blocks={}, total encoded {} bpw, total deploy {} bpw\n\n",
-            model_raw.n_weights,
-            model_raw.n_blocks,
-            fmt_bpw(total_encoded),
-            fmt_bpw(total_deploy)
-        ));
+        s.push_str(&format!("weights={} blocks={}, total encoded {} bpw, total deploy {} bpw\n\n", model_raw.n_weights, model_raw.n_blocks, fmt_bpw(total_encoded), fmt_bpw(total_deploy)));
         s.push_str("| component | raw_bpw | ent_bpw | recoverable_bpw | H bits/sym | note |\n|---|---:|---:|---:|---:|---|\n");
         for c in &reports {
-            s.push_str(&format!(
-                "| {} | {} | {} | {} | {:.3} | {} |\n",
-                c.label,
-                fmt_bpw(c.raw_b_per_w),
-                fmt_bpw(c.ent_b_per_w),
-                fmt_bpw(c.recoverable_b_per_w),
-                c.entropy_bits_per_sym,
-                c.note
-            ));
+            s.push_str(&format!("| {} | {} | {} | {} | {:.3} | {} |\n", c.label, fmt_bpw(c.raw_b_per_w), fmt_bpw(c.ent_b_per_w), fmt_bpw(c.recoverable_b_per_w), c.entropy_bits_per_sym, c.note));
         }
-        s.push_str(&format!(
-            "\nGATE: scale+sub recoverable = {} B/w; incl stream-table = {} B/w; verdict = {}\n",
-            fmt_bpw(c2_scale_sub),
-            fmt_bpw(c2_with_stream),
-            verdict
-        ));
+        s.push_str(&format!("\nGATE: scale+sub recoverable = {} B/w; incl stream-table = {} B/w; verdict = {}\n", fmt_bpw(c2_scale_sub), fmt_bpw(c2_with_stream), verdict));
         fs::write(md, &s).expect("write md");
         eprintln!("[bit-ledger] wrote {md}");
     }

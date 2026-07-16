@@ -1,4 +1,3 @@
-
 use std::fs;
 use std::io::Write as _;
 use std::path::Path;
@@ -40,13 +39,12 @@ pub const OUTL_RECORD_FIXED_BYTES: usize = 24;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct OutlierWire {
-    
     pub omax_bits: u32,
-    
+
     pub entries: Vec<(u32, i32)>,
-    
+
     pub idx_bits: u32,
-    
+
     pub val_bits: u32,
 }
 
@@ -60,24 +58,11 @@ pub fn idx_bits_for(n: usize) -> u32 {
 }
 
 impl OutlierWire {
-    
-    pub fn from_selection(
-        n_total: usize,
-        idx: Vec<usize>,
-        codes: Vec<i32>,
-        omax: f32,
-        val_bits: u32,
-    ) -> Self {
+    pub fn from_selection(n_total: usize, idx: Vec<usize>, codes: Vec<i32>, omax: f32, val_bits: u32) -> Self {
         debug_assert_eq!(idx.len(), codes.len());
-        let mut entries: Vec<(u32, i32)> =
-            idx.into_iter().map(|i| i as u32).zip(codes).collect();
+        let mut entries: Vec<(u32, i32)> = idx.into_iter().map(|i| i as u32).zip(codes).collect();
         entries.sort_unstable_by_key(|&(i, _)| i);
-        OutlierWire {
-            omax_bits: omax.to_bits(),
-            entries,
-            idx_bits: idx_bits_for(n_total),
-            val_bits: val_bits.clamp(2, 16),
-        }
+        OutlierWire { omax_bits: omax.to_bits(), entries, idx_bits: idx_bits_for(n_total), val_bits: val_bits.clamp(2, 16) }
     }
 
     pub fn wire_bytes(&self) -> u64 {
@@ -87,9 +72,7 @@ impl OutlierWire {
     pub fn dequant_vals(&self) -> impl Iterator<Item = (u32, f32)> + '_ {
         let omax = f32::from_bits(self.omax_bits);
         let levels = ((1i64 << (self.val_bits - 1)) - 1) as f32;
-        self.entries
-            .iter()
-            .map(move |&(i, c)| (i, (c as f32) / levels * omax))
+        self.entries.iter().map(move |&(i, c)| (i, (c as f32) / levels * omax))
     }
 }
 
@@ -114,11 +97,7 @@ fn read_bits_u64(bytes: &[u8], start_bit: usize, nbits: u32) -> u64 {
         let bit_idx = start_bit + i;
         let byte_idx = bit_idx >> 3;
         let in_byte = bit_idx & 7;
-        let bit = if byte_idx < bytes.len() {
-            ((bytes[byte_idx] >> in_byte) & 1) as u64
-        } else {
-            0
-        };
+        let bit = if byte_idx < bytes.len() { ((bytes[byte_idx] >> in_byte) & 1) as u64 } else { 0 };
         acc |= bit << i;
     }
     acc
@@ -136,16 +115,12 @@ pub struct OutlSection {
 }
 
 impl OutlSection {
-    
     pub fn n_with_channel(&self) -> usize {
         self.tensors.iter().filter(|t| t.is_some()).count()
     }
-    
+
     pub fn total_entries(&self) -> usize {
-        self.tensors
-            .iter()
-            .filter_map(|t| t.as_ref().map(|w| w.entries.len()))
-            .sum()
+        self.tensors.iter().filter_map(|t| t.as_ref().map(|w| w.entries.len())).sum()
     }
 }
 
@@ -154,11 +129,7 @@ fn page_align(x: usize) -> usize {
     (x + PAGE - 1) & !(PAGE - 1)
 }
 
-fn outl_section_bytes(
-    wires: &[Option<OutlierWire>],
-    totals: &[usize],
-    pos_rans: bool,
-) -> Result<Vec<u8>, String> {
+fn outl_section_bytes(wires: &[Option<OutlierWire>], totals: &[usize], pos_rans: bool) -> Result<Vec<u8>, String> {
     debug_assert_eq!(wires.len(), totals.len());
     let mut o = Vec::new();
     o.extend_from_slice(OUTL_MAGIC);
@@ -189,22 +160,15 @@ fn outl_section_bytes(
                 let mut prev: Option<u32> = None;
                 for &(idx, code) in &w.entries {
                     if idx as usize >= total {
-                        return Err(format!(
-                            "outl: tensor record {i}: index {idx} out of range ({total} weights)"
-                        ));
+                        return Err(format!("outl: tensor record {i}: index {idx} out of range ({total} weights)"));
                     }
                     if let Some(p) = prev {
                         if idx <= p {
-                            return Err(format!(
-                                "outl: tensor record {i}: indices must be strictly ascending"
-                            ));
+                            return Err(format!("outl: tensor record {i}: indices must be strictly ascending"));
                         }
                     }
                     if (code as i64) < -levels || (code as i64) > levels {
-                        return Err(format!(
-                            "outl: tensor record {i}: code {code} does not fit val_bits {}",
-                            w.val_bits
-                        ));
+                        return Err(format!("outl: tensor record {i}: code {code} does not fit val_bits {}", w.val_bits));
                     }
                     prev = Some(idx);
                 }
@@ -219,39 +183,24 @@ fn outl_section_bytes(
 
                 if pos_rans {
                     // value-only packed codes (no interleaved idx)
-                    let mut packed: Vec<u8> =
-                        Vec::with_capacity((w.entries.len() * w.val_bits as usize).div_ceil(8));
+                    let mut packed: Vec<u8> = Vec::with_capacity((w.entries.len() * w.val_bits as usize).div_ceil(8));
                     let mut cursor = 0usize;
                     for &(_, code) in &w.entries {
-                        write_bits(
-                            &mut packed,
-                            &mut cursor,
-                            (code as u32 as u64) & ((1u64 << w.val_bits) - 1),
-                            w.val_bits,
-                        );
+                        write_bits(&mut packed, &mut cursor, (code as u32 as u64) & ((1u64 << w.val_bits) - 1), w.val_bits);
                     }
                     o.extend_from_slice(&packed);
                     // gap-coded position stream (entries are already ascending)
                     let positions: Vec<u32> = w.entries.iter().map(|&(idx, _)| idx).collect();
                     let pstream = crate::c2_final::encode_positions(&positions);
-                    let plen: u32 = pstream.len().try_into().map_err(|_| {
-                        format!("outl: tensor record {i}: position stream exceeds u32")
-                    })?;
+                    let plen: u32 = pstream.len().try_into().map_err(|_| format!("outl: tensor record {i}: position stream exceeds u32"))?;
                     o.extend_from_slice(&plen.to_le_bytes());
                     o.extend_from_slice(&pstream);
                 } else {
-                    let mut packed: Vec<u8> = Vec::with_capacity(
-                        (w.entries.len() * (w.idx_bits + w.val_bits) as usize).div_ceil(8),
-                    );
+                    let mut packed: Vec<u8> = Vec::with_capacity((w.entries.len() * (w.idx_bits + w.val_bits) as usize).div_ceil(8));
                     let mut cursor = 0usize;
                     for &(idx, code) in &w.entries {
                         write_bits(&mut packed, &mut cursor, idx as u64, w.idx_bits);
-                        write_bits(
-                            &mut packed,
-                            &mut cursor,
-                            (code as u32 as u64) & ((1u64 << w.val_bits) - 1),
-                            w.val_bits,
-                        );
+                        write_bits(&mut packed, &mut cursor, (code as u32 as u64) & ((1u64 << w.val_bits) - 1), w.val_bits);
                     }
                     o.extend_from_slice(&packed);
                 }
@@ -273,25 +222,17 @@ pub fn append_outl_c2f(path: impl AsRef<Path>, wires: &[Option<OutlierWire>]) ->
     append_outl_inner(path, wires, true)
 }
 
-fn append_outl_inner(
-    path: impl AsRef<Path>,
-    wires: &[Option<OutlierWire>],
-    pos_rans: bool,
-) -> Result<(), String> {
+fn append_outl_inner(path: impl AsRef<Path>, wires: &[Option<OutlierWire>], pos_rans: bool) -> Result<(), String> {
     let path = path.as_ref();
     let buf = fs::read(path).map_err(|e| format!("outl: read {path:?}: {e}"))?;
 
     if buf.len() >= OUTL_TRAILER_BYTES && &buf[buf.len() - 4..] == &SPRV_MAGIC[..] {
-        return Err(
-            "outl: file already has an SPRV trailer — OUTL must be appended BEFORE SPRV \
+        return Err("outl: file already has an SPRV trailer — OUTL must be appended BEFORE SPRV \
              (sections stack as OUTL then SPRV, SPRV outermost)"
-                .into(),
-        );
+            .into());
     }
     match read_outl_bytes(&buf, true) {
-        Ok(Some(_)) => {
-            return Err("outl: file already has an OUTL section (double-append rejected)".into())
-        }
+        Ok(Some(_)) => return Err("outl: file already has an OUTL section (double-append rejected)".into()),
         Err(e) => {
             return Err(format!(
                 "outl: file ends in OUTL magic but the section is invalid — refusing to \
@@ -303,22 +244,15 @@ fn append_outl_inner(
 
     let hdr = read_strand_v2_header(&buf)?;
     if wires.len() != hdr.tensors.len() {
-        return Err(format!(
-            "outl: {} wire records, archive has {} tensors",
-            wires.len(),
-            hdr.tensors.len()
-        ));
+        return Err(format!("outl: {} wire records, archive has {} tensors", wires.len(), hdr.tensors.len()));
     }
     let totals: Vec<usize> = hdr.tensors.iter().map(|t| t.total).collect();
     let section = outl_section_bytes(wires, &totals, pos_rans)?;
-    let outl_bytes: u32 = section
-        .len()
-        .try_into()
-        .map_err(|_| format!("outl: section is {} bytes — exceeds the u32 field", section.len()))?;
+    let outl_bytes: u32 = section.len().try_into().map_err(|_| format!("outl: section is {} bytes — exceeds the u32 field", section.len()))?;
 
     let outl_offset = page_align(buf.len());
     let lead_pad = outl_offset - buf.len();
-    
+
     let end = page_align(outl_offset + section.len() + OUTL_TRAILER_BYTES);
     let tail_pad = end - OUTL_TRAILER_BYTES - outl_offset - section.len();
 
@@ -330,28 +264,17 @@ fn append_outl_inner(
     tail.extend_from_slice(&outl_bytes.to_le_bytes());
     tail.extend_from_slice(OUTL_MAGIC);
 
-    let mut f = fs::OpenOptions::new()
-        .append(true)
-        .open(path)
-        .map_err(|e| format!("outl: open {path:?} for append: {e}"))?;
+    let mut f = fs::OpenOptions::new().append(true).open(path).map_err(|e| format!("outl: open {path:?} for append: {e}"))?;
     f.write_all(&tail).map_err(|e| format!("outl: append to {path:?}: {e}"))?;
     Ok(())
 }
 
-fn parse_outl_section(
-    buf: &[u8],
-    outl_offset: usize,
-    outl_bytes: usize,
-    trailer_end: usize,
-) -> Result<OutlSection, String> {
+fn parse_outl_section(buf: &[u8], outl_offset: usize, outl_bytes: usize, trailer_end: usize) -> Result<OutlSection, String> {
     if outl_offset % PAGE != 0 {
         return Err(format!("outl: outl_offset {outl_offset} not page-aligned"));
     }
-    
-    let min_end = outl_offset
-        .checked_add(outl_bytes)
-        .and_then(|x| x.checked_add(OUTL_TRAILER_BYTES))
-        .ok_or("outl: outl_offset + outl_bytes overflows")?;
+
+    let min_end = outl_offset.checked_add(outl_bytes).and_then(|x| x.checked_add(OUTL_TRAILER_BYTES)).ok_or("outl: outl_offset + outl_bytes overflows")?;
     if min_end > trailer_end || trailer_end % PAGE != 0 {
         return Err(format!(
             "outl: section [{outl_offset}, +{outl_bytes}] + trailer does not fit the \
@@ -361,11 +284,8 @@ fn parse_outl_section(
     if outl_bytes < OUTL_HEADER_BYTES {
         return Err("outl: section shorter than the 32-byte header".into());
     }
-    
-    if buf[outl_offset + outl_bytes..trailer_end - OUTL_TRAILER_BYTES]
-        .iter()
-        .any(|&b| b != 0)
-    {
+
+    if buf[outl_offset + outl_bytes..trailer_end - OUTL_TRAILER_BYTES].iter().any(|&b| b != 0) {
         return Err("outl: nonzero bytes in section padding".into());
     }
 
@@ -381,10 +301,7 @@ fn parse_outl_section(
     }
     let n_tensors = u32::from_le_bytes(s[8..12].try_into().unwrap()) as usize;
     if n_tensors != v2.tensors.len() {
-        return Err(format!(
-            "outl: section n_tensors {n_tensors} != archive's {}",
-            v2.tensors.len()
-        ));
+        return Err(format!("outl: section n_tensors {n_tensors} != archive's {}", v2.tensors.len()));
     }
     let flags = u32::from_le_bytes(s[12..16].try_into().unwrap());
     if flags & !OUTL_FLAG_POS_RANS != 0 {
@@ -415,9 +332,7 @@ fn parse_outl_section(
         }
         if count == 0 {
             if omax_bits != 0 || idx_bits != 0 || val_bits != 0 {
-                return Err(format!(
-                    "outl: tensor record {i}: count 0 but nonzero channel fields"
-                ));
+                return Err(format!("outl: tensor record {i}: count 0 but nonzero channel fields"));
             }
             tensors.push(None);
             continue;
@@ -426,9 +341,7 @@ fn parse_outl_section(
         // legacy records require a real idx_bits in [1,32].
         if pos_rans {
             if idx_bits != 0 {
-                return Err(format!(
-                    "outl: tensor record {i}: POS_RANS section but idx_bits {idx_bits} != 0 sentinel"
-                ));
+                return Err(format!("outl: tensor record {i}: POS_RANS section but idx_bits {idx_bits} != 0 sentinel"));
             }
         } else if idx_bits == 0 || idx_bits > 32 {
             return Err(format!("outl: tensor record {i}: idx_bits {idx_bits} out of range"));
@@ -437,10 +350,7 @@ fn parse_outl_section(
             return Err(format!("outl: tensor record {i}: val_bits {val_bits} out of range"));
         }
         if count > desc.total {
-            return Err(format!(
-                "outl: tensor record {i}: count {count} exceeds tensor total {}",
-                desc.total
-            ));
+            return Err(format!("outl: tensor record {i}: count {count} exceeds tensor total {}", desc.total));
         }
 
         let effective_idx_bits = if pos_rans { idx_bits_for(desc.total) } else { idx_bits };
@@ -464,34 +374,22 @@ fn parse_outl_section(
             let plen = u32::from_le_bytes(take(&mut p, 4)?.try_into().unwrap()) as usize;
             let pstream = take(&mut p, plen)?;
             let mut ppos = 0usize;
-            let positions = crate::c2_final::decode_positions(pstream, &mut ppos)
-                .map_err(|e| format!("outl: tensor record {i}: position stream: {e}"))?;
+            let positions = crate::c2_final::decode_positions(pstream, &mut ppos).map_err(|e| format!("outl: tensor record {i}: position stream: {e}"))?;
             if ppos != pstream.len() {
-                return Err(format!(
-                    "outl: tensor record {i}: {} trailing bytes in position stream",
-                    pstream.len() - ppos
-                ));
+                return Err(format!("outl: tensor record {i}: {} trailing bytes in position stream", pstream.len() - ppos));
             }
             if positions.len() != count {
-                return Err(format!(
-                    "outl: tensor record {i}: decoded {} positions, count is {count}",
-                    positions.len()
-                ));
+                return Err(format!("outl: tensor record {i}: decoded {} positions, count is {count}", positions.len()));
             }
             let mut entries = Vec::with_capacity(count);
             let mut prev: Option<u32> = None;
             for (idx, code) in positions.into_iter().zip(codes.into_iter()) {
                 if idx as usize >= desc.total {
-                    return Err(format!(
-                        "outl: tensor record {i}: index {idx} out of range ({} weights)",
-                        desc.total
-                    ));
+                    return Err(format!("outl: tensor record {i}: index {idx} out of range ({} weights)", desc.total));
                 }
                 if let Some(pv) = prev {
                     if idx <= pv {
-                        return Err(format!(
-                            "outl: tensor record {i}: positions not strictly ascending"
-                        ));
+                        return Err(format!("outl: tensor record {i}: positions not strictly ascending"));
                     }
                 }
                 prev = Some(idx);
@@ -510,16 +408,11 @@ fn parse_outl_section(
                 let code = sign_extend(read_bits_u64(packed, cursor, val_bits), val_bits);
                 cursor += val_bits as usize;
                 if idx as usize >= desc.total {
-                    return Err(format!(
-                        "outl: tensor record {i}: index {idx} out of range ({} weights)",
-                        desc.total
-                    ));
+                    return Err(format!("outl: tensor record {i}: index {idx} out of range ({} weights)", desc.total));
                 }
                 if let Some(pv) = prev {
                     if idx <= pv {
-                        return Err(format!(
-                            "outl: tensor record {i}: indices not strictly ascending"
-                        ));
+                        return Err(format!("outl: tensor record {i}: indices not strictly ascending"));
                     }
                 }
                 prev = Some(idx);
@@ -536,12 +429,7 @@ fn parse_outl_section(
         // Reconstruct the in-memory OutlierWire with the *natural* idx_bits so a
         // POS_RANS archive's OutlierWire is byte-identical to the inline one (the
         // sentinel 0 on disk is an encoding detail, not part of the logical value).
-        tensors.push(Some(OutlierWire {
-            omax_bits,
-            entries,
-            idx_bits: effective_idx_bits,
-            val_bits,
-        }));
+        tensors.push(Some(OutlierWire { omax_bits, entries, idx_bits: effective_idx_bits, val_bits }));
     }
     if p != outl_bytes {
         return Err(format!("outl: {} trailing bytes after the last record", outl_bytes - p));
@@ -551,7 +439,7 @@ fn parse_outl_section(
 
 pub fn read_outl_bytes(buf: &[u8], strict: bool) -> Result<Option<OutlSection>, String> {
     let mut end = buf.len();
-    
+
     for _ in 0..4 {
         if end < OUTL_TRAILER_BYTES {
             return Ok(None);
@@ -562,9 +450,7 @@ pub fn read_outl_bytes(buf: &[u8], strict: bool) -> Result<Option<OutlSection>, 
             let parse = (|| -> Result<OutlSection, String> {
                 let outl_offset = u64::from_le_bytes(t[0..8].try_into().unwrap());
                 let outl_bytes = u32::from_le_bytes(t[8..12].try_into().unwrap());
-                let outl_offset: usize = outl_offset
-                    .try_into()
-                    .map_err(|_| "outl: outl_offset exceeds address space".to_string())?;
+                let outl_offset: usize = outl_offset.try_into().map_err(|_| "outl: outl_offset exceeds address space".to_string())?;
                 parse_outl_section(buf, outl_offset, outl_bytes as usize, end)
             })();
             return match parse {
@@ -609,11 +495,7 @@ mod tests {
     static COUNTER: AtomicU64 = AtomicU64::new(0);
 
     fn tmp_path(tag: &str) -> PathBuf {
-        std::env::temp_dir().join(format!(
-            "strand-outl-{tag}-{}-{}.strand",
-            std::process::id(),
-            COUNTER.fetch_add(1, Ordering::Relaxed)
-        ))
+        std::env::temp_dir().join(format!("strand-outl-{tag}-{}-{}.strand", std::process::id(), COUNTER.fetch_add(1, Ordering::Relaxed)))
     }
 
     struct TmpFile(PathBuf);
@@ -624,9 +506,7 @@ mod tests {
     }
 
     fn test_weights(n: usize, seed: u64) -> Vec<f32> {
-        (0..n)
-            .map(|i| ((i as f32 + seed as f32) * 0.0137).sin() * 0.5)
-            .collect()
+        (0..n).map(|i| ((i as f32 + seed as f32) * 0.0137).sin() * 0.5).collect()
     }
 
     fn build_test_archive() -> (Vec<u8>, TrellisConfig) {
@@ -637,27 +517,11 @@ mod tests {
         let shape_b = [900u64];
         let tensors = [
             PackedTensorV2 {
-                base: PackedTensor {
-                    name: "model.layers.0.q_proj",
-                    shape: &shape_a,
-                    rht_seed: 0,
-                    l_bits: cfg.l_bits as u8,
-                    k_bits: cfg.k_bits as u8,
-                    vec_dim: cfg.vec_dim() as u8,
-                    enc: &enc_a,
-                },
+                base: PackedTensor { name: "model.layers.0.q_proj", shape: &shape_a, rht_seed: 0, l_bits: cfg.l_bits as u8, k_bits: cfg.k_bits as u8, vec_dim: cfg.vec_dim() as u8, enc: &enc_a },
                 block_len: cfg.block_len as u32,
             },
             PackedTensorV2 {
-                base: PackedTensor {
-                    name: "model.layers.0.down_proj",
-                    shape: &shape_b,
-                    rht_seed: 0,
-                    l_bits: cfg.l_bits as u8,
-                    k_bits: cfg.k_bits as u8,
-                    vec_dim: cfg.vec_dim() as u8,
-                    enc: &enc_b,
-                },
+                base: PackedTensor { name: "model.layers.0.down_proj", shape: &shape_b, rht_seed: 0, l_bits: cfg.l_bits as u8, k_bits: cfg.k_bits as u8, vec_dim: cfg.vec_dim() as u8, enc: &enc_b },
                 block_len: cfg.block_len as u32,
             },
         ];
@@ -666,16 +530,7 @@ mod tests {
     }
 
     fn sample_wires() -> Vec<Option<OutlierWire>> {
-        vec![
-            Some(OutlierWire::from_selection(
-                1024,
-                vec![700, 3, 511],          
-                vec![-127, 5, 127],
-                0.3125f32,
-                8,
-            )),
-            None, 
-        ]
+        vec![Some(OutlierWire::from_selection(1024, vec![700, 3, 511], vec![-127, 5, 127], 0.3125f32, 8)), None]
     }
 
     #[test]
@@ -691,10 +546,10 @@ mod tests {
         append_outl(&path, &wires).expect("append outl");
 
         let back = read_outl(&path).unwrap().expect("section found");
-        
+
         let w0 = back.tensors[0].as_ref().unwrap();
         assert_eq!(w0.entries, vec![(3, 5), (511, 127), (700, -127)]);
-        assert_eq!(w0.idx_bits, 10); 
+        assert_eq!(w0.idx_bits, 10);
         assert_eq!(w0.val_bits, 8);
         assert_eq!(w0.omax_bits, 0.3125f32.to_bits());
         assert!(back.tensors[1].is_none());
@@ -772,7 +627,7 @@ mod tests {
 
         let outl_1 = read_outl(&path).unwrap().expect("outl under sprv");
         let sprv_1 = read_sprv(&path).unwrap().expect("sprv outermost");
-        
+
         let sprv_2 = read_sprv(&path).unwrap().expect("sprv outermost");
         let outl_2 = read_outl(&path).unwrap().expect("outl under sprv");
         assert_eq!(outl_1, outl_2);
@@ -794,16 +649,16 @@ mod tests {
         std::fs::write(&path, &buf).unwrap();
 
         assert!(append_outl(&path, &sample_wires()[..1]).is_err());
-        
+
         let mut w = sample_wires();
         w[0].as_mut().unwrap().entries.push((5000, 1));
         w[0].as_mut().unwrap().entries.sort_unstable_by_key(|&(i, _)| i);
         assert!(append_outl(&path, &w).is_err());
-        
+
         let mut w = sample_wires();
         w[0].as_mut().unwrap().entries[0].1 = 200;
         assert!(append_outl(&path, &w).is_err());
-        
+
         assert_eq!(std::fs::read(&path).unwrap(), buf);
     }
 
@@ -848,7 +703,6 @@ mod tests {
         let mut codes = Vec::new();
         let mut want = Vec::new();
         for (i, &g) in gts.iter().enumerate() {
-            
             let v = (g / omax * levels).round() / levels * omax;
             let code = (g / omax * levels).round() as i32;
             idx.push(i);
@@ -863,7 +717,7 @@ mod tests {
     #[test]
     fn wire_bytes_matches_delta_billing() {
         let w = OutlierWire::from_selection(1024, vec![1, 2, 3], vec![1, -1, 7], 1.0, 8);
-        
+
         assert_eq!(w.wire_bytes(), 19);
     }
 

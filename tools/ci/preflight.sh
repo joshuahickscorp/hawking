@@ -8,7 +8,7 @@
 #   SKIP_BENCH=1 tools/ci/preflight.sh
 #   TESTS="greedy_token_only_parity q6k_swiglu_2r_parity" tools/ci/preflight.sh   # override the subset
 set -uo pipefail
-cd "${REPO:-$HOME/Downloads/hawking}" || exit 2
+REPO="${REPO:-$(CDPATH= cd -- "$(dirname "$0")/../.." && pwd)}"; cd "$REPO" || exit 2
 fail=0
 step() { printf "\n\033[1m== %s ==\033[0m\n" "$1"; }
 run()  { echo "+ $*"; if "$@"; then :; else echo "FAILED: $*"; fail=1; fi; }

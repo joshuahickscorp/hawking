@@ -1,4 +1,3 @@
-
 use crate::format::{read_strand_v2_header, PAGE};
 use std::fs;
 use std::io::Write as _;
@@ -15,7 +14,7 @@ pub const RSLT_TRAILER_BYTES: usize = 16;
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct RsltSection {
     pub version: u8,
-    
+
     pub block_counts: Vec<Vec<u32>>,
 }
 
@@ -33,17 +32,17 @@ pub fn record_decode(section: &mut RsltSection, tensor_idx: usize, n_blocks: usi
 pub fn serialize(section: &RsltSection) -> Vec<u8> {
     let n_tensors = section.block_counts.len();
     let mut o = Vec::new();
-    
+
     o.extend_from_slice(RSLT_MAGIC);
     o.push(RSLT_VERSION);
-    o.extend_from_slice(&[0u8; 3]); 
+    o.extend_from_slice(&[0u8; 3]);
     o.extend_from_slice(&(n_tensors as u32).to_le_bytes());
-    o.extend_from_slice(&[0u8; 20]); 
+    o.extend_from_slice(&[0u8; 20]);
     debug_assert_eq!(o.len(), RSLT_HEADER_BYTES);
-    
+
     for counts in &section.block_counts {
-        o.extend_from_slice(&(counts.len() as u32).to_le_bytes()); 
-        o.extend_from_slice(&0u32.to_le_bytes()); 
+        o.extend_from_slice(&(counts.len() as u32).to_le_bytes());
+        o.extend_from_slice(&0u32.to_le_bytes());
         for &c in counts {
             o.extend_from_slice(&c.to_le_bytes());
         }
@@ -72,10 +71,7 @@ pub fn deserialize(bytes: &[u8]) -> Result<RsltSection, &'static str> {
 
     let mut p = RSLT_HEADER_BYTES;
     let take = |p: &mut usize, n: usize| -> Result<&[u8], &'static str> {
-        let end = p
-            .checked_add(n)
-            .filter(|&e| e <= bytes.len())
-            .ok_or("rslt: section truncated")?;
+        let end = p.checked_add(n).filter(|&e| e <= bytes.len()).ok_or("rslt: section truncated")?;
         let s = &bytes[*p..end];
         *p = end;
         Ok(s)
@@ -89,10 +85,7 @@ pub fn deserialize(bytes: &[u8]) -> Result<RsltSection, &'static str> {
             return Err("rslt: per-tensor reserved field not zero");
         }
         let raw = take(&mut p, n_blocks * 4)?;
-        let counts: Vec<u32> = raw
-            .chunks_exact(4)
-            .map(|c| u32::from_le_bytes(c.try_into().unwrap()))
-            .collect();
+        let counts: Vec<u32> = raw.chunks_exact(4).map(|c| u32::from_le_bytes(c.try_into().unwrap())).collect();
         block_counts.push(counts);
     }
 
@@ -130,10 +123,7 @@ fn page_align(x: usize) -> usize {
 
 fn rslt_section_and_trailer(section: &RsltSection, rslt_offset: usize) -> Result<Vec<u8>, String> {
     let body = serialize(section);
-    let rslt_bytes: u32 = body
-        .len()
-        .try_into()
-        .map_err(|_| format!("rslt: section is {} bytes — exceeds the u32 rslt_bytes field", body.len()))?;
+    let rslt_bytes: u32 = body.len().try_into().map_err(|_| format!("rslt: section is {} bytes — exceeds the u32 rslt_bytes field", body.len()))?;
     let mut out = body;
     out.extend_from_slice(&(rslt_offset as u64).to_le_bytes());
     out.extend_from_slice(&rslt_bytes.to_le_bytes());
@@ -145,15 +135,9 @@ fn parse_rslt_section(buf: &[u8], rslt_offset: usize, rslt_bytes: usize) -> Resu
     if rslt_offset % PAGE != 0 {
         return Err(format!("rslt: rslt_offset {rslt_offset} not page-aligned"));
     }
-    let expected_len = (rslt_offset as u64)
-        .checked_add(rslt_bytes as u64)
-        .and_then(|x| x.checked_add(RSLT_TRAILER_BYTES as u64))
-        .ok_or("rslt: rslt_offset + rslt_bytes overflows".to_string())?;
+    let expected_len = (rslt_offset as u64).checked_add(rslt_bytes as u64).and_then(|x| x.checked_add(RSLT_TRAILER_BYTES as u64)).ok_or("rslt: rslt_offset + rslt_bytes overflows".to_string())?;
     if expected_len != buf.len() as u64 {
-        return Err(format!(
-            "rslt: rslt_offset {rslt_offset} + rslt_bytes {rslt_bytes} + 16 != file len {}",
-            buf.len()
-        ));
+        return Err(format!("rslt: rslt_offset {rslt_offset} + rslt_bytes {rslt_bytes} + 16 != file len {}", buf.len()));
     }
     if rslt_bytes < RSLT_HEADER_BYTES {
         return Err("rslt: section shorter than the 32-byte RSLT header".into());
@@ -170,9 +154,7 @@ pub fn read_rslt_bytes(buf: &[u8], strict: bool) -> Result<Option<RsltSection>, 
     let parse = (|| -> Result<RsltSection, String> {
         let rslt_offset = u64::from_le_bytes(t[0..8].try_into().unwrap());
         let rslt_bytes = u32::from_le_bytes(t[8..12].try_into().unwrap());
-        let rslt_offset: usize = rslt_offset
-            .try_into()
-            .map_err(|_| "rslt: rslt_offset exceeds address space".to_string())?;
+        let rslt_offset: usize = rslt_offset.try_into().map_err(|_| "rslt: rslt_offset exceeds address space".to_string())?;
         parse_rslt_section(buf, rslt_offset, rslt_bytes as usize)
     })();
     match parse {
@@ -198,9 +180,7 @@ pub fn append_rslt(path: impl AsRef<Path>, section: &RsltSection) -> Result<(), 
     let buf = fs::read(path).map_err(|e| format!("rslt: read {path:?}: {e}"))?;
 
     match read_rslt_bytes(&buf, true) {
-        Ok(Some(_)) => {
-            return Err("rslt: file already has an RSLT section (double-append rejected)".into())
-        }
+        Ok(Some(_)) => return Err("rslt: file already has an RSLT section (double-append rejected)".into()),
         Err(e) => {
             return Err(format!(
                 "rslt: file ends in RSLT magic but the section is invalid — refusing to \
@@ -212,11 +192,7 @@ pub fn append_rslt(path: impl AsRef<Path>, section: &RsltSection) -> Result<(), 
 
     let hdr = read_strand_v2_header(&buf)?;
     if section.block_counts.len() != hdr.tensors.len() {
-        return Err(format!(
-            "rslt: section has {} tensor records, archive has {} tensors",
-            section.block_counts.len(),
-            hdr.tensors.len()
-        ));
+        return Err(format!("rslt: section has {} tensor records, archive has {} tensors", section.block_counts.len(), hdr.tensors.len()));
     }
     for (i, (counts, desc)) in section.block_counts.iter().zip(hdr.tensors.iter()).enumerate() {
         if counts.len() != desc.n_blocks {
@@ -238,10 +214,7 @@ pub fn append_rslt(path: impl AsRef<Path>, section: &RsltSection) -> Result<(), 
     tail.resize(lead_pad, 0u8);
     tail.extend_from_slice(&section_and_trailer);
 
-    let mut f = fs::OpenOptions::new()
-        .append(true)
-        .open(path)
-        .map_err(|e| format!("rslt: open {path:?} for append: {e}"))?;
+    let mut f = fs::OpenOptions::new().append(true).open(path).map_err(|e| format!("rslt: open {path:?} for append: {e}"))?;
     f.write_all(&tail).map_err(|e| format!("rslt: append to {path:?}: {e}"))?;
     Ok(())
 }
@@ -264,11 +237,7 @@ mod tests {
     static COUNTER: AtomicU64 = AtomicU64::new(0);
 
     fn tmp_path(tag: &str) -> PathBuf {
-        std::env::temp_dir().join(format!(
-            "strand-rslt-{tag}-{}-{}.strand",
-            std::process::id(),
-            COUNTER.fetch_add(1, Ordering::Relaxed)
-        ))
+        std::env::temp_dir().join(format!("strand-rslt-{tag}-{}-{}.strand", std::process::id(), COUNTER.fetch_add(1, Ordering::Relaxed)))
     }
 
     struct TmpFile(PathBuf);
@@ -279,9 +248,7 @@ mod tests {
     }
 
     fn test_weights(n: usize, seed: u64) -> Vec<f32> {
-        (0..n)
-            .map(|i| ((i as f32 + seed as f32) * 0.0137).sin() * 0.5)
-            .collect()
+        (0..n).map(|i| ((i as f32 + seed as f32) * 0.0137).sin() * 0.5).collect()
     }
 
     fn build_test_archive() -> Vec<u8> {
@@ -292,27 +259,11 @@ mod tests {
         let shape_b = [900u64];
         let tensors = [
             PackedTensorV2 {
-                base: PackedTensor {
-                    name: "model.layers.0.q_proj",
-                    shape: &shape_a,
-                    rht_seed: 0,
-                    l_bits: cfg.l_bits as u8,
-                    k_bits: cfg.k_bits as u8,
-                    vec_dim: cfg.vec_dim() as u8,
-                    enc: &enc_a,
-                },
+                base: PackedTensor { name: "model.layers.0.q_proj", shape: &shape_a, rht_seed: 0, l_bits: cfg.l_bits as u8, k_bits: cfg.k_bits as u8, vec_dim: cfg.vec_dim() as u8, enc: &enc_a },
                 block_len: cfg.block_len as u32,
             },
             PackedTensorV2 {
-                base: PackedTensor {
-                    name: "model.layers.0.down_proj",
-                    shape: &shape_b,
-                    rht_seed: 0,
-                    l_bits: cfg.l_bits as u8,
-                    k_bits: cfg.k_bits as u8,
-                    vec_dim: cfg.vec_dim() as u8,
-                    enc: &enc_b,
-                },
+                base: PackedTensor { name: "model.layers.0.down_proj", shape: &shape_b, rht_seed: 0, l_bits: cfg.l_bits as u8, k_bits: cfg.k_bits as u8, vec_dim: cfg.vec_dim() as u8, enc: &enc_b },
                 block_len: cfg.block_len as u32,
             },
         ];
@@ -321,13 +272,7 @@ mod tests {
 
     #[test]
     fn rslt_roundtrip() {
-        let section = RsltSection {
-            version: RSLT_VERSION,
-            block_counts: vec![
-                vec![0, 5, 100, 999],
-                vec![1, 2, 3],
-            ],
-        };
+        let section = RsltSection { version: RSLT_VERSION, block_counts: vec![vec![0, 5, 100, 999], vec![1, 2, 3]] };
         let bytes = serialize(&section);
         let back = deserialize(&bytes).expect("deserialize");
         assert_eq!(back, section, "RSLT round-trip must be exact");
@@ -343,15 +288,8 @@ mod tests {
         assert_eq!(read_rslt(&path).unwrap(), None, "plain v2 file must have no RSLT");
 
         let hdr = crate::format::read_strand_v2_header(&buf).unwrap();
-        let section = RsltSection {
-            version: RSLT_VERSION,
-            block_counts: hdr
-                .tensors
-                .iter()
-                .map(|t| vec![0u32; t.n_blocks])
-                .collect(),
-        };
-        
+        let section = RsltSection { version: RSLT_VERSION, block_counts: hdr.tensors.iter().map(|t| vec![0u32; t.n_blocks]).collect() };
+
         let mut s = section.clone();
         s.block_counts[0][0] = 42;
         s.block_counts[1][0] = 7;
@@ -367,20 +305,8 @@ mod tests {
 
     #[test]
     fn rslt_merge() {
-        let mut a = RsltSection {
-            version: RSLT_VERSION,
-            block_counts: vec![
-                vec![1, 2, u32::MAX - 1],
-                vec![10, 20],
-            ],
-        };
-        let b = RsltSection {
-            version: RSLT_VERSION,
-            block_counts: vec![
-                vec![3, 4, 2],       
-                vec![100, 200],      
-            ],
-        };
+        let mut a = RsltSection { version: RSLT_VERSION, block_counts: vec![vec![1, 2, u32::MAX - 1], vec![10, 20]] };
+        let b = RsltSection { version: RSLT_VERSION, block_counts: vec![vec![3, 4, 2], vec![100, 200]] };
         merge(&mut a, &b);
         assert_eq!(a.block_counts[0], vec![4, 6, u32::MAX], "saturating add at MAX");
         assert_eq!(a.block_counts[1], vec![110, 220], "normal add");
@@ -388,16 +314,9 @@ mod tests {
 
     #[test]
     fn rslt_hot_blocks() {
-        let section = RsltSection {
-            version: RSLT_VERSION,
-            block_counts: vec![
-                vec![0, 50, 100, 1],
-                vec![99, 101, 200],
-                vec![5],
-            ],
-        };
+        let section = RsltSection { version: RSLT_VERSION, block_counts: vec![vec![0, 50, 100, 1], vec![99, 101, 200], vec![5]] };
         let hot = hot_blocks(&section, 99);
-        
+
         assert_eq!(hot, vec![(0, 2), (1, 1), (1, 2)]);
 
         let hot0 = hot_blocks(&section, 0);
@@ -415,10 +334,7 @@ mod tests {
         std::fs::write(&path, &buf).unwrap();
 
         let hdr = crate::format::read_strand_v2_header(&buf).unwrap();
-        let section = RsltSection {
-            version: RSLT_VERSION,
-            block_counts: hdr.tensors.iter().map(|t| vec![0u32; t.n_blocks]).collect(),
-        };
+        let section = RsltSection { version: RSLT_VERSION, block_counts: hdr.tensors.iter().map(|t| vec![0u32; t.n_blocks]).collect() };
 
         append_rslt(&path, &section).expect("first append");
         let after_first = std::fs::read(&path).unwrap();
@@ -436,10 +352,7 @@ mod tests {
         std::fs::write(&path, &buf).unwrap();
 
         let hdr = crate::format::read_strand_v2_header(&buf).unwrap();
-        let section = RsltSection {
-            version: RSLT_VERSION,
-            block_counts: hdr.tensors.iter().map(|t| vec![1u32; t.n_blocks]).collect(),
-        };
+        let section = RsltSection { version: RSLT_VERSION, block_counts: hdr.tensors.iter().map(|t| vec![1u32; t.n_blocks]).collect() };
         append_rslt(&path, &section).expect("append");
         let clean = std::fs::read(&path).unwrap();
 
@@ -462,16 +375,9 @@ mod tests {
 
     #[test]
     fn rslt_write_raw() {
-        let tmp = std::env::temp_dir().join(format!(
-            "strand-rslt-raw-{}-{}.bin",
-            std::process::id(),
-            COUNTER.fetch_add(1, Ordering::Relaxed)
-        ));
+        let tmp = std::env::temp_dir().join(format!("strand-rslt-raw-{}-{}.bin", std::process::id(), COUNTER.fetch_add(1, Ordering::Relaxed)));
         let _guard = TmpFile(tmp.clone());
-        let section = RsltSection {
-            version: RSLT_VERSION,
-            block_counts: vec![vec![1, 2, 3], vec![4, 5]],
-        };
+        let section = RsltSection { version: RSLT_VERSION, block_counts: vec![vec![1, 2, 3], vec![4, 5]] };
         write_rslt(&tmp, &section).expect("write_rslt");
         let bytes = std::fs::read(&tmp).unwrap();
         let back = deserialize(&bytes).expect("deserialize raw");

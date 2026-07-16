@@ -24,10 +24,7 @@ fn main() {
 
 #[cfg(target_os = "macos")]
 mod macos {
-    use metal::{
-        Buffer, CompileOptions, ComputePipelineState, Device, MTLResourceOptions, MTLSize,
-        NSUInteger,
-    };
+    use metal::{Buffer, CompileOptions, ComputePipelineState, Device, MTLResourceOptions, MTLSize, NSUInteger};
     use std::time::Instant;
 
     use strand_decode_kernel::metal::{bake_bitslice_entries, BitsliceEntry};
@@ -40,22 +37,14 @@ mod macos {
     const STAGED: &str = include_str!("../../shaders/strand_bitslice_staged.metal");
 
     fn qat_running() -> bool {
-        std::process::Command::new("pgrep")
-            .args(["-f", "strand-qat"])
-            .output()
-            .map(|o| o.status.success())
-            .unwrap_or(false)
+        std::process::Command::new("pgrep").args(["-f", "strand-qat"]).output().map(|o| o.status.success()).unwrap_or(false)
     }
 
     fn upload<T: Copy>(dev: &Device, data: &[T]) -> Buffer {
         let byte_len = (data.len() * std::mem::size_of::<T>()).max(4);
         let buf = dev.new_buffer(byte_len as NSUInteger, MTLResourceOptions::StorageModeShared);
         unsafe {
-            std::ptr::copy_nonoverlapping(
-                data.as_ptr() as *const u8,
-                buf.contents() as *mut u8,
-                data.len() * std::mem::size_of::<T>(),
-            );
+            std::ptr::copy_nonoverlapping(data.as_ptr() as *const u8, buf.contents() as *mut u8, data.len() * std::mem::size_of::<T>());
         }
         buf
     }
@@ -158,7 +147,7 @@ mod macos {
         let budget = 32 * 1024usize;
         let tile_budget = budget.saturating_sub(lut_bytes);
         let max_blocks = (tile_budget / (256 * 4)) as u64; // ints per block * 4
-        // clamp to a SIMD-friendly value: prefer 32, else the largest multiple of 8 that fits
+                                                           // clamp to a SIMD-friendly value: prefer 32, else the largest multiple of 8 that fits
         let mut bg = max_blocks.min(32);
         if bg >= 8 {
             bg -= bg % 8;
@@ -219,12 +208,7 @@ mod macos {
             cmd.commit();
             cmd.wait_until_completed();
             let gpu_sz = unsafe { *(out.contents() as *const u32) } as usize;
-            assert_eq!(
-                gpu_sz,
-                std::mem::size_of::<BitsliceEntry>(),
-                "staged GPU sizeof(BitsliceEntry)={gpu_sz} != host {}",
-                std::mem::size_of::<BitsliceEntry>()
-            );
+            assert_eq!(gpu_sz, std::mem::size_of::<BitsliceEntry>(), "staged GPU sizeof(BitsliceEntry)={gpu_sz} != host {}", std::mem::size_of::<BitsliceEntry>());
             println!("sizeof(BitsliceEntry) parity OK: {gpu_sz} B (host == staged shader)");
         }
 
@@ -247,22 +231,12 @@ mod macos {
                 let lb = upload(&dev, &[cfg.l_bits]);
                 let lut_buf = upload(&dev, lut);
 
-                dispatch_staged(
-                    &q, &p_staged, &w_buf, &out_buf, &tbl_buf, &nb, &kb, &lb, &lut_buf,
-                    tbl.len(), cfg.l_bits, bg,
-                );
+                dispatch_staged(&q, &p_staged, &w_buf, &out_buf, &tbl_buf, &nb, &kb, &lb, &lut_buf, tbl.len(), cfg.l_bits, bg);
                 let got = unsafe { std::slice::from_raw_parts(out_buf.contents() as *const i32, total) };
-                assert_eq!(
-                    got, &want[..],
-                    "STAGED IDENTITY VIOLATION: k={} L={} total={total} bg={bg}",
-                    cfg.k_bits, cfg.l_bits
-                );
+                assert_eq!(got, &want[..], "STAGED IDENTITY VIOLATION: k={} L={} total={total} bg={bg}", cfg.k_bits, cfg.l_bits);
                 checked += 1;
             }
-            println!(
-                "identity OK: staged == decode_tensor_fixed for k{} L{} (bg={}) across 6 shapes",
-                cfg.k_bits, cfg.l_bits, bg
-            );
+            println!("identity OK: staged == decode_tensor_fixed for k{} L{} (bg={}) across 6 shapes", cfg.k_bits, cfg.l_bits, bg);
         }
         println!("identity: {checked} staged cells byte-identical to decode_tensor_fixed");
 
@@ -271,15 +245,8 @@ mod macos {
         let (rows, cols) = (2048usize, 2048usize);
         let total = rows * cols;
         let peak_dev = strand_decode_kernel::metal::StrandGpu::new();
-        let peak = peak_dev
-            .as_ref()
-            .map(|g| g.bench_peak_bw(16 << 20, 3))
-            .unwrap_or(f64::NAN);
-        println!(
-            "\n== micro-bench {rows}x{cols} = {:.1}M weights (best-of-5) ==  measured peak {:.1} GB/s",
-            total as f64 / 1e6,
-            peak / 1e9
-        );
+        let peak = peak_dev.as_ref().map(|g| g.bench_peak_bw(16 << 20, 3)).unwrap_or(f64::NAN);
+        println!("\n== micro-bench {rows}x{cols} = {:.1}M weights (best-of-5) ==  measured peak {:.1} GB/s", total as f64 / 1e6, peak / 1e9);
         for cfg in [TrellisConfig::for_bpw(3.0), TrellisConfig::for_bpw_l(2.0, 12)] {
             let bg = pick_bg(cfg.l_bits);
             let w: Vec<f32> = (0..total).map(|i| ((i as f32) * 0.013).sin() * 0.4).collect();
@@ -304,23 +271,21 @@ mod macos {
             let mut best_dep = f64::INFINITY;
             for _ in 0..5 {
                 let t = Instant::now();
-                dispatch_deployed(
-                    &dev, &q, &p_deployed, &w_buf, &out_buf, &tbl_buf, &nb, &kb, &lb, &lut_buf,
-                    tbl.len(), cfg.l_bits,
-                );
+                dispatch_deployed(&dev, &q, &p_deployed, &w_buf, &out_buf, &tbl_buf, &nb, &kb, &lb, &lut_buf, tbl.len(), cfg.l_bits);
                 let dt = t.elapsed().as_secs_f64();
-                if dt > 0.0 && dt < best_dep { best_dep = dt; }
+                if dt > 0.0 && dt < best_dep {
+                    best_dep = dt;
+                }
             }
             // staged
             let mut best_stg = f64::INFINITY;
             for _ in 0..5 {
                 let t = Instant::now();
-                dispatch_staged(
-                    &q, &p_staged, &w_buf, &out_buf, &tbl_buf, &nb, &kb, &lb, &lut_buf,
-                    tbl.len(), cfg.l_bits, bg,
-                );
+                dispatch_staged(&q, &p_staged, &w_buf, &out_buf, &tbl_buf, &nb, &kb, &lb, &lut_buf, tbl.len(), cfg.l_bits, bg);
                 let dt = t.elapsed().as_secs_f64();
-                if dt > 0.0 && dt < best_stg { best_stg = dt; }
+                if dt > 0.0 && dt < best_stg {
+                    best_stg = dt;
+                }
             }
 
             let g = |dt: f64| total as f64 / dt / 1e9;
@@ -328,14 +293,17 @@ mod macos {
             let pk = |dt: f64| if peak.is_finite() { 100.0 * (moved / dt) / peak } else { f64::NAN };
             println!(
                 "  k{} L{} (bg={bg}): deployed {:.2} Gw/s {:.1} GB/s ({:.0}% pk) | staged {:.2} Gw/s {:.1} GB/s ({:.0}% pk) | staged/deployed {:.2}x",
-                cfg.k_bits, cfg.l_bits,
-                g(best_dep), bw(best_dep), pk(best_dep),
-                g(best_stg), bw(best_stg), pk(best_stg),
+                cfg.k_bits,
+                cfg.l_bits,
+                g(best_dep),
+                bw(best_dep),
+                pk(best_dep),
+                g(best_stg),
+                bw(best_stg),
+                pk(best_stg),
                 best_dep / best_stg,
             );
         }
-        println!(
-            "(micro-bench on a SMALL shape to bound runtime; the canonical 67.9 Mw ffn_down number\n bench is gate-bitslice's bench() — wire the staged path there for the headline figure.)"
-        );
+        println!("(micro-bench on a SMALL shape to bound runtime; the canonical 67.9 Mw ffn_down number\n bench is gate-bitslice's bench() — wire the staged path there for the headline figure.)");
     }
 }

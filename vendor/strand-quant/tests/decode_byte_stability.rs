@@ -111,9 +111,9 @@ const SCALES: [i32; 25] = [
     i32::MIN,
     i32::MAX - 1,
     -(i32::MAX),
-    1_431_655_765,  // 0x55555555
+    1_431_655_765, // 0x55555555
     -1_431_655_765,
-    858_993_459,    // 0x33333333
+    858_993_459, // 0x33333333
     -858_993_459,
 ];
 
@@ -157,10 +157,7 @@ fn chain_golden_fast_l4_to_l7() {
 fn chain_golden_full_l4_to_l14() {
     let (hash, count) = chain_hash(FROZEN_MIN_L, FROZEN_MAX_L);
     assert_eq!(count, 52_403_200, "case-count drift (grid or frozen-L range changed)");
-    assert_eq!(
-        hash, 0xc3ad_262e_5604_336e,
-        "frozen-LUT decode arithmetic drift over the full L=4..14 sweep"
-    );
+    assert_eq!(hash, 0xc3ad_262e_5604_336e, "frozen-LUT decode arithmetic drift over the full L=4..14 sweep");
 }
 
 /// Six hand-computed `(scale, code, q) -> recon` triples. These are human-auditable
@@ -233,11 +230,7 @@ fn recon_is_floor_div_boundary_sweep() {
             // The contract: arithmetic >> 16 == floor(prod / 65536). div_euclid on a
             // positive divisor IS the floor. This is the only place the sign of the
             // shift matters, so assert it directly rather than restating `>>`.
-            assert_eq!(
-                shifted,
-                prod.div_euclid(1 << SCALE_SHIFT),
-                "shift is not floor-division at s={s} q={q} (prod={prod})"
-            );
+            assert_eq!(shifted, prod.div_euclid(1 << SCALE_SHIFT), "shift is not floor-division at s={s} q={q} (prod={prod})");
             // And confirm it genuinely floors *downward* for negatives, i.e. it is NOT
             // truncation toward zero whenever there is a nonzero remainder.
             if prod < 0 && prod % (1 << SCALE_SHIFT) != 0 {
@@ -273,16 +266,10 @@ fn chain_stays_in_i32_boundary_sweep() {
                 // i64 product never overflows: |es| <= 2^31, |q| <= Q_CLAMP, product
                 // magnitude <= 2^31 * 24576 < 2^46 << 2^63.
                 let prod = es as i64 * q as i64;
-                assert!(
-                    prod.unsigned_abs() < (1u64 << 63),
-                    "chain product overflows i64 at scale={scale} code={code} q={q}"
-                );
+                assert!(prod.unsigned_abs() < (1u64 << 63), "chain product overflows i64 at scale={scale} code={code} q={q}");
                 // recon fits i32: |prod>>16| <= 2^31 * 24576 / 65536 < 2^31.
                 let recon = prod >> SCALE_SHIFT;
-                assert!(
-                    (i32::MIN as i64..=i32::MAX as i64).contains(&recon),
-                    "chain recon leaves i32 at scale={scale} code={code} q={q}: {recon}"
-                );
+                assert!((i32::MIN as i64..=i32::MAX as i64).contains(&recon), "chain recon leaves i32 at scale={scale} code={code} q={q}: {recon}");
                 // and the impl agrees with that i64 oracle.
                 assert_eq!(reconstruct_q(es, q) as i64, recon);
                 checked += 1;
@@ -301,8 +288,7 @@ fn chain_stays_in_i32_boundary_sweep() {
 fn decode_path_is_float_free() {
     // Resolve decode.rs relative to this test file (CARGO_MANIFEST_DIR = the crate root).
     let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("src/decode.rs");
-    let src = std::fs::read_to_string(&path)
-        .unwrap_or_else(|e| panic!("cannot read {}: {e}", path.display()));
+    let src = std::fs::read_to_string(&path).unwrap_or_else(|e| panic!("cannot read {}: {e}", path.display()));
 
     // The decode module is permitted ONE bounded float region: the `decode_tensor`
     // f32 *wrapper* + its `Q12_TO_F32` constant, which exist solely to hand integer
@@ -310,9 +296,7 @@ fn decode_path_is_float_free() {
     // `f32_wrapper_is_exact_q12` in exhaustive.rs) and downstream of the bit-identical
     // integer decode. Everything ABOVE it — the actual decode arithmetic — must be
     // float-free. We scan only that region.
-    let cutoff = src
-        .find("const Q12_TO_F32")
-        .expect("decode.rs no longer has the Q12_TO_F32 float-wrapper marker — re-audit the float boundary");
+    let cutoff = src.find("const Q12_TO_F32").expect("decode.rs no longer has the Q12_TO_F32 float-wrapper marker — re-audit the float boundary");
     let integer_region = &src[..cutoff];
 
     // Strip line comments so doc/comment prose mentioning floats doesn't trip us.
@@ -334,11 +318,7 @@ fn decode_path_is_float_free() {
         offenders.is_empty(),
         "float appears in the integer decode region of decode.rs (above Q12_TO_F32) — \
          this can break bit-identical decode across platforms:\n{}",
-        offenders
-            .iter()
-            .map(|(ln, s)| format!("  line {ln}: {s}"))
-            .collect::<Vec<_>>()
-            .join("\n")
+        offenders.iter().map(|(ln, s)| format!("  line {ln}: {s}")).collect::<Vec<_>>().join("\n")
     );
 }
 

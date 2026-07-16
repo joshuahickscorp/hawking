@@ -8,6 +8,9 @@ repository.workspace = true
 authors.workspace = true
 description = "Benchmark harness for hawking — produces every published number"
 
+[lib]
+path = "lib.rs"
+
 [dependencies]
 hawking-core = { path = "../hawking-core" }
 anyhow = { workspace = true }

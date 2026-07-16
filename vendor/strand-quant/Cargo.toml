@@ -29,6 +29,14 @@ ordered-pipeline = ["block-parallel"]
 native-execution = ["ordered-pipeline", "dep:memmap2"]
 metal-rht-probe = []
 
+[[example]]
+name = "rht_xcheck"
+path = "example_rht_xcheck.rs"
+
+[[example]]
+name = "sdsq_measure"
+path = "example_sdsq_measure.rs"
+
 [[bin]]
 name = "gate-block-parallel"
 path = "src/bin/gate-block-parallel.rs"

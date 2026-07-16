@@ -42,6 +42,19 @@ T = _load_treatment()
 
 
 class LadderRuntimeTests(unittest.TestCase):
+    def require_release_binaries(self) -> None:
+        required = (
+            ROOT / "vendor/strand-quant/target/release/quantize-model",
+            ROOT / "vendor/strand-decode-kernel/target/release/attest-strand",
+            ROOT / "vendor/strand-decode-kernel/target/release/archive-to-safetensors",
+        )
+        missing = [path for path in required if not path.is_file()]
+        if missing:
+            self.skipTest(
+                "detached worktree has no release binaries: "
+                + ", ".join(path.name for path in missing)
+            )
+
     def test_pre_admission_gc_v2_receipt_binds_successor_program(self) -> None:
         scratch = ROOT / "scratch"
         scratch.mkdir(exist_ok=True)
@@ -236,6 +249,7 @@ class LadderRuntimeTests(unittest.TestCase):
                 self.assertEqual(torch.bfloat16, handle.get_tensor(list(handle.keys())[0]).dtype)
 
     def test_vector_packed_all2d_attest_and_bf16_decode(self) -> None:
+        self.require_release_binaries()
         with tempfile.TemporaryDirectory() as raw:
             root = Path(raw)
             source = root / "source.safetensors"
@@ -286,6 +300,7 @@ class LadderRuntimeTests(unittest.TestCase):
             self.assertGreater(physical_bpw, float(W.CANONICAL_RATES["0.33"]))
 
     def test_full_vector_treatment_is_packed_and_decodable(self) -> None:
+        self.require_release_binaries()
         with tempfile.TemporaryDirectory() as raw:
             root = Path(raw)
             source = root / "source.safetensors"

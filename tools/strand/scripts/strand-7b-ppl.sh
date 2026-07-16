@@ -29,14 +29,15 @@
 # ─────────────────────────────────────────────────────────────────────────────
 #
 # Usage:
-#   ./scripts/strand-7b-ppl.sh <MODEL_DIR> [options]
+#   tools/strand/scripts/strand-7b-ppl.sh <MODEL_DIR> [options]
 #
 # Options:
 #   --bits N            Scalar target bits (default: 4). Used as the mp-config
 #                       fallback when --mp-config is set.
 #   --l N               Explicit trellis register width L (default: k+4, or k+6
 #                       with --quality). Useful for iso-rate vector runs.
-#   --mp-config FILE    Mixed-precision JSON (e.g. scripts/mp-5a3f.json). Sets the
+#   --mp-config FILE    Mixed-precision JSON (e.g.
+#                       tools/strand/configs/mp-dp-d4-r2.json). Sets the
 #                       run label and per-tensor bits.
 #   --calib FILE        HSDI calibration (default: MODEL_DIR/hessian.hsdi if present).
 #   --skip-calib        Quantize unweighted (ignore any hessian.hsdi).
@@ -78,22 +79,22 @@
 #
 # Quick smokes (cheap; do these before a full run):
 #   # 1) Eval harness only — loads the original 7B, 4 windows. Gives the FP16 anchor.
-#   ./scripts/strand-7b-ppl.sh scratch/qwen-7b --no-quant --fp16-baseline \
+#   tools/strand/scripts/strand-7b-ppl.sh scratch/qwen-7b --no-quant --fp16-baseline \
 #       --limit-chunks 4 --device mps
 #
 #   # 2) Plumbing smoke — quantize 1 shard, copy the other 3, eval 2 windows.
 #   #    (PPL is meaningless here; this only proves quantize→recast→load→eval runs.)
-#   ./scripts/strand-7b-ppl.sh scratch/qwen-7b --bits 4 --max-shards 1 \
+#   tools/strand/scripts/strand-7b-ppl.sh scratch/qwen-7b --bits 4 --max-shards 1 \
 #       --limit-chunks 2 --device mps
 #
 # Real run (hours — launch under caffeinate):
-#   caffeinate -dimsu ./scripts/strand-7b-ppl.sh scratch/qwen-7b \
+#   caffeinate -dimsu tools/strand/scripts/strand-7b-ppl.sh scratch/qwen-7b \
 #       --bits 4 --fp16-baseline --device mps
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/../../.." && pwd)"
 
 # ---------------------------------------------------------------------------
 # Python interpreter — must have torch + transformers + datasets + safetensors.

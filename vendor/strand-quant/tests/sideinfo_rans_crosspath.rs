@@ -89,10 +89,7 @@ mod outlier_wire {
 #[path = "../src/sideinfo_rans.rs"]
 mod sr;
 
-use sr::{
-    decode_stream, encode_scale_q, encode_stream, encode_stream_with_model, zigzag, Model,
-    SCALE_TOTAL,
-};
+use sr::{decode_stream, encode_scale_q, encode_stream, encode_stream_with_model, zigzag, Model, SCALE_TOTAL};
 
 // ===========================================================================
 // deterministic PRNG — identical sequence on every platform.
@@ -245,21 +242,14 @@ fn spec_decode_section(data: &[u8]) -> Vec<i64> {
         let start = cum[symbol];
         let freq = cum[symbol + 1] - cum[symbol];
         // state update (wrapping, exactly as the production dec_get)
-        let mut s = freq
-            .wrapping_mul(x >> SPEC_SCALE_BITS)
-            .wrapping_add(slot)
-            .wrapping_sub(start);
+        let mut s = freq.wrapping_mul(x >> SPEC_SCALE_BITS).wrapping_add(slot).wrapping_sub(start);
         while s < SPEC_L {
             let b = if rpos < payload.len() { payload[rpos] } else { 0 };
             rpos += 1;
             s = (s << 8) | b as u32;
         }
         x = s;
-        let raw = if symbol == esc_idx {
-            spec_unzigzag(spec_read_varint(esc_blob, &mut esc_pos))
-        } else {
-            spec_unzigzag(symbols[symbol])
-        };
+        let raw = if symbol == esc_idx { spec_unzigzag(spec_read_varint(esc_blob, &mut esc_pos)) } else { spec_unzigzag(symbols[symbol]) };
         out.push(raw);
     }
     out
@@ -390,9 +380,7 @@ fn spec_rans_decoder_agrees_exhaustive_small_alphabet() {
     }
     let expect: u64 = (0..=8u32).map(|l| 4u64.pow(l)).sum();
     assert_eq!(covered, expect, "coverage drifted");
-    eprintln!(
-        "[crosspath] spec-rANS == production over {covered} exhaustive streams (radix 4, len 0..=8)"
-    );
+    eprintln!("[crosspath] spec-rANS == production over {covered} exhaustive streams (radix 4, len 0..=8)");
 }
 
 #[test]
@@ -431,10 +419,7 @@ fn spec_rans_decoder_agrees_wide_random_sweep() {
         let prod = decode_stream(&enc, &mut p).expect("prod decode");
         assert_eq!(prod, raw, "production round-trip broke (trial {trial})");
         let spec = spec_decode_section(&enc);
-        assert_eq!(
-            spec, raw,
-            "from-spec rANS decode disagrees with production (trial {trial}, regime {regime})"
-        );
+        assert_eq!(spec, raw, "from-spec rANS decode disagrees with production (trial {trial}, regime {regime})");
     }
     eprintln!("[crosspath] spec-rANS == production over 2000 random streams (5 regimes incl. full i64)");
 }
@@ -445,10 +430,7 @@ fn production_zigzag_matches_from_spec() {
     // docstring formula, over boundaries + a deterministic full-range sweep.
     // (Symbol identity through the model + escape blob rides on this being the
     // exact same map on every device.)
-    for v in [
-        0i64, 1, -1, 2, -2, 63, -64, 127, -128, 128, -129,
-        i32::MIN as i64, i32::MAX as i64, i64::MIN, i64::MAX, i64::MIN + 1, i64::MAX - 1,
-    ] {
+    for v in [0i64, 1, -1, 2, -2, 63, -64, 127, -128, 128, -129, i32::MIN as i64, i32::MAX as i64, i64::MIN, i64::MAX, i64::MIN + 1, i64::MAX - 1] {
         assert_eq!(zigzag(v), spec_zigzag(v), "production zigzag != spec at {v}");
         assert_eq!(spec_unzigzag(spec_zigzag(v)), v, "spec zigzag not bijective at {v}");
     }
@@ -467,9 +449,7 @@ fn spec_decoder_agrees_on_scale_q_and_position_wrappers() {
     let mut s = 0x5CA1_E000_0000_0001u64;
     for _ in 0..200 {
         let n = 1 + (splitmix64(&mut s) % 2000) as usize;
-        let scale_q: Vec<i32> = (0..n)
-            .map(|_| (splitmix64(&mut s) % 2048) as i32 - 1024)
-            .collect();
+        let scale_q: Vec<i32> = (0..n).map(|_| (splitmix64(&mut s) % 2048) as i32 - 1024).collect();
         let enc = encode_scale_q(&scale_q);
         let spec = spec_decode_section(&enc);
         let want: Vec<i64> = scale_q.iter().map(|&v| v as i64).collect();
@@ -582,8 +562,7 @@ fn from_spec_normalizer_matches_production_over_raw_counts() {
         // 0, -1, 1, -2, 2, … ) Reconstruct that exact order before normalizing,
         // or the cum tables won't line up. Pinning this is itself a determinism
         // guard: the canonical slot order is a wire-visible invariant.
-        let mut pairs: Vec<(u64, u64)> =
-            vals.iter().zip(cnts.iter()).map(|(&v, &c)| (spec_zigzag(v), c)).collect();
+        let mut pairs: Vec<(u64, u64)> = vals.iter().zip(cnts.iter()).map(|(&v, &c)| (spec_zigzag(v), c)).collect();
         pairs.sort_unstable_by_key(|&(z, _)| z);
         let mut canonical: Vec<u64> = pairs.iter().map(|&(_, c)| c).collect();
         canonical.push(1); // ESC floor (all distinct symbols modelled -> esc mass 0 -> floor 1)
@@ -603,9 +582,7 @@ fn from_spec_normalizer_matches_production_over_raw_counts() {
         assert_eq!(*prod_cum.last().unwrap(), SPEC_SCALE_TOTAL);
         checked += 1;
     }
-    eprintln!(
-        "[crosspath] production CDF reduction == from-spec normalizer over {checked} raw-count vectors"
-    );
+    eprintln!("[crosspath] production CDF reduction == from-spec normalizer over {checked} raw-count vectors");
 }
 
 // ===========================================================================
@@ -658,10 +635,7 @@ fn from_stream_is_invariant_to_input_order() {
             assert_eq!(m, m0, "from_stream model changed with input order (trial {trial}, shuf {shuf})");
             let mut b = Vec::new();
             m.serialize(&mut b);
-            assert_eq!(
-                b, b0,
-                "serialized CDF changed with input order — HashMap-order leak (trial {trial}, shuf {shuf})"
-            );
+            assert_eq!(b, b0, "serialized CDF changed with input order — HashMap-order leak (trial {trial}, shuf {shuf})");
             // The section encodes the SAME multiset, but element ORDER differs,
             // so the rANS payload legitimately differs. The MODEL prefix (the
             // determinism-critical CDF) must be byte-identical. Re-encode the
@@ -672,11 +646,7 @@ fn from_stream_is_invariant_to_input_order() {
             let _n = spec_read_u32(&enc, &mut pos);
             let (_syms, _cum) = spec_parse_model(&enc, &mut pos);
             let model_prefix_len = pos;
-            assert_eq!(
-                &enc[..model_prefix_len],
-                &enc0[..model_prefix_len],
-                "model prefix bytes differ across input order (trial {trial}, shuf {shuf})"
-            );
+            assert_eq!(&enc[..model_prefix_len], &enc0[..model_prefix_len], "model prefix bytes differ across input order (trial {trial}, shuf {shuf})");
         }
     }
     eprintln!("[crosspath] from_stream model + CDF bytes invariant over 300 multisets x 6 shuffles");
@@ -712,10 +682,7 @@ fn from_stream_invariant_with_escape_tail() {
         let m = Model::from_stream(&perm);
         let mut b = Vec::new();
         m.serialize(&mut b);
-        assert_eq!(
-            b, b0,
-            "model-at-cap changed with input order (shuf {shuf}) — top-N cut is not deterministic"
-        );
+        assert_eq!(b, b0, "model-at-cap changed with input order (shuf {shuf}) — top-N cut is not deterministic");
     }
     eprintln!("[crosspath] from_stream-at-cap (5000 distinct, escape tail) order-invariant over 8 shuffles");
 }
@@ -801,7 +768,7 @@ fn deserialize_rejects_all_malformed_models() {
 
     let mut n_huge = Vec::new();
     n_huge.extend_from_slice(&(4096u32 + 2).to_le_bytes()); // MAX_MODEL_SYMBOLS+2
-    // pad with a few bytes so it doesn't fail on truncation before the range check
+                                                            // pad with a few bytes so it doesn't fail on truncation before the range check
     n_huge.extend_from_slice(&[0u8; 8]);
     let mut pos = 0usize;
     assert!(Model::deserialize(&n_huge, &mut pos).is_err(), "n > MAX+1 model accepted");
@@ -810,9 +777,7 @@ fn deserialize_rejects_all_malformed_models() {
     let mut trunc = Vec::new();
     trunc.extend_from_slice(&3u32.to_le_bytes());
     let mut pos = 0usize;
-    let r = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-        Model::deserialize(&trunc, &mut pos)
-    }));
+    let r = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| Model::deserialize(&trunc, &mut pos)));
     assert!(r.is_ok(), "deserialize panicked on a truncated model");
     assert!(r.unwrap().is_err(), "truncated model accepted");
 
@@ -839,9 +804,7 @@ fn deserialize_rejects_random_corrupt_models_without_panic() {
             bad[i] ^= (splitmix64(&mut s) & 0xFF) as u8;
         }
         let mut pos = 0usize;
-        let r = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-            Model::deserialize(&bad, &mut pos)
-        }));
+        let r = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| Model::deserialize(&bad, &mut pos)));
         assert!(r.is_ok(), "deserialize panicked on corrupt model bytes: {bad:?}");
         if let Ok(Ok(m)) = r {
             // If it accepted, the rebuilt CDF MUST satisfy every moat invariant

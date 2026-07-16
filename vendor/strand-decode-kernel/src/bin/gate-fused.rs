@@ -1,11 +1,8 @@
-
 use std::time::Instant;
 
 use rayon::prelude::*;
 use strand_decode_kernel::block_walk::gate_proto::{machine_stamp, synth_encoded};
-use strand_decode_kernel::fused::{
-    fused_gemm, fused_gemm_scalar_mac, fused_gemm_with_q12, fused_matvec,
-};
+use strand_decode_kernel::fused::{fused_gemm, fused_gemm_scalar_mac, fused_gemm_with_q12, fused_matvec};
 use strand_decode_kernel::gemv_par::decode_q12_par;
 use strand_quant::encode::EncodedTensor;
 use strand_quant::TrellisConfig;
@@ -45,7 +42,6 @@ fn baseline_gemm(enc: &EncodedTensor, cfg: &TrellisConfig, out_f: usize, in_f: u
 }
 
 fn bench<F: FnMut() -> Vec<f32>>(label: &str, reps: usize, mut f: F) -> f64 {
-    
     let mut best = f64::INFINITY;
     for _ in 0..reps {
         let t = Instant::now();
@@ -62,13 +58,7 @@ fn bench<F: FnMut() -> Vec<f32>>(label: &str, reps: usize, mut f: F) -> f64 {
 
 fn run_point(name: &str, cfg: &TrellisConfig, out_f: usize, in_f: usize) {
     let total = out_f * in_f;
-    println!(
-        "\n== {name}: k={} L={} ({} states), {out_f}x{in_f} = {:.1}M weights ==",
-        cfg.k_bits,
-        cfg.l_bits,
-        cfg.num_states(),
-        total as f64 / 1e6
-    );
+    println!("\n== {name}: k={} L={} ({} states), {out_f}x{in_f} = {:.1}M weights ==", cfg.k_bits, cfg.l_bits, cfg.num_states(), total as f64 / 1e6);
     let enc = synth_encoded(total, cfg.k_bits, 256);
     let x: Vec<f32> = (0..in_f).map(|i| (i as f32 * 0.07).cos()).collect();
     let max_b = 64usize;
@@ -81,11 +71,7 @@ fn run_point(name: &str, cfg: &TrellisConfig, out_f: usize, in_f: usize) {
     let y_fused = fused_matvec(&enc, cfg, None, out_f, in_f, &x);
     assert_eq!(y_base.len(), y_fused.len());
     for o in 0..out_f {
-        assert_eq!(
-            y_fused[o].to_bits(),
-            y_base[o].to_bits(),
-            "fused_matvec y[{o}] != baseline (bit-equal contract)"
-        );
+        assert_eq!(y_fused[o].to_bits(), y_base[o].to_bits(), "fused_matvec y[{o}] != baseline (bit-equal contract)");
     }
     let (_, q12) = fused_gemm_with_q12(&enc, cfg, None, out_f, in_f, &x, 1);
     let q_ref = decode_q12_par(&enc, cfg);
@@ -101,24 +87,16 @@ fn run_point(name: &str, cfg: &TrellisConfig, out_f: usize, in_f: usize) {
         for b in 0..4 {
             let y1 = fused_matvec(&enc, cfg, None, out_f, in_f, &xs[b * in_f..(b + 1) * in_f]);
             for o in 0..out_f {
-                assert_eq!(
-                    yb4[o * 4 + b].to_bits(),
-                    y1[o].to_bits(),
-                    "fused_gemm B=4 col {b} row {o} != fused_matvec"
-                );
+                assert_eq!(yb4[o * 4 + b].to_bits(), y1[o].to_bits(), "fused_gemm B=4 col {b} row {o} != fused_matvec");
             }
         }
-        
+
         for &b in &[4usize, 16, 64] {
             let xb = &xs[..b * in_f];
             let y_neon = fused_gemm(&enc, cfg, None, out_f, in_f, xb, b);
             let y_scal = fused_gemm_scalar_mac(&enc, cfg, None, out_f, in_f, xb, b);
             for (i, (a, s)) in y_neon.iter().zip(y_scal.iter()).enumerate() {
-                assert_eq!(
-                    a.to_bits(),
-                    s.to_bits(),
-                    "G2b NEON MAC != scalar MAC at flat index {i} (B={b})"
-                );
+                assert_eq!(a.to_bits(), s.to_bits(), "G2b NEON MAC != scalar MAC at flat index {i} (B={b})");
             }
         }
         println!(
@@ -140,38 +118,21 @@ fn run_point(name: &str, cfg: &TrellisConfig, out_f: usize, in_f: usize) {
         println!("  {:<34} {:>8.1} ms  ({:.2} Gw/s decode)", "decode_q12_par (decode only)", best * 1e3, gw(best));
         best
     };
-    let t_base = bench("baseline decode_q12_par + matmul", 3, || {
-        baseline_matvec(&enc, cfg, out_f, in_f, &x)
-    });
+    let t_base = bench("baseline decode_q12_par + matmul", 3, || baseline_matvec(&enc, cfg, out_f, in_f, &x));
     let t_fused = bench("fused_matvec (B=1)", 3, || fused_matvec(&enc, cfg, None, out_f, in_f, &x));
     let mut batch_lines: Vec<(usize, f64, f64, f64)> = Vec::new();
     for &b in &[4usize, 16, 64] {
         let xb = &xs[..b * in_f];
-        let t_bb = bench(&format!("baseline decode + matmul (B={b})"), 3, || {
-            baseline_gemm(&enc, cfg, out_f, in_f, xb, b)
-        });
-        let t_sc = bench(&format!("fused_gemm scalar MAC (B={b})"), 3, || {
-            fused_gemm_scalar_mac(&enc, cfg, None, out_f, in_f, xb, b)
-        });
-        let t_fb = bench(&format!("fused_gemm NEON MAC  (B={b})"), 3, || {
-            fused_gemm(&enc, cfg, None, out_f, in_f, xb, b)
-        });
+        let t_bb = bench(&format!("baseline decode + matmul (B={b})"), 3, || baseline_gemm(&enc, cfg, out_f, in_f, xb, b));
+        let t_sc = bench(&format!("fused_gemm scalar MAC (B={b})"), 3, || fused_gemm_scalar_mac(&enc, cfg, None, out_f, in_f, xb, b));
+        let t_fb = bench(&format!("fused_gemm NEON MAC  (B={b})"), 3, || fused_gemm(&enc, cfg, None, out_f, in_f, xb, b));
         batch_lines.push((b, t_bb, t_sc, t_fb));
     }
 
     let mb_saved = (total * 4) as f64 / 1e6;
     println!("\n  -- {name} verdict --");
-    println!(
-        "  Q12 traffic killed: {mb_saved:.0} MB written + {mb_saved:.0} MB re-read per matvec never happens in fused"
-    );
-    println!(
-        "  B=1: fused {:.1} ms vs baseline {:.1} ms = {:.2}x  ({:.2} Gw/s effective; decode-only ceiling {:.2} Gw/s)",
-        t_fused * 1e3,
-        t_base * 1e3,
-        t_base / t_fused,
-        gw(t_fused),
-        gw(t_dec)
-    );
+    println!("  Q12 traffic killed: {mb_saved:.0} MB written + {mb_saved:.0} MB re-read per matvec never happens in fused");
+    println!("  B=1: fused {:.1} ms vs baseline {:.1} ms = {:.2}x  ({:.2} Gw/s effective; decode-only ceiling {:.2} Gw/s)", t_fused * 1e3, t_base * 1e3, t_base / t_fused, gw(t_fused), gw(t_dec));
     for (b, t_bb, t_sc, t_fb) in &batch_lines {
         println!(
             "  B={b:<2}: NEON {:.1} ms vs scalar-MAC {:.1} ms ({:.2}x G2b) vs baseline {:.1} ms ({:.2}x) | per-column {:.2} ms | MAC rate {:.2} GMAC/s",
@@ -187,11 +148,7 @@ fn run_point(name: &str, cfg: &TrellisConfig, out_f: usize, in_f: usize) {
 }
 
 fn strand_delta_alive() -> bool {
-    std::process::Command::new("pgrep")
-        .args(["-f", "strand-delta"])
-        .output()
-        .map(|o| o.status.success())
-        .unwrap_or(false)
+    std::process::Command::new("pgrep").args(["-f", "strand-delta"]).output().map(|o| o.status.success()).unwrap_or(false)
 }
 
 fn main() {

@@ -5,7 +5,7 @@ import {
   checkForUpdate,
   UPDATE_TARGETS,
   type ReleaseInput,
-} from "./updater";
+} from "./policies";
 
 const base: ReleaseInput = {
   version: "0.2.0",

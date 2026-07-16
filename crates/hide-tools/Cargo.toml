@@ -8,6 +8,9 @@ repository.workspace = true
 authors.workspace = true
 description = "Builtin tool implementations and protocol bridges for HIDE"
 
+[lib]
+path = "lib.rs"
+
 [dependencies]
 hide-core = { path = "../hide-core" }
 hide-security = { path = "../hide-security" }

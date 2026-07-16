@@ -9,14 +9,13 @@ const EditorArea = lazy(() => import("./shell/EditorArea").then((m) => ({ defaul
 import { ChatPane } from "./shell/ChatPane";
 import { FloatingChat } from "./shell/FloatingChat";
 import { Toolbar } from "./shell/Toolbar";
-import { StatusBar } from "./shell/StatusBar";
+import { StatusBar } from "./shell/components";
 import { Settings } from "./surfaces/Settings";
 import { CommandPalette, Gate, type Command } from "./ui";
-import { useFocusTrap } from "./shell/a11y";
-import { useAutoCompact } from "./shell/autocompact";
-import { MOCK_DIFF, parseDiff, type DiffDoc } from "./surfaces/ide/types";
-import { Home } from "./surfaces/home/Home";
-import type { PermMode } from "./surfaces/home/HomeComposer";
+import { useAutoCompact, useFocusTrap } from "./shell/policies";
+import { MOCK_DIFF, parseDiff, type DiffDoc } from "./surfaces/types";
+import { Home } from "./surfaces/Home";
+import type { PermMode } from "./surfaces/HomeComposer";
 
 // The two chambers: Chat (Claude Code style, the front door) and Code (the IDE, Cursor style).
 type Mode = "chat" | "code";

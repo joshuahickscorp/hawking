@@ -1,4 +1,3 @@
-
 #[cfg(not(target_os = "macos"))]
 fn main() {
     eprintln!("gate-tropical: Metal-only gate (macOS / Apple Silicon). Nothing to do here.");
@@ -14,9 +13,7 @@ mod mac {
     use std::time::Instant;
 
     use strand_quant::codebook::codebook_lut;
-    use strand_quant::encode::{
-        encode_tensor_with_lut_metric, encode_tensor_with_lut_metric_search, EncodeOpts,
-    };
+    use strand_quant::encode::{encode_tensor_with_lut_metric, encode_tensor_with_lut_metric_search, EncodeOpts};
     use strand_quant::gate_utils::{normal_vec, outlier_shaped};
     use strand_quant::metal_encode::TropicalEncoder;
     use strand_quant::TrellisConfig;
@@ -29,7 +26,6 @@ mod mac {
     ];
 
     fn for_each_case(mut check: impl FnMut(String, &[f32], &TrellisConfig, &EncodeOpts)) {
-        
         let mut seed = 0x7209_1CA1u64;
         for k in [1u32, 2, 3, 4] {
             for l in [4u32, 5, 6, 7] {
@@ -64,10 +60,7 @@ mod mac {
             let cfg = TrellisConfig::new(l, k, 256);
             let w = outlier_shaped(4096, 0xBADC_AB1E + l as u64);
             for (oname, opts) in &OPT_COMBOS[..2] {
-                check(
-                    format!("k={k} L={l} outlier-shaped n=4096 opts={oname}"),
-                    &w, &cfg, opts,
-                );
+                check(format!("k={k} L={l} outlier-shaped n=4096 opts={oname}"), &w, &cfg, opts);
             }
         }
 
@@ -79,15 +72,10 @@ mod mac {
                 check(format!("k={k} L={l} tie-cyclic n=2048 opts={oname}"), &w, &cfg, opts);
             }
             let base = normal_vec(2048, 0x71E5_0000 + (k as u64) << 16 | l as u64);
-            let enc = encode_tensor_with_lut_metric(
-                &base, &cfg, &OPT_COMBOS[0].1, codebook_lut(cfg.l_bits), true,
-            );
+            let enc = encode_tensor_with_lut_metric(&base, &cfg, &OPT_COMBOS[0].1, codebook_lut(cfg.l_bits), true);
             let snapped = strand_quant::decode::decode_tensor(&enc, &cfg);
             for (oname, opts) in &OPT_COMBOS[..2] {
-                check(
-                    format!("k={k} L={l} tie-snapped n=2048 opts={oname}"),
-                    &snapped, &cfg, opts,
-                );
+                check(format!("k={k} L={l} tie-snapped n=2048 opts={oname}"), &snapped, &cfg, opts);
             }
         }
 
@@ -114,20 +102,9 @@ mod mac {
         let mut fails = 0usize;
         let mut skipped = 0usize;
         for_each_case(|label, w, cfg, opts| {
-            
             let lanes: [(&str, Option<_>, _); 2] = [
-                (
-                    "full-gpu",
-                    gpu.encode_tensor(w, cfg, opts),
-                    encode_tensor_with_lut_metric_search(
-                        w, cfg, opts, codebook_lut(cfg.l_bits), true, true,
-                    ),
-                ),
-                (
-                    "prep-cpu",
-                    gpu.encode_tensor_prep_cpu(w, cfg, opts),
-                    encode_tensor_with_lut_metric(w, cfg, opts, codebook_lut(cfg.l_bits), true),
-                ),
+                ("full-gpu", gpu.encode_tensor(w, cfg, opts), encode_tensor_with_lut_metric_search(w, cfg, opts, codebook_lut(cfg.l_bits), true, true)),
+                ("prep-cpu", gpu.encode_tensor_prep_cpu(w, cfg, opts), encode_tensor_with_lut_metric(w, cfg, opts, codebook_lut(cfg.l_bits), true)),
             ];
             for (lane, gpu_enc, cpu_enc) in lanes {
                 let Some(gpu_enc) = gpu_enc else {
@@ -138,20 +115,10 @@ mod mac {
                 cases += 1;
                 if gpu_enc != cpu_enc {
                     fails += 1;
-                    
-                    let bit_diff = gpu_enc
-                        .bits
-                        .iter()
-                        .zip(cpu_enc.bits.iter())
-                        .position(|(a, b)| a != b);
-                    let blk_diff = gpu_enc
-                        .blocks
-                        .iter()
-                        .zip(cpu_enc.blocks.iter())
-                        .position(|(a, b)| a != b);
-                    println!(
-                        "  FAIL {label} [{lane}]  first-bit-byte-diff={bit_diff:?} first-block-diff={blk_diff:?}"
-                    );
+
+                    let bit_diff = gpu_enc.bits.iter().zip(cpu_enc.bits.iter()).position(|(a, b)| a != b);
+                    let blk_diff = gpu_enc.blocks.iter().zip(cpu_enc.blocks.iter()).position(|(a, b)| a != b);
+                    println!("  FAIL {label} [{lane}]  first-bit-byte-diff={bit_diff:?} first-block-diff={blk_diff:?}");
                 }
             }
         });
@@ -175,11 +142,7 @@ mod mac {
             ("git", &["git", "rev-parse", "--short", "HEAD"]),
         ];
         for (label, cmd) in cmds {
-            let out = std::process::Command::new(cmd[0])
-                .args(&cmd[1..])
-                .output()
-                .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string())
-                .unwrap_or_else(|_| "<unavailable>".into());
+            let out = std::process::Command::new(cmd[0]).args(&cmd[1..]).output().map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string()).unwrap_or_else(|_| "<unavailable>".into());
             println!("  {label}: {out}");
         }
         println!("  build: release={}", !cfg!(debug_assertions));
@@ -199,9 +162,7 @@ mod mac {
                 let cfg = *cfg;
                 hs.push(s.spawn(move || {
                     let w = normal_vec(n_per_thread, seed + t as u64);
-                    let e = encode_tensor_with_lut_metric(
-                        &w, &cfg, &EncodeOpts::default(), codebook_lut(cfg.l_bits), f32_metric,
-                    );
+                    let e = encode_tensor_with_lut_metric(&w, &cfg, &EncodeOpts::default(), codebook_lut(cfg.l_bits), f32_metric);
                     e.bits.len()
                 }));
             }
@@ -209,11 +170,7 @@ mod mac {
         });
         let dt = t0.elapsed().as_secs_f64();
         let mws = (n_per_thread * nt) as f64 / dt / 1e6;
-        println!(
-            "    cpu {}T {:<22} {mws:9.3} Mw/s aggregate  ({dt:.2}s, sink={sink})",
-            nt,
-            if f32_metric { "(f32 metric)" } else { "(canon f64)" },
-        );
+        println!("    cpu {}T {:<22} {mws:9.3} Mw/s aggregate  ({dt:.2}s, sink={sink})", nt, if f32_metric { "(f32 metric)" } else { "(canon f64)" },);
         mws
     }
 
@@ -242,14 +199,10 @@ mod mac {
             for full_lane in [true, false] {
                 let label = if full_lane { "full-gpu (f32 search)" } else { "prep-cpu (f64 search)" };
                 let run = |ww: &[f32]| -> usize {
-                    let e = if full_lane {
-                        gpu.encode_tensor(ww, &cfg, &opts)
-                    } else {
-                        gpu.encode_tensor_prep_cpu(ww, &cfg, &opts)
-                    };
+                    let e = if full_lane { gpu.encode_tensor(ww, &cfg, &opts) } else { gpu.encode_tensor_prep_cpu(ww, &cfg, &opts) };
                     e.map(|e| e.bits.len()).unwrap_or(0)
                 };
-                let _ = run(&w[..(1 << 16)]); 
+                let _ = run(&w[..(1 << 16)]);
                 let t0 = Instant::now();
                 let mut sink = 0usize;
                 for _ in 0..iters {
@@ -260,9 +213,7 @@ mod mac {
                 if full_lane {
                     gpu_full_mws = mws;
                 }
-                println!(
-                    "    gpu {label:<25} {mws:9.3} Mw/s            ({dt:.2}s, N={n_gpu}, sink={sink})"
-                );
+                println!("    gpu {label:<25} {mws:9.3} Mw/s            ({dt:.2}s, N={n_gpu}, sink={sink})");
             }
 
             let w1 = normal_vec(n_cpu1, 0xC0DE_0000 + l as u64);
@@ -270,11 +221,7 @@ mod mac {
                 let t0 = Instant::now();
                 let mut sink = 0usize;
                 for _ in 0..iters {
-                    sink += encode_tensor_with_lut_metric(
-                        &w1, &cfg, &opts, codebook_lut(cfg.l_bits), m,
-                    )
-                    .bits
-                    .len();
+                    sink += encode_tensor_with_lut_metric(&w1, &cfg, &opts, codebook_lut(cfg.l_bits), m).bits.len();
                 }
                 let dt = t0.elapsed().as_secs_f64();
                 let mws = (n_cpu1 as f64 * iters as f64) / dt / 1e6;
@@ -286,9 +233,7 @@ mod mac {
             let vs_f32 = gpu_full_mws / mt_f32;
             let vs_f64 = gpu_full_mws / mt_f64;
             let verdict = if vs_f64 >= 2.0 { "PASS (>= 2x bar)" } else { "BELOW the 2x kill bar" };
-            println!(
-                "    -> full-gpu = {vs_f32:.2}x all-cores-f32, {vs_f64:.2}x all-cores-canon-f64   [{verdict}]\n"
-            );
+            println!("    -> full-gpu = {vs_f32:.2}x all-cores-f32, {vs_f64:.2}x all-cores-canon-f64   [{verdict}]\n");
         }
     }
 
@@ -305,19 +250,12 @@ mod mac {
                 let s = gpu.encode_tensor(&w, &cfg, opts).map(|e| e.bits.len()).unwrap_or(0);
                 let g = n_gpu as f64 / t0.elapsed().as_secs_f64() / 1e6;
                 let t0 = Instant::now();
-                let sp = gpu
-                    .encode_tensor_prep_cpu(&w, &cfg, opts)
-                    .map(|e| e.bits.len())
-                    .unwrap_or(0);
+                let sp = gpu.encode_tensor_prep_cpu(&w, &cfg, opts).map(|e| e.bits.len()).unwrap_or(0);
                 let gp = n_gpu as f64 / t0.elapsed().as_secs_f64() / 1e6;
                 let t0 = Instant::now();
-                let s2 = encode_tensor_with_lut_metric(&w1, &cfg, opts, codebook_lut(l), true)
-                    .bits
-                    .len();
+                let s2 = encode_tensor_with_lut_metric(&w1, &cfg, opts, codebook_lut(l), true).bits.len();
                 let c1 = n_cpu as f64 / t0.elapsed().as_secs_f64() / 1e6;
-                println!(
-                    "  k={k} L={l} {oname:<9} full-gpu {g:9.3} Mw/s   prep-cpu {gp:9.3} Mw/s   cpu-1T-f32 {c1:7.3} Mw/s   (sinks {s}/{sp}/{s2})"
-                );
+                println!("  k={k} L={l} {oname:<9} full-gpu {g:9.3} Mw/s   prep-cpu {gp:9.3} Mw/s   cpu-1T-f32 {c1:7.3} Mw/s   (sinks {s}/{sp}/{s2})");
             }
         }
         println!();
@@ -334,7 +272,6 @@ mod mac {
             ok = run_identity(&gpu);
         }
         if !ok {
-            
             std::process::exit(1);
         }
         if mode == "bench" || mode == "all" {

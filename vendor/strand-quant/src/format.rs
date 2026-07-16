@@ -152,14 +152,7 @@ pub fn read_strand(buf: &[u8]) -> Result<Vec<OwnedTensor>, String> {
             let sub_scales = r.take(sl)?.to_vec();
             let ml = r.u32()? as usize;
             let mins = r.take(ml)?.to_vec();
-            blocks.push(BlockMeta {
-                scale_q,
-                sub_scales,
-                min_base_q,
-                mins,
-                init_state,
-                n: nn,
-            });
+            blocks.push(BlockMeta { scale_q, sub_scales, min_base_q, mins, init_state, n: nn });
         }
         out.push(OwnedTensor {
             name,
@@ -168,14 +161,7 @@ pub fn read_strand(buf: &[u8]) -> Result<Vec<OwnedTensor>, String> {
             l_bits,
             k_bits,
             vec_dim,
-            enc: EncodedTensor {
-                bits,
-                blocks,
-                total,
-                has_rht_seed: f & 1 != 0,
-                tail_biting: f & 2 != 0,
-                has_affine_min: f & 4 != 0,
-            },
+            enc: EncodedTensor { bits, blocks, total, has_rht_seed: f & 1 != 0, tail_biting: f & 2 != 0, has_affine_min: f & 4 != 0 },
         });
     }
     Ok(out)
@@ -284,11 +270,7 @@ fn in_features_of(shape: &[u64]) -> Option<u64> {
     }
 }
 
-pub fn write_strand_v2(
-    tensors: &[PackedTensorV2],
-    source_sha256: [u8; 32],
-    strict: bool,
-) -> Result<Vec<u8>, String> {
+pub fn write_strand_v2(tensors: &[PackedTensorV2], source_sha256: [u8; 32], strict: bool) -> Result<Vec<u8>, String> {
     write_strand_v2_inner(tensors, source_sha256, strict, false, &[])
 }
 
@@ -300,13 +282,7 @@ pub fn write_strand_v2(
 /// indexes tensors positionally; a short/empty slice means "rows" (the default,
 /// byte-identical to the plain writers). `scaleq_in_sdsq` mirrors
 /// [`write_strand_v2_packed`].
-pub fn write_strand_v2_rht(
-    tensors: &[PackedTensorV2],
-    source_sha256: [u8; 32],
-    strict: bool,
-    scaleq_in_sdsq: bool,
-    rht_cols: &[bool],
-) -> Result<Vec<u8>, String> {
+pub fn write_strand_v2_rht(tensors: &[PackedTensorV2], source_sha256: [u8; 32], strict: bool, scaleq_in_sdsq: bool, rht_cols: &[bool]) -> Result<Vec<u8>, String> {
     write_strand_v2_inner(tensors, source_sha256, strict, scaleq_in_sdsq, rht_cols)
 }
 
@@ -316,21 +292,11 @@ pub fn write_strand_v2_rht(
 /// carrying every block's `scale_q` in the same tensor-then-block order — without
 /// it the archive's `scale_q` is unrecoverable, so the loader hard-errors. This is
 /// the ship writer that realizes the SDSQ bpw drop.
-pub fn write_strand_v2_packed(
-    tensors: &[PackedTensorV2],
-    source_sha256: [u8; 32],
-    strict: bool,
-) -> Result<Vec<u8>, String> {
+pub fn write_strand_v2_packed(tensors: &[PackedTensorV2], source_sha256: [u8; 32], strict: bool) -> Result<Vec<u8>, String> {
     write_strand_v2_inner(tensors, source_sha256, strict, true, &[])
 }
 
-fn write_strand_v2_inner(
-    tensors: &[PackedTensorV2],
-    source_sha256: [u8; 32],
-    strict: bool,
-    scaleq_in_sdsq: bool,
-    rht_cols: &[bool],
-) -> Result<Vec<u8>, String> {
+fn write_strand_v2_inner(tensors: &[PackedTensorV2], source_sha256: [u8; 32], strict: bool, scaleq_in_sdsq: bool, rht_cols: &[bool]) -> Result<Vec<u8>, String> {
     let mut all_strict = true;
     for t in tensors {
         let bl = t.base.enc_block_len(t.block_len);
@@ -415,13 +381,7 @@ fn write_strand_v2_inner(
         o.extend_from_slice(&0u64.to_le_bytes());
         let sideinfo_bytes_pos = o.len();
         o.extend_from_slice(&0u64.to_le_bytes());
-        patches.push(Patch {
-            table_off_pos,
-            payload_off_pos,
-            payload_bytes_pos,
-            sideinfo_off_pos,
-            sideinfo_bytes_pos,
-        });
+        patches.push(Patch { table_off_pos, payload_off_pos, payload_bytes_pos, sideinfo_off_pos, sideinfo_bytes_pos });
     }
 
     let header_bytes = o.len() as u32;
@@ -476,16 +436,11 @@ fn write_strand_v2_inner(
             (0u64, 0u64)
         };
 
-        o[patch.table_off_pos..patch.table_off_pos + 8]
-            .copy_from_slice(&table_offset.to_le_bytes());
-        o[patch.payload_off_pos..patch.payload_off_pos + 8]
-            .copy_from_slice(&payload_offset.to_le_bytes());
-        o[patch.payload_bytes_pos..patch.payload_bytes_pos + 8]
-            .copy_from_slice(&payload_bytes.to_le_bytes());
-        o[patch.sideinfo_off_pos..patch.sideinfo_off_pos + 8]
-            .copy_from_slice(&sideinfo_offset.to_le_bytes());
-        o[patch.sideinfo_bytes_pos..patch.sideinfo_bytes_pos + 8]
-            .copy_from_slice(&sideinfo_bytes.to_le_bytes());
+        o[patch.table_off_pos..patch.table_off_pos + 8].copy_from_slice(&table_offset.to_le_bytes());
+        o[patch.payload_off_pos..patch.payload_off_pos + 8].copy_from_slice(&payload_offset.to_le_bytes());
+        o[patch.payload_bytes_pos..patch.payload_bytes_pos + 8].copy_from_slice(&payload_bytes.to_le_bytes());
+        o[patch.sideinfo_off_pos..patch.sideinfo_off_pos + 8].copy_from_slice(&sideinfo_offset.to_le_bytes());
+        o[patch.sideinfo_bytes_pos..patch.sideinfo_bytes_pos + 8].copy_from_slice(&sideinfo_bytes.to_le_bytes());
     }
 
     o[header_bytes_pos..header_bytes_pos + 4].copy_from_slice(&header_bytes.to_le_bytes());
@@ -535,21 +490,9 @@ impl StrandV2Header {
 
 pub fn read_strand_v2_header(buf: &[u8]) -> Result<StrandV2Header, String> {
     let flen = buf.len();
-    let rd_u32 = |off: usize| -> Result<u32, String> {
-        buf.get(off..off + 4)
-            .map(|s| u32::from_le_bytes(s.try_into().unwrap()))
-            .ok_or_else(|| "strand v2: EOF reading u32".to_string())
-    };
-    let rd_u64 = |off: usize| -> Result<u64, String> {
-        buf.get(off..off + 8)
-            .map(|s| u64::from_le_bytes(s.try_into().unwrap()))
-            .ok_or_else(|| "strand v2: EOF reading u64".to_string())
-    };
-    let rd_i32 = |off: usize| -> Result<i32, String> {
-        buf.get(off..off + 4)
-            .map(|s| i32::from_le_bytes(s.try_into().unwrap()))
-            .ok_or_else(|| "strand v2: EOF reading i32".to_string())
-    };
+    let rd_u32 = |off: usize| -> Result<u32, String> { buf.get(off..off + 4).map(|s| u32::from_le_bytes(s.try_into().unwrap())).ok_or_else(|| "strand v2: EOF reading u32".to_string()) };
+    let rd_u64 = |off: usize| -> Result<u64, String> { buf.get(off..off + 8).map(|s| u64::from_le_bytes(s.try_into().unwrap())).ok_or_else(|| "strand v2: EOF reading u64".to_string()) };
+    let rd_i32 = |off: usize| -> Result<i32, String> { buf.get(off..off + 4).map(|s| i32::from_le_bytes(s.try_into().unwrap())).ok_or_else(|| "strand v2: EOF reading i32".to_string()) };
 
     if flen < 56 {
         return Err("strand v2: file shorter than header".into());
@@ -567,22 +510,14 @@ pub fn read_strand_v2_header(buf: &[u8]) -> Result<StrandV2Header, String> {
     let rec_stride = BlockOffsetRecord::stride_for(flags);
     let scaleq_in_sdsq = flags & flags_v2::SCALEQ_IN_SDSQ != 0;
     let mut source_sha256 = [0u8; 32];
-    source_sha256.copy_from_slice(
-        buf.get(20..52)
-            .ok_or("strand v2: EOF reading source_sha256")?,
-    );
+    source_sha256.copy_from_slice(buf.get(20..52).ok_or("strand v2: EOF reading source_sha256")?);
 
     let mut p = 56usize;
     let mut tensors = Vec::with_capacity(n_tensors);
     for _ in 0..n_tensors {
         let name_len = rd_u32(p)? as usize;
         p += 4;
-        let name = String::from_utf8(
-            buf.get(p..p + name_len)
-                .ok_or("strand v2: EOF reading name")?
-                .to_vec(),
-        )
-        .map_err(|e| e.to_string())?;
+        let name = String::from_utf8(buf.get(p..p + name_len).ok_or("strand v2: EOF reading name")?.to_vec()).map_err(|e| e.to_string())?;
         p += name_len;
         let ndim = rd_u32(p)? as usize;
         p += 4;
@@ -617,19 +552,13 @@ pub fn read_strand_v2_header(buf: &[u8]) -> Result<StrandV2Header, String> {
         p += 8;
 
         if table_offset % PAGE != 0 {
-            return Err(format!(
-                "strand v2: table_offset {table_offset} not page-aligned"
-            ));
+            return Err(format!("strand v2: table_offset {table_offset} not page-aligned"));
         }
         if payload_offset % PAGE != 0 {
-            return Err(format!(
-                "strand v2: payload_offset {payload_offset} not page-aligned"
-            ));
+            return Err(format!("strand v2: payload_offset {payload_offset} not page-aligned"));
         }
         if sideinfo_offset != 0 && sideinfo_offset % PAGE != 0 {
-            return Err(format!(
-                "strand v2: sideinfo_offset {sideinfo_offset} not page-aligned"
-            ));
+            return Err(format!("strand v2: sideinfo_offset {sideinfo_offset} not page-aligned"));
         }
         if table_offset + n_blocks * rec_stride > payload_offset {
             return Err("strand v2: offset table overruns payload".into());
@@ -646,16 +575,8 @@ pub fn read_strand_v2_header(buf: &[u8]) -> Result<StrandV2Header, String> {
             let base = table_offset + b * rec_stride;
             // When scale_q lives in SDSQ the record is 12 B (no inline scale_q);
             // leave a 0 placeholder for `sideinfo_wire::apply_sdsq_to_header`.
-            let scale_q = if scaleq_in_sdsq {
-                0
-            } else {
-                rd_i32(base + 12)?
-            };
-            table.push(BlockOffsetRecord {
-                bit_offset: rd_u64(base)?,
-                init_state: rd_u32(base + 8)?,
-                scale_q,
-            });
+            let scale_q = if scaleq_in_sdsq { 0 } else { rd_i32(base + 12)? };
+            table.push(BlockOffsetRecord { bit_offset: rd_u64(base)?, init_state: rd_u32(base + 8)?, scale_q });
         }
 
         tensors.push(TensorHeaderV2 {
@@ -680,30 +601,14 @@ pub fn read_strand_v2_header(buf: &[u8]) -> Result<StrandV2Header, String> {
             table,
         });
     }
-    Ok(StrandV2Header {
-        flags,
-        source_sha256,
-        tensors,
-    })
+    Ok(StrandV2Header { flags, source_sha256, tensors })
 }
 
 pub fn read_strand_v2(buf: &[u8]) -> Result<Vec<OwnedTensorV2>, String> {
     let flen = buf.len();
-    let rd_u32 = |off: usize| -> Result<u32, String> {
-        buf.get(off..off + 4)
-            .map(|s| u32::from_le_bytes(s.try_into().unwrap()))
-            .ok_or_else(|| "strand v2: EOF reading u32".to_string())
-    };
-    let rd_u64 = |off: usize| -> Result<u64, String> {
-        buf.get(off..off + 8)
-            .map(|s| u64::from_le_bytes(s.try_into().unwrap()))
-            .ok_or_else(|| "strand v2: EOF reading u64".to_string())
-    };
-    let rd_i32 = |off: usize| -> Result<i32, String> {
-        buf.get(off..off + 4)
-            .map(|s| i32::from_le_bytes(s.try_into().unwrap()))
-            .ok_or_else(|| "strand v2: EOF reading i32".to_string())
-    };
+    let rd_u32 = |off: usize| -> Result<u32, String> { buf.get(off..off + 4).map(|s| u32::from_le_bytes(s.try_into().unwrap())).ok_or_else(|| "strand v2: EOF reading u32".to_string()) };
+    let rd_u64 = |off: usize| -> Result<u64, String> { buf.get(off..off + 8).map(|s| u64::from_le_bytes(s.try_into().unwrap())).ok_or_else(|| "strand v2: EOF reading u64".to_string()) };
+    let rd_i32 = |off: usize| -> Result<i32, String> { buf.get(off..off + 4).map(|s| i32::from_le_bytes(s.try_into().unwrap())).ok_or_else(|| "strand v2: EOF reading i32".to_string()) };
 
     if buf.len() < 56 {
         return Err("strand v2: file shorter than header".into());
@@ -726,12 +631,7 @@ pub fn read_strand_v2(buf: &[u8]) -> Result<Vec<OwnedTensorV2>, String> {
     for _ in 0..n_tensors {
         let name_len = rd_u32(p)? as usize;
         p += 4;
-        let name = String::from_utf8(
-            buf.get(p..p + name_len)
-                .ok_or_else(|| "strand v2: EOF reading name".to_string())?
-                .to_vec(),
-        )
-        .map_err(|e| e.to_string())?;
+        let name = String::from_utf8(buf.get(p..p + name_len).ok_or_else(|| "strand v2: EOF reading name".to_string())?.to_vec()).map_err(|e| e.to_string())?;
         p += name_len;
         let ndim = rd_u32(p)? as usize;
         p += 4;
@@ -768,18 +668,13 @@ pub fn read_strand_v2(buf: &[u8]) -> Result<Vec<OwnedTensorV2>, String> {
         let sideinfo_bytes = rd_u64(p)? as usize;
         p += 8;
 
-        for (label, off) in [
-            ("table_offset", table_offset),
-            ("payload_offset", payload_offset),
-        ] {
+        for (label, off) in [("table_offset", table_offset), ("payload_offset", payload_offset)] {
             if off % PAGE != 0 {
                 return Err(format!("strand v2: {label} {off} not page-aligned"));
             }
         }
         if sideinfo_offset != 0 && sideinfo_offset % PAGE != 0 {
-            return Err(format!(
-                "strand v2: sideinfo_offset {sideinfo_offset} not page-aligned"
-            ));
+            return Err(format!("strand v2: sideinfo_offset {sideinfo_offset} not page-aligned"));
         }
         if table_offset + n_blocks * rec_stride > payload_offset {
             return Err("strand v2: offset table overruns payload".into());
@@ -800,11 +695,7 @@ pub fn read_strand_v2(buf: &[u8]) -> Result<Vec<OwnedTensorV2>, String> {
         let mins_half_base = if has_affine_min && sideinfo_offset != 0 {
             let mut ss_end = sideinfo_offset;
             for b in 0..n_blocks {
-                let nb = if b + 1 < n_blocks {
-                    block_len as usize
-                } else {
-                    total - (n_blocks - 1) * block_len as usize
-                };
+                let nb = if b + 1 < n_blocks { block_len as usize } else { total - (n_blocks - 1) * block_len as usize };
                 let n_sub = nb.div_ceil(SUB_BLOCK);
                 ss_end += (6 * n_sub).div_ceil(8);
             }
@@ -825,30 +716,15 @@ pub fn read_strand_v2(buf: &[u8]) -> Result<Vec<OwnedTensorV2>, String> {
             let init_state = rd_u32(rec_off + 8)?;
             // 12-byte packed record: scale_q lives in SDSQ; 0 placeholder until
             // `sideinfo_wire::apply_sdsq_to_encoded` overwrites it.
-            let scale_q = if scaleq_in_sdsq {
-                0
-            } else {
-                rd_i32(rec_off + 12)?
-            };
-            table.push(BlockOffsetRecord {
-                bit_offset,
-                init_state,
-                scale_q,
-            });
+            let scale_q = if scaleq_in_sdsq { 0 } else { rd_i32(rec_off + 12)? };
+            table.push(BlockOffsetRecord { bit_offset, init_state, scale_q });
 
-            let nb = if b + 1 < n_blocks {
-                block_len as usize
-            } else {
-                total - (n_blocks - 1) * block_len as usize
-            };
+            let nb = if b + 1 < n_blocks { block_len as usize } else { total - (n_blocks - 1) * block_len as usize };
             let n_sub = nb.div_ceil(SUB_BLOCK);
             let ss_bytes = (6 * n_sub).div_ceil(8);
 
             let sub_scales = if sideinfo_offset != 0 {
-                let s = buf
-                    .get(ss_cursor..ss_cursor + ss_bytes)
-                    .ok_or("strand v2: EOF sub_scales")?
-                    .to_vec();
+                let s = buf.get(ss_cursor..ss_cursor + ss_bytes).ok_or("strand v2: EOF sub_scales")?.to_vec();
                 ss_cursor += ss_bytes;
                 let _ = sub_stride;
                 s
@@ -858,62 +734,30 @@ pub fn read_strand_v2(buf: &[u8]) -> Result<Vec<OwnedTensorV2>, String> {
 
             let (min_base_q, mins) = if let Some(mb) = mins_half_base {
                 let mbq = rd_i32(mb + b * 4)?;
-                let mins = buf
-                    .get(mins_cursor..mins_cursor + ss_bytes)
-                    .ok_or("strand v2: EOF mins")?
-                    .to_vec();
+                let mins = buf.get(mins_cursor..mins_cursor + ss_bytes).ok_or("strand v2: EOF mins")?.to_vec();
                 mins_cursor += ss_bytes;
                 (mbq, mins)
             } else {
                 (0i32, Vec::new())
             };
 
-            blocks.push(BlockMeta {
-                scale_q,
-                sub_scales,
-                min_base_q,
-                mins,
-                init_state,
-                n: nb as u32,
-            });
+            blocks.push(BlockMeta { scale_q, sub_scales, min_base_q, mins, init_state, n: nb as u32 });
 
             if bit_offset != cursor_bits {
-                return Err(format!(
-                    "strand v2: block {b} bit_offset {bit_offset} != cursor {cursor_bits}"
-                ));
+                return Err(format!("strand v2: block {b} bit_offset {bit_offset} != cursor {cursor_bits}"));
             }
             cursor_bits += (num_steps_for(nb, vec_dim) * k_bits as usize) as u64;
         }
 
         let total_payload_bits = (payload_bytes * 8) as u64;
         if cursor_bits > total_payload_bits {
-            return Err(format!(
-                "strand v2: total symbol bits {cursor_bits} exceed payload bits {total_payload_bits}"
-            ));
+            return Err(format!("strand v2: total symbol bits {cursor_bits} exceed payload bits {total_payload_bits}"));
         }
 
-        let bits = buf
-            .get(payload_offset..payload_offset + payload_bytes)
-            .ok_or("strand v2: EOF payload")?
-            .to_vec();
+        let bits = buf.get(payload_offset..payload_offset + payload_bytes).ok_or("strand v2: EOF payload")?.to_vec();
 
         out.push(OwnedTensorV2 {
-            base: OwnedTensor {
-                name,
-                shape,
-                rht_seed,
-                l_bits,
-                k_bits,
-                vec_dim,
-                enc: EncodedTensor {
-                    bits,
-                    blocks,
-                    total,
-                    has_rht_seed: f & 1 != 0,
-                    tail_biting: f & 2 != 0,
-                    has_affine_min,
-                },
-            },
+            base: OwnedTensor { name, shape, rht_seed, l_bits, k_bits, vec_dim, enc: EncodedTensor { bits, blocks, total, has_rht_seed: f & 1 != 0, tail_biting: f & 2 != 0, has_affine_min } },
             rht_cols: f & 8 != 0,
             block_len,
             table,
@@ -925,25 +769,13 @@ pub fn read_strand_v2(buf: &[u8]) -> Result<Vec<OwnedTensorV2>, String> {
 pub fn strand_v1_to_v2(v1: &[u8], block_lens: &[u32], strict: bool) -> Result<Vec<u8>, String> {
     let tensors = read_strand(v1)?;
     if block_lens.len() != tensors.len() {
-        return Err(format!(
-            "strand v1->v2: block_lens len {} != tensor count {}",
-            block_lens.len(),
-            tensors.len()
-        ));
+        return Err(format!("strand v1->v2: block_lens len {} != tensor count {}", block_lens.len(), tensors.len()));
     }
     let packed: Vec<PackedTensorV2> = tensors
         .iter()
         .zip(block_lens.iter())
         .map(|(t, &bl)| PackedTensorV2 {
-            base: PackedTensor {
-                name: &t.name,
-                shape: &t.shape,
-                rht_seed: t.rht_seed,
-                l_bits: t.l_bits,
-                k_bits: t.k_bits,
-                vec_dim: t.vec_dim,
-                enc: &t.enc,
-            },
+            base: PackedTensor { name: &t.name, shape: &t.shape, rht_seed: t.rht_seed, l_bits: t.l_bits, k_bits: t.k_bits, vec_dim: t.vec_dim, enc: &t.enc },
             block_len: bl,
         })
         .collect();
@@ -973,15 +805,7 @@ mod tests {
         let cfg = TrellisConfig::for_bpw(3.0);
         let enc = encode_tensor(&weights, &cfg);
         let shape = [8u64, 64u64];
-        let pt = PackedTensor {
-            name: "blk.0.attn.weight",
-            shape: &shape,
-            rht_seed: 0,
-            l_bits: cfg.l_bits as u8,
-            k_bits: cfg.k_bits as u8,
-            vec_dim: cfg.vec_dim() as u8,
-            enc: &enc,
-        };
+        let pt = PackedTensor { name: "blk.0.attn.weight", shape: &shape, rht_seed: 0, l_bits: cfg.l_bits as u8, k_bits: cfg.k_bits as u8, vec_dim: cfg.vec_dim() as u8, enc: &enc };
         let buf = write_strand(&[pt]);
         let back = read_strand(&buf).expect("read_strand");
         assert_eq!(back.len(), 1);
@@ -1006,15 +830,7 @@ mod tests {
         let bl = cfg.block_len as u32;
 
         let pt = PackedTensorV2 {
-            base: PackedTensor {
-                name: "blk.0.ffn_down.weight",
-                shape: &shape,
-                rht_seed: 0,
-                l_bits: cfg.l_bits as u8,
-                k_bits: cfg.k_bits as u8,
-                vec_dim: cfg.vec_dim() as u8,
-                enc: &enc,
-            },
+            base: PackedTensor { name: "blk.0.ffn_down.weight", shape: &shape, rht_seed: 0, l_bits: cfg.l_bits as u8, k_bits: cfg.k_bits as u8, vec_dim: cfg.vec_dim() as u8, enc: &enc },
             block_len: bl,
         };
 
@@ -1045,10 +861,7 @@ mod tests {
         let mut cursor: u64 = 0;
         for (b, blk) in enc.blocks.iter().enumerate() {
             assert_eq!(t.table[b].bit_offset, cursor, "block {b} bit_offset");
-            assert_eq!(
-                t.table[b].init_state, blk.init_state,
-                "block {b} init_state"
-            );
+            assert_eq!(t.table[b].init_state, blk.init_state, "block {b} init_state");
             assert_eq!(t.table[b].scale_q, blk.scale_q, "block {b} scale_q");
             cursor += (cfg.num_steps(blk.n as usize) * cfg.k_bits as usize) as u64;
         }
@@ -1063,15 +876,7 @@ mod tests {
         let shape = [4u64, 256u64];
         let bl = cfg.block_len as u32;
         let pt = PackedTensorV2 {
-            base: PackedTensor {
-                name: "blk.0.ffn_down.weight",
-                shape: &shape,
-                rht_seed: 0,
-                l_bits: cfg.l_bits as u8,
-                k_bits: cfg.k_bits as u8,
-                vec_dim: cfg.vec_dim() as u8,
-                enc: &enc,
-            },
+            base: PackedTensor { name: "blk.0.ffn_down.weight", shape: &shape, rht_seed: 0, l_bits: cfg.l_bits as u8, k_bits: cfg.k_bits as u8, vec_dim: cfg.vec_dim() as u8, enc: &enc },
             block_len: bl,
         };
         let buf = write_strand_v2(&[pt], [7u8; 32], true).expect("write_strand_v2");
@@ -1096,10 +901,7 @@ mod tests {
         assert_eq!(h.table_offset % PAGE, 0);
         assert_eq!(h.payload_offset % PAGE, 0);
         assert!(h.payload_offset + h.payload_bytes <= buf.len());
-        assert_eq!(
-            &buf[h.payload_offset..h.payload_offset + h.payload_bytes],
-            &enc.bits[..]
-        );
+        assert_eq!(&buf[h.payload_offset..h.payload_offset + h.payload_bytes], &enc.bits[..]);
     }
 
     #[test]
@@ -1109,15 +911,7 @@ mod tests {
         let enc = encode_tensor(&weights, &cfg);
         let shape = [2u64, 100u64];
         let make = || PackedTensorV2 {
-            base: PackedTensor {
-                name: "ragged.weight",
-                shape: &shape,
-                rht_seed: 0,
-                l_bits: cfg.l_bits as u8,
-                k_bits: cfg.k_bits as u8,
-                vec_dim: cfg.vec_dim() as u8,
-                enc: &enc,
-            },
+            base: PackedTensor { name: "ragged.weight", shape: &shape, rht_seed: 0, l_bits: cfg.l_bits as u8, k_bits: cfg.k_bits as u8, vec_dim: cfg.vec_dim() as u8, enc: &enc },
             block_len: cfg.block_len as u32,
         };
         let err = write_strand_v2(&[make()], [0u8; 32], true).unwrap_err();

@@ -78,17 +78,12 @@ fn cache_root() -> std::path::PathBuf {
         return std::path::PathBuf::from(xdg).join("hawking");
     }
     if let Ok(home) = std::env::var("HOME") {
-        return std::path::PathBuf::from(home)
-            .join(".cache")
-            .join("hawking");
+        return std::path::PathBuf::from(home).join(".cache").join("hawking");
     }
     std::path::PathBuf::from("/tmp").join("hawking-cache")
 }
 
-fn cache_fingerprint(
-    gguf_path: &std::path::Path,
-    tier_map_path: &std::path::Path,
-) -> Result<String> {
+fn cache_fingerprint(gguf_path: &std::path::Path, tier_map_path: &std::path::Path) -> Result<String> {
     let mut h = Sha256::new();
     h.update(STORE_CACHE_SCHEMA_V.to_le_bytes());
     for p in [gguf_path, tier_map_path] {
@@ -149,19 +144,11 @@ pub struct MixedQuantStore {
 
 impl StoreKey {
     pub fn routed(layer: usize, group: GroupKind, expert: usize) -> Self {
-        Self {
-            layer,
-            group,
-            expert,
-        }
+        Self { layer, group, expert }
     }
 
     pub fn shared(layer: usize, group: GroupKind) -> Self {
-        Self {
-            layer,
-            group,
-            expert: usize::MAX,
-        }
+        Self { layer, group, expert: usize::MAX }
     }
 }
 
@@ -224,14 +211,7 @@ impl MixedQuantStore {
                 return Ok(store);
             }
         }
-        let store = Self::build(
-            gguf,
-            tier_map,
-            n_layers,
-            first_k_dense_layers,
-            n_routed_experts,
-            include_shared,
-        )?;
+        let store = Self::build(gguf, tier_map, n_layers, first_k_dense_layers, n_routed_experts, include_shared)?;
         let _ = std::fs::create_dir_all(&cache_dir);
         let _ = store.write_cache(&bin, &meta); // best-effort
         Ok(store)
@@ -239,8 +219,7 @@ impl MixedQuantStore {
 
     fn load_from_cache(bin: &std::path::Path, meta: &std::path::Path) -> Result<Self> {
         let meta_bytes = std::fs::read(meta)?;
-        let v: CacheManifest = serde_json::from_slice(&meta_bytes)
-            .map_err(|e| Error::Model(format!("cache manifest parse: {e}")))?;
+        let v: CacheManifest = serde_json::from_slice(&meta_bytes).map_err(|e| Error::Model(format!("cache manifest parse: {e}")))?;
         if v.schema_version != STORE_CACHE_SCHEMA_V {
             return Err(Error::Model("cache schema mismatch".into()));
         }
@@ -260,12 +239,7 @@ impl MixedQuantStore {
                     },
                     expert: e.expert,
                 },
-                StoredTensor {
-                    offset: e.offset,
-                    byte_size: e.byte_size,
-                    n_elems: e.n_elems,
-                    dtype: gmltype_from_u32(e.dtype)?,
-                },
+                StoredTensor { offset: e.offset, byte_size: e.byte_size, n_elems: e.n_elems, dtype: gmltype_from_u32(e.dtype)? },
             );
         }
         Ok(Self { blob, tensors })
@@ -290,13 +264,8 @@ impl MixedQuantStore {
                 dtype: t.dtype as u32,
             })
             .collect();
-        let manifest = CacheManifest {
-            schema_version: STORE_CACHE_SCHEMA_V,
-            blob_len: self.blob.len(),
-            tensors: entries,
-        };
-        let bytes = serde_json::to_vec(&manifest)
-            .map_err(|e| Error::Model(format!("cache manifest serialize: {e}")))?;
+        let manifest = CacheManifest { schema_version: STORE_CACHE_SCHEMA_V, blob_len: self.blob.len(), tensors: entries };
+        let bytes = serde_json::to_vec(&manifest).map_err(|e| Error::Model(format!("cache manifest serialize: {e}")))?;
         std::fs::write(meta, &bytes)?;
         Ok(())
     }
@@ -319,14 +288,7 @@ impl MixedQuantStore {
     /// `first_k_dense_layers` is the count of leading dense (non-MoE)
     /// layers; those are skipped entirely since they don't have
     /// `*_exps` tensors.
-    pub fn build(
-        gguf: &GgufFile,
-        tier_map: &TierMap,
-        n_layers: usize,
-        first_k_dense_layers: usize,
-        n_routed_experts: usize,
-        include_shared: bool,
-    ) -> Result<Self> {
+    pub fn build(gguf: &GgufFile, tier_map: &TierMap, n_layers: usize, first_k_dense_layers: usize, n_routed_experts: usize, include_shared: bool) -> Result<Self> {
         let mut blob = Vec::new();
         let mut tensors = HashMap::new();
 
@@ -346,9 +308,7 @@ impl MixedQuantStore {
                 if group == GroupKind::GateUp {
                     // Honor "same dtype as native" tier as a no-op pass
                     // (avoids needlessly inflating memory).
-                    let gate_dtype = gguf
-                        .tensor(&format!("blk.{li}.ffn_gate_exps.weight"))
-                        .map(|t| t.dtype);
+                    let gate_dtype = gguf.tensor(&format!("blk.{li}.ffn_gate_exps.weight")).map(|t| t.dtype);
                     if gate_dtype == Some(tier) {
                         continue;
                     }
@@ -362,9 +322,7 @@ impl MixedQuantStore {
 
                 // group == Down: routed expert weights
                 let routed_name = format!("blk.{li}.ffn_down_exps.weight");
-                let info = gguf.tensor(&routed_name).ok_or_else(|| {
-                    Error::Model(format!("mixed_quant_store: missing tensor {routed_name}"))
-                })?;
+                let info = gguf.tensor(&routed_name).ok_or_else(|| Error::Model(format!("mixed_quant_store: missing tensor {routed_name}")))?;
                 if gguf.tensor(&routed_name).map(|t| t.dtype) == Some(tier) {
                     continue;
                 }
@@ -379,29 +337,16 @@ impl MixedQuantStore {
                 let bytes_per_expert_out = quant_block_bytes(tier, elems_per_expert)?;
 
                 // Read whole tensor; dequant once into a reusable buffer.
-                let src_bytes = gguf.tensor_bytes(&routed_name).ok_or_else(|| {
-                    Error::Model(format!(
-                        "mixed_quant_store: tensor_bytes None for {routed_name}"
-                    ))
-                })?;
+                let src_bytes = gguf.tensor_bytes(&routed_name).ok_or_else(|| Error::Model(format!("mixed_quant_store: tensor_bytes None for {routed_name}")))?;
                 let src_bytes_per_expert = src_bytes.len() / n_routed_experts;
                 let mut deq = vec![0.0f32; elems_per_expert];
                 for e in 0..n_routed_experts {
-                    let e_src =
-                        &src_bytes[e * src_bytes_per_expert..(e + 1) * src_bytes_per_expert];
+                    let e_src = &src_bytes[e * src_bytes_per_expert..(e + 1) * src_bytes_per_expert];
                     quant::dequant_into(info.dtype, e_src, &mut deq)?;
                     let offset = blob.len();
                     blob.resize(offset + bytes_per_expert_out, 0u8);
                     quantize_into(tier, &deq, &mut blob[offset..offset + bytes_per_expert_out])?;
-                    tensors.insert(
-                        StoreKey::routed(li, GroupKind::Down, e),
-                        StoredTensor {
-                            offset,
-                            byte_size: bytes_per_expert_out,
-                            n_elems: elems_per_expert,
-                            dtype: tier,
-                        },
-                    );
+                    tensors.insert(StoreKey::routed(li, GroupKind::Down, e), StoredTensor { offset, byte_size: bytes_per_expert_out, n_elems: elems_per_expert, dtype: tier });
                 }
 
                 if include_shared {
@@ -412,25 +357,13 @@ impl MixedQuantStore {
                         if sinfo.dtype != tier {
                             let sn_elems: usize = sinfo.dims.iter().product::<u64>() as usize;
                             let sbytes_out = quant_block_bytes(tier, sn_elems)?;
-                            let sbytes = gguf.tensor_bytes(&shared_name).ok_or_else(|| {
-                                Error::Model(format!(
-                                    "mixed_quant_store: tensor_bytes None for {shared_name}"
-                                ))
-                            })?;
+                            let sbytes = gguf.tensor_bytes(&shared_name).ok_or_else(|| Error::Model(format!("mixed_quant_store: tensor_bytes None for {shared_name}")))?;
                             let mut sdeq = vec![0.0f32; sn_elems];
                             quant::dequant_into(sinfo.dtype, sbytes, &mut sdeq)?;
                             let offset = blob.len();
                             blob.resize(offset + sbytes_out, 0u8);
                             quantize_into(tier, &sdeq, &mut blob[offset..offset + sbytes_out])?;
-                            tensors.insert(
-                                StoreKey::shared(li, GroupKind::Down),
-                                StoredTensor {
-                                    offset,
-                                    byte_size: sbytes_out,
-                                    n_elems: sn_elems,
-                                    dtype: tier,
-                                },
-                            );
+                            tensors.insert(StoreKey::shared(li, GroupKind::Down), StoredTensor { offset, byte_size: sbytes_out, n_elems: sn_elems, dtype: tier });
                         }
                     }
                 }
@@ -446,10 +379,7 @@ fn quant_block_bytes(dtype: GgmlType, n_elems: usize) -> Result<usize> {
     let block_size = block_size as usize;
     let block_bytes = block_bytes as usize;
     if n_elems % block_size != 0 {
-        return Err(Error::Model(format!(
-            "mixed_quant_store: n_elems {n_elems} not multiple of block_size {block_size} for {:?}",
-            dtype
-        )));
+        return Err(Error::Model(format!("mixed_quant_store: n_elems {n_elems} not multiple of block_size {block_size} for {:?}", dtype)));
     }
     Ok((n_elems / block_size) * block_bytes)
 }
@@ -459,10 +389,7 @@ fn quantize_into(dtype: GgmlType, src: &[f32], dst: &mut [u8]) -> Result<()> {
         GgmlType::Q4_K => quant::quantize_q4_k(src, dst),
         GgmlType::Q6_K => quant::quantize_q6_k(src, dst),
         GgmlType::Q8_0 => quant::quantize_q8_0(src, dst),
-        other => Err(Error::Model(format!(
-            "mixed_quant_store: re-quantize to {:?} not implemented (allowed: Q4_K, Q6_K, Q8_0)",
-            other
-        ))),
+        other => Err(Error::Model(format!("mixed_quant_store: re-quantize to {:?} not implemented (allowed: Q4_K, Q6_K, Q8_0)", other))),
     }
 }
 
@@ -509,11 +436,7 @@ mod tests {
         quantize_into(GgmlType::Q8_0, &deq, &mut q8_blob).unwrap();
         let mut requant = vec![0.0f32; n_elems];
         quant::dequant_into(GgmlType::Q8_0, &q8_blob, &mut requant).unwrap();
-        let err = deq
-            .iter()
-            .zip(requant.iter())
-            .map(|(a, b)| (a - b).abs())
-            .fold(0.0f32, f32::max);
+        let err = deq.iter().zip(requant.iter()).map(|(a, b)| (a - b).abs()).fold(0.0f32, f32::max);
         // Q8 has finer steps than Q5 ⇒ the rounding error should be
         // dominated by Q8's own scale step (~deq_amax/127). Should be tiny.
         assert!(err < 0.05, "Q5_0→Q8_0 round-trip err = {err}");

@@ -5,9 +5,7 @@ use std::io::{BufWriter, Write as _};
 use std::path::{Path, PathBuf};
 use std::time::{Instant, SystemTime, UNIX_EPOCH};
 
-use strand_quant::encode::{
-    encode_tensor_with_lut_block_parallel, BlockParallelConfig, EncodeOpts, EncodedTensor,
-};
+use strand_quant::encode::{encode_tensor_with_lut_block_parallel, BlockParallelConfig, EncodeOpts, EncodedTensor};
 use strand_quant::ordered_pipeline::{run_ordered_pipeline, Accounted, PipelineConfig};
 use strand_quant::rht::{rht_forward_rows, RhtConfig};
 use strand_quant::sha256::sha256;
@@ -36,34 +34,10 @@ fn parse_args() -> Args {
         match arg.as_str() {
             "--work-dir" => work_dir = Some(args.next().expect("--work-dir needs DIR").into()),
             "--receipt" => receipt = Some(args.next().expect("--receipt needs PATH").into()),
-            "--threads" => {
-                threads = args
-                    .next()
-                    .expect("--threads needs N")
-                    .parse()
-                    .expect("threads usize")
-            }
-            "--depth" => {
-                depth = args
-                    .next()
-                    .expect("--depth needs N")
-                    .parse()
-                    .expect("depth usize")
-            }
-            "--prepared-budget-bytes" => {
-                prepared_budget_bytes = args
-                    .next()
-                    .expect("--prepared-budget-bytes needs BYTES")
-                    .parse()
-                    .expect("prepared budget usize")
-            }
-            "--encoded-budget-bytes" => {
-                encoded_budget_bytes = args
-                    .next()
-                    .expect("--encoded-budget-bytes needs BYTES")
-                    .parse()
-                    .expect("encoded budget usize")
-            }
+            "--threads" => threads = args.next().expect("--threads needs N").parse().expect("threads usize"),
+            "--depth" => depth = args.next().expect("--depth needs N").parse().expect("depth usize"),
+            "--prepared-budget-bytes" => prepared_budget_bytes = args.next().expect("--prepared-budget-bytes needs BYTES").parse().expect("prepared budget usize"),
+            "--encoded-budget-bytes" => encoded_budget_bytes = args.next().expect("--encoded-budget-bytes needs BYTES").parse().expect("encoded budget usize"),
             "-h" | "--help" => {
                 println!(
                     "gate-ordered-pipeline --work-dir DIR --receipt PATH [--threads N] \
@@ -76,14 +50,7 @@ fn parse_args() -> Args {
         }
     }
     assert!(threads > 0, "--threads must be greater than zero");
-    Args {
-        work_dir: work_dir.expect("--work-dir is required"),
-        receipt: receipt.expect("--receipt is required"),
-        threads,
-        depth,
-        prepared_budget_bytes,
-        encoded_budget_bytes,
-    }
+    Args { work_dir: work_dir.expect("--work-dir is required"), receipt: receipt.expect("--receipt is required"), threads, depth, prepared_budget_bytes, encoded_budget_bytes }
 }
 
 fn hex(bytes: &[u8]) -> String {
@@ -117,10 +84,7 @@ fn generated_bytes(n: usize, mut state: u64) -> Vec<u8> {
 }
 
 fn decode_f32(bytes: &[u8]) -> Vec<f32> {
-    bytes
-        .chunks_exact(4)
-        .map(|chunk| f32::from_le_bytes([chunk[0], chunk[1], chunk[2], chunk[3]]))
-        .collect()
+    bytes.chunks_exact(4).map(|chunk| f32::from_le_bytes([chunk[0], chunk[1], chunk[2], chunk[3]])).collect()
 }
 
 fn encoded_wire(enc: &EncodedTensor) -> Vec<u8> {
@@ -161,13 +125,7 @@ struct Prepared {
 fn prepare(source: &Source) -> std::io::Result<Prepared> {
     let bytes = fs::read(&source.path)?;
     let values = decode_f32(&bytes);
-    Ok(Prepared {
-        values: rht_forward_rows(
-            &values,
-            &RhtConfig::from_seed(source.seed),
-            source.in_features,
-        ),
-    })
+    Ok(Prepared { values: rht_forward_rows(&values, &RhtConfig::from_seed(source.seed), source.in_features) })
 }
 
 fn main() {
@@ -176,39 +134,22 @@ fn main() {
     let sources = (0..8)
         .map(|index| {
             let path = args.work_dir.join(format!("source-{index:02}.f32le"));
-            fs::write(
-                &path,
-                generated_bytes(4096 + index * 256, 0x51A6_E000 + index as u64),
-            )
-            .expect("write synthetic source");
-            Source {
-                path,
-                seed: 0xA117_0000 + index as u64,
-                in_features: 256,
-            }
+            fs::write(&path, generated_bytes(4096 + index * 256, 0x51A6_E000 + index as u64)).expect("write synthetic source");
+            Source { path, seed: 0xA117_0000 + index as u64, in_features: 256 }
         })
         .collect::<Vec<_>>();
 
     let cfg = TrellisConfig::new(8, 3, 256);
     let lut = cfg.codebook();
-    let opts = EncodeOpts {
-        tail_biting: true,
-        affine_min: true,
-        ..EncodeOpts::default()
-    };
-    let block = BlockParallelConfig::new(args.threads)
-        .unwrap()
-        .with_min_blocks(1)
-        .with_scratch_budget_bytes(256 * 1024 * 1024);
+    let opts = EncodeOpts { tail_biting: true, affine_min: true, ..EncodeOpts::default() };
+    let block = BlockParallelConfig::new(args.threads).unwrap().with_min_blocks(1).with_scratch_budget_bytes(256 * 1024 * 1024);
     let serial_path = args.work_dir.join("serial.records");
     let serial_start = Instant::now();
     {
         let mut writer = BufWriter::new(fs::File::create(&serial_path).expect("serial output"));
         for source in &sources {
             let prepared = prepare(source).expect("serial read/prepare");
-            let encoded =
-                encode_tensor_with_lut_block_parallel(&prepared.values, &cfg, &opts, &lut, block)
-                    .expect("serial staged block encode");
+            let encoded = encode_tensor_with_lut_block_parallel(&prepared.values, &cfg, &opts, &lut, block).expect("serial staged block encode");
             write_record(&mut writer, &encoded_wire(&encoded)).expect("serial write");
         }
         writer.flush().expect("flush serial output");
@@ -221,21 +162,14 @@ fn main() {
     let mut writer = writer;
     let stats = run_ordered_pipeline(
         sources.clone(),
-        PipelineConfig::new(
-            args.depth,
-            args.prepared_budget_bytes,
-            args.encoded_budget_bytes,
-        )
-        .expect("pipeline config"),
+        PipelineConfig::new(args.depth, args.prepared_budget_bytes, args.encoded_budget_bytes).expect("pipeline config"),
         |_index, source| {
             let prepared = prepare(&source)?;
             let bytes = prepared.values.len() * std::mem::size_of::<f32>();
             Ok::<_, std::io::Error>(Accounted::new(prepared, bytes))
         },
         |_index, prepared| {
-            let encoded =
-                encode_tensor_with_lut_block_parallel(&prepared.values, &cfg, &opts, &lut, block)
-                    .map_err(std::io::Error::other)?;
+            let encoded = encode_tensor_with_lut_block_parallel(&prepared.values, &cfg, &opts, &lut, block).map_err(std::io::Error::other)?;
             let wire = encoded_wire(&encoded);
             let bytes = wire.len();
             Ok::<_, std::io::Error>(Accounted::new(wire, bytes))
@@ -247,10 +181,7 @@ fn main() {
 
     let serial_sha256 = file_sha256(&serial_path);
     let pipeline_sha256 = file_sha256(&pipeline_path);
-    assert_eq!(
-        pipeline_sha256, serial_sha256,
-        "pipeline output must be exact"
-    );
+    assert_eq!(pipeline_sha256, serial_sha256, "pipeline output must be exact");
     assert_eq!(stats.records_written, sources.len());
     assert!(stats.max_prepared_resident_records <= args.depth + 2);
     assert!(stats.max_encoded_resident_records <= args.depth + 2);
@@ -263,10 +194,7 @@ fn main() {
     }
     let source_manifest_sha256 = hex(&sha256(&source_manifest));
     let speedup = serial_ns as f64 / pipeline_ns.max(1) as f64;
-    let generated_unix_ns = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .expect("clock before epoch")
-        .as_nanos();
+    let generated_unix_ns = SystemTime::now().duration_since(UNIX_EPOCH).expect("clock before epoch").as_nanos();
     let receipt = format!(
         "{{\n  \"schema\": \"{SCHEMA}\",\n  \"status\": \"pass\",\n  \"scope\": \"synthetic_only\",\n  \"generated_unix_ns\": {generated_unix_ns},\n  \"binary\": \"{}\",\n  \"binary_sha256\": \"{binary_sha256}\",\n  \"source_manifest_sha256\": \"{source_manifest_sha256}\",\n  \"threads\": {},\n  \"depth\": {},\n  \"prepared_resident_budget_bytes\": {},\n  \"encoded_resident_budget_bytes\": {},\n  \"records\": {},\n  \"max_prepared_resident_records\": {},\n  \"max_encoded_resident_records\": {},\n  \"serial_output_sha256\": \"{serial_sha256}\",\n  \"pipeline_output_sha256\": \"{pipeline_sha256}\",\n  \"exact_output\": true,\n  \"canonical_order\": true,\n  \"serial_ns\": {serial_ns},\n  \"pipeline_ns\": {pipeline_ns},\n  \"exploratory_speedup\": {speedup:.6}\n}}\n",
         json_escape(&binary.display().to_string()),

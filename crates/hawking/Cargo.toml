@@ -10,20 +10,20 @@ description = "hawking CLI for Apple Silicon LLM inference"
 
 [[bin]]
 name = "hawking"
-path = "src/main.rs"
+path = "main.rs"
 
 [[bin]]
 name = "hawking-spec-acceptance-measure"
-path = "src/spec_acceptance_measure.rs"
+path = "spec_acceptance_measure.rs"
 
 [[bin]]
 name = "hawking-tq-device-probe"
-path = "src/tq_device_probe.rs"
+path = "tq_device_probe.rs"
 required-features = ["tq"]
 
 [[bin]]
 name = "hawking-tq-spec-probe"
-path = "src/tq_spec_probe.rs"
+path = "tq_spec_probe.rs"
 required-features = ["tq"]
 
 [features]

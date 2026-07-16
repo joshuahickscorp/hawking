@@ -110,14 +110,7 @@ impl Default for RuntimeLevers {
     /// `#[serde(default)]` → this) resolve identically to one where the object
     /// is present but those fields are omitted (`default_scale_dtype` etc.).
     fn default() -> Self {
-        Self {
-            profile_name: String::new(),
-            vocab_prune: None,
-            lm_head_path: String::new(),
-            ffn_down_q4k: false,
-            scale_dtype: default_scale_dtype(),
-            kv_dtype: default_kv_dtype(),
-        }
+        Self { profile_name: String::new(), vocab_prune: None, lm_head_path: String::new(), ffn_down_q4k: false, scale_dtype: default_scale_dtype(), kv_dtype: default_kv_dtype() }
     }
 }
 
@@ -134,11 +127,7 @@ impl RuntimeLevers {
     ///                    PREDEC_F16SCALES (best-effort; "f16" when no Q4K head).
     /// `profile_name` is passed in by the caller (it owns the chosen profile).
     pub fn from_env(profile_name: &str) -> Self {
-        let vocab_prune = std::env::var("HAWKING_QWEN_VOCAB_PRUNE")
-            .ok()
-            .filter(|v| v != "0" && !v.is_empty())
-            .and_then(|v| v.parse::<usize>().ok())
-            .filter(|&n| n > 0);
+        let vocab_prune = std::env::var("HAWKING_QWEN_VOCAB_PRUNE").ok().filter(|v| v != "0" && !v.is_empty()).and_then(|v| v.parse::<usize>().ok()).filter(|&n| n > 0);
         let ffn_down_q4k = crate::env_on("HAWKING_QWEN_FFN_DOWN_Q4K");
         let f16_scales = crate::env_on("HAWKING_QWEN_PREDEC_F16SCALES");
         let scale_dtype = if f16_scales { "f16" } else { "f32" }.to_string();
@@ -155,9 +144,7 @@ impl RuntimeLevers {
         // path can downgrade to "f16" if no Q4K head was built (recorded by
         // GenStats.lm_head_path at runtime — this is the *intended* path).
         let q4k_head = crate::env_on("HAWKING_QWEN_Q4K_LMHEAD");
-        let predec = std::env::var_os("HAWKING_QWEN_Q4K_PREDEC")
-            .map(|v| v != "0")
-            .unwrap_or(true);
+        let predec = std::env::var_os("HAWKING_QWEN_Q4K_PREDEC").map(|v| v != "0").unwrap_or(true);
         let lm_head_path = if !q4k_head {
             "f16"
         } else if f16_scales && predec {
@@ -168,14 +155,7 @@ impl RuntimeLevers {
             "q4k"
         }
         .to_string();
-        Self {
-            profile_name: profile_name.to_string(),
-            vocab_prune,
-            lm_head_path,
-            ffn_down_q4k,
-            scale_dtype,
-            kv_dtype,
-        }
+        Self { profile_name: profile_name.to_string(), vocab_prune, lm_head_path, ffn_down_q4k, scale_dtype, kv_dtype }
     }
 }
 
@@ -335,24 +315,16 @@ pub struct AutotuneOptions {
 
 impl Default for AutotuneOptions {
     fn default() -> Self {
-        Self {
-            profile: "m3-pro-18gb".to_string(),
-            max_hours: 8.0,
-            target_tps: 60.0,
-        }
+        Self { profile: "m3-pro-18gb".to_string(), max_hours: 8.0, target_tps: 60.0 }
     }
 }
 
 impl KernelProfile {
     pub fn load(path: &Path) -> Result<Self> {
         let data = std::fs::read_to_string(path)?;
-        let profile: Self = serde_json::from_str(&data)
-            .map_err(|e| Error::Model(format!("kernel profile parse: {e}")))?;
+        let profile: Self = serde_json::from_str(&data).map_err(|e| Error::Model(format!("kernel profile parse: {e}")))?;
         if profile.schema_version != PROFILE_SCHEMA_VERSION {
-            return Err(Error::Model(format!(
-                "kernel profile schema {} unsupported; expected {}",
-                profile.schema_version, PROFILE_SCHEMA_VERSION
-            )));
+            return Err(Error::Model(format!("kernel profile schema {} unsupported; expected {}", profile.schema_version, PROFILE_SCHEMA_VERSION)));
         }
         Ok(profile)
     }
@@ -363,34 +335,22 @@ impl KernelProfile {
         // releases inside the same family (qwen2 / qwen2.5, deepseek2 /
         // deepseek-v2, llama / llama3 / llama3.2) share a profile.
         if arch_family(&self.model_arch) != arch_family(arch) {
-            return Err(Error::Model(format!(
-                "kernel profile model arch mismatch: profile={} gguf={}",
-                self.model_arch, arch
-            )));
+            return Err(Error::Model(format!("kernel profile model arch mismatch: profile={} gguf={}", self.model_arch, arch)));
         }
 
         let layout = tensor_layout_hash(gguf);
         if self.tensor_layout_hash != layout {
-            return Err(Error::Model(format!(
-                "kernel profile tensor layout mismatch: profile={} gguf={}",
-                self.tensor_layout_hash, layout
-            )));
+            return Err(Error::Model(format!("kernel profile tensor layout mismatch: profile={} gguf={}", self.tensor_layout_hash, layout)));
         }
 
         let shader_hash = shader_source_hash();
         if self.shader_hash != shader_hash {
-            return Err(Error::Model(format!(
-                "kernel profile shader hash mismatch: profile={} current={}",
-                self.shader_hash, shader_hash
-            )));
+            return Err(Error::Model(format!("kernel profile shader hash mismatch: profile={} current={}", self.shader_hash, shader_hash)));
         }
 
         if let Some(device) = device_name {
             if self.device_name != device {
-                return Err(Error::Model(format!(
-                    "kernel profile device mismatch: profile={} current={}",
-                    self.device_name, device
-                )));
+                return Err(Error::Model(format!("kernel profile device mismatch: profile={} current={}", self.device_name, device)));
             }
         }
 
@@ -406,18 +366,8 @@ pub fn build_deterministic_profile(gguf: &GgufFile, opts: &AutotuneOptions) -> K
     let shader_hash = shader_source_hash();
     let candidates = deterministic_candidates();
     let measurements = score_candidates(&candidates);
-    let selected = select_variant(&candidates, &measurements)
-        .expect("deterministic_candidates is non-empty")
-        .clone();
-    let profile_id = profile_id(
-        &opts.profile,
-        &model_id,
-        &model_arch,
-        &tensor_layout_hash,
-        &device_name,
-        &shader_hash,
-        &selected.id,
-    );
+    let selected = select_variant(&candidates, &measurements).expect("deterministic_candidates is non-empty").clone();
+    let profile_id = profile_id(&opts.profile, &model_id, &model_arch, &tensor_layout_hash, &device_name, &shader_hash, &selected.id);
 
     KernelProfile {
         schema_version: PROFILE_SCHEMA_VERSION,
@@ -439,11 +389,7 @@ pub fn build_deterministic_profile(gguf: &GgufFile, opts: &AutotuneOptions) -> K
             candidate_count: candidates.len(),
             measurements,
             target_tps: opts.target_tps,
-            notes: vec![
-                "deterministic lexicographic candidate order".into(),
-                "temperature=0 greedy validation corpus".into(),
-                "runtime ignores unsupported entries and falls back safely".into(),
-            ],
+            notes: vec!["deterministic lexicographic candidate order".into(), "temperature=0 greedy validation corpus".into(), "runtime ignores unsupported entries and falls back safely".into()],
         },
     }
 }
@@ -478,15 +424,7 @@ fn score_candidates(candidates: &[KernelVariant]) -> Vec<AutotuneMeasurement> {
             variant_id: v.id.clone(),
             deterministic_rank: v.deterministic_rank,
             score: variant_score(v),
-            status: if [
-                v.moe_schedule.as_str(),
-                v.mla_schedule.as_str(),
-                v.lm_head_schedule.as_str(),
-                v.command_buffering.as_str(),
-                v.gpu_buffer_reuse.as_str(),
-            ]
-            .iter()
-            .any(|s| s.contains("planned"))
+            status: if [v.moe_schedule.as_str(), v.mla_schedule.as_str(), v.lm_head_schedule.as_str(), v.command_buffering.as_str(), v.gpu_buffer_reuse.as_str()].iter().any(|s| s.contains("planned"))
             {
                 "planned".into()
             } else {
@@ -501,18 +439,11 @@ fn score_candidates(candidates: &[KernelVariant]) -> Vec<AutotuneMeasurement> {
             runtime_levers: None,
         })
         .collect();
-    out.sort_by(|a, b| {
-        b.score
-            .cmp(&a.score)
-            .then_with(|| a.variant_id.cmp(&b.variant_id))
-    });
+    out.sort_by(|a, b| b.score.cmp(&a.score).then_with(|| a.variant_id.cmp(&b.variant_id)));
     out
 }
 
-fn select_variant<'a>(
-    candidates: &'a [KernelVariant],
-    measurements: &[AutotuneMeasurement],
-) -> Option<&'a KernelVariant> {
+fn select_variant<'a>(candidates: &'a [KernelVariant], measurements: &[AutotuneMeasurement]) -> Option<&'a KernelVariant> {
     let selected_id = measurements.first()?.variant_id.as_str();
     candidates.iter().find(|v| v.id == selected_id)
 }
@@ -549,22 +480,8 @@ impl AutotuneMeasurement {
     /// `tps` is decode tokens/sec; `quality` is a [0,1] signal (1.0 == no
     /// measured regression). `score`/`status` mirror the heuristic path so the
     /// JSONL log and legacy consumers keep working.
-    pub fn measured(
-        variant_id: impl Into<String>,
-        deterministic_rank: u32,
-        tps: f64,
-        quality: f64,
-        levers: RuntimeLevers,
-    ) -> Self {
-        Self {
-            variant_id: variant_id.into(),
-            deterministic_rank,
-            score: 0,
-            status: "measured".into(),
-            tps,
-            quality,
-            runtime_levers: Some(levers),
-        }
+    pub fn measured(variant_id: impl Into<String>, deterministic_rank: u32, tps: f64, quality: f64, levers: RuntimeLevers) -> Self {
+        Self { variant_id: variant_id.into(), deterministic_rank, score: 0, status: "measured".into(), tps, quality, runtime_levers: Some(levers) }
     }
 }
 
@@ -590,21 +507,14 @@ pub fn score_measurement(m: &AutotuneMeasurement, quality_floor: f64) -> f64 {
 ///   3. then lower `deterministic_rank` (the curated preference order),
 ///   4. then `variant_id` lexicographic.
 /// Returns `None` when there are no measurements, or none clear the floor.
-pub fn select_best<'a>(
-    evidence: &'a AutotuneEvidence,
-    quality_floor: f64,
-) -> Option<&'a AutotuneMeasurement> {
-    evidence
-        .measurements
-        .iter()
-        .filter(|m| score_measurement(m, quality_floor) > f64::NEG_INFINITY)
-        .max_by(|a, b| {
-            score_measurement(a, quality_floor)
-                .total_cmp(&score_measurement(b, quality_floor))
-                .then_with(|| a.quality.total_cmp(&b.quality))
-                .then_with(|| b.deterministic_rank.cmp(&a.deterministic_rank))
-                .then_with(|| b.variant_id.cmp(&a.variant_id))
-        })
+pub fn select_best<'a>(evidence: &'a AutotuneEvidence, quality_floor: f64) -> Option<&'a AutotuneMeasurement> {
+    evidence.measurements.iter().filter(|m| score_measurement(m, quality_floor) > f64::NEG_INFINITY).max_by(|a, b| {
+        score_measurement(a, quality_floor)
+            .total_cmp(&score_measurement(b, quality_floor))
+            .then_with(|| a.quality.total_cmp(&b.quality))
+            .then_with(|| b.deterministic_rank.cmp(&a.deterministic_rank))
+            .then_with(|| b.variant_id.cmp(&a.variant_id))
+    })
 }
 
 /// Convenience wrapper using [`DEFAULT_QUALITY_FLOOR`].
@@ -633,25 +543,9 @@ pub fn shader_source_hash() -> String {
     short_hash(metal::all_shader_sources().as_bytes())
 }
 
-fn profile_id(
-    profile: &str,
-    model_id: &str,
-    model_arch: &str,
-    tensor_layout_hash: &str,
-    device_name: &str,
-    shader_hash: &str,
-    selected_id: &str,
-) -> String {
+fn profile_id(profile: &str, model_id: &str, model_arch: &str, tensor_layout_hash: &str, device_name: &str, shader_hash: &str, selected_id: &str) -> String {
     let mut h = Sha256::new();
-    for s in [
-        profile,
-        model_id,
-        model_arch,
-        tensor_layout_hash,
-        device_name,
-        shader_hash,
-        selected_id,
-    ] {
+    for s in [profile, model_id, model_arch, tensor_layout_hash, device_name, shader_hash, selected_id] {
         h.update(s.as_bytes());
         h.update([0]);
     }
@@ -665,11 +559,7 @@ fn short_hash(bytes: &[u8]) -> String {
 }
 
 fn short_hex(bytes: &[u8]) -> String {
-    bytes
-        .iter()
-        .take(12)
-        .map(|b| format!("{b:02x}"))
-        .collect::<String>()
+    bytes.iter().take(12).map(|b| format!("{b:02x}")).collect::<String>()
 }
 
 /// Test-only helper: build a fresh deterministic KernelProfile from a
@@ -678,10 +568,7 @@ fn short_hex(bytes: &[u8]) -> String {
 /// `validate_for_gguf` against a stale pinned profile.
 pub fn fresh_test_profile(weights_path: &std::path::Path) -> crate::Result<KernelProfile> {
     let gguf = crate::gguf::GgufFile::open(weights_path)?;
-    Ok(build_deterministic_profile(
-        &gguf,
-        &AutotuneOptions::default(),
-    ))
+    Ok(build_deterministic_profile(&gguf, &AutotuneOptions::default()))
 }
 
 #[cfg(test)]
@@ -690,10 +577,7 @@ mod tests {
 
     #[test]
     fn candidate_order_is_stable() {
-        let ids: Vec<_> = deterministic_candidates()
-            .into_iter()
-            .map(|v| v.id)
-            .collect();
+        let ids: Vec<_> = deterministic_candidates().into_iter().map(|v| v.id).collect();
         assert_eq!(ids, vec!["metal-default"]);
     }
 
@@ -728,14 +612,7 @@ mod tests {
 
     #[test]
     fn runtime_levers_round_trip() {
-        let lv = RuntimeLevers {
-            profile_name: "fast".into(),
-            vocab_prune: Some(32000),
-            lm_head_path: "q4k-predec-f16s".into(),
-            ffn_down_q4k: true,
-            scale_dtype: "f16".into(),
-            kv_dtype: "f16".into(),
-        };
+        let lv = RuntimeLevers { profile_name: "fast".into(), vocab_prune: Some(32000), lm_head_path: "q4k-predec-f16s".into(), ffn_down_q4k: true, scale_dtype: "f16".into(), kv_dtype: "f16".into() };
         let json = serde_json::to_string(&lv).unwrap();
         let back: RuntimeLevers = serde_json::from_str(&json).unwrap();
         assert_eq!(lv, back);
@@ -817,16 +694,7 @@ mod tests {
     }
 
     fn ev(measurements: Vec<AutotuneMeasurement>) -> AutotuneEvidence {
-        AutotuneEvidence {
-            profile: "test".into(),
-            max_hours: 1.0,
-            prompt_count: 1,
-            token_lengths: vec![64],
-            candidate_count: measurements.len(),
-            measurements,
-            target_tps: 60.0,
-            notes: vec![],
-        }
+        AutotuneEvidence { profile: "test".into(), max_hours: 1.0, prompt_count: 1, token_lengths: vec![64], candidate_count: measurements.len(), measurements, target_tps: 60.0, notes: vec![] }
     }
 
     #[test]
@@ -834,23 +702,12 @@ mod tests {
         // Highest tps overall is `fast`, but it FAILS the floor (q=0.80 < 0.90).
         // `mid` (q=0.95, 40 tps) must win over `slow` (q=1.0, 30 tps) and over
         // the higher-tps-but-failing `fast`.
-        let evidence = ev(vec![
-            mk("fast", 3, 55.0, 0.80),
-            mk("mid", 2, 40.0, 0.95),
-            mk("slow", 1, 30.0, 1.00),
-        ]);
-        let chosen =
-            select_best(&evidence, DEFAULT_QUALITY_FLOOR).expect("a candidate clears floor");
+        let evidence = ev(vec![mk("fast", 3, 55.0, 0.80), mk("mid", 2, 40.0, 0.95), mk("slow", 1, 30.0, 1.00)]);
+        let chosen = select_best(&evidence, DEFAULT_QUALITY_FLOOR).expect("a candidate clears floor");
         assert_eq!(chosen.variant_id, "mid");
         // score_measurement rejects sub-floor candidates with NEG_INFINITY.
-        assert_eq!(
-            score_measurement(&evidence.measurements[0], DEFAULT_QUALITY_FLOOR),
-            f64::NEG_INFINITY
-        );
-        assert_eq!(
-            score_measurement(&evidence.measurements[1], DEFAULT_QUALITY_FLOOR),
-            40.0
-        );
+        assert_eq!(score_measurement(&evidence.measurements[0], DEFAULT_QUALITY_FLOOR), f64::NEG_INFINITY);
+        assert_eq!(score_measurement(&evidence.measurements[1], DEFAULT_QUALITY_FLOOR), 40.0);
     }
 
     #[test]
@@ -869,10 +726,7 @@ mod tests {
         assert_eq!(select_best_default(&by_id).unwrap().variant_id, "aaa");
 
         // Fully deterministic across calls (no NaN, total order): same input -> same pick.
-        assert_eq!(
-            select_best_default(&by_id).unwrap().variant_id,
-            select_best_default(&by_id).unwrap().variant_id
-        );
+        assert_eq!(select_best_default(&by_id).unwrap().variant_id, select_best_default(&by_id).unwrap().variant_id);
     }
 
     #[test]
@@ -886,8 +740,7 @@ mod tests {
     fn measured_constructor_round_trips_new_fields() {
         // New optional fields must serialize/deserialize and survive the
         // PartialEq derive (f64 PartialEq, no NaN produced here).
-        let m =
-            AutotuneMeasurement::measured("metal-default", 1, 47.96, 1.0, RuntimeLevers::default());
+        let m = AutotuneMeasurement::measured("metal-default", 1, 47.96, 1.0, RuntimeLevers::default());
         let json = serde_json::to_string(&m).unwrap();
         let back: AutotuneMeasurement = serde_json::from_str(&json).unwrap();
         assert_eq!(m, back);
@@ -906,42 +759,20 @@ mod tests {
     /// Path is `CARGO_MANIFEST_DIR/../../profiles` so it is CWD-independent.
     #[test]
     fn pinned_profiles_still_load_after_field_additions() {
-        let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("..")
-            .join("..")
-            .join("profiles");
-        let files = [
-            "qwen3b-instruct-q4k.m3pro18.json",
-            "qwen15b-instruct-q4k.m3pro18.json",
-            "qwen05b-instruct-q4k.m3pro18.json",
-            "deepseek-v2-lite-q4.m3pro18.json",
-        ];
+        let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("..").join("..").join("profiles");
+        let files = ["qwen3b-instruct-q4k.m3pro18.json", "qwen15b-instruct-q4k.m3pro18.json", "qwen05b-instruct-q4k.m3pro18.json", "deepseek-v2-lite-q4.m3pro18.json"];
         for f in files {
             let path = root.join(f);
-            let p = KernelProfile::load(&path)
-                .unwrap_or_else(|e| panic!("{f}: KernelProfile::load failed: {e}"));
-            assert_eq!(
-                p.schema_version, PROFILE_SCHEMA_VERSION,
-                "{f}: schema_version must match current"
-            );
+            let p = KernelProfile::load(&path).unwrap_or_else(|e| panic!("{f}: KernelProfile::load failed: {e}"));
+            assert_eq!(p.schema_version, PROFILE_SCHEMA_VERSION, "{f}: schema_version must match current");
             // The pinned JSONs predate runtime_levers => serde(default) fills it.
-            assert_eq!(
-                p.runtime_levers,
-                RuntimeLevers::default(),
-                "{f}: absent runtime_levers must deserialize to all-default"
-            );
+            assert_eq!(p.runtime_levers, RuntimeLevers::default(), "{f}: absent runtime_levers must deserialize to all-default");
             // The added AutotuneMeasurement fields default cleanly too (no `tps`
             // / `quality` keys in these JSONs => 0.0 / 1.0).
             for m in &p.evidence.measurements {
                 assert_eq!(m.tps, 0.0, "{f}: legacy measurement tps defaults to 0.0");
-                assert_eq!(
-                    m.quality, 1.0,
-                    "{f}: legacy measurement quality defaults to 1.0"
-                );
-                assert!(
-                    m.runtime_levers.is_none(),
-                    "{f}: legacy measurement has no runtime_levers"
-                );
+                assert_eq!(m.quality, 1.0, "{f}: legacy measurement quality defaults to 1.0");
+                assert!(m.runtime_levers.is_none(), "{f}: legacy measurement has no runtime_levers");
             }
         }
     }

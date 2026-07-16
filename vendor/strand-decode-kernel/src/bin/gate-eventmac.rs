@@ -1,4 +1,3 @@
-
 use std::path::{Path, PathBuf};
 
 use strand_decode_kernel::block_walk::gate_proto::machine_stamp;
@@ -32,11 +31,7 @@ fn quantile(vals: &mut [f32], q: f64) -> f32 {
 }
 
 fn identity_gates() {
-    let configs = [
-        ("3-bit deploy", TrellisConfig::for_bpw(3.0)),
-        ("2-bit reopen", TrellisConfig::for_bpw_l(2.0, 12)),
-        ("fold path", TrellisConfig::for_bpw_l(2.0, 5)),
-    ];
+    let configs = [("3-bit deploy", TrellisConfig::for_bpw(3.0)), ("2-bit reopen", TrellisConfig::for_bpw_l(2.0, 12)), ("fold path", TrellisConfig::for_bpw_l(2.0, 5))];
     let shapes = [(8usize, 256usize), (37, 300), (5, 97)];
     let mut cells = 0usize;
     for (label, cfg) in &configs {
@@ -55,19 +50,15 @@ fn identity_gates() {
             let y_ref = strand_decode_kernel::matvec(&enc, cfg, None, rows, cols, &x);
             let y_full = em.matvec_full(&x);
             for o in 0..rows {
-                assert_eq!(
-                    y_full[o].to_bits(),
-                    y_ref[o].to_bits(),
-                    "IDENTITY FAIL: full-set y[{o}] != crate::matvec ({label} {rows}x{cols})"
-                );
+                assert_eq!(y_full[o].to_bits(), y_ref[o].to_bits(), "IDENTITY FAIL: full-set y[{o}] != crate::matvec ({label} {rows}x{cols})");
             }
-            
+
             let (y_t0, rep) = em.matvec_threshold(&x, 0.0);
             assert_eq!(rep.fired, cols);
             for o in 0..rows {
                 assert_eq!(y_t0[o].to_bits(), y_ref[o].to_bits(), "IDENTITY FAIL: tau=0");
             }
-            
+
             for tau in [0.05f32, 0.3] {
                 let (y, _) = em.matvec_threshold(&x, tau);
                 let wq: Vec<f32> = q12.iter().map(|&q| (q as f32) * (1.0 / 4096.0)).collect();
@@ -78,18 +69,13 @@ fn identity_gates() {
                             acc += wq[o * cols + i] * x[i];
                         }
                     }
-                    assert_eq!(
-                        y[o].to_bits(),
-                        acc.to_bits(),
-                        "IDENTITY FAIL: partial S not exact ({label} tau={tau} row {o})"
-                    );
+                    assert_eq!(y[o].to_bits(), acc.to_bits(), "IDENTITY FAIL: partial S not exact ({label} tau={tau} row {o})");
                 }
             }
-            
+
             let mut dm = DeltaMac::new(&em);
             for t in 0..3 {
-                let xt: Vec<f32> =
-                    (0..cols).map(|i| ((i as f32 + t as f32 * 7.7) * 0.0511).sin()).collect();
+                let xt: Vec<f32> = (0..cols).map(|i| ((i as f32 + t as f32 * 7.7) * 0.0511).sin()).collect();
                 let (y, rep) = dm.step(&xt, 0.123, 1);
                 assert!(rep.refreshed);
                 let yf = em.matvec_full(&xt);
@@ -121,12 +107,7 @@ fn read_manifest(acts_dir: &Path) -> Option<Vec<ManifestEntry>> {
         if f.len() != 4 {
             continue;
         }
-        out.push(ManifestEntry {
-            tensor: f[0].to_string(),
-            tokens: f[1].parse().ok()?,
-            dim: f[2].parse().ok()?,
-            path: acts_dir.join(f[3]),
-        });
+        out.push(ManifestEntry { tensor: f[0].to_string(), tokens: f[1].parse().ok()?, dim: f[2].parse().ok()?, path: acts_dir.join(f[3]) });
     }
     Some(out)
 }
@@ -137,17 +118,11 @@ fn read_f32_le(path: &Path, n: usize) -> Option<Vec<f32>> {
         eprintln!("  !! {path:?}: {} bytes, expected {}", bytes.len(), n * 4);
         return None;
     }
-    Some(
-        bytes
-            .chunks_exact(4)
-            .map(|c| f32::from_le_bytes([c[0], c[1], c[2], c[3]]))
-            .collect(),
-    )
+    Some(bytes.chunks_exact(4).map(|c| f32::from_le_bytes([c[0], c[1], c[2], c[3]])).collect())
 }
 
 #[derive(Default, Clone)]
 struct Agg {
-    
     sums: Vec<(f64, f64)>,
     n: usize,
 }
@@ -174,9 +149,9 @@ fn real_curves(artifact: &Path, acts_dir: &Path, max_tensors: usize, max_tokens:
     };
 
     let keeps = [0.50f64, 0.25, 0.10, 0.05, 0.02];
-    
+
     let tau_ps = [0.50f64, 0.75, 0.90];
-    
+
     let dtau_ps = [0.50f64, 0.75, 0.90];
 
     let mut agg_topk = Agg { sums: vec![(0.0, 0.0); keeps.len()], n: 0 };
@@ -198,10 +173,7 @@ fn real_curves(artifact: &Path, acts_dir: &Path, max_tensors: usize, max_tokens:
         };
         let (out_f, in_f) = (hdr.shape[0] as usize, hdr.shape[1] as usize);
         if in_f != entry.dim {
-            eprintln!(
-                "  !! {}: artifact in_features {in_f} != activation dim {} — skipped",
-                entry.tensor, entry.dim
-            );
+            eprintln!("  !! {}: artifact in_features {in_f} != activation dim {} — skipped", entry.tensor, entry.dim);
             continue;
         }
         let w = match patched_weights(&model, &entry.tensor) {
@@ -218,8 +190,7 @@ fn real_curves(artifact: &Path, acts_dir: &Path, max_tensors: usize, max_tokens:
         let tokens = entry.tokens.min(max_tokens);
         used += 1;
 
-        let y_full: Vec<Vec<f32>> =
-            (0..tokens).map(|t| em.matvec_full(&acts[t * in_f..(t + 1) * in_f])).collect();
+        let y_full: Vec<Vec<f32>> = (0..tokens).map(|t| em.matvec_full(&acts[t * in_f..(t + 1) * in_f])).collect();
 
         print!("\n{} [{}x{}] tokens={tokens}\n  top-k : ", entry.tensor, out_f, in_f);
         for (ki, &keep) in keeps.iter().enumerate() {
@@ -288,7 +259,6 @@ fn real_curves(artifact: &Path, acts_dir: &Path, max_tensors: usize, max_tokens:
                         err_sum += e;
                         err_max = err_max.max(e);
                     } else if t > 0 {
-                        
                         for (a, b) in y.iter().zip(yf.iter()) {
                             assert_eq!(a.to_bits(), b.to_bits(), "refresh not bit-exact");
                         }
@@ -302,13 +272,7 @@ fn real_curves(artifact: &Path, acts_dir: &Path, max_tensors: usize, max_tokens:
                 if refresh == usize::MAX {
                     agg_delta.sums[di].0 += 1.0 - fired;
                     agg_delta.sums[di].1 += err;
-                    print!(
-                        "|dx|p{:.0} → fire {:>4.1}% err {:.4} (max {:.4})  ",
-                        p * 100.0,
-                        fired * 100.0,
-                        err,
-                        err_max
-                    );
+                    print!("|dx|p{:.0} → fire {:>4.1}% err {:.4} (max {:.4})  ", p * 100.0, fired * 100.0, err, err_max);
                 } else {
                     print!("[refresh8: err {err:.4}]  ");
                 }
@@ -326,30 +290,15 @@ fn real_curves(artifact: &Path, acts_dir: &Path, max_tensors: usize, max_tokens:
     println!("\n== AGGREGATE over {used} tensors (mean of per-tensor means; ADVISORY) ==");
     print!("  top-k : ");
     for (ki, &keep) in keeps.iter().enumerate() {
-        print!(
-            "keep {:>4.0}% → skip {:>4.1}% err {:.4}  ",
-            keep * 100.0,
-            agg_topk.sums[ki].0 / agg_topk.n as f64 * 100.0,
-            agg_topk.sums[ki].1 / agg_topk.n as f64
-        );
+        print!("keep {:>4.0}% → skip {:>4.1}% err {:.4}  ", keep * 100.0, agg_topk.sums[ki].0 / agg_topk.n as f64 * 100.0, agg_topk.sums[ki].1 / agg_topk.n as f64);
     }
     print!("\n  tau   : ");
     for (pi, &p) in tau_ps.iter().enumerate() {
-        print!(
-            "|x|p{:.0} → skip {:>4.1}% err {:.4}  ",
-            p * 100.0,
-            agg_tau.sums[pi].0 / agg_tau.n as f64 * 100.0,
-            agg_tau.sums[pi].1 / agg_tau.n as f64
-        );
+        print!("|x|p{:.0} → skip {:>4.1}% err {:.4}  ", p * 100.0, agg_tau.sums[pi].0 / agg_tau.n as f64 * 100.0, agg_tau.sums[pi].1 / agg_tau.n as f64);
     }
     print!("\n  delta : ");
     for (di, &p) in dtau_ps.iter().enumerate() {
-        print!(
-            "|dx|p{:.0} → skip {:>4.1}% err {:.4}  ",
-            p * 100.0,
-            agg_delta.sums[di].0 / agg_delta.n as f64 * 100.0,
-            agg_delta.sums[di].1 / agg_delta.n as f64
-        );
+        print!("|dx|p{:.0} → skip {:>4.1}% err {:.4}  ", p * 100.0, agg_delta.sums[di].0 / agg_delta.n as f64 * 100.0, agg_delta.sums[di].1 / agg_delta.n as f64);
     }
     println!(
         "\n\nNOTE: 'skip' here = fraction of input columns (MAC flops AND column bytes on \
@@ -364,22 +313,14 @@ fn real_curves(artifact: &Path, acts_dir: &Path, max_tensors: usize, max_tokens:
             let mut mags: Vec<f32> = x.iter().map(|v| v.abs()).collect();
             let tau = quantile(&mut mags, 0.5);
             let f = salient_threshold(x, tau).len() as f64 / e0.dim as f64;
-            assert!(
-                (0.4..=0.6).contains(&f),
-                "quantile/threshold disagree: p50 tau fired {f:.2} of dims"
-            );
+            assert!((0.4..=0.6).contains(&f), "quantile/threshold disagree: p50 tau fired {f:.2} of dims");
         }
     }
 }
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
-    let get = |flag: &str, default: &str| -> String {
-        args.iter()
-            .position(|a| a == flag)
-            .and_then(|i| args.get(i + 1).cloned())
-            .unwrap_or_else(|| default.to_string())
-    };
+    let get = |flag: &str, default: &str| -> String { args.iter().position(|a| a == flag).and_then(|i| args.get(i + 1).cloned()).unwrap_or_else(|| default.to_string()) };
     let artifact = PathBuf::from(get("--artifact", "scratch/artifacts/qwen05b-pv2-2bit.strand"));
     let acts_dir = PathBuf::from(get("--acts", "research/event-sparsity-probe"));
     let max_tensors: usize = get("--max-tensors", "12").parse().expect("--max-tensors");

@@ -58,9 +58,7 @@ fn main() {
         i += 1;
     }
     let [archive, out] = positional.as_slice() else {
-        eprintln!(
-            "usage: archive-to-safetensors <archive.strand> <out.safetensors> [--dtype f32|bf16]"
-        );
+        eprintln!("usage: archive-to-safetensors <archive.strand> <out.safetensors> [--dtype f32|bf16]");
         std::process::exit(2);
     };
 
@@ -74,21 +72,12 @@ fn main() {
         let th = model.tensor_header(name).expect("tensor header");
         let shape: Vec<u64> = th.shape.clone();
         let start = payload_len;
-        payload_len = payload_len
-            .checked_add((th.total as u64) * dtype.bytes_per_weight())
-            .expect("payload length overflow");
+        payload_len = payload_len.checked_add((th.total as u64) * dtype.bytes_per_weight()).expect("payload length overflow");
         if i > 0 {
             header.push(',');
         }
         let dims: Vec<String> = shape.iter().map(|d| d.to_string()).collect();
-        header.push_str(&format!(
-            "\"{}\":{{\"dtype\":\"{}\",\"shape\":[{}],\"data_offsets\":[{},{}]}}",
-            name,
-            dtype.safetensors_name(),
-            dims.join(","),
-            start,
-            payload_len
-        ));
+        header.push_str(&format!("\"{}\":{{\"dtype\":\"{}\",\"shape\":[{}],\"data_offsets\":[{},{}]}}", name, dtype.safetensors_name(), dims.join(","), start, payload_len));
     }
     header.push('}');
 
@@ -96,8 +85,7 @@ fn main() {
     f.write_all(&(header.len() as u64).to_le_bytes()).unwrap();
     f.write_all(header.as_bytes()).unwrap();
     for (i, name) in names.iter().enumerate() {
-        let weights =
-            patched_weights(&model, name).unwrap_or_else(|e| panic!("patched decode {name}: {e}"));
+        let weights = patched_weights(&model, name).unwrap_or_else(|e| panic!("patched decode {name}: {e}"));
         for chunk in weights.chunks(1 << 20) {
             let mut bytes = Vec::with_capacity(chunk.len() * dtype.bytes_per_weight() as usize);
             match dtype {
@@ -119,10 +107,5 @@ fn main() {
         }
     }
     f.sync_all().ok();
-    eprintln!(
-        "[a2s] wrote {out}: {} tensors, {} payload bytes ({}, patched decode)",
-        names.len(),
-        payload_len,
-        dtype.safetensors_name()
-    );
+    eprintln!("[a2s] wrote {out}: {} tensors, {} payload bytes ({}, patched decode)", names.len(), payload_len, dtype.safetensors_name());
 }

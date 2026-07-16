@@ -75,15 +75,13 @@ fn ref_decode(enc: &EncodedTensor, cfg: &TrellisConfig, lut: &[i32]) -> Vec<i32>
         let n = blk.n as usize;
         let n_sub = n.div_ceil(32);
         let scodes = ref_unpack6(&blk.sub_scales, n_sub);
-        let mcodes: Vec<u8> =
-            if enc.has_affine_min { ref_unpack6(&blk.mins, n_sub) } else { Vec::new() };
+        let mcodes: Vec<u8> = if enc.has_affine_min { ref_unpack6(&blk.mins, n_sub) } else { Vec::new() };
 
         // Tail-biting start state: only when n*k >= l_bits, else trust init_state.
         let mut state = if enc.tail_biting && n * k as usize >= l as usize {
             let mut s = 0usize;
             for i in 0..n {
-                s = ((s << k) | (ref_read_bits(&enc.bits, cursor + i * k as usize, k) & imask))
-                    & mask;
+                s = ((s << k) | (ref_read_bits(&enc.bits, cursor + i * k as usize, k) & imask)) & mask;
             }
             s
         } else {
@@ -136,15 +134,7 @@ fn pack_symbols(syms: &[usize], k: u32) -> Vec<u8> {
 /// init_state / scale / sub-scale codes / affine min codes are caller-supplied so
 /// adversarial edge values can be injected directly onto the wire.
 #[allow(clippy::too_many_arguments)]
-fn make_tensor(
-    block_syms: &[Vec<usize>],
-    k: u32,
-    init_states: &[u32],
-    scale_qs: &[i32],
-    sub_codes: &[Vec<u8>],
-    tail_biting: bool,
-    affine: Option<(&[i32], &[Vec<u8>])>,
-) -> EncodedTensor {
+fn make_tensor(block_syms: &[Vec<usize>], k: u32, init_states: &[u32], scale_qs: &[i32], sub_codes: &[Vec<u8>], tail_biting: bool, affine: Option<(&[i32], &[Vec<u8>])>) -> EncodedTensor {
     let all_syms: Vec<usize> = block_syms.iter().flatten().copied().collect();
     let bits = pack_symbols(&all_syms, k);
     let mut blocks = Vec::new();
@@ -156,23 +146,9 @@ fn make_tensor(
             Some((bases, codes)) => (bases[b], pack_sub_scales(&codes[b])),
             None => (0, Vec::new()),
         };
-        blocks.push(BlockMeta {
-            scale_q: scale_qs[b],
-            sub_scales: pack_sub_scales(&sub_codes[b]),
-            min_base_q,
-            mins,
-            init_state: init_states[b],
-            n: n as u32,
-        });
+        blocks.push(BlockMeta { scale_q: scale_qs[b], sub_scales: pack_sub_scales(&sub_codes[b]), min_base_q, mins, init_state: init_states[b], n: n as u32 });
     }
-    EncodedTensor {
-        bits,
-        blocks,
-        total,
-        has_rht_seed: false,
-        tail_biting,
-        has_affine_min: affine.is_some(),
-    }
+    EncodedTensor { bits, blocks, total, has_rht_seed: false, tail_biting, has_affine_min: affine.is_some() }
 }
 
 /// The MOAT assertion: the three decoders agree bit-for-bit, AND the f32 wrapper
@@ -222,18 +198,7 @@ fn empty_blocks_alone_and_interleaved() {
             for &affine in &[false, true] {
                 // A small zoo of block-length layouts, each with empty blocks in
                 // leading / middle / trailing / adjacent positions.
-                let layouts: &[&[usize]] = &[
-                    &[0],
-                    &[0, 0],
-                    &[0, 0, 0],
-                    &[0, 5],
-                    &[5, 0],
-                    &[5, 0, 7],
-                    &[0, 5, 0],
-                    &[0, 0, 9, 0, 0],
-                    &[33, 0, 1, 0, 64],
-                    &[0, 256, 0, 256, 0],
-                ];
+                let layouts: &[&[usize]] = &[&[0], &[0, 0], &[0, 0, 0], &[0, 5], &[5, 0], &[5, 0, 7], &[0, 5, 0], &[0, 0, 9, 0, 0], &[33, 0, 1, 0, 64], &[0, 256, 0, 256, 0]];
                 for layout in layouts {
                     let mut block_syms = Vec::new();
                     let mut inits = Vec::new();
@@ -242,9 +207,7 @@ fn empty_blocks_alone_and_interleaved() {
                     let mut bases = Vec::new();
                     let mut minc: Vec<Vec<u8>> = Vec::new();
                     for (b, &n) in layout.iter().enumerate() {
-                        let syms: Vec<usize> = (0..n)
-                            .map(|i| ((i + b * 131).wrapping_mul(2654435761) >> 11) & imask)
-                            .collect();
+                        let syms: Vec<usize> = (0..n).map(|i| ((i + b * 131).wrapping_mul(2654435761) >> 11) & imask).collect();
                         block_syms.push(syms);
                         // adversarial init_state: large, irrelevant if tail-bitten
                         inits.push(((b as u32).wrapping_mul(0x9E37_79B9)) | 0x8000_0001);
@@ -257,11 +220,7 @@ fn empty_blocks_alone_and_interleaved() {
                     let enc = make_tensor(&block_syms, k, &inits, &scales, &subs, tail, aff);
                     // total must equal the sum of block lengths (no phantom output)
                     assert_eq!(enc.total, layout.iter().sum::<usize>());
-                    assert_three_way(
-                        &enc,
-                        &cfg,
-                        &format!("empty L={l} k={k} tail={tail} affine={affine} layout={layout:?}"),
-                    );
+                    assert_three_way(&enc, &cfg, &format!("empty L={l} k={k} tail={tail} affine={affine} layout={layout:?}"));
                     covered += 1;
                 }
             }
@@ -302,8 +261,7 @@ fn switch_boundary_exhaustive_both_sides() {
                 continue;
             }
             for stream in 0..n_streams {
-                let syms: Vec<usize> =
-                    (0..n).map(|i| (stream >> (i * k as usize)) & imask).collect();
+                let syms: Vec<usize> = (0..n).map(|i| (stream >> (i * k as usize)) & imask).collect();
                 let scale = SCALES[(stream + n) % SCALES.len()];
 
                 if below {
@@ -313,32 +271,12 @@ fn switch_boundary_exhaustive_both_sides() {
                     // with the same init decodes byte-identically (the two branches
                     // provably coincide below the threshold).
                     for init in 0..n_states {
-                        let enc = make_tensor(
-                            std::slice::from_ref(&syms),
-                            k,
-                            &[init as u32],
-                            &[scale],
-                            &[unity_subs(n)],
-                            true,
-                            None,
-                        );
-                        assert_three_way(
-                            &enc,
-                            &cfg,
-                            &format!("switch-below L={l} k={k} n={n} init={init} stream={stream}"),
-                        );
+                        let enc = make_tensor(std::slice::from_ref(&syms), k, &[init as u32], &[scale], &[unity_subs(n)], true, None);
+                        assert_three_way(&enc, &cfg, &format!("switch-below L={l} k={k} n={n} init={init} stream={stream}"));
                         // Cross-check: a non-tail-biting tensor with the same init
                         // must decode identically (below threshold the branches
                         // coincide).
-                        let enc_plain = make_tensor(
-                            std::slice::from_ref(&syms),
-                            k,
-                            &[init as u32],
-                            &[scale],
-                            &[unity_subs(n)],
-                            false,
-                            None,
-                        );
+                        let enc_plain = make_tensor(std::slice::from_ref(&syms), k, &[init as u32], &[scale], &[unity_subs(n)], false, None);
                         assert_eq!(
                             decode_lean(&enc, &cfg),
                             decode_lean(&enc_plain, &cfg),
@@ -351,30 +289,11 @@ fn switch_boundary_exhaustive_both_sides() {
                     // At/above threshold: output is INDEPENDENT of stored init_state.
                     // Drive init_state with the full range plus garbage and require a
                     // single fixed output, three-way verified.
-                    let inits = [
-                        0u32,
-                        (n_states - 1) as u32,
-                        (n_states / 2) as u32,
-                        0xFFFF_FFFF,
-                        0x8000_0000,
-                        0xDEAD_BEEF,
-                    ];
+                    let inits = [0u32, (n_states - 1) as u32, (n_states / 2) as u32, 0xFFFF_FFFF, 0x8000_0000, 0xDEAD_BEEF];
                     let mut first: Option<Vec<i32>> = None;
                     for &init in &inits {
-                        let enc = make_tensor(
-                            std::slice::from_ref(&syms),
-                            k,
-                            &[init],
-                            &[scale],
-                            &[unity_subs(n)],
-                            true,
-                            None,
-                        );
-                        assert_three_way(
-                            &enc,
-                            &cfg,
-                            &format!("switch-above L={l} k={k} n={n} init={init} stream={stream}"),
-                        );
+                        let enc = make_tensor(std::slice::from_ref(&syms), k, &[init], &[scale], &[unity_subs(n)], true, None);
+                        assert_three_way(&enc, &cfg, &format!("switch-above L={l} k={k} n={n} init={init} stream={stream}"));
                         let out = decode_lean(&enc, &cfg);
                         match &first {
                             None => first = Some(out),
@@ -404,44 +323,23 @@ fn unaligned_and_huge_block_widths() {
     let mut covered = 0u64;
     // 31/33/63/65 straddle one and two sub-blocks; 895/896/897 are the niche dim
     // and its neighbours; 1024/4096 are "huge"; 257/8191 are prime-ish odd sizes.
-    let widths = [
-        1usize, 2, 3, 31, 32, 33, 63, 64, 65, 127, 128, 129, 255, 257, 511, 895, 896, 897, 1024,
-        4096, 8191,
-    ];
+    let widths = [1usize, 2, 3, 31, 32, 33, 63, 64, 65, 127, 128, 129, 255, 257, 511, 895, 896, 897, 1024, 4096, 8191];
     for (l, k) in LK {
         let cfg = TrellisConfig::new(l, k, 256);
         let imask = (1usize << k) - 1;
         for &tail in &[false, true] {
             for &affine in &[false, true] {
                 for &n in &widths {
-                    let syms: Vec<usize> = (0..n)
-                        .map(|i| (i.wrapping_mul(2654435761) >> 9) & imask)
-                        .collect();
+                    let syms: Vec<usize> = (0..n).map(|i| (i.wrapping_mul(2654435761) >> 9) & imask).collect();
                     let n_sub = n.div_ceil(32);
                     // distinct sub-scale code per sub-block (partial last one included)
                     let subc: Vec<u8> = (0..n_sub).map(|s| ((s * 13 + 1) % 64) as u8).collect();
                     let minc: Vec<u8> = (0..n_sub).map(|s| ((s * 29 + 5) % 64) as u8).collect();
                     let scale = SCALES[(n + l as usize) % SCALES.len()];
                     let bases_i32 = [1i32 << 18];
-                    let aff = if affine {
-                        Some((&bases_i32[..], std::slice::from_ref(&minc)))
-                    } else {
-                        None
-                    };
-                    let enc = make_tensor(
-                        std::slice::from_ref(&syms),
-                        k,
-                        &[0x1234_5678],
-                        &[scale],
-                        std::slice::from_ref(&subc),
-                        tail,
-                        aff,
-                    );
-                    assert_three_way(
-                        &enc,
-                        &cfg,
-                        &format!("width L={l} k={k} tail={tail} affine={affine} n={n}"),
-                    );
+                    let aff = if affine { Some((&bases_i32[..], std::slice::from_ref(&minc))) } else { None };
+                    let enc = make_tensor(std::slice::from_ref(&syms), k, &[0x1234_5678], &[scale], std::slice::from_ref(&subc), tail, aff);
+                    assert_three_way(&enc, &cfg, &format!("width L={l} k={k} tail={tail} affine={affine} n={n}"));
                     covered += 1;
                 }
             }
@@ -470,10 +368,7 @@ fn all_zero_and_all_outlier_streams() {
             ("all-zero", Box::new(|_| 0usize)),
             ("all-max", Box::new(move |_| max_sym)),
             ("alt-0-max", Box::new(move |i| if i % 2 == 0 { 0 } else { max_sym })),
-            (
-                "ramp",
-                Box::new(move |i| i & max_sym),
-            ),
+            ("ramp", Box::new(move |i| i & max_sym)),
         ];
         for (sname, sf) in &streams {
             for &n in &widths {
@@ -484,24 +379,9 @@ fn all_zero_and_all_outlier_streams() {
                         // sub-scale codes: include 0 (eff_scale_q with code 0 => x1),
                         // 63 (unity x1 too at SUB_SCALE_SHIFT=6 -> (x*64)>>6=x), and a
                         // mid code; we cycle them across sub-blocks.
-                        let subc: Vec<u8> =
-                            (0..n_sub).map(|s| [0u8, 63, 1, 31][s % 4]).collect();
-                        let enc = make_tensor(
-                            std::slice::from_ref(&syms),
-                            k,
-                            &[0xABCD_1234],
-                            &[scale],
-                            std::slice::from_ref(&subc),
-                            tail,
-                            None,
-                        );
-                        assert_three_way(
-                            &enc,
-                            &cfg,
-                            &format!(
-                                "extreme L={l} k={k} stream={sname} n={n} scale={scale} tail={tail}"
-                            ),
-                        );
+                        let subc: Vec<u8> = (0..n_sub).map(|s| [0u8, 63, 1, 31][s % 4]).collect();
+                        let enc = make_tensor(std::slice::from_ref(&syms), k, &[0xABCD_1234], &[scale], std::slice::from_ref(&subc), tail, None);
+                        assert_three_way(&enc, &cfg, &format!("extreme L={l} k={k} stream={sname} n={n} scale={scale} tail={tail}"));
                         covered += 1;
                     }
                 }
@@ -530,31 +410,17 @@ fn affine_min_extremes_on_edge_widths() {
     let mut covered = 0u64;
     for &base in &bases {
         for &n in &widths {
-            let syms: Vec<usize> =
-                (0..n).map(|i| (i.wrapping_mul(40503) >> 3) & imask).collect();
+            let syms: Vec<usize> = (0..n).map(|i| (i.wrapping_mul(40503) >> 3) & imask).collect();
             let n_sub = n.div_ceil(32);
             // min-codes hit both signs (0..31 negative side, 32..63 positive) and
             // the magnitude extremes 0 and 31.
-            let minc: Vec<u8> = (0..n_sub)
-                .map(|s| [0u8, 0x1F, 0x20, 0x3F, 17, 48][s % 6])
-                .collect();
+            let minc: Vec<u8> = (0..n_sub).map(|s| [0u8, 0x1F, 0x20, 0x3F, 17, 48][s % 6]).collect();
             let subc: Vec<u8> = (0..n_sub).map(|s| ((s * 7 + 9) % 64) as u8).collect();
             for &tail in &[false, true] {
                 for &scale in &[1i32 << 16, i32::MAX, 0, -(1 << 16)] {
-                    let enc = make_tensor(
-                        std::slice::from_ref(&syms),
-                        k,
-                        &[0xFEED_0001],
-                        &[scale],
-                        std::slice::from_ref(&subc),
-                        tail,
-                        Some((std::slice::from_ref(&base), std::slice::from_ref(&minc))),
-                    );
-                    assert_three_way(
-                        &enc,
-                        &cfg,
-                        &format!("affine-edge base={base} n={n} tail={tail} scale={scale}"),
-                    );
+                    let enc =
+                        make_tensor(std::slice::from_ref(&syms), k, &[0xFEED_0001], &[scale], std::slice::from_ref(&subc), tail, Some((std::slice::from_ref(&base), std::slice::from_ref(&minc))));
+                    assert_three_way(&enc, &cfg, &format!("affine-edge base={base} n={n} tail={tail} scale={scale}"));
                     covered += 1;
                 }
             }
@@ -582,26 +448,14 @@ fn tail_biting_ignores_init_state_full_sweep() {
         for &n in &[8usize, 33, 256] {
             // a few representative payloads
             for seed in [1u64, 7, 1234567, 0xFFFF_FFFF] {
-                let syms: Vec<usize> = (0..n)
-                    .map(|i| (((i as u64).wrapping_add(seed)).wrapping_mul(2654435761) >> 13)
-                        as usize
-                        & imask)
-                    .collect();
+                let syms: Vec<usize> = (0..n).map(|i| (((i as u64).wrapping_add(seed)).wrapping_mul(2654435761) >> 13) as usize & imask).collect();
                 let scale = 1i32 << 16;
                 let mut canonical: Option<Vec<i32>> = None;
                 // full init sweep + 32-bit garbage values
                 let garbage = [0xFFFF_FFFFu32, 0x8000_0000, 0xDEAD_BEEF, 0x0BAD_F00D];
                 let all_inits = (0..n_states as u32).chain(garbage);
                 for init in all_inits {
-                    let enc = make_tensor(
-                        std::slice::from_ref(&syms),
-                        k,
-                        &[init],
-                        &[scale],
-                        &[unity_subs(n)],
-                        true,
-                        None,
-                    );
+                    let enc = make_tensor(std::slice::from_ref(&syms), k, &[init], &[scale], &[unity_subs(n)], true, None);
                     // three-way each time too
                     let lut = codebook_lut(cfg.l_bits);
                     let reference = ref_decode(&enc, &cfg, lut);
@@ -641,14 +495,8 @@ fn init_state_control_below_changes_above_fixed() {
     // n=1 (nk=2 < 4): init-state branch. Two inits must be able to differ.
     let below = vec![1usize];
     let br = std::slice::from_ref(&below);
-    let a = decode_lean(
-        &make_tensor(br, 2, &[0], &[1 << 16], &[unity_subs(1)], true, None),
-        &cfg,
-    );
-    let b = decode_lean(
-        &make_tensor(br, 2, &[15], &[1 << 16], &[unity_subs(1)], true, None),
-        &cfg,
-    );
+    let a = decode_lean(&make_tensor(br, 2, &[0], &[1 << 16], &[unity_subs(1)], true, None), &cfg);
+    let b = decode_lean(&make_tensor(br, 2, &[15], &[1 << 16], &[unity_subs(1)], true, None), &cfg);
     assert_ne!(
         a, b,
         "below-threshold init_state had no effect — the init-state branch is dead, \
@@ -659,18 +507,9 @@ fn init_state_control_below_changes_above_fixed() {
     // all collapse to one output.
     let above = vec![1usize, 2, 3, 0];
     let ar = std::slice::from_ref(&above);
-    let c = decode_lean(
-        &make_tensor(ar, 2, &[0], &[1 << 16], &[unity_subs(4)], true, None),
-        &cfg,
-    );
-    let d = decode_lean(
-        &make_tensor(ar, 2, &[15], &[1 << 16], &[unity_subs(4)], true, None),
-        &cfg,
-    );
-    let e = decode_lean(
-        &make_tensor(ar, 2, &[0xDEAD_BEEF], &[1 << 16], &[unity_subs(4)], true, None),
-        &cfg,
-    );
+    let c = decode_lean(&make_tensor(ar, 2, &[0], &[1 << 16], &[unity_subs(4)], true, None), &cfg);
+    let d = decode_lean(&make_tensor(ar, 2, &[15], &[1 << 16], &[unity_subs(4)], true, None), &cfg);
+    let e = decode_lean(&make_tensor(ar, 2, &[0xDEAD_BEEF], &[1 << 16], &[unity_subs(4)], true, None), &cfg);
     assert_eq!(c, d, "above-threshold tail-bite not init-independent");
     assert_eq!(d, e, "above-threshold tail-bite not garbage-init-independent");
 }
@@ -689,16 +528,13 @@ fn long_chain_with_holes_and_adaptive_subscales() {
         let imask = (1usize << k) - 1;
         for &tail in &[false, true] {
             // Block lengths: alternate real/empty, with assorted non-aligned sizes.
-            let lens: Vec<usize> =
-                vec![0, 1, 0, 32, 0, 33, 0, 256, 0, 895, 0, 896, 0, 257, 0, 0, 64, 0];
+            let lens: Vec<usize> = vec![0, 1, 0, 32, 0, 33, 0, 256, 0, 895, 0, 896, 0, 257, 0, 0, 64, 0];
             let mut block_syms = Vec::new();
             let mut inits = Vec::new();
             let mut scales = Vec::new();
             let mut subs: Vec<Vec<u8>> = Vec::new();
             for (b, &n) in lens.iter().enumerate() {
-                let syms: Vec<usize> = (0..n)
-                    .map(|i| ((i + b * 977).wrapping_mul(2654435761) >> 7) & imask)
-                    .collect();
+                let syms: Vec<usize> = (0..n).map(|i| ((i + b * 977).wrapping_mul(2654435761) >> 7) & imask).collect();
                 block_syms.push(syms);
                 inits.push(((b as u32).wrapping_mul(0x85EB_CA77)) | 1);
                 scales.push(SCALES[(b * 3 + l as usize) % SCALES.len()]);
@@ -707,11 +543,7 @@ fn long_chain_with_holes_and_adaptive_subscales() {
             }
             let enc = make_tensor(&block_syms, k, &inits, &scales, &subs, tail, None);
             assert_eq!(enc.total, lens.iter().sum::<usize>());
-            assert_three_way(
-                &enc,
-                &cfg,
-                &format!("longchain L={l} k={k} tail={tail}"),
-            );
+            assert_three_way(&enc, &cfg, &format!("longchain L={l} k={k} tail={tail}"));
             covered += 1;
         }
     }

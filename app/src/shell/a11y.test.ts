@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { cycleIndex, flattenVisible, treeKeyTarget } from "./a11y";
-import type { FileNode } from "../surfaces/ide/types";
+import { cycleIndex, flattenVisible, treeKeyTarget } from "./policies";
+import type { FileNode } from "../surfaces/types";
 
 describe("cycleIndex", () => {
   it("wraps forward off the end", () => {

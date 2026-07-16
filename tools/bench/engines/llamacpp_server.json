@@ -1,8 +1,0 @@
-{
-  "name": "llamacpp_server",
-  "kind": "openai_compatible",
-  "base_url": "http://127.0.0.1:8081/v1",
-  "health_url": "http://127.0.0.1:8081/health",
-  "model": "local-model",
-  "launch_command": "${LLAMA_CPP_SERVER:-llama-server} -m ${MODEL_PATH} --host 127.0.0.1 --port 8081 --ctx-size ${CTX_SIZE:-65536} --parallel ${PARALLEL:-8}"
-}

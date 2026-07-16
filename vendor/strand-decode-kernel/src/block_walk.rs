@@ -1,8 +1,5 @@
-
 use strand_quant::decode::{eff_min_q, eff_scale_q};
-use strand_quant::encode::{
-    n_sub_blocks, unpack_sub_scales, unpack_sub_scales_or_unity, BlockMeta, EncodedTensor,
-};
+use strand_quant::encode::{n_sub_blocks, unpack_sub_scales, unpack_sub_scales_or_unity, BlockMeta, EncodedTensor};
 use strand_quant::trellis::read_bits;
 use strand_quant::TrellisConfig;
 
@@ -21,7 +18,6 @@ pub struct WordReader<'a> {
 }
 
 impl<'a> WordReader<'a> {
-    
     #[inline]
     pub(crate) fn load_u32_le(bytes: &[u8], wi: usize) -> u32 {
         let b = wi * 4;
@@ -64,11 +60,10 @@ impl<'a> WordReader<'a> {
 
 #[derive(Clone, Copy)]
 pub struct BlockPlan {
-    
     pub start_bit: usize,
-    
+
     pub out_off: usize,
-    
+
     pub n: usize,
 }
 
@@ -90,7 +85,6 @@ pub struct SideInfo {
 }
 
 impl SideInfo {
-    
     #[inline(always)]
     pub fn hoist(blk: &BlockMeta, has_affine: bool) -> Self {
         let n_sub = n_sub_blocks(blk.n as usize);
@@ -122,13 +116,7 @@ impl SideInfo {
 }
 
 #[inline]
-pub fn block_init_state(
-    blk: &BlockMeta,
-    bits: &[u8],
-    start_bit: usize,
-    cfg: &TrellisConfig,
-    tail_biting: bool,
-) -> usize {
+pub fn block_init_state(blk: &BlockMeta, bits: &[u8], start_bit: usize, cfg: &TrellisConfig, tail_biting: bool) -> usize {
     let mask = cfg.state_mask();
     let k = cfg.k_bits;
     let input_mask = cfg.num_inputs() - 1;
@@ -154,14 +142,7 @@ mod tests {
 
     #[test]
     fn absent_sub_scale_stream_is_canonical_unity() {
-        let block = BlockMeta {
-            scale_q: 1 << 16,
-            sub_scales: Vec::new(),
-            min_base_q: 0,
-            mins: Vec::new(),
-            init_state: 0,
-            n: 64,
-        };
+        let block = BlockMeta { scale_q: 1 << 16, sub_scales: Vec::new(), min_base_q: 0, mins: Vec::new(), init_state: 0, n: 64 };
         let side = SideInfo::hoist(&block, false);
         assert_eq!(side.eff(), &[1 << 16, 1 << 16]);
         assert_eq!(side.off(), &[0, 0]);
@@ -194,14 +175,7 @@ pub mod gate_proto {
         for _ in 0..n_blocks {
             let n = block_len.min(total - emitted);
             let n_sub = n.div_ceil(SUB_BLOCK);
-            blocks.push(BlockMeta {
-                scale_q: 1 << 16,
-                sub_scales: pack_unit_sub_scales(n_sub),
-                min_base_q: 0,
-                mins: Vec::new(),
-                init_state: 0,
-                n: n as u32,
-            });
+            blocks.push(BlockMeta { scale_q: 1 << 16, sub_scales: pack_unit_sub_scales(n_sub), min_base_q: 0, mins: Vec::new(), init_state: 0, n: n as u32 });
             emitted += n;
         }
         let payload_bits = (total as u64) * (k as u64);
@@ -214,14 +188,7 @@ pub mod gate_proto {
             x ^= x << 17;
             *b = (x >> 33) as u8;
         }
-        EncodedTensor {
-            bits,
-            blocks,
-            total,
-            has_affine_min: false,
-            tail_biting: false,
-            has_rht_seed: false,
-        }
+        EncodedTensor { bits, blocks, total, has_affine_min: false, tail_biting: false, has_rht_seed: false }
     }
 
     pub fn canonical_configs() -> Vec<(TrellisConfig, &'static str)> {
@@ -255,9 +222,6 @@ pub mod gate_proto {
                 format!("CO-RUNNING ({}): {}", lines.len(), lines.join("; "))
             })
             .unwrap_or_else(|| "no co-running STRAND science jobs".into());
-        format!(
-            "machine: loadavg {load} | {co} | rayon threads {}",
-            rayon::current_num_threads()
-        )
+        format!("machine: loadavg {load} | {co} | rayon threads {}", rayon::current_num_threads())
     }
 }

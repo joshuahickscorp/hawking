@@ -58,11 +58,7 @@ pub fn dequant_into(dtype: GgmlType, bytes: &[u8], out: &mut [f32]) -> Result<()
 fn copy_f32(bytes: &[u8], out: &mut [f32]) -> Result<()> {
     let need = out.len() * 4;
     if bytes.len() < need {
-        return Err(Error::Kernel(format!(
-            "copy_f32: have {}B need {}B",
-            bytes.len(),
-            need
-        )));
+        return Err(Error::Kernel(format!("copy_f32: have {}B need {}B", bytes.len(), need)));
     }
     for i in 0..out.len() {
         out[i] = f32::from_le_bytes(bytes[4 * i..4 * i + 4].try_into().unwrap());
@@ -73,11 +69,7 @@ fn copy_f32(bytes: &[u8], out: &mut [f32]) -> Result<()> {
 fn copy_f16(bytes: &[u8], out: &mut [f32]) -> Result<()> {
     let need = out.len() * 2;
     if bytes.len() < need {
-        return Err(Error::Kernel(format!(
-            "copy_f16: have {}B need {}B",
-            bytes.len(),
-            need
-        )));
+        return Err(Error::Kernel(format!("copy_f16: have {}B need {}B", bytes.len(), need)));
     }
     for i in 0..out.len() {
         let bits = u16::from_le_bytes(bytes[2 * i..2 * i + 2].try_into().unwrap());
@@ -89,11 +81,7 @@ fn copy_f16(bytes: &[u8], out: &mut [f32]) -> Result<()> {
 fn copy_bf16(bytes: &[u8], out: &mut [f32]) -> Result<()> {
     let need = out.len() * 2;
     if bytes.len() < need {
-        return Err(Error::Kernel(format!(
-            "copy_bf16: have {}B need {}B",
-            bytes.len(),
-            need
-        )));
+        return Err(Error::Kernel(format!("copy_bf16: have {}B need {}B", bytes.len(), need)));
     }
     for i in 0..out.len() {
         let bits = u16::from_le_bytes(bytes[2 * i..2 * i + 2].try_into().unwrap());
@@ -109,25 +97,13 @@ fn copy_bf16(bytes: &[u8], out: &mut [f32]) -> Result<()> {
 /// Consolidates the identical guard prologue across the `dequant_q*` family;
 /// error strings are byte-identical to the inlined originals.
 #[inline]
-fn block_count(
-    tag: &str,
-    out_len: usize,
-    bytes_len: usize,
-    block_elems: usize,
-    block_bytes: usize,
-) -> Result<usize> {
+fn block_count(tag: &str, out_len: usize, bytes_len: usize, block_elems: usize, block_bytes: usize) -> Result<usize> {
     if out_len % block_elems != 0 {
-        return Err(Error::Kernel(format!(
-            "{tag}: out len not multiple of {block_elems}"
-        )));
+        return Err(Error::Kernel(format!("{tag}: out len not multiple of {block_elems}")));
     }
     let nb = out_len / block_elems;
     if bytes_len < nb * block_bytes {
-        return Err(Error::Kernel(format!(
-            "{tag}: have {}B need {}B",
-            bytes_len,
-            nb * block_bytes
-        )));
+        return Err(Error::Kernel(format!("{tag}: have {}B need {}B", bytes_len, nb * block_bytes)));
     }
     Ok(nb)
 }
@@ -142,8 +118,7 @@ fn dequant_q8_0(bytes: &[u8], out: &mut [f32]) -> Result<()> {
     let nb = block_count("q8_0", out.len(), bytes.len(), BLOCK_ELEMS, BLOCK_BYTES)?;
     for b in 0..nb {
         let off = b * BLOCK_BYTES;
-        let d =
-            f16::from_bits(u16::from_le_bytes(bytes[off..off + 2].try_into().unwrap())).to_f32();
+        let d = f16::from_bits(u16::from_le_bytes(bytes[off..off + 2].try_into().unwrap())).to_f32();
         for i in 0..BLOCK_ELEMS {
             let q = bytes[off + 2 + i] as i8 as f32;
             out[b * BLOCK_ELEMS + i] = d * q;
@@ -162,18 +137,12 @@ pub const Q8_0_BLOCK_BYTES: usize = 34;
 
 pub fn quantize_q8_0(src: &[f32], dst: &mut [u8]) -> Result<()> {
     if src.len() % Q8_0_BLOCK_ELEMS != 0 {
-        return Err(Error::Kernel(
-            "q8_0 quantize: src len not multiple of 32".into(),
-        ));
+        return Err(Error::Kernel("q8_0 quantize: src len not multiple of 32".into()));
     }
     let nb = src.len() / Q8_0_BLOCK_ELEMS;
     let need = nb * Q8_0_BLOCK_BYTES;
     if dst.len() < need {
-        return Err(Error::Kernel(format!(
-            "q8_0 quantize: dst {}B need {}B",
-            dst.len(),
-            need
-        )));
+        return Err(Error::Kernel(format!("q8_0 quantize: dst {}B need {}B", dst.len(), need)));
     }
     for b in 0..nb {
         let block = &src[b * Q8_0_BLOCK_ELEMS..(b + 1) * Q8_0_BLOCK_ELEMS];
@@ -196,18 +165,12 @@ pub const Q6_K_BLOCK_BYTES: usize = 210;
 
 pub fn quantize_q4_k(src: &[f32], dst: &mut [u8]) -> Result<()> {
     if src.len() % Q_K != 0 {
-        return Err(Error::Kernel(
-            "q4_K quantize: src len not multiple of 256".into(),
-        ));
+        return Err(Error::Kernel("q4_K quantize: src len not multiple of 256".into()));
     }
     let nb = src.len() / Q_K;
     let need = nb * Q4_K_BLOCK_BYTES;
     if dst.len() < need {
-        return Err(Error::Kernel(format!(
-            "q4_K quantize: dst {}B need {}B",
-            dst.len(),
-            need
-        )));
+        return Err(Error::Kernel(format!("q4_K quantize: dst {}B need {}B", dst.len(), need)));
     }
     for b in 0..nb {
         let block = &src[b * Q_K..(b + 1) * Q_K];
@@ -245,11 +208,7 @@ pub fn quantize_q4_k(src: &[f32], dst: &mut [u8]) -> Result<()> {
         }
         let max_scale = sub_scale.iter().copied().fold(0.0f32, f32::max);
         let max_min = sub_min.iter().copied().fold(0.0f32, f32::max);
-        let d = if max_scale > 0.0 {
-            max_scale / 63.0
-        } else {
-            0.0
-        };
+        let d = if max_scale > 0.0 { max_scale / 63.0 } else { 0.0 };
         let dmin = if max_min > 0.0 { max_min / 63.0 } else { 0.0 };
         let inv_d = if d > 0.0 { 1.0 / d } else { 0.0 };
         let inv_dmin = if dmin > 0.0 { 1.0 / dmin } else { 0.0 };
@@ -266,11 +225,7 @@ pub fn quantize_q4_k(src: &[f32], dst: &mut [u8]) -> Result<()> {
         for s in 0..8 {
             let eff_scale = d * sc_u6[s] as f32;
             let eff_min = dmin * mn_u6[s] as f32;
-            let inv_eff = if eff_scale > 0.0 {
-                1.0 / eff_scale
-            } else {
-                0.0
-            };
+            let inv_eff = if eff_scale > 0.0 { 1.0 / eff_scale } else { 0.0 };
             let pair = s / 2;
             let upper = (s % 2) == 1;
             let qbase = pair * 32;
@@ -300,18 +255,12 @@ fn encode_q_k_scale_min(scales: &[u8; 8], mins: &[u8; 8], dst: &mut [u8]) {
 
 pub fn quantize_q6_k(src: &[f32], dst: &mut [u8]) -> Result<()> {
     if src.len() % Q_K != 0 {
-        return Err(Error::Kernel(
-            "q6_K quantize: src len not multiple of 256".into(),
-        ));
+        return Err(Error::Kernel("q6_K quantize: src len not multiple of 256".into()));
     }
     let nb = src.len() / Q_K;
     let need = nb * Q6_K_BLOCK_BYTES;
     if dst.len() < need {
-        return Err(Error::Kernel(format!(
-            "q6_K quantize: dst {}B need {}B",
-            dst.len(),
-            need
-        )));
+        return Err(Error::Kernel(format!("q6_K quantize: dst {}B need {}B", dst.len(), need)));
     }
     for b in 0..nb {
         let block = &src[b * Q_K..(b + 1) * Q_K];
@@ -333,11 +282,7 @@ pub fn quantize_q6_k(src: &[f32], dst: &mut [u8]) -> Result<()> {
             }
         }
         let max_scale = local_scale.iter().copied().fold(0.0f32, f32::max);
-        let d = if max_scale > 0.0 {
-            max_scale / 127.0
-        } else {
-            0.0
-        };
+        let d = if max_scale > 0.0 { max_scale / 127.0 } else { 0.0 };
         let inv_d = if d > 0.0 { 1.0 / d } else { 0.0 };
         let mut sc_i8 = [0i8; 16];
         for s in 0..16 {
@@ -392,8 +337,7 @@ fn dequant_q4_0(bytes: &[u8], out: &mut [f32]) -> Result<()> {
     let nb = block_count("q4_0", out.len(), bytes.len(), BLOCK_ELEMS, BLOCK_BYTES)?;
     for b in 0..nb {
         let off = b * BLOCK_BYTES;
-        let d =
-            f16::from_bits(u16::from_le_bytes(bytes[off..off + 2].try_into().unwrap())).to_f32();
+        let d = f16::from_bits(u16::from_le_bytes(bytes[off..off + 2].try_into().unwrap())).to_f32();
         let qs = &bytes[off + 2..off + 18];
         let dst = &mut out[b * BLOCK_ELEMS..(b + 1) * BLOCK_ELEMS];
         for j in 0..16 {
@@ -417,12 +361,8 @@ fn dequant_q4_1(bytes: &[u8], out: &mut [f32]) -> Result<()> {
     let nb = block_count("q4_1", out.len(), bytes.len(), BLOCK_ELEMS, BLOCK_BYTES)?;
     for b in 0..nb {
         let off = b * BLOCK_BYTES;
-        let d =
-            f16::from_bits(u16::from_le_bytes(bytes[off..off + 2].try_into().unwrap())).to_f32();
-        let m = f16::from_bits(u16::from_le_bytes(
-            bytes[off + 2..off + 4].try_into().unwrap(),
-        ))
-        .to_f32();
+        let d = f16::from_bits(u16::from_le_bytes(bytes[off..off + 2].try_into().unwrap())).to_f32();
+        let m = f16::from_bits(u16::from_le_bytes(bytes[off + 2..off + 4].try_into().unwrap())).to_f32();
         let qs = &bytes[off + 4..off + 20];
         let dst = &mut out[b * BLOCK_ELEMS..(b + 1) * BLOCK_ELEMS];
         for j in 0..16 {
@@ -449,8 +389,7 @@ fn dequant_q5_0(bytes: &[u8], out: &mut [f32]) -> Result<()> {
     let nb = block_count("q5_0", out.len(), bytes.len(), BLOCK_ELEMS, BLOCK_BYTES)?;
     for b in 0..nb {
         let off = b * BLOCK_BYTES;
-        let d =
-            f16::from_bits(u16::from_le_bytes(bytes[off..off + 2].try_into().unwrap())).to_f32();
+        let d = f16::from_bits(u16::from_le_bytes(bytes[off..off + 2].try_into().unwrap())).to_f32();
         let qh = u32::from_le_bytes(bytes[off + 2..off + 6].try_into().unwrap());
         let qs = &bytes[off + 6..off + 22];
         let dst = &mut out[b * BLOCK_ELEMS..(b + 1) * BLOCK_ELEMS];
@@ -480,12 +419,8 @@ fn dequant_q5_1(bytes: &[u8], out: &mut [f32]) -> Result<()> {
     let nb = block_count("q5_1", out.len(), bytes.len(), BLOCK_ELEMS, BLOCK_BYTES)?;
     for b in 0..nb {
         let off = b * BLOCK_BYTES;
-        let d =
-            f16::from_bits(u16::from_le_bytes(bytes[off..off + 2].try_into().unwrap())).to_f32();
-        let m = f16::from_bits(u16::from_le_bytes(
-            bytes[off + 2..off + 4].try_into().unwrap(),
-        ))
-        .to_f32();
+        let d = f16::from_bits(u16::from_le_bytes(bytes[off..off + 2].try_into().unwrap())).to_f32();
+        let m = f16::from_bits(u16::from_le_bytes(bytes[off + 2..off + 4].try_into().unwrap())).to_f32();
         let qh = u32::from_le_bytes(bytes[off + 4..off + 8].try_into().unwrap());
         let qs = &bytes[off + 8..off + 24];
         let dst = &mut out[b * BLOCK_ELEMS..(b + 1) * BLOCK_ELEMS];
@@ -520,12 +455,8 @@ fn dequant_q4_k(bytes: &[u8], out: &mut [f32]) -> Result<()> {
     let nb = block_count("q4_k", out.len(), bytes.len(), Q_K, BLOCK_BYTES)?;
     for b in 0..nb {
         let off = b * BLOCK_BYTES;
-        let d =
-            f16::from_bits(u16::from_le_bytes(bytes[off..off + 2].try_into().unwrap())).to_f32();
-        let dmin = f16::from_bits(u16::from_le_bytes(
-            bytes[off + 2..off + 4].try_into().unwrap(),
-        ))
-        .to_f32();
+        let d = f16::from_bits(u16::from_le_bytes(bytes[off..off + 2].try_into().unwrap())).to_f32();
+        let dmin = f16::from_bits(u16::from_le_bytes(bytes[off + 2..off + 4].try_into().unwrap())).to_f32();
         let scales = &bytes[off + 4..off + 16];
         let qs = &bytes[off + 16..off + 144];
 
@@ -580,10 +511,7 @@ pub fn dequant_q3_k_into(bytes: &[u8], out: &mut [f32]) -> Result<()> {
         let hmask = &bytes[off..off + 32];
         let qs = &bytes[off + 32..off + 96];
         let scale_bytes = &bytes[off + 96..off + 108];
-        let d = f16::from_bits(u16::from_le_bytes(
-            bytes[off + 108..off + 110].try_into().unwrap(),
-        ))
-        .to_f32();
+        let d = f16::from_bits(u16::from_le_bytes(bytes[off + 108..off + 110].try_into().unwrap())).to_f32();
 
         let mut scales = [0i8; 16];
         decode_q3_k_scales(scale_bytes, &mut scales);
@@ -599,14 +527,8 @@ pub fn dequant_q3_k_into(bytes: &[u8], out: &mut [f32]) -> Result<()> {
                 for lane in 0..16 {
                     let q0_idx = half_q + lane;
                     let q1_idx = half_q + 16 + lane;
-                    let q0 = ((qs[q0_idx] >> shift) & 0x03) as i8
-                        - if (hmask[lane] & high_mask) != 0 { 0 } else { 4 };
-                    let q1 = ((qs[q1_idx] >> shift) & 0x03) as i8
-                        - if (hmask[16 + lane] & high_mask) != 0 {
-                            0
-                        } else {
-                            4
-                        };
+                    let q0 = ((qs[q0_idx] >> shift) & 0x03) as i8 - if (hmask[lane] & high_mask) != 0 { 0 } else { 4 };
+                    let q1 = ((qs[q1_idx] >> shift) & 0x03) as i8 - if (hmask[16 + lane] & high_mask) != 0 { 0 } else { 4 };
                     let s0 = d * scales[half * 8 + j * 2] as f32;
                     let s1 = d * scales[half * 8 + j * 2 + 1] as f32;
                     dst[elem_base + j * 32 + lane] = s0 * q0 as f32;
@@ -644,20 +566,12 @@ fn decode_q3_k_scales(src: &[u8], scales: &mut [i8; 16]) {
 /// on every call. Build once at load; pair with a `gemm_q3_k_v4_predec` kernel.
 pub fn predecode_q3_k_scale_table(bytes: &[u8]) -> Vec<f32> {
     const BLOCK_BYTES: usize = 110;
-    debug_assert_eq!(
-        bytes.len() % BLOCK_BYTES,
-        0,
-        "predecode_q3_k_scale_table: len {} not a multiple of 110",
-        bytes.len()
-    );
+    debug_assert_eq!(bytes.len() % BLOCK_BYTES, 0, "predecode_q3_k_scale_table: len {} not a multiple of 110", bytes.len());
     let nb = bytes.len() / BLOCK_BYTES;
     let mut out = vec![0.0f32; nb * 16];
     for b in 0..nb {
         let off = b * BLOCK_BYTES;
-        let d = f16::from_bits(u16::from_le_bytes(
-            bytes[off + 108..off + 110].try_into().unwrap(),
-        ))
-        .to_f32();
+        let d = f16::from_bits(u16::from_le_bytes(bytes[off + 108..off + 110].try_into().unwrap())).to_f32();
         let mut scales = [0i8; 16];
         decode_q3_k_scales(&bytes[off + 96..off + 108], &mut scales);
         for i in 0..16 {
@@ -703,12 +617,8 @@ fn dequant_q5_k(bytes: &[u8], out: &mut [f32]) -> Result<()> {
     let nb = block_count("q5_k", out.len(), bytes.len(), Q_K, BLOCK_BYTES)?;
     for b in 0..nb {
         let off = b * BLOCK_BYTES;
-        let d =
-            f16::from_bits(u16::from_le_bytes(bytes[off..off + 2].try_into().unwrap())).to_f32();
-        let dmin = f16::from_bits(u16::from_le_bytes(
-            bytes[off + 2..off + 4].try_into().unwrap(),
-        ))
-        .to_f32();
+        let d = f16::from_bits(u16::from_le_bytes(bytes[off..off + 2].try_into().unwrap())).to_f32();
+        let dmin = f16::from_bits(u16::from_le_bytes(bytes[off + 2..off + 4].try_into().unwrap())).to_f32();
         let scales = &bytes[off + 4..off + 16];
         let qh = &bytes[off + 16..off + 48];
         let qs = &bytes[off + 48..off + 176];
@@ -757,10 +667,7 @@ fn dequant_q6_k(bytes: &[u8], out: &mut [f32]) -> Result<()> {
         let ql = &bytes[off..off + 128];
         let qh = &bytes[off + 128..off + 192];
         let sc_bytes = &bytes[off + 192..off + 208];
-        let d = f16::from_bits(u16::from_le_bytes(
-            bytes[off + 208..off + 210].try_into().unwrap(),
-        ))
-        .to_f32();
+        let d = f16::from_bits(u16::from_le_bytes(bytes[off + 208..off + 210].try_into().unwrap())).to_f32();
 
         let dst = &mut out[b * Q_K..(b + 1) * Q_K];
         // Per upstream layout (ggml `dequantize_row_q6_K`): 256 elems
@@ -838,10 +745,7 @@ mod tests {
 
     #[test]
     fn copy_f16_round_trip() {
-        let src: Vec<f16> = [1.0, -1.5, 2.25]
-            .iter()
-            .map(|&v| f16::from_f32(v))
-            .collect();
+        let src: Vec<f16> = [1.0, -1.5, 2.25].iter().map(|&v| f16::from_f32(v)).collect();
         let bytes: Vec<u8> = src.iter().flat_map(|h| h.to_bits().to_le_bytes()).collect();
         let mut out = vec![0.0f32; 3];
         copy_f16(&bytes, &mut out).unwrap();
@@ -864,18 +768,11 @@ mod tests {
         assert_eq!(table.len(), 32);
         for blk in 0..2 {
             let off = blk * 110;
-            let d = f16::from_bits(u16::from_le_bytes(
-                bytes[off + 108..off + 110].try_into().unwrap(),
-            ))
-            .to_f32();
+            let d = f16::from_bits(u16::from_le_bytes(bytes[off + 108..off + 110].try_into().unwrap())).to_f32();
             let mut scales = [0i8; 16];
             decode_q3_k_scales(&bytes[off + 96..off + 108], &mut scales);
             for i in 0..16 {
-                assert_eq!(
-                    table[blk * 16 + i],
-                    d * scales[i] as f32,
-                    "block {blk} sub {i}"
-                );
+                assert_eq!(table[blk * 16 + i], d * scales[i] as f32, "block {blk} sub {i}");
             }
         }
     }

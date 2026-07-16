@@ -10,7 +10,7 @@ description = "Offline tool to bake AWQ smoothing (W' = W * s) into Q4_K tensors
 
 [[bin]]
 name = "awq_bake_sidecar"
-path = "src/main.rs"
+path = "main.rs"
 
 [dependencies]
 anyhow = { workspace = true }

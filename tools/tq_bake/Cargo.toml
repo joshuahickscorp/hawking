@@ -18,7 +18,11 @@ description = "Offline TQ (Trellis-Quant) weight baker — GGUF -> .tq via the a
 
 [[bin]]
 name = "tq_bake"
-path = "src/main.rs"
+path = "main.rs"
+
+[[test]]
+name = "roundtrip"
+path = "roundtrip.rs"
 
 [dependencies]
 hawking-core = { path = "../../crates/hawking-core" }

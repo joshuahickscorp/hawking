@@ -24,35 +24,17 @@ fn parse_args() -> Args {
     let mut parallel_binary = None;
     let mut work_dir = None;
     let mut receipt = None;
-    let mut block_threads = std::thread::available_parallelism()
-        .map(|n| n.get())
-        .unwrap_or(1);
+    let mut block_threads = std::thread::available_parallelism().map(|n| n.get()).unwrap_or(1);
     let mut scratch_budget_bytes = 256 * 1024 * 1024usize;
     let mut args = std::env::args().skip(1);
     while let Some(arg) = args.next() {
         match arg.as_str() {
-            "--canonical-binary" => {
-                canonical_binary = Some(args.next().expect("--canonical-binary needs PATH").into())
-            }
-            "--parallel-binary" => {
-                parallel_binary = Some(args.next().expect("--parallel-binary needs PATH").into())
-            }
+            "--canonical-binary" => canonical_binary = Some(args.next().expect("--canonical-binary needs PATH").into()),
+            "--parallel-binary" => parallel_binary = Some(args.next().expect("--parallel-binary needs PATH").into()),
             "--work-dir" => work_dir = Some(args.next().expect("--work-dir needs PATH").into()),
             "--receipt" => receipt = Some(args.next().expect("--receipt needs PATH").into()),
-            "--block-threads" => {
-                block_threads = args
-                    .next()
-                    .expect("--block-threads needs N")
-                    .parse()
-                    .expect("block-threads usize")
-            }
-            "--scratch-budget-bytes" => {
-                scratch_budget_bytes = args
-                    .next()
-                    .expect("--scratch-budget-bytes needs BYTES")
-                    .parse()
-                    .expect("scratch-budget-bytes usize")
-            }
+            "--block-threads" => block_threads = args.next().expect("--block-threads needs N").parse().expect("block-threads usize"),
+            "--scratch-budget-bytes" => scratch_budget_bytes = args.next().expect("--scratch-budget-bytes needs BYTES").parse().expect("scratch-budget-bytes usize"),
             "-h" | "--help" => {
                 println!(
                     "gate-quantize-model-block-parallel --canonical-binary PATH \
@@ -64,14 +46,8 @@ fn parse_args() -> Args {
             other => panic!("unknown argument {other}"),
         }
     }
-    assert!(
-        block_threads > 0,
-        "--block-threads must be greater than zero"
-    );
-    assert!(
-        scratch_budget_bytes > 0,
-        "--scratch-budget-bytes must be greater than zero"
-    );
+    assert!(block_threads > 0, "--block-threads must be greater than zero");
+    assert!(scratch_budget_bytes > 0, "--scratch-budget-bytes must be greater than zero");
     Args {
         canonical_binary: canonical_binary.expect("--canonical-binary is required"),
         parallel_binary: parallel_binary.expect("--parallel-binary is required"),
@@ -92,9 +68,7 @@ fn hex(bytes: &[u8]) -> String {
 }
 
 fn file_sha256(path: &Path) -> String {
-    hex(&sha256(
-        &fs::read(path).unwrap_or_else(|e| panic!("read {}: {e}", path.display())),
-    ))
+    hex(&sha256(&fs::read(path).unwrap_or_else(|e| panic!("read {}: {e}", path.display()))))
 }
 
 fn json_escape(s: &str) -> String {
@@ -134,10 +108,8 @@ fn write_fixture(path: &Path) {
     while (8 + header.len()) % 8 != 0 {
         header.push(' ');
     }
-    let mut file =
-        fs::File::create(path).unwrap_or_else(|e| panic!("create fixture {}: {e}", path.display()));
-    file.write_all(&(header.len() as u64).to_le_bytes())
-        .unwrap();
+    let mut file = fs::File::create(path).unwrap_or_else(|e| panic!("create fixture {}: {e}", path.display()));
+    file.write_all(&(header.len() as u64).to_le_bytes()).unwrap();
     file.write_all(header.as_bytes()).unwrap();
     for value in q.iter().chain(&down).chain(&norm) {
         file.write_all(&value.to_le_bytes()).unwrap();
@@ -146,19 +118,9 @@ fn write_fixture(path: &Path) {
 }
 
 fn run(binary: &Path, argv: &[String]) {
-    let output = Command::new(binary)
-        .args(argv)
-        .env("STRAND_NO_GPU", "1")
-        .output()
-        .unwrap_or_else(|e| panic!("launch {}: {e}", binary.display()));
+    let output = Command::new(binary).args(argv).env("STRAND_NO_GPU", "1").output().unwrap_or_else(|e| panic!("launch {}: {e}", binary.display()));
     if !output.status.success() {
-        panic!(
-            "{} failed with {}\nstdout:\n{}\nstderr:\n{}",
-            binary.display(),
-            output.status,
-            String::from_utf8_lossy(&output.stdout),
-            String::from_utf8_lossy(&output.stderr),
-        );
+        panic!("{} failed with {}\nstdout:\n{}\nstderr:\n{}", binary.display(), output.status, String::from_utf8_lossy(&output.stdout), String::from_utf8_lossy(&output.stderr),);
     }
 }
 
@@ -168,34 +130,13 @@ struct Outputs {
     archive: PathBuf,
 }
 
-fn run_variant(
-    binary: &Path,
-    fixture: &Path,
-    work_dir: &Path,
-    label: &str,
-    parallel: Option<(usize, usize)>,
-) -> Outputs {
+fn run_variant(binary: &Path, fixture: &Path, work_dir: &Path, label: &str, parallel: Option<(usize, usize)>) -> Outputs {
     let dense = work_dir.join(format!("{label}.safetensors"));
     let sidecar = PathBuf::from(format!("{}.json", dense.display()));
     let archive = work_dir.join(format!("{label}.strand"));
-    let mut common = vec![
-        "--input".into(),
-        fixture.display().to_string(),
-        "--bits".into(),
-        "2".into(),
-        "--l".into(),
-        "8".into(),
-        "--no-rht".into(),
-        "--threads".into(),
-        "1".into(),
-    ];
+    let mut common = vec!["--input".into(), fixture.display().to_string(), "--bits".into(), "2".into(), "--l".into(), "8".into(), "--no-rht".into(), "--threads".into(), "1".into()];
     if let Some((threads, budget)) = parallel {
-        common.extend([
-            "--block-threads".into(),
-            threads.to_string(),
-            "--block-scratch-budget-bytes".into(),
-            budget.to_string(),
-        ]);
+        common.extend(["--block-threads".into(), threads.to_string(), "--block-scratch-budget-bytes".into(), budget.to_string()]);
     }
     let mut dense_argv = common.clone();
     dense_argv.extend(["--output".into(), dense.display().to_string()]);
@@ -204,42 +145,19 @@ fn run_variant(
     let mut archive_argv = common;
     archive_argv.extend(["--packed-v2-out".into(), archive.display().to_string()]);
     run(binary, &archive_argv);
-    Outputs {
-        dense,
-        sidecar,
-        archive,
-    }
+    Outputs { dense, sidecar, archive }
 }
 
 fn main() {
     let args = parse_args();
-    assert!(
-        args.canonical_binary.is_file(),
-        "canonical binary is not a file"
-    );
-    assert!(
-        args.parallel_binary.is_file(),
-        "parallel binary is not a file"
-    );
-    fs::create_dir_all(&args.work_dir)
-        .unwrap_or_else(|e| panic!("create {}: {e}", args.work_dir.display()));
+    assert!(args.canonical_binary.is_file(), "canonical binary is not a file");
+    assert!(args.parallel_binary.is_file(), "parallel binary is not a file");
+    fs::create_dir_all(&args.work_dir).unwrap_or_else(|e| panic!("create {}: {e}", args.work_dir.display()));
     let fixture = args.work_dir.join("block-parallel-canary.safetensors");
     write_fixture(&fixture);
 
-    let canonical = run_variant(
-        &args.canonical_binary,
-        &fixture,
-        &args.work_dir,
-        "canonical",
-        None,
-    );
-    let parallel = run_variant(
-        &args.parallel_binary,
-        &fixture,
-        &args.work_dir,
-        "block-parallel",
-        Some((args.block_threads, args.scratch_budget_bytes)),
-    );
+    let canonical = run_variant(&args.canonical_binary, &fixture, &args.work_dir, "canonical", None);
+    let parallel = run_variant(&args.parallel_binary, &fixture, &args.work_dir, "block-parallel", Some((args.block_threads, args.scratch_budget_bytes)));
     let canonical_dense = file_sha256(&canonical.dense);
     let parallel_dense = file_sha256(&parallel.dense);
     let canonical_sidecar = file_sha256(&canonical.sidecar);
@@ -248,37 +166,20 @@ fn main() {
     let parallel_archive = file_sha256(&parallel.archive);
     assert_eq!(parallel_dense, canonical_dense, "dense output SHA mismatch");
     assert_eq!(parallel_sidecar, canonical_sidecar, "sidecar SHA mismatch");
-    assert_eq!(
-        parallel_archive, canonical_archive,
-        "packed-v2 SHA mismatch"
-    );
+    assert_eq!(parallel_archive, canonical_archive, "packed-v2 SHA mismatch");
 
     let canonical_binary_sha256 = file_sha256(&args.canonical_binary);
     let parallel_binary_sha256 = file_sha256(&args.parallel_binary);
     let fixture_sha256 = file_sha256(&fixture);
-    let invocation = format!(
-        "STRAND_NO_GPU=1;bits=2;l=8;rht=off;tensor_scope=linear_default;outer_threads=1;block_threads={};block_scratch_budget_bytes={}",
-        args.block_threads, args.scratch_budget_bytes,
-    );
+    let invocation =
+        format!("STRAND_NO_GPU=1;bits=2;l=8;rht=off;tensor_scope=linear_default;outer_threads=1;block_threads={};block_scratch_budget_bytes={}", args.block_threads, args.scratch_budget_bytes,);
     let mut payload = Vec::new();
-    for value in [
-        SCHEMA,
-        &canonical_binary_sha256,
-        &parallel_binary_sha256,
-        &fixture_sha256,
-        &canonical_dense,
-        &canonical_sidecar,
-        &canonical_archive,
-        &invocation,
-    ] {
+    for value in [SCHEMA, &canonical_binary_sha256, &parallel_binary_sha256, &fixture_sha256, &canonical_dense, &canonical_sidecar, &canonical_archive, &invocation] {
         payload.extend_from_slice(value.as_bytes());
         payload.push(0);
     }
     let payload_sha256 = hex(&sha256(&payload));
-    let generated_unix_ns = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .expect("system clock before epoch")
-        .as_nanos();
+    let generated_unix_ns = SystemTime::now().duration_since(UNIX_EPOCH).expect("system clock before epoch").as_nanos();
     let receipt = format!(
         "{{\n  \"schema\": \"{SCHEMA}\",\n  \"status\": \"pass\",\n  \"generated_unix_ns\": {generated_unix_ns},\n  \"canonical_binary\": \"{}\",\n  \"canonical_binary_sha256\": \"{canonical_binary_sha256}\",\n  \"parallel_binary\": \"{}\",\n  \"parallel_binary_sha256\": \"{parallel_binary_sha256}\",\n  \"fixture\": \"{}\",\n  \"fixture_sha256\": \"{fixture_sha256}\",\n  \"invocation_contract\": \"{}\",\n  \"dense_output_sha256\": \"{canonical_dense}\",\n  \"dense_exact_match\": true,\n  \"sidecar_sha256\": \"{canonical_sidecar}\",\n  \"sidecar_exact_match\": true,\n  \"packed_v2_archive_sha256\": \"{canonical_archive}\",\n  \"packed_v2_exact_match\": true,\n  \"canonical_payload_sha256\": \"{payload_sha256}\"\n}}\n",
         json_escape(&args.canonical_binary.display().to_string()),
@@ -286,7 +187,6 @@ fn main() {
         json_escape(&fixture.display().to_string()),
         json_escape(&invocation),
     );
-    fs::write(&args.receipt, &receipt)
-        .unwrap_or_else(|e| panic!("write {}: {e}", args.receipt.display()));
+    fs::write(&args.receipt, &receipt).unwrap_or_else(|e| panic!("write {}: {e}", args.receipt.display()));
     print!("{receipt}");
 }

@@ -1,32 +1,16 @@
-
 use std::time::Instant;
 
 use strand_quant::codebook::codebook_lut;
 use strand_quant::decode::decode_tensor;
-use strand_quant::encode::{
-    encode_tensor_with_lut, encode_tensor_with_lut_metric, encode_tensor_with_lut_reference,
-    vector_lut_from_scalar, EncodeOpts,
-};
+use strand_quant::encode::{encode_tensor_with_lut, encode_tensor_with_lut_metric, encode_tensor_with_lut_reference, vector_lut_from_scalar, EncodeOpts};
 use strand_quant::gate_utils::{normal_vec, outlier_shaped, rel_rms};
 use strand_quant::TrellisConfig;
 
 const OPT_COMBOS: [(&str, EncodeOpts); 4] = [
-    (
-        "default",
-        EncodeOpts { adaptive: true, tail_biting: false, affine_min: false, silence_bonus: 0.0, entropy_bonus_scale: 0.0, entropy_bonus_two_pass: false },
-    ),
-    (
-        "tail",
-        EncodeOpts { adaptive: true, tail_biting: true, affine_min: false, silence_bonus: 0.0, entropy_bonus_scale: 0.0, entropy_bonus_two_pass: false },
-    ),
-    (
-        "affine",
-        EncodeOpts { adaptive: true, tail_biting: false, affine_min: true, silence_bonus: 0.0, entropy_bonus_scale: 0.0, entropy_bonus_two_pass: false },
-    ),
-    (
-        "tail+affine",
-        EncodeOpts { adaptive: true, tail_biting: true, affine_min: true, silence_bonus: 0.0, entropy_bonus_scale: 0.0, entropy_bonus_two_pass: false },
-    ),
+    ("default", EncodeOpts { adaptive: true, tail_biting: false, affine_min: false, silence_bonus: 0.0, entropy_bonus_scale: 0.0, entropy_bonus_two_pass: false }),
+    ("tail", EncodeOpts { adaptive: true, tail_biting: true, affine_min: false, silence_bonus: 0.0, entropy_bonus_scale: 0.0, entropy_bonus_two_pass: false }),
+    ("affine", EncodeOpts { adaptive: true, tail_biting: false, affine_min: true, silence_bonus: 0.0, entropy_bonus_scale: 0.0, entropy_bonus_two_pass: false }),
+    ("tail+affine", EncodeOpts { adaptive: true, tail_biting: true, affine_min: true, silence_bonus: 0.0, entropy_bonus_scale: 0.0, entropy_bonus_two_pass: false }),
 ];
 
 fn run_identity() -> bool {
@@ -98,12 +82,7 @@ fn run_identity() -> bool {
         let opts = EncodeOpts::default();
         let e64 = encode_tensor_with_lut_metric(&w, &cfg, &opts, lut, false);
         let e32 = encode_tensor_with_lut_metric(&w, &cfg, &opts, lut, true);
-        let diff_bytes = e64
-            .bits
-            .iter()
-            .zip(e32.bits.iter())
-            .filter(|(a, b)| a != b)
-            .count();
+        let diff_bytes = e64.bits.iter().zip(e32.bits.iter()).filter(|(a, b)| a != b).count();
         let r64 = rel_rms(&w, &decode_tensor(&e64, &cfg));
         let r32 = rel_rms(&w, &decode_tensor(&e32, &cfg));
         println!(
@@ -130,26 +109,14 @@ fn stamp() {
         ("git", &["git", "rev-parse", "--short", "HEAD"]),
     ];
     for (label, cmd) in cmds {
-        let out = std::process::Command::new(cmd[0])
-            .args(&cmd[1..])
-            .output()
-            .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string())
-            .unwrap_or_else(|_| "<unavailable>".into());
+        let out = std::process::Command::new(cmd[0]).args(&cmd[1..]).output().map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string()).unwrap_or_else(|_| "<unavailable>".into());
         println!("  {label}: {out}");
     }
     println!("  build: release={}", !cfg!(debug_assertions));
     println!();
 }
 
-fn bench_one(
-    label: &str,
-    w: &[f32],
-    cfg: &TrellisConfig,
-    lut: &'static [i32],
-    iters: u32,
-    f: impl Fn(&[f32], &TrellisConfig, &[i32]) -> usize,
-) -> f64 {
-    
+fn bench_one(label: &str, w: &[f32], cfg: &TrellisConfig, lut: &'static [i32], iters: u32, f: impl Fn(&[f32], &TrellisConfig, &[i32]) -> usize) -> f64 {
     let _ = f(&w[..1024.min(w.len())], cfg, lut);
     let t0 = Instant::now();
     let mut sink = 0usize;
@@ -170,31 +137,17 @@ fn run_bench() {
     let opts = EncodeOpts::default();
     let nthreads: usize = std::thread::available_parallelism().map(|p| p.get()).unwrap_or(1);
 
-    let configs: [(&str, u32, u32, usize, u32); 3] = [
-        ("q2_l12 (shipped 2-bit)", 2, 12, 49_152, 2),
-        ("q3_l12", 3, 12, 24_576, 2),
-        ("q4_l8 (4-bit default)", 4, 8, 262_144, 2),
-    ];
+    let configs: [(&str, u32, u32, usize, u32); 3] = [("q2_l12 (shipped 2-bit)", 2, 12, 49_152, 2), ("q3_l12", 3, 12, 24_576, 2), ("q4_l8 (4-bit default)", 4, 8, 262_144, 2)];
 
     for (name, k, l, n, iters) in configs {
         let cfg = TrellisConfig::new(l, k, 256);
         let lut: &'static [i32] = codebook_lut(cfg.l_bits);
         println!("  {name}  (k={k} L={l} N={n}, single-thread):");
         let w = normal_vec(n, 0xBEEF_0000 + l as u64);
-        let r_ref = bench_one("reference (scatter)", &w, &cfg, lut, iters, |w, c, lu| {
-            encode_tensor_with_lut_reference(w, c, &opts, lu).bits.len()
-        });
-        let r_new = bench_one("new relax kernel", &w, &cfg, lut, iters, |w, c, lu| {
-            encode_tensor_with_lut(w, c, &opts, lu).bits.len()
-        });
-        let r_f32 = bench_one("new + f32 metric", &w, &cfg, lut, iters, |w, c, lu| {
-            encode_tensor_with_lut_metric(w, c, &opts, lu, true).bits.len()
-        });
-        println!(
-            "    speedup: new {:.2}x   new+f32 {:.2}x\n",
-            r_new / r_ref,
-            r_f32 / r_ref
-        );
+        let r_ref = bench_one("reference (scatter)", &w, &cfg, lut, iters, |w, c, lu| encode_tensor_with_lut_reference(w, c, &opts, lu).bits.len());
+        let r_new = bench_one("new relax kernel", &w, &cfg, lut, iters, |w, c, lu| encode_tensor_with_lut(w, c, &opts, lu).bits.len());
+        let r_f32 = bench_one("new + f32 metric", &w, &cfg, lut, iters, |w, c, lu| encode_tensor_with_lut_metric(w, c, &opts, lu, true).bits.len());
+        println!("    speedup: new {:.2}x   new+f32 {:.2}x\n", r_new / r_ref, r_f32 / r_ref);
 
         println!("  {name}  ({nthreads} threads, one tensor each):");
         for (tlabel, mode) in [("reference (scatter)", 0u8), ("new relax kernel", 1), ("new + f32 metric", 2)] {
@@ -217,7 +170,7 @@ fn run_bench() {
                 handles.into_iter().map(|h| h.join().unwrap()).sum()
             });
             let dt = t0.elapsed().as_secs_f64();
-            
+
             let mw_s = ((n * nthreads) as f64) / dt / 1e6;
             println!("    {tlabel:<22} {mw_s:8.3} Mw/s aggregate  ({dt:.2}s, sink={total})");
         }

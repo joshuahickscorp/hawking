@@ -563,7 +563,7 @@ def write_report(
                 "> **CANDIDATE GO**: tau >= 2.5 gate met. "
                 "Before any wiring: run full sweep (--max-prompts 100+) and confirm "
                 "on the REAL WORKLOAD distribution. Then open an explicit kill-ledger "
-                "review to override EAGLE entry in docs/dead_levers.md."
+                "review to override the EAGLE kill record in docs/RESEARCH.md."
             )
         else:
             lines.append(
@@ -758,7 +758,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         else:
             print(
                 f"\nNO-GO: best tau={best.tau:.4f} < {TAU_GATE} gate.\n"
-                "EAGLE stays disabled per kill-ledger (docs/dead_levers.md).\n"
+                "EAGLE stays disabled per kill ledger (docs/RESEARCH.md).\n"
                 "Do not call enable_neural_slot.",
                 flush=True,
             )

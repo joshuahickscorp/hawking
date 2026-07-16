@@ -18,7 +18,7 @@
 #   OUT=<dir>                     report dir (default reports/ssm-quality-chat/<stamp>)
 set -u
 
-REPO="${REPO:-$HOME/Downloads/hawking}"; cd "$REPO" || exit 2
+REPO="${REPO:-$(CDPATH= cd -- "$(dirname "$0")/../.." && pwd)}"; cd "$REPO" || exit 2
 BIN="${BIN:-./target/release/hawking}"
 MODELS="${MODELS:-models/rwkv7-g1-04-sft-Q4_K_M.gguf models/qwen2.5-3b-instruct-q4_k_m.gguf}"
 TOK="${TOK:-96}"

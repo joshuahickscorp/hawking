@@ -63,13 +63,7 @@ pub fn hex32(d: &[u8; 32]) -> String {
     s
 }
 
-pub fn should_skip(
-    name: &str,
-    tensor_bytes_hash: &[u8; 32],
-    bits: u32,
-    config_key: &str,
-    prior: Option<&Manifest>,
-) -> bool {
+pub fn should_skip(name: &str, tensor_bytes_hash: &[u8; 32], bits: u32, config_key: &str, prior: Option<&Manifest>) -> bool {
     let Some(m) = prior else { return false };
     if m.config_key != config_key {
         return false;
@@ -82,25 +76,12 @@ pub fn should_skip(
 
 impl Manifest {
     pub fn new(config_key: impl Into<String>) -> Self {
-        Manifest {
-            config_key: config_key.into(),
-            entries: BTreeMap::new(),
-        }
+        Manifest { config_key: config_key.into(), entries: BTreeMap::new() }
     }
 
     pub fn record(&mut self, name: &str, tensor_bytes_hash: &[u8; 32], bits: u32) {
-        assert!(
-            !name.contains('"') && !name.contains('\\'),
-            "tensor name {name:?} needs JSON escaping — not supported"
-        );
-        self.entries.insert(
-            name.to_string(),
-            ManifestEntry {
-                name: name.to_string(),
-                bits,
-                sha256_hex: hex32(tensor_bytes_hash),
-            },
-        );
+        assert!(!name.contains('"') && !name.contains('\\'), "tensor name {name:?} needs JSON escaping — not supported");
+        self.entries.insert(name.to_string(), ManifestEntry { name: name.to_string(), bits, sha256_hex: hex32(tensor_bytes_hash) });
     }
 
     pub fn lookup(&self, name: &str) -> Option<&ManifestEntry> {
@@ -108,10 +89,7 @@ impl Manifest {
     }
 
     pub fn to_json(&self) -> String {
-        assert!(
-            !self.config_key.contains('"') && !self.config_key.contains('\\'),
-            "config_key needs JSON escaping — not supported"
-        );
+        assert!(!self.config_key.contains('"') && !self.config_key.contains('\\'), "config_key needs JSON escaping — not supported");
         let mut s = String::from("{\n");
         s.push_str(&format!("  \"version\": {},\n", MANIFEST_VERSION));
         s.push_str(&format!("  \"config_key\": \"{}\",\n", self.config_key));
@@ -120,10 +98,7 @@ impl Manifest {
             if i > 0 {
                 s.push_str(",\n");
             }
-            s.push_str(&format!(
-                "    {{\"name\": \"{}\", \"bits\": {}, \"sha256\": \"{}\"}}",
-                e.name, e.bits, e.sha256_hex
-            ));
+            s.push_str(&format!("    {{\"name\": \"{}\", \"bits\": {}, \"sha256\": \"{}\"}}", e.name, e.bits, e.sha256_hex));
         }
         s.push_str("\n  ]\n}\n");
         s
@@ -159,22 +134,11 @@ impl Manifest {
                     i += 1;
                 }
                 let obj = &body[start..i];
-                let (name, bits, sha) = (
-                    extract_str(obj, "name")?,
-                    extract_uint(obj, "bits")?,
-                    extract_str(obj, "sha256")?,
-                );
+                let (name, bits, sha) = (extract_str(obj, "name")?, extract_uint(obj, "bits")?, extract_str(obj, "sha256")?);
                 if sha.len() != 64 || !sha.bytes().all(|c| c.is_ascii_hexdigit()) {
                     return None;
                 }
-                m.entries.insert(
-                    name.clone(),
-                    ManifestEntry {
-                        name,
-                        bits: bits as u32,
-                        sha256_hex: sha,
-                    },
-                );
+                m.entries.insert(name.clone(), ManifestEntry { name, bits: bits as u32, sha256_hex: sha });
             } else {
                 i += 1;
             }
@@ -214,9 +178,7 @@ fn extract_uint(obj: &str, field: &str) -> Option<u64> {
     let p = obj.find(&pat)? + pat.len();
     let rest = &obj[p..];
     let rest = rest.trim_start_matches(|c: char| c.is_whitespace() || c == ':');
-    rest.split(|c: char| !c.is_ascii_digit())
-        .next()
-        .and_then(|t| t.parse().ok())
+    rest.split(|c: char| !c.is_ascii_digit()).next().and_then(|t| t.parse().ok())
 }
 
 #[cfg(test)]
@@ -265,54 +227,18 @@ mod tests {
         let hash = h(b"frozen down_proj bytes");
         m.record("model.layers.0.mlp.down_proj.weight", &hash, 2);
 
-        assert!(should_skip(
-            "model.layers.0.mlp.down_proj.weight",
-            &hash,
-            2,
-            key,
-            Some(&m)
-        ));
+        assert!(should_skip("model.layers.0.mlp.down_proj.weight", &hash, 2, key, Some(&m)));
 
-        assert!(!should_skip(
-            "model.layers.0.mlp.down_proj.weight",
-            &hash,
-            2,
-            key,
-            None
-        ));
+        assert!(!should_skip("model.layers.0.mlp.down_proj.weight", &hash, 2, key, None));
 
         let other = h(b"the shadow moved");
-        assert!(!should_skip(
-            "model.layers.0.mlp.down_proj.weight",
-            &other,
-            2,
-            key,
-            Some(&m)
-        ));
+        assert!(!should_skip("model.layers.0.mlp.down_proj.weight", &other, 2, key, Some(&m)));
 
-        assert!(!should_skip(
-            "model.layers.0.mlp.down_proj.weight",
-            &hash,
-            3,
-            key,
-            Some(&m)
-        ));
+        assert!(!should_skip("model.layers.0.mlp.down_proj.weight", &hash, 3, key, Some(&m)));
 
-        assert!(!should_skip(
-            "model.layers.0.mlp.down_proj.weight",
-            &hash,
-            2,
-            "bits=2,l=13,rht=true,out=1.0@8",
-            Some(&m)
-        ));
+        assert!(!should_skip("model.layers.0.mlp.down_proj.weight", &hash, 2, "bits=2,l=13,rht=true,out=1.0@8", Some(&m)));
 
-        assert!(!should_skip(
-            "model.layers.1.mlp.down_proj.weight",
-            &hash,
-            2,
-            key,
-            Some(&m)
-        ));
+        assert!(!should_skip("model.layers.1.mlp.down_proj.weight", &hash, 2, key, Some(&m)));
     }
 
     #[test]
@@ -329,14 +255,9 @@ mod tests {
 
     #[test]
     fn load_missing_or_garbage_is_a_cache_miss() {
-        assert!(Manifest::load("/nonexistent/path/manifest.json")
-            .unwrap()
-            .is_none());
+        assert!(Manifest::load("/nonexistent/path/manifest.json").unwrap().is_none());
         assert!(Manifest::from_json("not json at all").is_none());
-        assert!(
-            Manifest::from_json("{\"version\": 999, \"config_key\": \"x\", \"tensors\": []}")
-                .is_none()
-        );
+        assert!(Manifest::from_json("{\"version\": 999, \"config_key\": \"x\", \"tensors\": []}").is_none());
 
         assert!(Manifest::from_json(
             "{\"version\": 1, \"config_key\": \"k\", \"tensors\": [\
@@ -347,8 +268,7 @@ mod tests {
 
     #[test]
     fn save_load_roundtrip_on_disk() {
-        let dir =
-            std::env::temp_dir().join(format!("strand-encode-cache-test-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("strand-encode-cache-test-{}", std::process::id()));
         fs::create_dir_all(&dir).unwrap();
         let path = dir.join("manifest.json");
         let mut m = Manifest::new("bits=2,l=12,out=1.0@8");
@@ -357,13 +277,7 @@ mod tests {
         m.save(&path).unwrap();
         let back = Manifest::load(&path).unwrap().expect("manifest present");
         assert_eq!(m, back);
-        assert!(should_skip(
-            "model.layers.5.mlp.down_proj.weight",
-            &hash,
-            2,
-            "bits=2,l=12,out=1.0@8",
-            Some(&back)
-        ));
+        assert!(should_skip("model.layers.5.mlp.down_proj.weight", &hash, 2, "bits=2,l=12,out=1.0@8", Some(&back)));
         fs::remove_dir_all(&dir).ok();
     }
 

@@ -25,6 +25,10 @@ import statistics
 import sys
 from typing import Any
 
+import condense_profiles
+
+condense_profiles.install_archive_importer()
+
 import appendix_contract
 import appendix_corpus
 import appendix_device_runner
@@ -65,36 +69,23 @@ BASE_REQUIRED_SOURCE_PATHS = {
     "crates/hawking/Cargo.toml",
     "crates/hawking-core/Cargo.toml",
     "crates/hawking-core/build.rs",
-    "crates/hawking-core/src/metal/mod.rs",
-    "crates/hawking-core/src/metal/physical_signpost.c",
-    "crates/hawking/src/tq_device_probe.rs",
-    "crates/hawking/src/tq_spec_probe.rs",
-    "crates/hawking/src/process_joule.rs",
+    "crates/hawking-core/src/metal.rs",
+    "crates/hawking-core/src/metal_physical_signpost.c",
+    "crates/hawking/tq_device_probe.rs",
+    "crates/hawking/tq_spec_probe.rs",
+    "crates/hawking/process_joule.rs",
     "crates/hawking-core/shaders/strand_bitslice.metal",
-    "crates/hawking-core/src/kernels/mod.rs",
+    "crates/hawking-core/src/kernels.rs",
     "crates/hawking-core/src/lib.rs",
     "crates/hawking-core/src/tq.rs",
     "crates/hawking-core/src/tq_gpu.rs",
-    "crates/hawking-core/src/model/qwen_dense.rs",
-    "tools/condense/appendix_device_runner.py",
-    "tools/condense/appendix_postrun.py",
-    "tools/condense/appendix_corpus.py",
-    "tools/condense/appendix_physical_release_packet.py",
-    "tools/condense/spec_tq_runner.py",
-    "tools/condense/tq_receipt_contract.py",
-    "tools/condense/tq_runtime_matrix.py",
-    "tools/condense/tq_runtime_probe.py",
-    "tools/condense/spec_receipt_contract.py",
+    "crates/hawking-core/src/model_qwen_dense.rs",
+    "tools/condense/appendix_runtime.py",
+    "tools/condense/condense_common.py",
+    "tools/condense/condense_profiles.py",
     "tools/condense/physical_counter_attestation.py",
-    "tools/condense/appendix_physical_counter_collector.py",
     "tools/condense/appendix_physical_counter_authority.py",
-    "tools/condense/appendix_physical_counter_executor.py",
-    "tools/condense/appendix_physical_counter_normalizer.py",
-    "tools/condense/appendix_physical_counter_request.py",
-    "tools/condense/appendix_process_joule_collector.py",
-    "tools/condense/appendix_xctrace_export_adapter.py",
     "tools/condense/appendix_physical_evidence_gate.py",
-    "tools/condense/appendix_physical_release_state.py",
     "docs/plans/appendix_counter_authority_allowed_signers",
     "docs/plans/appendix_counter_authority_registry.json",
 }
@@ -116,7 +107,12 @@ def _python_dependency_closure(paths: set[str]) -> set[str]:
         seen.add(relative)
         path = ROOT / relative
         try:
-            tree = ast.parse(path.read_text(encoding="utf-8"), filename=relative)
+            source = (
+                path.read_text(encoding="utf-8")
+                if path.is_file()
+                else condense_profiles.archive_source(path.stem).decode("utf-8")
+            )
+            tree = ast.parse(source, filename=relative)
         except (OSError, UnicodeError, SyntaxError) as exc:
             raise RuntimeError(f"cannot derive Python dependency closure for {relative}: {exc}") from exc
         modules: set[str] = set()
@@ -1036,8 +1032,8 @@ def _validate_release_build(
         errors.append("release build compiled source closure set is incomplete")
         closures = {}
     for target_name, required_source in (
-        ("hawking-tq-device-probe", ROOT / "crates/hawking/src/tq_device_probe.rs"),
-        ("hawking-tq-spec-probe", ROOT / "crates/hawking/src/tq_spec_probe.rs"),
+        ("hawking-tq-device-probe", ROOT / "crates/hawking/tq_device_probe.rs"),
+        ("hawking-tq-spec-probe", ROOT / "crates/hawking/tq_spec_probe.rs"),
     ):
         artifact = artifacts.get(target_name)
         executable = artifact.get("executable") if isinstance(artifact, dict) else None

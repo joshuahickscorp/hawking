@@ -20,16 +20,7 @@ use crate::Result;
 ///   - head_dim
 /// Output:
 ///   - out:      (n_heads, head_dim)
-pub fn mha_decode_step(
-    q: &[f32],
-    k_cache: &[f32],
-    v_cache: &[f32],
-    n_heads: usize,
-    n_kv_heads: usize,
-    head_dim: usize,
-    seq_len: usize,
-    out: &mut [f32],
-) -> Result<()> {
+pub fn mha_decode_step(q: &[f32], k_cache: &[f32], v_cache: &[f32], n_heads: usize, n_kv_heads: usize, head_dim: usize, seq_len: usize, out: &mut [f32]) -> Result<()> {
     debug_assert_eq!(q.len(), n_heads * head_dim);
     debug_assert_eq!(out.len(), n_heads * head_dim);
 
@@ -78,14 +69,7 @@ pub fn mha_decode_step(
 /// `mha_decode_step` materializes internally and discards. Returns a
 /// `Vec` of `n_heads` distributions, each length `seq_len`, in
 /// retained-position order (index 0 == oldest cached position).
-pub fn mha_decode_step_weights(
-    q: &[f32],
-    k_cache: &[f32],
-    n_heads: usize,
-    n_kv_heads: usize,
-    head_dim: usize,
-    seq_len: usize,
-) -> Vec<Vec<f32>> {
+pub fn mha_decode_step_weights(q: &[f32], k_cache: &[f32], n_heads: usize, n_kv_heads: usize, head_dim: usize, seq_len: usize) -> Vec<Vec<f32>> {
     let group_size = n_heads / n_kv_heads;
     let scale = 1.0 / (head_dim as f32).sqrt();
     let mut out = Vec::with_capacity(n_heads);
@@ -286,42 +270,14 @@ mod tests {
         let v = rng_vec(seq_len * n_kv_heads * head_dim, 3);
 
         let mut out_ref = vec![0.0f32; n_heads * head_dim];
-        mha_decode_step(
-            &q,
-            &k,
-            &v,
-            n_heads,
-            n_kv_heads,
-            head_dim,
-            seq_len,
-            &mut out_ref,
-        )
-        .unwrap();
+        mha_decode_step(&q, &k, &v, n_heads, n_kv_heads, head_dim, seq_len, &mut out_ref).unwrap();
 
         let mut out_gemma = vec![0.0f32; n_heads * head_dim];
         let scale = 1.0 / (head_dim as f32).sqrt();
-        mha_decode_step_gemma(
-            &q,
-            &k,
-            &v,
-            n_heads,
-            n_kv_heads,
-            head_dim,
-            seq_len,
-            scale,
-            0.0,
-            &mut out_gemma,
-        )
-        .unwrap();
+        mha_decode_step_gemma(&q, &k, &v, n_heads, n_kv_heads, head_dim, seq_len, scale, 0.0, &mut out_gemma).unwrap();
 
         for i in 0..out_ref.len() {
-            assert_eq!(
-                out_ref[i].to_bits(),
-                out_gemma[i].to_bits(),
-                "i={i}: mha={} gemma={}",
-                out_ref[i],
-                out_gemma[i]
-            );
+            assert_eq!(out_ref[i].to_bits(), out_gemma[i].to_bits(), "i={i}: mha={} gemma={}", out_ref[i], out_gemma[i]);
         }
     }
 
@@ -336,10 +292,7 @@ mod tests {
         let v = rng_vec(seq_len * n_kv_heads * head_dim, 9);
         let mut out = vec![0.0f32; n_heads * head_dim];
         let scale = 1.0 / (head_dim as f32).sqrt();
-        mha_decode_step_gemma(
-            &q, &k, &v, n_heads, n_kv_heads, head_dim, seq_len, scale, 50.0, &mut out,
-        )
-        .unwrap();
+        mha_decode_step_gemma(&q, &k, &v, n_heads, n_kv_heads, head_dim, seq_len, scale, 50.0, &mut out).unwrap();
         for d in 0..head_dim {
             let mut lo = f32::INFINITY;
             let mut hi = f32::NEG_INFINITY;
@@ -350,10 +303,7 @@ mod tests {
             }
             for h in 0..n_heads {
                 let o = out[h * head_dim + d];
-                assert!(
-                    o >= lo - 1e-4 && o <= hi + 1e-4,
-                    "out {o} not in [{lo},{hi}]"
-                );
+                assert!(o >= lo - 1e-4 && o <= hi + 1e-4, "out {o} not in [{lo},{hi}]");
             }
         }
     }
@@ -370,17 +320,7 @@ mod tests {
         let v = rng_vec(seq_len * n_kv_heads * head_dim, 13);
 
         let mut out_ref = vec![0.0f32; n_heads * head_dim];
-        mha_decode_step(
-            &q,
-            &k,
-            &v,
-            n_heads,
-            n_kv_heads,
-            head_dim,
-            seq_len,
-            &mut out_ref,
-        )
-        .unwrap();
+        mha_decode_step(&q, &k, &v, n_heads, n_kv_heads, head_dim, seq_len, &mut out_ref).unwrap();
 
         let w = mha_decode_step_weights(&q, &k, n_heads, n_kv_heads, head_dim, seq_len);
         assert_eq!(w.len(), n_heads);
@@ -404,13 +344,7 @@ mod tests {
         }
         // Same arithmetic order as mha_decode_step's Phase 4 → bit-identical.
         for i in 0..out_ref.len() {
-            assert_eq!(
-                out_ref[i].to_bits(),
-                out_w[i].to_bits(),
-                "i={i}: mha={} weights-applied={}",
-                out_ref[i],
-                out_w[i]
-            );
+            assert_eq!(out_ref[i].to_bits(), out_w[i].to_bits(), "i={i}: mha={} weights-applied={}", out_ref[i], out_w[i]);
         }
     }
 }

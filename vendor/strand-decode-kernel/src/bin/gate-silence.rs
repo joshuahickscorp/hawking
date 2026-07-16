@@ -1,14 +1,10 @@
-
 use std::collections::BTreeMap;
 use std::process::ExitCode;
 
 use strand_decode_kernel::block_walk::gate_proto::machine_stamp;
 use strand_decode_kernel::gemv::decode_tensor_q12;
 use strand_decode_kernel::loader::StrandModel;
-use strand_decode_kernel::silence::{
-    census_tensor, decode_q12_silence, matvec_silence, matvec_silence_skip, zero_nearest_q12,
-    SilenceMask,
-};
+use strand_decode_kernel::silence::{census_tensor, decode_q12_silence, matvec_silence, matvec_silence_skip, zero_nearest_q12, SilenceMask};
 use strand_quant::codebook::codebook_lut;
 use strand_quant::decode::decode_tensor_fixed;
 use strand_quant::encode::{encode_tensor, encode_tensor_with, BlockMeta, EncodeOpts};
@@ -32,12 +28,7 @@ fn run_gate() -> Result<(), String> {
     let mut checked = 0usize;
     let mut detected_silent = 0usize;
 
-    let configs = [
-        TrellisConfig::for_bpw(3.0),       
-        TrellisConfig::for_bpw(2.0),       
-        TrellisConfig::for_bpw_l(2.0, 12), 
-        TrellisConfig::for_bpw_l(2.0, 5),  
-    ];
+    let configs = [TrellisConfig::for_bpw(3.0), TrellisConfig::for_bpw(2.0), TrellisConfig::for_bpw_l(2.0, 12), TrellisConfig::for_bpw_l(2.0, 5)];
     for cfg in &configs {
         let lut = codebook_lut(cfg.l_bits);
         for &n in &[2048usize, 1000, 257, 31] {
@@ -47,11 +38,7 @@ fn run_gate() -> Result<(), String> {
                     encode_tensor(&w, cfg),
                     encode_tensor_with(&w, cfg, &EncodeOpts { tail_biting: true, ..Default::default() }),
                     encode_tensor_with(&w, cfg, &EncodeOpts { affine_min: true, ..Default::default() }),
-                    encode_tensor_with(
-                        &w,
-                        cfg,
-                        &EncodeOpts { tail_biting: true, affine_min: true, ..Default::default() },
-                    ),
+                    encode_tensor_with(&w, cfg, &EncodeOpts { tail_biting: true, affine_min: true, ..Default::default() }),
                 ];
                 for enc in &variants {
                     let mask = SilenceMask::build(enc, cfg, lut);
@@ -59,10 +46,7 @@ fn run_gate() -> Result<(), String> {
                     let got = decode_q12_silence(enc, cfg, lut, &mask);
                     let want = decode_tensor_fixed(enc, cfg);
                     if got != want {
-                        return Err(format!(
-                            "DECODE IDENTITY FAIL: L={} k={} n={n} seed={seed} tail={} affine={}",
-                            cfg.l_bits, cfg.k_bits, enc.tail_biting, enc.has_affine_min
-                        ));
+                        return Err(format!("DECODE IDENTITY FAIL: L={} k={} n={n} seed={seed} tail={} affine={}", cfg.l_bits, cfg.k_bits, enc.tail_biting, enc.has_affine_min));
                     }
                     checked += 1;
                 }
@@ -73,18 +57,14 @@ fn run_gate() -> Result<(), String> {
     {
         let cfg = TrellisConfig::for_bpw_l(2.0, 12);
         let lut = codebook_lut(cfg.l_bits);
-        let mut enc =
-            strand_decode_kernel::block_walk::gate_proto::synth_encoded(4096, cfg.k_bits, cfg.block_len);
+        let mut enc = strand_decode_kernel::block_walk::gate_proto::synth_encoded(4096, cfg.k_bits, cfg.block_len);
         for b in [1usize, 2, 5] {
             let old: BlockMeta = enc.blocks[b].clone();
             enc.blocks[b] = BlockMeta { scale_q: 0, ..old };
         }
         let mask = SilenceMask::build(&enc, &cfg, lut);
         if mask.n_silent_zero() < 3 {
-            return Err(format!(
-                "PLANT FAIL: 3 scale_q=0 blocks planted, only {} detected SilentZero",
-                mask.n_silent_zero()
-            ));
+            return Err(format!("PLANT FAIL: 3 scale_q=0 blocks planted, only {} detected SilentZero", mask.n_silent_zero()));
         }
         detected_silent += mask.n_silent_zero();
         if decode_q12_silence(&enc, &cfg, lut, &mask) != decode_tensor_fixed(&enc, &cfg) {
@@ -116,10 +96,7 @@ fn run_gate() -> Result<(), String> {
                     return Err(format!("matvec_silence BIT FAIL row {o} {rows}x{cols} L={}", cfg.l_bits));
                 }
                 if y_b[o].to_bits() != y_ref[o].to_bits() {
-                    return Err(format!(
-                        "matvec_silence_skip BIT FAIL row {o} {rows}x{cols} L={}",
-                        cfg.l_bits
-                    ));
+                    return Err(format!("matvec_silence_skip BIT FAIL row {o} {rows}x{cols} L={}", cfg.l_bits));
                 }
             }
             checked += 1;
@@ -132,8 +109,7 @@ fn run_gate() -> Result<(), String> {
 }
 
 fn run_census(path: &str) -> Result<(), String> {
-    let model = StrandModel::open(std::path::Path::new(path))
-        .map_err(|e| format!("open {path}: {e}"))?;
+    let model = StrandModel::open(std::path::Path::new(path)).map_err(|e| format!("open {path}: {e}"))?;
     println!("# gate-silence census: {path}");
     println!("{}", machine_stamp());
 
@@ -151,22 +127,14 @@ fn run_census(path: &str) -> Result<(), String> {
     let mut agg_zero_level_visits = 0u64;
     let mut agg_silent_with_outlier = 0usize;
     let mut agg_state_hist: Option<Vec<u64>> = None;
-    
+
     let mut kind_rollup: BTreeMap<String, (usize, usize, usize, u64, u64)> = BTreeMap::new();
 
-    println!(
-        "{:<44} {:>9} {:>7} {:>7} {:>7} {:>8} {:>8} {:>9} {:>8}",
-        "tensor", "blocks", "sil0", "silC", "zlvlB", "sub_c0", "sub_c63", "zlvl_vis", "occ_H"
-    );
+    println!("{:<44} {:>9} {:>7} {:>7} {:>7} {:>8} {:>8} {:>9} {:>8}", "tensor", "blocks", "sil0", "silC", "zlvlB", "sub_c0", "sub_c63", "zlvl_vis", "occ_H");
     for name in &names {
-        let hdr = model
-            .tensor_header(name)
-            .ok_or_else(|| format!("missing header {name}"))?
-            .clone();
+        let hdr = model.tensor_header(name).ok_or_else(|| format!("missing header {name}"))?.clone();
         let cfg = model.config_for(&hdr);
-        let enc = model
-            .encoded_tensor(name)
-            .ok_or_else(|| format!("encoded_tensor failed for {name}"))?;
+        let enc = model.encoded_tensor(name).ok_or_else(|| format!("encoded_tensor failed for {name}"))?;
         let lut = codebook_lut(cfg.l_bits);
 
         let mask = SilenceMask::build(&enc, &cfg, lut);
@@ -178,10 +146,7 @@ fn run_census(path: &str) -> Result<(), String> {
         drop(got);
         drop(want);
 
-        let outlier_idx: Vec<u32> = model
-            .outlier(name)
-            .map(|w| w.entries.iter().map(|&(i, _)| i).collect())
-            .unwrap_or_default();
+        let outlier_idx: Vec<u32> = model.outlier(name).map(|w| w.entries.iter().map(|&(i, _)| i).collect()).unwrap_or_default();
         let c = census_tensor(&enc, &cfg, lut, &outlier_idx);
 
         let visits: u64 = c.state_hist.iter().sum();
@@ -200,15 +165,7 @@ fn run_census(path: &str) -> Result<(), String> {
 
         println!(
             "{:<44} {:>9} {:>7} {:>7} {:>7} {:>8} {:>8} {:>9} {:>8.3}",
-            name,
-            c.n_blocks,
-            c.n_silent_zero,
-            c.n_silent_const,
-            c.n_zero_level_blocks,
-            c.n_sub_code0,
-            c.n_sub_code_max,
-            c.zero_level_visits,
-            h
+            name, c.n_blocks, c.n_silent_zero, c.n_silent_const, c.n_zero_level_blocks, c.n_sub_code0, c.n_sub_code_max, c.zero_level_visits, h
         );
 
         agg_weights += c.n_weights;
@@ -230,9 +187,9 @@ fn run_census(path: &str) -> Result<(), String> {
                 }
             }
             None => agg_state_hist = Some(c.state_hist.clone()),
-            _ => {} 
+            _ => {}
         }
-        
+
         let kind = name.rsplit('.').nth(1).unwrap_or("other").to_string();
         let e = kind_rollup.entry(kind).or_insert((0, 0, 0, 0, 0));
         e.0 += c.n_blocks;
@@ -246,38 +203,21 @@ fn run_census(path: &str) -> Result<(), String> {
     println!("weights                {agg_weights}");
     println!("blocks                 {agg_blocks}");
     println!("sub-blocks             {agg_sub}");
-    println!(
-        "silent-zero blocks     {agg_silent_zero} ({:.4}%)",
-        100.0 * agg_silent_zero as f64 / agg_blocks.max(1) as f64
-    );
-    println!(
-        "silent-const blocks    {agg_silent_const} ({:.4}%)",
-        100.0 * agg_silent_const as f64 / agg_blocks.max(1) as f64
-    );
+    println!("silent-zero blocks     {agg_silent_zero} ({:.4}%)", 100.0 * agg_silent_zero as f64 / agg_blocks.max(1) as f64);
+    println!("silent-const blocks    {agg_silent_const} ({:.4}%)", 100.0 * agg_silent_const as f64 / agg_blocks.max(1) as f64);
     println!("zero-level blocks      {agg_zero_level_blocks}");
     println!("strong (eff==0) blocks {agg_strong}");
     println!("scale_q==0 blocks      {agg_scaleq_zero}");
-    println!(
-        "sub-blocks code 0      {agg_sub_code0} ({:.4}%)",
-        100.0 * agg_sub_code0 as f64 / agg_sub.max(1) as f64
-    );
-    println!(
-        "sub-blocks code 63     {agg_sub_code_max} ({:.4}%)",
-        100.0 * agg_sub_code_max as f64 / agg_sub.max(1) as f64
-    );
-    println!(
-        "zero-level visits      {agg_zero_level_visits} ({:.4}% of weights)",
-        100.0 * agg_zero_level_visits as f64 / agg_weights.max(1) as f64
-    );
+    println!("sub-blocks code 0      {agg_sub_code0} ({:.4}%)", 100.0 * agg_sub_code0 as f64 / agg_sub.max(1) as f64);
+    println!("sub-blocks code 63     {agg_sub_code_max} ({:.4}%)", 100.0 * agg_sub_code_max as f64 / agg_sub.max(1) as f64);
+    println!("zero-level visits      {agg_zero_level_visits} ({:.4}% of weights)", 100.0 * agg_zero_level_visits as f64 / agg_weights.max(1) as f64);
     println!("silent blocks w/ OUTL  {agg_silent_with_outlier}");
 
     if let Some(hist) = &agg_state_hist {
         let visits: u64 = hist.iter().sum();
         let mut sorted: Vec<u64> = hist.clone();
         sorted.sort_unstable_by(|a, b| b.cmp(a));
-        let topshare = |k: usize| -> f64 {
-            100.0 * sorted.iter().take(k).sum::<u64>() as f64 / visits.max(1) as f64
-        };
+        let topshare = |k: usize| -> f64 { 100.0 * sorted.iter().take(k).sum::<u64>() as f64 / visits.max(1) as f64 };
         let h: f64 = hist
             .iter()
             .filter(|&&v| v > 0)
@@ -298,21 +238,12 @@ fn run_census(path: &str) -> Result<(), String> {
 
     println!("\n## BY TENSOR KIND (blocks, silent, sub_c0, zlvl_visits, weights)");
     for (k, (b, s, c0, zv, nw)) in &kind_rollup {
-        println!(
-            "{:<12} blocks={:<8} silent={:<6} sub_c0={:<8} zlvl={:<10} zlvl%={:.4}",
-            k,
-            b,
-            s,
-            c0,
-            zv,
-            100.0 * *zv as f64 / (*nw).max(1) as f64
-        );
+        println!("{:<12} blocks={:<8} silent={:<6} sub_c0={:<8} zlvl={:<10} zlvl%={:.4}", k, b, s, c0, zv, 100.0 * *zv as f64 / (*nw).max(1) as f64);
     }
     Ok(())
 }
 
 fn main() -> ExitCode {
-    
     std::env::set_var("STRAND_NO_GPU", "1");
     let args: Vec<String> = std::env::args().skip(1).collect();
     let res = match args.first().map(|s| s.as_str()) {

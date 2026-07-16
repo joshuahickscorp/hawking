@@ -1,8 +1,8 @@
 /*
-  wire.ts: TS mirrors of crates/hide-core/src/api.rs. THE contract.
+  wire.ts: TS mirrors of crates/hide-core/lib.rs. THE contract.
   Field names, tags, and snake_case follow the Rust serde exactly. When this file and a
-  doc disagree, the Rust code wins (api.rs uses #[serde(tag="type", content="data", rename_all="snake_case")]).
-  Keep in lockstep with api.rs; this is the one place wire drift bites.
+  doc disagree, the Rust code wins (lib.rs uses #[serde(tag="type", content="data", rename_all="snake_case")]).
+  Keep in lockstep with lib.rs; this is the one place wire drift bites.
 */
 
 // ids.rs newtypes all serialize as plain strings.
@@ -19,7 +19,7 @@ export interface BlobRef {
   media_type: string | null;
 }
 
-// api.rs Intent  (tag = "type", content = "data")
+// hide-core/lib.rs Intent  (tag = "type", content = "data")
 export type Intent =
   | { type: "submit_turn"; data: { session_id: SessionId; text: string; attachments: BlobRef[] } }
   | { type: "cancel_run"; data: { run_id: RunId } }
@@ -33,14 +33,14 @@ export type Intent =
   | { type: "run_command"; data: { argv: string[]; cwd: string | null } }
   | { type: "custom"; data: { name: CustomName; payload: unknown } };
 
-// api.rs IntentAck
+// hide-core/lib.rs IntentAck
 export interface IntentAck {
   accepted: boolean;
   event_seq: number | null;
   message: string | null;
 }
 
-// api.rs UiEventKind  (tag = "type", content = "data"; Custom is an untagged Value)
+// hide-core/lib.rs UiEventKind  (tag = "type", content = "data"; Custom is an untagged Value)
 export type UiEventKind =
   | { type: "projection_patch"; data: { projection: ProjectionName; patch: unknown } }
   | { type: "token_batch"; data: { stream_id: string; text: string } }
@@ -50,7 +50,7 @@ export type UiEventKind =
   | { type: "error"; data: { code: string; message: string } }
   | { type: "custom"; data: unknown };
 
-// api.rs UiEvent
+// hide-core/lib.rs UiEvent
 export interface UiEvent {
   seq: number;
   session_id: SessionId | null;

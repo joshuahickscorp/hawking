@@ -12,7 +12,11 @@
 # Self-terminates when the ladder lock disappears (run finished). Launch detached:
 #   nohup tools/condense/ladder_health.sh >/dev/null 2>&1 &
 set -uo pipefail
-cd "$HOME/Downloads/hawking" || exit 2
+SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)" || exit 2
+REPO="${REPO:-$(CDPATH= cd -- "$SCRIPT_DIR/../.." && pwd -P)}"
+cd "$REPO" || exit 2
+REPO="$(pwd -P)"
+export REPO
 # per-run paths via env (defaults = the original 7B ladder)
 HEALTH="${LADDER_HEALTH:-reports/cron/7b_ladder_health.log}"
 LOCK="${LADDER_LOCK:-reports/cron/7b_ladder.lock}"

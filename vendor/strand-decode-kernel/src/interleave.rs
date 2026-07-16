@@ -1,4 +1,3 @@
-
 use crate::block_walk::{block_init_state, exceeds_max_sub, SideInfo, WordReader};
 use rayon::prelude::*;
 use strand_quant::codebook::codebook_lut;
@@ -16,16 +15,7 @@ struct Lane<'a> {
 }
 
 impl<'a> Lane<'a> {
-    
-    fn new(
-        blk: &strand_quant::encode::BlockMeta,
-        start_bit: usize,
-        bits: &'a [u8],
-        cfg: &TrellisConfig,
-        has_affine: bool,
-        tail_biting: bool,
-        dst: &'a mut [i32],
-    ) -> Self {
+    fn new(blk: &strand_quant::encode::BlockMeta, start_bit: usize, bits: &'a [u8], cfg: &TrellisConfig, has_affine: bool, tail_biting: bool, dst: &'a mut [i32]) -> Self {
         let n = blk.n as usize;
         let side = SideInfo::hoist(blk, has_affine);
         let state = block_init_state(blk, bits, start_bit, cfg, tail_biting);
@@ -36,7 +26,7 @@ impl<'a> Lane<'a> {
     fn step(&mut self, k: u32, input_mask: usize, mask: usize, lut: &[i32]) {
         let sym = self.reader.pop(k) & input_mask;
         self.state = ((self.state << k) | sym) & mask;
-        
+
         let q = unsafe { *lut.get_unchecked(self.state) };
         let sb = self.done / SUB_BLOCK;
         let es = unsafe { *self.side.eff.get_unchecked(sb) };
@@ -52,7 +42,6 @@ fn decode_chunk_interleaved<const S: usize>(lanes: &mut [Lane<'_>], cfg: &Trelli
     let input_mask = cfg.num_inputs() - 1;
 
     if lanes.len() == S {
-        
         let bytes: &[u8] = lanes[0].reader.bytes;
         let mut acc = [0u64; S];
         let mut have = [0u32; S];
@@ -73,7 +62,7 @@ fn decode_chunk_interleaved<const S: usize>(lanes: &mut [Lane<'_>], cfg: &Trelli
                     break 'rounds;
                 }
             }
-            
+
             let mut es = [0i32; S];
             let mut of = [0i32; S];
             let mut dp = [std::ptr::null_mut::<i32>(); S];
@@ -81,12 +70,11 @@ fn decode_chunk_interleaved<const S: usize>(lanes: &mut [Lane<'_>], cfg: &Trelli
                 let sb = done[l] / SUB_BLOCK;
                 es[l] = lanes[l].side.eff[sb];
                 of[l] = lanes[l].side.off[sb];
-                
+
                 dp[l] = unsafe { lanes[l].dst.as_mut_ptr().add(done[l]) };
             }
             for j in 0..SUB_BLOCK {
                 for l in 0..S {
-                    
                     if have[l] < k {
                         widx[l] += 1;
                         let nxt = WordReader::load_u32_le(bytes, widx[l]) as u64;
@@ -97,7 +85,7 @@ fn decode_chunk_interleaved<const S: usize>(lanes: &mut [Lane<'_>], cfg: &Trelli
                     acc[l] >>= k;
                     have[l] -= k;
                     state[l] = ((state[l] << k) | sym) & mask;
-                    
+
                     let q = unsafe { *lut.get_unchecked(state[l]) };
                     unsafe { *dp[l].add(j) = reconstruct_q(es[l], q) + of[l] };
                 }
@@ -115,7 +103,7 @@ fn decode_chunk_interleaved<const S: usize>(lanes: &mut [Lane<'_>], cfg: &Trelli
             lanes[l].done = done[l];
         }
     }
-    
+
     loop {
         let mut any = false;
         for lane in lanes.iter_mut() {
@@ -134,16 +122,8 @@ pub fn decode_q12_interleave<const S: usize>(enc: &EncodedTensor, cfg: &TrellisC
     decode_q12_interleave_with_lut::<S>(enc, cfg, codebook_lut(cfg.l_bits))
 }
 
-pub fn decode_q12_interleave_with_lut<const S: usize>(
-    enc: &EncodedTensor,
-    cfg: &TrellisConfig,
-    lut: &[i32],
-) -> Vec<i32> {
-    
-    if cfg.vec_dim() > 1
-        || SUB_BLOCK >= cfg.num_states()
-        || exceeds_max_sub(enc)
-    {
+pub fn decode_q12_interleave_with_lut<const S: usize>(enc: &EncodedTensor, cfg: &TrellisConfig, lut: &[i32]) -> Vec<i32> {
+    if cfg.vec_dim() > 1 || SUB_BLOCK >= cfg.num_states() || exceeds_max_sub(enc) {
         return crate::gemv::decode_q12_fast_with_lut(enc, cfg, lut);
     }
 
@@ -171,22 +151,12 @@ pub fn decode_q12_interleave_with_lut<const S: usize>(
     out
 }
 
-pub fn decode_q12_interleave_par<const S: usize>(
-    enc: &EncodedTensor,
-    cfg: &TrellisConfig,
-) -> Vec<i32> {
+pub fn decode_q12_interleave_par<const S: usize>(enc: &EncodedTensor, cfg: &TrellisConfig) -> Vec<i32> {
     decode_q12_interleave_par_with_lut::<S>(enc, cfg, codebook_lut(cfg.l_bits))
 }
 
-pub fn decode_q12_interleave_par_with_lut<const S: usize>(
-    enc: &EncodedTensor,
-    cfg: &TrellisConfig,
-    lut: &[i32],
-) -> Vec<i32> {
-    if cfg.vec_dim() > 1
-        || SUB_BLOCK >= cfg.num_states()
-        || exceeds_max_sub(enc)
-    {
+pub fn decode_q12_interleave_par_with_lut<const S: usize>(enc: &EncodedTensor, cfg: &TrellisConfig, lut: &[i32]) -> Vec<i32> {
+    if cfg.vec_dim() > 1 || SUB_BLOCK >= cfg.num_states() || exceeds_max_sub(enc) {
         return crate::gemv::decode_q12_fast_with_lut(enc, cfg, lut);
     }
 
@@ -199,7 +169,7 @@ pub fn decode_q12_interleave_par_with_lut<const S: usize>(
         start_bits.push(acc_bits);
         acc_bits += blk.n as usize * k;
     }
-    
+
     let n_chunks = enc.blocks.len().div_ceil(S);
     let mut chunked_dsts: Vec<Vec<&mut [i32]>> = Vec::with_capacity(n_chunks);
     let mut rest: &mut [i32] = &mut out;
@@ -213,21 +183,11 @@ pub fn decode_q12_interleave_par_with_lut<const S: usize>(
         chunked_dsts.push(dsts);
     }
 
-    enc.blocks
-        .par_chunks(S)
-        .zip(start_bits.par_chunks(S))
-        .zip(chunked_dsts.into_par_iter())
-        .for_each(|((blocks, bits_off), dsts)| {
-            let mut lanes: Vec<Lane<'_>> = blocks
-                .iter()
-                .zip(bits_off.iter())
-                .zip(dsts.into_iter())
-                .map(|((blk, &sb), dst)| {
-                    Lane::new(blk, sb, &enc.bits, cfg, enc.has_affine_min, enc.tail_biting, dst)
-                })
-                .collect();
-            decode_chunk_interleaved::<S>(&mut lanes, cfg, lut);
-        });
+    enc.blocks.par_chunks(S).zip(start_bits.par_chunks(S)).zip(chunked_dsts.into_par_iter()).for_each(|((blocks, bits_off), dsts)| {
+        let mut lanes: Vec<Lane<'_>> =
+            blocks.iter().zip(bits_off.iter()).zip(dsts.into_iter()).map(|((blk, &sb), dst)| Lane::new(blk, sb, &enc.bits, cfg, enc.has_affine_min, enc.tail_biting, dst)).collect();
+        decode_chunk_interleaved::<S>(&mut lanes, cfg, lut);
+    });
 
     out
 }
@@ -240,49 +200,23 @@ mod tests {
 
     #[test]
     fn interleave_is_bit_identical() {
-        let configs = [
-            TrellisConfig::for_bpw(2.0),       
-            TrellisConfig::for_bpw(3.0),       
-            TrellisConfig::for_bpw(4.0),       
-            TrellisConfig::for_bpw_l(2.0, 12), 
-        ];
+        let configs = [TrellisConfig::for_bpw(2.0), TrellisConfig::for_bpw(3.0), TrellisConfig::for_bpw(4.0), TrellisConfig::for_bpw_l(2.0, 12)];
         for cfg in &configs {
             for seed in 0..24u64 {
-                
                 let n = 1 + (seed as usize * 211) % 1500;
-                let w: Vec<f32> = (0..n)
-                    .map(|i| ((i as f32 + seed as f32) * 0.0173).sin() * 0.4)
-                    .collect();
+                let w: Vec<f32> = (0..n).map(|i| ((i as f32 + seed as f32) * 0.0173).sin() * 0.4).collect();
                 let variants = [
                     encode_tensor(&w, cfg),
-                    encode_tensor_with(
-                        &w,
-                        cfg,
-                        &EncodeOpts { tail_biting: true, ..Default::default() },
-                    ),
-                    encode_tensor_with(
-                        &w,
-                        cfg,
-                        &EncodeOpts { affine_min: true, ..Default::default() },
-                    ),
+                    encode_tensor_with(&w, cfg, &EncodeOpts { tail_biting: true, ..Default::default() }),
+                    encode_tensor_with(&w, cfg, &EncodeOpts { affine_min: true, ..Default::default() }),
                 ];
                 for enc in &variants {
                     let want = decode_tensor_fixed(enc, cfg);
                     assert_eq!(decode_q12_interleave::<2>(enc, cfg), want, "S=2 L={}", cfg.l_bits);
                     assert_eq!(decode_q12_interleave::<4>(enc, cfg), want, "S=4 L={}", cfg.l_bits);
                     assert_eq!(decode_q12_interleave::<8>(enc, cfg), want, "S=8 L={}", cfg.l_bits);
-                    assert_eq!(
-                        decode_q12_interleave_par::<4>(enc, cfg),
-                        want,
-                        "par S=4 L={}",
-                        cfg.l_bits
-                    );
-                    assert_eq!(
-                        decode_q12_interleave_par::<8>(enc, cfg),
-                        want,
-                        "par S=8 L={}",
-                        cfg.l_bits
-                    );
+                    assert_eq!(decode_q12_interleave_par::<4>(enc, cfg), want, "par S=4 L={}", cfg.l_bits);
+                    assert_eq!(decode_q12_interleave_par::<8>(enc, cfg), want, "par S=8 L={}", cfg.l_bits);
                 }
             }
         }
@@ -292,7 +226,7 @@ mod tests {
     fn fallback_configs_identical() {
         let w: Vec<f32> = (0..700).map(|i| ((i as f32) * 0.011).cos() * 0.3).collect();
 
-        let fold_cfg = TrellisConfig::for_bpw_l(2.0, 5); 
+        let fold_cfg = TrellisConfig::for_bpw_l(2.0, 5);
         let enc = encode_tensor(&w, &fold_cfg);
         let want = decode_tensor_fixed(&enc, &fold_cfg);
         assert_eq!(decode_q12_interleave::<4>(&enc, &fold_cfg), want);
@@ -301,9 +235,7 @@ mod tests {
         use strand_quant::decode::decode_tensor_fixed_with_lut;
         let vec_cfg = TrellisConfig::for_bpw(3.0).with_vec_dim(2);
         let (ns, d) = (vec_cfg.num_states(), vec_cfg.vec_dim());
-        let lut: Vec<i32> = (0..ns * d)
-            .map(|i| ((i as u32).wrapping_mul(2654435761) >> 20) as i32 - 2048)
-            .collect();
+        let lut: Vec<i32> = (0..ns * d).map(|i| ((i as u32).wrapping_mul(2654435761) >> 20) as i32 - 2048).collect();
         let encv = encode_tensor(&w, &vec_cfg);
         let want_v = decode_tensor_fixed_with_lut(&encv, &vec_cfg, &lut);
         assert_eq!(decode_q12_interleave_with_lut::<4>(&encv, &vec_cfg, &lut), want_v);

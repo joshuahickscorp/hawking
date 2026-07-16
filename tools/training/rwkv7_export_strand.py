@@ -1,10 +1,9 @@
 """Export a QAT-trained RWKV-7 checkpoint to STR2/TQ format for low-bit serving.
 
-Loads a state_dict.pt produced by rwkv7_sft_torch.py or rwkv7_dpo_torch.py,
-maps projection weights to GGUF names, writes a float32 safetensors staging
-file, then shells out to the strand `quantize-model` binary to produce the
-packed STR2 reconstruction (.recon.safetensors) and TQ tile-quantized output
-(.tq.safetensors).
+Loads a state_dict.pt produced by the SFT or QAT path, maps projection weights
+to GGUF names, writes a float32 safetensors staging file, then shells out to the
+strand `quantize-model` binary to produce the packed STR2 reconstruction
+(.recon.safetensors) and TQ tile-quantized output (.tq.safetensors).
 
 Supports two source modes detected from run_config.json:
   - strand-pv: use the `.base` reconstruction buffer (not `.weight` deltas)

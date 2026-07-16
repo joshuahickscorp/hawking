@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { callConnector, sendIntent } from "../ipc";
 import { useStore, type ContextManifest } from "../store";
 import { intent } from "../wire";
-import { HardwareToggle, Line, NoteField, OkMark, Stratum } from "./contextstack/parts";
-import { spanKey, useSteer } from "./contextstack/state";
+import { HardwareToggle, Line, NoteField, OkMark, Stratum } from "./ContextStackParts";
+import { spanKey, useSteer } from "./ContextStackState";
 
 const fileName = (p: string) => p.split("/").pop() ?? p;
 

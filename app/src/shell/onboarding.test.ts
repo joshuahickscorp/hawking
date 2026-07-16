@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from "vitest";
-import { shouldShowOnboarding, isTauri, pickWorkspaceFolder, ONBOARDING_DONE_KEY } from "./onboarding";
+import { shouldShowOnboarding, isTauri, pickWorkspaceFolder, ONBOARDING_DONE_KEY } from "./policies";
 
 describe("shouldShowOnboarding", () => {
   it("shows until a folder has been opened", () => {

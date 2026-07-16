@@ -11,9 +11,7 @@
 //! Run: `cargo test -p strand-quant --test sprint_chain_hazards`
 
 use strand_quant::encode::{encode_tensor_with, EncodeOpts};
-use strand_quant::format::{
-    read_strand_v2, read_strand_v2_header, write_strand_v2, PackedTensor, PackedTensorV2, PAGE,
-};
+use strand_quant::format::{read_strand_v2, read_strand_v2_header, write_strand_v2, PackedTensor, PackedTensorV2, PAGE};
 use strand_quant::outlier_wire::{append_outl, read_outl_bytes, OutlierWire};
 use strand_quant::provenance_io::{append_sprv_computed, read_sprv_bytes};
 use strand_quant::rslt::{self, append_rslt, read_rslt_bytes, RsltSection, RSLT_VERSION};
@@ -26,11 +24,7 @@ use std::sync::atomic::{AtomicU64, Ordering};
 static COUNTER: AtomicU64 = AtomicU64::new(0);
 
 fn tmp_path(tag: &str) -> PathBuf {
-    std::env::temp_dir().join(format!(
-        "strand-sprint-{tag}-{}-{}.strand",
-        std::process::id(),
-        COUNTER.fetch_add(1, Ordering::Relaxed)
-    ))
+    std::env::temp_dir().join(format!("strand-sprint-{tag}-{}-{}.strand", std::process::id(), COUNTER.fetch_add(1, Ordering::Relaxed)))
 }
 
 struct TmpFile(PathBuf);
@@ -41,9 +35,7 @@ impl Drop for TmpFile {
 }
 
 fn test_weights(n: usize, seed: u64) -> Vec<f32> {
-    (0..n)
-        .map(|i| ((i as f32 + seed as f32) * 0.0137).sin() * 0.5)
-        .collect()
+    (0..n).map(|i| ((i as f32 + seed as f32) * 0.0137).sin() * 0.5).collect()
 }
 
 /// Two-tensor base archive (q_proj [4,256] out=4, down_proj [3,300] out=3).
@@ -55,27 +47,11 @@ fn build_base() -> Vec<u8> {
     let shape_b = [3u64, 300u64];
     let tensors = [
         PackedTensorV2 {
-            base: PackedTensor {
-                name: "model.layers.0.q_proj",
-                shape: &shape_a,
-                rht_seed: 0,
-                l_bits: cfg.l_bits as u8,
-                k_bits: cfg.k_bits as u8,
-                vec_dim: cfg.vec_dim() as u8,
-                enc: &enc_a,
-            },
+            base: PackedTensor { name: "model.layers.0.q_proj", shape: &shape_a, rht_seed: 0, l_bits: cfg.l_bits as u8, k_bits: cfg.k_bits as u8, vec_dim: cfg.vec_dim() as u8, enc: &enc_a },
             block_len: cfg.block_len as u32,
         },
         PackedTensorV2 {
-            base: PackedTensor {
-                name: "model.layers.0.down_proj",
-                shape: &shape_b,
-                rht_seed: 0,
-                l_bits: cfg.l_bits as u8,
-                k_bits: cfg.k_bits as u8,
-                vec_dim: cfg.vec_dim() as u8,
-                enc: &enc_b,
-            },
+            base: PackedTensor { name: "model.layers.0.down_proj", shape: &shape_b, rht_seed: 0, l_bits: cfg.l_bits as u8, k_bits: cfg.k_bits as u8, vec_dim: cfg.vec_dim() as u8, enc: &enc_b },
             block_len: cfg.block_len as u32,
         },
     ];
@@ -84,10 +60,7 @@ fn build_base() -> Vec<u8> {
 
 fn rslt_for(buf: &[u8]) -> RsltSection {
     let hdr = read_strand_v2_header(buf).unwrap();
-    RsltSection {
-        version: RSLT_VERSION,
-        block_counts: hdr.tensors.iter().map(|t| vec![0u32; t.n_blocks]).collect(),
-    }
+    RsltSection { version: RSLT_VERSION, block_counts: hdr.tensors.iter().map(|t| vec![0u32; t.n_blocks]).collect() }
 }
 
 // ===========================================================================
@@ -177,10 +150,7 @@ fn read_outl_sees_through_sprv_but_chain_order_is_load_bearing() {
     let _g = TmpFile(path.clone());
     std::fs::write(&path, &buf).unwrap();
 
-    let wires = vec![
-        Some(OutlierWire::from_selection(1024, vec![7, 600], vec![-100, 42], 0.5, 8)),
-        None,
-    ];
+    let wires = vec![Some(OutlierWire::from_selection(1024, vec![7, 600], vec![-100, 42], 0.5, 8)), None];
     append_outl(&path, &wires).expect("append outl");
     append_sprv_computed(&path, false).expect("append sprv");
 
@@ -210,11 +180,7 @@ fn read_outl_cannot_see_past_sdsc_documenting_the_step_over_gap() {
     // over / bailing on the unknown-to-it region, never crashing.
     append_sdsc(&path).expect("append sdsc");
     let with_sdsc = std::fs::read(&path).unwrap();
-    assert_eq!(
-        read_outl_bytes(&with_sdsc, true).unwrap(),
-        None,
-        "read_outl over an SDSC-trailered file with no OUTL must be a clean None"
-    );
+    assert_eq!(read_outl_bytes(&with_sdsc, true).unwrap(), None, "read_outl over an SDSC-trailered file with no OUTL must be a clean None");
     // And SDSC reads back fine as the outermost section.
     assert!(read_sdsc_bytes(&with_sdsc, true).unwrap().is_some());
 }
@@ -231,21 +197,14 @@ fn sdsc_restack_preserves_outl_and_sprv_visibility() {
     let _g = TmpFile(path.clone());
     std::fs::write(&path, &buf).unwrap();
 
-    let wires = vec![
-        Some(OutlierWire::from_selection(1024, vec![7, 600], vec![-100, 42], 0.5, 8)),
-        None,
-    ];
+    let wires = vec![Some(OutlierWire::from_selection(1024, vec![7, 600], vec![-100, 42], 0.5, 8)), None];
     append_outl(&path, &wires).expect("append outl");
     append_sprv_computed(&path, false).expect("append sprv");
     append_sdsc(&path).expect("append sdsc (restack)");
 
     let buf2 = std::fs::read(&path).unwrap();
     assert!(read_sdsc_bytes(&buf2, true).unwrap().is_some(), "sdsc innermost");
-    assert_eq!(
-        read_outl_bytes(&buf2, true).unwrap().expect("outl after restack").tensors,
-        wires,
-        "OUTL must remain visible (read_outl steps over SPRV) after the SDSC restack"
-    );
+    assert_eq!(read_outl_bytes(&buf2, true).unwrap().expect("outl after restack").tensors, wires, "OUTL must remain visible (read_outl steps over SPRV) after the SDSC restack");
     assert!(read_sprv_bytes(&buf2, true).unwrap().is_some(), "sprv outermost");
     // v2 core bytes are untouched by the whole stack.
     assert_eq!(&buf2[..buf.len()], &buf[..], "v2 prefix must be byte-stable under the chain");
@@ -269,10 +228,7 @@ fn v2_core_readers_ignore_every_trailer_in_the_chain() {
     let base_full = read_strand_v2(&buf).unwrap();
 
     // Stack OUTL then SPRV (the common deploy chain).
-    let wires = vec![
-        Some(OutlierWire::from_selection(1024, vec![7, 600], vec![-100, 42], 0.5, 8)),
-        None,
-    ];
+    let wires = vec![Some(OutlierWire::from_selection(1024, vec![7, 600], vec![-100, 42], 0.5, 8)), None];
     append_outl(&path, &wires).expect("append outl");
     append_sprv_computed(&path, false).expect("append sprv");
     let trailered = std::fs::read(&path).unwrap();
@@ -312,10 +268,7 @@ fn outl_refuses_double_and_refuses_behind_sprv_seal() {
     let _g = TmpFile(path.clone());
     std::fs::write(&path, &buf).unwrap();
 
-    let wires = vec![
-        Some(OutlierWire::from_selection(1024, vec![7, 600], vec![-100, 42], 0.5, 8)),
-        None,
-    ];
+    let wires = vec![Some(OutlierWire::from_selection(1024, vec![7, 600], vec![-100, 42], 0.5, 8)), None];
     append_outl(&path, &wires).expect("first outl");
     // double-append of OUTL is rejected, file untouched
     let before = std::fs::read(&path).unwrap();
@@ -352,10 +305,7 @@ fn rslt_refuses_double_append() {
 
 #[test]
 fn rslt_raw_codec_round_trips_as_c2_baseline() {
-    let section = RsltSection {
-        version: RSLT_VERSION,
-        block_counts: vec![vec![0, 5, 100, 999, 0, 0, 7], vec![1, 2, 3]],
-    };
+    let section = RsltSection { version: RSLT_VERSION, block_counts: vec![vec![0, 5, 100, 999, 0, 0, 7], vec![1, 2, 3]] };
     let bytes = rslt::serialize(&section);
     let back = rslt::deserialize(&bytes).expect("deserialize");
     assert_eq!(back, section, "fixed-width RSLT round-trip is the C2 swap-in oracle");

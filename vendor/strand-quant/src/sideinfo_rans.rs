@@ -51,7 +51,7 @@
 
 /// rANS lower bound. State `x` is kept in `[L, (L<<8))`. Matches the container
 /// coder so behaviour is identical and equally battle-tested.
-const L: u32 = 1 << 23;
+pub(crate) const L: u32 = 1 << 23;
 
 /// Probability precision: frequencies sum to `SCALE_TOTAL = 1 << SCALE_BITS`.
 /// 14 bits gives enough CDF resolution for the ~1.5k-symbol `scale_q` alphabet
@@ -66,7 +66,7 @@ pub const SCALE_TOTAL: u32 = 1 << SCALE_BITS;
 const SCALE_MASK: u32 = SCALE_TOTAL - 1;
 
 #[inline]
-fn enc_put(x: &mut u32, out: &mut Vec<u8>, start: u32, freq: u32) {
+pub(crate) fn enc_put(x: &mut u32, out: &mut Vec<u8>, start: u32, freq: u32) {
     debug_assert!(freq > 0, "cannot encode a zero-frequency symbol");
     // Renormalize: emit low bytes until x fits the encodable window for `freq`.
     let x_max = (((L >> SCALE_BITS) << 8) as u64).wrapping_mul(freq as u64);
@@ -75,27 +75,17 @@ fn enc_put(x: &mut u32, out: &mut Vec<u8>, start: u32, freq: u32) {
         out.push((s & 0xFF) as u8);
         s >>= 8;
     }
-    *x = ((s / freq) << SCALE_BITS)
-        .wrapping_add(s % freq)
-        .wrapping_add(start);
+    *x = ((s / freq) << SCALE_BITS).wrapping_add(s % freq).wrapping_add(start);
 }
 
 #[inline]
-fn dec_get(
-    x: &mut u32,
-    data: &[u8],
-    pos: &mut usize,
-    cum: &[u32],
-) -> usize {
+pub(crate) fn dec_get(x: &mut u32, data: &[u8], pos: &mut usize, cum: &[u32]) -> usize {
     let slot = *x & SCALE_MASK;
     let symbol = cdf_find(cum, slot);
     let start = cum[symbol];
     let freq = cum[symbol + 1] - cum[symbol];
 
-    let mut s = freq
-        .wrapping_mul(*x >> SCALE_BITS)
-        .wrapping_add(slot)
-        .wrapping_sub(start);
+    let mut s = freq.wrapping_mul(*x >> SCALE_BITS).wrapping_add(slot).wrapping_sub(start);
     while s < L {
         let b = if *pos < data.len() { data[*pos] } else { 0 };
         *pos += 1;
@@ -200,11 +190,7 @@ impl Model {
         //    but a canonical table makes the serialized model deterministic and
         //    diff-friendly.)
         let esc_c = *raw_counts.last().unwrap();
-        let mut pairs: Vec<(u64, u64)> = symbols[..symbols.len() - 1]
-            .iter()
-            .cloned()
-            .zip(raw_counts[..raw_counts.len() - 1].iter().cloned())
-            .collect();
+        let mut pairs: Vec<(u64, u64)> = symbols[..symbols.len() - 1].iter().cloned().zip(raw_counts[..raw_counts.len() - 1].iter().cloned()).collect();
         pairs.sort_unstable_by_key(|&(s, _)| s);
         let mut symbols2: Vec<u64> = Vec::with_capacity(pairs.len() + 1);
         let mut counts2: Vec<u64> = Vec::with_capacity(pairs.len() + 1);
@@ -275,9 +261,7 @@ impl Model {
         }
         let total: u64 = freqs.iter().map(|&f| f as u64).sum();
         if total != SCALE_TOTAL as u64 {
-            return Err(format!(
-                "sideinfo_rans: model freqs sum {total} != SCALE_TOTAL {SCALE_TOTAL}"
-            ));
+            return Err(format!("sideinfo_rans: model freqs sum {total} != SCALE_TOTAL {SCALE_TOTAL}"));
         }
         if freqs.iter().any(|&f| f == 0) {
             return Err("sideinfo_rans: model has a zero-frequency slot".into());
@@ -297,7 +281,7 @@ impl Model {
 /// `SCALE_TOTAL`, every nonzero count kept at `freq >= 1`. Integer-only,
 /// deterministic — this is the byte-exact mirror of `strand_core::cdf`'s
 /// `from_counts`, reproduced locally to keep the crate dependency-free.
-fn normalize_to_cum(counts: &[u64]) -> Vec<u32> {
+pub(crate) fn normalize_to_cum(counts: &[u64]) -> Vec<u32> {
     let n = counts.len();
     debug_assert!(n >= 1);
     let total_raw: u64 = counts.iter().sum();
@@ -387,7 +371,7 @@ pub fn unzigzag(z: u64) -> i64 {
     ((z >> 1) as i64) ^ -((z & 1) as i64)
 }
 
-fn write_varint(out: &mut Vec<u8>, mut v: u64) {
+pub(crate) fn write_varint(out: &mut Vec<u8>, mut v: u64) {
     loop {
         let mut byte = (v & 0x7F) as u8;
         v >>= 7;
@@ -597,11 +581,7 @@ pub fn encode_scale_q(scale_q: &[i32]) -> Vec<u8> {
 /// Decode a `scale_q` section back to `i32`s.
 pub fn decode_scale_q(data: &[u8], pos: &mut usize) -> Result<Vec<i32>, String> {
     let raw = decode_stream(data, pos)?;
-    raw.iter()
-        .map(|&v| {
-            i32::try_from(v).map_err(|_| "sideinfo_rans: scale_q out of i32 range".to_string())
-        })
-        .collect()
+    raw.iter().map(|&v| i32::try_from(v).map_err(|_| "sideinfo_rans: scale_q out of i32 range".to_string())).collect()
 }
 
 /// Convenience: encode an outlier-**position** stream (strictly ascending `u32`)
@@ -696,8 +676,7 @@ mod tests {
 
     #[test]
     fn negative_and_large_values() {
-        let raw: Vec<i64> =
-            vec![i32::MIN as i64, i32::MAX as i64, 0, -1, 1, -1_000_000, 1_000_000];
+        let raw: Vec<i64> = vec![i32::MIN as i64, i32::MAX as i64, 0, -1, 1, -1_000_000, 1_000_000];
         round_trip_raw(&raw);
     }
 
@@ -707,15 +686,9 @@ mod tests {
         // and still round-trip byte-exactly. Spread values over ~20k levels so
         // the alphabet comfortably exceeds the 4096-symbol model cap.
         let mut s = 0xDEAD_BEEFu64;
-        let raw: Vec<i64> = (0..40_000)
-            .map(|_| (splitmix64(&mut s) % 20_000) as i64 - 10_000)
-            .collect();
+        let raw: Vec<i64> = (0..40_000).map(|_| (splitmix64(&mut s) % 20_000) as i64 - 10_000).collect();
         let distinct: std::collections::HashSet<i64> = raw.iter().cloned().collect();
-        assert!(
-            distinct.len() > MAX_MODEL_SYMBOLS,
-            "test should overflow the model (distinct={})",
-            distinct.len()
-        );
+        assert!(distinct.len() > MAX_MODEL_SYMBOLS, "test should overflow the model (distinct={})", distinct.len());
         let enc = round_trip_raw(&raw);
         assert!(!enc.is_empty());
     }
@@ -768,9 +741,7 @@ mod tests {
     #[test]
     fn scale_q_round_trip_i32() {
         let mut s = 0xABCD_0001u64;
-        let scale_q: Vec<i32> = (0..4000)
-            .map(|_| (splitmix64(&mut s) % 2048) as i32 - 1024)
-            .collect();
+        let scale_q: Vec<i32> = (0..4000).map(|_| (splitmix64(&mut s) % 2048) as i32 - 1024).collect();
         let enc = encode_scale_q(&scale_q);
         let mut pos = 0;
         let back = decode_scale_q(&enc, &mut pos).unwrap();
@@ -872,16 +843,10 @@ mod tests {
         );
         // The coder must beat fixed 32-bit storage by a wide margin and land
         // within a small constant of the order-0 entropy floor.
-        assert!(
-            achieved_bits_per_sym < raw_bits,
-            "rANS must beat fixed-width 32-bit scale_q storage"
-        );
+        assert!(achieved_bits_per_sym < raw_bits, "rANS must beat fixed-width 32-bit scale_q storage");
         // Overhead above the order-0 floor is the serialized CDF table (~4 B per
         // distinct symbol, amortized over all blocks) plus rANS's constant flush.
-        assert!(
-            achieved_bits_per_sym < h + 0.20,
-            "rANS within 0.2 bit/sym of order-0 entropy floor (got {achieved_bits_per_sym}, H={h})"
-        );
+        assert!(achieved_bits_per_sym < h + 0.20, "rANS within 0.2 bit/sym of order-0 entropy floor (got {achieved_bits_per_sym}, H={h})");
     }
 
     #[test]
@@ -896,11 +861,7 @@ mod tests {
         for _ in 0..n_outl {
             // clustered: most gaps small, heavy tail
             let r = splitmix64(&mut s) % 100;
-            let gap = if r < 80 {
-                1 + (splitmix64(&mut s) % 40) as u32
-            } else {
-                1 + (splitmix64(&mut s) % 400) as u32
-            };
+            let gap = if r < 80 { 1 + (splitmix64(&mut s) % 40) as u32 } else { 1 + (splitmix64(&mut s) % 400) as u32 };
             cur = cur.saturating_add(gap);
             positions.push(cur);
         }
@@ -921,16 +882,10 @@ mod tests {
             achieved_bits_per_sym - h_gap,
             enc.len(),
         );
-        assert!(
-            achieved_bits_per_sym < idx_bits,
-            "rANS gap-coding must beat fixed {idx_bits}-bit absolute positions"
-        );
+        assert!(achieved_bits_per_sym < idx_bits, "rANS gap-coding must beat fixed {idx_bits}-bit absolute positions");
         // Per-tensor stream: the CDF table amortizes over only ~43k symbols
         // here, so the overhead above the gap floor is a touch larger than the
         // whole-model case (where one shared/per-tensor table covers far more).
-        assert!(
-            achieved_bits_per_sym < h_gap + 0.35,
-            "rANS within 0.35 bit/sym of gap entropy floor (got {achieved_bits_per_sym}, H={h_gap})"
-        );
+        assert!(achieved_bits_per_sym < h_gap + 0.35, "rANS within 0.35 bit/sym of gap entropy floor (got {achieved_bits_per_sym}, H={h_gap})");
     }
 }

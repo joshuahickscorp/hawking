@@ -22,14 +22,15 @@ mkdir -p reports/condense
 [ -f "$ST" ]    || { echo "model safetensors missing: $ST" >&2; exit 2; }
 
 echo "[ppl] baseline f16 ..." >&2
-$PY tools/condense/ppl_bench.py "$MODEL" - f16 2>/dev/null | tee -a "$OUT"
+$PY -m tools.condense legacy ppl_bench "$MODEL" - f16 2>/dev/null | tee -a "$OUT"
 
 IFS=',' read -ra BARR <<< "$BITS"
 for b in "${BARR[@]}"; do
   CST="scratch/$(basename "$MODEL")-tq${b}.safetensors"
   echo "[bake] ${b}-bit -> $CST ..." >&2
   if $BAKER --in "$ST" --out "$CST" --bits "$b" --quality --rht-cols > "/tmp/bake_tq${b}.log" 2>&1; then
-    $PY tools/condense/ppl_bench.py "$MODEL" "$CST" "tq${b}" 2>/dev/null | tee -a "$OUT"
+    $PY -m tools.condense legacy ppl_bench \
+      "$MODEL" "$CST" "tq${b}" 2>/dev/null | tee -a "$OUT"
   else
     echo "{\"label\":\"tq${b}\",\"error\":\"bake failed (see /tmp/bake_tq${b}.log)\"}" | tee -a "$OUT"
     tail -3 "/tmp/bake_tq${b}.log" >&2

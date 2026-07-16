@@ -2,13 +2,8 @@
 
 use std::sync::{Arc, Mutex};
 
-use strand_quant::encode::{
-    encode_tensor_with_lut, encode_tensor_with_lut_block_parallel, BlockParallelConfig, EncodeOpts,
-    EncodedTensor,
-};
-use strand_quant::ordered_pipeline::{
-    run_ordered_pipeline, Accounted, PipelineConfig, PipelineStage,
-};
+use strand_quant::encode::{encode_tensor_with_lut, encode_tensor_with_lut_block_parallel, BlockParallelConfig, EncodeOpts, EncodedTensor};
+use strand_quant::ordered_pipeline::{run_ordered_pipeline, Accounted, PipelineConfig, PipelineStage};
 use strand_quant::rht::{rht_forward_rows, RhtConfig};
 use strand_quant::TrellisConfig;
 
@@ -32,22 +27,12 @@ fn generated_raw(n: usize, mut state: u64, in_features: usize) -> RawTensor {
         let value = (unit * 2.0 - 1.0) * (1.0 + (i % 17) as f32 / 8.0);
         bytes.extend_from_slice(&value.to_le_bytes());
     }
-    RawTensor {
-        bytes,
-        in_features,
-        seed: state,
-    }
+    RawTensor { bytes, in_features, seed: state }
 }
 
 fn read_prepare(raw: RawTensor) -> PreparedTensor {
-    let values: Vec<f32> = raw
-        .bytes
-        .chunks_exact(4)
-        .map(|c| f32::from_le_bytes([c[0], c[1], c[2], c[3]]))
-        .collect();
-    PreparedTensor {
-        values: rht_forward_rows(&values, &RhtConfig::from_seed(raw.seed), raw.in_features),
-    }
+    let values: Vec<f32> = raw.bytes.chunks_exact(4).map(|c| f32::from_le_bytes([c[0], c[1], c[2], c[3]])).collect();
+    PreparedTensor { values: rht_forward_rows(&values, &RhtConfig::from_seed(raw.seed), raw.in_features) }
 }
 
 fn encoded_wire(enc: &EncodedTensor) -> Vec<u8> {
@@ -73,16 +58,8 @@ fn encoded_wire(enc: &EncodedTensor) -> Vec<u8> {
 fn read_rht_encode_write_pipeline_is_exact_and_ordered() {
     let cfg = TrellisConfig::new(8, 3, 256);
     let lut = cfg.codebook();
-    let opts = EncodeOpts {
-        tail_biting: true,
-        affine_min: true,
-        ..EncodeOpts::default()
-    };
-    let make_inputs = || {
-        (0..7)
-            .map(|i| generated_raw(2048 + i * 256, 0xA11C_E000 + i as u64, 256))
-            .collect::<Vec<_>>()
-    };
+    let opts = EncodeOpts { tail_biting: true, affine_min: true, ..EncodeOpts::default() };
+    let make_inputs = || (0..7).map(|i| generated_raw(2048 + i * 256, 0xA11C_E000 + i as u64, 256)).collect::<Vec<_>>();
 
     let serial = make_inputs()
         .into_iter()
@@ -94,10 +71,7 @@ fn read_rht_encode_write_pipeline_is_exact_and_ordered() {
 
     let written = Arc::new(Mutex::new(Vec::<(usize, Vec<u8>)>::new()));
     let written_by_sink = Arc::clone(&written);
-    let block = BlockParallelConfig::new(4)
-        .unwrap()
-        .with_min_blocks(1)
-        .with_scratch_budget_bytes(64 * 1024 * 1024);
+    let block = BlockParallelConfig::new(4).unwrap().with_min_blocks(1).with_scratch_budget_bytes(64 * 1024 * 1024);
     let stats = run_ordered_pipeline(
         make_inputs(),
         PipelineConfig::new(1, 64 * 1024 * 1024, 8 * 1024 * 1024).unwrap(),
@@ -107,9 +81,7 @@ fn read_rht_encode_write_pipeline_is_exact_and_ordered() {
             Ok::<_, &'static str>(Accounted::new(prepared, bytes))
         },
         |_index, prepared| {
-            let enc =
-                encode_tensor_with_lut_block_parallel(&prepared.values, &cfg, &opts, &lut, block)
-                    .map_err(|_| "block encode failed")?;
+            let enc = encode_tensor_with_lut_block_parallel(&prepared.values, &cfg, &opts, &lut, block).map_err(|_| "block encode failed")?;
             let wire = encoded_wire(&enc);
             let bytes = wire.len();
             Ok::<_, &'static str>(Accounted::new(wire, bytes))

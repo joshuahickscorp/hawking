@@ -19,7 +19,7 @@
 #   tools/bench/ratios.sh tps q6k4r "HAWKING_QWEN_Q6K_SWIGLU_4R=1" short 5
 #   tools/bench/ratios.sh qual "" fast 100
 set -u
-REPO="${REPO:-$HOME/Downloads/hawking}"; cd "$REPO" || exit 2
+REPO="${REPO:-$(CDPATH= cd -- "$(dirname "$0")/../.." && pwd)}"; cd "$REPO" || exit 2
 BIN="${BIN:-./target/release/hawking}"
 M="${M:-models/qwen2.5-3b-instruct-q4_k_m.gguf}"
 TOK="${TOK:-128}"; SEED="${SEED:-5}"

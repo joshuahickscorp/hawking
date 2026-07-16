@@ -68,10 +68,7 @@ impl PlanTensor {
                 }
             })
             .collect();
-        assert_eq!(
-            over, 0,
-            "turbo i16 panel: {over} Q12 values exceed i16 range — this tensor needs i32 panels"
-        );
+        assert_eq!(over, 0, "turbo i16 panel: {over} Q12 values exceed i16 range — this tensor needs i32 panels");
         Self { rows, cols, enc, cfg, panel_i16 }
     }
 
@@ -124,10 +121,8 @@ fn build_layer(cfg: &TrellisConfig, mlp_only: bool) -> Vec<PlanTensor> {
     fn r256(n: usize) -> usize {
         n.div_ceil(256) * 256
     }
-    let attn: [(usize, usize); 4] =
-        [(896, r256(896)), (128, r256(896)), (128, r256(896)), (896, r256(896))];
-    let mlp: [(usize, usize); 3] =
-        [(4864, r256(896)), (4864, r256(896)), (896, r256(4864))];
+    let attn: [(usize, usize); 4] = [(896, r256(896)), (128, r256(896)), (128, r256(896)), (896, r256(896))];
+    let mlp: [(usize, usize); 3] = [(4864, r256(896)), (4864, r256(896)), (896, r256(4864))];
     let mut shapes: Vec<(usize, usize)> = Vec::new();
     if !mlp_only {
         shapes.extend_from_slice(&attn);
@@ -170,8 +165,7 @@ fn bench(label: &str, cfg: &TrellisConfig, mlp_only: bool) {
         }
     }
 
-    let xs: Vec<Vec<f32>> =
-        tensors.iter().map(|t| (0..t.cols).map(|i| ((i as f32) * 0.01).cos()).collect()).collect();
+    let xs: Vec<Vec<f32>> = tensors.iter().map(|t| (0..t.cols).map(|i| ((i as f32) * 0.01).cos()).collect()).collect();
     let mut ys: Vec<Vec<f32>> = tensors.iter().map(|t| vec![0.0f32; t.rows]).collect();
     let mut ys2: Vec<Vec<f32>> = tensors.iter().map(|t| vec![0.0f32; t.rows]).collect();
 
@@ -214,21 +208,9 @@ fn bench(label: &str, cfg: &TrellisConfig, mlp_only: bool) {
     println!("  identity: compressed == decode_lean (bit-exact); turbo panel == Q12 (exact)");
     println!("  turbo vs compressed output: max rel diff {max_rel:.2e} (within float-MAC)");
     let dens_c = if bw_c < Q4K_BYTES_PER_WEIGHT { "BEATS Q4_K" } else { "loses" };
-    println!(
-        "  Compressed : {:>7.3} ms/token ({:>6.1} tok/s) | {bw_c:.4} B/w  ({dens_c} {Q4K_BYTES_PER_WEIGHT})",
-        best_c * 1e3,
-        1.0 / best_c
-    );
-    println!(
-        "  TurboPanels: {:>7.3} ms/token ({:>6.1} tok/s) | {bw_t:.4} B/w  ({:.1}x RAM)",
-        best_t * 1e3,
-        1.0 / best_t,
-        bw_t / bw_c
-    );
-    println!(
-        "  turbo speedup {:.2}x (decode-once amortized; MAC-bound after that)",
-        best_c / best_t
-    );
+    println!("  Compressed : {:>7.3} ms/token ({:>6.1} tok/s) | {bw_c:.4} B/w  ({dens_c} {Q4K_BYTES_PER_WEIGHT})", best_c * 1e3, 1.0 / best_c);
+    println!("  TurboPanels: {:>7.3} ms/token ({:>6.1} tok/s) | {bw_t:.4} B/w  ({:.1}x RAM)", best_t * 1e3, 1.0 / best_t, bw_t / bw_c);
+    println!("  turbo speedup {:.2}x (decode-once amortized; MAC-bound after that)", best_c / best_t);
 }
 
 fn main() {

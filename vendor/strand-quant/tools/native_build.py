@@ -26,7 +26,7 @@ CRATE = Path(__file__).resolve().parents[1]
 REPO = CRATE.parents[1]
 ADMITTED_ROOT = (REPO / "build" / "native-execution").resolve()
 OWNER_PATTERN_SOURCE = (
-    REPO / "tools" / "condense" / "doctor_v5_single_device_sprint_audit.py"
+    REPO / "tools" / "condense" / "doctor_v5_local_observer.py"
 ).resolve()
 
 

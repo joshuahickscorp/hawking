@@ -1,14 +1,10 @@
-
 #![forbid(unsafe_code)]
 
 use std::fs;
 use std::path::PathBuf;
 
 use strand_quant::encode::{encode_tensor_with, EncodeOpts, EncodedTensor};
-use strand_quant::format::{
-    read_strand_v2, PackedTensor, PackedTensorV2,
-    write_strand_v2, OwnedTensorV2,
-};
+use strand_quant::format::{read_strand_v2, write_strand_v2, OwnedTensorV2, PackedTensor, PackedTensorV2};
 use strand_quant::rslt::{self, RsltSection};
 use strand_quant::{CodebookMode, TrellisConfig};
 
@@ -35,8 +31,8 @@ fn usage() -> ! {
 
 struct Args {
     model: PathBuf,
-    rslt:  PathBuf,
-    out:   PathBuf,
+    rslt: PathBuf,
+    out: PathBuf,
 }
 
 fn parse_args() -> Args {
@@ -45,23 +41,16 @@ fn parse_args() -> Args {
         usage();
     }
     let get = |flag: &str| -> PathBuf {
-        let pos = args.iter().position(|a| a == flag)
-            .unwrap_or_else(|| {
-                eprintln!("requant-rslt: missing required flag {flag}");
-                usage();
-            });
-        args.get(pos + 1)
-            .map(PathBuf::from)
-            .unwrap_or_else(|| {
-                eprintln!("requant-rslt: {flag} requires a value");
-                usage();
-            })
+        let pos = args.iter().position(|a| a == flag).unwrap_or_else(|| {
+            eprintln!("requant-rslt: missing required flag {flag}");
+            usage();
+        });
+        args.get(pos + 1).map(PathBuf::from).unwrap_or_else(|| {
+            eprintln!("requant-rslt: {flag} requires a value");
+            usage();
+        })
     };
-    Args {
-        model: get("--model"),
-        rslt:  get("--rslt"),
-        out:   get("--out"),
-    }
+    Args { model: get("--model"), rslt: get("--rslt"), out: get("--out") }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -83,28 +72,20 @@ fn classify(temperature: f64) -> Tier {
 
 fn tier_silence_bonus(tier: Tier) -> f64 {
     match tier {
-        Tier::Hot  => 0.0,   
-        Tier::Warm => 0.0,   
-        Tier::Cold => 1e-4,  
+        Tier::Hot => 0.0,
+        Tier::Warm => 0.0,
+        Tier::Cold => 1e-4,
     }
 }
 
 struct TierCounts {
-    hot:  usize,
+    hot: usize,
     warm: usize,
     cold: usize,
-    never: usize, 
+    never: usize,
 }
 
-fn re_encode_tensor(
-    name: &str,
-    src: &OwnedTensorV2,
-    counts_slice: &[u32],
-    max_count: u32,
-    default_opts: &EncodeOpts,
-    cfg: &TrellisConfig,
-) -> (EncodedTensor, TierCounts) {
-    
+fn re_encode_tensor(name: &str, src: &OwnedTensorV2, counts_slice: &[u32], max_count: u32, default_opts: &EncodeOpts, cfg: &TrellisConfig) -> (EncodedTensor, TierCounts) {
     if max_count == 0 {
         let enc = encode_tensor_with(&recon_f32(src), cfg, default_opts);
         let nb = enc.blocks.len();
@@ -115,7 +96,7 @@ fn re_encode_tensor(
     let nb = src.base.enc.blocks.len();
     let block_len = src.block_len as usize;
 
-    let mut hot_n  = 0usize;
+    let mut hot_n = 0usize;
     let mut warm_n = 0usize;
     let mut cold_n = 0usize;
     let mut never_n = 0usize;
@@ -140,7 +121,7 @@ fn re_encode_tensor(
         };
 
         match tier {
-            Tier::Hot  => hot_n  += 1,
+            Tier::Hot => hot_n += 1,
             Tier::Warm => warm_n += 1,
             Tier::Cold => cold_n += 1,
         }
@@ -158,18 +139,8 @@ fn re_encode_tensor(
         let n_steps = enc_b.total;
         let block_bits = (n_steps * k).div_ceil(8);
         merged_bits.extend_from_slice(&enc_b.bits[..block_bits.min(enc_b.bits.len())]);
-        
-        let mut bm = enc_b.blocks.into_iter().next().unwrap_or_else(|| {
-            
-            strand_quant::encode::BlockMeta {
-                scale_q: 0,
-                sub_scales: Vec::new(),
-                min_base_q: 0,
-                mins: Vec::new(),
-                init_state: 0,
-                n: 0,
-            }
-        });
+
+        let mut bm = enc_b.blocks.into_iter().next().unwrap_or_else(|| strand_quant::encode::BlockMeta { scale_q: 0, sub_scales: Vec::new(), min_base_q: 0, mins: Vec::new(), init_state: 0, n: 0 });
         bm.n = block_weights.len() as u32;
         merged_blocks.push(bm);
         total += block_weights.len();
@@ -179,38 +150,29 @@ fn re_encode_tensor(
         merged_bits.push(0);
     }
 
-    let new_enc = EncodedTensor {
-        bits: merged_bits,
-        blocks: merged_blocks,
-        total,
-        has_rht_seed: src.base.enc.has_rht_seed,
-        tail_biting: default_opts.tail_biting,
-        has_affine_min: default_opts.affine_min,
-    };
+    let new_enc =
+        EncodedTensor { bits: merged_bits, blocks: merged_blocks, total, has_rht_seed: src.base.enc.has_rht_seed, tail_biting: default_opts.tail_biting, has_affine_min: default_opts.affine_min };
 
     let silence_after = silence_rate(&new_enc);
-    let _ = (silence_before, silence_after, name); 
+    let _ = (silence_before, silence_after, name);
 
     (new_enc, TierCounts { hot: hot_n, warm: warm_n, cold: cold_n, never: never_n })
 }
 
 fn silence_rate(enc: &EncodedTensor) -> f64 {
-    if enc.total == 0 { return 0.0; }
-    
+    if enc.total == 0 {
+        return 0.0;
+    }
+
     let zero_bytes = enc.bits.iter().filter(|&&b| b == 0).count();
     zero_bytes as f64 / enc.bits.len() as f64
 }
 
 fn recon_f32(src: &OwnedTensorV2) -> Vec<f32> {
     use strand_quant::decode::decode_tensor_fixed;
-    
-    let cfg = TrellisConfig {
-        l_bits: src.base.l_bits as u32,
-        k_bits: src.base.k_bits as u32,
-        block_len: src.block_len as usize,
-        vec_dim: src.base.vec_dim as u32,
-        codebook_mode: CodebookMode::StoredLut,
-    };
+
+    let cfg =
+        TrellisConfig { l_bits: src.base.l_bits as u32, k_bits: src.base.k_bits as u32, block_len: src.block_len as usize, vec_dim: src.base.vec_dim as u32, codebook_mode: CodebookMode::StoredLut };
     let q12 = decode_tensor_fixed(&src.base.enc, &cfg);
     let inv = 1.0f32 / 4096.0;
     q12.iter().map(|&q| q as f32 * inv).collect()
@@ -246,27 +208,14 @@ fn main() {
             std::process::exit(1);
         });
 
-    let max_count: u32 = rslt
-        .block_counts
-        .iter()
-        .flat_map(|v| v.iter())
-        .copied()
-        .max()
-        .unwrap_or(0);
+    let max_count: u32 = rslt.block_counts.iter().flat_map(|v| v.iter()).copied().max().unwrap_or(0);
 
     println!("requant-rslt: loaded {} tensors, RSLT max_count={}", model_tensors.len(), max_count);
 
-    let default_opts = EncodeOpts {
-        adaptive: true,
-        tail_biting: false,
-        affine_min: false,
-        silence_bonus: 0.0,
-        entropy_bonus_scale: 0.0,
-        entropy_bonus_two_pass: false,
-    };
+    let default_opts = EncodeOpts { adaptive: true, tail_biting: false, affine_min: false, silence_bonus: 0.0, entropy_bonus_scale: 0.0, entropy_bonus_two_pass: false };
 
     let mut new_tensors: Vec<(OwnedTensorV2, EncodedTensor)> = Vec::new();
-    let mut total_hot  = 0usize;
+    let mut total_hot = 0usize;
     let mut total_warm = 0usize;
     let mut total_cold = 0usize;
     let mut total_never = 0usize;
@@ -282,32 +231,17 @@ fn main() {
             vec_dim: src.base.vec_dim as u32,
             codebook_mode: CodebookMode::StoredLut,
         };
-        let counts_slice: &[u32] = rslt
-            .block_counts
-            .get(ti)
-            .map(Vec::as_slice)
-            .unwrap_or(&[]);
+        let counts_slice: &[u32] = rslt.block_counts.get(ti).map(Vec::as_slice).unwrap_or(&[]);
 
-        let (new_enc, tiers) = re_encode_tensor(
-            &src.base.name,
-            src,
-            counts_slice,
-            max_count,
-            &default_opts,
-            &cfg,
-        );
-        total_hot   += tiers.hot;
-        total_warm  += tiers.warm;
-        total_cold  += tiers.cold;
+        let (new_enc, tiers) = re_encode_tensor(&src.base.name, src, counts_slice, max_count, &default_opts, &cfg);
+        total_hot += tiers.hot;
+        total_warm += tiers.warm;
+        total_cold += tiers.cold;
         total_never += tiers.never;
         total_blocks_processed += src.base.enc.blocks.len();
 
         let nb = src.base.enc.blocks.len();
-        println!(
-            "  [{:>3}/{:>3}] {:40}  blocks={:4}  hot={:4} warm={:4} cold={:4} never={:4}",
-            ti + 1, model_tensors.len(), &src.base.name,
-            nb, tiers.hot, tiers.warm, tiers.cold, tiers.never,
-        );
+        println!("  [{:>3}/{:>3}] {:40}  blocks={:4}  hot={:4} warm={:4} cold={:4} never={:4}", ti + 1, model_tensors.len(), &src.base.name, nb, tiers.hot, tiers.warm, tiers.cold, tiers.never,);
 
         new_tensors.push((src.clone(), new_enc));
     }
@@ -318,22 +252,12 @@ fn main() {
         start.elapsed()
     );
 
-    let source_sha256 = model_buf.get(20..52)
-        .and_then(|s| <[u8; 32]>::try_from(s).ok())
-        .unwrap_or([0u8; 32]);
+    let source_sha256 = model_buf.get(20..52).and_then(|s| <[u8; 32]>::try_from(s).ok()).unwrap_or([0u8; 32]);
 
     let packed: Vec<PackedTensorV2> = new_tensors
         .iter()
         .map(|(src, new_enc)| PackedTensorV2 {
-            base: PackedTensor {
-                name: &src.base.name,
-                shape: &src.base.shape,
-                rht_seed: src.base.rht_seed,
-                l_bits: src.base.l_bits,
-                k_bits: src.base.k_bits,
-                vec_dim: src.base.vec_dim,
-                enc: new_enc,
-            },
+            base: PackedTensor { name: &src.base.name, shape: &src.base.shape, rht_seed: src.base.rht_seed, l_bits: src.base.l_bits, k_bits: src.base.k_bits, vec_dim: src.base.vec_dim, enc: new_enc },
             block_len: src.block_len,
         })
         .collect();
@@ -354,7 +278,7 @@ fn main() {
     let orig_total_bits: usize = model_tensors.iter().map(|t| t.base.enc.bits.len() * 8).sum();
     let new_total_bits: usize = new_tensors.iter().map(|(_, e)| e.bits.len() * 8).sum();
     let orig_bpw = if orig_total_weights > 0 { orig_total_bits as f64 / orig_total_weights as f64 } else { 0.0 };
-    let new_bpw  = if new_total_weights > 0  { new_total_bits as f64  / new_total_weights as f64  } else { 0.0 };
+    let new_bpw = if new_total_weights > 0 { new_total_bits as f64 / new_total_weights as f64 } else { 0.0 };
 
     println!("  original : {orig_total_bits:12} bits  {orig_total_weights:12} weights  {orig_bpw:.4} bpw");
     println!("  re-encoded: {new_total_bits:12} bits  {new_total_weights:12} weights  {new_bpw:.4} bpw");

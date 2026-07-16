@@ -8,6 +8,9 @@ repository.workspace = true
 authors.workspace = true
 description = "OpenAI-compatible HTTP server for hawking-core"
 
+[lib]
+path = "lib.rs"
+
 [features]
 # Forward the runtime `tq` feature down to hawking-core so a `hawking serve`
 # built with `--features tq` can serve a `.tq` sidecar (HAWKING_QWEN_TQ). OFF by

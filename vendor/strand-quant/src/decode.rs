@@ -25,11 +25,7 @@ pub fn eff_min_q(min_base_q: i32, code: u8) -> i32 {
         return 0;
     }
     let base = (min_base_q.unsigned_abs()) as i64;
-    let signed = if code & 0x20 != 0 {
-        base * mag
-    } else {
-        -(base * mag)
-    };
+    let signed = if code & 0x20 != 0 { base * mag } else { -(base * mag) };
     (signed / 31) as i32
 }
 
@@ -46,31 +42,19 @@ pub fn decode_tensor_fixed(enc: &EncodedTensor, cfg: &TrellisConfig) -> Vec<i32>
             let lut = crate::codebook::codebook_lut(cfg.l_bits);
             decode_tensor_fixed_scalar_with(enc, cfg, |state| lut[state])
         }
-        CodebookMode::HashedQuantile => decode_tensor_fixed_scalar_with(enc, cfg, |state| {
-            crate::codebook::qcb_hashed(state, cfg.l_bits)
-        }),
-        CodebookMode::ComputedAcklam => decode_tensor_fixed_scalar_with(enc, cfg, |state| {
-            crate::codebook::qcb(state, cfg.l_bits)
-        }),
+        CodebookMode::HashedQuantile => decode_tensor_fixed_scalar_with(enc, cfg, |state| crate::codebook::qcb_hashed(state, cfg.l_bits)),
+        CodebookMode::ComputedAcklam => decode_tensor_fixed_scalar_with(enc, cfg, |state| crate::codebook::qcb(state, cfg.l_bits)),
     }
 }
 
-pub fn decode_tensor_fixed_with_lut(
-    enc: &EncodedTensor,
-    cfg: &TrellisConfig,
-    lut: &[i32],
-) -> Vec<i32> {
+pub fn decode_tensor_fixed_with_lut(enc: &EncodedTensor, cfg: &TrellisConfig, lut: &[i32]) -> Vec<i32> {
     if cfg.vec_dim() > 1 {
         return decode_tensor_fixed_with_lut_vec(enc, cfg, lut);
     }
     decode_tensor_fixed_scalar_with(enc, cfg, |state| lut[state])
 }
 
-fn decode_tensor_fixed_scalar_with<F>(
-    enc: &EncodedTensor,
-    cfg: &TrellisConfig,
-    mut qcb: F,
-) -> Vec<i32>
+fn decode_tensor_fixed_scalar_with<F>(enc: &EncodedTensor, cfg: &TrellisConfig, mut qcb: F) -> Vec<i32>
 where
     F: FnMut(usize) -> i32,
 {
@@ -90,10 +74,7 @@ where
 
         let offs: Vec<i32> = if enc.has_affine_min {
             let codes = unpack_sub_scales(&blk.mins, n_sub);
-            codes
-                .iter()
-                .map(|&c| eff_min_q(blk.min_base_q, c))
-                .collect()
+            codes.iter().map(|&c| eff_min_q(blk.min_base_q, c)).collect()
         } else {
             Vec::new()
         };
@@ -154,12 +135,7 @@ impl<'a> WordBitReader<'a> {
         let word_idx = start_bit >> 5;
         let bit_in_w = (start_bit & 31) as u32;
         let acc = (load_u32_le(bytes, word_idx) as u64) >> bit_in_w;
-        WordBitReader {
-            bytes,
-            word_idx,
-            acc,
-            have: 32 - bit_in_w,
-        }
+        WordBitReader { bytes, word_idx, acc, have: 32 - bit_in_w }
     }
 
     #[inline]
@@ -187,12 +163,8 @@ pub fn decode_lean(enc: &EncodedTensor, cfg: &TrellisConfig) -> Vec<i32> {
             let lut = crate::codebook::codebook_lut(cfg.l_bits);
             decode_lean_scalar_with(enc, cfg, |state| lut[state])
         }
-        CodebookMode::HashedQuantile => decode_lean_scalar_with(enc, cfg, |state| {
-            crate::codebook::qcb_hashed(state, cfg.l_bits)
-        }),
-        CodebookMode::ComputedAcklam => {
-            decode_lean_scalar_with(enc, cfg, |state| crate::codebook::qcb(state, cfg.l_bits))
-        }
+        CodebookMode::HashedQuantile => decode_lean_scalar_with(enc, cfg, |state| crate::codebook::qcb_hashed(state, cfg.l_bits)),
+        CodebookMode::ComputedAcklam => decode_lean_scalar_with(enc, cfg, |state| crate::codebook::qcb(state, cfg.l_bits)),
     }
 }
 
@@ -227,10 +199,7 @@ where
         let eff: Vec<i32> = mults.iter().map(|&m| eff_scale_q(blk.scale_q, m)).collect();
         let offs: Vec<i32> = if enc.has_affine_min {
             let codes = unpack_sub_scales(&blk.mins, n_sub);
-            codes
-                .iter()
-                .map(|&c| eff_min_q(blk.min_base_q, c))
-                .collect()
+            codes.iter().map(|&c| eff_min_q(blk.min_base_q, c)).collect()
         } else {
             Vec::new()
         };
@@ -282,11 +251,7 @@ where
     out
 }
 
-pub fn decode_tensor_fixed_with_lut_vec(
-    enc: &EncodedTensor,
-    cfg: &TrellisConfig,
-    lut: &[i32],
-) -> Vec<i32> {
+pub fn decode_tensor_fixed_with_lut_vec(enc: &EncodedTensor, cfg: &TrellisConfig, lut: &[i32]) -> Vec<i32> {
     use crate::encode::{n_sub_blocks, unpack_sub_scales, unpack_sub_scales_or_unity, SUB_BLOCK};
 
     let mask = cfg.state_mask();
@@ -304,10 +269,7 @@ pub fn decode_tensor_fixed_with_lut_vec(
         let eff: Vec<i32> = mults.iter().map(|&m| eff_scale_q(blk.scale_q, m)).collect();
         let offs: Vec<i32> = if enc.has_affine_min {
             let codes = unpack_sub_scales(&blk.mins, n_sub);
-            codes
-                .iter()
-                .map(|&c| eff_min_q(blk.min_base_q, c))
-                .collect()
+            codes.iter().map(|&c| eff_min_q(blk.min_base_q, c)).collect()
         } else {
             Vec::new()
         };
@@ -355,10 +317,7 @@ pub fn decode_tensor_fixed_with_lut_vec(
 const Q12_TO_F32: f32 = 1.0 / (1u32 << QUANTILE_SHIFT) as f32;
 
 pub fn decode_tensor(enc: &EncodedTensor, cfg: &TrellisConfig) -> Vec<f32> {
-    decode_tensor_fixed(enc, cfg)
-        .into_iter()
-        .map(|q| (q as f32) * Q12_TO_F32)
-        .collect()
+    decode_tensor_fixed(enc, cfg).into_iter().map(|q| (q as f32) * Q12_TO_F32).collect()
 }
 
 #[cfg(test)]
@@ -377,45 +336,16 @@ mod lean_tests {
             (TrellisConfig::for_bpw_l(3.0, 5), true),
         ];
         for (cfg, fold_expected) in configs {
-            assert_eq!(
-                SUB_BLOCK >= cfg.num_states(),
-                fold_expected,
-                "fold gate mismatch for L={}",
-                cfg.l_bits
-            );
+            assert_eq!(SUB_BLOCK >= cfg.num_states(), fold_expected, "fold gate mismatch for L={}", cfg.l_bits);
             for seed in 0..96u64 {
                 let n = 1 + (seed as usize * 37) % 2048;
-                let w: Vec<f32> = (0..n)
-                    .map(|i| ((i as f32 + seed as f32) * 0.0137).sin() * 0.5)
-                    .collect();
+                let w: Vec<f32> = (0..n).map(|i| ((i as f32 + seed as f32) * 0.0137).sin() * 0.5).collect();
 
                 let variants = [
                     encode_tensor(&w, &cfg),
-                    encode_tensor_with(
-                        &w,
-                        &cfg,
-                        &EncodeOpts {
-                            tail_biting: true,
-                            ..Default::default()
-                        },
-                    ),
-                    encode_tensor_with(
-                        &w,
-                        &cfg,
-                        &EncodeOpts {
-                            affine_min: true,
-                            ..Default::default()
-                        },
-                    ),
-                    encode_tensor_with(
-                        &w,
-                        &cfg,
-                        &EncodeOpts {
-                            tail_biting: true,
-                            affine_min: true,
-                            ..Default::default()
-                        },
-                    ),
+                    encode_tensor_with(&w, &cfg, &EncodeOpts { tail_biting: true, ..Default::default() }),
+                    encode_tensor_with(&w, &cfg, &EncodeOpts { affine_min: true, ..Default::default() }),
+                    encode_tensor_with(&w, &cfg, &EncodeOpts { tail_biting: true, affine_min: true, ..Default::default() }),
                 ];
                 for enc in &variants {
                     assert_eq!(
@@ -437,9 +367,7 @@ mod lean_tests {
     #[test]
     fn scalar_decode_sources_are_bit_identical() {
         let base = TrellisConfig::for_bpw_l(3.0, 10);
-        let weights: Vec<f32> = (0..1537)
-            .map(|i| ((i as f32 + 17.0) * 0.019).sin())
-            .collect();
+        let weights: Vec<f32> = (0..1537).map(|i| ((i as f32 + 17.0) * 0.019).sin()).collect();
         let enc = encode_tensor(&weights, &base);
         let stored = base.with_codebook_mode(CodebookMode::StoredLut);
         let hashed = base.with_codebook_mode(CodebookMode::HashedQuantile);
@@ -453,9 +381,7 @@ mod lean_tests {
 
     #[test]
     fn word_reader_matches_read_bits() {
-        let bytes: Vec<u8> = (0..257u32)
-            .map(|i| (i.wrapping_mul(2654435761) >> 13) as u8)
-            .collect();
+        let bytes: Vec<u8> = (0..257u32).map(|i| (i.wrapping_mul(2654435761) >> 13) as u8).collect();
         for k in 1..=6u32 {
             for start in 0..40usize {
                 let mut reader = WordBitReader::new(&bytes, start);

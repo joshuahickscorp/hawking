@@ -78,7 +78,7 @@ GOV_WINDOW = 32
 class UserNgramDraft:
     """Bigram + unigram index over emitted token ids.
 
-    Mirrors UserNgramDraft in crates/hawking-core/src/speculate/user_ngram.rs
+    Mirrors UserNgramDraft in crates/hawking-core/src/speculate_user_ngram.rs
     exactly: argmax by count, ties broken by smallest id.
     """
 
@@ -172,7 +172,7 @@ class UserNgramDraft:
 class SuffixArrayDraft:
     """Rolling-window exact-match suffix proposer.
 
-    Mirrors SuffixArrayDraft in crates/hawking-core/src/speculate/suffix_array.rs:
+    Mirrors SuffixArrayDraft in crates/hawking-core/src/speculate_suffix_array.rs:
     h=3, window=10_000, backwards search for most-recent prior occurrence.
     """
 
@@ -223,7 +223,7 @@ class SuffixArrayDraft:
 class RetrievalProposer:
     """Wide-corpus exact-match retrieval proposer.
 
-    Mirrors RetrievalProposer in crates/hawking-core/src/speculate/retrieval.rs:
+    Mirrors RetrievalProposer in crates/hawking-core/src/speculate_retrieval.rs:
     h=4, window=50_000. The key difference from SuffixArrayDraft is:
       - anchor h=4 (longer, higher precision, lower recall)
       - corpus includes warm()-seeded history in addition to emitted tokens

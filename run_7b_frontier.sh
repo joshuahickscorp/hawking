@@ -20,7 +20,8 @@
 #  caffeinate so the machine doesn't sleep. Nothing here can hard-OOM the machine.
 # ============================================================================
 set -uo pipefail
-cd "$HOME/Downloads/hawking" || { echo "repo not found at ~/Downloads/hawking"; exit 2; }
+REPO="${REPO:-$(CDPATH= cd -- "$(dirname "$0")" && pwd)}"
+cd "$REPO" || { echo "repo not found: $REPO"; exit 2; }
 PY=python3.12
 RUN=7b_frontier
 LOCK=reports/cron/$RUN.lock
@@ -33,7 +34,7 @@ CONDUCTOR_PID=reports/cron/${RUN}_conductor.pid
 VERIFIER_PID=reports/cron/${RUN}_verifier.pid
 SEED=reports/cron/7b_ladder.jsonl          # the first ladder's results to carry over
 mkdir -p reports/cron
-export LADDER_MODEL="$HOME/Downloads/hawking/scratch/qwen-7b"
+export LADDER_MODEL="$REPO/scratch/qwen-7b"
 export LADDER_LABEL=7B LADDER_SET=frontier LADDER_OUT=reports/cron/$RUN
 export LADDER_LOCK=$LOCK LADDER_HEALTH=$HEALTH LADDER_HEALTH_PID=$HEALTH_PID
 export LADDER_RUN_LOG=reports/cron/${RUN}_run.log
@@ -111,7 +112,7 @@ _arm_conductor() {
 import os, subprocess
 env = os.environ.copy()
 subprocess.Popen(
-    ["python3.12", "tools/condense/frontier_conductor.py", "--outbase", "reports/cron/7b_frontier"],
+    ["python3.12", "-m", "tools.condense", "frontier.conductor", "--outbase", "reports/cron/7b_frontier"],
     stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
     env=env, start_new_session=True,
 )
@@ -122,7 +123,7 @@ _arm_verifier() {
   $PY - <<'PY'
 import os, subprocess
 subprocess.Popen(
-    ["python3.12", "tools/condense/frontier_verifier.py"],
+    ["python3.12", "-m", "tools.condense", "frontier.verifier"],
     stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
     env=os.environ.copy(), start_new_session=True,
 )
@@ -170,7 +171,7 @@ PY
     [ -f "$HEALTH" ] && { echo "--- disk/swap (last) ---"; tail -1 "$HEALTH"; } ;;
 
   kill)
-    $PY tools/condense/ladder_launch.py kill 2>/dev/null
+    $PY -m tools.condense frontier.launcher kill 2>/dev/null
     hp=$(_live_health); [ -n "$hp" ] && kill "$hp" 2>/dev/null
     cp=$(_live_caffeinate); [ -n "$cp" ] && kill "$cp" 2>/dev/null
     kp=$(_live_keepalive); [ -n "$kp" ] && kill "$kp" 2>/dev/null
@@ -183,7 +184,7 @@ PY
     _seed
     p=$(_live)
     if [ -n "$p" ]; then echo "frontier already running (PID $p) — adopting, not restarting"
-    else echo "launching frontier (detached, resumes from checkpoint)…"; $PY tools/condense/ladder_launch.py; fi
+    else echo "launching frontier (detached, resumes from checkpoint)…"; $PY -m tools.condense frontier.launcher; fi
     if [ -n "$(_live_health)" ]; then echo "backstop already armed"
     else echo "arming OOM/disk backstop…"; _arm_health; fi
     # keep the machine awake until the run's PID exits

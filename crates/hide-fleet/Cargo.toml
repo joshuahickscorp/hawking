@@ -8,6 +8,9 @@ repository.workspace = true
 authors.workspace = true
 description = "Parallel agent fleet, workstation mode, and batch orchestration scaffold for HIDE"
 
+[lib]
+path = "lib.rs"
+
 [dependencies]
 hide-core = { path = "../hide-core" }
 hide-kernel = { path = "../hide-kernel" }

@@ -71,7 +71,7 @@ impl Rng {
     fn next_weight(&mut self) -> f32 {
         let r = self.next_u64();
         match r & 0xF {
-            0 => 0.0,                                            // exact zero
+            0 => 0.0,                                              // exact zero
             1 => 3.5 * ((r >> 8) as i32 as f32 / i32::MAX as f32), // outlier
             _ => {
                 let u = ((r >> 11) as f64) / (1u64 << 53) as f64; // [0,1)
@@ -102,10 +102,7 @@ fn deploy_configs() -> Vec<TrellisConfig> {
 /// runs in a few seconds; the dedicated `*_large` test below covers the >64k multi-block
 /// regime that actually exercises the rayon/SIMD chunking, on a single config.
 fn edge_sizes() -> Vec<usize> {
-    vec![
-        0, 1, 2, 31, 32, 33, 63, 64, 65, 127, 255, 256, 257, 511, 512, 513, 700, 1023, 1024,
-        1025, 2048, 4096, 4097, 8192,
-    ]
+    vec![0, 1, 2, 31, 32, 33, 63, 64, 65, 127, 255, 256, 257, 511, 512, 513, 700, 1023, 1024, 1025, 2048, 4096, 4097, 8192]
 }
 
 /// Build the four encode variants for a weight vector + config: {plain, tail-biting,
@@ -115,11 +112,7 @@ fn encode_variants(w: &[f32], cfg: &TrellisConfig) -> Vec<EncodedTensor> {
         encode_tensor(w, cfg),
         encode_tensor_with(w, cfg, &EncodeOpts { tail_biting: true, ..Default::default() }),
         encode_tensor_with(w, cfg, &EncodeOpts { affine_min: true, ..Default::default() }),
-        encode_tensor_with(
-            w,
-            cfg,
-            &EncodeOpts { tail_biting: true, affine_min: true, ..Default::default() },
-        ),
+        encode_tensor_with(w, cfg, &EncodeOpts { tail_biting: true, affine_min: true, ..Default::default() }),
     ]
 }
 
@@ -187,24 +180,9 @@ fn cpu_tuned_decode_bit_identical_large_multiblock() {
         let w: Vec<f32> = (0..n).map(|_| rng.next_weight()).collect();
         for enc in encode_variants(&w, &cfg) {
             let reference = decode_tensor_fixed(&enc, &cfg);
-            assert_eq!(
-                decode_q12_fast(&enc, &cfg),
-                reference,
-                "FAST large diverged k={} L={} tail={} affine={}",
-                cfg.k_bits, cfg.l_bits, enc.tail_biting, enc.has_affine_min
-            );
-            assert_eq!(
-                decode_q12_par(&enc, &cfg),
-                reference,
-                "PAR large diverged k={} L={} tail={} affine={}",
-                cfg.k_bits, cfg.l_bits, enc.tail_biting, enc.has_affine_min
-            );
-            assert_eq!(
-                decode_q12_simd(&enc, &cfg),
-                reference,
-                "SIMD large diverged k={} L={} tail={} affine={}",
-                cfg.k_bits, cfg.l_bits, enc.tail_biting, enc.has_affine_min
-            );
+            assert_eq!(decode_q12_fast(&enc, &cfg), reference, "FAST large diverged k={} L={} tail={} affine={}", cfg.k_bits, cfg.l_bits, enc.tail_biting, enc.has_affine_min);
+            assert_eq!(decode_q12_par(&enc, &cfg), reference, "PAR large diverged k={} L={} tail={} affine={}", cfg.k_bits, cfg.l_bits, enc.tail_biting, enc.has_affine_min);
+            assert_eq!(decode_q12_simd(&enc, &cfg), reference, "SIMD large diverged k={} L={} tail={} affine={}", cfg.k_bits, cfg.l_bits, enc.tail_biting, enc.has_affine_min);
         }
     }
 }
@@ -222,20 +200,8 @@ fn tuned_decode_is_run_to_run_deterministic() {
         let enc = encode_tensor(&w, &cfg);
         let reference = decode_tensor_fixed(&enc, &cfg);
         for rep in 0..8 {
-            assert_eq!(
-                decode_q12_par(&enc, &cfg),
-                reference,
-                "PAR nondeterministic at rep {rep} (k={} L={})",
-                cfg.k_bits,
-                cfg.l_bits
-            );
-            assert_eq!(
-                decode_q12_simd(&enc, &cfg),
-                reference,
-                "SIMD nondeterministic at rep {rep} (k={} L={})",
-                cfg.k_bits,
-                cfg.l_bits
-            );
+            assert_eq!(decode_q12_par(&enc, &cfg), reference, "PAR nondeterministic at rep {rep} (k={} L={})", cfg.k_bits, cfg.l_bits);
+            assert_eq!(decode_q12_simd(&enc, &cfg), reference, "SIMD nondeterministic at rep {rep} (k={} L={})", cfg.k_bits, cfg.l_bits);
         }
     }
 }
@@ -251,18 +217,10 @@ fn all_cpu_paths_agree_pairwise_with_index_report() {
             let w: Vec<f32> = (0..n).map(|_| rng.next_weight()).collect();
             for enc in encode_variants(&w, &cfg) {
                 let reference = decode_tensor_fixed(&enc, &cfg);
-                let paths: [(&str, Vec<i32>); 3] = [
-                    ("fast", decode_q12_fast(&enc, &cfg)),
-                    ("par", decode_q12_par(&enc, &cfg)),
-                    ("simd", decode_q12_simd(&enc, &cfg)),
-                ];
+                let paths: [(&str, Vec<i32>); 3] = [("fast", decode_q12_fast(&enc, &cfg)), ("par", decode_q12_par(&enc, &cfg)), ("simd", decode_q12_simd(&enc, &cfg))];
                 for (name, got) in &paths {
                     if got != &reference {
-                        let first = got
-                            .iter()
-                            .zip(reference.iter())
-                            .position(|(a, b)| a != b)
-                            .unwrap_or(usize::MAX);
+                        let first = got.iter().zip(reference.iter()).position(|(a, b)| a != b).unwrap_or(usize::MAX);
                         panic!(
                             "{name} != reference (MOAT BREAK) at index {first}: \
                              got {:?} want {:?} | k={} L={} n={} tail={} affine={}",
@@ -301,10 +259,7 @@ fn gpu_staged_kernel_is_bit_identical_to_reference() {
 
 #[cfg(target_os = "macos")]
 mod gpu_staged {
-    use metal::{
-        Buffer, CompileOptions, ComputePipelineState, Device, MTLResourceOptions, MTLSize,
-        NSUInteger,
-    };
+    use metal::{Buffer, CompileOptions, ComputePipelineState, Device, MTLResourceOptions, MTLSize, NSUInteger};
     use strand_decode_kernel::metal::{bake_bitslice_entries, BitsliceEntry};
     use strand_quant::codebook::codebook_lut;
     use strand_quant::decode::decode_tensor_fixed;
@@ -317,11 +272,7 @@ mod gpu_staged {
     /// Refuse to touch the GPU if a quant/PV job owns MPS (the conductor's live process).
     fn pv_owns_gpu() -> bool {
         for pat in ["strand-qat", "strand-pv", "strand-quant-7b"] {
-            let hit = std::process::Command::new("pgrep")
-                .args(["-f", pat])
-                .output()
-                .map(|o| o.status.success())
-                .unwrap_or(false);
+            let hit = std::process::Command::new("pgrep").args(["-f", pat]).output().map(|o| o.status.success()).unwrap_or(false);
             if hit {
                 return true;
             }
@@ -333,11 +284,7 @@ mod gpu_staged {
         let byte_len = (data.len() * std::mem::size_of::<T>()).max(4);
         let buf = dev.new_buffer(byte_len as NSUInteger, MTLResourceOptions::StorageModeShared);
         unsafe {
-            std::ptr::copy_nonoverlapping(
-                data.as_ptr() as *const u8,
-                buf.contents() as *mut u8,
-                data.len() * std::mem::size_of::<T>(),
-            );
+            std::ptr::copy_nonoverlapping(data.as_ptr() as *const u8, buf.contents() as *mut u8, data.len() * std::mem::size_of::<T>());
         }
         buf
     }
@@ -378,19 +325,7 @@ mod gpu_staged {
     }
 
     #[allow(clippy::too_many_arguments)]
-    fn dispatch_deployed(
-        q: &metal::CommandQueue,
-        p: &ComputePipelineState,
-        w: &Buffer,
-        out: &Buffer,
-        tbl: &Buffer,
-        nb: &Buffer,
-        k: &Buffer,
-        l: &Buffer,
-        lut: &Buffer,
-        n_blocks: usize,
-        l_bits: u32,
-    ) {
+    fn dispatch_deployed(q: &metal::CommandQueue, p: &ComputePipelineState, w: &Buffer, out: &Buffer, tbl: &Buffer, nb: &Buffer, k: &Buffer, l: &Buffer, lut: &Buffer, n_blocks: usize, l_bits: u32) {
         let cmd = q.new_command_buffer();
         let enc = cmd.new_compute_command_encoder();
         enc.set_compute_pipeline_state(p);
@@ -402,8 +337,7 @@ mod gpu_staged {
         enc.set_buffer(5, Some(l), 0);
         enc.set_buffer(6, Some(lut), 0);
         enc.set_threadgroup_memory_length(0, ((1usize << l_bits) * 4) as NSUInteger);
-        let groups =
-            MTLSize { width: (n_blocks as u64).div_ceil(256) as NSUInteger, height: 1, depth: 1 };
+        let groups = MTLSize { width: (n_blocks as u64).div_ceil(256) as NSUInteger, height: 1, depth: 1 };
         let tpg = MTLSize { width: 256, height: 1, depth: 1 };
         enc.dispatch_thread_groups(groups, tpg);
         enc.end_encoding();
@@ -438,8 +372,7 @@ mod gpu_staged {
         enc.set_buffer(6, Some(lut), 0);
         enc.set_threadgroup_memory_length(0, ((1usize << l_bits) * 4) as NSUInteger);
         enc.set_threadgroup_memory_length(1, (bg as usize * 256 * 4) as NSUInteger);
-        let groups =
-            MTLSize { width: (n_blocks as u64).div_ceil(bg) as NSUInteger, height: 1, depth: 1 };
+        let groups = MTLSize { width: (n_blocks as u64).div_ceil(bg) as NSUInteger, height: 1, depth: 1 };
         let tpg = MTLSize { width: bg as NSUInteger, height: 1, depth: 1 };
         enc.dispatch_thread_groups(groups, tpg);
         enc.end_encoding();
@@ -482,12 +415,7 @@ mod gpu_staged {
             cmd.commit();
             cmd.wait_until_completed();
             let gpu_sz = unsafe { *(out.contents() as *const u32) } as usize;
-            assert_eq!(
-                gpu_sz,
-                std::mem::size_of::<BitsliceEntry>(),
-                "staged GPU sizeof(BitsliceEntry)={gpu_sz} != host {} — tbl stride diverges",
-                std::mem::size_of::<BitsliceEntry>()
-            );
+            assert_eq!(gpu_sz, std::mem::size_of::<BitsliceEntry>(), "staged GPU sizeof(BitsliceEntry)={gpu_sz} != host {} — tbl stride diverges", std::mem::size_of::<BitsliceEntry>());
         }
 
         // Configs are the two production GPU configs. Sizes include every edge: a partial
@@ -496,23 +424,9 @@ mod gpu_staged {
         let mut total_checked: u64 = 0;
         for cfg in [TrellisConfig::for_bpw(3.0), TrellisConfig::for_bpw_l(2.0, 12)] {
             let bg = pick_bg(cfg.l_bits);
-            let sizes = [
-                1usize,
-                255,
-                256,
-                257,
-                512,
-                700,
-                (bg as usize) * 256,
-                (bg as usize) * 256 + 1,
-                (bg as usize) * 256 * 3 + 137,
-                4096,
-                65_536,
-                67_000,
-            ];
+            let sizes = [1usize, 255, 256, 257, 512, 700, (bg as usize) * 256, (bg as usize) * 256 + 1, (bg as usize) * 256 * 3 + 137, 4096, 65_536, 67_000];
             for &total in &sizes {
-                let w: Vec<f32> =
-                    (0..total).map(|i| ((i as f32) * 0.0137).sin() * 0.5).collect();
+                let w: Vec<f32> = (0..total).map(|i| ((i as f32) * 0.0137).sin() * 0.5).collect();
                 let enc = encode_tensor(&w, &cfg);
                 let want = decode_tensor_fixed(&enc, &cfg);
                 let Some(tbl) = bake_bitslice_entries(&enc, &cfg) else { continue };
@@ -527,18 +441,9 @@ mod gpu_staged {
 
                 // deployed kernel -> its own output buffer
                 let out_dep = alloc(&dev, total * 4);
-                dispatch_deployed(
-                    &q, &p_deployed, &w_buf, &out_dep, &tbl_buf, &nb, &kb, &lb, &lut_buf,
-                    tbl.len(), cfg.l_bits,
-                );
-                let got_dep =
-                    unsafe { std::slice::from_raw_parts(out_dep.contents() as *const i32, total) };
-                assert_eq!(
-                    got_dep,
-                    &want[..],
-                    "DEPLOYED bitslice != reference (precondition): k={} L={} total={total}",
-                    cfg.k_bits, cfg.l_bits
-                );
+                dispatch_deployed(&q, &p_deployed, &w_buf, &out_dep, &tbl_buf, &nb, &kb, &lb, &lut_buf, tbl.len(), cfg.l_bits);
+                let got_dep = unsafe { std::slice::from_raw_parts(out_dep.contents() as *const i32, total) };
+                assert_eq!(got_dep, &want[..], "DEPLOYED bitslice != reference (precondition): k={} L={} total={total}", cfg.k_bits, cfg.l_bits);
 
                 // staged (G4-tuned) kernel -> a FRESH buffer prefilled with a sentinel so an
                 // unwritten slot (a flush hole) would surface as a mismatch, not a stale 0.
@@ -549,31 +454,14 @@ mod gpu_staged {
                         *p.add(i) = i32::MIN; // sentinel: must be fully overwritten
                     }
                 }
-                dispatch_staged(
-                    &q, &p_staged, &w_buf, &out_stg, &tbl_buf, &nb, &kb, &lb, &lut_buf,
-                    tbl.len(), cfg.l_bits, bg,
-                );
-                let got_stg =
-                    unsafe { std::slice::from_raw_parts(out_stg.contents() as *const i32, total) };
+                dispatch_staged(&q, &p_staged, &w_buf, &out_stg, &tbl_buf, &nb, &kb, &lb, &lut_buf, tbl.len(), cfg.l_bits, bg);
+                let got_stg = unsafe { std::slice::from_raw_parts(out_stg.contents() as *const i32, total) };
 
                 // THE MOAT ASSERTION: staged Q12 == frozen-LUT integer reference, bit for bit.
-                assert_eq!(
-                    got_stg,
-                    &want[..],
-                    "STAGED (G4) decode != reference (MOAT BREAK): k={} L={} total={total} bg={bg}",
-                    cfg.k_bits, cfg.l_bits
-                );
+                assert_eq!(got_stg, &want[..], "STAGED (G4) decode != reference (MOAT BREAK): k={} L={} total={total} bg={bg}", cfg.k_bits, cfg.l_bits);
                 // and staged == deployed (cross-kernel equivalence)
-                assert_eq!(
-                    got_stg, got_dep,
-                    "STAGED != DEPLOYED (cross-kernel divergence): k={} L={} total={total} bg={bg}",
-                    cfg.k_bits, cfg.l_bits
-                );
-                assert!(
-                    got_stg.iter().all(|&v| v != i32::MIN) || total == 0,
-                    "staged left a sentinel slot unwritten (flush hole): k={} L={} total={total}",
-                    cfg.k_bits, cfg.l_bits
-                );
+                assert_eq!(got_stg, got_dep, "STAGED != DEPLOYED (cross-kernel divergence): k={} L={} total={total} bg={bg}", cfg.k_bits, cfg.l_bits);
+                assert!(got_stg.iter().all(|&v| v != i32::MIN) || total == 0, "staged left a sentinel slot unwritten (flush hole): k={} L={} total={total}", cfg.k_bits, cfg.l_bits);
                 total_checked += total as u64;
             }
         }

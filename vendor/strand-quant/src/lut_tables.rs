@@ -1,4 +1,3 @@
-
 pub const FROZEN_MIN_L: u32 = 4;
 
 pub const FROZEN_MAX_L: u32 = 14;

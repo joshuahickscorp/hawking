@@ -1,4 +1,3 @@
-
 #![forbid(unsafe_code)]
 
 use std::fs;
@@ -8,11 +7,11 @@ use std::sync::Mutex;
 use std::time::Instant;
 
 use strand_quant::encode::{BlockMeta, EncodedTensor};
+use strand_quant::gate_utils::{is_quantizable_linear, rht_seed_for};
 use strand_quant::outlier_wire::OutlierWire;
 use strand_quant::rht::{rht_forward_rows, RhtConfig};
 use strand_quant::safetensor_io::SafeTensors;
 use strand_quant::trellis::read_bits;
-use strand_quant::gate_utils::{is_quantizable_linear, rht_seed_for};
 use strand_quant::{encode_tensor_with, EncodeOpts, TrellisConfig};
 
 fn write_safetensors_f32(path: &str, tensors: &[(String, Vec<u64>, Vec<f32>)]) -> std::io::Result<()> {
@@ -24,10 +23,7 @@ fn write_safetensors_f32(path: &str, tensors: &[(String, Vec<u64>, Vec<f32>)]) -
         }
         let nbytes = data.len() * 4;
         let shape_s = shape.iter().map(|d| d.to_string()).collect::<Vec<_>>().join(",");
-        header.push_str(&format!(
-            "\"{}\":{{\"dtype\":\"F32\",\"shape\":[{}],\"data_offsets\":[{},{}]}}",
-            name, shape_s, offset, offset + nbytes
-        ));
+        header.push_str(&format!("\"{}\":{{\"dtype\":\"F32\",\"shape\":[{}],\"data_offsets\":[{},{}]}}", name, shape_s, offset, offset + nbytes));
         offset += nbytes;
     }
     header.push('}');
@@ -54,16 +50,7 @@ struct WireTensor {
 }
 
 #[allow(clippy::too_many_arguments)]
-fn encode_for_wire(
-    name: &str,
-    gt: &[f32],
-    in_features: usize,
-    cfg: &TrellisConfig,
-    opts: &EncodeOpts,
-    use_rht: bool,
-    outlier_pct: f64,
-    outlier_bits: u32,
-) -> WireTensor {
+fn encode_for_wire(name: &str, gt: &[f32], in_features: usize, cfg: &TrellisConfig, opts: &EncodeOpts, use_rht: bool, outlier_pct: f64, outlier_bits: u32) -> WireTensor {
     let outliers: Option<(Vec<usize>, Vec<i32>, f32)> = if outlier_pct > 0.0 {
         let n = gt.len();
         let k = ((outlier_pct / 100.0) * n as f64).round() as usize;
@@ -71,15 +58,12 @@ fn encode_for_wire(
             None
         } else {
             let mut order: Vec<usize> = (0..n).collect();
-            order.sort_unstable_by(|&a, &b| {
-                gt[b].abs().partial_cmp(&gt[a].abs()).unwrap_or(std::cmp::Ordering::Equal)
-            });
+            order.sort_unstable_by(|&a, &b| gt[b].abs().partial_cmp(&gt[a].abs()).unwrap_or(std::cmp::Ordering::Equal));
             let idx: Vec<usize> = order[..k].to_vec();
             let omax = idx.iter().fold(0f32, |m, &i| m.max(gt[i].abs())).max(1e-12);
             let ob = outlier_bits.clamp(2, 16);
             let levels = ((1i64 << (ob - 1)) - 1) as f32;
-            let codes: Vec<i32> =
-                idx.iter().map(|&i| (gt[i] / omax * levels).round() as i32).collect();
+            let codes: Vec<i32> = idx.iter().map(|&i| (gt[i] / omax * levels).round() as i32).collect();
             Some((idx, codes, omax))
         }
     } else {
@@ -111,15 +95,9 @@ fn encode_for_wire(
     let outlier = outliers.map(|(idx, codes, omax)| {
         let n = gt.len();
         let idx_bits = if n <= 1 { 1 } else { usize::BITS - (n - 1).leading_zeros() };
-        let mut entries: Vec<(u32, i32)> =
-            idx.into_iter().map(|i| i as u32).zip(codes).collect();
+        let mut entries: Vec<(u32, i32)> = idx.into_iter().map(|i| i as u32).zip(codes).collect();
         entries.sort_unstable_by_key(|&(i, _)| i);
-        OutlierWire {
-            omax_bits: omax.to_bits(),
-            entries,
-            idx_bits,
-            val_bits: outlier_bits.clamp(2, 16),
-        }
+        OutlierWire { omax_bits: omax.to_bits(), entries, idx_bits, val_bits: outlier_bits.clamp(2, 16) }
     });
 
     WireTensor { enc, outlier }
@@ -172,10 +150,7 @@ fn outlier_wire_bytes(o: &OutlierWire) -> u64 {
 }
 
 fn full_tensor_bytes(name: &str, ndim: usize, w: &WireTensor) -> u64 {
-    v1_tensor_header_bytes(name, ndim)
-        + w.enc.bits.len() as u64
-        + w.enc.blocks.iter().map(block_record_bytes).sum::<u64>()
-        + w.outlier.as_ref().map(outlier_wire_bytes).unwrap_or(0)
+    v1_tensor_header_bytes(name, ndim) + w.enc.bits.len() as u64 + w.enc.blocks.iter().map(block_record_bytes).sum::<u64>() + w.outlier.as_ref().map(outlier_wire_bytes).unwrap_or(0)
 }
 
 fn patch_record_prefix_bytes(name: &str) -> u64 {
@@ -184,13 +159,12 @@ fn patch_record_prefix_bytes(name: &str) -> u64 {
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum Status {
-    
     Diffed,
-    
+
     Added,
-    
+
     Removed,
-    
+
     Replaced,
 }
 
@@ -217,11 +191,7 @@ struct Row {
 }
 
 fn diff_pair(name: &str, ndim: usize, k_bits: u32, a: &WireTensor, b: &WireTensor) -> Row {
-    assert_eq!(
-        a.enc.blocks.len(),
-        b.enc.blocks.len(),
-        "{name}: same shape must partition into the same block count"
-    );
+    assert_eq!(a.enc.blocks.len(), b.enc.blocks.len(), "{name}: same shape must partition into the same block count");
     assert_eq!(a.enc.total, b.enc.total, "{name}: total mismatch at equal shape");
 
     let k = k_bits as usize;
@@ -246,31 +216,13 @@ fn diff_pair(name: &str, ndim: usize, k_bits: u32, a: &WireTensor, b: &WireTenso
     let n_changed = changed_idx.len();
     let full_bytes = full_tensor_bytes(name, ndim, b);
     let delta_bytes = if n_changed == 0 && !outlier_changed {
-        
         patch_record_prefix_bytes(name) + 4
     } else {
-        let patched = patch_record_prefix_bytes(name)
-            + 8
-            + delta_blocks_bytes
-            + 1
-            + if outlier_changed {
-                b.outlier.as_ref().map(outlier_wire_bytes).unwrap_or(0)
-            } else {
-                0
-            };
+        let patched = patch_record_prefix_bytes(name) + 8 + delta_blocks_bytes + 1 + if outlier_changed { b.outlier.as_ref().map(outlier_wire_bytes).unwrap_or(0) } else { 0 };
         patched.min(1 + full_bytes)
     };
 
-    Row {
-        name: name.to_string(),
-        status: Status::Diffed,
-        n_blocks: b.enc.blocks.len(),
-        n_changed,
-        changed_idx,
-        outlier_changed,
-        full_bytes,
-        delta_bytes,
-    }
+    Row { name: name.to_string(), status: Status::Diffed, n_blocks: b.enc.blocks.len(), n_changed, changed_idx, outlier_changed, full_bytes, delta_bytes }
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -380,14 +332,8 @@ fn parse_diff_args(mut it: std::env::Args) -> DiffArgs {
             "--no-rht" => a.rht = false,
             "--threads" => a.threads = it.next().expect("--threads").parse().expect("threads int"),
             "--only" => a.only = Some(it.next().expect("--only needs a substring")),
-            "--outlier-channel" => {
-                a.outlier_pct =
-                    it.next().expect("--outlier-channel needs PCT").parse().expect("outlier-channel f64")
-            }
-            "--outlier-bits" => {
-                a.outlier_bits =
-                    it.next().expect("--outlier-bits needs N").parse().expect("outlier-bits int")
-            }
+            "--outlier-channel" => a.outlier_pct = it.next().expect("--outlier-channel needs PCT").parse().expect("outlier-channel f64"),
+            "--outlier-bits" => a.outlier_bits = it.next().expect("--outlier-bits needs N").parse().expect("outlier-bits int"),
             "--json" => a.json = Some(it.next().expect("--json needs a path")),
             "--gpu-encode" => a.gpu_encode = true,
             "--vec-dim" | "--learned-codebook" => panic!(
@@ -402,10 +348,7 @@ fn parse_diff_args(mut it: std::env::Args) -> DiffArgs {
     assert!(pos.len() == 2, "diff needs exactly two positional paths: <a.safetensors> <b.safetensors>");
     a.a = pos.remove(0);
     a.b = pos.remove(0);
-    assert!(
-        (2..=6).contains(&a.bits),
-        "--bits must be 2, 3, 4, 5, or 6 (same range as quantize-model)"
-    );
+    assert!((2..=6).contains(&a.bits), "--bits must be 2, 3, 4, 5, or 6 (same range as quantize-model)");
     a
 }
 
@@ -429,15 +372,13 @@ fn run_diff(args: &DiffArgs) -> Report {
     eprintln!(
         "[strand-delta] a={} b={} bits={} L={} k={} rht={} tail_biting={} affine_min={} \
          outlier={}%/{}b threads={} cpu_pin={}",
-        args.a, args.b, args.bits, cfg.l_bits, cfg.k_bits, args.rht, tail_biting, affine_min,
-        args.outlier_pct, args.outlier_bits, args.threads, !args.gpu_encode
+        args.a, args.b, args.bits, cfg.l_bits, cfg.k_bits, args.rht, tail_biting, affine_min, args.outlier_pct, args.outlier_bits, args.threads, !args.gpu_encode
     );
 
     let st_a = SafeTensors::open(&args.a).expect("open checkpoint A");
     let st_b = SafeTensors::open(&args.b).expect("open checkpoint B");
 
-    let only_match =
-        |name: &str| args.only.as_ref().map(|s| name.contains(s.as_str())).unwrap_or(true);
+    let only_match = |name: &str| args.only.as_ref().map(|s| name.contains(s.as_str())).unwrap_or(true);
 
     struct Job {
         name: String,
@@ -455,9 +396,7 @@ fn run_diff(args: &DiffArgs) -> Report {
             None => (false, None),
         };
         match (a_q, b_q) {
-            (true, true) if b_shape.as_deref() == Some(&ta.shape[..]) => {
-                jobs.push(Job { name: name.clone(), status: Status::Diffed })
-            }
+            (true, true) if b_shape.as_deref() == Some(&ta.shape[..]) => jobs.push(Job { name: name.clone(), status: Status::Diffed }),
             (true, true) => jobs.push(Job { name: name.clone(), status: Status::Replaced }),
             (true, false) => jobs.push(Job { name: name.clone(), status: Status::Removed }),
             _ => {}
@@ -468,9 +407,7 @@ fn run_diff(args: &DiffArgs) -> Report {
             continue;
         }
         let tb = &st_b.tensors[name];
-        if is_quantizable_linear(name, &tb.shape)
-            && !st_a.tensors.get(name).map(|ta| is_quantizable_linear(name, &ta.shape)).unwrap_or(false)
-        {
+        if is_quantizable_linear(name, &tb.shape) && !st_a.tensors.get(name).map(|ta| is_quantizable_linear(name, &ta.shape)).unwrap_or(false) {
             jobs.push(Job { name: name.clone(), status: Status::Added });
         }
     }
@@ -497,23 +434,14 @@ fn run_diff(args: &DiffArgs) -> Report {
                         let ta = &st_a.tensors[&job.name];
                         let tb = &st_b.tensors[&job.name];
                         let in_features = *ta.shape.last().unwrap() as usize;
-                        let wa = encode_for_wire(
-                            &job.name, &st_a.to_f32(ta), in_features, &cfg, &opts, args.rht,
-                            args.outlier_pct, args.outlier_bits,
-                        );
-                        let wb = encode_for_wire(
-                            &job.name, &st_b.to_f32(tb), in_features, &cfg, &opts, args.rht,
-                            args.outlier_pct, args.outlier_bits,
-                        );
+                        let wa = encode_for_wire(&job.name, &st_a.to_f32(ta), in_features, &cfg, &opts, args.rht, args.outlier_pct, args.outlier_bits);
+                        let wb = encode_for_wire(&job.name, &st_b.to_f32(tb), in_features, &cfg, &opts, args.rht, args.outlier_pct, args.outlier_bits);
                         diff_pair(&job.name, ta.shape.len(), cfg.k_bits, &wa, &wb)
                     }
                     Status::Added | Status::Replaced => {
                         let tb = &st_b.tensors[&job.name];
                         let in_features = *tb.shape.last().unwrap() as usize;
-                        let wb = encode_for_wire(
-                            &job.name, &st_b.to_f32(tb), in_features, &cfg, &opts, args.rht,
-                            args.outlier_pct, args.outlier_bits,
-                        );
+                        let wb = encode_for_wire(&job.name, &st_b.to_f32(tb), in_features, &cfg, &opts, args.rht, args.outlier_pct, args.outlier_bits);
                         let full = full_tensor_bytes(&job.name, tb.shape.len(), &wb);
                         Row {
                             name: job.name.clone(),
@@ -537,15 +465,7 @@ fn run_diff(args: &DiffArgs) -> Report {
                         delta_bytes: patch_record_prefix_bytes(&job.name),
                     },
                 };
-                eprintln!(
-                    "[done {}/{}] {:<44} blocks={} changed={}{}",
-                    ji + 1,
-                    jobs.len(),
-                    row.name,
-                    row.n_blocks,
-                    row.n_changed,
-                    if row.outlier_changed { " outlier-changed" } else { "" }
-                );
+                eprintln!("[done {}/{}] {:<44} blocks={} changed={}{}", ji + 1, jobs.len(), row.name, row.n_blocks, row.n_changed, if row.outlier_changed { " outlier-changed" } else { "" });
                 results.lock().unwrap().push((ji, row));
             });
         }
@@ -557,33 +477,17 @@ fn run_diff(args: &DiffArgs) -> Report {
 
     let total_blocks: usize = rows.iter().map(|r| r.n_blocks).sum();
     let total_changed: usize = rows.iter().map(|r| r.n_changed).sum();
-    let total_full: u64 =
-        rows.iter().map(|r| r.full_bytes).sum::<u64>() + FULL_FILE_HEADER_BYTES;
-    let total_delta: u64 =
-        rows.iter().map(|r| r.delta_bytes).sum::<u64>() + PATCH_FILE_HEADER_BYTES;
+    let total_full: u64 = rows.iter().map(|r| r.full_bytes).sum::<u64>() + FULL_FILE_HEADER_BYTES;
+    let total_delta: u64 = rows.iter().map(|r| r.delta_bytes).sum::<u64>() + PATCH_FILE_HEADER_BYTES;
 
     eprintln!("[strand-delta] diff complete in {:.1}s", t0.elapsed().as_secs_f64());
-    Report {
-        rows,
-        total_blocks,
-        total_identical: total_blocks - total_changed,
-        total_changed,
-        total_full,
-        total_delta,
-    }
+    Report { rows, total_blocks, total_identical: total_blocks - total_changed, total_changed, total_full, total_delta }
 }
 
 fn print_report(r: &Report) {
-    println!(
-        "{:<44} {:>8} {:>8} {:>8} {:>5} {:>12} {:>12} {:>7}",
-        "tensor", "blocks", "ident", "chang", "outl", "full(B)", "delta(B)", "ratio"
-    );
+    println!("{:<44} {:>8} {:>8} {:>8} {:>5} {:>12} {:>12} {:>7}", "tensor", "blocks", "ident", "chang", "outl", "full(B)", "delta(B)", "ratio");
     for row in &r.rows {
-        let ratio = if row.full_bytes > 0 {
-            format!("{:>6.1}%", 100.0 * row.delta_bytes as f64 / row.full_bytes as f64)
-        } else {
-            "      -".to_string()
-        };
+        let ratio = if row.full_bytes > 0 { format!("{:>6.1}%", 100.0 * row.delta_bytes as f64 / row.full_bytes as f64) } else { "      -".to_string() };
         println!(
             "{:<44} {:>8} {:>8} {:>8} {:>5} {:>12} {:>12} {}",
             row.name,
@@ -591,7 +495,11 @@ fn print_report(r: &Report) {
             row.n_blocks - row.n_changed,
             row.n_changed,
             if row.status == Status::Diffed {
-                if row.outlier_changed { "yes" } else { "no" }
+                if row.outlier_changed {
+                    "yes"
+                } else {
+                    "no"
+                }
             } else {
                 row.status.as_str()
             },
@@ -600,21 +508,9 @@ fn print_report(r: &Report) {
             ratio
         );
     }
-    let pct_ident = if r.total_blocks > 0 {
-        100.0 * r.total_identical as f64 / r.total_blocks as f64
-    } else {
-        0.0
-    };
-    let pct_delta = if r.total_full > 0 {
-        100.0 * r.total_delta as f64 / r.total_full as f64
-    } else {
-        0.0
-    };
-    println!(
-        "{:<44} {:>8} {:>8} {:>8} {:>5} {:>12} {:>12} {:>6.1}%",
-        "TOTAL", r.total_blocks, r.total_identical, r.total_changed, "-", r.total_full,
-        r.total_delta, pct_delta
-    );
+    let pct_ident = if r.total_blocks > 0 { 100.0 * r.total_identical as f64 / r.total_blocks as f64 } else { 0.0 };
+    let pct_delta = if r.total_full > 0 { 100.0 * r.total_delta as f64 / r.total_full as f64 } else { 0.0 };
+    println!("{:<44} {:>8} {:>8} {:>8} {:>5} {:>12} {:>12} {:>6.1}%", "TOTAL", r.total_blocks, r.total_identical, r.total_changed, "-", r.total_full, r.total_delta, pct_delta);
     let win = if r.total_delta > 0 { r.total_full as f64 / r.total_delta as f64 } else { f64::INFINITY };
     println!(
         "identical blocks: {}/{} ({:.1}%); patch {} B vs full {} B = {:.1}%{}",
@@ -624,11 +520,7 @@ fn print_report(r: &Report) {
         r.total_delta,
         r.total_full,
         pct_delta,
-        if win >= 1.05 {
-            format!(" ({win:.1}x smaller)")
-        } else {
-            " (no win — nearly everything changed and/or the fixed patch header dominates at this tensor count)".to_string()
-        }
+        if win >= 1.05 { format!(" ({win:.1}x smaller)") } else { " (no win — nearly everything changed and/or the fixed patch header dominates at this tensor count)".to_string() }
     );
 }
 
@@ -666,8 +558,7 @@ fn write_json(path: &str, args: &DiffArgs, r: &Report) {
         "  \"config\": {{\"a\": \"{}\", \"b\": \"{}\", \"bits\": {}, \"l\": {}, \"k\": {}, \
          \"rht\": {}, \"tail_biting\": {}, \"affine_min\": {}, \"outlier_pct\": {}, \
          \"outlier_bits\": {}}}\n}}\n",
-        args.a, args.b, args.bits, cfg.l_bits, cfg.k_bits, args.rht, tail_biting, affine_min,
-        args.outlier_pct, args.outlier_bits
+        args.a, args.b, args.bits, cfg.l_bits, cfg.k_bits, args.rht, tail_biting, affine_min, args.outlier_pct, args.outlier_bits
     ));
     fs::write(path, s).expect("write --json report");
     eprintln!("[strand-delta] wrote {path}");
@@ -715,13 +606,7 @@ fn run_smoke() -> Result<(), String> {
     d_b[512..3 * 512].copy_from_slice(&gen_rows(2, 512, 0xB00B_0004, 1.5));
 
     let write = |path: &std::path::Path, q: &mut Vec<f32>, d: &mut Vec<f32>| {
-        write_safetensors_f32(
-            path.to_str().unwrap(),
-            &[
-                (Q.to_string(), vec![8, 256], std::mem::take(q)),
-                (D.to_string(), vec![4, 512], std::mem::take(d)),
-            ],
-        )
+        write_safetensors_f32(path.to_str().unwrap(), &[(Q.to_string(), vec![8, 256], std::mem::take(q)), (D.to_string(), vec![4, 512], std::mem::take(d))])
     };
     write(&a_path, &mut q_a, &mut d_a).map_err(|e| format!("write A: {e}"))?;
     write(&b_path, &mut q_b, &mut d_b).map_err(|e| format!("write B: {e}"))?;
@@ -768,22 +653,13 @@ fn run_smoke() -> Result<(), String> {
         return Err(format!("case 1: q_proj changed blocks {:?}, expected [3]", q1.changed_idx));
     }
     if row_set(&d1.changed_idx) != vec![2, 3, 4, 5] {
-        return Err(format!(
-            "case 1: down_proj changed blocks {:?}, expected [2,3,4,5]",
-            d1.changed_idx
-        ));
+        return Err(format!("case 1: down_proj changed blocks {:?}, expected [2,3,4,5]", d1.changed_idx));
     }
     if r1.total_identical != 11 || r1.total_changed != 5 {
-        return Err(format!(
-            "case 1: identical/changed = {}/{}, expected 11/5",
-            r1.total_identical, r1.total_changed
-        ));
+        return Err(format!("case 1: identical/changed = {}/{}, expected 11/5", r1.total_identical, r1.total_changed));
     }
     if r1.total_delta >= r1.total_full {
-        return Err(format!(
-            "case 1: delta ({}) must undercut full ({})",
-            r1.total_delta, r1.total_full
-        ));
+        return Err(format!("case 1: delta ({}) must undercut full ({})", r1.total_delta, r1.total_full));
     }
 
     eprintln!("[smoke] case 2: A vs B + outlier channel (superset + churn report)");
@@ -854,12 +730,12 @@ mod tests {
         let a = vec![0b1010_1100u8, 0b0111_0001, 0b1111_0000];
         let mut b = a.clone();
         assert!(bits_eq(&a, 0, &b, 0, 24));
-        assert!(bits_eq(&a, 0, &b, 0, 21)); 
-        assert!(bits_eq(&a, 3, &b, 3, 17)); 
-        b[1] ^= 0b0001_0000; 
+        assert!(bits_eq(&a, 0, &b, 0, 21));
+        assert!(bits_eq(&a, 3, &b, 3, 17));
+        b[1] ^= 0b0001_0000;
         assert!(!bits_eq(&a, 0, &b, 0, 24));
         assert!(!bits_eq(&a, 8, &b, 8, 8));
-        assert!(bits_eq(&a, 0, &b, 0, 12)); 
-        assert!(bits_eq(&a, 13, &b, 13, 11)); 
+        assert!(bits_eq(&a, 0, &b, 0, 12));
+        assert!(bits_eq(&a, 13, &b, 13, 11));
     }
 }

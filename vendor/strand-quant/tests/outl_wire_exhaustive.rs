@@ -21,12 +21,8 @@
 //! Run: `cargo test -p strand-quant --test outl_wire_exhaustive`
 
 use strand_quant::encode::{encode_tensor_with, EncodeOpts};
-use strand_quant::format::{
-    read_strand_v2, read_strand_v2_header, write_strand_v2, PackedTensor, PackedTensorV2, PAGE,
-};
-use strand_quant::outlier_wire::{
-    append_outl, idx_bits_for, read_outl, read_outl_bytes, OutlSection, OutlierWire,
-};
+use strand_quant::format::{read_strand_v2, read_strand_v2_header, write_strand_v2, PackedTensor, PackedTensorV2, PAGE};
+use strand_quant::outlier_wire::{append_outl, idx_bits_for, read_outl, read_outl_bytes, OutlSection, OutlierWire};
 use strand_quant::TrellisConfig;
 
 use std::path::PathBuf;
@@ -47,11 +43,7 @@ fn spec_read_bits(bytes: &[u8], start_bit: usize, nbits: u32) -> u64 {
     for i in 0..nbits as usize {
         let bit_idx = start_bit + i;
         let byte = bit_idx >> 3;
-        let bit = if byte < bytes.len() {
-            (bytes[byte] >> (bit_idx & 7)) & 1
-        } else {
-            0
-        };
+        let bit = if byte < bytes.len() { (bytes[byte] >> (bit_idx & 7)) & 1 } else { 0 };
         acc |= (bit as u64) << i;
     }
     acc
@@ -76,11 +68,7 @@ fn spec_unpack(packed: &[u8], count: usize, idx_bits: u32, val_bits: u32) -> (Ve
         cursor += val_bits as usize;
         entries.push((idx, code));
     }
-    let pad = if cursor % 8 != 0 {
-        spec_read_bits(packed, cursor, (8 - (cursor % 8)) as u32)
-    } else {
-        0
-    };
+    let pad = if cursor % 8 != 0 { spec_read_bits(packed, cursor, (8 - (cursor % 8)) as u32) } else { 0 };
     (entries, pad)
 }
 
@@ -91,11 +79,7 @@ fn spec_unpack(packed: &[u8], count: usize, idx_bits: u32, val_bits: u32) -> (Ve
 static COUNTER: AtomicU64 = AtomicU64::new(0);
 
 fn tmp_path(tag: &str) -> PathBuf {
-    std::env::temp_dir().join(format!(
-        "strand-outlx-{tag}-{}-{}.strand",
-        std::process::id(),
-        COUNTER.fetch_add(1, Ordering::Relaxed)
-    ))
+    std::env::temp_dir().join(format!("strand-outlx-{tag}-{}-{}.strand", std::process::id(), COUNTER.fetch_add(1, Ordering::Relaxed)))
 }
 
 struct TmpFile(PathBuf);
@@ -119,27 +103,11 @@ fn build_test_archive() -> Vec<u8> {
     let shape_b = [900u64];
     let tensors = [
         PackedTensorV2 {
-            base: PackedTensor {
-                name: "model.layers.0.q_proj",
-                shape: &shape_a,
-                rht_seed: 0,
-                l_bits: cfg.l_bits as u8,
-                k_bits: cfg.k_bits as u8,
-                vec_dim: cfg.vec_dim() as u8,
-                enc: &enc_a,
-            },
+            base: PackedTensor { name: "model.layers.0.q_proj", shape: &shape_a, rht_seed: 0, l_bits: cfg.l_bits as u8, k_bits: cfg.k_bits as u8, vec_dim: cfg.vec_dim() as u8, enc: &enc_a },
             block_len: cfg.block_len as u32,
         },
         PackedTensorV2 {
-            base: PackedTensor {
-                name: "model.layers.0.down_proj",
-                shape: &shape_b,
-                rht_seed: 0,
-                l_bits: cfg.l_bits as u8,
-                k_bits: cfg.k_bits as u8,
-                vec_dim: cfg.vec_dim() as u8,
-                enc: &enc_b,
-            },
+            base: PackedTensor { name: "model.layers.0.down_proj", shape: &shape_b, rht_seed: 0, l_bits: cfg.l_bits as u8, k_bits: cfg.k_bits as u8, vec_dim: cfg.vec_dim() as u8, enc: &enc_b },
             block_len: cfg.block_len as u32,
         },
     ];
@@ -199,9 +167,9 @@ fn exhaustive_code_reconstruction_all_widths() {
     let mut covered: u64 = 0;
     for val_bits in 2u32..=16 {
         let levels = (1i64 << (val_bits - 1)) - 1; // max magnitude that fits
-        // Enumerate every code from -levels..=levels. These are exactly the
-        // codes `outl_section_bytes` accepts; one entry per wire keeps idx_bits
-        // pinned at 1 (n_total = 2) so the packed payload isolates the code.
+                                                   // Enumerate every code from -levels..=levels. These are exactly the
+                                                   // codes `outl_section_bytes` accepts; one entry per wire keeps idx_bits
+                                                   // pinned at 1 (n_total = 2) so the packed payload isolates the code.
         let mut expected: Vec<(u32, i32)> = Vec::new();
         let mut codes: Vec<i32> = Vec::new();
         // We pack many codes into one tensor (strictly ascending indices) so a
@@ -222,15 +190,7 @@ fn exhaustive_code_reconstruction_all_widths() {
         let enc = encode_tensor_with(&test_weights(n, 7), &cfg, &EncodeOpts::default());
         let shape = [n as u64];
         let pt = PackedTensorV2 {
-            base: PackedTensor {
-                name: "t",
-                shape: &shape,
-                rht_seed: 0,
-                l_bits: cfg.l_bits as u8,
-                k_bits: cfg.k_bits as u8,
-                vec_dim: cfg.vec_dim() as u8,
-                enc: &enc,
-            },
+            base: PackedTensor { name: "t", shape: &shape, rht_seed: 0, l_bits: cfg.l_bits as u8, k_bits: cfg.k_bits as u8, vec_dim: cfg.vec_dim() as u8, enc: &enc },
             block_len: cfg.block_len as u32,
         };
         let buf = write_strand_v2(&[pt], [0u8; 32], true).expect("write v2");
@@ -244,9 +204,7 @@ fn exhaustive_code_reconstruction_all_widths() {
         assert_eq!(w, &wire, "full wire equality at val_bits={val_bits}");
     }
     // 2..=16 -> sum over w of (2*((1<<(w-1))-1)+1) representable codes.
-    let expect: u64 = (2u32..=16)
-        .map(|w| (2 * ((1u64 << (w - 1)) - 1)) + 1)
-        .sum();
+    let expect: u64 = (2u32..=16).map(|w| (2 * ((1u64 << (w - 1)) - 1)) + 1).sum();
     assert_eq!(covered, expect, "code coverage drifted");
     eprintln!("exhaustive code reconstruction: {covered} codes across val_bits 2..=16");
 }
@@ -294,8 +252,7 @@ fn exhaustive_position_reconstruction_and_spec_bytes() {
                 }
             })
             .collect();
-        let expected: Vec<(u32, i32)> =
-            idx.iter().map(|&i| i as u32).zip(codes.iter().copied()).collect();
+        let expected: Vec<(u32, i32)> = idx.iter().map(|&i| i as u32).zip(codes.iter().copied()).collect();
 
         let wire = OutlierWire::from_selection(n_total, idx.clone(), codes, 0.5f32, val_bits);
         assert_eq!(wire.idx_bits, idx_bits);
@@ -307,15 +264,7 @@ fn exhaustive_position_reconstruction_and_spec_bytes() {
             let enc = encode_tensor_with(&test_weights(n_total, 3), &cfg, &EncodeOpts::default());
             let shape = [n_total as u64];
             let pt = PackedTensorV2 {
-                base: PackedTensor {
-                    name: "t",
-                    shape: &shape,
-                    rht_seed: 0,
-                    l_bits: cfg.l_bits as u8,
-                    k_bits: cfg.k_bits as u8,
-                    vec_dim: cfg.vec_dim() as u8,
-                    enc: &enc,
-                },
+                base: PackedTensor { name: "t", shape: &shape, rht_seed: 0, l_bits: cfg.l_bits as u8, k_bits: cfg.k_bits as u8, vec_dim: cfg.vec_dim() as u8, enc: &enc },
                 block_len: cfg.block_len as u32,
             };
             let buf = write_strand_v2(&[pt], [0u8; 32], true).expect("write v2");
@@ -334,17 +283,12 @@ fn exhaustive_position_reconstruction_and_spec_bytes() {
             let t = &on_disk[on_disk.len() - 16..];
             let outl_off = u64::from_le_bytes(t[0..8].try_into().unwrap()) as usize;
             let rec = outl_off + 32; // single tensor -> its record starts after the header
-            let count = u64::from_le_bytes(
-                on_disk[rec..rec + 8].try_into().unwrap(),
-            ) as usize;
+            let count = u64::from_le_bytes(on_disk[rec..rec + 8].try_into().unwrap()) as usize;
             let payload_start = rec + 24;
             let payload_bytes = (count * (idx_bits + val_bits) as usize).div_ceil(8);
             let packed = &on_disk[payload_start..payload_start + payload_bytes];
             let (spec_entries, spec_pad) = spec_unpack(packed, count, idx_bits, val_bits);
-            assert_eq!(
-                spec_entries, expected,
-                "from-spec byte decode disagrees with intent (mask={mask:#x})"
-            );
+            assert_eq!(spec_entries, expected, "from-spec byte decode disagrees with intent (mask={mask:#x})");
             assert_eq!(spec_pad, 0, "production writer left nonzero pad bits (mask={mask:#x})");
             parsed
         };
@@ -414,9 +358,7 @@ fn property_section_round_trip_is_identity() {
             // round-trip its bits but make equality on the f32 awkward, so feed
             // a finite omax (its exact bits are still preserved & checked).
             let omax = if omax.is_finite() { omax } else { 1.0 };
-            wires.push(Some(OutlierWire::from_selection(
-                total, chosen, codes, omax, val_bits,
-            )));
+            wires.push(Some(OutlierWire::from_selection(total, chosen, codes, omax, val_bits)));
         }
         // Skip the degenerate all-None case occasionally produced; the parser
         // still handles it but it adds no signal here.
@@ -455,13 +397,7 @@ fn property_section_round_trip_is_identity() {
 fn golden_packed_payload_is_byte_stable() {
     // n_total = 1024 -> idx_bits = 10; val_bits = 8.
     // entries (post-sort by index): (3, 5), (511, 127), (700, -127)
-    let wire = OutlierWire::from_selection(
-        1024,
-        vec![700, 3, 511],
-        vec![-127, 5, 127],
-        0.3125f32,
-        8,
-    );
+    let wire = OutlierWire::from_selection(1024, vec![700, 3, 511], vec![-127, 5, 127], 0.3125f32, 8);
     assert_eq!(wire.idx_bits, 10);
     assert_eq!(wire.val_bits, 8);
     assert_eq!(wire.entries, vec![(3, 5), (511, 127), (700, -127)]);
@@ -499,10 +435,7 @@ fn golden_packed_payload_is_byte_stable() {
     assert_eq!(count0, 3);
     let payload0 = rec0 + 24;
     let bytes = &on_disk[payload0..payload0 + 7];
-    assert_eq!(
-        bytes, &golden,
-        "OUTL packed payload changed — cross-platform wire regression"
-    );
+    assert_eq!(bytes, &golden, "OUTL packed payload changed — cross-platform wire regression");
 
     // And the parsed entries match.
     let parsed = read_outl_bytes(&on_disk, true).unwrap().expect("present");
@@ -542,30 +475,20 @@ fn dequant_is_pure_and_matches_spec() {
         if idx.is_empty() {
             continue;
         }
-        let codes: Vec<i32> = idx
-            .iter()
-            .map(|_| (rng.below((2 * levels_i + 1) as u64) as i64 - levels_i) as i32)
-            .collect();
+        let codes: Vec<i32> = idx.iter().map(|_| (rng.below((2 * levels_i + 1) as u64) as i64 - levels_i) as i32).collect();
         let omax = f32::from_bits(rng.next_u64() as u32);
         let omax = if omax.is_finite() { omax } else { 0.5 };
-        let wire =
-            OutlierWire::from_selection(n, idx.clone(), codes.clone(), omax, val_bits);
+        let wire = OutlierWire::from_selection(n, idx.clone(), codes.clone(), omax, val_bits);
 
         // (a) purity / repeatability.
-        let first: Vec<(u32, u32)> =
-            wire.dequant_vals().map(|(i, v)| (i, v.to_bits())).collect();
-        let second: Vec<(u32, u32)> =
-            wire.dequant_vals().map(|(i, v)| (i, v.to_bits())).collect();
+        let first: Vec<(u32, u32)> = wire.dequant_vals().map(|(i, v)| (i, v.to_bits())).collect();
+        let second: Vec<(u32, u32)> = wire.dequant_vals().map(|(i, v)| (i, v.to_bits())).collect();
         assert_eq!(first, second, "dequant_vals is not a pure function of the wire");
 
         // (b) exact closed form: (code as f32)/levels*omax, byte-identical.
         let levels_f = levels_i as f32;
         let omax_back = f32::from_bits(wire.omax_bits);
-        let want: Vec<(u32, u32)> = wire
-            .entries
-            .iter()
-            .map(|&(i, c)| (i, ((c as f32) / levels_f * omax_back).to_bits()))
-            .collect();
+        let want: Vec<(u32, u32)> = wire.entries.iter().map(|&(i, c)| (i, ((c as f32) / levels_f * omax_back).to_bits())).collect();
         assert_eq!(first, want, "dequant diverged from the documented closed form");
     }
     eprintln!("dequant purity + spec match: 2000 wires");
@@ -599,20 +522,11 @@ fn wire_bytes_equals_real_packed_size() {
         if idx.is_empty() {
             continue;
         }
-        let codes: Vec<i32> =
-            idx.iter().map(|_| (rng.below((2 * levels + 1) as u64) as i64 - levels) as i32).collect();
+        let codes: Vec<i32> = idx.iter().map(|_| (rng.below((2 * levels + 1) as u64) as i64 - levels) as i32).collect();
         let wire = OutlierWire::from_selection(n, idx, codes, 1.0, val_bits);
 
-        let real_payload =
-            (wire.entries.len() * (wire.idx_bits + wire.val_bits) as usize).div_ceil(8) as u64;
-        assert_eq!(
-            wire.wire_bytes(),
-            12 + real_payload,
-            "wire_bytes() desynced from packed size (idx_bits={} val_bits={} n_entries={})",
-            wire.idx_bits,
-            wire.val_bits,
-            wire.entries.len()
-        );
+        let real_payload = (wire.entries.len() * (wire.idx_bits + wire.val_bits) as usize).div_ceil(8) as u64;
+        assert_eq!(wire.wire_bytes(), 12 + real_payload, "wire_bytes() desynced from packed size (idx_bits={} val_bits={} n_entries={})", wire.idx_bits, wire.val_bits, wire.entries.len());
     }
 }
 
@@ -629,10 +543,7 @@ fn outl_is_transparent_to_v2_readers() {
     std::fs::write(&path, &buf).unwrap();
     assert_eq!(read_outl(&path).unwrap(), None, "plain v2 must read OUTL as absent");
 
-    let wires = vec![
-        Some(OutlierWire::from_selection(1024, vec![3, 511, 700], vec![5, 127, -127], 0.3125, 8)),
-        None,
-    ];
+    let wires = vec![Some(OutlierWire::from_selection(1024, vec![3, 511, 700], vec![5, 127, -127], 0.3125, 8)), None];
     append_outl(&path, &wires).expect("append");
 
     let on_disk = std::fs::read(&path).unwrap();

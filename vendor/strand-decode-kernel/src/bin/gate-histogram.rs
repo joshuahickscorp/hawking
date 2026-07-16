@@ -1,14 +1,10 @@
-
 use std::time::Instant;
 
 use rayon::prelude::*;
 use strand_decode_kernel::block_walk::gate_proto::{machine_stamp, synth_encoded};
 use strand_decode_kernel::fused::fused_gemm;
 use strand_decode_kernel::gemv_par::decode_q12_par;
-use strand_decode_kernel::histogram_gemv::{
-    dot_q12_reference, histogram_dot_q12, histogram_gemm, histogram_gemm_scalar,
-    histogram_matvec, histogram_stats,
-};
+use strand_decode_kernel::histogram_gemv::{dot_q12_reference, histogram_dot_q12, histogram_gemm, histogram_gemm_scalar, histogram_matvec, histogram_stats};
 use strand_quant::encode::{n_sub_blocks, EncodedTensor};
 use strand_quant::TrellisConfig;
 
@@ -34,7 +30,7 @@ fn synth_varied_scales(total: usize, k: u32, block_len: usize) -> EncodedTensor 
         let n_sub = n_sub_blocks(blk.n as usize);
         let codes: Vec<u8> = (0..n_sub)
             .map(|_| {
-                let c = 16 + (ctr % 48) as u8; 
+                let c = 16 + (ctr % 48) as u8;
                 ctr += 1;
                 c
             })
@@ -57,14 +53,7 @@ fn synth_xq(n: usize) -> Vec<i32> {
         .collect()
 }
 
-fn baseline_gemm(
-    enc: &EncodedTensor,
-    cfg: &TrellisConfig,
-    out_f: usize,
-    in_f: usize,
-    xs: &[f32],
-    b: usize,
-) -> Vec<f32> {
+fn baseline_gemm(enc: &EncodedTensor, cfg: &TrellisConfig, out_f: usize, in_f: usize, xs: &[f32], b: usize) -> Vec<f32> {
     let w = decode_q12_par(enc, cfg);
     let inv = 1.0f32 / 4096.0;
     let mut y = vec![0.0f32; out_f * b];
@@ -98,26 +87,14 @@ fn bench<F: FnMut() -> Vec<f32>>(label: &str, reps: usize, mut f: F) -> f64 {
 }
 
 #[allow(clippy::too_many_arguments)]
-fn run_variant(
-    vname: &str,
-    enc: &EncodedTensor,
-    cfg: &TrellisConfig,
-    out_f: usize,
-    in_f: usize,
-    xs: &[f32],
-    xq: &[i32],
-    bench_perf: bool,
-) {
+fn run_variant(vname: &str, enc: &EncodedTensor, cfg: &TrellisConfig, out_f: usize, in_f: usize, xs: &[f32], xq: &[i32], bench_perf: bool) {
     let total = out_f * in_f;
 
     let t0 = Instant::now();
     let y_h = histogram_dot_q12(enc, cfg, None, out_f, in_f, xq);
     let t_hist_int = t0.elapsed().as_secs_f64();
     let y_r = dot_q12_reference(enc, cfg, None, out_f, in_f, xq);
-    assert_eq!(
-        y_h, y_r,
-        "[{vname}] INTEGER HISTOGRAM != REFERENCE DOT — the order-free regroup is broken"
-    );
+    assert_eq!(y_h, y_r, "[{vname}] INTEGER HISTOGRAM != REFERENCE DOT — the order-free regroup is broken");
     println!(
         "  [{vname}] integer histogram dot: BIT-EQUAL to reference i64 dot over {} rows ✓ \
          (serial walk {:.0} ms — exactness witness, not a perf path)",
@@ -141,10 +118,7 @@ fn run_variant(
         }
         let bound = ORDER_SLACK * absum + ABS_SLACK;
         let err = (y_hm[o] - y_f1[o]).abs();
-        assert!(
-            err <= bound,
-            "[{vname}] float histogram beyond the order bound at row {o}: err {err:.3e} > bound {bound:.3e}"
-        );
+        assert!(err <= bound, "[{vname}] float histogram beyond the order bound at row {o}: err {err:.3e} > bound {bound:.3e}");
         let frac = (err / bound) as f64;
         if frac > worst_frac {
             worst_frac = frac;
@@ -160,28 +134,18 @@ fn run_variant(
         let y_n = histogram_gemm(enc, cfg, None, out_f, in_f, xb, b);
         let y_s = histogram_gemm_scalar(enc, cfg, None, out_f, in_f, xb, b);
         for (i, (a, s)) in y_n.iter().zip(y_s.iter()).enumerate() {
-            assert_eq!(
-                a.to_bits(),
-                s.to_bits(),
-                "[{vname}] NEON bucket-add != scalar histogram at flat index {i} (B={b})"
-            );
+            assert_eq!(a.to_bits(), s.to_bits(), "[{vname}] NEON bucket-add != scalar histogram at flat index {i} (B={b})");
         }
     }
-    
+
     let yb4 = histogram_gemm(enc, cfg, None, out_f, in_f, &xs[..4 * in_f], 4);
     for b in 0..4 {
         let y1 = histogram_matvec(enc, cfg, None, out_f, in_f, &xs[b * in_f..(b + 1) * in_f]);
         for o in (0..out_f).step_by(97) {
-            assert_eq!(
-                yb4[o * 4 + b].to_bits(),
-                y1[o].to_bits(),
-                "[{vname}] gemm col {b} row {o} != matvec"
-            );
+            assert_eq!(yb4[o * 4 + b].to_bits(), y1[o].to_bits(), "[{vname}] gemm col {b} row {o} != matvec");
         }
     }
-    println!(
-        "  [{vname}] NEON==scalar bit-equal at B∈{{4,16,64}}; columns bit-equal to matvec ✓"
-    );
+    println!("  [{vname}] NEON==scalar bit-equal at B∈{{4,16,64}}; columns bit-equal to matvec ✓");
 
     let s = histogram_stats(enc, cfg, in_f);
     println!(
@@ -202,18 +166,10 @@ fn run_variant(
     let mut lines: Vec<(usize, f64, f64, f64, f64)> = Vec::new();
     for &b in &[1usize, 16, 64] {
         let xb = &xs[..b * in_f];
-        let t_bb = bench(&format!("[{vname}] baseline two-pass (B={b})"), 3, || {
-            baseline_gemm(enc, cfg, out_f, in_f, xb, b)
-        });
-        let t_f = bench(&format!("[{vname}] fused_gemm (B={b})"), 3, || {
-            fused_gemm(enc, cfg, None, out_f, in_f, xb, b)
-        });
-        let t_hs = bench(&format!("[{vname}] histogram scalar (B={b})"), 3, || {
-            histogram_gemm_scalar(enc, cfg, None, out_f, in_f, xb, b)
-        });
-        let t_hn = bench(&format!("[{vname}] histogram NEON (B={b})"), 3, || {
-            histogram_gemm(enc, cfg, None, out_f, in_f, xb, b)
-        });
+        let t_bb = bench(&format!("[{vname}] baseline two-pass (B={b})"), 3, || baseline_gemm(enc, cfg, out_f, in_f, xb, b));
+        let t_f = bench(&format!("[{vname}] fused_gemm (B={b})"), 3, || fused_gemm(enc, cfg, None, out_f, in_f, xb, b));
+        let t_hs = bench(&format!("[{vname}] histogram scalar (B={b})"), 3, || histogram_gemm_scalar(enc, cfg, None, out_f, in_f, xb, b));
+        let t_hn = bench(&format!("[{vname}] histogram NEON (B={b})"), 3, || histogram_gemm(enc, cfg, None, out_f, in_f, xb, b));
         lines.push((b, t_bb, t_f, t_hs, t_hn));
     }
     for (b, t_bb, t_f, t_hs, t_hn) in &lines {
@@ -230,13 +186,7 @@ fn run_variant(
 
 fn run_point(name: &str, cfg: &TrellisConfig, out_f: usize, in_f: usize) {
     let total = out_f * in_f;
-    println!(
-        "\n== {name}: k={} L={} ({} states), {out_f}x{in_f} = {:.1}M weights ==",
-        cfg.k_bits,
-        cfg.l_bits,
-        cfg.num_states(),
-        total as f64 / 1e6
-    );
+    println!("\n== {name}: k={} L={} ({} states), {out_f}x{in_f} = {:.1}M weights ==", cfg.k_bits, cfg.l_bits, cfg.num_states(), total as f64 / 1e6);
     let max_b = 64usize;
     let mut xs = Vec::with_capacity(max_b * in_f);
     for b in 0..max_b {
@@ -252,11 +202,7 @@ fn run_point(name: &str, cfg: &TrellisConfig, out_f: usize, in_f: usize) {
 }
 
 fn strand_delta_alive() -> bool {
-    std::process::Command::new("pgrep")
-        .args(["-f", "strand-delta"])
-        .output()
-        .map(|o| o.status.success())
-        .unwrap_or(false)
+    std::process::Command::new("pgrep").args(["-f", "strand-delta"]).output().map(|o| o.status.success()).unwrap_or(false)
 }
 
 fn main() {

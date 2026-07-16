@@ -49,14 +49,7 @@ impl TrellisConfig {
 
         let l_bits = l_bits.max(k_bits);
         let block_len = block_len.max(1);
-        TrellisConfig {
-            l_bits,
-            k_bits,
-            block_len,
-
-            vec_dim: 1,
-            codebook_mode: CodebookMode::StoredLut,
-        }
+        TrellisConfig { l_bits, k_bits, block_len, vec_dim: 1, codebook_mode: CodebookMode::StoredLut }
     }
 
     /// Return a copy with the codebook source set to `mode`. Under
@@ -78,12 +71,8 @@ impl TrellisConfig {
     pub fn codebook(&self) -> Cow<'static, [i32]> {
         match self.codebook_mode {
             CodebookMode::StoredLut => Cow::Borrowed(crate::codebook::codebook_lut(self.l_bits)),
-            CodebookMode::HashedQuantile => {
-                Cow::Owned(crate::codebook::codebook_lut_hashed(self.l_bits))
-            }
-            CodebookMode::ComputedAcklam => {
-                Cow::Owned(crate::codebook::codebook_lut_computed(self.l_bits))
-            }
+            CodebookMode::HashedQuantile => Cow::Owned(crate::codebook::codebook_lut_hashed(self.l_bits)),
+            CodebookMode::ComputedAcklam => Cow::Owned(crate::codebook::codebook_lut_computed(self.l_bits)),
         }
     }
 
@@ -186,11 +175,7 @@ pub fn read_bits(bytes: &[u8], start_bit: usize, nbits: u32) -> usize {
         let bit_idx = start_bit + i;
         let byte_idx = bit_idx >> 3;
         let in_byte = bit_idx & 7;
-        let bit = if byte_idx < bytes.len() {
-            ((bytes[byte_idx] >> in_byte) & 1) as usize
-        } else {
-            0
-        };
+        let bit = if byte_idx < bytes.len() { ((bytes[byte_idx] >> in_byte) & 1) as usize } else { 0 };
         acc |= bit << i;
     }
     acc

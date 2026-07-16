@@ -1,7 +1,7 @@
 #!/usr/bin/env python3.12
 """Hawking condense parameter-sweep DRIVER — the bit-floor search across the ladder.
 
-Contract (docs/plans/parameter_sweep_pipeline.md): for each model, climb EFFECTIVE bpw across
+Contract (docs/plans/TRAINING_LADDER_V5.md): for each model, climb EFFECTIVE bpw across
 recipes (single-bake AWQ + residual STRAND_b1+b2) and STOP at the lowest eff-bpw the doctor
 holds near-1:1. That recipe × the param count = the smallest artifact with full capability =
 the highest tps. Two streams per recipe:
@@ -69,7 +69,8 @@ def sh(cmd, env=None, timeout=None):
     return subprocess.run(cmd, cwd=ROOT, env=e, capture_output=True, text=True, timeout=timeout)
 
 def ppl(hf_dir, override, label, env):
-    r = sh([PY, "tools/condense/ppl_bench.py", hf_dir, override or "-", label],
+    r = sh([PY, "-m", "tools.condense", "legacy", "ppl_bench",
+            hf_dir, override or "-", label],
            env={**env, "PPL_TEXT": EVAL})
     for ln in r.stdout.splitlines():
         if ln.startswith("{"):
@@ -92,10 +93,12 @@ def stream_a(m, hf_dir, recipe, env):
     f16 = f16_ppl_for(name) or ppl(hf_dir, None, "f16", env)
     res["f16_ppl"] = f16
     if kind == "single":          # AWQ base = the artifact (activation-aware, training-free)
-        r = sh([PY, "tools/condense/awq.py", "bake", hf_dir, art, str(a), str(ALPHA)],
+        r = sh([PY, "-m", "tools.condense", "legacy", "awq",
+                "bake", hf_dir, art, str(a), str(ALPHA)],
                env={**env, "DOCTOR_CALIB": CALIB})
     else:                          # residual = STRAND_b1 + STRAND_b2(residual), full-rank heal
-        r = sh([PY, "tools/condense/residual.py", "bake", hf_dir, art, str(a), str(b)],
+        r = sh([PY, "-m", "tools.condense", "legacy", "residual",
+                "bake", hf_dir, art, str(a), str(b)],
                env={**env, "DOCTOR_CALIB": CALIB})
     if not os.path.exists(art):
         res["error"] = f"{kind}_bake failed: " + (r.stderr.strip().splitlines()[-1] if r.stderr else "?")

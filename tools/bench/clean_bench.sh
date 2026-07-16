@@ -7,7 +7,7 @@
 #   1. Quit the agent desktop app (Cmd+Q in the menu bar).
 #   2. Quit any agent CLI sessions (incl. MASTER_LOOP).
 #   3. Open a fresh Terminal.app window.
-#   4. cd /Users/scammermike/Downloads/hawking
+#   4. cd <hawking checkout>
 #   5. ./tools/bench/clean_bench.sh
 #   6. Wait ~30–45 min for all 6 trials. Results appear in
 #      bench_results/v0.3.6/. Read summary.md.

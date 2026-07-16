@@ -44,9 +44,7 @@
 //! from-spec reimplementation that is the binding contract.
 
 use strand_quant::gate_utils::rht_seed_for;
-use strand_quant::rht::{
-    rht_forward, rht_forward_rows, rht_inverse, rht_inverse_rows, RhtConfig, HADAMARD_BLOCK,
-};
+use strand_quant::rht::{rht_forward, rht_forward_rows, rht_inverse, rht_inverse_rows, RhtConfig, HADAMARD_BLOCK};
 
 // ---------------------------------------------------------------------------
 // From-spec reimplementation. This mirrors crates/strand-quant/src/rht.rs and
@@ -121,10 +119,7 @@ fn value_equal(a: &[f32], b: &[f32]) -> bool {
 
 /// Compare two vectors bit-for-bit after signed-zero normalization.
 fn bit_equal_modulo_signed_zero(a: &[f32], b: &[f32]) -> bool {
-    a.len() == b.len()
-        && a.iter()
-            .zip(b)
-            .all(|(x, y)| norm_zero_bits(*x) == norm_zero_bits(*y))
+    a.len() == b.len() && a.iter().zip(b).all(|(x, y)| norm_zero_bits(*x) == norm_zero_bits(*y))
 }
 
 /// Deterministic dyadic test signal: every element is an integer in
@@ -174,10 +169,7 @@ fn block_gives_exact_roundtrip(len: usize) -> bool {
 }
 
 fn max_abs_diff(a: &[f32], b: &[f32]) -> f32 {
-    a.iter()
-        .zip(b)
-        .map(|(x, y)| (x - y).abs())
-        .fold(0.0f32, f32::max)
+    a.iter().zip(b).map(|(x, y)| (x - y).abs()).fold(0.0f32, f32::max)
 }
 
 // ===========================================================================
@@ -189,21 +181,8 @@ fn rht_seed_matches_spec_over_name_corpus() {
     // A broad corpus: the empty name, single bytes, every real projection name
     // at many layer indices, plus adversarial byte content. The production seed
     // must equal the from-spec FNV-1a for every one.
-    let mut names: Vec<String> = vec![
-        String::new(),
-        "a".into(),
-        "weight".into(),
-        "model.embed_tokens.weight".into(),
-    ];
-    let projs = [
-        "self_attn.q_proj.weight",
-        "self_attn.k_proj.weight",
-        "self_attn.v_proj.weight",
-        "self_attn.o_proj.weight",
-        "mlp.gate_proj.weight",
-        "mlp.up_proj.weight",
-        "mlp.down_proj.weight",
-    ];
+    let mut names: Vec<String> = vec![String::new(), "a".into(), "weight".into(), "model.embed_tokens.weight".into()];
+    let projs = ["self_attn.q_proj.weight", "self_attn.k_proj.weight", "self_attn.v_proj.weight", "self_attn.o_proj.weight", "mlp.gate_proj.weight", "mlp.up_proj.weight", "mlp.down_proj.weight"];
     for layer in 0..96usize {
         for p in &projs {
             names.push(format!("model.layers.{layer}.{p}"));
@@ -217,19 +196,13 @@ fn rht_seed_matches_spec_over_name_corpus() {
     let mut s = 0x1234_5678_9ABC_DEF0u64;
     for _ in 0..4096 {
         let len = (spec_splitmix64(&mut s) % 48) as usize;
-        let bytes: Vec<u8> = (0..len)
-            .map(|_| b'!' + (spec_splitmix64(&mut s) % 94) as u8)
-            .collect();
+        let bytes: Vec<u8> = (0..len).map(|_| b'!' + (spec_splitmix64(&mut s) % 94) as u8).collect();
         names.push(String::from_utf8(bytes).unwrap());
     }
 
     let mut checked = 0u64;
     for name in &names {
-        assert_eq!(
-            rht_seed_for(name),
-            spec_rht_seed_for(name),
-            "production rht_seed_for diverged from FNV-1a spec for name {name:?}"
-        );
+        assert_eq!(rht_seed_for(name), spec_rht_seed_for(name), "production rht_seed_for diverged from FNV-1a spec for name {name:?}");
         checked += 1;
     }
     eprintln!("rht_seed_for: {checked} names cross-checked against FNV-1a spec");
@@ -269,24 +242,14 @@ fn rht_seed_structural_invariants() {
     let seeds: Vec<u64> = names.iter().map(|n| rht_seed_for(n)).collect();
     for i in 0..seeds.len() {
         for j in (i + 1)..seeds.len() {
-            assert_ne!(
-                seeds[i], seeds[j],
-                "seed collision between {:?} and {:?}",
-                names[i], names[j]
-            );
+            assert_ne!(seeds[i], seeds[j], "seed collision between {:?} and {:?}", names[i], names[j]);
         }
     }
 
     // (d) frozen golden seeds — drift sentinel for the FNV constants themselves.
     assert_eq!(rht_seed_for("a"), 0xaf63_dc4c_8601_ec8d);
-    assert_eq!(
-        rht_seed_for("model.layers.0.self_attn.q_proj.weight"),
-        0x3a29_6639_dc11_febb
-    );
-    assert_eq!(
-        rht_seed_for("model.layers.0.mlp.down_proj.weight"),
-        0xd83f_2f10_e10f_7075
-    );
+    assert_eq!(rht_seed_for("model.layers.0.self_attn.q_proj.weight"), 0x3a29_6639_dc11_febb);
+    assert_eq!(rht_seed_for("model.layers.0.mlp.down_proj.weight"), 0xd83f_2f10_e10f_7075);
 }
 
 // ===========================================================================
@@ -310,11 +273,7 @@ fn sign_sequence_matches_spec_on_tail() {
     let mut checked = 0u64;
     for i in tail_start..n {
         let expect = x[i] * spec_sign_at(cfg.seed, i);
-        assert_eq!(
-            fwd[i].to_bits(),
-            expect.to_bits(),
-            "tail element {i}: forward sign flip diverged from spec sign_at"
-        );
+        assert_eq!(fwd[i].to_bits(), expect.to_bits(), "tail element {i}: forward sign flip diverged from spec sign_at");
         checked += 1;
     }
     assert_eq!(checked, (n - tail_start) as u64);
@@ -351,10 +310,7 @@ fn splitmix_and_sign_are_deterministic_and_bipolar() {
     // crude balance check — over 140k draws, neither sign should dominate wildly
     let total = (pos + neg) as f64;
     let frac = pos as f64 / total;
-    assert!(
-        (0.45..0.55).contains(&frac),
-        "sign_at badly imbalanced: P(+)={frac:.4}"
-    );
+    assert!((0.45..0.55).contains(&frac), "sign_at badly imbalanced: P(+)={frac:.4}");
 }
 
 // ===========================================================================
@@ -398,30 +354,17 @@ fn round_trip_is_value_exact_and_bit_exact_modulo_signed_zero() {
     let mut signed_zero_seen = 0u64;
     let mut elements = 0u64;
     for &n in &exact_geoms {
-        assert!(
-            block_gives_exact_roundtrip(n),
-            "geometry {n} misclassified as exact (block {})",
-            effective_block(n)
-        );
+        assert!(block_gives_exact_roundtrip(n), "geometry {n} misclassified as exact (block {})", effective_block(n));
         for trial in 0..24u64 {
-            let seed = trial
-                .wrapping_mul(0x9E37_79B9_7F4A_7C15)
-                .wrapping_add(n as u64)
-                | 1;
+            let seed = trial.wrapping_mul(0x9E37_79B9_7F4A_7C15).wrapping_add(n as u64) | 1;
             let cfg = RhtConfig::from_seed(seed);
             for &(mag, denom) in &domains {
                 let x = dyadic_signal(n, seed ^ (mag as u64), mag, denom);
                 let fwd = rht_forward(&x, &cfg);
                 let back = rht_inverse(&fwd, &cfg);
 
-                assert!(
-                    value_equal(&x, &back),
-                    "round-trip NOT value-exact: n={n} seed={seed:#x} mag={mag} denom=2^{denom}"
-                );
-                assert!(
-                    bit_equal_modulo_signed_zero(&x, &back),
-                    "round-trip bit diff beyond signed-zero: n={n} seed={seed:#x} mag={mag}"
-                );
+                assert!(value_equal(&x, &back), "round-trip NOT value-exact: n={n} seed={seed:#x} mag={mag} denom=2^{denom}");
+                assert!(bit_equal_modulo_signed_zero(&x, &back), "round-trip bit diff beyond signed-zero: n={n} seed={seed:#x} mag={mag}");
                 // tally signed-zero artifacts to prove they are the real (and only) wrinkle
                 for (a, b) in x.iter().zip(back.iter()) {
                     elements += 1;
@@ -433,9 +376,7 @@ fn round_trip_is_value_exact_and_bit_exact_modulo_signed_zero() {
             }
         }
     }
-    eprintln!(
-        "round-trip (exact regime): {elements} elements value-exact; {signed_zero_seen} were the +0/-0 artifact"
-    );
+    eprintln!("round-trip (exact regime): {elements} elements value-exact; {signed_zero_seen} were the +0/-0 artifact");
 
     // INEXACT regime — the documented gap, pinned as a *bounded* deviation.
     let mut worst = 0.0f32;
@@ -453,11 +394,7 @@ fn round_trip_is_value_exact_and_bit_exact_modulo_signed_zero() {
             let back = rht_inverse(&rht_forward(&x, &cfg), &cfg);
             let d = max_abs_diff(&x, &back);
             worst = worst.max(d);
-            assert!(
-                d < 1e-3,
-                "inexact-regime round-trip exceeded numeric tolerance: n={n} (block {}) diff={d}",
-                effective_block(n)
-            );
+            assert!(d < 1e-3, "inexact-regime round-trip exceeded numeric tolerance: n={n} (block {}) diff={d}", effective_block(n));
             // it must NOT be claimed bit-exact here (sanity: the gap is real)
         }
     }
@@ -472,33 +409,18 @@ fn signed_zero_is_the_only_bit_artifact_and_is_itself_deterministic() {
     // even the "imperfection" is deterministic — no machine ambiguity).
     let cfg = RhtConfig::from_seed(0x0BAD_F00D_0000_0001);
     let n = HADAMARD_BLOCK; // single block, all elements transformed
-    let x: Vec<f32> = (0..n)
-        .map(|i| if i % 3 == 0 { 0.0 } else { ((i % 7) as f32 - 3.0) / 4.0 })
-        .collect();
+    let x: Vec<f32> = (0..n).map(|i| if i % 3 == 0 { 0.0 } else { ((i % 7) as f32 - 3.0) / 4.0 }).collect();
 
     let back1 = rht_inverse(&rht_forward(&x, &cfg), &cfg);
     let back2 = rht_inverse(&rht_forward(&x, &cfg), &cfg);
 
     assert!(value_equal(&x, &back1), "round-trip not value-exact");
-    assert!(
-        bit_equal_modulo_signed_zero(&x, &back1),
-        "bit diff beyond signed-zero"
-    );
+    assert!(bit_equal_modulo_signed_zero(&x, &back1), "bit diff beyond signed-zero");
     // The artifact reproduces exactly — true to_bits() equality between two runs.
-    assert!(
-        back1.iter().zip(&back2).all(|(a, b)| a.to_bits() == b.to_bits()),
-        "the signed-zero artifact is not reproducible — float nondeterminism!"
-    );
+    assert!(back1.iter().zip(&back2).all(|(a, b)| a.to_bits() == b.to_bits()), "the signed-zero artifact is not reproducible — float nondeterminism!");
     // And it really does occur (otherwise this test would be vacuous).
-    let n_sz = x
-        .iter()
-        .zip(&back1)
-        .filter(|(a, b)| a.to_bits() != b.to_bits())
-        .count();
-    assert!(
-        n_sz > 0,
-        "expected at least one +0/-0 artifact in this constructed case"
-    );
+    let n_sz = x.iter().zip(&back1).filter(|(a, b)| a.to_bits() != b.to_bits()).count();
+    assert!(n_sz > 0, "expected at least one +0/-0 artifact in this constructed case");
     eprintln!("signed-zero artifact: {n_sz}/{n} elements, reproducible bit-for-bit");
 }
 
@@ -514,17 +436,11 @@ fn forward_is_bit_reproducible() {
             let x = dyadic_signal(n, seed ^ 0xC0FFEE, 8192, 13);
             let a = rht_forward(&x, &cfg);
             let b = rht_forward(&x, &cfg);
-            assert!(
-                a.iter().zip(&b).all(|(p, q)| p.to_bits() == q.to_bits()),
-                "forward not bit-reproducible: seed={seed:#x} n={n}"
-            );
+            assert!(a.iter().zip(&b).all(|(p, q)| p.to_bits() == q.to_bits()), "forward not bit-reproducible: seed={seed:#x} n={n}");
             // inverse too
             let ia = rht_inverse(&x, &cfg);
             let ib = rht_inverse(&x, &cfg);
-            assert!(
-                ia.iter().zip(&ib).all(|(p, q)| p.to_bits() == q.to_bits()),
-                "inverse not bit-reproducible: seed={seed:#x} n={n}"
-            );
+            assert!(ia.iter().zip(&ib).all(|(p, q)| p.to_bits() == q.to_bits()), "inverse not bit-reproducible: seed={seed:#x} n={n}");
         }
     }
 }
@@ -538,31 +454,35 @@ fn forward_golden_vector_bits() {
     // arithmetic-determinism break.
     let seed = 0x5354_5241_4E44_0001u64;
     let cfg = RhtConfig::from_seed(seed);
-    let x: Vec<f32> = (0..HADAMARD_BLOCK)
-        .map(|i| (((i * 5 + 3) % 17) as i64 - 8) as f32)
-        .collect();
+    let x: Vec<f32> = (0..HADAMARD_BLOCK).map(|i| (((i * 5 + 3) % 17) as i64 - 8) as f32).collect();
     let y = rht_forward(&x, &cfg);
 
     // Whole-vector sentinel (FNV-1a over all 256 elements' little-endian bits).
-    assert_eq!(
-        fnv_over_bits(&y),
-        0x3920_ba06_af8a_93ee,
-        "RHT forward golden vector drifted — f32 determinism break on this platform"
-    );
+    assert_eq!(fnv_over_bits(&y), 0x3920_ba06_af8a_93ee, "RHT forward golden vector drifted — f32 determinism break on this platform");
 
     // A few exact element bits, as a human-readable cross-check of the sentinel.
     let expect_first16: [u32; 16] = [
-        0xbf50_0000, 0xbfe8_0000, 0xc0a2_0000, 0xc082_0000, 0xc08a_0000, 0xc0c2_0000, 0x40de_0000,
-        0x3f98_0000, 0x40ca_0000, 0xc06c_0000, 0xc0be_0000, 0x3fc8_0000, 0x3f50_0000, 0x4004_0000,
-        0x4092_0000, 0xc0b6_0000,
+        0xbf50_0000,
+        0xbfe8_0000,
+        0xc0a2_0000,
+        0xc082_0000,
+        0xc08a_0000,
+        0xc0c2_0000,
+        0x40de_0000,
+        0x3f98_0000,
+        0x40ca_0000,
+        0xc06c_0000,
+        0xc0be_0000,
+        0x3fc8_0000,
+        0x3f50_0000,
+        0x4004_0000,
+        0x4092_0000,
+        0xc0b6_0000,
     ];
     for (i, &want) in expect_first16.iter().enumerate() {
         assert_eq!(y[i].to_bits(), want, "golden bits drift at element {i}");
     }
-    let expect_last8: [u32; 8] = [
-        0x405c_0000, 0xc0ca_0000, 0x402c_0000, 0xc109_0000, 0xc101_0000, 0xbfc8_0000, 0x4103_0000,
-        0x40a6_0000,
-    ];
+    let expect_last8: [u32; 8] = [0x405c_0000, 0xc0ca_0000, 0x402c_0000, 0xc109_0000, 0xc101_0000, 0xbfc8_0000, 0x4103_0000, 0x40a6_0000];
     for (k, &want) in expect_last8.iter().enumerate() {
         let i = y.len() - 8 + k;
         assert_eq!(y[i].to_bits(), want, "golden bits drift at tail element {i}");
@@ -593,44 +513,26 @@ fn rows_round_trip_value_and_bit_exact() {
         (6, 768),           // in=768 -> h=256
     ];
     for &(out_f, in_f) in &exact_shapes {
-        assert!(
-            block_gives_exact_roundtrip(in_f),
-            "in_features {in_f} misclassified (block {})",
-            effective_block(in_f)
-        );
+        assert!(block_gives_exact_roundtrip(in_f), "in_features {in_f} misclassified (block {})", effective_block(in_f));
         let n = out_f * in_f;
         let x = dyadic_signal(n, (out_f as u64) << 20 | in_f as u64, 4096, 8);
         let fwd = rht_forward_rows(&x, &cfg, in_f);
         let back = rht_inverse_rows(&fwd, &cfg, in_f);
-        assert!(
-            value_equal(&x, &back),
-            "row round-trip not value-exact (out={out_f}, in={in_f})"
-        );
-        assert!(
-            bit_equal_modulo_signed_zero(&x, &back),
-            "row round-trip bit diff beyond signed-zero (out={out_f}, in={in_f})"
-        );
+        assert!(value_equal(&x, &back), "row round-trip not value-exact (out={out_f}, in={in_f})");
+        assert!(bit_equal_modulo_signed_zero(&x, &back), "row round-trip bit diff beyond signed-zero (out={out_f}, in={in_f})");
     }
 
     // INEXACT-block in_features (odd power-of-two effective block, e.g. 896 ->
     // 128, 768+128=896). Bounded numeric round-trip, NOT bit-exact — the gap.
     let inexact_shapes = [(3usize, 896usize), (5, 768 + 128), (2, 384)];
     for &(out_f, in_f) in &inexact_shapes {
-        assert!(
-            !block_gives_exact_roundtrip(in_f),
-            "in_features {in_f} expected inexact (block {})",
-            effective_block(in_f)
-        );
+        assert!(!block_gives_exact_roundtrip(in_f), "in_features {in_f} expected inexact (block {})", effective_block(in_f));
         let n = out_f * in_f;
         let x = dyadic_signal(n, (out_f as u64) << 20 | in_f as u64, 32768, 15);
         let fwd = rht_forward_rows(&x, &cfg, in_f);
         let back = rht_inverse_rows(&fwd, &cfg, in_f);
         let d = max_abs_diff(&x, &back);
-        assert!(
-            d < 1e-3,
-            "row round-trip exceeded tolerance (out={out_f}, in={in_f}, block {}): {d}",
-            effective_block(in_f)
-        );
+        assert!(d < 1e-3, "row round-trip exceeded tolerance (out={out_f}, in={in_f}, block {}): {d}", effective_block(in_f));
     }
 }
 
@@ -647,10 +549,7 @@ fn rows_equals_flat_when_in_features_256_aligned() {
         let flat = rht_forward(&x, &cfg);
         let rows = rht_forward_rows(&x, &cfg, in_f);
         assert_eq!(flat.len(), rows.len());
-        assert!(
-            flat.iter().zip(&rows).all(|(a, b)| a.to_bits() == b.to_bits()),
-            "row-aware RHT diverged (bitwise) from flat at aligned in_features={in_f}"
-        );
+        assert!(flat.iter().zip(&rows).all(|(a, b)| a.to_bits() == b.to_bits()), "row-aware RHT diverged (bitwise) from flat at aligned in_features={in_f}");
     }
 }
 

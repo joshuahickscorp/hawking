@@ -4,10 +4,7 @@ use std::fs;
 use std::path::PathBuf;
 use std::time::{Instant, SystemTime, UNIX_EPOCH};
 
-use strand_quant::encode::{
-    encode_tensor_with_lut, encode_tensor_with_lut_block_parallel, BlockParallelConfig, EncodeOpts,
-    EncodedTensor,
-};
+use strand_quant::encode::{encode_tensor_with_lut, encode_tensor_with_lut_block_parallel, BlockParallelConfig, EncodeOpts, EncodedTensor};
 use strand_quant::sha256::sha256;
 use strand_quant::TrellisConfig;
 
@@ -22,9 +19,7 @@ struct Args {
 }
 
 fn parse_args() -> Args {
-    let mut threads = std::thread::available_parallelism()
-        .map(|n| n.get())
-        .unwrap_or(1);
+    let mut threads = std::thread::available_parallelism().map(|n| n.get()).unwrap_or(1);
     let mut scratch_budget_bytes = 256 * 1024 * 1024usize;
     let mut receipt = None;
     let mut benchmark_weights = 131_072usize;
@@ -32,35 +27,11 @@ fn parse_args() -> Args {
     let mut args = std::env::args().skip(1);
     while let Some(arg) = args.next() {
         match arg.as_str() {
-            "--threads" => {
-                threads = args
-                    .next()
-                    .expect("--threads needs N")
-                    .parse()
-                    .expect("threads usize")
-            }
-            "--scratch-budget-bytes" => {
-                scratch_budget_bytes = args
-                    .next()
-                    .expect("--scratch-budget-bytes needs BYTES")
-                    .parse()
-                    .expect("scratch-budget-bytes usize")
-            }
+            "--threads" => threads = args.next().expect("--threads needs N").parse().expect("threads usize"),
+            "--scratch-budget-bytes" => scratch_budget_bytes = args.next().expect("--scratch-budget-bytes needs BYTES").parse().expect("scratch-budget-bytes usize"),
             "--receipt" => receipt = Some(args.next().expect("--receipt needs PATH").into()),
-            "--benchmark-weights" => {
-                benchmark_weights = args
-                    .next()
-                    .expect("--benchmark-weights needs N")
-                    .parse()
-                    .expect("benchmark-weights usize")
-            }
-            "--benchmark-iters" => {
-                benchmark_iters = args
-                    .next()
-                    .expect("--benchmark-iters needs N")
-                    .parse()
-                    .expect("benchmark-iters usize")
-            }
+            "--benchmark-weights" => benchmark_weights = args.next().expect("--benchmark-weights needs N").parse().expect("benchmark-weights usize"),
+            "--benchmark-iters" => benchmark_iters = args.next().expect("--benchmark-iters needs N").parse().expect("benchmark-iters usize"),
             "-h" | "--help" => {
                 println!(
                     "gate-block-parallel [--threads N] [--scratch-budget-bytes BYTES] \
@@ -72,25 +43,10 @@ fn parse_args() -> Args {
         }
     }
     assert!(threads > 0, "--threads must be greater than zero");
-    assert!(
-        scratch_budget_bytes > 0,
-        "--scratch-budget-bytes must be greater than zero"
-    );
-    assert!(
-        benchmark_weights > 0,
-        "--benchmark-weights must be greater than zero"
-    );
-    assert!(
-        benchmark_iters > 0,
-        "--benchmark-iters must be greater than zero"
-    );
-    Args {
-        threads,
-        scratch_budget_bytes,
-        receipt,
-        benchmark_weights,
-        benchmark_iters,
-    }
+    assert!(scratch_budget_bytes > 0, "--scratch-budget-bytes must be greater than zero");
+    assert!(benchmark_weights > 0, "--benchmark-weights must be greater than zero");
+    assert!(benchmark_iters > 0, "--benchmark-iters must be greater than zero");
+    Args { threads, scratch_budget_bytes, receipt, benchmark_weights, benchmark_iters }
 }
 
 fn hex(bytes: &[u8]) -> String {
@@ -158,14 +114,7 @@ struct CaseReceipt {
     parallel_ns: u128,
 }
 
-fn run_case(
-    name: &str,
-    values: &[f32],
-    cfg: &TrellisConfig,
-    opts: &EncodeOpts,
-    parallel: BlockParallelConfig,
-    iters: usize,
-) -> CaseReceipt {
+fn run_case(name: &str, values: &[f32], cfg: &TrellisConfig, opts: &EncodeOpts, parallel: BlockParallelConfig, iters: usize) -> CaseReceipt {
     let serial_start = Instant::now();
     let mut serial = None;
     for _ in 0..iters {
@@ -179,10 +128,7 @@ fn run_case(
     let mut accelerated = None;
     for _ in 0..iters {
         let lut = cfg.codebook();
-        accelerated = Some(
-            encode_tensor_with_lut_block_parallel(values, cfg, opts, &lut, parallel)
-                .unwrap_or_else(|e| panic!("{name}: block-parallel rejected: {e}")),
-        );
+        accelerated = Some(encode_tensor_with_lut_block_parallel(values, cfg, opts, &lut, parallel).unwrap_or_else(|e| panic!("{name}: block-parallel rejected: {e}")));
     }
     let parallel_ns = parallel_start.elapsed().as_nanos();
     let accelerated = accelerated.unwrap();
@@ -190,18 +136,8 @@ fn run_case(
     let serial_sha256 = hash_encoded(&serial);
     let parallel_sha256 = hash_encoded(&accelerated);
     assert_eq!(accelerated, serial, "{name}: canonical bytes differ");
-    assert_eq!(
-        parallel_sha256, serial_sha256,
-        "{name}: receipt digest differs"
-    );
-    CaseReceipt {
-        name: name.into(),
-        input_sha256: hash_weights(values),
-        serial_sha256,
-        parallel_sha256,
-        serial_ns,
-        parallel_ns,
-    }
+    assert_eq!(parallel_sha256, serial_sha256, "{name}: receipt digest differs");
+    CaseReceipt { name: name.into(), input_sha256: hash_weights(values), serial_sha256, parallel_sha256, serial_ns, parallel_ns }
 }
 
 fn json_escape(s: &str) -> String {
@@ -210,51 +146,17 @@ fn json_escape(s: &str) -> String {
 
 fn main() {
     let args = parse_args();
-    let parallel = BlockParallelConfig::new(args.threads)
-        .unwrap()
-        .with_min_blocks(1)
-        .with_scratch_budget_bytes(args.scratch_budget_bytes);
+    let parallel = BlockParallelConfig::new(args.threads).unwrap().with_min_blocks(1).with_scratch_budget_bytes(args.scratch_budget_bytes);
 
     let cases = [
-        (
-            "q2_l8_default",
-            TrellisConfig::new(8, 2, 256),
-            EncodeOpts::default(),
-            0xB10C_0001,
-        ),
-        (
-            "q3_l9_tail_affine",
-            TrellisConfig::new(9, 3, 256),
-            EncodeOpts {
-                tail_biting: true,
-                affine_min: true,
-                ..EncodeOpts::default()
-            },
-            0xB10C_0002,
-        ),
-        (
-            "q4_l10_two_pass_psi",
-            TrellisConfig::new(10, 4, 256),
-            EncodeOpts {
-                silence_bonus: 0.05,
-                entropy_bonus_scale: 0.2,
-                entropy_bonus_two_pass: true,
-                ..EncodeOpts::default()
-            },
-            0xB10C_0003,
-        ),
+        ("q2_l8_default", TrellisConfig::new(8, 2, 256), EncodeOpts::default(), 0xB10C_0001),
+        ("q3_l9_tail_affine", TrellisConfig::new(9, 3, 256), EncodeOpts { tail_biting: true, affine_min: true, ..EncodeOpts::default() }, 0xB10C_0002),
+        ("q4_l10_two_pass_psi", TrellisConfig::new(10, 4, 256), EncodeOpts { silence_bonus: 0.05, entropy_bonus_scale: 0.2, entropy_bonus_two_pass: true, ..EncodeOpts::default() }, 0xB10C_0003),
     ];
     let mut receipts = Vec::new();
     for (name, cfg, opts, seed) in cases {
         let values = weights(args.benchmark_weights + 17, seed);
-        receipts.push(run_case(
-            name,
-            &values,
-            &cfg,
-            &opts,
-            parallel,
-            args.benchmark_iters,
-        ));
+        receipts.push(run_case(name, &values, &cfg, &opts, parallel, args.benchmark_iters));
     }
 
     let exe = std::env::current_exe().expect("current executable");
@@ -271,10 +173,7 @@ fn main() {
         payload.extend_from_slice(case.parallel_sha256.as_bytes());
     }
     let payload_sha256 = hex(&sha256(&payload));
-    let generated_unix_ns = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .expect("system clock before epoch")
-        .as_nanos();
+    let generated_unix_ns = SystemTime::now().duration_since(UNIX_EPOCH).expect("system clock before epoch").as_nanos();
 
     let mut case_json = Vec::new();
     for case in &receipts {

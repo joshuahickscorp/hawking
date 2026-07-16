@@ -58,12 +58,7 @@ pub struct TrainConfig {
 
 impl TrainConfig {
     pub fn new(d: usize, k_centroids: usize) -> Self {
-        TrainConfig {
-            d,
-            k_centroids,
-            iters: 50,
-            seed: 0,
-        }
+        TrainConfig { d, k_centroids, iters: 50, seed: 0 }
     }
 }
 
@@ -173,11 +168,7 @@ pub fn train(samples: &[f32], cfg: &TrainConfig) -> Centroids {
     let n = samples.len() / d;
 
     if n == 0 {
-        return Centroids {
-            data: vec![0.0f64; k * d],
-            d,
-            k,
-        };
+        return Centroids { data: vec![0.0f64; k * d], d, k };
     }
 
     let points: Vec<f64> = samples[..n * d].iter().map(|&w| w as f64).collect();
@@ -238,11 +229,7 @@ pub fn train(samples: &[f32], cfg: &TrainConfig) -> Centroids {
         }
     }
 
-    Centroids {
-        data: centroids,
-        d,
-        k,
-    }
+    Centroids { data: centroids, d, k }
 }
 
 #[inline]
@@ -286,20 +273,10 @@ impl FrozenCodebook {
 
 pub fn freeze_centroids(c: &Centroids) -> FrozenCodebook {
     let table: Vec<i32> = c.data.iter().map(|&x| component_to_q12(x)).collect();
-    FrozenCodebook {
-        table,
-        d: c.d,
-        k: c.k,
-    }
+    FrozenCodebook { table, d: c.d, k: c.k }
 }
 
-pub fn train_state_vector_lut(
-    samples: &[f32],
-    l_bits: u32,
-    d: usize,
-    seed: u64,
-    iters: usize,
-) -> Vec<i32> {
+pub fn train_state_vector_lut(samples: &[f32], l_bits: u32, d: usize, seed: u64, iters: usize) -> Vec<i32> {
     let k = 1usize << l_bits;
     let d = d.max(1);
     let n = samples.len() / d;
@@ -317,12 +294,7 @@ pub fn train_state_vector_lut(
     } else {
         &samples[..n * d]
     };
-    let cfg = TrainConfig {
-        d,
-        k_centroids: k,
-        iters,
-        seed,
-    };
+    let cfg = TrainConfig { d, k_centroids: k, iters, seed };
     let centroids = train(training, &cfg);
     freeze_centroids(&centroids).table
 }
@@ -364,10 +336,7 @@ mod tests {
         let q_to_real = 1.0f64 / (1u32 << QUANTILE_SHIFT) as f64;
         let mut acc = 0.0f64;
         for p in 0..n {
-            let x: Vec<f64> = samples[p * d..p * d + d]
-                .iter()
-                .map(|&w| w as f64)
-                .collect();
+            let x: Vec<f64> = samples[p * d..p * d + d].iter().map(|&w| w as f64).collect();
 
             let mut best_d = f64::INFINITY;
             for i in 0..fc.k {
@@ -399,12 +368,7 @@ mod tests {
         for _ in 0..40 {
             samples.push(3.0f32);
         }
-        let cfg = TrainConfig {
-            d: 1,
-            k_centroids: 3,
-            iters: 50,
-            seed: 7,
-        };
+        let cfg = TrainConfig { d: 1, k_centroids: 3, iters: 50, seed: 7 };
         let c = train(&samples, &cfg);
         assert_eq!(c.d, 1);
         assert_eq!(c.k, 3);
@@ -420,11 +384,7 @@ mod tests {
         let q_to_real = 1.0f64 / (1u32 << QUANTILE_SHIFT) as f64;
         for i in 0..3 {
             let got = fc.reconstruct(i)[0] as f64 * q_to_real;
-            assert!(
-                (got - c.centroid(i)[0]).abs() <= q_to_real,
-                "centroid {i}: frozen {got} vs float {}",
-                c.centroid(i)[0]
-            );
+            assert!((got - c.centroid(i)[0]).abs() <= q_to_real, "centroid {i}: frozen {got} vs float {}", c.centroid(i)[0]);
         }
     }
 
@@ -442,38 +402,20 @@ mod tests {
             let p = rng.next_below(n);
             random_book[i * d..i * d + d].copy_from_slice(&points[p * d..p * d + d]);
         }
-        let random = Centroids {
-            data: random_book,
-            d,
-            k,
-        };
+        let random = Centroids { data: random_book, d, k };
         let random_mse = random.reconstruction_mse(&points);
 
-        let cfg = TrainConfig {
-            d,
-            k_centroids: k,
-            iters: 50,
-            seed: 42,
-        };
+        let cfg = TrainConfig { d, k_centroids: k, iters: 50, seed: 42 };
         let trained = train(&samples, &cfg);
         let trained_mse = trained.reconstruction_mse(&points);
 
-        assert!(
-            trained_mse < random_mse,
-            "training did not reduce MSE: trained {trained_mse} vs random {random_mse}"
-        );
+        assert!(trained_mse < random_mse, "training did not reduce MSE: trained {trained_mse} vs random {random_mse}");
 
-        assert!(
-            trained_mse < 0.9 * random_mse,
-            "training reduced MSE only marginally: trained {trained_mse} vs random {random_mse}"
-        );
+        assert!(trained_mse < 0.9 * random_mse, "training reduced MSE only marginally: trained {trained_mse} vs random {random_mse}");
 
         let frozen = freeze_centroids(&trained);
         let frozen_book_mse = frozen_mse(&frozen, &samples);
-        assert!(
-            frozen_book_mse < random_mse,
-            "frozen book lost to random init: frozen {frozen_book_mse} vs random {random_mse}"
-        );
+        assert!(frozen_book_mse < random_mse, "frozen book lost to random init: frozen {frozen_book_mse} vs random {random_mse}");
     }
 
     #[test]
@@ -481,12 +423,7 @@ mod tests {
         let d = 3;
         let k = 12;
         let samples = synth_gaussian(2000, d, 0x5151_2727);
-        let cfg = TrainConfig {
-            d,
-            k_centroids: k,
-            iters: 40,
-            seed: 11,
-        };
+        let cfg = TrainConfig { d, k_centroids: k, iters: 40, seed: 11 };
         let c = train(&samples, &cfg);
         let fc = freeze_centroids(&c);
         assert_eq!(fc.table.len(), k * d);
@@ -501,16 +438,9 @@ mod tests {
             for j in 0..d {
                 let got = fz[j] as f64 * q_to_real;
                 let want = fl[j].clamp(-6.0, 6.0);
-                assert!(
-                    (got - want).abs() <= q_to_real,
-                    "centroid {i} comp {j}: frozen {got} vs float {want}"
-                );
+                assert!((got - want).abs() <= q_to_real, "centroid {i} comp {j}: frozen {got} vs float {want}");
 
-                assert!(
-                    fz[j].abs() <= RECON_CLAMP_Q12,
-                    "entry exceeds clamp: {}",
-                    fz[j]
-                );
+                assert!(fz[j].abs() <= RECON_CLAMP_Q12, "entry exceeds clamp: {}", fz[j]);
             }
         }
 
@@ -524,34 +454,19 @@ mod tests {
         let k = 32;
 
         let samples = synth_gaussian(6000, d, 0xDEAD_BEEF);
-        let cfg = TrainConfig {
-            d,
-            k_centroids: k,
-            iters: 60,
-            seed: 2024,
-        };
+        let cfg = TrainConfig { d, k_centroids: k, iters: 60, seed: 2024 };
 
         let a = freeze_centroids(&train(&samples, &cfg));
         let b = freeze_centroids(&train(&samples, &cfg));
 
         assert_eq!(a.d, b.d);
         assert_eq!(a.k, b.k);
-        assert_eq!(
-            a.table, b.table,
-            "frozen tables differ across identical runs"
-        );
-        assert_eq!(
-            fnv1a(&a.table),
-            fnv1a(&b.table),
-            "golden hash differs across runs"
-        );
+        assert_eq!(a.table, b.table, "frozen tables differ across identical runs");
+        assert_eq!(fnv1a(&a.table), fnv1a(&b.table), "golden hash differs across runs");
 
         let ca = train(&samples, &cfg);
         let cb = train(&samples, &cfg);
-        assert_eq!(
-            ca.data, cb.data,
-            "float centroids differ across identical runs"
-        );
+        assert_eq!(ca.data, cb.data, "float centroids differ across identical runs");
     }
 
     #[test]
@@ -565,12 +480,7 @@ mod tests {
 
     #[test]
     fn empty_samples_yield_zero_book() {
-        let cfg = TrainConfig {
-            d: 4,
-            k_centroids: 8,
-            iters: 10,
-            seed: 1,
-        };
+        let cfg = TrainConfig { d: 4, k_centroids: 8, iters: 10, seed: 1 };
         let c = train(&[], &cfg);
         assert_eq!(c.k, 8);
         assert_eq!(c.d, 4);
@@ -586,12 +496,7 @@ mod tests {
         let k = 16;
 
         let samples: Vec<f32> = (0..10).map(|i| i as f32 * 0.1).collect();
-        let cfg = TrainConfig {
-            d,
-            k_centroids: k,
-            iters: 20,
-            seed: 3,
-        };
+        let cfg = TrainConfig { d, k_centroids: k, iters: 20, seed: 3 };
         let a = train(&samples, &cfg);
         let b = train(&samples, &cfg);
         assert_eq!(a.data, b.data);
@@ -602,9 +507,7 @@ mod tests {
     fn oversized_training_is_deterministically_sampled() {
         let d = 2;
         let n = MAX_TRAIN_VECTORS + 137;
-        let samples: Vec<f32> = (0..n * d)
-            .map(|i| ((i * 17 % 1009) as f32 - 504.0) / 211.0)
-            .collect();
+        let samples: Vec<f32> = (0..n * d).map(|i| ((i * 17 % 1009) as f32 - 504.0) / 211.0).collect();
         let a = train_state_vector_lut(&samples, 3, d, 0x1234_5678, 2);
         let b = train_state_vector_lut(&samples, 3, d, 0x1234_5678, 2);
         assert_eq!(a, b);

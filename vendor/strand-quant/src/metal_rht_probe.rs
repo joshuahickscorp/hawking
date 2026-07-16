@@ -78,52 +78,26 @@ pub struct MetalRhtProbe {
 impl MetalRhtProbe {
     pub fn new() -> Result<Self, String> {
         let device = Device::system_default().ok_or("no system Metal device")?;
-        let library = device
-            .new_library_with_source(METAL_RHT_SOURCE, &CompileOptions::new())
-            .map_err(|error| format!("compile Metal RHT probe: {error}"))?;
-        let function = library
-            .get_function("rht_forward_256", None)
-            .map_err(|error| format!("load Metal RHT probe kernel: {error}"))?;
-        let pipeline = device
-            .new_compute_pipeline_state_with_function(&function)
-            .map_err(|error| format!("create Metal RHT probe pipeline: {error}"))?;
+        let library = device.new_library_with_source(METAL_RHT_SOURCE, &CompileOptions::new()).map_err(|error| format!("compile Metal RHT probe: {error}"))?;
+        let function = library.get_function("rht_forward_256", None).map_err(|error| format!("load Metal RHT probe kernel: {error}"))?;
+        let pipeline = device.new_compute_pipeline_state_with_function(&function).map_err(|error| format!("create Metal RHT probe pipeline: {error}"))?;
         if pipeline.max_total_threads_per_threadgroup() < 256 {
             return Err("Metal device cannot dispatch a 256-thread RHT group".into());
         }
         let queue = device.new_command_queue();
-        Ok(Self {
-            device,
-            queue,
-            pipeline,
-        })
+        Ok(Self { device, queue, pipeline })
     }
 
     pub fn device_name(&self) -> String {
         self.device.name().to_string()
     }
 
-    pub fn forward(
-        &self,
-        input: &[f32],
-        seed: u64,
-        in_features: usize,
-        axis: RhtAxis,
-    ) -> Result<Vec<f32>, String> {
-        if input.is_empty()
-            || input.len() % 256 != 0
-            || in_features == 0
-            || in_features % 256 != 0
-            || input.len() % in_features != 0
-        {
-            return Err(
-                "Metal RHT probe requires non-empty 256-aligned rows and tensor length".into(),
-            );
+    pub fn forward(&self, input: &[f32], seed: u64, in_features: usize, axis: RhtAxis) -> Result<Vec<f32>, String> {
+        if input.is_empty() || input.len() % 256 != 0 || in_features == 0 || in_features % 256 != 0 || input.len() % in_features != 0 {
+            return Err("Metal RHT probe requires non-empty 256-aligned rows and tensor length".into());
         }
         let input_buffer = self.upload(input);
-        let output_buffer = self.device.new_buffer(
-            (input.len() * std::mem::size_of::<f32>()) as u64,
-            MTLResourceOptions::StorageModeShared,
-        );
+        let output_buffer = self.device.new_buffer((input.len() * std::mem::size_of::<f32>()) as u64, MTLResourceOptions::StorageModeShared);
         let params = [RhtParams {
             seed,
             in_features: u32::try_from(in_features).map_err(|_| "in_features does not fit u32")?,
@@ -140,18 +114,7 @@ impl MetalRhtProbe {
         encoder.set_buffer(1, Some(&output_buffer), 0);
         encoder.set_buffer(2, Some(&params_buffer), 0);
         encoder.set_threadgroup_memory_length(0, (256 * std::mem::size_of::<f32>()) as u64);
-        encoder.dispatch_thread_groups(
-            MTLSize {
-                width: (input.len() / 256) as u64,
-                height: 1,
-                depth: 1,
-            },
-            MTLSize {
-                width: 256,
-                height: 1,
-                depth: 1,
-            },
-        );
+        encoder.dispatch_thread_groups(MTLSize { width: (input.len() / 256) as u64, height: 1, depth: 1 }, MTLSize { width: 256, height: 1, depth: 1 });
         encoder.end_encoding();
         command.commit();
         command.wait_until_completed();
@@ -164,16 +127,9 @@ impl MetalRhtProbe {
 
     fn upload<T: Copy>(&self, values: &[T]) -> Buffer {
         let byte_len = values.len() * std::mem::size_of::<T>();
-        let buffer = self.device.new_buffer(
-            byte_len.max(4) as u64,
-            MTLResourceOptions::StorageModeShared,
-        );
+        let buffer = self.device.new_buffer(byte_len.max(4) as u64, MTLResourceOptions::StorageModeShared);
         unsafe {
-            std::ptr::copy_nonoverlapping(
-                values.as_ptr().cast::<u8>(),
-                buffer.contents().cast::<u8>(),
-                byte_len,
-            );
+            std::ptr::copy_nonoverlapping(values.as_ptr().cast::<u8>(), buffer.contents().cast::<u8>(), byte_len);
         }
         buffer
     }

@@ -5,7 +5,8 @@ PTQ on STRAND floors near ~80 PPL at 2-bit on Qwen2.5-0.5B (the RHT closes the f
 Hessian-objective lever; see will.md §4). The ~80 -> ~bf16 jump is TRAINING's. This harness
 proves the mechanism: load a pretrained CausalLM, wrap its projection Linears with a
 fake-quant (straight-through estimator), fine-tune on WikiText-2 train, and eval PPL on
-WikiText-2 test with the SAME protocol as scripts/strand-7b-ppl.sh (non-overlapping ctx
+WikiText-2 test with the SAME protocol as tools/strand/scripts/strand-7b-ppl.sh
+(non-overlapping ctx
 windows, exp(sum nll / sum tok)) so the number is directly comparable to the PTQ canon.
 
 Quantizers (all STE):

@@ -1,4 +1,3 @@
-
 use strand_decode_kernel::block_walk::gate_proto::{canonical_configs, machine_stamp, synth_encoded};
 use strand_decode_kernel::gemv_par::{decode_q12_par, decode_q12_par_counted};
 use strand_decode_kernel::prepared::{decode_q12_par_prepared, decode_q12_par_prepared_counted, PreparedTensor};
@@ -18,11 +17,7 @@ fn main() {
         for seed in 0..8u64 {
             let n = 256 + (seed as usize * 337) % 3000;
             let w: Vec<f32> = (0..n).map(|i| ((i as f32 + seed as f32) * 0.0137).sin() * 0.5).collect();
-            for opts in [
-                EncodeOpts::default(),
-                EncodeOpts { tail_biting: true, ..Default::default() },
-                EncodeOpts { affine_min: true, ..Default::default() },
-            ] {
+            for opts in [EncodeOpts::default(), EncodeOpts { tail_biting: true, ..Default::default() }, EncodeOpts { affine_min: true, ..Default::default() }] {
                 let enc = encode_tensor_with(&w, &cfg, &opts);
                 let nb = enc.blocks.len();
 
@@ -51,10 +46,7 @@ fn main() {
                 }
 
                 for (b, &c) in zero_counts.iter().enumerate() {
-                    assert_eq!(
-                        c, 0,
-                        "None-path VIOLATION: zero_counts[{b}] was mutated (should be impossible)"
-                    );
+                    assert_eq!(c, 0, "None-path VIOLATION: zero_counts[{b}] was mutated (should be impossible)");
                 }
 
                 checks += 1;
@@ -81,16 +73,10 @@ fn main() {
             total_decode_calls += 1;
             total_blocks += nb as u64;
 
-            assert_eq!(
-                q_prep_counted, q_prep_base,
-                "IDENTITY VIOLATION: prepared counted decode diverged at {label} n={n} seed={seed}"
-            );
+            assert_eq!(q_prep_counted, q_prep_base, "IDENTITY VIOLATION: prepared counted decode diverged at {label} n={n} seed={seed}");
 
             for (b, &c) in counts.iter().enumerate() {
-                assert!(
-                    c > 0,
-                    "COUNTS VIOLATION: prepared block {b} count == 0 at {label} n={n} seed={seed}"
-                );
+                assert!(c > 0, "COUNTS VIOLATION: prepared block {b} count == 0 at {label} n={n} seed={seed}");
             }
 
             checks += 1;
@@ -106,15 +92,12 @@ fn main() {
         let enc = encode_tensor(&w, &cfg);
         let nb = enc.blocks.len();
         let mut counts = vec![u32::MAX - 2; nb];
-        
+
         for _ in 0..5 {
             decode_q12_par_counted(&enc, &cfg, Some(&mut counts));
         }
         for (b, &c) in counts.iter().enumerate() {
-            assert_eq!(
-                c, u32::MAX,
-                "saturation VIOLATION: block {b} count {c} != u32::MAX after overflow"
-            );
+            assert_eq!(c, u32::MAX, "saturation VIOLATION: block {b} count {c} != u32::MAX after overflow");
         }
         println!("  saturation: all {} blocks clamped to u32::MAX OK", nb);
     }

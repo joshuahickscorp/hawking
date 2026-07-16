@@ -69,9 +69,7 @@ use std::fs;
 use std::io::Write as _;
 use std::path::Path;
 
-use crate::format::{
-    flags_v2, read_strand_v2, read_strand_v2_header, OwnedTensorV2, StrandV2Header, PAGE,
-};
+use crate::format::{flags_v2, read_strand_v2, read_strand_v2_header, OwnedTensorV2, StrandV2Header, PAGE};
 use crate::sideinfo_rans::{decode_scale_q, encode_scale_q};
 
 pub const SDSQ_MAGIC: &[u8; 4] = b"SDSQ";
@@ -127,10 +125,7 @@ fn page_align(x: usize) -> usize {
 fn sdsq_section_bytes(block_counts: &[usize], scale_q: &[i32]) -> Result<Vec<u8>, String> {
     let total: usize = block_counts.iter().sum();
     if total != scale_q.len() {
-        return Err(format!(
-            "sdsq: block_counts sum {total} != scale_q len {}",
-            scale_q.len()
-        ));
+        return Err(format!("sdsq: block_counts sum {total} != scale_q len {}", scale_q.len()));
     }
     let mut o = Vec::new();
     o.extend_from_slice(SDSQ_MAGIC);
@@ -145,10 +140,7 @@ fn sdsq_section_bytes(block_counts: &[usize], scale_q: &[i32]) -> Result<Vec<u8>
     }
 
     let stream = encode_scale_q(scale_q);
-    let stream_len: u32 = stream
-        .len()
-        .try_into()
-        .map_err(|_| format!("sdsq: scale_q stream is {} bytes — exceeds the u32 field", stream.len()))?;
+    let stream_len: u32 = stream.len().try_into().map_err(|_| format!("sdsq: scale_q stream is {} bytes — exceeds the u32 field", stream.len()))?;
     o.extend_from_slice(&stream_len.to_le_bytes());
     o.extend_from_slice(&stream);
     Ok(o)
@@ -163,22 +155,15 @@ pub fn append_sdsq(path: impl AsRef<Path>, scale_q: &[i32]) -> Result<(), String
     let buf = fs::read(path).map_err(|e| format!("sdsq: read {path:?}: {e}"))?;
 
     if buf.len() >= SDSQ_TRAILER_BYTES && &buf[buf.len() - 4..] == &SPRV_MAGIC[..] {
-        return Err(
-            "sdsq: file already has an SPRV trailer — SDSQ must be appended BEFORE SPRV \
+        return Err("sdsq: file already has an SPRV trailer — SDSQ must be appended BEFORE SPRV \
              (the seal is outermost; data sections stack under it)"
-                .into(),
-        );
+            .into());
     }
     if buf.len() >= SDSQ_TRAILER_BYTES && &buf[buf.len() - 4..] == &RSLT_MAGIC[..] {
-        return Err(
-            "sdsq: file already has an RSLT trailer — SDSQ must be appended BEFORE the RSLT seal"
-                .into(),
-        );
+        return Err("sdsq: file already has an RSLT trailer — SDSQ must be appended BEFORE the RSLT seal".into());
     }
     match read_sdsq_bytes(&buf, true) {
-        Ok(Some(_)) => {
-            return Err("sdsq: file already has an SDSQ section (double-append rejected)".into())
-        }
+        Ok(Some(_)) => return Err("sdsq: file already has an SDSQ section (double-append rejected)".into()),
         Err(e) => {
             return Err(format!(
                 "sdsq: file ends in SDSQ magic but the section is invalid — refusing to \
@@ -192,18 +177,11 @@ pub fn append_sdsq(path: impl AsRef<Path>, scale_q: &[i32]) -> Result<(), String
     let block_counts: Vec<usize> = hdr.tensors.iter().map(|t| t.n_blocks).collect();
     let total: usize = block_counts.iter().sum();
     if scale_q.len() != total {
-        return Err(format!(
-            "sdsq: {} scale_q values, archive has {total} blocks across {} tensors",
-            scale_q.len(),
-            hdr.tensors.len()
-        ));
+        return Err(format!("sdsq: {} scale_q values, archive has {total} blocks across {} tensors", scale_q.len(), hdr.tensors.len()));
     }
 
     let section = sdsq_section_bytes(&block_counts, scale_q)?;
-    let sdsq_bytes: u32 = section
-        .len()
-        .try_into()
-        .map_err(|_| format!("sdsq: section is {} bytes — exceeds the u32 field", section.len()))?;
+    let sdsq_bytes: u32 = section.len().try_into().map_err(|_| format!("sdsq: section is {} bytes — exceeds the u32 field", section.len()))?;
 
     let sdsq_offset = page_align(buf.len());
     let lead_pad = sdsq_offset - buf.len();
@@ -218,27 +196,16 @@ pub fn append_sdsq(path: impl AsRef<Path>, scale_q: &[i32]) -> Result<(), String
     tail.extend_from_slice(&sdsq_bytes.to_le_bytes());
     tail.extend_from_slice(SDSQ_MAGIC);
 
-    let mut f = fs::OpenOptions::new()
-        .append(true)
-        .open(path)
-        .map_err(|e| format!("sdsq: open {path:?} for append: {e}"))?;
+    let mut f = fs::OpenOptions::new().append(true).open(path).map_err(|e| format!("sdsq: open {path:?} for append: {e}"))?;
     f.write_all(&tail).map_err(|e| format!("sdsq: append to {path:?}: {e}"))?;
     Ok(())
 }
 
-fn parse_sdsq_section(
-    buf: &[u8],
-    sdsq_offset: usize,
-    sdsq_bytes: usize,
-    trailer_end: usize,
-) -> Result<SdsqSection, String> {
+fn parse_sdsq_section(buf: &[u8], sdsq_offset: usize, sdsq_bytes: usize, trailer_end: usize) -> Result<SdsqSection, String> {
     if sdsq_offset % PAGE != 0 {
         return Err(format!("sdsq: sdsq_offset {sdsq_offset} not page-aligned"));
     }
-    let min_end = sdsq_offset
-        .checked_add(sdsq_bytes)
-        .and_then(|x| x.checked_add(SDSQ_TRAILER_BYTES))
-        .ok_or("sdsq: sdsq_offset + sdsq_bytes overflows")?;
+    let min_end = sdsq_offset.checked_add(sdsq_bytes).and_then(|x| x.checked_add(SDSQ_TRAILER_BYTES)).ok_or("sdsq: sdsq_offset + sdsq_bytes overflows")?;
     if min_end > trailer_end || trailer_end % PAGE != 0 {
         return Err(format!(
             "sdsq: section [{sdsq_offset}, +{sdsq_bytes}] + trailer does not fit the \
@@ -249,10 +216,7 @@ fn parse_sdsq_section(
         return Err("sdsq: section shorter than the 32-byte header".into());
     }
     // padding between section end and the trailer must be zero (byte-stability)
-    if buf[sdsq_offset + sdsq_bytes..trailer_end - SDSQ_TRAILER_BYTES]
-        .iter()
-        .any(|&b| b != 0)
-    {
+    if buf[sdsq_offset + sdsq_bytes..trailer_end - SDSQ_TRAILER_BYTES].iter().any(|&b| b != 0) {
         return Err("sdsq: nonzero bytes in section padding".into());
     }
 
@@ -268,10 +232,7 @@ fn parse_sdsq_section(
     }
     let n_tensors = u32::from_le_bytes(s[8..12].try_into().unwrap()) as usize;
     if n_tensors != v2.tensors.len() {
-        return Err(format!(
-            "sdsq: section n_tensors {n_tensors} != archive's {}",
-            v2.tensors.len()
-        ));
+        return Err(format!("sdsq: section n_tensors {n_tensors} != archive's {}", v2.tensors.len()));
     }
     let flags = u32::from_le_bytes(s[12..16].try_into().unwrap());
     if flags != 0 {
@@ -293,10 +254,7 @@ fn parse_sdsq_section(
     for (i, desc) in v2.tensors.iter().enumerate() {
         let nb = u64::from_le_bytes(take(&mut p, 8)?.try_into().unwrap()) as usize;
         if nb != desc.n_blocks {
-            return Err(format!(
-                "sdsq: tensor record {i}: n_blocks {nb} != archive's {}",
-                desc.n_blocks
-            ));
+            return Err(format!("sdsq: tensor record {i}: n_blocks {nb} != archive's {}", desc.n_blocks));
         }
         block_counts.push(nb);
     }
@@ -310,17 +268,11 @@ fn parse_sdsq_section(
     let mut spos = 0usize;
     let scale_q = decode_scale_q(stream, &mut spos)?;
     if spos != stream.len() {
-        return Err(format!(
-            "sdsq: {} trailing bytes inside the rANS stream",
-            stream.len() - spos
-        ));
+        return Err(format!("sdsq: {} trailing bytes inside the rANS stream", stream.len() - spos));
     }
     let total: usize = block_counts.iter().sum();
     if scale_q.len() != total {
-        return Err(format!(
-            "sdsq: decoded {} scale_q values, block_counts sum to {total}",
-            scale_q.len()
-        ));
+        return Err(format!("sdsq: decoded {} scale_q values, block_counts sum to {total}", scale_q.len()));
     }
     Ok(SdsqSection { block_counts, scale_q })
 }
@@ -342,9 +294,7 @@ pub fn read_sdsq_bytes(buf: &[u8], strict: bool) -> Result<Option<SdsqSection>, 
             let parse = (|| -> Result<SdsqSection, String> {
                 let sdsq_offset = u64::from_le_bytes(t[0..8].try_into().unwrap());
                 let sdsq_bytes = u32::from_le_bytes(t[8..12].try_into().unwrap());
-                let sdsq_offset: usize = sdsq_offset
-                    .try_into()
-                    .map_err(|_| "sdsq: sdsq_offset exceeds address space".to_string())?;
+                let sdsq_offset: usize = sdsq_offset.try_into().map_err(|_| "sdsq: sdsq_offset exceeds address space".to_string())?;
                 parse_sdsq_section(buf, sdsq_offset, sdsq_bytes as usize, end)
             })();
             return match parse {
@@ -352,11 +302,7 @@ pub fn read_sdsq_bytes(buf: &[u8], strict: bool) -> Result<Option<SdsqSection>, 
                 Err(e) if strict => Err(e),
                 Err(_) => Ok(None),
             };
-        } else if magic == &SPRV_MAGIC[..]
-            || magic == &OUTL_MAGIC[..]
-            || magic == &RSLT_MAGIC[..]
-            || magic == &SDSC_MAGIC[..]
-        {
+        } else if magic == &SPRV_MAGIC[..] || magic == &OUTL_MAGIC[..] || magic == &RSLT_MAGIC[..] || magic == &SDSC_MAGIC[..] {
             // Every stacked section's trailer stores its own section start at [0..8].
             // Step back to it and keep looking for SDSQ underneath.
             let off = u64::from_le_bytes(t[0..8].try_into().unwrap());
@@ -389,31 +335,17 @@ pub fn read_sdsq(path: impl AsRef<Path>) -> Result<Option<SdsqSection>, String> 
 /// unchanged. This is the reference apply the loader uses when an SDSQ section is
 /// present; it touches only the in-memory `scale_q` field, never the seek-table
 /// bytes on disk.
-pub fn apply_sdsq_to_header(
-    hdr: &mut StrandV2Header,
-    sdsq: &SdsqSection,
-) -> Result<(), String> {
+pub fn apply_sdsq_to_header(hdr: &mut StrandV2Header, sdsq: &SdsqSection) -> Result<(), String> {
     if hdr.tensors.len() != sdsq.block_counts.len() {
-        return Err(format!(
-            "sdsq apply: header has {} tensors, SDSQ has {}",
-            hdr.tensors.len(),
-            sdsq.block_counts.len()
-        ));
+        return Err(format!("sdsq apply: header has {} tensors, SDSQ has {}", hdr.tensors.len(), sdsq.block_counts.len()));
     }
     let mut pos = 0usize;
     for (i, t) in hdr.tensors.iter_mut().enumerate() {
         let nb = sdsq.block_counts[i];
         if t.n_blocks != nb || t.table.len() != nb {
-            return Err(format!(
-                "sdsq apply: tensor {i}: header n_blocks {}/{} != SDSQ {nb}",
-                t.n_blocks,
-                t.table.len()
-            ));
+            return Err(format!("sdsq apply: tensor {i}: header n_blocks {}/{} != SDSQ {nb}", t.n_blocks, t.table.len()));
         }
-        let slice = sdsq
-            .scale_q
-            .get(pos..pos + nb)
-            .ok_or("sdsq apply: scale_q stream shorter than block_counts")?;
+        let slice = sdsq.scale_q.get(pos..pos + nb).ok_or("sdsq apply: scale_q stream shorter than block_counts")?;
         for (rec, &sq) in t.table.iter_mut().zip(slice.iter()) {
             rec.scale_q = sq;
         }
@@ -429,39 +361,18 @@ pub fn apply_sdsq_to_header(
 /// and the decode kernels read, so SPRV verification and any `read_strand_v2`
 /// consumer need this fill when [`flags_v2::SCALEQ_IN_SDSQ`] is set. Byte-identical
 /// to the value the legacy 16-byte record would have carried.
-pub fn apply_sdsq_to_tensors(
-    tensors: &mut [OwnedTensorV2],
-    sdsq: &SdsqSection,
-) -> Result<(), String> {
+pub fn apply_sdsq_to_tensors(tensors: &mut [OwnedTensorV2], sdsq: &SdsqSection) -> Result<(), String> {
     if tensors.len() != sdsq.block_counts.len() {
-        return Err(format!(
-            "sdsq apply: {} tensors, SDSQ has {}",
-            tensors.len(),
-            sdsq.block_counts.len()
-        ));
+        return Err(format!("sdsq apply: {} tensors, SDSQ has {}", tensors.len(), sdsq.block_counts.len()));
     }
     let mut pos = 0usize;
     for (i, t) in tensors.iter_mut().enumerate() {
         let nb = sdsq.block_counts[i];
         if t.base.enc.blocks.len() != nb || t.table.len() != nb {
-            return Err(format!(
-                "sdsq apply: tensor {i}: blocks {}/table {} != SDSQ {nb}",
-                t.base.enc.blocks.len(),
-                t.table.len()
-            ));
+            return Err(format!("sdsq apply: tensor {i}: blocks {}/table {} != SDSQ {nb}", t.base.enc.blocks.len(), t.table.len()));
         }
-        let slice = sdsq
-            .scale_q
-            .get(pos..pos + nb)
-            .ok_or("sdsq apply: scale_q stream shorter than block_counts")?;
-        for ((blk, rec), &sq) in t
-            .base
-            .enc
-            .blocks
-            .iter_mut()
-            .zip(t.table.iter_mut())
-            .zip(slice.iter())
-        {
+        let slice = sdsq.scale_q.get(pos..pos + nb).ok_or("sdsq apply: scale_q stream shorter than block_counts")?;
+        for ((blk, rec), &sq) in t.base.enc.blocks.iter_mut().zip(t.table.iter_mut()).zip(slice.iter()) {
             blk.scale_q = sq;
             rec.scale_q = sq;
         }
@@ -518,11 +429,7 @@ mod tests {
     static COUNTER: AtomicU64 = AtomicU64::new(0);
 
     fn tmp_path(tag: &str) -> PathBuf {
-        std::env::temp_dir().join(format!(
-            "strand-sdsq-{tag}-{}-{}.strand",
-            std::process::id(),
-            COUNTER.fetch_add(1, Ordering::Relaxed)
-        ))
+        std::env::temp_dir().join(format!("strand-sdsq-{tag}-{}-{}.strand", std::process::id(), COUNTER.fetch_add(1, Ordering::Relaxed)))
     }
 
     struct TmpFile(PathBuf);
@@ -544,27 +451,11 @@ mod tests {
         let shape_b = [3u64, 256u64];
         let tensors = [
             PackedTensorV2 {
-                base: PackedTensor {
-                    name: "model.layers.0.q_proj",
-                    shape: &shape_a,
-                    rht_seed: 0,
-                    l_bits: cfg.l_bits as u8,
-                    k_bits: cfg.k_bits as u8,
-                    vec_dim: cfg.vec_dim() as u8,
-                    enc: &enc_a,
-                },
+                base: PackedTensor { name: "model.layers.0.q_proj", shape: &shape_a, rht_seed: 0, l_bits: cfg.l_bits as u8, k_bits: cfg.k_bits as u8, vec_dim: cfg.vec_dim() as u8, enc: &enc_a },
                 block_len: cfg.block_len as u32,
             },
             PackedTensorV2 {
-                base: PackedTensor {
-                    name: "model.layers.0.down_proj",
-                    shape: &shape_b,
-                    rht_seed: 0,
-                    l_bits: cfg.l_bits as u8,
-                    k_bits: cfg.k_bits as u8,
-                    vec_dim: cfg.vec_dim() as u8,
-                    enc: &enc_b,
-                },
+                base: PackedTensor { name: "model.layers.0.down_proj", shape: &shape_b, rht_seed: 0, l_bits: cfg.l_bits as u8, k_bits: cfg.k_bits as u8, vec_dim: cfg.vec_dim() as u8, enc: &enc_b },
                 block_len: cfg.block_len as u32,
             },
         ];

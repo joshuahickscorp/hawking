@@ -28,22 +28,15 @@ mod tests {
     #[ignore] // needs release binary; cargo test -p strand-quant -- --ignored
     fn bits1_binary_accepts_flag() {
         // Verify quantize-model binary exits without assertion failure when passed --bits 1
-        let bin = std::env::var("STRAND_QUANT_BIN")
-            .unwrap_or_else(|_| "target/release/quantize-model".to_string());
+        let bin = std::env::var("STRAND_QUANT_BIN").unwrap_or_else(|_| "target/release/quantize-model".to_string());
         if !std::path::Path::new(&bin).exists() {
             eprintln!("Binary not found at '{}', skipping", bin);
             return;
         }
-        let out = std::process::Command::new(&bin)
-            .arg("--bits").arg("1").arg("--help")
-            .output();
+        let out = std::process::Command::new(&bin).arg("--bits").arg("1").arg("--help").output();
         if let Ok(o) = out {
             let stderr = String::from_utf8_lossy(&o.stderr);
-            assert!(
-                !stderr.contains("assertion"),
-                "Got assertion failure with --bits 1: {}",
-                stderr
-            );
+            assert!(!stderr.contains("assertion"), "Got assertion failure with --bits 1: {}", stderr);
         }
     }
 }

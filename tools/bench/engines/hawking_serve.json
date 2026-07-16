@@ -1,8 +1,0 @@
-{
-  "name": "dismantle_serve",
-  "kind": "openai_compatible",
-  "base_url": "http://127.0.0.1:8080/v1",
-  "health_url": "http://127.0.0.1:8080/healthz",
-  "model": "local-model",
-  "launch_command": "target/release/hawking serve --weights ${WEIGHTS} --addr 127.0.0.1:8080 --max-batch-size ${MAX_BATCH_SIZE:-8} --workload chat-shared-prompt --batch-policy prefix-grouped"
-}

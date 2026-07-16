@@ -10,6 +10,10 @@ CONDENSE = ROOT / "tools" / "condense"
 sys.path.insert(0, str(CONDENSE))
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 
+import condense_profiles  # noqa: E402
+
+condense_profiles.install_archive_importer()
+
 import appendix_contract  # noqa: E402
 import physical_counter_attestation as contract  # noqa: E402
 from physical_counter_fixtures import (  # noqa: E402

@@ -17,9 +17,7 @@
 
 use std::time::Instant;
 
-use strand_quant::debias::{
-    debias_tensor, estimate_mu_bar, output_error,
-};
+use strand_quant::debias::{debias_tensor, estimate_mu_bar, output_error};
 use strand_quant::decode::decode_tensor_fixed;
 use strand_quant::encode::{encode_tensor_with, EncodeOpts};
 use strand_quant::gate_utils::{normal_vec, rel_rms, rht_seed_for};
@@ -30,13 +28,7 @@ use strand_quant::TrellisConfig;
 const Q12_TO_F32: f32 = 1.0 / 4096.0;
 
 /// Real STRAND recon for one tensor, matching quantize-model's per-tensor flow.
-fn strand_recon(
-    w: &[f32],
-    in_features: usize,
-    name: &str,
-    cfg: &TrellisConfig,
-    outlier_pct: f64,
-) -> (Vec<f32>, f64) {
+fn strand_recon(w: &[f32], in_features: usize, name: &str, cfg: &TrellisConfig, outlier_pct: f64) -> (Vec<f32>, f64) {
     let n = w.len();
     // 1. outlier removal in WEIGHT space, pre-RHT (top-|w|).
     let mut idx_vals: Vec<(usize, f32)> = Vec::new();
@@ -86,30 +78,16 @@ fn strand_recon(
 }
 
 fn main() {
-    let model = std::env::args()
-        .nth(1)
-        .unwrap_or_else(|| "scratch/qwen-05b/model.safetensors".to_string());
-    let max_tensors: usize = std::env::args()
-        .nth(2)
-        .and_then(|s| s.parse().ok())
-        .unwrap_or(14);
+    let model = std::env::args().nth(1).unwrap_or_else(|| "scratch/qwen-05b/model.safetensors".to_string());
+    let max_tensors: usize = std::env::args().nth(2).and_then(|s| s.parse().ok()).unwrap_or(14);
     let n_acts = 64usize; // activation samples per tensor
 
     println!("== gate-debias (inner-product de-biasing, 2-bit) ==");
-    println!(
-        "machine: {} | model: {} | max_tensors: {} | acts/tensor: {}",
-        machine_stamp(),
-        model,
-        max_tensors,
-        n_acts
-    );
+    println!("machine: {} | model: {} | max_tensors: {} | acts/tensor: {}", machine_stamp(), model, max_tensors, n_acts);
     // 2-bit operating point: l=12, +1% outlier (will.md canon).
     let cfg = TrellisConfig::for_bpw_l(2.0, 12);
     let outlier_pct = 1.0;
-    println!(
-        "config: bits=2 l=12 outlier={}% (the 2-bit PTQ floor config)",
-        outlier_pct
-    );
+    println!("config: bits=2 l=12 outlier={}% (the 2-bit PTQ floor config)", outlier_pct);
 
     let st = match SafeTensors::open(&model) {
         Ok(s) => s,
@@ -120,10 +98,7 @@ fn main() {
         }
     };
 
-    let proj = [
-        "q_proj.weight", "k_proj.weight", "v_proj.weight", "o_proj.weight",
-        "gate_proj.weight", "up_proj.weight", "down_proj.weight",
-    ];
+    let proj = ["q_proj.weight", "k_proj.weight", "v_proj.weight", "o_proj.weight", "gate_proj.weight", "up_proj.weight", "down_proj.weight"];
 
     // Aggregate over the non-zero-mean model.
     let mut agg_rms_uncorr = 0.0f64;
@@ -133,10 +108,7 @@ fn main() {
     let mut nt = 0usize;
 
     println!("\nNON-ZERO-MEAN activation model (mu_bar estimated from the act sample):");
-    println!(
-        "{:<34} {:>7} {:>11} {:>11} {:>11} {:>11} {:>11}",
-        "tensor", "relRMS%", "outBias_u", "outBias_c", "outRMS_u", "outRMS_c", "dRMS%"
-    );
+    println!("{:<34} {:>7} {:>11} {:>11} {:>11} {:>11} {:>11}", "tensor", "relRMS%", "outBias_u", "outBias_c", "outRMS_u", "outRMS_c", "dRMS%");
 
     let t0 = Instant::now();
     for name in &st.order {
@@ -170,14 +142,10 @@ fn main() {
         let r = debias_tensor(&w, &recon, in_features, mu_bar, 16);
 
         let (b_u, rms_u) = output_error(&w, &recon, in_features, &xs, None);
-        let (b_c, rms_c) =
-            output_error(&w, &recon, in_features, &xs, Some(&r.bias_correction));
+        let (b_c, rms_c) = output_error(&w, &recon, in_features, &xs, Some(&r.bias_correction));
         let drms = if rms_u > 0.0 { (rms_u - rms_c) / rms_u * 100.0 } else { 0.0 };
 
-        println!(
-            "{:<34} {:>7.3} {:>11.4e} {:>11.4e} {:>11.4e} {:>11.4e} {:>+10.2}",
-            short(name), rr, b_u, b_c, rms_u, rms_c, drms
-        );
+        println!("{:<34} {:>7.3} {:>11.4e} {:>11.4e} {:>11.4e} {:>11.4e} {:>+10.2}", short(name), rr, b_u, b_c, rms_u, rms_c, drms);
         agg_rms_uncorr += rms_u;
         agg_rms_corr += rms_c;
         agg_bias_uncorr += b_u.abs();
@@ -216,9 +184,7 @@ fn main() {
         let in_features = t.shape[1] as usize;
         let (recon, _) = strand_recon(&w, in_features, name, &cfg, outlier_pct);
         let seed = rht_seed_for(name) ^ 0x2222_0000;
-        let xs: Vec<Vec<f32>> = (0..n_acts)
-            .map(|s| normal_vec(in_features, seed.wrapping_add(s as u64)))
-            .collect();
+        let xs: Vec<Vec<f32>> = (0..n_acts).map(|s| normal_vec(in_features, seed.wrapping_add(s as u64))).collect();
         let mu_bar = estimate_mu_bar(&xs); // ~0
         let r = debias_tensor(&w, &recon, in_features, mu_bar, 16);
         let (_, rms_u) = output_error(&w, &recon, in_features, &xs, None);
@@ -279,7 +245,11 @@ fn run_synthetic(cfg: &TrellisConfig, outlier_pct: f64, n_acts: usize) {
 fn short(name: &str) -> &str {
     // last 32 chars for readability in the table
     let n = name.len();
-    if n > 32 { &name[n - 32..] } else { name }
+    if n > 32 {
+        &name[n - 32..]
+    } else {
+        name
+    }
 }
 
 fn machine_stamp() -> String {

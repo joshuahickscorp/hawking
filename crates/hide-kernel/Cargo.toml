@@ -8,6 +8,9 @@ repository.workspace = true
 authors.workspace = true
 description = "Headless HIDE agent kernel scaffold"
 
+[lib]
+path = "lib.rs"
+
 [dependencies]
 hide-core = { path = "../hide-core" }
 hide-tools = { path = "../hide-tools" }

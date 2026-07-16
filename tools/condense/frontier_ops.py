@@ -61,6 +61,11 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 os.chdir(ROOT)
 sys.path.insert(0, str(ROOT / "tools" / "condense"))
 
+import condense_profiles  # noqa: E402
+
+condense_profiles.install_archive_importer()
+
+import condense_common as common  # noqa: E402
 from studio_manifest import (  # noqa: E402
     DEFAULT_HARDWARE,
     FRONTIER_MODELS,
@@ -114,8 +119,11 @@ AUDIT_GRADE_PATH = COND_DIR / "studio_audit_grade.local.json"
 RUNTIME_CONTRACT_PATH = COND_DIR / "studio_runtime_contract.local.json"
 COMPLETION_AUDIT_PATH = COND_DIR / "studio_completion_audit.local.json"
 DENSITY_RECEIPT_PATH = COND_DIR / "studio_density_receipt.local.json"
-DEFAULT_EXTERNAL_AUDIT_PATH = pathlib.Path("/Users/scammermike/Downloads/project_audits/hawking_deep_audit_2026_07_08.md")
-DEFAULT_STUDIO_AUDIT_PATH = pathlib.Path("docs/plans/STUDIO_DEEP_AUDIT_2026_07_08.md")
+DEFAULT_EXTERNAL_AUDIT_PATH = pathlib.Path(
+    os.environ.get("HAWKING_EXTERNAL_AUDIT_PATH", "").strip()
+    or "reports/condense/external_audit.md"
+)
+DEFAULT_STUDIO_AUDIT_PATH = pathlib.Path("docs/plans/ROADMAP.md")
 SIZE_RE = re.compile(r"\s([0-9]+(?:\.[0-9]+)?)([KMGT])$")
 SIZE_SCALE = {"K": 1e3, "M": 1e6, "G": 1e9, "T": 1e12}
 CACHE_RESERVE_GB = DEFAULT_HARDWARE.cache_reserve_gb
@@ -127,7 +135,7 @@ TEXT_EXTS = {
     ".json", ".toml", ".yaml", ".yml", ".md", ".txt",
     ".sh", ".css", ".html", ".sql",
 }
-TEXT_NAMES = {"Cargo.toml", "Cargo.lock", "Makefile", "package.json", "pnpm-lock.yaml"}
+TEXT_NAMES = {"Cargo.toml", "Cargo.lock", "Makefile"}
 LOCAL_MASS_PATHS = (
     ("models", "local model artifacts", "delete only after confirming no unique local model evidence"),
     ("scratch", "frontier scratch/cache/artifacts", "prune completed downloads only through lifecycle/source-release receipts"),
@@ -166,7 +174,7 @@ WORKTREE_SUBSYSTEMS = (
     },
     {
         "name": "hide-ui-tauri-assets",
-        "prefixes": ("app/", "logo/", "package.json", "pnpm-lock.yaml"),
+        "prefixes": ("app/", "logo/"),
         "branch": "codex/hide-ui-tauri-assets",
         "risk": "medium",
         "action": "Review as the HIDE desktop/Tauri/UI asset stack.",
@@ -194,7 +202,7 @@ WORKTREE_SUBSYSTEMS = (
     },
     {
         "name": "studio-docs-audits",
-        "prefixes": ("docs/plans/", "BASELINES.md"),
+        "prefixes": ("docs/plans/", "docs/RESEARCH.md"),
         "branch": "codex/studio-docs-audits",
         "risk": "low",
         "action": "Review as scorecard/runbook/audit evidence, paired with command output.",
@@ -260,7 +268,8 @@ def _cache_snapshot(root: pathlib.Path = ROOT) -> dict:
         "project_local": {k: _under_root(v, root) for k, v in paths.items()},
         "reserve_gb": CACHE_RESERVE_GB,
         "prune_dry_run_cmd": [
-            "python3.12", "tools/condense/procure.py", "--cache-prune",
+            "python3.12", "-m", "tools.condense", "legacy", "procure",
+            "--cache-prune",
         ],
     }
 
@@ -1409,7 +1418,7 @@ def _nonempty_dir(path: pathlib.Path) -> bool:
 
 def _read_json(path: pathlib.Path, default):
     try:
-        return json.load(open(path))
+        return common.read_json(path)
     except Exception:
         return default
 
@@ -1491,20 +1500,7 @@ def _download_checkpoint_status(model: FrontierModel, root: pathlib.Path = ROOT)
 
 
 def _write_json(path: pathlib.Path, data) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    fd, tmp_name = tempfile.mkstemp(prefix=f".{path.name}.", suffix=".tmp", dir=path.parent)
-    try:
-        with os.fdopen(fd, "w") as f:
-            json.dump(data, f, indent=2, sort_keys=True)
-            f.write("\n")
-            f.flush()
-            os.fsync(f.fileno())
-        os.replace(tmp_name, path)
-    finally:
-        try:
-            os.unlink(tmp_name)
-        except FileNotFoundError:
-            pass
+    common.atomic_write_json(path, data)
 
 
 def _append_jsonl(path: pathlib.Path, row: dict) -> None:
@@ -1574,12 +1570,7 @@ def _artifact_inventory_path(model: FrontierModel, root: pathlib.Path = ROOT) ->
     return root / "reports" / "condense" / f"{model.label}_artifact_inventory.json"
 
 
-def _sha256_file(path: pathlib.Path) -> str:
-    h = hashlib.sha256()
-    with open(path, "rb") as f:
-        for chunk in iter(lambda: f.read(1024 * 1024), b""):
-            h.update(chunk)
-    return h.hexdigest()
+_sha256_file = common.sha256_file
 
 
 def _sign_doc(data: dict) -> dict:
@@ -2179,8 +2170,14 @@ def manifest_drift_findings(root: pathlib.Path = ROOT) -> list[dict]:
         try:
             text = path.read_text()
         except Exception as e:
-            findings.append({"severity": "fail", "file": rel, "message": f"cannot read consumer: {e}"})
-            continue
+            try:
+                text = condense_profiles.archive_source(path.stem).decode("utf-8")
+            except (KeyError, OSError, UnicodeDecodeError) as archive_error:
+                findings.append({
+                    "severity": "fail", "file": rel,
+                    "message": f"cannot read consumer: {e}; archive fallback failed: {archive_error}",
+                })
+                continue
         if "studio_manifest" not in text:
             findings.append({"severity": "fail", "file": rel,
                              "message": "frontier consumer does not import studio_manifest"})
@@ -2375,7 +2372,7 @@ def _parity_row_by_label(root: pathlib.Path = ROOT) -> dict[str, dict]:
 
 def _download_cmd(model: FrontierModel) -> str:
     return (
-        "python3.12 tools/condense/procure.py "
+        "python3.12 -m tools.condense legacy procure "
         f"{model.label} --retries 2 --min-observed-mbs 80 --verify "
         "--progress-interval-s 60 --stall-timeout-s 900"
     )
@@ -2461,15 +2458,19 @@ def _lifecycle_node(model: FrontierModel, ledger_row: dict, parity_row: dict | N
         commands.append(_download_cmd(model))
     elif source_ready and not artifact:
         state = "ready-bake"
-        commands.append(f"python3.12 tools/condense/studio_run.py --frontier {model.label}")
         commands.append(
-            f"python3.12 tools/condense/frontier_ops.py record-event {model.label} "
+            f"python3.12 -m tools.condense legacy studio_run --frontier {model.label}"
+        )
+        commands.append(
+            f"python3.12 -m tools.condense frontier.ops record-event {model.label} "
             "--stage bake --status pass --duration-s <seconds> --artifact <path>"
         )
     elif artifact and not inventory_ok:
         state = "needs-artifact-inventory"
         blockers.extend(ledger_row.get("artifact_inventory", {}).get("problems", []))
-        commands.append(f"python3.12 tools/condense/frontier_ops.py artifact-inventory {model.label}")
+        commands.append(
+            f"python3.12 -m tools.condense frontier.ops artifact-inventory {model.label}"
+        )
     elif artifact and not receiptish:
         state = "needs-receipt"
         blockers.append("artifact exists without frontier record or official receipt")
@@ -2478,7 +2479,10 @@ def _lifecycle_node(model: FrontierModel, ledger_row: dict, parity_row: dict | N
         )
     elif ledger_row["release_safe"]:
         state = "ready-release-source"
-        commands.append(f"python3.12 tools/condense/frontier_ops.py release-source {model.label} --dry-run")
+        commands.append(
+            f"python3.12 -m tools.condense frontier.ops release-source "
+            f"{model.label} --dry-run"
+        )
     elif released or (artifact and not source_present):
         if parity_pass:
             if not source_provenance_ok:
@@ -2526,7 +2530,9 @@ def _lifecycle_node(model: FrontierModel, ledger_row: dict, parity_row: dict | N
         else:
             state = "claim-blocked-parity"
             blockers.extend((parity_row or {}).get("parity", {}).get("problems", ["parity missing"]))
-            commands.append("python3.12 tools/condense/frontier_parity.py status")
+            commands.append(
+                "python3.12 -m tools.condense legacy frontier_parity status"
+            )
     else:
         state = "needs-operator-review"
         blockers.append("state combination is unusual; inspect ledger evidence")
@@ -4481,7 +4487,7 @@ def cmd_selftest(args) -> int:
         partial_node = next(n for n in partial_lifecycle["nodes"] if n["label"] == partial_model.label)
         check("partial source resumes download and never becomes ready-bake",
               partial_node["state"] == "ready-download"
-              and "procure.py" in partial_node["next_commands"][0])
+              and "legacy procure" in partial_node["next_commands"][0])
 
         partial_state_path, partial_marker_path = _download_checkpoint_paths(partial_model, root)
         _write_json(partial_state_path, {
@@ -4708,7 +4714,7 @@ def cmd_selftest(args) -> int:
         for rel in (
             "app/src/App.tsx",
             "tools/condense/frontier_ops.py",
-            "crates/hawking/src/studio.rs",
+            "crates/hawking/main.rs",
             "node_modules/.bin/vite",
         ):
             path = worktree / rel
@@ -4718,7 +4724,7 @@ def cmd_selftest(args) -> int:
             "git", "-C", str(worktree), "add", "-f",
             "app/src/App.tsx",
             "tools/condense/frontier_ops.py",
-            "crates/hawking/src/studio.rs",
+            "crates/hawking/main.rs",
             "node_modules/.bin/vite",
         ], timeout=10)
         wtp = build_worktree_plan(worktree)

@@ -5,7 +5,7 @@ Philosophy (the contract): match each model's params to the LOWEST BIT POSSIBLE 
 near-1:1 quality via the doctor. The smallest viable artifact = the highest tps. So the
 sweep is a BIT-FLOOR SEARCH (climb 1→4 bit, stop at the lowest bit the doctor holds
 near-1:1), not a fixed grid. The central hypothesis: the bit-floor DESCENDS as params
-rise (bigger = more redundant = compresses harder). See docs/plans/parameter_sweep_pipeline.md.
+rise (bigger = more redundant = compresses harder). See docs/plans/TRAINING_LADDER_V5.md.
 
 Two ceilings on the M3 Ultra 96 GiB / 1 TB Studio:
   CONDENSE (needs f16 resident plus work buffers): 14B default; 32B requires streamed/block-wise proof.

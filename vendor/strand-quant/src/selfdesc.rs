@@ -3,9 +3,7 @@ use std::io::{Read, Seek, SeekFrom, Write};
 use std::path::Path;
 
 use crate::codebook::codebook_lut;
-use crate::format::{
-    read_strand_v2_header, BlockOffsetRecord, OwnedTensorV2, MAGIC_V2, PAGE, VERSION_V2,
-};
+use crate::format::{read_strand_v2_header, BlockOffsetRecord, OwnedTensorV2, MAGIC_V2, PAGE, VERSION_V2};
 use crate::outlier_wire::{append_outl, read_outl_bytes};
 use crate::provenance_io::{append_sprv, read_sprv_bytes};
 use crate::sha256::sha256;
@@ -171,36 +169,23 @@ pub struct Sdsc {
 
 impl Sdsc {
     pub fn const_val(&self, id: u32) -> Result<i64, String> {
-        self.consts
-            .iter()
-            .find(|(i, _)| *i == id)
-            .map(|(_, v)| *v)
-            .ok_or_else(|| format!("sdsc: missing constant id {id}"))
+        self.consts.iter().find(|(i, _)| *i == id).map(|(_, v)| *v).ok_or_else(|| format!("sdsc: missing constant id {id}"))
     }
 
     pub fn expr(&self, id: u32) -> Result<&SdscExpr, String> {
-        self.exprs
-            .iter()
-            .find(|e| e.id == id)
-            .ok_or_else(|| format!("sdsc: missing expression id {id}"))
+        self.exprs.iter().find(|e| e.id == id).ok_or_else(|| format!("sdsc: missing expression id {id}"))
     }
 
     pub fn lut(&self, l_bits: u8, vec_dim: u8) -> Result<&SdscLut, String> {
         let d = vec_dim.max(1);
-        self.luts
-            .iter()
-            .find(|l| l.l_bits == l_bits && l.vec_dim == d)
-            .ok_or_else(|| format!("sdsc: no LUT for geometry L={l_bits} d={d}"))
+        self.luts.iter().find(|l| l.l_bits == l_bits && l.vec_dim == d).ok_or_else(|| format!("sdsc: no LUT for geometry L={l_bits} d={d}"))
     }
 
     /// Resolve a learned vector LUT by archive tensor ordinal.  The decoder also
     /// validates its descriptor/hash; this accessor intentionally does not make
     /// geometry-only fallback possible for vector tensors.
     pub fn tensor_lut(&self, tensor_index: usize) -> Result<&SdscTensorLut, String> {
-        self.tensor_luts
-            .binary_search_by_key(&tensor_index, |l| l.tensor_index as usize)
-            .map(|i| &self.tensor_luts[i])
-            .map_err(|_| format!("sdsc: no per-tensor LUT for tensor index {tensor_index}"))
+        self.tensor_luts.binary_search_by_key(&tensor_index, |l| l.tensor_index as usize).map(|i| &self.tensor_luts[i]).map_err(|_| format!("sdsc: no per-tensor LUT for tensor index {tensor_index}"))
     }
 }
 
@@ -294,10 +279,7 @@ pub fn eval_expr(prog: &[u8], slots: &[i64]) -> Result<i64, String> {
         }
     }
     if st.len() != 1 {
-        return Err(format!(
-            "sdsc: expr left {} values on the stack (want 1)",
-            st.len()
-        ));
+        return Err(format!("sdsc: expr left {} values on the stack (want 1)", st.len()));
     }
     Ok(st[0])
 }
@@ -327,19 +309,7 @@ fn validate_prog(prog: &[u8], n_slots: u32) -> Result<(), String> {
                 }
                 p += 1;
             }
-            op::ADD
-            | op::SUB
-            | op::MUL
-            | op::TDIV
-            | op::NEG
-            | op::ABS
-            | op::WRAP32
-            | op::SHL
-            | op::ASR
-            | op::AND
-            | op::OR
-            | op::XOR
-            | op::CLAMP => {}
+            op::ADD | op::SUB | op::MUL | op::TDIV | op::NEG | op::ABS | op::WRAP32 | op::SHL | op::ASR | op::AND | op::OR | op::XOR | op::CLAMP => {}
             other => return Err(format!("sdsc: unknown opcode {other:#04x}")),
         }
     }
@@ -440,53 +410,24 @@ pub fn default_consts() -> Vec<(u32, i64)> {
 
 pub fn default_exprs() -> Vec<SdscExpr> {
     vec![
-        SdscExpr {
-            id: expr_id::ADVANCE,
-            n_slots: 4,
-            prog: prog_advance(),
-        },
-        SdscExpr {
-            id: expr_id::EFF_SCALE,
-            n_slots: 2,
-            prog: prog_eff_scale(),
-        },
-        SdscExpr {
-            id: expr_id::OFFSET,
-            n_slots: 2,
-            prog: prog_offset(),
-        },
-        SdscExpr {
-            id: expr_id::RECON,
-            n_slots: 3,
-            prog: prog_recon(),
-        },
+        SdscExpr { id: expr_id::ADVANCE, n_slots: 4, prog: prog_advance() },
+        SdscExpr { id: expr_id::EFF_SCALE, n_slots: 2, prog: prog_eff_scale() },
+        SdscExpr { id: expr_id::OFFSET, n_slots: 2, prog: prog_offset() },
+        SdscExpr { id: expr_id::RECON, n_slots: 3, prog: prog_recon() },
     ]
 }
 
 pub fn emit_sdsc(cfg: &TrellisConfig, lut: &[i32]) -> Result<Vec<u8>, String> {
     if cfg.vec_dim() > 1 {
-        return Err(
-            "sdsc: unbound vector LUT emission is forbidden; use the archive-bound per-tensor V2 builder"
-                .into(),
-        );
+        return Err("sdsc: unbound vector LUT emission is forbidden; use the archive-bound per-tensor V2 builder".into());
     }
     if lut.len() != cfg.lut_len() {
-        return Err(format!(
-            "sdsc: LUT has {} entries, geometry L={} d={} needs {}",
-            lut.len(),
-            cfg.l_bits,
-            cfg.vec_dim(),
-            cfg.lut_len()
-        ));
+        return Err(format!("sdsc: LUT has {} entries, geometry L={} d={} needs {}", lut.len(), cfg.l_bits, cfg.vec_dim(), cfg.lut_len()));
     }
     let sdsc = Sdsc {
         consts: default_consts(),
         exprs: default_exprs(),
-        luts: vec![SdscLut {
-            l_bits: cfg.l_bits as u8,
-            vec_dim: cfg.vec_dim() as u8,
-            entries: lut.to_vec(),
-        }],
+        luts: vec![SdscLut { l_bits: cfg.l_bits as u8, vec_dim: cfg.vec_dim() as u8, entries: lut.to_vec() }],
         archive_source_sha256: None,
         tensor_luts: Vec::new(),
     };
@@ -509,21 +450,8 @@ pub fn build_sdsc_for_archive(buf: &[u8]) -> Result<Sdsc, String> {
         }
     }
     ls.sort_unstable();
-    let luts = ls
-        .into_iter()
-        .map(|l| SdscLut {
-            l_bits: l,
-            vec_dim: 1,
-            entries: codebook_lut(l as u32).to_vec(),
-        })
-        .collect();
-    Ok(Sdsc {
-        consts: default_consts(),
-        exprs: default_exprs(),
-        luts,
-        archive_source_sha256: None,
-        tensor_luts: Vec::new(),
-    })
+    let luts = ls.into_iter().map(|l| SdscLut { l_bits: l, vec_dim: 1, entries: codebook_lut(l as u32).to_vec() }).collect();
+    Ok(Sdsc { consts: default_consts(), exprs: default_exprs(), luts, archive_source_sha256: None, tensor_luts: Vec::new() })
 }
 
 #[derive(Clone, Debug)]
@@ -558,20 +486,13 @@ const MAX_STR2_DESCRIPTOR_BYTES: usize = 256 * 1024 * 1024;
 /// memory even for a model artifact much larger than RAM.
 fn parse_archive_lut_descriptor(prefix: &[u8]) -> Result<ArchiveLutDescriptor, String> {
     let take = |p: &mut usize, n: usize| -> Result<&[u8], String> {
-        let end = p
-            .checked_add(n)
-            .filter(|&end| end <= prefix.len())
-            .ok_or("sdsc: STR2 descriptor truncated")?;
+        let end = p.checked_add(n).filter(|&end| end <= prefix.len()).ok_or("sdsc: STR2 descriptor truncated")?;
         let bytes = &prefix[*p..end];
         *p = end;
         Ok(bytes)
     };
-    let u32_at = |p: &mut usize| -> Result<u32, String> {
-        Ok(u32::from_le_bytes(take(p, 4)?.try_into().unwrap()))
-    };
-    let u64_at = |p: &mut usize| -> Result<u64, String> {
-        Ok(u64::from_le_bytes(take(p, 8)?.try_into().unwrap()))
-    };
+    let u32_at = |p: &mut usize| -> Result<u32, String> { Ok(u32::from_le_bytes(take(p, 4)?.try_into().unwrap())) };
+    let u64_at = |p: &mut usize| -> Result<u64, String> { Ok(u64::from_le_bytes(take(p, 8)?.try_into().unwrap())) };
 
     if prefix.len() < 56 || &prefix[..4] != &MAGIC_V2[..] {
         return Err("sdsc: not a STR2 archive descriptor".into());
@@ -582,18 +503,13 @@ fn parse_archive_lut_descriptor(prefix: &[u8]) -> Result<ArchiveLutDescriptor, S
     }
     let header_bytes = u32::from_le_bytes(prefix[8..12].try_into().unwrap()) as usize;
     if header_bytes != prefix.len() || header_bytes < 56 {
-        return Err(format!(
-            "sdsc: STR2 descriptor length {} != header_bytes {header_bytes}",
-            prefix.len()
-        ));
+        return Err(format!("sdsc: STR2 descriptor length {} != header_bytes {header_bytes}", prefix.len()));
     }
     let n_tensors = u32::from_le_bytes(prefix[12..16].try_into().unwrap()) as usize;
     // Even an empty-name, rank-0 descriptor occupies 88 bytes.  Check before
     // `Vec::with_capacity` so a hostile count cannot request model-sized RAM.
     if n_tensors > (header_bytes - 56) / 88 {
-        return Err(format!(
-            "sdsc: STR2 tensor count {n_tensors} cannot fit in the {header_bytes}-byte descriptor"
-        ));
+        return Err(format!("sdsc: STR2 tensor count {n_tensors} cannot fit in the {header_bytes}-byte descriptor"));
     }
     let archive_flags = u32::from_le_bytes(prefix[16..20].try_into().unwrap());
     let mut source_sha256 = [0u8; 32];
@@ -608,13 +524,10 @@ fn parse_archive_lut_descriptor(prefix: &[u8]) -> Result<ArchiveLutDescriptor, S
     let mut base_bytes = checked_page_align(header_bytes)?;
     for tensor_index in 0..n_tensors {
         let name_len = u32_at(&mut p)? as usize;
-        let name = String::from_utf8(take(&mut p, name_len)?.to_vec())
-            .map_err(|e| format!("sdsc: STR2 tensor {tensor_index} name: {e}"))?;
+        let name = String::from_utf8(take(&mut p, name_len)?.to_vec()).map_err(|e| format!("sdsc: STR2 tensor {tensor_index} name: {e}"))?;
         let ndim = u32_at(&mut p)? as usize;
         if ndim > (prefix.len() - p) / 8 {
-            return Err(format!(
-                "sdsc: STR2 tensor {tensor_index} rank {ndim} cannot fit in the descriptor"
-            ));
+            return Err(format!("sdsc: STR2 tensor {tensor_index} rank {ndim} cannot fit in the descriptor"));
         }
         let mut shape = Vec::with_capacity(ndim);
         for _ in 0..ndim {
@@ -628,56 +541,33 @@ fn parse_archive_lut_descriptor(prefix: &[u8]) -> Result<ArchiveLutDescriptor, S
         let n_blocks_u64 = u64_at(&mut p)?;
         let reserved = take(&mut p, 8)?;
         if reserved.iter().any(|&b| b != 0) {
-            return Err(format!(
-                "sdsc: STR2 tensor {tensor_index} reserved descriptor bytes are nonzero"
-            ));
+            return Err(format!("sdsc: STR2 tensor {tensor_index} reserved descriptor bytes are nonzero"));
         }
-        let table_offset = usize::try_from(u64_at(&mut p)?)
-            .map_err(|_| "sdsc: table offset exceeds address space")?;
-        let payload_offset = usize::try_from(u64_at(&mut p)?)
-            .map_err(|_| "sdsc: payload offset exceeds address space")?;
-        let payload_bytes = usize::try_from(u64_at(&mut p)?)
-            .map_err(|_| "sdsc: payload length exceeds address space")?;
-        let sideinfo_offset = usize::try_from(u64_at(&mut p)?)
-            .map_err(|_| "sdsc: side-info offset exceeds address space")?;
-        let sideinfo_bytes = usize::try_from(u64_at(&mut p)?)
-            .map_err(|_| "sdsc: side-info length exceeds address space")?;
-        let total = usize::try_from(total_u64)
-            .map_err(|_| "sdsc: tensor element count exceeds address space")?;
-        let n_blocks = usize::try_from(n_blocks_u64)
-            .map_err(|_| "sdsc: tensor block count exceeds address space")?;
+        let table_offset = usize::try_from(u64_at(&mut p)?).map_err(|_| "sdsc: table offset exceeds address space")?;
+        let payload_offset = usize::try_from(u64_at(&mut p)?).map_err(|_| "sdsc: payload offset exceeds address space")?;
+        let payload_bytes = usize::try_from(u64_at(&mut p)?).map_err(|_| "sdsc: payload length exceeds address space")?;
+        let sideinfo_offset = usize::try_from(u64_at(&mut p)?).map_err(|_| "sdsc: side-info offset exceeds address space")?;
+        let sideinfo_bytes = usize::try_from(u64_at(&mut p)?).map_err(|_| "sdsc: side-info length exceeds address space")?;
+        let total = usize::try_from(total_u64).map_err(|_| "sdsc: tensor element count exceeds address space")?;
+        let n_blocks = usize::try_from(n_blocks_u64).map_err(|_| "sdsc: tensor block count exceeds address space")?;
 
         for (label, offset) in [("table", table_offset), ("payload", payload_offset)] {
             if offset % PAGE != 0 {
-                return Err(format!(
-                    "sdsc: STR2 tensor {tensor_index} {label} offset {offset} is not page-aligned"
-                ));
+                return Err(format!("sdsc: STR2 tensor {tensor_index} {label} offset {offset} is not page-aligned"));
             }
         }
         if sideinfo_offset != 0 && sideinfo_offset % PAGE != 0 {
-            return Err(format!(
-                "sdsc: STR2 tensor {tensor_index} side-info offset is not page-aligned"
-            ));
+            return Err(format!("sdsc: STR2 tensor {tensor_index} side-info offset is not page-aligned"));
         }
-        let table_bytes = n_blocks
-            .checked_mul(record_stride)
-            .ok_or("sdsc: STR2 seek table length overflows")?;
-        let table_end = table_offset
-            .checked_add(table_bytes)
-            .ok_or("sdsc: STR2 seek table extent overflows")?;
+        let table_bytes = n_blocks.checked_mul(record_stride).ok_or("sdsc: STR2 seek table length overflows")?;
+        let table_end = table_offset.checked_add(table_bytes).ok_or("sdsc: STR2 seek table extent overflows")?;
         if table_end > payload_offset {
-            return Err(format!(
-                "sdsc: STR2 tensor {tensor_index} seek table overruns payload"
-            ));
+            return Err(format!("sdsc: STR2 tensor {tensor_index} seek table overruns payload"));
         }
-        let payload_end = payload_offset
-            .checked_add(payload_bytes)
-            .ok_or("sdsc: STR2 payload extent overflows")?;
+        let payload_end = payload_offset.checked_add(payload_bytes).ok_or("sdsc: STR2 payload extent overflows")?;
         base_bytes = base_bytes.max(checked_page_align(payload_end)?);
         if sideinfo_offset != 0 {
-            let sideinfo_end = sideinfo_offset
-                .checked_add(sideinfo_bytes)
-                .ok_or("sdsc: STR2 side-info extent overflows")?;
+            let sideinfo_end = sideinfo_offset.checked_add(sideinfo_bytes).ok_or("sdsc: STR2 side-info extent overflows")?;
             base_bytes = base_bytes.max(checked_page_align(sideinfo_end)?);
         }
 
@@ -698,16 +588,9 @@ fn parse_archive_lut_descriptor(prefix: &[u8]) -> Result<ArchiveLutDescriptor, S
         });
     }
     if p != header_bytes {
-        return Err(format!(
-            "sdsc: {} trailing bytes in STR2 descriptor header",
-            header_bytes - p
-        ));
+        return Err(format!("sdsc: {} trailing bytes in STR2 descriptor header", header_bytes - p));
     }
-    Ok(ArchiveLutDescriptor {
-        source_sha256,
-        tensors,
-        base_bytes,
-    })
+    Ok(ArchiveLutDescriptor { source_sha256, tensors, base_bytes })
 }
 
 fn archive_lut_descriptor_from_bytes(buf: &[u8]) -> Result<ArchiveLutDescriptor, String> {
@@ -716,46 +599,31 @@ fn archive_lut_descriptor_from_bytes(buf: &[u8]) -> Result<ArchiveLutDescriptor,
     }
     let header_bytes = u32::from_le_bytes(buf[8..12].try_into().unwrap()) as usize;
     if header_bytes > MAX_STR2_DESCRIPTOR_BYTES {
-        return Err(format!(
-            "sdsc: STR2 descriptor is {header_bytes} bytes (cap {MAX_STR2_DESCRIPTOR_BYTES})"
-        ));
+        return Err(format!("sdsc: STR2 descriptor is {header_bytes} bytes (cap {MAX_STR2_DESCRIPTOR_BYTES})"));
     }
-    let prefix = buf
-        .get(..header_bytes)
-        .ok_or("sdsc: STR2 descriptor extends past the file")?;
+    let prefix = buf.get(..header_bytes).ok_or("sdsc: STR2 descriptor extends past the file")?;
     parse_archive_lut_descriptor(prefix)
 }
 
 fn archive_lut_descriptor_from_file(file: &mut fs::File) -> Result<ArchiveLutDescriptor, String> {
     let mut fixed = [0u8; 56];
-    file.seek(SeekFrom::Start(0))
-        .map_err(|e| format!("sdsc: seek STR2 header: {e}"))?;
-    file.read_exact(&mut fixed)
-        .map_err(|e| format!("sdsc: read STR2 fixed header: {e}"))?;
+    file.seek(SeekFrom::Start(0)).map_err(|e| format!("sdsc: seek STR2 header: {e}"))?;
+    file.read_exact(&mut fixed).map_err(|e| format!("sdsc: read STR2 fixed header: {e}"))?;
     if &fixed[..4] != &MAGIC_V2[..] {
         return Err("sdsc: not a STR2 archive".into());
     }
     let header_bytes = u32::from_le_bytes(fixed[8..12].try_into().unwrap()) as usize;
     if !(56..=MAX_STR2_DESCRIPTOR_BYTES).contains(&header_bytes) {
-        return Err(format!(
-            "sdsc: STR2 descriptor is {header_bytes} bytes (allowed 56..={MAX_STR2_DESCRIPTOR_BYTES})"
-        ));
+        return Err(format!("sdsc: STR2 descriptor is {header_bytes} bytes (allowed 56..={MAX_STR2_DESCRIPTOR_BYTES})"));
     }
     let mut prefix = vec![0u8; header_bytes];
     prefix[..56].copy_from_slice(&fixed);
-    file.read_exact(&mut prefix[56..])
-        .map_err(|e| format!("sdsc: read STR2 descriptor: {e}"))?;
+    file.read_exact(&mut prefix[56..]).map_err(|e| format!("sdsc: read STR2 descriptor: {e}"))?;
     parse_archive_lut_descriptor(&prefix)
 }
 
-fn tensor_lut_record_sha256(
-    source_sha256: &[u8; 32],
-    tensor_index: usize,
-    desc: &TensorLutDescriptor,
-    entries: &[i32],
-) -> [u8; 32] {
-    let mut msg =
-        Vec::with_capacity(128 + desc.name.len() + desc.shape.len() * 8 + entries.len() * 4);
+fn tensor_lut_record_sha256(source_sha256: &[u8; 32], tensor_index: usize, desc: &TensorLutDescriptor, entries: &[i32]) -> [u8; 32] {
+    let mut msg = Vec::with_capacity(128 + desc.name.len() + desc.shape.len() * 8 + entries.len() * 4);
     msg.extend_from_slice(b"hawking.sdsc.tensor-lut.v2\0");
     msg.extend_from_slice(source_sha256);
     msg.extend_from_slice(&(tensor_index as u64).to_le_bytes());
@@ -783,14 +651,8 @@ fn tensor_lut_record_sha256(
     sha256(&msg)
 }
 
-fn owned_tensor_lut_record_sha256(
-    source_sha256: &[u8; 32],
-    tensor_index: usize,
-    t: &OwnedTensorV2,
-    entries: &[i32],
-) -> [u8; 32] {
-    let mut msg =
-        Vec::with_capacity(128 + t.base.name.len() + t.base.shape.len() * 8 + entries.len() * 4);
+fn owned_tensor_lut_record_sha256(source_sha256: &[u8; 32], tensor_index: usize, t: &OwnedTensorV2, entries: &[i32]) -> [u8; 32] {
+    let mut msg = Vec::with_capacity(128 + t.base.name.len() + t.base.shape.len() * 8 + entries.len() * 4);
     msg.extend_from_slice(b"hawking.sdsc.tensor-lut.v2\0");
     msg.extend_from_slice(source_sha256);
     msg.extend_from_slice(&(tensor_index as u64).to_le_bytes());
@@ -818,42 +680,22 @@ fn owned_tensor_lut_record_sha256(
     sha256(&msg)
 }
 
-fn validate_tensor_lut_record(
-    source_sha256: &[u8; 32],
-    descs: &[TensorLutDescriptor],
-    record: &SdscTensorLut,
-) -> Result<(), String> {
+fn validate_tensor_lut_record(source_sha256: &[u8; 32], descs: &[TensorLutDescriptor], record: &SdscTensorLut) -> Result<(), String> {
     let index = record.tensor_index as usize;
-    let desc = descs
-        .get(index)
-        .ok_or_else(|| format!("sdsc: tensor LUT index {index} is outside the archive"))?;
+    let desc = descs.get(index).ok_or_else(|| format!("sdsc: tensor LUT index {index} is outside the archive"))?;
     if desc.vec_dim <= 1 {
-        return Err(format!(
-            "sdsc: tensor LUT index {index} ({:?}) targets scalar vec_dim {}",
-            desc.name, desc.vec_dim
-        ));
+        return Err(format!("sdsc: tensor LUT index {index} ({:?}) targets scalar vec_dim {}", desc.name, desc.vec_dim));
     }
     if record.l_bits != desc.l_bits || record.vec_dim != desc.vec_dim {
-        return Err(format!(
-            "sdsc: tensor LUT index {index} geometry L={} d={} != archive L={} d={}",
-            record.l_bits, record.vec_dim, desc.l_bits, desc.vec_dim
-        ));
+        return Err(format!("sdsc: tensor LUT index {index} geometry L={} d={} != archive L={} d={}", record.l_bits, record.vec_dim, desc.l_bits, desc.vec_dim));
     }
-    let want = 1usize
-        .checked_shl(desc.l_bits as u32)
-        .and_then(|n| n.checked_mul(desc.vec_dim as usize))
-        .ok_or("sdsc: tensor LUT geometry overflows")?;
+    let want = 1usize.checked_shl(desc.l_bits as u32).and_then(|n| n.checked_mul(desc.vec_dim as usize)).ok_or("sdsc: tensor LUT geometry overflows")?;
     if record.entries.len() != want {
-        return Err(format!(
-            "sdsc: tensor LUT index {index} has {} entries, want {want}",
-            record.entries.len()
-        ));
+        return Err(format!("sdsc: tensor LUT index {index} has {} entries, want {want}", record.entries.len()));
     }
     let digest = tensor_lut_record_sha256(source_sha256, index, desc, &record.entries);
     if digest != record.record_sha256 {
-        return Err(format!(
-            "sdsc: tensor LUT index {index} descriptor/content SHA-256 mismatch"
-        ));
+        return Err(format!("sdsc: tensor LUT index {index} descriptor/content SHA-256 mismatch"));
     }
     Ok(())
 }
@@ -863,56 +705,29 @@ fn validate_tensor_lut_record(
 /// Every `vec_dim > 1` tensor must appear exactly once, and scalar tensors must
 /// not appear.  This all-or-nothing rule prevents a missing learned codebook from
 /// silently falling back to the unrelated broadcast/frozen LUT.
-pub fn build_sdsc_for_archive_with_tensor_luts(
-    buf: &[u8],
-    inputs: &[TensorLutInput<'_>],
-) -> Result<Sdsc, String> {
+pub fn build_sdsc_for_archive_with_tensor_luts(buf: &[u8], inputs: &[TensorLutInput<'_>]) -> Result<Sdsc, String> {
     let archive = archive_lut_descriptor_from_bytes(buf)?;
     build_sdsc_for_descriptor(&archive, inputs)
 }
 
-fn build_sdsc_for_descriptor(
-    archive: &ArchiveLutDescriptor,
-    inputs: &[TensorLutInput<'_>],
-) -> Result<Sdsc, String> {
+fn build_sdsc_for_descriptor(archive: &ArchiveLutDescriptor, inputs: &[TensorLutInput<'_>]) -> Result<Sdsc, String> {
     let mut sorted = inputs.to_vec();
     sorted.sort_unstable_by_key(|x| x.tensor_index);
-    if sorted
-        .windows(2)
-        .any(|w| w[0].tensor_index == w[1].tensor_index)
-    {
+    if sorted.windows(2).any(|w| w[0].tensor_index == w[1].tensor_index) {
         return Err("sdsc: duplicate per-tensor LUT index".into());
     }
 
-    let required: Vec<usize> = archive
-        .tensors
-        .iter()
-        .enumerate()
-        .filter_map(|(i, t)| (t.vec_dim > 1).then_some(i))
-        .collect();
+    let required: Vec<usize> = archive.tensors.iter().enumerate().filter_map(|(i, t)| (t.vec_dim > 1).then_some(i)).collect();
     let supplied: Vec<usize> = sorted.iter().map(|x| x.tensor_index).collect();
     if supplied != required {
-        return Err(format!(
-            "sdsc: learned vector LUT coverage mismatch: supplied {supplied:?}, required {required:?}"
-        ));
+        return Err(format!("sdsc: learned vector LUT coverage mismatch: supplied {supplied:?}, required {required:?}"));
     }
 
     let mut tensor_luts = Vec::with_capacity(sorted.len());
     for input in sorted {
         let desc = &archive.tensors[input.tensor_index];
-        let record_sha256 = tensor_lut_record_sha256(
-            &archive.source_sha256,
-            input.tensor_index,
-            desc,
-            input.entries,
-        );
-        let record = SdscTensorLut {
-            tensor_index: input.tensor_index as u32,
-            l_bits: desc.l_bits,
-            vec_dim: desc.vec_dim,
-            record_sha256,
-            entries: input.entries.to_vec(),
-        };
+        let record_sha256 = tensor_lut_record_sha256(&archive.source_sha256, input.tensor_index, desc, input.entries);
+        let record = SdscTensorLut { tensor_index: input.tensor_index as u32, l_bits: desc.l_bits, vec_dim: desc.vec_dim, record_sha256, entries: input.entries.to_vec() };
         validate_tensor_lut_record(&archive.source_sha256, &archive.tensors, &record)?;
         tensor_luts.push(record);
     }
@@ -920,35 +735,16 @@ fn build_sdsc_for_descriptor(
     // Scalar tensors continue to use the deterministic geometry LUT.  Vector
     // tensors are deliberately absent from this table: only their bound record
     // is legal at decode time.
-    let mut scalar_ls: Vec<u8> = archive
-        .tensors
-        .iter()
-        .filter(|t| t.vec_dim <= 1)
-        .map(|t| t.l_bits)
-        .collect();
+    let mut scalar_ls: Vec<u8> = archive.tensors.iter().filter(|t| t.vec_dim <= 1).map(|t| t.l_bits).collect();
     scalar_ls.sort_unstable();
     scalar_ls.dedup();
-    let luts = scalar_ls
-        .into_iter()
-        .map(|l| SdscLut {
-            l_bits: l,
-            vec_dim: 1,
-            entries: codebook_lut(l as u32).to_vec(),
-        })
-        .collect();
+    let luts = scalar_ls.into_iter().map(|l| SdscLut { l_bits: l, vec_dim: 1, entries: codebook_lut(l as u32).to_vec() }).collect();
 
-    Ok(Sdsc {
-        consts: default_consts(),
-        exprs: default_exprs(),
-        luts,
-        archive_source_sha256: Some(archive.source_sha256),
-        tensor_luts,
-    })
+    Ok(Sdsc { consts: default_consts(), exprs: default_exprs(), luts, archive_source_sha256: Some(archive.source_sha256), tensor_luts })
 }
 
 pub fn sdsc_section_bytes(sdsc: &Sdsc) -> Result<Vec<u8>, String> {
-    if sdsc.consts.len() > MAX_CONSTS || sdsc.exprs.len() > MAX_EXPRS || sdsc.luts.len() > MAX_LUTS
-    {
+    if sdsc.consts.len() > MAX_CONSTS || sdsc.exprs.len() > MAX_EXPRS || sdsc.luts.len() > MAX_LUTS {
         return Err("sdsc: section exceeds sanity caps".into());
     }
     if sdsc.tensor_luts.len() > MAX_TENSOR_LUTS {
@@ -956,9 +752,7 @@ pub fn sdsc_section_bytes(sdsc: &Sdsc) -> Result<Vec<u8>, String> {
     }
     let is_v2 = !sdsc.tensor_luts.is_empty();
     if is_v2 != sdsc.archive_source_sha256.is_some() {
-        return Err(
-            "sdsc: V2 requires both archive_source_sha256 and per-tensor LUT records".into(),
-        );
+        return Err("sdsc: V2 requires both archive_source_sha256 and per-tensor LUT records".into());
     }
     let mut prev = None;
     for &(id, _) in &sdsc.consts {
@@ -986,16 +780,9 @@ pub fn sdsc_section_bytes(sdsc: &Sdsc) -> Result<Vec<u8>, String> {
             return Err("sdsc: LUT geometries must be strictly ascending".into());
         }
         prev = Some(key);
-        let want = 1usize
-            .checked_shl(l.l_bits as u32)
-            .and_then(|n| n.checked_mul(d as usize))
-            .ok_or("sdsc: LUT geometry overflows")?;
+        let want = 1usize.checked_shl(l.l_bits as u32).and_then(|n| n.checked_mul(d as usize)).ok_or("sdsc: LUT geometry overflows")?;
         if l.entries.len() != want {
-            return Err(format!(
-                "sdsc: LUT L={} d={d} has {} entries, want {want}",
-                l.l_bits,
-                l.entries.len()
-            ));
+            return Err(format!("sdsc: LUT L={} d={d} has {} entries, want {want}", l.l_bits, l.entries.len()));
         }
     }
     let mut prev_tensor = None;
@@ -1006,20 +793,11 @@ pub fn sdsc_section_bytes(sdsc: &Sdsc) -> Result<Vec<u8>, String> {
         }
         prev_tensor = Some(index);
         if l.vec_dim <= 1 || l.l_bits == 0 {
-            return Err(format!(
-                "sdsc: tensor LUT {index} has invalid vector geometry L={} d={}",
-                l.l_bits, l.vec_dim
-            ));
+            return Err(format!("sdsc: tensor LUT {index} has invalid vector geometry L={} d={}", l.l_bits, l.vec_dim));
         }
-        let want = 1usize
-            .checked_shl(l.l_bits as u32)
-            .and_then(|n| n.checked_mul(l.vec_dim as usize))
-            .ok_or("sdsc: tensor LUT geometry overflows")?;
+        let want = 1usize.checked_shl(l.l_bits as u32).and_then(|n| n.checked_mul(l.vec_dim as usize)).ok_or("sdsc: tensor LUT geometry overflows")?;
         if l.entries.len() != want {
-            return Err(format!(
-                "sdsc: tensor LUT {index} has {} entries, want {want}",
-                l.entries.len()
-            ));
+            return Err(format!("sdsc: tensor LUT {index} has {} entries, want {want}", l.entries.len()));
         }
     }
 
@@ -1082,9 +860,7 @@ fn page_align(x: usize) -> usize {
 }
 
 fn checked_page_align(x: usize) -> Result<usize, String> {
-    x.checked_add(PAGE - 1)
-        .map(|end| end & !(PAGE - 1))
-        .ok_or_else(|| "sdsc: page alignment overflows address space".into())
+    x.checked_add(PAGE - 1).map(|end| end & !(PAGE - 1)).ok_or_else(|| "sdsc: page alignment overflows address space".into())
 }
 
 fn chain_scan(buf: &[u8]) -> (usize, bool) {
@@ -1117,36 +893,16 @@ fn chain_scan(buf: &[u8]) -> (usize, bool) {
 /// this immediately after `write_strand_v2`, before OUTL/SDSQ/SPRV.  It prevents
 /// an unrecognised or already-sealed trailer from being silently hidden by a new
 /// section.  Existing scalar [`append_sdsc`] retains its restacking behaviour.
-pub fn append_sdsc_with_tensor_luts(
-    path: impl AsRef<Path>,
-    inputs: &[TensorLutInput<'_>],
-) -> Result<Sdsc, String> {
+pub fn append_sdsc_with_tensor_luts(path: impl AsRef<Path>, inputs: &[TensorLutInput<'_>]) -> Result<Sdsc, String> {
     let path = path.as_ref();
-    let mut file = fs::OpenOptions::new()
-        .read(true)
-        .write(true)
-        .open(path)
-        .map_err(|e| format!("sdsc: open {path:?}: {e}"))?;
-    let file_bytes = usize::try_from(
-        file.metadata()
-            .map_err(|e| format!("sdsc: stat {path:?}: {e}"))?
-            .len(),
-    )
-    .map_err(|_| "sdsc: file length exceeds address space")?;
+    let mut file = fs::OpenOptions::new().read(true).write(true).open(path).map_err(|e| format!("sdsc: open {path:?}: {e}"))?;
+    let file_bytes = usize::try_from(file.metadata().map_err(|e| format!("sdsc: stat {path:?}: {e}"))?.len()).map_err(|_| "sdsc: file length exceeds address space")?;
     let archive = archive_lut_descriptor_from_file(&mut file)?;
     let sdsc = build_sdsc_for_descriptor(&archive, inputs)?;
     let section = sdsc_section_bytes(&sdsc)?;
-    let sdsc_bytes: u32 = section.len().try_into().map_err(|_| {
-        format!(
-            "sdsc: section is {} bytes — exceeds the u32 field",
-            section.len()
-        )
-    })?;
+    let sdsc_bytes: u32 = section.len().try_into().map_err(|_| format!("sdsc: section is {} bytes — exceeds the u32 field", section.len()))?;
     let sdsc_offset = checked_page_align(archive.base_bytes)?;
-    let unpadded_end = sdsc_offset
-        .checked_add(section.len())
-        .and_then(|end| end.checked_add(SDSC_TRAILER_BYTES))
-        .ok_or("sdsc: appended section extent overflows address space")?;
+    let unpadded_end = sdsc_offset.checked_add(section.len()).and_then(|end| end.checked_add(SDSC_TRAILER_BYTES)).ok_or("sdsc: appended section extent overflows address space")?;
     let end = checked_page_align(unpadded_end)?;
 
     // Materialise only the small append tail, never the model payload.  On a
@@ -1162,44 +918,29 @@ pub fn append_sdsc_with_tensor_luts(
     debug_assert_eq!(archive.base_bytes + tail.len(), end);
 
     if file_bytes < archive.base_bytes {
-        return Err(format!(
-            "sdsc: STR2 file is truncated: file has {file_bytes} bytes, base extent is {}",
-            archive.base_bytes,
-        ));
+        return Err(format!("sdsc: STR2 file is truncated: file has {file_bytes} bytes, base extent is {}", archive.base_bytes,));
     }
     if file_bytes > archive.base_bytes {
         let suffix_len = file_bytes - archive.base_bytes;
         if suffix_len > tail.len() {
-            return Err(format!(
-                "sdsc: learned vector LUTs require a bare STR2 archive or a recoverable partial SDSC append: file has {file_bytes} bytes, expected at most {end}"
-            ));
+            return Err(format!("sdsc: learned vector LUTs require a bare STR2 archive or a recoverable partial SDSC append: file has {file_bytes} bytes, expected at most {end}"));
         }
         let mut suffix = vec![0u8; suffix_len];
-        file.seek(SeekFrom::Start(archive.base_bytes as u64))
-            .and_then(|_| file.read_exact(&mut suffix))
-            .map_err(|e| format!("sdsc: read existing append suffix {path:?}: {e}"))?;
+        file.seek(SeekFrom::Start(archive.base_bytes as u64)).and_then(|_| file.read_exact(&mut suffix)).map_err(|e| format!("sdsc: read existing append suffix {path:?}: {e}"))?;
         if suffix != tail[..suffix_len] {
-            return Err(
-                "sdsc: non-bare STR2 suffix is not an exact prefix of this SDSC append; refusing to truncate foreign or mismatched data"
-                    .into(),
-            );
+            return Err("sdsc: non-bare STR2 suffix is not an exact prefix of this SDSC append; refusing to truncate foreign or mismatched data".into());
         }
         if suffix_len == tail.len() {
             // The append completed and only the caller acknowledgement was lost.
             return Ok(sdsc);
         }
-        file.set_len(archive.base_bytes as u64)
-            .map_err(|e| format!("sdsc: truncate interrupted append {path:?}: {e}"))?;
-        file.sync_all()
-            .map_err(|e| format!("sdsc: fsync recovered base {path:?}: {e}"))?;
+        file.set_len(archive.base_bytes as u64).map_err(|e| format!("sdsc: truncate interrupted append {path:?}: {e}"))?;
+        file.sync_all().map_err(|e| format!("sdsc: fsync recovered base {path:?}: {e}"))?;
     }
 
-    file.seek(SeekFrom::Start(archive.base_bytes as u64))
-        .map_err(|e| format!("sdsc: seek append {path:?}: {e}"))?;
-    file.write_all(&tail)
-        .map_err(|e| format!("sdsc: append tail {path:?}: {e}"))?;
-    file.sync_all()
-        .map_err(|e| format!("sdsc: fsync {path:?}: {e}"))?;
+    file.seek(SeekFrom::Start(archive.base_bytes as u64)).map_err(|e| format!("sdsc: seek append {path:?}: {e}"))?;
+    file.write_all(&tail).map_err(|e| format!("sdsc: append tail {path:?}: {e}"))?;
+    file.sync_all().map_err(|e| format!("sdsc: fsync {path:?}: {e}"))?;
     Ok(sdsc)
 }
 
@@ -1217,12 +958,7 @@ pub fn append_sdsc(path: impl AsRef<Path>) -> Result<Sdsc, String> {
 
     let sdsc = build_sdsc_for_archive(&buf)?;
     let section = sdsc_section_bytes(&sdsc)?;
-    let sdsc_bytes: u32 = section.len().try_into().map_err(|_| {
-        format!(
-            "sdsc: section is {} bytes — exceeds the u32 field",
-            section.len()
-        )
-    })?;
+    let sdsc_bytes: u32 = section.len().try_into().map_err(|_| format!("sdsc: section is {} bytes — exceeds the u32 field", section.len()))?;
 
     let mut out = buf[..base].to_vec();
     let sdsc_offset = page_align(out.len());
@@ -1246,19 +982,11 @@ pub fn append_sdsc(path: impl AsRef<Path>) -> Result<Sdsc, String> {
     Ok(sdsc)
 }
 
-fn parse_sdsc_section(
-    buf: &[u8],
-    sdsc_offset: usize,
-    sdsc_bytes: usize,
-    trailer_end: usize,
-) -> Result<Sdsc, String> {
+fn parse_sdsc_section(buf: &[u8], sdsc_offset: usize, sdsc_bytes: usize, trailer_end: usize) -> Result<Sdsc, String> {
     if sdsc_offset % PAGE != 0 {
         return Err(format!("sdsc: sdsc_offset {sdsc_offset} not page-aligned"));
     }
-    let min_end = sdsc_offset
-        .checked_add(sdsc_bytes)
-        .and_then(|x| x.checked_add(SDSC_TRAILER_BYTES))
-        .ok_or("sdsc: sdsc_offset + sdsc_bytes overflows")?;
+    let min_end = sdsc_offset.checked_add(sdsc_bytes).and_then(|x| x.checked_add(SDSC_TRAILER_BYTES)).ok_or("sdsc: sdsc_offset + sdsc_bytes overflows")?;
     if min_end > trailer_end || trailer_end % PAGE != 0 {
         return Err(format!(
             "sdsc: section [{sdsc_offset}, +{sdsc_bytes}] + trailer does not fit the \
@@ -1268,10 +996,7 @@ fn parse_sdsc_section(
     if sdsc_bytes < SDSC_HEADER_BYTES {
         return Err("sdsc: section shorter than the 48-byte header".into());
     }
-    if buf[sdsc_offset + sdsc_bytes..trailer_end - SDSC_TRAILER_BYTES]
-        .iter()
-        .any(|&b| b != 0)
-    {
+    if buf[sdsc_offset + sdsc_bytes..trailer_end - SDSC_TRAILER_BYTES].iter().any(|&b| b != 0) {
         return Err("sdsc: nonzero bytes in section padding".into());
     }
 
@@ -1281,9 +1006,7 @@ fn parse_sdsc_section(
     }
     let version = u32::from_le_bytes(s[4..8].try_into().unwrap());
     if version != SDSC_VERSION_V1 && version != SDSC_VERSION {
-        return Err(format!(
-            "sdsc: unsupported version {version} (supported {SDSC_VERSION_V1}, {SDSC_VERSION})"
-        ));
+        return Err(format!("sdsc: unsupported version {version} (supported {SDSC_VERSION_V1}, {SDSC_VERSION})"));
     }
     let flags = u32::from_le_bytes(s[8..12].try_into().unwrap());
     if flags != 0 {
@@ -1293,11 +1016,7 @@ fn parse_sdsc_section(
     let n_exprs = u32::from_le_bytes(s[16..20].try_into().unwrap()) as usize;
     let n_luts = u32::from_le_bytes(s[20..24].try_into().unwrap()) as usize;
     let n_tensor_luts = u32::from_le_bytes(s[24..28].try_into().unwrap()) as usize;
-    if n_consts > MAX_CONSTS
-        || n_exprs > MAX_EXPRS
-        || n_luts > MAX_LUTS
-        || n_tensor_luts > MAX_TENSOR_LUTS
-    {
+    if n_consts > MAX_CONSTS || n_exprs > MAX_EXPRS || n_luts > MAX_LUTS || n_tensor_luts > MAX_TENSOR_LUTS {
         return Err("sdsc: section exceeds sanity caps".into());
     }
     if version == SDSC_VERSION_V1 && n_tensor_luts != 0 {
@@ -1309,10 +1028,7 @@ fn parse_sdsc_section(
 
     let mut p = SDSC_HEADER_BYTES;
     let take = |p: &mut usize, n: usize| -> Result<&[u8], String> {
-        let end = p
-            .checked_add(n)
-            .filter(|&e| e <= s.len())
-            .ok_or("sdsc: section truncated")?;
+        let end = p.checked_add(n).filter(|&e| e <= s.len()).ok_or("sdsc: section truncated")?;
         let sl = &s[*p..end];
         *p = end;
         Ok(sl)
@@ -1371,37 +1087,21 @@ fn parse_sdsc_section(
             return Err("sdsc: LUT reserved field not zero".into());
         }
         if l_bits == 0 || l_bits > 24 || vec_dim == 0 || vec_dim > 255 {
-            return Err(format!(
-                "sdsc: LUT geometry L={l_bits} d={vec_dim} out of range"
-            ));
+            return Err(format!("sdsc: LUT geometry L={l_bits} d={vec_dim} out of range"));
         }
         let key = (l_bits as u8, vec_dim as u8);
         if prev.map_or(false, |pv| key <= pv) {
             return Err("sdsc: LUT geometries not strictly ascending".into());
         }
         prev = Some(key);
-        let want = 1usize
-            .checked_shl(l_bits)
-            .and_then(|n| n.checked_mul(vec_dim as usize))
-            .ok_or("sdsc: LUT geometry overflows")?;
+        let want = 1usize.checked_shl(l_bits).and_then(|n| n.checked_mul(vec_dim as usize)).ok_or("sdsc: LUT geometry overflows")?;
         if n_entries != want {
-            return Err(format!(
-                "sdsc: LUT L={l_bits} d={vec_dim} has {n_entries} entries, want {want}"
-            ));
+            return Err(format!("sdsc: LUT L={l_bits} d={vec_dim} has {n_entries} entries, want {want}"));
         }
-        let raw_len = n_entries
-            .checked_mul(4)
-            .ok_or("sdsc: LUT byte length overflows")?;
+        let raw_len = n_entries.checked_mul(4).ok_or("sdsc: LUT byte length overflows")?;
         let raw = take(&mut p, raw_len)?;
-        let entries: Vec<i32> = raw
-            .chunks_exact(4)
-            .map(|c| i32::from_le_bytes(c.try_into().unwrap()))
-            .collect();
-        luts.push(SdscLut {
-            l_bits: key.0,
-            vec_dim: key.1,
-            entries,
-        });
+        let entries: Vec<i32> = raw.chunks_exact(4).map(|c| i32::from_le_bytes(c.try_into().unwrap())).collect();
+        luts.push(SdscLut { l_bits: key.0, vec_dim: key.1, entries });
     }
 
     let mut tensor_luts = Vec::with_capacity(n_tensor_luts);
@@ -1416,83 +1116,40 @@ fn parse_sdsc_section(
             return Err("sdsc: tensor LUT reserved field not zero".into());
         }
         if l_bits == 0 || l_bits > 24 || vec_dim <= 1 || vec_dim > 255 {
-            return Err(format!(
-                "sdsc: tensor LUT geometry L={l_bits} d={vec_dim} out of range"
-            ));
+            return Err(format!("sdsc: tensor LUT geometry L={l_bits} d={vec_dim} out of range"));
         }
         let index = tensor_index as usize;
         if prev_tensor.map_or(false, |prev| index <= prev) {
             return Err("sdsc: tensor LUT indices not strictly ascending".into());
         }
         prev_tensor = Some(index);
-        let want = 1usize
-            .checked_shl(l_bits)
-            .and_then(|n| n.checked_mul(vec_dim as usize))
-            .ok_or("sdsc: tensor LUT geometry overflows")?;
+        let want = 1usize.checked_shl(l_bits).and_then(|n| n.checked_mul(vec_dim as usize)).ok_or("sdsc: tensor LUT geometry overflows")?;
         if n_entries != want {
-            return Err(format!(
-                "sdsc: tensor LUT {index} has {n_entries} entries, want {want}"
-            ));
+            return Err(format!("sdsc: tensor LUT {index} has {n_entries} entries, want {want}"));
         }
         let mut record_sha256 = [0u8; 32];
         record_sha256.copy_from_slice(take(&mut p, 32)?);
-        let raw_len = n_entries
-            .checked_mul(4)
-            .ok_or("sdsc: tensor LUT byte length overflows")?;
+        let raw_len = n_entries.checked_mul(4).ok_or("sdsc: tensor LUT byte length overflows")?;
         let raw = take(&mut p, raw_len)?;
-        let entries: Vec<i32> = raw
-            .chunks_exact(4)
-            .map(|c| i32::from_le_bytes(c.try_into().unwrap()))
-            .collect();
-        let record = SdscTensorLut {
-            tensor_index,
-            l_bits: l_bits as u8,
-            vec_dim: vec_dim as u8,
-            record_sha256,
-            entries,
-        };
-        validate_tensor_lut_record(
-            archive_source_sha256
-                .as_ref()
-                .ok_or("sdsc: tensor LUT record in a V1 section")?,
-            &archive.tensors,
-            &record,
-        )?;
+        let entries: Vec<i32> = raw.chunks_exact(4).map(|c| i32::from_le_bytes(c.try_into().unwrap())).collect();
+        let record = SdscTensorLut { tensor_index, l_bits: l_bits as u8, vec_dim: vec_dim as u8, record_sha256, entries };
+        validate_tensor_lut_record(archive_source_sha256.as_ref().ok_or("sdsc: tensor LUT record in a V1 section")?, &archive.tensors, &record)?;
         tensor_luts.push(record);
     }
 
-    let required: Vec<usize> = archive
-        .tensors
-        .iter()
-        .enumerate()
-        .filter_map(|(i, t)| (t.vec_dim > 1).then_some(i))
-        .collect();
-    let supplied: Vec<usize> = tensor_luts
-        .iter()
-        .map(|t| t.tensor_index as usize)
-        .collect();
+    let required: Vec<usize> = archive.tensors.iter().enumerate().filter_map(|(i, t)| (t.vec_dim > 1).then_some(i)).collect();
+    let supplied: Vec<usize> = tensor_luts.iter().map(|t| t.tensor_index as usize).collect();
     if version == SDSC_VERSION && supplied != required {
-        return Err(format!(
-            "sdsc: learned vector LUT coverage mismatch: supplied {supplied:?}, required {required:?}"
-        ));
+        return Err(format!("sdsc: learned vector LUT coverage mismatch: supplied {supplied:?}, required {required:?}"));
     }
     if version == SDSC_VERSION_V1 && !required.is_empty() {
         return Err("sdsc: V1 cannot decode an archive containing vector-trellis tensors".into());
     }
 
     if p != sdsc_bytes {
-        return Err(format!(
-            "sdsc: {} trailing bytes after the last LUT",
-            sdsc_bytes - p
-        ));
+        return Err(format!("sdsc: {} trailing bytes after the last LUT", sdsc_bytes - p));
     }
-    Ok(Sdsc {
-        consts,
-        exprs,
-        luts,
-        archive_source_sha256,
-        tensor_luts,
-    })
+    Ok(Sdsc { consts, exprs, luts, archive_source_sha256, tensor_luts })
 }
 
 pub fn read_sdsc_bytes(buf: &[u8], strict: bool) -> Result<Option<Sdsc>, String> {
@@ -1507,9 +1164,7 @@ pub fn read_sdsc_bytes(buf: &[u8], strict: bool) -> Result<Option<Sdsc>, String>
             let parse = (|| -> Result<Sdsc, String> {
                 let off = u64::from_le_bytes(t[0..8].try_into().unwrap());
                 let bytes = u32::from_le_bytes(t[8..12].try_into().unwrap());
-                let off: usize = off
-                    .try_into()
-                    .map_err(|_| "sdsc: sdsc_offset exceeds address space".to_string())?;
+                let off: usize = off.try_into().map_err(|_| "sdsc: sdsc_offset exceeds address space".to_string())?;
                 parse_sdsc_section(buf, off, bytes as usize, end)
             })();
             return match parse {
@@ -1551,10 +1206,7 @@ fn unpack_codes(bytes: &[u8], n: usize, code_bits: u32) -> Vec<u8> {
 
 pub fn decode_q12_with_sdsc(sdsc: &Sdsc, t: &OwnedTensorV2) -> Result<Vec<i32>, String> {
     if t.base.vec_dim > 1 {
-        return Err(
-            "sdsc: vector decode requires decode_q12_with_sdsc_at with the archive tensor index"
-                .into(),
-        );
+        return Err("sdsc: vector decode requires decode_q12_with_sdsc_at with the archive tensor index".into());
     }
     let entries = &sdsc.lut(t.base.l_bits, 1)?.entries;
     decode_q12_with_sdsc_lut(sdsc, t, entries)
@@ -1562,11 +1214,7 @@ pub fn decode_q12_with_sdsc(sdsc: &Sdsc, t: &OwnedTensorV2) -> Result<Vec<i32>, 
 
 /// Reconstruct one tensor through the self-described integer program and its
 /// exact archive-bound LUT.  Vector tensors never fall back to a geometry LUT.
-pub fn decode_q12_with_sdsc_at(
-    sdsc: &Sdsc,
-    tensor_index: usize,
-    t: &OwnedTensorV2,
-) -> Result<Vec<i32>, String> {
+pub fn decode_q12_with_sdsc_at(sdsc: &Sdsc, tensor_index: usize, t: &OwnedTensorV2) -> Result<Vec<i32>, String> {
     let d = t.base.vec_dim.max(1);
     if d == 1 {
         let entries = &sdsc.lut(t.base.l_bits, 1)?.entries;
@@ -1574,29 +1222,17 @@ pub fn decode_q12_with_sdsc_at(
     }
     let record = sdsc.tensor_lut(tensor_index)?;
     if record.l_bits != t.base.l_bits || record.vec_dim != d {
-        return Err(format!(
-            "sdsc: tensor LUT {tensor_index} geometry L={} d={} != tensor L={} d={}",
-            record.l_bits, record.vec_dim, t.base.l_bits, d
-        ));
+        return Err(format!("sdsc: tensor LUT {tensor_index} geometry L={} d={} != tensor L={} d={}", record.l_bits, record.vec_dim, t.base.l_bits, d));
     }
-    let source = sdsc
-        .archive_source_sha256
-        .as_ref()
-        .ok_or("sdsc: vector tensor has no V2 archive source binding")?;
+    let source = sdsc.archive_source_sha256.as_ref().ok_or("sdsc: vector tensor has no V2 archive source binding")?;
     let digest = owned_tensor_lut_record_sha256(source, tensor_index, t, &record.entries);
     if digest != record.record_sha256 {
-        return Err(format!(
-            "sdsc: tensor LUT {tensor_index} descriptor/content SHA-256 mismatch at decode"
-        ));
+        return Err(format!("sdsc: tensor LUT {tensor_index} descriptor/content SHA-256 mismatch at decode"));
     }
     decode_q12_with_sdsc_lut(sdsc, t, &record.entries)
 }
 
-fn decode_q12_with_sdsc_lut(
-    sdsc: &Sdsc,
-    t: &OwnedTensorV2,
-    lut: &[i32],
-) -> Result<Vec<i32>, String> {
+fn decode_q12_with_sdsc_lut(sdsc: &Sdsc, t: &OwnedTensorV2, lut: &[i32]) -> Result<Vec<i32>, String> {
     if sdsc.const_val(const_id::PAYLOAD_BIT_ORDER)? != 0 {
         return Err("sdsc: unknown PAYLOAD_BIT_ORDER".into());
     }
@@ -1607,15 +1243,9 @@ fn decode_q12_with_sdsc_lut(
         return Err("sdsc: unknown TAILBITE_RULE".into());
     }
     let d = (t.base.vec_dim as usize).max(1);
-    let want_lut = 1usize
-        .checked_shl(t.base.l_bits as u32)
-        .and_then(|n| n.checked_mul(d))
-        .ok_or("sdsc: decode LUT geometry overflows")?;
+    let want_lut = 1usize.checked_shl(t.base.l_bits as u32).and_then(|n| n.checked_mul(d)).ok_or("sdsc: decode LUT geometry overflows")?;
     if lut.len() != want_lut {
-        return Err(format!(
-            "sdsc: decode LUT has {} entries, tensor needs {want_lut}",
-            lut.len()
-        ));
+        return Err(format!("sdsc: decode LUT has {} entries, tensor needs {want_lut}", lut.len()));
     }
     let sub_block = sdsc.const_val(const_id::SUB_BLOCK)? as usize;
     let code_bits = sdsc.const_val(const_id::SUBSCALE_CODE_BITS)? as u32;
@@ -1678,10 +1308,7 @@ fn decode_q12_with_sdsc_lut(
             let emit = (n - produced).min(d);
             for j in 0..emit {
                 let i = produced + j;
-                let q = *lut
-                    .get(su * d + j)
-                    .ok_or("sdsc: state/vector lane indexes past the embedded LUT")?
-                    as i64;
+                let q = *lut.get(su * d + j).ok_or("sdsc: state/vector lane indexes past the embedded LUT")? as i64;
                 let sb = i / sub_block;
                 let es = *eff.get(sb).ok_or("sdsc: sub-block index out of range")?;
                 let off = offs.get(sb).copied().unwrap_or(0);
@@ -1707,11 +1334,7 @@ mod tests {
     static COUNTER: AtomicU64 = AtomicU64::new(0);
 
     fn tmp_path(tag: &str) -> PathBuf {
-        std::env::temp_dir().join(format!(
-            "strand-sdsc-{tag}-{}-{}.strand",
-            std::process::id(),
-            COUNTER.fetch_add(1, Ordering::Relaxed)
-        ))
+        std::env::temp_dir().join(format!("strand-sdsc-{tag}-{}-{}.strand", std::process::id(), COUNTER.fetch_add(1, Ordering::Relaxed)))
     }
 
     struct TmpFile(PathBuf);
@@ -1722,9 +1345,7 @@ mod tests {
     }
 
     fn test_weights(n: usize, seed: u64) -> Vec<f32> {
-        (0..n)
-            .map(|i| ((i as f32 + seed as f32) * 0.0137).sin() * 0.5)
-            .collect()
+        (0..n).map(|i| ((i as f32 + seed as f32) * 0.0137).sin() * 0.5).collect()
     }
 
     #[test]
@@ -1746,16 +1367,7 @@ mod tests {
             }
         }
 
-        for scale_q in [
-            -2_000_000_000i32,
-            -65536,
-            -1,
-            0,
-            1,
-            12345,
-            65536,
-            2_000_000_000,
-        ] {
+        for scale_q in [-2_000_000_000i32, -65536, -1, 0, 1, 12345, 65536, 2_000_000_000] {
             for code in 0u8..64 {
                 let want = eff_scale_q(scale_q, code) as i64;
                 let got = eval_expr(&eff, &[scale_q as i64, code as i64]).unwrap();
@@ -1806,31 +1418,9 @@ mod tests {
         let cfg = TrellisConfig::for_bpw(3.0);
         let encs = [
             encode_tensor_with(&test_weights(1024, 11), &cfg, &EncodeOpts::default()),
-            encode_tensor_with(
-                &test_weights(900, 23),
-                &cfg,
-                &EncodeOpts {
-                    tail_biting: true,
-                    ..Default::default()
-                },
-            ),
-            encode_tensor_with(
-                &test_weights(700, 5),
-                &cfg,
-                &EncodeOpts {
-                    affine_min: true,
-                    ..Default::default()
-                },
-            ),
-            encode_tensor_with(
-                &test_weights(1030, 41),
-                &cfg,
-                &EncodeOpts {
-                    tail_biting: true,
-                    affine_min: true,
-                    ..Default::default()
-                },
-            ),
+            encode_tensor_with(&test_weights(900, 23), &cfg, &EncodeOpts { tail_biting: true, ..Default::default() }),
+            encode_tensor_with(&test_weights(700, 5), &cfg, &EncodeOpts { affine_min: true, ..Default::default() }),
+            encode_tensor_with(&test_weights(1030, 41), &cfg, &EncodeOpts { tail_biting: true, affine_min: true, ..Default::default() }),
         ];
         let shapes: [Vec<u64>; 4] = [vec![4, 256], vec![900], vec![700], vec![1030]];
         let names = ["t.plain", "t.tail", "t.affine", "t.both"];
@@ -1839,15 +1429,7 @@ mod tests {
             .zip(shapes.iter())
             .zip(names.iter())
             .map(|((enc, shape), name)| PackedTensorV2 {
-                base: PackedTensor {
-                    name,
-                    shape,
-                    rht_seed: 0,
-                    l_bits: cfg.l_bits as u8,
-                    k_bits: cfg.k_bits as u8,
-                    vec_dim: cfg.vec_dim() as u8,
-                    enc,
-                },
+                base: PackedTensor { name, shape, rht_seed: 0, l_bits: cfg.l_bits as u8, k_bits: cfg.k_bits as u8, vec_dim: cfg.vec_dim() as u8, enc },
                 block_len: cfg.block_len as u32,
             })
             .collect();
@@ -1863,24 +1445,14 @@ mod tests {
         append_sdsc(&path).expect("append sdsc");
 
         let trailered = std::fs::read(&path).unwrap();
-        let sdsc = read_sdsc_bytes(&trailered, true)
-            .unwrap()
-            .expect("sdsc found");
+        let sdsc = read_sdsc_bytes(&trailered, true).unwrap().expect("sdsc found");
         let tensors = read_strand_v2(&trailered).expect("v2 read under sdsc trailer");
         assert_eq!(tensors.len(), 4);
         for t in &tensors {
-            let cfg = TrellisConfig::new(
-                t.base.l_bits as u32,
-                t.base.k_bits as u32,
-                t.block_len as usize,
-            );
+            let cfg = TrellisConfig::new(t.base.l_bits as u32, t.base.k_bits as u32, t.block_len as usize);
             let want = decode_lean(&t.base.enc, &cfg);
             let got = decode_q12_with_sdsc(&sdsc, t).expect("sdsc decode");
-            assert_eq!(
-                got, want,
-                "SDSC-driven decode diverged on {:?}",
-                t.base.name
-            );
+            assert_eq!(got, want, "SDSC-driven decode diverged on {:?}", t.base.name);
         }
     }
 
@@ -1891,18 +1463,7 @@ mod tests {
         let _guard = TmpFile(path.clone());
         std::fs::write(&path, &buf).unwrap();
 
-        let wires = vec![
-            Some(OutlierWire::from_selection(
-                1024,
-                vec![7, 600],
-                vec![-100, 42],
-                0.5,
-                8,
-            )),
-            None,
-            None,
-            None,
-        ];
+        let wires = vec![Some(OutlierWire::from_selection(1024, vec![7, 600], vec![-100, 42], 0.5, 8)), None, None, None];
         append_outl(&path, &wires).expect("append outl");
         let sprv_before = append_sprv_computed(&path, false).expect("append sprv");
         verify_archive(&path, VerifyDepth::Full).expect("clean pre-sdsc verify");
@@ -1917,10 +1478,7 @@ mod tests {
         let outl_back = read_outl(&path).unwrap().expect("outl above sdsc");
         assert_eq!(outl_back.tensors, wires);
         let sprv_back = read_sprv(&path).unwrap().expect("sprv outermost");
-        assert_eq!(
-            sprv_back, sprv_before,
-            "restacked SPRV must be content-identical"
-        );
+        assert_eq!(sprv_back, sprv_before, "restacked SPRV must be content-identical");
 
         let now = std::fs::read(&path).unwrap();
         assert_eq!(&now[..buf.len()], &buf[..], "v2 bytes must be untouched");
@@ -1938,31 +1496,19 @@ mod tests {
         let path = tmp_path("plain");
         let _guard = TmpFile(path.clone());
         std::fs::write(&path, &buf).unwrap();
-        assert_eq!(
-            read_sdsc(&path).unwrap(),
-            None,
-            "plain v2 must read as absent"
-        );
+        assert_eq!(read_sdsc(&path).unwrap(), None, "plain v2 must read as absent");
         let written = append_sdsc(&path).expect("append");
         let back = read_sdsc(&path).unwrap().expect("found");
         assert_eq!(back, written);
 
         let trailered = std::fs::read(&path).unwrap();
         assert_eq!(&trailered[..buf.len()], &buf[..]);
-        assert_eq!(
-            trailered.len() % PAGE,
-            0,
-            "SDSC end must be page-aligned (stacking)"
-        );
+        assert_eq!(trailered.len() % PAGE, 0, "SDSC end must be page-aligned (stacking)");
         assert_eq!(read_strand_v2(&trailered).unwrap().len(), 4);
 
         let cfg = TrellisConfig::for_bpw(3.0);
         let one = emit_sdsc(&cfg, codebook_lut(cfg.l_bits)).expect("emit_sdsc");
-        assert_eq!(
-            u32::from_le_bytes(one[4..8].try_into().unwrap()),
-            SDSC_VERSION_V1,
-            "scalar SDSC wire version must remain backward-compatible"
-        );
+        assert_eq!(u32::from_le_bytes(one[4..8].try_into().unwrap()), SDSC_VERSION_V1, "scalar SDSC wire version must remain backward-compatible");
         let multi = sdsc_section_bytes(&build_sdsc_for_archive(&buf).unwrap()).unwrap();
         assert_eq!(one, multi);
 
@@ -2024,16 +1570,7 @@ mod tests {
             sdsc.consts.len(),
             sdsc.exprs.len(),
             sdsc.luts.len(),
-            sdsc.luts
-                .iter()
-                .map(|l| format!(
-                    "L={} d={} ({} entries)",
-                    l.l_bits,
-                    l.vec_dim,
-                    l.entries.len()
-                ))
-                .collect::<Vec<_>>()
-                .join(", ")
+            sdsc.luts.iter().map(|l| format!("L={} d={} ({} entries)", l.l_bits, l.vec_dim, l.entries.len())).collect::<Vec<_>>().join(", ")
         );
     }
 }

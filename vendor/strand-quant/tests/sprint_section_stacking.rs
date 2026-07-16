@@ -24,9 +24,7 @@
 // API and a local reference oracle for the epilogue.
 
 use strand_quant::encode::{encode_tensor_with, EncodeOpts, EncodedTensor};
-use strand_quant::format::{
-    read_strand_v2_header, write_strand_v2, PackedTensor, PackedTensorV2, PAGE,
-};
+use strand_quant::format::{read_strand_v2_header, write_strand_v2, PackedTensor, PackedTensorV2, PAGE};
 use strand_quant::outlier_wire::{append_outl, read_outl_bytes, OutlierWire};
 use strand_quant::provenance_io::{append_sprv_computed, read_sprv, read_sprv_bytes};
 use strand_quant::sideinfo_wire::{append_sdsq, read_sdsq_bytes};
@@ -38,11 +36,7 @@ use std::sync::atomic::{AtomicU64, Ordering};
 static COUNTER: AtomicU64 = AtomicU64::new(0);
 
 fn tmp_path(tag: &str) -> PathBuf {
-    std::env::temp_dir().join(format!(
-        "strand-sprint-stack-{tag}-{}-{}.strand",
-        std::process::id(),
-        COUNTER.fetch_add(1, Ordering::Relaxed)
-    ))
+    std::env::temp_dir().join(format!("strand-sprint-stack-{tag}-{}-{}.strand", std::process::id(), COUNTER.fetch_add(1, Ordering::Relaxed)))
 }
 
 struct TmpFile(PathBuf);
@@ -95,10 +89,7 @@ fn build_test_archive() -> (Vec<u8>, EncodedTensor, EncodedTensor) {
 }
 
 fn sample_outl() -> Vec<Option<OutlierWire>> {
-    vec![
-        Some(OutlierWire::from_selection(1024, vec![3, 511, 700], vec![5, 127, -127], 0.3125, 8)),
-        None,
-    ]
+    vec![Some(OutlierWire::from_selection(1024, vec![3, 511, 700], vec![5, 127, -127], 0.3125, 8)), None]
 }
 
 // ===========================================================================
@@ -116,9 +107,7 @@ fn outl_then_sprv_is_the_canonical_live_stack() {
     let sprv = append_sprv_computed(&path, false).expect("append SPRV on top of OUTL");
 
     // OUTL is found beneath SPRV (read_outl_bytes steps over the SPRV trailer).
-    let outl = read_outl_bytes(&std::fs::read(&path).unwrap(), true)
-        .expect("read")
-        .expect("OUTL present beneath SPRV");
+    let outl = read_outl_bytes(&std::fs::read(&path).unwrap(), true).expect("read").expect("OUTL present beneath SPRV");
     assert_eq!(outl.tensors, sample_outl());
     // SPRV is outermost and self-consistent.
     assert_eq!(read_sprv(&path).unwrap().expect("SPRV present"), sprv);
@@ -169,10 +158,7 @@ fn outl_reader_cannot_skip_an_unknown_trailer_above_it() {
 
     // Baseline: OUTL is the outermost trailer and is found.
     let with_outl = std::fs::read(&path).unwrap();
-    assert!(
-        read_outl_bytes(&with_outl, true).unwrap().is_some(),
-        "OUTL must be found when it is the outermost trailer"
-    );
+    assert!(read_outl_bytes(&with_outl, true).unwrap().is_some(), "OUTL must be found when it is the outermost trailer");
 
     // Now stack a page-aligned section ending in an UNKNOWN 4-byte magic (stand-in for a
     // DBIA / C2 trailer the un-upgraded OUTL reader has never heard of). Layout mirrors the
@@ -203,11 +189,7 @@ fn outl_reader_cannot_skip_an_unknown_trailer_above_it() {
 
     // And the base STR2 header is still readable regardless (the hazard is OUTL-specific:
     // the header lives at the FRONT and never moves), so plain weight decode is unaffected.
-    assert_eq!(
-        read_strand_v2_header(&stacked).unwrap().tensors.len(),
-        2,
-        "header read must survive any stacked trailer (front-anchored)"
-    );
+    assert_eq!(read_strand_v2_header(&stacked).unwrap().tensors.len(), 2, "header read must survive any stacked trailer (front-anchored)");
 }
 
 // ===========================================================================
@@ -260,11 +242,7 @@ fn debias_epilogue_is_deterministic_and_residual_then_bias() {
     // (2) Equals the spelled-out reference (inner + resid + dequant(c)).
     for o in 0..4 {
         let want = (inner[o] + resid[o]) + bf16_to_f32(c_bits[o]);
-        assert_eq!(
-            apply(&c_bits)[o].to_bits(),
-            want.to_bits(),
-            "row {o}: epilogue must equal inner+resid+dequant(c) bit-for-bit"
-        );
+        assert_eq!(apply(&c_bits)[o].to_bits(), want.to_bits(), "row {o}: epilogue must equal inner+resid+dequant(c) bit-for-bit");
     }
 
     // (3) A zero correction is the byte-exact identity (the absent-DBIA / zero-mean case):
@@ -272,11 +250,7 @@ fn debias_epilogue_is_deterministic_and_residual_then_bias() {
     let zero_bits: Vec<u16> = vec![f32_to_bf16_round(0.0); 4];
     let base: Vec<f32> = inner.iter().zip(resid.iter()).map(|(a, b)| a + b).collect();
     for o in 0..4 {
-        assert_eq!(
-            apply(&zero_bits)[o].to_bits(),
-            base[o].to_bits(),
-            "row {o}: zero correction must not perturb a single output bit (back-compat)"
-        );
+        assert_eq!(apply(&zero_bits)[o].to_bits(), base[o].to_bits(), "row {o}: zero correction must not perturb a single output bit (back-compat)");
     }
 }
 
@@ -299,8 +273,7 @@ fn c2_scale_q_stream_is_lossless_against_real_archive_values() {
     let hdr = read_strand_v2_header(&buf).unwrap();
 
     // The exact scale_q integers C2 would entropy-code (one per block, all tensors).
-    let scale_q: Vec<i32> =
-        hdr.tensors.iter().flat_map(|t| t.table.iter().map(|r| r.scale_q)).collect();
+    let scale_q: Vec<i32> = hdr.tensors.iter().flat_map(|t| t.table.iter().map(|r| r.scale_q)).collect();
     assert!(!scale_q.is_empty(), "fixture must have blocks to code");
 
     // A C2 coder is byte-LOSSLESS by construction: decode(encode(scale_q)) == scale_q.
@@ -346,8 +319,7 @@ fn outl_sdsq_sprv_full_stack_all_read_back() {
 
     // The exact per-block scale_q the producer feeds SDSQ (== the seek-table values).
     let hdr = read_strand_v2_header(&buf).unwrap();
-    let scale_q: Vec<i32> =
-        hdr.tensors.iter().flat_map(|t| t.table.iter().map(|r| r.scale_q)).collect();
+    let scale_q: Vec<i32> = hdr.tensors.iter().flat_map(|t| t.table.iter().map(|r| r.scale_q)).collect();
     assert!(!scale_q.is_empty());
 
     // Stack all three in canonical order.
@@ -355,11 +327,7 @@ fn outl_sdsq_sprv_full_stack_all_read_back() {
     append_sdsq(&path, &scale_q).expect("append SDSQ (between OUTL and SPRV)");
     // After the two data sections (before the seal) the file end IS page-aligned — this is
     // the invariant that lets the SPRV seal start on a page boundary.
-    assert_eq!(
-        std::fs::read(&path).unwrap().len() % PAGE,
-        0,
-        "OUTL+SDSQ data sections must leave the file page-aligned before the seal"
-    );
+    assert_eq!(std::fs::read(&path).unwrap().len() % PAGE, 0, "OUTL+SDSQ data sections must leave the file page-aligned before the seal");
     let sprv = append_sprv_computed(&path, false).expect("append SPRV (outermost seal)");
 
     let on_disk = std::fs::read(&path).unwrap();
@@ -370,16 +338,12 @@ fn outl_sdsq_sprv_full_stack_all_read_back() {
     assert_ne!(on_disk.len() % PAGE, 0, "SPRV-sealed file ends at the seal, not a page boundary");
 
     // (1) OUTL survives two sections above it (SDSQ + SPRV). THE hazard assertion.
-    let outl = read_outl_bytes(&on_disk, true)
-        .expect("outl read must not error")
-        .expect("OUTL must remain readable under SDSQ+SPRV (step-over fix)");
+    let outl = read_outl_bytes(&on_disk, true).expect("outl read must not error").expect("OUTL must remain readable under SDSQ+SPRV (step-over fix)");
     assert_eq!(outl.tensors, sample_outl(), "OUTL payload intact");
 
     // (2) SDSQ reads back and its scale_q is BYTE-IDENTICAL to the seek-table values —
     //     this is the moat clause: decode overwrite reproduces the inline scale_q exactly.
-    let sdsq = read_sdsq_bytes(&on_disk, true)
-        .expect("sdsq read must not error")
-        .expect("SDSQ must be readable beneath the SPRV seal");
+    let sdsq = read_sdsq_bytes(&on_disk, true).expect("sdsq read must not error").expect("SDSQ must be readable beneath the SPRV seal");
     assert_eq!(sdsq.scale_q, scale_q, "SDSQ-decoded scale_q must equal the stored seek-table scale_q");
 
     // (3) SPRV is the outermost seal and self-consistent.

@@ -37,10 +37,10 @@ import sys
 import time
 from typing import Any, Mapping, Sequence
 
-import doctor_frontier_worker
+import frontier_runtime as doctor_frontier_worker
 import doctor_v5_physical_ab_controller as controller
 import doctor_v5_physical_counter_barrier as counter_barrier
-import spec_reentry_scaffold
+import frontier_runtime as spec_reentry_scaffold
 
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]

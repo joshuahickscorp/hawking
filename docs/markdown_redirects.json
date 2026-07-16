@@ -1,0 +1,419 @@
+{
+  "schema": "hawking.markdown-disposition.v1",
+  "generated_at": "2026-07-16",
+  "archive_policy": "Git history is the archive. Redirects identify the living canonical document; git-history-only entries are intentionally absent from the current tree.",
+  "entries": {
+    "ARCHITECTURE.md": {
+      "disposition": "redirect",
+      "replacement": "docs/README.md"
+    },
+    "BASELINES.md": {
+      "disposition": "redirect",
+      "replacement": "docs/RESEARCH.md"
+    },
+    "CONDENSE_AUDIT.md": {
+      "disposition": "git-history-only",
+      "replacement": null
+    },
+    "CONDENSE_DOCS_REVIEW.md": {
+      "disposition": "git-history-only",
+      "replacement": null
+    },
+    "CONDENSE_LEDGER.md": {
+      "disposition": "git-history-only",
+      "replacement": null
+    },
+    "FAILURES.md": {
+      "disposition": "redirect",
+      "replacement": "docs/RESEARCH.md"
+    },
+    "M1ULTRA_RUN_REPORT.md": {
+      "disposition": "git-history-only",
+      "replacement": null
+    },
+    "MODELS.md": {
+      "disposition": "redirect",
+      "replacement": "docs/README.md"
+    },
+    "WATCHLIST.md": {
+      "disposition": "redirect",
+      "replacement": "docs/RESEARCH.md"
+    },
+    "app/src-tauri/README.md": {
+      "disposition": "redirect",
+      "replacement": "docs/plans/ROADMAP.md"
+    },
+    "docs/ARCHIVE_INDEX.md": {
+      "disposition": "git-history-only",
+      "replacement": null
+    },
+    "docs/BENCHMARKS.md": {
+      "disposition": "redirect",
+      "replacement": "docs/RESEARCH.md"
+    },
+    "docs/SPEED.md": {
+      "disposition": "redirect",
+      "replacement": "docs/RESEARCH.md"
+    },
+    "docs/architecture.md": {
+      "disposition": "redirect",
+      "replacement": "docs/README.md"
+    },
+    "docs/autotune.md": {
+      "disposition": "redirect",
+      "replacement": "docs/OPERATIONS.md"
+    },
+    "docs/design/continuous_batching.md": {
+      "disposition": "redirect",
+      "replacement": "docs/RESEARCH.md"
+    },
+    "docs/dead_levers.md": {
+      "disposition": "redirect",
+      "replacement": "docs/RESEARCH.md"
+    },
+    "docs/hide-bible/DESIGN_DOCTRINE.md": {
+      "disposition": "redirect",
+      "replacement": "docs/plans/ROADMAP.md"
+    },
+    "docs/hide-bible/README.md": {
+      "disposition": "redirect",
+      "replacement": "docs/plans/ROADMAP.md"
+    },
+    "docs/hide-bible/SCAFFOLD_AUDIT.md": {
+      "disposition": "redirect",
+      "replacement": "docs/plans/ROADMAP.md"
+    },
+    "docs/hide-bible/SCAFFOLD_STATUS.md": {
+      "disposition": "redirect",
+      "replacement": "docs/plans/ROADMAP.md"
+    },
+    "docs/hide-bible/HIDE_PLAN.md": {
+      "disposition": "redirect",
+      "replacement": "docs/plans/ROADMAP.md"
+    },
+    "docs/kernels.md": {
+      "disposition": "redirect",
+      "replacement": "docs/README.md"
+    },
+    "docs/mixtral.md": {
+      "disposition": "redirect",
+      "replacement": "docs/README.md"
+    },
+    "docs/plans/CONDENSATION_DOCTOR_V2.md": {
+      "disposition": "redirect",
+      "replacement": "docs/plans/DOCTOR_V5.md"
+    },
+    "docs/plans/DOCTOR_V5_3BPW_RESOURCE_STOP_RECOVERY.md": {
+      "disposition": "redirect",
+      "replacement": "docs/OPERATIONS.md"
+    },
+    "docs/plans/DOCTOR_V5_AGGRESSIVE_ADMISSION_V2.md": {
+      "disposition": "redirect",
+      "replacement": "docs/OPERATIONS.md"
+    },
+    "docs/plans/DOCTOR_V5_BLOCKED_CELL_RECOVERY.md": {
+      "disposition": "redirect",
+      "replacement": "docs/OPERATIONS.md"
+    },
+    "docs/plans/DOCTOR_V5_ELASTIC_HOST_SPRINT.md": {
+      "disposition": "redirect",
+      "replacement": "docs/OPERATIONS.md"
+    },
+    "docs/plans/DOCTOR_V5_MOUNTAIN_LADDER.md": {
+      "disposition": "redirect",
+      "replacement": "docs/OPERATIONS.md"
+    },
+    "docs/plans/DOCTOR_V5_PARALLEL_ACCELERATION_HANDOFF.md": {
+      "disposition": "redirect",
+      "replacement": "docs/OPERATIONS.md"
+    },
+    "docs/plans/DOCTOR_V5_PHYSICAL_ADAPTER_AUTHORITY.md": {
+      "disposition": "redirect",
+      "replacement": "docs/OPERATIONS.md"
+    },
+    "docs/plans/DOCTOR_V5_PHYSICAL_POST120_NEXT_GOAL_PROMPT.md": {
+      "disposition": "redirect",
+      "replacement": "docs/OPERATIONS.md"
+    },
+    "docs/plans/DOCTOR_V5_POST120_ACCELERATION.md": {
+      "disposition": "redirect",
+      "replacement": "docs/OPERATIONS.md"
+    },
+    "docs/plans/DOCTOR_V5_POST_120B.md": {
+      "disposition": "redirect",
+      "replacement": "docs/OPERATIONS.md"
+    },
+    "docs/plans/DOCTOR_V5_REMAINING_SCRATCH_LEDGER.md": {
+      "disposition": "redirect",
+      "replacement": "docs/OPERATIONS.md"
+    },
+    "docs/plans/DOCTOR_V5_SINGLE_DEVICE_SPRINT.md": {
+      "disposition": "redirect",
+      "replacement": "docs/OPERATIONS.md"
+    },
+    "docs/plans/DOCTOR_V5_TELEGRAM_NOTIFICATIONS.md": {
+      "disposition": "redirect",
+      "replacement": "docs/OPERATIONS.md"
+    },
+    "docs/plans/HAWKING_LAPTOP_WAVE_2026_07_08.md": {
+      "disposition": "redirect",
+      "replacement": "docs/plans/ROADMAP.md"
+    },
+    "docs/plans/HIDE_REFINEMENT_RUN_REPORT.md": {
+      "disposition": "redirect",
+      "replacement": "docs/plans/ROADMAP.md"
+    },
+    "docs/plans/M1ULTRA_GOAL_PROMPT.md": {
+      "disposition": "git-history-only",
+      "replacement": null
+    },
+    "docs/plans/M1ULTRA_POTENTIAL_AUDIT.md": {
+      "disposition": "git-history-only",
+      "replacement": null
+    },
+    "docs/plans/STUDIO_DEEP_AUDIT_2026_07_08.md": {
+      "disposition": "redirect",
+      "replacement": "docs/plans/ROADMAP.md"
+    },
+    "docs/plans/STUDIO_GO.md": {
+      "disposition": "redirect",
+      "replacement": "docs/plans/ROADMAP.md"
+    },
+    "docs/plans/STUDIO_MODEL_LADDER.md": {
+      "disposition": "redirect",
+      "replacement": "docs/plans/ROADMAP.md"
+    },
+    "docs/plans/TABULA_RASA_SHIPPING_PLAN.md": {
+      "disposition": "redirect",
+      "replacement": "docs/plans/ROADMAP.md"
+    },
+    "docs/plans/agentic_tool_system_2026_07_11.md": {
+      "disposition": "redirect",
+      "replacement": "docs/RESEARCH.md"
+    },
+    "docs/plans/agentic_tool_system_audit_2026_07_11.md": {
+      "disposition": "redirect",
+      "replacement": "docs/RESEARCH.md"
+    },
+    "docs/plans/apple_fit_frontier_2026_06_22.md": {
+      "disposition": "redirect",
+      "replacement": "docs/RESEARCH.md"
+    },
+    "docs/plans/bible_active.md": {
+      "disposition": "redirect",
+      "replacement": "docs/RESEARCH.md"
+    },
+    "docs/plans/bible_archive.md": {
+      "disposition": "git-history-only",
+      "replacement": null
+    },
+    "docs/plans/computational_efficiency_paradigms_2026_07_11.md": {
+      "disposition": "redirect",
+      "replacement": "docs/RESEARCH.md"
+    },
+    "docs/plans/condense_autopilot_2026_06_27.md": {
+      "disposition": "redirect",
+      "replacement": "docs/plans/ROADMAP.md"
+    },
+    "docs/plans/condense_frontier_2026_06_22.md": {
+      "disposition": "redirect",
+      "replacement": "docs/plans/ROADMAP.md"
+    },
+    "docs/plans/condense_master_plan_2026_06_22.md": {
+      "disposition": "redirect",
+      "replacement": "docs/plans/ROADMAP.md"
+    },
+    "docs/plans/condense_naming_migration_2026_06_22.md": {
+      "disposition": "redirect",
+      "replacement": "docs/plans/ROADMAP.md"
+    },
+    "docs/plans/doctor_capability_and_speed_roadmap.md": {
+      "disposition": "redirect",
+      "replacement": "docs/OPERATIONS.md"
+    },
+    "docs/plans/doctor_maximization_plan.md": {
+      "disposition": "redirect",
+      "replacement": "docs/OPERATIONS.md"
+    },
+    "docs/plans/eh_verify_kernel_losslessness_2026_06_21.md": {
+      "disposition": "redirect",
+      "replacement": "docs/plans/hawking_event_horizon_status.md"
+    },
+    "docs/plans/g1a_v2_expansion_results_2026_06_20.md": {
+      "disposition": "git-history-only",
+      "replacement": null
+    },
+    "docs/plans/h_autoverify_protocol.md": {
+      "disposition": "redirect",
+      "replacement": "docs/RESEARCH.md"
+    },
+    "docs/plans/hawking_capability_frontier_2026_06_28.md": {
+      "disposition": "redirect",
+      "replacement": "docs/RESEARCH.md"
+    },
+    "docs/plans/hawking_capability_frontier_2026_06_28_HANDOFF_PROMPT.md": {
+      "disposition": "git-history-only",
+      "replacement": null
+    },
+    "docs/plans/hawking_event_horizon_phase0_blueprint.md": {
+      "disposition": "redirect",
+      "replacement": "docs/plans/hawking_event_horizon_status.md"
+    },
+    "docs/plans/hawking_event_horizon_proposal_engine.md": {
+      "disposition": "redirect",
+      "replacement": "docs/plans/hawking_event_horizon_status.md"
+    },
+    "docs/plans/hawking_handoff_2026_06_28.md": {
+      "disposition": "redirect",
+      "replacement": "docs/plans/ROADMAP.md"
+    },
+    "docs/plans/hawking_shippability_masterplan_2026_06_22.md": {
+      "disposition": "redirect",
+      "replacement": "docs/plans/ROADMAP.md"
+    },
+    "docs/plans/hide_command_system_maximalist_2026_06_29.md": {
+      "disposition": "redirect",
+      "replacement": "docs/plans/ROADMAP.md"
+    },
+    "docs/plans/hide_executor_plan_v2_enriched_2026_06_29.md": {
+      "disposition": "redirect",
+      "replacement": "docs/plans/ROADMAP.md"
+    },
+    "docs/plans/hide_handoff_2026_06_28.md": {
+      "disposition": "redirect",
+      "replacement": "docs/plans/ROADMAP.md"
+    },
+    "docs/plans/hide_master_build_plan_2026_06_29.md": {
+      "disposition": "redirect",
+      "replacement": "docs/plans/ROADMAP.md"
+    },
+    "docs/plans/hide_refinement_roadmap_2026_07_05.md": {
+      "disposition": "redirect",
+      "replacement": "docs/plans/ROADMAP.md"
+    },
+    "docs/plans/hide_release_autoupdate.md": {
+      "disposition": "redirect",
+      "replacement": "docs/plans/ROADMAP.md"
+    },
+    "docs/plans/hide_research_menu_2026_06_29.md": {
+      "disposition": "redirect",
+      "replacement": "docs/plans/ROADMAP.md"
+    },
+    "docs/plans/hide_ship_readiness.md": {
+      "disposition": "redirect",
+      "replacement": "docs/plans/ROADMAP.md"
+    },
+    "docs/plans/hide_ship_status_2026_06_29.md": {
+      "disposition": "redirect",
+      "replacement": "docs/plans/ROADMAP.md"
+    },
+    "docs/plans/hide_ux_audit_and_research_2026_06_29.md": {
+      "disposition": "redirect",
+      "replacement": "docs/plans/ROADMAP.md"
+    },
+    "docs/plans/native_tq_serving_impl.md": {
+      "disposition": "redirect",
+      "replacement": "docs/plans/tq_compute_for_memory_appendix_2026_07_14.md"
+    },
+    "docs/plans/parameter_sweep_pipeline.md": {
+      "disposition": "redirect",
+      "replacement": "docs/plans/TRAINING_LADDER_V5.md"
+    },
+    "docs/plans/q6k_predec_design.md": {
+      "disposition": "redirect",
+      "replacement": "docs/RESEARCH.md"
+    },
+    "docs/plans/quintessential_engine_2026_06_29.md": {
+      "disposition": "redirect",
+      "replacement": "docs/plans/ROADMAP.md"
+    },
+    "docs/plans/ratios_roadmap_2026_06_21.md": {
+      "disposition": "redirect",
+      "replacement": "docs/RESEARCH.md"
+    },
+    "docs/plans/throughput_pivot_campaign.md": {
+      "disposition": "git-history-only",
+      "replacement": null
+    },
+    "docs/profile.md": {
+      "disposition": "redirect",
+      "replacement": "docs/OPERATIONS.md"
+    },
+    "docs/rwkv7.md": {
+      "disposition": "redirect",
+      "replacement": "docs/RESEARCH.md"
+    },
+    "docs/serve.md": {
+      "disposition": "redirect",
+      "replacement": "docs/README.md"
+    },
+    "receipts/README.md": {
+      "disposition": "redirect",
+      "replacement": "docs/OPERATIONS.md"
+    },
+    "tools/bench/README.md": {
+      "disposition": "redirect",
+      "replacement": "docs/OPERATIONS.md"
+    },
+    "tools/bench/workloads/README.md": {
+      "disposition": "redirect",
+      "replacement": "docs/OPERATIONS.md"
+    },
+    "tools/bisect/README.md": {
+      "disposition": "redirect",
+      "replacement": "docs/OPERATIONS.md"
+    },
+    "tools/ci/README.md": {
+      "disposition": "redirect",
+      "replacement": "docs/OPERATIONS.md"
+    },
+    "tools/headbank/README.md": {
+      "disposition": "redirect",
+      "replacement": "docs/OPERATIONS.md"
+    },
+    "tools/strand/ops/labd-design.md": {
+      "disposition": "redirect",
+      "replacement": "docs/STRAND.md"
+    },
+    "tools/strand/ops/nervous-system.md": {
+      "disposition": "redirect",
+      "replacement": "docs/STRAND.md"
+    },
+    "tools/strand/ops/watchdog-runbook.md": {
+      "disposition": "redirect",
+      "replacement": "docs/STRAND.md"
+    },
+    "tools/strand/scripts/packaging/README.md": {
+      "disposition": "redirect",
+      "replacement": "docs/STRAND.md"
+    },
+    "tools/strand/scripts/packaging/iana-media-type.md": {
+      "disposition": "redirect",
+      "replacement": "docs/STRAND.md"
+    },
+    "tools/strand/scripts/packaging/macos/README.md": {
+      "disposition": "redirect",
+      "replacement": "docs/STRAND.md"
+    },
+    "tools/training/README.md": {
+      "disposition": "redirect",
+      "replacement": "docs/OPERATIONS.md"
+    },
+    "vendor/strand-decode-kernel/shaders/README.md": {
+      "disposition": "redirect",
+      "replacement": "docs/STRAND.md"
+    },
+    "vendor/strand-quant/BLOCK_PARALLEL.md": {
+      "disposition": "redirect",
+      "replacement": "docs/STRAND.md"
+    },
+    "vendor/strand-quant/NATIVE_EXECUTION.md": {
+      "disposition": "redirect",
+      "replacement": "docs/STRAND.md"
+    },
+    "vendor/strand-quant/THREAD_PROFILE_PIPELINE.md": {
+      "disposition": "redirect",
+      "replacement": "docs/STRAND.md"
+    }
+  }
+}

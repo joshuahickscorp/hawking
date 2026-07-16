@@ -63,22 +63,23 @@ import argparse
 import gc
 import json
 import os
+from pathlib import Path
 import sys
 import time
 
 import numpy as np
 
 # ----------------------------------------------------------------------------
+ROOT = Path(__file__).resolve().parents[2]
 MODEL = os.environ.get(
-    "QTIP_MODEL",
-    "/Users/scammermike/Downloads/hawking/models/qwen2.5-3b-instruct-q4_k_m.gguf",
+    "QTIP_MODEL", str(ROOT / "models/qwen2.5-3b-instruct-q4_k_m.gguf")
 )
-REPORT_MD = "/Users/scammermike/Downloads/hawking/reports/oracle_qtip_quality.md"
-REPORT_JSON = "/Users/scammermike/Downloads/hawking/reports/oracle/qtip_quality.json"
+REPORT_MD = str(ROOT / "reports/oracle_qtip_quality.md")
+REPORT_JSON = str(ROOT / "reports/oracle/qtip_quality.json")
 RSS_CEIL_GB = 3.0
 
-# Representative real tensors (attn + ffn across early/mid/late), mirrors
-# oracle_lowrank_codebook.py's sample. Q4_K + Q6_K both appear on disk.
+# Representative real tensors (attn + ffn across early/mid/late), retained from
+# the original feasibility sweep. Q4_K + Q6_K both appear on disk.
 SAMPLE_NAMES = [
     "blk.0.attn_q.weight",
     "blk.0.ffn_gate.weight",

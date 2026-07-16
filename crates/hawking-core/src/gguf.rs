@@ -111,17 +111,7 @@ impl GgmlType {
     }
 
     pub fn is_quantized(self) -> bool {
-        !matches!(
-            self,
-            Self::F32
-                | Self::F16
-                | Self::BF16
-                | Self::F64
-                | Self::I8
-                | Self::I16
-                | Self::I32
-                | Self::I64
-        )
+        !matches!(self, Self::F32 | Self::F16 | Self::BF16 | Self::F64 | Self::I8 | Self::I16 | Self::I32 | Self::I64)
     }
 }
 
@@ -228,9 +218,7 @@ impl GgufFile {
         let mut p = Cursor::new(&mmap);
         let magic = p.u32()?;
         if magic != GGUF_MAGIC {
-            return Err(Error::Gguf(format!(
-                "bad magic 0x{magic:08x}, expected 0x{GGUF_MAGIC:08x}"
-            )));
+            return Err(Error::Gguf(format!("bad magic 0x{magic:08x}, expected 0x{GGUF_MAGIC:08x}")));
         }
         let version = p.u32()?;
         if !(2..=3).contains(&version) {
@@ -247,8 +235,7 @@ impl GgufFile {
         }
 
         // Tensor index.
-        let mut infos: Vec<(String, Vec<u64>, GgmlType, u64)> =
-            Vec::with_capacity(tensor_count as usize);
+        let mut infos: Vec<(String, Vec<u64>, GgmlType, u64)> = Vec::with_capacity(tensor_count as usize);
         for _ in 0..tensor_count {
             let name = p.gguf_string()?;
             let n_dims = p.u32()? as usize;
@@ -265,10 +252,7 @@ impl GgufFile {
         }
 
         // Align tensor data start to `general.alignment` (default 32).
-        let alignment = metadata
-            .get("general.alignment")
-            .and_then(|v| v.as_u32())
-            .unwrap_or(32) as u64;
+        let alignment = metadata.get("general.alignment").and_then(|v| v.as_u32()).unwrap_or(32) as u64;
         let header_end = p.pos as u64;
         let data_base = align_up(header_end, alignment);
 
@@ -278,46 +262,22 @@ impl GgufFile {
             let n_elems: u64 = dims.iter().product();
             let (block_size, bytes_per_block) = dtype.block_layout();
             if n_elems % block_size != 0 {
-                return Err(Error::Gguf(format!(
-                    "tensor {name}: {n_elems} elems not divisible by block {block_size}"
-                )));
+                return Err(Error::Gguf(format!("tensor {name}: {n_elems} elems not divisible by block {block_size}")));
             }
             let byte_size = (n_elems / block_size) * bytes_per_block;
             let abs = data_base + local_offset;
             if abs + byte_size > mmap.len() as u64 {
-                return Err(Error::Gguf(format!(
-                    "tensor {name}: end {} past mmap len {}",
-                    abs + byte_size,
-                    mmap.len()
-                )));
+                return Err(Error::Gguf(format!("tensor {name}: end {} past mmap len {}", abs + byte_size, mmap.len())));
             }
             order.push(name.clone());
-            tensors.insert(
-                name.clone(),
-                TensorInfo {
-                    name,
-                    dims,
-                    dtype,
-                    data_offset: abs,
-                    byte_size,
-                },
-            );
+            tensors.insert(name.clone(), TensorInfo { name, dims, dtype, data_offset: abs, byte_size });
         }
 
-        Ok(Self {
-            mmap,
-            version,
-            tensor_count,
-            metadata,
-            tensors,
-            tensor_order: order,
-        })
+        Ok(Self { mmap, version, tensor_count, metadata, tensors, tensor_order: order })
     }
 
     pub fn architecture(&self) -> Option<&str> {
-        self.metadata
-            .get("general.architecture")
-            .and_then(|v| v.as_str())
+        self.metadata.get("general.architecture").and_then(|v| v.as_str())
     }
 
     pub fn name(&self) -> Option<&str> {

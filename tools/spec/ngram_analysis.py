@@ -14,7 +14,7 @@ USAGE (standalone):
     # read from stdin:
     cat tokens.txt | python3 tools/spec/ngram_analysis.py --stdin
 
-    # called by ngram_baseline.sh — output is machine-readable + human table
+    # called by the canonical spec runner — output is machine-readable + human table
     python3 tools/spec/ngram_analysis.py --seqs FILE --ngrams 2 3 4 --json out.json
 
 ORACLE MODEL (depth-1):

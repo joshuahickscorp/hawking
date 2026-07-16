@@ -1,0 +1,130 @@
+/* panels.css — folded sidebar panels: Runs (SCM) + Context tree.
+   Imported after theme.css, so these rules win on equal specificity. Target look: VS Code Explorer /
+   Source Control sidebar — flat, dark, system font, ~22px rows, no glows or breathing. */
+
+/* ---- Context tree (VS Code Explorer-style collapsible sections) ---- */
+.ctx-stack {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: var(--ma-1) 0 var(--ma-2);
+  font-family: var(--font-ui);
+}
+
+.ctx-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.ctx-section__head {
+  padding: 0 var(--ma-2);
+}
+
+.ctx-section__toggle {
+  border-radius: var(--radius-sm);
+}
+
+.ctx-section__toggle:hover {
+  background: var(--list-hover);
+}
+
+.ctx-section__toggle:hover .ctx-section__label,
+.ctx-section__toggle:hover .ctx-twistie {
+  color: var(--text);
+}
+
+/* compact tree rows */
+.ctx-row {
+  border-radius: 0;
+  color: var(--text);
+}
+
+.ctx-row--btn:hover,
+.ctx-row:hover {
+  background: var(--list-hover);
+}
+
+/* row trailing toggle */
+.ctx-toggle {
+  line-height: 1.4;
+  transition:
+    background var(--dur-fast) var(--ease),
+    color var(--dur-fast) var(--ease),
+    border-color var(--dur-fast) var(--ease);
+}
+
+.ctx-toggle:hover {
+  color: var(--text);
+  border-color: var(--widget-border);
+}
+
+.ctx-toggle[aria-pressed="true"]:hover {
+  filter: brightness(1.08);
+}
+
+.ctx-note-input::placeholder {
+  color: var(--text-dim);
+}
+
+.ctx-note-input:focus {
+  border-color: var(--accent);
+}
+
+/* ---- Runs (Source Control) view ---- */
+.runs-view {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.runs-subhead {
+  padding: var(--ma-1) var(--ma-3);
+  font-size: var(--fs-label);
+  font-weight: var(--fw-medium);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.runs-list {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 var(--ma-1);
+}
+
+.runs-row {
+  width: 100%;
+  min-height: 22px;
+  gap: var(--ma-2);
+  padding: 0 var(--ma-3);
+  border-radius: 0;
+  font-size: var(--fs-ui);
+  color: var(--text);
+}
+
+.runs-row:hover {
+  background: var(--list-hover);
+  color: var(--text-strong);
+}
+
+.runs-row__glyph {
+  width: 14px;
+  text-align: center;
+  flex: 0 0 auto;
+  font-size: var(--fs-small);
+}
+
+.runs-row__name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.runs-row__meta {
+  flex: 0 0 auto;
+  color: var(--text-dim);
+  font-size: var(--fs-label);
+  font-variant-numeric: tabular-nums;
+}

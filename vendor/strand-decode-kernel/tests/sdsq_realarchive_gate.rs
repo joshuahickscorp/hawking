@@ -29,16 +29,8 @@ fn sdsq_real_archive_reconstruct_is_byte_identical() {
 
     // The packed archive must actually be packed (flag set); legacy must not be.
     use strand_quant::format::flags_v2;
-    assert_eq!(
-        legacy.header().flags & flags_v2::SCALEQ_IN_SDSQ,
-        0,
-        "legacy archive must NOT set SCALEQ_IN_SDSQ"
-    );
-    assert_ne!(
-        packed.header().flags & flags_v2::SCALEQ_IN_SDSQ,
-        0,
-        "packed archive MUST set SCALEQ_IN_SDSQ"
-    );
+    assert_eq!(legacy.header().flags & flags_v2::SCALEQ_IN_SDSQ, 0, "legacy archive must NOT set SCALEQ_IN_SDSQ");
+    assert_ne!(packed.header().flags & flags_v2::SCALEQ_IN_SDSQ, 0, "packed archive MUST set SCALEQ_IN_SDSQ");
 
     let names: Vec<String> = legacy.tensor_names().map(|s| s.to_string()).collect();
     let pnames: Vec<String> = packed.tensor_names().map(|s| s.to_string()).collect();
@@ -78,9 +70,6 @@ fn sdsq_real_archive_reconstruct_is_byte_identical() {
         let po = packed.outlier(name);
         assert_eq!(lo, po, "OUTL outlier channel differs for {name}");
     }
-    println!(
-        "SDSQ real-archive gate: {} tensors, {checked_blocks} blocks, maxabsdiff={max_abs_diff}",
-        names.len()
-    );
+    println!("SDSQ real-archive gate: {} tensors, {checked_blocks} blocks, maxabsdiff={max_abs_diff}", names.len());
     assert_eq!(max_abs_diff, 0, "recon must be byte-identical (container-only)");
 }

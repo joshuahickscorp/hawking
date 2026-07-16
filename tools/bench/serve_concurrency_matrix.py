@@ -27,7 +27,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_WORKLOAD_DIR = ROOT / "tools/bench/workloads"
+DEFAULT_WORKLOAD_FILE = ROOT / "tools/bench/workloads.json"
 DEFAULT_REPORT = ROOT / "docs/reports/serve_matrix/latest.md"
 
 
@@ -72,13 +72,19 @@ def load_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def resolve_workload(value: str) -> Path:
+def resolve_workload(value: str) -> tuple[dict[str, Any], str]:
     path = Path(value)
     if path.exists():
-        return path
-    candidate = DEFAULT_WORKLOAD_DIR / f"{value}.json"
-    if candidate.exists():
-        return candidate
+        doc = load_json(path)
+        if "profiles" not in doc:
+            return doc, str(path)
+        name = path.stem
+    else:
+        name = path.stem
+        doc = load_json(DEFAULT_WORKLOAD_FILE)
+    profiles = doc.get("profiles", {})
+    if name in profiles:
+        return profiles[name], f"{DEFAULT_WORKLOAD_FILE}#{name}"
     raise SystemExit(f"unknown workload: {value}")
 
 
@@ -391,9 +397,9 @@ def main() -> int:
     parser.add_argument("--model", default="local-model")
     parser.add_argument("--hardware", default="apple-local")
     parser.add_argument("--workload", default="shared_agent")
-    parser.add_argument("--concurrency", type=parse_int_list, default=[1, 2, 4, 8])
-    parser.add_argument("--prompt-tokens", type=parse_int_list, default=[8192])
-    parser.add_argument("--decode-tokens", type=int, default=128)
+    parser.add_argument("--concurrency", type=parse_int_list)
+    parser.add_argument("--prompt-tokens", type=parse_int_list)
+    parser.add_argument("--decode-tokens", type=int)
     parser.add_argument("--requests-per-level", type=int, default=0, help="0 means max(concurrency)")
     parser.add_argument("--timeout", type=float, default=300)
     parser.add_argument("--stream", action="store_true")
@@ -410,22 +416,24 @@ def main() -> int:
     health_url = engine_config.get("health_url")
     model = args.model if args.model != "local-model" else engine_config.get("model", args.model)
 
-    workload_path = resolve_workload(args.workload)
-    workload = load_json(workload_path)
-    requests_per_level = args.requests_per_level if args.requests_per_level > 0 else max(args.concurrency)
+    workload, workload_source = resolve_workload(args.workload)
+    concurrency = args.concurrency or list(workload.get("concurrency") or [1, 2, 4, 8])
+    prompt_tokens = args.prompt_tokens or list(workload.get("prompt_token_targets") or [8192])
+    decode_tokens = args.decode_tokens or int(workload.get("decode_tokens", 128))
+    requests_per_level = args.requests_per_level if args.requests_per_level > 0 else max(concurrency)
     plans = build_plan(
         workload,
-        args.concurrency,
-        args.prompt_tokens,
-        args.decode_tokens,
+        concurrency,
+        prompt_tokens,
+        decode_tokens,
         requests_per_level,
         args.stream,
     )
     meta = {
         "generated_at": now_iso(),
         "engine": args.engine,
-        "workload_name": workload.get("name", workload_path.stem),
-        "workload_path": str(workload_path),
+        "workload_name": workload.get("name", Path(workload_source).stem),
+        "workload_path": workload_source,
         "hardware": args.hardware,
         "model": model,
     }

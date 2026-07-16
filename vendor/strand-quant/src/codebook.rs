@@ -7,35 +7,10 @@ const QUANTILE_CLAMP_Q12: i32 = 6 * (1 << QUANTILE_SHIFT);
 /// ([`acklam_central_q12`]). Lifted to module scope so both paths quote the
 /// identical numbers (the computed path must reproduce the frozen table the f64
 /// path bakes, byte-for-byte).
-const ACKLAM_A: [f64; 6] = [
-    -3.969683028665376e+01,
-    2.209460984245205e+02,
-    -2.759285104469687e+02,
-    1.38357751867269e+02,
-    -3.066479806614716e+01,
-    2.506628277459239e+00,
-];
-const ACKLAM_B: [f64; 5] = [
-    -5.447609879822406e+01,
-    1.615858368580409e+02,
-    -1.556989798598866e+02,
-    6.680131188771972e+01,
-    -1.328068155288572e+01,
-];
-const ACKLAM_C: [f64; 6] = [
-    -7.784894002430293e-03,
-    -3.223964580411365e-01,
-    -2.400758277161838e+00,
-    -2.549732539343734e+00,
-    4.374664141464968e+00,
-    2.938163982698783e+00,
-];
-const ACKLAM_D: [f64; 4] = [
-    7.784695709041462e-03,
-    3.224671290700398e-01,
-    2.445134137142996e+00,
-    3.754408661907416e+00,
-];
+const ACKLAM_A: [f64; 6] = [-3.969683028665376e+01, 2.209460984245205e+02, -2.759285104469687e+02, 1.38357751867269e+02, -3.066479806614716e+01, 2.506628277459239e+00];
+const ACKLAM_B: [f64; 5] = [-5.447609879822406e+01, 1.615858368580409e+02, -1.556989798598866e+02, 6.680131188771972e+01, -1.328068155288572e+01];
+const ACKLAM_C: [f64; 6] = [-7.784894002430293e-03, -3.223964580411365e-01, -2.400758277161838e+00, -2.549732539343734e+00, 4.374664141464968e+00, 2.938163982698783e+00];
+const ACKLAM_D: [f64; 4] = [7.784695709041462e-03, 3.224671290700398e-01, 2.445134137142996e+00, 3.754408661907416e+00];
 /// Lower break-point of Acklam's central region (`p in [P_LOW, 1-P_LOW]`).
 const ACKLAM_P_LOW: f64 = 0.02425;
 
@@ -57,17 +32,14 @@ fn inv_norm_cdf(p: f64) -> f64 {
     }
     if p < P_LOW {
         let q = (-2.0 * p.ln()).sqrt();
-        (((((C[0] * q + C[1]) * q + C[2]) * q + C[3]) * q + C[4]) * q + C[5])
-            / ((((D[0] * q + D[1]) * q + D[2]) * q + D[3]) * q + 1.0)
+        (((((C[0] * q + C[1]) * q + C[2]) * q + C[3]) * q + C[4]) * q + C[5]) / ((((D[0] * q + D[1]) * q + D[2]) * q + D[3]) * q + 1.0)
     } else if p <= P_HIGH {
         let q = p - 0.5;
         let r = q * q;
-        (((((A[0] * r + A[1]) * r + A[2]) * r + A[3]) * r + A[4]) * r + A[5]) * q
-            / (((((B[0] * r + B[1]) * r + B[2]) * r + B[3]) * r + B[4]) * r + 1.0)
+        (((((A[0] * r + A[1]) * r + A[2]) * r + A[3]) * r + A[4]) * r + A[5]) * q / (((((B[0] * r + B[1]) * r + B[2]) * r + B[3]) * r + B[4]) * r + 1.0)
     } else {
         let q = (-2.0 * (1.0 - p).ln()).sqrt();
-        -(((((C[0] * q + C[1]) * q + C[2]) * q + C[3]) * q + C[4]) * q + C[5])
-            / ((((D[0] * q + D[1]) * q + D[2]) * q + D[3]) * q + 1.0)
+        -(((((C[0] * q + C[1]) * q + C[2]) * q + C[3]) * q + C[4]) * q + C[5]) / ((((D[0] * q + D[1]) * q + D[2]) * q + D[3]) * q + 1.0)
     }
 }
 
@@ -163,23 +135,10 @@ const ACKLAM_FB: u32 = 40;
 /// integers: `ACKLAM_A_Q[i] == round(ACKLAM_A[i] * 2^ACKLAM_FB)`. Baked so the
 /// **runtime central path touches no float at all** (the determinism contract).
 /// The equality with the f64 source is asserted by `baked_acklam_coeffs_exact`.
-const ACKLAM_A_Q: [i128; 6] = [
-    -43647126486026,
-    242932804329501,
-    -303386605671354,
-    152125956971009,
-    -33716302037132,
-    2756066937579,
-];
+const ACKLAM_A_Q: [i128; 6] = [-43647126486026, 242932804329501, -303386605671354, 152125956971009, -33716302037132, 2756066937579];
 /// Acklam central denominator coefficients pre-scaled to Q(`ACKLAM_FB`); see
 /// [`ACKLAM_A_Q`]. The implicit trailing `B[5] = 1.0` is `1 << ACKLAM_FB`.
-const ACKLAM_B_Q: [i128; 5] = [
-    -59897104064522,
-    177665506509332,
-    -171192838788807,
-    73448819171239,
-    -14602263792188,
-];
+const ACKLAM_B_Q: [i128; 5] = [-59897104064522, 177665506509332, -171192838788807, 73448819171239, -14602263792188];
 
 /// Per-`L` count of **left-tail** ranks (`p < P_LOW`), `L = 4..=14` at index
 /// `L - 4`. Captured offline from the f64 `p < P_LOW` decision (the tail region
@@ -338,12 +297,7 @@ mod tests {
         let lut = build_quantile_lut_f64(10);
 
         for w in lut.windows(2) {
-            assert!(
-                w[1] >= w[0],
-                "quantile LUT not monotone: {} then {}",
-                w[0],
-                w[1]
-            );
+            assert!(w[1] >= w[0], "quantile LUT not monotone: {} then {}", w[0], w[1]);
         }
 
         let n = lut.len();
@@ -368,16 +322,8 @@ mod tests {
         use crate::lut_tables::{CODEBOOK_LUTS, FROZEN_MAX_L, FROZEN_MIN_L, QUANTILE_LUTS};
         for l in FROZEN_MIN_L..=FROZEN_MAX_L {
             let i = (l - FROZEN_MIN_L) as usize;
-            assert_eq!(
-                QUANTILE_LUTS[i],
-                build_quantile_lut_f64(l).as_slice(),
-                "quantile L={l}"
-            );
-            assert_eq!(
-                CODEBOOK_LUTS[i],
-                build_codebook_lut_f64(l).as_slice(),
-                "codebook L={l}"
-            );
+            assert_eq!(QUANTILE_LUTS[i], build_quantile_lut_f64(l).as_slice(), "quantile L={l}");
+            assert_eq!(CODEBOOK_LUTS[i], build_codebook_lut_f64(l).as_slice(), "codebook L={l}");
         }
 
         assert_eq!(quantile_lut(10), build_quantile_lut_f64(10).as_slice());
@@ -396,10 +342,7 @@ mod tests {
                 }
             }
         }
-        assert_eq!(
-            h, LUT_GOLDEN_HASH,
-            "frozen LUT golden hash mismatch (table drift)"
-        );
+        assert_eq!(h, LUT_GOLDEN_HASH, "frozen LUT golden hash mismatch (table drift)");
     }
 
     #[test]
@@ -413,10 +356,7 @@ mod tests {
                 assert!(!seen[h], "hash collision at L={l}: state {s} -> {h}");
                 seen[h] = true;
             }
-            assert!(
-                seen.iter().all(|&b| b),
-                "hash did not cover all ranks at L={l}"
-            );
+            assert!(seen.iter().all(|&b| b), "hash did not cover all ranks at L={l}");
         }
     }
 
@@ -426,24 +366,17 @@ mod tests {
         let k = 3u32;
         let cb = codebook_lut(l);
         let mask = (1usize << l) - 1;
-        let full_range =
-            (cb.iter().copied().max().unwrap() - cb.iter().copied().min().unwrap()) as f64;
+        let full_range = (cb.iter().copied().max().unwrap() - cb.iter().copied().min().unwrap()) as f64;
         let mut avg_spread = 0.0f64;
         let trials = 64usize;
         for s in 0..trials {
-            let succ: Vec<i32> = (0..(1usize << k))
-                .map(|i| cb[((s << k) | i) & mask])
-                .collect();
-            let spread =
-                (succ.iter().copied().max().unwrap() - succ.iter().copied().min().unwrap()) as f64;
+            let succ: Vec<i32> = (0..(1usize << k)).map(|i| cb[((s << k) | i) & mask]).collect();
+            let spread = (succ.iter().copied().max().unwrap() - succ.iter().copied().min().unwrap()) as f64;
             avg_spread += spread;
         }
         avg_spread /= trials as f64;
 
-        assert!(
-            avg_spread > 0.25 * full_range,
-            "successor spread {avg_spread:.0} too small vs full range {full_range:.0}",
-        );
+        assert!(avg_spread > 0.25 * full_range, "successor spread {avg_spread:.0} too small vs full range {full_range:.0}",);
     }
 
     #[test]
@@ -462,18 +395,10 @@ mod tests {
         // were transcribed correctly from the f64 source of truth.
         let scale = (1u128 << ACKLAM_FB) as f64;
         for (i, &a) in ACKLAM_A.iter().enumerate() {
-            assert_eq!(
-                ACKLAM_A_Q[i],
-                (a * scale).round() as i128,
-                "A[{i}] baked coeff wrong"
-            );
+            assert_eq!(ACKLAM_A_Q[i], (a * scale).round() as i128, "A[{i}] baked coeff wrong");
         }
         for (i, &b) in ACKLAM_B.iter().enumerate() {
-            assert_eq!(
-                ACKLAM_B_Q[i],
-                (b * scale).round() as i128,
-                "B[{i}] baked coeff wrong"
-            );
+            assert_eq!(ACKLAM_B_Q[i], (b * scale).round() as i128, "B[{i}] baked coeff wrong");
         }
     }
 
@@ -514,10 +439,7 @@ mod tests {
             }
             let t = TAIL_LEFT_LEN[(l - FROZEN_MIN_L) as usize];
             assert_eq!(t, left, "TAIL_LEFT_LEN wrong (left) at L={l}");
-            assert_eq!(
-                t, right,
-                "tail asymmetric count at L={l}: left={left} right={right}"
-            );
+            assert_eq!(t, right, "tail asymmetric count at L={l}: left={left} right={right}");
         }
     }
 
@@ -530,11 +452,7 @@ mod tests {
         for l in FROZEN_MIN_L..=FROZEN_MAX_L {
             let frozen = quantile_lut(l);
             for (r, &want) in frozen.iter().enumerate() {
-                assert_eq!(
-                    quantile_q12_computed(r, l),
-                    want,
-                    "computed quantile mismatch L={l} r={r}"
-                );
+                assert_eq!(quantile_q12_computed(r, l), want, "computed quantile mismatch L={l} r={r}");
             }
         }
     }

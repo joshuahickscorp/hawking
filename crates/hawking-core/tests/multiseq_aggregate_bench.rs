@@ -114,7 +114,7 @@ fn multiseq_aggregate_speedup() {
         );
     }
     println!("(ratio/delta cancel the agent's ~4-5x inflation; ABSOLUTE tps needs a clean room.)");
-    println!("(batch_ceiling.py predicts ~3.5-5.6x realistic aggregate @ B=8.)");
+    println!("(the offline ceiling model predicts ~3.5-5.6x realistic aggregate @ B=8.)");
     println!(
         "(R2+R3 are unconditional; to isolate their delta, A/B this bench vs commit 8aba79e.)\n"
     );

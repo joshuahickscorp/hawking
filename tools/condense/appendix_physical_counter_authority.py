@@ -31,7 +31,12 @@ import tempfile
 import time
 from typing import Any, Iterable
 
+import condense_profiles
+
+condense_profiles.install_archive_importer()
+
 import appendix_contract
+from condense_common import canonical_sha256, stamp_sha256 as _stamp
 import appendix_physical_counter_normalizer as trusted_normalizer
 import appendix_process_joule_collector as process_joule
 import physical_counter_attestation
@@ -85,7 +90,8 @@ XCTRACE_ABI = (
     "/Applications/Xcode.app/Contents/Developer/usr/bin/xctrace",
     "record", "--template", "Metal System Trace", "--attach", "{probe_pid}",
     "--output", "{raw_output}",
-    "then", "python3.12", "tools/condense/appendix_xctrace_export_adapter.py",
+    "then", "python3.12", "-m", "tools.condense", "legacy",
+    "appendix_xctrace_export_adapter",
     "--export", "--kind", "{kind}", "--trace", "{raw_output}",
     "--raw-bundle", "{raw_bundle}", "--profile", "{signed_profile}",
     "--probe-pid", "{probe_pid}", "--run-nonce", "{run_nonce}",
@@ -114,7 +120,8 @@ PROCESS_JOULE_ABI = (
     "pid+ri_uuid+ri_proc_start_abstime",
 )
 LEASE_HOLDER_ABI = (
-    "python3.12", "tools/condense/appendix_physical_counter_executor.py",
+    "python3.12", "-m", "tools.condense", "legacy",
+    "appendix_physical_counter_executor",
     "--lease-holder-execute", "REQUEST", "--acknowledge-request-sha256", "SHA256",
 )
 COMMAND_ABI_HASHES = {
@@ -225,25 +232,43 @@ class AuthorityError(ValueError):
     """A registry, receipt, key, or immutable output is not trustworthy."""
 
 
-def canonical_sha256(value: Any) -> str:
-    return appendix_contract.canonical_sha256(value)
+def _module_source_identity(
+    module_name: str, path: pathlib.Path,
+) -> tuple[dict[str, Any], str | None]:
+    """Identify retained bytes or their immutable Git archive replacement."""
+    if os.path.lexists(path):
+        return physical_counter_attestation.file_identity(path), None
+    record = condense_profiles.legacy_record(module_name)
+    source = condense_profiles.archive_source(module_name)
+    return {
+        "path": f"git:{record['archive_commit']}:{record['path']}",
+        "sha256": record["source_sha256"],
+        "size_bytes": len(source),
+    }, str(record["archive_commit"])
+
+
 
 
 def trusted_normalizer_identity() -> dict[str, Any]:
     """Measure the reviewed normalizer bytes at their one pinned source path."""
-    identity = physical_counter_attestation.file_identity(TRUSTED_NORMALIZER)
-    if identity["path"] != str(TRUSTED_NORMALIZER):
+    identity, normalizer_archive = _module_source_identity(
+        "appendix_physical_counter_normalizer", TRUSTED_NORMALIZER,
+    )
+    if normalizer_archive is None and identity["path"] != str(TRUSTED_NORMALIZER):
         raise AuthorityError("trusted normalizer resolved outside its pinned source path")
+    process_identity, process_archive = _module_source_identity(
+        "appendix_process_joule_collector", pathlib.Path(process_joule.__file__),
+    )
     return {
         "relative_path": TRUSTED_NORMALIZER_RELATIVE_PATH,
         "file": identity,
+        "archive_commit": normalizer_archive,
         "schema": trusted_normalizer.SCHEMA,
         "contract_sha256": trusted_normalizer.CONTRACT_SHA256,
         "attributed_schema": trusted_normalizer.ATTRIBUTED_SCHEMA,
         "process_joule_collector": {
-            "file": physical_counter_attestation.file_identity(
-                pathlib.Path(process_joule.__file__),
-            ),
+            "file": process_identity,
+            "archive_commit": process_archive,
             "schema": process_joule.SCHEMA,
             "contract_sha256": process_joule.CONTRACT_SHA256,
             "backend_id": process_joule.BACKEND_ID,
@@ -251,11 +276,6 @@ def trusted_normalizer_identity() -> dict[str, Any]:
     }
 
 
-def _stamp(value: dict[str, Any], field: str) -> dict[str, Any]:
-    stamped = copy.deepcopy(value)
-    stamped.pop(field, None)
-    stamped[field] = canonical_sha256(stamped)
-    return stamped
 
 
 def _hash_errors(value: Any, field: str, *, label: str) -> list[str]:
@@ -978,7 +998,30 @@ def status() -> dict[str, Any]:
     except (OSError, ValueError, AuthorityError) as exc:
         normalizer_identity = None
         normalizer_errors = [f"trusted normalizer cannot be identified: {exc}"]
-    process_status = process_joule.status()
+    try:
+        process_status = process_joule.status()
+    except (OSError, ValueError, process_joule.ProcessJouleError) as exc:
+        process_errors = [f"collector working-tree status unavailable: {exc}"]
+        try:
+            provenance = process_joule.library_provenance()
+        except (OSError, ValueError, process_joule.ProcessJouleError) as provenance_exc:
+            provenance = None
+            process_errors.append(f"libproc provenance unavailable: {provenance_exc}")
+        record = condense_profiles.legacy_record("appendix_process_joule_collector")
+        process_errors.extend([
+            (
+                "collector source is immutable in Git archive "
+                f"{record['archive_commit']}:{record['path']}"
+            ),
+            (
+                "probe-side bracketing proc_pid_rusage_v6 source is wired but lacks "
+                "a fresh release-build/runtime receipt"
+            ),
+        ])
+        process_status = {
+            "direct_process_nanojoule_backend_available": provenance is not None,
+            "blockers": process_errors,
+        }
     return _stamp({
         "schema": STATUS_SCHEMA,
         "default_off": True,

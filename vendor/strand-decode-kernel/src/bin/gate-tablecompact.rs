@@ -23,10 +23,7 @@ fn main() {
 #[cfg(target_os = "macos")]
 #[allow(unsafe_code)]
 mod macos {
-    use metal::{
-        Buffer, CommandQueue, CompileOptions, ComputePipelineState, Device, MTLResourceOptions,
-        MTLSize, NSUInteger,
-    };
+    use metal::{Buffer, CommandQueue, CompileOptions, ComputePipelineState, Device, MTLResourceOptions, MTLSize, NSUInteger};
 
     use strand_decode_kernel::block_walk::gate_proto::{machine_stamp, synth_encoded};
     use strand_decode_kernel::metal::{bake_bitslice_entries, BitsliceEntry, BitsliceGpu, StrandGpu};
@@ -61,10 +58,7 @@ mod macos {
         for (i, &c) in codes.iter().enumerate().take(8) {
             b[i] = c;
         }
-        [
-            u32::from_le_bytes([b[0], b[1], b[2], b[3]]),
-            u32::from_le_bytes([b[4], b[5], b[6], b[7]]),
-        ]
+        [u32::from_le_bytes([b[0], b[1], b[2], b[3]]), u32::from_le_bytes([b[4], b[5], b[6], b[7]])]
     }
 
     /// Compact bake. We derive bit_offset / init_state / out_off / n from the
@@ -82,11 +76,7 @@ mod macos {
             let n_sub = n_sub_blocks(blk.n as usize);
             assert!(n_sub <= 8, "compact entry holds <=8 sub-blocks (n<=256)");
             let mult_codes = unpack_sub_scales(&blk.sub_scales, n_sub);
-            let min_codes = if has_affine {
-                unpack_sub_scales(&blk.mins, n_sub)
-            } else {
-                Vec::new()
-            };
+            let min_codes = if has_affine { unpack_sub_scales(&blk.mins, n_sub) } else { Vec::new() };
             out.push(CompactEntry {
                 bit_offset: ref_e.bit_offset,
                 init_state: ref_e.init_state,
@@ -110,10 +100,7 @@ mod macos {
         let mult_code = mb[sb & 3];
         let nb = e.min_codes[sb >> 2].to_le_bytes();
         let min_code = nb[sb & 3];
-        (
-            eff_scale_q(e.scale_q, mult_code),
-            eff_min_q(e.min_base_q, min_code),
-        )
+        (eff_scale_q(e.scale_q, mult_code), eff_min_q(e.min_base_q, min_code))
     }
 
     // ============================================================================
@@ -353,33 +340,21 @@ kernel void compact_reduce_rows(
             let queue = device.new_command_queue();
             let gpu = Self { device, queue, decode, gemv_partials, reduce_rows, sizeof_probe };
             let gpu_sz = gpu.gpu_sizeof();
-            assert_eq!(
-                gpu_sz as usize,
-                std::mem::size_of::<CompactEntry>(),
-                "GPU sizeof(CompactEntry)={gpu_sz} != host {} — tbl stride would diverge",
-                std::mem::size_of::<CompactEntry>()
-            );
+            assert_eq!(gpu_sz as usize, std::mem::size_of::<CompactEntry>(), "GPU sizeof(CompactEntry)={gpu_sz} != host {} — tbl stride would diverge", std::mem::size_of::<CompactEntry>());
             Some(gpu)
         }
 
         fn upload<T: Copy>(&self, data: &[T]) -> Buffer {
             let byte_len = (data.len() * std::mem::size_of::<T>()).max(4);
-            let buf = self
-                .device
-                .new_buffer(byte_len as NSUInteger, MTLResourceOptions::StorageModeShared);
+            let buf = self.device.new_buffer(byte_len as NSUInteger, MTLResourceOptions::StorageModeShared);
             unsafe {
-                std::ptr::copy_nonoverlapping(
-                    data.as_ptr() as *const u8,
-                    buf.contents() as *mut u8,
-                    data.len() * std::mem::size_of::<T>(),
-                );
+                std::ptr::copy_nonoverlapping(data.as_ptr() as *const u8, buf.contents() as *mut u8, data.len() * std::mem::size_of::<T>());
             }
             buf
         }
 
         fn alloc(&self, byte_len: usize) -> Buffer {
-            self.device
-                .new_buffer(byte_len.max(4) as NSUInteger, MTLResourceOptions::StorageModeShared)
+            self.device.new_buffer(byte_len.max(4) as NSUInteger, MTLResourceOptions::StorageModeShared)
         }
 
         fn upload_payload(&self, bits: &[u8]) -> Buffer {
@@ -408,15 +383,7 @@ kernel void compact_reduce_rows(
         }
 
         #[allow(clippy::too_many_arguments)]
-        fn decode_q12(
-            &self,
-            payload: &[u8],
-            tbl: &[CompactEntry],
-            lut: &[i32],
-            total: usize,
-            k_bits: u32,
-            l_bits: u32,
-        ) -> Vec<i32> {
+        fn decode_q12(&self, payload: &[u8], tbl: &[CompactEntry], lut: &[i32], total: usize, k_bits: u32, l_bits: u32) -> Vec<i32> {
             let w_buf = self.upload_payload(payload);
             let out_buf = self.alloc(total * 4);
             let tbl_buf = self.upload(tbl);
@@ -435,11 +402,7 @@ kernel void compact_reduce_rows(
             enc.set_buffer(5, Some(&l_buf), 0);
             enc.set_buffer(6, Some(&lut_buf), 0);
             enc.set_threadgroup_memory_length(0, ((1usize << l_bits) * 4) as NSUInteger);
-            let groups = MTLSize {
-                width: (tbl.len() as u64).div_ceil(256) as NSUInteger,
-                height: 1,
-                depth: 1,
-            };
+            let groups = MTLSize { width: (tbl.len() as u64).div_ceil(256) as NSUInteger, height: 1, depth: 1 };
             let tpg = MTLSize { width: 256, height: 1, depth: 1 };
             enc.dispatch_thread_groups(groups, tpg);
             enc.end_encoding();
@@ -451,17 +414,7 @@ kernel void compact_reduce_rows(
 
         // ---- fused B=1 matvec (gemv partials + reduce) -------------------------
         #[allow(clippy::too_many_arguments)]
-        fn matvec_bufs(
-            &self,
-            payload: &[u8],
-            tbl: &[CompactEntry],
-            lut: &[i32],
-            rows: u32,
-            cols: u32,
-            k_bits: u32,
-            l_bits: u32,
-            x: &[f32],
-        ) -> CompactBufs {
+        fn matvec_bufs(&self, payload: &[u8], tbl: &[CompactEntry], lut: &[i32], rows: u32, cols: u32, k_bits: u32, l_bits: u32, x: &[f32]) -> CompactBufs {
             CompactBufs {
                 w: self.upload_payload(payload),
                 x: self.upload(x),
@@ -493,11 +446,7 @@ kernel void compact_reduce_rows(
                 enc.set_buffer(7, Some(&b.l), 0);
                 enc.set_buffer(8, Some(&b.lut), 0);
                 enc.set_threadgroup_memory_length(0, ((1usize << l_bits) * 4) as NSUInteger);
-                let groups = MTLSize {
-                    width: (n_blocks as u64).div_ceil(256) as NSUInteger,
-                    height: 1,
-                    depth: 1,
-                };
+                let groups = MTLSize { width: (n_blocks as u64).div_ceil(256) as NSUInteger, height: 1, depth: 1 };
                 let tpg = MTLSize { width: 256, height: 1, depth: 1 };
                 enc.dispatch_thread_groups(groups, tpg);
                 enc.end_encoding();
@@ -509,11 +458,7 @@ kernel void compact_reduce_rows(
                 enc.set_buffer(1, Some(&b.y), 0);
                 enc.set_buffer(2, Some(&b.rows), 0);
                 enc.set_buffer(3, Some(&b.bpr), 0);
-                let groups = MTLSize {
-                    width: (rows as u64).div_ceil(256) as NSUInteger,
-                    height: 1,
-                    depth: 1,
-                };
+                let groups = MTLSize { width: (rows as u64).div_ceil(256) as NSUInteger, height: 1, depth: 1 };
                 let tpg = MTLSize { width: 256, height: 1, depth: 1 };
                 enc.dispatch_thread_groups(groups, tpg);
                 enc.end_encoding();
@@ -523,17 +468,7 @@ kernel void compact_reduce_rows(
         }
 
         #[allow(clippy::too_many_arguments)]
-        fn matvec(
-            &self,
-            payload: &[u8],
-            tbl: &[CompactEntry],
-            lut: &[i32],
-            rows: u32,
-            cols: u32,
-            k_bits: u32,
-            l_bits: u32,
-            x: &[f32],
-        ) -> Vec<f32> {
+        fn matvec(&self, payload: &[u8], tbl: &[CompactEntry], lut: &[i32], rows: u32, cols: u32, k_bits: u32, l_bits: u32, x: &[f32]) -> Vec<f32> {
             let bufs = self.matvec_bufs(payload, tbl, lut, rows, cols, k_bits, l_bits, x);
             self.matvec_dispatch(&bufs, tbl.len() as u32, rows, l_bits);
             let ptr = bufs.y.contents() as *const f32;
@@ -541,18 +476,7 @@ kernel void compact_reduce_rows(
         }
 
         #[allow(clippy::too_many_arguments)]
-        fn bench_matvec(
-            &self,
-            payload: &[u8],
-            tbl: &[CompactEntry],
-            lut: &[i32],
-            rows: u32,
-            cols: u32,
-            k_bits: u32,
-            l_bits: u32,
-            x: &[f32],
-            iters: usize,
-        ) -> f64 {
+        fn bench_matvec(&self, payload: &[u8], tbl: &[CompactEntry], lut: &[i32], rows: u32, cols: u32, k_bits: u32, l_bits: u32, x: &[f32], iters: usize) -> f64 {
             let bufs = self.matvec_bufs(payload, tbl, lut, rows, cols, k_bits, l_bits, x);
             let mut best = f64::INFINITY;
             for _ in 0..iters {
@@ -601,18 +525,12 @@ kernel void compact_reduce_rows(
             let lut = codebook_lut(cfg.l_bits);
             for seed in 0..16u64 {
                 let n = 1 + (seed as usize * 211) % 4096;
-                let w: Vec<f32> = (0..n)
-                    .map(|i| ((i as f32 + seed as f32) * 0.0137).sin() * 0.5)
-                    .collect();
+                let w: Vec<f32> = (0..n).map(|i| ((i as f32 + seed as f32) * 0.0137).sin() * 0.5).collect();
                 let variants = [
                     encode_tensor(&w, cfg),
                     encode_tensor_with(&w, cfg, &EncodeOpts { tail_biting: true, ..Default::default() }),
                     encode_tensor_with(&w, cfg, &EncodeOpts { affine_min: true, ..Default::default() }),
-                    encode_tensor_with(
-                        &w,
-                        cfg,
-                        &EncodeOpts { tail_biting: true, affine_min: true, ..Default::default() },
-                    ),
+                    encode_tensor_with(&w, cfg, &EncodeOpts { tail_biting: true, affine_min: true, ..Default::default() }),
                 ];
                 for enc in &variants {
                     let Some(tbl) = bake_compact(enc, cfg) else {
@@ -628,20 +546,14 @@ kernel void compact_reduce_rows(
                             let (he, _ho) = host_eff_off(ce, sb);
                             let want = eff_scale_q(blk.scale_q, m);
                             if he != want {
-                                return Err(format!(
-                                    "host expand mismatch {label} sb={sb}: {he} != {want}"
-                                ));
+                                return Err(format!("host expand mismatch {label} sb={sb}: {he} != {want}"));
                             }
                         }
                     }
                     let got = gpu.decode_q12(&enc.bits, &tbl, lut, enc.total, cfg.k_bits, cfg.l_bits);
                     let want = decode_tensor_fixed(enc, cfg);
                     if got != want {
-                        let idx = got
-                            .iter()
-                            .zip(want.iter())
-                            .position(|(a, b)| a != b)
-                            .unwrap_or(usize::MAX);
+                        let idx = got.iter().zip(want.iter()).position(|(a, b)| a != b).unwrap_or(usize::MAX);
                         let (g, r) = if idx < got.len() { (got[idx], want[idx]) } else { (0, 0) };
                         return Err(format!(
                             "IDENTITY VIOLATION {label} n={n} seed={seed} tail={} affine={}: \
@@ -669,11 +581,7 @@ kernel void compact_reduce_rows(
         println!("  {}", machine_stamp());
         let host_ref = std::mem::size_of::<BitsliceEntry>();
         let host_compact = std::mem::size_of::<CompactEntry>();
-        println!(
-            "  sizeof: reference BitsliceEntry = {host_ref} B (GPU {}), compact CompactEntry = {host_compact} B (GPU {})",
-            rgpu.gpu_entry_sizeof(),
-            cgpu.gpu_sizeof(),
-        );
+        println!("  sizeof: reference BitsliceEntry = {host_ref} B (GPU {}), compact CompactEntry = {host_compact} B (GPU {})", rgpu.gpu_entry_sizeof(), cgpu.gpu_sizeof(),);
 
         // ---- identity gate FIRST ----
         print!("  identity (compact decode == decode_tensor_fixed): ");
@@ -691,23 +599,13 @@ kernel void compact_reduce_rows(
         let (out_f, in_f) = (18944usize, 3584usize);
         let total = out_f * in_f;
         let peak = StrandGpu::new().map(|g| g.bench_peak_bw(64 << 20, 5)).unwrap_or(f64::NAN);
-        println!(
-            "\n  ffn_down {out_f}x{in_f} = {:.1}M weights;  measured streaming peak {:.1} GB/s",
-            total as f64 / 1e6,
-            peak / 1e9
-        );
+        println!("\n  ffn_down {out_f}x{in_f} = {:.1}M weights;  measured streaming peak {:.1} GB/s", total as f64 / 1e6, peak / 1e9);
 
         let x: Vec<f32> = (0..in_f).map(|i| (i as f32 * 0.05).sin()).collect();
 
-        let cells = [
-            (TrellisConfig::for_bpw(3.0), "k3 L7 (3-bit deploy)"),
-            (TrellisConfig::for_bpw_l(2.0, 12), "k2 L12 (2-bit reopen)"),
-        ];
+        let cells = [(TrellisConfig::for_bpw(3.0), "k3 L7 (3-bit deploy)"), (TrellisConfig::for_bpw_l(2.0, 12), "k2 L12 (2-bit reopen)")];
 
-        println!(
-            "\n  {:<24} {:>10} {:>10} {:>8}   {:>10} {:>10} {:>8}   {:>7}",
-            "config", "ref ms", "ref Gw/s", "ref %pk", "cmp ms", "cmp Gw/s", "cmp %pk", "ratio"
-        );
+        println!("\n  {:<24} {:>10} {:>10} {:>8}   {:>10} {:>10} {:>8}   {:>7}", "config", "ref ms", "ref Gw/s", "ref %pk", "cmp ms", "cmp Gw/s", "cmp %pk", "ratio");
 
         for (cfg, label) in cells {
             let enc = synth_encoded(total, cfg.k_bits, 256);
@@ -725,9 +623,7 @@ kernel void compact_reduce_rows(
             assert_eq!(cmp_decode, want, "compact decode identity violated on bench shape at {label}");
 
             // fused y identity (compact) vs CPU, probe rows
-            let y_cmp = cgpu.matvec(
-                &enc.bits, &cmp_tbl, lut, out_f as u32, in_f as u32, cfg.k_bits, cfg.l_bits, &x,
-            );
+            let y_cmp = cgpu.matvec(&enc.bits, &cmp_tbl, lut, out_f as u32, in_f as u32, cfg.k_bits, cfg.l_bits, &x);
             let inv = 1.0f32 / 4096.0;
             for r in (0..out_f).step_by(997) {
                 let row = &want[r * in_f..(r + 1) * in_f];
@@ -736,20 +632,12 @@ kernel void compact_reduce_rows(
                     acc += (row[i] as f32) * inv * x[i];
                 }
                 let denom = acc.abs().max(1e-3);
-                assert!(
-                    (y_cmp[r] - acc).abs() / denom < 1e-3,
-                    "compact fused y diverged at {label} row {r}: GPU {} vs CPU {acc}",
-                    y_cmp[r]
-                );
+                assert!((y_cmp[r] - acc).abs() / denom < 1e-3, "compact fused y diverged at {label} row {r}: GPU {} vs CPU {acc}", y_cmp[r]);
             }
 
             // ---- timings ----
-            let dt_ref = rgpu.bench_matvec(
-                &enc.bits, &ref_tbl, lut, out_f as u32, in_f as u32, cfg.k_bits, cfg.l_bits, &x, 20,
-            );
-            let dt_cmp = cgpu.bench_matvec(
-                &enc.bits, &cmp_tbl, lut, out_f as u32, in_f as u32, cfg.k_bits, cfg.l_bits, &x, 20,
-            );
+            let dt_ref = rgpu.bench_matvec(&enc.bits, &ref_tbl, lut, out_f as u32, in_f as u32, cfg.k_bits, cfg.l_bits, &x, 20);
+            let dt_cmp = cgpu.bench_matvec(&enc.bits, &cmp_tbl, lut, out_f as u32, in_f as u32, cfg.k_bits, cfg.l_bits, &x, 20);
 
             let ref_gws = total as f64 / dt_ref / 1e9;
             let cmp_gws = total as f64 / dt_cmp / 1e9;
@@ -765,10 +653,7 @@ kernel void compact_reduce_rows(
             let cmp_pct = 100.0 * (cmp_bytes / dt_cmp) / peak;
             let ratio = cmp_gws / ref_gws;
 
-            println!(
-                "  {:<24} {:>10.3} {:>10.2} {:>7.1}%   {:>10.3} {:>10.2} {:>7.1}%   {:>6.2}x",
-                label, dt_ref * 1e3, ref_gws, ref_pct, dt_cmp * 1e3, cmp_gws, cmp_pct, ratio
-            );
+            println!("  {:<24} {:>10.3} {:>10.2} {:>7.1}%   {:>10.3} {:>10.2} {:>7.1}%   {:>6.2}x", label, dt_ref * 1e3, ref_gws, ref_pct, dt_cmp * 1e3, cmp_gws, cmp_pct, ratio);
 
             // traffic model detail
             let nblk = ref_tbl.len();

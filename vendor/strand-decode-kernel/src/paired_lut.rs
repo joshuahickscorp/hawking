@@ -1,7 +1,4 @@
-
-use crate::block_walk::{
-    block_init_state, block_plans, exceeds_max_sub, BlockPlan, SideInfo, WordReader,
-};
+use crate::block_walk::{block_init_state, block_plans, exceeds_max_sub, BlockPlan, SideInfo, WordReader};
 use rayon::prelude::*;
 use strand_quant::codebook::codebook_lut;
 use strand_quant::decode::reconstruct_q;
@@ -18,14 +15,13 @@ pub struct PairEntry {
 pub struct PairTable {
     entries: Vec<PairEntry>,
     lut: Vec<i32>,
-    
+
     idx_mask: usize,
     pub l_bits: u32,
     pub k_bits: u32,
 }
 
 impl PairTable {
-    
     pub fn build(cfg: &TrellisConfig) -> Self {
         Self::build_with_lut(cfg, codebook_lut(cfg.l_bits))
     }
@@ -39,7 +35,6 @@ impl PairTable {
         let mask = cfg.state_mask();
         let mut entries = Vec::with_capacity(n);
         for idx in 0..n {
-            
             entries.push(PairEntry { q1: lut[idx >> k], q2: lut[idx & mask] });
         }
         PairTable { entries, lut: lut.to_vec(), idx_mask: n - 1, l_bits: l, k_bits: k }
@@ -69,11 +64,7 @@ pub fn decode_q12_paired(enc: &EncodedTensor, cfg: &TrellisConfig) -> Vec<i32> {
     decode_q12_paired_with_lut(enc, cfg, codebook_lut(cfg.l_bits))
 }
 
-pub fn decode_q12_paired_with_lut(
-    enc: &EncodedTensor,
-    cfg: &TrellisConfig,
-    lut: &[i32],
-) -> Vec<i32> {
+pub fn decode_q12_paired_with_lut(enc: &EncodedTensor, cfg: &TrellisConfig, lut: &[i32]) -> Vec<i32> {
     if cfg.vec_dim() > 1 || exceeds_max_sub(enc) {
         return crate::gemv::decode_q12_fast_with_lut(enc, cfg, lut);
     }
@@ -81,11 +72,7 @@ pub fn decode_q12_paired_with_lut(
     decode_q12_paired_with_table(enc, cfg, &table)
 }
 
-pub fn decode_q12_paired_with_table(
-    enc: &EncodedTensor,
-    cfg: &TrellisConfig,
-    table: &PairTable,
-) -> Vec<i32> {
+pub fn decode_q12_paired_with_table(enc: &EncodedTensor, cfg: &TrellisConfig, table: &PairTable) -> Vec<i32> {
     assert_eq!(cfg.vec_dim(), 1, "paired decode is scalar-trellis only");
     assert_eq!((table.l_bits, table.k_bits), (cfg.l_bits, cfg.k_bits), "table/cfg mismatch");
     if exceeds_max_sub(enc) {
@@ -104,16 +91,7 @@ pub fn decode_q12_paired_with_table(
         rest = tail;
     }
     for ((blk, plan), dst) in enc.blocks.iter().zip(plans.iter()).zip(slices.iter_mut()) {
-        decode_block_paired(
-            blk,
-            plan,
-            &enc.bits,
-            cfg,
-            table,
-            enc.has_affine_min,
-            enc.tail_biting,
-            dst,
-        );
+        decode_block_paired(blk, plan, &enc.bits, cfg, table, enc.has_affine_min, enc.tail_biting, dst);
     }
     out
 }
@@ -126,11 +104,7 @@ pub fn decode_q12_paired_par(enc: &EncodedTensor, cfg: &TrellisConfig) -> Vec<i3
     decode_q12_paired_par_with_table(enc, cfg, &table)
 }
 
-pub fn decode_q12_paired_par_with_table(
-    enc: &EncodedTensor,
-    cfg: &TrellisConfig,
-    table: &PairTable,
-) -> Vec<i32> {
+pub fn decode_q12_paired_par_with_table(enc: &EncodedTensor, cfg: &TrellisConfig, table: &PairTable) -> Vec<i32> {
     assert_eq!(cfg.vec_dim(), 1, "paired decode is scalar-trellis only");
     assert_eq!((table.l_bits, table.k_bits), (cfg.l_bits, cfg.k_bits), "table/cfg mismatch");
     if exceeds_max_sub(enc) {
@@ -149,41 +123,19 @@ pub fn decode_q12_paired_par_with_table(
         rest = tail;
     }
 
-    enc.blocks
-        .par_iter()
-        .zip(plans.par_iter())
-        .zip(slices.par_iter_mut())
-        .for_each(|((blk, plan), dst)| {
-            decode_block_paired(
-                blk,
-                plan,
-                &enc.bits,
-                cfg,
-                table,
-                enc.has_affine_min,
-                enc.tail_biting,
-                dst,
-            );
-        });
+    enc.blocks.par_iter().zip(plans.par_iter()).zip(slices.par_iter_mut()).for_each(|((blk, plan), dst)| {
+        decode_block_paired(blk, plan, &enc.bits, cfg, table, enc.has_affine_min, enc.tail_biting, dst);
+    });
     out
 }
 
 #[allow(unsafe_code, clippy::too_many_arguments)]
 #[inline]
-fn decode_block_paired(
-    blk: &BlockMeta,
-    plan: &BlockPlan,
-    bits: &[u8],
-    cfg: &TrellisConfig,
-    table: &PairTable,
-    has_affine: bool,
-    tail_biting: bool,
-    dst: &mut [i32],
-) {
+fn decode_block_paired(blk: &BlockMeta, plan: &BlockPlan, bits: &[u8], cfg: &TrellisConfig, table: &PairTable, has_affine: bool, tail_biting: bool, dst: &mut [i32]) {
     let mask = cfg.state_mask();
     let k = cfg.k_bits;
     let k2 = 2 * k;
-    let kmask = cfg.num_inputs() - 1; 
+    let kmask = cfg.num_inputs() - 1;
     let idx_mask = table.idx_mask;
     let n = blk.n as usize;
 
@@ -200,7 +152,7 @@ fn decode_block_paired(
             let raw = reader.pop(k2);
             let sp = ((raw & kmask) << k) | (raw >> k);
             let t = (state << k2) | sp;
-            
+
             let e = unsafe { *entries.add(t & idx_mask) };
             state = t & mask;
             unsafe {
@@ -214,7 +166,6 @@ fn decode_block_paired(
     for (&es, &o) in eff.iter().zip(off.iter()) {
         let end = (i + SUB_BLOCK).min(n);
         if end - i == SUB_BLOCK {
-            
             for _ in 0..SUB_BLOCK / 2 {
                 pair_step!(i, es, o);
                 i += 2;
@@ -224,11 +175,11 @@ fn decode_block_paired(
                 pair_step!(i, es, o);
                 i += 2;
             }
-            
+
             if i < end {
                 let sym = reader.pop(k) & kmask;
                 state = ((state << k as usize) | sym) & mask;
-                
+
                 let q = unsafe { *lut_ptr.add(state) };
                 unsafe { *dst.get_unchecked_mut(i) = reconstruct_q(es, q) + o };
                 i += 1;
@@ -245,8 +196,7 @@ mod tests {
 
     #[test]
     fn pop_pair_equals_two_pops() {
-        let bytes: Vec<u8> =
-            (0..301u32).map(|i| (i.wrapping_mul(2654435761) >> 11) as u8).collect();
+        let bytes: Vec<u8> = (0..301u32).map(|i| (i.wrapping_mul(2654435761) >> 11) as u8).collect();
         for k in [2u32, 3, 4] {
             for start in 0..16usize {
                 let mut r1 = WordReader::new(&bytes, start);
@@ -265,62 +215,32 @@ mod tests {
     #[test]
     fn paired_decode_is_bit_identical() {
         let configs = [
-            TrellisConfig::for_bpw(3.0),       
-            TrellisConfig::for_bpw(2.0),       
-            TrellisConfig::for_bpw(4.0),       
-            TrellisConfig::for_bpw_l(2.0, 12), 
-            TrellisConfig::for_bpw_l(2.0, 5),  
-            TrellisConfig::for_bpw_l(3.0, 5),  
-            TrellisConfig::for_bpw_l(4.0, 4),  
+            TrellisConfig::for_bpw(3.0),
+            TrellisConfig::for_bpw(2.0),
+            TrellisConfig::for_bpw(4.0),
+            TrellisConfig::for_bpw_l(2.0, 12),
+            TrellisConfig::for_bpw_l(2.0, 5),
+            TrellisConfig::for_bpw_l(3.0, 5),
+            TrellisConfig::for_bpw_l(4.0, 4),
         ];
         for cfg in configs {
             let table = PairTable::build(&cfg);
             assert_eq!(table.size_bytes(), (1usize << (cfg.l_bits + cfg.k_bits)) * 8);
             for seed in 0..64u64 {
-                
                 let n = 1 + (seed as usize * 37) % 2048;
-                let w: Vec<f32> = (0..n)
-                    .map(|i| ((i as f32 + seed as f32) * 0.0137).sin() * 0.5)
-                    .collect();
+                let w: Vec<f32> = (0..n).map(|i| ((i as f32 + seed as f32) * 0.0137).sin() * 0.5).collect();
                 let variants = [
                     encode_tensor(&w, &cfg),
-                    encode_tensor_with(
-                        &w,
-                        &cfg,
-                        &EncodeOpts { tail_biting: true, ..Default::default() },
-                    ),
-                    encode_tensor_with(
-                        &w,
-                        &cfg,
-                        &EncodeOpts { affine_min: true, ..Default::default() },
-                    ),
-                    encode_tensor_with(
-                        &w,
-                        &cfg,
-                        &EncodeOpts {
-                            tail_biting: true,
-                            affine_min: true,
-                            ..Default::default()
-                        },
-                    ),
+                    encode_tensor_with(&w, &cfg, &EncodeOpts { tail_biting: true, ..Default::default() }),
+                    encode_tensor_with(&w, &cfg, &EncodeOpts { affine_min: true, ..Default::default() }),
+                    encode_tensor_with(&w, &cfg, &EncodeOpts { tail_biting: true, affine_min: true, ..Default::default() }),
                 ];
                 for enc in &variants {
                     let reference = decode_tensor_fixed(enc, &cfg);
-                    let ctx = format!(
-                        "L={} k={} n={} seed={} tail={} affine={}",
-                        cfg.l_bits, cfg.k_bits, n, seed, enc.tail_biting, enc.has_affine_min
-                    );
+                    let ctx = format!("L={} k={} n={} seed={} tail={} affine={}", cfg.l_bits, cfg.k_bits, n, seed, enc.tail_biting, enc.has_affine_min);
                     assert_eq!(decode_q12_paired(enc, &cfg), reference, "paired: {ctx}");
-                    assert_eq!(
-                        decode_q12_paired_with_table(enc, &cfg, &table),
-                        reference,
-                        "paired+table: {ctx}"
-                    );
-                    assert_eq!(
-                        decode_q12_paired_par_with_table(enc, &cfg, &table),
-                        reference,
-                        "paired-par: {ctx}"
-                    );
+                    assert_eq!(decode_q12_paired_with_table(enc, &cfg, &table), reference, "paired+table: {ctx}");
+                    assert_eq!(decode_q12_paired_par_with_table(enc, &cfg, &table), reference, "paired-par: {ctx}");
                 }
             }
         }
@@ -328,10 +248,7 @@ mod tests {
 
     #[test]
     fn paired_bit_identical_large_odd() {
-        for (cfg, n) in [
-            (TrellisConfig::for_bpw(3.0), 256 * 257 + 17),
-            (TrellisConfig::for_bpw_l(2.0, 12), 256 * 129 + 33),
-        ] {
+        for (cfg, n) in [(TrellisConfig::for_bpw(3.0), 256 * 257 + 17), (TrellisConfig::for_bpw_l(2.0, 12), 256 * 129 + 33)] {
             let w: Vec<f32> = (0..n).map(|i| ((i as f32) * 0.0011).sin() * 0.6).collect();
             let enc = encode_tensor(&w, &cfg);
             let reference = decode_tensor_fixed(&enc, &cfg);
@@ -345,9 +262,7 @@ mod tests {
     fn paired_with_custom_lut_bit_identical() {
         let cfg = TrellisConfig::for_bpw(3.0);
         let ns = cfg.num_states();
-        let lut: Vec<i32> = (0..ns)
-            .map(|i| ((i as u32).wrapping_mul(2654435761) >> 18) as i32 - 8192)
-            .collect();
+        let lut: Vec<i32> = (0..ns).map(|i| ((i as u32).wrapping_mul(2654435761) >> 18) as i32 - 8192).collect();
         let w: Vec<f32> = (0..3001).map(|i| ((i as f32) * 0.017).cos() * 0.4).collect();
         let enc = encode_tensor(&w, &cfg);
         let want = decode_tensor_fixed_with_lut(&enc, &cfg, &lut);
@@ -358,9 +273,7 @@ mod tests {
     fn paired_vec_fallback_bit_identical() {
         let cfg = TrellisConfig::for_bpw(3.0).with_vec_dim(2);
         let (ns, d) = (cfg.num_states(), cfg.vec_dim());
-        let lut: Vec<i32> = (0..ns * d)
-            .map(|i| ((i as u32).wrapping_mul(2654435761) >> 20) as i32 - 2048)
-            .collect();
+        let lut: Vec<i32> = (0..ns * d).map(|i| ((i as u32).wrapping_mul(2654435761) >> 20) as i32 - 2048).collect();
         let w: Vec<f32> = (0..700).map(|i| ((i as f32) * 0.011).cos() * 0.3).collect();
         let enc = encode_tensor(&w, &cfg);
         let want = decode_tensor_fixed_with_lut(&enc, &cfg, &lut);

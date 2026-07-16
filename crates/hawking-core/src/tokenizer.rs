@@ -44,45 +44,18 @@ enum DecodeOneMode {
 /// Different GGUF conversions set `eos_token_id` to either `<|endoftext|>` or
 /// `<|im_end|>`; treating the whole family as end-of-generation makes the chat
 /// path stop correctly regardless of which the file picked.
-const EOG_TOKEN_STRINGS: &[&str] = &[
-    "<|im_end|>",
-    "<|endoftext|>",
-    "<|eot_id|>",
-    "<|end|>",
-    "<|end_of_text|>",
-    "<end_of_turn>",
-    "</s>",
-    "<eos>",
-];
+const EOG_TOKEN_STRINGS: &[&str] = &["<|im_end|>", "<|endoftext|>", "<|eot_id|>", "<|end|>", "<|end_of_text|>", "<end_of_turn>", "</s>", "<eos>"];
 
 /// True for control tokens identified by string shape: the `<|...|>` family
 /// (Qwen, Llama-3, Phi) plus the classic SentencePiece sentinels. Real vocab
 /// entries never take these forms, so there are no false positives on text.
 fn is_special_token_str(s: &str) -> bool {
-    (s.len() >= 4 && s.starts_with("<|") && s.ends_with("|>"))
-        || matches!(
-            s,
-            "<s>"
-                | "</s>"
-                | "<unk>"
-                | "<pad>"
-                | "<mask>"
-                | "<bos>"
-                | "<eos>"
-                | "<start_of_turn>"
-                | "<end_of_turn>"
-        )
+    (s.len() >= 4 && s.starts_with("<|") && s.ends_with("|>")) || matches!(s, "<s>" | "</s>" | "<unk>" | "<pad>" | "<mask>" | "<bos>" | "<eos>" | "<start_of_turn>" | "<end_of_turn>")
 }
 
 /// Build the (special, end-of-generation) id sets from the vocab + the known
 /// sentinel ids. `tokens` is indexed by token id.
-fn build_special_sets(
-    tokens: &[String],
-    bos: Option<u32>,
-    eos: Option<u32>,
-    pad: Option<u32>,
-    unk: Option<u32>,
-) -> (HashSet<u32>, HashSet<u32>) {
+fn build_special_sets(tokens: &[String], bos: Option<u32>, eos: Option<u32>, pad: Option<u32>, unk: Option<u32>) -> (HashSet<u32>, HashSet<u32>) {
     let mut special = HashSet::new();
     let mut eog = HashSet::new();
     for id in [bos, eos, pad, unk].into_iter().flatten() {
@@ -122,21 +95,9 @@ impl Tokenizer {
     /// Load `tokenizer.json` from a path (preferred — exact behavior
     /// match with the upstream model).
     pub fn from_file<P: AsRef<Path>>(path: P) -> Result<Self> {
-        let inner = HfTokenizer::from_file(path)
-            .map_err(|e| Error::Model(format!("tokenizer load: {e}")))?;
-        let (special_ids, eog_ids) =
-            build_special_sets(&id_ordered_vocab(&inner), None, None, None, None);
-        Ok(Self {
-            inner,
-            bos_id: None,
-            eos_id: None,
-            pad_id: None,
-            decode_one_mode: DecodeOneMode::Hf,
-            llama_spm: None,
-            rwkv_world: None,
-            special_ids,
-            eog_ids,
-        })
+        let inner = HfTokenizer::from_file(path).map_err(|e| Error::Model(format!("tokenizer load: {e}")))?;
+        let (special_ids, eog_ids) = build_special_sets(&id_ordered_vocab(&inner), None, None, None, None);
+        Ok(Self { inner, bos_id: None, eos_id: None, pad_id: None, decode_one_mode: DecodeOneMode::Hf, llama_spm: None, rwkv_world: None, special_ids, eog_ids })
     }
 
     /// Load from the GGUF metadata. Uses `tokenizer.ggml.tokens` and
@@ -144,11 +105,7 @@ impl Tokenizer {
     /// ("gpt2"-style merges) and llama.cpp's "llama"-style SPM scoring;
     /// we surface only the merge form here in v0.1.
     pub fn from_gguf(gguf: &GgufFile) -> Result<Self> {
-        let model = gguf
-            .metadata
-            .get("tokenizer.ggml.model")
-            .and_then(|v| v.as_str())
-            .ok_or_else(|| Error::Model("gguf missing tokenizer.ggml.model".into()))?;
+        let model = gguf.metadata.get("tokenizer.ggml.model").and_then(|v| v.as_str()).ok_or_else(|| Error::Model("gguf missing tokenizer.ggml.model".into()))?;
 
         let tokens = gguf
             .metadata
@@ -159,62 +116,21 @@ impl Tokenizer {
             .map(String::from)
             .collect::<Vec<_>>();
 
-        let merges = gguf
-            .metadata
-            .get("tokenizer.ggml.merges")
-            .and_then(|v| v.as_str_array())
-            .map(|a| a.into_iter().map(String::from).collect::<Vec<_>>())
-            .unwrap_or_default();
-        let scores = gguf
-            .metadata
-            .get("tokenizer.ggml.scores")
-            .and_then(|v| v.as_f32_array())
-            .unwrap_or_default();
+        let merges = gguf.metadata.get("tokenizer.ggml.merges").and_then(|v| v.as_str_array()).map(|a| a.into_iter().map(String::from).collect::<Vec<_>>()).unwrap_or_default();
+        let scores = gguf.metadata.get("tokenizer.ggml.scores").and_then(|v| v.as_f32_array()).unwrap_or_default();
 
-        let bos_id = gguf
-            .metadata
-            .get("tokenizer.ggml.bos_token_id")
-            .and_then(|v| v.as_u32());
-        let eos_id = gguf
-            .metadata
-            .get("tokenizer.ggml.eos_token_id")
-            .and_then(|v| v.as_u32());
-        let pad_id = gguf
-            .metadata
-            .get("tokenizer.ggml.padding_token_id")
-            .and_then(|v| v.as_u32());
-        let unk_id = gguf
-            .metadata
-            .get("tokenizer.ggml.unknown_token_id")
-            .and_then(|v| v.as_u32());
-        let add_bos = gguf
-            .metadata
-            .get("tokenizer.ggml.add_bos_token")
-            .and_then(|v| v.as_bool())
-            .unwrap_or(false);
-        let add_eos = gguf
-            .metadata
-            .get("tokenizer.ggml.add_eos_token")
-            .and_then(|v| v.as_bool())
-            .unwrap_or(false);
+        let bos_id = gguf.metadata.get("tokenizer.ggml.bos_token_id").and_then(|v| v.as_u32());
+        let eos_id = gguf.metadata.get("tokenizer.ggml.eos_token_id").and_then(|v| v.as_u32());
+        let pad_id = gguf.metadata.get("tokenizer.ggml.padding_token_id").and_then(|v| v.as_u32());
+        let unk_id = gguf.metadata.get("tokenizer.ggml.unknown_token_id").and_then(|v| v.as_u32());
+        let add_bos = gguf.metadata.get("tokenizer.ggml.add_bos_token").and_then(|v| v.as_bool()).unwrap_or(false);
+        let add_eos = gguf.metadata.get("tokenizer.ggml.add_eos_token").and_then(|v| v.as_bool()).unwrap_or(false);
 
-        let (inner, decode_one_mode, llama_spm, rwkv_world) = build_tokenizer(
-            model, &tokens, &merges, &scores, bos_id, eos_id, unk_id, add_bos, add_eos,
-        )?;
+        let (inner, decode_one_mode, llama_spm, rwkv_world) = build_tokenizer(model, &tokens, &merges, &scores, bos_id, eos_id, unk_id, add_bos, add_eos)?;
 
         let (special_ids, eog_ids) = build_special_sets(&tokens, bos_id, eos_id, pad_id, unk_id);
 
-        Ok(Self {
-            inner,
-            bos_id,
-            eos_id,
-            pad_id,
-            decode_one_mode,
-            llama_spm,
-            rwkv_world,
-            special_ids,
-            eog_ids,
-        })
+        Ok(Self { inner, bos_id, eos_id, pad_id, decode_one_mode, llama_spm, rwkv_world, special_ids, eog_ids })
     }
 
     pub fn encode(&self, text: &str, add_special_tokens: bool) -> Result<Vec<u32>> {
@@ -224,10 +140,7 @@ impl Tokenizer {
         if let Some(spm) = &self.llama_spm {
             return spm.encode(text, add_special_tokens);
         }
-        let enc = self
-            .inner
-            .encode(text, add_special_tokens)
-            .map_err(|e| Error::Model(format!("encode: {e}")))?;
+        let enc = self.inner.encode(text, add_special_tokens).map_err(|e| Error::Model(format!("encode: {e}")))?;
         Ok(enc.get_ids().to_vec())
     }
 
@@ -238,9 +151,7 @@ impl Tokenizer {
         if let Some(spm) = &self.llama_spm {
             return spm.decode(ids, skip_special);
         }
-        self.inner
-            .decode(ids, skip_special)
-            .map_err(|e| Error::Model(format!("decode: {e}")))
+        self.inner.decode(ids, skip_special).map_err(|e| Error::Model(format!("decode: {e}")))
     }
 
     /// Decode a single token, preserving leading whitespace markers
@@ -257,10 +168,7 @@ impl Tokenizer {
             return Ok(rwkv.decode_one(id));
         }
         match self.decode_one_mode {
-            DecodeOneMode::Hf => self
-                .inner
-                .decode(&[id], false)
-                .map_err(|e| Error::Model(format!("decode: {e}"))),
+            DecodeOneMode::Hf => self.inner.decode(&[id], false).map_err(|e| Error::Model(format!("decode: {e}"))),
             DecodeOneMode::SentencePiece => self.decode_sentencepiece_one(id),
         }
     }
@@ -314,10 +222,7 @@ impl Tokenizer {
         if let Some(spm) = &self.llama_spm {
             return spm.decode_one(id);
         }
-        let raw = self
-            .inner
-            .id_to_token(id)
-            .ok_or_else(|| Error::Model(format!("decode: token id {id} outside vocabulary")))?;
+        let raw = self.inner.id_to_token(id).ok_or_else(|| Error::Model(format!("decode: token id {id} outside vocabulary")))?;
         if raw.len() == 6 && raw.starts_with("<0x") && raw.ends_with('>') {
             if let Ok(byte) = u8::from_str_radix(&raw[3..5], 16) {
                 return Ok(String::from_utf8(vec![byte]).unwrap_or_else(|_| "�".into()));
@@ -341,29 +246,13 @@ struct LlamaSpmTokenizer {
 }
 
 impl LlamaSpmTokenizer {
-    fn new(
-        tokens: &[String],
-        scores: &[f32],
-        bos_id: Option<u32>,
-        eos_id: Option<u32>,
-        unk_id: Option<u32>,
-        add_bos: bool,
-        add_eos: bool,
-    ) -> Result<Self> {
+    fn new(tokens: &[String], scores: &[f32], bos_id: Option<u32>, eos_id: Option<u32>, unk_id: Option<u32>, add_bos: bool, add_eos: bool) -> Result<Self> {
         if scores.len() != tokens.len() {
-            return Err(Error::Model(format!(
-                "llama SentencePiece GGUF vocab has {} tokens but {} scores",
-                tokens.len(),
-                scores.len()
-            )));
+            return Err(Error::Model(format!("llama SentencePiece GGUF vocab has {} tokens but {} scores", tokens.len(), scores.len())));
         }
         Ok(Self {
             tokens: tokens.to_vec(),
-            token_to_id: tokens
-                .iter()
-                .enumerate()
-                .map(|(i, token)| (token.clone(), i as u32))
-                .collect(),
+            token_to_id: tokens.iter().enumerate().map(|(i, token)| (token.clone(), i as u32)).collect(),
             scores: scores.to_vec(),
             bos_id,
             eos_id,
@@ -413,12 +302,7 @@ impl LlamaSpmTokenizer {
             if let Some(prev) = symbols.last_mut() {
                 prev.next = Some(idx);
             }
-            symbols.push(SpmSymbol {
-                prev: idx.checked_sub(1),
-                next: None,
-                start,
-                len: ch.len_utf8(),
-            });
+            symbols.push(SpmSymbol { prev: idx.checked_sub(1), next: None, start, len: ch.len_utf8() });
         }
 
         let mut work_queue = BinaryHeap::new();
@@ -430,11 +314,7 @@ impl LlamaSpmTokenizer {
             let Some(right) = symbols[bigram.left].next else {
                 continue;
             };
-            if right != bigram.right
-                || symbols[bigram.left].len == 0
-                || symbols[bigram.right].len == 0
-                || symbols[bigram.left].len + symbols[bigram.right].len != bigram.size
-            {
+            if right != bigram.right || symbols[bigram.left].len == 0 || symbols[bigram.right].len == 0 || symbols[bigram.left].len + symbols[bigram.right].len != bigram.size {
                 continue;
             }
 
@@ -465,14 +345,7 @@ impl LlamaSpmTokenizer {
         Ok(())
     }
 
-    fn try_add_bigram(
-        &self,
-        text: &str,
-        symbols: &[SpmSymbol],
-        left: usize,
-        right: usize,
-        work_queue: &mut BinaryHeap<SpmBigram>,
-    ) {
+    fn try_add_bigram(&self, text: &str, symbols: &[SpmSymbol], left: usize, right: usize, work_queue: &mut BinaryHeap<SpmBigram>) {
         if symbols[left].len == 0 || symbols[right].len == 0 {
             return;
         }
@@ -480,12 +353,7 @@ impl LlamaSpmTokenizer {
         let size = symbols[left].len + symbols[right].len;
         let piece = &text[start..start + size];
         if let Some(&id) = self.token_to_id.get(piece) {
-            work_queue.push(SpmBigram {
-                left,
-                right,
-                score: self.scores[id as usize],
-                size,
-            });
+            work_queue.push(SpmBigram { left, right, score: self.scores[id as usize], size });
         }
     }
 
@@ -502,9 +370,7 @@ impl LlamaSpmTokenizer {
             } else if let Some(id) = self.unk_id {
                 out.push(id);
             } else {
-                return Err(Error::Model(format!(
-                    "llama SentencePiece token {piece:?} has no byte fallback"
-                )));
+                return Err(Error::Model(format!("llama SentencePiece token {piece:?} has no byte fallback")));
             }
         }
         Ok(())
@@ -529,10 +395,7 @@ impl LlamaSpmTokenizer {
     }
 
     fn decode_one(&self, id: u32) -> Result<String> {
-        let raw = self
-            .tokens
-            .get(id as usize)
-            .ok_or_else(|| Error::Model(format!("decode: token id {id} outside vocabulary")))?;
+        let raw = self.tokens.get(id as usize).ok_or_else(|| Error::Model(format!("decode: token id {id} outside vocabulary")))?;
         if raw.len() == 6 && raw.starts_with("<0x") && raw.ends_with('>') {
             if let Ok(byte) = u8::from_str_radix(&raw[3..5], 16) {
                 return Ok(String::from_utf8(vec![byte]).unwrap_or_else(|_| "�".into()));
@@ -575,20 +438,12 @@ struct RwkvWorldTokenizer {
 
 impl RwkvWorldTokenizer {
     fn new(tokens: &[String], eos_id: Option<u32>, unk_id: Option<u32>) -> Self {
-        let id_to_bytes: Vec<Vec<u8>> = tokens
-            .iter()
-            .map(|t| unescape_rwkv_token(t.as_bytes()))
-            .collect();
+        let id_to_bytes: Vec<Vec<u8>> = tokens.iter().map(|t| unescape_rwkv_token(t.as_bytes())).collect();
         let mut trie = RwkvTrie::default();
         for (id, bytes) in id_to_bytes.iter().enumerate() {
             trie.insert(bytes, id as u32);
         }
-        Self {
-            id_to_bytes,
-            trie,
-            eos_id,
-            unk_id,
-        }
+        Self { id_to_bytes, trie, eos_id, unk_id }
     }
 
     fn vocab_size(&self) -> usize {
@@ -736,10 +591,7 @@ impl RwkvTrie {
     }
 
     fn traverse(&self, byte: u8) -> Option<&RwkvTrie> {
-        self.children
-            .binary_search_by_key(&byte, |(b, _)| *b)
-            .ok()
-            .map(|idx| &self.children[idx].1)
+        self.children.binary_search_by_key(&byte, |(b, _)| *b).ok().map(|idx| &self.children[idx].1)
     }
 
     fn traverse_root(&self, byte: u8) -> Option<&RwkvTrie> {
@@ -765,10 +617,7 @@ struct SpmBigram {
 
 impl PartialEq for SpmBigram {
     fn eq(&self, other: &Self) -> bool {
-        self.left == other.left
-            && self.right == other.right
-            && self.size == other.size
-            && self.score.to_bits() == other.score.to_bits()
+        self.left == other.left && self.right == other.right && self.size == other.size && self.score.to_bits() == other.score.to_bits()
     }
 }
 
@@ -782,18 +631,11 @@ impl PartialOrd for SpmBigram {
 
 impl Ord for SpmBigram {
     fn cmp(&self, other: &Self) -> Ordering {
-        self.score
-            .total_cmp(&other.score)
-            .then_with(|| other.left.cmp(&self.left))
+        self.score.total_cmp(&other.score).then_with(|| other.left.cmp(&self.left))
     }
 }
 
-type BuiltTokenizer = (
-    HfTokenizer,
-    DecodeOneMode,
-    Option<LlamaSpmTokenizer>,
-    Option<RwkvWorldTokenizer>,
-);
+type BuiltTokenizer = (HfTokenizer, DecodeOneMode, Option<LlamaSpmTokenizer>, Option<RwkvWorldTokenizer>);
 
 fn build_tokenizer(
     model: &str,
@@ -820,20 +662,11 @@ fn build_tokenizer(
         // instead of BPE merges. Treating them as byte-level BPE makes
         // common prompts fall back to character/byte tokens.
         "llama" if merges.is_empty() && tokens.iter().any(|t| t.contains('▁')) => {
-            let spm =
-                LlamaSpmTokenizer::new(tokens, scores, bos_id, eos_id, unk_id, add_bos, add_eos)?;
-            let vocab = tokens
-                .iter()
-                .cloned()
-                .zip(scores.iter().map(|s| *s as f64))
-                .collect::<Vec<_>>();
-            let unigram = Unigram::from(vocab, unk_id.map(|id| id as usize), true)
-                .map_err(|e| Error::Model(format!("unigram build: {e}")))?;
+            let spm = LlamaSpmTokenizer::new(tokens, scores, bos_id, eos_id, unk_id, add_bos, add_eos)?;
+            let vocab = tokens.iter().cloned().zip(scores.iter().map(|s| *s as f64)).collect::<Vec<_>>();
+            let unigram = Unigram::from(vocab, unk_id.map(|id| id as usize), true).map_err(|e| Error::Model(format!("unigram build: {e}")))?;
             let metaspace = Metaspace::new('▁', PrependScheme::Always, true);
-            let decoder = Sequence::new(vec![
-                DecoderWrapper::ByteFallback(ByteFallback::new()),
-                DecoderWrapper::Metaspace(metaspace.clone()),
-            ]);
+            let decoder = Sequence::new(vec![DecoderWrapper::ByteFallback(ByteFallback::new()), DecoderWrapper::Metaspace(metaspace.clone())]);
             let mut t = HfTokenizer::new(unigram);
             t.with_pre_tokenizer(Some(metaspace));
             t.with_decoder(Some(decoder));
@@ -850,11 +683,7 @@ fn build_tokenizer(
         }
         // llama.cpp's GPT-2-style BPE, used by Qwen and DeepSeek's English vocab.
         "gpt2" | "llama" => {
-            let vocab: std::collections::HashMap<String, u32> = tokens
-                .iter()
-                .enumerate()
-                .map(|(i, t)| (t.clone(), i as u32))
-                .collect();
+            let vocab: std::collections::HashMap<String, u32> = tokens.iter().enumerate().map(|(i, t)| (t.clone(), i as u32)).collect();
             let merges_pairs: Vec<(String, String)> = merges
                 .iter()
                 .filter_map(|m| {
@@ -862,10 +691,7 @@ fn build_tokenizer(
                     Some((it.next()?.to_string(), it.next()?.to_string()))
                 })
                 .collect();
-            let bpe = BPE::builder()
-                .vocab_and_merges(vocab, merges_pairs)
-                .build()
-                .map_err(|e| Error::Model(format!("bpe build: {e}")))?;
+            let bpe = BPE::builder().vocab_and_merges(vocab, merges_pairs).build().map_err(|e| Error::Model(format!("bpe build: {e}")))?;
             // Configure the byte-level pipeline both ways: pre-tokenizer
             // for encode (so input bytes get mapped through GPT-2's
             // visible-byte alphabet, e.g. ' ' → 'Ġ') and decoder for
@@ -874,10 +700,7 @@ fn build_tokenizer(
             // tokens the model wasn't trained on and decode prints
             // marker glyphs verbatim.
             let mut t = HfTokenizer::new(bpe);
-            t.with_pre_tokenizer(Some(ByteLevelPre::new(
-                /* add_prefix_space */ false, /* trim_offsets */ true,
-                /* use_regex */ true,
-            )));
+            t.with_pre_tokenizer(Some(ByteLevelPre::new(/* add_prefix_space */ false, /* trim_offsets */ true, /* use_regex */ true)));
             t.with_decoder(Some(ByteLevelDecoder::default()));
             // Register the GGUF's control tokens (`<|im_start|>`, `<|im_end|>`,
             // `<|endoftext|>`, …) as special so `encode` matches them as atomic
@@ -908,30 +731,10 @@ mod tests {
 
     #[test]
     fn llama_scores_build_sentencepiece_unigram() {
-        let tokens = vec![
-            "<unk>".to_string(),
-            "<s>".to_string(),
-            "</s>".to_string(),
-            "▁".to_string(),
-            "Once".to_string(),
-            "▁Once".to_string(),
-            "upon".to_string(),
-            "▁upon".to_string(),
-            "<0x21>".to_string(),
-        ];
+        let tokens =
+            vec!["<unk>".to_string(), "<s>".to_string(), "</s>".to_string(), "▁".to_string(), "Once".to_string(), "▁Once".to_string(), "upon".to_string(), "▁upon".to_string(), "<0x21>".to_string()];
         let scores = vec![-100.0, 0.0, 0.0, -10.0, -10.0, 0.0, -10.0, 0.0, -1.0];
-        let (tokenizer, mode, _spm, _rwkv) = build_tokenizer(
-            "llama",
-            &tokens,
-            &[],
-            &scores,
-            Some(1),
-            Some(2),
-            Some(0),
-            false,
-            false,
-        )
-        .unwrap();
+        let (tokenizer, mode, _spm, _rwkv) = build_tokenizer("llama", &tokens, &[], &scores, Some(1), Some(2), Some(0), false, false).unwrap();
 
         assert_eq!(mode, DecodeOneMode::SentencePiece);
         let enc = tokenizer.encode("Once upon", false).unwrap();
@@ -941,37 +744,10 @@ mod tests {
 
     #[test]
     fn sentencepiece_decode_one_preserves_leading_space() {
-        let tokens = vec![
-            "<unk>".to_string(),
-            "<s>".to_string(),
-            "</s>".to_string(),
-            "▁Once".to_string(),
-            "▁upon".to_string(),
-        ];
+        let tokens = vec!["<unk>".to_string(), "<s>".to_string(), "</s>".to_string(), "▁Once".to_string(), "▁upon".to_string()];
         let scores = vec![-100.0, 0.0, 0.0, 0.0, 0.0];
-        let (inner, decode_one_mode, llama_spm, rwkv_world) = build_tokenizer(
-            "llama",
-            &tokens,
-            &[],
-            &scores,
-            Some(1),
-            Some(2),
-            Some(0),
-            false,
-            false,
-        )
-        .unwrap();
-        let tokenizer = Tokenizer {
-            inner,
-            bos_id: Some(1),
-            eos_id: Some(2),
-            pad_id: None,
-            decode_one_mode,
-            llama_spm,
-            rwkv_world,
-            special_ids: HashSet::new(),
-            eog_ids: HashSet::new(),
-        };
+        let (inner, decode_one_mode, llama_spm, rwkv_world) = build_tokenizer("llama", &tokens, &[], &scores, Some(1), Some(2), Some(0), false, false).unwrap();
+        let tokenizer = Tokenizer { inner, bos_id: Some(1), eos_id: Some(2), pad_id: None, decode_one_mode, llama_spm, rwkv_world, special_ids: HashSet::new(), eog_ids: HashSet::new() };
 
         assert_eq!(tokenizer.decode_one(4).unwrap(), " upon");
     }

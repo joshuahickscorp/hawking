@@ -8,6 +8,9 @@ repository.workspace = true
 authors.workspace = true
 description = "Shared domain contracts for the HIDE local-first IDE architecture"
 
+[lib]
+path = "lib.rs"
+
 [dependencies]
 blake3 = { workspace = true }
 futures = { workspace = true }

@@ -1,14 +1,14 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./theme.css";
-import "./styles/chat.css";
-import "./styles/ide.css";
-import "./styles/panels.css";
-import "./styles/home.css";
+import "./chat.css";
+import "./ide.css";
+import "./panels.css";
+import "./home.css";
 import { App } from "./App";
 import { useStore } from "./store";
-import { initGlass } from "./shell/glass";
-import { ErrorBoundary } from "./shell/ErrorBoundary";
+import { initGlass } from "./shell/policies";
+import { ErrorBoundary } from "./shell/components";
 
 // Errors must never vanish, but framework-internal noise must never scream at the user either. In a
 // bundled .app there is no console, so surface *actionable* uncaught errors in the notices strip and

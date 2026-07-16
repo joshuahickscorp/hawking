@@ -125,10 +125,7 @@ fn ref_section_bytes(wires: &[Option<RefWire>], out_features: &[usize]) -> Vec<u
 /// Parse a DBIA section body back into per-tensor wires. Validates every field the
 /// production parser validates (magic, version, n_tensors, flags, reserved, lengths,
 /// no trailing bytes). Returns Err on any inconsistency.
-fn ref_parse_section(
-    s: &[u8],
-    out_features: &[usize],
-) -> Result<Vec<Option<RefWire>>, String> {
+fn ref_parse_section(s: &[u8], out_features: &[usize]) -> Result<Vec<Option<RefWire>>, String> {
     if s.len() < DBIA_HEADER_BYTES {
         return Err("section shorter than header".into());
     }
@@ -234,7 +231,7 @@ fn per_row_correction_is_row_local_bit_exact() {
     for &in_f in &[1usize, 2, 7, 8, 31, 32, 33, 64, 257] {
         for trial in 0..40 {
             let rows = 1 + (rng.next_u32() as usize % 9); // 1..=9 rows
-            // Build a multi-row weight/recon pair.
+                                                          // Build a multi-row weight/recon pair.
             let mut w = vec![0.0f32; rows * in_f];
             let mut recon = vec![0.0f32; rows * in_f];
             for k in 0..rows * in_f {
@@ -255,16 +252,8 @@ fn per_row_correction_is_row_local_bit_exact() {
                 // bit-exact equality of the f32 correction and rowsum bias.
                 // NaN-safe comparison via raw bits (NaN != NaN under ==, but the bit
                 // pattern must still be reproduced identically for determinism).
-                assert_eq!(
-                    full.bias_correction[i].to_bits(),
-                    solo.bias_correction[0].to_bits(),
-                    "row {i} correction not row-local (in_f={in_f} rows={rows})"
-                );
-                assert_eq!(
-                    full.rowsum_bias[i].to_bits(),
-                    solo.rowsum_bias[0].to_bits(),
-                    "row {i} rowsum not row-local (in_f={in_f} rows={rows})"
-                );
+                assert_eq!(full.bias_correction[i].to_bits(), solo.bias_correction[0].to_bits(), "row {i} correction not row-local (in_f={in_f} rows={rows})");
+                assert_eq!(full.rowsum_bias[i].to_bits(), solo.rowsum_bias[0].to_bits(), "row {i} rowsum not row-local (in_f={in_f} rows={rows})");
             }
             checked += 1;
         }
@@ -299,18 +288,12 @@ fn correction_commutes_with_row_permutation() {
         let mut wp = vec![0.0f32; rows * in_f];
         let mut rp = vec![0.0f32; rows * in_f];
         for (newi, &oldi) in perm.iter().enumerate() {
-            wp[newi * in_f..(newi + 1) * in_f]
-                .copy_from_slice(&w[oldi * in_f..(oldi + 1) * in_f]);
-            rp[newi * in_f..(newi + 1) * in_f]
-                .copy_from_slice(&recon[oldi * in_f..(oldi + 1) * in_f]);
+            wp[newi * in_f..(newi + 1) * in_f].copy_from_slice(&w[oldi * in_f..(oldi + 1) * in_f]);
+            rp[newi * in_f..(newi + 1) * in_f].copy_from_slice(&recon[oldi * in_f..(oldi + 1) * in_f]);
         }
         let permed = debias_tensor(&wp, &rp, in_f, mu_bar, 16);
         for (newi, &oldi) in perm.iter().enumerate() {
-            assert_eq!(
-                permed.bias_correction[newi].to_bits(),
-                base.bias_correction[oldi].to_bits(),
-                "permutation changed a correction bit pattern"
-            );
+            assert_eq!(permed.bias_correction[newi].to_bits(), base.bias_correction[oldi].to_bits(), "permutation changed a correction bit pattern");
         }
     }
 }
@@ -366,11 +349,7 @@ fn apply_add_is_order_free_and_bit_stable() {
             yr[o] += c[o];
         }
         for o in 0..n {
-            assert_eq!(
-                yf[o].to_bits(),
-                yr[o].to_bits(),
-                "per-row add depends on iteration order — would break cross-device parity"
-            );
+            assert_eq!(yf[o].to_bits(), yr[o].to_bits(), "per-row add depends on iteration order — would break cross-device parity");
             // and equals the documented single add
             assert_eq!(yf[o].to_bits(), (y0[o] + c[o]).to_bits());
         }
@@ -446,8 +425,7 @@ fn constant_activation_identity_on_real_code() {
         let r = debias_tensor(&w, &recon, in_f, mu_bar, 16);
         let x = vec![mu_bar; in_f];
         let (_, rms_uncorr) = output_error(&w, &recon, in_f, std::slice::from_ref(&x), None);
-        let (mean_corr, rms_corr) =
-            output_error(&w, &recon, in_f, &[x], Some(&r.bias_correction));
+        let (mean_corr, rms_corr) = output_error(&w, &recon, in_f, &[x], Some(&r.bias_correction));
         // corrected error vanishes (float-tolerance — this is the encode-side f64 math,
         // not the bit-exact decode add).
         assert!(rms_corr <= rms_uncorr + 1e-6, "correction increased error");
@@ -542,9 +520,7 @@ fn non_finite_preserves_top_half() {
     let mut count = 0u64;
     for sign in [0u32, 0x8000_0000] {
         // mantissa patterns: probe the kept-7 (bits 16..23) and dropped-16 (bits 0..16)
-        for m in [
-            0u32, 1, 0x7f, 0x80, 0xffff, 0x1_0000, 0x40_0000, 0x7f_ffff, 0x12_3456,
-        ] {
+        for m in [0u32, 1, 0x7f, 0x80, 0xffff, 0x1_0000, 0x40_0000, 0x7f_ffff, 0x12_3456] {
             let bits = sign | 0x7f80_0000 | m;
             let f = f32::from_bits(bits);
             let got = ref_f32_to_bf16(f);
@@ -614,13 +590,7 @@ fn wire_round_trip_is_byte_exact_property() {
         assert_eq!(&bytes[0..4], &DBIA_MAGIC[..]);
         assert_eq!(u32::from_le_bytes(bytes[8..12].try_into().unwrap()) as usize, n_tensors);
         // payload size accounting matches the documented record layout
-        let expect_len: usize = DBIA_HEADER_BYTES
-            + wires
-                .iter()
-                .map(|w| {
-                    DBIA_RECORD_FIXED_BYTES + w.as_ref().map_or(0, |x| x.c_bits.len() * 2)
-                })
-                .sum::<usize>();
+        let expect_len: usize = DBIA_HEADER_BYTES + wires.iter().map(|w| DBIA_RECORD_FIXED_BYTES + w.as_ref().map_or(0, |x| x.c_bits.len() * 2)).sum::<usize>();
         assert_eq!(bytes.len(), expect_len, "section length drifted from layout spec");
         checked += 1;
     }
@@ -635,10 +605,7 @@ fn wire_round_trip_is_byte_exact_property() {
 #[test]
 fn parser_rejects_all_corruptions() {
     let out_features = vec![4usize, 3];
-    let wires = vec![
-        Some(RefWire::from_f32(&[1.5e-3, -2.0e-4, 0.0, 7.125e-2])),
-        None,
-    ];
+    let wires = vec![Some(RefWire::from_f32(&[1.5e-3, -2.0e-4, 0.0, 7.125e-2])), None];
     let good = ref_section_bytes(&wires, &out_features);
     assert!(ref_parse_section(&good, &out_features).is_ok());
 
@@ -659,17 +626,9 @@ fn parser_rejects_all_corruptions() {
     // header reserved nonzero
     assert!(ref_parse_section(&mutate(&|b| b[16] = 1), &out_features).is_err());
     // record reserved nonzero (record 0 starts at header end +4)
-    assert!(ref_parse_section(
-        &mutate(&|b| b[DBIA_HEADER_BYTES + 4] = 1),
-        &out_features
-    )
-    .is_err());
+    assert!(ref_parse_section(&mutate(&|b| b[DBIA_HEADER_BYTES + 4] = 1), &out_features).is_err());
     // record length mismatch (claim 5 rows for an out=4 tensor)
-    assert!(ref_parse_section(
-        &mutate(&|b| b[DBIA_HEADER_BYTES] = 5),
-        &out_features
-    )
-    .is_err());
+    assert!(ref_parse_section(&mutate(&|b| b[DBIA_HEADER_BYTES] = 5), &out_features).is_err());
     // truncated payload (drop the last byte)
     assert!(ref_parse_section(&good[..good.len() - 1], &out_features).is_err());
     // trailing byte
@@ -688,10 +647,7 @@ fn parser_rejects_all_corruptions() {
 #[test]
 fn golden_section_bytes_are_frozen() {
     let out_features = vec![4usize, 3];
-    let wires = vec![
-        Some(RefWire::from_f32(&[1.5e-3, -2.0e-4, 0.0, 7.125e-2])),
-        None,
-    ];
+    let wires = vec![Some(RefWire::from_f32(&[1.5e-3, -2.0e-4, 0.0, 7.125e-2])), None];
     let bytes = ref_section_bytes(&wires, &out_features);
 
     // Header: magic, version=1, n_tensors=2, flags=0, 16 zero reserved.

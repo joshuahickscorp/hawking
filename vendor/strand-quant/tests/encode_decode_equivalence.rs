@@ -27,16 +27,10 @@
 //! self-contained" policy). Deterministic enumeration, no RNG crate.
 
 use strand_quant::codebook::codebook_lut;
-use strand_quant::decode::{
-    decode_lean, decode_lean_with_lut, decode_tensor, decode_tensor_fixed,
-    decode_tensor_fixed_with_lut,
-};
-use strand_quant::encode::{
-    encode_tensor, encode_tensor_with, encode_tensor_with_lut, n_sub_blocks, unpack_sub_scales,
-    vector_lut_from_scalar, EncodeOpts, EncodedTensor, SUB_BLOCK,
-};
-use strand_quant::QUANTILE_SHIFT;
+use strand_quant::decode::{decode_lean, decode_lean_with_lut, decode_tensor, decode_tensor_fixed, decode_tensor_fixed_with_lut};
+use strand_quant::encode::{encode_tensor, encode_tensor_with, encode_tensor_with_lut, n_sub_blocks, unpack_sub_scales, vector_lut_from_scalar, EncodeOpts, EncodedTensor, SUB_BLOCK};
 use strand_quant::TrellisConfig;
+use strand_quant::QUANTILE_SHIFT;
 
 const SCALE_SHIFT: u32 = 16;
 const SUB_SCALE_SHIFT: u32 = 6;
@@ -95,11 +89,7 @@ fn replay(enc: &EncodedTensor, cfg: &TrellisConfig, lut: &[i32], d: usize) -> Ve
         let n_sub = n_sub_blocks(n);
         // An omitted scale stream is the canonical non-adaptive wire form.
         // Replay that contract independently: Q6 code 63 is exact unity.
-        let scodes = if blk.sub_scales.is_empty() {
-            vec![63; n_sub]
-        } else {
-            unpack_sub_scales(&blk.sub_scales, n_sub)
-        };
+        let scodes = if blk.sub_scales.is_empty() { vec![63; n_sub] } else { unpack_sub_scales(&blk.sub_scales, n_sub) };
         let eff: Vec<i32> = scodes.iter().map(|&c| ind_eff_scale_q(blk.scale_q, c)).collect();
         let offs: Vec<i32> = if enc.has_affine_min {
             let mcodes = unpack_sub_scales(&blk.mins, n_sub);
@@ -184,16 +174,8 @@ fn assert_scalar_equivalence(weights: &[f32], cfg: &TrellisConfig, opts: &Encode
     assert_eq!(lean, expected, "decode_lean != independent replay [{ctx}]");
 
     // 3) Explicit-LUT decoders agree (same path, different entry point).
-    assert_eq!(
-        decode_tensor_fixed_with_lut(&enc, cfg, lut),
-        expected,
-        "decode_tensor_fixed_with_lut drift [{ctx}]"
-    );
-    assert_eq!(
-        decode_lean_with_lut(&enc, cfg, lut),
-        expected,
-        "decode_lean_with_lut drift [{ctx}]"
-    );
+    assert_eq!(decode_tensor_fixed_with_lut(&enc, cfg, lut), expected, "decode_tensor_fixed_with_lut drift [{ctx}]");
+    assert_eq!(decode_lean_with_lut(&enc, cfg, lut), expected, "decode_lean_with_lut drift [{ctx}]");
 
     // 4) Encode is reproducible (same input -> same bits & side info).
     let enc2 = encode_tensor_with(weights, cfg, opts);
@@ -206,11 +188,7 @@ fn assert_scalar_equivalence(weights: &[f32], cfg: &TrellisConfig, opts: &Encode
     let f = decode_tensor(&enc, cfg);
     let q12_to_f32 = 1.0f32 / (1u32 << QUANTILE_SHIFT) as f32;
     for (idx, (&q, &x)) in fixed.iter().zip(f.iter()).enumerate() {
-        assert_eq!(
-            x.to_bits(),
-            ((q as f32) * q12_to_f32).to_bits(),
-            "f32 wrapper not exact at i={idx} [{ctx}]"
-        );
+        assert_eq!(x.to_bits(), ((q as f32) * q12_to_f32).to_bits(), "f32 wrapper not exact at i={idx} [{ctx}]");
     }
 }
 
@@ -257,15 +235,8 @@ fn encode_decode_scalar_equivalence_sweep() {
                     for &adaptive in &[true, false] {
                         for &tail_biting in &[false, true] {
                             for &affine_min in &[false, true] {
-                                let opts = EncodeOpts {
-                                    adaptive,
-                                    tail_biting,
-                                    affine_min,
-                                    ..Default::default()
-                                };
-                                let ctx = format!(
-                                    "L={l} k={k} bl={block_len} n={n} adapt={adaptive} tail={tail_biting} affine={affine_min}"
-                                );
+                                let opts = EncodeOpts { adaptive, tail_biting, affine_min, ..Default::default() };
+                                let ctx = format!("L={l} k={k} bl={block_len} n={n} adapt={adaptive} tail={tail_biting} affine={affine_min}");
                                 assert_scalar_equivalence(&weights, &cfg, &opts, &ctx);
                                 cases += 1;
                             }
@@ -308,14 +279,8 @@ fn encode_decode_vector_equivalence_sweep() {
                     for &adaptive in &[true, false] {
                         for &tail_biting in &[false, true] {
                             for &affine_min in &[false, true] {
-                                let opts = EncodeOpts {
-                                    adaptive,
-                                    tail_biting,
-                                    affine_min,
-                                    ..Default::default()
-                                };
-                                let enc =
-                                    encode_tensor_with_lut(&weights, &cfg, &opts, &vlut);
+                                let opts = EncodeOpts { adaptive, tail_biting, affine_min, ..Default::default() };
+                                let enc = encode_tensor_with_lut(&weights, &cfg, &opts, &vlut);
                                 assert_eq!(enc.total, n, "vec total");
 
                                 let expected = replay(&enc, &cfg, &vlut, d as usize);
@@ -323,44 +288,23 @@ fn encode_decode_vector_equivalence_sweep() {
 
                                 // The vec decode path is reached via the
                                 // *_with_lut entry points when vec_dim > 1.
-                                let fixed =
-                                    decode_tensor_fixed_with_lut(&enc, &cfg, &vlut);
+                                let fixed = decode_tensor_fixed_with_lut(&enc, &cfg, &vlut);
                                 let lean = decode_lean_with_lut(&enc, &cfg, &vlut);
-                                let ctx = format!(
-                                    "VEC L={l} k={k} d={d} n={n} adapt={adaptive} tail={tail_biting} affine={affine_min}"
-                                );
-                                assert_eq!(
-                                    fixed, expected,
-                                    "vec decode_tensor_fixed_with_lut != replay [{ctx}]"
-                                );
-                                assert_eq!(
-                                    lean, expected,
-                                    "vec decode_lean_with_lut != replay [{ctx}]"
-                                );
+                                let ctx = format!("VEC L={l} k={k} d={d} n={n} adapt={adaptive} tail={tail_biting} affine={affine_min}");
+                                assert_eq!(fixed, expected, "vec decode_tensor_fixed_with_lut != replay [{ctx}]");
+                                assert_eq!(lean, expected, "vec decode_lean_with_lut != replay [{ctx}]");
 
                                 // Reproducible encode + decode.
-                                let enc2 =
-                                    encode_tensor_with_lut(&weights, &cfg, &opts, &vlut);
+                                let enc2 = encode_tensor_with_lut(&weights, &cfg, &opts, &vlut);
                                 assert_eq!(enc, enc2, "vec re-encode drift [{ctx}]");
-                                assert_eq!(
-                                    decode_tensor_fixed_with_lut(&enc, &cfg, &vlut),
-                                    fixed,
-                                    "vec re-decode drift [{ctx}]"
-                                );
+                                assert_eq!(decode_tensor_fixed_with_lut(&enc, &cfg, &vlut), fixed, "vec re-decode drift [{ctx}]");
 
                                 // At d=1 the vector LUT must agree with the
                                 // pure-scalar pipeline byte-for-byte.
                                 if d == 1 {
                                     let enc_s = encode_tensor_with(&weights, &cfg, &opts);
-                                    assert_eq!(
-                                        enc, enc_s,
-                                        "d=1 vec encode != scalar encode [{ctx}]"
-                                    );
-                                    assert_eq!(
-                                        fixed,
-                                        decode_tensor_fixed(&enc_s, &cfg),
-                                        "d=1 vec decode != scalar decode [{ctx}]"
-                                    );
+                                    assert_eq!(enc, enc_s, "d=1 vec encode != scalar encode [{ctx}]");
+                                    assert_eq!(fixed, decode_tensor_fixed(&enc_s, &cfg), "d=1 vec decode != scalar decode [{ctx}]");
                                 }
                                 cases += 1;
                             }
@@ -408,10 +352,7 @@ fn tail_biting_decode_ignores_stored_init_state() {
                 // (n_steps*k >= L), otherwise this test would be vacuous.
                 for blk in &enc.blocks {
                     let n_steps = cfg.num_steps(blk.n as usize);
-                    assert!(
-                        n_steps * (k as usize) >= l as usize,
-                        "block not tail-bitten; test would be vacuous (L={l},k={k},n={n})"
-                    );
+                    assert!(n_steps * (k as usize) >= l as usize, "block not tail-bitten; test would be vacuous (L={l},k={k},n={n})");
                 }
 
                 // Corrupt every stored init_state and confirm decode is unchanged.
@@ -419,16 +360,8 @@ fn tail_biting_decode_ignores_stored_init_state() {
                 for blk in &mut tampered.blocks {
                     blk.init_state = blk.init_state.wrapping_add(0x5A5A_5A5A);
                 }
-                assert_eq!(
-                    decode_tensor_fixed(&tampered, &cfg),
-                    base,
-                    "tail-bitten decode depends on stored init_state (L={l},k={k},n={n})"
-                );
-                assert_eq!(
-                    decode_lean(&tampered, &cfg),
-                    base,
-                    "tail-bitten decode_lean depends on stored init_state (L={l},k={k},n={n})"
-                );
+                assert_eq!(decode_tensor_fixed(&tampered, &cfg), base, "tail-bitten decode depends on stored init_state (L={l},k={k},n={n})");
+                assert_eq!(decode_lean(&tampered, &cfg), base, "tail-bitten decode_lean depends on stored init_state (L={l},k={k},n={n})");
                 checked += 1;
             }
         }
@@ -471,16 +404,8 @@ fn f32_metric_encode_decodes_float_free() {
                     let enc = encode_tensor_with(&weights, &cfg, &opts);
                     let lut = codebook_lut(l);
                     let expected = replay(&enc, &cfg, lut, 1);
-                    assert_eq!(
-                        decode_tensor_fixed(&enc, &cfg),
-                        expected,
-                        "f32-metric encode did not decode float-free (L={l},k={k},n={n},tail={tail_biting})"
-                    );
-                    assert_eq!(
-                        decode_lean(&enc, &cfg),
-                        expected,
-                        "f32-metric decode_lean drift (L={l},k={k},n={n},tail={tail_biting})"
-                    );
+                    assert_eq!(decode_tensor_fixed(&enc, &cfg), expected, "f32-metric encode did not decode float-free (L={l},k={k},n={n},tail={tail_biting})");
+                    assert_eq!(decode_lean(&enc, &cfg), expected, "f32-metric decode_lean drift (L={l},k={k},n={n},tail={tail_biting})");
                     cases += 1;
                 }
             }
@@ -520,10 +445,7 @@ fn degenerate_inputs_round_trip() {
                     let expected = replay(&enc, &cfg, codebook_lut(l), 1);
                     let got = decode_tensor_fixed(&enc, &cfg);
                     assert_eq!(got, expected, "zeros replay mismatch L={l} k={k} n={n}");
-                    assert!(
-                        got.iter().all(|&q| q == 0),
-                        "all-zero input did not decode to all-zero (L={l},k={k},n={n})"
-                    );
+                    assert!(got.iter().all(|&q| q == 0), "all-zero input did not decode to all-zero (L={l},k={k},n={n})");
                 }
             }
         }

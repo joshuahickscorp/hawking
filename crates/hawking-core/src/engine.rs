@@ -114,10 +114,7 @@ impl SpeculateMode {
     /// elsewhere in the codebase.
     pub fn from_cli(value: Option<&str>, legacy_bool: bool) -> Result<Self> {
         let env_val = std::env::var("HAWKING_SPEC_DECODE").ok();
-        let effective: Option<&str> = value
-            .map(str::trim)
-            .filter(|s| !s.is_empty())
-            .or_else(|| env_val.as_deref().map(str::trim).filter(|s| !s.is_empty()));
+        let effective: Option<&str> = value.map(str::trim).filter(|s| !s.is_empty()).or_else(|| env_val.as_deref().map(str::trim).filter(|s| !s.is_empty()));
 
         match effective {
             None if legacy_bool => Ok(Self::ExactShared),
@@ -125,9 +122,7 @@ impl SpeculateMode {
             Some("off" | "none" | "false" | "0") => Ok(Self::Off),
             Some("exact-shared" | "exact_shared") => Ok(Self::ExactShared),
             Some("eagle5" | "eagle-5" | "eagle5-v2") => Ok(Self::Eagle5),
-            Some(other) => Err(crate::Error::Model(format!(
-                "unknown speculate mode `{other}`; expected exact-shared, eagle5, or off"
-            ))),
+            Some(other) => Err(crate::Error::Model(format!("unknown speculate mode `{other}`; expected exact-shared, eagle5, or off"))),
         }
     }
 
@@ -151,13 +146,7 @@ pub struct SamplingParams {
 
 impl Default for SamplingParams {
     fn default() -> Self {
-        Self {
-            temperature: 0.7,
-            top_k: 40,
-            top_p: 0.9,
-            repetition_penalty: 1.0,
-            seed: None,
-        }
+        Self { temperature: 0.7, top_k: 40, top_p: 0.9, repetition_penalty: 1.0, seed: None }
     }
 }
 
@@ -257,7 +246,11 @@ impl GenStats {
     /// this is equivalent to the "user_ngram" accept rate.
     pub fn draft_accept_rate(&self) -> f32 {
         let total = self.draft_accepted + self.draft_rejected;
-        if total == 0 { 0.0 } else { self.draft_accepted as f32 / total as f32 }
+        if total == 0 {
+            0.0
+        } else {
+            self.draft_accepted as f32 / total as f32
+        }
     }
 
     /// Track 0.2 / 8.3 — serialize ONLY the scalar observability fields to a
@@ -292,11 +285,7 @@ pub trait Engine: Send + Sync {
     where
         Self: Sized;
 
-    fn generate(
-        &mut self,
-        req: GenerateRequest,
-        sink: &mut dyn FnMut(StreamEvent),
-    ) -> Result<GenStats>;
+    fn generate(&mut self, req: GenerateRequest, sink: &mut dyn FnMut(StreamEvent)) -> Result<GenStats>;
 
     fn model_id(&self) -> &str;
 
@@ -374,11 +363,7 @@ pub trait Engine: Send + Sync {
     /// Current engines may implement this as a correctness-preserving loop;
     /// the GPU-resident continuous-batch kernel replaces the internals later
     /// without changing the server scheduler.
-    fn forward_tokens_batched(
-        &mut self,
-        tokens: &[u32],
-        positions: &[usize],
-    ) -> Result<Vec<Vec<f32>>> {
+    fn forward_tokens_batched(&mut self, tokens: &[u32], positions: &[usize]) -> Result<Vec<Vec<f32>>> {
         self.forward_tokens_for_test(tokens, positions)
     }
 
@@ -406,10 +391,7 @@ pub trait Engine: Send + Sync {
     /// Returns the FIRST generated token per slot (in `slots` order), derived
     /// from each prompt's last-position logits — the caller seeds decode with it.
     fn prefill_slots_parallel(&mut self, slots: &[(usize, &[u32])]) -> Result<Vec<u32>> {
-        slots
-            .iter()
-            .map(|&(slot_id, prompt_ids)| self.prefill_slot(slot_id, prompt_ids))
-            .collect()
+        slots.iter().map(|&(slot_id, prompt_ids)| self.prefill_slot(slot_id, prompt_ids)).collect()
     }
 
     /// Continuous-batching DECODE seam: one decode step across N INDEPENDENT
@@ -420,12 +402,7 @@ pub trait Engine: Send + Sync {
     /// per-slot fallback; QwenDense overrides it with the GPU multi-seq path
     /// (weight read once across slots via the v3w GEMM + the multi-seq MHA +
     /// per-slot slot-strided KV).
-    fn forward_multiseq_batched(
-        &mut self,
-        tokens: &[u32],
-        positions: &[usize],
-        regions: &[usize],
-    ) -> Result<Vec<Vec<f32>>> {
+    fn forward_multiseq_batched(&mut self, tokens: &[u32], positions: &[usize], regions: &[usize]) -> Result<Vec<Vec<f32>>> {
         let _ = regions;
         self.forward_tokens_for_test(tokens, positions)
     }
@@ -433,19 +410,13 @@ pub trait Engine: Send + Sync {
     /// Phase 2 Wedge 2a -- multi-token forward shim. Currently a loop;
     /// later wedges widen internals. Exposed for parity testing and for
     /// future generate() integration.
-    fn forward_tokens_for_test(
-        &mut self,
-        tokens: &[u32],
-        positions: &[usize],
-    ) -> Result<Vec<Vec<f32>>>;
+    fn forward_tokens_for_test(&mut self, tokens: &[u32], positions: &[usize]) -> Result<Vec<Vec<f32>>>;
 
     /// Phase 3 prep -- shared-only forward for spec acceptance measurement.
     /// Returns logits from a forward pass that runs only shared experts
     /// (routed contributions zeroed). Dense models return Err("unimplemented").
     fn forward_token_shared_only_for_test(&mut self, _token: u32, _pos: usize) -> Result<Vec<f32>> {
-        Err(crate::Error::Unimplemented(
-            "forward_token_shared_only_for_test",
-        ))
+        Err(crate::Error::Unimplemented("forward_token_shared_only_for_test"))
     }
 
     /// Phase A Wedge A1 -- layer-first batched forward. Accepts N tokens
@@ -453,11 +424,7 @@ pub trait Engine: Send + Sync {
     /// before advancing to the next layer. Returns N logit vectors.
     /// A1: kernels still dispatch serially per token within each layer.
     /// A2+ replace inner loops with batched kernel dispatches.
-    fn forward_tokens_batched_for_test(
-        &mut self,
-        tokens: &[u32],
-        positions: &[usize],
-    ) -> Result<Vec<Vec<f32>>> {
+    fn forward_tokens_batched_for_test(&mut self, tokens: &[u32], positions: &[usize]) -> Result<Vec<Vec<f32>>> {
         self.forward_tokens_batched(tokens, positions)
     }
 
@@ -471,11 +438,7 @@ pub trait Engine: Send + Sync {
     /// predec scales directly — skipping the ~200ms decode pass at startup.
     ///
     /// Default: Err(Unimplemented). QwenDense overrides.
-    fn bake_sidecar_predec(
-        &self,
-        _out_path: &std::path::Path,
-        _profile: crate::sidecar::SidecarProfile,
-    ) -> Result<usize> {
+    fn bake_sidecar_predec(&self, _out_path: &std::path::Path, _profile: crate::sidecar::SidecarProfile) -> Result<usize> {
         Err(crate::Error::Unimplemented("bake_sidecar_predec"))
     }
 
@@ -489,12 +452,7 @@ pub trait Engine: Send + Sync {
     /// Returns the argmax token from the last prompt position.
     ///
     /// Default: falls back to `prefill_slot(slot_id, prompt_ids)` (correct, ignores start_pos).
-    fn prefill_slot_from_pos(
-        &mut self,
-        slot_id: usize,
-        prompt_ids: &[u32],
-        start_pos: usize,
-    ) -> Result<u32> {
+    fn prefill_slot_from_pos(&mut self, slot_id: usize, prompt_ids: &[u32], start_pos: usize) -> Result<u32> {
         let _ = start_pos;
         self.prefill_slot(slot_id, prompt_ids)
     }
@@ -509,12 +467,7 @@ pub trait Engine: Send + Sync {
     /// no GPU dispatch, no TCB commit needed.
     ///
     /// Default: `Err(Unimplemented)`. QwenDense overrides.
-    fn copy_kv_prefix_to_slot(
-        &mut self,
-        _src_slot: usize,
-        _dst_slot: usize,
-        _prefix_len: usize,
-    ) -> Result<()> {
+    fn copy_kv_prefix_to_slot(&mut self, _src_slot: usize, _dst_slot: usize, _prefix_len: usize) -> Result<()> {
         Err(crate::Error::Unimplemented("copy_kv_prefix_to_slot"))
     }
 
@@ -525,24 +478,9 @@ pub trait Engine: Send + Sync {
     /// stack's TCB, commits once, reads back B×4 bytes instead of B×vocab×4.
     ///
     /// Default: delegates to forward_multiseq_batched + per-slot CPU argmax.
-    fn forward_multiseq_greedy_tokens(
-        &mut self,
-        tokens: &[u32],
-        positions: &[usize],
-        regions: &[usize],
-    ) -> Result<Vec<u32>> {
+    fn forward_multiseq_greedy_tokens(&mut self, tokens: &[u32], positions: &[usize], regions: &[usize]) -> Result<Vec<u32>> {
         let logits = self.forward_multiseq_batched(tokens, positions, regions)?;
-        Ok(logits
-            .into_iter()
-            .map(|l| {
-                l.iter()
-                    .copied()
-                    .enumerate()
-                    .max_by(|a, b| a.1.partial_cmp(&b.1).unwrap_or(std::cmp::Ordering::Less))
-                    .map(|(i, _)| i as u32)
-                    .unwrap_or(0)
-            })
-            .collect())
+        Ok(logits.into_iter().map(|l| l.iter().copied().enumerate().max_by(|a, b| a.1.partial_cmp(&b.1).unwrap_or(std::cmp::Ordering::Less)).map(|(i, _)| i as u32).unwrap_or(0)).collect())
     }
 
     /// Phase A parity helper -- reset KV cache to empty so two forward passes
@@ -621,11 +559,7 @@ mod gen_stats_observability_tests {
 
     #[test]
     fn dec_tps_formula() {
-        let s = GenStats {
-            completion_tokens: 64,
-            decode_ms: 2000.0,
-            ..Default::default()
-        };
+        let s = GenStats { completion_tokens: 64, decode_ms: 2000.0, ..Default::default() };
         // 64 tokens / 2.0 s = 32 tok/s
         assert!((s.dec_tps() - 32.0).abs() < 1e-9);
     }

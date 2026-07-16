@@ -54,11 +54,7 @@ mod outlier_wire {
 #[path = "../src/sideinfo_rans.rs"]
 mod sr;
 
-use sr::{
-    decode_positions, decode_scale_q, decode_stream, encode_positions, encode_scale_q,
-    encode_stream, encode_stream_with_model, gaps_to_positions, positions_to_gaps, unzigzag,
-    zigzag, Model,
-};
+use sr::{decode_positions, decode_scale_q, decode_stream, encode_positions, encode_scale_q, encode_stream, encode_stream_with_model, gaps_to_positions, positions_to_gaps, unzigzag, zigzag, Model};
 
 // ===========================================================================
 // deterministic PRNG (no rand dep — identical sequence on every platform)
@@ -214,11 +210,7 @@ fn exhaustive_escape_path_against_frozen_model() {
                 saw_escape = true;
             }
             let enc = encode_stream_with_model(&raw, &model);
-            assert_eq!(
-                encode_stream_with_model(&raw, &model),
-                enc,
-                "encode-with-frozen-model not deterministic"
-            );
+            assert_eq!(encode_stream_with_model(&raw, &model), enc, "encode-with-frozen-model not deterministic");
             let mut pos = 0usize;
             let back = decode_stream(&enc, &mut pos).expect("decode frozen-model section");
             assert_eq!(back, raw, "escape round-trip mismatch");
@@ -248,30 +240,20 @@ fn exhaustive_escape_path_against_frozen_model() {
 
 fn unhex(s: &str) -> Vec<u8> {
     assert!(s.len() % 2 == 0, "odd hex length");
-    (0..s.len() / 2)
-        .map(|i| u8::from_str_radix(&s[2 * i..2 * i + 2], 16).expect("hex"))
-        .collect()
+    (0..s.len() / 2).map(|i| u8::from_str_radix(&s[2 * i..2 * i + 2], 16).expect("hex")).collect()
 }
 
 /// (label, raw i64 stream, exact encoded bytes as hex).
 const GOLDENS: &[(&str, &[i64], &str)] = &[
     ("empty", &[], "0000000001000000000040000000000400000000008000"),
     ("single_run", &[7, 7, 7, 7, 7, 7, 7, 7], "08000000020000000ee438001c070000000004000000281e4801"),
-    (
-        "small_mixed",
-        &[3, 3, 3, -1, -1, 5, 0, 0, 0, 0, 7, 3, -1],
-        "0d00000006000000004b1201b60d0649120a92040e92040092040000000007000000482e5c0dc32b89",
-    ),
+    ("small_mixed", &[3, 3, 3, -1, -1, 5, 0, 0, 0, 0, 7, 3, -1], "0d00000006000000004b1201b60d0649120a92040e92040092040000000007000000482e5c0dc32b89"),
     (
         "extremes",
         &[i32::MIN as i64, i32::MAX as i64, 0, -1, 1, -1_000_000, 1_000_000],
         "0700000008000000000008010008020008ff887a000880897a0008feffffff0f0008ffffffff0f00080000080000000006000000417401101800",
     ),
-    (
-        "alt_sign",
-        &[-2, 2, -2, 2, -2, 2, -2, 2, 0],
-        "0900000004000000006606039b190499190066060000000005000000f411cc1dbc",
-    ),
+    ("alt_sign", &[-2, 2, -2, 2, -2, 2, -2, 2, 0], "0900000004000000006606039b190499190066060000000005000000f411cc1dbc"),
 ];
 
 #[test]
@@ -282,7 +264,8 @@ fn golden_vectors_both_directions() {
         // encode is bit-frozen
         let got = encode_stream(raw);
         assert_eq!(
-            got, want,
+            got,
+            want,
             "ENCODE golden drift for '{name}': bytes changed — \
              a cross-device divergence or an intended codec change.\n got={}\nwant={}",
             got.iter().map(|b| format!("{b:02x}")).collect::<String>(),
@@ -311,8 +294,7 @@ fn golden_scale_q_and_positions() {
     assert_eq!(pos, want.len());
 
     let positions: [u32; 7] = [3, 7, 8, 100, 101, 5000, 1_000_000];
-    let want =
-        unhex("0700000007000000020010060008080008b8010008c64c0008f0ba790008000008000000000600000081d00004a800");
+    let want = unhex("0700000007000000020010060008080008b8010008c64c0008f0ba790008000008000000000600000081d00004a800");
     assert_eq!(encode_positions(&positions), want, "positions encode golden drift");
     let mut pos = 0usize;
     assert_eq!(decode_positions(&want, &mut pos).unwrap(), positions);
@@ -374,8 +356,8 @@ fn property_random_streams_roundtrip() {
         let regime = splitmix64(&mut s) % 4;
         let raw: Vec<i64> = (0..n)
             .map(|_| match regime {
-                0 => 0,                                              // all-equal
-                1 => (splitmix64(&mut s) % 3) as i64 - 1,           // tiny alphabet
+                0 => 0,                                   // all-equal
+                1 => (splitmix64(&mut s) % 3) as i64 - 1, // tiny alphabet
                 2 => {
                     // bell curve ~ scale_q
                     let mut acc = 0i64;
@@ -421,8 +403,7 @@ fn exhaustive_gap_transform_inverts() {
             if mask.count_ones() as usize != k {
                 continue;
             }
-            let positions: Vec<u32> =
-                universe.iter().copied().enumerate().filter(|(i, _)| (mask >> i) & 1 == 1).map(|(_, v)| v).collect();
+            let positions: Vec<u32> = universe.iter().copied().enumerate().filter(|(i, _)| (mask >> i) & 1 == 1).map(|(_, v)| v).collect();
             // positions are ascending by construction.
             let gaps = positions_to_gaps(&positions);
             let back = gaps_to_positions(&gaps).expect("gaps invert");
@@ -469,17 +450,14 @@ fn every_truncation_is_total() {
     for cut in 0..=enc.len() {
         let mut pos = 0usize;
         // Must return (Ok or Err) without panicking and must not read past `cut`.
-        let r = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-            decode_stream(&enc[..cut], &mut pos)
-        }));
+        let r = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| decode_stream(&enc[..cut], &mut pos)));
         assert!(r.is_ok(), "decode panicked on truncation to {cut} bytes");
         assert!(pos <= cut, "decode read past the truncated end ({pos} > {cut})");
         // The only Ok on a strict truncation is the empty stream when the header
         // declared n==0; our stream declares n=400, so any short cut is an Err.
         if cut < enc.len() {
             if let Ok(Ok(v)) = &r {
-                assert!(v.is_empty() || v.len() == raw.len(),
-                    "truncated decode produced a partial-but-nonempty wrong stream at cut={cut}");
+                assert!(v.is_empty() || v.len() == raw.len(), "truncated decode produced a partial-but-nonempty wrong stream at cut={cut}");
             }
         }
     }
@@ -498,9 +476,7 @@ fn every_single_byte_flip_is_total() {
             let mut bad = enc.clone();
             bad[i] ^= delta as u8;
             let mut pos = 0usize;
-            let r = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-                decode_stream(&bad, &mut pos)
-            }));
+            let r = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| decode_stream(&bad, &mut pos)));
             assert!(r.is_ok(), "decode panicked on single-byte flip at {i} (xor {delta})");
             assert!(pos <= bad.len(), "decode over-read on flip at {i}");
             // If it decodes, it must produce the declared symbol count or error —
@@ -543,10 +519,7 @@ fn random_byte_soup_never_panics() {
 #[test]
 fn zigzag_bijective_over_boundaries_and_sweep() {
     // exact boundaries
-    for v in [
-        0i64, 1, -1, 2, -2, 63, -64, 64, -65, 127, -128,
-        i32::MIN as i64, i32::MAX as i64, i64::MIN, i64::MAX, i64::MIN + 1, i64::MAX - 1,
-    ] {
+    for v in [0i64, 1, -1, 2, -2, 63, -64, 64, -65, 127, -128, i32::MIN as i64, i32::MAX as i64, i64::MIN, i64::MAX, i64::MIN + 1, i64::MAX - 1] {
         assert_eq!(unzigzag(zigzag(v)), v, "zigzag not bijective at {v}");
     }
     // dense sweep around zero (every value -100_000..=100_000)

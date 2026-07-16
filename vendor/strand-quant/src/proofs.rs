@@ -1,4 +1,3 @@
-
 #![allow(clippy::needless_range_loop)]
 
 use crate::codebook::{codebook_lut, quantile_lut, QUANTILE_SHIFT};
@@ -6,17 +5,17 @@ use crate::decode::{eff_min_q, eff_scale_q, reconstruct_q, WordBitReader, SCALE_
 use crate::lut_tables::{FROZEN_MAX_L, FROZEN_MIN_L};
 use crate::trellis::read_bits;
 
-const Q_CLAMP: i32 = 6 * (1 << QUANTILE_SHIFT); 
+const Q_CLAMP: i32 = 6 * (1 << QUANTILE_SHIFT);
 
 const RECON_ABS_MAX: i64 = ((1i64 << 31) * (Q_CLAMP as i64)) >> SCALE_SHIFT;
 
 fn boundary_scales() -> Vec<i32> {
     let mut v: Vec<i32> = Vec::new();
     for w in 0..=256i64 {
-        v.push(w as i32); 
-        v.push(-(w as i32)); 
-        v.push((i32::MAX as i64 - w) as i32); 
-        v.push((i32::MIN as i64 + w) as i32); 
+        v.push(w as i32);
+        v.push(-(w as i32));
+        v.push((i32::MAX as i64 - w) as i32);
+        v.push((i32::MIN as i64 + w) as i32);
     }
     for p in 0..31u32 {
         let b = 1i64 << p;
@@ -45,20 +44,17 @@ fn frozen_lut_entries_within_clamp() {
         assert_eq!(q.len(), 1usize << l);
         assert_eq!(c.len(), 1usize << l);
         for &v in q.iter().chain(c.iter()) {
-            assert!(
-                (-Q_CLAMP..=Q_CLAMP).contains(&v),
-                "LUT entry {v} outside ±{Q_CLAMP} at L={l}"
-            );
+            assert!((-Q_CLAMP..=Q_CLAMP).contains(&v), "LUT entry {v} outside ±{Q_CLAMP} at L={l}");
             checked += 1;
         }
-        
+
         let mut qs = q.to_vec();
         let mut cs = c.to_vec();
         qs.sort_unstable();
         cs.sort_unstable();
         assert_eq!(qs, cs, "codebook L={l} is not a permutation of the quantile LUT");
     }
-    
+
     assert_eq!(checked, 65_504, "coverage accounting drifted");
 }
 
@@ -67,16 +63,13 @@ fn reconstruct_q_total_corners() {
     for s in [i32::MIN, i32::MIN + 1, -1, 0, 1, i32::MAX - 1, i32::MAX] {
         for q in [-Q_CLAMP, -Q_CLAMP + 1, -1, 0, 1, Q_CLAMP - 1, Q_CLAMP] {
             let oracle = recon_oracle(s, q);
-            
+
             let prod128 = s as i128 * q as i128;
             assert!(prod128.unsigned_abs() < 1u128 << 63, "i64 product overflow at ({s},{q})");
-            
-            assert!(
-                oracle >= i32::MIN as i128 && oracle <= i32::MAX as i128,
-                "result leaves i32 at ({s},{q}): {oracle}"
-            );
+
+            assert!(oracle >= i32::MIN as i128 && oracle <= i32::MAX as i128, "result leaves i32 at ({s},{q}): {oracle}");
             assert!(oracle.unsigned_abs() <= RECON_ABS_MAX as u128);
-            
+
             assert_eq!(reconstruct_q(s, q) as i128, oracle, "impl != oracle at ({s},{q})");
         }
     }
@@ -85,7 +78,7 @@ fn reconstruct_q_total_corners() {
 #[test]
 fn reconstruct_q_total_boundary_sweep() {
     let scales = boundary_scales();
-    
+
     let mut qs: Vec<i32> = Vec::new();
     for l in FROZEN_MIN_L..=FROZEN_MAX_L {
         qs.extend_from_slice(quantile_lut(l));
@@ -99,20 +92,12 @@ fn reconstruct_q_total_boundary_sweep() {
         for &q in &qs {
             let oracle = recon_oracle(s, q);
             debug_assert!(oracle >= i32::MIN as i128 && oracle <= i32::MAX as i128);
-            assert!(
-                oracle >= i32::MIN as i128 && oracle <= i32::MAX as i128,
-                "result leaves i32 at ({s},{q})"
-            );
+            assert!(oracle >= i32::MIN as i128 && oracle <= i32::MAX as i128, "result leaves i32 at ({s},{q})");
             assert_eq!(reconstruct_q(s, q) as i128, oracle, "impl != oracle at ({s},{q})");
             checked += 1;
         }
     }
-    eprintln!(
-        "reconstruct_q boundary sweep: {} scales x {} quantiles = {} pairs",
-        scales.len(),
-        qs.len(),
-        checked
-    );
+    eprintln!("reconstruct_q boundary sweep: {} scales x {} quantiles = {} pairs", scales.len(), qs.len(), checked);
 }
 
 #[test]
@@ -143,15 +128,12 @@ fn eff_scale_q_total() {
             let prod = s as i128 * mult;
             assert!(prod.unsigned_abs() < 1u128 << 63);
             let oracle = prod >> 6;
-            assert!(
-                oracle >= i32::MIN as i128 && oracle <= i32::MAX as i128,
-                "eff_scale_q leaves i32 at ({s},{code})"
-            );
+            assert!(oracle >= i32::MIN as i128 && oracle <= i32::MAX as i128, "eff_scale_q leaves i32 at ({s},{code})");
             assert_eq!(eff_scale_q(s, code) as i128, oracle, "impl != oracle at ({s},{code})");
             checked += 1;
         }
     }
-    
+
     assert_eq!(eff_scale_q(i32::MIN, 63), i32::MIN);
     assert_eq!(eff_scale_q(i32::MAX, 63), i32::MAX);
     eprintln!("eff_scale_q sweep: 256 codes x {} scales = {checked} pairs", scales.len());
@@ -171,12 +153,9 @@ fn eff_min_q_total_on_encoder_domain() {
                 let signed = if code & 0x20 != 0 { b as i128 * mag } else { -(b as i128 * mag) };
                 signed / 31
             };
-            assert!(
-                oracle >= i32::MIN as i128 && oracle <= i32::MAX as i128,
-                "eff_min_q leaves i32 at ({b},{code})"
-            );
+            assert!(oracle >= i32::MIN as i128 && oracle <= i32::MAX as i128, "eff_min_q leaves i32 at ({b},{code})");
             assert_eq!(eff_min_q(b, code) as i128, oracle, "impl != oracle at ({b},{code})");
-            
+
             assert!(oracle.unsigned_abs() <= b.unsigned_abs() as u128);
             checked += 1;
         }
@@ -187,29 +166,26 @@ fn eff_min_q_total_on_encoder_domain() {
 #[test]
 fn eff_min_q_i32_min_wrap_is_out_of_domain() {
     assert_eq!(eff_min_q(i32::MIN, 0x3F), i32::MIN, "wrap behaviour changed — update the ledger");
-    
+
     assert_eq!(eff_min_q(i32::MIN, 0x1F), i32::MIN);
 }
 
 #[test]
 fn recon_plus_min_offset_add_bound() {
-    let max_safe_base: i64 = i32::MAX as i64 - RECON_ABS_MAX; 
+    let max_safe_base: i64 = i32::MAX as i64 - RECON_ABS_MAX;
     assert_eq!(max_safe_base, 1_342_177_279);
-    
+
     let recon_neg = reconstruct_q(i32::MIN, Q_CLAMP);
-    assert_eq!(recon_neg as i64, -RECON_ABS_MAX); 
+    assert_eq!(recon_neg as i64, -RECON_ABS_MAX);
     let recon_pos = reconstruct_q(i32::MAX, Q_CLAMP);
-    assert_eq!(recon_pos as i64, RECON_ABS_MAX - 1); 
-    
+    assert_eq!(recon_pos as i64, RECON_ABS_MAX - 1);
+
     let tight = max_safe_base + 1;
     assert!(recon_pos as i64 + tight <= i32::MAX as i64);
     assert!(recon_neg as i64 - tight >= i32::MIN as i64);
-    
-    assert!(
-        recon_pos as i64 + (tight + 1) > i32::MAX as i64,
-        "the bound is not tight — recompute the ledger"
-    );
-    
+
+    assert!(recon_pos as i64 + (tight + 1) > i32::MAX as i64, "the bound is not tight — recompute the ledger");
+
     assert_eq!(eff_min_q(max_safe_base as i32, 0x3F) as i64, max_safe_base);
 }
 
@@ -229,7 +205,7 @@ fn word_reader_exhaustive_two_byte_buffers() {
     for content in 0u32..=0xFFFF {
         let bytes = [(content & 0xFF) as u8, (content >> 8) as u8];
         for k in 1..=8u32 {
-            let n_syms = 16 / k as usize + 9; 
+            let n_syms = 16 / k as usize + 9;
             assert_reader_matches(&bytes, 0, k, n_syms);
         }
     }
@@ -274,8 +250,7 @@ fn word_reader_xor_homomorphism() {
     let pattern = |seed: u32| -> [u8; 16] {
         let mut b = [0u8; 16];
         for (i, slot) in b.iter_mut().enumerate() {
-            *slot = ((seed.wrapping_mul(2654435761).wrapping_add(i as u32 * 0x9E37))
-                >> ((i % 4) * 7)) as u8;
+            *slot = ((seed.wrapping_mul(2654435761).wrapping_add(i as u32 * 0x9E37)) >> ((i % 4) * 7)) as u8;
         }
         b
     };
@@ -311,7 +286,7 @@ mod kani_harnesses {
         let q: i32 = kani::any();
         kani::assume((-Q_CLAMP..=Q_CLAMP).contains(&q));
         let r = reconstruct_q(s, q);
-        let prod = (s as i64) * (q as i64); 
+        let prod = (s as i64) * (q as i64);
         assert_eq!(r as i64, prod >> SCALE_SHIFT);
     }
 

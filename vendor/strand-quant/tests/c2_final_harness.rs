@@ -1,23 +1,13 @@
 //! Standalone test harness for `src/c2_final.rs` — the synthesized C2 coder
 //! (attempt-4 mode-adaptive engine + attempt-0 sub_scale graft).
 //!
-//! `c2_final` is intentionally NOT yet declared in `lib.rs` (wiring it is a
-//! shared-file edit left to the operator, exactly like its `sideinfo_rans` and
-//! `c2_attempt_4` siblings). To exercise the **real shipping source** — including
-//! its inline `#[cfg(test)] mod tests` byte-exact round-trip + MEASURE suite —
-//! without touching any shared file, this integration test `#[path]`-includes the
-//! module source directly. Because this is a `--test` target, `cfg(test)` is set,
-//! so the module's own `mod tests` is compiled and its `#[test]` fns run here.
+//! `c2_final` is part of the public crate surface. This integration test exercises
+//! that shipping API directly; the module's internal byte-exact and measurement
+//! suites continue to run in the library test target.
 //!
 //! Run:  cargo test -p strand-quant --test c2_final_harness -- --nocapture
 
-#[path = "../src/c2_final.rs"]
-mod c2_final;
-
-use c2_final::{
-    decode_positions, decode_scale_q, decode_sub_scales, encode_positions, encode_scale_q,
-    encode_sub_scales,
-};
+use strand_quant::c2_final::{decode_positions, decode_scale_q, decode_sub_scales, encode_positions, encode_scale_q, encode_sub_scales};
 
 #[test]
 fn public_api_all_three_streams_round_trip() {

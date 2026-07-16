@@ -33,10 +33,7 @@ fn main() {
 #[cfg(target_os = "macos")]
 #[allow(unsafe_code)]
 mod macos {
-    use metal::{
-        Buffer, CommandQueue, CompileOptions, ComputePipelineState, Device, MTLResourceOptions,
-        MTLSize, NSUInteger,
-    };
+    use metal::{Buffer, CommandQueue, CompileOptions, ComputePipelineState, Device, MTLResourceOptions, MTLSize, NSUInteger};
     use strand_decode_kernel::block_walk::gate_proto::{machine_stamp, synth_encoded};
     use strand_decode_kernel::metal::{bake_bitslice_entries, BitsliceEntry, BitsliceGpu, StrandGpu};
     use strand_quant::codebook::{codebook_lut, quantile_lut};
@@ -317,7 +314,10 @@ kernel void sizeof_probe(device uint* out [[buffer(0)]]) { out[0]=(uint)sizeof(B
             let device = Device::system_default()?;
             let lib = match device.new_library_with_source(MSL, &CompileOptions::new()) {
                 Ok(l) => l,
-                Err(e) => { eprintln!("[gate-coopwindow] compile error: {e}"); return None; }
+                Err(e) => {
+                    eprintln!("[gate-coopwindow] compile error: {e}");
+                    return None;
+                }
             };
             let p = |n: &str| -> Option<ComputePipelineState> {
                 let f = lib.get_function(n, None).ok()?;
@@ -334,230 +334,350 @@ kernel void sizeof_probe(device uint* out [[buffer(0)]]) { out[0]=(uint)sizeof(B
                 device,
             };
             let sz = g.probe_sizeof();
-            assert_eq!(sz as usize, std::mem::size_of::<BitsliceEntry>(),
-                "GPU sizeof(BitsliceEntry)={sz} != host {}", std::mem::size_of::<BitsliceEntry>());
+            assert_eq!(sz as usize, std::mem::size_of::<BitsliceEntry>(), "GPU sizeof(BitsliceEntry)={sz} != host {}", std::mem::size_of::<BitsliceEntry>());
             Some(g)
         }
         fn upload<T: Copy>(&self, d: &[T]) -> Buffer {
-            let n = (d.len()*std::mem::size_of::<T>()).max(4);
+            let n = (d.len() * std::mem::size_of::<T>()).max(4);
             let b = self.device.new_buffer(n as NSUInteger, MTLResourceOptions::StorageModeShared);
-            unsafe { std::ptr::copy_nonoverlapping(d.as_ptr() as *const u8, b.contents() as *mut u8, d.len()*std::mem::size_of::<T>()); }
+            unsafe {
+                std::ptr::copy_nonoverlapping(d.as_ptr() as *const u8, b.contents() as *mut u8, d.len() * std::mem::size_of::<T>());
+            }
             b
         }
         fn alloc(&self, n: usize) -> Buffer {
             self.device.new_buffer(n.max(4) as NSUInteger, MTLResourceOptions::StorageModeShared)
         }
         fn upload_payload(&self, bits: &[u8]) -> Buffer {
-            let n = bits.len().div_ceil(4)*4 + 8;
+            let n = bits.len().div_ceil(4) * 4 + 8;
             let b = self.alloc(n);
-            unsafe { let d=b.contents() as *mut u8; std::ptr::write_bytes(d,0,n); std::ptr::copy_nonoverlapping(bits.as_ptr(),d,bits.len()); }
+            unsafe {
+                let d = b.contents() as *mut u8;
+                std::ptr::write_bytes(d, 0, n);
+                std::ptr::copy_nonoverlapping(bits.as_ptr(), d, bits.len());
+            }
             b
         }
         fn probe_sizeof(&self) -> u32 {
-            let out=self.alloc(4); let cmd=self.queue.new_command_buffer(); let e=cmd.new_compute_command_encoder();
-            e.set_compute_pipeline_state(&self.szprobe); e.set_buffer(0,Some(&out),0);
-            let one=MTLSize{width:1,height:1,depth:1}; e.dispatch_thread_groups(one,one); e.end_encoding(); cmd.commit(); cmd.wait_until_completed();
-            unsafe{*(out.contents() as *const u32)}
+            let out = self.alloc(4);
+            let cmd = self.queue.new_command_buffer();
+            let e = cmd.new_compute_command_encoder();
+            e.set_compute_pipeline_state(&self.szprobe);
+            e.set_buffer(0, Some(&out), 0);
+            let one = MTLSize { width: 1, height: 1, depth: 1 };
+            e.dispatch_thread_groups(one, one);
+            e.end_encoding();
+            cmd.commit();
+            cmd.wait_until_completed();
+            unsafe { *(out.contents() as *const u32) }
         }
 
         // K1 decode-only identity
         #[allow(clippy::too_many_arguments)]
-        fn k1_decode(&self, payload:&[u8], tbl:&[BitsliceEntry], quant:&[i16], total:usize, k:u32, l:u32) -> Vec<i32> {
-            let w=self.upload_payload(payload); let out=self.alloc(total*4); let t=self.upload(tbl);
-            let nb=self.upload(&[tbl.len() as u32]); let kb=self.upload(&[k]); let lb=self.upload(&[l]); let q=self.upload(quant);
-            let cmd=self.queue.new_command_buffer(); let e=cmd.new_compute_command_encoder();
+        fn k1_decode(&self, payload: &[u8], tbl: &[BitsliceEntry], quant: &[i16], total: usize, k: u32, l: u32) -> Vec<i32> {
+            let w = self.upload_payload(payload);
+            let out = self.alloc(total * 4);
+            let t = self.upload(tbl);
+            let nb = self.upload(&[tbl.len() as u32]);
+            let kb = self.upload(&[k]);
+            let lb = self.upload(&[l]);
+            let q = self.upload(quant);
+            let cmd = self.queue.new_command_buffer();
+            let e = cmd.new_compute_command_encoder();
             e.set_compute_pipeline_state(&self.k1_dec);
-            e.set_buffer(0,Some(&w),0); e.set_buffer(1,Some(&out),0); e.set_buffer(2,Some(&t),0);
-            e.set_buffer(3,Some(&nb),0); e.set_buffer(4,Some(&kb),0); e.set_buffer(5,Some(&lb),0); e.set_buffer(6,Some(&q),0);
-            e.set_threadgroup_memory_length(0, ((1usize<<l)*2) as NSUInteger);
-            let groups=MTLSize{width:(tbl.len() as u64).div_ceil(256) as NSUInteger,height:1,depth:1};
-            let tpg=MTLSize{width:256,height:1,depth:1}; e.dispatch_thread_groups(groups,tpg); e.end_encoding(); cmd.commit(); cmd.wait_until_completed();
-            unsafe{std::slice::from_raw_parts(out.contents() as *const i32, total)}.to_vec()
+            e.set_buffer(0, Some(&w), 0);
+            e.set_buffer(1, Some(&out), 0);
+            e.set_buffer(2, Some(&t), 0);
+            e.set_buffer(3, Some(&nb), 0);
+            e.set_buffer(4, Some(&kb), 0);
+            e.set_buffer(5, Some(&lb), 0);
+            e.set_buffer(6, Some(&q), 0);
+            e.set_threadgroup_memory_length(0, ((1usize << l) * 2) as NSUInteger);
+            let groups = MTLSize { width: (tbl.len() as u64).div_ceil(256) as NSUInteger, height: 1, depth: 1 };
+            let tpg = MTLSize { width: 256, height: 1, depth: 1 };
+            e.dispatch_thread_groups(groups, tpg);
+            e.end_encoding();
+            cmd.commit();
+            cmd.wait_until_completed();
+            unsafe { std::slice::from_raw_parts(out.contents() as *const i32, total) }.to_vec()
         }
 
         // K2 windowed decode-only identity
         #[allow(clippy::too_many_arguments)]
-        fn k2_decode(&self, payload:&[u8], tbl:&[BitsliceEntry], quant:&[i16], total:usize, k:u32, l:u32) -> Vec<i32> {
+        fn k2_decode(&self, payload: &[u8], tbl: &[BitsliceEntry], quant: &[i16], total: usize, k: u32, l: u32) -> Vec<i32> {
             const BG: u64 = 8;
-            let w=self.upload_payload(payload); let out=self.alloc(total*4); let t=self.upload(tbl);
-            let nb=self.upload(&[tbl.len() as u32]); let kb=self.upload(&[k]); let lb=self.upload(&[l]); let q=self.upload(quant);
-            let cmd=self.queue.new_command_buffer(); let e=cmd.new_compute_command_encoder();
+            let w = self.upload_payload(payload);
+            let out = self.alloc(total * 4);
+            let t = self.upload(tbl);
+            let nb = self.upload(&[tbl.len() as u32]);
+            let kb = self.upload(&[k]);
+            let lb = self.upload(&[l]);
+            let q = self.upload(quant);
+            let cmd = self.queue.new_command_buffer();
+            let e = cmd.new_compute_command_encoder();
             e.set_compute_pipeline_state(&self.k2_dec);
-            e.set_buffer(0,Some(&w),0); e.set_buffer(1,Some(&out),0); e.set_buffer(2,Some(&t),0);
-            e.set_buffer(3,Some(&nb),0); e.set_buffer(4,Some(&kb),0); e.set_buffer(5,Some(&lb),0); e.set_buffer(6,Some(&q),0);
-            e.set_threadgroup_memory_length(0, ((1usize<<l)*2) as NSUInteger);
-            let groups=MTLSize{width:(tbl.len() as u64).div_ceil(BG) as NSUInteger,height:1,depth:1};
-            let tpg=MTLSize{width:(BG*32) as NSUInteger,height:1,depth:1}; e.dispatch_thread_groups(groups,tpg); e.end_encoding(); cmd.commit(); cmd.wait_until_completed();
-            unsafe{std::slice::from_raw_parts(out.contents() as *const i32, total)}.to_vec()
+            e.set_buffer(0, Some(&w), 0);
+            e.set_buffer(1, Some(&out), 0);
+            e.set_buffer(2, Some(&t), 0);
+            e.set_buffer(3, Some(&nb), 0);
+            e.set_buffer(4, Some(&kb), 0);
+            e.set_buffer(5, Some(&lb), 0);
+            e.set_buffer(6, Some(&q), 0);
+            e.set_threadgroup_memory_length(0, ((1usize << l) * 2) as NSUInteger);
+            let groups = MTLSize { width: (tbl.len() as u64).div_ceil(BG) as NSUInteger, height: 1, depth: 1 };
+            let tpg = MTLSize { width: (BG * 32) as NSUInteger, height: 1, depth: 1 };
+            e.dispatch_thread_groups(groups, tpg);
+            e.end_encoding();
+            cmd.commit();
+            cmd.wait_until_completed();
+            unsafe { std::slice::from_raw_parts(out.contents() as *const i32, total) }.to_vec()
         }
 
         // K1 fused matvec
         #[allow(clippy::too_many_arguments)]
-        fn k1_matvec(&self, b:&Bufs, rows:u32, l:u32) -> (Vec<f32>, f64, usize) {
-            self.run_partials(&self.k1_blk, b, rows, l, /*coop=*/false)
+        fn k1_matvec(&self, b: &Bufs, rows: u32, l: u32) -> (Vec<f32>, f64, usize) {
+            self.run_partials(&self.k1_blk, b, rows, l, /*coop=*/ false)
         }
         #[allow(clippy::too_many_arguments)]
-        fn k2_matvec(&self, b:&Bufs, rows:u32, l:u32) -> (Vec<f32>, f64, usize) {
-            self.run_partials(&self.k2_coop, b, rows, l, /*coop=*/true)
+        fn k2_matvec(&self, b: &Bufs, rows: u32, l: u32) -> (Vec<f32>, f64, usize) {
+            self.run_partials(&self.k2_coop, b, rows, l, /*coop=*/ true)
         }
 
-        fn run_partials(&self, pipe:&ComputePipelineState, b:&Bufs, rows:u32, l:u32, coop:bool) -> (Vec<f32>, f64, usize) {
+        fn run_partials(&self, pipe: &ComputePipelineState, b: &Bufs, rows: u32, l: u32, coop: bool) -> (Vec<f32>, f64, usize) {
             // returns (y, dt_best_over_internal, tpb)
             // coop: BG blocks per threadgroup (one 32-lane SIMD-group per block) so the quant
             // table stages once per TG and amortizes. BG=8 -> 256 threads/TG.
             const BG: u64 = 8;
-            let tpb: u64 = if coop { BG*32 } else { 256 };
+            let tpb: u64 = if coop { BG * 32 } else { 256 };
             let dispatch = || {
-                let cmd=self.queue.new_command_buffer();
+                let cmd = self.queue.new_command_buffer();
                 {
-                    let e=cmd.new_compute_command_encoder();
+                    let e = cmd.new_compute_command_encoder();
                     e.set_compute_pipeline_state(pipe);
-                    e.set_buffer(0,Some(&b.w),0); e.set_buffer(1,Some(&b.x),0); e.set_buffer(2,Some(&b.partials),0);
-                    e.set_buffer(3,Some(&b.tbl),0); e.set_buffer(4,Some(&b.nb),0); e.set_buffer(5,Some(&b.cols),0);
-                    e.set_buffer(6,Some(&b.k),0); e.set_buffer(7,Some(&b.l),0); e.set_buffer(8,Some(&b.q),0);
+                    e.set_buffer(0, Some(&b.w), 0);
+                    e.set_buffer(1, Some(&b.x), 0);
+                    e.set_buffer(2, Some(&b.partials), 0);
+                    e.set_buffer(3, Some(&b.tbl), 0);
+                    e.set_buffer(4, Some(&b.nb), 0);
+                    e.set_buffer(5, Some(&b.cols), 0);
+                    e.set_buffer(6, Some(&b.k), 0);
+                    e.set_buffer(7, Some(&b.l), 0);
+                    e.set_buffer(8, Some(&b.q), 0);
                     if coop {
-                        e.set_threadgroup_memory_length(0, ((1u64<<l)*2) as NSUInteger); // sh_q i16
-                        let groups=MTLSize{width:(b.n_blocks as u64).div_ceil(BG) as NSUInteger,height:1,depth:1};
-                        let t=MTLSize{width:tpb as NSUInteger,height:1,depth:1};
-                        e.dispatch_thread_groups(groups,t);
+                        e.set_threadgroup_memory_length(0, ((1u64 << l) * 2) as NSUInteger); // sh_q i16
+                        let groups = MTLSize { width: (b.n_blocks as u64).div_ceil(BG) as NSUInteger, height: 1, depth: 1 };
+                        let t = MTLSize { width: tpb as NSUInteger, height: 1, depth: 1 };
+                        e.dispatch_thread_groups(groups, t);
                     } else {
-                        e.set_threadgroup_memory_length(0, ((1u64<<l)*2) as NSUInteger);
-                        let groups=MTLSize{width:(b.n_blocks as u64).div_ceil(256) as NSUInteger,height:1,depth:1};
-                        let t=MTLSize{width:256,height:1,depth:1};
-                        e.dispatch_thread_groups(groups,t);
+                        e.set_threadgroup_memory_length(0, ((1u64 << l) * 2) as NSUInteger);
+                        let groups = MTLSize { width: (b.n_blocks as u64).div_ceil(256) as NSUInteger, height: 1, depth: 1 };
+                        let t = MTLSize { width: 256, height: 1, depth: 1 };
+                        e.dispatch_thread_groups(groups, t);
                     }
                     e.end_encoding();
                 }
                 {
-                    let e=cmd.new_compute_command_encoder();
+                    let e = cmd.new_compute_command_encoder();
                     e.set_compute_pipeline_state(&self.reduce);
-                    e.set_buffer(0,Some(&b.partials),0); e.set_buffer(1,Some(&b.y),0); e.set_buffer(2,Some(&b.rows),0); e.set_buffer(3,Some(&b.bpr),0);
-                    let groups=MTLSize{width:(rows as u64).div_ceil(256) as NSUInteger,height:1,depth:1};
-                    let t=MTLSize{width:256,height:1,depth:1}; e.dispatch_thread_groups(groups,t); e.end_encoding();
+                    e.set_buffer(0, Some(&b.partials), 0);
+                    e.set_buffer(1, Some(&b.y), 0);
+                    e.set_buffer(2, Some(&b.rows), 0);
+                    e.set_buffer(3, Some(&b.bpr), 0);
+                    let groups = MTLSize { width: (rows as u64).div_ceil(256) as NSUInteger, height: 1, depth: 1 };
+                    let t = MTLSize { width: 256, height: 1, depth: 1 };
+                    e.dispatch_thread_groups(groups, t);
+                    e.end_encoding();
                 }
-                cmd.commit(); cmd.wait_until_completed();
+                cmd.commit();
+                cmd.wait_until_completed();
             };
             // warm
             dispatch();
-            let mut best=f64::INFINITY;
-            for _ in 0..30 { let t0=std::time::Instant::now(); dispatch(); let dt=t0.elapsed().as_secs_f64(); if dt>0.0 && dt<best {best=dt;} }
-            let y = unsafe{std::slice::from_raw_parts(b.y.contents() as *const f32, rows as usize)}.to_vec();
+            let mut best = f64::INFINITY;
+            for _ in 0..30 {
+                let t0 = std::time::Instant::now();
+                dispatch();
+                let dt = t0.elapsed().as_secs_f64();
+                if dt > 0.0 && dt < best {
+                    best = dt;
+                }
+            }
+            let y = unsafe { std::slice::from_raw_parts(b.y.contents() as *const f32, rows as usize) }.to_vec();
             (y, best, tpb as usize)
         }
     }
 
-    struct Bufs { w:Buffer, x:Buffer, partials:Buffer, y:Buffer, tbl:Buffer, nb:Buffer, cols:Buffer, k:Buffer, l:Buffer, q:Buffer, rows:Buffer, bpr:Buffer, n_blocks:u32 }
+    struct Bufs {
+        w: Buffer,
+        x: Buffer,
+        partials: Buffer,
+        y: Buffer,
+        tbl: Buffer,
+        nb: Buffer,
+        cols: Buffer,
+        k: Buffer,
+        l: Buffer,
+        q: Buffer,
+        rows: Buffer,
+        bpr: Buffer,
+        n_blocks: u32,
+    }
 
     #[allow(clippy::too_many_arguments)]
-    fn make_bufs(g:&Gpu, payload:&[u8], tbl:&[BitsliceEntry], quant:&[i16], rows:u32, cols:u32, k:u32, l:u32, x:&[f32]) -> Bufs {
+    fn make_bufs(g: &Gpu, payload: &[u8], tbl: &[BitsliceEntry], quant: &[i16], rows: u32, cols: u32, k: u32, l: u32, x: &[f32]) -> Bufs {
         Bufs {
-            w:g.upload_payload(payload), x:g.upload(x), partials:g.alloc(tbl.len()*4), y:g.alloc(rows as usize*4),
-            tbl:g.upload(tbl), nb:g.upload(&[tbl.len() as u32]), cols:g.upload(&[cols]), k:g.upload(&[k]), l:g.upload(&[l]),
-            q:g.upload(quant), rows:g.upload(&[rows]), bpr:g.upload(&[cols/256]), n_blocks:tbl.len() as u32,
+            w: g.upload_payload(payload),
+            x: g.upload(x),
+            partials: g.alloc(tbl.len() * 4),
+            y: g.alloc(rows as usize * 4),
+            tbl: g.upload(tbl),
+            nb: g.upload(&[tbl.len() as u32]),
+            cols: g.upload(&[cols]),
+            k: g.upload(&[k]),
+            l: g.upload(&[l]),
+            q: g.upload(quant),
+            rows: g.upload(&[rows]),
+            bpr: g.upload(&[cols / 256]),
+            n_blocks: tbl.len() as u32,
         }
     }
 
-    fn check_fused(y:&[f32], want:&[i32], x:&[f32], out_f:usize, in_f:usize) -> (bool, f64) {
-        let inv=1.0f32/4096.0; let mut ok=true; let mut maxrel=0.0f64;
+    fn check_fused(y: &[f32], want: &[i32], x: &[f32], out_f: usize, in_f: usize) -> (bool, f64) {
+        let inv = 1.0f32 / 4096.0;
+        let mut ok = true;
+        let mut maxrel = 0.0f64;
         for r in (0..out_f).step_by(257) {
-            let row=&want[r*in_f..(r+1)*in_f];
-            let mut acc=0.0f32; for i in 0..in_f { acc+=(row[i] as f32)*inv*x[i]; }
-            let denom=acc.abs().max(1e-3); let rel=((y[r]-acc).abs()/denom) as f64; maxrel=maxrel.max(rel);
-            if rel>=1e-3 { ok=false; }
+            let row = &want[r * in_f..(r + 1) * in_f];
+            let mut acc = 0.0f32;
+            for i in 0..in_f {
+                acc += (row[i] as f32) * inv * x[i];
+            }
+            let denom = acc.abs().max(1e-3);
+            let rel = ((y[r] - acc).abs() / denom) as f64;
+            maxrel = maxrel.max(rel);
+            if rel >= 1e-3 {
+                ok = false;
+            }
         }
         (ok, maxrel)
     }
 
     pub fn run() {
-        let Some(g)=Gpu::new() else { println!("gate-coopwindow: no Metal / compile failed."); return; };
-        let Some(refg)=BitsliceGpu::new() else { println!("gate-coopwindow: reference BitsliceGpu unavailable."); return; };
-        let peak=StrandGpu::new().map(|s|s.bench_peak_bw(64<<20,5)).unwrap_or(f64::NAN);
+        let Some(g) = Gpu::new() else {
+            println!("gate-coopwindow: no Metal / compile failed.");
+            return;
+        };
+        let Some(refg) = BitsliceGpu::new() else {
+            println!("gate-coopwindow: reference BitsliceGpu unavailable.");
+            return;
+        };
+        let peak = StrandGpu::new().map(|s| s.bench_peak_bw(64 << 20, 5)).unwrap_or(f64::NAN);
         println!("== gate-coopwindow: computed-codebook + cooperative windowed decode ==");
         println!("  {}", machine_stamp());
-        println!("  device props: k1_blk maxTPT={} execWidth={}  k2_coop maxTPT={} execWidth={}",
-            g.k1_blk.max_total_threads_per_threadgroup(), g.k1_blk.thread_execution_width(),
-            g.k2_coop.max_total_threads_per_threadgroup(), g.k2_coop.thread_execution_width());
-        println!("  measured streaming peak: {:.1} GB/s", peak/1e9);
+        println!(
+            "  device props: k1_blk maxTPT={} execWidth={}  k2_coop maxTPT={} execWidth={}",
+            g.k1_blk.max_total_threads_per_threadgroup(),
+            g.k1_blk.thread_execution_width(),
+            g.k2_coop.max_total_threads_per_threadgroup(),
+            g.k2_coop.thread_execution_width()
+        );
+        println!("  measured streaming peak: {:.1} GB/s", peak / 1e9);
 
-        let (out_f,in_f)=(18944usize,3584usize); let total=out_f*in_f;
-        let x:Vec<f32>=(0..in_f).map(|i|(i as f32*0.05).sin()).collect();
-        println!("  ffn_down {out_f}x{in_f} = {:.1}M weights\n", total as f64/1e6);
+        let (out_f, in_f) = (18944usize, 3584usize);
+        let total = out_f * in_f;
+        let x: Vec<f32> = (0..in_f).map(|i| (i as f32 * 0.05).sin()).collect();
+        println!("  ffn_down {out_f}x{in_f} = {:.1}M weights\n", total as f64 / 1e6);
 
-        for (cfg,label) in [
-            (TrellisConfig::for_bpw(3.0), "k3 L7 (3-bit deploy)"),
-            (TrellisConfig::for_bpw_l(2.0,12), "k2 L12 (2-bit reopen)"),
-        ] {
-            let enc=synth_encoded(total,cfg.k_bits,256);
-            let tbl=bake_bitslice_entries(&enc,&cfg).expect("bake");
-            let want=decode_tensor_fixed(&enc,&cfg);
-            let quant=quantile_i16(cfg.l_bits);
-            let cb=codebook_lut(cfg.l_bits);
-            let lutref=cb; // reference fused uses the precomputed codebook i32
+        for (cfg, label) in [(TrellisConfig::for_bpw(3.0), "k3 L7 (3-bit deploy)"), (TrellisConfig::for_bpw_l(2.0, 12), "k2 L12 (2-bit reopen)")] {
+            let enc = synth_encoded(total, cfg.k_bits, 256);
+            let tbl = bake_bitslice_entries(&enc, &cfg).expect("bake");
+            let want = decode_tensor_fixed(&enc, &cfg);
+            let quant = quantile_i16(cfg.l_bits);
+            let cb = codebook_lut(cfg.l_bits);
+            let lutref = cb; // reference fused uses the precomputed codebook i32
 
             // ---- IDENTITY: computed codebook == codebook_lut (and decode == reference) ----
             // 1) host check: quant[hash(s)] == codebook_lut[s] for all s.
             {
-                let n=1usize<<cfg.l_bits; let mut ok=true;
+                let n = 1usize << cfg.l_bits;
+                let mut ok = true;
                 for s in 0..n {
-                    let h=hash_host(s,cfg.l_bits);
-                    if quant[h] as i32 != cb[s] { ok=false; break; }
+                    let h = hash_host(s, cfg.l_bits);
+                    if quant[h] as i32 != cb[s] {
+                        ok = false;
+                        break;
+                    }
                 }
                 assert!(ok, "host computed codebook != codebook_lut at {label}");
             }
             // 2) GPU decode (computed, serial) == decode_tensor_fixed
-            let got=g.k1_decode(&enc.bits,&tbl,&quant,total,cfg.k_bits,cfg.l_bits);
-            let dec_ok = got==want;
+            let got = g.k1_decode(&enc.bits, &tbl, &quant, total, cfg.k_bits, cfg.l_bits);
+            let dec_ok = got == want;
             if !dec_ok {
-                let idx=got.iter().zip(want.iter()).position(|(a,b)|a!=b).unwrap_or(usize::MAX);
-                println!("  !! K1 decode identity FAIL at {label}: first diff i={idx} GPU={} CPU={}",
-                    got.get(idx).copied().unwrap_or(0), want.get(idx).copied().unwrap_or(0));
+                let idx = got.iter().zip(want.iter()).position(|(a, b)| a != b).unwrap_or(usize::MAX);
+                println!("  !! K1 decode identity FAIL at {label}: first diff i={idx} GPU={} CPU={}", got.get(idx).copied().unwrap_or(0), want.get(idx).copied().unwrap_or(0));
             }
             // 3) GPU WINDOWED decode (parallel, no recurrence) == decode_tensor_fixed
-            let gotw=g.k2_decode(&enc.bits,&tbl,&quant,total,cfg.k_bits,cfg.l_bits);
-            let win_ok = gotw==want;
+            let gotw = g.k2_decode(&enc.bits, &tbl, &quant, total, cfg.k_bits, cfg.l_bits);
+            let win_ok = gotw == want;
             if !win_ok {
-                let idx=gotw.iter().zip(want.iter()).position(|(a,b)|a!=b).unwrap_or(usize::MAX);
-                println!("  !! K2 WINDOWED decode identity FAIL at {label}: first diff i={idx} GPU={} CPU={}",
-                    gotw.get(idx).copied().unwrap_or(0), want.get(idx).copied().unwrap_or(0));
+                let idx = gotw.iter().zip(want.iter()).position(|(a, b)| a != b).unwrap_or(usize::MAX);
+                println!("  !! K2 WINDOWED decode identity FAIL at {label}: first diff i={idx} GPU={} CPU={}", gotw.get(idx).copied().unwrap_or(0), want.get(idx).copied().unwrap_or(0));
             }
 
             // ---- reference fused B=1 (existing kernel) baseline ----
-            let ref_dt = refg.bench_matvec(&enc.bits,&tbl,lutref,out_f as u32,in_f as u32,cfg.k_bits,cfg.l_bits,&x,30);
-            let ref_gws = total as f64/ref_dt/1e9;
+            let ref_dt = refg.bench_matvec(&enc.bits, &tbl, lutref, out_f as u32, in_f as u32, cfg.k_bits, cfg.l_bits, &x, 30);
+            let ref_gws = total as f64 / ref_dt / 1e9;
 
             // ---- K1 computed-codebook fused ----
-            let bufs=make_bufs(&g,&enc.bits,&tbl,&quant,out_f as u32,in_f as u32,cfg.k_bits,cfg.l_bits,&x);
-            let (y1,dt1,_)=g.k1_matvec(&bufs,out_f as u32,cfg.l_bits);
-            let (ok1,rel1)=check_fused(&y1,&want,&x,out_f,in_f);
-            let g1=total as f64/dt1/1e9;
+            let bufs = make_bufs(&g, &enc.bits, &tbl, &quant, out_f as u32, in_f as u32, cfg.k_bits, cfg.l_bits, &x);
+            let (y1, dt1, _) = g.k1_matvec(&bufs, out_f as u32, cfg.l_bits);
+            let (ok1, rel1) = check_fused(&y1, &want, &x, out_f, in_f);
+            let g1 = total as f64 / dt1 / 1e9;
 
             // ---- K2 cooperative windowed fused ----
-            let (y2,dt2,tpb2)=g.k2_matvec(&bufs,out_f as u32,cfg.l_bits);
-            let (ok2,rel2)=check_fused(&y2,&want,&x,out_f,in_f);
-            let g2=total as f64/dt2/1e9;
+            let (y2, dt2, tpb2) = g.k2_matvec(&bufs, out_f as u32, cfg.l_bits);
+            let (ok2, rel2) = check_fused(&y2, &want, &x, out_f, in_f);
+            let g2 = total as f64 / dt2 / 1e9;
 
-            let payload_bytes=(total as f64)*(cfg.k_bits as f64)/8.0;
-            let io=((in_f+out_f)*4) as f64;
-            let tbl_bytes=(tbl.len()*std::mem::size_of::<BitsliceEntry>()) as f64;
-            let bw=|dt:f64| 100.0*((payload_bytes+tbl_bytes+io)/dt)/peak;
+            let payload_bytes = (total as f64) * (cfg.k_bits as f64) / 8.0;
+            let io = ((in_f + out_f) * 4) as f64;
+            let tbl_bytes = (tbl.len() * std::mem::size_of::<BitsliceEntry>()) as f64;
+            let bw = |dt: f64| 100.0 * ((payload_bytes + tbl_bytes + io) / dt) / peak;
 
-            println!("  [{label}]  serial-decode-id={}  windowed-decode-id={}",
-                if dec_ok {"PASS"} else {"FAIL"}, if win_ok {"PASS"} else {"FAIL"});
-            println!("    reference fused B=1 : {:>7.3} ms  {:>6.2} Gw/s  {:>5.1}% peak  (1.00x)",
-                ref_dt*1e3, ref_gws, bw(ref_dt));
-            println!("    K1 computed-cbook   : {:>7.3} ms  {:>6.2} Gw/s  {:>5.1}% peak  ({:.2}x)  fused-id={} (rel {:.1e})",
-                dt1*1e3, g1, bw(dt1), g1/ref_gws, if ok1 {"PASS"} else {"FAIL"}, rel1);
-            println!("    K2 coop-windowed tpb{tpb2}: {:>6.3} ms  {:>6.2} Gw/s  {:>5.1}% peak  ({:.2}x)  fused-id={} (rel {:.1e})\n",
-                dt2*1e3, g2, bw(dt2), g2/ref_gws, if ok2 {"PASS"} else {"FAIL"}, rel2);
+            println!("  [{label}]  serial-decode-id={}  windowed-decode-id={}", if dec_ok { "PASS" } else { "FAIL" }, if win_ok { "PASS" } else { "FAIL" });
+            println!("    reference fused B=1 : {:>7.3} ms  {:>6.2} Gw/s  {:>5.1}% peak  (1.00x)", ref_dt * 1e3, ref_gws, bw(ref_dt));
+            println!(
+                "    K1 computed-cbook   : {:>7.3} ms  {:>6.2} Gw/s  {:>5.1}% peak  ({:.2}x)  fused-id={} (rel {:.1e})",
+                dt1 * 1e3,
+                g1,
+                bw(dt1),
+                g1 / ref_gws,
+                if ok1 { "PASS" } else { "FAIL" },
+                rel1
+            );
+            println!(
+                "    K2 coop-windowed tpb{tpb2}: {:>6.3} ms  {:>6.2} Gw/s  {:>5.1}% peak  ({:.2}x)  fused-id={} (rel {:.1e})\n",
+                dt2 * 1e3,
+                g2,
+                bw(dt2),
+                g2 / ref_gws,
+                if ok2 { "PASS" } else { "FAIL" },
+                rel2
+            );
         }
         println!("  NOTE: %peak uses payload+table+io traffic. Computed codebook removes the per-thread");
         println!("  data-dependent 2^L i32 shmem LUT (L12: 16KB->8KB i16 quant). K2 tests within-block parallelism.");
     }
 
-    fn hash_host(s:usize, l_bits:u32) -> usize {
-        let mask=(1usize<<l_bits)-1; let r=(l_bits/2).max(1) as usize;
-        let mut h=s&mask;
-        h=(h^(h>>r))&mask; h=h.wrapping_mul(0x2545_F491_4F6C_DD1D)&mask;
-        h=(h^(h>>r))&mask; h=h.wrapping_mul(0x9E37_79B9_7F4A_7C15)&mask; h&mask
+    fn hash_host(s: usize, l_bits: u32) -> usize {
+        let mask = (1usize << l_bits) - 1;
+        let r = (l_bits / 2).max(1) as usize;
+        let mut h = s & mask;
+        h = (h ^ (h >> r)) & mask;
+        h = h.wrapping_mul(0x2545_F491_4F6C_DD1D) & mask;
+        h = (h ^ (h >> r)) & mask;
+        h = h.wrapping_mul(0x9E37_79B9_7F4A_7C15) & mask;
+        h & mask
     }
 }

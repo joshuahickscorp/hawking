@@ -1,4 +1,3 @@
-
 use strand_quant::decode::decode_tensor_fixed;
 use strand_quant::{encode_tensor, TrellisConfig};
 

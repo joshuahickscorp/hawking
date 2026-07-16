@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [react()],
   server: { port: 5273, strictPort: false },
   // Monaco's editor + language services run off-thread; the workers are imported via `?worker`
-  // (see app/src/surfaces/ide/monacoTheme.ts) and bundled as ES-module workers, no CDN fetch.
+  // (see app/src/surfaces/monacoTheme.ts) and bundled as ES-module workers, no CDN fetch.
   worker: { format: "es" },
   // Bundle the editor core; exclude the worker entry subpaths from prebundling so the `?worker`
   // imports are handled as real worker modules, not flattened into the optimize step.

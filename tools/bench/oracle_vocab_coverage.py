@@ -26,8 +26,7 @@ Two halves are measured:
       stands in for argmax/output frequency, which needs a GPU decode we do
       not run.)
   (b) NORM-BOUND CERTIFICATE FALL-BACK RATE (LABEL ESTIMATE) — precompute
-      per-row ||w_v|| from the dequantized lm_head (reusing
-      oracle_svd_lmhead.py's GGUF loader). The certified-fast-path condition
+      per-row ||w_v|| from the dequantized lm_head. The certified-fast-path condition
       for a step is  max_{v not in H} ||w_v|| * ||h|| < l_c, equivalently
       ||h|| < l_c / max_{v not in H}||w_v||. Real ||h|| and l_c need a GPU run
       we do NOT do, so we MODEL them and SWEEP a plausible range of the ratio

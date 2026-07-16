@@ -8,6 +8,9 @@ repository.workspace = true
 authors.workspace = true
 description = "Context compiler, memory, and KV abstractions for HIDE"
 
+[lib]
+path = "lib.rs"
+
 [dependencies]
 hide-core = { path = "../hide-core" }
 hawking-index = { path = "../hawking-index" }

@@ -107,8 +107,7 @@ fn greedy_64_regression() {
         );
         return;
     };
-    let profile =
-        hawking_core::profile::KernelProfile::load(&profile_path).expect("load profile");
+    let profile = hawking_core::profile::KernelProfile::load(&profile_path).expect("load profile");
     let cfg = hawking_core::EngineConfig {
         kernel_profile: Some(profile),
         ..Default::default()
@@ -116,7 +115,7 @@ fn greedy_64_regression() {
     let ids = run_greedy_64(&weights, cfg);
     let hash = hash16(&ids);
     check_or_pin(
-        &PathBuf::from("tests/golden/_phase0_token_baseline_64.hashes"),
+        &PathBuf::from("tests/_phase0_token_baseline_64.hashes"),
         label,
         &hash,
     );

@@ -1,9 +1,7 @@
 #![cfg(feature = "block-parallel")]
 
 use strand_quant::encode::{
-    encode_tensor_with_block_parallel, encode_tensor_with_lut,
-    encode_tensor_with_lut_block_parallel, vector_lut_from_scalar, BlockParallelConfig,
-    BlockParallelError, EncodeOpts,
+    encode_tensor_with_block_parallel, encode_tensor_with_lut, encode_tensor_with_lut_block_parallel, vector_lut_from_scalar, BlockParallelConfig, BlockParallelError, EncodeOpts,
 };
 use strand_quant::{CodebookMode, TrellisConfig};
 
@@ -25,47 +23,21 @@ fn weights(n: usize, mut state: u64) -> Vec<f32> {
 }
 
 fn parallel(threads: usize) -> BlockParallelConfig {
-    BlockParallelConfig::new(threads)
-        .unwrap()
-        .with_min_blocks(1)
-        .with_scratch_budget_bytes(256 * 1024 * 1024)
+    BlockParallelConfig::new(threads).unwrap().with_min_blocks(1).with_scratch_budget_bytes(256 * 1024 * 1024)
 }
 
 #[test]
 fn scalar_matrix_is_byte_identical_in_canonical_order() {
     let option_matrix = [
         EncodeOpts::default(),
-        EncodeOpts {
-            adaptive: false,
-            ..EncodeOpts::default()
-        },
-        EncodeOpts {
-            tail_biting: true,
-            ..EncodeOpts::default()
-        },
-        EncodeOpts {
-            affine_min: true,
-            ..EncodeOpts::default()
-        },
-        EncodeOpts {
-            tail_biting: true,
-            affine_min: true,
-            silence_bonus: 0.125,
-            ..EncodeOpts::default()
-        },
-        EncodeOpts {
-            silence_bonus: 0.05,
-            entropy_bonus_scale: 0.2,
-            entropy_bonus_two_pass: true,
-            ..EncodeOpts::default()
-        },
+        EncodeOpts { adaptive: false, ..EncodeOpts::default() },
+        EncodeOpts { tail_biting: true, ..EncodeOpts::default() },
+        EncodeOpts { affine_min: true, ..EncodeOpts::default() },
+        EncodeOpts { tail_biting: true, affine_min: true, silence_bonus: 0.125, ..EncodeOpts::default() },
+        EncodeOpts { silence_bonus: 0.05, entropy_bonus_scale: 0.2, entropy_bonus_two_pass: true, ..EncodeOpts::default() },
     ];
     let mut case = 0u64;
-    let configs = [
-        (6, 2, 64, CodebookMode::StoredLut),
-        (8, 3, 256, CodebookMode::HashedQuantile),
-        (10, 4, 512, CodebookMode::ComputedAcklam),
-    ];
+    let configs = [(6, 2, 64, CodebookMode::StoredLut), (8, 3, 256, CodebookMode::HashedQuantile), (10, 4, 512, CodebookMode::ComputedAcklam)];
     for &(l, k, block_len, mode) in &configs {
         let cfg = TrellisConfig::new(l, k, block_len).with_codebook_mode(mode);
         let lengths = [0, 1, block_len - 1, block_len + 1, block_len * 3 + 17];
@@ -74,9 +46,7 @@ fn scalar_matrix_is_byte_identical_in_canonical_order() {
             for opts in &option_matrix {
                 let lut = cfg.codebook();
                 let serial = encode_tensor_with_lut(&w, &cfg, opts, &lut);
-                let accelerated =
-                    encode_tensor_with_lut_block_parallel(&w, &cfg, opts, &lut, parallel(4))
-                        .unwrap();
+                let accelerated = encode_tensor_with_lut_block_parallel(&w, &cfg, opts, &lut, parallel(4)).unwrap();
                 assert_eq!(accelerated, serial, "case={case} L={l} k={k} n={n}");
                 case += 1;
             }
@@ -98,17 +68,9 @@ fn vector_and_custom_lut_paths_are_byte_identical() {
             }
         }
         let w = weights(n, 0xC057_0000 + d as u64);
-        for opts in [
-            EncodeOpts::default(),
-            EncodeOpts {
-                tail_biting: true,
-                affine_min: true,
-                ..EncodeOpts::default()
-            },
-        ] {
+        for opts in [EncodeOpts::default(), EncodeOpts { tail_biting: true, affine_min: true, ..EncodeOpts::default() }] {
             let serial = encode_tensor_with_lut(&w, &cfg, &opts, &lut);
-            let accelerated =
-                encode_tensor_with_lut_block_parallel(&w, &cfg, &opts, &lut, parallel(4)).unwrap();
+            let accelerated = encode_tensor_with_lut_block_parallel(&w, &cfg, &opts, &lut, parallel(4)).unwrap();
             assert_eq!(accelerated, serial, "d={d} L={l} k={k}");
         }
     }
@@ -116,21 +78,11 @@ fn vector_and_custom_lut_paths_are_byte_identical() {
 
 #[test]
 fn dependency_and_configuration_errors_fail_closed() {
-    assert_eq!(
-        BlockParallelConfig::new(0),
-        Err(BlockParallelError::ZeroThreads)
-    );
+    assert_eq!(BlockParallelConfig::new(0), Err(BlockParallelError::ZeroThreads));
     let cfg = TrellisConfig::new(6, 2, 64);
     let w = weights(1024, 0xFA11_C105ED);
-    let rolling = EncodeOpts {
-        entropy_bonus_scale: 0.1,
-        entropy_bonus_two_pass: false,
-        ..EncodeOpts::default()
-    };
-    assert_eq!(
-        encode_tensor_with_block_parallel(&w, &cfg, &rolling, parallel(4)),
-        Err(BlockParallelError::RollingEntropyDependency)
-    );
+    let rolling = EncodeOpts { entropy_bonus_scale: 0.1, entropy_bonus_two_pass: false, ..EncodeOpts::default() };
+    assert_eq!(encode_tensor_with_block_parallel(&w, &cfg, &rolling, parallel(4)), Err(BlockParallelError::RollingEntropyDependency));
 }
 
 #[test]
@@ -139,17 +91,7 @@ fn scratch_budget_reduces_workers_without_changing_bytes() {
     let w = weights(256 * 12 + 3, 0xB0D6_E7);
     let lut = cfg.codebook();
     let serial = encode_tensor_with_lut(&w, &cfg, &EncodeOpts::default(), &lut);
-    let one_worker_budget = BlockParallelConfig::new(16)
-        .unwrap()
-        .with_min_blocks(1)
-        .with_scratch_budget_bytes(1);
-    let guarded = encode_tensor_with_lut_block_parallel(
-        &w,
-        &cfg,
-        &EncodeOpts::default(),
-        &lut,
-        one_worker_budget,
-    )
-    .unwrap();
+    let one_worker_budget = BlockParallelConfig::new(16).unwrap().with_min_blocks(1).with_scratch_budget_bytes(1);
+    let guarded = encode_tensor_with_lut_block_parallel(&w, &cfg, &EncodeOpts::default(), &lut, one_worker_budget).unwrap();
     assert_eq!(guarded, serial);
 }

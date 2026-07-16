@@ -2,7 +2,7 @@
 # tools/ci/regression_gate.sh — enforce that Hawking's speed / compression / quality
 # wins do NOT regress silently. Correctness is already locked by 193 golden token
 # hashes; this is the missing half: it compares MEASURED perf/footprint/quality against
-# a committed baseline (tools/ci/baselines/regression_baseline.json) and EXITS NON-ZERO
+# a committed baseline (tools/ci/regression_baseline.json) and EXITS NON-ZERO
 # on a breach. It reuses tools/bench/ratios.sh for measurement (no duplicated logic).
 #
 # It is a CATEGORY-regression gate, not a micro-benchmark: floors sit ~10-15% below the
@@ -29,12 +29,12 @@
 #   OUT=<dir>          report dir (default reports/regression/<stamp>)
 set -u
 
-REPO="${REPO:-$HOME/Downloads/hawking}"
+REPO="${REPO:-$(CDPATH= cd -- "$(dirname "$0")/../.." && pwd)}"
 cd "$REPO" || exit 2
 
 BIN="${BIN:-./target/release/hawking}"
 RATIOS="tools/bench/ratios.sh"
-BASELINE="${BASELINE:-tools/ci/baselines/regression_baseline.json}"
+BASELINE="${BASELINE:-tools/ci/regression_baseline.json}"
 TRIALS="${TRIALS:-3}"
 export TOK="${TOK:-96}"
 QTOK="${QTOK:-80}"

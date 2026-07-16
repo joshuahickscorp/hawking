@@ -8,6 +8,9 @@ repository.workspace = true
 authors.workspace = true
 description = "Living codebase index API and daemon scaffold for HIDE"
 
+[lib]
+path = "lib.rs"
+
 [dependencies]
 hide-core = { path = "../hide-core" }
 futures = { workspace = true }

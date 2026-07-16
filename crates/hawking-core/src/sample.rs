@@ -19,11 +19,7 @@ pub struct Sampler {
 
 impl Sampler {
     pub fn new(seed: u64) -> Self {
-        Self {
-            rng: Pcg64Mcg::new(seed as u128),
-            recent: Vec::new(),
-            rep_window: 64,
-        }
+        Self { rng: Pcg64Mcg::new(seed as u128), recent: Vec::new(), rep_window: 64 }
     }
 
     pub fn record(&mut self, token: u32) {
@@ -43,11 +39,7 @@ impl Sampler {
                 let i = t as usize;
                 if i < logits.len() {
                     let v = logits[i];
-                    logits[i] = if v >= 0.0 {
-                        v / params.repetition_penalty
-                    } else {
-                        v * params.repetition_penalty
-                    };
+                    logits[i] = if v >= 0.0 { v / params.repetition_penalty } else { v * params.repetition_penalty };
                 }
             }
         }
@@ -136,10 +128,7 @@ mod tests {
     fn greedy_picks_argmax() {
         let mut s = Sampler::new(42);
         let mut logits = vec![1.0, 5.0, 2.0, 0.0];
-        let p = SamplingParams {
-            temperature: 0.0,
-            ..SamplingParams::default()
-        };
+        let p = SamplingParams { temperature: 0.0, ..SamplingParams::default() };
         assert_eq!(s.sample(&mut logits, &p), 1);
     }
 }

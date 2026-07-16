@@ -1,57 +1,46 @@
 # Contributing
 
-`hawking` is owner-maintained. Public contributor credit in the project docs is
-kept to the maintainer:
+Hawking is owner-maintained, but focused fixes and evidence-backed reports are
+welcome.
 
-- Joshua Hicks
+## Required checks
 
-Outside fixes and reports are still welcome, but changes should stay small,
-measured, and easy to review.
-
-## Toolchain
-
-- Apple Silicon Mac for Metal work
-- Rust stable 1.80 or newer
-- Xcode Command Line Tools with Metal SDK
+Use an isolated target directory when a detached model run owns the machine:
 
 ```sh
-rustc --version
-xcrun --show-sdk-version
-cargo build --release --workspace
+cargo fmt --all -- --check
+CARGO_TARGET_DIR=/tmp/hawking-target cargo test --workspace --no-run
+FAST=1 CARGO_TARGET_DIR=/tmp/hawking-target tools/ci/preflight.sh
+python3 tools/ops.py selftest
+git diff --check
 ```
 
-## Correctness
+Run focused tests for every changed behavior. Kernel changes require a CPU or
+reference-path parity gate. Approximate paths require a declared quality gate;
+a skipped gate is never a pass.
 
-Run the core gates before opening a PR:
+## Performance changes
+
+Measure A and B under the same model, prompt, output length, profile, machine
+state, and cold/warm policy:
 
 ```sh
-cargo fmt --all
-cargo test --release --workspace --lib
-cargo test --release --workspace --tests
+python3 tools/ops.py bench run paired -- \
+  --label my-lever \
+  --env-a "HAWKING_EXAMPLE=0" \
+  --env-b "HAWKING_EXAMPLE=1"
 ```
 
-Kernel changes need a parity test against the CPU reference path. Behavioral
-changes need a focused test.
+Defaults change only after repeatable correctness, quality, and whole-path
+performance evidence.
 
-## Performance
+## Pull requests
 
-Performance claims need before/after numbers:
+- Keep one concern per change.
+- Keep new levers default-off until their gates pass.
+- Include the commands and evidence supporting the result.
+- Do not hide warnings with broad `allow` attributes.
+- Preserve artifact, receipt, failure, and rollback semantics.
+- Keep generated reports, models, caches, and credentials untracked.
 
-```sh
-TRIALS=4 TOKENS=24 bash tools/bench/coexist_bench.sh
-bash tools/bench/bench_diff.sh HEAD~1 HEAD
-```
-
-Defaults should only change when the win is measured and repeatable.
-
-## Pull Requests
-
-- Keep one concern per PR.
-- Keep new features default-off until correctness and performance are proven.
-- Include the command output that supports the change.
-- Do not add broad `allow` attributes for clippy warnings.
-- Keep documentation honest about what is verified versus experimental.
-
-## License
-
-By contributing you agree your changes are MIT-licensed. See [LICENSE](LICENSE).
+Contributions are MIT-licensed under [LICENSE](LICENSE).

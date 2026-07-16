@@ -1,4 +1,3 @@
-
 use strand_quant::codebook::codebook_lut;
 use strand_quant::decode::reconstruct_q;
 use strand_quant::encode::{EncodedTensor, SUB_BLOCK};
@@ -13,11 +12,7 @@ pub fn decode_q12_neonlut(enc: &EncodedTensor, cfg: &TrellisConfig) -> Vec<i32> 
     decode_q12_neonlut_with_lut(enc, cfg, codebook_lut(cfg.l_bits))
 }
 
-pub fn decode_q12_neonlut_with_lut(
-    enc: &EncodedTensor,
-    cfg: &TrellisConfig,
-    lut: &[i32],
-) -> Vec<i32> {
+pub fn decode_q12_neonlut_with_lut(enc: &EncodedTensor, cfg: &TrellisConfig, lut: &[i32]) -> Vec<i32> {
     decode_dispatch(enc, cfg, lut, false)
 }
 
@@ -25,18 +20,8 @@ pub fn decode_q12_neonlut_scalar_gather(enc: &EncodedTensor, cfg: &TrellisConfig
     decode_dispatch(enc, cfg, codebook_lut(cfg.l_bits), true)
 }
 
-fn decode_dispatch(
-    enc: &EncodedTensor,
-    cfg: &TrellisConfig,
-    lut: &[i32],
-    force_scalar_gather: bool,
-) -> Vec<i32> {
-    
-    let in_envelope = cfg.vec_dim() == 1
-        && cfg.l_bits <= 8
-        && lut.len() == cfg.num_states()
-        && !exceeds_max_sub(enc)
-        && lut.iter().all(|&v| v >= i16::MIN as i32 && v <= i16::MAX as i32);
+fn decode_dispatch(enc: &EncodedTensor, cfg: &TrellisConfig, lut: &[i32], force_scalar_gather: bool) -> Vec<i32> {
+    let in_envelope = cfg.vec_dim() == 1 && cfg.l_bits <= 8 && lut.len() == cfg.num_states() && !exceeds_max_sub(enc) && lut.iter().all(|&v| v >= i16::MIN as i32 && v <= i16::MAX as i32);
     if !in_envelope {
         return decode_q12_fast_with_lut(enc, cfg, lut);
     }
@@ -51,14 +36,7 @@ fn decode_dispatch(
     }
 }
 
-fn decode_block_scalar(
-    enc: &EncodedTensor,
-    cfg: &TrellisConfig,
-    lut: &[i32],
-    plan: &BlockPlan,
-    blk_idx: usize,
-    out: &mut [i32],
-) {
+fn decode_block_scalar(enc: &EncodedTensor, cfg: &TrellisConfig, lut: &[i32], plan: &BlockPlan, blk_idx: usize, out: &mut [i32]) {
     let blk = &enc.blocks[blk_idx];
     let k = cfg.k_bits;
     let mask = cfg.state_mask();
@@ -81,13 +59,7 @@ fn decode_block_scalar(
     }
 }
 
-fn scale_pass(
-    qbuf: &[i16],
-    sides: &[SideInfo],
-    plans: &[BlockPlan],
-    n: usize,
-    out: &mut [i32],
-) {
+fn scale_pass(qbuf: &[i16], sides: &[SideInfo], plans: &[BlockPlan], n: usize, out: &mut [i32]) {
     for (lane, (side, plan)) in sides.iter().zip(plans.iter()).enumerate() {
         let base = plan.out_off;
         let mut i = 0usize;
@@ -121,12 +93,7 @@ mod aarch64_impl {
         sym
     }
 
-    pub(super) fn decode(
-        enc: &EncodedTensor,
-        cfg: &TrellisConfig,
-        lut: &[i32],
-        force_scalar_gather: bool,
-    ) -> Vec<i32> {
+    pub(super) fn decode(enc: &EncodedTensor, cfg: &TrellisConfig, lut: &[i32], force_scalar_gather: bool) -> Vec<i32> {
         let plans = block_plans(enc, cfg.k_bits as usize);
         let mut out = vec![0i32; enc.total];
         if enc.blocks.is_empty() {
@@ -144,8 +111,7 @@ mod aarch64_impl {
         let mut qbuf: Vec<i16> = Vec::new();
         let mut b = 0usize;
         while b < enc.blocks.len() {
-            let group_ok = b + LANES <= enc.blocks.len()
-                && (b..b + LANES).all(|j| plans[j].n == plans[b].n);
+            let group_ok = b + LANES <= enc.blocks.len() && (b..b + LANES).all(|j| plans[j].n == plans[b].n);
             if !group_ok {
                 decode_block_scalar(enc, cfg, lut, &plans[b], b, &mut out);
                 b += 1;
@@ -163,8 +129,7 @@ mod aarch64_impl {
             for l in 0..LANES {
                 let plan = &plans[b + l];
                 let blk = &enc.blocks[b + l];
-                states[l] = block_init_state(blk, &enc.bits, plan.start_bit, cfg, enc.tail_biting)
-                    as u16;
+                states[l] = block_init_state(blk, &enc.bits, plan.start_bit, cfg, enc.tail_biting) as u16;
                 let r = WordReader::new(&enc.bits, plan.start_bit);
                 acc[l] = r.acc;
                 have[l] = r.have;
@@ -173,27 +138,15 @@ mod aarch64_impl {
             }
 
             if use_tbl {
-                
                 unsafe {
                     match num_states * 2 {
-                        0..=64 => simd_steps_tbl::<1>(
-                            enc, cfg, &lut16, n, &mut states, &mut acc, &mut have, &mut widx,
-                            &mut qbuf,
-                        ),
-                        65..=128 => simd_steps_tbl::<2>(
-                            enc, cfg, &lut16, n, &mut states, &mut acc, &mut have, &mut widx,
-                            &mut qbuf,
-                        ),
-                        _ => simd_steps_tbl::<4>(
-                            enc, cfg, &lut16, n, &mut states, &mut acc, &mut have, &mut widx,
-                            &mut qbuf,
-                        ),
+                        0..=64 => simd_steps_tbl::<1>(enc, cfg, &lut16, n, &mut states, &mut acc, &mut have, &mut widx, &mut qbuf),
+                        65..=128 => simd_steps_tbl::<2>(enc, cfg, &lut16, n, &mut states, &mut acc, &mut have, &mut widx, &mut qbuf),
+                        _ => simd_steps_tbl::<4>(enc, cfg, &lut16, n, &mut states, &mut acc, &mut have, &mut widx, &mut qbuf),
                     }
                 }
             } else {
-                scalar_gather_steps(
-                    enc, cfg, &lut16, n, &mut states, &mut acc, &mut have, &mut widx, &mut qbuf,
-                );
+                scalar_gather_steps(enc, cfg, &lut16, n, &mut states, &mut acc, &mut have, &mut widx, &mut qbuf);
             }
 
             scale_pass(&qbuf, &sides, &plans[b..b + LANES], n, &mut out);
@@ -222,14 +175,7 @@ mod aarch64_impl {
         let bias = vdupq_n_u16(256);
 
         let tp = lut16.as_ptr() as *const u8;
-        let lt = |o: usize| -> uint8x16x4_t {
-            uint8x16x4_t(
-                vld1q_u8(tp.add(o)),
-                vld1q_u8(tp.add(o + 16)),
-                vld1q_u8(tp.add(o + 32)),
-                vld1q_u8(tp.add(o + 48)),
-            )
-        };
+        let lt = |o: usize| -> uint8x16x4_t { uint8x16x4_t(vld1q_u8(tp.add(o)), vld1q_u8(tp.add(o + 16)), vld1q_u8(tp.add(o + 32)), vld1q_u8(tp.add(o + 48))) };
         let t0 = lt(0);
         let t1 = if NT >= 2 { lt(64) } else { t0 };
         let t2 = if NT >= 4 { lt(128) } else { t0 };
@@ -242,7 +188,7 @@ mod aarch64_impl {
         let qp = qbuf.as_mut_ptr();
         for step in 0..n {
             let mut syms = [0u16; LANES];
-            
+
             for l in 0..LANES {
                 syms[l] = pop_lane(bytes, &mut acc[l], &mut have[l], &mut widx[l], k);
             }
@@ -299,39 +245,24 @@ mod tests {
     #[test]
     fn neonlut_is_bit_identical() {
         let configs = [
-            TrellisConfig::for_bpw(3.0),        
-            TrellisConfig::for_bpw(2.0),        
-            TrellisConfig::for_bpw(4.0),        
-            TrellisConfig::for_bpw_l(2.0, 7),   
-            TrellisConfig::for_bpw_l(3.0, 6),   
-            TrellisConfig::for_bpw_l(3.0, 8),   
-            TrellisConfig::for_bpw_l(2.0, 5),   
-            TrellisConfig::for_bpw_l(2.0, 12),  
+            TrellisConfig::for_bpw(3.0),
+            TrellisConfig::for_bpw(2.0),
+            TrellisConfig::for_bpw(4.0),
+            TrellisConfig::for_bpw_l(2.0, 7),
+            TrellisConfig::for_bpw_l(3.0, 6),
+            TrellisConfig::for_bpw_l(3.0, 8),
+            TrellisConfig::for_bpw_l(2.0, 5),
+            TrellisConfig::for_bpw_l(2.0, 12),
         ];
         for cfg in configs {
             for seed in 0..48u64 {
-                
                 let n = 1 + (seed as usize * 211) % 4096;
-                let w: Vec<f32> = (0..n)
-                    .map(|i| ((i as f32 + seed as f32) * 0.0137).sin() * 0.5)
-                    .collect();
+                let w: Vec<f32> = (0..n).map(|i| ((i as f32 + seed as f32) * 0.0137).sin() * 0.5).collect();
                 let variants = [
                     encode_tensor(&w, &cfg),
-                    encode_tensor_with(
-                        &w,
-                        &cfg,
-                        &EncodeOpts { tail_biting: true, ..Default::default() },
-                    ),
-                    encode_tensor_with(
-                        &w,
-                        &cfg,
-                        &EncodeOpts { affine_min: true, ..Default::default() },
-                    ),
-                    encode_tensor_with(
-                        &w,
-                        &cfg,
-                        &EncodeOpts { tail_biting: true, affine_min: true, ..Default::default() },
-                    ),
+                    encode_tensor_with(&w, &cfg, &EncodeOpts { tail_biting: true, ..Default::default() }),
+                    encode_tensor_with(&w, &cfg, &EncodeOpts { affine_min: true, ..Default::default() }),
+                    encode_tensor_with(&w, &cfg, &EncodeOpts { tail_biting: true, affine_min: true, ..Default::default() }),
                 ];
                 for enc in &variants {
                     let reference = decode_tensor_fixed(enc, &cfg);
@@ -340,13 +271,19 @@ mod tests {
                         decode_q12_neonlut(enc, &cfg),
                         reference,
                         "neonlut diverged: L={} k={} n={n} seed={seed} tail={} affine={}",
-                        cfg.l_bits, cfg.k_bits, enc.tail_biting, enc.has_affine_min
+                        cfg.l_bits,
+                        cfg.k_bits,
+                        enc.tail_biting,
+                        enc.has_affine_min
                     );
                     assert_eq!(
                         decode_q12_neonlut_scalar_gather(enc, &cfg),
                         reference,
                         "neonlut-scalar-gather diverged: L={} k={} n={n} seed={seed} tail={} affine={}",
-                        cfg.l_bits, cfg.k_bits, enc.tail_biting, enc.has_affine_min
+                        cfg.l_bits,
+                        cfg.k_bits,
+                        enc.tail_biting,
+                        enc.has_affine_min
                     );
                 }
             }

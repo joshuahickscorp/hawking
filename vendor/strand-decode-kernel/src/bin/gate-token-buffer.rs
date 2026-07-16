@@ -41,15 +41,8 @@ fn main() {
     fn round256(n: usize) -> usize {
         n.div_ceil(256) * 256
     }
-    let per_layer: [(usize, usize, &str); 7] = [
-        (896, 896, "q_proj"),
-        (128, 896, "k_proj"),
-        (128, 896, "v_proj"),
-        (896, 896, "o_proj"),
-        (4864, 896, "gate_proj"),
-        (4864, 896, "up_proj"),
-        (896, 4864, "down_proj"),
-    ];
+    let per_layer: [(usize, usize, &str); 7] =
+        [(896, 896, "q_proj"), (128, 896, "k_proj"), (128, 896, "v_proj"), (896, 896, "o_proj"), (4864, 896, "gate_proj"), (4864, 896, "up_proj"), (896, 4864, "down_proj")];
     let mut shapes: Vec<(usize, usize)> = Vec::new();
     for _ in 0..LAYERS {
         for (o, i, _) in per_layer.iter() {
@@ -76,10 +69,7 @@ fn main() {
     );
 
     // 3-bit deploy (k3 L7) is the integration target shape.
-    for (cfg, label) in [
-        (TrellisConfig::for_bpw(3.0), "3-bit deploy (k3 L7)"),
-        (TrellisConfig::for_bpw_l(2.0, 12), "2-bit reopen (k2 L12)"),
-    ] {
+    for (cfg, label) in [(TrellisConfig::for_bpw(3.0), "3-bit deploy (k3 L7)"), (TrellisConfig::for_bpw_l(2.0, 12), "2-bit reopen (k2 L12)")] {
         println!("\n== {label} ==");
         let lut = codebook_lut(cfg.l_bits).to_vec();
 
@@ -92,16 +82,7 @@ fn main() {
             let enc = synth_encoded(total, cfg.k_bits, 256);
             let tbl = bake_bitslice_entries(&enc, &cfg).expect("256-weight blocks bake");
             let x: Vec<f32> = (0..in_f).map(|i| (i as f32 * 0.013).sin()).collect();
-            tokens.push(gpu.prepare_token_tensor(
-                &enc.bits,
-                &tbl,
-                &lut,
-                out_f as u32,
-                in_f as u32,
-                cfg.k_bits,
-                cfg.l_bits,
-                &x,
-            ));
+            tokens.push(gpu.prepare_token_tensor(&enc.bits, &tbl, &lut, out_f as u32, in_f as u32, cfg.k_bits, cfg.l_bits, &x));
         }
         let prep_ms = t_prep.elapsed().as_secs_f64() * 1e3;
         println!("  prepared {n_tensors} tensors in {prep_ms:.1} ms (one-time / per-token prep)");
@@ -118,10 +99,7 @@ fn main() {
                 max_rel = max_rel.max(((ra - rb).abs() as f64) / denom);
             }
         }
-        assert!(
-            max_rel < 1e-4,
-            "IDENTITY VIOLATION: one-buffer token diverged from per-tensor (max rel {max_rel:.2e})"
-        );
+        assert!(max_rel < 1e-4, "IDENTITY VIOLATION: one-buffer token diverged from per-tensor (max rel {max_rel:.2e})");
         println!("  identity OK: one-buffer == per-tensor (max rel diff {max_rel:.2e})");
 
         // ---- bench both shapes: token-wall -----------------------------------------------

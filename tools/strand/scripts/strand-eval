@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# strand-eval — thin CLI over tools/strand_eval (THE canon eval + results ledger).
+# strand-eval — thin CLI over the canonical strand_eval package.
 # Self-locates via its own resolved path (symlink-safe, cwd-independent), PROVES
 # the repo root (audit 3.3: Cargo.toml must mention strand-quant) or dies loudly,
 # then execs the canon python. Ledger subcommands need no torch (any python3).
 #
-#   scripts/strand-eval run --model scratch/qwen-05b --tag baseline --chunks 64
-#   scripts/strand-eval ledger check
-#   scripts/strand-eval ledger ingest scratch/pod-results --quiet
-#   scripts/strand-eval where
+#   tools/strand/scripts/strand-eval run --model scratch/qwen-05b --tag baseline --chunks 64
+#   tools/strand/scripts/strand-eval ledger check
+#   tools/strand/scripts/strand-eval ledger ingest scratch/pod-results --quiet
+#   tools/strand/scripts/strand-eval where
 set -euo pipefail
 
 # resolve symlinks to THIS script without requiring GNU readlink -f
@@ -18,12 +18,38 @@ while [ -h "$SRC" ]; do
     case "$SRC" in /*) ;; *) SRC="$DIR/$SRC" ;; esac
 done
 SCRIPT_DIR="$(cd -P "$(dirname "$SRC")" && pwd)"
-REPO_ROOT="${STRAND_ROOT:-$(dirname "$SCRIPT_DIR")}"
+
+if [ -n "${STRAND_ROOT:-}" ]; then
+    REPO_ROOT="$(cd -P "$STRAND_ROOT" 2>/dev/null && pwd || true)"
+else
+    REPO_ROOT="$SCRIPT_DIR"
+    while [ "$REPO_ROOT" != "/" ]; do
+        if [ -f "$REPO_ROOT/Cargo.toml" ] && grep -q 'strand-quant' "$REPO_ROOT/Cargo.toml"; then
+            break
+        fi
+        REPO_ROOT="$(dirname "$REPO_ROOT")"
+    done
+fi
 
 # LOCATION PROOF — fail at line ~20, not 90 minutes in (the REPO_ROOT incident)
 if ! { [ -f "$REPO_ROOT/Cargo.toml" ] && grep -q 'strand-quant' "$REPO_ROOT/Cargo.toml"; }; then
     echo "[strand-eval] FATAL: '$REPO_ROOT' is not the strand repo root" >&2
     echo "[strand-eval] (no Cargo.toml mentioning strand-quant). Set STRAND_ROOT." >&2
+    exit 3
+fi
+
+EVAL_CLI=""
+for candidate in \
+    "$REPO_ROOT/tools/strand/tools/strand_eval/cli.py" \
+    "$REPO_ROOT/tools/strand_eval/cli.py"
+do
+    if [ -f "$candidate" ]; then
+        EVAL_CLI="$candidate"
+        break
+    fi
+done
+if [ -z "$EVAL_CLI" ]; then
+    echo "[strand-eval] FATAL: canonical strand_eval package missing under '$REPO_ROOT'" >&2
     exit 3
 fi
 
@@ -37,4 +63,4 @@ if [ -z "$PY" ]; then
 fi
 [ -n "$PY" ] || { echo "[strand-eval] FATAL: no python3 found (set STRAND_PYTHON)" >&2; exit 3; }
 
-exec "$PY" "$REPO_ROOT/tools/strand_eval/cli.py" "$@"
+exec "$PY" "$EVAL_CLI" "$@"

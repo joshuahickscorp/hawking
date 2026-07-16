@@ -212,7 +212,7 @@
     "quality_gate": {
       "type": "string",
       "enum": ["pass", "warn", "fail", "invalid"],
-      "description": "§20-GATES four levels. pass = clears §6 bar (<=+2% ppl, KL in band, tripwire held, R3+). warn = +2-4% band, contingent/portfolio only. fail = misses gate, ships as FAILURES.md. invalid = violates a §20.3 rule; the run does not count and the reason is published in invalidation_reasons."
+      "description": "§20-GATES four levels. pass = clears §6 bar (<=+2% ppl, KL in band, tripwire held, R3+). warn = +2-4% band, contingent/portfolio only. fail = misses gate, ships in docs/RESEARCH.md. invalid = violates a §20.3 rule; the run does not count and the reason is published in invalidation_reasons."
     },
     "invalidation_reasons": {
       "type": "array",

@@ -1,4 +1,3 @@
-
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub(crate) struct BlockParams {
@@ -13,10 +12,9 @@ pub(crate) struct BlockParams {
 }
 
 pub struct GpuViterbiResult {
-    
     pub back_flat: Vec<u32>,
-    
+
     pub final_cost: Vec<f32>,
-    
+
     pub max_block_len: usize,
 }

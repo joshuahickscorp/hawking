@@ -75,13 +75,7 @@ pub struct DebiasResult {
 /// (both `[out, in]`, row-major), an activation-mean model `mu_bar`, and the bias
 /// payload width in bits (16 = bf16 side-channel; pass any existing bias width if
 /// folding). Pure, deterministic, float-encode-side (decode stays integer/LUT).
-pub fn debias_tensor(
-    w: &[f32],
-    recon: &[f32],
-    in_features: usize,
-    mu_bar: f32,
-    bias_bits: u32,
-) -> DebiasResult {
+pub fn debias_tensor(w: &[f32], recon: &[f32], in_features: usize, mu_bar: f32, bias_bits: u32) -> DebiasResult {
     assert_eq!(w.len(), recon.len(), "w/recon length mismatch");
     assert!(in_features > 0 && w.len() % in_features == 0, "ragged tensor");
     let out = w.len() / in_features;
@@ -118,7 +112,11 @@ pub fn estimate_mu_bar(samples: &[Vec<f32>]) -> f32 {
             n += 1;
         }
     }
-    if n == 0 { 0.0 } else { (sum / n as f64) as f32 }
+    if n == 0 {
+        0.0
+    } else {
+        (sum / n as f64) as f32
+    }
 }
 
 /// Simulated output: `y = W x` for one activation vector (row-major `[out,in]`).
@@ -139,13 +137,7 @@ pub fn matvec(w: &[f32], x: &[f32], in_features: usize) -> Vec<f32> {
 /// Mean / RMS output error of a recon (optionally de-biased) over a batch of
 /// activation vectors. Returns (mean_signed_error, rms_error) aggregated over all
 /// (row, sample) pairs. `correction` (if Some) is added to each `y_recon`.
-pub fn output_error(
-    w: &[f32],
-    recon: &[f32],
-    in_features: usize,
-    xs: &[Vec<f32>],
-    correction: Option<&[f32]>,
-) -> (f64, f64) {
+pub fn output_error(w: &[f32], recon: &[f32], in_features: usize, xs: &[Vec<f32>], correction: Option<&[f32]>) -> (f64, f64) {
     let out = w.len() / in_features;
     let mut sum_signed = 0.0f64;
     let mut sum_sq = 0.0f64;
@@ -183,8 +175,7 @@ mod tests {
         let r = debias_tensor(&w, &recon, in_f, mu_bar, 16);
         let x = vec![mu_bar; in_f];
         let (_, rms_uncorr) = output_error(&w, &recon, in_f, &[x.clone()], None);
-        let (mean_corr, rms_corr) =
-            output_error(&w, &recon, in_f, &[x], Some(&r.bias_correction));
+        let (mean_corr, rms_corr) = output_error(&w, &recon, in_f, &[x], Some(&r.bias_correction));
         assert!(rms_uncorr > 1e-6, "need a real bias to cancel");
         assert!(rms_corr < 1e-4, "corrected rms should vanish on constant x: {rms_corr}");
         assert!(mean_corr.abs() < 1e-4);

@@ -8,6 +8,9 @@ repository.workspace = true
 authors.workspace = true
 description = "Personalization, self-improvement, and eval-generation scaffold for HIDE"
 
+[lib]
+path = "lib.rs"
+
 [dependencies]
 hide-core = { path = "../hide-core" }
 hide-security = { path = "../hide-security" }

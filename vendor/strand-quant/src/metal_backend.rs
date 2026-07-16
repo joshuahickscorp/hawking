@@ -1,11 +1,7 @@
-
 #![allow(unsafe_code)]
-
 #![allow(clippy::upper_case_acronyms)]
 
-use metal::{
-    Buffer, CommandQueue, CompileOptions, Device, MTLResourceOptions, MTLSize, NSUInteger,
-};
+use metal::{Buffer, CommandQueue, CompileOptions, Device, MTLResourceOptions, MTLSize, NSUInteger};
 
 use crate::encode::SUB_BLOCK;
 use crate::gpu_types::{BlockParams, GpuViterbiResult};
@@ -121,12 +117,11 @@ pub struct MetalViterbi {
     device: Device,
     queue: CommandQueue,
     pipeline: metal::ComputePipelineState,
-    
+
     max_threads: usize,
 }
 
 impl MetalViterbi {
-    
     pub fn new() -> Option<Self> {
         let device = Device::system_default()?;
 
@@ -158,30 +153,14 @@ impl MetalViterbi {
         let max_threads = pipeline.max_total_threads_per_threadgroup() as usize;
         let queue = device.new_command_queue();
 
-        eprintln!(
-            "[strand-quant] Metal GPU ready: {} (max_threads_per_tg={})",
-            device.name(),
-            max_threads
-        );
+        eprintln!("[strand-quant] Metal GPU ready: {} (max_threads_per_tg={})", device.name(), max_threads);
 
         Some(Self { device, queue, pipeline, max_threads })
     }
 
-    pub fn run_blocks(
-        &self,
-        all_weights: &[f32],
-        sub_levels_all: &[f32],
-        block_lens: &[usize],
-        max_block_len: usize,
-        num_states: usize,
-        k_bits: u32,
-    ) -> Option<GpuViterbiResult> {
+    pub fn run_blocks(&self, all_weights: &[f32], sub_levels_all: &[f32], block_lens: &[usize], max_block_len: usize, num_states: usize, k_bits: u32) -> Option<GpuViterbiResult> {
         if all_weights.is_empty() {
-            return Some(GpuViterbiResult {
-                back_flat: Vec::new(),
-                final_cost: Vec::new(),
-                max_block_len,
-            });
+            return Some(GpuViterbiResult { back_flat: Vec::new(), final_cost: Vec::new(), max_block_len });
         }
         if num_states > self.max_threads {
             return None;
@@ -196,8 +175,7 @@ impl MetalViterbi {
             let mut src_off = 0;
             for (bi, &blen) in block_lens.iter().enumerate() {
                 let dst = bi * max_block_len;
-                weights_padded[dst..dst + blen]
-                    .copy_from_slice(&all_weights[src_off..src_off + blen]);
+                weights_padded[dst..dst + blen].copy_from_slice(&all_weights[src_off..src_off + blen]);
                 src_off += blen;
             }
         }
@@ -254,36 +232,33 @@ impl MetalViterbi {
 
     fn upload<T: Copy>(&self, data: &[T]) -> Buffer {
         let byte_len = data.len() * std::mem::size_of::<T>();
-        let buf = self
-            .device
-            .new_buffer(byte_len.max(4) as NSUInteger, MTLResourceOptions::StorageModeShared);
-        
+        let buf = self.device.new_buffer(byte_len.max(4) as NSUInteger, MTLResourceOptions::StorageModeShared);
+
         unsafe {
-            std::ptr::copy_nonoverlapping(
-                data.as_ptr() as *const u8,
-                buf.contents() as *mut u8,
-                byte_len,
-            );
+            std::ptr::copy_nonoverlapping(data.as_ptr() as *const u8, buf.contents() as *mut u8, byte_len);
         }
         buf
     }
 
     fn alloc_shared(&self, byte_len: usize) -> Buffer {
-        self.device
-            .new_buffer(byte_len.max(4) as NSUInteger, MTLResourceOptions::StorageModeShared)
+        self.device.new_buffer(byte_len.max(4) as NSUInteger, MTLResourceOptions::StorageModeShared)
     }
 
     fn read_u32(&self, buf: &Buffer, len: usize) -> Option<Vec<u32>> {
         let ptr = buf.contents() as *const u32;
-        if ptr.is_null() { return None; }
-        
+        if ptr.is_null() {
+            return None;
+        }
+
         Some(unsafe { std::slice::from_raw_parts(ptr, len) }.to_vec())
     }
 
     fn read_f32(&self, buf: &Buffer, len: usize) -> Option<Vec<f32>> {
         let ptr = buf.contents() as *const f32;
-        if ptr.is_null() { return None; }
-        
+        if ptr.is_null() {
+            return None;
+        }
+
         Some(unsafe { std::slice::from_raw_parts(ptr, len) }.to_vec())
     }
 }

@@ -1,4 +1,3 @@
-
 use strand_quant::decode::{decode_tensor_fixed, decode_tensor_fixed_with_lut};
 use strand_quant::encode::EncodedTensor;
 use strand_quant::TrellisConfig;
@@ -44,14 +43,7 @@ pub fn decode_weights_q12(enc: &EncodedTensor, cfg: &TrellisConfig, lut: Option<
     }
 }
 
-pub fn matvec(
-    enc: &EncodedTensor,
-    cfg: &TrellisConfig,
-    lut: Option<&[i32]>,
-    out_features: usize,
-    in_features: usize,
-    x: &[f32],
-) -> Vec<f32> {
+pub fn matvec(enc: &EncodedTensor, cfg: &TrellisConfig, lut: Option<&[i32]>, out_features: usize, in_features: usize, x: &[f32]) -> Vec<f32> {
     assert_eq!(x.len(), in_features, "x must have in_features entries");
     let w = decode_weights_q12(enc, cfg, lut);
     assert_eq!(w.len(), out_features * in_features, "decoded weight count mismatch");
@@ -102,7 +94,7 @@ mod tests {
     #[test]
     fn footprint_scales_with_bpw() {
         assert_eq!(footprint_bytes(8, 16.0), 16);
-        
+
         assert!(footprint_bytes(7_000_000_000, 3.0) * 5 < footprint_bytes(7_000_000_000, 16.0));
     }
 }

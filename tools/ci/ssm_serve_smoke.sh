@@ -6,7 +6,7 @@
 # SSM model family works through the server front door, not just `generate`.
 set -u
 
-REPO="${REPO:-$HOME/Downloads/hawking}"
+REPO="${REPO:-$(CDPATH= cd -- "$(dirname "$0")/../.." && pwd)}"
 cd "$REPO" || exit 2
 
 MODEL="${1:-${MODEL:-models/rwkv7-g1-04-sft-Q4_K_M.gguf}}"

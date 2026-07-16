@@ -1,4 +1,3 @@
-
 pub fn splitmix64(x: &mut u64) -> u64 {
     *x = x.wrapping_add(0x9E37_79B9_7F4A_7C15);
     let mut z = *x;
@@ -24,7 +23,7 @@ pub fn normal_vec(n: usize, seed: u64) -> Vec<f32> {
 
 pub fn outlier_shaped(n: usize, seed: u64) -> Vec<f32> {
     let mut w = normal_vec(n, seed);
-    
+
     for (i, v) in w.iter_mut().enumerate() {
         if i % 17 == 0 {
             *v = *v * v.abs() * 1.7;
@@ -56,15 +55,7 @@ pub fn is_quantizable_linear(name: &str, shape: &[u64]) -> bool {
     if shape.len() != 2 {
         return false;
     }
-    let proj = [
-        "q_proj.weight",
-        "k_proj.weight",
-        "v_proj.weight",
-        "o_proj.weight",
-        "gate_proj.weight",
-        "up_proj.weight",
-        "down_proj.weight",
-    ];
+    let proj = ["q_proj.weight", "k_proj.weight", "v_proj.weight", "o_proj.weight", "gate_proj.weight", "up_proj.weight", "down_proj.weight"];
     proj.iter().any(|p| name.ends_with(p))
 }
 

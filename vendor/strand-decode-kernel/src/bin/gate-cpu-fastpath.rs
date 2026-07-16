@@ -1,4 +1,3 @@
-
 use std::time::Instant;
 
 use strand_decode_kernel::gemv::decode_q12_fast;
@@ -8,15 +7,7 @@ use strand_quant::TrellisConfig;
 
 const Q4K_BYTES_PER_WEIGHT: f64 = 0.5625;
 
-fn decode_then_gemv(
-    f: impl Fn(&EncodedTensor, &TrellisConfig) -> Vec<i32>,
-    enc: &EncodedTensor,
-    cfg: &TrellisConfig,
-    rows: usize,
-    cols: usize,
-    x: &[f32],
-    y: &mut [f32],
-) {
+fn decode_then_gemv(f: impl Fn(&EncodedTensor, &TrellisConfig) -> Vec<i32>, enc: &EncodedTensor, cfg: &TrellisConfig, rows: usize, cols: usize, x: &[f32], y: &mut [f32]) {
     let w = f(enc, cfg);
     let inv = 1.0f32 / 4096.0;
     for o in 0..rows {
@@ -30,16 +21,11 @@ fn decode_then_gemv(
 }
 
 fn main() {
-    
     let cfg = TrellisConfig::for_bpw(3.0);
     assert_eq!((cfg.k_bits, cfg.l_bits), (3, 7), "deploy point is k=3,L=7");
 
-    let bench_rows = 256usize; 
-    let shapes: &[(&str, usize)] = &[
-        ("attn_o   cols=3584", 3584),
-        ("ffn_up    cols=18944", 18944),
-        ("ffn_down  cols=3584", 3584),
-    ];
+    let bench_rows = 256usize;
+    let shapes: &[(&str, usize)] = &[("attn_o   cols=3584", 3584), ("ffn_up    cols=18944", 18944), ("ffn_down  cols=3584", 3584)];
 
     println!("STRAND CPU decode→GEMV gate — 3-bit deploy (k=3, L=7), real encoded tensors");
     println!("(decode is integer-only, float-free; the only float is the Q12·(1/4096)·x MAC)\n");
@@ -49,8 +35,7 @@ fn main() {
         let mut all_ok = true;
         for &(_name, cols) in shapes {
             let n = bench_rows * cols;
-            let weights: Vec<f32> =
-                (0..n).map(|i| ((i as f32) * 0.0007).sin() * 0.6).collect();
+            let weights: Vec<f32> = (0..n).map(|i| ((i as f32) * 0.0007).sin() * 0.6).collect();
             let enc = encode_tensor(&weights, &cfg);
             let fast = decode_q12_fast(&enc, &cfg);
             let refr = decode_lean(&enc, &cfg);
@@ -66,10 +51,7 @@ fn main() {
         println!("PASS");
     }
 
-    println!(
-        "\n{:<22} {:>8} {:>12} {:>12} {:>9} {:>10} {:>9}  GEMV fast",
-        "shape", "rows", "decode ref", "decode fast", "speedup", "B/weight", "vs Q4_K",
-    );
+    println!("\n{:<22} {:>8} {:>12} {:>12} {:>9} {:>10} {:>9}  GEMV fast", "shape", "rows", "decode ref", "decode fast", "speedup", "B/weight", "vs Q4_K",);
     println!("{}", "-".repeat(108));
 
     for &(name, cols) in shapes {
@@ -112,14 +94,8 @@ fn main() {
         let mw_gemv = (n * iters) as f64 / secs_gemv / 1e6;
 
         let speedup = mw_fast / mw_ref;
-        let dens = if bytes_per_weight < Q4K_BYTES_PER_WEIGHT {
-            "BEATS"
-        } else {
-            "loses"
-        };
-        println!(
-            "{name:<22} {rows:>8} {mw_ref:>9.1} M {mw_fast:>10.1} M {speedup:>8.2}x {bytes_per_weight:>9.4} {dens:>9} {mw_gemv:>7.1} M"
-        );
+        let dens = if bytes_per_weight < Q4K_BYTES_PER_WEIGHT { "BEATS" } else { "loses" };
+        println!("{name:<22} {rows:>8} {mw_ref:>9.1} M {mw_fast:>10.1} M {speedup:>8.2}x {bytes_per_weight:>9.4} {dens:>9} {mw_gemv:>7.1} M");
     }
 
     println!("\nlegend:");

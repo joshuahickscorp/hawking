@@ -16,18 +16,15 @@
 #                       loads via the real mmap consumer path, asserts fixed==lean
 #                       decode, recomputes the model root and requires it to MATCH
 #                       the SPRV-stored root (the "stored == recomputed" gate)
-#   4. ledger_check     scripts/strand-eval ledger check — 0 ERROR lines (the
+#   4. ledger_check     tools/strand/scripts/strand-eval ledger check — 0 ERROR lines (the
 #                       15-digit tell / contamination checks)
 #
-# Contract with the conductor (ops/conductor.sh v7 §5b/5c):
-#   - the conductor launches this at most once per quiet 6h window
-#     (it stamps scratch/.replay-last at launch)
-#   - we self-gate AGAIN on idleness + a pid lock, so running it by hand any time
-#     is safe (it skips quietly if the box is busy)
-#   - verdict -> scratch/.replay-verdict (one line: "PASS|FAIL :: per-check summary");
-#     the conductor turns PASS into an S3 digest line and FAIL into an S1 wake
-#     (bit-rot detected = maximum salience)
-#   - one JSONL record appended to research/results-ledger.jsonl per COMPLETED
+# Standalone replay contract:
+#   - callers may schedule this at most once per quiet window;
+#   - the script self-gates on idleness plus a pid lock, so invoking it while
+#     the box is busy skips safely;
+#   - verdict -> scratch/.replay-verdict (one line: "PASS|FAIL :: summary");
+#   - one JSONL record is appended to research/results-ledger.jsonl per completed
 #     replay (harness_key=replay, no ppl field — `ledger check` will WARN
 #     "record without ppl" on these; known and benign, replay records are not
 #     canon comparisons and never enter the 15-digit grouping)
@@ -36,14 +33,15 @@
 #     "nothing checked" must not read as "all good")
 #   - exit 0 on PASS or quiet-skip; exit 1 on FAIL
 set -u
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/../../.."
+mkdir -p scratch research
 LOCK=scratch/.replay-lock
 VF=scratch/.replay-verdict
 LEDGER=research/results-ledger.jsonl
 ART=scratch/artifacts/qwen05b-pv2-2bit.strand
 log(){ echo "[replay $(date '+%d %H:%M:%S')] $*"; }
 
-# ── idle gate (same pgrep discipline as the conductor's idle jobs) ─────────────
+# ── idle gate ──────────────────────────────────────────────────────────────────
 # bracket-constructed patterns: the self-match trap (will.md 2026-06-11) — the
 # literal must not appear in our own cmdline or this script's text.
 if pgrep -f 'strand-qat[.]py|quantize-mode[l]|strand-7b-pp[l]|strand-act[2]' >/dev/null 2>&1; then
@@ -108,7 +106,7 @@ else
 fi
 
 # 4) ledger check: 0 ERROR lines (WARNs are expected — incl. our own replay records)
-if out=$(./scripts/strand-eval ledger check 2>&1); then
+if out=$(./tools/strand/scripts/strand-eval ledger check 2>&1); then
     ec=$(echo "$out" | grep -c '^ERROR ')
     if [ "${ec:-0}" -eq 0 ]; then
         note ledger_check PASS

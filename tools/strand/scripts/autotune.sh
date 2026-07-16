@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # autotune.sh — the idle autotuner ("the cerebellum"). v1, 2026-06-11.
 #
-# Runs the tunable sweep (tools/autotune/sweep.py) while the box is quiet, so the
+# Runs the canonical autotune.py sweep while the box is quiet, so the
 # performance constants we hand-picked once (rayon decode threads, interleave S,
 # requant --threads, ...) get re-learned per-machine by a machine. The tuner
 # NEVER changes a default in code: its only output is research/tuned-profile.toml;
-# consumers opt in via tools/autotune/apply.py.
+# consumers opt in via `autotune.py apply`.
 #
 # Contract (mirrors ops/replay.sh):
 #   - idle-gated on the same pgrep discipline (science/sibling processes running
@@ -13,7 +13,7 @@
 #   - at most one sweep per quiet window: scratch/.autotune-last stamped at launch,
 #     6 h window (AUTOTUNE_FORCE=1 bypasses the window, never the idle gate)
 #   - single-instance pid lock scratch/.autotune-lock
-#   - degrades gracefully: sweep.py SKIPs any tunable whose gate bin is missing
+#   - degrades gracefully: autotune.py SKIPs any tunable whose gate bin is missing
 #     (the sibling speed wave owns those bins and may have them mid-rebuild);
 #     "nothing runnable" -> rc=2 here = quiet skip, no profile, no false PASS
 #   - verdict -> scratch/.autotune-verdict; one JSONL record appended to
@@ -24,7 +24,8 @@
 #   - exit 0 on PASS or quiet-skip; exit 1 on FAIL (a guard or invariance broke --
 #     that is bit-rot-shaped news, not a tuning result)
 set -u
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/../../.."
+mkdir -p scratch research
 LOCK=scratch/.autotune-lock
 STAMP=scratch/.autotune-last
 VF=scratch/.autotune-verdict
@@ -57,7 +58,7 @@ if [ "${AUTOTUNE_FORCE:-0}" != 1 ] && [ -f "$STAMP" ]; then
 fi
 date +%s > "$STAMP"
 
-# ── degrade check: sweep.py SKIPs per-tunable, but say it up front in the log ──
+# ── degrade check: autotune.py SKIPs per-tunable, but say it up front in the log ──
 for bin in target/release/gate-decode-speed target/release/gate-interleave target/release/quantize-model; do
     [ -x "$bin" ] || log "note: $bin missing (sibling-wave rebuild?) — its tunables will SKIP"
 done
@@ -66,7 +67,8 @@ done
 PY=python3; command -v /usr/local/bin/python3 >/dev/null 2>&1 && PY=/usr/local/bin/python3
 $PY -c 'import sys; sys.exit(0 if sys.version_info >= (3, 8) else 1)' 2>/dev/null || PY=python3
 t0=$(date +%s)
-out=$("$PY" tools/autotune/sweep.py --reps "${AUTOTUNE_REPS:-2}" --out "$PROFILE" 2>&1)
+out=$("$PY" tools/strand/scripts/autotune.py sweep \
+    --reps "${AUTOTUNE_REPS:-2}" --out "$PROFILE" 2>&1)
 rc=$?
 secs=$(( $(date +%s) - t0 ))
 echo "$out" | tail -20
@@ -94,7 +96,7 @@ rec = {
     "provenance": "autotune",
     "note": "idle tunable sweep: per-machine perf constants -> research/tuned-profile.toml "
             "(ADVISORY timings; guards = gate-bin bit-identity + encode result-invariance; "
-            "the tuner never changes code defaults — consumers opt in via tools/autotune/apply.py)",
+            "the tuner never changes code defaults — consumers opt in via autotune.py apply)",
 }
 with open("research/results-ledger.jsonl", "a") as f:
     f.write(json.dumps(rec, sort_keys=True) + "\n")

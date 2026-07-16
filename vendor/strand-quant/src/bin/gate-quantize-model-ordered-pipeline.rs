@@ -42,55 +42,18 @@ fn parse_args() -> Args {
     let mut args = std::env::args().skip(1);
     while let Some(arg) = args.next() {
         match arg.as_str() {
-            "--serial-binary" => {
-                serial_binary = Some(args.next().expect("--serial-binary needs PATH").into())
-            }
-            "--pipeline-binary" => {
-                pipeline_binary = Some(args.next().expect("--pipeline-binary needs PATH").into())
-            }
+            "--serial-binary" => serial_binary = Some(args.next().expect("--serial-binary needs PATH").into()),
+            "--pipeline-binary" => pipeline_binary = Some(args.next().expect("--pipeline-binary needs PATH").into()),
             "--work-dir" => work_dir = Some(args.next().expect("--work-dir needs DIR").into()),
             "--receipt" => receipt = Some(args.next().expect("--receipt needs PATH").into()),
-            "--block-threads" => {
-                block_threads = args
-                    .next()
-                    .expect("--block-threads needs N")
-                    .parse()
-                    .expect("block threads usize")
-            }
-            "--scratch-budget-bytes" => {
-                scratch_budget_bytes = args
-                    .next()
-                    .expect("--scratch-budget-bytes needs BYTES")
-                    .parse()
-                    .expect("scratch budget usize")
-            }
-            "--depth" => {
-                depth = args
-                    .next()
-                    .expect("--depth needs N")
-                    .parse()
-                    .expect("depth usize")
-            }
-            "--prepared-budget-bytes" => {
-                prepared_budget_bytes = args
-                    .next()
-                    .expect("--prepared-budget-bytes needs BYTES")
-                    .parse()
-                    .expect("prepared budget usize")
-            }
-            "--encoded-budget-bytes" => {
-                encoded_budget_bytes = args
-                    .next()
-                    .expect("--encoded-budget-bytes needs BYTES")
-                    .parse()
-                    .expect("encoded budget usize")
-            }
+            "--block-threads" => block_threads = args.next().expect("--block-threads needs N").parse().expect("block threads usize"),
+            "--scratch-budget-bytes" => scratch_budget_bytes = args.next().expect("--scratch-budget-bytes needs BYTES").parse().expect("scratch budget usize"),
+            "--depth" => depth = args.next().expect("--depth needs N").parse().expect("depth usize"),
+            "--prepared-budget-bytes" => prepared_budget_bytes = args.next().expect("--prepared-budget-bytes needs BYTES").parse().expect("prepared budget usize"),
+            "--encoded-budget-bytes" => encoded_budget_bytes = args.next().expect("--encoded-budget-bytes needs BYTES").parse().expect("encoded budget usize"),
             "--pipeline-native-io" => {
                 let mode = args.next().expect("--pipeline-native-io needs MODE");
-                assert!(
-                    matches!(mode.as_str(), "preallocated" | "mmap"),
-                    "pipeline native I/O must be preallocated or mmap"
-                );
+                assert!(matches!(mode.as_str(), "preallocated" | "mmap"), "pipeline native I/O must be preallocated or mmap");
                 pipeline_native_io = Some(mode);
             }
             other => panic!("unknown argument {other}"),
@@ -122,9 +85,7 @@ fn hex(bytes: &[u8]) -> String {
 }
 
 fn file_sha256(path: &Path) -> String {
-    hex(&sha256(&fs::read(path).unwrap_or_else(|error| {
-        panic!("read {}: {error}", path.display())
-    })))
+    hex(&sha256(&fs::read(path).unwrap_or_else(|error| panic!("read {}: {error}", path.display()))))
 }
 
 fn json_escape(value: &str) -> String {
@@ -160,8 +121,7 @@ fn write_fixture(path: &Path) {
         header.push(' ');
     }
     let mut file = fs::File::create(path).expect("create fixture");
-    file.write_all(&(header.len() as u64).to_le_bytes())
-        .unwrap();
+    file.write_all(&(header.len() as u64).to_le_bytes()).unwrap();
     file.write_all(header.as_bytes()).unwrap();
     for value in q.iter().chain(&down).chain(&norm) {
         file.write_all(&value.to_le_bytes()).unwrap();
@@ -171,19 +131,9 @@ fn write_fixture(path: &Path) {
 
 fn run(binary: &Path, argv: &[String]) -> u128 {
     let started = Instant::now();
-    let output = Command::new(binary)
-        .args(argv)
-        .env("STRAND_NO_GPU", "1")
-        .output()
-        .unwrap_or_else(|error| panic!("launch {}: {error}", binary.display()));
+    let output = Command::new(binary).args(argv).env("STRAND_NO_GPU", "1").output().unwrap_or_else(|error| panic!("launch {}: {error}", binary.display()));
     if !output.status.success() {
-        panic!(
-            "{} failed with {}\nstdout:\n{}\nstderr:\n{}",
-            binary.display(),
-            output.status,
-            String::from_utf8_lossy(&output.stdout),
-            String::from_utf8_lossy(&output.stderr),
-        );
+        panic!("{} failed with {}\nstdout:\n{}\nstderr:\n{}", binary.display(), output.status, String::from_utf8_lossy(&output.stdout), String::from_utf8_lossy(&output.stderr),);
     }
     started.elapsed().as_nanos()
 }
@@ -198,17 +148,9 @@ struct Outputs {
 
 fn run_variant(binary: &Path, fixture: &Path, args: &Args, label: &str, pipeline: bool) -> Outputs {
     let partial = pipeline && args.pipeline_native_io.is_some();
-    let dense = args.work_dir.join(if partial {
-        format!("{label}.safetensors.partial")
-    } else {
-        format!("{label}.safetensors")
-    });
+    let dense = args.work_dir.join(if partial { format!("{label}.safetensors.partial") } else { format!("{label}.safetensors") });
     let sidecar = PathBuf::from(format!("{}.json", dense.display()));
-    let archive = args.work_dir.join(if partial {
-        format!("{label}.strand.partial")
-    } else {
-        format!("{label}.strand")
-    });
+    let archive = args.work_dir.join(if partial { format!("{label}.strand.partial") } else { format!("{label}.strand") });
     let mut common = vec![
         "--input".into(),
         fixture.display().to_string(),
@@ -241,13 +183,7 @@ fn run_variant(binary: &Path, fixture: &Path, args: &Args, label: &str, pipeline
     let dense_wall_ns = run(binary, &dense_args);
     common.extend(["--packed-v2-out".into(), archive.display().to_string()]);
     let archive_wall_ns = run(binary, &common);
-    Outputs {
-        dense,
-        sidecar,
-        archive,
-        dense_wall_ns,
-        archive_wall_ns,
-    }
+    Outputs { dense, sidecar, archive, dense_wall_ns, archive_wall_ns }
 }
 
 fn main() {
@@ -264,22 +200,12 @@ fn main() {
     let sidecar_sha = file_sha256(&serial.sidecar);
     let archive_sha = file_sha256(&serial.archive);
     assert_eq!(file_sha256(&pipeline.dense), dense_sha, "dense mismatch");
-    assert_eq!(
-        file_sha256(&pipeline.sidecar),
-        sidecar_sha,
-        "sidecar mismatch"
-    );
+    assert_eq!(file_sha256(&pipeline.sidecar), sidecar_sha, "sidecar mismatch");
     assert_eq!(file_sha256(&pipeline.archive), archive_sha, "STR2 mismatch");
 
-    let dense_order = SafeTensors::open(pipeline.dense.to_str().unwrap())
-        .expect("read pipeline dense")
-        .order;
+    let dense_order = SafeTensors::open(pipeline.dense.to_str().unwrap()).expect("read pipeline dense").order;
     assert_eq!(dense_order, [Q_NAME, DOWN_NAME, NORM_NAME]);
-    let archive_order = read_strand_v2(&fs::read(&pipeline.archive).expect("read pipeline STR2"))
-        .expect("parse pipeline STR2")
-        .into_iter()
-        .map(|tensor| tensor.base.name)
-        .collect::<Vec<_>>();
+    let archive_order = read_strand_v2(&fs::read(&pipeline.archive).expect("read pipeline STR2")).expect("parse pipeline STR2").into_iter().map(|tensor| tensor.base.name).collect::<Vec<_>>();
     assert_eq!(archive_order, [Q_NAME, DOWN_NAME]);
 
     let mut output_bundle = Vec::new();
@@ -289,10 +215,7 @@ fn main() {
     }
     let output_bundle_sha = hex(&sha256(&output_bundle));
 
-    let generated_unix_ns = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .expect("clock before epoch")
-        .as_nanos();
+    let generated_unix_ns = SystemTime::now().duration_since(UNIX_EPOCH).expect("clock before epoch").as_nanos();
     let receipt = format!(
         "{{\n  \"schema\": \"{SCHEMA}\",\n  \"status\": \"pass\",\n  \"scope\": \"synthetic_only\",\n  \"generated_unix_ns\": {generated_unix_ns},\n  \"serial_binary\": \"{}\",\n  \"serial_binary_sha256\": \"{}\",\n  \"pipeline_binary\": \"{}\",\n  \"pipeline_binary_sha256\": \"{}\",\n  \"fixture_sha256\": \"{}\",\n  \"pipeline_native_io\": \"{}\",\n  \"invocation_identity\": \"STRAND_NO_GPU=1;bits=2;l=8;rht=rows;outer_threads=1;block_threads={};scratch={};depth={}\",\n  \"depth\": {},\n  \"prepared_budget_bytes\": {},\n  \"encoded_budget_bytes\": {},\n  \"scratch_budget_bytes\": {},\n  \"dense_output_sha256\": \"{dense_sha}\",\n  \"dense_exact_match\": true,\n  \"sidecar_sha256\": \"{sidecar_sha}\",\n  \"sidecar_exact_match\": true,\n  \"packed_v2_archive_sha256\": \"{archive_sha}\",\n  \"packed_v2_exact_match\": true,\n  \"canonical_order\": true,\n  \"exact_output\": true,\n  \"measurements\": {{\"serial_dense_wall_ns\": {}, \"pipeline_dense_wall_ns\": {}, \"serial_archive_wall_ns\": {}, \"pipeline_archive_wall_ns\": {}, \"read_decode_ns\": null, \"rht_preprocess_ns\": null, \"encode_ns\": null, \"finalize_write_ns\": null, \"cpu_time_ns\": null, \"gpu_time_ns\": null, \"peak_rss_bytes\": null, \"swap_delta_bytes\": null, \"scratch_peak_bytes\": null, \"disk_read_bytes\": null, \"disk_write_bytes\": null, \"thermal_start\": null, \"thermal_end\": null, \"phase_instrumentation_complete\": false}},\n  \"input_bundle_sha256\": \"{}\",\n  \"output_bundle_sha256\": \"{output_bundle_sha}\",\n  \"scientific_receipt_bundle_sha256\": null,\n  \"component_speedup_is_eta_evidence\": false,\n  \"production_promotion_allowed\": false\n}}\n",
         json_escape(&args.serial_binary.display().to_string()),

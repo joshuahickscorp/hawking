@@ -1,11 +1,10 @@
-
 use std::time::Instant;
 
 use strand_quant::{encode_tensor_with, EncodeOpts, TrellisConfig};
 
 fn bench(label: &str, weights: &[f32], cfg: &TrellisConfig, opts: &EncodeOpts, iters: u32) -> f64 {
     let n = weights.len();
-    
+
     let _ = encode_tensor_with(&weights[..256.min(n)], cfg, opts);
 
     let t0 = Instant::now();
@@ -20,11 +19,9 @@ fn bench(label: &str, weights: &[f32], cfg: &TrellisConfig, opts: &EncodeOpts, i
 }
 
 fn main() {
-    const N: usize = 256 * 1024; 
+    const N: usize = 256 * 1024;
 
-    let weights: Vec<f32> = (0..N)
-        .map(|i| ((i as f32) * 0.003_141_592_6).sin())
-        .collect();
+    let weights: Vec<f32> = (0..N).map(|i| ((i as f32) * 0.003_141_592_6).sin()).collect();
 
     for bpw in [3.0_f64, 4.0] {
         let cfg = TrellisConfig::for_bpw(bpw);

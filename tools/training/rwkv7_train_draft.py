@@ -83,7 +83,7 @@ def lm_loss_from_batch(model: RWKV7Model, batch: list, device: str, pad_id: int 
     label -100 and are dropped from the loss. RWKV-7's recurrence is strictly
     left-to-right, so right-padding cannot perturb earlier real positions — the
     per-position logits at real tokens are identical to running each sequence
-    alone (verified by tools/training/test_rwkv7_batch_equiv.py). One padded
+    alone (verified by tools/training/test_rwkv7.py). One padded
     forward over B sequences replaces B serial forwards: far better GPU
     utilisation and higher RAM use = the speed win. Token-level mean CE over all
     supervised positions in the batch.

@@ -23,11 +23,11 @@ import sys
 from typing import Any
 
 import appendix_physical_evidence_gate
-import doctor_v5_post120_acceleration_scaffold as post120
+import doctor_v5_profiles as post120
 import doctor_v5_physical_adapter_registry as adapter_registry
 import doctor_v5_physical_counter_barrier as counter_barrier
 import doctor_v5_physical_result_authority as result_authority
-import spec_reentry_scaffold
+import frontier_runtime as spec_reentry_scaffold
 
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
@@ -107,22 +107,22 @@ SOURCE_PATHS = (
     "tools/condense/doctor_v5_physical_counter_barrier.py",
     "tools/condense/doctor_v5_physical_adapter_registry.py",
     "tools/condense/doctor_v5_physical_result_authority.py",
+    "tools/condense/appendix_runtime.py",
     "tools/condense/appendix_physical_counter_authority.py",
-    "tools/condense/appendix_contract.py",
-    "tools/condense/doctor_v5_single_device_benchmark.py",
-    "tools/condense/doctor_v5_single_device_sprint_audit.py",
-    "tools/condense/doctor_v5_block_parallel_config_matrix.py",
-    "tools/condense/doctor_v5_elastic_phase_scheduler.py",
-    "tools/condense/doctor_v5_aggressive_admission_policy.py",
-    "tools/condense/doctor_v5_shared_preprocess_cache.py",
-    "tools/condense/doctor_v5_qwen_shard_window.py",
+    "tools/condense/condense_profiles.py",
+    "tools/condense/doctor_v5_profiles.py",
+    "tools/condense/doctor_v5_campaign_report.py",
+    "tools/condense/doctor_v5_accelerated_resource_policy.py",
+    "tools/condense/doctor_v5_stacked_admission.py",
+    "tools/condense/doctor_v5_phase_aware_disk_gate.py",
+    "tools/condense/doctor_v5_post_120b.py",
+    "tools/condense/doctor_v5_gptoss_mxfp4.py",
+    "tools/condense/doctor_v5_gptoss_moe_adapter.py",
+    "tools/condense/doctor_v5_strand_ladder_block_parallel_adapter.py",
     "tools/condense/doctor_v5_remaining_scratch_ledger.py",
-    "tools/condense/doctor_v5_remaining_scratch_gate_adapter.py",
-    "tools/condense/doctor_v5_post120_acceleration_scaffold.py",
     "tools/condense/appendix_physical_evidence_gate.py",
-    "tools/condense/appendix_physical_counter_collector.py",
     "tools/condense/physical_counter_attestation.py",
-    "tools/condense/doctor_frontier_worker.py",
+    "tools/condense/frontier_runtime.py",
     "vendor/strand-quant/tools/thread_profile_contract.py",
     "vendor/strand-quant/tools/native_build.py",
     "vendor/strand-quant/src/ordered_pipeline.rs",

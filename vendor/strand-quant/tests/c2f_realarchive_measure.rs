@@ -27,10 +27,7 @@ fn measure_real() {
     // prefer SDSQ section if present (packed archives leave inline 0)
     let scale_q: Vec<i32> = match read_sdsq(&path).expect("read sdsq") {
         Some(s) => s.scale_q,
-        None => tensors
-            .iter()
-            .flat_map(|t| t.base.enc.blocks.iter().map(|b| b.scale_q))
-            .collect(),
+        None => tensors.iter().flat_map(|t| t.base.enc.blocks.iter().map(|b| b.scale_q)).collect(),
     };
     assert_eq!(scale_q.len(), total_blocks);
 

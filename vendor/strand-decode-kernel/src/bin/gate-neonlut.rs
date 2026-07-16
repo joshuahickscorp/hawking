@@ -1,4 +1,3 @@
-
 use std::time::Instant;
 
 use strand_decode_kernel::block_walk::gate_proto::{machine_stamp, synth_encoded};
@@ -11,10 +10,7 @@ use strand_quant::TrellisConfig;
 
 type DecodeFn = fn(&EncodedTensor, &TrellisConfig) -> Vec<i32>;
 
-const KERNELS: &[(&str, DecodeFn)] = &[
-    ("neonlut", decode_q12_neonlut),
-    ("neonlut-sg", decode_q12_neonlut_scalar_gather),
-];
+const KERNELS: &[(&str, DecodeFn)] = &[("neonlut", decode_q12_neonlut), ("neonlut-sg", decode_q12_neonlut_scalar_gather)];
 
 fn configs() -> Vec<(TrellisConfig, &'static str)> {
     vec![
@@ -33,20 +29,13 @@ fn identity_matrix() -> usize {
     let mut checked = 0usize;
     for (cfg, label) in configs() {
         for seed in 0..24u64 {
-            
             let n = 1 + (seed as usize * 211) % 4096;
-            let w: Vec<f32> = (0..n)
-                .map(|i| ((i as f32 + seed as f32) * 0.0137).sin() * 0.5)
-                .collect();
+            let w: Vec<f32> = (0..n).map(|i| ((i as f32 + seed as f32) * 0.0137).sin() * 0.5).collect();
             let variants = [
                 encode_tensor(&w, &cfg),
                 encode_tensor_with(&w, &cfg, &EncodeOpts { tail_biting: true, ..Default::default() }),
                 encode_tensor_with(&w, &cfg, &EncodeOpts { affine_min: true, ..Default::default() }),
-                encode_tensor_with(
-                    &w,
-                    &cfg,
-                    &EncodeOpts { tail_biting: true, affine_min: true, ..Default::default() },
-                ),
+                encode_tensor_with(&w, &cfg, &EncodeOpts { tail_biting: true, affine_min: true, ..Default::default() }),
             ];
             for enc in &variants {
                 let reference = decode_tensor_fixed(enc, &cfg);
@@ -67,7 +56,6 @@ fn identity_matrix() -> usize {
 }
 
 fn bench_one(name: &str, f: DecodeFn, enc: &EncodedTensor, cfg: &TrellisConfig) -> f64 {
-    
     let out = f(enc, cfg);
     assert_eq!(out.len(), enc.total);
     let mut best = f64::INFINITY;
@@ -99,11 +87,7 @@ fn main() {
     println!("bench: ffn_down {total} weights, synth, best-of-3, single-thread");
     println!("{}\n", machine_stamp());
 
-    let points = [
-        (TrellisConfig::for_bpw_l(2.0, 6), "k2 L6"),
-        (TrellisConfig::for_bpw(3.0), "k3 L7 (3-bit flagship)"),
-        (TrellisConfig::for_bpw(4.0), "k4 L8"),
-    ];
+    let points = [(TrellisConfig::for_bpw_l(2.0, 6), "k2 L6"), (TrellisConfig::for_bpw(3.0), "k3 L7 (3-bit flagship)"), (TrellisConfig::for_bpw(4.0), "k4 L8")];
     for (cfg, label) in points {
         let enc = synth_encoded(total, cfg.k_bits, cfg.block_len);
         println!("  {label}:");
@@ -111,11 +95,6 @@ fn main() {
         let tbl = bench_one("neonlut", decode_q12_neonlut, &enc, &cfg);
         let sg = bench_one("neonlut-sg", decode_q12_neonlut_scalar_gather, &enc, &cfg);
         let split = bench_one("split", decode_q12_split, &enc, &cfg);
-        println!(
-            "    → neonlut {0:.2}× of fast, {1:.2}× of split; tbl-tree {2:.2}× of scalar-gather\n",
-            tbl / base,
-            tbl / split,
-            tbl / sg
-        );
+        println!("    → neonlut {0:.2}× of fast, {1:.2}× of split; tbl-tree {2:.2}× of scalar-gather\n", tbl / base, tbl / split, tbl / sg);
     }
 }

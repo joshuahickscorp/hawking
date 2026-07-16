@@ -10,11 +10,11 @@ description = "Localhost HTTP + WebSocket transport exposing hide-backend::Backe
 
 [lib]
 name = "hide_serve"
-path = "src/lib.rs"
+path = "lib.rs"
 
 [[bin]]
 name = "hide-serve"
-path = "src/main.rs"
+path = "main.rs"
 
 [dependencies]
 # T5: HIDE talks HTTP only. Depend on the backend host and the wire types,

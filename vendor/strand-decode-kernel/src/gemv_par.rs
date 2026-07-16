@@ -1,7 +1,4 @@
-
-use crate::block_walk::{
-    block_init_state, block_plans, exceeds_max_sub, BlockPlan, SideInfo, WordReader,
-};
+use crate::block_walk::{block_init_state, block_plans, exceeds_max_sub, BlockPlan, SideInfo, WordReader};
 use crate::loader::StrandModel;
 use rayon::prelude::*;
 use strand_quant::codebook::codebook_lut;
@@ -13,11 +10,7 @@ pub fn decode_q12_par(enc: &EncodedTensor, cfg: &TrellisConfig) -> Vec<i32> {
     decode_q12_par_with_lut(enc, cfg, codebook_lut(cfg.l_bits))
 }
 
-pub fn decode_q12_par_counted(
-    enc: &EncodedTensor,
-    cfg: &TrellisConfig,
-    counts: Option<&mut [u32]>,
-) -> Vec<i32> {
+pub fn decode_q12_par_counted(enc: &EncodedTensor, cfg: &TrellisConfig, counts: Option<&mut [u32]>) -> Vec<i32> {
     decode_q12_par_with_lut_counted(enc, cfg, codebook_lut(cfg.l_bits), counts)
 }
 
@@ -44,33 +37,20 @@ pub fn decode_q12_par_with_lut(enc: &EncodedTensor, cfg: &TrellisConfig, lut: &[
         rest = tail;
     }
 
-    enc.blocks
-        .par_iter()
-        .zip(plans.par_iter())
-        .zip(slices.par_iter_mut())
-        .for_each(|((blk, plan), dst)| {
-            let mut folded: Vec<i32> = Vec::new();
-            decode_block_inline(
-                blk, plan, &enc.bits, cfg, lut, fold, has_affine, tail_biting, &mut folded, dst,
-            );
-        });
+    enc.blocks.par_iter().zip(plans.par_iter()).zip(slices.par_iter_mut()).for_each(|((blk, plan), dst)| {
+        let mut folded: Vec<i32> = Vec::new();
+        decode_block_inline(blk, plan, &enc.bits, cfg, lut, fold, has_affine, tail_biting, &mut folded, dst);
+    });
 
     out
 }
 
-pub fn decode_q12_par_with_lut_counted(
-    enc: &EncodedTensor,
-    cfg: &TrellisConfig,
-    lut: &[i32],
-    counts: Option<&mut [u32]>,
-) -> Vec<i32> {
-    
+pub fn decode_q12_par_with_lut_counted(enc: &EncodedTensor, cfg: &TrellisConfig, lut: &[i32], counts: Option<&mut [u32]>) -> Vec<i32> {
     let Some(counts) = counts else {
         return decode_q12_par_with_lut(enc, cfg, lut);
     };
 
     if cfg.vec_dim() > 1 || exceeds_max_sub(enc) {
-        
         let out = crate::gemv::decode_q12_fast_with_lut(enc, cfg, lut);
         for b in 0..enc.blocks.len().min(counts.len()) {
             counts[b] = counts[b].saturating_add(1);
@@ -97,16 +77,9 @@ pub fn decode_q12_par_with_lut_counted(
     }
 
     let mut folded: Vec<i32> = Vec::new();
-    for (b, ((blk, plan), dst)) in enc.blocks
-        .iter()
-        .zip(plans.iter())
-        .zip(slices.iter_mut())
-        .enumerate()
-    {
-        decode_block_inline(
-            blk, plan, &enc.bits, cfg, lut, fold, has_affine, tail_biting, &mut folded, dst,
-        );
-        
+    for (b, ((blk, plan), dst)) in enc.blocks.iter().zip(plans.iter()).zip(slices.iter_mut()).enumerate() {
+        decode_block_inline(blk, plan, &enc.bits, cfg, lut, fold, has_affine, tail_biting, &mut folded, dst);
+
         if b < counts.len() {
             counts[b] = counts[b].saturating_add(1);
         }
@@ -117,18 +90,7 @@ pub fn decode_q12_par_with_lut_counted(
 
 #[allow(unsafe_code)]
 #[inline]
-fn decode_block_inline(
-    blk: &BlockMeta,
-    plan: &BlockPlan,
-    bits: &[u8],
-    cfg: &TrellisConfig,
-    lut: &[i32],
-    fold: bool,
-    has_affine: bool,
-    tail_biting: bool,
-    folded: &mut Vec<i32>,
-    dst: &mut [i32],
-) {
+fn decode_block_inline(blk: &BlockMeta, plan: &BlockPlan, bits: &[u8], cfg: &TrellisConfig, lut: &[i32], fold: bool, has_affine: bool, tail_biting: bool, folded: &mut Vec<i32>, dst: &mut [i32]) {
     let mask = cfg.state_mask();
     let k = cfg.k_bits;
     let input_mask = cfg.num_inputs() - 1;
@@ -205,7 +167,7 @@ pub fn matvec_named_par(model: &StrandModel, name: &str, x: &[f32]) -> Option<Ve
         return None;
     }
     let inv = 1.0f32 / 4096.0;
-    
+
     let y: Vec<f32> = (0..out_features)
         .into_par_iter()
         .map(|o| {
@@ -275,29 +237,18 @@ pub fn decode_q12_simd_with_lut(enc: &EncodedTensor, cfg: &TrellisConfig, lut: &
     }
     let _ = n_blocks;
 
-    block_chunks
-        .into_par_iter()
-        .zip(plan_chunks.into_par_iter())
-        .zip(slice_groups.into_par_iter())
-        .for_each(|((bch, pch), mut sg)| {
-            if bch.len() == SIMD_LANES {
-                
-                unsafe {
-                    decode_4_blocks_neon(
-                        bch, pch, bits, cfg, lut, k, mask, input_mask, has_affine, tail_biting,
-                        &mut sg,
-                    );
-                }
-            } else {
-                let mut folded: Vec<i32> = Vec::new();
-                for ((blk, plan), dst) in bch.iter().zip(pch.iter()).zip(sg.iter_mut()) {
-                    decode_block_inline(
-                        blk, plan, bits, cfg, lut, false, has_affine, tail_biting, &mut folded,
-                        dst,
-                    );
-                }
+    block_chunks.into_par_iter().zip(plan_chunks.into_par_iter()).zip(slice_groups.into_par_iter()).for_each(|((bch, pch), mut sg)| {
+        if bch.len() == SIMD_LANES {
+            unsafe {
+                decode_4_blocks_neon(bch, pch, bits, cfg, lut, k, mask, input_mask, has_affine, tail_biting, &mut sg);
             }
-        });
+        } else {
+            let mut folded: Vec<i32> = Vec::new();
+            for ((blk, plan), dst) in bch.iter().zip(pch.iter()).zip(sg.iter_mut()) {
+                decode_block_inline(blk, plan, bits, cfg, lut, false, has_affine, tail_biting, &mut folded, dst);
+            }
+        }
+    });
 
     out
 }
@@ -322,8 +273,7 @@ unsafe fn decode_4_blocks_neon(
 
     debug_assert_eq!(blocks.len(), SIMD_LANES);
 
-    let sides: [SideInfo; SIMD_LANES] =
-        core::array::from_fn(|lane| SideInfo::hoist(&blocks[lane], has_affine));
+    let sides: [SideInfo; SIMD_LANES] = core::array::from_fn(|lane| SideInfo::hoist(&blocks[lane], has_affine));
     let mut n_lane = [0usize; SIMD_LANES];
     for lane in 0..SIMD_LANES {
         n_lane[lane] = blocks[lane].n as usize;
@@ -333,8 +283,7 @@ unsafe fn decode_4_blocks_neon(
     let mut readers: Vec<WordReader> = Vec::with_capacity(SIMD_LANES);
     for lane in 0..SIMD_LANES {
         let start_bit = plans[lane].start_bit;
-        state_arr[lane] =
-            block_init_state(&blocks[lane], bits, start_bit, cfg, tail_biting) as u32;
+        state_arr[lane] = block_init_state(&blocks[lane], bits, start_bit, cfg, tail_biting) as u32;
         readers.push(WordReader::new(bits, start_bit));
     }
 
@@ -351,7 +300,7 @@ unsafe fn decode_4_blocks_neon(
             }
         }
         let sym_v = vld1q_u32(sym_arr.as_ptr());
-        
+
         let shifted = vshlq_n_u32_dynamic(state_v, k);
         state_v = vandq_u32(vorrq_u32(shifted, sym_v), mask_v);
         vst1q_u32(state_arr.as_mut_ptr(), state_v);
@@ -359,7 +308,7 @@ unsafe fn decode_4_blocks_neon(
         for lane in 0..SIMD_LANES {
             if i < n_lane[lane] {
                 let st = state_arr[lane] as usize;
-                
+
                 let q = *lut_ptr.add(st);
                 let sb = i / SUB_BLOCK;
                 let es = sides[lane].eff[sb];
@@ -402,55 +351,24 @@ mod tests {
             (TrellisConfig::for_bpw_l(3.0, 5), true),
         ];
         for (cfg, fold_expected) in configs {
-            assert_eq!(
-                SUB_BLOCK >= cfg.num_states(),
-                fold_expected,
-                "fold gate mismatch for L={}",
-                cfg.l_bits
-            );
+            assert_eq!(SUB_BLOCK >= cfg.num_states(), fold_expected, "fold gate mismatch for L={}", cfg.l_bits);
             for seed in 0..96u64 {
                 let n = 1 + (seed as usize * 53) % 4096;
-                let w: Vec<f32> = (0..n)
-                    .map(|i| ((i as f32 + seed as f32) * 0.0137).sin() * 0.5)
-                    .collect();
+                let w: Vec<f32> = (0..n).map(|i| ((i as f32 + seed as f32) * 0.0137).sin() * 0.5).collect();
                 let variants = [
                     encode_tensor(&w, &cfg),
-                    encode_tensor_with(
-                        &w,
-                        &cfg,
-                        &EncodeOpts { tail_biting: true, ..Default::default() },
-                    ),
-                    encode_tensor_with(
-                        &w,
-                        &cfg,
-                        &EncodeOpts { affine_min: true, ..Default::default() },
-                    ),
-                    encode_tensor_with(
-                        &w,
-                        &cfg,
-                        &EncodeOpts {
-                            tail_biting: true,
-                            affine_min: true,
-                            ..Default::default()
-                        },
-                    ),
+                    encode_tensor_with(&w, &cfg, &EncodeOpts { tail_biting: true, ..Default::default() }),
+                    encode_tensor_with(&w, &cfg, &EncodeOpts { affine_min: true, ..Default::default() }),
+                    encode_tensor_with(&w, &cfg, &EncodeOpts { tail_biting: true, affine_min: true, ..Default::default() }),
                 ];
                 for enc in &variants {
                     let refr = ref_decode_lean(enc, &cfg);
                     let fast = decode_q12_fast(enc, &cfg);
                     assert_eq!(fast, refr, "precondition: fast != lean");
                     let par = decode_q12_par(enc, &cfg);
-                    assert_eq!(
-                        par, refr,
-                        "PAR decode diverged: L={} k={} n={} seed={} tail={} affine={}",
-                        cfg.l_bits, cfg.k_bits, n, seed, enc.tail_biting, enc.has_affine_min
-                    );
+                    assert_eq!(par, refr, "PAR decode diverged: L={} k={} n={} seed={} tail={} affine={}", cfg.l_bits, cfg.k_bits, n, seed, enc.tail_biting, enc.has_affine_min);
                     let simd = decode_q12_simd(enc, &cfg);
-                    assert_eq!(
-                        simd, refr,
-                        "SIMD decode diverged: L={} k={} n={} seed={} tail={} affine={}",
-                        cfg.l_bits, cfg.k_bits, n, seed, enc.tail_biting, enc.has_affine_min
-                    );
+                    assert_eq!(simd, refr, "SIMD decode diverged: L={} k={} n={} seed={} tail={} affine={}", cfg.l_bits, cfg.k_bits, n, seed, enc.tail_biting, enc.has_affine_min);
                 }
             }
         }
@@ -479,8 +397,7 @@ mod tests {
         assert_eq!(cfg.k_bits, 4);
         for seed in 0..48u64 {
             let n = 2 + (seed as usize * 213) % 6000;
-            let w: Vec<f32> =
-                (0..n).map(|i| ((i as f32 + seed as f32) * 0.0091).cos() * 0.6).collect();
+            let w: Vec<f32> = (0..n).map(|i| ((i as f32 + seed as f32) * 0.0091).cos() * 0.6).collect();
             let lut = train_state_vector_lut(&w, cfg.l_bits, 2, 0xABCD ^ seed, 30);
             assert_eq!(lut.len(), cfg.num_states() * 2, "vector LUT must be [2^L * d]");
             for tail in [false, true] {
@@ -488,16 +405,8 @@ mod tests {
                 let enc = encode_tensor_with_lut(&w, &cfg, &opts, &lut);
                 assert_eq!(enc.total, n);
                 let refr = decode_lean_with_lut(&enc, &cfg, &lut);
-                assert_eq!(
-                    decode_q12_par_with_lut(&enc, &cfg, &lut),
-                    refr,
-                    "PAR vec_dim=2 n={n} seed={seed} tail={tail}"
-                );
-                assert_eq!(
-                    decode_q12_simd_with_lut(&enc, &cfg, &lut),
-                    refr,
-                    "SIMD vec_dim=2 n={n} seed={seed} tail={tail}"
-                );
+                assert_eq!(decode_q12_par_with_lut(&enc, &cfg, &lut), refr, "PAR vec_dim=2 n={n} seed={seed} tail={tail}");
+                assert_eq!(decode_q12_simd_with_lut(&enc, &cfg, &lut), refr, "SIMD vec_dim=2 n={n} seed={seed} tail={tail}");
             }
         }
     }
@@ -510,23 +419,12 @@ mod tests {
         fn write_tiny_v2(name: &str, rows: u64, cols: u64, cfg: &TrellisConfig, enc: &EncodedTensor) -> std::path::PathBuf {
             let shape = [rows, cols];
             let pt = PackedTensorV2 {
-                base: PackedTensor {
-                    name,
-                    shape: &shape,
-                    rht_seed: 0,
-                    l_bits: cfg.l_bits as u8,
-                    k_bits: cfg.k_bits as u8,
-                    vec_dim: cfg.vec_dim() as u8,
-                    enc,
-                },
+                base: PackedTensor { name, shape: &shape, rht_seed: 0, l_bits: cfg.l_bits as u8, k_bits: cfg.k_bits as u8, vec_dim: cfg.vec_dim() as u8, enc },
                 block_len: cfg.block_len as u32,
             };
             let buf = write_strand_v2(&[pt], [0u8; 32], true).expect("write_strand_v2");
             let mut path = std::env::temp_dir();
-            let uniq = std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .map(|d| d.as_nanos())
-                .unwrap_or(0);
+            let uniq = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_nanos()).unwrap_or(0);
             path.push(format!("strand_gemvpar_e2e_{name}_{}_{uniq}.strand", std::process::id()));
             let mut f = std::fs::File::create(&path).expect("create temp .strand");
             f.write_all(&buf).expect("write");
@@ -559,23 +457,12 @@ mod tests {
         let enc = encode_tensor(&weights, &cfg);
         let shape = [rows as u64, cols as u64];
         let pt = PackedTensorV2 {
-            base: PackedTensor {
-                name: "w",
-                shape: &shape,
-                rht_seed: 0,
-                l_bits: cfg.l_bits as u8,
-                k_bits: cfg.k_bits as u8,
-                vec_dim: cfg.vec_dim() as u8,
-                enc: &enc,
-            },
+            base: PackedTensor { name: "w", shape: &shape, rht_seed: 0, l_bits: cfg.l_bits as u8, k_bits: cfg.k_bits as u8, vec_dim: cfg.vec_dim() as u8, enc: &enc },
             block_len: cfg.block_len as u32,
         };
         let buf = write_strand_v2(&[pt], [0u8; 32], true).expect("write_strand_v2");
         let mut path = std::env::temp_dir();
-        let uniq = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .map(|d| d.as_nanos())
-            .unwrap_or(0);
+        let uniq = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_nanos()).unwrap_or(0);
         path.push(format!("strand_gemvpar_mv_{}_{uniq}.strand", std::process::id()));
         std::fs::File::create(&path).unwrap().write_all(&buf).unwrap();
 

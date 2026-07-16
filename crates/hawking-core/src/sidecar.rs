@@ -114,7 +114,7 @@ pub struct SidecarContents {
 ///
 /// SCAFFOLD ONLY: this is the FORMAT + loader-resolver. It does NOT pick
 /// tiers (selection needs AWQ/perplexity calibration — naive RTN mixed-prec
-/// is `docs/dead_levers.md` #16 Type-1 dead) and it does NOT itself
+/// is `docs/RESEARCH.md` #16 Type-1 dead) and it does NOT itself
 /// re-quantize (that is `mixed_quant_store::MixedQuantStore`).
 ///
 /// Distinct from `quant_tier_map::TierMap`, which is per-`(layer, group)`
@@ -180,10 +180,7 @@ impl SidecarTierMap {
         let mut seen = std::collections::HashSet::new();
         for e in &self.entries {
             if !seen.insert(e.tensor.as_str()) {
-                return Err(crate::Error::Model(format!(
-                    "sidecar tier map: duplicate entry for tensor {:?}",
-                    e.tensor
-                )));
+                return Err(crate::Error::Model(format!("sidecar tier map: duplicate entry for tensor {:?}", e.tensor)));
             }
             parse_sidecar_tier_dtype(&e.dtype)?;
         }
@@ -226,36 +223,20 @@ impl SidecarCompat {
         matches!(self, Self::Compatible | Self::ShaderHashMismatch { .. })
     }
     pub fn is_fatal(&self) -> bool {
-        matches!(
-            self,
-            Self::GgufHashMismatch { .. } | Self::VersionTooNew { .. }
-        )
+        matches!(self, Self::GgufHashMismatch { .. } | Self::VersionTooNew { .. })
     }
 }
 
 /// Check whether `header` is compatible with the currently loaded GGUF.
-pub fn check_sidecar_compatibility(
-    header: &SidecarHeader,
-    gguf_sha256_hex: &str,
-    shader_sha256_hex: &str,
-) -> SidecarCompat {
+pub fn check_sidecar_compatibility(header: &SidecarHeader, gguf_sha256_hex: &str, shader_sha256_hex: &str) -> SidecarCompat {
     if header.version > SIDECAR_VERSION {
-        return SidecarCompat::VersionTooNew {
-            sidecar: header.version,
-            supported: SIDECAR_VERSION,
-        };
+        return SidecarCompat::VersionTooNew { sidecar: header.version, supported: SIDECAR_VERSION };
     }
     if header.source_gguf_hash != gguf_sha256_hex {
-        return SidecarCompat::GgufHashMismatch {
-            sidecar: header.source_gguf_hash.clone(),
-            actual: gguf_sha256_hex.to_string(),
-        };
+        return SidecarCompat::GgufHashMismatch { sidecar: header.source_gguf_hash.clone(), actual: gguf_sha256_hex.to_string() };
     }
     if header.shader_hash != shader_sha256_hex {
-        return SidecarCompat::ShaderHashMismatch {
-            sidecar: header.shader_hash.clone(),
-            actual: shader_sha256_hex.to_string(),
-        };
+        return SidecarCompat::ShaderHashMismatch { sidecar: header.shader_hash.clone(), actual: shader_sha256_hex.to_string() };
     }
     SidecarCompat::Compatible
 }
@@ -289,66 +270,47 @@ pub struct SidecarWriter {
 impl SidecarWriter {
     pub fn write(&self) -> crate::Result<usize> {
         use std::io::Write;
-        let header_json = serde_json::to_string(&self.header)
-            .map_err(|e| crate::Error::Model(format!("sidecar: header serialize: {e}")))?;
+        let header_json = serde_json::to_string(&self.header).map_err(|e| crate::Error::Model(format!("sidecar: header serialize: {e}")))?;
         let header_bytes = header_json.as_bytes();
         let header_len = header_bytes.len() as u32;
 
-        let file = std::fs::File::create(&self.path)
-            .map_err(|e| crate::Error::Model(format!("sidecar: create {:?}: {e}", self.path)))?;
+        let file = std::fs::File::create(&self.path).map_err(|e| crate::Error::Model(format!("sidecar: create {:?}: {e}", self.path)))?;
         let mut w = std::io::BufWriter::new(file);
 
-        w.write_all(SIDECAR_MAGIC)
-            .map_err(|e| crate::Error::Model(format!("sidecar write: {e}")))?;
-        w.write_all(&header_len.to_le_bytes())
-            .map_err(|e| crate::Error::Model(format!("sidecar write: {e}")))?;
-        w.write_all(header_bytes)
-            .map_err(|e| crate::Error::Model(format!("sidecar write: {e}")))?;
+        w.write_all(SIDECAR_MAGIC).map_err(|e| crate::Error::Model(format!("sidecar write: {e}")))?;
+        w.write_all(&header_len.to_le_bytes()).map_err(|e| crate::Error::Model(format!("sidecar write: {e}")))?;
+        w.write_all(header_bytes).map_err(|e| crate::Error::Model(format!("sidecar write: {e}")))?;
 
         let mut total_bytes = 8 + 4 + header_bytes.len();
         for (offset, scales) in &self.predec_entries {
-            w.write_all(&offset.to_le_bytes())
-                .map_err(|e| crate::Error::Model(format!("sidecar write: {e}")))?;
+            w.write_all(&offset.to_le_bytes()).map_err(|e| crate::Error::Model(format!("sidecar write: {e}")))?;
             let n = scales.len() as u32;
-            w.write_all(&n.to_le_bytes())
-                .map_err(|e| crate::Error::Model(format!("sidecar write: {e}")))?;
+            w.write_all(&n.to_le_bytes()).map_err(|e| crate::Error::Model(format!("sidecar write: {e}")))?;
             let bytes = bytemuck::cast_slice::<f32, u8>(scales);
-            w.write_all(bytes)
-                .map_err(|e| crate::Error::Model(format!("sidecar write: {e}")))?;
+            w.write_all(bytes).map_err(|e| crate::Error::Model(format!("sidecar write: {e}")))?;
             total_bytes += 8 + 4 + bytes.len();
         }
-        w.flush()
-            .map_err(|e| crate::Error::Model(format!("sidecar flush: {e}")))?;
+        w.flush().map_err(|e| crate::Error::Model(format!("sidecar flush: {e}")))?;
         Ok(total_bytes)
     }
 }
 
 /// Read all predec entries from a sidecar file.
 /// Returns `(header, Vec<(tensor_offset, scales_f32)>)`.
-pub fn read_predec_entries(
-    path: &std::path::Path,
-) -> crate::Result<(SidecarHeader, Vec<(usize, Vec<f32>)>)> {
+pub fn read_predec_entries(path: &std::path::Path) -> crate::Result<(SidecarHeader, Vec<(usize, Vec<f32>)>)> {
     use std::io::Read;
-    let mut f = std::fs::File::open(path)
-        .map_err(|e| crate::Error::Model(format!("sidecar: open {:?}: {e}", path)))?;
+    let mut f = std::fs::File::open(path).map_err(|e| crate::Error::Model(format!("sidecar: open {:?}: {e}", path)))?;
     let mut magic = [0u8; 8];
-    f.read_exact(&mut magic)
-        .map_err(|e| crate::Error::Model(format!("sidecar: read magic: {e}")))?;
+    f.read_exact(&mut magic).map_err(|e| crate::Error::Model(format!("sidecar: read magic: {e}")))?;
     if &magic != SIDECAR_MAGIC {
-        return Err(crate::Error::Model(format!(
-            "sidecar: bad magic in {:?}",
-            path
-        )));
+        return Err(crate::Error::Model(format!("sidecar: bad magic in {:?}", path)));
     }
     let mut len_buf = [0u8; 4];
-    f.read_exact(&mut len_buf)
-        .map_err(|e| crate::Error::Model(format!("sidecar: read header_len: {e}")))?;
+    f.read_exact(&mut len_buf).map_err(|e| crate::Error::Model(format!("sidecar: read header_len: {e}")))?;
     let header_len = u32::from_le_bytes(len_buf) as usize;
     let mut json_buf = vec![0u8; header_len];
-    f.read_exact(&mut json_buf)
-        .map_err(|e| crate::Error::Model(format!("sidecar: read header json: {e}")))?;
-    let header: SidecarHeader = serde_json::from_slice(&json_buf)
-        .map_err(|e| crate::Error::Model(format!("sidecar: parse header: {e}")))?;
+    f.read_exact(&mut json_buf).map_err(|e| crate::Error::Model(format!("sidecar: read header json: {e}")))?;
+    let header: SidecarHeader = serde_json::from_slice(&json_buf).map_err(|e| crate::Error::Model(format!("sidecar: parse header: {e}")))?;
 
     let mut entries = Vec::new();
     loop {
@@ -360,16 +322,11 @@ pub fn read_predec_entries(
         }
         let offset = u64::from_le_bytes(offset_buf) as usize;
         let mut n_buf = [0u8; 4];
-        f.read_exact(&mut n_buf)
-            .map_err(|e| crate::Error::Model(format!("sidecar: read entry n: {e}")))?;
+        f.read_exact(&mut n_buf).map_err(|e| crate::Error::Model(format!("sidecar: read entry n: {e}")))?;
         let n = u32::from_le_bytes(n_buf) as usize;
         let mut bytes = vec![0u8; n * std::mem::size_of::<f32>()];
-        f.read_exact(&mut bytes)
-            .map_err(|e| crate::Error::Model(format!("sidecar: read entry scales: {e}")))?;
-        let scales: Vec<f32> = bytes
-            .chunks_exact(4)
-            .map(|c| f32::from_le_bytes([c[0], c[1], c[2], c[3]]))
-            .collect();
+        f.read_exact(&mut bytes).map_err(|e| crate::Error::Model(format!("sidecar: read entry scales: {e}")))?;
+        let scales: Vec<f32> = bytes.chunks_exact(4).map(|c| f32::from_le_bytes([c[0], c[1], c[2], c[3]])).collect();
         entries.push((offset, scales));
     }
     Ok((header, entries))
@@ -384,10 +341,7 @@ pub fn read_predec_entries(
 /// (not on the Engine trait) so the bake path composes without touching the
 /// model module. Validates the map before writing so a typo'd dtype fails the
 /// bake instead of producing a sidecar the loader will reject.
-pub fn attach_tier_map_to_sidecar(
-    path: &std::path::Path,
-    tier_map: SidecarTierMap,
-) -> crate::Result<usize> {
+pub fn attach_tier_map_to_sidecar(path: &std::path::Path, tier_map: SidecarTierMap) -> crate::Result<usize> {
     tier_map.validate()?;
     let (mut header, entries) = read_predec_entries(path)?;
     header.contents.mixed_quant_tier_map = true;
@@ -405,10 +359,8 @@ pub fn attach_tier_map_to_sidecar(
 /// shape `{ "entries": [ { "tensor": "...", "dtype": "q6_K" }, ... ] }`
 /// (SidecarTierMap is already `Deserialize`). Validates dtype strings up front.
 pub fn load_sidecar_tier_map_json(path: &std::path::Path) -> crate::Result<SidecarTierMap> {
-    let bytes = std::fs::read(path)
-        .map_err(|e| crate::Error::Model(format!("tier-map json: read {:?}: {e}", path)))?;
-    let tm: SidecarTierMap = serde_json::from_slice(&bytes)
-        .map_err(|e| crate::Error::Model(format!("tier-map json: parse {:?}: {e}", path)))?;
+    let bytes = std::fs::read(path).map_err(|e| crate::Error::Model(format!("tier-map json: read {:?}: {e}", path)))?;
+    let tm: SidecarTierMap = serde_json::from_slice(&bytes).map_err(|e| crate::Error::Model(format!("tier-map json: parse {:?}: {e}", path)))?;
     tm.validate()?;
     Ok(tm)
 }
@@ -416,26 +368,18 @@ pub fn load_sidecar_tier_map_json(path: &std::path::Path) -> crate::Result<Sidec
 /// Read and validate a sidecar file.
 pub fn read_sidecar_header(path: &std::path::Path) -> crate::Result<SidecarHeader> {
     use std::io::Read;
-    let mut f = std::fs::File::open(path)
-        .map_err(|e| crate::Error::Model(format!("sidecar: open {:?}: {e}", path)))?;
+    let mut f = std::fs::File::open(path).map_err(|e| crate::Error::Model(format!("sidecar: open {:?}: {e}", path)))?;
     let mut magic = [0u8; 8];
-    f.read_exact(&mut magic)
-        .map_err(|e| crate::Error::Model(format!("sidecar: read magic: {e}")))?;
+    f.read_exact(&mut magic).map_err(|e| crate::Error::Model(format!("sidecar: read magic: {e}")))?;
     if &magic != SIDECAR_MAGIC {
-        return Err(crate::Error::Model(format!(
-            "sidecar: bad magic in {:?}",
-            path
-        )));
+        return Err(crate::Error::Model(format!("sidecar: bad magic in {:?}", path)));
     }
     let mut len_buf = [0u8; 4];
-    f.read_exact(&mut len_buf)
-        .map_err(|e| crate::Error::Model(format!("sidecar: read header_len: {e}")))?;
+    f.read_exact(&mut len_buf).map_err(|e| crate::Error::Model(format!("sidecar: read header_len: {e}")))?;
     let header_len = u32::from_le_bytes(len_buf) as usize;
     let mut json_buf = vec![0u8; header_len];
-    f.read_exact(&mut json_buf)
-        .map_err(|e| crate::Error::Model(format!("sidecar: read header json: {e}")))?;
-    serde_json::from_slice::<SidecarHeader>(&json_buf)
-        .map_err(|e| crate::Error::Model(format!("sidecar: parse header: {e}")))
+    f.read_exact(&mut json_buf).map_err(|e| crate::Error::Model(format!("sidecar: read header json: {e}")))?;
+    serde_json::from_slice::<SidecarHeader>(&json_buf).map_err(|e| crate::Error::Model(format!("sidecar: parse header: {e}")))
 }
 
 #[cfg(test)]
@@ -450,10 +394,7 @@ mod tier_map_tests {
             tokenizer_hash: "tok_abc".to_string(),
             shader_hash: "shader_abc".to_string(),
             bake_profile: SidecarProfile::Race,
-            contents: SidecarContents {
-                mixed_quant_tier_map: true,
-                ..Default::default()
-            },
+            contents: SidecarContents { mixed_quant_tier_map: true, ..Default::default() },
             quality: SidecarQuality::default(),
             bake_device: "test".to_string(),
             bake_time_secs: 0,
@@ -469,45 +410,23 @@ mod tier_map_tests {
     fn tier_map_round_trips_through_sidecar_and_loader_reports_dtype() {
         let tm = SidecarTierMap {
             entries: vec![
-                SidecarTierEntry {
-                    tensor: "blk.0.ffn_down.weight".into(),
-                    dtype: "q8_0".into(),
-                },
-                SidecarTierEntry {
-                    tensor: "blk.5.attn_q.weight".into(),
-                    dtype: "q6_K".into(),
-                },
-                SidecarTierEntry {
-                    tensor: "blk.5.attn_k.weight".into(),
-                    dtype: "q4_K".into(),
-                },
+                SidecarTierEntry { tensor: "blk.0.ffn_down.weight".into(), dtype: "q8_0".into() },
+                SidecarTierEntry { tensor: "blk.5.attn_q.weight".into(), dtype: "q6_K".into() },
+                SidecarTierEntry { tensor: "blk.5.attn_k.weight".into(), dtype: "q4_K".into() },
             ],
         };
         // Pre-write resolver sanity + validation.
         assert!(tm.validate().is_ok());
-        assert_eq!(
-            tm.dtype_for("blk.0.ffn_down.weight").unwrap(),
-            Some(GgmlType::Q8_0)
-        );
-        assert_eq!(
-            tm.dtype_for("blk.5.attn_q.weight").unwrap(),
-            Some(GgmlType::Q6_K)
-        );
-        assert_eq!(
-            tm.dtype_for("blk.5.attn_k.weight").unwrap(),
-            Some(GgmlType::Q4_K)
-        );
+        assert_eq!(tm.dtype_for("blk.0.ffn_down.weight").unwrap(), Some(GgmlType::Q8_0));
+        assert_eq!(tm.dtype_for("blk.5.attn_q.weight").unwrap(), Some(GgmlType::Q6_K));
+        assert_eq!(tm.dtype_for("blk.5.attn_k.weight").unwrap(), Some(GgmlType::Q4_K));
         // Absent tensor falls through.
         assert_eq!(tm.dtype_for("blk.9.ffn_up.weight").unwrap(), None);
 
         // Write a sidecar carrying the tier map (predec_entries empty is fine).
         let dir = tempfile::tempdir().expect("tempdir");
         let path = dir.path().join("model.hawking");
-        let writer = SidecarWriter {
-            path: path.clone(),
-            predec_entries: Vec::new(),
-            header: header_with_tier_map(tm.clone()),
-        };
+        let writer = SidecarWriter { path: path.clone(), predec_entries: Vec::new(), header: header_with_tier_map(tm.clone()) };
         let n = writer.write().expect("write sidecar");
         assert!(n > 0);
 
@@ -515,35 +434,19 @@ mod tier_map_tests {
         // round-trip, then re-run the loader hook on the LOADED copy.
         let read_header = read_sidecar_header(&path).expect("read header");
         assert!(read_header.contents.mixed_quant_tier_map);
-        let loaded = read_header
-            .tier_map
-            .expect("tier_map present after round-trip");
+        let loaded = read_header.tier_map.expect("tier_map present after round-trip");
         assert_eq!(loaded, tm, "tier map not byte-identical after round-trip");
         assert!(loaded.validate().is_ok());
-        assert_eq!(
-            loaded.dtype_for("blk.0.ffn_down.weight").unwrap(),
-            Some(GgmlType::Q8_0)
-        );
-        assert_eq!(
-            loaded.dtype_for("blk.5.attn_q.weight").unwrap(),
-            Some(GgmlType::Q6_K)
-        );
-        assert_eq!(
-            loaded.dtype_for("blk.5.attn_k.weight").unwrap(),
-            Some(GgmlType::Q4_K)
-        );
+        assert_eq!(loaded.dtype_for("blk.0.ffn_down.weight").unwrap(), Some(GgmlType::Q8_0));
+        assert_eq!(loaded.dtype_for("blk.5.attn_q.weight").unwrap(), Some(GgmlType::Q6_K));
+        assert_eq!(loaded.dtype_for("blk.5.attn_k.weight").unwrap(), Some(GgmlType::Q4_K));
         assert_eq!(loaded.dtype_for("nope.weight").unwrap(), None);
     }
 
     /// Bad dtype string fails fast in the resolver and in validate().
     #[test]
     fn bad_dtype_string_is_rejected() {
-        let tm = SidecarTierMap {
-            entries: vec![SidecarTierEntry {
-                tensor: "blk.0.ffn_down.weight".into(),
-                dtype: "q3_K".into(),
-            }],
-        };
+        let tm = SidecarTierMap { entries: vec![SidecarTierEntry { tensor: "blk.0.ffn_down.weight".into(), dtype: "q3_K".into() }] };
         assert!(tm.dtype_for("blk.0.ffn_down.weight").is_err());
         assert!(tm.validate().is_err());
     }
@@ -588,16 +491,7 @@ mod tier_map_tests {
     #[test]
     fn duplicate_tensor_entry_rejected() {
         let tm = SidecarTierMap {
-            entries: vec![
-                SidecarTierEntry {
-                    tensor: "blk.0.attn_q.weight".into(),
-                    dtype: "q4_K".into(),
-                },
-                SidecarTierEntry {
-                    tensor: "blk.0.attn_q.weight".into(),
-                    dtype: "q8_0".into(),
-                },
-            ],
+            entries: vec![SidecarTierEntry { tensor: "blk.0.attn_q.weight".into(), dtype: "q4_K".into() }, SidecarTierEntry { tensor: "blk.0.attn_q.weight".into(), dtype: "q8_0".into() }],
         };
         assert!(tm.validate().is_err());
     }

@@ -65,13 +65,15 @@ RSS ceiling 3 GB (the .npy logit dumps for a few-k-token corpus are << 1 GB).
 import argparse
 import json
 import os
+from pathlib import Path
 import sys
 import time
 
 import numpy as np
 
 # ----------------------------------------------------------------------------
-REPORT_JSON = "/Users/scammermike/Downloads/hawking/reports/oracle/small_draft_accept.json"
+ROOT = Path(__file__).resolve().parents[2]
+REPORT_JSON = str(ROOT / "reports/oracle/small_draft_accept.json")
 SEED = 0
 
 # Byte-ratio-grounded forward-cost ESTIMATES (draft cost in units of one 3B

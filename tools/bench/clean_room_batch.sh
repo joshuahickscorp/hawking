@@ -23,7 +23,7 @@
 #   2. Quit any agent CLI sessions        (incl. any MASTER_LOOP / loop).
 #   3. Quit slm and any other GPU/RAM-heavy process.
 #   4. Open a fresh Terminal.app window.
-#   5. cd /Users/scammermike/Downloads/hawking
+#   5. cd <hawking checkout>
 #   6. ./tools/bench/clean_room_batch.sh
 #   7. Read the three section verdicts printed at the end.
 #
@@ -64,7 +64,7 @@ ANCHOR_LOW="${ANCHOR_LOW:-31}"   # most-recent clean anchor (A1/A4, bible §3.0)
 GATES_ONLY=0
 [[ "${1:-}" == "--gates-only" ]] && GATES_ONLY=1
 
-# Locked Qwen fast-path (matches quick_bench.sh / measure_joules.sh / path_to_50).
+# Locked Qwen fast-path shared with the canonical paired and energy gates.
 export HAWKING_QWEN_TCB=1 \
        HAWKING_QWEN_VOCAB_PRUNE=32000 \
        HAWKING_QWEN_Q4K_LMHEAD=1 \

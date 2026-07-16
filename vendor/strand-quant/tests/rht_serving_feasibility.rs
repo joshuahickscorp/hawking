@@ -11,9 +11,7 @@
 // per-column GEMV identity (so dismantle can wire it correctly).
 use strand_quant::decode::decode_tensor_fixed;
 use strand_quant::encode::{encode_tensor_with, EncodeOpts};
-use strand_quant::rht::{
-    rht_forward, rht_forward_cols, rht_forward_rows, rht_inverse_cols, rht_inverse_rows, RhtConfig,
-};
+use strand_quant::rht::{rht_forward, rht_forward_cols, rht_forward_rows, rht_inverse_cols, rht_inverse_rows, RhtConfig};
 use strand_quant::TrellisConfig;
 
 // deterministic realistic-ish weight: small Gaussian-like bulk + sparse heavy tails (like a real
@@ -86,13 +84,7 @@ fn rht_per_column_serving_feasibility() {
         let rms_cols = rel_rms(&w, &recon_cols);
 
         let penalty = (rms_cols - rms_rows) / rms_rows * 100.0;
-        println!(
-            "  {name}: rel-RMS  none={:.3}%  per-row={:.3}%  per-COLUMN={:.3}%   col-vs-row penalty={:+.1}%",
-            rms_none * 100.0,
-            rms_rows * 100.0,
-            rms_cols * 100.0,
-            penalty
-        );
+        println!("  {name}: rel-RMS  none={:.3}%  per-row={:.3}%  per-COLUMN={:.3}%   col-vs-row penalty={:+.1}%", rms_none * 100.0, rms_rows * 100.0, rms_cols * 100.0, penalty);
 
         // --- per-column GEMV identity: y = decode(W_rht_col) · T(x), T(x)=rht_forward(x) ONCE ---
         let x = realistic_weight(1, in_f, 0xBEEF); // one activation row
@@ -103,22 +95,11 @@ fn rht_per_column_serving_feasibility() {
 
         let id_err = rel_rms(&y_recon_spatial, &y_strand); // orthogonal identity (should be ~0)
         let quant_err = rel_rms(&y_orig, &y_strand); // vs true output (quant cost)
-        println!(
-            "    GEMV identity (RHT-domain == spatial): rel-err {:.2e}   output-vs-true: {:.3}%   activation transforms/token: per-row={out_f}  per-COLUMN=1",
-            id_err,
-            quant_err * 100.0
-        );
+        println!("    GEMV identity (RHT-domain == spatial): rel-err {:.2e}   output-vs-true: {:.3}%   activation transforms/token: per-row={out_f}  per-COLUMN=1", id_err, quant_err * 100.0);
 
-        assert!(
-            id_err < 1e-3,
-            "{name}: per-column GEMV identity broke ({id_err:.2e})"
-        );
+        assert!(id_err < 1e-3, "{name}: per-column GEMV identity broke ({id_err:.2e})");
     }
 
-    println!(
-        "  verdict: if col-vs-row penalty is small (~<10%), per-column buys ~{out_f}x cheaper"
-    );
-    println!(
-        "           serving (1 vs {out_f} activation transforms/token) at ~the same quality.\n"
-    );
+    println!("  verdict: if col-vs-row penalty is small (~<10%), per-column buys ~{out_f}x cheaper");
+    println!("           serving (1 vs {out_f} activation transforms/token) at ~the same quality.\n");
 }

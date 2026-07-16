@@ -1,4 +1,3 @@
-
 use std::time::Instant;
 
 use strand_decode_kernel::block_walk::gate_proto::synth_encoded;
@@ -8,7 +7,6 @@ use strand_decode_kernel::interleave::{decode_q12_interleave, decode_q12_interle
 use strand_quant::TrellisConfig;
 
 fn bench<F: FnMut() -> Vec<i32>>(label: &str, total: usize, reps: usize, mut f: F) -> f64 {
-    
     let mut best = f64::INFINITY;
     for _ in 0..reps {
         let t = Instant::now();
@@ -46,25 +44,17 @@ fn run_point(name: &str, cfg: &TrellisConfig, total: usize) {
     let s6 = bench("interleave S=6", total, 3, || decode_q12_interleave::<6>(&enc, cfg));
     let s8 = bench("interleave S=8", total, 3, || decode_q12_interleave::<8>(&enc, cfg));
     let s16 = bench("interleave S=16", total, 3, || decode_q12_interleave::<16>(&enc, cfg));
-    let best_s = [(2, s2), (4, s4), (6, s6), (8, s8), (16, s16)]
-        .into_iter()
-        .max_by(|a, b| a.1.total_cmp(&b.1))
-        .unwrap();
+    let best_s = [(2, s2), (4, s4), (6, s6), (8, s8), (16, s16)].into_iter().max_by(|a, b| a.1.total_cmp(&b.1)).unwrap();
     println!("  single-core verdict: S={} = {:.2}x over baseline", best_s.0, best_s.1 / base);
 
     let parb = bench("rayon par (baseline)", total, 3, || decode_q12_par(&enc, cfg));
     let p4 = bench("interleave_par S=4", total, 3, || decode_q12_interleave_par::<4>(&enc, cfg));
     let p8 = bench("interleave_par S=8", total, 3, || decode_q12_interleave_par::<8>(&enc, cfg));
     let bestp = p4.max(p8);
-    println!(
-        "  all-core verdict: {:.2}x over rayon baseline ({:.2} Gw/s; bandwidth flip ≈ 156 Gw/s)",
-        bestp / parb,
-        bestp / 1e3
-    );
+    println!("  all-core verdict: {:.2}x over rayon baseline ({:.2} Gw/s; bandwidth flip ≈ 156 Gw/s)", bestp / parb, bestp / 1e3);
 }
 
 fn main() {
-    
     let total = 18944usize * 3584;
     println!("gate-interleave — G0: multi-stream scalar ILP decode");
     println!("(advisory if run during the marathon; definitive numbers re-run serially)");

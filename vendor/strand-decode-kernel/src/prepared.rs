@@ -1,4 +1,3 @@
-
 use crate::block_walk::{block_init_state, exceeds_max_sub, SideInfo, WordReader};
 use crate::gemv_par::decode_q12_par_with_lut;
 use crate::loader::StrandModel;
@@ -10,15 +9,14 @@ use strand_quant::encode::{n_sub_blocks, EncodedTensor, SUB_BLOCK};
 use strand_quant::TrellisConfig;
 
 pub struct PreparedBlocks {
-    
     out_off: Vec<usize>,
-    
+
     init_state: Vec<u32>,
-    
+
     sub_off: Vec<u32>,
-    
+
     eff: Vec<i32>,
-    
+
     off: Vec<i32>,
 }
 
@@ -42,14 +40,7 @@ impl PreparedBlocks {
         debug_assert_eq!(pn, enc.total);
 
         let bits: &[u8] = &enc.bits;
-        let init_state: Vec<u32> = enc
-            .blocks
-            .par_iter()
-            .enumerate()
-            .map(|(b, blk)| {
-                block_init_state(blk, bits, out_off[b] * k, cfg, enc.tail_biting) as u32
-            })
-            .collect();
+        let init_state: Vec<u32> = enc.blocks.par_iter().enumerate().map(|(b, blk)| block_init_state(blk, bits, out_off[b] * k, cfg, enc.tail_biting) as u32).collect();
 
         let total_sub = ps as usize;
         let mut eff = vec![0i32; total_sub];
@@ -69,11 +60,7 @@ impl PreparedBlocks {
     }
 
     pub fn bytes(&self) -> usize {
-        self.out_off.len() * std::mem::size_of::<usize>()
-            + self.init_state.len() * 4
-            + self.sub_off.len() * 4
-            + self.eff.len() * 4
-            + self.off.len() * 4
+        self.out_off.len() * std::mem::size_of::<usize>() + self.init_state.len() * 4 + self.sub_off.len() * 4 + self.eff.len() * 4 + self.off.len() * 4
     }
 
     #[inline(always)]
@@ -96,17 +83,12 @@ pub struct PreparedTensor {
 }
 
 impl PreparedTensor {
-    
     pub fn new(enc: EncodedTensor, cfg: TrellisConfig) -> Self {
         Self::with_lut(enc, cfg, None)
     }
 
     pub fn with_lut(enc: EncodedTensor, cfg: TrellisConfig, lut: Option<Vec<i32>>) -> Self {
-        let fast = if cfg.vec_dim() > 1 || exceeds_max_sub(&enc) {
-            None 
-        } else {
-            Some(PreparedBlocks::build(&enc, &cfg))
-        };
+        let fast = if cfg.vec_dim() > 1 || exceeds_max_sub(&enc) { None } else { Some(PreparedBlocks::build(&enc, &cfg)) };
         PreparedTensor { enc, cfg, lut, fast, shape: None }
     }
 
@@ -143,14 +125,7 @@ impl PreparedTensor {
     }
 
     pub fn resident_bytes(&self) -> usize {
-        let blocks_bytes: usize = self
-            .enc
-            .blocks
-            .iter()
-            .map(|b| {
-                std::mem::size_of_val(b) + b.sub_scales.capacity() + b.mins.capacity()
-            })
-            .sum();
+        let blocks_bytes: usize = self.enc.blocks.iter().map(|b| std::mem::size_of_val(b) + b.sub_scales.capacity() + b.mins.capacity()).sum();
         self.enc.bits.capacity() + blocks_bytes + self.prepared_bytes()
     }
 
@@ -172,21 +147,13 @@ pub struct PreparedModel {
 }
 
 impl PreparedModel {
-    
     pub fn from_model(model: &StrandModel) -> Result<Self, String> {
-        let names: Vec<String> =
-            model.tensor_names().map(|s| s.to_string()).collect();
+        let names: Vec<String> = model.tensor_names().map(|s| s.to_string()).collect();
         let mut tensors = Vec::with_capacity(names.len());
         for name in names {
-            let hdr = model
-                .tensor_header(&name)
-                .ok_or_else(|| format!("prepare: tensor {name:?} vanished"))?;
+            let hdr = model.tensor_header(&name).ok_or_else(|| format!("prepare: tensor {name:?} vanished"))?;
             let cfg = model.config_for(hdr);
-            let shape = if hdr.shape.len() >= 2 {
-                Some((hdr.shape[0] as usize, hdr.shape[1] as usize))
-            } else {
-                None
-            };
+            let shape = if hdr.shape.len() >= 2 { Some((hdr.shape[0] as usize, hdr.shape[1] as usize)) } else { None };
             let enc = model.encoded_tensor_checked(&name)?;
             let mut p = PreparedTensor::new(enc, cfg);
             if let Some((o, i)) = shape {
@@ -222,17 +189,13 @@ impl PreparedModel {
     }
 }
 
-pub fn decode_q12_par_prepared_counted(
-    p: &PreparedTensor,
-    counts: Option<&mut [u32]>,
-) -> Vec<i32> {
+pub fn decode_q12_par_prepared_counted(p: &PreparedTensor, counts: Option<&mut [u32]>) -> Vec<i32> {
     let Some(counts) = counts else {
         return decode_q12_par_prepared(p);
     };
 
     let lut = p.lut_resolved();
     let Some(fb) = &p.fast else {
-        
         let out = decode_q12_par_with_lut(&p.enc, &p.cfg, lut);
         for b in 0..p.enc.blocks.len().min(counts.len()) {
             counts[b] = counts[b].saturating_add(1);
@@ -251,7 +214,7 @@ pub fn decode_q12_par_prepared_counted(
     let has_affine = enc.has_affine_min;
 
     let mut out = vec![0i32; enc.total];
-    
+
     let mut slices: Vec<&mut [i32]> = Vec::with_capacity(fb.n_blocks());
     let mut rest: &mut [i32] = &mut out;
     for b in 0..fb.n_blocks() {
@@ -262,11 +225,8 @@ pub fn decode_q12_par_prepared_counted(
 
     let mut folded: Vec<i32> = Vec::new();
     for (b, dst) in slices.iter_mut().enumerate() {
-        replay_block(
-            &enc.bits, lut, fb, b, k, mask, input_mask, num_states, fold, has_affine,
-            &mut folded, dst,
-        );
-        
+        replay_block(&enc.bits, lut, fb, b, k, mask, input_mask, num_states, fold, has_affine, &mut folded, dst);
+
         if b < counts.len() {
             counts[b] = counts[b].saturating_add(1);
         }
@@ -291,7 +251,7 @@ pub fn decode_q12_par_prepared(p: &PreparedTensor) -> Vec<i32> {
     let has_affine = enc.has_affine_min;
 
     let mut out = vec![0i32; enc.total];
-    
+
     let mut slices: Vec<&mut [i32]> = Vec::with_capacity(fb.n_blocks());
     let mut rest: &mut [i32] = &mut out;
     for b in 0..fb.n_blocks() {
@@ -302,10 +262,7 @@ pub fn decode_q12_par_prepared(p: &PreparedTensor) -> Vec<i32> {
 
     slices.par_iter_mut().enumerate().for_each(|(b, dst)| {
         let mut folded: Vec<i32> = Vec::new();
-        replay_block(
-            &enc.bits, lut, fb, b, k, mask, input_mask, num_states, fold, has_affine,
-            &mut folded, dst,
-        );
+        replay_block(&enc.bits, lut, fb, b, k, mask, input_mask, num_states, fold, has_affine, &mut folded, dst);
     });
 
     out
@@ -351,7 +308,7 @@ fn replay_block(
             while i < end {
                 let sym = reader.pop(k) & input_mask;
                 state = ((state << k) | sym) & mask;
-                
+
                 let v = unsafe { *folded.get_unchecked(base + state) };
                 unsafe { *dst.get_unchecked_mut(i) = v + o };
                 i += 1;
@@ -361,14 +318,13 @@ fn replay_block(
         let lut_ptr = lut.as_ptr();
         let mut i = 0usize;
         for sb in s0..s1 {
-            
             let es = unsafe { *fb.eff.get_unchecked(sb) };
             let o = if has_affine { unsafe { *fb.off.get_unchecked(sb) } } else { 0 };
             let end = (i + SUB_BLOCK).min(n);
             while i < end {
                 let sym = reader.pop(k) & input_mask;
                 state = ((state << k) | sym) & mask;
-                
+
                 let q = unsafe { *lut_ptr.add(state) };
                 unsafe { *dst.get_unchecked_mut(i) = reconstruct_q(es, q) + o };
                 i += 1;
@@ -404,18 +360,10 @@ pub fn decode_q12_prepared_paired_par(p: &PreparedTensor, table: &PairTable) -> 
 }
 
 fn compose_fast_route<'a>(p: &'a PreparedTensor, table: &PairTable) -> Option<&'a PreparedBlocks> {
-    assert_eq!(
-        (table.l_bits, table.k_bits),
-        (p.cfg.l_bits, p.cfg.k_bits),
-        "pair table / prepared tensor config mismatch"
-    );
-    
+    assert_eq!((table.l_bits, table.k_bits), (p.cfg.l_bits, p.cfg.k_bits), "pair table / prepared tensor config mismatch");
+
     let fb = p.fast.as_ref()?;
-    assert_eq!(
-        table.lut_slice(),
-        p.lut_resolved(),
-        "pair table built from a different LUT than the prepared tensor resolves"
-    );
+    assert_eq!(table.lut_slice(), p.lut_resolved(), "pair table built from a different LUT than the prepared tensor resolves");
     Some(fb)
 }
 
@@ -437,24 +385,14 @@ fn split_block_slices<'a>(fb: &PreparedBlocks, out: &'a mut [i32]) -> Vec<&'a mu
 
 #[allow(unsafe_code, clippy::too_many_arguments)]
 #[inline]
-fn replay_block_paired(
-    bits: &[u8],
-    table: &PairTable,
-    fb: &PreparedBlocks,
-    b: usize,
-    k: u32,
-    mask: usize,
-    input_mask: usize,
-    has_affine: bool,
-    dst: &mut [i32],
-) {
+fn replay_block_paired(bits: &[u8], table: &PairTable, fb: &PreparedBlocks, b: usize, k: u32, mask: usize, input_mask: usize, has_affine: bool, dst: &mut [i32]) {
     let k2 = 2 * k;
     let idx_mask = table.index_mask();
     let n = fb.block_n(b);
     let start_bit = fb.out_off[b] * (k as usize);
     let s0 = fb.sub_off[b] as usize;
     let s1 = fb.sub_off[b + 1] as usize;
-    
+
     let mut state = fb.init_state[b] as usize;
     let mut reader = WordReader::new(bits, start_bit);
 
@@ -468,7 +406,7 @@ fn replay_block_paired(
             let raw = reader.pop(k2);
             let sp = ((raw & input_mask) << k) | (raw >> k);
             let t = (state << k2) | sp;
-            
+
             let e = unsafe { *entries.add(t & idx_mask) };
             state = t & mask;
             unsafe {
@@ -481,12 +419,10 @@ fn replay_block_paired(
     let k = k as usize;
     let mut i = 0usize;
     for sb in s0..s1 {
-        
         let es = unsafe { *eff_ptr.add(sb) };
         let o = if has_affine { unsafe { *off_ptr.add(sb) } } else { 0 };
         let end = (i + SUB_BLOCK).min(n);
         if end - i == SUB_BLOCK {
-            
             for _ in 0..SUB_BLOCK / 2 {
                 pair_step!(i, es, o);
                 i += 2;
@@ -497,10 +433,9 @@ fn replay_block_paired(
                 i += 2;
             }
             if i < end {
-                
                 let sym = reader.pop(k as u32) & input_mask;
                 state = ((state << k) | sym) & mask;
-                
+
                 let q = unsafe { *lut_ptr.add(state) };
                 unsafe { *dst.get_unchecked_mut(i) = reconstruct_q(es, q) + o };
                 i += 1;
@@ -509,57 +444,26 @@ fn replay_block_paired(
     }
 }
 
-pub fn fused_gemm_prepared(
-    p: &PreparedTensor,
-    out_features: usize,
-    in_features: usize,
-    xs: &[f32],
-    batch: usize,
-) -> Vec<f32> {
+pub fn fused_gemm_prepared(p: &PreparedTensor, out_features: usize, in_features: usize, xs: &[f32], batch: usize) -> Vec<f32> {
     fused_prepared_impl(p, out_features, in_features, xs, batch, false).0
 }
 
-pub fn fused_gemm_prepared_with_q12(
-    p: &PreparedTensor,
-    out_features: usize,
-    in_features: usize,
-    xs: &[f32],
-    batch: usize,
-) -> (Vec<f32>, Vec<i32>) {
+pub fn fused_gemm_prepared_with_q12(p: &PreparedTensor, out_features: usize, in_features: usize, xs: &[f32], batch: usize) -> (Vec<f32>, Vec<i32>) {
     let (y, q) = fused_prepared_impl(p, out_features, in_features, xs, batch, true);
     (y, q.expect("debug path materializes q12"))
 }
 
-fn fused_prepared_impl(
-    p: &PreparedTensor,
-    out_features: usize,
-    in_features: usize,
-    xs: &[f32],
-    batch: usize,
-    want_q12: bool,
-) -> (Vec<f32>, Option<Vec<i32>>) {
+fn fused_prepared_impl(p: &PreparedTensor, out_features: usize, in_features: usize, xs: &[f32], batch: usize, want_q12: bool) -> (Vec<f32>, Option<Vec<i32>>) {
     assert!(batch >= 1, "batch must be >= 1");
     assert_eq!(xs.len(), batch * in_features, "xs must be batch x in_features");
-    assert_eq!(
-        p.enc.total,
-        out_features * in_features,
-        "encoded weight count != out_features * in_features"
-    );
+    assert_eq!(p.enc.total, out_features * in_features, "encoded weight count != out_features * in_features");
 
     let Some(fb) = &p.fast else {
-        
         return if want_q12 {
-            let (y, q) = crate::fused::fused_gemm_with_q12(
-                &p.enc, &p.cfg, p.lut.as_deref(), out_features, in_features, xs, batch,
-            );
+            let (y, q) = crate::fused::fused_gemm_with_q12(&p.enc, &p.cfg, p.lut.as_deref(), out_features, in_features, xs, batch);
             (y, Some(q))
         } else {
-            (
-                crate::fused::fused_gemm(
-                    &p.enc, &p.cfg, p.lut.as_deref(), out_features, in_features, xs, batch,
-                ),
-                None,
-            )
+            (crate::fused::fused_gemm(&p.enc, &p.cfg, p.lut.as_deref(), out_features, in_features, xs, batch), None)
         };
     };
 
@@ -581,13 +485,10 @@ fn fused_prepared_impl(
 
     match q12.as_mut() {
         Some(q) => {
-            y.par_chunks_mut(rows_per_group * batch)
-                .zip(q.par_chunks_mut(rows_per_group * in_features))
-                .enumerate()
-                .for_each(|(gi, (yg, qg))| {
-                    let r0 = gi * rows_per_group;
-                    prep_group(p, fb, lut, in_features, batch, &xt, r0, yg, Some(qg));
-                });
+            y.par_chunks_mut(rows_per_group * batch).zip(q.par_chunks_mut(rows_per_group * in_features)).enumerate().for_each(|(gi, (yg, qg))| {
+                let r0 = gi * rows_per_group;
+                prep_group(p, fb, lut, in_features, batch, &xt, r0, yg, Some(qg));
+            });
         }
         None => {
             y.par_chunks_mut(rows_per_group * batch).enumerate().for_each(|(gi, yg)| {
@@ -601,17 +502,7 @@ fn fused_prepared_impl(
 }
 
 #[allow(clippy::too_many_arguments)]
-fn prep_group(
-    p: &PreparedTensor,
-    fb: &PreparedBlocks,
-    lut: &[i32],
-    in_features: usize,
-    batch: usize,
-    xt: &[f32],
-    r0: usize,
-    yg: &mut [f32],
-    mut qg: Option<&mut [i32]>,
-) {
+fn prep_group(p: &PreparedTensor, fb: &PreparedBlocks, lut: &[i32], in_features: usize, batch: usize, xt: &[f32], r0: usize, yg: &mut [f32], mut qg: Option<&mut [i32]>) {
     let mut b_off = 0usize;
     while b_off < batch {
         let rem = batch - b_off;
@@ -649,7 +540,6 @@ fn prep_chunk<const B: usize, const NV: usize>(
 ) {
     #[cfg(target_arch = "aarch64")]
     unsafe {
-        
         prep_rows_neon::<B, NV>(p, fb, lut, in_features, batch, b_off, xt, r0, yg, q12);
     }
     #[cfg(not(target_arch = "aarch64"))]
@@ -657,18 +547,7 @@ fn prep_chunk<const B: usize, const NV: usize>(
 }
 
 #[allow(unsafe_code, clippy::too_many_arguments)]
-fn prep_rows<const B: usize>(
-    p: &PreparedTensor,
-    fb: &PreparedBlocks,
-    lut: &[i32],
-    in_features: usize,
-    batch: usize,
-    b_off: usize,
-    xt: &[f32],
-    r0: usize,
-    yg: &mut [f32],
-    mut q12: Option<&mut [i32]>,
-) {
+fn prep_rows<const B: usize>(p: &PreparedTensor, fb: &PreparedBlocks, lut: &[i32], in_features: usize, batch: usize, b_off: usize, xt: &[f32], r0: usize, yg: &mut [f32], mut q12: Option<&mut [i32]>) {
     let cfg = &p.cfg;
     let enc = &p.enc;
     let mask = cfg.state_mask();
@@ -738,12 +617,8 @@ fn prep_rows<const B: usize>(
                 if g >= g1 {
                     break 'blocks;
                 }
-                
-                let q = if fold {
-                    (unsafe { *folded.get_unchecked(base + state) }) + o
-                } else {
-                    reconstruct_q(es, unsafe { *lut_ptr.add(state) }) + o
-                };
+
+                let q = if fold { (unsafe { *folded.get_unchecked(base + state) }) + o } else { reconstruct_q(es, unsafe { *lut_ptr.add(state) }) + o };
                 if let Some(qd) = q12.as_deref_mut() {
                     qd[g - g0] = q;
                 }
@@ -855,12 +730,8 @@ unsafe fn prep_rows_neon<const B: usize, const NV: usize>(
                 if g >= g1 {
                     break 'blocks;
                 }
-                
-                let q = if fold {
-                    (*folded.get_unchecked(base + state)) + o
-                } else {
-                    reconstruct_q(es, *lut_ptr.add(state)) + o
-                };
+
+                let q = if fold { (*folded.get_unchecked(base + state)) + o } else { reconstruct_q(es, *lut_ptr.add(state)) + o };
                 if let Some(qd) = q12.as_deref_mut() {
                     qd[g - g0] = q;
                 }
@@ -915,24 +786,18 @@ mod tests {
             TrellisConfig::for_bpw(2.0),
             TrellisConfig::for_bpw(4.0),
             TrellisConfig::for_bpw_l(2.0, 12),
-            TrellisConfig::for_bpw_l(2.0, 5), 
-            TrellisConfig::for_bpw_l(3.0, 5), 
+            TrellisConfig::for_bpw_l(2.0, 5),
+            TrellisConfig::for_bpw_l(3.0, 5),
         ];
         for cfg in &configs {
             for seed in 0..48u64 {
                 let n = 1 + (seed as usize * 97) % 4096;
-                let w: Vec<f32> = (0..n)
-                    .map(|i| ((i as f32 + seed as f32) * 0.0137).sin() * 0.5)
-                    .collect();
+                let w: Vec<f32> = (0..n).map(|i| ((i as f32 + seed as f32) * 0.0137).sin() * 0.5).collect();
                 let variants = [
                     encode_tensor(&w, cfg),
                     encode_tensor_with(&w, cfg, &EncodeOpts { tail_biting: true, ..Default::default() }),
                     encode_tensor_with(&w, cfg, &EncodeOpts { affine_min: true, ..Default::default() }),
-                    encode_tensor_with(
-                        &w,
-                        cfg,
-                        &EncodeOpts { tail_biting: true, affine_min: true, ..Default::default() },
-                    ),
+                    encode_tensor_with(&w, cfg, &EncodeOpts { tail_biting: true, affine_min: true, ..Default::default() }),
                 ];
                 for enc in &variants {
                     let refr = decode_tensor_fixed(enc, cfg);
@@ -942,7 +807,12 @@ mod tests {
                         decode_q12_par_prepared(&p),
                         refr,
                         "PREPARED decode diverged: L={} k={} n={} seed={} tail={} affine={}",
-                        cfg.l_bits, cfg.k_bits, n, seed, enc.tail_biting, enc.has_affine_min
+                        cfg.l_bits,
+                        cfg.k_bits,
+                        n,
+                        seed,
+                        enc.tail_biting,
+                        enc.has_affine_min
                     );
                 }
             }
@@ -951,19 +821,12 @@ mod tests {
 
     #[test]
     fn prepared_fused_bit_equals_fused_gemm() {
-        let configs = [
-            TrellisConfig::for_bpw(3.0),
-            TrellisConfig::for_bpw_l(2.0, 12),
-            TrellisConfig::for_bpw_l(2.0, 5), 
-        ];
+        let configs = [TrellisConfig::for_bpw(3.0), TrellisConfig::for_bpw_l(2.0, 12), TrellisConfig::for_bpw_l(2.0, 5)];
         for cfg in &configs {
             for &(rows, cols) in &[(16usize, 256usize), (37, 300), (9, 1024)] {
                 let n = rows * cols;
                 let w: Vec<f32> = (0..n).map(|i| ((i as f32) * 0.0113).sin() * 0.6).collect();
-                for opts in [
-                    EncodeOpts::default(),
-                    EncodeOpts { tail_biting: true, affine_min: true, ..Default::default() },
-                ] {
+                for opts in [EncodeOpts::default(), EncodeOpts { tail_biting: true, affine_min: true, ..Default::default() }] {
                     let enc = encode_tensor_with(&w, cfg, &opts);
                     let p = PreparedTensor::new(enc.clone(), cfg.clone());
                     for &batch in &[1usize, 3, 4, 5, 16, 21, 64, 65] {
@@ -980,21 +843,17 @@ mod tests {
                                 b.to_bits(),
                                 "prepared fused diverged at flat index {i}: L={} k={} \
                                  rows={rows} cols={cols} batch={batch} tail={} affine={}",
-                                cfg.l_bits, cfg.k_bits, enc.tail_biting, enc.has_affine_min
+                                cfg.l_bits,
+                                cfg.k_bits,
+                                enc.tail_biting,
+                                enc.has_affine_min
                             );
                         }
                     }
                     for &batch in &[1usize, 4] {
-                        let xs: Vec<f32> =
-                            (0..batch * cols).map(|i| ((i as f32) * 0.031).cos()).collect();
+                        let xs: Vec<f32> = (0..batch * cols).map(|i| ((i as f32) * 0.031).cos()).collect();
                         let (_y, q12) = fused_gemm_prepared_with_q12(&p, rows, cols, &xs, batch);
-                        assert_eq!(
-                            q12,
-                            decode_q12_par(&enc, cfg),
-                            "prepared hidden Q12 diverged: L={} k={} batch={batch}",
-                            cfg.l_bits,
-                            cfg.k_bits
-                        );
+                        assert_eq!(q12, decode_q12_par(&enc, cfg), "prepared hidden Q12 diverged: L={} k={} batch={batch}", cfg.l_bits, cfg.k_bits);
                         let y_dbg = fused_gemm_prepared_with_q12(&p, rows, cols, &xs, batch).0;
                         let y_plain = fused_gemm_prepared(&p, rows, cols, &xs, batch);
                         for (a, b) in y_dbg.iter().zip(y_plain.iter()) {
@@ -1009,44 +868,31 @@ mod tests {
     #[test]
     fn prepared_paired_is_bit_identical() {
         let configs = [
-            TrellisConfig::for_bpw(3.0),       
+            TrellisConfig::for_bpw(3.0),
             TrellisConfig::for_bpw(2.0),
             TrellisConfig::for_bpw(4.0),
-            TrellisConfig::for_bpw_l(2.0, 12), 
-            TrellisConfig::for_bpw_l(2.0, 5),  
-            TrellisConfig::for_bpw_l(3.0, 5),  
+            TrellisConfig::for_bpw_l(2.0, 12),
+            TrellisConfig::for_bpw_l(2.0, 5),
+            TrellisConfig::for_bpw_l(3.0, 5),
         ];
         for cfg in &configs {
             let table = PairTable::build(cfg);
             for seed in 0..32u64 {
-                let n = 1 + (seed as usize * 131) % 4096; 
-                let w: Vec<f32> = (0..n)
-                    .map(|i| ((i as f32 + seed as f32) * 0.0137).sin() * 0.5)
-                    .collect();
+                let n = 1 + (seed as usize * 131) % 4096;
+                let w: Vec<f32> = (0..n).map(|i| ((i as f32 + seed as f32) * 0.0137).sin() * 0.5).collect();
                 let variants = [
                     encode_tensor(&w, cfg),
                     encode_tensor_with(&w, cfg, &EncodeOpts { tail_biting: true, ..Default::default() }),
                     encode_tensor_with(&w, cfg, &EncodeOpts { affine_min: true, ..Default::default() }),
-                    encode_tensor_with(
-                        &w,
-                        cfg,
-                        &EncodeOpts { tail_biting: true, affine_min: true, ..Default::default() },
-                    ),
+                    encode_tensor_with(&w, cfg, &EncodeOpts { tail_biting: true, affine_min: true, ..Default::default() }),
                 ];
                 for enc in &variants {
                     let refr = decode_tensor_fixed(enc, cfg);
                     let p = PreparedTensor::new(enc.clone(), cfg.clone());
                     assert!(p.is_fast_path());
-                    let ctx = format!(
-                        "L={} k={} n={} seed={} tail={} affine={}",
-                        cfg.l_bits, cfg.k_bits, n, seed, enc.tail_biting, enc.has_affine_min
-                    );
+                    let ctx = format!("L={} k={} n={} seed={} tail={} affine={}", cfg.l_bits, cfg.k_bits, n, seed, enc.tail_biting, enc.has_affine_min);
                     assert_eq!(decode_q12_prepared_paired(&p, &table), refr, "compose: {ctx}");
-                    assert_eq!(
-                        decode_q12_prepared_paired_par(&p, &table),
-                        refr,
-                        "compose-par: {ctx}"
-                    );
+                    assert_eq!(decode_q12_prepared_paired_par(&p, &table), refr, "compose-par: {ctx}");
                 }
             }
         }
@@ -1058,28 +904,20 @@ mod tests {
 
         let vcfg = TrellisConfig::for_bpw(3.0).with_vec_dim(2);
         let (ns, d) = (vcfg.num_states(), vcfg.vec_dim());
-        let vlut: Vec<i32> = (0..ns * d)
-            .map(|i| ((i as u32).wrapping_mul(2654435761) >> 20) as i32 - 2048)
-            .collect();
+        let vlut: Vec<i32> = (0..ns * d).map(|i| ((i as u32).wrapping_mul(2654435761) >> 20) as i32 - 2048).collect();
         let w: Vec<f32> = (0..700).map(|i| ((i as f32) * 0.011).cos() * 0.3).collect();
         let enc = encode_tensor(&w, &vcfg);
         let want = decode_tensor_fixed_with_lut(&enc, &vcfg, &vlut);
         let p = PreparedTensor::with_lut(enc, vcfg.clone(), Some(vlut));
         assert!(!p.is_fast_path());
-        
+
         let scalar_table = PairTable::build(&TrellisConfig::for_bpw(3.0));
         assert_eq!(decode_q12_prepared_paired(&p, &scalar_table), want, "compose vec fallback");
-        assert_eq!(
-            decode_q12_prepared_paired_par(&p, &scalar_table),
-            want,
-            "compose-par vec fallback"
-        );
+        assert_eq!(decode_q12_prepared_paired_par(&p, &scalar_table), want, "compose-par vec fallback");
 
         let cfg = TrellisConfig::for_bpw(3.0);
         let ns = cfg.num_states();
-        let lut: Vec<i32> = (0..ns)
-            .map(|i| ((i as u32).wrapping_mul(2654435761) >> 18) as i32 - 8192)
-            .collect();
+        let lut: Vec<i32> = (0..ns).map(|i| ((i as u32).wrapping_mul(2654435761) >> 18) as i32 - 8192).collect();
         let w: Vec<f32> = (0..3001).map(|i| ((i as f32) * 0.017).cos() * 0.4).collect();
         let enc = encode_tensor(&w, &cfg);
         let want = decode_tensor_fixed_with_lut(&enc, &cfg, &lut);
@@ -1108,9 +946,7 @@ mod tests {
 
         let cfg = TrellisConfig::for_bpw(3.0).with_vec_dim(2);
         let (ns, d) = (cfg.num_states(), cfg.vec_dim());
-        let lut: Vec<i32> = (0..ns * d)
-            .map(|i| ((i as u32).wrapping_mul(2654435761) >> 20) as i32 - 2048)
-            .collect();
+        let lut: Vec<i32> = (0..ns * d).map(|i| ((i as u32).wrapping_mul(2654435761) >> 20) as i32 - 2048).collect();
         let w: Vec<f32> = (0..700).map(|i| ((i as f32) * 0.011).cos() * 0.3).collect();
         let enc = encode_tensor(&w, &cfg);
         let want = decode_tensor_fixed_with_lut(&enc, &cfg, &lut);
@@ -1129,30 +965,15 @@ mod tests {
         let n = (rows * cols) as usize;
         let weights: Vec<f32> = (0..n).map(|i| (i as f32 * 0.013).sin() * 0.7).collect();
         let cfg = TrellisConfig::for_bpw(3.0);
-        let enc = encode_tensor_with(
-            &weights,
-            &cfg,
-            &EncodeOpts { tail_biting: true, ..Default::default() },
-        );
+        let enc = encode_tensor_with(&weights, &cfg, &EncodeOpts { tail_biting: true, ..Default::default() });
         let shape = [rows, cols];
         let pt = PackedTensorV2 {
-            base: PackedTensor {
-                name: "w",
-                shape: &shape,
-                rht_seed: 0,
-                l_bits: cfg.l_bits as u8,
-                k_bits: cfg.k_bits as u8,
-                vec_dim: cfg.vec_dim() as u8,
-                enc: &enc,
-            },
+            base: PackedTensor { name: "w", shape: &shape, rht_seed: 0, l_bits: cfg.l_bits as u8, k_bits: cfg.k_bits as u8, vec_dim: cfg.vec_dim() as u8, enc: &enc },
             block_len: cfg.block_len as u32,
         };
         let buf = write_strand_v2(&[pt], [0u8; 32], true).expect("write_strand_v2");
         let mut path = std::env::temp_dir();
-        let uniq = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .map(|d| d.as_nanos())
-            .unwrap_or(0);
+        let uniq = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_nanos()).unwrap_or(0);
         path.push(format!("strand_prepared_{}_{uniq}.strand", std::process::id()));
         std::fs::File::create(&path).unwrap().write_all(&buf).unwrap();
 
@@ -1182,18 +1003,17 @@ mod tests {
     #[test]
     fn prepared_bytes_match_documented_bill() {
         let cfg = TrellisConfig::for_bpw(3.0);
-        let n = 256 * 64; 
+        let n = 256 * 64;
         let w: Vec<f32> = (0..n).map(|i| ((i as f32) * 0.0017).sin() * 0.5).collect();
 
         let enc = encode_tensor(&w, &cfg);
         let p = PreparedTensor::new(enc, cfg.clone());
-        
+
         let expect = 65 * 8 + 64 * 4 + 65 * 4 + 64 * 8 * 4;
         assert_eq!(p.prepared_bytes(), expect);
         assert!((p.prepared_bytes_per_weight() - expect as f64 / n as f64).abs() < 1e-12);
 
-        let enc_a =
-            encode_tensor_with(&w, &cfg, &EncodeOpts { affine_min: true, ..Default::default() });
+        let enc_a = encode_tensor_with(&w, &cfg, &EncodeOpts { affine_min: true, ..Default::default() });
         if enc_a.has_affine_min {
             let pa = PreparedTensor::new(enc_a, cfg);
             assert_eq!(pa.prepared_bytes(), expect + 64 * 8 * 4, "affine adds off[]");

@@ -7,7 +7,7 @@ set -euo pipefail
 cd "$(dirname "$0")"
 
 CLI=${1:-/tmp/strand-release-bin/strand}
-./setup-signing-keychain.sh >/dev/null 2>&1 || true
+./setup-signing-keychain.sh >/dev/null
 
 # Build can hit a transient timestamp-server flake; retry a few times.
 built=0

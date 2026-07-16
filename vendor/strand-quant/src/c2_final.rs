@@ -65,66 +65,8 @@
 
 #![allow(clippy::needless_range_loop)]
 
-// ===========================================================================
-// rANS core (self-contained, byte-renormalized, 32-bit state, single lane).
-// Byte-for-byte the construction in sideinfo_rans.rs / strand-container.
-// ===========================================================================
-
-const L: u32 = 1 << 23;
-const SCALE_BITS: u32 = 14;
-pub const SCALE_TOTAL: u32 = 1 << SCALE_BITS;
-const SCALE_MASK: u32 = SCALE_TOTAL - 1;
-
-#[inline]
-fn enc_put(x: &mut u32, out: &mut Vec<u8>, start: u32, freq: u32) {
-    debug_assert!(freq > 0, "cannot encode a zero-frequency symbol");
-    let x_max = (((L >> SCALE_BITS) << 8) as u64).wrapping_mul(freq as u64);
-    let mut s = *x;
-    while (s as u64) >= x_max {
-        out.push((s & 0xFF) as u8);
-        s >>= 8;
-    }
-    *x = ((s / freq) << SCALE_BITS)
-        .wrapping_add(s % freq)
-        .wrapping_add(start);
-}
-
-#[inline]
-fn dec_get(x: &mut u32, data: &[u8], pos: &mut usize, cum: &[u32]) -> usize {
-    let slot = *x & SCALE_MASK;
-    let symbol = cdf_find(cum, slot);
-    let start = cum[symbol];
-    let freq = cum[symbol + 1] - cum[symbol];
-
-    let mut s = freq
-        .wrapping_mul(*x >> SCALE_BITS)
-        .wrapping_add(slot)
-        .wrapping_sub(start);
-    while s < L {
-        let b = if *pos < data.len() { data[*pos] } else { 0 };
-        *pos += 1;
-        s = (s << 8) | b as u32;
-    }
-    *x = s;
-    symbol
-}
-
-/// Rightmost index with `cum[idx] <= value`. Integer-only; deterministic.
-#[inline]
-fn cdf_find(cum: &[u32], value: u32) -> usize {
-    debug_assert!(value < SCALE_TOTAL);
-    let mut lo = 0usize;
-    let mut hi = cum.len() - 1;
-    while lo + 1 < hi {
-        let mid = lo + (hi - lo) / 2;
-        if cum[mid] <= value {
-            lo = mid;
-        } else {
-            hi = mid;
-        }
-    }
-    lo
-}
+use crate::sideinfo_rans::{dec_get, enc_put, normalize_to_cum, write_varint, L};
+pub use crate::sideinfo_rans::{unzigzag, zigzag, SCALE_TOTAL};
 
 // ===========================================================================
 // Bit I/O for raw mantissa bits (LSB-first; same convention as outlier_wire.rs).
@@ -151,42 +93,10 @@ fn read_bits_u64(bytes: &[u8], start_bit: usize, nbits: u32) -> u64 {
         let bit_idx = start_bit + i;
         let byte_idx = bit_idx >> 3;
         let in_byte = bit_idx & 7;
-        let bit = if byte_idx < bytes.len() {
-            ((bytes[byte_idx] >> in_byte) & 1) as u64
-        } else {
-            0
-        };
+        let bit = if byte_idx < bytes.len() { ((bytes[byte_idx] >> in_byte) & 1) as u64 } else { 0 };
         acc |= bit << i;
     }
     acc
-}
-
-// ===========================================================================
-// zig-zag + varint.
-// ===========================================================================
-
-#[inline]
-pub fn zigzag(v: i64) -> u64 {
-    ((v << 1) ^ (v >> 63)) as u64
-}
-
-#[inline]
-pub fn unzigzag(z: u64) -> i64 {
-    ((z >> 1) as i64) ^ -((z & 1) as i64)
-}
-
-fn write_varint(out: &mut Vec<u8>, mut v: u64) {
-    loop {
-        let mut byte = (v & 0x7F) as u8;
-        v >>= 7;
-        if v != 0 {
-            byte |= 0x80;
-        }
-        out.push(byte);
-        if v == 0 {
-            break;
-        }
-    }
 }
 
 fn read_varint(data: &[u8], pos: &mut usize) -> Result<u64, String> {
@@ -224,86 +134,6 @@ fn read_u16(data: &[u8], pos: &mut usize) -> Result<u16, String> {
     let s = data.get(*pos..end).ok_or("c2f: u16 truncated")?;
     *pos = end;
     Ok(u16::from_le_bytes(s.try_into().unwrap()))
-}
-
-// ===========================================================================
-// Shared CDF normalizer (byte-exact mirror of sideinfo_rans / strand_core::cdf).
-// ===========================================================================
-
-fn normalize_to_cum(counts: &[u64]) -> Vec<u32> {
-    let n = counts.len();
-    debug_assert!(n >= 1);
-    let total_raw: u64 = counts.iter().sum();
-    let total = SCALE_TOTAL as u64;
-    let mut freqs = vec![0u32; n];
-    if total_raw == 0 {
-        distribute_uniform(&mut freqs);
-    } else {
-        let mut allocated: u64 = 0;
-        for (i, &c) in counts.iter().enumerate() {
-            if c == 0 {
-                freqs[i] = 0;
-                continue;
-            }
-            let mut f = c * total / total_raw;
-            if f == 0 {
-                f = 1;
-            }
-            freqs[i] = f as u32;
-            allocated += f;
-        }
-        if allocated < total {
-            let need = (total - allocated) as u32;
-            let idx = argmax(&freqs);
-            freqs[idx] = freqs[idx].wrapping_add(need);
-        } else if allocated > total {
-            let mut excess = allocated - total;
-            while excess > 0 {
-                let idx = argmax(&freqs);
-                let take = excess.min(freqs[idx].saturating_sub(1) as u64);
-                if take == 0 {
-                    distribute_uniform(&mut freqs);
-                    break;
-                }
-                freqs[idx] -= take as u32;
-                excess -= take;
-            }
-        }
-    }
-    let mut cum = Vec::with_capacity(n + 1);
-    let mut acc = 0u32;
-    cum.push(0);
-    for &f in &freqs {
-        acc += f;
-        cum.push(acc);
-    }
-    debug_assert_eq!(*cum.last().unwrap(), SCALE_TOTAL);
-    cum
-}
-
-fn distribute_uniform(freqs: &mut [u32]) {
-    let n = freqs.len() as u32;
-    let base = SCALE_TOTAL / n;
-    let mut rem = SCALE_TOTAL - base * n;
-    for f in freqs.iter_mut() {
-        *f = base;
-        if rem > 0 {
-            *f += 1;
-            rem -= 1;
-        }
-    }
-}
-
-fn argmax(freqs: &[u32]) -> usize {
-    let mut best = 0usize;
-    let mut best_v = 0u32;
-    for (i, &f) in freqs.iter().enumerate() {
-        if f > best_v {
-            best_v = f;
-            best = i;
-        }
-    }
-    best
 }
 
 // ===========================================================================
@@ -694,11 +524,7 @@ fn decode_cdf(data: &[u8], pos: &mut usize) -> Result<Vec<i64>, String> {
     let mut out = Vec::with_capacity(n);
     for _ in 0..n {
         let slot = dec_get(&mut x, payload, &mut rpos, &model.cum);
-        let raw = if slot == esc_idx {
-            unzigzag(read_varint(esc_blob, &mut esc_pos)?)
-        } else {
-            unzigzag(model.symbols[slot])
-        };
+        let raw = if slot == esc_idx { unzigzag(read_varint(esc_blob, &mut esc_pos)?) } else { unzigzag(model.symbols[slot]) };
         out.push(raw);
     }
     Ok(out)
@@ -854,10 +680,7 @@ pub fn decode_scale_q(data: &[u8], pos: &mut usize) -> Result<Vec<i32>, String> 
     *pos += 1;
     let stream = decode_stream(data, pos)?;
     match tag {
-        SQ_RAW => stream
-            .iter()
-            .map(|&v| i32::try_from(v).map_err(|_| "c2f: scale_q out of i32 range".to_string()))
-            .collect(),
+        SQ_RAW => stream.iter().map(|&v| i32::try_from(v).map_err(|_| "c2f: scale_q out of i32 range".to_string())).collect(),
         SQ_DELTA => deltas_to_scale_q(&stream),
         other => Err(format!("c2f: unknown scale_q transform tag {other}")),
     }
@@ -898,15 +721,7 @@ pub fn encode_sub_scales(codes: &[u8]) -> Vec<u8> {
 /// Decode a `sub_scale` section back to 6-bit codes (validated `< 64`).
 pub fn decode_sub_scales(data: &[u8], pos: &mut usize) -> Result<Vec<u8>, String> {
     let raw = decode_stream(data, pos)?;
-    raw.iter()
-        .map(|&v| {
-            if (0..64).contains(&v) {
-                Ok(v as u8)
-            } else {
-                Err(format!("c2f: sub_scale code {v} out of 6-bit range"))
-            }
-        })
-        .collect()
+    raw.iter().map(|&v| if (0..64).contains(&v) { Ok(v as u8) } else { Err(format!("c2f: sub_scale code {v} out of 6-bit range")) }).collect()
 }
 
 // ===========================================================================
@@ -1038,9 +853,7 @@ mod tests {
 
     #[test]
     fn negative_and_large_values() {
-        round_trip_raw(&[
-            i32::MIN as i64, i32::MAX as i64, 0, -1, 1, -1_000_000, 1_000_000, i64::MAX, i64::MIN,
-        ]);
+        round_trip_raw(&[i32::MIN as i64, i32::MAX as i64, 0, -1, 1, -1_000_000, 1_000_000, i64::MAX, i64::MIN]);
     }
 
     #[test]
@@ -1048,10 +861,7 @@ mod tests {
         // Drive each encoder directly (bypassing the size-picker) so BOTH decode
         // paths are exercised on the same data regardless of which one wins.
         let raw: Vec<i64> = (0..3000).map(|i| ((i * 31) % 800) as i64 - 400).collect();
-        for enc in [
-            encode_cdf(&raw, &CdfModel::from_stream(&raw)),
-            encode_bucket(&raw, &BucketModel::from_stream(&raw)),
-        ] {
+        for enc in [encode_cdf(&raw, &CdfModel::from_stream(&raw)), encode_bucket(&raw, &BucketModel::from_stream(&raw))] {
             let mut pos = 0usize;
             assert_eq!(decode_stream(&enc, &mut pos).unwrap(), raw);
             assert_eq!(pos, enc.len());
@@ -1061,8 +871,7 @@ mod tests {
     #[test]
     fn many_distinct_symbols_force_escape() {
         let mut s = 0xDEAD_BEEFu64;
-        let raw: Vec<i64> =
-            (0..40_000).map(|_| (splitmix64(&mut s) % 20_000) as i64 - 10_000).collect();
+        let raw: Vec<i64> = (0..40_000).map(|_| (splitmix64(&mut s) % 20_000) as i64 - 10_000).collect();
         let distinct: std::collections::HashSet<i64> = raw.iter().cloned().collect();
         assert!(distinct.len() > MAX_MODEL_SYMBOLS, "distinct={}", distinct.len());
         let enc = encode_cdf(&raw, &CdfModel::from_stream(&raw));
@@ -1184,8 +993,7 @@ mod tests {
         assert_eq!(decode_positions(&enc, &mut pos).unwrap(), positions);
         assert_eq!(pos, enc.len());
 
-        let scale_q: Vec<i32> =
-            (0..4000).map(|_| (splitmix64(&mut s) % 2048) as i32 - 1024).collect();
+        let scale_q: Vec<i32> = (0..4000).map(|_| (splitmix64(&mut s) % 2048) as i32 - 1024).collect();
         let enc = encode_scale_q(&scale_q);
         let mut pos = 0;
         assert_eq!(decode_scale_q(&enc, &mut pos).unwrap(), scale_q);
@@ -1242,15 +1050,10 @@ mod tests {
     #[test]
     fn every_truncation_is_total() {
         let raw: Vec<i64> = (0..400).map(|i| ((i * 37) % 11) as i64 - 5).collect();
-        for enc in [
-            encode_cdf(&raw, &CdfModel::from_stream(&raw)),
-            encode_bucket(&raw, &BucketModel::from_stream(&raw)),
-        ] {
+        for enc in [encode_cdf(&raw, &CdfModel::from_stream(&raw)), encode_bucket(&raw, &BucketModel::from_stream(&raw))] {
             for cut in 0..=enc.len() {
                 let mut pos = 0usize;
-                let r = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-                    decode_stream(&enc[..cut], &mut pos)
-                }));
+                let r = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| decode_stream(&enc[..cut], &mut pos)));
                 assert!(r.is_ok(), "decode panicked on truncation to {cut}");
                 assert!(pos <= cut, "decode read past truncated end ({pos} > {cut})");
             }
@@ -1376,10 +1179,7 @@ mod tests {
         assert!(bps_amort < raw_bits, "amortized scale_q must beat fixed 32-bit storage");
         assert!(rec_amort > 0.06, "amortized scale_q must recover >0.06 bpw (got {rec_amort})");
         if n_blocks >= 4096 {
-            assert!(
-                bps_amort < h0 + 0.30,
-                "amortized scale_q within 0.30 bit/sym of H0 at scale (got {bps_amort}, H0={h0})"
-            );
+            assert!(bps_amort < h0 + 0.30, "amortized scale_q within 0.30 bit/sym of H0 at scale (got {bps_amort}, H0={h0})");
         }
     }
 
@@ -1415,10 +1215,7 @@ mod tests {
         assert!(bps_amort < raw_bits, "amortized sub_scale must beat fixed 6-bit storage");
         assert!(rec_amort > 0.0, "amortized sub_scale must recover positive bpw");
         if n_codes >= 8192 {
-            assert!(
-                bps_amort < h0 + 0.20,
-                "amortized sub_scale within 0.20 bit/sym of H0 at scale (got {bps_amort}, H0={h0})"
-            );
+            assert!(bps_amort < h0 + 0.20, "amortized sub_scale within 0.20 bit/sym of H0 at scale (got {bps_amort}, H0={h0})");
         }
     }
 
@@ -1435,11 +1232,7 @@ mod tests {
         let mut cur = 0u32;
         for _ in 0..n_outl {
             let r = splitmix64(&mut s) % 100;
-            let gap = if r < 80 {
-                1 + (splitmix64(&mut s) % 40) as u32
-            } else {
-                1 + (splitmix64(&mut s) % 400) as u32
-            };
+            let gap = if r < 80 { 1 + (splitmix64(&mut s) % 40) as u32 } else { 1 + (splitmix64(&mut s) % 400) as u32 };
             cur = cur.saturating_add(gap);
             positions.push(cur);
         }
@@ -1466,10 +1259,7 @@ mod tests {
         );
         assert!(bps_amort < idx_bits, "amortized gap-coding must beat fixed {idx_bits}-bit positions");
         assert!(ach_bpw_amort < raw_bpw, "amortized outl_pos must recover bpw vs fixed idx_bits");
-        assert!(
-            bps_amort < h_gap + 1.0,
-            "amortized positions within 1.0 bit/sym of gap entropy floor (got {bps_amort}, H={h_gap})"
-        );
+        assert!(bps_amort < h_gap + 1.0, "amortized positions within 1.0 bit/sym of gap entropy floor (got {bps_amort}, H={h_gap})");
     }
 
     #[test]
@@ -1500,8 +1290,7 @@ mod tests {
         // sub_scale (amortized; per-symbol cost scaled to full count)
         let sub_sample = synthetic_sub_scales(200_000 * SUBS_PER_BLOCK, 0x5AB5_CA1E);
         let raw_ss: Vec<i64> = sub_sample.iter().map(|&c| c as i64).collect();
-        let coded_sub_bits_per_sym =
-            amortized_min_payload_bits(&raw_ss) as f64 / sub_sample.len() as f64;
+        let coded_sub_bits_per_sym = amortized_min_payload_bits(&raw_ss) as f64 / sub_sample.len() as f64;
         let coded_sub_bpw = coded_sub_bits_per_sym * n_subs as f64 / n_weights as f64;
         let raw_sub_bpw = 6.0 * n_subs as f64 / n_weights as f64; // 0.1875
         let rec_sub = raw_sub_bpw - coded_sub_bpw;
@@ -1535,12 +1324,9 @@ mod tests {
         let rec_total = rec_scale_sub + rec_pos;
 
         eprintln!("\n========== C2 FINAL: amortized bpw recovered (synthetic q2, all three) ==========");
-        eprintln!("  scale_q : raw {:.5}  coded {:.5}  RECOVERED {:.5} bpw  (ledger ceiling 0.08401)",
-                  raw_scale_bpw, coded_scale_bpw, rec_scale);
-        eprintln!("  sub_scale: raw {:.5}  coded {:.5}  RECOVERED {:.5} bpw  (ledger ceiling 0.02196)",
-                  raw_sub_bpw, coded_sub_bpw, rec_sub);
-        eprintln!("  outl_pos : raw {:.5}  coded {:.5}  RECOVERED {:.5} bpw  (ledger ceiling 0.14760)",
-                  raw_pos_bpw, coded_pos_bpw, rec_pos);
+        eprintln!("  scale_q : raw {:.5}  coded {:.5}  RECOVERED {:.5} bpw  (ledger ceiling 0.08401)", raw_scale_bpw, coded_scale_bpw, rec_scale);
+        eprintln!("  sub_scale: raw {:.5}  coded {:.5}  RECOVERED {:.5} bpw  (ledger ceiling 0.02196)", raw_sub_bpw, coded_sub_bpw, rec_sub);
+        eprintln!("  outl_pos : raw {:.5}  coded {:.5}  RECOVERED {:.5} bpw  (ledger ceiling 0.14760)", raw_pos_bpw, coded_pos_bpw, rec_pos);
         eprintln!("  ----------------------------------------------------------------");
         eprintln!("  scale+sub RECOVERED {:.5} bpw  (goal 0.106, ledger 0.10597)", rec_scale_sub);
         eprintln!("  ALL THREE RECOVERED {:.5} bpw  (goal 0.25,  ledger 0.25357)", rec_total);
@@ -1562,24 +1348,22 @@ mod tests {
         let cases: Vec<(&str, Vec<i64>)> = vec![
             ("long_bell", scale_q_to_deltas(&synthetic_scale_q(60_000, 0x1111))),
             ("short_bell", scale_q_to_deltas(&synthetic_scale_q(200, 0x2222))),
-            (
-                "heavy_tail",
-                {
-                    let mut s = 0x3333u64;
-                    (0..5000)
-                        .map(|_| {
-                            let r = splitmix64(&mut s);
-                            if r % 10 < 9 { (r % 8) as i64 } else { (r % 2_000_000) as i64 }
-                        })
-                        .collect()
-                },
-            ),
+            ("heavy_tail", {
+                let mut s = 0x3333u64;
+                (0..5000)
+                    .map(|_| {
+                        let r = splitmix64(&mut s);
+                        if r % 10 < 9 {
+                            (r % 8) as i64
+                        } else {
+                            (r % 2_000_000) as i64
+                        }
+                    })
+                    .collect()
+            }),
             // sub_scale-shaped: tiny 64-symbol alphabet ⇒ Cdf table is ~130 B and
             // amortizes instantly, so Cdf (= attempt 0's static-rANS model) wins.
-            (
-                "sub_scale_64",
-                synthetic_sub_scales(50_000, 0x4444).iter().map(|&c| c as i64).collect(),
-            ),
+            ("sub_scale_64", synthetic_sub_scales(50_000, 0x4444).iter().map(|&c| c as i64).collect()),
         ];
         for (name, raw) in &cases {
             let cdf = encode_cdf(raw, &CdfModel::from_stream(raw));
@@ -1592,17 +1376,13 @@ mod tests {
             let mut pos = 0usize;
             assert_eq!(decode_stream(&picked, &mut pos).unwrap(), *raw, "[{name}] picked mode failed to decode");
             assert_eq!(pos, picked.len());
-            eprintln!(
-                "[c2f] mode select [{name}]: cdf={} bkt={} -> picked {} ({} B)",
-                cdf.len(), bkt.len(), if want_mode == MODE_CDF { "Cdf" } else { "Bucket" }, want_len
-            );
+            eprintln!("[c2f] mode select [{name}]: cdf={} bkt={} -> picked {} ({} B)", cdf.len(), bkt.len(), if want_mode == MODE_CDF { "Cdf" } else { "Bucket" }, want_len);
         }
 
         let table_bytes = 4 + 2 * NUM_BUCKETS;
         for &spread in &[1i64, 100, 4096, 1_000_000] {
             let mut s = 0xC0DEu64 ^ spread as u64;
-            let raw: Vec<i64> =
-                (0..4000).map(|_| (splitmix64(&mut s) % (spread as u64 * 2 + 1)) as i64 - spread).collect();
+            let raw: Vec<i64> = (0..4000).map(|_| (splitmix64(&mut s) % (spread as u64 * 2 + 1)) as i64 - spread).collect();
             let mut b = Vec::new();
             BucketModel::from_stream(&raw).serialize(&mut b);
             assert_eq!(b.len(), table_bytes, "bucket table not constant (spread={spread})");
@@ -1636,11 +1416,7 @@ mod tests {
                 })
                 .collect();
             let enc = encode_stream_with_models(&stream, &cdf, &bkt);
-            assert_eq!(
-                encode_stream_with_models(&stream, &cdf, &bkt),
-                enc,
-                "frozen-model encode not deterministic"
-            );
+            assert_eq!(encode_stream_with_models(&stream, &cdf, &bkt), enc, "frozen-model encode not deterministic");
             let mut pos = 0usize;
             assert_eq!(decode_stream(&enc, &mut pos).unwrap(), stream);
             assert_eq!(pos, enc.len());

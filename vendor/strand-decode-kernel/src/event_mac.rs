@@ -1,25 +1,18 @@
-
 #[derive(Clone, Copy, Debug)]
 pub struct EventReport {
-    
     pub fired: usize,
-    
+
     pub total: usize,
 }
 
 impl EventReport {
-    
     pub fn skip_fraction(&self) -> f64 {
         1.0 - self.fired as f64 / self.total.max(1) as f64
     }
 }
 
 pub fn salient_threshold(x: &[f32], tau: f32) -> Vec<usize> {
-    x.iter()
-        .enumerate()
-        .filter(|(_, v)| v.abs() >= tau)
-        .map(|(i, _)| i)
-        .collect()
+    x.iter().enumerate().filter(|(_, v)| v.abs() >= tau).map(|(i, _)| i).collect()
 }
 
 pub fn salient_topk(x: &[f32], k: usize) -> Vec<usize> {
@@ -27,27 +20,20 @@ pub fn salient_topk(x: &[f32], k: usize) -> Vec<usize> {
         return (0..x.len()).collect();
     }
     let mut idx: Vec<usize> = (0..x.len()).collect();
-    
-    idx.sort_by(|&a, &b| {
-        x[b].abs()
-            .partial_cmp(&x[a].abs())
-            .unwrap_or(std::cmp::Ordering::Equal)
-            .then(a.cmp(&b))
-    });
+
+    idx.sort_by(|&a, &b| x[b].abs().partial_cmp(&x[a].abs()).unwrap_or(std::cmp::Ordering::Equal).then(a.cmp(&b)));
     let mut s = idx[..k].to_vec();
     s.sort_unstable();
     s
 }
 
 pub struct EventMac {
-    
     wt: Vec<f32>,
     pub out_features: usize,
     pub in_features: usize,
 }
 
 impl EventMac {
-    
     pub fn from_dense(w: &[f32], out_features: usize, in_features: usize) -> Self {
         assert_eq!(w.len(), out_features * in_features, "w must be out x in");
         let mut wt = vec![0.0f32; w.len()];
@@ -106,15 +92,13 @@ impl EventMac {
 
 #[derive(Clone, Copy, Debug)]
 pub struct DeltaReport {
-    
     pub fired: usize,
     pub total: usize,
-    
+
     pub refreshed: bool,
 }
 
 impl DeltaReport {
-    
     pub fn skip_fraction(&self) -> f64 {
         1.0 - self.fired as f64 / self.total.max(1) as f64
     }
@@ -122,7 +106,7 @@ impl DeltaReport {
 
 pub struct DeltaMac<'a> {
     mac: &'a EventMac,
-    
+
     x_applied: Vec<f32>,
     y: Vec<f32>,
     steps_since_refresh: usize,
@@ -131,13 +115,7 @@ pub struct DeltaMac<'a> {
 
 impl<'a> DeltaMac<'a> {
     pub fn new(mac: &'a EventMac) -> Self {
-        DeltaMac {
-            mac,
-            x_applied: vec![0.0f32; mac.in_features],
-            y: vec![0.0f32; mac.out_features],
-            steps_since_refresh: 0,
-            started: false,
-        }
+        DeltaMac { mac, x_applied: vec![0.0f32; mac.in_features], y: vec![0.0f32; mac.out_features], steps_since_refresh: 0, started: false }
     }
 
     pub fn refresh(&mut self, x: &[f32]) -> &[f32] {
@@ -185,7 +163,6 @@ mod tests {
     use strand_quant::TrellisConfig;
 
     fn synth_x(n: usize, seed: f32) -> Vec<f32> {
-        
         (0..n)
             .map(|i| {
                 let c = ((i as f32 + seed) * 0.0713).cos();
@@ -196,34 +173,19 @@ mod tests {
 
     #[test]
     fn full_set_bit_equals_reference_matvec() {
-        let configs = [
-            TrellisConfig::for_bpw(3.0),
-            TrellisConfig::for_bpw_l(2.0, 12),
-            TrellisConfig::for_bpw_l(2.0, 5), 
-        ];
+        let configs = [TrellisConfig::for_bpw(3.0), TrellisConfig::for_bpw_l(2.0, 12), TrellisConfig::for_bpw_l(2.0, 5)];
         for cfg in &configs {
             for &(rows, cols) in &[(8usize, 256usize), (37, 300), (5, 97)] {
-                let w: Vec<f32> =
-                    (0..rows * cols).map(|i| (i as f32 * 0.0137).sin() * 0.5).collect();
+                let w: Vec<f32> = (0..rows * cols).map(|i| (i as f32 * 0.0137).sin() * 0.5).collect();
                 let enc = encode_tensor(&w, cfg);
                 let q12 = crate::decode_weights_q12(&enc, cfg, None);
                 let em = EventMac::from_q12(&q12, rows, cols);
                 let x = synth_x(cols, 1.0);
                 let y_ref = crate::matvec(&enc, cfg, None, rows, cols, &x);
-                for (label, y_ev) in [
-                    ("matvec_full", em.matvec_full(&x)),
-                    ("threshold tau=0", em.matvec_threshold(&x, 0.0).0),
-                    ("topk k=n", em.matvec_topk(&x, cols).0),
-                ] {
+                for (label, y_ev) in [("matvec_full", em.matvec_full(&x)), ("threshold tau=0", em.matvec_threshold(&x, 0.0).0), ("topk k=n", em.matvec_topk(&x, cols).0)] {
                     assert_eq!(y_ev.len(), y_ref.len());
                     for o in 0..rows {
-                        assert_eq!(
-                            y_ev[o].to_bits(),
-                            y_ref[o].to_bits(),
-                            "{label} y[{o}] != crate::matvec (L={} k={} {rows}x{cols})",
-                            cfg.l_bits,
-                            cfg.k_bits
-                        );
+                        assert_eq!(y_ev[o].to_bits(), y_ref[o].to_bits(), "{label} y[{o}] != crate::matvec (L={} k={} {rows}x{cols})", cfg.l_bits, cfg.k_bits);
                     }
                 }
             }
@@ -239,7 +201,7 @@ mod tests {
         for tau in [0.05f32, 0.2, 0.5] {
             let (y, rep) = em.matvec_threshold(&x, tau);
             assert!(rep.fired < cols, "tau {tau} should skip something");
-            
+
             for o in 0..rows {
                 let mut acc = 0.0f32;
                 for i in 0..cols {
@@ -262,7 +224,7 @@ mod tests {
             let s2 = salient_topk(&x, k);
             assert_eq!(s, s2, "deterministic");
         }
-        
+
         let k = 32;
         let s = salient_topk(&x, k);
         let mut mags: Vec<f32> = x.iter().map(|v| v.abs()).collect();
@@ -295,7 +257,6 @@ mod tests {
         let mut x = synth_x(cols, 0.0);
         dm.step(&x, tau, usize::MAX);
         for t in 1..20 {
-            
             for (i, v) in x.iter_mut().enumerate() {
                 *v += 0.01 * ((t * 31 + i) as f32 * 0.11).sin();
             }
@@ -303,13 +264,10 @@ mod tests {
             assert!(!rep.refreshed);
             assert!(rep.fired < cols, "small drift must not fire everything");
             for i in 0..cols {
-                assert!(
-                    (x[i] - dm.x_applied[i]).abs() < tau,
-                    "applied state escaped the tau bound at dim {i} step {t}"
-                );
+                assert!((x[i] - dm.x_applied[i]).abs() < tau, "applied state escaped the tau bound at dim {i} step {t}");
             }
         }
-        
+
         let (y, rep) = dm.step(&x, tau, dm.steps_since_refresh + 1);
         assert!(rep.refreshed);
         let y_full = em.matvec_full(&x);
@@ -336,7 +294,7 @@ mod tests {
             let num: f32 = y.iter().zip(&y_full).map(|(a, b)| (a - b) * (a - b)).sum();
             let den: f32 = y_full.iter().map(|v| v * v).sum();
             let rel = (num / den.max(1e-30)).sqrt();
-            
+
             assert!(rel < 0.05, "delta drift rel err {rel} too large at step {t}");
         }
     }

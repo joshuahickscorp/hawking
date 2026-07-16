@@ -119,23 +119,12 @@ impl PrunedVocab {
     ///   any keep_id >= `vocab_size_original`; duplicate ids
     pub fn load(path: impl AsRef<Path>) -> Result<Self> {
         let bytes = std::fs::read(path.as_ref())?;
-        let raw: WhitelistFile = serde_json::from_slice(&bytes)
-            .map_err(|e| Error::Model(format!("vocab whitelist parse: {e}")))?;
-        Self::from_parts(
-            raw.vocab_size_original,
-            raw.vocab_size_pruned,
-            raw.coverage,
-            raw.keep_token_ids,
-        )
+        let raw: WhitelistFile = serde_json::from_slice(&bytes).map_err(|e| Error::Model(format!("vocab whitelist parse: {e}")))?;
+        Self::from_parts(raw.vocab_size_original, raw.vocab_size_pruned, raw.coverage, raw.keep_token_ids)
     }
 
     /// Build from already-parsed components. Useful for tests.
-    pub fn from_parts(
-        original_vocab_size: usize,
-        pruned_vocab_size: usize,
-        coverage: f64,
-        mut keep_token_ids: Vec<u32>,
-    ) -> Result<Self> {
+    pub fn from_parts(original_vocab_size: usize, pruned_vocab_size: usize, coverage: f64, mut keep_token_ids: Vec<u32>) -> Result<Self> {
         if keep_token_ids.len() != pruned_vocab_size {
             return Err(Error::Model(format!(
                 "vocab whitelist: vocab_size_pruned={pruned_vocab_size} but \
@@ -144,44 +133,29 @@ impl PrunedVocab {
             )));
         }
         if pruned_vocab_size == 0 {
-            return Err(Error::Model(
-                "vocab whitelist: pruned vocab size 0 (would yield no outputs)".into(),
-            ));
+            return Err(Error::Model("vocab whitelist: pruned vocab size 0 (would yield no outputs)".into()));
         }
         if pruned_vocab_size > original_vocab_size {
-            return Err(Error::Model(format!(
-                "vocab whitelist: pruned_size {pruned_vocab_size} > original {original_vocab_size}"
-            )));
+            return Err(Error::Model(format!("vocab whitelist: pruned_size {pruned_vocab_size} > original {original_vocab_size}")));
         }
         // Defensive sort; producer is supposed to emit ascending.
         keep_token_ids.sort_unstable();
         // Detect duplicates + out-of-range.
         for pair in keep_token_ids.windows(2) {
             if pair[0] == pair[1] {
-                return Err(Error::Model(format!(
-                    "vocab whitelist: duplicate token id {}",
-                    pair[0]
-                )));
+                return Err(Error::Model(format!("vocab whitelist: duplicate token id {}", pair[0])));
             }
         }
         if let Some(&max_id) = keep_token_ids.last() {
             if (max_id as usize) >= original_vocab_size {
-                return Err(Error::Model(format!(
-                    "vocab whitelist: token id {max_id} >= original vocab {original_vocab_size}"
-                )));
+                return Err(Error::Model(format!("vocab whitelist: token id {max_id} >= original vocab {original_vocab_size}")));
             }
         }
         let mut reverse = HashMap::with_capacity(pruned_vocab_size);
         for (pruned_id, &orig_id) in keep_token_ids.iter().enumerate() {
             reverse.insert(orig_id, pruned_id as u32);
         }
-        Ok(Self {
-            original_vocab_size,
-            pruned_vocab_size,
-            coverage,
-            keep_token_ids,
-            reverse,
-        })
+        Ok(Self { original_vocab_size, pruned_vocab_size, coverage, keep_token_ids, reverse })
     }
 
     /// Number of tokens after pruning. Use this as the new `cfg.vocab_size`.
@@ -210,10 +184,7 @@ impl PrunedVocab {
     /// they disagree (whitelist was built for a different model).
     pub fn validate(&self, tokenizer_vocab_size: usize) -> Result<()> {
         if self.original_vocab_size != tokenizer_vocab_size {
-            return Err(Error::Model(format!(
-                "vocab whitelist built for vocab_size={} but tokenizer reports {}",
-                self.original_vocab_size, tokenizer_vocab_size
-            )));
+            return Err(Error::Model(format!("vocab whitelist built for vocab_size={} but tokenizer reports {}", self.original_vocab_size, tokenizer_vocab_size)));
         }
         Ok(())
     }
@@ -227,13 +198,7 @@ impl PrunedVocab {
     pub fn slice_lm_head_f16(&self, orig_weight: &[f16], hidden: usize) -> Result<Vec<f16>> {
         let expected = self.original_vocab_size * hidden;
         if orig_weight.len() != expected {
-            return Err(Error::Model(format!(
-                "vocab prune: lm_head weight length {} ≠ expected {} ({}×{})",
-                orig_weight.len(),
-                expected,
-                self.original_vocab_size,
-                hidden
-            )));
+            return Err(Error::Model(format!("vocab prune: lm_head weight length {} ≠ expected {} ({}×{})", orig_weight.len(), expected, self.original_vocab_size, hidden)));
         }
         let mut out = Vec::with_capacity(self.pruned_vocab_size * hidden);
         for &orig_id in &self.keep_token_ids {
@@ -337,28 +302,11 @@ mod tests {
         let sliced = p.slice_lm_head_f16(&w, hidden).unwrap();
         assert_eq!(sliced.len(), 3 * 3);
         // pruned row 0 ← orig row 0: [0, 1, 2]
-        assert_eq!(
-            sliced[0..3],
-            [f16::from_f32(0.0), f16::from_f32(1.0), f16::from_f32(2.0)]
-        );
+        assert_eq!(sliced[0..3], [f16::from_f32(0.0), f16::from_f32(1.0), f16::from_f32(2.0)]);
         // pruned row 1 ← orig row 2: [20, 21, 22]
-        assert_eq!(
-            sliced[3..6],
-            [
-                f16::from_f32(20.0),
-                f16::from_f32(21.0),
-                f16::from_f32(22.0)
-            ]
-        );
+        assert_eq!(sliced[3..6], [f16::from_f32(20.0), f16::from_f32(21.0), f16::from_f32(22.0)]);
         // pruned row 2 ← orig row 3: [30, 31, 32]
-        assert_eq!(
-            sliced[6..9],
-            [
-                f16::from_f32(30.0),
-                f16::from_f32(31.0),
-                f16::from_f32(32.0)
-            ]
-        );
+        assert_eq!(sliced[6..9], [f16::from_f32(30.0), f16::from_f32(31.0), f16::from_f32(32.0)]);
     }
 
     #[test]
@@ -379,12 +327,7 @@ mod tests {
         full[5] = 10.0;
         // Pruned logits picks pruned_id 3 (which maps back to 5).
         let pruned_logits: Vec<f32> = p.keep_ids().iter().map(|&i| full[i as usize]).collect();
-        let pruned_winner = pruned_logits
-            .iter()
-            .enumerate()
-            .max_by(|a, b| a.1.partial_cmp(b.1).unwrap())
-            .unwrap()
-            .0 as u32;
+        let pruned_winner = pruned_logits.iter().enumerate().max_by(|a, b| a.1.partial_cmp(b.1).unwrap()).unwrap().0 as u32;
         assert_eq!(p.pruned_to_original(pruned_winner), 5);
     }
 }

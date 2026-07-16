@@ -14,7 +14,7 @@
 # RUN_SPEED, RUN_QUALITY, RUN_ISOLATION (default 1), RUN_16K (default 0).
 set -u
 
-REPO="${REPO:-$HOME/Downloads/hawking}"; cd "$REPO" || exit 2
+REPO="${REPO:-$(CDPATH= cd -- "$(dirname "$0")/../.." && pwd)}"; cd "$REPO" || exit 2
 MODEL="${1:-${MODEL:-models/rwkv7-g1-04-sft-Q4_K_M.gguf}}"
 BIN="${BIN:-./target/release/hawking}"
 STAMP="$(date -u +%Y%m%dT%H%M%SZ)"

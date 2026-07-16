@@ -1,0 +1,95 @@
+{
+  "schema": "hawking.repository_condensation.v1",
+  "baseline_commit": "1c525380204d61beb8b570516576c5a683d73595",
+  "recommended_target": "extreme",
+  "baseline": {
+    "tracked_files": 1406,
+    "tracked_directories": 158,
+    "primary_lines": 505528,
+    "markdown_files": 116,
+    "markdown_lines": 25576,
+    "condense_python_files": 245,
+    "condense_python_lines": 172430
+  },
+  "extreme_target": {
+    "tracked_files_max": 800,
+    "tracked_directories_max": 80,
+    "primary_lines_max": 345000,
+    "markdown_files_max": 18,
+    "markdown_lines_max": 8000,
+    "condense_python_files_max": 85,
+    "condense_python_lines_max": 100000
+  },
+  "invariants": {
+    "campaign_results_or_progress_may_change": false,
+    "scientific_or_quality_semantics_may_change": false,
+    "packed_output_parity_required": true,
+    "receipt_and_failure_semantics_parity_required": true,
+    "native_throughput_regression_permitted": false,
+    "source_history_is_the_archive": true,
+    "active_worktree_may_be_modified_before_supersession": false
+  },
+  "test_surface": {
+    "rust_test_attributes": 1626,
+    "rust_ignore_attributes": 60
+  },
+  "active_worktree": "/Users/scammermike/Downloads/hawking",
+  "condensation_worktree": "/Users/scammermike/Downloads/hawking-condensed",
+  "external_artifacts": {
+    "build/strand-block-parallel/release/quantize-model-block-parallel": {
+      "bytes": 1452208,
+      "sha256": "69ce7e09741e84a785604863f0fff369355c94185544646059baeeb08cabf4a9"
+    },
+    "vendor/strand-decode-kernel/target/release/archive-to-safetensors": {
+      "bytes": 729472,
+      "sha256": "e1cec500c39fef02a02e63ed00c7a0971484da125454e793f06e9ba37054f676"
+    },
+    "vendor/strand-decode-kernel/target/release/attest-strand": {
+      "bytes": 827904,
+      "sha256": "d431a04f37ee45cb899f691bc5bae913e2ad8a9271d6db94b027bbe24c85787b"
+    },
+    "vendor/strand-quant/target/release/quantize-model": {
+      "bytes": 1391728,
+      "sha256": "fc3da80de511e951dec23b8d4176d4836af3da95feb7450a7cabe7696cb3c0c1"
+    }
+  },
+  "live_bound_paths": [
+    "docs/env_flags.md",
+    "docs/plans/APPENDIX.md",
+    "docs/plans/APPENDIX_HANDOFF.md",
+    "docs/plans/DOCTOR_V5.md",
+    "docs/plans/DOCTOR_V5_RESEARCH_PASSES.md",
+    "docs/plans/TRAINING_LADDER_V5.md",
+    "docs/plans/hawking_event_horizon_status.md",
+    "docs/plans/spec_decode_reentry_appendix_2026_07_14.md",
+    "docs/plans/spec_decode_studio_readiness_2026_07_12.md",
+    "docs/plans/tq_compute_for_memory_appendix_2026_07_14.md",
+    "tools/condense/doctor_v5_accel_loader.py",
+    "tools/condense/doctor_v5_adapter_abi.py",
+    "tools/condense/doctor_v5_disk25_successor.py",
+    "tools/condense/doctor_v5_gc_runtime_transition.py",
+    "tools/condense/doctor_v5_parameter_manifest.py",
+    "tools/condense/doctor_v5_pass_b_worker.py",
+    "tools/condense/doctor_v5_qwen_treatment_adapter.py",
+    "tools/condense/doctor_v5_qwen_treatment_block_parallel_adapter.py",
+    "tools/condense/doctor_v5_sharded_eval.py",
+    "tools/condense/doctor_v5_source_seal.py",
+    "tools/condense/doctor_v5_strand_ladder_adapter.py",
+    "tools/condense/doctor_v5_strand_ladder_block_parallel_adapter.py",
+    "tools/condense/doctor_v5_strand_ladder_block_parallel_worker.py",
+    "tools/condense/doctor_v5_strand_ladder_worker.py",
+    "tools/condense/doctor_v5_ultra_accelerated_autoresume.py",
+    "tools/condense/doctor_v5_ultra_accelerated_queue.py",
+    "build/strand-block-parallel/release/quantize-model-block-parallel",
+    "vendor/strand-decode-kernel/target/release/archive-to-safetensors",
+    "vendor/strand-decode-kernel/target/release/attest-strand",
+    "vendor/strand-quant/target/release/quantize-model"
+  ],
+  "activation_gate": {
+    "current_campaign_terminal": true,
+    "signed_release_gate_passed": true,
+    "old_to_new_path_and_sha_supersession_receipt_required": true,
+    "synthetic_campaign_replay_required": true,
+    "crash_resume_and_rollback_tests_required": true
+  }
+}

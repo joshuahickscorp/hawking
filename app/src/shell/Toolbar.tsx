@@ -6,7 +6,7 @@
 */
 import { useStore } from "../store";
 import { Icon } from "./icons";
-import { LogoH } from "./Mark";
+import { LogoH } from "./components";
 
 export function Toolbar({
   mode,

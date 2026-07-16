@@ -115,17 +115,13 @@ impl TierMap {
     /// Load and validate a tier-map JSON file.
     pub fn load(path: impl AsRef<Path>) -> Result<Self> {
         let bytes = std::fs::read(path.as_ref())?;
-        let raw: TierFile = serde_json::from_slice(&bytes)
-            .map_err(|e| Error::Model(format!("quant_tier_map parse: {e}")))?;
+        let raw: TierFile = serde_json::from_slice(&bytes).map_err(|e| Error::Model(format!("quant_tier_map parse: {e}")))?;
         Self::from_parts(raw)
     }
 
     fn from_parts(raw: TierFile) -> Result<Self> {
         if raw.schema_version != SCHEMA_VERSION {
-            return Err(Error::Model(format!(
-                "quant_tier_map: unsupported schema_version {} (expected {})",
-                raw.schema_version, SCHEMA_VERSION
-            )));
+            return Err(Error::Model(format!("quant_tier_map: unsupported schema_version {} (expected {})", raw.schema_version, SCHEMA_VERSION)));
         }
         if raw.n_layers == 0 {
             return Err(Error::Model("quant_tier_map: n_layers must be > 0".into()));
@@ -134,16 +130,10 @@ impl TierMap {
         let mut seen = std::collections::HashSet::new();
         for e in &raw.layers {
             if e.layer >= raw.n_layers {
-                return Err(Error::Model(format!(
-                    "quant_tier_map: entry layer={} >= n_layers={}",
-                    e.layer, raw.n_layers
-                )));
+                return Err(Error::Model(format!("quant_tier_map: entry layer={} >= n_layers={}", e.layer, raw.n_layers)));
             }
             if !seen.insert(e.layer) {
-                return Err(Error::Model(format!(
-                    "quant_tier_map: duplicate entry for layer {}",
-                    e.layer
-                )));
+                return Err(Error::Model(format!("quant_tier_map: duplicate entry for layer {}", e.layer)));
             }
             if let Some(s) = e.gate_up.as_deref() {
                 overrides.insert((e.layer, GroupKind::GateUp), parse_dtype(s)?);
@@ -152,12 +142,7 @@ impl TierMap {
                 overrides.insert((e.layer, GroupKind::Down), parse_dtype(s)?);
             }
         }
-        Ok(Self {
-            schema_version: raw.schema_version,
-            model_arch: raw.model_arch,
-            n_layers: raw.n_layers,
-            overrides,
-        })
+        Ok(Self { schema_version: raw.schema_version, model_arch: raw.model_arch, n_layers: raw.n_layers, overrides })
     }
 
     /// Validate the map matches a live model. Mismatched arch or layer
@@ -165,16 +150,10 @@ impl TierMap {
     /// re-quantize the wrong tensors.
     pub fn validate(&self, arch: &str, n_layers: usize) -> Result<()> {
         if self.model_arch != arch {
-            return Err(Error::Model(format!(
-                "quant_tier_map: model_arch={} but engine reports {}",
-                self.model_arch, arch
-            )));
+            return Err(Error::Model(format!("quant_tier_map: model_arch={} but engine reports {}", self.model_arch, arch)));
         }
         if self.n_layers != n_layers {
-            return Err(Error::Model(format!(
-                "quant_tier_map: n_layers={} but model has {}",
-                self.n_layers, n_layers
-            )));
+            return Err(Error::Model(format!("quant_tier_map: n_layers={} but model has {}", self.n_layers, n_layers)));
         }
         Ok(())
     }
@@ -208,8 +187,7 @@ mod tests {
     use super::*;
 
     fn parse(json: &str) -> Result<TierMap> {
-        let raw: TierFile =
-            serde_json::from_str(json).map_err(|e| Error::Model(format!("test parse: {e}")))?;
+        let raw: TierFile = serde_json::from_str(json).map_err(|e| Error::Model(format!("test parse: {e}")))?;
         TierMap::from_parts(raw)
     }
 
@@ -267,27 +245,19 @@ mod tests {
 
     #[test]
     fn rejects_wrong_schema_version() {
-        let r = parse(
-            r#"{ "schema_version": 2, "model_arch": "deepseek2", "n_layers": 1, "layers": [] }"#,
-        );
+        let r = parse(r#"{ "schema_version": 2, "model_arch": "deepseek2", "n_layers": 1, "layers": [] }"#);
         assert!(r.is_err());
     }
 
     #[test]
     fn empty_layers_is_legal() {
-        let m = parse(
-            r#"{ "schema_version": 1, "model_arch": "deepseek2", "n_layers": 1, "layers": [] }"#,
-        )
-        .unwrap();
+        let m = parse(r#"{ "schema_version": 1, "model_arch": "deepseek2", "n_layers": 1, "layers": [] }"#).unwrap();
         assert!(!m.any_overrides());
     }
 
     #[test]
     fn validate_arch_and_layer_count() {
-        let m = parse(
-            r#"{ "schema_version": 1, "model_arch": "deepseek2", "n_layers": 27, "layers": [] }"#,
-        )
-        .unwrap();
+        let m = parse(r#"{ "schema_version": 1, "model_arch": "deepseek2", "n_layers": 27, "layers": [] }"#).unwrap();
         assert!(m.validate("deepseek2", 27).is_ok());
         assert!(m.validate("llama", 27).is_err());
         assert!(m.validate("deepseek2", 26).is_err());

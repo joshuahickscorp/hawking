@@ -149,7 +149,12 @@ fn build_kernel_with_stub(
         .build()
 }
 
-fn build_kernel(log: DynEventLog, root: &Path, planner: Arc<dyn Planner>, mode: Mode) -> AgentKernel {
+fn build_kernel(
+    log: DynEventLog,
+    root: &Path,
+    planner: Arc<dyn Planner>,
+    mode: Mode,
+) -> AgentKernel {
     let dispatcher = allow_all_dispatcher(root.to_string_lossy().to_string());
     AgentKernel::builder(log)
         .workspace_root(root.to_string_lossy().to_string())
@@ -192,7 +197,10 @@ async fn phase_names(log: &Arc<InMemoryEventLog>) -> Vec<String> {
 async fn full_run_passes_through_real_oracle_to_done() {
     let repo = make_repo(true);
     let log = Arc::new(InMemoryEventLog::new());
-    let planner = Arc::new(FixedPlanner::new(vec!["typecheck".to_string()], StepKind::Edit));
+    let planner = Arc::new(FixedPlanner::new(
+        vec!["typecheck".to_string()],
+        StepKind::Edit,
+    ));
     let kernel = build_kernel(log.clone(), &repo, planner, Mode::Live);
 
     let mut state = kernel
@@ -201,7 +209,11 @@ async fn full_run_passes_through_real_oracle_to_done() {
         .unwrap();
     let phases = drive(&kernel, &mut state, 60).await;
 
-    assert_eq!(state.phase, Phase::Done, "run must finish (phases: {phases:?})");
+    assert_eq!(
+        state.phase,
+        Phase::Done,
+        "run must finish (phases: {phases:?})"
+    );
     // The FSM visited the canonical lifecycle phases.
     let names = phase_names(&log).await;
     for expected in ["plan", "select_step", "act", "observe", "verify", "done"] {
@@ -211,7 +223,9 @@ async fn full_run_passes_through_real_oracle_to_done() {
         );
     }
     // A real deterministic verdict was recorded and it PASSED (cargo check exit 0).
-    let v = state.last_verdict.expect("a verdict was produced by the real oracle");
+    let v = state
+        .last_verdict
+        .expect("a verdict was produced by the real oracle");
     assert!(v.is_deterministic());
     assert_eq!(v.status, hide_kernel::verify::oracle::VerdictStatus::Pass);
 
@@ -222,7 +236,10 @@ async fn full_run_passes_through_real_oracle_to_done() {
 async fn failing_real_oracle_triggers_repair() {
     let repo = make_repo(false); // code does NOT type-check
     let log = Arc::new(InMemoryEventLog::new());
-    let planner = Arc::new(FixedPlanner::new(vec!["typecheck".to_string()], StepKind::Edit));
+    let planner = Arc::new(FixedPlanner::new(
+        vec!["typecheck".to_string()],
+        StepKind::Edit,
+    ));
     let kernel = build_kernel(log.clone(), &repo, planner, Mode::Live);
 
     let mut state = kernel
@@ -240,7 +257,10 @@ async fn failing_real_oracle_triggers_repair() {
     // The recorded verdict is a deterministic FAIL with structured failures.
     let v = state.last_verdict.expect("a verdict was produced");
     assert_eq!(v.status, hide_kernel::verify::oracle::VerdictStatus::Fail);
-    assert!(!v.failures.is_empty(), "real diagnostics parsed into failures");
+    assert!(
+        !v.failures.is_empty(),
+        "real diagnostics parsed into failures"
+    );
 
     let _ = std::fs::remove_dir_all(repo);
 }
@@ -254,10 +274,7 @@ async fn replay_mode_does_not_run_effects() {
     let planner = Arc::new(FixedPlanner::new(vec![], StepKind::Investigate));
     let kernel = build_kernel(log.clone(), &repo, planner, Mode::Replay);
 
-    let mut state = kernel
-        .start_run(SessionId::new(), "noop")
-        .await
-        .unwrap();
+    let mut state = kernel.start_run(SessionId::new(), "noop").await.unwrap();
     drive(&kernel, &mut state, 40).await;
 
     // In replay mode no `agent.action` Action event is emitted (effects skipped).
@@ -286,14 +303,24 @@ async fn low_tool_call_budget_trips_governor_abort() {
     planner.tool_args = Some(serde_json::json!({ "argv": ["echo", "hi"] }));
     let kernel = build_kernel(log.clone(), &repo, Arc::new(planner), Mode::Live);
 
-    let mut state = kernel.start_run(SessionId::new(), "run a command").await.unwrap();
+    let mut state = kernel
+        .start_run(SessionId::new(), "run a command")
+        .await
+        .unwrap();
     state.budget.max_tool_calls = 1; // cap reached after a single dispatch
 
     let _ = drive(&kernel, &mut state, 80).await;
 
-    assert_eq!(state.phase, Phase::Aborted, "low tool-call budget must abort the run");
+    assert_eq!(
+        state.phase,
+        Phase::Aborted,
+        "low tool-call budget must abort the run"
+    );
     // At least one real tool call was consumed against the ledger.
-    assert!(state.ledger.tool_calls >= 1, "a tool dispatch must be counted");
+    assert!(
+        state.ledger.tool_calls >= 1,
+        "a tool dispatch must be counted"
+    );
     // The abort was the structured ToolCalls cap (cap = "tool_calls").
     let events = log.scan(None, None, None).await.unwrap();
     let abort = events
@@ -383,8 +410,7 @@ async fn model_step_dispatches_emitted_tool_call() {
     let events = log.scan(None, None, None).await.unwrap();
     let dispatched = events.iter().any(|e: &Event| {
         e.kind == "agent.observation"
-            && e
-                .payload
+            && e.payload
                 .get("tool_calls")
                 .and_then(|v| v.as_array())
                 .map(|arr| {
@@ -425,7 +451,10 @@ async fn model_step_does_not_auto_dispatch_a_mutating_tool() {
     let _ = drive(&kernel, &mut state, 60).await;
 
     // The write must NOT have happened.
-    assert!(!target.exists(), "a model step must not auto-execute a mutating tool");
+    assert!(
+        !target.exists(),
+        "a model step must not auto-execute a mutating tool"
+    );
     // And it must be recorded as proposed / not dispatched.
     let events = log.scan(None, None, None).await.unwrap();
     let proposed = events.iter().any(|e: &Event| {
@@ -441,7 +470,10 @@ async fn model_step_does_not_auto_dispatch_a_mutating_tool() {
                 })
                 .unwrap_or(false)
     });
-    assert!(proposed, "the mutating call must be recorded as proposed, not dispatched");
+    assert!(
+        proposed,
+        "the mutating call must be recorded as proposed, not dispatched"
+    );
 
     let _ = std::fs::remove_dir_all(repo);
 }
@@ -453,7 +485,8 @@ async fn model_step_does_not_auto_dispatch_subprocess_readonly_tool() {
     // arg-injection escalation the review found). Recorded as proposed, not run.
     let repo = make_repo(true);
     let stub_out =
-        "<tool_call>{\"name\":\"git.diff\",\"arguments\":{\"ref\":\"HEAD\"}}</tool_call>".to_string();
+        "<tool_call>{\"name\":\"git.diff\",\"arguments\":{\"ref\":\"HEAD\"}}</tool_call>"
+            .to_string();
     let log = Arc::new(InMemoryEventLog::new());
     let planner = Arc::new(FixedPlanner::new(vec![], StepKind::Investigate));
     let kernel = build_kernel_with_stub(log.clone(), &repo, planner, Mode::Live, &stub_out);

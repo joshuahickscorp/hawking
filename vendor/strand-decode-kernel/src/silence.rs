@@ -1,4 +1,3 @@
-
 use crate::block_walk::{block_init_state, block_plans, exceeds_max_sub, SideInfo, WordReader};
 use strand_quant::codebook::codebook_lut;
 use strand_quant::decode::reconstruct_q;
@@ -7,23 +6,20 @@ use strand_quant::TrellisConfig;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum BlockClass {
-    
     Live,
-    
+
     SilentZero,
-    
+
     SilentConst,
 }
 
 pub struct SilenceMask {
-    
     pub class: Vec<BlockClass>,
-    
+
     pub consts: Vec<Option<Vec<i32>>>,
 }
 
 impl SilenceMask {
-    
     pub fn build(enc: &EncodedTensor, cfg: &TrellisConfig, lut: &[i32]) -> Self {
         let n_blocks = enc.blocks.len();
         if cfg.vec_dim() > 1 || exceeds_max_sub(enc) {
@@ -82,9 +78,7 @@ pub fn classify_strong(enc: &EncodedTensor) -> Vec<bool> {
         .map(|blk| {
             let n_sub = n_sub_blocks(blk.n as usize);
             let mults = unpack_sub_scales(&blk.sub_scales, n_sub);
-            mults
-                .iter()
-                .all(|&m| strand_quant::decode::eff_scale_q(blk.scale_q, m) == 0)
+            mults.iter().all(|&m| strand_quant::decode::eff_scale_q(blk.scale_q, m) == 0)
         })
         .collect()
 }
@@ -93,12 +87,7 @@ pub fn zero_nearest_q12(lut: &[i32]) -> i32 {
     lut.iter().map(|v| v.abs()).min().unwrap_or(0)
 }
 
-pub fn decode_q12_silence(
-    enc: &EncodedTensor,
-    cfg: &TrellisConfig,
-    lut: &[i32],
-    mask: &SilenceMask,
-) -> Vec<i32> {
+pub fn decode_q12_silence(enc: &EncodedTensor, cfg: &TrellisConfig, lut: &[i32], mask: &SilenceMask) -> Vec<i32> {
     if cfg.vec_dim() > 1 || exceeds_max_sub(enc) {
         return strand_quant::decode::decode_lean_with_lut(enc, cfg, lut);
     }
@@ -171,15 +160,7 @@ pub fn decode_q12_silence(
     out
 }
 
-pub fn matvec_silence(
-    enc: &EncodedTensor,
-    cfg: &TrellisConfig,
-    lut: &[i32],
-    mask: &SilenceMask,
-    out_features: usize,
-    in_features: usize,
-    x: &[f32],
-) -> Vec<f32> {
+pub fn matvec_silence(enc: &EncodedTensor, cfg: &TrellisConfig, lut: &[i32], mask: &SilenceMask, out_features: usize, in_features: usize, x: &[f32]) -> Vec<f32> {
     assert_eq!(x.len(), in_features, "x must have in_features entries");
     let w = decode_q12_silence(enc, cfg, lut, mask);
     assert_eq!(w.len(), out_features * in_features, "decoded weight count mismatch");
@@ -196,15 +177,7 @@ pub fn matvec_silence(
     y
 }
 
-pub fn matvec_silence_skip(
-    enc: &EncodedTensor,
-    cfg: &TrellisConfig,
-    lut: &[i32],
-    mask: &SilenceMask,
-    out_features: usize,
-    in_features: usize,
-    x: &[f32],
-) -> Vec<f32> {
+pub fn matvec_silence_skip(enc: &EncodedTensor, cfg: &TrellisConfig, lut: &[i32], mask: &SilenceMask, out_features: usize, in_features: usize, x: &[f32]) -> Vec<f32> {
     assert_eq!(x.len(), in_features, "x must have in_features entries");
     let w = decode_q12_silence(enc, cfg, lut, mask);
     assert_eq!(w.len(), out_features * in_features, "decoded weight count mismatch");
@@ -263,34 +236,29 @@ pub struct TensorCensus {
     pub n_weights: usize,
     pub n_blocks: usize,
     pub n_sub: usize,
-    
+
     pub n_silent_zero: usize,
-    
+
     pub n_silent_const: usize,
-    
+
     pub n_zero_level_blocks: usize,
-    
+
     pub n_strong_silent: usize,
-    
+
     pub n_sub_code0: usize,
-    
+
     pub n_sub_code_max: usize,
-    
+
     pub n_scaleq_zero: usize,
-    
+
     pub state_hist: Vec<u64>,
-    
+
     pub zero_level_visits: u64,
-    
+
     pub n_silent_with_outlier: usize,
 }
 
-pub fn census_tensor(
-    enc: &EncodedTensor,
-    cfg: &TrellisConfig,
-    lut: &[i32],
-    outlier_idx: &[u32],
-) -> TensorCensus {
+pub fn census_tensor(enc: &EncodedTensor, cfg: &TrellisConfig, lut: &[i32], outlier_idx: &[u32]) -> TensorCensus {
     let lut = if lut.is_empty() { codebook_lut(cfg.l_bits) } else { lut };
     let num_states = cfg.num_states();
     let zmin = zero_nearest_q12(lut);
@@ -403,12 +371,7 @@ mod tests {
 
     #[test]
     fn silence_decode_is_byte_identical_and_detects_planted_blocks() {
-        let configs = [
-            TrellisConfig::for_bpw(3.0),
-            TrellisConfig::for_bpw(2.0),
-            TrellisConfig::for_bpw_l(2.0, 12),
-            TrellisConfig::for_bpw_l(2.0, 5),
-        ];
+        let configs = [TrellisConfig::for_bpw(3.0), TrellisConfig::for_bpw(2.0), TrellisConfig::for_bpw_l(2.0, 12), TrellisConfig::for_bpw_l(2.0, 5)];
         for cfg in configs {
             let lut = codebook_lut(cfg.l_bits);
             for &n in &[2048usize, 1000, 257] {
@@ -424,11 +387,7 @@ mod tests {
                     let want = decode_tensor_fixed(enc, &cfg);
                     assert_eq!(got, want, "silence decode diverged L={} n={n}", cfg.l_bits);
                     if !enc.has_affine_min {
-                        assert!(
-                            mask.n_silent_zero() + mask.n_silent_const() >= 1,
-                            "no silence detected on planted tensor L={} n={n}",
-                            cfg.l_bits
-                        );
+                        assert!(mask.n_silent_zero() + mask.n_silent_const() >= 1, "no silence detected on planted tensor L={} n={n}", cfg.l_bits);
                     }
                 }
             }
@@ -444,16 +403,11 @@ mod tests {
         assert!(strong[1] && strong[2], "scale_q=0 blocks must be strong-silent");
         let mask = SilenceMask::build(&enc, &cfg, lut);
         assert!(mask.n_silent_zero() >= 2, "strong-silent blocks must classify SilentZero");
-        assert_eq!(
-            decode_q12_silence(&enc, &cfg, lut, &mask),
-            decode_tensor_fixed(&enc, &cfg),
-            "scale_q=0 silence decode diverged"
-        );
+        assert_eq!(decode_q12_silence(&enc, &cfg, lut, &mask), decode_tensor_fixed(&enc, &cfg), "scale_q=0 silence decode diverged");
     }
 
     #[test]
     fn matvec_silence_variants_are_bit_equal() {
-        
         for &(rows, cols) in &[(8usize, 896usize), (4, 256), (5, 320)] {
             let cfg = TrellisConfig::for_bpw_l(2.0, 12);
             let lut = codebook_lut(cfg.l_bits);

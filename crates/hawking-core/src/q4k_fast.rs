@@ -136,10 +136,7 @@ pub fn decode_q4k_sb_mb(block: &[u8; Q4K_BLOCK_BYTES]) -> ([u8; 8], [u8; 8]) {
 /// fp16 `d` and integer `sb_idx[k]`. Storing the pre-multiplied product
 /// as fp16 may quantize precision; the parity guarantee only holds when
 /// the product is exactly representable in fp16.
-pub fn convert_q4k_block_to_fast(
-    src: &[u8; Q4K_BLOCK_BYTES],
-    dst: &mut [u8; Q4K_FAST_BLOCK_BYTES],
-) {
+pub fn convert_q4k_block_to_fast(src: &[u8; Q4K_BLOCK_BYTES], dst: &mut [u8; Q4K_FAST_BLOCK_BYTES]) {
     let d_bits = u16::from_le_bytes([src[0], src[1]]);
     let dmin_bits = u16::from_le_bytes([src[2], src[3]]);
     let d = f16::from_bits(d_bits).to_f32();
@@ -185,28 +182,17 @@ pub fn convert_q4k_block_to_fast(
 /// cols) / 256`. Tensor major order is preserved (row-major); each row is
 /// `cols/256` super-blocks.
 pub fn convert_q4k_tensor_to_fast(src: &[u8], rows: usize, cols: usize) -> Vec<u8> {
-    assert!(
-        cols % Q4K_BLOCK_ELEMS == 0,
-        "cols must be a multiple of 256"
-    );
+    assert!(cols % Q4K_BLOCK_ELEMS == 0, "cols must be a multiple of 256");
     let blocks_per_row = cols / Q4K_BLOCK_ELEMS;
     let n_blocks = rows * blocks_per_row;
-    assert_eq!(
-        src.len(),
-        n_blocks * Q4K_BLOCK_BYTES,
-        "Q4_K input size mismatch"
-    );
+    assert_eq!(src.len(), n_blocks * Q4K_BLOCK_BYTES, "Q4_K input size mismatch");
 
     let mut out = vec![0u8; n_blocks * Q4K_FAST_BLOCK_BYTES];
     for b in 0..n_blocks {
         let s_off = b * Q4K_BLOCK_BYTES;
         let d_off = b * Q4K_FAST_BLOCK_BYTES;
-        let src_block: &[u8; Q4K_BLOCK_BYTES] =
-            (&src[s_off..s_off + Q4K_BLOCK_BYTES]).try_into().unwrap();
-        let dst_block: &mut [u8; Q4K_FAST_BLOCK_BYTES] = (&mut out
-            [d_off..d_off + Q4K_FAST_BLOCK_BYTES])
-            .try_into()
-            .unwrap();
+        let src_block: &[u8; Q4K_BLOCK_BYTES] = (&src[s_off..s_off + Q4K_BLOCK_BYTES]).try_into().unwrap();
+        let dst_block: &mut [u8; Q4K_FAST_BLOCK_BYTES] = (&mut out[d_off..d_off + Q4K_FAST_BLOCK_BYTES]).try_into().unwrap();
         convert_q4k_block_to_fast(src_block, dst_block);
     }
     out
@@ -260,15 +246,10 @@ pub fn header_byte_length(tensors: &[(String, u32, u32)]) -> u64 {
 /// fast_bytes). Returns the complete file as a single `Vec<u8>` (caller
 /// writes to disk). Use `header_byte_length` to project layout if needed.
 pub fn serialize_sidecar(src_hash: u64, tensors: Vec<WrittenTensor>) -> Vec<u8> {
-    let meta: Vec<(String, u32, u32)> = tensors
-        .iter()
-        .map(|t| (t.name.clone(), t.rows, t.cols))
-        .collect();
+    let meta: Vec<(String, u32, u32)> = tensors.iter().map(|t| (t.name.clone(), t.rows, t.cols)).collect();
     let header_len = header_byte_length(&meta);
 
-    let mut out = Vec::with_capacity(
-        header_len as usize + tensors.iter().map(|t| t.bytes.len()).sum::<usize>(),
-    );
+    let mut out = Vec::with_capacity(header_len as usize + tensors.iter().map(|t| t.bytes.len()).sum::<usize>());
     out.extend_from_slice(Q4K_FAST_MAGIC);
     out.push(0u8); // reserved
     out.extend_from_slice(&Q4K_FAST_VERSION.to_le_bytes());
@@ -307,26 +288,17 @@ pub fn serialize_sidecar(src_hash: u64, tensors: Vec<WrittenTensor>) -> Vec<u8> 
 /// truncated input.
 pub fn parse_header(file: &[u8]) -> Result<Q4kFastHeader, String> {
     if file.len() < 26 {
-        return Err(format!(
-            "file too short for Q4K_FAST header: {}",
-            file.len()
-        ));
+        return Err(format!("file too short for Q4K_FAST header: {}", file.len()));
     }
     if &file[0..9] != Q4K_FAST_MAGIC {
-        return Err(format!(
-            "bad magic: expected {:?}, got {:?}",
-            Q4K_FAST_MAGIC,
-            &file[0..9]
-        ));
+        return Err(format!("bad magic: expected {:?}, got {:?}", Q4K_FAST_MAGIC, &file[0..9]));
     }
     if file[9] != 0 {
         return Err(format!("reserved byte not zero: {}", file[9]));
     }
     let version = u32::from_le_bytes(file[10..14].try_into().unwrap());
     if version != Q4K_FAST_VERSION {
-        return Err(format!(
-            "version mismatch: expected {Q4K_FAST_VERSION}, got {version}"
-        ));
+        return Err(format!("version mismatch: expected {Q4K_FAST_VERSION}, got {version}"));
     }
     let src_hash = u64::from_le_bytes(file[14..22].try_into().unwrap());
     let n_tensors = u32::from_le_bytes(file[22..26].try_into().unwrap()) as usize;
@@ -342,9 +314,7 @@ pub fn parse_header(file: &[u8]) -> Result<Q4kFastHeader, String> {
         if p + name_len + 24 > file.len() {
             return Err("truncated in tensor entry".to_string());
         }
-        let name = std::str::from_utf8(&file[p..p + name_len])
-            .map_err(|e| format!("name utf8: {e}"))?
-            .to_string();
+        let name = std::str::from_utf8(&file[p..p + name_len]).map_err(|e| format!("name utf8: {e}"))?.to_string();
         p += name_len;
         let rows = u32::from_le_bytes(file[p..p + 4].try_into().unwrap());
         p += 4;
@@ -354,21 +324,10 @@ pub fn parse_header(file: &[u8]) -> Result<Q4kFastHeader, String> {
         p += 8;
         let byte_len = u64::from_le_bytes(file[p..p + 8].try_into().unwrap());
         p += 8;
-        tensors.push(Q4kFastTensorEntry {
-            name,
-            rows,
-            cols,
-            byte_off,
-            byte_len,
-        });
+        tensors.push(Q4kFastTensorEntry { name, rows, cols, byte_off, byte_len });
     }
 
-    Ok(Q4kFastHeader {
-        version,
-        src_hash,
-        tensors,
-        header_bytes: p as u64,
-    })
+    Ok(Q4kFastHeader { version, src_hash, tensors, header_bytes: p as u64 })
 }
 
 /// Compute the source-GGUF hash used in the sidecar header. We take the
@@ -389,20 +348,8 @@ mod tests {
         let payload_a = vec![0xAAu8; 160 * 4]; // 4 super-blocks
         let payload_b = vec![0xBBu8; 160 * 8];
         let tensors = vec![
-            WrittenTensor {
-                name: "blk.0.attn_q.weight".to_string(),
-                rows: 4,
-                cols: 256,
-                byte_len: payload_a.len() as u64,
-                bytes: payload_a.clone(),
-            },
-            WrittenTensor {
-                name: "blk.0.attn_k.weight".to_string(),
-                rows: 8,
-                cols: 256,
-                byte_len: payload_b.len() as u64,
-                bytes: payload_b.clone(),
-            },
+            WrittenTensor { name: "blk.0.attn_q.weight".to_string(), rows: 4, cols: 256, byte_len: payload_a.len() as u64, bytes: payload_a.clone() },
+            WrittenTensor { name: "blk.0.attn_k.weight".to_string(), rows: 8, cols: 256, byte_len: payload_b.len() as u64, bytes: payload_b.clone() },
         ];
         let file = serialize_sidecar(0xDEAD_BEEF_CAFE_BABEu64, tensors);
         let hdr = parse_header(&file).unwrap();
