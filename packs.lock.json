@@ -10,34 +10,34 @@
   "packs": [
     {
       "id": "hawking-runtime-validation-r225",
-      "version": "3",
-      "archive_name": "hawking-runtime-validation-r225-v3.tar",
-      "archive_bytes": 7813120,
-      "archive_sha256": "d7f0b34c1a3daaf5803bde9ce40a65b035b0a58f8810909d2eaadb3a356a3bc5",
-      "manifest_sha256": "80ff847fbb91ee658cbac7df8cfb05249ede1c8746d2ae51173af41c83deb022",
-      "tree_sha256": "f17ef635ac86087f8e44bcb26e185a0a7fac30903fef5bf66b615017d28b3667",
-      "primary_lines": 118507,
+      "version": "4",
+      "archive_name": "hawking-runtime-validation-r225-v4.tar",
+      "archive_bytes": 7823360,
+      "archive_sha256": "f4667c3727e83feb154138e8edca67316896e2221eb71c5e44aa5267c7d49422",
+      "manifest_sha256": "d4e1d23cb0a9a918d6b853559a893da59f99e0e592c89a3951a928d6956ea5d2",
+      "tree_sha256": "c33f711f3c02030f005bb8c690f68e0a362aaa400c7d7e59391fc053d8be9a77",
+      "primary_lines": 118540,
       "source_repository": "https://github.com/joshuahickscorp/hawking-packs",
-      "source_commit": "26fc4ccadb0154b51b227dbb445b72c41f828f08",
-      "source_tree": "59dc0c98c3ee80852f3ecb1937ecc124d03a1a9b",
-      "source_tag": "hawking-runtime-validation-r225-v3",
-      "control_primary_lines": 358,
-      "control_inventory_sha256": "c1a3f28fb1ca712ee2883bd15f5281199ae5c85a5a642681ae07175e6b0076b5",
+      "source_commit": "a3afe82b69fe2a82a8937d3f35a38ab88d97b869",
+      "source_tree": "cd3291f5abe429dd62ff7c50fcb653308097071a",
+      "source_tag": "hawking-runtime-validation-r225-v4",
+      "control_primary_lines": 354,
+      "control_inventory_sha256": "6c0902c0f88f1af0ed8904f1fdadb75f4c33792d2db50f4ce6dc7368ec037add",
       "control_files": [
         {
           "path": "BUILDING.md",
           "bytes": 1122,
-          "sha256": "90a357a6f2c6ec8fa62690500d14262f8cb081db0e8edb3b6d5751dd6adccd89",
+          "sha256": "3de57f42d430146897fe5e08f7a75fcab6381de6259a14b62864f65cf9cc74dd",
           "lines": 33
         },
         {
           "path": "tools/build_pack.py",
-          "bytes": 12771,
-          "sha256": "300303a319bb0c9edf880da831709da71491510a149f92a23d29c078404d1d96",
-          "lines": 325
+          "bytes": 12641,
+          "sha256": "e9a063ba6650b894caf4e28908dd5373d9f8eaa4cd0d8b0377254e4a4de98526",
+          "lines": 321
         }
       ],
-      "hydrate_name": "hawking-runtime-validation-r225-v3",
+      "hydrate_name": "hawking-runtime-validation-r225-v4",
       "ownership": "project_owned",
       "unmaterialized_metadata": [
         "README.md",
@@ -45,8 +45,8 @@
         "pack-source.manifest.json"
       ],
       "mirrors": [
-        "../hawking-pack-cache/hawking-runtime-validation-r225-v3.tar",
-        "https://github.com/joshuahickscorp/hawking-packs/releases/download/hawking-runtime-validation-r225-v3/hawking-runtime-validation-r225-v3.tar"
+        "../hawking-pack-cache/hawking-runtime-validation-r225-v4.tar",
+        "https://github.com/joshuahickscorp/hawking-packs/releases/download/hawking-runtime-validation-r225-v4/hawking-runtime-validation-r225-v4.tar"
       ],
       "materialize": [
         {
