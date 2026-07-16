@@ -1,6 +1,7 @@
 # Rust
 /target
 **/target/
+/build/
 /node_modules/
 **/*.rs.bk
 *.pdb
