@@ -294,7 +294,72 @@ async fn list_models(State(s): State<AppState>) -> Json<ListModels> {
 #[derive(Deserialize, Clone)]
 struct ChatMessage {
     role: String,
-    content: String,
+    // OpenAI round-trip: an assistant turn that only makes tool calls sends
+    // content:null, and a role:tool result may omit content. Both must parse, so
+    // content is optional and the tool fields are accepted (B1: complete the
+    // standard tools round-trip instead of 400-ing on turn 2).
+    #[serde(default)]
+    content: Option<String>,
+    #[serde(default)]
+    tool_calls: Option<Vec<serde_json::Value>>,
+    #[serde(default)]
+    tool_call_id: Option<String>,
+    // Accepted for OpenAI wire compatibility (the function name on a tool result);
+    // not yet used in rendering.
+    #[serde(default)]
+    #[allow(dead_code)]
+    name: Option<String>,
+}
+
+impl ChatMessage {
+    fn new(role: &str, content: String) -> Self {
+        ChatMessage {
+            role: role.to_string(),
+            content: Some(content),
+            tool_calls: None,
+            tool_call_id: None,
+            name: None,
+        }
+    }
+
+    /// The rendered text body for this message. Plain content passes through, but an
+    /// assistant turn carrying `tool_calls` and a `role:tool` result are wrapped in the
+    /// Hermes/Qwen `<tool_call>` / `<tool_response>` tags the model was trained on, so
+    /// the prior tool interaction is VISIBLE in the prompt on the next turn instead of
+    /// being silently dropped (which would move the round-trip bug rather than fix it).
+    fn rendered_body(&self) -> String {
+        let base = self.content.clone().unwrap_or_default();
+        if self.role == "assistant" {
+            if let Some(calls) = &self.tool_calls {
+                let mut out = base;
+                for c in calls {
+                    // OpenAI shape is {id, type, function:{name, arguments}}; be lenient
+                    // and also accept a bare {name, arguments} object.
+                    let func = c.get("function").unwrap_or(c);
+                    let name = func.get("name").and_then(|v| v.as_str()).unwrap_or("");
+                    // arguments is a JSON STRING in the OpenAI wire shape; pass it through
+                    // verbatim if so, otherwise serialize the object.
+                    let args_str = match func.get("arguments") {
+                        Some(serde_json::Value::String(s)) => s.clone(),
+                        Some(other) => other.to_string(),
+                        None => "{}".to_string(),
+                    };
+                    let name_json = serde_json::to_string(name).unwrap_or_else(|_| "\"\"".into());
+                    if !out.is_empty() {
+                        out.push('\n');
+                    }
+                    out.push_str(&format!(
+                        "<tool_call>\n{{\"name\": {name_json}, \"arguments\": {args_str}}}\n</tool_call>"
+                    ));
+                }
+                return out;
+            }
+        }
+        if self.role == "tool" {
+            return format!("<tool_response>\n{base}\n</tool_response>");
+        }
+        base
+    }
 }
 
 #[derive(Deserialize)]
@@ -372,15 +437,10 @@ async fn chat_completions(State(s): State<AppState>, body: Bytes) -> Response {
         let mut msgs = req.messages.clone();
         match msgs.first_mut() {
             Some(first) if first.role == "system" => {
-                first.content = format!("{preamble}\n{}", first.content);
+                let existing = first.content.clone().unwrap_or_default();
+                first.content = Some(format!("{preamble}\n{existing}"));
             }
-            _ => msgs.insert(
-                0,
-                ChatMessage {
-                    role: "system".to_string(),
-                    content: preamble,
-                },
-            ),
+            _ => msgs.insert(0, ChatMessage::new("system", preamble)),
         }
         render_chat(&msgs, &s.model_arch)
     } else {
@@ -459,10 +519,13 @@ fn render_chat(msgs: &[ChatMessage], model_arch: &str) -> String {
 fn render_chat_deepseek(msgs: &[ChatMessage]) -> String {
     let mut s = String::new();
     for m in msgs {
+        let body = m.rendered_body();
         match m.role.as_str() {
-            "system" => s.push_str(&format!("{}\n\n", m.content)),
-            "user" => s.push_str(&format!("User: {}\n\n", m.content)),
-            "assistant" => s.push_str(&format!("Assistant: {}\n\n", m.content)),
+            "system" => s.push_str(&format!("{body}\n\n")),
+            "user" => s.push_str(&format!("User: {body}\n\n")),
+            "assistant" => s.push_str(&format!("Assistant: {body}\n\n")),
+            // tool results are shown to the model as an observation turn.
+            "tool" => s.push_str(&format!("User: {body}\n\n")),
             _ => {}
         }
     }
@@ -481,9 +544,12 @@ fn render_chat_qwen2(msgs: &[ChatMessage]) -> String {
         );
     }
     for m in msgs {
+        // Qwen2.5 renders tool results inside a user turn wrapped in <tool_response>;
+        // rendered_body already adds the wrapper, so map the role tag to "user".
+        let tag = if m.role == "tool" { "user" } else { m.role.as_str() };
         s.push_str(&format!(
-            "<|im_start|>{}\n{}<|im_end|>\n",
-            m.role, m.content
+            "<|im_start|>{tag}\n{}<|im_end|>\n",
+            m.rendered_body()
         ));
     }
     s.push_str("<|im_start|>assistant\n");
@@ -493,7 +559,7 @@ fn render_chat_qwen2(msgs: &[ChatMessage]) -> String {
 fn render_chat_generic(msgs: &[ChatMessage]) -> String {
     let mut s = String::new();
     for m in msgs {
-        s.push_str(&format!("<|{}|>\n{}\n", m.role, m.content));
+        s.push_str(&format!("<|{}|>\n{}\n", m.role, m.rendered_body()));
     }
     s.push_str("<|assistant|>\n");
     s
@@ -1137,5 +1203,78 @@ async fn embeddings(State(s): State<AppState>, body: Bytes) -> Response {
         .into_response(),
         Ok(Err(e)) => ApiError::internal(e.to_string()).into_response(),
         Err(_) => ApiError::internal("embedding task panicked").into_response(),
+    }
+}
+
+#[cfg(test)]
+mod b1_roundtrip_tests {
+    use super::*;
+
+    // B1: the standard OpenAI tools round-trip must PARSE. Before the fix, an assistant
+    // turn with content:null + tool_calls, and a role:tool result, both 400-ed
+    // ("invalid type: null, expected a string" / "missing field content").
+    #[test]
+    fn openai_tool_roundtrip_turn_two_parses() {
+        let body = br#"{
+            "model": "qwen",
+            "messages": [
+                {"role": "user", "content": "read foo.rs"},
+                {"role": "assistant", "content": null, "tool_calls": [
+                    {"id": "call_1", "type": "function",
+                     "function": {"name": "fs.read", "arguments": "{\"path\": \"foo.rs\"}"}}
+                ]},
+                {"role": "tool", "tool_call_id": "call_1", "name": "fs.read",
+                 "content": "fn foo() {}"}
+            ]
+        }"#;
+        let req: ChatReq = serde_json::from_slice(body).expect("turn-2 round-trip must parse");
+        assert_eq!(req.messages.len(), 3);
+        // assistant content is null -> None; tool_calls carried through
+        assert!(req.messages[1].content.is_none());
+        assert!(req.messages[1].tool_calls.as_ref().unwrap().len() == 1);
+        // tool result carries its id and content
+        assert_eq!(req.messages[2].role, "tool");
+        assert_eq!(req.messages[2].tool_call_id.as_deref(), Some("call_1"));
+    }
+
+    #[test]
+    fn omitted_content_parses() {
+        // A role:tool message may omit content entirely.
+        let body = br#"{"messages":[{"role":"assistant","tool_calls":[]}]}"#;
+        let req: ChatReq = serde_json::from_slice(body).expect("omitted content must parse");
+        assert!(req.messages[0].content.is_none());
+    }
+
+    #[test]
+    fn tool_interaction_is_rendered_not_dropped() {
+        // The prior tool call + result must appear in the prompt so the model sees the
+        // interaction on the next turn (fixing the drop, not just the 400).
+        let msgs = vec![
+            ChatMessage::new("user", "read foo.rs".into()),
+            ChatMessage {
+                role: "assistant".into(),
+                content: None,
+                tool_calls: Some(vec![serde_json::json!({
+                    "id": "call_1", "type": "function",
+                    "function": {"name": "fs.read", "arguments": "{\"path\": \"foo.rs\"}"}
+                })]),
+                tool_call_id: None,
+                name: None,
+            },
+            ChatMessage {
+                role: "tool".into(),
+                content: Some("fn foo() {}".into()),
+                tool_calls: None,
+                tool_call_id: Some("call_1".into()),
+                name: Some("fs.read".into()),
+            },
+        ];
+        let prompt = render_chat_qwen2(&msgs);
+        assert!(prompt.contains("<tool_call>"), "assistant tool_call must render: {prompt}");
+        assert!(prompt.contains("fs.read"), "tool name must render: {prompt}");
+        assert!(prompt.contains("<tool_response>"), "tool result must render: {prompt}");
+        assert!(prompt.contains("fn foo() {}"), "tool output must render: {prompt}");
+        // tool role maps to a user turn tag in the Qwen template
+        assert!(!prompt.contains("<|im_start|>tool"), "tool role tag should map to user");
     }
 }

@@ -38,15 +38,21 @@ def wilson(passes, n, z=1.96):
     return (max(0.0, center - half), min(1.0, center + half))
 
 
-CODE_FENCE = re.compile(r"```(?:[a-zA-Z0-9_+-]*)\n(.*?)```", re.DOTALL)
+# Robust to malformed fences: small quantized models sometimes open with 2 backticks
+# (``rust) instead of 3. Accept a run of 2+ backticks, an optional lang tag, then
+# capture until the next run of 2+ backticks.
+CODE_FENCE = re.compile(r"`{2,}[ \t]*[a-zA-Z0-9_+-]*[ \t]*\n(.*?)`{2,}", re.DOTALL)
 
 
 def extract_code(text):
-    """Pull the first fenced code block; fall back to the whole body."""
+    """Pull the first fenced code block; fall back to the body with fence lines and
+    any stray backticks stripped, so a malformed fence never leaks backticks into the
+    compiled source (which would be a fake failure, not a model failure)."""
     m = CODE_FENCE.search(text)
     if m:
         return m.group(1).strip()
-    return text.strip()
+    lines = [ln for ln in text.splitlines() if not ln.lstrip().startswith("`")]
+    return "\n".join(lines).strip().strip("`").strip()
 
 
 def call_endpoint(endpoint, model, prompt, max_tokens, timeout):
@@ -85,6 +91,36 @@ def run_python_task(code, entry, test, timeout):
     return False, (err[-1] if err else "nonzero exit")
 
 
+def run_rust_task(code, test, timeout):
+    """Compile the model's Rust code + test main with rustc, run it. Pass = exit 0."""
+    import os
+    import tempfile
+    program = code + "\n\n" + test + "\n"
+    with tempfile.TemporaryDirectory() as d:
+        src = os.path.join(d, "t.rs")
+        binp = os.path.join(d, "t")
+        with open(src, "w") as f:
+            f.write(program)
+        try:
+            comp = subprocess.run(
+                ["rustc", "-O", "--edition", "2021", src, "-o", binp],
+                capture_output=True, text=True, timeout=timeout)
+        except subprocess.TimeoutExpired:
+            return False, "compile-timeout"
+        if comp.returncode != 0:
+            err = (comp.stderr or "").strip().splitlines()
+            first = next((l for l in err if "error" in l.lower()), err[0] if err else "compile-fail")
+            return False, "compile: " + first[:80]
+        try:
+            run = subprocess.run([binp], capture_output=True, text=True, timeout=timeout)
+        except subprocess.TimeoutExpired:
+            return False, "run-timeout"
+        if run.returncode == 0:
+            return True, "ok"
+        err = (run.stderr or run.stdout or "").strip().splitlines()
+        return False, (err[-1][:80] if err else "run-nonzero")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--endpoint", default="http://127.0.0.1:8899")
@@ -117,10 +153,14 @@ def main():
             continue
         gen_s += dt
         code = extract_code(content)
-        if t.get("lang", "python") != "python":
+        lang = t.get("lang", "python")
+        if lang == "python":
+            ok, reason = run_python_task(code, t.get("entry", ""), t["test"], args.exec_timeout)
+        elif lang == "rust":
+            ok, reason = run_rust_task(code, t["test"], args.exec_timeout)
+        else:
             results.append({"id": t["id"], "passed": False, "reason": "lang-unsupported"})
             continue
-        ok, reason = run_python_task(code, t.get("entry", ""), t["test"], args.exec_timeout)
         passes += 1 if ok else 0
         results.append({"id": t["id"], "passed": ok, "reason": reason, "gen_s": round(dt, 2)})
         print(f"[{i:2d}/{len(tasks)}] {t['id']:20s} {'PASS' if ok else 'FAIL':4s} {reason}", file=sys.stderr)

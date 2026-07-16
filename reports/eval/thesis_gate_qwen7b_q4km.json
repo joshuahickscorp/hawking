@@ -11,97 +11,97 @@
     0.7018,
     0.9881
   ],
-  "total_generation_s": 68.6,
+  "total_generation_s": 67.6,
   "results": [
     {
       "id": "t01_add",
       "passed": true,
       "reason": "ok",
-      "gen_s": 1.69
+      "gen_s": 1.54
     },
     {
       "id": "t02_is_prime",
       "passed": true,
       "reason": "ok",
-      "gen_s": 4.31
+      "gen_s": 4.19
     },
     {
       "id": "t03_fib",
       "passed": true,
       "reason": "ok",
-      "gen_s": 3.48
+      "gen_s": 3.39
     },
     {
       "id": "t04_reverse_words",
       "passed": true,
       "reason": "ok",
-      "gen_s": 3.17
+      "gen_s": 3.1
     },
     {
       "id": "t05_two_sum",
       "passed": true,
       "reason": "ok",
-      "gen_s": 5.63
+      "gen_s": 5.59
     },
     {
       "id": "t06_gcd",
       "passed": true,
       "reason": "ok",
-      "gen_s": 3.45
+      "gen_s": 3.39
     },
     {
       "id": "t07_is_palindrome",
       "passed": true,
       "reason": "ok",
-      "gen_s": 3.98
+      "gen_s": 3.95
     },
     {
       "id": "t08_count_vowels",
       "passed": false,
       "reason": "SyntaxError: expected '('",
-      "gen_s": 3.84
+      "gen_s": 3.86
     },
     {
       "id": "t09_flatten",
       "passed": true,
       "reason": "ok",
-      "gen_s": 4.04
+      "gen_s": 4.01
     },
     {
       "id": "t10_max_subarray",
       "passed": true,
       "reason": "ok",
-      "gen_s": 4.63
+      "gen_s": 4.57
     },
     {
       "id": "t11_roman",
       "passed": true,
       "reason": "ok",
-      "gen_s": 7.79
+      "gen_s": 7.62
     },
     {
       "id": "t12_merge_sorted",
       "passed": true,
       "reason": "ok",
-      "gen_s": 6.17
+      "gen_s": 6.28
     },
     {
       "id": "t13_anagram",
       "passed": true,
       "reason": "ok",
-      "gen_s": 5.16
+      "gen_s": 5.08
     },
     {
       "id": "t14_binary_search",
       "passed": true,
       "reason": "ok",
-      "gen_s": 6.09
+      "gen_s": 5.95
     },
     {
       "id": "t15_word_count",
       "passed": true,
       "reason": "ok",
-      "gen_s": 5.18
+      "gen_s": 5.12
     }
   ]
 }

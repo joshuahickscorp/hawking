@@ -1,0 +1,89 @@
+{
+  "gate": "thesis_gate_v0_execution_grounded",
+  "grade": "MEASURED-LAB (R0/R1: first on-box number, below R3, not a public WIN)",
+  "endpoint": "http://127.0.0.1:8899",
+  "model_label": "qwen2.5-7b-instruct-q4km-debug-m3ultra-RUST",
+  "corpus": "tools/eval/thesis_rust_corpus_v0.jsonl",
+  "n": 12,
+  "passes": 10,
+  "pass_at_1": 0.8333,
+  "wilson95": [
+    0.552,
+    0.953
+  ],
+  "total_generation_s": 49.4,
+  "results": [
+    {
+      "id": "r01_add",
+      "passed": true,
+      "reason": "ok",
+      "gen_s": 2.17
+    },
+    {
+      "id": "r02_is_prime",
+      "passed": true,
+      "reason": "ok",
+      "gen_s": 4.53
+    },
+    {
+      "id": "r03_fib",
+      "passed": true,
+      "reason": "ok",
+      "gen_s": 2.85
+    },
+    {
+      "id": "r04_reverse_words",
+      "passed": true,
+      "reason": "ok",
+      "gen_s": 2.17
+    },
+    {
+      "id": "r05_gcd",
+      "passed": true,
+      "reason": "ok",
+      "gen_s": 2.54
+    },
+    {
+      "id": "r06_is_palindrome",
+      "passed": false,
+      "reason": "compile: error[E0599]: no method named `is_ascii_alphanumeric` found for reference `&str`",
+      "gen_s": 5.39
+    },
+    {
+      "id": "r07_max_subarray",
+      "passed": true,
+      "reason": "ok",
+      "gen_s": 4.32
+    },
+    {
+      "id": "r08_two_sum",
+      "passed": true,
+      "reason": "ok",
+      "gen_s": 4.65
+    },
+    {
+      "id": "r09_merge_sorted",
+      "passed": false,
+      "reason": "compile: error: expected one of `!` or `::`, found keyword `fn`",
+      "gen_s": 5.77
+    },
+    {
+      "id": "r10_binary_search",
+      "passed": true,
+      "reason": "ok",
+      "gen_s": 4.86
+    },
+    {
+      "id": "r11_count_words",
+      "passed": true,
+      "reason": "ok",
+      "gen_s": 3.46
+    },
+    {
+      "id": "r12_roman",
+      "passed": true,
+      "reason": "ok",
+      "gen_s": 6.69
+    }
+  ]
+}

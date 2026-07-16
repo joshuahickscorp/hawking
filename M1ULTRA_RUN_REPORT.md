@@ -49,7 +49,7 @@ once unbounded wall-clock converts every time-wall. Update the Proven column as 
 | HIDE M3: own the .tq format | 5.5 | 8.5 | 9.0 | GATED (no e2e coherent-token receipt) | - |
 | HIDE M4: grammar-guaranteed tool calls | 3.0 | 7.0 | 7.5 | MEASURED-LAB scaffold, adversarially verified (parser + parse/lint/dedup/dispatch loop + schema-aware jump-forward grammar + prompt-lookup, 39 owned tests; 6 review findings, 4 fixed w/ regression tests, 2 pre-existing edit.rs bugs reported); still GATED on decode-loop wiring + first-try-valid receipt | agentic_tool_system_audit_2026_07_11.md |
 | HIDE ship-readiness (Tauri, executor, tests) | 7.0 | 8.5 | 9.0 | MEASURED-LAB (signed 18 MB DMG on disk) | - |
-| The thesis gate (can the local model code) | 3.0 | 7.0 | 7.5 | MEASURED-LAB (R0/R1: 14/15 = 93.3% exec-grounded pass@1, Wilson95 70.2-98.8%, Qwen2.5-7B-Q4_K served) | reports/eval/thesis_gate_qwen7b_q4km.json |
+| The thesis gate (can the local model code) | 3.5 | 7.0 | 7.5 | MEASURED-LAB (R0/R1: Python 14/15 = 93.3% Wilson95 70.2-98.8%; Rust 10/12 = 83.3% Wilson95 55.2-95.3%; exec-grounded, Qwen2.5-7B-Q4_K served) | reports/eval/thesis_gate_qwen7b_q4km*.json |
 
 North-star overall: proven 3.25 / bounded ceiling 6.33 / maximal ceiling ~8.4.
 
@@ -60,9 +60,17 @@ GPU meet or beat the M1 Ultra plan, but memory is 96 not 128 GB and usable disk 
 consequence: the frontier-resident moonshot (gate 2) and the RAM-cliff demo are DISK-WALLED for parent
 staging (a 235B/405B/671B bf16 parent does not fit in 150 GB free; only stream-bake is possible), and 671B
 @84 GB will not fit RESIDENT on 96 GB (retire it here). Moonshot gate 1 (doctor recovery 7B-32B) is
-download-gated not dead: 7B + 14B bf16 parents are now staged (see Wave 1). The size_frontier.DEVICES
-`m1ultra` row (112 GB budget / 8 TB) is wrong for this box and needs an `m3ultra` row (~80 GB weight budget,
-~150 GB disk stage limit, 800 GB/s); pending.
+download-gated not dead: 7B + 14B bf16 parents are now staged (see Wave 1). CORRECTION to the Wave 1 note:
+the device constants were ALREADY re-derived for this box during the doctor-v5 work. studio_manifest.py
+DEFAULT_HARDWARE = M3_ULTRA_96GB (ram 96, weight_budget 78 GB, ram_gbps 819, ssd_tb 1.0, disk_reserve 150)
+and size_frontier DEFAULT_DEVICE = studio-m3ultra-96; the leftover `m1ultra` (112/8 TB) is only a
+non-default historical comparison row. So weight_budget 78 GB already correctly retires 671B-resident
+(84 GB > 78). Two residual gaps remain: (1) the AUDIT + GOAL-PROMPT PROSE still describe the box as
+M1 Ultra 128 GB / 8 TB (doc drift, harmless to the math but misleading); (2) the manifest models a 1 TB SSD
+with an 850 GB storage budget, but the box is 82% full with only ~162 GB actually FREE, so the frontier-fit
+`fits_storage` math overstates what can be staged today (the real staging wall is current free space, not
+SSD capacity). Net: the moonshot-2 disk wall stands for a different reason than "wrong constants" - it is
+current disk occupancy, not a missing device row.
 
 ## 2. Open gates (answer these to move the scoreboard)
 
@@ -87,7 +95,8 @@ download-gated not dead: 7B + 14B bf16 parents are now staged (see Wave 1). The 
 | Qwen2.5-3B-Q4_K_M decode tok/s (single-stream) | 31.03 (a4_clean_walltime.json) | - | bandwidth-bound; projection ~150-165 until run |
 | Aggregate tok/s at max continuous batch | ~48 (B=8, conservative) | - | the re-headlined metric on 128 GB |
 | 7B doctor recovery, best recovered eff-bpw @ <=+2% | none (swap-died) | - | the moonshot gate 1 headline; 7B+14B bf16 now staged |
-| Thesis gate pass@1 (exec-grounded smoke, 15 Python tasks) | none | 14/15 = 93.3% (Qwen2.5-7B-Q4_K, debug serve) | Wilson95 70.2-98.8%; 1 fail = quant token glitch `count_ vowels`; next tier = EvalPlus + Rust-via-cargo |
+| Thesis gate pass@1 Python (15-task exec-grounded smoke) | none | 14/15 = 93.3% (Qwen2.5-7B-Q4_K, debug serve) | Wilson95 70.2-98.8%; 1 fail = quant token glitch `count_ vowels` |
+| Thesis gate pass@1 Rust (12-task rustc exec-grounded) | none | 10/12 = 83.3% (same model) | Wilson95 55.2-95.3%; 2 real model fails (is_ascii_alphanumeric on &str; a syntax error); Rust harder than Python as expected |
 | Native .tq decode tok/s (resident 70B) | none | - | microbench B / SPINE-4; GGUF serve path proven coherent this wave |
 | RAM-cliff tok/s vs control box Q4_K | none | - | the money demo |
 | Energy J/tok at the cliff | none | - | the energy moat |
@@ -125,6 +134,31 @@ committed (approved) artifact.
   (c) HIDE condenser B1 (OpenAI tool round-trip fix) in parallel; (d) with 7B bf16 staged, microbench A
   (MPS-bf16 vs CPU-bf16 doctor) and moonshot gate 1's first doctor pass become runnable. No commit made;
   local only, pending operator approval.
+- Wave 2 (2026-07-16, on-box, levers in sequence per operator): drove the reconciled spine
+  (thesis gate + HIDE condenser Phase A). LEVER 1 (m3ultra constants): found the constants were ALREADY
+  re-derived for this box (studio_manifest DEFAULT_HARDWARE = M3_ULTRA_96GB, weight_budget 78 GB, 819 GB/s,
+  disk_reserve 150), so no code change; corrected the Wave 1 ledger over-claim and flagged the REAL residual
+  gap (the manifest models a 1 TB SSD / 850 GB budget but the box has only ~162 GB actually free, so
+  fits_storage overstates stageable frontier size). LEVER 2 (HIDE condenser B1, OpenAI tool round-trip):
+  patched crates/hawking-serve/src/http.rs ChatMessage (content now Option, added tool_calls/tool_call_id/
+  name for the standard round-trip) + a rendered_body() that emits the prior tool call and result in
+  Hermes <tool_call>/<tool_response> tags so the interaction is VISIBLE next turn instead of dropped; 3 new
+  unit tests + full hawking-serve suite green; VERIFIED LIVE e2e: the exact turn-2 history that used to 400
+  (assistant content:null + tool_calls, then role:tool result) now returns HTTP 200 and the model correctly
+  consumed the tool result (read `pub fn foo() -> i32 { 42 }` and explained it). B1 = MEASURED-LAB, e2e.
+  LEVER 3 (thesis gate tier 2): extended tools/eval/thesis_gate.py with a Rust rustc compile-and-run path +
+  a 12-task Rust corpus. First Rust run showed 1/12 with all fails "unknown start of token backtick" - caught
+  as a HARNESS extraction bug (the Q4_K model opened fences with 2 backticks not 3, so raw backticks leaked
+  into the compiled source); fixed extract_code to accept 2+ backtick fences and strip stray fence lines
+  (reporting the fake 8.3% would have been a fake-LOSS, banned like a fake-win). Re-run HONEST: Rust 10/12 =
+  83.3% (Wilson95 55.2-95.3%), the 2 fails REAL model defects (.is_ascii_alphanumeric on &str; a syntax
+  error); Python re-confirmed stable at 14/15 = 93.3% under the new extractor. CATEGORY MOVEMENT: thesis gate
+  3.0 -> 3.5 (now has a Python AND a Rust exec-grounded number; Rust is the honest harder + more differentiated
+  number for our stack); HIDE tool-call round-trip blocker (from the HIDE deep audit) CLOSED at the serve wire
+  layer. Still R0/R1, small corpora, debug build, no independent repro = not a public WIN. NEXT LEVER (4):
+  moonshot gate 1 first doctor pass on the staged 7B bf16 + microbench A (MPS-bf16 vs CPU-bf16 doctor
+  throughput); needs careful preregistration (<=+2% ppl gate, effective bpw, MULTIWINDOW>=4) and is the heavy
+  long-running job. Wave 2 artifacts uncommitted pending approval.
 - Wave C (2026-07-11, wiring + hardening): with operator approval, committed the scaffold
   (commit 79f54420, 11 files, 47 tests) then landed three wiring/hardening pieces (commit
   14909a97, 469 insertions): (1) MCP REGISTRATION - `register_mcp_servers` resiliently connects a
