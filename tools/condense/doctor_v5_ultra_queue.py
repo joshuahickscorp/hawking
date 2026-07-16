@@ -2378,14 +2378,6 @@ def _scan(plan: dict[str, Any], state: dict[str, Any]) \
         row = state["cells"][cell["cell_id"]]
         if row["status"] in TERMINAL or row["status"] == "running":
             continue
-        if row["status"] == "blocked-execution" \
-                and row["attempts"] >= MAX_AUTOMATIC_ATTEMPTS:
-            retained = row["blockers"] or [
-                f"automatic retry ceiling reached ({MAX_AUTOMATIC_ATTEMPTS})"
-            ]
-            row["blockers"] = retained
-            blockers[cell["cell_id"]] = retained
-            continue
         disposition, disposition_errors = _validate_disposition(cell, plan)
         if disposition_errors:
             row["blockers"] = disposition_errors
@@ -2402,6 +2394,14 @@ def _scan(plan: dict[str, Any], state: dict[str, Any]) \
                           disposition_sha256=disposition["disposition_sha256"])
             _save_state(plan, state, "running")
             _sync_reporter(plan, state, reason=f"terminal:{cell['cell_id']}")
+            continue
+        if row["status"] == "blocked-execution" \
+                and row["attempts"] >= MAX_AUTOMATIC_ATTEMPTS:
+            retained = row["blockers"] or [
+                f"automatic retry ceiling reached ({MAX_AUTOMATIC_ATTEMPTS})"
+            ]
+            row["blockers"] = retained
+            blockers[cell["cell_id"]] = retained
             continue
         ready, dependency_blockers = _dependency_state(cell, state)
         if not ready:
@@ -2439,14 +2439,6 @@ def _scan_runnable_heads(plan: dict[str, Any], state: dict[str, Any]) \
             continue
         if cell["cell_id"] in state["active_children"]:
             continue  # Belt-and-suspenders: a launched lane is never re-admitted.
-        if row["status"] == "blocked-execution" \
-                and row["attempts"] >= MAX_AUTOMATIC_ATTEMPTS:
-            retained = row["blockers"] or [
-                f"automatic retry ceiling reached ({MAX_AUTOMATIC_ATTEMPTS})"
-            ]
-            row["blockers"] = retained
-            blockers[cell["cell_id"]] = retained
-            continue
         disposition, disposition_errors = _validate_disposition(cell, plan)
         if disposition_errors:
             row["blockers"] = disposition_errors
@@ -2463,6 +2455,14 @@ def _scan_runnable_heads(plan: dict[str, Any], state: dict[str, Any]) \
                           disposition_sha256=disposition["disposition_sha256"])
             _save_state(plan, state, "running")
             _sync_reporter(plan, state, reason=f"terminal:{cell['cell_id']}")
+            continue
+        if row["status"] == "blocked-execution" \
+                and row["attempts"] >= MAX_AUTOMATIC_ATTEMPTS:
+            retained = row["blockers"] or [
+                f"automatic retry ceiling reached ({MAX_AUTOMATIC_ATTEMPTS})"
+            ]
+            row["blockers"] = retained
+            blockers[cell["cell_id"]] = retained
             continue
         ready, dependency_blockers = _dependency_state(cell, state)
         if not ready:
@@ -4792,6 +4792,35 @@ def selftest() -> int:
     finally:
         globals()["_prepare_execution"] = original_prepare
         globals()["_validate_disposition"] = original_disposition
+    # A sealed disposition remains authoritative after the automatic retry
+    # ceiling, in both the serial and concurrent scan paths.
+    saved = {name: globals()[name] for name in (
+        "_validate_disposition", "_prepare_execution", "_append_event",
+        "_save_state", "_sync_reporter",
+    )}
+    disposition_sha = "d" * 64
+    try:
+        globals()["_validate_disposition"] = lambda cell, current: (
+            ({"status": "unsupported", "disposition_sha256": disposition_sha}, [])
+            if cell["cell_id"] == first_codec["cell_id"] else (None, [])
+        )
+        globals()["_prepare_execution"] = lambda cell: {
+            "cell": cell, "blockers": ["stop after disposition assertion"],
+        }
+        for name in ("_append_event", "_save_state", "_sync_reporter"):
+            globals()[name] = lambda *args, **kwargs: None
+        for scan in (_scan, _scan_runnable_heads):
+            exhausted = _base_state(plan)
+            row = exhausted["cells"][first_codec["cell_id"]]
+            row.update({"status": "blocked-execution",
+                        "attempts": MAX_AUTOMATIC_ATTEMPTS,
+                        "blockers": ["retry ceiling"], "error": "exit 2"})
+            scan(plan, exhausted)
+            assert row["status"] == "unsupported"
+            assert row["disposition_sha256"] == disposition_sha
+            assert row["blockers"] == [] and row["error"] is None
+    finally:
+        globals().update(saved)
     control = _base_control(plan)
     assert control["control_sha256"] == _hash_value(_without(control, "control_sha256"))
     # The strict ceiling must not accept a one-third nominal rate as 0.33.
