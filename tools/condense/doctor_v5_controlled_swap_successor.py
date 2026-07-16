@@ -36,7 +36,7 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 SCRIPT = Path(__file__).resolve()
 V1_PATH = HERE / "doctor_v5_ultra_accelerated_queue.py"
-V1_SHA256 = "f7c3054ec533563cb5ba988d97718c98e29dea0c00c4ca9e7dcd4534486c3681"
+V1_SHA256 = "1e5a61582b398117ca197483a1ec0c59870288bb032bee5118d942087d131365"
 STACKED_PATH = HERE / "doctor_v5_stacked_admission.py"
 STACKED_SHA256 = "2227c4ebb32039b87d3d9d40f24e8d984a8f96cef4113ed29a48f125b809aaa5"
 
