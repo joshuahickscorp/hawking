@@ -24,6 +24,76 @@ jobs:
           # pinned baseline commit, so CI must include repository history.
           fetch-depth: 0
 
+      - name: Cache pinned source packs
+        uses: actions/cache@v4
+        with:
+          path: .hawking-pack-cache
+          key: hawking-source-packs-${{ runner.os }}-${{ hashFiles('packs.lock.json') }}
+
+      - name: Fetch pinned source pack
+        run: python3 tools/hawking_packs.py fetch
+
+      - name: Verify pinned source release and deterministic rebuild
+        run: |
+          python3 - <<'PY' > "$RUNNER_TEMP/hawking-pack.env"
+          import json
+          import shlex
+
+          lock = json.load(open("packs.lock.json", encoding="utf-8"))
+          row = lock["packs"][0]
+          values = {
+              "PACK_SOURCE_REPOSITORY": row["source_repository"],
+              "PACK_SOURCE_COMMIT": row["source_commit"],
+              "PACK_SOURCE_TREE": row["source_tree"],
+              "PACK_SOURCE_TAG": row["source_tag"],
+              "PACK_ARCHIVE_NAME": row["archive_name"],
+          }
+          for key, value in values.items():
+              print(f"{key}={shlex.quote(str(value))}")
+          PY
+          . "$RUNNER_TEMP/hawking-pack.env"
+          source_checkout="$RUNNER_TEMP/hawking-packs-source"
+          git clone --quiet --depth 1 --branch "$PACK_SOURCE_TAG" \
+            "$PACK_SOURCE_REPOSITORY" "$source_checkout"
+          test "$(git -C "$source_checkout" rev-parse HEAD)" = "$PACK_SOURCE_COMMIT"
+          test "$(git -C "$source_checkout" rev-parse "HEAD^{tree}")" = "$PACK_SOURCE_TREE"
+          python3 - "$source_checkout" <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
+          import sys
+
+          source = Path(sys.argv[1])
+          row = json.load(open("packs.lock.json", encoding="utf-8"))["packs"][0]
+          actual = []
+          for expected in row["control_files"]:
+              raw = (source / expected["path"]).read_bytes()
+              actual.append({
+                  "path": expected["path"],
+                  "bytes": len(raw),
+                  "sha256": hashlib.sha256(raw).hexdigest(),
+                  "lines": raw.count(b"\n") + bool(raw and not raw.endswith(b"\n")),
+              })
+          canonical = (
+              json.dumps(actual, sort_keys=True, separators=(",", ":")) + "\n"
+          ).encode()
+          assert actual == row["control_files"]
+          assert sum(item["lines"] for item in actual) == row["control_primary_lines"]
+          assert hashlib.sha256(canonical).hexdigest() == row["control_inventory_sha256"]
+          PY
+          python3 "$source_checkout/tools/build_pack.py" \
+            --output "$RUNNER_TEMP/$PACK_ARCHIVE_NAME"
+          cmp "$RUNNER_TEMP/$PACK_ARCHIVE_NAME" \
+            ".hawking-pack-cache/$PACK_ARCHIVE_NAME"
+
+      - name: Hydrate and verify pinned source pack offline
+        run: |
+          python3 tools/hawking_packs.py selftest
+          python3 tools/hawking_packs.py fetch --offline
+          python3 tools/hawking_packs.py hydrate
+          python3 tools/hawking_packs.py verify
+          python3 tools/loc_floor.py check --rung r250-pack-proof
+
       - name: Install Rust (stable + rustfmt + clippy)
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -31,6 +101,12 @@ jobs:
 
       - name: Cache cargo registry + target
         uses: Swatinem/rust-cache@v2
+
+      - name: Fetch locked Cargo dependencies
+        run: |
+          cargo fetch --locked
+          cargo fetch --manifest-path vendor/strand-quant/Cargo.toml --locked
+          cargo fetch --manifest-path vendor/strand-decode-kernel/Cargo.toml --locked
 
       - name: Condensation contract
         run: |
@@ -47,7 +123,7 @@ jobs:
       # allowlisted. Any NEW lint of an un-allowed kind fails the build.
       - name: Clippy
         run: |
-          cargo clippy --workspace -- -D warnings \
+          cargo clippy --workspace --frozen -- -D warnings \
             -A unexpected_cfgs \
             -A unused_assignments \
             -A clippy::should_implement_trait \
@@ -55,20 +131,38 @@ jobs:
             -A clippy::too_many_arguments
 
       - name: Build
-        run: cargo build --workspace
+        run: cargo build --workspace --frozen
 
       # Compile every test target, including the GPU/model parity gates, so a
       # broken test can't hide behind a skip.
       - name: Compile all tests
-        run: cargo test --workspace --no-run
+        run: cargo test --workspace --no-run --frozen
+
+      - name: Compile hydrated TQ integration gates
+        run: |
+          cargo test -p hawking-core --features tq \
+            --test qwen_tq_serve_parity \
+            --test tq_output_space_quality \
+            --no-run --frozen
+
+      - name: Compile standalone pack crates offline
+        env:
+          CARGO_TARGET_DIR: target/pack-validation
+        run: |
+          cargo test --manifest-path vendor/strand-quant/Cargo.toml \
+            --locked --offline --no-run
+          cargo test --manifest-path vendor/strand-decode-kernel/Cargo.toml \
+            --locked --offline --no-run
 
       # Run the deterministic unit tests (no model weights or GPU required).
       # Model-dependent parity gates skip cleanly when weights are absent; the
       # independent-oracle (llama.cpp) gate runs once a small fixture is wired.
       - name: Unit tests
-        run: cargo test --workspace --lib --bins
+        run: cargo test --workspace --lib --bins --frozen
 
   frontend:
+    # This job runs TypeScript/Vite only; it never invokes Tauri, Cargo, or the
+    # sidecar staging script, so it does not need the Rust source pack.
     name: typecheck · test · build (frontend)
     runs-on: macos-14
     defaults:

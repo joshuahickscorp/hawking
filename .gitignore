@@ -19,6 +19,23 @@ Cargo.lock.bak
 # Coding-agent project-local config (settings, plans, agents)
 .claude/
 
+# Content-addressed Hawking packs. Source packs are versioned separately and
+# hydrated deterministically from the offline cache via tools/hawking_packs.py.
+/.hawking/
+/.hawking-pack-cache/
+
+# The TQ compatibility surface is source-owned by the pinned Hawking pack.
+# Hydration restores these exact legacy paths for Cargo, tools, and receipts.
+/vendor/strand-quant/
+/vendor/strand-decode-kernel/
+/tools/strand/
+/tools/tq_bake/
+/tools/training/rwkv7_qat.py
+/tools/training/rwkv7_export_strand.py
+/tools/condense/audit_ladder.py
+/crates/hawking-core/tests/qwen_tq_serve_parity.rs
+/crates/hawking-core/tests/tq_output_space_quality.rs
+
 # Manager↔executor file-based bus (internal AI dev pipeline; results ship via
 # normal commits to crates/, docs/, README.md, etc — not these working files)
 /prompts/

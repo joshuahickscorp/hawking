@@ -66,192 +66,136 @@ def _suite(
     }
 
 
-SUITES: tuple[dict[str, Any], ...] = (
-    _suite(
-        "fresh_document_nll",
-        ("language_modeling", "calibration", "multilingual"),
-        "sealed_primary",
-        "local:post-cutoff-document-sampler",
-        "document NLL, teacher KL/JS, Brier/ECE, rare-token/tail loss",
-        "document",
-        temporal_freeze=True,
-        notes="Bootstrap documents, never correlated tokens; stratify language/domain/length.",
+_SUITE_SPECS = (
+    (
+        "fresh_document_nll", ("language_modeling", "calibration", "multilingual"),
+        "sealed_primary", "local:post-cutoff-document-sampler",
+        "document NLL, teacher KL/JS, Brier/ECE, rare-token/tail loss", "document", True,
+        "Bootstrap documents, never correlated tokens; stratify language/domain/length.",
     ),
-    _suite(
+    (
         "livebench_frozen_snapshot",
         ("knowledge", "reasoning", "mathematics", "coding", "instruction_following"),
-        "public_development",
-        "https://arxiv.org/abs/2406.19314",
-        "official deterministic ground-truth scorers",
-        "item",
-        temporal_freeze=True,
-        notes="Contamination-limited public development evidence, never the sealed proof alone.",
+        "public_development", "https://arxiv.org/abs/2406.19314",
+        "official deterministic ground-truth scorers", "item", True,
+        "Contamination-limited public development evidence, never the sealed proof alone.",
     ),
-    _suite(
-        "livecodebench_post_cutoff",
-        ("coding", "reasoning"),
-        "frozen_primary",
+    (
+        "livecodebench_post_cutoff", ("coding", "reasoning"), "frozen_primary",
         "https://arxiv.org/abs/2403.07974",
-        "identical execution sandbox, tests, sampling n/k, and token budget",
-        "task",
-        temporal_freeze=True,
+        "identical execution sandbox, tests, sampling n/k, and token budget", "task", True, "",
     ),
-    _suite(
-        "arc_agi_2",
-        ("reasoning",),
-        "frozen_primary",
-        "https://arxiv.org/abs/2505.11831",
-        "exact grid output under matched attempts/compute",
-        "task",
+    (
+        "arc_agi_2", ("reasoning",), "frozen_primary", "https://arxiv.org/abs/2505.11831",
+        "exact grid output under matched attempts/compute", "task", False, "",
     ),
-    _suite(
-        "ifeval",
-        ("instruction_following",),
-        "public_development",
-        "https://arxiv.org/abs/2311.07911",
-        "official verifiable instruction checks",
-        "item",
+    (
+        "ifeval", ("instruction_following",), "public_development",
+        "https://arxiv.org/abs/2311.07911", "official verifiable instruction checks",
+        "item", False, "",
     ),
-    _suite(
-        "bfcl_v4_frozen",
-        ("tool_use", "instruction_following"),
-        "frozen_primary",
+    (
+        "bfcl_v4_frozen", ("tool_use", "instruction_following"), "frozen_primary",
         "https://gorilla.cs.berkeley.edu/leaderboard",
-        "official AST/live/multiturn/hallucination checks",
-        "interaction",
-        temporal_freeze=True,
+        "official AST/live/multiturn/hallucination checks", "interaction", True, "",
     ),
-    _suite(
-        "ruler_curve",
-        ("long_context", "reasoning"),
-        "frozen_primary",
+    (
+        "ruler_curve", ("long_context", "reasoning"), "frozen_primary",
         "https://arxiv.org/abs/2404.06654",
         "official exact/objective tasks at 4k,8k,16k,32k,max context",
-        "item_by_context",
+        "item_by_context", False, "",
     ),
-    _suite(
-        "nolima_curve",
-        ("long_context", "knowledge", "reasoning"),
-        "frozen_primary",
-        "https://arxiv.org/abs/2502.05167",
-        "official long-context latent-association scoring",
-        "item_by_context",
+    (
+        "nolima_curve", ("long_context", "knowledge", "reasoning"), "frozen_primary",
+        "https://arxiv.org/abs/2502.05167", "official long-context latent-association scoring",
+        "item_by_context", False, "",
     ),
-    _suite(
-        "longbench_v2",
-        ("long_context", "reasoning", "coding"),
-        "secondary_diagnostic",
-        "https://arxiv.org/abs/2412.15204",
-        "official multiple-choice scoring by context/task",
-        "item_by_task",
-        notes="Public and exposed; useful transfer diagnostic, not a one-shot private proof.",
+    (
+        "longbench_v2", ("long_context", "reasoning", "coding"), "secondary_diagnostic",
+        "https://arxiv.org/abs/2412.15204", "official multiple-choice scoring by context/task",
+        "item_by_task", False,
+        "Public and exposed; useful transfer diagnostic, not a one-shot private proof.",
     ),
-    _suite(
-        "bigcodebench",
-        ("coding", "instruction_following"),
-        "frozen_primary",
+    (
+        "bigcodebench", ("coding", "instruction_following"), "frozen_primary",
         "https://arxiv.org/abs/2406.15877",
-        "identical execution environment and pass@k budget",
-        "task",
+        "identical execution environment and pass@k budget", "task", False, "",
     ),
-    _suite(
-        "evalplus",
-        ("coding",),
-        "public_development",
-        "https://arxiv.org/abs/2305.01210",
-        "official augmented tests under matched samples",
-        "task",
+    (
+        "evalplus", ("coding",), "public_development", "https://arxiv.org/abs/2305.01210",
+        "official augmented tests under matched samples", "task", False, "",
     ),
-    _suite(
-        "mmlu_prox",
-        ("knowledge", "reasoning", "science", "multilingual"),
-        "frozen_primary",
+    (
+        "mmlu_prox", ("knowledge", "reasoning", "science", "multilingual"), "frozen_primary",
         "https://arxiv.org/abs/2503.10497",
         "official per-language/per-domain exact choice scoring",
-        "item_by_language_domain",
+        "item_by_language_domain", False, "",
     ),
-    _suite(
-        "mmlu_redux_audited",
-        ("knowledge", "reasoning", "science"),
-        "secondary_diagnostic",
-        "https://arxiv.org/abs/2406.04127",
-        "audited-item exact choice scoring",
-        "item_by_domain",
-        notes="Prefer audited items; original MMLU is not primary v5 proof evidence.",
+    (
+        "mmlu_redux_audited", ("knowledge", "reasoning", "science"), "secondary_diagnostic",
+        "https://arxiv.org/abs/2406.04127", "audited-item exact choice scoring",
+        "item_by_domain", False,
+        "Prefer audited items; original MMLU is not primary v5 proof evidence.",
     ),
-    _suite(
-        "gpqa_diamond",
-        ("science", "reasoning"),
-        "secondary_diagnostic",
-        "https://arxiv.org/abs/2311.12022",
-        "exact choice, prompt variants reported",
-        "item_by_domain",
-        notes="Exposed static benchmark; secondary diagnostic only.",
+    (
+        "gpqa_diamond", ("science", "reasoning"), "secondary_diagnostic",
+        "https://arxiv.org/abs/2311.12022", "exact choice, prompt variants reported",
+        "item_by_domain", False, "Exposed static benchmark; secondary diagnostic only.",
     ),
-    _suite(
-        "math_rob",
-        ("mathematics", "reasoning"),
-        "transfer_primary",
+    (
+        "math_rob", ("mathematics", "reasoning"), "transfer_primary",
         "https://arxiv.org/abs/2503.04550",
         "official robustness transformations and exact answers",
-        "base_item_and_mutation_family",
+        "base_item_and_mutation_family", False, "",
     ),
-    _suite(
-        "lgmt_metamorphic",
-        ("reasoning", "instruction_following", "safety_security"),
-        "transfer_primary",
-        "https://arxiv.org/abs/2605.23965",
-        "logic-grounded metamorphic consistency",
-        "base_item_and_relation",
+    (
+        "lgmt_metamorphic", ("reasoning", "instruction_following", "safety_security"),
+        "transfer_primary", "https://arxiv.org/abs/2605.23965",
+        "logic-grounded metamorphic consistency", "base_item_and_relation", False, "",
     ),
-    _suite(
+    (
         "fresh_procedural_reasoning",
-        ("reasoning", "mathematics", "science", "instruction_following"),
-        "sealed_primary",
+        ("reasoning", "mathematics", "science", "instruction_following"), "sealed_primary",
         "local:seed-committed-procedural-generator",
-        "programmatic oracle plus expert audit sample",
-        "generator_family_and_seed",
-        temporal_freeze=True,
-        notes="Seeds committed before generation; mutation families held out from Doctor.",
+        "programmatic oracle plus expert audit sample", "generator_family_and_seed", True,
+        "Seeds committed before generation; mutation families held out from Doctor.",
     ),
-    _suite(
-        "fresh_multilingual_constraints",
-        ("multilingual", "instruction_following", "reasoning"),
-        "sealed_primary",
-        "local:post-cutoff-human-and-procedural-vault",
+    (
+        "fresh_multilingual_constraints", ("multilingual", "instruction_following", "reasoning"),
+        "sealed_primary", "local:post-cutoff-human-and-procedural-vault",
         "objective constraints plus bilingual human adjudication sample",
-        "language_family_and_item",
-        temporal_freeze=True,
+        "language_family_and_item", True, "",
     ),
-    _suite(
+    (
         "quantization_security_metamorphics",
-        ("safety_security", "calibration", "instruction_following"),
-        "sealed_primary",
+        ("safety_security", "calibration", "instruction_following"), "sealed_primary",
         "https://arxiv.org/abs/2605.15152",
         "harmful-compliance, over-refusal, injected-outlier and confidence-shift checks",
-        "attack_family_model_seed_item",
-        temporal_freeze=True,
-        notes="Includes benign-parent/quantized-child differential behavior and clean controls.",
+        "attack_family_model_seed_item", True,
+        "Includes benign-parent/quantized-child differential behavior and clean controls.",
     ),
-    _suite(
-        "sealed_capability_tail",
-        tuple(contract.CAPABILITY_DOMAINS),
-        "sealed_primary",
+    (
+        "sealed_capability_tail", tuple(contract.CAPABILITY_DOMAINS), "sealed_primary",
         "local:post-freeze-private-capability-vault",
         "objective oracle where possible; blind multi-judge plus human adjudication otherwise",
-        "capability_family_item_prompt_seed",
-        temporal_freeze=True,
-        notes="One-shot lineage consumption; promotion service returns aggregates only.",
+        "capability_family_item_prompt_seed", True,
+        "One-shot lineage consumption; promotion service returns aggregates only.",
     ),
-    _suite(
-        "independent_replication_battery",
-        tuple(contract.CAPABILITY_DOMAINS),
-        "independent_primary",
-        "local:independent-owner-post-freeze-vault",
+    (
+        "independent_replication_battery", tuple(contract.CAPABILITY_DOMAINS),
+        "independent_primary", "local:independent-owner-post-freeze-vault",
         "same preregistered metrics under an independently held prompt set",
-        "capability_family_item_prompt_seed",
-        temporal_freeze=True,
+        "capability_family_item_prompt_seed", True, "",
     ),
+)
+SUITES: tuple[dict[str, Any], ...] = tuple(
+    _suite(
+        suite_id, domains, role, source, scoring, cluster_unit,
+        temporal_freeze=temporal_freeze, notes=notes,
+    )
+    for (
+        suite_id, domains, role, source, scoring, cluster_unit, temporal_freeze, notes
+    ) in _SUITE_SPECS
 )
 
 
@@ -1142,163 +1086,25 @@ def _restamp(document: dict[str, Any]) -> None:
 
 
 def validate_manifest(manifest: Any) -> list[str]:
+    """Validate the mutable receipt envelope against the canonical policy.
+
+    ``_policy_projection`` is the fail-closed boundary: it normalizes only the
+    timestamp, manifest identity, and explicitly declared receipt slots.  A
+    projected manifest must otherwise equal a fresh compiler result byte for
+    byte.  Keeping that single rule authoritative avoids a second, inevitably
+    drifting hand-written schema for the same policy.
+    """
+
     errors: list[str] = []
     if not isinstance(manifest, dict):
         return ["manifest must be an object"]
-    if manifest.get("schema") != SCHEMA:
-        errors.append(f"schema must be {SCHEMA}")
-    if manifest.get("version") != VERSION:
-        errors.append(f"version must be {VERSION}")
-    if manifest.get("mode") != "manifest_only_no_evaluation":
-        errors.append("manifest mode must remain execution-free")
     if not _valid_generated_at(manifest.get("generated_at")):
         errors.append("generated_at must be a timezone-aware ISO-8601 timestamp")
-    if manifest.get("claim_scopes") != list(contract.CLAIM_SCOPES):
-        errors.append("claim-scope order mismatch")
-    if manifest.get("capability_domains") != list(contract.CAPABILITY_DOMAINS):
-        errors.append("capability-domain order mismatch")
-
-    suites = manifest.get("suites")
-    if not isinstance(suites, list) or not suites:
-        errors.append("suites must be a non-empty array")
-        suites = []
-    seen: set[str] = set()
-    primary_coverage: set[str] = set()
-    for index, suite in enumerate(suites):
-        prefix = f"suites[{index}]"
-        if not isinstance(suite, dict):
-            errors.append(f"{prefix} must be an object")
-            continue
-        suite_id = suite.get("id")
-        if not isinstance(suite_id, str) or not suite_id or suite_id in seen:
-            errors.append(f"{prefix}.id missing or duplicate")
-            continue
-        seen.add(suite_id)
-        domains = suite.get("domains")
-        if not isinstance(domains, list) or not domains or any(
-            domain not in contract.CAPABILITY_DOMAINS for domain in domains
-        ):
-            errors.append(f"{suite_id}: invalid domains")
-        if suite.get("role") in {"sealed_primary", "frozen_primary", "independent_primary"}:
-            primary_coverage.update(domains if isinstance(domains, list) else [])
-        if not isinstance(suite.get("primary_source"), str) or not suite["primary_source"]:
-            errors.append(f"{suite_id}: primary source missing")
-        if not isinstance(suite.get("cluster_unit"), str) or not suite["cluster_unit"]:
-            errors.append(f"{suite_id}: cluster unit missing")
-    missing = set(contract.CAPABILITY_DOMAINS) - primary_coverage
-    if missing:
-        errors.append("primary suite coverage missing domains: " + ", ".join(sorted(missing)))
 
     for label, container, field in _receipt_slots(manifest):
         if field not in container or not _is_receipt(container.get(field)):
             errors.append(f"{label} must be 'required' or a SHA-256 receipt")
 
-    vaults = manifest.get("vaults")
-    vault_ids = [row.get("id") for row in vaults if isinstance(row, dict)] \
-        if isinstance(vaults, list) else []
-    if vault_ids != list(contract.DATA_SPLITS):
-        errors.append("vault order and coverage must exactly match the v5 data splits")
-
-    compute = manifest.get("matched_test_time_compute")
-    required_compute_fields = compute.get("required_fields") if isinstance(compute, dict) else None
-    if not isinstance(required_compute_fields, dict):
-        errors.append("matched test-time-compute field registry is missing")
-    else:
-        flattened = [
-            field
-            for group in required_compute_fields.values()
-            if isinstance(group, list)
-            for field in group
-        ]
-        must_include = {
-            "input_token_count", "max_input_tokens", "max_output_tokens", "temperature",
-            "max_reasoning_tokens", "timeout_seconds", "samples_per_item", "tool_calls",
-            "retrieval_calls", "external_model_calls", "verifier_retries",
-            "sampling_seed_schedule_sha256", "retrieval_index_sha256", "tool_schema_sha256",
-        }
-        if len(flattened) != len(set(flattened)) or not must_include <= set(flattened):
-            errors.append("matched test-time-compute fields are duplicated or incomplete")
-
-    statistics = manifest.get("statistics")
-    if not isinstance(statistics, dict) or any((
-        statistics.get("minimum_independent_training_seeds") != 5,
-        statistics.get("minimum_independent_calibration_draws") != 5,
-        statistics.get("minimum_generation_seeds_per_stochastic_item") != 5,
-        statistics.get("multiple_testing") != "holm_or_closed_testing",
-        statistics.get("intersection_union_required_for_uniform_dominance") is not True,
-        statistics.get("pre_power_each_primary_domain") is not True,
-    )):
-        errors.append("statistical replication, calibration, power, or multiplicity contract incomplete")
-
-    coverage = manifest.get("competitor_coverage")
-    implementations = coverage.get("direct_implementations") if isinstance(coverage, dict) else None
-    implementation_ids = [
-        row.get("implementation_id") for row in implementations if isinstance(row, dict)
-    ] if isinstance(implementations, list) else []
-    if not implementation_ids or len(implementation_ids) != len(set(implementation_ids)):
-        errors.append("direct competitor implementation registry is empty or duplicated")
-    missing_central = set(CENTRAL_DIRECT_IMPLEMENTATIONS) - set(implementation_ids)
-    if missing_central:
-        errors.append(
-            "central direct competitor obligations missing: " + ", ".join(sorted(missing_central))
-        )
-    rate_coverage = coverage.get("required_implementation_ids_by_rate_bpw") \
-        if isinstance(coverage, dict) else None
-    if not isinstance(rate_coverage, dict):
-        errors.append("direct competitor rate coverage is missing")
-    else:
-        for rate in RATE_POINTS:
-            ids = rate_coverage.get(str(rate))
-            public_ids = [value for value in ids or [] if value != "hawking_prior_source_bound_champion"]
-            if not isinstance(ids, list) or len(public_ids) < 2 or any(
-                value not in implementation_ids for value in ids
-            ):
-                errors.append(f"rate {rate} lacks at least two named direct public implementations")
-    matgptq = next(
-        (
-            row for row in implementations or []
-            if isinstance(row, dict) and row.get("implementation_id") == "matgptq_ptq"
-        ),
-        None,
-    )
-    if not isinstance(matgptq, dict) \
-            or matgptq.get("required_ladder_rates_bpw") != [4.0, 3.0] \
-            or "2.0" not in matgptq.get("explicitly_excluded_ladder_rates_bpw", {}):
-        errors.append("MatGPTQ coverage must distinguish 4/3-bit quality evidence from 2-bit support")
-    qmoe = next(
-        (row for row in implementations or [] if isinstance(row, dict)
-         and row.get("implementation_id") == "qmoe_switch_subbit"),
-        None,
-    )
-    spear = next(
-        (row for row in implementations or [] if isinstance(row, dict)
-         and row.get("implementation_id") == "spear_token_gated_compensation"),
-        None,
-    )
-    if not isinstance(qmoe, dict) or qmoe.get("applicable_model_classes") != [
-        "mixture_of_experts"
-    ] or qmoe.get("required_ladder_rates_bpw") != [1.0, 0.8]:
-        errors.append("QMoE must remain MoE-only and bound to its 0.8-bpw-compatible lanes")
-    if not isinstance(spear, dict) or spear.get("required_ladder_rates_bpw") != [4.0] \
-            or spear.get("control_kind") != "conditional_runtime_repair":
-        errors.append("SPEAR must remain a four-bit conditional-repair control")
-
-    owner_contract = manifest.get("sealed_and_independent_receipts")
-    sealed_owner = owner_contract.get("sealed_final") if isinstance(owner_contract, dict) else None
-    independent_owner = owner_contract.get("independent_replication") \
-        if isinstance(owner_contract, dict) else None
-    if not isinstance(sealed_owner, dict) or not isinstance(independent_owner, dict) or any((
-        sealed_owner.get("required") is not True,
-        sealed_owner.get("owner_independent_of_optimizer_and_candidate_selector") is not True,
-        independent_owner.get("required") is not True,
-        independent_owner.get("owner_distinct_from_campaign_and_sealed_final_owners") is not True,
-        independent_owner.get("reproduce_every_applicable_direct_competitor") is not True,
-    )):
-        errors.append("sealed-final or independent-owner receipt contract is incomplete")
-
-    # The schema checks above make failures legible; this exact projection is
-    # the security boundary.  A malicious edit followed by a valid restamp must
-    # still differ from the fresh, code-owned canonical policy.
     canonical = compile_manifest()
     projected = _policy_projection(manifest)
     canonical_projected = _policy_projection(canonical)
@@ -1340,7 +1146,78 @@ def selftest() -> int:
 
     # Red-team the stronger boundary: every mutation is re-stamped with a valid
     # manifest hash and must *still* fail canonical-policy validation.
-    def assert_restamped_rejected(label: str, edit) -> None:
+    def implementation(value, implementation_id):
+        return next(
+            row for row in value["competitor_coverage"]["direct_implementations"]
+            if row["implementation_id"] == implementation_id
+        )
+
+    mutations = (
+        ("delete suite", lambda value: value["suites"].pop()),
+        ("change suite scoring",
+         lambda value: value["suites"][0].__setitem__("scoring", "token average only")),
+        ("open sealed vault", lambda value: next(
+            row for row in value["vaults"] if row["id"] == "sealed_final"
+        ).__setitem__("optimizer_access", True)),
+        ("delete temperature matching",
+         lambda value: value["matched_test_time_compute"]["required_fields"]["sampling"].remove(
+             "temperature"
+         )),
+        ("lower training seeds",
+         lambda value: value["statistics"].__setitem__(
+             "minimum_independent_training_seeds", 1
+         )),
+        ("lower calibration draws",
+         lambda value: value["statistics"].__setitem__(
+             "minimum_independent_calibration_draws", 1
+         )),
+        ("disable multiple testing",
+         lambda value: value["statistics"].__setitem__("multiple_testing", "none")),
+        ("weaken contamination",
+         lambda value: value["contamination_firewall"].__setitem__(
+             "semantic_neighbor_exclusion", False
+         )),
+        ("remove contamination control",
+         lambda value: value["contamination_firewall"].pop("teacher_query_log_exclusion")),
+        ("weaken independent owner",
+         lambda value: value["sealed_and_independent_receipts"][
+             "independent_replication"
+         ].__setitem__("owner_distinct_from_campaign_and_sealed_final_owners", False)),
+        ("remove sealed receipt field",
+         lambda value: value["sealed_and_independent_receipts"]["sealed_final"][
+             "required_receipt_fields"
+         ].pop()),
+        ("delete named competitor",
+         lambda value: value["competitor_coverage"]["direct_implementations"].pop(0)),
+        ("substitute one competitor",
+         lambda value: value["competitor_coverage"].__setitem__(
+             "direct_implementations",
+             [value["competitor_coverage"]["direct_implementations"][0]],
+         )),
+        ("misstate MatGPTQ as sourced 2-bit quality evidence",
+         lambda value: implementation(value, "matgptq_ptq")[
+             "required_ladder_rates_bpw"
+         ].append(2.0)),
+        ("silently omit BTC-LLM",
+         lambda value: value["competitor_coverage"]["direct_implementations"].remove(
+             implementation(value, "btc_llm_binary_codebook")
+         )),
+        ("broaden QMoE to dense without evidence",
+         lambda value: implementation(value, "qmoe_switch_subbit")[
+             "applicable_model_classes"
+         ].append("dense")),
+        ("silently omit SPEAR incompatibility path",
+         lambda value: implementation(value, "spear_token_gated_compensation")[
+             "resolution_contract"
+         ].__setitem__("silent_omission_forbidden", False)),
+        ("misclassify Shannon ANS as capability repair",
+         lambda value: implementation(value, "shannon_ans_lossless_wrapper").__setitem__(
+             "control_kind", "capability_repair"
+         )),
+        ("add unknown policy escape hatch",
+         lambda value: value.__setitem__("allow_policy_override", True)),
+    )
+    for label, edit in mutations:
         candidate = copy.deepcopy(manifest)
         edit(candidate)
         _restamp(candidate)
@@ -1349,113 +1226,6 @@ def selftest() -> int:
             label,
             failures,
         )
-
-    assert_restamped_rejected("delete suite", lambda value: value["suites"].pop())
-    assert_restamped_rejected(
-        "change suite scoring",
-        lambda value: value["suites"][0].__setitem__("scoring", "token average only"),
-    )
-    assert_restamped_rejected(
-        "open sealed vault",
-        lambda value: next(
-            row for row in value["vaults"] if row["id"] == "sealed_final"
-        ).__setitem__("optimizer_access", True),
-    )
-    assert_restamped_rejected(
-        "delete temperature matching",
-        lambda value: value["matched_test_time_compute"]["required_fields"]["sampling"].remove(
-            "temperature"
-        ),
-    )
-    assert_restamped_rejected(
-        "lower training seeds",
-        lambda value: value["statistics"].__setitem__("minimum_independent_training_seeds", 1),
-    )
-    assert_restamped_rejected(
-        "lower calibration draws",
-        lambda value: value["statistics"].__setitem__("minimum_independent_calibration_draws", 1),
-    )
-    assert_restamped_rejected(
-        "disable multiple testing",
-        lambda value: value["statistics"].__setitem__("multiple_testing", "none"),
-    )
-    assert_restamped_rejected(
-        "weaken contamination",
-        lambda value: value["contamination_firewall"].__setitem__(
-            "semantic_neighbor_exclusion", False
-        ),
-    )
-    assert_restamped_rejected(
-        "remove contamination control",
-        lambda value: value["contamination_firewall"].pop("teacher_query_log_exclusion"),
-    )
-    assert_restamped_rejected(
-        "weaken independent owner",
-        lambda value: value["sealed_and_independent_receipts"]["independent_replication"].__setitem__(
-            "owner_distinct_from_campaign_and_sealed_final_owners", False
-        ),
-    )
-    assert_restamped_rejected(
-        "remove sealed receipt field",
-        lambda value: value["sealed_and_independent_receipts"]["sealed_final"][
-            "required_receipt_fields"
-        ].pop(),
-    )
-    assert_restamped_rejected(
-        "delete named competitor",
-        lambda value: value["competitor_coverage"]["direct_implementations"].pop(0),
-    )
-    assert_restamped_rejected(
-        "substitute one competitor",
-        lambda value: value["competitor_coverage"].__setitem__(
-            "direct_implementations",
-            [value["competitor_coverage"]["direct_implementations"][0]],
-        ),
-    )
-    assert_restamped_rejected(
-        "misstate MatGPTQ as sourced 2-bit quality evidence",
-        lambda value: next(
-            row
-            for row in value["competitor_coverage"]["direct_implementations"]
-            if row["implementation_id"] == "matgptq_ptq"
-        )["required_ladder_rates_bpw"].append(2.0),
-    )
-    assert_restamped_rejected(
-        "silently omit BTC-LLM",
-        lambda value: value["competitor_coverage"]["direct_implementations"].remove(next(
-            row
-            for row in value["competitor_coverage"]["direct_implementations"]
-            if row["implementation_id"] == "btc_llm_binary_codebook"
-        )),
-    )
-    assert_restamped_rejected(
-        "broaden QMoE to dense without evidence",
-        lambda value: next(
-            row
-            for row in value["competitor_coverage"]["direct_implementations"]
-            if row["implementation_id"] == "qmoe_switch_subbit"
-        )["applicable_model_classes"].append("dense"),
-    )
-    assert_restamped_rejected(
-        "silently omit SPEAR incompatibility path",
-        lambda value: next(
-            row
-            for row in value["competitor_coverage"]["direct_implementations"]
-            if row["implementation_id"] == "spear_token_gated_compensation"
-        )["resolution_contract"].__setitem__("silent_omission_forbidden", False),
-    )
-    assert_restamped_rejected(
-        "misclassify Shannon ANS as capability repair",
-        lambda value: next(
-            row
-            for row in value["competitor_coverage"]["direct_implementations"]
-            if row["implementation_id"] == "shannon_ans_lossless_wrapper"
-        ).__setitem__("control_kind", "capability_repair"),
-    )
-    assert_restamped_rejected(
-        "add unknown policy escape hatch",
-        lambda value: value.__setitem__("allow_policy_override", True),
-    )
 
     # Concrete cryptographic receipts are the sole mutable policy projection.
     receiptized = copy.deepcopy(manifest)

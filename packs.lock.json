@@ -1,0 +1,91 @@
+{
+  "schema": "hawking.pack_lock.v1",
+  "cache_env": "HAWKING_PACK_CACHE",
+  "default_cache": ".hawking-pack-cache",
+  "hydrate_root": ".hawking/packs",
+  "platforms": [
+    "macos",
+    "linux"
+  ],
+  "packs": [
+    {
+      "id": "hawking-tq-r250-compat",
+      "version": "2",
+      "archive_name": "hawking-tq-r250-compat-v2.tar",
+      "archive_bytes": 3307520,
+      "archive_sha256": "2db59233de9ee6e308457b1b744b53b211f588ee33ed64b0f763ea50b3532035",
+      "manifest_sha256": "83fd42335f5c9b2669b8e052b7a86c25c93bc7c9c27931a2b3317a9aad0d0c30",
+      "tree_sha256": "ca3d0e6ae8c4e243c2d9f8a24fa9ed5625d13f68cf7bddf410194bdf5fd5f9ad",
+      "primary_lines": 61269,
+      "source_repository": "https://github.com/joshuahickscorp/hawking-packs",
+      "source_commit": "c9bb33dfccdecd2915789eca9b62b633687837ff",
+      "source_tree": "e9457625856c344b16c1ae29253ab4b93ca250e4",
+      "source_tag": "hawking-tq-r250-compat-v2",
+      "control_primary_lines": 151,
+      "control_inventory_sha256": "4ad3d4cf7414209c3a214daac93d0f3b1da0d32166655e0d9bbb39f22a0226da",
+      "control_files": [
+        {
+          "path": "BUILDING.md",
+          "bytes": 367,
+          "sha256": "a133390e7ed34d42f9f37b0835795ace409f5b28e6d7dc897cc98e5456109875",
+          "lines": 12
+        },
+        {
+          "path": "tools/build_pack.py",
+          "bytes": 4385,
+          "sha256": "4b85788f90a779dc3c4d1266724167733436ff181d8f42b83fe28c52645d02d8",
+          "lines": 139
+        }
+      ],
+      "hydrate_name": "hawking-tq-r250-compat-v2",
+      "ownership": "project_owned",
+      "unmaterialized_metadata": [
+        "README.md",
+        "legacy-path-map.json",
+        "pack-source.manifest.json"
+      ],
+      "mirrors": [
+        "../hawking-pack-cache/hawking-tq-r250-compat-v2.tar",
+        "https://github.com/joshuahickscorp/hawking-packs/releases/download/hawking-tq-r250-compat-v2/hawking-tq-r250-compat-v2.tar"
+      ],
+      "materialize": [
+        {
+          "source": "codec/quant",
+          "destination": "vendor/strand-quant"
+        },
+        {
+          "source": "codec/decode",
+          "destination": "vendor/strand-decode-kernel"
+        },
+        {
+          "source": "support/lab",
+          "destination": "tools/strand"
+        },
+        {
+          "source": "support/bake",
+          "destination": "tools/tq_bake"
+        },
+        {
+          "source": "support/training/rwkv7_qat.py",
+          "destination": "tools/training/rwkv7_qat.py"
+        },
+        {
+          "source": "support/training/rwkv7_export_strand.py",
+          "destination": "tools/training/rwkv7_export_strand.py"
+        },
+        {
+          "source": "support/doctor/audit_ladder.py",
+          "destination": "tools/condense/audit_ladder.py"
+        },
+        {
+          "source": "validation/hawking-core/qwen_tq_serve_parity.rs",
+          "destination": "crates/hawking-core/tests/qwen_tq_serve_parity.rs"
+        },
+        {
+          "source": "validation/hawking-core/tq_output_space_quality.rs",
+          "destination": "crates/hawking-core/tests/tq_output_space_quality.rs"
+        }
+      ]
+    }
+  ]
+}

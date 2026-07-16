@@ -10,6 +10,7 @@ from pathlib import Path, PurePosixPath
 import re
 import subprocess
 import sys
+from loc_floor import build_report
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -169,6 +170,9 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     contract = json.loads(CONTRACT.read_text(encoding="utf-8"))
     current = measure()
+    for key, row in build_report()["logical_test_surface"].items():
+        current[f"active_{key}"] = current[key]
+        current[key] = int(row["current"])
     target = contract["extreme_target"]
     comparisons = {
         key.removesuffix("_max"): {

@@ -1,0 +1,166 @@
+{
+  "schema": "hawking.loc_floor.v2",
+  "policy": {
+    "id": "hawking.physical_source_lines.v2",
+    "unit": "raw_physical_lines",
+    "terminal_fragment_counts_as_line": true,
+    "active_source": "regular tracked blobs in the selected Git tree",
+    "untracked_files_count": false,
+    "tracked_generated_source_counts": true,
+    "symlink_blobs_count": false,
+    "legacy_suffixes": [
+      ".py",
+      ".rs",
+      ".sh",
+      ".md",
+      ".ts",
+      ".tsx",
+      ".css",
+      ".metal"
+    ],
+    "source_suffixes": [
+      ".c",
+      ".cc",
+      ".cpp",
+      ".cxx",
+      ".h",
+      ".hh",
+      ".hpp",
+      ".hxx",
+      ".m",
+      ".mm",
+      ".swift",
+      ".rs",
+      ".metal",
+      ".py",
+      ".sh",
+      ".ps1",
+      ".js",
+      ".jsx",
+      ".mjs",
+      ".cjs",
+      ".ts",
+      ".tsx",
+      ".css",
+      ".html",
+      ".md"
+    ]
+  },
+  "heritage_baseline": {
+    "commit": "1c525380204d61beb8b570516576c5a683d73595",
+    "legacy_primary_lines": 505528,
+    "active_repo_loc": 505760
+  },
+  "foundation_measurement": {
+    "commit": "de67554fa2f4612a09860d195d5200cbed85a9a6",
+    "legacy_primary_lines": 309346,
+    "active_repo_loc": 309578,
+    "relocated_owned_loc": 91899,
+    "hydrated_owned_loc": 401477,
+    "eliminated_loc": 104283
+  },
+  "source_lock": "condensation.sources.lock.json",
+  "pack_lock": "packs.lock.json",
+  "north_star_rung": "r100-north-star",
+  "fallback_floor_order": [
+    "r100-north-star",
+    "r125-extreme",
+    "r150-hard",
+    "r175-lean",
+    "r200-maintained",
+    "r225-condensed",
+    "r250-pack-proof"
+  ],
+  "test_surface": {
+    "rust_test_attributes": 1626,
+    "rust_ignore_attributes": 60
+  },
+  "rungs": [
+    {
+      "id": "r250-pack-proof",
+      "prior": null,
+      "budgets": {
+        "active_repo_loc_max": 250000,
+        "hydrated_owned_loc_max": 403500,
+        "relocated_owned_loc_max": 153500,
+        "eliminated_loc_min": 102000
+      }
+    },
+    {
+      "id": "r225-condensed",
+      "prior": "r250-pack-proof",
+      "budgets": {
+        "active_repo_loc_max": 225000,
+        "hydrated_owned_loc_max": 340000,
+        "relocated_owned_loc_max": 120000,
+        "eliminated_loc_min": 165760
+      }
+    },
+    {
+      "id": "r200-maintained",
+      "prior": "r225-condensed",
+      "budgets": {
+        "active_repo_loc_max": 200000,
+        "hydrated_owned_loc_max": 285000,
+        "relocated_owned_loc_max": 85000,
+        "eliminated_loc_min": 220760
+      }
+    },
+    {
+      "id": "r175-lean",
+      "prior": "r200-maintained",
+      "budgets": {
+        "active_repo_loc_max": 175000,
+        "hydrated_owned_loc_max": 240000,
+        "relocated_owned_loc_max": 65000,
+        "eliminated_loc_min": 265760
+      }
+    },
+    {
+      "id": "r150-hard",
+      "prior": "r175-lean",
+      "budgets": {
+        "active_repo_loc_max": 150000,
+        "hydrated_owned_loc_max": 220000,
+        "relocated_owned_loc_max": 70000,
+        "eliminated_loc_min": 285760
+      }
+    },
+    {
+      "id": "r125-extreme",
+      "prior": "r150-hard",
+      "budgets": {
+        "active_repo_loc_max": 125000,
+        "hydrated_owned_loc_max": 195000,
+        "relocated_owned_loc_max": 70000,
+        "eliminated_loc_min": 310760
+      }
+    },
+    {
+      "id": "r100-north-star",
+      "prior": "r125-extreme",
+      "budgets": {
+        "active_repo_loc_max": 100000,
+        "hydrated_owned_loc_max": 175000,
+        "relocated_owned_loc_max": 75000,
+        "eliminated_loc_min": 330760
+      }
+    }
+  ],
+  "accounting": {
+    "hydrated_owned_loc": "active_repo_loc + relocated_owned_loc",
+    "eliminated_loc": "heritage_baseline.active_repo_loc - hydrated_owned_loc",
+    "conservation": "heritage_baseline.active_repo_loc = active_repo_loc + relocated_owned_loc + eliminated_loc",
+    "eliminated_loc_is_net": true,
+    "external_pack_control_source_counts_as_relocated": true,
+    "passive_unreferenced_git_history_counts_as_relocated": false,
+    "supported_owned_source_loaded_from_history_counts_as_relocated": true
+  },
+  "forbidden_shortcuts": [
+    "minification or physical line packing",
+    "renaming source to an uncounted extension",
+    "generated or encoded source used through include indirection",
+    "undeclared execution or inspection of source in Git history",
+    "reclassifying baseline-owned source as third party without a provenance receipt"
+  ]
+}

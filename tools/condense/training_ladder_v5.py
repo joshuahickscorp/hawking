@@ -202,29 +202,22 @@ def _treatment_branches(rate: float) -> list[str]:
 def _source_classes() -> list[dict[str, Any]]:
     return [
         {
-            "id": "resident_parent_source",
-            "params_b_range": {"minimum_exclusive": 0.0, "maximum_inclusive": 16.0},
-            "source_mode": "verified_local_or_downloaded_parent",
-            "required_access": "parent tensors, tokenizer, config, revision, chat template",
-            "whole_parent_residency_assumed": True,
-            "streaming_required": False,
-        },
-        {
-            "id": "streamed_parent_source",
-            "params_b_range": {"minimum_exclusive": 16.0, "maximum_inclusive": 235.0},
-            "source_mode": "verified_sharded_parent",
-            "required_access": "immutable shard map plus byte offsets and hashes",
-            "whole_parent_residency_assumed": False,
-            "streaming_required": True,
-        },
-        {
-            "id": "frontier_sharded_parent_source",
-            "params_b_range": {"minimum_exclusive": 235.0, "maximum_inclusive": None},
-            "source_mode": "remote_or_local_verified_frontier_shards",
-            "required_access": "immutable manifest, transactional shard fetch, global merge state",
-            "whole_parent_residency_assumed": False,
-            "streaming_required": True,
-        },
+            "id": source_id,
+            "params_b_range": {"minimum_exclusive": minimum, "maximum_inclusive": maximum},
+            "source_mode": mode,
+            "required_access": access,
+            "whole_parent_residency_assumed": resident,
+            "streaming_required": not resident,
+        }
+        for source_id, minimum, maximum, mode, access, resident in (
+            ("resident_parent_source", 0.0, 16.0, "verified_local_or_downloaded_parent",
+             "parent tensors, tokenizer, config, revision, chat template", True),
+            ("streamed_parent_source", 16.0, 235.0, "verified_sharded_parent",
+             "immutable shard map plus byte offsets and hashes", False),
+            ("frontier_sharded_parent_source", 235.0, None,
+             "remote_or_local_verified_frontier_shards",
+             "immutable manifest, transactional shard fetch, global merge state", False),
+        )
     ]
 
 
@@ -240,71 +233,63 @@ def _resource_classes() -> list[dict[str, Any]]:
     }
     return [
         {
-            "id": "resident_single_host_research",
-            "params_b_range": {"minimum_exclusive": 0.0, "maximum_inclusive": 16.0},
-            "execution_shape_if_later_authorized": "one resident parent/candidate treatment",
-            "future_parallel_cap": 3,
+            "id": resource_id,
+            "params_b_range": {"minimum_exclusive": minimum, "maximum_inclusive": maximum},
+            "execution_shape_if_later_authorized": shape,
+            "future_parallel_cap": parallel_cap,
             **common,
-        },
-        {
-            "id": "streamed_single_host_research",
-            "params_b_range": {"minimum_exclusive": 16.0, "maximum_inclusive": 235.0},
-            "execution_shape_if_later_authorized": "bounded layer/block/shard windows",
-            "future_parallel_cap": 1,
-            **common,
-        },
-        {
-            "id": "frontier_out_of_core_research",
-            "params_b_range": {"minimum_exclusive": 235.0, "maximum_inclusive": None},
-            "execution_shape_if_later_authorized": "multi-pass transactional out-of-core shards",
-            "future_parallel_cap": 1,
-            **common,
-        },
+        }
+        for resource_id, minimum, maximum, shape, parallel_cap in (
+            ("resident_single_host_research", 0.0, 16.0,
+             "one resident parent/candidate treatment", 3),
+            ("streamed_single_host_research", 16.0, 235.0,
+             "bounded layer/block/shard windows", 1),
+            ("frontier_out_of_core_research", 235.0, None,
+             "multi-pass transactional out-of-core shards", 1),
+        )
     ]
 
 
 def _track_definitions() -> list[dict[str, Any]]:
     return [
         {
-            "id": "codec_fidelity",
-            "claim": "codec/representation fidelity without attached Doctor repair or external inference",
-            "training_teachers": ["exact_parent_for_reconstruction_only"],
-            "doctor_repair_allowed": False,
-            "stronger_teacher_allowed": False,
-            "external_runtime_allowed": False,
-            "external_runtime_bytes_ceiling": 0,
-            "l8_action": "prove_zero_doctor_repair_and_zero_external_runtime_dependency",
-        },
-        {
-            "id": "restorative_training",
-            "claim": "standalone condensed artifact restores damage against its exact identity teacher",
-            "training_teachers": ["exact_parent", "truth_oracle"],
-            "doctor_repair_allowed": True,
-            "stronger_teacher_allowed": False,
-            "external_runtime_allowed": False,
-            "external_runtime_bytes_ceiling": 0,
-            "l8_action": "prove_identity_teacher_only_and_zero_external_runtime",
-        },
-        {
-            "id": "capability_elevation",
-            "claim": "standalone condensed artifact gains verified capability from stronger teachers",
-            "training_teachers": ["exact_parent", "provenance_bound_stronger_teacher", "truth_oracle"],
-            "doctor_repair_allowed": True,
-            "stronger_teacher_allowed": True,
-            "external_runtime_allowed": False,
-            "external_runtime_bytes_ceiling": 0,
-            "l8_action": "prove_training_only_teacher_dependency_and_zero_external_runtime",
-        },
-        {
-            "id": "augmented_system",
-            "claim": "fully billed system adds capability through retrieval, tools, or verifiers",
-            "training_teachers": ["exact_parent", "truth_oracle_for_external_system_outputs"],
-            "doctor_repair_allowed": True,
-            "stronger_teacher_allowed": False,
-            "external_runtime_allowed": True,
-            "external_runtime_bytes_ceiling": "measured_not_assumed",
-            "l8_action": "build_and_bill_retrieval_tool_verifier_plane",
-        },
+            "id": track_id,
+            "claim": claim,
+            "training_teachers": list(teachers),
+            "doctor_repair_allowed": repair,
+            "stronger_teacher_allowed": stronger,
+            "external_runtime_allowed": external,
+            "external_runtime_bytes_ceiling": runtime_bytes,
+            "l8_action": action,
+        }
+        for track_id, claim, teachers, repair, stronger, external, runtime_bytes, action in (
+            (
+                "codec_fidelity",
+                "codec/representation fidelity without attached Doctor repair or external inference",
+                ("exact_parent_for_reconstruction_only",), False, False, False, 0,
+                "prove_zero_doctor_repair_and_zero_external_runtime_dependency",
+            ),
+            (
+                "restorative_training",
+                "standalone condensed artifact restores damage against its exact identity teacher",
+                ("exact_parent", "truth_oracle"), True, False, False, 0,
+                "prove_identity_teacher_only_and_zero_external_runtime",
+            ),
+            (
+                "capability_elevation",
+                "standalone condensed artifact gains verified capability from stronger teachers",
+                ("exact_parent", "provenance_bound_stronger_teacher", "truth_oracle"),
+                True, True, False, 0,
+                "prove_training_only_teacher_dependency_and_zero_external_runtime",
+            ),
+            (
+                "augmented_system",
+                "fully billed system adds capability through retrieval, tools, or verifiers",
+                ("exact_parent", "truth_oracle_for_external_system_outputs"),
+                True, False, True, "measured_not_assumed",
+                "build_and_bill_retrieval_tool_verifier_plane",
+            ),
+        )
     ]
 
 
@@ -878,10 +863,16 @@ def _cycle(stages: dict[str, dict[str, Any]]) -> list[str] | None:
     return None
 
 
-def _validate_execution_policy(document: dict[str, Any]) -> list[str]:
-    errors: list[str] = []
-    policy = document.get("execution_policy")
-    expected = {
+def _validate_static_sections(document: dict[str, Any]) -> list[str]:
+    """Compare immutable policy sections with their canonical constructors.
+
+    Each former section validator ended by performing this same exact
+    comparison after repeating a partial schema by hand.  The constructors are
+    already the authoritative schema, so centralizing the comparisons keeps the
+    validator fail-closed while removing the duplicate policy implementation.
+    """
+
+    execution_policy = {
         "planner_only": True,
         "launches_processes": False,
         "loads_models": False,
@@ -889,335 +880,47 @@ def _validate_execution_policy(document: dict[str, Any]) -> list[str]:
         "touches_live_state": False,
         "only_declared_output": str(DEFAULT_REPORT.relative_to(ROOT)),
     }
-    if policy != expected:
-        errors.append("execution_policy must be the exact execution-free v5 policy")
-    return errors
-
-
-def _validate_quality_policy(document: dict[str, Any]) -> list[str]:
-    policy = document.get("quality_policy")
-    if not isinstance(policy, dict):
-        return ["quality_policy must be an object"]
-    errors: list[str] = []
-    required_true = (
-        "quality_first",
-        "speed_deferred",
-        "speed_claim_before_separate_runtime_ladder_forbidden",
-        "checkpointing_required_despite_unbounded_wall_clock",
-        "headline_unbeatable_language_before_independent_reproduction_forbidden",
-        "average_score_cannot_mask_protected_domain_regression",
-        "perplexity_cannot_substitute_for_capability",
-        "codec_restoration_elevation_augmented_scores_separate",
-        "matched_test_time_compute_required",
-        "underpowered_result_is_inconclusive",
+    expected = (
+        ("execution_policy", execution_policy,
+         "execution_policy must be the exact execution-free v5 policy"),
+        ("quality_policy", _quality_policy(), "quality policy differs from canonical v5"),
+        ("matched_test_time_compute", _matched_compute_policy(),
+         "matched test-time-compute policy differs from the complete quality-battery contract"),
+        ("claim_tracks", _track_definitions(),
+         "claim tracks differ; codec_fidelity repair/teacher/runtime firewall changed"),
+        ("source_classes", _source_classes(), "source class definitions differ from canonical v5"),
+        ("resource_classes", _resource_classes(),
+         "resource class definitions differ from canonical v5"),
+        ("rate_profiles", _rate_profiles(),
+         "rate profile order/coverage must match the complete v5 ladder"),
+        ("stages", _stages(), "stage definitions differ from the canonical L0-L10 ladder"),
+        ("data_firewall", _data_firewall(), "data firewall gates are incomplete or weakened"),
+        ("exact_resume_gate", _exact_resume(), "exact resume state differs from Doctor-v5"),
+        ("controls", _controls(), "mandatory control set is incomplete or duplicated"),
+        ("competitor_requirements", _competitors(),
+         "competitor fairness contract or direct requirements differ from canonical v5"),
     )
-    for field in required_true:
-        if policy.get(field) is not True:
-            errors.append(f"quality_policy.{field} must be true")
-    if policy.get("speed_may_break_quality_ties") is not False:
-        errors.append("speed cannot break quality ties in this ladder")
-    if policy.get("wall_clock_campaign_cutoff") is not None:
-        errors.append("quality campaign must not have a wall-clock cutoff")
-    if policy.get("minimum_independent_training_seeds") != 5:
-        errors.append("quality campaign requires five independent training seeds")
-    expected_order = [
-        "all_domain_parent_noninferiority",
-        "worst_domain_quality",
-        "same_budget_competitor_dominance",
-        "physical_capability_density",
-    ]
-    if policy.get("objective_order") != expected_order:
-        errors.append("quality objective order changed")
-    if policy != _quality_policy():
-        errors.append("quality policy differs from the canonical v5 policy")
-    return errors
-
-
-def _validate_tracks(document: dict[str, Any]) -> list[str]:
-    tracks = document.get("claim_tracks")
-    if not isinstance(tracks, list):
-        return ["claim_tracks must be a list"]
     errors: list[str] = []
-    by_id = {row.get("id"): row for row in tracks if isinstance(row, dict)}
-    if set(by_id) != set(CLAIM_TRACKS) or len(tracks) != len(CLAIM_TRACKS):
-        errors.append("claim tracks must exactly match Doctor-v5 claim scopes")
-        return errors
-    codec = by_id["codec_fidelity"]
-    restorative = by_id["restorative_training"]
-    elevation = by_id["capability_elevation"]
-    augmented = by_id["augmented_system"]
-    if codec.get("doctor_repair_allowed") is not False \
-            or codec.get("stronger_teacher_allowed") is not False \
-            or codec.get("external_runtime_allowed") is not False:
-        errors.append("codec_fidelity repair/teacher/runtime firewall weakened")
-    if restorative.get("doctor_repair_allowed") is not True \
-            or restorative.get("stronger_teacher_allowed") is not False \
-            or restorative.get("external_runtime_allowed") is not False:
-        errors.append("restorative_training must use identity-teacher standalone treatment")
-    if elevation.get("doctor_repair_allowed") is not True \
-            or elevation.get("stronger_teacher_allowed") is not True \
-            or elevation.get("external_runtime_allowed") is not False:
-        errors.append("capability_elevation must allow stronger training teachers but no external runtime")
-    if augmented.get("doctor_repair_allowed") is not True \
-            or augmented.get("stronger_teacher_allowed") is not False \
-            or augmented.get("external_runtime_allowed") is not True:
-        errors.append("augmented_system must bill external runtime without adding a stronger training teacher")
-    for scope in (codec, restorative, elevation):
-        if scope.get("external_runtime_bytes_ceiling") != 0:
-            errors.append(f"{scope.get('id')} must have zero external runtime bytes")
-    if tracks != _track_definitions():
-        errors.append("claim-track definitions differ from the canonical v5 tracks")
-    return errors
-
-
-def _validate_classes(document: dict[str, Any]) -> list[str]:
-    errors: list[str] = []
-    source_rows = document.get("source_classes")
-    resource_rows = document.get("resource_classes")
-    source_ids = {
-        row.get("id") for row in source_rows if isinstance(row, dict)
-    } if isinstance(source_rows, list) else set()
-    resource_ids = {
-        row.get("id") for row in resource_rows if isinstance(row, dict)
-    } if isinstance(resource_rows, list) else set()
-    if source_ids != set(SOURCE_CLASS_IDS) or len(source_rows or []) != len(SOURCE_CLASS_IDS):
-        errors.append("source classes are incomplete or duplicated")
-    if resource_ids != set(RESOURCE_CLASS_IDS) or len(resource_rows or []) != len(RESOURCE_CLASS_IDS):
-        errors.append("resource classes are incomplete or duplicated")
-    if isinstance(resource_rows, list):
-        for row in resource_rows:
-            if not isinstance(row, dict):
-                continue
-            for field in (
-                "heavy_lease_required_before_future_execution",
-                "zero_swap_required",
-                "normal_memory_pressure_required",
-                "exact_resume_before_training_required",
-            ):
-                if row.get(field) is not True:
-                    errors.append(f"resource class {row.get('id')} weakens {field}")
-            if row.get("launch_permitted_by_this_ladder") is not False:
-                errors.append(f"resource class {row.get('id')} permits ladder launch")
-            if row.get("concurrency_requires_measured_peak_wave_fit") is not True \
-                    or row.get("concurrency_requires_independent_atomic_checkpoints") is not True:
-                errors.append(f"resource class {row.get('id')} weakens concurrency safety")
-            expected_cap = 3 if row.get("id") == "resident_single_host_research" else 1
-            if row.get("future_parallel_cap") != expected_cap:
-                errors.append(f"resource class {row.get('id')} future parallel cap changed")
-    if source_rows != _source_classes():
-        errors.append("source class definitions differ from the canonical v5 classes")
-    if resource_rows != _resource_classes():
-        errors.append("resource class definitions differ from the canonical v5 classes")
-    return errors
-
-
-def _validate_stages(document: dict[str, Any]) -> list[str]:
-    stages_raw = document.get("stages")
-    if not isinstance(stages_raw, list):
-        return ["stages must be a list"]
-    errors: list[str] = []
-    stages: dict[str, dict[str, Any]] = {}
-    for index, stage in enumerate(stages_raw):
-        if not isinstance(stage, dict):
-            errors.append(f"stages[{index}] must be an object")
+    for field, canonical, message in expected:
+        actual = document.get(field)
+        if actual == canonical:
             continue
-        stage_id = stage.get("id")
-        if stage_id in stages:
-            errors.append(f"duplicate stage {stage_id}")
-        if not isinstance(stage_id, str):
-            errors.append(f"stages[{index}].id missing")
-            continue
-        stages[stage_id] = stage
-        if not isinstance(stage.get("depends_on"), list):
-            errors.append(f"stage {stage_id} dependencies must be a list")
-        if set(stage.get("claim_tracks", [])) != set(CLAIM_TRACKS):
-            errors.append(f"stage {stage_id} claim-track coverage incomplete")
-        if set(stage.get("source_classes", [])) != set(SOURCE_CLASS_IDS):
-            errors.append(f"stage {stage_id} source-class coverage incomplete")
-        if set(stage.get("resource_classes", [])) != set(RESOURCE_CLASS_IDS):
-            errors.append(f"stage {stage_id} resource-class coverage incomplete")
-        actions = stage.get("scope_actions")
-        if not isinstance(actions, dict) or set(actions) != set(CLAIM_TRACKS) \
-                or any(not isinstance(action, str) or not action for action in actions.values()):
-            errors.append(f"stage {stage_id} scope actions are incomplete")
-        if stage.get("executor_wired") is not False or stage.get("launch_permitted") is not False:
-            errors.append(f"stage {stage_id} is not execution-free")
-        for field in ("purpose", "evidence_required", "promotion_gates", "failure_route"):
-            if not stage.get(field):
-                errors.append(f"stage {stage_id}.{field} is empty")
-    if tuple(stage.get("id") for stage in stages_raw if isinstance(stage, dict)) != STAGE_IDS:
-        errors.append("stage order must be exactly L0 through L10")
-    if set(stages) != set(STAGE_IDS) or len(stages_raw) != len(STAGE_IDS):
-        errors.append("stage set must be exactly L0 through L10")
-    for stage_id, stage in stages.items():
-        for dependency in stage.get("depends_on", []):
-            if dependency not in stages:
-                errors.append(f"stage {stage_id} has unknown dependency {dependency}")
-    cycle = _cycle(stages) if stages else None
-    if cycle:
-        errors.append("stage DAG cycle: " + " -> ".join(cycle))
-    expected_dependencies = {"L0": []} | {f"L{index}": [f"L{index - 1}"] for index in range(1, 11)}
-    for stage_id, expected in expected_dependencies.items():
-        if stages.get(stage_id, {}).get("depends_on") != expected:
-            errors.append(f"stage {stage_id} dependency must be {expected}")
-    collapse_gates = " ".join(stages.get("L1", {}).get("promotion_gates", [])).lower()
-    if "collapse forbids compensation-only" not in collapse_gates:
-        errors.append("L1 must hard-route computation collapse away from compensation-only treatment")
-    if stages_raw != _stages():
-        errors.append("stage definitions differ from the canonical L0-L10 ladder")
-    return errors
-
-
-def _validate_firewall(document: dict[str, Any]) -> list[str]:
-    firewall = document.get("data_firewall")
-    if not isinstance(firewall, dict):
-        return ["data_firewall must be an object"]
-    errors = doctor_contract.validate_data_contract(firewall.get("data_contract"), "planned")
-    if firewall.get("split_names") != list(doctor_contract.DATA_SPLITS):
-        errors.append("data firewall split names differ from Doctor-v5")
-    gates = firewall.get("gates")
-    expected_gates = {
-        "content_hash_distinct",
-        "exact_duplicate_scan",
-        "near_duplicate_scan",
-        "semantic_contamination_scan",
-        "mutation_family_split_before_generation",
-        "teacher_cache_split_bound",
-        "retrieval_index_excludes_evaluation",
-        "selection_hidden_from_failure_generator",
-        "sealed_hidden_until_training_frozen",
-        "violation_invalidates_lineage",
-    }
-    if not isinstance(gates, dict) or set(gates) != expected_gates \
-            or any(value is not True for value in gates.values()):
-        errors.append("data firewall gates are incomplete or weakened")
-    if firewall != _data_firewall():
-        errors.append("data firewall differs from the canonical v5 firewall")
-    return errors
-
-
-def _validate_resume(document: dict[str, Any]) -> list[str]:
-    resume = document.get("exact_resume_gate")
-    if not isinstance(resume, dict):
-        return ["exact_resume_gate must be an object"]
-    errors: list[str] = []
-    if set(resume.get("required_state", [])) != set(doctor_contract.EXACT_RESUME_STATE):
-        errors.append("exact resume state differs from Doctor-v5")
-    if resume.get("mutating_stages") != [f"L{index}" for index in range(2, 10)]:
-        errors.append("exact resume mutating-stage coverage is incomplete")
-    for field in (
-        "required_before_any_mutating_stage",
-        "atomic_replace",
-        "fsync_file",
-        "fsync_parent_directory",
-        "validate_before_resume",
-        "source_shard_and_byte_offset_required",
-        "resume_replay_identity_required",
-    ):
-        if resume.get(field) is not True:
-            errors.append(f"exact_resume_gate.{field} must be true")
-    if resume != _exact_resume():
-        errors.append("exact resume gate differs from the canonical v5 gate")
-    return errors
-
-
-def _validate_controls_and_competitors(document: dict[str, Any]) -> list[str]:
-    errors: list[str] = []
-    controls = document.get("controls")
-    control_ids = {
-        row.get("id") for row in controls if isinstance(row, dict)
-    } if isinstance(controls, list) else set()
-    if control_ids != set(CONTROL_IDS) or len(controls or []) != len(CONTROL_IDS):
-        errors.append("mandatory control set is incomplete or duplicated")
-    if isinstance(controls, list):
-        for row in controls:
-            if not isinstance(row, dict):
-                continue
-            if any(row.get(field) is not True for field in (
-                "mandatory", "negative_result_retained", "same_parent", "same_prompt_and_scorer"
-            )):
-                errors.append(f"control {row.get('id')} weakens comparison requirements")
-    competitors = document.get("competitor_requirements")
-    if not isinstance(competitors, dict):
-        return errors + ["competitor_requirements must be an object"]
-    canonical_coverage = quality_battery_v5._competitor_coverage()
-    families = competitors.get("required_families")
-    family_ids = {
-        row.get("family_id") for row in families if isinstance(row, dict)
-    } if isinstance(families, list) else set()
-    expected_family_ids = {
-        row["family_id"] for row in canonical_coverage["required_families"]
-    }
-    if family_ids != expected_family_ids or len(families or []) != len(expected_family_ids):
-        errors.append("competitor family set is incomplete or duplicated")
-    implementations = competitors.get("required_direct_implementations")
-    implementation_ids = {
-        row.get("implementation_id") for row in implementations if isinstance(row, dict)
-    } if isinstance(implementations, list) else set()
-    expected_implementation_ids = {
-        row["implementation_id"] for row in canonical_coverage["direct_implementations"]
-    }
-    if implementation_ids != expected_implementation_ids \
-            or len(implementations or []) != len(expected_implementation_ids):
-        errors.append("direct competitor implementation set is incomplete or duplicated")
-    if competitors.get("quality_battery_competitor_coverage_sha256") != _canonical_hash(
-        canonical_coverage
-    ):
-        errors.append("quality-battery competitor coverage hash mismatched")
-    fairness = competitors.get("fairness_contract")
-    expected_fairness = {
-        "same_parent",
-        "same_or_lower_physical_bytes",
-        "same_data_access",
-        "same_teacher_budget_within_claim_track",
-        "same_prompt_protocol",
-        "same_scorer",
-        "same_test_time_compute_budget",
-        "same_output_token_budget",
-        "same_samples_retries_and_calls",
-        "same_augmentation_scope",
-        "packed_artifact_required",
-        "independent_reproduction_required_for_headline",
-        "family_representative_substitution_forbidden",
-        "signed_incompatibility_and_narrowed_claim_required_when_unavailable",
-    }
-    if not isinstance(fairness, dict) or set(fairness) != expected_fairness \
-            or any(value is not True for value in fairness.values()):
-        errors.append("same-budget competitor fairness contract is incomplete or weakened")
-    if controls != _controls():
-        errors.append("control definitions differ from the canonical v5 controls")
-    if competitors != _competitors():
-        errors.append("competitor requirements differ from the canonical v5 requirements")
-    return errors
-
-
-def _validate_rates(document: dict[str, Any]) -> list[str]:
-    profiles = document.get("rate_profiles")
-    if not isinstance(profiles, list):
-        return ["rate_profiles must be a list"]
-    errors: list[str] = []
-    rates = [row.get("physical_bpw_ceiling") for row in profiles if isinstance(row, dict)]
-    if rates != list(RATE_POINTS) or len(profiles) != len(RATE_POINTS):
-        errors.append("rate profile order/coverage must match the complete v5 ladder")
-    for row in profiles:
-        if not isinstance(row, dict):
-            errors.append("rate profile must be an object")
-            continue
-        rate = row.get("physical_bpw_ceiling")
-        if rate not in RATE_POINTS:
-            continue
-        if row.get("role") != _rate_role(float(rate)):
-            errors.append(f"rate {rate} role changed")
-        if row.get("applies_to_all_models") is not True:
-            errors.append(f"rate {rate} must cover all models, including negative controls")
-        if row.get("required_treatment_branches") != _treatment_branches(float(rate)):
-            errors.append(f"rate {rate} treatment branches changed")
-        if row.get("below_two_requires_representation_reset_arm") is not (float(rate) < 2.0):
-            errors.append(f"rate {rate} representation-reset policy wrong")
-        if row.get("collapse_forbids_compensation_only") is not True:
-            errors.append(f"rate {rate} permits compensation-only collapse treatment")
-    if profiles != _rate_profiles():
-        errors.append("rate profiles differ from the canonical v5 profiles")
+        if field == "quality_policy" and isinstance(actual, dict) \
+                and actual.get("speed_deferred") is not True:
+            message = "quality_policy.speed_deferred must be true"
+        elif field == "stages" and isinstance(actual, list):
+            try:
+                stages = {
+                    row["id"]: row
+                    for row in actual
+                    if isinstance(row, dict) and isinstance(row.get("id"), str)
+                }
+                cycle = _cycle(stages) if len(stages) == len(actual) else None
+            except (KeyError, TypeError, ValueError):
+                cycle = None
+            if cycle:
+                message = "stage DAG cycle: " + " -> ".join(cycle)
+        errors.append(message)
     return errors
 
 
@@ -1400,17 +1103,7 @@ def validate_ladder(document: Any) -> list[str]:
         errors.append("doctor policy version differs from Doctor-v5")
     if document.get("capability_domains") != list(doctor_contract.CAPABILITY_DOMAINS):
         errors.append("capability domains differ from Doctor-v5")
-    errors.extend(_validate_execution_policy(document))
-    errors.extend(_validate_quality_policy(document))
-    if document.get("matched_test_time_compute") != _matched_compute_policy():
-        errors.append("matched test-time-compute policy differs from the complete quality-battery contract")
-    errors.extend(_validate_tracks(document))
-    errors.extend(_validate_classes(document))
-    errors.extend(_validate_stages(document))
-    errors.extend(_validate_firewall(document))
-    errors.extend(_validate_resume(document))
-    errors.extend(_validate_controls_and_competitors(document))
-    errors.extend(_validate_rates(document))
+    errors.extend(_validate_static_sections(document))
     errors.extend(_validate_models_and_lanes(document))
     errors.extend(_validate_counts(document))
     expected_sha = document.get("ladder_sha256")
@@ -1469,74 +1162,63 @@ def selftest() -> int:
         loaded = json.loads(path.read_text(encoding="utf-8"))
         assert validate_ladder(loaded) == []
 
-    damaged = copy.deepcopy(document)
-    damaged["rate_profiles"] = [
-        row for row in damaged["rate_profiles"] if row["physical_bpw_ceiling"] != 0.33
-    ]
-    _assert_invalid(_restamp_ladder(damaged), "rate profile order/coverage")
+    def reject(phrase: str, edit, *, lane: bool = False, ladder: bool = True) -> None:
+        damaged = copy.deepcopy(document)
+        edit(damaged)
+        if lane:
+            damaged["lanes"][0] = _restamp_lane(damaged["lanes"][0])
+        _assert_invalid(_restamp_ladder(damaged) if ladder else damaged, phrase)
 
-    damaged = copy.deepcopy(document)
-    damaged["stages"][0]["depends_on"] = ["L10"]
-    _assert_invalid(_restamp_ladder(damaged), "stage DAG cycle")
+    def assign(path, replacement):
+        def edit(value) -> None:
+            target = value
+            for key in path[:-1]:
+                target = target[key]
+            target[path[-1]] = replacement
+        return edit
 
-    damaged = copy.deepcopy(document)
-    damaged["models"][0]["params_b"] = 0.6
-    _assert_invalid(_restamp_ladder(damaged), "differs from ladder.MODELS")
-
-    damaged = copy.deepcopy(document)
-    damaged["compiled_from"]["parameter_count_policy"][
-        "exact_integer_tensor_parameter_count_required_for_evidence"
-    ] = False
-    _assert_invalid(_restamp_ladder(damaged), "parameter-count policy")
-
-    damaged = copy.deepcopy(document)
-    damaged["lanes"][0]["exact_parameter_count"] = 500_000_000
-    damaged["lanes"][0]["exact_physical_bpw_computable"] = True
-    damaged["lanes"][0] = _restamp_lane(damaged["lanes"][0])
-    _assert_invalid(_restamp_ladder(damaged), "fabricates exact source parameter evidence")
-
-    damaged = copy.deepcopy(document)
-    damaged["lanes"][0]["launch_permitted"] = True
-    damaged["lanes"][0] = _restamp_lane(damaged["lanes"][0])
-    _assert_invalid(_restamp_ladder(damaged), "execution-free contract")
-
-    damaged = copy.deepcopy(document)
-    damaged["claim_tracks"][0]["stronger_teacher_allowed"] = True
-    _assert_invalid(_restamp_ladder(damaged), "codec_fidelity repair/teacher/runtime firewall")
-
-    damaged = copy.deepcopy(document)
-    damaged["data_firewall"]["gates"]["sealed_hidden_until_training_frozen"] = False
-    _assert_invalid(_restamp_ladder(damaged), "data firewall gates")
-
-    damaged = copy.deepcopy(document)
-    damaged["exact_resume_gate"]["required_state"].remove("rng_state_all_backends")
-    _assert_invalid(_restamp_ladder(damaged), "exact resume state")
-
-    damaged = copy.deepcopy(document)
-    damaged["controls"] = [row for row in damaged["controls"] if row["id"] != "zero_correction"]
-    _assert_invalid(_restamp_ladder(damaged), "mandatory control set")
-
-    damaged = copy.deepcopy(document)
-    damaged["competitor_requirements"]["fairness_contract"]["same_parent"] = False
-    _assert_invalid(_restamp_ladder(damaged), "fairness contract")
-
-    damaged = copy.deepcopy(document)
-    damaged["quality_policy"]["speed_deferred"] = False
-    _assert_invalid(_restamp_ladder(damaged), "speed_deferred")
-
-    damaged = copy.deepcopy(document)
-    damaged["matched_test_time_compute"]["required_fields"]["input"].remove(
-        "max_input_tokens"
+    mutations = (
+        ("rate profile order/coverage", lambda value: value.__setitem__(
+            "rate_profiles",
+            [row for row in value["rate_profiles"] if row["physical_bpw_ceiling"] != 0.33],
+        ), False, True),
+        ("stage DAG cycle", assign(("stages", 0, "depends_on"), ["L10"]), False, True),
+        ("differs from ladder.MODELS", assign(("models", 0, "params_b"), 0.6), False, True),
+        ("parameter-count policy", assign((
+            "compiled_from", "parameter_count_policy",
+            "exact_integer_tensor_parameter_count_required_for_evidence",
+        ), False), False, True),
+        ("fabricates exact source parameter evidence", lambda value: (
+            value["lanes"][0].__setitem__("exact_parameter_count", 500_000_000),
+            value["lanes"][0].__setitem__("exact_physical_bpw_computable", True),
+        ), True, True),
+        ("execution-free contract", assign(("lanes", 0, "launch_permitted"), True), True, True),
+        ("codec_fidelity repair/teacher/runtime firewall",
+         assign(("claim_tracks", 0, "stronger_teacher_allowed"), True), False, True),
+        ("data firewall gates", assign((
+            "data_firewall", "gates", "sealed_hidden_until_training_frozen",
+        ), False), False, True),
+        ("exact resume state", lambda value: value["exact_resume_gate"]["required_state"].remove(
+            "rng_state_all_backends"
+        ), False, True),
+        ("mandatory control set", lambda value: value.__setitem__(
+            "controls", [row for row in value["controls"] if row["id"] != "zero_correction"]
+        ), False, True),
+        ("fairness contract", assign((
+            "competitor_requirements", "fairness_contract", "same_parent",
+        ), False), False, True),
+        ("speed_deferred", assign(("quality_policy", "speed_deferred"), False), False, True),
+        ("matched test-time-compute policy",
+         lambda value: value["matched_test_time_compute"]["required_fields"]["input"].remove(
+             "max_input_tokens"
+         ), False, True),
+        ("research lane count", lambda value: value["lanes"].pop(), False, True),
+        ("ladder_sha256", assign(
+            ("models", 0, "note"), "tampered-without-restamp"
+        ), False, False),
     )
-    _assert_invalid(_restamp_ladder(damaged), "matched test-time-compute policy")
-
-    damaged = copy.deepcopy(document)
-    damaged["lanes"].pop()
-    _assert_invalid(_restamp_ladder(damaged), "research lane count")
-
-    damaged = copy.deepcopy(document)
-    damaged["models"][0]["note"] = "tampered-without-restamp"
-    _assert_invalid(damaged, "ladder_sha256")
+    for phrase, edit, lane, ladder in mutations:
+        reject(phrase, edit, lane=lane, ladder=ladder)
 
     print("training_ladder_v5.py selftest OK")
     return 0
