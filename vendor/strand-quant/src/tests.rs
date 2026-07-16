@@ -822,24 +822,28 @@ fn b1_rung1_learned_d4_beats_scalar_at_iso_bpw() {
 // ---------------------------------------------------------------------------
 // (vii) COMPUTED-CODEBOOK EQUIVALENCE GATE (T2).
 //
-// CodebookMode::ComputedAcklam (Variant A) reproduces the frozen codebook
-// byte-for-byte, so it must leave BOTH the encoder's emitted bits AND the
-// decoder's output completely unchanged vs the default StoredLut, across the
-// full matrix of register widths, rates, and quality levers. This is the hard
-// gate: a single byte of divergence here means the computed path is not exact.
+// HashedQuantile and ComputedAcklam reproduce the frozen codebook byte-for-byte,
+// so both must leave the encoder bits and decoder output completely unchanged.
 // ---------------------------------------------------------------------------
 
 use crate::trellis::CodebookMode;
 
-/// Assert an encode→decode round trip is byte-identical under StoredLut and
-/// ComputedAcklam for the given weights / config / opts.
+/// Assert an encode→decode round trip is byte-identical under all codebook paths.
 #[cfg(test)]
 fn assert_codebook_modes_identical(weights: &[f32], cfg: &TrellisConfig, opts: &EncodeOpts) {
     let cfg_stored = cfg.with_codebook_mode(CodebookMode::StoredLut);
+    let cfg_hashed = cfg.with_codebook_mode(CodebookMode::HashedQuantile);
     let cfg_computed = cfg.with_codebook_mode(CodebookMode::ComputedAcklam);
 
     let enc_s = encode_tensor_with(weights, &cfg_stored, opts);
+    let enc_h = encode_tensor_with(weights, &cfg_hashed, opts);
     let enc_c = encode_tensor_with(weights, &cfg_computed, opts);
+
+    assert_eq!(
+        enc_s, enc_h,
+        "L={} k={}: hashed EncodedTensor diverged",
+        cfg.l_bits, cfg.k_bits
+    );
 
     // Same emitted payload + side info, field for field.
     assert_eq!(
@@ -888,12 +892,24 @@ fn assert_codebook_modes_identical(weights: &[f32], cfg: &TrellisConfig, opts: &
     // (proves the decode-side gather→compute swap is exact in isolation, not just
     // that encode+decode drift together).
     let d_ss = decode_tensor_fixed(&enc_s, &cfg_stored);
+    let d_hh = decode_tensor_fixed(&enc_h, &cfg_hashed);
     let d_cc = decode_tensor_fixed(&enc_c, &cfg_computed);
+    let d_sh = decode_tensor_fixed(&enc_s, &cfg_hashed);
     let d_sc = decode_tensor_fixed(&enc_s, &cfg_computed); // stored bits, computed decode
     let d_cs = decode_tensor_fixed(&enc_c, &cfg_stored); // computed bits, stored decode
     assert_eq!(
         d_ss, d_cc,
         "L={} k={}: decode diverged across modes",
+        cfg.l_bits, cfg.k_bits
+    );
+    assert_eq!(
+        d_ss, d_hh,
+        "L={} k={}: hashed decode diverged",
+        cfg.l_bits, cfg.k_bits
+    );
+    assert_eq!(
+        d_ss, d_sh,
+        "L={} k={}: hashed decode of stored bits diverged",
         cfg.l_bits, cfg.k_bits
     );
     assert_eq!(
@@ -970,6 +986,30 @@ fn computed_codebook_encode_decode_equivalence_matrix() {
 }
 
 #[test]
+fn scalar_decode_sources_are_bit_identical() {
+    // Cheap hot-loop gate for the three runtime sources. The exhaustive table
+    // tests prove every value; this proves scalar decode obtains those values
+    // through the selected stored/hash/computed branch on one edge-rich tensor.
+    let weights = normal_vec(257, 0xA11C_E5EED);
+    let stored = TrellisConfig::new(6, 2, 64).with_codebook_mode(CodebookMode::StoredLut);
+    let opts = EncodeOpts {
+        adaptive: true,
+        tail_biting: true,
+        affine_min: true,
+        ..Default::default()
+    };
+    let encoded = encode_tensor_with(&weights, &stored, &opts);
+    let expected = decode_tensor_fixed(&encoded, &stored);
+    for mode in [CodebookMode::HashedQuantile, CodebookMode::ComputedAcklam] {
+        let candidate = decode_tensor_fixed(&encoded, &stored.with_codebook_mode(mode));
+        assert_eq!(
+            candidate, expected,
+            "scalar decode source diverged: {mode:?}"
+        );
+    }
+}
+
+#[test]
 fn computed_codebook_exhaustive_small_trellis_equivalence() {
     // Exhaustive-style stress on the *small* trellises where every state is
     // exercised many times: many seeds, short and long tensors, tiny blocks so
@@ -1031,6 +1071,9 @@ fn computed_codebook_cfg_codebook_helper_matches_frozen() {
     for l in TrellisConfig::MIN_L..=TrellisConfig::MAX_L {
         let cfg = TrellisConfig::new(l, 2, 256);
         let stored = cfg.with_codebook_mode(CodebookMode::StoredLut).codebook();
+        let hashed = cfg
+            .with_codebook_mode(CodebookMode::HashedQuantile)
+            .codebook();
         let computed = cfg
             .with_codebook_mode(CodebookMode::ComputedAcklam)
             .codebook();
@@ -1038,6 +1081,11 @@ fn computed_codebook_cfg_codebook_helper_matches_frozen() {
             stored.as_ref(),
             codebook_lut(l),
             "stored helper != frozen, L={l}"
+        );
+        assert_eq!(
+            hashed.as_ref(),
+            codebook_lut(l),
+            "hashed helper != frozen, L={l}"
         );
         assert_eq!(
             computed.as_ref(),

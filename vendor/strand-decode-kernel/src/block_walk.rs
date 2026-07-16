@@ -1,6 +1,8 @@
 
 use strand_quant::decode::{eff_min_q, eff_scale_q};
-use strand_quant::encode::{n_sub_blocks, unpack_sub_scales, BlockMeta, EncodedTensor};
+use strand_quant::encode::{
+    n_sub_blocks, unpack_sub_scales, unpack_sub_scales_or_unity, BlockMeta, EncodedTensor,
+};
 use strand_quant::trellis::read_bits;
 use strand_quant::TrellisConfig;
 
@@ -95,7 +97,7 @@ impl SideInfo {
         debug_assert!(n_sub <= MAX_SUB, "caller must gate on exceeds_max_sub");
         let mut eff = [0i32; MAX_SUB];
         let mut off = [0i32; MAX_SUB];
-        let mults = unpack_sub_scales(&blk.sub_scales, n_sub);
+        let mults = unpack_sub_scales_or_unity(&blk.sub_scales, n_sub);
         for (e, &m) in eff[..n_sub].iter_mut().zip(mults.iter()) {
             *e = eff_scale_q(blk.scale_q, m);
         }
@@ -143,6 +145,26 @@ pub fn block_init_state(
         s
     } else {
         blk.init_state as usize & mask
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn absent_sub_scale_stream_is_canonical_unity() {
+        let block = BlockMeta {
+            scale_q: 1 << 16,
+            sub_scales: Vec::new(),
+            min_base_q: 0,
+            mins: Vec::new(),
+            init_state: 0,
+            n: 64,
+        };
+        let side = SideInfo::hoist(&block, false);
+        assert_eq!(side.eff(), &[1 << 16, 1 << 16]);
+        assert_eq!(side.off(), &[0, 0]);
     }
 }
 

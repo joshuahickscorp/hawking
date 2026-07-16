@@ -2,18 +2,21 @@ use std::borrow::Cow;
 
 /// How the per-state Gaussian codebook is sourced.
 ///
-/// The codebook is a deterministic function of `L` either way; this only selects
-/// *how* an entry is obtained, not *what* it is. Variant A
-/// ([`ComputedAcklam`](CodebookMode::ComputedAcklam)) reproduces the frozen table
-/// **byte-for-byte** (contract-tested in [`crate::codebook`]), so it requires no
-/// re-encoding and never changes a decoded weight — it just trades a `2^L`-entry
-/// LUT gather for a few integer ALU ops (a size / portability / occupancy win on
-/// bandwidth-bound decoders).
+/// The codebook is a deterministic function of `L` in every mode; this only
+/// selects *how* a scalar decoder obtains an entry, not *what* the entry is.
+/// Neither this choice nor a decoder's hardware-specific implementation belongs
+/// on the wire, so a single archive can be interpreted by all three paths without
+/// re-encoding or changing a decoded weight.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
 pub enum CodebookMode {
     /// Borrow the frozen `&'static` integer LUT (the historical default).
     #[default]
     StoredLut,
+    /// Compute the state-to-rank permutation, then gather from the monotone Q12
+    /// quantile table. This halves the table footprint when stored as i16 and adds
+    /// a handful of integer hash operations per decoded weight. Byte-identical to
+    /// [`StoredLut`](CodebookMode::StoredLut).
+    HashedQuantile,
     /// Compute each entry with the bit-exact integer Acklam path (no gather).
     /// Byte-identical to [`StoredLut`](CodebookMode::StoredLut) under Variant A.
     ComputedAcklam,
@@ -67,12 +70,17 @@ impl TrellisConfig {
 
     /// The per-state codebook for this config, sourced per [`Self::codebook_mode`].
     ///
-    /// `StoredLut` borrows the frozen `&'static` table (zero alloc); `ComputedAcklam`
-    /// materialises the identical values via the integer Acklam path. Returned as
-    /// a [`Cow`] so the default path stays allocation-free and both share one shape.
+    /// `StoredLut` borrows the frozen `&'static` table (zero alloc). The compute
+    /// modes materialise identical values for encoder/vector call sites that need
+    /// a slice; scalar decoders bypass this helper and evaluate their selected
+    /// source directly in the hot loop. Returned as a [`Cow`] so the default path
+    /// remains allocation-free and every mode shares one compatibility shape.
     pub fn codebook(&self) -> Cow<'static, [i32]> {
         match self.codebook_mode {
             CodebookMode::StoredLut => Cow::Borrowed(crate::codebook::codebook_lut(self.l_bits)),
+            CodebookMode::HashedQuantile => {
+                Cow::Owned(crate::codebook::codebook_lut_hashed(self.l_bits))
+            }
             CodebookMode::ComputedAcklam => {
                 Cow::Owned(crate::codebook::codebook_lut_computed(self.l_bits))
             }

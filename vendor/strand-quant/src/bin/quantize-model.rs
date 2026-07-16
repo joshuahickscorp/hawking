@@ -2,6 +2,7 @@
 
 use std::collections::HashMap;
 use std::fs;
+#[cfg(feature = "native-execution")]
 use std::io::Write as _;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Mutex;
@@ -9,6 +10,10 @@ use std::time::Instant;
 
 use strand_quant::codebook::codebook_lut;
 use strand_quant::decode::{decode_tensor_fixed, decode_tensor_fixed_with_lut};
+#[cfg(feature = "block-parallel")]
+use strand_quant::encode::{
+    encode_tensor_with_block_parallel, encode_tensor_with_lut_block_parallel, BlockParallelConfig,
+};
 use strand_quant::encode::{
     encode_tensor_with_lut, f32_metric_from_env, f32_search_from_env, vector_lut_from_scalar,
     EncodedTensor,
@@ -17,6 +22,8 @@ use strand_quant::encode_cache::{self, Manifest};
 use strand_quant::format::{self, PackedTensor, PackedTensorV2};
 use strand_quant::gate_utils::{is_quantizable_linear, rht_seed_for};
 use strand_quant::learned_codebook::{train_state_vector_lut, MAX_TRAIN_VECTORS};
+#[cfg(feature = "ordered-pipeline")]
+use strand_quant::ordered_pipeline::{run_ordered_pipeline, Accounted, PipelineConfig};
 use strand_quant::outlier_wire::{append_outl, append_outl_c2f, idx_bits_for, OutlierWire};
 use strand_quant::provenance_io::{
     append_sprv, build_sprv, default_lut_provider, DEFAULT_VECTORS_PER_TENSOR,
@@ -213,7 +220,56 @@ struct OutTensor {
     data: Vec<f32>,
 }
 
-fn write_safetensors(path: &str, tensors: &[OutTensor]) -> std::io::Result<()> {
+fn write_output_bytes(path: &str, bytes: &[u8], preallocate: bool) -> std::io::Result<()> {
+    #[cfg(feature = "native-execution")]
+    if preallocate {
+        return strand_quant::native_io::write_preallocated(std::path::Path::new(path), bytes);
+    }
+    let _ = preallocate;
+    fs::write(path, bytes)
+}
+
+enum AppendOutput {
+    Standard(std::path::PathBuf),
+    #[cfg(feature = "native-execution")]
+    Native(strand_quant::native_io::WorkerOutput),
+}
+
+impl AppendOutput {
+    fn create(path: &str, bytes: &[u8], native: bool) -> std::io::Result<Self> {
+        #[cfg(feature = "native-execution")]
+        if native {
+            let mut output = strand_quant::native_io::WorkerOutput::create(
+                std::path::Path::new(path),
+                bytes.len() as u64,
+            )?;
+            output.file_mut()?.write_all(bytes)?;
+            output.close_writer()?;
+            return Ok(Self::Native(output));
+        }
+        let _ = native;
+        fs::write(path, bytes)?;
+        Ok(Self::Standard(path.into()))
+    }
+
+    fn path(&self) -> &std::path::Path {
+        match self {
+            Self::Standard(path) => path,
+            #[cfg(feature = "native-execution")]
+            Self::Native(output) => output.temporary_path(),
+        }
+    }
+
+    fn finalize(self) -> std::io::Result<()> {
+        match self {
+            Self::Standard(_) => Ok(()),
+            #[cfg(feature = "native-execution")]
+            Self::Native(output) => output.finalize(),
+        }
+    }
+}
+
+fn write_safetensors(path: &str, tensors: &[OutTensor], preallocate: bool) -> std::io::Result<()> {
     let mut header = String::from("{");
     let mut offset = 0usize;
     for (i, t) in tensors.iter().enumerate() {
@@ -241,18 +297,32 @@ fn write_safetensors(path: &str, tensors: &[OutTensor]) -> std::io::Result<()> {
         header.push(' ');
     }
 
-    let mut f = std::io::BufWriter::new(fs::File::create(path)?);
-    f.write_all(&(header.len() as u64).to_le_bytes())?;
-    f.write_all(header.as_bytes())?;
-    for t in tensors {
-        let mut buf = Vec::with_capacity(t.data.len() * 4);
-        for &v in &t.data {
-            buf.extend_from_slice(&v.to_le_bytes());
+    let final_len = (8 + header.len() + offset) as u64;
+    let write_payload = |writer: &mut dyn std::io::Write| -> std::io::Result<()> {
+        writer.write_all(&(header.len() as u64).to_le_bytes())?;
+        writer.write_all(header.as_bytes())?;
+        for t in tensors {
+            let mut buf = Vec::with_capacity(t.data.len() * 4);
+            for &v in &t.data {
+                buf.extend_from_slice(&v.to_le_bytes());
+            }
+            writer.write_all(&buf)?;
         }
-        f.write_all(&buf)?;
+        writer.flush()
+    };
+    #[cfg(feature = "native-execution")]
+    if preallocate {
+        let mut output =
+            strand_quant::native_io::WorkerOutput::create(std::path::Path::new(path), final_len)?;
+        {
+            let mut writer = std::io::BufWriter::new(output.file_mut()?);
+            write_payload(&mut writer)?;
+        }
+        return output.finalize();
     }
-    f.flush()?;
-    Ok(())
+    let _ = (final_len, preallocate);
+    let mut writer = std::io::BufWriter::new(fs::File::create(path)?);
+    write_payload(&mut writer)
 }
 
 struct Args {
@@ -275,6 +345,21 @@ struct Args {
     // Default OFF; ignored when --no-rht. Mutually independent of --vec-dim.
     rht_cols: bool,
     threads: usize,
+
+    // Feature-gated, explicit block-level CPU accelerator. A non-zero value
+    // forces one outer tensor worker so the requested cores are not multiplied
+    // by tensor-level fanout. It never affects the canonical binary by default.
+    block_threads: Option<usize>,
+    block_scratch_budget_bytes: usize,
+
+    // Feature-gated tensor pipeline. A non-zero depth defers source f32 decode
+    // into the bounded producer, overlaps deterministic preprocessing with the
+    // caller-owned block encoder, and collects results in canonical order. Final
+    // archive framing remains on the caller after every tensor is complete.
+    ordered_pipeline_depth: Option<usize>,
+    ordered_pipeline_prepared_budget_bytes: usize,
+    ordered_pipeline_encoded_budget_bytes: usize,
+    native_io: NativeIoMode,
 
     only: Option<String>,
 
@@ -358,6 +443,59 @@ enum AffineMode {
     Off,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum NativeIoMode {
+    Standard,
+    Preallocated,
+    Mmap,
+}
+
+fn validate_native_output_paths(root: &str, paths: &[String]) -> Result<(), String> {
+    let admitted_root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .join("build/native-execution")
+        .canonicalize()
+        .map_err(|error| format!("resolve build/native-execution: {error}"))?;
+    let requested_root = std::path::Path::new(root);
+    if fs::symlink_metadata(requested_root)
+        .map_err(|error| format!("inspect native staging root: {error}"))?
+        .file_type()
+        .is_symlink()
+    {
+        return Err("native staging root must not be a symlink".into());
+    }
+    let requested_root = requested_root
+        .canonicalize()
+        .map_err(|error| format!("resolve native staging root: {error}"))?;
+    if !requested_root.is_dir() || !requested_root.starts_with(&admitted_root) {
+        return Err(format!(
+            "native staging root must be a directory below {}",
+            admitted_root.display()
+        ));
+    }
+    for raw in paths {
+        let path = std::path::Path::new(raw);
+        if fs::symlink_metadata(path).is_ok() {
+            return Err(format!(
+                "refusing an existing or symlinked native output: {}",
+                path.display()
+            ));
+        }
+        let parent = path.parent().unwrap_or_else(|| std::path::Path::new("."));
+        let parent = parent.canonicalize().map_err(|error| {
+            format!("resolve native output parent {}: {error}", parent.display())
+        })?;
+        if !parent.starts_with(&requested_root) {
+            return Err(format!(
+                "native output {} escapes staging root {}",
+                path.display(),
+                requested_root.display()
+            ));
+        }
+    }
+    Ok(())
+}
+
 fn parse_args() -> Args {
     let mut input = String::new();
     let mut output = String::new();
@@ -370,6 +508,13 @@ fn parse_args() -> Args {
     let mut threads = std::thread::available_parallelism()
         .map(|n| n.get())
         .unwrap_or(4);
+    let mut block_threads = None;
+    let mut block_scratch_budget_bytes = 256 * 1024 * 1024usize;
+    let mut ordered_pipeline_depth = None;
+    let mut ordered_pipeline_prepared_budget_bytes = 2 * 1024 * 1024 * 1024usize;
+    let mut ordered_pipeline_encoded_budget_bytes = 2 * 1024 * 1024 * 1024usize;
+    let mut native_io = NativeIoMode::Standard;
+    let mut native_staging_root = None;
     let mut only = None;
     let mut tensor_scope_all_2d = false;
     let mut measure_only = false;
@@ -419,6 +564,60 @@ fn parse_args() -> Args {
             "--rht-cols" => rht_cols = true,
             "--rht-rows" => rht_cols = false,
             "--threads" => threads = it.next().expect("--threads").parse().expect("threads int"),
+            "--block-threads" => {
+                block_threads = Some(
+                    it.next()
+                        .expect("--block-threads needs N")
+                        .parse()
+                        .expect("block-threads usize"),
+                )
+            }
+            "--block-scratch-budget-bytes" => {
+                block_scratch_budget_bytes = it
+                    .next()
+                    .expect("--block-scratch-budget-bytes needs BYTES")
+                    .parse()
+                    .expect("block-scratch-budget-bytes usize")
+            }
+            "--ordered-pipeline-depth" => {
+                ordered_pipeline_depth = Some(
+                    it.next()
+                        .expect("--ordered-pipeline-depth needs N")
+                        .parse()
+                        .expect("ordered-pipeline-depth usize"),
+                )
+            }
+            "--ordered-pipeline-prepared-budget-bytes" => {
+                ordered_pipeline_prepared_budget_bytes = it
+                    .next()
+                    .expect("--ordered-pipeline-prepared-budget-bytes needs BYTES")
+                    .parse()
+                    .expect("ordered-pipeline-prepared-budget-bytes usize")
+            }
+            "--ordered-pipeline-encoded-budget-bytes" => {
+                ordered_pipeline_encoded_budget_bytes = it
+                    .next()
+                    .expect("--ordered-pipeline-encoded-budget-bytes needs BYTES")
+                    .parse()
+                    .expect("ordered-pipeline-encoded-budget-bytes usize")
+            }
+            "--native-io" => {
+                native_io = match it.next().as_deref() {
+                    Some("standard") => NativeIoMode::Standard,
+                    Some("preallocated") => NativeIoMode::Preallocated,
+                    Some("mmap") => NativeIoMode::Mmap,
+                    Some(other) => {
+                        panic!("--native-io expects standard|preallocated|mmap, got {other}")
+                    }
+                    None => panic!("--native-io needs standard|preallocated|mmap"),
+                }
+            }
+            "--native-staging-root" => {
+                native_staging_root = Some(
+                    it.next()
+                        .expect("--native-staging-root needs an existing directory"),
+                )
+            }
             "--only" => only = Some(it.next().expect("--only needs a substring")),
             "--tensor-scope" => {
                 tensor_scope_all_2d = match it.next().as_deref() {
@@ -512,6 +711,11 @@ fn parse_args() -> Args {
                     "quantize-model --input/--in <safetensors> --output/--out <safetensors> \
                      --bits <1|2|3|4> [--l <4..14>] \
                      [--tail-biting] [--affine-min auto|on|off] [--no-rht] [--rht-cols] [--threads N] \
+                     [--block-threads N] [--block-scratch-budget-bytes BYTES] \
+                     [--ordered-pipeline-depth N \
+                      --ordered-pipeline-prepared-budget-bytes BYTES \
+                      --ordered-pipeline-encoded-budget-bytes BYTES] \
+                     [--native-io standard|preallocated|mmap --native-staging-root <dir>] \
                      [--only <substr>] [--tensor-scope linear|all-2d] [--measure-only] [--quality]\n\
                      [--mp-config <json>] [--rung-config <json>] [--dump-indices <path>] \
                      [--vec-dim N] [--block-len N] [--learned-codebook] [--no-adaptive-scales]\n\
@@ -625,6 +829,100 @@ fn parse_args() -> Args {
         "--vec-dim must be in 1..={} (values are not silently clamped)",
         TrellisConfig::MAX_VEC_DIM,
     );
+    if let Some(n) = block_threads {
+        assert!(n > 0, "--block-threads must be greater than zero");
+        assert!(
+            block_scratch_budget_bytes > 0,
+            "--block-scratch-budget-bytes must be greater than zero"
+        );
+        assert!(
+            cfg!(feature = "block-parallel"),
+            "--block-threads requires the feature-gated quantize-model-block-parallel binary"
+        );
+        assert!(
+            std::env::var_os("STRAND_NO_GPU").is_some(),
+            "--block-threads is a CPU-only parity path and requires STRAND_NO_GPU=1; refusing to compare against or replace a potentially different Metal encode path"
+        );
+    }
+    if let Some(depth) = ordered_pipeline_depth {
+        assert!(
+            depth > 0,
+            "--ordered-pipeline-depth must be greater than zero"
+        );
+        assert!(
+            ordered_pipeline_prepared_budget_bytes > 0 && ordered_pipeline_encoded_budget_bytes > 0,
+            "ordered-pipeline resident budgets must be greater than zero"
+        );
+        assert!(
+            cfg!(feature = "ordered-pipeline"),
+            "--ordered-pipeline-depth requires the feature-gated quantize-model-ordered-pipeline binary"
+        );
+        assert!(
+            block_threads.is_some(),
+            "--ordered-pipeline-depth requires --block-threads so the encode owner is the reviewed CPU block path"
+        );
+        assert!(
+            skip_manifest.is_none() && reuse_from.is_none(),
+            "--ordered-pipeline-depth cannot yet combine with identity reuse; remain on the serial fallback"
+        );
+    }
+    if native_io != NativeIoMode::Standard {
+        assert!(
+            cfg!(feature = "native-execution"),
+            "--native-io requires the feature-gated quantize-model-native binary"
+        );
+        if native_io == NativeIoMode::Mmap {
+            assert!(
+                cfg!(target_os = "macos"),
+                "--native-io mmap is currently admitted only on macOS"
+            );
+        }
+        let staging_root = native_staging_root
+            .as_deref()
+            .expect("native I/O requires --native-staging-root");
+        assert!(
+            actmean.is_none() || !output.is_empty(),
+            "native --actmean requires --output so its de-bias sidecar has an explicit staged path"
+        );
+        for path in [
+            &output,
+            packed_out.as_deref().unwrap_or(""),
+            packed_v2_out.as_deref().unwrap_or(""),
+        ] {
+            if !path.is_empty() {
+                assert!(
+                    path.ends_with(".partial"),
+                    "native I/O writes only worker-owned .partial paths; fsync and rename after exact receipt finalization"
+                );
+            }
+        }
+        let mut generated_paths = Vec::new();
+        for path in [
+            output.as_str(),
+            packed_out.as_deref().unwrap_or(""),
+            packed_v2_out.as_deref().unwrap_or(""),
+            skip_manifest.as_deref().unwrap_or(""),
+        ] {
+            if !path.is_empty() {
+                generated_paths.push(path.to_string());
+            }
+        }
+        if !output.is_empty() {
+            generated_paths.push(format!("{output}.json"));
+            if actmean.is_some() {
+                generated_paths.push(format!("{output}.debias.json"));
+            }
+        }
+        if let Some(prefix) = &dump_indices {
+            generated_paths.push(format!("{prefix}.native-path-check.bin"));
+        }
+        validate_native_output_paths(staging_root, &generated_paths)
+            .unwrap_or_else(|error| panic!("native output confinement: {error}"));
+    }
+    assert!(
+        native_io != NativeIoMode::Standard || native_staging_root.is_none(),
+        "--native-staging-root is valid only with feature-gated native I/O"
+    );
     assert!(
         !learned_codebook || vec_dim > 1,
         "--learned-codebook requires --vec-dim > 1"
@@ -659,6 +957,12 @@ fn parse_args() -> Args {
         rht,
         rht_cols,
         threads,
+        block_threads,
+        block_scratch_budget_bytes,
+        ordered_pipeline_depth,
+        ordered_pipeline_prepared_budget_bytes,
+        ordered_pipeline_encoded_budget_bytes,
+        native_io,
         only,
         tensor_scope_all_2d,
         measure_only,
@@ -686,7 +990,7 @@ fn parse_args() -> Args {
 }
 
 fn cache_config_key(args: &Args, f32_metric: bool, f32_search: bool) -> String {
-    format!(
+    let canonical = format!(
         "cache_identity_schema={};codec_schema={};l={};quality={};tail_biting={};affine={};rht_axis={};tensor_scope={};vec_dim={};block_len={};learned={};adaptive_scales={};learned_iters=50;learned_maxvec={};workers={};out={}@{};f32_metric={};f32_search={}",
         encode_cache::TENSOR_IDENTITY_SCHEMA,
         QUANTIZE_CODEC_SCHEMA,
@@ -710,7 +1014,14 @@ fn cache_config_key(args: &Args, f32_metric: bool, f32_search: bool) -> String {
         args.outlier_bits,
         f32_metric,
         f32_search,
-    )
+    );
+    match args.block_threads {
+        None => canonical,
+        Some(workers) => format!(
+            "{canonical};block_workers={workers};block_scratch_bytes={}",
+            args.block_scratch_budget_bytes
+        ),
+    }
 }
 
 fn sanitize_for_filename(name: &str) -> String {
@@ -731,6 +1042,7 @@ fn dump_index_stream(
     syms: &[u8],
     k: u32,
     l: u32,
+    native_output: bool,
 ) -> std::io::Result<String> {
     let path = format!("{}.{}.bin", prefix, sanitize_for_filename(name));
     let mut buf: Vec<u8> = Vec::with_capacity(24 + syms.len());
@@ -740,7 +1052,7 @@ fn dump_index_stream(
     buf.extend_from_slice(&l.to_le_bytes());
     buf.extend_from_slice(&(syms.len() as u64).to_le_bytes());
     buf.extend_from_slice(syms);
-    fs::write(&path, &buf)?;
+    write_output_bytes(&path, &buf, native_output)?;
     Ok(path)
 }
 
@@ -815,6 +1127,14 @@ struct TensorJob {
     bits: u32,
 }
 
+#[cfg(feature = "ordered-pipeline")]
+struct TensorSource {
+    name: String,
+    shape: Vec<u64>,
+    in_features: usize,
+    bits: u32,
+}
+
 struct TensorResult {
     name: String,
     shape: Vec<u64>,
@@ -856,6 +1176,104 @@ struct TensorResult {
     outlier: Option<OutlierWire>,
 }
 
+#[cfg(feature = "ordered-pipeline")]
+struct PipelinePreparedTensor {
+    job: TensorJob,
+    preprocessed: TensorPreprocess,
+}
+
+#[cfg(feature = "ordered-pipeline")]
+struct PipelineEncodedTensor {
+    result: TensorResult,
+    debias: Option<Vec<f32>>,
+}
+
+#[cfg(feature = "ordered-pipeline")]
+fn pipeline_prepared_resident_bytes(value: &PipelinePreparedTensor) -> usize {
+    let mut bytes = std::mem::size_of::<PipelinePreparedTensor>()
+        .saturating_add(value.job.name.capacity())
+        .saturating_add(value.job.shape.capacity() * std::mem::size_of::<u64>())
+        .saturating_add(value.job.gt.capacity() * std::mem::size_of::<f32>())
+        .saturating_add(value.preprocessed.work.capacity() * std::mem::size_of::<f32>());
+    if let Some(bulk) = &value.preprocessed.bulk_gt {
+        bytes = bytes.saturating_add(bulk.capacity() * std::mem::size_of::<f32>());
+    }
+    if let Some((idx, vals, codes, _)) = &value.preprocessed.outliers {
+        bytes = bytes
+            .saturating_add(idx.capacity() * std::mem::size_of::<usize>())
+            .saturating_add(vals.capacity() * std::mem::size_of::<f32>())
+            .saturating_add(codes.capacity() * std::mem::size_of::<i32>());
+    }
+    bytes
+}
+
+#[cfg(feature = "ordered-pipeline")]
+fn pipeline_encoded_resident_bytes(value: &PipelineEncodedTensor) -> usize {
+    let result = &value.result;
+    let mut bytes = std::mem::size_of::<PipelineEncodedTensor>()
+        .saturating_add(result.name.capacity())
+        .saturating_add(result.shape.capacity() * std::mem::size_of::<u64>())
+        .saturating_add(result.recon.capacity() * std::mem::size_of::<f32>());
+    if let Some(enc) = &result.enc {
+        bytes = bytes.saturating_add(enc.bits.capacity()).saturating_add(
+            enc.blocks.capacity() * std::mem::size_of::<strand_quant::encode::BlockMeta>(),
+        );
+        for block in &enc.blocks {
+            bytes = bytes
+                .saturating_add(block.sub_scales.capacity())
+                .saturating_add(block.mins.capacity());
+        }
+    }
+    if let Some(lut) = &result.vector_lut {
+        bytes = bytes.saturating_add(lut.capacity() * std::mem::size_of::<i32>());
+    }
+    if let Some(outlier) = &result.outlier {
+        bytes =
+            bytes.saturating_add(outlier.entries.capacity() * std::mem::size_of::<(u32, i32)>());
+    }
+    if let Some(debias) = &value.debias {
+        bytes = bytes.saturating_add(debias.capacity() * std::mem::size_of::<f32>());
+    }
+    bytes
+}
+
+#[derive(Clone, Copy, Debug)]
+struct ParallelEncodeConfig {
+    threads: usize,
+    scratch_budget_bytes: usize,
+}
+
+fn encode_configured(
+    weights: &[f32],
+    cfg: &TrellisConfig,
+    opts: &EncodeOpts,
+    custom_lut: Option<&[i32]>,
+    parallel: Option<ParallelEncodeConfig>,
+) -> EncodedTensor {
+    #[cfg(feature = "block-parallel")]
+    if let Some(p) = parallel {
+        let block_cfg = BlockParallelConfig::new(p.threads)
+            .expect("validated --block-threads")
+            .with_scratch_budget_bytes(p.scratch_budget_bytes);
+        return match custom_lut {
+            None => encode_tensor_with_block_parallel(weights, cfg, opts, block_cfg),
+            Some(lut) => encode_tensor_with_lut_block_parallel(weights, cfg, opts, lut, block_cfg),
+        }
+        .unwrap_or_else(|e| panic!("block-parallel encode rejected: {e}"));
+    }
+
+    #[cfg(not(feature = "block-parallel"))]
+    assert!(
+        parallel.is_none(),
+        "block-parallel encode requested from a build without the block-parallel feature"
+    );
+
+    match custom_lut {
+        None => encode_tensor_with(weights, cfg, opts),
+        Some(lut) => encode_tensor_with_lut(weights, cfg, opts, lut),
+    }
+}
+
 fn vector_lut_required_bytes(cfg: &TrellisConfig) -> u64 {
     if cfg.vec_dim() > 1 {
         (SDSC_TENSOR_LUT_RECORD_BYTES + cfg.lut_len() * std::mem::size_of::<i32>()) as u64
@@ -864,22 +1282,23 @@ fn vector_lut_required_bytes(cfg: &TrellisConfig) -> u64 {
     }
 }
 
-#[allow(clippy::too_many_arguments)]
-fn quantize_one(
+type OutlierSelection = (Vec<usize>, Vec<f32>, Vec<i32>, f32);
+
+struct TensorPreprocess {
+    outliers: Option<OutlierSelection>,
+    bulk_gt: Option<Vec<f32>>,
+    work: Vec<f32>,
+    rcfg: Option<RhtConfig>,
+}
+
+fn preprocess_tensor(
     job: &TensorJob,
-    cfg: &TrellisConfig,
     use_rht: bool,
     rht_cols: bool,
-    tail_biting: bool,
-    affine_min: bool,
-    dump_indices: Option<&str>,
-    learned_codebook: bool,
-    adaptive_scales: bool,
     outlier_pct: f64,
     outlier_bits: u32,
-    want_packed: bool,
-) -> TensorResult {
-    let outliers: Option<(Vec<usize>, Vec<f32>, Vec<i32>, f32)> = if outlier_pct > 0.0 {
+) -> TensorPreprocess {
+    let outliers: Option<OutlierSelection> = if outlier_pct > 0.0 {
         let n = job.gt.len();
         let k = ((outlier_pct / 100.0) * n as f64).round() as usize;
         if k == 0 || n == 0 {
@@ -912,18 +1331,14 @@ fn quantize_one(
     } else {
         None
     };
-    let bulk_gt: Vec<f32>;
-    let job_gt: &[f32] = if let Some((idx, ..)) = &outliers {
-        let mut b = job.gt.clone();
+    let bulk_gt = outliers.as_ref().map(|(idx, ..)| {
+        let mut bulk = job.gt.clone();
         for &i in idx {
-            b[i] = 0.0;
+            bulk[i] = 0.0;
         }
-        bulk_gt = b;
-        &bulk_gt
-    } else {
-        &job.gt
-    };
-
+        bulk
+    });
+    let job_gt = bulk_gt.as_deref().unwrap_or(&job.gt);
     let (work, rcfg) = if use_rht {
         let rcfg = RhtConfig::from_seed(rht_seed_for(&job.name));
         let fwd = if rht_cols {
@@ -935,6 +1350,74 @@ fn quantize_one(
     } else {
         (job_gt.to_vec(), None)
     };
+    TensorPreprocess {
+        outliers,
+        bulk_gt,
+        work,
+        rcfg,
+    }
+}
+
+#[allow(clippy::too_many_arguments)]
+fn quantize_one(
+    job: &TensorJob,
+    cfg: &TrellisConfig,
+    use_rht: bool,
+    rht_cols: bool,
+    tail_biting: bool,
+    affine_min: bool,
+    dump_indices: Option<&str>,
+    native_output: bool,
+    learned_codebook: bool,
+    adaptive_scales: bool,
+    outlier_pct: f64,
+    outlier_bits: u32,
+    want_packed: bool,
+    parallel: Option<ParallelEncodeConfig>,
+) -> TensorResult {
+    let prepared = preprocess_tensor(job, use_rht, rht_cols, outlier_pct, outlier_bits);
+    quantize_preprocessed(
+        job,
+        prepared,
+        cfg,
+        use_rht,
+        rht_cols,
+        tail_biting,
+        affine_min,
+        dump_indices,
+        native_output,
+        learned_codebook,
+        adaptive_scales,
+        outlier_bits,
+        want_packed,
+        parallel,
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+fn quantize_preprocessed(
+    job: &TensorJob,
+    prepared: TensorPreprocess,
+    cfg: &TrellisConfig,
+    use_rht: bool,
+    rht_cols: bool,
+    tail_biting: bool,
+    affine_min: bool,
+    dump_indices: Option<&str>,
+    native_output: bool,
+    learned_codebook: bool,
+    adaptive_scales: bool,
+    outlier_bits: u32,
+    want_packed: bool,
+    parallel: Option<ParallelEncodeConfig>,
+) -> TensorResult {
+    let TensorPreprocess {
+        outliers,
+        bulk_gt,
+        work,
+        rcfg,
+    } = prepared;
+    let job_gt = bulk_gt.as_deref().unwrap_or(&job.gt);
 
     let opts = EncodeOpts {
         adaptive: adaptive_scales,
@@ -956,7 +1439,7 @@ fn quantize_one(
             let scalar: Vec<i32> = codebook_lut(cfg.l_bits).to_vec();
             let broadcast = vector_lut_from_scalar(&scalar, d);
             let eval_lut = |lut: &[i32]| -> (EncodedTensor, f64) {
-                let e = encode_tensor_with_lut(&work, cfg, &opts, lut);
+                let e = encode_configured(&work, cfg, &opts, Some(lut), parallel);
                 let q12 = decode_tensor_fixed_with_lut(&e, cfg, lut);
                 let mut r: Vec<f32> = q12.iter().map(|&q| (q as f32) * (1.0 / 4096.0)).collect();
                 if let Some(rc) = rcfg.as_ref() {
@@ -996,16 +1479,20 @@ fn quantize_one(
     };
     let mut enc = match selected_enc {
         Some(enc) => enc,
-        None => match &custom_lut {
-            None => encode_tensor_with(&work, cfg, &opts),
-            Some(lut) => encode_tensor_with_lut(&work, cfg, &opts, lut),
-        },
+        None => encode_configured(&work, cfg, &opts, custom_lut.as_deref(), parallel),
     };
     enc.has_rht_seed = use_rht;
 
     if let Some(prefix) = dump_indices {
         let syms = enc.index_symbols(cfg);
-        match dump_index_stream(prefix, &job.name, &syms, cfg.k_bits, cfg.l_bits) {
+        match dump_index_stream(
+            prefix,
+            &job.name,
+            &syms,
+            cfg.k_bits,
+            cfg.l_bits,
+            native_output,
+        ) {
             Ok(path) => eprintln!(
                 "[quantize-model] dumped {} index symbols (k={}, L={}) -> {}",
                 syms.len(),
@@ -1112,11 +1599,33 @@ fn quantize_one(
     }
 }
 
+fn verify_native_source_identity(st: &SafeTensors, mode: NativeIoMode) {
+    #[cfg(all(feature = "native-execution", target_os = "macos"))]
+    if mode != NativeIoMode::Standard {
+        st.verify_source_identity()
+            .expect("native source identity changed; refusing output promotion");
+    }
+    let _ = (st, mode);
+}
+
 fn main() {
     let args = parse_args();
     let t0 = Instant::now();
 
-    let st = SafeTensors::open(&args.input).expect("open input safetensors");
+    let st = match args.native_io {
+        NativeIoMode::Standard => SafeTensors::open(&args.input),
+        #[cfg(feature = "native-execution")]
+        NativeIoMode::Preallocated => {
+            SafeTensors::open_preallocated(std::path::Path::new(&args.input))
+        }
+        #[cfg(not(feature = "native-execution"))]
+        NativeIoMode::Preallocated => unreachable!("validated native I/O feature"),
+        #[cfg(all(feature = "native-execution", target_os = "macos"))]
+        NativeIoMode::Mmap => SafeTensors::open_mmap(std::path::Path::new(&args.input)),
+        #[cfg(not(all(feature = "native-execution", target_os = "macos")))]
+        NativeIoMode::Mmap => unreachable!("validated native mmap support"),
+    }
+    .expect("open input safetensors");
 
     let resolve_cfg = |bits: u32| -> (TrellisConfig, bool, bool) {
         let cfg = if args.l != 0 {
@@ -1179,6 +1688,8 @@ fn main() {
     }
 
     let mut jobs: Vec<TensorJob> = Vec::new();
+    #[cfg(feature = "ordered-pipeline")]
+    let mut pipeline_sources: Vec<TensorSource> = Vec::new();
     let mut passthrough: Vec<OutTensor> = Vec::new();
     let only_match = |name: &str| {
         args.only
@@ -1201,6 +1712,16 @@ fn main() {
                 Some(rules) => mp_bits(rules, name, rung_fallback),
                 None => rung_fallback,
             };
+            #[cfg(feature = "ordered-pipeline")]
+            if args.ordered_pipeline_depth.is_some() {
+                pipeline_sources.push(TensorSource {
+                    name: name.clone(),
+                    shape: t.shape.clone(),
+                    in_features,
+                    bits: tensor_bits,
+                });
+                continue;
+            }
             jobs.push(TensorJob {
                 name: name.clone(),
                 shape: t.shape.clone(),
@@ -1216,9 +1737,13 @@ fn main() {
             });
         }
     }
+    #[cfg(feature = "ordered-pipeline")]
+    let quantized_count = jobs.len() + pipeline_sources.len();
+    #[cfg(not(feature = "ordered-pipeline"))]
+    let quantized_count = jobs.len();
     eprintln!(
         "[quantize-model] {} quantized tensors (scope={}), {} pass-through tensors",
-        jobs.len(),
+        quantized_count,
         if args.tensor_scope_all_2d {
             "all-2d"
         } else {
@@ -1233,12 +1758,12 @@ fn main() {
     // machine even though each individual CLI value passed validation.
     const MAX_BACKTRACE_CELLS_PER_WORKER: usize = 16 * 1024 * 1024;
     let mut checked_bits = Vec::new();
-    for job in &jobs {
-        if checked_bits.contains(&job.bits) {
-            continue;
+    let mut check_geometry = |bits: u32| {
+        if checked_bits.contains(&bits) {
+            return;
         }
-        checked_bits.push(job.bits);
-        let (cfg, _, _) = resolve_cfg(job.bits);
+        checked_bits.push(bits);
+        let (cfg, _, _) = resolve_cfg(bits);
         let cells = cfg
             .num_steps(cfg.block_len)
             .checked_mul(cfg.num_states())
@@ -1246,13 +1771,20 @@ fn main() {
         assert!(
             cells <= MAX_BACKTRACE_CELLS_PER_WORKER,
             "unsafe Viterbi geometry for bits={}: block_len={} vec_dim={} L={} needs {} backtrace cells/worker (limit {}); lower --block-len or --l",
-            job.bits,
+            bits,
             cfg.block_len,
             cfg.vec_dim(),
             cfg.l_bits,
             cells,
             MAX_BACKTRACE_CELLS_PER_WORKER,
         );
+    };
+    for job in &jobs {
+        check_geometry(job.bits);
+    }
+    #[cfg(feature = "ordered-pipeline")]
+    for source in &pipeline_sources {
+        check_geometry(source.bits);
     }
 
     let skip_key = cache_config_key(&args, f32_metric_from_env(), f32_search_from_env());
@@ -1312,7 +1844,19 @@ fn main() {
         m
     });
     let debias_out: Mutex<Vec<(String, Vec<f32>)>> = Mutex::new(Vec::new());
-    let nthreads = if args.learned_codebook {
+    let block_parallel = args.block_threads.map(|threads| ParallelEncodeConfig {
+        threads,
+        scratch_budget_bytes: args.block_scratch_budget_bytes,
+    });
+    let nthreads = if let Some(p) = block_parallel {
+        eprintln!(
+            "[quantize-model] feature-gated block-parallel CPU encode: {} block workers, {} MiB aggregate Viterbi scratch cap; forcing one outer tensor worker (requested {})",
+            p.threads,
+            p.scratch_budget_bytes >> 20,
+            args.threads,
+        );
+        1
+    } else if args.learned_codebook {
         // Learned-codebook encode is per-tensor independent (quantize_one owns a local
         // SplitMix64 seeded per tensor), so multi-threading across tensors is bit-identical.
         // The only constraint is memory: each concurrent worker holds roughly the largest
@@ -1352,9 +1896,10 @@ fn main() {
     } else {
         args.threads.max(1)
     };
-    std::thread::scope(|scope| {
-        for _ in 0..nthreads {
-            scope.spawn(|| loop {
+    let run_serial = || {
+        std::thread::scope(|scope| {
+            for _ in 0..nthreads {
+                scope.spawn(|| loop {
                 let idx = next.fetch_add(1, Ordering::Relaxed);
                 if idx >= jobs.len() {
                     break;
@@ -1422,11 +1967,13 @@ fn main() {
                         tensor_tail_biting,
                         tensor_affine_min,
                         args.dump_indices.as_deref(),
+                        args.native_io != NativeIoMode::Standard,
                         args.learned_codebook,
                         args.adaptive_scales,
                         args.outlier_pct,
                         args.outlier_bits,
                         args.packed_out.is_some() || args.packed_v2_out.is_some(),
+                        block_parallel,
                     ),
                 };
                 eprintln!(
@@ -1453,8 +2000,129 @@ fn main() {
                 }
                 results.lock().unwrap().push(r);
             });
-        }
-    });
+            }
+        })
+    };
+
+    #[cfg(feature = "ordered-pipeline")]
+    if let Some(depth) = args.ordered_pipeline_depth {
+        let pipeline_config = PipelineConfig::new(
+            depth,
+            args.ordered_pipeline_prepared_budget_bytes,
+            args.ordered_pipeline_encoded_budget_bytes,
+        )
+        .unwrap_or_else(|error| panic!("ordered pipeline config rejected: {error}"));
+        eprintln!(
+            "[quantize-model] feature-gated ordered pipeline: depth={}, prepared cap={} MiB, encoded cap={} MiB; final container framing remains canonical after all tensors complete",
+            depth,
+            args.ordered_pipeline_prepared_budget_bytes >> 20,
+            args.ordered_pipeline_encoded_budget_bytes >> 20,
+        );
+        let stats = run_ordered_pipeline(
+            pipeline_sources,
+            pipeline_config,
+            |_index, source| {
+                let tensor = st
+                    .tensors
+                    .get(&source.name)
+                    .ok_or_else(|| format!("source tensor {:?} disappeared", source.name))?;
+                let job = TensorJob {
+                    name: source.name,
+                    shape: source.shape,
+                    gt: st.to_f32(tensor),
+                    in_features: source.in_features,
+                    bits: source.bits,
+                };
+                let preprocessed = preprocess_tensor(
+                    &job,
+                    args.rht,
+                    args.rht_cols,
+                    args.outlier_pct,
+                    args.outlier_bits,
+                );
+                let prepared = PipelinePreparedTensor { job, preprocessed };
+                let resident_bytes = pipeline_prepared_resident_bytes(&prepared);
+                Ok::<_, String>(Accounted::new(prepared, resident_bytes))
+            },
+            |index, prepared| {
+                let PipelinePreparedTensor { job, preprocessed } = prepared;
+                let (tensor_cfg, tensor_affine_min, tensor_tail_biting) =
+                    resolve_cfg(job.bits);
+                let result = quantize_preprocessed(
+                    &job,
+                    preprocessed,
+                    &tensor_cfg,
+                    args.rht,
+                    args.rht_cols,
+                    tensor_tail_biting,
+                    tensor_affine_min,
+                    args.dump_indices.as_deref(),
+                    args.native_io != NativeIoMode::Standard,
+                    args.learned_codebook,
+                    args.adaptive_scales,
+                    args.outlier_bits,
+                    args.packed_out.is_some() || args.packed_v2_out.is_some(),
+                    block_parallel,
+                );
+                eprintln!(
+                    "[done {}/{}] {:<40} bits={} bpw={:.3} rel-RMS={:.2}% (ordered pipeline)",
+                    index + 1,
+                    quantized_count,
+                    result.name,
+                    result.bits,
+                    result.bpw,
+                    result.rel_rms_pct
+                );
+                let debias = actmean_map.as_ref().and_then(|map| {
+                    map.get(&result.name).and_then(|mu| {
+                        if mu.len() == job.in_features {
+                            Some(debias_correction(
+                                &job.gt,
+                                &result.recon,
+                                mu,
+                                job.in_features,
+                            ))
+                        } else {
+                            eprintln!(
+                                "[quantize-model] WARNING: actmean dim {} != in_features {} for '{}' — de-bias skipped",
+                                mu.len(), job.in_features, result.name
+                            );
+                            None
+                        }
+                    })
+                });
+                let encoded = PipelineEncodedTensor { result, debias };
+                let resident_bytes = pipeline_encoded_resident_bytes(&encoded);
+                Ok::<_, String>(Accounted::new(encoded, resident_bytes))
+            },
+            |_index, encoded| {
+                if let Some(correction) = encoded.debias {
+                    debias_out
+                        .lock()
+                        .map_err(|_| "de-bias result lock poisoned")?
+                        .push((encoded.result.name.clone(), correction));
+                }
+                results
+                    .lock()
+                    .map_err(|_| "result lock poisoned")?
+                    .push(encoded.result);
+                Ok::<_, &'static str>(())
+            },
+        )
+        .unwrap_or_else(|error| panic!("ordered pipeline failed closed: {error}"));
+        eprintln!(
+            "[quantize-model] ordered pipeline complete: read/prepared={}, encoded={}, canonically collected={}, max prepared residents={}, max encoded residents={}",
+            stats.records_read_prepared,
+            stats.records_encoded,
+            stats.records_written,
+            stats.max_prepared_resident_records,
+            stats.max_encoded_resident_records,
+        );
+    } else {
+        run_serial();
+    }
+    #[cfg(not(feature = "ordered-pipeline"))]
+    run_serial();
 
     if let Some(p) = &args.actmean {
         let mut rows = debias_out.into_inner().unwrap();
@@ -1481,7 +2149,12 @@ fn main() {
         }
         js.push_str("\n  }\n}\n");
         let dpath = format!("{}.debias.json", args.output);
-        fs::write(&dpath, &js).expect("write debias sidecar");
+        write_output_bytes(
+            &dpath,
+            js.as_bytes(),
+            args.native_io != NativeIoMode::Standard,
+        )
+        .expect("write debias sidecar");
         // billed mass: rows * 16 bits (bf16 deploy) over the quantized weights
         let nw: usize = results.lock().unwrap().iter().map(|r| r.recon.len()).sum();
         eprintln!(
@@ -1499,7 +2172,12 @@ fn main() {
 
     if let Some(p) = &args.skip_manifest {
         let m = new_manifest.into_inner().unwrap();
-        match m.save(p) {
+        let saved = if args.native_io != NativeIoMode::Standard {
+            write_output_bytes(p, m.to_json().as_bytes(), true)
+        } else {
+            m.save(p)
+        };
+        match saved {
             Ok(()) => eprintln!(
                 "[quantize-model] identity-skip: {} skipped / {} total; manifest -> {}",
                 skipped_count.load(Ordering::Relaxed),
@@ -1518,6 +2196,7 @@ fn main() {
         .map(|(i, n)| (n.as_str(), i))
         .collect();
     quant_results.sort_by_key(|r| order_idx[r.name.as_str()]);
+    verify_native_source_identity(&st, args.native_io);
 
     if let Some(packed_path) = &args.packed_out {
         let mut pts: Vec<PackedTensor> = Vec::new();
@@ -1537,7 +2216,12 @@ fn main() {
             }
         }
         let bytes = format::write_strand(&pts);
-        fs::write(packed_path, &bytes).expect("write .strand archive");
+        write_output_bytes(
+            packed_path,
+            &bytes,
+            args.native_io != NativeIoMode::Standard,
+        )
+        .expect("write .strand archive");
         let nw: usize = quant_results.iter().map(|r| r.recon.len()).sum();
         eprintln!(
             "[quantize-model] wrote {} tensors -> {} ({:.1} MB, {:.4} bytes/weight){}",
@@ -1551,6 +2235,7 @@ fn main() {
                 String::new()
             }
         );
+        verify_native_source_identity(&st, args.native_io);
         return;
     }
 
@@ -1609,7 +2294,13 @@ fn main() {
                 std::process::exit(1);
             }
         };
-        fs::write(packed_path, &bytes).expect("write .strand v2 archive");
+        let append_output = AppendOutput::create(
+            packed_path,
+            &bytes,
+            args.native_io != NativeIoMode::Standard,
+        )
+        .expect("create worker-owned .strand v2 archive");
+        let append_path = append_output.path();
 
         // Vector trellis codebooks are part of the executable representation, not
         // an optional JSON sidecar.  Append the exact per-tensor LUTs immediately
@@ -1627,7 +2318,7 @@ fn main() {
             })
             .collect();
         if !tensor_lut_inputs.is_empty() {
-            let sdsc = append_sdsc_with_tensor_luts(packed_path, &tensor_lut_inputs)
+            let sdsc = append_sdsc_with_tensor_luts(append_path, &tensor_lut_inputs)
                 .unwrap_or_else(|e| panic!("append archive-bound vector SDSC: {e}"));
             eprintln!(
                 "[quantize-model] appended SDSC v2: {} exact per-tensor vector LUTs",
@@ -1645,10 +2336,10 @@ fn main() {
             // --c2f-outl: gap-code positions (OUTL_FLAG_POS_RANS). Container-only —
             // reconstruct is byte-identical, so decode/MAC/SPRV are unchanged.
             if args.c2f_outl {
-                append_outl_c2f(packed_path, &wires)
+                append_outl_c2f(append_path, &wires)
                     .unwrap_or_else(|e| panic!("append C2F OUTL section: {e}"));
             } else {
-                append_outl(packed_path, &wires)
+                append_outl(append_path, &wires)
                     .unwrap_or_else(|e| panic!("append OUTL section: {e}"));
             }
             eprintln!(
@@ -1677,10 +2368,10 @@ fn main() {
                 .collect();
             let n_blocks = scale_q.len();
             let raw_inline_bits = (n_blocks as u64) * 32; // bare 32-bit/block ship cost
-            append_sdsq(packed_path, &scale_q)
+            append_sdsq(append_path, &scale_q)
                 .unwrap_or_else(|e| panic!("append SDSQ section: {e}"));
             // Report the rANS stream cost vs the would-be inline 32-bit footprint.
-            let sec = strand_quant::sideinfo_wire::read_sdsq(packed_path)
+            let sec = strand_quant::sideinfo_wire::read_sdsq(append_path)
                 .ok()
                 .flatten()
                 .map(|s| s.scale_q.len())
@@ -1699,7 +2390,7 @@ fn main() {
         }
 
         if !args.no_sprv {
-            let archive_bytes = fs::read(packed_path)
+            let archive_bytes = fs::read(append_path)
                 .unwrap_or_else(|e| panic!("read packed archive for SPRV: {e}"));
             let lut_for = |tensor: &strand_quant::format::OwnedTensorV2| {
                 if tensor.base.vec_dim <= 1 {
@@ -1718,7 +2409,7 @@ fn main() {
             };
             let sprv = build_sprv(&archive_bytes, DEFAULT_VECTORS_PER_TENSOR, false, &lut_for)
                 .unwrap_or_else(|e| panic!("build SPRV section: {e}"));
-            append_sprv(packed_path, &sprv).unwrap_or_else(|e| panic!("append SPRV section: {e}"));
+            append_sprv(append_path, &sprv).unwrap_or_else(|e| panic!("append SPRV section: {e}"));
             let mut root_hex = String::with_capacity(64);
             for b in &sprv.model_root {
                 root_hex.push_str(&format!("{b:02x}"));
@@ -1726,7 +2417,7 @@ fn main() {
             eprintln!("[quantize-model] appended SPRV trailer (v2): model_root={root_hex}");
         }
 
-        let final_len = fs::metadata(packed_path)
+        let final_len = fs::metadata(append_path)
             .map(|m| m.len())
             .unwrap_or(bytes.len() as u64);
         let nw: usize = quant_results.iter().map(|r| r.recon.len()).sum();
@@ -1748,6 +2439,10 @@ fn main() {
                 String::new()
             }
         );
+        verify_native_source_identity(&st, args.native_io);
+        append_output
+            .finalize()
+            .expect("durably finalize complete .strand v2 archive");
         return;
     }
 
@@ -1892,7 +2587,12 @@ fn main() {
     if args.measure_only {
         let json_path = format!("{}.json", args.output);
         if !args.output.is_empty() {
-            fs::write(&json_path, &sidecar).expect("write sidecar json");
+            write_output_bytes(
+                &json_path,
+                sidecar.as_bytes(),
+                args.native_io != NativeIoMode::Standard,
+            )
+            .expect("write sidecar json");
         }
         eprintln!(
             "[quantize-model] MEASURE-ONLY: {} tensors quantized in {:.1}s (no model written)",
@@ -1903,6 +2603,7 @@ fn main() {
             "[quantize-model] AGGREGATE effective bpw = {:.4} over {} quantized weights ; weighted rel-RMS = {:.2}%",
             agg_bpw, agg_den, agg_rel
         );
+        verify_native_source_identity(&st, args.native_io);
         return;
     }
 
@@ -1915,9 +2616,19 @@ fn main() {
         .map(|n| by_name.remove(n).expect("every input tensor accounted for"))
         .collect();
 
-    write_safetensors(&args.output, &out_tensors).expect("write output safetensors");
+    write_safetensors(
+        &args.output,
+        &out_tensors,
+        args.native_io != NativeIoMode::Standard,
+    )
+    .expect("write output safetensors");
     let json_path = format!("{}.json", args.output);
-    fs::write(&json_path, &sidecar).expect("write sidecar json");
+    write_output_bytes(
+        &json_path,
+        sidecar.as_bytes(),
+        args.native_io != NativeIoMode::Standard,
+    )
+    .expect("write sidecar json");
 
     eprintln!(
         "[quantize-model] wrote {} ({} tensors) + {} in {:.1}s",
@@ -1930,6 +2641,7 @@ fn main() {
         "[quantize-model] AGGREGATE effective bpw = {:.4} over {} quantized weights ; weighted rel-RMS = {:.2}%",
         agg_bpw, agg_den, agg_rel
     );
+    verify_native_source_identity(&st, args.native_io);
 }
 
 #[cfg(test)]
@@ -1947,6 +2659,12 @@ mod tests {
             rht: true,
             rht_cols: false,
             threads: 1,
+            block_threads: None,
+            block_scratch_budget_bytes: 256 * 1024 * 1024,
+            ordered_pipeline_depth: None,
+            ordered_pipeline_prepared_budget_bytes: 2 * 1024 * 1024 * 1024,
+            ordered_pipeline_encoded_budget_bytes: 2 * 1024 * 1024 * 1024,
+            native_io: NativeIoMode::Standard,
             only: None,
             tensor_scope_all_2d: false,
             measure_only: false,
@@ -1962,6 +2680,7 @@ mod tests {
             vec_dim: 1,
             block_len: 256,
             learned_codebook: false,
+            encode_mem_budget_bytes: 0,
             adaptive_scales: true,
             no_sprv: false,
             outlier_pct: 1.0,
@@ -1970,6 +2689,40 @@ mod tests {
             reuse_from: None,
             actmean: None,
         }
+    }
+
+    #[test]
+    fn native_output_root_rejects_escape_and_existing_entries() {
+        let admitted = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../..")
+            .join("build/native-execution");
+        fs::create_dir_all(&admitted).unwrap();
+        let root = admitted.join(format!("native-output-test-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir(&root).unwrap();
+        let inside = root.join("candidate.partial");
+        assert!(validate_native_output_paths(
+            root.to_str().unwrap(),
+            &[inside.display().to_string()]
+        )
+        .is_ok());
+        let outside = std::env::temp_dir().join(format!(
+            "native-output-escape-{}.partial",
+            std::process::id()
+        ));
+        assert!(validate_native_output_paths(
+            root.to_str().unwrap(),
+            &[outside.display().to_string()]
+        )
+        .is_err());
+        fs::write(&inside, b"prior owner").unwrap();
+        assert!(validate_native_output_paths(
+            root.to_str().unwrap(),
+            &[inside.display().to_string()]
+        )
+        .is_err());
+        fs::remove_file(inside).unwrap();
+        fs::remove_dir(root).unwrap();
     }
 
     #[test]
@@ -1985,6 +2738,17 @@ mod tests {
         assert_ne!(
             key_metric, key_search,
             "STRAND_F32_SEARCH must be pinned in the config key"
+        );
+        assert!(
+            !key.contains("block_workers"),
+            "disabled feature must preserve the historical cache-key schema"
+        );
+        let mut accelerated = test_args();
+        accelerated.block_threads = Some(4);
+        assert!(
+            cache_config_key(&accelerated, false, false)
+                .ends_with(";block_workers=4;block_scratch_bytes=268435456"),
+            "enabled feature settings must be bound into the pending-only cache identity"
         );
 
         assert_eq!(key, cache_config_key(&test_args(), false, false));
@@ -2160,7 +2924,8 @@ mod tests {
         };
         let scalar = TrellisConfig::for_bpw_l(2.0, 6);
         let result = quantize_one(
-            &job, &scalar, false, false, false, false, None, false, true, 1.0, 8, false,
+            &job, &scalar, false, false, false, false, None, false, false, true, 1.0, 8, false,
+            None,
         );
         // One selected outlier: 12-byte record metadata + ceil(log2(100)) index
         // bits + one 8-bit value code.
