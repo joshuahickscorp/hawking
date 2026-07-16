@@ -249,10 +249,15 @@ mod tests {
     use hide_core::ids::now_ms;
     use hide_core::types::Decision;
     use http_body_util::BodyExt;
+    use std::sync::atomic::{AtomicU64, Ordering};
     use tower::ServiceExt; // oneshot
 
+    static TEST_ROOT_SEQUENCE: AtomicU64 = AtomicU64::new(0);
+
     fn host_for_test() -> Arc<BackendHost> {
-        let dir = std::env::temp_dir().join(format!("hide_serve_{}", now_ms()));
+        let sequence = TEST_ROOT_SEQUENCE.fetch_add(1, Ordering::Relaxed);
+        let dir =
+            std::env::temp_dir().join(format!("hide_serve_{}_{}_{}", std::process::id(), now_ms(), sequence));
         let mut config = HideConfig::for_workspace(&dir);
         // Allow shell so the RunCommand intent round-trips end to end.
         config.security.shell_default = Decision::Allow;

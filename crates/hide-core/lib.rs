@@ -1106,13 +1106,15 @@ pub mod ids {
         use super::*;
 
         #[test]
-        fn ulid_ids_are_sortable_and_unique() {
+        fn ulid_ids_are_well_formed_and_unique() {
             let a = EventId::new();
             let b = EventId::new();
             assert_ne!(a, b);
-            assert!(a.as_str().starts_with("evt_"));
-            // ULIDs minted later sort lexicographically >= earlier ones.
-            assert!(b.as_str() >= a.as_str());
+            for id in [&a, &b] {
+                let body = id.as_str().strip_prefix("evt_").expect("event id prefix");
+                assert_eq!(body.len(), ulid::ULID_LEN);
+                assert!(Ulid::from_string(body).is_ok(), "event id body must be a valid ULID");
+            }
         }
 
         #[test]

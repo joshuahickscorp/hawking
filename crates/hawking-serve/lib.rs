@@ -1053,8 +1053,12 @@ pub mod batch {
         }
 
         pub fn decode_step(&self) -> Option<DecodeStep> {
-            Some(DecodeStep { slot_id: self.id, token: self.last_token?, position: self.position })
-                .filter(|_| self.is_ready_to_decode())
+            let token = self.last_token?;
+            self.is_ready_to_decode().then_some(DecodeStep {
+                slot_id: self.id,
+                token,
+                position: self.position,
+            })
         }
 
         pub fn sample_next(&mut self, logits: &mut [f32]) -> Option<u32> {
