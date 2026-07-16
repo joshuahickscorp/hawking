@@ -12,6 +12,7 @@ import os
 from pathlib import Path, PurePosixPath
 import shutil
 import stat
+import subprocess
 import sys
 import tarfile
 import tempfile
@@ -26,6 +27,22 @@ LOCK_SCHEMA = "hawking.pack_lock.v1"
 IGNORED_PARTS = {"target", "__pycache__", ".pytest_cache"}
 ALLOWED_DESTINATION_ROOTS = {"crates", "tools", "vendor"}
 MAX_MANIFEST_BYTES = 4 * 1024 * 1024
+VALIDATION_ROOTS = (
+    PurePosixPath("crates/hawking-core/tests"),
+    PurePosixPath("crates/hawking-serve/tests"),
+    PurePosixPath("crates/hawking/tests"),
+    PurePosixPath("crates/hide-fleet/tests"),
+    PurePosixPath("crates/hide-kernel/tests"),
+    PurePosixPath("tools/condense/tests"),
+)
+VALIDATION_SENTINELS = (
+    PurePosixPath("crates/hawking-core/tests/.hawking-validation-pack"),
+    PurePosixPath("tools/condense/tests/.hawking-validation-pack"),
+)
+COMPATIBILITY_PACK_ID = "hawking-runtime-validation-r225"
+COMPATIBILITY_MAP = "legacy-path-map.json"
+COMPATIBILITY_DELIVERY = "consumer_lock_selected_exact_file_copy"
+COMPATIBILITY_MAPPING_COUNT = 41
 
 def canonical_json(value: object) -> bytes:
     return (json.dumps(value, sort_keys=True, separators=(",", ":")) + "\n").encode()
@@ -77,7 +94,10 @@ def primary_lines(path: Path, suffixes: set[str]) -> int:
 def source_inventory(source: Path, suffixes: set[str]) -> tuple[list[dict[str, object]], int]:
     rows: list[dict[str, object]] = []
     total_lines = 0
-    for path in sorted(source.rglob("*")):
+    for path in sorted(
+        source.rglob("*"),
+        key=lambda value: value.relative_to(source).as_posix(),
+    ):
         if path.is_symlink():
             raise ValueError(f"source packs cannot contain symlinks: {path}")
         if not path.is_file():
@@ -487,6 +507,46 @@ def _same_materialization(source: Path, destination: Path, suffixes: set[str]) -
         return False
     return source_inventory(source, suffixes)[0] == source_inventory(destination, suffixes)[0]
 
+def _regular_identity(path: Path) -> tuple[int, int, str] | None:
+    try:
+        descriptor = os.open(path, os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0))
+        with os.fdopen(descriptor, "rb") as handle:
+            info = os.fstat(handle.fileno())
+            if not stat.S_ISREG(info.st_mode):
+                return None
+            digest = hashlib.sha256()
+            for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+                digest.update(chunk)
+            return info.st_mode & 0o777, info.st_size, digest.hexdigest()
+    except OSError:
+        return None
+
+def _safe_materialization_upgrade(source: Path, destination: Path) -> bool:
+    """Allow replacement only when the old regular files are an exact subset."""
+    if source.is_symlink() or destination.is_symlink():
+        return False
+    if source.is_file():
+        return destination.is_file() \
+            and _regular_identity(source) == _regular_identity(destination)
+    if not source.is_dir() or not destination.is_dir():
+        return False
+    try:
+        for existing in sorted(destination.rglob("*")):
+            relative = existing.relative_to(destination)
+            if any(part in IGNORED_PARTS for part in relative.parts):
+                continue
+            mode = existing.lstat().st_mode
+            if stat.S_ISDIR(mode):
+                continue
+            if not stat.S_ISREG(mode):
+                return False
+            counterpart = _child_path(source, PurePosixPath(relative.as_posix()))
+            if _regular_identity(existing) != _regular_identity(counterpart):
+                return False
+    except (OSError, ValueError):
+        return False
+    return True
+
 def _remove(path: Path) -> None:
     if path.is_dir() and not path.is_symlink():
         shutil.rmtree(path)
@@ -569,8 +629,10 @@ def materialize_pack(hydrated: Path, row: dict[str, object],
                                         label="materialization destination")
         source = _child_path(hydrated, source_rel)
         destination = _repo_path(destination_rel, allowed=ALLOWED_DESTINATION_ROOTS)
+        destination_exists = destination.exists() or destination.is_symlink()
         changed = not _same_materialization(source, destination, suffixes)
-        if changed and destination.exists() and not force:
+        if changed and destination_exists and not force \
+                and not _safe_materialization_upgrade(source, destination):
             raise ValueError(f"{destination}: existing materialization differs")
         if changed:
             stage = transaction / "stage" / str(index)
@@ -584,7 +646,7 @@ def materialize_pack(hydrated: Path, row: dict[str, object],
             if not _same_materialization(source, stage, suffixes):
                 raise ValueError(f"materialization copy differs: {destination}")
             records.append({"index": index, "destination": destination_rel.as_posix(),
-                            "had_destination": destination.exists()})
+                            "had_destination": destination_exists})
         results.append({"source": source_rel.as_posix(),
                         "destination": destination_rel.as_posix(),
                         "changed": changed, "valid": not changed})
@@ -684,6 +746,199 @@ def verify_locked_hydration(lock: dict[str, object], row: dict[str, object],
         "valid": bool(tree["valid"]) and bool(materializations["valid"]),
     }
 
+def _compatibility_mapping_contract(document: dict[str, object],
+                                    row: dict[str, object]) -> dict[str, object]:
+    sealed = dict(document)
+    declared_sha = sealed.pop("map_sha256", None)
+    if not _hex(declared_sha, 64) \
+            or sha256_bytes(canonical_json(sealed)) != declared_sha:
+        raise ValueError("legacy compatibility map SHA-256 differs")
+    if document.get("schema") != "hawking.runtime_validation_legacy_map.v2" \
+            or document.get("pack_id") != row["id"] \
+            or str(document.get("pack_version")) != str(row["version"]):
+        raise ValueError("legacy compatibility map identity differs from pack lock")
+    authority = document.get("materialization")
+    required = {
+        "authority": "consuming_hawking_pack_lock",
+        "compatibility_canonical_root": "support/compat/condense",
+        "compatibility_legacy_root": "tools/condense",
+        "compatibility_file_mapping_count": COMPATIBILITY_MAPPING_COUNT,
+        "compatibility_file_mappings_permitted": True,
+        "compatibility_mapping_mode": COMPATIBILITY_DELIVERY,
+        "default_materialized": False,
+        "hardlinks_permitted": False,
+        "implicit_copying_permitted": False,
+        "post_copy_mode_required": True,
+        "post_copy_sha256_required": True,
+        "symlinks_permitted": False,
+        "type": "lock_selected_verified_regular_file_copy",
+    }
+    if not isinstance(authority, dict) \
+            or any(authority.get(key) != value for key, value in required.items()):
+        raise ValueError("legacy compatibility materialization authority differs")
+    canonical_root = safe_relative(
+        authority["compatibility_canonical_root"], label="compatibility canonical root")
+    legacy_root = safe_relative(
+        authority["compatibility_legacy_root"], label="compatibility legacy root")
+    files = document.get("files")
+    if not isinstance(files, list) or not all(isinstance(item, dict) for item in files):
+        raise ValueError("legacy compatibility map files must be objects")
+    expected = []
+    for item in files:
+        if item.get("delivery") != COMPATIBILITY_DELIVERY:
+            continue
+        source = safe_relative(item.get("canonical_path"), label="compatibility source")
+        destination = safe_relative(
+            item.get("legacy_path"), label="compatibility destination")
+        if item.get("materialized_by_default") is not False \
+                or source.parent != canonical_root or destination.parent != legacy_root:
+            raise ValueError("legacy compatibility exact-copy row is unsafe")
+        expected.append({
+            "source": source.as_posix(),
+            "destination": destination.as_posix(),
+        })
+    expected.sort(key=lambda item: (item["source"], item["destination"]))
+    if len(expected) != COMPATIBILITY_MAPPING_COUNT \
+            or len({item["source"] for item in expected}) != len(expected) \
+            or len({item["destination"] for item in expected}) != len(expected):
+        raise ValueError("legacy compatibility exact-copy inventory differs")
+    actual = []
+    for mapping in row["materialize"]:
+        source = safe_relative(mapping["source"], label="lock compatibility source")
+        destination = safe_relative(
+            mapping["destination"], label="lock compatibility destination")
+        if source.parts[:len(canonical_root.parts)] == canonical_root.parts:
+            actual.append({
+                "source": source.as_posix(),
+                "destination": destination.as_posix(),
+            })
+    actual.sort(key=lambda item: (item["source"], item["destination"]))
+    if actual != expected:
+        raise ValueError("pack lock compatibility mappings differ from legacy map")
+    return {
+        "mapping_count": len(expected),
+        "inventory_sha256": sha256_bytes(canonical_json(expected)),
+        "legacy_map_sha256": declared_sha,
+    }
+
+def compatibility_mapping_inventory(lock: dict[str, object],
+                                    row: dict[str, object]) -> dict[str, object]:
+    path = pack_destination(lock, row) / COMPATIBILITY_MAP
+    if path.is_symlink() or not path.is_file():
+        raise ValueError(f"{row['id']}: verified legacy compatibility map is missing")
+    document = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(document, dict):
+        raise ValueError(f"{row['id']}: legacy compatibility map must be an object")
+    return _compatibility_mapping_contract(document, row)
+
+def validation_inventory(lock: dict[str, object],
+                         suffixes: set[str]) -> dict[str, object]:
+    mappings: dict[PurePosixPath, tuple[dict[str, object], dict[str, object]]] = {}
+    for row in select_rows(lock, []):
+        for mapping in row["materialize"]:
+            destination = safe_relative(
+                mapping["destination"], label="validation destination")
+            related = [
+                root for root in VALIDATION_ROOTS
+                if destination.parts[:len(root.parts)] == root.parts
+                or root.parts[:len(destination.parts)] == destination.parts
+            ]
+            if related and destination not in VALIDATION_ROOTS:
+                raise ValueError(
+                    f"overlapping validation materialization: {destination}")
+            if destination in VALIDATION_ROOTS:
+                if destination in mappings:
+                    raise ValueError(
+                        f"duplicate validation materialization: {destination}")
+                mappings[destination] = row, mapping
+    missing = [root.as_posix() for root in VALIDATION_ROOTS if root not in mappings]
+    if missing:
+        raise ValueError(
+            f"validation materializations missing from pack lock: {', '.join(missing)}")
+
+    inventories: dict[str, list[dict[str, object]]] = {}
+    verified: set[str] = set()
+    for destination_rel in VALIDATION_ROOTS:
+        row, mapping = mappings[destination_rel]
+        pack_id = str(row["id"])
+        if pack_id not in verified:
+            result = verify_locked_hydration(lock, row, suffixes)
+            if not result["valid"]:
+                raise ValueError(f"{pack_id}: validation pack verification failed")
+            verified.add(pack_id)
+        source = _child_path(
+            pack_destination(lock, row),
+            safe_relative(mapping["source"], label="validation source"),
+        )
+        destination = _repo_path(
+            destination_rel, allowed=ALLOWED_DESTINATION_ROOTS)
+        if not source.is_dir() or not _same_materialization(
+                source, destination, suffixes):
+            raise ValueError(
+                f"validation materialization differs: {destination_rel}")
+        files, _lines = source_inventory(source, suffixes)
+        inventories[destination_rel.as_posix()] = files
+
+    for sentinel in VALIDATION_SENTINELS:
+        root = next(root for root in VALIDATION_ROOTS
+                    if sentinel.parts[:len(root.parts)] == root.parts)
+        relative = sentinel.relative_to(root).as_posix()
+        if relative not in {
+            str(row["path"]) for row in inventories[root.as_posix()]
+        }:
+            raise ValueError(f"validation sentinel is not pinned: {sentinel}")
+
+    try:
+        tracked = subprocess.check_output(
+            ["git", "ls-files", "--",
+             *(root.as_posix() for root in VALIDATION_ROOTS)],
+            cwd=ROOT, text=True,
+        ).splitlines()
+    except subprocess.CalledProcessError as exc:
+        raise ValueError("cannot inspect tracked validation sources") from exc
+    if tracked:
+        raise ValueError(
+            "validation materializations still contain tracked files: "
+            + ", ".join(tracked[:8]))
+    python_files = [
+        {**row, "path": f"tools/condense/tests/{row['path']}"}
+        for row in inventories["tools/condense/tests"]
+        if str(row["path"]).endswith(".py")
+    ]
+    if not python_files:
+        raise ValueError("pinned Python validation inventory is empty")
+    compatibility_rows = [
+        row for row in select_rows(lock, [])
+        if row.get("id") == COMPATIBILITY_PACK_ID
+    ]
+    if len(compatibility_rows) != 1:
+        raise ValueError(
+            f"expected exactly one {COMPATIBILITY_PACK_ID} compatibility pack")
+    compatibility_row = compatibility_rows[0]
+    if str(compatibility_row["id"]) not in verified:
+        result = verify_locked_hydration(lock, compatibility_row, suffixes)
+        if not result["valid"]:
+            raise ValueError(
+                f"{COMPATIBILITY_PACK_ID}: compatibility pack verification failed")
+        verified.add(COMPATIBILITY_PACK_ID)
+    compatibility = compatibility_mapping_inventory(lock, compatibility_row)
+    return {
+        "schema": "hawking.validation_inventory.v1",
+        "pack_ids": sorted(verified),
+        "materializations": {
+            path: {
+                "file_count": len(files),
+                "inventory_sha256": sha256_bytes(canonical_json(files)),
+            }
+            for path, files in inventories.items()
+        },
+        "python_validation": {
+            "file_count": len(python_files),
+            "inventory_sha256": sha256_bytes(canonical_json(python_files)),
+        },
+        "compatibility_materializations": compatibility,
+    }
+
 def status(lock: dict[str, object], suffixes: set[str]) -> dict[str, object]:
     rows = []
     for row in select_rows(lock, []):
@@ -711,6 +966,7 @@ def status(lock: dict[str, object], suffixes: set[str]) -> dict[str, object]:
     return {"schema": "hawking.pack_status.v1", "packs": rows}
 
 def selftest() -> None:
+    global ROOT
     suffixes = {".py", ".rs"}
     with tempfile.TemporaryDirectory(prefix="hawking-pack-selftest-") as raw:
         root = Path(raw)
@@ -720,8 +976,20 @@ def selftest() -> None:
         nested = source / "nested"
         nested.mkdir()
         (nested / "b.rs").write_text("fn b() {}\n", encoding="utf-8")
+        (nested / "c.py").write_text("print('c')\n", encoding="utf-8")
+        for relative in (
+            "crates/hawking-core/tests/core.rs",
+            "crates/hawking/tests/hawking.rs",
+        ):
+            path = source / relative
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("fn collision() {}\n", encoding="utf-8")
         archive = root / "sample.tar"
         files, lines = source_inventory(source, suffixes)
+        paths = [str(row["path"]) for row in files]
+        assert paths == sorted(paths)
+        assert paths.index("crates/hawking-core/tests/core.rs") \
+            < paths.index("crates/hawking/tests/hawking.rs")
         manifest = {
             "schema": PACK_SCHEMA,
             "pack_id": "sample",
@@ -766,6 +1034,71 @@ def selftest() -> None:
         repeated = hydrate_archive(archive, destination, row=row,
                                    suffixes=suffixes)
         assert repeated["valid"] and not repeated["changed"]
+        repository = root / "repository"
+        materialized = repository / "crates/sample/tests"
+        materialized.mkdir(parents=True)
+        shutil.copy2(destination / "nested/b.rs", materialized / "b.rs")
+        (materialized / "target").mkdir()
+        (materialized / "target/untracked.bin").write_bytes(b"ignored")
+        materialize_row = {
+            **row,
+            "materialize": [{
+                "source": "nested",
+                "destination": "crates/sample/tests",
+            }],
+        }
+        original_root = ROOT
+        ROOT = repository
+        try:
+            activation = materialize_pack(
+                destination, materialize_row, suffixes, force=False)
+            assert activation["materializations"] == [{
+                "source": "nested",
+                "destination": "crates/sample/tests",
+                "changed": True,
+                "valid": True,
+            }]
+            assert _same_materialization(
+                destination / "nested", materialized, suffixes)
+            (materialized / "extra.rs").write_text(
+                "fn extra() {}\n", encoding="utf-8")
+            try:
+                materialize_pack(
+                    destination, materialize_row, suffixes, force=False)
+            except ValueError:
+                pass
+            else:
+                raise AssertionError("non-subset materialization upgrade succeeded")
+            _remove(materialized)
+            materialized.symlink_to(root / "missing")
+            try:
+                materialize_pack(
+                    destination, materialize_row, suffixes, force=False)
+            except ValueError:
+                pass
+            else:
+                raise AssertionError("symlinked materialization upgrade succeeded")
+        finally:
+            ROOT = original_root
+        subset = root / "subset"
+        subset.mkdir()
+        shutil.copy2(source / "a.py", subset / "a.py")
+        assert _safe_materialization_upgrade(source, subset)
+        (subset / "target").mkdir()
+        (subset / "target" / "untracked.bin").write_bytes(b"ignored")
+        (subset / "__pycache__").mkdir()
+        (subset / "__pycache__" / "a.pyc").write_bytes(b"ignored")
+        (subset / ".pytest_cache").mkdir()
+        (subset / ".pytest_cache" / "state").write_bytes(b"ignored")
+        assert _safe_materialization_upgrade(source, subset)
+        (subset / "a.py").chmod(0o755)
+        assert not _safe_materialization_upgrade(source, subset)
+        shutil.copy2(source / "a.py", subset / "a.py")
+        (subset / "extra.py").write_text("extra\n", encoding="utf-8")
+        assert not _safe_materialization_upgrade(source, subset)
+        (subset / "extra.py").unlink()
+        (subset / "link.py").symlink_to(source / "a.py")
+        assert not _safe_materialization_upgrade(source, subset)
         (destination / "a.py").write_text("tampered\n", encoding="utf-8")
         assert not verify_tree(destination, manifest, suffixes)["valid"]
         rewritten = json.loads(json.dumps(manifest))
@@ -776,6 +1109,52 @@ def selftest() -> None:
             pass
         else:
             raise AssertionError("self-consistent manifest rewrite escaped the lock")
+        compatibility_files = [{
+            "canonical_path": f"support/compat/condense/compat_{index}.py",
+            "legacy_path": f"tools/condense/compat_{index}.py",
+            "delivery": COMPATIBILITY_DELIVERY,
+            "materialized_by_default": False,
+        } for index in range(COMPATIBILITY_MAPPING_COUNT)]
+        compatibility_row = {
+            "id": COMPATIBILITY_PACK_ID,
+            "version": "test",
+            "materialize": [{
+                "source": item["canonical_path"],
+                "destination": item["legacy_path"],
+            } for item in compatibility_files],
+        }
+        compatibility_map: dict[str, object] = {
+            "schema": "hawking.runtime_validation_legacy_map.v2",
+            "pack_id": COMPATIBILITY_PACK_ID,
+            "pack_version": "test",
+            "files": compatibility_files,
+            "materialization": {
+                "authority": "consuming_hawking_pack_lock",
+                "compatibility_canonical_root": "support/compat/condense",
+                "compatibility_legacy_root": "tools/condense",
+                "compatibility_file_mapping_count": COMPATIBILITY_MAPPING_COUNT,
+                "compatibility_file_mappings_permitted": True,
+                "compatibility_mapping_mode": COMPATIBILITY_DELIVERY,
+                "default_materialized": False,
+                "hardlinks_permitted": False,
+                "implicit_copying_permitted": False,
+                "post_copy_mode_required": True,
+                "post_copy_sha256_required": True,
+                "symlinks_permitted": False,
+                "type": "lock_selected_verified_regular_file_copy",
+            },
+        }
+        compatibility_map["map_sha256"] = sha256_bytes(canonical_json(compatibility_map))
+        assert _compatibility_mapping_contract(
+            compatibility_map, compatibility_row)["mapping_count"] \
+            == COMPATIBILITY_MAPPING_COUNT
+        compatibility_row["materialize"] = compatibility_row["materialize"][1:]
+        try:
+            _compatibility_mapping_contract(compatibility_map, compatibility_row)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError("incomplete compatibility lock mapping succeeded")
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
@@ -788,6 +1167,7 @@ def main(argv: list[str] | None = None) -> int:
         if name == "hydrate":
             command.add_argument("--force", action="store_true")
     sub.add_parser("status")
+    sub.add_parser("validation")
     sub.add_parser("selftest")
     args = parser.parse_args(argv)
     suffixes = lock_suffixes()
@@ -798,6 +1178,8 @@ def main(argv: list[str] | None = None) -> int:
         lock = load_lock()
         if args.command == "status":
             result = status(lock, suffixes)
+        elif args.command == "validation":
+            result = validation_inventory(lock, suffixes)
         else:
             results = []
             for row in select_rows(lock, args.packs):

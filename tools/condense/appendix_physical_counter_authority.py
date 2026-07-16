@@ -235,7 +235,15 @@ class AuthorityError(ValueError):
 def _module_source_identity(
     module_name: str, path: pathlib.Path,
 ) -> tuple[dict[str, Any], str | None]:
-    """Identify retained bytes or their immutable Git archive replacement."""
+    """Identify retained bytes or their immutable compatibility archive."""
+    if condense_profiles.normalize(module_name) in condense_profiles.EXECUTABLE_MODULES:
+        record = condense_profiles.legacy_record(module_name)
+        source = condense_profiles.archive_source(module_name)
+        return {
+            "path": f"git:{record['archive_commit']}:{record['path']}",
+            "sha256": record["source_sha256"],
+            "size_bytes": len(source),
+        }, str(record["archive_commit"])
     if os.path.lexists(path):
         return physical_counter_attestation.file_identity(path), None
     record = condense_profiles.legacy_record(module_name)

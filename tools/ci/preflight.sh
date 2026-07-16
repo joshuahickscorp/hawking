@@ -13,6 +13,17 @@ fail=0
 step() { printf "\n\033[1m== %s ==\033[0m\n" "$1"; }
 run()  { echo "+ $*"; if "$@"; then :; else echo "FAILED: $*"; fail=1; fi; }
 
+step "pinned source packs"
+PYTHON="${PYTHON:-python3}"
+if [ "${HAWKING_PACK_OFFLINE:-0}" = 1 ]; then
+  "$PYTHON" tools/hawking_packs.py fetch --offline || exit 1
+else
+  "$PYTHON" tools/hawking_packs.py fetch || exit 1
+fi
+"$PYTHON" tools/hawking_packs.py hydrate || exit 1
+"$PYTHON" tools/hawking_packs.py verify || exit 1
+"$PYTHON" tools/hawking_packs.py validation || exit 1
+
 step "fmt --check"                      # CI: `cargo fmt -- --check` (workspace members only, not vendor/)
 [ "${SKIP_FMT:-0}" = 1 ] || run cargo fmt -- --check
 

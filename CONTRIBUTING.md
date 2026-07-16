@@ -8,6 +8,10 @@ welcome.
 Use an isolated target directory when a detached model run owns the machine:
 
 ```sh
+python3 tools/hawking_packs.py fetch
+python3 tools/hawking_packs.py hydrate
+python3 tools/hawking_packs.py verify
+python3 tools/hawking_packs.py validation
 cargo fmt --all -- --check
 CARGO_TARGET_DIR=/tmp/hawking-target cargo test --workspace --no-run
 FAST=1 CARGO_TARGET_DIR=/tmp/hawking-target tools/ci/preflight.sh

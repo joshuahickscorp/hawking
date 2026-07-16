@@ -20,9 +20,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          # Canonical compatibility loaders verify retired commands against the
-          # pinned baseline commit, so CI must include repository history.
+          # The LOC contract measures the pinned heritage baseline from Git
+          # objects, so CI must include repository history.
           fetch-depth: 0
+
+      - name: Set up Python validation runtime
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: docs/plans/studio_pinned_requirements.txt
 
       - name: Cache pinned source packs
         uses: actions/cache@v4
@@ -40,7 +47,16 @@ jobs:
           import shlex
 
           lock = json.load(open("packs.lock.json", encoding="utf-8"))
-          row = lock["packs"][0]
+          rows = [
+              row for row in lock.get("packs", [])
+              if isinstance(row, dict)
+              and row.get("id") == "hawking-runtime-validation-r225"
+          ]
+          if len(rows) != 1:
+              raise SystemExit(
+                  "expected exactly one hawking-runtime-validation-r225 pack row"
+              )
+          row = rows[0]
           values = {
               "PACK_SOURCE_REPOSITORY": row["source_repository"],
               "PACK_SOURCE_COMMIT": row["source_commit"],
@@ -64,7 +80,17 @@ jobs:
           import sys
 
           source = Path(sys.argv[1])
-          row = json.load(open("packs.lock.json", encoding="utf-8"))["packs"][0]
+          lock = json.load(open("packs.lock.json", encoding="utf-8"))
+          rows = [
+              row for row in lock.get("packs", [])
+              if isinstance(row, dict)
+              and row.get("id") == "hawking-runtime-validation-r225"
+          ]
+          if len(rows) != 1:
+              raise SystemExit(
+                  "expected exactly one hawking-runtime-validation-r225 pack row"
+              )
+          row = rows[0]
           actual = []
           for expected in row["control_files"]:
               raw = (source / expected["path"]).read_bytes()
@@ -86,13 +112,50 @@ jobs:
           cmp "$RUNNER_TEMP/$PACK_ARCHIVE_NAME" \
             ".hawking-pack-cache/$PACK_ARCHIVE_NAME"
 
-      - name: Hydrate and verify pinned source pack offline
+      - name: Hydrate and verify pinned source packs offline
         run: |
           python3 tools/hawking_packs.py selftest
           python3 tools/hawking_packs.py fetch --offline
           python3 tools/hawking_packs.py hydrate
           python3 tools/hawking_packs.py verify
-          python3 tools/loc_floor.py check --rung r250-pack-proof
+          python3 tools/hawking_packs.py validation
+          python3 tools/loc_floor.py check --rung r225-condensed \
+            > "$RUNNER_TEMP/loc-floor.json"
+          python3 - "$RUNNER_TEMP/loc-floor.json" <<'PY'
+          import json
+          import sys
+
+          report = json.load(open(sys.argv[1], encoding="utf-8"))
+          logical = report["logical_test_surface"]
+          assert logical["rust_test_attributes"]["current"] == 1626
+          assert logical["rust_ignore_attributes"]["current"] == 60
+          PY
+          cat "$RUNNER_TEMP/loc-floor.json"
+
+      - name: Run hydrated Python validation
+        env:
+          HF_HUB_OFFLINE: "1"
+          TRANSFORMERS_OFFLINE: "1"
+        run: |
+          test "$(uname -m)" = arm64
+          python3 -m pip install --disable-pip-version-check --only-binary=:all: \
+            pytest==9.1.0 jsonschema==4.24.0 numpy==2.2.6 torch==2.6.0 \
+            safetensors==0.7.0 transformers==5.6.2
+          validation_home="$RUNNER_TEMP/python-validation-home"
+          install -d -m 700 "$validation_home/.ssh"
+          awk '{ print $2, $3; exit }' \
+            docs/plans/appendix_counter_authority_allowed_signers \
+            > "$validation_home/.ssh/id_ed25519.pub"
+          chmod 644 "$validation_home/.ssh/id_ed25519.pub"
+          # Hosted CI cannot possess the operator's release signing key. The
+          # two private-key custody assertions remain release-host gates;
+          # every other hydrated Python test executes here.
+          HOME="$validation_home" python3 -m pytest -q \
+            tools/condense/tests \
+            tools/condense/test_doctor_v5_strand_ladder_runtime.py \
+            tools/training/test_rwkv7.py \
+            --deselect tools/condense/tests/test_appendix_physical_counter_authority.py::test_source_sealed_registry_and_operator_custody_are_valid \
+            --deselect tools/condense/tests/test_appendix_physical_counter_authority.py::test_status_distinguishes_registry_validity_and_signing_key_availability
 
       - name: Install Rust (stable + rustfmt + clippy)
         uses: dtolnay/rust-toolchain@stable

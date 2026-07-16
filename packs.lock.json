@@ -9,35 +9,35 @@
   ],
   "packs": [
     {
-      "id": "hawking-tq-r250-compat",
-      "version": "2",
-      "archive_name": "hawking-tq-r250-compat-v2.tar",
-      "archive_bytes": 3307520,
-      "archive_sha256": "2db59233de9ee6e308457b1b744b53b211f588ee33ed64b0f763ea50b3532035",
-      "manifest_sha256": "83fd42335f5c9b2669b8e052b7a86c25c93bc7c9c27931a2b3317a9aad0d0c30",
-      "tree_sha256": "ca3d0e6ae8c4e243c2d9f8a24fa9ed5625d13f68cf7bddf410194bdf5fd5f9ad",
-      "primary_lines": 61269,
+      "id": "hawking-runtime-validation-r225",
+      "version": "3",
+      "archive_name": "hawking-runtime-validation-r225-v3.tar",
+      "archive_bytes": 7813120,
+      "archive_sha256": "d7f0b34c1a3daaf5803bde9ce40a65b035b0a58f8810909d2eaadb3a356a3bc5",
+      "manifest_sha256": "80ff847fbb91ee658cbac7df8cfb05249ede1c8746d2ae51173af41c83deb022",
+      "tree_sha256": "f17ef635ac86087f8e44bcb26e185a0a7fac30903fef5bf66b615017d28b3667",
+      "primary_lines": 118507,
       "source_repository": "https://github.com/joshuahickscorp/hawking-packs",
-      "source_commit": "c9bb33dfccdecd2915789eca9b62b633687837ff",
-      "source_tree": "e9457625856c344b16c1ae29253ab4b93ca250e4",
-      "source_tag": "hawking-tq-r250-compat-v2",
-      "control_primary_lines": 151,
-      "control_inventory_sha256": "4ad3d4cf7414209c3a214daac93d0f3b1da0d32166655e0d9bbb39f22a0226da",
+      "source_commit": "26fc4ccadb0154b51b227dbb445b72c41f828f08",
+      "source_tree": "59dc0c98c3ee80852f3ecb1937ecc124d03a1a9b",
+      "source_tag": "hawking-runtime-validation-r225-v3",
+      "control_primary_lines": 358,
+      "control_inventory_sha256": "c1a3f28fb1ca712ee2883bd15f5281199ae5c85a5a642681ae07175e6b0076b5",
       "control_files": [
         {
           "path": "BUILDING.md",
-          "bytes": 367,
-          "sha256": "a133390e7ed34d42f9f37b0835795ace409f5b28e6d7dc897cc98e5456109875",
-          "lines": 12
+          "bytes": 1122,
+          "sha256": "90a357a6f2c6ec8fa62690500d14262f8cb081db0e8edb3b6d5751dd6adccd89",
+          "lines": 33
         },
         {
           "path": "tools/build_pack.py",
-          "bytes": 4385,
-          "sha256": "4b85788f90a779dc3c4d1266724167733436ff181d8f42b83fe28c52645d02d8",
-          "lines": 139
+          "bytes": 12771,
+          "sha256": "300303a319bb0c9edf880da831709da71491510a149f92a23d29c078404d1d96",
+          "lines": 325
         }
       ],
-      "hydrate_name": "hawking-tq-r250-compat-v2",
+      "hydrate_name": "hawking-runtime-validation-r225-v3",
       "ownership": "project_owned",
       "unmaterialized_metadata": [
         "README.md",
@@ -45,8 +45,8 @@
         "pack-source.manifest.json"
       ],
       "mirrors": [
-        "../hawking-pack-cache/hawking-tq-r250-compat-v2.tar",
-        "https://github.com/joshuahickscorp/hawking-packs/releases/download/hawking-tq-r250-compat-v2/hawking-tq-r250-compat-v2.tar"
+        "../hawking-pack-cache/hawking-runtime-validation-r225-v3.tar",
+        "https://github.com/joshuahickscorp/hawking-packs/releases/download/hawking-runtime-validation-r225-v3/hawking-runtime-validation-r225-v3.tar"
       ],
       "materialize": [
         {
@@ -78,12 +78,192 @@
           "destination": "tools/condense/audit_ladder.py"
         },
         {
-          "source": "validation/hawking-core/qwen_tq_serve_parity.rs",
-          "destination": "crates/hawking-core/tests/qwen_tq_serve_parity.rs"
+          "source": "support/compat/condense/appendix_contract.py",
+          "destination": "tools/condense/appendix_contract.py"
         },
         {
-          "source": "validation/hawking-core/tq_output_space_quality.rs",
-          "destination": "crates/hawking-core/tests/tq_output_space_quality.rs"
+          "source": "support/compat/condense/appendix_corpus.py",
+          "destination": "tools/condense/appendix_corpus.py"
+        },
+        {
+          "source": "support/compat/condense/appendix_device_runner.py",
+          "destination": "tools/condense/appendix_device_runner.py"
+        },
+        {
+          "source": "support/compat/condense/appendix_physical_counter_collector.py",
+          "destination": "tools/condense/appendix_physical_counter_collector.py"
+        },
+        {
+          "source": "support/compat/condense/appendix_physical_counter_executor.py",
+          "destination": "tools/condense/appendix_physical_counter_executor.py"
+        },
+        {
+          "source": "support/compat/condense/appendix_physical_counter_normalizer.py",
+          "destination": "tools/condense/appendix_physical_counter_normalizer.py"
+        },
+        {
+          "source": "support/compat/condense/appendix_physical_counter_request.py",
+          "destination": "tools/condense/appendix_physical_counter_request.py"
+        },
+        {
+          "source": "support/compat/condense/appendix_physical_release_packet.py",
+          "destination": "tools/condense/appendix_physical_release_packet.py"
+        },
+        {
+          "source": "support/compat/condense/appendix_process_joule_collector.py",
+          "destination": "tools/condense/appendix_process_joule_collector.py"
+        },
+        {
+          "source": "support/compat/condense/appendix_xctrace_export_adapter.py",
+          "destination": "tools/condense/appendix_xctrace_export_adapter.py"
+        },
+        {
+          "source": "support/compat/condense/awq.py",
+          "destination": "tools/condense/awq.py"
+        },
+        {
+          "source": "support/compat/condense/floor_integrity.py",
+          "destination": "tools/condense/floor_integrity.py"
+        },
+        {
+          "source": "support/compat/condense/frontier_autopilot.py",
+          "destination": "tools/condense/frontier_autopilot.py"
+        },
+        {
+          "source": "support/compat/condense/frontier_claims.py",
+          "destination": "tools/condense/frontier_claims.py"
+        },
+        {
+          "source": "support/compat/condense/frontier_common.py",
+          "destination": "tools/condense/frontier_common.py"
+        },
+        {
+          "source": "support/compat/condense/frontier_coverage.py",
+          "destination": "tools/condense/frontier_coverage.py"
+        },
+        {
+          "source": "support/compat/condense/frontier_coverage_runner.py",
+          "destination": "tools/condense/frontier_coverage_runner.py"
+        },
+        {
+          "source": "support/compat/condense/frontier_doctor_recovery.py",
+          "destination": "tools/condense/frontier_doctor_recovery.py"
+        },
+        {
+          "source": "support/compat/condense/frontier_evidence_run.py",
+          "destination": "tools/condense/frontier_evidence_run.py"
+        },
+        {
+          "source": "support/compat/condense/frontier_experiment_runner.py",
+          "destination": "tools/condense/frontier_experiment_runner.py"
+        },
+        {
+          "source": "support/compat/condense/frontier_experiments.py",
+          "destination": "tools/condense/frontier_experiments.py"
+        },
+        {
+          "source": "support/compat/condense/frontier_licenses.py",
+          "destination": "tools/condense/frontier_licenses.py"
+        },
+        {
+          "source": "support/compat/condense/frontier_parity.py",
+          "destination": "tools/condense/frontier_parity.py"
+        },
+        {
+          "source": "support/compat/condense/frontier_parity_runner.py",
+          "destination": "tools/condense/frontier_parity_runner.py"
+        },
+        {
+          "source": "support/compat/condense/frontier_provenance.py",
+          "destination": "tools/condense/frontier_provenance.py"
+        },
+        {
+          "source": "support/compat/condense/frontier_receipt_runner.py",
+          "destination": "tools/condense/frontier_receipt_runner.py"
+        },
+        {
+          "source": "support/compat/condense/frontier_receipts.py",
+          "destination": "tools/condense/frontier_receipts.py"
+        },
+        {
+          "source": "support/compat/condense/frontier_serve_capture.py",
+          "destination": "tools/condense/frontier_serve_capture.py"
+        },
+        {
+          "source": "support/compat/condense/frontier_verifier.py",
+          "destination": "tools/condense/frontier_verifier.py"
+        },
+        {
+          "source": "support/compat/condense/ladder_launch.py",
+          "destination": "tools/condense/ladder_launch.py"
+        },
+        {
+          "source": "support/compat/condense/ppl_bench.py",
+          "destination": "tools/condense/ppl_bench.py"
+        },
+        {
+          "source": "support/compat/condense/procure.py",
+          "destination": "tools/condense/procure.py"
+        },
+        {
+          "source": "support/compat/condense/receipt_verify.py",
+          "destination": "tools/condense/receipt_verify.py"
+        },
+        {
+          "source": "support/compat/condense/residual.py",
+          "destination": "tools/condense/residual.py"
+        },
+        {
+          "source": "support/compat/condense/spec_receipt_contract.py",
+          "destination": "tools/condense/spec_receipt_contract.py"
+        },
+        {
+          "source": "support/compat/condense/spec_reentry_scaffold.py",
+          "destination": "tools/condense/spec_reentry_scaffold.py"
+        },
+        {
+          "source": "support/compat/condense/spec_tq_runner.py",
+          "destination": "tools/condense/spec_tq_runner.py"
+        },
+        {
+          "source": "support/compat/condense/studio_run.py",
+          "destination": "tools/condense/studio_run.py"
+        },
+        {
+          "source": "support/compat/condense/tq_receipt_contract.py",
+          "destination": "tools/condense/tq_receipt_contract.py"
+        },
+        {
+          "source": "support/compat/condense/tq_runtime_matrix.py",
+          "destination": "tools/condense/tq_runtime_matrix.py"
+        },
+        {
+          "source": "support/compat/condense/tq_runtime_probe.py",
+          "destination": "tools/condense/tq_runtime_probe.py"
+        },
+        {
+          "source": "validation/rust/crates/hawking-core/tests",
+          "destination": "crates/hawking-core/tests"
+        },
+        {
+          "source": "validation/rust/crates/hawking-serve/tests",
+          "destination": "crates/hawking-serve/tests"
+        },
+        {
+          "source": "validation/rust/crates/hawking/tests",
+          "destination": "crates/hawking/tests"
+        },
+        {
+          "source": "validation/rust/crates/hide-fleet/tests",
+          "destination": "crates/hide-fleet/tests"
+        },
+        {
+          "source": "validation/rust/crates/hide-kernel/tests",
+          "destination": "crates/hide-kernel/tests"
+        },
+        {
+          "source": "validation/python/tools/condense/tests",
+          "destination": "tools/condense/tests"
         }
       ]
     }

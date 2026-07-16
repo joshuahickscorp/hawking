@@ -1,4 +1,7 @@
 #![allow(clippy::all)]
+#[cfg(test)]
+mod validation_pack_guard;
+
 #[rustfmt::skip]
 pub mod attn;
 #[rustfmt::skip]

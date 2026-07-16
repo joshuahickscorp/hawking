@@ -122,6 +122,8 @@ def _python_dependency_closure(paths: set[str]) -> set[str]:
             elif isinstance(node, ast.ImportFrom) and node.level == 0 and node.module:
                 modules.add(node.module.split(".")[0])
         for module in sorted(modules):
+            if module in condense_profiles.SOURCE_CLOSURE_EXCLUSIONS:
+                continue
             candidate = f"tools/condense/{module}.py"
             if (ROOT / candidate).is_file() and candidate not in output:
                 output.add(candidate)
@@ -130,6 +132,9 @@ def _python_dependency_closure(paths: set[str]) -> set[str]:
 
 
 REQUIRED_SOURCE_PATHS = frozenset(_python_dependency_closure(BASE_REQUIRED_SOURCE_PATHS))
+if REQUIRED_SOURCE_PATHS != frozenset(BASE_REQUIRED_SOURCE_PATHS):
+    raise RuntimeError("Appendix required source seal expanded beyond its 24-path boundary")
+REQUIRED_SOURCE_PATHS_SHA256 = "e64d9b13d43248270760c8a5c5603f47eef1f9f99a1ac56feeaa700d0ca234c7"
 
 
 def canonical_sha256(value: Any) -> str:

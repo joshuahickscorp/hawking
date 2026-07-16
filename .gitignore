@@ -33,8 +33,58 @@ Cargo.lock.bak
 /tools/training/rwkv7_qat.py
 /tools/training/rwkv7_export_strand.py
 /tools/condense/audit_ladder.py
-/crates/hawking-core/tests/qwen_tq_serve_parity.rs
-/crates/hawking-core/tests/tq_output_space_quality.rs
+
+# Exact legacy command copies materialized from the pinned R225 pack. Imports
+# remain pack-loader/hash-bound; these paths exist for self-hash and reentry.
+/tools/condense/appendix_contract.py
+/tools/condense/appendix_corpus.py
+/tools/condense/appendix_device_runner.py
+/tools/condense/appendix_physical_counter_collector.py
+/tools/condense/appendix_physical_counter_executor.py
+/tools/condense/appendix_physical_counter_normalizer.py
+/tools/condense/appendix_physical_counter_request.py
+/tools/condense/appendix_physical_release_packet.py
+/tools/condense/appendix_process_joule_collector.py
+/tools/condense/appendix_xctrace_export_adapter.py
+/tools/condense/awq.py
+/tools/condense/floor_integrity.py
+/tools/condense/frontier_autopilot.py
+/tools/condense/frontier_claims.py
+/tools/condense/frontier_common.py
+/tools/condense/frontier_coverage.py
+/tools/condense/frontier_coverage_runner.py
+/tools/condense/frontier_doctor_recovery.py
+/tools/condense/frontier_evidence_run.py
+/tools/condense/frontier_experiment_runner.py
+/tools/condense/frontier_experiments.py
+/tools/condense/frontier_licenses.py
+/tools/condense/frontier_parity.py
+/tools/condense/frontier_parity_runner.py
+/tools/condense/frontier_provenance.py
+/tools/condense/frontier_receipt_runner.py
+/tools/condense/frontier_receipts.py
+/tools/condense/frontier_serve_capture.py
+/tools/condense/frontier_verifier.py
+/tools/condense/ladder_launch.py
+/tools/condense/ppl_bench.py
+/tools/condense/procure.py
+/tools/condense/receipt_verify.py
+/tools/condense/residual.py
+/tools/condense/spec_receipt_contract.py
+/tools/condense/spec_reentry_scaffold.py
+/tools/condense/spec_tq_runner.py
+/tools/condense/studio_run.py
+/tools/condense/tq_receipt_contract.py
+/tools/condense/tq_runtime_matrix.py
+/tools/condense/tq_runtime_probe.py
+
+# Validation sources are owned by the pinned pack and hydrate untracked.
+/crates/hawking-core/tests/
+/crates/hawking-serve/tests/
+/crates/hawking/tests/
+/crates/hide-fleet/tests/
+/crates/hide-kernel/tests/
+/tools/condense/tests/
 
 # Manager↔executor file-based bus (internal AI dev pipeline; results ship via
 # normal commits to crates/, docs/, README.md, etc — not these working files)

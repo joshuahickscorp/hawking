@@ -30,10 +30,15 @@ Tools.
 ```sh
 git clone https://github.com/joshuahickscorp/hawking.git
 cd hawking
+python3 tools/hawking_packs.py fetch
+python3 tools/hawking_packs.py hydrate
+python3 tools/hawking_packs.py verify
 cargo build --release --workspace
 ```
 
 The CLI is written to `target/release/hawking`.
+For a network-free build, preseed the sibling `../hawking-pack-cache` directory
+or set `HAWKING_PACK_CACHE`, then replace `fetch` with `fetch --offline`.
 
 ## Model and generation
 
@@ -82,6 +87,7 @@ security boundary.
 ## Validation and benchmarks
 
 ```sh
+python3 tools/hawking_packs.py validation
 cargo fmt --all -- --check
 CARGO_TARGET_DIR=/tmp/hawking-target cargo test --workspace --no-run
 python3 tools/ops.py selftest

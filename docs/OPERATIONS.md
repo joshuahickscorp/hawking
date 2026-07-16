@@ -19,6 +19,18 @@ profiles, and offline training. Scientific campaign policy remains in
 
 ## Build and local validation
 
+Bootstrap the checksum-pinned source pack before invoking Cargo:
+
+```sh
+python3 tools/hawking_packs.py fetch
+python3 tools/hawking_packs.py hydrate
+python3 tools/hawking_packs.py verify
+python3 tools/hawking_packs.py validation
+```
+
+For an offline clone, place the release archive in `../hawking-pack-cache` or
+set `HAWKING_PACK_CACHE`, then use `fetch --offline`.
+
 Use the narrowest relevant checks while a heavy owner is present:
 
 ```sh

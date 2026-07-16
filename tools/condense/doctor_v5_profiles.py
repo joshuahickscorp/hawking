@@ -1,5 +1,5 @@
 #!/usr/bin/env python3.12
-"""Canonical profiles, replay semantics, and Git-backed Doctor V5 archive."""
+"""Canonical profiles, replay semantics, and static Doctor V5 history."""
 
 from __future__ import annotations
 
@@ -11,10 +11,10 @@ import os
 from pathlib import Path
 import re
 import stat
-import subprocess
 import sys
 from typing import Any, Sequence
 
+import compat_catalog
 import condense_common as common
 
 
@@ -25,9 +25,6 @@ REPLAY_SCHEMA = "hawking.doctor_v5_condensed_replay.v1"
 TERMINAL = frozenset({"complete", "negative", "unsupported"})
 ALLOWED_STATUS = TERMINAL | {"pending", "running", "failed", "resource-stop"}
 HEX64 = re.compile(r"^[0-9a-f]{64}$")
-SCHEMA_RE = re.compile(rb"hawking\.doctor_v5_[A-Za-z0-9_.-]+\.v[0-9]+")
-REPORT_RE = re.compile(rb"reports/condense/doctor_v5_[A-Za-z0-9_./-]+")
-SUBCOMMAND_RE = re.compile(rb"add_parser\([\"']([^\"']+)")
 DEFAULT_HANDOFF = (
     ROOT / "reports/condense/doctor_v5_unbound/post120_acceleration/handoff.json"
 )
@@ -76,45 +73,7 @@ PHYSICAL_AB_FACETS = (
 
 # name: (profile, canonical replacement, baseline source SHA-256)
 ARCHIVED: dict[str, tuple[str, str, str]] = {
-    "doctor_v5_acceleration_eta": ("methodology", "doctor.report", "d49b3573f534653aa77182d725b165c066f19a5b905563861b58e89293a10ae7"),
-    "doctor_v5_acceleration_reentry": ("recovery", "doctor.recovery", "3d665221ac2379816a0b7beb5e770c721459f3d813ed91bbbcbd8b51a0f1b2af"),
-    "doctor_v5_aggressive_admission_policy": ("admission", "doctor.admission", "d9e11003f630c4dbbf0ae68ea4395ae9160b0240d0ba936e01c66ba0995de745"),
-    "doctor_v5_audit": ("reporting", "doctor.report", "8ce808e3363b66ff11019bfa793617a4bd898df9e5b67e8a84af0a8be4a54dca"),
-    "doctor_v5_block_parallel_config_matrix": ("block_parallel", "doctor.block-parallel", "1f46930330c045ab35f7e942885e67ee455f563fe4af484045849c6a41f36111"),
-    "doctor_v5_block_parallel_real_canary": ("block_parallel", "doctor.block-parallel", "c9dc632468e000b6cf4dfa4458623e1404095994350e9f86e7eacf1f628757f0"),
-    "doctor_v5_blocked_cell_recovery": ("recovery", "doctor.recovery", "f60bec33b917ff9d2290703a67380a22593161e1df3cb38f2793f73ecc9d5db6"),
-    "doctor_v5_condenser_mountain_methodology": ("methodology", "doctor.methodology", "a1222d48eef75ded4881c3dbbcf6bd7aa0f5f92475ef7fc314afd80db5ea3f68"),
-    "doctor_v5_distributed_transport": ("post120", "doctor.post120", "d4328c0445b163082263971d8b8c6cd3c8e0c22b80a25b5c617d978db83ef3fa"),
-    "doctor_v5_elastic_phase_scheduler": ("admission", "doctor.admission", "70f409ff1582f46935e020ab7c1389a8f922ddb03c256dc33a8a0a6a3c7017d3"),
-    "doctor_v5_fixture_phase_validator": ("admission", "doctor.admission", "8741b4bd3ce9d002a401feee56b84849108fa3e41be6bd0250d8fab31b05b503"),
-    "doctor_v5_forward_recovery": ("recovery", "doctor.recovery", "f31658c902251eba8c70fb43c8254562cafbffad41523a7afdc372125b85e428"),
-    "doctor_v5_gptoss_execution_thread_contract": ("post120", "doctor.post120", "622357978e0aa916759fef32311c31e3f5a0544d0590e728521ac8cc8dd5f8c9"),
-    "doctor_v5_gptoss_parallel_scaffold": ("post120", "doctor.post120", "5acd24944dcee8f03107394cbe59f8b6e1197f1987d98bc036d00212e2a8647e"),
-    "doctor_v5_gptoss_reuse_fanout": ("post120", "doctor.post120", "c7e728818ab62e4207cd3735d0c4d733a31c7fa9a0d1c6769e218666946614e6"),
-    "doctor_v5_gptoss_tokenizer_gate": ("post120", "doctor.post120", "e3a6aac63fc8738d7fec430b12c527fa87e8654e1a43d12cad6dd1fdaea5f949"),
-    "doctor_v5_higher_tier_authority": ("post120", "doctor.post120", "dec19a057e8867b34423f3752e85f77c2bd2b64659f5bdf3d8b20ce57e5eeb40"),
-    "doctor_v5_higher_tier_scaffold": ("post120", "doctor.post120", "ecffa8759fb785b399540efcd0e1909c83f737bad72a528210572877fa6cbe12"),
-    "doctor_v5_host_sprint_plan": ("admission", "doctor.admission", "912d4cd744ea0357069d457a914181ff1afed8b9f32fef6ed320beb5ad025e83"),
-    "doctor_v5_inert_phase_launcher": ("admission", "doctor.admission", "644bfd089e3f8e87e45216259ddfa16deeded013b0e769c993c06001c576b7ec"),
-    "doctor_v5_mountain_ladder": ("methodology", "doctor.methodology", "78aa8902d765d00e431cc110ab124cbcdb115cff449cd9d5176a3e6bfbbb7d15"),
-    "doctor_v5_pass_b_bootstrap": ("supervisor", "doctor.supervisor", "2a02e850f75b2f9cf145406041ed0e6d64f314f198c20486b47ba25f83cf39df"),
-    "doctor_v5_pass_b_queue": ("supervisor", "doctor.supervisor", "ae405cd7b2e804367a7288af5bd874f3f38a5de7e544873ccb4d513c0e6b9386"),
-    "doctor_v5_post120_acceleration_scaffold": ("post120", "doctor.post120", "da370c6a039c38be4926cb34626ea2f3bd27e3bce287ed6ca2ce96b2a10f65c5"),
-    "doctor_v5_production_eta": ("methodology", "doctor.report", "1421c9ae118006928c7cd59812424bb71d98fedbaf39db43f2688a1b433baa03"),
-    "doctor_v5_queue": ("supervisor", "doctor.supervisor", "0b65e36279e4db4635d37e63ab3b1b35fffac378ce7cdd4efcde6eebfab1d7a4"),
-    "doctor_v5_qwen_shard_window": ("admission", "doctor.admission", "cd46bb05500cad073c5d6c3ef5bc9ee1ff816123be0d18ff1488ecc15ffc26fc"),
-    "doctor_v5_qwen_thread_profile_runner": ("admission", "doctor.admission", "6ed08cb57268b8bd9f61413a89bd73b02ac34aa3b46a5d2b4365cc4510b9cc4b"),
-    "doctor_v5_remaining_scratch_gate_adapter": ("admission", "doctor.admission", "9fb2379d1db6d26e7628e3bd3591440830b8551196d43c7b3d5354b23ffaf6d8"),
-    "doctor_v5_resource_stop_recovery_stage": ("recovery", "doctor.recovery", "c7aeebdc6db9b17d2450c4ac1c91f897dc08b419e15bd528cfb1cd81f51744cb"),
-    "doctor_v5_root": ("supervisor", "doctor.supervisor", "6bc3620223ecce84bd109e9dff61ef7ac041d44fecbc4a3c7e49c7546e604547"),
-    "doctor_v5_shared_preprocess_cache": ("post120", "doctor.post120", "2bdf39a188409c2b3ed7374084d93fec2bb483c36afd7e6c896136a175021437"),
-    "doctor_v5_single_device_benchmark": ("methodology", "doctor.methodology", "45eb2316689e04f973c47e3812bf483c91a592eb358a9fbead9dbd463f2ef5e8"),
-    "doctor_v5_single_device_sprint_audit": ("methodology", "doctor.methodology", "37347b5aebf9051e071b85d92a003e7b1c7206e5a2b5aea5c2882525481db4df"),
-    "doctor_v5_strand_control_adapter": ("supervisor", "doctor.supervisor", "b288b2433eb1fa15023d9848427a7a67e2650f335c5bb550bb09a88b4c6c0edd"),
-    "doctor_v5_streaming_source": ("post120", "doctor.post120", "ba9b0c327b2d0475658b466d541d7fb5ff80c26ab70d5e1ef4310bcec85e91ee"),
-    "doctor_v5_ultra_aggressive_autoresume": ("supervisor", "doctor.supervisor", "e18c3b11829f3dfcd3a1a87a82d7bfb20e3204c7175ad816f32650c2db314944"),
-    "doctor_v5_ultra_aggressive_queue": ("supervisor", "doctor.supervisor", "371dcf43faf384862983d68fb5a4919fa15d49b79cab12a0a0357cfe87b9b063"),
-    "doctor_v5_ultra_autoresume": ("supervisor", "doctor.supervisor", "f5d48608ae2842477b4914c35f5c43d61633825812bfbad3dbb2841585efade1"),
+    name: row[:3] for name, row in compat_catalog.DOCTOR_METADATA.items()
 }
 
 
@@ -321,6 +280,10 @@ RETAINED_MODULES = frozenset({
 })
 
 
+class CompatibilitySourceError(RuntimeError):
+    """A superseded Doctor source body was requested."""
+
+
 def _name(raw: str) -> str:
     name = Path(raw).name.removesuffix(".py")
     if not name.startswith("doctor_v5_"):
@@ -332,31 +295,38 @@ def archive_source(name: str) -> bytes:
     normalized = _name(name)
     if normalized not in ARCHIVED:
         raise KeyError(f"unknown retired Doctor module: {name}")
-    relative = f"tools/condense/{normalized}.py"
-    raw = subprocess.check_output(["git", "show", f"{ARCHIVE_COMMIT}:{relative}"], cwd=ROOT)
-    expected = ARCHIVED[normalized][2]
-    if hashlib.sha256(raw).hexdigest() != expected:
-        raise RuntimeError(f"Git archive hash mismatch for {relative}")
-    return raw
+    raise CompatibilitySourceError(
+        f"{normalized} is superseded; its raw source is intentionally unavailable"
+    )
 
 
-def legacy_record(name: str, *, include_source: bool = False) -> dict[str, Any]:
-    normalized = _name(name)
-    profile, replacement, digest = ARCHIVED[normalized]
-    raw = archive_source(normalized)
-    record: dict[str, Any] = {
+def _record(normalized: str) -> dict[str, Any]:
+    profile, replacement, digest, schemas, artifact_paths, subcommands = (
+        compat_catalog.DOCTOR_METADATA[normalized]
+    )
+    return {
         "schema": SCHEMA,
         "legacy_module": normalized + ".py",
         "archive_commit": ARCHIVE_COMMIT,
         "source_sha256": digest,
         "profile": profile,
         "replacement_command": replacement,
-        "schemas": sorted(row.decode() for row in set(SCHEMA_RE.findall(raw))),
-        "artifact_paths": sorted(row.decode().rstrip("./") for row in set(REPORT_RE.findall(raw))),
-        "subcommands": sorted(row.decode() for row in set(SUBCOMMAND_RE.findall(raw))),
+        "schemas": list(schemas),
+        "artifact_paths": list(artifact_paths),
+        "subcommands": list(subcommands),
     }
+
+
+def legacy_record(name: str, *, include_source: bool = False) -> dict[str, Any]:
+    normalized = _name(name)
+    if normalized not in ARCHIVED:
+        raise KeyError(f"unknown retired Doctor module: {name}")
+    record = _record(normalized)
     if include_source:
-        record["source"] = raw.decode("utf-8")
+        record.update({
+            "source_available": False,
+            "source_status": "superseded-unavailable",
+        })
     return record
 
 
@@ -560,11 +530,9 @@ def validate() -> list[str]:
     for name, (_profile, _replacement, digest) in ARCHIVED.items():
         if not HEX64.fullmatch(digest):
             errors.append(f"invalid archive SHA-256: {name}")
-            continue
-        try:
-            archive_source(name)
-        except (KeyError, OSError, subprocess.SubprocessError, RuntimeError) as exc:
-            errors.append(f"archive unavailable: {name}: {exc}")
+    records = {name: _record(name) for name in sorted(ARCHIVED)}
+    if common.canonical_sha256(records) != compat_catalog.DOCTOR_RECORDS_SHA256:
+        errors.append("static Doctor metadata differs from the golden capture")
     current = {path.name for path in (ROOT / "tools/condense").glob("doctor_v5_*.py")}
     expected = set(RETAINED_MODULES) | {"doctor_v5_profiles.py"}
     if current != expected:
