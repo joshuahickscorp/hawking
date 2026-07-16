@@ -37,6 +37,7 @@ ROOT = Path(__file__).resolve().parents[2]
 CAMPAIGN = ROOT / "reports/condense/doctor_v5_ultra/campaign.json"
 OBSERVER = ROOT / "reports/condense/doctor_v5_ultra/post_120b/observer_state.json"
 RESULTS = ROOT / "reports/condense/doctor_v5_ultra/results"
+DISPOSITIONS = ROOT / "reports/condense/doctor_v5_ultra/dispositions"
 OUTPUT_ROOT = ROOT / "reports/condense/doctor_v5_unbound/telegram_notifier"
 STATE = OUTPUT_ROOT / "state.json"
 LOCK = OUTPUT_ROOT / "notifier.lock"
@@ -48,8 +49,12 @@ TOKEN_SERVICE = "com.hawking.doctorv5.telegram.bot-token"
 CHAT_SERVICE = "com.hawking.doctorv5.telegram.chat-id"
 KEYCHAIN_ACCOUNT = "hawking"
 STATE_SCHEMA = "hawking.doctor_v5_telegram_notifier_state.v1"
+CAMPAIGN_SCHEMA = "hawking.doctor_v5_ultra_campaign.v1"
+RESULT_SCHEMA = "hawking.doctor_v5_adapter_result.v1"
+DISPOSITION_SCHEMA = "hawking.doctor_v5_ultra_disposition.v1"
 TARGET_RATES = ("4", "3", "2", "1")
 BRANCHES = ("codec_control", "doctor_static", "doctor_conditional", "doctor_full")
+TERMINAL_STATUSES = frozenset({"complete", "negative", "unsupported"})
 BRANCH_LABELS = {
     "codec_control": "codec",
     "doctor_static": "static",
@@ -58,6 +63,17 @@ BRANCH_LABELS = {
 }
 MAX_JSON_BYTES = 32 * 1024 * 1024
 MAX_MESSAGE_CHARS = 4000
+SHA256_RE = re.compile(r"[0-9a-f]{64}")
+RESULT_KEYS = {
+    "schema", "policy_version", "completed_at", "request_sha256", "adapter",
+    "status", "output_artifacts", "metrics", "evidence_class",
+    "quality_claims_permitted", "source_deletion_permitted", "result_sha256",
+}
+DISPOSITION_KEYS = {
+    "schema", "version", "plan_sha256", "cell_id", "cell_identity_sha256",
+    "status", "reason_code", "detail", "evidence_artifacts", "recorded_at",
+    "quality_claims_permitted", "source_deletion_permitted", "disposition_sha256",
+}
 # Hawking's existing competitive criterion: no more than +8% PPL versus the
 # exact source baseline.  This is deliberately stricter than a generic
 # "usable" quantization threshold because rung notifications drive promotion.
@@ -84,6 +100,38 @@ def _hash_value(value: Any) -> str:
 
 def _sealed(value: dict[str, Any], field: str) -> bool:
     return value.get(field) == _hash_value({k: v for k, v in value.items() if k != field})
+
+
+def _is_sha(value: Any) -> bool:
+    return isinstance(value, str) and SHA256_RE.fullmatch(value) is not None
+
+
+def _workspace_file(raw: Any, *, maximum_bytes: int = MAX_JSON_BYTES) -> Path:
+    if not isinstance(raw, str) or not raw or "\x00" in raw:
+        raise NotifierError("workspace evidence path is invalid")
+    candidate = Path(raw)
+    if not candidate.is_absolute():
+        candidate = ROOT / candidate
+    if candidate.is_symlink():
+        raise NotifierError(f"symlink evidence input is forbidden: {candidate}")
+    try:
+        path = candidate.resolve(strict=True)
+        path.relative_to(ROOT.resolve(strict=True))
+    except (OSError, ValueError) as exc:
+        raise NotifierError(f"evidence input escapes or is absent: {candidate}") from exc
+    if not path.is_file() or path.stat().st_size > maximum_bytes:
+        raise NotifierError(f"unsafe or oversized evidence input: {path}")
+    return path
+
+
+def _sha_file(path: Path) -> tuple[str, int]:
+    digest = hashlib.sha256()
+    size = 0
+    with path.open("rb") as handle:
+        while chunk := handle.read(1024 * 1024):
+            digest.update(chunk)
+            size += len(chunk)
+    return digest.hexdigest(), size
 
 
 def _read_json(path: Path) -> dict[str, Any]:
@@ -226,24 +274,116 @@ def _cell_map(campaign: dict[str, Any]) -> dict[tuple[str, str, str], dict[str, 
     }
 
 
-def complete_rungs(campaign: dict[str, Any]) -> list[dict[str, Any]]:
+def _validate_campaign(campaign: dict[str, Any]) -> None:
+    if campaign.get("schema") != CAMPAIGN_SCHEMA \
+            or not isinstance(campaign.get("version"), str) \
+            or not _is_sha(campaign.get("plan_sha256")) \
+            or campaign.get("source_deletion_permitted") is not False \
+            or not _sealed(campaign, "campaign_sha256"):
+        raise NotifierError("campaign identity or safety boundary is invalid")
+    _cell_map(campaign)
+
+
+def _terminal_rung_candidates(campaign: dict[str, Any]) -> list[dict[str, Any]]:
     cells = _cell_map(campaign)
     labels = sorted({key[0] for key in cells}, key=lambda value: float(value.rstrip("BT")))
     rungs: list[dict[str, Any]] = []
     for label in labels:
         for rate in TARGET_RATES:
             rows = [cells.get((label, rate, branch)) for branch in BRANCHES]
-            if all(isinstance(row, dict) and row.get("status") == "complete" for row in rows):
-                result_hashes = [row.get("result_sha256") for row in rows]
+            if all(isinstance(row, dict)
+                   and row.get("status") in TERMINAL_STATUSES for row in rows):
                 event_id = f"rung/{label}/{rate}bpw"
                 rungs.append({"event_id": event_id, "model_label": label,
-                              "rate_id": rate, "cells": rows,
-                              "evidence_root_sha256": _hash_value(result_hashes)})
+                              "rate_id": rate, "cells": rows})
     return rungs
 
 
-def _result_metrics(cell: dict[str, Any]) -> dict[str, Any]:
-    result = _read_json(RESULTS / cell["cell_id"] / "result.json")
+def _validated_result(cell: dict[str, Any]) -> dict[str, Any]:
+    result_paths = cell.get("result_paths")
+    declared = result_paths.get("result") if isinstance(result_paths, dict) else None
+    path = _workspace_file(declared)
+    expected = (RESULTS / str(cell.get("cell_id")) / "result.json").resolve(strict=False)
+    if path != expected:
+        raise NotifierError(f"result path binding is invalid for {cell.get('cell_id')}")
+    result = _read_json(path)
+    metrics = result.get("metrics")
+    adapter = result.get("adapter")
+    campaign_cell = metrics.get("campaign_cell") if isinstance(metrics, dict) else None
+    exact_binding = {
+        field: cell.get(field)
+        for field in ("branch", "cell_id", "cell_identity_sha256", "model_label", "rate_id")
+    }
+    if set(result) != RESULT_KEYS or result.get("schema") != RESULT_SCHEMA \
+            or result.get("status") != "complete" \
+            or result.get("result_sha256") != cell.get("result_sha256") \
+            or not _is_sha(result.get("result_sha256")) \
+            or not _sealed(result, "result_sha256") \
+            or result.get("request_sha256") != cell.get("request_sha256") \
+            or not isinstance(adapter, dict) \
+            or adapter.get("adapter_id") != cell.get("adapter_id") \
+            or campaign_cell != exact_binding \
+            or result.get("evidence_class") != "provisional_engineering_evidence" \
+            or result.get("quality_claims_permitted") is not False \
+            or result.get("source_deletion_permitted") is not False:
+        raise NotifierError(f"result evidence is invalid for {cell.get('cell_id')}")
+    return result
+
+
+def _validated_disposition(cell: dict[str, Any],
+                           campaign: dict[str, Any]) -> dict[str, Any]:
+    path = _workspace_file(cell.get("disposition_path"))
+    expected = (DISPOSITIONS / f"{cell.get('cell_id')}.json").resolve(strict=False)
+    if path != expected:
+        raise NotifierError(f"disposition path binding is invalid for {cell.get('cell_id')}")
+    disposition = _read_json(path)
+    if set(disposition) != DISPOSITION_KEYS \
+            or disposition.get("schema") != DISPOSITION_SCHEMA \
+            or disposition.get("version") != campaign.get("version") \
+            or disposition.get("plan_sha256") != campaign.get("plan_sha256") \
+            or disposition.get("cell_id") != cell.get("cell_id") \
+            or disposition.get("cell_identity_sha256") != cell.get("cell_identity_sha256") \
+            or disposition.get("status") != cell.get("status") \
+            or disposition.get("status") not in {"negative", "unsupported"} \
+            or disposition.get("disposition_sha256") != cell.get("disposition_sha256") \
+            or not _is_sha(disposition.get("disposition_sha256")) \
+            or not _sealed(disposition, "disposition_sha256") \
+            or not isinstance(disposition.get("reason_code"), str) \
+            or not disposition["reason_code"] \
+            or not isinstance(disposition.get("detail"), str) \
+            or not disposition["detail"] \
+            or disposition.get("quality_claims_permitted") is not False \
+            or disposition.get("source_deletion_permitted") is not False:
+        raise NotifierError(f"disposition evidence is invalid for {cell.get('cell_id')}")
+    artifacts = disposition.get("evidence_artifacts")
+    if not isinstance(artifacts, list):
+        raise NotifierError(f"disposition evidence list is invalid for {cell.get('cell_id')}")
+    roles: set[str] = set()
+    for index, artifact in enumerate(artifacts):
+        if not isinstance(artifact, dict) \
+                or set(artifact) != {"role", "path", "sha256", "bytes"} \
+                or not isinstance(artifact.get("role"), str) \
+                or not artifact["role"] or artifact["role"] in roles \
+                or not _is_sha(artifact.get("sha256")) \
+                or isinstance(artifact.get("bytes"), bool) \
+                or not isinstance(artifact.get("bytes"), int) \
+                or artifact["bytes"] < 0:
+            raise NotifierError(
+                f"disposition evidence artifact {index} is invalid for {cell.get('cell_id')}"
+            )
+        roles.add(artifact["role"])
+        artifact_path = _workspace_file(artifact["path"])
+        digest, size = _sha_file(artifact_path)
+        if digest != artifact["sha256"] or size != artifact["bytes"]:
+            raise NotifierError(
+                f"disposition evidence artifact {index} changed for {cell.get('cell_id')}"
+            )
+    return disposition
+
+
+def _result_metrics(cell: dict[str, Any],
+                    result: dict[str, Any] | None = None) -> dict[str, Any]:
+    result = result if isinstance(result, dict) else _validated_result(cell)
     metrics = result.get("metrics") if isinstance(result.get("metrics"), dict) else {}
     physical = metrics.get("physical_accounting") \
         if isinstance(metrics.get("physical_accounting"), dict) else {}
@@ -270,6 +410,41 @@ def _result_metrics(cell: dict[str, Any]) -> dict[str, Any]:
         "attempts": cell.get("attempts"),
         "quality_status": quality.get("status"),
     }
+
+
+def _validated_terminal_rung(rung: dict[str, Any],
+                             campaign: dict[str, Any]) -> dict[str, Any]:
+    evidence: list[dict[str, Any]] = []
+    metrics: dict[str, dict[str, Any]] = {}
+    dispositions: dict[str, dict[str, Any]] = {}
+    for cell in rung["cells"]:
+        branch = str(cell["branch"])
+        status = str(cell["status"])
+        row = {"cell_id": cell["cell_id"], "branch": branch, "status": status}
+        if status == "complete":
+            result = _validated_result(cell)
+            row["result_sha256"] = result["result_sha256"]
+            metrics[branch] = _result_metrics(cell, result)
+        else:
+            disposition = _validated_disposition(cell, campaign)
+            row["disposition_sha256"] = disposition["disposition_sha256"]
+            dispositions[branch] = disposition
+        evidence.append(row)
+    return {
+        **rung,
+        "metrics": metrics,
+        "dispositions": dispositions,
+        "evidence_root_sha256": _hash_value(evidence),
+    }
+
+
+def complete_rungs(campaign: dict[str, Any]) -> list[dict[str, Any]]:
+    """Return evidence-validated target rungs closed by any terminal status."""
+    _validate_campaign(campaign)
+    return [
+        _validated_terminal_rung(rung, campaign)
+        for rung in _terminal_rung_candidates(campaign)
+    ]
 
 
 def _fmt(value: Any, *, percent: bool = False, signed: bool = False) -> str:
@@ -310,10 +485,12 @@ def _pareto_structure(
 
 
 def _rung_decision(metrics: dict[str, dict[str, Any]]) -> dict[str, Any]:
-    """Apply the physical-first condenser gate to a completed rung."""
+    """Apply the physical-first condenser gate to measured branches only."""
     eligible: list[tuple[str, dict[str, Any]]] = []
     for branch in BRANCHES:
-        row = metrics[branch]
+        row = metrics.get(branch)
+        if not isinstance(row, dict):
+            continue
         actual, target = row.get("actual_bpw"), row.get("target_bpw")
         ppl, capability = row.get("ppl_delta"), row.get("capability_delta")
         if all(isinstance(value, (int, float)) and not isinstance(value, bool)
@@ -321,11 +498,11 @@ def _rung_decision(metrics: dict[str, dict[str, Any]]) -> dict[str, Any]:
                for value in (actual, target, ppl, capability)):
             eligible.append((branch, row))
     if not eligible:
-        return {"result": "BAD", "optimization_possible": False,
+        return {"result": "UNAVAILABLE", "optimization_possible": False,
                 "optimization_scope": "none", "evidence_value": "INCOMPLETE",
                 "pareto_active": [], "dominated_branches": [],
                 "best_branch": None, "best": None,
-                "reason": "required physical or quality metrics are missing"}
+                "reason": "no completed branch has the required physical and quality metrics"}
     structure = _pareto_structure(eligible)
     quality_passes = [
         item for item in eligible
@@ -396,10 +573,13 @@ def _health() -> dict[str, Any]:
 def _progress(campaign: dict[str, Any]) -> dict[str, Any]:
     cells = campaign["cells"]
     complete = [cell for cell in cells if cell.get("status") == "complete"]
+    terminal = [cell for cell in cells if cell.get("status") in TERMINAL_STATUSES]
     total_passes = sum(int(cell["exact_stored_parameter_count"]) for cell in cells)
     done_passes = sum(int(cell["exact_stored_parameter_count"]) for cell in complete)
-    return {"complete": len(complete), "total": len(cells),
-            "weighted": done_passes / total_passes}
+    terminal_passes = sum(int(cell["exact_stored_parameter_count"]) for cell in terminal)
+    return {"complete": len(complete), "terminal": len(terminal), "total": len(cells),
+            "weighted_complete": done_passes / total_passes,
+            "weighted_terminal": terminal_passes / total_passes}
 
 
 def _duration(seconds: float) -> str:
@@ -458,7 +638,9 @@ def _next_rung(campaign: dict[str, Any], observer: dict[str, Any] | None
             rows = [cells.get((label, rate, branch)) for branch in BRANCHES]
             if not all(isinstance(row, dict) for row in rows):
                 continue
-            remaining = [row for row in rows if row.get("status") != "complete"]
+            remaining = [
+                row for row in rows if row.get("status") not in TERMINAL_STATUSES
+            ]
             if not remaining:
                 continue
             seconds = 0.0
@@ -508,26 +690,71 @@ def _eta_block(campaign: dict[str, Any], observer: dict[str, Any] | None) -> lis
 
 def format_rung(rung: dict[str, Any], campaign: dict[str, Any],
                 observer: dict[str, Any] | None = None) -> str:
-    metrics = {cell["branch"]: _result_metrics(cell) for cell in rung["cells"]}
+    metrics = rung.get("metrics")
+    if not isinstance(metrics, dict):
+        raise NotifierError("rung evidence was not validated before formatting")
     decision = _rung_decision(metrics)
     best = decision["best"]
-    result_icon = "✅" if decision["result"] == "GOOD" else "❌"
-    optimization = (
-        f"YES — {decision['optimization_scope'].upper()} ⚡"
-        if decision["optimization_possible"] else "NO"
+    statuses = {str(cell["branch"]): str(cell["status"]) for cell in rung["cells"]}
+    all_complete = all(status == "complete" for status in statuses.values())
+    measured = [branch for branch in BRANCHES if statuses.get(branch) == "complete"]
+    negative = [branch for branch in BRANCHES if statuses.get(branch) == "negative"]
+    unsupported = [branch for branch in BRANCHES if statuses.get(branch) == "unsupported"]
+    result_icon = {"GOOD": "✅", "BAD": "❌"}.get(decision["result"], "⚪")
+    if decision["result"] == "UNAVAILABLE":
+        optimization = "UNAVAILABLE"
+    elif decision["optimization_possible"]:
+        optimization = f"YES — {decision['optimization_scope'].upper()} ⚡"
+    else:
+        optimization = "NO"
+    closure = "complete" if all_complete else "closed"
+    result_label = "Result" if all_complete else "Measured result"
+    optimization_label = (
+        "Optimization possible"
+        if all_complete else "Optimization possible from measured evidence"
     )
+    evidence_value = decision["evidence_value"]
+    if not measured:
+        evidence_value = "DISPOSITION ONLY"
+    elif not all_complete:
+        evidence_value += " (measured branches only)"
     lines = [
-        f"🏔 Hawking: {rung['model_label']} @ {rung['rate_id']} bpw complete",
+        f"🏔 Hawking: {rung['model_label']} @ {rung['rate_id']} bpw {closure}",
         "",
-        f"Result: {decision['result']} {result_icon}",
-        f"Optimization possible: {optimization}",
-        f"Evidence: {decision['evidence_value']}",
+        f"{result_label}: {decision['result']} {result_icon}",
+        f"{optimization_label}: {optimization}",
+        f"Evidence: {evidence_value}",
         f"Reason: {decision['reason']}",
     ]
+    if not all_complete:
+        coverage = [f"{len(measured)} measured"]
+        if negative:
+            coverage.append(f"{len(negative)} negative disposition")
+        if unsupported:
+            coverage.append(f"{len(unsupported)} adaptively deferred")
+        lines.append("Coverage: " + " | ".join(coverage))
+        if measured:
+            lines.append(
+                "Measured: " + ", ".join(BRANCH_LABELS[branch] for branch in measured)
+            )
+        if negative:
+            lines.append(
+                "Negative: " + ", ".join(BRANCH_LABELS[branch] for branch in negative)
+            )
+        if unsupported:
+            lines.append(
+                "Deferred: " + ", ".join(BRANCH_LABELS[branch] for branch in unsupported)
+            )
+        if negative or unsupported:
+            lines.append("Disposition branches carry no quality or source-deletion claim.")
     active = decision["pareto_active"]
     dominated = decision["dominated_branches"]
     if active:
-        speed = f"{len(active)}/{len(active) + len(dominated)} branches Pareto-active"
+        branch_scope = "branches" if all_complete else "measured branches"
+        speed = (
+            f"{len(active)}/{len(active) + len(dominated)} "
+            f"{branch_scope} Pareto-active"
+        )
         if dominated:
             labels = ", ".join(BRANCH_LABELS[branch] for branch in dominated)
             speed += f"; dominated here: {labels}"
@@ -552,8 +779,10 @@ def format_rung(rung: dict[str, Any], campaign: dict[str, Any],
     health = _health()
     lines += [
         "",
-        f"Progress: {progress['complete']}/{progress['total']} cells "
-        f"({progress['weighted'] * 100:.2f}% weighted)",
+        f"Progress: {progress['complete']}/{progress['total']} measured "
+        f"({progress['weighted_complete'] * 100:.2f}% weighted) | "
+        f"{progress['terminal']}/{progress['total']} terminal "
+        f"({progress['weighted_terminal'] * 100:.2f}% weighted)",
         f"Host: pressure {health['pressure']} | swap {_fmt(health['swap_mb'])} MB | "
         f"disk {health['disk_free_gb']:.1f} GB | "
         f"thermal {'green' if health['thermal_green'] else 'warning'}",
@@ -599,14 +828,16 @@ def run_once(*, sender: Any = _send) -> dict[str, Any]:
         except BlockingIOError:
             return {"status": "already-running", "sent": 0}
         campaign = _read_json(CAMPAIGN)
+        _validate_campaign(campaign)
         observer = _read_json(OBSERVER) if OBSERVER.exists() else None
         state = _state()
         if state.get("primed") is not True:
             raise NotifierError("notifier must be primed before delivery")
         sent = 0
-        for rung in complete_rungs(campaign):
-            if rung["event_id"] in state["delivered"]:
+        for candidate in _terminal_rung_candidates(campaign):
+            if candidate["event_id"] in state["delivered"]:
                 continue
+            rung = _validated_terminal_rung(candidate, campaign)
             delivery = sender(format_rung(rung, campaign, observer))
             state["delivered"][rung["event_id"]] = {
                 "status": "delivered",
@@ -671,12 +902,18 @@ def install_launch_agent() -> dict[str, Any]:
 def status() -> dict[str, Any]:
     state = _state()
     campaign = _read_json(CAMPAIGN)
+    _validate_campaign(campaign)
+    terminal_rungs = _terminal_rung_candidates(campaign)
     return {
         "token_configured": _keychain_get(TOKEN_SERVICE) is not None,
         "chat_configured": _keychain_get(CHAT_SERVICE) is not None,
         "primed": state.get("primed") is True,
         "known_rungs": len(state.get("delivered", {})),
-        "currently_complete_target_rungs": len(complete_rungs(campaign)),
+        "currently_complete_target_rungs": sum(
+            all(cell.get("status") == "complete" for cell in rung["cells"])
+            for rung in terminal_rungs
+        ),
+        "currently_terminal_target_rungs": len(terminal_rungs),
         "launch_agent_installed": PLIST.exists(),
         "target_rates": list(TARGET_RATES),
         "state": str(STATE),
