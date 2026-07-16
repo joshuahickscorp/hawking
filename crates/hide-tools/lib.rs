@@ -3270,27 +3270,26 @@ pub mod mcp {
             None
         }
 
-        const FAKE_SERVER: &str = r#"
-    import sys, json
-    def send(obj):
-        sys.stdout.write(json.dumps(obj) + "\n"); sys.stdout.flush()
-    for line in sys.stdin:
-        line = line.strip()
-        if not line: continue
-        req = json.loads(line)
-        m = req.get("method"); i = req.get("id")
-        if m == "initialize":
-            send({"jsonrpc":"2.0","id":i,"result":{"protocolVersion":"2025-11-25","capabilities":{},"serverInfo":{"name":"fake","version":"0"}}})
-        elif m == "notifications/initialized":
-            pass
-        elif m == "tools/list":
-            send({"jsonrpc":"2.0","id":i,"result":{"tools":[{"name":"echo","description":"echo","inputSchema":{"type":"object","properties":{"msg":{"type":"string"}},"required":["msg"],"additionalProperties":False}}]}})
-        elif m == "tools/call":
-            msg = req["params"]["arguments"]["msg"]
-            send({"jsonrpc":"2.0","id":i,"result":{"isError":False,"structuredContent":{"echoed":msg},"content":[{"type":"text","text":msg}]}})
-        else:
-            send({"jsonrpc":"2.0","id":i,"error":{"code":-32601,"message":"method not found"}})
-    "#;
+        const FAKE_SERVER: &str = r#"import sys, json
+def send(obj):
+    sys.stdout.write(json.dumps(obj) + "\n"); sys.stdout.flush()
+for line in sys.stdin:
+    line = line.strip()
+    if not line: continue
+    req = json.loads(line)
+    m = req.get("method"); i = req.get("id")
+    if m == "initialize":
+        send({"jsonrpc":"2.0","id":i,"result":{"protocolVersion":"2025-11-25","capabilities":{},"serverInfo":{"name":"fake","version":"0"}}})
+    elif m == "notifications/initialized":
+        pass
+    elif m == "tools/list":
+        send({"jsonrpc":"2.0","id":i,"result":{"tools":[{"name":"echo","description":"echo","inputSchema":{"type":"object","properties":{"msg":{"type":"string"}},"required":["msg"],"additionalProperties":False}}]}})
+    elif m == "tools/call":
+        msg = req["params"]["arguments"]["msg"]
+        send({"jsonrpc":"2.0","id":i,"result":{"isError":False,"structuredContent":{"echoed":msg},"content":[{"type":"text","text":msg}]}})
+    else:
+        send({"jsonrpc":"2.0","id":i,"error":{"code":-32601,"message":"method not found"}})
+"#;
     }
 }
 #[rustfmt::skip]
