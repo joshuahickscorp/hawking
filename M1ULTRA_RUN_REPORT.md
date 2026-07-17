@@ -450,3 +450,18 @@ committed (approved) artifact.
   experiments and unbuilt code that unbounded wall-clock converts. Next lever: Wave 0 on the box (transfer +
   build green, fix the studio_run.py crash, regenerate device constants, stage bf16 parents, the two day-0
   microbenches, pin the oracle fixture), then SPINE-1 the thesis gate.
+- CLEAN SLATE Stage A (2026-07-17, this session, additional directive): finished Gravity Forge
+  preparation and froze the sub-bit run architecture; Stage B (repo condensation) authorized but NOT
+  begun. Fresh live audit: no heavy hawking process (only the separate MoP project on CPU), Forge
+  local-only on codex/gravity-forge. Resolved the key contradiction: the 120B tokenizer IS present
+  and valid (vocab 200019 o200k_harmony + chat_template.jinja), unblocking real-token F2. Landed a
+  4th materially-distinct family (ternary_factor), a real-token F2 fixture (real inputs route to 74
+  experts, sub-bit transform_pq output divergence 1.26 vs 0.61 synthetic - the Gaussian proxy was
+  optimistic), integrated a sealed launch-disabled Forge program into the ONE merged controller
+  (materialize_forge_program; controller refuses launch), and composed 685B/1T/1.6T giant adapter
+  contracts from read-only source authority. Built the AUTO-DERIVED pre-run readiness gate
+  (hawking.gravity_forge.pre_run_readiness.v1): 12/12 live probes PASS -> authorizes condensation
+  (NOT the heavy run). Honest guard: fixture-green means the apparatus runs, not that packing passes
+  a capability bar; the science stays negative. 48 tests green. Commits HELD for approval (house
+  rule). Next: begin Stage B condensation (needs commit approval) OR keep hardening Stage A (true
+  residual-stream F2 via the block attention layer; wire the forge program as a live successor row).

@@ -1,0 +1,57 @@
+{
+  "adapters": {
+    "deepseek-v3.2-685b": {
+      "hf_id": "deepseek-ai/DeepSeek-V3.2",
+      "missing": [],
+      "sha256": "556d5dee8f2f814f",
+      "valid": true
+    },
+    "deepseek-v4-pro-1.6t": {
+      "hf_id": "deepseek-ai/DeepSeek-V4-Pro",
+      "missing": [],
+      "sha256": "21f81af72c6184b1",
+      "valid": true
+    },
+    "kimi-k2.6-1t": {
+      "hf_id": "moonshotai/Kimi-K2.6",
+      "missing": [],
+      "sha256": "419525622001c5f4",
+      "valid": true
+    }
+  },
+  "all_contracts_valid": true,
+  "composed_from": "read-only source authority; no giant download or execution",
+  "generated_at": "2026-07-17T23:37:13Z",
+  "required_fields": [
+    "architecture_primitives",
+    "tensor_taxonomy",
+    "router_and_expert_mapping",
+    "shared_expert_handling",
+    "mtp_or_vision_boundaries",
+    "source_precision",
+    "streamed_source_interface",
+    "forge_hooks",
+    "doctor_hooks",
+    "runtime_hooks",
+    "physical_byte_model",
+    "gravity_stress_rate",
+    "queue_identity"
+  ],
+  "schema": "hawking.gravity_forge.giant_adapters.stable.v1",
+  "sha256": "b666e3641a25eeb28c186d2dd3c744bca69221fe420be40bb96a6bca06b03ff8",
+  "shared_primitive_library": [
+    "dense_transformer_trunk",
+    "moe_router",
+    "shared_expert",
+    "routed_expert",
+    "mla_attention",
+    "mtp_head",
+    "vision_tower",
+    "safetensors_source",
+    "compressed_tensor_source",
+    "streamed_source",
+    "compact_expert_runtime",
+    "expert_paging"
+  ],
+  "source_authority_sha256": "bf672223852bcffc"
+}

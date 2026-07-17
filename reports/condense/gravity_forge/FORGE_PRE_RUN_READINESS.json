@@ -1,0 +1,100 @@
+{
+  "authorizes": "codebase_condensation (Stage B)",
+  "blocking_conditions": [],
+  "conditions": {
+    "compact_runtime_fixture_green": {
+      "activation_source": "real_token_embedding",
+      "mean_output_rel_div": 1.21582,
+      "measurement_apparatus_green": true,
+      "n_experts_exercised": 24,
+      "note": "green = the fixture RUNS (bounded/deterministic/finite); NOT a capability pass",
+      "value": true
+    },
+    "condensation_safe": {
+      "branch": "codex/gravity-forge",
+      "rollback_point": "63003e0e",
+      "value": true
+    },
+    "doctor_fixture_green": {
+      "doctor_bpw": 0.1111,
+      "note": "one real same-budget treatment executes and is billed; F2-rerun at capability pending",
+      "reduces_error": true,
+      "treatment": "low_rank+sparse_rows",
+      "value": true
+    },
+    "giant_adapter_contracts_stable": {
+      "adapters": [
+        "deepseek-v3.2-685b",
+        "deepseek-v4-pro-1.6t",
+        "kimi-k2.6-1t"
+      ],
+      "all_contracts_valid": true,
+      "note": "composed from read-only source authority; contract-only, launch disabled",
+      "value": true
+    },
+    "gravity_controller_integrated": {
+      "controller_refuses_launch": true,
+      "kind": "forge_subbit",
+      "note": "materialized via succ_gravity.materialize_forge_program; launch disabled",
+      "representation_family": "gravity_forge:transform_pq",
+      "sealed": true,
+      "value": true
+    },
+    "minimum_families_available": {
+      "families": [
+        "transform_pq",
+        "shared_expert_grammar",
+        "repairability_shaped",
+        "ternary_factor",
+        "(controls: naive_rvq, low_rank)"
+      ],
+      "families_available": 4,
+      "value": true
+    },
+    "no_heavy_process_conflict": {
+      "heavy_hawking_processes": 0,
+      "note": "MoP is a separate project and does not count as a hawking heavy owner",
+      "value": true
+    },
+    "representation_interface_stable": {
+      "selftest": {
+        "accounting_invariant_holds": true,
+        "compressible_beats_random": true,
+        "deterministic_bytes": true
+      },
+      "value": true
+    },
+    "resource_policy_green": {
+      "atlas_present": true,
+      "disk_free_gb": 565.2,
+      "reserve_gb": 50,
+      "value": true
+    },
+    "source_authority_valid": {
+      "manifest_sha256": "e7c95a34cc4baf09",
+      "shard_count": 7,
+      "shards_present": true,
+      "tensor_count": 543,
+      "value": true
+    },
+    "telegram_green": {
+      "emit_available": true,
+      "note": "distinguishes proxy/functional/sealed; event_horizon emit neutralized in baseline",
+      "value": true
+    },
+    "tokenizer_valid": {
+      "chat_template_present": true,
+      "roundtrip": true,
+      "tokenizer_sha256": "0614fe83cadab421",
+      "value": true,
+      "vocab_size": 200019
+    }
+  },
+  "derived": true,
+  "does_not_authorize": "the heavy model run (separate receipt after condensation)",
+  "generated_at": "2026-07-17T23:41:25Z",
+  "operator_declared": false,
+  "readiness_passes": true,
+  "schema": "hawking.gravity_forge.pre_run_readiness.v1",
+  "sha256": "0ba5c0bacaa38feba7ddedb31e8a04b12ce472d3627cf299b5768987b404f4a3"
+}

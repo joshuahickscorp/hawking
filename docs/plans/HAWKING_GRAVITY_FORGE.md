@@ -240,3 +240,42 @@ Then, in priority order: (1) bind the 120B tokenizer + chat template to unlock r
 (2) implement execute-from-compact Metal kernels for `transform_pq`/`shared_expert_grammar`;
 (3) wire `gravity_forge_run` as a successor-queue row; (4) add binary-latent-factorization and
 learned-rotation families; (5) scaffold the 685B Forge adapter from bounded source windows.
+
+---
+
+## CLEAN SLATE Stage A — COMPLETE (pre-run readiness DERIVES to PASS)
+
+Program: `HAWKING CLEAN SLATE.md` (Stage A prep + freeze; Stage B condensation gated). Fresh §0
+audit: no heavy hawking process (only the separate MoP project on CPU); Forge `verified_but_local`
+on `codex/gravity-forge`. **§4 contradiction resolved**: the 120B tokenizer is **present and valid**
+(`scratch/staging/gpt-oss-120b.partial/tokenizer.json`, vocab 200019 o200k_harmony, round-trips,
+`chat_template.jinja` present) — the earlier "absent" claim was stale.
+
+Stage-A deliverables (this session):
+- **§5 four materially-distinct families**: added `ternary_factor` (ternary latent factorization,
+  billed 2 bits/elem, conservative) to `transform_pq` / `shared_expert_grammar` /
+  `repairability_shaped` (+ naive_rvq / low_rank controls). `families_available = 4`.
+- **§6 real-token F2 fixture** (`forge_f2_fixture.py`): tokenizes real prompts, embeds with the
+  model's `embedding.weight`, runs the reference MoE with original vs packed experts. Real inputs
+  route to **74 experts** (vs 11 synthetic) and sub-bit `transform_pq` gives **mean output
+  divergence 1.26** (max 1.97) — far worse than the synthetic 0.61. Honest boundary: real
+  token-embedding activations, a pre-attention proxy; true residual-stream F2 needs the block
+  attention layer (tracked, not hidden).
+- **§8 controller integration** (`succ_gravity.materialize_forge_program` +
+  `forge_controller_integration.py`): the ONE controller materializes a sealed, source-bound Forge
+  program (`forge_subbit`, `gravity_forge:transform_pq`), registered in `GRAVITY_STATE.json`, and
+  **refuses to launch it** (default-off + admission not passed). Launch disabled.
+- **§9 giant adapters** (`forge_giant_adapters.py`): 685B / 1T / 1.6T adapter contracts composed
+  from shared primitives out of the read-only source authority (no downloads); all contracts valid.
+- **§10 AUTO-DERIVED pre-run readiness gate** (`forge_pre_run_readiness.py`,
+  `hawking.gravity_forge.pre_run_readiness.v1`): computes all 12 conditions from live probes (not
+  static JSON). **Result: PASS (12/12), blocking: []** -> authorizes codebase condensation (Stage B).
+
+Honesty guard: `compact_runtime_fixture_green` / `doctor_fixture_green` certify the measurement
+apparatus RUNS (bounded, deterministic, finite) - NOT that sub-bit packing passes a capability bar.
+The real science remains negative (severe output divergence). This gate authorizes **condensation**,
+not the heavy run (§27 heavy-run readiness is separate and not yet derived). 48 tests green.
+
+Stage B (repository condensation, §11-27) is now **authorized but not begun**: it is a multi-week
+descent (175k->50k) whose every checkpoint needs a commit+tag, and the standing house rule forbids
+commits without explicit approval. Held for the go signal.

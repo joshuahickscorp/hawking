@@ -643,6 +643,53 @@ def materialize_gravity_program(parent_label: str, *, rate: Fraction, kind: str,
     return seal_field(program, "program_sha256")
 
 
+def materialize_forge_program(parent_label: str, *, rate: Fraction, family: str,
+                              source_manifest_sha256: str | None,
+                              doctor_budget_bpw: float = 0.15,
+                              fallback_rate: Fraction | None = None) -> dict[str, Any]:
+    """Compile a source-bound GRAVITY FORGE program descriptor for the merged controller (Section 8).
+
+    Same schema/seal/launch-gate family as materialize_gravity_program (so the ONE controller
+    materializes, validates, explains, queues, and refuses-duplicate-launches it), but bound to a
+    Forge representation family and carrying the F0/F1/F2 sequence, Doctor budget, Escape rules, and
+    stop conditions. Launch stays disabled (default-off); this never starts the heavy run."""
+    p = gp.prior_for(parent_label)
+    rate = Fraction(rate)
+    program = {
+        "schema": GRAVITY_PROGRAM_SCHEMA,
+        "kind": "forge_subbit",
+        "parent_label": parent_label,
+        "hf_or_source_id": p.get("hf_or_source_id"),
+        "architecture_family": p.get("architecture_family"),
+        "rate": gp.rate_identity(rate),
+        "is_subbit": gp.is_subbit(rate),
+        "representation_family": f"gravity_forge:{family}",
+        "forge_runner": "tools/condense/gravity_forge_run.py",
+        "f_sequence": ["F0_oracle", "F1_weight_proxy", "F1_5_output_divergence", "F2_capability"],
+        "doctor_budget_bpw": doctor_budget_bpw,
+        "doctor_program": {"promote": [], "note": "diagnose-first; repairability_shaped reserved"},
+        "resource_request": {"gpu": "mps", "bounded_experts": True, "no_full_download": True},
+        "checkpoint_rules": {"per_cell": True, "resumable": True,
+                             "root": "reports/condense/gravity_forge/cells"},
+        "telegram_events": ["gravity_feasibility_completed", "gravity_diagnosis"],
+        "fallback_candidate": (gp.rate_identity(Fraction(fallback_rate)) if fallback_rate else None),
+        "escape_receipt_rules": {"requires": ">=2 advanced families at F2 + >=1 Doctor rescue at "
+                                 "sub-bit + capability eval + structural diagnosis",
+                                 "authorizes_escape": False},
+        "stop_conditions": ["sealed Escape Receipt", "capability pass at sub-bit", "operator drain"],
+        "source_manifest_sha256": source_manifest_sha256,
+        "required_controls": ["zero_treatment", "equal_byte_codec", "smaller_higher_bit"],
+        "lane": "hawking-gravity-forge",
+        "launch_gate": {
+            "gravity_enabled": False, "resource_admission_passed": False,
+            "heavy_lease_free": False, "release_boundary_signed": False,
+            "source_program_executable": source_manifest_sha256 is not None,
+        },
+        "created_at": now_iso(),
+    }
+    return seal_field(program, "program_sha256")
+
+
 def program_launchable(program: dict[str, Any], *, policy: dict[str, Any] | None,
                        heavy_lock: HeavyLock, env: dict[str, str] | None = None,
                        admission_passed: bool = False) -> tuple[bool, list[str]]:

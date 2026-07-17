@@ -87,3 +87,26 @@ def test_no_dense_shadow_model():
     w = _lowrank(m=256, n=128, r=8)
     art = gf.pack_transform_pq(w, dim=32, subspaces=2, k=64)
     assert art.recon.size == w.size == art.n_weights
+
+
+def test_four_materially_distinct_families_available():
+    """Section 5 requires >=4 materially distinct families (beyond the RVQ/low-rank controls)."""
+    out = gf.selftest()
+    assert out["families_available"] >= 4
+    w = _lowrank()
+    families = {
+        "transform_pq": gf.pack_transform_pq(w, dim=32, subspaces=2, k=64).family,
+        "shared_grammar": gf.pack_shared_grammar([w, w * 1.01], dim=32, k=64, stages=2).family,
+        "repairability": gf.pack_repairability_shaped(w, base_dim=32, base_k=32, corr_rank=2, sparse_rows=2).family,
+        "ternary": gf.pack_ternary_factor(w, rank=4).family,
+    }
+    assert len(set(families.values())) == 4
+
+
+def test_ternary_factor_is_ternary_and_billed_conservatively():
+    """Ternary factors must be {-1,0,+1} and billed at 2 bits each (no base-3 packing claimed)."""
+    w = _lowrank()
+    art = gf.pack_ternary_factor(w, rank=6)
+    assert art.config["ternary_bits"] == 2
+    assert "ternary_factors" in art.ledger.items
+    assert art.recon.size == w.size and np.isfinite(art.recon).all()

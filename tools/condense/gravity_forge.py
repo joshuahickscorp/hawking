@@ -336,6 +336,56 @@ def pack_repairability_shaped(w: np.ndarray, *, base_dim: int, base_k: int, corr
 
 
 # --------------------------------------------------------------------------------------------
+# FAMILY D - ternary_factor: ternary latent factorization (Section 5.2). Materially distinct from
+# both fp16 low-rank (real-valued SVD) and codebook/VQ families: W ~= sum_j s_j (a_j b_j^T) with
+# a_j in {-1,0,+1}^rows, b_j in {-1,0,+1}^cols, fit by greedy ternary power iteration. Sub-bit via
+# small rank; ternary elements billed at 2 bits each (conservative - no base-3 packing claimed).
+# --------------------------------------------------------------------------------------------
+def _ternarize(x, keep_frac: float):
+    """Keep the top-|keep_frac| entries as their sign (+-1), zero the rest -> ternary vector."""
+    torch = _torch()
+    a = x.abs()
+    if keep_frac >= 1.0:
+        return torch.sign(x)
+    k = max(1, int(a.numel() * keep_frac))
+    thr = torch.topk(a.flatten(), k).values.min()
+    return torch.sign(x) * (a >= thr).to(x.dtype)
+
+
+def pack_ternary_factor(w: np.ndarray, *, rank: int, keep_frac: float = 0.6, iters: int = 6,
+                        seed: int = 0) -> PackedArtifact:
+    """Greedy ternary rank-r factorization. Each stage fits a ternary rank-1 outer product to the
+    running residual by alternating ternary power iteration, then subtracts s*a b^T."""
+    torch = _torch()
+    dev = _device()
+    rows, cols = w.shape
+    t = torch.from_numpy(np.ascontiguousarray(w, dtype=np.float32)).to(dev)
+    resid = t.clone()
+    recon = torch.zeros_like(t)
+    g = torch.Generator(device="cpu").manual_seed(seed)
+    ledger = ByteLedger()
+    for j in range(rank):
+        b = _ternarize(torch.randn(cols, generator=g).to(dev), keep_frac)
+        a = None
+        for _ in range(iters):
+            denom_b = float((b * b).sum()) or 1.0
+            a = _ternarize((resid @ b) / denom_b, keep_frac)          # [rows]
+            denom_a = float((a * a).sum()) or 1.0
+            b = _ternarize((resid.t() @ a) / denom_a, keep_frac)      # [cols]
+        num = float(a @ (resid @ b))
+        den = (float((a * a).sum()) * float((b * b).sum())) or 1.0
+        s = num / den
+        recon = recon + s * torch.outer(a, b)
+        resid = t - recon
+        ledger.add_bits("ternary_factors", (rows + cols), 2)          # 2 bits/ternary elem (conservative)
+        ledger.add_fp16(1)                                            # per-stage scale s
+    base_bits = rank * ((rows + cols) * 2 + 16)
+    return PackedArtifact("ternary_factor", recon.detach().cpu().numpy().astype(np.float32),
+                          w.size, ledger, base_bits, 0,
+                          {"rank": rank, "keep_frac": keep_frac, "ternary_bits": 2})
+
+
+# --------------------------------------------------------------------------------------------
 # Baselines (naive), re-implemented for comparison at matched whole-artifact bytes.
 # --------------------------------------------------------------------------------------------
 def pack_naive_rvq(w: np.ndarray, *, dim: int, k: int, stages: int, iters: int = 10,
@@ -432,6 +482,7 @@ def selftest() -> dict[str, Any]:
     a = pack_transform_pq(lr, dim=32, subspaces=4, k=16)          # runs + accounts (whitens by design)
     gram = pack_shared_grammar([lr, lr * 1.01, lr * 0.99], dim=32, k=64, stages=2, corr_rank=2)
     rep = pack_repairability_shaped(lr, base_dim=32, base_k=32, corr_rank=4, sparse_rows=4)
+    tern = pack_ternary_factor(lr, rank=8)
 
     # deterministic: same seed => identical bytes
     det = pack_naive_rvq(lr, dim=32, k=64, stages=2, seed=7).physical_bytes == \
@@ -440,7 +491,7 @@ def selftest() -> dict[str, Any]:
     acct_ok = all(p.physical_bytes > 0
                   and p.whole_artifact_bpw >= (p.base_bpw + p.doctor_bpw) - 1e-6
                   and np.isfinite(p.recon).all()
-                  for p in (a, gram, rep))
+                  for p in (a, gram, rep, tern))
     return {
         "ok": True, "device": _device().type,
         "lowrank_family_relerr": round(err_lr, 5),
@@ -451,6 +502,8 @@ def selftest() -> dict[str, Any]:
         "repairability_bpw": round(rep.whole_artifact_bpw, 4),
         "repairability_base_bpw": round(rep.base_bpw, 4),
         "repairability_doctor_bpw": round(rep.doctor_bpw, 4),
+        "ternary_factor_bpw": round(tern.whole_artifact_bpw, 4),
+        "families_available": 4,
         "deterministic_bytes": det,
         "accounting_invariant_holds": acct_ok,
     }

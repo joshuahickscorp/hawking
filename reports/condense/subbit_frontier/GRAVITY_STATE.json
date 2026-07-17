@@ -1,4 +1,71 @@
 {
+  "forge_program": {
+    "architecture_family": "gpt-oss-moe",
+    "checkpoint_rules": {
+      "per_cell": true,
+      "resumable": true,
+      "root": "reports/condense/gravity_forge/cells"
+    },
+    "created_at": "2026-07-17T23:40:57+00:00",
+    "doctor_budget_bpw": 0.15,
+    "doctor_program": {
+      "note": "diagnose-first; repairability_shaped reserved",
+      "promote": []
+    },
+    "escape_receipt_rules": {
+      "authorizes_escape": false,
+      "requires": ">=2 advanced families at F2 + >=1 Doctor rescue at sub-bit + capability eval + structural diagnosis"
+    },
+    "f_sequence": [
+      "F0_oracle",
+      "F1_weight_proxy",
+      "F1_5_output_divergence",
+      "F2_capability"
+    ],
+    "fallback_candidate": null,
+    "forge_runner": "tools/condense/gravity_forge_run.py",
+    "hf_or_source_id": "openai/gpt-oss-120b",
+    "is_subbit": true,
+    "kind": "forge_subbit",
+    "lane": "hawking-gravity-forge",
+    "launch_gate": {
+      "gravity_enabled": false,
+      "heavy_lease_free": false,
+      "release_boundary_signed": false,
+      "resource_admission_passed": false,
+      "source_program_executable": true
+    },
+    "parent_label": "120B",
+    "program_sha256": "b4568972afe5d07cbbd19900250c11b40ead1742f5244d0079d2fb506f3440b1",
+    "rate": {
+      "den": 5,
+      "label": "4/5",
+      "num": 4,
+      "value": 0.8
+    },
+    "representation_family": "gravity_forge:transform_pq",
+    "required_controls": [
+      "zero_treatment",
+      "equal_byte_codec",
+      "smaller_higher_bit"
+    ],
+    "resource_request": {
+      "bounded_experts": true,
+      "gpu": "mps",
+      "no_full_download": true
+    },
+    "schema": "hawking.gravity.program.v1",
+    "source_manifest_sha256": "e7c95a34cc4baf094bd521752bc64c69a9e63c717d288adc3bd6db813321e0d6",
+    "stop_conditions": [
+      "sealed Escape Receipt",
+      "capability pass at sub-bit",
+      "operator drain"
+    ],
+    "telegram_events": [
+      "gravity_feasibility_completed",
+      "gravity_diagnosis"
+    ]
+  },
   "generated_at": "2026-07-17T21:15:08+00:00",
   "gravity_enabled": false,
   "live_parent": "120B",
@@ -337,5 +404,5 @@
       "source_manifest_sha256": "d09af556423d1a7009731254739065dbce9a1c523c3bc66989b7c0e324bf4c4e"
     }
   },
-  "state_doc_sha256": "70da1c43962bdc3d53dc5451511be6354a108cea9b0d5d28224c834387aede2b"
+  "state_doc_sha256": "d68497e46e931ff09594e823d7722535c2149d2646d4d392f7fbe8f34797f39f"
 }

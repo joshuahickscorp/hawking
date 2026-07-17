@@ -65,13 +65,18 @@ def _cfgs_for(rows: int, cols: int) -> list[dict[str, Any]]:
          "kw": dict(base_dim=32, base_k=64, corr_rank=8, sparse_rows=16)},
         {"family": "repairability_shaped", "rate": 0.5,
          "kw": dict(base_dim=32, base_k=16, corr_rank=4, sparse_rows=8)},
+        # ternary latent factorization lives in the DEEP sub-bit regime (cheap per rank), so it is
+        # reported at its natural ranks rather than matched to the 0.5/0.8 grid.
+        {"family": "ternary_factor", "rate": 0.02, "kw": dict(rank=16)},
+        {"family": "ternary_factor", "rate": 0.07, "kw": dict(rank=64)},
     ]
 
 
 def _pack(family: str, w: np.ndarray, kw: dict[str, Any]) -> gf.PackedArtifact:
     fn = {"naive_rvq": gf.pack_naive_rvq, "low_rank": gf.pack_low_rank,
           "transform_pq": gf.pack_transform_pq,
-          "repairability_shaped": gf.pack_repairability_shaped}[family]
+          "repairability_shaped": gf.pack_repairability_shaped,
+          "ternary_factor": gf.pack_ternary_factor}[family]
     return fn(w, **kw)
 
 

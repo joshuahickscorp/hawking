@@ -1,0 +1,29 @@
+{
+  "activation_gap": "pre-attention proxy; true residual-stream F2 needs the block attention layer",
+  "activation_source": "real_token_embedding",
+  "block": 0,
+  "bounded_memory": true,
+  "capability_parity": false,
+  "deterministic": true,
+  "device": "mps",
+  "fixture_sha256": "62594a3df425d149af2d55f92bfde3e2163dbc07068047c77a30d7350ade6877",
+  "green": true,
+  "max_output_rel_div": 1.97452,
+  "mean_output_rel_div": 1.25948,
+  "min_output_rel_div": 0.85442,
+  "n_experts_exercised": 74,
+  "n_tokens": 40,
+  "pack": "transform_pq@~0.75bpw",
+  "packed_whole_artifact_bpw": 0.7514,
+  "parent": "120B",
+  "reconstructs_dense_model": false,
+  "routing_divergence_note": "invariant until the router itself is packed",
+  "routing_invariant": true,
+  "schema": "hawking.gravity_forge.f2_fixture.v1",
+  "seconds": 64.7,
+  "tokenizer": {
+    "chat_template_present": true,
+    "roundtrip": true,
+    "vocab_size": 200019
+  }
+}

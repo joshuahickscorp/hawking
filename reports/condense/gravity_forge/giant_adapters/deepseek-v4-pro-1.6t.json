@@ -1,0 +1,121 @@
+{
+  "architecture": "DeepseekV4ForCausalLM",
+  "architecture_primitives": [
+    "dense_transformer_trunk",
+    "mla_attention",
+    "moe_router",
+    "routed_expert",
+    "shared_expert",
+    "mtp_head",
+    "compressed_tensor_source",
+    "streamed_source",
+    "compact_expert_runtime",
+    "expert_paging"
+  ],
+  "contract_sha256": "21f81af72c6184b1730622d4963f3e60733794d09d0d091a93a3be2b7057a796",
+  "doctor_hooks": [
+    "protected_precision_islands",
+    "router_protection",
+    "shared_expert_protection",
+    "rare_expert_protection",
+    "low_rank_correction",
+    "structured_sparse_correction"
+  ],
+  "forge_hooks": {
+    "routed_expert": [
+      "transform_pq",
+      "shared_expert_grammar",
+      "repairability_shaped",
+      "ternary_factor"
+    ],
+    "router": [
+      "pass_through(fp16)"
+    ],
+    "shared_expert": [
+      "repairability_shaped(protected)"
+    ],
+    "trunk": [
+      "pass_through(fp16)"
+    ]
+  },
+  "gravity_stress_rate": "1/4",
+  "hf_id": "deepseek-ai/DeepSeek-V4-Pro",
+  "launch": "DISABLED (contract only; no giant run, no download)",
+  "mtp_or_vision_boundaries": {
+    "mtp_layers": 1,
+    "multimodal": false,
+    "note": "MTP/vision tensors are pass-through unless capability eval requires them; excluded from sub-bit stress first"
+  },
+  "physical_byte_model": {
+    "counts": [
+      "indices",
+      "codebooks",
+      "factors",
+      "scales",
+      "transform_seeds",
+      "doctor_corrections",
+      "router",
+      "shared_expert",
+      "trunk_passthrough",
+      "metadata",
+      "alignment"
+    ],
+    "primary_claim": "installed whole-artifact BPW",
+    "unit": "whole_artifact_bpw = total_physical_bits / n_weights"
+  },
+  "queue_identity": {
+    "lane": "hawking-gravity-forge",
+    "launch_gate": "disabled",
+    "parent_label": "1.6T",
+    "row_id": "deepseek-v4-pro-1.6t"
+  },
+  "router_and_expert_mapping": {
+    "experts_per_tok": 6,
+    "n_routed_experts": 384,
+    "n_shared_experts": 1
+  },
+  "row_id": "deepseek-v4-pro-1.6t",
+  "runtime_hooks": {
+    "compact_expert_runtime": true,
+    "expert_paging": true,
+    "reconstructs_dense_model": false,
+    "selected_expert_fusion": "planned"
+  },
+  "schema": "hawking.gravity_forge.giant_adapter_contract.v1",
+  "shared_expert_handling": "always-on shared expert added to every token; protected organ (candidate Doctor precision island)",
+  "source_precision": "fp4_experts+fp8_trunk(~0.54 B/param)",
+  "streamed_source_interface": {
+    "access": "bounded source windows (per-expert / per-shard); no full download",
+    "decoder": "compressed_tensor_source(fp4/fp8)",
+    "n_shards": 64,
+    "source_bytes": 864704792696
+  },
+  "tensor_taxonomy": {
+    "attention": [
+      "attn.qkv",
+      "attn.out",
+      "attn.sinks(if_present)"
+    ],
+    "mtp": [
+      "mtp.*"
+    ],
+    "routed_expert": [
+      "mlp.{gate,up,down}"
+    ],
+    "router": [
+      "mlp.gate.weight",
+      "mlp.gate.bias"
+    ],
+    "shared_expert": [
+      "shared.mlp.*"
+    ],
+    "trunk": [
+      "embedding",
+      "final_norm",
+      "unembedding",
+      "attn.norm",
+      "mlp.norm"
+    ],
+    "vision": []
+  }
+}
