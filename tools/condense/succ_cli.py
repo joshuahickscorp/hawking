@@ -186,6 +186,36 @@ def cmd_gc_plan(args) -> dict[str, Any]:
             "with a real candidate set", "vocabulary": "see succ_gc.selftest for the safety gates"}
 
 
+def cmd_calibrate(args) -> dict[str, Any]:
+    import succ_calibrate
+    prog = succ_calibrate.build_calibration(args.model, campaign_root=args.campaign_root)
+    if args.out:
+        from eco_common import atomic_write_json
+        atomic_write_json(args.out, prog)
+    return {"model_label": prog["model_label"], "program_sha256": prog["program_sha256"],
+            "extreme_status": prog["extreme_status"],
+            "event_horizon_bracket": prog["event_horizon_bracket"],
+            "experiments": len(prog["ordered_experiments"]),
+            "untreated_frontier": prog["untreated_frontier"],
+            "release_binding": prog["release_binding"]["executes"]}
+
+
+def cmd_watch(args) -> dict[str, Any]:
+    import succ_watch
+    return succ_watch.watch_once(args.campaign_root, intent_path=args.intent, go=args.go)
+
+
+def cmd_arm_template(args) -> dict[str, Any]:
+    import succ_watch
+    return succ_watch.write_intent_template(args.campaign_root, out_path=args.out)
+
+
+def cmd_watch_plist(args) -> dict[str, Any]:
+    import succ_watch
+    return succ_watch.write_launchd_plist(out_path=args.out, interval=args.interval,
+                                          campaign_root=args.campaign_root)
+
+
 def cmd_telegram(args) -> dict[str, Any]:
     import succ_telegram
     if args.telegram_action == "status":
@@ -207,6 +237,13 @@ def build_parser() -> argparse.ArgumentParser:
                  "drain", "verify", "transition-status", "gc-plan"):
         sub.add_parser(name)
     qp = sub.add_parser("queue"); qp.add_argument("--model", default=None)
+    cp = sub.add_parser("calibrate"); cp.add_argument("--model", default="72B"); cp.add_argument("--out", default=None)
+    wp = sub.add_parser("watch")
+    wp.add_argument("--once", action="store_true"); wp.add_argument("--go", action="store_true")
+    wp.add_argument("--intent", default=None)
+    ap_t = sub.add_parser("arm-template"); ap_t.add_argument("--out", default=None)
+    wpl = sub.add_parser("watch-plist"); wpl.add_argument("--out", default=None)
+    wpl.add_argument("--interval", type=int, default=300)
     at = sub.add_parser("arm-transition"); at.add_argument("--intent", default=None)
     tg = sub.add_parser("telegram")
     tg.add_argument("telegram_action", choices=["test", "status"])
@@ -219,6 +256,8 @@ DISPATCH = {
     "queue": cmd_queue, "explain-next": cmd_explain_next, "ping": cmd_ping, "resume": cmd_resume,
     "drain": cmd_drain, "verify": cmd_verify, "arm-transition": cmd_arm_transition,
     "transition-status": cmd_transition_status, "gc-plan": cmd_gc_plan, "telegram": cmd_telegram,
+    "calibrate": cmd_calibrate, "watch": cmd_watch, "arm-template": cmd_arm_template,
+    "watch-plist": cmd_watch_plist,
 }
 
 

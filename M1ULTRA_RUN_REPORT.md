@@ -106,6 +106,26 @@ current disk occupancy, not a missing device row.
 Append one paragraph per wave: what ran, verdict, category movement, next lever. No wave ends without a
 committed (approved) artifact.
 
+- Wave F3 (2026-07-17, successor continuation: 72B seal + arming): re-invoked the same master goal. Re-audit
+  found the LEGACY 72B codec_control cell SEALED (now complete; 142 complete total; the campaign moved on to
+  qwen2-5-72b__4bpw__doctor-static, now running and untouched); report checkpoints still None so the campaign
+  is NOT released (State B holds, transition still correctly blocked). Used the new 72B evidence: the successor
+  now imports 189 terminal cells and 72B is a parent WITH evidence (its 4bpw codec_control physical bytes
+  sealed at all_in_model_payload_bpw=5.078, quality DEFERRED as the 72B resident eval is disk/RAM-gated).
+  BUILT (additive): succ_calibrate.py (precompiles the 72B post-release calibration program per section 9:
+  untreated frontier from sealed evidence, the deferred full-model quality eval as the first experiment, the
+  boundary probes, lower-rate reasons, release-bound, launches nothing) and succ_watch.py (the detached
+  release watcher: singleton-lease tick that heartbeats + re-checks the gate in WAIT_OLD_RELEASE and fires the
+  one-use transition only when the gate passes; plus the arming artifacts: an UNSIGNED intent template bound to
+  the exact live identities (legacy_plan_sha256, successor_commit 467e8885, expected_terminal_count=320), and a
+  launchd plist written to a file, NOT installed). Wired calibrate/watch/arm-template/watch-plist into the CLI.
+  Also closed the last cheap adversarial-review item (transition one-use TOCTOU via an O_EXCL atomic claim).
+  92 tests green (+6). VERIFIED end to end on live data: calibrate wrote the 72B program (11 experiments),
+  arm-template wrote the unsigned template, watch-plist wrote the plist, watch --once ticks and correctly
+  blocks the gate (no signed intent). HONEST State-B boundary unchanged: the two final arming acts (operator
+  signature + launchctl load of the auto-activating agent) are the operator's, by design; everything up to
+  them is built, tested, and one command each away. CI: PR #24 greened frontend + rustfmt; clippy cascade debt
+  remains. Committed to PR #23; no merge, no activation.
 - Wave F2 (2026-07-17, Unattended Condenser successor control plane): invoked via the authoritative master
   goal HAWKING_UNATTENDED_CONDENSER_MASTER_GOAL.md (State B target: legacy running). E0 audit (6-agent
   read-only workflow + direct capture) established: legacy 72B still running (shard 32/37, supervisor pid

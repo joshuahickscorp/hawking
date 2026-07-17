@@ -430,6 +430,22 @@ def execute_transition(intent: dict[str, Any], campaign_root: str | os.PathLike[
         return {"executed": False, "refused": True, "reason": "gate not satisfied",
                 "gate": gate}
 
+    # atomic one-use CLAIM: close the TOCTOU between the exists-check above and the receipt
+    # write below by creating the consumed receipt exclusively (O_EXCL). If a concurrent
+    # execute already claimed this intent, refuse without side effects. The full receipt is
+    # written over this claim at the end (only this process holds it).
+    claim_path = cfg.consumed_path(intent_sha)
+    claim_path.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        _fd = os.open(str(claim_path), os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+    except FileExistsError:
+        return {"executed": False, "refused": True,
+                "reason": "intent consumed concurrently (exclusive claim lost)",
+                "intent_sha256": intent_sha}
+    os.write(_fd, b'{"status":"claimed"}\n')
+    os.fsync(_fd)
+    os.close(_fd)
+
     # preserve the pre-transition state as the rollback target
     if cfg.manifest_path.exists():
         atomic_write_json(cfg.previous_path, read_json_safe(cfg.manifest_path))

@@ -67,22 +67,35 @@ python3.12 $CD/succ_cli.py transition-status
 python3.12 $CD/succ_cli.py arm-transition --intent <intent.json>
 python3.12 $CD/succ_cli.py telegram status
 python3.12 $CD/succ_cli.py telegram test --go   # sends a real successor test message (needs Keychain creds)
+python3.12 $CD/succ_cli.py calibrate --model 72B --out <path>   # precompile the post-release calibration
+python3.12 $CD/succ_cli.py watch --once          # one detached tick (heartbeat + gate re-check)
+python3.12 $CD/succ_cli.py arm-template --out <path>            # emit the unsigned intent template
+python3.12 $CD/succ_cli.py watch-plist --out <path>            # write the launchd plist (does NOT install)
 ```
 
-## 4. Arming the transition (State B)
+## 4. Arming the transition (State B) - the operator's two steps
+
+The agent builds and tests all the machinery and precompiles the artifacts, but it does NOT
+self-sign or install an auto-activating system agent. Two operator steps complete arming:
 
 1. `successor compile` boots the controller into `WAIT_OLD_RELEASE` and materializes the queue.
-2. Build a one-use transition intent (`succ_transition.make_intent`) binding: the pinned legacy
-   plan sha, the accepted reporter checkpoint identities, the successor commit/tree/config/queue
-   identities, the expected terminal cell count, `require_quiescent`, the operator authorization,
-   a generation/expiry, and a rollback target.
-3. `successor arm-transition --intent <path>` evaluates the gate read-only; it stays refused
-   while the legacy campaign runs.
-4. Install the detached watcher via launchd (`succ_watchdog` plist) so heartbeats and the gate
-   re-check continue without a chat session. The watcher fires `execute_transition` only when the
-   gate passes (all cells terminal, reports sealed, checkpoints accepted, quiescent, signature
-   valid, intent verifies) AND the intent has not been consumed. One-use is enforced by an
-   append-only consumed receipt.
+2. `successor arm-template --out intent_template.json` writes an UNSIGNED template bound to the
+   exact current identities (legacy plan sha, successor commit/tree, `expected_terminal_count` =
+   the full 320-cell cohort). **Operator step 1:** add an `operator_signature` (a real detached
+   signature over an operator key is preferred; a permission-restricted authorization file + self
+   seal is the fallback and is possession/integrity control, not cryptographic authenticity), then
+   `succ_transition.make_intent(**make_intent_fields, operator_signature=<sig>)` to produce the real
+   sealed intent, and `successor arm-transition --intent <intent.json>`.
+3. `successor watch-plist --out watcher.plist` writes the LaunchAgent plist calling
+   `successor watch --once --go --intent <intent.json>` every 300 s. **Operator step 2:**
+   `launchctl load watcher.plist`. The watcher then heartbeats and re-checks the gate each tick and
+   fires `execute_transition` automatically the moment the gate passes (all cells terminal, both
+   group reports sealed, checkpoints accepted, quiescent, signature valid, intent verifies, not
+   consumed). One-use is enforced by an `O_EXCL` atomic claim + an append-only consumed receipt.
+
+Until both operator steps are done, crossing the release is NOT hands-off. This boundary is
+deliberate: an auto-activating system agent and a supersession signature are the operator's to
+authorize.
 
 ## 5. Rollback and recovery
 
