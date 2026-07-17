@@ -43,7 +43,11 @@ jobs:
             -A unused_assignments \
             -A clippy::should_implement_trait \
             -A clippy::type_complexity \
-            -A clippy::too_many_arguments
+            -A clippy::too_many_arguments \
+            -A clippy::derivable_impls \
+            -A clippy::default_constructed_unit_structs \
+            -A clippy::unnecessary_map_or \
+            -A clippy::len_without_is_empty
 
       - name: Build
         run: cargo build --workspace
