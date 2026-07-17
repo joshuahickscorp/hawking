@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-07-17T20:38:32+00:00",
+  "generated_at": "2026-07-17T21:15:08+00:00",
   "gravity_enabled": false,
-  "live_parent": "72B",
+  "live_parent": "120B",
   "note": "default-off; programs are launch-gated and cannot execute outside admission",
   "parent_states": {
     "1.6T": {
-      "created_at": "2026-07-17T20:38:32+00:00",
+      "created_at": "2026-07-17T21:15:08+00:00",
       "current_diagnosis": null,
       "current_doctor_program": null,
       "current_evidence_level": null,
@@ -46,17 +46,17 @@
       "representation_families_tested": [],
       "resource_budget": null,
       "schema": "hawking.gravity.parent_state.v1",
-      "state_sha256": "380163d1896eee367fa80de0b808154f5f07276b725bb00404df88dfb6139e67",
+      "state_sha256": "2a02ecabf4d0f61ab098bcdafd401ffc1ec2a0433e72a74109a21b392a5accbf",
       "stop_condition": null,
       "subbit_coverage_status": {
         "route": null,
         "satisfied": false
       },
       "transitions": [],
-      "updated_at": "2026-07-17T20:38:32+00:00"
+      "updated_at": "2026-07-17T21:15:08+00:00"
     },
     "120B": {
-      "created_at": "2026-07-17T20:38:32+00:00",
+      "created_at": "2026-07-17T21:15:08+00:00",
       "current_diagnosis": null,
       "current_doctor_program": null,
       "current_evidence_level": null,
@@ -97,17 +97,17 @@
       "representation_families_tested": [],
       "resource_budget": null,
       "schema": "hawking.gravity.parent_state.v1",
-      "state_sha256": "cdd756f08312ccc12febef80ff4e1e40abb930e46fc6bc1c9ca4cf6bbc741c55",
+      "state_sha256": "4a8d2482c251c99031cceb9b8cd11adf696bd7e9f775e52a7e0c57bccf81a83f",
       "stop_condition": null,
       "subbit_coverage_status": {
         "route": null,
         "satisfied": false
       },
       "transitions": [],
-      "updated_at": "2026-07-17T20:38:32+00:00"
+      "updated_at": "2026-07-17T21:15:08+00:00"
     },
     "1T": {
-      "created_at": "2026-07-17T20:38:32+00:00",
+      "created_at": "2026-07-17T21:15:08+00:00",
       "current_diagnosis": null,
       "current_doctor_program": null,
       "current_evidence_level": null,
@@ -148,17 +148,17 @@
       "representation_families_tested": [],
       "resource_budget": null,
       "schema": "hawking.gravity.parent_state.v1",
-      "state_sha256": "6fc64dff4a0710c85fb550f7400d8a9f124a12f300b19708ce261c4f7cd674e7",
+      "state_sha256": "11dfdd144fff58e625911646554c1d950f53bffd89220a1e0da41b7195004265",
       "stop_condition": null,
       "subbit_coverage_status": {
         "route": null,
         "satisfied": false
       },
       "transitions": [],
-      "updated_at": "2026-07-17T20:38:32+00:00"
+      "updated_at": "2026-07-17T21:15:08+00:00"
     },
     "685B": {
-      "created_at": "2026-07-17T20:38:32+00:00",
+      "created_at": "2026-07-17T21:15:08+00:00",
       "current_diagnosis": null,
       "current_doctor_program": null,
       "current_evidence_level": null,
@@ -199,17 +199,17 @@
       "representation_families_tested": [],
       "resource_budget": null,
       "schema": "hawking.gravity.parent_state.v1",
-      "state_sha256": "43424a8a32cc440d40436c3301cb419050676c3ec62e705aa7f3fda87a1dac7e",
+      "state_sha256": "63a0b6ad21484855e9b059a55dc5b8d9205e90cb3b9efc8adf50e159754509a0",
       "stop_condition": null,
       "subbit_coverage_status": {
         "route": null,
         "satisfied": false
       },
       "transitions": [],
-      "updated_at": "2026-07-17T20:38:32+00:00"
+      "updated_at": "2026-07-17T21:15:08+00:00"
     },
     "72B": {
-      "created_at": "2026-07-17T20:38:32+00:00",
+      "created_at": "2026-07-17T21:15:08+00:00",
       "current_diagnosis": null,
       "current_doctor_program": null,
       "current_evidence_level": null,
@@ -250,28 +250,28 @@
       "representation_families_tested": [],
       "resource_budget": null,
       "schema": "hawking.gravity.parent_state.v1",
-      "state_sha256": "8a2bba7798312f37829d6dc4c0a48293084150e114424a533053911795bd91e3",
+      "state_sha256": "763b976cb2ab519740100ad12e57fa5b7d1ac3d4995f52877c554a76ff8376ad",
       "stop_condition": null,
       "subbit_coverage_status": {
         "route": null,
         "satisfied": false
       },
       "transitions": [],
-      "updated_at": "2026-07-17T20:38:32+00:00"
+      "updated_at": "2026-07-17T21:15:08+00:00"
     }
   },
   "policy_version": "2026-07-17.1",
   "schema": "hawking.gravity.state.v1",
   "source_bound_programs": {
     "higher_rate_fallback": {
-      "adapter_id": "doctor-v5-strand-ladder-qwen25-dense",
-      "architecture_family": "qwen2.5-dense",
-      "created_at": "2026-07-17T20:38:32+00:00",
+      "adapter_id": null,
+      "architecture_family": "gpt-oss-moe",
+      "created_at": "2026-07-17T21:15:08+00:00",
       "doctor_program": {
         "note": "diagnose-first",
         "promote": []
       },
-      "hf_or_source_id": "Qwen/Qwen2.5-72B-Instruct",
+      "hf_or_source_id": "openai/gpt-oss-120b",
       "is_subbit": false,
       "kind": "higher_rate_fallback",
       "lane": "hawking-gravity-oracle-first",
@@ -282,13 +282,13 @@
         "resource_admission_passed": false,
         "source_program_executable": true
       },
-      "parent_label": "72B",
-      "program_sha256": "2b988612e75c82b4f4ea8b70fa8d711df8ee6d0dc75c1d3eb97663f36892c717",
+      "parent_label": "120B",
+      "program_sha256": "fdbe19fd10878c7f8cef4722ceaa16ed1410a47a1bd5d239310c7b093a3a2ad9",
       "rate": {
-        "den": 2,
-        "label": "3/2",
-        "num": 3,
-        "value": 1.5
+        "den": 4,
+        "label": "5/4",
+        "num": 5,
+        "value": 1.25
       },
       "representation_family": "scalar_trellis_tqv2",
       "required_controls": [
@@ -297,18 +297,18 @@
         "smaller_higher_bit"
       ],
       "schema": "hawking.gravity.program.v1",
-      "source_manifest_sha256": "e97955f438759b1a4bbd79fa82ecd0dd7a164a939e7af77158523434d9a6d95b"
+      "source_manifest_sha256": "d09af556423d1a7009731254739065dbce9a1c523c3bc66989b7c0e324bf4c4e"
     },
-    "parent_label": "72B",
+    "parent_label": "120B",
     "subbit_stress": {
-      "adapter_id": "doctor-v5-strand-ladder-qwen25-dense",
-      "architecture_family": "qwen2.5-dense",
-      "created_at": "2026-07-17T20:38:32+00:00",
+      "adapter_id": null,
+      "architecture_family": "gpt-oss-moe",
+      "created_at": "2026-07-17T21:15:08+00:00",
       "doctor_program": {
         "note": "diagnose-first",
         "promote": []
       },
-      "hf_or_source_id": "Qwen/Qwen2.5-72B-Instruct",
+      "hf_or_source_id": "openai/gpt-oss-120b",
       "is_subbit": true,
       "kind": "subbit_stress",
       "lane": "hawking-gravity-oracle-first",
@@ -319,8 +319,8 @@
         "resource_admission_passed": false,
         "source_program_executable": true
       },
-      "parent_label": "72B",
-      "program_sha256": "794b7d2a69237ac77d6ed60adad46c0387dd9889b37ac2db662c29ee17a5b801",
+      "parent_label": "120B",
+      "program_sha256": "de7d20760f8b2b04bbc7e477031d88d1031add0b770a6aab2536bfa41fc470d3",
       "rate": {
         "den": 5,
         "label": "4/5",
@@ -334,8 +334,8 @@
         "smaller_higher_bit"
       ],
       "schema": "hawking.gravity.program.v1",
-      "source_manifest_sha256": "e97955f438759b1a4bbd79fa82ecd0dd7a164a939e7af77158523434d9a6d95b"
+      "source_manifest_sha256": "d09af556423d1a7009731254739065dbce9a1c523c3bc66989b7c0e324bf4c4e"
     }
   },
-  "state_doc_sha256": "f61c62c83569cc305cb82f03e79fdbd8f8885ee1354a5feeff31ff5237697b58"
+  "state_doc_sha256": "70da1c43962bdc3d53dc5451511be6354a108cea9b0d5d28224c834387aede2b"
 }

@@ -36,7 +36,7 @@ ADAPTER_ID = "doctor-v5-strand-ladder-gpt-oss-moe"
 ADAPTER_VERSION = "0.1-contract"
 OPERATION = "condense_control"
 MODEL_FAMILY = "gpt-oss-moe"
-BACKEND = "apple-cpu-strand"
+BACKEND = "apple-silicon-doctor-v5"
 SPEC_SCHEMA = "hawking.doctor_v5_strand_ladder_spec.v1"
 PREFLIGHT_SCHEMA = "hawking.doctor_v5_gptoss_moe_preflight.v1"
 CAPABILITY_SCHEMA = "hawking.doctor_v5_gptoss_moe_capabilities.v1"
@@ -268,7 +268,7 @@ def build_spec(*, rate_id: str, cell_id: str, cell_identity_sha256: str,
         raise AdapterError("cell_id is invalid")
     if any(isinstance(value, bool) or not isinstance(value, int) or value <= 0
            for value in (disk_reserve_bytes, scratch_budget_bytes, threads)) \
-            or disk_reserve_bytes < 150_000_000_000 \
+            or disk_reserve_bytes < 50_000_000_000 \
             or scratch_budget_bytes < 12_000_000_000 \
             or not 1 <= threads <= 16:
         raise AdapterError("resource values violate the Ultra safety envelope")
@@ -489,7 +489,7 @@ def main(argv: list[str] | None = None) -> int:
     build.add_argument("--cell-identity-sha256", required=True)
     build.add_argument("--program-spec-sha256", required=True)
     build.add_argument("--resource-admission-sha256", required=True)
-    build.add_argument("--disk-reserve-bytes", type=int, default=150_000_000_000)
+    build.add_argument("--disk-reserve-bytes", type=int, default=50_000_000_000)
     build.add_argument("--scratch-budget-bytes", type=int, default=64_000_000_000)
     build.add_argument("--threads", type=int, default=8)
     build.add_argument("--inventory", type=Path, default=DEFAULT_INVENTORY)

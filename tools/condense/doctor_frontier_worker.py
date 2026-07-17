@@ -52,7 +52,7 @@ EXECUTION_CONTRACT_SCHEMA = "hawking.doctor_frontier_cell_execution.v1"
 CHECKPOINT_CONTRACT_SCHEMA = "hawking.healer_checkpoint_contract.v2"
 HEAVY_LEASE_FD_ENV = "HAWKING_HEAVY_LEASE_FD"
 ADAPTER_ARGV_MARKER = "hawking-internal-adapter"
-MIN_DISK_RESERVE_BYTES = 150_000_000_000
+MIN_DISK_RESERVE_BYTES = 50_000_000_000  # lowered 150->50 GB after campaign retirement (operator, 2026-07-17)
 MAX_JSON_BYTES = 32 * 1024 * 1024
 
 CHECKPOINT_REQUIRED_STATE = (

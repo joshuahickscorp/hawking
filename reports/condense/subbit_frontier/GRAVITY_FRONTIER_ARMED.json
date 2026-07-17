@@ -1,6 +1,6 @@
 {
-  "frontier_armed_sha256": "751c932193094624f80982d4137ba6b6c2081e5859875fb3e9ad668fd260fdfc",
-  "generated_at": "2026-07-17T20:38:32+00:00",
+  "frontier_armed_sha256": "293a01a3114de27248770915e6f9717a0bc0e67431fd921de0d07a1395e5adf9",
+  "generated_at": "2026-07-17T21:15:08+00:00",
   "giant_frontier_rows_augmented": [
     "deepseek-v3.2-685b",
     "kimi-k2.6-1t",
@@ -15,20 +15,20 @@
       "heavy lease held by doctor_v5_disk25_successor (would be a second heavy controller)"
     ]
   },
-  "live_parent": "72B",
+  "live_parent": "120B",
   "note": "armed and Gravity-governed; heavy launch deferred until the heavy lease is free AND a sub-1-bit deployable packer exists. Nothing launched.",
   "operational_status": "integrated_armed_launch_gated",
   "schema": "hawking.gravity.frontier_armed.v1",
   "source_bound_programs": {
     "higher_rate_fallback": {
-      "adapter_id": "doctor-v5-strand-ladder-qwen25-dense",
-      "architecture_family": "qwen2.5-dense",
-      "created_at": "2026-07-17T20:38:32+00:00",
+      "adapter_id": null,
+      "architecture_family": "gpt-oss-moe",
+      "created_at": "2026-07-17T21:15:08+00:00",
       "doctor_program": {
         "note": "diagnose-first",
         "promote": []
       },
-      "hf_or_source_id": "Qwen/Qwen2.5-72B-Instruct",
+      "hf_or_source_id": "openai/gpt-oss-120b",
       "is_subbit": false,
       "kind": "higher_rate_fallback",
       "lane": "hawking-gravity-oracle-first",
@@ -39,13 +39,13 @@
         "resource_admission_passed": false,
         "source_program_executable": true
       },
-      "parent_label": "72B",
-      "program_sha256": "2b988612e75c82b4f4ea8b70fa8d711df8ee6d0dc75c1d3eb97663f36892c717",
+      "parent_label": "120B",
+      "program_sha256": "fdbe19fd10878c7f8cef4722ceaa16ed1410a47a1bd5d239310c7b093a3a2ad9",
       "rate": {
-        "den": 2,
-        "label": "3/2",
-        "num": 3,
-        "value": 1.5
+        "den": 4,
+        "label": "5/4",
+        "num": 5,
+        "value": 1.25
       },
       "representation_family": "scalar_trellis_tqv2",
       "required_controls": [
@@ -54,18 +54,18 @@
         "smaller_higher_bit"
       ],
       "schema": "hawking.gravity.program.v1",
-      "source_manifest_sha256": "e97955f438759b1a4bbd79fa82ecd0dd7a164a939e7af77158523434d9a6d95b"
+      "source_manifest_sha256": "d09af556423d1a7009731254739065dbce9a1c523c3bc66989b7c0e324bf4c4e"
     },
-    "parent_label": "72B",
+    "parent_label": "120B",
     "subbit_stress": {
-      "adapter_id": "doctor-v5-strand-ladder-qwen25-dense",
-      "architecture_family": "qwen2.5-dense",
-      "created_at": "2026-07-17T20:38:32+00:00",
+      "adapter_id": null,
+      "architecture_family": "gpt-oss-moe",
+      "created_at": "2026-07-17T21:15:08+00:00",
       "doctor_program": {
         "note": "diagnose-first",
         "promote": []
       },
-      "hf_or_source_id": "Qwen/Qwen2.5-72B-Instruct",
+      "hf_or_source_id": "openai/gpt-oss-120b",
       "is_subbit": true,
       "kind": "subbit_stress",
       "lane": "hawking-gravity-oracle-first",
@@ -76,8 +76,8 @@
         "resource_admission_passed": false,
         "source_program_executable": true
       },
-      "parent_label": "72B",
-      "program_sha256": "794b7d2a69237ac77d6ed60adad46c0387dd9889b37ac2db662c29ee17a5b801",
+      "parent_label": "120B",
+      "program_sha256": "de7d20760f8b2b04bbc7e477031d88d1031add0b770a6aab2536bfa41fc470d3",
       "rate": {
         "den": 5,
         "label": "4/5",
@@ -91,7 +91,7 @@
         "smaller_higher_bit"
       ],
       "schema": "hawking.gravity.program.v1",
-      "source_manifest_sha256": "e97955f438759b1a4bbd79fa82ecd0dd7a164a939e7af77158523434d9a6d95b"
+      "source_manifest_sha256": "d09af556423d1a7009731254739065dbce9a1c523c3bc66989b7c0e324bf4c4e"
     }
   }
 }

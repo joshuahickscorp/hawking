@@ -70,7 +70,7 @@ MIN_REPEATS = 5
 # Exact authoritative Doctor production policy uses decimal byte quantities:
 # retain 150 GB free disk and a separate 64 GB phase-aware scratch reserve.
 # Do not transpose these two gates or silently convert them to GiB.
-MIN_DISK_RESERVE_BYTES = 150_000_000_000
+MIN_DISK_RESERVE_BYTES = 50_000_000_000
 MIN_SCRATCH_RESERVE_BYTES = 64_000_000_000
 MIN_TOTAL_DISK_ADMISSION_BYTES = MIN_DISK_RESERVE_BYTES + MIN_SCRATCH_RESERVE_BYTES
 

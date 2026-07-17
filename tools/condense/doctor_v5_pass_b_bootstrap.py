@@ -116,7 +116,7 @@ def prepare() -> dict[str, Any]:
         "swap_used_bytes": 0,
         "require_ac_power": True,
         "require_nominal_thermal": True,
-        "disk_reserve_bytes": 150_000_000_000,
+        "disk_reserve_bytes": 50_000_000_000,
         "scratch_budget_bytes": 12_000_000_000,
         "monitor_interval_seconds": 5,
         "gate_failure": "terminate_process_group_and_resume_from_last_phase",

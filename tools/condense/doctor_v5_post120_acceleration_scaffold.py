@@ -318,7 +318,7 @@ def _facets(scope_sha256: str) -> dict[str, Any]:
             "recovery_requires_normal_pressure_thermal_and_nonrising_swap": True,
         },
         "disk_lifecycle_gc": {
-            **common, "minimum_free_disk_reserve_bytes": 150_000_000_000,
+            **common, "minimum_free_disk_reserve_bytes": 50_000_000_000,
             "phase_aware_remaining_scratch_required": True,
             "disk_admission_before_every_launch": True,
             "hash_fsync_reporter_seal_successor_binding_before_ephemeral_gc": True,

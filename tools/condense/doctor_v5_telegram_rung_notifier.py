@@ -25,6 +25,7 @@ from pathlib import Path
 import plistlib
 import re
 import secrets
+import statistics
 import subprocess
 import sys
 from typing import Any
@@ -61,6 +62,13 @@ BRANCH_LABELS = {
     "doctor_conditional": "conditional",
     "doctor_full": "full",
 }
+# Post-120B horizon models are planning scaffolding only.  Nominal display
+# parameter counts drive wall-clock projections; nothing here schedules work.
+POST_120B_HORIZON = (
+    ("DeepSeek-V4-Flash", "284B", 284e9),
+    ("Kimi-K2.6", "1.1T", 1.1e12),
+    ("DeepSeek-V4-Pro", "1.6T", 1.6e12),
+)
 MAX_JSON_BYTES = 32 * 1024 * 1024
 MAX_MESSAGE_CHARS = 4000
 SHA256_RE = re.compile(r"[0-9a-f]{64}")
@@ -591,6 +599,62 @@ def _duration(seconds: float) -> str:
     return f"{seconds / 86400:.1f}d"
 
 
+def _parse_time(value: Any) -> dt.datetime | None:
+    if not isinstance(value, str):
+        return None
+    try:
+        parsed = dt.datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    return parsed if parsed.tzinfo else parsed.replace(tzinfo=dt.timezone.utc)
+
+
+def _campaign_rates(campaign: dict[str, Any]) -> tuple[
+        dict[str, float], dict[str, float]]:
+    """Median measured seconds-per-billion per branch@rate and per branch.
+
+    Mirrors the observer's _runtime_rates sampling: complete cells only, wall
+    seconds divided by exact stored parameters over 1e9, same validity guards.
+    Unlike the observer there is no synthetic default rate; with zero measured
+    samples both maps are empty and callers keep the honest "ETA learning"
+    rendering.
+    """
+    branch_samples: dict[str, list[float]] = {}
+    keyed_samples: dict[str, list[float]] = {}
+    for cell in campaign["cells"]:
+        if cell.get("status") != "complete":
+            continue
+        started = _parse_time(cell.get("started_at"))
+        completed = _parse_time(cell.get("completed_at"))
+        parameters = cell.get("exact_stored_parameter_count")
+        if started is None or completed is None or completed <= started \
+                or isinstance(parameters, bool) or not isinstance(parameters, int) \
+                or parameters <= 0:
+            continue
+        sample = ((completed - started).total_seconds()
+                  / (parameters / 1_000_000_000))
+        branch_samples.setdefault(str(cell["branch"]), []).append(sample)
+        keyed_samples.setdefault(
+            f"{cell['branch']}@{cell['rate_id']}", []).append(sample)
+    all_samples = [value for values in branch_samples.values() for value in values]
+    if not all_samples:
+        return {}, {}
+    fallback = statistics.median(all_samples)
+    branches = {str(cell["branch"]) for cell in campaign["cells"]}
+    branch_rates = {
+        branch: statistics.median(branch_samples[branch])
+        if branch_samples.get(branch) else fallback
+        for branch in branches
+    }
+    keys = {f"{cell['branch']}@{cell['rate_id']}" for cell in campaign["cells"]}
+    keyed_rates = {
+        key: statistics.median(keyed_samples[key])
+        if keyed_samples.get(key) else branch_rates[key.split("@", 1)[0]]
+        for key in keys
+    }
+    return keyed_rates, branch_rates
+
+
 def _next_rung(campaign: dict[str, Any], observer: dict[str, Any] | None
                ) -> dict[str, Any] | None:
     """Return the next active block, or the first unfinished target rung."""
@@ -601,10 +665,16 @@ def _next_rung(campaign: dict[str, Any], observer: dict[str, Any] | None
         "branch_seconds_per_billion", {})
     rates = rates if isinstance(rates, dict) else {}
     fallback = fallback if isinstance(fallback, dict) else {}
+    campaign_keyed, campaign_branch = _campaign_rates(campaign)
 
     def estimate(row: dict[str, Any]) -> float | None:
         branch, rate = str(row["branch"]), str(row["rate_id"])
         per_billion = rates.get(f"{branch}@{rate}", fallback.get(branch))
+        if not isinstance(per_billion, (int, float)):
+            # Third tier: measured campaign medians keep the ETA real while
+            # the observer projection is blocked and carries no rate keys.
+            per_billion = campaign_keyed.get(f"{branch}@{rate}",
+                                             campaign_branch.get(branch))
         parameters = row.get("exact_stored_parameter_count")
         if not isinstance(per_billion, (int, float)) \
                 or not isinstance(parameters, (int, float)):
@@ -671,9 +741,17 @@ def _eta_block(campaign: dict[str, Any], observer: dict[str, Any] | None) -> lis
         next_line = (f"Next block: {next_rung['model_label']} @ {next_rung['rate_id']} bpw"
                      " — ETA learning")
 
-    boundary = ((observer or {}).get("eta") or {}).get("to_120b_boundary", {})
+    eta = (observer or {}).get("eta")
+    eta = eta if isinstance(eta, dict) else {}
+    boundary = eta.get("to_120b_boundary", {})
     point_at = boundary.get("point_at") if isinstance(boundary, dict) else None
     overall_line = "Overall sub-120B: ETA learning"
+    if eta.get("confidence") == "blocked":
+        reason = eta.get("reason")
+        reason = reason if isinstance(reason, str) and reason else "simulation blocked"
+        blocked = campaign.get("counts", {}).get("blocked-execution", 0)
+        overall_line = (f"Overall sub-120B: blocked, {blocked} blocked-execution"
+                        f" ({reason})")
     if isinstance(point_at, str):
         try:
             point = dt.datetime.fromisoformat(point_at).astimezone()
@@ -685,7 +763,46 @@ def _eta_block(campaign: dict[str, Any], observer: dict[str, Any] | None) -> lis
                             f" (~{_duration(remaining)} remaining, provisional)")
         except ValueError:
             pass
-    return ["ETA", next_line, overall_line]
+    lines = ["ETA", next_line, overall_line]
+    through = eta.get("through_120b")
+    through = through if isinstance(through, dict) else {}
+    through_at = through.get("point_at")
+    if isinstance(through_at, str):
+        try:
+            point = dt.datetime.fromisoformat(through_at).astimezone()
+            remaining = (point - dt.datetime.now(dt.timezone.utc).astimezone()).total_seconds()
+            date = point.strftime("%b %d").replace(" 0", " ")
+            clock = point.strftime("%I:%M %p").lstrip("0")
+            zone = point.tzname() or "local"
+            lines.append(f"120B: {date}, {clock} {zone}"
+                         f" (~{_duration(remaining)} remaining, provisional)")
+        except ValueError:
+            pass
+    elif isinstance(through.get("reason"), str) and through["reason"]:
+        lines.append(f"120B: gated ({through['reason']})")
+    return lines
+
+
+def _horizon_block(campaign: dict[str, Any],
+                   observer: dict[str, Any] | None) -> list[str]:
+    """Planning-only wall-clock projections for the post-120B horizon models."""
+    eta = (observer or {}).get("eta")
+    eta = eta if isinstance(eta, dict) else {}
+    branch_rates = eta.get("branch_seconds_per_billion")
+    branch_rates = branch_rates if isinstance(branch_rates, dict) else {}
+    per_billion = branch_rates.get("codec_control")
+    if not isinstance(per_billion, (int, float)):
+        _, branch_medians = _campaign_rates(campaign)
+        per_billion = branch_medians.get("codec_control")
+    lines = ["Post-120B horizon"]
+    for name, display, parameters in POST_120B_HORIZON:
+        if isinstance(per_billion, (int, float)):
+            projection = f"~{_duration(float(per_billion) * parameters / 1_000_000_000)}"
+        else:
+            projection = "rate learning"
+        lines.append(f"{name} {display}: {projection} "
+                     "(planning projection, scaffold only, not scheduled)")
+    return lines
 
 
 def format_rung(rung: dict[str, Any], campaign: dict[str, Any],
@@ -775,6 +892,7 @@ def format_rung(rung: dict[str, Any], campaign: dict[str, Any],
     else:
         lines.append("Best: unavailable (quality metrics missing)")
     lines += [""] + _eta_block(campaign, observer)
+    horizon_index = len(lines)
     progress = _progress(campaign)
     health = _health()
     lines += [
@@ -788,7 +906,13 @@ def format_rung(rung: dict[str, Any], campaign: dict[str, Any],
         f"thermal {'green' if health['thermal_green'] else 'warning'}",
     ]
     lines += ["", "Provisional until the signed physical release gate."]
-    return "\n".join(lines)[:MAX_MESSAGE_CHARS]
+    with_horizon = (lines[:horizon_index] + [""]
+                    + _horizon_block(campaign, observer) + lines[horizon_index:])
+    message = "\n".join(with_horizon)
+    if len(message) > MAX_MESSAGE_CHARS:
+        # Horizon lines are planning color only: drop them before truncating.
+        message = "\n".join(lines)
+    return message[:MAX_MESSAGE_CHARS]
 
 
 def _send(text: str) -> dict[str, Any]:

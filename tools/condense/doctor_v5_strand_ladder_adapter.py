@@ -215,7 +215,7 @@ def build_spec(*, label: str, rate_id: str, cell_id: str,
         raise AdapterError("evaluation mode violates the dense-reconstruction admission gate")
     if any(isinstance(v, bool) or not isinstance(v, int) or v <= 0
            for v in (disk_reserve_bytes, scratch_budget_bytes, threads)) \
-            or disk_reserve_bytes < 150_000_000_000 or not 1 <= threads <= 32:
+            or disk_reserve_bytes < 50_000_000_000 or not 1 <= threads <= 32:
         raise AdapterError("resource values are invalid")
 
     parameter_path = PARAMETER_MANIFEST_DIR / f"{label}.json"
@@ -721,7 +721,7 @@ def main(argv: list[str] | None = None) -> int:
     build.add_argument("--resource-admission-sha256", required=True)
     build.add_argument("--evaluation-mode", choices=("auto", "resident", "deferred"),
                        default="auto")
-    build.add_argument("--disk-reserve-bytes", type=int, default=150_000_000_000)
+    build.add_argument("--disk-reserve-bytes", type=int, default=50_000_000_000)
     build.add_argument("--scratch-budget-bytes", type=int, required=True)
     build.add_argument("--threads", type=int, default=8)
     build.add_argument("--output", required=True, type=Path)

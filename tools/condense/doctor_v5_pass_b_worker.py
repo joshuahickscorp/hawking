@@ -58,7 +58,7 @@ PHASES = (
     "reconstruction_capability", "receipt",
 )
 MAX_JSON_BYTES = 32 * 1024 * 1024
-DEFAULT_DISK_RESERVE_BYTES = 150_000_000_000
+DEFAULT_DISK_RESERVE_BYTES = 50_000_000_000
 # macOS can retain a tiny swap allocation after pressure has fully recovered.
 # Treat up to 1 GiB as residue when the independent memory-pressure probe is
 # normal; the ultra supervisor keeps 28 GB of pool headroom and sheds lanes on

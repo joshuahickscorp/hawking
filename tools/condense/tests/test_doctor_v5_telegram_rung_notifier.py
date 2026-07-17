@@ -483,6 +483,123 @@ class TelegramRungNotifierTests(unittest.TestCase):
         self.assertIn("4/320 terminal", text)
         self.assertIn("provisional", text)
 
+    def test_next_rung_falls_back_to_campaign_rates_when_observer_blocked(self) -> None:
+        fixture = campaign_fixture()
+        for cell in fixture["cells"][:4]:
+            cell.update({
+                "started_at": "2026-07-16T00:00:00+00:00",
+                "completed_at": "2026-07-16T00:10:00+00:00",
+                "exact_stored_parameter_count": 1_000_000_000,
+            })
+        for offset, branch in enumerate(notifier.BRANCHES, start=4):
+            fixture["cells"][offset].update({
+                "model_label": "0.5B", "rate_id": "3", "branch": branch,
+                "status": "pending",
+                "exact_stored_parameter_count": 500_000_000,
+            })
+        observer = {"eta": {
+            "confidence": "blocked",
+            "reason": "one or more admitted cells are blocked-execution",
+        }}
+        estimate = notifier._next_rung(fixture, observer)
+        self.assertEqual("0.5B", estimate["model_label"])
+        self.assertEqual("3", estimate["rate_id"])
+        self.assertEqual(1200.0, estimate["remaining_seconds"])
+
+    def test_eta_block_renders_blocked_reason_and_count(self) -> None:
+        fixture = campaign_fixture()
+        fixture["counts"]["blocked-execution"] = 8
+        observer = {"eta": {
+            "confidence": "blocked",
+            "reason": "one or more admitted cells are blocked-execution",
+            "to_120b_boundary": {"point_seconds": None, "point_at": None},
+        }}
+        text = "\n".join(notifier._eta_block(fixture, observer))
+        self.assertIn(
+            "Overall sub-120B: blocked, 8 blocked-execution "
+            "(one or more admitted cells are blocked-execution)",
+            text,
+        )
+        self.assertNotIn("Overall sub-120B: ETA learning", text)
+
+    def test_eta_block_renders_through_120b_point(self) -> None:
+        fixture = campaign_fixture()
+        observer = {"eta": {
+            "to_120b_boundary": {"point_at": "2099-08-14T08:00:53+00:00"},
+            "through_120b": {"point_at": "2099-08-20T08:00:53+00:00"},
+        }}
+        text = "\n".join(notifier._eta_block(fixture, observer))
+        self.assertIn("Overall sub-120B: Aug 14", text)
+        self.assertIn("120B: Aug 20", text)
+        self.assertIn("remaining, provisional", text)
+
+    def test_eta_block_renders_through_120b_gated_reason(self) -> None:
+        fixture = campaign_fixture()
+        observer = {"eta": {
+            "confidence": "provisional",
+            "to_120b_boundary": {"point_at": "2099-08-14T08:00:53+00:00"},
+            "through_120b": {
+                "point_seconds": None, "point_at": None,
+                "reason": "120B campaign is not fully wired/reviewed/executable",
+            },
+        }}
+        lines = notifier._eta_block(fixture, observer)
+        self.assertIn(
+            "120B: gated (120B campaign is not fully wired/reviewed/executable)",
+            lines,
+        )
+
+    def test_horizon_lines_marked_planning_projection(self) -> None:
+        fixture = campaign_fixture()
+        observer = {"eta": {"branch_seconds_per_billion": {"codec_control": 600.0}}}
+        lines = notifier._horizon_block(fixture, observer)
+        self.assertIn("DeepSeek-V4-Flash 284B: ~47.3h "
+                      "(planning projection, scaffold only, not scheduled)", lines)
+        self.assertIn("Kimi-K2.6 1.1T: ~7.6d "
+                      "(planning projection, scaffold only, not scheduled)", lines)
+        self.assertIn("DeepSeek-V4-Pro 1.6T: ~11.1d "
+                      "(planning projection, scaffold only, not scheduled)", lines)
+        for cell in fixture["cells"][:4]:
+            cell.update({
+                "started_at": "2026-07-16T00:00:00+00:00",
+                "completed_at": "2026-07-16T00:10:00+00:00",
+                "exact_stored_parameter_count": 1_000_000_000,
+            })
+        fallback_lines = notifier._horizon_block(fixture, None)
+        self.assertIn("DeepSeek-V4-Flash 284B: ~47.3h "
+                      "(planning projection, scaffold only, not scheduled)",
+                      fallback_lines)
+
+    def test_horizon_lines_dropped_before_truncation(self) -> None:
+        row = {"actual_bpw": 3.9, "target_bpw": 4.0,
+               "physical_target_met": True, "ppl_delta": 0.02,
+               "capability_delta": 0.0, "wall_seconds": 3600,
+               "attempts": 1, "quality_status": "provisional"}
+        fixture = campaign_fixture()
+        rung = {
+            "event_id": "rung/0.5B/4bpw",
+            "model_label": "0.5B",
+            "rate_id": "4",
+            "cells": fixture["cells"][:4],
+            "metrics": {branch: dict(row) for branch in notifier.BRANCHES},
+            "dispositions": {},
+            "evidence_root_sha256": "b" * 64,
+        }
+        observer = {"eta": {"branch_seconds_per_billion": {"codec_control": 600.0}}}
+        with mock.patch.object(notifier, "_health", return_value={
+            "pressure": 1, "swap_mb": 10.0,
+            "disk_free_gb": 200.0, "thermal_green": True,
+        }):
+            full = notifier.format_rung(rung, fixture, observer)
+            self.assertIn("Post-120B horizon", full)
+            self.assertIn("planning projection", full)
+            budget = len(full) - 1
+            with mock.patch.object(notifier, "MAX_MESSAGE_CHARS", budget):
+                trimmed = notifier.format_rung(rung, fixture, observer)
+        self.assertNotIn("planning projection", trimmed)
+        self.assertLessEqual(len(trimmed), budget)
+        self.assertIn("Provisional until the signed physical release gate.", trimmed)
+
 
 if __name__ == "__main__":
     unittest.main()

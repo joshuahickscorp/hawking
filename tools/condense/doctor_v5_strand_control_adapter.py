@@ -42,7 +42,7 @@ OPERATION = "condense_pilot"
 PROFILE = "strand-scalar-quality-rhtcols-v1"
 INTERNAL_DIR_NAME = "strand_q4_control"
 MAX_JSON_BYTES = 32 * 1024 * 1024
-DEFAULT_DISK_RESERVE_BYTES = 150_000_000_000
+DEFAULT_DISK_RESERVE_BYTES = 50_000_000_000
 DEFAULT_SCRATCH_BYTES = 12_000_000_000
 HEX64 = re.compile(r"[0-9a-f]{64}")
 
