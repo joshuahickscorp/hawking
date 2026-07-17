@@ -302,7 +302,10 @@ struct ChatMessage {
     content: Option<String>,
     #[serde(default)]
     tool_calls: Option<Vec<serde_json::Value>>,
+    // Accepted for OpenAI wire compatibility (the id a tool result refers back to);
+    // parsed for round-trip completeness, not yet read in rendering.
     #[serde(default)]
+    #[allow(dead_code)]
     tool_call_id: Option<String>,
     // Accepted for OpenAI wire compatibility (the function name on a tool result);
     // not yet used in rendering.
