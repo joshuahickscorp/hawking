@@ -186,6 +186,76 @@ def cmd_gc_plan(args) -> dict[str, Any]:
             "with a real candidate set", "vocabulary": "see succ_gc.selftest for the safety gates"}
 
 
+def cmd_frontier(args) -> dict[str, Any]:
+    import succ_frontier
+    man = succ_frontier.frontier_manifest()
+    if args.out:
+        from eco_common import atomic_write_json
+        atomic_write_json(args.out, man)
+    return {"manifest_sha256": man["manifest_sha256"], "row_ids": man["row_ids"],
+            "regimes_selected": man["regimes_selected"],
+            "heavy_execution_order": man["heavy_execution_order"],
+            "parents": [{"row_id": r["row_id"], "status": r["current_status"],
+                         "regime": r["selected_regime"], "revision": r["exact_revision"][:12],
+                         "source_gb": r["envelopes"]["source_gb"],
+                         "resident_ceiling_bpw": r["physical_fit"]["resident_ceiling_bpw"],
+                         "blockers": len(r["blockers"])} for r in man["parents"]]}
+
+
+def cmd_frontier_fit(args) -> dict[str, Any]:
+    import succ_frontier
+    out = {}
+    for p in succ_frontier.PARENTS:
+        fit = succ_frontier.physical_fit(p)
+        out[p.row_id] = {"regime": fit["selected_regime"],
+                         "resident_ceiling_bpw": fit["resident_ceiling_bpw"],
+                         "anchor_fit": fit["anchor_fit"], "hybrid": fit["hybrid"],
+                         "source_gb": fit["source_bytes_gb"]}
+    return {"device_envelope": succ_frontier.default_envelope().as_dict(), "fit": out}
+
+
+def cmd_frontier_admit(args) -> dict[str, Any]:
+    """Upsert the 3 giant-parent rows into the durable controller queue (supervisor-loaded)."""
+    import succ_frontier, succ_queue
+    q = succ_queue.Queue()
+    admitted = []
+    for row in succ_frontier.queue_rows():
+        q.upsert(row)
+        admitted.append(row["parent_label"])
+    return {"admitted_to_durable_queue": admitted, "queue": succ_queue.Queue().summary()}
+
+
+def cmd_frontier_twin(args) -> dict[str, Any]:
+    try:
+        import succ_twin, succ_frontier
+    except Exception as exc:  # noqa: BLE001
+        return {"error": f"succ_twin not available: {exc}"}
+    out = {}
+    for p in succ_frontier.PARENTS:
+        try:
+            v = succ_twin.validate_twin(p)
+            out[p.row_id] = {"all_green": v.get("all_green"),
+                             "checks": {k: (val.get("pass") if isinstance(val, dict) else val)
+                                        for k, val in (v.get("checks") or {}).items()}}
+        except Exception as exc:  # noqa: BLE001
+            out[p.row_id] = {"error": type(exc).__name__}
+    return out
+
+
+def cmd_frontier_press_plan(args) -> dict[str, Any]:
+    try:
+        import succ_press, succ_frontier
+    except Exception as exc:  # noqa: BLE001
+        return {"error": f"succ_press not available: {exc}"}
+    out = {}
+    for p in succ_frontier.PARENTS:
+        try:
+            out[p.row_id] = succ_press.press_plan(p)
+        except Exception as exc:  # noqa: BLE001
+            out[p.row_id] = {"error": type(exc).__name__}
+    return out
+
+
 def cmd_harvest(args) -> dict[str, Any]:
     import succ_harvest
     ds = succ_harvest.harvest(args.campaign_root)
@@ -271,6 +341,11 @@ def build_parser() -> argparse.ArgumentParser:
                  "drain", "verify", "transition-status", "gc-plan"):
         sub.add_parser(name)
     qp = sub.add_parser("queue"); qp.add_argument("--model", default=None)
+    fp = sub.add_parser("frontier"); fp.add_argument("--out", default=None)
+    sub.add_parser("frontier-fit")
+    sub.add_parser("frontier-admit")
+    sub.add_parser("frontier-twin")
+    sub.add_parser("frontier-press-plan")
     hp = sub.add_parser("harvest"); hp.add_argument("--out", default=None)
     rp = sub.add_parser("retire-plan"); rp.add_argument("--out", default=None)
     sub.add_parser("eta")
@@ -295,7 +370,9 @@ DISPATCH = {
     "transition-status": cmd_transition_status, "gc-plan": cmd_gc_plan, "telegram": cmd_telegram,
     "calibrate": cmd_calibrate, "watch": cmd_watch, "arm-template": cmd_arm_template,
     "watch-plist": cmd_watch_plist, "harvest": cmd_harvest, "retire-plan": cmd_retire_plan,
-    "eta": cmd_eta,
+    "eta": cmd_eta, "frontier": cmd_frontier, "frontier-fit": cmd_frontier_fit,
+    "frontier-admit": cmd_frontier_admit, "frontier-twin": cmd_frontier_twin,
+    "frontier-press-plan": cmd_frontier_press_plan,
 }
 
 

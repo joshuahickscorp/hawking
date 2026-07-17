@@ -106,6 +106,33 @@ current disk occupancy, not a missing device row.
 Append one paragraph per wave: what ran, verdict, category movement, next lever. No wave ends without a
 committed (approved) artifact.
 
+- Wave F5 (2026-07-17, High-Parameter Frontier Program: 685B/1T/1.6T preparation layer): built the giant-parent
+  preparation layer (heavy conversion gated: sources 595-1371 GB vs 175 GB free disk; legacy 72B still running,
+  untouched). SOURCE AUTHORITY bound by READ-ONLY HF metadata fetch (not from memory), with exact revisions +
+  geometry, correcting the directive's hypotheses where the real config differed: DeepSeek-V3.2 685B (rev
+  a7e62ac, 256 experts/8-selected/1-shared, MLA, MTP=1, ~bf16 1371GB); Kimi-K2.6 1T (rev 7eb5002,
+  KimiK25ForConditionalGeneration = MULTIMODAL so text-core/full claim split is real, 384/8/1, MTP=0, INT4
+  595GB); DeepSeek-V4-Pro 1.6T (rev b5968e9, 384 experts/6-selected [NOT 8], native FP4/FP8 ~0.54 B/param
+  [directive's FP4 confirmed], MTP=1, 865GB). MODULES (5 new succ_*.py + 2 test files, 111 tests green):
+  succ_frontier (exact geometry + physical fit with the OFFICIAL-total denominator: V3.2@0.80=68.5GB and
+  Kimi@0.55=68.75GB fit the 72GB safe envelope -> RESIDENT_EXTREME; V4-Pro@0.38=76GB -> HYBRID_EXPERT_EXTREME,
+  resident ceiling 0.36; 3 durable rows admitted to the controller queue with honest waiting_adapter blockers);
+  succ_twin (MANDATORY synthetic geometry twins + systems battery - ALL THREE twins GREEN 8/8:
+  deterministic_conversion, round_trip_integrity, bounded_rss, source_range_resume, expert_paging HOT/WARM/COLD,
+  crash_recovery, flock duplicate_launch_prevention, output_layout - the acquisition gate is PASSED);
+  succ_press (remote bounded-stream Press: 4 deterministic passes, every byte in the shard manifest, resume-not-
+  restart, deterministic global reduction; press_plan proves PEAK DISK ~9-15 GB per giant parent vs 595-1371 GB
+  source = a giant parent IS convertible on this disk-walled box via bounded streaming, the key feasibility
+  result); succ_adapter_frontier (fail-closed adapter contracts for deepseek_v32/kimi_k25/deepseek_v4: run
+  refuses exit 78, capabilities all-pending, claim components CORE/CORE+MTP and K2.6_TEXT_CORE/FULL_MULTIMODAL);
+  succ_atlas (NON-COMPETING resource atlas: read-only 28-core/96GiB inventory + harvest-derived per-branch
+  sec/billion; full CPU/GPU/storage benchmark deferred post-release since it would compete with the live worker).
+  CLI: frontier/frontier-fit/frontier-admit/frontier-twin/frontier-press-plan wired. Source authority + frontier
+  manifest sealed under the successor namespace. NON-INTERFERENCE held (no campaign-namespace write, nothing
+  heavy launched, twins/press are offline fixtures). Honest gaps: the twin/press codecs are reversible
+  stand-ins (systems path proven, not compression quality); the safetensors header prefetch for per-tensor byte
+  ranges and the live disk-floor gate in run_pass are the remaining production wiring; real acquisition + heavy
+  conversion run only post-release + admission. Committed to PR #23; no merge, no activation.
 - Wave F4 (2026-07-17, empirical evidence sealed + retirement/ETA/Telegram wired): continuation. RECOVERED the
   three interrupted prior-session workflows (in session dc930fd4, NOT this one): doctor-boundary-optimization-map
   COMPLETED (5/5, read-only map + adversarial verify that had cross-checked a 140-row harvest 139/139 vs raw
