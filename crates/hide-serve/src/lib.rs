@@ -252,7 +252,12 @@ mod tests {
     use tower::ServiceExt; // oneshot
 
     fn host_for_test() -> Arc<BackendHost> {
-        let dir = std::env::temp_dir().join(format!("hide_serve_{}", now_ms()));
+        // Unique per call: cargo runs tests in parallel, and a now_ms()-only name collides
+        // when two tests start in the same millisecond, sharing a host and leaking events.
+        use std::sync::atomic::{AtomicU64, Ordering};
+        static COUNTER: AtomicU64 = AtomicU64::new(0);
+        let uniq = COUNTER.fetch_add(1, Ordering::Relaxed);
+        let dir = std::env::temp_dir().join(format!("hide_serve_{}_{}", now_ms(), uniq));
         let mut config = HideConfig::for_workspace(&dir);
         // Allow shell so the RunCommand intent round-trips end to end.
         config.security.shell_default = Decision::Allow;
