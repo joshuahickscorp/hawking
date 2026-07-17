@@ -339,6 +339,91 @@ def test_deliverables_seal():
     assert sealed(val, "validation_sha256") and val["all_selftests_ok"]
 
 
+# -- integration: selector binding applies G(x) as priority-only ------------------------
+def test_selector_binding_applies_gravity_priority():
+    import succ_engine as eng
+    states = {"72B": g.new_parent_state("72B")}
+    plan = {"parents": [{"binding": {"model_label": "72B"}, "params_b": 72.7,
+                         "event_horizon_bracket": {"lowest_pass_bpw": None},
+                         "boundary_probes_needed": [
+                             {"rate_bpw": 0.8, "current_verdict": "INCONCLUSIVE",
+                              "next_feasibility_tier": "F1", "doctor_program": {"promote": []}},
+                             {"rate_bpw": 4.0, "current_verdict": "INCONCLUSIVE",
+                              "next_feasibility_tier": "F3_full_model_quality", "doctor_program": {"promote": []}},
+                         ]}]}
+    plain = eng.next_experiment(plan)
+    bonus = g.gravity_bonus_binding(states, gp.build_policy_manifest())
+    governed = eng.next_experiment(plan, gravity_bonus=bonus)
+    # Gravity pulls the sub-bit (0.8) probe to the top; the plain selector need not
+    assert governed["selected"]["rate_bpw"] == 0.8
+    assert "gravity_bonus" in governed["selected"]
+    # and it never touches the quality verdict
+    assert governed["selected"]["verdict"] == "INCONCLUSIVE"
+
+
+# -- integration: EXTREME finalization gate refuses unjustified >1 BPW EXTREME -----------
+def test_finalize_extreme_gate_refuses_unjustified():
+    rows = [
+        {"model_label": "72B", "tier": "EXTREME", "whole_bpw": 1.5},   # above 1, no receipt
+        {"model_label": "685B", "tier": "EXTREME", "whole_bpw": 0.72},  # sub-bit, allowed
+    ]
+    states = {"72B": g.new_parent_state("72B"), "685B": g.new_parent_state("685B")}
+    out = g.finalize_extreme_gate(rows, states, receipts={})
+    refused_labels = {r["label"] for r in out["refused"]}
+    allowed_labels = {r.get("model_label") for r in out["allowed"]}
+    assert "72B" in refused_labels          # >1 BPW EXTREME without coverage+receipt: refused
+    assert "685B" in allowed_labels         # sub-bit EXTREME: allowed
+    # with coverage + a valid receipt, the >1 BPW row is allowed
+    states["72B"]["representation_families_tested"] = [
+        {"family": "binary_latent_factors", "evidence_level": "F2"},
+        {"family": "additive_codebooks", "evidence_level": "F2"}]
+    receipts = {"72B": {"escape_receipt": gr._fully_justified_example()}}
+    out2 = g.finalize_extreme_gate(rows, states, receipts=receipts)
+    assert "72B" not in {r["label"] for r in out2["refused"]}
+
+
+# -- integration: Gravity notifications compose in the approved terse style --------------
+def test_gravity_notifications_compose():
+    composed = g.notify_gravity("gravity_event_horizon",
+                                {"parent": "72B", "rate": "4/5", "whole_bpw": 0.83}, dry_run=True)
+    assert composed["text"].startswith("🕳 Hawking successor: Event Horizon")
+    assert "Provisional until the signed physical release gate." in composed["text"]
+    # unknown kind fails closed
+    with pytest.raises(g.GravityEngineError):
+        g.notify_gravity("not_a_kind", {}, dry_run=True)
+    # injectable emit is used for real sends
+    seen = {}
+    def fake_emit(kind, ctx):
+        seen["kind"] = kind
+        return {"status": "sent"}
+    r = g.notify_gravity("gravity_ascend", {"parent": "72B", "from_rate": "1/2", "to_rate": "4/5"},
+                         emit=fake_emit, dry_run=False)
+    assert seen["kind"] == "gravity_ascend" and r["status"] == "sent"
+
+
+# -- integration: Gravity daily summary carries the required fields ----------------------
+def test_gravity_daily_summary_fields():
+    states = {label: g.new_parent_state(label) for label in gp.PARENT_PRIORS}
+    summ = g.gravity_daily_summary(states, digest_date="2026-07-17")
+    assert summ["digest_date"] == "2026-07-17"
+    p72 = next(p for p in summ["parents"] if p["parent"] == "72B")
+    for field in ("gravity_enabled", "stress_start_rate", "current_rate", "current_representation",
+                  "escape_receipt_state", "next_experiment", "eta_range"):
+        assert field in p72
+    assert p72["stress_start_rate"] == "4/5"
+
+
+# -- integration: arm_frontier arms but never launches ----------------------------------
+def test_arm_frontier_is_launch_gated():
+    doc = g.arm_frontier(live_parent="72B", source_manifest_sha256="a" * 64)
+    assert sealed(doc, "frontier_armed_sha256")
+    assert doc["operational_status"] == "integrated_armed_launch_gated"
+    assert doc["launch_gate"]["launchable_now"] is False
+    assert doc["gravity_enabled"] is False        # default-off; heavy launch deferred
+    assert set(doc["giant_frontier_rows_augmented"]) == {
+        "deepseek-v3.2-685b", "kimi-k2.6-1t", "deepseek-v4-pro-1.6t"}
+
+
 # -- default-off: nothing activates until every gate holds ------------------------------
 def test_default_off_until_all_gates():
     pol = gp.default_policy()

@@ -465,7 +465,11 @@ def build_policy_manifest() -> dict[str, Any]:
                      "above sub-bit is permitted only with a sealed Escape Receipt."),
         "invariant": INVARIANT,
         "enabled": False,
-        "activation_gates": {g: False for g in _ACTIVATION_GATES},
+        # Gravity is INTEGRATED (wired into the successor spine) and ARMED, but heavy launch is
+        # gated: schemas validated, yet the release boundary is unsigned, admission cannot pass
+        # while the legacy campaign holds the heavy lease, and no sub-1-bit packer exists yet.
+        "operational_status": "integrated_armed_launch_gated",
+        "activation_gates": {**{g: False for g in _ACTIVATION_GATES}, "schemas_validated": True},
         "env_flag": "HAWKING_GRAVITY_ENABLED",
         "rate_ladder": [rate_identity(r) for r in RATE_LADDER],
         "doctor_reserve_prior": rate_identity(DOCTOR_RESERVE_PRIOR),

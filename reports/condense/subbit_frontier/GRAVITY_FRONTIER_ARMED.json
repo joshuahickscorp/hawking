@@ -1,0 +1,97 @@
+{
+  "frontier_armed_sha256": "751c932193094624f80982d4137ba6b6c2081e5859875fb3e9ad668fd260fdfc",
+  "generated_at": "2026-07-17T20:38:32+00:00",
+  "giant_frontier_rows_augmented": [
+    "deepseek-v3.2-685b",
+    "kimi-k2.6-1t",
+    "deepseek-v4-pro-1.6t"
+  ],
+  "gravity_enabled": false,
+  "launch_gate": {
+    "launchable_now": false,
+    "reasons": [
+      "gravity default-off (not enabled)",
+      "resource admission not passed",
+      "heavy lease held by doctor_v5_disk25_successor (would be a second heavy controller)"
+    ]
+  },
+  "live_parent": "72B",
+  "note": "armed and Gravity-governed; heavy launch deferred until the heavy lease is free AND a sub-1-bit deployable packer exists. Nothing launched.",
+  "operational_status": "integrated_armed_launch_gated",
+  "schema": "hawking.gravity.frontier_armed.v1",
+  "source_bound_programs": {
+    "higher_rate_fallback": {
+      "adapter_id": "doctor-v5-strand-ladder-qwen25-dense",
+      "architecture_family": "qwen2.5-dense",
+      "created_at": "2026-07-17T20:38:32+00:00",
+      "doctor_program": {
+        "note": "diagnose-first",
+        "promote": []
+      },
+      "hf_or_source_id": "Qwen/Qwen2.5-72B-Instruct",
+      "is_subbit": false,
+      "kind": "higher_rate_fallback",
+      "lane": "hawking-gravity-oracle-first",
+      "launch_gate": {
+        "gravity_enabled": false,
+        "heavy_lease_free": false,
+        "release_boundary_signed": false,
+        "resource_admission_passed": false,
+        "source_program_executable": true
+      },
+      "parent_label": "72B",
+      "program_sha256": "2b988612e75c82b4f4ea8b70fa8d711df8ee6d0dc75c1d3eb97663f36892c717",
+      "rate": {
+        "den": 2,
+        "label": "3/2",
+        "num": 3,
+        "value": 1.5
+      },
+      "representation_family": "scalar_trellis_tqv2",
+      "required_controls": [
+        "zero_treatment",
+        "equal_byte_codec",
+        "smaller_higher_bit"
+      ],
+      "schema": "hawking.gravity.program.v1",
+      "source_manifest_sha256": "e97955f438759b1a4bbd79fa82ecd0dd7a164a939e7af77158523434d9a6d95b"
+    },
+    "parent_label": "72B",
+    "subbit_stress": {
+      "adapter_id": "doctor-v5-strand-ladder-qwen25-dense",
+      "architecture_family": "qwen2.5-dense",
+      "created_at": "2026-07-17T20:38:32+00:00",
+      "doctor_program": {
+        "note": "diagnose-first",
+        "promote": []
+      },
+      "hf_or_source_id": "Qwen/Qwen2.5-72B-Instruct",
+      "is_subbit": true,
+      "kind": "subbit_stress",
+      "lane": "hawking-gravity-oracle-first",
+      "launch_gate": {
+        "gravity_enabled": false,
+        "heavy_lease_free": false,
+        "release_boundary_signed": false,
+        "resource_admission_passed": false,
+        "source_program_executable": true
+      },
+      "parent_label": "72B",
+      "program_sha256": "794b7d2a69237ac77d6ed60adad46c0387dd9889b37ac2db662c29ee17a5b801",
+      "rate": {
+        "den": 5,
+        "label": "4/5",
+        "num": 4,
+        "value": 0.8
+      },
+      "representation_family": "scalar_trellis_tqv2",
+      "required_controls": [
+        "zero_treatment",
+        "equal_byte_codec",
+        "smaller_higher_bit"
+      ],
+      "schema": "hawking.gravity.program.v1",
+      "source_manifest_sha256": "e97955f438759b1a4bbd79fa82ecd0dd7a164a939e7af77158523434d9a6d95b"
+    }
+  }
+}

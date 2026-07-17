@@ -2,7 +2,7 @@
   "activation_gates": {
     "release_boundary_signed": false,
     "resource_admission_passed": false,
-    "schemas_validated": false,
+    "schemas_validated": true,
     "source_program_executable": false,
     "successor_authorized": false
   },
@@ -50,7 +50,7 @@
     "same_rate_different_doctor_treatment",
     "slightly_higher_rate"
   ],
-  "generated_at": "2026-07-17T20:10:39+00:00",
+  "generated_at": "2026-07-17T20:38:32+00:00",
   "invariant": {
     "default_search_direction": "upward from a parent-specific sub-bit stress point",
     "default_target_region": "physical whole-artifact BPW < 1.0",
@@ -60,6 +60,7 @@
     "physical_accounting": "complete whole artifact",
     "quality_contract": "unchanged"
   },
+  "operational_status": "integrated_armed_launch_gated",
   "parent_stress_starts": {
     "1.6T": {
       "first_likely_viable_bpw": "0.25-0.33",
@@ -146,7 +147,7 @@
       "subbit_is": "collapse_probe_not_resident_forced"
     }
   },
-  "policy_sha256": "f05d881cd42d96de754caba6c30ace5fcde602caa1e320e856c0a8be72b3640b",
+  "policy_sha256": "cf8d337879811abc4e49e14efe5325d4852140852a6d9acb96cfdd9c3b097217",
   "policy_version": "2026-07-17.1",
   "rate_ladder": [
     {

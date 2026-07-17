@@ -125,9 +125,15 @@ Doctor treatment` -> `slightly higher rate`.
   It holds the machine-wide heavy lease (`reports/cron/studio_heavy.lock`). Immutable.
 - Sole active heavy controller: `doctor_v5_disk25_successor.py`. Gravity must never become
   a second one.
-- Gravity is default-off. `GRAVITY_STATE.json` carries the materialized **source-bound 72B
-  sub-bit program** at `4/5` (0.80) and its **higher-rate fallback** at `3/2` (1.5). Neither
-  is launchable: `program_launchable` refuses while the lock is held and Gravity is off.
+- Gravity is **integrated and armed, launch-gated** (`operational_status:
+  integrated_armed_launch_gated`). It is wired into the successor spine (selector, EXTREME
+  gate, row augmentation, notifications), but heavy launch is refused: schemas are validated,
+  yet the release boundary is unsigned, resource admission cannot pass while the legacy
+  campaign holds the heavy lease, and no sub-1-bit packer exists. `gravity_enabled` is False.
+- `GRAVITY_STATE.json` / `GRAVITY_FRONTIER_ARMED.json` carry the materialized **source-bound
+  72B sub-bit program** at `4/5` (0.80) and its **higher-rate fallback** at `3/2` (1.5), plus
+  the three giant frontier rows augmented with Gravity state. `program_launchable` /
+  `arm_frontier` report `launchable_now: false`. Nothing is launched.
 
 Confirm the lock owner without touching it:
 
@@ -157,6 +163,15 @@ python3.12 tools/condense/succ_cli.py gravity-validate
 
 # materialize the source-bound program + higher-rate fallback (a plan; cannot launch)
 python3.12 tools/condense/succ_cli.py gravity-materialize --parent 72B
+
+# arm the Gravity-governed frontier (giant rows + 72B program; launch-gated, launches nothing)
+python3.12 tools/condense/succ_cli.py gravity-frontier --parent 72B
+
+# Gravity daily summary (per-parent stress start, current rate, coverage, next probe, ETA)
+python3.12 tools/condense/succ_cli.py gravity-daily
+
+# next experiment, now Gravity-governed (sub-bit-first priority); --no-gravity for the old order
+python3.12 tools/condense/succ_cli.py explain-next
 ```
 
 Existing controller status / drain / resume (Gravity rides the same spine):

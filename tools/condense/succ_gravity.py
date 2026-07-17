@@ -684,6 +684,144 @@ def materialize_live_parent_programs(parent_label: str, *,
     }
 
 
+# ── controller integration (wiring Gravity into the dormant successor spine) ───────────
+def gravity_bonus_binding(states: dict[str, dict[str, Any]], policy: dict[str, Any]) -> Callable[[dict[str, Any]], float]:
+    """Return a callable f(candidate)->G(x) for succ_engine.next_experiment. Gravity changes
+    scheduling PRIORITY only; the caller passes this ONLY when Gravity is enabled, so a
+    Gravity-off controller stays byte-identical."""
+    def _bonus(candidate: dict[str, Any]) -> float:
+        label = candidate.get("model_label") or candidate.get("parent") or ""
+        st = states.get(label, {}) or new_parent_state(label) if label in gp.PARENT_PRIORS else {}
+        cand = {"model_label": label, "rate": _rate_label(candidate.get("rate_bpw", candidate.get("rate"))),
+                "family": candidate.get("family"), "can_change_extreme": True, "near_boundary": True}
+        try:
+            return gravity_bonus(cand, st or {})
+        except Exception:  # noqa: BLE001 - a scoring hiccup must never break selection
+            return 0.0
+    return _bonus
+
+
+def _rate_label(rate: Any) -> str:
+    if isinstance(rate, str):
+        return rate
+    try:
+        return gp.rate_identity(Fraction(rate).limit_denominator(1000))["label"]
+    except Exception:  # noqa: BLE001
+        return str(rate)
+
+
+def finalize_extreme_gate(frontier_rows: list[dict[str, Any]], states: dict[str, dict[str, Any]],
+                          receipts: dict[str, dict[str, Any]] | None = None) -> dict[str, Any]:
+    """Enforce the EXTREME finalization law over harvest/frontier rows (section 3/5). Any row
+    whose whole-artifact BPW exceeds 1.0 and is tagged EXTREME is REFUSED unless the parent has
+    mandatory sub-bit coverage AND a valid sealed Escape Receipt. Sub-bit EXTREME rows pass
+    (Gravity does not block them; the quality contract is unchanged and enforced elsewhere)."""
+    receipts = receipts or {}
+    allowed, refused = [], []
+    for row in frontier_rows:
+        label = row.get("model_label") or row.get("parent_label") or row.get("row_id") or ""
+        whole = row.get("whole_bpw", row.get("physical_bpw"))
+        tier = str(row.get("tier") or row.get("frontier_tier") or "").upper()
+        if whole is None or tier != "EXTREME":
+            allowed.append(row)
+            continue
+        st = states.get(label, {}) or {}
+        cov = gp.subbit_coverage_status(st)
+        esc = (receipts.get(label) or {}).get("escape_receipt")
+        esc_valid = bool(esc) and gr.escape_receipt_valid(esc)[0]
+        ok, why = gp.can_finalize_extreme(whole_bpw=float(whole), coverage=cov,
+                                          escape_receipt=esc, escape_receipt_valid=esc_valid)
+        if ok:
+            allowed.append(row)
+        else:
+            refused.append({"label": label, "whole_bpw": float(whole), "reasons": why})
+    return {"allowed": allowed, "refused": refused,
+            "gate": "no EXTREME above 1.0 BPW without coverage + sealed Escape Receipt"}
+
+
+def notify_gravity(event_kind: str, context: dict[str, Any], *,
+                   emit: Callable[..., dict[str, Any]] | None = None,
+                   dry_run: bool = True) -> dict[str, Any]:
+    """Emit a Gravity notification through the successor Telegram service (terse, deduplicated,
+    reboot-safe). Dry-run composes without sending. `emit` is injectable for tests; by default
+    it uses succ_telegram.emit which is idempotent and non-raising."""
+    import succ_telegram as tg
+    if event_kind not in tg.EVENT_CATALOG:
+        raise GravityEngineError(f"unknown Gravity telegram kind {event_kind!r}")
+    if dry_run:
+        return tg.compose_event(event_kind, context)
+    sender = emit or tg.emit
+    return sender(event_kind, context)
+
+
+# Fields the Gravity daily summary must carry (section 18).
+def gravity_daily_summary(states: dict[str, dict[str, Any]], *, digest_date: str,
+                          next_by_parent: dict[str, Any] | None = None,
+                          eta_by_parent: dict[str, Any] | None = None) -> dict[str, Any]:
+    """The Gravity daily summary (section 18): per parent, its enabled flag, stress start,
+    current rate, representation, diagnosis, Doctor treatment, lowest measured failure, first
+    measured pass, Escape Receipt state, next experiment, and ETA range."""
+    next_by_parent = next_by_parent or {}
+    eta_by_parent = eta_by_parent or {}
+    parents = []
+    for label, st in states.items():
+        cov = st.get("subbit_coverage_status", {}) or {}
+        parents.append({
+            "parent": label,
+            "gravity_enabled": bool(st.get("gravity_enabled")),
+            "stress_start_rate": (st.get("initial_stress_rate") or {}).get("label"),
+            "current_rate": (st.get("current_rate") or {}).get("label"),
+            "current_representation": st.get("current_representation_family"),
+            "current_diagnosis": st.get("current_diagnosis"),
+            "doctor_treatment": st.get("current_doctor_program"),
+            "lowest_measured_failure": st.get("lowest_measured_fail"),
+            "first_measured_pass": st.get("first_passing_rate"),
+            "escape_receipt_state": "granted" if st.get("escape_receipt") else "none",
+            "coverage": {"satisfied": cov.get("satisfied", False), "route": cov.get("route")},
+            "next_experiment": next_by_parent.get(label, st.get("next_action")),
+            "eta_range": eta_by_parent.get(label, "uncalibrated"),
+        })
+    summary = {"schema": "hawking.gravity.daily_summary.v1", "digest_date": digest_date,
+               "gravity_enabled_any": any(p["gravity_enabled"] for p in parents), "parents": parents}
+    return summary
+
+
+def arm_frontier(*, live_parent: str = "72B", source_manifest_sha256: str | None = None,
+                 env: dict[str, str] | None = None) -> dict[str, Any]:
+    """Arm the new (Gravity-governed) frontier WITHOUT launching anything: build the giant
+    frontier rows augmented with Gravity state, materialize the live parent's source-bound
+    sub-bit program plus higher-rate fallback, and report the launch-gate status. Heavy launch
+    stays refused while the heavy lease is held and the sub-1-bit packer is unbuilt."""
+    import succ_frontier as sf
+    policy = gp.build_policy_manifest()
+    states = {label: new_parent_state(label) for label in gp.PARENT_PRIORS}
+    # augment the three giant frontier rows with their Gravity state (additive)
+    giant_rows = []
+    for p in sf.PARENTS:
+        base = sf.build_row(p)
+        label = getattr(p, "row_id", None)
+        st = states.get(label) or states.get(gp._ROWID_ALIAS.get(label, label), {})
+        giant_rows.append(sf.build_row(p, gravity=_gravity_row_fields(st)) if st else base)
+    programs = materialize_live_parent_programs(live_parent, source_manifest_sha256=source_manifest_sha256)
+    lock = HeavyLock(held_by="doctor_v5_disk25_successor")  # live legacy campaign holds it
+    launchable, why = program_launchable(programs["subbit_stress"], policy=gp.default_policy(),
+                                         heavy_lock=lock, env=env or {"HAWKING_GRAVITY_ENABLED": "1"},
+                                         admission_passed=False)
+    doc = {
+        "schema": "hawking.gravity.frontier_armed.v1",
+        "generated_at": now_iso(),
+        "live_parent": live_parent,
+        "gravity_enabled": gp.gravity_enabled(policy=policy, env=env),
+        "operational_status": "integrated_armed_launch_gated",
+        "giant_frontier_rows_augmented": [r["row_id"] for r in giant_rows if "row_id" in r],
+        "source_bound_programs": programs,
+        "launch_gate": {"launchable_now": launchable, "reasons": why},
+        "note": "armed and Gravity-governed; heavy launch deferred until the heavy lease is free "
+                "AND a sub-1-bit deployable packer exists. Nothing launched.",
+    }
+    return seal_field(doc, "frontier_armed_sha256")
+
+
 # ── deliverable generators (section 20) ────────────────────────────────────────────────
 def build_state_doc(parent_labels: list[str], *, live_parent: str,
                     source_manifest_sha256: str | None = None) -> dict[str, Any]:

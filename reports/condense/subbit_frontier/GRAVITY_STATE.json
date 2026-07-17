@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-07-17T20:10:39+00:00",
+  "generated_at": "2026-07-17T20:38:32+00:00",
   "gravity_enabled": false,
   "live_parent": "72B",
   "note": "default-off; programs are launch-gated and cannot execute outside admission",
   "parent_states": {
     "1.6T": {
-      "created_at": "2026-07-17T20:10:39+00:00",
+      "created_at": "2026-07-17T20:38:32+00:00",
       "current_diagnosis": null,
       "current_doctor_program": null,
       "current_evidence_level": null,
@@ -46,17 +46,17 @@
       "representation_families_tested": [],
       "resource_budget": null,
       "schema": "hawking.gravity.parent_state.v1",
-      "state_sha256": "00248e57ce2ac4ff8b75a9175b540dbfa89f6ab65d81dbbaa288ec7e9d9a161c",
+      "state_sha256": "380163d1896eee367fa80de0b808154f5f07276b725bb00404df88dfb6139e67",
       "stop_condition": null,
       "subbit_coverage_status": {
         "route": null,
         "satisfied": false
       },
       "transitions": [],
-      "updated_at": "2026-07-17T20:10:39+00:00"
+      "updated_at": "2026-07-17T20:38:32+00:00"
     },
     "120B": {
-      "created_at": "2026-07-17T20:10:39+00:00",
+      "created_at": "2026-07-17T20:38:32+00:00",
       "current_diagnosis": null,
       "current_doctor_program": null,
       "current_evidence_level": null,
@@ -97,17 +97,17 @@
       "representation_families_tested": [],
       "resource_budget": null,
       "schema": "hawking.gravity.parent_state.v1",
-      "state_sha256": "5d86a21ef2f92208f4e945f35e230a65da863154e0257e261f50ca868934035f",
+      "state_sha256": "cdd756f08312ccc12febef80ff4e1e40abb930e46fc6bc1c9ca4cf6bbc741c55",
       "stop_condition": null,
       "subbit_coverage_status": {
         "route": null,
         "satisfied": false
       },
       "transitions": [],
-      "updated_at": "2026-07-17T20:10:39+00:00"
+      "updated_at": "2026-07-17T20:38:32+00:00"
     },
     "1T": {
-      "created_at": "2026-07-17T20:10:39+00:00",
+      "created_at": "2026-07-17T20:38:32+00:00",
       "current_diagnosis": null,
       "current_doctor_program": null,
       "current_evidence_level": null,
@@ -148,17 +148,17 @@
       "representation_families_tested": [],
       "resource_budget": null,
       "schema": "hawking.gravity.parent_state.v1",
-      "state_sha256": "178244227171f169cbcfe3262edf8dca15008517de4946c49e33534f3e9dddd2",
+      "state_sha256": "6fc64dff4a0710c85fb550f7400d8a9f124a12f300b19708ce261c4f7cd674e7",
       "stop_condition": null,
       "subbit_coverage_status": {
         "route": null,
         "satisfied": false
       },
       "transitions": [],
-      "updated_at": "2026-07-17T20:10:39+00:00"
+      "updated_at": "2026-07-17T20:38:32+00:00"
     },
     "685B": {
-      "created_at": "2026-07-17T20:10:39+00:00",
+      "created_at": "2026-07-17T20:38:32+00:00",
       "current_diagnosis": null,
       "current_doctor_program": null,
       "current_evidence_level": null,
@@ -199,17 +199,17 @@
       "representation_families_tested": [],
       "resource_budget": null,
       "schema": "hawking.gravity.parent_state.v1",
-      "state_sha256": "b4f0be0f8289e90115fbf0c655a006c55661336799000443c755f0cb6a73067d",
+      "state_sha256": "43424a8a32cc440d40436c3301cb419050676c3ec62e705aa7f3fda87a1dac7e",
       "stop_condition": null,
       "subbit_coverage_status": {
         "route": null,
         "satisfied": false
       },
       "transitions": [],
-      "updated_at": "2026-07-17T20:10:39+00:00"
+      "updated_at": "2026-07-17T20:38:32+00:00"
     },
     "72B": {
-      "created_at": "2026-07-17T20:10:39+00:00",
+      "created_at": "2026-07-17T20:38:32+00:00",
       "current_diagnosis": null,
       "current_doctor_program": null,
       "current_evidence_level": null,
@@ -250,14 +250,14 @@
       "representation_families_tested": [],
       "resource_budget": null,
       "schema": "hawking.gravity.parent_state.v1",
-      "state_sha256": "690a4011c716f666716f706f299ec0eb8d4b4104d7358492ab83a8a312f4f60b",
+      "state_sha256": "8a2bba7798312f37829d6dc4c0a48293084150e114424a533053911795bd91e3",
       "stop_condition": null,
       "subbit_coverage_status": {
         "route": null,
         "satisfied": false
       },
       "transitions": [],
-      "updated_at": "2026-07-17T20:10:39+00:00"
+      "updated_at": "2026-07-17T20:38:32+00:00"
     }
   },
   "policy_version": "2026-07-17.1",
@@ -266,7 +266,7 @@
     "higher_rate_fallback": {
       "adapter_id": "doctor-v5-strand-ladder-qwen25-dense",
       "architecture_family": "qwen2.5-dense",
-      "created_at": "2026-07-17T20:10:39+00:00",
+      "created_at": "2026-07-17T20:38:32+00:00",
       "doctor_program": {
         "note": "diagnose-first",
         "promote": []
@@ -283,7 +283,7 @@
         "source_program_executable": true
       },
       "parent_label": "72B",
-      "program_sha256": "34d64e30dea7978e4a079477cefd36df00b019d3f234cbd826809f3165e15438",
+      "program_sha256": "2b988612e75c82b4f4ea8b70fa8d711df8ee6d0dc75c1d3eb97663f36892c717",
       "rate": {
         "den": 2,
         "label": "3/2",
@@ -303,7 +303,7 @@
     "subbit_stress": {
       "adapter_id": "doctor-v5-strand-ladder-qwen25-dense",
       "architecture_family": "qwen2.5-dense",
-      "created_at": "2026-07-17T20:10:39+00:00",
+      "created_at": "2026-07-17T20:38:32+00:00",
       "doctor_program": {
         "note": "diagnose-first",
         "promote": []
@@ -320,7 +320,7 @@
         "source_program_executable": true
       },
       "parent_label": "72B",
-      "program_sha256": "adb5ed79f72d9fe7ee18eb02ce29249a7ea2a899cdfbee6b05bf2733f73d6510",
+      "program_sha256": "794b7d2a69237ac77d6ed60adad46c0387dd9889b37ac2db662c29ee17a5b801",
       "rate": {
         "den": 5,
         "label": "4/5",
@@ -337,5 +337,5 @@
       "source_manifest_sha256": "e97955f438759b1a4bbd79fa82ecd0dd7a164a939e7af77158523434d9a6d95b"
     }
   },
-  "state_doc_sha256": "f2104fd828f21b6e4a44d62b7724985f884817274239f819bc62b2115b3ebb3d"
+  "state_doc_sha256": "f61c62c83569cc305cb82f03e79fdbd8f8885ee1354a5feeff31ff5237697b58"
 }
