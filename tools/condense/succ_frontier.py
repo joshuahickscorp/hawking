@@ -222,7 +222,8 @@ def _parent_status(p: GiantParent) -> tuple[str, list[str], str]:
     return "adapter_pending", blockers, "build architecture adapter + green synthetic twin"
 
 
-def build_row(p: GiantParent, env: DeviceEnvelope | None = None, *, generation: str = "gen-1") -> dict[str, Any]:
+def build_row(p: GiantParent, env: DeviceEnvelope | None = None, *, generation: str = "gen-1",
+              gravity: dict[str, Any] | None = None) -> dict[str, Any]:
     fit = physical_fit(p, env)
     status, blockers, next_transition = _parent_status(p)
     row = {
@@ -266,6 +267,10 @@ def build_row(p: GiantParent, env: DeviceEnvelope | None = None, *, generation: 
         "eta_state": "uncalibrated_no_giant_run", "telegram_state": "notify_on_state_change",
         "notes": p.notes, "created_at": now_iso(),
     }
+    # Additive Gravity augmentation of the giant queue row (master goal section 16). Present
+    # only when supplied, so an un-augmented frontier row is byte-identical to before.
+    if gravity is not None:
+        row["gravity"] = gravity
     return seal_field(row, "row_sha256")
 
 

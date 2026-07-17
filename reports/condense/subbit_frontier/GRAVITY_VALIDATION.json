@@ -1,0 +1,25 @@
+{
+  "all_selftests_ok": true,
+  "generated_at": "2026-07-17T20:38:32+00:00",
+  "invariants": {
+    "default_off": true,
+    "exact_rational_rates": true,
+    "extreme_gate_refuses_escape_without_receipt": true,
+    "resident_ceiling_72b": 7.561332957908093,
+    "whole_artifact_bpw_authoritative": true
+  },
+  "module_selftests": {
+    "engine_selftest": {
+      "ok": true
+    },
+    "policy_selftest": {
+      "ok": true
+    },
+    "receipts_selftest": {
+      "ok": true
+    }
+  },
+  "policy_version": "2026-07-17.1",
+  "schema": "hawking.gravity.validation.v1",
+  "validation_sha256": "c80c66f8c55a65d220d4bf3c713880f4d14ee47b9b23d18f10ce2a6860e0bca1"
+}

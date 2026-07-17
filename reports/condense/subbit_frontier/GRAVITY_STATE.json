@@ -1,0 +1,341 @@
+{
+  "generated_at": "2026-07-17T20:38:32+00:00",
+  "gravity_enabled": false,
+  "live_parent": "72B",
+  "note": "default-off; programs are launch-gated and cannot execute outside admission",
+  "parent_states": {
+    "1.6T": {
+      "created_at": "2026-07-17T20:38:32+00:00",
+      "current_diagnosis": null,
+      "current_doctor_program": null,
+      "current_evidence_level": null,
+      "current_rate": {
+        "den": 4,
+        "label": "1/4",
+        "num": 1,
+        "value": 0.25
+      },
+      "current_representation_family": "scalar_trellis_tqv2",
+      "doctor_treatments_attempted": [],
+      "escape_receipt": null,
+      "fallback_rate": null,
+      "families_failed_causally": [],
+      "first_passing_rate": null,
+      "fsm_state": "GRAVITY_UNINITIALIZED",
+      "gravity_enabled": false,
+      "gravity_policy_version": "2026-07-17.1",
+      "highest_measured_fail": null,
+      "highest_unproven": null,
+      "initial_stress_rate": {
+        "den": 4,
+        "label": "1/4",
+        "num": 1,
+        "value": 0.25
+      },
+      "lowest_measured_fail": null,
+      "lowest_measured_pass": null,
+      "lowest_tested_rate": null,
+      "next_action": "diagnose",
+      "parent_identity": {
+        "hf_or_source_id": "deepseek-ai/DeepSeek-V4-Pro",
+        "label": "1.6T"
+      },
+      "per_rate": {},
+      "physical_budget": null,
+      "reopening_conditions": [],
+      "representation_families_tested": [],
+      "resource_budget": null,
+      "schema": "hawking.gravity.parent_state.v1",
+      "state_sha256": "380163d1896eee367fa80de0b808154f5f07276b725bb00404df88dfb6139e67",
+      "stop_condition": null,
+      "subbit_coverage_status": {
+        "route": null,
+        "satisfied": false
+      },
+      "transitions": [],
+      "updated_at": "2026-07-17T20:38:32+00:00"
+    },
+    "120B": {
+      "created_at": "2026-07-17T20:38:32+00:00",
+      "current_diagnosis": null,
+      "current_doctor_program": null,
+      "current_evidence_level": null,
+      "current_rate": {
+        "den": 5,
+        "label": "4/5",
+        "num": 4,
+        "value": 0.8
+      },
+      "current_representation_family": "scalar_trellis_tqv2",
+      "doctor_treatments_attempted": [],
+      "escape_receipt": null,
+      "fallback_rate": null,
+      "families_failed_causally": [],
+      "first_passing_rate": null,
+      "fsm_state": "GRAVITY_UNINITIALIZED",
+      "gravity_enabled": false,
+      "gravity_policy_version": "2026-07-17.1",
+      "highest_measured_fail": null,
+      "highest_unproven": null,
+      "initial_stress_rate": {
+        "den": 5,
+        "label": "4/5",
+        "num": 4,
+        "value": 0.8
+      },
+      "lowest_measured_fail": null,
+      "lowest_measured_pass": null,
+      "lowest_tested_rate": null,
+      "next_action": "diagnose",
+      "parent_identity": {
+        "hf_or_source_id": "openai/gpt-oss-120b",
+        "label": "120B"
+      },
+      "per_rate": {},
+      "physical_budget": null,
+      "reopening_conditions": [],
+      "representation_families_tested": [],
+      "resource_budget": null,
+      "schema": "hawking.gravity.parent_state.v1",
+      "state_sha256": "cdd756f08312ccc12febef80ff4e1e40abb930e46fc6bc1c9ca4cf6bbc741c55",
+      "stop_condition": null,
+      "subbit_coverage_status": {
+        "route": null,
+        "satisfied": false
+      },
+      "transitions": [],
+      "updated_at": "2026-07-17T20:38:32+00:00"
+    },
+    "1T": {
+      "created_at": "2026-07-17T20:38:32+00:00",
+      "current_diagnosis": null,
+      "current_doctor_program": null,
+      "current_evidence_level": null,
+      "current_rate": {
+        "den": 3,
+        "label": "1/3",
+        "num": 1,
+        "value": 0.3333333333333333
+      },
+      "current_representation_family": "scalar_trellis_tqv2",
+      "doctor_treatments_attempted": [],
+      "escape_receipt": null,
+      "fallback_rate": null,
+      "families_failed_causally": [],
+      "first_passing_rate": null,
+      "fsm_state": "GRAVITY_UNINITIALIZED",
+      "gravity_enabled": false,
+      "gravity_policy_version": "2026-07-17.1",
+      "highest_measured_fail": null,
+      "highest_unproven": null,
+      "initial_stress_rate": {
+        "den": 3,
+        "label": "1/3",
+        "num": 1,
+        "value": 0.3333333333333333
+      },
+      "lowest_measured_fail": null,
+      "lowest_measured_pass": null,
+      "lowest_tested_rate": null,
+      "next_action": "diagnose",
+      "parent_identity": {
+        "hf_or_source_id": "moonshotai/Kimi-K2.6",
+        "label": "1T"
+      },
+      "per_rate": {},
+      "physical_budget": null,
+      "reopening_conditions": [],
+      "representation_families_tested": [],
+      "resource_budget": null,
+      "schema": "hawking.gravity.parent_state.v1",
+      "state_sha256": "6fc64dff4a0710c85fb550f7400d8a9f124a12f300b19708ce261c4f7cd674e7",
+      "stop_condition": null,
+      "subbit_coverage_status": {
+        "route": null,
+        "satisfied": false
+      },
+      "transitions": [],
+      "updated_at": "2026-07-17T20:38:32+00:00"
+    },
+    "685B": {
+      "created_at": "2026-07-17T20:38:32+00:00",
+      "current_diagnosis": null,
+      "current_doctor_program": null,
+      "current_evidence_level": null,
+      "current_rate": {
+        "den": 20,
+        "label": "11/20",
+        "num": 11,
+        "value": 0.55
+      },
+      "current_representation_family": "scalar_trellis_tqv2",
+      "doctor_treatments_attempted": [],
+      "escape_receipt": null,
+      "fallback_rate": null,
+      "families_failed_causally": [],
+      "first_passing_rate": null,
+      "fsm_state": "GRAVITY_UNINITIALIZED",
+      "gravity_enabled": false,
+      "gravity_policy_version": "2026-07-17.1",
+      "highest_measured_fail": null,
+      "highest_unproven": null,
+      "initial_stress_rate": {
+        "den": 20,
+        "label": "11/20",
+        "num": 11,
+        "value": 0.55
+      },
+      "lowest_measured_fail": null,
+      "lowest_measured_pass": null,
+      "lowest_tested_rate": null,
+      "next_action": "diagnose",
+      "parent_identity": {
+        "hf_or_source_id": "deepseek-ai/DeepSeek-V3.2",
+        "label": "685B"
+      },
+      "per_rate": {},
+      "physical_budget": null,
+      "reopening_conditions": [],
+      "representation_families_tested": [],
+      "resource_budget": null,
+      "schema": "hawking.gravity.parent_state.v1",
+      "state_sha256": "43424a8a32cc440d40436c3301cb419050676c3ec62e705aa7f3fda87a1dac7e",
+      "stop_condition": null,
+      "subbit_coverage_status": {
+        "route": null,
+        "satisfied": false
+      },
+      "transitions": [],
+      "updated_at": "2026-07-17T20:38:32+00:00"
+    },
+    "72B": {
+      "created_at": "2026-07-17T20:38:32+00:00",
+      "current_diagnosis": null,
+      "current_doctor_program": null,
+      "current_evidence_level": null,
+      "current_rate": {
+        "den": 5,
+        "label": "4/5",
+        "num": 4,
+        "value": 0.8
+      },
+      "current_representation_family": "scalar_trellis_tqv2",
+      "doctor_treatments_attempted": [],
+      "escape_receipt": null,
+      "fallback_rate": null,
+      "families_failed_causally": [],
+      "first_passing_rate": null,
+      "fsm_state": "GRAVITY_UNINITIALIZED",
+      "gravity_enabled": false,
+      "gravity_policy_version": "2026-07-17.1",
+      "highest_measured_fail": null,
+      "highest_unproven": null,
+      "initial_stress_rate": {
+        "den": 5,
+        "label": "4/5",
+        "num": 4,
+        "value": 0.8
+      },
+      "lowest_measured_fail": null,
+      "lowest_measured_pass": null,
+      "lowest_tested_rate": null,
+      "next_action": "diagnose",
+      "parent_identity": {
+        "hf_or_source_id": "Qwen/Qwen2.5-72B-Instruct",
+        "label": "72B"
+      },
+      "per_rate": {},
+      "physical_budget": null,
+      "reopening_conditions": [],
+      "representation_families_tested": [],
+      "resource_budget": null,
+      "schema": "hawking.gravity.parent_state.v1",
+      "state_sha256": "8a2bba7798312f37829d6dc4c0a48293084150e114424a533053911795bd91e3",
+      "stop_condition": null,
+      "subbit_coverage_status": {
+        "route": null,
+        "satisfied": false
+      },
+      "transitions": [],
+      "updated_at": "2026-07-17T20:38:32+00:00"
+    }
+  },
+  "policy_version": "2026-07-17.1",
+  "schema": "hawking.gravity.state.v1",
+  "source_bound_programs": {
+    "higher_rate_fallback": {
+      "adapter_id": "doctor-v5-strand-ladder-qwen25-dense",
+      "architecture_family": "qwen2.5-dense",
+      "created_at": "2026-07-17T20:38:32+00:00",
+      "doctor_program": {
+        "note": "diagnose-first",
+        "promote": []
+      },
+      "hf_or_source_id": "Qwen/Qwen2.5-72B-Instruct",
+      "is_subbit": false,
+      "kind": "higher_rate_fallback",
+      "lane": "hawking-gravity-oracle-first",
+      "launch_gate": {
+        "gravity_enabled": false,
+        "heavy_lease_free": false,
+        "release_boundary_signed": false,
+        "resource_admission_passed": false,
+        "source_program_executable": true
+      },
+      "parent_label": "72B",
+      "program_sha256": "2b988612e75c82b4f4ea8b70fa8d711df8ee6d0dc75c1d3eb97663f36892c717",
+      "rate": {
+        "den": 2,
+        "label": "3/2",
+        "num": 3,
+        "value": 1.5
+      },
+      "representation_family": "scalar_trellis_tqv2",
+      "required_controls": [
+        "zero_treatment",
+        "equal_byte_codec",
+        "smaller_higher_bit"
+      ],
+      "schema": "hawking.gravity.program.v1",
+      "source_manifest_sha256": "e97955f438759b1a4bbd79fa82ecd0dd7a164a939e7af77158523434d9a6d95b"
+    },
+    "parent_label": "72B",
+    "subbit_stress": {
+      "adapter_id": "doctor-v5-strand-ladder-qwen25-dense",
+      "architecture_family": "qwen2.5-dense",
+      "created_at": "2026-07-17T20:38:32+00:00",
+      "doctor_program": {
+        "note": "diagnose-first",
+        "promote": []
+      },
+      "hf_or_source_id": "Qwen/Qwen2.5-72B-Instruct",
+      "is_subbit": true,
+      "kind": "subbit_stress",
+      "lane": "hawking-gravity-oracle-first",
+      "launch_gate": {
+        "gravity_enabled": false,
+        "heavy_lease_free": false,
+        "release_boundary_signed": false,
+        "resource_admission_passed": false,
+        "source_program_executable": true
+      },
+      "parent_label": "72B",
+      "program_sha256": "794b7d2a69237ac77d6ed60adad46c0387dd9889b37ac2db662c29ee17a5b801",
+      "rate": {
+        "den": 5,
+        "label": "4/5",
+        "num": 4,
+        "value": 0.8
+      },
+      "representation_family": "scalar_trellis_tqv2",
+      "required_controls": [
+        "zero_treatment",
+        "equal_byte_codec",
+        "smaller_higher_bit"
+      ],
+      "schema": "hawking.gravity.program.v1",
+      "source_manifest_sha256": "e97955f438759b1a4bbd79fa82ecd0dd7a164a939e7af77158523434d9a6d95b"
+    }
+  },
+  "state_doc_sha256": "f61c62c83569cc305cb82f03e79fdbd8f8885ee1354a5feeff31ff5237697b58"
+}

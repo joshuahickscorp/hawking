@@ -49,12 +49,18 @@ def acquisition_score(probe: dict[str, Any], *, feasible_prob: float, hv_gain: f
 
 
 def next_experiment(plan: dict[str, Any], *, seed: int = 20260717,
-                    retirement_ledger: dict[str, Any] | None = None) -> dict[str, Any] | None:
+                    retirement_ledger: dict[str, Any] | None = None,
+                    gravity_bonus: Callable[[dict[str, Any]], float] | None = None) -> dict[str, Any] | None:
     """Select the highest-value next experiment across all parents' boundary probes.
 
     Deterministic: recorded weights, a fixed seed for tie-breaking, and an explicit rationale.
     If a retirement_ledger is supplied, probes at an evidence-closed (model, rate) are SKIPPED
     so the selector never re-runs an experiment the measured evidence already answered.
+
+    `gravity_bonus` is an optional callable (succ_gravity.gravity_bonus, curried with the
+    parent state) that adds the sub-bit-first Gravity pull G(x) to each candidate's score.
+    It changes SCHEDULING PRIORITY ONLY, never quality or evidence. When None (default), the
+    selector is byte-identical to its pre-Gravity behavior.
     """
     retired_keys: set[str] = set()
     if retirement_ledger is not None:
@@ -82,11 +88,16 @@ def next_experiment(plan: dict[str, Any], *, seed: int = 20260717,
             cost = rate  # cheap proxy: higher bpw ~ more bytes/time (refined by succ_eta)
             score = acquisition_score(probe, feasible_prob=feasible, hv_gain=1.0, info_gain=info,
                                       boundary_uncertainty=boundary_u, transfer=transfer, cost=cost)
-            candidates.append({
+            cand = {
                 "model_label": label, "rate_bpw": rate, "verdict": probe["current_verdict"],
                 "feasibility_tier": probe.get("next_feasibility_tier"),
                 "doctor_program": probe.get("doctor_program"), "acquisition": round(score, 6),
-            })
+            }
+            if gravity_bonus is not None:
+                g = float(gravity_bonus(cand))
+                cand["gravity_bonus"] = round(g, 6)
+                cand["acquisition"] = round(score + g, 6)  # priority only; quality untouched
+            candidates.append(cand)
     if not candidates:
         return None
     # deterministic: sort by score desc, then label, then rate; seed only documents the policy

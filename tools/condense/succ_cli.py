@@ -119,9 +119,24 @@ def cmd_explain_next(args) -> dict[str, Any]:
     import eco_import, eco_planner, succ_engine
     ledger = eco_import.build_ledger(eco_import.default_config(args.campaign_root))
     plan = eco_planner.build_plan(ledger)
-    pick = succ_engine.next_experiment(plan)
-    return {"next_experiment": pick} if pick else {"next_experiment": None,
-                                                   "note": "no boundary probes; frontier resolved or evidence-less"}
+    # Gravity governs SCHEDULING PRIORITY (never quality/evidence): the sub-bit-first pull G(x)
+    # is applied to the selector once Gravity is integrated. This launches nothing.
+    gravity_bonus = None
+    gravity_governed = False
+    if not getattr(args, "no_gravity", False):
+        try:
+            import succ_gravity as sg
+            states = {label: sg.new_parent_state(label) for label in sg.gp.PARENT_PRIORS}
+            gravity_bonus = sg.gravity_bonus_binding(states, sg.gp.build_policy_manifest())
+            gravity_governed = True
+        except Exception:  # noqa: BLE001 - a Gravity hiccup must never break planning
+            gravity_bonus, gravity_governed = None, False
+    pick = succ_engine.next_experiment(plan, gravity_bonus=gravity_bonus)
+    if pick is None:
+        return {"next_experiment": None, "gravity_governed": gravity_governed,
+                "note": "no boundary probes; frontier resolved or evidence-less"}
+    return {"next_experiment": pick, "gravity_governed": gravity_governed,
+            "direction": "upward from a sub-bit stress point" if gravity_governed else "frontier-value"}
 
 
 def cmd_ping(args) -> dict[str, Any]:
@@ -332,6 +347,55 @@ def cmd_telegram(args) -> dict[str, Any]:
     return {"error": "unknown telegram action"}
 
 
+def cmd_gravity_status(args) -> dict[str, Any]:
+    import succ_gravity_policy as gp
+    pol = gp.build_policy_manifest()
+    return {"policy_version": pol["policy_version"], "enabled": pol["enabled"],
+            "activation_gates": pol["activation_gates"], "invariant": pol["invariant"],
+            "parents": {k: v["stress_start"]["label"] for k, v in pol["parent_stress_starts"].items()}}
+
+
+def cmd_gravity_inspect(args) -> dict[str, Any]:
+    import succ_gravity as sg
+    import succ_gravity_policy as gp
+    return {"parent": args.parent, "stress_start": gp.compute_stress_start(args.parent),
+            "state": sg.new_parent_state(args.parent)}
+
+
+def cmd_gravity_explain_next(args) -> dict[str, Any]:
+    import succ_gravity as sg
+    import succ_gravity_policy as gp
+    ss = gp.parse_rate(gp.compute_stress_start(args.parent)["chosen_stress_rate"]["label"])
+    p = gp.prior_for(args.parent)
+    cand = [{"model_label": args.parent, "rate": gp.rate_identity(ss)["label"],
+             "family": p["representation_families"][0], "near_boundary": True,
+             "can_change_extreme": True, "distinguishes_degradation_from_collapse": True}]
+    ranked = sg.rank_candidates(cand, {args.parent: sg.new_parent_state(args.parent)})
+    return {"parent": args.parent, "direction": "upward from a sub-bit stress point",
+            "next": ranked[0]}
+
+
+def cmd_gravity_materialize(args) -> dict[str, Any]:
+    import succ_gravity as sg
+    return sg.materialize_live_parent_programs(args.parent, source_manifest_sha256=args.source_manifest_sha256)
+
+
+def cmd_gravity_validate(args) -> dict[str, Any]:
+    import succ_gravity as sg
+    return sg.build_validation_doc()
+
+
+def cmd_gravity_frontier(args) -> dict[str, Any]:
+    import succ_gravity as sg
+    return sg.arm_frontier(live_parent=args.parent, source_manifest_sha256=args.source_manifest_sha256)
+
+
+def cmd_gravity_daily(args) -> dict[str, Any]:
+    import succ_gravity as sg
+    states = {label: sg.new_parent_state(label) for label in sg.gp.PARENT_PRIORS}
+    return sg.gravity_daily_summary(states, digest_date=args.date or "today")
+
+
 def build_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(prog="successor", description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -360,6 +424,17 @@ def build_parser() -> argparse.ArgumentParser:
     tg = sub.add_parser("telegram")
     tg.add_argument("telegram_action", choices=["test", "status"])
     tg.add_argument("--go", action="store_true")
+    sub.add_parser("gravity-status")
+    gi = sub.add_parser("gravity-inspect"); gi.add_argument("--parent", default="72B")
+    ge = sub.add_parser("gravity-explain-next"); ge.add_argument("--parent", default="72B")
+    gm = sub.add_parser("gravity-materialize"); gm.add_argument("--parent", default="72B")
+    gm.add_argument("--source-manifest-sha256", default=None)
+    sub.add_parser("gravity-validate")
+    gf = sub.add_parser("gravity-frontier"); gf.add_argument("--parent", default="72B")
+    gf.add_argument("--source-manifest-sha256", default=None)
+    gd = sub.add_parser("gravity-daily"); gd.add_argument("--date", default=None)
+    if "explain-next" in sub.choices:   # opt-out flag to see the pre-Gravity frontier-value order
+        sub.choices["explain-next"].add_argument("--no-gravity", action="store_true")
     return ap
 
 
@@ -373,6 +448,10 @@ DISPATCH = {
     "eta": cmd_eta, "frontier": cmd_frontier, "frontier-fit": cmd_frontier_fit,
     "frontier-admit": cmd_frontier_admit, "frontier-twin": cmd_frontier_twin,
     "frontier-press-plan": cmd_frontier_press_plan,
+    "gravity-status": cmd_gravity_status, "gravity-inspect": cmd_gravity_inspect,
+    "gravity-explain-next": cmd_gravity_explain_next, "gravity-materialize": cmd_gravity_materialize,
+    "gravity-validate": cmd_gravity_validate, "gravity-frontier": cmd_gravity_frontier,
+    "gravity-daily": cmd_gravity_daily,
 }
 
 
