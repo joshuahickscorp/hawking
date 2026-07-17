@@ -87,6 +87,10 @@ def make_row(**fields: Any) -> dict[str, Any]:
         "next_transition": fields.get("next_transition"),
         "created_at": now_iso(),
     }
+    # Additive Gravity augmentation (master goal section 16). Only present when supplied, so a
+    # row built without Gravity is byte-identical to before and its seal is unchanged.
+    if fields.get("gravity") is not None:
+        row["gravity"] = fields["gravity"]
     return seal_field(row, "row_sha256")
 
 

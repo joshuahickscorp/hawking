@@ -124,6 +124,26 @@ EVENT_CATALOG: dict[str, dict[str, Any]] = {
     "frontier_row_state_changed": {"icon": "🌠", "label": "frontier row state changed", "salient": ("label", "old_state", "new_state")},
     "daily_digest":              {"icon": "📰", "label": "daily digest", "salient": ("digest_date",)},
     "final_seal":                {"icon": "🔒", "label": "final seal", "salient": ("generation", "seal_sha256")},
+    # ── Gravity (sub-bit-first law) notifications (master goal section 18) ──
+    "gravity_policy_enabled":    {"icon": "🪐", "label": "Gravity policy enabled", "salient": ("parent", "policy_version")},
+    "gravity_start_rate":        {"icon": "🪂", "label": "Gravity start rate", "salient": ("parent", "stress_rate")},
+    "gravity_tournament_started":{"icon": "🎲", "label": "sub-bit representation tournament", "salient": ("parent", "rate")},
+    "gravity_feasibility_completed": {"icon": "🧪", "label": "Gravity feasibility completed", "salient": ("parent", "rate", "tier")},
+    "gravity_diagnosis":         {"icon": "🩺", "label": "Gravity diagnosis", "salient": ("parent", "rate", "diagnosis")},
+    "gravity_rescue_started":    {"icon": "🚑", "label": "Doctor rescue started", "salient": ("parent", "rate", "treatment")},
+    "gravity_rescue_result":     {"icon": "💊", "label": "Doctor rescue result", "salient": ("parent", "rate", "result"), "provisional": True},
+    "gravity_byte_allocation_changed": {"icon": "⚖️", "label": "byte allocation changed", "salient": ("parent", "rate", "base_bpw", "doctor_bpw")},
+    "gravity_representation_changed": {"icon": "🔀", "label": "representation changed", "salient": ("parent", "rate", "family")},
+    "gravity_descend":           {"icon": "🪨", "label": "descending to lower rate", "salient": ("parent", "from_rate", "to_rate")},
+    "gravity_ascend":            {"icon": "🧗", "label": "ascending to higher rate", "salient": ("parent", "from_rate", "to_rate")},
+    "gravity_escape_requested":  {"icon": "🛎", "label": "Escape Receipt requested", "salient": ("parent", "rate")},
+    "gravity_escape_decision":   {"icon": "🎟", "label": "Escape Receipt decision", "salient": ("parent", "decision", "receipt_sha256"), "provisional": True},
+    "gravity_first_pass":        {"icon": "🌅", "label": "first passing rate", "salient": ("parent", "rate"), "provisional": True},
+    "gravity_lower_boundary":    {"icon": "📛", "label": "lower failing boundary", "salient": ("parent", "rate")},
+    "gravity_event_horizon":     {"icon": "🕳", "label": "Event Horizon", "salient": ("parent", "rate", "whole_bpw"), "provisional": True},
+    "gravity_bpw_composition":   {"icon": "🧾", "label": "physical BPW composition", "salient": ("parent", "whole_bpw", "base_bpw", "doctor_bpw")},
+    "gravity_queue_eta":         {"icon": "📅", "label": "Gravity queue and ETA", "salient": ("parent", "next_probe", "eta_range")},
+    "gravity_daily":             {"icon": "🗞", "label": "Gravity daily summary", "salient": ("digest_date",)},
 }
 
 _PROVISIONAL_FOOTER = "Provisional until the signed physical release gate."
