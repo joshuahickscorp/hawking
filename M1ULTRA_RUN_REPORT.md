@@ -106,6 +106,42 @@ current disk occupancy, not a missing device row.
 Append one paragraph per wave: what ran, verdict, category movement, next lever. No wave ends without a
 committed (approved) artifact.
 
+- Wave F2 (2026-07-17, Unattended Condenser successor control plane): invoked via the authoritative master
+  goal HAWKING_UNATTENDED_CONDENSER_MASTER_GOAL.md (State B target: legacy running). E0 audit (6-agent
+  read-only workflow + direct capture) established: legacy 72B still running (shard 32/37, supervisor pid
+  48045, untouched), 176 GB free, CPU saturated (so successor work is Python-light, Rust defers to CI);
+  the eco_* scaffold from Wave F1 is a DESCRIPTOR/PLANNING layer not a runtime (no event log, no journaled
+  resume, admission faked from an id-map, pipeline validators unenforced); adapters INVERTED from naive
+  reading (qwen2.5-dense adapter execution-ready but claim-restricted with treatment hooks
+  lora_kd/blockwise_qat/strand_hessian UNSUPPORTED = only method=none; gpt-oss-120B adapter a fail-closed
+  0.1-contract whose run refuses exit 78 with real blockers); CI pre-existing red on main (rustfmt drift +
+  app/pnpm-workspace.yaml missing packages: under pnpm 9). BUILT the real successor control plane: 13
+  tools/condense/succ_*.py modules + 3 test files (28 successor tests, 86 total green): succ_events
+  (append-only hash-chained log, tamper-detect, resume), succ_state (BOOT..SEALED_PARENT enforced FSM +
+  journaled checkpoint + exact resume + split-brain refusal), succ_queue (durable queue + full status
+  vocabulary + section-11.2 row schema + 72B/120B/671B rows with honest blockers), succ_admission (SOURCE-
+  BOUND adapter capability probe replacing the id-map: runs the adapter capabilities subcommand and ANDs the
+  section-5.4 requirements; on live data qwen ready, gpt-oss not-ready with its 15 real blockers), succ_transition
+  (one-use bound tamper-tested transition intent, gate re-derived from disk, all_pass-bypass refused, rollback),
+  succ_watchdog (fcntl singleton lease, fail-closed adoption never on pid alone, launchd plist), succ_telegram
+  (successor service: events, dedup cursor, bounded retry, heartbeat, redaction, injected+real sender),
+  succ_doctor (typed mechanism registry of 13 lineages + controls, real MCKP/DP joint base+healing allocator
+  matching brute force, causal-control set; unwired treatment hooks NOT selectable), succ_engine (acquisition
+  function, source-bound program materialize/validate, GATED lightweight dispatch, idempotent ingest),
+  succ_gc (evidence-closed retirement + safe GC, no-follow, receipts, never-delete classes), succ_eta
+  (empirical per-segment ETA, refuses one global constant, marks 120B/giant uncalibrated), succ_audit (signed
+  E0 packets), succ_cli (the `successor` command surface). VERIFIED END TO END ON LIVE DATA (read-only,
+  plan-only): `successor compile` imports 187 terminal cells, probes the REAL adapters, builds the honest
+  queue (72B waiting_old_release, 120B waiting_adapter, 671B waiting_source_authority), and boots the
+  controller into WAIT_OLD_RELEASE; status/verify/explain-next/ping/resume/queue all work; the activation gate
+  refuses while the campaign runs. NON-INTERFERENCE HELD (additive-only, no campaign write, no heavy launch,
+  72B advanced untouched). CI: fixed on a separate scoped branch chore/ci-green (PR #24: cargo fmt across 158
+  files + delete app/pnpm-workspace.yaml; fmt gate clean locally, clippy/build/test pending remote CI). VERDICT:
+  State B core is REAL (durable event-sourced controller, exact resume, honest queue, transition machinery,
+  telegram service, all tested); heavy 72B/120B/giant EXECUTION honestly gated (non-interference + adapter/disk
+  blockers + treatment hooks unsupported). NEXT LEVER: on signed release, wire execute_transition to a launchd
+  watcher and dispatch the first lightweight 72B calibration probe; build the missing qwen doctor treatment
+  hooks and the 120B/deepseek adapters. Committed to PR #23; no merge, no activation.
 - Wave F1 (2026-07-17, Condenser Ecosystem Frontier scaffold, isolated worktree): invoked via /goal with the
   frontier directive (governing refs: the Desktop bundle HAWKING_EVENT_HORIZON / _CONDENSER_ECOSYSTEM_FRONTIER
   / _CONDENSER_PULSE). NON-INTERFERENCE HELD: the 72B generation stayed live and untouched throughout
