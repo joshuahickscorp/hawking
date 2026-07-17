@@ -106,6 +106,46 @@ current disk occupancy, not a missing device row.
 Append one paragraph per wave: what ran, verdict, category movement, next lever. No wave ends without a
 committed (approved) artifact.
 
+- Wave F1 (2026-07-17, Condenser Ecosystem Frontier scaffold, isolated worktree): invoked via /goal with the
+  frontier directive (governing refs: the Desktop bundle HAWKING_EVENT_HORIZON / _CONDENSER_ECOSYSTEM_FRONTIER
+  / _CONDENSER_PULSE). NON-INTERFERENCE HELD: the 72B generation stayed live and untouched throughout
+  (qwen2-5-72b__4bpw__codec-control advanced shard 25 -> 28 of 37 under the same supervisor pid 48045 while
+  this ran); all work was additive, default-off, in worktree codex/condenser-ecosystem-frontier. BUILT: nine
+  additive Python modules tools/condense/eco_*.py + eight test files (58 tests green) implementing the
+  Press->Doctor->Horizon->Context->Continuum->Lens->Bridge->Passport->Capsule->Summon layer: (1) the one
+  identity/receipt graph (Passport) binding all eight dimensions with claim-separation enforcement (physical
+  bytes refuse runtime roles) and a content-addressed prefix/branch DAG; (2) an immutable read-only campaign
+  import that validates each cell's on-disk result_sha256/disposition_sha256 byte-identically to the reporter
+  and skips every non-terminal cell (verified on the live campaign: 187 terminal cells imported, 140 complete
+  + 47 dispositions, all seals valid, running/blocked cells skipped); (3) the ADAPTIVE PLANNER replacing the
+  fixed 320-cell matrix with an evidence-driven F0..F4 + diagnose-first + adaptive-descent frontier that emits
+  one EXTREME candidate per parent, the Event-Horizon bracket, and the exact boundary probes; (4) the
+  data-driven 10-stage pipeline state machine (validators, exact resume, rollback, offline hydration); (5) a
+  fail-closed default-off activation gate; (6) 120B+ admission plans; (7) Telegram status/ETA reusing the
+  notifier primitives; (8) a unified CLI + materialize. RESULT ON LIVE DATA (plan-only, read-only): under the
+  campaign's own promotion gate (ppl rel delta <= 0.08, cap abs delta >= -0.05) NO rate passes yet; at 4 bpw
+  the best Doctor branch reaches the very edge (0.5B doctor_full 0.0798) but does not clear it, and 2 bpw
+  collapses (5x-28x ppl), so the small-Qwen standalone Event Horizon sits ABOVE 4 bpw under this contract;
+  the collapse-boundary floor DESCENDS with scale (3.0 bpw at 0.5-3B, 2.0 bpw at 7-14B, slope ~-0.81/decade,
+  the bit-floor-descends hypothesis on real sealed data), predicting 72B ~1.44 bpw / 120B ~1.28 bpw as
+  SCHEDULING priors only. 72B TRANSITION: 72B has zero terminal cells (codec-control still running), so it is
+  reported awaiting_evidence, bracketed from the smaller-scale anchors, never restarted; once it seals it is
+  the planner's first calibration case. VERDICT: physical bytes SEALED (imported + revalidated), quality
+  PROVISIONAL only (quality_claims_permitted:false end to end), zero public WIN asserted; EXTREME is UNPROVEN
+  pending Doctor-recovery evidence, honestly. An adversarial review pass (1 reviewer) confirmed the seal
+  byte-identity, non-interference, and PASS-honesty foundations and found defects that were FIXED with
+  regression tests: activation all_pass now binds the pinned plan_sha256 (was only noted); checkpoint_accepted
+  rejects empty-dict checkpoints; a campaign adaptive-defer disposition is labeled campaign_deferral (not a
+  fake measured computation_collapse) and no longer sets the proven collapse boundary; import is None-status
+  crash-safe; admission admissible_now includes disk feasibility; pipeline spec_sha256 is a deterministic
+  content address; materialize passports flag their BPW as a planning_proxy. Docs: docs/plans/
+  CONDENSER_ECOSYSTEM_FRONTIER.md (constitution mirrored, E0) + docs/plans/FRONTIER_ECOSYSTEM_SCAFFOLD.md
+  (status, 72B transition, 120B+ admission, non-interference proof). ACTIVATION gate run against the live
+  campaign REFUSES (133 non-terminal, no reporter checkpoints, running cell, supervisor alive, no signature)
+  so activation is impossible while the campaign runs. NEXT LEVER: on the signed supersession boundary, make
+  72B the first adaptive-planner calibration case; before that, the deferred Rust Continuum/Lens/Bridge crates
+  and the real context-evaluation battery (E2..E12). No commit made; worktree only, pending operator approval
+  (a draft PR is prepared, not opened).
 - Wave 1 (2026-07-16, FIRST on-box session, M3 Ultra 96 GB): invoked via /goal with the added directive to
   fold in docs/plans/HIDE_CONDENSER_GOAL_PROMPT.md (the HIDE SOTA build ladder). ORIENT surfaced the material
   box-reality finding: the delivered box is an M3 Ultra 96 GB / ~162 GB-free, not the M1 Ultra 128 GB / 8 TB
