@@ -115,12 +115,19 @@ mod tests {
 
     #[test]
     fn ulid_ids_are_sortable_and_unique() {
+        // Distinctness and prefix hold for the random path.
         let a = EventId::new();
         let b = EventId::new();
         assert_ne!(a, b);
         assert!(a.as_str().starts_with("evt_"));
-        // ULIDs minted later sort lexicographically >= earlier ones.
-        assert!(b.as_str() >= a.as_str());
+        // Lexicographic sortability is a property of TIME-ORDERED ulids. Two random ulids
+        // minted in the same millisecond carry random relative order, so assert sortability
+        // on the deterministic monotonic source instead (otherwise the test is flaky).
+        with_deterministic_ids(0, || {
+            let x = EventId::new();
+            let y = EventId::new();
+            assert!(y.as_str() > x.as_str(), "a later id sorts after an earlier id");
+        });
     }
 
     #[test]
