@@ -48,17 +48,29 @@ def acquisition_score(probe: dict[str, Any], *, feasible_prob: float, hv_gain: f
             + w["transfer"] * transfer - w["cost"] * cost)
 
 
-def next_experiment(plan: dict[str, Any], *, seed: int = 20260717) -> dict[str, Any] | None:
+def next_experiment(plan: dict[str, Any], *, seed: int = 20260717,
+                    retirement_ledger: dict[str, Any] | None = None) -> dict[str, Any] | None:
     """Select the highest-value next experiment across all parents' boundary probes.
 
     Deterministic: recorded weights, a fixed seed for tie-breaking, and an explicit rationale.
+    If a retirement_ledger is supplied, probes at an evidence-closed (model, rate) are SKIPPED
+    so the selector never re-runs an experiment the measured evidence already answered.
     """
+    retired_keys: set[str] = set()
+    if retirement_ledger is not None:
+        retired_keys = set(retirement_ledger.get("retired_keys", []))
     candidates: list[dict[str, Any]] = []
+    skipped_retired = 0
     for parent in plan.get("parents", []):
         label = parent["binding"]["model_label"]
         params_b = parent.get("params_b") or 0.0
         for probe in parent.get("boundary_probes_needed", []):
             rate = probe["rate_bpw"]
+            # skip if this (model, rate) is evidence-closed below a replicated collapse boundary
+            # (retirement retires all branches including codec_control at such rates)
+            if f"{label}__{rate}bpw__codec_control" in retired_keys:
+                skipped_retired += 1
+                continue
             # Heuristic priors before a learned selector exists (7.4 permits calibrated heuristics).
             feasible = 0.9 if probe["current_verdict"] == "INCONCLUSIVE" else 0.6
             # boundary uncertainty is highest near the bracket edge
@@ -81,6 +93,7 @@ def next_experiment(plan: dict[str, Any], *, seed: int = 20260717) -> dict[str, 
     candidates.sort(key=lambda c: (-c["acquisition"], c["model_label"], c["rate_bpw"]))
     best = candidates[0]
     return {"selected": best, "considered": len(candidates), "policy_seed": seed,
+            "skipped_retired": skipped_retired,
             "weights": {"info": 0.5, "boundary": 0.7, "transfer": 0.2, "cost": 0.3},
             "rationale": "highest acquisition score across all parent boundary probes"}
 

@@ -106,6 +106,30 @@ current disk occupancy, not a missing device row.
 Append one paragraph per wave: what ran, verdict, category movement, next lever. No wave ends without a
 committed (approved) artifact.
 
+- Wave F4 (2026-07-17, empirical evidence sealed + retirement/ETA/Telegram wired): continuation. RECOVERED the
+  three interrupted prior-session workflows (in session dc930fd4, NOT this one): doctor-boundary-optimization-map
+  COMPLETED (5/5, read-only map + adversarial verify that had cross-checked a 140-row harvest 139/139 vs raw
+  receipts); eta-mountain-parallelism-map PARTIAL (2/3; found the mountain_ladder.json already built);
+  doctor-evidence-closure-build PARTIAL (1/3; its one completed builder produced the untracked
+  tools/condense/doctor_v5_source_gc.py on main, arm/run never executed; the other 2 builders left nothing).
+  Classified the uncommitted main-branch doctor_v5_* changes as prior-session LEGACY campaign tooling
+  (operator-owned, campaign namespace) and left them untouched. Legacy 72B still running (doctor-static), 142
+  complete, not released; non-interference held. BUILT (additive, in the frontier worktree): succ_harvest.py
+  (seals the empirical evidence: 189 terminal rows with the full field set from result.json +
+  execution_receipt.json - exact physical bpw, parameter/tensor geometry, quality, wall time from the receipt
+  resource_observations timestamps, disk/memory-pressure/thermal, lifecycle, treatment-vs-equal-rate-control,
+  dominance, and a failure CLASSIFICATION that never relabels a scheduling deferral as collapse: 113
+  measured_computation_collapse vs 47 scheduling_deferral vs 2 missing_evaluation vs 27 measured_quality_failure;
+  142/142 complete rows seal-valid; doctor improved over control in 54/103; 72B codec_control 5.078bpw took
+  ~13.7h wall); succ_retire.py (evidence-closed retirement from the sealed harvest: replicated collapse
+  boundaries 0.5B/3B/7B/14B=3.0bpw, 1.5B=2.0bpw; 229 FUTURE successor experiments retired with sealed receipts
+  that preserve evidence + reopening criteria, ground cannot_change_frontier_conservative bound by the sealed
+  harvest - honest for single-seed Pass-B, no false replication claim; additive, never mutates a legacy cell).
+  WIRED into the controller: succ_engine.next_experiment now consults the retirement ledger and SKIPS
+  evidence-closed (model,rate) probes (proven by test); ETA fit from 142 real wall-time observations into
+  per-(branch,full_cell) segments (never one global constant). Telegram VERIFIED with a REAL send (message_id
+  5827, delivery receipt stored). CLI: harvest/retire-plan/eta wired. 98 tests green (+6). Committed to PR #23;
+  no merge, no activation.
 - Wave F3 (2026-07-17, successor continuation: 72B seal + arming): re-invoked the same master goal. Re-audit
   found the LEGACY 72B codec_control cell SEALED (now complete; 142 complete total; the campaign moved on to
   qwen2-5-72b__4bpw__doctor-static, now running and untouched); report checkpoints still None so the campaign

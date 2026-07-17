@@ -186,6 +186,40 @@ def cmd_gc_plan(args) -> dict[str, Any]:
             "with a real candidate set", "vocabulary": "see succ_gc.selftest for the safety gates"}
 
 
+def cmd_harvest(args) -> dict[str, Any]:
+    import succ_harvest
+    ds = succ_harvest.harvest(args.campaign_root)
+    if args.out:
+        from eco_common import atomic_write_json
+        atomic_write_json(args.out, ds)
+    return {"harvest_sha256": ds["harvest_sha256"], "terminal_rows": ds["terminal_rows"],
+            "classification_counts": ds["classification_counts"]}
+
+
+def cmd_retire_plan(args) -> dict[str, Any]:
+    import succ_harvest, succ_retire
+    ds = succ_harvest.harvest(args.campaign_root)
+    ledger = succ_retire.build_retirement_ledger(ds)
+    if args.out:
+        from eco_common import atomic_write_json
+        atomic_write_json(args.out, ledger)
+    return {"ledger_sha256": ledger["ledger_sha256"], "retired_count": ledger["retired_count"],
+            "replicated_collapse_boundaries": ledger["replicated_collapse_boundaries"],
+            "applied_to": ledger["applied_to"]}
+
+
+def cmd_eta(args) -> dict[str, Any]:
+    import succ_harvest, succ_eta
+    ds = succ_harvest.harvest(args.campaign_root)
+    obs = succ_harvest.eta_observations(ds)
+    if not obs:
+        return {"note": "no completed cells with wall-time in the harvest yet"}
+    model = succ_eta.fit_runtime(obs)
+    segments = getattr(model, "segments", None) or getattr(model, "as_dict", lambda: {})()
+    return {"observations": len(obs), "segments": segments if isinstance(segments, dict) else str(segments),
+            "note": "per-(branch, full_cell) medians; never one global seconds-per-billion constant"}
+
+
 def cmd_calibrate(args) -> dict[str, Any]:
     import succ_calibrate
     prog = succ_calibrate.build_calibration(args.model, campaign_root=args.campaign_root)
@@ -237,6 +271,9 @@ def build_parser() -> argparse.ArgumentParser:
                  "drain", "verify", "transition-status", "gc-plan"):
         sub.add_parser(name)
     qp = sub.add_parser("queue"); qp.add_argument("--model", default=None)
+    hp = sub.add_parser("harvest"); hp.add_argument("--out", default=None)
+    rp = sub.add_parser("retire-plan"); rp.add_argument("--out", default=None)
+    sub.add_parser("eta")
     cp = sub.add_parser("calibrate"); cp.add_argument("--model", default="72B"); cp.add_argument("--out", default=None)
     wp = sub.add_parser("watch")
     wp.add_argument("--once", action="store_true"); wp.add_argument("--go", action="store_true")
@@ -257,7 +294,8 @@ DISPATCH = {
     "drain": cmd_drain, "verify": cmd_verify, "arm-transition": cmd_arm_transition,
     "transition-status": cmd_transition_status, "gc-plan": cmd_gc_plan, "telegram": cmd_telegram,
     "calibrate": cmd_calibrate, "watch": cmd_watch, "arm-template": cmd_arm_template,
-    "watch-plist": cmd_watch_plist,
+    "watch-plist": cmd_watch_plist, "harvest": cmd_harvest, "retire-plan": cmd_retire_plan,
+    "eta": cmd_eta,
 }
 
 
