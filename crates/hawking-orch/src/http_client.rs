@@ -430,10 +430,8 @@ mod tests {
 
     #[test]
     fn embedding_extracted_from_openai_shape() {
-        let v: Value = serde_json::from_str(
-            "{\"data\":[{\"embedding\":[0.1,0.2,0.3],\"index\":0}]}",
-        )
-        .unwrap();
+        let v: Value =
+            serde_json::from_str("{\"data\":[{\"embedding\":[0.1,0.2,0.3],\"index\":0}]}").unwrap();
         assert_eq!(extract_embedding(&v), Some(vec![0.1, 0.2, 0.3]));
     }
 

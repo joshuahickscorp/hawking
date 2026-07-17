@@ -6,9 +6,9 @@
 //!   3. `phase_x_simdmat_argmax_matches_cpu` — token id (argmax) from simdmat matches CPU.
 #![cfg(target_os = "macos")]
 
+use half::f16;
 use hawking_core::kernels;
 use hawking_core::metal::{MetalContext, PinnedBuffer, TokenCommandBuffer};
-use half::f16;
 
 mod common;
 use common::*;

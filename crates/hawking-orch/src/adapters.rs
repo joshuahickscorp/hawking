@@ -129,9 +129,9 @@ impl AdapterRegistry {
 
     fn language_adapter_for(&self, language: &str) -> Option<&AdapterDescriptor> {
         let lang = language.to_lowercase();
-        self.by_id.values().find(|d| {
-            matches!(&d.kind, AdapterKind::Language(l) if l.eq_ignore_ascii_case(&lang))
-        })
+        self.by_id
+            .values()
+            .find(|d| matches!(&d.kind, AdapterKind::Language(l) if l.eq_ignore_ascii_case(&lang)))
     }
 
     fn task_adapter_for(&self, task_kind: &str) -> Option<&AdapterDescriptor> {

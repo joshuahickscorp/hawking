@@ -66,7 +66,12 @@ fn allowed_origins() -> Vec<HeaderValue> {
         "http://127.0.0.1:5273".to_string(),
     ];
     if let Ok(extra) = std::env::var("HIDE_ALLOW_ORIGIN") {
-        raw.extend(extra.split(',').map(|s| s.trim().to_string()).filter(|s| !s.is_empty()));
+        raw.extend(
+            extra
+                .split(',')
+                .map(|s| s.trim().to_string())
+                .filter(|s| !s.is_empty()),
+        );
     }
     raw.iter().filter_map(|o| o.parse().ok()).collect()
 }
@@ -86,7 +91,11 @@ async fn healthz() -> &'static str {
 /// surfaced (never silently swallowed); the body mirrors the FE's expectation
 /// of a readable `{ error: { message } }` shape.
 fn host_error(status: StatusCode, message: impl Into<String>) -> Response {
-    (status, Json(json!({ "error": { "message": message.into() } }))).into_response()
+    (
+        status,
+        Json(json!({ "error": { "message": message.into() } })),
+    )
+        .into_response()
 }
 
 // ── Wire-A: POST /v1/hide/intent ────────────────────────────────────────────
@@ -174,7 +183,9 @@ async fn forward_ui_events(mut socket: WebSocket, host: Arc<BackendHost>) {
                 // can then re-sync via GET /v1/hide/events?after_seq=N.
                 let frame = error_frame(
                     "lagged",
-                    &format!("subscriber lagged; {skipped} events dropped, reconnect with after_seq"),
+                    &format!(
+                        "subscriber lagged; {skipped} events dropped, reconnect with after_seq"
+                    ),
                 );
                 if socket.send(Message::Text(frame.into())).await.is_err() {
                     break;
@@ -232,11 +243,11 @@ mod tests {
     use super::*;
     use axum::body::Body;
     use axum::http::Request;
+    use hide_backend::BackendServices;
     use hide_core::api::IntentAck;
     use hide_core::config::HideConfig;
     use hide_core::ids::now_ms;
     use hide_core::types::Decision;
-    use hide_backend::BackendServices;
     use http_body_util::BodyExt;
     use tower::ServiceExt; // oneshot
 
@@ -298,7 +309,9 @@ mod tests {
             .await
             .unwrap();
         assert_eq!(
-            resp.headers().get("access-control-allow-origin").and_then(|v| v.to_str().ok()),
+            resp.headers()
+                .get("access-control-allow-origin")
+                .and_then(|v| v.to_str().ok()),
             Some("tauri://localhost"),
             "the app origin is allowed to read responses"
         );
@@ -376,7 +389,10 @@ mod tests {
         let bytes = resp.into_body().collect().await.unwrap().to_bytes();
         let value: Value = serde_json::from_slice(&bytes).unwrap();
         assert!(
-            value["roles"].as_array().map(|a| !a.is_empty()).unwrap_or(false),
+            value["roles"]
+                .as_array()
+                .map(|a| !a.is_empty())
+                .unwrap_or(false),
             "runtime.roles.list must return a non-empty roles array"
         );
     }

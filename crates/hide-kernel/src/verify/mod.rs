@@ -173,7 +173,10 @@ mod tests {
         let suite = OracleSuite::new();
         let input = VerificationInput::new(".");
         let verdicts = suite.run(&["ghost".to_string()], &input).await.unwrap();
-        assert_ne!(VerificationGate::default().decide(&verdicts), GateDecision::Accept);
+        assert_ne!(
+            VerificationGate::default().decide(&verdicts),
+            GateDecision::Accept
+        );
     }
 
     #[test]

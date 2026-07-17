@@ -162,7 +162,10 @@ mod tests {
             ..Default::default()
         });
         let r = tool
-            .call(json!({ "argv": ["sh", "-c", "echo fail 1>&2; exit 1"] }), ctx())
+            .call(
+                json!({ "argv": ["sh", "-c", "echo fail 1>&2; exit 1"] }),
+                ctx(),
+            )
             .await;
         assert!(r.ok, "failing test run must be ok:true (EXEC_NONZERO)");
         assert_eq!(r.exit_code, Some(1));

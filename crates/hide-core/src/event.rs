@@ -731,12 +731,18 @@ mod tests {
         let h1 = compute_chain_hash(&[0u8; 32], &first).unwrap();
         first.chain_hash = Some(hex_lower(&h1));
 
-        let second = Event::new(2, NewEvent::system(session, "b", serde_json::json!({ "n": 2 })));
+        let second = Event::new(
+            2,
+            NewEvent::system(session, "b", serde_json::json!({ "n": 2 })),
+        );
         let h2 = compute_chain_hash(&h1, &second).unwrap();
 
         // Untampered: recomputation matches the embedded hash.
         let recomputed = compute_chain_hash(&[0u8; 32], &first).unwrap();
-        assert_eq!(first.chain_hash.as_deref(), Some(hex_lower(&recomputed).as_str()));
+        assert_eq!(
+            first.chain_hash.as_deref(),
+            Some(hex_lower(&recomputed).as_str())
+        );
 
         // Tamper with the payload → recomputed hash diverges, so the embedded
         // hash (and every downstream hash) no longer verifies.

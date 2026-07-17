@@ -17,10 +17,16 @@ pub struct PromptSegment {
 
 impl PromptSegment {
     pub fn stat(label: impl Into<String>) -> Self {
-        Self { label: label.into(), is_static: true }
+        Self {
+            label: label.into(),
+            is_static: true,
+        }
     }
     pub fn dynamic(label: impl Into<String>) -> Self {
-        Self { label: label.into(), is_static: false }
+        Self {
+            label: label.into(),
+            is_static: false,
+        }
     }
 }
 
@@ -64,6 +70,9 @@ mod tests {
     #[test]
     fn empty_and_all_dynamic_are_fine() {
         assert_eq!(check_prefix_discipline(&[]), Ok(()));
-        assert_eq!(check_prefix_discipline(&[PromptSegment::dynamic("a")]), Ok(()));
+        assert_eq!(
+            check_prefix_discipline(&[PromptSegment::dynamic("a")]),
+            Ok(())
+        );
     }
 }

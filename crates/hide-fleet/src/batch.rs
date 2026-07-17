@@ -82,7 +82,10 @@ pub fn evaluate_gate(
     let mut reasons = Vec::new();
     if let Some(earliest) = schedule.earliest_start_ms {
         if now < earliest {
-            reasons.push(format!("before earliest start ({} > now {})", earliest, now));
+            reasons.push(format!(
+                "before earliest start ({} > now {})",
+                earliest, now
+            ));
         }
     }
     if let Some(end) = schedule.window_end_ms {

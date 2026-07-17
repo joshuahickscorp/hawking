@@ -63,7 +63,11 @@ fn sha256(parts: &[&[u8]]) -> [u8; 32] {
     h.finalize().into()
 }
 
-fn rolling_prefix_hash(model_hash: &[u8; 32], tokenizer_hash: &[u8; 32], tokens: &[u32]) -> [u8; 32] {
+fn rolling_prefix_hash(
+    model_hash: &[u8; 32],
+    tokenizer_hash: &[u8; 32],
+    tokens: &[u32],
+) -> [u8; 32] {
     let mut h = Sha256::new();
     h.update(model_hash);
     h.update(tokenizer_hash);
@@ -279,9 +283,10 @@ impl KvStore for HttpKvStore {
                 }),
             )
             .await?;
-        let slot = v.get("slot").and_then(|s| s.as_u64()).ok_or_else(|| {
-            HideError::RuntimeUnavailable("kv/warm: missing slot".into())
-        })?;
+        let slot = v
+            .get("slot")
+            .and_then(|s| s.as_u64())
+            .ok_or_else(|| HideError::RuntimeUnavailable("kv/warm: missing slot".into()))?;
         Ok(SlotId(slot))
     }
 
@@ -340,13 +345,18 @@ impl KvStore for HttpKvStore {
                 serde_json::json!({ "session": session.as_str() }),
             )
             .await?;
-        let arr = v.get("checkpoints").cloned().unwrap_or(serde_json::json!([]));
+        let arr = v
+            .get("checkpoints")
+            .cloned()
+            .unwrap_or(serde_json::json!([]));
         serde_json::from_value(arr)
             .map_err(|e| HideError::RuntimeUnavailable(format!("kv/list decode: {e}")))
     }
 
     async fn stats(&self) -> Result<KvStoreStats> {
-        let v = self.post("/v1/hawking/kv/stats", serde_json::json!({})).await?;
+        let v = self
+            .post("/v1/hawking/kv/stats", serde_json::json!({}))
+            .await?;
         serde_json::from_value(v)
             .map_err(|e| HideError::RuntimeUnavailable(format!("kv/stats decode: {e}")))
     }
@@ -382,7 +392,10 @@ impl StubKvStore {
 
     /// Pre-bank a prefix (e.g. the system block) so a later lookup hits.
     pub fn bank(&self, key: &PrefixKey) {
-        self.inner.lock().banked.insert(key.prefix_hex(), key.n_tokens);
+        self.inner
+            .lock()
+            .banked
+            .insert(key.prefix_hex(), key.n_tokens);
     }
 }
 
@@ -527,7 +540,10 @@ mod tests {
         let prefix_hex = hex32(&prefix_hash);
         assert_eq!(key.prefix_hex(), prefix_hex);
         assert_eq!(key.prefix_hex().len(), 64);
-        assert_eq!(format!("{model_hex}/{prefix_hex}.kv").len(), 64 + 1 + 64 + 3);
+        assert_eq!(
+            format!("{model_hex}/{prefix_hex}.kv").len(),
+            64 + 1 + 64 + 3
+        );
 
         // Empty-prompt edge: still seeded by model‖tokenizer (n_tokens == 0).
         let empty = PrefixKey::from_model_and_prompt(model, tok_sig, &[]);

@@ -85,11 +85,8 @@ impl Tool for SearchTextTool {
                     )
                 }
             };
-            let glob_set = glob.and_then(|g| {
-                globset::Glob::new(g)
-                    .ok()
-                    .map(|g| g.compile_matcher())
-            });
+            let glob_set =
+                glob.and_then(|g| globset::Glob::new(g).ok().map(|g| g.compile_matcher()));
 
             let mut matches = Vec::new();
             let mut truncated = false;

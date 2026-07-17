@@ -217,24 +217,24 @@ fn single_call(value: &Value) -> Option<ParsedToolCall> {
     let obj = value.as_object()?;
 
     // OpenAI nests name/arguments under `function`.
-    let (name_src, args_src, id) = if let Some(func) = obj.get("function").and_then(|f| f.as_object())
-    {
-        let id = obj.get("id").and_then(|v| v.as_str()).map(str::to_string);
-        (
-            func.get("name"),
-            func.get("arguments").or_else(|| func.get("parameters")),
-            id,
-        )
-    } else {
-        let id = obj.get("id").and_then(|v| v.as_str()).map(str::to_string);
-        (
-            obj.get("name").or_else(|| obj.get("tool")),
-            obj.get("arguments")
-                .or_else(|| obj.get("args"))
-                .or_else(|| obj.get("parameters")),
-            id,
-        )
-    };
+    let (name_src, args_src, id) =
+        if let Some(func) = obj.get("function").and_then(|f| f.as_object()) {
+            let id = obj.get("id").and_then(|v| v.as_str()).map(str::to_string);
+            (
+                func.get("name"),
+                func.get("arguments").or_else(|| func.get("parameters")),
+                id,
+            )
+        } else {
+            let id = obj.get("id").and_then(|v| v.as_str()).map(str::to_string);
+            (
+                obj.get("name").or_else(|| obj.get("tool")),
+                obj.get("arguments")
+                    .or_else(|| obj.get("args"))
+                    .or_else(|| obj.get("parameters")),
+                id,
+            )
+        };
 
     let name = name_src?.as_str()?.trim().to_string();
     if name.is_empty() {
@@ -363,7 +363,8 @@ mod tests {
     fn bare_call_after_bracket_citation_is_recovered() {
         // A leading "[1]" must not shadow the real object (was dropped before the
         // all-spans fix; confirmed by adversarial review).
-        let calls = parse_tool_calls("See [1] for details. {\"name\":\"fs.read\",\"arguments\":{}}");
+        let calls =
+            parse_tool_calls("See [1] for details. {\"name\":\"fs.read\",\"arguments\":{}}");
         assert_eq!(calls.len(), 1);
         assert_eq!(calls[0].name, "fs.read");
     }
@@ -397,4 +398,3 @@ mod tests {
         assert_eq!(call.args, json!({ "path": "x" }));
     }
 }
-

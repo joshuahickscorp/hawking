@@ -232,7 +232,7 @@ mod tests {
     #[test]
     fn safe_prefix_respects_char_boundaries() {
         let s = "héllo"; // é is 2 bytes
-        // cutting at byte 2 would split é → must back off to 1
+                         // cutting at byte 2 would split é → must back off to 1
         assert_eq!(safe_prefix(s, 2), "h");
         assert_eq!(safe_prefix(s, 100), s);
     }

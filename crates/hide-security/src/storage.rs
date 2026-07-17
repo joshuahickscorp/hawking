@@ -161,7 +161,13 @@ impl FileWrapKeyStore {
         // key_ref is a controlled handle, but sanitize defensively.
         let safe: String = key_ref
             .chars()
-            .map(|c| if c.is_ascii_alphanumeric() || c == '-' || c == '_' { c } else { '_' })
+            .map(|c| {
+                if c.is_ascii_alphanumeric() || c == '-' || c == '_' {
+                    c
+                } else {
+                    '_'
+                }
+            })
             .collect();
         self.dir.join(format!("{safe}.wrapkey"))
     }
@@ -225,7 +231,9 @@ pub struct AtRestCipher {
 
 impl std::fmt::Debug for AtRestCipher {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("AtRestCipher").field("wdk", &"<sealed>").finish()
+        f.debug_struct("AtRestCipher")
+            .field("wdk", &"<sealed>")
+            .finish()
     }
 }
 
@@ -248,10 +256,16 @@ impl AtRestCipher {
         let ct = cipher
             .encrypt(
                 Nonce::from_slice(&nonce),
-                Payload { msg: &self.wdk, aad: WRAP_AAD },
+                Payload {
+                    msg: &self.wdk,
+                    aad: WRAP_AAD,
+                },
             )
             .map_err(|_| HideError::Storage("WDK wrap failed".into()))?;
-        Ok(WrappedWdk { nonce, ciphertext: ct })
+        Ok(WrappedWdk {
+            nonce,
+            ciphertext: ct,
+        })
     }
 
     /// Recover the WDK from its wrapped form (authenticated — a tampered wrap or
@@ -261,7 +275,10 @@ impl AtRestCipher {
         let pt = cipher
             .decrypt(
                 Nonce::from_slice(&wrapped.nonce),
-                Payload { msg: &wrapped.ciphertext, aad: WRAP_AAD },
+                Payload {
+                    msg: &wrapped.ciphertext,
+                    aad: WRAP_AAD,
+                },
             )
             .map_err(|_| HideError::Storage("WDK unwrap failed (bad key or tampered)".into()))?;
         let wdk: [u8; WDK_LEN] = pt
@@ -289,10 +306,16 @@ impl AtRestCipher {
         let ct = cipher
             .encrypt(
                 Nonce::from_slice(&nonce),
-                Payload { msg: plaintext, aad: store_id.as_bytes() },
+                Payload {
+                    msg: plaintext,
+                    aad: store_id.as_bytes(),
+                },
             )
             .map_err(|_| HideError::Storage("segment encrypt failed".into()))?;
-        Ok(EncryptedSegment { nonce, ciphertext: ct })
+        Ok(EncryptedSegment {
+            nonce,
+            ciphertext: ct,
+        })
     }
 
     /// Decrypt + authenticate a segment. A wrong `store_id`, wrong key, or any
@@ -303,7 +326,10 @@ impl AtRestCipher {
         cipher
             .decrypt(
                 Nonce::from_slice(&segment.nonce),
-                Payload { msg: &segment.ciphertext, aad: store_id.as_bytes() },
+                Payload {
+                    msg: &segment.ciphertext,
+                    aad: store_id.as_bytes(),
+                },
             )
             .map_err(|_| HideError::Storage("segment decrypt failed (bad key or tampered)".into()))
     }
@@ -414,7 +440,8 @@ pub fn validate_layout(hide_dir: &Path) -> LayoutValidation {
     #[cfg(not(unix))]
     {
         let _ = log_dir;
-        warnings.push("layout mode checks are only enforced on Unix; refusing to claim 0700".into());
+        warnings
+            .push("layout mode checks are only enforced on Unix; refusing to claim 0700".into());
         LayoutValidation {
             ok: false,
             root_mode_owner_only: false,
@@ -496,7 +523,9 @@ mod tests {
     #[test]
     fn aead_round_trips_and_authenticates() {
         let cipher = AtRestCipher::generate();
-        let seg = cipher.encrypt_segment("log", b"hello secret world").unwrap();
+        let seg = cipher
+            .encrypt_segment("log", b"hello secret world")
+            .unwrap();
         let pt = cipher.decrypt_segment("log", &seg).unwrap();
         assert_eq!(pt, b"hello secret world");
 

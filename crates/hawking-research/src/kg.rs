@@ -230,8 +230,7 @@ impl PetKnowledgeGraph {
         if inner.edge_ids.contains(&edge.id) {
             return;
         }
-        let (Some(&from), Some(&to)) =
-            (inner.index.get(&edge.from), inner.index.get(&edge.to))
+        let (Some(&from), Some(&to)) = (inner.index.get(&edge.from), inner.index.get(&edge.to))
         else {
             return; // endpoints must exist first
         };
@@ -296,10 +295,7 @@ impl PetKnowledgeGraph {
             let span = ProvenanceSpan {
                 doc_id: doc.id.clone(),
                 span_id: section.spans.first().map(|s| s.id.clone()),
-                char_range: section
-                    .spans
-                    .first()
-                    .map(|s| (s.start_char, s.end_char)),
+                char_range: section.spans.first().map(|s| (s.start_char, s.end_char)),
                 citation: None,
                 content_hash,
                 evidence_blob,
@@ -410,7 +406,11 @@ impl PetKnowledgeGraph {
                 .chain(inner.graph.edges_directed(idx, Direction::Incoming))
             {
                 edges.push(e.weight().clone());
-                let nbr = if e.source() == idx { e.target() } else { e.source() };
+                let nbr = if e.source() == idx {
+                    e.target()
+                } else {
+                    e.source()
+                };
                 if visited.insert(nbr) {
                     queue.push_back((nbr, depth + 1));
                 }
@@ -457,7 +457,11 @@ impl PetKnowledgeGraph {
                 .edges_directed(idx, Direction::Outgoing)
                 .chain(inner.graph.edges_directed(idx, Direction::Incoming))
             {
-                let nbr = if e.source() == idx { e.target() } else { e.source() };
+                let nbr = if e.source() == idx {
+                    e.target()
+                } else {
+                    e.source()
+                };
                 if visited.insert(nbr) {
                     prev.insert(nbr, (idx, e.weight().clone()));
                     queue.push_back(nbr);
@@ -638,16 +642,25 @@ mod tests {
         );
         // (2) The recorded receipt hash equals blake3 of the canonical bytes...
         let canon = cas::canonical_evidence_bytes(&section_text);
-        assert_eq!(claim.provenance.content_hash.as_deref(), Some(cas::blake3_hex(&canon).as_str()));
+        assert_eq!(
+            claim.provenance.content_hash.as_deref(),
+            Some(cas::blake3_hex(&canon).as_str())
+        );
         // ...and equals the per-section pin's hash (no doc-level divergence).
-        assert_eq!(claim.provenance.content_hash.as_deref(), Some(hash.as_str()));
+        assert_eq!(
+            claim.provenance.content_hash.as_deref(),
+            Some(hash.as_str())
+        );
         assert_eq!(claim.provenance.evidence_blob.as_ref(), Some(&blob));
 
         // (3) Re-verification re-hashes the SAME blob bytes against the SAME
         //     receipt → Intact (no false positive).
-        let check =
-            cas::verify_evidence(&cas, claim.provenance.evidence_blob.as_ref().unwrap(), claim.provenance.content_hash.as_ref().unwrap())
-                .unwrap();
+        let check = cas::verify_evidence(
+            &cas,
+            claim.provenance.evidence_blob.as_ref().unwrap(),
+            claim.provenance.content_hash.as_ref().unwrap(),
+        )
+        .unwrap();
         assert!(check.is_intact());
     }
 

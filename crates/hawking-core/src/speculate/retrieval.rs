@@ -25,7 +25,7 @@
 //! 4. `reset()` — no-op; the corpus persists across requests (same policy as
 //!    `SuffixArrayDraft` and `NgramProposer`).
 
-use crate::speculate::proposal::{Budget, Ctx, CostNs, Proposal, Proposer, Telemetry};
+use crate::speculate::proposal::{Budget, CostNs, Ctx, Proposal, Proposer, Telemetry};
 
 /// Rolling-window exact-match retrieval proposer.
 ///
@@ -172,7 +172,11 @@ mod tests {
     use crate::speculate::proposal::{Budget, Ctx, Telemetry};
 
     fn make_ctx<'a>(tokens: &'a [u32]) -> Ctx<'a> {
-        Ctx { tokens, pos: tokens.len(), hidden: None }
+        Ctx {
+            tokens,
+            pos: tokens.len(),
+            hidden: None,
+        }
     }
 
     /// Helper: extract the Vec<u32> from a TokenLine or panic.
@@ -209,7 +213,11 @@ mod tests {
         let ctx = make_ctx(&tokens);
         let v = token_line(p.propose(&ctx, Budget::line(3), &Telemetry::default()));
         // The anchor is found at corpus[0..4]; tokens after it are [50, 60].
-        assert_eq!(v, vec![50u32, 60], "should draft the 2 tokens after the warm anchor");
+        assert_eq!(
+            v,
+            vec![50u32, 60],
+            "should draft the 2 tokens after the warm anchor"
+        );
     }
 
     // Test 3: novel tail → nothing (anchor absent in corpus).
@@ -255,7 +263,11 @@ mod tests {
         let ctx = make_ctx(&tokens);
         let v = token_line(p.propose(&ctx, Budget::line(1), &Telemetry::default()));
         // Only exact match at index 0 should fire; draft = corpus[4..5] = [99].
-        assert_eq!(v, vec![99u32], "only the exact 4-token match should produce a draft");
+        assert_eq!(
+            v,
+            vec![99u32],
+            "only the exact 4-token match should produce a draft"
+        );
     }
 
     // Test 5: ctx.tokens.len() < h → nothing (not enough context to form anchor).
@@ -296,6 +308,10 @@ mod tests {
         let tokens = [1u32, 2, 3, 4];
         let ctx = make_ctx(&tokens);
         let v = token_line(p.propose(&ctx, Budget::line(1), &Telemetry::default()));
-        assert_eq!(v, vec![5u32], "observed tokens must extend the searchable corpus");
+        assert_eq!(
+            v,
+            vec![5u32],
+            "observed tokens must extend the searchable corpus"
+        );
     }
 }

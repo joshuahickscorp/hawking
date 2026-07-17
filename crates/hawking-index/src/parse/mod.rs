@@ -186,14 +186,8 @@ fn extract_with_bundle(bundle: &GrammarBundle, rel_path: &str, source: &str) -> 
             let cap_name = capture_names[cap.index as usize];
             if Some(cap.index as usize) == name_idx {
                 name_node = Some(cap.node);
-                name_text = cap
-                    .node
-                    .utf8_text(src_bytes)
-                    .ok()
-                    .map(|s| s.to_string());
-            } else if cap_name.starts_with("definition.")
-                || cap_name.starts_with("reference.")
-            {
+                name_text = cap.node.utf8_text(src_bytes).ok().map(|s| s.to_string());
+            } else if cap_name.starts_with("definition.") || cap_name.starts_with("reference.") {
                 role_capture = Some(cap_name);
             }
         }
@@ -283,11 +277,7 @@ fn helper() {}
         assert!(!out.unparseable);
 
         // definitions present: Engine (struct), run_engine + helper (fn)
-        let def_names: Vec<_> = out
-            .symbols
-            .iter()
-            .map(|s| s.name.as_str())
-            .collect();
+        let def_names: Vec<_> = out.symbols.iter().map(|s| s.name.as_str()).collect();
         assert!(def_names.contains(&"Engine"), "got {def_names:?}");
         assert!(def_names.contains(&"run_engine"));
         assert!(def_names.contains(&"helper"));
@@ -299,7 +289,10 @@ fn helper() {}
             .filter(|o| o.role == ROLE_REFERENCE)
             .map(|o| o.symbol.as_str())
             .collect();
-        assert!(refs.contains(&"helper"), "expected ref to helper, got {refs:?}");
+        assert!(
+            refs.contains(&"helper"),
+            "expected ref to helper, got {refs:?}"
+        );
     }
 
     #[test]
@@ -309,7 +302,10 @@ fn helper() {}
         assert!(id_fn.ends_with("foo()."));
         assert!(id_struct.ends_with("Foo#"));
         // stable across calls
-        assert_eq!(id_fn, scip_symbol_id(LangId::Rust, "a.rs", "foo", SymKind::Function));
+        assert_eq!(
+            id_fn,
+            scip_symbol_id(LangId::Rust, "a.rs", "foo", SymKind::Function)
+        );
     }
 
     #[test]
@@ -352,8 +348,14 @@ const formatted = format("x");
             !refs.is_empty(),
             "TS source must yield non-empty references, got {refs:?}"
         );
-        assert!(refs.contains(&"greet"), "expected call ref to greet: {refs:?}");
-        assert!(refs.contains(&"format"), "expected call ref to format: {refs:?}");
+        assert!(
+            refs.contains(&"greet"),
+            "expected call ref to greet: {refs:?}"
+        );
+        assert!(
+            refs.contains(&"format"),
+            "expected call ref to format: {refs:?}"
+        );
     }
 
     #[test]
@@ -381,7 +383,10 @@ const square = (n) => add(n, n);
         assert!(def_names.contains(&"add"), "got defs {def_names:?}");
         assert!(def_names.contains(&"Calculator"), "got defs {def_names:?}");
         assert!(def_names.contains(&"run"), "got defs {def_names:?}");
-        assert!(def_names.contains(&"square"), "arrow-fn const def: {def_names:?}");
+        assert!(
+            def_names.contains(&"square"),
+            "arrow-fn const def: {def_names:?}"
+        );
 
         let refs: Vec<_> = out
             .occurrences
@@ -393,7 +398,10 @@ const square = (n) => add(n, n);
             !refs.is_empty(),
             "JS source must yield non-empty references, got {refs:?}"
         );
-        assert!(refs.contains(&"compute"), "expected call ref to compute: {refs:?}");
+        assert!(
+            refs.contains(&"compute"),
+            "expected call ref to compute: {refs:?}"
+        );
         assert!(refs.contains(&"add"), "expected call ref to add: {refs:?}");
     }
 
@@ -412,7 +420,10 @@ const square = (n) => add(n, n);
         let out = parse_source("x.rs", src);
         // good() still extracted despite the broken neighbor
         assert!(out.symbols.iter().any(|s| s.name == "good"));
-        assert!(!out.error_spans.is_empty(), "expected an ERROR/MISSING span");
+        assert!(
+            !out.error_spans.is_empty(),
+            "expected an ERROR/MISSING span"
+        );
     }
 
     #[test]

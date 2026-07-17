@@ -1,6 +1,6 @@
 use hide_core::api::{UiEvent, UiEventKind};
 use hide_core::event::{
-    Event, ErrorEvent, ProjectionEvent, RuntimeStatusEvent, SecurityEvent, TokenEvent,
+    ErrorEvent, Event, ProjectionEvent, RuntimeStatusEvent, SecurityEvent, TokenEvent,
     ToolCallEvent, ToolResultEvent,
 };
 use hide_core::ids::SessionId;
@@ -162,12 +162,14 @@ pub fn event_to_ui_event(event: &Event) -> UiEvent {
     // projection-flavored subset keyed off the dotted event kind, reading the
     // typed view off the open `Value` payload.
     let kind = match event.kind.as_str() {
-        "projection.patch" => event
-            .payload_as::<ProjectionEvent>()
-            .map(|projection| UiEventKind::ProjectionPatch {
-                projection: projection.projection,
-                patch: projection.patch,
-            }),
+        "projection.patch" => {
+            event
+                .payload_as::<ProjectionEvent>()
+                .map(|projection| UiEventKind::ProjectionPatch {
+                    projection: projection.projection,
+                    patch: projection.patch,
+                })
+        }
         "token" | "token_batch" => {
             event
                 .payload_as::<TokenEvent>()

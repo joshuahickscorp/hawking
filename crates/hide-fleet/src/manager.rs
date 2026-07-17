@@ -491,11 +491,7 @@ impl FleetManager {
     /// Drive ticks until the queue reaches quiescence: no ready jobs and no live
     /// jobs (everything terminal). Bounded by `max_ticks` to avoid a runaway loop
     /// in a misbehaving test. Used by batch drains + tests.
-    pub async fn run_to_quiescence(
-        &self,
-        max_slots: u32,
-        max_ticks: usize,
-    ) -> Result<()> {
+    pub async fn run_to_quiescence(&self, max_slots: u32, max_ticks: usize) -> Result<()> {
         for _ in 0..max_ticks {
             let _ = self.schedule_tick(max_slots, 40.0, 40.0).await?;
             // Wait for in-flight runs to report, then fold.
@@ -509,11 +505,7 @@ impl FleetManager {
                 self.await_completions(live).await?;
             }
             self.drain_completions().await?;
-            let pending = self
-                .queue
-                .all()
-                .iter()
-                .any(|j| !j.status.is_terminal());
+            let pending = self.queue.all().iter().any(|j| !j.status.is_terminal());
             if !pending {
                 return Ok(());
             }
@@ -779,7 +771,10 @@ mod tests {
             mgr.config.ports_per_run as usize,
             "ports leased while the run is live"
         );
-        assert_eq!(mgr.occupancy().ports_leased, mgr.config.ports_per_run as u32);
+        assert_eq!(
+            mgr.occupancy().ports_leased,
+            mgr.config.ports_per_run as u32
+        );
 
         // Fold the completion → release_run must return the ports.
         mgr.await_completions(1).await.unwrap();
@@ -833,7 +828,10 @@ mod tests {
         let occ = mgr.occupancy();
         // Two live model runs each hold ports_per_run ports → allocator truth.
         assert_eq!(occ.ports_leased, 2 * mgr.config.ports_per_run as u32);
-        assert_eq!(occ.ports_leased, mgr.worktrees().ports_leased_count() as u32);
+        assert_eq!(
+            occ.ports_leased,
+            mgr.worktrees().ports_leased_count() as u32
+        );
         assert_eq!(occ.worktrees, 2);
         assert_eq!(occ.worktrees, mgr.worktrees().live_worktree_count() as u32);
 

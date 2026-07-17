@@ -205,9 +205,8 @@ pub async fn dispatch_purity_gated<D: CallDispatch>(
     dispatcher: &D,
     calls: Vec<(ToolCall, bool)>,
 ) -> Vec<hide_core::Result<ToolResult>> {
-    let mut results: Vec<Option<hide_core::Result<ToolResult>>> = (0..calls.len())
-        .map(|_| None)
-        .collect();
+    let mut results: Vec<Option<hide_core::Result<ToolResult>>> =
+        (0..calls.len()).map(|_| None).collect();
 
     // Read-only calls: fan out concurrently.
     let read_only: Vec<(usize, ToolCall)> = calls
@@ -216,9 +215,12 @@ pub async fn dispatch_purity_gated<D: CallDispatch>(
         .filter(|(_, (_, ro))| *ro)
         .map(|(i, (c, _))| (i, c.clone()))
         .collect();
-    let ro_results =
-        futures::future::join_all(read_only.iter().map(|(_, c)| dispatcher.dispatch(c.clone())))
-            .await;
+    let ro_results = futures::future::join_all(
+        read_only
+            .iter()
+            .map(|(_, c)| dispatcher.dispatch(c.clone())),
+    )
+    .await;
     for ((idx, _), res) in read_only.iter().zip(ro_results) {
         results[*idx] = Some(res);
     }
@@ -230,7 +232,10 @@ pub async fn dispatch_purity_gated<D: CallDispatch>(
         }
     }
 
-    results.into_iter().map(|r| r.expect("every slot filled")).collect()
+    results
+        .into_iter()
+        .map(|r| r.expect("every slot filled"))
+        .collect()
 }
 
 // ---------------------------------------------------------------------------
@@ -340,10 +345,7 @@ mod tests {
     }
 
     impl CallDispatch for FakeDispatcher {
-        fn dispatch<'a>(
-            &'a self,
-            call: ToolCall,
-        ) -> BoxFuture<'a, hide_core::Result<ToolResult>> {
+        fn dispatch<'a>(&'a self, call: ToolCall) -> BoxFuture<'a, hide_core::Result<ToolResult>> {
             self.calls.fetch_add(1, Ordering::SeqCst);
             let fail = self.fail;
             Box::pin(async move {
@@ -369,11 +371,15 @@ mod tests {
         let d = FakeDispatcher::ok();
         let mut lp = ToolLoop::new(&d, known(), None);
         let turns = lp
-            .run_text("<tool_call>{\"name\":\"fs.read\",\"arguments\":{\"path\":\"a\"}}</tool_call>")
+            .run_text(
+                "<tool_call>{\"name\":\"fs.read\",\"arguments\":{\"path\":\"a\"}}</tool_call>",
+            )
             .await;
         assert_eq!(turns.len(), 1);
         assert!(matches!(turns[0].status, ToolTurnStatus::Ok(_)));
-        assert!(turns[0].feedback.contains("<tool_response name=\"fs.read\">"));
+        assert!(turns[0]
+            .feedback
+            .contains("<tool_response name=\"fs.read\">"));
         assert!(turns[0].feedback.contains("echo"));
         assert_eq!(d.count(), 1);
     }
@@ -423,7 +429,9 @@ mod tests {
         let d = FakeDispatcher::ok();
         let mut lp = ToolLoop::new(&d, known(), None);
         let ok = lp
-            .run_text("<tool_call>{\"name\":\"fs.read\",\"arguments\":{\"path\":\"a\"}}</tool_call>")
+            .run_text(
+                "<tool_call>{\"name\":\"fs.read\",\"arguments\":{\"path\":\"a\"}}</tool_call>",
+            )
             .await;
         let obs = ok[0].to_observation();
         assert_eq!(obs["tool"], "fs.read");
@@ -443,7 +451,9 @@ mod tests {
         let d = FakeDispatcher::failing();
         let mut lp = ToolLoop::new(&d, known(), None);
         let turns = lp
-            .run_text("<tool_call>{\"name\":\"shell.run\",\"arguments\":{\"argv\":[\"x\"]}}</tool_call>")
+            .run_text(
+                "<tool_call>{\"name\":\"shell.run\",\"arguments\":{\"argv\":[\"x\"]}}</tool_call>",
+            )
             .await;
         assert_eq!(turns.len(), 1);
         assert!(matches!(turns[0].status, ToolTurnStatus::Error(_)));

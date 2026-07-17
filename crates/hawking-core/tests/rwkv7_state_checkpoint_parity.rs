@@ -47,7 +47,10 @@ fn rwkv7_checkpoint_roundtrip_bit_identical_logits() {
     // Snapshot the state; a fork must equal the snapshot at the same point.
     let cp = engine.save_checkpoint().expect("save_checkpoint");
     let fork = engine.fork_state().expect("fork_state");
-    assert_eq!(cp, fork, "fork_state must equal the save_checkpoint snapshot");
+    assert_eq!(
+        cp, fork,
+        "fork_state must equal the save_checkpoint snapshot"
+    );
 
     // Step one token from the checkpoint, then restore and step the same token:
     // the restored state must reproduce bit-identical next-token logits.

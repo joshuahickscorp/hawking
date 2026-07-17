@@ -6,9 +6,9 @@
 //! For gate+up (11008 rows × 2048 cols): 344 TGs vs 688 (pair_4r_f32)
 //! or 1376 (pair_f16s 1r). Both bandwidth and TG scheduling savings.
 
+use half::f16;
 use hawking_core::kernels;
 use hawking_core::metal::{MetalContext, TokenCommandBuffer};
-use half::f16;
 
 mod common;
 use common::*;

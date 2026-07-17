@@ -29,7 +29,10 @@ impl LinearFidelity {
     /// (`rwkv7.context_length`). Floor defaults to 0.3 (old context stays partly
     /// recoverable from the rolling state).
     pub fn new(horizon_tokens: usize) -> Self {
-        Self { horizon_tokens, floor: 0.3 }
+        Self {
+            horizon_tokens,
+            floor: 0.3,
+        }
     }
 }
 
@@ -109,28 +112,47 @@ mod tests {
         let p = LinearFidelity::new(1000);
         assert!((p.fidelity(0) - 1.0).abs() < 1e-6);
         assert!(p.fidelity(500) > 0.49 && p.fidelity(500) < 0.51);
-        assert!((p.fidelity(100_000) - p.floor).abs() < 1e-6, "holds at floor, never 0");
+        assert!(
+            (p.fidelity(100_000) - p.floor).abs() < 1e-6,
+            "holds at floor, never 0"
+        );
     }
 
     #[test]
     fn zero_horizon_is_full() {
-        assert_eq!(LinearFidelity { horizon_tokens: 0, floor: 0.3 }.fidelity(123), 1.0);
+        assert_eq!(
+            LinearFidelity {
+                horizon_tokens: 0,
+                floor: 0.3
+            }
+            .fidelity(123),
+            1.0
+        );
     }
 
     #[test]
     fn spline_interpolates_between_knots() {
         let p = SplineFidelity::new(vec![(0, 1.0), (1000, 0.5), (2000, 0.3)]);
         assert!((p.fidelity(0) - 1.0).abs() < 1e-6);
-        assert!((p.fidelity(500) - 0.75).abs() < 1e-6, "midpoint of 1.0..0.5");
+        assert!(
+            (p.fidelity(500) - 0.75).abs() < 1e-6,
+            "midpoint of 1.0..0.5"
+        );
         assert!((p.fidelity(1500) - 0.4).abs() < 1e-6);
-        assert!((p.fidelity(5000) - 0.3).abs() < 1e-6, "held flat past last knot");
+        assert!(
+            (p.fidelity(5000) - 0.3).abs() < 1e-6,
+            "held flat past last knot"
+        );
     }
 
     #[test]
     fn spline_enforces_monotone_non_increasing() {
         // A noisy knot that rises is clamped down to the prior fidelity.
         let p = SplineFidelity::new(vec![(0, 1.0), (1000, 0.4), (2000, 0.9)]);
-        assert!(p.fidelity(2000) <= 0.4 + 1e-6, "recall cannot recover with age");
+        assert!(
+            p.fidelity(2000) <= 0.4 + 1e-6,
+            "recall cannot recover with age"
+        );
     }
 
     #[test]

@@ -26,7 +26,10 @@ use std::path::Path;
 /// Outcome of computing a post-image without writing it.
 enum Plan {
     /// New file content + a per-edit log.
-    Ready { content: String, applied: Vec<Value> },
+    Ready {
+        content: String,
+        applied: Vec<Value>,
+    },
     /// A conflict the model must resolve (no write).
     Conflict { message: String, hint: String },
     /// An argument problem.
@@ -227,12 +230,21 @@ fn check_base_hash(args: &Value, current: &str) -> Option<Plan> {
 
 fn plan_write_file(args: &Value) -> Plan {
     let Some(path) = args.get("path").and_then(|v| v.as_str()) else {
-        return Plan::Invalid { message: "missing path".into(), ptr: "/path" };
+        return Plan::Invalid {
+            message: "missing path".into(),
+            ptr: "/path",
+        };
     };
     let Some(content) = args.get("content").and_then(|v| v.as_str()) else {
-        return Plan::Invalid { message: "missing content".into(), ptr: "/content" };
+        return Plan::Invalid {
+            message: "missing content".into(),
+            ptr: "/content",
+        };
     };
-    let create_only = args.get("create_only").and_then(|v| v.as_bool()).unwrap_or(false);
+    let create_only = args
+        .get("create_only")
+        .and_then(|v| v.as_bool())
+        .unwrap_or(false);
     if create_only && Path::new(path).exists() {
         return Plan::Conflict {
             message: format!("create_only set but {path} exists"),
@@ -251,15 +263,24 @@ fn plan_write_file(args: &Value) -> Plan {
 
 fn plan_search_replace(args: &Value) -> Plan {
     let Some(path) = args.get("path").and_then(|v| v.as_str()) else {
-        return Plan::Invalid { message: "missing path".into(), ptr: "/path" };
+        return Plan::Invalid {
+            message: "missing path".into(),
+            ptr: "/path",
+        };
     };
     let Some(edits) = args.get("edits").and_then(|v| v.as_array()) else {
-        return Plan::Invalid { message: "missing edits[]".into(), ptr: "/edits" };
+        return Plan::Invalid {
+            message: "missing edits[]".into(),
+            ptr: "/edits",
+        };
     };
     let mut current = match read_current(path) {
         Ok(c) => c,
         Err(err) => {
-            return Plan::Invalid { message: err.to_string(), ptr: "/path" };
+            return Plan::Invalid {
+                message: err.to_string(),
+                ptr: "/path",
+            };
         }
     };
     if let Some(conflict) = check_base_hash(args, &current) {
@@ -286,7 +307,10 @@ fn plan_search_replace(args: &Value) -> Plan {
             }
         }
     }
-    Plan::Ready { content: current, applied }
+    Plan::Ready {
+        content: current,
+        applied,
+    }
 }
 
 /// Apply one search/replace with the three-stage tolerance ladder. Returns the
@@ -303,7 +327,11 @@ fn apply_one(
     }
     // 1. exact
     if content.contains(search) {
-        let count = if all { content.matches(search).count() } else { 1 };
+        let count = if all {
+            content.matches(search).count()
+        } else {
+            1
+        };
         let next = if all {
             content.replace(search, replace)
         } else {
@@ -423,14 +451,25 @@ fn line_start_offsets(content: &str) -> Vec<usize> {
 /// the original lines, matching context/removed lines, and emitting added lines.
 fn plan_apply_patch(args: &Value) -> Plan {
     let Some(path) = args.get("path").and_then(|v| v.as_str()) else {
-        return Plan::Invalid { message: "missing path".into(), ptr: "/path" };
+        return Plan::Invalid {
+            message: "missing path".into(),
+            ptr: "/path",
+        };
     };
     let Some(patch) = args.get("patch").and_then(|v| v.as_str()) else {
-        return Plan::Invalid { message: "missing patch".into(), ptr: "/patch" };
+        return Plan::Invalid {
+            message: "missing patch".into(),
+            ptr: "/patch",
+        };
     };
     let current = match read_current(path) {
         Ok(c) => c,
-        Err(err) => return Plan::Invalid { message: err.to_string(), ptr: "/path" },
+        Err(err) => {
+            return Plan::Invalid {
+                message: err.to_string(),
+                ptr: "/path",
+            }
+        }
     };
     if let Some(conflict) = check_base_hash(args, &current) {
         return conflict;
@@ -505,7 +544,9 @@ fn apply_unified(original: &str, patch: &str) -> Result<String, String> {
             // orig_lines[cursor..anchor] would then panic (start > end). Treat a
             // backward hunk as an out-of-order conflict, not a crash.
             if anchor < cursor {
-                return Err("hunk context precedes the current position (out-of-order hunk)".to_string());
+                return Err(
+                    "hunk context precedes the current position (out-of-order hunk)".to_string(),
+                );
             }
             // Copy unchanged lines up to the anchor.
             for l in &orig_lines[cursor..anchor] {
@@ -693,7 +734,9 @@ mod tests {
             )
             .await;
         assert!(r.ok);
-        assert!(std::fs::read_to_string(&file).unwrap().contains("let x = 2;"));
+        assert!(std::fs::read_to_string(&file)
+            .unwrap()
+            .contains("let x = 2;"));
         let _ = std::fs::remove_dir_all(dir);
     }
 
@@ -719,7 +762,9 @@ mod tests {
             "whitespace-normalized match should succeed: {:?}",
             r.error
         );
-        assert!(std::fs::read_to_string(&file).unwrap().contains("let x = 2;"));
+        assert!(std::fs::read_to_string(&file)
+            .unwrap()
+            .contains("let x = 2;"));
         let _ = std::fs::remove_dir_all(dir);
     }
 
@@ -768,7 +813,8 @@ mod tests {
         let dir = tmp("patch");
         let file = dir.join("f.txt");
         std::fs::write(&file, "line1\nline2\nline3\n").unwrap();
-        let patch = "--- a/f.txt\n+++ b/f.txt\n@@ -1,3 +1,3 @@\n line1\n-line2\n+line2-edited\n line3\n";
+        let patch =
+            "--- a/f.txt\n+++ b/f.txt\n@@ -1,3 +1,3 @@\n line1\n-line2\n+line2-edited\n line3\n";
         let tool = ApplyPatchTool::default();
         let r = tool
             .call(
@@ -793,7 +839,10 @@ mod tests {
         let patch = "@@\n-b\n+B\n@@\n-target\n+TARGET\n";
         let tool = ApplyPatchTool::default();
         let r = tool
-            .call(json!({ "path": file.to_string_lossy(), "patch": patch }), ctx())
+            .call(
+                json!({ "path": file.to_string_lossy(), "patch": patch }),
+                ctx(),
+            )
             .await;
         assert!(!r.ok, "out-of-order hunk must not apply");
         assert_eq!(r.error.unwrap().code, "CONFLICT");
@@ -812,7 +861,10 @@ mod tests {
         let patch = "@@\n\n-a\n+A\n";
         let tool = ApplyPatchTool::default();
         let r = tool
-            .call(json!({ "path": file.to_string_lossy(), "patch": patch }), ctx())
+            .call(
+                json!({ "path": file.to_string_lossy(), "patch": patch }),
+                ctx(),
+            )
             .await;
         assert!(!r.ok, "mismatched removal must not silently corrupt");
         assert_eq!(r.error.unwrap().code, "CONFLICT");
@@ -831,7 +883,10 @@ mod tests {
         let patch = "@@\n a\n\n+X\n b\n";
         let tool = ApplyPatchTool::default();
         let r = tool
-            .call(json!({ "path": file.to_string_lossy(), "patch": patch }), ctx())
+            .call(
+                json!({ "path": file.to_string_lossy(), "patch": patch }),
+                ctx(),
+            )
             .await;
         assert!(!r.ok, "blank-context desync must conflict, not corrupt");
         assert_eq!(r.error.unwrap().code, "CONFLICT");
@@ -849,7 +904,10 @@ mod tests {
         let patch = "@@\n\n\n";
         let tool = ApplyPatchTool::default();
         let r = tool
-            .call(json!({ "path": file.to_string_lossy(), "patch": patch }), ctx())
+            .call(
+                json!({ "path": file.to_string_lossy(), "patch": patch }),
+                ctx(),
+            )
             .await;
         assert!(!r.ok, "all-blank hunk must not report success");
         assert_eq!(std::fs::read_to_string(&file).unwrap(), "a\nb\nc\n");
@@ -867,7 +925,10 @@ mod tests {
         let patch = "@@ -1,3 +1,3 @@\n a\n-b\n+B\n c\n\n";
         let tool = ApplyPatchTool::default();
         let r = tool
-            .call(json!({ "path": file.to_string_lossy(), "patch": patch }), ctx())
+            .call(
+                json!({ "path": file.to_string_lossy(), "patch": patch }),
+                ctx(),
+            )
             .await;
         assert!(r.ok, "trailing blank must not block apply: {:?}", r.error);
         assert_eq!(std::fs::read_to_string(&file).unwrap(), "a\nB\nc\n");
@@ -884,7 +945,10 @@ mod tests {
         let patch = "@@ -1,3 +1,3 @@\n a\n\n-c\n+C\n";
         let tool = ApplyPatchTool::default();
         let r = tool
-            .call(json!({ "path": file.to_string_lossy(), "patch": patch }), ctx())
+            .call(
+                json!({ "path": file.to_string_lossy(), "patch": patch }),
+                ctx(),
+            )
             .await;
         assert!(r.ok, "stripped-blank context should apply: {:?}", r.error);
         assert_eq!(std::fs::read_to_string(&file).unwrap(), "a\n\nC\n");

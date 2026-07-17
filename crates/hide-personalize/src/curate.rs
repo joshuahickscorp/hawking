@@ -78,9 +78,9 @@ fn p95_latency(records: &[PersonalizationRecord]) -> Option<u32> {
 
 pub fn curate(records: &[PersonalizationRecord], policy: &CurationPolicy) -> CuratedDataset {
     // ── Rule 4: latency outlier cutoff, computed from the population ──────────
-    let latency_cutoff: Option<u32> = policy.latency_outlier_p95_mult.and_then(|mult| {
-        p95_latency(records).map(|p95| ((p95 as f32) * mult).round() as u32)
-    });
+    let latency_cutoff: Option<u32> = policy
+        .latency_outlier_p95_mult
+        .and_then(|mult| p95_latency(records).map(|p95| ((p95 as f32) * mult).round() as u32));
 
     // ── Rule 5: recency-weighting. Process newest-first so the cap keeps the
     //    most recent examples (the user's current style), and apply it across
@@ -206,10 +206,7 @@ mod tests {
 
     #[test]
     fn curation_keeps_accepted_diffs() {
-        let records = vec![
-            rec_at("p1", "+hello", 10, 1),
-            rec_at("p2", "+world", 10, 2),
-        ];
+        let records = vec![rec_at("p1", "+hello", 10, 1), rec_at("p2", "+world", 10, 2)];
         let dataset = curate(&records, &CurationPolicy::default());
         // 2 positives, 10% held-out rounds to 0 → both in train.
         assert_eq!(dataset.sft.len(), 2);
@@ -238,10 +235,7 @@ mod tests {
             held_out_frac: 0.0,
             ..Default::default()
         };
-        let records = vec![
-            rec_at("old", "+old", 10, 1),
-            rec_at("new", "+new", 10, 100),
-        ];
+        let records = vec![rec_at("old", "+old", 10, 1), rec_at("new", "+new", 10, 100)];
         let dataset = curate(&records, &policy);
         assert_eq!(dataset.sft.len(), 1);
         assert_eq!(dataset.sft[0].target_diff, "+new");
@@ -251,8 +245,7 @@ mod tests {
     fn dpo_pairs_on_matching_prompt() {
         let mut accepted = PersonalizationRecord::accepted(TaskClass::EditCode, "same", "+good");
         accepted.observed_at_us = 2;
-        let rejected =
-            PersonalizationRecord::rejected(TaskClass::EditCode, "same", "+bad", None);
+        let rejected = PersonalizationRecord::rejected(TaskClass::EditCode, "same", "+bad", None);
         let dataset = curate(&[accepted, rejected], &CurationPolicy::default());
         assert_eq!(dataset.preferences.len(), 1);
         assert_eq!(dataset.preferences[0].chosen_diff, "+good");
@@ -269,6 +262,9 @@ mod tests {
         assert_eq!(v, 1);
         assert!(layout.dataset_version_dir(1).join("train.jsonl").exists());
         assert!(layout.dataset_version_dir(1).join("pref.jsonl").exists());
-        assert!(layout.dataset_version_dir(1).join("held_out.jsonl").exists());
+        assert!(layout
+            .dataset_version_dir(1)
+            .join("held_out.jsonl")
+            .exists());
     }
 }

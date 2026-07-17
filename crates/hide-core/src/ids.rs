@@ -125,15 +125,16 @@ mod tests {
 
     #[test]
     fn deterministic_ids_are_monotonic_and_reproducible() {
-        let first = with_deterministic_ids(0, || {
-            (0..4).map(|_| EventId::new().0).collect::<Vec<_>>()
-        });
-        let second = with_deterministic_ids(0, || {
-            (0..4).map(|_| EventId::new().0).collect::<Vec<_>>()
-        });
+        let first =
+            with_deterministic_ids(0, || (0..4).map(|_| EventId::new().0).collect::<Vec<_>>());
+        let second =
+            with_deterministic_ids(0, || (0..4).map(|_| EventId::new().0).collect::<Vec<_>>());
         assert_eq!(first, second, "same seed yields identical id sequence");
         for pair in first.windows(2) {
-            assert!(pair[1] > pair[0], "deterministic ids are strictly increasing");
+            assert!(
+                pair[1] > pair[0],
+                "deterministic ids are strictly increasing"
+            );
         }
     }
 }

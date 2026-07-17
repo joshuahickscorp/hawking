@@ -202,11 +202,11 @@ impl RuntimeSupervisor {
     /// [`crate::model_provider::HttpModelProvider`] so the kernel generates
     /// against the live child.
     pub fn base_url(&self) -> Option<String> {
-        self.inner
-            .lock()
-            .health_url
-            .as_ref()
-            .map(|h| h.trim_end_matches("/healthz").trim_end_matches('/').to_string())
+        self.inner.lock().health_url.as_ref().map(|h| {
+            h.trim_end_matches("/healthz")
+                .trim_end_matches('/')
+                .to_string()
+        })
     }
 
     /// Acquire the `runtime.lock` (fail-closed if another live host holds it).
@@ -268,7 +268,9 @@ impl RuntimeSupervisor {
     fn read_lock_holder(path: &Path) -> Option<u32> {
         let body = std::fs::read_to_string(path).ok()?;
         let json: serde_json::Value = serde_json::from_str(&body).ok()?;
-        json.get("pid").and_then(|p| p.as_u64()).and_then(|p| u32::try_from(p).ok())
+        json.get("pid")
+            .and_then(|p| p.as_u64())
+            .and_then(|p| u32::try_from(p).ok())
     }
 
     fn release_lock(&self) {
@@ -347,7 +349,8 @@ impl RuntimeSupervisor {
             }
             Ok(true) => {
                 // Health green but child handle gone — treat as needing restart.
-                self.attempt_restart("child handle lost while healthy").await
+                self.attempt_restart("child handle lost while healthy")
+                    .await
             }
             Ok(false) => {
                 self.transition(
@@ -631,11 +634,8 @@ pub(crate) mod testkit {
                     if sd.load(Ordering::SeqCst) {
                         break;
                     }
-                    let accept = tokio::time::timeout(
-                        Duration::from_millis(100),
-                        listener.accept(),
-                    )
-                    .await;
+                    let accept =
+                        tokio::time::timeout(Duration::from_millis(100), listener.accept()).await;
                     let Ok(Ok((mut stream, _))) = accept else {
                         continue;
                     };
@@ -646,7 +646,11 @@ pub(crate) mod testkit {
                         let n = stream.read(&mut buf).await.unwrap_or(0);
                         let req = String::from_utf8_lossy(&buf[..n]);
                         let body = serve_fake(&req, healthy_now);
-                        let status = if healthy_now { "200 OK" } else { "503 Service Unavailable" };
+                        let status = if healthy_now {
+                            "200 OK"
+                        } else {
+                            "503 Service Unavailable"
+                        };
                         let resp = format!(
                             "HTTP/1.1 {status}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
                             body.len()
@@ -686,7 +690,11 @@ pub(crate) mod testkit {
     fn serve_fake(req: &str, healthy: bool) -> String {
         let first = req.lines().next().unwrap_or_default();
         if first.contains("/healthz") {
-            return if healthy { "ok".to_string() } else { "unhealthy".to_string() };
+            return if healthy {
+                "ok".to_string()
+            } else {
+                "unhealthy".to_string()
+            };
         }
         if first.contains("/v1/embeddings") {
             return serde_json::json!({
@@ -967,7 +975,10 @@ mod tests {
         sup.boot().await.unwrap();
         assert!(lock.exists(), "runtime.lock should exist while Ready");
         sup.shutdown().await;
-        assert!(!lock.exists(), "runtime.lock should be released on shutdown");
+        assert!(
+            !lock.exists(),
+            "runtime.lock should be released on shutdown"
+        );
         let _ = std::fs::remove_dir_all(dir);
         rt.stop();
     }

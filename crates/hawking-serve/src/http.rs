@@ -18,8 +18,8 @@ use axum::{
     routing::{get, post},
     Json, Router,
 };
-use hawking_core::{Engine, GenerateRequest, SamplingParams};
 use futures::stream::Stream;
+use hawking_core::{Engine, GenerateRequest, SamplingParams};
 use parking_lot::Mutex;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, VecDeque};
@@ -393,7 +393,8 @@ async fn chat_completions(State(s): State<AppState>, body: Bytes) -> Response {
         repetition_penalty: 1.0,
         seed: req.seed,
     };
-    let json_mode = req.response_format
+    let json_mode = req
+        .response_format
         .as_ref()
         .map(|f| f.format_type == "json_object")
         .unwrap_or(false);

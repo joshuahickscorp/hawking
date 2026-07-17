@@ -107,8 +107,7 @@ fn greedy_64_regression() {
         );
         return;
     };
-    let profile =
-        hawking_core::profile::KernelProfile::load(&profile_path).expect("load profile");
+    let profile = hawking_core::profile::KernelProfile::load(&profile_path).expect("load profile");
     let cfg = hawking_core::EngineConfig {
         kernel_profile: Some(profile),
         ..Default::default()

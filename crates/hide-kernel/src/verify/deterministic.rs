@@ -11,7 +11,9 @@
 //! file content), `schema` (JSON-against-schema), `runtime_smoke` (run a canned
 //! command and check exit/stdout). Each returns a Deterministic [`Verdict`].
 
-use crate::verify::oracle::{Cost, Failure, Oracle, OracleClass, Verdict, VerdictStatus, VerificationInput};
+use crate::verify::oracle::{
+    Cost, Failure, Oracle, OracleClass, Verdict, VerdictStatus, VerificationInput,
+};
 use futures::future::BoxFuture;
 use hide_core::tool::{ToolCall, ToolDispatcher, ToolResult};
 use hide_core::Result;
@@ -54,17 +56,38 @@ impl ProcessOracle {
 
     /// `build` oracle (`cargo build`).
     pub fn build(dispatcher: Arc<ToolDispatcher>) -> Self {
-        Self::new("build", "build.run", vec![], Cost::Medium, "build", dispatcher)
+        Self::new(
+            "build",
+            "build.run",
+            vec![],
+            Cost::Medium,
+            "build",
+            dispatcher,
+        )
     }
 
     /// `typecheck` oracle (`cargo check`).
     pub fn typecheck(dispatcher: Arc<ToolDispatcher>) -> Self {
-        Self::new("typecheck", "compile.check", vec![], Cost::Medium, "type", dispatcher)
+        Self::new(
+            "typecheck",
+            "compile.check",
+            vec![],
+            Cost::Medium,
+            "type",
+            dispatcher,
+        )
     }
 
     /// `test` oracle (`cargo test`).
     pub fn test(dispatcher: Arc<ToolDispatcher>) -> Self {
-        Self::new("test", "test.run", vec![], Cost::Expensive, "test", dispatcher)
+        Self::new(
+            "test",
+            "test.run",
+            vec![],
+            Cost::Expensive,
+            "test",
+            dispatcher,
+        )
     }
 
     /// `lint` oracle (`cargo clippy`).

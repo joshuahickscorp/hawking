@@ -88,9 +88,10 @@ impl From<Admission> for AdmissionDecision {
                 allowed: true,
                 reason: "admitted".to_string(),
             },
-            Admission::No { reason } | Admission::Defer { reason } => {
-                AdmissionDecision { allowed: false, reason }
-            }
+            Admission::No { reason } | Admission::Defer { reason } => AdmissionDecision {
+                allowed: false,
+                reason,
+            },
         }
     }
 }
@@ -153,7 +154,10 @@ impl FleetGovernor {
     /// the Model-pool ceiling shrinks (don't kill running work — just admit
     /// fewer). Returns the effective `max_model_runs`.
     pub fn effective_model_ceiling(&self) -> u32 {
-        let base = self.envelope.max_model_runs.min(self.snapshot.max_generation_slots);
+        let base = self
+            .envelope
+            .max_model_runs
+            .min(self.snapshot.max_generation_slots);
         let drop = self.snapshot.thermal_drop_pct();
         if drop >= self.envelope.thermal_throttle_pct {
             // Hard backoff: halve (at least 1 if anything is allowed at all).
@@ -210,10 +214,7 @@ impl FleetGovernor {
                 let ceiling = self.effective_model_ceiling();
                 if live.model_runs + req.generation_slots > ceiling {
                     return Admission::Defer {
-                        reason: format!(
-                            "model pool full: {}/{} slots",
-                            live.model_runs, ceiling
-                        ),
+                        reason: format!("model pool full: {}/{} slots", live.model_runs, ceiling),
                     };
                 }
             }
@@ -371,7 +372,11 @@ pub struct ReadyJob {
 
 /// Build a snapshot from a live probe (helper so the host doesn't construct it by
 /// hand). Re-exported convenience.
-pub async fn probe_snapshot(probe: &dyn ResourceProbe, max_slots: u32, active: u32) -> ResourceSnapshot {
+pub async fn probe_snapshot(
+    probe: &dyn ResourceProbe,
+    max_slots: u32,
+    active: u32,
+) -> ResourceSnapshot {
     probe.snapshot(max_slots, active).await
 }
 

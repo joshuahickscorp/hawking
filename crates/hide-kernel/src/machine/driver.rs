@@ -17,11 +17,11 @@ use crate::plan::dag::PlanDag;
 use crate::plan::planner::Planner;
 use crate::plan::replan::{localized_replan, supersede, ReplanRequest};
 use crate::plan::schema::{PlanStep, StepKind, StepStatus};
+use crate::runtime_client::KernelRuntimeClient;
 use crate::verify::gate::{GateDecision, VerificationGate};
 use crate::verify::oracle::{Failure, Verdict, VerdictStatus, VerificationInput};
 use crate::verify::OracleSuite;
 use crate::Grounding;
-use crate::runtime_client::KernelRuntimeClient;
 use hide_core::event::{NewEvent, PlanEvent};
 use hide_core::ids::now_ms;
 use hide_core::persistence::DynEventLog;
@@ -72,7 +72,8 @@ impl<'a> AgentDriver<'a> {
             Phase::SelectStep => self.do_select(state).await?,
             Phase::Act => self.do_act(state).await?,
             Phase::Observe => {
-                self.emit_phase(state, "observation recorded as data").await?;
+                self.emit_phase(state, "observation recorded as data")
+                    .await?;
                 state.phase = Phase::Verify;
             }
             Phase::Verify => self.do_verify(state).await?,
@@ -167,7 +168,8 @@ impl<'a> AgentDriver<'a> {
                         effects: vec![format!("{:?}", s.kind)],
                     });
                     state.phase = Phase::Paused;
-                    self.emit_phase(state, "effectful step awaits approval").await?;
+                    self.emit_phase(state, "effectful step awaits approval")
+                        .await?;
                     return Ok(());
                 }
                 EffectAuthorization::Forbidden => {
@@ -175,7 +177,8 @@ impl<'a> AgentDriver<'a> {
                     state.mark_cursor(StepStatus::Skipped);
                     state.cursor = None;
                     state.phase = Phase::SelectStep;
-                    self.emit_phase(state, "effectful step skipped (read-only)").await?;
+                    self.emit_phase(state, "effectful step skipped (read-only)")
+                        .await?;
                     return Ok(());
                 }
             }
@@ -219,7 +222,8 @@ impl<'a> AgentDriver<'a> {
 
         // Replay: do not run effects — fold the recorded Observation outcome.
         if self.mode.is_replay() {
-            self.emit_phase(state, "replay: folding recorded outcome").await?;
+            self.emit_phase(state, "replay: folding recorded outcome")
+                .await?;
             state.phase = Phase::Observe;
             return Ok(());
         }
@@ -293,7 +297,10 @@ impl<'a> AgentDriver<'a> {
     /// not for the no-dispatcher / model-authored-edit fallbacks.
     async fn act_tool(&self, step: &PlanStep) -> Result<(serde_json::Value, bool)> {
         let Some(dispatcher) = self.dispatcher else {
-            return Ok((json!({ "note": "no dispatcher; step recorded without effect" }), false));
+            return Ok((
+                json!({ "note": "no dispatcher; step recorded without effect" }),
+                false,
+            ));
         };
         let tool = match &step.tool_hint {
             Some(t) => t.clone(),
@@ -305,7 +312,9 @@ impl<'a> AgentDriver<'a> {
         if args.get("cwd").is_none() {
             args["cwd"] = json!(self.workspace_root);
         }
-        let result = dispatcher.dispatch(ToolCall::new(tool.clone(), args)).await?;
+        let result = dispatcher
+            .dispatch(ToolCall::new(tool.clone(), args))
+            .await?;
         Ok((
             json!({
                 "tool": tool,
@@ -322,8 +331,12 @@ impl<'a> AgentDriver<'a> {
         let Some(runtime) = self.runtime else {
             return Ok(json!({ "note": "no runtime; step recorded without generation" }));
         };
-        let prompt =
-            build_model_prompt(&step.title, &step.acceptance.predicate, &step.rationale, steer);
+        let prompt = build_model_prompt(
+            &step.title,
+            &step.acceptance.predicate,
+            &step.rationale,
+            steer,
+        );
         let request = InferenceRequest {
             task_kind: "code".to_string(),
             prompt,
@@ -427,7 +440,9 @@ impl<'a> AgentDriver<'a> {
         // Convergence/stall detection (W-F5-1): record a normalized fingerprint
         // of this verify pass; if the last K are identical, repair is spinning
         // and the Repair branch below routes to Replan instead.
-        state.verdict_history.push_back(verdict_fingerprint(&verdicts));
+        state
+            .verdict_history
+            .push_back(verdict_fingerprint(&verdicts));
         while state.verdict_history.len() > STALL_WINDOW {
             state.verdict_history.pop_front();
         }
@@ -470,7 +485,8 @@ impl<'a> AgentDriver<'a> {
             state.mark_cursor(StepStatus::Completed);
             state.cursor = None;
             state.phase = Phase::SelectStep;
-            self.emit_phase(state, "soft step accepted (no oracle applies)").await?;
+            self.emit_phase(state, "soft step accepted (no oracle applies)")
+                .await?;
             return Ok(());
         }
 
@@ -498,15 +514,20 @@ impl<'a> AgentDriver<'a> {
                         ))
                         .await?;
                     state.phase = Phase::Replan;
-                    self.emit_phase(state, "stalled: identical failures across the window; replanning")
-                        .await?;
+                    self.emit_phase(
+                        state,
+                        "stalled: identical failures across the window; replanning",
+                    )
+                    .await?;
                 } else if repairs_remaining(state) {
                     state.phase = Phase::Repair;
-                    self.emit_phase(state, "verification failed; repairing").await?;
+                    self.emit_phase(state, "verification failed; repairing")
+                        .await?;
                 } else {
                     // Repairs exhausted → replan (the approach may be wrong).
                     state.phase = Phase::Replan;
-                    self.emit_phase(state, "repairs exhausted; replanning").await?;
+                    self.emit_phase(state, "repairs exhausted; replanning")
+                        .await?;
                 }
             }
             GateDecision::Replan => {
@@ -514,7 +535,8 @@ impl<'a> AgentDriver<'a> {
                 self.emit_phase(state, "gate requested replan").await?;
             }
             GateDecision::Abort => {
-                self.abort(state, AbortReason::Steps("gate aborted".to_string())).await?;
+                self.abort(state, AbortReason::Steps("gate aborted".to_string()))
+                    .await?;
             }
         }
         Ok(())
@@ -569,7 +591,8 @@ impl<'a> AgentDriver<'a> {
 
         // Re-attempt the same step (Act re-runs with the lesson now in state).
         state.phase = Phase::Act;
-        self.emit_phase(state, "re-attempting step with failure context").await?;
+        self.emit_phase(state, "re-attempting step with failure context")
+            .await?;
         Ok(())
     }
 
@@ -583,7 +606,8 @@ impl<'a> AgentDriver<'a> {
         // check, but we finalize honestly here rather than spin.
         if state.replan_count > state.budget.max_replans {
             state.phase = Phase::Finalize;
-            self.emit_phase(state, "replan budget exhausted; finalizing honestly").await?;
+            self.emit_phase(state, "replan budget exhausted; finalizing honestly")
+                .await?;
             return Ok(());
         }
 
@@ -651,8 +675,11 @@ impl<'a> AgentDriver<'a> {
 
         // A replanned plan must still be acyclic.
         if !PlanDag::acyclic(&new_plan) {
-            self.abort(state, AbortReason::Steps("replan produced a cyclic plan".to_string()))
-                .await?;
+            self.abort(
+                state,
+                AbortReason::Steps("replan produced a cyclic plan".to_string()),
+            )
+            .await?;
             return Ok(());
         }
         state.plan = Some(new_plan);

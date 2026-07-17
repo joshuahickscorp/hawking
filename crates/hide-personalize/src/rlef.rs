@@ -56,13 +56,22 @@ impl ExecutionOutcome {
         if signals.iter().any(|s| matches!(s, FeedbackSignal::Timeout)) {
             return Self::Timeout;
         }
-        if signals.iter().any(|s| matches!(s, FeedbackSignal::BuildFailed)) {
+        if signals
+            .iter()
+            .any(|s| matches!(s, FeedbackSignal::BuildFailed))
+        {
             return Self::BuildFail;
         }
-        if signals.iter().any(|s| matches!(s, FeedbackSignal::TestFailed)) {
+        if signals
+            .iter()
+            .any(|s| matches!(s, FeedbackSignal::TestFailed))
+        {
             return Self::TestFail;
         }
-        if signals.iter().any(|s| matches!(s, FeedbackSignal::LintFailed)) {
+        if signals
+            .iter()
+            .any(|s| matches!(s, FeedbackSignal::LintFailed))
+        {
             return Self::LintOnly;
         }
         Self::AllGreen
@@ -311,10 +320,19 @@ mod tests {
     #[test]
     fn signals_fold_to_worst_outcome() {
         let s = [FeedbackSignal::BuildPassed, FeedbackSignal::TestFailed];
-        assert_eq!(ExecutionOutcome::from_signals(&s), ExecutionOutcome::TestFail);
+        assert_eq!(
+            ExecutionOutcome::from_signals(&s),
+            ExecutionOutcome::TestFail
+        );
         let s2 = [FeedbackSignal::BuildFailed, FeedbackSignal::TestFailed];
-        assert_eq!(ExecutionOutcome::from_signals(&s2), ExecutionOutcome::BuildFail);
-        assert_eq!(ExecutionOutcome::from_signals(&[]), ExecutionOutcome::AllGreen);
+        assert_eq!(
+            ExecutionOutcome::from_signals(&s2),
+            ExecutionOutcome::BuildFail
+        );
+        assert_eq!(
+            ExecutionOutcome::from_signals(&[]),
+            ExecutionOutcome::AllGreen
+        );
     }
 
     #[test]

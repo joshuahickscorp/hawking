@@ -62,7 +62,10 @@ impl Default for StubInferenceClient {
 pub fn deterministic_embedding(text: &str, dim: usize) -> Vec<f32> {
     let dim = dim.max(1);
     let mut v = vec![0.0f32; dim];
-    for token in text.split(|c: char| !c.is_alphanumeric()).filter(|t| !t.is_empty()) {
+    for token in text
+        .split(|c: char| !c.is_alphanumeric())
+        .filter(|t| !t.is_empty())
+    {
         // FNV-1a over the lowercased token.
         let mut h: u64 = 0xcbf29ce484222325;
         for b in token.to_ascii_lowercase().bytes() {
@@ -182,8 +185,7 @@ mod tests {
 
     #[tokio::test]
     async fn scripted_client_advances_per_call() {
-        let client =
-            ScriptedInferenceClient::new(vec!["first".to_string(), "second".to_string()]);
+        let client = ScriptedInferenceClient::new(vec!["first".to_string(), "second".to_string()]);
         let mut got = Vec::new();
         let mut sink = |chunk: StreamChunk| {
             if let StreamChunk::Token { text, .. } = chunk {

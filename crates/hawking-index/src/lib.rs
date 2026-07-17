@@ -26,8 +26,8 @@ pub mod semantic;
 pub mod store;
 
 pub use query::{
-    CodeIndex, Index, IndexHealth, InMemoryCodeIndex, Q, SearchQuery, SearchResult,
-    SearchResultSource, SqliteCodeIndex,
+    CodeIndex, InMemoryCodeIndex, Index, IndexHealth, SearchQuery, SearchResult,
+    SearchResultSource, SqliteCodeIndex, Q,
 };
 
 pub use graph::{CodeGraph, EdgeKind, Occurrence, RepoMap, RepoMapRequest, Symbol};

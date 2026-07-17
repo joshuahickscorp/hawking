@@ -207,7 +207,11 @@ impl BackendHost {
             Intent::Custom { name, payload }
                 if matches!(
                     name.as_str(),
-                    "create_worktree" | "new_session" | "compact_context" | "open_session" | "open_folder"
+                    "create_worktree"
+                        | "new_session"
+                        | "compact_context"
+                        | "open_session"
+                        | "open_folder"
                 ) =>
             {
                 Some((name.clone(), payload.clone()))
@@ -272,7 +276,13 @@ impl BackendHost {
         let raw = branch.unwrap_or("session");
         let slug: String = raw
             .chars()
-            .map(|c| if c.is_ascii_alphanumeric() || c == '-' || c == '_' { c.to_ascii_lowercase() } else { '-' })
+            .map(|c| {
+                if c.is_ascii_alphanumeric() || c == '-' || c == '_' {
+                    c.to_ascii_lowercase()
+                } else {
+                    '-'
+                }
+            })
             .collect();
         let slug = slug.trim_matches('-');
         let slug = if slug.is_empty() { "session" } else { slug };
@@ -563,7 +573,11 @@ impl BackendHost {
     /// `provider` is optional: when `Some`, the kernel is built with an HTTP
     /// `ModelProvider`-backed runtime so the fleet run generates against a live
     /// (or fake) serve; when `None`, the host's minimal stub kernel runs.
-    pub async fn fleet_run(&self, session_id: SessionId, objective: impl Into<String>) -> Result<String> {
+    pub async fn fleet_run(
+        &self,
+        session_id: SessionId,
+        objective: impl Into<String>,
+    ) -> Result<String> {
         // A deterministic fixed probe with ample headroom (no thermal/RAM
         // pressure) so the run admits in the test/headless path; production swaps
         // in `OsResourceProbe`.
@@ -761,9 +775,7 @@ impl BackendHost {
         let (rt_status, rt_detail) = match self.runtime_state() {
             None => (HealthStatus::Ok, "not configured".to_string()),
             Some(RuntimeSupervisorState::Ready) => (HealthStatus::Ok, "ready".to_string()),
-            Some(RuntimeSupervisorState::Failed) => {
-                (HealthStatus::Failed, "failed".to_string())
-            }
+            Some(RuntimeSupervisorState::Failed) => (HealthStatus::Failed, "failed".to_string()),
             Some(other) => (HealthStatus::Degraded, format!("{other:?}").to_lowercase()),
         };
         checks.push(HealthCheck {
@@ -822,7 +834,10 @@ async fn generate_submit_turn(
             session_id: Some(session_id),
             kind: UiEventKind::RuntimeStatus {
                 status: "cancelled".to_string(),
-                detail: Some(format!("run {} cancelled before generation", run_id.as_str())),
+                detail: Some(format!(
+                    "run {} cancelled before generation",
+                    run_id.as_str()
+                )),
             },
         });
         return Ok(String::new());
@@ -1003,7 +1018,11 @@ mod live_manifest_tests {
         assert!(ssm.state_bytes.is_some());
         assert!(ssm.kv_seq_len.is_none());
         // Half the horizon -> ~0.5 fidelity -> ~0.5 occupancy (1 - fidelity).
-        assert!((ssm.occupancy - 0.5).abs() < 0.05, "occupancy {}", ssm.occupancy);
+        assert!(
+            (ssm.occupancy - 0.5).abs() < 0.05,
+            "occupancy {}",
+            ssm.occupancy
+        );
     }
 
     #[test]
@@ -1086,7 +1105,9 @@ fn dangerous_command(argv: &[String]) -> Option<&'static str> {
     if prog == "dd" && j.contains("of=/dev/") {
         return Some("writes raw to a device");
     }
-    if prog == "rm" && (j.contains("-rf") || j.contains("-fr") || (j.contains("-r") && j.contains("-f"))) {
+    if prog == "rm"
+        && (j.contains("-rf") || j.contains("-fr") || (j.contains("-r") && j.contains("-f")))
+    {
         if j.contains(" /") || j.contains(" ~") || j.contains(" /*") {
             return Some("recursively deletes a system path");
         }
@@ -1099,7 +1120,10 @@ fn dangerous_command(argv: &[String]) -> Option<&'static str> {
     if j.contains(":(){") || j.contains(":|:&") {
         return Some("fork bomb");
     }
-    if (prog == "chmod" || prog == "chown") && j.contains("-r") && (j.contains(" /") || j.contains(" ~")) {
+    if (prog == "chmod" || prog == "chown")
+        && j.contains("-r")
+        && (j.contains(" /") || j.contains(" ~"))
+    {
         return Some("recursively changes permissions on a system path");
     }
     None
@@ -1109,7 +1133,12 @@ fn dangerous_command(argv: &[String]) -> Option<&'static str> {
 // them). Confined to the workspace root. A real command runner, not a full interactive PTY. The
 // security gate is applied UPSTREAM (in `spawn_command_run`), so reaching here means the command is
 // either inherently safe or was user-approved via the gate round-trip.
-async fn exec_command_streamed(ui_bus: Arc<UiEventBus>, root: PathBuf, argv: Vec<String>, cwd: Option<String>) {
+async fn exec_command_streamed(
+    ui_bus: Arc<UiEventBus>,
+    root: PathBuf,
+    argv: Vec<String>,
+    cwd: Option<String>,
+) {
     use std::sync::atomic::{AtomicU64, Ordering};
     use tokio::io::AsyncBufReadExt;
     static SHELL_SEQ: AtomicU64 = AtomicU64::new(1);
@@ -1118,7 +1147,10 @@ async fn exec_command_streamed(ui_bus: Arc<UiEventBus>, root: PathBuf, argv: Vec
         bus.publish(UiEvent {
             seq: 0,
             session_id: None,
-            kind: UiEventKind::ToolProgress { call_id: call_id.clone(), message },
+            kind: UiEventKind::ToolProgress {
+                call_id: call_id.clone(),
+                message,
+            },
         });
     };
 
@@ -1150,7 +1182,14 @@ async fn exec_command_streamed(ui_bus: Arc<UiEventBus>, root: PathBuf, argv: Vec
         readers.push(tokio::spawn(async move {
             let mut lines = tokio::io::BufReader::new(out).lines();
             while let Ok(Some(l)) = lines.next_line().await {
-                bus.publish(UiEvent { seq: 0, session_id: None, kind: UiEventKind::ToolProgress { call_id: cid.clone(), message: l } });
+                bus.publish(UiEvent {
+                    seq: 0,
+                    session_id: None,
+                    kind: UiEventKind::ToolProgress {
+                        call_id: cid.clone(),
+                        message: l,
+                    },
+                });
             }
         }));
     }
@@ -1160,7 +1199,14 @@ async fn exec_command_streamed(ui_bus: Arc<UiEventBus>, root: PathBuf, argv: Vec
         readers.push(tokio::spawn(async move {
             let mut lines = tokio::io::BufReader::new(err).lines();
             while let Ok(Some(l)) = lines.next_line().await {
-                bus.publish(UiEvent { seq: 0, session_id: None, kind: UiEventKind::ToolProgress { call_id: cid.clone(), message: l } });
+                bus.publish(UiEvent {
+                    seq: 0,
+                    session_id: None,
+                    kind: UiEventKind::ToolProgress {
+                        call_id: cid.clone(),
+                        message: l,
+                    },
+                });
             }
         }));
     }
@@ -1454,8 +1500,7 @@ mod tests {
             boot_timeout: Duration::from_secs(2),
             lock_path: Some(host.services.layout().hide_dir.join("runtime.lock")),
         };
-        let supervisor =
-            RuntimeSupervisor::new(cfg, Arc::new(FakeLauncher::new(rt.clone())));
+        let supervisor = RuntimeSupervisor::new(cfg, Arc::new(FakeLauncher::new(rt.clone())));
         supervisor.boot().await.unwrap();
         assert_eq!(
             supervisor.state(),
@@ -1587,7 +1632,10 @@ mod tests {
         for evicted in &ids[..4] {
             assert!(book.take(evicted).is_none(), "the four oldest were evicted");
         }
-        assert!(book.take(ids.last().unwrap()).is_some(), "the newest is still parked");
+        assert!(
+            book.take(ids.last().unwrap()).is_some(),
+            "the newest is still parked"
+        );
     }
 
     // A command classified dangerous (the `mkfs.` rule) but whose program does not exist, so even the
@@ -1618,14 +1666,24 @@ mod tests {
 
         // A destructive command is parked (not run) and surfaces a SecurityGate carrying its id.
         let ack = host
-            .handle_intent(Intent::RunCommand { argv: held_argv(), cwd: None })
+            .handle_intent(Intent::RunCommand {
+                argv: held_argv(),
+                cwd: None,
+            })
             .await
             .unwrap();
         assert!(ack.accepted);
-        assert_eq!(host.pending_gate_count(), 1, "the command is held at the gate");
+        assert_eq!(
+            host.pending_gate_count(),
+            1,
+            "the command is held at the gate"
+        );
 
         let (gate, message) = first_security_gate(&mut rx).await;
-        assert!(message.contains("mkfs.hidetest"), "the gate names the blocked command");
+        assert!(
+            message.contains("mkfs.hidetest"),
+            "the gate names the blocked command"
+        );
 
         // Approving with that id releases the held command from the book (and dispatches it).
         let ack = host
@@ -1636,7 +1694,11 @@ mod tests {
             .await
             .unwrap();
         assert!(ack.accepted);
-        assert_eq!(host.pending_gate_count(), 0, "approve consumes the held command");
+        assert_eq!(
+            host.pending_gate_count(),
+            0,
+            "approve consumes the held command"
+        );
         let _ = std::fs::remove_dir_all(dir);
     }
 
@@ -1645,9 +1707,12 @@ mod tests {
         let dir = std::env::temp_dir().join(format!("hide_host_gate_deny_{}", now_ms()));
         let host = BackendHost::open_workspace(&dir).unwrap();
         let mut rx = host.subscribe_ui();
-        host.handle_intent(Intent::RunCommand { argv: held_argv(), cwd: None })
-            .await
-            .unwrap();
+        host.handle_intent(Intent::RunCommand {
+            argv: held_argv(),
+            cwd: None,
+        })
+        .await
+        .unwrap();
         assert_eq!(host.pending_gate_count(), 1);
         let (gate, _) = first_security_gate(&mut rx).await;
 
@@ -1657,7 +1722,11 @@ mod tests {
         })
         .await
         .unwrap();
-        assert_eq!(host.pending_gate_count(), 0, "deny drops the held command without running it");
+        assert_eq!(
+            host.pending_gate_count(),
+            0,
+            "deny drops the held command without running it"
+        );
         let _ = std::fs::remove_dir_all(dir);
     }
 
@@ -1688,7 +1757,10 @@ mod tests {
                 }
             }
         };
-        assert!(ev.session_id.is_some(), "new_session carries a fresh session id");
+        assert!(
+            ev.session_id.is_some(),
+            "new_session carries a fresh session id"
+        );
         let _ = std::fs::remove_dir_all(dir);
     }
 
@@ -1721,7 +1793,11 @@ mod tests {
             .await
             .unwrap();
         assert!(ack.accepted, "the intent is still recorded as an event");
-        assert_eq!(host.pending_gate_count(), 0, "no held command to release; never panics");
+        assert_eq!(
+            host.pending_gate_count(),
+            0,
+            "no held command to release; never panics"
+        );
         let _ = std::fs::remove_dir_all(dir);
     }
 }

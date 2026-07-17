@@ -9,9 +9,9 @@
 //!      + argmax via TCB produces the same token id as the CPU path.
 #![cfg(target_os = "macos")]
 
+use half::f16;
 use hawking_core::kernels;
 use hawking_core::metal::{MetalContext, PinnedBuffer, TokenCommandBuffer};
-use half::f16;
 
 mod common;
 use common::*;

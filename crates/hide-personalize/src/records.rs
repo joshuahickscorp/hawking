@@ -265,8 +265,8 @@ mod tests {
 
     #[test]
     fn record_serde_roundtrips_with_hex_hashes() {
-        let rec = PersonalizationRecord::accepted(TaskClass::EditCode, "p", "diff")
-            .with_perf(42.0, 100);
+        let rec =
+            PersonalizationRecord::accepted(TaskClass::EditCode, "p", "diff").with_perf(42.0, 100);
         let json = serde_json::to_string(&rec).unwrap();
         assert!(json.contains(&rec.prompt_hash.to_hex()));
         let back: PersonalizationRecord = serde_json::from_str(&json).unwrap();

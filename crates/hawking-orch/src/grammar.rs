@@ -144,9 +144,8 @@ impl GrammarCompiler for ShellGrammarCompiler {
         let spec = Self::spec_from_schema(&request.schema_json)?;
         let canonical = spec.canonical();
         let grammar_hash = fnv1a_hex(canonical.as_bytes());
-        let mask_cache_key = fnv1a_hex(
-            format!("{canonical}|{}", request.tokenizer_signature).as_bytes(),
-        );
+        let mask_cache_key =
+            fnv1a_hex(format!("{canonical}|{}", request.tokenizer_signature).as_bytes());
         Ok(CompiledGrammar {
             name: request.name,
             grammar_hash,
@@ -192,8 +191,8 @@ impl GrammarMatcher {
                         return GrammarValidation::Retry(RetryHint {
                             code: "NOT_JSON".to_string(),
                             message: format!(
-                                "Output was not valid JSON ({e}). Re-emit ONLY a single JSON object."
-                            ),
+                            "Output was not valid JSON ({e}). Re-emit ONLY a single JSON object."
+                        ),
                         })
                     }
                 };
@@ -399,9 +398,7 @@ impl JsonObjectFsm {
         if self.dead || self.done {
             return;
         }
-        if c.is_whitespace()
-            && !matches!(self.state, FsmState::InKey | FsmState::InStringValue)
-        {
+        if c.is_whitespace() && !matches!(self.state, FsmState::InKey | FsmState::InStringValue) {
             return; // whitespace is structurally inert between tokens
         }
         match self.state {
@@ -433,7 +430,7 @@ impl JsonObjectFsm {
             FsmState::ExpectValue => match c {
                 '"' => self.state = FsmState::InStringValue,
                 '{' | '[' => self.state = FsmState::Freeform, // nesting → permissive
-                _ => self.state = FsmState::Freeform, // numbers/bools/null → permissive
+                _ => self.state = FsmState::Freeform,         // numbers/bools/null → permissive
             },
             FsmState::InStringValue => {
                 if c == '"' {

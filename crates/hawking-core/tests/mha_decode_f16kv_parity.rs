@@ -20,10 +20,10 @@
 //! (batched). f16 is a single round-trip (~2^-11 relative/element), strictly
 //! tighter than the MLA Q8 path's 5e-3, so 1e-3 holds with margin even at 2048.
 
+use half::f16;
 use hawking_core::attn::mha_decode_step;
 use hawking_core::kernels;
 use hawking_core::metal::TokenCommandBuffer;
-use half::f16;
 
 mod common;
 use common::*;

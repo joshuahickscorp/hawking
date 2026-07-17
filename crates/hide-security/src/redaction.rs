@@ -356,9 +356,7 @@ impl Redactor {
                 items
                     .iter()
                     .enumerate()
-                    .map(|(i, v)| {
-                        self.scrub_value(v, format!("{pointer}/{i}"), paths, tally)
-                    })
+                    .map(|(i, v)| self.scrub_value(v, format!("{pointer}/{i}"), paths, tally))
                     .collect(),
             ),
             Value::Object(map) => Value::Object(
@@ -458,7 +456,10 @@ fn builtin_detectors() -> &'static [PatternDetector] {
         );
         // GitHub PATs (classic + fine-grained + app/refresh tokens).
         add("github_pat", r"\bgh[pousr]_[A-Za-z0-9]{36,255}\b");
-        add("github_fine_grained_pat", r"\bgithub_pat_[A-Za-z0-9_]{22,255}\b");
+        add(
+            "github_fine_grained_pat",
+            r"\bgithub_pat_[A-Za-z0-9_]{22,255}\b",
+        );
         // GitLab PAT.
         add("gitlab_pat", r"\bglpat-[A-Za-z0-9_\-]{20,}\b");
         // Slack token.
@@ -481,8 +482,15 @@ mod tests {
     #[test]
     fn redacts_aws_access_key() {
         let r = Redactor::default().redact("export AWS_KEY=AKIAIOSFODNN7EXAMPLE done");
-        assert!(r.text.contains("\u{00AB}redacted:aws_access_key\u{00BB}"), "{}", r.text);
-        assert!(r.redactions.iter().any(|x| x.pattern_name == "aws_access_key"));
+        assert!(
+            r.text.contains("\u{00AB}redacted:aws_access_key\u{00BB}"),
+            "{}",
+            r.text
+        );
+        assert!(r
+            .redactions
+            .iter()
+            .any(|x| x.pattern_name == "aws_access_key"));
         assert!(!r.text.contains("AKIA"));
     }
 
@@ -490,21 +498,33 @@ mod tests {
     fn redacts_github_pat() {
         let token = format!("ghp_{}", "a".repeat(36));
         let r = Redactor::default().redact(&format!("token={token}"));
-        assert!(r.text.contains("\u{00AB}redacted:github_pat\u{00BB}"), "{}", r.text);
+        assert!(
+            r.text.contains("\u{00AB}redacted:github_pat\u{00BB}"),
+            "{}",
+            r.text
+        );
     }
 
     #[test]
     fn redacts_jwt() {
         let jwt = "eyJhbGciOiJIUzI1Ni1.eyJzdWIiOiIxMjM0NTY3.SflKxwRJSMeKKF2QT4f";
         let r = Redactor::default().redact(&format!("auth {jwt} end"));
-        assert!(r.text.contains("\u{00AB}redacted:jwt\u{00BB}"), "{}", r.text);
+        assert!(
+            r.text.contains("\u{00AB}redacted:jwt\u{00BB}"),
+            "{}",
+            r.text
+        );
     }
 
     #[test]
     fn redacts_pem_block() {
         let pem = "-----BEGIN RSA PRIVATE KEY-----\nMIIBOgIBAAJBAKj...\nabcDEF123==\n-----END RSA PRIVATE KEY-----";
         let r = Redactor::default().redact(&format!("key:\n{pem}\nrest"));
-        assert!(r.text.contains("\u{00AB}redacted:pem_private_key\u{00BB}"), "{}", r.text);
+        assert!(
+            r.text.contains("\u{00AB}redacted:pem_private_key\u{00BB}"),
+            "{}",
+            r.text
+        );
         assert!(!r.text.contains("PRIVATE KEY-----\nMIIB"));
     }
 
@@ -513,7 +533,11 @@ mod tests {
         // No known prefix, but high-entropy mixed-class blob → entropy detector.
         let secret = "Zk9Qm2Xp7Lv3Rt8Wf1Yc6Nb4Hd0Sg5Aj"; // 33 chars, mixed
         let r = Redactor::default().redact(&format!("password is {secret} ok"));
-        assert!(r.text.contains("\u{00AB}redacted:entropy\u{00BB}"), "got: {}", r.text);
+        assert!(
+            r.text.contains("\u{00AB}redacted:entropy\u{00BB}"),
+            "got: {}",
+            r.text
+        );
     }
 
     #[test]
@@ -561,8 +585,16 @@ mod tests {
         });
         let report = r.redact_json(&payload);
         assert!(!report.is_clean());
-        assert!(report.paths.contains(&"/output/stdout".to_string()), "{:?}", report.paths);
-        assert!(report.paths.contains(&"/args/1".to_string()), "{:?}", report.paths);
+        assert!(
+            report.paths.contains(&"/output/stdout".to_string()),
+            "{:?}",
+            report.paths
+        );
+        assert!(
+            report.paths.contains(&"/args/1".to_string()),
+            "{:?}",
+            report.paths
+        );
         // Clean leaves untouched; non-string leaves preserved.
         assert_eq!(report.value["output"]["exit"], 0);
         assert_eq!(report.value["args"][0], "clean");
@@ -622,7 +654,11 @@ mod tests {
         let sha = "a1b9c3d7e5f1a2b4c6d8e0f2a4b6c8d0e2f4a6b8"; // 40 hex chars
         let id = "0123456789012345678901234567890123456789"; // 40 digits
         let clean = Redactor::default().redact(&format!("{sha} {id}"));
-        assert!(clean.is_clean(), "hex/decimal id redacted: {:?}", clean.redactions);
+        assert!(
+            clean.is_clean(),
+            "hex/decimal id redacted: {:?}",
+            clean.redactions
+        );
     }
 
     #[test]
@@ -634,7 +670,11 @@ mod tests {
         let loosened = Redactor::default()
             .with_single_class(16, 3.5)
             .redact(&format!("x={tok}"));
-        assert!(loosened.text.contains("\u{00AB}redacted:entropy\u{00BB}"), "{}", loosened.text);
+        assert!(
+            loosened.text.contains("\u{00AB}redacted:entropy\u{00BB}"),
+            "{}",
+            loosened.text
+        );
         // Default dial (min_len 32) leaves the 21-char token untouched.
         let tight = Redactor::default().redact(&format!("x={tok}"));
         assert!(tight.is_clean(), "{:?}", tight.redactions);

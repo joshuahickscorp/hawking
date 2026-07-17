@@ -171,11 +171,7 @@ pub trait MemoryStore: Send + Sync {
     }
 
     /// Retire `old` and mint `new` with a `supersedes` edge (default no-op edge).
-    fn supersede<'a>(
-        &'a self,
-        _old: &'a str,
-        new: MemoryRecord,
-    ) -> BoxFuture<'a, Result<String>> {
+    fn supersede<'a>(&'a self, _old: &'a str, new: MemoryRecord) -> BoxFuture<'a, Result<String>> {
         self.upsert(new)
     }
 
@@ -357,7 +353,9 @@ impl SqliteMemoryStore {
     pub fn len(&self) -> Result<usize> {
         let conn = self.conn.lock();
         let n: i64 = conn
-            .query_row("SELECT COUNT(*) FROM memory WHERE retired = 0", [], |r| r.get(0))
+            .query_row("SELECT COUNT(*) FROM memory WHERE retired = 0", [], |r| {
+                r.get(0)
+            })
             .map_err(sql_err)?;
         Ok(n as usize)
     }
@@ -409,9 +407,11 @@ impl SqliteMemoryStore {
         // `MATCH` joins back to `memory` by rowid. On an upsert the row already
         // exists; clear the stale FTS row first, then index the current text.
         let rowid: i64 = conn
-            .query_row("SELECT rowid FROM memory WHERE id = ?1", [&record.id], |r| {
-                r.get(0)
-            })
+            .query_row(
+                "SELECT rowid FROM memory WHERE id = ?1",
+                [&record.id],
+                |r| r.get(0),
+            )
             .map_err(sql_err)?;
         conn.execute("DELETE FROM memory_fts WHERE rowid = ?1", [rowid])
             .map_err(sql_err)?;
@@ -483,7 +483,9 @@ impl SqliteMemoryStore {
         // bm25() returns a score where *more negative* = better match. Map the
         // ordered results to a [0,1] keyword-relevance with the top hit at 1.0.
         let rows: Vec<(String, f64)> = stmt
-            .query_map([&match_query], |r| Ok((r.get::<_, String>(0)?, r.get::<_, f64>(1)?)))
+            .query_map([&match_query], |r| {
+                Ok((r.get::<_, String>(0)?, r.get::<_, f64>(1)?))
+            })
             .map_err(sql_err)?
             .collect::<std::result::Result<Vec<_>, _>>()
             .map_err(sql_err)?;
@@ -518,8 +520,8 @@ fn row_to_stored(row: &rusqlite::Row<'_>) -> rusqlite::Result<StoredMemory> {
     let tags_json: String = row.get(7)?;
     let embedding_json: Option<String> = row.get(8)?;
     let links_json: String = row.get(10)?;
-    let provenance: Provenance = serde_json::from_str(&provenance_json)
-        .unwrap_or_else(|_| Provenance::trusted("memory"));
+    let provenance: Provenance =
+        serde_json::from_str(&provenance_json).unwrap_or_else(|_| Provenance::trusted("memory"));
     let tags: Vec<String> = serde_json::from_str(&tags_json).unwrap_or_default();
     let links: Vec<String> = serde_json::from_str(&links_json).unwrap_or_default();
     let record = MemoryRecord {
@@ -621,11 +623,7 @@ impl MemoryStore for SqliteMemoryStore {
         })
     }
 
-    fn supersede<'a>(
-        &'a self,
-        old: &'a str,
-        new: MemoryRecord,
-    ) -> BoxFuture<'a, Result<String>> {
+    fn supersede<'a>(&'a self, old: &'a str, new: MemoryRecord) -> BoxFuture<'a, Result<String>> {
         Box::pin(async move {
             // Retire the old version (hidden from retrieval, kept on disk).
             {
@@ -711,18 +709,31 @@ mod tests {
             .unwrap()
             .with_embedder(Arc::new(HashingEmbeddingClient::default()));
         store
-            .upsert(rec("a", MemoryKind::Semantic, "the database uses sqlx and postgres", 0.5))
+            .upsert(rec(
+                "a",
+                MemoryKind::Semantic,
+                "the database uses sqlx and postgres",
+                0.5,
+            ))
             .await
             .unwrap();
         store
-            .upsert(rec("b", MemoryKind::Semantic, "rocket telemetry orbital insertion", 0.5))
+            .upsert(rec(
+                "b",
+                MemoryKind::Semantic,
+                "rocket telemetry orbital insertion",
+                0.5,
+            ))
             .await
             .unwrap();
         let hits = store
             .retrieve("database sqlx", 2, &[MemoryKind::Semantic])
             .await
             .unwrap();
-        assert_eq!(hits[0].record.id, "a", "relevance should rank the db note first");
+        assert_eq!(
+            hits[0].record.id, "a",
+            "relevance should rank the db note first"
+        );
         assert_eq!(store.len().unwrap(), 2);
     }
 
@@ -732,7 +743,12 @@ mod tests {
         let store = SqliteMemoryStore::open_in_memory().unwrap();
         // "cat" is a whole token here.
         store
-            .upsert(rec("hit", MemoryKind::Semantic, "the cat sat on the mat", 0.1))
+            .upsert(rec(
+                "hit",
+                MemoryKind::Semantic,
+                "the cat sat on the mat",
+                0.1,
+            ))
             .await
             .unwrap();
         // "cat" appears only as a *substring* of "concatenate" — a naive
@@ -754,7 +770,10 @@ mod tests {
             .unwrap();
 
         // The token match gets non-zero relevance.
-        let hit = hits.iter().find(|h| h.record.id == "hit").expect("token row present");
+        let hit = hits
+            .iter()
+            .find(|h| h.record.id == "hit")
+            .expect("token row present");
         assert!(
             hit.relevance > 0.0,
             "FTS5 MATCH must give the token row keyword relevance"
@@ -791,9 +810,16 @@ mod tests {
         let hits = store.retrieve("fact", 10, &[]).await.unwrap();
         let ids: Vec<_> = hits.iter().map(|h| h.record.id.as_str()).collect();
         assert!(ids.contains(&"v2"));
-        assert!(!ids.contains(&"v1"), "retired version hidden from retrieval");
+        assert!(
+            !ids.contains(&"v1"),
+            "retired version hidden from retrieval"
+        );
         assert_eq!(
-            hits.iter().find(|h| h.record.id == "v2").unwrap().meta.supersedes,
+            hits.iter()
+                .find(|h| h.record.id == "v2")
+                .unwrap()
+                .meta
+                .supersedes,
             Some("v1".to_string())
         );
     }

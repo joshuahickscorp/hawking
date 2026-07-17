@@ -336,14 +336,9 @@ mod tests {
             "pub fn target_widget() {}\n",
             Some("h".into()),
         );
-        let hits = route_and_search(
-            &index,
-            RetrievalStrategy::Symbol,
-            "target_widget",
-            5,
-        )
-        .await
-        .unwrap();
+        let hits = route_and_search(&index, RetrievalStrategy::Symbol, "target_widget", 5)
+            .await
+            .unwrap();
         assert!(hits.iter().any(|h| h.title.contains("target_widget")));
     }
 }

@@ -17,9 +17,9 @@
 
 #![cfg(target_os = "macos")]
 
+use half::f16;
 use hawking_core::kernels::{self, predecode_q4_k_scale_table_f16};
 use hawking_core::metal::{MetalContext, PinnedBuffer, TokenCommandBuffer};
-use half::f16;
 use rand::Rng;
 use rand_pcg::Pcg64Mcg;
 

@@ -17,8 +17,7 @@ use hide_backend::BackendHost;
 async fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt()
         .with_env_filter(
-            tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| "info".into()),
+            tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| "info".into()),
         )
         .init();
 
@@ -46,10 +45,10 @@ fn parse_args() -> anyhow::Result<(std::path::PathBuf, String)> {
     while let Some(arg) = args.next() {
         match arg.as_str() {
             "--port" | "-p" => {
-                let value = args
-                    .next()
-                    .context("--port requires a value")?;
-                port = value.parse().with_context(|| format!("invalid port {value}"))?;
+                let value = args.next().context("--port requires a value")?;
+                port = value
+                    .parse()
+                    .with_context(|| format!("invalid port {value}"))?;
             }
             other if other.starts_with('-') => {
                 anyhow::bail!("unknown flag {other}");

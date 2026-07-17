@@ -1,7 +1,9 @@
 //! Registration of the builtin catalog into a `hide-core` `ToolRegistry`.
 
 use crate::edit::{ApplyPatchTool, SearchReplaceTool, WriteFileTool};
-use crate::fs::{FsConfig, FsGlobTool, FsListTool, FsReadTool, FsStatTool, FsWatchTool, FsWriteTool};
+use crate::fs::{
+    FsConfig, FsGlobTool, FsListTool, FsReadTool, FsStatTool, FsWatchTool, FsWriteTool,
+};
 use crate::git::{
     GitCommitTool, GitConfig, GitDiffTool, GitLogTool, GitStatusTool, GitWorktreeAddTool,
     GitWorktreeListTool, GitWorktreeRemoveTool,

@@ -74,7 +74,10 @@ pub fn localized_replan(plan: &Plan, request: &ReplanRequest) -> ReplanResult {
             changed.push(probe_id);
         }
     }
-    ReplanResult { plan, changed_steps: changed }
+    ReplanResult {
+        plan,
+        changed_steps: changed,
+    }
 }
 
 #[cfg(test)]

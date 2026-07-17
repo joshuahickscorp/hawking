@@ -67,8 +67,9 @@ impl AnswerNormalizer {
         match self {
             AnswerNormalizer::Trimmed => sample.trim().to_string(),
             AnswerNormalizer::CaseFold => sample.trim().to_lowercase(),
-            AnswerNormalizer::CanonicalJson => canonical_json(sample.trim())
-                .unwrap_or_else(|| sample.trim().to_string()),
+            AnswerNormalizer::CanonicalJson => {
+                canonical_json(sample.trim()).unwrap_or_else(|| sample.trim().to_string())
+            }
         }
     }
 }
@@ -126,9 +127,7 @@ pub fn self_consistency_vote(samples: &[String], normalizer: AnswerNormalizer) -
         .first()
         .map(|(k, c)| (Some(k.clone()), *c))
         .unwrap_or((None, 0));
-    let winner_original = winner
-        .as_ref()
-        .and_then(|w| first_original.get(w).cloned());
+    let winner_original = winner.as_ref().and_then(|w| first_original.get(w).cloned());
     let agreement = winner_count as f32 / total as f32;
     VoteResult {
         winner,
