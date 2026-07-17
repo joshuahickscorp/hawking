@@ -126,7 +126,10 @@ mod tests {
         with_deterministic_ids(0, || {
             let x = EventId::new();
             let y = EventId::new();
-            assert!(y.as_str() > x.as_str(), "a later id sorts after an earlier id");
+            assert!(
+                y.as_str() > x.as_str(),
+                "a later id sorts after an earlier id"
+            );
         });
     }
 
