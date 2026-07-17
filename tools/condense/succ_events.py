@@ -13,8 +13,12 @@ Every event is:
     then validate the tail).
 
 The log is a JSONL file; each line is one sealed event. `verify_chain` re-derives every
-chain hash from the genesis, so any truncation, reordering, or in-place edit is detected.
-This is the durable substrate for succ_state (the state machine) and succ_queue.
+chain hash from the genesis, so REORDERING and in-place edits within the retained log are
+detected. Honest limits of an UNKEYED self-hash chain: it cannot resist a motivated forger
+who rewrites the whole file (recomputing every chain hash), and it cannot detect TAIL
+truncation on its own. Pass `expected_head`/`expected_count` (from a journaled checkpoint,
+as succ_state.resume does) to detect truncation; treat the chain as integrity, not
+authenticity. This is the durable substrate for succ_state and succ_queue.
 """
 from __future__ import annotations
 
@@ -113,7 +117,11 @@ class EventLog:
             raise EventError("post-append validation failed: tail hash mismatch")
         return body
 
-    def verify_chain(self) -> tuple[bool, list[str]]:
+    def verify_chain(self, *, expected_head: str | None = None,
+                     expected_count: int | None = None) -> tuple[bool, list[str]]:
+        """Re-derive the chain from genesis. Detects reorder + in-place edit within the log.
+        Pass expected_head/expected_count (from a checkpoint) to also detect TAIL TRUNCATION,
+        which an unkeyed chain cannot catch alone."""
         reasons: list[str] = []
         prev = GENESIS_HASH
         expect_seq = 0
@@ -128,6 +136,11 @@ class EventLog:
                 reasons.append(f"chain_hash mismatch at seq {event.get('seq')}")
             prev = event.get("chain_hash")
             expect_seq += 1
+        # anchor checks: catch tail truncation / forked head against a trusted checkpoint
+        if expected_count is not None and expect_seq != expected_count:
+            reasons.append(f"length anchor mismatch: log has {expect_seq}, expected {expected_count}")
+        if expected_head is not None and prev != expected_head:
+            reasons.append("head anchor mismatch: log head != expected (truncation or fork)")
         return (not reasons), reasons
 
 

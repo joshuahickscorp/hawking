@@ -223,6 +223,11 @@ def _normalize_qwen(report: dict[str, Any], method: str) -> dict[str, Any]:
     method_entry = hooks.get(method)
     method_supported = bool(isinstance(method_entry, dict) and method_entry.get("supported"))
     resident = ev.get("resident_labels")
+    # `reviewed` must be an EXPLICIT attestation in the report, never inferred from hook
+    # support (5.4 requires "reviewed for this campaign generation"). The qwen ladder report
+    # carries no such field, so we fail closed: the codec is execution-capable, but the live
+    # review is not machine-attestable from the capability report.
+    reviewed = bool(report.get("reviewed_for_live_campaign_execution", False))
     reqs = {
         "source_conversion": bool(report.get("rates")),
         "reassembly_provenance": bool(report.get("labels")),
@@ -233,7 +238,7 @@ def _normalize_qwen(report: dict[str, Any], method: str) -> dict[str, Any]:
         "exact_resume": "dense_reconstructions" in ev,
         "streamed_lifecycle": bool(ev),
         "quality_path": bool(ev),
-        "reviewed": method_supported,
+        "reviewed": reviewed,
     }
     blockers: list[str] = []
     if not method_supported:
@@ -241,10 +246,17 @@ def _normalize_qwen(report: dict[str, Any], method: str) -> dict[str, Any]:
                   if isinstance(method_entry, dict) else None) \
             or f"treatment hook '{method}' is not published by the adapter"
         blockers.append(f"qwen2.5-dense:treatment[{method}]: {detail}")
+    if not reviewed:
+        blockers.append("qwen2.5-dense:review_flag_absent: the capability report has no "
+                        "reviewed_for_live_campaign_execution field; treated as unreviewed "
+                        "(fail-closed). The codec is execution-capable but live review is not "
+                        "machine-attestable from the report.")
+    execution_capable = method_supported and bool(resident) and bool(report.get("rates"))
     return {
         "adapter_id": report.get("adapter_id"),
         "requirements": reqs,
         "blockers": blockers,
+        "execution_capable": execution_capable,
         "claim_restricted": not bool(claims.get("quality", False)),
     }
 
@@ -319,6 +331,7 @@ def admit(family: str, label: str, *, method: str = "none",
         "capability_report_schema": report.get("schema"),
         "requirements": reqs,
         "reviewed": reqs["reviewed"],
+        "execution_capable": bool(norm.get("execution_capable", False)),
         "claim_restricted": bool(norm["claim_restricted"]),
         "ready_for_execution": ready,
         "blockers": blockers,
@@ -407,18 +420,33 @@ def _fake_probe(family: str, adapter_path: str | os.PathLike[str] | None,
 
 
 def selftest() -> dict[str, Any]:
-    # qwen with method=none -> the full conjunction holds -> execution-ready, claim-restricted
+    # qwen method=none: the codec is execution-CAPABLE, but the ladder report has NO explicit
+    # reviewed_for_live_campaign_execution field, so readiness fails closed (never inferred
+    # from hook support) with a review_flag_absent blocker. This is the honesty fix.
     qwen = admit("qwen2.5-dense", "14B", method="none", probe=_fake_probe)
     if not sealed(qwen, "admission_sha256"):
         raise AdmissionError("qwen admission not self-sealed")
-    if not qwen["ready_for_execution"]:
-        raise AdmissionError(f"qwen-none should be execution-ready: {qwen['blockers']}")
-    if not all(qwen["requirements"].values()):
-        raise AdmissionError("qwen-none should satisfy every requirement")
+    if qwen["ready_for_execution"]:
+        raise AdmissionError("qwen-none must NOT be ready without an explicit review attestation")
+    if not qwen.get("execution_capable"):
+        raise AdmissionError("qwen-none should be execution_capable (the codec runs)")
+    if not any("review_flag_absent" in b for b in qwen["blockers"]):
+        raise AdmissionError(f"qwen-none should carry a review_flag_absent blocker: {qwen['blockers']}")
     if not qwen["claim_restricted"]:
         raise AdmissionError("qwen should be claim-restricted (claims.quality False)")
-    if qwen["blockers"]:
-        raise AdmissionError(f"qwen-none should have no blockers: {qwen['blockers']}")
+
+    # a qwen report WITH an explicit live-review attestation -> execution-ready (the AND holds)
+    def _reviewed_probe(family, path, *, config=None):
+        p = _fake_probe(family, path, config=config)
+        if family == "qwen2.5-dense" and p.get("report"):
+            p = dict(p)
+            p["report"] = dict(p["report"], reviewed_for_live_campaign_execution=True)
+        return p
+    qwen_ok = admit("qwen2.5-dense", "14B", method="none", probe=_reviewed_probe)
+    if not qwen_ok["ready_for_execution"]:
+        raise AdmissionError(f"qwen with explicit review should be ready: {qwen_ok['blockers']}")
+    if not all(qwen_ok["requirements"].values()):
+        raise AdmissionError("reviewed qwen-none should satisfy every requirement")
 
     # an unsupported treatment hook fails closed with the hook's own blocker
     qwen_lora = admit("qwen2.5-dense", "14B", method="lora_kd", probe=_fake_probe)
@@ -459,6 +487,8 @@ def selftest() -> dict[str, Any]:
     return {
         "ok": True,
         "qwen_none_ready": qwen["ready_for_execution"],
+        "qwen_execution_capable": qwen["execution_capable"],
+        "qwen_reviewed_ready": qwen_ok["ready_for_execution"],
         "qwen_claim_restricted": qwen["claim_restricted"],
         "qwen_lora_ready": qwen_lora["ready_for_execution"],
         "gptoss_ready": gptoss["ready_for_execution"],

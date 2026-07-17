@@ -29,6 +29,7 @@ with synthetic candidates and never touches real campaign data or live processes
 from __future__ import annotations
 
 import dataclasses
+import hashlib
 import json
 import os
 import stat
@@ -52,6 +53,46 @@ SCHEMA_GC_RECEIPT = "hawking.successor.gc_receipt.v1"
 
 # Successor-only state namespace. Deliberately NOT under doctor_v5_ultra (campaign owned).
 GC_DIR = "reports/condense/event_horizon_successor/gc"
+
+# Subtrees the GC may NEVER touch, whatever the (forgeable, unkeyed) sealed plan says.
+# This is a STRUCTURAL guard against a caller-supplied path resolving into the immutable
+# campaign namespace (non-interference), enforced at both plan and apply time.
+FORBIDDEN_SUBTREES: tuple[str, ...] = (
+    "reports/condense/doctor_v5_ultra",
+)
+
+
+def _under_forbidden(rel: Any) -> bool:
+    """True if a confined relative path lies within any forbidden subtree (prefix match on
+    normalized path parts; symlink evasion is separately blocked by no-follow at delete)."""
+    if not isinstance(rel, str) or not rel:
+        return True  # fail closed on a malformed path
+    parts = Path(rel).parts
+    for forb in FORBIDDEN_SUBTREES:
+        fparts = Path(forb).parts
+        if parts[: len(fparts)] == fparts:
+            return True
+    return False
+
+
+def _content_sha_nofollow(root: Path, rel: str) -> str:
+    """sha256 of a leaf opened descriptor-relative and no-follow (refuses symlinks)."""
+    dir_fd, leaf = _open_parent_nofollow(root, rel)
+    try:
+        try:
+            leaf_fd = os.open(leaf, os.O_RDONLY | os.O_NOFOLLOW | getattr(os, "O_CLOEXEC", 0),
+                              dir_fd=dir_fd)
+        except OSError as exc:
+            raise GcError(f"leaf is a symlink or unopenable, refusing: {rel!r}: {exc}") from exc
+        try:
+            digest = hashlib.sha256()
+            while chunk := os.read(leaf_fd, 1 << 20):
+                digest.update(chunk)
+        finally:
+            os.close(leaf_fd)
+    finally:
+        os.close(dir_fd)
+    return digest.hexdigest()
 
 # A dependent experiment is settled when it is terminal or explicitly evidence-closed.
 TERMINAL_STATUSES = frozenset({"complete", "negative", "unsupported", "evidence_closed"})
@@ -262,6 +303,8 @@ def evaluate_candidate(
     rel_path = candidate.get("path")
     if not _path_is_confined(rel_path):
         reasons.append(f"path {rel_path!r} is not a confined relative path")
+    if _under_forbidden(rel_path):
+        reasons.append(f"path {rel_path!r} lies in the immutable campaign namespace (forbidden)")
 
     # -- condition C1: every dependent experiment terminal / evidence-closed -------------
     dependents = candidate.get("dependents", [])
@@ -329,7 +372,8 @@ def evaluate_candidate(
 
     eligible = (object_class not in NEVER_DELETE_CLASSES
                 and all(conditions.values())
-                and _path_is_confined(rel_path))
+                and _path_is_confined(rel_path)
+                and not _under_forbidden(rel_path))
 
     verdict: dict[str, Any] = {
         "object_id": object_id,
@@ -540,11 +584,39 @@ def gc_apply(
     if receipt.get("operator_ack") is not True:
         raise GcError("operator_ack is not True")
 
+    # Re-assert the hard exclusions at APPLY time. The sealed plan is an unkeyed self-hash
+    # (integrity, not authenticity): a caller who can write a plan can forge its seal, so the
+    # plan is NEVER the authority for an irreversible deletion. These cheap structural checks
+    # run on the dry run too, so a bad manifest is refused before any go.
+    for entry in manifest:
+        if not isinstance(entry, dict):
+            raise GcError("apply refused: manifest entry is not an object")
+        oc = entry.get("object_class")
+        ep = entry.get("path")
+        if oc in NEVER_DELETE_CLASSES:
+            raise GcError(f"apply refused: manifest names protected class {oc!r} ({ep!r})")
+        if not _path_is_confined(ep):
+            raise GcError(f"apply refused: manifest path {ep!r} is not confined")
+        if _under_forbidden(ep):
+            raise GcError(f"apply refused: manifest path {ep!r} is in the campaign namespace")
+        if oc not in config.operator_permitted_classes:
+            raise GcError(f"apply refused: class {oc!r} not operator-permitted for {ep!r}")
+        if not is_sha256(entry.get("sha256")):
+            raise GcError(f"apply refused: manifest entry {ep!r} lacks a sha256")
+
     if not go:
         return {"schema": SCHEMA_GC_RECEIPT, "applied": False, "go": False,
                 "would_delete": len(manifest),
                 "would_free_bytes": plan.get("total_bytes", 0),
                 "note": "dry run: pass go=True to delete the allowlisted manifest"}
+
+    # Content binding: verify EVERY manifested sha256 against the on-disk bytes before
+    # deleting ANY, so a same-size different-content file is never deleted as the target.
+    for entry in manifest:
+        got_sha = _content_sha_nofollow(config.root, entry["path"])
+        if got_sha != entry.get("sha256"):
+            raise GcError(f"apply refused: content sha mismatch for {entry['path']!r}: "
+                          f"manifest {entry.get('sha256')} != on-disk {got_sha}")
 
     deleted: list[dict[str, Any]] = []
     for entry in manifest:
@@ -682,11 +754,13 @@ def selftest() -> dict[str, Any]:
         check("plan-never-delete-reason",
               any("protected class" in r for r in plan_protected["refused"][0]["reasons"]))
 
-        # fully evidence-closed candidate -> produces a plan with one allowlisted entry
+        # fully evidence-closed candidate -> produces a plan with one allowlisted entry.
+        # The manifest sha256 must equal the REAL on-disk content (apply verifies it).
         target = root / "scratch" / "dead.bin"
         target.write_bytes(b"d" * 4096)
+        dead_sha = hashlib.sha256(b"d" * 4096).hexdigest()
         plan_ok = gc_plan(
-            [_closed_candidate("scratch/dead.bin", sha=sha_a)], dep_index, config=config)
+            [_closed_candidate("scratch/dead.bin", sha=dead_sha)], dep_index, config=config)
         check("plan-admits-closed-candidate", len(plan_ok["allowlist"]) == 1)
         check("plan-manifest-exact",
               plan_ok["manifest"][0]["path"] == "scratch/dead.bin"
@@ -767,6 +841,42 @@ def selftest() -> dict[str, Any]:
         except GcError:
             refused = True
         check("apply-refuses-traversal", refused)
+
+        # -- SECURITY: a candidate in the campaign namespace is never eligible ------------
+        camp_file = root / "reports" / "condense" / "doctor_v5_ultra" / "victim.bin"
+        camp_file.parent.mkdir(parents=True, exist_ok=True)
+        camp_file.write_bytes(b"c" * 4096)
+        camp_sha = hashlib.sha256(b"c" * 4096).hexdigest()
+        plan_camp = gc_plan(
+            [_closed_candidate("reports/condense/doctor_v5_ultra/victim.bin", sha=camp_sha)],
+            dep_index, config=config)
+        check("plan-refuses-campaign-namespace", plan_camp["allowlist"] == [])
+        # -- SECURITY: a FORGED sealed plan naming a campaign path / protected class is
+        # refused at apply time, before any deletion (the plan is never the authority) -----
+        for oc, path, content in (("source_scratch", "reports/condense/doctor_v5_ultra/victim.bin", camp_sha),
+                                  ("receipt", "scratch/dead2.bin", None)):
+            (root / "scratch" / "dead2.bin").write_bytes(b"x" * 4096) if oc == "receipt" else None
+            forged_manifest = [{"object_id": path, "object_class": oc, "path": path,
+                                "bytes": 4096, "sha256": content or hashlib.sha256(b"x" * 4096).hexdigest(),
+                                "reacquisition_path": "hf://x@r"}]
+            forged = seal_field({
+                "schema": SCHEMA_GC_PLAN, "generated_at": now_iso(), "root": str(config.root),
+                "operator_permitted_classes": ["source_scratch"],
+                "never_delete_classes": sorted(NEVER_DELETE_CLASSES),
+                "conditions_checked": [label for label, _ in GC_CONDITIONS],
+                "allowlist": [{"object_id": path}], "manifest": forged_manifest,
+                "manifest_sha256": hash_value(forged_manifest), "dependency_proof": {},
+                "refused": [], "total_bytes": 4096, "receipt_to_be": {"schema": SCHEMA_GC_RECEIPT},
+            }, "plan_sha256")
+            fack = {"acknowledges_plan_sha256": forged["plan_sha256"],
+                    "acknowledges_manifest_sha256": forged["manifest_sha256"], "operator_ack": True}
+            refused = False
+            try:
+                gc_apply(forged, fack, go=True, config=config)
+            except GcError:
+                refused = True
+            check(f"apply-refuses-forged-{oc}-{'campaign' if 'doctor' in path else 'protected'}", refused)
+        check("campaign-victim-survives", camp_file.exists())
 
     return {"ok": True, "checks": checks, "check_count": len(checks)}
 

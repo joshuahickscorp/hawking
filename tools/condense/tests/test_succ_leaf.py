@@ -22,8 +22,10 @@ import succ_engine as eng  # noqa: E402
 def test_admission_selftest():
     r = adm.selftest()
     assert r["ok"] is True
-    # source-bound probe: qwen method=none ready, lora not ready, gpt-oss not ready/reviewed
-    assert r["qwen_none_ready"] is True and r["qwen_lora_ready"] is False
+    # honesty: qwen codec is execution-capable but NOT ready without an explicit review flag;
+    # only with an explicit review attestation does it become ready. lora hook unsupported.
+    assert r["qwen_none_ready"] is False and r["qwen_execution_capable"] is True
+    assert r["qwen_reviewed_ready"] is True and r["qwen_lora_ready"] is False
     assert r["gptoss_ready"] is False and r["gptoss_reviewed"] is False
 
 

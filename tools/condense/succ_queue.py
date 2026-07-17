@@ -100,6 +100,12 @@ class Queue:
         if not self.path.exists():
             return {"schema": QUEUE_SCHEMA, "rows": {}}
         doc = read_json_safe(self.path)
+        if doc.get("schema") != QUEUE_SCHEMA:
+            raise QueueError(f"queue schema mismatch: {doc.get('schema')!r}")
+        # verify the container seal so whole-row insertion/removal is caught, not just
+        # per-row edits (the container seal binds the exact row set).
+        if not sealed(doc, "queue_sha256"):
+            raise QueueError("queue container self-seal invalid on load (row set tampered)")
         for label, row in doc.get("rows", {}).items():
             if not sealed(row, "row_sha256"):
                 raise QueueError(f"queue row {label} self-seal invalid on load")

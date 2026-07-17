@@ -393,12 +393,15 @@ def evaluate_gate(campaign_root: str | os.PathLike[str], intent: dict[str, Any],
 
 # ── one-use execution + rollback ───────────────────────────────────────────────────────
 def execute_transition(intent: dict[str, Any], campaign_root: str | os.PathLike[str],
-                       go: bool, *, successor_identity: dict[str, Any] | None = None,
+                       go: bool, *, _test_identity_override: dict[str, Any] | None = None,
                        state_root: str | os.PathLike[str] | None = None) -> dict[str, Any]:
     """Execute the supersession ONCE. Fail-closed and impossible to force:
       - it recomputes the gate itself (there is NO all_pass parameter to pass in);
       - it re-reads live campaign state from disk (an invented live manifest cannot pass the
         supersession portion, which reads queue_state directly);
+      - it MEASURES the running successor identity (git tree/commit + config/queue-root hashes)
+        rather than accepting it from the caller, so the bound-vs-running check is not vacuous;
+        `_test_identity_override` is a test-only hook and must never be set in production;
       - it refuses if a consumed receipt for this exact intent already exists (durable
         one-use, append-only), or if `intent.consumed` is set, or if `go` is not True.
     On success it preserves the prior manifest as the rollback target, writes the activation
@@ -420,7 +423,8 @@ def execute_transition(intent: dict[str, Any], campaign_root: str | os.PathLike[
     if not go:
         return {"executed": False, "refused": True, "reason": "go not set"}
 
-    gate = evaluate_gate(campaign_root, intent, successor_identity=successor_identity,
+    # production path MEASURES successor identity; only tests inject one
+    gate = evaluate_gate(campaign_root, intent, successor_identity=_test_identity_override,
                          state_root=sroot)
     if not gate["all_pass"]:
         return {"executed": False, "refused": True, "reason": "gate not satisfied",
@@ -569,7 +573,7 @@ def selftest() -> dict[str, Any]:
         g1 = evaluate_gate(croot, intent, successor_identity=succ_id, state_root=sroot)
         if g1["all_pass"]:
             raise TransitionError("gate must fail on a running campaign")
-        r1 = execute_transition(intent, croot, go=True, successor_identity=succ_id,
+        r1 = execute_transition(intent, croot, go=True, _test_identity_override=succ_id,
                                 state_root=sroot)
         if r1["executed"]:
             raise TransitionError("execute must refuse on a running campaign")
@@ -584,7 +588,7 @@ def selftest() -> dict[str, Any]:
         g2 = evaluate_gate(croot, intent2, successor_identity=succ_id, state_root=sroot)
         if not g2["all_pass"]:
             raise TransitionError(f"gate should pass now: {g2['reasons']}")
-        r2 = execute_transition(intent2, croot, go=True, successor_identity=succ_id,
+        r2 = execute_transition(intent2, croot, go=True, _test_identity_override=succ_id,
                                 state_root=sroot)
         if not r2["executed"]:
             raise TransitionError(f"execute should succeed: {r2}")
@@ -593,7 +597,7 @@ def selftest() -> dict[str, Any]:
         results["signed_go_executes_once"] = True
 
         # (3) second execute of the same intent -> refused (one-use consumed)
-        r3 = execute_transition(intent2, croot, go=True, successor_identity=succ_id,
+        r3 = execute_transition(intent2, croot, go=True, _test_identity_override=succ_id,
                                 state_root=sroot)
         if r3["executed"]:
             raise TransitionError("second execute must refuse (one-use)")
@@ -605,7 +609,7 @@ def selftest() -> dict[str, Any]:
         vt = verify_intent(tampered, build_live_manifest(croot, succ_id))
         if vt["ok"]:
             raise TransitionError("tampered intent must fail verify")
-        rt = execute_transition(tampered, croot, go=True, successor_identity=succ_id,
+        rt = execute_transition(tampered, croot, go=True, _test_identity_override=succ_id,
                                 state_root=sroot)
         if rt["executed"]:
             raise TransitionError("tampered intent must not execute")
@@ -617,7 +621,7 @@ def selftest() -> dict[str, Any]:
         ve = verify_intent(expired, build_live_manifest(croot, succ_id))
         if ve["ok"]:
             raise TransitionError("expired intent must fail verify")
-        re_ = execute_transition(expired, croot, go=True, successor_identity=succ_id,
+        re_ = execute_transition(expired, croot, go=True, _test_identity_override=succ_id,
                                  state_root=sroot)
         if re_["executed"]:
             raise TransitionError("expired intent must not execute")
@@ -636,7 +640,7 @@ def selftest() -> dict[str, Any]:
         #     because the supersession gate re-reads queue_state from disk.
         bypass_attempted = False
         try:
-            execute_transition(intent2, croot, go=True, successor_identity=succ_id,
+            execute_transition(intent2, croot, go=True, _test_identity_override=succ_id,
                                state_root=sroot, all_pass=True)  # type: ignore[call-arg]
         except TypeError:
             bypass_attempted = True  # no such knob exists
@@ -650,7 +654,7 @@ def selftest() -> dict[str, Any]:
         }
         if verify_intent(fresh_intent, forged_live)["ok"] is not True:
             raise TransitionError("sanity: forged live should satisfy verify in isolation")
-        rb7 = execute_transition(fresh_intent, croot, go=True, successor_identity=succ_id,
+        rb7 = execute_transition(fresh_intent, croot, go=True, _test_identity_override=succ_id,
                                  state_root=sroot)
         if rb7["executed"]:
             raise TransitionError("running campaign must refuse regardless of caller inputs")
