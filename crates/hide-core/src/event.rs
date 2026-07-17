@@ -486,15 +486,15 @@ impl EventLog for InMemoryEventLog {
             for event in self.events.lock().iter() {
                 if session_id
                     .as_ref()
-                    .map_or(false, |sid| sid != &event.session_id)
+                    .is_some_and(|sid| sid != &event.session_id)
                 {
                     continue;
                 }
-                if after_seq.map_or(false, |seq| event.seq <= seq) {
+                if after_seq.is_some_and(|seq| event.seq <= seq) {
                     continue;
                 }
                 out.push(event.clone());
-                if limit.map_or(false, |n| out.len() >= n) {
+                if limit.is_some_and(|n| out.len() >= n) {
                     break;
                 }
             }
@@ -536,15 +536,15 @@ impl EventLog for JsonlEventLog {
             for event in read_events(&self.path)? {
                 if session_id
                     .as_ref()
-                    .map_or(false, |sid| sid != &event.session_id)
+                    .is_some_and(|sid| sid != &event.session_id)
                 {
                     continue;
                 }
-                if after_seq.map_or(false, |seq| event.seq <= seq) {
+                if after_seq.is_some_and(|seq| event.seq <= seq) {
                     continue;
                 }
                 out.push(event);
-                if limit.map_or(false, |n| out.len() >= n) {
+                if limit.is_some_and(|n| out.len() >= n) {
                     break;
                 }
             }
