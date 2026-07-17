@@ -52,7 +52,11 @@ fn stub_runtime_kernel_launcher(log: DynEventLog) -> Arc<dyn RunLauncher> {
     let runtime = Arc::new(hide_kernel::runtime_client::KernelRuntimeClient::new(
         router, inference,
     ));
-    let kernel = Arc::new(hide_kernel::AgentKernel::builder(log).runtime(runtime).build());
+    let kernel = Arc::new(
+        hide_kernel::AgentKernel::builder(log)
+            .runtime(runtime)
+            .build(),
+    );
     Arc::new(KernelRunLauncher::new(kernel).with_max_steps(256))
 }
 
@@ -146,7 +150,10 @@ async fn fleet_runs_a_fanout_of_real_kernel_runs() {
 
     for i in 0..3 {
         manager
-            .enqueue(AgentJob::new(format!("port endpoint {i}"), PriorityClass::Normal))
+            .enqueue(AgentJob::new(
+                format!("port endpoint {i}"),
+                PriorityClass::Normal,
+            ))
             .await
             .unwrap();
     }

@@ -109,7 +109,10 @@ impl PlanStep {
 
     /// Does the step mutate the world (needs an autonomy gate / approval)?
     pub fn is_effectful(&self) -> bool {
-        matches!(self.kind, StepKind::Edit | StepKind::Command | StepKind::Delegate)
+        matches!(
+            self.kind,
+            StepKind::Edit | StepKind::Command | StepKind::Delegate
+        )
     }
 }
 

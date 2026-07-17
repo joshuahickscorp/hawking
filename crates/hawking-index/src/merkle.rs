@@ -354,7 +354,10 @@ fn detect_renames(cs: &mut ChangeSet, old: &MerkleNode, new: &MerkleNode) {
     let mut removed_by_hash: BTreeMap<String, Vec<PathBuf>> = BTreeMap::new();
     for p in &cs.removed {
         if let Some(h) = old_hashes.get(p) {
-            removed_by_hash.entry(h.clone()).or_default().push(p.clone());
+            removed_by_hash
+                .entry(h.clone())
+                .or_default()
+                .push(p.clone());
         }
     }
 

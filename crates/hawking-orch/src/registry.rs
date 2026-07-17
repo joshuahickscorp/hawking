@@ -55,11 +55,7 @@ impl RoleRegistry {
     /// Resolve a role by its human name (the key used in `roles.toml`), since
     /// `escalates_to`/`draft_for` reference roles by name in the file.
     pub fn by_name(&self, name: &str) -> Option<ModelRole> {
-        self.roles
-            .read()
-            .values()
-            .find(|r| r.name == name)
-            .cloned()
+        self.roles.read().values().find(|r| r.name == name).cloned()
     }
 
     /// Load roles from a `.hide/roles.toml` (or any TOML) file if it exists,

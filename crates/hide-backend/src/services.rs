@@ -40,11 +40,7 @@ impl SessionRegistry {
 
     /// Open-or-create the named session. The first call mints + records it (in
     /// the KV store if present); subsequent calls return the same id.
-    pub fn open_or_create(
-        &self,
-        name: &str,
-        kv: Option<&DynKeyValueStore>,
-    ) -> SessionId {
+    pub fn open_or_create(&self, name: &str, kv: Option<&DynKeyValueStore>) -> SessionId {
         let mut map = self.by_name.lock();
         if let Some(id) = map.get(name) {
             return id.clone();
@@ -52,7 +48,11 @@ impl SessionRegistry {
         // Recover a previously-recorded id from the durable KV store, else mint.
         let id = kv
             .and_then(|kv| kv.get(Self::KV_NAMESPACE, name).ok().flatten())
-            .and_then(|v| v.get("session_id").and_then(|s| s.as_str()).map(SessionId::from))
+            .and_then(|v| {
+                v.get("session_id")
+                    .and_then(|s| s.as_str())
+                    .map(SessionId::from)
+            })
             .unwrap_or_default();
         if let Some(kv) = kv {
             let _ = kv.put(
@@ -166,8 +166,9 @@ impl BackendServices {
         )?);
 
         // Spine B: the persistent Project Brain lives in a SQLite DB on disk.
-        let memory_store: DynMemoryStore =
-            Arc::new(SqliteMemoryStore::open(layout.hide_dir.join("memory").join("memory.db"))?);
+        let memory_store: DynMemoryStore = Arc::new(SqliteMemoryStore::open(
+            layout.hide_dir.join("memory").join("memory.db"),
+        )?);
 
         let mut services = Self::with_stores(
             config,

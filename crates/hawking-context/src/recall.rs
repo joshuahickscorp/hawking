@@ -60,7 +60,10 @@ pub fn needles_from(original: &str, max: usize) -> Vec<RecallProbe> {
             continue;
         }
         if seen.insert(t.to_string()) {
-            out.push(RecallProbe { id: format!("n{}", out.len()), needle: t.to_string() });
+            out.push(RecallProbe {
+                id: format!("n{}", out.len()),
+                needle: t.to_string(),
+            });
             if out.len() >= max {
                 break;
             }
@@ -86,18 +89,38 @@ pub fn decide_rollback(
     depth: u8,
 ) -> RollbackDecision {
     if depth > MAX_COMPACT_DEPTH {
-        return RollbackDecision { should_rollback: true, recall, reason: "depth cap exceeded" };
+        return RollbackDecision {
+            should_rollback: true,
+            recall,
+            reason: "depth cap exceeded",
+        };
     }
     if coverage_regressed {
-        return RollbackDecision { should_rollback: true, recall, reason: "test coverage regressed" };
+        return RollbackDecision {
+            should_rollback: true,
+            recall,
+            reason: "test coverage regressed",
+        };
     }
     if recall < RECALL_FLOOR {
-        return RollbackDecision { should_rollback: true, recall, reason: "recall below floor" };
+        return RollbackDecision {
+            should_rollback: true,
+            recall,
+            reason: "recall below floor",
+        };
     }
     if dropped_important_frac > DROPPED_IMPORTANT_CEIL {
-        return RollbackDecision { should_rollback: true, recall, reason: "dropped too much that mattered" };
+        return RollbackDecision {
+            should_rollback: true,
+            recall,
+            reason: "dropped too much that mattered",
+        };
     }
-    RollbackDecision { should_rollback: false, recall, reason: "ok" }
+    RollbackDecision {
+        should_rollback: false,
+        recall,
+        reason: "ok",
+    }
 }
 
 #[cfg(test)]
@@ -105,7 +128,10 @@ mod tests {
     use super::*;
 
     fn probe(id: &str, needle: &str) -> RecallProbe {
-        RecallProbe { id: id.into(), needle: needle.into() }
+        RecallProbe {
+            id: id.into(),
+            needle: needle.into(),
+        }
     }
 
     #[test]
@@ -138,10 +164,25 @@ mod tests {
 
     #[test]
     fn rollback_fires_on_each_condition() {
-        assert!(decide_rollback(0.99, 0.0, false, 3).should_rollback, "depth");
-        assert!(decide_rollback(0.99, 0.0, true, 1).should_rollback, "coverage");
-        assert!(decide_rollback(0.50, 0.0, false, 1).should_rollback, "recall");
-        assert!(decide_rollback(0.99, 0.5, false, 1).should_rollback, "dropped");
-        assert!(!decide_rollback(0.99, 0.0, false, 1).should_rollback, "clean keeps");
+        assert!(
+            decide_rollback(0.99, 0.0, false, 3).should_rollback,
+            "depth"
+        );
+        assert!(
+            decide_rollback(0.99, 0.0, true, 1).should_rollback,
+            "coverage"
+        );
+        assert!(
+            decide_rollback(0.50, 0.0, false, 1).should_rollback,
+            "recall"
+        );
+        assert!(
+            decide_rollback(0.99, 0.5, false, 1).should_rollback,
+            "dropped"
+        );
+        assert!(
+            !decide_rollback(0.99, 0.0, false, 1).should_rollback,
+            "clean keeps"
+        );
     }
 }

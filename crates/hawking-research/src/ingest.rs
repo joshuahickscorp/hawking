@@ -401,7 +401,12 @@ pub fn parse_arxiv_feed(xml: &str) -> Vec<ArxivEntry> {
             continue;
         }
         // arXiv id is the trailing path component of the <id> URL.
-        let short_id = id_raw.rsplit('/').next().unwrap_or(&id_raw).trim().to_string();
+        let short_id = id_raw
+            .rsplit('/')
+            .next()
+            .unwrap_or(&id_raw)
+            .trim()
+            .to_string();
         out.push(ArxivEntry {
             id: short_id,
             title,

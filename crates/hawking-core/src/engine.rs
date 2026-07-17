@@ -257,7 +257,11 @@ impl GenStats {
     /// this is equivalent to the "user_ngram" accept rate.
     pub fn draft_accept_rate(&self) -> f32 {
         let total = self.draft_accepted + self.draft_rejected;
-        if total == 0 { 0.0 } else { self.draft_accepted as f32 / total as f32 }
+        if total == 0 {
+            0.0
+        } else {
+            self.draft_accepted as f32 / total as f32
+        }
     }
 
     /// Track 0.2 / 8.3 — serialize ONLY the scalar observability fields to a
@@ -603,7 +607,9 @@ pub trait Engine: Send + Sync {
         }
         let positions: Vec<usize> = (0..ids.len()).collect();
         let rows = self.forward_tokens_for_test(&ids, &positions)?;
-        let last = rows.last().ok_or_else(|| crate::Error::Model("embed: no output rows".into()))?;
+        let last = rows
+            .last()
+            .ok_or_else(|| crate::Error::Model("embed: no output rows".into()))?;
         let norm: f32 = last.iter().map(|v| v * v).sum::<f32>().sqrt().max(1e-8);
         Ok(last.iter().map(|v| v / norm).collect())
     }

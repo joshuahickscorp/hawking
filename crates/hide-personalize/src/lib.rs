@@ -33,8 +33,8 @@ pub mod world;
 
 pub use records::{Hash32, Outcome, PersonalizationRecord, TaskClass};
 pub use store::{
-    scrub_record, DynPersonalizationStore, InMemoryPersonalizationStore,
-    JsonlPersonalizationStore, PersonalLayout, PersonalizationStore,
+    scrub_record, DynPersonalizationStore, InMemoryPersonalizationStore, JsonlPersonalizationStore,
+    PersonalLayout, PersonalizationStore,
 };
 
 pub use curate::{curate, write_dataset, CuratedDataset, CurationPolicy};

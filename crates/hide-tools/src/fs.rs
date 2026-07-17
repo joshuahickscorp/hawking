@@ -114,8 +114,11 @@ impl Tool for FsReadTool {
 
             if use_base64 {
                 let encoded = base64_encode(&bytes);
-                let spill =
-                    common::maybe_spill(encoded, ctx.output_cap_bytes as usize, self.config.blobs.as_ref());
+                let spill = common::maybe_spill(
+                    encoded,
+                    ctx.output_cap_bytes as usize,
+                    self.config.blobs.as_ref(),
+                );
                 return finalize_read(path, "base64", spill, bytes.len());
             }
 
@@ -140,19 +143,22 @@ impl Tool for FsReadTool {
                 None => text,
             };
             let total = sliced.len();
-            let spill =
-                common::maybe_spill(sliced, ctx.output_cap_bytes as usize, self.config.blobs.as_ref());
+            let spill = common::maybe_spill(
+                sliced,
+                ctx.output_cap_bytes as usize,
+                self.config.blobs.as_ref(),
+            );
             finalize_read(path, "utf8", spill, total)
         })
     }
 
     fn simulate<'a>(&'a self, args: &'a Value, _ctx: ToolCtx) -> BoxFuture<'a, Option<EffectSet>> {
         Box::pin(async move {
-            args.get("path").and_then(|v| v.as_str()).map(|path| {
-                EffectSet {
+            args.get("path")
+                .and_then(|v| v.as_str())
+                .map(|path| EffectSet {
                     effects: vec![read_effect(path)],
-                }
-            })
+                })
         })
     }
 
@@ -261,7 +267,10 @@ impl Tool for FsListTool {
                     "is_dir": entry.file_type().map(|t| t.is_dir()).unwrap_or(false),
                 }));
             }
-            common::ok(json!({ "path": path, "entries": entries }), EffectSet::default())
+            common::ok(
+                json!({ "path": path, "entries": entries }),
+                EffectSet::default(),
+            )
         })
     }
 
@@ -320,8 +329,14 @@ impl Tool for FsWriteTool {
             let Some(content) = args.get("content").and_then(|v| v.as_str()) else {
                 return common::arg_invalid("missing string arg: content", None, Some("/content"));
             };
-            let create_dirs = args.get("create_dirs").and_then(|v| v.as_bool()).unwrap_or(false);
-            let create_only = args.get("create_only").and_then(|v| v.as_bool()).unwrap_or(false);
+            let create_dirs = args
+                .get("create_dirs")
+                .and_then(|v| v.as_bool())
+                .unwrap_or(false);
+            let create_only = args
+                .get("create_only")
+                .and_then(|v| v.as_bool())
+                .unwrap_or(false);
             let path_buf = PathBuf::from(path);
 
             if create_only && path_buf.exists() {
@@ -627,7 +642,10 @@ fn snapshot_mtime(path: &str) -> Option<std::time::SystemTime> {
 
 fn parse_range(args: &Value) -> Option<(usize, usize)> {
     let range = args.get("range")?;
-    let start = range.get("start_line").and_then(|v| v.as_u64()).unwrap_or(1) as usize;
+    let start = range
+        .get("start_line")
+        .and_then(|v| v.as_u64())
+        .unwrap_or(1) as usize;
     let end = range
         .get("end_line")
         .and_then(|v| v.as_u64())
@@ -668,8 +686,7 @@ fn write_effect(path: &str, bytes: usize) -> Effect {
 /// Minimal dependency-free base64 (standard alphabet, padded). Used for binary
 /// reads so we never hard-error on non-UTF-8 content.
 fn base64_encode(input: &[u8]) -> String {
-    const ALPHABET: &[u8; 64] =
-        b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    const ALPHABET: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
     let mut out = String::with_capacity(input.len().div_ceil(3) * 4);
     for chunk in input.chunks(3) {
         let b = [

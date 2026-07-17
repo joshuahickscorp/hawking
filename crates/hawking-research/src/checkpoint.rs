@@ -33,9 +33,16 @@ pub enum CheckpointKind {
     State { state: String },
     /// A source doc was fetched + content-addressed (recorded so we never
     /// re-fetch the same content_hash on resume).
-    Fetched { doc_id: String, content_hash: Option<String> },
+    Fetched {
+        doc_id: String,
+        content_hash: Option<String>,
+    },
     /// A round of the reflect loop completed.
-    Round { round: u32, coverage: f32, novelty: f32 },
+    Round {
+        round: u32,
+        coverage: f32,
+        novelty: f32,
+    },
     /// Run finalized.
     Done { docs_read: usize, claims: usize },
 }
@@ -133,7 +140,10 @@ impl JsonlCheckpointLedger {
 impl CheckpointLedger for JsonlCheckpointLedger {
     fn append(&self, event: CheckpointEvent) -> Result<()> {
         *self.seq.lock() = event.seq;
-        let mut file = OpenOptions::new().create(true).append(true).open(&self.path)?;
+        let mut file = OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(&self.path)?;
         serde_json::to_writer(&mut file, &event)?;
         file.write_all(b"\n")?;
         file.sync_data()?;
@@ -223,11 +233,16 @@ mod tests {
         // A different run's event must not bleed in.
         let mut other = RunJournal::new(RunId::from("run_b"), ledger.clone());
         other
-            .record(CheckpointKind::State { state: "Read".into() })
+            .record(CheckpointKind::State {
+                state: "Read".into(),
+            })
             .unwrap();
 
         assert_eq!(ledger.events_for("run_a").unwrap().len(), 3);
-        assert_eq!(ledger.last_state("run_a").unwrap().as_deref(), Some("Fetch"));
+        assert_eq!(
+            ledger.last_state("run_a").unwrap().as_deref(),
+            Some("Fetch")
+        );
         assert!(ledger.fetched_hashes("run_a").unwrap().contains("h1"));
         let _ = std::fs::remove_dir_all(dir);
     }

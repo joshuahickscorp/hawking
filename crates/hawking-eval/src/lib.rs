@@ -103,13 +103,27 @@ pub async fn run_suite<C: CompletionClient + Sync>(
     let mut outcomes = Vec::with_capacity(tasks.len());
     for t in tasks {
         let out = client.complete(&t.prompt).await?;
-        outcomes.push(TaskOutcome { id: t.id.clone(), passed: score(t, &out) });
+        outcomes.push(TaskOutcome {
+            id: t.id.clone(),
+            passed: score(t, &out),
+        });
     }
     let passes = outcomes.iter().filter(|o| o.passed).count();
     let total = outcomes.len();
     let (ci_low, ci_high) = wilson_interval(passes, total, Z_95);
-    let pass_at_1 = if total == 0 { 0.0 } else { passes as f64 / total as f64 };
-    Ok(EvalReport { outcomes, passes, total, pass_at_1, ci_low, ci_high })
+    let pass_at_1 = if total == 0 {
+        0.0
+    } else {
+        passes as f64 / total as f64
+    };
+    Ok(EvalReport {
+        outcomes,
+        passes,
+        total,
+        pass_at_1,
+        ci_low,
+        ci_high,
+    })
 }
 
 /// Load eval tasks from JSONL text (one `Task` JSON object per line) -- the
@@ -153,7 +167,10 @@ impl OpenAiClient {
 #[async_trait]
 impl CompletionClient for OpenAiClient {
     async fn complete(&self, prompt: &str) -> Result<String, EvalError> {
-        let url = format!("{}/v1/chat/completions", self.base_url.trim_end_matches('/'));
+        let url = format!(
+            "{}/v1/chat/completions",
+            self.base_url.trim_end_matches('/')
+        );
         let body = serde_json::json!({
             "model": self.model,
             "messages": [{ "role": "user", "content": prompt }],
@@ -199,14 +216,26 @@ mod tests {
 
     fn tasks() -> Vec<Task> {
         vec![
-            Task { id: "a".into(), prompt: "pa".into(), expect: vec!["foo".into()] },
-            Task { id: "b".into(), prompt: "pb".into(), expect: vec!["bar".into()] },
+            Task {
+                id: "a".into(),
+                prompt: "pa".into(),
+                expect: vec!["foo".into()],
+            },
+            Task {
+                id: "b".into(),
+                prompt: "pb".into(),
+                expect: vec!["bar".into()],
+            },
         ]
     }
 
     #[test]
     fn score_requires_all_substrings() {
-        let t = Task { id: "x".into(), prompt: String::new(), expect: vec!["a".into(), "b".into()] };
+        let t = Task {
+            id: "x".into(),
+            prompt: String::new(),
+            expect: vec!["a".into(), "b".into()],
+        };
         assert!(score(&t, "x a y b z"));
         assert!(!score(&t, "only a"));
     }
@@ -222,8 +251,14 @@ mod tests {
     #[test]
     fn nll_rewards_confident_correct_and_punishes_wrong() {
         let logits = vec![100.0, 0.0, 0.0];
-        assert!(nll_from_logits(&logits, 0) < 1e-3, "confident correct -> ~0 NLL");
-        assert!(nll_from_logits(&logits, 1) > 50.0, "confident wrong -> high NLL");
+        assert!(
+            nll_from_logits(&logits, 0) < 1e-3,
+            "confident correct -> ~0 NLL"
+        );
+        assert!(
+            nll_from_logits(&logits, 1) > 50.0,
+            "confident wrong -> high NLL"
+        );
     }
 
     #[test]

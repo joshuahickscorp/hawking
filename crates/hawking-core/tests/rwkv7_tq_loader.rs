@@ -128,8 +128,7 @@ fn tq_loader_missing_artifact_is_err() {
     assert_eq!(names[5], "blk.0.channel_mix_value.weight");
     assert_eq!(names[6], "blk.1.time_mix_receptance.weight");
     assert_eq!(
-        names[143],
-        "blk.23.channel_mix_value.weight",
+        names[143], "blk.23.channel_mix_value.weight",
         "last tensor name for 24-layer model"
     );
 }

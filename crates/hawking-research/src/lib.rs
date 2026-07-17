@@ -29,8 +29,8 @@ pub use checkpoint::{
 };
 pub use ingest::{ArxivAdapter, InMemorySourceAdapter, SourceAdapter, StructuredDoc};
 pub use kg::{
-    GraphQuery, InMemoryKnowledgeGraph, KnowledgeGraph, KnowledgeNode, NodeKind,
-    PetKnowledgeGraph, QueryResult,
+    GraphQuery, InMemoryKnowledgeGraph, KnowledgeGraph, KnowledgeNode, NodeKind, PetKnowledgeGraph,
+    QueryResult,
 };
 pub use litmap::{build_literature_map, compare_papers, LiteratureMap};
 pub use pipeline::{ResearchBudget, ResearchPipeline, ResearchRun, ResearchState};

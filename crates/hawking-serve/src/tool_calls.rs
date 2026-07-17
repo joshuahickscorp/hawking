@@ -160,11 +160,16 @@ fn calls_from_value(value: &Value) -> Vec<(String, Value)> {
 fn single(value: &Value) -> Option<(String, Value)> {
     let obj = value.as_object()?;
     let (name_src, args_src) = if let Some(func) = obj.get("function").and_then(|f| f.as_object()) {
-        (func.get("name"), func.get("arguments").or_else(|| func.get("parameters")))
+        (
+            func.get("name"),
+            func.get("arguments").or_else(|| func.get("parameters")),
+        )
     } else {
         (
             obj.get("name").or_else(|| obj.get("tool")),
-            obj.get("arguments").or_else(|| obj.get("args")).or_else(|| obj.get("parameters")),
+            obj.get("arguments")
+                .or_else(|| obj.get("args"))
+                .or_else(|| obj.get("parameters")),
         )
     };
     let name = name_src?.as_str()?.trim().to_string();
@@ -174,7 +179,9 @@ fn single(value: &Value) -> Option<(String, Value)> {
     let args = match args_src {
         None | Some(Value::Null) => serde_json::json!({}),
         Some(Value::Object(o)) => Value::Object(o.clone()),
-        Some(Value::String(s)) => serde_json::from_str::<Value>(s).unwrap_or_else(|_| serde_json::json!({ "input": s })),
+        Some(Value::String(s)) => {
+            serde_json::from_str::<Value>(s).unwrap_or_else(|_| serde_json::json!({ "input": s }))
+        }
         Some(other) => serde_json::json!({ "value": other.clone() }),
     };
     Some((name, args))

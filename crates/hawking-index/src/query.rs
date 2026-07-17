@@ -116,13 +116,19 @@ impl SearchQuery {
     /// full hybrid.
     pub fn routed(text: impl Into<String>, limit: usize) -> Self {
         let text = text.into();
-        let (include_symbols, include_lexical, include_semantic) =
-            match classify_query_shape(&text) {
-                QueryShape::ExactSymbol => (true, false, false),
-                QueryShape::Identifier => (true, true, false),
-                QueryShape::NaturalLanguage => (true, true, true),
-            };
-        SearchQuery { text, limit, include_symbols, include_lexical, include_semantic }
+        let (include_symbols, include_lexical, include_semantic) = match classify_query_shape(&text)
+        {
+            QueryShape::ExactSymbol => (true, false, false),
+            QueryShape::Identifier => (true, true, false),
+            QueryShape::NaturalLanguage => (true, true, true),
+        };
+        SearchQuery {
+            text,
+            limit,
+            include_symbols,
+            include_lexical,
+            include_semantic,
+        }
     }
 }
 
@@ -132,12 +138,21 @@ mod routing_tests {
 
     #[test]
     fn classifies_query_shapes() {
-        assert_eq!(classify_query_shape("CodeIndex::search"), QueryShape::ExactSymbol);
+        assert_eq!(
+            classify_query_shape("CodeIndex::search"),
+            QueryShape::ExactSymbol
+        );
         assert_eq!(classify_query_shape("foo_bar"), QueryShape::ExactSymbol);
         assert_eq!(classify_query_shape("parseTree"), QueryShape::ExactSymbol);
         assert_eq!(classify_query_shape("parse tree"), QueryShape::Identifier);
-        assert_eq!(classify_query_shape("where do we handle retries?"), QueryShape::NaturalLanguage);
-        assert_eq!(classify_query_shape("how does compaction work"), QueryShape::NaturalLanguage);
+        assert_eq!(
+            classify_query_shape("where do we handle retries?"),
+            QueryShape::NaturalLanguage
+        );
+        assert_eq!(
+            classify_query_shape("how does compaction work"),
+            QueryShape::NaturalLanguage
+        );
     }
 
     #[test]
@@ -152,8 +167,12 @@ mod routing_tests {
 
     #[test]
     fn precise_sources_outrank_similar_code() {
-        assert!(source_rank(SearchResultSource::Symbol) < source_rank(SearchResultSource::Semantic));
-        assert!(source_rank(SearchResultSource::Lexical) < source_rank(SearchResultSource::Semantic));
+        assert!(
+            source_rank(SearchResultSource::Symbol) < source_rank(SearchResultSource::Semantic)
+        );
+        assert!(
+            source_rank(SearchResultSource::Lexical) < source_rank(SearchResultSource::Semantic)
+        );
     }
 }
 
@@ -216,18 +235,10 @@ pub trait Index: CodeIndex {
 
     /// Definition lookup honoring the per-query [`Q`] knobs: freshness gate +
     /// precise (exact-symbol-only) resolution.
-    fn definition_q<'a>(
-        &'a self,
-        symbol: &'a str,
-        q: Q,
-    ) -> BoxFuture<'a, Result<Vec<Occurrence>>>;
+    fn definition_q<'a>(&'a self, symbol: &'a str, q: Q) -> BoxFuture<'a, Result<Vec<Occurrence>>>;
 
     /// Reference lookup honoring the per-query [`Q`] knobs.
-    fn references_q<'a>(
-        &'a self,
-        symbol: &'a str,
-        q: Q,
-    ) -> BoxFuture<'a, Result<Vec<Occurrence>>>;
+    fn references_q<'a>(&'a self, symbol: &'a str, q: Q) -> BoxFuture<'a, Result<Vec<Occurrence>>>;
 }
 
 // ============================================================================
@@ -450,10 +461,7 @@ impl InMemoryCodeIndex {
     }
 }
 
-fn def_range(
-    occs: &BTreeMap<String, Vec<Occurrence>>,
-    symbol_id: &str,
-) -> Option<TextRange> {
+fn def_range(occs: &BTreeMap<String, Vec<Occurrence>>, symbol_id: &str) -> Option<TextRange> {
     occs.get(symbol_id)?
         .iter()
         .find(|o| o.role == ROLE_DEFINITION)
@@ -697,17 +705,16 @@ impl SqliteCodeIndex {
     }
 }
 
-fn first_line_for(
-    content: &str,
-    occs: &[Occurrence],
-    symbol_id: &str,
-) -> String {
+fn first_line_for(content: &str, occs: &[Occurrence], symbol_id: &str) -> String {
     if let Some(occ) = occs
         .iter()
         .find(|o| o.symbol == symbol_id && o.role == ROLE_DEFINITION)
     {
         if let Some(range) = &occ.range {
-            if let Some(line) = content.lines().nth((range.start_line.saturating_sub(1)) as usize) {
+            if let Some(line) = content
+                .lines()
+                .nth((range.start_line.saturating_sub(1)) as usize)
+            {
                 return line.trim().to_string();
             }
         }
@@ -786,11 +793,7 @@ impl Index for SqliteCodeIndex {
         *self.generation.read()
     }
 
-    fn definition_q<'a>(
-        &'a self,
-        symbol: &'a str,
-        q: Q,
-    ) -> BoxFuture<'a, Result<Vec<Occurrence>>> {
+    fn definition_q<'a>(&'a self, symbol: &'a str, q: Q) -> BoxFuture<'a, Result<Vec<Occurrence>>> {
         Box::pin(async move {
             q.check_fresh(self.current_generation())?;
             if q.precise {
@@ -801,11 +804,7 @@ impl Index for SqliteCodeIndex {
         })
     }
 
-    fn references_q<'a>(
-        &'a self,
-        symbol: &'a str,
-        q: Q,
-    ) -> BoxFuture<'a, Result<Vec<Occurrence>>> {
+    fn references_q<'a>(&'a self, symbol: &'a str, q: Q) -> BoxFuture<'a, Result<Vec<Occurrence>>> {
         Box::pin(async move {
             q.check_fresh(self.current_generation())?;
             if q.precise {
@@ -847,11 +846,7 @@ impl Index for InMemoryCodeIndex {
         *self.generation.read()
     }
 
-    fn definition_q<'a>(
-        &'a self,
-        symbol: &'a str,
-        q: Q,
-    ) -> BoxFuture<'a, Result<Vec<Occurrence>>> {
+    fn definition_q<'a>(&'a self, symbol: &'a str, q: Q) -> BoxFuture<'a, Result<Vec<Occurrence>>> {
         Box::pin(async move {
             q.check_fresh(self.current_generation())?;
             Ok(if q.precise {
@@ -862,11 +857,7 @@ impl Index for InMemoryCodeIndex {
         })
     }
 
-    fn references_q<'a>(
-        &'a self,
-        symbol: &'a str,
-        q: Q,
-    ) -> BoxFuture<'a, Result<Vec<Occurrence>>> {
+    fn references_q<'a>(&'a self, symbol: &'a str, q: Q) -> BoxFuture<'a, Result<Vec<Occurrence>>> {
         Box::pin(async move {
             q.check_fresh(self.current_generation())?;
             Ok(if q.precise {

@@ -32,5 +32,7 @@ pub fn cursor_step(state: &AgentState) -> Option<&PlanStep> {
 
 /// The current cursor step mutates the world (needs an autonomy/approval gate).
 pub fn cursor_is_effectful(state: &AgentState) -> bool {
-    cursor_step(state).map(PlanStep::is_effectful).unwrap_or(false)
+    cursor_step(state)
+        .map(PlanStep::is_effectful)
+        .unwrap_or(false)
 }

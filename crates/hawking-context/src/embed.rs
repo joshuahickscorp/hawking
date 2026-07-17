@@ -132,8 +132,8 @@ impl HashingEmbeddingClient {
             // blake3 the token → bucket index; deterministic and well-spread.
             let h = blake3::hash(lower.as_bytes());
             let bytes = h.as_bytes();
-            let idx = (u32::from_le_bytes([bytes[0], bytes[1], bytes[2], bytes[3]]) as usize)
-                % self.dim;
+            let idx =
+                (u32::from_le_bytes([bytes[0], bytes[1], bytes[2], bytes[3]]) as usize) % self.dim;
             v[idx] += 1.0;
         }
         v

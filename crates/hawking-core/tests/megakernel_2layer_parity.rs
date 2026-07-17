@@ -16,6 +16,7 @@
 
 use std::path::PathBuf;
 
+use half::f16;
 use hawking_core::kernels::megakernel::{
     megakernel_2layer_dispatch, megakernel_nlayer_dispatch, MegakernelRunner, MK_PROBE_ATTN_OUT,
     MK_PROBE_FFN_DOWN, MK_PROBE_O_PROJ, MK_PROBE_Q_ROT, MK_PROBE_RESIDUAL, MK_PROBE_RESIDUAL_L0,
@@ -24,7 +25,6 @@ use hawking_core::kernels::megakernel::{
 use hawking_core::metal::MetalContext;
 use hawking_core::model::qwen_dense::{MegakernelLayerWeightsF16, QwenDense};
 use hawking_core::{Engine, EngineConfig};
-use half::f16;
 
 mod common;
 use common::*;

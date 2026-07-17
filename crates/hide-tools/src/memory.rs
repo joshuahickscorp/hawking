@@ -105,7 +105,12 @@ impl MemoryTool {
         let rel = args.get(key).and_then(|v| v.as_str()).unwrap_or("");
         match safe_rel(rel) {
             Ok(rel) => Ok(self.config.root.join(rel)),
-            Err(msg) => Err(common::coded("ARG_INVALID", msg, true, Some("path escapes rejected"))),
+            Err(msg) => Err(common::coded(
+                "ARG_INVALID",
+                msg,
+                true,
+                Some("path escapes rejected"),
+            )),
         }
     }
 
@@ -180,7 +185,12 @@ impl MemoryTool {
         };
         let count = current.matches(old).count();
         if count == 0 {
-            return common::coded("CONFLICT", "old_str not found", true, Some("re-view the file and copy an exact slice"));
+            return common::coded(
+                "CONFLICT",
+                "old_str not found",
+                true,
+                Some("re-view the file and copy an exact slice"),
+            );
         }
         if count > 1 {
             return common::coded(
@@ -202,7 +212,10 @@ impl MemoryTool {
             Ok(p) => p,
             Err(r) => return r,
         };
-        let line = args.get("insert_line").and_then(|v| v.as_u64()).unwrap_or(0) as usize;
+        let line = args
+            .get("insert_line")
+            .and_then(|v| v.as_u64())
+            .unwrap_or(0) as usize;
         let content = args.get("content").and_then(|v| v.as_str()).unwrap_or("");
         let current = std::fs::read_to_string(&full).unwrap_or_default();
         let mut lines: Vec<&str> = current.lines().collect();
@@ -246,7 +259,12 @@ impl MemoryTool {
             Ok(p) => p,
             Err(r) => return r,
         };
-        if args.get("new_path").and_then(|v| v.as_str()).unwrap_or("").is_empty() {
+        if args
+            .get("new_path")
+            .and_then(|v| v.as_str())
+            .unwrap_or("")
+            .is_empty()
+        {
             return common::arg_invalid("missing new_path", None, Some("/new_path"));
         }
         if let Some(parent) = to.parent() {
@@ -338,21 +356,35 @@ mod tests {
             N.fetch_add(1, Ordering::SeqCst)
         ));
         std::fs::create_dir_all(&root).unwrap();
-        (MemoryTool::with_config(MemoryConfig { root: root.clone() }), root)
+        (
+            MemoryTool::with_config(MemoryConfig { root: root.clone() }),
+            root,
+        )
     }
 
     #[tokio::test]
     async fn create_view_replace_roundtrip() {
         let (tool, root) = tmp_tool("rt");
         let r = tool
-            .call(json!({ "command": "create", "path": "notes.md", "content": "a\nb\n" }), ctx())
+            .call(
+                json!({ "command": "create", "path": "notes.md", "content": "a\nb\n" }),
+                ctx(),
+            )
             .await;
         assert!(r.ok, "create failed: {:?}", r.error);
-        assert_eq!(std::fs::read_to_string(root.join("notes.md")).unwrap(), "a\nb\n");
+        assert_eq!(
+            std::fs::read_to_string(root.join("notes.md")).unwrap(),
+            "a\nb\n"
+        );
 
-        let v = tool.call(json!({ "command": "view", "path": "notes.md" }), ctx()).await;
+        let v = tool
+            .call(json!({ "command": "view", "path": "notes.md" }), ctx())
+            .await;
         assert!(v.ok);
-        let content = v.structured_content.unwrap()["content"].as_str().unwrap().to_string();
+        let content = v.structured_content.unwrap()["content"]
+            .as_str()
+            .unwrap()
+            .to_string();
         assert!(content.contains("1\ta"), "numbered view: {content}");
 
         let rep = tool
@@ -362,16 +394,26 @@ mod tests {
             )
             .await;
         assert!(rep.ok, "replace failed: {:?}", rep.error);
-        assert_eq!(std::fs::read_to_string(root.join("notes.md")).unwrap(), "A\nb\n");
+        assert_eq!(
+            std::fs::read_to_string(root.join("notes.md")).unwrap(),
+            "A\nb\n"
+        );
         let _ = std::fs::remove_dir_all(root);
     }
 
     #[tokio::test]
     async fn str_replace_requires_unique_match() {
         let (tool, root) = tmp_tool("uniq");
-        tool.call(json!({ "command": "create", "path": "f", "content": "x x x" }), ctx()).await;
+        tool.call(
+            json!({ "command": "create", "path": "f", "content": "x x x" }),
+            ctx(),
+        )
+        .await;
         let r = tool
-            .call(json!({ "command": "str_replace", "path": "f", "old_str": "x", "new_str": "y" }), ctx())
+            .call(
+                json!({ "command": "str_replace", "path": "f", "old_str": "x", "new_str": "y" }),
+                ctx(),
+            )
             .await;
         assert!(!r.ok);
         assert_eq!(r.error.unwrap().code, "CONFLICT");
@@ -381,14 +423,23 @@ mod tests {
     #[tokio::test]
     async fn insert_at_line_and_delete() {
         let (tool, root) = tmp_tool("ins");
-        tool.call(json!({ "command": "create", "path": "f", "content": "a\nc" }), ctx()).await;
+        tool.call(
+            json!({ "command": "create", "path": "f", "content": "a\nc" }),
+            ctx(),
+        )
+        .await;
         let r = tool
-            .call(json!({ "command": "insert", "path": "f", "insert_line": 1, "content": "b" }), ctx())
+            .call(
+                json!({ "command": "insert", "path": "f", "insert_line": 1, "content": "b" }),
+                ctx(),
+            )
             .await;
         assert!(r.ok, "insert failed: {:?}", r.error);
         assert_eq!(std::fs::read_to_string(root.join("f")).unwrap(), "a\nb\nc");
 
-        let d = tool.call(json!({ "command": "delete", "path": "f" }), ctx()).await;
+        let d = tool
+            .call(json!({ "command": "delete", "path": "f" }), ctx())
+            .await;
         assert!(d.ok);
         assert!(!root.join("f").exists());
         let _ = std::fs::remove_dir_all(root);
@@ -397,8 +448,16 @@ mod tests {
     #[tokio::test]
     async fn view_lists_directory() {
         let (tool, root) = tmp_tool("ls");
-        tool.call(json!({ "command": "create", "path": "a.md", "content": "1" }), ctx()).await;
-        tool.call(json!({ "command": "create", "path": "sub/b.md", "content": "2" }), ctx()).await;
+        tool.call(
+            json!({ "command": "create", "path": "a.md", "content": "1" }),
+            ctx(),
+        )
+        .await;
+        tool.call(
+            json!({ "command": "create", "path": "sub/b.md", "content": "2" }),
+            ctx(),
+        )
+        .await;
         let v = tool.call(json!({ "command": "view" }), ctx()).await;
         assert!(v.ok);
         let entries = v.structured_content.unwrap()["entries"].clone();
@@ -414,7 +473,10 @@ mod tests {
     async fn rejects_parent_traversal() {
         let (tool, root) = tmp_tool("esc1");
         let r = tool
-            .call(json!({ "command": "create", "path": "../escape.txt", "content": "x" }), ctx())
+            .call(
+                json!({ "command": "create", "path": "../escape.txt", "content": "x" }),
+                ctx(),
+            )
             .await;
         assert!(!r.ok, "must reject ..");
         // The escape file must not exist outside the root.
@@ -426,7 +488,10 @@ mod tests {
     async fn rejects_absolute_path() {
         let (tool, root) = tmp_tool("esc2");
         let r = tool
-            .call(json!({ "command": "create", "path": "/tmp/hide_mem_escape", "content": "x" }), ctx())
+            .call(
+                json!({ "command": "create", "path": "/tmp/hide_mem_escape", "content": "x" }),
+                ctx(),
+            )
             .await;
         assert!(!r.ok, "must reject absolute path");
         assert!(!Path::new("/tmp/hide_mem_escape").exists());
@@ -437,7 +502,10 @@ mod tests {
     async fn rejects_percent_encoded_traversal() {
         let (tool, root) = tmp_tool("esc3");
         let r = tool
-            .call(json!({ "command": "view", "path": "%2e%2e/%2e%2e/etc/passwd" }), ctx())
+            .call(
+                json!({ "command": "view", "path": "%2e%2e/%2e%2e/etc/passwd" }),
+                ctx(),
+            )
             .await;
         assert!(!r.ok, "must reject percent-encoded ..");
         let _ = std::fs::remove_dir_all(root);

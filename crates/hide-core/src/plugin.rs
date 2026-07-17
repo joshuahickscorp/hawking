@@ -52,4 +52,8 @@ impl ExtensionRegistry {
     pub fn len(&self) -> usize {
         self.manifests.len()
     }
+
+    pub fn is_empty(&self) -> bool {
+        self.manifests.is_empty()
+    }
 }

@@ -556,8 +556,8 @@ fn status_event_kind(status: JobStatus) -> (&'static str, EventClass) {
 }
 
 fn job_event(job: &AgentJob, kind: &str, class: EventClass, payload: Value) -> NewEvent {
-    let mut ev = NewEvent::of(job.session_id.clone(), EventSource::System, kind, payload)
-        .with_class(class);
+    let mut ev =
+        NewEvent::of(job.session_id.clone(), EventSource::System, kind, payload).with_class(class);
     if let Some(run) = &job.run_id {
         ev = ev.with_run(run.clone());
     }

@@ -241,7 +241,11 @@ pub fn sandbox_profile(config: &ShellConfig, argv: &[String]) -> SandboxProfile 
     let root = config
         .workspace_root
         .clone()
-        .and_then(|r| std::fs::canonicalize(&r).ok().map(|p| p.to_string_lossy().into_owned()))
+        .and_then(|r| {
+            std::fs::canonicalize(&r)
+                .ok()
+                .map(|p| p.to_string_lossy().into_owned())
+        })
         .or_else(|| {
             std::env::current_dir()
                 .ok()
@@ -286,8 +290,8 @@ pub fn sandbox_render_options(config: &ShellConfig) -> SandboxRenderOptions {
 /// basename regex in the renderer.
 fn essential_exec_allowlist() -> Vec<String> {
     [
-        "sh", "bash", "zsh", "env", "git", "cargo", "rustc", "cc", "ld", "clang",
-        "printf", "echo", "true", "sleep", "cat", "ls", "node", "python3", "python",
+        "sh", "bash", "zsh", "env", "git", "cargo", "rustc", "cc", "ld", "clang", "printf", "echo",
+        "true", "sleep", "cat", "ls", "node", "python3", "python",
     ]
     .iter()
     .map(|s| s.to_string())
@@ -330,8 +334,7 @@ pub fn runnable_sbpl(base: &str) -> String {
 
 /// Whether `sandbox-exec` exists on this host.
 fn sandbox_exec_available() -> bool {
-    cfg!(target_os = "macos")
-        && std::path::Path::new("/usr/bin/sandbox-exec").exists()
+    cfg!(target_os = "macos") && std::path::Path::new("/usr/bin/sandbox-exec").exists()
 }
 
 /// Resolve `bwrap` (bubblewrap) on `PATH`. `Some(path)` ⇒ a Linux confinement

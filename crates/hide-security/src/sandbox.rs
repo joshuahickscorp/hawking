@@ -29,7 +29,12 @@ const SECRET_READ_DENY_REGEXES: &[&str] = &[r"/\.env($|\.)", r"\.pem$", r"\.key$
 
 /// Broad-but-bounded system read roots a build/test realistically needs.
 const SYSTEM_READ_SUBPATHS: &[&str] = &["/usr", "/bin", "/System/Library", "/Library/Developer"];
-const SYSTEM_READ_LITERALS: &[&str] = &["/dev/null", "/dev/urandom", "/dev/random", "/dev/dtracehelper"];
+const SYSTEM_READ_LITERALS: &[&str] = &[
+    "/dev/null",
+    "/dev/urandom",
+    "/dev/random",
+    "/dev/dtracehelper",
+];
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct RenderedSandboxProfile {
@@ -91,10 +96,7 @@ pub fn render_macos_seatbelt_with(
             if cmd.starts_with('/') {
                 literals.push_str(&format!("    (literal \"{}\")\n", escape(cmd)));
             } else {
-                literals.push_str(&format!(
-                    "    (regex #\"/{}$\")\n",
-                    escape_regex(cmd)
-                ));
+                literals.push_str(&format!("    (regex #\"/{}$\")\n", escape_regex(cmd)));
             }
         }
         text.push_str("(allow process-exec\n");
@@ -107,19 +109,31 @@ pub fn render_macos_seatbelt_with(
     // --- filesystem: read broad-but-bounded, write narrow ---
     text.push_str(";; --- filesystem ---\n");
     for sub in SYSTEM_READ_SUBPATHS {
-        text.push_str(&format!("(allow file-read* (subpath \"{}\"))\n", escape(sub)));
+        text.push_str(&format!(
+            "(allow file-read* (subpath \"{}\"))\n",
+            escape(sub)
+        ));
     }
     for lit in SYSTEM_READ_LITERALS {
-        text.push_str(&format!("(allow file-read* (literal \"{}\"))\n", escape(lit)));
+        text.push_str(&format!(
+            "(allow file-read* (literal \"{}\"))\n",
+            escape(lit)
+        ));
     }
     for root in &profile.read_roots {
-        text.push_str(&format!("(allow file-read* (subpath \"{}\"))\n", escape(root)));
+        text.push_str(&format!(
+            "(allow file-read* (subpath \"{}\"))\n",
+            escape(root)
+        ));
     }
 
     // Secret read-denies (S2/S6) — these come AFTER allows; in SBPL the most
     // specific / last-matching rule wins, and explicit deny always overrides.
     for sub in SECRET_READ_DENY_SUBPATHS {
-        text.push_str(&format!("(deny file-read* (subpath \"{}\"))\n", escape(sub)));
+        text.push_str(&format!(
+            "(deny file-read* (subpath \"{}\"))\n",
+            escape(sub)
+        ));
     }
     for re in SECRET_READ_DENY_REGEXES {
         text.push_str(&format!("(deny file-read* (regex #\"{}\"))\n", re));
@@ -131,11 +145,17 @@ pub fn render_macos_seatbelt_with(
         .clone()
         .or_else(|| profile.write_roots.first().cloned());
     if let Some(root) = &write_root {
-        text.push_str(&format!("(allow file-write* (subpath \"{}\"))\n", escape(root)));
+        text.push_str(&format!(
+            "(allow file-write* (subpath \"{}\"))\n",
+            escape(root)
+        ));
     }
     for root in &profile.write_roots {
         if Some(root) != write_root.as_ref() {
-            text.push_str(&format!("(allow file-write* (subpath \"{}\"))\n", escape(root)));
+            text.push_str(&format!(
+                "(allow file-write* (subpath \"{}\"))\n",
+                escape(root)
+            ));
         }
     }
     if write_root.is_none() && profile.write_roots.is_empty() {
@@ -338,7 +358,23 @@ fn escape(value: &str) -> String {
 fn escape_regex(value: &str) -> String {
     let mut out = String::with_capacity(value.len());
     for ch in value.chars() {
-        if matches!(ch, '.' | '+' | '*' | '?' | '(' | ')' | '[' | ']' | '{' | '}' | '^' | '$' | '|' | '\\' | '/') {
+        if matches!(
+            ch,
+            '.' | '+'
+                | '*'
+                | '?'
+                | '('
+                | ')'
+                | '['
+                | ']'
+                | '{'
+                | '}'
+                | '^'
+                | '$'
+                | '|'
+                | '\\'
+                | '/'
+        ) {
             out.push('\\');
         }
         out.push(ch);
@@ -380,7 +416,10 @@ mod tests {
         let r = render_macos_seatbelt(&p);
         assert!(r.profile_text.contains("(deny process-exec*)"));
         assert!(!r.profile_text.contains("(allow process-exec\n"));
-        assert!(r.warnings.iter().any(|w| w.contains("process-exec fully denied")));
+        assert!(r
+            .warnings
+            .iter()
+            .any(|w| w.contains("process-exec fully denied")));
     }
 
     #[test]
@@ -392,12 +431,20 @@ mod tests {
             worktree_root: Some("/work/wt".to_string()),
         };
         let r = render_macos_seatbelt_with(&p, &opts);
-        assert!(r.profile_text.contains("(deny file-read* (subpath \"$HOME/.ssh\"))"));
-        assert!(r.profile_text.contains(r#"(deny file-read* (regex #"\.pem$"))"#));
+        assert!(r
+            .profile_text
+            .contains("(deny file-read* (subpath \"$HOME/.ssh\"))"));
+        assert!(r
+            .profile_text
+            .contains(r#"(deny file-read* (regex #"\.pem$"))"#));
         // .hide/log specifically write-denied.
-        assert!(r.profile_text.contains("(deny file-write* (subpath \"/work/.hide/log\"))"));
+        assert!(r
+            .profile_text
+            .contains("(deny file-write* (subpath \"/work/.hide/log\"))"));
         // whole .hide write-denied.
-        assert!(r.profile_text.contains("(deny file-write* (subpath \"/work/.hide\"))"));
+        assert!(r
+            .profile_text
+            .contains("(deny file-write* (subpath \"/work/.hide\"))"));
     }
 
     #[test]
@@ -413,7 +460,10 @@ mod tests {
             .profile_text
             .contains("(allow network-outbound (remote ip \"localhost:8131\"))"));
         // allowed_hosts are a proxy concern, surfaced as a warning.
-        assert!(r.warnings.iter().any(|w| w.contains("allowed_hosts are enforced at the proxy")));
+        assert!(r
+            .warnings
+            .iter()
+            .any(|w| w.contains("allowed_hosts are enforced at the proxy")));
     }
 
     #[test]
@@ -428,7 +478,11 @@ mod tests {
     fn bare_command_renders_basename_regex() {
         let p = profile_with(&["cargo"], Decision::Deny);
         let r = render_macos_seatbelt(&p);
-        assert!(r.profile_text.contains(r#"(regex #"/cargo$")"#), "{}", r.profile_text);
+        assert!(
+            r.profile_text.contains(r#"(regex #"/cargo$")"#),
+            "{}",
+            r.profile_text
+        );
     }
 
     #[test]

@@ -219,7 +219,9 @@ mod tests {
     #[test]
     fn admits_when_budget_is_ample() {
         let s = Scheduler::default();
-        assert!(s.admit(&role(4_600), &ResourceSnapshot::default()).is_admit());
+        assert!(s
+            .admit(&role(4_600), &ResourceSnapshot::default())
+            .is_admit());
     }
 
     #[test]

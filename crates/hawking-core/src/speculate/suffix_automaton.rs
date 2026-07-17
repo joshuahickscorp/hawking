@@ -25,8 +25,8 @@
 //! After construction, the *endpos* of any accepted suffix can be found by
 //! following transitions from state 0.
 
-use std::collections::HashMap;
 use crate::speculate::proposal::{Budget, Ctx, Proposal, Proposer, Telemetry};
+use std::collections::HashMap;
 
 // ---------------------------------------------------------------------------
 // Sub-flag
@@ -58,7 +58,12 @@ struct SamState {
 
 impl SamState {
     fn new(len: usize, link: usize) -> Self {
-        SamState { len, link, next: HashMap::new(), end_pos: 0 }
+        SamState {
+            len,
+            link,
+            next: HashMap::new(),
+            end_pos: 0,
+        }
     }
 }
 
@@ -316,7 +321,11 @@ mod tests {
 
     // Helper: build a Ctx from a token slice.
     fn make_ctx(tokens: &[u32]) -> Ctx<'_> {
-        Ctx { tokens, pos: tokens.len(), hidden: None }
+        Ctx {
+            tokens,
+            pos: tokens.len(),
+            hidden: None,
+        }
     }
 
     // Helper: run propose() and extract the inner Vec<u32>.
@@ -436,7 +445,10 @@ mod tests {
         // The result should be deterministic (not random) — just check consistency:
         // call propose() again with the same ctx and verify identical output.
         let result2 = propose_tokens(&mut sam, &[1u32, 2], 4);
-        assert_eq!(result, result2, "SAM must be deterministic across identical calls");
+        assert_eq!(
+            result, result2,
+            "SAM must be deterministic across identical calls"
+        );
     }
 
     // ------------------------------------------------------------------

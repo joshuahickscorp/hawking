@@ -88,7 +88,11 @@ impl Executor {
 
     /// Resolve the client for a role id, picking the chat route for chat tasks
     /// and the native route otherwise.
-    fn client_for_role(&self, role_id: &RoleId, route: GenerateRoute) -> Result<Arc<dyn InferenceClient>> {
+    fn client_for_role(
+        &self,
+        role_id: &RoleId,
+        route: GenerateRoute,
+    ) -> Result<Arc<dyn InferenceClient>> {
         let role = self
             .registry
             .get(role_id)
@@ -157,7 +161,9 @@ pub async fn collect_to_string(
                         stats = s;
                     }
                 }
-                StreamChunk::Error { message } => return Err(HideError::RuntimeUnavailable(message)),
+                StreamChunk::Error { message } => {
+                    return Err(HideError::RuntimeUnavailable(message))
+                }
             }
             Ok(())
         };
@@ -260,7 +266,10 @@ mod tests {
         ));
         let stub: Arc<dyn InferenceClient> = Arc::new(StubInferenceClient::new("x"));
         let executor = Executor::new(registry, Arc::new(FixedClientFactory(stub)));
-        let v = executor.embed(&decision(embed_id), "hello world").await.unwrap();
+        let v = executor
+            .embed(&decision(embed_id), "hello world")
+            .await
+            .unwrap();
         assert_eq!(v.len(), 8);
     }
 

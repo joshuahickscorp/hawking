@@ -101,7 +101,12 @@ impl HttpModelProvider {
     /// bytes, slot occupancy). `None` if the serve instance is down or pre-context
     /// (old build) — the caller then shows no live ceiling rather than a fake one.
     pub async fn get_context_info(&self) -> Option<ContextInfo> {
-        let resp = self.client.get(self.url("/v1/hawking/context")).send().await.ok()?;
+        let resp = self
+            .client
+            .get(self.url("/v1/hawking/context"))
+            .send()
+            .await
+            .ok()?;
         if !resp.status().is_success() {
             return None;
         }
@@ -206,7 +211,9 @@ impl HttpModelProvider {
                         done = true;
                     }
                     SseChunk::Error(message) => {
-                        sink(StreamChunk::Error { message: message.clone() })?;
+                        sink(StreamChunk::Error {
+                            message: message.clone(),
+                        })?;
                         return Err(HideError::RuntimeUnavailable(message));
                     }
                     SseChunk::Ignore => {}
@@ -226,7 +233,9 @@ impl HttpModelProvider {
                     }
                 }
                 SseChunk::Error(message) => {
-                    sink(StreamChunk::Error { message: message.clone() })?;
+                    sink(StreamChunk::Error {
+                        message: message.clone(),
+                    })?;
                     return Err(HideError::RuntimeUnavailable(message));
                 }
                 SseChunk::Ignore => {}
@@ -363,7 +372,11 @@ pub fn extract_embedding(body: &Value) -> Result<Vec<f32>> {
                 .map(|v| v as f32)
                 .collect()
         })
-        .ok_or_else(|| HideError::RuntimeUnavailable("embeddings response missing data[0].embedding".to_string()))
+        .ok_or_else(|| {
+            HideError::RuntimeUnavailable(
+                "embeddings response missing data[0].embedding".to_string(),
+            )
+        })
 }
 
 impl ModelProvider for HttpModelProvider {
@@ -391,7 +404,9 @@ impl ModelProvider for HttpModelProvider {
                 .json(&body)
                 .send()
                 .await
-                .map_err(|e| HideError::RuntimeUnavailable(format!("generate request failed: {e}")))?;
+                .map_err(|e| {
+                    HideError::RuntimeUnavailable(format!("generate request failed: {e}"))
+                })?;
             if !resp.status().is_success() {
                 return Err(HideError::RuntimeUnavailable(format!(
                     "generate returned {}",
@@ -416,10 +431,9 @@ impl ModelProvider for HttpModelProvider {
                 return Self::stream_native_sse(resp, sink).await;
             }
 
-            let value: Value = resp
-                .json()
-                .await
-                .map_err(|e| HideError::RuntimeUnavailable(format!("generate decode failed: {e}")))?;
+            let value: Value = resp.json().await.map_err(|e| {
+                HideError::RuntimeUnavailable(format!("generate decode failed: {e}"))
+            })?;
             let (text, stats) = extract_completion(self.route, &value);
             // Emit the whole completion as one token batch, then a terminal Done —
             // the same contract the streaming path produces, so callers (the

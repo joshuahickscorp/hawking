@@ -117,12 +117,7 @@ impl ProjectSnapshot {
 /// transition and re-plans if `predicted_outcome != Build && confidence > 0.7`.
 pub trait StaticSimulator: Send + Sync {
     /// Predict whether applying `diff` to `path` would build cleanly.
-    fn predict_edit(
-        &self,
-        path: &Path,
-        diff: &str,
-        context: &ProjectSnapshot,
-    ) -> SimulationResult;
+    fn predict_edit(&self, path: &Path, diff: &str, context: &ProjectSnapshot) -> SimulationResult;
 }
 
 /// The Tier-1 STATIC simulator: balanced-delimiter + tree-sitter parse-sanity.
@@ -303,7 +298,11 @@ impl StaticProjectSimulator {
                     message: format!(
                         "{} parse {} at line {line}",
                         lang.as_str(),
-                        if node.is_missing() { "MISSING" } else { "ERROR" }
+                        if node.is_missing() {
+                            "MISSING"
+                        } else {
+                            "ERROR"
+                        }
                     ),
                 }));
             }
@@ -322,17 +321,8 @@ impl StaticProjectSimulator {
 }
 
 impl StaticSimulator for StaticProjectSimulator {
-    fn predict_edit(
-        &self,
-        path: &Path,
-        diff: &str,
-        context: &ProjectSnapshot,
-    ) -> SimulationResult {
-        let base = context
-            .files
-            .get(path)
-            .map(String::as_str)
-            .unwrap_or("");
+    fn predict_edit(&self, path: &Path, diff: &str, context: &ProjectSnapshot) -> SimulationResult {
+        let base = context.files.get(path).map(String::as_str).unwrap_or("");
         let post = Self::apply_diff(base, diff);
 
         if post.trim().is_empty() {

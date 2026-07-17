@@ -144,10 +144,10 @@ impl Planner for RuntimePlanner {
                 let (kind, acceptance) = if last {
                     (
                         StepKind::Verify,
-                        Acceptance::with_oracles("the change builds and tests pass", vec![
-                            "build".to_string(),
-                            "test".to_string(),
-                        ]),
+                        Acceptance::with_oracles(
+                            "the change builds and tests pass",
+                            vec!["build".to_string(), "test".to_string()],
+                        ),
                     )
                 } else {
                     (
@@ -210,6 +210,12 @@ mod tests {
         assert_eq!(plan.steps.len(), 3);
         assert!(PlanDag::acyclic(&plan));
         // Last step requires tests.
-        assert!(plan.steps.last().unwrap().acceptance.oracles.contains(&"test".to_string()));
+        assert!(plan
+            .steps
+            .last()
+            .unwrap()
+            .acceptance
+            .oracles
+            .contains(&"test".to_string()));
     }
 }

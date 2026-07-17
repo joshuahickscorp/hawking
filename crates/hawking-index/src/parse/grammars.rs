@@ -32,9 +32,7 @@ impl LangId {
         match path.extension().and_then(|e| e.to_str()) {
             Some("rs") => LangId::Rust,
             Some("py" | "pyi") => LangId::Python,
-            Some("ts" | "tsx" | "mts" | "cts" | "js" | "jsx" | "mjs" | "cjs") => {
-                LangId::TypeScript
-            }
+            Some("ts" | "tsx" | "mts" | "cts" | "js" | "jsx" | "mjs" | "cjs") => LangId::TypeScript,
             _ => LangId::Unknown,
         }
     }

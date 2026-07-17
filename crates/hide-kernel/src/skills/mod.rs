@@ -50,7 +50,11 @@ fn default_importance() -> f32 {
 }
 
 impl SkillRecord {
-    pub fn new(name: impl Into<String>, body: impl Into<String>, trigger: impl Into<String>) -> Self {
+    pub fn new(
+        name: impl Into<String>,
+        body: impl Into<String>,
+        trigger: impl Into<String>,
+    ) -> Self {
         Self {
             id: PluginId::new(),
             name: name.into(),
@@ -195,7 +199,11 @@ mod tests {
             "register in router.rs::build",
             "add a route in this repo",
         ));
-        store.capture(SkillRecord::new("add-route", "register in router.rs::build", "route"));
+        store.capture(SkillRecord::new(
+            "add-route",
+            "register in router.rs::build",
+            "route",
+        ));
         // Reinforced: success_count went 1 → 2.
         let got = store.retrieve(&SkillQuery {
             text: "add a route".to_string(),

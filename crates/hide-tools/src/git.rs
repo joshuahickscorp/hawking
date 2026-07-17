@@ -92,8 +92,13 @@ macro_rules! git_read_tool {
                 Box::pin(async move {
                     let cwd = cwd_of(&args);
                     let argv: Vec<String> = $build(&args);
-                    run_git(&cwd, &argv, ctx.output_cap_bytes as usize, self.config.blobs.as_ref())
-                        .await
+                    run_git(
+                        &cwd,
+                        &argv,
+                        ctx.output_cap_bytes as usize,
+                        self.config.blobs.as_ref(),
+                    )
+                    .await
                 })
             }
             fn purity(&self) -> Purity {
@@ -127,7 +132,11 @@ git_read_tool!(
     },"required":[],"additionalProperties":false}),
     |args: &Value| {
         let mut v = vec!["diff".to_string()];
-        if args.get("staged").and_then(|x| x.as_bool()).unwrap_or(false) {
+        if args
+            .get("staged")
+            .and_then(|x| x.as_bool())
+            .unwrap_or(false)
+        {
             v.push("--staged".to_string());
         }
         if let Some(r) = args.get("ref").and_then(|x| x.as_str()) {
@@ -249,7 +258,11 @@ impl Tool for GitCommitTool {
             let paths: Vec<String> = args
                 .get("paths")
                 .and_then(|v| v.as_array())
-                .map(|a| a.iter().filter_map(|v| v.as_str().map(String::from)).collect())
+                .map(|a| {
+                    a.iter()
+                        .filter_map(|v| v.as_str().map(String::from))
+                        .collect()
+                })
                 .unwrap_or_default();
             let mut add = vec!["add".to_string()];
             if paths.is_empty() {
@@ -370,8 +383,13 @@ impl Tool for GitWorktreeAddTool {
             if let Some(from) = args.get("from").and_then(|v| v.as_str()) {
                 argv.push(from.to_string());
             }
-            let mut result =
-                run_git(&cwd, &argv, ctx.output_cap_bytes as usize, self.config.blobs.as_ref()).await;
+            let mut result = run_git(
+                &cwd,
+                &argv,
+                ctx.output_cap_bytes as usize,
+                self.config.blobs.as_ref(),
+            )
+            .await;
             if let Some(sc) = result.structured_content.as_mut() {
                 sc["worktree_id"] = json!(branch);
                 sc["root"] = json!(path);
@@ -448,7 +466,13 @@ impl Tool for GitWorktreeRemoveTool {
                 argv.push("--force".to_string());
             }
             argv.push(path.to_string());
-            run_git(&cwd, &argv, ctx.output_cap_bytes as usize, self.config.blobs.as_ref()).await
+            run_git(
+                &cwd,
+                &argv,
+                ctx.output_cap_bytes as usize,
+                self.config.blobs.as_ref(),
+            )
+            .await
         })
     }
 
@@ -659,7 +683,11 @@ mod tests {
             ))
             .await
             .unwrap();
-        assert!(add.ok && add.exit_code == Some(0), "{:?}", add.structured_content);
+        assert!(
+            add.ok && add.exit_code == Some(0),
+            "{:?}",
+            add.structured_content
+        );
         let list = d
             .dispatch(ToolCall::new(
                 "git.worktree.list",

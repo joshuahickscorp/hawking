@@ -217,7 +217,10 @@ mod tests {
     #[tokio::test]
     async fn judge_low_score_fails() {
         let oracle = LlmJudgeOracle::new(runtime("0.2 not great"), "be great");
-        let v = oracle.verify(&VerificationInput::new("/tmp")).await.unwrap();
+        let v = oracle
+            .verify(&VerificationInput::new("/tmp"))
+            .await
+            .unwrap();
         assert_eq!(v.status, VerdictStatus::Fail);
     }
 }

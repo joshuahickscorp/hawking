@@ -183,10 +183,7 @@ impl EscalationCascade {
     }
 
     /// Collect a single completion's full text (concatenating token chunks).
-    async fn run_once(
-        &self,
-        request: &InferenceRequest,
-    ) -> Result<(String, GenerationStats)> {
+    async fn run_once(&self, request: &InferenceRequest) -> Result<(String, GenerationStats)> {
         let mut text = String::new();
         let mut final_stats: Option<GenerationStats> = None;
         let mut err: Option<String> = None;
@@ -252,24 +249,27 @@ impl EscalationCascade {
 
             // Draw extra samples for voting only if the task is gateable
             // (votable) and the budget asks for more than one.
-            let samples = self
-                .collect_vote_samples(&role_request, &primary)
-                .await?;
+            let samples = self.collect_vote_samples(&role_request, &primary).await?;
 
-            let (confidence, reason) =
-                self.probe.score(&primary, &samples, grammar.as_ref());
+            let (confidence, reason) = self.probe.score(&primary, &samples, grammar.as_ref());
 
             let at_top = current_role.escalates_to.is_none();
             let budget_left = escalations < self.budget.max_escalations;
-            let should_escalate =
-                reason.is_some() && confidence < self.budget.accept_threshold && !at_top && budget_left;
+            let should_escalate = reason.is_some()
+                && confidence < self.budget.accept_threshold
+                && !at_top
+                && budget_left;
 
             trail.push(EscalationStep {
                 role_id: current_role.id.clone(),
                 role_name: current_role.name.clone(),
                 confidence,
                 output: primary.clone(),
-                escalated: if should_escalate { reason.clone() } else { None },
+                escalated: if should_escalate {
+                    reason.clone()
+                } else {
+                    None
+                },
             });
 
             if !should_escalate {
@@ -287,9 +287,10 @@ impl EscalationCascade {
                 .escalates_to
                 .clone()
                 .expect("checked !at_top above");
-            let next_role = self.registry.get(&next_id).ok_or_else(|| {
-                HideError::NotFound(format!("escalation target role {next_id}"))
-            })?;
+            let next_role = self
+                .registry
+                .get(&next_id)
+                .ok_or_else(|| HideError::NotFound(format!("escalation target role {next_id}")))?;
             current_role = next_role;
             escalations += 1;
             force_edit = true; // escalations always use the edit sampler
@@ -392,12 +393,7 @@ mod tests {
             normalizer_is_json: false,
             accept_threshold: 0.67,
         });
-        let cascade = EscalationCascade::new(
-            registry,
-            client,
-            probe,
-            EscalationBudget::default(),
-        );
+        let cascade = EscalationCascade::new(registry, client, probe, EscalationBudget::default());
         let decision = RouteDecision {
             role_id: draft_id.clone(),
             provider: "hawking-local".into(),

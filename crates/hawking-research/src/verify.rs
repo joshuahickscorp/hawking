@@ -238,11 +238,19 @@ mod tests {
 
     #[test]
     fn corroboration_requires_independent_origins() {
-        let target = claim("c0", "docA", "paged attention reduces kv cache memory waste");
+        let target = claim(
+            "c0",
+            "docA",
+            "paged attention reduces kv cache memory waste",
+        );
         // Two peers from the SAME doc → only one independent origin.
         let peers = vec![
             target.clone(),
-            claim("c1", "docA", "paged attention reduces kv cache memory waste greatly"),
+            claim(
+                "c1",
+                "docA",
+                "paged attention reduces kv cache memory waste greatly",
+            ),
         ];
         let v = AdversarialVerifier::verify(&target, &peers);
         assert_eq!(v.independent_sources, 0); // same origin as target excluded

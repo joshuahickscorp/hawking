@@ -13,7 +13,7 @@
 //! this structurally (returns Err for any hidden slot with verdict≠"GO").
 
 use crate::speculate::eagle5::Eagle5Head;
-use crate::speculate::proposal::{Budget, Ctx, CostNs, Proposal, Proposer, Telemetry};
+use crate::speculate::proposal::{Budget, CostNs, Ctx, Proposal, Proposer, Telemetry};
 
 /// Adapter that wraps `Eagle5Head` behind the `Proposer` trait.
 ///

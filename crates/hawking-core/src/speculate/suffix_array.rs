@@ -29,7 +29,11 @@ pub struct SuffixArrayDraft {
 
 impl Default for SuffixArrayDraft {
     fn default() -> Self {
-        Self { stream: Vec::new(), window: 10_000, h: 3 }
+        Self {
+            stream: Vec::new(),
+            window: 10_000,
+            h: 3,
+        }
     }
 }
 
@@ -112,7 +116,11 @@ mod tests {
     use crate::speculate::proposal::{Budget, Ctx, Telemetry};
 
     fn make_ctx<'a>(tokens: &'a [u32]) -> Ctx<'a> {
-        Ctx { tokens, pos: tokens.len(), hidden: None }
+        Ctx {
+            tokens,
+            pos: tokens.len(),
+            hidden: None,
+        }
     }
 
     #[test]
@@ -131,8 +139,12 @@ mod tests {
         let span = [10u32, 20, 30, 40];
         let mut p = SuffixArrayDraft::new();
         // Feed the stream: two full repetitions + partial third
-        let stream: Vec<u32> = span.iter().cloned().chain(span.iter().cloned())
-            .chain([10u32, 20, 30]).collect(); // tail = [10, 20, 30]
+        let stream: Vec<u32> = span
+            .iter()
+            .cloned()
+            .chain(span.iter().cloned())
+            .chain([10u32, 20, 30])
+            .collect(); // tail = [10, 20, 30]
         p.observe(&stream);
 
         let ctx = make_ctx(&[10, 20, 30]); // last 2 (last_two) not relevant here
@@ -157,7 +169,10 @@ mod tests {
         // Tail is [7, 8, 9]; only occurrence is at index 6 (the tail itself is excluded).
         let ctx = make_ctx(&[7, 8, 9]);
         let proposal = p.propose(&ctx, Budget::line(4), &Telemetry::default());
-        assert!(proposal.is_empty(), "non-recurring tail must propose nothing");
+        assert!(
+            proposal.is_empty(),
+            "non-recurring tail must propose nothing"
+        );
     }
 
     #[test]
@@ -186,7 +201,10 @@ mod tests {
                 // i=2: stream[2..5] = [3,99,1] ≠ [1,2,3] → skip
                 // i=1: stream[1..4] = [2,3,99] ≠ [1,2,3] → skip
                 // i=0: stream[0..3] = [1,2,3] = [1,2,3] → MATCH! copy_start=3, copy_end=4 → [99]
-                assert!(!v.is_empty(), "exact match at index 0 should produce a draft");
+                assert!(
+                    !v.is_empty(),
+                    "exact match at index 0 should produce a draft"
+                );
             }
             _ => panic!("expected TokenLine"),
         }

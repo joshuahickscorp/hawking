@@ -221,7 +221,9 @@ pub struct NgramProposer {
 
 impl NgramProposer {
     pub fn new() -> Self {
-        Self { inner: UserNgramDraft::new() }
+        Self {
+            inner: UserNgramDraft::new(),
+        }
     }
     pub fn index(&self) -> &UserNgramDraft {
         &self.inner

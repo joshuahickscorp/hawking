@@ -80,7 +80,13 @@ impl UiEventBus {
     /// `stream_id` accumulate; a batch for a *different* stream (or a
     /// [`UiEventBus::flush`]) flushes the accumulated text as a single
     /// `TokenBatch`. This is the render-coalescing path.
-    pub fn publish_token(&self, seq: u64, session_id: Option<hide_core::ids::SessionId>, stream_id: impl Into<String>, text: impl AsRef<str>) {
+    pub fn publish_token(
+        &self,
+        seq: u64,
+        session_id: Option<hide_core::ids::SessionId>,
+        stream_id: impl Into<String>,
+        text: impl AsRef<str>,
+    ) {
         let stream_id = stream_id.into();
         let text = text.as_ref();
         let to_emit = {

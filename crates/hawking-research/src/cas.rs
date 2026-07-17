@@ -91,7 +91,11 @@ pub fn pin_evidence(
 /// receipt. The pinned bytes match what [`content_id`]/[`composite_id`] hash for
 /// the same text, so the claim id and its evidence receipt agree on one source.
 pub fn pin_canonical_evidence(cas: &DynBlobStore, text: &str) -> Result<(BlobRef, String)> {
-    pin_evidence(cas, canonical_evidence_bytes(text), Some("text/plain".to_string()))
+    pin_evidence(
+        cas,
+        canonical_evidence_bytes(text),
+        Some("text/plain".to_string()),
+    )
 }
 
 /// Re-open evidence bytes from the CAS and confirm they still blake3-hash to the

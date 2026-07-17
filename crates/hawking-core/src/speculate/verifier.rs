@@ -14,7 +14,9 @@ pub trait ExactTarget {
     /// (argmax_per_pos, residual_per_pos). b == tokens.len() must be 1..=8 for the
     /// fast path. Wraps QwenDense::forward_tokens_verify (qwen_dense.rs:9004).
     fn forward_tokens_verify(
-        &mut self, tokens: &[u32], positions: &[usize],
+        &mut self,
+        tokens: &[u32],
+        positions: &[usize],
     ) -> Result<(Vec<u32>, Vec<Vec<f32>>)>;
 
     /// Single greedy/bonus token; writes KV[pos], returns argmax. Wraps
@@ -22,7 +24,9 @@ pub trait ExactTarget {
     fn forward_token_greedy(&mut self, token: u32, pos: usize) -> Result<u32>;
 
     /// Phase-6: ancestor-mask tree verify? False until the Metal build lands.
-    fn supports_tree_verify(&self) -> bool { false }
+    fn supports_tree_verify(&self) -> bool {
+        false
+    }
 }
 
 /// Result of one exact verify pass. accepted ids are argmax-confirmed;
@@ -43,30 +47,44 @@ pub struct VerifyOutcome {
 /// Stateless-per-call verifier. Configured once per request.
 #[derive(Debug, Clone)]
 pub struct Verifier {
-    pub max_batch: usize,      // forward_tokens_verify fast-path cap (8)
-    pub want_residuals: bool,  // fill VerifyOutcome::residuals (hidden tap); off for n-gram
+    pub max_batch: usize,     // forward_tokens_verify fast-path cap (8)
+    pub want_residuals: bool, // fill VerifyOutcome::residuals (hidden tap); off for n-gram
 }
 impl Default for Verifier {
-    fn default() -> Self { Self { max_batch: 8, want_residuals: false } }
+    fn default() -> Self {
+        Self {
+            max_batch: 8,
+            want_residuals: false,
+        }
+    }
 }
 
 impl Verifier {
     pub fn new(max_batch: usize, want_residuals: bool) -> Self {
-        Self { max_batch: max_batch.clamp(1, 8), want_residuals }
+        Self {
+            max_batch: max_batch.clamp(1, 8),
+            want_residuals,
+        }
     }
 
     /// THE single home for the accept rule (retires the inline copy at
     /// qwen_dense.rs:2632). Bit-identical to the inline loop by construction:
     /// same vtoks = [bonus, draft[0..k-1]], same preds[i]==draft[i] test.
     pub fn verify_line<T: ExactTarget>(
-        &self, target: &mut T, bonus: u32, bonus_pos: usize, draft: &[u32],
+        &self,
+        target: &mut T,
+        bonus: u32,
+        bonus_pos: usize,
+        draft: &[u32],
     ) -> Result<VerifyOutcome> {
         // Degenerate: empty draft → one plain greedy bonus step (still lossless).
         if draft.is_empty() {
             let corr = target.forward_token_greedy(bonus, bonus_pos)?;
             return Ok(VerifyOutcome {
-                accepted: Vec::new(), correction: Some(corr),
-                next_seq_len: bonus_pos + 1, residuals: Vec::new(),
+                accepted: Vec::new(),
+                correction: Some(corr),
+                next_seq_len: bonus_pos + 1,
+                residuals: Vec::new(),
             });
         }
         // Clamp bonus + draft ≤ max_batch.
@@ -75,14 +93,18 @@ impl Verifier {
 
         let mut vtoks = Vec::with_capacity(k);
         vtoks.push(bonus);
-        if k > 1 { vtoks.extend_from_slice(&draft[..k - 1]); }
+        if k > 1 {
+            vtoks.extend_from_slice(&draft[..k - 1]);
+        }
         let vpos: Vec<usize> = (0..k).map(|j| bonus_pos + j).collect();
 
         let (preds, residuals) = target.forward_tokens_verify(&vtoks, &vpos)?;
         debug_assert_eq!(preds.len(), k);
 
-        let VerifyResult { accepted_count, first_divergent_token } =
-            verify_draft_ids_until_mismatch(draft, |i| Ok(preds[i]))?;
+        let VerifyResult {
+            accepted_count,
+            first_divergent_token,
+        } = verify_draft_ids_until_mismatch(draft, |i| Ok(preds[i]))?;
 
         let accepted = draft[..accepted_count].to_vec();
         let next_seq_len = if first_divergent_token.is_some() {
@@ -94,7 +116,11 @@ impl Verifier {
             accepted,
             correction: first_divergent_token,
             next_seq_len,
-            residuals: if self.want_residuals { residuals } else { Vec::new() },
+            residuals: if self.want_residuals {
+                residuals
+            } else {
+                Vec::new()
+            },
         })
     }
 }
@@ -104,10 +130,15 @@ mod tests {
     use super::*;
 
     /// Mock target driven by canned argmax preds; no Metal, no model.
-    struct MockTarget { preds: Vec<u32> }
+    struct MockTarget {
+        preds: Vec<u32>,
+    }
     impl ExactTarget for MockTarget {
-        fn forward_tokens_verify(&mut self, tokens: &[u32], _positions: &[usize])
-            -> Result<(Vec<u32>, Vec<Vec<f32>>)> {
+        fn forward_tokens_verify(
+            &mut self,
+            tokens: &[u32],
+            _positions: &[usize],
+        ) -> Result<(Vec<u32>, Vec<Vec<f32>>)> {
             // Return the first `tokens.len()` canned preds.
             let n = tokens.len();
             Ok((self.preds[..n].to_vec(), vec![Vec::new(); n]))
@@ -121,7 +152,9 @@ mod tests {
     fn full_accept() {
         // preds confirm every draft token (model argmax == draft[i] at each step)
         // → full accept, no correction, next_seq_len = bonus_pos + k.
-        let mut t = MockTarget { preds: vec![10, 20, 30] };
+        let mut t = MockTarget {
+            preds: vec![10, 20, 30],
+        };
         let v = Verifier::default();
         let o = v.verify_line(&mut t, 1, 5, &[10, 20, 30]).unwrap();
         assert_eq!(o.accepted, vec![10, 20, 30]);
@@ -132,7 +165,9 @@ mod tests {
 
     #[test]
     fn mid_reject() {
-        let mut t = MockTarget { preds: vec![10, 99, 30] };
+        let mut t = MockTarget {
+            preds: vec![10, 99, 30],
+        };
         let v = Verifier::default();
         let o = v.verify_line(&mut t, 1, 5, &[10, 20, 30]).unwrap();
         assert_eq!(o.accepted, vec![10]);

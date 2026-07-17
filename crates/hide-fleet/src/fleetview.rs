@@ -171,7 +171,11 @@ impl FleetView {
 }
 
 fn str_field(event: &Event, key: &str) -> Option<String> {
-    event.payload.get(key).and_then(|v| v.as_str()).map(String::from)
+    event
+        .payload
+        .get(key)
+        .and_then(|v| v.as_str())
+        .map(String::from)
 }
 
 #[cfg(test)]
@@ -238,6 +242,10 @@ mod tests {
         .unwrap();
         let events = log.scan(None, None, None).await.unwrap();
         let view = FleetView::project(&events);
-        assert!(view.breaker_banner.as_deref().unwrap().contains("spawn rate"));
+        assert!(view
+            .breaker_banner
+            .as_deref()
+            .unwrap()
+            .contains("spawn rate"));
     }
 }
