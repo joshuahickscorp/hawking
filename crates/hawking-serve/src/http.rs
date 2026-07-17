@@ -547,7 +547,11 @@ fn render_chat_qwen2(msgs: &[ChatMessage]) -> String {
     for m in msgs {
         // Qwen2.5 renders tool results inside a user turn wrapped in <tool_response>;
         // rendered_body already adds the wrapper, so map the role tag to "user".
-        let tag = if m.role == "tool" { "user" } else { m.role.as_str() };
+        let tag = if m.role == "tool" {
+            "user"
+        } else {
+            m.role.as_str()
+        };
         s.push_str(&format!(
             "<|im_start|>{tag}\n{}<|im_end|>\n",
             m.rendered_body()
@@ -1271,11 +1275,26 @@ mod b1_roundtrip_tests {
             },
         ];
         let prompt = render_chat_qwen2(&msgs);
-        assert!(prompt.contains("<tool_call>"), "assistant tool_call must render: {prompt}");
-        assert!(prompt.contains("fs.read"), "tool name must render: {prompt}");
-        assert!(prompt.contains("<tool_response>"), "tool result must render: {prompt}");
-        assert!(prompt.contains("fn foo() {}"), "tool output must render: {prompt}");
+        assert!(
+            prompt.contains("<tool_call>"),
+            "assistant tool_call must render: {prompt}"
+        );
+        assert!(
+            prompt.contains("fs.read"),
+            "tool name must render: {prompt}"
+        );
+        assert!(
+            prompt.contains("<tool_response>"),
+            "tool result must render: {prompt}"
+        );
+        assert!(
+            prompt.contains("fn foo() {}"),
+            "tool output must render: {prompt}"
+        );
         // tool role maps to a user turn tag in the Qwen template
-        assert!(!prompt.contains("<|im_start|>tool"), "tool role tag should map to user");
+        assert!(
+            !prompt.contains("<|im_start|>tool"),
+            "tool role tag should map to user"
+        );
     }
 }
