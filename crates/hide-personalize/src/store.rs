@@ -56,10 +56,18 @@ pub trait PersonalizationStore: Send + Sync {
 pub fn scrub_record(redactor: &Redactor, record: &mut PersonalizationRecord) -> usize {
     let mut total = 0;
     let proposed = redactor.redact(&record.diff_proposed);
-    total += proposed.redactions.iter().map(|r| r.occurrences).sum::<usize>();
+    total += proposed
+        .redactions
+        .iter()
+        .map(|r| r.occurrences)
+        .sum::<usize>();
     record.diff_proposed = proposed.text;
     let accepted = redactor.redact(&record.diff_accepted);
-    total += accepted.redactions.iter().map(|r| r.occurrences).sum::<usize>();
+    total += accepted
+        .redactions
+        .iter()
+        .map(|r| r.occurrences)
+        .sum::<usize>();
     record.diff_accepted = accepted.text;
     total
 }
@@ -288,10 +296,7 @@ mod tests {
         store.append(&rec).unwrap();
 
         let raw = std::fs::read_to_string(&path).unwrap();
-        assert!(
-            !raw.contains(secret),
-            "secret must not reach disk: {raw}"
-        );
+        assert!(!raw.contains(secret), "secret must not reach disk: {raw}");
         assert!(raw.contains("redacted"), "redaction marker expected");
 
         // The in-memory record we passed in is untouched (scrub is on the copy).

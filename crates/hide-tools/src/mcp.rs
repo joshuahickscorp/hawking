@@ -150,10 +150,13 @@ pub fn mcp_result_to_hide(value: &Value) -> ToolResult {
             blocks
                 .iter()
                 .filter_map(|b| match b.get("type").and_then(|t| t.as_str()) {
-                    Some("text") => b
-                        .get("text")
-                        .and_then(|t| t.as_str())
-                        .map(|t| ToolContent::Text { text: t.to_string() }),
+                    Some("text") => {
+                        b.get("text")
+                            .and_then(|t| t.as_str())
+                            .map(|t| ToolContent::Text {
+                                text: t.to_string(),
+                            })
+                    }
                     _ => Some(ToolContent::Json { value: b.clone() }),
                 })
                 .collect::<Vec<_>>()
@@ -287,8 +290,7 @@ impl McpClient {
             .ok_or_else(|| anyhow!("tools/list: missing tools[]"))?;
         let mut specs = Vec::new();
         for t in tools {
-            let tool: McpTool =
-                serde_json::from_value(t.clone()).context("decoding MCP tool")?;
+            let tool: McpTool = serde_json::from_value(t.clone()).context("decoding MCP tool")?;
             specs.push(mcp_tool_to_hide_spec(&self.server_id, tool));
         }
         Ok(specs)
@@ -301,7 +303,10 @@ impl McpClient {
             .strip_prefix(&format!("mcp:{}/", self.server_id))
             .unwrap_or(name);
         let result = self
-            .request("tools/call", json!({ "name": bare, "arguments": arguments }))
+            .request(
+                "tools/call",
+                json!({ "name": bare, "arguments": arguments }),
+            )
             .await?;
         Ok(mcp_result_to_hide(&result))
     }
@@ -674,10 +679,17 @@ mod tests {
 
         assert_eq!(results.len(), 2);
         let good_r = results.iter().find(|r| r.server_id == "good").unwrap();
-        assert!(good_r.error.is_none(), "good server errored: {:?}", good_r.error);
+        assert!(
+            good_r.error.is_none(),
+            "good server errored: {:?}",
+            good_r.error
+        );
         assert!(good_r.tools.contains(&"mcp:good/echo".to_string()));
         let bad_r = results.iter().find(|r| r.server_id == "bad").unwrap();
-        assert!(bad_r.error.is_some(), "bad server should have recorded an error");
+        assert!(
+            bad_r.error.is_some(),
+            "bad server should have recorded an error"
+        );
         // The registry actually holds the good server's proxy tool, dispatchable.
         assert!(registry.get("mcp:good/echo").is_some());
     }
@@ -781,11 +793,7 @@ mod tests {
                 }),
             };
             // Always assign a session id so the client must echo it back next time.
-            (
-                [("MCP-Session-Id", "sess-abc123")],
-                AxumJson(body),
-            )
-                .into_response()
+            ([("MCP-Session-Id", "sess-abc123")], AxumJson(body)).into_response()
         }
 
         let app = Router::new().route(

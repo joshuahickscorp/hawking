@@ -156,7 +156,11 @@ impl CodeGraph {
     ///
     /// `personalization` maps a node id to its teleport mass; missing nodes get
     /// uniform mass. Converges fast on sparse code graphs.
-    pub fn pagerank(&self, personalization: &HashMap<String, f32>, iters: usize) -> HashMap<String, f32> {
+    pub fn pagerank(
+        &self,
+        personalization: &HashMap<String, f32>,
+        iters: usize,
+    ) -> HashMap<String, f32> {
         let n = self.graph.node_count();
         if n == 0 {
             return HashMap::new();
@@ -352,12 +356,8 @@ impl CodeGraph {
 }
 
 fn is_multiword(name: &str) -> bool {
-    name.contains('_')
-        || name.contains('-')
-        || name
-            .chars()
-            .skip(1)
-            .any(|c| c.is_uppercase()) // camelCase
+    name.contains('_') || name.contains('-') || name.chars().skip(1).any(|c| c.is_uppercase())
+    // camelCase
 }
 
 fn truncate_line(line: &str, max: usize) -> String {
@@ -380,9 +380,24 @@ mod tests {
 
     fn graph_with_calls() -> CodeGraph {
         let mut g = CodeGraph::new();
-        g.add_definition("mod::core_engine", "core_engine", "src/engine.rs", "pub fn core_engine()");
-        g.add_definition("mod::helper_fn", "helper_fn", "src/util.rs", "fn helper_fn()");
-        g.add_definition("mod::caller_one", "caller_one", "src/a.rs", "fn caller_one()");
+        g.add_definition(
+            "mod::core_engine",
+            "core_engine",
+            "src/engine.rs",
+            "pub fn core_engine()",
+        );
+        g.add_definition(
+            "mod::helper_fn",
+            "helper_fn",
+            "src/util.rs",
+            "fn helper_fn()",
+        );
+        g.add_definition(
+            "mod::caller_one",
+            "caller_one",
+            "src/a.rs",
+            "fn caller_one()",
+        );
         // many things call core_engine → it should rank high
         g.add_edge("mod::caller_one", "mod::core_engine", EdgeKind::Calls, 1.0);
         g.add_edge("mod::helper_fn", "mod::core_engine", EdgeKind::Calls, 1.0);

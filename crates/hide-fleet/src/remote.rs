@@ -264,10 +264,7 @@ pub struct RemoteContext {
 /// Dispatch one JSON-RPC request against the server state, returning the response
 /// plus any backlog events to stream (for `session/resume`). This is the pure
 /// protocol core — `serve` wraps it with the socket.
-pub async fn dispatch(
-    ctx: &RemoteContext,
-    req: JsonRpcRequest,
-) -> (JsonRpcResponse, Vec<Event>) {
+pub async fn dispatch(ctx: &RemoteContext, req: JsonRpcRequest) -> (JsonRpcResponse, Vec<Event>) {
     if req.jsonrpc != "2.0" {
         return (
             JsonRpcResponse::err(req.id, ERR_INVALID_REQUEST, "jsonrpc must be \"2.0\""),
@@ -338,26 +335,18 @@ pub async fn dispatch(
                     Vec::new(),
                 );
             }
-            let intent: Result<Intent, _> = serde_json::from_value(
-                req.params.get("intent").cloned().unwrap_or(Value::Null),
-            );
+            let intent: Result<Intent, _> =
+                serde_json::from_value(req.params.get("intent").cloned().unwrap_or(Value::Null));
             match intent {
                 Ok(intent) => {
                     let seq = ctx.sink.submit(&session, intent);
                     (
-                        JsonRpcResponse::ok(
-                            req.id,
-                            json!({ "accepted": true, "event_seq": seq }),
-                        ),
+                        JsonRpcResponse::ok(req.id, json!({ "accepted": true, "event_seq": seq })),
                         Vec::new(),
                     )
                 }
                 Err(e) => (
-                    JsonRpcResponse::err(
-                        req.id,
-                        ERR_INVALID_PARAMS,
-                        format!("bad intent: {e}"),
-                    ),
+                    JsonRpcResponse::err(req.id, ERR_INVALID_PARAMS, format!("bad intent: {e}")),
                     Vec::new(),
                 ),
             }
@@ -576,7 +565,10 @@ mod tests {
             },
         )
         .await;
-        let session = resp.result.unwrap()["session"].as_str().unwrap().to_string();
+        let session = resp.result.unwrap()["session"]
+            .as_str()
+            .unwrap()
+            .to_string();
         // intent
         let intent = Intent::SubmitTurn {
             session_id: SessionId::from(session.as_str()),
@@ -611,7 +603,10 @@ mod tests {
             },
         )
         .await;
-        let session_str = resp.result.unwrap()["session"].as_str().unwrap().to_string();
+        let session_str = resp.result.unwrap()["session"]
+            .as_str()
+            .unwrap()
+            .to_string();
         let session = ctx.sessions.get(&session_str).unwrap().session_id;
         for i in 0..3 {
             log.append(NewEvent::system(
@@ -677,8 +672,7 @@ mod tests {
 
         // session/new
         ws.send(Message::Text(
-            json!({ "jsonrpc": "2.0", "id": 1, "method": "session/new", "params": {} })
-                .to_string(),
+            json!({ "jsonrpc": "2.0", "id": 1, "method": "session/new", "params": {} }).to_string(),
         ))
         .await
         .unwrap();

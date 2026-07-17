@@ -424,17 +424,57 @@ mod tests {
     fn debug_and_refactor_profiles_populate_band_by_kind() {
         let debug = ContextProfile::debug(8192);
         // The debug profile boosts diagnostics above 1.0 and lifts recency.
-        assert!(debug.source_weights.band_by_kind.get("Diagnostics").copied().unwrap() > 1.0);
-        assert!(debug.source_weights.band_by_kind.get("ToolOutput").copied().unwrap() > 1.0);
+        assert!(
+            debug
+                .source_weights
+                .band_by_kind
+                .get("Diagnostics")
+                .copied()
+                .unwrap()
+                > 1.0
+        );
+        assert!(
+            debug
+                .source_weights
+                .band_by_kind
+                .get("ToolOutput")
+                .copied()
+                .unwrap()
+                > 1.0
+        );
         assert!(debug.source_weights.w_recency >= 1.0);
         // A kind with no entry still defaults to 1.0 at the call site (absent).
         assert!(!debug.source_weights.band_by_kind.contains_key("Code"));
 
         let refactor = ContextProfile::refactor(8192);
         // The refactor profile boosts symbols/code and de-emphasizes tool output.
-        assert!(refactor.source_weights.band_by_kind.get("Symbol").copied().unwrap() > 1.0);
-        assert!(refactor.source_weights.band_by_kind.get("Code").copied().unwrap() > 1.0);
-        assert!(refactor.source_weights.band_by_kind.get("ToolOutput").copied().unwrap() < 1.0);
+        assert!(
+            refactor
+                .source_weights
+                .band_by_kind
+                .get("Symbol")
+                .copied()
+                .unwrap()
+                > 1.0
+        );
+        assert!(
+            refactor
+                .source_weights
+                .band_by_kind
+                .get("Code")
+                .copied()
+                .unwrap()
+                > 1.0
+        );
+        assert!(
+            refactor
+                .source_weights
+                .band_by_kind
+                .get("ToolOutput")
+                .copied()
+                .unwrap()
+                < 1.0
+        );
         assert!(refactor.source_weights.w_relevance > 1.0);
 
         // Reserved names resolve via preset().

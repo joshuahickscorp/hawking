@@ -34,7 +34,10 @@ pub struct BanditPolicy {
 
 impl Default for BanditPolicy {
     fn default() -> Self {
-        Self { arms: Vec::new(), total: 0 }
+        Self {
+            arms: Vec::new(),
+            total: 0,
+        }
     }
 }
 
@@ -156,7 +159,10 @@ mod tests {
 
         let candidates = vec![(0, 0.9), (1, 0.1)];
         let chosen = p.pick_ucb1(&candidates).expect("must return Some");
-        assert_eq!(chosen, 0, "arm 0 (reward 0.9) should beat arm 1 (reward 0.1) after warmup");
+        assert_eq!(
+            chosen, 0,
+            "arm 0 (reward 0.9) should beat arm 1 (reward 0.1) after warmup"
+        );
     }
 
     /// Test 2: a cold arm gets explored due to its large UCB bonus.
@@ -213,7 +219,10 @@ mod tests {
         p.update(0, 0.4);
         let expected = (0.8 + 0.4) / 2.0;
         let got = p.mu(0);
-        assert!((got - expected).abs() < 1e-12, "mu(0) = {got} expected {expected}");
+        assert!(
+            (got - expected).abs() < 1e-12,
+            "mu(0) = {got} expected {expected}"
+        );
 
         // Arm 1 untouched.
         assert_eq!(p.mu(1), 0.0);

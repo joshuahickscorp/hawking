@@ -2,8 +2,8 @@
 //! requires_text_bridge()=true → enable_neural_slot refuses without GO.
 //! Default: NO-GO (0.58-0.70× slowdown on Apple Silicon, ref 2604.16368).
 
+use crate::speculate::proposal::{Budget, CostNs, Ctx, Proposal, Proposer, Telemetry};
 use std::collections::HashMap;
-use crate::speculate::proposal::{Budget, Ctx, CostNs, Proposal, Proposer, Telemetry};
 
 /// Scaffold cross-tokenizer proposer. DISABLED by default.
 ///
@@ -114,7 +114,11 @@ mod tests {
         p.learn_span(42, vec![100, 101, 102]);
 
         let tokens = vec![42u32];
-        let ctx = Ctx { tokens: &tokens, pos: 1, hidden: None };
+        let ctx = Ctx {
+            tokens: &tokens,
+            pos: 1,
+            hidden: None,
+        };
         let budget = Budget::line(2);
         let tel = Telemetry::default();
 
@@ -134,7 +138,11 @@ mod tests {
         // warm([1,2,3,4]) → pairs (1→2), (2→3), (3→4)
         // propose ctx=[2], k=1 → first dst of 2 = 3
         let tokens = vec![2u32];
-        let ctx = Ctx { tokens: &tokens, pos: 1, hidden: None };
+        let ctx = Ctx {
+            tokens: &tokens,
+            pos: 1,
+            hidden: None,
+        };
         let budget = Budget::line(1);
         let tel = Telemetry::default();
 
@@ -152,7 +160,11 @@ mod tests {
         p.learn_span(1, vec![10, 11]);
 
         let tokens = vec![99u32]; // not in map
-        let ctx = Ctx { tokens: &tokens, pos: 1, hidden: None };
+        let ctx = Ctx {
+            tokens: &tokens,
+            pos: 1,
+            hidden: None,
+        };
         let budget = Budget::line(4);
         let tel = Telemetry::default();
 

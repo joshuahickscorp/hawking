@@ -53,7 +53,11 @@ impl Phase {
 #[serde(rename_all = "snake_case", tag = "kind")]
 pub enum Frame {
     /// A search node (best-of-N candidate exploration).
-    Search { step_id: StepId, tier: String, candidates: u32 },
+    Search {
+        step_id: StepId,
+        tier: String,
+        candidates: u32,
+    },
     /// A nested subagent run.
     Subagent { child_run: RunId, objective: String },
 }
@@ -204,7 +208,10 @@ mod lesson_tests {
         assert_eq!(s.lessons.len(), MAX_LESSONS);
         // The two oldest were evicted; the newest is retained.
         assert_eq!(s.lessons.first().unwrap().text, "L2");
-        assert_eq!(s.lessons.last().unwrap().text, format!("L{}", MAX_LESSONS + 1));
+        assert_eq!(
+            s.lessons.last().unwrap().text,
+            format!("L{}", MAX_LESSONS + 1)
+        );
         assert_eq!(s.lessons[0].phase, Phase::Repair);
     }
 }

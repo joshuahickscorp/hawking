@@ -10,8 +10,8 @@
 
 use crate::kg::{Claim, KnowledgeNode};
 use hawking_context::memory::{MemoryKind, MemoryRecord};
-use hawking_index::query::{CodeIndex, SearchQuery};
 use hawking_index::graph::Symbol;
+use hawking_index::query::{CodeIndex, SearchQuery};
 use hide_core::error::Result;
 use hide_core::types::Provenance;
 use serde::{Deserialize, Serialize};
@@ -121,11 +121,7 @@ pub async fn claim_to_issue_linked(claim: &Claim, index: &dyn CodeIndex) -> Resu
 
 /// Turn an extracted equation (latex + symbol descriptions) into a typed code
 /// stub. The symbol table drives the parameter list (§4.10).
-pub fn equation_to_code(
-    name: &str,
-    latex: &str,
-    symbols: &[(String, String)],
-) -> String {
+pub fn equation_to_code(name: &str, latex: &str, symbols: &[(String, String)]) -> String {
     let params = symbols
         .iter()
         .map(|(s, _)| format!("{}: f64", sanitize_ident(s)))
@@ -245,7 +241,10 @@ mod tests {
         let code = equation_to_code(
             "softmax scale",
             "y = x / sqrt(d)",
-            &[("x".into(), "input".into()), ("d".into(), "dimension".into())],
+            &[
+                ("x".into(), "input".into()),
+                ("d".into(), "dimension".into()),
+            ],
         );
         assert!(code.contains("fn softmax_scale(x: f64, d: f64) -> f64"));
         assert!(code.contains("todo!"));

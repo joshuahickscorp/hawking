@@ -141,10 +141,7 @@ impl BroadcastReport {
 /// Drive the seam for every member of a share group (§11.5.2 step 3). A member
 /// that fails to restore is reported, not panicked on, so the swarm can fall
 /// back to full prefill for that worker.
-pub fn copy_for_group(
-    copier: &dyn KvPrefixCopier,
-    group: &KvShareGroup,
-) -> BroadcastReport {
+pub fn copy_for_group(copier: &dyn KvPrefixCopier, group: &KvShareGroup) -> BroadcastReport {
     let handle = group.handle();
     let mut restored = Vec::new();
     let mut failed = Vec::new();
@@ -199,7 +196,9 @@ mod tests {
         let group = KvShareGroup::new(
             KvKey::new("k"),
             2300,
-            (0..16).map(|i| AgentId::new(format!("worker:{i}"))).collect(),
+            (0..16)
+                .map(|i| AgentId::new(format!("worker:{i}")))
+                .collect(),
         );
         let copier = FakeCopier { fail_for: None };
         let report = copy_for_group(&copier, &group);

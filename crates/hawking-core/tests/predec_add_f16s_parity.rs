@@ -5,9 +5,9 @@
 //! _add_f16s = predec_add geometry (in-place residual add) + half* scale reads.
 //! Enables oproj_add_rmsnorm_fuse in fast profile (PREDEC_F16SCALES=1).
 
+use half::f16;
 use hawking_core::kernels;
 use hawking_core::metal::{MetalContext, TokenCommandBuffer};
-use half::f16;
 
 mod common;
 use common::*;

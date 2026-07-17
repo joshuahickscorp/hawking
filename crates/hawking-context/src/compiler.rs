@@ -16,9 +16,8 @@
 use crate::budget::{Reservations, TokenCounter};
 use crate::embed::{cosine, EmbeddingClient, HashingEmbeddingClient};
 use crate::manifest::{
-    span_content_id, CompactionEvent, ContextManifest, ContextSourceKind, ContextSpan,
-    DropReason, DroppedContextSpan, ManifestBudget, ManifestModel, ManifestProfile, PinState,
-    SpanSignals,
+    span_content_id, CompactionEvent, ContextManifest, ContextSourceKind, ContextSpan, DropReason,
+    DroppedContextSpan, ManifestBudget, ManifestModel, ManifestProfile, PinState, SpanSignals,
 };
 use crate::profiles::ContextProfile;
 use futures::future::BoxFuture;
@@ -172,7 +171,11 @@ pub trait ContextSource: Send + Sync {
 }
 
 /// Default degrade: truncate to ~`target_tokens` on a whitespace boundary.
-fn default_truncate(text: &str, target_tokens: usize, counter: &TokenCounter) -> Option<RealizedSpan> {
+fn default_truncate(
+    text: &str,
+    target_tokens: usize,
+    counter: &TokenCounter,
+) -> Option<RealizedSpan> {
     if target_tokens == 0 || text.is_empty() {
         return None;
     }
@@ -212,7 +215,11 @@ fn default_truncate(text: &str, target_tokens: usize, counter: &TokenCounter) ->
 /// hint. Cheaper than truncation and far cheaper than an LLM summary (a summary
 /// is a full local inference pass), and it preserves the reasoning trace by only
 /// touching tool chatter. A span already within budget is kept verbatim.
-fn mask_observation(text: &str, target_tokens: usize, counter: &TokenCounter) -> Option<RealizedSpan> {
+fn mask_observation(
+    text: &str,
+    target_tokens: usize,
+    counter: &TokenCounter,
+) -> Option<RealizedSpan> {
     if text.is_empty() {
         return None;
     }
@@ -350,15 +357,22 @@ impl ContextCompiler {
         let cand_vecs: Vec<Vec<f32>>;
         if let Some(embedder) = &self.embedder {
             query_vec = embedder.embed_one(&input.task).await.unwrap_or_default();
-            let texts: Vec<String> = cands.iter().map(|c| c.title.clone() + " " + &c.text).collect();
-            cand_vecs = embedder.embed(&texts).await.unwrap_or_else(|_| {
-                vec![Vec::new(); cands.len()]
-            });
+            let texts: Vec<String> = cands
+                .iter()
+                .map(|c| c.title.clone() + " " + &c.text)
+                .collect();
+            cand_vecs = embedder
+                .embed(&texts)
+                .await
+                .unwrap_or_else(|_| vec![Vec::new(); cands.len()]);
         } else {
             // Lexical fallback embedder so relevance/redundancy are never blanket-zero.
             let lex = HashingEmbeddingClient::default();
             query_vec = lex.embed_one(&input.task).await.unwrap_or_default();
-            let texts: Vec<String> = cands.iter().map(|c| c.title.clone() + " " + &c.text).collect();
+            let texts: Vec<String> = cands
+                .iter()
+                .map(|c| c.title.clone() + " " + &c.text)
+                .collect();
             cand_vecs = lex.embed(&texts).await.unwrap_or_default();
         }
 
@@ -377,9 +391,12 @@ impl ContextCompiler {
                     0.0
                 };
                 let importance = c.importance.unwrap_or(c.score).clamp(0.0, 1.0);
-                let recency = recency_score(c.recency_ms.unwrap_or(now), now, profile.recency_half_life_ms);
-                let band = c.score.clamp(0.0, 1.0)
-                    * band_multiplier(weights, &c.source);
+                let recency = recency_score(
+                    c.recency_ms.unwrap_or(now),
+                    now,
+                    profile.recency_half_life_ms,
+                );
+                let band = c.score.clamp(0.0, 1.0) * band_multiplier(weights, &c.source);
                 let mut base = weights.w_band * band
                     + weights.w_relevance * relevance
                     + weights.w_recency * recency
@@ -654,7 +671,11 @@ impl ContextCompiler {
                         rolled_back = true;
                     }
                 }
-                let tokens = self.counter.count(&text).min(*free).max(usize::from(!is_pin));
+                let tokens = self
+                    .counter
+                    .count(&text)
+                    .min(*free)
+                    .max(usize::from(!is_pin));
                 *free = free.saturating_sub(tokens);
                 let original_id = e.cand.id.clone();
                 let result_id = span_content_id(&e.cand.source, &e.cand.title, &text);
@@ -723,12 +744,7 @@ impl ContextCompiler {
         }
     }
 
-    fn max_redundancy(
-        &self,
-        cand_vecs: &[Vec<f32>],
-        idx: usize,
-        selected: &[SelectedSpan],
-    ) -> f32 {
+    fn max_redundancy(&self, cand_vecs: &[Vec<f32>], idx: usize, selected: &[SelectedSpan]) -> f32 {
         if idx >= cand_vecs.len() {
             return 0.0;
         }
@@ -771,10 +787,7 @@ impl ContextCompiler {
                     .then_with(|| a.cand.id.cmp(&b.cand.id))
             });
             let e = deferred.remove(0);
-            match self
-                .admit(e, free, selected, compaction, false)
-                .await?
-            {
+            match self.admit(e, free, selected, compaction, false).await? {
                 // Still doesn't fit even degraded — truly no-fit; re-defer and
                 // stop (nothing smaller will help this iteration's budget).
                 Some(left) => {
@@ -826,10 +839,7 @@ fn drop_of(c: &ContextCandidate, reason: DropReason) -> DroppedContextSpan {
     }
 }
 
-fn band_multiplier(
-    weights: &crate::profiles::SourceWeights,
-    kind: &ContextSourceKind,
-) -> f32 {
+fn band_multiplier(weights: &crate::profiles::SourceWeights, kind: &ContextSourceKind) -> f32 {
     weights
         .band_by_kind
         .get(&format!("{kind:?}"))
@@ -1037,10 +1047,21 @@ mod tests {
             0.5,
             Provenance::trusted("test"),
         );
-        let dt = src.degrade(&tool, 10, &counter).await.unwrap().expect("tool degraded");
-        let dc = src.degrade(&code, 10, &counter).await.unwrap().expect("code degraded");
+        let dt = src
+            .degrade(&tool, 10, &counter)
+            .await
+            .unwrap()
+            .expect("tool degraded");
+        let dc = src
+            .degrade(&code, 10, &counter)
+            .await
+            .unwrap()
+            .expect("code degraded");
         assert!(dt.text.contains("masked"), "tool output should be masked");
-        assert!(!dc.text.contains("masked"), "code should be truncated, not masked");
+        assert!(
+            !dc.text.contains("masked"),
+            "code should be truncated, not masked"
+        );
     }
 
     #[tokio::test]
@@ -1090,7 +1111,12 @@ mod tests {
         assert!(
             low_dropped || low_compacted,
             "bulky low span must be dropped or compacted; retained={:?}",
-            compiled.manifest.retained.iter().map(|s| &s.title).collect::<Vec<_>>()
+            compiled
+                .manifest
+                .retained
+                .iter()
+                .map(|s| &s.title)
+                .collect::<Vec<_>>()
         );
         // High value outranks low value.
         assert!(high.score >= 0.5);
@@ -1170,8 +1196,7 @@ mod tests {
             .await
             .unwrap();
 
-        let realized_ids: HashSet<String> =
-            realized.lock().unwrap().iter().cloned().collect();
+        let realized_ids: HashSet<String> = realized.lock().unwrap().iter().cloned().collect();
         // The selected span was realized.
         assert!(
             realized_ids.contains("keep"),
@@ -1300,8 +1325,22 @@ mod tests {
         // Two near-identical spans; only one should survive (redundancy).
         let dup = "the database pool is built with sqlx in db pool rs";
         compiler.add_source(StaticSource(vec![
-            ContextCandidate::new("a", ContextSourceKind::Memory, "a", dup, 0.9, Provenance::trusted("t")),
-            ContextCandidate::new("b", ContextSourceKind::Memory, "b", dup, 0.9, Provenance::trusted("t")),
+            ContextCandidate::new(
+                "a",
+                ContextSourceKind::Memory,
+                "a",
+                dup,
+                0.9,
+                Provenance::trusted("t"),
+            ),
+            ContextCandidate::new(
+                "b",
+                ContextSourceKind::Memory,
+                "b",
+                dup,
+                0.9,
+                Provenance::trusted("t"),
+            ),
             ContextCandidate::new(
                 "c",
                 ContextSourceKind::Code,
@@ -1374,7 +1413,12 @@ mod tests {
                 .iter()
                 .any(|s| matches!(s.source, ContextSourceKind::Diagnostics)),
             "diagnostics span should be retained under the debug band, retained={:?}",
-            compiled.manifest.retained.iter().map(|s| &s.title).collect::<Vec<_>>()
+            compiled
+                .manifest
+                .retained
+                .iter()
+                .map(|s| &s.title)
+                .collect::<Vec<_>>()
         );
         // Sanity: with the *standard* profile (no band boost) the two equal
         // spans tie-break on content id, so the band is what flips debug.
@@ -1388,15 +1432,16 @@ mod tests {
             .unwrap();
         // Under standard, "code" wins the id tie-break (c < d), so the band in
         // the debug run genuinely changed the selection.
-        let standard_kept_code = standard
-            .manifest
-            .retained
-            .iter()
-            .any(|s| s.title == "code");
+        let standard_kept_code = standard.manifest.retained.iter().any(|s| s.title == "code");
         assert!(
             standard_kept_code,
             "control: standard profile keeps 'code' by id tie-break; got {:?}",
-            standard.manifest.retained.iter().map(|s| &s.title).collect::<Vec<_>>()
+            standard
+                .manifest
+                .retained
+                .iter()
+                .map(|s| &s.title)
+                .collect::<Vec<_>>()
         );
     }
 

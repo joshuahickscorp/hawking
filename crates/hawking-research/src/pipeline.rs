@@ -13,7 +13,9 @@
 //! emits a Report node + Findings; Reflect gates a bounded re-loop on coverage.
 
 use crate::cas;
-use crate::checkpoint::{CheckpointKind, DynCheckpointLedger, InMemoryCheckpointLedger, RunJournal};
+use crate::checkpoint::{
+    CheckpointKind, DynCheckpointLedger, InMemoryCheckpointLedger, RunJournal,
+};
 use crate::ingest::{SourceAdapter, SourceQuery, SourceRecord, StructuredDoc};
 use crate::kg::{
     Claim, ConfidenceTier, EdgeKind, KnowledgeEdge, KnowledgeNode, NodeKind, PetKnowledgeGraph,
@@ -311,7 +313,11 @@ impl ResearchPipeline {
             .unwrap_or_default();
         let mut subs: Vec<String> = raw
             .lines()
-            .map(|l| l.trim_start_matches(['-', '*', '•', ' ']).trim().to_string())
+            .map(|l| {
+                l.trim_start_matches(['-', '*', '•', ' '])
+                    .trim()
+                    .to_string()
+            })
             .filter(|l| l.len() > 5)
             .take(4)
             .collect();
@@ -473,17 +479,15 @@ impl ResearchPipeline {
                         id: fid.clone(),
                         summary: claim.text.chars().take(160).collect(),
                         claim_ids: vec![claim.id.clone()],
-                        actionable: matches!(
-                            v.status,
-                            crate::verify::ClaimStatus::Contradicted
-                        ),
+                        actionable: matches!(v.status, crate::verify::ClaimStatus::Contradicted),
                     });
                     self.graph.upsert_edge(KnowledgeEdge {
                         id: cas::composite_id("edge", &[&report_id, &claim.id, "produced"]),
                         from: report_id.clone(),
                         to: claim.id.clone(),
                         kind: EdgeKind::Related,
-                        confidence: v.independent_sources as f32 / (v.independent_sources as f32 + 1.0),
+                        confidence: v.independent_sources as f32
+                            / (v.independent_sources as f32 + 1.0),
                         provenance: vec![claim.provenance.clone()],
                     });
                 }
@@ -668,7 +672,10 @@ mod tests {
             );
             checked += 1;
         }
-        assert!(checked > 0, "expected at least one pinned claim to re-verify");
+        assert!(
+            checked > 0,
+            "expected at least one pinned claim to re-verify"
+        );
 
         // Now deliberately mutate the on-disk evidence bytes of one claim's blob
         // and confirm the re-check flips to Tampered (a REAL change is caught).
@@ -703,4 +710,3 @@ mod tests {
         assert!(out.contains("Insufficient verified evidence"));
     }
 }
-

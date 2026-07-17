@@ -113,7 +113,10 @@ pub fn build_literature_map(graph: &PetKnowledgeGraph, topic: impl Into<String>)
         .filter(|(_, s)| s.len() <= 1)
         .map(|(concept, support)| ResearchGap {
             id: format!("gap:{concept}"),
-            description: format!("Concept {concept} has thin coverage ({} paper)", support.len()),
+            description: format!(
+                "Concept {concept} has thin coverage ({} paper)",
+                support.len()
+            ),
             supporting_node_ids: support,
         })
         .collect();

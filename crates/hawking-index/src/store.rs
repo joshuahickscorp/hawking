@@ -155,11 +155,8 @@ impl SqliteStore {
         // Clear prior rows for this file (re-index of a changed file).
         tx.execute("DELETE FROM occurrence WHERE file = ?1", params![rel_path])
             .map_err(map_err)?;
-        tx.execute(
-            "DELETE FROM symbol WHERE file = ?1",
-            params![rel_path],
-        )
-        .map_err(map_err)?;
+        tx.execute("DELETE FROM symbol WHERE file = ?1", params![rel_path])
+            .map_err(map_err)?;
         tx.execute("DELETE FROM chunk WHERE file = ?1", params![rel_path])
             .map_err(map_err)?;
         tx.execute("DELETE FROM fts_body WHERE path = ?1", params![rel_path])
@@ -298,8 +295,7 @@ impl SqliteStore {
     pub fn definitions(&self, symbol: &str) -> Result<Vec<Occurrence>> {
         let conn = self.conn.lock();
         // Direct id match first.
-        let mut occs =
-            query_occurrences(&conn, "symbol_id = ?1 AND role = 'definition'", symbol)?;
+        let mut occs = query_occurrences(&conn, "symbol_id = ?1 AND role = 'definition'", symbol)?;
         if occs.is_empty() {
             // Resolve by bare name: find symbol_ids whose display_name = symbol.
             let ids = symbol_ids_by_name(&conn, symbol)?;
@@ -418,9 +414,7 @@ impl SqliteStore {
         kind: EdgeKind,
     ) -> Result<Vec<(String, f32)>> {
         let conn = self.conn.lock();
-        let sql = format!(
-            "SELECT {val_col}, weight FROM edge WHERE {key_col} = ?1 AND kind = ?2"
-        );
+        let sql = format!("SELECT {val_col}, weight FROM edge WHERE {key_col} = ?1 AND kind = ?2");
         let mut stmt = conn.prepare(&sql).map_err(map_err)?;
         let rows = stmt
             .query_map(params![key, edge_kind_str(kind)], |row| {
@@ -814,7 +808,9 @@ mod tests {
     #[test]
     fn reverse_edges_are_a_seek() {
         let store = SqliteStore::open_in_memory().unwrap();
-        store.add_edge("caller", "callee", EdgeKind::Calls, 1.0, 1).unwrap();
+        store
+            .add_edge("caller", "callee", EdgeKind::Calls, 1.0, 1)
+            .unwrap();
         let callers = store.in_edges("callee", EdgeKind::Calls).unwrap();
         assert_eq!(callers.len(), 1);
         assert_eq!(callers[0].0, "caller");

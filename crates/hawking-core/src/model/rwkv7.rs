@@ -228,14 +228,20 @@ impl std::fmt::Display for StateDecodeError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             StateDecodeError::TooShort { got } => {
-                write!(f, "RwkvState blob too short: {got} bytes (need >= {STATE_HEADER_LEN})")
+                write!(
+                    f,
+                    "RwkvState blob too short: {got} bytes (need >= {STATE_HEADER_LEN})"
+                )
             }
             StateDecodeError::BadMagic => write!(f, "RwkvState blob has wrong magic (not DSSSMV1)"),
             StateDecodeError::UnsupportedVersion(v) => {
                 write!(f, "RwkvState blob version {v} is unsupported")
             }
             StateDecodeError::LengthMismatch { expected, got } => {
-                write!(f, "RwkvState payload length mismatch: expected {expected}, got {got}")
+                write!(
+                    f,
+                    "RwkvState payload length mismatch: expected {expected}, got {got}"
+                )
             }
         }
     }
@@ -299,7 +305,12 @@ impl RwkvState {
         out.push(u8::from(self.fresh));
         out.extend_from_slice(&[0u8; 3]);
         debug_assert_eq!(out.len(), STATE_HEADER_LEN);
-        for plane in self.wkv.iter().chain(&self.att_shift).chain(&self.ffn_shift) {
+        for plane in self
+            .wkv
+            .iter()
+            .chain(&self.att_shift)
+            .chain(&self.ffn_shift)
+        {
             out.extend_from_slice(bytemuck::cast_slice::<f32, u8>(plane.as_slice()));
         }
         out
@@ -315,7 +326,8 @@ impl RwkvState {
         if &bytes[..8] != &STATE_MAGIC[..] {
             return Err(StateDecodeError::BadMagic);
         }
-        let rd = |o: usize| u32::from_le_bytes([bytes[o], bytes[o + 1], bytes[o + 2], bytes[o + 3]]);
+        let rd =
+            |o: usize| u32::from_le_bytes([bytes[o], bytes[o + 1], bytes[o + 2], bytes[o + 3]]);
         let version = rd(8);
         if version != 1 {
             return Err(StateDecodeError::UnsupportedVersion(version));
@@ -328,7 +340,10 @@ impl RwkvState {
         let expected = n_layer * (wkv_len + att_len + ffn_len) * 4;
         let payload = &bytes[STATE_HEADER_LEN..];
         if payload.len() != expected {
-            return Err(StateDecodeError::LengthMismatch { expected, got: payload.len() });
+            return Err(StateDecodeError::LengthMismatch {
+                expected,
+                got: payload.len(),
+            });
         }
         let floats: Vec<f32> = payload
             .chunks_exact(4)
@@ -346,7 +361,12 @@ impl RwkvState {
         let wkv = planes(wkv_len);
         let att_shift = planes(att_len);
         let ffn_shift = planes(ffn_len);
-        Ok(Self { wkv, att_shift, ffn_shift, fresh })
+        Ok(Self {
+            wkv,
+            att_shift,
+            ffn_shift,
+            fresh,
+        })
     }
 
     /// Fork this recurrent state into an independent copy -- the M1 "Fork-&-Try-N"
@@ -406,7 +426,8 @@ impl RwkvState {
         if &bytes[..8] != &STATE_MAGIC_I8[..] {
             return Err(StateDecodeError::BadMagic);
         }
-        let rd = |o: usize| u32::from_le_bytes([bytes[o], bytes[o + 1], bytes[o + 2], bytes[o + 3]]);
+        let rd =
+            |o: usize| u32::from_le_bytes([bytes[o], bytes[o + 1], bytes[o + 2], bytes[o + 3]]);
         if rd(8) != 1 {
             return Err(StateDecodeError::UnsupportedVersion(rd(8)));
         }
@@ -419,7 +440,10 @@ impl RwkvState {
         let mut wkv = Vec::with_capacity(n_layer);
         for _ in 0..n_layer {
             if off + 4 + wkv_len > bytes.len() {
-                return Err(StateDecodeError::LengthMismatch { expected: off + 4 + wkv_len, got: bytes.len() });
+                return Err(StateDecodeError::LengthMismatch {
+                    expected: off + 4 + wkv_len,
+                    got: bytes.len(),
+                });
             }
             let scale =
                 f32::from_le_bytes([bytes[off], bytes[off + 1], bytes[off + 2], bytes[off + 3]]);
@@ -428,25 +452,34 @@ impl RwkvState {
             off += wkv_len;
             wkv.push(dequantize_plane_int8(&codes, scale));
         }
-        let read_planes = |off: &mut usize, per: usize| -> std::result::Result<Vec<Vec<f32>>, StateDecodeError> {
-            let mut planes = Vec::with_capacity(n_layer);
-            for _ in 0..n_layer {
-                let nbytes = per * 4;
-                if *off + nbytes > bytes.len() {
-                    return Err(StateDecodeError::LengthMismatch { expected: *off + nbytes, got: bytes.len() });
+        let read_planes =
+            |off: &mut usize, per: usize| -> std::result::Result<Vec<Vec<f32>>, StateDecodeError> {
+                let mut planes = Vec::with_capacity(n_layer);
+                for _ in 0..n_layer {
+                    let nbytes = per * 4;
+                    if *off + nbytes > bytes.len() {
+                        return Err(StateDecodeError::LengthMismatch {
+                            expected: *off + nbytes,
+                            got: bytes.len(),
+                        });
+                    }
+                    let plane: Vec<f32> = bytes[*off..*off + nbytes]
+                        .chunks_exact(4)
+                        .map(|c| f32::from_le_bytes([c[0], c[1], c[2], c[3]]))
+                        .collect();
+                    *off += nbytes;
+                    planes.push(plane);
                 }
-                let plane: Vec<f32> = bytes[*off..*off + nbytes]
-                    .chunks_exact(4)
-                    .map(|c| f32::from_le_bytes([c[0], c[1], c[2], c[3]]))
-                    .collect();
-                *off += nbytes;
-                planes.push(plane);
-            }
-            Ok(planes)
-        };
+                Ok(planes)
+            };
         let att_shift = read_planes(&mut off, att_len)?;
         let ffn_shift = read_planes(&mut off, ffn_len)?;
-        Ok(Self { wkv, att_shift, ffn_shift, fresh })
+        Ok(Self {
+            wkv,
+            att_shift,
+            ffn_shift,
+            fresh,
+        })
     }
 }
 
@@ -592,7 +625,10 @@ mod state_serde_tests {
         let s = sample();
         let mut c = s.clone();
         c.wkv[0][0] = 999.0;
-        assert_eq!(s.wkv[0][0], 0.5, "mutating the clone must not touch the original");
+        assert_eq!(
+            s.wkv[0][0], 0.5,
+            "mutating the clone must not touch the original"
+        );
     }
 
     #[test]
@@ -619,14 +655,20 @@ mod state_serde_tests {
     #[test]
     fn cosine_flags_divergence() {
         let s = sample();
-        assert!((super::wkv_cosine_similarity(&s, &s) - 1.0).abs() < 1e-5, "identical -> 1.0");
+        assert!(
+            (super::wkv_cosine_similarity(&s, &s) - 1.0).abs() < 1e-5,
+            "identical -> 1.0"
+        );
         let mut t = s.clone();
         for v in &mut t.wkv {
             for x in v {
                 *x = -*x;
             }
         }
-        assert!(super::wkv_cosine_similarity(&s, &t) < 0.0, "negated -> negative cosine");
+        assert!(
+            super::wkv_cosine_similarity(&s, &t) < 0.0,
+            "negated -> negative cosine"
+        );
     }
 
     #[test]
@@ -656,7 +698,11 @@ mod state_serde_tests {
         g.fork_member("a");
         g.member_mut("a").unwrap().wkv[0][0] = 7.0; // diverge a branch
         let seed = g.reconverge();
-        assert_eq!(seed.to_bytes(), base.to_bytes(), "reconverge seed == fresh base fork");
+        assert_eq!(
+            seed.to_bytes(),
+            base.to_bytes(),
+            "reconverge seed == fresh base fork"
+        );
         assert!(g.is_empty(), "diverged members dropped");
     }
 
@@ -692,7 +738,10 @@ mod state_serde_tests {
             }
         }
         // The int8 blob is smaller than the f32 blob (wkv 4x smaller).
-        assert!(bytes.len() < s.to_bytes().len(), "int8 state shrinks the footprint");
+        assert!(
+            bytes.len() < s.to_bytes().len(),
+            "int8 state shrinks the footprint"
+        );
     }
 
     #[test]
@@ -734,7 +783,10 @@ mod state_serde_tests {
         let mut bytes = s.to_bytes();
         assert!(RwkvState::from_bytes(&bytes[..16]).is_err());
         bytes[0] = b'X';
-        assert!(matches!(RwkvState::from_bytes(&bytes), Err(StateDecodeError::BadMagic)));
+        assert!(matches!(
+            RwkvState::from_bytes(&bytes),
+            Err(StateDecodeError::BadMagic)
+        ));
         assert!(RwkvState::from_bytes(&[]).is_err());
     }
 }
@@ -793,7 +845,10 @@ pub struct StateShareGroup {
 impl StateShareGroup {
     /// Start a group rooted at `base` (e.g. the planner's analyzed-repo state).
     pub fn new(base: RwkvState) -> Self {
-        Self { base, members: std::collections::HashMap::new() }
+        Self {
+            base,
+            members: std::collections::HashMap::new(),
+        }
     }
 
     /// Fork the base into a new member by `key` (memcpy). Returns `false` if the
@@ -1589,8 +1644,9 @@ impl Engine for RwkvSeven {
         } else {
             None
         };
-        let mut json_constraint =
-            req.json_mode.then(|| crate::json_constrain::JsonConstraint::new());
+        let mut json_constraint = req
+            .json_mode
+            .then(|| crate::json_constrain::JsonConstraint::new());
 
         // Decode.
         let decode_start = Instant::now();
@@ -1823,9 +1879,10 @@ impl Engine for RwkvSeven {
                     .unwrap_or(0));
             }
         }
-        Err(crate::Error::Unimplemented("rwkv7 prefill_slot: GPU unavailable"))
+        Err(crate::Error::Unimplemented(
+            "rwkv7 prefill_slot: GPU unavailable",
+        ))
     }
-
 }
 
 #[cfg(target_os = "macos")]
@@ -1856,13 +1913,11 @@ impl RwkvSeven {
                 );
             }
             for (l, shift_l) in cpu.att_shift.iter().enumerate() {
-                let p = (arena.att_shift.contents() as *mut f32)
-                    .add((slot * n_layer + l) * n_embd);
+                let p = (arena.att_shift.contents() as *mut f32).add((slot * n_layer + l) * n_embd);
                 std::ptr::copy_nonoverlapping(shift_l.as_ptr(), p, n_embd);
             }
             for (l, shift_l) in cpu.ffn_shift.iter().enumerate() {
-                let p = (arena.ffn_shift.contents() as *mut f32)
-                    .add((slot * n_layer + l) * n_embd);
+                let p = (arena.ffn_shift.contents() as *mut f32).add((slot * n_layer + l) * n_embd);
                 std::ptr::copy_nonoverlapping(shift_l.as_ptr(), p, n_embd);
             }
         }
@@ -2698,12 +2753,7 @@ pub mod gpu {
                 let w = ProjWeight::build(ctx, g, "output.weight", cfg.vocab_size, cfg.n_embd);
                 #[cfg(feature = "tq")]
                 let w = if let Some(ref store) = tq_store_opt {
-                    w.try_replace_with_tq(
-                        "output.weight",
-                        store,
-                        tq_res_store_opt.as_ref(),
-                        ctx,
-                    )?
+                    w.try_replace_with_tq("output.weight", store, tq_res_store_opt.as_ref(), ctx)?
                 } else {
                     w
                 };
@@ -2797,7 +2847,10 @@ pub mod gpu {
         let bytes = std::fs::read(path).map_err(crate::Error::Io)?;
         let tensors = crate::tq::read_strand(&bytes)
             .map_err(|e| crate::Error::Model(format!("TQ artifact parse: {}", e)))?;
-        Ok(tensors.into_iter().map(|st| (st.name.clone(), st)).collect())
+        Ok(tensors
+            .into_iter()
+            .map(|st| (st.name.clone(), st))
+            .collect())
     }
 
     /// Copy `n` f32 from a host slice into the head of a shared GPU buffer.
@@ -2924,7 +2977,9 @@ pub mod gpu {
 
             // Fused: w = exp(-0.606531*sigmoid(w0+w_raw)) AND a = sigmoid(a0+a_raw)
             // Both read/write lora_up (w_raw@[0..n), a_raw@[n..2n)); saves 1 dispatch/layer.
-            rwkv7_wa_prep_tcb(&mut tcb, &a.lora_up, up_a_off, &layer.w0, &a.w, &layer.a0, n)?;
+            rwkv7_wa_prep_tcb(
+                &mut tcb, &a.lora_up, up_a_off, &layer.w0, &a.w, &layer.a0, n,
+            )?;
 
             // k = Wk @ xk (slot 2) ; v = Wv @ xv (slot 3) — Q4_K projections
             layer.key.gemv(&mut tcb, &a.xs, slot_off(2), &a.k)?;

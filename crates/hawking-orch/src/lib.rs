@@ -29,7 +29,9 @@ pub mod tool_spec_decode;
 
 pub use adapters::{AdapterRegistry, AdapterSelection};
 pub use confidence::{self_consistency_vote, AnswerNormalizer, VoteResult};
-pub use escalation::{EscalationBudget, EscalationCascade, EscalationOutcome, SelfConsistencyProbe};
+pub use escalation::{
+    EscalationBudget, EscalationCascade, EscalationOutcome, SelfConsistencyProbe,
+};
 pub use executor::{Executor, HttpClientFactory};
 pub use grammar::{GrammarMatcher, GrammarSpec, GrammarValidation, ShellGrammarCompiler};
 pub use http_client::{GenerateRoute, HawkingHttpClient};

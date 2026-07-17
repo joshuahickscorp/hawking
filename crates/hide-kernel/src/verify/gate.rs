@@ -112,19 +112,28 @@ mod tests {
 
     #[test]
     fn deterministic_pass_accepts() {
-        assert_eq!(VerificationGate::default().decide(&[det_pass()]), GateDecision::Accept);
+        assert_eq!(
+            VerificationGate::default().decide(&[det_pass()]),
+            GateDecision::Accept
+        );
     }
 
     #[test]
     fn deterministic_fail_repairs() {
-        assert_eq!(VerificationGate::default().decide(&[det_fail()]), GateDecision::Repair);
+        assert_eq!(
+            VerificationGate::default().decide(&[det_fail()]),
+            GateDecision::Repair
+        );
     }
 
     #[test]
     fn deterministic_outranks_probabilistic() {
         // A high-scoring probabilistic PASS must NOT rescue a deterministic FAIL.
         let verdicts = vec![det_fail(), prob_pass(1.0)];
-        assert_eq!(VerificationGate::default().decide(&verdicts), GateDecision::Repair);
+        assert_eq!(
+            VerificationGate::default().decide(&verdicts),
+            GateDecision::Repair
+        );
     }
 
     #[test]
@@ -136,6 +145,9 @@ mod tests {
 
     #[test]
     fn no_oracle_is_inconclusive() {
-        assert_eq!(VerificationGate::default().decide(&[]), GateDecision::Inconclusive);
+        assert_eq!(
+            VerificationGate::default().decide(&[]),
+            GateDecision::Inconclusive
+        );
     }
 }

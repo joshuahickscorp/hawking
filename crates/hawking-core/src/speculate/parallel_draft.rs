@@ -14,7 +14,7 @@
 //!
 //! Sub-flag: HAWKING_EH_PARALLEL_DRAFT (unset = disabled).
 
-use crate::speculate::proposal::{Budget, Ctx, CostNs, Proposal, Proposer, Telemetry};
+use crate::speculate::proposal::{Budget, CostNs, Ctx, Proposal, Proposer, Telemetry};
 
 /// Maximum number of draft tokens this proposer will emit in one shot.
 /// Mirrors `Budget::MAX_DRAFT_LEN` (7) — the verifier's B≤8 fast path.
@@ -138,7 +138,9 @@ mod tests {
         let tel = Telemetry::default();
         let proposal = proposer.propose(&ctx, Budget::line(5), &tel);
         match proposal {
-            Proposal::TokenLine(v) => assert_eq!(v.len(), 5, "expected k=5 drafts from parallel head stub"),
+            Proposal::TokenLine(v) => {
+                assert_eq!(v.len(), 5, "expected k=5 drafts from parallel head stub")
+            }
             other => panic!("expected TokenLine, got len={}", other.draft_len()),
         }
     }
@@ -186,7 +188,8 @@ mod tests {
         let budget = Budget::line(10);
         assert!(
             budget.k <= MAX_DRAFT_LEN,
-            "Budget::line must cap k at MAX_DRAFT_LEN={}", MAX_DRAFT_LEN
+            "Budget::line must cap k at MAX_DRAFT_LEN={}",
+            MAX_DRAFT_LEN
         );
 
         let proposal = proposer.propose(&ctx, budget, &tel);
@@ -195,7 +198,8 @@ mod tests {
                 assert!(
                     v.len() <= MAX_DRAFT_LEN,
                     "propose must never emit more than MAX_DRAFT_LEN={} tokens, got {}",
-                    MAX_DRAFT_LEN, v.len()
+                    MAX_DRAFT_LEN,
+                    v.len()
                 );
             }
             other => panic!("expected TokenLine, got len={}", other.draft_len()),

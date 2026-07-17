@@ -152,9 +152,7 @@ impl Default for StubEmbeddingClient {
 impl EmbeddingClient for StubEmbeddingClient {
     fn embed<'a>(&'a self, texts: Vec<String>) -> BoxFuture<'a, Result<Vec<Vec<f32>>>> {
         let dim = self.dim;
-        Box::pin(async move {
-            Ok(texts.iter().map(|t| bag_of_chars(t, dim)).collect())
-        })
+        Box::pin(async move { Ok(texts.iter().map(|t| bag_of_chars(t, dim)).collect()) })
     }
     fn model_id(&self) -> String {
         self.model_id.clone()
@@ -408,7 +406,17 @@ mod tests {
         let out = crate::parse::parse_source("q.rs", "pub fn alpha() { compute(); }");
         let chunks = crate::parse::chunk_file("q.rs", "pub fn alpha() { compute(); }");
         store
-            .upsert_file("q.rs", "rust", "h", "ok", "pub fn alpha() { compute(); }", &out.symbols, &out.occurrences, &chunks, 1)
+            .upsert_file(
+                "q.rs",
+                "rust",
+                "h",
+                "ok",
+                "pub fn alpha() { compute(); }",
+                &out.symbols,
+                &out.occurrences,
+                &chunks,
+                1,
+            )
             .unwrap();
         let embedder = StubEmbeddingClient::default();
         // embed and store the chunk vector
@@ -431,8 +439,7 @@ mod tests {
     }
     impl EmbeddingClient for CountingEmbedder {
         fn embed<'a>(&'a self, texts: Vec<String>) -> BoxFuture<'a, Result<Vec<Vec<f32>>>> {
-            self.calls
-                .fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+            self.calls.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
             Box::pin(async move { Ok(texts.iter().map(|t| bag_of_chars(t, 16)).collect()) })
         }
         fn model_id(&self) -> String {

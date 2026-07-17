@@ -296,7 +296,10 @@ mod tests {
     async fn submit(log: &DynEventLog, sid: &str, text: &str) {
         let mut ev = NewEvent::user_intent(
             SessionId::from(sid.to_string()),
-            UserIntentEvent { intent: "submit_turn".to_string(), args: json!({ "text": text }) },
+            UserIntentEvent {
+                intent: "submit_turn".to_string(),
+                args: json!({ "text": text }),
+            },
         );
         ev.kind = "user.intent.submit_turn".to_string();
         log.append(ev).await.unwrap();
@@ -310,13 +313,21 @@ mod tests {
         submit(&log, "ses_a", "add a regression test").await;
         submit(&log, "ses_b", "port the tokenizer").await;
 
-        let (home, sessions) =
-            compute_home_and_sessions(&log, &store, Path::new("/tmp/hawking")).await.unwrap();
+        let (home, sessions) = compute_home_and_sessions(&log, &store, Path::new("/tmp/hawking"))
+            .await
+            .unwrap();
 
-        assert_eq!(home["digest"]["sessions"], json!(2), "two distinct sessions");
+        assert_eq!(
+            home["digest"]["sessions"],
+            json!(2),
+            "two distinct sessions"
+        );
         assert_eq!(home["digest"]["messages"], json!(3), "three submit_turns");
         // Token total is never claimed (not persisted to the log).
-        assert!(home["digest"].get("tokens").is_none(), "tokens omitted, not faked");
+        assert!(
+            home["digest"].get("tokens").is_none(),
+            "tokens omitted, not faked"
+        );
         assert_eq!(home["digest"]["heatmap_cols"], json!(HEATMAP_WEEKS));
         assert_eq!(home["workspace"]["repo"], json!("hawking"));
 

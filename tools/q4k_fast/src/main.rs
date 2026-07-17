@@ -28,9 +28,7 @@ fn main() -> Result<()> {
     let input = args.next().context("missing <input.gguf>")?;
     let output = args.next().context("missing <output.hawking>")?;
     if args.next().is_some() {
-        bail!(
-            "unexpected extra argument; usage: q4k_fast_recompute <input.gguf> <output.hawking>"
-        );
+        bail!("unexpected extra argument; usage: q4k_fast_recompute <input.gguf> <output.hawking>");
     }
     let input_path = PathBuf::from(input);
     let output_path = PathBuf::from(output);

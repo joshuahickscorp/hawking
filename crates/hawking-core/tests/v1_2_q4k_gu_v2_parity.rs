@@ -11,8 +11,8 @@
 
 #![cfg(target_os = "macos")]
 
-use hawking_core::kernels;
 use half::f16;
+use hawking_core::kernels;
 use rand::Rng;
 use rand_pcg::Pcg64Mcg;
 

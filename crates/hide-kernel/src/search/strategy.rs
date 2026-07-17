@@ -36,7 +36,10 @@ impl Candidate {
             .filter(|v| v.is_deterministic())
             .all(|v| v.status != VerdictStatus::Fail)
             && self.verdicts.iter().any(|v| v.is_deterministic());
-        let any_fail = self.verdicts.iter().any(|v| v.status == VerdictStatus::Fail);
+        let any_fail = self
+            .verdicts
+            .iter()
+            .any(|v| v.status == VerdictStatus::Fail);
         let tier = if det_ok {
             2
         } else if !any_fail {
@@ -189,7 +192,12 @@ mod tests {
             summary: String::new(),
             output: String::new(),
             score: 0.99,
-            verdicts: vec![Verdict::fail("build", OracleClass::Deterministic, "no", vec![])],
+            verdicts: vec![Verdict::fail(
+                "build",
+                OracleClass::Deterministic,
+                "no",
+                vec![],
+            )],
         };
         assert!(pass.rank_key() > fail.rank_key());
     }

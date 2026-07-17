@@ -162,8 +162,7 @@ pub fn verify_tree_cpu<T: ExactTarget>(
         // path[0] is the root token, which equals `bonus` — skip it for draft.
         let draft = &full_path[1..];
         let outcome = verifier.verify_line(target, bonus, bonus_pos, draft)?;
-        let score =
-            outcome.accepted.len() + if outcome.correction.is_some() { 1 } else { 0 };
+        let score = outcome.accepted.len() + if outcome.correction.is_some() { 1 } else { 0 };
         if score > best_score || best.is_none() {
             best_score = score;
             best = Some(outcome);
@@ -181,7 +180,10 @@ pub fn verify_tree_cpu<T: ExactTarget>(
 /// # Panics
 /// Panics if `tokens` is empty (there is no meaningful root token).
 pub fn build_line_as_tree(tokens: &[u32]) -> TokenTreeBuilder {
-    assert!(!tokens.is_empty(), "build_line_as_tree: tokens must not be empty");
+    assert!(
+        !tokens.is_empty(),
+        "build_line_as_tree: tokens must not be empty"
+    );
     let mut tree = TokenTreeBuilder::new(tokens[0]);
     let mut parent = 0usize;
     for &tok in &tokens[1..] {
@@ -323,10 +325,11 @@ mod tests {
         let _left2 = tree.add_child(left, 20);
         let _right = tree.add_child(0, 50);
 
-        let mut target = MockTarget { preds: vec![10, 99] };
+        let mut target = MockTarget {
+            preds: vec![10, 99],
+        };
         let verifier = Verifier::default();
-        let outcome =
-            verify_tree_cpu(&tree, &verifier, &mut target, 99, 5).unwrap();
+        let outcome = verify_tree_cpu(&tree, &verifier, &mut target, 99, 5).unwrap();
 
         assert_eq!(outcome.accepted, vec![10], "left branch token accepted");
         assert_eq!(
@@ -401,7 +404,7 @@ mod tests {
     fn tree_draft_k_basic() {
         let budget = Budget::line(6);
         assert_eq!(tree_draft_k(budget, 2), 3);
-        assert_eq!(tree_draft_k(budget, 7), 1);  // floor(6/7)=0 → clamp to 1
-        assert_eq!(tree_draft_k(budget, 0), 6);  // width.max(1)=1
+        assert_eq!(tree_draft_k(budget, 7), 1); // floor(6/7)=0 → clamp to 1
+        assert_eq!(tree_draft_k(budget, 0), 6); // width.max(1)=1
     }
 }

@@ -79,7 +79,10 @@ fn chain_from(genesis: &[u8], events: &[Event], verify_embedded: bool) -> ChainA
                     ok: false,
                     records,
                     chain_root: None,
-                    error: Some(format!("event {} failed canonical serialization: {err}", event.seq)),
+                    error: Some(format!(
+                        "event {} failed canonical serialization: {err}",
+                        event.seq
+                    )),
                 };
             }
         };

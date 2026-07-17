@@ -90,7 +90,11 @@ mod tests {
         cache.store(&k, &s).expect("store");
         assert!(cache.contains(&k));
         let back = cache.load(&k).expect("load");
-        assert_eq!(back.to_bytes(), s.to_bytes(), "instant-resume must be exact");
+        assert_eq!(
+            back.to_bytes(),
+            s.to_bytes(),
+            "instant-resume must be exact"
+        );
         let _ = std::fs::remove_dir_all(&dir);
     }
 

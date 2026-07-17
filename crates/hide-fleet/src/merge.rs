@@ -85,7 +85,11 @@ pub fn plan_footprints(footprints: &[Footprint]) -> FootprintPlan {
     FootprintPlan {
         parallel_groups: groups
             .into_iter()
-            .map(|g| g.into_iter().map(|i| footprints[i].job_id.clone()).collect())
+            .map(|g| {
+                g.into_iter()
+                    .map(|i| footprints[i].job_id.clone())
+                    .collect()
+            })
             .collect(),
         overlaps,
     }
@@ -183,11 +187,7 @@ impl TournamentSelector {
             })
             .collect();
         let needs_judge = leaders.len() > 1;
-        let beaten: Vec<String> = viable
-            .iter()
-            .skip(1)
-            .map(|c| c.job_id.clone())
-            .collect();
+        let beaten: Vec<String> = viable.iter().skip(1).map(|c| c.job_id.clone()).collect();
         MergeDecision {
             winner_job_id: Some(leader.job_id.clone()),
             beaten,
@@ -564,12 +564,12 @@ mod tests {
             Footprint::new("c", ["src/x.rs".to_string()]), // overlaps a
         ];
         let plan = plan_footprints(&fps);
-        assert!(plan
-            .overlaps
-            .contains(&("a".to_string(), "c".to_string())));
+        assert!(plan.overlaps.contains(&("a".to_string(), "c".to_string())));
         // a and b are disjoint → same parallel group; c opens a new one.
-        assert!(plan.parallel_groups.iter().any(|g| g.contains(&"a".to_string())
-            && g.contains(&"b".to_string())));
+        assert!(plan
+            .parallel_groups
+            .iter()
+            .any(|g| g.contains(&"a".to_string()) && g.contains(&"b".to_string())));
     }
 
     #[test]

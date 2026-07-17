@@ -52,7 +52,9 @@ impl Budget {
     pub const VERIFY_BATCH: usize = 8;
     pub const MAX_DRAFT_LEN: usize = 7;
     pub fn line(k: usize) -> Self {
-        Budget { k: k.min(Self::MAX_DRAFT_LEN) }
+        Budget {
+            k: k.min(Self::MAX_DRAFT_LEN),
+        }
     }
 }
 
@@ -113,13 +115,19 @@ pub trait Proposer {
     /// Taps target hidden states (EAGLE-family)? Base proposers: false. The
     /// router uses this to turn the target's 2 capture dispatches on only when a
     /// hidden proposer is live.
-    fn requires_hidden(&self) -> bool { false }
+    fn requires_hidden(&self) -> bool {
+        false
+    }
 
     /// Needs detok→retok text bridge (cross-tokenizer)? Base proposers: false.
-    fn requires_text_bridge(&self) -> bool { false }
+    fn requires_text_bridge(&self) -> bool {
+        false
+    }
 
     /// Predicted draft cost (ns) — the router's draft_ns input. Base proposers ~0.
-    fn cost_estimate(&self, _ctx: &Ctx<'_>, _budget: Budget) -> CostNs { 0 }
+    fn cost_estimate(&self, _ctx: &Ctx<'_>, _budget: Budget) -> CostNs {
+        0
+    }
 
     /// Produce a draft. MUST respect budget.k (≤7) and never mutate emitted
     /// output — only proposes; the verifier decides. May return empty/short.

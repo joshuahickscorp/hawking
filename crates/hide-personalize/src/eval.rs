@@ -15,9 +15,9 @@
 //!     declared-but-previously-unused `hawking-index`.
 
 use crate::records::Hash32;
+use hawking_index::{CodeIndex, Occurrence, SearchQuery};
 use hide_core::ids::now_micros;
 use hide_core::Result;
-use hawking_index::{CodeIndex, Occurrence, SearchQuery};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
@@ -264,12 +264,7 @@ impl EvalMiner {
         let mut auto_added = 0usize;
 
         for name in candidate_fns {
-            if self
-                .config
-                .name_blocklist
-                .iter()
-                .any(|b| name.contains(b))
-            {
+            if self.config.name_blocklist.iter().any(|b| name.contains(b)) {
                 continue;
             }
             if self.has_test_linkage(index, name).await? {
@@ -278,8 +273,7 @@ impl EvalMiner {
 
             // Locate the function's defining file (best-effort) for source_files.
             let defs = index.definition(name).await?;
-            let source_files: Vec<PathBuf> =
-                defs.iter().map(|o| PathBuf::from(&o.file)).collect();
+            let source_files: Vec<PathBuf> = defs.iter().map(|o| PathBuf::from(&o.file)).collect();
 
             // Confidence heuristics (§11.3.2).
             //
@@ -313,11 +307,7 @@ impl EvalMiner {
                 // the function name. The exact filter is the function name so the
                 // harness runs only the relevant test.
                 oracle: EvalOracle::Command {
-                    argv: vec![
-                        "cargo".into(),
-                        "test".into(),
-                        name.clone(),
-                    ],
+                    argv: vec!["cargo".into(), "test".into(), name.clone()],
                     cwd: None,
                     expected_exit: 0,
                 },
@@ -349,11 +339,7 @@ impl EvalMiner {
     /// index's structural reference occurrences (tree-sitter extracted), filtered
     /// to drop the definition's own file and any test path. A positive count
     /// means the function is load-bearing — actually used by product code.
-    async fn nontest_reference_count<I: CodeIndex>(
-        &self,
-        index: &I,
-        name: &str,
-    ) -> Result<usize> {
+    async fn nontest_reference_count<I: CodeIndex>(&self, index: &I, name: &str) -> Result<usize> {
         let refs: Vec<Occurrence> = index.references(name).await?;
         let count = refs
             .iter()
