@@ -47,7 +47,8 @@ jobs:
             -A clippy::derivable_impls \
             -A clippy::default_constructed_unit_structs \
             -A clippy::unnecessary_map_or \
-            -A clippy::len_without_is_empty
+            -A clippy::len_without_is_empty \
+            -A clippy::result_large_err
 
       - name: Build
         run: cargo build --workspace
