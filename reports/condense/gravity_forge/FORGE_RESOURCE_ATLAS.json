@@ -1,0 +1,35 @@
+{
+  "forge_device_placement": {
+    "expert_dequant_mxfp4": "CPU (numpy)",
+    "kmeans_assign_matmul": "MPS (GPU)",
+    "linalg_svd": "CPU fallback (aten::linalg_svd unsupported on MPS in torch 2.6.0)",
+    "randomized_hadamard": "MPS (GPU)"
+  },
+  "generated_at": "2026-07-17T23:13:08Z",
+  "honest_gaps": [
+    "GPU utilization % not yet measured (needs powermetrics/sudo or Metal counters).",
+    "SVD-heavy families (low_rank, repairability, grammar-correction) are CPU-bound today.",
+    "No pipeline overlap (source read / decode / fit / attest / write) yet; Section 12 pending."
+  ],
+  "machine": {
+    "chip": "Apple M3 Ultra",
+    "cores": 28,
+    "e_cores": 8,
+    "gpu": "MPS (Metal) available and built, torch 2.6.0",
+    "p_cores": 20,
+    "ram_gib": 96
+  },
+  "next_levers": [
+    "move SVD to a Metal-friendly path or randomized SVD on GPU",
+    "batch expert dequant on GPU",
+    "bounded producer/consumer overlap with policy caps"
+  ],
+  "schema": "hawking.gravity_forge.resource_atlas.v1",
+  "sha256": "b081c97432ee41e436d92cdbf2cbb593673dc13c97583c47d5fc67eaf6a9eed3",
+  "state_at_audit": {
+    "cpu_contention": "mop-final-mechanic-* (~6+ procs at ~100%, SEPARATE project)",
+    "disk_free_gib": 527,
+    "memory_free_pct": 94,
+    "swap_used_mb": 1255
+  }
+}

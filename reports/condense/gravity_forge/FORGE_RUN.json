@@ -1,0 +1,32 @@
+{
+  "does_not": [
+    "enable Gravity",
+    "emit an Event-Horizon Telegram",
+    "authorize any escape",
+    "spawn an unmanaged background daemon"
+  ],
+  "first_program": {
+    "hf_or_source_id": "openai/gpt-oss-120b",
+    "launch_gate": {
+      "gravity_enabled": false,
+      "heavy_lease_free": true,
+      "release_boundary_signed": false,
+      "resource_admission_passed": false,
+      "source_program_executable": true
+    },
+    "parent": "120B",
+    "run_mode_this_session": "synchronous bounded tournament (like the naive run), sealed cells; NOT a daemon; no admission bypass.",
+    "runner": "tools/condense/gravity_forge_run.py"
+  },
+  "generated_at": "2026-07-17T23:13:08Z",
+  "owner_intent": "One source-bound controller program owns the next Forge work as a real successor queue row (event-sourced, lease-controlled, resumable, drainable, checkpointed, Telegram-visible, exact-rate + representation-family + source-manifest + Doctor-policy bound, resource-admitted). Not an unmanaged background process.",
+  "schema": "hawking.gravity_forge.run_contract.v1",
+  "sequence": [
+    "120B F2 machinery + Forge calibration",
+    "685B source-bound Forge",
+    "1T",
+    "1.6T"
+  ],
+  "sha256": "a34c2735ed5f782e53426664d671344561ddcd66cf30215d45042563e44bb22e",
+  "status": "scaffold_contract_not_yet_wired"
+}
