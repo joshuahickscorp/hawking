@@ -1,0 +1,14 @@
+{
+  "candidates": {
+    "assets": 2360,
+    "hawking-adapters-extra": 8395,
+    "hawking-compat": 0,
+    "hawking-docs-archive": 28240,
+    "hawking-fixtures": 0,
+    "hawking-hide-desktop": 39357,
+    "hawking-lab": 8811
+  },
+  "note": "sealed packs, offline-hydratable; not deleted",
+  "schema": "hawking.pack_candidates.v1",
+  "total_packable_loc": 39411
+}

@@ -1,0 +1,8 @@
+{
+  "active_product_loc_estimate": 377452,
+  "gap_to_75k": 254700,
+  "kernel_loc_estimate": 329700,
+  "method": "heuristic; refine with AST/call-graph before committing to a floor",
+  "schema": "hawking.irreducible_kernel_estimate.v1",
+  "target_kernel": "50k-75k"
+}

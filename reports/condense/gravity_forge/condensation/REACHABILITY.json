@@ -1,0 +1,27 @@
+{
+  "caveat": "orphaned = not reachable from the two CLIs. Some orphaned modules are the live/retired doctor_v5 campaign (their own entrypoints + launchd), not dead code; they are the hawking-lab pack surface, sealed below, NOT deleted.",
+  "entrypoints": [
+    "tools/condense/succ_cli.py",
+    "tools/condense/eco_cli.py"
+  ],
+  "generated_at": "2026-07-18T00:18:21Z",
+  "kernel_floor_estimate": {
+    "combined": 137860,
+    "note": "true CLI-reachable kernel; the Rust engine dominates, the Python spine is small",
+    "python_reachable": 13873,
+    "rust_hawking": 123987
+  },
+  "python_tools_condense": {
+    "orphaned_fraction": 0.929,
+    "orphaned_loc": 180373,
+    "orphaned_modules": 279,
+    "reachable_loc": 13873,
+    "reachable_modules": 33
+  },
+  "rust": {
+    "hawking_kernel_loc": 123987,
+    "hide_product_loc": 32712
+  },
+  "schema": "hawking.condense_reachability.v1",
+  "sha256": "e614dd0302801887227656181139418c03a4a5f363a99e62ab7b2321e102e554"
+}
