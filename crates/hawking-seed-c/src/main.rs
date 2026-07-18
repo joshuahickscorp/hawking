@@ -19,6 +19,8 @@ use std::time::Instant;
 
 const SEED_COMPAT: &str = "seed-c-1";
 const WEIGHTS: &str = "models/SmolLM2-135M-Instruct-Q4_K_M.gguf";
+const GPTOSS_SHARD1: &str = "models/gpt-oss-120b/original/model--00001-of-00007.safetensors";
+const GPTOSS_REV: &str = "b5c939de8f754692c1647ca79fbf85e8c1e70f8a";
 const GOLDEN: &str = "reports/condense/gravity_forge/condensation/seed_b_golden.json";
 const PROMPT: &str = "The capital of France is";
 const MAX_TOK: usize = 16;
@@ -36,6 +38,7 @@ fn main() {
     let code = match a.get(1).map(String::as_str).unwrap_or("help") {
         "run" => cmd_run(),
         "f2" => cmd_f2(),
+        "gravity-run" => cmd_gravity_run(),
         "status" => cmd_status(),
         "inspect" => cmd_inspect(),
         "verify" => cmd_verify(),
@@ -220,6 +223,28 @@ fn cmd_run() -> i32 {
 }
 
 fn cmd_f2() -> i32 {
+    // Real parent-bound F2 when the authoritative GPT-OSS-120B source is present; else synthetic.
+    let shard = PathBuf::from(GPTOSS_SHARD1);
+    if shard.exists() {
+        match hawking_seed_c::gptoss::run(&shard, GPTOSS_REV, 0, (512, 512)) {
+            Ok(r) => {
+                println!("[f2-REAL] parent={} rev={} shard={}", r.parent, &r.revision[..12], r.shard);
+                println!("     layer {} router={} experts={} top{}={:?} -> expert {}", r.layer, r.router_tensor, r.n_experts, r.top_k, r.selected_experts, r.expert);
+                println!("     expert {} full shape {:?}, tested slice {:?}, source bytes read {}", r.expert_tensor, r.expert_full_shape, r.tested_slice, r.source_bytes_read);
+                println!("     reference checksum {}", &r.reference_output_checksum[..16]);
+                println!("     sub-bit: {:.4} BPW (<1.0={}), untreated_div {:.4} -> Doctor {:.4} (doctor {} bits, same-rate={})", r.complete_bpw, r.subbit_below_one_bpw, r.untreated_divergence, r.treated_divergence, r.doctor_bits, r.doctor_within_same_rate);
+                println!("     repeatable={}", r.repeatable);
+                let ok = r.subbit_below_one_bpw && r.treated_divergence <= r.untreated_divergence && r.repeatable;
+                if let Ok(mut m) = Machine::open(state_root()) {
+                    let _ = m.record(receipt("evaluation", serde_json::to_value(&r).unwrap_or(serde_json::json!({}))));
+                }
+                println!("[f2-REAL] {}", if ok { "GREEN (parent-bound sub-bit F2, direct compact, same-budget Doctor)" } else { "FAILED" });
+                return if ok { 0 } else { 3 };
+            }
+            Err(e) => return err(2, format!("real F2: {e}")),
+        }
+    }
+    eprintln!("hawking-seed-c: real GPT-OSS-120B source absent -> synthetic MoE fixture");
     let r = f2::run();
     println!("[f2] real_120b_present={} :: {}", r.real_120b_present, r.real_120b_note);
     println!("     source={} experts={} top_k={} selected={:?}", r.source, r.n_experts, r.top_k, r.selected_experts);
@@ -236,6 +261,24 @@ fn cmd_f2() -> i32 {
         0
     } else {
         3
+    }
+}
+
+
+fn cmd_gravity_run() -> i32 {
+    let shard = PathBuf::from(GPTOSS_SHARD1);
+    if !shard.exists() {
+        return err(2, "FAIL-CLOSED: GPT-OSS-120B source absent; cannot launch Gravity run");
+    }
+    let root = PathBuf::from("reports/condense/gravity_forge/condensation/gravity_120b_run");
+    let _ = std::fs::remove_dir_all(&root);
+    eprintln!("[gravity-run] launching ONE sub-bit-first Gravity run over gpt-oss-120b layer 0 (128 experts), pid {}", std::process::id());
+    match hawking_seed_c::gravity_run::run(&shard, GPTOSS_REV, &root, 0, 128, (256, 256)) {
+        Ok(()) => {
+            println!("[gravity-run] complete; controller log at {}", root.display());
+            0
+        }
+        Err(e) => err(2, format!("gravity run: {e}")),
     }
 }
 

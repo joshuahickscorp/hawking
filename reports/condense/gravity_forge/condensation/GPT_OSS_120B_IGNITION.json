@@ -1,0 +1,32 @@
+{
+  "all_seals_valid": true,
+  "all_subbit": true,
+  "at": "2026-07-18T23:18:59Z",
+  "checkpoints": 128,
+  "controller": "hawking-seed-c state machine (single)",
+  "exit": 0,
+  "first_healthy_checkpoint": {
+    "complete_bpw": 0.9897,
+    "doctor_same_rate": true,
+    "expert": 0,
+    "layer": 0,
+    "rate_rank_r": 8,
+    "sub_bit": true,
+    "treated_div": 0.8508,
+    "untreated_div": 0.9946
+  },
+  "launched": true,
+  "law_honored": "sub-bit-first; representation before BPW; Doctor same-rate; every Doctor byte counted; NO Escape Receipt (stayed sub-bit); F1/deferral never authorized escape",
+  "lease": "acquired then released on clean completion",
+  "no_duplicate_controller": true,
+  "no_predecessor_controller": true,
+  "no_runaway_disk": true,
+  "program_hash": "0c9658b92e7589b9",
+  "run": "gpt-oss-120b sub-bit-first Gravity run",
+  "schema": "hawking.120b_ignition.v1",
+  "scope": "layer 0, 128 real experts, bounded 256x256 reference slice each, MXFP4 read directly",
+  "seed_commit": "80b1f1c213f5ba2c97c736ade9d7fff62484da92",
+  "seed_tag": "hawking-seed-event-horizon",
+  "sha256": "0cbb0a78f0628d00a12bed3449f550068a0d29c929f5df67af673899edce4e45",
+  "source": "openai/gpt-oss-120b @ b5c939de8f754692c1647ca79fbf85e8c1e70f8a (RESTORED+VERIFIED, receipt ed905415)"
+}

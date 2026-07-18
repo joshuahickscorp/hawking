@@ -1,0 +1,23 @@
+{
+  "at": "2026-07-18T23:16:51Z",
+  "controller": "hawking-seed-c state machine (single controller + append-only sealed log)",
+  "evaluation": "output divergence vs BF16/MXFP4 reference on deterministic probes",
+  "evidence_schema": "per-expert sealed condensation Record {layer,expert,rate_rank_r,complete_bpw,untreated/treated divergence,doctor_bits,source_bytes}",
+  "exact_rational_rates": "latent-rank ladder -> increasing sub-bit BPW, all <1.0",
+  "family": "ternary latent factorization (Forge) + sparse f16 Doctor residual",
+  "law": "sub-bit-first: start below 1.0 BPW at an aggressive stress point; representation (latent rank) escalates BEFORE BPW; Doctor at same rate; every Doctor byte counted; NO Escape Receipt (stays sub-bit); F1/scheduler-deferral never authorize escape",
+  "parent": "openai/gpt-oss-120b",
+  "program_hash": "0c9658b92e7589b90ab8148fa4dd936f78cfd4f33b166fa046642e68663408b2",
+  "rate_ladder_r": [
+    4,
+    8,
+    16,
+    24
+  ],
+  "runtime": "Candidate C direct compact operator",
+  "schema": "hawking.gpt_oss_120b_gravity_program.v1",
+  "scope": "layer 0, experts 0..127 (bounded 256x256 reference slice per expert)",
+  "sha256": "da40c9be365cb182c2cf5aea9df2482659a8f828ce6008a40bf51b9c0f8ceaff",
+  "source_revision": "b5c939de8f754692c1647ca79fbf85e8c1e70f8a",
+  "stopping_rule": "all experts in scope checkpointed; sealed on completion"
+}

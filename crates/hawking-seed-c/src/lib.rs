@@ -22,7 +22,11 @@ pub mod gguf;
 pub mod ir;
 pub mod metal;
 pub mod model;
+pub mod gptoss;
+pub mod gravity_run;
+pub mod mxfp4;
 pub mod quant;
+pub mod safetensors;
 pub mod tokenizer;
 
 // sub-bit direct execution + Doctor rescue + the bounded MoE / 120B F2 bridge.

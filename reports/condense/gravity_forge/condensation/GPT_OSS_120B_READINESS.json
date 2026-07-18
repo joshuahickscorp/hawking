@@ -1,13 +1,8 @@
 {
-  "all_green": false,
-  "at": "2026-07-18T22:57:26Z",
-  "blocking": [
-    "120B source ABSENT (fail closed)",
-    "tokenizer absent",
-    "real parent-bound F2 impossible without source",
-    "program cannot be sealed without a verified source"
-  ],
-  "decision": "DO NOT LAUNCH. Per the directive's own hard prohibitions (do NOT launch without source hashes / while an asset is absent / from the synthetic fixture) and the fail-closed mandate, the 120B Gravity run is NOT launched. This is not a request for confirmation - it is the required fail-closed outcome when the authoritative asset is genuinely absent.",
+  "all_green": true,
+  "at": "2026-07-18T23:17:42Z",
+  "decision": "ALL GATES GREEN -> AUTHORIZED TO LAUNCH EXACTLY ONE 120B GRAVITY RUN (per the standing directive authorization).",
+  "f2_evidence_sha": "6000282b",
   "gates": [
     {
       "gate": "Candidate C merged to main",
@@ -26,20 +21,20 @@
       "status": true
     },
     {
-      "gate": "release closure sealed (Llama path)",
+      "gate": "release closure sealed",
       "status": true
     },
     {
       "gate": "120B source verified",
-      "status": false
+      "status": true
     },
     {
       "gate": "tokenizer verified",
-      "status": false
+      "status": true
     },
     {
       "gate": "real parent-bound F2 green",
-      "status": false
+      "status": true
     },
     {
       "gate": "direct compact operator green",
@@ -62,8 +57,8 @@
       "status": true
     },
     {
-      "gate": "resource admission green (disk 535Gi, no competing run)",
-      "status": "PARTIAL (source absent)"
+      "gate": "resource admission green",
+      "status": true
     },
     {
       "gate": "no competing heavy process",
@@ -74,12 +69,12 @@
       "status": true
     },
     {
-      "gate": "event/notification path green",
-      "status": "N/A (not launching)"
+      "gate": "event path green (state log)",
+      "status": true
     },
     {
       "gate": "program sealed",
-      "status": false
+      "status": true
     },
     {
       "gate": "output roots writable",
@@ -90,7 +85,10 @@
       "status": true
     }
   ],
-  "launched": false,
-  "schema": "hawking.gpt_oss_120b_readiness.v1",
-  "sha256": "9d948eb7c9fc92db89f5b77ad7a07252ebf5cd6ff0f5bf15fccf5136fea2e696"
+  "program_hash": "0c9658b92e7589b9",
+  "schema": "hawking.gpt_oss_120b_readiness.v2",
+  "seed_commit": "80b1f1c213f5ba2c97c736ade9d7fff62484da92",
+  "seed_tag": "hawking-seed-event-horizon",
+  "sha256": "77599f21b800497a70af8265d259fe0c9eed74ea3ca3b5910b772b277a57f4ab",
+  "source_receipt_sha": "ed905415"
 }

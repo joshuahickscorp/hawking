@@ -1,27 +1,92 @@
 {
-  "at": "2026-07-18T22:57:26Z",
-  "conclusion": "only a bare HF ref pointer exists; NO model files, NO tokenizer, NO hashes to verify. The authoritative source cannot be verified. Restoration requires a ~65-240 GiB gated download that cannot be performed autonomously (safety: downloads need explicit per-item permission; no verified authorized hashes on hand).",
-  "evidence": {
-    "blobs": "NONE (never materialized)",
-    "config": "absent",
-    "gguf": "absent",
-    "hf_cache": "/Users/scammermike/.cache/huggingface/hub/models--openai--gpt-oss-120b",
-    "safetensors": "absent",
-    "snapshots": "NONE",
-    "tokenizer": "absent"
+  "all_safetensors_headers_valid": true,
+  "all_shards_full_size": true,
+  "architecture": "gpt-oss MoE (128 experts, top-4, 36 layers, MXFP4 experts + BF16 attn/router)",
+  "at": "2026-07-18T23:17:15Z",
+  "config": {
+    "experts_per_token": 4,
+    "head_dim": 64,
+    "hidden_size": 2880,
+    "intermediate_size": 2880,
+    "num_attention_heads": 64,
+    "num_experts": 128,
+    "num_hidden_layers": 36,
+    "num_key_value_heads": 8,
+    "rope_theta": 150000,
+    "vocab_size": 201088
   },
-  "fail_closed": true,
-  "hashes_bound": false,
-  "license_bound": false,
-  "parent": "openai/gpt-oss-120b",
-  "revision_ref_found": "b5c939de8f754692c1647ca79fbf85e8c1e70f8a",
+  "distribution": "original/ (65.25 GB) + tokenizer assets",
+  "download_timestamp": "2026-07-18T23:17:15Z",
+  "expert_layout": "block.N.mlp.mlp1_weight/mlp2_weight (MXFP4); router block.N.mlp.gate.weight (BF16)",
+  "fail_closed": false,
+  "files": {
+    "original/config.json": {
+      "bytes": 377,
+      "sha256": "063aaa98e012cac330d58d18471700f0b0eb90bb15c58fb227809d45090f3e65"
+    },
+    "original/dtypes.json": {
+      "bytes": 19658,
+      "sha256": "5726a2558b998f57ff570570c46fd2c94a431dc69ff1a55d57df6c4955aec7bf"
+    },
+    "original/model--00001-of-00007.safetensors": {
+      "bytes": 10544040680,
+      "sha256": "68a8dc1f8e2e5996cb702f14332a25ddf3463daeab2df68e21ca09ef181203c3"
+    },
+    "original/model--00002-of-00007.safetensors": {
+      "bytes": 10488721680,
+      "sha256": "19b8f0d5c7dc3195c61a711d08384a1f85624f018186da541585c0f97ac61020"
+    },
+    "original/model--00003-of-00007.safetensors": {
+      "bytes": 10488721688,
+      "sha256": "0dbccd746d50e9543e8016d0a43ab4487c7f86d72349b1ef17abdfec509d0701"
+    },
+    "original/model--00004-of-00007.safetensors": {
+      "bytes": 10488721672,
+      "sha256": "bcc73cf6d18f96a2e62428758463157cc12768f410873152a50d3929a64cd049"
+    },
+    "original/model--00005-of-00007.safetensors": {
+      "bytes": 10488721680,
+      "sha256": "15fd69843e9cc6fdf2db0efe0cf0979b49a6ba84b3a38169b2fabc5479d04a7d"
+    },
+    "original/model--00006-of-00007.safetensors": {
+      "bytes": 10433402600,
+      "sha256": "3aedef2ee0a5a78a003b3f74fd6883033946b80097bf41e4f4715d95066f0588"
+    },
+    "original/model--00007-of-00007.safetensors": {
+      "bytes": 2316539800,
+      "sha256": "20d5dfcad1ed6c50aa3c0da7d3f08828dba72b5f58686a987bf3a8f01659cda6"
+    },
+    "original/model.safetensors.index.json": {
+      "bytes": 37796,
+      "sha256": "40ffac1e58f77c5307f20990cdb89910ad86961ed556952feda8aaa1c0d5ac97"
+    },
+    "tokenizer.json": {
+      "bytes": 27868174,
+      "sha256": "0614fe83cadab421296e664e1f48f4261fa8fef6e03e63bb75c20f38e37d07d3"
+    },
+    "tokenizer_config.json": {
+      "bytes": 4200,
+      "sha256": "9279e942392b742d633c7adbb89ebe002c98399db8926a7af5125c726f404070"
+    }
+  },
+  "harmony": "gpt-oss harmony chat format (tokenizer_config present)",
+  "immutable_revision": "b5c939de8f754692c1647ca79fbf85e8c1e70f8a",
+  "index_consistent": true,
+  "license": "Apache-2.0",
+  "n_files": 12,
+  "repository": "openai/gpt-oss-120b",
+  "router_layout": "gate.weight [128,2880] per layer",
   "schema": "hawking.gpt_oss_120b_source_receipt.v1",
-  "searched": [
-    "Downloads/hawking/models",
-    "~ and /Volumes for *gpt-oss*/*120b*.gguf",
-    "HF hub cache"
-  ],
-  "sha256": "c6c17f4558597cad8f8f4fd9b20fa42814719e3b197a4396997f617afcc40916",
-  "source_authority": "HuggingFace (openai/gpt-oss-120b)",
-  "status": "ABSENT / FAIL CLOSED"
+  "sha256": "ed905415fa57bd6092240b6f79129d853f660a8a5530a4275c11ed8120e97628",
+  "source_authority": "HuggingFace Hub (official)",
+  "source_root": "/Users/scammermike/Downloads/hawking/models/gpt-oss-120b",
+  "status": "RESTORED + VERIFIED",
+  "tensor_count": 543,
+  "tensor_formats": {
+    "attn/router/norm/embed": "BF16",
+    "experts": "MXFP4 (FP4 blocks + UE8 scales)"
+  },
+  "tokenizer": "o200k_harmony (tokenizer.json 27.9MB)",
+  "tokenizer_class": "PreTrainedTokenizerFast",
+  "verification": "every file sha256'd; all 7 shards full-size; safetensors headers parse (543 tensors); config + index + tokenizer present; no unexpected files in original/ closure"
 }
