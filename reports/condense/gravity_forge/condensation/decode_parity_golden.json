@@ -1,0 +1,34 @@
+{
+  "fixture": "SmolLM2-135M-Instruct-Q4_K_M.gguf",
+  "fixture_sha256": "ed5fa30c487b282e",
+  "max_tokens": 16,
+  "modes": {
+    "baseline_no_spec": {
+      "completion_tokens": null,
+      "draft_accepted": null,
+      "draft_rejected": null,
+      "returncode": 0,
+      "text": "Paris.\n\nParis is the capital city is the capital city is Paris is",
+      "text_sha256": "2d1559cf92cc5f1cab78faa7d44c40e4360817cbd5c8dd6f7400b054b7c978fe"
+    },
+    "exact_shared": {
+      "completion_tokens": null,
+      "draft_accepted": null,
+      "draft_rejected": null,
+      "returncode": 0,
+      "text": "Paris.\n\nParis is the capital city is the capital city is Paris is",
+      "text_sha256": "2d1559cf92cc5f1cab78faa7d44c40e4360817cbd5c8dd6f7400b054b7c978fe"
+    },
+    "suffix_automaton": {
+      "completion_tokens": null,
+      "draft_accepted": null,
+      "draft_rejected": null,
+      "returncode": 0,
+      "text": "Paris.\n\nParis is the capital city is the capital city is Paris is",
+      "text_sha256": "2d1559cf92cc5f1cab78faa7d44c40e4360817cbd5c8dd6f7400b054b7c978fe"
+    }
+  },
+  "profile": "exact",
+  "prompt": "The capital of France is",
+  "schema": "hawking.decode_parity_golden.v1"
+}
