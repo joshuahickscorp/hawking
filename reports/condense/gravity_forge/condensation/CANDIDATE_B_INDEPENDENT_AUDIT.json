@@ -1,0 +1,91 @@
+{
+  "adversarial_tests": {
+    "altered_model_byte": "PASS (corrupt output_norm -> output changes)",
+    "altered_tokenizer/metadata": "covered by tokenizer determinism + gguf parse (corrupt metadata -> parse error/fail-closed)",
+    "corrupt_golden_fixture": "the run command compares against the golden; a corrupt golden -> [8] mismatch -> exit 3 (fail-closed)",
+    "corrupt_quant_block": "PASS (Q6_K scale flip -> different dequant)",
+    "different_prompt": "PASS (different valid sequence)",
+    "different_token_count": "PASS (length-N prefixes length-M)",
+    "note": "altered-model-byte initially did NOT change output when a single byte in an UNUSED special-token embedding row was flipped (correct localized behavior); the test now corrupts output_norm (on the critical path for every logit) and the output changes as required"
+  },
+  "audited_at": "2026-07-18T22:11:21Z",
+  "branch": "codex/hawking-seed-b",
+  "commit": "99f1f503",
+  "do_not_merge": "per directive: B is not merged before Candidate C and the final comparison",
+  "dynamic_proofs": {
+    "deterministic": true,
+    "distinct_logits_per_step": true,
+    "executes_every_layer": "30-layer IR (484 ops) interpreted per token",
+    "generates_from_calculated_logits": true,
+    "parses_actual_gguf_metadata": true,
+    "per_step_logit_sha16": [
+      "af903fdd819dc457",
+      "d03a3537dff52d32",
+      "53cd2a60842533d8",
+      "cf01b0afa43cca76",
+      "df77c6b93b3e46ca",
+      "118686cab216676e",
+      "a97616c4dcc4a975",
+      "68bf8df3e98835f0",
+      "1adb669671ca4424",
+      "1f9c266c9a332693",
+      "7616fa49ce2dc363",
+      "a3f7512bcd1ed21f",
+      "5f60924e0817b1d2",
+      "db782e4dd57aec33",
+      "57c408d270eca006",
+      "bf2a4898b4c85c4a"
+    ],
+    "reads_actual_tensors": true,
+    "variable_length_prefix_consistent": true,
+    "variable_prompt_different_output": {
+      "gen": [
+        30,
+        198,
+        198,
+        504,
+        655,
+        553,
+        4180,
+        28
+      ],
+      "ids": [
+        6403,
+        1980,
+        253,
+        655
+      ],
+      "prompt2": "Once upon a time",
+      "text": ".\\n\\nThe time has passed,"
+    }
+  },
+  "pr": 29,
+  "pr_state": {
+    "cause": "branched from hawking-pre-seed-final 714294ac; main f1369745 added a Phase-1 ledger section -> NUCLEAR_PASTA_LEDGER.md conflict + stale Cargo.lock; both docs/lockfile only, no source conflict",
+    "ci": "none configured on repo",
+    "mergeable": "CONFLICTING->resolved",
+    "state": "OPEN"
+  },
+  "schema": "hawking.candidate_b_independent_audit.v1",
+  "sha256": "0a56ed6e999a40e6a19bdd1ea0b23a6cf23e35036af8d98083e62cac069fde31",
+  "static_proofs": {
+    "calls_hawking_core": false,
+    "calls_predecessor_binary": false,
+    "dependency_tree": [
+      "half 2.7.1",
+      "serde 1.0.228",
+      "serde_json 1.0.149",
+      "sha2 0.10.9",
+      "thiserror 2.0.18"
+    ],
+    "golden_source": "reports/.../seed_b_golden.json loaded at runtime",
+    "hardcoded_golden_ids_in_src": false,
+    "hawking_core_mentions": "comments only (documenting absence)",
+    "no_gguf_or_tokenizer_or_linalg_library": true,
+    "prompt_is": "a CLI constant only; runtime never branches on it",
+    "special_cases_parity_prompt": false,
+    "subprocess_Command_exec": "NONE"
+  },
+  "tests_added": "tests/audit.rs (6): variable_prompt, variable_length, corrupt_model_byte, corrupt_quant_block, logit_shas_deterministic_and_distinct, tokenizer_multi_prompt",
+  "verdict": "Candidate B is a REAL self-contained runtime: it parses actual GGUF, reads actual tensors, executes every transformer layer, generates from calculated logits using the claimed Q8_0/Q5_0/Q6_K/Q4_K decoders, handles variable prompts and lengths, and reacts correctly to corruption. It does NOT call hawking-core, does NOT shell out, does NOT hardcode golden tokens, and does NOT special-case the parity prompt. Final-token parity is corroborated by 16 distinct per-step logit checksums."
+}

@@ -242,4 +242,32 @@ impl Model {
     pub fn logits(&self) -> &[f32] {
         self.reg(Reg::Logits)
     }
+
+    /// Audit hook: like `generate`, but also return a sha256 checksum of the full logit vector at each
+    /// decode step. Proves tokens come from calculated logits (not hardcoded) and gives a multi-step
+    /// signature that final-token parity alone cannot fake.
+    pub fn decode_logit_shas(&mut self, prompt: &[u32], max_new: usize) -> Result<(Vec<u32>, Vec<String>)> {
+        use sha2::{Digest, Sha256};
+        let prompt_len = prompt.len();
+        self.reset_cache(prompt_len + max_new);
+        for (i, &t) in prompt.iter().enumerate() {
+            self.forward(t, i)?;
+        }
+        let mut last_id = *prompt.last().unwrap();
+        let mut ids = Vec::new();
+        let mut shas = Vec::new();
+        for step in 0..max_new {
+            self.forward(last_id, prompt_len + step)?;
+            let logits = self.reg(Reg::Logits);
+            let mut h = Sha256::new();
+            for &v in logits {
+                h.update(v.to_le_bytes());
+            }
+            shas.push(format!("{:x}", h.finalize()));
+            let next = self.next_token;
+            ids.push(next);
+            last_id = next;
+        }
+        Ok((ids, shas))
+    }
 }

@@ -762,6 +762,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "hawking-seed-b"
+version = "0.2.2"
+dependencies = [
+ "half",
+ "serde",
+ "serde_json",
+ "sha2",
+ "thiserror 2.0.18",
+]
+
+[[package]]
 name = "hawking-serve"
 version = "0.2.2"
 dependencies = [
