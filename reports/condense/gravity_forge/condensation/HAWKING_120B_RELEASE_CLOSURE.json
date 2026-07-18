@@ -1,0 +1,28 @@
+{
+  "at": "2026-07-18T22:58:26Z",
+  "bindings_missing": [
+    "120B source manifest",
+    "120B tokenizer",
+    "expert byte ranges",
+    "router layout",
+    "source hashes",
+    "license binding"
+  ],
+  "bindings_present": {
+    "doctor": "subbit rescue",
+    "forge_families": [
+      "ternary sub-bit",
+      "int8"
+    ],
+    "gravity_law": "gravity.rs",
+    "hardware": "Apple M3 Ultra",
+    "rollback": "hawking-seed-event-horizon",
+    "seed_binary": "target/release/hawking-seed-c (0.60MB)",
+    "validation_vectors": "23 tests"
+  },
+  "reason": "the authoritative GPT-OSS-120B source is ABSENT (only a bare HF ref b5c939de; no blobs/tokenizer/hashes). A 120B release closure cannot be content-addressed without the source, tokenizer, and expert/router layout.",
+  "schema": "hawking.120b_release_closure.v1",
+  "sha256": "0fd13ad7555b175dede875082f8b3a0628e51757af079f015e1917ae01ff6703",
+  "status": "BLOCKED (fail-closed)",
+  "unblocks_when": "authoritative openai/gpt-oss-120b rev b5c939de restored + every file/tokenizer verified + hashes/license bound (a gated ~65-240GiB download requiring explicit authorization and disk)"
+}

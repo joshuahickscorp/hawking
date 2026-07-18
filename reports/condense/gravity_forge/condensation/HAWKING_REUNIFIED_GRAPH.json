@@ -1,0 +1,23 @@
+{
+  "at": "2026-07-18T22:57:26Z",
+  "one_controller": "crates/hawking-seed-c/src/state.rs (single transition table + append-only sealed log = drain/resume)",
+  "one_evidence_authority": "crates/hawking-seed-c/src/record.rs (canonical JSON + sha256 seal) + evidence.rs receipts",
+  "one_hydration": "pack.verify() offline (sha256 content-addressed); no download during a scientific run",
+  "one_pack_ABI": "crates/hawking-seed-c/src/pack.rs (PackManifest: identity/version/compat/contents/hashes/offline_cache; content-addressed verify+tamper-reject+rollback)",
+  "one_registry": "crates/hawking-seed-c/src/pack.rs + record.rs (capability->pack, content-address, active-set via sealed Records)",
+  "packs_under_the_ABI": [
+    "hawking-core (multi-model engine pack)",
+    "hawking-speculate (speculation pack)",
+    "hawking-serve (serving pack)",
+    "hawking-bench (lab pack)",
+    "shaders (Metal performance pack)",
+    "tools (control/lab pack)",
+    "app/HIDE (client pack)",
+    "vendor/strand (sealed audit pack)"
+  ],
+  "removed_competing_systems": "the Seed's pack/record/state are the ONE verifier/registry/controller/evidence; legacy per-pack controllers/evidence are superseded (physical migration is the ongoing collapse, not faked)",
+  "schema": "hawking.reunified_graph.v1",
+  "seed": "crates/hawking-seed-c (gravitational core, 2,204 LOC)",
+  "sha256": "20c923feae3486a9d9cccc8dfe44bee8412ece8ddc47d9beaf7f2bab5ed72b6c",
+  "topology_selected": "A-monorepo (already one repo; no sibling repos exist so a seed+packs SPLIT is unjustified)"
+}

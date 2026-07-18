@@ -1,0 +1,186 @@
+{
+  "at": "2026-07-18T22:57:26Z",
+  "edges": [
+    {
+      "depends_on": "hawking-core",
+      "from": "hawking"
+    },
+    {
+      "depends_on": "hawking-core",
+      "from": "hawking-serve"
+    },
+    {
+      "depends_on": "hawking-speculate",
+      "from": "hawking-core"
+    },
+    {
+      "depends_on": "hawking-core",
+      "from": "hawking-bench"
+    },
+    {
+      "depends_on": "NONE (self-contained; NO hawking-core)",
+      "from": "hawking-seed-c"
+    },
+    {
+      "from": "hawking-seed-c",
+      "replaces": "hawking-core FOR the Llama/SmolLM direct-quant path"
+    },
+    {
+      "from": "tools",
+      "loads": "models + parity fixtures"
+    }
+  ],
+  "global_accounting": {
+    "GLOBAL_ACTIVE_OWNED_LOC": 142812,
+    "active_workspace_crates_rust_LOC": 74451,
+    "generated_excluded_LOC": 64860,
+    "hide_app_source_LOC": 6359,
+    "in_repo_shaders_LOC": 10215,
+    "owned_inactive_vendor_audit_only_LOC": 47490,
+    "owned_python_tooling_LOC": 51098,
+    "seed_core_LOC": 2204,
+    "stale_worktree_duplication": "~360k (reclaimable, excluded)",
+    "tools_rust_LOC": 689
+  },
+  "nodes": [
+    {
+      "branch": "main",
+      "capabilities": [
+        "authority",
+        "direct-quant runtime",
+        "Metal LM-head",
+        "sub-bit operator",
+        "Doctor rescue",
+        "MoE-ready IR",
+        "pack verify",
+        "CLI"
+      ],
+      "commit": "6715ae458da0e9c7cdbd7aa64dca67e4fa3209e5",
+      "loc": 2204,
+      "node": "hawking-seed-c (SEED = gravitational core)",
+      "path": "crates/hawking-seed-c",
+      "rollback": "tag hawking-seed-event-horizon / hawking-pre-seed-final",
+      "source_authority": "self",
+      "status": "ACTIVE/SELECTED",
+      "tests": 23
+    },
+    {
+      "capabilities": [
+        "multi-arch models",
+        "Metal kernel bank",
+        "serving",
+        "prefix cache",
+        "attention/MLA",
+        "GGUF",
+        "quant"
+      ],
+      "loc": 60118,
+      "node": "hawking-core (legacy multi-model engine)",
+      "path": "crates/hawking-core",
+      "rollback": "git history",
+      "source_authority": "self",
+      "status": "ACTIVE (superseded FOR the Llama/SmolLM path by the Seed; still sole provider for RWKV/Qwen/DeepSeek/MoE/serving/kernel-bank)",
+      "tests": "~123 core"
+    },
+    {
+      "capabilities": [
+        "generate/tokenize/bench CLI over hawking-core"
+      ],
+      "consumers": [
+        "users"
+      ],
+      "loc": 4089,
+      "node": "hawking (CLI)",
+      "path": "crates/hawking",
+      "status": "ACTIVE"
+    },
+    {
+      "capabilities": [
+        "OpenAI-compatible serving"
+      ],
+      "loc": 4404,
+      "node": "hawking-serve",
+      "path": "crates/hawking-serve",
+      "status": "ACTIVE"
+    },
+    {
+      "capabilities": [
+        "speculative decode: propose/verify/accept/metrics"
+      ],
+      "loc": 4157,
+      "node": "hawking-speculate",
+      "note": "extracted from hawking-core (NUCLEAR PASTA D), decode-parity green",
+      "path": "crates/hawking-speculate",
+      "status": "ACTIVE pack"
+    },
+    {
+      "capabilities": [
+        "kernel/server benchmarks"
+      ],
+      "loc": 1010,
+      "node": "hawking-bench",
+      "path": "crates/hawking-bench",
+      "status": "ACTIVE lab pack"
+    },
+    {
+      "capabilities": [
+        "Metal kernels"
+      ],
+      "loc": 10215,
+      "node": "shaders (Metal, in hawking-core)",
+      "path": "crates/hawking-core/shaders",
+      "status": "ACTIVE performance"
+    },
+    {
+      "capabilities": [
+        "condense ladders",
+        "parity harness",
+        "Gravity succ_*",
+        "eco_*",
+        "studio",
+        "analysis"
+      ],
+      "loc": 51098,
+      "node": "tools (owned Python control/tooling)",
+      "path": "tools",
+      "status": "ACTIVE lab/control"
+    },
+    {
+      "capabilities": [
+        "chat/code IDE client"
+      ],
+      "loc": 6359,
+      "node": "HIDE/app client",
+      "path": "app",
+      "status": "ACTIVE client (source; dist excluded)"
+    },
+    {
+      "capabilities": [
+        "strand quant track"
+      ],
+      "loc": 47490,
+      "node": "vendor/strand-quant + strand-decode-kernel",
+      "path": "vendor",
+      "rollback": "tag quant-handoff",
+      "status": "OWNED-INACTIVE (absorbed, audit-only, workspace-EXCLUDED, byte-identical mirror)"
+    },
+    {
+      "loc": "~360k duplicated",
+      "node": "stale .claude/worktrees (x3)",
+      "note": "excluded from all owned counts",
+      "path": ".claude/worktrees",
+      "status": "RECLAIMABLE DUPLICATION (orphaned agent worktrees; full-tree copies; NOT distinct owned implementation; not git-registered)"
+    },
+    {
+      "loc": 64860,
+      "node": "app/dist bundles",
+      "path": "app/dist",
+      "status": "GENERATED (built bundle; excluded from owned counts)"
+    }
+  ],
+  "remote": "git@github.com:joshuahickscorp/hawking.git",
+  "repositories_discovered": 1,
+  "schema": "hawking.owned_graph.v1",
+  "sha256": "68e735cfd7a2ba368d96e6be699117b830c13cb1420ed37a872c7fa6879626cf",
+  "sibling_repos": "NONE (single monorepo; no worktrees beyond main; no submodules)"
+}

@@ -1,0 +1,22 @@
+{
+  "at": "2026-07-18T22:57:26Z",
+  "bindings": {
+    "default_pack": "self-contained",
+    "doctor": "subbit rescue",
+    "forge": "subbit ternary + int8",
+    "gravity_law": "crates/hawking-seed-c/src/gravity.rs",
+    "parity_golden": "seed_b_golden.json (2d1559cf)",
+    "rollback": "hawking-pre-seed-final / hawking-seed-event-horizon",
+    "seed_binary": "target/release/hawking-seed-c",
+    "tokenizer": "GGUF-embedded (GPT-2 BPE)",
+    "validation": "23 tests"
+  },
+  "main_commit": "6715ae458da0e9c7cdbd7aa64dca67e4fa3209e5",
+  "offline": true,
+  "schema": "hawking.release_closure.v1",
+  "sealed_for": "SmolLM/Llama direct-quant scientific path",
+  "seed_binary_bytes": 601584,
+  "seed_tag": "hawking-seed-event-horizon",
+  "sha256": "7c388922f95d4a7f3d6a947b1194baabf7fed6b04da321400716de6de867867c",
+  "status": "SEALED for Llama path"
+}

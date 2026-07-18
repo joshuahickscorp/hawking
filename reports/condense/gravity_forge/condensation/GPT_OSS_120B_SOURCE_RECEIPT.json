@@ -1,0 +1,27 @@
+{
+  "at": "2026-07-18T22:57:26Z",
+  "conclusion": "only a bare HF ref pointer exists; NO model files, NO tokenizer, NO hashes to verify. The authoritative source cannot be verified. Restoration requires a ~65-240 GiB gated download that cannot be performed autonomously (safety: downloads need explicit per-item permission; no verified authorized hashes on hand).",
+  "evidence": {
+    "blobs": "NONE (never materialized)",
+    "config": "absent",
+    "gguf": "absent",
+    "hf_cache": "/Users/scammermike/.cache/huggingface/hub/models--openai--gpt-oss-120b",
+    "safetensors": "absent",
+    "snapshots": "NONE",
+    "tokenizer": "absent"
+  },
+  "fail_closed": true,
+  "hashes_bound": false,
+  "license_bound": false,
+  "parent": "openai/gpt-oss-120b",
+  "revision_ref_found": "b5c939de8f754692c1647ca79fbf85e8c1e70f8a",
+  "schema": "hawking.gpt_oss_120b_source_receipt.v1",
+  "searched": [
+    "Downloads/hawking/models",
+    "~ and /Volumes for *gpt-oss*/*120b*.gguf",
+    "HF hub cache"
+  ],
+  "sha256": "c6c17f4558597cad8f8f4fd9b20fa42814719e3b197a4396997f617afcc40916",
+  "source_authority": "HuggingFace (openai/gpt-oss-120b)",
+  "status": "ABSENT / FAIL CLOSED"
+}

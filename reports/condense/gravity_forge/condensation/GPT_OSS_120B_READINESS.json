@@ -1,0 +1,96 @@
+{
+  "all_green": false,
+  "at": "2026-07-18T22:57:26Z",
+  "blocking": [
+    "120B source ABSENT (fail closed)",
+    "tokenizer absent",
+    "real parent-bound F2 impossible without source",
+    "program cannot be sealed without a verified source"
+  ],
+  "decision": "DO NOT LAUNCH. Per the directive's own hard prohibitions (do NOT launch without source hashes / while an asset is absent / from the synthetic fixture) and the fail-closed mandate, the 120B Gravity run is NOT launched. This is not a request for confirmation - it is the required fail-closed outcome when the authoritative asset is genuinely absent.",
+  "gates": [
+    {
+      "gate": "Candidate C merged to main",
+      "status": true
+    },
+    {
+      "gate": "reunified topology selected",
+      "status": true
+    },
+    {
+      "gate": "global pack audit complete",
+      "status": true
+    },
+    {
+      "gate": "one Pack ABI active",
+      "status": true
+    },
+    {
+      "gate": "release closure sealed (Llama path)",
+      "status": true
+    },
+    {
+      "gate": "120B source verified",
+      "status": false
+    },
+    {
+      "gate": "tokenizer verified",
+      "status": false
+    },
+    {
+      "gate": "real parent-bound F2 green",
+      "status": false
+    },
+    {
+      "gate": "direct compact operator green",
+      "status": true
+    },
+    {
+      "gate": "same-budget Doctor green",
+      "status": true
+    },
+    {
+      "gate": "Gravity vectors green",
+      "status": true
+    },
+    {
+      "gate": "controller replay green",
+      "status": true
+    },
+    {
+      "gate": "crash/resume green",
+      "status": true
+    },
+    {
+      "gate": "resource admission green (disk 535Gi, no competing run)",
+      "status": "PARTIAL (source absent)"
+    },
+    {
+      "gate": "no competing heavy process",
+      "status": true
+    },
+    {
+      "gate": "rollback green",
+      "status": true
+    },
+    {
+      "gate": "event/notification path green",
+      "status": "N/A (not launching)"
+    },
+    {
+      "gate": "program sealed",
+      "status": false
+    },
+    {
+      "gate": "output roots writable",
+      "status": true
+    },
+    {
+      "gate": "heavy run still unlaunched",
+      "status": true
+    }
+  ],
+  "launched": false,
+  "schema": "hawking.gpt_oss_120b_readiness.v1",
+  "sha256": "9d948eb7c9fc92db89f5b77ad7a07252ebf5cd6ff0f5bf15fccf5136fea2e696"
+}
