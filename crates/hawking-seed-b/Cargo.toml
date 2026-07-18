@@ -1,0 +1,24 @@
+[package]
+name = "hawking-seed-b"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Candidate B: a self-contained Hawking Seed runtime that executes SmolLM-135M without the predecessor engine"
+
+[[bin]]
+name = "hawking-seed-b"
+path = "src/main.rs"
+
+# Self-contained: NO hawking-core, no linear-algebra crate, no GGUF/tokenizer library. Model math,
+# GGUF reading, dequant, the tokenizer, and the forward pass are all implemented in this crate.
+# `half` is used only as the IEEE f16<->f32 numeric primitive (not model math), matching the
+# fixture's f16 scales bit-for-bit; serde/sha2 back the Record seal; clap is the CLI.
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+sha2 = { workspace = true }
+thiserror = { workspace = true }
+half = { workspace = true }
