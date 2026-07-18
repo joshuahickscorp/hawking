@@ -465,3 +465,15 @@ committed (approved) artifact.
   a capability bar; the science stays negative. 48 tests green. Commits HELD for approval (house
   rule). Next: begin Stage B condensation (needs commit approval) OR keep hardening Stage A (true
   residual-stream F2 via the block attention layer; wire the forge program as a live successor row).
+- CLEAN SLATE hardened + PUSHED + Stage B BEGUN (2026-07-17, directives "commit A + activation-aware
+  fit" then "push all tracks then push stage a begin and end stage b"). TRUE residual-stream F2 (built
+  block-0 attention gptoss_block.py; corrected the science: true-residual sub-bit output divergence
+  0.69 vs token-embedding-proxy 1.26 vs synthetic 0.61) + Forge wired as a live successor queue row.
+  Activation-aware fitting (pack_transform_pq_actaware, AWQ-style): 0.679 -> 0.651 (-4.1% matched
+  bytes) = DIRECTIONAL only, NOT a WIN. All 5 commits PUSHED to origin/codex/gravity-forge; draft
+  PR #26. Stage B BEGUN: census 568,921 tracked LOC; reachability true CLI kernel ~137,860 (Rust
+  engine 123,987 + Python spine 13,873), 180,373 LOC (93% of tools/condense, 279 modules) ORPHANED =
+  hawking-lab pack surface (SEALED manifest, no move). CONDENSATION_PLAN.md grounds 175k->50k. Stage B
+  NOT ended (honest: multi-week per-checkpoint descent + orphaned modules include live doctor_v5
+  campaign machinery; refused to fake). 50 tests green. Next: triage 8 pre-existing doctor_v5
+  test-collection failures + resolve campaign lifecycle, then execute the 175k checkpoint under a green gate.
