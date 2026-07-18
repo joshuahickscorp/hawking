@@ -1,0 +1,69 @@
+{
+  "branch": "codex/hawking-seed-b",
+  "candidate": "B (self-contained execution-IR runtime)",
+  "delegates_model_math_to_predecessor": false,
+  "generated_at": "2026-07-18T04:28:53Z",
+  "honest_notes": "Decode is a pure scalar f32 CPU path (correctness-first per directive): 9.68 tok/s end-to-end 16-token generation. Weights are dequantized to f32 at load (peak RSS 726MB) rather than kept quantized-resident like the predecessor - the explicit memory/perf tradeoff, reported not hidden. Metal/SIMD and quantized-resident execution are future optimizations, not needed for parity.",
+  "measurements": {
+    "binary_bytes": 551712,
+    "build_time_release_s": 4.06,
+    "candidate_b_CLI_LOC": 299,
+    "candidate_b_adapter_LOC": 118,
+    "candidate_b_default_pack_LOC": 0,
+    "candidate_b_forge_doctor_LOC": 139,
+    "candidate_b_hydrated_LOC": 1945,
+    "candidate_b_runtime_LOC": 972,
+    "candidate_b_seed_LOC": 417,
+    "candidate_b_ship_LOC": 1945,
+    "generate_16tok_ms": 1653,
+    "generate_tok_per_s": 9.68,
+    "model_load_ms": 65,
+    "peak_rss_bytes": 726106112,
+    "per_file_impl": {
+      "adapter": 118,
+      "doctor": 84,
+      "evidence": 25,
+      "forge": 55,
+      "gguf": 257,
+      "gravity": 82,
+      "ir": 58,
+      "lib": 38,
+      "main_cli": 299,
+      "model": 212,
+      "ops": 88,
+      "pack": 56,
+      "quant": 137,
+      "record": 83,
+      "state": 133,
+      "tokenizer": 220
+    },
+    "ship_LOC_incl_tests": 2609,
+    "startup_s": 0.11
+  },
+  "parity": {
+    "full_decode": "GREEN bit-identical: 16 token ids == golden + completion-text sha 2d1559cf",
+    "staged": "tokenizer ids + full 16-token greedy sequence (black-box golden from predecessor); the predecessor exposes no white-box tensor dump, so intermediate stages are covered by the self-consistency requirement that the full forward reproduce every golden id bit-for-bit (one-block parity is subsumed by exact full-decode parity)",
+    "tokenizer": "GREEN (prompt ids [504,3575,282,4649,314] == golden)"
+  },
+  "runtime_contents": "from-scratch: GGUF reader, Q8_0/Q5_0/Q6_K/Q4_K dequant, GPT-2 byte-level BPE, compact execution IR (Reg file + 10 op kinds), scalar CPU ops (RMSNorm f64 / NeoX RoPE / out-major GEMV / softmax / SiLU), KV cache, Llama forward, greedy sampler. No hawking-core, no linear-algebra or model/GGUF/tokenizer library. Deps: serde/serde_json/sha2/thiserror + half (f16 primitive).",
+  "schema": "hawking.seed_metrics.v1",
+  "sha256": "1116a975fc924cc6bb8a37e156c128d8e61e7db739dcb04b162b94e9c46a94a7",
+  "targets": {
+    "cli<=750": "299 PASS",
+    "runtime+adapter<=8000": "1090 PASS",
+    "seed<=2000": "417 PASS",
+    "ship<=12000": "1945 PASS",
+    "stretch<=10000": "1945 PASS"
+  },
+  "tests": "20 unit (quant x3, ops x5, record x2, state x4, gravity x2, pack x1, forge x2, doctor x1) + 1 integration (full_decode_is_bit_identical_to_golden, real 105MB fixture) = 21 green",
+  "vertical_path": "GREEN",
+  "vs_candidate_a": {
+    "a_delegates": true,
+    "a_seed_core": 1068,
+    "a_ship": 53481,
+    "b_delegates": false,
+    "b_ship": 1945,
+    "binary": "B 0.55MB vs A 1.68MB",
+    "ship_ratio": "~27.5x smaller and self-contained"
+  }
+}
