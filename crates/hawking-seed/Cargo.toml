@@ -1,0 +1,22 @@
+[package]
+name = "hawking-seed"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Hawking Seed: the smallest stable object from which Gravity, Forge, Doctor, runtime, and evidence are summoned"
+
+[[bin]]
+name = "hawking-seed"
+path = "src/main.rs"
+
+[dependencies]
+hawking-core = { path = "../hawking-core" }   # the default runtime pack (model math)
+serde = { workspace = true }
+serde_json = { workspace = true }
+sha2 = { workspace = true }
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+clap = { workspace = true }

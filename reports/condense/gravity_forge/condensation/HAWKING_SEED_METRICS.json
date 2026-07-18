@@ -1,0 +1,41 @@
+{
+  "branch": "codex/hawking-seed-a",
+  "candidate": "A (Rust microkernel)",
+  "generated_at": "2026-07-18T03:52:55Z",
+  "honest_framing": "seed CORE = 1,068 LOC (under the 10k gravitational target) and is a REAL functional microkernel, NOT hollow. The model math (decode) is the OWNED default runtime pack (hawking-core 52k), reported in ship LOC per Section 7/20/276 - not hidden, not external. The open question for a truly-small SHIP is whether the 52k runtime engine itself can shrink (execution-IR / kernel-bank work). Candidate A answers: the AUTHORITY/CONTROL/EVIDENCE/GRAVITY core is ~1k LOC.",
+  "measurements": {
+    "api_LOC": "(via CLI; no separate API yet)",
+    "binary_bytes": 1678112,
+    "cli_LOC": 287,
+    "default_runtime_pack": "hawking-core (OWNED, reported separately; provides the model math the runtime interface delegates to)",
+    "default_runtime_pack_LOC": 52413,
+    "doctor_iface_LOC": 102,
+    "evidence_LOC": 37,
+    "forge_iface_LOC": 70,
+    "gravity_LOC": 107,
+    "pack_loader_LOC": 74,
+    "record_LOC": 100,
+    "runtime_iface_LOC": 108,
+    "seed_core_LOC": 1068,
+    "seed_ship_LOC": "1068 + 52413 (hawking-core default runtime pack) = 53481",
+    "seed_test_LOC": 216,
+    "state_controller_LOC": 149
+  },
+  "schema": "hawking.seed_metrics.v1",
+  "sha256": "c511618e1f99c87a66817aaa11dc8fb77c4d78ac5f006b44762f3864e1de9308",
+  "tests": "14 seed lib vectors green (record seal/tamper, canonical identity, state transitions, crash-resume, drain-resume, gravity invariants x3, doctor byte conservation, pack tamper/rollback, forge roundtrip); vertical-path integration green",
+  "vertical_path": "GREEN",
+  "vertical_path_result": {
+    "artifact_identity": "SmolLM sha ed5fa30c",
+    "decode": "16 tok, sha 2d1559cf92cc",
+    "doctor": "outlier-column treatment, rel_err 0.0004->0.0003, total 12.75 BPW (base+doctor counted), within budget",
+    "evidence": "sealed evaluation receipt",
+    "forge": "int8 per-column, 10.5 BPW, round-trip rel_err 0.0033",
+    "gravity": "sub-bit default + escape-without-receipt denied + F1/deferral cannot escape (34-invariant law re-expressed, 4 Rust vectors)",
+    "pack": "verified offline (content-addressed, tamper-rejecting)",
+    "parity": "GREEN bit-identical to predecessor golden",
+    "record": "sealed + tamper-detected",
+    "resume": "8 sealed records replayed, all seals valid, state=Sealed",
+    "state": "9-state machine, transitions persisted+sealed"
+  }
+}

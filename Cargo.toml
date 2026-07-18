@@ -4,6 +4,7 @@ members = [
     "crates/hawking",
     "crates/hawking-core",
     "crates/hawking-speculate",
+    "crates/hawking-seed",
     "crates/hawking-serve",
     "crates/hawking-bench",
     "tools/q4k_fast",
