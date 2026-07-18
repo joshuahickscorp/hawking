@@ -2,7 +2,7 @@
   "checkpoints": {
     "C0_capsule": "DONE (legacy capsule sealed, 171k Python subtracted, tag clean-slate-c0-capsule)",
     "C1_100k_product": "MET - owned active product src = 98,420 <= 100k (tests + vendor tracked separately per Section 12); orphaned Python absent, HIDE packed, capsule works, 165 py tests green, workspace builds",
-    "C2_75k_kernel": "ATTEMPTED - clean crate extraction removed 50k Rust (HIDE cluster); remaining hawking-core is a real inference engine (kernels 13,177 + model cores + metal 3,759 + tokenizer + quant + tq). Honest floor ~85-90k > 75k without engine condensation",
+    "C2_75k_kernel": "ATTEMPTED - HIDE cluster (50k) + 5 non-frontier model adapters (3.6k, build-gated, workspace+tests green) extracted to packs => product 94,785. speculate/ (6.3k) is woven into the engine config (SpeculateMode) and model forward paths (eagle5_head in deepseek/qwen) - removing it deletes a real spec-decode CAPABILITY, a trade-off decision, not a clean move. Honest kernel floor ~85-90k > 75k without capability removal or parity-gated engine condensation.",
     "C3_50k_kernel": "NOT REACHED - the irreducible engine (~45k) + frontier models (~8k) + CLI bin (11.5k) + serve (5.7k) + Python spine (19k) floor well above 50k"
   },
   "does_not": [
@@ -11,7 +11,12 @@
     "hide implementation in packs it still ships",
     "claim the final codebase Event Horizon is sealed"
   ],
-  "generated_at": "2026-07-18T01:03:24Z",
+  "extractions_executed": {
+    "C2a_hide_cluster": "50,351 LOC (13 crates)",
+    "C2b_model_adapters": "3,611 LOC (5 models)",
+    "total": "53,962 Rust LOC to packs"
+  },
+  "generated_at": "2026-07-18T01:15:09Z",
   "irreducible_subsystem_budget_hawking_core_src": {
     "backend": 1502,
     "cache": 1124,
@@ -28,13 +33,14 @@
   },
   "measured_kernel_after_hide_extraction": {
     "python_active": 19154,
-    "rust_hawking_src": 79266,
-    "total": 98420
+    "rust_hawking_src": 75631,
+    "total": 94785
   },
-  "measured_owned_active_product_loc": 98420,
+  "measured_owned_active_product_loc": 94785,
+  "remaining_to_75k": "~20k: either remove spec-decode + bench (capability/feature trade-off, ~7k) OR condense the genuine engine (kernels 13k / qwen 10.6k, parity-gated). The ~45k engine core is irreducible.",
   "schema": "hawking.codebase_escape_receipt.v1",
-  "sha256": "12bab3ea158bce7df827dab15dc7306fbd1dd088163350adf45d45393d91f93e",
-  "status": "PROVISIONAL",
+  "sha256": "36266765cd7c023c5230e743b67471ae963d98b29ea246aa519a3d3e934f0f7a",
+  "status": "PROVISIONAL (updated after C2b model extraction)",
   "two_architecture_requirement_section26": {
     "architecture_A_compact_monolithic": "NOT ATTEMPTED - a compact-monolithic rewrite of the ~80k Rust engine is a genuine multi-week engineering effort, not faked here",
     "architecture_B_minimal_kernel_plus_packs": "ATTEMPTED + partially achieved (capsule + HIDE pack + hawking-lab manifest); reached product 98k"
