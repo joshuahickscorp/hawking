@@ -1,7 +1,7 @@
 mod bench_kernel;
 mod bench_server;
 mod capture;
-mod studio;
+// `studio` (quant-campaign orchestration) extracted to the hawking-lab pack (Architecture B).
 
 use anyhow::Result;
 use clap::{Parser, Subcommand};
@@ -501,11 +501,6 @@ enum Cmd {
     Version {
         #[arg(long)]
         weights: Option<PathBuf>,
-    },
-    /// Studio proof/lifecycle control surface. Read-only/dry-run by default.
-    Studio {
-        #[command(subcommand)]
-        cmd: studio::StudioCmd,
     },
     /// Run a list of prompts through one in-process engine, emitting
     /// per-prompt b3sum hashes of the decoded text. Replaces the
@@ -1050,7 +1045,6 @@ fn main() -> Result<()> {
             max_routed_expert_ram_mb,
         ),
         Cmd::Version { weights } => version_main(weights),
-        Cmd::Studio { cmd } => studio::run(cmd),
         Cmd::BatchHash {
             weights,
             prompts,
