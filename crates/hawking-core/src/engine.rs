@@ -257,7 +257,11 @@ impl GenStats {
     /// this is equivalent to the "user_ngram" accept rate.
     pub fn draft_accept_rate(&self) -> f32 {
         let total = self.draft_accepted + self.draft_rejected;
-        if total == 0 { 0.0 } else { self.draft_accepted as f32 / total as f32 }
+        if total == 0 {
+            0.0
+        } else {
+            self.draft_accepted as f32 / total as f32
+        }
     }
 
     /// Track 0.2 / 8.3 — serialize ONLY the scalar observability fields to a
@@ -302,6 +306,55 @@ pub trait Engine: Send + Sync {
 
     fn model_arch(&self) -> &str {
         "unknown"
+    }
+
+    /// Spine A — live context introspection. Native context length in tokens as
+    /// declared by the model config (GGUF `*.context_length` / `max_position_
+    /// embeddings`). `None` when the engine cannot determine it. This is the
+    /// floor, not the number HIDE shows — the effective ceiling is native scaled
+    /// by the `.tq` multiplier (computed by the runtime, not here).
+    fn context_length_native(&self) -> Option<usize> {
+        None
+    }
+
+    /// Spine A — effective context ceiling in tokens, if the engine itself knows
+    /// it (e.g. a `.tq`-aware engine). Default `None`: the runtime computes
+    /// `native * tq_multiplier` instead. Never hardcode a constant here.
+    fn context_length_effective(&self) -> Option<usize> {
+        None
+    }
+
+    /// Spine A — constant recurrent-state footprint in bytes for SSMs (RWKV-7).
+    /// `None` for transformers (which grow a KV cache instead). Used to report
+    /// per-slot state occupancy and to frame the "recall horizon" reading.
+    fn recurrent_state_size_bytes(&self) -> Option<usize> {
+        None
+    }
+
+    /// M1 "pass state, not text" -- serialize the engine's current recurrent
+    /// state to a portable byte blob (RWKV `DSSSMV1`). `Ok` only for engines
+    /// that carry a constant-size recurrent state; transformers (whose "state"
+    /// is a context-growing KV cache) keep the `Unimplemented` default. Captures
+    /// the CPU-resident state -- a GPU-resident state needs a readback first.
+    fn save_checkpoint(&self) -> Result<Vec<u8>> {
+        Err(crate::Error::Unimplemented("save_checkpoint"))
+    }
+
+    /// Restore a recurrent state previously produced by [`save_checkpoint`] or
+    /// [`fork_state`], replacing the live state with NO re-prefill -- the M1
+    /// "instant resume" primitive. Default `Unimplemented`.
+    fn load_checkpoint(&mut self, _bytes: &[u8]) -> Result<()> {
+        Err(crate::Error::Unimplemented("load_checkpoint"))
+    }
+
+    /// Fork the current recurrent state into an independent, portable copy that
+    /// can seed a sibling decode (the M1 "fork & try N" / telepathic-handoff
+    /// primitive). Copy-not-merge by construction: there is deliberately NO
+    /// inverse that blends two states (interpolating recurrent states is
+    /// unsound). Defaults to a `save_checkpoint` snapshot the caller loads
+    /// elsewhere.
+    fn fork_state(&self) -> Result<Vec<u8>> {
+        self.save_checkpoint()
     }
 
     /// Continuous-batching helper: tokenize a request prompt without starting
@@ -554,7 +607,9 @@ pub trait Engine: Send + Sync {
         }
         let positions: Vec<usize> = (0..ids.len()).collect();
         let rows = self.forward_tokens_for_test(&ids, &positions)?;
-        let last = rows.last().ok_or_else(|| crate::Error::Model("embed: no output rows".into()))?;
+        let last = rows
+            .last()
+            .ok_or_else(|| crate::Error::Model("embed: no output rows".into()))?;
         let norm: f32 = last.iter().map(|v| v * v).sum::<f32>().sqrt().max(1e-8);
         Ok(last.iter().map(|v| v / norm).collect())
     }

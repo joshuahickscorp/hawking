@@ -1,0 +1,39 @@
+{
+  "condensation_gate": "BLOCKED - do not begin structural repository condensation.",
+  "conditions": {
+    "active_campaign_safe": {
+      "evidence": "No active campaign worker exists; nothing was disturbed.",
+      "value": true
+    },
+    "doctor_treatment_real": {
+      "evidence": "repairability_shaped applies + bills low-rank and sparse-row corrections at F1, but a treatment is not 'real' until it re-runs at F2; F2 is not yet reachable.",
+      "value": false
+    },
+    "f2_parent_bound_evidence": {
+      "evidence": "Output-divergence is measured on real experts but with SYNTHETIC activations; real-activation F2 is blocked on the missing tokenizer + end-to-end path.",
+      "value": false
+    },
+    "giant_adapter_contracts_stable": {
+      "evidence": "685B/1T/1.6T Forge adapter contracts not yet scaffolded/validated.",
+      "value": false
+    },
+    "gravity_controller_integrated": {
+      "evidence": "Forge run is not yet a successor-queue row / lease-controlled program; a FORGE_RUN.json contract exists but is not wired into succ_gravity.",
+      "value": false
+    },
+    "packed_runtime_real": {
+      "evidence": "The numpy reference MoE forward runs packed experts (output-divergence), but there is no execute-from-compact Metal path and no end-to-end runtime.",
+      "value": false
+    },
+    "subbit_packer_real": {
+      "evidence": "tools/condense/gravity_forge.py: transform_pq / shared_expert_grammar / repairability_shaped pack + round-trip real GPT-OSS-120B experts with exact whole-artifact byte accounting; selftest green.",
+      "value": true
+    }
+  },
+  "derivation": "OPERATOR-DECLARED from the audited evidence in each condition, NOT yet auto-derived from live probes. Only subbit_packer_real is machine-checkable today (python3.12 tools/condense/gravity_forge.py --selftest). Making every condition programmatically computed from a live check - so this gate can BLOCK the condensation program automatically rather than by convention - is itself required work before the gate is trusted to auto-authorize.",
+  "generated_at": "2026-07-17T23:13:08Z",
+  "purpose": "Gates the future codebase-condensation program. Condensation may begin ONLY when all conditions are true (Section 17). Currently FALSE -> condensation BLOCKED.",
+  "readiness_passes": false,
+  "schema": "hawking.gravity_forge.readiness.v1",
+  "sha256": "bfd471ab4a5b651e422c23993b61539eba1245a02126170fc0ff009effbb4df5"
+}

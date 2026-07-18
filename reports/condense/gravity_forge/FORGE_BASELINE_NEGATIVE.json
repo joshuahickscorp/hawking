@@ -1,0 +1,50 @@
+{
+  "authorizes_gravity_escape": false,
+  "does_not_prove": [
+    "protected capabilities fail below one BPW",
+    "an activation-aware representation fails",
+    "a learned transform fails",
+    "a structured binary factorization fails",
+    "expert-specific grammar plus shared bases fails",
+    "progressive expert slices fail",
+    "sparse exceptions fail",
+    "conditional reconstruction fails",
+    "QAT or distillation fails",
+    "generated-weight execution fails",
+    "routing-aware protection fails",
+    "a hybrid representation fails",
+    "a sub-bit artifact is impossible"
+  ],
+  "evidence": {
+    "families": [
+      "vector_codebook",
+      "low_rank_factor"
+    ],
+    "per_rate_best_rel_error": {
+      "1/1 (1.0bpw)": 0.576,
+      "2/1 (2.0bpw)": 0.364,
+      "4/5 (0.8bpw)": 0.628
+    },
+    "per_rate_verdict": {
+      "1/1": "collapse",
+      "2/1": "degraded",
+      "4/5": "collapse"
+    },
+    "source_cells": "reports/condense/subbit_frontier/gravity_120b_run/rate_*.json"
+  },
+  "generated_at": "2026-07-17T23:13:08Z",
+  "hf_or_source_id": "openai/gpt-oss-120b",
+  "is_capability_claim": false,
+  "is_event_horizon": false,
+  "metric": "weight_space_relative_frobenius_error",
+  "metric_is_proxy": true,
+  "must_not": [
+    "seal as the 120B Event Horizon",
+    "emit a Telegram claiming the scientific Event Horizon is 2-4 BPW",
+    "authorize a Gravity Escape Receipt on this evidence"
+  ],
+  "parent": "120B",
+  "schema": "hawking.gravity_forge.baseline_negative.v1",
+  "seal_statement": "BASELINE NEGATIVE: naive weight-space RVQ and simple shared-codebook expert genome do not preserve weight reconstruction sufficiently at sub-bit rates on the sampled GPT-OSS 120B expert matrices.",
+  "sha256": "ea7b45660832fdc369304a428ca5c4a0961f17fbd6c21533d1ded36780b7f580"
+}

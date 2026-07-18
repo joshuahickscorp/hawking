@@ -10,7 +10,7 @@
 #   - M3 multi-prompt with TRIALS=10 for tight error bars
 #   - M9 variance hunt — 30 trials on best config for confidence
 #   - RAM watcher in addition to disk watcher
-#   - All idempotent; nohup + disown survives Claude crash
+#   - All idempotent; nohup + disown survives agent crash
 #
 # Estimated: ~6-8 h compute. No commits made.
 

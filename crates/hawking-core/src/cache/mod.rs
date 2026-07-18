@@ -8,6 +8,8 @@
 //! system-prompt-heavy workloads.
 
 pub mod prefill_disk;
+pub mod prefix_lint;
+pub mod sstate_disk;
 
 use crate::Result;
 

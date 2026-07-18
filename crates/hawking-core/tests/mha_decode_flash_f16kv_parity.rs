@@ -13,10 +13,10 @@
 //! the long-context (4096 = 32 tiles) regime this kernel exists to enable — a
 //! length the O(seq)-shmem `mha_decode_f16kv` cannot reach near the 32 KB cap.
 
+use half::f16;
 use hawking_core::attn::mha_decode_step;
 use hawking_core::kernels;
 use hawking_core::metal::{MetalContext, PinnedBuffer, TokenCommandBuffer};
-use half::f16;
 
 mod common;
 use common::*;

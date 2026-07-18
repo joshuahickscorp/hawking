@@ -3,14 +3,14 @@
 #
 # Self-restarting watchdog wrapper around build_corpus.py.
 #
-# Designed so a Claude-Code session can be the only supervisor — the user
+# Designed so a coding agent session can be the only supervisor — the user
 # kicks this script once and walks away. The script:
 #
 #   - Loops forever, kicking build_corpus.py with --skip-existing
 #     (default). Each parquet shard is idempotent: crashed runs resume
 #     from the next unfinished shard with no data loss.
 #   - Writes a JSON heartbeat to $HEARTBEAT_PATH every 30 s while
-#     build_corpus.py is alive. Claude reads this to track progress.
+#     build_corpus.py is alive. The agent reads this to track progress.
 #   - Sleeps with exponential backoff after crashes (cap 5 min) so OOM
 #     loops don't spin the CPU.
 #   - Exits cleanly when $STOP_FLAG_PATH exists, when --max-sequences
@@ -97,7 +97,7 @@ EOF
     mv "$HEARTBEAT_PATH.tmp" "$HEARTBEAT_PATH"
 }
 
-# Ensure the venv exists; if not, the user (or a Claude session) needs
+# Ensure the venv exists; if not, the user (or an agent session) needs
 # to run Step 1 of the runbook first. Don't auto-pip-install here — that
 # can be a multi-GB download and the user should consent.
 if [ ! -d "$VENV_PATH" ]; then

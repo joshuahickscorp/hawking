@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # tools/training/overnight_resilient_chain.sh
 #
-# Survives Claude crash. Detaches via nohup; reparents to launchd.
+# Survives agent crash. Detaches via nohup; reparents to launchd.
 # 4 modules chained, each idempotent. If a module fails, the next one
 # still runs — partial progress always banked.
 #
@@ -11,7 +11,7 @@
 #   M3: Multi-prompt sweep (story/code/factual/math × all levers) (~1h)
 #   M4: Wrap memo with all findings (~5 min)
 #
-# Total: ~3-4h compute. If Claude dies, this keeps running — check
+# Total: ~3-4h compute. If the agent dies, this keeps running — check
 # progress via: tail -f artifacts/runs/overnight_chain/chain.log
 # or: cat artifacts/runs/overnight_chain/status.json
 #
@@ -181,7 +181,7 @@ else
     {
         echo "# Multi-prompt sweep — $(stamp)"
         echo ""
-        echo "All trials are seed-0, 64 tokens, 3 trials. Paired delta valid (Claude live OK)."
+        echo "All trials are seed-0, 64 tokens, 3 trials. Paired delta valid (agent live OK)."
         echo ""
 
         # Prompt set covering diverse cases

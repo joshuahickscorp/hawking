@@ -1,0 +1,42 @@
+{
+  "project": "hawking",
+  "receipt_version": "0.2",
+  "repro_level": "R1",
+  "claim_type": "baseline",
+  "machine": "MacBook Pro M3 Pro, 18GB unified",
+  "machine_class": "M3Pro-18",
+  "os_build": "macOS 26.x (Darwin 25.6.0)",
+  "model_family": "qwen",
+  "source_model": "Qwen/Qwen2.5-0.5B-Instruct (local scratch/qwen-05b)",
+  "source_sha256": "fdf756fa7fcbe7404d5c60e26bff1a0c8b8aa1f72ced49e7dd0210fe288fb7fe",
+  "source_precision": "bf16",
+  "source_license": "apache-2.0",
+  "derivative_policy": "see LICENSE_DERIVATIVE",
+  "condensed_artifact": "scratch/qwen-05b-tq3.safetensors.json (per-tensor bpw ledger)",
+  "artifact_sha256": "f93ebc13c7aafd3738fbd3a457bf6e607f53e8cc5e818d62fa45ed105381a5d8",
+  "recipe": [
+    "tq3",
+    "per-tensor-3bit"
+  ],
+  "effective_bpw": 3.653537,
+  "nominal_bpw": 3.0,
+  "peak_rss_gb": 1.2,
+  "wall_clock_s": 0.0,
+  "tokens_per_second": 0.0,
+  "baseline_q4_load_result": "not-run",
+  "baseline_mlx4_result": "not-run",
+  "baseline_best_effort": true,
+  "multiwindow_n": 0,
+  "quality_gate": "warn",
+  "hawking_commit": "42a0e9ed49a0c43f1e2e6cd7ed805ecd02c6f4b0",
+  "commands": [
+    "python3.12 tools/condense/audit_ladder.py scratch/qwen-05b 0.5B essential reports/condense/qwen-05b",
+    "python3.12 tools/condense/emit_receipt.py"
+  ],
+  "raw_logs": [
+    "scratch/qwen-05b-tq3.safetensors.json"
+  ],
+  "notes": "REAL R1 baseline receipt. effective_bpw is the n-weighted aggregate over 168 condensed tensors (357,826,560 params) from the tq3 ledger. 0.5B is a sanity/baseline rung and never sets a verdict (\u00a719.4 L0); PPL/KL were not measured in this ledger so those fields are omitted \u2014 a baseline receipt does not have to clear the \u00a76 window bar. claim_type=baseline + baseline_best_effort=true => cannot be cited as a win (rules R6/R8 inert for baselines).",
+  "prompt_suite_hash": "d79802d7777bc27d1268bd042433f7f98f0d920177f4845bb8d52e4f0eb3a86b",
+  "prompt_suite_version": "v1"
+}

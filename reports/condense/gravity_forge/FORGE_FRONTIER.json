@@ -1,0 +1,1004 @@
+{
+  "authorizes_escape": false,
+  "blocks": [
+    0,
+    35
+  ],
+  "capability_parity": false,
+  "cells": [
+    {
+      "base_bpw": 0.5158,
+      "block": 0,
+      "cell_sha256": "7bb039e0a948309ac9ef55ec1aaf595082fb930084604de1ce5194b7804307be",
+      "config": {
+        "dim": 32,
+        "k": 256,
+        "stages": 2
+      },
+      "doctor_bpw": 0.0,
+      "expert": 0,
+      "f1_verdict": "collapse",
+      "f1_weight_rel_error": 0.75729,
+      "family": "naive_rvq",
+      "kind": "single_tensor",
+      "organ": "mlp1",
+      "overhead_bpw": 0.0,
+      "physical_bytes": 1069632,
+      "seconds": 1.09,
+      "shape": [
+        5760,
+        2880
+      ],
+      "signal": "weight_proxy",
+      "target_bpw": 0.5,
+      "whole_artifact_bpw": 0.5158
+    },
+    {
+      "base_bpw": 0.752,
+      "block": 0,
+      "cell_sha256": "2d26361994480b9797f6245f39dee7e49ae7e6a09d932283682fee82feb16b05",
+      "config": {
+        "dim": 16,
+        "k": 64,
+        "stages": 2
+      },
+      "doctor_bpw": 0.0,
+      "expert": 0,
+      "f1_verdict": "collapse",
+      "f1_weight_rel_error": 0.68003,
+      "family": "naive_rvq",
+      "kind": "single_tensor",
+      "organ": "mlp1",
+      "overhead_bpw": 0.0,
+      "physical_bytes": 1559360,
+      "seconds": 0.36,
+      "shape": [
+        5760,
+        2880
+      ],
+      "signal": "weight_proxy",
+      "target_bpw": 0.8,
+      "whole_artifact_bpw": 0.752
+    },
+    {
+      "base_bpw": 0.5,
+      "block": 0,
+      "cell_sha256": "0592aea6f10edf2995812d93a01545d7690b90b42ef48e0a5aac8cb948397010",
+      "config": {
+        "rank": 60
+      },
+      "doctor_bpw": 0.0,
+      "expert": 0,
+      "f1_verdict": "collapse",
+      "f1_weight_rel_error": 0.92177,
+      "family": "low_rank",
+      "kind": "single_tensor",
+      "organ": "mlp1",
+      "overhead_bpw": 0.0,
+      "physical_bytes": 1036864,
+      "seconds": 3.43,
+      "shape": [
+        5760,
+        2880
+      ],
+      "signal": "weight_proxy",
+      "target_bpw": 0.5,
+      "whole_artifact_bpw": 0.5
+    },
+    {
+      "base_bpw": 0.8,
+      "block": 0,
+      "cell_sha256": "50b62197ab2f50446ee5d7e0a4389bc135fe85d32952d1ab6b24973126998b05",
+      "config": {
+        "rank": 96
+      },
+      "doctor_bpw": 0.0,
+      "expert": 0,
+      "f1_verdict": "collapse",
+      "f1_weight_rel_error": 0.8867,
+      "family": "low_rank",
+      "kind": "single_tensor",
+      "organ": "mlp1",
+      "overhead_bpw": 0.0,
+      "physical_bytes": 1658944,
+      "seconds": 3.49,
+      "shape": [
+        5760,
+        2880
+      ],
+      "signal": "weight_proxy",
+      "target_bpw": 0.8,
+      "whole_artifact_bpw": 0.8
+    },
+    {
+      "base_bpw": 0.5079,
+      "block": 0,
+      "cell_sha256": "936c16f54c1d8fff995af8364e76333e2d57e5033d1023297067ae06a889de9e",
+      "config": {
+        "dim": 32,
+        "k": 256,
+        "seed": 0,
+        "subspaces": 2
+      },
+      "doctor_bpw": 0.0,
+      "expert": 0,
+      "f1_verdict": "collapse",
+      "f1_weight_rel_error": 0.77079,
+      "family": "transform_pq",
+      "kind": "single_tensor",
+      "organ": "mlp1",
+      "overhead_bpw": 0.0,
+      "physical_bytes": 1053256,
+      "seconds": 0.43,
+      "shape": [
+        5760,
+        2880
+      ],
+      "signal": "weight_proxy",
+      "target_bpw": 0.5,
+      "whole_artifact_bpw": 0.5079
+    },
+    {
+      "base_bpw": 0.751,
+      "block": 0,
+      "cell_sha256": "f03d468c0891552a96e087f34682df893f7c4ec12d967fb070b14d5b20136fcc",
+      "config": {
+        "dim": 16,
+        "k": 64,
+        "seed": 0,
+        "subspaces": 2
+      },
+      "doctor_bpw": 0.0,
+      "expert": 0,
+      "f1_verdict": "collapse",
+      "f1_weight_rel_error": 0.68857,
+      "family": "transform_pq",
+      "kind": "single_tensor",
+      "organ": "mlp1",
+      "overhead_bpw": 0.0,
+      "physical_bytes": 1557320,
+      "seconds": 0.33,
+      "shape": [
+        5760,
+        2880
+      ],
+      "signal": "weight_proxy",
+      "target_bpw": 0.8,
+      "whole_artifact_bpw": 0.751
+    },
+    {
+      "base_bpw": 0.1895,
+      "block": 0,
+      "cell_sha256": "16d5ef2233aa2fdf85f2bdf67a65b1b9a2ae4922ddc422ec31fa973f67565285",
+      "config": {
+        "base_dim": 32,
+        "base_k": 64,
+        "corr_rank": 8,
+        "sparse_rows": 16
+      },
+      "doctor_bpw": 0.1111,
+      "expert": 0,
+      "f1_verdict": "collapse",
+      "f1_weight_rel_error": 0.88286,
+      "family": "repairability_shaped",
+      "kind": "single_tensor",
+      "organ": "mlp1",
+      "overhead_bpw": 0.0,
+      "physical_bytes": 623386,
+      "seconds": 1.82,
+      "shape": [
+        5760,
+        2880
+      ],
+      "signal": "weight_proxy",
+      "target_bpw": 0.8,
+      "whole_artifact_bpw": 0.3006
+    },
+    {
+      "base_bpw": 0.1255,
+      "block": 0,
+      "cell_sha256": "0f241e3022691d51efb6f9b6accbc2662474e7de856b1902ad3a8988cd6ef64c",
+      "config": {
+        "base_dim": 32,
+        "base_k": 16,
+        "corr_rank": 4,
+        "sparse_rows": 8
+      },
+      "doctor_bpw": 0.0556,
+      "expert": 0,
+      "f1_verdict": "collapse",
+      "f1_weight_rel_error": 0.93678,
+      "family": "repairability_shaped",
+      "kind": "single_tensor",
+      "organ": "mlp1",
+      "overhead_bpw": 0.0,
+      "physical_bytes": 375501,
+      "seconds": 1.87,
+      "shape": [
+        5760,
+        2880
+      ],
+      "signal": "weight_proxy",
+      "target_bpw": 0.5,
+      "whole_artifact_bpw": 0.1811
+    },
+    {
+      "base_bpw": 0.5316,
+      "block": 0,
+      "cell_sha256": "2ec67b9ab7cfa8378795896601549e75cfcfb001d448d087e5cce489304f210b",
+      "config": {
+        "dim": 32,
+        "k": 256,
+        "stages": 2
+      },
+      "doctor_bpw": 0.0,
+      "expert": 0,
+      "f1_verdict": "collapse",
+      "f1_weight_rel_error": 0.79786,
+      "family": "naive_rvq",
+      "kind": "single_tensor",
+      "organ": "mlp2",
+      "overhead_bpw": 0.0001,
+      "physical_bytes": 551232,
+      "seconds": 0.27,
+      "shape": [
+        2880,
+        2880
+      ],
+      "signal": "weight_proxy",
+      "target_bpw": 0.5,
+      "whole_artifact_bpw": 0.5317
+    },
+    {
+      "base_bpw": 0.754,
+      "block": 0,
+      "cell_sha256": "7d3408c828e126ba4e7f75261ce07f9c80172e7e9007ba70a61e033242bdc7c0",
+      "config": {
+        "dim": 16,
+        "k": 64,
+        "stages": 2
+      },
+      "doctor_bpw": 0.0,
+      "expert": 0,
+      "f1_verdict": "collapse",
+      "f1_weight_rel_error": 0.75499,
+      "family": "naive_rvq",
+      "kind": "single_tensor",
+      "organ": "mlp2",
+      "overhead_bpw": 0.0001,
+      "physical_bytes": 781760,
+      "seconds": 0.22,
+      "shape": [
+        2880,
+        2880
+      ],
+      "signal": "weight_proxy",
+      "target_bpw": 0.8,
+      "whole_artifact_bpw": 0.754
+    },
+    {
+      "base_bpw": 0.5,
+      "block": 0,
+      "cell_sha256": "bb8b78a48f179ec81dde483c85412cf13b1a31a45f1b04bc732f27ff86331a55",
+      "config": {
+        "rank": 45
+      },
+      "doctor_bpw": 0.0,
+      "expert": 0,
+      "f1_verdict": "collapse",
+      "f1_weight_rel_error": 0.82184,
+      "family": "low_rank",
+      "kind": "single_tensor",
+      "organ": "mlp2",
+      "overhead_bpw": 0.0001,
+      "physical_bytes": 518464,
+      "seconds": 2.51,
+      "shape": [
+        2880,
+        2880
+      ],
+      "signal": "weight_proxy",
+      "target_bpw": 0.5,
+      "whole_artifact_bpw": 0.5001
+    },
+    {
+      "base_bpw": 0.8,
+      "block": 0,
+      "cell_sha256": "64dd1a7a1d79918ef25be50c26b884e7406a19898b32dbbdd478c2039516e9c5",
+      "config": {
+        "rank": 72
+      },
+      "doctor_bpw": 0.0,
+      "expert": 0,
+      "f1_verdict": "collapse",
+      "f1_weight_rel_error": 0.76594,
+      "family": "low_rank",
+      "kind": "single_tensor",
+      "organ": "mlp2",
+      "overhead_bpw": 0.0001,
+      "physical_bytes": 829504,
+      "seconds": 2.49,
+      "shape": [
+        2880,
+        2880
+      ],
+      "signal": "weight_proxy",
+      "target_bpw": 0.8,
+      "whole_artifact_bpw": 0.8001
+    },
+    {
+      "base_bpw": 0.5158,
+      "block": 0,
+      "cell_sha256": "4c179d8bfbf72f94ad4dad918a1dbf9b5d4f3ad29e76b331ddfba608f897c6da",
+      "config": {
+        "dim": 32,
+        "k": 256,
+        "seed": 0,
+        "subspaces": 2
+      },
+      "doctor_bpw": 0.0,
+      "expert": 0,
+      "f1_verdict": "collapse",
+      "f1_weight_rel_error": 0.80512,
+      "family": "transform_pq",
+      "kind": "single_tensor",
+      "organ": "mlp2",
+      "overhead_bpw": 0.0001,
+      "physical_bytes": 534856,
+      "seconds": 0.26,
+      "shape": [
+        2880,
+        2880
+      ],
+      "signal": "weight_proxy",
+      "target_bpw": 0.5,
+      "whole_artifact_bpw": 0.5159
+    },
+    {
+      "base_bpw": 0.752,
+      "block": 0,
+      "cell_sha256": "167f653f75b487b61ee238833f04d7da6ba6480e5655e762fb6e52355abea3ef",
+      "config": {
+        "dim": 16,
+        "k": 64,
+        "seed": 0,
+        "subspaces": 2
+      },
+      "doctor_bpw": 0.0,
+      "expert": 0,
+      "f1_verdict": "collapse",
+      "f1_weight_rel_error": 0.75122,
+      "family": "transform_pq",
+      "kind": "single_tensor",
+      "organ": "mlp2",
+      "overhead_bpw": 0.0001,
+      "physical_bytes": 779720,
+      "seconds": 0.21,
+      "shape": [
+        2880,
+        2880
+      ],
+      "signal": "weight_proxy",
+      "target_bpw": 0.8,
+      "whole_artifact_bpw": 0.752
+    },
+    {
+      "base_bpw": 0.1915,
+      "block": 0,
+      "cell_sha256": "f18056bc03990d6fb6606f3a142350cdd43af16fa89e121f516ba443c024cc93",
+      "config": {
+        "base_dim": 32,
+        "base_k": 64,
+        "corr_rank": 8,
+        "sparse_rows": 16
+      },
+      "doctor_bpw": 0.1778,
+      "expert": 0,
+      "f1_verdict": "collapse",
+      "f1_weight_rel_error": 0.83837,
+      "family": "repairability_shaped",
+      "kind": "single_tensor",
+      "organ": "mlp2",
+      "overhead_bpw": 0.0001,
+      "physical_bytes": 382904,
+      "seconds": 1.21,
+      "shape": [
+        2880,
+        2880
+      ],
+      "signal": "weight_proxy",
+      "target_bpw": 0.8,
+      "whole_artifact_bpw": 0.3693
+    },
+    {
+      "base_bpw": 0.126,
+      "block": 0,
+      "cell_sha256": "4b1ffed930b91d80b9fbf57282662eb97bbfa9445a81c8d1238c8f2605178109",
+      "config": {
+        "base_dim": 32,
+        "base_k": 16,
+        "corr_rank": 4,
+        "sparse_rows": 8
+      },
+      "doctor_bpw": 0.0889,
+      "expert": 0,
+      "f1_verdict": "collapse",
+      "f1_weight_rel_error": 0.89707,
+      "family": "repairability_shaped",
+      "kind": "single_tensor",
+      "organ": "mlp2",
+      "overhead_bpw": 0.0001,
+      "physical_bytes": 222860,
+      "seconds": 1.23,
+      "shape": [
+        2880,
+        2880
+      ],
+      "signal": "weight_proxy",
+      "target_bpw": 0.5,
+      "whole_artifact_bpw": 0.2149
+    },
+    {
+      "base_bpw": 0.5158,
+      "block": 35,
+      "cell_sha256": "880a402c95403198d4973804e8a0c543aa2a67c2dd19c5ab86342cc33015171f",
+      "config": {
+        "dim": 32,
+        "k": 256,
+        "stages": 2
+      },
+      "doctor_bpw": 0.0,
+      "expert": 0,
+      "f1_verdict": "collapse",
+      "f1_weight_rel_error": 0.77273,
+      "family": "naive_rvq",
+      "kind": "single_tensor",
+      "organ": "mlp1",
+      "overhead_bpw": 0.0,
+      "physical_bytes": 1069632,
+      "seconds": 0.43,
+      "shape": [
+        5760,
+        2880
+      ],
+      "signal": "weight_proxy",
+      "target_bpw": 0.5,
+      "whole_artifact_bpw": 0.5158
+    },
+    {
+      "base_bpw": 0.752,
+      "block": 35,
+      "cell_sha256": "1066fbc61b092a3502ce590557e237d3f41cf5def46fe4e75c2f48795f68c7b9",
+      "config": {
+        "dim": 16,
+        "k": 64,
+        "stages": 2
+      },
+      "doctor_bpw": 0.0,
+      "expert": 0,
+      "f1_verdict": "collapse",
+      "f1_weight_rel_error": 0.70893,
+      "family": "naive_rvq",
+      "kind": "single_tensor",
+      "organ": "mlp1",
+      "overhead_bpw": 0.0,
+      "physical_bytes": 1559360,
+      "seconds": 0.34,
+      "shape": [
+        5760,
+        2880
+      ],
+      "signal": "weight_proxy",
+      "target_bpw": 0.8,
+      "whole_artifact_bpw": 0.752
+    },
+    {
+      "base_bpw": 0.5,
+      "block": 35,
+      "cell_sha256": "cfef5a0c887a43ba612b266faa66ff2dead27cbafac4ac39efd699d670d8fea9",
+      "config": {
+        "rank": 60
+      },
+      "doctor_bpw": 0.0,
+      "expert": 0,
+      "f1_verdict": "collapse",
+      "f1_weight_rel_error": 0.86554,
+      "family": "low_rank",
+      "kind": "single_tensor",
+      "organ": "mlp1",
+      "overhead_bpw": 0.0,
+      "physical_bytes": 1036864,
+      "seconds": 3.33,
+      "shape": [
+        5760,
+        2880
+      ],
+      "signal": "weight_proxy",
+      "target_bpw": 0.5,
+      "whole_artifact_bpw": 0.5
+    },
+    {
+      "base_bpw": 0.8,
+      "block": 35,
+      "cell_sha256": "7c507eaa6c8a23b65f0a407561870d9df658676c06f665f5b5a8f1298ede93c1",
+      "config": {
+        "rank": 96
+      },
+      "doctor_bpw": 0.0,
+      "expert": 0,
+      "f1_verdict": "collapse",
+      "f1_weight_rel_error": 0.82074,
+      "family": "low_rank",
+      "kind": "single_tensor",
+      "organ": "mlp1",
+      "overhead_bpw": 0.0,
+      "physical_bytes": 1658944,
+      "seconds": 3.4,
+      "shape": [
+        5760,
+        2880
+      ],
+      "signal": "weight_proxy",
+      "target_bpw": 0.8,
+      "whole_artifact_bpw": 0.8
+    },
+    {
+      "base_bpw": 0.5079,
+      "block": 35,
+      "cell_sha256": "66d72b4e91bd36c65d645043f188c375bde5fbabf6ac473a4f59f2a78fe8f07e",
+      "config": {
+        "dim": 32,
+        "k": 256,
+        "seed": 0,
+        "subspaces": 2
+      },
+      "doctor_bpw": 0.0,
+      "expert": 0,
+      "f1_verdict": "collapse",
+      "f1_weight_rel_error": 0.77853,
+      "family": "transform_pq",
+      "kind": "single_tensor",
+      "organ": "mlp1",
+      "overhead_bpw": 0.0,
+      "physical_bytes": 1053256,
+      "seconds": 0.41,
+      "shape": [
+        5760,
+        2880
+      ],
+      "signal": "weight_proxy",
+      "target_bpw": 0.5,
+      "whole_artifact_bpw": 0.5079
+    },
+    {
+      "base_bpw": 0.751,
+      "block": 35,
+      "cell_sha256": "d4d905f4b80c0a63dfad4c16cfa5c39a5a1181fb3c4f74cdc527e9c8b78299cb",
+      "config": {
+        "dim": 16,
+        "k": 64,
+        "seed": 0,
+        "subspaces": 2
+      },
+      "doctor_bpw": 0.0,
+      "expert": 0,
+      "f1_verdict": "collapse",
+      "f1_weight_rel_error": 0.70908,
+      "family": "transform_pq",
+      "kind": "single_tensor",
+      "organ": "mlp1",
+      "overhead_bpw": 0.0,
+      "physical_bytes": 1557320,
+      "seconds": 0.32,
+      "shape": [
+        5760,
+        2880
+      ],
+      "signal": "weight_proxy",
+      "target_bpw": 0.8,
+      "whole_artifact_bpw": 0.751
+    },
+    {
+      "base_bpw": 0.1895,
+      "block": 35,
+      "cell_sha256": "b01d5946b91b0e0ef057f816f60eda50d483fb16d7c81f0ff79ee9c76bc50312",
+      "config": {
+        "base_dim": 32,
+        "base_k": 64,
+        "corr_rank": 8,
+        "sparse_rows": 16
+      },
+      "doctor_bpw": 0.1111,
+      "expert": 0,
+      "f1_verdict": "collapse",
+      "f1_weight_rel_error": 0.8706,
+      "family": "repairability_shaped",
+      "kind": "single_tensor",
+      "organ": "mlp1",
+      "overhead_bpw": 0.0,
+      "physical_bytes": 623386,
+      "seconds": 1.82,
+      "shape": [
+        5760,
+        2880
+      ],
+      "signal": "weight_proxy",
+      "target_bpw": 0.8,
+      "whole_artifact_bpw": 0.3006
+    },
+    {
+      "base_bpw": 0.1255,
+      "block": 35,
+      "cell_sha256": "d493757721e6a238401410aecbb1f30b4356491b7b263ee5393cf03f4683f810",
+      "config": {
+        "base_dim": 32,
+        "base_k": 16,
+        "corr_rank": 4,
+        "sparse_rows": 8
+      },
+      "doctor_bpw": 0.0556,
+      "expert": 0,
+      "f1_verdict": "collapse",
+      "f1_weight_rel_error": 0.91932,
+      "family": "repairability_shaped",
+      "kind": "single_tensor",
+      "organ": "mlp1",
+      "overhead_bpw": 0.0,
+      "physical_bytes": 375501,
+      "seconds": 1.84,
+      "shape": [
+        5760,
+        2880
+      ],
+      "signal": "weight_proxy",
+      "target_bpw": 0.5,
+      "whole_artifact_bpw": 0.1811
+    },
+    {
+      "base_bpw": 0.5316,
+      "block": 35,
+      "cell_sha256": "14f8af69393c1cc29ce02fc925c995e3722d8a4bbb321a47b5fa3a8dd19c822c",
+      "config": {
+        "dim": 32,
+        "k": 256,
+        "stages": 2
+      },
+      "doctor_bpw": 0.0,
+      "expert": 0,
+      "f1_verdict": "collapse",
+      "f1_weight_rel_error": 0.73014,
+      "family": "naive_rvq",
+      "kind": "single_tensor",
+      "organ": "mlp2",
+      "overhead_bpw": 0.0001,
+      "physical_bytes": 551232,
+      "seconds": 0.25,
+      "shape": [
+        2880,
+        2880
+      ],
+      "signal": "weight_proxy",
+      "target_bpw": 0.5,
+      "whole_artifact_bpw": 0.5317
+    },
+    {
+      "base_bpw": 0.754,
+      "block": 35,
+      "cell_sha256": "54453c5373ce1d9c31d4ce923e523e8a9f26d7a3b9a943b26b2b86742283c605",
+      "config": {
+        "dim": 16,
+        "k": 64,
+        "stages": 2
+      },
+      "doctor_bpw": 0.0,
+      "expert": 0,
+      "f1_verdict": "collapse",
+      "f1_weight_rel_error": 0.67526,
+      "family": "naive_rvq",
+      "kind": "single_tensor",
+      "organ": "mlp2",
+      "overhead_bpw": 0.0001,
+      "physical_bytes": 781760,
+      "seconds": 0.2,
+      "shape": [
+        2880,
+        2880
+      ],
+      "signal": "weight_proxy",
+      "target_bpw": 0.8,
+      "whole_artifact_bpw": 0.754
+    },
+    {
+      "base_bpw": 0.5,
+      "block": 35,
+      "cell_sha256": "adf7dc214f4a62a467dbfe40aac2c78dcf7a46a6ebe28d8ef55bc9aab55f6c48",
+      "config": {
+        "rank": 45
+      },
+      "doctor_bpw": 0.0,
+      "expert": 0,
+      "f1_verdict": "collapse",
+      "f1_weight_rel_error": 0.83181,
+      "family": "low_rank",
+      "kind": "single_tensor",
+      "organ": "mlp2",
+      "overhead_bpw": 0.0001,
+      "physical_bytes": 518464,
+      "seconds": 2.5,
+      "shape": [
+        2880,
+        2880
+      ],
+      "signal": "weight_proxy",
+      "target_bpw": 0.5,
+      "whole_artifact_bpw": 0.5001
+    },
+    {
+      "base_bpw": 0.8,
+      "block": 35,
+      "cell_sha256": "fa788702a76b7778bca9149a7492dd3b85d384a45e4298f4660f639a5244ed93",
+      "config": {
+        "rank": 72
+      },
+      "doctor_bpw": 0.0,
+      "expert": 0,
+      "f1_verdict": "collapse",
+      "f1_weight_rel_error": 0.79822,
+      "family": "low_rank",
+      "kind": "single_tensor",
+      "organ": "mlp2",
+      "overhead_bpw": 0.0001,
+      "physical_bytes": 829504,
+      "seconds": 2.51,
+      "shape": [
+        2880,
+        2880
+      ],
+      "signal": "weight_proxy",
+      "target_bpw": 0.8,
+      "whole_artifact_bpw": 0.8001
+    },
+    {
+      "base_bpw": 0.5158,
+      "block": 35,
+      "cell_sha256": "618cbd020ca52f68793c1c25b925d4f1cdaabe07af75053ac776ac207367eed9",
+      "config": {
+        "dim": 32,
+        "k": 256,
+        "seed": 0,
+        "subspaces": 2
+      },
+      "doctor_bpw": 0.0,
+      "expert": 0,
+      "f1_verdict": "collapse",
+      "f1_weight_rel_error": 0.75371,
+      "family": "transform_pq",
+      "kind": "single_tensor",
+      "organ": "mlp2",
+      "overhead_bpw": 0.0001,
+      "physical_bytes": 534856,
+      "seconds": 0.25,
+      "shape": [
+        2880,
+        2880
+      ],
+      "signal": "weight_proxy",
+      "target_bpw": 0.5,
+      "whole_artifact_bpw": 0.5159
+    },
+    {
+      "base_bpw": 0.752,
+      "block": 35,
+      "cell_sha256": "d053c49229d4cf90842da51a7d9b81ab41a9053c5b3f5af03f9bb3ad743f2d73",
+      "config": {
+        "dim": 16,
+        "k": 64,
+        "seed": 0,
+        "subspaces": 2
+      },
+      "doctor_bpw": 0.0,
+      "expert": 0,
+      "f1_verdict": "collapse",
+      "f1_weight_rel_error": 0.6912,
+      "family": "transform_pq",
+      "kind": "single_tensor",
+      "organ": "mlp2",
+      "overhead_bpw": 0.0001,
+      "physical_bytes": 779720,
+      "seconds": 0.2,
+      "shape": [
+        2880,
+        2880
+      ],
+      "signal": "weight_proxy",
+      "target_bpw": 0.8,
+      "whole_artifact_bpw": 0.752
+    },
+    {
+      "base_bpw": 0.1915,
+      "block": 35,
+      "cell_sha256": "fdd5d171c256d77bae078353cfda273ecb8911861701e760f229b2031323b74c",
+      "config": {
+        "base_dim": 32,
+        "base_k": 64,
+        "corr_rank": 8,
+        "sparse_rows": 16
+      },
+      "doctor_bpw": 0.1778,
+      "expert": 0,
+      "f1_verdict": "collapse",
+      "f1_weight_rel_error": 0.79593,
+      "family": "repairability_shaped",
+      "kind": "single_tensor",
+      "organ": "mlp2",
+      "overhead_bpw": 0.0001,
+      "physical_bytes": 382904,
+      "seconds": 1.19,
+      "shape": [
+        2880,
+        2880
+      ],
+      "signal": "weight_proxy",
+      "target_bpw": 0.8,
+      "whole_artifact_bpw": 0.3693
+    },
+    {
+      "base_bpw": 0.126,
+      "block": 35,
+      "cell_sha256": "367adb16b0cd5d67d8203ffd15f0605e7bfae1c7d27ed2ff38e0f838639a9ddf",
+      "config": {
+        "base_dim": 32,
+        "base_k": 16,
+        "corr_rank": 4,
+        "sparse_rows": 8
+      },
+      "doctor_bpw": 0.0889,
+      "expert": 0,
+      "f1_verdict": "collapse",
+      "f1_weight_rel_error": 0.86803,
+      "family": "repairability_shaped",
+      "kind": "single_tensor",
+      "organ": "mlp2",
+      "overhead_bpw": 0.0001,
+      "physical_bytes": 222860,
+      "seconds": 1.21,
+      "shape": [
+        2880,
+        2880
+      ],
+      "signal": "weight_proxy",
+      "target_bpw": 0.5,
+      "whole_artifact_bpw": 0.2149
+    },
+    {
+      "base_bpw": 0.5,
+      "block": 0,
+      "cell_sha256": "a7eb14515b9dd48f2930998cbe5de016f11b1499000da89c1826f32310cabe7b",
+      "config": {
+        "corr_rank": 0,
+        "dim": 32,
+        "k": 256,
+        "n_experts": 4,
+        "stages": 2
+      },
+      "doctor_bpw": 0.0,
+      "f1_verdict": "collapse",
+      "f1_weight_rel_error": 0.75665,
+      "family": "shared_expert_grammar",
+      "kind": "expert_cluster",
+      "n_experts": 4,
+      "organ": "mlp1",
+      "overhead_bpw": 0.004,
+      "physical_bytes": 4180032,
+      "seconds": 1.34,
+      "signal": "weight_proxy",
+      "target_bpw": 0.5,
+      "whole_artifact_bpw": 0.504
+    },
+    {
+      "base_bpw": 0.75,
+      "block": 0,
+      "cell_sha256": "2c88af3f583cda30330140619c180d5c8754e1831c7ef8c927e71de1e31a423a",
+      "config": {
+        "corr_rank": 4,
+        "dim": 16,
+        "k": 64,
+        "n_experts": 4,
+        "stages": 2
+      },
+      "doctor_bpw": 0.0333,
+      "f1_verdict": "collapse",
+      "f1_weight_rel_error": 0.67181,
+      "family": "shared_expert_grammar",
+      "kind": "expert_cluster",
+      "n_experts": 4,
+      "organ": "mlp1",
+      "overhead_bpw": 0.0005,
+      "physical_bytes": 6501440,
+      "seconds": 7.81,
+      "signal": "weight_proxy",
+      "target_bpw": 0.8,
+      "whole_artifact_bpw": 0.7838
+    },
+    {
+      "base_bpw": 0.5,
+      "block": 35,
+      "cell_sha256": "1b0cbf63a997ded87efd61c21c599e8df535dba6d1ad8c37b7cf090578aefd34",
+      "config": {
+        "corr_rank": 0,
+        "dim": 32,
+        "k": 256,
+        "n_experts": 4,
+        "stages": 2
+      },
+      "doctor_bpw": 0.0,
+      "f1_verdict": "collapse",
+      "f1_weight_rel_error": 0.78298,
+      "family": "shared_expert_grammar",
+      "kind": "expert_cluster",
+      "n_experts": 4,
+      "organ": "mlp1",
+      "overhead_bpw": 0.004,
+      "physical_bytes": 4180032,
+      "seconds": 1.35,
+      "signal": "weight_proxy",
+      "target_bpw": 0.5,
+      "whole_artifact_bpw": 0.504
+    },
+    {
+      "base_bpw": 0.75,
+      "block": 35,
+      "cell_sha256": "91b3771a526e5500be4b0360e24e4be3f25b12ab87e1cb1d50d79fe6bfdaf44a",
+      "config": {
+        "corr_rank": 4,
+        "dim": 16,
+        "k": 64,
+        "n_experts": 4,
+        "stages": 2
+      },
+      "doctor_bpw": 0.0333,
+      "f1_verdict": "collapse",
+      "f1_weight_rel_error": 0.70372,
+      "family": "shared_expert_grammar",
+      "kind": "expert_cluster",
+      "n_experts": 4,
+      "organ": "mlp1",
+      "overhead_bpw": 0.0005,
+      "physical_bytes": 6501440,
+      "seconds": 7.9,
+      "signal": "weight_proxy",
+      "target_bpw": 0.8,
+      "whole_artifact_bpw": 0.7838
+    }
+  ],
+  "cluster_size": 4,
+  "device": "mps",
+  "evidence_level": "F1 (weight proxy) + F1.5 (output proxy)",
+  "experts": [
+    0
+  ],
+  "finished_at": "2026-07-17T23:08:48Z",
+  "hf_or_source_id": "openai/gpt-oss-120b",
+  "is_deployable_artifact": false,
+  "is_event_horizon": false,
+  "note": "Materially-distinct Forge families on real GPT-OSS-120B experts. Weight error is a PROXY; output divergence uses synthetic activations until the tokenizer+runtime land. No cell authorizes a Gravity escape or an Event-Horizon seal.",
+  "organs": [
+    "mlp1",
+    "mlp2"
+  ],
+  "output_divergence": {
+    "capability_parity": false,
+    "family": "transform_pq",
+    "max_output_rel_div": 0.622,
+    "mean_output_rel_div": 0.60507,
+    "min_output_rel_div": 0.58732,
+    "n_experts_exercised": 11,
+    "n_inputs": 8,
+    "signal": "proxy_output_synthetic_activations",
+    "target_bpw": 0.8
+  },
+  "parent": "120B",
+  "run_sha256": "56dc3a808a7a8383e108031495605d3890f084e3b45377ff9eb6902c9cdb89eb",
+  "schema": "hawking.gravity_forge.run.v1",
+  "started_at": "2026-07-17T23:07:36Z"
+}

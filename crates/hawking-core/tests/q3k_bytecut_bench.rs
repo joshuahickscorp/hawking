@@ -48,10 +48,10 @@
 
 #![cfg(target_os = "macos")]
 
+use half::f16;
 use hawking_core::kernels;
 use hawking_core::metal::TokenCommandBuffer;
 use hawking_core::quant::predecode_q3_k_scale_table;
-use half::f16;
 use rand::Rng;
 use rand_pcg::Pcg64Mcg;
 use std::time::Instant;

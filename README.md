@@ -113,3 +113,73 @@ See [tools/bench/README.md](tools/bench/README.md) for conventions.
 ## License
 
 MIT. See [LICENSE](LICENSE).
+
+## Roadmap
+
+Hawking is a from-scratch LLM inference engine for Apple Silicon, written in
+Rust with hand-written Metal kernels. It runs quantized GGUF models end to end
+on the GPU, with no PyTorch, llama.cpp, or BLAS. The work ahead is about
+pushing quality, memory, and context length further on Apple hardware, with the
+heavy runs on an Apple M3 Ultra Mac Studio (96 GB unified memory, 819 GB/s advertised
+memory bandwidth, 1 TB SSD). The condense/studio research
+program - the largest-model, lowest-bit, and long-context work below - is a
+single command away: see `docs/plans/STUDIO_GO.md`.
+
+The Studio program is governed by
+[`Beyond FLOPS`](docs/plans/computational_efficiency_paradigms_2026_07_11.md): optimize useful
+capability per joule, byte moved, resident byte, parameter, and wall-clock second, while holding quality
+fixed. Its safe initial ladder is the staged 0.5B/1.5B/7B sequence, then 14B alone; 32B remains gated on a
+measured memory-pressure or streamed/blockwise proof. Storage plans use current free space with a 150 GB
+safety reserve, 64 GB scratch, and 32 GB HF/Xet cache. Downloads and processing checkpoint so the Studio
+can be drained, shut down, moved, and resumed without treating partial artifacts as complete.
+
+### Now (works today)
+- Dense Qwen2.5 forward pass on Metal, GGUF-native, with Q4_K / Q6_K kernels,
+  RoPE / RMSNorm / attention / GPU sampling, and an OpenAI-compatible server.
+- CPU-to-GPU numerical-parity tests and golden-hash regression gates running in
+  CI on real Apple Silicon.
+
+### Next
+- RWKV-7 (SSM): the decode engine and CPU/Metal parity tests exist; what's left
+  is wiring it into the OpenAI-compatible serve path so the flat-cost,
+  no-KV-wall long-context case is reachable the same way Qwen2.5 is.
+- Per-channel int4 KV cache, to cut KV memory by roughly three quarters.
+- Post-hoc context extension (YaRN RoPE-scaling) validated by needle-in-a-haystack
+  retrieval, not just "it didn't crash" - stretch the trained window at serve time,
+  paired with int4 KV so the longer context actually fits in memory.
+- STKV, a tiered KV hybrid that is Hawking-specific because it uses both engines at
+  once: exact int8 recall for attention sinks and the recent window, a trellis-coded
+  warm band (the same codec as the weights, on the cache), and an unbounded cold tail
+  that is either paged to SSD (lossless, slow) or summarized into an RWKV-7 state
+  (lossy, flat memory). Exact recall where attention lands, unbounded reach beyond it.
+- Close the remaining decode-throughput gap to llama.cpp / MLX (kernel and
+  scheduling work).
+
+### Later
+- Condense: an out-of-core, memory-budgeted low-bit compression pipeline that
+  can quantize models too large to hold resident, so a single Mac can prepare
+  and serve models well beyond its own memory.
+- The Doctor as a registry: quality restoration at low bits is not one method
+  but a pluggable set - calibration, activation-aware pre-scaling, output-
+  sensitivity mixed precision, full-rank residual, block-wise QAT, codec-native
+  error feedback, and distillation - auto-composed per model and target bit-rate,
+  with a ledger that reports which method recovers the most per unit of compute so
+  the next lever is chosen from evidence, not guesswork.
+- The size frontier: stop requiring the whole model resident. The parameter
+  ceiling is then storage, not RAM - the model lives on the SSD and only the
+  weights a token touches stream through memory. For MoE (all the giant models),
+  only the routed experts page in, so a multi-trillion-parameter model runs at a
+  usable rate where a RAM-resident engine tops out near half a trillion. An auto
+  advisor picks the bit format and the serve regime (resident / expert-paged /
+  dense out-of-core) per model and device.
+- Broader verified architecture coverage (MoE, Mamba2, more dense families)
+  under the same correctness-before-speed gates. Mamba2 already ships as a real
+  serve engine (flat O(1) recurrent state, same long-context shape as RWKV-7)
+  and now has condense-track coverage too: its state geometry is computed from
+  its own config, and the Doctor knows which recovery methods apply to an SSM
+  versus a dense-attention or MoE model.
+- A codec-parallelism triage step, so a new low-bit format is scored for decode
+  parallelism (not just density) before any Metal kernel work starts on it -
+  compression and speed are aligned on this hardware as long as decode stays
+  lane-independent; a denser format that forces serial decode can lose the
+  bandwidth win it was supposed to buy.

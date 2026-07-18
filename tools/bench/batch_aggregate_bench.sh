@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Aggregate-tps for continuous-batching multi-seq decode (B=1/4/8).
-# The SPEEDUP RATIO is contamination-robust (valid with Claude open); the
+# The SPEEDUP RATIO is contamination-robust (valid with the agent open); the
 # ABSOLUTE tps needs a clean room. Auto-detected by clean_bench_queue.sh.
 set -uo pipefail
 cd "$(dirname "$0")/../.."

@@ -57,9 +57,9 @@
 #   STEADY_URL      override the steady server URL
 #
 # CONTAMINATION NOTE:
-#   Absolute tps and J/tok are inflated ~4-5x with a live Claude session.
+#   Absolute tps and J/tok are inflated ~4-5x with a live agent session.
 #   The J/task delta and TTFT delta are contamination-robust (relative, inflation
-#   cancels). For publishable absolute numbers: quit Claude and re-run.
+#   cancels). For publishable absolute numbers: quit the agent and re-run.
 #
 # COEXISTENCE:
 #   dismantle serve processes run under `nice -n 19 taskpolicy -b`.
@@ -366,7 +366,7 @@ printf 'weights : %s\n' "$WEIGHTS"
 printf 'batch   : %d concurrent requests\n' "$BATCH"
 printf 'tokens  : %d per request\n' "$TOKENS"
 printf 'macmon  : %s\n' "$([[ "$HAS_MACMON" -eq 1 ]] && echo yes || echo no)"
-printf '\nCONTAMINATION: absolute tps/J inflated ~4-5x with a live Claude session.\n'
+printf '\nCONTAMINATION: absolute tps/J inflated ~4-5x with a live agent session.\n'
 printf 'J/task delta and TTFT delta are contamination-robust (relative).\n'
 
 do_warmup "$RACE_URL"   "race"

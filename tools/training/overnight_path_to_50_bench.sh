@@ -13,16 +13,20 @@
 #   artifacts/runs/path_to_50_matrix/<utc>/report.md         (the matrix output)
 #   artifacts/runs/overnight/path_to_50_bench.log            (full log)
 #
-# Refuses to run if Claude is live (uses tools/bench/path_to_50_matrix.sh
-# which is --strict by default).
+# Refuses to run if the coding agent is live (uses
+# tools/bench/path_to_50_matrix.sh which is --strict by default).
 #
 # Intended invocation:
 #   1. After overnight_path_to_50.sh finishes
-#   2. After user has quit Claude (or via launchd at a known quiet window)
+#   2. After user has quit the agent (or via launchd at a known quiet window)
 #   3. Manual:  bash tools/training/overnight_path_to_50_bench.sh
 
 set -uo pipefail
 cd "$(dirname "$0")/../.."
+
+_agent_env="$(git rev-parse --show-toplevel 2>/dev/null)/.agent_env"
+[ -f "$_agent_env" ] && source "$_agent_env"
+unset _agent_env
 
 LOG_DIR="artifacts/runs/overnight"
 mkdir -p "$LOG_DIR"
@@ -73,16 +77,16 @@ else
     log "training gate clear: stage=$cur_stage state=$cur_state"
 fi
 
-# --- Gate: no Claude (relaxable) ---
-# STRICT_CLEAN_BENCH=1 (default) refuses to run when Claude.app is live —
+# --- Gate: no agent (relaxable) ---
+# STRICT_CLEAN_BENCH=1 (default) refuses to run when the agent app is live —
 # absolute numbers would be contaminated 4-5×. Set STRICT_CLEAN_BENCH=0 to
-# proceed anyway; paired deltas (lever vs baseline) cancel contamination per
-# memory feedback_bench_with_claude_open.md.
+# proceed anyway; paired deltas (lever vs baseline) cancel contamination
+# (see project design memory).
 : "${STRICT_CLEAN_BENCH:=1}"
-if [[ "$STRICT_CLEAN_BENCH" = "1" ]] && pgrep -f "Claude.app" > /dev/null 2>&1; then
-    log "❌ Claude.app is running — bench numbers would be contaminated. Aborting."
+if [[ "$STRICT_CLEAN_BENCH" = "1" ]] && pgrep -f "${AGENT_APP_PGREP:?see .agent_env.example}" > /dev/null 2>&1; then
+    log "❌ the agent app is running — bench numbers would be contaminated. Aborting."
     log "   (set STRICT_CLEAN_BENCH=0 to override; paired deltas still valid.)"
-    write_status "gate" "failed" "Claude.app live"
+    write_status "gate" "failed" "agent app live"
     exit 64
 fi
 if [[ "$STRICT_CLEAN_BENCH" = "0" ]]; then

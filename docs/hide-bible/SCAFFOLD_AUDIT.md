@@ -1,7 +1,7 @@
 # HIDE Scaffold Audit — Gap Inventory
 
 > **Audit date:** 2026-06-27
-> **Subject:** The 11-crate HIDE (Hawking IDE) Rust scaffold (Codex-generated) under `crates/`, measured against `docs/hide-bible/` chapters 01–11.
+> **Subject:** The 11-crate HIDE (Hawking IDE) Rust scaffold (agent-generated) under `crates/`, measured against `docs/hide-bible/` chapters 01–11.
 > **Method:** Every `.rs` file in every HIDE crate was read in full, plus each crate's `Cargo.toml`, plus the binding-contract sections of the relevant bible chapters. The workspace compiles clean (`cargo check --workspace` green) and contains **zero** `todo!()`/`unimplemented!()` markers — so gaps are **shallowness** (thin logic, surface-only types, deterministic placeholders, unwired seams), not explicit stubs. Classifications below reflect runtime depth, not whether code exists.
 
 Legend for module classifications:

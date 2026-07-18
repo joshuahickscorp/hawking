@@ -1,0 +1,11 @@
+# Template for .agent_env (gitignored, machine-specific).
+# Copy to .agent_env and set these to the process names your coding
+# assistant runs under, so tools/bench/*.sh and tools/training/*.sh can
+# detect a live session and refuse to record contaminated bench numbers.
+#
+#   cp .agent_env.example .agent_env
+#   # then edit the values below to match your setup
+
+AGENT_APP_PGREP="YourAgentApp.app"
+AGENT_HELPER_PGREP="YourAgentApp Helper"
+AGENT_CLI_PGREP="youragentcli"

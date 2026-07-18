@@ -1,0 +1,24 @@
+{
+  "disk_blocker_resolved_by_cleanup": true,
+  "f0_note": "f0 gate",
+  "f0_outcome": "deferred",
+  "fits_resident_at_stress": true,
+  "fsm_state": "GRAVITY_F0",
+  "oracle_sha256": "eeec3b2b439faa647f597b46ecd5aab164c11a323d9f9775d63418b3b69925d8",
+  "parent": "120B",
+  "real_run_blockers": [
+    "u8_safetensors_reader",
+    "source_provenance_manifest",
+    "gptoss_moe_str2_loader",
+    "tokenizer_download"
+  ],
+  "resident_ceiling_bpw": 4.705638810964368,
+  "schema": "hawking.gravity.oracle_lane.v1",
+  "stress_rate": {
+    "den": 5,
+    "label": "4/5",
+    "num": 4,
+    "value": 0.8
+  },
+  "subbit_deployable_today": false
+}

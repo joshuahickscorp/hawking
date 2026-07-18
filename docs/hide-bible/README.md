@@ -1,70 +1,24 @@
-# Hawking IDE — Technical Bible
+# Hawking IDE (HIDE) — Documentation
 
-**13-chapter engineering reference for the HIDE local-first agentic coding IDE.**
+HIDE is the second product in the Hawking family: a local-first agentic coding IDE that serves Hawking `.tq` models, free and fully on-device. The design and the capability are one idea, "the box that radiates": privacy outward (nothing leaves your machine), transparency inward (the Context Stack).
 
-HIDE is built on Hawking Condense (`.tq` sub-4-bit models) and runs entirely on Apple Silicon — no cloud required, no per-token cost. This bible is the single authoritative source for every architecture decision, schema, state machine, and integration contract. Read it before touching any HIDE crate.
+## The single source of truth
 
----
+**[HIDE_PLAN.md](HIDE_PLAN.md)** is the one authoritative document. It folds the strategy, the unified roadmap, the full design doctrine, and the product + contract reference into one place:
 
-## Reading order
+- **Part A: Strategy** — the spine, where we stand, the wedge ("fork and try 5, keep the best, free, watch all five radiate"), the proof demo, the risk register, the improvements.
+- **Part B: The Roadmap** — the M0 to M8 interlock (backend capability married to front-end surface), the critical path, the design-to-capability synergy map.
+- **Part C: The Design Doctrine** — SUPERSEDED. The canonical design system is now **[DESIGN_DOCTRINE.md](DESIGN_DOCTRINE.md)** (v3: a Tadao Ando grayscale-concrete and light-as-accent system; the v2 gold rim-light is retired). Read that for tokens, type, the three surfaces, and the Self-check ship gate.
+- **Part D: Product and Contract Reference** — the surfaces, the `Intent`/`UiEvent` + `hide-serve` contract, the OSS harvest map.
 
-Start with [ch.00](00-vision-and-constitution.md) (the thesis and design constitution) and [ch.01](01-system-architecture.md) (process model and event log). Then read chapters in any order — they are heavily cross-referenced.
+Everything binds to the contract that actually exists in code (`crates/hide-core/src/api.rs`, `crates/hide-backend`, `crates/hide-serve`).
 
----
+## What is built
 
-## Chapters
+- **Backend:** 11 crates, the agent loop real. See **[SCAFFOLD_STATUS.md](SCAFFOLD_STATUS.md)** (the per-crate reality) and **[SCAFFOLD_AUDIT.md](SCAFFOLD_AUDIT.md)** (the original gap audit, historical).
+- **Transport:** `crates/hide-serve` (localhost HTTP/WS over `BackendHost`).
+- **Front end:** `app/` (Vite + React + TS), built to Design Doctrine v3 (Ando concrete + light): the design system (`theme.css`), the `Volume`/`LightEdge` primitives, `wire.ts`/`ipc.ts`, the Zustand stores, the Shell, and the three surfaces plus the Context Stack. It runs alive on a mock transport; set `VITE_HIDE_TRANSPORT=live` to bind `hide-serve`.
 
-| # | Title | Core contract | Status |
-|---|---|---|---|
-| [00](00-vision-and-constitution.md) | Vision and Constitution | Thesis, local superpowers, 12 design principles, scope gates | ✅ |
-| [01](01-system-architecture.md) | System Architecture | Four-tier process model, append-only event log, plugin spine, data stores | ✅ |
-| [02](02-agent-kernel.md) | Agent Kernel | Formal FSM, Plan-as-data (HTN+DAG), Oracle trait, search escalation ladder, Skill Library | ✅ |
-| [03](03-tool-system-and-capabilities.md) | Tool System and Capabilities | `ToolCall`/`ToolResult`/`ToolError` schemas, ~60 built-in tools, MCP 2025-11-25 host+client, PermissionPolicy | ✅ |
-| [04](04-context-engineering-and-memory.md) | Context Engineering and Memory | Context Compiler, `KvStore` trait, CoALA memory layers, forever project memory | ✅ |
-| [05](05-codebase-intelligence.md) | Codebase Intelligence | BLAKE3 merkle-DAG, tree-sitter + stack-graphs + headless LSP, unified graph, living index daemon | ✅ |
-| [06](06-model-inference-orchestration.md) | Model Inference Orchestration | Model-role system, routing cascade, constrained/grammar decode, LoRA hot-swap, personalization flywheel | ✅ |
-| [07](07-hci-ux-and-ide-surface.md) | HCI, UX and IDE Surface | Six-region workbench, Context Stack right-rail, Tauri IPC, Monaco adapters, three ASCII state machines | ✅ |
-| [08](08-research-and-knowledge-lab.md) | Research and Knowledge Lab | Multi-source pipeline FSM, ~21 node knowledge graph, `SourceAdapter` trait, adversarial verify | ✅ POST-SHELL |
-| [09](09-parallel-agents-and-workstation.md) | Parallel Agents and Workstation | 7 orchestration patterns, worktree isolation, merge funnel, machine Governor, remote wss protocol | ✅ POST-SHELL |
-| [10](10-local-first-infrastructure-and-security.md) | Local-First Infrastructure and Security | Storage layout, T0-T4 sandbox ladder, CaMeL taint, 22-row threat model, hash-chained log | ✅ |
-| [11](11-bleeding-edge-and-moonshots.md) | Bleeding-Edge Capabilities and Moonshots | Personalization flywheel, RLEF on-device, self-improving workflows, KV handoff, ranked table | ✅ |
-| [12](12-competitive-matrix.md) | Competitive Matrix | HIDE vs Claude Code / Cursor / Cline / Aider / Void / OpenHands and 6 others; OSS harvest map | ✅ |
-| [13](13-roadmap-and-build-sequencing.md) | Roadmap and Build Sequencing | M0/M1/M2/M3+ milestones, thesis gate, kill protocol, scope contract, HF lane conditions | ✅ |
+## Archive
 
----
-
-## Key schemas (quick reference)
-
-| Schema | Defined in |
-|---|---|
-| `Event` envelope (ULID, seq, session, cause, payload) | ch.01 §1.2 |
-| `Plan` + `PlanStep` + `StepResult` | ch.02 §2.3 |
-| `ToolCall` / `ToolResult` / `ToolError` | ch.03 §3.1 |
-| `PermissionPolicy` (rules, defaults, risk_gates, scope_grammar) | ch.03 §3.5, ch.10 §10.4 |
-| `ContextManifest` (retained/dropped spans, KV budget) | ch.04 §4.2 |
-| `MemoryRecord` (CoALA-typed: working/episodic/semantic/procedural) | ch.04 §4.5 |
-| `ToolCall` wire format for MCP 2025-11-25 | ch.03 §3.4 |
-| `ModelDescriptor` / `ProviderCaps` / `RoleRegistry` | ch.06 §6.1 |
-| `AgentJob` / `GovernorState` / `WakeReport` | ch.09 §9.5 |
-| `PersonalizationRecord` | ch.11 §11.1 |
-| `AgentHandoff` (structured JSON inter-agent) | ch.11 §11.4 |
-
----
-
-## Scope summary
-
-**Ships in the initial shell (M0–M1):** agent kernel, eval harness, router, `.tq` GPU serving, constrained-JSON tools, Tauri app shell (Chat / Diff Review / Context Stack / terminal / file tree / timeline).
-
-**M2, gated on thesis-gate GO:** `hawking-condense` (HF link → .tq), `hawking-hub` (catalog download), Model Lab/Store tab.
-
-**Explicitly deferred:** Hawking HF org live catalog (until 32B `.tq` ready), Research Tab, parallel agent workstation UI, Remote Mac-Studio, RLEF/personalization flywheel (ch.11 moonshots), full JSON-Schema grammar compiler.
-
-See [ch.13 §13.9](13-roadmap-and-build-sequencing.md) for the full scope contract table.
-
----
-
-## License policy
-
-Only **MIT / Apache-2.0** code may be copied or ported into shipped `app/` or `crates/`. CI gate: `cargo-about` + `package.json` license check fails on GPL/AGPL/unknown. See `THIRD_PARTY_NOTICES.md` for attribution. **Zed = study-only (AGPL). Cursor/Codex = never lift (proprietary ToS).**
-
-See [ch.12 §12.5](12-competitive-matrix.md) for the full OSS harvest map.
+The original 13-chapter backend bible (now implemented as code), the 5-doc front-end bible (now folded into `HIDE_PLAN.md`), and the standalone `MASTER_PLAN.md` were archived (removed from the tree, fully retrievable) on 2026-06-28; see the "2026-06-28 pass" section of [`../ARCHIVE_INDEX.md`](../ARCHIVE_INDEX.md) for the file list and retrieval commands. Reference only; the live spec is `HIDE_PLAN.md` and the code.

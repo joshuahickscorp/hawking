@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+_agent_env="$(git rev-parse --show-toplevel 2>/dev/null)/.agent_env"
+[ -f "$_agent_env" ] && source "$_agent_env"
+unset _agent_env
 # tools/bench/path_to_50_matrix.sh
 #
 # Bench matrix for the path-to-50 consolidation. Runs every lever
@@ -17,9 +20,9 @@
 # so its contribution shows up in the L4 row vs the pre-T2.16 baseline in
 # artifacts/runs/overnight/spec_decode_sweep.md.
 #
-# This script MUST be run with Claude Code's desktop app fully quit
+# This script MUST be run with the coding agent's desktop app fully quit
 # (Cmd+Q both the app and any CLI sessions) — see
-# memory/bench_contamination.md. It uses --strict to enforce this.
+# project design memory. It uses --strict to enforce this.
 #
 # Usage:
 #   bash tools/bench/path_to_50_matrix.sh                  # full matrix
@@ -61,10 +64,10 @@ echo "levers:            $LEVERS"
 echo "run dir:           $RUN_DIR"
 echo
 
-if pgrep -f "Claude.app" > /dev/null 2>&1; then
-    echo "❌ Claude desktop app is running. Bench numbers will be 4-5x"
-    echo "   contaminated (memory/bench_contamination.md). Quit Claude and re-run."
-    echo "   This script is STRICT — it will not run with Claude live."
+if pgrep -f "${AGENT_APP_PGREP:?see .agent_env.example}" > /dev/null 2>&1; then
+    echo "❌ The agent desktop app is running. Bench numbers will be 4-5x"
+    echo "   contaminated (see project design memory). Quit the agent and re-run."
+    echo "   This script is STRICT — it will not run with the agent live."
     exit 64
 fi
 
@@ -199,7 +202,7 @@ jq -s '
 {
     echo "# path-to-50 bench matrix — $UTC"
     echo
-    echo "**Conditions:** $TOKENS tokens × $TRIALS trials per lever, Claude quit, M3 Pro 18 GB."
+    echo "**Conditions:** $TOKENS tokens × $TRIALS trials per lever, agent quit, M3 Pro 18 GB."
     echo
     echo "| Lever | Median tps | Δ vs L0 | Δ% | Notes |"
     echo "|---|---:|---:|---:|---|"

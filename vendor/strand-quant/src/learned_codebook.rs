@@ -1,7 +1,9 @@
-
 use crate::codebook::QUANTILE_SHIFT;
 
 pub const RECON_CLAMP_Q12: i32 = 6 << QUANTILE_SHIFT;
+/// Bound per-tensor k-means memory/work. Full-tensor evaluation still chooses learned vs frozen;
+/// only centroid training is deterministically sampled.
+pub const MAX_TRAIN_VECTORS: usize = 16_384;
 
 #[derive(Clone, Debug)]
 struct SplitMix64 {
@@ -27,7 +29,7 @@ impl SplitMix64 {
     fn next_below(&mut self, n: usize) -> usize {
         debug_assert!(n > 0);
         let n = n as u64;
-        
+
         let zone = u64::MAX - (u64::MAX % n);
         loop {
             let r = self.next_u64();
@@ -39,25 +41,22 @@ impl SplitMix64 {
 
     #[inline]
     fn next_f64(&mut self) -> f64 {
-        
         (self.next_u64() >> 11) as f64 * (1.0 / (1u64 << 53) as f64)
     }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct TrainConfig {
-    
     pub d: usize,
-    
+
     pub k_centroids: usize,
-    
+
     pub iters: usize,
-    
+
     pub seed: u64,
 }
 
 impl TrainConfig {
-    
     pub fn new(d: usize, k_centroids: usize) -> Self {
         TrainConfig {
             d,
@@ -70,16 +69,14 @@ impl TrainConfig {
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Centroids {
-    
     pub data: Vec<f64>,
-    
+
     pub d: usize,
-    
+
     pub k: usize,
 }
 
 impl Centroids {
-    
     #[inline]
     pub fn centroid(&self, i: usize) -> &[f64] {
         &self.data[i * self.d..i * self.d + self.d]
@@ -100,7 +97,7 @@ impl Centroids {
             let (_, dist) = nearest_centroid(x, &self.data, self.k, self.d);
             acc += dist;
         }
-        
+
         acc / (n as f64 * self.d as f64)
     }
 }
@@ -132,12 +129,12 @@ fn nearest_centroid(x: &[f64], centroids: &[f64], k: usize, d: usize) -> (usize,
 
 fn kmeans_pp_init(points: &[f64], n: usize, d: usize, k: usize, rng: &mut SplitMix64) -> Vec<f64> {
     let mut centroids = vec![0.0f64; k * d];
-    
+
     let first = rng.next_below(n);
     centroids[0..d].copy_from_slice(&points[first * d..first * d + d]);
 
     let mut d2 = vec![f64::INFINITY; n];
-    
+
     for chosen in 1..k {
         let last = &centroids[(chosen - 1) * d..(chosen - 1) * d + d];
         let mut total = 0.0f64;
@@ -149,11 +146,11 @@ fn kmeans_pp_init(points: &[f64], n: usize, d: usize, k: usize, rng: &mut SplitM
             }
             total += d2[p];
         }
-        
+
         let pick = if total > 0.0 {
             let target = rng.next_f64() * total;
             let mut cum = 0.0f64;
-            let mut idx = n - 1; 
+            let mut idx = n - 1;
             for p in 0..n {
                 cum += d2[p];
                 if cum > target {
@@ -163,7 +160,6 @@ fn kmeans_pp_init(points: &[f64], n: usize, d: usize, k: usize, rng: &mut SplitM
             }
             idx
         } else {
-            
             0
         };
         centroids[chosen * d..chosen * d + d].copy_from_slice(&points[pick * d..pick * d + d]);
@@ -194,7 +190,6 @@ pub fn train(samples: &[f32], cfg: &TrainConfig) -> Centroids {
     let mut counts = vec![0usize; k];
 
     for _ in 0..cfg.iters {
-        
         for p in 0..n {
             let x = &points[p * d..p * d + d];
             let (best, _) = nearest_centroid(x, &centroids, k, d);
@@ -225,7 +220,6 @@ pub fn train(samples: &[f32], cfg: &TrainConfig) -> Centroids {
                     centroids[base + j] = sums[base + j] * inv;
                 }
             } else {
-                
                 let mut worst_p = 0usize;
                 let mut worst_d = -1.0f64;
                 for p in 0..n {
@@ -239,9 +233,7 @@ pub fn train(samples: &[f32], cfg: &TrainConfig) -> Centroids {
                     }
                 }
                 let base = i * d;
-                centroids[base..base + d]
-                    .copy_from_slice(&points[worst_p * d..worst_p * d + d]);
-                
+                centroids[base..base + d].copy_from_slice(&points[worst_p * d..worst_p * d + d]);
             }
         }
     }
@@ -268,16 +260,14 @@ fn component_to_q12(x: f64) -> i32 {
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct FrozenCodebook {
-    
     pub table: Vec<i32>,
-    
+
     pub d: usize,
-    
+
     pub k: usize,
 }
 
 impl FrozenCodebook {
-    
     #[inline]
     pub fn reconstruct(&self, index: usize) -> &[i32] {
         &self.table[index * self.d..index * self.d + self.d]
@@ -311,13 +301,29 @@ pub fn train_state_vector_lut(
     iters: usize,
 ) -> Vec<i32> {
     let k = 1usize << l_bits;
+    let d = d.max(1);
+    let n = samples.len() / d;
+    let sampled: Vec<f32>;
+    let training = if n > MAX_TRAIN_VECTORS {
+        let offset = (seed as usize) % n;
+        let mut values = Vec::with_capacity(MAX_TRAIN_VECTORS * d);
+        for i in 0..MAX_TRAIN_VECTORS {
+            let base = ((i as u128 * n as u128) / MAX_TRAIN_VECTORS as u128) as usize;
+            let p = (offset + base) % n;
+            values.extend_from_slice(&samples[p * d..p * d + d]);
+        }
+        sampled = values;
+        sampled.as_slice()
+    } else {
+        &samples[..n * d]
+    };
     let cfg = TrainConfig {
-        d: d.max(1),
+        d,
         k_centroids: k,
         iters,
         seed,
     };
-    let centroids = train(samples, &cfg);
+    let centroids = train(training, &cfg);
     freeze_centroids(&centroids).table
 }
 
@@ -340,7 +346,6 @@ mod tests {
         let mut rng = SplitMix64::new(seed);
         let mut out = Vec::with_capacity(n * d);
         for _ in 0..n * d {
-            
             let u1 = rng.next_f64().max(1e-12);
             let u2 = rng.next_f64();
             let r = (-2.0 * u1.ln()).sqrt();
@@ -359,8 +364,11 @@ mod tests {
         let q_to_real = 1.0f64 / (1u32 << QUANTILE_SHIFT) as f64;
         let mut acc = 0.0f64;
         for p in 0..n {
-            let x: Vec<f64> = samples[p * d..p * d + d].iter().map(|&w| w as f64).collect();
-            
+            let x: Vec<f64> = samples[p * d..p * d + d]
+                .iter()
+                .map(|&w| w as f64)
+                .collect();
+
             let mut best_d = f64::INFINITY;
             for i in 0..fc.k {
                 let c = fc.reconstruct(i);
@@ -381,7 +389,6 @@ mod tests {
 
     #[test]
     fn d1_reduces_to_scalar_quantization() {
-        
         let mut samples = Vec::new();
         for _ in 0..40 {
             samples.push(-2.0f32);
@@ -401,7 +408,7 @@ mod tests {
         let c = train(&samples, &cfg);
         assert_eq!(c.d, 1);
         assert_eq!(c.k, 3);
-        
+
         let mut centres: Vec<f64> = (0..3).map(|i| c.centroid(i)[0]).collect();
         centres.sort_by(|a, b| a.partial_cmp(b).unwrap());
         assert!((centres[0] - (-2.0)).abs() < 1e-6, "got {centres:?}");
@@ -455,7 +462,7 @@ mod tests {
             trained_mse < random_mse,
             "training did not reduce MSE: trained {trained_mse} vs random {random_mse}"
         );
-        
+
         assert!(
             trained_mse < 0.9 * random_mse,
             "training reduced MSE only marginally: trained {trained_mse} vs random {random_mse}"
@@ -492,15 +499,18 @@ mod tests {
             let fz = fc.reconstruct(i);
             assert_eq!(fz.len(), d);
             for j in 0..d {
-                
                 let got = fz[j] as f64 * q_to_real;
                 let want = fl[j].clamp(-6.0, 6.0);
                 assert!(
                     (got - want).abs() <= q_to_real,
                     "centroid {i} comp {j}: frozen {got} vs float {want}"
                 );
-                
-                assert!(fz[j].abs() <= RECON_CLAMP_Q12, "entry exceeds clamp: {}", fz[j]);
+
+                assert!(
+                    fz[j].abs() <= RECON_CLAMP_Q12,
+                    "entry exceeds clamp: {}",
+                    fz[j]
+                );
             }
         }
 
@@ -512,7 +522,7 @@ mod tests {
     fn two_runs_are_bit_identical() {
         let d = 5;
         let k = 32;
-        
+
         let samples = synth_gaussian(6000, d, 0xDEAD_BEEF);
         let cfg = TrainConfig {
             d,
@@ -526,18 +536,28 @@ mod tests {
 
         assert_eq!(a.d, b.d);
         assert_eq!(a.k, b.k);
-        assert_eq!(a.table, b.table, "frozen tables differ across identical runs");
-        assert_eq!(fnv1a(&a.table), fnv1a(&b.table), "golden hash differs across runs");
+        assert_eq!(
+            a.table, b.table,
+            "frozen tables differ across identical runs"
+        );
+        assert_eq!(
+            fnv1a(&a.table),
+            fnv1a(&b.table),
+            "golden hash differs across runs"
+        );
 
         let ca = train(&samples, &cfg);
         let cb = train(&samples, &cfg);
-        assert_eq!(ca.data, cb.data, "float centroids differ across identical runs");
+        assert_eq!(
+            ca.data, cb.data,
+            "float centroids differ across identical runs"
+        );
     }
 
     #[test]
     fn splitmix64_stream_is_pinned() {
         let mut rng = SplitMix64::new(0);
-        
+
         assert_eq!(rng.next_u64(), 0xE220_A839_7B1D_CDAF);
         assert_eq!(rng.next_u64(), 0x6E78_9E6A_A1B9_65F4);
         assert_eq!(rng.next_u64(), 0x06C4_5D18_8009_454F);
@@ -564,7 +584,7 @@ mod tests {
     fn fewer_points_than_k_is_deterministic() {
         let d = 2;
         let k = 16;
-        
+
         let samples: Vec<f32> = (0..10).map(|i| i as f32 * 0.1).collect();
         let cfg = TrainConfig {
             d,
@@ -576,5 +596,18 @@ mod tests {
         let b = train(&samples, &cfg);
         assert_eq!(a.data, b.data);
         assert_eq!(a.k, k);
+    }
+
+    #[test]
+    fn oversized_training_is_deterministically_sampled() {
+        let d = 2;
+        let n = MAX_TRAIN_VECTORS + 137;
+        let samples: Vec<f32> = (0..n * d)
+            .map(|i| ((i * 17 % 1009) as f32 - 504.0) / 211.0)
+            .collect();
+        let a = train_state_vector_lut(&samples, 3, d, 0x1234_5678, 2);
+        let b = train_state_vector_lut(&samples, 3, d, 0x1234_5678, 2);
+        assert_eq!(a, b);
+        assert_eq!(a.len(), (1usize << 3) * d);
     }
 }

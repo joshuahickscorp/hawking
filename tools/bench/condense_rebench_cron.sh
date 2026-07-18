@@ -35,7 +35,7 @@ PY
   echo "[cron] === ppl sweep (f16 vs TQ3 vs TQ2) ==="
   bash tools/condense/quality_sweep.sh scratch/qwen-05b 3,2 2>&1 | tail -20
   echo "[cron] === DOCTOR (self-CE, diverse calib): 2-bit, 300 steps (the money shot) ==="
-  python3.12 tools/condense/doctor_qat.py 2 300 3e-5 scratch/qwen-05b-healed2.safetensors 2>&1 | tail -30 || echo "[cron] doctor-2 failed"
+  python3.12 tools/condense/doctor.py qat 2 300 3e-5 scratch/qwen-05b-healed2.safetensors 2>&1 | tail -30 || echo "[cron] doctor-2 failed"
   echo "[cron] === PRODUCT bridge: STRAND-bake the healed shadow -> real TQ2 ppl ==="
   vendor/strand-quant/target/release/quantize-model --in scratch/qwen-05b-healed2.raw.safetensors \
     --out scratch/qwen-05b-healed2-strand.safetensors --bits 2 --quality --rht-cols \
@@ -44,11 +44,11 @@ PY
   echo "[cron] === 3-WAY QUALITY: healed TQ2 vs llama Q4_K (the win check) ==="
   bash tools/condense/quality_3way.sh scratch/qwen-05b-healed2-strand.safetensors "tq2+doctor" 2>&1 | tail -10 || echo "[cron] 3way failed"
   echo "[cron] === DOCTOR (KD): distillation 2-bit, 300 steps ==="
-  KD=1 python3.12 tools/condense/doctor_qat.py 2 300 2e-5 scratch/qwen-05b-healed2kd.safetensors 2>&1 | tail -12 || echo "[cron] doctor-2-kd failed"
+  KD=1 python3.12 tools/condense/doctor.py qat 2 300 2e-5 scratch/qwen-05b-healed2kd.safetensors 2>&1 | tail -12 || echo "[cron] doctor-2-kd failed"
   echo "[cron] === DOCTOR: 3-bit, 200 steps ==="
-  python3.12 tools/condense/doctor_qat.py 3 200 2e-5 scratch/qwen-05b-healed3.safetensors 2>&1 | tail -8 || echo "[cron] doctor-3 failed"
+  python3.12 tools/condense/doctor.py qat 3 200 2e-5 scratch/qwen-05b-healed3.safetensors 2>&1 | tail -8 || echo "[cron] doctor-3 failed"
 
-  # ── 2. tps/footprint: full rigorous bench, CLEAN (cron has no Claude inflating tps) ──
+  # ── 2. tps/footprint: full rigorous bench, CLEAN (cron has no agent inflating tps) ──
   echo "[cron] === SOTA bench (Hawking vs llama vs MLX) ==="
   TRIALS=5 TOK=256 BIT_TARGETS=8,6,5,4,3,2,1 STRICT_CLEAN=0 \
     OUT="reports/sota-compare/cron-${STAMP}" bash tools/bench/compare_sota.sh

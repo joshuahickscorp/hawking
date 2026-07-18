@@ -38,7 +38,7 @@ GPU_WAIT=1 tools/ci/regression_gate.sh
 
 It is a **category-regression** gate, not a micro-benchmark: floors sit ~10–15% below the
 measured warm median because the fresh-process warm-median has a ±several-% noise floor
-(see `docs/campaign/test_matrix.md`). It catches a lever being silently disabled
+(see `docs/campaign/test_matrix.md`, archived, see `docs/ARCHIVE_INDEX.md`). It catches a lever being silently disabled
 (predec OFF = −46.7%), a quant path regressing, or a quality collapse — without flapping.
 A check whose inputs are unavailable is reported SKIPPED, never a false PASS. The baseline's
 `pending_not_enforced` block (serve-tps, int4-KV perplexity, instruct-quality) is printed so
@@ -46,7 +46,7 @@ gaps are not mistaken for coverage. `preflight.sh` runs the footprint gate alway
 gate in its bench block; `overnight_hardening.sh` runs it via `RUN_REGRESSION=1` (default on).
 
 Update the baseline only with attended review + fresh warm-median evidence, and record the
-change in `docs/campaign/test_matrix.md`.
+change in `docs/campaign/test_matrix.md`, archived, see `docs/ARCHIVE_INDEX.md`.
 
 ## `overnight_hardening.sh`
 

@@ -19,9 +19,64 @@ repository = "https://github.com/strand-compress/strand"
 [dependencies]
 wide      = "0.7"   # concrete (not workspace-inherited): see the self-contained note above
 
+[features]
+# The canonical release path remains unchanged unless this feature is selected.
+# Promotion is additionally opt-in at the API/caller level; enabling the feature
+# alone never changes `encode_tensor*` behavior or runtime defaults.
+default = []
+block-parallel = []
+ordered-pipeline = ["block-parallel"]
+native-execution = ["ordered-pipeline", "dep:memmap2"]
+metal-rht-probe = []
+
+[[bin]]
+name = "gate-block-parallel"
+path = "src/bin/gate-block-parallel.rs"
+required-features = ["block-parallel"]
+
+[[bin]]
+name = "gate-quantize-model-block-parallel"
+path = "src/bin/gate-quantize-model-block-parallel.rs"
+required-features = ["block-parallel"]
+
+[[bin]]
+name = "gate-ordered-pipeline"
+path = "src/bin/gate-ordered-pipeline.rs"
+required-features = ["ordered-pipeline"]
+
+[[bin]]
+name = "gate-quantize-model-ordered-pipeline"
+path = "src/bin/gate-quantize-model-ordered-pipeline.rs"
+required-features = ["ordered-pipeline"]
+
+[[bin]]
+name = "quantize-model-block-parallel"
+path = "src/bin/quantize-model.rs"
+required-features = ["block-parallel"]
+
+[[bin]]
+name = "quantize-model-ordered-pipeline"
+path = "src/bin/quantize-model.rs"
+required-features = ["ordered-pipeline"]
+
+[[bin]]
+name = "quantize-model-native"
+path = "src/bin/quantize-model.rs"
+required-features = ["native-execution"]
+
+[[bin]]
+name = "probe-metal-rht"
+path = "src/bin/probe-metal-rht.rs"
+required-features = ["metal-rht-probe"]
+
+[[bin]]
+name = "quantize-model"
+path = "src/bin/quantize-model.rs"
+
 [target.'cfg(target_os = "macos")'.dependencies]
 metal = "0.27"
 objc  = "0.2"
+memmap2 = { version = "0.9", optional = true }
 
 [dev-dependencies]
 # (none — tests are self-contained)

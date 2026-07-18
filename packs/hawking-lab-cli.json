@@ -1,0 +1,24 @@
+{
+  "archive_sha256": "032352342547fd1bc9909beb5e0ed5e59a31a820fe9a679a93dc1f65c2b869ed",
+  "bins_removed": [
+    "hawking-tq-device-probe",
+    "hawking-tq-spec-probe",
+    "hawking-spec-acceptance-measure"
+  ],
+  "content_loc": 2810,
+  "files": [
+    "crates/hawking/src/tq_device_probe.rs",
+    "crates/hawking/src/tq_spec_probe.rs",
+    "crates/hawking/src/spec_acceptance_measure.rs",
+    "crates/hawking/src/process_joule.rs"
+  ],
+  "hydrate": "tar xzf pack.tar.gz -C <root> + restore [[bin]] entries in crates/hawking/Cargo.toml",
+  "manifest_sha256": "260104e6c16968dc51b36721e4422f88345c14b4c0c5ec40ff2d3e95b1184758",
+  "offline_cache": "/Users/scammermike/Downloads/hawking-packs/hawking-lab-cli",
+  "pack": "hawking-lab-cli",
+  "reason": "standalone diagnostic/probe binaries (tq-device-probe, tq-spec-probe, spec-acceptance-measure) + process_joule (Architecture B CLI condensation)",
+  "rollback": "git checkout 7cf04408e51d -- crates/hawking",
+  "schema": "hawking.pack.manifest.v1",
+  "source_commit": "7cf04408e51d94d6ad332f14dbbddc0a182c11e0",
+  "version": "1.0.0"
+}

@@ -19,7 +19,7 @@
 //! `forward_token_greedy_tcb`) is a follow-up best done with a real
 //! GGUF in hand to bench against.
 
-use super::arch_config::ArchReader;
+use super::arch_config::{token_embd_vocab_size, ArchReader};
 use super::weights::{dequant_f16, dequant_f32, tensor_ref, TensorRef};
 use crate::attn::mha_decode_step;
 use crate::cache::KvCache;
@@ -89,17 +89,9 @@ impl LlamaConfig {
         let intermediate = r.req_usize("feed_forward_length")?;
         let vocab_size = match get_u32("llama.vocab_size") {
             Some(v) => v as usize,
-            None => {
-                // GGUF dim ordering varies; vocab >> hidden in practice,
-                // so the max dim on the embed tensor is the vocab size.
-                let dims = g
-                    .tensor("token_embd.weight")
-                    .map(|t| t.dims.clone())
-                    .ok_or_else(|| {
-                        Error::Model("vocab size not in metadata or token_embd dims".into())
-                    })?;
-                dims.iter().copied().max().unwrap_or(0) as usize
-            }
+            // GGUF dim ordering varies; vocab >> hidden in practice, so the max
+            // dim on the embed tensor is the vocab size.
+            None => token_embd_vocab_size(g, "vocab size not in metadata or token_embd dims")?,
         };
         let rope_theta = r.opt_f32("rope.freq_base", 500_000.0);
         let rms_norm_eps = r.opt_f32("attention.layer_norm_rms_epsilon", 1e-5);
@@ -656,7 +648,6 @@ impl Engine for LlamaDense {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use crate::kernels::Llama3RopeScaling;
 
     /// Llama-3.2 reference RoPE-scaling values that should round-trip

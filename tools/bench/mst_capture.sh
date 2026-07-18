@@ -29,6 +29,10 @@
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 
+_agent_env="$(git rev-parse --show-toplevel 2>/dev/null)/.agent_env"
+[ -f "$_agent_env" ] && source "$_agent_env"
+unset _agent_env
+
 if ! command -v xcrun >/dev/null 2>&1; then
     echo "error: xcrun not found. MST requires macOS + Xcode command-line tools." >&2
     exit 1
@@ -53,9 +57,9 @@ if [ ! -x "$BIN" ]; then
     exit 1
 fi
 
-if pgrep -f "Claude.app" >/dev/null 2>&1; then
-    echo "⚠️  Claude desktop app is running — trace counters will reflect contention." >&2
-    echo "   For clean dispatch-count numbers, Cmd+Q Claude first." >&2
+if pgrep -f "${AGENT_APP_PGREP:?see .agent_env.example}" >/dev/null 2>&1; then
+    echo "⚠️  the agent desktop app is running — trace counters will reflect contention." >&2
+    echo "   For clean dispatch-count numbers, Cmd+Q the agent first." >&2
 fi
 
 mkdir -p "$TRACES_DIR"

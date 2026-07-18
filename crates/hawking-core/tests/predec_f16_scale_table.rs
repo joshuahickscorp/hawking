@@ -5,8 +5,8 @@
 
 #![cfg(target_os = "macos")]
 
-use hawking_core::kernels::{predecode_q4_k_scale_table, predecode_q4_k_scale_table_f16};
 use half::f16;
+use hawking_core::kernels::{predecode_q4_k_scale_table, predecode_q4_k_scale_table_f16};
 
 /// One row of 64 Q4_K blocks with realistic header scales (d ~0.01, dmin small)
 /// and deterministic packed sub-block bytes.

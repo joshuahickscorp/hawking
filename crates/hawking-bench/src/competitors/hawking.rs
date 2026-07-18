@@ -1,8 +1,6 @@
 use super::{Competitor, Measurement};
 use anyhow::{anyhow, Result};
-use hawking_core::{
-    Engine, EngineConfig, GenStats, GenerateRequest, SamplingParams, StreamEvent,
-};
+use hawking_core::{Engine, EngineConfig, GenStats, GenerateRequest, SamplingParams, StreamEvent};
 use std::path::{Path, PathBuf};
 use std::time::Instant;
 

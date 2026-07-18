@@ -1,0 +1,35 @@
+{
+  "active_product_loc": 88418,
+  "branch": "codex/clean-slate-collapse",
+  "commit": "b31467f1",
+  "fixture_coverage_finding": "SmolLM-135M (llama) uses ZERO speculate/eagle5 -> the harness covers the GENERIC speculate path (exact-shared/suffix-automaton) but NOT eagle5 (only qwen 115-refs + deepseek 35-refs use it). Full speculate inversion's eagle5 arm needs a qwen/deepseek GGUF + trained eagle5 head fixture to parity-verify; the generic-proposer extraction IS SmolLM-verifiable.",
+  "generated_at": "2026-07-18T02:47:38Z",
+  "hawking_core_src": 52413,
+  "hawking_speculate_crate": 6312,
+  "next_exact_edit": "E kernel-bank: define KernelContract ABI + selector in hawking-core, move one q4k gemm family's tuned variants to crates/hawking-kernel-bank behind the ABI, decode-parity gate. OR feature-gate hawking-speculate optional in hawking-core for the minimal profile.",
+  "no_heavy_run": true,
+  "order_of_operations": {
+    "A_cli_<=2.5k": "partial (11,385->4,851; probes+studio+bench packed, decode-parity GREEN). REMAINING ~2.35k: extract inline dev-command handlers from main.rs (Bench/Autotune/SpecOracle/MacProfile/ProfileRank/ShaderHash/BatchHash/Stats) + command-registry refactor",
+    "B_python_<=10k": "not started - eco_*/succ_* -> hawking_control unification (live-gated rewrite)",
+    "C_parity_harness": "DONE + PROVEN as a gate: verified GREEN after the bench-command CLI extraction (bit-identical). Tags nuclear-parity, nuclear-cli.",
+    "D_speculate_inversion": "DONE (relocation): generic speculate physically extracted hawking-core -> hawking-speculate crate (6,312 LOC), leaf crate, cycle broken via Box<dyn Error> callback boundary. decode-parity GREEN, 123 spec lib tests pass. hawking-core src 58.7k->52.4k. REMAINING: feature-gate for minimal-profile-without-speculate; positive speculate parity needs qwen fixture.",
+    "E_kernel_bank": "NEXT - same pattern: operation ABI + baseline in kernel, tuned Metal variants to hawking-kernel-bank, decode-parity gated",
+    "F_serving": "4.4k -> 2-3k",
+    "G_arch_A": "monolith prototype",
+    "H_arch_B": "3 profiles",
+    "I": "select",
+    "J": "<=50k",
+    "K": "receipt",
+    "L": "heavy-run readiness (print not launch)"
+  },
+  "rollback_tags": [
+    "nuclear-parity",
+    "nuclear-cli",
+    "nuclear-speculate-pack"
+  ],
+  "schema": "hawking.nuclear_pasta_state.v1",
+  "sha256": "a9cae921c71f006060c8c3e2b0b452228436237e7bc455f9e5205b13c0602b76",
+  "status": "descent in progress",
+  "target": "kernel <=50k OR two implemented architectures prove a higher floor",
+  "tests": "165 py + hawking 17+2 + hawking-core 205 lib; decode parity GREEN"
+}

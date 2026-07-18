@@ -1,11 +1,10 @@
-
 pub const MAGIC: &[u8; 4] = b"STRQ";
 pub const VERSION: u32 = 1;
 
 pub mod flags {
     pub const TAIL_BITING: u32 = 1 << 0;
-    pub const AFFINE_MIN:  u32 = 1 << 1;
-    pub const HAS_RHT:     u32 = 1 << 2;
+    pub const AFFINE_MIN: u32 = 1 << 1;
+    pub const HAS_RHT: u32 = 1 << 2;
 }
 
 #[derive(Debug, Clone)]
@@ -60,9 +59,15 @@ pub fn write_strand(tensors: &[PackedTensor]) -> Vec<u8> {
         o.push(t.k_bits);
         o.push(t.vec_dim);
         let mut f = 0u8;
-        if t.enc.has_rht_seed { f |= 1; }
-        if t.enc.tail_biting { f |= 2; }
-        if t.enc.has_affine_min { f |= 4; }
+        if t.enc.has_rht_seed {
+            f |= 1;
+        }
+        if t.enc.tail_biting {
+            f |= 2;
+        }
+        if t.enc.has_affine_min {
+            f |= 4;
+        }
         o.push(f);
         o.extend_from_slice(&(t.enc.total as u64).to_le_bytes());
         o.extend_from_slice(&(t.enc.bits.len() as u64).to_le_bytes());
@@ -95,10 +100,18 @@ impl<'a> Rd<'a> {
         self.p += n;
         Ok(s)
     }
-    fn u8(&mut self) -> Result<u8, String> { Ok(self.take(1)?[0]) }
-    fn u32(&mut self) -> Result<u32, String> { Ok(u32::from_le_bytes(self.take(4)?.try_into().unwrap())) }
-    fn u64(&mut self) -> Result<u64, String> { Ok(u64::from_le_bytes(self.take(8)?.try_into().unwrap())) }
-    fn i32(&mut self) -> Result<i32, String> { Ok(i32::from_le_bytes(self.take(4)?.try_into().unwrap())) }
+    fn u8(&mut self) -> Result<u8, String> {
+        Ok(self.take(1)?[0])
+    }
+    fn u32(&mut self) -> Result<u32, String> {
+        Ok(u32::from_le_bytes(self.take(4)?.try_into().unwrap()))
+    }
+    fn u64(&mut self) -> Result<u64, String> {
+        Ok(u64::from_le_bytes(self.take(8)?.try_into().unwrap()))
+    }
+    fn i32(&mut self) -> Result<i32, String> {
+        Ok(i32::from_le_bytes(self.take(4)?.try_into().unwrap()))
+    }
 }
 
 pub fn read_strand(buf: &[u8]) -> Result<Vec<OwnedTensor>, String> {
@@ -139,7 +152,14 @@ pub fn read_strand(buf: &[u8]) -> Result<Vec<OwnedTensor>, String> {
             let sub_scales = r.take(sl)?.to_vec();
             let ml = r.u32()? as usize;
             let mins = r.take(ml)?.to_vec();
-            blocks.push(BlockMeta { scale_q, sub_scales, min_base_q, mins, init_state, n: nn });
+            blocks.push(BlockMeta {
+                scale_q,
+                sub_scales,
+                min_base_q,
+                mins,
+                init_state,
+                n: nn,
+            });
         }
         out.push(OwnedTensor {
             name,
@@ -168,10 +188,10 @@ pub const VERSION_V2: u32 = 2;
 pub const PAGE: usize = 4096;
 
 pub mod section_tag {
-    pub const SDSC: &[u8; 4] = b"SDSC"; 
-    pub const OUTL: &[u8; 4] = b"OUTL"; 
-    pub const SPRV: &[u8; 4] = b"SPRV"; 
-    pub const RSLT: &[u8; 4] = b"RSLT"; 
+    pub const SDSC: &[u8; 4] = b"SDSC";
+    pub const OUTL: &[u8; 4] = b"OUTL";
+    pub const SPRV: &[u8; 4] = b"SPRV";
+    pub const RSLT: &[u8; 4] = b"RSLT";
 }
 
 pub mod flags_v2 {
@@ -192,7 +212,6 @@ pub mod flags_v2 {
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct BlockOffsetRecord {
-
     pub bit_offset: u64,
 
     pub init_state: u32,
@@ -233,6 +252,8 @@ pub struct PackedTensorV2<'a> {
 #[derive(Clone, Debug)]
 pub struct OwnedTensorV2 {
     pub base: OwnedTensor,
+    /// Per-column RHT mode persisted in tensor descriptor flag bit 3.
+    pub rht_cols: bool,
     pub block_len: u32,
     pub table: Vec<BlockOffsetRecord>,
 }
@@ -256,7 +277,11 @@ fn num_steps_for(n: usize, vec_dim: u8) -> usize {
 
 #[inline]
 fn in_features_of(shape: &[u64]) -> Option<u64> {
-    if shape.len() >= 2 { Some(shape[1]) } else { None }
+    if shape.len() >= 2 {
+        Some(shape[1])
+    } else {
+        None
+    }
 }
 
 pub fn write_strand_v2(
@@ -332,11 +357,11 @@ fn write_strand_v2_inner(
     o.extend_from_slice(MAGIC_V2);
     o.extend_from_slice(&VERSION_V2.to_le_bytes());
     let header_bytes_pos = o.len();
-    o.extend_from_slice(&0u32.to_le_bytes()); 
+    o.extend_from_slice(&0u32.to_le_bytes());
     o.extend_from_slice(&(tensors.len() as u32).to_le_bytes());
     o.extend_from_slice(&flags.to_le_bytes());
     o.extend_from_slice(&source_sha256);
-    o.extend_from_slice(&0u32.to_le_bytes()); 
+    o.extend_from_slice(&0u32.to_le_bytes());
 
     struct Patch {
         table_off_pos: usize,
@@ -360,28 +385,36 @@ fn write_strand_v2_inner(
         o.push(b.l_bits);
         o.push(b.k_bits);
         o.push(b.vec_dim);
-        
+
         let mut f = 0u8;
-        if b.enc.has_rht_seed { f |= 1; }
-        if b.enc.tail_biting { f |= 2; }
-        if b.enc.has_affine_min { f |= 4; }
-        if rht_cols.get(ti).copied().unwrap_or(false) { f |= 8; }
+        if b.enc.has_rht_seed {
+            f |= 1;
+        }
+        if b.enc.tail_biting {
+            f |= 2;
+        }
+        if b.enc.has_affine_min {
+            f |= 4;
+        }
+        if rht_cols.get(ti).copied().unwrap_or(false) {
+            f |= 8;
+        }
         o.push(f);
         o.extend_from_slice(&bl.to_le_bytes());
         o.extend_from_slice(&(b.enc.total as u64).to_le_bytes());
         o.extend_from_slice(&(b.enc.blocks.len() as u64).to_le_bytes());
-        o.extend_from_slice(&0u32.to_le_bytes()); 
-        o.extend_from_slice(&0u32.to_le_bytes()); 
+        o.extend_from_slice(&0u32.to_le_bytes());
+        o.extend_from_slice(&0u32.to_le_bytes());
         let table_off_pos = o.len();
-        o.extend_from_slice(&0u64.to_le_bytes()); 
+        o.extend_from_slice(&0u64.to_le_bytes());
         let payload_off_pos = o.len();
-        o.extend_from_slice(&0u64.to_le_bytes()); 
+        o.extend_from_slice(&0u64.to_le_bytes());
         let payload_bytes_pos = o.len();
-        o.extend_from_slice(&0u64.to_le_bytes()); 
+        o.extend_from_slice(&0u64.to_le_bytes());
         let sideinfo_off_pos = o.len();
-        o.extend_from_slice(&0u64.to_le_bytes()); 
+        o.extend_from_slice(&0u64.to_le_bytes());
         let sideinfo_bytes_pos = o.len();
-        o.extend_from_slice(&0u64.to_le_bytes()); 
+        o.extend_from_slice(&0u64.to_le_bytes());
         patches.push(Patch {
             table_off_pos,
             payload_off_pos,
@@ -419,16 +452,14 @@ fn write_strand_v2_inner(
         pad_to_page(&mut o);
 
         let has_subscales = enc.blocks.iter().any(|b| !b.sub_scales.is_empty());
-        let has_mins = enc.has_affine_min
-            && enc.blocks.iter().any(|b| !b.mins.is_empty());
+        let has_mins = enc.has_affine_min && enc.blocks.iter().any(|b| !b.mins.is_empty());
         let (sideinfo_offset, sideinfo_bytes) = if has_subscales || has_mins {
             let sideinfo_offset = o.len() as u64;
-            
+
             for b in &enc.blocks {
                 o.extend_from_slice(&b.sub_scales);
             }
             if has_mins {
-                
                 let aligned = align_up(o.len(), 4);
                 o.resize(aligned, 0u8);
                 for b in &enc.blocks {
@@ -485,7 +516,7 @@ pub struct TensorHeaderV2 {
     pub payload_bytes: usize,
     pub sideinfo_offset: usize,
     pub sideinfo_bytes: usize,
-    
+
     pub table: Vec<BlockOffsetRecord>,
 }
 
@@ -497,7 +528,6 @@ pub struct StrandV2Header {
 }
 
 impl StrandV2Header {
-    
     pub fn all_strict(&self) -> bool {
         self.flags & flags_v2::ALL_STRICT != 0
     }
@@ -537,8 +567,10 @@ pub fn read_strand_v2_header(buf: &[u8]) -> Result<StrandV2Header, String> {
     let rec_stride = BlockOffsetRecord::stride_for(flags);
     let scaleq_in_sdsq = flags & flags_v2::SCALEQ_IN_SDSQ != 0;
     let mut source_sha256 = [0u8; 32];
-    source_sha256
-        .copy_from_slice(buf.get(20..52).ok_or("strand v2: EOF reading source_sha256")?);
+    source_sha256.copy_from_slice(
+        buf.get(20..52)
+            .ok_or("strand v2: EOF reading source_sha256")?,
+    );
 
     let mut p = 56usize;
     let mut tensors = Vec::with_capacity(n_tensors);
@@ -572,7 +604,7 @@ pub fn read_strand_v2_header(buf: &[u8]) -> Result<StrandV2Header, String> {
         p += 8;
         let n_blocks = rd_u64(p)? as usize;
         p += 8;
-        p += 8; 
+        p += 8;
         let table_offset = rd_u64(p)? as usize;
         p += 8;
         let payload_offset = rd_u64(p)? as usize;
@@ -585,13 +617,19 @@ pub fn read_strand_v2_header(buf: &[u8]) -> Result<StrandV2Header, String> {
         p += 8;
 
         if table_offset % PAGE != 0 {
-            return Err(format!("strand v2: table_offset {table_offset} not page-aligned"));
+            return Err(format!(
+                "strand v2: table_offset {table_offset} not page-aligned"
+            ));
         }
         if payload_offset % PAGE != 0 {
-            return Err(format!("strand v2: payload_offset {payload_offset} not page-aligned"));
+            return Err(format!(
+                "strand v2: payload_offset {payload_offset} not page-aligned"
+            ));
         }
         if sideinfo_offset != 0 && sideinfo_offset % PAGE != 0 {
-            return Err(format!("strand v2: sideinfo_offset {sideinfo_offset} not page-aligned"));
+            return Err(format!(
+                "strand v2: sideinfo_offset {sideinfo_offset} not page-aligned"
+            ));
         }
         if table_offset + n_blocks * rec_stride > payload_offset {
             return Err("strand v2: offset table overruns payload".into());
@@ -608,7 +646,11 @@ pub fn read_strand_v2_header(buf: &[u8]) -> Result<StrandV2Header, String> {
             let base = table_offset + b * rec_stride;
             // When scale_q lives in SDSQ the record is 12 B (no inline scale_q);
             // leave a 0 placeholder for `sideinfo_wire::apply_sdsq_to_header`.
-            let scale_q = if scaleq_in_sdsq { 0 } else { rd_i32(base + 12)? };
+            let scale_q = if scaleq_in_sdsq {
+                0
+            } else {
+                rd_i32(base + 12)?
+            };
             table.push(BlockOffsetRecord {
                 bit_offset: rd_u64(base)?,
                 init_state: rd_u32(base + 8)?,
@@ -638,7 +680,11 @@ pub fn read_strand_v2_header(buf: &[u8]) -> Result<StrandV2Header, String> {
             table,
         });
     }
-    Ok(StrandV2Header { flags, source_sha256, tensors })
+    Ok(StrandV2Header {
+        flags,
+        source_sha256,
+        tensors,
+    })
 }
 
 pub fn read_strand_v2(buf: &[u8]) -> Result<Vec<OwnedTensorV2>, String> {
@@ -750,7 +796,7 @@ pub fn read_strand_v2(buf: &[u8]) -> Result<Vec<OwnedTensorV2>, String> {
             let n_sub_full = (block_len as usize).div_ceil(SUB_BLOCK);
             (6 * n_sub_full).div_ceil(8)
         };
-        
+
         let mins_half_base = if has_affine_min && sideinfo_offset != 0 {
             let mut ss_end = sideinfo_offset;
             for b in 0..n_blocks {
@@ -779,8 +825,16 @@ pub fn read_strand_v2(buf: &[u8]) -> Result<Vec<OwnedTensorV2>, String> {
             let init_state = rd_u32(rec_off + 8)?;
             // 12-byte packed record: scale_q lives in SDSQ; 0 placeholder until
             // `sideinfo_wire::apply_sdsq_to_encoded` overwrites it.
-            let scale_q = if scaleq_in_sdsq { 0 } else { rd_i32(rec_off + 12)? };
-            table.push(BlockOffsetRecord { bit_offset, init_state, scale_q });
+            let scale_q = if scaleq_in_sdsq {
+                0
+            } else {
+                rd_i32(rec_off + 12)?
+            };
+            table.push(BlockOffsetRecord {
+                bit_offset,
+                init_state,
+                scale_q,
+            });
 
             let nb = if b + 1 < n_blocks {
                 block_len as usize
@@ -796,7 +850,7 @@ pub fn read_strand_v2(buf: &[u8]) -> Result<Vec<OwnedTensorV2>, String> {
                     .ok_or("strand v2: EOF sub_scales")?
                     .to_vec();
                 ss_cursor += ss_bytes;
-                let _ = sub_stride; 
+                let _ = sub_stride;
                 s
             } else {
                 Vec::new()
@@ -860,6 +914,7 @@ pub fn read_strand_v2(buf: &[u8]) -> Result<Vec<OwnedTensorV2>, String> {
                     has_affine_min,
                 },
             },
+            rht_cols: f & 8 != 0,
             block_len,
             table,
         });
@@ -867,11 +922,7 @@ pub fn read_strand_v2(buf: &[u8]) -> Result<Vec<OwnedTensorV2>, String> {
     Ok(out)
 }
 
-pub fn strand_v1_to_v2(
-    v1: &[u8],
-    block_lens: &[u32],
-    strict: bool,
-) -> Result<Vec<u8>, String> {
+pub fn strand_v1_to_v2(v1: &[u8], block_lens: &[u32], strict: bool) -> Result<Vec<u8>, String> {
     let tensors = read_strand(v1)?;
     if block_lens.len() != tensors.len() {
         return Err(format!(
@@ -900,10 +951,13 @@ pub fn strand_v1_to_v2(
 }
 
 impl<'a> PackedTensor<'a> {
-    
     #[inline]
     fn enc_block_len(&self, block_len: u32) -> u32 {
-        if block_len == 0 { 256 } else { block_len }
+        if block_len == 0 {
+            256
+        } else {
+            block_len
+        }
     }
 }
 
@@ -937,7 +991,7 @@ mod tests {
         assert_eq!(t.enc.bits, enc.bits);
         assert_eq!(t.enc.blocks, enc.blocks);
         assert_eq!(t.enc.total, enc.total);
-        
+
         let q0 = crate::decode::decode_tensor_fixed(&enc, &cfg);
         let q1 = crate::decode::decode_tensor_fixed(&t.enc, &cfg);
         assert_eq!(q0, q1);
@@ -945,7 +999,6 @@ mod tests {
 
     #[test]
     fn strand_v2_round_trip_matches_v1_q12() {
-        
         let weights: Vec<f32> = (0..1024).map(|i| (i as f32 * 0.013).sin() * 0.7).collect();
         let cfg = TrellisConfig::for_bpw(3.0);
         let enc = encode_tensor(&weights, &cfg);
@@ -992,7 +1045,10 @@ mod tests {
         let mut cursor: u64 = 0;
         for (b, blk) in enc.blocks.iter().enumerate() {
             assert_eq!(t.table[b].bit_offset, cursor, "block {b} bit_offset");
-            assert_eq!(t.table[b].init_state, blk.init_state, "block {b} init_state");
+            assert_eq!(
+                t.table[b].init_state, blk.init_state,
+                "block {b} init_state"
+            );
             assert_eq!(t.table[b].scale_q, blk.scale_q, "block {b} scale_q");
             cursor += (cfg.num_steps(blk.n as usize) * cfg.k_bits as usize) as u64;
         }

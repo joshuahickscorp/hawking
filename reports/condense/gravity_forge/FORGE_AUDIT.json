@@ -1,0 +1,135 @@
+{
+  "doctrine": "Audited directly per Section 0; transcript/memory/stale-PID claims not trusted.",
+  "frontier_armed": {
+    "launchable_now": false,
+    "operational_status": "integrated_armed_launch_gated",
+    "reconciliation": {
+      "audited_truth": "FALSE - no such process is running; the heavy lease is FREE. The armed doc was written 2026-07-17T21:15:08 when the campaign notionally held the lease. Real remaining gate = no sub-1-bit deployable packer (now being built) + gravity default-off + admission.",
+      "stale_claim": "GRAVITY_FRONTIER_ARMED.json says 'heavy lease held by doctor_v5_disk25_successor'."
+    }
+  },
+  "generated_at": "2026-07-17T23:13:08Z",
+  "git": {
+    "branch": "main",
+    "clean": true,
+    "head": "088aa66192e3eaaea58a531bd5b655824dbf548e",
+    "note": "PR #23 and #25 already merged (172b304b, 28d53c3d); no open PRs.",
+    "open_prs": 0,
+    "stale_local_branches_origin_gone": [
+      "chore/ci-green",
+      "codex/condenser-ecosystem-frontier",
+      "codex/hawking-gravity"
+    ],
+    "untracked_only": [
+      "tools/condense/frontier_giant_scaffold.py",
+      "tools/condense/gptoss_gravity_run.py",
+      "tools/condense/gptoss_subbit_packer.py"
+    ],
+    "worktrees": 1
+  },
+  "gravity_state": {
+    "all_fsm_state": "GRAVITY_UNINITIALIZED",
+    "gravity_enabled": false,
+    "live_parent": "120B",
+    "only_representation_family": "scalar_trellis_tqv2",
+    "parents": {
+      "1.6T": "deepseek-ai/DeepSeek-V4-Pro",
+      "120B": "openai/gpt-oss-120b",
+      "1T": "moonshotai/Kimi-K2.6",
+      "685B": "deepseek-ai/DeepSeek-V3.2",
+      "72B": "Qwen/Qwen2.5-72B-Instruct"
+    },
+    "resident_ceiling_bpw_120b": 4.705638810964368,
+    "stress_priors": {
+      "1.6T": "1/4",
+      "120B": "4/5",
+      "1T": "1/3",
+      "685B": "11/20"
+    }
+  },
+  "launchd": {
+    "all_program_paths_point_to_main_repo": true,
+    "frontier_job": "com.hawking.frontier.plist.disabled",
+    "loaded": [
+      "com.hawking.doctorv5.telegram (last exit 0)",
+      "com.hawking.doctorv5ultra.post120b (last exit 2)"
+    ]
+  },
+  "leases": {
+    "heavy_lease_free": true,
+    "lease_pid_alive": false,
+    "stale": true,
+    "watcher_lease_pid": 4333
+  },
+  "naive_f1_result": {
+    "families": [
+      "vector_codebook",
+      "low_rank"
+    ],
+    "gravity_event_horizon_telegram_emitted": false,
+    "metric": "weight_space_relative_frobenius (PROXY)",
+    "note": "No false Event-Horizon claim was ever emitted (the run stopped at per-rate checkpoints). Adversarial review (Section 16) found the emit path was still ARMED by default in gptoss_gravity_run.py (would have emitted 'Event Horizon 2.0 BPW' on the real checkpoints). NEUTRALIZED: renamed to f1_weight_proxy_*; removed the gravity_event_horizon emit (now gravity_feasibility_completed tier F1_weight_proxy); requires 'survives' not 'degraded'; notify default OFF.",
+    "overclaim_path_neutralized": true,
+    "per_rate": {
+      "1/1": "collapse 0.576",
+      "2/1": "degraded 0.364",
+      "3/1": "improving",
+      "4/5": "collapse 0.628"
+    },
+    "real_experts_blocks": [
+      0,
+      35
+    ],
+    "run_json_sealed": false
+  },
+  "processes": {
+    "doctor_running": false,
+    "f1_diagnostic_running": false,
+    "hawking_compute_running": false,
+    "note": "No hawking worker of any kind is running. Top CPU is the SEPARATE MoP project (mop-final-mechanic-* at ~100% x6+), not hawking.",
+    "successor_controller_running": false
+  },
+  "resources": {
+    "chip": "M3 Ultra",
+    "cores_total": 28,
+    "cpu_contended_by": "mop-final-mechanic (separate ~/Downloads/mop project)",
+    "disk_free_gib": 527,
+    "e_cores": 8,
+    "memory_free_pct": 94,
+    "p_cores": 20,
+    "ram_gib": 96,
+    "swap_used_mb": 1255
+  },
+  "schema": "hawking.gravity_forge.audit.v1",
+  "sha256": "394ba26e317b25d82d034545c9d3095812f8b28b371eea521a183b791fec0844",
+  "source_120b": {
+    "gib": 65.25,
+    "kind": "native MXFP4 original",
+    "note": "gptoss_moe_runtime.load_expert dequantizes MXFP4->fp32 and a CPU MoE reference forward exists; the naive F1 run already read real experts from it.",
+    "path": "scratch/staging/gpt-oss-120b.partial/original",
+    "per_expert_loader_works": true,
+    "present": true,
+    "revision": "b5c939de8f754692c1647ca79fbf85e8c1e70f8a",
+    "shards": "7/7",
+    "tokenizer_present": false,
+    "verified_complete": true
+  },
+  "stale_job_disposition": {
+    "interference_with_active_worker": "none (no active worker exists)",
+    "old_cpu_f1_diagnostic": "NOT running (already exited).",
+    "partial_checkpoints_preserved": "reports/condense/subbit_frontier/gravity_120b_run/rate_*.json",
+    "why_superseded": "Weight-space RVQ/low-rank reconstruction is a PROXY, not the protected capability contract. Superseded by the Forge foundry (materially-distinct families + output-space evidence). NOT reinterpreted as a final result."
+  },
+  "successor_queue": {
+    "120B_status": "waiting_adapter",
+    "blockers": [
+      "strand-reader-whole-file-u8-unsupported",
+      "source-provenance-reassembly",
+      "gptoss-moe-str2-loader-missing",
+      "tokenizer-missing",
+      "ten-artifact-disk-retention-infeasible",
+      "adapter 0.1-contract refuses (exit 78)"
+    ],
+    "checkpoint_state": "WAIT_OLD_RELEASE"
+  }
+}

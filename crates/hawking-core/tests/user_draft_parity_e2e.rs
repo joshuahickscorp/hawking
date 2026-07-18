@@ -427,24 +427,43 @@ fn user_draft_propose_first_bit_identical_pruned_q4k() {
 /// fp16 fallback verify path.
 #[test]
 fn event_horizon_bit_identical_default() {
-    let Some(weights) = weights_path() else { return; };
+    let Some(weights) = weights_path() else {
+        return;
+    };
     let _g = SERIAL_GATE.get_or_init(|| Mutex::new(())).lock().unwrap();
     std::env::set_var("HAWKING_QWEN_USER_DRAFT", "1");
 
     std::env::remove_var("HAWKING_QWEN_EVENT_HORIZON");
-    let (ref_ids, _) = { let mut e = make_engine(&weights); gen_on(e.as_mut(), PROMPT) };
+    let (ref_ids, _) = {
+        let mut e = make_engine(&weights);
+        gen_on(e.as_mut(), PROMPT)
+    };
 
     std::env::set_var("HAWKING_QWEN_EVENT_HORIZON", "1");
-    let (eh_ids, accepted) = { let mut e = make_engine(&weights); gen_on(e.as_mut(), PROMPT) };
+    let (eh_ids, accepted) = {
+        let mut e = make_engine(&weights);
+        gen_on(e.as_mut(), PROMPT)
+    };
     std::env::remove_var("HAWKING_QWEN_EVENT_HORIZON");
     std::env::set_var("HAWKING_QWEN_USER_DRAFT", "0");
 
-    assert_eq!(ref_ids.len(), MAX_NEW_TOKENS, "EH-OFF produced wrong token count");
-    assert_eq!(eh_ids.len(), MAX_NEW_TOKENS, "EH-ON produced wrong token count");
     assert_eq!(
-        &ref_ids[..3], &eh_ids[..3],
+        ref_ids.len(),
+        MAX_NEW_TOKENS,
+        "EH-OFF produced wrong token count"
+    );
+    assert_eq!(
+        eh_ids.len(),
+        MAX_NEW_TOKENS,
+        "EH-ON produced wrong token count"
+    );
+    assert_eq!(
+        &ref_ids[..3],
+        &eh_ids[..3],
         "EH GATE FAILED (first 3 tokens): EH changed greedy output.\n \
-         off={:?}\n  on={:?}", &ref_ids[..3], &eh_ids[..3],
+         off={:?}\n  on={:?}",
+        &ref_ids[..3],
+        &eh_ids[..3],
     );
     assert_eq!(
         ref_ids, eh_ids,
@@ -461,27 +480,39 @@ fn event_horizon_bit_identical_default() {
 /// P0.6 gate: EH ON ≡ EH OFF under the GPU pruned-Q4K fast verify path.
 #[test]
 fn event_horizon_bit_identical_fast_pruned_q4k() {
-    let Some(weights) = weights_path() else { return; };
+    let Some(weights) = weights_path() else {
+        return;
+    };
     let _g = SERIAL_GATE.get_or_init(|| Mutex::new(())).lock().unwrap();
     std::env::set_var("HAWKING_QWEN_USER_DRAFT", "1");
     std::env::set_var("HAWKING_QWEN_VOCAB_PRUNE", "32000");
     std::env::set_var("HAWKING_QWEN_Q4K_LMHEAD", "1");
 
     std::env::remove_var("HAWKING_QWEN_EVENT_HORIZON");
-    let (ref_ids, _) = { let mut e = make_engine(&weights); gen_on(e.as_mut(), PROMPT) };
+    let (ref_ids, _) = {
+        let mut e = make_engine(&weights);
+        gen_on(e.as_mut(), PROMPT)
+    };
 
     std::env::set_var("HAWKING_QWEN_EVENT_HORIZON", "1");
-    let (eh_ids, accepted) = { let mut e = make_engine(&weights); gen_on(e.as_mut(), PROMPT) };
+    let (eh_ids, accepted) = {
+        let mut e = make_engine(&weights);
+        gen_on(e.as_mut(), PROMPT)
+    };
     std::env::remove_var("HAWKING_QWEN_EVENT_HORIZON");
     std::env::remove_var("HAWKING_QWEN_VOCAB_PRUNE");
     std::env::remove_var("HAWKING_QWEN_Q4K_LMHEAD");
     std::env::set_var("HAWKING_QWEN_USER_DRAFT", "0");
 
-    assert_eq!(ref_ids, eh_ids,
+    assert_eq!(
+        ref_ids, eh_ids,
         "EH GATE FAILED (pruned-Q4K): EH changed greedy output.\n \
-         off={ref_ids:?}\n  on={eh_ids:?}");
-    assert!(accepted > 0,
-        "EH pruned-Q4K gate: draft_accepted=0 — drafting path not exercised");
+         off={ref_ids:?}\n  on={eh_ids:?}"
+    );
+    assert!(
+        accepted > 0,
+        "EH pruned-Q4K gate: draft_accepted=0 — drafting path not exercised"
+    );
     eprintln!("\n=== EH parity gate (fast pruned-Q4K) ===");
     eprintln!("EH OFF: {ref_ids:?}");
     eprintln!("EH ON : {eh_ids:?}  (draft_accepted={accepted})");

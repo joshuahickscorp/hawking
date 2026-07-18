@@ -16,10 +16,10 @@
 //!
 //! seq ∈ {64,128,129} exercises the partial-tile tail (t_len = min(FLASH_TG, …)).
 
+use half::f16;
 use hawking_core::attn::mha_decode_step;
 use hawking_core::kernels;
 use hawking_core::metal::{MetalContext, PinnedBuffer, TokenCommandBuffer};
-use half::f16;
 
 mod common;
 use common::*;

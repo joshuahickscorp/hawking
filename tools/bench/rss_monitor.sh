@@ -18,7 +18,7 @@
 #   decode      | 3.4       | 2180   | steady
 #   peak        | -         | 2240   | WITHIN 5GB limit
 #
-# 5 GB SENTINEL (from CLAUDE.md):
+# 5 GB SENTINEL (from AGENT.md):
 #   Peak RSS > 5000 MB prints a warning and exits non-zero.
 #   Qwen-3B steady-state is ~0.8–2 GB; the zero-copy loader keeps it near
 #   model size.  Any reading far above that signals a regression.

@@ -2,13 +2,13 @@
 # =============================================================================
 # tools/bench/final_analysis.sh — ONE command for the lever analysis.
 #
-# DEFAULT MODE is CONTAMINATION-ROBUST — it works with Claude OPEN, because it
+# DEFAULT MODE is CONTAMINATION-ROBUST — it works with the agent OPEN, because it
 # only uses paired/relative metrics (A/B ratios + back-to-back J/tok), where the
-# ~4-5x session inflation CANCELS. No Claude-quit required, no long-context
+# ~4-5x session inflation CANCELS. No agent-quit required, no long-context
 # hang. This is the mode to use day-to-day.
 #
-#   tools/bench/final_analysis.sh            # robust (Claude open OK) — DEFAULT
-#   tools/bench/final_analysis.sh --clean    # ALSO run absolute anchor (QUIT Claude)
+#   tools/bench/final_analysis.sh            # robust (agent open OK) — DEFAULT
+#   tools/bench/final_analysis.sh --clean    # ALSO run absolute anchor (QUIT the agent)
 #   tools/bench/final_analysis.sh --diag     # ALSO run the "is there more tps?" diagnostics
 #
 # DEFAULT runs (~6-12 min):
@@ -18,8 +18,8 @@
 #   D. quality (SHORT) f16-scales + f16-KV      (token drift; no slow long tier)
 #
 # --clean additionally runs tools/bench/clean_room_batch.sh (absolute tps/J/tok
-#   + Q3 §A) — meaningless unless Claude is fully QUIT; it self-gates and will
-#   refuse if Claude.app is running.
+#   + Q3 §A) — meaningless unless the agent is fully QUIT; it self-gates and will
+#   refuse if the agent app is running.
 #
 # --diag additionally runs the settle-the-ceiling diagnostics (one-time, slow):
 #   gpu_saturation.sh (kernel-bound vs idle — verdict: kernel-bound, saturation DEAD)
@@ -48,14 +48,14 @@ banner() { printf '\n\n=================== %s ===================\n' "$1"; }
 
 echo "dismantle final analysis — $(date)"
 echo "branch: $(git rev-parse --abbrev-ref HEAD 2>/dev/null) @ $(git rev-parse --short HEAD 2>/dev/null)"
-echo "mode:   $([[ $CLEAN == 1 ]] && echo 'CLEAN (absolute — QUIT Claude!)' || echo 'ROBUST (paired/relative — Claude open OK)')$([[ $DIAG == 1 ]] && echo ' +DIAG')"
+echo "mode:   $([[ $CLEAN == 1 ]] && echo 'CLEAN (absolute — QUIT the agent!)' || echo 'ROBUST (paired/relative — agent open OK)')$([[ $DIAG == 1 ]] && echo ' +DIAG')"
 echo "log:    $LOG"
 
 banner "build (idempotent)"
 cargo build --release --workspace 2>&1 | tail -2
 
 if [[ "$CLEAN" == 1 ]]; then
-  banner "0  ABSOLUTE ANCHOR  (clean_room_batch — needs Claude QUIT)"
+  banner "0  ABSOLUTE ANCHOR  (clean_room_batch — needs the agent QUIT)"
   tools/bench/clean_room_batch.sh || echo "[note] clean_room_batch self-gated or non-zero (read above)"
 fi
 
@@ -111,4 +111,4 @@ if [[ "$DIAG" == 1 ]]; then
 echo "  DIAG-1 saturation       -> kernel-bound vs idle (verdict 2026-06-02: KERNEL-BOUND, saturation DEAD)"
 echo "  DIAG-2 MLX B/A          -> dismantle/MLX on this box; settles if the 1.6x gap is a runtime ceiling"
 fi
-[[ "$CLEAN" == 0 ]] && echo "  (run with --clean + Claude QUIT for absolute tps/J/tok; --diag for the ceiling diagnostics)"
+[[ "$CLEAN" == 0 ]] && echo "  (run with --clean + agent QUIT for absolute tps/J/tok; --diag for the ceiling diagnostics)"

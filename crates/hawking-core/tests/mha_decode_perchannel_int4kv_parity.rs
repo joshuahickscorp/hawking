@@ -17,10 +17,10 @@
 //!   GATE 2 — quality: cosine(GPU int4, f32 ref on the ORIGINAL K/V) >= 0.99 on
 //!     the outlier K/V. (Perplexity on a freed machine is the final arbiter.)
 
+use half::f16;
 use hawking_core::attn::mha_decode_step;
 use hawking_core::kernels;
 use hawking_core::metal::{MetalContext, PinnedBuffer, TokenCommandBuffer};
-use half::f16;
 
 mod common;
 use common::*;

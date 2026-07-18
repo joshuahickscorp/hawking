@@ -1,5 +1,6 @@
-
+#[cfg(test)]
 use crate::gemv::decode_q12_fast;
+use crate::gemv::decode_q12_fast_with_lut;
 use crate::loader::StrandModel;
 use strand_quant::rht::{
     rht_forward_cols_inplace, rht_forward_rows_inplace, rht_inverse_cols_inplace,
@@ -16,7 +17,7 @@ pub fn patched_weights(model: &StrandModel, name: &str) -> Result<Vec<f32>, Stri
         .ok_or_else(|| format!("outlier_mac: no tensor {name:?}"))?;
     let cfg = model.config_for(hdr);
     let enc = model.encoded_tensor_checked(name)?;
-    let q12 = decode_q12_fast(&enc, &cfg);
+    let q12 = decode_q12_fast_with_lut(&enc, &cfg, model.lut_for(name)?);
 
     let mut w: Vec<f32> = q12.iter().map(|&q| (q as f32) * (1.0 / 4096.0)).collect();
 
@@ -52,7 +53,7 @@ pub fn bulk_weights(model: &StrandModel, name: &str) -> Result<Vec<f32>, String>
         .ok_or_else(|| format!("outlier_mac: no tensor {name:?}"))?;
     let cfg = model.config_for(hdr);
     let enc = model.encoded_tensor_checked(name)?;
-    let q12 = decode_q12_fast(&enc, &cfg);
+    let q12 = decode_q12_fast_with_lut(&enc, &cfg, model.lut_for(name)?);
     let mut w: Vec<f32> = q12.iter().map(|&q| (q as f32) * (1.0 / 4096.0)).collect();
     if hdr.has_rht_seed {
         let in_features = in_features_of(&hdr.shape)
@@ -71,7 +72,7 @@ pub fn bulk_weights(model: &StrandModel, name: &str) -> Result<Vec<f32>, String>
 pub struct OutlierResidual {
     pub row: u32,
     pub col: u32,
-    
+
     pub resid: f32,
 }
 
@@ -153,7 +154,7 @@ pub fn matvec_rht(
     }
     let cfg = model.config_for(hdr);
     let enc = model.encoded_tensor_checked(name)?;
-    let q12 = decode_q12_fast(&enc, &cfg);
+    let q12 = decode_q12_fast_with_lut(&enc, &cfg, model.lut_for(name)?);
     if q12.len() != out_features * in_features {
         return Err(format!(
             "outlier_mac: tensor {name:?} decoded {} weights, shape says {}",
@@ -226,7 +227,9 @@ mod tests {
     use super::*;
     use std::io::Write as _;
     use strand_quant::encode::encode_tensor;
-    use strand_quant::format::{write_strand_v2, write_strand_v2_rht, PackedTensor, PackedTensorV2};
+    use strand_quant::format::{
+        write_strand_v2, write_strand_v2_rht, PackedTensor, PackedTensorV2,
+    };
     use strand_quant::outlier_wire::{append_outl, idx_bits_for, OutlierWire};
     use strand_quant::rht::{rht_forward, rht_forward_cols, rht_forward_rows, RhtConfig};
     use strand_quant::TrellisConfig;
@@ -254,7 +257,7 @@ mod tests {
         use_rht: bool,
         use_cols: bool,
     ) -> (std::path::PathBuf, Vec<f32>) {
-        let cfg = TrellisConfig::for_bpw_l(2.0, 8); 
+        let cfg = TrellisConfig::for_bpw_l(2.0, 8);
         let gt = test_weights(rows * cols, 0xC0FFEE);
         let n = gt.len();
         let ob = 8u32;
@@ -263,15 +266,22 @@ mod tests {
             let k = ((outlier_pct / 100.0) * n as f64).round() as usize;
             let mut order: Vec<usize> = (0..n).collect();
             order.sort_unstable_by(|&a, &b| {
-                gt[b].abs().partial_cmp(&gt[a].abs()).unwrap_or(std::cmp::Ordering::Equal)
+                gt[b]
+                    .abs()
+                    .partial_cmp(&gt[a].abs())
+                    .unwrap_or(std::cmp::Ordering::Equal)
             });
             let idx: Vec<usize> = order[..k].to_vec();
             let omax = idx.iter().fold(0f32, |m, &i| m.max(gt[i].abs())).max(1e-12);
             let levels = ((1i64 << (ob - 1)) - 1) as f32;
-            let vals: Vec<f32> =
-                idx.iter().map(|&i| (gt[i] / omax * levels).round() / levels * omax).collect();
-            let codes: Vec<i32> =
-                idx.iter().map(|&i| (gt[i] / omax * levels).round() as i32).collect();
+            let vals: Vec<f32> = idx
+                .iter()
+                .map(|&i| (gt[i] / omax * levels).round() / levels * omax)
+                .collect();
+            let codes: Vec<i32> = idx
+                .iter()
+                .map(|&i| (gt[i] / omax * levels).round() as i32)
+                .collect();
             Some((idx, vals, codes, omax))
         } else {
             None
@@ -350,7 +360,7 @@ mod tests {
             (4usize, 256usize, 1.0f64, true),
             (4, 256, 1.0, false),
             (3, 512, 2.0, true),
-            (4, 256, 0.0, true), 
+            (4, 256, 0.0, true),
         ] {
             let name = "model.layers.0.mlp.down_proj.weight";
             let (path, recon) = bake_fixture(name, rows, cols, pct, rht, false);
@@ -398,7 +408,10 @@ mod tests {
         assert!(!res.is_empty(), "fixture must exercise the sparse term");
         let y_rht = matvec_rht(&model, name, &x, Some(&res)).expect("matvec_rht");
         let y_rht2 = matvec_rht(&model, name, &x, None).expect("matvec_rht (recompute)");
-        assert_eq!(y_rht, y_rht2, "residual precompute must not change the result");
+        assert_eq!(
+            y_rht, y_rht2,
+            "residual precompute must not change the result"
+        );
         for o in 0..rows {
             let scale = y_ref[o].abs().max(1.0);
             assert!(
@@ -421,7 +434,9 @@ mod tests {
         let cfg = model.config_for(hdr);
         let enc = model.encoded_tensor_checked(name).unwrap();
         let q12 = decode_q12_fast(&enc, &cfg);
-        let x: Vec<f32> = (0..cols).map(|i| ((i as f32) * 0.013).sin() + 0.1).collect();
+        let x: Vec<f32> = (0..cols)
+            .map(|i| ((i as f32) * 0.013).sin() + 0.1)
+            .collect();
 
         let mut y_ref = vec![0.0f32; rows];
         for o in 0..rows {
@@ -434,14 +449,18 @@ mod tests {
         let mut y_naive = vec![0.0f32; rows];
         for o in 0..rows {
             let qrow = &q12[o * cols..(o + 1) * cols];
-            y_naive[o] = qrow.iter().zip(&x_rht).map(|(&q, xv)| (q as f32) * inv * xv).sum();
+            y_naive[o] = qrow
+                .iter()
+                .zip(&x_rht)
+                .map(|(&q, xv)| (q as f32) * inv * xv)
+                .sum();
         }
 
         assert!(
             (y_naive[0] - y_ref[0]).abs() / y_ref[0].abs().max(1.0) < 1e-2,
             "row 0 should roughly match (it shares the sign prefix)"
         );
-        
+
         let worst = (1..rows)
             .map(|o| (y_naive[o] - y_ref[o]).abs() / y_ref[o].abs().max(1e-3))
             .fold(0.0f32, f32::max);
@@ -472,12 +491,20 @@ mod tests {
         let (path, recon) = bake_fixture(name, rows, cols, 0.0, false, true);
         let model = StrandModel::open(&path).expect("open");
         let hdr = model.tensor_header(name).unwrap();
-        assert!(hdr.rht_cols, "col archive must carry the rht_cols flag (bit 3)");
-        assert!(hdr.has_rht_seed, "col archive must still carry the RHT seed");
+        assert!(
+            hdr.rht_cols,
+            "col archive must carry the rht_cols flag (bit 3)"
+        );
+        assert!(
+            hdr.has_rht_seed,
+            "col archive must still carry the RHT seed"
+        );
         let cfg = model.config_for(hdr);
         let enc = model.encoded_tensor_checked(name).unwrap();
         let q12 = decode_q12_fast(&enc, &cfg);
-        let x: Vec<f32> = (0..cols).map(|i| ((i as f32) * 0.013).sin() + 0.1).collect();
+        let x: Vec<f32> = (0..cols)
+            .map(|i| ((i as f32) * 0.013).sin() + 0.1)
+            .collect();
 
         // spatial reference: bake_fixture already applied rht_inverse_cols to `recon`.
         let mut y_ref = vec![0.0f32; rows];
@@ -492,7 +519,11 @@ mod tests {
         let worst = (0..rows)
             .map(|o| {
                 let qrow = &q12[o * cols..(o + 1) * cols];
-                let y: f32 = qrow.iter().zip(&x_rht).map(|(&q, xv)| (q as f32) * inv * xv).sum();
+                let y: f32 = qrow
+                    .iter()
+                    .zip(&x_rht)
+                    .map(|(&q, xv)| (q as f32) * inv * xv)
+                    .sum();
                 (y - y_ref[o]).abs() / y_ref[o].abs().max(1e-3)
             })
             .fold(0.0f32, f32::max);

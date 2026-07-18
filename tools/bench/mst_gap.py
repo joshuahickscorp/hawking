@@ -58,7 +58,7 @@ Usage:
 
 Notes / honesty:
   • Absolute GPU-us are contaminated if any other GPU workload is open
-    (Claude.app). Run Claude-quit (mst_diff.sh hard-aborts otherwise).
+    (the agent app). Run agent-quit (mst_diff.sh hard-aborts otherwise).
   • Kernel NAMES differ across engines (dismantle: gemm_q4_k_v4_predec_pair;
     llama.cpp Metal: kernel_mul_mm_q4_K_f32 / kernel_mul_mv_*). --gemv-match
     takes a comma-list of case-insensitive substrings; the DOMINANT GEMV per

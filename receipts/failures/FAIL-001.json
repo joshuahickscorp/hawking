@@ -1,0 +1,47 @@
+{
+  "project": "hawking",
+  "receipt_version": "0.2",
+  "repro_level": "R1",
+  "claim_type": "negative",
+  "machine": "MacBook Pro M3 Pro, 18GB unified",
+  "machine_class": "M3Pro-18",
+  "os_build": "macOS 26.x (Darwin 25.6.0)",
+  "model_family": "qwen",
+  "source_model": "Qwen/Qwen2.5-7B-Instruct (local scratch/qwen-7b, bf16 safetensors)",
+  "source_sha256": "624bf7c47cd12468fdc16e38a47cf4f19e0415b859a223ba3c027eed2f0e1028",
+  "source_precision": "bf16",
+  "source_license": "apache-2.0",
+  "derivative_policy": "see LICENSE_DERIVATIVE",
+  "condensed_artifact": "NONE \u2014 doctor never completed (swap-death before artifact emit)",
+  "artifact_sha256": "eb0d058297cbe41a9eebaeabbc8c717f0dfcd95997f70e14ce2467cbcc3205c0",
+  "recipe": [
+    "3-AWQ+dr-r16-v3",
+    "4-AWQ+dr-r16-v3",
+    "blockwise-doctor-v3"
+  ],
+  "effective_bpw": 3.0,
+  "nominal_bpw": 3.0,
+  "peak_rss_gb": 18.0,
+  "swap_gb": 25.305,
+  "condense_peak_rss_gb": 18.0,
+  "wall_clock_s": 7200.0,
+  "baseline_q4_load_result": "not-run",
+  "baseline_mlx4_result": "not-run",
+  "baseline_best_effort": true,
+  "multiwindow_n": 0,
+  "quality_gate": "fail",
+  "invalidation_reasons": [],
+  "hawking_commit": "42a0e9ed49a0c43f1e2e6cd7ed805ecd02c6f4b0",
+  "commands": [
+    "./run_7b_frontier.sh   # frontier_conductor.py --outbase reports/cron/7b_frontier",
+    "DOCTOR_SWAP_CEIL controls the kill ceiling; v3 configs die at the 6000MB-class ceiling / 120m timeout"
+  ],
+  "raw_logs": [
+    "reports/cron/7b_frontier.jsonl",
+    "reports/cron/7b_frontier_conductor_state.json",
+    "reports/cron/7b_frontier_autopilot_state.json"
+  ],
+  "prompt_suite_hash": "d79802d7777bc27d1268bd042433f7f98f0d920177f4845bb8d52e4f0eb3a86b",
+  "prompt_suite_version": "v1",
+  "notes": "REAL negative receipt. The 7B LoRA/blockwise recovery frontier (branch='waiting-for-v3') repeatedly swap-dies on the 18GB box: measured kills include 'swap 6926MB > 6000MB ceiling', '9003MB > 6000MB', '11780MB > 6000MB', plus 'doctor timeout: 120m > 120m limit' and leaked-semaphore failures (resource_tracker). Run log shows swap=25305MB. No artifact was ever emitted. This is the measured 18GB dead-end the Studio (96GB) is bought to clear \u2014 NOT a Hawking quality failure. category=memory-prediction/recovery-loss; severity=wedge-NOT-threat (a hardware floor)."
+}

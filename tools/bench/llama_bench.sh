@@ -8,16 +8,21 @@
 # profile to regenerate after a shader-source change.
 #
 # NOT authoritative — bench numbers are contaminated when run from inside
-# an active Claude Code session (4-5x slower than truth, see
+# an active coding-agent session (4-5x slower than truth, see
 # reports/v0.3.5_clean_rebench.md and memory/bench_contamination.md).
-# Use a Cmd+Q-Claude terminal for shippable absolute numbers; paired
-# deltas are fine contaminated.
+# Use a terminal with the agent fully quit for shippable absolute numbers;
+# paired deltas are fine contaminated.
 #
 # Usage:
 #   WEIGHTS=models/llama-3.2-3b-instruct-q4_k_m.gguf ./tools/bench/llama_bench.sh
 #   # optional: TOKENS=64  PROFILE=profiles/my.json  ./tools/bench/llama_bench.sh
 
 set -euo pipefail
+
+_agent_env="$(git rev-parse --show-toplevel 2>/dev/null)/.agent_env"
+[ -f "$_agent_env" ] && source "$_agent_env"
+unset _agent_env
+
 cd "$(dirname "$0")/../.."
 
 WEIGHTS="${WEIGHTS:-models/llama-3.2-3b-instruct-q4_k_m.gguf}"
@@ -53,17 +58,17 @@ if [[ ! -f "$PROFILE" ]]; then
         --out "$PROFILE"
 fi
 
-CLAUDE_RUNNING=0
-if pgrep -f "Claude.app" > /dev/null 2>&1; then
-    CLAUDE_RUNNING=1
-    echo "⚠️  Claude desktop app is running — dec_tps will be contaminated." >&2
-    echo "   Cmd+Q for shippable absolute numbers; paired deltas are fine." >&2
+AGENT_RUNNING=0
+if pgrep -f "${AGENT_APP_PGREP:?see .agent_env.example}" > /dev/null 2>&1; then
+    AGENT_RUNNING=1
+    echo "⚠️  the agent desktop app is running — dec_tps will be contaminated." >&2
+    echo "   Quit it for shippable absolute numbers; paired deltas are fine." >&2
 fi
 
 STRICT_FLAG="${STRICT:-}"
 if [[ "${1:-}" == "--strict" ]]; then STRICT_FLAG=1; shift || true; fi
-if [[ -n "$STRICT_FLAG" ]] && [[ "$CLAUDE_RUNNING" == "1" ]]; then
-    echo "❌ STRICT mode: refusing to bench with Claude running." >&2
+if [[ -n "$STRICT_FLAG" ]] && [[ "$AGENT_RUNNING" == "1" ]]; then
+    echo "❌ STRICT mode: refusing to bench with the agent running." >&2
     exit 64
 fi
 

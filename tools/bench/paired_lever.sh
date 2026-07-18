@@ -5,8 +5,8 @@
 # top of the locked Qwen fast-path, run as
 #   1. PARITY   — greedy temp=0 bit-identical token check (B,C vs A).
 #   2. BENCH    — interleaved paired decode_tps trials (A,B,A,B,... cancels
-#                 thermal drift; Claude-open is fine for paired deltas, see
-#                 memory/feedback_bench_with_claude_open.md). Prints medians +
+#                 thermal drift; agent-open is fine for paired deltas, see
+#                 project design memory). Prints medians +
 #                 B/A ratio.
 #   3. GATE     — a SEPARATE instrumented run (HAWKING_TCB_TRACE=gpu) of the
 #                 B variant fed to analyze_tcb_trace.py. The §1 methodology gate

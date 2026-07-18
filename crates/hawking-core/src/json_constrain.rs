@@ -31,7 +31,10 @@ impl JsonVocabIndex {
     }
 
     pub fn text(&self, id: u32) -> &str {
-        self.token_text.get(id as usize).map(|s| s.as_str()).unwrap_or("")
+        self.token_text
+            .get(id as usize)
+            .map(|s| s.as_str())
+            .unwrap_or("")
     }
 
     pub fn len(&self) -> usize {
@@ -70,7 +73,10 @@ impl Default for JsonConstraint {
 
 impl JsonConstraint {
     pub fn new() -> Self {
-        Self { state: JsonState::Start, depth: Vec::new() }
+        Self {
+            state: JsonState::Start,
+            depth: Vec::new(),
+        }
     }
 
     /// Update state given the decoded text of the last emitted token.
@@ -84,22 +90,40 @@ impl JsonConstraint {
         use JsonState::*;
         self.state = match &self.state {
             Start => match ch {
-                '{' => { self.depth.push(b'O'); ObjectKey }
-                '[' => { self.depth.push(b'A'); ArrayValue }
+                '{' => {
+                    self.depth.push(b'O');
+                    ObjectKey
+                }
+                '[' => {
+                    self.depth.push(b'A');
+                    ArrayValue
+                }
                 ' ' | '\n' | '\t' | '\r' => Start,
                 _ => Start,
             },
             ObjectKey => match ch {
-                '"' => InString { escape: false, is_key: true },
-                '}' => { self.depth.pop(); self.pop_or_done() }
+                '"' => InString {
+                    escape: false,
+                    is_key: true,
+                },
+                '}' => {
+                    self.depth.pop();
+                    self.pop_or_done()
+                }
                 ' ' | '\n' | '\t' => ObjectKey,
                 _ => ObjectKey,
             },
             InString { escape, is_key } => {
                 if *escape {
-                    InString { escape: false, is_key: *is_key }
+                    InString {
+                        escape: false,
+                        is_key: *is_key,
+                    }
                 } else if ch == '\\' {
-                    InString { escape: true, is_key: *is_key }
+                    InString {
+                        escape: true,
+                        is_key: *is_key,
+                    }
                 } else if ch == '"' {
                     if *is_key {
                         ObjectColon
@@ -111,21 +135,36 @@ impl JsonConstraint {
                         }
                     }
                 } else {
-                    InString { escape: false, is_key: *is_key }
+                    InString {
+                        escape: false,
+                        is_key: *is_key,
+                    }
                 }
             }
-            ObjectColon => if ch == ':' { ObjectValue } else { ObjectColon },
+            ObjectColon => {
+                if ch == ':' {
+                    ObjectValue
+                } else {
+                    ObjectColon
+                }
+            }
             ObjectValue => self.start_value(ch),
             ObjectAfterValue => match ch {
                 ',' => ObjectKey,
-                '}' => { self.depth.pop(); self.pop_or_done() }
+                '}' => {
+                    self.depth.pop();
+                    self.pop_or_done()
+                }
                 ' ' | '\n' | '\t' => ObjectAfterValue,
                 _ => ObjectAfterValue,
             },
             ArrayValue => self.start_value(ch),
             ArrayAfterValue => match ch {
                 ',' => ArrayValue,
-                ']' => { self.depth.pop(); self.pop_or_done() }
+                ']' => {
+                    self.depth.pop();
+                    self.pop_or_done()
+                }
                 ' ' | '\n' | '\t' => ArrayAfterValue,
                 _ => ArrayAfterValue,
             },
@@ -161,9 +200,18 @@ impl JsonConstraint {
     fn start_value(&mut self, ch: char) -> JsonState {
         use JsonState::*;
         match ch {
-            '"' => InString { escape: false, is_key: false },
-            '{' => { self.depth.push(b'O'); ObjectKey }
-            '[' => { self.depth.push(b'A'); ArrayValue }
+            '"' => InString {
+                escape: false,
+                is_key: false,
+            },
+            '{' => {
+                self.depth.push(b'O');
+                ObjectKey
+            }
+            '[' => {
+                self.depth.push(b'A');
+                ArrayValue
+            }
             '0'..='9' | '-' => InNumber,
             't' => InKeyword { remaining: 3 },
             'f' => InKeyword { remaining: 4 },
@@ -238,15 +286,15 @@ impl JsonConstraint {
             ObjectKey => ValidFirstBytes::Set(vec!['"', '}', ' ', '\n', '\t']),
             ObjectColon => ValidFirstBytes::Set(vec![':', ' ', '\n', '\t']),
             ObjectValue | ArrayValue => ValidFirstBytes::Set(vec![
-                '"', '{', '[', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-                '-', 't', 'f', 'n', ' ', '\n', '\t',
+                '"', '{', '[', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-', 't', 'f',
+                'n', ' ', '\n', '\t',
             ]),
             ObjectAfterValue => ValidFirstBytes::Set(vec![',', '}', ' ', '\n', '\t']),
             ArrayAfterValue => ValidFirstBytes::Set(vec![',', ']', ' ', '\n', '\t']),
             InString { .. } => ValidFirstBytes::InString,
             InNumber => ValidFirstBytes::Set(vec![
-                '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-                '.', 'e', 'E', '+', '-', ',', '}', ']', ' ', '\n',
+                '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', 'e', 'E', '+', '-', ',',
+                '}', ']', ' ', '\n',
             ]),
             InKeyword { remaining } => {
                 // For true/false/null we allow any lowercase letter and continuation.
@@ -263,6 +311,42 @@ enum ValidFirstBytes {
     Set(Vec<char>),
     InString,
     Done,
+}
+
+/// A structured output constraint a request can carry into the runtime (the
+/// W-F4-1 foundation). The engine today has only a binary `json_mode`; this is
+/// the core-owned grammar TYPE the runtime-grammar work builds on (core cannot
+/// reach hawking-orch's shell-side `GrammarSpec`). `validate` is the post-hoc
+/// gate; per-token MASK enforcement of `required_keys` / `Choices` during decode
+/// is the deferred runtime FSM (hawking-orch grammar.rs marks it
+/// "RUNTIME-SIDE — LATER"), as is threading a `grammar` field through the 44
+/// `GenerateRequest` construction sites.
+#[derive(Debug, Clone, PartialEq)]
+pub enum GrammarConstraint {
+    /// Any valid JSON object, optionally requiring these top-level keys.
+    JsonObject { required_keys: Vec<String> },
+    /// Output must be exactly one of these choices (classifier label / enum).
+    Choices(Vec<String>),
+}
+
+impl GrammarConstraint {
+    /// Post-hoc validation gate: does a completed `output` satisfy the constraint?
+    pub fn validate(&self, output: &str) -> bool {
+        match self {
+            GrammarConstraint::JsonObject { required_keys } => {
+                match serde_json::from_str::<serde_json::Value>(output.trim()) {
+                    Ok(serde_json::Value::Object(map)) => {
+                        required_keys.iter().all(|k| map.contains_key(k.as_str()))
+                    }
+                    _ => false,
+                }
+            }
+            GrammarConstraint::Choices(choices) => {
+                let t = output.trim();
+                choices.iter().any(|c| c.as_str() == t)
+            }
+        }
+    }
 }
 
 #[cfg(test)]
@@ -303,5 +387,28 @@ mod tests {
         c.advance(r#"{"k": "#);
         assert!(!c.is_done());
         assert_eq!(c.state, JsonState::ObjectValue);
+    }
+
+    #[test]
+    fn grammar_constraint_validates_json_object_required_keys() {
+        let c = GrammarConstraint::JsonObject {
+            required_keys: vec!["tool".into(), "args".into()],
+        };
+        assert!(c.validate(r#"{"tool":"grep","args":{}}"#));
+        assert!(!c.validate(r#"{"tool":"grep"}"#), "missing required key");
+        assert!(!c.validate("not json"));
+        assert!(!c.validate("[1,2,3]"), "array is not an object");
+        let any = GrammarConstraint::JsonObject {
+            required_keys: vec![],
+        };
+        assert!(any.validate(r#"{"x":1}"#));
+    }
+
+    #[test]
+    fn grammar_constraint_validates_choices() {
+        let c = GrammarConstraint::Choices(vec!["yes".into(), "no".into()]);
+        assert!(c.validate("yes"));
+        assert!(c.validate("  no  "), "trims whitespace");
+        assert!(!c.validate("maybe"));
     }
 }

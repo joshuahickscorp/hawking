@@ -8,6 +8,13 @@ repository.workspace = true
 authors.workspace = true
 description = "OpenAI-compatible HTTP server for hawking-core"
 
+[features]
+# Forward the runtime `tq` feature down to hawking-core so a `hawking serve`
+# built with `--features tq` can serve a `.tq` sidecar (HAWKING_QWEN_TQ). OFF by
+# default: the default product build stays byte-identical (no strand-quant dep,
+# no metal 0.27) and the existing gates stay green.
+tq = ["hawking-core/tq"]
+
 [dependencies]
 hawking-core = { path = "../hawking-core" }
 anyhow = { workspace = true }

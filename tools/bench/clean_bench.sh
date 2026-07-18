@@ -2,10 +2,10 @@
 #
 # tools/bench/clean_bench.sh — v0.3.6 clean bench harness
 #
-# USAGE — run from a plain terminal with Claude Code fully quit
+# USAGE — run from a plain terminal with the coding agent fully quit
 #
-#   1. Quit the Claude Code desktop app (Cmd+Q in the menu bar).
-#   2. Quit any 'claude' CLI sessions (incl. MASTER_LOOP).
+#   1. Quit the agent desktop app (Cmd+Q in the menu bar).
+#   2. Quit any agent CLI sessions (incl. MASTER_LOOP).
 #   3. Open a fresh Terminal.app window.
 #   4. cd /Users/scammermike/Downloads/hawking
 #   5. ./tools/bench/clean_bench.sh
@@ -18,6 +18,10 @@
 
 set -euo pipefail
 cd "$(dirname "$0")/../.."
+
+_agent_env="$(git rev-parse --show-toplevel 2>/dev/null)/.agent_env"
+[ -f "$_agent_env" ] && source "$_agent_env"
+unset _agent_env
 
 GATES_ONLY="${1:-}"
 RESULTS_DIR="bench_results/v0.3.6"
@@ -85,29 +89,31 @@ gate_spotlight() {
     done
 }
 
-# ─── GATE: Claude processes ───────────────────────────────────────────────────
-gate_claude() {
-    log "gate/claude: checking for Claude Helper / Renderer / GPU / claude CLI..."
+# ─── GATE: agent processes ─────────────────────────────────────────────────────
+gate_agent() {
+    log "gate/agent: checking for Agent Helper / Renderer / GPU / agent CLI..."
     set +e
     # On macOS, ps -axo comm gives full executable paths, so match on path content.
-    # Targets: "Claude Helper" (any variant) and the "claude" CLI binary.
-    claude_out=$(ps -axo %cpu,comm | awk '
+    # Targets: the agent app's "Helper" process (any variant) and the agent CLI binary.
+    helper_pat="${AGENT_HELPER_PGREP:?see .agent_env.example}"
+    cli_pat="${AGENT_CLI_PGREP:?see .agent_env.example}"
+    agent_out=$(ps -axo %cpu,comm | awk -v helper_pat="$helper_pat" -v cli_pat="$cli_pat" '
     {
         cpu = $1 + 0
         comm = $0; sub(/^[[:space:]]*[0-9.]+[[:space:]]+/, "", comm)
-        if (cpu > 10.0 && (comm ~ /Claude Helper/ || comm ~ /\/claude$/)) {
+        if (cpu > 10.0 && (comm ~ helper_pat || comm ~ ("/" cli_pat "$"))) {
             print; ec = 1
         }
     }
     END { exit ec+0 }' 2>&1)
-    claude_ec=$?
+    agent_ec=$?
     set -e
-    if [[ $claude_ec -ne 0 ]]; then
-        printf 'FAIL gate/claude: Claude Code is running. Quit Claude Code (Cmd+Q on the desktop app) and re-run this script from a plain terminal.\nOffending processes:\n%s\n' \
-            "$claude_out" >&2
+    if [[ $agent_ec -ne 0 ]]; then
+        printf 'FAIL gate/agent: the coding agent is running. Quit it (Cmd+Q on the desktop app) and re-run this script from a plain terminal.\nOffending processes:\n%s\n' \
+            "$agent_out" >&2
         exit 1
     fi
-    log "gate/claude: pass"
+    log "gate/agent: pass"
 }
 
 # ─── BUILD SANITY ─────────────────────────────────────────────────────────────
@@ -133,7 +139,7 @@ TOP_SNAPSHOT=$(ps -axo %cpu,comm | sort -nr | head -10)
 printf '%s\n' "$TOP_SNAPSHOT"
 
 gate_slm
-gate_claude
+gate_agent
 gate_spotlight
 
 if [[ "$GATES_ONLY" == "--gates-only" ]]; then
@@ -184,7 +190,7 @@ for entry in "${TRIAL_ORDER[@]}"; do
         log "Sleeping 30s between trials..."
         sleep 30
         gate_spotlight
-        gate_claude
+        gate_agent
     fi
     first_trial=false
 
@@ -195,7 +201,7 @@ for entry in "${TRIAL_ORDER[@]}"; do
             log "Retrying $TAG (attempt 2)..."
             sleep 30
             gate_spotlight
-            gate_claude
+            gate_agent
         fi
 
         set +e

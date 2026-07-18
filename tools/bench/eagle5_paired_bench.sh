@@ -6,10 +6,10 @@
 # --speculate eagle5 at K∈{2,4,8} on the same prompt + tokens, n trials
 # each, and prints dec_tps + draft_accept/reject + ms/token.
 #
-# Per `memory/feedback_bench_with_claude_open.md`, paired-delta runs
-# work with Claude open because contamination cancels in the relative
-# delta. Absolute-tps gates would need `tools/bench/clean_bench.sh`
-# from a Cmd+Q-Claude terminal.
+# Per project design memory on benching with the agent open, paired-delta
+# runs work with the agent open because contamination cancels in the
+# relative delta. Absolute-tps gates would need `tools/bench/clean_bench.sh`
+# from a terminal with the agent fully quit.
 #
 # Env:
 #   WEIGHTS        : path to GGUF (default models/deepseek-v2-lite-q4.gguf)

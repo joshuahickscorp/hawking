@@ -1,0 +1,17 @@
+{
+  "allowed_signers_relative_path": "docs/plans/appendix_counter_authority_allowed_signers",
+  "allowed_signers_sha256": "a70164edd312fc8d33ae77fcd292f57241790aed737dcfefa5f7615c36498620",
+  "authority_envelope_schema": "hawking.appendix_counter_signed_authority_envelope.v1",
+  "authority_receipt_schema": "hawking.appendix_counter_authority_receipt.v1",
+  "default_off": true,
+  "generated_by": "root-release-authority-bootstrap",
+  "private_key_embedded": false,
+  "public_key_algorithm": "ssh-ed25519",
+  "public_key_blob_sha256": "6db91ec62ce28aa4c6fe51f019f06b985e9e78bb3f8c345f61bd6186dd4d7dc8",
+  "registry_grants_execution": false,
+  "registry_sha256": "b5d538250e92e244586aeb7fa2af86636f8111ae2ac2328b06a71a2f249612d2",
+  "registry_version": 1,
+  "schema": "hawking.appendix_counter_authority_registry.v1",
+  "signer_identity": "hawking-appendix-release",
+  "sshsig_namespace": "hawking-appendix-counter-authority-v1"
+}

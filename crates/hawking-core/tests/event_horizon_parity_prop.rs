@@ -112,8 +112,7 @@ fn pseudo_rand_prompts(n: usize, seed: u64) -> Vec<String> {
 
         // Safety: every byte is in 0x20..=0x7e (printable ASCII), so this is
         // always valid UTF-8.
-        let s = String::from_utf8(buf)
-            .expect("LCG generated non-UTF8 byte — invariant broken");
+        let s = String::from_utf8(buf).expect("LCG generated non-UTF8 byte — invariant broken");
         prompts.push(s);
     }
 
@@ -215,7 +214,13 @@ fn event_horizon_parity_property() {
     for (i, prompt) in prompts.iter().enumerate() {
         // GPU-CAP: max_new_tokens=16 while KD job owns GPU; un-cap for full run.
         // The logical bucket (16/64/256) is noted in comments but not used while capped.
-        let _logical_max = if i < 7 { 16 } else if i < 14 { 64 } else { 256 };
+        let _logical_max = if i < 7 {
+            16
+        } else if i < 14 {
+            64
+        } else {
+            256
+        };
         let max_new_tokens = MAX_NEW_TOKENS_CAP;
 
         // ── NO-SPEC canonical greedy (the oracle) ─────────────────────────

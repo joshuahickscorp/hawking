@@ -10,9 +10,9 @@
 //! this averages down with sufficient blocks. We gate on rel_L2 < 1e-2
 //! (same bar as pair_f16s and swiglu_f16s).
 
+use half::f16;
 use hawking_core::kernels;
 use hawking_core::metal::{MetalContext, TokenCommandBuffer};
-use half::f16;
 
 mod common;
 use common::*;

@@ -8,8 +8,8 @@
 #   lane | dec_tps | J/tok_GPU | J/tok_pkg | wall_s | readback_bytes/tok | lane_type | feature_flags | git_sha
 #
 # CONTAMINATION NOTE (printed in the output header):
-#   Absolute numbers require a clean room (Claude closed). Relative lane ratios
-#   are contamination-robust and valid with Claude open.
+#   Absolute numbers require a clean room (agent closed). Relative lane ratios
+#   are contamination-robust and valid with the agent open.
 #
 # USAGE:
 #   tools/bench/report_card.sh
@@ -624,7 +624,7 @@ printf ' GitSHA  : %s  local_mods: %s\n' "$GIT_SHA" "$LOCAL_MODS"
 printf ' Binary  : %s  built: %s\n' "$DBIN" "$BUILD_MTIME"
 printf ' Tokens  : %s   macmon: %s\n' "$TOKENS" "$(macmon --version 2>/dev/null || echo 'NOT FOUND — J/tok = N/A')"
 echo
-echo " !! CONTAMINATION NOTE: absolute numbers require clean room (Claude closed)."
+echo " !! CONTAMINATION NOTE: absolute numbers require clean room (agent closed)."
 echo "    Relative lane-vs-lane ratios are contamination-robust."
 echo "============================================================="
 

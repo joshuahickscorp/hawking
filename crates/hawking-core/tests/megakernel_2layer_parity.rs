@@ -16,6 +16,7 @@
 
 use std::path::PathBuf;
 
+use half::f16;
 use hawking_core::kernels::megakernel::{
     megakernel_2layer_dispatch, megakernel_nlayer_dispatch, MegakernelRunner, MK_PROBE_ATTN_OUT,
     MK_PROBE_FFN_DOWN, MK_PROBE_O_PROJ, MK_PROBE_Q_ROT, MK_PROBE_RESIDUAL, MK_PROBE_RESIDUAL_L0,
@@ -24,7 +25,6 @@ use hawking_core::kernels::megakernel::{
 use hawking_core::metal::MetalContext;
 use hawking_core::model::qwen_dense::{MegakernelLayerWeightsF16, QwenDense};
 use hawking_core::{Engine, EngineConfig};
-use half::f16;
 
 mod common;
 use common::*;
@@ -50,7 +50,7 @@ const ROPE_THETA: f32 = 1_000_000.0;
 /// f16 carries ~10 mantissa bits → ~1e-3 RELATIVE precision, so for a
 /// value of magnitude ~10 the absolute fp16 store noise is ~1e-2. The
 /// effective gate is `|diff| ≤ ATOL + RTOL * |want|`, mirroring numpy's
-/// `assert_allclose`. CLAUDE.md § "Verification rule" specifies atol=1e-3
+/// `assert_allclose`. AGENT.md § "Verification rule" specifies atol=1e-3
 /// fp16 for kernel parity with O(1) inputs; here the synthetic input
 /// drives activations into O(10) range so the relative term takes over.
 const RTOL: f32 = 2e-3;

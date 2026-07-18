@@ -1,7 +1,7 @@
 // Megakernel POC for Qwen-3B-Q4_K (2026-05-25, build/megakernel day 3+).
 //
-// SKELETON. Stage bodies (A..L per layer) are TODOs — see
-// `~/.claude/projects/-Users-scammermike-Downloads-dismantle/memory/build_megakernel_design_2026_05_25.md`
+// SKELETON. Stage bodies (A..L per layer) are TODOs — see project design
+// memory (build_megakernel_design_2026_05_25)
 // and the day-2 / day-3 closeouts. This file ships the threadgroup
 // memory layout, the argument-buffer-based binding scheme that keeps
 // the buffer-binding count under Metal's 30-slot limit, and the

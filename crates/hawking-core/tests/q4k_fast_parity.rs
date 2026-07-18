@@ -11,10 +11,10 @@
 
 #![cfg(target_os = "macos")]
 
+use half::f16;
 use hawking_core::kernels;
 use hawking_core::metal::{MetalContext, PinnedBuffer, TokenCommandBuffer};
 use hawking_core::q4k_fast::{convert_q4k_tensor_to_fast, Q4K_BLOCK_BYTES, Q4K_FAST_BLOCK_BYTES};
-use half::f16;
 use rand::Rng;
 use rand_pcg::Pcg64Mcg;
 

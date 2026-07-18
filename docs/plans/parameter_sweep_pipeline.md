@@ -138,7 +138,7 @@ llama_fits, cliff, tps`.
 ## 5. Results schema (the output)
 
 One JSONL row per `(model, bits, method)` cell → `reports/condense/ladder.jsonl` (append-only,
-idempotent). Rendered by `sweep_render.py` → `reports/condense/MATRIX.md`:
+idempotent). Rendered by `sweep.py render` → `reports/condense/MATRIX.md`:
 
 - **Headline — bit-floor vs scale:** `model | params | 1:1-floor | win-floor | Δ@floor | tps@floor`
   + the curve (does the floor descend with scale?).
@@ -156,7 +156,7 @@ idempotent). Rendered by `sweep_render.py` → `reports/condense/MATRIX.md`:
   **JIT-fetch** (downloads f16 only when about to condense; disk-gated) + **purge** (deletes
   f16/intermediate safetensors after recording numbers, keeps `.tq` + JSONL → stays within 1 TB).
   **Safe default:** prints the plan; requires `--go` to execute. Resumable.
-- **`sweep_render.py`** — JSONL → `MATRIX.md`.
+- **`sweep.py render`** — JSONL → `MATRIX.md`.
 - **`sweep_watchdog.sh`** — detached Studio launcher (download → Stream A → Stream B per model,
   each stage logged independently so a long run never loses an earlier result).
 

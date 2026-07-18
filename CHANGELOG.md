@@ -179,7 +179,7 @@ on.
 
 ### Removed
 
-- **`AGENTS.md`** (was duplicate of `CLAUDE.md`).
+- **`AGENTS.md`** (was duplicate of `AGENT.md`).
 - **`NOTES.md`, `ROADMAP.md`** (replaced by `prompts/v2.0.0_*.md` and
   `reports/v1.1.0_architecture_audit.md` which carry the current strategic
   direction).

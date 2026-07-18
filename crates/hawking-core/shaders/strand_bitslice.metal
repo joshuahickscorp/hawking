@@ -12,6 +12,19 @@ struct BitsliceEntry {
     uint d;            // vector dim (1 = scalar). last field => scalar kernels read the same first 80 B.
 };
 
+// Runtime-only compute-for-memory twin of BitsliceEntry. The .tq wire format is
+// unchanged; this 40-byte table is baked once at load from the same block meta.
+struct CompactBitsliceEntry {
+    uint bit_offset;
+    uint init_state;
+    uint out_off;
+    uint n;
+    int  scale_q;
+    int  min_base_q;
+    uint mult_codes[2];
+    uint min_codes[2];
+};
+
 static inline uint bs_load_u32_le(device const uchar* p, uint widx) {
     uint b = widx << 2;
     return (uint)p[b]
@@ -140,6 +153,26 @@ static inline int bs_qcb(uint state, uint l_bits, device const int* tail_q12, ui
     return bs_quantile_q12_computed(rank, l_bits, tail_q12, t);
 }
 
+static inline uchar bs_compact_code(device const uint* codes, uint sb) {
+    uint word = codes[sb >> 2];
+    return (uchar)((word >> ((sb & 3u) * 8u)) & 0x3fu);
+}
+
+// Exact mirrors of strand_quant::decode::{eff_scale_q,eff_min_q}. These execute
+// once per 32-weight sub-block on the compact metadata path.
+static inline int bs_expand_eff(int scale_q, uchar code) {
+    long mult = (long)((uint)(code & 0x3fu) + 1u);
+    return (int)(((long)scale_q * mult) >> 6);
+}
+
+static inline int bs_expand_off(int min_base_q, uchar code) {
+    long mag = (long)(code & 0x1fu);
+    if (mag == 0) return 0;
+    long base = min_base_q < 0 ? -(long)min_base_q : (long)min_base_q;
+    long signed_value = (code & 0x20u) ? base * mag : -(base * mag);
+    return (int)(signed_value / 31);
+}
+
 kernel void strand_bitslice_decode(
     device   const uchar*          w_bits   [[buffer(0)]],
     device         int*            out_q12  [[buffer(1)]],
@@ -251,8 +284,115 @@ kernel void strand_bitslice_decode_computed(
     }
 }
 
+// Hashed-quantile decode-only oracle. This mirrors the hashed fused-GEMV inner
+// loop but writes Q12 directly so the runtime policy can be held byte-identical
+// to the stored path before any float reduction is considered.
+kernel void strand_bitslice_decode_hashed(
+    device   const uchar*          w_bits    [[buffer(0)]],
+    device         int*            out_q12   [[buffer(1)]],
+    device   const BitsliceEntry*  tbl       [[buffer(2)]],
+    constant       uint&           n_blocks  [[buffer(3)]],
+    constant       uint&           k_bits    [[buffer(4)]],
+    constant       uint&           l_bits    [[buffer(5)]],
+    device   const short*          quant_q12 [[buffer(6)]],
+    threadgroup    short*          sh_quant  [[threadgroup(0)]],
+    uint tid  [[thread_position_in_threadgroup]],
+    uint gidx [[thread_position_in_grid]],
+    uint tgs  [[threads_per_threadgroup]])
+{
+    uint lut_n = 1u << l_bits;
+    for (uint r = tid; r < lut_n; r += tgs) sh_quant[r] = quant_q12[r];
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (gidx >= n_blocks) return;
+
+    uint state_mask = lut_n - 1u;
+    uint input_mask = (1u << k_bits) - 1u;
+    device const BitsliceEntry* e = &tbl[gidx];
+    uint state = e->init_state & state_mask;
+    uint word_idx = e->bit_offset >> 5;
+    uint bit_in_w = e->bit_offset & 31u;
+    ulong acc = (ulong)(bs_load_u32_le(w_bits, word_idx) >> bit_in_w);
+    uint have = 32u - bit_in_w;
+
+    for (uint j = 0; j < e->n; ++j) {
+        if (have < k_bits) {
+            ulong nxt = (ulong)bs_load_u32_le(w_bits, ++word_idx);
+            acc |= nxt << have;
+            have += 32u;
+        }
+        uint sym = (uint)acc & input_mask;
+        acc >>= k_bits;
+        have -= k_bits;
+        state = ((state << k_bits) | sym) & state_mask;
+        uint rank = (uint)bs_hash_state((ulong)state, l_bits);
+        int q = (int)sh_quant[rank];
+        uint sb = j >> 5;
+        int w = (int)(((long)e->eff[sb] * (long)q) >> 16) + e->off[sb];
+        out_q12[e->out_off + j] = w;
+    }
+}
+
+// Compact-metadata decode-only oracle. The payload and stored codebook are
+// unchanged; only scale/min expansion moves into the kernel. Exact Q12 output
+// proves the 40-byte runtime record before its fused-GEMV timing is admissible.
+kernel void strand_bitslice_decode_compact(
+    device   const uchar*                 w_bits   [[buffer(0)]],
+    device         int*                   out_q12  [[buffer(1)]],
+    device   const CompactBitsliceEntry*  tbl      [[buffer(2)]],
+    constant       uint&                  n_blocks [[buffer(3)]],
+    constant       uint&                  k_bits   [[buffer(4)]],
+    constant       uint&                  l_bits   [[buffer(5)]],
+    device   const int*                   lut_q12  [[buffer(6)]],
+    threadgroup    int*                   sh_lut   [[threadgroup(0)]],
+    uint tid  [[thread_position_in_threadgroup]],
+    uint gidx [[thread_position_in_grid]],
+    uint tgs  [[threads_per_threadgroup]])
+{
+    uint lut_n = 1u << l_bits;
+    for (uint s = tid; s < lut_n; s += tgs) sh_lut[s] = lut_q12[s];
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (gidx >= n_blocks) return;
+
+    uint state_mask = lut_n - 1u;
+    uint input_mask = (1u << k_bits) - 1u;
+    device const CompactBitsliceEntry* e = &tbl[gidx];
+    uint state = e->init_state & state_mask;
+    uint word_idx = e->bit_offset >> 5;
+    uint bit_in_w = e->bit_offset & 31u;
+    ulong acc = (ulong)(bs_load_u32_le(w_bits, word_idx) >> bit_in_w);
+    uint have = 32u - bit_in_w;
+    uint current_sb = 0u;
+    int es = bs_expand_eff(e->scale_q, bs_compact_code(e->mult_codes, 0));
+    int of = bs_expand_off(e->min_base_q, bs_compact_code(e->min_codes, 0));
+
+    for (uint j = 0; j < e->n; ++j) {
+        if (have < k_bits) {
+            ulong nxt = (ulong)bs_load_u32_le(w_bits, ++word_idx);
+            acc |= nxt << have;
+            have += 32u;
+        }
+        uint sym = (uint)acc & input_mask;
+        acc >>= k_bits;
+        have -= k_bits;
+        state = ((state << k_bits) | sym) & state_mask;
+        uint sb = j >> 5;
+        if (sb != current_sb) {
+            current_sb = sb;
+            es = bs_expand_eff(e->scale_q, bs_compact_code(e->mult_codes, sb));
+            of = bs_expand_off(e->min_base_q, bs_compact_code(e->min_codes, sb));
+        }
+        int q = sh_lut[state];
+        int w = (int)(((long)es * (long)q) >> 16) + of;
+        out_q12[e->out_off + j] = w;
+    }
+}
+
 kernel void strand_bitslice_entry_sizeof(device uint* out [[buffer(0)]]) {
     out[0] = (uint)sizeof(BitsliceEntry);
+}
+
+kernel void strand_bitslice_compact_entry_sizeof(device uint* out [[buffer(0)]]) {
+    out[0] = (uint)sizeof(CompactBitsliceEntry);
 }
 
 // ---- B.7 vector trellis (d=2) -------------------------------------------------
@@ -371,6 +511,171 @@ kernel void strand_bitslice_gemv_partials(
         int q  = sh_lut[state];
         uint sb = j >> 5;
         int w  = (int)(((long)e->eff[sb] * (long)q) >> 16) + e->off[sb];
+        partial += (float)w * Q12_TO_F32 * x[col0 + j];
+    }
+    partials[gidx] = partial;
+}
+
+// Same expanded 84-byte metadata as the baseline, but compute the deterministic
+// state->rank permutation and gather an i16 monotone quantile table. This is the
+// middle FLOPS path: half the codebook staging bytes, modest extra integer ALU.
+kernel void strand_bitslice_gemv_partials_hashed(
+    device   const uchar*          w_bits   [[buffer(0)]],
+    device   const float*          x        [[buffer(1)]],
+    device         float*          partials [[buffer(2)]],
+    device   const BitsliceEntry*  tbl      [[buffer(3)]],
+    constant       uint&           n_blocks [[buffer(4)]],
+    constant       uint&           cols     [[buffer(5)]],
+    constant       uint&           k_bits   [[buffer(6)]],
+    constant       uint&           l_bits   [[buffer(7)]],
+    device   const short*          quant_q12 [[buffer(8)]],
+    threadgroup    short*          sh_quant [[threadgroup(0)]],
+    uint tid  [[thread_position_in_threadgroup]],
+    uint gidx [[thread_position_in_grid]],
+    uint tgs  [[threads_per_threadgroup]])
+{
+    uint lut_n = 1u << l_bits;
+    for (uint s = tid; s < lut_n; s += tgs) sh_quant[s] = quant_q12[s];
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (gidx >= n_blocks) return;
+
+    uint state_mask = lut_n - 1u;
+    uint input_mask = (1u << k_bits) - 1u;
+    const float Q12_TO_F32 = 1.0f / 4096.0f;
+    device const BitsliceEntry* e = &tbl[gidx];
+    uint state = e->init_state & state_mask;
+    uint n = e->n;
+    uint col0 = e->out_off % cols;
+    uint word_idx = e->bit_offset >> 5;
+    uint bit_in_w = e->bit_offset & 31u;
+    ulong acc = (ulong)(bs_load_u32_le(w_bits, word_idx) >> bit_in_w);
+    uint have = 32u - bit_in_w;
+
+    float partial = 0.0f;
+    for (uint j = 0; j < n; ++j) {
+        if (have < k_bits) {
+            ulong nxt = (ulong)bs_load_u32_le(w_bits, ++word_idx);
+            acc |= nxt << have;
+            have += 32u;
+        }
+        uint sym = (uint)acc & input_mask;
+        acc >>= k_bits;
+        have -= k_bits;
+        state = ((state << k_bits) | sym) & state_mask;
+        uint rank = (uint)bs_hash_state((ulong)state, l_bits);
+        int q = (int)sh_quant[rank];
+        uint sb = j >> 5;
+        int w = (int)(((long)e->eff[sb] * (long)q) >> 16) + e->off[sb];
+        partial += (float)w * Q12_TO_F32 * x[col0 + j];
+    }
+    partials[gidx] = partial;
+}
+
+// Fully lookup-free central codebook: integer Acklam is evaluated per state;
+// only the exact left-tail prefix is read. This deliberately spends substantial
+// 64-bit integer ALU and is an explicit research path, never the default.
+kernel void strand_bitslice_gemv_partials_computed(
+    device   const uchar*          w_bits   [[buffer(0)]],
+    device   const float*          x        [[buffer(1)]],
+    device         float*          partials [[buffer(2)]],
+    device   const BitsliceEntry*  tbl      [[buffer(3)]],
+    constant       uint&           n_blocks [[buffer(4)]],
+    constant       uint&           cols     [[buffer(5)]],
+    constant       uint&           k_bits   [[buffer(6)]],
+    constant       uint&           l_bits   [[buffer(7)]],
+    device   const int*            tail_q12 [[buffer(8)]],
+    uint gidx [[thread_position_in_grid]])
+{
+    if (gidx >= n_blocks) return;
+    uint state_mask = (1u << l_bits) - 1u;
+    uint input_mask = (1u << k_bits) - 1u;
+    uint tail_len = BS_TAIL_LEFT_LEN[l_bits - 4u];
+    const float Q12_TO_F32 = 1.0f / 4096.0f;
+    device const BitsliceEntry* e = &tbl[gidx];
+    uint state = e->init_state & state_mask;
+    uint n = e->n;
+    uint col0 = e->out_off % cols;
+    uint word_idx = e->bit_offset >> 5;
+    uint bit_in_w = e->bit_offset & 31u;
+    ulong acc = (ulong)(bs_load_u32_le(w_bits, word_idx) >> bit_in_w);
+    uint have = 32u - bit_in_w;
+
+    float partial = 0.0f;
+    for (uint j = 0; j < n; ++j) {
+        if (have < k_bits) {
+            ulong nxt = (ulong)bs_load_u32_le(w_bits, ++word_idx);
+            acc |= nxt << have;
+            have += 32u;
+        }
+        uint sym = (uint)acc & input_mask;
+        acc >>= k_bits;
+        have -= k_bits;
+        state = ((state << k_bits) | sym) & state_mask;
+        int q = bs_qcb(state, l_bits, tail_q12, tail_len);
+        uint sb = j >> 5;
+        int w = (int)(((long)e->eff[sb] * (long)q) >> 16) + e->off[sb];
+        partial += (float)w * Q12_TO_F32 * x[col0 + j];
+    }
+    partials[gidx] = partial;
+}
+
+// Compact metadata path: expand scale/min once per 32 weights while retaining
+// the baseline stored Q12 codebook. It isolates metadata savings from codebook
+// experiments for clean A/B attribution.
+kernel void strand_bitslice_gemv_partials_compact(
+    device   const uchar*                 w_bits   [[buffer(0)]],
+    device   const float*                 x        [[buffer(1)]],
+    device         float*                 partials [[buffer(2)]],
+    device   const CompactBitsliceEntry*  tbl      [[buffer(3)]],
+    constant       uint&                  n_blocks [[buffer(4)]],
+    constant       uint&                  cols     [[buffer(5)]],
+    constant       uint&                  k_bits   [[buffer(6)]],
+    constant       uint&                  l_bits   [[buffer(7)]],
+    device   const int*                   lut_q12  [[buffer(8)]],
+    threadgroup    int*                   sh_lut   [[threadgroup(0)]],
+    uint tid  [[thread_position_in_threadgroup]],
+    uint gidx [[thread_position_in_grid]],
+    uint tgs  [[threads_per_threadgroup]])
+{
+    uint lut_n = 1u << l_bits;
+    for (uint s = tid; s < lut_n; s += tgs) sh_lut[s] = lut_q12[s];
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (gidx >= n_blocks) return;
+
+    uint state_mask = lut_n - 1u;
+    uint input_mask = (1u << k_bits) - 1u;
+    const float Q12_TO_F32 = 1.0f / 4096.0f;
+    device const CompactBitsliceEntry* e = &tbl[gidx];
+    uint state = e->init_state & state_mask;
+    uint n = e->n;
+    uint col0 = e->out_off % cols;
+    uint word_idx = e->bit_offset >> 5;
+    uint bit_in_w = e->bit_offset & 31u;
+    ulong acc = (ulong)(bs_load_u32_le(w_bits, word_idx) >> bit_in_w);
+    uint have = 32u - bit_in_w;
+    uint current_sb = 0u;
+    int es = bs_expand_eff(e->scale_q, bs_compact_code(e->mult_codes, 0));
+    int of = bs_expand_off(e->min_base_q, bs_compact_code(e->min_codes, 0));
+
+    float partial = 0.0f;
+    for (uint j = 0; j < n; ++j) {
+        if (have < k_bits) {
+            ulong nxt = (ulong)bs_load_u32_le(w_bits, ++word_idx);
+            acc |= nxt << have;
+            have += 32u;
+        }
+        uint sym = (uint)acc & input_mask;
+        acc >>= k_bits;
+        have -= k_bits;
+        state = ((state << k_bits) | sym) & state_mask;
+        uint sb = j >> 5;
+        if (sb != current_sb) {
+            current_sb = sb;
+            es = bs_expand_eff(e->scale_q, bs_compact_code(e->mult_codes, sb));
+            of = bs_expand_off(e->min_base_q, bs_compact_code(e->min_codes, sb));
+        }
+        int q = sh_lut[state];
+        int w = (int)(((long)es * (long)q) >> 16) + of;
         partial += (float)w * Q12_TO_F32 * x[col0 + j];
     }
     partials[gidx] = partial;
@@ -556,6 +861,48 @@ kernel void strand_rht_forward_cols(
     }
 }
 
+// Batch-major twin for speculative verification. Input and output are laid out
+// as `(batch, in_features)` so Hawking's resident decode arena can bind them
+// directly. One thread still owns one 256-wide FWHT block; `gidx` simply adds a
+// batch dimension. This keeps the exact scalar butterfly order above while
+// avoiding B separate transform dispatches.
+kernel void strand_rht_forward_cols_batched(
+    device   const float*  x           [[buffer(0)]],
+    device         float*  tx          [[buffer(1)]],
+    constant       uint&   in_features [[buffer(2)]],
+    constant       uint&   seed_lo     [[buffer(3)]],
+    constant       uint&   seed_hi     [[buffer(4)]],
+    constant       uint&   batch       [[buffer(5)]],
+    uint gidx [[thread_position_in_grid]])
+{
+    uint n_blocks = in_features / RHT_BLOCK;
+    if (gidx >= n_blocks * batch) return;
+    uint bi = gidx / n_blocks;
+    uint blk = gidx % n_blocks;
+    ulong seed = (ulong)seed_lo | ((ulong)seed_hi << 32);
+    uint col_base = (blk * RHT_BLOCK) % in_features;
+    uint base = bi * in_features + blk * RHT_BLOCK;
+
+    float buf[RHT_BLOCK];
+    for (uint j = 0; j < RHT_BLOCK; ++j) {
+        buf[j] = x[base + j] * rht_sign_at(seed, col_base + j);
+    }
+    for (uint len = 1u; len < RHT_BLOCK; len <<= 1) {
+        for (uint i = 0; i < RHT_BLOCK; i += len * 2u) {
+            for (uint j = i; j < i + len; ++j) {
+                float u = buf[j];
+                float v = buf[j + len];
+                buf[j] = u + v;
+                buf[j + len] = u - v;
+            }
+        }
+    }
+    const float scale = 1.0f / 16.0f;
+    for (uint j = 0; j < RHT_BLOCK; ++j) {
+        tx[base + j] = buf[j] * scale;
+    }
+}
+
 // ─── OUTL outlier sparse correction (GAP 1) ────────────────────────────────────
 //
 // Outliers live in the UN-rotated weight domain. The bulk bitslice GEMV serves
@@ -585,6 +932,301 @@ kernel void strand_outlier_correct(
     OutlierEntry e = outl[gidx];
     float contrib = e.resid * x_raw[x_base_elems + e.col];
     atomic_fetch_add_explicit(&y[y_base_elems + e.row], contrib, memory_order_relaxed);
+}
+
+// Batch-major OUTL correction for the small-batch TQ verifier path. One grid
+// element owns one (activation, outlier) pair; atomics retain the single-vector
+// kernel's same-row ordering safety without B command-encoder dispatches.
+kernel void strand_outlier_correct_batched(
+    device   const OutlierEntry* outl   [[buffer(0)]],
+    device         atomic_float* y      [[buffer(1)]],
+    device   const float*        x_raw  [[buffer(2)]],
+    constant       uint&         n_outl [[buffer(3)]],
+    constant       uint&         rows   [[buffer(4)]],
+    constant       uint&         cols   [[buffer(5)]],
+    constant       uint&         batch  [[buffer(6)]],
+    uint gidx [[thread_position_in_grid]])
+{
+    if (gidx >= n_outl * batch) return;
+    uint bi = gidx / n_outl;
+    uint oi = gidx % n_outl;
+    OutlierEntry e = outl[oi];
+    float contrib = e.resid * x_raw[(ulong)bi * cols + e.col];
+    atomic_fetch_add_explicit(&y[(ulong)bi * rows + e.row], contrib, memory_order_relaxed);
+}
+
+// ─── B=1..8 batch-major TQ GEMM for speculative verification ────────────────
+//
+// Unlike the older fixed B={4,16,64} transposed-input experiment below, these
+// kernels bind Hawking's resident `(batch, cols)` arena buffers directly. One
+// thread decodes one 256-weight block ONCE and accumulates up to eight activation
+// rows in registers. That is the core speculative-decode reuse: compressed
+// weight bytes, trellis state transitions, metadata expansion and codebook work
+// are shared across every proposed token in the verification group.
+
+#define BS_SMALL_BATCH_MAX 8u
+
+static inline void bs_small_zero(thread float* pacc) {
+    for (uint bi = 0; bi < BS_SMALL_BATCH_MAX; ++bi) pacc[bi] = 0.0f;
+}
+
+static inline void bs_small_mac(thread float* pacc, float wf,
+                                device const float* x, uint cols, uint col,
+                                uint batch) {
+    for (uint bi = 0; bi < batch; ++bi) {
+        pacc[bi] += wf * x[(ulong)bi * cols + col];
+    }
+}
+
+static inline void bs_small_store(thread const float* pacc, device float* partials,
+                                  uint n_blocks, uint gidx, uint batch) {
+    for (uint bi = 0; bi < batch; ++bi) {
+        partials[(ulong)bi * n_blocks + gidx] = pacc[bi];
+    }
+}
+
+kernel void strand_bitslice_gemm_small_stored(
+    device   const uchar*          w_bits   [[buffer(0)]],
+    device   const float*          x        [[buffer(1)]],
+    device         float*          partials [[buffer(2)]],
+    device   const BitsliceEntry*  tbl      [[buffer(3)]],
+    constant       uint&           n_blocks [[buffer(4)]],
+    constant       uint&           cols     [[buffer(5)]],
+    constant       uint&           k_bits   [[buffer(6)]],
+    constant       uint&           l_bits   [[buffer(7)]],
+    device   const int*            lut_q12  [[buffer(8)]],
+    constant       uint&           batch    [[buffer(9)]],
+    threadgroup    int*            sh_lut   [[threadgroup(0)]],
+    uint tid  [[thread_position_in_threadgroup]],
+    uint gidx [[thread_position_in_grid]],
+    uint tgs  [[threads_per_threadgroup]])
+{
+    uint lut_n = 1u << l_bits;
+    for (uint s = tid; s < lut_n; s += tgs) sh_lut[s] = lut_q12[s];
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (gidx >= n_blocks || batch == 0u || batch > BS_SMALL_BATCH_MAX) return;
+
+    uint state_mask = lut_n - 1u;
+    uint input_mask = (1u << k_bits) - 1u;
+    device const BitsliceEntry* e = &tbl[gidx];
+    uint state = e->init_state & state_mask;
+    uint n = e->n;
+    uint col0 = e->out_off % cols;
+    uint word_idx = e->bit_offset >> 5;
+    uint bit_in_w = e->bit_offset & 31u;
+    ulong acc = (ulong)(bs_load_u32_le(w_bits, word_idx) >> bit_in_w);
+    uint have = 32u - bit_in_w;
+    float pacc[BS_SMALL_BATCH_MAX];
+    bs_small_zero(pacc);
+
+    for (uint j = 0; j < n; ++j) {
+        if (have < k_bits) {
+            ulong nxt = (ulong)bs_load_u32_le(w_bits, ++word_idx);
+            acc |= nxt << have;
+            have += 32u;
+        }
+        uint sym = (uint)acc & input_mask;
+        acc >>= k_bits;
+        have -= k_bits;
+        state = ((state << k_bits) | sym) & state_mask;
+        uint sb = j >> 5;
+        int w = (int)(((long)e->eff[sb] * (long)sh_lut[state]) >> 16) + e->off[sb];
+        bs_small_mac(pacc, (float)w * (1.0f / 4096.0f), x, cols, col0 + j, batch);
+    }
+    bs_small_store(pacc, partials, n_blocks, gidx, batch);
+}
+
+kernel void strand_bitslice_gemm_small_hashed(
+    device   const uchar*          w_bits    [[buffer(0)]],
+    device   const float*          x         [[buffer(1)]],
+    device         float*          partials  [[buffer(2)]],
+    device   const BitsliceEntry*  tbl       [[buffer(3)]],
+    constant       uint&           n_blocks  [[buffer(4)]],
+    constant       uint&           cols      [[buffer(5)]],
+    constant       uint&           k_bits    [[buffer(6)]],
+    constant       uint&           l_bits    [[buffer(7)]],
+    device   const short*          quant_q12 [[buffer(8)]],
+    constant       uint&           batch     [[buffer(9)]],
+    threadgroup    short*          sh_quant  [[threadgroup(0)]],
+    uint tid  [[thread_position_in_threadgroup]],
+    uint gidx [[thread_position_in_grid]],
+    uint tgs  [[threads_per_threadgroup]])
+{
+    uint lut_n = 1u << l_bits;
+    for (uint s = tid; s < lut_n; s += tgs) sh_quant[s] = quant_q12[s];
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (gidx >= n_blocks || batch == 0u || batch > BS_SMALL_BATCH_MAX) return;
+
+    uint state_mask = lut_n - 1u;
+    uint input_mask = (1u << k_bits) - 1u;
+    device const BitsliceEntry* e = &tbl[gidx];
+    uint state = e->init_state & state_mask;
+    uint n = e->n;
+    uint col0 = e->out_off % cols;
+    uint word_idx = e->bit_offset >> 5;
+    uint bit_in_w = e->bit_offset & 31u;
+    ulong acc = (ulong)(bs_load_u32_le(w_bits, word_idx) >> bit_in_w);
+    uint have = 32u - bit_in_w;
+    float pacc[BS_SMALL_BATCH_MAX];
+    bs_small_zero(pacc);
+
+    for (uint j = 0; j < n; ++j) {
+        if (have < k_bits) {
+            ulong nxt = (ulong)bs_load_u32_le(w_bits, ++word_idx);
+            acc |= nxt << have;
+            have += 32u;
+        }
+        uint sym = (uint)acc & input_mask;
+        acc >>= k_bits;
+        have -= k_bits;
+        state = ((state << k_bits) | sym) & state_mask;
+        uint rank = (uint)bs_hash_state((ulong)state, l_bits);
+        uint sb = j >> 5;
+        int w = (int)(((long)e->eff[sb] * (long)sh_quant[rank]) >> 16) + e->off[sb];
+        bs_small_mac(pacc, (float)w * (1.0f / 4096.0f), x, cols, col0 + j, batch);
+    }
+    bs_small_store(pacc, partials, n_blocks, gidx, batch);
+}
+
+kernel void strand_bitslice_gemm_small_computed(
+    device   const uchar*          w_bits   [[buffer(0)]],
+    device   const float*          x        [[buffer(1)]],
+    device         float*          partials [[buffer(2)]],
+    device   const BitsliceEntry*  tbl      [[buffer(3)]],
+    constant       uint&           n_blocks [[buffer(4)]],
+    constant       uint&           cols     [[buffer(5)]],
+    constant       uint&           k_bits   [[buffer(6)]],
+    constant       uint&           l_bits   [[buffer(7)]],
+    device   const int*            tail_q12 [[buffer(8)]],
+    constant       uint&           batch    [[buffer(9)]],
+    uint gidx [[thread_position_in_grid]])
+{
+    if (gidx >= n_blocks || batch == 0u || batch > BS_SMALL_BATCH_MAX) return;
+    uint state_mask = (1u << l_bits) - 1u;
+    uint input_mask = (1u << k_bits) - 1u;
+    uint tail_len = BS_TAIL_LEFT_LEN[l_bits - 4u];
+    device const BitsliceEntry* e = &tbl[gidx];
+    uint state = e->init_state & state_mask;
+    uint n = e->n;
+    uint col0 = e->out_off % cols;
+    uint word_idx = e->bit_offset >> 5;
+    uint bit_in_w = e->bit_offset & 31u;
+    ulong acc = (ulong)(bs_load_u32_le(w_bits, word_idx) >> bit_in_w);
+    uint have = 32u - bit_in_w;
+    float pacc[BS_SMALL_BATCH_MAX];
+    bs_small_zero(pacc);
+
+    for (uint j = 0; j < n; ++j) {
+        if (have < k_bits) {
+            ulong nxt = (ulong)bs_load_u32_le(w_bits, ++word_idx);
+            acc |= nxt << have;
+            have += 32u;
+        }
+        uint sym = (uint)acc & input_mask;
+        acc >>= k_bits;
+        have -= k_bits;
+        state = ((state << k_bits) | sym) & state_mask;
+        uint sb = j >> 5;
+        int q = bs_qcb(state, l_bits, tail_q12, tail_len);
+        int w = (int)(((long)e->eff[sb] * (long)q) >> 16) + e->off[sb];
+        bs_small_mac(pacc, (float)w * (1.0f / 4096.0f), x, cols, col0 + j, batch);
+    }
+    bs_small_store(pacc, partials, n_blocks, gidx, batch);
+}
+
+kernel void strand_bitslice_gemm_small_compact(
+    device   const uchar*                 w_bits   [[buffer(0)]],
+    device   const float*                 x        [[buffer(1)]],
+    device         float*                 partials [[buffer(2)]],
+    device   const CompactBitsliceEntry*  tbl      [[buffer(3)]],
+    constant       uint&                  n_blocks [[buffer(4)]],
+    constant       uint&                  cols     [[buffer(5)]],
+    constant       uint&                  k_bits   [[buffer(6)]],
+    constant       uint&                  l_bits   [[buffer(7)]],
+    device   const int*                   lut_q12  [[buffer(8)]],
+    constant       uint&                  batch    [[buffer(9)]],
+    threadgroup    int*                   sh_lut   [[threadgroup(0)]],
+    uint tid  [[thread_position_in_threadgroup]],
+    uint gidx [[thread_position_in_grid]],
+    uint tgs  [[threads_per_threadgroup]])
+{
+    uint lut_n = 1u << l_bits;
+    for (uint s = tid; s < lut_n; s += tgs) sh_lut[s] = lut_q12[s];
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (gidx >= n_blocks || batch == 0u || batch > BS_SMALL_BATCH_MAX) return;
+
+    uint state_mask = lut_n - 1u;
+    uint input_mask = (1u << k_bits) - 1u;
+    device const CompactBitsliceEntry* e = &tbl[gidx];
+    uint state = e->init_state & state_mask;
+    uint n = e->n;
+    uint col0 = e->out_off % cols;
+    uint word_idx = e->bit_offset >> 5;
+    uint bit_in_w = e->bit_offset & 31u;
+    ulong acc = (ulong)(bs_load_u32_le(w_bits, word_idx) >> bit_in_w);
+    uint have = 32u - bit_in_w;
+    uint current_sb = 0u;
+    int es = bs_expand_eff(e->scale_q, bs_compact_code(e->mult_codes, 0));
+    int of = bs_expand_off(e->min_base_q, bs_compact_code(e->min_codes, 0));
+    float pacc[BS_SMALL_BATCH_MAX];
+    bs_small_zero(pacc);
+
+    for (uint j = 0; j < n; ++j) {
+        if (have < k_bits) {
+            ulong nxt = (ulong)bs_load_u32_le(w_bits, ++word_idx);
+            acc |= nxt << have;
+            have += 32u;
+        }
+        uint sym = (uint)acc & input_mask;
+        acc >>= k_bits;
+        have -= k_bits;
+        state = ((state << k_bits) | sym) & state_mask;
+        uint sb = j >> 5;
+        if (sb != current_sb) {
+            current_sb = sb;
+            es = bs_expand_eff(e->scale_q, bs_compact_code(e->mult_codes, sb));
+            of = bs_expand_off(e->min_base_q, bs_compact_code(e->min_codes, sb));
+        }
+        int w = (int)(((long)es * (long)sh_lut[state]) >> 16) + of;
+        bs_small_mac(pacc, (float)w * (1.0f / 4096.0f), x, cols, col0 + j, batch);
+    }
+    bs_small_store(pacc, partials, n_blocks, gidx, batch);
+}
+
+kernel void strand_bitslice_reduce_rows_small_batch(
+    device const float* partials [[buffer(0)]],
+    device       float* y        [[buffer(1)]],
+    constant     uint&  rows     [[buffer(2)]],
+    constant     uint&  bpr      [[buffer(3)]],
+    constant     uint&  n_blocks [[buffer(4)]],
+    constant     uint&  batch    [[buffer(5)]],
+    uint gidx [[thread_position_in_grid]])
+{
+    if (gidx >= rows * batch) return;
+    uint bi = gidx / rows;
+    uint row = gidx % rows;
+    float acc = 0.0f;
+    ulong base = (ulong)bi * n_blocks + (ulong)row * bpr;
+    for (uint blk = 0; blk < bpr; ++blk) acc += partials[base + blk];
+    y[(ulong)bi * rows + row] = acc;
+}
+
+kernel void strand_bitslice_reduce_rows_small_batch_accum(
+    device const float* partials [[buffer(0)]],
+    device       float* y        [[buffer(1)]],
+    constant     uint&  rows     [[buffer(2)]],
+    constant     uint&  bpr      [[buffer(3)]],
+    constant     uint&  n_blocks [[buffer(4)]],
+    constant     uint&  batch    [[buffer(5)]],
+    uint gidx [[thread_position_in_grid]])
+{
+    if (gidx >= rows * batch) return;
+    uint bi = gidx / rows;
+    uint row = gidx % rows;
+    float acc = 0.0f;
+    ulong base = (ulong)bi * n_blocks + (ulong)row * bpr;
+    for (uint blk = 0; blk < bpr; ++blk) acc += partials[base + blk];
+    y[(ulong)bi * rows + row] += acc;
 }
 
 template <uint B>

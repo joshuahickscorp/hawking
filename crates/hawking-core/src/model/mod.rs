@@ -6,16 +6,14 @@
 pub mod arch_config;
 pub mod deepseek_v2;
 pub mod expert_cache;
-pub mod gemma2;
 pub mod llama;
-pub mod mamba2;
-pub mod mixtral;
-pub mod olmoe;
-pub mod phi3;
 pub mod qwen_dense;
 pub mod qwen_moe;
 pub mod rwkv7;
 pub mod weights;
+// Non-frontier model adapters (gemma2, phi3, olmoe, mamba2, mixtral) were extracted to the
+// hawking-adapters-extra pack (CLEAN SLATE C2); the shipping engine ships the Qwen/RWKV/DeepSeek/
+// Llama frontier set. Hydrate the pack + re-add the modules to load those architectures.
 
 use crate::gguf::GgufFile;
 use crate::{Engine, EngineConfig, Error, Result};
@@ -63,18 +61,11 @@ pub fn load_engine(weights: &Path, mut config: EngineConfig) -> Result<Box<dyn E
 
     let gguf = GgufFile::open(weights)?;
     let arch = gguf.architecture().unwrap_or("").to_string();
-    let is_mixtral = mixtral::is_mixtral_gguf(&gguf);
     // Track 4.3: read + honor (log) the sidecar mixed-quant tier map, if present.
     let _ = honor_sidecar_tier_map(weights, &gguf);
     drop(gguf); // model loaders re-open via mmap
     match arch.as_str() {
-        "llama" if is_mixtral => {
-            let e = mixtral::MixtralEngine::load(weights, config)?;
-            Ok(Box::new(e))
-        }
-        // Llama-family dense arch (Llama-2 / Llama-3.x / Mistral). The
-        // `is_mixtral` guard above catches MoE Mixtral GGUFs that also
-        // self-report as `"llama"`, so this arm is the dense fallback.
+        // Llama-family dense arch (Llama-2 / Llama-3.x / Mistral).
         "llama" | "llama2" | "llama3" | "llama3.1" | "llama3.2" | "mistral" => {
             let e = llama::LlamaDense::load(weights, config)?;
             Ok(Box::new(e))
@@ -91,28 +82,13 @@ pub fn load_engine(weights: &Path, mut config: EngineConfig) -> Result<Box<dyn E
             let e = qwen_moe::QwenMoE::load(weights, config)?;
             Ok(Box::new(e))
         }
-        "gemma2" | "gemma-2" => {
-            let e = gemma2::Gemma2::load(weights, config)?;
-            Ok(Box::new(e))
-        }
-        "phi3" | "phi-3" | "phi3.5" => {
-            let e = phi3::Phi3::load(weights, config)?;
-            Ok(Box::new(e))
-        }
         "rwkv7" | "rwkv-7" => {
             let e = rwkv7::RwkvSeven::load(weights, config)?;
             Ok(Box::new(e))
         }
-        "mamba2" => {
-            let e = mamba2::Mamba2::load(weights, config)?;
-            Ok(Box::new(e))
-        }
-        "olmoe" => {
-            let e = olmoe::OlmoeEngine::load(weights, config)?;
-            Ok(Box::new(e))
-        }
         other => Err(Error::Model(format!(
-            "unknown architecture {other:?}; supports llama (dense + mixtral) + deepseek2 + qwen2 + qwen-moe + gemma2 + phi3 + rwkv7 + mamba2 + olmoe"
+            "unknown architecture {other:?}; the shipping engine supports llama + deepseek2 + qwen2 \
+             + qwen-moe + rwkv7. gemma2/phi3/olmoe/mamba2/mixtral are in the hawking-adapters-extra pack"
         ))),
     }
 }

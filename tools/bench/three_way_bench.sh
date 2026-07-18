@@ -7,7 +7,7 @@
 # Energy is read sudo-free from macmon (IOReport), the SAME reader the dismantle
 # anchor uses, so the J/tok numbers are directly comparable to our 0.196 J/tok.
 #
-# CLEAN ROOM REQUIRED — quit Claude.app AND the Claude CLI and any heavy GPU job
+# CLEAN ROOM REQUIRED — quit the agent app AND the agent CLI and any heavy GPU job
 # first; absolute tps/J inflate ~4-5x under a live session (the preflight aborts).
 #
 # USAGE:
@@ -28,6 +28,10 @@
 set -uo pipefail
 cd "$(dirname "$0")/../.."
 
+_agent_env="$(git rev-parse --show-toplevel 2>/dev/null)/.agent_env"
+[ -f "$_agent_env" ] && source "$_agent_env"
+unset _agent_env
+
 TOKENS="${TOKENS:-128}"
 PROMPT="${PROMPT:-Explain how a CPU pipeline hazard is resolved by forwarding.}"
 GGUF="${GGUF:-models/qwen2.5-3b-instruct-q4_k_m.gguf}"
@@ -42,8 +46,9 @@ NICE=(nice -n 19 taskpolicy -b)
 
 # --- preflight ---------------------------------------------------------------
 command -v macmon >/dev/null 2>&1 || { echo "FAIL: macmon missing -> brew install macmon"; exit 3; }
-if pgrep -f "Claude.app" >/dev/null 2>&1 || pgrep -xi "claude" >/dev/null 2>&1; then
-  echo "FAIL: a Claude session (app or CLI) is running — absolute tps/J inflate ~4-5x. Quit it and re-run."
+if pgrep -f "${AGENT_APP_PGREP:?see .agent_env.example}" >/dev/null 2>&1 \
+   || pgrep -xi "${AGENT_CLI_PGREP:?see .agent_env.example}" >/dev/null 2>&1; then
+  echo "FAIL: an agent session (app or CLI) is running — absolute tps/J inflate ~4-5x. Quit it and re-run."
   exit 3
 fi
 want() { [[ -z "$ONLY" || ",$ONLY," == *",$1,"* ]]; }

@@ -6,8 +6,8 @@
 
 #![cfg(target_os = "macos")]
 
-use hawking_core::metal::{MetalContext, TokenCommandBuffer};
 use half::f16;
+use hawking_core::metal::{MetalContext, TokenCommandBuffer};
 
 const TG_SIZE: u32 = 256;
 

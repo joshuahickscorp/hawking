@@ -244,7 +244,7 @@ Stated plainly because the question is "the physical limit," and at the limit th
 5. **Product decision, not an optimization:** §7.6 (smaller model) — evaluate in parallel as a strategic question; it's the only lever that doubles dense throughput, and it trades quality the product may or may not afford.
 **The honest bottom line for §7:** the exact levers (§7.1, §7.4, §7.5) get you from "MLX-class kernels" to the true bus ceiling — a further single-digit-to-low-double-digit percent with no quality cost. The quality-gated numerator levers (§7.3) move the dense wall from ~104 to ~125 tps. Speculation (§7.2) is the only thing that puts **effective** throughput into the ~200–250 range, and only on the code workload. The **deterministic dense ceiling on this M3 Pro at usable quality is ~100–125 tps**; everything above is either speculation's workload multiplier or a different model (§7.6) — and the largest lever of all remains the one piece of hardware we can't change here: a 400 GB/s Max-class chip would ~2.6× the whole table.
 ---
-### 7.9 — Verified-facts ledger (so Claude Code ingests no assumptions)
+### 7.9 — Verified-facts ledger (so the coding agent ingests no assumptions)
 Every Apple-Silicon claim this section relies on, with its status:
 - **Unified bus shared by all units; CPU and GPU reach comparable UMA bandwidth** — verified (SoC architecture sources; HPC measurement study). Basis for §7.0.
 - **M3 Pro = 150 GB/s** — verified earlier in the project (Apple spec; 25% below M1/M2 Pro). Basis for all floor numbers.

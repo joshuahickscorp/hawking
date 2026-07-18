@@ -9,7 +9,7 @@ Harness: [`tools/bench/compare_sota.sh`](../tools/bench/compare_sota.sh)
 
 ## Run it (clean room)
 
-For trustworthy *absolute* numbers, **quit Claude/Cursor and every other heavy GPU
+For trustworthy *absolute* numbers, **quit the coding agent, Cursor, and every other heavy GPU
 app first** — a background AI session inflates tps/J by ~4–5×. Then, in a terminal:
 
 ```bash
@@ -22,7 +22,7 @@ Useful variants:
 
 ```bash
 QUICK=1 bash tools/bench/compare_sota.sh            # fewer trials/contexts/prompts
-STRICT_CLEAN=1 bash tools/bench/compare_sota.sh     # abort if Claude is still running
+STRICT_CLEAN=1 bash tools/bench/compare_sota.sh     # abort if the agent is still running
 TRIALS=5 TOK=256 bash tools/bench/compare_sota.sh   # heavier, lower-variance
 BIT_TARGETS=8,6,5,4,3,2,1 bash tools/bench/compare_sota.sh
 RUN_KERNEL_BENCH=0 RUN_HAWKING_BENCH=0 bash tools/bench/compare_sota.sh  # skip extra Hawking probes

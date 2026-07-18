@@ -63,11 +63,11 @@
 # CONTAMINATION NOTE
 # ==================
 # SplitCbGpu gpu_us absolute values are contaminated by any open GPU workload
-# (e.g. Claude.app).  However, PER-KERNEL SHARES (% of total gpu_us) are
+# (e.g. the coding agent app).  However, PER-KERNEL SHARES (% of total gpu_us) are
 # ~robust: contamination affects all kernels proportionally.
 # The gpu_busy_frac uses production TPS (also contaminated in the same ratio),
 # so the FRACTION is approximately contamination-robust.
-# Running with Claude open inflates absolute numbers ~4-5x but the RATIOS hold.
+# Running with the agent open inflates absolute numbers ~4-5x but the RATIOS hold.
 # For clean absolute tps numbers, use tools/bench/clean_bench.sh.
 #
 # USAGE
@@ -81,6 +81,11 @@
 #   Analyze JSON: /tmp/gpu_sat_analyze_<timestamp>.json
 # =============================================================================
 set -uo pipefail
+
+_agent_env="$(git rev-parse --show-toplevel 2>/dev/null)/.agent_env"
+[ -f "$_agent_env" ] && source "$_agent_env"
+unset _agent_env
+
 cd "$(dirname "$0")/../.."
 
 BIN="${BIN:-./target/release/hawking}"
@@ -106,10 +111,10 @@ die() { printf 'error: %s\n' "$*" >&2; exit 64; }
 [[ -x "$BIN" ]]     || die "$BIN not built (cargo build --release --workspace?)"
 [[ -f "$WEIGHTS" ]] || die "weights not found: $WEIGHTS"
 
-if pgrep -f "Claude.app" >/dev/null 2>&1; then
-    printf '\n[note] Claude.app is running — absolute gpu_us values are contaminated\n'
+if pgrep -f "${AGENT_APP_PGREP:?see .agent_env.example}" >/dev/null 2>&1; then
+    printf '\n[note] the agent app is running — absolute gpu_us values are contaminated\n'
     printf '       PER-KERNEL SHARES and the GAP FRACTION are ~robust (contamination cancels).\n'
-    printf '       For clean absolute numbers: Cmd+Q Claude and re-run.\n'
+    printf '       For clean absolute numbers: quit the agent and re-run.\n'
 fi
 
 # ---------------------------------------------------------------------------
@@ -388,7 +393,7 @@ else:
     print()
     print(f"  AMBIGUOUS: GPU-busy = {f_gpu*100:.1f}%, inter-token gap = {inter_token_gap_us/1000:.1f} ms.")
     print("  Gap exists but is smaller than expected. Check for measurement noise:")
-    print("   - Was Claude.app running? Contamination degrades absolute values.")
+    print("   - Was the agent app running? Contamination degrades absolute values.")
     print("   - Use TOKENS=64 or TOKENS=128 for more stable per-token averages.")
     print("   - Compare with A4 baseline: per_token_gpu_us should be ~21.7 ms for Qwen-3B.")
 

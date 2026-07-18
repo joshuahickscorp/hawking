@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+_agent_env="$(git rev-parse --show-toplevel 2>/dev/null)/.agent_env"
+[ -f "$_agent_env" ] && source "$_agent_env"
+unset _agent_env
 # =============================================================================
 # prefill_mma_ttft_bench.sh — paired prefill-TTFT bench for the Q4_K
 #   simdgroup-MMA prefill kernel (silicon #8), in the SHIPPED config.
@@ -34,9 +37,9 @@
 #   HAWKING_QWEN_Q4K_MMA       — the lever: 0 (arm A) vs 1 (arm B).
 #   predec is held ON (the shipped config) so Option B is the path under test.
 #
-# CONTAMINATION  (feedback_bench_with_claude_open.md + build plan §7)
-#   This is a PAIRED delta (A and B share the same Claude-app GPU load), so the
-#   RELATIVE prefill delta is the signal even with Claude open — no clean room
+# CONTAMINATION  (see project design memory + build plan §7)
+#   This is a PAIRED delta (A and B share the same agent-app GPU load), so the
+#   RELATIVE prefill delta is the signal even with the agent open — no clean room
 #   required. Still take >=3 runs and report the FULL spread, not a single mean
 #   (feedback_report_spread_and_label_estimates). Absolute prefill_ms is
 #   contaminated; the A/B ratio is not.
@@ -122,14 +125,14 @@ maxv() { printf '%s\n' $1 | tr ' ' '\n' | grep -E '.' | sort -n | tail -1; }
 
 # ---- contamination note -----------------------------------------------------
 DIRTY=0
-pgrep -f "Claude.app" >/dev/null 2>&1 && DIRTY=1
+pgrep -f "${AGENT_APP_PGREP:?see .agent_env.example}" >/dev/null 2>&1 && DIRTY=1
 
 hr
 echo "  prefill-MMA TTFT paired bench (silicon #8, build plan §7)"
 echo "  weights=$WEIGHTS  profile=$PROFILE"
 echo "  prompt ~${PROMPT_TOKENS} tok (${PROMPT_CHARS} chars), decode=${DECODE_TOKENS} tok, runs=$RUNS"
 echo "  env (both arms): predec ON + BATCH_PREFILL ON (shipped). Lever: Q4K_MMA 0 vs 1."
-echo "  paired delta => Claude-open OK ($([[ $DIRTY == 1 ]] && echo "Claude RUNNING — relative delta is still valid" || echo "clean room")); 3-run spread reported."
+echo "  paired delta => agent-open OK ($([[ $DIRTY == 1 ]] && echo "agent RUNNING — relative delta is still valid" || echo "clean room")); 3-run spread reported."
 hr
 echo "  PREFLIGHT REMINDER (build plan §3/§7 — the predec-default-ON trap):"
 echo "    The MMA only moves shipped prefill if the predec-MMA twin is wired into"
@@ -168,7 +171,7 @@ echo "  >> metric = prefill_ms (TTFT proxy). decode_tps shown only to confirm"
 echo "     decode is UNTOUCHED (MMA is prefill-only; build plan §0)."
 
 # ---- machine-readable summary ----------------------------------------------
-TPS_TAG="$([[ $DIRTY == 1 ]] && echo "paired-delta-valid (Claude open)" || echo clean)"
+TPS_TAG="$([[ $DIRTY == 1 ]] && echo "paired-delta-valid (agent open)" || echo clean)"
 "$PY" - "$OUT" "$TPS_TAG" "$PROMPT_TOKENS" "$DECODE_TOKENS" "$RUNS" \
   "$mPA" "$mPB" "$loPA" "$hiPA" "$loPB" "$hiPB" "$mTA" "$mTB" \
   "$PRE_A" "$PRE_B" <<'PYEOF'

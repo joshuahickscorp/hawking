@@ -1,12 +1,15 @@
 #!/usr/bin/env bash
+_agent_env="$(git rev-parse --show-toplevel 2>/dev/null)/.agent_env"
+[ -f "$_agent_env" ] && source "$_agent_env"
+unset _agent_env
 # tools/bench/phase1_go_no_go.sh — Phase 1 internal checkpoint.
 #
 # Plan: dismantle-execution-plan-enchanted-salamander.md, "Phase 1 internal
 # go/no-go checkpoint" (task #19).
 #
 # Trigger: after MLA flash-attn (#8) + ICB (#9) + mixed-precision quant
-# runtime (#12) all land + parity-pass. Run this on a clean bench (Claude
-# Code quit) and read the verdict.
+# runtime (#12) all land + parity-pass. Run this on a clean bench (the
+# coding agent quit) and read the verdict.
 #
 #   exit 0  →  GO. Combined dec_tps ≥ 40 tps. Continue Phase 1: AMX,
 #              vocab-pruned LM, eagle5 sparse-FFN, Q8 KV, RoPE/MLA minors.
@@ -40,16 +43,16 @@ THRESHOLD_TPS="${THRESHOLD_TPS:-40}"
 BIN="${BIN:-./target/release/hawking}"
 REPORTS_DIR="${REPORTS_DIR:-reports}"
 
-# Bench hygiene — refuse if Claude is running (4-5× contamination,
-# see memory/bench_contamination.md).
-if pgrep -f "Claude.app" >/dev/null 2>&1; then
-    echo "❌ Claude desktop app is running. Cmd+Q Claude and rerun." >&2
+# Bench hygiene — refuse if the agent is running (4-5× contamination,
+# see project design memory).
+if pgrep -f "${AGENT_APP_PGREP:?see .agent_env.example}" >/dev/null 2>&1; then
+    echo "❌ The agent desktop app is running. Cmd+Q the agent and rerun." >&2
     echo "   Phase 1 GO/NO-GO requires shippable numbers." >&2
     exit 2
 fi
-if pgrep -f "claude" 2>/dev/null | grep -vq "$$"; then
-    # Some claude CLI session may also be running — best-effort warn.
-    echo "⚠️  A 'claude' process appears to be running. Verify it's not a session." >&2
+if pgrep -f "${AGENT_CLI_PGREP:?see .agent_env.example}" 2>/dev/null | grep -vq "$$"; then
+    # Some agent CLI session may also be running — best-effort warn.
+    echo "⚠️  An agent CLI process appears to be running. Verify it's not a session." >&2
 fi
 
 if [ ! -x "$BIN" ]; then

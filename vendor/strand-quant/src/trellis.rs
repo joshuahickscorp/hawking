@@ -1,20 +1,22 @@
-
 use std::borrow::Cow;
 
 /// How the per-state Gaussian codebook is sourced.
 ///
-/// The codebook is a deterministic function of `L` either way; this only selects
-/// *how* an entry is obtained, not *what* it is. Variant A
-/// ([`ComputedAcklam`](CodebookMode::ComputedAcklam)) reproduces the frozen table
-/// **byte-for-byte** (contract-tested in [`crate::codebook`]), so it requires no
-/// re-encoding and never changes a decoded weight — it just trades a `2^L`-entry
-/// LUT gather for a few integer ALU ops (a size / portability / occupancy win on
-/// bandwidth-bound decoders).
+/// The codebook is a deterministic function of `L` in every mode; this only
+/// selects *how* a scalar decoder obtains an entry, not *what* the entry is.
+/// Neither this choice nor a decoder's hardware-specific implementation belongs
+/// on the wire, so a single archive can be interpreted by all three paths without
+/// re-encoding or changing a decoded weight.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
 pub enum CodebookMode {
     /// Borrow the frozen `&'static` integer LUT (the historical default).
     #[default]
     StoredLut,
+    /// Compute the state-to-rank permutation, then gather from the monotone Q12
+    /// quantile table. This halves the table footprint when stored as i16 and adds
+    /// a handful of integer hash operations per decoded weight. Byte-identical to
+    /// [`StoredLut`](CodebookMode::StoredLut).
+    HashedQuantile,
     /// Compute each entry with the bit-exact integer Acklam path (no gather).
     /// Byte-identical to [`StoredLut`](CodebookMode::StoredLut) under Variant A.
     ComputedAcklam,
@@ -22,7 +24,6 @@ pub enum CodebookMode {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct TrellisConfig {
-
     pub l_bits: u32,
 
     pub k_bits: u32,
@@ -36,17 +37,16 @@ pub struct TrellisConfig {
 }
 
 impl TrellisConfig {
-    
     pub const MIN_L: u32 = 4;
-    
+
     pub const MAX_L: u32 = 14;
-    
+
     pub const MAX_K: u32 = 4;
 
     pub fn new(l_bits: u32, k_bits: u32, block_len: usize) -> Self {
         let l_bits = l_bits.clamp(Self::MIN_L, Self::MAX_L);
         let k_bits = k_bits.clamp(1, Self::MAX_K);
-        
+
         let l_bits = l_bits.max(k_bits);
         let block_len = block_len.max(1);
         TrellisConfig {
@@ -70,29 +70,49 @@ impl TrellisConfig {
 
     /// The per-state codebook for this config, sourced per [`Self::codebook_mode`].
     ///
-    /// `StoredLut` borrows the frozen `&'static` table (zero alloc); `ComputedAcklam`
-    /// materialises the identical values via the integer Acklam path. Returned as
-    /// a [`Cow`] so the default path stays allocation-free and both share one shape.
+    /// `StoredLut` borrows the frozen `&'static` table (zero alloc). The compute
+    /// modes materialise identical values for encoder/vector call sites that need
+    /// a slice; scalar decoders bypass this helper and evaluate their selected
+    /// source directly in the hot loop. Returned as a [`Cow`] so the default path
+    /// remains allocation-free and every mode shares one compatibility shape.
     pub fn codebook(&self) -> Cow<'static, [i32]> {
         match self.codebook_mode {
             CodebookMode::StoredLut => Cow::Borrowed(crate::codebook::codebook_lut(self.l_bits)),
+            CodebookMode::HashedQuantile => {
+                Cow::Owned(crate::codebook::codebook_lut_hashed(self.l_bits))
+            }
             CodebookMode::ComputedAcklam => {
                 Cow::Owned(crate::codebook::codebook_lut_computed(self.l_bits))
             }
         }
     }
 
-    pub const MAX_VEC_DIM: u32 = 8;
+    /// CPU/research vector-trellis ceiling.  The packed descriptor stores this as
+    /// u8 and the generic decoder is dimension-agnostic.  GPU kernels may impose a
+    /// smaller launch-time ceiling; that is a serving admission rule, not a codec
+    /// reason to prevent 16/32-wide sub-bit experiments.
+    pub const MAX_VEC_DIM: u32 = 32;
 
     pub fn with_vec_dim(mut self, vec_dim: u32) -> Self {
         self.vec_dim = vec_dim.clamp(1, Self::MAX_VEC_DIM);
         self
     }
 
+    /// Override the number of weights encoded under one trellis scale/state reset.
+    ///
+    /// The historical/default geometry is 256 weights.  Larger blocks amortise the
+    /// scale and initial-state bookkeeping, which matters materially below one bit
+    /// per weight.  This is an encode/decode geometry change (and therefore belongs
+    /// in cache keys and wire descriptors), not a tuning hint.
+    #[must_use]
+    pub fn with_block_len(mut self, block_len: usize) -> Self {
+        self.block_len = block_len.max(1);
+        self
+    }
+
     pub fn for_bpw(target_bpw: f64) -> Self {
-        
         let k = target_bpw.round().clamp(1.0, Self::MAX_K as f64) as u32;
-        
+
         let l = (k + 4).min(Self::MAX_L);
         Self::new(l, k, 256)
     }

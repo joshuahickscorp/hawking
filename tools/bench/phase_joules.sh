@@ -343,7 +343,7 @@ if [[ "$DOMAINS" == 1 ]]; then
     fi
     printf '    NOTE  : MODEL-ESTIMATE (~1 mJ res); GPU-SRAM not exposed on M3 Pro;\n'
     printf '            power averaged over the whole decode window — use --tokens 512+\n'
-    printf '            and a clean room (Claude quit) for a publishable absolute number.\n'
+    printf '            and a clean room (agent quit) for a publishable absolute number.\n'
   else
     printf '  --domains: DRAM domain only available via macmon (current source: %s); skipped.\n' "$SRC"
   fi

@@ -1,0 +1,27 @@
+{
+  "project": "hawking",
+  "receipt_version": "0.2",
+  "repro_level": "R2",
+  "claim_type": "scale-point",
+  "machine": "Apple Silicon, 103GB unified",
+  "machine_class": "Studio-103",
+  "model_family": "qwen",
+  "source_model": "7B (scratch/qwen-7b)",
+  "source_sha256": "624bf7c47cd12468fdc16e38a47cf4f19e0415b859a223ba3c027eed2f0e1028",
+  "source_precision": "bf16",
+  "condensed_artifact": "none @ None eff-bpw (reports/cron/studio_7B.jsonl)",
+  "artifact_sha256": "16418a9fe8ca4fa794c6343426288cc98fbaa44f45cdde3b0491f58b0285daff",
+  "effective_bpw": 0.0,
+  "nominal_bpw": 0.0,
+  "peak_rss_gb": 0.0,
+  "multiwindow_n": 4,
+  "quality_gate": "fail",
+  "hawking_commit": "8c6ef062",
+  "commands": [
+    "python3.12 tools/condense/studio_run.py --model 7B",
+    "python3.12 tools/condense/scaling_law.py --floor 7B reports/cron/studio_7B.jsonl studio_7B.jsonl"
+  ],
+  "notes": "Bit-floor datapoint for the \u00a74 scale curve. floor = lowest effective bpw at <= +2.0% ppl (multiwindow).  beats-Q4_K=no.",
+  "prompt_suite_hash": "d79802d7777bc27d1268bd042433f7f98f0d920177f4845bb8d52e4f0eb3a86b",
+  "prompt_suite_version": "v1"
+}

@@ -167,7 +167,10 @@ fn recon_tq_awq_rht(
     calib_scales: &[f32],
     alpha: f32,
 ) -> Vec<f32> {
-    let d: Vec<f32> = calib_scales.iter().map(|&s| s.powf(alpha).max(1e-6)).collect();
+    let d: Vec<f32> = calib_scales
+        .iter()
+        .map(|&s| s.powf(alpha).max(1e-6))
+        .collect();
     let mut ws = vec![0f32; w.len()];
     for i in 0..r {
         for j in 0..c {
@@ -198,7 +201,11 @@ fn protect_outliers(
 ) -> f32 {
     let k = (((c as f64) * pct).ceil() as usize).clamp(1, c);
     let mut idx: Vec<usize> = (0..c).collect();
-    idx.sort_by(|&a, &b| sigma[b].partial_cmp(&sigma[a]).unwrap_or(std::cmp::Ordering::Equal));
+    idx.sort_by(|&a, &b| {
+        sigma[b]
+            .partial_cmp(&sigma[a])
+            .unwrap_or(std::cmp::Ordering::Equal)
+    });
     for &j in idx.iter().take(k) {
         for i in 0..r {
             wh[i * c + j] = w[i * c + j]; // exact (f16) restore of the outlier column
@@ -221,8 +228,11 @@ fn recon_tq_awq_reg(
     alpha: f32,
     clip: f32,
 ) -> Vec<f32> {
-    let logmean: f64 =
-        calib_sigma.iter().map(|&s| (s.max(1e-9) as f64).ln()).sum::<f64>() / c as f64;
+    let logmean: f64 = calib_sigma
+        .iter()
+        .map(|&s| (s.max(1e-9) as f64).ln())
+        .sum::<f64>()
+        / c as f64;
     let gmean = logmean.exp() as f32;
     let d: Vec<f32> = calib_sigma
         .iter()
@@ -296,14 +306,26 @@ fn report() {
     let st = SafeTensors::open(st_path.to_str().expect("utf8 path")).expect("open safetensors");
 
     let picks = [
-        TensorPick { name: "model.layers.0.ffn.key.weight", max_rows: 1024 },
-        TensorPick { name: "model.layers.0.ffn.value.weight", max_rows: 256 },
-        TensorPick { name: "model.layers.11.ffn.key.weight", max_rows: 1024 },
-        TensorPick { name: "lm_head.weight", max_rows: 1024 },
+        TensorPick {
+            name: "model.layers.0.ffn.key.weight",
+            max_rows: 1024,
+        },
+        TensorPick {
+            name: "model.layers.0.ffn.value.weight",
+            max_rows: 256,
+        },
+        TensorPick {
+            name: "model.layers.11.ffn.key.weight",
+            max_rows: 1024,
+        },
+        TensorPick {
+            name: "lm_head.weight",
+            max_rows: 1024,
+        },
     ];
 
     let b = 48usize; // activation samples (eval)
-    // Heavy-tailed activation structure: σ from calib seed, eval from a DIFFERENT seed.
+                     // Heavy-tailed activation structure: σ from calib seed, eval from a DIFFERENT seed.
     let act_seed_eval = 0xA5A5_1234_DEAD_BEEF;
     let act_seed_calib = 0x1357_9BDF_0246_8ACE;
     let scale_seed = 0xF00D_FACE_CAFE_0001;
@@ -348,15 +370,26 @@ fn report() {
             calib_sigma[j] = (s2 / b as f64).sqrt() as f32;
         }
 
-        println!("── {}  ({}×{}, using {} rows) ─────────────", p.name, rows_full, c, r);
-        println!("  {:<16} {:>6}  {:>9} {:>9} {:>9}", "method", "bpw", "wRMSE", "oG", "oH");
+        println!(
+            "── {}  ({}×{}, using {} rows) ─────────────",
+            p.name, rows_full, c, r
+        );
+        println!(
+            "  {:<16} {:>6}  {:>9} {:>9} {:>9}",
+            "method", "bpw", "wRMSE", "oG", "oH"
+        );
 
         let mut row = |label: &str, wh: &[f32], bpw: f64| {
             let wr = rel_rmse(wh, w);
             let og = out_rel_err(wh, w, r, c, &xg, b);
             let oh = out_rel_err(wh, w, r, c, &xh, b);
-            println!("  {:<16} {:>6.3}  {:>9.5} {:>9.5} {:>9.5}", label, bpw, wr, og, oh);
-            let e = agg.entry(label.to_string()).or_insert((0.0, 0.0, 0.0, 0.0, 0));
+            println!(
+                "  {:<16} {:>6.3}  {:>9.5} {:>9.5} {:>9.5}",
+                label, bpw, wr, og, oh
+            );
+            let e = agg
+                .entry(label.to_string())
+                .or_insert((0.0, 0.0, 0.0, 0.0, 0));
             e.0 += bpw;
             e.1 += wr;
             e.2 += og;
@@ -400,9 +433,16 @@ fn report() {
     }
 
     println!("================ MEANS ACROSS TENSORS (report) ================");
-    println!("  {:<16} {:>6}  {:>9} {:>9} {:>9}", "method", "bpw", "wRMSE", "oG", "oH");
+    println!(
+        "  {:<16} {:>6}  {:>9} {:>9} {:>9}",
+        "method", "bpw", "wRMSE", "oG", "oH"
+    );
     let q4k = agg.get("Q4_K").cloned().unwrap_or_default();
-    let q4k_oh = if q4k.4 > 0 { q4k.3 / q4k.4 as f64 } else { f64::INFINITY };
+    let q4k_oh = if q4k.4 > 0 {
+        q4k.3 / q4k.4 as f64
+    } else {
+        f64::INFINITY
+    };
     for (label, (bpw, wr, og, oh, n)) in &agg {
         let n = *n as f64;
         let beats = if label != "Q4_K" && oh / n <= q4k_oh && bpw / n < q4k.0 / q4k.4 as f64 {
@@ -471,14 +511,25 @@ fn awq_sweep() {
         let w = &full[..r * c];
         let base = recon_tq_rht(w, c, &cfg, name); // activation-independent
 
-        println!("── {} ({}×{}, {} rows) ─ baseline TQ3+L+rht ─", name, t.shape[0], c, r);
+        println!(
+            "── {} ({}×{}, {} rows) ─ baseline TQ3+L+rht ─",
+            name, t.shape[0], c, r
+        );
         for (slabel, outl, frac, mag) in &structures {
             // structure-specific scales: outlier channels at `mag`, deterministic
             let scales: Vec<f32> = if *slabel == "real-w4a8" {
                 real_w4a8_scales(c, 0x9EA1_5EED)
             } else {
                 let mut rng = Rng(0xBEEF_0000 ^ (*mag as u64).wrapping_mul(2654435761));
-                (0..c).map(|_| if *outl && rng.unit() < *frac { *mag } else { 1.0 }).collect()
+                (0..c)
+                    .map(|_| {
+                        if *outl && rng.unit() < *frac {
+                            *mag
+                        } else {
+                            1.0
+                        }
+                    })
+                    .collect()
             };
             let x_eval = make_acts(c, b_eval, &scales, 0xE0E0_1111);
             let x_calib = make_acts(c, b_calib, &scales, 0xCA1B_2222);
@@ -496,7 +547,13 @@ fn awq_sweep() {
             for &a in &alphas {
                 let wh = recon_tq_awq_reg(w, r, c, &cfg, name, &sigma, a, clip);
                 let o = out_rel_err(&wh, w, r, c, &x_eval, b_eval);
-                let tag = if o < o_base * 0.999 { "↓" } else if o > o_base * 1.001 { "↑" } else { "=" };
+                let tag = if o < o_base * 0.999 {
+                    "↓"
+                } else if o > o_base * 1.001 {
+                    "↑"
+                } else {
+                    "="
+                };
                 print!("  |α{:.2} {:.5}{}", a, o, tag);
             }
             println!();
@@ -643,9 +700,14 @@ fn recovery() {
             for &k in &ranks {
                 let healed = lowrank_heal(&awq, w, r, c, k, 0x5EED_0001 ^ k as u64);
                 let o = out_rel_err(&healed, w, r, c, &x_eval, b_eval);
-                let add_bpw = (k as f32 * (full_rows + c) as f32 * 16.0) / (full_rows as f32 * c as f32);
+                let add_bpw =
+                    (k as f32 * (full_rows + c) as f32 * 16.0) / (full_rows as f32 * c as f32);
                 let tot = base_bpw + add_bpw;
-                let win = if o <= o_q4 && tot < 4.5 { " ✓WIN" } else { "" };
+                let win = if o <= o_q4 && tot < 4.5 {
+                    " ✓WIN"
+                } else {
+                    ""
+                };
                 print!("  | r{:<3} o={:.5} @{:.2}bpw{}", k, o, tot, win);
             }
             println!();
@@ -657,7 +719,11 @@ fn recovery() {
 
 fn alloc_avg_bpw(lvl: &[usize], params: &[f64], lv_bpw: &[f64]) -> f64 {
     let tot: f64 = params.iter().sum();
-    lvl.iter().zip(params).map(|(&l, &p)| lv_bpw[l] * p).sum::<f64>() / tot
+    lvl.iter()
+        .zip(params)
+        .map(|(&l, &p)| lv_bpw[l] * p)
+        .sum::<f64>()
+        / tot
 }
 
 /// DYNAMIC BIT ALLOCATION (the "bit selected model"): bits are per-tensor, chosen by
@@ -703,9 +769,9 @@ fn allocate() {
         // per-tensor activation seed (real layers see DIFFERENT activation
         // distributions — outliers land on different columns), so sensitivities
         // diverge and dynamic allocation has something to differentiate.
-        let tseed = n
-            .bytes()
-            .fold(0xC0FFEE_u64, |a, b| a.wrapping_mul(1099511628211).wrapping_add(b as u64));
+        let tseed = n.bytes().fold(0xC0FFEE_u64, |a, b| {
+            a.wrapping_mul(1099511628211).wrapping_add(b as u64)
+        });
         let scales = real_w4a8_scales(c, tseed ^ 0x9EA1_5EED);
         let x = make_acts(c, b_eval, &scales, tseed ^ 0xE0E0_1111);
         let xc = make_acts(c, b_calib, &scales, tseed ^ 0xCA1B_2222);
@@ -754,15 +820,24 @@ fn allocate() {
     let mix_worst = (0..nt).map(|i| o_all[i][lvl[i]]).fold(0.0, f64::max);
     let mix_mean = (0..nt).map(|i| o_all[i][lvl[i]]).sum::<f64>() / nt as f64;
     let mix_bpw = alloc_avg_bpw(&lvl, &params, &lv_bpw);
-    println!("\n===== DYNAMIC BIT ALLOCATION ({} tensors, REAL acts) =====", nt);
+    println!(
+        "\n===== DYNAMIC BIT ALLOCATION ({} tensors, REAL acts) =====",
+        nt
+    );
     for i in 0..nt {
         println!(
             "  {:<46} 2b={:.4} 3b={:.4} 4b={:.4} -> {}b",
             names[i], o_all[i][0], o_all[i][1], o_all[i][2], lv_bits[lvl[i]]
         );
     }
-    println!("  UNIFORM 3-bit : avg_bpw={:.3}  worst_o={:.5}  mean_o={:.5}", lv_bpw[1], uni_worst, uni_mean);
-    println!("  DYNAMIC mixed : avg_bpw={:.3}  worst_o={:.5}  mean_o={:.5}", mix_bpw, mix_worst, mix_mean);
+    println!(
+        "  UNIFORM 3-bit : avg_bpw={:.3}  worst_o={:.5}  mean_o={:.5}",
+        lv_bpw[1], uni_worst, uni_mean
+    );
+    println!(
+        "  DYNAMIC mixed : avg_bpw={:.3}  worst_o={:.5}  mean_o={:.5}",
+        mix_bpw, mix_worst, mix_mean
+    );
     let verdict = if (mix_worst - uni_worst).abs() < 1e-9 {
         "TIES uniform — homogeneous sensitivity / 2-bit intolerable on all tensors => recovery (QAT/KD) is the only 2-bit path"
     } else if mix_worst < uni_worst {

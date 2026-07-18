@@ -371,7 +371,10 @@ impl StrandTensor {
     /// pipeline. All fields are already public; this is a typed check-point so call
     /// sites can guard the GPU path without spelling out the individual conditions.
     pub fn is_tq_gpu_compatible(&self) -> bool {
-        true
+        self.cfg.vec_dim() == 1
+            && self.in_features % 256 == 0
+            && self.enc.blocks.len() == self.out_features.saturating_mul(self.in_features / 256)
+            && self.enc.blocks.iter().all(|block| block.n == 256)
     }
 }
 

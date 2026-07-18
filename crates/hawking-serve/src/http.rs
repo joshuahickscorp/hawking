@@ -18,8 +18,8 @@ use axum::{
     routing::{get, post},
     Json, Router,
 };
-use hawking_core::{Engine, GenerateRequest, SamplingParams};
 use futures::stream::Stream;
+use hawking_core::{Engine, GenerateRequest, SamplingParams};
 use parking_lot::Mutex;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, VecDeque};
@@ -166,6 +166,7 @@ pub fn router(state: AppState) -> Router {
         .route("/v1/embeddings", post(embeddings))
         .route("/v1/hawking/tokens", post(hawking_tokens))
         .route("/v1/hawking/generate", post(hawking_generate))
+        .route("/v1/hawking/context", get(hawking_context))
         .route("/metrics", get(metrics))
         .with_state(state)
 }
@@ -212,6 +213,61 @@ async fn metrics(State(s): State<AppState>) -> String {
     )
 }
 
+/// Spine A — live context introspection. Read-only snapshot of the real,
+/// dynamic context picture: native length from the model config, the effective
+/// ceiling derived from the measured `.tq` multiplier (passed in via env by the
+/// supervisor — never a constant), the constant recurrent-state footprint for
+/// SSMs, and live slot occupancy. The shell renders this as an ambient cue.
+#[derive(Serialize)]
+struct ContextStatus {
+    model_id: String,
+    arch: String,
+    ctx_len_native: Option<usize>,
+    ctx_len_effective: Option<usize>,
+    /// Measured `.tq` weight-compression multiplier (1.0 == no claim).
+    tq_multiplier: f32,
+    /// True when the effective ceiling is a derived estimate, not a hard cap.
+    tq_estimated: bool,
+    /// Constant recurrent-state footprint in bytes for SSMs; None for transformers.
+    recurrent_state_bytes: Option<usize>,
+    active_slots: usize,
+    free_slots: usize,
+    max_batch: usize,
+}
+
+async fn hawking_context(State(s): State<AppState>) -> Json<ContextStatus> {
+    let (model_id, arch, native, state_bytes) = {
+        let eng = s.engine.lock();
+        (
+            eng.model_id().to_string(),
+            eng.model_arch().to_string(),
+            eng.context_length_native(),
+            eng.recurrent_state_size_bytes(),
+        )
+    };
+    // The supervisor measured this from the .tq artifact and passed it in; if
+    // absent the multiplier is 1.0 (no expansion claimed). Never hardcoded.
+    let tq_multiplier: f32 = std::env::var("HAWKING_QWEN_TQ_MULTIPLIER")
+        .ok()
+        .and_then(|v| v.parse().ok())
+        .filter(|m: &f32| m.is_finite() && *m >= 1.0)
+        .unwrap_or(1.0);
+    let effective = native.map(|n| (n as f32 * tq_multiplier).round() as usize);
+    let active = s.driver.lock().scheduler.active_count();
+    Json(ContextStatus {
+        model_id,
+        arch,
+        ctx_len_native: native,
+        ctx_len_effective: effective,
+        tq_multiplier,
+        tq_estimated: tq_multiplier > 1.0,
+        recurrent_state_bytes: state_bytes,
+        active_slots: active,
+        free_slots: s.max_batch.saturating_sub(active),
+        max_batch: s.max_batch,
+    })
+}
+
 #[derive(Serialize)]
 struct ModelInfo {
     id: String,
@@ -235,10 +291,78 @@ async fn list_models(State(s): State<AppState>) -> Json<ListModels> {
     })
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 struct ChatMessage {
     role: String,
-    content: String,
+    // OpenAI round-trip: an assistant turn that only makes tool calls sends
+    // content:null, and a role:tool result may omit content. Both must parse, so
+    // content is optional and the tool fields are accepted (B1: complete the
+    // standard tools round-trip instead of 400-ing on turn 2).
+    #[serde(default)]
+    content: Option<String>,
+    #[serde(default)]
+    tool_calls: Option<Vec<serde_json::Value>>,
+    // Accepted for OpenAI wire compatibility (the id a tool result refers back to);
+    // parsed for round-trip completeness, not yet read in rendering.
+    #[serde(default)]
+    #[allow(dead_code)]
+    tool_call_id: Option<String>,
+    // Accepted for OpenAI wire compatibility (the function name on a tool result);
+    // not yet used in rendering.
+    #[serde(default)]
+    #[allow(dead_code)]
+    name: Option<String>,
+}
+
+impl ChatMessage {
+    fn new(role: &str, content: String) -> Self {
+        ChatMessage {
+            role: role.to_string(),
+            content: Some(content),
+            tool_calls: None,
+            tool_call_id: None,
+            name: None,
+        }
+    }
+
+    /// The rendered text body for this message. Plain content passes through, but an
+    /// assistant turn carrying `tool_calls` and a `role:tool` result are wrapped in the
+    /// Hermes/Qwen `<tool_call>` / `<tool_response>` tags the model was trained on, so
+    /// the prior tool interaction is VISIBLE in the prompt on the next turn instead of
+    /// being silently dropped (which would move the round-trip bug rather than fix it).
+    fn rendered_body(&self) -> String {
+        let base = self.content.clone().unwrap_or_default();
+        if self.role == "assistant" {
+            if let Some(calls) = &self.tool_calls {
+                let mut out = base;
+                for c in calls {
+                    // OpenAI shape is {id, type, function:{name, arguments}}; be lenient
+                    // and also accept a bare {name, arguments} object.
+                    let func = c.get("function").unwrap_or(c);
+                    let name = func.get("name").and_then(|v| v.as_str()).unwrap_or("");
+                    // arguments is a JSON STRING in the OpenAI wire shape; pass it through
+                    // verbatim if so, otherwise serialize the object.
+                    let args_str = match func.get("arguments") {
+                        Some(serde_json::Value::String(s)) => s.clone(),
+                        Some(other) => other.to_string(),
+                        None => "{}".to_string(),
+                    };
+                    let name_json = serde_json::to_string(name).unwrap_or_else(|_| "\"\"".into());
+                    if !out.is_empty() {
+                        out.push('\n');
+                    }
+                    out.push_str(&format!(
+                        "<tool_call>\n{{\"name\": {name_json}, \"arguments\": {args_str}}}\n</tool_call>"
+                    ));
+                }
+                return out;
+            }
+        }
+        if self.role == "tool" {
+            return format!("<tool_response>\n{base}\n</tool_response>");
+        }
+        base
+    }
 }
 
 #[derive(Deserialize)]
@@ -259,6 +383,14 @@ struct ChatReq {
     /// `{"type": "json_object"}` triggers structural JSON constraint masking.
     #[serde(default)]
     response_format: Option<ResponseFormat>,
+    /// OpenAI-style function tools; when present they are rendered into the prompt
+    /// and the completion is parsed back into `tool_calls` (Phase 1a).
+    #[serde(default)]
+    tools: Option<Vec<serde_json::Value>>,
+    /// Accepted for API compatibility; currently advisory only.
+    #[serde(default)]
+    #[allow(dead_code)]
+    tool_choice: Option<serde_json::Value>,
 }
 
 #[derive(Deserialize, Default)]
@@ -297,7 +429,26 @@ async fn chat_completions(State(s): State<AppState>, body: Bytes) -> Response {
         return ApiError::missing_parameter("'messages' must contain at least one message")
             .into_response();
     }
-    let prompt = render_chat(&req.messages, &s.model_arch);
+    // Native tool calling (Phase 1a): render the tool specs into a leading system
+    // message so a Hermes/Qwen-trained model emits <tool_call> blocks, and remember
+    // to parse them back out of the completion.
+    let tools: Vec<serde_json::Value> = req.tools.clone().unwrap_or_default();
+    let want_tools = !tools.is_empty();
+    let tool_names = crate::tool_calls::tool_names(&tools);
+    let prompt = if want_tools {
+        let preamble = crate::tool_calls::render_tools_preamble(&tools);
+        let mut msgs = req.messages.clone();
+        match msgs.first_mut() {
+            Some(first) if first.role == "system" => {
+                let existing = first.content.clone().unwrap_or_default();
+                first.content = Some(format!("{preamble}\n{existing}"));
+            }
+            _ => msgs.insert(0, ChatMessage::new("system", preamble)),
+        }
+        render_chat(&msgs, &s.model_arch)
+    } else {
+        render_chat(&req.messages, &s.model_arch)
+    };
     let sampling = SamplingParams {
         temperature: req.temperature.unwrap_or(0.7),
         top_k: 40,
@@ -305,7 +456,8 @@ async fn chat_completions(State(s): State<AppState>, body: Bytes) -> Response {
         repetition_penalty: 1.0,
         seed: req.seed,
     };
-    let json_mode = req.response_format
+    let json_mode = req
+        .response_format
         .as_ref()
         .map(|f| f.format_type == "json_object")
         .unwrap_or(false);
@@ -319,9 +471,9 @@ async fn chat_completions(State(s): State<AppState>, body: Bytes) -> Response {
         json_mode,
     };
     if req.stream {
-        sse_response(s, gen, /*chat=*/ true).into_response()
+        sse_response(s, gen, /*chat=*/ true, tool_names).into_response()
     } else {
-        json_full_response(s, gen, /*chat=*/ true)
+        json_full_response(s, gen, /*chat=*/ true, tool_names)
             .await
             .into_response()
     }
@@ -352,9 +504,9 @@ async fn completions(State(s): State<AppState>, body: Bytes) -> Response {
         json_mode: false,
     };
     if req.stream {
-        sse_response(s, gen, /*chat=*/ false).into_response()
+        sse_response(s, gen, /*chat=*/ false, Vec::new()).into_response()
     } else {
-        json_full_response(s, gen, /*chat=*/ false)
+        json_full_response(s, gen, /*chat=*/ false, Vec::new())
             .await
             .into_response()
     }
@@ -371,10 +523,13 @@ fn render_chat(msgs: &[ChatMessage], model_arch: &str) -> String {
 fn render_chat_deepseek(msgs: &[ChatMessage]) -> String {
     let mut s = String::new();
     for m in msgs {
+        let body = m.rendered_body();
         match m.role.as_str() {
-            "system" => s.push_str(&format!("{}\n\n", m.content)),
-            "user" => s.push_str(&format!("User: {}\n\n", m.content)),
-            "assistant" => s.push_str(&format!("Assistant: {}\n\n", m.content)),
+            "system" => s.push_str(&format!("{body}\n\n")),
+            "user" => s.push_str(&format!("User: {body}\n\n")),
+            "assistant" => s.push_str(&format!("Assistant: {body}\n\n")),
+            // tool results are shown to the model as an observation turn.
+            "tool" => s.push_str(&format!("User: {body}\n\n")),
             _ => {}
         }
     }
@@ -393,9 +548,16 @@ fn render_chat_qwen2(msgs: &[ChatMessage]) -> String {
         );
     }
     for m in msgs {
+        // Qwen2.5 renders tool results inside a user turn wrapped in <tool_response>;
+        // rendered_body already adds the wrapper, so map the role tag to "user".
+        let tag = if m.role == "tool" {
+            "user"
+        } else {
+            m.role.as_str()
+        };
         s.push_str(&format!(
-            "<|im_start|>{}\n{}<|im_end|>\n",
-            m.role, m.content
+            "<|im_start|>{tag}\n{}<|im_end|>\n",
+            m.rendered_body()
         ));
     }
     s.push_str("<|im_start|>assistant\n");
@@ -405,7 +567,7 @@ fn render_chat_qwen2(msgs: &[ChatMessage]) -> String {
 fn render_chat_generic(msgs: &[ChatMessage]) -> String {
     let mut s = String::new();
     for m in msgs {
-        s.push_str(&format!("<|{}|>\n{}\n", m.role, m.content));
+        s.push_str(&format!("<|{}|>\n{}\n", m.role, m.rendered_body()));
     }
     s.push_str("<|assistant|>\n");
     s
@@ -415,6 +577,7 @@ fn sse_response(
     state: AppState,
     req: GenerateRequest,
     chat: bool,
+    tool_names: Vec<String>,
 ) -> Sse<impl Stream<Item = Result<Event, Infallible>>> {
     // SSE → client channel (receives formatted SSE events).
     let (sse_tx, sse_rx) = tokio::sync::mpsc::channel::<Result<Event, Infallible>>(256);
@@ -478,11 +641,22 @@ fn sse_response(
         // the request is admitted from the queue when a slot frees.
     };
 
-    // Forward raw token strings from the per-slot channel to SSE events.
+    // Forward raw token strings from the per-slot channel to SSE events. When tools
+    // were requested we BUFFER instead of streaming, because a Hermes/Qwen model
+    // emits `<tool_call>{...}</tool_call>` XML that must be parsed into structured
+    // tool_calls, not streamed verbatim as content. On end we emit one terminating
+    // chunk carrying either the tool_calls or the buffered text, with finish_reason.
+    let want_tools = chat && !tool_names.is_empty();
     tokio::spawn(async move {
+        let mut buf = String::new();
         while let Some(item) = tok_rx.recv().await {
             match item {
                 Ok(text) => {
+                    if want_tools {
+                        // Buffer; the terminating chunk is emitted after the loop.
+                        buf.push_str(&text);
+                        continue;
+                    }
                     let chunk = if chat {
                         serde_json::json!({
                             "choices": [{"delta": {"content": text}, "index": 0}],
@@ -499,15 +673,48 @@ fn sse_response(
                         .await
                         .is_err()
                     {
-                        break;
+                        return;
                     }
                 }
-                Err(()) => {
-                    let _ = sse_tx.send(Ok(Event::default().data("[DONE]"))).await;
-                    break;
-                }
+                // The failure sentinel. Normal completion does NOT send this — the
+                // decode loop just drops the sender (recv -> None), so the flush
+                // below MUST live outside the loop or a buffered (tools) answer
+                // would be lost entirely.
+                Err(()) => break,
             }
         }
+
+        // Terminating flush. Reached on normal channel-close AND on the failure
+        // sentinel. For a tools request, parse the buffer into structured tool_calls
+        // (or return the buffered text); the non-tools path already streamed its
+        // content and just needs the [DONE] terminator.
+        if want_tools {
+            let calls = crate::tool_calls::extract_tool_calls(&buf, &tool_names);
+            let chunk = if !calls.is_empty() {
+                let arr: Vec<serde_json::Value> = calls.iter().map(|c| c.to_openai()).collect();
+                serde_json::json!({
+                    "object": "chat.completion.chunk",
+                    "choices": [{
+                        "index": 0,
+                        "delta": {"role": "assistant", "tool_calls": arr},
+                        "finish_reason": "tool_calls"
+                    }]
+                })
+            } else {
+                serde_json::json!({
+                    "object": "chat.completion.chunk",
+                    "choices": [{
+                        "index": 0,
+                        "delta": {"role": "assistant", "content": buf},
+                        "finish_reason": "stop"
+                    }]
+                })
+            };
+            let _ = sse_tx
+                .send(Ok(Event::default().data(chunk.to_string())))
+                .await;
+        }
+        let _ = sse_tx.send(Ok(Event::default().data("[DONE]"))).await;
     });
 
     Sse::new(ReceiverStream::new(sse_rx)).keep_alive(KeepAlive::default())
@@ -853,6 +1060,7 @@ async fn json_full_response(
     state: AppState,
     req: GenerateRequest,
     chat: bool,
+    tool_names: Vec<String>,
 ) -> Result<Json<serde_json::Value>, ApiError> {
     // Admit under a short lock (tokenize + slot assignment only) — does NOT hold
     // the engine mutex for the full generation.
@@ -895,9 +1103,32 @@ async fn json_full_response(
             }
         }
         let body = if chat {
+            // When tools were requested, parse the completion back into OpenAI
+            // tool_calls; otherwise it is a plain assistant message.
+            let calls = if !tool_names.is_empty() {
+                crate::tool_calls::extract_tool_calls(&text, &tool_names)
+            } else {
+                Vec::new()
+            };
+            let (message, finish) = if !calls.is_empty() {
+                let arr: Vec<serde_json::Value> = calls.iter().map(|c| c.to_openai()).collect();
+                (
+                    serde_json::json!({
+                        "role": "assistant",
+                        "content": serde_json::Value::Null,
+                        "tool_calls": arr
+                    }),
+                    "tool_calls",
+                )
+            } else {
+                (
+                    serde_json::json!({ "role": "assistant", "content": text }),
+                    "stop",
+                )
+            };
             serde_json::json!({
                 "object": "chat.completion",
-                "choices": [{"index": 0, "message": {"role": "assistant", "content": text}}]
+                "choices": [{"index": 0, "message": message, "finish_reason": finish}]
             })
         } else {
             serde_json::json!({
@@ -980,5 +1211,93 @@ async fn embeddings(State(s): State<AppState>, body: Bytes) -> Response {
         .into_response(),
         Ok(Err(e)) => ApiError::internal(e.to_string()).into_response(),
         Err(_) => ApiError::internal("embedding task panicked").into_response(),
+    }
+}
+
+#[cfg(test)]
+mod b1_roundtrip_tests {
+    use super::*;
+
+    // B1: the standard OpenAI tools round-trip must PARSE. Before the fix, an assistant
+    // turn with content:null + tool_calls, and a role:tool result, both 400-ed
+    // ("invalid type: null, expected a string" / "missing field content").
+    #[test]
+    fn openai_tool_roundtrip_turn_two_parses() {
+        let body = br#"{
+            "model": "qwen",
+            "messages": [
+                {"role": "user", "content": "read foo.rs"},
+                {"role": "assistant", "content": null, "tool_calls": [
+                    {"id": "call_1", "type": "function",
+                     "function": {"name": "fs.read", "arguments": "{\"path\": \"foo.rs\"}"}}
+                ]},
+                {"role": "tool", "tool_call_id": "call_1", "name": "fs.read",
+                 "content": "fn foo() {}"}
+            ]
+        }"#;
+        let req: ChatReq = serde_json::from_slice(body).expect("turn-2 round-trip must parse");
+        assert_eq!(req.messages.len(), 3);
+        // assistant content is null -> None; tool_calls carried through
+        assert!(req.messages[1].content.is_none());
+        assert!(req.messages[1].tool_calls.as_ref().unwrap().len() == 1);
+        // tool result carries its id and content
+        assert_eq!(req.messages[2].role, "tool");
+        assert_eq!(req.messages[2].tool_call_id.as_deref(), Some("call_1"));
+    }
+
+    #[test]
+    fn omitted_content_parses() {
+        // A role:tool message may omit content entirely.
+        let body = br#"{"messages":[{"role":"assistant","tool_calls":[]}]}"#;
+        let req: ChatReq = serde_json::from_slice(body).expect("omitted content must parse");
+        assert!(req.messages[0].content.is_none());
+    }
+
+    #[test]
+    fn tool_interaction_is_rendered_not_dropped() {
+        // The prior tool call + result must appear in the prompt so the model sees the
+        // interaction on the next turn (fixing the drop, not just the 400).
+        let msgs = vec![
+            ChatMessage::new("user", "read foo.rs".into()),
+            ChatMessage {
+                role: "assistant".into(),
+                content: None,
+                tool_calls: Some(vec![serde_json::json!({
+                    "id": "call_1", "type": "function",
+                    "function": {"name": "fs.read", "arguments": "{\"path\": \"foo.rs\"}"}
+                })]),
+                tool_call_id: None,
+                name: None,
+            },
+            ChatMessage {
+                role: "tool".into(),
+                content: Some("fn foo() {}".into()),
+                tool_calls: None,
+                tool_call_id: Some("call_1".into()),
+                name: Some("fs.read".into()),
+            },
+        ];
+        let prompt = render_chat_qwen2(&msgs);
+        assert!(
+            prompt.contains("<tool_call>"),
+            "assistant tool_call must render: {prompt}"
+        );
+        assert!(
+            prompt.contains("fs.read"),
+            "tool name must render: {prompt}"
+        );
+        assert!(
+            prompt.contains("<tool_response>"),
+            "tool result must render: {prompt}"
+        );
+        assert!(
+            prompt.contains("fn foo() {}"),
+            "tool output must render: {prompt}"
+        );
+        // tool role maps to a user turn tag in the Qwen template
+        assert!(
+            !prompt.contains("<|im_start|>tool"),
+            "tool role tag should map to user"
+        );
     }
 }

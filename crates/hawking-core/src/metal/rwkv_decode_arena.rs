@@ -26,9 +26,8 @@ pub use imp::{
     rwkv7_lora_mid_act_tcb, rwkv7_relu_sq_inplace_tcb, rwkv7_shift_writeback_multiseq_tcb,
     rwkv7_sigmoid_bias_multiseq_tcb, rwkv7_sigmoid_bias_tcb, rwkv7_sigmoid_inplace_tcb,
     rwkv7_tanh_inplace_tcb, rwkv7_token_shift_lerp_multiseq_tcb, rwkv7_token_shift_lerp_tcb,
-    rwkv7_value_residual_mix_multiseq_tcb, rwkv7_value_residual_mix_tcb,
-    rwkv7_wa_prep_tcb, rwkv7_wkv_decode_multiseq_tcb, rwkv7_wkv_decode_tcb,
-    RwkvDecodeArena,
+    rwkv7_value_residual_mix_multiseq_tcb, rwkv7_value_residual_mix_tcb, rwkv7_wa_prep_tcb,
+    rwkv7_wkv_decode_multiseq_tcb, rwkv7_wkv_decode_tcb, RwkvDecodeArena,
 };
 
 #[cfg(target_os = "macos")]

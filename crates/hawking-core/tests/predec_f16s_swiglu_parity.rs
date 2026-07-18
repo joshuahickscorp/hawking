@@ -12,9 +12,9 @@
 //! when the absolute error is tiny.  They still run as a smoke test with a
 //! loose absolute gate.
 
+use half::f16;
 use hawking_core::kernels;
 use hawking_core::metal::{MetalContext, TokenCommandBuffer};
-use half::f16;
 
 mod common;
 use common::*;

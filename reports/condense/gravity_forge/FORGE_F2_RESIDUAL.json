@@ -1,0 +1,30 @@
+{
+  "activation_gap": "from-config attention (RoPE/SwiGLU/eps not HF-parity-validated); approximations largely cancel in the relative orig-vs-packed divergence",
+  "activation_source": "true_residual_stream_block0",
+  "block": 0,
+  "bounded_memory": true,
+  "capability_parity": false,
+  "deterministic": true,
+  "device": "mps",
+  "fixture_sha256": "84c48d78c27a4b2155bd1554515f2f1aa3207c0a08a5eff4da0584e726afea53",
+  "green": true,
+  "max_output_rel_div": 0.91581,
+  "mean_output_rel_div": 0.68792,
+  "min_output_rel_div": 0.55193,
+  "mode": "residual",
+  "n_experts_exercised": 68,
+  "n_tokens": 40,
+  "pack": "transform_pq@~0.75bpw",
+  "packed_whole_artifact_bpw": 0.7514,
+  "parent": "120B",
+  "reconstructs_dense_model": false,
+  "routing_divergence_note": "invariant until the router itself is packed",
+  "routing_invariant": true,
+  "schema": "hawking.gravity_forge.f2_fixture.v1",
+  "seconds": 62.2,
+  "tokenizer": {
+    "chat_template_present": true,
+    "roundtrip": true,
+    "vocab_size": 200019
+  }
+}

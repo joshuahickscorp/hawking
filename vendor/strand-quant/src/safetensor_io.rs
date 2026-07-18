@@ -1,5 +1,57 @@
-
 use std::collections::HashMap;
+#[cfg(all(feature = "native-execution", target_os = "macos"))]
+use std::fs::File;
+#[cfg(all(feature = "native-execution", target_os = "macos"))]
+use std::io::Read as _;
+#[cfg(all(feature = "native-execution", target_os = "macos"))]
+use std::os::unix::fs::MetadataExt;
+#[cfg(feature = "native-execution")]
+use std::path::Path;
+#[cfg(all(feature = "native-execution", target_os = "macos"))]
+use std::path::PathBuf;
+
+#[cfg(all(feature = "native-execution", target_os = "macos"))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+struct FileIdentity {
+    dev: u64,
+    ino: u64,
+    size: u64,
+    mtime_sec: i64,
+    mtime_nsec: i64,
+}
+
+#[cfg(all(feature = "native-execution", target_os = "macos"))]
+fn file_identity(path: &Path) -> std::io::Result<FileIdentity> {
+    let metadata = std::fs::metadata(path)?;
+    Ok(metadata_identity(&metadata))
+}
+
+#[cfg(all(feature = "native-execution", target_os = "macos"))]
+fn metadata_identity(metadata: &std::fs::Metadata) -> FileIdentity {
+    FileIdentity {
+        dev: metadata.dev(),
+        ino: metadata.ino(),
+        size: metadata.size(),
+        mtime_sec: metadata.mtime(),
+        mtime_nsec: metadata.mtime_nsec(),
+    }
+}
+
+enum SafeTensorBacking {
+    Owned(Vec<u8>),
+    #[cfg(all(feature = "native-execution", target_os = "macos"))]
+    Mapped(memmap2::Mmap),
+}
+
+impl SafeTensorBacking {
+    fn as_slice(&self) -> &[u8] {
+        match self {
+            Self::Owned(bytes) => bytes,
+            #[cfg(all(feature = "native-execution", target_os = "macos"))]
+            Self::Mapped(bytes) => bytes,
+        }
+    }
+}
 
 #[derive(Clone, Debug)]
 pub struct StTensor {
@@ -10,28 +62,115 @@ pub struct StTensor {
 }
 
 pub struct SafeTensors {
-    bytes: Vec<u8>,
+    backing: SafeTensorBacking,
     pub data_start: usize,
     pub tensors: HashMap<String, StTensor>,
     pub order: Vec<String>,
+    #[cfg(all(feature = "native-execution", target_os = "macos"))]
+    source_identity: Option<(PathBuf, FileIdentity)>,
 }
 
 impl SafeTensors {
     pub fn open(path: &str) -> std::io::Result<Self> {
         let bytes = std::fs::read(path)?;
+        Ok(Self::from_backing(SafeTensorBacking::Owned(bytes)))
+    }
+
+    #[cfg(feature = "native-execution")]
+    pub fn open_preallocated(path: &Path) -> std::io::Result<Self> {
+        #[cfg(target_os = "macos")]
+        {
+            let before = file_identity(path)?;
+            let mut file = File::open(path)?;
+            let fd_before = metadata_identity(&file.metadata()?);
+            let after_open = file_identity(path)?;
+            if before != fd_before || fd_before != after_open {
+                return Err(std::io::Error::other(
+                    "source identity changed while opening owned input",
+                ));
+            }
+            let len = usize::try_from(fd_before.size)
+                .map_err(|_| std::io::Error::other("source length does not fit usize"))?;
+            let mut bytes = Vec::new();
+            bytes.try_reserve_exact(len).map_err(|error| {
+                std::io::Error::other(format!("cannot reserve {len} source bytes: {error}"))
+            })?;
+            bytes.resize(len, 0);
+            file.read_exact(&mut bytes)?;
+            let fd_after = metadata_identity(&file.metadata()?);
+            let path_after = file_identity(path)?;
+            if fd_before != fd_after || fd_after != path_after {
+                return Err(std::io::Error::other(
+                    "source identity changed during owned input read",
+                ));
+            }
+            let mut tensors = Self::from_backing(SafeTensorBacking::Owned(bytes));
+            tensors.source_identity = Some((path.to_path_buf(), fd_after));
+            return Ok(tensors);
+        }
+        #[cfg(not(target_os = "macos"))]
+        {
+            let bytes = crate::native_io::read_preallocated(path)?;
+            Ok(Self::from_backing(SafeTensorBacking::Owned(bytes)))
+        }
+    }
+
+    #[cfg(all(feature = "native-execution", target_os = "macos"))]
+    pub fn open_mmap(path: &Path) -> std::io::Result<Self> {
+        let before = file_identity(path)?;
+        let file = File::open(path)?;
+        let fd_identity = metadata_identity(&file.metadata()?);
+        // Safety: the mapping is read-only and is owned by `SafeTensors` for at
+        // least as long as every slice returned by `raw`/`bytes`.
+        let mmap = unsafe { memmap2::MmapOptions::new().map(&file)? };
+        let after = file_identity(path)?;
+        if before != fd_identity || fd_identity != after || mmap.len() as u64 != after.size {
+            return Err(std::io::Error::other(
+                "source identity changed while establishing mmap",
+            ));
+        }
+        let mut tensors = Self::from_backing(SafeTensorBacking::Mapped(mmap));
+        tensors.source_identity = Some((path.to_path_buf(), fd_identity));
+        Ok(tensors)
+    }
+
+    #[cfg(all(feature = "native-execution", target_os = "macos"))]
+    pub fn verify_source_identity(&self) -> std::io::Result<()> {
+        let Some((path, expected)) = &self.source_identity else {
+            return Ok(());
+        };
+        let actual = file_identity(path)?;
+        if actual != *expected || self.backing.as_slice().len() as u64 != actual.size {
+            return Err(std::io::Error::other(format!(
+                "native source identity changed: {}",
+                path.display()
+            )));
+        }
+        Ok(())
+    }
+
+    fn from_backing(backing: SafeTensorBacking) -> Self {
+        let bytes = backing.as_slice();
         let hdr_len = u64::from_le_bytes(bytes[0..8].try_into().unwrap()) as usize;
         let json = bytes[8..8 + hdr_len].to_vec();
         let data_start = 8 + hdr_len;
         let (tensors, order) = parse_header(&json);
-        Ok(SafeTensors { bytes, data_start, tensors, order })
+        SafeTensors {
+            backing,
+            data_start,
+            tensors,
+            order,
+            #[cfg(all(feature = "native-execution", target_os = "macos"))]
+            source_identity: None,
+        }
     }
 
     pub fn raw(&self, t: &StTensor) -> &[u8] {
-        &self.bytes[self.data_start + t.off_start..self.data_start + t.off_end]
+        &self.backing.as_slice()[self.data_start + t.off_start..self.data_start + t.off_end]
     }
 
     pub fn bytes(&self) -> &[u8] {
-        &self.bytes
+        self.backing.as_slice()
     }
 
     pub fn to_f32(&self, t: &StTensor) -> Vec<f32> {
@@ -160,7 +299,12 @@ pub fn parse_header(json: &[u8]) -> (HashMap<String, StTensor>, Vec<String>) {
         if offs.len() == 2 {
             map.insert(
                 key.clone(),
-                StTensor { dtype, shape, off_start: offs[0] as usize, off_end: offs[1] as usize },
+                StTensor {
+                    dtype,
+                    shape,
+                    off_start: offs[0] as usize,
+                    off_end: offs[1] as usize,
+                },
             );
             order.push(key);
         }
@@ -180,9 +324,70 @@ pub fn extract_str_field(obj: &str, field: &str) -> Option<String> {
 
 pub fn extract_num_array(obj: &str, field: &str) -> Vec<u64> {
     let pat = format!("\"{field}\"");
-    let Some(p) = obj.find(&pat) else { return Vec::new() };
+    let Some(p) = obj.find(&pat) else {
+        return Vec::new();
+    };
     let rest = &obj[p + pat.len()..];
-    let Some(lb) = rest.find('[') else { return Vec::new() };
-    let Some(rb) = rest.find(']') else { return Vec::new() };
-    rest[lb + 1..rb].split(',').filter_map(|t| t.trim().parse::<u64>().ok()).collect()
+    let Some(lb) = rest.find('[') else {
+        return Vec::new();
+    };
+    let Some(rb) = rest.find(']') else {
+        return Vec::new();
+    };
+    rest[lb + 1..rb]
+        .split(',')
+        .filter_map(|t| t.trim().parse::<u64>().ok())
+        .collect()
+}
+
+#[cfg(all(test, feature = "native-execution", target_os = "macos"))]
+mod native_tests {
+    use super::*;
+    use std::io::Write as _;
+
+    #[test]
+    fn mmap_identity_guard_detects_source_change() {
+        let path = std::env::temp_dir().join(format!(
+            "strand-mmap-identity-{}-{}.safetensors",
+            std::process::id(),
+            std::thread::current().name().unwrap_or("test")
+        ));
+        let mut bytes = Vec::new();
+        bytes.extend_from_slice(&2u64.to_le_bytes());
+        bytes.extend_from_slice(b"{}");
+        std::fs::write(&path, &bytes).unwrap();
+        let mapped = SafeTensors::open_mmap(&path).unwrap();
+        assert_eq!(mapped.bytes(), bytes);
+        let mut file = std::fs::OpenOptions::new()
+            .append(true)
+            .open(&path)
+            .unwrap();
+        file.write_all(&[0]).unwrap();
+        file.sync_all().unwrap();
+        assert!(mapped.verify_source_identity().is_err());
+        drop(mapped);
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn owned_identity_guard_detects_source_change() {
+        let path = std::env::temp_dir().join(format!(
+            "strand-owned-identity-{}-{}.safetensors",
+            std::process::id(),
+            std::thread::current().name().unwrap_or("test")
+        ));
+        let mut bytes = Vec::new();
+        bytes.extend_from_slice(&2u64.to_le_bytes());
+        bytes.extend_from_slice(b"{}");
+        std::fs::write(&path, &bytes).unwrap();
+        let owned = SafeTensors::open_preallocated(&path).unwrap();
+        let mut file = std::fs::OpenOptions::new()
+            .append(true)
+            .open(&path)
+            .unwrap();
+        file.write_all(&[0]).unwrap();
+        file.sync_all().unwrap();
+        assert!(owned.verify_source_identity().is_err());
+        let _ = std::fs::remove_file(path);
+    }
 }

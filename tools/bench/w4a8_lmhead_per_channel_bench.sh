@@ -16,10 +16,10 @@
 # each W4A8 config is compared token-by-token to the BASELINE
 # (config #1), reported as "match=K/16".
 #
-# Per `memory/feedback_bench_with_claude_open.md`, paired-delta runs
-# work with Claude open because contamination cancels in the relative
+# Per project design memory on bench feedback with the agent open, paired-delta
+# runs work with the agent open because contamination cancels in the relative
 # delta. Absolute-tps gates need `tools/bench/clean_bench.sh` from a
-# Cmd+Q-Claude terminal.
+# Cmd+Q-agent terminal.
 #
 # Usage:
 #   ./tools/bench/w4a8_lmhead_per_channel_bench.sh
@@ -241,5 +241,5 @@ printf "%-26s  %10s  %10s  %10s  %s\n" \
 printf "%-26s  %10s  %10s  %10s  %s\n" \
     "w4a8 per-channel LM_HEAD" "$PERCH_TPS"  "$PERCH_MS"  "$PERCH_DELTA"   "$PERCH_MATCH"
 echo
-echo "Note: paired-delta numbers are valid with Claude running."
+echo "Note: paired-delta numbers are valid with the agent running."
 echo "      Absolute dec_tps may be contaminated — see bench_contamination.md."

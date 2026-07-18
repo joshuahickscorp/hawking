@@ -35,8 +35,8 @@ fn head_path(env_var: &str) -> Option<PathBuf> {
 #[test]
 #[ignore = "needs HAWKING_Q3B_HEAD=/path/to/q3b_eagle6_long.safetensors"]
 fn trained_head_q3b_loads() {
-    let path = head_path("HAWKING_Q3B_HEAD")
-        .expect("set HAWKING_Q3B_HEAD to the q3b safetensors path");
+    let path =
+        head_path("HAWKING_Q3B_HEAD").expect("set HAWKING_Q3B_HEAD to the q3b safetensors path");
     let head = Eagle5Head::load_from_safetensors(&path, Q3B_HIDDEN, QWEN_VOCAB)
         .expect("q3b head must load");
     assert_eq!(head.hidden(), Q3B_HIDDEN);
@@ -56,8 +56,8 @@ fn trained_head_q3b_loads() {
 #[test]
 #[ignore = "needs HAWKING_Q1P5_HEAD=/path/to/q1p5_eagle6_long.safetensors"]
 fn trained_head_q1p5_loads() {
-    let path = head_path("HAWKING_Q1P5_HEAD")
-        .expect("set HAWKING_Q1P5_HEAD to the q1p5 safetensors path");
+    let path =
+        head_path("HAWKING_Q1P5_HEAD").expect("set HAWKING_Q1P5_HEAD to the q1p5 safetensors path");
     let head = Eagle5Head::load_from_safetensors(&path, Q1P5_HIDDEN, QWEN_VOCAB)
         .expect("q1p5 head must load (note: 2-block — exercises extra_blocks.* path)");
     assert_eq!(head.hidden(), Q1P5_HIDDEN);
@@ -70,8 +70,8 @@ fn trained_head_q1p5_loads() {
 #[test]
 #[ignore = "needs HAWKING_Q3B_HEAD env"]
 fn trained_head_rejects_wrong_hidden() {
-    let path = head_path("HAWKING_Q3B_HEAD")
-        .expect("set HAWKING_Q3B_HEAD to the q3b safetensors path");
+    let path =
+        head_path("HAWKING_Q3B_HEAD").expect("set HAWKING_Q3B_HEAD to the q3b safetensors path");
     // Pass deliberately-wrong hidden — loader must refuse.
     let err = Eagle5Head::load_from_safetensors(&path, Q3B_HIDDEN + 1, QWEN_VOCAB);
     assert!(err.is_err(), "loader must reject hidden_dim mismatch");

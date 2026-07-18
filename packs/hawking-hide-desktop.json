@@ -1,0 +1,39 @@
+{
+  "archive_bytes": 460901,
+  "archive_sha256": "f0c75f9309120f8375256d560bd6670261aec20793d4dde14a85607990ccfa8c",
+  "content_addressed": true,
+  "content_loc": 50351,
+  "crates": [
+    "hide-core",
+    "hide-kernel",
+    "hide-fleet",
+    "hide-personalize",
+    "hide-backend",
+    "hide-serve",
+    "hide-tools",
+    "hide-security",
+    "hawking-context",
+    "hawking-index",
+    "hawking-orch",
+    "hawking-research",
+    "hawking-eval"
+  ],
+  "file_count": 164,
+  "hydrate": "tar xzf pack.tar.gz -C <workspace root> and re-add to Cargo.toml members",
+  "kernel_retained": [
+    "hawking",
+    "hawking-core",
+    "hawking-serve",
+    "hawking-bench"
+  ],
+  "manifest_sha256": "6a814481675cecfeae53f21f74cbe0800f6f09354474046daaf52b4b9a3216db",
+  "offline_cache": "/Users/scammermike/Downloads/hawking-packs/hawking-hide-desktop",
+  "offline_hydratable": true,
+  "pack": "hawking-hide-desktop",
+  "reason": "HIDE product cluster + its supporting hawking crates (not reachable from the hawking binary)",
+  "rollback": "git checkout 5a99d0e2d7bf -- crates Cargo.toml",
+  "schema": "hawking.pack.manifest.v1",
+  "sealed_at": "2026-07-18T00:57:53Z",
+  "source_commit": "5a99d0e2d7bf7ea822fd41a74f713008bacba1a5",
+  "version": "1.0.0"
+}

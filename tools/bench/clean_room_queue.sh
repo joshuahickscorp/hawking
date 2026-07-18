@@ -6,7 +6,7 @@
 #   which an in-session agent inflates ~4-5x (reports/bench_contamination.md).
 # =============================================================================
 #
-#   ⚠⚠⚠  RUN THIS ONLY WITH CLAUDE CODE FULLY QUIT.  ⚠⚠⚠
+#   ⚠⚠⚠  RUN THIS ONLY WITH THE CODING AGENT FULLY QUIT.  ⚠⚠⚠
 #
 #   This is the SAME clean-room discipline as tools/bench/clean_room_batch.sh
 #   (Q3 byte-cut + anchor + energy). This queue is the *complement*: the two
@@ -14,8 +14,8 @@
 #   measure, because only a clean machine yields a trustworthy tps/TTFT number.
 #
 # HOW TO RUN (the user does this — NOT an agent):
-#   1. Quit the Claude Code desktop app   (Cmd+Q).
-#   2. Quit any `claude` CLI / loop sessions.
+#   1. Quit the agent desktop app         (Cmd+Q).
+#   2. Quit any agent CLI / loop sessions.
 #   3. Quit slm and any other GPU/RAM-heavy process.
 #   4. Open a fresh Terminal.app window.
 #   5. cd /Users/scammermike/Downloads/hawking
@@ -23,7 +23,7 @@
 #   7. Read the per-section verdicts; the JSON artifacts land under reports/bench/.
 #
 #   Pass --gates-only to print the plan + contamination preflight WITHOUT
-#   running any bench (safe to run anytime, even with Claude open).
+#   running any bench (safe to run anytime, even with the agent open).
 #
 # WHAT IT RUNS:
 #   (1) user_draft_3arm_bench.sh — the 3-arm propose-first vs bonus-first vs
@@ -38,6 +38,10 @@
 set -uo pipefail
 cd "$(dirname "$0")/../.."
 
+_agent_env="$(git rev-parse --show-toplevel 2>/dev/null)/.agent_env"
+[ -f "$_agent_env" ] && source "$_agent_env"
+unset _agent_env
+
 BIN="${BIN:-./target/release/hawking}"
 GATES_ONLY=0
 [[ "${1:-}" == "--gates-only" ]] && GATES_ONLY=1
@@ -49,12 +53,14 @@ echo "  clean_room_queue.sh — section-close deferred absolute benches (2026-06
 hr
 
 # ---- contamination preflight ------------------------------------------------
-if pgrep -if "Claude" >/dev/null 2>&1 || pgrep -if "[c]laude" >/dev/null 2>&1; then
-  echo "  ⚠ A Claude process appears to be running. Absolute tps/TTFT will be"
-  echo "    contaminated ~4-5x. Quit Claude Code + any claude CLI, then re-run."
+agent_app_pat="${AGENT_APP_PGREP:?see .agent_env.example}"
+agent_cli_pat="${AGENT_CLI_PGREP:?see .agent_env.example}"
+if pgrep -if "$agent_app_pat" >/dev/null 2>&1 || pgrep -if "$agent_cli_pat" >/dev/null 2>&1; then
+  echo "  ⚠ An agent process appears to be running. Absolute tps/TTFT will be"
+  echo "    contaminated ~4-5x. Quit the coding agent app + any agent CLI, then re-run."
   [[ "$GATES_ONLY" -eq 0 ]] && { echo "  Refusing to run (pass --gates-only to override the plan print)."; exit 2; }
 else
-  echo "  preflight: no Claude process detected — clean to measure."
+  echo "  preflight: no agent process detected — clean to measure."
 fi
 
 if [[ ! -x "$BIN" ]]; then

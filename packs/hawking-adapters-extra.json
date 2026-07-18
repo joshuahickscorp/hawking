@@ -1,0 +1,21 @@
+{
+  "archive_sha256": "5599eabc9438e6298169904d69f491518601e06b50dc5b203ed0f13a027e2c7c",
+  "content_loc": 3611,
+  "file_count": 5,
+  "hydrate": "tar xzf pack.tar.gz -C <root> + re-add pub mod + dispatch arms",
+  "manifest_sha256": "31dfb57f57fad7a5fa861560e79066085bb52390ea8d21d6e9b41d5d16fbdf92",
+  "models": [
+    "gemma2",
+    "phi3",
+    "olmoe",
+    "mamba2",
+    "mixtral"
+  ],
+  "offline_cache": "/Users/scammermike/Downloads/hawking-packs/hawking-adapters-extra",
+  "pack": "hawking-adapters-extra",
+  "reason": "non-frontier model adapters (extracted C2); shipping engine keeps qwen/rwkv/deepseek/llama",
+  "rollback": "git checkout 9048118d341d -- crates/hawking-core/src/model/gemma2.rs crates/hawking-core/src/model/phi3.rs crates/hawking-core/src/model/olmoe.rs crates/hawking-core/src/model/mamba2.rs crates/hawking-core/src/model/mixtral.rs",
+  "schema": "hawking.pack.manifest.v1",
+  "source_commit": "9048118d341d1f757eda5158a2f5750f195bc2ef",
+  "version": "1.0.0"
+}

@@ -9,7 +9,7 @@
 //! may FMA-contract it without that intermediate f32 round (measured ~1 ULP /
 //! ~1e-4 on 1667/2048 rows). That 1-ULP delta is inherent to pre-decoding, not
 //! a bug, so this gates at the project's correctness bar (atol 1e-3 fp16, per
-//! CLAUDE.md) rather than exact equality. Q3_K is symmetric (no min term), so
+//! AGENT.md) rather than exact equality. Q3_K is symmetric (no min term), so
 //! the pre-decoded table is 16 f32/block.
 //!
 //! This is the byte-cut Stage-3 unblock validation: the fast Q3_K GEMV that a
@@ -18,10 +18,10 @@
 
 #![cfg(target_os = "macos")]
 
+use half::f16;
 use hawking_core::kernels;
 use hawking_core::metal::TokenCommandBuffer;
 use hawking_core::quant::predecode_q3_k_scale_table;
-use half::f16;
 use rand::Rng;
 use rand_pcg::Pcg64Mcg;
 

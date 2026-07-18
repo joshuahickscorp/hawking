@@ -14,7 +14,7 @@
 #   J/eff-tok  = J/req / effective_tokens  (effective_tokens = completion +
 #                prefix_cache_hits + spec_accepted, if metrics are available)
 #
-# CONTAMINATION NOTE: J/tok and tps are absolute; run with Claude closed for
+# CONTAMINATION NOTE: J/tok and tps are absolute; run with the agent closed for
 #   publishable numbers. Relative A/B deltas are contamination-robust.
 #
 # USAGE:
@@ -409,5 +409,5 @@ if a is not None and b is not None and a > 0:
 PYEOF
 fi
 
-printf '\nnote: absolute numbers require clean room (macmon + Claude closed).\n'
+printf '\nnote: absolute numbers require clean room (macmon + agent closed).\n'
 printf '      Relative A/B delta is contamination-robust.\n'

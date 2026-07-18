@@ -2,7 +2,7 @@
 //!
 //! Not a correctness gate — `rwkv7_metal_parity.rs` owns that. This reports:
 //!   * GPU decode tok/s and the GPU-vs-CPU ratio (the ratio is robust to a live
-//!     Claude session perturbing absolute tps; absolute is indicative only).
+//!     agent session perturbing absolute tps; absolute is indicative only).
 //!   * decode tok/s vs CONTEXT DEPTH (0 / 4k / 16k / 64k): RWKV-7 has no KV
 //!     cache, so per-step work is constant and the curve must stay FLAT — the
 //!     whole point of the slice.

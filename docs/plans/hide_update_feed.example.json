@@ -1,0 +1,11 @@
+{
+  "version": "0.2.0",
+  "notes": "Faster state forks; security-gate approve-and-run; accessibility pass.",
+  "pub_date": "2026-06-29T00:00:00Z",
+  "platforms": {
+    "darwin-aarch64": {
+      "signature": "<minisign signature of HIDE_0.2.0_aarch64.app.tar.gz>",
+      "url": "https://dl.hide.dev/updates/darwin-aarch64/HIDE_0.2.0_aarch64.app.tar.gz"
+    }
+  }
+}
