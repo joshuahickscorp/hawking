@@ -410,7 +410,7 @@ pub struct QwenDense {
     ///
     /// Storage only; the actual dispatch into this head is selected by
     /// `EngineConfig::speculate_mode == SpeculateMode::Eagle5`.
-    pub(crate) eagle5_head: Option<crate::speculate::eagle5::Eagle5Head>,
+    pub(crate) eagle5_head: Option<hawking_speculate::eagle5::Eagle5Head>,
 
     /// Eagle5 verify window from `EngineConfig::verify_window`.
     /// `HAWKING_QWEN_EAGLE5_K=N` remains as a diagnostic override.
@@ -1337,7 +1337,7 @@ impl Engine for QwenDense {
             match config.eagle5_head_path.as_deref() {
                 Some(p) => {
                     eprintln!("[eagle5] loading trained head from {}", p.display());
-                    Some(crate::speculate::eagle5::Eagle5Head::load_from_safetensors(
+                    Some(hawking_speculate::eagle5::Eagle5Head::load_from_safetensors(
                         p, hidden, vocab,
                     )?)
                 }
@@ -1347,7 +1347,7 @@ impl Engine for QwenDense {
                          for runtime wiring (accept rate ≈ 1/vocab — set --eagle5-head to use the \
                          trained checkpoint)"
                     );
-                    Some(crate::speculate::eagle5::Eagle5Head::mock(
+                    Some(hawking_speculate::eagle5::Eagle5Head::mock(
                         0xea91e5_u64,
                         hidden,
                         vocab,
@@ -2407,7 +2407,7 @@ impl Engine for QwenDense {
             // exactly as in 'ud_loop. Propose-first changes only how many target
             // forwards schedule per emitted token, never which tokens are
             // emitted. The bonus-first 'ud_loop remains the parity reference.
-            let mut draft_index = crate::speculate::user_ngram::UserNgramDraft::new();
+            let mut draft_index = hawking_speculate::user_ngram::UserNgramDraft::new();
             // Warm-start from the prompt (same in-prompt signal as 'ud_loop).
             draft_index.warm_start(&prompt_ids);
             // Lookahead count per cycle. The verify batch is `carried_true` +
@@ -2417,7 +2417,7 @@ impl Engine for QwenDense {
             // carried_true + k-1 lookahead for the same reason.)
             let k_la = user_draft_k.min(7);
             let mut spec_gov = if use_spec_governor {
-                let mut g = crate::speculate::governor::SpecGovernor::new(
+                let mut g = hawking_speculate::governor::SpecGovernor::new(
                     spec_gov_window,
                     spec_gov_min_rate,
                 );
@@ -2640,7 +2640,7 @@ impl Engine for QwenDense {
             //   Stage 3: verify [bonus, draft[..k-1]] in ONE batched forward;
             //            accept the longest agreeing prefix; correction on the
             //            first mismatch. KV bookkeeping identical to e5_loop.
-            let mut draft_index = crate::speculate::user_ngram::UserNgramDraft::new();
+            let mut draft_index = hawking_speculate::user_ngram::UserNgramDraft::new();
             // Warm-start from the prompt (the user's immediate history) so the
             // index has context from token one — the same in-prompt signal PLD
             // uses, plus the user's emitted stream as it grows.
@@ -2651,7 +2651,7 @@ impl Engine for QwenDense {
             let mut last_emit: u32 = last_id;
             let mut pos = prompt_len;
             let mut spec_gov = if use_spec_governor {
-                let mut g = crate::speculate::governor::SpecGovernor::new(
+                let mut g = hawking_speculate::governor::SpecGovernor::new(
                     spec_gov_window,
                     spec_gov_min_rate,
                 );
@@ -2670,11 +2670,11 @@ impl Engine for QwenDense {
             // Default OFF; the existing 'ud_loop accept path is the untouched fallback
             // and the parity oracle. Never flip this default without the human-run
             // bit-identity gate in user_draft_parity_e2e.rs.
-            use crate::speculate::proposal::Proposer as _;
+            use hawking_speculate::proposal::Proposer as _;
             let eh_on = std::env::var("HAWKING_QWEN_EVENT_HORIZON").is_ok();
-            let mut ngram_proposer = crate::speculate::user_ngram::NgramProposer::new();
-            let mut suffix_proposer = crate::speculate::suffix_array::SuffixArrayDraft::new();
-            let mut router = crate::speculate::router::ProposalRouter::new(
+            let mut ngram_proposer = hawking_speculate::user_ngram::NgramProposer::new();
+            let mut suffix_proposer = hawking_speculate::suffix_array::SuffixArrayDraft::new();
+            let mut router = hawking_speculate::router::ProposalRouter::new(
                 spec_gov_window,
                 spec_gov_min_rate,
                 0.0,
@@ -2684,7 +2684,7 @@ impl Engine for QwenDense {
                 suffix_proposer.warm(&prompt_ids);
                 // P1.4: register the suffix-array as a second always-on free slot.
                 router.add_free_slot(
-                    crate::speculate::router::ProposerId::SuffixArray,
+                    hawking_speculate::router::ProposerId::SuffixArray,
                     spec_gov_window,
                     spec_gov_min_rate,
                 );
@@ -2736,10 +2736,10 @@ impl Engine for QwenDense {
                 let ctx_buf: [u32; 2] = [ctx_prev, bonus];
                 // Stage 2: propose. P0.7: route through ProposalRouter when EH is ON;
                 // fall back to the original gov_propose + draft_index path when OFF.
-                let mut eh_proposer_id = crate::speculate::router::ProposerId::UserNgram;
+                let mut eh_proposer_id = hawking_speculate::router::ProposerId::UserNgram;
                 let draft = if eh_on {
-                    use crate::speculate::proposal::{Budget, Ctx as PCtx, Proposal, Telemetry};
-                    use crate::speculate::router::{ProposerId, RouterCtx, RouterPlan};
+                    use hawking_speculate::proposal::{Budget, Ctx as PCtx, Proposal, Telemetry};
+                    use hawking_speculate::router::{ProposerId, RouterCtx, RouterPlan};
                     let rctx = RouterCtx {
                         // 1ms placeholder: router always proposes on the parity gate
                         // (benefit > 0 with zero costs). Tune with real timing in P0.7+.
@@ -2819,7 +2819,7 @@ impl Engine for QwenDense {
                 // block when OFF (the untouched fallback and parity oracle).
                 if eh_on {
                     let outcome = {
-                        let v = crate::speculate::verifier::Verifier::new(8, false);
+                        let v = hawking_speculate::verifier::Verifier::new(8, false);
                         v.verify_line(self, bonus, bonus_pos, &draft)?
                     };
                     let na = outcome.accepted.len();
@@ -2828,7 +2828,7 @@ impl Engine for QwenDense {
                     // Router feedback replaces spec_gov.step() in the EH path.
                     router.record(
                         eh_proposer_id,
-                        &crate::speculate::router::StepObservation {
+                        &hawking_speculate::router::StepObservation {
                             accepted: na,
                             drafted: draft_len,
                             ..Default::default()
@@ -9374,7 +9374,7 @@ impl QwenDense {
         }
         let mut out = Vec::with_capacity(b);
         for k in 0..b {
-            out.push(crate::speculate::eagle5_forward::matmul_no_bias_f16w(
+            out.push(hawking_speculate::eagle5_forward::matmul_no_bias_f16w(
                 lm_head_src,
                 &x_norm_all[k * h..(k + 1) * h],
                 vocab,
@@ -9624,7 +9624,7 @@ impl QwenDense {
         let mut out = Vec::with_capacity(b);
         for k in 0..b {
             let x_norm_k = &x_norm_all[k * h..(k + 1) * h];
-            let logits = crate::speculate::eagle5_forward::matmul_no_bias_f16w(
+            let logits = hawking_speculate::eagle5_forward::matmul_no_bias_f16w(
                 lm_head_src,
                 x_norm_k,
                 vocab,
@@ -9763,16 +9763,20 @@ impl QwenDense {
 // UFCS (fully-qualified path) avoids self-recursion: `QwenDense::forward_*`
 // resolves to the inherent method, not this trait impl.
 #[cfg(target_os = "macos")]
-impl crate::speculate::verifier::ExactTarget for QwenDense {
+impl hawking_speculate::verifier::ExactTarget for QwenDense {
     fn forward_tokens_verify(
         &mut self,
         tokens: &[u32],
         positions: &[usize],
-    ) -> crate::Result<(Vec<u32>, Vec<Vec<f32>>)> {
-        QwenDense::forward_tokens_verify(self, tokens, positions)
+    ) -> hawking_speculate::verifier::TargetResult<(Vec<u32>, Vec<Vec<f32>>)> {
+        Ok(QwenDense::forward_tokens_verify(self, tokens, positions)?)
     }
-    fn forward_token_greedy(&mut self, token: u32, pos: usize) -> crate::Result<u32> {
-        QwenDense::forward_token_greedy_tcb(self, token, pos)
+    fn forward_token_greedy(
+        &mut self,
+        token: u32,
+        pos: usize,
+    ) -> hawking_speculate::verifier::TargetResult<u32> {
+        Ok(QwenDense::forward_token_greedy_tcb(self, token, pos)?)
     }
 }
 

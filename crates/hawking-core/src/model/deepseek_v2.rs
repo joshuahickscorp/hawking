@@ -165,7 +165,7 @@ pub struct DeepSeekV2 {
     /// and falls back to a deterministic mock head when the loader is
     /// not yet implemented (current state) or the checkpoint path is
     /// `None`.
-    pub eagle5_head: Option<crate::speculate::eagle5::Eagle5Head>,
+    pub eagle5_head: Option<hawking_speculate::eagle5::Eagle5Head>,
 
     /// v1.2.0-9: Per-layer expert access stats + POSIX madvise offloading.
     /// `Some` when `--max-routed-expert-ram-mb` is set. `None` on V2-Lite default
@@ -719,13 +719,13 @@ impl Engine for DeepSeekV2 {
         // training run completes — it lets the spec-decode runtime
         // ship behind HAWKING_SPEC_DECODE=eagle5 without blocking
         // on training completion.
-        let eagle5_head: Option<crate::speculate::eagle5::Eagle5Head> =
+        let eagle5_head: Option<hawking_speculate::eagle5::Eagle5Head> =
             if speculate_mode == SpeculateMode::Eagle5 {
                 let h = cfg.hidden;
                 let v = cfg.vocab_size;
                 let head = match config.eagle5_head_path.as_deref() {
                     Some(p) => {
-                        match crate::speculate::eagle5::Eagle5Head::load_from_safetensors(p, h, v) {
+                        match hawking_speculate::eagle5::Eagle5Head::load_from_safetensors(p, h, v) {
                             Ok(loaded) => {
                                 eprintln!(
                                     "[eagle5] loaded trained head from {} (hidden={h}, vocab={v})",
@@ -739,7 +739,7 @@ impl Engine for DeepSeekV2 {
                                  falling back to deterministic mock head — accept rate will \
                                  be near 1/vocab and is only useful for runtime validation."
                                 );
-                                crate::speculate::eagle5::Eagle5Head::mock(0xea91e5_u64, h, v)
+                                hawking_speculate::eagle5::Eagle5Head::mock(0xea91e5_u64, h, v)
                             }
                         }
                     }
@@ -749,7 +749,7 @@ impl Engine for DeepSeekV2 {
                          head (hidden={h}, vocab={v}). Accept rate will be near 1/vocab — \
                          runtime-validation mode only."
                         );
-                        crate::speculate::eagle5::Eagle5Head::mock(0xea91e5_u64, h, v)
+                        hawking_speculate::eagle5::Eagle5Head::mock(0xea91e5_u64, h, v)
                     }
                 };
                 Some(head)
@@ -1255,7 +1255,7 @@ impl Engine for DeepSeekV2 {
                 tmp_last = last_id;
                 let use_profiled_greedy = self.profiled_greedy_enabled(&req.sampling);
                 let verify_result =
-                    crate::speculate::shared::verify_draft_ids_until_mismatch(&draft_ids, |k| {
+                    hawking_speculate::shared::verify_draft_ids_until_mismatch(&draft_ids, |k| {
                         let id =
                             self.forward_token_argmax(tmp_last, pos + k, use_profiled_greedy)?;
                         if id == draft_ids[k] {

@@ -4,24 +4,24 @@
     "tools/condense/succ_cli.py",
     "tools/condense/eco_cli.py"
   ],
-  "generated_at": "2026-07-18T00:18:21Z",
+  "generated_at": "2026-07-18T01:03:43Z",
   "kernel_floor_estimate": {
-    "combined": 137860,
+    "combined": 120221,
     "note": "true CLI-reachable kernel; the Rust engine dominates, the Python spine is small",
     "python_reachable": 13873,
-    "rust_hawking": 123987
+    "rust_hawking": 106348
   },
   "python_tools_condense": {
-    "orphaned_fraction": 0.929,
-    "orphaned_loc": 180373,
-    "orphaned_modules": 279,
+    "orphaned_fraction": 0.358,
+    "orphaned_loc": 7736,
+    "orphaned_modules": 33,
     "reachable_loc": 13873,
     "reachable_modules": 33
   },
   "rust": {
-    "hawking_kernel_loc": 123987,
-    "hide_product_loc": 32712
+    "hawking_kernel_loc": 106348,
+    "hide_product_loc": 0
   },
   "schema": "hawking.condense_reachability.v1",
-  "sha256": "e614dd0302801887227656181139418c03a4a5f363a99e62ab7b2321e102e554"
+  "sha256": "51e31479dfcd2e4138a0de4e8bb211d2a7b8cc637f0742d732b1cc23c7615d9f"
 }

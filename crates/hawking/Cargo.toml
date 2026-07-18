@@ -12,20 +12,6 @@ description = "hawking CLI for Apple Silicon LLM inference"
 name = "hawking"
 path = "src/main.rs"
 
-[[bin]]
-name = "hawking-spec-acceptance-measure"
-path = "src/spec_acceptance_measure.rs"
-
-[[bin]]
-name = "hawking-tq-device-probe"
-path = "src/tq_device_probe.rs"
-required-features = ["tq"]
-
-[[bin]]
-name = "hawking-tq-spec-probe"
-path = "src/tq_spec_probe.rs"
-required-features = ["tq"]
-
 [features]
 # Forward the runtime `tq` feature down through hawking-serve to hawking-core so
 # the `hawking serve` binary, built with `--features tq`, serves a `.tq` sidecar
@@ -38,6 +24,7 @@ tq = ["hawking-serve/tq", "hawking-core/tq"]
 hawking-core = { path = "../hawking-core" }
 hawking-serve = { path = "../hawking-serve" }
 hawking-bench = { path = "../hawking-bench" }
+hawking-speculate = { path = "../hawking-speculate" }
 anyhow = { workspace = true }
 clap = { workspace = true }
 tokio = { workspace = true }

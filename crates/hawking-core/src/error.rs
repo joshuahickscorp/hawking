@@ -22,3 +22,13 @@ pub enum Error {
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
+
+impl From<hawking_speculate::Error> for Error {
+    fn from(e: hawking_speculate::Error) -> Self {
+        match e {
+            hawking_speculate::Error::Io(io) => Error::Io(io),
+            hawking_speculate::Error::Model(s) => Error::Model(s),
+            hawking_speculate::Error::Unimplemented(s) => Error::Unimplemented(s),
+        }
+    }
+}

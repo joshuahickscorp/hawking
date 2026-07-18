@@ -1,0 +1,42 @@
+{
+  "done_this_session": {
+    "cli_condensation": "crates/hawking 11,385 -> 5,200 LOC (-6,185): extracted 3 diagnostic probe bins + process_joule (2,810) to hawking-lab-cli pack, and the studio quant-campaign subcommand (3,369) to hawking-lab. cargo check --workspace green, hawking tests 17+2 pass.",
+    "packs_created": [
+      "hawking-lab-cli (2,810 LOC)",
+      "studio (3,369 LOC)"
+    ]
+  },
+  "generated_at": "2026-07-18T01:51:58Z",
+  "measurements": {
+    "cli_loc": 5200,
+    "delta": -6179,
+    "hawking_core_loc": 58680,
+    "hawking_serve_loc": 4414,
+    "owned_active_product_src": 88606,
+    "prior": 94785,
+    "python_spine_loc": 19154,
+    "total_tracked": 336864
+  },
+  "note": "Per Section 14, Architecture B is NOT complete: CLI physically reduced, but Python not yet reduced and speculate not yet addressed. No heavy run launched.",
+  "remaining_architecture_B": {
+    "cli_to_2500": "main.rs (4,428) needs the command-registry/shared-arg refactor (~2k more) - a real rewrite, not extraction",
+    "decode_parity_harness": "not yet built - prerequisite for speculate + kernel-bank",
+    "kernel_bank_boundary": "contract/dispatch ABI in kernel + optimized bank pack (~19k out) - needs the parity harness",
+    "python_19k_to_10k": "eco_*/succ_* controller unification into one hawking_control package - substantial multi-step rewrite of the LIVE control plane (must stay green + gate must pass); no large trivial duplication exists (checked)",
+    "speculate_inversion": "trait interface + hawking-speculate pack (~6.3k out) - needs the parity harness + breaks the models<->speculate cycle via interface inversion"
+  },
+  "schema": "hawking.archb_checkpoint.v1",
+  "sha256": "da231e432e6a5bf64144f28f9b007f8fb0783947baf958f107d4a1771e8a213e",
+  "stage_b_status": {
+    "C0": "complete",
+    "C1": "complete",
+    "C2": "incomplete",
+    "C3": "incomplete",
+    "escape_receipt": "revoked"
+  },
+  "status": "IN PROGRESS - Architecture B NOT complete",
+  "tags": [
+    "archb-cli-1-probes",
+    "archb-cli-2-studio"
+  ]
+}

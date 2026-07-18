@@ -16,7 +16,7 @@ pub mod quant;
 pub mod quant_tier_map;
 pub mod sample;
 pub mod sidecar;
-pub mod speculate;
+// speculate extracted to the hawking-speculate crate (NUCLEAR PASTA)
 pub mod stateful;
 pub mod tokenizer;
 /// TQ (Trellis-Quant): `.tq` decode + activation-RHT CPU serving reference, built

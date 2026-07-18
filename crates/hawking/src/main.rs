@@ -1,7 +1,6 @@
-mod bench_kernel;
-mod bench_server;
+// bench_kernel + bench_server extracted to the hawking-bench pack (NUCLEAR PASTA CLI collapse).
 mod capture;
-mod studio;
+// `studio` (quant-campaign orchestration) extracted to the hawking-lab pack (Architecture B).
 
 use anyhow::Result;
 use clap::{Parser, Subcommand};
@@ -502,11 +501,6 @@ enum Cmd {
         #[arg(long)]
         weights: Option<PathBuf>,
     },
-    /// Studio proof/lifecycle control surface. Read-only/dry-run by default.
-    Studio {
-        #[command(subcommand)]
-        cmd: studio::StudioCmd,
-    },
     /// Run a list of prompts through one in-process engine, emitting
     /// per-prompt b3sum hashes of the decoded text. Replaces the
     /// 50-launch shell loop in capture-baseline-50 / token-regression
@@ -536,50 +530,7 @@ enum Cmd {
     /// Print the SHA-256 prefix of all compiled Metal shader sources.
     /// Used to update kernel-profile JSON after shader changes.
     ShaderHash,
-    /// Load a model once and serve repeated inference requests over stdin/stdout
-    /// (JSON-line protocol). Eliminates the 5-15s model-load cost for each
-    /// smoke iteration during development. Use bench_server_driver.sh for
-    /// automated multi-request runs.
-    BenchServer {
-        #[arg(long)]
-        weights: PathBuf,
-        #[arg(long)]
-        kernel_profile: Option<PathBuf>,
-        #[arg(long, num_args = 0..=1, default_missing_value = "exact-shared", value_name = "MODE")]
-        speculate: Option<String>,
-        #[arg(long, default_value_t = 4)]
-        verify_window: usize,
-        /// Enable Metal dispatch tracing for per-request structural metrics.
-        #[arg(long, default_value_t = false)]
-        trace_dispatch: bool,
-        /// Read requests from stdin (JSON-line). Currently the only supported
-        /// transport; HTTP bind will be added in a future sub-phase.
-        #[arg(long, default_value_t = true)]
-        stdin: bool,
-    },
-    /// Micro-benchmark an individual Metal GEMV kernel at a production tensor
-    /// shape without loading a model. Allocates synthetic buffers, dispatches
-    /// the kernel N times, and reports mean/p50/p99/min/max latency in μs.
-    /// Use --all to bench every supported kernel at a given shape.
-    BenchKernel {
-        /// Kernel name, e.g. gemv_q4_k_m_v2_pinned_tcb. Use --all to bench
-        /// all kernels that support the given shape.
-        #[arg(long, conflicts_with = "all")]
-        kernel: Option<String>,
-        /// Bench all kernels that support the given shape.
-        #[arg(long, default_value_t = false)]
-        all: bool,
-        /// Matrix shape as ROWSxCOLS, e.g. 1408x2048 (rows=output, cols=input).
-        /// Kernel constraints (e.g. cols%256==0) are checked at runtime.
-        #[arg(long)]
-        shape: String,
-        /// Number of dispatches to time. Default 1000.
-        #[arg(long, default_value_t = 1000)]
-        iterations: usize,
-        /// Suppress appending to bench_results/kernel_perf_history.jsonl.
-        #[arg(long, default_value_t = false)]
-        no_history: bool,
-    },
+    // BenchServer + BenchKernel extracted to the hawking-bench pack (NUCLEAR PASTA CLI collapse).
     /// Verify model file integrity: compute SHA-256, print size, check sidecar.
     ///
     /// Usage:
@@ -1050,7 +1001,6 @@ fn main() -> Result<()> {
             max_routed_expert_ram_mb,
         ),
         Cmd::Version { weights } => version_main(weights),
-        Cmd::Studio { cmd } => studio::run(cmd),
         Cmd::BatchHash {
             weights,
             prompts,
@@ -1074,33 +1024,6 @@ fn main() -> Result<()> {
             println!("{}", hawking_core::profile::shader_source_hash());
             Ok(())
         }
-        Cmd::BenchServer {
-            weights,
-            kernel_profile,
-            speculate,
-            verify_window,
-            trace_dispatch,
-            stdin: _,
-        } => bench_server::run(bench_server::BenchServerOptions {
-            weights,
-            kernel_profile,
-            speculate,
-            verify_window,
-            trace_dispatch,
-        }),
-        Cmd::BenchKernel {
-            kernel,
-            all,
-            shape,
-            iterations,
-            no_history,
-        } => bench_kernel::run(bench_kernel::BenchKernelOptions {
-            kernel,
-            all,
-            shape,
-            iterations,
-            no_history,
-        }),
         Cmd::BakeSidecar {
             weights,
             out,
@@ -4301,7 +4224,7 @@ fn spec_oracle_main(
     warm_frac: f64,
     json: bool,
 ) -> Result<()> {
-    use hawking_core::speculate::replay_oracle::replay_grid;
+    use hawking_speculate::replay_oracle::replay_grid;
 
     let text = std::fs::read_to_string(&corpus)
         .map_err(|e| anyhow::anyhow!("read corpus {}: {e}", corpus.display()))?;
@@ -4408,7 +4331,7 @@ mod spec_oracle_tests {
         // The text->ids->report GLUE: feed a synthetic, highly-repetitive id
         // stream (what encode() would yield on a repetitive corpus) straight
         // into the shipped replay_grid and assert the report the handler prints.
-        use hawking_core::speculate::replay_oracle::replay_grid;
+        use hawking_speculate::replay_oracle::replay_grid;
         let mut ids: Vec<u32> = Vec::new();
         for _ in 0..200 {
             ids.extend_from_slice(&[10, 11, 12, 13, 14, 15, 16, 17]);
