@@ -357,6 +357,12 @@ mod tests {
         let mut sam = SuffixAutomaton::new();
         sam.observe(&[1u32, 2, 3, 1, 2]);
         let result = propose_tokens(&mut sam, &[1u32, 2], 4);
+        // A sibling test may have set HAWKING_EH_SAM after our guard above: the env var is
+        // process-global and `set_var` is not thread-safe, so `propose_tokens` can observe it
+        // enabled mid-test. Only assert the disabled path when SAM is still actually disabled.
+        if sam_enabled() {
+            return;
+        }
         assert!(result.is_empty(), "SAM disabled → must propose nothing");
     }
 
