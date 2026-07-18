@@ -34,3 +34,4 @@ Durable resume state for the maximum-density compression campaign. Status: **des
 ## HAWKING SEED — Phase 0 CLOSE THE OLD WORLD: DONE
 - main fast-forwarded 088aa661 -> 714294ac (collapse merged); validated green (core 123 + spec 123 + py 165 + gravity 34 + parity GREEN); sealed hawking-pre-seed-final; rollback tag hawking-pre-collapse-main. Pushed origin/main.
 - Phase 1-8 (build 3 Seed candidate architectures -> 10k): genuine multi-month R&D campaign; resume via this ledger.
+- Phase 1 (spec extraction): HAWKING_SEED_ARCHITECTURE.md written = the oracle (parity golden 2d1559cf, Gravity law 34, pack ABI, runtime/CLI contracts) + Record envelope + one state machine + execution IR + 3 candidate designs (A Rust microkernel / B functional Rust / C mixed) + measurement plan. Next: build candidate A in an isolated worktree, migrate status->artifact->decode->Gravity/Forge/Doctor->evidence, parity-gated.
