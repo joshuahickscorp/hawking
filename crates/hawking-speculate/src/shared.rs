@@ -68,12 +68,12 @@ pub fn verify_draft_ids_until_mismatch<F>(
     mut verify_id: F,
 ) -> Result<VerifyResult>
 where
-    F: FnMut(usize) -> Result<u32>,
+    F: FnMut(usize) -> std::result::Result<u32, Box<dyn std::error::Error + Send + Sync>>,
 {
     let mut accepted_count = 0usize;
     let mut first_divergent_token = None;
     for (i, &draft_id) in draft_ids.iter().enumerate() {
-        let verifier_id = verify_id(i)?;
+        let verifier_id = verify_id(i).map_err(|e| crate::Error::Model(e.to_string()))?;
         if verifier_id == draft_id {
             accepted_count += 1;
         } else {

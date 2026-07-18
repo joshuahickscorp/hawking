@@ -12,7 +12,7 @@
 //! ([`note_token`]) — their codebase identifiers, boilerplate, frequent
 //! completions — and proposes a draft continuation for the current context
 //! ([`propose`]). It is the **draft source** the propose→verify loop plugs in;
-//! the [`crate::speculate::shared::verify_draft_ids_until_mismatch`] /
+//! the [`crate::shared::verify_draft_ids_until_mismatch`] /
 //! `forward_tokens_verify` verifier is reused **unchanged**, so every emitted
 //! token is still the verifier's token — the draft affects only speed, never
 //! output. **Lossless by construction** (design §2.1b: "E unconditionally").
@@ -207,7 +207,7 @@ fn argmax_count(m: &HashMap<u32, u32>) -> Option<u32> {
 }
 
 // ---- Event Horizon: the live, lossless, tokenizer-native BASE proposer ----
-use crate::speculate::proposal::{Budget, Ctx, Proposal, Proposer, Telemetry};
+use crate::proposal::{Budget, Ctx, Proposal, Proposer, Telemetry};
 
 /// Default-on, lossless, tokenizer-native base proposer: a thin [`Proposer`]
 /// adapter over [`UserNgramDraft`] (the live τ=1.43 base that beat the trained

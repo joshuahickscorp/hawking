@@ -7,7 +7,7 @@
 //! in Phase 0/1. This module defines contracts only; concrete impls live beside
 //! their state (user_ngram.rs, eagle5.rs).
 
-use crate::speculate::shared::DraftToken;
+use crate::shared::DraftToken;
 
 /// Wall-clock currency of the router's expected_gain rule. Everything is ns;
 /// convert to ms only at the human-readable edge.

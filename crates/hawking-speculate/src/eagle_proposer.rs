@@ -12,8 +12,8 @@
 //! τ≥2.5 on the target workload. The `enable_neural_slot` guard enforces
 //! this structurally (returns Err for any hidden slot with verdict≠"GO").
 
-use crate::speculate::eagle5::Eagle5Head;
-use crate::speculate::proposal::{Budget, CostNs, Ctx, Proposal, Proposer, Telemetry};
+use crate::eagle5::Eagle5Head;
+use crate::proposal::{Budget, CostNs, Ctx, Proposal, Proposer, Telemetry};
 
 /// Adapter that wraps `Eagle5Head` behind the `Proposer` trait.
 ///
@@ -107,8 +107,8 @@ impl Proposer for EagleProposer {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::speculate::proposal::{Budget, Ctx, HiddenTap, Telemetry};
-    use crate::speculate::router::{ProposalRouter, ProposerId};
+    use crate::proposal::{Budget, Ctx, HiddenTap, Telemetry};
+    use crate::router::{ProposalRouter, ProposerId};
 
     fn ctx_no_hidden<'a>(tokens: &'a [u32]) -> Ctx<'a> {
         Ctx {

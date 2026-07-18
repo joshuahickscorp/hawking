@@ -1,0 +1,19 @@
+[package]
+name = "hawking-speculate"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Hawking speculative decoding pack: proposers, governors, EAGLE (default-hydrated performance pack, extracted from hawking-core)"
+
+[dependencies]
+thiserror = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+half = { workspace = true }
+memmap2 = { workspace = true }
+rand = { workspace = true }
+rand_pcg = { workspace = true }
+sha2 = { workspace = true }

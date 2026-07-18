@@ -4,11 +4,15 @@
 //! Adds NO model math — wraps forward_tokens_verify + forward_token_greedy_tcb.
 //! KV bookkeeping stays with the caller (returns the position math via next_seq_len).
 
-use crate::speculate::shared::{verify_draft_ids_until_mismatch, VerifyResult};
+use crate::shared::{verify_draft_ids_until_mismatch, VerifyResult};
 use crate::Result;
 
 /// The only thing the verifier needs from a model. QwenDense is the Phase-0
 /// implementor; DeepSeek-V2 can impl the same over its rollback KV later.
+/// The callback boundary uses a boxed error so a model in another crate (hawking-core) can
+/// implement it without a dependency cycle; the verifier maps it into its own Error.
+pub type TargetResult<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
+
 pub trait ExactTarget {
     /// Batched linear verify: `tokens` at contiguous `positions` in one TCB →
     /// (argmax_per_pos, residual_per_pos). b == tokens.len() must be 1..=8 for the
@@ -17,11 +21,11 @@ pub trait ExactTarget {
         &mut self,
         tokens: &[u32],
         positions: &[usize],
-    ) -> Result<(Vec<u32>, Vec<Vec<f32>>)>;
+    ) -> TargetResult<(Vec<u32>, Vec<Vec<f32>>)>;
 
     /// Single greedy/bonus token; writes KV[pos], returns argmax. Wraps
     /// QwenDense::forward_token_greedy_tcb (qwen_dense.rs:4456).
-    fn forward_token_greedy(&mut self, token: u32, pos: usize) -> Result<u32>;
+    fn forward_token_greedy(&mut self, token: u32, pos: usize) -> TargetResult<u32>;
 
     /// Phase-6: ancestor-mask tree verify? False until the Metal build lands.
     fn supports_tree_verify(&self) -> bool {
@@ -79,7 +83,9 @@ impl Verifier {
     ) -> Result<VerifyOutcome> {
         // Degenerate: empty draft → one plain greedy bonus step (still lossless).
         if draft.is_empty() {
-            let corr = target.forward_token_greedy(bonus, bonus_pos)?;
+            let corr = target
+                .forward_token_greedy(bonus, bonus_pos)
+                .map_err(|e| crate::Error::Model(e.to_string()))?;
             return Ok(VerifyOutcome {
                 accepted: Vec::new(),
                 correction: Some(corr),
@@ -98,7 +104,9 @@ impl Verifier {
         }
         let vpos: Vec<usize> = (0..k).map(|j| bonus_pos + j).collect();
 
-        let (preds, residuals) = target.forward_tokens_verify(&vtoks, &vpos)?;
+        let (preds, residuals) = target
+            .forward_tokens_verify(&vtoks, &vpos)
+            .map_err(|e| crate::Error::Model(e.to_string()))?;
         debug_assert_eq!(preds.len(), k);
 
         let VerifyResult {
@@ -138,12 +146,12 @@ mod tests {
             &mut self,
             tokens: &[u32],
             _positions: &[usize],
-        ) -> Result<(Vec<u32>, Vec<Vec<f32>>)> {
+        ) -> TargetResult<(Vec<u32>, Vec<Vec<f32>>)> {
             // Return the first `tokens.len()` canned preds.
             let n = tokens.len();
             Ok((self.preds[..n].to_vec(), vec![Vec::new(); n]))
         }
-        fn forward_token_greedy(&mut self, _token: u32, _pos: usize) -> Result<u32> {
+        fn forward_token_greedy(&mut self, _token: u32, _pos: usize) -> TargetResult<u32> {
             Ok(self.preds[0])
         }
     }

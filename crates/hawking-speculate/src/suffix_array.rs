@@ -9,7 +9,7 @@
 //!
 //! Lossless by construction: the verifier confirms every proposed token.
 
-use crate::speculate::proposal::{Budget, Ctx, Proposal, Proposer, Telemetry};
+use crate::proposal::{Budget, Ctx, Proposal, Proposer, Telemetry};
 
 /// Rolling-window exact-match suffix proposer.
 ///
@@ -48,7 +48,7 @@ impl Proposer for SuffixArrayDraft {
         "suffix_array"
     }
 
-    fn cost_estimate(&self, _ctx: &Ctx<'_>, _budget: Budget) -> crate::speculate::proposal::CostNs {
+    fn cost_estimate(&self, _ctx: &Ctx<'_>, _budget: Budget) -> crate::proposal::CostNs {
         0
     }
 
@@ -113,7 +113,7 @@ impl Proposer for SuffixArrayDraft {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::speculate::proposal::{Budget, Ctx, Telemetry};
+    use crate::proposal::{Budget, Ctx, Telemetry};
 
     fn make_ctx<'a>(tokens: &'a [u32]) -> Ctx<'a> {
         Ctx {

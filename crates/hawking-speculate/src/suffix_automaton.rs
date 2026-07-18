@@ -25,7 +25,7 @@
 //! After construction, the *endpos* of any accepted suffix can be found by
 //! following transitions from state 0.
 
-use crate::speculate::proposal::{Budget, Ctx, Proposal, Proposer, Telemetry};
+use crate::proposal::{Budget, Ctx, Proposal, Proposer, Telemetry};
 use std::collections::HashMap;
 
 // ---------------------------------------------------------------------------
@@ -234,7 +234,7 @@ impl Proposer for SuffixAutomaton {
         "suffix_automaton"
     }
 
-    fn cost_estimate(&self, _ctx: &Ctx<'_>, _budget: Budget) -> crate::speculate::proposal::CostNs {
+    fn cost_estimate(&self, _ctx: &Ctx<'_>, _budget: Budget) -> crate::proposal::CostNs {
         0
     }
 
@@ -317,7 +317,7 @@ impl Proposer for SuffixAutomaton {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::speculate::proposal::{Budget, Ctx, Telemetry};
+    use crate::proposal::{Budget, Ctx, Telemetry};
 
     // Helper: build a Ctx from a token slice.
     fn make_ctx(tokens: &[u32]) -> Ctx<'_> {

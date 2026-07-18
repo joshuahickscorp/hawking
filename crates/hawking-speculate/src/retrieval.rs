@@ -25,7 +25,7 @@
 //! 4. `reset()` — no-op; the corpus persists across requests (same policy as
 //!    `SuffixArrayDraft` and `NgramProposer`).
 
-use crate::speculate::proposal::{Budget, CostNs, Ctx, Proposal, Proposer, Telemetry};
+use crate::proposal::{Budget, CostNs, Ctx, Proposal, Proposer, Telemetry};
 
 /// Rolling-window exact-match retrieval proposer.
 ///
@@ -169,7 +169,7 @@ impl Proposer for RetrievalProposer {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::speculate::proposal::{Budget, Ctx, Telemetry};
+    use crate::proposal::{Budget, Ctx, Telemetry};
 
     fn make_ctx<'a>(tokens: &'a [u32]) -> Ctx<'a> {
         Ctx {

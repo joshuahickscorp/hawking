@@ -195,7 +195,7 @@ pub struct ProposalRouter {
     margin_forwards: f32,
     verifier_curve: VerifierCostCurve,
     #[allow(dead_code)]
-    bandit: crate::speculate::policy::BanditPolicy,
+    bandit: crate::policy::BanditPolicy,
 }
 
 impl ProposalRouter {
@@ -209,7 +209,7 @@ impl ProposalRouter {
             requires_text_bridge: false,
             oracle_cleared: true,
         };
-        let mut bandit = crate::speculate::policy::BanditPolicy::new();
+        let mut bandit = crate::policy::BanditPolicy::new();
         bandit.push_arm(); // one arm for the initial UserNgram slot
         Self {
             slots: vec![base],

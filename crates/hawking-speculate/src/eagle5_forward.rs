@@ -39,7 +39,7 @@
 //! converted to f32 lazily during the relevant matmul. Trainable
 //! weights are stored f32.
 
-use crate::speculate::eagle5::{TrainedBlock, TrainedConfig};
+use crate::eagle5::{TrainedBlock, TrainedConfig};
 use half::f16;
 
 /// RMS epsilon, matches `RMS_EPS = 1e-6` in eagle5_train_pytorch.py:71.

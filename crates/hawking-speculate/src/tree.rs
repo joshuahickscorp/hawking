@@ -1,8 +1,8 @@
 //! Event Horizon Phase 6 — token-tree builder + CPU linear-fallback verifier.
 //! Metal single-pass kernel = documented TODO; supports_tree_verify()=false.
 
-use crate::speculate::proposal::{Budget, Proposal};
-use crate::speculate::verifier::{ExactTarget, Verifier, VerifyOutcome};
+use crate::proposal::{Budget, Proposal};
+use crate::verifier::{ExactTarget, Verifier, VerifyOutcome};
 use crate::Result;
 
 /// A single node in a token tree.
@@ -218,12 +218,12 @@ mod tests {
             &mut self,
             tokens: &[u32],
             _positions: &[usize],
-        ) -> Result<(Vec<u32>, Vec<Vec<f32>>)> {
+        ) -> TargetResult<(Vec<u32>, Vec<Vec<f32>>)> {
             let n = tokens.len();
             Ok((self.preds[..n].to_vec(), vec![Vec::new(); n]))
         }
 
-        fn forward_token_greedy(&mut self, _token: u32, _pos: usize) -> Result<u32> {
+        fn forward_token_greedy(&mut self, _token: u32, _pos: usize) -> TargetResult<u32> {
             Ok(self.preds[0])
         }
     }

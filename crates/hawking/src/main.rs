@@ -4224,7 +4224,7 @@ fn spec_oracle_main(
     warm_frac: f64,
     json: bool,
 ) -> Result<()> {
-    use hawking_core::speculate::replay_oracle::replay_grid;
+    use hawking_speculate::replay_oracle::replay_grid;
 
     let text = std::fs::read_to_string(&corpus)
         .map_err(|e| anyhow::anyhow!("read corpus {}: {e}", corpus.display()))?;
@@ -4331,7 +4331,7 @@ mod spec_oracle_tests {
         // The text->ids->report GLUE: feed a synthetic, highly-repetitive id
         // stream (what encode() would yield on a repetitive corpus) straight
         // into the shipped replay_grid and assert the report the handler prints.
-        use hawking_core::speculate::replay_oracle::replay_grid;
+        use hawking_speculate::replay_oracle::replay_grid;
         let mut ids: Vec<u32> = Vec::new();
         for _ in 0..200 {
             ids.extend_from_slice(&[10, 11, 12, 13, 14, 15, 16, 17]);

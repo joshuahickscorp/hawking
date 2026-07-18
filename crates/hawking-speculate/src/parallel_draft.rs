@@ -14,7 +14,7 @@
 //!
 //! Sub-flag: HAWKING_EH_PARALLEL_DRAFT (unset = disabled).
 
-use crate::speculate::proposal::{Budget, CostNs, Ctx, Proposal, Proposer, Telemetry};
+use crate::proposal::{Budget, CostNs, Ctx, Proposal, Proposer, Telemetry};
 
 /// Maximum number of draft tokens this proposer will emit in one shot.
 /// Mirrors `Budget::MAX_DRAFT_LEN` (7) — the verifier's B≤8 fast path.
@@ -102,8 +102,8 @@ impl Proposer for ParallelDraftProposer {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::speculate::proposal::{Budget, Ctx, Telemetry};
-    use crate::speculate::router::{ProposalRouter, ProposerId};
+    use crate::proposal::{Budget, Ctx, Telemetry};
+    use crate::router::{ProposalRouter, ProposerId};
 
     fn ctx_no_hidden<'a>(tokens: &'a [u32]) -> Ctx<'a> {
         Ctx {

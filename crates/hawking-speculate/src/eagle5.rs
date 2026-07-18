@@ -53,7 +53,7 @@
 //!   sidecar buffer. That wiring is documented in the call-site comment
 //!   in `model/deepseek_v2.rs::generate()`'s Eagle5 branch.
 
-use crate::speculate::safetensors_io::SafeTensors;
+use crate::safetensors_io::SafeTensors;
 use crate::Error;
 use crate::Result;
 use half::f16;
@@ -537,7 +537,7 @@ impl Eagle5Head {
                 token_embd_f16,
                 lm_head_f16,
             } => {
-                use crate::speculate::eagle5_forward::{compute_draft_hidden, lm_head_logits};
+                use crate::eagle5_forward::{compute_draft_hidden, lm_head_logits};
                 let h = config.hidden_dim;
                 let v = config.vocab_size;
                 let zeros = vec![0.0f32; h];
@@ -566,11 +566,11 @@ impl Eagle5Head {
                     let next = match pruned {
                         Some((lm_pruned, remap)) => {
                             let logits = lm_head_logits(&draft_hidden, lm_pruned, h, remap.len());
-                            remap[crate::kernels::argmax_f32(&logits) as usize]
+                            remap[crate::argmax_f32(&logits) as usize]
                         }
                         None => {
                             let logits = lm_head_logits(&draft_hidden, lm_head_f16, h, v);
-                            crate::kernels::argmax_f32(&logits) as u32
+                            crate::argmax_f32(&logits) as u32
                         }
                     };
                     out.push(next);
@@ -595,7 +595,7 @@ impl Eagle5Head {
                 let logits = self
                     .forward_logits(prev, residual_in, intermediate)
                     .expect("Trained variant must return Some(logits)");
-                crate::kernels::argmax_f32(&logits) as u32
+                crate::argmax_f32(&logits) as u32
             }
         }
     }
@@ -623,7 +623,7 @@ impl Eagle5Head {
                 output_norm,
                 token_embd_f16,
                 lm_head_f16,
-            } => Some(crate::speculate::eagle5_forward::forward_single_step(
+            } => Some(crate::eagle5_forward::forward_single_step(
                 config,
                 in_proj,
                 blocks,

@@ -2,7 +2,7 @@
 //! requires_text_bridge()=true → enable_neural_slot refuses without GO.
 //! Default: NO-GO (0.58-0.70× slowdown on Apple Silicon, ref 2604.16368).
 
-use crate::speculate::proposal::{Budget, CostNs, Ctx, Proposal, Proposer, Telemetry};
+use crate::proposal::{Budget, CostNs, Ctx, Proposal, Proposer, Telemetry};
 use std::collections::HashMap;
 
 /// Scaffold cross-tokenizer proposer. DISABLED by default.
@@ -105,8 +105,8 @@ impl Proposer for CrossTokenizerProposer {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::speculate::proposal::Telemetry;
-    use crate::speculate::router::{ProposalRouter, ProposerId};
+    use crate::proposal::Telemetry;
+    use crate::router::{ProposalRouter, ProposerId};
 
     #[test]
     fn map_learns_a_span() {
