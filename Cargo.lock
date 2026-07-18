@@ -762,6 +762,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "hawking-seed-c"
+version = "0.2.2"
+dependencies = [
+ "half",
+ "memmap2",
+ "metal 0.29.0",
+ "serde",
+ "serde_json",
+ "sha2",
+ "thiserror 2.0.18",
+]
+
+[[package]]
 name = "hawking-serve"
 version = "0.2.2"
 dependencies = [
