@@ -3,16 +3,16 @@
   "blocking_conditions": [],
   "conditions": {
     "compact_runtime_fixture_green": {
-      "activation_source": "real_token_embedding",
-      "mean_output_rel_div": 1.21582,
+      "activation_source": "true_residual_stream_block0",
+      "mean_output_rel_div": 0.72186,
       "measurement_apparatus_green": true,
-      "n_experts_exercised": 24,
+      "n_experts_exercised": 36,
       "note": "green = the fixture RUNS (bounded/deterministic/finite); NOT a capability pass",
       "value": true
     },
     "condensation_safe": {
       "branch": "codex/gravity-forge",
-      "rollback_point": "63003e0e",
+      "rollback_point": "0eceb10a",
       "value": true
     },
     "doctor_fixture_green": {
@@ -66,7 +66,7 @@
     },
     "resource_policy_green": {
       "atlas_present": true,
-      "disk_free_gb": 565.2,
+      "disk_free_gb": 562.2,
       "reserve_gb": 50,
       "value": true
     },
@@ -92,9 +92,9 @@
   },
   "derived": true,
   "does_not_authorize": "the heavy model run (separate receipt after condensation)",
-  "generated_at": "2026-07-17T23:41:25Z",
+  "generated_at": "2026-07-17T23:56:05Z",
   "operator_declared": false,
   "readiness_passes": true,
   "schema": "hawking.gravity_forge.pre_run_readiness.v1",
-  "sha256": "0ba5c0bacaa38feba7ddedb31e8a04b12ce472d3627cf299b5768987b404f4a3"
+  "sha256": "513874f9d44c73f65aa3f0d40157a32d4644d65b0e745f1d41b77f475dafd762"
 }

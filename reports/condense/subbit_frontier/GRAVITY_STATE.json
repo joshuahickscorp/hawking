@@ -6,7 +6,7 @@
       "resumable": true,
       "root": "reports/condense/gravity_forge/cells"
     },
-    "created_at": "2026-07-17T23:40:57+00:00",
+    "created_at": "2026-07-17T23:55:28+00:00",
     "doctor_budget_bpw": 0.15,
     "doctor_program": {
       "note": "diagnose-first; repairability_shaped reserved",
@@ -36,7 +36,7 @@
       "source_program_executable": true
     },
     "parent_label": "120B",
-    "program_sha256": "b4568972afe5d07cbbd19900250c11b40ead1742f5244d0079d2fb506f3440b1",
+    "program_sha256": "80b48b64d24a6dc607b58e538e4769cd7ab557c135250898e2633d592e4e1860",
     "rate": {
       "den": 5,
       "label": "4/5",
@@ -404,5 +404,5 @@
       "source_manifest_sha256": "d09af556423d1a7009731254739065dbce9a1c523c3bc66989b7c0e324bf4c4e"
     }
   },
-  "state_doc_sha256": "d68497e46e931ff09594e823d7722535c2149d2646d4d392f7fbe8f34797f39f"
+  "state_doc_sha256": "0a20d001275819acefbdd92813cc5aa742f1281ed3617ba51e67bf9d8f3c2693"
 }

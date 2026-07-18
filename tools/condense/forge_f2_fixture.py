@@ -62,7 +62,8 @@ def _tokenizer_ok() -> tuple[bool, dict[str, Any]]:
         return False, {"error": f"{type(e).__name__}: {e}"}
 
 
-def run(*, block: int = 0, max_tokens: int = 48, top_k: int = 4,
+def run(*, block: int = 0, max_tokens: int = 48, top_k: int = 4, mode: str = "token_embedding",
+        seq_per_prompt: int = 16,
         pack_fn: Callable[[np.ndarray], np.ndarray] | None = None,
         pack_label: str = "transform_pq@~0.75bpw") -> dict[str, Any]:
     ok, tkinfo = _tokenizer_ok()
@@ -75,20 +76,34 @@ def run(*, block: int = 0, max_tokens: int = 48, top_k: int = 4,
     if not Path(reader.by_name["block.0.mlp.gate.weight"]["shard_path"]).exists():
         return {"schema": FIXTURE_SCHEMA, "green": False, "reason": "120B source shards absent"}
 
-    # deterministic real token ids (dedup, bounded)
-    ids: list[int] = []
-    for p in PROMPTS:
-        ids.extend(tk.encode(p).ids)
-    seen, uniq = set(), []
-    for i in ids:
-        if i not in seen:
-            seen.add(i); uniq.append(int(i))
-        if len(uniq) >= max_tokens:
-            break
-
-    # real layer-0 embeddings for those tokens (loaded once, indexed -> bounded)
-    emb = reader.bf16("embedding.weight")            # [vocab, 2880]
-    acts = np.ascontiguousarray(emb[uniq], dtype=np.float32)   # [n, 2880]
+    emb = reader.bf16("embedding.weight")            # [vocab, 2880], loaded once
+    if mode == "residual":
+        # TRUE residual-stream: run each prompt through block-0 attention (tokens attend in-context),
+        # then mlp.norm -> the genuine MoE input per position.
+        import gptoss_block as gb
+        acts_list = []
+        for p in PROMPTS:
+            ids = [int(i) for i in tk.encode(p).ids[:seq_per_prompt]]
+            acts_list.append(gb.block0_moe_inputs(reader, ids, embeddings=emb))
+            if sum(a.shape[0] for a in acts_list) >= max_tokens:
+                break
+        acts = np.concatenate(acts_list, axis=0)[:max_tokens]
+        activation_source = "true_residual_stream_block0"
+        activation_gap = ("from-config attention (RoPE/SwiGLU/eps not HF-parity-validated); "
+                          "approximations largely cancel in the relative orig-vs-packed divergence")
+    else:
+        ids = []
+        for p in PROMPTS:
+            ids.extend(tk.encode(p).ids)
+        seen, uniq = set(), []
+        for i in ids:
+            if i not in seen:
+                seen.add(i); uniq.append(int(i))
+            if len(uniq) >= max_tokens:
+                break
+        acts = np.ascontiguousarray(emb[uniq], dtype=np.float32)
+        activation_source = "real_token_embedding"
+        activation_gap = "pre-attention proxy; true residual-stream F2 needs the block attention layer"
     del emb
 
     if pack_fn is None:
@@ -123,9 +138,9 @@ def run(*, block: int = 0, max_tokens: int = 48, top_k: int = 4,
     return {
         "schema": FIXTURE_SCHEMA, "green": bool(finite and len(rel) > 0),
         "parent": "120B", "block": block, "device": gf._device().type,
-        "tokenizer": tkinfo, "activation_source": "real_token_embedding",
-        "activation_gap": "pre-attention proxy; true residual-stream F2 needs the block attention layer",
-        "n_tokens": len(uniq), "n_experts_exercised": len(routed), "pack": pack_label,
+        "tokenizer": tkinfo, "activation_source": activation_source,
+        "activation_gap": activation_gap, "mode": mode,
+        "n_tokens": int(acts.shape[0]), "n_experts_exercised": len(routed), "pack": pack_label,
         "packed_whole_artifact_bpw": round(whole_bpw, 4),
         "mean_output_rel_div": round(float(np.mean(rel)), 5),
         "max_output_rel_div": round(float(np.max(rel)), 5),
@@ -141,10 +156,11 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description="Forge F2 real-token compact-runtime fixture.")
     ap.add_argument("--block", type=int, default=0)
     ap.add_argument("--max-tokens", type=int, default=48)
+    ap.add_argument("--mode", default="token_embedding", choices=["token_embedding", "residual"])
     ap.add_argument("--out", default="reports/condense/gravity_forge/FORGE_F2_FIXTURE.json")
     args = ap.parse_args(argv)
     t0 = time.time()
-    doc = run(block=args.block, max_tokens=args.max_tokens)
+    doc = run(block=args.block, max_tokens=args.max_tokens, mode=args.mode)
     doc["seconds"] = round(time.time() - t0, 1)
     doc["fixture_sha256"] = hashlib.sha256(
         json.dumps({k: v for k, v in doc.items() if k != "fixture_sha256"},

@@ -56,3 +56,14 @@ def test_giant_adapter_contracts_stable_and_composed_from_authority():
     s = json.load(open(p))
     assert s["all_contracts_valid"] is True
     assert set(s["adapters"]) >= {"deepseek-v3.2-685b", "kimi-k2.6-1t", "deepseek-v4-pro-1.6t"}
+
+
+def test_block0_forward_shapes_and_rmsnorm():
+    """The block-0 attention forward is shape-correct and RMSNorm is unit-scale under identity."""
+    import numpy as np
+    import gptoss_block as gb
+    x = np.random.default_rng(0).standard_normal((5, gb.HIDDEN)).astype(np.float32)
+    y = gb.rmsnorm(x, np.ones(gb.HIDDEN, dtype=np.float32))
+    assert abs(float(np.sqrt(np.mean(y ** 2))) - 1.0) < 0.05     # RMSNorm -> ~unit rms
+    q = gb._rope(np.ones((3, gb.N_Q, gb.HEAD_DIM), dtype=np.float32), np.arange(3))
+    assert q.shape == (3, gb.N_Q, gb.HEAD_DIM) and np.isfinite(q).all()

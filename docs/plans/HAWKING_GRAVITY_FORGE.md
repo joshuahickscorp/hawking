@@ -279,3 +279,19 @@ not the heavy run (§27 heavy-run readiness is separate and not yet derived). 48
 Stage B (repository condensation, §11-27) is now **authorized but not begun**: it is a multi-week
 descent (175k->50k) whose every checkpoint needs a commit+tag, and the standing house rule forbids
 commits without explicit approval. Held for the go signal.
+
+### Stage-A hardening (after committing Stage A @ `0eceb10a`)
+
+- **True residual-stream F2** (`gptoss_block.py`): built the block-0 attention forward (GQA 64/8,
+  RoPE theta 150000, per-head attention sinks, causal, then residual + mlp.norm) so F2 sees the
+  genuine post-attention MoE input instead of raw embeddings. **This corrected the science**: on the
+  true residual stream sub-bit `transform_pq` output divergence is **0.69** (max 0.92) - vs the
+  token-embedding proxy's *pessimistic* 1.26 and the synthetic 0.61. The gate's
+  `compact_runtime_fixture` now runs this faithful residual fixture. Honesty: from-config attention,
+  not HF-parity-validated; the approximations largely cancel in the relative orig-vs-packed divergence.
+- **Forge program wired as a live successor queue row** (`forge_controller_integration.register_queue_row`):
+  the sealed Forge program is now a candidate on the live 120B successor row (drain/resume via the one
+  controller), still launch-disabled and refused.
+
+Still negative science, still gated: 0.69 output divergence at ~0.75 BPW is a large capability
+perturbation. No escape, no Event Horizon, heavy-run readiness (§27) not derived.

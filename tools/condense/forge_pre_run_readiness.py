@@ -88,7 +88,7 @@ def c_minimum_families() -> dict[str, Any]:
 
 def c_compact_runtime_fixture() -> dict[str, Any]:
     import forge_f2_fixture as fx
-    r = fx.run(max_tokens=8)
+    r = fx.run(mode="residual", max_tokens=12, seq_per_prompt=8)   # true residual stream (faithful)
     return {"value": bool(r.get("green")), "activation_source": r.get("activation_source"),
             "n_experts_exercised": r.get("n_experts_exercised"),
             "mean_output_rel_div": r.get("mean_output_rel_div"),
