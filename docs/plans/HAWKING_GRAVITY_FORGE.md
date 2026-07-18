@@ -295,3 +295,14 @@ commits without explicit approval. Held for the go signal.
 
 Still negative science, still gated: 0.69 output divergence at ~0.75 BPW is a large capability
 perturbation. No escape, no Event Horizon, heavy-run readiness (§27) not derived.
+
+### Activation-aware fitting (§6.2) — first counter-lever, DIRECTIONAL only
+
+`gravity_forge.pack_transform_pq_actaware` fits the same representation to minimize OUTPUT error
+using the real residual activations (AWQ-style per-input-channel salience scaling, scale billed).
+`forge_actaware_experiment.py` on the true residual stream: at matched ~0.755 BPW, activation-aware
+lowers output divergence **0.679 -> 0.651 (-4.1%)**. The direction (output-aware objectives) works,
+but per-channel scaling alone is modest and sub-bit still collapses. Per house rules this is a
+**directional signal, NOT a WIN** (N=32, F2-proxy not capability parity; needs larger scale + an
+independent adversarial reproduction before any claim). Next levers stack on this: output-aware
+codebook fitting, GPTQ-style error compensation, Doctor correction at F2, codec-native QAT.

@@ -1,0 +1,26 @@
+{
+  "activation_aware_reduces_divergence": true,
+  "activation_source": "true_residual_stream_block0",
+  "authorizes_escape": false,
+  "capability_parity": false,
+  "green": true,
+  "n_experts": 65,
+  "n_tokens": 32,
+  "note": "same representation + matched bytes; only the fit objective differs. Output-space, real residual activations. A reduction is real progress, NOT yet a capability pass.",
+  "output_divergence_activation_aware": {
+    "max": 0.95559,
+    "mean": 0.65088
+  },
+  "output_divergence_weight_aware": {
+    "max": 0.97545,
+    "mean": 0.67863
+  },
+  "pack": "transform_pq {'dim': 16, 'subspaces': 2, 'k': 64}",
+  "parent": "120B",
+  "relative_improvement": 0.0409,
+  "schema": "hawking.gravity_forge.actaware_experiment.v1",
+  "seconds": 92.4,
+  "sha256": "d95fc55cb35c2b9f2908d42e51957f9e74db58e87d730cf31152d6c660176038",
+  "whole_artifact_bpw_activation_aware": 0.7551,
+  "whole_artifact_bpw_weight_aware": 0.7514
+}

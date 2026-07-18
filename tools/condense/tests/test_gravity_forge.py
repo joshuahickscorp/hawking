@@ -110,3 +110,19 @@ def test_ternary_factor_is_ternary_and_billed_conservatively():
     assert art.config["ternary_bits"] == 2
     assert "ternary_factors" in art.ledger.items
     assert art.recon.size == w.size and np.isfinite(art.recon).all()
+
+
+def test_activation_aware_reduces_output_error_when_activations_concentrate():
+    """Section 6.2: with activations concentrated on a few input channels, activation-aware packing
+    must reduce OUTPUT error ||X W^T - X What^T|| vs weight-aware at ~matched bytes, and bill the scale."""
+    rng = np.random.default_rng(0)
+    W = rng.standard_normal((64, 64)).astype(np.float32)
+    X = rng.standard_normal((128, 64)).astype(np.float32) * 0.05
+    X[:, :4] *= 40.0                                             # 4 salient input channels
+    wa = gf.pack_transform_pq(W, dim=16, subspaces=2, k=16)
+    aa = gf.pack_transform_pq_actaware(W, X, dim=16, subspaces=2, k=16)
+    err_wa = float(np.linalg.norm(X @ W.T - X @ wa.recon.T))
+    err_aa = float(np.linalg.norm(X @ W.T - X @ aa.recon.T))
+    assert err_aa < err_wa                                       # activation-aware wins in output space
+    assert aa.config.get("act_scaled") is True                  # scale billed in the ledger
+    assert aa.physical_bytes >= wa.physical_bytes                # scale costs bytes (honest)

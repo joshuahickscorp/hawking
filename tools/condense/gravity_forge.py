@@ -231,6 +231,27 @@ def _largest_pow2_divisor(cols: int, cap: int = 64) -> int:
     return 1
 
 
+def pack_transform_pq_actaware(w: np.ndarray, acts: np.ndarray, *, dim: int, subspaces: int,
+                               k: int, alpha: float = 0.5, seed: int = 0,
+                               iters: int = 10) -> PackedArtifact:
+    """Activation-aware transform_pq (Section 6.2). Given real input activations `acts` [n, in] for
+    this weight (in == w.shape[1]), scale each INPUT channel by its salience s_j = mean|acts_j|^alpha
+    (geomean-normalized) before packing, and unscale on decode. This concentrates quantization
+    precision where the activations actually are, minimizing OUTPUT error X W^T rather than weight
+    error - the AWQ idea. The per-channel scale is billed (in * fp16)."""
+    cols = w.shape[1]
+    a = np.abs(acts).mean(axis=0).astype(np.float32)              # [in] channel salience
+    a = np.maximum(a, 1e-8)
+    s = a ** alpha
+    s = s / np.exp(np.mean(np.log(s)))                            # geomean-normalize (scale-neutral)
+    w_scaled = (w * s[None, :]).astype(np.float32)
+    art = pack_transform_pq(w_scaled, dim=dim, subspaces=subspaces, k=k, seed=seed, iters=iters)
+    recon = art.recon / s[None, :]                               # unscale
+    art.ledger.add_fp16(cols)                                     # bill the per-channel scale
+    return PackedArtifact("transform_pq_actaware", recon.astype(np.float32), w.size, art.ledger,
+                          art.base_bits, 0, {**art.config, "alpha": alpha, "act_scaled": True})
+
+
 # --------------------------------------------------------------------------------------------
 # FAMILY B - shared_expert_grammar: shared additive codebook across a cluster + per-expert
 # indices + per-expert low-rank correction. The MoE amortization lever.
