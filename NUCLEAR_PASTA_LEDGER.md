@@ -30,3 +30,7 @@ Durable resume state for the maximum-density compression campaign. Status: **des
 - parity harness: golden captured on SmolLM-135M; baseline/exact-shared/suffix-automaton all bit-identical (sha 2d1559cf); lossless-speculation invariant enforced.
 - CLI: 5,200 -> 4,851 (bench_server+bench_kernel -> hawking-bench pack); decode parity re-verified GREEN. product 88,606 -> 88,373. tag nuclear-cli.
 - D DONE: speculate 19 modules physically moved hawking-core->hawking-speculate; cycle broken via Box<dyn Error> ExactTarget boundary; hawking-core src 58.7k->52.4k; decode parity GREEN; 123 spec tests pass.
+
+## HAWKING SEED — Phase 0 CLOSE THE OLD WORLD: DONE
+- main fast-forwarded 088aa661 -> 714294ac (collapse merged); validated green (core 123 + spec 123 + py 165 + gravity 34 + parity GREEN); sealed hawking-pre-seed-final; rollback tag hawking-pre-collapse-main. Pushed origin/main.
+- Phase 1-8 (build 3 Seed candidate architectures -> 10k): genuine multi-month R&D campaign; resume via this ledger.
