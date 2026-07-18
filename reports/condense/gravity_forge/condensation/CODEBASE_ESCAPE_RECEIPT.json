@@ -5,6 +5,11 @@
     "C2_75k_kernel": "ATTEMPTED - HIDE cluster (50k) + 5 non-frontier model adapters (3.6k, build-gated, workspace+tests green) extracted to packs => product 94,785. speculate/ (6.3k) is woven into the engine config (SpeculateMode) and model forward paths (eagle5_head in deepseek/qwen) - removing it deletes a real spec-decode CAPABILITY, a trade-off decision, not a clean move. Honest kernel floor ~85-90k > 75k without capability removal or parity-gated engine condensation.",
     "C3_50k_kernel": "NOT REACHED - the irreducible engine (~45k) + frontier models (~8k) + CLI bin (11.5k) + serve (5.7k) + Python spine (19k) floor well above 50k"
   },
+  "correction": {
+    "kernel_bank_classification": "48 versioned q4_k wrappers: the Metal shaders (13,913 LOC) are DISTINCT GPU algorithms (predec/mma/swiglu = different memory+math) -> belong in a default-hydrated hawking-kernel-bank PACK, NOT the irreducible kernel. The host wrappers repeat ~40 LOC of validation/dispatch boilerplate across ~40 variants -> ~1-1.4k LOC parity-safe consolidatable (GPU dispatch unchanged).",
+    "prior_error": "Claimed ~94.8k irreducible from clippy/dead-code = 0. That establishes little trivial dead code, NOT architectural irreducibility.",
+    "reframe": "kernel_LOC != product_LOC. Optional surfaces (kernel-bank ~19k, speculate ~6.3k, serving-extra ~3k) are default-hydrated PACKS, outside the irreducible kernel but preserving full hydrated capability."
+  },
   "does_not": [
     "fake a sub-75k number",
     "use minification or unreadable code",
@@ -16,7 +21,7 @@
     "C2b_model_adapters": "3,611 LOC (5 models)",
     "total": "53,962 Rust LOC to packs"
   },
-  "generated_at": "2026-07-18T01:20:06Z",
+  "generated_at": "2026-07-18T01:35:21Z",
   "irreducible_subsystem_budget_hawking_core_src": {
     "backend": 1502,
     "cache": 1124,
@@ -30,6 +35,20 @@
     "tokenizer": 1014,
     "tq": 991,
     "tq_gpu": 1947
+  },
+  "measured_architecture_B_kernel_projection": {
+    "condense_in_place": {
+      "cli_11.5k_to_2.5k": 9000,
+      "kernel_wrapper_boilerplate": 1200,
+      "python_19k_to_10k": 9000
+    },
+    "current_product": 94785,
+    "move_to_default_hydrated_packs": {
+      "kernel_bank": 19000,
+      "serving_extra": 3000,
+      "speculate": 6300
+    },
+    "projected_minimal_kernel": "~47-57k (target <=50k plausible; acceptable floor <=65k) - to be PROVEN by implementation+build+bench, not projected"
   },
   "measured_kernel_after_hide_extraction": {
     "python_active": 19154,
@@ -46,8 +65,15 @@
   },
   "remaining_to_75k": "~20k: either remove spec-decode + bench (capability/feature trade-off, ~7k) OR condense the genuine engine (kernels 13k / qwen 10.6k, parity-gated). The ~45k engine core is irreducible.",
   "schema": "hawking.codebase_escape_receipt.v1",
-  "sha256": "11998692d4a97864b6699eac5c389580f0617064c48258ccb7bc6afe55026325",
-  "status": "PROVISIONAL-STRONG (Architecture B irreducible by machine-verified condensation; Architecture A reasoned, not executed)",
+  "sha256": "22042b4385382396a83623feabd9dbf97db06a6a36952bfd15d1ae48e67b4dda",
+  "stage_b_status": {
+    "C0": "complete",
+    "C1": "complete",
+    "C2": "NOT complete",
+    "C3": "NOT complete",
+    "escape_receipt": "REVOKED/provisional"
+  },
+  "status": "REVOKED - NOT a valid Escape Receipt. The ~94.8k figure was product-with-all-surfaces-active measured as the irreducible kernel; that conflation is withdrawn.",
   "two_architecture_requirement_section26": {
     "architecture_A_compact_monolithic": "NOT ATTEMPTED - a compact-monolithic rewrite of the ~80k Rust engine is a genuine multi-week engineering effort, not faked here",
     "architecture_B_minimal_kernel_plus_packs": "ATTEMPTED + partially achieved (capsule + HIDE pack + hawking-lab manifest); reached product 98k"
