@@ -31,6 +31,10 @@ Durable resume state for the maximum-density compression campaign. Status: **des
 - CLI: 5,200 -> 4,851 (bench_server+bench_kernel -> hawking-bench pack); decode parity re-verified GREEN. product 88,606 -> 88,373. tag nuclear-cli.
 - D DONE: speculate 19 modules physically moved hawking-core->hawking-speculate; cycle broken via Box<dyn Error> ExactTarget boundary; hawking-core src 58.7k->52.4k; decode parity GREEN; 123 spec tests pass.
 
+## HAWKING SEED — Phase 0 CLOSE THE OLD WORLD: DONE
+- main fast-forwarded 088aa661 -> 714294ac (collapse merged); validated green; sealed hawking-pre-seed-final; rollback tag hawking-pre-collapse-main.
+- Phase 1 (spec extraction): HAWKING_SEED_ARCHITECTURE.md written = the oracle (parity golden 2d1559cf, Gravity law, pack ABI, runtime/CLI contracts) + 3 candidate designs + measurement plan.
+
 ## HAWKING SEED — ALL THREE CANDIDATES BUILT + MEASURED; WINNER SELECTED
 - Candidate A (codex/hawking-seed-a, PR #28 CLOSED/sealed): Rust microkernel, seed core 1,068 LOC, ship ~53,481 (delegates decode to the 52k predecessor hawking-core). tag seed-a-vertical. Bit-identical parity.
 - Candidate B (codex/hawking-seed-b, PR #29 CLOSED/sealed): self-contained scalar runtime, ship 1,945 LOC, 9.68 tok/s, 726MB RSS, bit-identical parity, NO predecessor. INDEPENDENT AUDIT sealed (CANDIDATE_B_INDEPENDENT_AUDIT.{json,md}): no hawking-core, no subprocess, no hardcoded golden, 16 distinct per-step logit shas + adversarial tests. PR #29 was CONFLICTING (docs-only ledger conflict + stale Cargo.lock) -> resolved (merged main, synced lock) -> MERGEABLE, then closed as sealed experiment.
