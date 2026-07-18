@@ -1,0 +1,43 @@
+{
+  "checkpoints": {
+    "C0_capsule": "DONE (legacy capsule sealed, 171k Python subtracted, tag clean-slate-c0-capsule)",
+    "C1_100k_product": "MET - owned active product src = 98,420 <= 100k (tests + vendor tracked separately per Section 12); orphaned Python absent, HIDE packed, capsule works, 165 py tests green, workspace builds",
+    "C2_75k_kernel": "ATTEMPTED - clean crate extraction removed 50k Rust (HIDE cluster); remaining hawking-core is a real inference engine (kernels 13,177 + model cores + metal 3,759 + tokenizer + quant + tq). Honest floor ~85-90k > 75k without engine condensation",
+    "C3_50k_kernel": "NOT REACHED - the irreducible engine (~45k) + frontier models (~8k) + CLI bin (11.5k) + serve (5.7k) + Python spine (19k) floor well above 50k"
+  },
+  "does_not": [
+    "fake a sub-75k number",
+    "use minification or unreadable code",
+    "hide implementation in packs it still ships",
+    "claim the final codebase Event Horizon is sealed"
+  ],
+  "generated_at": "2026-07-18T01:03:24Z",
+  "irreducible_subsystem_budget_hawking_core_src": {
+    "backend": 1502,
+    "cache": 1124,
+    "cleanly_extractable_extras": "~10k (5 non-frontier models 3.6k + speculate/eagle5 6.3k + kernel_bench 0.4k)",
+    "engine": 665,
+    "metal": 3759,
+    "metal_kernels": 13177,
+    "model_cores_qwen_deepseek_rwkv": 18500,
+    "quant": 882,
+    "stateful": 2070,
+    "tokenizer": 1014,
+    "tq": 991,
+    "tq_gpu": 1947
+  },
+  "measured_kernel_after_hide_extraction": {
+    "python_active": 19154,
+    "rust_hawking_src": 79266,
+    "total": 98420
+  },
+  "measured_owned_active_product_loc": 98420,
+  "schema": "hawking.codebase_escape_receipt.v1",
+  "sha256": "12bab3ea158bce7df827dab15dc7306fbd1dd088163350adf45d45393d91f93e",
+  "status": "PROVISIONAL",
+  "two_architecture_requirement_section26": {
+    "architecture_A_compact_monolithic": "NOT ATTEMPTED - a compact-monolithic rewrite of the ~80k Rust engine is a genuine multi-week engineering effort, not faked here",
+    "architecture_B_minimal_kernel_plus_packs": "ATTEMPTED + partially achieved (capsule + HIDE pack + hawking-lab manifest); reached product 98k"
+  },
+  "verdict": "PROVISIONAL, not a FINAL sealed Escape Receipt: Section 26 requires BOTH architectures attempted and failed structurally before rejecting a lower target. Architecture A (engine rewrite) is not attempted. The honest measured floor is ~88k product; per Section 26 an honest 88k system beats a fake 49k with hidden code."
+}
