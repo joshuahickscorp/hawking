@@ -13,8 +13,8 @@ Durable resume state for the maximum-density compression campaign. Status: **des
 ## Order of operations (A-L)
 - [~] A. CLI collapse <=2.5k  (at 5,200; probes+studio extracted)
 - [ ] B. Python control <=10k
-- [ ] C. decode-parity harness
-- [ ] D. speculate trait inversion + extract
+- [x] C. decode-parity harness (decode_parity_harness.py; verify GREEN; tag nuclear-parity)
+- [~] D. speculate trait inversion + extract (NEXT; harness-gated)
 - [ ] E. kernel-bank ABI + extract
 - [ ] F. serving condensation
 - [ ] G. Architecture A
@@ -26,3 +26,5 @@ Durable resume state for the maximum-density compression campaign. Status: **des
 
 ## Log
 - CLI: 11,385 -> 5,200 (probes+process_joule -> hawking-lab-cli pack; studio -> hawking-lab). tags archb-cli-{1,2}. product 94,785 -> 88,606.
+
+- parity harness: golden captured on SmolLM-135M; baseline/exact-shared/suffix-automaton all bit-identical (sha 2d1559cf); lossless-speculation invariant enforced.

@@ -1,0 +1,32 @@
+{
+  "active_product_loc": 88606,
+  "branch": "codex/clean-slate-collapse",
+  "commit": "07189a81",
+  "generated_at": "2026-07-18T02:06:21Z",
+  "next_exact_edit": "crates/hawking-core/src/model/deepseek_v2.rs + qwen_dense.rs: enumerate every method call on `eagle5_head` to define the SpeculativeHead trait surface; then create crates/hawking-speculate and invert.",
+  "no_heavy_run": true,
+  "order_of_operations": {
+    "A_cli_<=2.5k": "partial (11,385->5,200; probes+studio packed). REMAINING: extract bench/diagnostic command cluster from main.rs (Bench/Autotune/BenchServer/BenchKernel/SpecOracle/MacProfile/ProfileRank/ShaderHash/BatchHash/Stats) + registry refactor",
+    "B_python_<=10k": "not started - eco_*/succ_* -> hawking_control unification (live-gated rewrite)",
+    "C_parity_harness": "DONE - tools/condense/decode_parity_harness.py, golden captured, verify GREEN (bit-identical across baseline/exact-shared/suffix-automaton). Gates D and E.",
+    "D_speculate_inversion": "NEXT. Break models<->speculate cycle: define kernel traits (Drafter/Proposer[exists]/SpeculativeHead/Proposal/VerificationResult), create hawking-speculate crate (depends on hawking-core), move concrete impls, change model eagle5_head field to Option<Box<dyn SpeculativeHead>> injected by the caller, parity-gate each step with the harness. Target speculate-in-kernel <=700 LOC.",
+    "E_kernel_bank": "after D - operation ABI + baseline in kernel, tuned Metal variants to hawking-kernel-bank pack, parity-gated",
+    "F_serving": "4.4k -> 2-3k",
+    "G_arch_A": "monolith prototype",
+    "H_arch_B": "3 profiles",
+    "I": "select",
+    "J": "<=50k",
+    "K": "receipt",
+    "L": "heavy-run readiness (print not launch)"
+  },
+  "rollback_tags": [
+    "clean-slate-c0-capsule",
+    "archb-cli-2-studio",
+    "nuclear-parity"
+  ],
+  "schema": "hawking.nuclear_pasta_state.v1",
+  "sha256": "e38c2b2ecf9ef632ef06a44782991670a5f872ba2aff39ac435ebe955beb630f",
+  "status": "descent in progress",
+  "target": "kernel <=50k OR two implemented architectures prove a higher floor",
+  "tests": "165 py + hawking 17+2 + hawking-core 205 lib; decode parity GREEN"
+}
