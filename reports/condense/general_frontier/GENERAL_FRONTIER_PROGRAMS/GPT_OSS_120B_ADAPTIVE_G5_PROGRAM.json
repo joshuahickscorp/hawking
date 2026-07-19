@@ -1,0 +1,484 @@
+{
+  "adaptive_rate_brackets": {
+    "adaptive_policy": {
+      "diagnose_first": "per tensor class, diagnose sensitivity on a calibration wave before committing a rate (planner shape from the F0..F4 adaptive planner)",
+      "escape_receipt_gate": ">1 BPW requires a sealed Escape Receipt (sub-bit-first law); the goal is the sub-bit region, so this gate should not trigger on a passing candidate",
+      "expert_classes_search": "hi_fi first; escalate DOWN into stress (2/5, 1/3, 1/4) only while the frozen gates still hold (sub-bit-first: push toward the stress bracket until a gate breaks)",
+      "protected_classes_search": "hi_fi only (router/attn/embed/output/norms stay native or high hi-fi)",
+      "stopping_per_class": "promote the representation with the HIGHEST layer_hidden_state_cosine within the exact per-class budget; source_native controls excluded from selection"
+    },
+    "hi_fi": [
+      {
+        "rational": "1/1",
+        "value": 1.0
+      },
+      {
+        "rational": "9/10",
+        "value": 0.9
+      },
+      {
+        "rational": "7/8",
+        "value": 0.875
+      },
+      {
+        "rational": "4/5",
+        "value": 0.8
+      },
+      {
+        "rational": "3/4",
+        "value": 0.75
+      },
+      {
+        "rational": "7/10",
+        "value": 0.7
+      },
+      {
+        "rational": "2/3",
+        "value": 0.666667
+      },
+      {
+        "rational": "3/5",
+        "value": 0.6
+      },
+      {
+        "rational": "1/2",
+        "value": 0.5
+      }
+    ],
+    "stress": [
+      {
+        "rational": "2/5",
+        "value": 0.4
+      },
+      {
+        "rational": "1/3",
+        "value": 0.333333
+      },
+      {
+        "rational": "1/4",
+        "value": 0.25
+      }
+    ]
+  },
+  "apple_implementation_note": {
+    "compute": "CPU numpy for the forward (wall-safe); MPS only for the RVQ/PQ kmeans+assign packing fit",
+    "forward": "REAL bounded forward (gptoss_real_forward.py): correct gpt-oss expert activation (interleaved gate/up ::2/1::2, gate.clamp(max=7), up.clip(-7,7), glu=gate*sigmoid(1.702*gate), (up+1)*glu); residual threaded through all 36 blocks; final RMSNorm + unembed -> real logits over vocab 201088",
+    "honesty": "no capability is claimed by the forward instrument alone; a capability PASS requires the sealed gates on a packed row",
+    "lease": "ONE Apple heavy lease; G5 must acquire it only after the live G4 controller (pid 48797) releases it. No second heavy forward may run concurrently.",
+    "memory": "bounded-streaming: one block + a handful of experts resident at a time; ~65 GB read per forward; NO offload; byte-range read-only on the source (no source mutation)",
+    "parity": "CPU/Metal parity verified; Gen-M lookup-linear is EXACT parity to Gen-F direct-compact (quality-neutral); Gen-F direct-compact is the wall-safe default provider",
+    "parity_boundary": "empirical-by-coherence, NOT bit-exact vs transformers: the checkpoint is OpenAI-format so a transformers reference cannot be loaded on 96 GB. Coherence smoke ('The capital of France is' -> ' Paris', p=0.405) validates the RoPE + gate/up-interleave conventions"
+  },
+  "boundaries": {
+    "capability_claim": false,
+    "no_full_gptoss_forward_launched_by_this_planning_artifact": true,
+    "no_weight_download": true,
+    "one_apple_heavy_lease": "held by live G4 controller pid 48797; G5 is PLANNING-only until G4 releases the lease",
+    "predecessor_evidence_is_scheduling_prior_only": true
+  },
+  "candidate_organ_mappings": [
+    {
+      "billing": "billed at native 4.25 BPW",
+      "excluded_from_ranking": true,
+      "id": "C0",
+      "is_control": true,
+      "name": "source_native_reference",
+      "representation": "MXFP4 native (FP4 blocks + UE8 scales); NO re-quantization",
+      "role": "reference boundary; supplies the parent logits/PPL every candidate is scored against; never promoted",
+      "tensor_class_map": {
+        "all": "source_native"
+      }
+    },
+    {
+      "billing": "exact codebook-aware bits at the assigned uniform rate",
+      "excluded_from_ranking": false,
+      "id": "C1",
+      "is_control": true,
+      "name": "uniform_rvq_control",
+      "representation": "single global Residual-Vector-Quantization rate applied UNIFORMLY to every expert matrix (naive_rvq family)",
+      "role": "naive control: shows what a single global sub-bit rate costs with no tensor-class awareness (expected NEGATIVE, consistent with G0-G3)",
+      "tensor_class_map": {
+        "expert_mlp1": "naive_rvq",
+        "expert_mlp2": "naive_rvq",
+        "protected_islands": "native"
+      }
+    },
+    {
+      "billing": "exact per-tensor-class bits; islands reserve counted in budget",
+      "excluded_from_ranking": false,
+      "id": "C2",
+      "is_control": false,
+      "name": "tensor_class_pq",
+      "representation": "tensor-class-aware Product Quantization: expert_mlp1 = product/shared-grammar PQ; expert_mlp2 = protected-islands (heavy-tail residual-energy reserve)",
+      "role": "the primary Forge hypothesis: mlp1 tolerates shared-grammar product codes, mlp2 needs protected heavy-tail islands",
+      "tensor_class_map": {
+        "expert_mlp1": "product_quant (shared grammar)",
+        "expert_mlp2": "pq_protected_islands (heavy-tail reserve)",
+        "protected_islands": "native"
+      }
+    },
+    {
+      "billing": "exact codebook-aware bits per split",
+      "excluded_from_ranking": false,
+      "id": "C3",
+      "is_control": false,
+      "name": "generation_m_split",
+      "parity_note": "m2_shared_lookup_linear == genf_direct_compact end-to-end (logit cos 1.0, next-token 1.0; operator/expert/layer ~1e-7)",
+      "representation": "Generation-M lookup-linear split providers: M2 base (m2_shared_lookup_linear) / M6 for expert_mlp1 / M4 for expert_mlp2",
+      "role": "tests whether the Gen-M split representation preserves whole-model capability; Gen-M lookup-linear is EXACT parity to Gen-F direct-compact (quality-neutral mechanically), so any divergence is representational, not from the provider",
+      "tensor_class_map": {
+        "base_provider": "M2 (m2_shared_lookup_linear)",
+        "expert_mlp1": "M6 lookup-linear grammar",
+        "expert_mlp2": "M4 lookup-linear grammar",
+        "protected_islands": "native"
+      }
+    },
+    {
+      "billing": "exact bits; extra island reserve on router/attn/output counted in budget",
+      "excluded_from_ranking": false,
+      "id": "C4",
+      "is_control": false,
+      "name": "generation_m_split_plus_islands",
+      "representation": "C3 (M2/M6/M4 split) PLUS additional protected precision islands on router + attention + output",
+      "role": "tests whether widening the protected set past the experts (router/attn/output) recovers capability the C3 split loses",
+      "tensor_class_map": {
+        "attn_out": "protected",
+        "base_provider": "M2",
+        "expert_mlp1": "M6 + islands",
+        "expert_mlp2": "M4 + islands",
+        "final_norm": "native",
+        "router": "protected (near-native)",
+        "unembed": "protected"
+      }
+    },
+    {
+      "billing": "budget PINNED to the winning candidate's total bits (equal-byte comparison)",
+      "excluded_from_ranking": false,
+      "id": "C5",
+      "is_control": true,
+      "name": "equal_byte_conventional_control",
+      "representation": "conventional uniform low-bit quantizer (round-to-nearest / GPTQ-style int) sized to the SAME total bytes as the best PQ candidate (C2/C3/C4 winner)",
+      "role": "conventional baseline at equal budget: does the Forge/island machinery beat an off-the-shelf quantizer at the same bytes? (falsification control)",
+      "tensor_class_map": {
+        "expert_mlp1": "conventional_int_equal_byte",
+        "expert_mlp2": "conventional_int_equal_byte",
+        "protected_islands": "native"
+      }
+    }
+  ],
+  "checkpointing": {
+    "controller": "durable singleton (gravity_frontier_g4 pattern): per-row SEALED checkpoints; crash/resume survives controller restart",
+    "durability": "reparented to init pgid (survives terminal/chat/IDE closure) + caffeinate blocks idle sleep; NOT installed as a reboot-persistent launchd agent (repo convention + persistent-config caution)",
+    "lease_guard": "single heavy lease file; a second controller refuses to start while the lease is live",
+    "state_file": "reports/condense/general_frontier/G5/G5_ADAPTIVE_STATE.json (per-row rows_done/rows_total + sealed thresholds + eta)"
+  },
+  "doctor_reserves": {
+    "heavy_tail_island_budget_frac": {
+      "adaptive": true,
+      "note": "residual-energy islands reserve a small fraction of the budget for the heaviest-tail weights (G3 default 0.01)",
+      "range": [
+        0.005,
+        0.05
+      ]
+    },
+    "protected_classes_default": [
+      "router",
+      "attn_out",
+      "embed",
+      "final_norm",
+      "unembed"
+    ],
+    "purpose": "Doctor = protected precision islands (heavy-tail residual-energy reserve) + optional KD/QAT recovery; its bytes are COUNTED in the exact budget, never free",
+    "recovery": "KD/QAT recovery reserve optional per candidate (C4); billed in budget; PROVEN mechanism from the doctor track"
+  },
+  "exact_total_bit_budgets": {
+    "discipline": {
+      "codebook_aware": true,
+      "controls_billed_at_native_rate": true,
+      "packer_fails_over_budget": true,
+      "rates_are_rational": true
+    },
+    "expert_budget_table_whole_model": {
+      "hi_fi": [
+        {
+          "rate": "1/1",
+          "rate_value": 1.0,
+          "target_effective_bpw": 4.25,
+          "target_total_bits": 487312588800
+        },
+        {
+          "rate": "9/10",
+          "rate_value": 0.9,
+          "target_effective_bpw": 3.825,
+          "target_total_bits": 438581329920
+        },
+        {
+          "rate": "7/8",
+          "rate_value": 0.875,
+          "target_effective_bpw": 3.7188,
+          "target_total_bits": 426398515200
+        },
+        {
+          "rate": "4/5",
+          "rate_value": 0.8,
+          "target_effective_bpw": 3.4,
+          "target_total_bits": 389850071040
+        },
+        {
+          "rate": "3/4",
+          "rate_value": 0.75,
+          "target_effective_bpw": 3.1875,
+          "target_total_bits": 365484441600
+        },
+        {
+          "rate": "7/10",
+          "rate_value": 0.7,
+          "target_effective_bpw": 2.975,
+          "target_total_bits": 341118812160
+        },
+        {
+          "rate": "2/3",
+          "rate_value": 0.666667,
+          "target_effective_bpw": 2.8333,
+          "target_total_bits": 324875059200
+        },
+        {
+          "rate": "3/5",
+          "rate_value": 0.6,
+          "target_effective_bpw": 2.55,
+          "target_total_bits": 292387553280
+        },
+        {
+          "rate": "1/2",
+          "rate_value": 0.5,
+          "target_effective_bpw": 2.125,
+          "target_total_bits": 243656294400
+        }
+      ],
+      "stress": [
+        {
+          "rate": "2/5",
+          "rate_value": 0.4,
+          "target_effective_bpw": 1.7,
+          "target_total_bits": 194925035520
+        },
+        {
+          "rate": "1/3",
+          "rate_value": 0.333333,
+          "target_effective_bpw": 1.4167,
+          "target_total_bits": 162437529600
+        },
+        {
+          "rate": "1/4",
+          "rate_value": 0.25,
+          "target_effective_bpw": 1.0625,
+          "target_total_bits": 121828147200
+        }
+      ]
+    },
+    "inventory": {
+      "hidden": 2880,
+      "moe_intermediate": 2880,
+      "n_experts": 128,
+      "n_layers": 36,
+      "per_expert_mlp1_weights": 16588800,
+      "per_expert_mlp2_weights": 8294400,
+      "top_k": 4,
+      "whole_model_expert_native_bits": 487312588800,
+      "whole_model_expert_native_bytes": 60914073600,
+      "whole_model_expert_weights": 114661785600,
+      "whole_model_mlp1_weights": 76441190400,
+      "whole_model_mlp2_weights": 38220595200
+    },
+    "native_bpw_experts": 4.25,
+    "protected_islands_billing": "router / attn / embed / final_norm / unembed billed at native (or near-native) and counted in the whole-model total; only expert_mlp1/mlp2 carry the sub-bit stress",
+    "whole_model_total_bit_law": "sum over every tensor class of (n_weights * native_bpw_class * assigned_rate); packer FAILS the row if realized bits exceed the exact target"
+  },
+  "executor": {
+    "controller": "tools/condense/gravity_frontier_g4_controller.py (durable singleton; extend to G5)",
+    "note": "G5 uses the REAL G4 forward (correct gpt-oss activation, residual threaded through 36 blocks, real logits over vocab 201088), NOT the from-config relative-only approximation used by G0-G3",
+    "packer": "gravity_forge full-rank Product-Quantization Forge (7 verbs + protected precision islands + Doctor); MPS for kmeans/assign fit only",
+    "real_forward": "tools/condense/gptoss_real_forward.py"
+  },
+  "frozen_quality_gates": {
+    "capability_ppl_gate_G5_proposed": {
+      "honesty": "distinguish inherited-sealed (kl, argmax) from G5-proposed (ppl tolerance); freeze all before first result",
+      "relative_ppl_increase_max": 0.02,
+      "status": "FROZEN_AT_G5_IGNITION (proposed; NOT inherited-sealed). A passing candidate must keep every capability probe's PPL within +2% of the parent baseline. Labeled proposed to stay honest: only kl<=0.10 and argmax>=0.95 are inherited-sealed."
+    },
+    "capability_probes": [
+      {
+        "anchor_prompt": "code_py",
+        "parent_ppl": 1.92,
+        "probe": "coding"
+      },
+      {
+        "anchor_prompt": "math_add",
+        "parent_ppl": 5.14,
+        "probe": "math"
+      },
+      {
+        "anchor_prompt": "reason_syllogism",
+        "parent_ppl": 3.46,
+        "probe": "reasoning"
+      },
+      {
+        "anchor_prompt": "instr_list",
+        "parent_ppl": 12.26,
+        "probe": "instruction"
+      },
+      {
+        "anchor_prompt": "tool_call (Harmony tool schema)",
+        "parent_ppl": null,
+        "probe": "tool_use"
+      },
+      {
+        "anchor_prompt": "gen_paris / gen_science (long-tail vocab)",
+        "parent_ppl": 27.43,
+        "probe": "rare_token"
+      }
+    ],
+    "freeze_law": "all thresholds frozen at G5 ignition BEFORE the first result; not lowered after seeing results (same law as G4 sealed_thresholds)",
+    "inherited_sealed_from_G4": {
+      "promote_mean_sym_kl_max": 0.1,
+      "promote_next_token_argmax_agreement_min": 0.95,
+      "status": "SEALED (inherited verbatim from G4; binding promotion gate)"
+    },
+    "mechanistic_gates": [
+      {
+        "direction": "higher_better",
+        "metric": "router_topk_agreement",
+        "role": "did routing survive"
+      },
+      {
+        "direction": "higher_better",
+        "metric": "expert_output_cosine"
+      },
+      {
+        "direction": "lower_better",
+        "metric": "expert_output_rel_error"
+      },
+      {
+        "direction": "lower_better",
+        "metric": "weighted_combine_divergence"
+      },
+      {
+        "direction": "higher_better",
+        "metric": "layer_hidden_state_cosine",
+        "role": "primary per-class ranking signal"
+      },
+      {
+        "direction": "higher_better",
+        "metric": "logit_cosine"
+      },
+      {
+        "direction": "lower_better",
+        "metric": "logit_mean_sym_kl",
+        "sealed_threshold": 0.1
+      },
+      {
+        "direction": "higher_better",
+        "metric": "topk_overlap_top5"
+      },
+      {
+        "direction": "higher_better",
+        "metric": "next_token_argmax_agreement",
+        "sealed_threshold": 0.95
+      },
+      {
+        "baseline": "parent_ppl_baseline",
+        "direction": "lower_better",
+        "metric": "nll_perplexity_vs_parent"
+      }
+    ]
+  },
+  "gate": "G5_whole_model_adaptive",
+  "generated_at": "2026-07-19T20:20:00Z",
+  "hash_discipline": {
+    "excluded_from_hash": [
+      "program_sha256",
+      "generated_at"
+    ],
+    "reason": "stable program identity across regeneration (timestamp-hash bug fix, same discipline as G2/G3)"
+  },
+  "parent_model_id": "openai/gpt-oss-120b",
+  "parent_ppl_baseline": {
+    "by_prompt": {
+      "code_py": 1.92,
+      "gen_paris": 27.43,
+      "gen_science": 6.68,
+      "instr_list": 12.26,
+      "math_add": 5.14,
+      "reason_syllogism": 3.46
+    },
+    "exact_g4_values": {
+      "code_py": 1.9202,
+      "gen_paris": 27.4325,
+      "gen_science": 6.6751,
+      "instr_list": 12.255,
+      "math_add": 5.1396,
+      "reason_syllogism": 3.4641
+    },
+    "measured": true,
+    "provenance": "measured by the real G4 forward (self-NLL/PPL on real tokenizer output); never-before-measured reference"
+  },
+  "parent_revision": "b5c939de8f754692c1647ca79fbf85e8c1e70f8a",
+  "program_sha256": "3d28e8879bc88640684f8e6126505acbdbdbd1a60b97c2fe35b3442b81d715a0",
+  "row_generation": {
+    "controls_excluded_from_selection": true,
+    "escalation": "per expert tensor class, walk the hi_fi bracket down while gates hold, then into stress; protected classes fixed at native/high-hi-fi",
+    "estimated_candidate_rows": "6 (C0 probes) + 5 candidates x 2 expert classes x (up to 12 rate rungs) = up to ~126 expert rows per full sweep, gated adaptively (most rows pruned by diagnose-first)",
+    "note": "exact row count is adaptive (diagnose-first prunes); the program defines the search space + gates, the controller materializes rows",
+    "seed_wave": "C0 reference on all 6 capability probes (parent logits/PPL) + C1..C5 on the two expert classes at the hi-fi entry rate (3/4), diagnose-first"
+  },
+  "schema": "hawking.frontier_g5.adaptive_whole_model_program.v1",
+  "scope": {
+    "claim_scope": "whole-artifact BPW; capability-preserving sub-bit; the G5 escalation of the G0..G4 ladder from single-layer/short-forward to the full model + full real-forward capability eval",
+    "expert_coverage": "full 128 experts per MoE layer (no expert subsampling)",
+    "kind": "whole_model",
+    "layers": "all 36 blocks (residual threaded 0..35 + final RMSNorm + unembed)",
+    "sub_bit_first": true,
+    "tensor_classes": [
+      "embed",
+      "attn_qkv",
+      "attn_out",
+      "attn_sinks",
+      "router",
+      "expert_mlp1",
+      "expert_mlp2",
+      "layer_norms",
+      "final_norm",
+      "unembed"
+    ]
+  },
+  "source_lifecycle_states": {
+    "current_F0": "resident_bounded_stream (source present + verified: reports/condense/gravity_forge/condensation/GPT_OSS_120B_SOURCE_RECEIPT.json)",
+    "integrity_freeze_rule": "after ANY terminal cell the source is integrity-frozen (resume + compile both refuse); a frozen campaign needs a fresh run, not an in-place resume",
+    "release_rule": "F0 source is released to admit F1 (235B) per the one-parent storage law; release is what unlocks the next rung",
+    "states": [
+      "prep",
+      "admitted",
+      "resident_bounded_stream",
+      "integrity_frozen",
+      "released"
+    ]
+  },
+  "stopping_rules": {
+    "HONEST_BOUNDARY": {
+      "action": "seal the honest negative boundary; report the best-achieved (rate, layer_hidden_state_cosine, logit_kl, argmax_agreement, per-probe PPL) as the honest frontier; do NOT lower thresholds; do NOT claim capability",
+      "condition": "no candidate crosses the sealed gates at any admissible rate",
+      "consistency": "this is the EXPECTED outcome and is a real, publishable result (the honest sub-bit boundary at whole-model real-forward fidelity)"
+    },
+    "PASS": {
+      "action": "seal an Event-Horizon capability candidate + (if effective BPW>1) a sealed Escape Receipt; record the passing (rate, divergence) per tensor class",
+      "condition": "a packed WHOLE-MODEL candidate meets BOTH sealed gates (logit_mean_sym_kl <= 0.10 AND next_token_argmax_agreement >= 0.95) AND every capability probe stays within the frozen +2% PPL tolerance, at a sub-bit (<1 BPW effective) rate",
+      "expectation": "LOW prior: G0-G3 proxy + Second-Light 0.688 divergence + expected-NEGATIVE G4 all point sub-bit-negative; a PASS would be a genuine surprise"
+    },
+    "TERMINATION": {
+      "all_rows_sealed": "program final=true when every planned row is sealed or pruned",
+      "budget_exhaustion": "a tensor class stops escalating when the packer fails the exact budget at the next rate",
+      "per_class": "promote highest layer_hidden_state_cosine within the exact per-class budget; controls excluded"
+    }
+  },
+  "title": "GPT-OSS-120B adaptive whole-model condensation program (Part IV/13, gate G5)"
+}

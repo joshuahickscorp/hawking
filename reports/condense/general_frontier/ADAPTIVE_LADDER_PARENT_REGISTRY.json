@@ -1,0 +1,367 @@
+{
+  "authority": "Authoritative next-rung planning registry for the adaptive General Frontier ladder. Binds each parent's identity, live-verified architecture, eligibility gate, and honest source/storage status. F2..F4 and both optional rungs were resolved LIVE this session via HfApi.model_info + tiny config.json (metadata only, NO weight download). Only F0 has real measured capability evidence; every downstream rung is source-absent planning-only until its predecessor's full source is released and it is admitted.",
+  "boundaries": {
+    "no_giant_launch": true,
+    "no_weight_download": true,
+    "one_apple_heavy_lease": "held by live G4 controller pid 48797; this registry is planning-only and touched no heavy compute",
+    "only_active_source": "F0 (present); every other rung is prep/absent",
+    "predecessor_evidence_is_scheduling_prior_only": "F0 measured evidence schedules candidate rates for downstream rungs but is NEVER proof of downstream quality"
+  },
+  "dag_edges": [
+    {
+      "from": "F0",
+      "gate": "release F0 full source -> admit F1",
+      "to": "F1"
+    },
+    {
+      "from": "F1",
+      "gate": "release F1 (235B) full source -> admit F2 (397B)",
+      "to": "F2"
+    },
+    {
+      "from": "F2",
+      "gate": "release F2 (397B) full source -> admit F3 (685B)",
+      "to": "F3"
+    },
+    {
+      "from": "F3",
+      "gate": "release F3 (685B) full source -> admit F4 (1T)",
+      "to": "F4"
+    },
+    {
+      "from": "F1",
+      "gate": "optional side-rung off the Qwen line; explicit admission + a free predecessor slot",
+      "to": "OPT_480B"
+    },
+    {
+      "from": "F4",
+      "gate": "optional post-frontier; explicit signed admission decision",
+      "to": "OPT_1_6T"
+    }
+  ],
+  "eligibility_gates": {
+    "F2_397B": "eligible_when the 235B (F1) full source is RELEASED from disk (prompt gate: 397B after 235B source release)",
+    "F3_685B": "eligible_when the predecessor (F2 / 397B) full source is RELEASED (prompt gate: 685B after predecessor release)",
+    "F4_1T": "eligible_when the predecessor (F3 / 685B) full source is RELEASED (prompt gate: 1T after predecessor release)",
+    "optional_480B_and_1_6T": "OPTIONAL side/post-frontier rungs; require an explicit signed admission decision in addition to a released predecessor slot; NOT activated"
+  },
+  "generated_at": "2026-07-19T20:10:00Z",
+  "parents": [
+    {
+      "eligible_when": "active now (source present; G4 real-forward campaign running)",
+      "expected_properties_from_prompt": {
+        "role": "root oracle; only parent with real measured evidence",
+        "status": "active"
+      },
+      "honesty_notes": [
+        "param counts are published nominal (config.json carries no param count)"
+      ],
+      "immutable_revision": "b5c939de8f754692c1647ca79fbf85e8c1e70f8a",
+      "license": "apache-2.0",
+      "live_verified_properties": {
+        "active_params_nominal": "~5.1B",
+        "gated": false,
+        "license_live": "apache-2.0",
+        "model_type": "gpt_oss (GptOssForCausalLM)",
+        "num_experts": 128,
+        "num_experts_per_tok": 4,
+        "num_hidden_layers": 36,
+        "shared_experts": 0,
+        "source_precision": "MXFP4 experts (FP4 blocks + UE8 scales) + BF16 attn/router/norm/embed",
+        "total_params_nominal": "116.8B"
+      },
+      "measured_evidence": "G4 real-forward parent PPL baseline sealed (code_py 1.92 / reason 3.46 / math 5.14 / gen_science 6.68 / instr 12.26 / paris 27.43); sub-bit NEGATIVE at G0-G3 proxy + Second-Light 0.688 divergence",
+      "parent_label": "F0",
+      "repo": "openai/gpt-oss-120b",
+      "resolved": true,
+      "source_status": "present",
+      "storage_mode": "resident_bounded_stream (65 GiB source present; bounded per-expert windows, ~65 GB read/forward, no offload)"
+    },
+    {
+      "eligible_when": "full source resident only AFTER F0 (120B, 65 GiB) is released (required_mode: full_after_120b_release)",
+      "expected_properties_from_prompt": {
+        "full_source_gib": 437.9,
+        "immutable_revision": "ac9c66cc9b46af7306746a9250f23d47083d689e",
+        "license": "apache-2.0",
+        "status": "admitted"
+      },
+      "honesty_notes": [
+        "admission = metadata downloaded + admission receipt sealed; full 437.9 GiB source NOT yet resident"
+      ],
+      "immutable_revision": "ac9c66cc9b46af7306746a9250f23d47083d689e",
+      "license": "apache-2.0",
+      "live_verified_properties": {
+        "active_params_nominal": "~22B",
+        "admission_receipt": "reports/condense/general_frontier/QWEN3_235B_SOURCE_ADMISSION.json",
+        "full_source_bytes": 470211497053,
+        "full_source_gib": 437.9,
+        "hidden_size": 4096,
+        "max_position_embeddings": 262144,
+        "model_type": "qwen3_moe (Qwen3MoeForCausalLM)",
+        "moe_intermediate_size": 1536,
+        "num_attention_heads": 64,
+        "num_experts": 128,
+        "num_experts_per_tok": 8,
+        "num_hidden_layers": 94,
+        "num_key_value_heads": 4,
+        "torch_dtype": "bfloat16",
+        "total_params_nominal": "235B",
+        "vocab_size": 151936
+      },
+      "parent_label": "F1",
+      "repo": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+      "resolved": true,
+      "source_status": "admitted",
+      "storage_mode": "full_after_120b_release"
+    },
+    {
+      "eligible_when": "235B (F1) full source RELEASED from disk (prompt gate: 397B after 235B source release)",
+      "expected_properties_from_prompt": {
+        "eligibility": "397B, eligible after 235B (F1) source release",
+        "params_nominal_from_name": "397B total / 17B active"
+      },
+      "honesty_notes": [
+        "resolved LIVE this session; sha is the real current head commit",
+        "param counts are nominal from the repo name (397B-A17B); config.json carries no param count",
+        "512 experts + top-10 + 60 layers is a MUCH wider/shallower MoE than F0/F1; adapter grammar must be re-derived, not inherited",
+        "multimodal wrapper: only TEXT_CORE is in adaptive-condensation scope; vision tower excluded",
+        "full-source storage not measured; bind exact bytes at admission (bf16 397B would exceed the ~560 GiB free disk, reinforcing the one-parent law)"
+      ],
+      "immutable_revision": "8472618112abcbd45acbcdc58436aff4233c23f7",
+      "license": "apache-2.0",
+      "live_verified_properties": {
+        "active_params_nominal": "~17B (from repo name)",
+        "gated": false,
+        "last_modified": "2026-04-24",
+        "license_live": "apache-2.0",
+        "model_type": "qwen3_5_moe (Qwen3_5MoeForConditionalGeneration; multimodal image-text-to-text)",
+        "multimodal": "vision path present (image-text-to-text; chat template has <|vision_start|> / <|image_pad|>); TEXT_CORE would be the sub-bit scope, vision tower pass-through/excluded",
+        "text_config": {
+          "head_dim": 256,
+          "hidden_size": 4096,
+          "max_position_embeddings": 262144,
+          "model_type": "qwen3_5_moe_text",
+          "moe_intermediate_size": 1024,
+          "num_attention_heads": 32,
+          "num_experts": 512,
+          "num_experts_per_tok": 10,
+          "num_hidden_layers": 60,
+          "num_key_value_heads": 2,
+          "shared_expert_intermediate_size": 1024,
+          "vocab_size": 248320
+        },
+        "total_params_nominal": "397B (from repo name)"
+      },
+      "parent_label": "F2",
+      "repo": "Qwen/Qwen3.5-397B-A17B",
+      "resolved": true,
+      "source_status": "prep",
+      "storage_bytes_estimate": null,
+      "storage_mode": "full_after_235b_release"
+    },
+    {
+      "eligible_when": "predecessor (F2 / 397B) full source RELEASED (prompt gate: 685B after predecessor release)",
+      "expected_properties_from_prompt": {
+        "eligibility": "685B, eligible after predecessor (F2) source release",
+        "params_nominal": "~685B (DeepSeek-V3 family)"
+      },
+      "honesty_notes": [
+        "resolved LIVE this session; sha is the real current head commit",
+        "LICENSE CORRECTION: live license is MIT (prior giant registry assumed 'DeepSeek License Agreement'); MIT is the verified value",
+        "shipped weights are fp8 block-quant (~1 B/param), so full source is ~671 GiB not the bf16 ~1.37 TiB the earlier contract estimated",
+        "total_params not in config; ~671-685B is DeepSeek-V3 family public spec (label estimate; confirm at admission)",
+        "MLA + 256 routed experts + top-8 + 1 shared; V3.2 adds DeepSeek sparse attention over V3.1"
+      ],
+      "immutable_revision": "a7e62ac04ecb2c0a54d736dc46601c5606cf10a6",
+      "license": "mit",
+      "live_verified_properties": {
+        "attention": "MLA (multi-head latent attention)",
+        "base_model": "deepseek-ai/DeepSeek-V3.2-Exp-Base",
+        "first_k_dense_replace": 3,
+        "gated": false,
+        "hidden_size": 7168,
+        "intermediate_size": 18432,
+        "kv_lora_rank": 512,
+        "last_modified": "2025-12-01",
+        "license_live": "mit",
+        "max_position_embeddings": 163840,
+        "model_type": "deepseek_v32 (DeepseekV32ForCausalLM; V3.2 sparse-attention family)",
+        "moe_intermediate_size": 2048,
+        "n_routed_experts": 256,
+        "n_shared_experts": 1,
+        "num_attention_heads": 128,
+        "num_experts_per_tok": 8,
+        "num_hidden_layers": 61,
+        "num_key_value_heads": 128,
+        "q_lora_rank": 1536,
+        "rope_theta": 10000,
+        "source_precision_live": "fp8 block-quant (weight_block_size [128,128]); shipped checkpoint is fp8, not bf16",
+        "torch_dtype": "bfloat16",
+        "vocab_size": 129280
+      },
+      "parent_label": "F3",
+      "repo": "deepseek-ai/DeepSeek-V3.2",
+      "resolved": true,
+      "source_status": "absent",
+      "storage_bytes_estimate": null,
+      "storage_mode": "full_after_predecessor_release"
+    },
+    {
+      "eligible_when": "predecessor (F3 / 685B) full source RELEASED (prompt gate: 1T after predecessor release)",
+      "expected_properties_from_prompt": {
+        "eligibility": "1T, eligible after predecessor (F3) source release",
+        "params_nominal": "~1T (Kimi-K2 family)"
+      },
+      "honesty_notes": [
+        "resolved LIVE this session; sha is the real current head commit",
+        "shipped weights are int4 compressed-tensors (~0.5-0.6 B/param) -> full source ~595 GiB (matches the earlier contract estimate)",
+        "license live value is 'other' (HF); Kimi-K2 family is modified-MIT; pin exact terms at admission",
+        "TEXT_CORE (dense trunk + MLA + MoE + shared expert) is the sub-bit scope; vision tower (vision.*) is a separately-claimed, deferred multimodal scope",
+        "total_params 1T + active ~32B are family public specs (config carries no param count)"
+      ],
+      "immutable_revision": "7eb5002f6aadc958aed6a9177b7ed26bb94011bb",
+      "license": "other",
+      "live_verified_properties": {
+        "active_params_nominal": "~32B (family spec)",
+        "gated": false,
+        "last_modified": "2026-05-19",
+        "license_live": "other (Kimi-K2 family: modified MIT; HF reports 'other')",
+        "model_type": "kimi_k25 (KimiK25ForConditionalGeneration; multimodal wrapper w/ vision tower)",
+        "multimodal": "vision_tower + mm_projector present; K2.6_TEXT_CORE is the sub-bit scope, vision tower is a SEPARATE deferred multimodal claim",
+        "source_precision_live": "int4 compressed-tensors (pack-quantized, group_size 32, 4-bit, symmetric); vision_tower + shared_experts + attn ignored from int4",
+        "text_config": {
+          "attention": "MLA (multi-head latent attention)",
+          "first_k_dense_replace": 1,
+          "hidden_size": 7168,
+          "intermediate_size": 18432,
+          "kv_lora_rank": 512,
+          "max_position_embeddings": 262144,
+          "model_type": "kimi_k2 (inner arch DeepseekV3ForCausalLM)",
+          "moe_intermediate_size": 2048,
+          "n_routed_experts": 384,
+          "n_shared_experts": 1,
+          "num_attention_heads": 64,
+          "num_experts_per_tok": 8,
+          "num_hidden_layers": 61,
+          "num_key_value_heads": 64,
+          "q_lora_rank": 1536,
+          "rope_theta": 50000.0,
+          "vocab_size": 163840
+        },
+        "total_params_nominal": "1T (Kimi-K2 family)"
+      },
+      "parent_label": "F4",
+      "repo": "moonshotai/Kimi-K2.6",
+      "resolved": true,
+      "source_status": "absent",
+      "storage_bytes_estimate": null,
+      "storage_mode": "full_after_predecessor_release"
+    },
+    {
+      "eligible_when": "OPTIONAL side-rung off the Qwen line (coder specialization); requires an explicit signed admission decision AND a free predecessor slot; NOT activated",
+      "expected_properties_from_prompt": {
+        "params_nominal_from_name": "480B total / 35B active",
+        "role": "optional 480B rung"
+      },
+      "honesty_notes": [
+        "resolved LIVE; text-only coder MoE (no vision); admission-gated optional, not part of the mandatory F0..F4 chain"
+      ],
+      "immutable_revision": "9d90cf8fca1bf7b7acca42d3fc9ae694a2194069",
+      "license": "apache-2.0",
+      "live_verified_properties": {
+        "active_params_nominal": "~35B (from name)",
+        "gated": false,
+        "head_dim": 128,
+        "hidden_size": 6144,
+        "intermediate_size": 8192,
+        "license_live": "apache-2.0",
+        "max_position_embeddings": 262144,
+        "model_type": "qwen3_moe (Qwen3MoeForCausalLM)",
+        "moe_intermediate_size": 2560,
+        "num_attention_heads": 96,
+        "num_experts": 160,
+        "num_experts_per_tok": 8,
+        "num_hidden_layers": 62,
+        "num_key_value_heads": 8,
+        "rope_theta": 10000000,
+        "shared_expert_intermediate_size": 0,
+        "torch_dtype": "bfloat16",
+        "total_params_nominal": "480B (from name)",
+        "vocab_size": 151936
+      },
+      "optional": true,
+      "parent_label": "OPT_480B",
+      "repo": "Qwen/Qwen3-Coder-480B-A35B-Instruct",
+      "resolved": true,
+      "source_status": "absent",
+      "storage_mode": "admission_gated_only"
+    },
+    {
+      "eligible_when": "OPTIONAL, post-frontier; requires explicit signed admission decision; NOT activated",
+      "expected_properties_from_prompt": {
+        "params_nominal": "~1.6T",
+        "role": "optional 1.6T post-frontier rung"
+      },
+      "honesty_notes": [
+        "resolved LIVE; LICENSE CORRECTION: live license is MIT (prior contract assumed 'DeepSeek License Agreement')",
+        "top-6 experts + 384 routed + MLA head_dim 512 + 1M context + sparse-attention indexer + MTP; the most exotic arch in the ladder",
+        "total_params 1.6T is the contract label; not in config"
+      ],
+      "immutable_revision": "b5968e9190ef611bbf34a7229255be88a0e937c1",
+      "license": "mit",
+      "live_verified_properties": {
+        "attention": "MLA + sparse-attention indexer",
+        "extra_arch": "DeepSeek sparse-attention indexer (index_head_dim / index_n_heads / index_topk) + MTP (num_nextn_predict_layers); 1M-token context",
+        "gated": false,
+        "head_dim": 512,
+        "hidden_size": 7168,
+        "license_live": "mit",
+        "max_position_embeddings": 1048576,
+        "model_type": "deepseek_v4 (DeepseekV4ForCausalLM)",
+        "moe_intermediate_size": 3072,
+        "n_routed_experts": 384,
+        "n_shared_experts": 1,
+        "num_attention_heads": 128,
+        "num_experts_per_tok": 6,
+        "num_hidden_layers": 61,
+        "num_key_value_heads": 1,
+        "q_lora_rank": 1536,
+        "rope_theta": 10000,
+        "source_precision_live": "fp8 block-quant (weight_block_size [128,128])",
+        "torch_dtype": "bfloat16",
+        "total_params_nominal": "1.6T (contract label)",
+        "vocab_size": 129280
+      },
+      "optional": true,
+      "parent_label": "OPT_1_6T",
+      "repo": "deepseek-ai/DeepSeek-V4-Pro",
+      "resolved": true,
+      "source_status": "absent",
+      "storage_mode": "admission_gated_only"
+    }
+  ],
+  "resolution_method": {
+    "honesty": "immutable_revision fields for F2..F4 and optional rungs are the REAL commit shas returned live this session; config properties are read from each repo's config.json at that sha. Param counts not present in config are labeled nominal-from-repo-name or family-estimate.",
+    "interpreter": "/Library/Frameworks/Python.framework/Versions/3.12/bin/python3.12 (huggingface_hub live)",
+    "network": "metadata-only (HfApi.model_info + hf_hub_download of config.json only); no weight shards fetched",
+    "resolved_at": "2026-07-19T20:05:00Z"
+  },
+  "schema": "hawking.general_frontier.adaptive_ladder_parent_registry.v1",
+  "sha256": "1cd3f256495996ed46bc08c6c342722ccf0ddc2f3a06e164f834f330c03aef8b",
+  "sha256_method": "sha256 over json.dumps(obj_without_sha256_field, sort_keys=True, separators=(',',':'))",
+  "source_status_legend": {
+    "absent": "repo resolved live; source absent locally; gated behind >=2 predecessor releases or explicit admission (F3, F4, optional)",
+    "admitted": "admission recorded + metadata downloaded; full source NOT yet resident (gated on predecessor release) (F1)",
+    "prep": "repo resolved live; next-eligible rung; metadata not yet downloaded; full source absent (F2)",
+    "present": "full source resident locally + active foundry (F0)"
+  },
+  "storage_law": {
+    "consequence": "F1 (437.9 GiB) cannot be resident until F0 (65 GiB) is released; F2/F3/F4 each exceed free disk on their own, so the chain is strictly sequential: F0 -> F1 -> F2 -> F3 -> F4, one full source resident at a time.",
+    "device": "Mac Studio M3 Ultra 96GB (28-core); sole Apple heavy lease held by the live G4 controller (pid 48797)",
+    "disk_free_gib_at_admission_snapshot": 559.7,
+    "name": "one_parent_full_source_resident",
+    "reserve_policy": "full source + Doctor/packing working reserve must both fit; if not, the rung stays prep/absent",
+    "statement": "The device disk holds at most ONE parent's full source at a time (plus the working reserve). A downstream parent's full-source admission is gated on the RELEASE of the predecessor's full source. This is a hard disk-capacity law, not a preference."
+  },
+  "title": "Adaptive ladder parent registry (Parts VIII-IX): F0..F4 DAG + optional 480B / 1.6T"
+}
