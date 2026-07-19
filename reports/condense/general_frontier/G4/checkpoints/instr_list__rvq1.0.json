@@ -1,0 +1,27 @@
+{
+  "active_generation": "M",
+  "capability_candidate": false,
+  "divergence_vs_original": {
+    "mean_logit_cosine": 0.95518,
+    "mean_sym_kl": 1.40313,
+    "mean_top5_overlap": 0.4727,
+    "next_token_argmax_agreement": 0.5455
+  },
+  "domain": "instruction",
+  "forward_seconds": 1044.0,
+  "honesty": "real full-model from-config forward (coherence-validated, not bit-exact HF); packed=naive sub-bit RVQ lower bound; capability tier requires meeting sealed thresholds",
+  "logits_finite": true,
+  "n_tokens": 11,
+  "prompt_id": "instr_list",
+  "quality": {
+    "n_positions": 10,
+    "nll": 3.8763,
+    "perplexity": 48.2451
+  },
+  "rate_bpw": 1.0,
+  "row_id": "instr_list__rvq1.0",
+  "sealed_at": "2026-07-19T22:18:49Z",
+  "sha256": "fbb4368747a5a1cd4743a3cedcb2e8811ac2120a37238bb887c2dd5ac09492b4",
+  "variant": "packed_rvq",
+  "verdict": "degraded"
+}

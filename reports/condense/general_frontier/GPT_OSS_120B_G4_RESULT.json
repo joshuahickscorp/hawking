@@ -1,0 +1,70 @@
+{
+  "capability_candidates": [],
+  "forward": "gptoss_real_forward.py (coherence-validated real forward; The capital of France is -> Paris)",
+  "gate": "G4_short_end_to_end_real_forward",
+  "honest_boundary": "uniform sub-bit is the sealed negative control. The tensor-class correction wave (C2/C3) is the next test of whether ANY sub-bit allocation preserves capability; if it too fails, the honest G4/G5 boundary is that GPT-OSS-120B does not survive <1 real bit/weight, transferring the machinery to the 235B rung.",
+  "integrity": "OK",
+  "next": "correction wave (tensor-class C2/C3) then adaptive G5 decision",
+  "packed_control_rvq_1bpw": [
+    {
+      "mean_sym_kl": 1.86501,
+      "next_token_agreement": 0.6296,
+      "ppl": 6.5052,
+      "row": "code_py__rvq1.0",
+      "verdict": "degraded"
+    },
+    {
+      "mean_sym_kl": 1.84465,
+      "next_token_agreement": 0.2,
+      "ppl": 179.9742,
+      "row": "gen_paris__rvq1.0",
+      "verdict": "degraded"
+    },
+    {
+      "mean_sym_kl": 3.49281,
+      "next_token_agreement": 0.1111,
+      "ppl": 196.8759,
+      "row": "gen_science__rvq1.0",
+      "verdict": "collapse"
+    },
+    {
+      "mean_sym_kl": 1.40313,
+      "next_token_agreement": 0.5455,
+      "ppl": 48.2451,
+      "row": "instr_list__rvq1.0",
+      "verdict": "degraded"
+    },
+    {
+      "mean_sym_kl": 3.55916,
+      "next_token_agreement": 0.2222,
+      "ppl": 106.6035,
+      "row": "math_add__rvq1.0",
+      "verdict": "collapse"
+    },
+    {
+      "mean_sym_kl": 4.43205,
+      "next_token_agreement": 0.25,
+      "ppl": 194.218,
+      "row": "reason_syllogism__rvq1.0",
+      "verdict": "collapse"
+    }
+  ],
+  "parent_real_perplexity": {
+    "code_py": 1.9202,
+    "gen_paris": 27.4325,
+    "gen_science": 6.6751,
+    "instr_list": 12.255,
+    "math_add": 5.1396,
+    "reason_syllogism": 3.4641
+  },
+  "promote_thresholds": {
+    "law": "not lowered after seeing results",
+    "mean_sym_kl_max": 0.1,
+    "next_token_argmax_agreement_min": 0.95
+  },
+  "rows": "12/12",
+  "schema": "hawking.gpt_oss_120b.g4_result.v1",
+  "sha256": "fee33af154dd01c51458e0b4c43f98befea93f98cce711efedff4c5c0ed7d088",
+  "status": "COMPLETE",
+  "verdict": "NEGATIVE at real fidelity: uniform sub-bit RVQ@1.0 preserves no capability (3 collapse, 3 degraded, 0 pass; next-token agreement 0.11-0.63 vs 0.95 gate). This is the first REAL-forward (real logits, real PPL) confirmation of the G0-G3 proxy negative and the Second-Light 0.688 baseline."
+}

@@ -1,0 +1,19 @@
+{
+  "active_generation": "M",
+  "domain": "general",
+  "forward_seconds": 263.6,
+  "honesty": "real full-model from-config forward (coherence-validated, not bit-exact HF); packed=naive sub-bit RVQ lower bound; capability tier requires meeting sealed thresholds",
+  "logits_finite": true,
+  "n_tokens": 9,
+  "prompt_id": "gen_science",
+  "quality": {
+    "n_positions": 8,
+    "nll": 1.89838,
+    "perplexity": 6.6751
+  },
+  "rate_bpw": null,
+  "row_id": "gen_science__original",
+  "sealed_at": "2026-07-19T19:08:46Z",
+  "sha256": "586506dd247015fc435c9478abdffe609fe11480bd08e84120daa746ebeb7018",
+  "variant": "original"
+}

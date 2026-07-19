@@ -1,0 +1,19 @@
+{
+  "active_generation": "M",
+  "domain": "math",
+  "forward_seconds": 439.5,
+  "honesty": "real full-model from-config forward (coherence-validated, not bit-exact HF); packed=naive sub-bit RVQ lower bound; capability tier requires meeting sealed thresholds",
+  "logits_finite": true,
+  "n_tokens": 18,
+  "prompt_id": "math_add",
+  "quality": {
+    "n_positions": 17,
+    "nll": 1.63697,
+    "perplexity": 5.1396
+  },
+  "rate_bpw": null,
+  "row_id": "math_add__original",
+  "sealed_at": "2026-07-19T19:24:39Z",
+  "sha256": "eb310604f10eb065e712dbb40d70011ad344798371099c33bfbdc3cd1c0a8c9c",
+  "variant": "original"
+}

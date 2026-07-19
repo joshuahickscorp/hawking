@@ -1,0 +1,70 @@
+{
+  "active_generation": "M",
+  "capability_candidates": [],
+  "eta_seconds_remaining": 0,
+  "final": true,
+  "gate": "G4_short_end_to_end_real_forward",
+  "generated_at": "2026-07-19T22:25:20Z",
+  "honest_note": "first real-forward gate; parent PPL is the never-before-measured reference; sub-bit RVQ challenger expected NEGATIVE (consistent with G0-G3 proxy). No capability pass unless a packed row meets sealed thresholds (mean_sym_kl<=0.1 AND argmax_agreement>=0.95).",
+  "packed_rows": [
+    {
+      "argmax_agreement": 0.6296,
+      "mean_sym_kl": 1.86501,
+      "perplexity": 6.5052,
+      "rate_bpw": 1.0,
+      "row_id": "code_py__rvq1.0",
+      "verdict": "degraded"
+    },
+    {
+      "argmax_agreement": 0.2,
+      "mean_sym_kl": 1.84465,
+      "perplexity": 179.9742,
+      "rate_bpw": 1.0,
+      "row_id": "gen_paris__rvq1.0",
+      "verdict": "degraded"
+    },
+    {
+      "argmax_agreement": 0.1111,
+      "mean_sym_kl": 3.49281,
+      "perplexity": 196.8759,
+      "rate_bpw": 1.0,
+      "row_id": "gen_science__rvq1.0",
+      "verdict": "collapse"
+    },
+    {
+      "argmax_agreement": 0.5455,
+      "mean_sym_kl": 1.40313,
+      "perplexity": 48.2451,
+      "rate_bpw": 1.0,
+      "row_id": "instr_list__rvq1.0",
+      "verdict": "degraded"
+    },
+    {
+      "argmax_agreement": 0.2222,
+      "mean_sym_kl": 3.55916,
+      "perplexity": 106.6035,
+      "rate_bpw": 1.0,
+      "row_id": "math_add__rvq1.0",
+      "verdict": "collapse"
+    },
+    {
+      "argmax_agreement": 0.25,
+      "mean_sym_kl": 4.43205,
+      "perplexity": 194.218,
+      "rate_bpw": 1.0,
+      "row_id": "reason_syllogism__rvq1.0",
+      "verdict": "collapse"
+    }
+  ],
+  "parent_real_perplexity_by_prompt": {
+    "code_py": 1.9202,
+    "gen_paris": 27.4325,
+    "gen_science": 6.6751,
+    "instr_list": 12.255,
+    "math_add": 5.1396,
+    "reason_syllogism": 3.4641
+  },
+  "rows_done": 12,
+  "rows_total": 12,
+  "schema": "hawking.frontier_g4.real_forward_state.v1"
+}
