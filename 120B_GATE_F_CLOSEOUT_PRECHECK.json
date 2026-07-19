@@ -1,0 +1,48 @@
+{
+  "schema": "hawking.gpt_oss_120b.gate_f_closeout_precheck.v1",
+  "generated_at_utc": "2026-07-19T22:45:00Z",
+  "campaign": "120B GATE-F CLOSURE -> QWEN 235B HANDOFF (final Doctor D0-D6 correction wave, then Qwen)",
+
+  "git": {
+    "branch": "campaign/adaptive-transfer-ladder",
+    "head": "ba09c384987c87ee3d67377870e332d19d1be8e5",
+    "origin_main": "4fbca8bc6d33117707933793bb3293d9463c049f",
+    "commits_ahead_of_main": 5,
+    "pushed": false,
+    "remote": "git@github.com:joshuahickscorp/hawking.git",
+    "note": "this /goal authorizes commits/pushes/PRs/merges when green"
+  },
+
+  "g4_state": {
+    "classification": "COMPLETE (verified) - controller exited, lease released, no live controller",
+    "rows": "12/12 sealed",
+    "integrity": "OK (all unique ids, all seals recomputed-valid, all metrics finite)",
+    "result_sealed": "reports/condense/general_frontier/GPT_OSS_120B_G4_RESULT.json (committed ba09c384)",
+    "parent_real_perplexity": {"code_py": 1.9202, "reason_syllogism": 3.4641, "math_add": 5.1396, "gen_science": 6.6751, "instr_list": 12.255, "gen_paris": 27.4325},
+    "untreated_rvq_1bpw_control": {"verdict": "NEGATIVE", "collapse": 3, "degraded": 3, "capability_pass": 0, "next_token_agreement_range": [0.1111, 0.6296], "note": "uniform untreated RVQ near 1 BPW is a real-forward negative CONTROL, not Hawking's strongest treated candidate"}
+  },
+
+  "forward_validation": {
+    "module": "tools/condense/gptoss_real_forward.py",
+    "cheap_tests": "58 passed (apply_gate parity: interleaved gate/up + clamp 7 + alpha 1.702 + (up+1)*glu; differs from split-half plain SiLU; tokenizer + config guards)",
+    "heavy_tests": "4/5 passed (capital-of-France->Paris; different-prompts-different-top1; corrupt-one-tensor-changes-logits; missing-shard-raises); 5th (wrong-activation-ordering-degrades-coherence) re-running to complete the audit",
+    "corroboration": "parent PPL is domain-ordered (code 1.92 < reason 3.46 < math 5.14 < gen_science 6.68 < instr 12.26 < paris 27.43), which a broken forward would not produce"
+  },
+
+  "resources": {"platform": "M3 Ultra 96GB/28c", "mem_available_gb": 76.8, "disk_free_gib": 540, "network": "HF reachable", "one_heavy_lease": "FREE (G4 done; audit re-run holds it transiently)", "memory_policy": "PressureAwareCache: fill RAM + swap, evict only near danger line (floor 4GB / disk reserve 30GB), never OOM-crash"},
+
+  "source": {"gpt_oss_120b": {"root": "models/gpt-oss-120b", "present": true, "gib": 61, "revision": "openai/gpt-oss-120b @ b5c939de"}},
+
+  "qwen3_235b": {"admitted": true, "revision": "ac9c66cc9b46af7306746a9250f23d47083d689e", "license": "apache-2.0", "gib": 437.9, "q0_source_feasibility": "PROVEN on real bytes (header range-GET)", "adapter": "built + 16 tests green", "storage": "does not coexist with 120B source + reserve on 540GiB -> release 120B source OR shard-stream"},
+
+  "final_doctor_campaign_plan": {
+    "gate": "D0-D6 tensor-class + diagnosis-selected Doctor correction wave on the real forward",
+    "already_built": "gravity_frontier_correction_wave.py implements D2 (tensor-class PQ: product_quant mlp1 / protected_islands mlp2) and D4 (g3-winner: pq_doctor_lowrank mlp1 / protected_islands mlp2)",
+    "expansion": "add D0 parent-ref, D1 uniform-RVQ (from G4), D3 (islands both), D5 (residual/additive PQ + Doctor), D6 (global byte allocation via gravity_global_allocator), and a bounded diagnosis phase (organ-isolation)",
+    "expected_science": "NEGATIVE at sub-bit (Outcome B honest boundary most likely; uniform collapsed, G3 winners needed 2-3 BPW for even partial fidelity). The point is a transferable scientific result, positive or negative.",
+    "honest_gating": "the 120B CONCLUSION requires the D-campaign to COMPLETE (hours, detached). Qwen heavy transfer is gated behind the conclusion + source release. Non-blocking Qwen prep (admission/Q0/adapter) is already done."
+  },
+
+  "rollback": "git reset --hard 4fbca8bc (main); branch campaign/adaptive-transfer-ladder holds all work. No source mutated (byte-range read-only). Qwen: metadata-only downloaded.",
+  "tag_on_conclusion": "hawking-gptoss-120b-frontier"
+}
