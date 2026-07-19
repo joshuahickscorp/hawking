@@ -1,0 +1,558 @@
+{
+  "energy": {
+    "contract_ref": "reports/mechanics_thermodynamics/HAWKING_ENERGY_MEASUREMENT_CONTRACT.json",
+    "energy_class": "UNAVAILABLE",
+    "policy": "mechanics+quality proceed; thermodynamics labelled UNAVAILABLE; no invented estimates",
+    "reason": "powermetrics requires sudo (not bypassed, Bible \u00a733/\u00a768); no defensible non-sudo whole-system power method"
+  },
+  "grammar": "bounded_reconstruction (tile decode + tile matmul)",
+  "identity": {
+    "block": 0,
+    "candidate_id": "gen-M.B0B1M1.block0.expert0",
+    "confidence": "mechanics ANALYTICAL + wall MEASURED(contaminated); CPU authoritative",
+    "expert": 0,
+    "generated_at": "2026-07-19T04:46:54Z",
+    "hardware": {
+      "chip": "Apple M3 Ultra",
+      "contamination": "concurrent MoP CPU load (~24 procs, load ~22); timing contaminated_by_concurrent_cpu_load",
+      "model": "Mac15,14",
+      "mps": true,
+      "os": "27.0",
+      "profile_ref": "reports/mechanics_thermodynamics/HAWKING_APPLE_MECHANICS_PROFILE.json",
+      "python": "3.12.6",
+      "torch": "2.6.0"
+    },
+    "parent": "GPT-OSS-120B (Generation-F frozen)",
+    "reps": 9,
+    "tensors": {
+      "mlp1": {
+        "class": "moe_expert_projection",
+        "shape": [
+          5760,
+          2880
+        ]
+      },
+      "mlp2": {
+        "class": "moe_expert_projection",
+        "shape": [
+          2880,
+          2880
+        ]
+      }
+    }
+  },
+  "schema": "hawking.mechanics.cost_schema.v1",
+  "sha256": "61e0cbfd21981b1dbceb3f07686f2c82783a300c5558b67505d8ed638231fd61",
+  "stage": "B1",
+  "tensors": {
+    "mlp1": {
+      "d16": {
+        "geometry": {
+          "dim": 64,
+          "k": 256,
+          "nchunk": 45,
+          "rotate": false,
+          "sub": 16,
+          "subspaces": 4
+        },
+        "mech_b1_cpu": {
+          "definitions": {
+            "Bbit": "bit ops",
+            "F16": "logical FP16/BF16 ops",
+            "F32": "logical FP32 ops",
+            "Fint": "integer ops",
+            "Klaunch": "Metal dispatch count",
+            "Llookup": "table/gather/codebook lookups",
+            "Mread": "bytes read",
+            "Mwrite": "bytes written",
+            "Ssync": "waits/barriers/sync",
+            "Ttemporary": "peak temporary bytes"
+          },
+          "labels": {
+            "Bbit": "ANALYTICAL",
+            "F16": "ANALYTICAL",
+            "F32": "ANALYTICAL",
+            "Fint": "ANALYTICAL",
+            "Klaunch": "MEASURED",
+            "Llookup": "ANALYTICAL",
+            "Mread": "ANALYTICAL",
+            "Mwrite": "ANALYTICAL",
+            "Ssync": "MEASURED",
+            "Ttemporary": "ANALYTICAL"
+          },
+          "schema": "hawking.mechanics.cost_schema.v1",
+          "vector": {
+            "Bbit": 0.0,
+            "F16": 0.0,
+            "F32": 33177600.0,
+            "Fint": 0.0,
+            "Klaunch": 0.0,
+            "Llookup": 1036800.0,
+            "Mread": 67436288.0,
+            "Mwrite": 66378240.0,
+            "Ssync": 0.0,
+            "Ttemporary": 5898240.0
+          }
+        },
+        "mech_b1_metal": {
+          "definitions": {
+            "Bbit": "bit ops",
+            "F16": "logical FP16/BF16 ops",
+            "F32": "logical FP32 ops",
+            "Fint": "integer ops",
+            "Klaunch": "Metal dispatch count",
+            "Llookup": "table/gather/codebook lookups",
+            "Mread": "bytes read",
+            "Mwrite": "bytes written",
+            "Ssync": "waits/barriers/sync",
+            "Ttemporary": "peak temporary bytes"
+          },
+          "labels": {
+            "Bbit": "ANALYTICAL",
+            "F16": "ANALYTICAL",
+            "F32": "ANALYTICAL",
+            "Fint": "ANALYTICAL",
+            "Klaunch": "ESTIMATED",
+            "Llookup": "ANALYTICAL",
+            "Mread": "ANALYTICAL",
+            "Mwrite": "ANALYTICAL",
+            "Ssync": "MEASURED",
+            "Ttemporary": "ANALYTICAL"
+          },
+          "schema": "hawking.mechanics.cost_schema.v1",
+          "vector": {
+            "Bbit": 0.0,
+            "F16": 0.0,
+            "F32": 33177600.0,
+            "Fint": 0.0,
+            "Klaunch": 72.0,
+            "Llookup": 1036800.0,
+            "Mread": 67436288.0,
+            "Mwrite": 66378240.0,
+            "Ssync": 1.0,
+            "Ttemporary": 5898240.0
+          }
+        },
+        "no_dense_shadow": {
+          "bounded_all_under_half_dense": true,
+          "full_dense_bytes": 66355200,
+          "peak_temporary_bytes": {
+            "b0_compact_cpu": 16588800.0,
+            "b1_cpu": 5898240.0,
+            "b1_metal": 5898240.0,
+            "m1_cpu": 1036800.0,
+            "m1_metal": 1036800.0
+          }
+        },
+        "rate": {
+          "base_bpw": 0.5158,
+          "physical_bytes": 1069632,
+          "whole_artifact_bpw": 0.51583
+        },
+        "timing_ms": {
+          "b1_cpu": {
+            "iqr_ms": 1.0045,
+            "mad_ms": 0.5375,
+            "max_ms": 37.83704,
+            "median_ms": 35.95379,
+            "min_ms": 25.39612,
+            "n": 9,
+            "p25_ms": 35.39713,
+            "p75_ms": 36.40163
+          },
+          "b1_metal": {
+            "iqr_ms": 0.43004,
+            "mad_ms": 0.24263,
+            "max_ms": 10.70783,
+            "median_ms": 9.49838,
+            "min_ms": 7.75108,
+            "n": 9,
+            "p25_ms": 9.31096,
+            "p75_ms": 9.741
+          }
+        }
+      },
+      "d8": {
+        "geometry": {
+          "dim": 64,
+          "k": 16,
+          "nchunk": 45,
+          "rotate": false,
+          "sub": 8,
+          "subspaces": 8
+        },
+        "mech_b1_cpu": {
+          "definitions": {
+            "Bbit": "bit ops",
+            "F16": "logical FP16/BF16 ops",
+            "F32": "logical FP32 ops",
+            "Fint": "integer ops",
+            "Klaunch": "Metal dispatch count",
+            "Llookup": "table/gather/codebook lookups",
+            "Mread": "bytes read",
+            "Mwrite": "bytes written",
+            "Ssync": "waits/barriers/sync",
+            "Ttemporary": "peak temporary bytes"
+          },
+          "labels": {
+            "Bbit": "ANALYTICAL",
+            "F16": "ANALYTICAL",
+            "F32": "ANALYTICAL",
+            "Fint": "ANALYTICAL",
+            "Klaunch": "MEASURED",
+            "Llookup": "ANALYTICAL",
+            "Mread": "ANALYTICAL",
+            "Mwrite": "ANALYTICAL",
+            "Ssync": "MEASURED",
+            "Ttemporary": "ANALYTICAL"
+          },
+          "schema": "hawking.mechanics.cost_schema.v1",
+          "vector": {
+            "Bbit": 0.0,
+            "F16": 0.0,
+            "F32": 33177600.0,
+            "Fint": 0.0,
+            "Klaunch": 0.0,
+            "Llookup": 2073600.0,
+            "Mread": 67405568.0,
+            "Mwrite": 66378240.0,
+            "Ssync": 0.0,
+            "Ttemporary": 5898240.0
+          }
+        },
+        "mech_b1_metal": {
+          "definitions": {
+            "Bbit": "bit ops",
+            "F16": "logical FP16/BF16 ops",
+            "F32": "logical FP32 ops",
+            "Fint": "integer ops",
+            "Klaunch": "Metal dispatch count",
+            "Llookup": "table/gather/codebook lookups",
+            "Mread": "bytes read",
+            "Mwrite": "bytes written",
+            "Ssync": "waits/barriers/sync",
+            "Ttemporary": "peak temporary bytes"
+          },
+          "labels": {
+            "Bbit": "ANALYTICAL",
+            "F16": "ANALYTICAL",
+            "F32": "ANALYTICAL",
+            "Fint": "ANALYTICAL",
+            "Klaunch": "ESTIMATED",
+            "Llookup": "ANALYTICAL",
+            "Mread": "ANALYTICAL",
+            "Mwrite": "ANALYTICAL",
+            "Ssync": "MEASURED",
+            "Ttemporary": "ANALYTICAL"
+          },
+          "schema": "hawking.mechanics.cost_schema.v1",
+          "vector": {
+            "Bbit": 0.0,
+            "F16": 0.0,
+            "F32": 33177600.0,
+            "Fint": 0.0,
+            "Klaunch": 120.0,
+            "Llookup": 2073600.0,
+            "Mread": 67405568.0,
+            "Mwrite": 66378240.0,
+            "Ssync": 1.0,
+            "Ttemporary": 5898240.0
+          }
+        },
+        "no_dense_shadow": {
+          "bounded_all_under_half_dense": true,
+          "full_dense_bytes": 66355200,
+          "peak_temporary_bytes": {
+            "b0_compact_cpu": 8294400.0,
+            "b1_cpu": 5898240.0,
+            "b1_metal": 5898240.0,
+            "m1_cpu": 1036800.0,
+            "m1_metal": 1036800.0
+          }
+        },
+        "rate": {
+          "base_bpw": 0.50099,
+          "physical_bytes": 1038912,
+          "whole_artifact_bpw": 0.50102
+        },
+        "timing_ms": {
+          "b1_cpu": {
+            "iqr_ms": 2.48308,
+            "mad_ms": 1.49271,
+            "max_ms": 88.77813,
+            "median_ms": 58.34029,
+            "min_ms": 52.49329,
+            "n": 9,
+            "p25_ms": 56.84758,
+            "p75_ms": 59.33067
+          },
+          "b1_metal": {
+            "iqr_ms": 1.38813,
+            "mad_ms": 1.18692,
+            "max_ms": 17.79317,
+            "median_ms": 14.79421,
+            "min_ms": 12.61238,
+            "n": 9,
+            "p25_ms": 14.593,
+            "p75_ms": 15.98113
+          }
+        }
+      }
+    },
+    "mlp2": {
+      "d16": {
+        "geometry": {
+          "dim": 64,
+          "k": 256,
+          "nchunk": 45,
+          "rotate": false,
+          "sub": 16,
+          "subspaces": 4
+        },
+        "mech_b1_cpu": {
+          "definitions": {
+            "Bbit": "bit ops",
+            "F16": "logical FP16/BF16 ops",
+            "F32": "logical FP32 ops",
+            "Fint": "integer ops",
+            "Klaunch": "Metal dispatch count",
+            "Llookup": "table/gather/codebook lookups",
+            "Mread": "bytes read",
+            "Mwrite": "bytes written",
+            "Ssync": "waits/barriers/sync",
+            "Ttemporary": "peak temporary bytes"
+          },
+          "labels": {
+            "Bbit": "ANALYTICAL",
+            "F16": "ANALYTICAL",
+            "F32": "ANALYTICAL",
+            "Fint": "ANALYTICAL",
+            "Klaunch": "MEASURED",
+            "Llookup": "ANALYTICAL",
+            "Mread": "ANALYTICAL",
+            "Mwrite": "ANALYTICAL",
+            "Ssync": "MEASURED",
+            "Ttemporary": "ANALYTICAL"
+          },
+          "schema": "hawking.mechanics.cost_schema.v1",
+          "vector": {
+            "Bbit": 0.0,
+            "F16": 0.0,
+            "F32": 16588800.0,
+            "Fint": 0.0,
+            "Klaunch": 0.0,
+            "Llookup": 518400.0,
+            "Mread": 33740288.0,
+            "Mwrite": 33189120.0,
+            "Ssync": 0.0,
+            "Ttemporary": 5898240.0
+          }
+        },
+        "mech_b1_metal": {
+          "definitions": {
+            "Bbit": "bit ops",
+            "F16": "logical FP16/BF16 ops",
+            "F32": "logical FP32 ops",
+            "Fint": "integer ops",
+            "Klaunch": "Metal dispatch count",
+            "Llookup": "table/gather/codebook lookups",
+            "Mread": "bytes read",
+            "Mwrite": "bytes written",
+            "Ssync": "waits/barriers/sync",
+            "Ttemporary": "peak temporary bytes"
+          },
+          "labels": {
+            "Bbit": "ANALYTICAL",
+            "F16": "ANALYTICAL",
+            "F32": "ANALYTICAL",
+            "Fint": "ANALYTICAL",
+            "Klaunch": "ESTIMATED",
+            "Llookup": "ANALYTICAL",
+            "Mread": "ANALYTICAL",
+            "Mwrite": "ANALYTICAL",
+            "Ssync": "MEASURED",
+            "Ttemporary": "ANALYTICAL"
+          },
+          "schema": "hawking.mechanics.cost_schema.v1",
+          "vector": {
+            "Bbit": 0.0,
+            "F16": 0.0,
+            "F32": 16588800.0,
+            "Fint": 0.0,
+            "Klaunch": 36.0,
+            "Llookup": 518400.0,
+            "Mread": 33740288.0,
+            "Mwrite": 33189120.0,
+            "Ssync": 1.0,
+            "Ttemporary": 5898240.0
+          }
+        },
+        "no_dense_shadow": {
+          "bounded_all_under_half_dense": true,
+          "full_dense_bytes": 33177600,
+          "peak_temporary_bytes": {
+            "b0_compact_cpu": 8294400.0,
+            "b1_cpu": 5898240.0,
+            "b1_metal": 5898240.0,
+            "m1_cpu": 518400.0,
+            "m1_metal": 518400.0
+          }
+        },
+        "rate": {
+          "base_bpw": 0.5316,
+          "physical_bytes": 551232,
+          "whole_artifact_bpw": 0.53167
+        },
+        "timing_ms": {
+          "b1_cpu": {
+            "iqr_ms": 0.38646,
+            "mad_ms": 0.18379,
+            "max_ms": 20.38317,
+            "median_ms": 18.93846,
+            "min_ms": 18.00596,
+            "n": 9,
+            "p25_ms": 18.70567,
+            "p75_ms": 19.09213
+          },
+          "b1_metal": {
+            "iqr_ms": 1.14692,
+            "mad_ms": 0.56708,
+            "max_ms": 8.59842,
+            "median_ms": 7.30633,
+            "min_ms": 5.92458,
+            "n": 9,
+            "p25_ms": 6.90625,
+            "p75_ms": 8.05317
+          }
+        }
+      },
+      "d8": {
+        "geometry": {
+          "dim": 64,
+          "k": 16,
+          "nchunk": 45,
+          "rotate": false,
+          "sub": 8,
+          "subspaces": 8
+        },
+        "mech_b1_cpu": {
+          "definitions": {
+            "Bbit": "bit ops",
+            "F16": "logical FP16/BF16 ops",
+            "F32": "logical FP32 ops",
+            "Fint": "integer ops",
+            "Klaunch": "Metal dispatch count",
+            "Llookup": "table/gather/codebook lookups",
+            "Mread": "bytes read",
+            "Mwrite": "bytes written",
+            "Ssync": "waits/barriers/sync",
+            "Ttemporary": "peak temporary bytes"
+          },
+          "labels": {
+            "Bbit": "ANALYTICAL",
+            "F16": "ANALYTICAL",
+            "F32": "ANALYTICAL",
+            "Fint": "ANALYTICAL",
+            "Klaunch": "MEASURED",
+            "Llookup": "ANALYTICAL",
+            "Mread": "ANALYTICAL",
+            "Mwrite": "ANALYTICAL",
+            "Ssync": "MEASURED",
+            "Ttemporary": "ANALYTICAL"
+          },
+          "schema": "hawking.mechanics.cost_schema.v1",
+          "vector": {
+            "Bbit": 0.0,
+            "F16": 0.0,
+            "F32": 16588800.0,
+            "Fint": 0.0,
+            "Klaunch": 0.0,
+            "Llookup": 1036800.0,
+            "Mread": 33709568.0,
+            "Mwrite": 33189120.0,
+            "Ssync": 0.0,
+            "Ttemporary": 5898240.0
+          }
+        },
+        "mech_b1_metal": {
+          "definitions": {
+            "Bbit": "bit ops",
+            "F16": "logical FP16/BF16 ops",
+            "F32": "logical FP32 ops",
+            "Fint": "integer ops",
+            "Klaunch": "Metal dispatch count",
+            "Llookup": "table/gather/codebook lookups",
+            "Mread": "bytes read",
+            "Mwrite": "bytes written",
+            "Ssync": "waits/barriers/sync",
+            "Ttemporary": "peak temporary bytes"
+          },
+          "labels": {
+            "Bbit": "ANALYTICAL",
+            "F16": "ANALYTICAL",
+            "F32": "ANALYTICAL",
+            "Fint": "ANALYTICAL",
+            "Klaunch": "ESTIMATED",
+            "Llookup": "ANALYTICAL",
+            "Mread": "ANALYTICAL",
+            "Mwrite": "ANALYTICAL",
+            "Ssync": "MEASURED",
+            "Ttemporary": "ANALYTICAL"
+          },
+          "schema": "hawking.mechanics.cost_schema.v1",
+          "vector": {
+            "Bbit": 0.0,
+            "F16": 0.0,
+            "F32": 16588800.0,
+            "Fint": 0.0,
+            "Klaunch": 60.0,
+            "Llookup": 1036800.0,
+            "Mread": 33709568.0,
+            "Mwrite": 33189120.0,
+            "Ssync": 1.0,
+            "Ttemporary": 5898240.0
+          }
+        },
+        "no_dense_shadow": {
+          "bounded_all_under_half_dense": true,
+          "full_dense_bytes": 33177600,
+          "peak_temporary_bytes": {
+            "b0_compact_cpu": 4147200.0,
+            "b1_cpu": 5898240.0,
+            "b1_metal": 5898240.0,
+            "m1_cpu": 518400.0,
+            "m1_metal": 518400.0
+          }
+        },
+        "rate": {
+          "base_bpw": 0.50198,
+          "physical_bytes": 520512,
+          "whole_artifact_bpw": 0.50204
+        },
+        "timing_ms": {
+          "b1_cpu": {
+            "iqr_ms": 0.36004,
+            "mad_ms": 0.22533,
+            "max_ms": 30.15342,
+            "median_ms": 29.20337,
+            "min_ms": 27.90929,
+            "n": 9,
+            "p25_ms": 29.06867,
+            "p75_ms": 29.42871
+          },
+          "b1_metal": {
+            "iqr_ms": 0.93325,
+            "mad_ms": 0.46979,
+            "max_ms": 12.85904,
+            "median_ms": 10.43483,
+            "min_ms": 9.30817,
+            "n": 9,
+            "p25_ms": 10.18692,
+            "p75_ms": 11.12017
+          }
+        }
+      }
+    }
+  },
+  "tile_rows": 512
+}

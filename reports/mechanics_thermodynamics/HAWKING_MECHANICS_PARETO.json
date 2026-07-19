@@ -1,0 +1,210 @@
+{
+  "axes": [
+    "quality_div",
+    "bpw",
+    "wall_ms",
+    "movement",
+    "temporary",
+    "floating",
+    "launches",
+    "energy(UNAVAILABLE, excluded)"
+  ],
+  "beat_m1_b0_at_matched_quality": {
+    "any_admissible": true,
+    "n_admissible": 19,
+    "note": "M2..M6 measure the MoE cluster forward (E experts sharing tables); the sealed M1/B0 measured a single expert matvec. Cross-unit wall comparison is NOT made (would be apples-to-oranges). The M2 causal control (shared vs independent) is the honest same-unit speed test; see M2 causal_delta.wall_shared_over_independent."
+  },
+  "best_quality_div": 0.199821,
+  "champions": {
+    "best_balanced_apple": {
+      "balanced_score": 0.2565,
+      "bpw": 0.265818,
+      "candidate": "layer_group_share",
+      "quality_div": 0.359519,
+      "stage": "M2",
+      "tensor_class": "mlp2",
+      "wall_ms": 6.03913
+    },
+    "lowest_floating": {
+      "bpw": 0.265818,
+      "candidate": "layer_group_share",
+      "floating": 3985920.0,
+      "quality_div": 0.359519,
+      "stage": "M2",
+      "tensor_class": "mlp2"
+    },
+    "lowest_launches": {
+      "bpw": 0.257909,
+      "candidate": "layer_group_share",
+      "launches": 0.0,
+      "quality_div": 0.881808,
+      "stage": "M2",
+      "tensor_class": "mlp1"
+    },
+    "lowest_movement": {
+      "bpw": 0.265818,
+      "candidate": "layer_group_share",
+      "movement": 5387776.0,
+      "quality_div": 0.359519,
+      "stage": "M2",
+      "tensor_class": "mlp2"
+    },
+    "quality_preserving_speed": {
+      "bpw": 0.905882,
+      "candidate": "fused_pq_islands_doctor",
+      "quality_div": 0.199821,
+      "stage": "M4",
+      "tensor_class": "mlp2",
+      "wall_ms": 9.19583
+    }
+  },
+  "dominated": [
+    "independent",
+    "shared",
+    "independent",
+    "shared",
+    "islands_magnitude",
+    "islands_activation_aware",
+    "islands_sensitivity",
+    "islands_residual_energy",
+    "islands_activation_aware",
+    "islands_sensitivity",
+    "islands_residual_energy",
+    "fused_pq_islands_doctor",
+    "conditional_doctor",
+    "residual_additive_lookup"
+  ],
+  "excluded_inadmissible_dense": [],
+  "frontier": [
+    {
+      "bpw": 0.257909,
+      "candidate": "layer_group_share",
+      "floating": 5022720.0,
+      "launches": 0.0,
+      "movement": 10617856.0,
+      "quality_div": 0.881808,
+      "stage": "M2",
+      "temporary": 1082880.0,
+      "tensor_class": "mlp1",
+      "wall_ms": 10.21933
+    },
+    {
+      "bpw": 0.265818,
+      "candidate": "layer_group_share",
+      "floating": 3985920.0,
+      "launches": 0.0,
+      "movement": 5387776.0,
+      "quality_div": 0.359519,
+      "stage": "M2",
+      "temporary": 564480.0,
+      "tensor_class": "mlp2",
+      "wall_ms": 6.03913
+    },
+    {
+      "bpw": 0.749277,
+      "candidate": "islands_magnitude",
+      "floating": 5990400.0,
+      "launches": 0.0,
+      "movement": 5387776.0,
+      "quality_div": 0.218502,
+      "stage": "M3",
+      "temporary": 1566720.0,
+      "tensor_class": "mlp2",
+      "wall_ms": 5.58842
+    },
+    {
+      "bpw": 0.905882,
+      "candidate": "fused_pq_islands_doctor",
+      "floating": 12407040.0,
+      "launches": 19.0,
+      "movement": 5387776.0,
+      "quality_div": 0.199821,
+      "stage": "M4",
+      "temporary": 1566720.0,
+      "tensor_class": "mlp2",
+      "wall_ms": 9.19583
+    },
+    {
+      "bpw": 0.905882,
+      "candidate": "conditional_doctor",
+      "floating": 12407040.0,
+      "launches": 0.0,
+      "movement": 5387776.0,
+      "quality_div": 0.199821,
+      "stage": "M5",
+      "temporary": 1566720.0,
+      "tensor_class": "mlp2",
+      "wall_ms": 25.80633
+    },
+    {
+      "bpw": 0.930324,
+      "candidate": "residual_additive_lookup",
+      "floating": 13950720.0,
+      "launches": 0.0,
+      "movement": 18511616.0,
+      "quality_div": 0.228441,
+      "stage": "M6",
+      "temporary": 564480.0,
+      "tensor_class": "mlp2",
+      "wall_ms": 25.18746
+    }
+  ],
+  "identity": {
+    "block": 0,
+    "candidate_id": "gen-M.runall.block0.experts83-86-12-48",
+    "confidence": "mechanics ANALYTICAL + wall MEASURED(contaminated); CPU authoritative; combine-divergence proxy_output synthetic activations, NOT capability parity",
+    "config": {
+      "D": 64,
+      "cond_threshold": 0.02,
+      "doctor_k": 256,
+      "doctor_stages": 1,
+      "fn_gate": 0.05,
+      "island_budget_frac": 0.03,
+      "iters": 6,
+      "k": 256,
+      "need_delta": 0.001,
+      "stages": 2
+    },
+    "generated_at": "2026-07-19T05:13:10Z",
+    "hardware": {
+      "chip": "Apple M3 Ultra",
+      "contamination": "concurrent MoP CPU load (~24 procs, load ~22); timing contaminated_by_concurrent_cpu_load",
+      "model": "Mac15,14",
+      "mps": true,
+      "os": "27.0",
+      "profile_ref": "reports/mechanics_thermodynamics/HAWKING_APPLE_MECHANICS_PROFILE.json",
+      "python": "3.12.6",
+      "torch": "2.6.0"
+    },
+    "parent": "GPT-OSS-120B (Generation-F frozen)",
+    "reps": 5,
+    "routed_experts": [
+      83,
+      86,
+      12,
+      48
+    ]
+  },
+  "n_admissible": 20,
+  "n_candidates": 20,
+  "quality_preserving_speed_per_tensor": {
+    "mlp1": {
+      "bpw": 0.902662,
+      "champion": "residual_additive_lookup",
+      "quality_div": 0.654399,
+      "stage": "M6",
+      "verdict": "quality_preserving_speed_champion",
+      "wall_ms": 41.73163
+    },
+    "mlp2": {
+      "bpw": 0.905882,
+      "champion": "fused_pq_islands_doctor",
+      "quality_div": 0.199821,
+      "stage": "M4",
+      "verdict": "quality_preserving_speed_champion",
+      "wall_ms": 9.19583
+    }
+  },
+  "schema": "hawking.mechanics.run_all.v1",
+  "sha256": "fc3ec2e47c32ac2f32c20cd036a0a1f9094c76fba325baf4b132ca4f7563cdbf"
+}

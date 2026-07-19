@@ -1,0 +1,43 @@
+{
+  "base_generation_f": "e0857398 (frozen)",
+  "branch": "codex/hawking-mechanics-thermodynamics",
+  "cpu_reference": "mech_measure.py CPU grammars (authoritative)",
+  "energy_results": "UNAVAILABLE (no sudo powermetrics; not bypassed)",
+  "fallback": "B0 source-native direct-compact (Generation F path) - always admissible",
+  "g2": "COMPLETE (non-interference)",
+  "generated_at": "2026-07-19T05:17:05Z",
+  "generation": "M",
+  "hardware_profile": "Apple M3 Ultra 20P+8E 96GB MPS torch2.6",
+  "integration_note": "champions are quality-NEUTRAL mechanical improvements ready to apply to the Frontier execution path when a quality-POSITIVE representation is found; NOT merged to main without approval (house rule). Wired via mech_run_all.py run-all feedback loop.",
+  "measurement_confidence": "timing MEASURED+contaminated(MoP); mech vector ANALYTICAL/MEASURED labelled; energy UNAVAILABLE",
+  "mechanical_results": "M1 lookup-linear 2.5-3.3x faster CPU vs compact @ zero quality cost; M2 shared-table reuse; M4 fused launch/temp; M6 richer-codebook mlp1 win; M5 conditional-Doctor NEGATIVE (gate never fires at deep sub-bit)",
+  "metal_pipelines": "mech_measure MPS lookup-linear + shared tables",
+  "pareto_frontier_size": 6,
+  "quality_results": "NEGATIVE at sub-bit (rel_err 0.65-0.88 mlp1 / 0.20-0.36 mlp2); mechanical wins are quality-NEUTRAL vs their representation; NO capability pass, NO Event Horizon",
+  "rollback": "git reset --hard f5521233 (pre-Mechanics); tag hawking-frontier-gate-f",
+  "schema": "hawking.generation_m.v1",
+  "sha256": "66f8983520758f5afa1f55a2651c9a6fc8d4dc6745639fcbd4c5fa991bd098ed",
+  "shadow_replay": {
+    "artifact_bpw": "unchanged",
+    "gen_m_lookup_vs_gen_f_direct": "quality-neutral (M1==B1 ~1e-7 sealed)",
+    "no_dense_shadow": true,
+    "rel_err": 2.3175377350526105e-07
+  },
+  "source_commit": "f5521233",
+  "tests": "mech_measure 13 + mech_run_all 13 = 26 green; frozen suites unchanged",
+  "winning_operator_per_tensor_class": {
+    "base_mechanical_win": "M2 shared_lookup_linear_moe (75% table-builds avoided, 64-69% fewer FLOPs, 3-7% faster) - applies across MoE regardless of class",
+    "mlp1_up_gate": {
+      "bpw": 0.9,
+      "champion": "M6 residual_additive_lookup",
+      "quality_div": 0.654,
+      "reason": "high-rank mlp1 benefits from richer multi-stage codebooks at equal bits"
+    },
+    "mlp2_down": {
+      "bpw": 0.91,
+      "champion": "M4 fused_pq_islands_doctor",
+      "quality_div": 0.2,
+      "reason": "structured sensitive mlp2 benefits from protected islands + fused Doctor"
+    }
+  }
+}

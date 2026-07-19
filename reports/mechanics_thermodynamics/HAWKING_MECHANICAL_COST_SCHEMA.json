@@ -1,0 +1,30 @@
+{
+  "definitions": {
+    "Bbit": "bit ops",
+    "F16": "logical FP16/BF16 ops",
+    "F32": "logical FP32 ops",
+    "Fint": "integer ops",
+    "Klaunch": "Metal dispatch count",
+    "Llookup": "table/gather/codebook lookups",
+    "Mread": "bytes read",
+    "Mwrite": "bytes written",
+    "Ssync": "waits/barriers/sync",
+    "Ttemporary": "peak temporary bytes"
+  },
+  "generated_at": "2026-07-19T04:35:48Z",
+  "law": "never hide one dimension inside another; label each ANALYTICAL/MEASURED/ESTIMATED/UNAVAILABLE",
+  "schema": "hawking.mechanics.cost_schema.v1",
+  "sha256": "447363c8ab558d6411d07796e4e26895dc9705d521addeb2a415d7843d5f52f0",
+  "vector": [
+    "F32",
+    "F16",
+    "Fint",
+    "Bbit",
+    "Llookup",
+    "Mread",
+    "Mwrite",
+    "Klaunch",
+    "Ssync",
+    "Ttemporary"
+  ]
+}

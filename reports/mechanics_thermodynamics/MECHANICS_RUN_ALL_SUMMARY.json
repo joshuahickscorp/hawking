@@ -1,0 +1,215 @@
+{
+  "identity": {
+    "block": 0,
+    "candidate_id": "gen-M.runall.block0.experts83-86-12-48",
+    "confidence": "mechanics ANALYTICAL + wall MEASURED(contaminated); CPU authoritative; combine-divergence proxy_output synthetic activations, NOT capability parity",
+    "config": {
+      "D": 64,
+      "cond_threshold": 0.02,
+      "doctor_k": 256,
+      "doctor_stages": 1,
+      "fn_gate": 0.05,
+      "island_budget_frac": 0.03,
+      "iters": 6,
+      "k": 256,
+      "need_delta": 0.001,
+      "stages": 2
+    },
+    "generated_at": "2026-07-19T05:13:10Z",
+    "hardware": {
+      "chip": "Apple M3 Ultra",
+      "contamination": "concurrent MoP CPU load (~24 procs, load ~22); timing contaminated_by_concurrent_cpu_load",
+      "model": "Mac15,14",
+      "mps": true,
+      "os": "27.0",
+      "profile_ref": "reports/mechanics_thermodynamics/HAWKING_APPLE_MECHANICS_PROFILE.json",
+      "python": "3.12.6",
+      "torch": "2.6.0"
+    },
+    "parent": "GPT-OSS-120B (Generation-F frozen)",
+    "reps": 5,
+    "routed_experts": [
+      83,
+      86,
+      12,
+      48
+    ]
+  },
+  "progress_log": [
+    "[run-all] loading bounded real cluster (layer-0)...",
+    "[run-all] routed experts (bounded 4): [83, 86, 12, 48] | router top-1/2 margins [0.008, 0.019, 0.005]",
+    "    imported B0/B1/M1: ['B0', 'B1', 'M1']",
+    "[run-all] STAGE M2 shared_lookup_linear_moe",
+    "      M2/mlp1/independent: bpw=0.281613 relerr=0.881873 shared=False",
+    "      M2/mlp1/shared: bpw=0.257909 relerr=0.883356 shared=True",
+    "      M2/mlp1/layer_group_share: bpw=0.257909 relerr=0.881808 shared=True",
+    "      M2/mlp2/independent: bpw=0.313225 relerr=0.385499 shared=False",
+    "      M2/mlp2/shared: bpw=0.265818 relerr=0.362042 shared=True",
+    "      M2/mlp2/layer_group_share: bpw=0.265818 relerr=0.359519 shared=True",
+    "    sealed M2_RESULTS.json + M2_REPORT.md (6 candidates)",
+    "[run-all] STAGE M3 shared_moe_plus_islands",
+    "      M3/mlp1/magnitude: bpw=0.7386 island_bits=31896356 relerr=0.855364 (off=0.883356)",
+    "      M3/mlp1/activation_aware: bpw=0.7386 island_bits=31896356 relerr=0.855322 (off=0.883356)",
+    "      M3/mlp1/sensitivity: bpw=0.7386 island_bits=31896356 relerr=0.855559 (off=0.883356)",
+    "      M3/mlp1/residual_energy: bpw=0.7386 island_bits=31896356 relerr=0.855587 (off=0.883356)",
+    "      M3/mlp2/magnitude: bpw=0.749277 island_bits=16040016 relerr=0.218502 (off=0.362042)",
+    "      M3/mlp2/activation_aware: bpw=0.749277 island_bits=16040016 relerr=0.218503 (off=0.362042)",
+    "      M3/mlp2/sensitivity: bpw=0.749277 island_bits=16040016 relerr=0.221166 (off=0.362042)",
+    "      M3/mlp2/residual_energy: bpw=0.749277 island_bits=16040016 relerr=0.22134 (off=0.362042)",
+    "    sealed M3_RESULTS.json + M3_REPORT.md (8 candidates)",
+    "[run-all] STAGE M4 fused_pq_islands_doctor",
+    "      M4/mlp1: bpw=0.879403 doctor_bits=9342976 fuse_match=0.00e+00 launch 27.0->19.0",
+    "      M4/mlp2: bpw=0.905882 doctor_bits=5195776 fuse_match=0.00e+00 launch 27.0->19.0",
+    "    sealed M4_RESULTS.json + M4_REPORT.md (2 candidates)",
+    "[run-all] STAGE M5 conditional_doctor",
+    "      M5/mlp1: skip_frac=0.000 fn_rate=0.000 gate_fires=False (needed=12)",
+    "      M5/mlp2: skip_frac=0.000 fn_rate=0.000 gate_fires=False (needed=12)",
+    "    sealed M5_RESULTS.json + M5_REPORT.md (2 candidates)",
+    "[run-all] STAGE M6 residual_additive_lookup",
+    "      M6/mlp1: stages=7 bits 59896320 vs M4 58352932 relerr 0.654399 vs M4 0.804737 (m6_wins=True)",
+    "      M6/mlp2: stages=7 bits 30865920 vs M4 30054992 relerr 0.228441 vs M4 0.199821 (m6_wins=False)",
+    "    sealed M6_RESULTS.json + M6_REPORT.md (2 candidates)",
+    "[run-all] STAGE M7 bit_oriented: DEFERRED (Bible 77)",
+    "[run-all] Pareto: 20/20 admissible; frontier size 6"
+  ],
+  "schema": "hawking.mechanics.run_all.v1",
+  "sha256": "99616479dbfdb2bfcbeb297af6490d698b39ca83be42afaf36b0e9ebdba2db5f",
+  "summary": {
+    "artifacts": [
+      "M2_REPORT.md",
+      "M2_RESULTS.json",
+      "M3_REPORT.md",
+      "M3_RESULTS.json",
+      "M4_REPORT.md",
+      "M4_RESULTS.json",
+      "M5_REPORT.md",
+      "M5_RESULTS.json",
+      "M6_REPORT.md",
+      "M6_RESULTS.json",
+      "M7_DEFERRED.json",
+      "HAWKING_MECHANICS_RESULTS.jsonl",
+      "HAWKING_THERMODYNAMICS_RESULTS.jsonl",
+      "HAWKING_MECHANICS_PARETO.json"
+    ],
+    "beat_m1_b0_at_matched_quality": {
+      "any_admissible": true,
+      "n_admissible": 19,
+      "note": "M2..M6 measure the MoE cluster forward (E experts sharing tables); the sealed M1/B0 measured a single expert matvec. Cross-unit wall comparison is NOT made (would be apples-to-oranges). The M2 causal control (shared vs independent) is the honest same-unit speed test; see M2 causal_delta.wall_shared_over_independent."
+    },
+    "energy": "UNAVAILABLE (all thermodynamics rows labelled UNAVAILABLE; no estimates)",
+    "n_candidate_rows": 20,
+    "ok": true,
+    "pareto_champions": {
+      "best_balanced_apple": {
+        "balanced_score": 0.2565,
+        "bpw": 0.265818,
+        "candidate": "layer_group_share",
+        "quality_div": 0.359519,
+        "stage": "M2",
+        "tensor_class": "mlp2",
+        "wall_ms": 6.03913
+      },
+      "lowest_floating": {
+        "bpw": 0.265818,
+        "candidate": "layer_group_share",
+        "floating": 3985920.0,
+        "quality_div": 0.359519,
+        "stage": "M2",
+        "tensor_class": "mlp2"
+      },
+      "lowest_launches": {
+        "bpw": 0.257909,
+        "candidate": "layer_group_share",
+        "launches": 0.0,
+        "quality_div": 0.881808,
+        "stage": "M2",
+        "tensor_class": "mlp1"
+      },
+      "lowest_movement": {
+        "bpw": 0.265818,
+        "candidate": "layer_group_share",
+        "movement": 5387776.0,
+        "quality_div": 0.359519,
+        "stage": "M2",
+        "tensor_class": "mlp2"
+      },
+      "quality_preserving_speed": {
+        "bpw": 0.905882,
+        "candidate": "fused_pq_islands_doctor",
+        "quality_div": 0.199821,
+        "stage": "M4",
+        "tensor_class": "mlp2",
+        "wall_ms": 9.19583
+      }
+    },
+    "quality_preserving_speed_per_tensor": {
+      "mlp1": {
+        "bpw": 0.902662,
+        "champion": "residual_additive_lookup",
+        "quality_div": 0.654399,
+        "stage": "M6",
+        "verdict": "quality_preserving_speed_champion",
+        "wall_ms": 41.73163
+      },
+      "mlp2": {
+        "bpw": 0.905882,
+        "champion": "fused_pq_islands_doctor",
+        "quality_div": 0.199821,
+        "stage": "M4",
+        "verdict": "quality_preserving_speed_champion",
+        "wall_ms": 9.19583
+      }
+    },
+    "report_dir": "reports/mechanics_thermodynamics",
+    "routed_experts": [
+      83,
+      86,
+      12,
+      48
+    ],
+    "stages": {
+      "B0_B1_M1_imported": {
+        "B0": {
+          "file": "B0_BASELINE_QUALITY.json",
+          "present": true,
+          "sha256": "f5d870f747819bce"
+        },
+        "B1": {
+          "file": "B1_QUALITY_PARITY.json",
+          "present": true,
+          "sha256": "1bfd5ab0ef94e214"
+        },
+        "M1": {
+          "file": "M1_PARITY.json",
+          "present": true,
+          "sha256": "6d36ae77293da613"
+        }
+      },
+      "M2": {
+        "iterated": false,
+        "n_rows": 6
+      },
+      "M3": {
+        "n_rows": 8,
+        "picked": {
+          "mlp1": "activation_aware",
+          "mlp2": "magnitude"
+        }
+      },
+      "M4": {
+        "n_rows": 2
+      },
+      "M5": {
+        "iterated": false,
+        "n_rows": 2
+      },
+      "M6": {
+        "n_rows": 2
+      },
+      "M7": {
+        "deferred": true
+      }
+    },
+    "timing_caveat": "contaminated_by_concurrent_cpu_load (MoP)"
+  }
+}

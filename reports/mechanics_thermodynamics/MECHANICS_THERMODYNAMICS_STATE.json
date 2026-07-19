@@ -1,0 +1,37 @@
+{
+  "b0_b1_m1_finding": "M1 lookup-linear 2.5-3.3x faster than Generation-F compact (CPU) at ZERO quality cost (M1==B1 ~1e-7, CPU/Metal parity ~1e-7); Metal mixed; dense-BLAS faster but INADMISSIBLE (dense-shadow law). Quality negative ~0.5bpw (inherited from Gravity). Energy UNAVAILABLE, timing MoP-caveated.",
+  "branch": "codex/hawking-mechanics-thermodynamics",
+  "champions": {
+    "base": "M2 shared-table",
+    "mlp1": "M6 residual_additive (0.654)",
+    "mlp2": "M4 fused_islands_doctor (0.200)"
+  },
+  "commit": "(uncommitted; f5521233 base)",
+  "completed_stages": [
+    "B0-A",
+    "B1-A",
+    "M1-A",
+    "M2",
+    "M3",
+    "M4",
+    "M5(neg)",
+    "M6",
+    "M7(deferred)"
+  ],
+  "current_stage": "tournament run-all complete; Generation M sealed; shadow-replay green",
+  "energy_method": "UNAVAILABLE",
+  "g2_status": "COMPLETE (non-interference satisfied)",
+  "generated_at": "2026-07-19T04:37:34Z",
+  "generation_f": "e0857398",
+  "generation_m": "66f89835 sealed",
+  "honest_scope": "long-running multi-session campaign per Bible Book VIII/XVI; this session executes the foundation + B0/B1/M1 Fidelity-A; full B0-M6 A-D tournament + Generation M resumes from this ledger. NOT claiming full completion.",
+  "lease": "com.hawking.mechanics_thermodynamics",
+  "next_exact_edit": "deeper D-fidelity short-model paths per stage + energy (if sudo) are the multi-session continuation; champions ready to apply when a quality-POSITIVE representation exists",
+  "program_sha256": "a4ab32586862cce7",
+  "rollback": "git reset --hard f5521233 (pre-Mechanics); tag hawking-frontier-gate-f",
+  "schema": "hawking.mechanics.state.v1",
+  "sha256": "76bef14f70c29196453480006126947065e75404ab2a8b67e27f0d85cada02f9",
+  "status": "RUN_ALL_COMPLETE",
+  "timing": "MoP-contaminated (caveated)",
+  "updated_at": "2026-07-19T05:17:59Z"
+}

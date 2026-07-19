@@ -1,0 +1,29 @@
+{
+  "apple": {
+    "chip": "Apple M3 Ultra",
+    "cpu": "20P+8E/28",
+    "model": "Mac15,14",
+    "mps": true,
+    "os": "27.0",
+    "ram_gb": 96.0,
+    "torch": "2.6.0"
+  },
+  "branch": "codex/hawking-mechanics-thermodynamics",
+  "g2_status": "COMPLETE (10/10 sealed, 0 over-budget, lease released, pid 41651 dead)",
+  "g2_winner": "pq_protected_islands g2_004 hidden_cos 0.984 combine_div 0.553 layer_bpw 3.25",
+  "generated_at": "2026-07-19T04:35:48Z",
+  "generation_f": "e0857398 (frozen)",
+  "heavy_lease": "com.hawking.mechanics_thermodynamics (distinct)",
+  "law": "No heavy Mechanics work before this precheck sealed. Energy UNAVAILABLE -> mechanics+quality proceed, thermodynamics labelled UNAVAILABLE, no invented estimates.",
+  "main": "1544b26a8df9569abf98c3a8bbf5f82456211136",
+  "measurement_environment": {
+    "competing_heavy_process": "MoP 24x mop-final-mechanic, load ~22 (SEPARATE user project, not killed)",
+    "energy": "UNAVAILABLE - powermetrics needs sudo (security not bypassed, Bible \u00a733/\u00a768); no defensible non-sudo whole-system power method",
+    "thermal": "no warnings",
+    "timing_confidence": "CPU timing CONTAMINATED by MoP; GPU/Metal timing less affected; caveat all timings"
+  },
+  "non_interference": "SATISFIED - no live heavy Frontier controller; Mechanics may begin Generation-M experiments",
+  "origin_main": "1544b26a8df9569abf98c3a8bbf5f82456211136",
+  "schema": "hawking.mechanics.precheck.v1",
+  "sha256": "1f7c1ec4248950858cfffdce2b8f92daa3368b97415e2d18375f1e3e9e88a7b8"
+}

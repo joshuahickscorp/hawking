@@ -1,0 +1,1220 @@
+{
+  "candidates": [
+    {
+      "admissible": true,
+      "candidate": "islands_magnitude",
+      "causal_delta": {
+        "control": "M3(+islands) vs M2(islands-off, shared)",
+        "island_bits": 31896356,
+        "n_islands_total": 692,
+        "quality_improved": true,
+        "relerr_improvement": 0.027992,
+        "relerr_off": 0.883356,
+        "relerr_on": 0.855364,
+        "strategy": "magnitude",
+        "wall_on_over_off": 1.0931
+      },
+      "control_vs": "M2_shared",
+      "energy": {
+        "class": "UNAVAILABLE"
+      },
+      "extra": {
+        "budget_frac": 0.03,
+        "strategy": "magnitude"
+      },
+      "mech_vector": {
+        "definitions": {
+          "Bbit": "bit ops",
+          "F16": "logical FP16/BF16 ops",
+          "F32": "logical FP32 ops",
+          "Fint": "integer ops",
+          "Klaunch": "Metal dispatch count",
+          "Llookup": "table/gather/codebook lookups",
+          "Mread": "bytes read",
+          "Mwrite": "bytes written",
+          "Ssync": "waits/barriers/sync",
+          "Ttemporary": "peak temporary bytes"
+        },
+        "labels": {
+          "Bbit": "ANALYTICAL",
+          "F16": "ANALYTICAL",
+          "F32": "ANALYTICAL",
+          "Fint": "ANALYTICAL",
+          "Klaunch": "MEASURED",
+          "Llookup": "ANALYTICAL",
+          "Mread": "ANALYTICAL",
+          "Mwrite": "ANALYTICAL",
+          "Ssync": "MEASURED",
+          "Ttemporary": "ANALYTICAL"
+        },
+        "schema": "hawking.mechanics.cost_schema.v1",
+        "vector": {
+          "Bbit": 0.0,
+          "F16": 0.0,
+          "F32": 9008640.0,
+          "Fint": 0.0,
+          "Klaunch": 0.0,
+          "Llookup": 2074292.0,
+          "Mread": 10479616.0,
+          "Mwrite": 138240.0,
+          "Ssync": 0.0,
+          "Ttemporary": 3075840.0
+        }
+      },
+      "no_dense_shadow": {
+        "bounded_under_half_dense": true,
+        "full_dense_bytes": 66355200.0,
+        "peak_temporary_bytes": 3075840.0
+      },
+      "quality": {
+        "cosine_vs_dense_mean": 0.517946,
+        "rel_error_vs_dense_max": 0.8682,
+        "rel_error_vs_dense_mean": 0.855364
+      },
+      "quality_gate": {
+        "baseline_div": 0.883356,
+        "combine_div": 0.855364,
+        "delta_vs_baseline": -0.027992,
+        "quality_admissible": true,
+        "tol": 1000000000.0,
+        "verdict": "islands_reduce_error"
+      },
+      "rate": {
+        "base_index_bits": 16588800,
+        "doctor_bits": 0,
+        "island_bits": 31896356,
+        "n_experts": 4,
+        "physical_bytes": 6126245,
+        "shared_codebook": true,
+        "total_bits": 49009956,
+        "total_weights": 66355200,
+        "whole_artifact_bpw": 0.7386
+      },
+      "stage": "M3",
+      "tensor_class": "mlp1",
+      "timing_ms": {
+        "M3_activation_aware": {
+          "iqr_ms": 0.32363,
+          "mad_ms": 0.10933,
+          "max_ms": 14.16213,
+          "median_ms": 13.39612,
+          "min_ms": 13.28679,
+          "n": 5,
+          "p25_ms": 13.37962,
+          "p75_ms": 13.70325
+        },
+        "M3_islands_off": {
+          "iqr_ms": 0.28863,
+          "mad_ms": 0.18938,
+          "max_ms": 12.6195,
+          "median_ms": 12.42829,
+          "min_ms": 12.02413,
+          "n": 5,
+          "p25_ms": 12.32904,
+          "p75_ms": 12.61767
+        },
+        "M3_magnitude": {
+          "iqr_ms": 0.19458,
+          "mad_ms": 0.191,
+          "max_ms": 13.82262,
+          "median_ms": 13.58483,
+          "min_ms": 13.02671,
+          "n": 5,
+          "p25_ms": 13.39383,
+          "p75_ms": 13.58842
+        },
+        "M3_residual_energy": {
+          "iqr_ms": 0.36542,
+          "mad_ms": 0.24392,
+          "max_ms": 14.10283,
+          "median_ms": 13.44212,
+          "min_ms": 9.594,
+          "n": 5,
+          "p25_ms": 13.32063,
+          "p75_ms": 13.68604
+        },
+        "M3_sensitivity": {
+          "iqr_ms": 0.15329,
+          "mad_ms": 0.11612,
+          "max_ms": 13.74037,
+          "median_ms": 13.56967,
+          "min_ms": 11.62625,
+          "n": 5,
+          "p25_ms": 13.45354,
+          "p75_ms": 13.60683
+        }
+      }
+    },
+    {
+      "admissible": true,
+      "candidate": "islands_activation_aware",
+      "causal_delta": {
+        "control": "M3(+islands) vs M2(islands-off, shared)",
+        "island_bits": 31896356,
+        "n_islands_total": 692,
+        "quality_improved": true,
+        "relerr_improvement": 0.028034,
+        "relerr_off": 0.883356,
+        "relerr_on": 0.855322,
+        "strategy": "activation_aware",
+        "wall_on_over_off": 1.0779
+      },
+      "control_vs": "M2_shared",
+      "energy": {
+        "class": "UNAVAILABLE"
+      },
+      "extra": {
+        "budget_frac": 0.03,
+        "strategy": "activation_aware"
+      },
+      "mech_vector": {
+        "definitions": {
+          "Bbit": "bit ops",
+          "F16": "logical FP16/BF16 ops",
+          "F32": "logical FP32 ops",
+          "Fint": "integer ops",
+          "Klaunch": "Metal dispatch count",
+          "Llookup": "table/gather/codebook lookups",
+          "Mread": "bytes read",
+          "Mwrite": "bytes written",
+          "Ssync": "waits/barriers/sync",
+          "Ttemporary": "peak temporary bytes"
+        },
+        "labels": {
+          "Bbit": "ANALYTICAL",
+          "F16": "ANALYTICAL",
+          "F32": "ANALYTICAL",
+          "Fint": "ANALYTICAL",
+          "Klaunch": "MEASURED",
+          "Llookup": "ANALYTICAL",
+          "Mread": "ANALYTICAL",
+          "Mwrite": "ANALYTICAL",
+          "Ssync": "MEASURED",
+          "Ttemporary": "ANALYTICAL"
+        },
+        "schema": "hawking.mechanics.cost_schema.v1",
+        "vector": {
+          "Bbit": 0.0,
+          "F16": 0.0,
+          "F32": 9008640.0,
+          "Fint": 0.0,
+          "Klaunch": 0.0,
+          "Llookup": 2074292.0,
+          "Mread": 10479616.0,
+          "Mwrite": 138240.0,
+          "Ssync": 0.0,
+          "Ttemporary": 3075840.0
+        }
+      },
+      "no_dense_shadow": {
+        "bounded_under_half_dense": true,
+        "full_dense_bytes": 66355200.0,
+        "peak_temporary_bytes": 3075840.0
+      },
+      "quality": {
+        "cosine_vs_dense_mean": 0.518007,
+        "rel_error_vs_dense_max": 0.868566,
+        "rel_error_vs_dense_mean": 0.855322
+      },
+      "quality_gate": {
+        "baseline_div": 0.883356,
+        "combine_div": 0.855322,
+        "delta_vs_baseline": -0.028034,
+        "quality_admissible": true,
+        "tol": 1000000000.0,
+        "verdict": "islands_reduce_error"
+      },
+      "rate": {
+        "base_index_bits": 16588800,
+        "doctor_bits": 0,
+        "island_bits": 31896356,
+        "n_experts": 4,
+        "physical_bytes": 6126245,
+        "shared_codebook": true,
+        "total_bits": 49009956,
+        "total_weights": 66355200,
+        "whole_artifact_bpw": 0.7386
+      },
+      "stage": "M3",
+      "tensor_class": "mlp1",
+      "timing_ms": {
+        "M3_activation_aware": {
+          "iqr_ms": 0.32363,
+          "mad_ms": 0.10933,
+          "max_ms": 14.16213,
+          "median_ms": 13.39612,
+          "min_ms": 13.28679,
+          "n": 5,
+          "p25_ms": 13.37962,
+          "p75_ms": 13.70325
+        },
+        "M3_islands_off": {
+          "iqr_ms": 0.28863,
+          "mad_ms": 0.18938,
+          "max_ms": 12.6195,
+          "median_ms": 12.42829,
+          "min_ms": 12.02413,
+          "n": 5,
+          "p25_ms": 12.32904,
+          "p75_ms": 12.61767
+        },
+        "M3_magnitude": {
+          "iqr_ms": 0.19458,
+          "mad_ms": 0.191,
+          "max_ms": 13.82262,
+          "median_ms": 13.58483,
+          "min_ms": 13.02671,
+          "n": 5,
+          "p25_ms": 13.39383,
+          "p75_ms": 13.58842
+        },
+        "M3_residual_energy": {
+          "iqr_ms": 0.36542,
+          "mad_ms": 0.24392,
+          "max_ms": 14.10283,
+          "median_ms": 13.44212,
+          "min_ms": 9.594,
+          "n": 5,
+          "p25_ms": 13.32063,
+          "p75_ms": 13.68604
+        },
+        "M3_sensitivity": {
+          "iqr_ms": 0.15329,
+          "mad_ms": 0.11612,
+          "max_ms": 13.74037,
+          "median_ms": 13.56967,
+          "min_ms": 11.62625,
+          "n": 5,
+          "p25_ms": 13.45354,
+          "p75_ms": 13.60683
+        }
+      }
+    },
+    {
+      "admissible": true,
+      "candidate": "islands_sensitivity",
+      "causal_delta": {
+        "control": "M3(+islands) vs M2(islands-off, shared)",
+        "island_bits": 31896356,
+        "n_islands_total": 692,
+        "quality_improved": true,
+        "relerr_improvement": 0.027797,
+        "relerr_off": 0.883356,
+        "relerr_on": 0.855559,
+        "strategy": "sensitivity",
+        "wall_on_over_off": 1.0918
+      },
+      "control_vs": "M2_shared",
+      "energy": {
+        "class": "UNAVAILABLE"
+      },
+      "extra": {
+        "budget_frac": 0.03,
+        "strategy": "sensitivity"
+      },
+      "mech_vector": {
+        "definitions": {
+          "Bbit": "bit ops",
+          "F16": "logical FP16/BF16 ops",
+          "F32": "logical FP32 ops",
+          "Fint": "integer ops",
+          "Klaunch": "Metal dispatch count",
+          "Llookup": "table/gather/codebook lookups",
+          "Mread": "bytes read",
+          "Mwrite": "bytes written",
+          "Ssync": "waits/barriers/sync",
+          "Ttemporary": "peak temporary bytes"
+        },
+        "labels": {
+          "Bbit": "ANALYTICAL",
+          "F16": "ANALYTICAL",
+          "F32": "ANALYTICAL",
+          "Fint": "ANALYTICAL",
+          "Klaunch": "MEASURED",
+          "Llookup": "ANALYTICAL",
+          "Mread": "ANALYTICAL",
+          "Mwrite": "ANALYTICAL",
+          "Ssync": "MEASURED",
+          "Ttemporary": "ANALYTICAL"
+        },
+        "schema": "hawking.mechanics.cost_schema.v1",
+        "vector": {
+          "Bbit": 0.0,
+          "F16": 0.0,
+          "F32": 9008640.0,
+          "Fint": 0.0,
+          "Klaunch": 0.0,
+          "Llookup": 2074292.0,
+          "Mread": 10479616.0,
+          "Mwrite": 138240.0,
+          "Ssync": 0.0,
+          "Ttemporary": 3075840.0
+        }
+      },
+      "no_dense_shadow": {
+        "bounded_under_half_dense": true,
+        "full_dense_bytes": 66355200.0,
+        "peak_temporary_bytes": 3075840.0
+      },
+      "quality": {
+        "cosine_vs_dense_mean": 0.517634,
+        "rel_error_vs_dense_max": 0.868667,
+        "rel_error_vs_dense_mean": 0.855559
+      },
+      "quality_gate": {
+        "baseline_div": 0.883356,
+        "combine_div": 0.855559,
+        "delta_vs_baseline": -0.027797,
+        "quality_admissible": true,
+        "tol": 1000000000.0,
+        "verdict": "islands_reduce_error"
+      },
+      "rate": {
+        "base_index_bits": 16588800,
+        "doctor_bits": 0,
+        "island_bits": 31896356,
+        "n_experts": 4,
+        "physical_bytes": 6126245,
+        "shared_codebook": true,
+        "total_bits": 49009956,
+        "total_weights": 66355200,
+        "whole_artifact_bpw": 0.7386
+      },
+      "stage": "M3",
+      "tensor_class": "mlp1",
+      "timing_ms": {
+        "M3_activation_aware": {
+          "iqr_ms": 0.32363,
+          "mad_ms": 0.10933,
+          "max_ms": 14.16213,
+          "median_ms": 13.39612,
+          "min_ms": 13.28679,
+          "n": 5,
+          "p25_ms": 13.37962,
+          "p75_ms": 13.70325
+        },
+        "M3_islands_off": {
+          "iqr_ms": 0.28863,
+          "mad_ms": 0.18938,
+          "max_ms": 12.6195,
+          "median_ms": 12.42829,
+          "min_ms": 12.02413,
+          "n": 5,
+          "p25_ms": 12.32904,
+          "p75_ms": 12.61767
+        },
+        "M3_magnitude": {
+          "iqr_ms": 0.19458,
+          "mad_ms": 0.191,
+          "max_ms": 13.82262,
+          "median_ms": 13.58483,
+          "min_ms": 13.02671,
+          "n": 5,
+          "p25_ms": 13.39383,
+          "p75_ms": 13.58842
+        },
+        "M3_residual_energy": {
+          "iqr_ms": 0.36542,
+          "mad_ms": 0.24392,
+          "max_ms": 14.10283,
+          "median_ms": 13.44212,
+          "min_ms": 9.594,
+          "n": 5,
+          "p25_ms": 13.32063,
+          "p75_ms": 13.68604
+        },
+        "M3_sensitivity": {
+          "iqr_ms": 0.15329,
+          "mad_ms": 0.11612,
+          "max_ms": 13.74037,
+          "median_ms": 13.56967,
+          "min_ms": 11.62625,
+          "n": 5,
+          "p25_ms": 13.45354,
+          "p75_ms": 13.60683
+        }
+      }
+    },
+    {
+      "admissible": true,
+      "candidate": "islands_residual_energy",
+      "causal_delta": {
+        "control": "M3(+islands) vs M2(islands-off, shared)",
+        "island_bits": 31896356,
+        "n_islands_total": 692,
+        "quality_improved": true,
+        "relerr_improvement": 0.027769,
+        "relerr_off": 0.883356,
+        "relerr_on": 0.855587,
+        "strategy": "residual_energy",
+        "wall_on_over_off": 1.0816
+      },
+      "control_vs": "M2_shared",
+      "energy": {
+        "class": "UNAVAILABLE"
+      },
+      "extra": {
+        "budget_frac": 0.03,
+        "strategy": "residual_energy"
+      },
+      "mech_vector": {
+        "definitions": {
+          "Bbit": "bit ops",
+          "F16": "logical FP16/BF16 ops",
+          "F32": "logical FP32 ops",
+          "Fint": "integer ops",
+          "Klaunch": "Metal dispatch count",
+          "Llookup": "table/gather/codebook lookups",
+          "Mread": "bytes read",
+          "Mwrite": "bytes written",
+          "Ssync": "waits/barriers/sync",
+          "Ttemporary": "peak temporary bytes"
+        },
+        "labels": {
+          "Bbit": "ANALYTICAL",
+          "F16": "ANALYTICAL",
+          "F32": "ANALYTICAL",
+          "Fint": "ANALYTICAL",
+          "Klaunch": "MEASURED",
+          "Llookup": "ANALYTICAL",
+          "Mread": "ANALYTICAL",
+          "Mwrite": "ANALYTICAL",
+          "Ssync": "MEASURED",
+          "Ttemporary": "ANALYTICAL"
+        },
+        "schema": "hawking.mechanics.cost_schema.v1",
+        "vector": {
+          "Bbit": 0.0,
+          "F16": 0.0,
+          "F32": 9008640.0,
+          "Fint": 0.0,
+          "Klaunch": 0.0,
+          "Llookup": 2074292.0,
+          "Mread": 10479616.0,
+          "Mwrite": 138240.0,
+          "Ssync": 0.0,
+          "Ttemporary": 3075840.0
+        }
+      },
+      "no_dense_shadow": {
+        "bounded_under_half_dense": true,
+        "full_dense_bytes": 66355200.0,
+        "peak_temporary_bytes": 3075840.0
+      },
+      "quality": {
+        "cosine_vs_dense_mean": 0.517601,
+        "rel_error_vs_dense_max": 0.869031,
+        "rel_error_vs_dense_mean": 0.855587
+      },
+      "quality_gate": {
+        "baseline_div": 0.883356,
+        "combine_div": 0.855587,
+        "delta_vs_baseline": -0.027769,
+        "quality_admissible": true,
+        "tol": 1000000000.0,
+        "verdict": "islands_reduce_error"
+      },
+      "rate": {
+        "base_index_bits": 16588800,
+        "doctor_bits": 0,
+        "island_bits": 31896356,
+        "n_experts": 4,
+        "physical_bytes": 6126245,
+        "shared_codebook": true,
+        "total_bits": 49009956,
+        "total_weights": 66355200,
+        "whole_artifact_bpw": 0.7386
+      },
+      "stage": "M3",
+      "tensor_class": "mlp1",
+      "timing_ms": {
+        "M3_activation_aware": {
+          "iqr_ms": 0.32363,
+          "mad_ms": 0.10933,
+          "max_ms": 14.16213,
+          "median_ms": 13.39612,
+          "min_ms": 13.28679,
+          "n": 5,
+          "p25_ms": 13.37962,
+          "p75_ms": 13.70325
+        },
+        "M3_islands_off": {
+          "iqr_ms": 0.28863,
+          "mad_ms": 0.18938,
+          "max_ms": 12.6195,
+          "median_ms": 12.42829,
+          "min_ms": 12.02413,
+          "n": 5,
+          "p25_ms": 12.32904,
+          "p75_ms": 12.61767
+        },
+        "M3_magnitude": {
+          "iqr_ms": 0.19458,
+          "mad_ms": 0.191,
+          "max_ms": 13.82262,
+          "median_ms": 13.58483,
+          "min_ms": 13.02671,
+          "n": 5,
+          "p25_ms": 13.39383,
+          "p75_ms": 13.58842
+        },
+        "M3_residual_energy": {
+          "iqr_ms": 0.36542,
+          "mad_ms": 0.24392,
+          "max_ms": 14.10283,
+          "median_ms": 13.44212,
+          "min_ms": 9.594,
+          "n": 5,
+          "p25_ms": 13.32063,
+          "p75_ms": 13.68604
+        },
+        "M3_sensitivity": {
+          "iqr_ms": 0.15329,
+          "mad_ms": 0.11612,
+          "max_ms": 13.74037,
+          "median_ms": 13.56967,
+          "min_ms": 11.62625,
+          "n": 5,
+          "p25_ms": 13.45354,
+          "p75_ms": 13.60683
+        }
+      }
+    },
+    {
+      "admissible": true,
+      "candidate": "islands_magnitude",
+      "causal_delta": {
+        "control": "M3(+islands) vs M2(islands-off, shared)",
+        "island_bits": 16040016,
+        "n_islands_total": 348,
+        "quality_improved": true,
+        "relerr_improvement": 0.14354,
+        "relerr_off": 0.362042,
+        "relerr_on": 0.218502,
+        "strategy": "magnitude",
+        "wall_on_over_off": 1.094
+      },
+      "control_vs": "M2_shared",
+      "energy": {
+        "class": "UNAVAILABLE"
+      },
+      "extra": {
+        "budget_frac": 0.03,
+        "strategy": "magnitude"
+      },
+      "mech_vector": {
+        "definitions": {
+          "Bbit": "bit ops",
+          "F16": "logical FP16/BF16 ops",
+          "F32": "logical FP32 ops",
+          "Fint": "integer ops",
+          "Klaunch": "Metal dispatch count",
+          "Llookup": "table/gather/codebook lookups",
+          "Mread": "bytes read",
+          "Mwrite": "bytes written",
+          "Ssync": "waits/barriers/sync",
+          "Ttemporary": "peak temporary bytes"
+        },
+        "labels": {
+          "Bbit": "ANALYTICAL",
+          "F16": "ANALYTICAL",
+          "F32": "ANALYTICAL",
+          "Fint": "ANALYTICAL",
+          "Klaunch": "MEASURED",
+          "Llookup": "ANALYTICAL",
+          "Mread": "ANALYTICAL",
+          "Mwrite": "ANALYTICAL",
+          "Ssync": "MEASURED",
+          "Ttemporary": "ANALYTICAL"
+        },
+        "schema": "hawking.mechanics.cost_schema.v1",
+        "vector": {
+          "Bbit": 0.0,
+          "F16": 0.0,
+          "F32": 5990400.0,
+          "Fint": 0.0,
+          "Klaunch": 0.0,
+          "Llookup": 1037148.0,
+          "Mread": 5295616.0,
+          "Mwrite": 92160.0,
+          "Ssync": 0.0,
+          "Ttemporary": 1566720.0
+        }
+      },
+      "no_dense_shadow": {
+        "bounded_under_half_dense": true,
+        "full_dense_bytes": 33177600.0,
+        "peak_temporary_bytes": 1566720.0
+      },
+      "quality": {
+        "cosine_vs_dense_mean": 0.974504,
+        "rel_error_vs_dense_max": 0.305529,
+        "rel_error_vs_dense_mean": 0.218502
+      },
+      "quality_gate": {
+        "baseline_div": 0.362042,
+        "combine_div": 0.218502,
+        "delta_vs_baseline": -0.14354,
+        "quality_admissible": true,
+        "tol": 1000000000.0,
+        "verdict": "islands_reduce_error"
+      },
+      "rate": {
+        "base_index_bits": 8294400,
+        "doctor_bits": 0,
+        "island_bits": 16040016,
+        "n_experts": 4,
+        "physical_bytes": 3107402,
+        "shared_codebook": true,
+        "total_bits": 24859216,
+        "total_weights": 33177600,
+        "whole_artifact_bpw": 0.749277
+      },
+      "stage": "M3",
+      "tensor_class": "mlp2",
+      "timing_ms": {
+        "M3_activation_aware": {
+          "iqr_ms": 0.14062,
+          "mad_ms": 0.11842,
+          "max_ms": 6.52237,
+          "median_ms": 6.38612,
+          "min_ms": 5.57396,
+          "n": 5,
+          "p25_ms": 6.26771,
+          "p75_ms": 6.40833
+        },
+        "M3_islands_off": {
+          "iqr_ms": 0.68596,
+          "mad_ms": 0.29729,
+          "max_ms": 6.10542,
+          "median_ms": 5.58842,
+          "min_ms": 5.29113,
+          "n": 5,
+          "p25_ms": 5.41337,
+          "p75_ms": 6.09933
+        },
+        "M3_magnitude": {
+          "iqr_ms": 0.19579,
+          "mad_ms": 0.19133,
+          "max_ms": 6.96558,
+          "median_ms": 6.114,
+          "min_ms": 5.89375,
+          "n": 5,
+          "p25_ms": 6.10954,
+          "p75_ms": 6.30533
+        },
+        "M3_residual_energy": {
+          "iqr_ms": 0.59212,
+          "mad_ms": 0.39525,
+          "max_ms": 6.84933,
+          "median_ms": 6.44375,
+          "min_ms": 5.80375,
+          "n": 5,
+          "p25_ms": 6.0485,
+          "p75_ms": 6.64062
+        },
+        "M3_sensitivity": {
+          "iqr_ms": 0.32475,
+          "mad_ms": 0.10187,
+          "max_ms": 6.37267,
+          "median_ms": 6.27079,
+          "min_ms": 5.49021,
+          "n": 5,
+          "p25_ms": 6.00742,
+          "p75_ms": 6.33217
+        }
+      }
+    },
+    {
+      "admissible": true,
+      "candidate": "islands_activation_aware",
+      "causal_delta": {
+        "control": "M3(+islands) vs M2(islands-off, shared)",
+        "island_bits": 16040016,
+        "n_islands_total": 348,
+        "quality_improved": true,
+        "relerr_improvement": 0.143539,
+        "relerr_off": 0.362042,
+        "relerr_on": 0.218503,
+        "strategy": "activation_aware",
+        "wall_on_over_off": 1.1427
+      },
+      "control_vs": "M2_shared",
+      "energy": {
+        "class": "UNAVAILABLE"
+      },
+      "extra": {
+        "budget_frac": 0.03,
+        "strategy": "activation_aware"
+      },
+      "mech_vector": {
+        "definitions": {
+          "Bbit": "bit ops",
+          "F16": "logical FP16/BF16 ops",
+          "F32": "logical FP32 ops",
+          "Fint": "integer ops",
+          "Klaunch": "Metal dispatch count",
+          "Llookup": "table/gather/codebook lookups",
+          "Mread": "bytes read",
+          "Mwrite": "bytes written",
+          "Ssync": "waits/barriers/sync",
+          "Ttemporary": "peak temporary bytes"
+        },
+        "labels": {
+          "Bbit": "ANALYTICAL",
+          "F16": "ANALYTICAL",
+          "F32": "ANALYTICAL",
+          "Fint": "ANALYTICAL",
+          "Klaunch": "MEASURED",
+          "Llookup": "ANALYTICAL",
+          "Mread": "ANALYTICAL",
+          "Mwrite": "ANALYTICAL",
+          "Ssync": "MEASURED",
+          "Ttemporary": "ANALYTICAL"
+        },
+        "schema": "hawking.mechanics.cost_schema.v1",
+        "vector": {
+          "Bbit": 0.0,
+          "F16": 0.0,
+          "F32": 5990400.0,
+          "Fint": 0.0,
+          "Klaunch": 0.0,
+          "Llookup": 1037148.0,
+          "Mread": 5295616.0,
+          "Mwrite": 92160.0,
+          "Ssync": 0.0,
+          "Ttemporary": 1566720.0
+        }
+      },
+      "no_dense_shadow": {
+        "bounded_under_half_dense": true,
+        "full_dense_bytes": 33177600.0,
+        "peak_temporary_bytes": 1566720.0
+      },
+      "quality": {
+        "cosine_vs_dense_mean": 0.974505,
+        "rel_error_vs_dense_max": 0.305491,
+        "rel_error_vs_dense_mean": 0.218503
+      },
+      "quality_gate": {
+        "baseline_div": 0.362042,
+        "combine_div": 0.218503,
+        "delta_vs_baseline": -0.143539,
+        "quality_admissible": true,
+        "tol": 1000000000.0,
+        "verdict": "islands_reduce_error"
+      },
+      "rate": {
+        "base_index_bits": 8294400,
+        "doctor_bits": 0,
+        "island_bits": 16040016,
+        "n_experts": 4,
+        "physical_bytes": 3107402,
+        "shared_codebook": true,
+        "total_bits": 24859216,
+        "total_weights": 33177600,
+        "whole_artifact_bpw": 0.749277
+      },
+      "stage": "M3",
+      "tensor_class": "mlp2",
+      "timing_ms": {
+        "M3_activation_aware": {
+          "iqr_ms": 0.14062,
+          "mad_ms": 0.11842,
+          "max_ms": 6.52237,
+          "median_ms": 6.38612,
+          "min_ms": 5.57396,
+          "n": 5,
+          "p25_ms": 6.26771,
+          "p75_ms": 6.40833
+        },
+        "M3_islands_off": {
+          "iqr_ms": 0.68596,
+          "mad_ms": 0.29729,
+          "max_ms": 6.10542,
+          "median_ms": 5.58842,
+          "min_ms": 5.29113,
+          "n": 5,
+          "p25_ms": 5.41337,
+          "p75_ms": 6.09933
+        },
+        "M3_magnitude": {
+          "iqr_ms": 0.19579,
+          "mad_ms": 0.19133,
+          "max_ms": 6.96558,
+          "median_ms": 6.114,
+          "min_ms": 5.89375,
+          "n": 5,
+          "p25_ms": 6.10954,
+          "p75_ms": 6.30533
+        },
+        "M3_residual_energy": {
+          "iqr_ms": 0.59212,
+          "mad_ms": 0.39525,
+          "max_ms": 6.84933,
+          "median_ms": 6.44375,
+          "min_ms": 5.80375,
+          "n": 5,
+          "p25_ms": 6.0485,
+          "p75_ms": 6.64062
+        },
+        "M3_sensitivity": {
+          "iqr_ms": 0.32475,
+          "mad_ms": 0.10187,
+          "max_ms": 6.37267,
+          "median_ms": 6.27079,
+          "min_ms": 5.49021,
+          "n": 5,
+          "p25_ms": 6.00742,
+          "p75_ms": 6.33217
+        }
+      }
+    },
+    {
+      "admissible": true,
+      "candidate": "islands_sensitivity",
+      "causal_delta": {
+        "control": "M3(+islands) vs M2(islands-off, shared)",
+        "island_bits": 16040016,
+        "n_islands_total": 348,
+        "quality_improved": true,
+        "relerr_improvement": 0.140876,
+        "relerr_off": 0.362042,
+        "relerr_on": 0.221166,
+        "strategy": "sensitivity",
+        "wall_on_over_off": 1.1221
+      },
+      "control_vs": "M2_shared",
+      "energy": {
+        "class": "UNAVAILABLE"
+      },
+      "extra": {
+        "budget_frac": 0.03,
+        "strategy": "sensitivity"
+      },
+      "mech_vector": {
+        "definitions": {
+          "Bbit": "bit ops",
+          "F16": "logical FP16/BF16 ops",
+          "F32": "logical FP32 ops",
+          "Fint": "integer ops",
+          "Klaunch": "Metal dispatch count",
+          "Llookup": "table/gather/codebook lookups",
+          "Mread": "bytes read",
+          "Mwrite": "bytes written",
+          "Ssync": "waits/barriers/sync",
+          "Ttemporary": "peak temporary bytes"
+        },
+        "labels": {
+          "Bbit": "ANALYTICAL",
+          "F16": "ANALYTICAL",
+          "F32": "ANALYTICAL",
+          "Fint": "ANALYTICAL",
+          "Klaunch": "MEASURED",
+          "Llookup": "ANALYTICAL",
+          "Mread": "ANALYTICAL",
+          "Mwrite": "ANALYTICAL",
+          "Ssync": "MEASURED",
+          "Ttemporary": "ANALYTICAL"
+        },
+        "schema": "hawking.mechanics.cost_schema.v1",
+        "vector": {
+          "Bbit": 0.0,
+          "F16": 0.0,
+          "F32": 5990400.0,
+          "Fint": 0.0,
+          "Klaunch": 0.0,
+          "Llookup": 1037148.0,
+          "Mread": 5295616.0,
+          "Mwrite": 92160.0,
+          "Ssync": 0.0,
+          "Ttemporary": 1566720.0
+        }
+      },
+      "no_dense_shadow": {
+        "bounded_under_half_dense": true,
+        "full_dense_bytes": 33177600.0,
+        "peak_temporary_bytes": 1566720.0
+      },
+      "quality": {
+        "cosine_vs_dense_mean": 0.974018,
+        "rel_error_vs_dense_max": 0.305295,
+        "rel_error_vs_dense_mean": 0.221166
+      },
+      "quality_gate": {
+        "baseline_div": 0.362042,
+        "combine_div": 0.221166,
+        "delta_vs_baseline": -0.140876,
+        "quality_admissible": true,
+        "tol": 1000000000.0,
+        "verdict": "islands_reduce_error"
+      },
+      "rate": {
+        "base_index_bits": 8294400,
+        "doctor_bits": 0,
+        "island_bits": 16040016,
+        "n_experts": 4,
+        "physical_bytes": 3107402,
+        "shared_codebook": true,
+        "total_bits": 24859216,
+        "total_weights": 33177600,
+        "whole_artifact_bpw": 0.749277
+      },
+      "stage": "M3",
+      "tensor_class": "mlp2",
+      "timing_ms": {
+        "M3_activation_aware": {
+          "iqr_ms": 0.14062,
+          "mad_ms": 0.11842,
+          "max_ms": 6.52237,
+          "median_ms": 6.38612,
+          "min_ms": 5.57396,
+          "n": 5,
+          "p25_ms": 6.26771,
+          "p75_ms": 6.40833
+        },
+        "M3_islands_off": {
+          "iqr_ms": 0.68596,
+          "mad_ms": 0.29729,
+          "max_ms": 6.10542,
+          "median_ms": 5.58842,
+          "min_ms": 5.29113,
+          "n": 5,
+          "p25_ms": 5.41337,
+          "p75_ms": 6.09933
+        },
+        "M3_magnitude": {
+          "iqr_ms": 0.19579,
+          "mad_ms": 0.19133,
+          "max_ms": 6.96558,
+          "median_ms": 6.114,
+          "min_ms": 5.89375,
+          "n": 5,
+          "p25_ms": 6.10954,
+          "p75_ms": 6.30533
+        },
+        "M3_residual_energy": {
+          "iqr_ms": 0.59212,
+          "mad_ms": 0.39525,
+          "max_ms": 6.84933,
+          "median_ms": 6.44375,
+          "min_ms": 5.80375,
+          "n": 5,
+          "p25_ms": 6.0485,
+          "p75_ms": 6.64062
+        },
+        "M3_sensitivity": {
+          "iqr_ms": 0.32475,
+          "mad_ms": 0.10187,
+          "max_ms": 6.37267,
+          "median_ms": 6.27079,
+          "min_ms": 5.49021,
+          "n": 5,
+          "p25_ms": 6.00742,
+          "p75_ms": 6.33217
+        }
+      }
+    },
+    {
+      "admissible": true,
+      "candidate": "islands_residual_energy",
+      "causal_delta": {
+        "control": "M3(+islands) vs M2(islands-off, shared)",
+        "island_bits": 16040016,
+        "n_islands_total": 348,
+        "quality_improved": true,
+        "relerr_improvement": 0.140702,
+        "relerr_off": 0.362042,
+        "relerr_on": 0.22134,
+        "strategy": "residual_energy",
+        "wall_on_over_off": 1.1531
+      },
+      "control_vs": "M2_shared",
+      "energy": {
+        "class": "UNAVAILABLE"
+      },
+      "extra": {
+        "budget_frac": 0.03,
+        "strategy": "residual_energy"
+      },
+      "mech_vector": {
+        "definitions": {
+          "Bbit": "bit ops",
+          "F16": "logical FP16/BF16 ops",
+          "F32": "logical FP32 ops",
+          "Fint": "integer ops",
+          "Klaunch": "Metal dispatch count",
+          "Llookup": "table/gather/codebook lookups",
+          "Mread": "bytes read",
+          "Mwrite": "bytes written",
+          "Ssync": "waits/barriers/sync",
+          "Ttemporary": "peak temporary bytes"
+        },
+        "labels": {
+          "Bbit": "ANALYTICAL",
+          "F16": "ANALYTICAL",
+          "F32": "ANALYTICAL",
+          "Fint": "ANALYTICAL",
+          "Klaunch": "MEASURED",
+          "Llookup": "ANALYTICAL",
+          "Mread": "ANALYTICAL",
+          "Mwrite": "ANALYTICAL",
+          "Ssync": "MEASURED",
+          "Ttemporary": "ANALYTICAL"
+        },
+        "schema": "hawking.mechanics.cost_schema.v1",
+        "vector": {
+          "Bbit": 0.0,
+          "F16": 0.0,
+          "F32": 5990400.0,
+          "Fint": 0.0,
+          "Klaunch": 0.0,
+          "Llookup": 1037148.0,
+          "Mread": 5295616.0,
+          "Mwrite": 92160.0,
+          "Ssync": 0.0,
+          "Ttemporary": 1566720.0
+        }
+      },
+      "no_dense_shadow": {
+        "bounded_under_half_dense": true,
+        "full_dense_bytes": 33177600.0,
+        "peak_temporary_bytes": 1566720.0
+      },
+      "quality": {
+        "cosine_vs_dense_mean": 0.973976,
+        "rel_error_vs_dense_max": 0.305559,
+        "rel_error_vs_dense_mean": 0.22134
+      },
+      "quality_gate": {
+        "baseline_div": 0.362042,
+        "combine_div": 0.22134,
+        "delta_vs_baseline": -0.140702,
+        "quality_admissible": true,
+        "tol": 1000000000.0,
+        "verdict": "islands_reduce_error"
+      },
+      "rate": {
+        "base_index_bits": 8294400,
+        "doctor_bits": 0,
+        "island_bits": 16040016,
+        "n_experts": 4,
+        "physical_bytes": 3107402,
+        "shared_codebook": true,
+        "total_bits": 24859216,
+        "total_weights": 33177600,
+        "whole_artifact_bpw": 0.749277
+      },
+      "stage": "M3",
+      "tensor_class": "mlp2",
+      "timing_ms": {
+        "M3_activation_aware": {
+          "iqr_ms": 0.14062,
+          "mad_ms": 0.11842,
+          "max_ms": 6.52237,
+          "median_ms": 6.38612,
+          "min_ms": 5.57396,
+          "n": 5,
+          "p25_ms": 6.26771,
+          "p75_ms": 6.40833
+        },
+        "M3_islands_off": {
+          "iqr_ms": 0.68596,
+          "mad_ms": 0.29729,
+          "max_ms": 6.10542,
+          "median_ms": 5.58842,
+          "min_ms": 5.29113,
+          "n": 5,
+          "p25_ms": 5.41337,
+          "p75_ms": 6.09933
+        },
+        "M3_magnitude": {
+          "iqr_ms": 0.19579,
+          "mad_ms": 0.19133,
+          "max_ms": 6.96558,
+          "median_ms": 6.114,
+          "min_ms": 5.89375,
+          "n": 5,
+          "p25_ms": 6.10954,
+          "p75_ms": 6.30533
+        },
+        "M3_residual_energy": {
+          "iqr_ms": 0.59212,
+          "mad_ms": 0.39525,
+          "max_ms": 6.84933,
+          "median_ms": 6.44375,
+          "min_ms": 5.80375,
+          "n": 5,
+          "p25_ms": 6.0485,
+          "p75_ms": 6.64062
+        },
+        "M3_sensitivity": {
+          "iqr_ms": 0.32475,
+          "mad_ms": 0.10187,
+          "max_ms": 6.37267,
+          "median_ms": 6.27079,
+          "min_ms": 5.49021,
+          "n": 5,
+          "p25_ms": 6.00742,
+          "p75_ms": 6.33217
+        }
+      }
+    }
+  ],
+  "causal_control": {
+    "controls": "islands-off(M2) vs 4 selectors",
+    "mlp1_min_improvement": 0.027769,
+    "mlp2_max_improvement": 0.14354,
+    "mlp2_more_sensitive": true,
+    "picked_selector": {
+      "mlp1": "activation_aware",
+      "mlp2": "magnitude"
+    }
+  },
+  "energy": {
+    "contract_ref": "reports/mechanics_thermodynamics/HAWKING_ENERGY_MEASUREMENT_CONTRACT.json",
+    "energy_class": "UNAVAILABLE",
+    "policy": "mechanics+quality proceed; thermodynamics labelled UNAVAILABLE; no invented estimates",
+    "reason": "powermetrics requires sudo (not bypassed, Bible \u00a733/\u00a768); no defensible non-sudo whole-system power method"
+  },
+  "identity": {
+    "block": 0,
+    "candidate_id": "gen-M.runall.block0.experts83-86-12-48",
+    "confidence": "mechanics ANALYTICAL + wall MEASURED(contaminated); CPU authoritative; combine-divergence proxy_output synthetic activations, NOT capability parity",
+    "config": {
+      "D": 64,
+      "cond_threshold": 0.02,
+      "doctor_k": 256,
+      "doctor_stages": 1,
+      "fn_gate": 0.05,
+      "island_budget_frac": 0.03,
+      "iters": 6,
+      "k": 256,
+      "need_delta": 0.001,
+      "stages": 2
+    },
+    "generated_at": "2026-07-19T05:13:10Z",
+    "hardware": {
+      "chip": "Apple M3 Ultra",
+      "contamination": "concurrent MoP CPU load (~24 procs, load ~22); timing contaminated_by_concurrent_cpu_load",
+      "model": "Mac15,14",
+      "mps": true,
+      "os": "27.0",
+      "profile_ref": "reports/mechanics_thermodynamics/HAWKING_APPLE_MECHANICS_PROFILE.json",
+      "python": "3.12.6",
+      "torch": "2.6.0"
+    },
+    "parent": "GPT-OSS-120B (Generation-F frozen)",
+    "reps": 5,
+    "routed_experts": [
+      83,
+      86,
+      12,
+      48
+    ]
+  },
+  "note": "wall MEASURED contaminated_by_concurrent_cpu_load; mechanics ANALYTICAL; CPU authoritative; energy UNAVAILABLE",
+  "schema": "hawking.mechanics.run_all.v1",
+  "sha256": "78ad6931b7dce5f85ffc46771f68cd23615ceb560640248cc86628cbff02a013",
+  "stage": "M3"
+}

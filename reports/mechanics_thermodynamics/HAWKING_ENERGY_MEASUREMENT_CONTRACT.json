@@ -1,0 +1,13 @@
+{
+  "energy_class": "UNAVAILABLE",
+  "generated_at": "2026-07-19T04:35:48Z",
+  "if_becomes_available": "powermetrics with sudo, or external meter -> gross J = integral P dt; adjusted J = gross - idle*dt; report both + uncertainty; inconclusive if CI overlaps 0",
+  "measurement_sources": {
+    "external_meter": "none",
+    "metal_counters": "not wired via python",
+    "powermetrics": "UNAVAILABLE (sudo)"
+  },
+  "policy": "Bible \u00a768 - complete mechanics+quality; label thermodynamics UNAVAILABLE; do NOT invent estimates; a candidate may still be promoted on quality+performance but cannot be called an energy champion",
+  "schema": "hawking.mechanics.energy_contract.v1",
+  "sha256": "1fa6c6bdbc91938eb88e3e9aad19dc647a4bc495b8deeb30a2e2ed53cd061b0b"
+}

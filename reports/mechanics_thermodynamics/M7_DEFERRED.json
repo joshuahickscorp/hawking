@@ -1,0 +1,49 @@
+{
+  "admissible": false,
+  "deferred": true,
+  "energy": {
+    "class": "UNAVAILABLE"
+  },
+  "grammar": "bit_oriented (base-k packing / bit-plane codewords / sub-byte gather)",
+  "identity": {
+    "block": 0,
+    "candidate_id": "gen-M.runall.block0.experts83-86-12-48",
+    "confidence": "mechanics ANALYTICAL + wall MEASURED(contaminated); CPU authoritative; combine-divergence proxy_output synthetic activations, NOT capability parity",
+    "config": {
+      "D": 64,
+      "cond_threshold": 0.02,
+      "doctor_k": 256,
+      "doctor_stages": 1,
+      "fn_gate": 0.05,
+      "island_budget_frac": 0.03,
+      "iters": 6,
+      "k": 256,
+      "need_delta": 0.001,
+      "stages": 2
+    },
+    "generated_at": "2026-07-19T05:13:10Z",
+    "hardware": {
+      "chip": "Apple M3 Ultra",
+      "contamination": "concurrent MoP CPU load (~24 procs, load ~22); timing contaminated_by_concurrent_cpu_load",
+      "model": "Mac15,14",
+      "mps": true,
+      "os": "27.0",
+      "profile_ref": "reports/mechanics_thermodynamics/HAWKING_APPLE_MECHANICS_PROFILE.json",
+      "python": "3.12.6",
+      "torch": "2.6.0"
+    },
+    "parent": "GPT-OSS-120B (Generation-F frozen)",
+    "reps": 5,
+    "routed_experts": [
+      83,
+      86,
+      12,
+      48
+    ]
+  },
+  "reason": "Bible 77: seal deferred if it would grow uncontrollably; the M2..M6 lookup-linear wins are measured on real experts, and a bit-oriented kernel program is a research track, not a bounded run-all stage. No estimates invented.",
+  "schema": "hawking.mechanics.run_all.v1",
+  "sha256": "663dfd90607f4d7f0f013a0905e92fed65e97b87a4f2eed8fc2489363d0c825d",
+  "stage": "M7",
+  "status": "DEFERRED"
+}
