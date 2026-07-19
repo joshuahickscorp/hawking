@@ -1,0 +1,32 @@
+{
+  "active_generation": "M (merged origin/main c21ed593, tag hawking-mechanics-thermodynamics)",
+  "constraints": {
+    "apple_only": true,
+    "cuda": "BLOCKED (no sealed cloud budget)",
+    "eligibility_gates_not_weakened": true,
+    "no_separate_scheduler_daemon": true,
+    "one_local_heavy_lease": true
+  },
+  "eligibility_gates": {
+    "1.6T": "OPTIONAL - after 1T milestone + sealed cost/info-gain admission",
+    "1T_heavy": "after 120B G5-or-boundary + 685B parent-bound F2 + Kimi source authority + text/full claim separation; source-absent -> prep only",
+    "685B_heavy": "after 120B G3 + one full-rank family + one Doctor path + frozen quality contract + Apple exec + whole-artifact projection + (CUDA parity OR blocked receipt); source-absent -> prep only"
+  },
+  "execution_provider_map": "HAWKING_GENERATION_M_PROVIDER_MAP.json (M2 lookup-linear available, Gen-F direct-compact default)",
+  "generated_at": "2026-07-19T06:14:42Z",
+  "generation_f": "e0857398 (frozen rollback generation)",
+  "honest_note": "science NEGATIVE at sub-bit (capability regression verified at Fidelity D); the ladder searches for a quality-positive representation, now with the Gen-M parity-verified execution grammar available. No capability claim.",
+  "ladder": [
+    "G2(COMPLETE)",
+    "G3(launching)",
+    "G4",
+    "G5_120B",
+    "685B_F0/F1/F2",
+    "685B_frontier",
+    "1T_F0/F1/F2",
+    "1T_frontier"
+  ],
+  "no_manual_relaunch_between_gates": "the durable controller advances the queue; preparation lanes (685B/1T source-authority) run non-conflicting",
+  "schema": "hawking.frontier.auto_progression.v1",
+  "sha256": "7e3c8982905cfe03abf097edfca4c1a7912fdf5c5b6957cd1e27964b9446b12c"
+}

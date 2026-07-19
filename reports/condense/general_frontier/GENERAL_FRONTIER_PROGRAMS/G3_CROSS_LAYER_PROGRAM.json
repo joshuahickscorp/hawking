@@ -1,0 +1,1589 @@
+{
+  "activation_provenance": {
+    "capability_parity": false,
+    "honesty": "generalized-block APPROXIMATION: block-N attention is a from-config forward (RoPE theta 150000, GQA 64/8, sinks, sliding-window inactive at seq<128), exactly as the block-0 forward is; it is valid ONLY for the RELATIVE orig-vs-packed divergence, where the shared residual + shared reference SwiGLU largely cancel the approximation. Not real Harmony text, no holdout corpus; authorizes no Escape Receipt / Event Horizon seal.",
+    "path": "gravity_frontier_g3_controller.block_n_moe_inputs (generalized reference forward)",
+    "token_source": "synthetic Harmony-ish id sequences (SAME tokens at every layer) pushed through the REAL embedding + block-N attention + block-N mlp-norm path"
+  },
+  "base_execution_provider": {
+    "cpu_reference": "mech_measure.m1_lookup_linear_np",
+    "default_fallback_provider": "genf_direct_compact",
+    "execution_generation": "M",
+    "metal_provider": "mech_measure.m1_lookup_linear_torch",
+    "name": "m2_shared_lookup_linear",
+    "note": "Gen-M lookup-linear is EXACT parity to Gen-F direct-compact; it lowers logical FLOPs / movement / dispatches but does NOT change the measured divergence. Gen-F direct-compact is the wall-safe default provider.",
+    "parity_vs_genf": "EXACT end-to-end (logit cos 1.0, next-token 1.0; operator/expert/layer ~1e-7)",
+    "quality_neutral": true,
+    "status": "AVAILABLE (verified parity-preserving)"
+  },
+  "exact_budget_discipline": {
+    "codebook_aware": true,
+    "controls_billed_at_native_rate": true,
+    "packer_fails_over_budget": true,
+    "rates_are_rational": true
+  },
+  "execution_generation": "M",
+  "functional_metrics": [
+    "router_topk_agreement",
+    "expert_output_cosine",
+    "expert_output_rel_error",
+    "weighted_combine_divergence",
+    "layer_hidden_state_cosine",
+    "complete_layer_bpw",
+    "cross_layer_transfer"
+  ],
+  "gate": "G3_cross_layer_transfer",
+  "generated_at": "2026-07-19T06:23:37Z",
+  "hash_discipline": {
+    "excluded_from_hash": [
+      "program_sha256",
+      "generated_at"
+    ],
+    "reason": "stable program identity across regeneration (timestamp-hash bug fix)"
+  },
+  "layer_roles": {
+    "0": "early",
+    "18": "mid",
+    "35": "late"
+  },
+  "layers": [
+    0,
+    18,
+    35
+  ],
+  "parent_revision": "openai/gpt-oss-120b",
+  "program_sha256": "155cecab75256d326b733390284c801f2f0700405fc6583d68ab58e22e6259e8",
+  "rows": [
+    {
+      "base_execution_provider": {
+        "cpu_reference": "mech_measure.m1_lookup_linear_np",
+        "default_fallback_provider": "genf_direct_compact",
+        "execution_generation": "M",
+        "metal_provider": "mech_measure.m1_lookup_linear_torch",
+        "name": "m2_shared_lookup_linear",
+        "note": "Gen-M lookup-linear is EXACT parity to Gen-F direct-compact; it lowers logical FLOPs / movement / dispatches but does NOT change the measured divergence. Gen-F direct-compact is the wall-safe default provider.",
+        "parity_vs_genf": "EXACT end-to-end (logit cos 1.0, next-token 1.0; operator/expert/layer ~1e-7)",
+        "quality_neutral": true,
+        "status": "AVAILABLE (verified parity-preserving)"
+      },
+      "calibration_inputs": {
+        "kind": "real_block_n_moe_inputs",
+        "layer": 0,
+        "n_sequences": 3,
+        "seed_domain": "calibration",
+        "tokens_per_seq": 6
+      },
+      "candidate": true,
+      "cpu_impl": "gravity_frontier_g3 numpy reference forward (generalized block N)",
+      "exact_budget": {
+        "n_weights_per_matrix": 16588800,
+        "native_bpw": 4.25,
+        "rate": "3/4",
+        "target_total_bits": 15262208
+      },
+      "exact_rate": "3/4",
+      "execution_generation": "M",
+      "family_params": {
+        "budget_frac": 0.01,
+        "dim": 16,
+        "k": 64,
+        "strategy": "residual_energy",
+        "subspaces": 2
+      },
+      "functional_metrics": [
+        "router_topk_agreement",
+        "expert_output_cosine",
+        "expert_output_rel_error",
+        "weighted_combine_divergence",
+        "layer_hidden_state_cosine",
+        "complete_layer_bpw",
+        "cross_layer_transfer"
+      ],
+      "is_control": false,
+      "layer": 0,
+      "layer_role": "early",
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) for the packer fit",
+      "note": "PQ + residual-energy protected islands (heavy-tail reserve)",
+      "representation_family": "pq_protected_islands",
+      "row_id": "g3_000",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "per (tensor_class, layer) promote the representation with the HIGHEST layer_hidden_state_cosine within the exact per-matrix budget; source_native controls are reference boundaries and are excluded; then record whether the layer-0 winner still wins at the mid (18) and late (35) layers (cross-layer transfer)",
+      "tensor_class": "expert_mlp1",
+      "tensor_group_fmt": "block.{b}.mlp.mlp1_weight",
+      "top_k": 4,
+      "validation_inputs": {
+        "kind": "real_block_n_moe_inputs",
+        "layer": 0,
+        "n_sequences": 2,
+        "seed_domain": "validation_disjoint",
+        "tokens_per_seq": 6
+      }
+    },
+    {
+      "base_execution_provider": {
+        "cpu_reference": "mech_measure.m1_lookup_linear_np",
+        "default_fallback_provider": "genf_direct_compact",
+        "execution_generation": "M",
+        "metal_provider": "mech_measure.m1_lookup_linear_torch",
+        "name": "m2_shared_lookup_linear",
+        "note": "Gen-M lookup-linear is EXACT parity to Gen-F direct-compact; it lowers logical FLOPs / movement / dispatches but does NOT change the measured divergence. Gen-F direct-compact is the wall-safe default provider.",
+        "parity_vs_genf": "EXACT end-to-end (logit cos 1.0, next-token 1.0; operator/expert/layer ~1e-7)",
+        "quality_neutral": true,
+        "status": "AVAILABLE (verified parity-preserving)"
+      },
+      "calibration_inputs": {
+        "kind": "real_block_n_moe_inputs",
+        "layer": 0,
+        "n_sequences": 3,
+        "seed_domain": "calibration",
+        "tokens_per_seq": 6
+      },
+      "candidate": true,
+      "cpu_impl": "gravity_frontier_g3 numpy reference forward (generalized block N)",
+      "exact_budget": {
+        "n_weights_per_matrix": 16588800,
+        "native_bpw": 4.25,
+        "rate": "3/4",
+        "target_total_bits": 15096320
+      },
+      "exact_rate": "3/4",
+      "execution_generation": "M",
+      "family_params": {
+        "dim": 16,
+        "doctor": "residual_codebook",
+        "doctor_bpw": 0.15,
+        "k": 64,
+        "subspaces": 2
+      },
+      "functional_metrics": [
+        "router_topk_agreement",
+        "expert_output_cosine",
+        "expert_output_rel_error",
+        "weighted_combine_divergence",
+        "layer_hidden_state_cosine",
+        "complete_layer_bpw",
+        "cross_layer_transfer"
+      ],
+      "is_control": false,
+      "layer": 0,
+      "layer_role": "early",
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) for the packer fit",
+      "note": "PQ + Doctor residual codebook inside the same rate (G2 layer-0 mlp1 winner)",
+      "representation_family": "pq_doctor_lowrank",
+      "row_id": "g3_001",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "per (tensor_class, layer) promote the representation with the HIGHEST layer_hidden_state_cosine within the exact per-matrix budget; source_native controls are reference boundaries and are excluded; then record whether the layer-0 winner still wins at the mid (18) and late (35) layers (cross-layer transfer)",
+      "tensor_class": "expert_mlp1",
+      "tensor_group_fmt": "block.{b}.mlp.mlp1_weight",
+      "top_k": 4,
+      "validation_inputs": {
+        "kind": "real_block_n_moe_inputs",
+        "layer": 0,
+        "n_sequences": 2,
+        "seed_domain": "validation_disjoint",
+        "tokens_per_seq": 6
+      }
+    },
+    {
+      "base_execution_provider": {
+        "cpu_reference": "mech_measure.m1_lookup_linear_np",
+        "default_fallback_provider": "genf_direct_compact",
+        "execution_generation": "M",
+        "metal_provider": "mech_measure.m1_lookup_linear_torch",
+        "name": "m2_shared_lookup_linear",
+        "note": "Gen-M lookup-linear is EXACT parity to Gen-F direct-compact; it lowers logical FLOPs / movement / dispatches but does NOT change the measured divergence. Gen-F direct-compact is the wall-safe default provider.",
+        "parity_vs_genf": "EXACT end-to-end (logit cos 1.0, next-token 1.0; operator/expert/layer ~1e-7)",
+        "quality_neutral": true,
+        "status": "AVAILABLE (verified parity-preserving)"
+      },
+      "calibration_inputs": {
+        "kind": "real_block_n_moe_inputs",
+        "layer": 0,
+        "n_sequences": 3,
+        "seed_domain": "calibration",
+        "tokens_per_seq": 6
+      },
+      "candidate": true,
+      "cpu_impl": "gravity_frontier_g3 numpy reference forward (generalized block N)",
+      "exact_budget": {
+        "n_weights_per_matrix": 16588800,
+        "native_bpw": 4.25,
+        "rate": "3/4",
+        "target_total_bits": 12608000
+      },
+      "exact_rate": "3/4",
+      "execution_generation": "M",
+      "family_params": {
+        "dim": 16,
+        "k": 64,
+        "subspaces": 2
+      },
+      "functional_metrics": [
+        "router_topk_agreement",
+        "expert_output_cosine",
+        "expert_output_rel_error",
+        "weighted_combine_divergence",
+        "layer_hidden_state_cosine",
+        "complete_layer_bpw",
+        "cross_layer_transfer"
+      ],
+      "is_control": false,
+      "layer": 0,
+      "layer_role": "early",
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) for the packer fit",
+      "note": "plain product quantization (no Hadamard rotation)",
+      "representation_family": "product_quant",
+      "row_id": "g3_002",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "per (tensor_class, layer) promote the representation with the HIGHEST layer_hidden_state_cosine within the exact per-matrix budget; source_native controls are reference boundaries and are excluded; then record whether the layer-0 winner still wins at the mid (18) and late (35) layers (cross-layer transfer)",
+      "tensor_class": "expert_mlp1",
+      "tensor_group_fmt": "block.{b}.mlp.mlp1_weight",
+      "top_k": 4,
+      "validation_inputs": {
+        "kind": "real_block_n_moe_inputs",
+        "layer": 0,
+        "n_sequences": 2,
+        "seed_domain": "validation_disjoint",
+        "tokens_per_seq": 6
+      }
+    },
+    {
+      "base_execution_provider": {
+        "cpu_reference": "mech_measure.m1_lookup_linear_np",
+        "default_fallback_provider": "genf_direct_compact",
+        "execution_generation": "M",
+        "metal_provider": "mech_measure.m1_lookup_linear_torch",
+        "name": "m2_shared_lookup_linear",
+        "note": "Gen-M lookup-linear is EXACT parity to Gen-F direct-compact; it lowers logical FLOPs / movement / dispatches but does NOT change the measured divergence. Gen-F direct-compact is the wall-safe default provider.",
+        "parity_vs_genf": "EXACT end-to-end (logit cos 1.0, next-token 1.0; operator/expert/layer ~1e-7)",
+        "quality_neutral": true,
+        "status": "AVAILABLE (verified parity-preserving)"
+      },
+      "calibration_inputs": {
+        "kind": "real_block_n_moe_inputs",
+        "layer": 0,
+        "n_sequences": 3,
+        "seed_domain": "calibration",
+        "tokens_per_seq": 6
+      },
+      "candidate": true,
+      "cpu_impl": "gravity_frontier_g3 numpy reference forward (generalized block N)",
+      "exact_budget": {
+        "n_weights_per_matrix": 16588800,
+        "native_bpw": 4.25,
+        "rate": "native",
+        "target_total_bits": 70502912
+      },
+      "exact_rate": "native",
+      "execution_generation": "M",
+      "family_params": {},
+      "functional_metrics": [
+        "router_topk_agreement",
+        "expert_output_cosine",
+        "expert_output_rel_error",
+        "weighted_combine_divergence",
+        "layer_hidden_state_cosine",
+        "complete_layer_bpw",
+        "cross_layer_transfer"
+      ],
+      "is_control": true,
+      "layer": 0,
+      "layer_role": "early",
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) for the packer fit",
+      "note": "source-native reference boundary (kept native, excluded from selection)",
+      "representation_family": "source_native_control",
+      "row_id": "g3_003",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "per (tensor_class, layer) promote the representation with the HIGHEST layer_hidden_state_cosine within the exact per-matrix budget; source_native controls are reference boundaries and are excluded; then record whether the layer-0 winner still wins at the mid (18) and late (35) layers (cross-layer transfer)",
+      "tensor_class": "expert_mlp1",
+      "tensor_group_fmt": "block.{b}.mlp.mlp1_weight",
+      "top_k": 4,
+      "validation_inputs": {
+        "kind": "real_block_n_moe_inputs",
+        "layer": 0,
+        "n_sequences": 2,
+        "seed_domain": "validation_disjoint",
+        "tokens_per_seq": 6
+      }
+    },
+    {
+      "base_execution_provider": {
+        "cpu_reference": "mech_measure.m1_lookup_linear_np",
+        "default_fallback_provider": "genf_direct_compact",
+        "execution_generation": "M",
+        "metal_provider": "mech_measure.m1_lookup_linear_torch",
+        "name": "m2_shared_lookup_linear",
+        "note": "Gen-M lookup-linear is EXACT parity to Gen-F direct-compact; it lowers logical FLOPs / movement / dispatches but does NOT change the measured divergence. Gen-F direct-compact is the wall-safe default provider.",
+        "parity_vs_genf": "EXACT end-to-end (logit cos 1.0, next-token 1.0; operator/expert/layer ~1e-7)",
+        "quality_neutral": true,
+        "status": "AVAILABLE (verified parity-preserving)"
+      },
+      "calibration_inputs": {
+        "kind": "real_block_n_moe_inputs",
+        "layer": 0,
+        "n_sequences": 3,
+        "seed_domain": "calibration",
+        "tokens_per_seq": 6
+      },
+      "candidate": true,
+      "cpu_impl": "gravity_frontier_g3 numpy reference forward (generalized block N)",
+      "exact_budget": {
+        "n_weights_per_matrix": 8294400,
+        "native_bpw": 4.25,
+        "rate": "3/4",
+        "target_total_bits": 7631360
+      },
+      "exact_rate": "3/4",
+      "execution_generation": "M",
+      "family_params": {
+        "budget_frac": 0.01,
+        "dim": 16,
+        "k": 64,
+        "strategy": "residual_energy",
+        "subspaces": 2
+      },
+      "functional_metrics": [
+        "router_topk_agreement",
+        "expert_output_cosine",
+        "expert_output_rel_error",
+        "weighted_combine_divergence",
+        "layer_hidden_state_cosine",
+        "complete_layer_bpw",
+        "cross_layer_transfer"
+      ],
+      "is_control": false,
+      "layer": 0,
+      "layer_role": "early",
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) for the packer fit",
+      "note": "PQ + residual-energy protected islands (G2 layer-0 mlp2 winner)",
+      "representation_family": "pq_protected_islands",
+      "row_id": "g3_004",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "per (tensor_class, layer) promote the representation with the HIGHEST layer_hidden_state_cosine within the exact per-matrix budget; source_native controls are reference boundaries and are excluded; then record whether the layer-0 winner still wins at the mid (18) and late (35) layers (cross-layer transfer)",
+      "tensor_class": "expert_mlp2",
+      "tensor_group_fmt": "block.{b}.mlp.mlp2_weight",
+      "top_k": 4,
+      "validation_inputs": {
+        "kind": "real_block_n_moe_inputs",
+        "layer": 0,
+        "n_sequences": 2,
+        "seed_domain": "validation_disjoint",
+        "tokens_per_seq": 6
+      }
+    },
+    {
+      "base_execution_provider": {
+        "cpu_reference": "mech_measure.m1_lookup_linear_np",
+        "default_fallback_provider": "genf_direct_compact",
+        "execution_generation": "M",
+        "metal_provider": "mech_measure.m1_lookup_linear_torch",
+        "name": "m2_shared_lookup_linear",
+        "note": "Gen-M lookup-linear is EXACT parity to Gen-F direct-compact; it lowers logical FLOPs / movement / dispatches but does NOT change the measured divergence. Gen-F direct-compact is the wall-safe default provider.",
+        "parity_vs_genf": "EXACT end-to-end (logit cos 1.0, next-token 1.0; operator/expert/layer ~1e-7)",
+        "quality_neutral": true,
+        "status": "AVAILABLE (verified parity-preserving)"
+      },
+      "calibration_inputs": {
+        "kind": "real_block_n_moe_inputs",
+        "layer": 0,
+        "n_sequences": 3,
+        "seed_domain": "calibration",
+        "tokens_per_seq": 6
+      },
+      "candidate": true,
+      "cpu_impl": "gravity_frontier_g3 numpy reference forward (generalized block N)",
+      "exact_budget": {
+        "n_weights_per_matrix": 8294400,
+        "native_bpw": 4.25,
+        "rate": "3/4",
+        "target_total_bits": 6304256
+      },
+      "exact_rate": "3/4",
+      "execution_generation": "M",
+      "family_params": {
+        "dim": 16,
+        "k": 64,
+        "stages": 2
+      },
+      "functional_metrics": [
+        "router_topk_agreement",
+        "expert_output_cosine",
+        "expert_output_rel_error",
+        "weighted_combine_divergence",
+        "layer_hidden_state_cosine",
+        "complete_layer_bpw",
+        "cross_layer_transfer"
+      ],
+      "is_control": false,
+      "layer": 0,
+      "layer_role": "early",
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) for the packer fit",
+      "note": "residual vector quantization (different representation)",
+      "representation_family": "naive_rvq",
+      "row_id": "g3_005",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "per (tensor_class, layer) promote the representation with the HIGHEST layer_hidden_state_cosine within the exact per-matrix budget; source_native controls are reference boundaries and are excluded; then record whether the layer-0 winner still wins at the mid (18) and late (35) layers (cross-layer transfer)",
+      "tensor_class": "expert_mlp2",
+      "tensor_group_fmt": "block.{b}.mlp.mlp2_weight",
+      "top_k": 4,
+      "validation_inputs": {
+        "kind": "real_block_n_moe_inputs",
+        "layer": 0,
+        "n_sequences": 2,
+        "seed_domain": "validation_disjoint",
+        "tokens_per_seq": 6
+      }
+    },
+    {
+      "base_execution_provider": {
+        "cpu_reference": "mech_measure.m1_lookup_linear_np",
+        "default_fallback_provider": "genf_direct_compact",
+        "execution_generation": "M",
+        "metal_provider": "mech_measure.m1_lookup_linear_torch",
+        "name": "m2_shared_lookup_linear",
+        "note": "Gen-M lookup-linear is EXACT parity to Gen-F direct-compact; it lowers logical FLOPs / movement / dispatches but does NOT change the measured divergence. Gen-F direct-compact is the wall-safe default provider.",
+        "parity_vs_genf": "EXACT end-to-end (logit cos 1.0, next-token 1.0; operator/expert/layer ~1e-7)",
+        "quality_neutral": true,
+        "status": "AVAILABLE (verified parity-preserving)"
+      },
+      "calibration_inputs": {
+        "kind": "real_block_n_moe_inputs",
+        "layer": 0,
+        "n_sequences": 3,
+        "seed_domain": "calibration",
+        "tokens_per_seq": 6
+      },
+      "candidate": true,
+      "cpu_impl": "gravity_frontier_g3 numpy reference forward (generalized block N)",
+      "exact_budget": {
+        "n_weights_per_matrix": 8294400,
+        "native_bpw": 4.25,
+        "rate": "3/4",
+        "target_total_bits": 6304256
+      },
+      "exact_rate": "3/4",
+      "execution_generation": "M",
+      "family_params": {
+        "dim": 16,
+        "k": 64,
+        "subspaces": 2
+      },
+      "functional_metrics": [
+        "router_topk_agreement",
+        "expert_output_cosine",
+        "expert_output_rel_error",
+        "weighted_combine_divergence",
+        "layer_hidden_state_cosine",
+        "complete_layer_bpw",
+        "cross_layer_transfer"
+      ],
+      "is_control": false,
+      "layer": 0,
+      "layer_role": "early",
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) for the packer fit",
+      "note": "plain product quantization (no Hadamard rotation)",
+      "representation_family": "product_quant",
+      "row_id": "g3_006",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "per (tensor_class, layer) promote the representation with the HIGHEST layer_hidden_state_cosine within the exact per-matrix budget; source_native controls are reference boundaries and are excluded; then record whether the layer-0 winner still wins at the mid (18) and late (35) layers (cross-layer transfer)",
+      "tensor_class": "expert_mlp2",
+      "tensor_group_fmt": "block.{b}.mlp.mlp2_weight",
+      "top_k": 4,
+      "validation_inputs": {
+        "kind": "real_block_n_moe_inputs",
+        "layer": 0,
+        "n_sequences": 2,
+        "seed_domain": "validation_disjoint",
+        "tokens_per_seq": 6
+      }
+    },
+    {
+      "base_execution_provider": {
+        "cpu_reference": "mech_measure.m1_lookup_linear_np",
+        "default_fallback_provider": "genf_direct_compact",
+        "execution_generation": "M",
+        "metal_provider": "mech_measure.m1_lookup_linear_torch",
+        "name": "m2_shared_lookup_linear",
+        "note": "Gen-M lookup-linear is EXACT parity to Gen-F direct-compact; it lowers logical FLOPs / movement / dispatches but does NOT change the measured divergence. Gen-F direct-compact is the wall-safe default provider.",
+        "parity_vs_genf": "EXACT end-to-end (logit cos 1.0, next-token 1.0; operator/expert/layer ~1e-7)",
+        "quality_neutral": true,
+        "status": "AVAILABLE (verified parity-preserving)"
+      },
+      "calibration_inputs": {
+        "kind": "real_block_n_moe_inputs",
+        "layer": 0,
+        "n_sequences": 3,
+        "seed_domain": "calibration",
+        "tokens_per_seq": 6
+      },
+      "candidate": true,
+      "cpu_impl": "gravity_frontier_g3 numpy reference forward (generalized block N)",
+      "exact_budget": {
+        "n_weights_per_matrix": 8294400,
+        "native_bpw": 4.25,
+        "rate": "native",
+        "target_total_bits": 35251712
+      },
+      "exact_rate": "native",
+      "execution_generation": "M",
+      "family_params": {},
+      "functional_metrics": [
+        "router_topk_agreement",
+        "expert_output_cosine",
+        "expert_output_rel_error",
+        "weighted_combine_divergence",
+        "layer_hidden_state_cosine",
+        "complete_layer_bpw",
+        "cross_layer_transfer"
+      ],
+      "is_control": true,
+      "layer": 0,
+      "layer_role": "early",
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) for the packer fit",
+      "note": "source-native reference boundary (kept native, excluded from selection)",
+      "representation_family": "source_native_control",
+      "row_id": "g3_007",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "per (tensor_class, layer) promote the representation with the HIGHEST layer_hidden_state_cosine within the exact per-matrix budget; source_native controls are reference boundaries and are excluded; then record whether the layer-0 winner still wins at the mid (18) and late (35) layers (cross-layer transfer)",
+      "tensor_class": "expert_mlp2",
+      "tensor_group_fmt": "block.{b}.mlp.mlp2_weight",
+      "top_k": 4,
+      "validation_inputs": {
+        "kind": "real_block_n_moe_inputs",
+        "layer": 0,
+        "n_sequences": 2,
+        "seed_domain": "validation_disjoint",
+        "tokens_per_seq": 6
+      }
+    },
+    {
+      "base_execution_provider": {
+        "cpu_reference": "mech_measure.m1_lookup_linear_np",
+        "default_fallback_provider": "genf_direct_compact",
+        "execution_generation": "M",
+        "metal_provider": "mech_measure.m1_lookup_linear_torch",
+        "name": "m2_shared_lookup_linear",
+        "note": "Gen-M lookup-linear is EXACT parity to Gen-F direct-compact; it lowers logical FLOPs / movement / dispatches but does NOT change the measured divergence. Gen-F direct-compact is the wall-safe default provider.",
+        "parity_vs_genf": "EXACT end-to-end (logit cos 1.0, next-token 1.0; operator/expert/layer ~1e-7)",
+        "quality_neutral": true,
+        "status": "AVAILABLE (verified parity-preserving)"
+      },
+      "calibration_inputs": {
+        "kind": "real_block_n_moe_inputs",
+        "layer": 18,
+        "n_sequences": 3,
+        "seed_domain": "calibration",
+        "tokens_per_seq": 6
+      },
+      "candidate": true,
+      "cpu_impl": "gravity_frontier_g3 numpy reference forward (generalized block N)",
+      "exact_budget": {
+        "n_weights_per_matrix": 16588800,
+        "native_bpw": 4.25,
+        "rate": "3/4",
+        "target_total_bits": 15262208
+      },
+      "exact_rate": "3/4",
+      "execution_generation": "M",
+      "family_params": {
+        "budget_frac": 0.01,
+        "dim": 16,
+        "k": 64,
+        "strategy": "residual_energy",
+        "subspaces": 2
+      },
+      "functional_metrics": [
+        "router_topk_agreement",
+        "expert_output_cosine",
+        "expert_output_rel_error",
+        "weighted_combine_divergence",
+        "layer_hidden_state_cosine",
+        "complete_layer_bpw",
+        "cross_layer_transfer"
+      ],
+      "is_control": false,
+      "layer": 18,
+      "layer_role": "mid",
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) for the packer fit",
+      "note": "PQ + residual-energy protected islands (heavy-tail reserve)",
+      "representation_family": "pq_protected_islands",
+      "row_id": "g3_008",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "per (tensor_class, layer) promote the representation with the HIGHEST layer_hidden_state_cosine within the exact per-matrix budget; source_native controls are reference boundaries and are excluded; then record whether the layer-0 winner still wins at the mid (18) and late (35) layers (cross-layer transfer)",
+      "tensor_class": "expert_mlp1",
+      "tensor_group_fmt": "block.{b}.mlp.mlp1_weight",
+      "top_k": 4,
+      "validation_inputs": {
+        "kind": "real_block_n_moe_inputs",
+        "layer": 18,
+        "n_sequences": 2,
+        "seed_domain": "validation_disjoint",
+        "tokens_per_seq": 6
+      }
+    },
+    {
+      "base_execution_provider": {
+        "cpu_reference": "mech_measure.m1_lookup_linear_np",
+        "default_fallback_provider": "genf_direct_compact",
+        "execution_generation": "M",
+        "metal_provider": "mech_measure.m1_lookup_linear_torch",
+        "name": "m2_shared_lookup_linear",
+        "note": "Gen-M lookup-linear is EXACT parity to Gen-F direct-compact; it lowers logical FLOPs / movement / dispatches but does NOT change the measured divergence. Gen-F direct-compact is the wall-safe default provider.",
+        "parity_vs_genf": "EXACT end-to-end (logit cos 1.0, next-token 1.0; operator/expert/layer ~1e-7)",
+        "quality_neutral": true,
+        "status": "AVAILABLE (verified parity-preserving)"
+      },
+      "calibration_inputs": {
+        "kind": "real_block_n_moe_inputs",
+        "layer": 18,
+        "n_sequences": 3,
+        "seed_domain": "calibration",
+        "tokens_per_seq": 6
+      },
+      "candidate": true,
+      "cpu_impl": "gravity_frontier_g3 numpy reference forward (generalized block N)",
+      "exact_budget": {
+        "n_weights_per_matrix": 16588800,
+        "native_bpw": 4.25,
+        "rate": "3/4",
+        "target_total_bits": 15096320
+      },
+      "exact_rate": "3/4",
+      "execution_generation": "M",
+      "family_params": {
+        "dim": 16,
+        "doctor": "residual_codebook",
+        "doctor_bpw": 0.15,
+        "k": 64,
+        "subspaces": 2
+      },
+      "functional_metrics": [
+        "router_topk_agreement",
+        "expert_output_cosine",
+        "expert_output_rel_error",
+        "weighted_combine_divergence",
+        "layer_hidden_state_cosine",
+        "complete_layer_bpw",
+        "cross_layer_transfer"
+      ],
+      "is_control": false,
+      "layer": 18,
+      "layer_role": "mid",
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) for the packer fit",
+      "note": "PQ + Doctor residual codebook inside the same rate (G2 layer-0 mlp1 winner)",
+      "representation_family": "pq_doctor_lowrank",
+      "row_id": "g3_009",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "per (tensor_class, layer) promote the representation with the HIGHEST layer_hidden_state_cosine within the exact per-matrix budget; source_native controls are reference boundaries and are excluded; then record whether the layer-0 winner still wins at the mid (18) and late (35) layers (cross-layer transfer)",
+      "tensor_class": "expert_mlp1",
+      "tensor_group_fmt": "block.{b}.mlp.mlp1_weight",
+      "top_k": 4,
+      "validation_inputs": {
+        "kind": "real_block_n_moe_inputs",
+        "layer": 18,
+        "n_sequences": 2,
+        "seed_domain": "validation_disjoint",
+        "tokens_per_seq": 6
+      }
+    },
+    {
+      "base_execution_provider": {
+        "cpu_reference": "mech_measure.m1_lookup_linear_np",
+        "default_fallback_provider": "genf_direct_compact",
+        "execution_generation": "M",
+        "metal_provider": "mech_measure.m1_lookup_linear_torch",
+        "name": "m2_shared_lookup_linear",
+        "note": "Gen-M lookup-linear is EXACT parity to Gen-F direct-compact; it lowers logical FLOPs / movement / dispatches but does NOT change the measured divergence. Gen-F direct-compact is the wall-safe default provider.",
+        "parity_vs_genf": "EXACT end-to-end (logit cos 1.0, next-token 1.0; operator/expert/layer ~1e-7)",
+        "quality_neutral": true,
+        "status": "AVAILABLE (verified parity-preserving)"
+      },
+      "calibration_inputs": {
+        "kind": "real_block_n_moe_inputs",
+        "layer": 18,
+        "n_sequences": 3,
+        "seed_domain": "calibration",
+        "tokens_per_seq": 6
+      },
+      "candidate": true,
+      "cpu_impl": "gravity_frontier_g3 numpy reference forward (generalized block N)",
+      "exact_budget": {
+        "n_weights_per_matrix": 16588800,
+        "native_bpw": 4.25,
+        "rate": "3/4",
+        "target_total_bits": 12608000
+      },
+      "exact_rate": "3/4",
+      "execution_generation": "M",
+      "family_params": {
+        "dim": 16,
+        "k": 64,
+        "subspaces": 2
+      },
+      "functional_metrics": [
+        "router_topk_agreement",
+        "expert_output_cosine",
+        "expert_output_rel_error",
+        "weighted_combine_divergence",
+        "layer_hidden_state_cosine",
+        "complete_layer_bpw",
+        "cross_layer_transfer"
+      ],
+      "is_control": false,
+      "layer": 18,
+      "layer_role": "mid",
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) for the packer fit",
+      "note": "plain product quantization (no Hadamard rotation)",
+      "representation_family": "product_quant",
+      "row_id": "g3_010",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "per (tensor_class, layer) promote the representation with the HIGHEST layer_hidden_state_cosine within the exact per-matrix budget; source_native controls are reference boundaries and are excluded; then record whether the layer-0 winner still wins at the mid (18) and late (35) layers (cross-layer transfer)",
+      "tensor_class": "expert_mlp1",
+      "tensor_group_fmt": "block.{b}.mlp.mlp1_weight",
+      "top_k": 4,
+      "validation_inputs": {
+        "kind": "real_block_n_moe_inputs",
+        "layer": 18,
+        "n_sequences": 2,
+        "seed_domain": "validation_disjoint",
+        "tokens_per_seq": 6
+      }
+    },
+    {
+      "base_execution_provider": {
+        "cpu_reference": "mech_measure.m1_lookup_linear_np",
+        "default_fallback_provider": "genf_direct_compact",
+        "execution_generation": "M",
+        "metal_provider": "mech_measure.m1_lookup_linear_torch",
+        "name": "m2_shared_lookup_linear",
+        "note": "Gen-M lookup-linear is EXACT parity to Gen-F direct-compact; it lowers logical FLOPs / movement / dispatches but does NOT change the measured divergence. Gen-F direct-compact is the wall-safe default provider.",
+        "parity_vs_genf": "EXACT end-to-end (logit cos 1.0, next-token 1.0; operator/expert/layer ~1e-7)",
+        "quality_neutral": true,
+        "status": "AVAILABLE (verified parity-preserving)"
+      },
+      "calibration_inputs": {
+        "kind": "real_block_n_moe_inputs",
+        "layer": 18,
+        "n_sequences": 3,
+        "seed_domain": "calibration",
+        "tokens_per_seq": 6
+      },
+      "candidate": true,
+      "cpu_impl": "gravity_frontier_g3 numpy reference forward (generalized block N)",
+      "exact_budget": {
+        "n_weights_per_matrix": 16588800,
+        "native_bpw": 4.25,
+        "rate": "native",
+        "target_total_bits": 70502912
+      },
+      "exact_rate": "native",
+      "execution_generation": "M",
+      "family_params": {},
+      "functional_metrics": [
+        "router_topk_agreement",
+        "expert_output_cosine",
+        "expert_output_rel_error",
+        "weighted_combine_divergence",
+        "layer_hidden_state_cosine",
+        "complete_layer_bpw",
+        "cross_layer_transfer"
+      ],
+      "is_control": true,
+      "layer": 18,
+      "layer_role": "mid",
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) for the packer fit",
+      "note": "source-native reference boundary (kept native, excluded from selection)",
+      "representation_family": "source_native_control",
+      "row_id": "g3_011",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "per (tensor_class, layer) promote the representation with the HIGHEST layer_hidden_state_cosine within the exact per-matrix budget; source_native controls are reference boundaries and are excluded; then record whether the layer-0 winner still wins at the mid (18) and late (35) layers (cross-layer transfer)",
+      "tensor_class": "expert_mlp1",
+      "tensor_group_fmt": "block.{b}.mlp.mlp1_weight",
+      "top_k": 4,
+      "validation_inputs": {
+        "kind": "real_block_n_moe_inputs",
+        "layer": 18,
+        "n_sequences": 2,
+        "seed_domain": "validation_disjoint",
+        "tokens_per_seq": 6
+      }
+    },
+    {
+      "base_execution_provider": {
+        "cpu_reference": "mech_measure.m1_lookup_linear_np",
+        "default_fallback_provider": "genf_direct_compact",
+        "execution_generation": "M",
+        "metal_provider": "mech_measure.m1_lookup_linear_torch",
+        "name": "m2_shared_lookup_linear",
+        "note": "Gen-M lookup-linear is EXACT parity to Gen-F direct-compact; it lowers logical FLOPs / movement / dispatches but does NOT change the measured divergence. Gen-F direct-compact is the wall-safe default provider.",
+        "parity_vs_genf": "EXACT end-to-end (logit cos 1.0, next-token 1.0; operator/expert/layer ~1e-7)",
+        "quality_neutral": true,
+        "status": "AVAILABLE (verified parity-preserving)"
+      },
+      "calibration_inputs": {
+        "kind": "real_block_n_moe_inputs",
+        "layer": 18,
+        "n_sequences": 3,
+        "seed_domain": "calibration",
+        "tokens_per_seq": 6
+      },
+      "candidate": true,
+      "cpu_impl": "gravity_frontier_g3 numpy reference forward (generalized block N)",
+      "exact_budget": {
+        "n_weights_per_matrix": 8294400,
+        "native_bpw": 4.25,
+        "rate": "3/4",
+        "target_total_bits": 7631360
+      },
+      "exact_rate": "3/4",
+      "execution_generation": "M",
+      "family_params": {
+        "budget_frac": 0.01,
+        "dim": 16,
+        "k": 64,
+        "strategy": "residual_energy",
+        "subspaces": 2
+      },
+      "functional_metrics": [
+        "router_topk_agreement",
+        "expert_output_cosine",
+        "expert_output_rel_error",
+        "weighted_combine_divergence",
+        "layer_hidden_state_cosine",
+        "complete_layer_bpw",
+        "cross_layer_transfer"
+      ],
+      "is_control": false,
+      "layer": 18,
+      "layer_role": "mid",
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) for the packer fit",
+      "note": "PQ + residual-energy protected islands (G2 layer-0 mlp2 winner)",
+      "representation_family": "pq_protected_islands",
+      "row_id": "g3_012",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "per (tensor_class, layer) promote the representation with the HIGHEST layer_hidden_state_cosine within the exact per-matrix budget; source_native controls are reference boundaries and are excluded; then record whether the layer-0 winner still wins at the mid (18) and late (35) layers (cross-layer transfer)",
+      "tensor_class": "expert_mlp2",
+      "tensor_group_fmt": "block.{b}.mlp.mlp2_weight",
+      "top_k": 4,
+      "validation_inputs": {
+        "kind": "real_block_n_moe_inputs",
+        "layer": 18,
+        "n_sequences": 2,
+        "seed_domain": "validation_disjoint",
+        "tokens_per_seq": 6
+      }
+    },
+    {
+      "base_execution_provider": {
+        "cpu_reference": "mech_measure.m1_lookup_linear_np",
+        "default_fallback_provider": "genf_direct_compact",
+        "execution_generation": "M",
+        "metal_provider": "mech_measure.m1_lookup_linear_torch",
+        "name": "m2_shared_lookup_linear",
+        "note": "Gen-M lookup-linear is EXACT parity to Gen-F direct-compact; it lowers logical FLOPs / movement / dispatches but does NOT change the measured divergence. Gen-F direct-compact is the wall-safe default provider.",
+        "parity_vs_genf": "EXACT end-to-end (logit cos 1.0, next-token 1.0; operator/expert/layer ~1e-7)",
+        "quality_neutral": true,
+        "status": "AVAILABLE (verified parity-preserving)"
+      },
+      "calibration_inputs": {
+        "kind": "real_block_n_moe_inputs",
+        "layer": 18,
+        "n_sequences": 3,
+        "seed_domain": "calibration",
+        "tokens_per_seq": 6
+      },
+      "candidate": true,
+      "cpu_impl": "gravity_frontier_g3 numpy reference forward (generalized block N)",
+      "exact_budget": {
+        "n_weights_per_matrix": 8294400,
+        "native_bpw": 4.25,
+        "rate": "3/4",
+        "target_total_bits": 6304256
+      },
+      "exact_rate": "3/4",
+      "execution_generation": "M",
+      "family_params": {
+        "dim": 16,
+        "k": 64,
+        "stages": 2
+      },
+      "functional_metrics": [
+        "router_topk_agreement",
+        "expert_output_cosine",
+        "expert_output_rel_error",
+        "weighted_combine_divergence",
+        "layer_hidden_state_cosine",
+        "complete_layer_bpw",
+        "cross_layer_transfer"
+      ],
+      "is_control": false,
+      "layer": 18,
+      "layer_role": "mid",
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) for the packer fit",
+      "note": "residual vector quantization (different representation)",
+      "representation_family": "naive_rvq",
+      "row_id": "g3_013",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "per (tensor_class, layer) promote the representation with the HIGHEST layer_hidden_state_cosine within the exact per-matrix budget; source_native controls are reference boundaries and are excluded; then record whether the layer-0 winner still wins at the mid (18) and late (35) layers (cross-layer transfer)",
+      "tensor_class": "expert_mlp2",
+      "tensor_group_fmt": "block.{b}.mlp.mlp2_weight",
+      "top_k": 4,
+      "validation_inputs": {
+        "kind": "real_block_n_moe_inputs",
+        "layer": 18,
+        "n_sequences": 2,
+        "seed_domain": "validation_disjoint",
+        "tokens_per_seq": 6
+      }
+    },
+    {
+      "base_execution_provider": {
+        "cpu_reference": "mech_measure.m1_lookup_linear_np",
+        "default_fallback_provider": "genf_direct_compact",
+        "execution_generation": "M",
+        "metal_provider": "mech_measure.m1_lookup_linear_torch",
+        "name": "m2_shared_lookup_linear",
+        "note": "Gen-M lookup-linear is EXACT parity to Gen-F direct-compact; it lowers logical FLOPs / movement / dispatches but does NOT change the measured divergence. Gen-F direct-compact is the wall-safe default provider.",
+        "parity_vs_genf": "EXACT end-to-end (logit cos 1.0, next-token 1.0; operator/expert/layer ~1e-7)",
+        "quality_neutral": true,
+        "status": "AVAILABLE (verified parity-preserving)"
+      },
+      "calibration_inputs": {
+        "kind": "real_block_n_moe_inputs",
+        "layer": 18,
+        "n_sequences": 3,
+        "seed_domain": "calibration",
+        "tokens_per_seq": 6
+      },
+      "candidate": true,
+      "cpu_impl": "gravity_frontier_g3 numpy reference forward (generalized block N)",
+      "exact_budget": {
+        "n_weights_per_matrix": 8294400,
+        "native_bpw": 4.25,
+        "rate": "3/4",
+        "target_total_bits": 6304256
+      },
+      "exact_rate": "3/4",
+      "execution_generation": "M",
+      "family_params": {
+        "dim": 16,
+        "k": 64,
+        "subspaces": 2
+      },
+      "functional_metrics": [
+        "router_topk_agreement",
+        "expert_output_cosine",
+        "expert_output_rel_error",
+        "weighted_combine_divergence",
+        "layer_hidden_state_cosine",
+        "complete_layer_bpw",
+        "cross_layer_transfer"
+      ],
+      "is_control": false,
+      "layer": 18,
+      "layer_role": "mid",
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) for the packer fit",
+      "note": "plain product quantization (no Hadamard rotation)",
+      "representation_family": "product_quant",
+      "row_id": "g3_014",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "per (tensor_class, layer) promote the representation with the HIGHEST layer_hidden_state_cosine within the exact per-matrix budget; source_native controls are reference boundaries and are excluded; then record whether the layer-0 winner still wins at the mid (18) and late (35) layers (cross-layer transfer)",
+      "tensor_class": "expert_mlp2",
+      "tensor_group_fmt": "block.{b}.mlp.mlp2_weight",
+      "top_k": 4,
+      "validation_inputs": {
+        "kind": "real_block_n_moe_inputs",
+        "layer": 18,
+        "n_sequences": 2,
+        "seed_domain": "validation_disjoint",
+        "tokens_per_seq": 6
+      }
+    },
+    {
+      "base_execution_provider": {
+        "cpu_reference": "mech_measure.m1_lookup_linear_np",
+        "default_fallback_provider": "genf_direct_compact",
+        "execution_generation": "M",
+        "metal_provider": "mech_measure.m1_lookup_linear_torch",
+        "name": "m2_shared_lookup_linear",
+        "note": "Gen-M lookup-linear is EXACT parity to Gen-F direct-compact; it lowers logical FLOPs / movement / dispatches but does NOT change the measured divergence. Gen-F direct-compact is the wall-safe default provider.",
+        "parity_vs_genf": "EXACT end-to-end (logit cos 1.0, next-token 1.0; operator/expert/layer ~1e-7)",
+        "quality_neutral": true,
+        "status": "AVAILABLE (verified parity-preserving)"
+      },
+      "calibration_inputs": {
+        "kind": "real_block_n_moe_inputs",
+        "layer": 18,
+        "n_sequences": 3,
+        "seed_domain": "calibration",
+        "tokens_per_seq": 6
+      },
+      "candidate": true,
+      "cpu_impl": "gravity_frontier_g3 numpy reference forward (generalized block N)",
+      "exact_budget": {
+        "n_weights_per_matrix": 8294400,
+        "native_bpw": 4.25,
+        "rate": "native",
+        "target_total_bits": 35251712
+      },
+      "exact_rate": "native",
+      "execution_generation": "M",
+      "family_params": {},
+      "functional_metrics": [
+        "router_topk_agreement",
+        "expert_output_cosine",
+        "expert_output_rel_error",
+        "weighted_combine_divergence",
+        "layer_hidden_state_cosine",
+        "complete_layer_bpw",
+        "cross_layer_transfer"
+      ],
+      "is_control": true,
+      "layer": 18,
+      "layer_role": "mid",
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) for the packer fit",
+      "note": "source-native reference boundary (kept native, excluded from selection)",
+      "representation_family": "source_native_control",
+      "row_id": "g3_015",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "per (tensor_class, layer) promote the representation with the HIGHEST layer_hidden_state_cosine within the exact per-matrix budget; source_native controls are reference boundaries and are excluded; then record whether the layer-0 winner still wins at the mid (18) and late (35) layers (cross-layer transfer)",
+      "tensor_class": "expert_mlp2",
+      "tensor_group_fmt": "block.{b}.mlp.mlp2_weight",
+      "top_k": 4,
+      "validation_inputs": {
+        "kind": "real_block_n_moe_inputs",
+        "layer": 18,
+        "n_sequences": 2,
+        "seed_domain": "validation_disjoint",
+        "tokens_per_seq": 6
+      }
+    },
+    {
+      "base_execution_provider": {
+        "cpu_reference": "mech_measure.m1_lookup_linear_np",
+        "default_fallback_provider": "genf_direct_compact",
+        "execution_generation": "M",
+        "metal_provider": "mech_measure.m1_lookup_linear_torch",
+        "name": "m2_shared_lookup_linear",
+        "note": "Gen-M lookup-linear is EXACT parity to Gen-F direct-compact; it lowers logical FLOPs / movement / dispatches but does NOT change the measured divergence. Gen-F direct-compact is the wall-safe default provider.",
+        "parity_vs_genf": "EXACT end-to-end (logit cos 1.0, next-token 1.0; operator/expert/layer ~1e-7)",
+        "quality_neutral": true,
+        "status": "AVAILABLE (verified parity-preserving)"
+      },
+      "calibration_inputs": {
+        "kind": "real_block_n_moe_inputs",
+        "layer": 35,
+        "n_sequences": 3,
+        "seed_domain": "calibration",
+        "tokens_per_seq": 6
+      },
+      "candidate": true,
+      "cpu_impl": "gravity_frontier_g3 numpy reference forward (generalized block N)",
+      "exact_budget": {
+        "n_weights_per_matrix": 16588800,
+        "native_bpw": 4.25,
+        "rate": "3/4",
+        "target_total_bits": 15262208
+      },
+      "exact_rate": "3/4",
+      "execution_generation": "M",
+      "family_params": {
+        "budget_frac": 0.01,
+        "dim": 16,
+        "k": 64,
+        "strategy": "residual_energy",
+        "subspaces": 2
+      },
+      "functional_metrics": [
+        "router_topk_agreement",
+        "expert_output_cosine",
+        "expert_output_rel_error",
+        "weighted_combine_divergence",
+        "layer_hidden_state_cosine",
+        "complete_layer_bpw",
+        "cross_layer_transfer"
+      ],
+      "is_control": false,
+      "layer": 35,
+      "layer_role": "late",
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) for the packer fit",
+      "note": "PQ + residual-energy protected islands (heavy-tail reserve)",
+      "representation_family": "pq_protected_islands",
+      "row_id": "g3_016",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "per (tensor_class, layer) promote the representation with the HIGHEST layer_hidden_state_cosine within the exact per-matrix budget; source_native controls are reference boundaries and are excluded; then record whether the layer-0 winner still wins at the mid (18) and late (35) layers (cross-layer transfer)",
+      "tensor_class": "expert_mlp1",
+      "tensor_group_fmt": "block.{b}.mlp.mlp1_weight",
+      "top_k": 4,
+      "validation_inputs": {
+        "kind": "real_block_n_moe_inputs",
+        "layer": 35,
+        "n_sequences": 2,
+        "seed_domain": "validation_disjoint",
+        "tokens_per_seq": 6
+      }
+    },
+    {
+      "base_execution_provider": {
+        "cpu_reference": "mech_measure.m1_lookup_linear_np",
+        "default_fallback_provider": "genf_direct_compact",
+        "execution_generation": "M",
+        "metal_provider": "mech_measure.m1_lookup_linear_torch",
+        "name": "m2_shared_lookup_linear",
+        "note": "Gen-M lookup-linear is EXACT parity to Gen-F direct-compact; it lowers logical FLOPs / movement / dispatches but does NOT change the measured divergence. Gen-F direct-compact is the wall-safe default provider.",
+        "parity_vs_genf": "EXACT end-to-end (logit cos 1.0, next-token 1.0; operator/expert/layer ~1e-7)",
+        "quality_neutral": true,
+        "status": "AVAILABLE (verified parity-preserving)"
+      },
+      "calibration_inputs": {
+        "kind": "real_block_n_moe_inputs",
+        "layer": 35,
+        "n_sequences": 3,
+        "seed_domain": "calibration",
+        "tokens_per_seq": 6
+      },
+      "candidate": true,
+      "cpu_impl": "gravity_frontier_g3 numpy reference forward (generalized block N)",
+      "exact_budget": {
+        "n_weights_per_matrix": 16588800,
+        "native_bpw": 4.25,
+        "rate": "3/4",
+        "target_total_bits": 15096320
+      },
+      "exact_rate": "3/4",
+      "execution_generation": "M",
+      "family_params": {
+        "dim": 16,
+        "doctor": "residual_codebook",
+        "doctor_bpw": 0.15,
+        "k": 64,
+        "subspaces": 2
+      },
+      "functional_metrics": [
+        "router_topk_agreement",
+        "expert_output_cosine",
+        "expert_output_rel_error",
+        "weighted_combine_divergence",
+        "layer_hidden_state_cosine",
+        "complete_layer_bpw",
+        "cross_layer_transfer"
+      ],
+      "is_control": false,
+      "layer": 35,
+      "layer_role": "late",
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) for the packer fit",
+      "note": "PQ + Doctor residual codebook inside the same rate (G2 layer-0 mlp1 winner)",
+      "representation_family": "pq_doctor_lowrank",
+      "row_id": "g3_017",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "per (tensor_class, layer) promote the representation with the HIGHEST layer_hidden_state_cosine within the exact per-matrix budget; source_native controls are reference boundaries and are excluded; then record whether the layer-0 winner still wins at the mid (18) and late (35) layers (cross-layer transfer)",
+      "tensor_class": "expert_mlp1",
+      "tensor_group_fmt": "block.{b}.mlp.mlp1_weight",
+      "top_k": 4,
+      "validation_inputs": {
+        "kind": "real_block_n_moe_inputs",
+        "layer": 35,
+        "n_sequences": 2,
+        "seed_domain": "validation_disjoint",
+        "tokens_per_seq": 6
+      }
+    },
+    {
+      "base_execution_provider": {
+        "cpu_reference": "mech_measure.m1_lookup_linear_np",
+        "default_fallback_provider": "genf_direct_compact",
+        "execution_generation": "M",
+        "metal_provider": "mech_measure.m1_lookup_linear_torch",
+        "name": "m2_shared_lookup_linear",
+        "note": "Gen-M lookup-linear is EXACT parity to Gen-F direct-compact; it lowers logical FLOPs / movement / dispatches but does NOT change the measured divergence. Gen-F direct-compact is the wall-safe default provider.",
+        "parity_vs_genf": "EXACT end-to-end (logit cos 1.0, next-token 1.0; operator/expert/layer ~1e-7)",
+        "quality_neutral": true,
+        "status": "AVAILABLE (verified parity-preserving)"
+      },
+      "calibration_inputs": {
+        "kind": "real_block_n_moe_inputs",
+        "layer": 35,
+        "n_sequences": 3,
+        "seed_domain": "calibration",
+        "tokens_per_seq": 6
+      },
+      "candidate": true,
+      "cpu_impl": "gravity_frontier_g3 numpy reference forward (generalized block N)",
+      "exact_budget": {
+        "n_weights_per_matrix": 16588800,
+        "native_bpw": 4.25,
+        "rate": "3/4",
+        "target_total_bits": 12608000
+      },
+      "exact_rate": "3/4",
+      "execution_generation": "M",
+      "family_params": {
+        "dim": 16,
+        "k": 64,
+        "subspaces": 2
+      },
+      "functional_metrics": [
+        "router_topk_agreement",
+        "expert_output_cosine",
+        "expert_output_rel_error",
+        "weighted_combine_divergence",
+        "layer_hidden_state_cosine",
+        "complete_layer_bpw",
+        "cross_layer_transfer"
+      ],
+      "is_control": false,
+      "layer": 35,
+      "layer_role": "late",
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) for the packer fit",
+      "note": "plain product quantization (no Hadamard rotation)",
+      "representation_family": "product_quant",
+      "row_id": "g3_018",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "per (tensor_class, layer) promote the representation with the HIGHEST layer_hidden_state_cosine within the exact per-matrix budget; source_native controls are reference boundaries and are excluded; then record whether the layer-0 winner still wins at the mid (18) and late (35) layers (cross-layer transfer)",
+      "tensor_class": "expert_mlp1",
+      "tensor_group_fmt": "block.{b}.mlp.mlp1_weight",
+      "top_k": 4,
+      "validation_inputs": {
+        "kind": "real_block_n_moe_inputs",
+        "layer": 35,
+        "n_sequences": 2,
+        "seed_domain": "validation_disjoint",
+        "tokens_per_seq": 6
+      }
+    },
+    {
+      "base_execution_provider": {
+        "cpu_reference": "mech_measure.m1_lookup_linear_np",
+        "default_fallback_provider": "genf_direct_compact",
+        "execution_generation": "M",
+        "metal_provider": "mech_measure.m1_lookup_linear_torch",
+        "name": "m2_shared_lookup_linear",
+        "note": "Gen-M lookup-linear is EXACT parity to Gen-F direct-compact; it lowers logical FLOPs / movement / dispatches but does NOT change the measured divergence. Gen-F direct-compact is the wall-safe default provider.",
+        "parity_vs_genf": "EXACT end-to-end (logit cos 1.0, next-token 1.0; operator/expert/layer ~1e-7)",
+        "quality_neutral": true,
+        "status": "AVAILABLE (verified parity-preserving)"
+      },
+      "calibration_inputs": {
+        "kind": "real_block_n_moe_inputs",
+        "layer": 35,
+        "n_sequences": 3,
+        "seed_domain": "calibration",
+        "tokens_per_seq": 6
+      },
+      "candidate": true,
+      "cpu_impl": "gravity_frontier_g3 numpy reference forward (generalized block N)",
+      "exact_budget": {
+        "n_weights_per_matrix": 16588800,
+        "native_bpw": 4.25,
+        "rate": "native",
+        "target_total_bits": 70502912
+      },
+      "exact_rate": "native",
+      "execution_generation": "M",
+      "family_params": {},
+      "functional_metrics": [
+        "router_topk_agreement",
+        "expert_output_cosine",
+        "expert_output_rel_error",
+        "weighted_combine_divergence",
+        "layer_hidden_state_cosine",
+        "complete_layer_bpw",
+        "cross_layer_transfer"
+      ],
+      "is_control": true,
+      "layer": 35,
+      "layer_role": "late",
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) for the packer fit",
+      "note": "source-native reference boundary (kept native, excluded from selection)",
+      "representation_family": "source_native_control",
+      "row_id": "g3_019",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "per (tensor_class, layer) promote the representation with the HIGHEST layer_hidden_state_cosine within the exact per-matrix budget; source_native controls are reference boundaries and are excluded; then record whether the layer-0 winner still wins at the mid (18) and late (35) layers (cross-layer transfer)",
+      "tensor_class": "expert_mlp1",
+      "tensor_group_fmt": "block.{b}.mlp.mlp1_weight",
+      "top_k": 4,
+      "validation_inputs": {
+        "kind": "real_block_n_moe_inputs",
+        "layer": 35,
+        "n_sequences": 2,
+        "seed_domain": "validation_disjoint",
+        "tokens_per_seq": 6
+      }
+    },
+    {
+      "base_execution_provider": {
+        "cpu_reference": "mech_measure.m1_lookup_linear_np",
+        "default_fallback_provider": "genf_direct_compact",
+        "execution_generation": "M",
+        "metal_provider": "mech_measure.m1_lookup_linear_torch",
+        "name": "m2_shared_lookup_linear",
+        "note": "Gen-M lookup-linear is EXACT parity to Gen-F direct-compact; it lowers logical FLOPs / movement / dispatches but does NOT change the measured divergence. Gen-F direct-compact is the wall-safe default provider.",
+        "parity_vs_genf": "EXACT end-to-end (logit cos 1.0, next-token 1.0; operator/expert/layer ~1e-7)",
+        "quality_neutral": true,
+        "status": "AVAILABLE (verified parity-preserving)"
+      },
+      "calibration_inputs": {
+        "kind": "real_block_n_moe_inputs",
+        "layer": 35,
+        "n_sequences": 3,
+        "seed_domain": "calibration",
+        "tokens_per_seq": 6
+      },
+      "candidate": true,
+      "cpu_impl": "gravity_frontier_g3 numpy reference forward (generalized block N)",
+      "exact_budget": {
+        "n_weights_per_matrix": 8294400,
+        "native_bpw": 4.25,
+        "rate": "3/4",
+        "target_total_bits": 7631360
+      },
+      "exact_rate": "3/4",
+      "execution_generation": "M",
+      "family_params": {
+        "budget_frac": 0.01,
+        "dim": 16,
+        "k": 64,
+        "strategy": "residual_energy",
+        "subspaces": 2
+      },
+      "functional_metrics": [
+        "router_topk_agreement",
+        "expert_output_cosine",
+        "expert_output_rel_error",
+        "weighted_combine_divergence",
+        "layer_hidden_state_cosine",
+        "complete_layer_bpw",
+        "cross_layer_transfer"
+      ],
+      "is_control": false,
+      "layer": 35,
+      "layer_role": "late",
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) for the packer fit",
+      "note": "PQ + residual-energy protected islands (G2 layer-0 mlp2 winner)",
+      "representation_family": "pq_protected_islands",
+      "row_id": "g3_020",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "per (tensor_class, layer) promote the representation with the HIGHEST layer_hidden_state_cosine within the exact per-matrix budget; source_native controls are reference boundaries and are excluded; then record whether the layer-0 winner still wins at the mid (18) and late (35) layers (cross-layer transfer)",
+      "tensor_class": "expert_mlp2",
+      "tensor_group_fmt": "block.{b}.mlp.mlp2_weight",
+      "top_k": 4,
+      "validation_inputs": {
+        "kind": "real_block_n_moe_inputs",
+        "layer": 35,
+        "n_sequences": 2,
+        "seed_domain": "validation_disjoint",
+        "tokens_per_seq": 6
+      }
+    },
+    {
+      "base_execution_provider": {
+        "cpu_reference": "mech_measure.m1_lookup_linear_np",
+        "default_fallback_provider": "genf_direct_compact",
+        "execution_generation": "M",
+        "metal_provider": "mech_measure.m1_lookup_linear_torch",
+        "name": "m2_shared_lookup_linear",
+        "note": "Gen-M lookup-linear is EXACT parity to Gen-F direct-compact; it lowers logical FLOPs / movement / dispatches but does NOT change the measured divergence. Gen-F direct-compact is the wall-safe default provider.",
+        "parity_vs_genf": "EXACT end-to-end (logit cos 1.0, next-token 1.0; operator/expert/layer ~1e-7)",
+        "quality_neutral": true,
+        "status": "AVAILABLE (verified parity-preserving)"
+      },
+      "calibration_inputs": {
+        "kind": "real_block_n_moe_inputs",
+        "layer": 35,
+        "n_sequences": 3,
+        "seed_domain": "calibration",
+        "tokens_per_seq": 6
+      },
+      "candidate": true,
+      "cpu_impl": "gravity_frontier_g3 numpy reference forward (generalized block N)",
+      "exact_budget": {
+        "n_weights_per_matrix": 8294400,
+        "native_bpw": 4.25,
+        "rate": "3/4",
+        "target_total_bits": 6304256
+      },
+      "exact_rate": "3/4",
+      "execution_generation": "M",
+      "family_params": {
+        "dim": 16,
+        "k": 64,
+        "stages": 2
+      },
+      "functional_metrics": [
+        "router_topk_agreement",
+        "expert_output_cosine",
+        "expert_output_rel_error",
+        "weighted_combine_divergence",
+        "layer_hidden_state_cosine",
+        "complete_layer_bpw",
+        "cross_layer_transfer"
+      ],
+      "is_control": false,
+      "layer": 35,
+      "layer_role": "late",
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) for the packer fit",
+      "note": "residual vector quantization (different representation)",
+      "representation_family": "naive_rvq",
+      "row_id": "g3_021",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "per (tensor_class, layer) promote the representation with the HIGHEST layer_hidden_state_cosine within the exact per-matrix budget; source_native controls are reference boundaries and are excluded; then record whether the layer-0 winner still wins at the mid (18) and late (35) layers (cross-layer transfer)",
+      "tensor_class": "expert_mlp2",
+      "tensor_group_fmt": "block.{b}.mlp.mlp2_weight",
+      "top_k": 4,
+      "validation_inputs": {
+        "kind": "real_block_n_moe_inputs",
+        "layer": 35,
+        "n_sequences": 2,
+        "seed_domain": "validation_disjoint",
+        "tokens_per_seq": 6
+      }
+    },
+    {
+      "base_execution_provider": {
+        "cpu_reference": "mech_measure.m1_lookup_linear_np",
+        "default_fallback_provider": "genf_direct_compact",
+        "execution_generation": "M",
+        "metal_provider": "mech_measure.m1_lookup_linear_torch",
+        "name": "m2_shared_lookup_linear",
+        "note": "Gen-M lookup-linear is EXACT parity to Gen-F direct-compact; it lowers logical FLOPs / movement / dispatches but does NOT change the measured divergence. Gen-F direct-compact is the wall-safe default provider.",
+        "parity_vs_genf": "EXACT end-to-end (logit cos 1.0, next-token 1.0; operator/expert/layer ~1e-7)",
+        "quality_neutral": true,
+        "status": "AVAILABLE (verified parity-preserving)"
+      },
+      "calibration_inputs": {
+        "kind": "real_block_n_moe_inputs",
+        "layer": 35,
+        "n_sequences": 3,
+        "seed_domain": "calibration",
+        "tokens_per_seq": 6
+      },
+      "candidate": true,
+      "cpu_impl": "gravity_frontier_g3 numpy reference forward (generalized block N)",
+      "exact_budget": {
+        "n_weights_per_matrix": 8294400,
+        "native_bpw": 4.25,
+        "rate": "3/4",
+        "target_total_bits": 6304256
+      },
+      "exact_rate": "3/4",
+      "execution_generation": "M",
+      "family_params": {
+        "dim": 16,
+        "k": 64,
+        "subspaces": 2
+      },
+      "functional_metrics": [
+        "router_topk_agreement",
+        "expert_output_cosine",
+        "expert_output_rel_error",
+        "weighted_combine_divergence",
+        "layer_hidden_state_cosine",
+        "complete_layer_bpw",
+        "cross_layer_transfer"
+      ],
+      "is_control": false,
+      "layer": 35,
+      "layer_role": "late",
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) for the packer fit",
+      "note": "plain product quantization (no Hadamard rotation)",
+      "representation_family": "product_quant",
+      "row_id": "g3_022",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "per (tensor_class, layer) promote the representation with the HIGHEST layer_hidden_state_cosine within the exact per-matrix budget; source_native controls are reference boundaries and are excluded; then record whether the layer-0 winner still wins at the mid (18) and late (35) layers (cross-layer transfer)",
+      "tensor_class": "expert_mlp2",
+      "tensor_group_fmt": "block.{b}.mlp.mlp2_weight",
+      "top_k": 4,
+      "validation_inputs": {
+        "kind": "real_block_n_moe_inputs",
+        "layer": 35,
+        "n_sequences": 2,
+        "seed_domain": "validation_disjoint",
+        "tokens_per_seq": 6
+      }
+    },
+    {
+      "base_execution_provider": {
+        "cpu_reference": "mech_measure.m1_lookup_linear_np",
+        "default_fallback_provider": "genf_direct_compact",
+        "execution_generation": "M",
+        "metal_provider": "mech_measure.m1_lookup_linear_torch",
+        "name": "m2_shared_lookup_linear",
+        "note": "Gen-M lookup-linear is EXACT parity to Gen-F direct-compact; it lowers logical FLOPs / movement / dispatches but does NOT change the measured divergence. Gen-F direct-compact is the wall-safe default provider.",
+        "parity_vs_genf": "EXACT end-to-end (logit cos 1.0, next-token 1.0; operator/expert/layer ~1e-7)",
+        "quality_neutral": true,
+        "status": "AVAILABLE (verified parity-preserving)"
+      },
+      "calibration_inputs": {
+        "kind": "real_block_n_moe_inputs",
+        "layer": 35,
+        "n_sequences": 3,
+        "seed_domain": "calibration",
+        "tokens_per_seq": 6
+      },
+      "candidate": true,
+      "cpu_impl": "gravity_frontier_g3 numpy reference forward (generalized block N)",
+      "exact_budget": {
+        "n_weights_per_matrix": 8294400,
+        "native_bpw": 4.25,
+        "rate": "native",
+        "target_total_bits": 35251712
+      },
+      "exact_rate": "native",
+      "execution_generation": "M",
+      "family_params": {},
+      "functional_metrics": [
+        "router_topk_agreement",
+        "expert_output_cosine",
+        "expert_output_rel_error",
+        "weighted_combine_divergence",
+        "layer_hidden_state_cosine",
+        "complete_layer_bpw",
+        "cross_layer_transfer"
+      ],
+      "is_control": true,
+      "layer": 35,
+      "layer_role": "late",
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) for the packer fit",
+      "note": "source-native reference boundary (kept native, excluded from selection)",
+      "representation_family": "source_native_control",
+      "row_id": "g3_023",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "per (tensor_class, layer) promote the representation with the HIGHEST layer_hidden_state_cosine within the exact per-matrix budget; source_native controls are reference boundaries and are excluded; then record whether the layer-0 winner still wins at the mid (18) and late (35) layers (cross-layer transfer)",
+      "tensor_class": "expert_mlp2",
+      "tensor_group_fmt": "block.{b}.mlp.mlp2_weight",
+      "top_k": 4,
+      "validation_inputs": {
+        "kind": "real_block_n_moe_inputs",
+        "layer": 35,
+        "n_sequences": 2,
+        "seed_domain": "validation_disjoint",
+        "tokens_per_seq": 6
+      }
+    }
+  ],
+  "schema": "hawking.frontier_g3.cross_layer_program.v1",
+  "scientific_question": "Does the full-rank sub-bit representation that best preserves a COMPLETE GPT-OSS layer 0 still best preserve the residual stream at a middle (18) and a late (35) layer? i.e. does the winning geometry TRANSFER across depth?",
+  "search_doctrine": {
+    "class_isolation": "each candidate replaces ONLY its tensor class; the router stays native",
+    "controls_excluded_from_selection": true,
+    "execution_note": "execution_generation=M is quality-NEUTRAL (m2_shared_lookup_linear is EXACT parity to Gen-F direct-compact); it changes mechanical cost, never the measured divergence",
+    "gate": "cross_layer_transfer",
+    "ranking_signal": "layer_hidden_state_cosine (highest within budget per (class, layer))",
+    "transfer_verdict": "compare the per-layer winner family to the layer-0 winner family per tensor_class; report transfers_to_mid / transfers_to_late"
+  },
+  "totals": {
+    "candidates_per_expert_class": 4,
+    "expected_checkpoint_count": 24,
+    "layers": [
+      0,
+      18,
+      35
+    ],
+    "rows_per_layer": 8,
+    "tensor_classes": [
+      "expert_mlp1",
+      "expert_mlp2"
+    ],
+    "total_rows": 24
+  }
+}
