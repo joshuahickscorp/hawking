@@ -1,0 +1,125 @@
+{
+  "schema": "hide.competitor_matrix.v1",
+  "run_date": "2026-07-19",
+  "cutoff": "2026-07-19",
+  "note": "Field converged on a common shape (agentic loop + MCP + subagents + hooks + skills + git worktrees + parallel/cloud exec), so raw feature parity is table stakes. Vendor claims are product signals, not neutral benchmarks. Claude Code studied deepest.",
+  "axes": ["chat_ux","ide_ux","agent_loop","context_memory","tools","mcp","skills_hooks","subagents_teams","worktrees","durability","verification","security","local_support","cost_model","extensibility","observability","notable_2026"],
+  "competitors": [
+    {
+      "name": "Claude Code",
+      "depth": "primary",
+      "chat_ux": "Terminal REPL; streamed gather->act->verify; Esc interrupt-and-keep + soft steer; unified / palette; Ctrl+T todos; Ctrl+O transcript; scriptable status line; whimsical spinner",
+      "ide_ux": "Native VS Code/Cursor extension (editable plan doc, inline diffs, @file#L, parallel tabs, Remote tab); JetBrains beta (terminal + getDiagnostics only); Apr-14 desktop redesign added a multi-agent session sidebar [verifier: 'no GUI' is OUTDATED]",
+      "agent_loop": "Flat gather-act-verify; /goal = separate Haiku evaluator (transcript-only) drives to a completion condition; /loop; adaptive reasoning + effort dial",
+      "context_memory": "CLAUDE.md tree + @imports + .claude/rules; auto-memory (200 lines/25KB); auto-compaction + /compact + rewind Summarize; Sonnet 5 native 1M context",
+      "tools": "Built-in fs/edit/shell/search/git + WebFetch(isolated ctx); read-only Bash allowlist; PowerShell parity",
+      "mcp": "Client + host; .mcp.json/managed; stdio/streamable-http/sse/ws; OAuth 2.0; @resources; prompts as commands; tool-search deferral default-on; 10k warn/25k cap spill",
+      "skills_hooks": "Skills (SKILL.md progressive disclosure, context:fork); plugins + marketplaces (SHA-pinned, ~11 LSP plugins); hooks (11+ events, JSON-decision, execute on trust)",
+      "subagents_teams": "File-defined subagents (isolated ctx, depth 5, 200/session); experimental agent teams (shared task list + mailbox, ~7x tokens, one team/session, no nesting); background agents dashboard",
+      "worktrees": "Background sessions auto-isolate in git worktrees, auto commit/push/draft-PR (never main/force-push)",
+      "durability": "JSONL transcripts; --continue/--resume picker (worktree/branch/all/PR scope); checkpoints (100, 30-day) + rewind code/conv/both; /branch + --fork-session; supervisor daemon survives sleep/reboot; cloud Routines",
+      "verification": "/goal evaluator; deterministic gates via hooks; test/build via bash",
+      "security": "Workspace-trust gate (config inert until trust); /sandbox (Seatbelt/bubblewrap, cwd+temp writes, egress default-deny proxy, credential mask); ~84% fewer prompts; auto-mode classifier (~83% catch/0.4% FP/17% FN); srt open-source; managed lockdown keys",
+      "local_support": "NONE first-class; cloud-only Anthropic models; users point it at local models as a workaround",
+      "cost_model": "Metered: 5-hour window + weekly caps (all-models + Opus-specific); Pro/Max/Team/Enterprise seats; /usage local-session-only",
+      "extensibility": "Skills/plugins/hooks/MCP/subagents/output-styles; Agent SDK (TS+Python) + headless -p (--json-schema, --bare hermetic)",
+      "observability": "/usage attribution, /context grid, transcript viewer, status line JSON",
+      "notable_2026": "Auto mode + sandboxing GA; /goal (v2.1.139); checkpointing/rewind; Fable 5 / Opus 4.8 / Sonnet 5 (1M) / Haiku 4.5 + effort dial (low..max/ultracode); cloud Routines; Remote Control (steer local from web/mobile); desktop redesign; is itself a listed ACP agent in Zed/JetBrains",
+      "what_it_does_that_others_dont": "Deepest, most polished single-vendor integration of the whole stack; best steerable-autonomy ergonomics; strongest documented security thesis (deterministic > probabilistic)",
+      "local_first_opening": "It is DELIBERATELY cloud-only, metered, egress-required, and remotely mutable - every one of those is a HIDE structural wedge"
+    },
+    {
+      "name": "Cursor",
+      "depth": "high",
+      "ide_ux": "Full GUI IDE (VS Code fork); integrated browser + Design Mode (shipped 3.0, Apr 2 2026 [verifier-corrected from 3.5])",
+      "agent_loop": "Agent mode; per-model harness profiles; measures Keep Rate; tool errors persist in context",
+      "subagents_teams": "/best-of-n across parallel worktrees (multi-model tournament, pick winner)",
+      "durability": "Cloud/background agents in isolated remote workspaces",
+      "local_support": "Weak (cloud models)",
+      "cost_model": "Metered subscription",
+      "what_it_does_that_others_dont": "First-class best-of-N worktree tournament; integrated browser + UI Design Mode annotation; polished GUI",
+      "local_first_opening": "HIDE can offer best-of-N via warm-state forks at near-zero marginal cost (Cursor pays per run + cloud VM); local browser verification with no screenshot upload"
+    },
+    {
+      "name": "OpenAI Codex CLI + Symphony",
+      "depth": "high",
+      "agent_loop": "Codex loop (output->tool->observe->context mgmt); Codex-CLI exposes codex()/codex-reply() MCP tools + native subagents [verifier: OpenAI-documented]",
+      "subagents_teams": "Symphony: board-as-control-plane (Linear/issues as continuous dispatch queue; agents self-assign, open PRs); self-reported '500% more landed PRs' [vendor claim]",
+      "durability": "Per-task workspaces, retries, stall detection, resumable",
+      "local_support": "No",
+      "what_it_does_that_others_dont": "Issue-tracker-as-control-plane orchestration; harness-engineering discipline",
+      "local_first_opening": "HIDE can run a self-dispatching queue overnight at fixed hardware cost (no unbounded cloud spend); warm forks keep each ticket resident"
+    },
+    {
+      "name": "Zed + ACP / JetBrains",
+      "depth": "high",
+      "ide_ux": "Zed agent panel; ACP (Agent Client Protocol): editor owns thread UI/history, agent owns runtime/model/tools; agent registry",
+      "what_it_does_that_others_dont": "Neutral agent-hosting protocol - ANY agent (including a local one) plugs into a real IDE; Claude Code is itself a listed ACP agent [verifier-added]",
+      "local_first_opening": "STRONGEST interop lever: HIDE ships an ACP server to appear natively in Zed/JetBrains alongside Claude Code/Codex/Gemini, with no auth/subscription handshake and no egress; warm-state resume beats cloud agents' re-prefill"
+    },
+    {
+      "name": "GitHub Copilot / VS Code agent mode",
+      "depth": "medium",
+      "ide_ux": "Native VS Code agent mode; project instructions, skills, hooks, MCP, specialized agents, policy gates",
+      "subagents_teams": "Copilot coding agent: async issue->PR",
+      "context_memory": "Copilot Memory: repo facts with source citations, re-verified against current branch before use [strong pattern]",
+      "local_support": "No",
+      "what_it_does_that_others_dont": "Revalidated memory (citation-checked); deepest GitHub/CI integration",
+      "local_first_opening": "HIDE's outcome-governed memory can do local revalidation with no code egress"
+    },
+    {
+      "name": "Google Antigravity",
+      "depth": "medium",
+      "verification": "Real-Chrome subagent: drives the actual app, clicks/fills/screenshots, sees failures, fixes; artifacts (task lists, plans, screenshots, browser recordings) as the review surface with inline annotation",
+      "local_support": "No",
+      "what_it_does_that_others_dont": "Artifact-based review + real-browser self-verification; Managed Agents API",
+      "local_first_opening": "HIDE runs headless-browser verification locally (no screenshot upload, no metered re-run); capsules re-enter exact app state after each fix"
+    },
+    {
+      "name": "Windsurf / Devin (Cognition)",
+      "depth": "medium",
+      "security": "Devin Local: rewritten in Rust, OS-level filesystem isolation + network allow/deny in the runtime [verifier: DOCUMENTED via Devin changelog]",
+      "context_memory": "Windsurf Fast Context; DeepWiki",
+      "local_support": "Devin Local runs on-machine; SWE-1.6 model",
+      "what_it_does_that_others_dont": "Repo-committed workflows/recipes; OS sandbox baked into runtime; local desktop",
+      "local_first_opening": "HIDE defaults network to DENY (no egress needed for inference) - strictly safer than agents that must reach a model API"
+    },
+    {
+      "name": "Aider",
+      "depth": "medium",
+      "agent_loop": "Architect/editor two-model split (strong reasoner plans, cheap/fast model emits diff; ~30-50% cheaper, better multi-file edits)",
+      "context_memory": "Graph-ranked RepoMap under a token budget (~1K default) - a serious deterministic baseline",
+      "local_support": "First-class with Ollama; model-agnostic; works offline",
+      "what_it_does_that_others_dont": "Deterministic RepoMap baseline; architect/editor split; watch-mode AI comments",
+      "local_first_opening": "HIDE runs both roles locally with warm state shared (editor reads planner's capsule, no re-send as text); RepoMap is a baseline HIDE's index must beat"
+    },
+    {
+      "name": "mini-SWE-agent",
+      "depth": "reference-baseline",
+      "agent_loop": "~100 lines, bash-only, linear history, no tool-calling requirement; still >74% SWE-bench",
+      "what_it_does_that_others_dont": "Radical minimalism + full auditability; a control for whether harness complexity actually helps",
+      "local_first_opening": "HIDE offers a transparent 'thin' mode; capsules enable deterministic replay + fork-from-step debugging"
+    },
+    {
+      "name": "Qwen Code",
+      "depth": "medium",
+      "agent_loop": "qwen serve: persistent daemon exposing a shared session over HTTP+SSE that many clients (CLI/desktop/IDE/bots) attach to",
+      "local_support": "Local open-weight; Qwen3-Coder-Next 80B-A3B (hybrid recurrent MoE)",
+      "what_it_does_that_others_dont": "Shared session daemon (warm agent state over HTTP) + a strong local coder architecture",
+      "local_first_opening": "This IS Hawking's 'pass state not text' thesis, but Hawking can go further: the daemon holds resident KV/state capsules so attach/fork is a pointer copy, not a re-prefill; Qwen3-Coder-Next is HIDE's first architecture-fit local coder target"
+    },
+    {
+      "name": "Gemini CLI",
+      "depth": "low",
+      "subagents_teams": "Subagents as .md + YAML frontmatter; @agent delegation syntax",
+      "local_support": "No",
+      "local_first_opening": "HIDE reads the same markdown+frontmatter conventions verbatim (interop, zero migration friction)"
+    }
+  ],
+  "field_synthesis": {
+    "table_stakes_2026": ["agentic plan->edit->run->observe loop", "MCP", "subagents", "hooks", "skills", "git worktrees", "parallel/background execution", "markdown+frontmatter config"],
+    "differentiators_claude_code_lacks": ["neutral ACP agent-in-IDE hosting (Zed/JetBrains)", "artifact/real-browser verification (Antigravity, Cursor)", "first-class best-of-N worktree tournament (Cursor)", "board-as-control-plane (Symphony)", "OS-sandbox baked into runtime (Devin Local)", "genuinely local/offline operation (Aider+Ollama, Qwen Code, mini-SWE-agent)"],
+    "hide_strategic_positioning": "Reproduce Claude Code's polished steerable-autonomy loop, read its config verbatim, then win on the six things it structurally cannot do locally (no meter, no egress, no remote regression, warm-state forks/best-of-N, resident daemon, ACP-native local hosting)",
+    "coverage_gaps_flagged": ["Sourcegraph Amp", "Amazon Kiro", "Cline/Roo as ACP agents", "JetBrains Junie standalone", "Continue"]
+  }
+}

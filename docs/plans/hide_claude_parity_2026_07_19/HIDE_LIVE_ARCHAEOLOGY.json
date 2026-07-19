@@ -1,0 +1,86 @@
+{
+  "schema": "hide.live_archaeology.v1",
+  "run_date": "2026-07-19",
+  "repo_head": "4fbca8bc",
+  "branch": "main",
+  "method": "6 read-only audit agents, file:line reconciliation, fleet wf_3a62e82a-5c8",
+  "evidence_default": "VERIFIED REPO",
+  "executive_verdict": "Real polished frontend + real fast runtime with the ~50k-line agent spine sealed out between them. Vertical slice broken (FE speaks /v1/hide/* on 8744 to a hide-serve that no longer builds; live hawking-serve serves a disjoint surface on 8080). Every Hawking-native advantage exists as a real-but-unwired primitive; the 'pass state not text' moat is dead-ended below the product boundary.",
+  "active_crates": [
+    { "name": "hawking-core", "loc_rs": 78097, "status": "ACTIVE", "role": "engine, model archs, Metal kernels, RWKV state, caches, tokenizer, .tq" },
+    { "name": "hawking-serve", "loc_rs": 5735, "status": "ACTIVE", "role": "OpenAI-compatible + native HTTP server, continuous batching" },
+    { "name": "hawking", "loc_rs": 4924, "status": "ACTIVE", "role": "CLI: generate, serve, bench" },
+    { "name": "hawking-speculate", "loc_rs": 6312, "status": "ACTIVE_CLI_ONLY", "role": "spec-decode toolbox (verifier, governor, EAGLE5, ngram/suffix), default-off" },
+    { "name": "hawking-seed-c", "loc_rs": 6170, "status": "ACTIVE", "role": "Event-Horizon research CLI + absorbed Pack ABI + provider registry (registry ACTIVE_UNEXPOSED)" },
+    { "name": "hawking-bench", "loc_rs": 1149, "status": "ACTIVE", "role": "performance/throughput harness" },
+    { "name": "hawking-seed", "loc_rs": 0, "status": "MISSING", "role": "empty stray dir, not a workspace member" }
+  ],
+  "packs_clarification": {
+    "hawking_packs": { "state": "ABSORBED+RETIRED", "where": "crates/hawking-seed-c/src/providers/ @ 0adcab57", "external_dependency": "NONE (verified grep Cargo.lock)", "folder": "deleted @ 4fbca8bc, bundle 756cee3e recovery-proven", "directive": "do not recreate (Bible sec 7)" },
+    "hawking_hide_desktop": { "state": "SEALED", "manifest": "packs/hawking-hide-desktop.json", "crates": 13, "content_loc": 50351, "files": 164, "source_commit": "5a99d0e2", "recover": "git checkout 5a99d0e2 -- crates Cargo.toml", "offline_archive": "MISSING FROM DISK (correction to handoff); git history is the only lifeline" }
+  },
+  "serve_gap_reconciliation": [
+    { "id": "G1", "claim": "no HTTP state save/load/fork/rollback", "verdict": "CONFIRMED", "evidence": "http.rs:160-172; engine.rs:339-358 unrouted" },
+    { "id": "G2", "claim": "no session-to-slot affinity", "verdict": "CONFIRMED", "evidence": "http.rs:124,127 anonymous u32 slots" },
+    { "id": "G3", "claim": "max_seq_len hardcoded 4096, no Serve override", "verdict": "CONFIRMED", "evidence": "lib.rs:509 sole literal; Serve subcommand no flag" },
+    { "id": "G4", "claim": "direct-admit/batch-one misses prefix reuse", "verdict": "CONFIRMED", "evidence": "copy_kv_prefix_to_slot sole call site lib.rs:908 (queue-drain only); default max_batch_size=1" },
+    { "id": "G5", "claim": "system KV bank is routing hint (0 KV bytes)", "verdict": "CONFIRMED", "evidence": "system_kv_bank.rs:12-18; detached store deferred :20-23" },
+    { "id": "G9", "claim": "/context reports unproven multiplier", "verdict": "CONFIRMED", "evidence": "HAWKING_QWEN_TQ_MULTIPLIER read http.rs:250, never set in-repo" },
+    { "id": "G10", "claim": "LAN bind 0.0.0.0, no auth", "verdict": "CONFIRMED", "evidence": "CLI default main.rs:133; no auth middleware" },
+    { "id": "G11", "claim": "weight-compression != context multiplier", "verdict": "CONFIRMED", "evidence": "effective=native*tq_multiplier while KV capacity fixed 4096" },
+    { "id": "T6", "claim": "no live IDE tool-dispatch loop in runtime", "verdict": "CONFIRMED", "evidence": "tool_calls.rs API-shaping only; no dispatch in serve" },
+    { "id": "T7", "claim": "tool-bearing streaming buffers to completion", "verdict": "CONFIRMED", "evidence": "http.rs:655-716 want_tools buffers then single terminal chunk" },
+    { "id": "T8", "claim": "stop/JSON-constrain/spec-decode dormant on batched path", "verdict": "CONFIRMED", "evidence": "driver.rs:52-110 no constraints; single-seq generate() only" }
+  ],
+  "facade_reconciliation": [
+    { "id": "S1", "claim": "default kernel = stub planner, no runtime/tools", "verdict": "CONFIRMED", "evidence": "5a99d0e2 hide-kernel/lib.rs:116-127; host.rs:75" },
+    { "id": "S2", "claim": "raw prompt, empty history, 256-token cap", "verdict": "CONFIRMED", "evidence": "5a99d0e2 hide-backend/host.rs:848-863" },
+    { "id": "S3", "claim": "compiled context prompt discarded", "verdict": "CONFIRMED", "evidence": "5a99d0e2 connectors.rs:477-502; not fed to InferenceRequest.prompt" },
+    { "id": "S4", "claim": "compact_context logged not performed", "verdict": "CONFIRMED", "evidence": "5a99d0e2 host.rs:262-265 fall-through" },
+    { "id": "S5", "claim": "no state/KV HTTP routes", "verdict": "CONFIRMED", "evidence": "http.rs:161-170; HttpKvStore client marked [RUNTIME-SIDE - LATER]" }
+  ],
+  "sealed_backend_triage": [
+    { "crate": "hawking-context", "loc": 4947, "verdict": "REINTEGRATE", "tier": "flagship", "what": "reserve-then-fill compiler, value-density knapsack, degrade ladder, replayable manifest, FTS5+cosine memory" },
+    { "crate": "hawking-index", "loc": 4712, "verdict": "REINTEGRATE", "tier": "flagship", "what": "tree-sitter defs/refs, cAST, BLAKE3 merkle gate, FTS5+graph, PageRank repo-map, hybrid RRF, MVCC daemon" },
+    { "crate": "hide-kernel", "loc": 5724, "verdict": "REINTEGRATE", "tier": "highest-value-idea", "what": "plan-as-data DAG with per-step acceptance oracles, deterministic-first verify gate, governor" },
+    { "crate": "hide-tools", "loc": 5739, "verdict": "REINTEGRATE", "tier": "core", "what": "verifying edit applier (base_hash concurrency), sandboxed shell.run, proc, search, git worktree, MCP client" },
+    { "crate": "hawking-orch", "loc": 4036, "verdict": "REINTEGRATE", "tier": "core", "what": "role router, escalation cascade, grammar retry, admission scheduler, lossless tool-spec-decode" },
+    { "crate": "hide-core", "loc": 2930, "verdict": "REINTEGRATE", "tier": "foundation", "what": "pure shared contracts + traits" },
+    { "crate": "hide-serve", "loc": 521, "verdict": "REINTEGRATE", "tier": "product-boundary", "what": "thin axum over BackendHost; /v1/hide/* on loopback:8744" },
+    { "crate": "hawking-eval", "loc": 307, "verdict": "REINTEGRATE", "tier": "cheap-high-leverage", "what": "pass@1 + Wilson CI over serve chat path" },
+    { "crate": "hide-security", "loc": 2474, "verdict": "REINTEGRATE_LOGIC_REDESIGN_OS", "tier": "security", "what": "blake3 audit, AES-256-GCM at-rest, redaction, Seatbelt render; OS enforcement is a seam" },
+    { "crate": "hide-backend", "loc": 6565, "verdict": "REDESIGN", "tier": "host", "what": "good supervisor/bus/router; turn loop bypasses kernel" },
+    { "crate": "hide-fleet", "loc": 5057, "verdict": "REDESIGN", "tier": "fleet", "what": "job DAG, resource admission, isolation leases, merge; heavy, not HTTP-reachable" },
+    { "crate": "hide-personalize", "loc": 2965, "verdict": "REDESIGN", "tier": "learning", "what": "RLEF loop stub-at-core (LoRA grad/PPL/KV copy are seams)" },
+    { "crate": "hawking-research", "loc": 3637, "verdict": "ARCHIVE", "tier": "scope-trap", "what": "knowledge graph / arXiv ingest; unrelated to coding IDE slice" }
+  ],
+  "hawking_native_levers": [
+    { "lever": "continuous batching", "readiness": "wired", "where": "hawking-serve/lib.rs:598-962" },
+    { "lever": "prefix reuse", "readiness": "wired_queue_path_partial_direct_admit", "where": "serve lib.rs:605-918; CLI InMemoryPrefixCache" },
+    { "lever": "exact-match lossless spec-decode verifier", "readiness": "unwired", "where": "hawking-speculate/verifier.rs:77-133" },
+    { "lever": "RWKV-7 recurrent state serialize", "readiness": "unwired", "where": "rwkv7.rs:292-370 (byte-exact tested)" },
+    { "lever": "RWKV-7 state fork (memcpy, no re-prefill)", "readiness": "unwired", "where": "rwkv7.rs:376-378; StateShareGroup:840" },
+    { "lever": "warm-state .sstate disk store", "readiness": "unwired", "where": "cache/sstate_disk.rs" },
+    { "lever": "transformer KV capsule", "readiness": "missing", "where": "KvCache not serializable" },
+    { "lever": "GPU->CPU recurrent readback (exact live capture)", "readiness": "missing", "where": "no reverse readback fn; rwkv7.rs:1720-1723" },
+    { "lever": "HTTP state save/load/fork routes", "readiness": "missing", "where": "absent from http.rs:160-172" },
+    { "lever": "session->slot affinity", "readiness": "missing", "where": "anonymous slots" },
+    { "lever": "serve long-context (max_seq_len override)", "readiness": "missing", "where": "hardcoded 4096 lib.rs:509" },
+    { "lever": "detached reusable KV-block store", "readiness": "missing", "where": "deferred system_kv_bank.rs:20-23" },
+    { "lever": "reserve-then-fill context compiler", "readiness": "unwired_packed", "where": "hawking-context @ 5a99d0e2" },
+    { "lever": "living code index", "readiness": "unwired_packed", "where": "hawking-index @ 5a99d0e2" },
+    { "lever": "plan-as-data kernel + oracle-gated verify", "readiness": "unwired_packed", "where": "hide-kernel @ 5a99d0e2" },
+    { "lever": "typed tools + verifying edit applier + MCP client", "readiness": "unwired_packed", "where": "hide-tools @ 5a99d0e2" },
+    { "lever": "training-free lossless tool-spec-decode", "readiness": "partial_packed", "where": "hawking-orch/tool_spec_decode.rs @ 5a99d0e2" },
+    { "lever": ".tq sub-4-bit native serving", "readiness": "partial_feature_env_gated", "where": "qwen_dense/rwkv7, tq feature off by default" },
+    { "lever": "one Pack ABI + provider/capability registry", "readiness": "unwired", "where": "hawking-seed-c/providers/" },
+    { "lever": "local capability eval (pass@1 + Wilson CI)", "readiness": "unwired_packed", "where": "hawking-eval @ 5a99d0e2" },
+    { "lever": "perf eval harness", "readiness": "wired", "where": "hawking-bench via 'hawking bench'" },
+    { "lever": "local-first no-metering doctrine", "readiness": "wired_fe", "where": "app/src" }
+  ],
+  "open_probes": [
+    "apply_patch correctness (hide-tools base_hash optimistic concurrency) untested here",
+    "GPU->CPU recurrent readback cost unmeasured",
+    "no active capability/quality eval harness in tree (hawking-eval sealed)"
+  ]
+}

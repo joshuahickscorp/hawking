@@ -1,0 +1,83 @@
+{
+  "schema": "hide.research_receipt.v1",
+  "run_date": "2026-07-19",
+  "research_cutoff": "2026-07-19",
+  "authoritative_spec": "HIDE_CLAUDE_CODE_PARITY_SUPREMACY_BIBLE.md",
+  "repo_truth": {
+    "head": "4fbca8bc",
+    "branch": "main",
+    "verified_commits": {
+      "packs_absorption": "0adcab5731949337032b1c13a875b3653ea8d3fd (2026-07-19 14:04)",
+      "packs_retirement": "4fbca8bc6d33117707933793bb3293d9463c049f (2026-07-19 14:06, = HEAD)",
+      "frontier_g3_gen_m": "c9280be3771f528964c2e6edb470f48121f37867 (2026-07-19 02:32)",
+      "sealed_hide_backend_source": "5a99d0e2d7bf7ea822fd41a74f713008bacba1a5"
+    },
+    "frontier_running_at_start": false
+  },
+  "isolation": {
+    "branch": "research/hide-claude-parity-2026-07-19",
+    "worktree": "/Users/scammermike/Downloads/hawking-hide-parity-research",
+    "policy": "read-only against all live sources/controllers/checkpoints/providers/leases; writes only on the research branch; no merge to main; hawking-packs not recreated; Frontier untouched"
+  },
+  "inputs_challenged": [
+    "docs/plans/hawking_ide_frontier_2026_07_19.md (first-pass dossier)",
+    "docs/plans/hawking_ide_claude_research_handoff_2026_07_19.md (handoff)"
+  ],
+  "method": {
+    "fleets": [
+      { "name": "hide-live-audit", "run_id": "wf_3a62e82a-5c8", "agents": 6, "errors": 0, "subagent_tokens": 710128, "tool_calls": 189, "purpose": "read-only reconciliation of every historical claim against current code with file:line evidence" },
+      { "name": "claude-code-cleanroom", "run_id": "wf_5c04451d-beb", "agents": 22, "errors": 0, "subagent_tokens": 2020952, "tool_calls": 292, "purpose": "11 facet scouts each independently adversarially verified; cited parity targets with evidence labels" },
+      { "name": "hide-spec-drafting", "run_id": "wf_98a2bdf4-216", "agents": 13, "errors": 0, "subagent_tokens": 1352743, "tool_calls": 240, "purpose": "drafted the self-contained specs grounded in the archaeology + parity artifacts" },
+      { "name": "hide-adversarial-verify", "run_id": "wf_74fdbb5b-b03", "agents": 5, "errors": 0, "purpose": "falsify supremacy + parity claims, re-verify archaeology against live code, test the handoff falsification targets, audit internal consistency" }
+    ],
+    "authored_directly_by_orchestrator": [
+      "HIDE_LIVE_ARCHAEOLOGY.md/.json", "HIDE_STATE_CAPSULE_ABI.md", "HIDE_CLAUDE_CODE_UX_GENOME.md",
+      "HIDE_CLAUDE_CODE_WORKFLOW_TRACES.jsonl", "HIDE_CLAUDE_CODE_BEHAVIORAL_PARITY_SPEC.json",
+      "HIDE_CLAUDE_CODE_CONFIGURATION_COMPATIBILITY.md", "HIDE_USER_LOVE_PAIN_MAP.md",
+      "HIDE_2026_COMPETITOR_MATRIX.json", "HIDE_TWO_SURFACE_ARCHITECTURE.md", "HIDE_SECURITY_CONSTITUTION.md",
+      "HIDE_PARITY_GAP_MATRIX.json", "HIDE_SUPREMACY_THESIS.md", "HIDE_PRIORITIZED_BUILD_LADDER.md",
+      "HIDE_MINIMUM_LOVABLE_VERTICAL.md", "HIDE_SIGNATURE_DEMO.md", "HIDE_RESEARCH_RECEIPT.json", "HIDE_RESEARCH_FINAL_REPORT.md"
+    ],
+    "drafted_by_fleet_then_reviewed": [
+      "HIDE_CHAT_SPEC.md", "HIDE_IDE_SPEC.md", "HIDE_AGENT_KERNEL_OPTIONS.md", "HIDE_CONTEXT_OS_SPEC.md",
+      "HIDE_MEMORY_SPEC.md", "HIDE_TOOL_SKILL_PLUGIN_MCP_ABI.md", "HIDE_PERMISSION_AND_EFFECT_SYSTEM.md",
+      "HIDE_DURABLE_AGENT_SPEC.md", "HIDE_LOCAL_MODEL_TOPOLOGY.md", "HIDE_SPEED_FRONTIER.md",
+      "HIDE_CAPABILITY_DENSITY_EVAL.md", "HIDE_BLIND_PREFERENCE_STUDY.md", "HIDE_EXPERIMENT_MENU.md"
+    ]
+  },
+  "evidence_discipline": {
+    "labels_used": ["DOCUMENTED", "OBSERVED", "MEASURED", "INFERRED", "ANECDOTAL", "UNKNOWN", "VERIFIED REPO"],
+    "clean_room": "behavioral contracts, workflow patterns, configuration shapes, short functional labels only; no proprietary source, assets, or branding; HIDE uses its own names, voice, and visual doctrine",
+    "house_rules_enforced": ["no em or en dashes (0 across the package)", "no Claude git attribution", "no commit/push without explicit approval (the campaign prompt authorizes a research branch push after verification)", "read-only on live sources"]
+  },
+  "key_reconciliations": [
+    "TWO distinct packs: hawking-packs ABSORBED+RETIRED into hawking-seed-c (do not recreate) vs hawking-hide-desktop STILL SEALED (13 crates, git-only recovery)",
+    "CORRECTION to handoff: the offline sealed-archive path is GONE from disk; git 5a99d0e2 is the only lifeline",
+    "the production vertical slice is still broken (FE targets /v1/hide/* on 8744 = packed hide-serve; live hawking-serve serves a disjoint surface on 8080, no /v1/hide/*, no state routes)",
+    "the 'pass state, not text' moat is real-but-unwired: RwkvState fork/serialize byte-exact + tested, no HTTP/CLI caller; GPU->CPU readback missing; no transformer capsule",
+    "all five facade claims (S1-S5) CONFIRMED at git 5a99d0e2; the packed harness is the highest-value reintegration target",
+    "CORRECTED prior memory: packs absorption is committed (not designed/uncommitted); deletion 20/20; packs retired at 4fbca8bc"
+  ],
+  "known_limits": [
+    "clean-room web claims are as-of 2026-07-19; Claude Code changes weekly (verifiers caught several stale/overclaimed sub-claims, all downgraded or corrected)",
+    "supremacy advantages are mostly real-but-unwired primitives; every claim is gated on its build item; nothing is presented as shipped",
+    "local-model judgment quality is blocked_on_model (a capable local coder), which the package states rather than papers over",
+    "apply_patch correctness (hide-tools base_hash optimistic concurrency) flagged as an open probe, not verified here",
+    "GPU->CPU recurrent readback cost is unmeasured (the first hard gate on the state moat)"
+  ],
+  "verification_outcome": {
+    "fleet": "wf_74fdbb5b-b03 (5 independent verifiers, 0 errors)",
+    "archaeology": "all 7 load-bearing claims CONFIRMED against live code; 1 internal contradiction found and fixed (crate-member count)",
+    "supremacy": "all 6 handoff falsification targets held; the package correctly FALSIFIES the naive claims and frames the open ones with kill criteria; 2 sharpenings applied (2.2 air-gap scope, 2.5 affinity gate)",
+    "parity": "attempts to falsify the DOCUMENTED Claude Code claims all FAILED; 2 label fixes applied (hooks.lifecycle->absent, component-name traceability)",
+    "hawking_fit": "all 9 reintegration targets verified in packed source; readiness labels consistent; minor citation nits noted",
+    "consistency_material_issue_resolved": "verifier found 123 em/en dashes across 10 files (a house-rule violation missed by a broken BSD-grep check); all stripped, 0 remain; the final report is now authored; README manifest sealed",
+    "residual_nits_accepted": [
+      "context-OS cites a debug_assert as a hard invariant (compiled out in release)",
+      "'~44 GenerateRequest sites' quoted from a stale in-code comment; true count ~38-41",
+      "json_mode:false forcing should cite http.rs/scheduler.rs, not driver.rs (driver.rs:52-110 correctly shows no constraint on the batched decode)",
+      "sibling docs cite slightly divergent line ranges for the same RWKV features"
+    ]
+  },
+  "final_report": "HIDE_RESEARCH_FINAL_REPORT.md"
+}

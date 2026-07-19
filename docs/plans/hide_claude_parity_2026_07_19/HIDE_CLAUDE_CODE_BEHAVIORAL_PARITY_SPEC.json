@@ -1,0 +1,345 @@
+{
+  "schema": "hide.behavioral_parity_spec.v1",
+  "run_date": "2026-07-19",
+  "target": "Claude Code v2.1.x (~v2.1.215, July 2026)",
+  "clean_room": "behavioral contracts only; no proprietary source/assets/branding; HIDE uses its own names and voice",
+  "evidence_labels": ["DOCUMENTED", "OBSERVED", "MEASURED", "INFERRED", "ANECDOTAL", "UNKNOWN"],
+  "hide_status_labels": ["absent", "ui_only", "packed_unwired", "partial", "wired"],
+  "priority_labels": ["P0_table_stakes", "P1_core", "P2_advanced", "P3_optional"],
+  "entries": [
+    {
+      "id": "loop.interrupt_and_keep",
+      "domain": "core_loop",
+      "behavior": "Esc hard-interrupts and cancels the in-flight tool while retaining all completed work in context; Ctrl+C is a second interrupt (clear input / exit).",
+      "evidence": "DOCUMENTED",
+      "parity_requirement": "Two independent gestures on a streaming turn: hard interrupt (cancel in-flight tool, keep prior results, return to prompt) and a second clear/exit control.",
+      "enforcement": "Must not discard tool results already returned; interrupt targets only the in-flight call.",
+      "hide_status": "ui_only",
+      "hide_evidence": "FE SteerBar has cancel_run/pause; no live backend turn to interrupt (vertical slice broken)",
+      "hawking_superiority": "No network request to cancel -> interrupt is genuinely zero-latency; can fork a warm state at the interrupt point to branch both directions.",
+      "priority": "P0_table_stakes"
+    },
+    {
+      "id": "loop.soft_steer",
+      "domain": "core_loop",
+      "behavior": "Typing a correction + Enter is consumed as soon as the current tool completes, without stopping it.",
+      "evidence": "DOCUMENTED",
+      "parity_requirement": "Queue typed input to be injected at the next turn boundary without cancelling the running tool.",
+      "hide_status": "ui_only",
+      "hide_evidence": "FE redirect_run custom intent exists; no live backend",
+      "priority": "P0_table_stakes"
+    },
+    {
+      "id": "loop.side_query",
+      "domain": "core_loop",
+      "behavior": "Ephemeral side-question mid-turn answered from in-context material only (no tools), in a dismissible overlay, never entering history, promotable to a real session.",
+      "evidence": "DOCUMENTED",
+      "parity_requirement": "A concurrent read-only side-channel query over current context that stays out of history and can be promoted.",
+      "hide_status": "absent",
+      "hawking_superiority": "A warm fork answers on a second local decode stream at zero marginal cost and zero added latency to the main turn.",
+      "priority": "P2_advanced"
+    },
+    {
+      "id": "loop.status_line",
+      "domain": "core_loop",
+      "behavior": "A scriptable status line fed a stable JSON object (model, context used %, session cost+duration, cwd, git branch + staged/modified, PR number+state, rate-limit windows) whose stdout is rendered.",
+      "evidence": "DOCUMENTED",
+      "parity_requirement": "A status-line hook piping a documented JSON contract to a user shell script, updating live.",
+      "hide_status": "partial",
+      "hide_evidence": "FE StatusBar real for phase/model/transport; branch + problems hardcoded",
+      "hawking_superiority": "No dollar meter -> show true local telemetry (tok/s, energy J/tok, resident GB, state-fork depth); exact context fill as a raw token/byte counter (not a percentage or budget bar, per the no-meter doctrine), read from local KV state.",
+      "priority": "P1_core"
+    },
+    {
+      "id": "loop.todo_list",
+      "domain": "core_loop",
+      "behavior": "Agent-authored multi-step checklist with three-state markers, ~5 visible, persisting across compaction; shareable via a named ID.",
+      "evidence": "DOCUMENTED",
+      "parity_requirement": "A first-class task-list primitive the model writes to, a toggle, three-state rendering, windowed display, persistence across summarization.",
+      "hide_status": "ui_only",
+      "hide_evidence": "FE PlanCard + todo rendering exist; no mock/live emits plan projection",
+      "priority": "P1_core"
+    },
+    {
+      "id": "loop.collapsed_tools",
+      "domain": "core_loop",
+      "behavior": "Tool/MCP calls collapse to one-liners by default; repeated same-server calls coalesce to a count; a transcript viewer expands raw I/O + per-message timestamp + model used.",
+      "evidence": "DOCUMENTED",
+      "parity_requirement": "Collapse-by-default tool rendering, count-coalescing, and a full-transcript toggle showing timestamps and per-message model.",
+      "hide_status": "partial",
+      "hide_evidence": "FE tool chips + ChatPanel tool feed exist; data mock",
+      "priority": "P1_core"
+    },
+    {
+      "id": "palette.unified",
+      "domain": "discoverability",
+      "behavior": "'/' opens one incremental fuzzy palette merging built-ins, skills, plugin commands, and MCP prompts; '@' picks files + MCP resources; '!' runs a shell command into context; ghost prompt suggestions from git history.",
+      "evidence": "DOCUMENTED",
+      "parity_requirement": "One merged incremental palette on '/', an '@' picker merging files and resources, a '!' shell affordance, dismissable ghost suggestions (suppressed after first turn / in plan mode).",
+      "hide_status": "partial",
+      "hide_evidence": "FE CommandPalette (ui.tsx) real; MCP/skill unification absent (backend packed)",
+      "priority": "P1_core"
+    },
+    {
+      "id": "perm.mode_cycle",
+      "domain": "permissions",
+      "behavior": "Shift+Tab cycles default(Manual)/acceptEdits/plan (+optional bypassPermissions/auto) with an always-visible mode badge; also --permission-mode flag and permissions.defaultMode setting.",
+      "evidence": "DOCUMENTED",
+      "parity_requirement": "A single cycling chord over an ordered mode set, a permanent glanceable mode indicator, plus a CLI flag and settings key.",
+      "hide_status": "partial",
+      "hide_evidence": "FE bypass-gate auto-approve exists; full mode cycle + enforcement need the packed kernel",
+      "priority": "P0_table_stakes"
+    },
+    {
+      "id": "perm.plan_mode",
+      "domain": "permissions",
+      "behavior": "Plan mode allows reads + read-only shell but structurally blocks source edits until a written plan is approved via a graded dialog (auto / review-each / keep-refining / deeper-review); Ctrl+G edits the plan first.",
+      "evidence": "DOCUMENTED",
+      "parity_requirement": "Executor-level write block during planning (not prompt-based), a structured editable plan artifact, and a graded approval dialog that deterministically sets the post-approval mode.",
+      "hide_status": "ui_only",
+      "hide_evidence": "FE PlanCard approve/edit/reorder intents exist; enforcement needs kernel + tool gate",
+      "hawking_superiority": "Best-of-N candidate plans executed speculatively in isolated local forks; user picks the plan that already worked, not a guess.",
+      "priority": "P0_table_stakes"
+    },
+    {
+      "id": "perm.rule_engine",
+      "domain": "permissions",
+      "behavior": "allow/ask/deny arrays, deny->ask->allow precedence, first-match-wins; matchers: Bash(git commit:*) word-boundary globs with compound-command splitting, gitignore-style Read/Edit path scoping, WebFetch(domain:*), mcp__server__tool, Agent(Name); read-only Bash allowlist never prompts in any mode; symlink dual-path (allow needs both, deny needs either); protected paths (.git/.claude/rc) route to prompt before allow rules; rm -rf / circuit breaker even in bypass.",
+      "evidence": "DOCUMENTED",
+      "parity_requirement": "An ordered deny->ask->allow evaluator, shell-operator-aware compound decomposition, word-boundary globs, gitignore-style path scoping, protected-path pre-gate, and a non-defeatable destructive circuit breaker.",
+      "hide_status": "packed_unwired",
+      "hide_evidence": "hide-security + hide-tools carry the pieces; hide-backend command-router gate; unwired",
+      "hawking_superiority": "Enforce at the OS/syscall boundary (Seatbelt) so a denied capability is physically absent; network default-off shrinks the deny race to an opt-in allowlist.",
+      "priority": "P0_table_stakes"
+    },
+    {
+      "id": "perm.persistence_tiers",
+      "domain": "permissions",
+      "behavior": "read-only never prompts; a Bash 'don't ask again' persists permanently per-repo+command to settings.local.json; a file-edit approval persists only until session end.",
+      "evidence": "DOCUMENTED",
+      "parity_requirement": "Prompt offers allow-once / allow-for-session / allow-permanently (persisted, inspectable, per-repo) / deny, with persistence scope matched to risk.",
+      "hide_status": "packed_unwired",
+      "priority": "P0_table_stakes"
+    },
+    {
+      "id": "perm.auto_mode",
+      "domain": "permissions",
+      "behavior": "A separate classifier model gates every non-trivial action (sees user msgs + tool calls + rules but NOT raw tool-result content), auto-approves benign work, blocks escalation/exfiltration/destructive; falls back to prompting after repeated blocks; drops broad allow rules on entry.",
+      "evidence": "DOCUMENTED, MEASURED(~83% catch / 0.4% FP / 17% FN, Sonnet-4.6-class classifier)",
+      "parity_requirement": "An independent policy-evaluation pass per action, isolated from hostile tool-result content, with a documented block taxonomy and graceful fallback.",
+      "hide_status": "absent",
+      "hawking_superiority": "Run the classifier as a warm local fork (no round-trip, no metered cost, no transcript egress); best-of-N safety judges reduce single-classifier error; egress-off default removes the exfiltration class entirely.",
+      "priority": "P1_core"
+    },
+    {
+      "id": "trust.workspace_gate",
+      "domain": "security",
+      "behavior": "On first open, project settings.json allow rules + additionalDirectories + MCP + hooks are parsed but INERT until the user accepts a trust dialog enumerating what would be granted; deny/ask always apply; trust keyed to git repo root. CVE-2026-33068 was exactly a case of resolving bypassPermissions before this gate.",
+      "evidence": "DOCUMENTED",
+      "parity_requirement": "A first-open trust gate that treats project config as data, lists exactly what a folder would grant, applies nothing capability-granting until accept, and resolves NO permission mode before the gate.",
+      "hide_status": "absent",
+      "hide_evidence": "hide-security has audit/redaction/Seatbelt but no trust-before-config gate; serve binds 0.0.0.0 with no auth",
+      "priority": "P0_table_stakes"
+    },
+    {
+      "id": "security.sandbox",
+      "domain": "security",
+      "behavior": "/sandbox: OS-enforced dual isolation (Seatbelt macOS, bubblewrap+seccomp Linux/WSL2), writes confined to cwd+temp inherited by every subprocess, reads = machine minus denies, network denied-by-default via an out-of-sandbox proxy with per-session domain approval + allow/deny domain lists; sandbox.credentials deny/mask; ~84% fewer prompts. Open-sourced as @anthropic-ai/sandbox-runtime (srt).",
+      "evidence": "DOCUMENTED, MEASURED(~84% prompt reduction)",
+      "parity_requirement": "OS-primitive sandbox for every execution path, subprocess-inherited fs confinement, an out-of-sandbox egress proxy default-deny, credential deny/mask, and a one-command toggle that keeps deny rules + circuit breakers.",
+      "hide_status": "packed_unwired",
+      "hide_evidence": "hide-security renders Seatbelt profiles + spawns sandbox-exec (pure logic real+tested); egress proxy / microVM are seams",
+      "hawking_superiority": "Local inference needs NO egress at all -> ship egress default-fully-off, air-gap as a hardware fact; snapshot the workspace to a capsule before a risky run for near-zero-cost rollback.",
+      "priority": "P0_table_stakes"
+    },
+    {
+      "id": "config.claude_md",
+      "domain": "configuration",
+      "behavior": "CLAUDE.md at ./ and ./.claude/, walk up tree, root-first concat into a post-system user message; subdir CLAUDE.md loads lazily on touch; @path imports depth 4 (code-spans skipped, first-use approval); .claude/rules/*.md with paths: globs; claudeMdExcludes; CLAUDE.local.md; block-level HTML comments stripped. Instruction precedence Managed>User>Project>Local (read-last-wins).",
+      "evidence": "DOCUMENTED",
+      "parity_requirement": "Read an existing project's full CLAUDE.md tree + imports + rules verbatim with the exact precedence; migration must not require rewriting.",
+      "hide_status": "absent",
+      "hide_evidence": "no CLAUDE.md reader in active tree; hawking-context memory store is packed",
+      "hawking_superiority": "Compile the resolved instruction set once into a warm-state capsule / prefix KV so instructions are free after the first fork, not re-tokenized each session.",
+      "priority": "P1_core"
+    },
+    {
+      "id": "config.settings_precedence",
+      "domain": "configuration",
+      "behavior": "settings.json (user ~/.claude, project .claude, local .claude/settings.local.json, OS managed) with precedence Managed>CLI>Local>Project>User and permissions MERGING; managed-settings.d/*.json numeric-prefix ordering; managed claudeMd injection.",
+      "evidence": "DOCUMENTED",
+      "parity_requirement": "Four merge scopes with fixed precedence where deny always wins, a managed tier lower tiers can't override, and permissions merge (not override).",
+      "hide_status": "absent",
+      "priority": "P1_core"
+    },
+    {
+      "id": "config.auto_memory",
+      "domain": "configuration",
+      "behavior": "Claude-authored memory at ~/.claude/projects/<repo-key>/memory/MEMORY.md (200 lines/25KB loaded), recalled next session; topic files linked from MEMORY.md.",
+      "evidence": "DOCUMENTED",
+      "parity_requirement": "Read an existing memory tree (MEMORY.md index + topic files, repo-derived key) at start; offer a quick-capture affordance (the '#' name is NOT current -> do not name-copy).",
+      "hide_status": "absent",
+      "hawking_superiority": "Memory as a first-class warm-state capsule folded into the state fork -> no 200-line/25KB truncation cliff, no re-tokenization; deterministic offline dedup/merge.",
+      "priority": "P2_advanced"
+    },
+    {
+      "id": "session.durable_transcript",
+      "domain": "sessions",
+      "behavior": "Every message/tool call/result streams to ~/.claude/projects/<sanitized-cwd>/<session-id>.jsonl instantly; survives exit/crash/reboot.",
+      "evidence": "DOCUMENTED",
+      "parity_requirement": "Append-per-turn transcript keyed by stable session ID under a predictable configurable root, written the instant each event happens.",
+      "hide_status": "packed_unwired",
+      "hide_evidence": "hide-backend event bus + BackendReplayService exist (packed); FE store is event-sourced",
+      "hawking_superiority": "Persist the warm KV/state capsule alongside the text -> resume is instant with no re-prefill; unlimited full-fidelity local retention.",
+      "priority": "P0_table_stakes"
+    },
+    {
+      "id": "session.resume_picker",
+      "domain": "sessions",
+      "behavior": "--continue/-c (last in dir), --resume/-r (searchable picker: Space preview, Ctrl+W worktrees, Ctrl+A all projects, Ctrl+B branch, pasted PR URL), /resume, --from-pr; AI-generated titles; -n/--rename.",
+      "evidence": "DOCUMENTED",
+      "parity_requirement": "Continue-last, a searchable/nameable picker with scope widening and PR-URL resume, and AI titles.",
+      "hide_status": "partial",
+      "hide_evidence": "FE Home recents + open_session; picker + scope widening absent",
+      "priority": "P1_core"
+    },
+    {
+      "id": "session.checkpoint_rewind",
+      "domain": "sessions",
+      "behavior": "Every prompt snapshots files (100 kept, 30-day cleanup); /rewind or empty Esc Esc restores code / conversation / both + Summarize from/up-to; persists across resume and /clear; /branch + --fork-session make a divergent copy. Does NOT cover bash-made or external file changes.",
+      "evidence": "DOCUMENTED",
+      "parity_requirement": "Pre-edit file snapshots + conversation checkpoints, a three-axis rewind menu, a bounded ring surviving resume, non-destructive /clear, and session forking.",
+      "hide_status": "ui_only",
+      "hide_evidence": "FE StateTimeline scrub_to_event/fork_session intents; backend snapshot 'plan 2'",
+      "hawking_superiority": "Checkpoint the model KV/scratch state as a content-addressed capsule -> 'restore both' is atomic and instantaneous, unlimited depth, no 100-cap.",
+      "priority": "P1_core"
+    },
+    {
+      "id": "session.background_supervisor",
+      "domain": "sessions",
+      "behavior": "Background sessions run detached under a per-user supervisor daemon (roster.json, jobs/<id>/state.json), survive sleep, restart from disk after reboot, monitored from a dashboard (claude agents), auto worktree commit/push/draft-PR (never main, never force-push).",
+      "evidence": "DOCUMENTED",
+      "parity_requirement": "A supervisor hosting detached sessions surviving terminal close + sleep, a one-screen dashboard grouped by state (working/needs-input/idle/done/failed) with peek/reply/attach, per-session worktree isolation, conditional auto-PR.",
+      "hide_status": "packed_unwired",
+      "hide_evidence": "hide-fleet job DAG + isolation + merge (packed, not HTTP-reachable); FE FleetView optimistic",
+      "hawking_superiority": "No metered quota ceiling (Claude warns 10 parallel = 10x quota) -> parallelism bounded only by local hardware; state stays on-device.",
+      "priority": "P2_advanced"
+    },
+    {
+      "id": "subagents.file_defined",
+      "domain": "subagents",
+      "behavior": "Specialists defined as .md + YAML frontmatter (name, description, tools, disallowedTools, model[inherit], skills, mcp, hooks, memory, permissions) in .claude/agents/ (project) + ~/.claude/agents/ (user); isolated context window; summary-only return; auto delegation via description or explicit @-mention / --agent; nesting depth 5; 200/session cap.",
+      "evidence": "DOCUMENTED",
+      "parity_requirement": "Load agent defs from project+user dirs with the same field semantics (name+description required; tools allowlist, disallowed applied first; model inherit default), isolated context, summary-only return, auto + explicit delegation, bounded nesting.",
+      "hide_status": "packed_unwired",
+      "hide_evidence": "hide-kernel subagent support + hawking-orch role router (packed)",
+      "hawking_superiority": "Store each definition as a signed state capsule shipping its warmed prefix -> spawn is instant, not cold-start context assembly.",
+      "priority": "P1_core"
+    },
+    {
+      "id": "subagents.fork_worker",
+      "domain": "subagents",
+      "behavior": "A 'fork' worker inherits the ENTIRE conversation (system prompt, tools, model, history) and reuses the parent's prompt cache; forks run in background; fork-of-fork blocked.",
+      "evidence": "DOCUMENTED",
+      "parity_requirement": "A fork mode cloning the live conversation into a background worker sharing the parent's cache/prefix, returning only its result.",
+      "hide_status": "packed_unwired",
+      "hawking_superiority": "Forking is the NATIVE Hawking primitive: a warm-state fork is a pointer-copy of a resident capsule -> unlimited cheap forks (best-of-N from one start), where Claude's fork advantage is only a prompt-cache hit.",
+      "priority": "P1_core"
+    },
+    {
+      "id": "teams.coordinated",
+      "domain": "subagents",
+      "behavior": "Experimental agent teams (CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1): a fixed lead spawns peer sessions sharing a task list (dependencies + file-locked claims) + mailboxes, messaging directly; ~7x tokens (teammates in plan mode); one team/session; no nested teams.",
+      "evidence": "DOCUMENTED, MEASURED(~7x tokens)",
+      "parity_requirement": "A lead + peer sessions with a shared dependency-gated race-safe task list, per-agent mailboxes with push delivery, direct addressing, plus honest cost/fit guidance.",
+      "hide_status": "packed_unwired",
+      "hawking_superiority": "Resident shared-memory forks collapse the ~7x token explosion toward the cost of one -> teams become a default, not a rationed premium.",
+      "priority": "P2_advanced"
+    },
+    {
+      "id": "goal.evaluator_loop",
+      "domain": "autonomy",
+      "behavior": "/goal: a session-scoped loop where after each turn a separate fast model (default Haiku) judges a user completion condition (<=4000 chars) against TRANSCRIPT EVIDENCE ONLY (never runs tools), feeding a reason back on 'not yet'; requires trust; pairs with auto mode for unattended runs.",
+      "evidence": "DOCUMENTED",
+      "parity_requirement": "A completion loop with a fresh transcript-only evaluator separate from the worker, reason-feedback on miss, and objective stop.",
+      "hide_status": "absent",
+      "hawking_superiority": "Run the evaluator as a local Haiku-class fork at zero marginal cost -> evaluate more often (even mid-turn) and best-of-N judges to reduce single-evaluator error.",
+      "priority": "P2_advanced"
+    },
+    {
+      "id": "skills.progressive_disclosure",
+      "domain": "extensibility",
+      "behavior": "SKILL.md (YAML frontmatter + body) + optional bundled scripts; only name+description in context, body loads on trigger (auto description-match or /skill-name), bundled files load on reference; allowed-tools scoped to the invoking turn; context:fork+agent; model/effort; !`cmd` dynamic injection; scope enterprise>personal>project; plugin:skill namespacing; custom commands merged into skills.",
+      "evidence": "DOCUMENTED",
+      "parity_requirement": "A two-tier registry (cheap name+description listing + lazy body load), description-matching auto-trigger with opt-out, a skill-dir contract with a dir path var, turn-scoped tool pre-approval, and context:fork.",
+      "hide_status": "absent",
+      "hide_evidence": "FE ContextStack SKILLS is a hardcoded const; no skill runtime",
+      "hawking_superiority": "Pre-index the skill corpus into a resident capsule; hydrate a body by forking it -> O(1) load, no per-turn token accounting, no eviction; bundled scripts touch .tq artifacts / GPU / private data a cloud sandbox can't.",
+      "priority": "P1_core"
+    },
+    {
+      "id": "plugins.bundles",
+      "domain": "extensibility",
+      "behavior": ".claude-plugin/plugin.json manifest bundling skills/agents/hooks/.mcp.json/.lsp.json/monitors/themes/output-styles/settings.json + userConfig(sensitive); installed via /plugin from marketplaces (marketplace.json, git/owner-repo/URL/local); SHA-pinned; 'Will install' inventory + per-turn context-cost estimate; unused-plugin detection; ~11 LSP language plugins; auto-update.",
+      "evidence": "DOCUMENTED",
+      "parity_requirement": "A manifest-defined bundle with convention dirs per component type, install/enable/disable/uninstall lifecycle, namespaced names, marketplace add-then-install, SHA pinning, pre-install inventory + cost estimate, admin allowlists.",
+      "hide_status": "absent",
+      "hawking_superiority": "Bundles can ship local runtime assets a cloud plugin can't: quantized model shards, Metal kernels, state-capsule presets -> install an entire specialized local model+workflow.",
+      "priority": "P2_advanced"
+    },
+    {
+      "id": "hooks.lifecycle",
+      "domain": "extensibility",
+      "behavior": "Hooks fire at PreToolUse/PostToolUse/UserPromptSubmit/Stop/SessionStart/PreCompact/Notification/SubagentStop/PermissionRequest/ConfigChange/InstructionsLoaded with matchers; stdin-JSON + exit-code + JSON-decision (allow/deny/ask, block+reason, updatedInput, additionalContext, updatedToolOutput). Hooks execute only after trust.",
+      "evidence": "DOCUMENTED",
+      "parity_requirement": "The same event taxonomy with matchers, JSON-on-stdin, exit-code semantics, and a JSON decision object; PreToolUse as a hard pre-execution gate that can deny/ask/allow/rewrite; NO project hook runs before trust.",
+      "hide_status": "absent",
+      "hide_evidence": "no hook lifecycle engine is packed; hide-backend command-router is adjacent permission-routing, not a hook engine",
+      "hawking_superiority": "Local hooks are latency-free and can read/modify true runtime state (live KV, resident model) not a serialized transcript; enforce the gate at the syscall/sandbox layer.",
+      "priority": "P1_core"
+    },
+    {
+      "id": "mcp.client_host_server",
+      "domain": "mcp",
+      "behavior": ".mcp.json (project) + ~/.claude.json (user/local) + managed; stdio/HTTP(streamable-http)/SSE(deprecated)/WebSocket; OAuth 2.0 (DCR/CIMD/pinned scopes); @server:proto://path resources; /mcp__server__prompt prompts; tool-search deferral default-on; output warn 10k/hard 25k spill-to-disk; elicitation; claude mcp add/list/get/remove/login.",
+      "evidence": "DOCUMENTED",
+      "parity_requirement": "Be MCP client AND host AND a server exposing HIDE's own tools/agents; read a repo-root manifest layered under local/user/managed; support all live transports + OAuth; @-resource mentions; prompts as slash commands; deferred tool loading; bounded output with disk spill.",
+      "hide_status": "packed_unwired",
+      "hide_evidence": "hide-tools has a JSON-RPC MCP client (stdio + Streamable HTTP), packed; no host/server",
+      "hawking_superiority": "Keep long-lived local stdio servers warm across sessions; snapshot the resolved+authed server set into a capsule so a fork inherits connected servers instantly.",
+      "priority": "P1_core"
+    },
+    {
+      "id": "sdk.headless",
+      "domain": "sdk",
+      "behavior": "TS + Python SDKs = same engine; claude -p with --output-format text/json/stream-json, --json-schema (result in structured_output field), --allowedTools/--disallowedTools, --permission-mode, --max-turns, --mcp-config, session resume/fork; result carries total_cost_usd/tokens/num_turns/duration_ms/session_id; --bare hermetic mode (no auto-discovery; becoming -p default); settingSources controls whether .claude/CLAUDE.md travel.",
+      "evidence": "DOCUMENTED",
+      "parity_requirement": "An embeddable local Agent SDK (>=2 langs) with a query()-style API + options parity, plus a headless -p with structured output, tool allow/deny, permission modes, max-turns, MCP config, session resume/fork, a result object, and a hermetic --bare mode.",
+      "hide_status": "absent",
+      "hawking_superiority": "forkSession is an O(1) copy-on-write of live model+conversation state (warm-state fork), not a JSONL re-read; return a truthful $0.00 / joules; unlimited best-of-N with no rate limit; byte-reproducible runs (fixed seed + resident weights).",
+      "priority": "P1_core"
+    },
+    {
+      "id": "ide.two_surface_bridge",
+      "domain": "ide",
+      "behavior": "Native VS Code/Cursor extension: editable plan doc + inline comments, side-by-side accept/reject diffs, @file#L-ranges, checkpoints, parallel tabs, cloud Remote tab; a loopback 'ide' MCP server (lock file 0600, per-activation token) sharing active selection + open-file + LSP diagnostics into the session. JetBrains plugin (beta, terminal-based, only getDiagnostics). CLI and IDE share ONE conversation history + checkpoints.",
+      "evidence": "DOCUMENTED",
+      "parity_requirement": "One session across a terminal-style Chat and an editor IDE: a loopback token-authed bridge injecting selection+file+diagnostics, native diff-with-permission review, editable plan doc, shared history + checkpoints across both surfaces.",
+      "hide_status": "partial",
+      "hide_evidence": "FE has both Chat and Code chambers sharing one Zustand store + wire; backend bridge packed",
+      "hawking_superiority": "Local engine -> zero network round-trip for diffs/selection/diagnostics; both surfaces share ONE warm resident context instead of re-injecting selection per prompt.",
+      "priority": "P0_table_stakes"
+    },
+    {
+      "id": "cost.usage_transparency",
+      "domain": "product",
+      "behavior": "/usage (merged /cost, /stats) shows session totals + per-model + per-skill/subagent/plugin/MCP attribution, plan bars, 5-hour + weekly caps; /context grid; /compact [focus]. Pain: /usage is local-session-only.",
+      "evidence": "DOCUMENTED",
+      "parity_requirement": "An at-any-time usage/telemetry view with attribution, a context-window map with optimization hints, and a focus-able compaction command.",
+      "hide_status": "partial",
+      "hide_evidence": "FE Digest + ContextStack exist; doctrine already forbids a budget/cap meter",
+      "hawking_superiority": "STRONGEST INVERSION: no meter, no plan limits -> replace budget bars with pure performance telemetry (tok/s, energy, parallelism) framed as capability headroom, not a countdown; compaction can be reversible detail-hiding, not lossy summarization.",
+      "priority": "P1_core"
+    }
+  ]
+}
