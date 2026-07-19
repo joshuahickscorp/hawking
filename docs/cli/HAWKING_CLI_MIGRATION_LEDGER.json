@@ -1,0 +1,484 @@
+{
+  "alias_policy": "temporary aliases warn on stderr, forward to the canonical handler, share the same state root, create no duplicate controller, preserve scientific identity",
+  "entries": [
+    {
+      "affected_automation": "launch scripts, HIDE desktop hide-serve; none broken.",
+      "compatibility_alias": "`serve` kept as the canonical verb (no rename).",
+      "new_five_command_equivalent": "serve <artifact>",
+      "old_command": "serve (rust, main.rs:130)",
+      "removal_condition": "never (core command)",
+      "warning_text": "none"
+    },
+    {
+      "affected_automation": "batched-capture/serve-report harnesses, eval scripts calling generate --prompts-file.",
+      "compatibility_alias": "`generate` -> shim to `serve --once`, warns.",
+      "new_five_command_equivalent": "serve <artifact> --once [--prompt|--prompts-file]",
+      "old_command": "generate (rust, main.rs:225)",
+      "removal_condition": "remove once callers migrate (2 releases)",
+      "warning_text": "`hawking generate` is now `hawking serve <artifact> --once`; forwarding. Alias removed after 2 releases."
+    },
+    {
+      "affected_automation": "tokenizer-parity CI checks.",
+      "compatibility_alias": "`tokenize` -> `doctor --tokenize`, warns.",
+      "new_five_command_equivalent": "doctor <model> --tokenize [TEXT]",
+      "old_command": "tokenize (rust, main.rs:373)",
+      "removal_condition": "remove after 2 releases",
+      "warning_text": "`tokenize` is now `doctor --tokenize` (read-only parity diagnostic)."
+    },
+    {
+      "affected_automation": "tools/bench/* wrappers, paired_lever.sh, dead_lever registry runs.",
+      "compatibility_alias": "`bench` -> `doctor --bench`, warns.",
+      "new_five_command_equivalent": "doctor <model> --bench [SUITE]",
+      "old_command": "bench (rust, main.rs:393)",
+      "removal_condition": "remove after 2 releases",
+      "warning_text": "`bench` is now `doctor --bench` (read-only measurement)."
+    },
+    {
+      "affected_automation": "kernel-profile generation jobs, profile-rank pipeline inputs.",
+      "compatibility_alias": "`autotune` -> `serve --autotune --explain` (writes profile, does not bind unless asked), warns.",
+      "new_five_command_equivalent": "serve <artifact> --autotune [--max-hours]",
+      "old_command": "autotune (rust, main.rs:428)",
+      "removal_condition": "remove after 2 releases",
+      "warning_text": "`autotune` folded into `serve --autotune`; profile still written to --out."
+    },
+    {
+      "affected_automation": "Q4_K GEMV shape-bench JSON emitters.",
+      "compatibility_alias": "`bench-q4k-shapes` -> `doctor --bench q4k-shapes`, warns.",
+      "new_five_command_equivalent": "doctor --bench q4k-shapes",
+      "old_command": "bench-q4k-shapes (rust, main.rs:448)",
+      "removal_condition": "remove after 2 releases",
+      "warning_text": "`bench-q4k-shapes` folded into `doctor --bench q4k-shapes`."
+    },
+    {
+      "affected_automation": "fit/RSS CI checks; unchanged.",
+      "compatibility_alias": "`doctor` kept (canonical), semantics widened to model-OR-artifact + read-only default.",
+      "new_five_command_equivalent": "doctor <model-or-artifact>",
+      "old_command": "doctor (rust, main.rs:455)",
+      "removal_condition": "never (core command)",
+      "warning_text": "none (behavior superset; QAT/KD 'heal' now under --treat)."
+    },
+    {
+      "affected_automation": "offline scorer pipeline.",
+      "compatibility_alias": "`profile-rank` -> `doctor --rank-profile`, warns.",
+      "new_five_command_equivalent": "doctor --rank-profile <PATH>",
+      "old_command": "profile-rank (rust, main.rs:472)",
+      "removal_condition": "remove after 2 releases",
+      "warning_text": "`profile-rank` folded into `doctor --rank-profile`."
+    },
+    {
+      "affected_automation": "expert-access diagnostics.",
+      "compatibility_alias": "`stats` -> `doctor` (routed-expert access section), warns.",
+      "new_five_command_equivalent": "doctor <model> --tokenize (routed-expert probe folded into doctor diagnosis)",
+      "old_command": "stats (rust, main.rs:487)",
+      "removal_condition": "remove after 2 releases",
+      "warning_text": "`stats` folded into `doctor`; routed-expert status is a doctor section."
+    },
+    {
+      "affected_automation": "release/version stamping scripts.",
+      "compatibility_alias": "`version` -> `status --version`; clap `--version` retained.",
+      "new_five_command_equivalent": "status --version (and clap `--version`)",
+      "old_command": "version (rust, main.rs:500)",
+      "removal_condition": "remove after 2 releases",
+      "warning_text": "`version` subcommand folded into `status --version`."
+    },
+    {
+      "affected_automation": "bit-identity/determinism gates.",
+      "compatibility_alias": "`batch-hash` -> `doctor --verify --batch-hash`, warns.",
+      "new_five_command_equivalent": "doctor --verify (determinism) OR serve --once --json (hashes)",
+      "old_command": "batch-hash (rust, main.rs:508)",
+      "removal_condition": "remove after 2 releases",
+      "warning_text": "`batch-hash` folded into `doctor --verify` (per-prompt b3sum determinism check)."
+    },
+    {
+      "affected_automation": "shader bit-identity CI.",
+      "compatibility_alias": "`shader-hash` -> `status --version`, warns.",
+      "new_five_command_equivalent": "status --version (build/shader fingerprint) / doctor --verify",
+      "old_command": "shader-hash (rust, main.rs:532)",
+      "removal_condition": "remove after 2 releases",
+      "warning_text": "`shader-hash` folded into `status --version` build identity."
+    },
+    {
+      "affected_automation": "integrity/release verification scripts.",
+      "compatibility_alias": "`verify` -> `doctor --verify`, warns.",
+      "new_five_command_equivalent": "doctor <target> --verify",
+      "old_command": "verify (rust, main.rs:542)",
+      "removal_condition": "remove after 2 releases",
+      "warning_text": "`verify` is now `doctor --verify` (SHA + sidecar + ledger + parity)."
+    },
+    {
+      "affected_automation": ".hawking sidecar generation jobs.",
+      "compatibility_alias": "`bake-sidecar` -> `condense ... --tier-map --vocab-prune --profile`, warns.",
+      "new_five_command_equivalent": "condense <model> <bpw> (bake) / condense --explain (plan)",
+      "old_command": "bake-sidecar (rust, main.rs:559)",
+      "removal_condition": "remove after 2 releases",
+      "warning_text": "`bake-sidecar` folded into `condense`; sidecar is a condense output."
+    },
+    {
+      "affected_automation": "Press Plan generators, memory-budget planners.",
+      "compatibility_alias": "`press` -> `condense --explain` (dry-run) or `condense` (gated bake), warns.",
+      "new_five_command_equivalent": "condense --explain (--dry-run plan) / condense (bake)",
+      "old_command": "press (rust, main.rs:604)",
+      "removal_condition": "remove after 2 releases",
+      "warning_text": "`press` folded into `condense`; `press --dry-run` == `condense --explain`."
+    },
+    {
+      "affected_automation": "Apple Fit envelope callers, serve --auto config.",
+      "compatibility_alias": "`fit` -> `doctor --intent`, warns.",
+      "new_five_command_equivalent": "doctor <model> --intent <...> [--explain]",
+      "old_command": "fit (rust, main.rs:630)",
+      "removal_condition": "remove after 2 releases",
+      "warning_text": "`fit` folded into `doctor` (Apple Fit is a doctor diagnosis)."
+    },
+    {
+      "affected_automation": "speculative-decode acceptance oracles.",
+      "compatibility_alias": "`spec-oracle` -> `doctor --verify --spec-oracle`, warns.",
+      "new_five_command_equivalent": "doctor <tokenizer-source> --verify (spec replay)",
+      "old_command": "spec-oracle (rust, main.rs:655)",
+      "removal_condition": "remove after 2 releases",
+      "warning_text": "`spec-oracle` folded into `doctor --verify` (offline accept/tau replay)."
+    },
+    {
+      "affected_automation": "lever-bundle runs; unchanged.",
+      "compatibility_alias": "unchanged",
+      "new_five_command_equivalent": "retained verbatim as a global flag on all 5 commands",
+      "old_command": "global --profile <NAME> (main.rs:19)",
+      "removal_condition": "never",
+      "warning_text": "none"
+    },
+    {
+      "affected_automation": "any launchd/manual seed-c invocations.",
+      "compatibility_alias": "seed-c bin retained as internal engine; `hawking gravity` is the front door.",
+      "new_five_command_equivalent": "gravity <model> (--resume to re-enter)",
+      "old_command": "hawking-seed-c run (separate bin)",
+      "removal_condition": "keep bin internal, unpublish as user surface",
+      "warning_text": "`hawking-seed-c run` is now the engine behind `hawking gravity`; call gravity."
+    },
+    {
+      "affected_automation": "forge_f2_fixture.py callers.",
+      "compatibility_alias": "internal stage; f2 divergence measurement -> doctor --verify.",
+      "new_five_command_equivalent": "gravity (F2 forge stage) / doctor --verify (F2 divergence fixture)",
+      "old_command": "hawking-seed-c f2",
+      "removal_condition": "unpublish as user surface",
+      "warning_text": "`f2` is an internal gravity stage; parity view via `doctor --verify`."
+    },
+    {
+      "affected_automation": "gravity_forge_run.py / one-run ignition scripts.",
+      "compatibility_alias": "-> gravity, warns.",
+      "new_five_command_equivalent": "gravity <model>",
+      "old_command": "hawking-seed-c gravity-run",
+      "removal_condition": "unpublish as user surface",
+      "warning_text": "`gravity-run` is now `hawking gravity`."
+    },
+    {
+      "affected_automation": "status polling.",
+      "compatibility_alias": "-> status.",
+      "new_five_command_equivalent": "status",
+      "old_command": "hawking-seed-c status",
+      "removal_condition": "unpublish",
+      "warning_text": "`seed-c status` folded into `hawking status`."
+    },
+    {
+      "affected_automation": "inspection scripts.",
+      "compatibility_alias": "-> status --explain (run state) or doctor (artifact).",
+      "new_five_command_equivalent": "status --explain / doctor",
+      "old_command": "hawking-seed-c inspect",
+      "removal_condition": "unpublish",
+      "warning_text": "`inspect` folded into `status --explain` / `doctor`."
+    },
+    {
+      "affected_automation": "engine-level integrity checks.",
+      "compatibility_alias": "-> doctor --verify.",
+      "new_five_command_equivalent": "doctor --verify",
+      "old_command": "hawking-seed-c verify",
+      "removal_condition": "unpublish",
+      "warning_text": "`verify` folded into `doctor --verify`."
+    },
+    {
+      "affected_automation": "stop/drain automation, launchd stop hooks.",
+      "compatibility_alias": "-> gravity --drain.",
+      "new_five_command_equivalent": "gravity --drain",
+      "old_command": "hawking-seed-c drain",
+      "removal_condition": "unpublish",
+      "warning_text": "`drain` is now `gravity --drain` (graceful, lease-releasing)."
+    },
+    {
+      "affected_automation": "crash-resume/relaunch automation.",
+      "compatibility_alias": "-> gravity --resume.",
+      "new_five_command_equivalent": "gravity --resume",
+      "old_command": "hawking-seed-c resume",
+      "removal_condition": "unpublish",
+      "warning_text": "`resume` is now `gravity --resume`."
+    },
+    {
+      "affected_automation": "launchd KeepAlive stop, kill scripts -> must call --drain.",
+      "compatibility_alias": "no hard-kill verb exposed; drain is the only stop.",
+      "new_five_command_equivalent": "gravity --drain (campaign) / serve --drain (server)",
+      "old_command": "stop (conceptual / launchd)",
+      "removal_condition": "n/a (never existed as clean verb)",
+      "warning_text": "There is no `stop`; use `--drain` (graceful, seals state). Hard-kill is not a public action."
+    },
+    {
+      "affected_automation": "THE LIVE RUN (PID 84690 lease), launchd autoresume, resume hooks.",
+      "compatibility_alias": "SCRIPT PRESERVED AS-IS; `gravity` shells out to it. NOT rewritten, NOT broken.",
+      "new_five_command_equivalent": "gravity <model> [--resume]; reset -> gravity --drain then re-ignite",
+      "old_command": "second_light_controller.py run/resume/reset (LIVE, PID surface)",
+      "removal_condition": "NEVER remove while a live campaign can use it; only unpublish as the recommended surface after the run completes",
+      "warning_text": "`second_light_controller.py` is the live controller behind `gravity`; keep invoking it directly is supported during migration."
+    },
+    {
+      "affected_automation": "live status polling, dashboards, --watch loops.",
+      "compatibility_alias": "SCRIPT PRESERVED AS-IS; `status` shells out to / re-implements its exact read-only-flock contract.",
+      "new_five_command_equivalent": "status",
+      "old_command": "second_light_status.py (LIVE status reader)",
+      "removal_condition": "NEVER break; it and its import (second_light_controller) must keep working.",
+      "warning_text": "`second_light_status.py` is the live status truth behind `hawking status`; unchanged."
+    },
+    {
+      "affected_automation": "one-run ignition; refused anyway by singleton lease.",
+      "compatibility_alias": "-> gravity; --dry-run -> gravity --explain.",
+      "new_five_command_equivalent": "gravity <model> (ignite) / gravity --explain (dry-run)",
+      "old_command": "second_light_ignite.py",
+      "removal_condition": "unpublish after run",
+      "warning_text": "Ignition folded into `gravity`; `--dry-run` -> `gravity --explain`."
+    },
+    {
+      "affected_automation": "program-seal, provenance rebuild, readiness gating.",
+      "compatibility_alias": "program/manifest generators stay internal to gravity; readiness/gates/evidence -> doctor --verify sections.",
+      "new_five_command_equivalent": "gravity internals (program/manifest) + doctor --verify (readiness/gates/evidence)",
+      "old_command": "second_light_program/source_manifest/quality_contract/first_light_seal/readiness/gates/precheck/*_evidence.py",
+      "removal_condition": "unpublish as user surface; keep as gravity build steps",
+      "warning_text": "Do not run program/source_manifest/ignite mid-campaign (they reseal the bound program); use `gravity`/`doctor --verify`."
+    },
+    {
+      "affected_automation": "successor dashboards.",
+      "compatibility_alias": "-> status (+ --explain/--watch).",
+      "new_five_command_equivalent": "status / status --explain / status --watch",
+      "old_command": "succ_cli.py gravity-status/gravity-inspect/gravity-explain-next/gravity-daily",
+      "removal_condition": "unpublish after successor plane retired",
+      "warning_text": "successor `gravity-*` read verbs folded into `hawking status`."
+    },
+    {
+      "affected_automation": "successor materialize/validate jobs.",
+      "compatibility_alias": "-> gravity + doctor --verify.",
+      "new_five_command_equivalent": "gravity (materialize) / doctor --verify (validate) / gravity --explain (frontier)",
+      "old_command": "succ_cli.py gravity-materialize/gravity-validate/gravity-frontier",
+      "removal_condition": "unpublish",
+      "warning_text": "successor gravity write/validate verbs folded into `gravity` and `doctor --verify`."
+    },
+    {
+      "affected_automation": "queue inspection.",
+      "compatibility_alias": "-> status (view); gravity owns execution.",
+      "new_five_command_equivalent": "status (read the queue) / gravity works it",
+      "old_command": "succ_cli.py queue",
+      "removal_condition": "unpublish",
+      "warning_text": "`queue` view folded into `status`; the run works the queue, there is no separate queue command."
+    },
+    {
+      "affected_automation": "frontier planners, admission controllers.",
+      "compatibility_alias": "-> gravity --explain and condense --explain; admission becomes automatic.",
+      "new_five_command_equivalent": "gravity --explain (frontier/fit/twin) / condense --explain (press-plan) / gravity automatic (admit)",
+      "old_command": "succ_cli.py frontier / frontier-fit / frontier-twin / frontier-press-plan / frontier-admit",
+      "removal_condition": "unpublish",
+      "warning_text": "Frontier planning is now `gravity --explain`; press-plan is `condense --explain`; admission is automatic (no command)."
+    },
+    {
+      "affected_automation": "harvest cron/manual runs.",
+      "compatibility_alias": "no command; harvesting is automatic on row-seal, surfaced in status.",
+      "new_five_command_equivalent": "gravity automatic behavior; status lists harvested artifacts",
+      "old_command": "succ_cli.py harvest",
+      "removal_condition": "remove command surface",
+      "warning_text": "`harvest` is now automatic; completed artifacts appear in `status` / `doctor`."
+    },
+    {
+      "affected_automation": "GC/retire jobs.",
+      "compatibility_alias": "no command; retirement automatic. Plan view -> doctor --explain.",
+      "new_five_command_equivalent": "automatic GC on drain/complete; doctor --explain shows retire plan",
+      "old_command": "succ_cli.py retire / retire-plan",
+      "removal_condition": "remove command surface",
+      "warning_text": "`retire` is automatic; there is no retire command."
+    },
+    {
+      "affected_automation": "eta reporting.",
+      "compatibility_alias": "-> status.",
+      "new_five_command_equivalent": "status (eta field)",
+      "old_command": "succ_cli.py eta",
+      "removal_condition": "unpublish",
+      "warning_text": "`eta` folded into `status`."
+    },
+    {
+      "affected_automation": "first-light calibration jobs.",
+      "compatibility_alias": "calibration is an automatic gravity step; verify via doctor.",
+      "new_five_command_equivalent": "gravity automatic (first-light calibration) / doctor --verify",
+      "old_command": "succ_cli.py calibrate",
+      "removal_condition": "remove command surface",
+      "warning_text": "`calibrate` is an automatic gravity step; inspect via `doctor --verify`."
+    },
+    {
+      "affected_automation": "live watchers; launchd plist installers must move out of the CLI.",
+      "compatibility_alias": "watch -> status --watch. watch-plist: no alias.",
+      "new_five_command_equivalent": "status --watch (watch); watch-plist REMOVED (no launchd/multi-machine command)",
+      "old_command": "succ_cli.py watch / watch-plist",
+      "removal_condition": "remove watch-plist immediately from public surface",
+      "warning_text": "`watch` is `status --watch`. `watch-plist` (launchd install) is removed: install persistence out-of-band, not a hawking command."
+    },
+    {
+      "affected_automation": "launchd arming, transition automation.",
+      "compatibility_alias": "none.",
+      "new_five_command_equivalent": "REMOVED (no distributed/scheduling commands)",
+      "old_command": "succ_cli.py arm-template / arm-transition / watch-plist (persistence/scheduling)",
+      "removal_condition": "remove immediately",
+      "warning_text": "Scheduling/persistence arming is not a hawking command; the five commands are single-machine and stateless-invocation."
+    },
+    {
+      "affected_automation": "Telegram rung notifiers, --notify flags on run scripts.",
+      "compatibility_alias": "none; notifications become an innate opt-in behavior read from config.",
+      "new_five_command_equivalent": "automatic --notify behavior (config-driven); no public command",
+      "old_command": "succ_cli.py telegram + doctor_v5_telegram_rung_notifier.py",
+      "removal_condition": "remove command surface (keep notifier as internal library)",
+      "warning_text": "`telegram` is not a command; notifications are an automatic config-driven behavior."
+    },
+    {
+      "affected_automation": "admission-control scripts.",
+      "compatibility_alias": "none; automatic.",
+      "new_five_command_equivalent": "gravity automatic (the campaign decides admission)",
+      "old_command": "succ_cli.py admission (frontier-admit)",
+      "removal_condition": "remove command surface",
+      "warning_text": "`admission` is automatic inside `gravity`; no command."
+    },
+    {
+      "affected_automation": "eco pipeline runners, passport emitters.",
+      "compatibility_alias": "-> condense + doctor.",
+      "new_five_command_equivalent": "condense (pipeline/materialize) / doctor (passport/status/verify)",
+      "old_command": "eco_cli.py pipeline/passport/status/activation/materialize/selftest",
+      "removal_condition": "unpublish after fold",
+      "warning_text": "eco Press->Summon pipeline folded into `condense`; passport/status into `doctor`."
+    },
+    {
+      "affected_automation": "none (already library).",
+      "compatibility_alias": "library only; no command (already selftest-only).",
+      "new_five_command_equivalent": "gravity/condense internal (packing is a production step)",
+      "old_command": "packs (second_light_pack.py / eco pipeline packing)",
+      "removal_condition": "keep as library; never a public command",
+      "warning_text": "Packing has no public command; it is internal to gravity/condense."
+    },
+    {
+      "affected_automation": "any multi-box fan-out (already absent).",
+      "compatibility_alias": "none.",
+      "new_five_command_equivalent": "REMOVED",
+      "old_command": "workers (distributed/multi-machine)",
+      "removal_condition": "remove immediately / never add",
+      "warning_text": "Hawking is single-machine; there are no worker/distributed commands. One heavy job at a time under the singleton lease."
+    },
+    {
+      "affected_automation": "artifact catalogs.",
+      "compatibility_alias": "-> status list; doctor per-artifact.",
+      "new_five_command_equivalent": "status (artifacts[]) / doctor <artifact>",
+      "old_command": "artifacts (listing produced artifacts)",
+      "removal_condition": "n/a (folded)",
+      "warning_text": "Artifact listing is a `status` section; inspect one with `doctor`."
+    },
+    {
+      "affected_automation": "provenance rebuild (second_light_source_manifest.py).",
+      "compatibility_alias": "-> doctor --verify; rebuild stays internal to gravity.",
+      "new_five_command_equivalent": "doctor <source> --verify (provenance/integrity); gravity reads it",
+      "old_command": "sources (source provenance manifest)",
+      "removal_condition": "unpublish rebuild as user surface",
+      "warning_text": "Source provenance is verified via `doctor --verify`; the manifest is a gravity internal."
+    },
+    {
+      "affected_automation": "bench harness, hawking-bench pack callers.",
+      "compatibility_alias": "-> doctor --bench.",
+      "new_five_command_equivalent": "doctor --bench [SUITE]",
+      "old_command": "benchmark (bench/bench-q4k-shapes/extracted bench-kernel+bench-server)",
+      "removal_condition": "remove old verbs after 2 releases",
+      "warning_text": "All benchmarking is `doctor --bench` (read-only measurement)."
+    },
+    {
+      "affected_automation": "decode_parity_harness, codebase_census, condense_reachability, size_frontier callers.",
+      "compatibility_alias": "-> doctor subsections.",
+      "new_five_command_equivalent": "doctor (+ --verify/--explain/--bench)",
+      "old_command": "diagnostics (stats/tokenize/profile-rank/spec-oracle/census/reachability/size_frontier/parity harness)",
+      "removal_condition": "unpublish standalone diagnostics after fold",
+      "warning_text": "All diagnostics live under `doctor`."
+    },
+    {
+      "affected_automation": "post-hoc recovery jobs.",
+      "compatibility_alias": "-> doctor --treat (existing artifact) or condense --recover (new artifact).",
+      "new_five_command_equivalent": "doctor <artifact> --treat  (heal in place) / condense --recover (heal while producing)",
+      "old_command": "treat (QAT/KD heal of an artifact)",
+      "removal_condition": "remove any standalone treat verb",
+      "warning_text": "`treat` is `doctor --treat` (authorized, mutating) or `condense --recover`."
+    },
+    {
+      "affected_automation": "succ_events.py log inspection.",
+      "compatibility_alias": "-> status --history.",
+      "new_five_command_equivalent": "status --history / status --json",
+      "old_command": "history (event log / events.jsonl)",
+      "removal_condition": "n/a (folded)",
+      "warning_text": "Event history is `status --history` (read-only tail of the hash-chained log)."
+    },
+    {
+      "affected_automation": "resource monitors.",
+      "compatibility_alias": "-> status.",
+      "new_five_command_equivalent": "status (host resource snapshot)",
+      "old_command": "resources (sample_resources / RSS / heat)",
+      "removal_condition": "n/a (folded)",
+      "warning_text": "Resource telemetry is a `status` section."
+    },
+    {
+      "affected_automation": "passport emitters/consumers.",
+      "compatibility_alias": "-> doctor.",
+      "new_five_command_equivalent": "doctor <artifact> --verify (passport section) / doctor --json",
+      "old_command": "passport (artifact provenance passport, eco_passport)",
+      "removal_condition": "unpublish standalone",
+      "warning_text": "Artifact passport/provenance is a `doctor` section."
+    },
+    {
+      "affected_automation": "forge tournaments, subbit packer experiments (share gravity_forge lib the campaign imports).",
+      "compatibility_alias": "-> gravity; standalone experiment scripts kept for research, unpublished as user surface.",
+      "new_five_command_equivalent": "gravity <model>",
+      "old_command": "forge (Gravity Forge tournament, gravity_forge_run/gptoss_gravity_run/gptoss_subbit_packer/forge_* )",
+      "removal_condition": "unpublish as user commands; keep libraries",
+      "warning_text": "The Forge is `hawking gravity`; forge_* remain internal research libraries."
+    },
+    {
+      "affected_automation": "seed-c direct invocations.",
+      "compatibility_alias": "-> gravity (engine stays internal).",
+      "new_five_command_equivalent": "gravity <model>",
+      "old_command": "event-horizon (seed-c Event Horizon engine)",
+      "removal_condition": "unpublish as user surface",
+      "warning_text": "Event Horizon is the engine behind `gravity`."
+    },
+    {
+      "affected_automation": "successor-plane cron, heavy tournament runs.",
+      "compatibility_alias": "kept as internal/research scripts; not part of the 5-command public surface.",
+      "new_five_command_equivalent": "gravity (+ doctor for measurement)",
+      "old_command": "succ_cli.py `successor` plane (whole CLI) + gravity_forge_run/gptoss_gravity_run/gptoss_subbit_packer/gptoss_block/frontier_giant_scaffold standalone runners",
+      "removal_condition": "unpublish; retain as libraries/experiments",
+      "warning_text": "The successor CLI and standalone runners are internal; use the 5 commands."
+    }
+  ],
+  "entry_count": 57,
+  "generated_at": "2026-07-19T01:09:29Z",
+  "live_run_safety": {
+    "migration_must_alias_not_break": {
+      "controller-bound seal generators": "second_light_program.py / second_light_source_manifest.py / second_light_ignite.py reseal the program/manifest/lease the controller is bound to. Their aliases (`gravity`, `gravity --explain`) MUST refuse or route through the lease so they cannot re-seal or re-ignite mid-campaign; direct invocation stays possible but is guarded by the flock.",
+      "gravity": "`hawking gravity <model>` and its --resume/--drain MUST shell out to / wrap the existing second_light_controller.py through the SAME singleton lease. It must NOT reimplement the controller in a way that could start a second controller on the same root. `reset` semantics map to `gravity --drain` then re-ignite -- never a hard kill of a live campaign.",
+      "status": "`hawking status` and bare `hawking` MUST preserve second_light_status.py's exact contract: read-only, never acquire-and-hold the lease, liveness from a non-blocking flock probe, progress recounted from durable checkpoints. Breaking second_light_status.py OR its module-level import of second_light_controller breaks status; the migration keeps both importable and intact."
+    },
+    "runtime_critical_do_not_break": [
+      "tools/condense/second_light_controller.py (the durable Gravity controller; SecondLightController.run/resume; holds the lease) -- the engine behind `hawking gravity`.",
+      "tools/condense/second_light_status.py (imports second_light_controller at module level; STATUS_SCHEMA hawking.second_light.status.v1) -- the engine behind `hawking status`.",
+      "Their import closure: gravity_forge.py, second_light_pack.py (full-scope 128-expert path used by --max-experts 128), gptoss_moe_runtime.py, doctor_v5_gptoss_mxfp4.py, succ_watchdog.py (SingletonLease/heartbeat/sample_resources), succ_events.py (EventLog), and the no-__main__ libraries eco_common.py + studio_manifest.py."
+    ],
+    "safety_guarantees_encoded_in_the_design": [
+      "One heavy job at a time: the singleton fcntl lease remains the single arbiter; `gravity` (any spelling/alias) that could drive the campaign routes through it, so no five-command rename can spawn a duplicate controller (INV-7).",
+      "status can never become a shadow controller (INV-6): no --resume/--drain on status, no lease-hold, no signals.",
+      "--drain is the only stop verb: graceful, seals resumable state, releases the lease; there is no public hard-kill (source stays integrity-frozen and resumable).",
+      "The five-command aliases are additive shims during migration -- the live scripts keep working unchanged, and the DO-NOT-BREAK import closure is never rewritten as part of this consolidation, only fronted."
+    ],
+    "status_at_design_time": "The audit captured second_light_controller.py live as PID 84690 holding the fcntl singleton lease. At the moment this design was written, ps/pgrep show that specific PID is NOT currently resident. This does NOT relax the constraint: the campaign is crash-resumable and launchd-armable, so a live controller may reappear at any time on the same campaign root, and the migration must be safe whether or not one is running right now."
+  },
+  "schema": "hawking.cli.migration_ledger.v1",
+  "sha256": "73d3226770bf652353bdc6b045fd8fcbb8c9836f9a8de4daaa1f056ba703408c"
+}

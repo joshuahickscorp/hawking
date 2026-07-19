@@ -1,0 +1,211 @@
+{
+  "command_spec": {
+    "_preamble": "Exactly 5 public commands. Plain `hawking` dispatches to `status`. Six innate lifecycle flags recur across commands: --resume (re-enter a durable run at its last sealed checkpoint), --drain (graceful stop; release lease, seal, do NOT hard-kill), --verify (run the independent verification pass; read-only), --explain (compute + print the plan/decision WITHOUT performing side effects), --watch (follow live, re-render on change), --json (machine-readable, schema-tagged). A flag only appears on a command where it is meaningful; --resume/--drain are mutating and are FORBIDDEN on the read-only commands (status, doctor-default). Global: --profile <NAME> (lever bundle, existing main.rs:19) and clap --version/--help stay.",
+    "condense": {
+      "args": [
+        "<model>  (source weights: GGUF | MXFP4 dir)",
+        "<bpw>  (REQUIRED target effective bits/weight, e.g. 4 | 3 | 2 | 1 | 0.8)"
+      ],
+      "authorization": "Non-dry bake is owner-gated today (press bake prints a gated notice; bake-sidecar full bake is a follow-on). --explain is always allowed. Refuses if <bpw> is unreachable for the source without violating the byte-ledger.",
+      "flags": {
+        "command_specific": {
+          "--memory-budget <SIZE>": "Fit target (18gb|2tb|raw-bytes). Planner solves per-layer tiers to hit <bpw> under this. Was press --memory-budget.",
+          "--out <PATH>": "Artifact / .hawking sidecar output path.",
+          "--profile <fast|race|efficient|exact>": "Bake profile (predecoded scales aggressiveness). Was bake-sidecar --profile.",
+          "--recover <off|qat|kd>": "Post-quantization capability recovery (the QAT/KD 'doctor heal' sense). Default kd. This is the RECOVER half of 'condense = quantize+recover'.",
+          "--tier-map <PATH>": "Per-tensor quant-tier assignment (was bake-sidecar --tier-map-json / --quant-tier-map-path).",
+          "--vocab-prune <PATH>": "Pruned LM-head vocabulary (was bake-sidecar --vocab-prune)."
+        },
+        "lifecycle": {
+          "--drain": "Finish the current layer, seal a partial artifact, and stop.",
+          "--explain": "Metadata-only Press Plan: what layers get which tier to hit <bpw> under the budget, projected size, WITHOUT baking. Replaces `press --dry-run`, `frontier-press-plan`, `bake-sidecar` plan-print.",
+          "--json": "Emit the plan/artifact object.",
+          "--resume": "Continue a partially-baked artifact from its last sealed layer/tile (bake is layer-checkpointed).",
+          "--verify": "After (or instead of) baking, run the independent artifact verification: byte-ledger, tier-map coverage, decode parity vs source. Read-only when combined with an existing artifact.",
+          "--watch": "Follow the bake (per-layer progress, running effective-bpw, quality proxy)."
+        }
+      },
+      "handler": "Python: tools/condense/second_light_pack.py + gravity_forge.py packers, eco_pipeline (Press->Summon), doctor_v5_gptoss_mxfp4.py staging. Rust plan/bake surface: crates/hawking/src/main.rs press_main (main.rs:1076) and bake_sidecar_main (main.rs:1027). Recovery (QAT/KD) is the proven doctor-recover path.",
+      "json_output_summary": "{schema:'hawking.condense.v1', model, target_bpw, achieved_bpw, plan{layers:[{tensor,tier,bits}],projected_bytes,budget_bytes}, recover_mode, artifact_path, byte_ledger_sha256, verify{parity,coverage}|null}",
+      "mutability": "MUTATING (writes the artifact). --explain/--verify subsets read-only.",
+      "one_line_help": "Quantize+recover <model> to the EXACT target <bpw> and emit a served-ready artifact; obeys the bit-rate.",
+      "state_ownership": "OWNS produced artifacts: .tq / .hawking sidecars, their byte-ledger and provenance passport, and the Press Plan JSON. Does NOT own the gravity campaign lease."
+    },
+    "doctor": {
+      "args": [
+        "<model-or-artifact>  (GGUF | .tq/.hawking artifact | provenance manifest)"
+      ],
+      "authorization": "Default + --verify + --explain + --bench: none (read-only). --treat: owner-gated (mutates an artifact).",
+      "flags": {
+        "command_specific": {
+          "--bench [SUITE]": "Run the measurement/benchmark suite (folds `bench`, `bench-q4k-shapes`, extracted bench-kernel/bench-server). Read-only measurement.",
+          "--intent <max-capability|max-context|max-quality|max-speed|max-battery|safe-fit>": "Apple Fit intent (was fit/serve --intent).",
+          "--max-context <TOKENS>": "Context-KV fit envelope input (was fit --max-context).",
+          "--max-seq-len <N>": "KV-budget basis (was doctor --max-seq-len).",
+          "--rank-profile <PATH>": "Rank a recorded autotune kernel-profile via the offline scorer (was `profile-rank --profile-json`).",
+          "--tokenize [TEXT]": "Tokenizer parity diagnostic (was `tokenize`, `stats` routed-expert probe).",
+          "--treat <off|qat|kd>": "The ONLY mutating doctor mode: heal an EXISTING artifact in place via QAT/KD recovery. MUTATING + authorized; default off. (Distinct from condense --recover, which recovers while producing a NEW artifact.)"
+        },
+        "lifecycle": {
+          "--explain": "Explain the fit envelope / the diagnosis reasoning (per-Mac fit, KV budget math, why a rate collapsed) without heavy compute. Folds `fit`, `profile-rank` narration.",
+          "--json": "Emit the diagnosis object.",
+          "--verify": "The INDEPENDENT verification pass (a second, non-producer code path): SHA-256 integrity + .hawking sidecar check, byte-ledger re-derivation, decode/tokenizer parity, shader/build fingerprint, readiness gates. Replaces `verify`, `spec-oracle`, `batch-hash`, `shader-hash`, second_light_precheck/readiness/gates, doctor_v5 verify/validate, eco passport.",
+          "--watch": "Poll resource/RSS/fit as it changes (light)."
+        }
+      },
+      "handler": "Rust: crates/hawking/src/main.rs doctor_main (main.rs:1054-fit_main, doctor_main:455), verify_main (main.rs:1044), profile_rank_main, stats_main, tokenize_main, bench dispatch, shader-hash inline (main.rs:1023), spec_oracle_main. Python: doctor_v5_gptoss_mxfp4.py (audit/verify/validate), second_light_precheck/readiness/gates/*_evidence.py, decode_parity_harness.py, size_frontier.py, codebase_census.py, eco_passport. --treat: the proven QAT/KD recover path.",
+      "json_output_summary": "{schema:'hawking.doctor.v1', target, kind(source|artifact), size_bytes, sha256, fit{per_mac:[{mac,fits,intent,max_ctx}]}, kv_budget, rss, verify{sha_pass,ledger_pass,parity,gates:[{name,pass}]}|null, bench{suite,results}|null}",
+      "mutability": "READ-ONLY by default. The single exception is --treat (authorized, mutates an existing artifact). Everything else, including --verify and --bench, only reads.",
+      "one_line_help": "Inspect and (with --verify) independently prove a model or artifact; read-only by default.",
+      "state_ownership": "Owns NO durable run state. May write only explicitly-requested report/evidence JSON to --out (e.g. sealed *_PROOF.json). Reads campaign/artifact state produced by gravity/condense; never mutates the lease."
+    },
+    "gravity": {
+      "args": [
+        "<model>  (path to source weights: GGUF | MXFP4 STR2 dir | provenance manifest)"
+      ],
+      "authorization": "Requires the singleton campaign lease (succ_watchdog.SingletonLease). Ignition is owner-gated. --explain/--verify need no lease. No network, no multi-machine fan-out (removed).",
+      "flags": {
+        "command_specific": {
+          "--max-experts <N>": "Bound the per-block expert working set (live run uses 128). Was controller flag.",
+          "--observe-seconds <N>": "Post-ignite observation window before detaching (was ignite flag).",
+          "--organs <LIST>": "Restrict the tournament to named organs/blocks (folds gravity_forge_run --organs/--blocks/--experts, gptoss_gravity_run --blocks/--rates).",
+          "--out <DIR>": "Campaign/artifact root (default reports/condense/second_light). Was --root.",
+          "--pq-max-rows <N>": "Cap PQ program rows (was controller flag).",
+          "--target-bpw <F>": "OPTIONAL cap. Gravity chooses freely below this ceiling; omitted => unbounded search to the collapse floor. (Distinguishes gravity's CHOOSE semantics from condense's OBEY semantics.)"
+        },
+        "lifecycle": {
+          "--drain": "Signal the running campaign to finish the current row, seal, release the flock, and exit. Graceful; never corrupts the source (source is integrity-frozen after any terminal cell). Replaces `drain`/`stop`.",
+          "--explain": "Diagnose-first: print the frontier plan, the candidate family tournament (PQ vs ternary vs RVQ+lowrank), and what row would run next, WITHOUT igniting. Replaces `gravity-explain-next`, `frontier`, `frontier-fit`, `second_light_ignite --dry-run`.",
+          "--json": "Emit the campaign/decision object machine-readably.",
+          "--resume": "Re-enter the durable foundry campaign for <model> at its last sealed per-row checkpoint under the singleton flock. Idempotent; a second live invocation is refused by the lease, not by racing. Replaces controller `resume` and seed-c `resume`.",
+          "--verify": "Read-only: re-derive the chosen family/rate from the sealed evidence + event-chain and re-check tournament receipts; prints PASS/FAIL without touching the lease.",
+          "--watch": "Follow the live campaign (progress recounted from durable checkpoints, ETA, best candidate), re-rendering on heartbeat."
+        }
+      },
+      "handler": "Python owner: tools/condense/second_light_controller.py (SecondLightController.run/resume) driving gravity_forge.py (pack_transform_pq/pack_shared_grammar), second_light_pack.py (full-scope 128-expert grammar), gptoss_moe_runtime.py, doctor_v5_gptoss_mxfp4.py. Lease/heartbeat: succ_watchdog.py; events: succ_events.py. Native/engine core: crates/hawking-seed-c (Event Horizon / Gravity Forge, argv dispatch run|gravity-run|f2). The `gravity` verb is the single front door over BOTH.",
+      "json_output_summary": "{schema:'hawking.gravity.v1', model, state(RUNNING|DRAINING|PAUSED|COMPLETE|FAILED|NOT_STARTED), lease{held,pid}, program_sha256, chosen{family,effective_bpw,rank,output_divergence}, frontier[], row{current,completed,total}, eta_s, best_candidate, artifact_path, event_head_hash}",
+      "mutability": "MUTATING. Writes sealed checkpoints, event-chain, artifacts; holds the singleton fcntl lease. --explain/--verify/--watch/--json subsets are read-only.",
+      "one_line_help": "Search for and forge the strongest sub-bit representation of <model>; the foundry CHOOSES the bit-rate.",
+      "state_ownership": "OWNS the campaign root: GPT_OSS_120B_PQ_GRAVITY_PROGRAM.json (sealed program_sha256), per-row checkpoint.json, events.jsonl (hash-chained), the singleton lease/heartbeat, and the produced .tq/PQ artifacts. Sole writer of the lease."
+    },
+    "serve": {
+      "args": [
+        "<artifact>  (GGUF weights | .tq/.hawking artifact)"
+      ],
+      "authorization": "None beyond local bind. --verify gate is mandatory-by-default; disabling proof requires an explicit opt-out flag and is logged. Exactly one endpoint owner: refuses to start if the addr is already bound (no duplicate /v1 route, no second server binary).",
+      "flags": {
+        "command_specific": {
+          "--addr <SOCKET>": "Bind address (default 0.0.0.0:8080).",
+          "--auto | --intent <...>": "Apple Fit auto serving config (existing serve flags).",
+          "--autotune [--max-hours <F>]": "Deterministically select+write a kernel-profile, then serve with it (folds `autotune`).",
+          "--f16-kv | --no-f16-kv / --energy-mode / --memory-limit-mb / --max-routed-expert-ram-mb / --kernel-profile / --prefill-cache-dir": "Existing serving knobs.",
+          "--once [--prompt <STR>|--prompts-file <PATH>]": "One-shot / batched generation to stdout instead of the HTTP loop (folds the entire `generate` command + batch-hash + batched-capture).",
+          "--speculate [MODE] / --verify-window <N> / --max-batch-size <N> / --batch-policy <...>": "Decode/batch knobs (existing).",
+          "--workload <default|code-completion|chat-shared-prompt|batch-summarization|local-agent-loop>": "Serving workload preset."
+        },
+        "lifecycle": {
+          "--drain": "Stop accepting new requests, finish in-flight, then shut the single endpoint down cleanly.",
+          "--explain": "Explain the chosen serving/performance config (kernels, batch policy, fit) without binding. Was --explain-performance.",
+          "--json": "Emit the serve/generation object (folds --serve-report-json, --capture-out).",
+          "--verify": "The verify-before-load gate: run the artifact proof (byte-ledger, .tq strict/all-linear/gpu proof, sidecar) BEFORE binding the port or loading weights; refuse to serve on FAIL. Folds --tq-proof-mode/--tq-strict/--tq-require-all-linear/--tq-require-gpu into one gate that is ON by default and cannot be silently skipped.",
+          "--watch": "Follow live serving telemetry (tok/s, batch occupancy, KV)."
+        }
+      },
+      "handler": "Rust: crates/hawking/src/main.rs serve dispatch (main.rs:694 -> hawking_serve::run) + generate_main (main.rs:860) + capture.rs (batched-capture) + autotune_main (main.rs:971) + batch_hash_main. The .tq proof gate is the crate `tq` feature surface, promoted to default-on for verify.",
+      "json_output_summary": "{schema:'hawking.serve.v1', artifact, addr, verify{passed,proof:{ledger,all_linear,gpu}}, config{workload,speculate,batch_policy,f16_kv}, fit{intent,max_ctx}, mode(server|once), generation|null, tok_s}",
+      "mutability": "MUTATING only in the operational sense (binds a port, holds a model in RAM, writes optional reports). Does not mutate artifacts or the campaign.",
+      "one_line_help": "Verify then serve <artifact> as an OpenAI-compatible endpoint (or one-shot generate).",
+      "state_ownership": "Owns the runtime server process + bound socket + in-RAM model + optional prefill cache. The SOLE OpenAI-compatible endpoint. Owns no durable producer state."
+    },
+    "status": {
+      "args": [
+        "(none)  -- `hawking` with no subcommand == `hawking status`"
+      ],
+      "authorization": "None. Must be safe to run against a live controller. Cannot import a code path that could start or drive the controller.",
+      "flags": {
+        "command_specific": {
+          "--history": "Print the hash-chained event log tail (read-only view of events.jsonl; folds `history`).",
+          "--version": "Include binary version + shader/build fingerprint (folds `version`, `shader-hash` identity)."
+        },
+        "lifecycle": {
+          "--explain": "Narrate what the running campaign is and what row/step it would do next (read from durable state, not by driving the controller). Folds `inspect`, `eta`, `gravity-explain-next` (read-only narration only).",
+          "--json": "Emit the status object (the canonical machine surface; folds history/resources/version into one document).",
+          "--verify": "Read-only integrity of the live view itself: flock liveness re-probed, heartbeat freshness, event-chain head hash re-verified, progress recounted from durable checkpoints. Never acquires-and-holds the lease.",
+          "--watch": "Follow live truth, re-rendering on heartbeat/checkpoint change. Folds `watch`, `gravity-daily`."
+        }
+      },
+      "handler": "Python: tools/condense/second_light_status.py (already exactly this contract: reads state, never mutates, never holds the lease; STATUS_SCHEMA hawking.second_light.status.v1). Aggregates succ_watchdog.sample_resources, succ_events head, gravity chosen candidate. Rust `version` identity folds in.",
+      "json_output_summary": "{schema:'hawking.status.v1', host{mac,ram_free,rss}, campaign{state,lease{held,pid,alive},heartbeat_age_s,program_sha256,row{current,completed,total},eta_s,best_candidate}|null, artifacts:[{path,bpw,verified}], version, shader_sha, event_head_hash}",
+      "mutability": "STRICTLY READ-ONLY. No --resume, no --drain, cannot spawn/kill/lease the controller. Liveness is decided by probing the flock non-blocking and immediately releasing, never by holding it.",
+      "one_line_help": "Read-only live truth for the machine and any running foundry campaign (this is what bare `hawking` runs).",
+      "state_ownership": "Owns NOTHING durable. Pure reader of gravity's campaign root + host resources. Explicitly NOT the controller (the anti-shadow-controller command)."
+    }
+  },
+  "commands": [
+    "gravity",
+    "condense",
+    "doctor",
+    "serve",
+    "status"
+  ],
+  "generated_at": "2026-07-19T01:09:29Z",
+  "generation_targets": [
+    "python parser",
+    "rust parser",
+    "help text",
+    "docs",
+    "completions",
+    "command parity tests"
+  ],
+  "no_distributed_commands": true,
+  "one_command_authority_plan": {
+    "change_workflow": "To add/rename/remove any surface: edit spec/hawking_cli.authority.json -> regenerate help/docs/completions -> run the authority tests. No hand-editing of clap, help text, docs, or completions is permitted (enforced by the drift gate).",
+    "drift_gate": "A single CI check `cli-authority` fails the build if: (1) clap subcommands != spec; (2) any Python public verb is absent from the alias table; (3) generated help/docs/completions differ from committed; (4) any --json output violates its declared schema. authority.json is the ONLY place a human edits the surface.",
+    "generated_or_validated_artifacts": [
+      {
+        "artifact": "Rust clap surface (crates/hawking/src/main.rs Cmd enum)",
+        "owner": "build script + tests/cli_authority.rs",
+        "relationship": "VALIDATED against authority.json by a build.rs/test that asserts the top-level subcommand set == the 5 and that every flag present in clap exists in the spec (and vice versa). Optionally a codegen step emits the Cmd enum + alias shim table from the spec so drift is impossible."
+      },
+      {
+        "artifact": "Python CLI surface (tools/condense/*_cli.py, second_light_status.py, succ_cli.py, eco_cli.py)",
+        "owner": "tools/condense/test_cli_authority.py",
+        "relationship": "VALIDATED: a pytest loads authority.json and asserts each surviving Python entrypoint either (a) maps to a five-command target in the alias table, or (b) is an internal library with no public verb. The `status` reader is asserted to match the status command's json schema id."
+      },
+      {
+        "artifact": "--help / usage text",
+        "owner": "help generator",
+        "relationship": "GENERATED from authority.json (one-line help + flag docs come from the spec), so Rust --help and any Python argparse help read from the same strings."
+      },
+      {
+        "artifact": "docs (CLI reference, migration guide)",
+        "owner": "docs generator + doc-drift test",
+        "relationship": "GENERATED: the command reference and the deprecation table are rendered from authority.json + migration_ledger; a doc-drift test fails if regenerated output differs from committed docs."
+      },
+      {
+        "artifact": "shell completions (bash/zsh/fish)",
+        "owner": "completions generator",
+        "relationship": "GENERATED from the spec (clap can emit, but the alias shims are added from authority.json so completions know the deprecated spellings and their targets)."
+      },
+      {
+        "artifact": "tests (the invariants_to_test suite)",
+        "owner": "tests/cli_authority.rs + test_cli_authority.py",
+        "relationship": "PARAMETERIZED by authority.json: INV-1 reads the expected 5, INV-7 iterates every alias row, INV-9 iterates every lifecycle flag. Adding a command/flag to the spec automatically extends the tests."
+      },
+      {
+        "artifact": "JSON output schemas",
+        "owner": "per-command output tests",
+        "relationship": "VALIDATED: each command's --json output is checked against the schema id declared in authority.json (jsonschema), keeping json_output_summary honest."
+      }
+    ],
+    "single_source_of_truth": {
+      "format": "One machine-readable JSON document: the 5 commands, their positional args, the innate lifecycle flags with per-command applicability, command-specific flags, each flag's {mutating, authorized, read_only, aliases[]}, the full alias/migration table (mirrors migration_ledger), and each command's declared json_output schema id.",
+      "path": "spec/hawking_cli.authority.json (+ a frozen sha in spec/hawking_cli.authority.sha256)",
+      "why_json": "Both the Rust binary and the Python tools/condense surface must consume the identical contract; JSON is the neutral interchange both parsers already use (STATUS_SCHEMA etc.)."
+    }
+  },
+  "plain_hawking_equals": "status",
+  "schema": "hawking.cli.authority.v1",
+  "sha256": "c7de5441a02d23f5d15be6ae8e13f904a414634472020a28b1537d523c627644",
+  "status": "SCAFFOLD - single source of truth for the 5-command surface; NOT yet wired to parsers (implementation deferred)"
+}

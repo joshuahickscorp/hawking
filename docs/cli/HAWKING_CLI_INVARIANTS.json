@@ -1,0 +1,63 @@
+{
+  "count": 9,
+  "generated_at": "2026-07-19T01:10:14Z",
+  "invariants": [
+    {
+      "id": "INV-1-exactly-five",
+      "name": "Exactly five primary commands in help",
+      "statement": "`hawking --help` lists exactly {gravity, condense, doctor, serve, status} as subcommands and nothing else. No clap-hidden commands (grep for #[command(hide)] / #[arg(hide)] on top-level must be zero). Every historical verb resolves only via an alias shim that is NOT listed as a first-class subcommand.",
+      "test": "Parse --help output; assert the subcommand set equals the 5; assert `hawking generate --help` prints the deprecation shim, not a peer command."
+    },
+    {
+      "id": "INV-2-bare-is-status",
+      "name": "Plain hawking == hawking status",
+      "statement": "Invoking the binary with no subcommand runs `status` and is byte-identical to `hawking status` (same schema, same read-only behavior, same exit code).",
+      "test": "Diff stdout/JSON of `hawking` vs `hawking status`; assert equal and exit 0 with no lease acquisition."
+    },
+    {
+      "id": "INV-3-choose-vs-obey",
+      "name": "Gravity CHOOSES bpw / Condense OBEYS bpw",
+      "statement": "`gravity <model>` selects effective_bpw from evidence (output.chosen.effective_bpw is derived, not an input) and, given only --target-bpw as a ceiling, never exceeds it. `condense <model> <bpw>` produces an artifact whose measured achieved_bpw == the requested <bpw> within the byte-ledger tolerance, and REFUSES if it cannot hit it (no silent drift).",
+      "test": "gravity --explain on a fixture: chosen bpw present, <= --target-bpw when set. condense with <bpw>=2: assert achieved_bpw==2\u00b1ledger_eps; condense with an unreachable bpw: assert non-zero exit + refusal, no artifact written."
+    },
+    {
+      "id": "INV-4-doctor-readonly-plus-independent-verify",
+      "name": "Doctor read-only by default + independent verification path",
+      "statement": "`doctor <target>` and `doctor --verify` perform ZERO mutation of the target, the campaign, or the lease (verified by pre/post sha256 of target + campaign root). --verify runs a code path that does NOT reuse the producer (gravity/condense) code, so it can catch producer bugs. Only `doctor --treat` mutates, and only when authorized.",
+      "test": "Snapshot target+campaign sha before/after doctor and doctor --verify; assert unchanged and no flock acquired. Assert --verify imports the verifier module, not the packer. Assert --treat without authorization refuses."
+    },
+    {
+      "id": "INV-5-serve-verify-before-load-single-endpoint",
+      "name": "Serve verifies before load + exactly one endpoint",
+      "statement": "`serve <artifact>` runs the artifact proof (ledger + .tq strict/all-linear/gpu as applicable) BEFORE binding the socket or loading weights; a FAIL exits non-zero with the port never bound and the model never loaded. Starting serve when the addr is already bound refuses (no duplicate /v1 endpoint, no second server binary).",
+      "test": "Corrupt an artifact's ledger -> serve exits non-zero, `lsof` shows no bind, RSS shows no model load. Start two serves on the same addr -> second refuses. Assert only one code path owns /v1 (grep for a single router registration)."
+    },
+    {
+      "id": "INV-6-status-not-shadow-controller",
+      "name": "Status is not a shadow controller",
+      "statement": "`status` (and bare `hawking`) can NEVER acquire-and-hold the lease, spawn/kill the controller, or mutate durable state. It decides liveness by a non-blocking flock probe that it immediately releases, and recounts progress from durable checkpoints (a stale cursor/PID cannot flip RUNNING). status exposes no --resume/--drain.",
+      "test": "Run status against a live-lease fixture: assert it never wins-and-holds the flock (instrument SingletonLease), never sends signals, exit 0. Assert clap rejects `status --resume` and `status --drain`. Kill the holder while status --watch runs: state flips to NOT_STARTED/FAILED from flock truth, not from the stale PID/cursor."
+    },
+    {
+      "id": "INV-7-aliases-warn-no-duplicate-controller",
+      "name": "Aliases warn and never spawn a duplicate controller",
+      "statement": "Every deprecated verb (generate, bench, fit, press, verify, seed-c run/resume/drain, succ gravity-*, etc.) prints a deprecation warning to stderr, forwards to its five-command target, and \u2014 for anything that could drive the campaign \u2014 routes through the SAME singleton lease so no second controller can start. Two concurrent ignition attempts (any spelling) result in exactly one live controller.",
+      "test": "For each alias in the migration_ledger, assert stderr warning + correct forwarded exit behavior. Concurrently invoke `gravity --resume` and `second_light_controller.py resume` on the same root: assert exactly one holds the flock and the other refuses cleanly (no corruption, no second PID)."
+    },
+    {
+      "id": "INV-8-no-distributed-commands",
+      "name": "No distributed/multi-machine surface",
+      "statement": "None of the five commands, and no surviving alias, exposes workers/scheduling/plist/telegram/arm-* as a command. Persistence and notifications are automatic/config behaviors only.",
+      "test": "grep the resolved command graph for worker/plist/arm-template/telegram command nodes -> zero. Assert watch-plist/arm-* have no alias entry that resolves to a runnable command."
+    },
+    {
+      "id": "INV-9-lifecycle-flag-consistency",
+      "name": "Lifecycle flags mean the same thing everywhere",
+      "statement": "--verify is always read-only; --explain always computes-without-side-effects; --drain always seals-and-releases (never hard-kills); --resume always re-enters at the last sealed checkpoint; --json always emits a schema-tagged object; on read-only commands the mutating flags are absent.",
+      "test": "Property test across commands: with --explain no files/lease change; with --verify no mutation; --drain leaves a resumable sealed state (a subsequent --resume completes); every --json output validates against its declared schema id."
+    }
+  ],
+  "note": "maps to the goal's required public-surface/gravity/condense/doctor/serve/status/migration tests",
+  "schema": "hawking.cli.invariants.v1",
+  "sha256": "35c5dcb30c77d373654ce18becc2d035d262966ffe85a951d8b4f78b2e6390b7"
+}
