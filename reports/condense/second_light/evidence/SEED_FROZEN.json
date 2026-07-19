@@ -1,0 +1,11 @@
+{
+  "candidate": "Candidate C / Event Horizon Seed (crate hawking-seed-c)",
+  "frozen": "authoritative core; Seed design not reopened this session",
+  "generated_at": "2026-07-19T00:13:50Z",
+  "green": true,
+  "note": "cargo test -p hawking-seed-c exit 0",
+  "schema": "hawking.second_light.seed_frozen.v1",
+  "sha256": "7b3a5de01276b37daafaacfa428c3d39a0837235ace824cd83935b27fbe4a7ae",
+  "tests_failed": 0,
+  "tests_passed": 6
+}

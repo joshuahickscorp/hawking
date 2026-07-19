@@ -1,0 +1,82 @@
+{
+  "dead_pid_not_running": true,
+  "example_status_after_run": {
+    "avg_row_seconds": 0.012,
+    "best_candidate": {
+      "rel_error": 0.0,
+      "row_id": "r0072",
+      "whole_artifact_bpw": 16.00139
+    },
+    "campaign_root": "/Users/scammermike/Downloads/hawking/reports/condense/second_light",
+    "checkpoint_present": true,
+    "checkpoint_written_at": "2026-07-19T00:14:31+00:00",
+    "controller_pid": 74757,
+    "current_row": null,
+    "eta_seconds": 0.0,
+    "heartbeat": {
+      "age_seconds": 0.2,
+      "beat_at": "2026-07-19T00:14:31+00:00",
+      "fresh": true,
+      "interval_seconds": 30,
+      "path": "/Users/scammermike/Downloads/hawking/reports/condense/second_light/heartbeat/second_light.heartbeat.json"
+    },
+    "lease": {
+      "acquired_at": "2026-07-19T00:14:30+00:00",
+      "heavy_controller_count": 0,
+      "holder_alive": false,
+      "holder_pid": 74757,
+      "live": false,
+      "path": "/Users/scammermike/Downloads/hawking/reports/condense/second_light/leases/second_light.lease"
+    },
+    "parent_pid": 74030,
+    "process_start_time": "2026-07-19T00:14:30+00:00",
+    "program_error": null,
+    "program_loaded": true,
+    "program_path": "/Users/scammermike/Downloads/hawking/reports/condense/second_light/GPT_OSS_120B_PQ_GRAVITY_PROGRAM.json",
+    "program_sha256": "3a4061f2b8d467b4a994ce3f46224ffb96f4bcab3f88abd5b2e10925b22ce760",
+    "progress": {
+      "completed_row_ids": [
+        "r0072",
+        "r0073",
+        "r0074",
+        "r0075"
+      ],
+      "completed_rows": 4,
+      "failed_row_ids": [],
+      "failed_rows": 0,
+      "pending_rows": 0,
+      "total_rows": 4
+    },
+    "resource_snapshot": {
+      "cpu_count": 28,
+      "disk_path": "/Users/scammermike/Downloads/hawking/reports/condense/second_light",
+      "free_disk_gb": 602.023,
+      "physical_memory_bytes": 103079215104,
+      "read_only": true,
+      "sampled_at": "2026-07-19T00:14:31+00:00",
+      "schema": "hawking.successor.resource_sample.v1",
+      "self_rss_bytes": 42074112,
+      "swap": {
+        "available": true,
+        "free_bytes": 1300957757,
+        "total_bytes": 2147483648,
+        "used_bytes": 846525890
+      },
+      "thermal": {
+        "available": false
+      },
+      "total_disk_gb": 994.663
+    },
+    "sampled_at": "2026-07-19T00:14:31+00:00",
+    "schema": "hawking.second_light.status.v1",
+    "state": "COMPLETE"
+  },
+  "generated_at": "2026-07-19T00:14:31Z",
+  "not_started_when_reset": true,
+  "reports_progress_after_run": true,
+  "rollback_ok": true,
+  "schema": "hawking.second_light.controller_status.v1",
+  "sha256": "c0bb049767e2ce00f9b18dbf899b803ee6c88acd6ab734b96ee6d2d13f2675c0",
+  "singleton_ok": true,
+  "status_reports_live_truth": true
+}

@@ -1,0 +1,110 @@
+{
+  "bindings": {
+    "code_commit": "7f237ed36a64ed1b19886b32a1d17f82af50c5bd",
+    "doctor_budget": {
+      "max_improvement": 0.17618863235682536,
+      "mean_improvement": 0.12665621090531753
+    },
+    "effective_rank": "approximately 104 / 256 for 90% energy (experts are HIGH-RANK)",
+    "exact_rates_bpw": {
+      "1/1 (1.0bpw)": 0.576,
+      "2/1 (2.0bpw)": 0.364,
+      "4/5 (0.8bpw)": 0.628
+    },
+    "experts": "128 (layer 0)",
+    "layer": 0,
+    "output_space_proxy_f2": {
+      "activation_aware_mean": 0.65088,
+      "capability_parity": false,
+      "true_residual_mean_output_rel_div": 0.68792
+    },
+    "parent_revision": "openai/gpt-oss-120b @ b5c939de",
+    "pq_experiment": {
+      "pq_0p5bpw_subdim8_K16": 0.785,
+      "pq_beats_ternary_experts": "32/32",
+      "product_quantization_subdim8_K256": {
+        "bpw_amortized": 1.0,
+        "rel_err_mean": 0.5425698049366474
+      },
+      "ternary_rank8": {
+        "rel_err_mean": 0.9854774866253138
+      }
+    },
+    "representation_evaluated": [
+      "low_rank_factor",
+      "ternary_rank8",
+      "vector_codebook",
+      "product_quantization (selection probe)"
+    ],
+    "resident_ceiling_bpw": 4.705638810964368,
+    "residual_statistics": {
+      "col_energy_top10pct": "15.4% (mild concentration)",
+      "heavy_tailed": true,
+      "implication": "a small protected-island outlier reserve captures disproportionate residual",
+      "kurtosis": 5.19
+    },
+    "slice_dimensions": "layer 0, 128 experts, 256x256 bounded slices (mlp1 MXFP4)",
+    "source_commit": "openai/gpt-oss-120b @ b5c939de",
+    "svd_spectrum": {
+      "svd_rank64_error": 0.51,
+      "svd_rank8_error": 0.916
+    },
+    "tensor": "mlp1 expert weights (MXFP4)",
+    "treated_divergence": {
+      "max": 0.9190994910017254,
+      "mean": 0.8684329149033003,
+      "min": 0.8244588763686855,
+      "sd": 0.020542707998828225
+    },
+    "untreated_divergence": {
+      "max": 1.008770548002912,
+      "mean": 0.9950891258086177,
+      "min": 0.9765087689563521,
+      "sd": 0.005576657019256403
+    }
+  },
+  "boundary_statement": "This dataset selected the next representation family. It did not constitute a full-model condensation or capability run. Low-rank ternary factorization is REJECTED as the principal geometry; the next run uses a full-rank Product/Vector Quantization family with shared amortized codebooks and a protected-island / residual Doctor reserve.",
+  "classification": "FIRST_LIGHT_CALIBRATION",
+  "family_selection": {
+    "pq_vs_ternary_rel_error": {
+      "pq_error_reduction_vs_ternary": "approximately 45 percent",
+      "pq_subdim8_K256_1bpw": 0.5425698049366474,
+      "pq_wins_experts": "32/32",
+      "ternary_rank8": 0.9854774866253138
+    },
+    "reason": "of the ~0.99 error, low-rank truncation accounts for ~0.92 and ternary sign-quantization adds only ~0.07. The bottleneck is RANK, not quantization precision. Richer levels at the same low rank cannot help.",
+    "rejected": "low_rank_ternary_factorization",
+    "selected": "PRODUCT/VECTOR QUANTIZATION with a codebook shared+amortized across experts (full-rank, sub-bit), optionally hybridized with a protected-island outlier reserve for the heavy tail. Low-rank latent factorization is REJECTED for these high-rank experts."
+  },
+  "generated_at": "2026-07-18T23:52:58Z",
+  "honesty": {
+    "authorizes_escape": false,
+    "does_not_prove": [
+      "protected capabilities fail below one BPW",
+      "an activation-aware representation fails",
+      "a learned transform fails",
+      "a structured binary factorization fails",
+      "expert-specific grammar plus shared bases fails",
+      "progressive expert slices fail",
+      "sparse exceptions fail",
+      "conditional reconstruction fails",
+      "QAT or distillation fails",
+      "generated-weight execution fails",
+      "routing-aware protection fails",
+      "a hybrid representation fails",
+      "a sub-bit artifact is impossible"
+    ],
+    "is_capability_claim": false,
+    "is_event_horizon": false,
+    "metric_is_proxy": true
+  },
+  "not_classification": "FULL_RUN",
+  "schema": "hawking.second_light.first_light_calibration.v1",
+  "sha256": "33ba88b136c30df2088cb232bf9de7cd7c1fbae9695a4050c71f5923b263d266",
+  "source_artifacts": {
+    "actaware": "reports/condense/gravity_forge/FORGE_ACTAWARE.json",
+    "baseline_negative": "reports/condense/gravity_forge/FORGE_BASELINE_NEGATIVE.json",
+    "f2_residual": "reports/condense/gravity_forge/FORGE_F2_RESIDUAL.json",
+    "run_dossier": "reports/condense/gravity_forge/condensation/GPT_OSS_120B_RUN_DOSSIER.json"
+  }
+}

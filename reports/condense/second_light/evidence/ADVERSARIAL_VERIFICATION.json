@@ -1,0 +1,26 @@
+{
+  "confirmed": 6,
+  "defect_found_and_fixed": {
+    "file": "tools/condense/second_light_precheck.py",
+    "now": "advancing measured from second_light_status.snapshot() (fcntl-flock liveness + fresh heartbeat + working/sealed cursor); launchd label com.hawking.second_light added; heavy-process scan excludes shell wrappers + own tree",
+    "proof": "idle->NOT_STARTED; live+advancing controller->RUNNING; kill+reset->NOT_STARTED",
+    "was": "advancing = False hardcoded -> full_run_status could never be RUNNING (honest by coincidence, not measurement)"
+  },
+  "generated_at": "2026-07-19T00:33:05Z",
+  "method": "7 independent adversarial skeptics, each instructed to REFUTE one claim (workflow second-light-adversarial-verify)",
+  "no_refutations": true,
+  "plausible": 1,
+  "refuted": 0,
+  "schema": "hawking.second_light.adversarial_verification.v1",
+  "sha256": "2fc84b4adccbe8169a63c2f775ef17fd36852530710a56c319ef7fec3a8bc693",
+  "total": 7,
+  "verdicts": {
+    "controller_durability": "CONFIRMED (singleton; 5 crash/resume idempotent; status never lies)",
+    "forge_pq_accounting": "CONFIRMED (deterministic bytes; islands billed; Doctor within budget; execute==dense)",
+    "no_capability_overclaim": "CONFIRMED (no capability pass / Event Horizon / escape; proxies labeled)",
+    "precheck_not_started": "PLAUSIBLE->FIXED (advancing was hardcoded False so RUNNING was unreachable; now MEASURED from live lease+heartbeat; RUNNING reachability adversarially proven; heavy-scan tightened)",
+    "program_accounting": "CONFIRMED (all 543 source tensors mapped; totals + whole-BPW recompute; budgets close exactly)",
+    "source_manifest": "CONFIRMED (byte ranges match real safetensors headers; reader reads real expert)",
+    "streaming_full_scope": "CONFIRMED (128 experts assigned exactly; only codebook FIT sampled; within budget; deterministic)"
+  }
+}

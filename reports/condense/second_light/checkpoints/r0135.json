@@ -1,0 +1,30 @@
+{
+  "controller_pid": 84690,
+  "elapsed_seconds": 1.091,
+  "is_subbit": false,
+  "layer": 13,
+  "metrics": {
+    "bounded_slice": false,
+    "budget_bits": 26395855,
+    "budget_shrunk_for_test": false,
+    "full_rows": 2880,
+    "n_weights_full": 11796480,
+    "n_weights_packed": 11796480,
+    "physical_bits": 23659072,
+    "rel_error": 0.359234,
+    "slice_rows": 2880,
+    "slice_weights": 11796480,
+    "target_total_bits": 26395855,
+    "whole_artifact_bpw": 2.005604,
+    "within_budget": true
+  },
+  "program_sha256": "3a4061f2b8d467b4a994ce3f46224ffb96f4bcab3f88abd5b2e10925b22ce760",
+  "representation_family": "transform_pq",
+  "row_id": "r0135",
+  "row_sha256": "5ab47a1d2bbcecb6776ec8627987b49ad91683a4a048066dee36a34e839be702",
+  "schema": "hawking.second_light.row_checkpoint.v1",
+  "sealed_at": "2026-07-19T01:00:01+00:00",
+  "status": "SEALED",
+  "tensor_class": "attn_out",
+  "tensor_group": "block.13.attn.out.weight"
+}

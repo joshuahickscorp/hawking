@@ -1,0 +1,30 @@
+{
+  "controller_pid": 84690,
+  "elapsed_seconds": 7.954,
+  "is_subbit": false,
+  "layer": null,
+  "metrics": {
+    "bounded_slice": true,
+    "budget_bits": 646379031,
+    "budget_shrunk_for_test": false,
+    "full_rows": 201088,
+    "n_weights_full": 579133440,
+    "n_weights_packed": 579133440,
+    "physical_bits": 579336295,
+    "rel_error": 0.584424,
+    "slice_rows": 65536,
+    "slice_weights": 188743680,
+    "target_total_bits": 646379031,
+    "whole_artifact_bpw": 1.00035,
+    "within_budget": true
+  },
+  "program_sha256": "3a4061f2b8d467b4a994ce3f46224ffb96f4bcab3f88abd5b2e10925b22ce760",
+  "representation_family": "transform_pq",
+  "row_id": "r0181",
+  "row_sha256": "72e3387d97425916ec9ffbf750199fa52fbd3c5785d1eb1874f0fbda7af0f8de",
+  "schema": "hawking.second_light.row_checkpoint.v1",
+  "sealed_at": "2026-07-19T01:01:29+00:00",
+  "status": "SEALED",
+  "tensor_class": "output_projection",
+  "tensor_group": "unembedding.weight"
+}

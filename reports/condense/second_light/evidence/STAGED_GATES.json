@@ -1,0 +1,156 @@
+{
+  "expert_gate": {
+    "activation_source": "synthetic_gaussian_routed_experts_exercised",
+    "capability_parity": false,
+    "family": "transform_pq",
+    "label": "Stage B expert gate",
+    "layers": [
+      0,
+      18,
+      35
+    ],
+    "mean_output_rel_div": 0.45738,
+    "note": "apparatus gate: real experts packed + reference forward run; functional PROXY, not a capability pass",
+    "per_layer": [
+      {
+        "block": 0,
+        "capability_parity": false,
+        "max_output_rel_div": 0.622,
+        "mean_output_rel_div": 0.60559,
+        "min_output_rel_div": 0.58732,
+        "n_experts_exercised": 9,
+        "n_inputs": 6,
+        "signal": "proxy_output_synthetic_activations"
+      },
+      {
+        "block": 18,
+        "capability_parity": false,
+        "max_output_rel_div": 0.31947,
+        "mean_output_rel_div": 0.29225,
+        "min_output_rel_div": 0.285,
+        "n_experts_exercised": 5,
+        "n_inputs": 6,
+        "signal": "proxy_output_synthetic_activations"
+      },
+      {
+        "block": 35,
+        "capability_parity": false,
+        "max_output_rel_div": 0.48647,
+        "mean_output_rel_div": 0.47431,
+        "min_output_rel_div": 0.45317,
+        "n_experts_exercised": 5,
+        "n_inputs": 6,
+        "signal": "proxy_output_synthetic_activations"
+      }
+    ],
+    "ran": true,
+    "target_bpw": "~0.75",
+    "worst_output_rel_div": 0.60559
+  },
+  "full_layer_gate": {
+    "activation_source": "synthetic_gaussian_routed_experts_exercised",
+    "capability_parity": false,
+    "family": "transform_pq",
+    "label": "Stage C full-layer gate (bounded: routed experts of layer 0)",
+    "layers": [
+      0
+    ],
+    "mean_output_rel_div": 0.60364,
+    "note": "apparatus gate: real experts packed + reference forward run; functional PROXY, not a capability pass",
+    "per_layer": [
+      {
+        "block": 0,
+        "capability_parity": false,
+        "max_output_rel_div": 0.622,
+        "mean_output_rel_div": 0.60364,
+        "min_output_rel_div": 0.58732,
+        "n_experts_exercised": 12,
+        "n_inputs": 12,
+        "signal": "proxy_output_synthetic_activations"
+      }
+    ],
+    "ran": true,
+    "target_bpw": "~0.75",
+    "worst_output_rel_div": 0.60364
+  },
+  "gates_sha256": "7fddfae57a4fbd69457ed50fe5354e3af0b58c16e0400f91ae542e76118ceff2",
+  "generated_at": "2026-07-19T00:15:36Z",
+  "honesty": {
+    "all_apparatus_not_capability": true,
+    "note": "these gates prove the apparatus runs on real weights and produce honest functional proxies; sub-bit divergence remains large; no capability pass claimed",
+    "subbit_divergence_large": true
+  },
+  "multi_layer_gate": {
+    "activation_source": "synthetic_gaussian_routed_experts_exercised",
+    "capability_parity": false,
+    "family": "transform_pq",
+    "label": "Stage D multi-layer gate",
+    "layers": [
+      0,
+      12,
+      24,
+      35
+    ],
+    "mean_output_rel_div": 0.59454,
+    "note": "apparatus gate: real experts packed + reference forward run; functional PROXY, not a capability pass",
+    "per_layer": [
+      {
+        "block": 0,
+        "capability_parity": false,
+        "max_output_rel_div": 0.622,
+        "mean_output_rel_div": 0.60559,
+        "min_output_rel_div": 0.58732,
+        "n_experts_exercised": 9,
+        "n_inputs": 6,
+        "signal": "proxy_output_synthetic_activations"
+      },
+      {
+        "block": 12,
+        "capability_parity": false,
+        "max_output_rel_div": 0.6256,
+        "mean_output_rel_div": 0.60982,
+        "min_output_rel_div": 0.60057,
+        "n_experts_exercised": 6,
+        "n_inputs": 6,
+        "signal": "proxy_output_synthetic_activations"
+      },
+      {
+        "block": 24,
+        "capability_parity": false,
+        "max_output_rel_div": 0.68995,
+        "mean_output_rel_div": 0.68843,
+        "min_output_rel_div": 0.68592,
+        "n_experts_exercised": 4,
+        "n_inputs": 6,
+        "signal": "proxy_output_synthetic_activations"
+      },
+      {
+        "block": 35,
+        "capability_parity": false,
+        "max_output_rel_div": 0.48647,
+        "mean_output_rel_div": 0.47431,
+        "min_output_rel_div": 0.45317,
+        "n_experts_exercised": 5,
+        "n_inputs": 6,
+        "signal": "proxy_output_synthetic_activations"
+      }
+    ],
+    "ran": true,
+    "target_bpw": "~0.75",
+    "worst_output_rel_div": 0.68843
+  },
+  "parent": "openai/gpt-oss-120b",
+  "schema": "hawking.second_light.staged_gates.v1",
+  "seconds": 60.4,
+  "short_e2e_gate": {
+    "activation_source": "synthetic_gaussian",
+    "capability_parity": false,
+    "label": "Stage E short end-to-end proxy",
+    "max_token_output_div": 0.61118,
+    "mean_token_output_div": 0.59414,
+    "n_experts_exercised": 11,
+    "note": "token-level apparatus proxy; not logit/perplexity capability",
+    "ran": true,
+    "seq_len": 4
+  }
+}

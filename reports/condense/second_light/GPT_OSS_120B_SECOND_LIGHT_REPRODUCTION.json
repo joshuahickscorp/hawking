@@ -1,0 +1,19 @@
+{
+  "determinism": "per-row seeds are stable (layer index or row-id ordinal); shared-grammar codebook fit is seeded; assignment exact; byte accounting exactly deterministic (recon may drift ~1e-6 on MPS, CPU authoritative)",
+  "expected": {
+    "failed": 0,
+    "output_gib": 10.47,
+    "realized_bpw": 0.76976,
+    "rows": 183
+  },
+  "generated_at": "2026-07-19T01:22:21Z",
+  "reproduce": [
+    "python3.12 tools/condense/second_light_source_manifest.py   # rebuild provenance to real source",
+    "python3.12 tools/condense/second_light_program.py           # re-seal program (hash 3a4061f2b8d4)",
+    "python3.12 tools/condense/second_light_controller.py reset",
+    "python3.12 tools/condense/second_light_controller.py run --max-experts 128   # full-scope pass",
+    "python3.12 tools/condense/second_light_status.py            # -> COMPLETE 183/183, realized BPW 0.770"
+  ],
+  "schema": "hawking.gpt_oss_120b.second_light_reproduction.v1",
+  "sha256": "0e795f5e8e19af75d2518d09018d7d5c45b13c37b49841bbd92a3dd5988ee7f7"
+}

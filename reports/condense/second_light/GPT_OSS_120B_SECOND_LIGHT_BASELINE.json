@@ -1,0 +1,52 @@
+{
+  "bindings": {
+    "controller_identity": "second_light_controller.py (singleton lease com.hawking.second_light)",
+    "doctor_impl": "gravity_forge.doctor_pq (reserve-only in base pass)",
+    "forge_impl": "tools/condense/gravity_forge.py (PQ 7-verb + islands + doctor_pq + parity)",
+    "metal_impl": "MPS via torch (pack_shared_grammar streaming, transform_pq)",
+    "program_hash": "3a4061f2b8d467b4a994ce3f46224ffb96f4bcab3f88abd5b2e10925b22ce760",
+    "quality_contract_sha256": "6edc2121a93ca4d7c033851c6189fcd53b4d54c2920262706cbeb0f437758994",
+    "seed_commit": "7f237ed36a64ed1b19886b32a1d17f82af50c5bd",
+    "source_manifest_sha256": "49675804250bdba09fcfa682363443be9c1bdd99d278d6f064ce44b7ff59ab40",
+    "source_revision": "openai/gpt-oss-120b @ b5c939de",
+    "tokenizer_harmony": "tokenizer.json vocab 201088 + chat_template.jinja (Harmony)"
+  },
+  "boundary_statement": "Second Light proves complete sub-bit artifact construction and accounting. It does not pass the functional-quality contract.",
+  "generated_at": "2026-07-19T01:22:21Z",
+  "is": [
+    "a complete declared candidate artifact",
+    "exact byte accounting",
+    "negative quality"
+  ],
+  "is_not": [
+    "a successful sub-bit model",
+    "a capability-preserving solution",
+    "the final Event Horizon"
+  ],
+  "quality": {
+    "capability_pass": false,
+    "note": "negative science at sub-bit",
+    "true_residual_output_divergence_mean": 0.68792,
+    "weight_rel_error_mean": 0.554
+  },
+  "result": {
+    "budget_bpw": 0.92788,
+    "complete_physical_bits": 89930626766,
+    "logical_weight_count": 116829156672,
+    "output_gib": 10.469,
+    "realized_whole_artifact_bpw": 0.76976,
+    "rows_failed": 0,
+    "rows_sealed": 183,
+    "rows_total": 183,
+    "source_gib": 60.77,
+    "within_budget_all_rows": true
+  },
+  "schema": "hawking.gpt_oss_120b.second_light_baseline.v1",
+  "scientific_role": "SECOND-LIGHT PQ BASELINE ARTIFACT",
+  "sha256": "3470683feb54529614a025c741509c350c3fd5b061c111613418340af9674ce6",
+  "verification": {
+    "all_183_seals_valid": true,
+    "controller_replay_183_183": true,
+    "fail_closed_all_valid": true
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "controller_pid": 84690,
+  "elapsed_seconds": 17.649,
+  "is_subbit": true,
+  "layer": 4,
+  "metrics": {
+    "bounded_experts": false,
+    "budget_bits": 964041625,
+    "budget_shrunk_for_test": false,
+    "family": "shared_expert_grammar_streaming",
+    "full_scope": true,
+    "max_rel_error": 0.777658,
+    "n_experts_full": 128,
+    "n_experts_packed": 128,
+    "n_weights_full": 1061683200,
+    "n_weights_packed": 1061683200,
+    "physical_bits": 796295680,
+    "rel_error": 0.743536,
+    "target_total_bits": 964041625,
+    "whole_artifact_bpw": 0.750031,
+    "within_budget": true
+  },
+  "program_sha256": "3a4061f2b8d467b4a994ce3f46224ffb96f4bcab3f88abd5b2e10925b22ce760",
+  "representation_family": "shared_expert_grammar",
+  "row_id": "r0009",
+  "row_sha256": "ea6795bad9ecb95dc561e0305884e74554cf5d9a9a7075ce5976e88791e5f5cf",
+  "schema": "hawking.second_light.row_checkpoint.v1",
+  "sealed_at": "2026-07-19T00:37:02+00:00",
+  "status": "SEALED",
+  "tensor_class": "expert_mlp2",
+  "tensor_group": "block.4.mlp.mlp2_weight"
+}
