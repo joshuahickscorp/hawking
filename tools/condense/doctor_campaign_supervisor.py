@@ -90,6 +90,31 @@ def _telegram(text: str) -> bool:
         return False
 
 
+def _eta_line(rows_dir: Path, done, total) -> str:
+    """ETA from the ACTUAL sealed rows' real forward times (accounts for mop contention). Approximate:
+    treated rows (packing) run slower than the early parent rows, so this tightens as they seal."""
+    try:
+        done = int(done); total = int(total)
+        secs = []
+        for f in rows_dir.glob("*.json"):
+            try:
+                secs.append(float(json.loads(f.read_text()).get("forward_seconds") or 0))
+            except Exception:
+                pass
+        secs = [s for s in secs if s > 0]
+        remaining = total - done
+        if not secs or remaining <= 0:
+            return "ETA: computing" if remaining > 0 else "ETA: done"
+        mean = sum(secs) / len(secs)
+        eta = mean * remaining
+        finish = time.strftime("%H:%M", time.gmtime(time.time() + eta)) + "Z"
+        h, m = int(eta // 3600), int((eta % 3600) // 60)
+        span = (f"{h}h {m}m" if h else f"{m}m")
+        return f"ETA ~{span} remaining (~{finish}, approx; avg {int(mean)}s/row)"
+    except Exception:
+        return "ETA: n/a"
+
+
 def _candidate_summary(rows_dir: Path) -> str:
     try:
         rows = [json.loads(f.read_text()) for f in rows_dir.glob("*.json")]
@@ -182,6 +207,7 @@ def tick() -> int:
     if last_done != done or (now - last_ts) >= PROGRESS_MIN_SECONDS:
         _telegram("Hawking 120B Doctor campaign running.\n"
                   f"rows {done}/{total}  row {hb.get('row_id')} {hb.get('phase')}  pid {pid} alive.\n"
+                  f"{_eta_line(CAMP / 'checkpoints', done, total)}\n"
                   f"{_candidate_summary(CAMP / 'checkpoints')}")
         sup_state = {**sup_state, "last_progress_rows": done, "last_progress_epoch": now}
     _write(SUP_STATE, {**sup_state, "runs": runs, "status": "running"})
