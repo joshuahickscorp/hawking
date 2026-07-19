@@ -1,0 +1,49 @@
+{
+  "controller_pid": 17601,
+  "elapsed_seconds": 3.711,
+  "family": "naive_rvq",
+  "metrics": {
+    "budget_bits": 6304256,
+    "budget_shrunk_for_test": false,
+    "functional_divergence": 0.49006,
+    "functional_evidence": {
+      "capability_parity": false,
+      "max_output_rel_div": 0.57953,
+      "mean_output_rel_div": 0.49006,
+      "min_output_rel_div": 0.4589,
+      "n_experts_exercised": 3,
+      "n_inputs": 4,
+      "signal": "proxy_output_synthetic_activations"
+    },
+    "functional_metric": "output_divergence (reference MoE forward, routed experts)",
+    "n_weights": 8294400,
+    "physical_bits": 6254080,
+    "sample_layer": 0,
+    "target_total_bits": 6304256,
+    "weight_meta": {
+      "representative_expert": 0,
+      "representative_of_class": "expert_mlp2",
+      "sample_layer": 0
+    },
+    "weight_rel_error": 0.754989,
+    "whole_artifact_bpw": 0.754012,
+    "within_budget": true
+  },
+  "params": {
+    "dim": 16,
+    "k": 64,
+    "stages": 2
+  },
+  "priority_rank": 1,
+  "program_sha256": "d0fa8ced7aad25f7004729a1ab5be2139f08864541129016aad1bfa29dece9a1",
+  "protected_island_strategy": null,
+  "rate": "3/4",
+  "representation_family": "naive_rvq",
+  "row_id": "t0005",
+  "schema": "hawking.gravity_frontier.trial_checkpoint.v1",
+  "sealed_at": "2026-07-19T01:44:51+00:00",
+  "sharing_group": "expert_mlp2_naive_rvq",
+  "status": "SEALED",
+  "tensor_class": "expert_mlp2",
+  "trial_sha256": "52f1e61cab1b3d63b0f488ec7c02f2fcae8b4791cf0ec67f621a2c4d07c5eb60"
+}

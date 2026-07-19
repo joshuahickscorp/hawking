@@ -1,0 +1,354 @@
+{
+  "all_trials": [
+    {
+      "bpw": 0.751022,
+      "family": "transform_pq",
+      "func_div": 0.00872,
+      "rate": null,
+      "row_id": "t0000",
+      "status": "SEALED",
+      "tensor_class": "expert_mlp1",
+      "weight_err": 0.688568
+    },
+    {
+      "bpw": 0.752045,
+      "family": "transform_pq",
+      "func_div": 0.59779,
+      "rate": null,
+      "row_id": "t0001",
+      "status": "SEALED",
+      "tensor_class": "expert_mlp2",
+      "weight_err": 0.751221
+    },
+    {
+      "bpw": 0.751019,
+      "family": "product_quant",
+      "func_div": 0.00865,
+      "rate": null,
+      "row_id": "t0002",
+      "status": "SEALED",
+      "tensor_class": "expert_mlp1",
+      "weight_err": 0.67675
+    },
+    {
+      "bpw": 0.752037,
+      "family": "product_quant",
+      "func_div": 0.60702,
+      "rate": null,
+      "row_id": "t0003",
+      "status": "SEALED",
+      "tensor_class": "expert_mlp2",
+      "weight_err": 0.749797
+    },
+    {
+      "bpw": 0.752006,
+      "family": "naive_rvq",
+      "func_div": 0.009,
+      "rate": null,
+      "row_id": "t0004",
+      "status": "SEALED",
+      "tensor_class": "expert_mlp1",
+      "weight_err": 0.680033
+    },
+    {
+      "bpw": 0.754012,
+      "family": "naive_rvq",
+      "func_div": 0.49006,
+      "rate": null,
+      "row_id": "t0005",
+      "status": "SEALED",
+      "tensor_class": "expert_mlp2",
+      "weight_err": 0.754989
+    },
+    {
+      "bpw": 0.75201,
+      "family": "transform_pq",
+      "func_div": 0.00893,
+      "rate": null,
+      "row_id": "t0006",
+      "status": "SEALED",
+      "tensor_class": "expert_mlp1",
+      "weight_err": 0.692916
+    },
+    {
+      "bpw": 0.75402,
+      "family": "transform_pq",
+      "func_div": 0.58816,
+      "rate": null,
+      "row_id": "t0007",
+      "status": "SEALED",
+      "tensor_class": "expert_mlp2",
+      "weight_err": 0.750086
+    },
+    {
+      "bpw": 0.500158,
+      "family": "transform_pq",
+      "func_div": 0.01039,
+      "rate": null,
+      "row_id": "t0008",
+      "status": "SEALED",
+      "tensor_class": "expert_mlp1",
+      "weight_err": 0.773817
+    },
+    {
+      "bpw": 0.500316,
+      "family": "transform_pq",
+      "func_div": 0.77218,
+      "rate": null,
+      "row_id": "t0009",
+      "status": "SEALED",
+      "tensor_class": "expert_mlp2",
+      "weight_err": 0.856181
+    },
+    {
+      "bpw": 0.912175,
+      "family": "pq_protected_islands",
+      "func_div": 0.00849,
+      "rate": null,
+      "row_id": "t0010",
+      "status": "SEALED",
+      "tensor_class": "expert_mlp1",
+      "weight_err": 0.668253
+    },
+    {
+      "bpw": 0.913191,
+      "family": "pq_protected_islands",
+      "func_div": 0.18369,
+      "rate": null,
+      "row_id": "t0011",
+      "status": "SEALED",
+      "tensor_class": "expert_mlp2",
+      "weight_err": 0.661814
+    },
+    {
+      "bpw": 0.87608,
+      "family": "pq_doctor_lowrank",
+      "func_div": 0.00832,
+      "rate": null,
+      "row_id": "t0012",
+      "status": "SEALED",
+      "tensor_class": "expert_mlp1",
+      "weight_err": 0.651719
+    },
+    {
+      "bpw": 0.87716,
+      "family": "pq_doctor_lowrank",
+      "func_div": 0.60074,
+      "rate": null,
+      "row_id": "t0013",
+      "status": "SEALED",
+      "tensor_class": "expert_mlp2",
+      "weight_err": 0.732402
+    },
+    {
+      "bpw": 0.30584,
+      "family": "repairability_shaped",
+      "func_div": 0.01146,
+      "rate": null,
+      "row_id": "t0014",
+      "status": "SEALED",
+      "tensor_class": "expert_mlp1",
+      "weight_err": 0.879631
+    },
+    {
+      "bpw": 0.339456,
+      "family": "repairability_shaped",
+      "func_div": 0.21991,
+      "rate": null,
+      "row_id": "t0015",
+      "status": "SEALED",
+      "tensor_class": "expert_mlp2",
+      "weight_err": 0.861633
+    },
+    {
+      "bpw": 0.751022,
+      "family": "transform_pq",
+      "func_div": 0.00872,
+      "rate": null,
+      "row_id": "t0016",
+      "status": "SEALED",
+      "tensor_class": "expert_mlp1",
+      "weight_err": 0.688568
+    },
+    {
+      "bpw": 0.752045,
+      "family": "transform_pq",
+      "func_div": 0.59779,
+      "rate": null,
+      "row_id": "t0017",
+      "status": "SEALED",
+      "tensor_class": "expert_mlp2",
+      "weight_err": 0.751221
+    },
+    {
+      "bpw": 0.751019,
+      "family": "product_quant",
+      "func_div": 0.00865,
+      "rate": null,
+      "row_id": "t0018",
+      "status": "SEALED",
+      "tensor_class": "expert_mlp1",
+      "weight_err": 0.67675
+    },
+    {
+      "bpw": 0.752037,
+      "family": "product_quant",
+      "func_div": 0.60702,
+      "rate": null,
+      "row_id": "t0019",
+      "status": "SEALED",
+      "tensor_class": "expert_mlp2",
+      "weight_err": 0.749797
+    },
+    {
+      "bpw": 0.752006,
+      "family": "naive_rvq",
+      "func_div": 0.00899,
+      "rate": null,
+      "row_id": "t0020",
+      "status": "SEALED",
+      "tensor_class": "expert_mlp1",
+      "weight_err": 0.680032
+    },
+    {
+      "bpw": 0.754012,
+      "family": "naive_rvq",
+      "func_div": 0.49031,
+      "rate": null,
+      "row_id": "t0021",
+      "status": "SEALED",
+      "tensor_class": "expert_mlp2",
+      "weight_err": 0.754988
+    },
+    {
+      "bpw": 0.75201,
+      "family": "transform_pq",
+      "func_div": 0.00894,
+      "rate": null,
+      "row_id": "t0022",
+      "status": "SEALED",
+      "tensor_class": "expert_mlp1",
+      "weight_err": 0.692917
+    },
+    {
+      "bpw": 0.75402,
+      "family": "transform_pq",
+      "func_div": 0.58716,
+      "rate": null,
+      "row_id": "t0023",
+      "status": "SEALED",
+      "tensor_class": "expert_mlp2",
+      "weight_err": 0.750084
+    },
+    {
+      "bpw": 0.500158,
+      "family": "transform_pq",
+      "func_div": 0.01038,
+      "rate": null,
+      "row_id": "t0024",
+      "status": "SEALED",
+      "tensor_class": "expert_mlp1",
+      "weight_err": 0.773819
+    },
+    {
+      "bpw": 0.500316,
+      "family": "transform_pq",
+      "func_div": 0.77197,
+      "rate": null,
+      "row_id": "t0025",
+      "status": "SEALED",
+      "tensor_class": "expert_mlp2",
+      "weight_err": 0.856181
+    },
+    {
+      "bpw": 0.912175,
+      "family": "pq_protected_islands",
+      "func_div": 0.00849,
+      "rate": null,
+      "row_id": "t0026",
+      "status": "SEALED",
+      "tensor_class": "expert_mlp1",
+      "weight_err": 0.668253
+    },
+    {
+      "bpw": 0.913191,
+      "family": "pq_protected_islands",
+      "func_div": 0.18369,
+      "rate": null,
+      "row_id": "t0027",
+      "status": "SEALED",
+      "tensor_class": "expert_mlp2",
+      "weight_err": 0.661814
+    },
+    {
+      "bpw": 0.87608,
+      "family": "pq_doctor_lowrank",
+      "func_div": 0.00832,
+      "rate": null,
+      "row_id": "t0028",
+      "status": "SEALED",
+      "tensor_class": "expert_mlp1",
+      "weight_err": 0.65172
+    },
+    {
+      "bpw": 0.87716,
+      "family": "pq_doctor_lowrank",
+      "func_div": 0.60074,
+      "rate": null,
+      "row_id": "t0029",
+      "status": "SEALED",
+      "tensor_class": "expert_mlp2",
+      "weight_err": 0.732402
+    },
+    {
+      "bpw": 0.30584,
+      "family": "repairability_shaped",
+      "func_div": 0.01146,
+      "rate": null,
+      "row_id": "t0030",
+      "status": "SEALED",
+      "tensor_class": "expert_mlp1",
+      "weight_err": 0.879631
+    },
+    {
+      "bpw": 0.339456,
+      "family": "repairability_shaped",
+      "func_div": 0.21991,
+      "rate": null,
+      "row_id": "t0031",
+      "status": "SEALED",
+      "tensor_class": "expert_mlp2",
+      "weight_err": 0.861633
+    }
+  ],
+  "baseline_functional_divergence": 0.688,
+  "generated_at": "2026-07-19T01:50:45Z",
+  "honesty": "synthetic-activation output-divergence PROXY (capability_parity=false, small n_inputs). DIRECTIONAL geometry science, NOT a verified capability pass. Per house rules the winners need larger-sample + true-residual + adversarial reproduction before any WIN claim. No Event Horizon.",
+  "key_findings": [
+    "per-tensor-class geometry matters: expert_mlp1 (up/gate) is robust to sub-bit; expert_mlp2 (down-proj) is sensitive",
+    "PROTECTED ISLANDS on the heavy-tailed mlp2 residual cut functional divergence from ~0.60 (plain PQ) to 0.184",
+    "PQ + Doctor low-rank residual gives expert_mlp1 ~0.008 divergence",
+    "these winners spend island/Doctor reserve so land at ~0.88-0.91 bpw (still sub-bit) vs the 0.75 base rate"
+  ],
+  "next_campaign": "Gate F: apply the winning per-class geometry (mlp1 pq_doctor, mlp2 pq_islands) at the COMPLETE 128-expert x 36-layer scope as a durable full artifact + capability-tier (HF-validated forward) evaluation.",
+  "schema": "hawking.gravity_frontier.geometry_search_result.v1",
+  "sha256": "f342455ac2641cceb65646840e5aea5069e731883b83fcdb6c3c11e6e53ef412",
+  "status": "COMPLETE",
+  "trials_over_budget": 0,
+  "trials_sealed": 32,
+  "trials_total": 32,
+  "winners": {
+    "expert_mlp1": {
+      "bpw": 0.87608,
+      "family": "pq_doctor_lowrank",
+      "functional_divergence": 0.00832,
+      "row": "t0012"
+    },
+    "expert_mlp2": {
+      "bpw": 0.913191,
+      "family": "pq_protected_islands",
+      "functional_divergence": 0.18369,
+      "row": "t0011"
+    }
+  }
+}

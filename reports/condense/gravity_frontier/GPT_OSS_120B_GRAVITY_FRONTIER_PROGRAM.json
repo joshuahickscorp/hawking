@@ -1,0 +1,1536 @@
+{
+  "exact_budget_discipline": {
+    "no_post_hoc_rate_acceptance": true,
+    "packer_fails_over_budget": true,
+    "rates_are_rational": true
+  },
+  "generated_at": "2026-07-19T01:44:25Z",
+  "parent_revision": "openai/gpt-oss-120b",
+  "program_sha256": "d0fa8ced7aad25f7004729a1ab5be2139f08864541129016aad1bfa29dece9a1",
+  "rows": [
+    {
+      "calibration_metrics": [
+        "weight_relative_error",
+        "functional_output_divergence"
+      ],
+      "cpu_impl": "gravity_forge numpy",
+      "dependencies": [],
+      "doctor_reserve_bpw": 0.0,
+      "evidence_schema": "hawking.gravity_frontier.trial_evidence.v1",
+      "exact_budget": {
+        "n_weights_per_matrix": 16588800,
+        "rate": "3/4",
+        "target_total_bits": 12608000
+      },
+      "exact_rate": "3/4",
+      "family_params": {
+        "dim": 16,
+        "k": 64,
+        "subspaces": 2
+      },
+      "functional_metric": "output_divergence (reference MoE forward, routed experts)",
+      "holdout_metrics": [
+        "holdout_functional_output_divergence"
+      ],
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) / streaming",
+      "note": "Second Light baseline geometry (rotated PQ)",
+      "priority_rank": 1,
+      "protected_island_strategy": null,
+      "representation_family": "transform_pq",
+      "resource_estimate": {
+        "gpu": "mps",
+        "peak_gib": 1.5
+      },
+      "row_id": "t0000",
+      "sample_layers": [
+        0,
+        18,
+        35
+      ],
+      "sharing_group": "expert_mlp1_transform_pq",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "promote the lowest functional divergence within budget; escalate rate only after all geometries at this rate are tried",
+      "tensor_class": "expert_mlp1",
+      "tensor_group_fmt": "block.{b}.mlp.mlp1_weight",
+      "trial": true
+    },
+    {
+      "calibration_metrics": [
+        "weight_relative_error",
+        "functional_output_divergence"
+      ],
+      "cpu_impl": "gravity_forge numpy",
+      "dependencies": [],
+      "doctor_reserve_bpw": 0.0,
+      "evidence_schema": "hawking.gravity_frontier.trial_evidence.v1",
+      "exact_budget": {
+        "n_weights_per_matrix": 8294400,
+        "rate": "3/4",
+        "target_total_bits": 6304256
+      },
+      "exact_rate": "3/4",
+      "family_params": {
+        "dim": 16,
+        "k": 64,
+        "subspaces": 2
+      },
+      "functional_metric": "output_divergence (reference MoE forward, routed experts)",
+      "holdout_metrics": [
+        "holdout_functional_output_divergence"
+      ],
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) / streaming",
+      "note": "Second Light baseline geometry (rotated PQ)",
+      "priority_rank": 1,
+      "protected_island_strategy": null,
+      "representation_family": "transform_pq",
+      "resource_estimate": {
+        "gpu": "mps",
+        "peak_gib": 1.5
+      },
+      "row_id": "t0001",
+      "sample_layers": [
+        0,
+        18,
+        35
+      ],
+      "sharing_group": "expert_mlp2_transform_pq",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "promote the lowest functional divergence within budget; escalate rate only after all geometries at this rate are tried",
+      "tensor_class": "expert_mlp2",
+      "tensor_group_fmt": "block.{b}.mlp.mlp2_weight",
+      "trial": true
+    },
+    {
+      "calibration_metrics": [
+        "weight_relative_error",
+        "functional_output_divergence"
+      ],
+      "cpu_impl": "gravity_forge numpy",
+      "dependencies": [],
+      "doctor_reserve_bpw": 0.0,
+      "evidence_schema": "hawking.gravity_frontier.trial_evidence.v1",
+      "exact_budget": {
+        "n_weights_per_matrix": 16588800,
+        "rate": "3/4",
+        "target_total_bits": 12608000
+      },
+      "exact_rate": "3/4",
+      "family_params": {
+        "dim": 16,
+        "k": 64,
+        "subspaces": 2
+      },
+      "functional_metric": "output_divergence (reference MoE forward, routed experts)",
+      "holdout_metrics": [
+        "holdout_functional_output_divergence"
+      ],
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) / streaming",
+      "note": "plain PQ, no Hadamard rotation (different representation)",
+      "priority_rank": 1,
+      "protected_island_strategy": null,
+      "representation_family": "product_quant",
+      "resource_estimate": {
+        "gpu": "mps",
+        "peak_gib": 1.5
+      },
+      "row_id": "t0002",
+      "sample_layers": [
+        0,
+        18,
+        35
+      ],
+      "sharing_group": "expert_mlp1_product_quant",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "promote the lowest functional divergence within budget; escalate rate only after all geometries at this rate are tried",
+      "tensor_class": "expert_mlp1",
+      "tensor_group_fmt": "block.{b}.mlp.mlp1_weight",
+      "trial": true
+    },
+    {
+      "calibration_metrics": [
+        "weight_relative_error",
+        "functional_output_divergence"
+      ],
+      "cpu_impl": "gravity_forge numpy",
+      "dependencies": [],
+      "doctor_reserve_bpw": 0.0,
+      "evidence_schema": "hawking.gravity_frontier.trial_evidence.v1",
+      "exact_budget": {
+        "n_weights_per_matrix": 8294400,
+        "rate": "3/4",
+        "target_total_bits": 6304256
+      },
+      "exact_rate": "3/4",
+      "family_params": {
+        "dim": 16,
+        "k": 64,
+        "subspaces": 2
+      },
+      "functional_metric": "output_divergence (reference MoE forward, routed experts)",
+      "holdout_metrics": [
+        "holdout_functional_output_divergence"
+      ],
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) / streaming",
+      "note": "plain PQ, no Hadamard rotation (different representation)",
+      "priority_rank": 1,
+      "protected_island_strategy": null,
+      "representation_family": "product_quant",
+      "resource_estimate": {
+        "gpu": "mps",
+        "peak_gib": 1.5
+      },
+      "row_id": "t0003",
+      "sample_layers": [
+        0,
+        18,
+        35
+      ],
+      "sharing_group": "expert_mlp2_product_quant",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "promote the lowest functional divergence within budget; escalate rate only after all geometries at this rate are tried",
+      "tensor_class": "expert_mlp2",
+      "tensor_group_fmt": "block.{b}.mlp.mlp2_weight",
+      "trial": true
+    },
+    {
+      "calibration_metrics": [
+        "weight_relative_error",
+        "functional_output_divergence"
+      ],
+      "cpu_impl": "gravity_forge numpy",
+      "dependencies": [],
+      "doctor_reserve_bpw": 0.0,
+      "evidence_schema": "hawking.gravity_frontier.trial_evidence.v1",
+      "exact_budget": {
+        "n_weights_per_matrix": 16588800,
+        "rate": "3/4",
+        "target_total_bits": 12608000
+      },
+      "exact_rate": "3/4",
+      "family_params": {
+        "dim": 16,
+        "k": 64,
+        "stages": 2
+      },
+      "functional_metric": "output_divergence (reference MoE forward, routed experts)",
+      "holdout_metrics": [
+        "holdout_functional_output_divergence"
+      ],
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) / streaming",
+      "note": "residual vector quantization (different representation)",
+      "priority_rank": 1,
+      "protected_island_strategy": null,
+      "representation_family": "naive_rvq",
+      "resource_estimate": {
+        "gpu": "mps",
+        "peak_gib": 1.5
+      },
+      "row_id": "t0004",
+      "sample_layers": [
+        0,
+        18,
+        35
+      ],
+      "sharing_group": "expert_mlp1_naive_rvq",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "promote the lowest functional divergence within budget; escalate rate only after all geometries at this rate are tried",
+      "tensor_class": "expert_mlp1",
+      "tensor_group_fmt": "block.{b}.mlp.mlp1_weight",
+      "trial": true
+    },
+    {
+      "calibration_metrics": [
+        "weight_relative_error",
+        "functional_output_divergence"
+      ],
+      "cpu_impl": "gravity_forge numpy",
+      "dependencies": [],
+      "doctor_reserve_bpw": 0.0,
+      "evidence_schema": "hawking.gravity_frontier.trial_evidence.v1",
+      "exact_budget": {
+        "n_weights_per_matrix": 8294400,
+        "rate": "3/4",
+        "target_total_bits": 6304256
+      },
+      "exact_rate": "3/4",
+      "family_params": {
+        "dim": 16,
+        "k": 64,
+        "stages": 2
+      },
+      "functional_metric": "output_divergence (reference MoE forward, routed experts)",
+      "holdout_metrics": [
+        "holdout_functional_output_divergence"
+      ],
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) / streaming",
+      "note": "residual vector quantization (different representation)",
+      "priority_rank": 1,
+      "protected_island_strategy": null,
+      "representation_family": "naive_rvq",
+      "resource_estimate": {
+        "gpu": "mps",
+        "peak_gib": 1.5
+      },
+      "row_id": "t0005",
+      "sample_layers": [
+        0,
+        18,
+        35
+      ],
+      "sharing_group": "expert_mlp2_naive_rvq",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "promote the lowest functional divergence within budget; escalate rate only after all geometries at this rate are tried",
+      "tensor_class": "expert_mlp2",
+      "tensor_group_fmt": "block.{b}.mlp.mlp2_weight",
+      "trial": true
+    },
+    {
+      "calibration_metrics": [
+        "weight_relative_error",
+        "functional_output_divergence"
+      ],
+      "cpu_impl": "gravity_forge numpy",
+      "dependencies": [],
+      "doctor_reserve_bpw": 0.0,
+      "evidence_schema": "hawking.gravity_frontier.trial_evidence.v1",
+      "exact_budget": {
+        "n_weights_per_matrix": 16588800,
+        "rate": "3/4",
+        "target_total_bits": 12608000
+      },
+      "exact_rate": "3/4",
+      "family_params": {
+        "dim": 32,
+        "k": 64,
+        "subspaces": 4
+      },
+      "functional_metric": "output_divergence (reference MoE forward, routed experts)",
+      "holdout_metrics": [
+        "holdout_functional_output_divergence"
+      ],
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) / streaming",
+      "note": "alternative subvector geometry (dim 32, 4 subspaces)",
+      "priority_rank": 3,
+      "protected_island_strategy": null,
+      "representation_family": "transform_pq",
+      "resource_estimate": {
+        "gpu": "mps",
+        "peak_gib": 1.5
+      },
+      "row_id": "t0006",
+      "sample_layers": [
+        0,
+        18,
+        35
+      ],
+      "sharing_group": "expert_mlp1_transform_pq",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "promote the lowest functional divergence within budget; escalate rate only after all geometries at this rate are tried",
+      "tensor_class": "expert_mlp1",
+      "tensor_group_fmt": "block.{b}.mlp.mlp1_weight",
+      "trial": true
+    },
+    {
+      "calibration_metrics": [
+        "weight_relative_error",
+        "functional_output_divergence"
+      ],
+      "cpu_impl": "gravity_forge numpy",
+      "dependencies": [],
+      "doctor_reserve_bpw": 0.0,
+      "evidence_schema": "hawking.gravity_frontier.trial_evidence.v1",
+      "exact_budget": {
+        "n_weights_per_matrix": 8294400,
+        "rate": "3/4",
+        "target_total_bits": 6304256
+      },
+      "exact_rate": "3/4",
+      "family_params": {
+        "dim": 32,
+        "k": 64,
+        "subspaces": 4
+      },
+      "functional_metric": "output_divergence (reference MoE forward, routed experts)",
+      "holdout_metrics": [
+        "holdout_functional_output_divergence"
+      ],
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) / streaming",
+      "note": "alternative subvector geometry (dim 32, 4 subspaces)",
+      "priority_rank": 3,
+      "protected_island_strategy": null,
+      "representation_family": "transform_pq",
+      "resource_estimate": {
+        "gpu": "mps",
+        "peak_gib": 1.5
+      },
+      "row_id": "t0007",
+      "sample_layers": [
+        0,
+        18,
+        35
+      ],
+      "sharing_group": "expert_mlp2_transform_pq",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "promote the lowest functional divergence within budget; escalate rate only after all geometries at this rate are tried",
+      "tensor_class": "expert_mlp2",
+      "tensor_group_fmt": "block.{b}.mlp.mlp2_weight",
+      "trial": true
+    },
+    {
+      "calibration_metrics": [
+        "weight_relative_error",
+        "functional_output_divergence"
+      ],
+      "cpu_impl": "gravity_forge numpy",
+      "dependencies": [],
+      "doctor_reserve_bpw": 0.0,
+      "evidence_schema": "hawking.gravity_frontier.trial_evidence.v1",
+      "exact_budget": {
+        "n_weights_per_matrix": 16588800,
+        "rate": "3/4",
+        "target_total_bits": 12608000
+      },
+      "exact_rate": "3/4",
+      "family_params": {
+        "dim": 8,
+        "k": 16,
+        "subspaces": 1
+      },
+      "functional_metric": "output_divergence (reference MoE forward, routed experts)",
+      "holdout_metrics": [
+        "holdout_functional_output_divergence"
+      ],
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) / streaming",
+      "note": "alternative subvector geometry (dim 8, single subspace)",
+      "priority_rank": 3,
+      "protected_island_strategy": null,
+      "representation_family": "transform_pq",
+      "resource_estimate": {
+        "gpu": "mps",
+        "peak_gib": 1.5
+      },
+      "row_id": "t0008",
+      "sample_layers": [
+        0,
+        18,
+        35
+      ],
+      "sharing_group": "expert_mlp1_transform_pq",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "promote the lowest functional divergence within budget; escalate rate only after all geometries at this rate are tried",
+      "tensor_class": "expert_mlp1",
+      "tensor_group_fmt": "block.{b}.mlp.mlp1_weight",
+      "trial": true
+    },
+    {
+      "calibration_metrics": [
+        "weight_relative_error",
+        "functional_output_divergence"
+      ],
+      "cpu_impl": "gravity_forge numpy",
+      "dependencies": [],
+      "doctor_reserve_bpw": 0.0,
+      "evidence_schema": "hawking.gravity_frontier.trial_evidence.v1",
+      "exact_budget": {
+        "n_weights_per_matrix": 8294400,
+        "rate": "3/4",
+        "target_total_bits": 6304256
+      },
+      "exact_rate": "3/4",
+      "family_params": {
+        "dim": 8,
+        "k": 16,
+        "subspaces": 1
+      },
+      "functional_metric": "output_divergence (reference MoE forward, routed experts)",
+      "holdout_metrics": [
+        "holdout_functional_output_divergence"
+      ],
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) / streaming",
+      "note": "alternative subvector geometry (dim 8, single subspace)",
+      "priority_rank": 3,
+      "protected_island_strategy": null,
+      "representation_family": "transform_pq",
+      "resource_estimate": {
+        "gpu": "mps",
+        "peak_gib": 1.5
+      },
+      "row_id": "t0009",
+      "sample_layers": [
+        0,
+        18,
+        35
+      ],
+      "sharing_group": "expert_mlp2_transform_pq",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "promote the lowest functional divergence within budget; escalate rate only after all geometries at this rate are tried",
+      "tensor_class": "expert_mlp2",
+      "tensor_group_fmt": "block.{b}.mlp.mlp2_weight",
+      "trial": true
+    },
+    {
+      "calibration_metrics": [
+        "weight_relative_error",
+        "functional_output_divergence"
+      ],
+      "cpu_impl": "gravity_forge numpy",
+      "dependencies": [],
+      "doctor_reserve_bpw": 0.0,
+      "evidence_schema": "hawking.gravity_frontier.trial_evidence.v1",
+      "exact_budget": {
+        "n_weights_per_matrix": 16588800,
+        "rate": "3/4",
+        "target_total_bits": 15262208
+      },
+      "exact_rate": "3/4",
+      "family_params": {
+        "budget_frac": 0.01,
+        "dim": 16,
+        "k": 64,
+        "strategy": "residual_energy",
+        "subspaces": 2
+      },
+      "functional_metric": "output_divergence (reference MoE forward, routed experts)",
+      "holdout_metrics": [
+        "holdout_functional_output_divergence"
+      ],
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) / streaming",
+      "note": "PQ + residual-energy protected islands (heavy-tail reserve)",
+      "priority_rank": 4,
+      "protected_island_strategy": "residual_energy",
+      "representation_family": "pq_protected_islands",
+      "resource_estimate": {
+        "gpu": "mps",
+        "peak_gib": 1.5
+      },
+      "row_id": "t0010",
+      "sample_layers": [
+        0,
+        18,
+        35
+      ],
+      "sharing_group": "expert_mlp1_pq_protected_islands",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "promote the lowest functional divergence within budget; escalate rate only after all geometries at this rate are tried",
+      "tensor_class": "expert_mlp1",
+      "tensor_group_fmt": "block.{b}.mlp.mlp1_weight",
+      "trial": true
+    },
+    {
+      "calibration_metrics": [
+        "weight_relative_error",
+        "functional_output_divergence"
+      ],
+      "cpu_impl": "gravity_forge numpy",
+      "dependencies": [],
+      "doctor_reserve_bpw": 0.0,
+      "evidence_schema": "hawking.gravity_frontier.trial_evidence.v1",
+      "exact_budget": {
+        "n_weights_per_matrix": 8294400,
+        "rate": "3/4",
+        "target_total_bits": 7631360
+      },
+      "exact_rate": "3/4",
+      "family_params": {
+        "budget_frac": 0.01,
+        "dim": 16,
+        "k": 64,
+        "strategy": "residual_energy",
+        "subspaces": 2
+      },
+      "functional_metric": "output_divergence (reference MoE forward, routed experts)",
+      "holdout_metrics": [
+        "holdout_functional_output_divergence"
+      ],
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) / streaming",
+      "note": "PQ + residual-energy protected islands (heavy-tail reserve)",
+      "priority_rank": 4,
+      "protected_island_strategy": "residual_energy",
+      "representation_family": "pq_protected_islands",
+      "resource_estimate": {
+        "gpu": "mps",
+        "peak_gib": 1.5
+      },
+      "row_id": "t0011",
+      "sample_layers": [
+        0,
+        18,
+        35
+      ],
+      "sharing_group": "expert_mlp2_pq_protected_islands",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "promote the lowest functional divergence within budget; escalate rate only after all geometries at this rate are tried",
+      "tensor_class": "expert_mlp2",
+      "tensor_group_fmt": "block.{b}.mlp.mlp2_weight",
+      "trial": true
+    },
+    {
+      "calibration_metrics": [
+        "weight_relative_error",
+        "functional_output_divergence"
+      ],
+      "cpu_impl": "gravity_forge numpy",
+      "dependencies": [],
+      "doctor_reserve_bpw": 0.15,
+      "evidence_schema": "hawking.gravity_frontier.trial_evidence.v1",
+      "exact_budget": {
+        "n_weights_per_matrix": 16588800,
+        "rate": "3/4",
+        "target_total_bits": 15096320
+      },
+      "exact_rate": "3/4",
+      "family_params": {
+        "dim": 16,
+        "doctor": "residual_codebook",
+        "doctor_bpw": 0.15,
+        "k": 64,
+        "subspaces": 2
+      },
+      "functional_metric": "output_divergence (reference MoE forward, routed experts)",
+      "holdout_metrics": [
+        "holdout_functional_output_divergence"
+      ],
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) / streaming",
+      "note": "PQ + Doctor residual codebook inside the same rate",
+      "priority_rank": 5,
+      "protected_island_strategy": null,
+      "representation_family": "pq_doctor_lowrank",
+      "resource_estimate": {
+        "gpu": "mps",
+        "peak_gib": 1.5
+      },
+      "row_id": "t0012",
+      "sample_layers": [
+        0,
+        18,
+        35
+      ],
+      "sharing_group": "expert_mlp1_pq_doctor_lowrank",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "promote the lowest functional divergence within budget; escalate rate only after all geometries at this rate are tried",
+      "tensor_class": "expert_mlp1",
+      "tensor_group_fmt": "block.{b}.mlp.mlp1_weight",
+      "trial": true
+    },
+    {
+      "calibration_metrics": [
+        "weight_relative_error",
+        "functional_output_divergence"
+      ],
+      "cpu_impl": "gravity_forge numpy",
+      "dependencies": [],
+      "doctor_reserve_bpw": 0.15,
+      "evidence_schema": "hawking.gravity_frontier.trial_evidence.v1",
+      "exact_budget": {
+        "n_weights_per_matrix": 8294400,
+        "rate": "3/4",
+        "target_total_bits": 7548416
+      },
+      "exact_rate": "3/4",
+      "family_params": {
+        "dim": 16,
+        "doctor": "residual_codebook",
+        "doctor_bpw": 0.15,
+        "k": 64,
+        "subspaces": 2
+      },
+      "functional_metric": "output_divergence (reference MoE forward, routed experts)",
+      "holdout_metrics": [
+        "holdout_functional_output_divergence"
+      ],
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) / streaming",
+      "note": "PQ + Doctor residual codebook inside the same rate",
+      "priority_rank": 5,
+      "protected_island_strategy": null,
+      "representation_family": "pq_doctor_lowrank",
+      "resource_estimate": {
+        "gpu": "mps",
+        "peak_gib": 1.5
+      },
+      "row_id": "t0013",
+      "sample_layers": [
+        0,
+        18,
+        35
+      ],
+      "sharing_group": "expert_mlp2_pq_doctor_lowrank",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "promote the lowest functional divergence within budget; escalate rate only after all geometries at this rate are tried",
+      "tensor_class": "expert_mlp2",
+      "tensor_group_fmt": "block.{b}.mlp.mlp2_weight",
+      "trial": true
+    },
+    {
+      "calibration_metrics": [
+        "weight_relative_error",
+        "functional_output_divergence"
+      ],
+      "cpu_impl": "gravity_forge numpy",
+      "dependencies": [],
+      "doctor_reserve_bpw": 0.0,
+      "evidence_schema": "hawking.gravity_frontier.trial_evidence.v1",
+      "exact_budget": {
+        "n_weights_per_matrix": 16588800,
+        "rate": "3/4",
+        "target_total_bits": 12608000
+      },
+      "exact_rate": "3/4",
+      "family_params": {
+        "base_dim": 16,
+        "base_k": 16,
+        "corr_rank": 4,
+        "sparse_rows": 8
+      },
+      "functional_metric": "output_divergence (reference MoE forward, routed experts)",
+      "holdout_metrics": [
+        "holdout_functional_output_divergence"
+      ],
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) / streaming",
+      "note": "cheap base + billed low-rank + sparse Doctor",
+      "priority_rank": 6,
+      "protected_island_strategy": null,
+      "representation_family": "repairability_shaped",
+      "resource_estimate": {
+        "gpu": "mps",
+        "peak_gib": 1.5
+      },
+      "row_id": "t0014",
+      "sample_layers": [
+        0,
+        18,
+        35
+      ],
+      "sharing_group": "expert_mlp1_repairability_shaped",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "promote the lowest functional divergence within budget; escalate rate only after all geometries at this rate are tried",
+      "tensor_class": "expert_mlp1",
+      "tensor_group_fmt": "block.{b}.mlp.mlp1_weight",
+      "trial": true
+    },
+    {
+      "calibration_metrics": [
+        "weight_relative_error",
+        "functional_output_divergence"
+      ],
+      "cpu_impl": "gravity_forge numpy",
+      "dependencies": [],
+      "doctor_reserve_bpw": 0.0,
+      "evidence_schema": "hawking.gravity_frontier.trial_evidence.v1",
+      "exact_budget": {
+        "n_weights_per_matrix": 8294400,
+        "rate": "3/4",
+        "target_total_bits": 6304256
+      },
+      "exact_rate": "3/4",
+      "family_params": {
+        "base_dim": 16,
+        "base_k": 16,
+        "corr_rank": 4,
+        "sparse_rows": 8
+      },
+      "functional_metric": "output_divergence (reference MoE forward, routed experts)",
+      "holdout_metrics": [
+        "holdout_functional_output_divergence"
+      ],
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) / streaming",
+      "note": "cheap base + billed low-rank + sparse Doctor",
+      "priority_rank": 6,
+      "protected_island_strategy": null,
+      "representation_family": "repairability_shaped",
+      "resource_estimate": {
+        "gpu": "mps",
+        "peak_gib": 1.5
+      },
+      "row_id": "t0015",
+      "sample_layers": [
+        0,
+        18,
+        35
+      ],
+      "sharing_group": "expert_mlp2_repairability_shaped",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "promote the lowest functional divergence within budget; escalate rate only after all geometries at this rate are tried",
+      "tensor_class": "expert_mlp2",
+      "tensor_group_fmt": "block.{b}.mlp.mlp2_weight",
+      "trial": true
+    },
+    {
+      "calibration_metrics": [
+        "weight_relative_error",
+        "functional_output_divergence"
+      ],
+      "cpu_impl": "gravity_forge numpy",
+      "dependencies": [],
+      "doctor_reserve_bpw": 0.0,
+      "evidence_schema": "hawking.gravity_frontier.trial_evidence.v1",
+      "exact_budget": {
+        "n_weights_per_matrix": 16588800,
+        "rate": "1/1",
+        "target_total_bits": 16755200
+      },
+      "exact_rate": "1/1",
+      "family_params": {
+        "dim": 16,
+        "k": 64,
+        "subspaces": 2
+      },
+      "functional_metric": "output_divergence (reference MoE forward, routed experts)",
+      "holdout_metrics": [
+        "holdout_functional_output_divergence"
+      ],
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) / streaming",
+      "note": "Second Light baseline geometry (rotated PQ)",
+      "priority_rank": 1,
+      "protected_island_strategy": null,
+      "representation_family": "transform_pq",
+      "resource_estimate": {
+        "gpu": "mps",
+        "peak_gib": 1.5
+      },
+      "row_id": "t0016",
+      "sample_layers": [
+        0,
+        18,
+        35
+      ],
+      "sharing_group": "expert_mlp1_transform_pq",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "promote the lowest functional divergence within budget; escalate rate only after all geometries at this rate are tried",
+      "tensor_class": "expert_mlp1",
+      "tensor_group_fmt": "block.{b}.mlp.mlp1_weight",
+      "trial": true
+    },
+    {
+      "calibration_metrics": [
+        "weight_relative_error",
+        "functional_output_divergence"
+      ],
+      "cpu_impl": "gravity_forge numpy",
+      "dependencies": [],
+      "doctor_reserve_bpw": 0.0,
+      "evidence_schema": "hawking.gravity_frontier.trial_evidence.v1",
+      "exact_budget": {
+        "n_weights_per_matrix": 8294400,
+        "rate": "1/1",
+        "target_total_bits": 8377856
+      },
+      "exact_rate": "1/1",
+      "family_params": {
+        "dim": 16,
+        "k": 64,
+        "subspaces": 2
+      },
+      "functional_metric": "output_divergence (reference MoE forward, routed experts)",
+      "holdout_metrics": [
+        "holdout_functional_output_divergence"
+      ],
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) / streaming",
+      "note": "Second Light baseline geometry (rotated PQ)",
+      "priority_rank": 1,
+      "protected_island_strategy": null,
+      "representation_family": "transform_pq",
+      "resource_estimate": {
+        "gpu": "mps",
+        "peak_gib": 1.5
+      },
+      "row_id": "t0017",
+      "sample_layers": [
+        0,
+        18,
+        35
+      ],
+      "sharing_group": "expert_mlp2_transform_pq",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "promote the lowest functional divergence within budget; escalate rate only after all geometries at this rate are tried",
+      "tensor_class": "expert_mlp2",
+      "tensor_group_fmt": "block.{b}.mlp.mlp2_weight",
+      "trial": true
+    },
+    {
+      "calibration_metrics": [
+        "weight_relative_error",
+        "functional_output_divergence"
+      ],
+      "cpu_impl": "gravity_forge numpy",
+      "dependencies": [],
+      "doctor_reserve_bpw": 0.0,
+      "evidence_schema": "hawking.gravity_frontier.trial_evidence.v1",
+      "exact_budget": {
+        "n_weights_per_matrix": 16588800,
+        "rate": "1/1",
+        "target_total_bits": 16755200
+      },
+      "exact_rate": "1/1",
+      "family_params": {
+        "dim": 16,
+        "k": 64,
+        "subspaces": 2
+      },
+      "functional_metric": "output_divergence (reference MoE forward, routed experts)",
+      "holdout_metrics": [
+        "holdout_functional_output_divergence"
+      ],
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) / streaming",
+      "note": "plain PQ, no Hadamard rotation (different representation)",
+      "priority_rank": 1,
+      "protected_island_strategy": null,
+      "representation_family": "product_quant",
+      "resource_estimate": {
+        "gpu": "mps",
+        "peak_gib": 1.5
+      },
+      "row_id": "t0018",
+      "sample_layers": [
+        0,
+        18,
+        35
+      ],
+      "sharing_group": "expert_mlp1_product_quant",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "promote the lowest functional divergence within budget; escalate rate only after all geometries at this rate are tried",
+      "tensor_class": "expert_mlp1",
+      "tensor_group_fmt": "block.{b}.mlp.mlp1_weight",
+      "trial": true
+    },
+    {
+      "calibration_metrics": [
+        "weight_relative_error",
+        "functional_output_divergence"
+      ],
+      "cpu_impl": "gravity_forge numpy",
+      "dependencies": [],
+      "doctor_reserve_bpw": 0.0,
+      "evidence_schema": "hawking.gravity_frontier.trial_evidence.v1",
+      "exact_budget": {
+        "n_weights_per_matrix": 8294400,
+        "rate": "1/1",
+        "target_total_bits": 8377856
+      },
+      "exact_rate": "1/1",
+      "family_params": {
+        "dim": 16,
+        "k": 64,
+        "subspaces": 2
+      },
+      "functional_metric": "output_divergence (reference MoE forward, routed experts)",
+      "holdout_metrics": [
+        "holdout_functional_output_divergence"
+      ],
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) / streaming",
+      "note": "plain PQ, no Hadamard rotation (different representation)",
+      "priority_rank": 1,
+      "protected_island_strategy": null,
+      "representation_family": "product_quant",
+      "resource_estimate": {
+        "gpu": "mps",
+        "peak_gib": 1.5
+      },
+      "row_id": "t0019",
+      "sample_layers": [
+        0,
+        18,
+        35
+      ],
+      "sharing_group": "expert_mlp2_product_quant",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "promote the lowest functional divergence within budget; escalate rate only after all geometries at this rate are tried",
+      "tensor_class": "expert_mlp2",
+      "tensor_group_fmt": "block.{b}.mlp.mlp2_weight",
+      "trial": true
+    },
+    {
+      "calibration_metrics": [
+        "weight_relative_error",
+        "functional_output_divergence"
+      ],
+      "cpu_impl": "gravity_forge numpy",
+      "dependencies": [],
+      "doctor_reserve_bpw": 0.0,
+      "evidence_schema": "hawking.gravity_frontier.trial_evidence.v1",
+      "exact_budget": {
+        "n_weights_per_matrix": 16588800,
+        "rate": "1/1",
+        "target_total_bits": 16755200
+      },
+      "exact_rate": "1/1",
+      "family_params": {
+        "dim": 16,
+        "k": 64,
+        "stages": 2
+      },
+      "functional_metric": "output_divergence (reference MoE forward, routed experts)",
+      "holdout_metrics": [
+        "holdout_functional_output_divergence"
+      ],
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) / streaming",
+      "note": "residual vector quantization (different representation)",
+      "priority_rank": 1,
+      "protected_island_strategy": null,
+      "representation_family": "naive_rvq",
+      "resource_estimate": {
+        "gpu": "mps",
+        "peak_gib": 1.5
+      },
+      "row_id": "t0020",
+      "sample_layers": [
+        0,
+        18,
+        35
+      ],
+      "sharing_group": "expert_mlp1_naive_rvq",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "promote the lowest functional divergence within budget; escalate rate only after all geometries at this rate are tried",
+      "tensor_class": "expert_mlp1",
+      "tensor_group_fmt": "block.{b}.mlp.mlp1_weight",
+      "trial": true
+    },
+    {
+      "calibration_metrics": [
+        "weight_relative_error",
+        "functional_output_divergence"
+      ],
+      "cpu_impl": "gravity_forge numpy",
+      "dependencies": [],
+      "doctor_reserve_bpw": 0.0,
+      "evidence_schema": "hawking.gravity_frontier.trial_evidence.v1",
+      "exact_budget": {
+        "n_weights_per_matrix": 8294400,
+        "rate": "1/1",
+        "target_total_bits": 8377856
+      },
+      "exact_rate": "1/1",
+      "family_params": {
+        "dim": 16,
+        "k": 64,
+        "stages": 2
+      },
+      "functional_metric": "output_divergence (reference MoE forward, routed experts)",
+      "holdout_metrics": [
+        "holdout_functional_output_divergence"
+      ],
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) / streaming",
+      "note": "residual vector quantization (different representation)",
+      "priority_rank": 1,
+      "protected_island_strategy": null,
+      "representation_family": "naive_rvq",
+      "resource_estimate": {
+        "gpu": "mps",
+        "peak_gib": 1.5
+      },
+      "row_id": "t0021",
+      "sample_layers": [
+        0,
+        18,
+        35
+      ],
+      "sharing_group": "expert_mlp2_naive_rvq",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "promote the lowest functional divergence within budget; escalate rate only after all geometries at this rate are tried",
+      "tensor_class": "expert_mlp2",
+      "tensor_group_fmt": "block.{b}.mlp.mlp2_weight",
+      "trial": true
+    },
+    {
+      "calibration_metrics": [
+        "weight_relative_error",
+        "functional_output_divergence"
+      ],
+      "cpu_impl": "gravity_forge numpy",
+      "dependencies": [],
+      "doctor_reserve_bpw": 0.0,
+      "evidence_schema": "hawking.gravity_frontier.trial_evidence.v1",
+      "exact_budget": {
+        "n_weights_per_matrix": 16588800,
+        "rate": "1/1",
+        "target_total_bits": 16755200
+      },
+      "exact_rate": "1/1",
+      "family_params": {
+        "dim": 32,
+        "k": 64,
+        "subspaces": 4
+      },
+      "functional_metric": "output_divergence (reference MoE forward, routed experts)",
+      "holdout_metrics": [
+        "holdout_functional_output_divergence"
+      ],
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) / streaming",
+      "note": "alternative subvector geometry (dim 32, 4 subspaces)",
+      "priority_rank": 3,
+      "protected_island_strategy": null,
+      "representation_family": "transform_pq",
+      "resource_estimate": {
+        "gpu": "mps",
+        "peak_gib": 1.5
+      },
+      "row_id": "t0022",
+      "sample_layers": [
+        0,
+        18,
+        35
+      ],
+      "sharing_group": "expert_mlp1_transform_pq",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "promote the lowest functional divergence within budget; escalate rate only after all geometries at this rate are tried",
+      "tensor_class": "expert_mlp1",
+      "tensor_group_fmt": "block.{b}.mlp.mlp1_weight",
+      "trial": true
+    },
+    {
+      "calibration_metrics": [
+        "weight_relative_error",
+        "functional_output_divergence"
+      ],
+      "cpu_impl": "gravity_forge numpy",
+      "dependencies": [],
+      "doctor_reserve_bpw": 0.0,
+      "evidence_schema": "hawking.gravity_frontier.trial_evidence.v1",
+      "exact_budget": {
+        "n_weights_per_matrix": 8294400,
+        "rate": "1/1",
+        "target_total_bits": 8377856
+      },
+      "exact_rate": "1/1",
+      "family_params": {
+        "dim": 32,
+        "k": 64,
+        "subspaces": 4
+      },
+      "functional_metric": "output_divergence (reference MoE forward, routed experts)",
+      "holdout_metrics": [
+        "holdout_functional_output_divergence"
+      ],
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) / streaming",
+      "note": "alternative subvector geometry (dim 32, 4 subspaces)",
+      "priority_rank": 3,
+      "protected_island_strategy": null,
+      "representation_family": "transform_pq",
+      "resource_estimate": {
+        "gpu": "mps",
+        "peak_gib": 1.5
+      },
+      "row_id": "t0023",
+      "sample_layers": [
+        0,
+        18,
+        35
+      ],
+      "sharing_group": "expert_mlp2_transform_pq",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "promote the lowest functional divergence within budget; escalate rate only after all geometries at this rate are tried",
+      "tensor_class": "expert_mlp2",
+      "tensor_group_fmt": "block.{b}.mlp.mlp2_weight",
+      "trial": true
+    },
+    {
+      "calibration_metrics": [
+        "weight_relative_error",
+        "functional_output_divergence"
+      ],
+      "cpu_impl": "gravity_forge numpy",
+      "dependencies": [],
+      "doctor_reserve_bpw": 0.0,
+      "evidence_schema": "hawking.gravity_frontier.trial_evidence.v1",
+      "exact_budget": {
+        "n_weights_per_matrix": 16588800,
+        "rate": "1/1",
+        "target_total_bits": 16755200
+      },
+      "exact_rate": "1/1",
+      "family_params": {
+        "dim": 8,
+        "k": 16,
+        "subspaces": 1
+      },
+      "functional_metric": "output_divergence (reference MoE forward, routed experts)",
+      "holdout_metrics": [
+        "holdout_functional_output_divergence"
+      ],
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) / streaming",
+      "note": "alternative subvector geometry (dim 8, single subspace)",
+      "priority_rank": 3,
+      "protected_island_strategy": null,
+      "representation_family": "transform_pq",
+      "resource_estimate": {
+        "gpu": "mps",
+        "peak_gib": 1.5
+      },
+      "row_id": "t0024",
+      "sample_layers": [
+        0,
+        18,
+        35
+      ],
+      "sharing_group": "expert_mlp1_transform_pq",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "promote the lowest functional divergence within budget; escalate rate only after all geometries at this rate are tried",
+      "tensor_class": "expert_mlp1",
+      "tensor_group_fmt": "block.{b}.mlp.mlp1_weight",
+      "trial": true
+    },
+    {
+      "calibration_metrics": [
+        "weight_relative_error",
+        "functional_output_divergence"
+      ],
+      "cpu_impl": "gravity_forge numpy",
+      "dependencies": [],
+      "doctor_reserve_bpw": 0.0,
+      "evidence_schema": "hawking.gravity_frontier.trial_evidence.v1",
+      "exact_budget": {
+        "n_weights_per_matrix": 8294400,
+        "rate": "1/1",
+        "target_total_bits": 8377856
+      },
+      "exact_rate": "1/1",
+      "family_params": {
+        "dim": 8,
+        "k": 16,
+        "subspaces": 1
+      },
+      "functional_metric": "output_divergence (reference MoE forward, routed experts)",
+      "holdout_metrics": [
+        "holdout_functional_output_divergence"
+      ],
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) / streaming",
+      "note": "alternative subvector geometry (dim 8, single subspace)",
+      "priority_rank": 3,
+      "protected_island_strategy": null,
+      "representation_family": "transform_pq",
+      "resource_estimate": {
+        "gpu": "mps",
+        "peak_gib": 1.5
+      },
+      "row_id": "t0025",
+      "sample_layers": [
+        0,
+        18,
+        35
+      ],
+      "sharing_group": "expert_mlp2_transform_pq",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "promote the lowest functional divergence within budget; escalate rate only after all geometries at this rate are tried",
+      "tensor_class": "expert_mlp2",
+      "tensor_group_fmt": "block.{b}.mlp.mlp2_weight",
+      "trial": true
+    },
+    {
+      "calibration_metrics": [
+        "weight_relative_error",
+        "functional_output_divergence"
+      ],
+      "cpu_impl": "gravity_forge numpy",
+      "dependencies": [],
+      "doctor_reserve_bpw": 0.0,
+      "evidence_schema": "hawking.gravity_frontier.trial_evidence.v1",
+      "exact_budget": {
+        "n_weights_per_matrix": 16588800,
+        "rate": "1/1",
+        "target_total_bits": 19409408
+      },
+      "exact_rate": "1/1",
+      "family_params": {
+        "budget_frac": 0.01,
+        "dim": 16,
+        "k": 64,
+        "strategy": "residual_energy",
+        "subspaces": 2
+      },
+      "functional_metric": "output_divergence (reference MoE forward, routed experts)",
+      "holdout_metrics": [
+        "holdout_functional_output_divergence"
+      ],
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) / streaming",
+      "note": "PQ + residual-energy protected islands (heavy-tail reserve)",
+      "priority_rank": 4,
+      "protected_island_strategy": "residual_energy",
+      "representation_family": "pq_protected_islands",
+      "resource_estimate": {
+        "gpu": "mps",
+        "peak_gib": 1.5
+      },
+      "row_id": "t0026",
+      "sample_layers": [
+        0,
+        18,
+        35
+      ],
+      "sharing_group": "expert_mlp1_pq_protected_islands",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "promote the lowest functional divergence within budget; escalate rate only after all geometries at this rate are tried",
+      "tensor_class": "expert_mlp1",
+      "tensor_group_fmt": "block.{b}.mlp.mlp1_weight",
+      "trial": true
+    },
+    {
+      "calibration_metrics": [
+        "weight_relative_error",
+        "functional_output_divergence"
+      ],
+      "cpu_impl": "gravity_forge numpy",
+      "dependencies": [],
+      "doctor_reserve_bpw": 0.0,
+      "evidence_schema": "hawking.gravity_frontier.trial_evidence.v1",
+      "exact_budget": {
+        "n_weights_per_matrix": 8294400,
+        "rate": "1/1",
+        "target_total_bits": 9704960
+      },
+      "exact_rate": "1/1",
+      "family_params": {
+        "budget_frac": 0.01,
+        "dim": 16,
+        "k": 64,
+        "strategy": "residual_energy",
+        "subspaces": 2
+      },
+      "functional_metric": "output_divergence (reference MoE forward, routed experts)",
+      "holdout_metrics": [
+        "holdout_functional_output_divergence"
+      ],
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) / streaming",
+      "note": "PQ + residual-energy protected islands (heavy-tail reserve)",
+      "priority_rank": 4,
+      "protected_island_strategy": "residual_energy",
+      "representation_family": "pq_protected_islands",
+      "resource_estimate": {
+        "gpu": "mps",
+        "peak_gib": 1.5
+      },
+      "row_id": "t0027",
+      "sample_layers": [
+        0,
+        18,
+        35
+      ],
+      "sharing_group": "expert_mlp2_pq_protected_islands",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "promote the lowest functional divergence within budget; escalate rate only after all geometries at this rate are tried",
+      "tensor_class": "expert_mlp2",
+      "tensor_group_fmt": "block.{b}.mlp.mlp2_weight",
+      "trial": true
+    },
+    {
+      "calibration_metrics": [
+        "weight_relative_error",
+        "functional_output_divergence"
+      ],
+      "cpu_impl": "gravity_forge numpy",
+      "dependencies": [],
+      "doctor_reserve_bpw": 0.15,
+      "evidence_schema": "hawking.gravity_frontier.trial_evidence.v1",
+      "exact_budget": {
+        "n_weights_per_matrix": 16588800,
+        "rate": "1/1",
+        "target_total_bits": 19243520
+      },
+      "exact_rate": "1/1",
+      "family_params": {
+        "dim": 16,
+        "doctor": "residual_codebook",
+        "doctor_bpw": 0.15,
+        "k": 64,
+        "subspaces": 2
+      },
+      "functional_metric": "output_divergence (reference MoE forward, routed experts)",
+      "holdout_metrics": [
+        "holdout_functional_output_divergence"
+      ],
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) / streaming",
+      "note": "PQ + Doctor residual codebook inside the same rate",
+      "priority_rank": 5,
+      "protected_island_strategy": null,
+      "representation_family": "pq_doctor_lowrank",
+      "resource_estimate": {
+        "gpu": "mps",
+        "peak_gib": 1.5
+      },
+      "row_id": "t0028",
+      "sample_layers": [
+        0,
+        18,
+        35
+      ],
+      "sharing_group": "expert_mlp1_pq_doctor_lowrank",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "promote the lowest functional divergence within budget; escalate rate only after all geometries at this rate are tried",
+      "tensor_class": "expert_mlp1",
+      "tensor_group_fmt": "block.{b}.mlp.mlp1_weight",
+      "trial": true
+    },
+    {
+      "calibration_metrics": [
+        "weight_relative_error",
+        "functional_output_divergence"
+      ],
+      "cpu_impl": "gravity_forge numpy",
+      "dependencies": [],
+      "doctor_reserve_bpw": 0.15,
+      "evidence_schema": "hawking.gravity_frontier.trial_evidence.v1",
+      "exact_budget": {
+        "n_weights_per_matrix": 8294400,
+        "rate": "1/1",
+        "target_total_bits": 9622016
+      },
+      "exact_rate": "1/1",
+      "family_params": {
+        "dim": 16,
+        "doctor": "residual_codebook",
+        "doctor_bpw": 0.15,
+        "k": 64,
+        "subspaces": 2
+      },
+      "functional_metric": "output_divergence (reference MoE forward, routed experts)",
+      "holdout_metrics": [
+        "holdout_functional_output_divergence"
+      ],
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) / streaming",
+      "note": "PQ + Doctor residual codebook inside the same rate",
+      "priority_rank": 5,
+      "protected_island_strategy": null,
+      "representation_family": "pq_doctor_lowrank",
+      "resource_estimate": {
+        "gpu": "mps",
+        "peak_gib": 1.5
+      },
+      "row_id": "t0029",
+      "sample_layers": [
+        0,
+        18,
+        35
+      ],
+      "sharing_group": "expert_mlp2_pq_doctor_lowrank",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "promote the lowest functional divergence within budget; escalate rate only after all geometries at this rate are tried",
+      "tensor_class": "expert_mlp2",
+      "tensor_group_fmt": "block.{b}.mlp.mlp2_weight",
+      "trial": true
+    },
+    {
+      "calibration_metrics": [
+        "weight_relative_error",
+        "functional_output_divergence"
+      ],
+      "cpu_impl": "gravity_forge numpy",
+      "dependencies": [],
+      "doctor_reserve_bpw": 0.0,
+      "evidence_schema": "hawking.gravity_frontier.trial_evidence.v1",
+      "exact_budget": {
+        "n_weights_per_matrix": 16588800,
+        "rate": "1/1",
+        "target_total_bits": 16755200
+      },
+      "exact_rate": "1/1",
+      "family_params": {
+        "base_dim": 16,
+        "base_k": 16,
+        "corr_rank": 4,
+        "sparse_rows": 8
+      },
+      "functional_metric": "output_divergence (reference MoE forward, routed experts)",
+      "holdout_metrics": [
+        "holdout_functional_output_divergence"
+      ],
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) / streaming",
+      "note": "cheap base + billed low-rank + sparse Doctor",
+      "priority_rank": 6,
+      "protected_island_strategy": null,
+      "representation_family": "repairability_shaped",
+      "resource_estimate": {
+        "gpu": "mps",
+        "peak_gib": 1.5
+      },
+      "row_id": "t0030",
+      "sample_layers": [
+        0,
+        18,
+        35
+      ],
+      "sharing_group": "expert_mlp1_repairability_shaped",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "promote the lowest functional divergence within budget; escalate rate only after all geometries at this rate are tried",
+      "tensor_class": "expert_mlp1",
+      "tensor_group_fmt": "block.{b}.mlp.mlp1_weight",
+      "trial": true
+    },
+    {
+      "calibration_metrics": [
+        "weight_relative_error",
+        "functional_output_divergence"
+      ],
+      "cpu_impl": "gravity_forge numpy",
+      "dependencies": [],
+      "doctor_reserve_bpw": 0.0,
+      "evidence_schema": "hawking.gravity_frontier.trial_evidence.v1",
+      "exact_budget": {
+        "n_weights_per_matrix": 8294400,
+        "rate": "1/1",
+        "target_total_bits": 8377856
+      },
+      "exact_rate": "1/1",
+      "family_params": {
+        "base_dim": 16,
+        "base_k": 16,
+        "corr_rank": 4,
+        "sparse_rows": 8
+      },
+      "functional_metric": "output_divergence (reference MoE forward, routed experts)",
+      "holdout_metrics": [
+        "holdout_functional_output_divergence"
+      ],
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) / streaming",
+      "note": "cheap base + billed low-rank + sparse Doctor",
+      "priority_rank": 6,
+      "protected_island_strategy": null,
+      "representation_family": "repairability_shaped",
+      "resource_estimate": {
+        "gpu": "mps",
+        "peak_gib": 1.5
+      },
+      "row_id": "t0031",
+      "sample_layers": [
+        0,
+        18,
+        35
+      ],
+      "sharing_group": "expert_mlp2_repairability_shaped",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "promote the lowest functional divergence within budget; escalate rate only after all geometries at this rate are tried",
+      "tensor_class": "expert_mlp2",
+      "tensor_group_fmt": "block.{b}.mlp.mlp2_weight",
+      "trial": true
+    }
+  ],
+  "sample_layers": [
+    0,
+    18,
+    35
+  ],
+  "schema": "hawking.gpt_oss_120b.gravity_frontier_program.v1",
+  "scientific_question": "Which full-rank geometry preserves function below one bit?",
+  "search_doctrine": {
+    "baseline_to_beat": 0.688,
+    "geometry_before_rate": true,
+    "priority_order": [
+      "representation",
+      "sharing",
+      "subvector_geometry",
+      "protected_islands",
+      "doctor",
+      "residual_additive",
+      "raise_rate"
+    ],
+    "ranking_signal": "functional_output_divergence (real reference forward)"
+  },
+  "totals": {
+    "expected_checkpoint_count": 32,
+    "expected_wall_time_note": "each trial packs the sampled experts + runs the reference forward on routed experts (~seconds-minutes); bounded, durable",
+    "geometries": 8,
+    "rates": [
+      "3/4",
+      "1/1"
+    ],
+    "sample_layers": 3,
+    "total_trial_rows": 32
+  }
+}

@@ -1,0 +1,82 @@
+{
+  "program_path": "/Users/scammermike/Downloads/hawking/reports/condense/gravity_frontier/GPT_OSS_120B_GRAVITY_FRONTIER_PROGRAM.json",
+  "program_sha256": "d0fa8ced7aad25f7004729a1ab5be2139f08864541129016aad1bfa29dece9a1",
+  "ranking_signal": "functional_output_divergence (lowest within budget)",
+  "schema": "hawking.gravity_frontier.frontier_selection.v1",
+  "selected_at": "2026-07-19T01:48:57+00:00",
+  "selection_sha256": "bc9872bb427eadf782e6192cb3c50cb4990e98c29fc5a8edd6db325080662ded",
+  "winners_by_tensor_class": {
+    "expert_mlp1": {
+      "candidates": [
+        "t0000",
+        "t0002",
+        "t0004",
+        "t0006",
+        "t0008",
+        "t0010",
+        "t0012",
+        "t0014",
+        "t0016",
+        "t0018",
+        "t0020",
+        "t0022",
+        "t0024",
+        "t0026",
+        "t0028",
+        "t0030"
+      ],
+      "family": "pq_doctor_lowrank",
+      "functional_divergence": 0.00832,
+      "n_candidates": 16,
+      "params": {
+        "dim": 16,
+        "doctor": "residual_codebook",
+        "doctor_bpw": 0.15,
+        "k": 64,
+        "subspaces": 2
+      },
+      "physical_bits": 14533120,
+      "rate": "3/4",
+      "representation_family": "pq_doctor_lowrank",
+      "weight_rel_error": 0.651719,
+      "whole_artifact_bpw": 0.87608,
+      "winner_row_id": "t0012"
+    },
+    "expert_mlp2": {
+      "candidates": [
+        "t0001",
+        "t0003",
+        "t0005",
+        "t0007",
+        "t0009",
+        "t0011",
+        "t0013",
+        "t0015",
+        "t0017",
+        "t0019",
+        "t0021",
+        "t0023",
+        "t0025",
+        "t0027",
+        "t0029",
+        "t0031"
+      ],
+      "family": "pq_protected_islands",
+      "functional_divergence": 0.18369,
+      "n_candidates": 16,
+      "params": {
+        "budget_frac": 0.01,
+        "dim": 16,
+        "k": 64,
+        "strategy": "residual_energy",
+        "subspaces": 2
+      },
+      "physical_bits": 7574368,
+      "rate": "3/4",
+      "representation_family": "pq_protected_islands",
+      "weight_rel_error": 0.661814,
+      "whole_artifact_bpw": 0.913191,
+      "winner_row_id": "t0011"
+    }
+  }
+}

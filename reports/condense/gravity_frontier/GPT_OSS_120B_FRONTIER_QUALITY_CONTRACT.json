@@ -1,0 +1,47 @@
+{
+  "baseline": "SECOND-LIGHT PQ BASELINE: builds a 0.770-BPW artifact, functional output divergence ~0.688, NO capability pass",
+  "datasets": {
+    "calibration": "Harmony general/code/math/tooluse",
+    "holdout": "sealed disjoint, NEVER tuned",
+    "validation": "held disjoint"
+  },
+  "gate_law": "Do not lower thresholds after seeing results to turn a gate green.",
+  "generated_at": "2026-07-19T01:27:55Z",
+  "metric_tiers": {
+    "end_to_end": [
+      "logit_cosine",
+      "logit_kl",
+      "topk_token_overlap",
+      "next_token_agreement",
+      "perplexity_nll",
+      "deterministic_generation",
+      "harmony_instruction_fixtures",
+      "reasoning_capability_fixtures"
+    ],
+    "layer": [
+      "hidden_state_cosine",
+      "hidden_state_relative_error",
+      "residual_stream_drift",
+      "early_mid_late_behavior"
+    ],
+    "local_functional": [
+      "expert_output_cosine",
+      "expert_output_relative_error",
+      "router_topk_agreement",
+      "router_prob_divergence",
+      "weighted_expert_combine_divergence",
+      "attention_output_divergence"
+    ],
+    "representation": [
+      "weight_relative_error",
+      "codebook_utilization",
+      "residual_distribution",
+      "protected_byte_utilization"
+    ]
+  },
+  "promote_threshold_functional_divergence": 0.6,
+  "promotion_law": "No family advances based only on weight reconstruction. The ranking signal is FUNCTIONAL output divergence (real reference forward, routed experts exercised). A geometry passes only if functional divergence materially beats the 0.688 baseline; capability tier requires an HF-validated forward.",
+  "schema": "hawking.gpt_oss_120b.frontier_quality_contract.v1",
+  "scientific_question": "Which full-rank representation geometry preserves GPT-OSS-120B function below one complete physical bit per original weight?",
+  "sha256": "2c1405f99d16f5c482da9277c0ad88b58ba489f5b0581d83b9a5fcf276bb52f6"
+}

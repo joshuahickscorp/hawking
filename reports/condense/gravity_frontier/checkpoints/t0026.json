@@ -1,0 +1,51 @@
+{
+  "controller_pid": 18615,
+  "elapsed_seconds": 3.146,
+  "family": "pq_protected_islands",
+  "metrics": {
+    "budget_bits": 19409408,
+    "budget_shrunk_for_test": false,
+    "functional_divergence": 0.00849,
+    "functional_evidence": {
+      "capability_parity": false,
+      "max_output_rel_div": 0.00926,
+      "mean_output_rel_div": 0.00849,
+      "min_output_rel_div": 0.00792,
+      "n_experts_exercised": 3,
+      "n_inputs": 4,
+      "signal": "proxy_output_synthetic_activations"
+    },
+    "functional_metric": "output_divergence (reference MoE forward, routed experts)",
+    "n_weights": 16588800,
+    "physical_bits": 15131896,
+    "sample_layer": 0,
+    "target_total_bits": 19409408,
+    "weight_meta": {
+      "representative_expert": 0,
+      "representative_of_class": "expert_mlp1",
+      "sample_layer": 0
+    },
+    "weight_rel_error": 0.668253,
+    "whole_artifact_bpw": 0.912175,
+    "within_budget": true
+  },
+  "params": {
+    "budget_frac": 0.01,
+    "dim": 16,
+    "k": 64,
+    "strategy": "residual_energy",
+    "subspaces": 2
+  },
+  "priority_rank": 4,
+  "program_sha256": "d0fa8ced7aad25f7004729a1ab5be2139f08864541129016aad1bfa29dece9a1",
+  "protected_island_strategy": "residual_energy",
+  "rate": "1/1",
+  "representation_family": "pq_protected_islands",
+  "row_id": "t0026",
+  "schema": "hawking.gravity_frontier.trial_checkpoint.v1",
+  "sealed_at": "2026-07-19T01:48:06+00:00",
+  "sharing_group": "expert_mlp1_pq_protected_islands",
+  "status": "SEALED",
+  "tensor_class": "expert_mlp1",
+  "trial_sha256": "4a913c2eda88618b607da2441e8911c59abba55a493ccae6b0859d3bb6dc2091"
+}
