@@ -63,6 +63,7 @@ fn ensure_pack(root: &Path) -> Result<PackManifest, String> {
         source_commit: "seed-c".into(),
         offline_cache: root.to_string_lossy().into(),
         contents: vec![PackEntry { path: "runtime.txt".into(), sha256: sha256_hex(content) }],
+        ..Default::default()
     };
     std::fs::write(root.join("manifest.json"), serde_json::to_string_pretty(&man).unwrap()).map_err(|e| e.to_string())?;
     Ok(man)

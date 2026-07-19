@@ -16,6 +16,14 @@ pub const KINDS: &[&str] = &[
     "retirement",
     "compatibility",
     "condensation",
+    // absorbed provider receipt kinds (one receipt engine; providers seal evidence through it)
+    "adapter",
+    "forge",
+    "doctor",
+    "metal",
+    "speculation",
+    "validation",
+    "experiment",
 ];
 
 /// Build a sealed receipt of `kind` carrying `payload`. A receipt is just a sealed Record.

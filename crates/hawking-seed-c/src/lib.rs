@@ -35,6 +35,11 @@ pub mod tokenizer;
 pub mod f2;
 pub mod subbit;
 
+// Absorbed hawking-packs nucleus: the ONE Pack ABI's capability providers (adapters, forge, doctor, metal,
+// speculation, validation, experiment) plus the one registry/verifier/profiles, all orbiting this Seed's
+// own authority (record/evidence/state/pack/gravity/ir/subbit). No external crate; internal modules only.
+pub mod providers;
+
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
     #[error("seal: {0}")]
@@ -43,6 +48,14 @@ pub enum Error {
     Transition(String),
     #[error("pack: {0}")]
     Pack(String),
+    #[error("pack {pack} TAMPERED: {path} sha {got} != declared {declared}")]
+    Tamper { pack: String, path: String, got: String, declared: String },
+    #[error("registry: {0}")]
+    Registry(String),
+    #[error("adapter: {0}")]
+    Adapter(String),
+    #[error("provider: {0}")]
+    Provider(String),
     #[error("gravity: {0}")]
     Gravity(String),
     #[error("gguf: {0}")]
