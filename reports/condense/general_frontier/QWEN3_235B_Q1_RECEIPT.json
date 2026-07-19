@@ -1,0 +1,19 @@
+{
+  "bytes_streamed": 1048576,
+  "dtype": "BF16",
+  "finite": true,
+  "gate": "Q1_bounded_tensor_decode",
+  "mean_abs": 0.032861,
+  "method": "HTTP Range-GET of the tensor's exact data byte range (header offsets); bf16->f32 decode; no bulk download, 0 resident weights",
+  "repo": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+  "revision": "ac9c66cc9b46af7306746a9250f23d47083d689e",
+  "rms": 0.050836,
+  "schema": "hawking.qwen3_235b.q1_bounded_decode.v1",
+  "sha256": "19e45ca51cdc7b1759d31d0453d4677d9e45c092309749d5a337218ef9b0bf46",
+  "shape": [
+    128,
+    4096
+  ],
+  "tensor": "model.layers.0.mlp.gate.weight",
+  "verdict": "Q1 PASS - a real official Qwen tensor decodes to finite in-range values via bounded streaming; shard-serial transfer is decode-feasible."
+}
