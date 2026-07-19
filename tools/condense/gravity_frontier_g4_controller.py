@@ -42,6 +42,7 @@ if _HERE not in sys.path:
 
 import gptoss_real_forward as rf
 import gptoss_subbit_packer as pk
+import bounded_cache as bc
 
 ROOT = Path(_HERE).resolve().parents[1]
 CAMPAIGN = ROOT / "reports/condense/general_frontier/G4"
@@ -135,21 +136,17 @@ def _divergence(orig: np.ndarray, packed: np.ndarray) -> dict[str, float]:
 
 
 # ── packed expert hook ──────────────────────────────────────────────────────────────────────
-_CACHE_CAP = 160  # decoded experts kept resident (~99 MB each -> ~16 GB); bounds RAM so a long
-                  # prompt (e.g. code) cannot grow the shared cache until the OS OOM-kills the run.
-
-
-def _make_hook(target_bpw: float, cache: dict):
-    """Return expert_hook(block, expert, ex) that RVQ-packs mlp1/mlp2 at target_bpw and decodes
-    back (real sub-bit roundtrip). Decoded experts are cached keyed by (block,expert,rate) and
-    reused across forwards (each distinct expert packed once), with a BOUNDED LRU (cap _CACHE_CAP):
-    on overflow the oldest entry is evicted. This keeps RAM bounded on long prompts that touch many
-    distinct experts (the earlier unbounded cache OOM-killed code_py)."""
+def _make_hook(target_bpw: float, cache):
+    """Return expert_hook(block, expert, ex) that RVQ-packs mlp1/mlp2 at target_bpw and decodes back
+    (real sub-bit roundtrip). Decoded experts live in a PressureAwareCache keyed by
+    (block,expert,rate) and are reused across forwards (each distinct expert packed once). The cache
+    grows to fill RAM + swap and evicts LRU only under genuine memory/disk pressure - use as much as
+    the box gives, never OOM-crash (the earlier fixed-cap over-evicted and re-packed; the earlier
+    unbounded cache OOM-killed code_py)."""
     def hook(block: int, expert: int, ex: dict[str, np.ndarray]) -> dict[str, np.ndarray]:
         ck = (block, expert, target_bpw)
         hit = cache.get(ck)
         if hit is not None:
-            cache[ck] = cache.pop(ck)  # mark most-recently-used (dict preserves insertion order)
             out = dict(ex); out["mlp1"], out["mlp2"] = hit
             return out
         out = dict(ex)
@@ -158,9 +155,7 @@ def _make_hook(target_bpw: float, cache: dict):
             dim, k, stages = pk.pick_config(w.shape[1], target_bpw)
             code = pk.rvq_encode(w, dim=dim, k=k, stages=stages, iters=8)
             out[key] = pk.rvq_decode(code).cpu().numpy().astype(np.float32)
-        cache[ck] = (out["mlp1"], out["mlp2"])
-        while len(cache) > _CACHE_CAP:
-            cache.pop(next(iter(cache)))  # evict least-recently-used
+        cache.put(ck, (out["mlp1"], out["mlp2"]))
         return out
     return hook
 
@@ -211,7 +206,7 @@ def run(max_rows: int | None = None) -> int:
     total = len(rows)
     # cache original logits per prompt for divergence + reuse; shared decoded-expert cache per rate
     orig_logits_cache: dict[str, np.ndarray] = {}
-    packed_expert_cache: dict = {}
+    packed_expert_cache = bc.PressureAwareCache("g4_packed", disk_path=str(ROOT))
     done = 0
     processed = 0
     t_start = time.time()

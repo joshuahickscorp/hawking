@@ -42,6 +42,7 @@ if _HERE not in sys.path:
 
 import gptoss_real_forward as rf
 import gravity_forge as gf
+import bounded_cache as bc
 
 ROOT = Path(_HERE).resolve().parents[1]
 CAMPAIGN = ROOT / "reports/condense/general_frontier/CORRECTION_WAVE"
@@ -139,23 +140,18 @@ def forge_pack(family: str, w: np.ndarray, seed: int = 0) -> dict[str, Any]:
     raise ValueError(f"unknown family {family}")
 
 
-_CACHE_CAP = 120  # decoded experts per candidate (~99 MB each -> ~12 GB); two candidate caches live
-                  # at once, so ~24 GB total. Bounded LRU so long prompts cannot OOM-kill the run.
-
-
-def _make_hook(mapping: dict[str, str], cache: dict):
+def _make_hook(mapping: dict[str, str], cache):
+    """Decoded experts live in a PressureAwareCache (grow to fill RAM + swap, evict LRU only under
+    genuine pressure). Two candidate caches are live at once; each self-limits on the shared floor."""
     def hook(block: int, expert: int, ex: dict[str, np.ndarray]) -> dict[str, np.ndarray]:
         ck = (block, expert)
         hit = cache.get(ck)
         if hit is not None:
-            cache[ck] = cache.pop(ck)  # LRU touch
             out = dict(ex); out["mlp1"], out["mlp2"] = hit; return out
         out = dict(ex)
         out["mlp1"] = forge_pack(mapping["mlp1"], ex["mlp1"], seed=block * 1000 + expert)["recon"]
         out["mlp2"] = forge_pack(mapping["mlp2"], ex["mlp2"], seed=block * 1000 + expert)["recon"]
-        cache[ck] = (out["mlp1"], out["mlp2"])
-        while len(cache) > _CACHE_CAP:
-            cache.pop(next(iter(cache)))
+        cache.put(ck, (out["mlp1"], out["mlp2"]))
         return out
     return hook
 
@@ -245,7 +241,7 @@ def run(max_rows: int | None = None) -> int:
     rows = _rows()
     total = len(rows)
     orig_cache: dict[str, np.ndarray] = {}
-    expert_caches: dict[str, dict] = {c: {} for c in CANDIDATES}
+    expert_caches = {c: bc.PressureAwareCache(f"cw_{c}", disk_path=str(ROOT)) for c in CANDIDATES}
     done = processed = 0
     t0 = time.time()
     for row in rows:
