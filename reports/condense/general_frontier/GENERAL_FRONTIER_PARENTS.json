@@ -1,0 +1,309 @@
+{
+  "authority": "Authoritative parent registry for the General Frontier. Binds each F-series parent's identity, architecture, source, claim scope, and honest status. Only F0 has real measured evidence; F2/F3 are source-absent prep-only; F4 is optional and admission-gated.",
+  "boundaries": {
+    "cuda_lane": "blocked on budget (no sealed HAWKING_CLOUD_BUDGET; not inferred from key presence)",
+    "giant_lanes": "blocked on source (F2/F3 absent; F4 optional + admission-gated)",
+    "no_giant_download_or_launch": true,
+    "no_proxy_overclaim": true,
+    "one_apple_heavy_lease": true,
+    "only_real_compute_lane": "F0 120B Apple (Gate-F)",
+    "predecessor_evidence_is_scheduling_prior_only": true
+  },
+  "generated_at": "2026-07-19T02:45:00Z",
+  "handoff": {
+    "baseline": "b4655883",
+    "baseline_tag": "hawking-second-light-baseline",
+    "precheck": "reports/condense/general_frontier/GENERAL_FRONTIER_PRECHECK.json",
+    "precheck_sha256": "b0da327a6f19af5dcea2aa8aeef8e78c610a01d64465c105dd7ad9ecd4de476e",
+    "verified_main": "e2609f9452bcc9c97cfa960d6ef362567a048727"
+  },
+  "parents": [
+    {
+      "active_params": 5100000000,
+      "adapter_status": "active_foundry (full-rank Product-Quantization Forge built: 7 verbs + protected precision islands + Doctor)",
+      "apple_status": "proven (M3 Ultra 28-core, MPS; CPU/Metal parity verified; sole real compute lane = Gate-F Apple)",
+      "architecture": "GptOssForCausalLM (gpt-oss MoE)",
+      "attention_type": "gqa_sliding_window_sinks (64 q-heads, 8 kv-heads, head_dim 64, sliding_window 128, attention sinks)",
+      "claim_scope": "whole-artifact BPW; full 128-expert complete-scope streaming pack; sub-bit-first",
+      "context_config": {
+        "effective_context_length": 131072,
+        "initial_context_length": 4096,
+        "rope_ntk_alpha": 1,
+        "rope_ntk_beta": 32,
+        "rope_scaling": "yarn",
+        "rope_scaling_factor": 32.0,
+        "rope_theta": 150000,
+        "sliding_window": 128
+      },
+      "cuda_status": "not_required (Apple-only lane for F0; CUDA lane N/A)",
+      "expected_source_bytes": 65248869800,
+      "expert_count": 128,
+      "experts_per_token": 4,
+      "gravity_policy": {
+        "escape_receipt_gate": ">1BPW requires sealed Escape Receipt",
+        "gravity_enabled": true,
+        "launch": "COMPLETE (Second Light run ignited + completed; lease released)",
+        "note": "root oracle of the F-series; the only parent with real measured evidence",
+        "sub_bit_first": true
+      },
+      "immutable_revision": "b5c939de8f754692c1647ca79fbf85e8c1e70f8a",
+      "layer_count": 36,
+      "license": "Apache-2.0",
+      "model_id": "openai/gpt-oss-120b",
+      "parent_label": "F0",
+      "predecessor_dependencies": [],
+      "quality_status": "NEGATIVE at sub-bit (Second Light complete: realized whole-artifact ~0.770 BPW, output-div ~0.69, NO capability pass, NO Event Horizon crossed)",
+      "row_id": "gpt-oss-120b",
+      "runtime_status": "proven (full-128-expert streaming packer ~10-20s/row; CPU/Metal parity; durable singleton controller crash/resume)",
+      "shared_experts": 0,
+      "source_manifest": {
+        "index": "original/model.safetensors.index.json",
+        "n_shards": 7,
+        "receipt": "reports/condense/gravity_forge/condensation/GPT_OSS_120B_SOURCE_RECEIPT.json",
+        "receipt_sha256": "ed905415fa57bd6092240b6f79129d853f660a8a5530a4275c11ed8120e97628",
+        "source_root": "models/gpt-oss-120b",
+        "status": "RESTORED + VERIFIED (every file sha256'd, all shards full-size, headers parse)",
+        "tensor_count": 543
+      },
+      "source_precision": "MXFP4 experts (FP4 blocks + UE8 scales) + BF16 attn/router/norm/embed",
+      "status": "active_foundry",
+      "streaming_status": "proven (bounded per-expert source windows; complete 128-expert scope streamed)",
+      "tokenizer_protocol": {
+        "assets_present": true,
+        "chat_format": "gpt-oss harmony",
+        "class": "PreTrainedTokenizerFast",
+        "name": "o200k_harmony",
+        "tokenizer_json_sha256": "0614fe83cadab421296e664e1f48f4261fa8fef6e03e63bb75c20f38e37d07d3",
+        "vocab_size": 201088
+      },
+      "total_params": 116800000000,
+      "unbound_or_estimated": [
+        "total_params/active_params are published nominal (116.8B total, ~5.1B active top-4/128); config.json carries no param count",
+        "architecture name GptOssForCausalLM is the standard gpt-oss HF arch (config.json has no architectures field)"
+      ]
+    },
+    {
+      "active_params": null,
+      "adapter_status": "unbound (no contract)",
+      "apple_status": "unbound",
+      "architecture": null,
+      "attention_type": null,
+      "claim_scope": null,
+      "context_config": null,
+      "cuda_status": "unbound",
+      "expected_source_bytes": null,
+      "expert_count": null,
+      "experts_per_token": null,
+      "gravity_policy": {
+        "launch": "DISABLED",
+        "note": "no model bound"
+      },
+      "immutable_revision": null,
+      "layer_count": null,
+      "license": null,
+      "model_id": null,
+      "parent_label": "F1",
+      "predecessor_dependencies": [],
+      "quality_status": "unbound",
+      "row_id": null,
+      "runtime_status": "unbound",
+      "shared_experts": null,
+      "source_manifest": null,
+      "source_precision": null,
+      "status": "reserved_unpopulated",
+      "streaming_status": "unbound",
+      "tokenizer_protocol": null,
+      "total_params": null,
+      "unbound_or_estimated": [
+        "Reserved mid-tier slot in the F0..F4 ladder. No model, contract, or source is bound. Not described by the Part 4 spec (which enumerates F0/F2/F3/F4). Documented here only so the F0..F4 index is complete and the gap is explicit, not silent. Populate at admission of a mid-tier (~200-400B-class) parent if/when one is admitted."
+      ]
+    },
+    {
+      "active_params": 37000000000,
+      "adapter_status": "contract_only (deepseek-v3.2-685b.json)",
+      "apple_status": "device-fit pending (resident-forced at sub-bit ~0.80 eff-bpw ceiling; not run)",
+      "architecture": "DeepseekV32ForCausalLM",
+      "attention_type": "mla (multi-head latent attention)",
+      "claim_scope": "whole-artifact BPW; routed-expert sub-bit stress first; MTP (1 layer) pass-through/excluded; non-multimodal",
+      "context_config": {
+        "native_context_length": 131072,
+        "note": "DeepSeek-V3 family 128K; confirm at admission"
+      },
+      "cuda_status": "blocked on budget (no sealed HAWKING_CLOUD_BUDGET; provisioning plan only)",
+      "expected_source_bytes": 1370793842752,
+      "expert_count": 256,
+      "experts_per_token": 8,
+      "gravity_policy": {
+        "boundary": "giant lanes blocked on source; each parent needs its own quality evidence",
+        "escape_receipt_gate": ">1BPW requires sealed Escape Receipt",
+        "launch": "DISABLED (contract only; no giant run, no download)",
+        "sub_bit_first": true
+      },
+      "immutable_revision": null,
+      "layer_count": 61,
+      "license": "DeepSeek License Agreement (verify + pin at admission)",
+      "model_id": "deepseek-ai/DeepSeek-V3.2",
+      "parent_label": "F2",
+      "predecessor_dependencies": [
+        "F0 (gpt-oss-120b): Forge machinery (full-rank PQ engine, Doctor precision islands, streaming packer) proven on F0",
+        "F0 evidence usable only as a SCHEDULING prior (candidate_rate_is_prior_only); never as proof for F2"
+      ],
+      "quality_status": "unproven (source absent; no run)",
+      "row_id": "deepseek-v3.2-685b",
+      "runtime_status": "prep_only (compact_expert_runtime + expert_paging designed, unbuilt/unrun)",
+      "shared_experts": 1,
+      "source_manifest": {
+        "access": "streamed / bounded per-expert-per-shard source windows (no full download)",
+        "contract": "reports/condense/gravity_forge/giant_adapters/deepseek-v3.2-685b.json",
+        "contract_sha256": "556d5dee8f2f814f72c8a282f94e1111529ffafebfe9b63e9851d32d934e9e5c",
+        "decoder": "compressed_tensor_source(fp4/fp8)",
+        "n_shards": 163,
+        "status": "ABSENT locally; contract-only; bind concrete manifest at admission"
+      },
+      "source_precision": "bf16_with_fp8_scheme(~2.0 B/param)",
+      "status": "source_absent_prep_only",
+      "streaming_status": "designed (bounded source windows; not exercised)",
+      "tokenizer_protocol": {
+        "name": "deepseek_v3_tokenizer",
+        "note": "bind exact tokenizer + revision at admission (source absent)"
+      },
+      "total_params": 685000000000,
+      "unbound_or_estimated": [
+        "immutable_revision null (source absent; pin at admission)",
+        "total_params 685B from contract parent_label; active_params ~37B and layer_count 61 are DeepSeek-V3-family public specs (confirm at admission)",
+        "license is DeepSeek family default; verify exact terms at admission",
+        "context_length is family estimate (128K)"
+      ]
+    },
+    {
+      "active_params": 32000000000,
+      "adapter_status": "contract_only (kimi-k2.6-1t.json)",
+      "apple_status": "device-fit pending (resident-forced at sub-bit ~0.55 eff-bpw ceiling; not run)",
+      "architecture": "KimiK25ForConditionalGeneration",
+      "attention_type": "mla (multi-head latent attention)",
+      "claim_scope": {
+        "K2.6_FULL_MULTIMODAL": "SEPARATE claim scope = TEXT_CORE + vision tower (vision.*). DEFERRED; not claimed under the general frontier; requires its own multimodal capability eval.",
+        "K2.6_TEXT_CORE": "dense trunk + MLA attention + MoE router/routed experts + shared expert; whole-artifact BPW; sub-bit-first. Vision tower (vision.*) is pass-through/EXCLUDED from sub-bit stress.",
+        "primary": "K2.6_TEXT_CORE",
+        "separation": "text-core and full-multimodal claims are explicitly separated; only TEXT_CORE is in-scope for sub-bit condensation first"
+      },
+      "context_config": {
+        "native_context_length": 131072,
+        "note": "Kimi-K2 family 128K; confirm at admission"
+      },
+      "cuda_status": "blocked on budget (no sealed HAWKING_CLOUD_BUDGET; provisioning plan only)",
+      "expected_source_bytes": 595148192736,
+      "expert_count": 384,
+      "experts_per_token": 8,
+      "gravity_policy": {
+        "boundary": "giant lanes blocked on source; vision tower out-of-scope under TEXT_CORE",
+        "escape_receipt_gate": ">1BPW requires sealed Escape Receipt",
+        "launch": "DISABLED (contract only; no giant run, no download)",
+        "sub_bit_first": true
+      },
+      "immutable_revision": null,
+      "layer_count": 61,
+      "license": "Modified MIT (Kimi K2 family; verify + pin at admission)",
+      "model_id": "moonshotai/Kimi-K2.6",
+      "parent_label": "F3",
+      "predecessor_dependencies": [
+        "F0 (gpt-oss-120b): Forge machinery proven on F0; F0 evidence is a SCHEDULING prior only, never proof for F3"
+      ],
+      "quality_status": "unproven (source absent; no run)",
+      "row_id": "kimi-k2.6-1t",
+      "runtime_status": "prep_only (compact_expert_runtime + expert_paging designed, unbuilt/unrun)",
+      "shared_experts": 1,
+      "source_manifest": {
+        "access": "streamed / bounded per-expert-per-shard source windows (no full download)",
+        "contract": "reports/condense/gravity_forge/giant_adapters/kimi-k2.6-1t.json",
+        "contract_sha256": "419525622001c5f48e0ebc11e1ba1c421b2c2871d1a7b76d979176840cd2f656",
+        "decoder": "compressed_tensor_source(int4)",
+        "n_shards": 64,
+        "status": "ABSENT locally; contract-only; bind concrete manifest at admission"
+      },
+      "source_precision": "int4_compressed_tensors(~0.60 B/param)",
+      "status": "source_absent_prep_only",
+      "streaming_status": "designed (bounded source windows; not exercised)",
+      "tokenizer_protocol": {
+        "name": "kimi_tokenizer",
+        "note": "bind exact tokenizer + revision at admission (source absent)"
+      },
+      "total_params": 1000000000000,
+      "unbound_or_estimated": [
+        "immutable_revision null (source absent; pin at admission)",
+        "total_params 1T from contract parent_label; active_params ~32B and layer_count 61 are Kimi-K2-family public specs (confirm at admission)",
+        "architecture string KimiK25ForConditionalGeneration is from the contract (Kimi K2.5/K2.6 family)",
+        "license is Kimi-K2 family default (modified MIT); verify exact terms at admission",
+        "context_length is family estimate (128K)"
+      ]
+    },
+    {
+      "active_params": null,
+      "adapter_status": "contract_only (deepseek-v4-pro-1.6t.json)",
+      "apple_status": "device-fit pending (resident-forced at sub-bit ~0.34 eff-bpw ceiling; not run)",
+      "architecture": "DeepseekV4ForCausalLM",
+      "attention_type": "mla (multi-head latent attention)",
+      "claim_scope": "whole-artifact BPW; routed-expert sub-bit stress first; MTP (1 layer) pass-through/excluded; non-multimodal. OPTIONAL scope - only if explicitly admitted.",
+      "context_config": {
+        "note": "unbound (admission-gated; confirm native context at admission)"
+      },
+      "cuda_status": "blocked on budget (no sealed HAWKING_CLOUD_BUDGET; provisioning plan only)",
+      "expected_source_bytes": 864704792696,
+      "expert_count": 384,
+      "experts_per_token": 6,
+      "gravity_policy": {
+        "activated": false,
+        "admission_gated": true,
+        "boundary": "OPTIONAL, admission-gated, post-frontier; NOT activated; needs explicit admission signature",
+        "escape_receipt_gate": ">1BPW requires sealed Escape Receipt",
+        "launch": "DISABLED (contract only; no giant run, no download)",
+        "sub_bit_first": true
+      },
+      "immutable_revision": null,
+      "layer_count": null,
+      "license": "DeepSeek License Agreement (verify + pin at admission)",
+      "model_id": "deepseek-ai/DeepSeek-V4-Pro",
+      "parent_label": "F4",
+      "predecessor_dependencies": [
+        "F0 (gpt-oss-120b): Forge machinery proven on F0 (scheduling prior only)",
+        "Admission gate: requires an explicit, signed admission decision before any binding/activation"
+      ],
+      "quality_status": "unproven (source absent; not admitted)",
+      "row_id": "deepseek-v4-pro-1.6t",
+      "runtime_status": "blocked (optional, not admitted)",
+      "shared_experts": 1,
+      "source_manifest": {
+        "access": "streamed / bounded per-expert-per-shard source windows (no full download)",
+        "contract": "reports/condense/gravity_forge/giant_adapters/deepseek-v4-pro-1.6t.json",
+        "contract_sha256": "21f81af72c6184b1730622d4963f3e60733794d09d0d091a93a3be2b7057a796",
+        "decoder": "compressed_tensor_source(fp4/fp8)",
+        "n_shards": 64,
+        "status": "ABSENT locally; contract-only; OPTIONAL post-frontier; NOT activated"
+      },
+      "source_precision": "fp4_experts+fp8_trunk(~0.54 B/param)",
+      "status": "optional_blocked",
+      "streaming_status": "designed (bounded source windows; not exercised)",
+      "tokenizer_protocol": {
+        "name": "deepseek_v4_tokenizer",
+        "note": "unbound; bind at admission (source absent, admission-gated)"
+      },
+      "total_params": 1600000000000,
+      "unbound_or_estimated": [
+        "immutable_revision null (source absent; admission-gated)",
+        "total_params 1.6T from contract parent_label",
+        "active_params + layer_count + context null (unbound; DeepSeek-V4 specs not publicly fixed; bind at admission)",
+        "license/tokenizer are DeepSeek family defaults; verify at admission"
+      ]
+    }
+  ],
+  "schema": "hawking.general_frontier.parents.v1",
+  "sha256": "8aa56056b7dea81006d5f057a02b4eb9964d6782518e45cf410365533b17690d",
+  "sha256_method": "sha256 over json.dumps(obj_without_sha256_field, sort_keys=True, separators=(',',':'))",
+  "status_legend": {
+    "active_foundry": "Forge + runtime built and run on real source; has measured evidence (F0)",
+    "optional_blocked": "contract exists; optional post-frontier; admission-gated; NOT activated (F4)",
+    "reserved_unpopulated": "index slot with no model/contract/source bound (F1)",
+    "source_absent_prep_only": "contract exists; source absent locally; prep only, no run (F2, F3)"
+  },
+  "title": "General Frontier parent registry (goal Part 4)"
+}
