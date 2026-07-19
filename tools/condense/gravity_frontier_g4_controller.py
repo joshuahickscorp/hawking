@@ -135,15 +135,21 @@ def _divergence(orig: np.ndarray, packed: np.ndarray) -> dict[str, float]:
 
 
 # ── packed expert hook ──────────────────────────────────────────────────────────────────────
+_CACHE_CAP = 160  # decoded experts kept resident (~99 MB each -> ~16 GB); bounds RAM so a long
+                  # prompt (e.g. code) cannot grow the shared cache until the OS OOM-kills the run.
+
+
 def _make_hook(target_bpw: float, cache: dict):
     """Return expert_hook(block, expert, ex) that RVQ-packs mlp1/mlp2 at target_bpw and decodes
-    back (real sub-bit roundtrip). Decoded experts are cached in `cache` keyed by (block,expert,rate)
-    and reused across ALL forwards, so each distinct expert is packed exactly once (the whole
-    holdout stays tractable; ~30 GB RAM for one rate)."""
+    back (real sub-bit roundtrip). Decoded experts are cached keyed by (block,expert,rate) and
+    reused across forwards (each distinct expert packed once), with a BOUNDED LRU (cap _CACHE_CAP):
+    on overflow the oldest entry is evicted. This keeps RAM bounded on long prompts that touch many
+    distinct experts (the earlier unbounded cache OOM-killed code_py)."""
     def hook(block: int, expert: int, ex: dict[str, np.ndarray]) -> dict[str, np.ndarray]:
         ck = (block, expert, target_bpw)
         hit = cache.get(ck)
         if hit is not None:
+            cache[ck] = cache.pop(ck)  # mark most-recently-used (dict preserves insertion order)
             out = dict(ex); out["mlp1"], out["mlp2"] = hit
             return out
         out = dict(ex)
@@ -153,6 +159,8 @@ def _make_hook(target_bpw: float, cache: dict):
             code = pk.rvq_encode(w, dim=dim, k=k, stages=stages, iters=8)
             out[key] = pk.rvq_decode(code).cpu().numpy().astype(np.float32)
         cache[ck] = (out["mlp1"], out["mlp2"])
+        while len(cache) > _CACHE_CAP:
+            cache.pop(next(iter(cache)))  # evict least-recently-used
         return out
     return hook
 

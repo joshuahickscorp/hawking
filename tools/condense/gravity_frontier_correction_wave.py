@@ -139,16 +139,23 @@ def forge_pack(family: str, w: np.ndarray, seed: int = 0) -> dict[str, Any]:
     raise ValueError(f"unknown family {family}")
 
 
+_CACHE_CAP = 120  # decoded experts per candidate (~99 MB each -> ~12 GB); two candidate caches live
+                  # at once, so ~24 GB total. Bounded LRU so long prompts cannot OOM-kill the run.
+
+
 def _make_hook(mapping: dict[str, str], cache: dict):
     def hook(block: int, expert: int, ex: dict[str, np.ndarray]) -> dict[str, np.ndarray]:
         ck = (block, expert)
         hit = cache.get(ck)
         if hit is not None:
+            cache[ck] = cache.pop(ck)  # LRU touch
             out = dict(ex); out["mlp1"], out["mlp2"] = hit; return out
         out = dict(ex)
         out["mlp1"] = forge_pack(mapping["mlp1"], ex["mlp1"], seed=block * 1000 + expert)["recon"]
         out["mlp2"] = forge_pack(mapping["mlp2"], ex["mlp2"], seed=block * 1000 + expert)["recon"]
         cache[ck] = (out["mlp1"], out["mlp2"])
+        while len(cache) > _CACHE_CAP:
+            cache.pop(next(iter(cache)))
         return out
     return hook
 
