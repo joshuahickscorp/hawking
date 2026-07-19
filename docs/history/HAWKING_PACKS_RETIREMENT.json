@@ -1,0 +1,26 @@
+{
+  "absorbed_into": "crates/hawking-seed-c/src/providers/ (Candidate I) at Hawking commit 0adcab57",
+  "absorption_proof": "providers 2199 LOC; PackManifest extended additively (identity unchanged); one error; one registry; seed-c 43 lib + 6 parity + 3 harness green; no-external-dependency + clean-clone PROVEN",
+  "archive": {
+    "bundle": "/Users/scammermike/Archives/Hawking/hawking-packs-event-horizon.bundle",
+    "recovery_proven": true,
+    "sha256": "756cee3e510433da3432cc2c9da3ceb598c135e404f61f86ce72279b214993cd"
+  },
+  "final_packs_commit": "a10fdddc5dec539941e69537fdfc5369b8d8dac4",
+  "generated_at": "2026-07-19T18:06:07Z",
+  "historical_manifest_note": "233,056 LOC historical closure remains sealed IN THE BUNDLE (never imported into active Hawking)",
+  "original_repository": {
+    "local_path": "/Users/scammermike/Downloads/hawking-packs",
+    "remote": "NONE (no git remote was configured)"
+  },
+  "packs_event_horizon_tag": "packs-event-horizon",
+  "recovery_commands": [
+    "git clone ~/Archives/Hawking/hawking-packs-event-horizon.bundle <dir>",
+    "cd <dir> && git checkout packs-event-horizon  # -> a10fddd"
+  ],
+  "remote_deletion": "N/A (packs repo had no remote; an absence, not a permission blocker)",
+  "runtime_dependency": "NONE",
+  "schema": "hawking.packs_retirement.v2",
+  "sha256": "91f693f7023faf08dac5a30fb736fb64ec6344a31195f1776d743d45c1f6155b",
+  "status": "RETIRED (absorbed + local folder deleted)"
+}

@@ -1,0 +1,11 @@
+{
+  "archive": "~/Archives/Hawking/hawking-packs-event-horizon.bundle sha256 756cee3e (recovery-proven) - deletion is lossless",
+  "branch": "codex/absorb-hawking-packs (from main c9280be3)",
+  "gate_sequence": "integration build+test green -> no-external-dependency proof -> clean-clone proof -> deletion-readiness 20/20 -> DELETE local folder (archived) -> merge to main; remote deletion N/A (no packs remote)",
+  "generated_at": "2026-07-19T17:42:42Z",
+  "next": "await integration agent; then execute the gate sequence + irreversible-but-archived local deletion",
+  "packs_repo": "~/Downloads/hawking-packs (present; NO remote)",
+  "phase": "INTEGRATION IN PROGRESS (Candidate I: absorb nucleus into crates/hawking-seed-c/src/providers/)",
+  "schema": "hawking.packs_absorption.state.v2",
+  "sha256": "a23009bc761765fce0ab0d54161cec3f5adb3bb6739acb246c0f7763ab784779"
+}

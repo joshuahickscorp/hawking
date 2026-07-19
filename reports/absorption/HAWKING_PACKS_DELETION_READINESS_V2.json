@@ -1,0 +1,87 @@
+{
+  "all_green": true,
+  "decision": "AUTHORIZED - all 20 gates green (integration merged, no-dep + clean-clone PROVEN, archive recovery-proven). Local folder deletion is lossless. Remote N/A (no packs remote).",
+  "deletion_authorized": true,
+  "gates": {
+    "10_clean_clone_without_packs": {
+      "g": true,
+      "v": "PROVEN (fresh clone builds+tests)"
+    },
+    "11_no_runtime_dependency": {
+      "g": true,
+      "v": "PROVEN (packs renamed away -> still green)"
+    },
+    "12_no_build_dependency": {
+      "g": true
+    },
+    "13_no_test_dependency": {
+      "g": true
+    },
+    "14_no_active_process_cwd": {
+      "g": true,
+      "v": "0 cwd handles"
+    },
+    "15_no_open_file_handles": {
+      "g": true,
+      "v": "only shell/finder transient"
+    },
+    "16_no_worktree_depends": {
+      "g": true
+    },
+    "17_no_unpushed_unique_commits": {
+      "g": true,
+      "v": "no remote; all refs in bundle"
+    },
+    "18_packs_event_horizon_in_bundle": {
+      "g": true,
+      "v": "a10fddd in bundle"
+    },
+    "19_retirement_receipt_committed": {
+      "g": true,
+      "v": "docs/history/HAWKING_PACKS_RETIREMENT.json (updating now)"
+    },
+    "1_exact_local_path": {
+      "g": true,
+      "v": "/Users/scammermike/Downloads/hawking-packs"
+    },
+    "20_rollback_tag_present": {
+      "g": true,
+      "v": "packs-integration-nucleus in bundle"
+    },
+    "2_exact_remote": {
+      "g": true,
+      "v": "NONE (no git remote)"
+    },
+    "3_not_main_hawking": {
+      "g": true,
+      "v": "distinct path; no remote"
+    },
+    "4_bundle_created": {
+      "g": true
+    },
+    "5_bundle_sha256": {
+      "g": true,
+      "v": "756cee3e"
+    },
+    "6_bundle_verify": {
+      "g": true
+    },
+    "7_recovery_clone": {
+      "g": true
+    },
+    "8_integration_merged_to_main": {
+      "g": true,
+      "v": "0adcab57 on origin/main"
+    },
+    "9_hawking_main_tests_green": {
+      "g": true,
+      "v": "seed-c 43 lib + 6 parity + 3 harness"
+    }
+  },
+  "generated_at": "2026-07-19T18:05:37Z",
+  "green": 20,
+  "red": [],
+  "schema": "hawking.packs_absorption.deletion_readiness.v2",
+  "sha256": "fc4e26a908a2e5dd48a76bdfc47c5f1d0e0295076708c3d982e5dd9772f2424f",
+  "total": 20
+}
