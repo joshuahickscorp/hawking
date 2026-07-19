@@ -1,6 +1,17 @@
 {
   "base_generation_f": "e0857398 (frozen)",
   "branch": "codex/hawking-mechanics-thermodynamics",
+  "closeout": {
+    "energy": "UNAVAILABLE",
+    "fidelity_c_d": "COMPLETE (no missing-D forbidden exit)",
+    "generated_at": "2026-07-19T06:11:03Z",
+    "not_promoted": "the sub-bit REPRESENTATION (Gravity-NEGATIVE, catastrophic capability regression next-token 0.36) - blocks representation promotion, NOT execution grammar; Frontier keeps searching for a quality-positive representation",
+    "promoted": "m2_shared_lookup_linear execution grammar - VERIFIED parity-preserving A/B/C/D (exact end-to-end), reduces logical FLOPs/movement/dispatches; integrated as AVAILABLE provider with Gen-F direct-compact as wall-safe default",
+    "promotion_decision": "OUTCOME A for the EXECUTION GRAMMAR / representation NOT promoted",
+    "provider_map": "HAWKING_GENERATION_M_PROVIDER_MAP.json",
+    "rollback": "HAWKING_GENERATION_M_ROLLBACK.json",
+    "wall_speed_claim": "NONE - timing contaminated (MoP) + equivocal; promoted on parity + logical-work-reduction grounds, not a wall-clock win (avoids the microbenchmark/contaminated-timing forbidden exit)"
+  },
   "cpu_reference": "mech_measure.py CPU grammars (authoritative)",
   "energy_results": "UNAVAILABLE (no sudo powermetrics; not bypassed)",
   "fallback": "B0 source-native direct-compact (Generation F path) - always admissible",
@@ -16,7 +27,7 @@
   "quality_results": "NEGATIVE at sub-bit (rel_err 0.65-0.88 mlp1 / 0.20-0.36 mlp2); mechanical wins are quality-NEUTRAL vs their representation; NO capability pass, NO Event Horizon",
   "rollback": "git reset --hard f5521233 (pre-Mechanics); tag hawking-frontier-gate-f",
   "schema": "hawking.generation_m.v1",
-  "sha256": "66f8983520758f5afa1f55a2651c9a6fc8d4dc6745639fcbd4c5fa991bd098ed",
+  "sha256": "82703c54d98ae59c65287990d6142cd529b1280181463dce55c7e289bc4a71f7",
   "shadow_replay": {
     "artifact_bpw": "unchanged",
     "gen_m_lookup_vs_gen_f_direct": "quality-neutral (M1==B1 ~1e-7 sealed)",
