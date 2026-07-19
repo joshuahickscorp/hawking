@@ -1,0 +1,58 @@
+{
+  "capability_claim": false,
+  "controller_child_pid": 41651,
+  "current_row": "g2_001",
+  "current_state": "RUNNING",
+  "frontier": {
+    "complete_layer_bpw": 2.146702,
+    "family": "pq_protected_islands",
+    "layer_hidden_state_cosine": 0.959961,
+    "rate": "3/4",
+    "row_id": "g2_000",
+    "tensor_class": "expert_mlp1",
+    "weighted_combine_divergence": 0.857999
+  },
+  "g2_rows_done_at_observe": 1,
+  "generation": "F",
+  "ignited": true,
+  "lease": {
+    "label": "com.hawking.frontier_g2",
+    "live": true
+  },
+  "observed": [
+    {
+      "current_row": "g2_000",
+      "done": 0,
+      "hb_fresh": true,
+      "lease_live": true,
+      "state": "RUNNING"
+    },
+    {
+      "current_row": "g2_000",
+      "done": 0,
+      "hb_fresh": true,
+      "lease_live": true,
+      "state": "RUNNING"
+    },
+    {
+      "current_row": "g2_000",
+      "done": 0,
+      "hb_fresh": true,
+      "lease_live": true,
+      "state": "RUNNING"
+    },
+    {
+      "current_row": "g2_001",
+      "done": 1,
+      "hb_fresh": true,
+      "lease_live": true,
+      "state": "RUNNING"
+    }
+  ],
+  "program_sha256": "3377ddb7dde2d6cf8423cee2e645cb5ca34aa328252832ef3a2789bb1ee0e64c",
+  "readiness_sha256": "a57625b00f6170831c66e116fc388edec629e229c376783f73468ccdf02a1efc",
+  "rollback": "git reset --hard e2609f94  (pre-Gate-F); baseline tag hawking-second-light-baseline",
+  "schema": "hawking.full_frontier.g2_ignition_receipt.v1",
+  "sha256": "d68e03f9ecaaa04981a162f0aa4276b7b680619cec31639b22d4b8d18e3a4ec9",
+  "start_time": "2026-07-19T03:20:25Z"
+}

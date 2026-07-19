@@ -1,0 +1,515 @@
+{
+  "activation_provenance": {
+    "capability_parity": false,
+    "honesty": "real-activation FUNCTIONAL PROXY; not real Harmony text, no holdout corpus; authorizes no Escape Receipt / Event Horizon seal",
+    "path": "gptoss_block.block0_moe_inputs (verified reference forward)",
+    "token_source": "synthetic Harmony-ish id sequences pushed through the REAL embedding + attention + mlp-norm path"
+  },
+  "exact_budget_discipline": {
+    "codebook_aware": true,
+    "controls_billed_at_native_rate": true,
+    "packer_fails_over_budget": true,
+    "rates_are_rational": true
+  },
+  "functional_metrics": [
+    "router_topk_agreement",
+    "expert_output_cosine",
+    "expert_output_rel_error",
+    "weighted_combine_divergence",
+    "layer_hidden_state_cosine",
+    "complete_layer_bpw"
+  ],
+  "gate": "G2_complete_layer",
+  "generated_at": "2026-07-19T03:14:45Z",
+  "hash_discipline": {
+    "excluded_from_hash": [
+      "program_sha256",
+      "generated_at"
+    ],
+    "reason": "stable program identity across regeneration (timestamp-hash bug fix)"
+  },
+  "layer": 0,
+  "parent_revision": "openai/gpt-oss-120b",
+  "program_sha256": "3377ddb7dde2d6cf8423cee2e645cb5ca34aa328252832ef3a2789bb1ee0e64c",
+  "rows": [
+    {
+      "calibration_inputs": {
+        "kind": "real_block0_moe_inputs",
+        "n_sequences": 3,
+        "seed_domain": "calibration",
+        "tokens_per_seq": 6
+      },
+      "candidate": true,
+      "cpu_impl": "gravity_frontier_g2 numpy reference forward",
+      "exact_budget": {
+        "n_weights_per_matrix": 16588800,
+        "native_bpw": 4.25,
+        "rate": "3/4",
+        "target_total_bits": 15262208
+      },
+      "exact_rate": "3/4",
+      "family_params": {
+        "budget_frac": 0.01,
+        "dim": 16,
+        "k": 64,
+        "strategy": "residual_energy",
+        "subspaces": 2
+      },
+      "functional_metrics": [
+        "router_topk_agreement",
+        "expert_output_cosine",
+        "expert_output_rel_error",
+        "weighted_combine_divergence",
+        "layer_hidden_state_cosine",
+        "complete_layer_bpw"
+      ],
+      "is_control": false,
+      "layer": 0,
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) for the packer fit",
+      "note": "PQ + residual-energy protected islands (heavy-tail reserve)",
+      "representation_family": "pq_protected_islands",
+      "row_id": "g2_000",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "promote the representation with the HIGHEST layer_hidden_state_cosine within the exact per-matrix budget per tensor_class; source_native controls are reference boundaries and are excluded from selection",
+      "tensor_class": "expert_mlp1",
+      "tensor_group_fmt": "block.{b}.mlp.mlp1_weight",
+      "top_k": 4,
+      "validation_inputs": {
+        "kind": "real_block0_moe_inputs",
+        "n_sequences": 2,
+        "seed_domain": "validation_disjoint",
+        "tokens_per_seq": 6
+      }
+    },
+    {
+      "calibration_inputs": {
+        "kind": "real_block0_moe_inputs",
+        "n_sequences": 3,
+        "seed_domain": "calibration",
+        "tokens_per_seq": 6
+      },
+      "candidate": true,
+      "cpu_impl": "gravity_frontier_g2 numpy reference forward",
+      "exact_budget": {
+        "n_weights_per_matrix": 16588800,
+        "native_bpw": 4.25,
+        "rate": "3/4",
+        "target_total_bits": 15096320
+      },
+      "exact_rate": "3/4",
+      "family_params": {
+        "dim": 16,
+        "doctor": "residual_codebook",
+        "doctor_bpw": 0.15,
+        "k": 64,
+        "subspaces": 2
+      },
+      "functional_metrics": [
+        "router_topk_agreement",
+        "expert_output_cosine",
+        "expert_output_rel_error",
+        "weighted_combine_divergence",
+        "layer_hidden_state_cosine",
+        "complete_layer_bpw"
+      ],
+      "is_control": false,
+      "layer": 0,
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) for the packer fit",
+      "note": "PQ + Doctor residual codebook inside the same rate",
+      "representation_family": "pq_doctor_lowrank",
+      "row_id": "g2_001",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "promote the representation with the HIGHEST layer_hidden_state_cosine within the exact per-matrix budget per tensor_class; source_native controls are reference boundaries and are excluded from selection",
+      "tensor_class": "expert_mlp1",
+      "tensor_group_fmt": "block.{b}.mlp.mlp1_weight",
+      "top_k": 4,
+      "validation_inputs": {
+        "kind": "real_block0_moe_inputs",
+        "n_sequences": 2,
+        "seed_domain": "validation_disjoint",
+        "tokens_per_seq": 6
+      }
+    },
+    {
+      "calibration_inputs": {
+        "kind": "real_block0_moe_inputs",
+        "n_sequences": 3,
+        "seed_domain": "calibration",
+        "tokens_per_seq": 6
+      },
+      "candidate": true,
+      "cpu_impl": "gravity_frontier_g2 numpy reference forward",
+      "exact_budget": {
+        "n_weights_per_matrix": 16588800,
+        "native_bpw": 4.25,
+        "rate": "3/4",
+        "target_total_bits": 12608000
+      },
+      "exact_rate": "3/4",
+      "family_params": {
+        "dim": 16,
+        "k": 64,
+        "subspaces": 2
+      },
+      "functional_metrics": [
+        "router_topk_agreement",
+        "expert_output_cosine",
+        "expert_output_rel_error",
+        "weighted_combine_divergence",
+        "layer_hidden_state_cosine",
+        "complete_layer_bpw"
+      ],
+      "is_control": false,
+      "layer": 0,
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) for the packer fit",
+      "note": "plain product quantization (no Hadamard rotation)",
+      "representation_family": "product_quant",
+      "row_id": "g2_002",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "promote the representation with the HIGHEST layer_hidden_state_cosine within the exact per-matrix budget per tensor_class; source_native controls are reference boundaries and are excluded from selection",
+      "tensor_class": "expert_mlp1",
+      "tensor_group_fmt": "block.{b}.mlp.mlp1_weight",
+      "top_k": 4,
+      "validation_inputs": {
+        "kind": "real_block0_moe_inputs",
+        "n_sequences": 2,
+        "seed_domain": "validation_disjoint",
+        "tokens_per_seq": 6
+      }
+    },
+    {
+      "calibration_inputs": {
+        "kind": "real_block0_moe_inputs",
+        "n_sequences": 3,
+        "seed_domain": "calibration",
+        "tokens_per_seq": 6
+      },
+      "candidate": true,
+      "cpu_impl": "gravity_frontier_g2 numpy reference forward",
+      "exact_budget": {
+        "n_weights_per_matrix": 16588800,
+        "native_bpw": 4.25,
+        "rate": "native",
+        "target_total_bits": 70502912
+      },
+      "exact_rate": "native",
+      "family_params": {},
+      "functional_metrics": [
+        "router_topk_agreement",
+        "expert_output_cosine",
+        "expert_output_rel_error",
+        "weighted_combine_divergence",
+        "layer_hidden_state_cosine",
+        "complete_layer_bpw"
+      ],
+      "is_control": true,
+      "layer": 0,
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) for the packer fit",
+      "note": "source-native reference boundary (kept native, excluded from selection)",
+      "representation_family": "source_native_control",
+      "row_id": "g2_003",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "promote the representation with the HIGHEST layer_hidden_state_cosine within the exact per-matrix budget per tensor_class; source_native controls are reference boundaries and are excluded from selection",
+      "tensor_class": "expert_mlp1",
+      "tensor_group_fmt": "block.{b}.mlp.mlp1_weight",
+      "top_k": 4,
+      "validation_inputs": {
+        "kind": "real_block0_moe_inputs",
+        "n_sequences": 2,
+        "seed_domain": "validation_disjoint",
+        "tokens_per_seq": 6
+      }
+    },
+    {
+      "calibration_inputs": {
+        "kind": "real_block0_moe_inputs",
+        "n_sequences": 3,
+        "seed_domain": "calibration",
+        "tokens_per_seq": 6
+      },
+      "candidate": true,
+      "cpu_impl": "gravity_frontier_g2 numpy reference forward",
+      "exact_budget": {
+        "n_weights_per_matrix": 8294400,
+        "native_bpw": 4.25,
+        "rate": "3/4",
+        "target_total_bits": 7631360
+      },
+      "exact_rate": "3/4",
+      "family_params": {
+        "budget_frac": 0.01,
+        "dim": 16,
+        "k": 64,
+        "strategy": "residual_energy",
+        "subspaces": 2
+      },
+      "functional_metrics": [
+        "router_topk_agreement",
+        "expert_output_cosine",
+        "expert_output_rel_error",
+        "weighted_combine_divergence",
+        "layer_hidden_state_cosine",
+        "complete_layer_bpw"
+      ],
+      "is_control": false,
+      "layer": 0,
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) for the packer fit",
+      "note": "PQ + residual-energy protected islands (heavy-tail reserve)",
+      "representation_family": "pq_protected_islands",
+      "row_id": "g2_004",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "promote the representation with the HIGHEST layer_hidden_state_cosine within the exact per-matrix budget per tensor_class; source_native controls are reference boundaries and are excluded from selection",
+      "tensor_class": "expert_mlp2",
+      "tensor_group_fmt": "block.{b}.mlp.mlp2_weight",
+      "top_k": 4,
+      "validation_inputs": {
+        "kind": "real_block0_moe_inputs",
+        "n_sequences": 2,
+        "seed_domain": "validation_disjoint",
+        "tokens_per_seq": 6
+      }
+    },
+    {
+      "calibration_inputs": {
+        "kind": "real_block0_moe_inputs",
+        "n_sequences": 3,
+        "seed_domain": "calibration",
+        "tokens_per_seq": 6
+      },
+      "candidate": true,
+      "cpu_impl": "gravity_frontier_g2 numpy reference forward",
+      "exact_budget": {
+        "n_weights_per_matrix": 8294400,
+        "native_bpw": 4.25,
+        "rate": "3/4",
+        "target_total_bits": 6304256
+      },
+      "exact_rate": "3/4",
+      "family_params": {
+        "dim": 16,
+        "k": 64,
+        "stages": 2
+      },
+      "functional_metrics": [
+        "router_topk_agreement",
+        "expert_output_cosine",
+        "expert_output_rel_error",
+        "weighted_combine_divergence",
+        "layer_hidden_state_cosine",
+        "complete_layer_bpw"
+      ],
+      "is_control": false,
+      "layer": 0,
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) for the packer fit",
+      "note": "residual vector quantization (different representation)",
+      "representation_family": "naive_rvq",
+      "row_id": "g2_005",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "promote the representation with the HIGHEST layer_hidden_state_cosine within the exact per-matrix budget per tensor_class; source_native controls are reference boundaries and are excluded from selection",
+      "tensor_class": "expert_mlp2",
+      "tensor_group_fmt": "block.{b}.mlp.mlp2_weight",
+      "top_k": 4,
+      "validation_inputs": {
+        "kind": "real_block0_moe_inputs",
+        "n_sequences": 2,
+        "seed_domain": "validation_disjoint",
+        "tokens_per_seq": 6
+      }
+    },
+    {
+      "calibration_inputs": {
+        "kind": "real_block0_moe_inputs",
+        "n_sequences": 3,
+        "seed_domain": "calibration",
+        "tokens_per_seq": 6
+      },
+      "candidate": true,
+      "cpu_impl": "gravity_frontier_g2 numpy reference forward",
+      "exact_budget": {
+        "n_weights_per_matrix": 8294400,
+        "native_bpw": 4.25,
+        "rate": "3/4",
+        "target_total_bits": 6304256
+      },
+      "exact_rate": "3/4",
+      "family_params": {
+        "dim": 16,
+        "k": 64,
+        "subspaces": 2
+      },
+      "functional_metrics": [
+        "router_topk_agreement",
+        "expert_output_cosine",
+        "expert_output_rel_error",
+        "weighted_combine_divergence",
+        "layer_hidden_state_cosine",
+        "complete_layer_bpw"
+      ],
+      "is_control": false,
+      "layer": 0,
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) for the packer fit",
+      "note": "plain product quantization (no Hadamard rotation)",
+      "representation_family": "product_quant",
+      "row_id": "g2_006",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "promote the representation with the HIGHEST layer_hidden_state_cosine within the exact per-matrix budget per tensor_class; source_native controls are reference boundaries and are excluded from selection",
+      "tensor_class": "expert_mlp2",
+      "tensor_group_fmt": "block.{b}.mlp.mlp2_weight",
+      "top_k": 4,
+      "validation_inputs": {
+        "kind": "real_block0_moe_inputs",
+        "n_sequences": 2,
+        "seed_domain": "validation_disjoint",
+        "tokens_per_seq": 6
+      }
+    },
+    {
+      "calibration_inputs": {
+        "kind": "real_block0_moe_inputs",
+        "n_sequences": 3,
+        "seed_domain": "calibration",
+        "tokens_per_seq": 6
+      },
+      "candidate": true,
+      "cpu_impl": "gravity_frontier_g2 numpy reference forward",
+      "exact_budget": {
+        "n_weights_per_matrix": 8294400,
+        "native_bpw": 4.25,
+        "rate": "native",
+        "target_total_bits": 35251712
+      },
+      "exact_rate": "native",
+      "family_params": {},
+      "functional_metrics": [
+        "router_topk_agreement",
+        "expert_output_cosine",
+        "expert_output_rel_error",
+        "weighted_combine_divergence",
+        "layer_hidden_state_cosine",
+        "complete_layer_bpw"
+      ],
+      "is_control": true,
+      "layer": 0,
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) for the packer fit",
+      "note": "source-native reference boundary (kept native, excluded from selection)",
+      "representation_family": "source_native_control",
+      "row_id": "g2_007",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "promote the representation with the HIGHEST layer_hidden_state_cosine within the exact per-matrix budget per tensor_class; source_native controls are reference boundaries and are excluded from selection",
+      "tensor_class": "expert_mlp2",
+      "tensor_group_fmt": "block.{b}.mlp.mlp2_weight",
+      "top_k": 4,
+      "validation_inputs": {
+        "kind": "real_block0_moe_inputs",
+        "n_sequences": 2,
+        "seed_domain": "validation_disjoint",
+        "tokens_per_seq": 6
+      }
+    },
+    {
+      "calibration_inputs": {
+        "kind": "real_block0_moe_inputs",
+        "n_sequences": 3,
+        "seed_domain": "calibration",
+        "tokens_per_seq": 6
+      },
+      "candidate": true,
+      "cpu_impl": "gravity_frontier_g2 numpy reference forward",
+      "exact_budget": {
+        "n_weights_per_matrix": 368640,
+        "native_bpw": 16.0,
+        "rate": "native",
+        "target_total_bits": 5898752
+      },
+      "exact_rate": "native",
+      "family_params": {},
+      "functional_metrics": [
+        "router_topk_agreement",
+        "expert_output_cosine",
+        "expert_output_rel_error",
+        "weighted_combine_divergence",
+        "layer_hidden_state_cosine",
+        "complete_layer_bpw"
+      ],
+      "is_control": true,
+      "layer": 0,
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) for the packer fit",
+      "note": "router gate kept source-native (routing must not drift; a valid control result)",
+      "representation_family": "source_native_control",
+      "row_id": "g2_008",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "promote the representation with the HIGHEST layer_hidden_state_cosine within the exact per-matrix budget per tensor_class; source_native controls are reference boundaries and are excluded from selection",
+      "tensor_class": "router",
+      "tensor_group_fmt": "block.{b}.mlp.gate.weight",
+      "top_k": 4,
+      "validation_inputs": {
+        "kind": "real_block0_moe_inputs",
+        "n_sequences": 2,
+        "seed_domain": "validation_disjoint",
+        "tokens_per_seq": 6
+      }
+    },
+    {
+      "calibration_inputs": {
+        "kind": "real_block0_moe_inputs",
+        "n_sequences": 3,
+        "seed_domain": "calibration",
+        "tokens_per_seq": 6
+      },
+      "candidate": true,
+      "cpu_impl": "gravity_frontier_g2 numpy reference forward",
+      "exact_budget": {
+        "n_weights_per_matrix": 14745600,
+        "native_bpw": 16.0,
+        "rate": "native",
+        "target_total_bits": 235930112
+      },
+      "exact_rate": "native",
+      "family_params": {},
+      "functional_metrics": [
+        "router_topk_agreement",
+        "expert_output_cosine",
+        "expert_output_rel_error",
+        "weighted_combine_divergence",
+        "layer_hidden_state_cosine",
+        "complete_layer_bpw"
+      ],
+      "is_control": true,
+      "layer": 0,
+      "metal_impl": "gravity_forge MPS (_kmeans/_assign) for the packer fit",
+      "note": "attention organ kept source-native (reference boundary)",
+      "representation_family": "source_native_control",
+      "row_id": "g2_009",
+      "source_revision": "openai/gpt-oss-120b",
+      "stopping_rule": "promote the representation with the HIGHEST layer_hidden_state_cosine within the exact per-matrix budget per tensor_class; source_native controls are reference boundaries and are excluded from selection",
+      "tensor_class": "attn",
+      "tensor_group_fmt": "block.{b}.attn.qkv.weight",
+      "top_k": 4,
+      "validation_inputs": {
+        "kind": "real_block0_moe_inputs",
+        "n_sequences": 2,
+        "seed_domain": "validation_disjoint",
+        "tokens_per_seq": 6
+      }
+    }
+  ],
+  "schema": "hawking.frontier_g2.complete_layer_program.v1",
+  "scientific_question": "Which full-rank sub-bit representation best preserves a COMPLETE GPT-OSS layer-0's function on real residual-stream activations?",
+  "search_doctrine": {
+    "class_isolation": "each candidate replaces ONLY its tensor class; the router stays native",
+    "controls_excluded_from_selection": true,
+    "gate": "complete_layer",
+    "ranking_signal": "layer_hidden_state_cosine (highest within budget)"
+  },
+  "totals": {
+    "candidates_per_expert_class": 4,
+    "expected_checkpoint_count": 10,
+    "tensor_classes": [
+      "expert_mlp1",
+      "expert_mlp2",
+      "router",
+      "attn"
+    ],
+    "total_rows": 10
+  }
+}

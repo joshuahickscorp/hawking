@@ -1,0 +1,35 @@
+{
+  "boundaries": {
+    "current_0770_is_negative_control_not_champion": true,
+    "one_heavy_lease": true,
+    "proxy_winners_not_promoted_without_G2_G4": true,
+    "quality_non_negotiable": true,
+    "sub_bit_first": true
+  },
+  "cloud_budget_state": "ABSENT (HAWKING_CLOUD_BUDGET not set) -> CUDA paid lane BLOCKED, budget not inferred from keys",
+  "gate_f_merged": true,
+  "gate_f_status": {
+    "G0": "PASS",
+    "G1": "PASS-proxy",
+    "G2_G5": "pending (G2 building now)",
+    "cpu_metal_parity": "within-tol"
+  },
+  "gate_f_tag": "hawking-frontier-gate-f",
+  "generated_at": "2026-07-19T03:01:14Z",
+  "generation": "F (closure e0857398)",
+  "leases": "free",
+  "live_heavy_controller": "none",
+  "main": "f55212337ecc8fb8e234b64dd4f3b05f1e2bec4c",
+  "origin_main": "f55212337ecc8fb8e234b64dd4f3b05f1e2bec4c",
+  "remote": "git@github.com:joshuahickscorp/hawking.git",
+  "repository": "/Users/scammermike/Downloads/hawking",
+  "resources": {
+    "disk_free_gb": 559.3,
+    "platform": "M3 Ultra 28c MPS",
+    "ram_gb": 96.0
+  },
+  "schema": "hawking.full_frontier_ignition.precheck.v1",
+  "second_light_baseline": "b4655883 (negative control, 0.76976 BPW)",
+  "sha256": "630875b19c60f8f57fa2587bbca2b98c53c9d7046d990847af79c38822683c55",
+  "source_120b": "PRESENT (models/gpt-oss-120b, revision b5c939de)"
+}

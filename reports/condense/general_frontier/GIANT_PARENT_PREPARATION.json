@@ -1,0 +1,38 @@
+{
+  "generated_at": "2026-07-19T03:01:14Z",
+  "law": "absent giant source is NOT a stop; bounded preparation proceeds. Heavy lane admitted only at the eligibility milestone. 120B G2-G5 is the active lane.",
+  "parents": {
+    "1.6T": {
+      "action": "source-authority + bounded-range access prep only; NO full download without disk+network gate; NO unofficial repack",
+      "contract_file": "reports/condense/gravity_forge/giant_adapters/deepseek-v4-pro-1.6t.json",
+      "contract_present": true,
+      "eligibility": "OPTIONAL - after 1T milestone + sealed cost/info-gain admission",
+      "heavy_admitted": false,
+      "immutable_revision": "deepseek-ai/DeepSeek-V4-Pro",
+      "source_authority": "contract-bound; immutable revision resolved; license+index+tokenizer assets to verify on admission",
+      "source_local": "ABSENT"
+    },
+    "1T": {
+      "action": "source-authority + bounded-range access prep only; NO full download without disk+network gate; NO unofficial repack",
+      "contract_file": "reports/condense/gravity_forge/giant_adapters/kimi-k2.6-1t.json",
+      "contract_present": true,
+      "eligibility": "after 120B G5-or-boundary + 685B parent-bound F2 + Kimi source authority + text/full claim separation",
+      "heavy_admitted": false,
+      "immutable_revision": "moonshotai/Kimi-K2.6",
+      "source_authority": "contract-bound; immutable revision resolved; license+index+tokenizer assets to verify on admission",
+      "source_local": "ABSENT"
+    },
+    "685B": {
+      "action": "source-authority + bounded-range access prep only; NO full download without disk+network gate; NO unofficial repack",
+      "contract_file": "reports/condense/gravity_forge/giant_adapters/deepseek-v3.2-685b.json",
+      "contract_present": true,
+      "eligibility": "after 120B G3 + one full-rank family + Doctor path + quality contract + Apple exec + whole-artifact projection + CUDA parity-or-blocked",
+      "heavy_admitted": false,
+      "immutable_revision": "deepseek-ai/DeepSeek-V3.2",
+      "source_authority": "contract-bound; immutable revision resolved; license+index+tokenizer assets to verify on admission",
+      "source_local": "ABSENT"
+    }
+  },
+  "schema": "hawking.full_frontier.giant_prep.v1",
+  "sha256": "a03446264e1abd6b0a162c621ab41979bdd58a9e8a7509b776e981255ab69377"
+}
