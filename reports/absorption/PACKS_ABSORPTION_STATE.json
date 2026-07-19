@@ -1,0 +1,20 @@
+{
+  "archive_state": "GREEN - bundle sha256 756cee3e..., recovery-proven",
+  "deleted_duplicate_loc": 0,
+  "deletion_readiness": "16/20 green; RED: 8 integration-merged, 10 clean-clone, 11 no-runtime-dep, 19 retirement-committed",
+  "external_dependency_state": "not yet proven absent (integration pending)",
+  "generated_at": "2026-07-19T01:03:33Z",
+  "hawking_commit": "7f237ed3",
+  "integrated_loc": 0,
+  "integration_branch": "codex/absorb-hawking-packs (not yet created)",
+  "integration_selected": "Candidate I (seed-c/src/providers) - designed, est 1660 LOC integrated / 5050 combined",
+  "live_run_protection": "Second Light COMPLETED cleanly (183/183); was not interrupted",
+  "local_deletion": "NOT AUTHORIZED - red gates (integration not implemented). Archive protects repo (lossless).",
+  "merge_state": "not merged",
+  "next_exact_edit": "implement Candidate I absorption (extend PackManifest additively; fold packs Error; absorb registry+adapters+forge+doctor+metal+speculation+validation; delete 8 duplications; build+test; clean-clone proof; then gates go green and deletion is authorized)",
+  "packs_commit": "a10fddd (tag) / e7effb2 (branch head)",
+  "remote_deletion": "N/A - packs has no remote",
+  "schema": "hawking.packs_absorption.state.v1",
+  "sha256": "ff23cd225e5ff43de38731b5be76943200db853982fd489111dee894791dfdbe",
+  "tests": "packs: seed 19+6, nucleus 22, harness 3 - all green; hawking main unaffected"
+}

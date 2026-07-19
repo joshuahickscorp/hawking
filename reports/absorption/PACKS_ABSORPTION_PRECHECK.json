@@ -1,0 +1,73 @@
+{
+  "archive_gate": {
+    "bundle": "~/Archives/Hawking/hawking-packs-event-horizon.bundle",
+    "recovery_proven": true,
+    "sha256": "756cee3e510433da3432cc2c9da3ceb598c135e404f61f86ce72279b214993cd",
+    "status": "GREEN"
+  },
+  "discrepancies_vs_report": [
+    {
+      "finding": "packs HEAD is e7effb2 (a ledger commit that RECORDS a10fddd); the sealed tag packs-event-horizon -> a10fddd matches the report. Minor, benign.",
+      "item": "HEAD vs reported final commit",
+      "severity": "low"
+    },
+    {
+      "finding": "packs repo has NO git remote configured. There is NO separate packs remote to delete. Section 25 remote-deletion has no target (an ABSENCE, not a permission blocker).",
+      "item": "remote GitHub repository (goal Section 25)",
+      "severity": "material_scope_correction"
+    }
+  ],
+  "generated_at": "2026-07-19T00:49:17Z",
+  "hawking": {
+    "active_lease": "com.hawking.second_light",
+    "branch": "main",
+    "head": "7f237ed36a64ed1b19886b32a1d17f82af50c5bd",
+    "local_path": "/Users/scammermike/Downloads/hawking",
+    "origin_main": "7f237ed36a64ed1b19886b32a1d17f82af50c5bd",
+    "remote": "git@github.com:joshuahickscorp/hawking.git",
+    "running_controller": "second_light PID 84690 RUNNING (live scientific run - MUST NOT interrupt, Section 3)",
+    "working_tree_dirty_files": 17,
+    "worktrees": [
+      "/Users/scammermike/Downloads/hawking 7f237ed3 [main]"
+    ]
+  },
+  "hawking_packs": {
+    "branch": "codex/hawking-packs-event-horizon",
+    "head": "e7effb214fd3ff97722a06590ab09588c9ac5fc0",
+    "local_path": "/Users/scammermike/Downloads/hawking-packs",
+    "packs_event_horizon_tag_commit": "a10fdddc5dec539941e69537fdfc5369b8d8dac4",
+    "remote": "NONE (no git remote configured)",
+    "reported_final_commit": "a10fddd",
+    "tags": [
+      "packs-abi",
+      "packs-adapters",
+      "packs-event-horizon",
+      "packs-integration-nucleus",
+      "packs-labs",
+      "packs-metal",
+      "packs-pre-collapse",
+      "packs-truth",
+      "packs-validation"
+    ],
+    "working_tree_clean": true,
+    "worktrees": [
+      "/Users/scammermike/Downloads/hawking-packs e7effb2 [codex/hawking-packs-event-horizon]"
+    ]
+  },
+  "identity_check": {
+    "cannot_confuse_targets": true,
+    "fail_closed": false,
+    "hawking_and_packs_distinct_paths": true,
+    "hawking_remote": "git@github.com:joshuahickscorp/hawking.git",
+    "identity_ambiguous": false,
+    "packs_has_no_remote": true,
+    "packs_head_is_ledger_ahead_of_tag": true,
+    "packs_tag_matches_a10fddd": true
+  },
+  "protect_live_run": {
+    "policy": "Section 3: no integration step may interrupt the live run; work isolated; do not reset/discard Hawking working tree (dirty with live Second Light work).",
+    "second_light_running": true
+  },
+  "schema": "hawking.packs_absorption.precheck.v1",
+  "sha256": "99bc8d5e444997cc6768a2cfb380fa6a642cba076912358e191eb038c4a60b1d"
+}

@@ -1,0 +1,92 @@
+{
+  "all_green": false,
+  "decision": "DELETION NOT AUTHORIZED - RED gates 8/10/11/19 require the integration to be implemented+merged+clean-clone-proven and the retirement receipt committed. The goal's own rule 'No deletion with a red gate' governs. The full archive bundle (recovery-proven) makes the packs repo lossless regardless.",
+  "deletion_authorized": false,
+  "gates": {
+    "10_clean_clone_without_packs_green": {
+      "green": false,
+      "v": "RED - requires integration first"
+    },
+    "11_no_runtime_dependency": {
+      "green": false,
+      "v": "RED-by-spirit - capabilities not yet absorbed; hawking today has zero dep on packs but the useful mass is not yet in hawking"
+    },
+    "12_no_build_dependency": {
+      "green": true,
+      "v": "hawking builds without packs today"
+    },
+    "13_no_test_dependency": {
+      "green": true
+    },
+    "14_no_active_process_cwd_in_packs": {
+      "green": true
+    },
+    "15_no_open_file_handles_in_packs": {
+      "green": true
+    },
+    "16_no_worktree_depends_on_packs": {
+      "green": true
+    },
+    "17_no_unpushed_unique_commits": {
+      "green": true,
+      "v": "no remote; every ref in bundle"
+    },
+    "18_packs_event_horizon_in_bundle": {
+      "green": true,
+      "v": "a10fddd present in bundle"
+    },
+    "19_retirement_receipt_committed": {
+      "green": false,
+      "v": "RED - created at docs/history/HAWKING_PACKS_RETIREMENT.json, not git-committed (no commit made this session)"
+    },
+    "1_exact_local_packs_path_identified": {
+      "green": true,
+      "v": "/Users/scammermike/Downloads/hawking-packs"
+    },
+    "20_rollback_tag_present": {
+      "green": true,
+      "v": "packs-integration-nucleus + others in bundle"
+    },
+    "2_exact_packs_remote_identified": {
+      "green": true,
+      "v": "NONE (no git remote) -> Section 25 has no target"
+    },
+    "3_target_proven_not_main_hawking": {
+      "green": true,
+      "v": "distinct path; packs has no remote so cannot be the hawking remote"
+    },
+    "4_full_bundle_created": {
+      "green": true
+    },
+    "5_bundle_sha256_recorded": {
+      "green": true,
+      "v": "756cee3e..."
+    },
+    "6_bundle_verification_green": {
+      "green": true
+    },
+    "7_recovery_clone_green": {
+      "green": true
+    },
+    "8_integration_merged_to_main": {
+      "green": false,
+      "v": "RED - integration DESIGNED not implemented/merged"
+    },
+    "9_hawking_main_tests_green": {
+      "green": true,
+      "v": "seed 19+6, unaffected by absorption"
+    }
+  },
+  "generated_at": "2026-07-19T01:02:36Z",
+  "green_count": 16,
+  "red_gates": [
+    "8_integration_merged_to_main",
+    "10_clean_clone_without_packs_green",
+    "11_no_runtime_dependency",
+    "19_retirement_receipt_committed"
+  ],
+  "remote_deletion": "N/A - packs repo has NO remote (Section 25 has no target; this is an ABSENCE not a permission blocker)",
+  "schema": "hawking.packs_absorption.deletion_readiness.v1",
+  "sha256": "27705a6462d4ef84b53f0f70d562f1e9ae2f1fdf87532f0a72d54da26bbf8028",
+  "total": 20
+}

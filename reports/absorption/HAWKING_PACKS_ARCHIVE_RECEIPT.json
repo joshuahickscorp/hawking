@@ -1,0 +1,30 @@
+{
+  "bundle_bytes": 2411541,
+  "bundle_path": "/Users/scammermike/Archives/Hawking/hawking-packs-event-horizon.bundle",
+  "bundle_verify": "PASS (records a complete history)",
+  "contained_refs": [
+    "refs/heads/codex/hawking-packs-event-horizon -> e7effb2",
+    "refs/tags/packs-event-horizon -> a10fddd (the sealed Event Horizon)",
+    "refs/tags/packs-pre-collapse, packs-truth, packs-abi, packs-adapters, packs-integration-nucleus, packs-metal, packs-labs, packs-validation"
+  ],
+  "gate": "GREEN - no deletion permitted before this gate is green (Section 4); it is green",
+  "generated_at": "2026-07-19T00:49:52Z",
+  "hash_algorithm_note": "bundle uses git sha1 object ids; sha256 above is over the bundle FILE",
+  "receipt_sha256": "9bcfb2a266ee6114cdd29a4e809842ec499483d08ac1ecf8099aa93e38a7e738",
+  "recovery_clone_test": {
+    "result": "PASS",
+    "steps": [
+      "clone from bundle",
+      "checkout packs-event-horizon -> a10fddd",
+      "all required artifacts present (0 missing)",
+      "14 nucleus modules recovered",
+      "temp clone removed"
+    ]
+  },
+  "recovery_commands": [
+    "git clone ~/Archives/Hawking/hawking-packs-event-horizon.bundle <dir>",
+    "cd <dir> && git checkout packs-event-horizon   # -> a10fddd"
+  ],
+  "schema": "hawking.packs_absorption.archive_receipt.v1",
+  "sha256": "756cee3e510433da3432cc2c9da3ceb598c135e404f61f86ce72279b214993cd"
+}

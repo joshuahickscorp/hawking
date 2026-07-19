@@ -1,0 +1,18 @@
+{
+  "generated_at": "2026-07-19T00:51:30Z",
+  "reconciliations": {
+    "packs_head": "e7effb2 is a ledger commit atop the tagged a10fddd; tag packs-event-horizon -> a10fddd matches report",
+    "seed_19": "CONFIRMED - hawking-seed-c lib unittests = 19 (plus 6 parity integration tests)"
+  },
+  "reran_from_clean_checkout": true,
+  "results": {
+    "all_green": true,
+    "harness_tests": 3,
+    "nucleus_tests": 22,
+    "seed_lib_tests": 19,
+    "seed_parity_tests": 6
+  },
+  "schema": "hawking.packs_absorption.eh_verification.v1",
+  "sha256": "e929dc6fe47bc3fc937c14e31d82c9d8fd0d7ef67a8dd9a7a8c0295032ebc447",
+  "verdict": "Packs Event Horizon INDEPENDENTLY REVALIDATED - safe to absorb"
+}

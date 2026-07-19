@@ -1,0 +1,43 @@
+{
+  "candidate_I": {
+    "est_integrated_loc": 1660,
+    "new_crates": 0,
+    "provider_core_loc": 1170,
+    "structure": "crates/hawking-seed-c/src/providers/{registry,adapters,forge,doctor,metal,speculation,validation}"
+  },
+  "candidate_II": {
+    "est_integrated_loc": 1960,
+    "new_crates": 1,
+    "structure": "crates/hawking-providers (separate workspace crate depending on hawking-seed-c)"
+  },
+  "duplications_to_delete": [
+    "lib.rs `pub use hawking_seed_c as hawking` re-export",
+    "lib.rs packs Error enum + Seed(#[from]) bridge + Result alias -> fold into hawking_seed_c::Error",
+    "lib.rs HAWKING_COMPAT dup of SEED_COMPAT",
+    "lib.rs identity_of() -> use Record::new/identity",
+    "manifest.rs to_seed() projection + mirrored PackManifest core block -> extend PackManifest directly",
+    "manifest.rs canonical() passthrough -> record::canonical",
+    "verify.rs tamper-string m.contains(TAMPERED) coupling -> typed Error::Pack match",
+    "adapter.rs dense backbone dup of hawking_seed_c::adapter::build_plan -> generalize seed's builder"
+  ],
+  "estimated_combined_loc": 5050,
+  "generated_at": "2026-07-19T01:02:36Z",
+  "naive_combined_loc": 6159,
+  "rationale": "Candidate I is structurally the lower coherent architecture: with no separate crate, NucleusManifest extends PackManifest in place and packs Error folds into seed Error, so a second Pack ABI / second registry is impossible to construct (satisfied structurally, not by discipline). Deletes the entire crate-boundary layer (Provider-trait indirection, Context String plumbing, to_seed projection).",
+  "risks": [
+    "content-addressed pack identity: PackManifest extension MUST be strictly additive (serde(default), excluded from identity block) or every sealed receipt breaks",
+    "evidence::KINDS allow-list: new provider kinds (adapter/forge/doctor/metal/speculation/validation/experiment) must be registered or sealed receipts fail",
+    "error unification must preserve exact tamper/missing-file semantics (the literal TAMPERED string is the current contract)",
+    "adapter multi-arch must not perturb the llama Op order the CPU/Metal bit-identity parity contract depends on; SSM refusal stays fail-closed",
+    "reconcile registry.activate vs seed's Machine Admit into ONE activation authority",
+    "CLI collapse <=150 LOC must preserve the demo evidence-chain proof as 'hawking debug packs demo'"
+  ],
+  "schema": "hawking.packs_absorption.integration_design.v1",
+  "selected_candidate": "candidate_I",
+  "sha256": "b60ba97cdb83156b4b5c98df20e7e15de8601ef6f35bf7fe1393435a0936b233",
+  "single_pack_abi_owner": "crates/hawking-seed-c/src/pack.rs (PackManifest additively extended with CapabilityKind/Profile/CapabilityDecl/Implementation/Asset/owned_loc; compat stays seed-c-1)",
+  "single_registry_owner": "crates/hawking-seed-c/src/providers/registry.rs (typed capability->impl registry over evidence::KINDS)",
+  "status": "DESIGNED - not implemented. Implementation = careful multi-hour Rust refactor deferred (live run active; must not rush an irreversible downstream deletion).",
+  "target_primary": 5000,
+  "target_stretch": 4250
+}

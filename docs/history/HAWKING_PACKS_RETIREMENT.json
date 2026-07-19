@@ -1,0 +1,22 @@
+{
+  "archive_location": "/Users/scammermike/Archives/Hawking/hawking-packs-event-horizon.bundle",
+  "branch_head_at_archive": "e7effb214fd3ff97722a06590ab09588c9ac5fc0",
+  "bundle_sha256": "756cee3e510433da3432cc2c9da3ceb598c135e404f61f86ce72279b214993cd",
+  "final_packs_commit": "a10fdddc5dec539941e69537fdfc5369b8d8dac4",
+  "generated_at": "2026-07-19T00:49:52Z",
+  "hawking_oracle_commit": "7f237ed36a64ed1b19886b32a1d17f82af50c5bd",
+  "historical_manifest_note": "233,056 LOC historical closure remains SEALED in the bundle (historical/ tarballs); NOT imported into active Hawking",
+  "original_repository": {
+    "local_path": "/Users/scammermike/Downloads/hawking-packs",
+    "remote": "NONE (no git remote was configured)"
+  },
+  "packs_event_horizon_tag": "packs-event-horizon",
+  "recovery_commands": [
+    "git clone ~/Archives/Hawking/hawking-packs-event-horizon.bundle <dir>",
+    "cd <dir> && git checkout packs-event-horizon"
+  ],
+  "runtime_dependency": "NONE - normal Hawking builds/runtime must not depend on this archive",
+  "schema": "hawking.packs_retirement.v1",
+  "sha256": "c7b42430e753b71259f1a4d238f95697af36fcee8e796bc576126c7b1b10351d",
+  "status": "archived+recovery-proven; integration + retirement in progress"
+}
