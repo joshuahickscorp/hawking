@@ -26,7 +26,7 @@
     "accepted_handoff": true,
     "expected": "e2609f94",
     "geometry_search_result_commit": "e2609f9452bcc9c97cfa960d6ef362567a048727",
-    "note": "e2609f94 accepted as handoff main. Do NOT merge packs/CLI scaffolds into the run-critical frontier. Later valid work must not be reset.",
+    "note": "e2609f94 is the accepted handoff anchor (HEAD=origin/main at handoff, verified ancestor of the working branch). The Gate-F generation branch codex/general-frontier-gate-f was created + committed + pushed by the active /goal loop; HEAD f648d6be is a direct child of e2609f94. Do NOT merge packs/CLI scaffolds into the run-critical frontier. Later valid work must not be reset.",
     "pre_frontier_analysis": "7f237ed36a64ed1b19886b32a1d17f82af50c5bd",
     "preserved_scaffolds": [
       "codex/packs-absorption-scaffold",
@@ -35,7 +35,11 @@
     "second_light_baseline": "b465588384cf9cf7107f3144df1d6bf558bf3581",
     "second_light_tag": "hawking-second-light-baseline",
     "verified_is_head_and_origin_main": true,
-    "verified_main": "e2609f9452bcc9c97cfa960d6ef362567a048727"
+    "verified_main": "e2609f9452bcc9c97cfa960d6ef362567a048727",
+    "working_branch": "codex/general-frontier-gate-f",
+    "working_branch_head": "f648d6be11051792833172155da84c8504a6c598",
+    "working_branch_head_subject": "General Frontier: Gate-F transition scaffold (precheck, parents, Atlas, G0/G1, CUDA plan)",
+    "working_branch_parent_is_handoff": true
   },
   "cloud_spend": {
     "authorization_present": false,
@@ -74,8 +78,8 @@
     }
   },
   "continuous_operation_policy": {
-    "current_effective_mode": "LOCAL_ONLY (cloud blocked; one live Apple heavy experiment = G1 reproduction)",
-    "current_idle_state": "not idle - G1 reproduction actively running (pid 28670). Durable Gate-F singleton controller not yet launched; nearest idle-state reason if it drains would be WAITING_RESOURCE.",
+    "current_effective_mode": "LOCAL_ONLY (cloud blocked)",
+    "current_idle_state": "transient gap: G0 and G1 bounded reproductions just SEALED; no durable Gate-F singleton controller/auto-dispatcher exists yet, so next work (branch + durable controller + G2 complete-layer) awaits the next /goal loop tick or manual dispatch. Nearest formal enum: WAITING_HUMAN_AUTHORIZATION (durable controller not yet materialized).",
     "idle_states": [
       "NO_RUNNABLE_WORK",
       "WAITING_SOURCE",
@@ -106,14 +110,23 @@
   "current_blockers": [
     "giants source-absent: DeepSeek-V3.2-class 685B, Kimi-K2.6-class 1T, and optional DeepSeek-V4-Pro-class 1.6T are ABSENT locally (contracts/manifests exist) -> source-authority/adapter/metadata PREP ONLY, heavy runs blocked",
     "cuda budget-absent: no sealed cloud budget and no CUDA/RunPod credentials -> CUDA lane implement/CI-fixture + provisioning plan only, NO paid launch (Part 28)",
-    "Gate-F controller not yet built: the durable General-Frontier controller + immutable Gate-F program hash do not exist yet",
-    "bounded geometry winners are PROXY-only: must not be promoted without larger functional reproduction (G1+)"
+    "Gate-F durable controller not yet built: the singleton General-Frontier controller + immutable byte-stable Gate-F program hash do not exist yet (G0/G1 ran as bounded reproduction scripts, not the authoritative controller)",
+    "bounded geometry winners remain PROXY: G0+G1 reproduce the direction (larger sample, cal/val, CPU/Metal parity) but capability_parity is still False; true-residual + real Harmony activations + holdout (G3/G4) required before any WIN claim",
+    "stale on-disk lease: gravity_frontier.lease names dead pid 27566; clear it so liveness reporting is not misled"
   ],
   "frontier": {
     "baseline_functional_divergence": 0.688,
     "capability_parity": false,
     "evidence_level": "PROXY",
-    "honesty": "synthetic-activation output-divergence PROXY; capability_parity=false, small n_inputs. DIRECTIONAL geometry science, NOT a verified capability pass. Winners need larger-sample + true-residual + adversarial reproduction before any WIN claim. No Event Horizon. Second-Light 0.770-BPW artifact and these winners are NOT auto-promoted champions (Part 68).",
+    "g1_larger_reproduction_confirmation": {
+      "cal_val_separation": true,
+      "cpu_metal_parity": "green (assignment_agreement 1.0, ranking_match true, within_tol)",
+      "mlp1": "all PQ variants ~0.0053 val (statistically indistinguishable at this fidelity; A3_pq_islands nominal best); pq_doctor_lowrank prior holds",
+      "mlp2": "pq_protected_islands wins decisively (val 0.14919 vs naive_rvq 0.447, plain PQ 0.610)",
+      "status": "SEALED (GATE_F_G1_RESULT.json)",
+      "still_proxy": true
+    },
+    "honesty": "synthetic-activation output-divergence PROXY; capability_parity=false, small n_inputs. DIRECTIONAL geometry science, NOT a verified capability pass. Winners need larger-sample + true-residual + adversarial reproduction before any WIN claim. G1 reproduces the direction on a larger cal/val sample with CPU/Metal parity but remains PROXY. No Event Horizon. Second-Light 0.770-BPW artifact and these winners are NOT auto-promoted champions (Part 68).",
     "kind": "bounded per-class geometry winners (representation prior)",
     "per_tensor_class_winners": {
       "expert_mlp1_up_gate": {
@@ -151,13 +164,7 @@
     },
     "ranking_signal": "functional output divergence (lowest within budget)"
   },
-  "gate_f": {
-    "G0": "PASS (32-trial reproduces deterministically)",
-    "G1": "PASS-proxy (larger expert reproduction, calib/val split, CPU/Metal parity; mlp1 pq_islands ~0.005, mlp2 pq_islands 0.149; beats 0.688 baseline; capability_parity False)",
-    "G2_G5": "pending (complete-layer / cross-layer / short-e2e / complete artifact)",
-    "branch": "codex/general-frontier-gate-f"
-  },
-  "generated_at": "2026-07-19T02:36:25Z",
+  "generated_at": "2026-07-19T02:40:31Z",
   "goal_binding": {
     "doctrine": "One Gravity law. Many scales. Two hardware worlds. One empirical frontier. Sub-bit-first + quality + whole-artifact accounting + backend portability are non-negotiable.",
     "goal": "HAWKING GENERAL FRONTIER - CONTINUOUS HANDOFF",
@@ -166,14 +173,16 @@
   },
   "live_controller": {
     "authoritative_general_frontier_controller": null,
+    "gate_f_branch": "codex/general-frontier-gate-f",
+    "gate_f_branch_created": true,
     "generation": null,
     "lease": null,
-    "note": "No durable General-Frontier / Gate-F singleton controller (with a frozen immutable generation) exists yet. Part XIV/50: exactly ONE authoritative controller will own the next generation, and this General Frontier will own it. The live Gate-F ladder work (see live_process_truth) is running via bounded reproduction SCRIPTS (gravity_frontier_g1.py etc.), NOT the durable authoritative controller. Do not treat these as the singleton controller.",
+    "note": "No durable General-Frontier / Gate-F singleton controller (with a frozen immutable generation + byte-stable program hash) exists yet, even though the Gate-F branch/scaffold has been committed (f648d6be). Part XIV/50: exactly ONE authoritative controller will own the next generation, and this General Frontier will own it. The Gate-F ladder work (see live_process_truth) ran via bounded reproduction SCRIPTS (gravity_frontier_controller.py --max-rows, gravity_frontier_g1.py), NOT the durable authoritative controller. Do not treat those as the singleton controller.",
     "pid": null,
     "status": "none_yet_gate_f_pending"
   },
   "live_process_truth": {
-    "audited_at": "2026-07-19T02:36:25Z",
+    "audited_at": "2026-07-19T02:40:31Z",
     "classification_enum": [
       "authoritative_live",
       "completed",
@@ -192,12 +201,12 @@
       "role": "bounded G0 reproducibility re-run (max-rows 4); FINISHED; result sealed to GENERAL_FRONTIER_RESULTS/GATE_F_G0_RESULT.json (verdict G0 PASS, winners confirmed)"
     },
     "g1_reproduction_process": {
-      "classification": "authoritative_live",
+      "classification": "completed",
       "command": "tools/condense/gravity_frontier_g1.py",
       "is_general_frontier_controller": false,
       "pid": 28670,
       "pid_alive_at_audit": false,
-      "role": "G1 larger-expert reproduction (128 layer-0 experts, both mlp classes); bounded reproduction script, not the durable singleton controller"
+      "role": "G1 larger-expert reproduction (layer-0 experts, both mlp classes, cal/val split, CPU/Metal parity); FINISHED in ~157s; result sealed to GENERAL_FRONTIER_RESULTS/GATE_F_G1_RESULT.json (verdict: reproduces; still PROXY)"
     },
     "gravity_frontier_geometry_search_campaign": {
       "artifact": "reports/condense/gravity_frontier/GRAVITY_FRONTIER_GEOMETRY_RESULT.json",
@@ -209,7 +218,8 @@
       "classification": "unrelated",
       "note": "separate MoP project heavy CPU load; coexists because the PQ/geometry lane is MPS-bound"
     },
-    "one_heavy_lease_policy": "one Apple heavy experiment at a time; currently the live heavy Apple work is G1 (pid 28670). A second local heavy controller must NOT be launched (Part I/1, Part 48).",
+    "no_live_heavy_process_at_final_tick": true,
+    "one_heavy_lease_policy": "one Apple heavy experiment at a time. During this audit the live heavy count fluctuated (G0 then G1 bounded reproduction scripts started/finished); at the final tick 0 heavy processes are live and the on-disk gravity_frontier.lease is stale. A second local heavy controller must NOT be launched (Part I/1, Part 48).",
     "snapshot_note": "point-in-time audit of an ACTIVELY ADVANCING Gate-F ladder (a parallel /goal loop is executing G0->G1). Statuses move fast; classifications reflect the audited instant.",
     "stale_lease": {
       "classification": "stale",
@@ -221,7 +231,7 @@
     }
   },
   "next_exact_edits": [
-    "create dedicated branch/worktree codex/general-frontier-gate-f from verified main e2609f94; bind Generation 0 (Hawking commit, Second-Light b4655883, geometry result, GPT-OSS-120B source receipt, frozen Gate-F quality contract, exact Forge/Doctor/Metal provider commits, immutable Gate-F program hash)",
+    "create Gate-F branch [DONE - codex/general-frontier-gate-f committed f648d6be, child of e2609f94, pushed] then complete Generation-0 binding: still PENDING = frozen Gate-F quality contract lock + exact Forge/Doctor/Metal provider commits + IMMUTABLE byte-stable Gate-F program hash",
     "G0 reproduction [DONE - SEALED G0 PASS]: 32-trial result reproduced deterministically from frozen commit; identity/budget/functional-metric checks green; winners confirmed",
     "G1 larger expert reproduction [IN PROGRESS - gravity_frontier_g1.py pid 28670]: all 128 layer-0 experts, both mlp1 and mlp2 classes, larger bounded slices or complete rows, real activation probes, calibration/validation separation, CPU and Metal scientific parity",
     "adopt a stable generation identity for the Gate-F program (hash program CONTENT excluding generated_at timestamp; the current program_sha256 is not byte-stable across regenerations)",
@@ -287,9 +297,11 @@
         "status": "SEALED (verdict G0 PASS)"
       },
       "G1": {
-        "detail": "all 128 layer-0 experts, both mlp classes, larger/complete rows, real activation probes, calibration/validation separation, CPU/Metal scientific parity",
+        "detail": "layer-0 experts, both mlp classes, calibration(16)/validation(12) split, CPU/Metal parity (assignment_agreement 1.0, ranking_match true). mlp1 robust to all PQ (val ~0.0053); mlp2 pq_protected_islands wins decisively (val 0.149 vs naive_rvq 0.447, plain PQ 0.610). source_native identity controls excluded from winner selection.",
+        "honesty": "synthetic-activation functional-divergence PROXY, capability_parity False, NOT a capability pass; true-residual + real Harmony activations + holdout are the next fidelity (G3/G4).",
         "name": "larger expert reproduction",
-        "status": "IN_PROGRESS (gravity_frontier_g1.py, pid 28670 live)"
+        "result": "reports/condense/general_frontier/GENERAL_FRONTIER_RESULTS/GATE_F_G1_RESULT.json",
+        "status": "SEALED (reproduces; still PROXY)"
       },
       "G2": {
         "name": "complete layer",
@@ -335,8 +347,8 @@
   },
   "resource_state": {
     "disk_free_gb": 559.0,
-    "heavy_lease_detail": "one live heavy Apple experiment: G1 reproduction gravity_frontier_g1.py (pid 28670). The on-disk gravity_frontier.lease is STALE (names dead pid 27566). One-Apple-heavy-lease policy enforced.",
-    "heavy_leases_held": 1,
+    "heavy_lease_detail": "one-Apple-heavy-lease POLICY enforced. During the audit G0 then G1 bounded reproduction scripts ran (fluctuating live count 0/1); at the final tick 0 heavy processes are live. The on-disk gravity_frontier.lease is STALE (names dead pid 27566) and should be cleared.",
+    "heavy_leases_held_at_final_tick": 0,
     "mop_note": "separate MoP CPU load present; coexists (PQ lane MPS-bound)",
     "platform": "M3 Ultra 28-core, MPS",
     "ram_gb": 96.0,
@@ -345,6 +357,5 @@
     "thermal": "not sampled"
   },
   "schema": "hawking.general_frontier.state.v1",
-  "sha256": "add78a695100cb4f2de219245e520c7ce4470adfd58521fb2eb838b82ff559e3",
-  "updated_at": "2026-07-19T02:36:44Z"
+  "sha256": "4566aa660a28d9a6e5d118dd570662d66ecdc103b1e0b39bb452405c83208e77"
 }
