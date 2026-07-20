@@ -198,6 +198,27 @@ LADDER: dict[str, dict[str, Any]] = {
                 "-inf before the top-k, then the k weights renormalize as usual. That is a real "
                 "change to the model and only the forward may judge it.",
     },
+    "S64_gamma": {
+        "kind": "packed",
+        "keep_experts": 64,
+        "gate_up": {"family": "function_aware", "dim": 8, "k": 1024, "stages": 2, "gamma_weighted": True},
+        "down": {"family": "function_aware", "dim": 16, "k": 1024, "stages": 1,
+                 "doctor": {"dim": 16, "k": 1024, "stages": 1, "protect_frac": 0.5}},
+        "note": "S64_doctor + DATA-FREE output-aware coding on gate/up. The Lane C adversary showed "
+                "that the ~60 percent layer-0 output-error cut credited to routed-token calibration "
+                "is 83 percent recoverable from h = post_attention_layernorm.weight^2 alone "
+                "(log-corr 0.9918), so the load-bearing quantity is the LayerNorm gamma, not the "
+                "activations. gamma is ALREADY shipped native as a pass-through tensor, so this "
+                "costs ZERO additional bits and needs ZERO calibration: complete BPW is identical "
+                "to S64_doctor at 0.999769787. Applied to gate/up ONLY, because their input IS the "
+                "post-attention-layernorm output; down_proj's input is the SwiGLU intermediate and "
+                "gamma does not describe it. Measured gamma^2 anisotropy over all 94 layers: mean "
+                "0.293 decades, 45.7 percent of layers above 0.3, layer 0 an outlier at 1.843. "
+                "Expected gain is large at layer 0 and a few percent at median depth. The trade is "
+                "real and must be judged by the forward, not asserted: output-aware coding makes "
+                "WEIGHT-space error substantially worse (0.237 -> 0.806 on L0 gate) while cutting "
+                "output error, which is the correct direction only if output is what survives.",
+    },
     "S64_doctor": {
         "kind": "packed",
         "keep_experts": 64,
@@ -227,7 +248,7 @@ LADDER: dict[str, dict[str, Any]] = {
 # PASS), then the aggressive end. If A1 passes and R2 fails, the cliff is already bracketed and rows
 # 4-5 bisect it. If R2 passes, the anchors are moot and the remaining budget goes to the moonshots.
 # A truncated run therefore still yields a cliff location rather than only "everything collapsed".
-LADDER_ORDER = ["R0_parent", "S64_structural", "S64_doctor", "A1_1p0", "R2_subhalf_best", "R1_c1_corrected",
+LADDER_ORDER = ["R0_parent", "S64_structural", "S64_doctor", "S64_gamma", "A1_1p0", "R2_subhalf_best", "R1_c1_corrected",
                 "A2_0p85", "R4_highdim_vq", "R5_rownorm_strat", "R3_routing_aware"]
 
 ORGANS = ("gate", "up", "down")
@@ -375,6 +396,26 @@ def _apply_grammar(spec: dict[str, Any], books, w: np.ndarray) -> np.ndarray:
     return out
 
 
+_GAMMA: dict[int, Any] = {}
+
+
+def _gamma_importance(rd, layer: int):
+    """h = post_attention_layernorm.weight^2, mean-normalized. DATA-FREE and already shipped.
+
+    For gate/up the organ input is exactly the post-attention-LayerNorm output, so gamma^2 is the
+    diagonal of that input's second moment up to the (isotropic) normalized residual - which makes
+    it the correct per-column weight for OUTPUT error, obtainable with no calibration pass at all.
+    """
+    hit = _GAMMA.get(layer)
+    if hit is None:
+        g = rd.bf16(f"model.layers.{layer}.post_attention_layernorm.weight").astype(np.float64)
+        h = g * g
+        m = float(h.mean())
+        hit = (h / m).astype(np.float32) if m > 0 else np.ones_like(h, np.float32)
+        _GAMMA[layer] = hit
+    return hit
+
+
 def _mps_gc() -> None:
     try:
         import torch
@@ -481,13 +522,14 @@ def _pack_organ(spec: dict[str, Any], books, w: np.ndarray, seed: int) -> np.nda
         # scale-invariant decode with the closed-form optimal per-row scale substituted back in.
         # Identical artifact layout to shared_grammar plus the billed bf16 scale per row.
         wf = np.ascontiguousarray(w, np.float32)
+        imp = spec.get("_importance")
         doc = spec.get("doctor")
         if doc:
             base_bk, doc_bk = books
             return FAC.apply_doctor(base_bk, doc_bk, wf, dim=int(spec["dim"]),
                                     doctor_dim=int(doc["dim"]),
                                     protect_frac=float(doc["protect_frac"]))
-        return FAC.apply_refit(books, wf, dim=int(spec["dim"]))
+        return FAC.apply_refit(books, wf, dim=int(spec["dim"]), importance=imp)
     if fam == "shared_grammar":
         return _apply_grammar(spec, books, w)
     if fam in ("product_quant", "transform_pq"):
@@ -851,9 +893,10 @@ def lockstep_logits(fwd, variants: list[str], plan: dict[str, list[str]],
                         continue
                     if spec["family"] == "function_aware":
                         mats = [np.ascontiguousarray(m, np.float32) for m in fit_mats[grp]]
+                        imp = _gamma_importance(rd, L) if spec.get("gamma_weighted") else None
                         base = FAC.fit(mats, dim=int(spec["dim"]), k=int(spec["k"]),
                                        stages=int(spec.get("stages", 1)), seed=L * 131 + 7,
-                                       iters=4)
+                                       iters=4, importance=imp)
                         doc = spec.get("doctor")
                         books[(v, grp, cold)] = base if not doc else (
                             base, FAC.fit_doctor(
@@ -881,6 +924,8 @@ def lockstep_logits(fwd, variants: list[str], plan: dict[str, list[str]],
                     for organ in ORGANS:
                         grp = _GROUP[organ]
                         spec = specs[grp]
+                        if spec.get("gamma_weighted"):
+                            spec = dict(spec, _importance=_gamma_importance(rd, L))
                         bk = books.get((v, grp, cold))
                         w[organ] = _pack_organ(spec, bk, ex[organ], seed=L * 1000 + e)
                 for key, p, gwt in hits:
