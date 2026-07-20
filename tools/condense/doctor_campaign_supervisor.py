@@ -118,39 +118,61 @@ def _eta_line(rows_dir: Path, done, total) -> str:
     treated rows (packing) run slower than the early parent rows, so this tightens as they seal."""
     try:
         done = int(done); total = int(total)
+        remaining = total - done
+        if remaining <= 0:
+            return "ETA: done"
+        # Use the RECENT rows' pace (last 4 by mtime): the remaining rows are all the slow treated
+        # ones, so an all-row average (which includes the fast parents) badly underestimates.
+        files = sorted(rows_dir.glob("*.json"), key=lambda f: f.stat().st_mtime)
         secs = []
-        for f in rows_dir.glob("*.json"):
+        for f in files[-4:]:
             try:
-                secs.append(float(json.loads(f.read_text()).get("forward_seconds") or 0))
+                v = float(json.loads(f.read_text()).get("forward_seconds") or 0)
+                if v > 0:
+                    secs.append(v)
             except Exception:
                 pass
-        secs = [s for s in secs if s > 0]
-        remaining = total - done
-        if not secs or remaining <= 0:
-            return "ETA: computing" if remaining > 0 else "ETA: done"
+        if not secs:
+            return "ETA: computing"
         mean = sum(secs) / len(secs)
         eta = mean * remaining
         finish = time.strftime("%H:%M", time.gmtime(time.time() + eta)) + "Z"
         h, m = int(eta // 3600), int((eta % 3600) // 60)
         span = (f"{h}h {m}m" if h else f"{m}m")
-        return f"ETA ~{span} remaining (~{finish}, approx; avg {int(mean)}s/row)"
+        return f"ETA ~{span} (finish ~{finish})"
     except Exception:
         return "ETA: n/a"
 
 
+def _split(row_id: str) -> tuple[str, str]:
+    """gen_science__D4_pq_doctor -> ('gen_science', 'D4 pq_doctor')."""
+    if "__" in row_id:
+        a, b = row_id.split("__", 1)
+        return a, b.replace("_", " ", 1) if b[:1] == "D" else b
+    return row_id, ""
+
+
+def _pct(x) -> str:
+    try:
+        return f"{round(float(x) * 100)}%"
+    except Exception:
+        return "?"
+
+
 def _last_sealed(rows_dir: Path) -> str:
-    """The row that just sealed (newest checkpoint) + its result, for a per-step notification."""
+    """Clean one-line result for the row that just sealed."""
     try:
         files = sorted(rows_dir.glob("*.json"), key=lambda f: f.stat().st_mtime)
         if not files:
             return ""
         d = json.loads(files[-1].read_text())
+        prompt, cand = _split(d["row_id"])
         dv = d.get("divergence_vs_parent")
         if dv:
-            return (f"done: {d['row_id']}  symKL {dv['mean_sym_kl']} agree "
-                    f"{dv['next_token_argmax_agreement']} -> {d.get('verdict')}")
+            return (f"done: {prompt} / {cand}  ->  {d.get('verdict')}\n"
+                    f"      agree {_pct(dv['next_token_argmax_agreement'])}   KL {dv['mean_sym_kl']}")
         q = d.get("quality", {})
-        return f"done: {d['row_id']}  ppl {q.get('perplexity')} (parent ref)"
+        return f"done: {prompt} / {cand}  ppl {q.get('perplexity')}"
     except Exception:
         return ""
 
@@ -166,8 +188,8 @@ def _candidate_summary(rows_dir: Path) -> str:
         return ""
     b = cand[0]
     d = b["divergence_vs_parent"]
-    return (f"best so far {b['row_id']}: symKL {d['mean_sym_kl']} agree "
-            f"{d['next_token_argmax_agreement']} ({b.get('verdict')})")
+    prompt, c = _split(b["row_id"])
+    return f"best: {prompt} / {c}  agree {_pct(d['next_token_argmax_agreement'])}  KL {d['mean_sym_kl']}"
 
 
 def _bootout_self() -> None:
@@ -219,11 +241,9 @@ def tick() -> int:
             pass
         os.write(fd, json.dumps({"sealed_at": _now(), "seal_exit": seal.returncode, "outcome": outcome}).encode())
         os.close(fd)
-        _telegram("Hawking 120B Doctor campaign COMPLETE.\n"
-                  f"rows {done}/{total}. Conclusion sealed (seal exit {seal.returncode}).\n"
-                  f"outcome: {outcome or 'see GPT_OSS_120B_FINAL_FRONTIER_RESULT.json'}\n"
-                  f"{_candidate_summary(CAMP / 'checkpoints')}\n"
-                  "Next: operator commits/merges/tags + evaluates the 15 source-release gates before any Qwen transfer.")
+        _telegram(f"Doctor 120B  COMPLETE  {done}/{total}\n"
+                  f"conclusion: {outcome or 'sealed (see result json)'}\n"
+                  f"{_candidate_summary(CAMP / 'checkpoints')}")
         _write(SUP_STATE, {**sup_state, "runs": runs, "status": "sealed", "seal_exit": seal.returncode})
         _bootout_self()
         return 0
@@ -231,10 +251,10 @@ def tick() -> int:
     # FAULT -> controller dead but not final
     if not alive:
         if sup_state.get("fault_notified") != pid:
-            _telegram("Hawking 120B Doctor campaign FAULT.\n"
-                      f"controller pid {pid} is not alive but state is not final (rows {done}/{total}, "
-                      f"row {hb.get('row_id')}).\nNeeds a resume: python3.12 "
-                      "tools/condense/gravity_frontier_correction_wave.py detach")
+            prompt_f, cand_f = _split(hb.get("row_id", ""))
+            _telegram(f"Doctor 120B  FAULT\n"
+                      f"stopped at {done}/{total} ({prompt_f} / {cand_f})\n"
+                      "needs resume")
             _write(SUP_STATE, {**sup_state, "runs": runs, "status": "fault", "fault_notified": pid})
         else:
             _write(SUP_STATE, {**sup_state, "runs": runs, "status": "fault_known"})
@@ -245,9 +265,10 @@ def tick() -> int:
     last_ts = float(sup_state.get("last_progress_epoch", 0))
     now = time.time()
     if last_done != done or (now - last_ts) >= PROGRESS_MIN_SECONDS:
-        _telegram(f"Hawking 120B Doctor: row sealed {done}/{total}.\n"
+        prompt_now, cand_now = _split(hb.get("row_id", ""))
+        _telegram(f"Doctor 120B  {done}/{total}\n"
                   f"{_last_sealed(CAMP / 'checkpoints')}\n"
-                  f"now: {hb.get('row_id')} {hb.get('phase')}  pid {pid} alive.\n"
+                  f"next: {prompt_now} / {cand_now}\n"
                   f"{_eta_line(CAMP / 'checkpoints', done, total)}")
         sup_state = {**sup_state, "last_progress_rows": done, "last_progress_epoch": now}
     _write(SUP_STATE, {**sup_state, "runs": runs, "status": "running"})
