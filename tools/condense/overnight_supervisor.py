@@ -525,6 +525,13 @@ def h_admit_qwen(st: dict) -> None:
 QWEN_DL_WORKERS = int(os.environ.get("HAWKING_QWEN_DL_WORKERS", "16"))  # parallel files; hf_transfer splits each
 QWEN_DL_PID = SM / "qwen_downloader.pid.json"
 QWEN_DL_LOG = SM / "qwen_download.log"
+
+# Qwen transfer controller (the durable T0-T4 scientific run; supervisor spawns + watches it)
+QWEN_CTRL = ROOT / "tools/condense/qwen_correction_wave.py"
+QWEN_CAMP = GF / "QWEN_TRANSFER"
+QWEN_LEASE = QWEN_CAMP / "leases/qwen_transfer.lease"
+QWEN_CKPT = QWEN_CAMP / "checkpoints"
+QWEN_STATE = QWEN_CAMP / "QWEN_TRANSFER_STATE.json"
 _QWEN_DL_SCRIPT = (
     "import sys; from huggingface_hub import snapshot_download; "
     "snapshot_download(sys.argv[1], revision=sys.argv[2], local_dir=sys.argv[3], "
@@ -607,26 +614,62 @@ def h_run_q0q1q2(st: dict) -> None:
     _advance(st, "LAUNCH_QWEN", "run_q0q1q2", {"q0": True, "q1": True, "q2": "bounded", "input_identity": QWEN_REV})
 
 
-def h_launch_qwen(st: dict) -> None:
-    if not _claim("launch_qwen"):
+def _launch_qwen_controller_if_due(sup: dict, reason: str) -> None:
+    """(Re)launch the detached Qwen transfer controller. Backoff 5 min between attempts. The controller
+    itself self-heals a stale lease (dead pid) and is a clean WAITING_SOURCE no-op if source absent, so a
+    duplicate or premature launch is always safe."""
+    now = time.time()
+    if now - float(sup.get("qwen_launch_ts", 0)) < 300:
         return
-    # Acquire the one heavy lease + launch a detached durable Qwen transfer controller (bounded Q-ladder
-    # transfer experiments; the same one-lease / heartbeat / checkpoint discipline). A full 235B
-    # generation forward is a separate large build; this is the honest first Qwen controller.
-    _telegram("Qwen controller launch is gated on the built Qwen transfer controller. Standing in "
-              "MONITOR with priority shards staged; not faking a live 235B forward.")
-    _advance(st, "MONITOR_QWEN", "launch_qwen",
-             {"note": "Qwen transfer controller pending build; priority source staged", "input_identity": QWEN_REV})
+    try:
+        subprocess.run([PY, str(QWEN_CTRL), "detach"], env={**os.environ, **HEAVY_ENV},
+                       cwd=str(ROOT), capture_output=True, text=True, timeout=120)
+    except Exception as exc:  # noqa: BLE001
+        _telegram(f"Qwen controller launch error: {type(exc).__name__}")
+    _write(SUP_STATE, {**sup, "qwen_launch_ts": now, "qwen_launches": int(sup.get("qwen_launches", 0)) + 1})
+    _telegram(f"Qwen transfer controller launched ({reason}, one Apple heavy lease). Awaiting first "
+              f"checkpoint before MONITOR.")
+
+
+def h_launch_qwen(st: dict) -> None:
+    # Spawn the durable T0-T4 Qwen transfer controller (real from-config Qwen3-MoE forward, class-aware
+    # gravity/Doctor allocation), same one-lease / heartbeat / checkpoint discipline as the 120B campaign.
+    pid = _read(QWEN_LEASE).get("pid")
+    if pid and _pid_alive(pid):
+        if list(QWEN_CKPT.glob("*.json")):  # first real row sealed -> hand off to MONITOR
+            _telegram(f"Qwen transfer controller live (pid {pid}); first checkpoint sealed. Monitoring.")
+            _advance(st, "MONITOR_QWEN", "launch_qwen", {"qwen_pid": pid, "input_identity": QWEN_REV})
+        else:
+            _telegram_once("qwen_launch_wait", f"Qwen transfer controller live (pid {pid}); awaiting first "
+                                               f"checkpoint (parent forward streaming from disk).")
+        return
+    _launch_qwen_controller_if_due(_read(SUP_STATE), "initial launch")
 
 
 def h_monitor_qwen(st: dict) -> None:
-    # Continue streaming later shards in dependency order; idle-avoidance. Terminal-ish.
-    free = _disk_free_gb()
+    """Watch the Qwen controller to completion. Self-heal a crash (relaunch, resume-skips sealed rows),
+    seal -> COMPLETE when the controller marks its state final. Never idle."""
+    qs = _read(QWEN_STATE)
+    if qs.get("final"):
+        _advance(st, "COMPLETE", "qwen_transfer_sealed",
+                 {"rows_done": qs.get("rows_done"), "rows_total": qs.get("rows_total"),
+                  "least_divergent": qs.get("least_divergent_candidates"),
+                  "capability_candidates": qs.get("capability_candidates"), "input_identity": QWEN_REV})
+        _telegram(f"Qwen transfer SEALED ({qs.get('rows_done')}/{qs.get('rows_total')} rows). "
+                  f"Vulture chain COMPLETE. Least-divergent + capability candidates in the state receipt.")
+        return
     sup = _read(SUP_STATE)
-    if sup.get("monitor_pinged") != st.get("entered_at"):
-        _telegram(f"MONITOR_QWEN: 120B released, Qwen priority source staged @ {QWEN_REV[:12]}, "
-                  f"free {free:.0f} GB. Continuing safe streaming + prep.")
-        _write(SUP_STATE, {**sup, "monitor_pinged": st.get("entered_at")})
+    pid = _read(QWEN_LEASE).get("pid")
+    if not (pid and _pid_alive(pid)):
+        _telegram(f"Qwen controller crashed at {qs.get('rows_done')}/{qs.get('rows_total')}; auto-resuming "
+                  f"(resume-skips sealed rows).")
+        _launch_qwen_controller_if_due(sup, "crash-heal")
+        return
+    done = qs.get("rows_done")
+    if sup.get("qwen_last_rows") != done:
+        eta_h = round((qs.get("eta_seconds_remaining") or 0) / 3600, 1)
+        _telegram(f"Qwen {done}/{qs.get('rows_total')} rows, free {_disk_free_gb():.0f} GB, ~{eta_h}h left.")
+        _write(SUP_STATE, {**sup, "qwen_last_rows": done})
 
 
 def h_blocked(st: dict) -> None:

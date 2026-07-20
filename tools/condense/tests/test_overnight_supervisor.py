@@ -64,6 +64,10 @@ def _configure(mod, monkeypatch, root):
         "QWEN_META": QWEN_DIR / "_meta",
         "QWEN_DL_PID": SM / "qwen_downloader.pid.json",
         "QWEN_DL_LOG": SM / "qwen_download.log",
+        "QWEN_CAMP": GF / "QWEN_TRANSFER",
+        "QWEN_LEASE": GF / "QWEN_TRANSFER/leases/qwen_transfer.lease",
+        "QWEN_CKPT": GF / "QWEN_TRANSFER/checkpoints",
+        "QWEN_STATE": GF / "QWEN_TRANSFER/QWEN_TRANSFER_STATE.json",
     }
     for k, v in vals.items():
         monkeypatch.setattr(mod, k, v)
@@ -365,8 +369,7 @@ def test_09_duplicate_launch_prevention(tmp_path, monkeypatch):
     # every fully claim-guarded handler no-ops when its claim is already present
     guards = [("seal_conclusion", "SEAL_120B_CONCLUSION", mod.h_seal),
               ("vulture_harvest", "VULTURE_HARVEST", mod.h_vulture_harvest),
-              ("run_q0q1q2", "RUN_QWEN_Q0_Q1_Q2", mod.h_run_q0q1q2),
-              ("launch_qwen", "LAUNCH_QWEN", mod.h_launch_qwen)]
+              ("run_q0q1q2", "RUN_QWEN_Q0_Q1_Q2", mod.h_run_q0q1q2)]
     for claim, state, handler in guards:
         assert mod._claim(claim) is True         # a prior tick already holds it
         mod._write(ctx.SM_STATE, {"state": state, "entered_at": mod._now(), "input_identity": None})
@@ -396,7 +399,10 @@ def test_11_successful_qwen_ignition_path(tmp_path, monkeypatch):
     ctx.QWEN_DIR.mkdir(parents=True, exist_ok=True)
     mod._write(ctx.QWEN_META / "model.safetensors.index.json", {"weight_map": {"a": plan_shard}})
     (ctx.QWEN_DIR / plan_shard).write_bytes(b"qwen-bytes")  # full source present -> transfer completes
-    monkeypatch.setattr(mod, "_pid_alive", lambda pid: False)
+    # A live controller with a first checkpoint sealed: LAUNCH hands off to MONITOR.
+    monkeypatch.setattr(mod, "_pid_alive", lambda pid: pid == 4242)
+    mod._write(ctx.QWEN_LEASE, {"pid": 4242, "owner": "com.hawking.qwen_transfer"})
+    mod._write(ctx.QWEN_CKPT / "reason_0__T0_parent.json", {"row_id": "reason_0__T0_parent"})
     mod._write(ctx.SM_STATE, {"state": "TRANSFER_QWEN_PRIORITY", "entered_at": mod._now(),
                               "input_identity": mod.QWEN_REV})
 
@@ -415,6 +421,40 @@ def test_11_successful_qwen_ignition_path(tmp_path, monkeypatch):
     assert {"transfer_qwen_priority.json", "run_q0q1q2.json", "launch_qwen.json"} <= recs
     assert ctx.tg, "no Telegram notifications emitted on the ignition path"
     assert any("Qwen" in m for m in ctx.tg)
+
+
+# -- 12. Qwen controller self-heal + seal -> COMPLETE ---------------------------------------
+def test_12_qwen_controller_self_heal_and_seal(tmp_path, monkeypatch):
+    mod = osup
+    ctx = _configure(mod, monkeypatch, tmp_path)
+
+    # (a) LAUNCH with no live controller -> spawns the detach, stays LAUNCH_QWEN (awaiting first checkpoint)
+    monkeypatch.setattr(mod, "_pid_alive", lambda pid: False)
+    mod._write(ctx.SM_STATE, {"state": "LAUNCH_QWEN", "entered_at": mod._now(), "input_identity": None})
+    mod.h_launch_qwen(mod._read(ctx.SM_STATE))
+    assert mod._read(ctx.SM_STATE)["state"] == "LAUNCH_QWEN"
+    assert any("qwen_correction_wave.py" in " ".join(c) and "detach" in c for c in ctx.calls), \
+        "controller detach not spawned"
+
+    # (b) MONITOR with a dead controller pid + not-final state -> auto-resume (relaunch)
+    mod._write(ctx.SM_STATE, {"state": "MONITOR_QWEN", "entered_at": mod._now(), "input_identity": None})
+    mod._write(ctx.QWEN_LEASE, {"pid": 999})
+    mod._write(ctx.QWEN_STATE, {"final": False, "rows_done": 3, "rows_total": 60})
+    mod._write(ctx.SUP_STATE, {})  # clear the launch backoff so the heal fires
+    ctx.calls.clear()
+    mod.h_monitor_qwen(mod._read(ctx.SM_STATE))
+    assert mod._read(ctx.SM_STATE)["state"] == "MONITOR_QWEN"
+    assert any("qwen_correction_wave.py" in " ".join(c) for c in ctx.calls), "crash not healed"
+    assert any("crashed" in m and "auto-resuming" in m for m in ctx.tg)
+
+    # (c) MONITOR with a final state -> COMPLETE
+    mod._write(ctx.QWEN_STATE, {"final": True, "rows_done": 60, "rows_total": 60,
+                                "least_divergent_candidates": [{"row_id": "x"}],
+                                "capability_candidates": []})
+    mod.h_monitor_qwen(mod._read(ctx.SM_STATE))
+    assert mod._read(ctx.SM_STATE)["state"] == "COMPLETE"
+    assert (ctx.RECEIPTS / "qwen_transfer_sealed.json").exists()
+    assert any("SEALED" in m and "COMPLETE" in m for m in ctx.tg)
 
 
 # -- CRITICAL: a successful release removes ONLY the seven shards ----------------------------
