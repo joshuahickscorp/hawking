@@ -198,6 +198,51 @@ LADDER: dict[str, dict[str, Any]] = {
                 "-inf before the top-k, then the k weights renormalize as usual. That is a real "
                 "change to the model and only the forward may judge it.",
     },
+    "D1_route_only": {
+        "kind": "packed",
+        "diagnostic_only": True,
+        "keep_experts": 64,
+        "gate_up": {"family": "passthrough"},
+        "down": {"family": "passthrough"},
+        "note": "CAUSAL CONTROL for the S1 decomposition, isolating ROUTING loss. Every expert is "
+                "served at source bf16 (perfect reconstruction) while the router is masked to the "
+                "SAME 64-expert survivor set S64_structural uses. Whatever quality this loses is "
+                "caused by omitted routing mass and nothing else. DIAGNOSTIC ONLY: its experts are "
+                "uncompressed, so its complete BPW is 16 and it is permanently ineligible for "
+                "promotion. It exists to answer a causal question, not to be a candidate.",
+    },
+    "D2_recon_only": {
+        "kind": "packed",
+        "diagnostic_only": True,
+        "gate_up": {"family": "function_aware", "dim": 8, "k": 1024, "stages": 2},
+        "down": {"family": "function_aware", "dim": 16, "k": 1024, "stages": 1},
+        "note": "CAUSAL CONTROL for the S1 decomposition, isolating RECONSTRUCTION loss. The full "
+                "128-expert router runs UNMASKED (no routing mass is lost at all) while every "
+                "expert is packed at the exact rates S64_structural gives its survivors. Whatever "
+                "quality this loses is caused by reconstruction error and nothing else. "
+                "DIAGNOSTIC ONLY: coding 128 experts at the survivor rate costs about 1.9 complete "
+                "BPW, which is ILLEGAL under the 1/1 ceiling. It is permanently ineligible for "
+                "promotion and is never reported as a candidate. Measuring a causal control above "
+                "the ceiling is not the same as proposing an artifact above the ceiling, and this "
+                "one is fenced so it can never become one.",
+    },
+    "S2A_adaptive_k": {
+        "kind": "packed",
+        "adaptive_program": "QWEN235B_ADAPTIVE_EXPERT_PROGRAM.json",
+        "note": "GENERATION S2A. Per-layer expert inventory K_l and per-layer organ rungs chosen by "
+                "an EXACT global byte auction (qwen_adaptive_k), not a hard-coded 64. The auction "
+                "minimises sum_l [(1 - C_l(K)) * MISS_COST + C_l(K) * recon_err(rate)] subject to "
+                "the complete <= 1/1 ceiling, solved as a separable knapsack by Lagrangian "
+                "bisection - exact, not greedy. MISS_COST = 1.0 is a MEASUREMENT, not a guess: "
+                "Lane E showed an omitted expert is not reconstructible from survivors (best "
+                "single survivor median held-out relative error 0.885-0.995, i.e. the trivial zero "
+                "predictor). Result: K spans 48..96 with mean 65.4 (7 layers at 48, 77 at 64, 5 at "
+                "80, 5 at 96), and 84 of 94 layers buy a RICHER down rung (1.25) than S1 used "
+                "(0.625), funded by cheaper rungs on the remaining 10. Complete 0.996853694 BPW "
+                "(exact 915445149/918334510), legal. Predicted mean layer error 0.46213 vs 0.521819 "
+                "for uniform-64 under the identical predictor and ledger. That predictor orders "
+                "candidates; it does not select. Only this forward does.",
+    },
     "S64_gamma": {
         "kind": "packed",
         "keep_experts": 64,
@@ -248,7 +293,8 @@ LADDER: dict[str, dict[str, Any]] = {
 # PASS), then the aggressive end. If A1 passes and R2 fails, the cliff is already bracketed and rows
 # 4-5 bisect it. If R2 passes, the anchors are moot and the remaining budget goes to the moonshots.
 # A truncated run therefore still yields a cliff location rather than only "everything collapsed".
-LADDER_ORDER = ["R0_parent", "S64_structural", "S64_doctor", "S64_gamma", "A1_1p0", "R2_subhalf_best", "R1_c1_corrected",
+LADDER_ORDER = ["R0_parent", "S64_structural", "S64_doctor", "D1_route_only",
+                "D2_recon_only", "S2A_adaptive_k", "S64_gamma", "A1_1p0", "R2_subhalf_best", "R1_c1_corrected",
                 "A2_0p85", "R4_highdim_vq", "R5_rownorm_strat", "R3_routing_aware"]
 
 ORGANS = ("gate", "up", "down")
@@ -426,6 +472,22 @@ def _mps_gc() -> None:
 
 
 # ── structural survivor sets (Lane D) ─────────────────────────────────────────────────────────
+_ADAPTIVE: dict[str, dict[int, dict]] = {}
+
+
+def _adaptive_program(cand: str) -> dict[int, dict] | None:
+    """Per-layer {K, gate_rung, down_rung} for a candidate driven by the byte auction."""
+    path = LADDER[cand].get("adaptive_program")
+    if not path:
+        return None
+    hit = _ADAPTIVE.get(cand)
+    if hit is None:
+        doc = json.loads((ROOT / path).read_text())
+        hit = {int(r["layer"]): r for r in doc["per_layer"]}
+        _ADAPTIVE[cand] = hit
+    return hit
+
+
 _SURV_CACHE: dict[tuple[str, int], frozenset] = {}
 _ROUTING_DOC: dict[str, Any] = {}
 
@@ -450,7 +512,8 @@ def survivor_set(cand: str, layer: int, n_experts: int) -> frozenset | None:
     Falls back to the hottest-by-index stand-in ONLY if no calibration is on disk, and the receipt
     records which source was used - an allocation fitted on an absent calibration is not evidence.
     """
-    keep = LADDER[cand].get("keep_experts")
+    prog = _adaptive_program(cand)
+    keep = prog[layer]["K"] if prog else LADDER[cand].get("keep_experts")
     if not keep or int(keep) >= n_experts:
         return None
     key = (cand, layer)
@@ -508,6 +571,11 @@ def _specs_for(cand: str, layer: int, expert: int,
                n_experts: int) -> tuple[dict[str, dict[str, Any]], bool]:
     """Resolve the (hot|cold) spec for each organ group of one expert under one candidate."""
     c = LADDER[cand]
+    prog = _adaptive_program(cand)
+    if prog is not None:
+        row = prog[layer]
+        return {"gate_up": dict(SP.GATE_RUNGS[row["gate_rung"]], family="function_aware"),
+                "down": dict(SP.DOWN_RUNGS[row["down_rung"]], family="function_aware")}, False
     cold_frac = float(c.get("cold_frac", 0.0))
     cold = bool(cold_frac > 0 and expert in _cold_experts(layer, n_experts, cold_frac))
     if cold:
@@ -518,6 +586,8 @@ def _specs_for(cand: str, layer: int, expert: int,
 
 def _pack_organ(spec: dict[str, Any], books, w: np.ndarray, seed: int) -> np.ndarray:
     fam = spec["family"]
+    if fam == "passthrough":
+        return np.ascontiguousarray(w, np.float32)
     if fam == "function_aware":
         # scale-invariant decode with the closed-form optimal per-row scale substituted back in.
         # Identical artifact layout to shared_grammar plus the billed bf16 scale per row.
@@ -576,6 +646,26 @@ def _ladder_bpw(inv, cand: str) -> dict[str, Any]:
     c = LADDER[cand]
     if c["kind"] == "parent":
         return {"whole_model_bpw": 16.0, "scope": "bf16 source parent", "organ_bpw": {}}
+    if c.get("diagnostic_only"):
+        if c["gate_up"].get("family") == "passthrough":
+            return {"whole_model_bpw": 16.0, "scope": "DIAGNOSTIC: bf16 experts, masked router",
+                    "legal_under_one_bit_ceiling": False, "promotable": False, "organ_bpw": {}}
+        led = SP.ledger(inv, 128, c["gate_up"], c["down"], None)
+        return {"whole_model_bpw": led["complete_bpw"],
+                "legal_under_one_bit_ceiling": led["legal_under_one_bit_ceiling"],
+                "promotable": False,
+                "scope": "DIAGNOSTIC: all 128 experts at the survivor rate, ILLEGAL as an artifact",
+                "organ_bpw": {}}
+    if c.get("adaptive_program"):
+        doc = json.loads((ROOT / c["adaptive_program"]).read_text())
+        led = doc["ledger"]
+        return {"whole_model_bpw": led["complete_bpw"],
+                "complete_bpw_exact": led["complete_bpw_exact"],
+                "legal_under_one_bit_ceiling": led["legal_under_one_bit_ceiling"],
+                "complete_bytes": math.ceil(led["complete_bits"] / 8),
+                "K_histogram": doc["K_histogram"], "rung_histogram": doc["rung_histogram"],
+                "predicted_mean_layer_error": led["predicted_mean_layer_error"],
+                "scope": "complete artifact, per-layer adaptive inventory", "organ_bpw": {}}
     if c.get("keep_experts"):
         # Structural candidates are billed by the omission-aware ledger: omitted expert tensors
         # contribute ZERO payload bits, the codebook amortizes over SURVIVORS only (a real cost of
@@ -887,7 +977,7 @@ def lockstep_logits(fwd, variants: list[str], plan: dict[str, list[str]],
                 for cold in (False, True):
                     spec = (LADDER[v].get(f"cold_{grp}") if cold else LADDER[v].get(grp))
                     if spec is None or spec.get("family") not in ("shared_grammar",
-                                                                  "function_aware"):
+                                                                  "function_aware"):  # noqa: E501
                         continue
                     if cold and not LADDER[v].get("cold_frac"):
                         continue
@@ -1068,8 +1158,14 @@ def _run_inner(fwd, max_rows, candidates, max_layers, fit_experts) -> int:
             div = _divergence(parent, lg)
             ok, verdict = _verdict(div)
             rec["divergence_vs_parent"] = div
-            rec["capability_pass"] = bool(ok)
-            rec["verdict"] = verdict
+            diag = bool(LADDER[cand].get("diagnostic_only"))
+            rec["capability_pass"] = bool(ok) and not diag
+            rec["verdict"] = ("CAUSAL_CONTROL_not_a_candidate" if diag else verdict)
+            if diag:
+                rec["diagnostic_only"] = True
+                rec["promotion_blocked_reason"] = (
+                    "causal control for the S1 failure decomposition; its byte cost is not a legal "
+                    "artifact and it may never be promoted regardless of measured quality")
         else:
             rec["verdict"] = "parent_reference"
         rec["honesty"] = ("REAL parent-vs-packed Qwen3-MoE forward with expert_hook substitution; "
