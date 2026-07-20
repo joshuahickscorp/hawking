@@ -42,8 +42,11 @@ HONESTY, non-negotiable and enforced by the report this file writes:
     survivors (MISS_COST = 1.0). Adding an expert back also perturbs the top-k renormalisation of
     the other experts of that token; that second-order term is NOT modelled and is declared in the
     report as a first-order approximation.
-  * The shared codebook is fitted here on a 2-expert cluster, not on all 64 survivors, while the
-    codebook bytes are charged amortised over 64 exactly as the ledger does. Declared, not hidden.
+  * The shared codebook is fitted here PER EXPERT (on that expert's own gate+up pair, and on its
+    own down tensor) rather than on all 64 survivors of the layer, while the codebook bytes are
+    charged amortised over 64 exactly as the deployed ledger does. This flatters every coded arm
+    equally, so the RANKING is the deliverable and the absolute errors are optimistic. Declared,
+    not hidden.
   * Every bit is charged with the existing exact ledger (qwen_subhalfbit_search.expert_bits,
     qwen_function_aware_codec.doctor_bits). Nothing here is charged approximately.
 """
@@ -72,9 +75,10 @@ import qwen_structural_plan as SP  # noqa: E402
 import qwen_subhalfbit_search as SHB  # noqa: E402
 
 SCHEMA = "hawking.gravity.doctor_gen2.v1"
+_ROOT = Path(_HERE).parent.parent          # repo root, so inputs resolve from any cwd
 REPORT = Path("reports/subbit_reset/S3C_DOCTOR_GEN2.json")
-S2C_REPORT = Path("reports/subbit_reset/S2C_ROUTER_CAPACITY.json")
-ROUTING = Path("reports/subbit_reset/QWEN3_235B_ROUTING_CALIBRATION_1200.json")
+S2C_REPORT = _ROOT / "reports/subbit_reset/S2C_ROUTER_DISTILL.json"
+ROUTING = _ROOT / "reports/subbit_reset/QWEN3_235B_ROUTING_CALIBRATION_1200.json"
 CACHE = Path(os.environ.get("HAWKING_SCRATCH", "/tmp")) / "qwen_doctor_gen2_acts.npz"
 
 # The S64_doctor artifact's own spec (reports/.../checkpoints/*__S64_doctor.json).
@@ -83,6 +87,7 @@ GATE_BASE, GATE_UP_RUNG = "2.5", "5.0"
 DOWN_BASE, DOWN_UP_RUNG = "0.625", "1.25"
 DOCTOR = {"dim": 16, "k": 1024, "stages": 1, "protect_frac": 0.5}
 LAYER = 46                      # the layer every sealed Doctor number in this campaign is from
+MIN_TOKENS = 800                # ~8 frozen segments, so the BY-PROMPT fit/score split is possible
 MISS_COST = 1.0                 # SEALED, Lane E: an omitted expert is not reconstructible
 
 
@@ -137,6 +142,40 @@ def doctor_arm(w: np.ndarray, base: np.ndarray, *, h: np.ndarray | None, select_
 
 
 # ── the auction ranking ───────────────────────────────────────────────────────────────────────
+def router_capacity_e() -> dict[str, Any]:
+    """(e) router capacity, READ from the sealed S2C report. Never estimated.
+
+    S2C's unit is the MEDIAN RELATIVE error of the whole MoE output against the 128-expert
+    teacher; this stage's auction unit is ABSOLUTE squared output error of one expert's weighted
+    contribution. They are not interconvertible, so (e) is reported ALONGSIDE the auction with its
+    own numbers rather than ranked inside it. Its sign, however, is decisive on its own.
+    """
+    if not S2C_REPORT.is_file():
+        return {"present": False, "source": str(S2C_REPORT), "note": "ABSENT - not estimated"}
+    d = json.loads(S2C_REPORT.read_text())
+    arms = []
+    for lay in d.get("layers", []):
+        base = lay["arms"]["masked"]["holdout_median_rel_err"]
+        for name, v in lay["arms"].items():
+            if name == "masked":
+                continue
+            arms.append({"layer": lay["layer"], "arm": name,
+                         "extra_bits_whole_model": v.get("extra_bits"),
+                         "masked_holdout_rel_err": base,
+                         "holdout_delta_vs_masked": v.get("holdout_delta_vs_masked"),
+                         "beats_masked_holdout": v.get("beats_masked_holdout")})
+    positive = [a for a in arms if a["beats_masked_holdout"] and (a["extra_bits_whole_model"] or 0) > 0]
+    return {"present": True, "source": str(S2C_REPORT), "verdict": d.get("verdict"), "arms": arms,
+            "any_paid_arm_beats_masking": bool(positive),
+            "unit": "median relative error of the whole MoE output vs the 128-expert teacher",
+            "note": "NOT in this auction's unit and therefore not ranked inside it. S2C's sealed "
+                    "verdict is NEGATIVE - no trained router student beats plain masking on "
+                    "held-out token ids at layer 0, and the single layer-46 win (bias, "
+                    "-0.0067 relative error for 96256 whole-model bits) is unreplicated and of "
+                    "the opposite sign to layer 0. Router capacity therefore cannot outrank a "
+                    "treatment with positive measured utility per bit."}
+
+
 def rank(entries: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Rank competing uses of the same marginal bits by output-error reduction PER BIT.
 
@@ -154,7 +193,7 @@ def rank(entries: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
 
 # ── activation capture (real weights, truncated forward) ──────────────────────────────────────
-def capture(layer: int = LAYER, min_tokens: int = 96, out: Path = CACHE,
+def capture(layer: int = LAYER, min_tokens: int = MIN_TOKENS, out: Path = CACHE,
             max_layers: int | None = None, progress: bool = True) -> dict[str, Any]:
     """Run the real forward to `layer` and cache that layer's expert-input activations + routing.
 
@@ -172,6 +211,11 @@ def capture(layer: int = LAYER, min_tokens: int = 96, out: Path = CACHE,
     tk = Tokenizer.from_file(str(DEFAULT_META / "tokenizer.json"))
     corpus = CC.build(min_tokens=min_tokens, tokenizer=tk)
     prompts = corpus["prompts"]
+    # The fit/score split is BY PROMPT, so a corpus of one prompt cannot be split at all. Fail here,
+    # at capture time, rather than after a 5-minute forward.
+    assert len(prompts) >= 4, (
+        f"corpus has {len(prompts)} prompt(s); the prompt-disjoint fit/score split needs >= 4. "
+        f"raise --tokens (each frozen segment is ~100 tokens)")
     lens = [len(p["ids"]) for p in prompts]
     owner = np.concatenate([np.full(n, i, np.int32) for i, n in enumerate(lens)])
     xs = [r.bf16_rows("model.embed_tokens.weight", list(p["ids"])) for p in prompts]
@@ -396,15 +440,13 @@ def measure(cache: Path = CACHE, n_survivors: int = 3, progress: bool = True) ->
                         "bits": b_expert, "delta_sq_err": marg["delta_sq_err"]})
     ranked = rank(entries)
 
-    s2c = json.loads(S2C_REPORT.read_text()) if S2C_REPORT.is_file() else None
     return {"layer": layer, "survivor_count": len(surv), "marginal_expert": marg,
             "per_expert": per_expert, "auction": ranked,
             "bits": {"doctor_per_expert": b_doc, "gate_up_rung_up_per_expert": b_gate,
                      "down_rung_up_per_expert": b_down, "one_expert_per_layer": b_expert},
             "split": {"n_fit_tokens": int(len(fit_t)), "n_score_tokens": int(len(score_t)),
                       "prompt_disjoint": True},
-            "router_capacity_e": (s2c if s2c is None else {"source": str(S2C_REPORT),
-                                                           "present": True})}
+            "router_capacity_e": router_capacity_e()}
 
 
 # ── report ────────────────────────────────────────────────────────────────────────────────────
@@ -461,6 +503,11 @@ def build_report(m: dict[str, Any]) -> dict[str, Any]:
             "doctor_utility_per_bit": best_doc["utility_per_bit"],
             "beaten_by": [e["id"] for e in losers],
             "doctor_keeps_its_slot": doctor_keeps_slot,
+            "router_capacity_e": {
+                "in_auction_unit": False,
+                "any_paid_arm_beats_masking":
+                    m["router_capacity_e"].get("any_paid_arm_beats_masking"),
+                "source_verdict": (m["router_capacity_e"].get("verdict") or {}).get("result")},
             "gen2_beats_gen1": bool(best_doc["id"] != "a_doctor_gen1" and
                                     best_doc["utility_per_bit"] > gen1["utility_per_bit"]),
         },
@@ -469,13 +516,18 @@ def build_report(m: dict[str, Any]) -> dict[str, Any]:
             "Measured at ONE layer (46) on a sample of survivor experts, not the whole model.",
             "(b) uses the SEALED Lane E MISS_COST=1.0; the top-k renormalisation perturbation from "
             "restoring an expert is a second-order term that is NOT modelled.",
-            "The shared codebook is fitted on a 2-expert cluster while its bytes are charged "
-            "amortised over 64 survivors, exactly as the ledger does.",
+            "The shared codebook is fitted PER EXPERT while its bytes are charged amortised over "
+            "64 survivors, exactly as the deployed ledger does; every coded arm is flattered "
+            "equally, so the ranking is the deliverable and the absolute errors are optimistic.",
             "Codebooks, importance vectors and protected-row choices come from the FIT prompts; "
             "every reported number is measured on the disjoint SCORE prompts.",
             f"(b) is measured on only {m['marginal_expert'].get('n_score_tokens', 0)} score tokens "
             "- the marginal expert is by construction the coldest one, so its sample is the "
             "smallest in the table and its utility is the least precise number here.",
+            "(e) router capacity is READ from the sealed S2C report, not re-measured. Its unit "
+            "(median relative error of the whole MoE output) is NOT this auction's unit "
+            "(absolute squared output error of one expert's weighted contribution), so it is "
+            "reported alongside the ranking rather than inside it.",
         ],
     }
     rep["sha256"] = hashlib.sha256(
@@ -525,6 +577,15 @@ def selftest() -> dict[str, Any]:
         return float((((w - base) ** 2)[keep] @ h).sum())
     assert left(sel_out) < left(sel_rel) * 0.1, (left(sel_out), left(sel_rel))
 
+    # 3b. (e) router capacity must be READ from S2C, never estimated, and the path must resolve.
+    #     The sealed S2C artifact is IN this repo, so a mistyped path is a silent ABSENT and must
+    #     fail loudly here rather than quietly dropping (e) out of the auction.
+    e5 = router_capacity_e()
+    assert e5["present"], f"(e) unreadable: {S2C_REPORT} - a wrong path is not an absent stage"
+    assert e5["arms"] and "verdict" in e5, e5
+    l0 = [a for a in e5["arms"] if a["layer"] == 0 and (a["extra_bits_whole_model"] or 0) > 0]
+    assert l0 and not any(a["beats_masked_holdout"] for a in l0), l0
+
     # 4. The auction ranks by utility PER BIT, not by raw delta.
     r = rank([{"id": "cheap", "bits": 10, "delta_sq_err": 5.0},
               {"id": "huge", "bits": 1_000_000, "delta_sq_err": 100.0},
@@ -571,7 +632,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--capture", action="store_true")
     ap.add_argument("--run", action="store_true")
     ap.add_argument("--layer", type=int, default=LAYER)
-    ap.add_argument("--tokens", type=int, default=96)
+    ap.add_argument("--tokens", type=int, default=MIN_TOKENS)
     ap.add_argument("--max-layers", type=int, default=0)
     ap.add_argument("--experts", type=int, default=3)
     ap.add_argument("--cache", default=str(CACHE))

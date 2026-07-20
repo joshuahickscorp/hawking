@@ -970,7 +970,13 @@ def lockstep_logits(fwd, variants: list[str], plan: dict[str, list[str]],
                 m["gate_up"] += [ex["gate"], ex["up"]]
                 m["down"].append(ex["down"])
             return m
+        # Two candidates that share an organ spec AND the same fit sample produce the SAME
+        # codebook. The S1 pass proved this is not hypothetical: S64_structural and S64_doctor
+        # carry identical gate/up specs, so that run fitted and packed gate and up twice for
+        # nothing. Memoize on (organ group, exact spec, fit sample) and the duplicate work
+        # disappears without changing a single shipped index.
         books: dict[tuple[str, str, bool], Any] = {}
+        _book_memo: dict[tuple, Any] = {}
         for v in packed_vars:
             fit_mats = _mats(fit_by_var[v])
             for grp in ("gate_up", "down"):
@@ -980,6 +986,11 @@ def lockstep_logits(fwd, variants: list[str], plan: dict[str, list[str]],
                                                                   "function_aware"):  # noqa: E501
                         continue
                     if cold and not LADDER[v].get("cold_frac"):
+                        continue
+                    memo_key = (grp, json.dumps(spec, sort_keys=True),
+                                tuple(fit_by_var[v]), bool(cold))
+                    if memo_key in _book_memo:
+                        books[(v, grp, cold)] = _book_memo[memo_key]
                         continue
                     if spec["family"] == "function_aware":
                         mats = [np.ascontiguousarray(m, np.float32) for m in fit_mats[grp]]
@@ -997,6 +1008,7 @@ def lockstep_logits(fwd, variants: list[str], plan: dict[str, list[str]],
                                 iters=4))
                     else:
                         books[(v, grp, cold)] = _fit_grammar(spec, fit_mats[grp], seed=L * 131 + 7)
+                    _book_memo[memo_key] = books[(v, grp, cold)]
 
         # expert OUTER, candidate INNER
         _beat("experts", L, n_layers, 0, rows_total, cache)
@@ -1005,6 +1017,7 @@ def lockstep_logits(fwd, variants: list[str], plan: dict[str, list[str]],
             if ex is None:
                 ex = _read_expert(rd, L, e)
                 _cache_put(cache, (L, e), ex)
+            pack_memo: dict[tuple, Any] = {}
             for v, hits in need[e].items():
                 if LADDER[v]["kind"] == "parent":
                     w = ex
@@ -1017,12 +1030,21 @@ def lockstep_logits(fwd, variants: list[str], plan: dict[str, list[str]],
                         if spec.get("gamma_weighted"):
                             spec = dict(spec, _importance=_gamma_importance(rd, L))
                         bk = books.get((v, grp, cold))
-                        w[organ] = _pack_organ(spec, bk, ex[organ], seed=L * 1000 + e)
+                        # Identical spec + identical codebook object => identical decoded tensor.
+                        # id(bk) is safe as a key because the memo lives and dies inside this
+                        # expert's scope, so a book object cannot be freed and its id reused.
+                        pk = (organ, json.dumps({k: vv for k, vv in spec.items()
+                                                 if k != "_importance"}, sort_keys=True),
+                              id(bk), bool(spec.get("gamma_weighted")))
+                        if pk not in pack_memo:
+                            pack_memo[pk] = _pack_organ(spec, bk, ex[organ], seed=L * 1000 + e)
+                        w[organ] = pack_memo[pk]
                 for key, p, gwt in hits:
                     a = Q.swiglu(w["gate"] @ hs[key][p], w["up"] @ hs[key][p])
                     outs[key][p] += gwt * (w["down"] @ a)
                 if LADDER[v]["kind"] == "packed":
                     del w
+            del pack_memo
             _mps_gc()
 
         for key in states:

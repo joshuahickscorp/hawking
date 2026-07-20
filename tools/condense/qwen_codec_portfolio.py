@@ -240,6 +240,17 @@ def measure_cell(mats: list[np.ndarray], organ: str, gamma: np.ndarray | None) -
     return out
 
 
+def fixed_rule_mode(organ: str) -> str:
+    """THE ZERO-MODE-BIT BASELINE, and the strictest falsifier of the whole selector.
+
+    "gamma-weighted VQ on gate/up, incumbent VQ on down_proj" is a STRUCTURAL rule: organ class is
+    already in the tensor name and in the structural plan, so this policy is decodable with ZERO
+    mode bits and zero measurement. If the per-cell portfolio cannot beat it, the mode field is
+    buying nothing that the tensor name did not already say, and the selector must not ship.
+    """
+    return "vq" if organ == "down_proj" else "gvq"
+
+
 def kron_admitted(inc: dict[str, Any], k: dict[str, Any]) -> dict[str, bool]:
     """THE ADMISSION RULE, itemized so each condition can be tested and audited separately.
 
@@ -373,15 +384,28 @@ def build(layers: tuple[int, ...] = SAMPLE_LAYERS) -> dict[str, Any]:
     }
 
     # portfolio vs the best SINGLE codec applied everywhere, on the measured cells
-    per_mode = {m: float(np.mean([c["arms"][m]["output_rel_error"]
-                                  for c in cells if m in c["arms"] and c["arms"][m]]))
-                for m in MODES if any(m in c["arms"] and c["arms"][m] for c in cells)}
+    # NOTE the cell count in the key: gvq only exists on gate/up, so its mean is over FEWER and
+    # EASIER cells than vq's. These entries are NOT comparable across different n_cells; only the
+    # `universal_codecs` (all 18 cells) and the free-rule comparison below are like-for-like.
+    _cells_with = lambda m: [c for c in cells if m in c["arms"] and c["arms"][m]]  # noqa: E731
+    per_mode = {m: float(np.mean([c["arms"][m]["output_rel_error"] for c in _cells_with(m)]))
+                for m in MODES if _cells_with(m)}
     # a single codec must be applicable to EVERY cell to count as "one codec everywhere"
     universal = {m: v for m, v in per_mode.items()
                  if all(m in c["arms"] and c["arms"][m] for c in cells)}
+    # keys must stay bare mode names here; relabelling them for the report is done at write time
+    assert set(per_mode) <= set(MODES) and universal, (sorted(per_mode), sorted(universal))
     best_single = min(universal, key=universal.get)
     pf_mean = float(np.mean([c["arms"][c["selected"]]["output_rel_error"] for c in cells]))
     beats = pf_mean < universal[best_single] - 1e-9
+
+    # the real falsifier: the zero-mode-bit structural rule, and how many cells the measured
+    # selector actually moves off it. If that count is tiny the mode field is a rounding error.
+    fx_mean = float(np.mean([c["arms"][fixed_rule_mode(c["organ"])]["output_rel_error"]
+                             for c in cells]))
+    off_rule = [f"L{c['layer']}.{c['organ']}:{c['selected']}" for c in cells
+                if c["selected"] != fixed_rule_mode(c["organ"])]
+    beats_fixed = pf_mean < fx_mean - 1e-9
 
     inv = A.build_inventory(A.load_config(), A.load_index())
     routing = json.loads(ROUTING.read_text()) if ROUTING.exists() else None
@@ -398,17 +422,27 @@ def build(layers: tuple[int, ...] = SAMPLE_LAYERS) -> dict[str, Any]:
         if c["organ"] == "gate_proj":
             predicted[c["layer"]] = c["selected"]
 
+    # The verdict is gated on the HARDER baseline. Beating the best universal codec is not
+    # enough: the structural rule is free, so the selector must beat THAT to earn its mode bits.
     verdict = (
-        f"PORTFOLIO WINS: per-(layer,organ) selection beats the best single codec "
-        f"({best_single}) at equal complete bits, mean surrogate output rel_error "
-        f"{pf_mean:.4f} vs {universal[best_single]:.4f}, selector surcharge "
-        f"{led['selector_surcharge_bpw']:.3e} BPW."
-        if beats else
-        f"SELECTOR NOT WORTH ITS MODE BITS: the best single codec ({best_single}, mean "
-        f"{universal[best_single]:.4f}) matches or beats the per-cell portfolio "
-        f"({pf_mean:.4f}); the mode field buys nothing and must not be shipped."
-    ) + (" NOT A CAPABILITY CLAIM: surrogate output space on a synthetic gamma input model, "
-         "no forward was run.")
+        f"SELECTOR NOT WORTH ITS MODE BITS: the free structural rule "
+        f"(gvq on gate/up, vq on down_proj, ZERO mode bits) scores {fx_mean:.4f} and the measured "
+        f"per-cell portfolio {pf_mean:.4f}; the mode field buys nothing the tensor name did not "
+        f"already say."
+        if not beats_fixed else
+        f"PORTFOLIO WINS BUT ONLY BARELY, AND ONLY VIA {len(off_rule)}/{len(cells)} CELLS: "
+        f"per-cell selection {pf_mean:.4f} vs the free structural rule {fx_mean:.4f} "
+        f"({100 * (fx_mean - pf_mean) / max(fx_mean, _EPS):.1f} pct relative) and vs the best "
+        f"universal codec {best_single} {universal[best_single]:.4f}. The ONLY cells that move "
+        f"off the free rule are {off_rule or 'none'}, so the portfolio is the structural rule "
+        f"plus a short exception list, NOT a general per-layer selector. Ship the rule and the "
+        f"exception list, not a 2-bit mode field."
+    ) + (
+        f" Selector surcharge {led['selector_surcharge_bpw']:.3e} BPW."
+        " NOT A CAPABILITY CLAIM: surrogate output space on a synthetic gamma input model, "
+        "no forward was run; the sealed S1 full-stack forward COLLAPSES 12/12 and nothing here "
+        "is evidence against that."
+    )
 
     return {
         "schema": SCHEMA, "generated_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
@@ -417,7 +451,10 @@ def build(layers: tuple[int, ...] = SAMPLE_LAYERS) -> dict[str, Any]:
         "n_layers": N_LAYERS, "n_fit_tensors_per_cell": N_EXPERTS_FIT,
         "predictor": predictor, "cells": cells,
         "comparison_at_equal_complete_bits": {
-            "mean_output_rel_error_per_single_codec": {k: round(v, 6) for k, v in per_mode.items()},
+            # cell count is IN THE KEY: gvq is averaged over the 9 gate cells only, vq/rvq/kron
+            # over all 18. Entries with different n_cells are NOT comparable to each other.
+            "mean_output_rel_error_per_single_codec": {
+                f"{k}_over_{len(_cells_with(k))}_cells": round(v, 6) for k, v in per_mode.items()},
             "universal_codecs": sorted(universal),
             "best_single_codec": best_single,
             "best_single_mean_output_rel_error": round(universal[best_single], 6),
@@ -425,6 +462,16 @@ def build(layers: tuple[int, ...] = SAMPLE_LAYERS) -> dict[str, Any]:
             "portfolio_beats_best_single": bool(beats),
             "distinct_modes_selected": sorted(sel),
             "kron_admitted_cells": kron_cells,
+            "free_structural_rule": {
+                "rule": "gvq on gate/up, vq on down_proj; organ is in the tensor name",
+                "mode_bits": 0,
+                "mean_output_rel_error": round(fx_mean, 6),
+                "portfolio_beats_it": bool(beats_fixed),
+                "relative_gain_pct": round(100 * (fx_mean - pf_mean) / max(fx_mean, _EPS), 4),
+                "cells_off_the_rule": off_rule,
+                "n_cells_off_the_rule": len(off_rule),
+                "n_cells": len(cells),
+            },
         },
         "ledger": led,
         "whole_model_mode_assignment_gate_up": {
@@ -536,6 +583,11 @@ def demo() -> None:
                            books_g[0].detach().cpu().numpy()), "importance never reached the fit"
     # gamma^2 importance is the mean-1 normalized square of gamma, exactly.
     assert np.allclose(imp, gv ** 2 / float((gv ** 2).mean()), rtol=1e-5), imp[:4]
+
+    # 6b. the free structural rule: gamma-weighted on gate/up, never on down_proj (whose input is
+    #     the SwiGLU intermediate, which gamma does not describe).
+    assert fixed_rule_mode("gate_proj") == "gvq" and fixed_rule_mode("up_proj") == "gvq"
+    assert fixed_rule_mode("down_proj") == "vq", "gamma must never be applied to down_proj"
 
     # 7. the ledger: mode bits are really charged, and the ceiling really bites.
     comp = {c: 0 for c in ("indices", "codebooks", "scales", "metadata", "alignment",

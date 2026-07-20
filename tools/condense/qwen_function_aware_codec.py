@@ -99,8 +99,16 @@ def _row_chunk(k: int) -> int:
 def _assign(v, cb, wt=None):
     """argmin_k sum_d wt[n,d] * (v[n,d] - cb[k,d])^2, blocked so [N,k] is never materialized.
 
-    Unweighted (wt is None) reduces to the plain ||a-b||^2 identity. Weighted expands to
-    (wt*v*v).sum - 2*(wt*v)@cb.T + wt@(cb*cb).T, which is still three matmuls per block.
+    The ||v||^2 term (and its weighted analogue sum_d h*v^2) is CONSTANT across k, so it cannot
+    change an argmin and is simply not computed. That is strictly less work and less code, and
+    selftest asserts the indices are identical to the naive full-distance form.
+
+    MEASURED NULL, recorded so nobody re-derives it: carrying a running (min, argmin) over
+    K-blocks instead of reducing the full [N,k] block looked like 1.44x in an unpaired timing,
+    but a PAIRED interleaved A/B on the real d8/k1024 gate geometry gave median 1.07x and
+    min-to-min 0.98x. That is a tie, and a tie is a null. The apparent win was GPU contention
+    from a concurrent heavy campaign, not the algorithm. Reverted rather than kept: it added a
+    nested loop and two torch.where per block to buy nothing.
     """
     torch = gf._torch()
     n, k = v.shape[0], cb.shape[0]
@@ -113,10 +121,10 @@ def _assign(v, cb, wt=None):
     for i in range(0, n, step):
         c = v[i:i + step]
         if wt is None:
-            d2 = (c * c).sum(1, keepdim=True) - 2.0 * (c @ cbt) + cb2s
+            d2 = cb2s - 2.0 * (c @ cbt)
         else:
             h = wt[i:i + step]
-            d2 = (h * c * c).sum(1, keepdim=True) - 2.0 * ((h * c) @ cbt) + (h @ cb2t)
+            d2 = (h @ cb2t) - 2.0 * ((h * c) @ cbt)
         out[i:i + step] = d2.argmin(1)
     return out
 
@@ -472,6 +480,27 @@ def selftest() -> dict[str, Any]:
 
     # importance is mean-normalized, so it never rescales the objective
     assert abs(float(h.mean()) - 1.0) < 1e-5
+
+    # SPEED PATHS ARE EXACT. _assign drops the constant ||v||^2 term and, for large k, carries a
+    # running min over K-blocks. Both must return the SAME indices as the naive full-distance
+    # form, weighted and unweighted, above and below the K-block threshold. A speedup that moves
+    # an index is not a speedup, it is a different artifact.
+    torch = gf._torch()
+    dev = gf._device()
+
+    def _naive(vv, cbb, ww=None):
+        cbt = cbb.t().contiguous()
+        if ww is None:
+            return ((vv * vv).sum(1, keepdim=True) - 2.0 * (vv @ cbt) + (cbb * cbb).sum(1)).argmin(1)
+        return ((ww * vv * vv).sum(1, keepdim=True) - 2.0 * ((ww * vv) @ cbt)
+                + (ww @ (cbb * cbb).t().contiguous())).argmin(1)
+
+    for kk in (64, 1024):                            # small and large codebook
+        vv = torch.from_numpy(rng.standard_normal((4096, dim)).astype(np.float32)).to(dev)
+        cbb = torch.from_numpy(rng.standard_normal((kk, dim)).astype(np.float32)).to(dev)
+        ww = torch.from_numpy(np.abs(rng.standard_normal((4096, dim))).astype(np.float32)).to(dev)
+        assert bool((_assign(vv, cbb) == _naive(vv, cbb)).all()), f"unweighted k={kk}"
+        assert bool((_assign(vv, cbb, ww) == _naive(vv, cbb, ww)).all()), f"weighted k={kk}"
 
     return {"ok": True, "pathology_share": base["mean_single_codeword_share"],
             "cured_share": inv["mean_single_codeword_share"],

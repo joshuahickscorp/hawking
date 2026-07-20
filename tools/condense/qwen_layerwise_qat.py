@@ -179,7 +179,8 @@ def _loop(mats, xs, *, dim, k, stages, rounds, iters, seed, sub, etas):
 
 # ── measurement ───────────────────────────────────────────────────────────────────────────────
 def measure(layers=(0, 46), experts=(0, 1, 2), n_tokens: int = 1400, rounds: int = 4,
-            iters: int = 5, sub: int = 400_000, source: Path = SOURCE_DIR) -> dict[str, Any]:
+            iters: int = 5, sub: int = 400_000, source: Path = SOURCE_DIR,
+            seeds: tuple[int, ...] = (0, 1)) -> dict[str, Any]:
     from qwen_real_forward import SafetensorsIndexReader
     reader = SafetensorsIndexReader(source)
     cells: list[dict[str, Any]] = []
@@ -201,17 +202,40 @@ def measure(layers=(0, 46), experts=(0, 1, 2), n_tokens: int = 1400, rounds: int
             mats = [reader.bf16(f"model.layers.{L}.mlp.experts.{e}.{organ}.weight"
                                 ).astype(np.float32) for e in experts]
             d, k, st = spec["dim"], spec["k"], spec["stages"]
-            ctl, t_ctl, br_ctl, _, _ = _loop(mats, fit_x, dim=d, k=k, stages=st, rounds=rounds,
-                                             iters=iters, seed=0, sub=sub, etas=(0.0,))
-            trt, t_trt, br_trt, etas, dlt = _loop(mats, fit_x, dim=d, k=k, stages=st,
-                                                  rounds=rounds, iters=iters, seed=0, sub=sub,
-                                                  etas=ETAS)
+            # Held-out sets here are only ~30-90 routed tokens, so ONE seed cannot distinguish a
+            # real gain from Lloyd-restart noise. Every cell is run under every seed and the
+            # verdict demands the win in all of them.
+            per_seed = []
+            for sd in seeds:
+                ctl, t_ctl, br_ctl, _, _ = _loop(mats, fit_x, dim=d, k=k, stages=st, rounds=rounds,
+                                                 iters=iters, seed=sd, sub=sub, etas=(0.0,))
+                trt, t_trt, br_trt, etas, dlt = _loop(mats, fit_x, dim=d, k=k, stages=st,
+                                                      rounds=rounds, iters=iters, seed=sd, sub=sub,
+                                                      etas=ETAS)
+                per_seed.append({
+                    "seed": sd,
+                    "output_rel_error_heldout_control": round(float(np.mean(
+                        [LC.out_rel_error(m, r, xx) for m, r, xx in zip(mats, ctl, hold_x)])), 6),
+                    "output_rel_error_heldout_treatment": round(float(np.mean(
+                        [LC.out_rel_error(m, r, xx) for m, r, xx in zip(mats, trt, hold_x)])), 6),
+                    "weight_rel_error_control": round(float(np.mean(
+                        [C.rel_error(m, r) for m, r in zip(mats, ctl)])), 6),
+                    "weight_rel_error_treatment": round(float(np.mean(
+                        [C.rel_error(m, r) for m, r in zip(mats, trt)])), 6),
+                    "fit_trace_control": t_ctl, "fit_trace_treatment": t_trt,
+                    "best_round_control": br_ctl, "best_round_treatment": br_trt,
+                    "chosen_eta_per_round": etas, "qat_step_fit_gain_per_round": dlt,
+                })
+                if sd != seeds[-1]:
+                    del ctl, trt
+            # The artifact charge depends only on (shape, spec, cluster), which no arm touches -
+            # both arms are literally the same integer, and the seeds change nothing either.
             bits = LC.artifact_bits(mats[0].shape, spec, DEPLOY_CLUSTER)
-            assert bits == LC.artifact_bits(mats[0].shape, spec, DEPLOY_CLUSTER), "layout drift"
-            oc = float(np.mean([LC.out_rel_error(m, r, xx)
-                                for m, r, xx in zip(mats, ctl, hold_x)]))
-            ot = float(np.mean([LC.out_rel_error(m, r, xx)
-                                for m, r, xx in zip(mats, trt, hold_x)]))
+            oc = float(np.mean([p["output_rel_error_heldout_control"] for p in per_seed]))
+            ot = float(np.mean([p["output_rel_error_heldout_treatment"] for p in per_seed]))
+            gains = [100.0 * (1.0 - p["output_rel_error_heldout_treatment"]
+                              / max(p["output_rel_error_heldout_control"], C._EPS))
+                     for p in per_seed]
             cells.append({
                 "layer": L, "organ": organ, "experts": list(experts),
                 "activation_provenance": prov,
@@ -222,18 +246,15 @@ def measure(layers=(0, 46), experts=(0, 1, 2), n_tokens: int = 1400, rounds: int
                 "bits_identical": True,
                 "complete_bpw_this_tensor": round(bits / (mats[0].shape[0] * mats[0].shape[1]), 6),
                 "weight_rel_error_control": round(float(np.mean(
-                    [C.rel_error(m, r) for m, r in zip(mats, ctl)])), 6),
+                    [p["weight_rel_error_control"] for p in per_seed])), 6),
                 "weight_rel_error_treatment": round(float(np.mean(
-                    [C.rel_error(m, r) for m, r in zip(mats, trt)])), 6),
+                    [p["weight_rel_error_treatment"] for p in per_seed])), 6),
                 "output_rel_error_heldout_control": round(oc, 6),
                 "output_rel_error_heldout_treatment": round(ot, 6),
-                "qat_gain_pct_heldout": round(100.0 * (1.0 - ot / max(oc, C._EPS)), 4),
-                "fit_trace_control": t_ctl,
-                "fit_trace_treatment": t_trt,
-                "best_round_control": br_ctl,
-                "best_round_treatment": br_trt,
-                "chosen_eta_per_round": etas,
-                "qat_step_fit_gain_per_round": dlt,
+                "qat_gain_pct_heldout": round(float(np.mean(gains)), 4),
+                "qat_gain_pct_heldout_per_seed": [round(g, 4) for g in gains],
+                "wins_all_seeds": bool(all(g > 0 for g in gains)),
+                "per_seed": per_seed,
                 "n_fit_tokens": [int(v.shape[0]) for v in fit_x],
                 "n_heldout_tokens": [int(v.shape[0]) for v in hold_x],
                 "routed_token_counts": routed,
@@ -243,9 +264,9 @@ def measure(layers=(0, 46), experts=(0, 1, 2), n_tokens: int = 1400, rounds: int
     reader.close()
 
     real = [c for c in cells if c["activation_provenance"] == "real_tokens"]
-    wins = [c for c in real if c["output_rel_error_heldout_treatment"]
-            < c["output_rel_error_heldout_control"]]
-    moved = [c for c in cells if any(e > 0 for e in c["chosen_eta_per_round"])]
+    wins = [c for c in real if c["wins_all_seeds"]]
+    moved = [c for c in cells if any(e > 0 for p in c["per_seed"]
+                                     for e in p["chosen_eta_per_round"])]
     verdict = ("S3A_QAT_ALIVE" if real and len(wins) == len(real) else
                "S3A_QAT_PARTIAL" if wins else "S3A_QAT_DEAD")
     # Only layer 0 has real-token activations, and layer 0 is the campaign's KNOWN exception
@@ -263,12 +284,16 @@ def measure(layers=(0, 46), experts=(0, 1, 2), n_tokens: int = 1400, rounds: int
                       "bpw, down dim=16 k=1024 stages=1 = 0.625. Whole-model complete BPW of the "
                       "S64_structural plan is 0.948410027 <= 1. This module proposes no rate."),
         "n_calibration_tokens": n_tokens, "rounds": rounds, "lloyd_iters": iters,
-        "eta_grid": list(ETAS), "fit_vector_subsample": sub,
+        "eta_grid": list(ETAS), "fit_vector_subsample": sub, "seeds": list(seeds),
         "cells": cells,
         "n_cells_where_weights_moved": len(moved),
         "verdict": verdict,
-        "verdict_note": ("Scored ONLY on real_tokens cells. gaussian_proxy cells (deeper layers) "
-                         "validate the machinery and carry no evidence about those layers."),
+        "verdict_note": ("Scored ONLY on real_tokens cells, and a cell counts as a win only if it "
+                         "wins under EVERY seed. gaussian_proxy cells (deeper layers) validate the "
+                         "machinery and carry no evidence about those layers. Real-token "
+                         "activations exist only at layer 0 without a multi-layer forward, and "
+                         "layer 0 is the campaign's known coding exception, so a _LAYER0_ONLY "
+                         "verdict does NOT generalise to depth."),
         "honesty": ("Output-space relative error on a HELD-OUT, disjoint routed-token split is a "
                     "PROXY for capability, not capability. Weight-space error is not a capability "
                     "claim. No forward was run and no frontier is selected. Every reported number "
@@ -352,6 +377,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--experts", default="0,1,2")
     ap.add_argument("--rounds", type=int, default=4)
     ap.add_argument("--tokens", type=int, default=1400)
+    ap.add_argument("--seeds", default="0,1")
     ap.add_argument("--out", default="reports/subbit_reset/S3A_LAYERWISE_QAT.json")
     a = ap.parse_args(argv)
     if a.selftest:
@@ -360,7 +386,8 @@ def main(argv: list[str] | None = None) -> int:
     if a.measure:
         rep = measure(layers=tuple(int(v) for v in a.layers.split(",")),
                       experts=tuple(int(v) for v in a.experts.split(",")),
-                      n_tokens=a.tokens, rounds=a.rounds)
+                      n_tokens=a.tokens, rounds=a.rounds,
+                      seeds=tuple(int(v) for v in a.seeds.split(",")))
         p = Path(a.out)
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_text(json.dumps(rep, indent=2) + "\n")
