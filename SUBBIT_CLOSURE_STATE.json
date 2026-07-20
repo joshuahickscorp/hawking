@@ -1,0 +1,70 @@
+{
+  "campaign": "subbit-capability-density-reset",
+  "candidates": [
+    {
+      "complete_bpw": 0.948410027,
+      "exact": "870957657/918334510",
+      "id": "S64_structural",
+      "legal": true
+    },
+    {
+      "complete_bpw": 0.999769787,
+      "id": "S64_doctor",
+      "legal": true
+    },
+    {
+      "complete_bpw": 0.947079561,
+      "id": "S32_g5.0_d1.25",
+      "legal": true,
+      "status": "admitted_next"
+    }
+  ],
+  "ceiling": {
+    "escape": "FORBIDDEN",
+    "rule": "complete_bits / original_weight_count <= 1/1",
+    "unsolved_semantics": "SUBBIT_UNSOLVED, never an Escape Receipt above 1 BPW"
+  },
+  "families": {
+    "A_function_aware": {
+      "methods": [
+        "M01' scale-invariant VQ",
+        "M02 activation-aware diag-Hessian fitting",
+        "closed-form optimal per-row scale refit"
+      ],
+      "result": "real gain (L0 gate 0.7214 -> 0.6435) but the codec is AT the memoryless-Gaussian rate-distortion floor (0.6484), so the family has no headroom left",
+      "status": "IMPLEMENTED_AND_MEASURED_THEN_SEALED_NEGATIVE"
+    },
+    "B_same_budget_doctor": {
+      "result": "down_proj L46 rel_error 0.7038 -> 0.6074 for +0.319 organ bpw; complete artifact 0.999769787 BPW, legal",
+      "status": "IMPLEMENTED_AND_MEASURED"
+    },
+    "C_qat_compressibility": {
+      "note": "unblocked by the F1 negative, not blocked",
+      "status": "QUEUED"
+    },
+    "D_structural_expert_reduction": {
+      "result": "S64 g2.5 d0.625 = 0.948410027 complete BPW; gate/up RD floor 0.6484 -> 0.1768",
+      "status": "IMPLEMENTED_FORWARD_IN_FLIGHT"
+    },
+    "E_distillation": {
+      "status": "QUEUED"
+    },
+    "F_generated_tied_parameters": {
+      "status": "QUEUED"
+    },
+    "G_dynamic_conditional": {
+      "status": "QUEUED"
+    }
+  },
+  "generated_at_utc": "2026-07-20T21:14:34Z",
+  "gravity_method_generation": "GRAVITY_METHOD_V2",
+  "honesty": "no capability is claimed by any byte plan or weight-space measurement in this state file",
+  "next_admitted_experiment": "S32_g5.0_d1.25 - quarter the inventory, gate/up to 5.0 index bpw (RD floor 0.0312, per-expert near-lossless). Already legal and already in the ladder. If S64 passes, descend here immediately; if S64 fails on routing loss rather than reconstruction, S32 is the wrong direction and Lane C/E (compressibility training, distillation) is admitted instead - the diagnosis is readable directly off which of symKL or argmax moved.",
+  "parent": "qwen3-235b-a22b-instruct-2507",
+  "retired": [
+    "A1_1p0 (1.0075 BPW, ILLEGAL under the ceiling and collapsed 6/6)",
+    "R2_subhalf_best (0.4930 BPW, collapsed 6/6)",
+    "R5_rownorm_strat (premise falsified, never needed to run)"
+  ],
+  "schema": "hawking.subbit_closure.state.v1"
+}
