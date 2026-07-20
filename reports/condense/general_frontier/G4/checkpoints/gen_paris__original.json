@@ -1,0 +1,19 @@
+{
+  "active_generation": "M",
+  "domain": "factual",
+  "forward_seconds": 190.8,
+  "honesty": "real full-model from-config forward (coherence-validated, not bit-exact HF); packed=naive sub-bit RVQ lower bound; capability tier requires meeting sealed thresholds",
+  "logits_finite": true,
+  "n_tokens": 5,
+  "prompt_id": "gen_paris",
+  "quality": {
+    "n_positions": 4,
+    "nll": 3.31173,
+    "perplexity": 27.4325
+  },
+  "rate_bpw": null,
+  "row_id": "gen_paris__original",
+  "sealed_at": "2026-07-19T19:04:00Z",
+  "sha256": "386128c154ee6eda59c72f43e331c9786c4c930904c2ade9fe542e228fea1153",
+  "variant": "original"
+}

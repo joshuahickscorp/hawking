@@ -1,0 +1,27 @@
+{
+  "active_generation": "M",
+  "capability_candidate": false,
+  "divergence_vs_original": {
+    "mean_logit_cosine": 0.8884,
+    "mean_sym_kl": 4.43205,
+    "mean_top5_overlap": 0.2125,
+    "next_token_argmax_agreement": 0.25
+  },
+  "domain": "reasoning",
+  "forward_seconds": 1146.8,
+  "honesty": "real full-model from-config forward (coherence-validated, not bit-exact HF); packed=naive sub-bit RVQ lower bound; capability tier requires meeting sealed thresholds",
+  "logits_finite": true,
+  "n_tokens": 16,
+  "prompt_id": "reason_syllogism",
+  "quality": {
+    "n_positions": 15,
+    "nll": 5.26898,
+    "perplexity": 194.218
+  },
+  "rate_bpw": 1.0,
+  "row_id": "reason_syllogism__rvq1.0",
+  "sealed_at": "2026-07-19T21:55:28Z",
+  "sha256": "02e4195be4140ca728d4e627b159767212cb40a0ac5a639cfadbd65c7f7a14e8",
+  "variant": "packed_rvq",
+  "verdict": "collapse"
+}

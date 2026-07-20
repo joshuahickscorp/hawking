@@ -1,0 +1,27 @@
+{
+  "active_generation": "M",
+  "capability_candidate": false,
+  "divergence_vs_original": {
+    "mean_logit_cosine": 0.90775,
+    "mean_sym_kl": 1.86501,
+    "mean_top5_overlap": 0.5778,
+    "next_token_argmax_agreement": 0.6296
+  },
+  "domain": "code",
+  "forward_seconds": 1624.6,
+  "honesty": "real full-model from-config forward (coherence-validated, not bit-exact HF); packed=naive sub-bit RVQ lower bound; capability tier requires meeting sealed thresholds",
+  "logits_finite": true,
+  "n_tokens": 27,
+  "prompt_id": "code_py",
+  "quality": {
+    "n_positions": 26,
+    "nll": 1.8726,
+    "perplexity": 6.5052
+  },
+  "rate_bpw": 1.0,
+  "row_id": "code_py__rvq1.0",
+  "sealed_at": "2026-07-19T20:56:23Z",
+  "sha256": "06e6360b4a4ade159bd53bbf271cdda294e570a83693491579fbf9b6da1f5862",
+  "variant": "packed_rvq",
+  "verdict": "degraded"
+}

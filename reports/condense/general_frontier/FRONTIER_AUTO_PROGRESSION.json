@@ -18,15 +18,17 @@
   "honest_note": "science NEGATIVE at sub-bit (capability regression verified at Fidelity D); the ladder searches for a quality-positive representation, now with the Gen-M parity-verified execution grammar available. No capability claim.",
   "ladder": [
     "G2(COMPLETE)",
-    "G3(launching)",
-    "G4",
+    "G3(COMPLETE - G3_TRANSFER.json sealed 2026-07-19T06:40Z; g3_000..g3_023)",
+    "G4(LAUNCHED 2026-07-19T19:04Z - first REAL-forward gate; controller gravity_frontier_g4_controller.py pid 48797; see G4_IGNITION_RECEIPT.json + G4/G4_REAL_FORWARD_STATE.json)",
     "G5_120B",
-    "685B_F0/F1/F2",
+    "685B_F0/F1/F2 (source-absent -> prep-only)",
     "685B_frontier",
-    "1T_F0/F1/F2",
+    "1T_F0/F1/F2 (source-absent -> prep-only)",
     "1T_frontier"
   ],
-  "no_manual_relaunch_between_gates": "the durable controller advances the queue; preparation lanes (685B/1T source-authority) run non-conflicting",
+  "reality_note_2026_07_19": "There is NO auto-advancing cross-gate controller: each gate (G0..G4) is a hand-built per-session controller (gravity_frontier_gN_*.py) built + ignited + sealed by its /goal session. G4 is the FIRST gate to leave proxy fidelity (real gpt-oss-120b forward, coherence-validated: 'The capital of France is'->' Paris'). Giants do NOT auto-hand-off: 685B/1T are source-absent AND gated behind 120B G5. Next session builds G5 (or seals the G4 boundary) after G4 completes.",
+  "no_manual_relaunch_between_gates": "WITHIN a gate the durable controller advances its own row queue (resume-safe). BETWEEN gates the next controller is hand-built (repo reality). Preparation lanes (685B/1T source-authority) run non-conflicting.",
   "schema": "hawking.frontier.auto_progression.v1",
-  "sha256": "7e3c8982905cfe03abf097edfca4c1a7912fdf5c5b6957cd1e27964b9446b12c"
+  "updated_at": "2026-07-19T19:09:00Z",
+  "sha256": "superseded-by-content-above"
 }

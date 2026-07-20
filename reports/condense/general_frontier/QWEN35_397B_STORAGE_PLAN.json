@@ -1,0 +1,53 @@
+{
+  "admission_gate": "BLOCKED: requires GPT_OSS_120B_SOURCE_RELEASE_READINESS = AUTHORIZED (currently DENIED) AND explicit authorization for a gated ~751 GiB streamed transfer.",
+  "avg_shard_bytes": 8582938738,
+  "avg_shard_gib": 7.99,
+  "disk": {
+    "free_after_120b_release_gib": 600.5,
+    "free_bytes_now": 579487981568,
+    "free_gib_now": 539.7,
+    "release_120b_reclaims_gib": 60.8
+  },
+  "immutable_revision": "8472618112abcbd45acbcdc58436aff4233c23f7",
+  "metadata_bytes_resident": 23325009,
+  "n_weight_shards": 94,
+  "one_parent_storage_law": {
+    "enforced_by": "GPT_OSS_120B_SOURCE_RELEASE_READINESS.json (currently DENIED: 6 red gates).",
+    "reference_235b": {
+      "fits_resident_after_120b_release": true,
+      "note": "235B (437.9 GiB) DOES fit resident after release; 397B does not.",
+      "weight_gib": 437.9
+    },
+    "statement": "At most ONE giant parent's weight working set is resident at a time. The 120B source (60.8 GiB) must be RELEASED before the 397B streaming working set is admitted, to preserve the safety reserve and honor single-lease heavy compute."
+  },
+  "repo": "Qwen/Qwen3.5-397B-A17B",
+  "residency": {
+    "conclusion": "397B CANNOT be fully resident even after the 120B release (need 751.4 GiB, have 600.5 GiB after release) -> bounded shard-serial streaming is MANDATORY.",
+    "fits_397b_full_resident_after_120b_release": false,
+    "fits_397b_full_resident_now": false,
+    "gap_gib_after_release": 151.0
+  },
+  "schema": "hawking.qwen35_397b.storage_plan.v1",
+  "sha256": "de6168f443321191213933b2190fa33d39b56ebde807f63494d4c54ccc34aec3",
+  "shard_naming": "model.safetensors-00001-of-00094.safetensors .. model.safetensors-00094-of-00094.safetensors",
+  "status": "DRAFT (streaming-only admission; gated on 120B release)",
+  "streaming_plan": {
+    "method": "bounded shard-serial streaming (extends the proven Q0 Range-GET header reader and doctor_v5 bounded reader): resident metadata (config/index/tokenizer, ~23 MB) addresses each tensor to its shard; stream one shard (~8.6 GiB), transform/measure the organ, flush, release, advance.",
+    "never": [
+      "materialize all 94 shards",
+      "hold two giant parents resident",
+      "download weights before the 120B release is AUTHORIZED"
+    ],
+    "organ_order": [
+      "moe_experts (per-layer expert stacks; the target)",
+      "router + attention + shared_expert (protected, measure-only)",
+      "embeddings/head + vision + mtp (protected, load-check only)"
+    ],
+    "resident_metadata_only": true,
+    "working_set_bound_gib": 7.99
+  },
+  "total_bytes": 806819566361,
+  "total_gib": 751.4,
+  "weight_bytes": 806796241352,
+  "weight_gib": 751.4
+}

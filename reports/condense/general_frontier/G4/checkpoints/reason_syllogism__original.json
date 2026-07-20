@@ -1,0 +1,19 @@
+{
+  "active_generation": "M",
+  "domain": "reasoning",
+  "forward_seconds": 357.9,
+  "honesty": "real full-model from-config forward (coherence-validated, not bit-exact HF); packed=naive sub-bit RVQ lower bound; capability tier requires meeting sealed thresholds",
+  "logits_finite": true,
+  "n_tokens": 16,
+  "prompt_id": "reason_syllogism",
+  "quality": {
+    "n_positions": 15,
+    "nll": 1.24246,
+    "perplexity": 3.4641
+  },
+  "rate_bpw": null,
+  "row_id": "reason_syllogism__original",
+  "sealed_at": "2026-07-19T19:30:37Z",
+  "sha256": "727c140884380847a1eaedcd86e2f42e8223312f6617efd95b5167ef6cbb9bbf",
+  "variant": "original"
+}

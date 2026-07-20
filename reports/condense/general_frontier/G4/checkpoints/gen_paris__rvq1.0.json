@@ -1,0 +1,27 @@
+{
+  "active_generation": "M",
+  "capability_candidate": false,
+  "divergence_vs_original": {
+    "mean_logit_cosine": 0.94789,
+    "mean_sym_kl": 1.84465,
+    "mean_top5_overlap": 0.24,
+    "next_token_argmax_agreement": 0.2
+  },
+  "domain": "factual",
+  "forward_seconds": 700.0,
+  "honesty": "real full-model from-config forward (coherence-validated, not bit-exact HF); packed=naive sub-bit RVQ lower bound; capability tier requires meeting sealed thresholds",
+  "logits_finite": true,
+  "n_tokens": 5,
+  "prompt_id": "gen_paris",
+  "quality": {
+    "n_positions": 4,
+    "nll": 5.19281,
+    "perplexity": 179.9742
+  },
+  "rate_bpw": 1.0,
+  "row_id": "gen_paris__rvq1.0",
+  "sealed_at": "2026-07-19T19:47:45Z",
+  "sha256": "a6f333873096c1d764da8c89f1eb9c2f46002555f0f7ad59d5c05c79cf67f5de",
+  "variant": "packed_rvq",
+  "verdict": "degraded"
+}
