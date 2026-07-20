@@ -1,0 +1,56 @@
+{
+  "created_at": "2026-07-20T19:29:43+00:00",
+  "entries": {
+    "calibration_88_tokens": {
+      "killed_by": "at 88 tokens the median routing split is only 63.6 percent stable and 26.1 percent of cells never route at all",
+      "lever": "routing-frequency allocation calibrated on ~88 tokens",
+      "parent": "gpt-oss-120b:F0",
+      "reopen_condition": "never at 88; use >= 1000 calibration tokens",
+      "verdict": "the lever is alive, the 88-token calibration is dead; needs ~1000 tokens"
+    },
+    "entropy_coded_pq_indices": {
+      "killed_by": "measured 0.0 to 0.7 percent, not the hoped 10 to 25 percent; Lloyd-optimal indices are near-uniform by construction",
+      "lever": "entropy coding of trained PQ indices",
+      "parent": "gpt-oss-120b:F0",
+      "reopen_condition": "a future parent uses NON-Lloyd (biased or stratified) codebooks whose measured index entropy is <= 0.9 of uniform",
+      "verdict": "the gain is inside the noise of the byte plan"
+    },
+    "inter_expert_redundancy": {
+      "killed_by": "mean pairwise cosine between experts = 1e-4; experts are mutually orthogonal",
+      "lever": "delta coding / shared low-rank bases / cluster-mean subtraction across experts",
+      "parent": "gpt-oss-120b:F0",
+      "reopen_condition": "a future parent measures mean pairwise expert cosine >= 0.10 on its own weights",
+      "verdict": "dead on arrival: there is no shared component to subtract"
+    },
+    "large_expert_cache": {
+      "killed_by": "0 evictions at a 64GB cap; RAM 70->18GB free and swap down to 906MB free. A single lockstep pass has zero cross-layer reuse",
+      "lever": "aggressive expert cache (64GB cap) for a single lockstep pass",
+      "parent": "gpt-oss-120b:F0",
+      "reopen_condition": "a future parent's schedule has MEASURED cross-layer expert reuse (cache hit rate > 0) instead of a single lockstep pass",
+      "verdict": "correct cap is ~20GB; aggressive RAM only where real reuse exists"
+    },
+    "posthoc_scalar_gain": {
+      "killed_by": "optimal gain pinned at exactly 1.0; k-means reconstruction is a conditional mean so the residual is orthogonal to the reconstruction, and cosine is gain-invariant",
+      "lever": "post-hoc scalar gain correction on a PQ artifact",
+      "parent": "gpt-oss-120b:F0",
+      "reopen_condition": "a future parent uses a NON-conditional-mean quantizer whose residual is measurably non-orthogonal to the reconstruction",
+      "verdict": "algebraically pinned, not merely unhelpful"
+    },
+    "ternary_factorization": {
+      "killed_by": "loses to VQ at matched rate",
+      "lever": "ternary factorization instead of VQ",
+      "parent": "gpt-oss-120b:F0",
+      "reopen_condition": "a future parent diagnoses a weight distribution where ternary beats VQ at a matched exact rate on a real forward",
+      "verdict": "dominated at every matched rate tested"
+    },
+    "uniform_subbit_allocation": {
+      "killed_by": "F0 real forward: both the uniform and the treated artifact collapsed",
+      "lever": "uniform sub-bit allocation across organs (and its treated variant)",
+      "parent": "gpt-oss-120b:F0",
+      "reopen_condition": "a future parent measures NO organ sensitivity split (gate and down degrade within 10 percent of each other)",
+      "verdict": "superseded by organ inversion (mlp1 gate+up sensitive, mlp2 down tolerant), confirmed by F1 qwen3-235b dominant_failure_organ = gate"
+    }
+  },
+  "schema": "hawking.foundry.negative_transfer_atlas.v1",
+  "sha256": "2d9e38dca3f47e34e1c2f42b2fa5d2298d0b01bab0599129868e701443088273"
+}

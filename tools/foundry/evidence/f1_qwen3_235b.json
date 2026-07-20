@@ -1,0 +1,71 @@
+{
+ "schema": "hawking.foundry.parent_evidence.v1",
+ "provenance": "F1 Qwen3-235B campaign, LIVE at transcription time (~layer 55/94, pid 86590, checkout /Users/scammermike/hawking-qwen-recovery-20260720). This bundle is IN FLIGHT: artifacts generated from it are provisional and do NOT unlock the next parent. Refresh and regenerate when the run seals.",
+ "parent": {
+  "id": "qwen3-235b-a22b-instruct-2507",
+  "label": "235B",
+  "generation": "F1",
+  "architecture": "qwen3-moe",
+  "source_id": "Qwen/Qwen3-235B-A22B-Instruct-2507"
+ },
+ "run_status": "in_flight",
+ "representation": {"winners": [], "rate_response": []},
+ "organ_sensitivity": {
+  "organs": {
+   "gate": {"role": "mlp1", "sensitivity": "HIGH", "rel_error_at_rate": 0.92, "note": "gate_up 0.92 rel_err at Q2"},
+   "up": {"role": "mlp1", "sensitivity": "HIGH", "rel_error_at_rate": 0.92},
+   "down": {"role": "mlp2", "sensitivity": "LOWER", "rel_error_at_rate": 0.20, "note": "down_only 0.20 rel_err"}
+  },
+  "dominant_failure_organ": "gate",
+  "inversion": "mlp1/gate+up is the SENSITIVE organ; mlp2/down tolerates more",
+  "inversion_confirmed": true
+ },
+ "doctor": {"successes": [], "failures": []},
+ "routing": {"required_calibration_tokens": 1000, "note": "F0 calibration finding carried forward; not yet re-measured at F1"},
+ "activation": {},
+ "quality": {
+  "capability_gate": {"mean_symmetric_kl_max": 0.10, "next_token_argmax_agreement_min": 0.95},
+  "result": {"selected_frontier": null, "reason": "run in flight"},
+  "failures": [],
+  "probes": ["real_parent_vs_packed_forward"],
+  "domains_collapsing_first": []
+ },
+ "runtime": {
+  "timings": [],
+  "dominant_bottleneck": "expert streaming",
+  "kernel_requirements": []
+ },
+ "resources": {
+  "expert_cache_cap_gib_tested": 64,
+  "evictions": 0,
+  "ram_gb_before_after": [70, 18],
+  "swap_free_mb_at_worst": 906,
+  "correct_cap_gib": 20,
+  "working_set_gib_per_layer": 8,
+  "note": "the 64GiB cache falsification was measured on this run"
+ },
+ "source_format": {"lessons": [], "decoder_requirements": []},
+ "storage": {"mode": "release source after harvest; re-download from pinned revision", "lessons": []},
+ "assumptions": [
+  {"id": "organ_inversion", "statement": "mlp1/gate+up is the sensitive organ", "verdict": "CONFIRMED", "evidence": "dominant_failure_organ=gate; down_only 0.20 vs gate_up 0.92 rel_err"},
+  {"id": "cache_policy_64gb", "statement": "a large expert cache accelerates a single lockstep pass", "verdict": "FALSIFIED", "evidence": "0 evictions, RAM 70 to 18 GB, swap free 906MB"},
+  {"id": "capability_cliff_scale_dependence", "statement": "the capability cliff moves with parent scale", "verdict": "OPEN", "evidence": "run in flight; no sealed forward yet"}
+ ],
+ "review_answers": {
+  "capability_cliff_moved_with_scale": {"answer": "UNRESOLVED", "evidence": "run in flight"},
+  "geometry_transferred": {"answer": "organ inversion transferred from F0", "evidence": "dominant_failure_organ=gate matches the 120B mlp1 inversion"},
+  "hot_cold_routing_mattered": {"answer": "UNRESOLVED", "evidence": "routing not re-calibrated at F1"},
+  "codebook_sharing_structure_or_amortization": {"answer": "AMORTIZATION ONLY (carried from F0)", "evidence": "structure gain zero at F0; not contradicted"},
+  "higher_dimensional_vq_helped": {"answer": "UNRESOLVED at F1", "evidence": "no F1 rate ladder yet"},
+  "row_norm_stratification_helped": {"answer": "UNTESTED", "evidence": null},
+  "organs_consuming_most_rescue_bytes": {"answer": "gate and up", "evidence": "gate_up 0.92 vs down_only 0.20 rel_err"},
+  "quality_domains_collapsing_first": {"answer": "UNRESOLVED", "evidence": "no sealed forward yet"},
+  "dominant_runtime_bottleneck": {"answer": "expert streaming", "evidence": "expert-outer/candidate-inner removed 2.7h re-streaming; persisted parent logits removed 1.33h per restart"}
+ },
+ "methods": [
+  {"id": "organ_inversion_allocation", "name": "organ inversion byte allocation", "status": "CONFIRMED_MEASURED", "transfer_breadth": 2.0, "evidence": "confirmed independently at F0 and F1"},
+  {"id": "persisted_parent_logits", "name": "persisted parent logits", "status": "CONFIRMED_MEASURED", "transfer_breadth": 1.0, "evidence": "53MB; removes 1.33h per restart"},
+  {"id": "expert_cache_20gib", "name": "20GiB expert cache cap", "status": "CONFIRMED_MEASURED", "transfer_breadth": 1.0, "evidence": "replaces the falsified 64GiB cap"}
+ ],
+ "next_parent": {"storage": {"free_gib": 122, "required_gib": 0, "headroom_gib": 0, "download_in_flight": false}}
+}

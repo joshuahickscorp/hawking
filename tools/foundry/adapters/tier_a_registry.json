@@ -1,0 +1,14 @@
+{
+ "schema": "hawking.foundry.tier_a_adapter_registry.v1",
+ "note": "Every future Tier-A adapter. An entry is STALE until it carries a rebase_ack for each completed parent whose prescription_digest matches the generated ADAPTER_REBASE_MATRIX. Acks are added by whoever actually rebases the adapter, never by the generator: that is what makes silent methodology drift detectable.",
+ "adapters": [
+  {"id": "llama", "tier": "A", "status": "existing", "consumes_parent_lessons": [], "unverified_assumptions": null, "falsification_plan": null, "rebase_acks": {}},
+  {"id": "gemma2", "tier": "A", "status": "existing", "consumes_parent_lessons": [], "unverified_assumptions": null, "falsification_plan": null, "rebase_acks": {}},
+  {"id": "phi3", "tier": "A", "status": "existing", "consumes_parent_lessons": [], "unverified_assumptions": null, "falsification_plan": null, "rebase_acks": {}},
+  {"id": "olmoe", "tier": "A", "status": "existing", "consumes_parent_lessons": [], "unverified_assumptions": null, "falsification_plan": null, "rebase_acks": {}},
+  {"id": "mixtral", "tier": "A", "status": "existing", "consumes_parent_lessons": [], "unverified_assumptions": null, "falsification_plan": null, "rebase_acks": {}},
+  {"id": "gpt_oss", "tier": "A", "status": "existing", "consumes_parent_lessons": [], "unverified_assumptions": null, "falsification_plan": null, "rebase_acks": {}},
+  {"id": "mamba2", "tier": "A", "status": "existing", "consumes_parent_lessons": [], "unverified_assumptions": null, "falsification_plan": null, "rebase_acks": {}},
+  {"id": "qwen3_moe", "tier": "A", "status": "planned", "consumes_parent_lessons": [], "unverified_assumptions": null, "falsification_plan": null, "rebase_acks": {}}
+ ]
+}
