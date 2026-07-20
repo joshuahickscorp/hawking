@@ -62,6 +62,8 @@ def _configure(mod, monkeypatch, root):
                    MODEL_DIR / "chat_template.jinja"],
         "QWEN_DIR": QWEN_DIR,
         "QWEN_META": QWEN_DIR / "_meta",
+        "QWEN_DL_PID": SM / "qwen_downloader.pid.json",
+        "QWEN_DL_LOG": SM / "qwen_download.log",
     }
     for k, v in vals.items():
         monkeypatch.setattr(mod, k, v)
@@ -80,7 +82,15 @@ def _configure(mod, monkeypatch, root):
         ctx.calls.append([str(x) for x in argv])
         return types.SimpleNamespace(returncode=ctx.run_rc(argv), stdout="", stderr="")
 
-    monkeypatch.setattr(mod, "subprocess", types.SimpleNamespace(run=fake_run))
+    ctx.popen_calls = []
+
+    def fake_popen(argv, *a, **k):
+        ctx.popen_calls.append([str(x) for x in argv])
+        ctx._pid = getattr(ctx, "_pid", 424240) + 1
+        return types.SimpleNamespace(pid=ctx._pid)
+
+    monkeypatch.setattr(mod, "subprocess",
+                        types.SimpleNamespace(run=fake_run, Popen=fake_popen, DEVNULL=-3, STDOUT=-2))
     return ctx
 
 
@@ -239,61 +249,77 @@ def test_05_interrupted_deletion_is_restart_safe(tmp_path, monkeypatch):
 def test_06_interrupted_qwen_download_retries_and_respects_floors(tmp_path, monkeypatch):
     mod = osup
     ctx = _configure(mod, monkeypatch, tmp_path)
-    plan_shard = "model-00001-of-00002.safetensors"
-    mod._write(ctx.GF / "QWEN3_235B_PRIORITY_PLAN.json", {"priority_shards": [plan_shard]})
+    ctx.QWEN_META.mkdir(parents=True, exist_ok=True)
     ctx.QWEN_DIR.mkdir(parents=True, exist_ok=True)
+    mod._write(ctx.QWEN_META / "model.safetensors.index.json",
+               {"weight_map": {"a": "s1.safetensors", "b": "s2.safetensors"}})
 
     def transfer_state():
         return {"state": "TRANSFER_QWEN_PRIORITY", "entered_at": mod._now(), "input_identity": None}
 
-    # (a) shard missing, disk healthy -> retry next tick, no advance, no crash.
+    # (a) not complete, disk healthy, no downloader -> launch ONE parallel downloader; stay in state.
     mod._write(ctx.SM_STATE, transfer_state())
-    monkeypatch.setattr(mod, "_disk_free_gb", lambda: 500.0)  # fake_run does NOT create the file
+    monkeypatch.setattr(mod, "_disk_free_gb", lambda: 500.0)
+    monkeypatch.setattr(mod, "_pid_alive", lambda pid: False)
     mod.h_transfer_qwen_priority(mod._read(ctx.SM_STATE))
     assert mod._read(ctx.SM_STATE)["state"] == "TRANSFER_QWEN_PRIORITY"
-    assert any("retry" in m for m in ctx.tg)
+    assert any("snapshot_download" in " ".join(c) for c in ctx.popen_calls), "no parallel downloader launched"
+    assert (ctx.SM / "qwen_downloader.pid.json").exists()
+    assert any("parallel" in m or "workers" in m for m in ctx.tg)
 
-    # (b) below hard-stop -> paused (self-heals when disk recovers), NOT terminal.
+    # (b) below hard-stop -> kill downloader + stay (self-heal), no new launch.
+    ctx.popen_calls.clear(); ctx.tg.clear()
     mod._write(ctx.SM_STATE, transfer_state())
-    ctx.tg.clear()
     monkeypatch.setattr(mod, "_disk_free_gb", lambda: 30.0)
     mod.h_transfer_qwen_priority(mod._read(ctx.SM_STATE))
     assert mod._read(ctx.SM_STATE)["state"] == "TRANSFER_QWEN_PRIORITY"
     assert any("hard-stop" in m for m in ctx.tg)
+    assert not ctx.popen_calls, "must not launch below hard-stop"
 
-    # (c) below pause (but above hard-stop) -> pause without advancing.
+    # (c) below pause, no downloader -> pause, do NOT start.
+    ctx.popen_calls.clear(); ctx.tg.clear()
     mod._write(ctx.SM_STATE, transfer_state())
-    ctx.tg.clear()
     monkeypatch.setattr(mod, "_disk_free_gb", lambda: 70.0)
     mod.h_transfer_qwen_priority(mod._read(ctx.SM_STATE))
     assert mod._read(ctx.SM_STATE)["state"] == "TRANSFER_QWEN_PRIORITY"
     assert any("paused" in m for m in ctx.tg)
+    assert not ctx.popen_calls, "must not launch below pause"
+
+    # (d) all shards present -> advance to RUN_Q.
+    (ctx.QWEN_DIR / "s1.safetensors").write_bytes(b"x")
+    (ctx.QWEN_DIR / "s2.safetensors").write_bytes(b"x")
+    ctx.tg.clear()
+    monkeypatch.setattr(mod, "_disk_free_gb", lambda: 300.0)
+    mod._write(ctx.SM_STATE, transfer_state())
+    mod.h_transfer_qwen_priority(mod._read(ctx.SM_STATE))
+    assert mod._read(ctx.SM_STATE)["state"] == "RUN_QWEN_Q0_Q1_Q2"
 
 
 # -- 7. disk floor reached: explicit hard-stop + pause --------------------------------------
 def test_07_disk_floor_hardstop_and_pause(tmp_path, monkeypatch):
     mod = osup
     ctx = _configure(mod, monkeypatch, tmp_path)
-    mod._write(ctx.GF / "QWEN3_235B_PRIORITY_PLAN.json", {"priority_shards": ["s.safetensors"]})
+    ctx.QWEN_META.mkdir(parents=True, exist_ok=True)
     ctx.QWEN_DIR.mkdir(parents=True, exist_ok=True)
+    mod._write(ctx.QWEN_META / "model.safetensors.index.json", {"weight_map": {"a": "s.safetensors"}})
+    monkeypatch.setattr(mod, "_pid_alive", lambda pid: False)
 
-    # hard-stop -> self-healing pause (not terminal)
+    # hard-stop -> stays (self-healing), no launch
     mod._write(ctx.SM_STATE, {"state": "TRANSFER_QWEN_PRIORITY", "entered_at": mod._now()})
     ctx.tg.clear()
     monkeypatch.setattr(mod, "_disk_free_gb", lambda: mod.DISK_HARDSTOP_GB - 1)
     mod.h_transfer_qwen_priority(mod._read(ctx.SM_STATE))
-    st = mod._read(ctx.SM_STATE)
-    assert st["state"] == "TRANSFER_QWEN_PRIORITY"
+    assert mod._read(ctx.SM_STATE)["state"] == "TRANSFER_QWEN_PRIORITY"
     assert any("hard-stop" in m.lower() for m in ctx.tg)
 
-    # pause (between hard-stop and pause floors)
+    # between floors, no downloader -> pause, no launch
     mod._write(ctx.SM_STATE, {"state": "TRANSFER_QWEN_PRIORITY", "entered_at": mod._now()})
-    ctx.tg.clear()
-    monkeypatch.setattr(mod, "_disk_free_gb",
-                        lambda: (mod.DISK_HARDSTOP_GB + mod.DISK_PAUSE_GB) / 2)
+    ctx.tg.clear(); ctx.popen_calls.clear()
+    monkeypatch.setattr(mod, "_disk_free_gb", lambda: (mod.DISK_HARDSTOP_GB + mod.DISK_PAUSE_GB) / 2)
     mod.h_transfer_qwen_priority(mod._read(ctx.SM_STATE))
     assert mod._read(ctx.SM_STATE)["state"] == "TRANSFER_QWEN_PRIORITY"
     assert any("paused" in m for m in ctx.tg)
+    assert not ctx.popen_calls
 
 
 # -- 8. restart during every state: no crash, no double side effect -------------------------
@@ -366,9 +392,11 @@ def test_11_successful_qwen_ignition_path(tmp_path, monkeypatch):
     mod = osup
     ctx = _configure(mod, monkeypatch, tmp_path)
     plan_shard = "model-00001-of-00002.safetensors"
-    mod._write(ctx.GF / "QWEN3_235B_PRIORITY_PLAN.json", {"priority_shards": [plan_shard]})
+    ctx.QWEN_META.mkdir(parents=True, exist_ok=True)
     ctx.QWEN_DIR.mkdir(parents=True, exist_ok=True)
-    (ctx.QWEN_DIR / plan_shard).write_bytes(b"qwen-bytes")  # already staged -> transfer completes
+    mod._write(ctx.QWEN_META / "model.safetensors.index.json", {"weight_map": {"a": plan_shard}})
+    (ctx.QWEN_DIR / plan_shard).write_bytes(b"qwen-bytes")  # full source present -> transfer completes
+    monkeypatch.setattr(mod, "_pid_alive", lambda pid: False)
     mod._write(ctx.SM_STATE, {"state": "TRANSFER_QWEN_PRIORITY", "entered_at": mod._now(),
                               "input_identity": mod.QWEN_REV})
 

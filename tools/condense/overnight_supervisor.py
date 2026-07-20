@@ -522,45 +522,77 @@ def h_admit_qwen(st: dict) -> None:
              {"priority_shards": priority_shards, "input_identity": QWEN_REV})
 
 
+QWEN_DL_WORKERS = int(os.environ.get("HAWKING_QWEN_DL_WORKERS", "16"))  # parallel files; hf_transfer splits each
+QWEN_DL_PID = SM / "qwen_downloader.pid.json"
+QWEN_DL_LOG = SM / "qwen_download.log"
+_QWEN_DL_SCRIPT = (
+    "import sys; from huggingface_hub import snapshot_download; "
+    "snapshot_download(sys.argv[1], revision=sys.argv[2], local_dir=sys.argv[3], "
+    "max_workers=int(sys.argv[4]), "
+    "allow_patterns=['*.safetensors','*.json','*.jinja','*.txt','*.model'])"
+)
+
+
+def _qwen_shards() -> list[str]:
+    idx = _read(QWEN_META / "model.safetensors.index.json")
+    return sorted({*(idx.get("weight_map", {}).values())})
+
+
+def _qwen_present() -> tuple[int, int]:
+    shards = _qwen_shards()
+    got = sum(1 for s in shards if (QWEN_DIR / s).exists() and (QWEN_DIR / s).stat().st_size > 0)
+    return got, len(shards)
+
+
+def _dl_alive() -> bool:
+    pid = _read(QWEN_DL_PID).get("pid")
+    return bool(pid and _pid_alive(pid))
+
+
+def _kill_downloader() -> None:
+    pid = _read(QWEN_DL_PID).get("pid")
+    if pid and _pid_alive(pid):
+        try:
+            os.killpg(int(pid), 15)  # whole group (start_new_session)
+        except Exception:
+            try:
+                os.kill(int(pid), 15)
+            except Exception:
+                pass
+
+
 def h_transfer_qwen_priority(st: dict) -> None:
-    # Disk floors first. Hard stop is a self-healing PAUSE (wait for disk to recover), not a wedge -
-    # continuing would fill the disk (harm), so we stop downloading but keep polling to resume.
-    free = _disk_free_gb()
-    if free < DISK_HARDSTOP_GB:
-        _telegram_once("disk_hardstop",
-                       f"transfer hard-stopped: free {free:.0f} GB < {DISK_HARDSTOP_GB} GB. "
-                       "Paused; will resume when disk recovers."); return
-    plan = _read(GF / "QWEN3_235B_PRIORITY_PLAN.json")
-    # FULL_DISK_RESIDENT: download every official shard (fits after the 120B release); priority subset is
-    # only the ordering hint. All shards stay local for the whole Qwen campaign.
-    shards = plan.get("full_sweep_shards") or plan.get("priority_shards", [])
-    got = 0
-    for shard in shards:
-        dest = QWEN_DIR / shard
-        if dest.exists() and dest.stat().st_size > 0:
-            got += 1; continue
-        if _disk_free_gb() < DISK_PAUSE_GB:
-            _telegram_once("transfer_paused",
-                           f"transfer paused: free {_disk_free_gb():.0f} GB < {DISK_PAUSE_GB} GB target."); return
-        # one physical copy: local-dir download only (no HF cache duplicate)
-        r = subprocess.run([PY, "-c",
-                            "import sys;from huggingface_hub import hf_hub_download;"
-                            f"hf_hub_download('{QWEN_REPO}', sys.argv[1], revision='{QWEN_REV}',"
-                            f" local_dir='{QWEN_DIR}')", shard],
-                           capture_output=True, text=True, cwd=str(ROOT),
-                           env={**os.environ, **HEAVY_ENV, "HF_HUB_DISABLE_TELEMETRY": "1",
-                                "HF_HUB_ENABLE_HF_TRANSFER": "1"},
-                           timeout=7200)
-        if r.returncode != 0 or not dest.exists():
-            _telegram_once(f"retry_{shard}", f"shard {shard} transfer retry pending ({r.returncode}).", 600)
-            return  # bounded backoff: retry next tick
-        _telegram(f"Qwen shard {got+1}/{len(shards)} done: {shard} (free {_disk_free_gb():.0f} GB)")
-        got += 1
-        return  # one shard per tick keeps the tick short + disk-checked
-    if got >= len(shards) and shards:
-        _telegram(f"Qwen priority shards complete ({got}). Running Q0/Q1/Q2.")
+    got, total = _qwen_present()
+    if total and got >= total:            # FULL_DISK_RESIDENT complete + verified
+        _kill_downloader()
+        _telegram(f"Qwen full source resident: {got}/{total} shards on disk, one copy, "
+                  f"free {_disk_free_gb():.0f} GB. Running Q0/Q1/Q2.")
         _advance(st, "RUN_QWEN_Q0_Q1_Q2", "transfer_qwen_priority",
-                 {"priority_shards_got": got, "input_identity": QWEN_REV})
+                 {"shards": got, "input_identity": QWEN_REV}); return
+    free = _disk_free_gb()
+    if free < DISK_HARDSTOP_GB:            # hard stop: kill the parallel job, self-heal when disk recovers
+        _kill_downloader()
+        _telegram_once("disk_hardstop", f"Qwen transfer hard-stopped: free {free:.0f} GB < "
+                       f"{DISK_HARDSTOP_GB} GB. Killed downloader; resumes when disk recovers."); return
+    if _dl_alive():                        # downloader running in parallel -> report progress (deduped)
+        msg = (f"Qwen download below {DISK_PAUSE_GB:.0f} GB target ({free:.0f} GB); letting the running job finish"
+               if free < DISK_PAUSE_GB else
+               f"Qwen download {got}/{total} shards, {QWEN_DL_WORKERS} parallel workers + hf_transfer, free {free:.0f} GB")
+        _telegram_once("qwen_dl_progress", msg, 1800); return
+    if free < DISK_PAUSE_GB:               # not running + below target -> do NOT start a new download
+        _telegram_once("transfer_paused",
+                       f"Qwen download paused: free {free:.0f} GB < {DISK_PAUSE_GB} GB target."); return
+    # (re)launch ONE detached parallel downloader: snapshot_download, N workers, hf_transfer multi-connection
+    # per file, one physical copy in local_dir (no HF cache dup), resumable across kills/reboots.
+    QWEN_DIR.mkdir(parents=True, exist_ok=True)
+    with open(QWEN_DL_LOG, "ab") as lh:
+        proc = subprocess.Popen([PY, "-c", _QWEN_DL_SCRIPT, QWEN_REPO, QWEN_REV, str(QWEN_DIR), str(QWEN_DL_WORKERS)],
+                                stdout=lh, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL, cwd=str(ROOT),
+                                start_new_session=True,
+                                env={**os.environ, "HF_HUB_DISABLE_TELEMETRY": "1", "HF_HUB_ENABLE_HF_TRANSFER": "1"})
+    _write(QWEN_DL_PID, {"pid": proc.pid, "started_at": _now(), "workers": QWEN_DL_WORKERS})
+    _telegram(f"Qwen full download launched (parallel): {total} shards, {QWEN_DL_WORKERS} workers x hf_transfer "
+              f"multi-connection, one local copy, resumable. {got}/{total} present.")
 
 
 def h_run_q0q1q2(st: dict) -> None:
