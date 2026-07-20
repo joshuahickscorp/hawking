@@ -76,12 +76,35 @@ def _pid_alive(pid) -> bool:
         return False
 
 
-def _telegram(text: str) -> bool:
-    """Fail-closed send via the campaign notifier's Keychain creds. Never raises."""
+CREDS_FILE = SUP_DIR / ".telegram_creds.json"  # 0600 fallback: launchd often cannot read the login Keychain
+
+
+def _creds():
+    """Keychain first (works from an interactive shell); fall back to a 0600 file (works from launchd,
+    which frequently cannot reach the login Keychain in its background session)."""
     try:
         import doctor_v5_telegram_rung_notifier as N
         tok = N._keychain_get(N.TOKEN_SERVICE); chat = N._keychain_get(N.CHAT_SERVICE)
+        if tok and chat:
+            return tok, chat
+    except Exception:
+        pass
+    if CREDS_FILE.exists():
+        try:
+            d = json.loads(CREDS_FILE.read_text())
+            return d.get("token"), d.get("chat_id")
+        except Exception:
+            pass
+    return None, None
+
+
+def _telegram(text: str) -> bool:
+    """Fail-closed send. Never raises."""
+    try:
+        import doctor_v5_telegram_rung_notifier as N
+        tok, chat = _creds()
         if not tok or not chat:
+            sys.stderr.write("[supervisor] telegram creds unavailable (keychain + file)\n")
             return False
         N._telegram(tok, "sendMessage", {"chat_id": chat, "text": text[:4000]})
         return True
