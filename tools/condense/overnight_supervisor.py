@@ -489,12 +489,28 @@ def h_admit_qwen(st: dict) -> None:
                     + [t for t in wm if t.startswith("model.layers.0.mlp.experts.0.")]
                     + [t for t in wm if t.startswith("model.layers.0.mlp.experts.") and ".experts.1." in t][:0])
     priority_shards = sorted({wm[t] for t in need_tensors if t in wm})
-    plan = {"repo": QWEN_REPO, "immutable_revision": QWEN_REV, "n_priority_shards": len(priority_shards),
-            "priority_shards": priority_shards, "total_shards": len({*wm.values()}),
-            "mode": st.get("input_identity") and "resolved", "storage": "one payload copy; shard-serial preferred"}
+
+    # FULL dependency-ordered sweep = MAXIMAL coverage: every shard, streamed one bounded window at a
+    # time (layer-0 first ... last layer, then embed/norm/head), so the entire model (all 94 layers,
+    # all 128 experts) can be tested without ever holding the 437.9 GiB resident.
+    def _min_layer(shard: str) -> int:
+        ls = [int(t.split(".")[2]) for t in wm
+              if wm[t] == shard and t.startswith("model.layers.") and t.split(".")[2].isdigit()]
+        return min(ls) if ls else -1  # non-layer tensors (embed/norm/lm_head) sort first
+    full_sweep = sorted({*wm.values()}, key=lambda s: (_min_layer(s), s))
+
+    plan = {"repo": QWEN_REPO, "immutable_revision": QWEN_REV,
+            "n_priority_shards": len(priority_shards), "priority_shards": priority_shards,
+            "total_shards": len(full_sweep), "full_sweep_shards": full_sweep,
+            "coverage": ("phase1 = priority shards (Q0/Q1/Q2 feasibility); phase2 = FULL SWEEP over all "
+                         "shards, shard-serial, one window at a time = maximal model coverage. Each swept "
+                         "shard is processed + measured + released before the next. The per-shard "
+                         "compression TEST requires the Qwen compute engine (real forward + per-expert "
+                         "packer, the analog of gptoss_real_forward.py) - the next real build."),
+            "storage": "one payload copy; shard-serial; disk floors pause<100GB hardstop<40GB"}
     _write(GF / "QWEN3_235B_PRIORITY_PLAN.json", plan)
-    _telegram(f"Qwen admitted @ {QWEN_REV[:12]}. Priority plan: {len(priority_shards)} shards for "
-              "config/decode/L0-attn/L0-router/one-expert/Q2.")
+    _telegram(f"Qwen admitted @ {QWEN_REV[:12]}. Phase1 = {len(priority_shards)} priority shards (Q0/Q1/Q2); "
+              f"phase2 = full sweep over all {len(full_sweep)} shards (maximal coverage, shard-serial).")
     _advance(st, "TRANSFER_QWEN_PRIORITY", "admit_qwen",
              {"priority_shards": priority_shards, "input_identity": QWEN_REV})
 
