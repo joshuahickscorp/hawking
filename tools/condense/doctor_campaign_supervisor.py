@@ -138,6 +138,23 @@ def _eta_line(rows_dir: Path, done, total) -> str:
         return "ETA: n/a"
 
 
+def _last_sealed(rows_dir: Path) -> str:
+    """The row that just sealed (newest checkpoint) + its result, for a per-step notification."""
+    try:
+        files = sorted(rows_dir.glob("*.json"), key=lambda f: f.stat().st_mtime)
+        if not files:
+            return ""
+        d = json.loads(files[-1].read_text())
+        dv = d.get("divergence_vs_parent")
+        if dv:
+            return (f"done: {d['row_id']}  symKL {dv['mean_sym_kl']} agree "
+                    f"{dv['next_token_argmax_agreement']} -> {d.get('verdict')}")
+        q = d.get("quality", {})
+        return f"done: {d['row_id']}  ppl {q.get('perplexity')} (parent ref)"
+    except Exception:
+        return ""
+
+
 def _candidate_summary(rows_dir: Path) -> str:
     try:
         rows = [json.loads(f.read_text()) for f in rows_dir.glob("*.json")]
@@ -228,10 +245,10 @@ def tick() -> int:
     last_ts = float(sup_state.get("last_progress_epoch", 0))
     now = time.time()
     if last_done != done or (now - last_ts) >= PROGRESS_MIN_SECONDS:
-        _telegram("Hawking 120B Doctor campaign running.\n"
-                  f"rows {done}/{total}  row {hb.get('row_id')} {hb.get('phase')}  pid {pid} alive.\n"
-                  f"{_eta_line(CAMP / 'checkpoints', done, total)}\n"
-                  f"{_candidate_summary(CAMP / 'checkpoints')}")
+        _telegram(f"Hawking 120B Doctor: row sealed {done}/{total}.\n"
+                  f"{_last_sealed(CAMP / 'checkpoints')}\n"
+                  f"now: {hb.get('row_id')} {hb.get('phase')}  pid {pid} alive.\n"
+                  f"{_eta_line(CAMP / 'checkpoints', done, total)}")
         sup_state = {**sup_state, "last_progress_rows": done, "last_progress_epoch": now}
     _write(SUP_STATE, {**sup_state, "runs": runs, "status": "running"})
     return 0
