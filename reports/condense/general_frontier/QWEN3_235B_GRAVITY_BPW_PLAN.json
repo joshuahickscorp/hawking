@@ -1,0 +1,223 @@
+{
+  "accounting": {
+    "container_metadata_reserve_bytes": 67108864,
+    "margin_bits": 2705296051,
+    "margin_bytes": 338162006,
+    "packed_tensor_payload_bits": 177779931648,
+    "projected_whole_artifact_bpw": 0.758492687,
+    "target_met": true,
+    "target_total_bits": 181022098611,
+    "total_artifact_bits": 178316802560,
+    "total_artifact_bytes": 22289600320
+  },
+  "allocation": {
+    "embed_tokens": {
+      "n_weights": 622329856,
+      "payload_bits": 622338560,
+      "physical_bytes": 77792320,
+      "realized_bpw": 1.000013986,
+      "spec": {
+        "dim": 32,
+        "family": "product_quant",
+        "k": 16,
+        "subspaces": 8
+      },
+      "tensor_count": 1
+    },
+    "input_layernorm": {
+      "n_weights": 385024,
+      "payload_bits": 6208512,
+      "physical_bytes": 776064,
+      "realized_bpw": 16.125,
+      "spec": {
+        "bpw": 16.0,
+        "family": "kept_original"
+      },
+      "tensor_count": 94
+    },
+    "lm_head": {
+      "n_weights": 622329856,
+      "payload_bits": 622338560,
+      "physical_bytes": 77792320,
+      "realized_bpw": 1.000013986,
+      "spec": {
+        "dim": 32,
+        "family": "product_quant",
+        "k": 16,
+        "subspaces": 8
+      },
+      "tensor_count": 1
+    },
+    "mlp.experts.down_proj": {
+      "n_weights": 75698798592,
+      "payload_bits": 112142956544,
+      "physical_bytes": 14017869568,
+      "realized_bpw": 1.481436412,
+      "spec": {
+        "budget_frac": 0.03,
+        "dim": 16,
+        "family": "pq_protected_islands",
+        "k": 16,
+        "strategy": "residual_energy",
+        "subspaces": 4
+      },
+      "tensor_count": 12032
+    },
+    "mlp.experts.gate_proj": {
+      "n_weights": 75698798592,
+      "payload_bits": 28442492928,
+      "physical_bytes": 3555311616,
+      "realized_bpw": 0.375732422,
+      "spec": {
+        "dim": 32,
+        "family": "product_quant",
+        "k": 8,
+        "subspaces": 4
+      },
+      "tensor_count": 12032
+    },
+    "mlp.experts.up_proj": {
+      "n_weights": 75698798592,
+      "payload_bits": 28442492928,
+      "physical_bytes": 3555311616,
+      "realized_bpw": 0.375732422,
+      "spec": {
+        "dim": 32,
+        "family": "product_quant",
+        "k": 8,
+        "subspaces": 4
+      },
+      "tensor_count": 12032
+    },
+    "mlp.gate": {
+      "n_weights": 49283072,
+      "payload_bits": 788577280,
+      "physical_bytes": 98572160,
+      "realized_bpw": 16.000976562,
+      "spec": {
+        "bpw": 16.0,
+        "family": "kept_original"
+      },
+      "tensor_count": 94
+    },
+    "model.norm": {
+      "n_weights": 4096,
+      "payload_bits": 66048,
+      "physical_bytes": 8256,
+      "realized_bpw": 16.125,
+      "spec": {
+        "bpw": 16.0,
+        "family": "kept_original"
+      },
+      "tensor_count": 1
+    },
+    "post_attention_layernorm": {
+      "n_weights": 385024,
+      "payload_bits": 6208512,
+      "physical_bytes": 776064,
+      "realized_bpw": 16.125,
+      "spec": {
+        "bpw": 16.0,
+        "family": "kept_original"
+      },
+      "tensor_count": 94
+    },
+    "self_attn.k_norm": {
+      "n_weights": 12032,
+      "payload_bits": 240640,
+      "physical_bytes": 30080,
+      "realized_bpw": 20.0,
+      "spec": {
+        "bpw": 16.0,
+        "family": "kept_original"
+      },
+      "tensor_count": 94
+    },
+    "self_attn.k_proj": {
+      "n_weights": 197132288,
+      "payload_bits": 197950464,
+      "physical_bytes": 24743808,
+      "realized_bpw": 1.004150391,
+      "spec": {
+        "dim": 32,
+        "family": "product_quant",
+        "k": 16,
+        "subspaces": 8
+      },
+      "tensor_count": 94
+    },
+    "self_attn.o_proj": {
+      "n_weights": 3154116608,
+      "payload_bits": 3154934784,
+      "physical_bytes": 394366848,
+      "realized_bpw": 1.000259399,
+      "spec": {
+        "dim": 32,
+        "family": "product_quant",
+        "k": 16,
+        "subspaces": 8
+      },
+      "tensor_count": 94
+    },
+    "self_attn.q_norm": {
+      "n_weights": 12032,
+      "payload_bits": 240640,
+      "physical_bytes": 30080,
+      "realized_bpw": 20.0,
+      "spec": {
+        "bpw": 16.0,
+        "family": "kept_original"
+      },
+      "tensor_count": 94
+    },
+    "self_attn.q_proj": {
+      "n_weights": 3154116608,
+      "payload_bits": 3154934784,
+      "physical_bytes": 394366848,
+      "realized_bpw": 1.000259399,
+      "spec": {
+        "dim": 32,
+        "family": "product_quant",
+        "k": 16,
+        "subspaces": 8
+      },
+      "tensor_count": 94
+    },
+    "self_attn.v_proj": {
+      "n_weights": 197132288,
+      "payload_bits": 197950464,
+      "physical_bytes": 24743808,
+      "realized_bpw": 1.004150391,
+      "spec": {
+        "dim": 32,
+        "family": "product_quant",
+        "k": 16,
+        "subspaces": 8
+      },
+      "tensor_count": 94
+    }
+  },
+  "claim": "BYTE PLAN ONLY; capability requires real parent-vs-packed forward gates",
+  "parent": {
+    "config_index_identity_ok": true,
+    "parameters": 235093634560,
+    "repo": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+    "revision": "ac9c66cc9b46af7306746a9250f23d47083d689e",
+    "source_payload_bytes": 470187269120,
+    "source_shards": 118
+  },
+  "quality_strategy": {
+    "attention_embed_head": "separately billed 1-BPW PQ lane; never hidden as native overhead",
+    "expert_down": "reduced-cardinality PQ plus 3% protected rows; Q2 down-only error was lower",
+    "expert_gate_up": "Q2-driven input reallocation: four subspaces after gate/up dominated error",
+    "forbidden_shortcut": "expert-only BPW must not be reported as whole-model BPW",
+    "routers_and_norms": "kept BF16 to stabilize routing and residual scale"
+  },
+  "schema": "hawking.qwen3_235b.gravity_whole_bpw_plan.v1",
+  "sha256": "1030ec1f82dc1b048739914cc0be4dbec0e3bdfbe22ee9fc0e12f989d4628235",
+  "target": {
+    "important_boundary": "the 120B rate passed but capability failed; this is a Qwen byte envelope to test, not a capability prediction",
+    "provenance": "GPT-OSS-120B byte-complete construction floor (~0.77 BPW)",
+    "whole_artifact_bpw_ceiling": 0.77
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "diagnosis_receipt": "reports/condense/general_frontier/QWEN3_235B_Q2_T5_RECEIPT.json",
+  "diagnosis_sha256": "63b4b393b4ed2d82ee1ef50758037c128f1ef663eaa1d2ba350dc2f821ab8f2f",
+  "dominant_failure_organ": "gate",
+  "final": false,
+  "next_frontier_move": "Qwen refutes the direct 120B robustness ordering on this activation: move budget from down islands into activation-aware gate/up PQ, holding <=0.77 BPW. A billed output-gain calibration is admitted because it removes material error.",
+  "q2_receipt": "/private/tmp/hawking-status.S3Ry7K/reports/condense/general_frontier/QWEN3_235B_Q2_RECEIPT.json",
+  "schema": "hawking.qwen3_235b.gravity_state.v1",
+  "status": "Q2_DIAGNOSED_NEXT_CANDIDATE_READY",
+  "target_whole_artifact_bpw_ceiling": 0.77,
+  "updated_at": "2026-07-20T13:08:12Z"
+}

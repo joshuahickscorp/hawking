@@ -19,18 +19,25 @@ gate_proj/up_proj/down_proj into the real Qwen forward). Qwen experts have THREE
                          gate/up, mlp2 -> down); else gate/up = product_quant, down =
                          pq_protected_islands.
   T2_product_quant     : second-best full-rank family - plain product_quant on all three.
-  T3_qwen_organ_alloc  : Qwen-specific challenger. Asymmetric organ allocation exploiting the
+  T3_qwen_organ_alloc  : Qwen-specific 120B-rate challenger. Asymmetric organ allocation exploiting the
                          3-projection structure: the SwiGLU pair (gate/up, robust) gets a tighter
                          product_quant (FEWER bytes); down (sensitive, heavy-tailed) gets looser
-                         pq_protected_islands with a larger island budget (MORE bytes). Distinct
-                         mapping from T1/T2. (A cluster-shared codebook is the other Qwen-specific
+                         pq_protected_islands with a larger island budget (MORE bytes). Its expert
+                         projection rate is designed below 0.77 BPW; the separate whole-model plan
+                         bills attention/embed/head/router/norm too. Distinct mapping from T1/T2.
+                         (A cluster-shared codebook is the other Qwen-specific
                          lever but needs whole-layer expert buffering the per-expert hook cannot
                          see; organ allocation is the per-expert form.)
   T4_naive_rvq_control : equal-byte conventional control - naive_rvq on all three.
+  T5_qwen_input_realloc: Q2-driven challenger at the same expert rate as T3. Q2 showed gate/up,
+                         not down, dominate the first Qwen activation error, so T5 shifts PQ index
+                         capacity into gate/up and reduces down codebook cardinality while retaining
+                         the 3% protected-row mechanism.
 
 Metrics are identical in shape to the gpt-oss wave: real logit divergence vs the parent (mean
 symmetric softmax KL, logit cosine, top-5 overlap, next-token argmax agreement) + candidate PPL +
-a per-expert whole-artifact BPW audit read back from the byte-accounted gravity_forge packers.
+a three-projection expert BPW audit read back from the byte-accounted gravity_forge packers. This
+rate is never mislabeled as whole-model BPW; qwen_bpw_budget.py bills the remaining organs.
 Sealed capability thresholds: mean_sym_kl <= 0.10 AND next_token_argmax_agreement >= 0.95 (do NOT
 lower after seeing results). Rows are decisive-first: all T0 parent refs, then each candidate
 across the 6-prompt Qwen-tokenized holdout, T1 (champion) first.
@@ -77,6 +84,7 @@ CHECKPOINTS = CAMPAIGN / "checkpoints"
 CONTROLLER = CAMPAIGN / "controller"
 STATE_PATH = CAMPAIGN / "QWEN_TRANSFER_STATE.json"
 WAITING_RECEIPT = CAMPAIGN / "QWEN_TRANSFER_WAITING_SOURCE.json"
+BPW_PLAN_PATH = ROOT / "reports/condense/general_frontier/QWEN3_235B_GRAVITY_BPW_PLAN.json"
 LEASE_PATH = LEASES / "qwen_transfer.lease"
 HB_PATH = HEARTBEAT / "qwen_transfer.heartbeat.json"
 LABEL = "com.hawking.qwen_transfer"
@@ -109,6 +117,7 @@ PARAMS = {"dim": 16, "k": 64, "subspaces": 2, "strategy": "residual_energy",
 
 PROMOTE_KL = 0.10
 PROMOTE_ARGMAX_AGREE = 0.95
+TARGET_WHOLE_BPW = 0.77
 
 
 def _spec(family: str, **overrides: Any) -> dict[str, Any]:
@@ -134,16 +143,24 @@ def _vulture_champion() -> dict[str, dict[str, Any]]:
 CANDIDATES: dict[str, dict[str, Any]] = {
     "T1_vulture_champion": _vulture_champion(),
     "T2_product_quant": {c: _spec("product_quant") for c in CLASSES},
-    # T3: asymmetric organ allocation. gate/up (SwiGLU pair, robust) tighter -> FEWER bytes
-    # (dim 16->32, k 64->16); down (sensitive) looser -> MORE bytes (subspaces 2->4, island 1%->3%).
+    # T3: gate/up are tight; down keeps most of the joint budget through four subspaces + 3%
+    # protected rows. k=32 puts the three projections below the 120B 0.77-BPW construction rate.
+    # Non-expert organs are still billed separately by qwen_bpw_budget.py.
     "T3_qwen_organ_alloc": {"gate": _spec("product_quant", dim=32, k=16, subspaces=2),
                             "up": _spec("product_quant", dim=32, k=16, subspaces=2),
-                            "down": _spec("pq_protected_islands", dim=16, k=64, subspaces=4,
+                            "down": _spec("pq_protected_islands", dim=16, k=32, subspaces=4,
                                           budget_frac=0.03)},
+    # T5: admitted by the first real Qwen organ diagnosis. Same ~0.744 expert BPW as T3, but
+    # gate/up rise ~0.251->0.376 each while down falls ~1.732->1.481.
+    "T5_qwen_input_realloc": {"gate": _spec("product_quant", dim=32, k=8, subspaces=4),
+                              "up": _spec("product_quant", dim=32, k=8, subspaces=4),
+                              "down": _spec("pq_protected_islands", dim=16, k=16, subspaces=4,
+                                            budget_frac=0.03)},
     "T4_naive_rvq_control": {c: _spec("naive_rvq") for c in CLASSES},
 }
 # Decisive-first: the champion, then the Qwen challenger, then the full-rank baseline, then control.
-CANDIDATE_ORDER = ["T1_vulture_champion", "T3_qwen_organ_alloc", "T2_product_quant", "T4_naive_rvq_control"]
+CANDIDATE_ORDER = ["T1_vulture_champion", "T3_qwen_organ_alloc", "T5_qwen_input_realloc",
+                   "T2_product_quant", "T4_naive_rvq_control"]
 
 
 def _now() -> str:
@@ -263,14 +280,17 @@ def _make_hook(mapping: dict[str, Any], audit: dict[str, Any]):
 
 
 def _budget_from_audit(audit: dict[str, Any]) -> dict[str, Any] | None:
-    """Combine the per-class realized BPWs into a per-expert whole-artifact BPW (size-weighted)."""
+    """Combine the three projection rates. This is explicitly not a whole-model BPW."""
     if not all(c in audit for c in CLASSES):
         return None
     ns = {c: audit[c]["n_weights"] for c in CLASSES}
     bits = sum(audit[c]["whole_bpw"] * ns[c] for c in CLASSES)
     tot = sum(ns.values())
     out = {f"{c}_class": audit[c] for c in CLASSES}
-    out["per_expert_whole_bpw"] = round(bits / max(1, tot), 5)
+    out["per_expert_projection_bpw"] = round(bits / max(1, tot), 5)
+    out["per_expert_whole_bpw"] = out["per_expert_projection_bpw"]  # receipt compatibility
+    out["scope"] = "three expert projection tensors only; not whole-model BPW"
+    out["meets_120b_numeric_ceiling"] = out["per_expert_projection_bpw"] <= TARGET_WHOLE_BPW
     return out
 
 
@@ -370,6 +390,8 @@ def _seal_waiting_source() -> int:
                "source_dir": str(ROOT / Q.DEFAULT_SOURCE),
                "candidates": {c: {k: CANDIDATES[c][k]["family"] for k in CLASSES} for c in CANDIDATES},
                "candidate_order": CANDIDATE_ORDER, "params": PARAMS,
+               "target_whole_artifact_bpw_ceiling": TARGET_WHOLE_BPW,
+               "whole_model_bpw_plan": str(BPW_PLAN_PATH),
                "honesty": "UNTESTED-PENDING-SOURCE; run() is a safe no-op until the weights are staged"}
     _atomic(STATE_PATH, payload)
     _atomic(WAITING_RECEIPT, payload)
@@ -476,6 +498,8 @@ def _write_state(done, total, t0, final=False):
         "gate": "qwen3_235b_transfer_real_forward", "rows_done": done, "rows_total": total,
         "candidates": {c: {k: CANDIDATES[c][k]["family"] for k in CLASSES} for c in CANDIDATES},
         "candidate_order": CANDIDATE_ORDER, "params": PARAMS,
+        "target_whole_artifact_bpw_ceiling": TARGET_WHOLE_BPW,
+        "whole_model_bpw_plan": str(BPW_PLAN_PATH),
         "promote_thresholds": {"mean_sym_kl_max": PROMOTE_KL, "argmax_agreement_min": PROMOTE_ARGMAX_AGREE},
         "least_divergent_candidates": [{"row_id": r["row_id"], "variant": r["variant"],
                                         "mean_sym_kl": r["divergence_vs_parent"]["mean_sym_kl"],

@@ -36,12 +36,16 @@ RoPE + q/k-norm end to end in milliseconds. No capability is claimed by this mod
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import mmap
 import os
 import struct
 import sys
 import time
+import urllib.error
+import urllib.parse
+import urllib.request
 from pathlib import Path
 from typing import Any, Callable
 
@@ -58,6 +62,9 @@ _ST_BYTES = {"BF16": 2, "F16": 2, "F32": 4}
 
 DEFAULT_SOURCE = Path("models/qwen3-235b-a22b")
 DEFAULT_META = Path("models/qwen3-235b-a22b/_meta")
+DEFAULT_REPO = "Qwen/Qwen3-235B-A22B-Instruct-2507"
+DEFAULT_REVISION = "ac9c66cc9b46af7306746a9250f23d47083d689e"
+MAX_REMOTE_HEADER_BYTES = 200 * 1024 * 1024
 
 
 # ── bf16 <-> f32 bit ops ────────────────────────────────────────────────────────────────────
@@ -220,6 +227,160 @@ class SafetensorsIndexReader:
             except Exception:
                 pass
         self._mmaps.clear(); self._files.clear(); self._headers.clear()
+
+
+class RemoteSafetensorsIndexReader:
+    """Revision-pinned HTTP Range reader for a sharded safetensors checkpoint.
+
+    The reader has the same narrow interface as :class:`SafetensorsIndexReader`, but fetches only
+    the header and exact tensor byte ranges it needs. A content-addressed range cache makes retries
+    resumable and prevents a parent/candidate probe from downloading the same tensor twice. It
+    rejects a server that ignores ``Range`` instead of accidentally accepting a multi-GiB shard.
+
+    ``range_fetcher`` is injectable for deterministic unit tests. Its contract is
+    ``fetcher(shard, start, end) -> bytes`` for the half-open range ``[start, end)``.
+    """
+
+    def __init__(self, index_path: str | os.PathLike[str], *,
+                 repo_id: str = DEFAULT_REPO, revision: str = DEFAULT_REVISION,
+                 cache_dir: str | os.PathLike[str] | None = None,
+                 range_fetcher: Callable[[str, int, int], bytes] | None = None,
+                 timeout_seconds: float = 180.0):
+        self.source_dir = Path(cache_dir or "/tmp/hawking-qwen-range-cache")
+        with open(index_path) as fh:
+            idx = json.load(fh)
+        self.weight_map: dict[str, str] = idx["weight_map"]
+        self.metadata: dict[str, Any] = idx.get("metadata", {})
+        self.repo_id = repo_id
+        self.revision = revision
+        self.cache_dir = Path(cache_dir) if cache_dir is not None else None
+        self.range_fetcher = range_fetcher
+        self.timeout_seconds = float(timeout_seconds)
+        self._headers: dict[str, tuple[dict[str, Any], int]] = {}
+        self.telemetry: dict[str, Any] = {
+            "range_requests": 0, "network_bytes": 0, "cache_hits": 0, "cache_misses": 0,
+            "shards_touched": set(), "tensors_read": set(),
+        }
+
+    def has(self, name: str) -> bool:
+        return name in self.weight_map
+
+    def source_present(self) -> bool:
+        # The immutable remote source is the source. Reachability is verified on the first range;
+        # callers do not need all 438 GiB resident merely to pass an availability gate.
+        return True
+
+    def shard_of(self, name: str) -> str:
+        if name not in self.weight_map:
+            raise KeyError(f"tensor not in index weight_map: {name}")
+        return self.weight_map[name]
+
+    def _cache_path(self, shard: str, start: int, end: int) -> Path | None:
+        if self.cache_dir is None:
+            return None
+        key = hashlib.sha256(
+            f"{self.repo_id}\0{self.revision}\0{shard}\0{start}\0{end}".encode()
+        ).hexdigest()
+        return self.cache_dir / key[:2] / f"{key}.range"
+
+    def _http_range(self, shard: str, start: int, end: int) -> bytes:
+        quoted_shard = urllib.parse.quote(shard, safe="/-_.")
+        quoted_rev = urllib.parse.quote(self.revision, safe="")
+        url = f"https://huggingface.co/{self.repo_id}/resolve/{quoted_rev}/{quoted_shard}"
+        headers = {"Range": f"bytes={start}-{end - 1}", "User-Agent": "hawking-qwen-q2/1"}
+        token = os.environ.get("HF_TOKEN") or os.environ.get("HUGGING_FACE_HUB_TOKEN")
+        if token:
+            headers["Authorization"] = f"Bearer {token}"
+        request = urllib.request.Request(url, headers=headers)
+        try:
+            with urllib.request.urlopen(request, timeout=self.timeout_seconds) as response:
+                status = int(getattr(response, "status", response.getcode()))
+                if status != 206:
+                    raise IOError(f"remote source ignored Range for {shard}: HTTP {status}")
+                raw = response.read(end - start + 1)
+        except urllib.error.HTTPError as exc:
+            raise IOError(f"remote range failed for {shard}@{start}:{end}: HTTP {exc.code}") from exc
+        return raw
+
+    def _read_range(self, shard: str, start: int, end: int) -> bytes:
+        if start < 0 or end <= start:
+            raise ValueError(f"invalid half-open range [{start},{end}) for {shard}")
+        expected = end - start
+        cp = self._cache_path(shard, start, end)
+        if cp is not None and cp.is_file() and cp.stat().st_size == expected:
+            self.telemetry["cache_hits"] += 1
+            return cp.read_bytes()
+        self.telemetry["cache_misses"] += 1
+        if self.range_fetcher is not None:
+            raw = self.range_fetcher(shard, start, end)
+        else:
+            raw = self._http_range(shard, start, end)
+        if not isinstance(raw, bytes) or len(raw) != expected:
+            raise IOError(f"short remote range for {shard}@{start}:{end}: "
+                          f"expected {expected}, got {len(raw) if isinstance(raw, bytes) else type(raw)}")
+        self.telemetry["range_requests"] += 1
+        self.telemetry["network_bytes"] += len(raw)
+        self.telemetry["shards_touched"].add(shard)
+        if cp is not None:
+            cp.parent.mkdir(parents=True, exist_ok=True)
+            tmp = cp.with_suffix(f".tmp.{os.getpid()}")
+            tmp.write_bytes(raw)
+            os.replace(tmp, cp)
+        return raw
+
+    def _shard(self, shard_file: str) -> tuple[dict[str, Any], int]:
+        if shard_file not in self._headers:
+            prefix = self._read_range(shard_file, 0, 8)
+            hlen = struct.unpack("<Q", prefix)[0]
+            if not (2 <= hlen <= MAX_REMOTE_HEADER_BYTES):
+                raise IOError(f"unsafe safetensors header length {hlen} in {shard_file}")
+            header = self._read_range(shard_file, 8, 8 + hlen)
+            entries = json.loads(header)
+            entries.pop("__metadata__", None)
+            self._headers[shard_file] = (entries, 8 + hlen)
+        return self._headers[shard_file]
+
+    def _entry(self, name: str) -> tuple[str, int, dict[str, Any]]:
+        shard = self.shard_of(name)
+        entries, data_start = self._shard(shard)
+        row = entries.get(name)
+        if row is None:
+            raise KeyError(f"{name!r} absent from shard {shard} header")
+        return shard, data_start, row
+
+    def bf16(self, name: str) -> np.ndarray:
+        shard, data_start, row = self._entry(name)
+        dtype, shape, (start, end) = row["dtype"], tuple(row["shape"]), row["data_offsets"]
+        if dtype != "BF16":
+            raise ValueError(f"{name}: expected BF16, got {dtype}")
+        raw = self._read_range(shard, data_start + start, data_start + end)
+        self.telemetry["tensors_read"].add(name)
+        return bf16_bits_to_f32(np.frombuffer(raw, dtype=np.uint16)).reshape(shape)
+
+    def bf16_rows(self, name: str, rows: list[int]) -> np.ndarray:
+        shard, data_start, row = self._entry(name)
+        dtype, shape, (start, _end) = row["dtype"], tuple(row["shape"]), row["data_offsets"]
+        if dtype != "BF16" or len(shape) != 2:
+            raise ValueError(f"bf16_rows needs a 2D BF16 tensor, {name} is {dtype} {shape}")
+        nrow, ncol = shape
+        out = np.empty((len(rows), ncol), dtype=np.float32)
+        for i, r in enumerate(rows):
+            rr = int(r)
+            if not 0 <= rr < nrow:
+                raise IndexError(f"row {rr} outside {name} shape {shape}")
+            begin = data_start + start + rr * ncol * 2
+            raw = self._read_range(shard, begin, begin + ncol * 2)
+            out[i] = bf16_bits_to_f32(np.frombuffer(raw, dtype=np.uint16))
+        self.telemetry["tensors_read"].add(name)
+        return out
+
+    def telemetry_json(self) -> dict[str, Any]:
+        return {**self.telemetry,
+                "shards_touched": sorted(self.telemetry["shards_touched"]),
+                "tensors_read": sorted(self.telemetry["tensors_read"])}
+
+    def close(self) -> None:
+        self._headers.clear()
 
 
 # ── geometry ─────────────────────────────────────────────────────────────────────────────────
@@ -387,6 +548,21 @@ def from_source(source_dir: str | os.PathLike[str] = DEFAULT_SOURCE,
     idx = Path(source_dir) / "model.safetensors.index.json"
     reader = SafetensorsIndexReader(source_dir, idx if idx.is_file()
                                     else Path(meta_dir) / "model.safetensors.index.json")
+    return QwenRealForward(reader, QwenGeometry(config))
+
+
+def from_remote(meta_dir: str | os.PathLike[str], *, repo_id: str = DEFAULT_REPO,
+                revision: str = DEFAULT_REVISION,
+                cache_dir: str | os.PathLike[str] | None = None,
+                range_fetcher: Callable[[str, int, int], bytes] | None = None) -> QwenRealForward:
+    """Build a real Qwen forward over the immutable Hub source without full-model residency."""
+    meta = Path(meta_dir)
+    with open(meta / "config.json") as fh:
+        config = json.load(fh)
+    reader = RemoteSafetensorsIndexReader(
+        meta / "model.safetensors.index.json", repo_id=repo_id, revision=revision,
+        cache_dir=cache_dir, range_fetcher=range_fetcher,
+    )
     return QwenRealForward(reader, QwenGeometry(config))
 
 

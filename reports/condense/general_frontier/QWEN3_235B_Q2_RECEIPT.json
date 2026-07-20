@@ -1,0 +1,188 @@
+{
+  "bounded_token_id": 374,
+  "elapsed_seconds": 222.1,
+  "first_gravity_candidate": {
+    "budget": {
+      "down_class": {
+        "family": "pq_protected_islands",
+        "n_weights": 6291456,
+        "params": {
+          "budget_frac": 0.03,
+          "dim": 16,
+          "k": 32,
+          "subspaces": 4
+        },
+        "whole_bpw": 1.73209
+      },
+      "gate_class": {
+        "family": "product_quant",
+        "n_weights": 6291456,
+        "params": {
+          "budget_frac": 0.01,
+          "dim": 32,
+          "k": 16,
+          "subspaces": 2
+        },
+        "whole_bpw": 0.25138
+      },
+      "meets_120b_numeric_ceiling": true,
+      "per_expert_projection_bpw": 0.74495,
+      "per_expert_whole_bpw": 0.74495,
+      "scope": "three expert projection tensors only; not whole-model BPW",
+      "up_class": {
+        "family": "product_quant",
+        "n_weights": 6291456,
+        "params": {
+          "budget_frac": 0.01,
+          "dim": 32,
+          "k": 16,
+          "subspaces": 2
+        },
+        "whole_bpw": 0.25138
+      }
+    },
+    "candidate": "T3_qwen_organ_alloc",
+    "finite": true,
+    "mapping": {
+      "down": {
+        "family": "pq_protected_islands",
+        "params": {
+          "budget_frac": 0.03,
+          "dim": 16,
+          "doctor": "residual_codebook",
+          "doctor_bpw": 0.15,
+          "k": 32,
+          "stages": 2,
+          "strategy": "residual_energy",
+          "subspaces": 4
+        }
+      },
+      "gate": {
+        "family": "product_quant",
+        "params": {
+          "budget_frac": 0.01,
+          "dim": 32,
+          "doctor": "residual_codebook",
+          "doctor_bpw": 0.15,
+          "k": 16,
+          "stages": 2,
+          "strategy": "residual_energy",
+          "subspaces": 2
+        }
+      },
+      "up": {
+        "family": "product_quant",
+        "params": {
+          "budget_frac": 0.01,
+          "dim": 32,
+          "doctor": "residual_codebook",
+          "doctor_bpw": 0.15,
+          "k": 16,
+          "stages": 2,
+          "strategy": "residual_energy",
+          "subspaces": 2
+        }
+      }
+    },
+    "quality_scope": "single real expert activation diagnostic; not a capability pass",
+    "real_activation_output_cosine": 0.93792116,
+    "real_activation_output_relative_error": 0.94278245,
+    "real_layer": 0,
+    "real_selected_expert": 54,
+    "target_numeric_bpw_ceiling": 0.77,
+    "target_numeric_bpw_met": true
+  },
+  "gate": "Q2_real_router_expert_layer_and_gravity_ignition",
+  "generated_at": "2026-07-20T13:04:48Z",
+  "prompt": "The capital of France is",
+  "prompt_token_count": 5,
+  "real_layer0": {
+    "complete_top8_forward": true,
+    "finite": true,
+    "hidden_rms": 0.03667985,
+    "hidden_shape": [
+      1,
+      4096
+    ],
+    "routing_weight_sum": 1.0,
+    "routing_weights": [
+      0.22264698,
+      0.15449506,
+      0.14321223,
+      0.1412638,
+      0.12548421,
+      0.11557131,
+      0.0490231,
+      0.04830328
+    ],
+    "selected_experts": [
+      54,
+      95,
+      51,
+      89,
+      68,
+      74,
+      84,
+      19
+    ]
+  },
+  "repo": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+  "revision": "ac9c66cc9b46af7306746a9250f23d47083d689e",
+  "schema": "hawking.qwen3_235b.q2_router_expert_layer.v1",
+  "sha256": "9a466fb74e33e06ae02c279dee745d02f3ecf423742d1828b3a4a66311781a22",
+  "source_mode": "immutable revision-pinned HTTP byte ranges with content-addressed cache",
+  "transport": {
+    "cache_hits": 10,
+    "cache_misses": 38,
+    "network_bytes": 445735400,
+    "range_requests": 38,
+    "shards_touched": [
+      "model-00001-of-00118.safetensors",
+      "model-00002-of-00118.safetensors"
+    ],
+    "tensors_read": [
+      "model.embed_tokens.weight",
+      "model.layers.0.input_layernorm.weight",
+      "model.layers.0.mlp.experts.19.down_proj.weight",
+      "model.layers.0.mlp.experts.19.gate_proj.weight",
+      "model.layers.0.mlp.experts.19.up_proj.weight",
+      "model.layers.0.mlp.experts.51.down_proj.weight",
+      "model.layers.0.mlp.experts.51.gate_proj.weight",
+      "model.layers.0.mlp.experts.51.up_proj.weight",
+      "model.layers.0.mlp.experts.54.down_proj.weight",
+      "model.layers.0.mlp.experts.54.gate_proj.weight",
+      "model.layers.0.mlp.experts.54.up_proj.weight",
+      "model.layers.0.mlp.experts.68.down_proj.weight",
+      "model.layers.0.mlp.experts.68.gate_proj.weight",
+      "model.layers.0.mlp.experts.68.up_proj.weight",
+      "model.layers.0.mlp.experts.74.down_proj.weight",
+      "model.layers.0.mlp.experts.74.gate_proj.weight",
+      "model.layers.0.mlp.experts.74.up_proj.weight",
+      "model.layers.0.mlp.experts.84.down_proj.weight",
+      "model.layers.0.mlp.experts.84.gate_proj.weight",
+      "model.layers.0.mlp.experts.84.up_proj.weight",
+      "model.layers.0.mlp.experts.89.down_proj.weight",
+      "model.layers.0.mlp.experts.89.gate_proj.weight",
+      "model.layers.0.mlp.experts.89.up_proj.weight",
+      "model.layers.0.mlp.experts.95.down_proj.weight",
+      "model.layers.0.mlp.experts.95.gate_proj.weight",
+      "model.layers.0.mlp.experts.95.up_proj.weight",
+      "model.layers.0.mlp.gate.weight",
+      "model.layers.0.post_attention_layernorm.weight",
+      "model.layers.0.self_attn.k_norm.weight",
+      "model.layers.0.self_attn.k_proj.weight",
+      "model.layers.0.self_attn.o_proj.weight",
+      "model.layers.0.self_attn.q_norm.weight",
+      "model.layers.0.self_attn.q_proj.weight",
+      "model.layers.0.self_attn.v_proj.weight"
+    ]
+  },
+  "verdict": "Q2 PASS; real Qwen layer/router/expert path works and the first asymmetric Gravity candidate is below the 120B numeric BPW ceiling. Full-model parent-vs-packed capability evaluation remains required.",
+  "whole_model_byte_plan": {
+    "path": "/private/tmp/hawking-status.S3Ry7K/reports/condense/general_frontier/QWEN3_235B_GRAVITY_BPW_PLAN.json",
+    "physical_bytes": 22308081472,
+    "projected_whole_artifact_bpw": 0.759121582,
+    "sha256": "e4300c7b48c11fded6814232bdc1d7fae93ef0c849e11de7feebcbcd2da7e95a",
+    "target_met": true
+  }
+}

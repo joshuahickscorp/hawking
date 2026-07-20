@@ -3,7 +3,7 @@
 
 NO real forward is run and the 438 GiB Qwen source is never touched. These validate:
   * forge_pack per family reconstructs to the right shape with real byte-accounted BPW,
-  * the T0-T4 candidate mapping enumerates correctly (Qwen 3-projection classes; Vulture champion
+  * the T0-T5 candidate mapping enumerates correctly (Qwen 3-projection classes; Vulture champion
     maps gate/up together and down distinctly),
   * _rows() produces the decisive-first parent-then-candidate set,
   * the source-absent path seals WAITING_SOURCE cleanly (monkeypatched source_present=False, no lease),
@@ -50,11 +50,12 @@ def test_forge_pack_rejects_unknown_family():
 
 
 # --------------------------------------------------------------------------- #
-# T0-T4 candidate mapping enumeration
+# T0-T5 candidate mapping enumeration
 # --------------------------------------------------------------------------- #
 def test_candidates_enumerate_over_three_qwen_classes():
     assert set(qcw.CANDIDATES) == {"T1_vulture_champion", "T2_product_quant",
-                                   "T3_qwen_organ_alloc", "T4_naive_rvq_control"}
+                                   "T3_qwen_organ_alloc", "T4_naive_rvq_control",
+                                   "T5_qwen_input_realloc"}
     for mapping in qcw.CANDIDATES.values():
         assert set(mapping) == {"gate", "up", "down"}       # Qwen has THREE projections
         for cls in ("gate", "up", "down"):
@@ -83,6 +84,19 @@ def test_control_and_baseline_families():
     t3 = qcw.CANDIDATES["T3_qwen_organ_alloc"]
     assert t3["down"]["family"] != t3["gate"]["family"]
     assert t3["gate"]["params"]["dim"] == 32 and t3["down"]["params"]["budget_frac"] == 0.03
+    assert t3["down"]["params"]["k"] == 32       # tuned to the <=0.77 whole-model envelope
+    t5 = qcw.CANDIDATES["T5_qwen_input_realloc"]
+    assert t5["gate"]["params"]["subspaces"] == 4
+    assert t5["down"]["params"]["k"] == 16
+
+
+def test_budget_scope_does_not_mislabel_expert_rate_as_whole_model():
+    audit = {c: {"whole_bpw": v, "n_weights": 100} for c, v in
+             {"gate": 0.25, "up": 0.25, "down": 1.7}.items()}
+    out = qcw._budget_from_audit(audit)
+    assert out["per_expert_projection_bpw"] == out["per_expert_whole_bpw"]
+    assert out["scope"].endswith("not whole-model BPW")
+    assert out["meets_120b_numeric_ceiling"] is True
 
 
 # --------------------------------------------------------------------------- #
@@ -91,7 +105,7 @@ def test_control_and_baseline_families():
 def test_rows_are_decisive_first_and_unique():
     rows = qcw._rows()
     n = len(qcw.HOLDOUT)
-    assert len(rows) == n * (1 + len(qcw.CANDIDATE_ORDER))          # parent + 4 candidates per prompt
+    assert len(rows) == n * (1 + len(qcw.CANDIDATE_ORDER))          # parent + candidates per prompt
     assert all(r["candidate"] == "parent" for r in rows[:n])        # all T0 parent refs first
     assert rows[n]["candidate"] == "T1_vulture_champion"           # champion block first
     assert rows[n]["row_id"].endswith("__T1_vulture_champion")

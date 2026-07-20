@@ -1,0 +1,78 @@
+{
+  "candidate": "T3_qwen_organ_alloc",
+  "claim_scope": "one real routed expert activation; diagnostic only, not capability parity",
+  "class_bpw": {
+    "down": 1.73208745,
+    "gate": 0.25138346,
+    "up": 0.25138346
+  },
+  "combined_expert_projection_bpw": 0.74495146,
+  "diagnostic_metrics": {
+    "all_three": {
+      "cosine": 0.93791902,
+      "gain_corrected_relative_error": 0.3468543,
+      "optimal_scalar_gain": 15.31057765,
+      "relative_error": 0.94278298
+    },
+    "down_only": {
+      "cosine": 0.98894602,
+      "gain_corrected_relative_error": 0.14827599,
+      "optimal_scalar_gain": 1.06026082,
+      "relative_error": 0.15857194
+    },
+    "gate_only": {
+      "cosine": 0.98198402,
+      "gain_corrected_relative_error": 0.18896396,
+      "optimal_scalar_gain": 4.46646195,
+      "relative_error": 0.78520354
+    },
+    "gate_up": {
+      "cosine": 0.95172803,
+      "gain_corrected_relative_error": 0.30694259,
+      "optimal_scalar_gain": 14.55927389,
+      "relative_error": 0.93800093
+    },
+    "up_only": {
+      "cosine": 0.98694041,
+      "gain_corrected_relative_error": 0.1610858,
+      "optimal_scalar_gain": 3.59657737,
+      "relative_error": 0.73051132
+    }
+  },
+  "dominant_failure_organ": "gate",
+  "generated_at": "2026-07-20T13:06:22Z",
+  "next_frontier_move": "Qwen refutes the direct 120B robustness ordering on this activation: move budget from down islands into activation-aware gate/up PQ, holding <=0.77 BPW. A billed output-gain calibration is admitted because it removes material error.",
+  "parent_q2_sha256": "9a466fb74e33e06ae02c279dee745d02f3ecf423742d1828b3a4a66311781a22",
+  "real_expert": 54,
+  "real_layer": 0,
+  "real_token_id": 374,
+  "revision": "ac9c66cc9b46af7306746a9250f23d47083d689e",
+  "schema": "hawking.qwen3_235b.q2_organ_diagnosis.v1",
+  "sha256": "11f030c618d67d101716cdf18a364af76c4ab06c091cb57e8124d6497b289fd9",
+  "single_organ_relative_error": {
+    "down": 0.15857194,
+    "gate": 0.78520354,
+    "up": 0.73051132
+  },
+  "transport": {
+    "cache_hits": 16,
+    "cache_misses": 0,
+    "network_bytes": 0,
+    "range_requests": 0,
+    "shards_touched": [],
+    "tensors_read": [
+      "model.embed_tokens.weight",
+      "model.layers.0.input_layernorm.weight",
+      "model.layers.0.mlp.experts.54.down_proj.weight",
+      "model.layers.0.mlp.experts.54.gate_proj.weight",
+      "model.layers.0.mlp.experts.54.up_proj.weight",
+      "model.layers.0.post_attention_layernorm.weight",
+      "model.layers.0.self_attn.k_norm.weight",
+      "model.layers.0.self_attn.k_proj.weight",
+      "model.layers.0.self_attn.o_proj.weight",
+      "model.layers.0.self_attn.q_norm.weight",
+      "model.layers.0.self_attn.q_proj.weight",
+      "model.layers.0.self_attn.v_proj.weight"
+    ]
+  }
+}

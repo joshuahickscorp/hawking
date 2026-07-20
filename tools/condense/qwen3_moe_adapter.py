@@ -39,7 +39,7 @@ from typing import Any
 
 # Immutable pin recorded for provenance; the adapter reads local _meta, never the network.
 IMMUTABLE_REVISION = "ac9c66cc9b46af7306746a9250f23d47083d689e"
-HF_ID = "Qwen/Qwen3-235B-A22B"
+HF_ID = "Qwen/Qwen3-235B-A22B-Instruct-2507"
 EXPECTED_ARCH = "Qwen3MoeForCausalLM"
 EXPECTED_MODEL_TYPE = "qwen3_moe"
 

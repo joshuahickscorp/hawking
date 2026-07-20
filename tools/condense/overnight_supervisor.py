@@ -553,7 +553,7 @@ QWEN_DL_PID = SM / "qwen_downloader.pid.json"
 QWEN_DL_LOG = SM / "qwen_download.log"
 QWEN_DL_WORKER = ROOT / "tools/condense/qwen_download_worker.py"  # enforces the disk floor at write cadence
 
-# Qwen transfer controller (the durable T0-T4 scientific run; supervisor spawns + watches it)
+# Qwen transfer controller (the durable T0-T5 scientific run; supervisor spawns + watches it)
 QWEN_CTRL = ROOT / "tools/condense/qwen_correction_wave.py"
 QWEN_CAMP = GF / "QWEN_TRANSFER"
 QWEN_LEASE = QWEN_CAMP / "leases/qwen_transfer.lease"
@@ -663,7 +663,7 @@ def _launch_qwen_controller_if_due(sup: dict, reason: str) -> None:
 
 
 def h_launch_qwen(st: dict) -> None:
-    # Spawn the durable T0-T4 Qwen transfer controller (real from-config Qwen3-MoE forward, class-aware
+    # Spawn the durable T0-T5 Qwen transfer controller (real from-config Qwen3-MoE forward, class-aware
     # gravity/Doctor allocation), same one-lease / heartbeat / checkpoint discipline as the 120B campaign.
     pid = _read(QWEN_LEASE).get("pid")
     if pid and _pid_alive(pid):

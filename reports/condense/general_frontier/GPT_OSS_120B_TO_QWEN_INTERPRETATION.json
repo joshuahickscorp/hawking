@@ -1,0 +1,60 @@
+{
+  "schema": "hawking.120b_to_qwen.interpretation.v1",
+  "generated_at_utc": "2026-07-20T13:15:00Z",
+  "gpt_oss_120b_interpretation": {
+    "construction": "PASS: the campaign proved a byte-complete whole artifact near 0.77 BPW with 183/183 rows sealed and exact accounting.",
+    "capability": "FAIL at sub-bit: byte completeness did not preserve the frozen real-forward capability contract.",
+    "uniform_control": "NEGATIVE: RVQ near 1.0 BPW produced 3 collapse, 3 degraded, and 0 capability passes; next-token agreement was 0.11-0.63 against the 0.95 gate.",
+    "mechanism_prior": "On GPT-OSS, expert input-side mlp1 was comparatively robust while the heavy-tailed output-side mlp2 benefited from protected islands.",
+    "operating_conclusion": "Do not repeat uniform sub-bit RVQ, do not lower gates, and do not confuse the 0.77 construction floor with a capability-preserving floor."
+  },
+  "qwen_transfer_started": {
+    "parent": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+    "revision": "ac9c66cc9b46af7306746a9250f23d47083d689e",
+    "q2": "PASS: immutable HTTP ranges executed one complete real Qwen layer-0 attention/router/top-8-expert step.",
+    "t3_first_target_point": {
+      "expert_projection_bpw": 0.74495,
+      "projected_whole_model_bpw": 0.759121582,
+      "real_selected_expert_activation_relative_error": 0.94278245,
+      "real_selected_expert_activation_cosine": 0.93792116,
+      "verdict": "rate pass, quality diagnostic fail"
+    },
+    "organ_diagnosis": {
+      "gate_only_relative_error": 0.78520354,
+      "up_only_relative_error": 0.73051132,
+      "down_only_relative_error": 0.15857194,
+      "conclusion": "Qwen reverses the direct 120B robustness ordering on this activation; gate/up need more budget."
+    },
+    "t5_reallocation": {
+      "expert_projection_bpw": 0.74430042,
+      "projected_whole_model_bpw": 0.758492687,
+      "all_three_relative_error": 0.93025011,
+      "all_three_cosine": 0.96906902,
+      "gain_corrected_relative_error": 0.24678984,
+      "improvement_vs_t3": "same/lower BPW, higher cosine, lower raw and gain-corrected activation error",
+      "verdict": "promote as next diagnostic frontier; not a capability pass"
+    }
+  },
+  "source_release": {
+    "status": "DELETE_HOLD",
+    "deleted": false,
+    "reason": "The live APFS directory entry is visible after repair, but the final receipt, Vulture harvest, campaign state, and release-readiness files still block on read. A fresh 15/15 gate cannot honestly be sealed until a reboot clears the stale vnodes.",
+    "required_after_reboot": [
+      "read and hash the final 120B receipt, Vulture harvest, campaign state, and source-release receipt",
+      "rerun verify_120b and seal_120b_conclusion",
+      "confirm exact seven indexed shards, no live lease/process, no mappings, metadata/tokenizer retained, and immutable rehydration identity",
+      "only then authorize exact-path shard deletion"
+    ]
+  },
+  "evidence": [
+    "GPT_OSS_120B_G4_RESULT.json",
+    "GPT_OSS_120B_G4_UNTREATED_CONTROL.json",
+    "tools/condense/seal_120b_conclusion.py",
+    "tools/condense/vulture_harvest.py",
+    "QWEN3_235B_Q2_RECEIPT.json",
+    "QWEN3_235B_Q2_ORGAN_DIAGNOSIS.json",
+    "QWEN3_235B_Q2_T5_RECEIPT.json",
+    "QWEN3_235B_GRAVITY_BPW_PLAN.json"
+  ],
+  "sha256_without_this_field": "a1989b9aba4e2f064bbb6bd8b3f649f3f8bc9e741c11dba6f78a60adb8128150"
+}
