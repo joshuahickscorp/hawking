@@ -465,3 +465,33 @@ def test_reverify_gates_fresh_authorized(tmp_path, monkeypatch):
     _t.sleep(0.01)
     ok, d = mod._reverify_gates()
     assert ok is False, "must not delete on a stale all-green verdict when the re-run failed"
+
+
+# -- 13. campaign crash -> auto-resume + alert; live -> no resume; backoff ------------------
+def test_campaign_crash_auto_resumes(tmp_path, monkeypatch):
+    mod = osup
+    ctx = _configure(mod, monkeypatch, tmp_path)
+    mod._write(ctx.CAMP_STATE, {"final": False, "rows_done": 12, "rows_total": 28})
+    mod._write(ctx.CAMP / "leases/doctor_campaign.lease", {"pid": 999999})
+    monkeypatch.setattr(mod, "_pid_alive", lambda pid: False)   # controller dead
+    mod._write(ctx.SM_STATE, {"state": "WAIT_120B_FINAL", "entered_at": mod._now()})
+    mod.h_wait_120b_final(mod._read(ctx.SM_STATE))
+    assert any("gravity_frontier_correction_wave.py" in " ".join(c) and "detach" in c
+               for c in ctx.calls), ctx.calls
+    assert any("crashed" in t and "auto-resuming" in t for t in ctx.tg)
+    n = len(ctx.calls)
+    mod.h_wait_120b_final(mod._read(ctx.SM_STATE))
+    assert len(ctx.calls) == n, "backoff must prevent an immediate second resume"
+
+
+def test_campaign_alive_no_resume(tmp_path, monkeypatch):
+    mod = osup
+    ctx = _configure(mod, monkeypatch, tmp_path)
+    mod._write(ctx.CAMP_STATE, {"final": False, "rows_done": 12, "rows_total": 28})
+    mod._write(ctx.CAMP / "leases/doctor_campaign.lease", {"pid": 42390})
+    monkeypatch.setattr(mod, "_pid_alive", lambda pid: True)    # controller alive
+    ctx.CAMP_CKPT.mkdir(parents=True, exist_ok=True)
+    mod._write(ctx.CAMP / "heartbeat/doctor_campaign.heartbeat.json", {"row_id": "code_py__D4_pq_doctor"})
+    mod._write(ctx.SM_STATE, {"state": "WAIT_120B_FINAL", "entered_at": mod._now()})
+    mod.h_wait_120b_final(mod._read(ctx.SM_STATE))
+    assert not any("detach" in c for c in ctx.calls), "must never resume a live campaign"

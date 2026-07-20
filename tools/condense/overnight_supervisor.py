@@ -223,11 +223,43 @@ def verify_120b() -> tuple[bool, dict]:
 
 
 # ── handlers ──────────────────────────────────────────────────────────────────────────────
+CAMPAIGN_RESUME_ENV = {"HAWKING_CACHE_MAX_GB": "48", "HAWKING_CACHE_FLOOR_GB": "12",
+                       "HAWKING_CACHE_DISK_RESERVE_GB": "40"}
+
+
+def _resume_campaign_if_due(sup: dict, done, total) -> None:
+    """Auto-heal a crashed Doctor campaign (zero-idle, safe to leave). Backoff 5 min between attempts;
+    a successful resume brings the pid back so the next tick sees it alive and stops resuming."""
+    now = time.time()
+    if now - float(sup.get("last_resume_ts", 0)) < 300:
+        return
+    _telegram(f"120B campaign crashed at {done}/{total}; auto-resuming with the byte-budget cache.")
+    lease = CAMP / "leases/doctor_campaign.lease"
+    try:
+        if lease.exists():
+            lease.unlink()
+    except Exception:
+        pass
+    try:
+        subprocess.run([PY, str(ROOT / "tools/condense/gravity_frontier_correction_wave.py"), "detach"],
+                       env={**os.environ, **CAMPAIGN_RESUME_ENV}, cwd=str(ROOT),
+                       capture_output=True, text=True, timeout=60)
+    except Exception as exc:  # noqa: BLE001
+        _telegram(f"auto-resume launch error: {type(exc).__name__}")
+    _write(SUP_STATE, {**sup, "last_resume_ts": now, "resumes": int(sup.get("resumes", 0)) + 1})
+
+
 def h_wait_120b_final(st: dict) -> None:
     cs = _read(CAMP_STATE)
     done, total = cs.get("rows_done"), cs.get("rows_total")
     sup = _read(SUP_STATE)
     if not cs.get("final"):
+        # crash detection + auto-resume: if the controller pid is dead but the campaign is not final,
+        # it crashed -> heal it (this replaces the retired Doctor supervisor's fault handling).
+        pid = _read(CAMP / "leases/doctor_campaign.lease").get("pid")
+        if pid and not _pid_alive(pid):
+            _resume_campaign_if_due(sup, done, total)
+            return
         # subsume the Doctor supervisor: per-row progress (rate-limited by rows change)
         if sup.get("last_rows") != done:
             try:
