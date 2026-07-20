@@ -1,0 +1,92 @@
+{
+ "schema": "hawking.provider_foundry_v2.precheck.v1",
+ "generated_at_utc": "2026-07-20T19:16:18Z",
+ "non_interference": {
+  "live_parent": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+  "live_controller_pid": 86590,
+  "live_status": "RUNNING",
+  "live_layer": "48/94",
+  "live_checkout": "/Users/scammermike/hawking-qwen-recovery-20260720 (NOT touched by foundry)",
+  "heavy_lease": "held by live Qwen controller; foundry will NOT acquire",
+  "policy": "metadata + source-independent implementation only while Qwen is live"
+ },
+ "tcc_isolation": {
+  "problem": "launchd could not exec under ~/Downloads (EPERM, protected folder) - caused a prior chain freeze",
+  "foundry_worktree": "/Users/scammermike/HawkingWorktrees/deep-architecture-foundry",
+  "protected_path_avoided": "~/Downloads",
+  "branch": "codex/hawking-deep-architecture-foundry",
+  "base": "4fbca8bc"
+ },
+ "repository": {
+  "authoritative": "/Users/scammermike/Downloads/hawking",
+  "main": "4fbca8bc",
+  "origin_main": "4fbca8bc",
+  "worktrees": [
+   "/Users/scammermike/Downloads/hawking                          c056a105 [campaign/adaptive-transfer-ladder]",
+   "/Users/scammermike/Downloads/hawking-hide-build               4fbca8bc [build/hide-impl-2026-07-19]",
+   "/Users/scammermike/Downloads/hawking-hide-parity-research     454b3013 [research/hide-claude-parity-2026-07-19]",
+   "/Users/scammermike/HawkingWorktrees/deep-architecture-foundry 4fbca8bc [codex/hawking-deep-architecture-foundry]"
+  ]
+ },
+ "provider_universe": {
+  "root": "crates/hawking-seed-c/src/providers/",
+  "exists": true,
+  "total_loc": 2199,
+  "files": {
+   "adapters.rs": 380,
+   "doctor.rs": 205,
+   "experiment.rs": 118,
+   "forge.rs": 185,
+   "metal.rs": 156,
+   "mod.rs": 32,
+   "profiles.rs": 88,
+   "provider.rs": 106,
+   "registry.rs": 251,
+   "source_decl.rs": 112,
+   "speculation.rs": 143,
+   "validation.rs": 239,
+   "verify.rs": 184
+  },
+  "existing_arch_adapters": [
+   "llama",
+   "gemma2",
+   "phi3",
+   "olmoe",
+   "mixtral",
+   "gpt_oss",
+   "mamba2"
+  ],
+  "decision": "EXTEND this ABI. No second provider framework, registry, IR, or source authority."
+ },
+ "resources": {
+  "ram_total_gb": 103,
+  "ram_available_gb": 41.8,
+  "swap": "total = 4096.00M  used = 2751.56M  free = 1344.44M  (encrypted)",
+  "disk_free_gib": 122,
+  "cores": 28,
+  "live_campaign_cpu_pct": 1587,
+  "foundry_budget": "remaining cores only; cargo check not full builds while Qwen is live"
+ },
+ "verification_of_reported_findings": {
+  "gate_up_dominant_sensitive_organ": "VERIFIED (Qwen Q2 dominant_failure_organ=gate; matches 120B mlp1 inversion)",
+  "down_tolerates_more": "VERIFIED (down_only rel_err 0.20 vs gate_up 0.92)",
+  "inter_expert_correlation_absent": "VERIFIED (mean pairwise cosine 1e-4; residual 0.9350 vs orthogonal null 0.9354)",
+  "entropy_coding_negligible": "VERIFIED (index entropy 7.945/8.0 = 0.0-0.7 percent)",
+  "shared_codebooks_amortization_only": "VERIFIED (structure gain zero; codebook cost amortizes)",
+  "routing_needs_calibration": "VERIFIED (88-token calibration only 63.6 pct stable at median; 26.1 pct cells never routed)",
+  "row_norm_stratification_promising": "OPEN (94 pct of gate/up rows collapse to one codeword; untested)",
+  "highdim_vq_promising": "VERIFIED DIRECTIONALLY (d8k16 0.782 -> d16k256 0.757 -> d32k65536 0.668 rel_err at fixed 0.5 rate)",
+  "cache_policy_64gb": "FALSIFIED FOR THIS WORKLOAD. Single lockstep pass has zero cross-layer reuse; 64GB cap drove RAM 70->18GB and swap to 906MB free with 0 evictions. Correct cap is ~20GB (working set ~8GB/layer). Aggressive-RAM policy applies only where reuse exists.",
+  "expert_outer_candidate_inner": "VERIFIED (implemented; removed 2.7h re-streaming)",
+  "persisted_parent_logits": "VERIFIED (implemented; 53MB, removes 1.33h per restart)"
+ },
+ "forbidden_confirmed_not_done": [
+  "no live controller mutation",
+  "no heavy lease",
+  "no giant download",
+  "no second controller/ABI/registry",
+  "no Hawking Seed reopen",
+  "no hawking-packs recreation"
+ ],
+ "sha256": "ff27cfca1fbb0ce321087cb18b3221e71cee4faf6313ed9e6dbf5b479d44efe1"
+}

@@ -1,0 +1,195 @@
+{
+ "schema": "hawking.provider_capability_matrix.v1",
+ "generated_at_utc": "2026-07-20T19:20:32Z",
+ "companion": "HAWKING_LADDER_V3.json",
+ "abi_under_extension": "crates/hawking-seed-c/src/providers/ (2199 LOC). This matrix is the input to extending adapters.rs ArchAdapter tables and source_decl.rs declared dtypes. It does NOT introduce a second registry, IR, or source authority.",
+ "evidence_rule": "Every cell is either CONFIG (read from the official config.json on the pinned revision), API (read from the official Hugging Face model API), REPORTED (campaign brief or secondary press, unconfirmed), or UNRESOLVED. A cell with no evidence tag is an error.",
+
+ "capability_axes": [
+  "attention_family",
+  "routing",
+  "source_dtypes",
+  "tokenizer_protocol",
+  "multimodal_claim"
+ ],
+
+ "abi_gap_axes": {
+  "attention_families_currently_supported": "The existing ArchAdapter builtins (llama, gemma2, phi3, olmoe, mixtral, gpt_oss, mamba2) cover dense MHA/GQA, sliding-window, and a state-space family. NONE of them cover MLA, a lightning indexer, block-sparse top-k attention, or gated linear attention.",
+  "source_dtypes_currently_declared": "source_decl.rs documents MXFP4 and BF16. The ladder requires additionally: F8_E4M3, F8_E8M0 (microscale exponents), I8-packed FP4, I32-packed INT4 group-32, and F32.",
+  "tokenizer_protocols_currently_assumed": "A tokenizer_identity string only. The ladder contains at least three real protocols: HF tokenizers JSON, GPT2-style vocab plus merges, and tiktoken plus a Python module."
+ },
+
+ "matrix": [
+  {
+   "rung": "F0",
+   "repo": "openai/gpt-oss-120b",
+   "attention_family": {"value": "GQA with sliding window (gpt_oss builtin adapter)", "evidence": "API tags plus existing ABI adapter", "abi_covered": true},
+   "routing": {"value": "MoE, gpt_oss adapter table", "evidence": "API", "abi_covered": true},
+   "source_dtypes": {"value": ["BF16", "MXFP4 (U8 packed)"], "evidence": "API expand[]=safetensors, tags mxfp4", "abi_covered": true},
+   "tokenizer_protocol": {"value": "HF tokenizers JSON (tokenizer.json) plus chat_template.jinja", "evidence": "API tree"},
+   "multimodal_claim": {"value": false, "evidence": "API pipeline_tag text-generation"}
+  },
+
+  {
+   "rung": "F1",
+   "repo": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+   "attention_family": {"value": "dense GQA, 64 query heads over 4 kv heads, head_dim 128, rope_theta 5e6, no sliding window (use_sliding_window false)", "evidence": "CONFIG", "abi_covered": false, "abi_note": "shape is llama-adapter-compatible but no qwen3_moe entry exists"},
+   "routing": {"value": "MoE 128 experts, top-8, moe_intermediate_size 1536, decoder_sparse_step 1 (every layer sparse), norm_topk_prob true, no shared expert", "evidence": "CONFIG", "abi_covered": false},
+   "source_dtypes": {"value": ["BF16"], "evidence": "API", "abi_covered": true},
+   "tokenizer_protocol": {"value": "HF tokenizers JSON plus GPT2-style vocab.json and merges.txt", "evidence": "API tree"},
+   "multimodal_claim": {"value": false, "evidence": "API pipeline_tag text-generation, no vision_config"}
+  },
+
+  {
+   "rung": "F2",
+   "repo": "Qwen/Qwen3.5-397B-A17B",
+   "attention_family": {"value": "HYBRID: 45 linear_attention layers and 15 full_attention layers on a period of 4 (full_attention_interval 4). Full layers are GQA 32 heads over 2 kv heads, head_dim 256, with attn_output_gate true. Linear layers declare linear_num_key_heads 16, linear_num_value_heads 64, linear_key_head_dim 128, linear_value_head_dim 128, linear_conv_kernel_dim 4, mamba_ssm_dtype float32.", "evidence": "CONFIG text_config.layer_types", "abi_covered": false, "abi_note": "the ONLY rung requiring two attention operators inside one model. mamba2 is the nearest builtin and is a different operator; do not alias it."},
+   "routing": {"value": "MoE 512 experts, top-10, moe_intermediate_size 1024, plus a shared expert of intermediate 1024. Also mtp_num_hidden_layers 1.", "evidence": "CONFIG", "abi_covered": false},
+   "source_dtypes": {"value": ["BF16", "F32"], "evidence": "API", "abi_covered": true},
+   "tokenizer_protocol": {"value": "HF tokenizers JSON plus vocab.json and merges.txt, plus preprocessor_config.json and video_preprocessor_config.json", "evidence": "API tree"},
+   "multimodal_claim": {"value": true, "detail": "image and video. Top-level Qwen3_5MoeForConditionalGeneration, vision_config depth 27, hidden 1152, patch_size 16, spatial_merge_size 2, temporal_patch_size 2, image_token_id 248056, video_token_id 248057, mrope_section [11,11,10].", "evidence": "CONFIG", "brief_delta": "the campaign brief described F2 as a hybrid recurrent transfer and did not mention multimodality; it is multimodal"}
+  },
+
+  {
+   "rung": "F3",
+   "repo": "MiniMaxAI/MiniMax-M3",
+   "attention_family": {"value": "block-sparse top-k attention (MiniMax Sparse Attention). GQA 64 heads over 4 kv, head_dim 128, per_head qk_norm, partial_rotary_factor 0.5 (rotary_dim 64). Sparse path: sparse_index_dim 128, sparse_num_index_heads 4, sparse_block_size 128, sparse_topk_blocks 16, sparse_score_type max, sparse_local_block 1, sparse_init_block 0. Layers 0-2 dense-attention, layers 3-59 sparse.", "evidence": "CONFIG text_config.sparse_attention_config", "abi_covered": false},
+   "routing": {"value": "MoE 128 local experts, top-4, 1 shared expert, sigmoid scoring with routing bias, routed_scaling_factor 2.0. Layers 0-2 dense MLP (intermediate 12288), layers 3-59 MoE (intermediate 3072). Activation swigluoai with alpha 1.702 and limit 7.0. num_mtp_modules 7.", "evidence": "CONFIG", "abi_covered": false},
+   "source_dtypes": {"value": ["BF16", "F32"], "evidence": "API", "abi_covered": true},
+   "tokenizer_protocol": {"value": "HF tokenizers JSON plus vocab.json, merges.txt, added_tokens.json. Image and video processing are Python modules (image_processor.py, video_processor.py) so the vision preprocessing path is NOT declarative.", "evidence": "API tree"},
+   "multimodal_claim": {"value": true, "detail": "image and video. CLIP-style vision tower (model_type clip_vision_model), 32 layers, hidden 1280, image_size 2016, patch_size 14, rope_mode 3d, 36 dynamic-resolution grid pinpoints, image_seq_length 576, vision_segment_max_frames 4.", "evidence": "CONFIG"}
+  },
+
+  {
+   "rung": "F4",
+   "repo": "deepseek-ai/DeepSeek-V3.2",
+   "attention_family": {"value": "MLA plus lightning indexer (DSA). kv_lora_rank 512, q_lora_rank 1536, qk_nope_head_dim 128, qk_rope_head_dim 64, v_head_dim 128, 128 heads. Indexer: index_head_dim 128, index_n_heads 64, index_topk 2048.", "evidence": "CONFIG", "abi_covered": false},
+   "routing": {"value": "DeepSeekMoE 256 routed experts, top-8, 1 shared expert, moe_intermediate_size 2048. Grouped routing n_group 8 topk_group 4, topk_method noaux_tc, sigmoid scoring, routed_scaling_factor 2.5, norm_topk_prob true. Layers 0-2 dense (first_k_dense_replace 3). num_nextn_predict_layers 1.", "evidence": "CONFIG", "abi_covered": false},
+   "source_dtypes": {"value": ["F8_E4M3", "BF16", "F32"], "detail": "fp8 quant_method with fmt e4m3, scale_fmt ue8m0, weight_block_size [128,128], dynamic activation scheme", "evidence": "CONFIG quantization_config", "abi_covered": false},
+   "tokenizer_protocol": {"value": "HF tokenizers JSON only (tokenizer.json plus tokenizer_config.json). No vocab/merges, no chat_template.jinja file.", "evidence": "API tree"},
+   "multimodal_claim": {"value": false, "evidence": "API pipeline_tag text-generation, no vision_config"},
+   "context_note": "max_position_embeddings 163840. This rung is NOT a 1M-context model."
+  },
+
+  {
+   "rung": "F5",
+   "repo": "zai-org/GLM-5.2-FP8",
+   "fallback_repo": "zai-org/GLM-5.2",
+   "attention_family": {"value": "MLA plus DSA indexer with IndexShare. head_dim 192, qk_head_dim 256 (qk_nope 192 plus qk_rope 64), v_head_dim 256, 64 heads, q_lora_rank 2048, kv_lora_rank 512. Indexer: index_head_dim 128, index_n_heads 32, index_topk 2048, index_topk_freq 4, index_skip_topk_offset 3, per-layer indexer_types list of 78, indexer_rope_interleave true, index_share_for_mtp_iteration true.", "evidence": "CONFIG", "abi_covered": false},
+   "routing": {"value": "256 routed experts, top-8, 1 shared expert, moe_intermediate_size 2048, n_group 1 topk_group 1 (ungrouped), topk_method noaux_tc, sigmoid scoring, routed_scaling_factor 2.5, moe_router_dtype float32. Layers 0-2 dense (first_k_dense_replace 3), per-layer mlp_layer_types list of 78. num_nextn_predict_layers 1 (MTP).", "evidence": "CONFIG", "abi_covered": false},
+   "source_dtypes": {"value": ["F8_E4M3", "BF16", "F32"], "detail": "fp8 e4m3, weight_block_size [128,128], dynamic activations, 541 modules_to_not_convert. The BF16 fallback repo is pure BF16 plus F32.", "evidence": "CONFIG quantization_config", "abi_covered": false},
+   "tokenizer_protocol": {"value": "HF tokenizers JSON plus chat_template.jinja", "evidence": "API tree"},
+   "multimodal_claim": {"value": false, "evidence": "API pipeline_tag text-generation, languages en and zh, no vision_config"},
+   "context_note": "max_position_embeddings 1048576. 1M context CONFIRMED from config."
+  },
+
+  {
+   "rung": "F6",
+   "repo": "moonshotai/Kimi-K2.6",
+   "attention_family": {"value": "MLA. Text core is a DeepseekV3ForCausalLM with kv_lora_rank 512, q_lora_rank 1536, qk_nope_head_dim 128, qk_rope_head_dim 64, v_head_dim 128, 64 heads, rope_theta 50000.", "evidence": "CONFIG text_config", "abi_covered": false},
+   "routing": {"value": "384 routed experts, top-8, 1 shared expert, moe_intermediate_size 2048, n_group 1, topk_method noaux_tc, sigmoid scoring, routed_scaling_factor 2.827, first_k_dense_replace 1. num_nextn_predict_layers 0 (NO MTP on this rung).", "evidence": "CONFIG", "abi_covered": false},
+   "source_dtypes": {"value": ["INT4 group-32 pack-quantized (stored I32)", "BF16", "F32"], "detail": "compressed-tensors, format pack-quantized, num_bits 4, type int, strategy group, group_size 32, symmetric true, observer minmax, quantization_status compressed. INT4 applies to ROUTED EXPERTS ONLY: self_attn, shared_experts, dense mlp gate/up/gate_up/down, lm_head, vision_tower, and mm_projector are all in the ignore list and stay BF16.", "evidence": "CONFIG quantization_config", "abi_covered": false},
+   "tokenizer_protocol": {"value": "tiktoken. Ships tiktoken.model plus tokenization_kimi.py plus tokenizer_config.json. NO tokenizer.json. A HF tokenizers fast path will not load this rung.", "evidence": "API tree", "abi_covered": false, "abi_note": "the only non-HF-tokenizers protocol on the entire ladder"},
+   "multimodal_claim": {"value": true, "detail": "image and video. KimiK25ForConditionalGeneration with a vision tower (patch_size 14, merge_kernel_size [2,2], merge_type sd2_tpool, mm_projector_type patchmerger, pos_emb_type divided_fixed, video_attn_type spatial-prefixed), media_placeholder_token_id 163605, kimi_k25_processor.py. Text core is separable, which is what makes a text-core transfer viable.", "evidence": "CONFIG"}
+  },
+
+  {
+   "rung": "F7",
+   "repo": "deepseek-ai/DeepSeek-V4-Pro",
+   "attention_family": {"value": "compressed plus hash attention with a lightning indexer and a local window. Fields present: head_dim 512, 128 heads over num_key_value_heads 1, q_lora_rank 1536, o_lora_rank 1024, o_groups 16, qk_rope_head_dim 64, index_head_dim 128, index_n_heads 64, index_topk 1024, sliding_window 128, compress_ratios (length 62), compress_rope_theta 160000, num_hash_layers 3.", "evidence": "CONFIG for the fields; the names CSA and HCA are REPORTED and are not bound to any fetched official document", "abi_covered": false},
+   "routing": {"value": "384 routed experts, top-6, 1 shared expert, moe_intermediate_size 3072, topk_method noaux_tc, scoring_func sqrtsoftplus (unique on this ladder, every other DeepSeek-family rung uses sigmoid), routed_scaling_factor 2.5, swiglu_limit 10.0, num_nextn_predict_layers 1. Additional fields hc_mult 4, hc_sinkhorn_iters 20, hc_eps 1e-06 (the brief calls this mHC; that name is REPORTED).", "evidence": "CONFIG", "abi_covered": false},
+   "source_dtypes": {"value": ["FP4 experts packed 2-per-I8", "F8_E8M0 block-32 microscales", "F8_E4M3", "BF16", "F32", "I64"], "detail": "config declares expert_dtype fp4. The E8M0 scale count is exactly 1/32 of the unpacked fp4 value count, proving block-32 microscaling. The [128,128] weight_block_size in quantization_config governs the fp8 tensors only, not the fp4 experts.", "evidence": "CONFIG plus DERIVED arithmetic (see HAWKING_LADDER_V3.json F7.param_accounting)", "abi_covered": false, "abi_note": "F8_E8M0 is a scale-only dtype the ABI has never declared; it must be added to source_decl.rs tensor_types"},
+   "tokenizer_protocol": {"value": "HF tokenizers JSON only", "evidence": "API tree"},
+   "multimodal_claim": {"value": false, "evidence": "API pipeline_tag text-generation, no vision_config"},
+   "context_note": "max_position_embeddings 1048576. 1M context CONFIRMED from config."
+  },
+
+  {
+   "rung": "F8",
+   "repo": "UNRESOLVED",
+   "attention_family": {"value": "UNRESOLVED", "reported_only": "Kimi Delta Attention (KDA) and Attention Residuals", "evidence": "REPORTED (secondary press only). No config, no tensor index, no official document fetched."},
+   "routing": {"value": "UNRESOLVED", "reported_only": "16 of 896 experts active, Stable LatentMoE", "evidence": "REPORTED"},
+   "source_dtypes": {"value": "UNRESOLVED", "evidence": "UNRESOLVED"},
+   "tokenizer_protocol": {"value": "UNRESOLVED", "evidence": "UNRESOLVED", "prior_note": "the sibling rung F6 (Kimi-K2.6) uses tiktoken, so a tiktoken protocol is the likely prior, but that is a guess and is not recorded as a capability"},
+   "multimodal_claim": {"value": "UNRESOLVED", "evidence": "UNRESOLVED"},
+   "gate": "PENDING_OFFICIAL_WEIGHTS. No adapter, tensor name, or dimension may be written for this rung until repo, license, revision, config, tokenizer, index, and weights all verifiably exist."
+  },
+
+  {
+   "probe": "P1",
+   "repo": "deepseek-ai/DeepSeek-V4-Flash",
+   "attention_family": {"value": "same deepseek_v4 family as F7 at reduced scale: 43 layers, hidden 4096, 64 heads over 1 kv head, head_dim 512, q_lora_rank 1024, index_topk 512", "evidence": "CONFIG", "abi_covered": false},
+   "routing": {"value": "256 routed experts, top-6, 1 shared expert, topk_method noaux_tc, scoring_func sqrtsoftplus", "evidence": "CONFIG", "abi_covered": false},
+   "source_dtypes": {"value": ["FP4 experts packed 2-per-I8", "F8_E8M0", "F8_E4M3", "BF16", "F32", "I64"], "evidence": "CONFIG plus DERIVED", "abi_covered": false},
+   "tokenizer_protocol": {"value": "HF tokenizers JSON only", "evidence": "API tree"},
+   "multimodal_claim": {"value": false, "evidence": "API"},
+   "probe_value": "HIGHEST. Identical family and identical dtype layout to F7 at 159.6 GB instead of 864.7 GB. Prove the deepseek_v4 adapter and the fp4-in-I8 plus E8M0 dequant path here first."
+  },
+
+  {
+   "probe": "P2",
+   "repo": "Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8",
+   "attention_family": {"value": "dense GQA, 96 heads over 8 kv, head_dim 128, 62 layers", "evidence": "CONFIG", "abi_covered": false},
+   "routing": {"value": "MoE 160 experts, top-8", "evidence": "CONFIG", "abi_covered": false},
+   "source_dtypes": {"value": ["F8_E4M3", "BF16"], "detail": "fp8 quant_method, dynamic activation scheme", "evidence": "CONFIG", "abi_covered": false},
+   "tokenizer_protocol": {"value": "HF tokenizers JSON plus vocab.json and merges.txt plus chat_template.jinja", "evidence": "API tree"},
+   "multimodal_claim": {"value": false, "evidence": "API"},
+   "probe_value": "shares the qwen3_moe family with the live F1 parent, so it validates the same adapter under FP8 rather than BF16"
+  },
+
+  {
+   "probe": "P3",
+   "repo": "baidu/ERNIE-4.5-300B-A47B-PT",
+   "attention_family": {"value": "dense GQA, 64 heads over 8 kv, hidden 8192, 54 layers, max_position 131072", "evidence": "CONFIG", "abi_covered": false},
+   "routing": {"value": "MoE 64 experts (moe_num_experts), top-8 (moe_k), ZERO shared experts (moe_num_shared_experts 0)", "evidence": "CONFIG", "abi_covered": false, "abi_note": "distinct field naming: moe_num_experts / moe_k / moe_num_shared_experts. The adapter Moe table must map names per family, not assume one convention."},
+   "source_dtypes": {"value": ["BF16", "F32"], "evidence": "API", "abi_covered": true},
+   "tokenizer_protocol": {"value": "HF tokenizers JSON plus a SentencePiece tokenizer.model plus added_tokens.json plus chat_template.jinja", "evidence": "API tree"},
+   "multimodal_claim": {"value": false, "evidence": "API pipeline_tag text-generation"},
+   "probe_value": "the naming-convention stress test for the adapter Moe table"
+  },
+
+  {
+   "probe": "P4",
+   "repo": "meta-llama/Llama-4-Maverick-17B-128E-Instruct",
+   "attention_family": {"value": "UNRESOLVED", "evidence": "config.json resolve returned 401; repo is gated manual. Nothing asserted."},
+   "routing": {"value": "UNRESOLVED", "evidence": "UNRESOLVED. The repo name states 128E but a repo name is not a config field."},
+   "source_dtypes": {"value": ["BF16"], "evidence": "API expand[]=safetensors, which is public even for gated repos", "abi_covered": true},
+   "tokenizer_protocol": {"value": "HF tokenizers JSON plus SentencePiece tokenizer.model plus processor_config.json (file list is public, contents are not)", "evidence": "API tree"},
+   "multimodal_claim": {"value": true, "detail": "API pipeline_tag is image-text-to-text and the repo ships preprocessor_config.json and processor_config.json", "evidence": "API"},
+   "probe_value": "LOW until the license gate is manually accepted by a human. Do not spend adapter effort on an unreadable config."
+  },
+
+  {
+   "probe": "P5",
+   "repo": "inclusionAI/Ling-1T",
+   "attention_family": {"value": "dense GQA, 64 heads over 8 kv, head_dim 128, hidden 8192, 80 layers", "evidence": "CONFIG", "abi_covered": false},
+   "routing": {"value": "MoE 256 experts, top-8 (BailingMoeV2ForCausalLM)", "evidence": "CONFIG", "abi_covered": false},
+   "source_dtypes": {"value": ["BF16", "F32"], "evidence": "API", "abi_covered": true},
+   "tokenizer_protocol": {"value": "HF tokenizers JSON plus special_tokens_map.json", "evidence": "API tree"},
+   "multimodal_claim": {"value": false, "evidence": "API"},
+   "probe_value": "LOW. max_position_embeddings is only 32768, the shortest on the list, and 1999.4 GB of BF16 is the most expensive traversal on the list. Worst bytes-per-insight ratio of any probe."
+  }
+ ],
+
+ "derived_abi_work_items": [
+  {"item": "adapters.rs: add qwen3_moe (covers F1 and P2)", "unblocks": ["F1 A3", "P2 A3"], "difficulty": "low, dense GQA plus flat MoE, closest to the mixtral builtin"},
+  {"item": "adapters.rs: add deepseek_v32 with MLA plus lightning indexer", "unblocks": ["F4 A3"], "difficulty": "high, new attention operator"},
+  {"item": "adapters.rs: add glm_moe_dsa", "unblocks": ["F5 A3"], "difficulty": "high, reuses the MLA plus indexer work plus IndexShare and MTP"},
+  {"item": "adapters.rs: add deepseek_v4", "unblocks": ["F7 A3", "P1 A3"], "difficulty": "high, new attention plus a new expert dtype path; prove on P1 first"},
+  {"item": "adapters.rs: add kimi_k25 text core", "unblocks": ["F6 A3"], "difficulty": "medium for MLA, high for the tiktoken tokenizer protocol"},
+  {"item": "adapters.rs: add minimax_m3_vl text core with block-sparse attention", "unblocks": ["F3 A3"], "difficulty": "high, custom_code model"},
+  {"item": "adapters.rs: add qwen3_5_moe with per-layer attention dispatch", "unblocks": ["F2 A3"], "difficulty": "highest, first model needing two attention operators selected per layer from layer_types"},
+  {"item": "source_decl.rs: extend declared tensor_types with F8_E4M3, F8_E8M0, I8_PACKED_FP4, I32_PACKED_INT4_G32, F32", "unblocks": ["F4", "F5", "F6", "F7", "P1", "P2"], "difficulty": "low, declarative"},
+  {"item": "tokenizer protocol axis: the ABI currently carries a tokenizer_identity string only; F6 needs tiktoken plus a Python module and P3/P4 need SentencePiece", "unblocks": ["F6 A4"], "difficulty": "medium"}
+ ],
+
+ "recommended_order": [
+  "P1 DeepSeek-V4-Flash: cheapest path to a verified deepseek_v4 adapter and the fp4-in-I8 plus E8M0 dequant path (159.6 GB)",
+  "F1 Qwen3-235B: adapter for the family already under live campaign (no new traversal, the bytes are already flowing)",
+  "F4 DeepSeek-V3.2: first MLA plus indexer rung, smallest shards on the ladder at 6.64 GB max",
+  "F7 DeepSeek-V4-Pro: 1.6T real parameters at 864.7 GB, reuses everything P1 proves",
+  "F6 Kimi-K2.6: 1.0T INT4 at 595.2 GB, but pay the tiktoken cost first",
+  "F5, F3, F2 in that order: each adds one genuinely new operator class",
+  "F8 Kimi K3: blocked, re-run this sealer after the reported 2026-07-27 date"
+ ]
+}
