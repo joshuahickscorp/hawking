@@ -139,6 +139,8 @@ def _build_release(mod, ctx, monkeypatch, all_green=True):
     (ctx.MODEL_DIR / "chat_template.jinja").write_text("x")
     decoy = ctx.ORIGINAL / "extra-of-00007.safetensors"  # NOT in SHARDS -> must survive
     decoy.write_bytes(b"decoy")
+    (ctx.GF / "GPT_OSS_120B_VULTURE_HARVEST.json").parent.mkdir(parents=True, exist_ok=True)
+    (ctx.GF / "GPT_OSS_120B_VULTURE_HARVEST.json").write_text("{}")  # release gate 7: harvest sealed
     mod._write(ctx.CAMP / "leases/doctor_campaign.lease", {"pid": 999999})
     _write_gates(mod, ctx, all_green)
     # These tests exercise deletion SAFETY (path guards, lsof, metadata), not the gate subprocess
@@ -336,7 +338,7 @@ def test_09_duplicate_launch_prevention(tmp_path, monkeypatch):
 
     # every fully claim-guarded handler no-ops when its claim is already present
     guards = [("seal_conclusion", "SEAL_120B_CONCLUSION", mod.h_seal),
-              ("narrow_refinement", "NARROW_RATE_REFINEMENT", mod.h_narrow_refinement),
+              ("vulture_harvest", "VULTURE_HARVEST", mod.h_vulture_harvest),
               ("run_q0q1q2", "RUN_QWEN_Q0_Q1_Q2", mod.h_run_q0q1q2),
               ("launch_qwen", "LAUNCH_QWEN", mod.h_launch_qwen)]
     for claim, state, handler in guards:

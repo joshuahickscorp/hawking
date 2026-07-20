@@ -58,7 +58,7 @@ DISK_TARGET_GB = 100.0   # predicted post-transfer free-space target
 DISK_PAUSE_GB = 100.0    # pause transfer below this
 DISK_HARDSTOP_GB = 40.0  # absolute hard stop
 
-STATES = ["WAIT_120B_FINAL", "VERIFY_120B", "SEAL_120B_CONCLUSION", "NARROW_RATE_REFINEMENT",
+STATES = ["WAIT_120B_FINAL", "VERIFY_120B", "SEAL_120B_CONCLUSION", "VULTURE_HARVEST",
           "EVALUATE_SOURCE_RELEASE", "RELEASE_120B_SOURCE", "ADMIT_QWEN", "TRANSFER_QWEN_PRIORITY",
           "RUN_QWEN_Q0_Q1_Q2", "LAUNCH_QWEN", "MONITOR_QWEN", "BLOCKED", "COMPLETE"]
 PROGRESS_MIN_SECONDS = 1800
@@ -316,27 +316,31 @@ def h_seal(st: dict) -> None:
     if r.returncode != 0 or not res:
         _retry(st, "seal", f"sealer exit {r.returncode}"); return
     outcome = (res.get("outcome") or res.get("status") or "").upper()
-    is_a = "OUTCOME_A" in outcome or ("PASS" in outcome and "BOUNDARY" not in outcome)
     if not _claim("seal_conclusion"):
         return
-    _telegram(f"120B conclusion sealed. Outcome: {outcome or 'B (boundary)'}")
-    receipt = {"seal_exit": r.returncode, "outcome": outcome, "input_identity": st.get("input_identity")}
-    if is_a and res.get("narrow_refinement_required"):
-        _advance(st, "NARROW_RATE_REFINEMENT", "seal_conclusion", receipt)
-    else:
-        _advance(st, "EVALUATE_SOURCE_RELEASE", "seal_conclusion", receipt)
+    # Vulture binding rule: seal pass OR honest boundary and MOVE. No lower-rate refinement even on a
+    # pass; no further 120B compute. The result sets Qwen's priors, not whether Qwen begins.
+    _telegram(f"120B conclusion sealed. Outcome: {outcome or 'B (honest boundary)'}. "
+              "No refinement (Vulture: seal + move). Harvesting transferable evidence.")
+    _advance(st, "VULTURE_HARVEST", "seal_conclusion",
+             {"seal_exit": r.returncode, "outcome": outcome, "input_identity": st.get("input_identity")})
 
 
-def h_narrow_refinement(st: dict) -> None:
-    # Only reached on Outcome A with a contract-required single lower-rate refinement. Bounded: it does
-    # NOT begin a broad new 120B search. Expected unreached (science points to Outcome B).
-    if not _claim("narrow_refinement"):
+def h_vulture_harvest(st: dict) -> None:
+    # Lane A: harvest every transferable prior (representation, organ sensitivity, Doctor, runtime,
+    # quality, storage) into the 8 harvest artifacts. Idempotent; retry on failure; claim the advance.
+    # This must seal BEFORE the source body is deleted (release gate 7).
+    r = subprocess.run([PY, str(ROOT / "tools/condense/vulture_harvest.py")],
+                       capture_output=True, text=True, cwd=str(ROOT), timeout=600)
+    harvest = GF / "GPT_OSS_120B_VULTURE_HARVEST.json"
+    if r.returncode != 0 or not harvest.exists():
+        _retry(st, "vulture_harvest", f"harvest exit {r.returncode}"); return
+    if not _claim("vulture_harvest"):
         return
-    _telegram("Outcome A: running the single contract-required narrow lower-rate refinement (bounded).")
-    # A real refinement would run one lower rate via the doctor campaign machinery on the winning
-    # candidate only. Left as a bounded, gated hook; it seals a receipt and proceeds.
-    _advance(st, "EVALUATE_SOURCE_RELEASE", "narrow_refinement",
-             {"note": "single bounded refinement hook", "input_identity": st.get("input_identity")})
+    _telegram("Vulture harvest sealed: transfer priors + failure/Doctor/resource atlases + runtime "
+              "lessons carried to Qwen. Releasing the 120B body next.")
+    _advance(st, "EVALUATE_SOURCE_RELEASE", "vulture_harvest",
+             {"harvest": "sealed", "input_identity": st.get("input_identity")})
 
 
 def _git(*args, timeout=120):
@@ -453,6 +457,9 @@ def h_release_120b_source(st: dict) -> None:
     for m in (ORIGINAL / "config.json", ORIGINAL / "model.safetensors.index.json", MODEL_DIR / "tokenizer.json"):
         if not m.exists():
             _skip_release_shard_serial(st, f"metadata {m.name} missing (cannot guarantee rehydration)"); return
+    # release gate 7: the Vulture harvest (all transferable science) must be sealed before the body dies.
+    if not (GF / "GPT_OSS_120B_VULTURE_HARVEST.json").exists():
+        _skip_release_shard_serial(st, "Vulture harvest not sealed (gate 7)"); return
     if not _claim("release_source"):   # one-use deletion guard: everything above is clean + authorized
         return
     freed = []
@@ -524,7 +531,9 @@ def h_transfer_qwen_priority(st: dict) -> None:
                        f"transfer hard-stopped: free {free:.0f} GB < {DISK_HARDSTOP_GB} GB. "
                        "Paused; will resume when disk recovers."); return
     plan = _read(GF / "QWEN3_235B_PRIORITY_PLAN.json")
-    shards = plan.get("priority_shards", [])
+    # FULL_DISK_RESIDENT: download every official shard (fits after the 120B release); priority subset is
+    # only the ordering hint. All shards stay local for the whole Qwen campaign.
+    shards = plan.get("full_sweep_shards") or plan.get("priority_shards", [])
     got = 0
     for shard in shards:
         dest = QWEN_DIR / shard
@@ -602,7 +611,7 @@ def h_complete(st: dict) -> None:
 
 HANDLERS = {
     "WAIT_120B_FINAL": h_wait_120b_final, "VERIFY_120B": h_verify_120b,
-    "SEAL_120B_CONCLUSION": h_seal, "NARROW_RATE_REFINEMENT": h_narrow_refinement,
+    "SEAL_120B_CONCLUSION": h_seal, "VULTURE_HARVEST": h_vulture_harvest,
     "EVALUATE_SOURCE_RELEASE": h_evaluate_source_release, "RELEASE_120B_SOURCE": h_release_120b_source,
     "ADMIT_QWEN": h_admit_qwen, "TRANSFER_QWEN_PRIORITY": h_transfer_qwen_priority,
     "RUN_QWEN_Q0_Q1_Q2": h_run_q0q1q2, "LAUNCH_QWEN": h_launch_qwen,

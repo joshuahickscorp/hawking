@@ -1,0 +1,58 @@
+{
+  "schema": "hawking.vulture_handoff.precheck.v1",
+  "generated_at_utc": "2026-07-20T03:42:00Z",
+  "philosophy": "Vulture: harvest every trustworthy result from the parent, seal pass-or-honest-boundary, release the raw body, carry priors to the next parent. 120B determines Qwen's starting priors, NOT whether Qwen begins.",
+
+  "campaign_120b": {
+    "status": "RUNNING (do not touch; do not modify its scientific code while alive)",
+    "controller_pid": 42390,
+    "controller_pgid": 42390,
+    "exclusive_lease": "com.hawking.doctor_campaign (pid 42390)",
+    "elapsed": "~2h28m",
+    "rows_sealed": 14,
+    "rows_total": 28,
+    "current_row": "reason_syllogism__D4_pq_doctor",
+    "final": false,
+    "candidate_set_verified": "D0 parent-ref (6) + diagnosis diag_mlp1_only/diag_mlp2_only (4) + D2_tensor_pq (6) + D4_pq_doctor (6) + D6_global_alloc (6) = 28; D1 uniform RVQ sealed in G4 as the untreated control; D3/D5 represented by GPT_OSS_120B_D3_D5_NON_ADMISSION.json (dominated by G1/G3 evidence)",
+    "crash_history": "3 memory-pressure kills healed by the byte-budget cache (HAWKING_CACHE_MAX_GB=48/FLOOR=12/RESERVE=40); stable since",
+    "source_mapping": "reports/condense/subbit_frontier/GRAVITY_120B_PROVENANCE.json -> models/gpt-oss-120b/original/model--0000N-of-00007.safetensors (543 tensors)",
+    "tokenizer": "tokenizer.json vocab 201088 + Harmony chat template"
+  },
+
+  "binding_amendments_applied_this_session": {
+    "no_refinement": "even on Outcome A, seal immediately (NO lower-rate refinement); NARROW_RATE_REFINEMENT removed from the pipeline",
+    "no_further_120b_compute": "the current campaign is the FINAL permitted 120B compute; no new 120B controller, no reopened search",
+    "result_does_not_block_qwen": "pass OR honest boundary both proceed to Qwen; the result sets priors, not the go decision",
+    "qwen_full_disk_resident": "preferred mode FULL_DISK_RESIDENT_SOURCE - download ALL 118 official shards, keep them all local for the Qwen campaign; execution stays bounded (mmap, range reads, one expert window, PressureAwareCache, RAM floor 12GB, swap guard)",
+    "two_lanes": "after 120B final: Lane A (Vulture harvest + prior updates) and Lane B (release 120B body + full Qwen download) run concurrently; Qwen engineering continues during download"
+  },
+
+  "git": {"branch": "campaign/adaptive-transfer-ladder", "head": "514212c9875ed7343acc48a0a08cc3f1c0645381",
+          "origin_in_sync": true, "note": "merge to authoritative main happens at conclusion seal (guarded)"},
+
+  "supervisors": {
+    "overnight_handoff": "com.hawking.overnight.handoff LIVE, state WAIT_120B_FINAL, launchd 60s tick, survives reboot; auto-resumes a crashed campaign; being amended for no-refinement + full-download + Vulture harvest lane",
+    "doctor_campaign_supervisor": "retired (subsumed by overnight WAIT progress)",
+    "telegram": "per-row card + ETA + fault + completion via 0600 creds file fallback"
+  },
+
+  "resources": {"ram_avail_gb": 31, "disk_free_gib": 514, "disk_total_gib": 926,
+                "disk_after_120b_release_gib": 575, "swap_used_mb": 1400, "thermal": "not sampled"},
+
+  "qwen_full_download_math": {
+    "repo": "Qwen/Qwen3-235B-A22B-Instruct-2507", "immutable_revision": "ac9c66cc9b46af7306746a9250f23d47083d689e",
+    "download_gib": 437.9, "shards": 118,
+    "fits_full_disk_after_120b_release": "yes: 575 - 438 = ~137 GiB free after; >= 100 GiB preferred margin AND >= 40 GiB hard reserve -> FULL_DISK_RESIDENT admitted",
+    "one_copy": "local_dir only, no HF cache duplicate; resumable + per-shard verified",
+    "ram_note": "235B never fits in 96 GB RAM; full-disk means all shards on DISK, compute streams per-expert"
+  },
+
+  "giants_disk_reality": {
+    "F2_397B_Qwen3.5": {"download_gib": 751.4, "precision": "bf16", "fits_full_disk": false, "mode": "shard-serial two-pass"},
+    "F3_685B_DeepSeekV3.2": {"download_gib": 642.2, "precision": "fp8", "fits_full_disk": false, "mode": "shard-serial two-pass"},
+    "F4_1T_KimiK2.6": {"download_gib": 554.3, "precision": "int4", "fits_full_disk": "barely (~20 GiB margin) -> decide live", "mode": "full-if-clean else shard-serial"},
+    "insight": "disk size is precision-driven, not param count: 397B bf16 (751) > 685B fp8 (642) > 1T int4 (554)"
+  },
+
+  "rollback": "git reset --hard 514212c9; kill 42390 stops the campaign; no source mutated; Qwen metadata only. Deletion of the 7 gpt-oss shards happens only after 15/15 release gates incl Vulture-harvest-sealed."
+}
