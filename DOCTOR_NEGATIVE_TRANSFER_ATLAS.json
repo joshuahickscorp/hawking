@@ -1,0 +1,26 @@
+{
+  "entries": {
+    "expert_merge": {
+      "provenance": "Lane E, adversarially UPHELD: best single surviving expert reconstructs an omitted expert with median held-out rel error 0.885/0.993/0.995 at L0/L3/L7; a 4-survivor least-squares merge reaches 0.863/0.988/0.995. ~1.0 is the trivial zero predictor. The adversary's found contamination ran IN THE MERGE'S FAVOUR.",
+      "reopen": "a parent measuring best-single-survivor reconstruction error <= 0.5 held out",
+      "status": "dead"
+    },
+    "generated_tied_params": {
+      "provenance": "Lane F: expert templates dead (raw and row-normalized off-diagonal cosine agree to 3 s.f., 0.00166 vs 0.00168 - experts are orthogonal in BOTH spaces); cross-layer same-index tying indistinguishable from a different-index control at 1e-7.",
+      "reopen": "a parent measuring row-normalized mean off-diagonal expert cosine >= 0.10",
+      "status": "dead"
+    },
+    "low_rank_residual": {
+      "provenance": "docs/dead_levers.md: quantization error is HIGH rank; LoRA plateaus ~step 25 and rank-64 SVD healed TQ3 only 0.114 -> 0.104 while costing 4.6 bpw. Also data-free low-rank residual NO-GO (top-64 SVD captures 3-9 pct of energy).",
+      "reopen": "only when the residual is MEASURED low rank on the parent in question",
+      "status": "dead"
+    },
+    "router_distill": {
+      "provenance": "S2C: a survivor-restricted ORACLE halves layer-0 weighted-output error (reachable headroom 0.573 vs masked baseline 0.0784), but NO trained student captured it on held-out token ids - every variant overfit the train ids.",
+      "reopen": "a parent where the survivor-restricted oracle gap is large AND a student generalizes to held-out ids",
+      "status": "negative"
+    }
+  },
+  "rule": "a dead or negative treatment may be re-proposed ONLY under the no-repetition law: a materially different diagnosis, an architecture that changes reachability, a different rate regime, or an implementation that removes the prior blocker",
+  "schema": "hawking.doctor.negative_transfer_atlas.v1"
+}

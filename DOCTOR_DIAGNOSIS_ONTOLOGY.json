@@ -1,0 +1,28 @@
+{
+  "causal_controls_available": {
+    "D1_route_only": "every expert at source bf16, router masked to the survivor set. Isolates routing_omission. RUNNING.",
+    "D2_recon_only": "full 128-expert router unmasked, every expert packed at the survivor rate. Isolates quantization_reconstruction. RUNNING.",
+    "both": "S64_structural itself. Sealed: symKL 8.599, argmax 0.0735."
+  },
+  "causes": {
+    "activation_shift": "the organ input distribution moved, so the fit is off-distribution",
+    "direction_distortion": "the unit direction of rows is wrong",
+    "domain_collapse": "one capability domain fails while others hold",
+    "expert_substitution": "a surviving expert stands in for an omitted one and does not match",
+    "hidden_state_drift": "post-layer hidden state diverges and accumulates down the stack",
+    "logit_ranking_collapse": "logit ordering is lost even where the vector is correlated",
+    "mixed_interaction": "two or more causes interact and neither alone explains the loss",
+    "normalization_mismatch": "RMSNorm statistics differ between parent and student",
+    "quantization_reconstruction": "the coded weights do not reconstruct the parent tensor",
+    "rare_token_collapse": "low-frequency tokens are destroyed while common ones survive",
+    "residual_accumulation": "small per-layer errors compound in the residual stream",
+    "router_redistribution": "the surviving router assigns the wrong weights among survivors",
+    "routing_omission": "the token should have been routed to an expert the artifact does not have",
+    "runtime_numerical": "the failure is a kernel/dtype/precision bug, not a representation loss",
+    "scale_magnitude_distortion": "row/column magnitude is wrong even where direction is right"
+  },
+  "decision_rule": "if D1 alone reproduces most of the S64 loss the parent is ROUTING_BOUND; if D2 alone does, RECONSTRUCTION_BOUND; if neither alone does and both contribute, MIXED_BOUND; if the controls are inconsistent with S64, INVALID",
+  "generated_at_utc": "2026-07-20T23:38:34Z",
+  "rule": "a diagnosis is a WEIGHTED SET of causes measured by causal controls, never a single guess, and never inferred from weight-space error alone",
+  "schema": "hawking.doctor.diagnosis_ontology.v1"
+}

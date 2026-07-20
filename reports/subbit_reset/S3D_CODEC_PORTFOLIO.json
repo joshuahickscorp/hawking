@@ -1,0 +1,422 @@
+{
+  "cells": [
+    {
+      "anisotropy_decades": 1.842777,
+      "arms": {
+        "gvq": {
+          "complete_bits_per_tensor": 15733264,
+          "complete_bpw_tensor": 2.500735,
+          "output_rel_error": 0.079666,
+          "spec": {
+            "dim": 8,
+            "k": 1024,
+            "stages": 2
+          },
+          "weight_rel_error": 0.762638
+        },
+        "kron": {
+          "complete_bits_per_tensor": 15729152,
+          "complete_bpw_tensor": 2.500081,
+          "concentration": 0.999519,
+          "output_rel_error": 0.014847,
+          "rank": 192,
+          "split": [
+            1,
+            2048,
+            1536,
+            2
+          ],
+          "weight_rel_error": 0.022778
+        },
+        "rvq": {
+          "complete_bits_per_tensor": 15745552,
+          "complete_bpw_tensor": 2.502688,
+          "output_rel_error": 0.121551,
+          "spec": {
+            "dim": 16,
+            "k": 1024,
+            "stages": 4
+          },
+          "weight_rel_error": 0.221989
+        },
+        "vq": {
+          "complete_bits_per_tensor": 15733264,
+          "complete_bpw_tensor": 2.500735,
+          "output_rel_error": 0.155289,
+          "spec": {
+            "dim": 8,
+            "k": 1024,
+            "stages": 2
+          },
+          "weight_rel_error": 0.230096
+        }
+      },
+      "incumbent_complete_bits_per_tensor": 15733264,
+      "layer": 0,
+      "n_fit_tensors": 3,
+      "organ": "gate_proj",
+      "output_metric": "gamma_weighted_surrogate",
+      "selected": "kron",
+      "selection_reason": "kron output_rel_error 0.014847 < incumbent 0.155289 at 15729152 <= 15733264 complete bits",
+      "shape": [
+        1536,
+        4096
+      ]
+    },
+    {
+      "anisotropy_decades": 1.842777,
+      "arms": {
+        "kron": {
+          "complete_bits_per_tensor": 3932672,
+          "complete_bpw_tensor": 0.625081,
+          "concentration": 0.561426,
+          "output_rel_error": 0.662247,
+          "rank": 48,
+          "split": [
+            2,
+            1536,
+            2048,
+            1
+          ],
+          "weight_rel_error": 0.662247
+        },
+        "rvq": {
+          "complete_bits_per_tensor": 3949072,
+          "complete_bpw_tensor": 0.627688,
+          "output_rel_error": 0.255732,
+          "spec": {
+            "dim": 32,
+            "k": 1024,
+            "stages": 2
+          },
+          "weight_rel_error": 0.255732
+        },
+        "vq": {
+          "complete_bits_per_tensor": 3936784,
+          "complete_bpw_tensor": 0.625735,
+          "output_rel_error": 0.32401,
+          "spec": {
+            "dim": 16,
+            "k": 1024,
+            "stages": 1
+          },
+          "weight_rel_error": 0.32401
+        }
+      },
+      "incumbent_complete_bits_per_tensor": 3936784,
+      "layer": 0,
+      "n_fit_tensors": 3,
+      "organ": "down_proj",
+      "output_metric": "isotropic_input_model",
+      "selected": "vq",
+      "selection_reason": "incumbent not beaten by any admitted alternative",
+      "shape": [
+        4096,
+        1536
+      ]
+    }
+  ],
+  "comparison_at_equal_complete_bits": {
+    "best_single_codec": "rvq",
+    "best_single_mean_output_rel_error": 0.188642,
+    "distinct_modes_selected": [
+      "kron",
+      "vq"
+    ],
+    "kron_admitted_cells": [
+      "L0.gate_proj"
+    ],
+    "mean_output_rel_error_per_single_codec": {
+      "gvq": 0.079666,
+      "kron": 0.338547,
+      "rvq": 0.188642,
+      "vq": 0.23965
+    },
+    "portfolio_beats_best_single": true,
+    "portfolio_mean_output_rel_error": 0.169429,
+    "universal_codecs": [
+      "kron",
+      "rvq",
+      "vq"
+    ]
+  },
+  "elapsed_s": 32.4,
+  "generated_utc": "2026-07-20T23:37:02Z",
+  "honesty": {
+    "bits": "every arm charged with SHB.expert_bits / G.kron_bits; portfolio ledger is an exact UPPER bound (cheaper Kronecker cells get no credit).",
+    "capability": "NONE. Weight-space and surrogate-output-space only; no forward ran.",
+    "circularity": "gate/up predictor and gate/up output metric share gamma, so this correlation is PARTLY definitional; the load-bearing numbers are the gain MAGNITUDES and the isotropic-space cost, not the r value",
+    "coverage": "1/94 layers measured; the rest are predicted.",
+    "fit_score_overlap": "codebooks are fit on the same expert cluster they are scored on, identically for every arm.",
+    "output_space": "synthetic input model x = gamma (*) z for gate/up; isotropic for down_proj. NOT measured activations."
+  },
+  "keep_experts": 64,
+  "layers_measured": [
+    0
+  ],
+  "ledger": {
+    "ceiling_receipt": {
+      "complete_bpw_exact": "435478899/459167255",
+      "complete_bpw_float": 0.9484101800769743,
+      "headroom_bits": "12128438272",
+      "legal": true,
+      "reserve_bits": "0",
+      "schema": "hawking.foundry.one_bit_ceiling.v1",
+      "scope": "whole_model"
+    },
+    "coded_expert_tensors": 18048,
+    "components": {
+      "alignment": 0,
+      "codebooks": 73924608,
+      "doctor": 0,
+      "indices": 212902871040,
+      "metadata": 9276672,
+      "packaging": 536870912,
+      "pass_through_tensors": 801541632,
+      "protected_islands": 7950447616,
+      "runtime_tables": 12032,
+      "scales": 690251776
+    },
+    "incumbent_everywhere_complete_bpw": 0.948410027,
+    "legal_under_one_bit_ceiling": true,
+    "mode_bits_per_tensor": 2,
+    "mode_bits_total": 36096,
+    "portfolio_complete_bpw": 0.94841018,
+    "portfolio_complete_bpw_exact": "435478899/459167255",
+    "selector_surcharge_bpw": 1.5353882323337714e-07
+  },
+  "modes": [
+    "vq",
+    "gvq",
+    "kron",
+    "rvq"
+  ],
+  "n_fit_tensors_per_cell": 3,
+  "n_layers": 94,
+  "predictor": {
+    "all_94_layers": {
+      "0": 1.842777,
+      "1": 0.903508,
+      "2": 0.553984,
+      "3": 0.247705,
+      "4": 0.209126,
+      "5": 0.117801,
+      "6": 0.116165,
+      "7": 0.120733,
+      "8": 0.07618,
+      "9": 0.065834,
+      "10": 0.121964,
+      "11": 0.133,
+      "12": 0.169351,
+      "13": 0.243866,
+      "14": 0.322535,
+      "15": 0.357768,
+      "16": 0.397104,
+      "17": 0.430571,
+      "18": 0.495885,
+      "19": 0.44402,
+      "20": 0.399145,
+      "21": 0.342194,
+      "22": 0.331917,
+      "23": 0.311168,
+      "24": 0.270902,
+      "25": 0.237592,
+      "26": 0.216679,
+      "27": 0.158362,
+      "28": 0.10737,
+      "29": 0.085364,
+      "30": 0.219315,
+      "31": 0.206621,
+      "32": 0.233011,
+      "33": 0.289992,
+      "34": 0.352183,
+      "35": 0.372829,
+      "36": 0.410782,
+      "37": 0.463583,
+      "38": 0.519737,
+      "39": 0.470425,
+      "40": 0.415415,
+      "41": 0.375041,
+      "42": 0.352183,
+      "43": 0.320361,
+      "44": 0.272764,
+      "45": 0.233489,
+      "46": 0.202582,
+      "47": 0.282011,
+      "48": 0.343364,
+      "49": 0.392872,
+      "50": 0.440108,
+      "51": 0.486076,
+      "52": 0.51561,
+      "53": 0.459607,
+      "54": 0.430636,
+      "55": 0.37164,
+      "56": 0.348017,
+      "57": 0.321595,
+      "58": 0.271818,
+      "59": 0.242175,
+      "60": 0.226079,
+      "61": 0.177043,
+      "62": 0.116904,
+      "63": 0.111467,
+      "64": 0.204746,
+      "65": 0.226229,
+      "66": 0.277899,
+      "67": 0.338866,
+      "68": 0.392166,
+      "69": 0.423859,
+      "70": 0.457595,
+      "71": 0.497503,
+      "72": 0.525006,
+      "73": 0.475087,
+      "74": 0.426433,
+      "75": 0.365649,
+      "76": 0.322965,
+      "77": 0.278995,
+      "78": 0.223354,
+      "79": 0.19021,
+      "80": 0.17086,
+      "81": 0.126774,
+      "82": 0.081673,
+      "83": 0.068608,
+      "84": 0.055698,
+      "85": 0.049965,
+      "86": 0.043169,
+      "87": 0.041868,
+      "88": 0.035458,
+      "89": 0.028796,
+      "90": 0.018287,
+      "91": 0.025802,
+      "92": 0.029164,
+      "93": 0.062068
+    },
+    "circularity_caveat": "gate/up predictor and gate/up output metric share gamma, so this correlation is PARTLY definitional; the load-bearing numbers are the gain MAGNITUDES and the isotropic-space cost, not the r value",
+    "definition": "log10(p99/p50) of post_attention_layernorm.weight ** 2, data-free",
+    "gvq_gain_vs_anisotropy_gate": {
+      "n": 1,
+      "pearson": NaN,
+      "spearman": NaN
+    },
+    "gvq_isotropic_cost_vs_anisotropy_gate": {
+      "n": 1,
+      "pearson": NaN,
+      "spearman": NaN
+    },
+    "kron_gain_vs_anisotropy_all_cells": {
+      "n": 2,
+      "pearson": NaN,
+      "spearman": NaN
+    },
+    "per_layer_gate": [
+      {
+        "anisotropy_decades": 1.842777,
+        "gvq_output_gain_decades": 0.289868,
+        "gvq_weight_space_cost_decades": -0.520409,
+        "layer": 0
+      }
+    ]
+  },
+  "schema": "hawking.gravity.codec_portfolio.v1",
+  "verdict": "PORTFOLIO WINS: per-(layer,organ) selection beats the best single codec (rvq) at equal complete bits, mean surrogate output rel_error 0.1694 vs 0.1886, selector surcharge 1.535e-07 BPW. NOT A CAPABILITY CLAIM: surrogate output space on a synthetic gamma input model, no forward was run.",
+  "whole_model_mode_assignment_gate_up": {
+    "assignment": {
+      "0": "kron",
+      "1": "vq",
+      "2": "vq",
+      "3": "vq",
+      "4": "vq",
+      "5": "vq",
+      "6": "vq",
+      "7": "vq",
+      "8": "vq",
+      "9": "vq",
+      "10": "vq",
+      "11": "vq",
+      "12": "vq",
+      "13": "vq",
+      "14": "vq",
+      "15": "vq",
+      "16": "vq",
+      "17": "vq",
+      "18": "vq",
+      "19": "vq",
+      "20": "vq",
+      "21": "vq",
+      "22": "vq",
+      "23": "vq",
+      "24": "vq",
+      "25": "vq",
+      "26": "vq",
+      "27": "vq",
+      "28": "vq",
+      "29": "vq",
+      "30": "vq",
+      "31": "vq",
+      "32": "vq",
+      "33": "vq",
+      "34": "vq",
+      "35": "vq",
+      "36": "vq",
+      "37": "vq",
+      "38": "vq",
+      "39": "vq",
+      "40": "vq",
+      "41": "vq",
+      "42": "vq",
+      "43": "vq",
+      "44": "vq",
+      "45": "vq",
+      "46": "vq",
+      "47": "vq",
+      "48": "vq",
+      "49": "vq",
+      "50": "vq",
+      "51": "vq",
+      "52": "vq",
+      "53": "vq",
+      "54": "vq",
+      "55": "vq",
+      "56": "vq",
+      "57": "vq",
+      "58": "vq",
+      "59": "vq",
+      "60": "vq",
+      "61": "vq",
+      "62": "vq",
+      "63": "vq",
+      "64": "vq",
+      "65": "vq",
+      "66": "vq",
+      "67": "vq",
+      "68": "vq",
+      "69": "vq",
+      "70": "vq",
+      "71": "vq",
+      "72": "vq",
+      "73": "vq",
+      "74": "vq",
+      "75": "vq",
+      "76": "vq",
+      "77": "vq",
+      "78": "vq",
+      "79": "vq",
+      "80": "vq",
+      "81": "vq",
+      "82": "vq",
+      "83": "vq",
+      "84": "vq",
+      "85": "vq",
+      "86": "vq",
+      "87": "vq",
+      "88": "vq",
+      "89": "vq",
+      "90": "vq",
+      "91": "vq",
+      "92": "vq",
+      "93": "vq"
+    },
+    "gvq_anisotropy_threshold_decades": null,
+    "n_gvq": 0,
+    "status": "PREDICTED for unmeasured layers, MEASURED for L0"
+  }
+}

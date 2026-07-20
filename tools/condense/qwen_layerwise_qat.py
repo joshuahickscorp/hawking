@@ -248,6 +248,10 @@ def measure(layers=(0, 46), experts=(0, 1, 2), n_tokens: int = 1400, rounds: int
     moved = [c for c in cells if any(e > 0 for e in c["chosen_eta_per_round"])]
     verdict = ("S3A_QAT_ALIVE" if real and len(wins) == len(real) else
                "S3A_QAT_PARTIAL" if wins else "S3A_QAT_DEAD")
+    # Only layer 0 has real-token activations, and layer 0 is the campaign's KNOWN exception
+    # (non-Gaussian, 1.328 decades of coding gap). A win confined to it must say so in its name.
+    if verdict != "S3A_QAT_DEAD" and {c["layer"] for c in real} == {0}:
+        verdict += "_LAYER0_ONLY"
     return {
         "schema": SCHEMA,
         "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
@@ -323,8 +327,11 @@ def selftest() -> dict[str, Any]:
     d1 = _decode_idx(books, idxs, rows, cols, dim)
     d2 = _decode_idx(books, [i.clone() for i in idxs], rows, cols, dim)
     assert np.array_equal(d1, d2), "decode is not a pure function of the index stream"
-    cbn = books[0].detach().cpu().numpy()
-    assert np.array_equal(cbn, _bf16(cbn)), "codebook is not on the bf16 grid it is charged at"
+    # bf16 grid checked STRUCTURALLY (low mantissa bits must be zero), not against _bf16 itself -
+    # comparing to _bf16 would pass even if _bf16 were gutted into a no-op.
+    cbn = np.ascontiguousarray(books[0].detach().cpu().numpy(), np.float32)
+    assert not np.any(cbn.view(np.uint32) & np.uint32(0xFFFF)), \
+        "codebook is not on the bf16 grid it is charged at"
 
     # 5. zero bits added: both arms carry the identical complete charge.
     spec = {"family": "shared_grammar", "dim": dim, "k": k, "stages": 1}
