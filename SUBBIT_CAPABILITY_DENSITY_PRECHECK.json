@@ -1,0 +1,74 @@
+{
+  "generated_at_utc": "2026-07-20T21:08:16Z",
+  "honesty": [
+    "no capability is claimed by any byte plan or weight-space measurement",
+    "only a real parent-vs-packed forward on the frozen holdout may select a frontier",
+    "the routing calibration in flight replaces an 88-token CONTAMINATED sample (fitted on the scored holdout) with a 1200-token frozen DISJOINT corpus"
+  ],
+  "lane_a_function_aware": {
+    "aggregate": {
+      "error_reduction_fraction": 0.028461,
+      "gate_error_improves_at_identical_rate": true,
+      "gate_single_codeword_below_0.20": true,
+      "mean_rel_error_baseline": 0.774596,
+      "mean_rel_error_scale_invariant": 0.75255,
+      "mean_single_codeword_share_baseline": 0.026716,
+      "mean_single_codeword_share_scale_invariant": 0.016072,
+      "verdict": "LEVER_ALIVE"
+    },
+    "decisive_finding": "post-hoc coding of the frozen weights is AT its information-theoretic floor",
+    "implemented": [
+      "M01' scale-invariant VQ (per-row bf16 scale, billed)",
+      "M02 activation-aware diagonal-Hessian weighted Lloyd",
+      "closed-form optimal per-row scale refit (zero extra bytes)"
+    ],
+    "measured_on": "REAL Qwen3-235B tensors, 5 layers x 3 organs x 8 experts",
+    "module": "tools/condense/qwen_function_aware_codec.py"
+  },
+  "lane_d_structural": {
+    "legal_arms": 27,
+    "module": "tools/condense/qwen_structural_plan.py",
+    "principle": "the expert INVENTORY is a free variable under a fixed complete ceiling; halving it and doubling the survivor rate is budget-neutral",
+    "selected": "S64_g2.5_d0.625 (complete 0.948410027 BPW, exact 870957657/918334510)"
+  },
+  "law": {
+    "a1_status": "the 1.0075 BPW A1 candidate is ILLEGAL under this ceiling and is not rerun",
+    "ceiling": "complete_bits / original_weight_count <= 1/1",
+    "enforced_by": "tools/foundry/one_bit_ceiling.assert_complete_bpw_le_one",
+    "upward_bracketing": "REJECTED. No 1.2 / 1.5 / 2 / 3 BPW anchor is scheduled in this campaign."
+  },
+  "live_state": {
+    "based_on": "codex/hawking-deep-architecture-foundry @5a85a593 (one-bit ceiling law) merged with campaign/adaptive-transfer-ladder @c056a105 (qwen tooling)",
+    "campaign_branch": "campaign/subbit-capability-density-reset",
+    "heavy_lease": "FREE. QWEN_GRAVITY_STATE.json final=true, no lease file, controller pid 86590 dead. No heavy campaign was interrupted.",
+    "origin_main": "4fbca8bc Packs retirement record + deletion readiness 20/20 (absorbed at 0adcab57; archive recovery-proven)",
+    "parent_source": {
+      "bytes_on_disk_gib": 438,
+      "id": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+      "parent_logits_cached": "6/6 holdout prompts, verified healthy (gen_paris argmax = ' Paris')",
+      "resident": true,
+      "revision": "ac9c66cc9b46af7306746a9250f23d47083d689e",
+      "shards": 118
+    },
+    "resources": {
+      "free_disk_gb": 117.0,
+      "ram_note": "M3 Ultra 96GB; routing calibration and packing both run bounded-streaming",
+      "swap": "total = 3072.00M  used = 1875.00M  free = 1197.00M  (encrypted)"
+    },
+    "sealed_qwen_result": {
+      "ladder_sha": "563ad51128717126",
+      "rows": 18,
+      "status": "SEALED",
+      "verdict_id": "FIXED_WEIGHT_PQ_VQ_CAPABILITY_FAILURE"
+    },
+    "worktree": "/Users/scammermike/HawkingWorktrees/subbit-reset (TCC-safe, outside ~/Downloads)",
+    "worktrees": [
+      "/Users/scammermike/Downloads/hawking                          c056a105 [campaign/adaptive-transfer-ladder]",
+      "/Users/scammermike/Downloads/hawking-hide-build               4fbca8bc [build/hide-impl-2026-07-19]",
+      "/Users/scammermike/Downloads/hawking-hide-parity-research     454b3013 [research/hide-claude-parity-2026-07-19]",
+      "/Users/scammermike/HawkingWorktrees/deep-architecture-foundry 5a85a593 [codex/hawking-deep-architecture-foundry]",
+      "/Users/scammermike/HawkingWorktrees/subbit-reset              2bc17577 [campaign/subbit-capability-density-reset]"
+    ]
+  },
+  "schema": "hawking.subbit_capability_density.precheck.v1"
+}

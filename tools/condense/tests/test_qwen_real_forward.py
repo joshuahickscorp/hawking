@@ -160,6 +160,53 @@ def test_bf16_rows_matches_full_gather(tiny):
     assert np.array_equal(gathered, full[rows])   # bounded gather == full-table indexing, exactly
 
 
+def test_remote_reader_uses_exact_ranges_and_cache(tmp_path):
+    """The remote path is exercised without a network: the injected transport sees only exact
+    half-open ranges, while the second read is served by the content-addressed cache."""
+    source = tmp_path / "source"
+    source.mkdir()
+    g = _build_tiny_checkpoint(source)
+    blobs = {p.name: p.read_bytes() for p in source.glob("*.safetensors")}
+    calls: list[tuple[str, int, int]] = []
+
+    def fetch(shard: str, start: int, end: int) -> bytes:
+        calls.append((shard, start, end))
+        return blobs[shard][start:end]
+
+    cache = tmp_path / "range-cache"
+    reader = Q.RemoteSafetensorsIndexReader(
+        source / "model.safetensors.index.json", cache_dir=cache, range_fetcher=fetch,
+        repo_id="fixture/tiny", revision="fixture-revision",
+    )
+    q1 = reader.bf16("model.layers.0.self_attn.q_proj.weight")
+    n_calls = len(calls)
+    q2 = reader.bf16("model.layers.0.self_attn.q_proj.weight")
+    assert np.array_equal(q1, q2)
+    assert q1.shape == (g.q_out, g.hidden)
+    assert len(calls) == n_calls                         # tensor + header were cache hits
+    telem = reader.telemetry_json()
+    assert telem["cache_hits"] >= 1 and telem["network_bytes"] > 0
+    assert "model.layers.0.self_attn.q_proj.weight" in telem["tensors_read"]
+
+
+def test_remote_forward_matches_local_forward(tmp_path):
+    source = tmp_path / "source"
+    source.mkdir()
+    g = _build_tiny_checkpoint(source, seed=9)
+    blobs = {p.name: p.read_bytes() for p in source.glob("*.safetensors")}
+    remote = Q.RemoteSafetensorsIndexReader(
+        source / "model.safetensors.index.json",
+        range_fetcher=lambda shard, start, end: blobs[shard][start:end],
+        repo_id="fixture/tiny", revision="fixture-revision",
+    )
+    local = Q.SafetensorsIndexReader(source)
+    ids = [1, 5, 9, 2]
+    got = Q.QwenRealForward(remote, g).logits_for(ids, positions="all")
+    expected = Q.QwenRealForward(local, g).logits_for(ids, positions="all")
+    local.close(); remote.close()
+    assert np.array_equal(got, expected)
+
+
 # --------------------------------------------------------------------------- #
 # Full forward chain
 # --------------------------------------------------------------------------- #
