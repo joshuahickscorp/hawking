@@ -70,6 +70,16 @@ def free_disk_bytes(path: str) -> int:
         return 100 * _GIB
 
 
+def _entry_bytes(value: Any) -> int:
+    """Bytes held by a cache value (a numpy array, or a tuple/list of them)."""
+    try:
+        if isinstance(value, (tuple, list)):
+            return sum(int(getattr(x, "nbytes", 0)) for x in value)
+        return int(getattr(value, "nbytes", 0))
+    except Exception:
+        return 0
+
+
 class PressureAwareCache:
     """Ordered dict with pressure-triggered LRU eviction. get()/put() only; len() supported."""
 
@@ -82,9 +92,14 @@ class PressureAwareCache:
         self.disk_reserve = int((_env_float("HAWKING_CACHE_DISK_RESERVE_GB", 30.0) if disk_reserve_gb is None else disk_reserve_gb) * _GIB)
         self.min_entries = int(os.environ.get("HAWKING_CACHE_MIN_ENTRIES", min_entries if min_entries is not None else 48))
         self.hard_max = int(os.environ.get("HAWKING_CACHE_HARD_MAX", hard_max if hard_max is not None else 200000))
+        # Absolute byte budget: the PRIMARY control. Fill RAM hard (aggressive) but never spill the
+        # cache unbounded into swap - which is what killed the campaign (macOS keeps 'available' high
+        # by swapping, so an available-floor alone never triggers and the cache balloons into swap).
+        self.max_bytes = int(_env_float("HAWKING_CACHE_MAX_GB", 48.0) * _GIB)
         self.check_every = max(1, int(check_every))
         self.verbose = verbose
         self._d: dict[Any, Any] = {}
+        self._bytes = 0
         self._ops = 0
         self.evictions = 0
         self.peak_entries = 0
@@ -97,21 +112,26 @@ class PressureAwareCache:
         return v
 
     def put(self, key: Any, value: Any) -> None:
+        if key in self._d:
+            self._bytes -= _entry_bytes(self._d[key])
         self._d[key] = value
+        self._bytes += _entry_bytes(value)
         self.peak_entries = max(self.peak_entries, len(self._d))
         self._ops += 1
-        if self._ops % self.check_every == 0 or len(self._d) > self.hard_max:
+        if self._ops % self.check_every == 0 or self._bytes > self.max_bytes or len(self._d) > self.hard_max:
             self._evict_if_pressured()
 
     def _pressured(self) -> bool:
-        return (available_ram_bytes() < self.floor
+        return (self._bytes > self.max_bytes
+                or available_ram_bytes() < self.floor
                 or free_disk_bytes(self.disk_path) < self.disk_reserve
                 or len(self._d) > self.hard_max)
 
     def _evict_if_pressured(self) -> None:
         evicted = 0
         while len(self._d) > self.min_entries and self._pressured():
-            self._d.pop(next(iter(self._d)))  # oldest = least recently used
+            k = next(iter(self._d))  # oldest = least recently used
+            self._bytes -= _entry_bytes(self._d.pop(k))
             evicted += 1
         if evicted:
             self.evictions += evicted
@@ -125,7 +145,8 @@ class PressureAwareCache:
 
     def stats(self) -> dict[str, Any]:
         return {"name": self.name, "entries": len(self._d), "peak_entries": self.peak_entries,
-                "evictions": self.evictions, "floor_gb": round(self.floor / _GIB, 1),
+                "evictions": self.evictions, "cache_gb": round(self._bytes / _GIB, 2),
+                "max_gb": round(self.max_bytes / _GIB, 1), "floor_gb": round(self.floor / _GIB, 1),
                 "disk_reserve_gb": round(self.disk_reserve / _GIB, 1)}
 
     def __len__(self) -> int:

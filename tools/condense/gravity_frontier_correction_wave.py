@@ -152,6 +152,18 @@ def _tokenizer():
 
 
 # ── faithful forge pack (per-class params) -> recon matrix + realized whole-artifact BPW ────────
+def _mps_gc() -> None:
+    """Release the MPS/GPU allocator cache accumulated during packing. gravity_forge packs on MPS
+    (unified memory); without this the GPU-side cache can hoard memory that a CPU-side byte budget
+    cannot see, contributing to the memory-pressure kills. Cheap, fail-closed."""
+    try:
+        import torch
+        if torch.backends.mps.is_available():
+            torch.mps.empty_cache()
+    except Exception:
+        pass
+
+
 def forge_pack(family: str, w: np.ndarray, seed: int = 0,
                params: dict[str, Any] | None = None) -> dict[str, Any]:
     """Pack `w` with `family` using `params` (defaults to module PARAMS). Returns the recon matrix
@@ -225,6 +237,7 @@ def _make_hook(mapping: dict[str, Any], cache, audit: dict[str, Any]):
                               "n_weights": int(ex[cls].size), "params": knobs}
                 if packed.get("doctor_skipped"):
                     audit[cls]["doctor_skipped"] = True
+        _mps_gc()  # release GPU cache after this expert's packs (once per expert)
         cache.put(ck, (out["mlp1"], out["mlp2"]))
         return out
     return hook
