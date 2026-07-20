@@ -1,0 +1,103 @@
+{
+  "active_controller": {
+    "caffeinate": true,
+    "detached": true,
+    "heartbeat": "reports/condense/general_frontier/QWEN_GRAVITY/heartbeat",
+    "lease_dir": "reports/condense/general_frontier/QWEN_GRAVITY/leases",
+    "log": "/tmp/d1d2.log",
+    "pid": 24649,
+    "stage": "D1_route_only + D2_recon_only causal controls"
+  },
+  "admitted_program_remaining": [
+    "D1_route_only (running)",
+    "D2_recon_only (running)",
+    "S2A_adaptive_k (built, legal 0.996853694 BPW, queued)",
+    "S64_gamma (built, legal 0.999769787 BPW, queued)",
+    "S2B router remap",
+    "S2C router distillation",
+    "S2D hot/warm/cold",
+    "S3A layerwise QAT",
+    "S3B expert/router/hidden distillation",
+    "S3C learned same-budget Doctor",
+    "S3D codec portfolio",
+    "S3E global calibration"
+  ],
+  "generated_at_utc": "2026-07-20T23:21:55Z",
+  "generation_S1": {
+    "aggregates": {
+      "S64_doctor": {
+        "capability_pass": false,
+        "collapse_count": 6,
+        "complete_bpw": 0.999769787,
+        "mean_argmax_agreement": 0.09215,
+        "mean_logit_cosine": 0.46818,
+        "mean_sym_kl": 7.6989,
+        "mean_top5_overlap": 0.1429,
+        "n_rows": 6
+      },
+      "S64_structural": {
+        "capability_pass": false,
+        "collapse_count": 6,
+        "complete_bpw": 0.948410027,
+        "mean_argmax_agreement": 0.07348,
+        "mean_logit_cosine": 0.43373,
+        "mean_sym_kl": 8.59917,
+        "mean_top5_overlap": 0.07952,
+        "n_rows": 6
+      }
+    },
+    "final": true,
+    "note": "first NON-ZERO next-token agreement in this campaign. Every sealed F1 fixed-weight arm scored argmax exactly 0.0 on all six domains; S64_structural reaches 0.0735 and S64_doctor 0.0922. The Doctor demonstrably earns its 0.0513 BPW: symKL 8.599 -> 7.699, argmax 0.0735 -> 0.0922, cosine 0.434 -> 0.468, top5 0.080 -> 0.143. It is still a collapse: the gate wants symKL <= 0.10 and argmax >= 0.95.",
+    "rows": "12/12",
+    "status": "SEALED",
+    "verdict": "COLLAPSE 12/12 - no capability pass"
+  },
+  "hard_law": {
+    "ceiling": "complete_bits / original_weight_count <= 1/1",
+    "diagnostic_controls": "D1 (16 BPW) and D2 (1.857 BPW) are fenced diagnostic_only, capability_pass forced False, promotable false. Measuring a causal control above the ceiling is not proposing an artifact above it.",
+    "escape_receipt": "FORBIDDEN",
+    "upward_bracketing": "FORBIDDEN"
+  },
+  "honesty": [
+    "no capability pass exists at any rate in this campaign",
+    "qwen3moe is an Unimplemented stub in the Rust engine: these artifacts are direct-executable in the Python reference forward ONLY, not the .tq serve path"
+  ],
+  "parent": {
+    "bytes_gib": 438,
+    "id": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+    "parent_logits_cached": "6/6 holdout prompts, verified healthy (gen_paris argmax = ' Paris')",
+    "resident": true,
+    "revision": "ac9c66cc9b46af7306746a9250f23d47083d689e",
+    "shards": 118,
+    "tokenizer": "models/qwen3-235b-a22b/_meta/tokenizer.json"
+  },
+  "repository": {
+    "campaign_branch": "campaign/subbit-capability-density-reset",
+    "head": "851b4577",
+    "origin": "git@github.com:joshuahickscorp/hawking.git",
+    "origin_main": "4fbca8bc Packs retirement record + deletion readiness 20/20 (absorbed at 0adcab57; archive recovery-proven)",
+    "tcc_safe_path": "/Users/scammermike/HawkingWorktrees/subbit-reset (outside ~/Downloads)",
+    "worktrees": [
+      "/Users/scammermike/Downloads/hawking                          c056a105 [campaign/adaptive-transfer-ladder]",
+      "/Users/scammermike/Downloads/hawking-hide-build               4fbca8bc [build/hide-impl-2026-07-19]",
+      "/Users/scammermike/Downloads/hawking-hide-parity-research     454b3013 [research/hide-claude-parity-2026-07-19]",
+      "/Users/scammermike/HawkingWorktrees/deep-architecture-foundry 5a85a593 [codex/hawking-deep-architecture-foundry]",
+      "/Users/scammermike/HawkingWorktrees/subbit-reset              851b4577 [campaign/subbit-capability-density-reset]"
+    ]
+  },
+  "resources": {
+    "free_disk_gb": 110.0,
+    "ram_gb": 96,
+    "swap": "total = 5120.00M  used = 3921.06M  free = 1198.94M  (encrypted)",
+    "thermal": "Note: No thermal warning level has been recorded\nNote: No performance warning level has been recorded\nNote: No CPU power status has been recorded"
+  },
+  "schema": "hawking.qwen.full_course.precheck.v1",
+  "telegram": {
+    "configured": true,
+    "dedup_key": "row_id + checkpoint sha256 seal",
+    "delivered_so_far": 12,
+    "ledger_advances_only_after_delivery": true,
+    "notifier": "tools/condense/qwen_checkpoint_notifier.py",
+    "source": "macOS Keychain (com.hawking.doctorv5.telegram.*)"
+  }
+}
