@@ -190,8 +190,8 @@ def test_03_source_mapped_refuses_release(tmp_path, monkeypatch):
                         lambda p: p.name.endswith("00003-of-00007.safetensors"))
     mod.h_release_120b_source(mod._read(ctx.SM_STATE))
     st = mod._read(ctx.SM_STATE)
-    assert st["state"] == "BLOCKED"
-    assert "mapped" in (st.get("blocked_reason") or "")
+    assert st["state"] == "RELEASE_120B_SOURCE"   # retry (wait for unmap), not terminal
+    assert any("mapped" in m for m in ctx.tg)
     for p in orig:
         assert p.exists(), f"shard deleted despite being mapped: {p.name}"
 
@@ -203,7 +203,7 @@ def test_04_deletion_gate_red_refuses(tmp_path, monkeypatch):
     _build_release(mod, ctx, monkeypatch, all_green=False)
     orig = list(ctx.SHARDS)
     mod.h_release_120b_source(mod._read(ctx.SM_STATE))
-    assert mod._read(ctx.SM_STATE)["state"] == "BLOCKED"
+    assert mod._read(ctx.SM_STATE)["state"] == "ADMIT_QWEN"   # shard-serial, source kept, nothing deleted
     for p in orig:
         assert p.exists(), f"shard deleted with red gates: {p.name}"
 
@@ -251,11 +251,13 @@ def test_06_interrupted_qwen_download_retries_and_respects_floors(tmp_path, monk
     assert mod._read(ctx.SM_STATE)["state"] == "TRANSFER_QWEN_PRIORITY"
     assert any("retry" in m for m in ctx.tg)
 
-    # (b) below hard-stop -> BLOCKED.
+    # (b) below hard-stop -> paused (self-heals when disk recovers), NOT terminal.
     mod._write(ctx.SM_STATE, transfer_state())
+    ctx.tg.clear()
     monkeypatch.setattr(mod, "_disk_free_gb", lambda: 30.0)
     mod.h_transfer_qwen_priority(mod._read(ctx.SM_STATE))
-    assert mod._read(ctx.SM_STATE)["state"] == "BLOCKED"
+    assert mod._read(ctx.SM_STATE)["state"] == "TRANSFER_QWEN_PRIORITY"
+    assert any("hard-stop" in m for m in ctx.tg)
 
     # (c) below pause (but above hard-stop) -> pause without advancing.
     mod._write(ctx.SM_STATE, transfer_state())
@@ -273,13 +275,14 @@ def test_07_disk_floor_hardstop_and_pause(tmp_path, monkeypatch):
     mod._write(ctx.GF / "QWEN3_235B_PRIORITY_PLAN.json", {"priority_shards": ["s.safetensors"]})
     ctx.QWEN_DIR.mkdir(parents=True, exist_ok=True)
 
-    # hard-stop
+    # hard-stop -> self-healing pause (not terminal)
     mod._write(ctx.SM_STATE, {"state": "TRANSFER_QWEN_PRIORITY", "entered_at": mod._now()})
+    ctx.tg.clear()
     monkeypatch.setattr(mod, "_disk_free_gb", lambda: mod.DISK_HARDSTOP_GB - 1)
     mod.h_transfer_qwen_priority(mod._read(ctx.SM_STATE))
     st = mod._read(ctx.SM_STATE)
-    assert st["state"] == "BLOCKED"
-    assert "hard" in (st.get("blocked_reason") or "").lower()
+    assert st["state"] == "TRANSFER_QWEN_PRIORITY"
+    assert any("hard-stop" in m.lower() for m in ctx.tg)
 
     # pause (between hard-stop and pause floors)
     mod._write(ctx.SM_STATE, {"state": "TRANSFER_QWEN_PRIORITY", "entered_at": mod._now()})
@@ -352,9 +355,8 @@ def test_10_q2_failure_blocks(tmp_path, monkeypatch):
                               "input_identity": None})
     mod.h_run_q0q1q2(mod._read(ctx.SM_STATE))
     st = mod._read(ctx.SM_STATE)
-    assert st["state"] == "BLOCKED"
-    reason = st.get("blocked_reason") or ""
-    assert "Q0/Q1" in reason or "adapter" in reason
+    assert st["state"] == "RUN_QWEN_Q0_Q1_Q2"   # retry (transient), never wedges
+    assert any("retrying" in m and ("Q0/Q1" in m or "adapter" in m) for m in ctx.tg)
 
 
 # -- 11. successful Qwen ignition path ------------------------------------------------------

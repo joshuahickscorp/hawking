@@ -145,11 +145,35 @@ def _advance(st: dict, new_state: str, receipt_name: str, receipt: dict) -> None
     _write(SM_STATE, st)
 
 
+# Shared env for every heavy child (auto-resumed campaign + any Qwen compute): the byte-budget RAM
+# protection that stopped the OOM kills. Fill RAM hard, never spill unbounded into swap, never crash.
+HEAVY_ENV = {"HAWKING_CACHE_MAX_GB": "48", "HAWKING_CACHE_FLOOR_GB": "12",
+             "HAWKING_CACHE_DISK_RESERVE_GB": "40"}
+
+
 def _fail(st: dict, reason: str, receipt_name: str = "blocked") -> None:
-    _receipt(receipt_name, {"reason": reason, "from_state": st.get("state")})
-    _telegram(f"BLOCKED in {st.get('state')}: {reason}")
+    """HARD-STOP. Reserve for genuinely-harmful situations only (unsafe deletion path, invalid/corrupt
+    campaign data). Stopping here is the safe choice; a human should look."""
+    _receipt(receipt_name, {"reason": reason, "from_state": st.get("state"), "kind": "hard_stop"})
+    _telegram(f"HARD-STOP in {st.get('state')} (stopping to avoid harm): {reason}")
     _write(SM_STATE, {**st, "state": "BLOCKED", "entered_at": _now(), "blocked_reason": reason,
                       "blocked_from": st.get("state")})
+
+
+def _retry(st: dict, key: str, reason: str, backoff: float = 600) -> None:
+    """Recoverable failure: stay in the CURRENT state and try again next tick (the chain keeps going).
+    Deduped Telegram (at most one per backoff window) so a persistent problem pings but never spams,
+    and never leaves the pipeline permanently wedged on a transient issue."""
+    sup = _read(SUP_STATE)
+    rt = sup.get("retries", {})
+    e = rt.get(key, {"n": 0, "ts": 0.0})
+    e["n"] = int(e.get("n", 0)) + 1
+    now = time.time()
+    if e["n"] == 1 or (now - float(e.get("ts", 0))) >= backoff:
+        _telegram(f"{st.get('state')}: transient issue, retrying (attempt {e['n']}): {reason}")
+        e["ts"] = now
+    rt[key] = e
+    _write(SUP_STATE, {**sup, "retries": rt})
 
 
 def _disk_free_gb() -> float:
@@ -223,10 +247,6 @@ def verify_120b() -> tuple[bool, dict]:
 
 
 # ── handlers ──────────────────────────────────────────────────────────────────────────────
-CAMPAIGN_RESUME_ENV = {"HAWKING_CACHE_MAX_GB": "48", "HAWKING_CACHE_FLOOR_GB": "12",
-                       "HAWKING_CACHE_DISK_RESERVE_GB": "40"}
-
-
 def _resume_campaign_if_due(sup: dict, done, total) -> None:
     """Auto-heal a crashed Doctor campaign (zero-idle, safe to leave). Backoff 5 min between attempts;
     a successful resume brings the pid back so the next tick sees it alive and stops resuming."""
@@ -242,7 +262,7 @@ def _resume_campaign_if_due(sup: dict, done, total) -> None:
         pass
     try:
         subprocess.run([PY, str(ROOT / "tools/condense/gravity_frontier_correction_wave.py"), "detach"],
-                       env={**os.environ, **CAMPAIGN_RESUME_ENV}, cwd=str(ROOT),
+                       env={**os.environ, **HEAVY_ENV}, cwd=str(ROOT),
                        capture_output=True, text=True, timeout=60)
     except Exception as exc:  # noqa: BLE001
         _telegram(f"auto-resume launch error: {type(exc).__name__}")
@@ -288,16 +308,19 @@ def h_verify_120b(st: dict) -> None:
 
 
 def h_seal(st: dict) -> None:
-    if not _claim("seal_conclusion"):
-        return
+    # The sealer is idempotent (re-writes the same conclusion artifacts); run it each tick until it
+    # succeeds, then the claim guards a single advance. A failed seal retries, never wedges.
     r = subprocess.run([PY, str(ROOT / "tools/condense/seal_120b_conclusion.py"), "seal"],
                        capture_output=True, text=True, cwd=str(ROOT), timeout=1800)
     res = _read(GF / "GPT_OSS_120B_FINAL_FRONTIER_RESULT.json")
+    if r.returncode != 0 or not res:
+        _retry(st, "seal", f"sealer exit {r.returncode}"); return
     outcome = (res.get("outcome") or res.get("status") or "").upper()
-    is_a = "OUTCOME_A" in outcome or "PASS" in outcome and "BOUNDARY" not in outcome
-    _telegram(f"120B conclusion sealed (exit {r.returncode}). Outcome: {outcome or 'B (boundary)'}")
+    is_a = "OUTCOME_A" in outcome or ("PASS" in outcome and "BOUNDARY" not in outcome)
+    if not _claim("seal_conclusion"):
+        return
+    _telegram(f"120B conclusion sealed. Outcome: {outcome or 'B (boundary)'}")
     receipt = {"seal_exit": r.returncode, "outcome": outcome, "input_identity": st.get("input_identity")}
-    # Outcome A + contract-required narrow refinement -> one refinement; else proceed.
     if is_a and res.get("narrow_refinement_required"):
         _advance(st, "NARROW_RATE_REFINEMENT", "seal_conclusion", receipt)
     else:
@@ -395,33 +418,43 @@ def _lsof_maps(path: Path) -> bool:
         return False  # lsof absent -> treat as not-mapped only after the pid/queue checks below
 
 
+def _skip_release_shard_serial(st: dict, reason: str) -> None:
+    """Safe alternate that keeps the chain moving: do NOT delete, keep the 120B source, and stream
+    Qwen shard-serial instead. Used whenever deletion is unauthorized or the source is not in a
+    perfectly-deletable state - progressing without any destructive action."""
+    _telegram_once("release_skip", f"skipping 120B deletion ({reason}); source kept, Qwen shard-serial.")
+    _advance(st, "ADMIT_QWEN", "release_source",
+             {"mode": "shard_serial_no_release", "reason": reason, "input_identity": st.get("input_identity")})
+
+
 def h_release_120b_source(st: dict) -> None:
-    if not _claim("release_source"):
+    # Restart-safe: once the deletion is claimed (in progress or done) this is a clean no-op, so a
+    # mid-deletion restart never re-runs or diverts.
+    if (CLAIMS / "release_source.claim").exists():
         return
-    # RE-VERIFY (fresh, authoritative, exactly 15/15) immediately before deleting. A crashed or stale
-    # verdict blocks deletion - this enforces the re-verify-before-delete guarantee.
+    # RE-VERIFY (fresh, authoritative, exactly 15/15) immediately before deleting - a crashed or stale
+    # verdict never deletes. All checks below run BEFORE the one-use claim so recoverable conditions
+    # retry (never burning the claim). Deletion only happens on the fully-clean, authorized path.
     ok, g = _reverify_gates()
     if not ok:
-        _fail(st, f"release re-check not authorized: {g.get('green')}/{g.get('total')} green, "
-                  f"authorized={g.get('release_authorized')} {g.get('reason','')}", "release_regate_fail"); return
-    # exactly 7 exact shard paths, each under ORIGINAL, exact name, existing, NOT mapped
+        _skip_release_shard_serial(st, f"re-check not authorized ({g.get('green')}/{g.get('total')})"); return
     if len(SHARDS) != 7:
-        _fail(st, "shard list is not exactly 7", "release_pathcount_fail"); return
+        _fail(st, "shard list is not exactly 7", "release_pathcount_fail"); return  # HARD-STOP: SHARDS wrong
     for p in SHARDS:
         rp = p.resolve()
         if rp.parent != ORIGINAL.resolve() or not p.name.startswith("model--0000") or not p.name.endswith("-of-00007.safetensors"):
-            _fail(st, f"unsafe deletion path {p}", "release_path_fail"); return
+            _fail(st, f"unsafe deletion path {p}", "release_path_fail"); return  # HARD-STOP: harm risk
         if not p.exists():
-            _fail(st, f"shard already absent {p.name}", "release_absent_fail"); return
+            _skip_release_shard_serial(st, f"shard absent {p.name} (source incomplete)"); return
         if _lsof_maps(p):
-            _fail(st, f"shard still mapped by a process: {p.name}", "release_mapped_fail"); return
-    # no live heavy controller (doctor campaign) references the source
+            _retry(st, "release_mapped", f"shard {p.name} still mapped; waiting to release"); return
     if _pid_alive(_read(CAMP / "leases/doctor_campaign.lease").get("pid", -1)):
-        _fail(st, "doctor campaign still live", "release_livecontroller_fail"); return
-    # metadata to preserve must be present BEFORE we delete anything
+        _retry(st, "release_live", "a controller still maps the source; waiting"); return
     for m in (ORIGINAL / "config.json", ORIGINAL / "model.safetensors.index.json", MODEL_DIR / "tokenizer.json"):
         if not m.exists():
-            _fail(st, f"required metadata missing, refusing to delete: {m.name}", "release_meta_fail"); return
+            _skip_release_shard_serial(st, f"metadata {m.name} missing (cannot guarantee rehydration)"); return
+    if not _claim("release_source"):   # one-use deletion guard: everything above is clean + authorized
+        return
     freed = []
     before = _disk_free_gb()
     for p in SHARDS:
@@ -467,10 +500,13 @@ def h_admit_qwen(st: dict) -> None:
 
 
 def h_transfer_qwen_priority(st: dict) -> None:
-    # Disk floors first.
+    # Disk floors first. Hard stop is a self-healing PAUSE (wait for disk to recover), not a wedge -
+    # continuing would fill the disk (harm), so we stop downloading but keep polling to resume.
     free = _disk_free_gb()
     if free < DISK_HARDSTOP_GB:
-        _fail(st, f"hard disk stop: {free:.0f} GB < {DISK_HARDSTOP_GB} GB", "transfer_hardstop"); return
+        _telegram_once("disk_hardstop",
+                       f"transfer hard-stopped: free {free:.0f} GB < {DISK_HARDSTOP_GB} GB. "
+                       "Paused; will resume when disk recovers."); return
     plan = _read(GF / "QWEN3_235B_PRIORITY_PLAN.json")
     shards = plan.get("priority_shards", [])
     got = 0
@@ -487,7 +523,8 @@ def h_transfer_qwen_priority(st: dict) -> None:
                             f"hf_hub_download('{QWEN_REPO}', sys.argv[1], revision='{QWEN_REV}',"
                             f" local_dir='{QWEN_DIR}')", shard],
                            capture_output=True, text=True, cwd=str(ROOT),
-                           env={**os.environ, "HF_HUB_DISABLE_TELEMETRY": "1", "HF_HUB_ENABLE_HF_TRANSFER": "1"},
+                           env={**os.environ, **HEAVY_ENV, "HF_HUB_DISABLE_TELEMETRY": "1",
+                                "HF_HUB_ENABLE_HF_TRANSFER": "1"},
                            timeout=7200)
         if r.returncode != 0 or not dest.exists():
             _telegram_once(f"retry_{shard}", f"shard {shard} transfer retry pending ({r.returncode}).", 600)
@@ -502,16 +539,14 @@ def h_transfer_qwen_priority(st: dict) -> None:
 
 
 def h_run_q0q1q2(st: dict) -> None:
-    if not _claim("run_q0q1q2"):
-        return
-    # Q0 (already proven on real bytes) + Q1 (bounded tensor decode) + Q2 (router/expert/complete-layer)
+    # Idempotent; retry on failure (transient network/adapter), claim only the advance. Never wedges.
     r = subprocess.run([PY, str(ROOT / "tools/condense/qwen3_moe_adapter.py")],
                        capture_output=True, text=True, cwd=str(ROOT), timeout=600)
-    q_ok = r.returncode == 0
-    _telegram(f"Qwen Q0 (source feasibility) + Q1 (bounded decode): {'PASS' if q_ok else 'CHECK'}.")
-    if not q_ok:
-        _fail(st, "Q0/Q1 adapter validation failed", "q_fail"); return
-    _telegram("Qwen Q2 (router/expert/complete-layer transfer): running on priority shards.")
+    if r.returncode != 0:
+        _retry(st, "q0q1q2", f"Q0/Q1 adapter validation exit {r.returncode}"); return
+    if not _claim("run_q0q1q2"):
+        return
+    _telegram("Qwen Q0 (source feasibility) + Q1 (bounded decode) PASS; Q2 (router/expert/layer) running.")
     _advance(st, "LAUNCH_QWEN", "run_q0q1q2", {"q0": True, "q1": True, "q2": "bounded", "input_identity": QWEN_REV})
 
 
