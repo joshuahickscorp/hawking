@@ -30,12 +30,17 @@
       "verdict": "correct cap is ~20GB; aggressive RAM only where real reuse exists"
     },
     "post_hoc_coding_of_frozen_weights": {
-      "evidence": "reports/subbit_reset/M01_FUNCTION_AWARE_PROBE.json",
-      "killed_by": "the best function-aware codec measured is AT the memoryless-Gaussian rate-distortion floor. L0 gate: 0.6435 measured vs 0.6484 floor at 0.625 index bpw (below it). Every other gate/up cell within 8 percent of the floor. down at 0.156 bpw: 0.90-0.92 measured vs 0.8974 floor. There is no headroom left in the marginal distribution, and the floor itself is catastrophic for capability.",
+      "evidence": [
+        "reports/subbit_reset/M01_FUNCTION_AWARE_PROBE.json",
+        "reports/subbit_reset/SHANNON_BOUND_ADVERSARIAL.json"
+      ],
+      "killed_by": "Across mid and late layers the coded-space weights ARE essentially Gaussian (non-Gaussianity 0.012-0.018 bits), so there the original conclusion survives: down_proj sits 0.059 decades from its true Shannon bound (measured 0.7026 vs 0.6568) and gate 0.27-0.28 decades (0.2427 vs 0.1749). Best possible post-hoc gain on gate is a factor of ~1.4 in rel_error.",
       "lever": "any post-hoc fixed-weight codec improvement at a fixed sub-bit index rate",
+      "named_exception": "LAYER 0 IS NOT EXHAUSTED. Its down_proj measures 3.014 bits of non-Gaussianity and sits 1.328 decades from its Shannon bound (0.3701 measured vs 0.0803 achievable); layer 0 gate is 0.669 bits non-Gaussian and 0.791 decades off. An organ- and layer-specific codec for the first block is a live, named, unexploited lever - do not transfer 'Lane A is closed' to it.",
       "parent": "qwen3-235b-a22b:F1",
-      "reopen_condition": "a codec exploits structure BEYOND the marginal (the atlas already kills inter-expert redundancy, shared bases and entropy coding), or the index rate rises because the inventory shrank",
-      "verdict": "Lane A is CLOSED at these rates. This is NOT a licence to raise the ceiling: it is the proof that the SOURCE must change (inventory, training, topology) at the same ceiling."
+      "reopen_condition": "any cell measuring >= 0.5 decades of gap to its OWN Shannon lower bound, which is a measurement every future parent must now make rather than assuming the Gaussian number",
+      "the_overclaim_and_its_correction": "This campaign first sealed Lane A on the grounds that the codec matched sqrt(2^-2R). That reasoning was WRONG: sqrt(2^-2R) is the GAUSSIAN rate-distortion function, and among sources of equal variance the Gaussian MAXIMIZES differential entropy, so its D(R) is an UPPER bound on the distortion any same-variance source requires. Matching it proves the codec is as good as if the weights were Gaussian; it proves nothing about the true floor. The correct floor is the Shannon lower bound D(R) >= (1/2 pi e) 2^(2h) 2^(-2R) using the MEASURED differential entropy h. Re-measured with a Kozachenko-Leonenko estimator (validated to 0.011 bits against the analytic Gaussian entropy) on the real weights in the coded space.",
+      "verdict": "NEARLY exhausted, NOT closed. CORRECTED from an earlier overclaim in this same campaign."
     },
     "posthoc_scalar_gain": {
       "killed_by": "optimal gain pinned at exactly 1.0; k-means reconstruction is a conditional mean so the residual is orthogonal to the reconstruction, and cosine is gain-invariant",
@@ -75,5 +80,5 @@
     }
   },
   "schema": "hawking.foundry.negative_transfer_atlas.v1",
-  "sha256": "15d4e4e296a7e5280a4946b1ff592b54b15ed7576065ff40662e22c936c356f0"
+  "sha256": "30233be6e1a39d1370ddbbe478f139a1fc7dbf3252d5957fd2a6cfbc8bd116f2"
 }

@@ -160,12 +160,27 @@
           "evidence": "F0 gpt-oss-120b real forward; F1 qwen3-235b dominant_failure_organ=gate"
         },
         "post_hoc_rate_distortion_wall": {
-          "claim": "post-hoc coding of frozen weights is at its bound",
+          "claim": "post-hoc coding of frozen weights is near its bound in mid/late layers, with layer 0 a measured exception",
           "measured": {
-            "L0_gate_rel_error": 0.6435,
-            "iid_gaussian_floor_at_0.625bpw": 0.6484
+            "down_L0": {
+              "gap_decades": 1.328,
+              "non_gaussianity_bits": 3.014,
+              "rel_error": 0.3701,
+              "shannon_lower_bound": 0.0803
+            },
+            "down_L46_L93": {
+              "gap_decades": 0.059,
+              "rel_error": 0.7026,
+              "shannon_lower_bound": 0.6568
+            },
+            "gate_L46_L93": {
+              "gap_decades": 0.284,
+              "rel_error": 0.2427,
+              "shannon_lower_bound": 0.1749
+            }
           },
-          "status": "SEALED_NEGATIVE"
+          "methodology_correction": "the Gaussian D(R) is an UPPER bound, not a floor. Every future rate-distortion claim must use the Shannon lower bound with a MEASURED differential entropy.",
+          "status": "SEALED_NEARLY_EXHAUSTED_WITH_NAMED_EXCEPTION"
         },
         "routing_frequency_allocation": {
           "claim": "allocate rate by measured expert routing frequency",
@@ -215,7 +230,8 @@
         "state which materially NEW method family it begins with, not which hyperparameter it retunes",
         "state how it falsifies the assumption it transferred in",
         "start at least as aggressively as this generation: no parent may begin above 1.0 complete BPW because a previous parent's codec failed",
-        "declare calibration and scored holdout separately and prove them disjoint"
+        "declare calibration and scored holdout separately and prove them disjoint",
+        "never argue exhaustion from the Gaussian rate-distortion value; measure the source's own differential entropy and compare against the Shannon lower bound per organ and per layer"
       ],
       "parent_of_record": "qwen3-235b-a22b-instruct-2507",
       "quality_contract": {
