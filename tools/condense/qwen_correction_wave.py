@@ -163,7 +163,9 @@ def _atomic(path: Path, obj: Any) -> None:
 
 def _pid_alive(pid: int) -> bool:
     try:
-        os.kill(pid, 0); return True
+        if pid is None or int(pid) <= 0:   # -1 default / 0 would make os.kill BROADCAST to the group
+            return False
+        os.kill(int(pid), 0); return True
     except PermissionError:
         return True
     except Exception:

@@ -230,23 +230,24 @@ def test_05_interrupted_deletion_is_restart_safe(tmp_path, monkeypatch):
     ctx = _configure(mod, monkeypatch, tmp_path)
     decoy = _build_release(mod, ctx, monkeypatch, all_green=True)
     orig = list(ctx.SHARDS)
-    # Simulate a prior tick that claimed and deleted 3 of 7 before crashing.
+    # Simulate a prior tick that claimed (deletion authorized: every safety gate passed) and deleted
+    # 3 of 7 before crashing.
     assert mod._claim("release_source") is True
     for p in orig[:3]:
         os.remove(str(p))
-    # Restart: the held claim must make the handler a clean no-op (no double run, no crash).
+    # Restart: the held claim means the deletion was authorized, so the handler must COMPLETE the
+    # remaining removals (idempotent) and advance - never no-op forever with the source half-deleted.
     mod.h_release_120b_source(mod._read(ctx.SM_STATE))
-    for p in orig[:3]:
-        assert not p.exists()
-    for p in orig[3:]:
-        assert p.exists(), f"restart deleted remaining shard: {p.name}"
+    for p in orig:
+        assert not p.exists(), f"restart left a shard undeleted: {p.name}"
     for m in ("config.json", "model.safetensors.index.json"):
         assert (ctx.ORIGINAL / m).exists(), f"restart touched metadata {m}"
     assert (ctx.MODEL_DIR / "tokenizer.json").exists()
     assert decoy.exists(), "restart touched a non-shard file"
-    # No advance, no block, no receipt from the no-op.
-    assert mod._read(ctx.SM_STATE)["state"] == "RELEASE_120B_SOURCE"
-    assert not (ctx.RECEIPTS / "release_source.json").exists()
+    # Completes: advances to ADMIT_QWEN, receipt records only the 4 shards that were still present.
+    assert mod._read(ctx.SM_STATE)["state"] == "ADMIT_QWEN"
+    rec = mod._read(ctx.RECEIPTS / "release_source.json")
+    assert len(rec.get("freed", [])) == 4, "resume should free only the remaining shards"
 
 
 # -- 6. interrupted Qwen download retries + respects floors ---------------------------------
@@ -267,7 +268,9 @@ def test_06_interrupted_qwen_download_retries_and_respects_floors(tmp_path, monk
     monkeypatch.setattr(mod, "_pid_alive", lambda pid: False)
     mod.h_transfer_qwen_priority(mod._read(ctx.SM_STATE))
     assert mod._read(ctx.SM_STATE)["state"] == "TRANSFER_QWEN_PRIORITY"
-    assert any("snapshot_download" in " ".join(c) for c in ctx.popen_calls), "no parallel downloader launched"
+    assert any("qwen_download_worker" in " ".join(c) for c in ctx.popen_calls), "no disk-floor downloader launched"
+    # the downloader gets the hard-stop reserve as its write-cadence floor
+    assert any(str(mod.DISK_HARDSTOP_GB) in c for c in ctx.popen_calls[-1]), "worker not passed the disk floor"
     assert (ctx.SM / "qwen_downloader.pid.json").exists()
     assert any("parallel" in m or "workers" in m for m in ctx.tg)
 
@@ -280,14 +283,24 @@ def test_06_interrupted_qwen_download_retries_and_respects_floors(tmp_path, monk
     assert any("hard-stop" in m for m in ctx.tg)
     assert not ctx.popen_calls, "must not launch below hard-stop"
 
-    # (c) below pause, no downloader -> pause, do NOT start.
+    # (c) below pause, no partial, no downloader -> pause, do NOT start a FRESH download.
     ctx.popen_calls.clear(); ctx.tg.clear()
     mod._write(ctx.SM_STATE, transfer_state())
     monkeypatch.setattr(mod, "_disk_free_gb", lambda: 70.0)
     mod.h_transfer_qwen_priority(mod._read(ctx.SM_STATE))
     assert mod._read(ctx.SM_STATE)["state"] == "TRANSFER_QWEN_PRIORITY"
     assert any("paused" in m for m in ctx.tg)
-    assert not ctx.popen_calls, "must not launch below pause"
+    assert not ctx.popen_calls, "must not fresh-start below pause"
+
+    # (c2) partial present + below pause + no downloader -> RESUME (a resumable partial is safe down to
+    # the hard-stop floor; gating resume on the 100 GB target would strand an interrupted transfer).
+    ctx.popen_calls.clear(); ctx.tg.clear()
+    (ctx.QWEN_DIR / "s1.safetensors").write_bytes(b"x")   # 1 of 2 = partial
+    mod._write(ctx.SM_STATE, transfer_state())
+    mod.h_transfer_qwen_priority(mod._read(ctx.SM_STATE))
+    assert mod._read(ctx.SM_STATE)["state"] == "TRANSFER_QWEN_PRIORITY"
+    assert any("qwen_download_worker" in " ".join(c) for c in ctx.popen_calls), "must resume a partial below pause"
+    os.remove(str(ctx.QWEN_DIR / "s1.safetensors"))
 
     # (d) all shards present -> advance to RUN_Q.
     (ctx.QWEN_DIR / "s1.safetensors").write_bytes(b"x")
@@ -339,42 +352,43 @@ def test_08_restart_during_every_state(tmp_path, monkeypatch):
         assert mod._read(ctx.SM_STATE).get("state") in mod.STATES, state
 
 
-# -- 9. duplicate launch prevention ---------------------------------------------------------
-def test_09_duplicate_launch_prevention(tmp_path, monkeypatch):
+# -- 9. claim dedups the telegram but NEVER gates the advance (no-wedge) ---------------------
+def test_09_claim_dedups_telegram_but_never_wedges_advance(tmp_path, monkeypatch):
     mod = osup
     ctx = _configure(mod, monkeypatch, tmp_path)
     # atomic one-use claim
     assert mod._claim("foo") is True
     assert mod._claim("foo") is False
 
-    # a claim-guarded handler performs its side effect exactly once
     mod._write(ctx.QWEN_META / "model.safetensors.index.json",
                {"weight_map": {"model.norm.weight": "s1"}})
 
     def admit_state():
         return {"state": "ADMIT_QWEN", "entered_at": mod._now(), "input_identity": None}
 
+    # First pass: builds the plan, telegrams, advances.
     mod._write(ctx.SM_STATE, admit_state())
     mod.h_admit_qwen(mod._read(ctx.SM_STATE))
     plan_path = ctx.GF / "QWEN3_235B_PRIORITY_PLAN.json"
     assert plan_path.exists()
     assert mod._read(ctx.SM_STATE)["state"] == "TRANSFER_QWEN_PRIORITY"
+    assert any("admitted" in m.lower() for m in ctx.tg)
 
-    plan_path.unlink()                       # remove the artifact of the first run
-    mod._write(ctx.SM_STATE, admit_state())  # rewind the state and re-run
+    # Second pass with the claim already held (simulates a crash/ENOSPC that consumed the claim but
+    # never completed the advance). The advance MUST still run (no permanent wedge); the telegram must
+    # NOT re-fire (the claim is only a dedup guard, not the advance guard). This is finding [1]/[6].
+    plan_path.unlink(); ctx.tg.clear()
+    mod._write(ctx.SM_STATE, admit_state())
     mod.h_admit_qwen(mod._read(ctx.SM_STATE))
-    assert not plan_path.exists(), "side effect fired twice under a held claim"
-    assert mod._read(ctx.SM_STATE)["state"] == "ADMIT_QWEN", "advanced twice under a held claim"
+    assert mod._read(ctx.SM_STATE)["state"] == "TRANSFER_QWEN_PRIORITY", "held claim WEDGED the advance"
+    assert plan_path.exists(), "idempotent plan write should re-run"
+    assert not any("admitted" in m.lower() for m in ctx.tg), "telegram re-fired under a held claim"
 
-    # every fully claim-guarded handler no-ops when its claim is already present
-    guards = [("seal_conclusion", "SEAL_120B_CONCLUSION", mod.h_seal),
-              ("vulture_harvest", "VULTURE_HARVEST", mod.h_vulture_harvest),
-              ("run_q0q1q2", "RUN_QWEN_Q0_Q1_Q2", mod.h_run_q0q1q2)]
-    for claim, state, handler in guards:
-        assert mod._claim(claim) is True         # a prior tick already holds it
-        mod._write(ctx.SM_STATE, {"state": state, "entered_at": mod._now(), "input_identity": None})
-        handler(mod._read(ctx.SM_STATE))
-        assert mod._read(ctx.SM_STATE)["state"] == state, (state, "advanced despite held claim")
+    # h_run_q0q1q2 shares the exact pattern: a pre-held claim must not wedge its advance.
+    assert mod._claim("run_q0q1q2") is True
+    mod._write(ctx.SM_STATE, {"state": "RUN_QWEN_Q0_Q1_Q2", "entered_at": mod._now(), "input_identity": None})
+    mod.h_run_q0q1q2(mod._read(ctx.SM_STATE))
+    assert mod._read(ctx.SM_STATE)["state"] == "LAUNCH_QWEN", "held claim wedged run_q0q1q2"
 
 
 # -- 10. Q2 failure blocks ------------------------------------------------------------------
@@ -567,3 +581,17 @@ def test_campaign_alive_no_resume(tmp_path, monkeypatch):
     mod._write(ctx.SM_STATE, {"state": "WAIT_120B_FINAL", "entered_at": mod._now()})
     mod.h_wait_120b_final(mod._read(ctx.SM_STATE))
     assert not any("detach" in c for c in ctx.calls), "must never resume a live campaign"
+
+
+def test_campaign_missing_lease_resumes(tmp_path, monkeypatch):
+    # finding [3]/[12]: a not-final campaign whose lease is MISSING entirely (crash that also cleared
+    # the lease, or a relaunch that died before writing one) must still self-heal - not silently wedge.
+    mod = osup
+    ctx = _configure(mod, monkeypatch, tmp_path)
+    mod._write(ctx.CAMP_STATE, {"final": False, "rows_done": 5, "rows_total": 28})
+    # no lease file written at all
+    monkeypatch.setattr(mod, "_pid_alive", lambda pid: False)
+    mod._write(ctx.SM_STATE, {"state": "WAIT_120B_FINAL", "entered_at": mod._now()})
+    mod.h_wait_120b_final(mod._read(ctx.SM_STATE))
+    assert any("gravity_frontier_correction_wave.py" in " ".join(c) and "detach" in c
+               for c in ctx.calls), "missing lease must trigger resume"
