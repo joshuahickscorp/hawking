@@ -1,14 +1,254 @@
 {
- "schema": "hawking.foundry.tier_a_adapter_registry.v1",
- "note": "Every future Tier-A adapter. An entry is STALE until it carries a rebase_ack for each completed parent whose prescription_digest matches the generated ADAPTER_REBASE_MATRIX. Acks are added by whoever actually rebases the adapter, never by the generator: that is what makes silent methodology drift detectable.",
  "adapters": [
-  {"id": "llama", "tier": "A", "status": "existing", "consumes_parent_lessons": [], "unverified_assumptions": null, "falsification_plan": null, "rebase_acks": {}},
-  {"id": "gemma2", "tier": "A", "status": "existing", "consumes_parent_lessons": [], "unverified_assumptions": null, "falsification_plan": null, "rebase_acks": {}},
-  {"id": "phi3", "tier": "A", "status": "existing", "consumes_parent_lessons": [], "unverified_assumptions": null, "falsification_plan": null, "rebase_acks": {}},
-  {"id": "olmoe", "tier": "A", "status": "existing", "consumes_parent_lessons": [], "unverified_assumptions": null, "falsification_plan": null, "rebase_acks": {}},
-  {"id": "mixtral", "tier": "A", "status": "existing", "consumes_parent_lessons": [], "unverified_assumptions": null, "falsification_plan": null, "rebase_acks": {}},
-  {"id": "gpt_oss", "tier": "A", "status": "existing", "consumes_parent_lessons": [], "unverified_assumptions": null, "falsification_plan": null, "rebase_acks": {}},
-  {"id": "mamba2", "tier": "A", "status": "existing", "consumes_parent_lessons": [], "unverified_assumptions": null, "falsification_plan": null, "rebase_acks": {}},
-  {"id": "qwen3_moe", "tier": "A", "status": "planned", "consumes_parent_lessons": [], "unverified_assumptions": null, "falsification_plan": null, "rebase_acks": {}}
- ]
+  {
+   "consumes_parent_lessons": [
+    "gpt-oss-120b:F0",
+    "qwen3-235b-a22b:F1"
+   ],
+   "falsification_plan": "measure the single-codeword share and the achieved rel_error against the memoryless-Gaussian rate-distortion floor at the adapter's OWN deployed geometry before assuming either the Qwen pathology or the Qwen wall transfers",
+   "id": "llama",
+   "prescription": {
+    "avoids": [
+     "post_hoc_coding_of_frozen_weights",
+     "row_norm_stratification_premise",
+     "inter_expert_redundancy",
+     "entropy_coded_pq_indices",
+     "calibration_88_tokens"
+    ],
+    "calibration_rule": "calibration corpus and scored holdout must be declared separately and proven disjoint; >= 1000 calibration tokens for any per-expert allocation",
+    "falsifies_transferred_assumption": "measure the single-codeword share and the achieved rel_error against the memoryless-Gaussian rate-distortion floor at the adapter's OWN deployed geometry before assuming either the Qwen pathology or the Qwen wall transfers",
+    "prescription_digest": "GRAVITY_METHOD_V2/qwen3-235b-a22b-instruct-2507",
+    "starting_aggressiveness": "at least as aggressive as this generation. No parent may begin above 1.0 complete BPW because a previous parent's codec failed. SUBBIT_UNSOLVED, never an Escape.",
+    "starts_with": "structural expert reduction with survivor-rate reallocation under the SAME complete <=1 BPW ceiling (Lane D), NOT a post-hoc codec retune"
+   },
+   "rebase_acks": {
+    "GRAVITY_METHOD_V2/qwen3-235b-a22b-instruct-2507": "PENDING"
+   },
+   "status": "existing",
+   "tier": "A",
+   "unverified_assumptions": [
+    "that this parent's expert routing is concentrated enough for structural omission",
+    "that this parent's weights sit at the same rate-distortion wall as Qwen3-235B"
+   ]
+  },
+  {
+   "consumes_parent_lessons": [
+    "gpt-oss-120b:F0",
+    "qwen3-235b-a22b:F1"
+   ],
+   "falsification_plan": "measure the single-codeword share and the achieved rel_error against the memoryless-Gaussian rate-distortion floor at the adapter's OWN deployed geometry before assuming either the Qwen pathology or the Qwen wall transfers",
+   "id": "gemma2",
+   "prescription": {
+    "avoids": [
+     "post_hoc_coding_of_frozen_weights",
+     "row_norm_stratification_premise",
+     "inter_expert_redundancy",
+     "entropy_coded_pq_indices",
+     "calibration_88_tokens"
+    ],
+    "calibration_rule": "calibration corpus and scored holdout must be declared separately and proven disjoint; >= 1000 calibration tokens for any per-expert allocation",
+    "falsifies_transferred_assumption": "measure the single-codeword share and the achieved rel_error against the memoryless-Gaussian rate-distortion floor at the adapter's OWN deployed geometry before assuming either the Qwen pathology or the Qwen wall transfers",
+    "prescription_digest": "GRAVITY_METHOD_V2/qwen3-235b-a22b-instruct-2507",
+    "starting_aggressiveness": "at least as aggressive as this generation. No parent may begin above 1.0 complete BPW because a previous parent's codec failed. SUBBIT_UNSOLVED, never an Escape.",
+    "starts_with": "structural expert reduction with survivor-rate reallocation under the SAME complete <=1 BPW ceiling (Lane D), NOT a post-hoc codec retune"
+   },
+   "rebase_acks": {
+    "GRAVITY_METHOD_V2/qwen3-235b-a22b-instruct-2507": "PENDING"
+   },
+   "status": "existing",
+   "tier": "A",
+   "unverified_assumptions": [
+    "that this parent's expert routing is concentrated enough for structural omission",
+    "that this parent's weights sit at the same rate-distortion wall as Qwen3-235B"
+   ]
+  },
+  {
+   "consumes_parent_lessons": [
+    "gpt-oss-120b:F0",
+    "qwen3-235b-a22b:F1"
+   ],
+   "falsification_plan": "measure the single-codeword share and the achieved rel_error against the memoryless-Gaussian rate-distortion floor at the adapter's OWN deployed geometry before assuming either the Qwen pathology or the Qwen wall transfers",
+   "id": "phi3",
+   "prescription": {
+    "avoids": [
+     "post_hoc_coding_of_frozen_weights",
+     "row_norm_stratification_premise",
+     "inter_expert_redundancy",
+     "entropy_coded_pq_indices",
+     "calibration_88_tokens"
+    ],
+    "calibration_rule": "calibration corpus and scored holdout must be declared separately and proven disjoint; >= 1000 calibration tokens for any per-expert allocation",
+    "falsifies_transferred_assumption": "measure the single-codeword share and the achieved rel_error against the memoryless-Gaussian rate-distortion floor at the adapter's OWN deployed geometry before assuming either the Qwen pathology or the Qwen wall transfers",
+    "prescription_digest": "GRAVITY_METHOD_V2/qwen3-235b-a22b-instruct-2507",
+    "starting_aggressiveness": "at least as aggressive as this generation. No parent may begin above 1.0 complete BPW because a previous parent's codec failed. SUBBIT_UNSOLVED, never an Escape.",
+    "starts_with": "structural expert reduction with survivor-rate reallocation under the SAME complete <=1 BPW ceiling (Lane D), NOT a post-hoc codec retune"
+   },
+   "rebase_acks": {
+    "GRAVITY_METHOD_V2/qwen3-235b-a22b-instruct-2507": "PENDING"
+   },
+   "status": "existing",
+   "tier": "A",
+   "unverified_assumptions": [
+    "that this parent's expert routing is concentrated enough for structural omission",
+    "that this parent's weights sit at the same rate-distortion wall as Qwen3-235B"
+   ]
+  },
+  {
+   "consumes_parent_lessons": [
+    "gpt-oss-120b:F0",
+    "qwen3-235b-a22b:F1"
+   ],
+   "falsification_plan": "measure the single-codeword share and the achieved rel_error against the memoryless-Gaussian rate-distortion floor at the adapter's OWN deployed geometry before assuming either the Qwen pathology or the Qwen wall transfers",
+   "id": "olmoe",
+   "prescription": {
+    "avoids": [
+     "post_hoc_coding_of_frozen_weights",
+     "row_norm_stratification_premise",
+     "inter_expert_redundancy",
+     "entropy_coded_pq_indices",
+     "calibration_88_tokens"
+    ],
+    "calibration_rule": "calibration corpus and scored holdout must be declared separately and proven disjoint; >= 1000 calibration tokens for any per-expert allocation",
+    "falsifies_transferred_assumption": "measure the single-codeword share and the achieved rel_error against the memoryless-Gaussian rate-distortion floor at the adapter's OWN deployed geometry before assuming either the Qwen pathology or the Qwen wall transfers",
+    "prescription_digest": "GRAVITY_METHOD_V2/qwen3-235b-a22b-instruct-2507",
+    "starting_aggressiveness": "at least as aggressive as this generation. No parent may begin above 1.0 complete BPW because a previous parent's codec failed. SUBBIT_UNSOLVED, never an Escape.",
+    "starts_with": "structural expert reduction with survivor-rate reallocation under the SAME complete <=1 BPW ceiling (Lane D), NOT a post-hoc codec retune"
+   },
+   "rebase_acks": {
+    "GRAVITY_METHOD_V2/qwen3-235b-a22b-instruct-2507": "PENDING"
+   },
+   "status": "existing",
+   "tier": "A",
+   "unverified_assumptions": [
+    "that this parent's expert routing is concentrated enough for structural omission",
+    "that this parent's weights sit at the same rate-distortion wall as Qwen3-235B"
+   ]
+  },
+  {
+   "consumes_parent_lessons": [
+    "gpt-oss-120b:F0",
+    "qwen3-235b-a22b:F1"
+   ],
+   "falsification_plan": "measure the single-codeword share and the achieved rel_error against the memoryless-Gaussian rate-distortion floor at the adapter's OWN deployed geometry before assuming either the Qwen pathology or the Qwen wall transfers",
+   "id": "mixtral",
+   "prescription": {
+    "avoids": [
+     "post_hoc_coding_of_frozen_weights",
+     "row_norm_stratification_premise",
+     "inter_expert_redundancy",
+     "entropy_coded_pq_indices",
+     "calibration_88_tokens"
+    ],
+    "calibration_rule": "calibration corpus and scored holdout must be declared separately and proven disjoint; >= 1000 calibration tokens for any per-expert allocation",
+    "falsifies_transferred_assumption": "measure the single-codeword share and the achieved rel_error against the memoryless-Gaussian rate-distortion floor at the adapter's OWN deployed geometry before assuming either the Qwen pathology or the Qwen wall transfers",
+    "prescription_digest": "GRAVITY_METHOD_V2/qwen3-235b-a22b-instruct-2507",
+    "starting_aggressiveness": "at least as aggressive as this generation. No parent may begin above 1.0 complete BPW because a previous parent's codec failed. SUBBIT_UNSOLVED, never an Escape.",
+    "starts_with": "structural expert reduction with survivor-rate reallocation under the SAME complete <=1 BPW ceiling (Lane D), NOT a post-hoc codec retune"
+   },
+   "rebase_acks": {
+    "GRAVITY_METHOD_V2/qwen3-235b-a22b-instruct-2507": "PENDING"
+   },
+   "status": "existing",
+   "tier": "A",
+   "unverified_assumptions": [
+    "that this parent's expert routing is concentrated enough for structural omission",
+    "that this parent's weights sit at the same rate-distortion wall as Qwen3-235B"
+   ]
+  },
+  {
+   "consumes_parent_lessons": [
+    "gpt-oss-120b:F0",
+    "qwen3-235b-a22b:F1"
+   ],
+   "falsification_plan": "measure the single-codeword share and the achieved rel_error against the memoryless-Gaussian rate-distortion floor at the adapter's OWN deployed geometry before assuming either the Qwen pathology or the Qwen wall transfers",
+   "id": "gpt_oss",
+   "prescription": {
+    "avoids": [
+     "post_hoc_coding_of_frozen_weights",
+     "row_norm_stratification_premise",
+     "inter_expert_redundancy",
+     "entropy_coded_pq_indices",
+     "calibration_88_tokens"
+    ],
+    "calibration_rule": "calibration corpus and scored holdout must be declared separately and proven disjoint; >= 1000 calibration tokens for any per-expert allocation",
+    "falsifies_transferred_assumption": "measure the single-codeword share and the achieved rel_error against the memoryless-Gaussian rate-distortion floor at the adapter's OWN deployed geometry before assuming either the Qwen pathology or the Qwen wall transfers",
+    "prescription_digest": "GRAVITY_METHOD_V2/qwen3-235b-a22b-instruct-2507",
+    "starting_aggressiveness": "at least as aggressive as this generation. No parent may begin above 1.0 complete BPW because a previous parent's codec failed. SUBBIT_UNSOLVED, never an Escape.",
+    "starts_with": "structural expert reduction with survivor-rate reallocation under the SAME complete <=1 BPW ceiling (Lane D), NOT a post-hoc codec retune"
+   },
+   "rebase_acks": {
+    "GRAVITY_METHOD_V2/qwen3-235b-a22b-instruct-2507": "PENDING"
+   },
+   "status": "existing",
+   "tier": "A",
+   "unverified_assumptions": [
+    "that this parent's expert routing is concentrated enough for structural omission",
+    "that this parent's weights sit at the same rate-distortion wall as Qwen3-235B"
+   ]
+  },
+  {
+   "consumes_parent_lessons": [
+    "gpt-oss-120b:F0",
+    "qwen3-235b-a22b:F1"
+   ],
+   "falsification_plan": "measure the single-codeword share and the achieved rel_error against the memoryless-Gaussian rate-distortion floor at the adapter's OWN deployed geometry before assuming either the Qwen pathology or the Qwen wall transfers",
+   "id": "mamba2",
+   "prescription": {
+    "avoids": [
+     "post_hoc_coding_of_frozen_weights",
+     "row_norm_stratification_premise",
+     "inter_expert_redundancy",
+     "entropy_coded_pq_indices",
+     "calibration_88_tokens"
+    ],
+    "calibration_rule": "calibration corpus and scored holdout must be declared separately and proven disjoint; >= 1000 calibration tokens for any per-expert allocation",
+    "falsifies_transferred_assumption": "measure the single-codeword share and the achieved rel_error against the memoryless-Gaussian rate-distortion floor at the adapter's OWN deployed geometry before assuming either the Qwen pathology or the Qwen wall transfers",
+    "prescription_digest": "GRAVITY_METHOD_V2/qwen3-235b-a22b-instruct-2507",
+    "starting_aggressiveness": "at least as aggressive as this generation. No parent may begin above 1.0 complete BPW because a previous parent's codec failed. SUBBIT_UNSOLVED, never an Escape.",
+    "starts_with": "structural expert reduction with survivor-rate reallocation under the SAME complete <=1 BPW ceiling (Lane D), NOT a post-hoc codec retune"
+   },
+   "rebase_acks": {
+    "GRAVITY_METHOD_V2/qwen3-235b-a22b-instruct-2507": "PENDING"
+   },
+   "status": "existing",
+   "tier": "A",
+   "unverified_assumptions": [
+    "that this parent's expert routing is concentrated enough for structural omission",
+    "that this parent's weights sit at the same rate-distortion wall as Qwen3-235B"
+   ]
+  },
+  {
+   "consumes_parent_lessons": [
+    "gpt-oss-120b:F0",
+    "qwen3-235b-a22b:F1"
+   ],
+   "falsification_plan": "measure the single-codeword share and the achieved rel_error against the memoryless-Gaussian rate-distortion floor at the adapter's OWN deployed geometry before assuming either the Qwen pathology or the Qwen wall transfers",
+   "id": "qwen3_moe",
+   "prescription": {
+    "avoids": [
+     "post_hoc_coding_of_frozen_weights",
+     "row_norm_stratification_premise",
+     "inter_expert_redundancy",
+     "entropy_coded_pq_indices",
+     "calibration_88_tokens"
+    ],
+    "calibration_rule": "calibration corpus and scored holdout must be declared separately and proven disjoint; >= 1000 calibration tokens for any per-expert allocation",
+    "falsifies_transferred_assumption": "measure the single-codeword share and the achieved rel_error against the memoryless-Gaussian rate-distortion floor at the adapter's OWN deployed geometry before assuming either the Qwen pathology or the Qwen wall transfers",
+    "prescription_digest": "GRAVITY_METHOD_V2/qwen3-235b-a22b-instruct-2507",
+    "starting_aggressiveness": "at least as aggressive as this generation. No parent may begin above 1.0 complete BPW because a previous parent's codec failed. SUBBIT_UNSOLVED, never an Escape.",
+    "starts_with": "structural expert reduction with survivor-rate reallocation under the SAME complete <=1 BPW ceiling (Lane D), NOT a post-hoc codec retune"
+   },
+   "rebase_acks": {
+    "GRAVITY_METHOD_V2/qwen3-235b-a22b-instruct-2507": "PENDING"
+   },
+   "status": "planned",
+   "tier": "A",
+   "unverified_assumptions": [
+    "that this parent's expert routing is concentrated enough for structural omission",
+    "that this parent's weights sit at the same rate-distortion wall as Qwen3-235B"
+   ]
+  }
+ ],
+ "note": "Every future Tier-A adapter. An entry is STALE until it carries a rebase_ack for each completed parent whose prescription_digest matches the generated ADAPTER_REBASE_MATRIX. Acks are added by whoever actually rebases the adapter, never by the generator: that is what makes silent methodology drift detectable. GRAVITY_METHOD_V2: upward bracketing is permanently forbidden; every adapter must name the atlas entry it avoids and the materially new family it begins with.",
+ "schema": "hawking.foundry.tier_a_adapter_registry.v1"
 }
