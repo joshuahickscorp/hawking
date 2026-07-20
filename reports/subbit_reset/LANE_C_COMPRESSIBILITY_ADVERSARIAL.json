@@ -1,0 +1,95 @@
+{
+  "schema": "hawking.qwen3_235b.lane_c.adversarial.v1",
+  "generated_at": "2026-07-20T22:20:00Z",
+  "target_report": "reports/subbit_reset/LANE_C_COMPRESSIBILITY.json",
+  "target_module": "tools/condense/qwen_compressibility_train.py",
+  "verdict_upheld": false,
+  "severity": "material",
+  "narrow_result_that_survives": "At identical charged bytes, an h-weighted output-objective fit lowers held-out output rel_error on layer-0 expert tensors. Reproduced independently (gate 60.23 pct vs reported 60.20; down 28.36 pct vs reported 29.06) and on a disjoint expert set (experts 8-11: gate 51.17 pct, down 24.76 pct).",
+  "bit_accounting_correct": true,
+  "bit_rederivation": {
+    "gate_proj_1536x4096": {
+      "indices": 15728640,
+      "codebook_amortized_over_128": 2048,
+      "output_gain_scalar": 16,
+      "metadata": 512,
+      "row_scales_bf16": 24576,
+      "total": 15755792,
+      "report_total": 15755792,
+      "match": true
+    },
+    "down_proj_4096x1536": {
+      "indices": 3932160,
+      "codebook_amortized_over_128": 2048,
+      "output_gain_scalar": 16,
+      "metadata": 512,
+      "row_scales_bf16": 65536,
+      "total": 4000272,
+      "report_total": 4000272,
+      "match": true
+    },
+    "whole_model_S64_g2.5_d0.625_recomputed_bpw": 0.9484100265381511,
+    "whole_model_report_bpw": 0.948410027,
+    "zero_bits_added_claim": "UPHELD - the h vector, the routed-token split and the alternation are all encode-time only; the shipped payload is indices + amortized codebook + one bf16 scale per row in both arms.",
+    "discrepancy": "artifact_bits() amortizes the shared codebook over DEPLOY_CLUSTER=128, but the S64 plan it cites amortizes over the SURVIVING 64 experts (qwen_structural_plan.ledger passes cluster=keep). Correct per-tensor charge under S64 is 15757840 (gate) / 4002320 (down): 2048 bits per tensor undercharged, 0.000326 bpw. Cosmetic, does not threaten the ceiling."
+  },
+  "self_check_actually_fails_when_broken": false,
+  "self_check_break_tests": [
+    {
+      "mutation": "h forced to ones in distill() (kills the entire claimed mechanism)",
+      "selftest_result": "PASSES: output_before 0.600999 -> output_after 0.565552, assert oa < ob satisfied"
+    },
+    {
+      "mutation": "refit_scales called with h=None (kills the h-weighted closed-form scale)",
+      "selftest_result": "PASSES and IMPROVES: output_after 0.415127, better than the unbroken 0.435986"
+    }
+  ],
+  "self_check_diagnosis": "The synthetic twin's assert only requires that the multi-restart distill arm beat the single-fit baseline arm. The two arms are not matched on search budget (baseline = 1 codebook fit; distill = `rounds` independent fits with best-of selection), so the assert is satisfiable with the mechanism removed. A discriminating check would compare distill(h=real) against distill(h=ones) at equal rounds.",
+  "search_budget_control_on_real_weights": {
+    "note": "Run by the adversary, absent from the lane. Same 4-round restart-and-select machinery with h=ones.",
+    "L0_gate_output_gain_pct_heldout": 7.9943,
+    "L0_gate_output_gain_pct_allcorpus": 1.9873,
+    "L0_down_output_gain_pct_heldout": 4.4527,
+    "L0_down_output_gain_pct_allcorpus": -1.6117,
+    "conclusion": "The unequal search budget explains only ~8 of the ~60 point gate gain. The h weighting is genuinely load-bearing on real weights. This control CONFIRMS the lane."
+  },
+  "mechanism_attribution_refutation": {
+    "note": "The lane presents the gain as coming from real routed-token activation statistics. It does not.",
+    "corr_log_h_fit_vs_log_gamma_squared_L0_expert0": 0.9794,
+    "corr_log_h_clustermean_vs_log_gamma_squared_L0": 0.9918,
+    "corr_log_h_allcorpus_vs_log_gamma_squared_L0": 0.994,
+    "corr_log_h_fit_vs_log_h_heldout_L0_expert0": 0.9985,
+    "data_free_arm_h_equals_gamma_squared": {
+      "L0_gate_output_gain_pct_heldout": 49.8025,
+      "L0_gate_output_gain_pct_allcorpus": 47.4866,
+      "fraction_of_reported_gate_gain_recovered_heldout": 0.827,
+      "fraction_of_reported_gate_gain_recovered_allcorpus": 0.885
+    },
+    "conclusion": "Replacing the entire calibration pipeline (frozen corpus, tokenizer, embedding rows, real router top-8, disjoint routed fit/hold split, 33-token h) with a DATA-FREE h = post_attention_layernorm.weight^2 recovers 83 pct of the held-out gate gain and 89 pct of the all-corpus gate gain. The load-bearing quantity at layer 0 is the LayerNorm gamma, not the activation distribution. (down_proj is unaffected by this substitution - its input is the 1536-wide intermediate, so it retained empirical h.)"
+  },
+  "generality_refutation": {
+    "gamma_squared_anisotropy_decades_p99_over_p50_by_layer": {
+      "0": 1.8428,
+      "1": 0.9035,
+      "2": 0.554,
+      "23": 0.3112,
+      "46": 0.2026,
+      "70": 0.4576,
+      "93": 0.0621
+    },
+    "conclusion": "Gain tracks h anisotropy (the lane says so itself), h is ~gamma^2, and layer 0 is by a factor of 2x-30x the most anisotropic layer in the model. The single layer carrying real-token evidence is the most favourable layer that exists. Worse: the layer-46 gaussian_proxy cell has h anisotropy 0.2298, essentially identical to the REAL layer-46 gamma^2 anisotropy of 0.2026, so its ~2 pct gain is not an uninformative null - it is a credible estimate of the real layer-46 result. The lane's own machinery therefore predicts ~2 pct, not ~60 pct, on the other 93 layers."
+  },
+  "additional_refutations": [
+    "OFF-DISTRIBUTION PROBE IS NOT OFF-DISTRIBUTION. output_rel_error_*_allcorpus scores on the same 1400-token frozen corpus, under the same layer-0 approximation (attention residual not simulated). It varies routing, not distribution. Nothing here probes a different corpus, a different context length, or the real hidden state.",
+    "DOWN_PROJ GAIN IS WEAKER THAN REPORTED AND EXPERT-DEPENDENT. On experts 8-11 the all-corpus down gain is 2.24 pct (vs 9.24 pct on experts 0-3), and the h=ones control on experts 0-3 gives -1.61 pct. down_proj is at or near the noise floor once the routed-token advantage is removed.",
+    "THIN-h CASES ARE NOT EXCLUDED. routed_split only requires 8 routed tokens. On experts 8-11 expert 8 had 13 routed tokens -> h fitted on 6 tokens over 4096 channels, and that cell is averaged into the headline gain without a flag.",
+    "ALTERNATION GAIN IS SCORED ON THE FIT BATCH. alternation_gain_pct is computed from distill_fit_batch_trace, never on the holdout, so 'the outer loop is worthless' is itself a fit-batch statement. The direction happens to be right but the number is not held-out.",
+    "ROUND SELECTION USES THE FIT OBJECTIVE. distill() picks the best of `rounds` by the fit-batch error and that winner is then scored on the holdout. Mild selection leakage; small at rounds=4 but undeclared.",
+    "REPORTED NUMBERS ARE NOT DETERMINISTIC. Re-running the exact shipped config gave down_proj 28.36 pct held-out vs 29.06 pct reported (0.7 pp drift) despite fixed seeds. The report quotes 4-6 significant figures and no run-to-run spread.",
+    "A KEY NUMBER IN THE VERDICT IS NOT FROM THIS ARTIFACT. The claim's importance_decades_p99_over_p50_L0_gate = 2.4151 does not appear in LANE_C_COMPRESSIBILITY.json, whose gate cell says 2.1865; 2.4151 is a value from QWEN3_235B_ROUTING_CALIBRATION_1200.json.",
+    "CODEBOOK CLUSTER MISMATCH WITH THE CITED PLAN: cluster=128 here vs cluster=keep(64) in qwen_structural_plan.ledger. 2048 bits/tensor undercharged, 0.000326 bpw, ceiling unaffected."
+  ],
+  "bound_abuse": "NONE FOUND IN LANE C. This module states no optimality, exhaustion or rate-distortion claim and never invokes a Shannon or Gaussian bound. (The memoryless-Gaussian rd_floor in qwen_structural_plan.py remains an inherited exposure but is out of this lane's scope; note only that the after-arm weight rel_error of 0.806 at 2.5 index bpw is far above that 0.177 figure, i.e. nothing here is claimed to beat it.)",
+  "proxy_laundering": "PARTIAL. Real Qwen3-235B weights, real tokenizer, real embedding rows, real router. Not laundered as capability - the report says PROXY three times and reports weight-space regression openly. But (a) layer-0 x omits the attention residual and is the only real-token cell, (b) the all-corpus probe is mislabelled as off-distribution, (c) the layer-46 proxy null is presented as carrying no evidence when its h anisotropy matches the real layer-46 gamma, which makes it informative and unfavourable.",
+  "recommended_correction": "Rewrite the verdict as: 'LANE_C_ALIVE_AT_LAYER_0_ONLY - at identical bytes, gamma-weighted coding cuts held-out layer-0 gate output rel_error by ~60 pct, of which ~83 pct is recovered by a DATA-FREE h = post_attention_layernorm.weight^2; the routed-token calibration adds ~10 points. Gain tracks gamma anisotropy, layer 0 is the most anisotropic layer in the model (1.84 decades vs 0.06-0.90 elsewhere), and the module's own layer-46 cell predicts ~2 pct at typical anisotropy. down_proj is at the noise floor off routed tokens (2.2-9.2 pct all-corpus, -1.6 pct in the h=ones control). No lane-level ALIVE claim is supported.' Also: (1) add a distill(h=ones) control arm at equal rounds and make the selftest assert distill(h=real) < distill(h=ones), since the current assert survives deleting the mechanism; (2) charge the codebook over cluster=keep to match the cited S64 plan; (3) rename output_rel_error_*_allcorpus to _unrouted_same_corpus; (4) flag cells whose per-expert routed count is below ~64; (5) report run-to-run spread over >=3 seeds instead of 6-figure point estimates; (6) run at least one real-token cell at a mid-stack layer before any lane-level verdict."
+}

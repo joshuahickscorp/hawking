@@ -1,0 +1,116 @@
+{
+  "schema": "hawking.gravity.generated_params.adversarial.v1",
+  "target_report": "reports/subbit_reset/LANE_F_GENERATED_PARAMS.json",
+  "target_module": "tools/condense/qwen_generated_params.py",
+  "role": "adversarial refutation; default verdict is REFUTED under uncertainty",
+  "verdict_upheld": false,
+  "severity": "material",
+  "per_submethod": {
+    "F_a_templates_normalized_space": "UPHELD. Reproduced, and additionally survives on layer 0 (the outlier layer the lane declined to sample): row-normalized excess over the 1/E null 0.00102 gate, 0.00018 down. Wording over-claims only in that it covers INDEX-ALIGNED templates; a row-permuted shared dictionary is invisible to a flattened cosine (that family is however already the incumbent VQ).",
+    "F_b_kronecker": "REFUTED AS GENERALIZED. The per-tensor numbers reproduce exactly, but the failure is LAYER-DEPENDENT, not structural. On layer 0 gate_proj the optimal Kronecker at 2.487061 BPW reaches rel_error 0.0301 against the incumbent codec's 0.2252 at 2.500735 BPW - a 7.5x WIN for Kronecker at a cheaper complete rate. The lane excused not sampling layer 0 on the grounds that its hypotheses are about cross-expert/cross-layer TYING; F-b is a single-tensor factorisation with no tying, so that excuse does not cover it.",
+    "F_c_cross_layer_tying": "UPHELD on the evidence shown. Effect sizes (1e-7) are far below any plausible measurement artifact. Note the selftest does not pin the residual formula (see mutation survivors)."
+  },
+  "reproduced_exactly": {
+    "F_b_gate_rel_error_at_budget": 0.8533779345780803,
+    "F_b_gate_rank_at_budget": 191,
+    "F_b_gate_complete_bpw": 2.487061,
+    "F_b_gate_top1_kron_energy_share": 0.002658,
+    "F_b_down_rel_error_at_budget": 0.958236,
+    "F_b_down_rank_at_budget": 47,
+    "F_b_down_complete_bpw": 0.612061,
+    "F_b_gate_codec_rival_bpw": 2.500735,
+    "F_b_down_codec_rival_bpw": 0.625735,
+    "selftest": "PASS"
+  },
+  "new_measurements": {
+    "kron_rel_error_at_2.487061_bpw_gate_proj_expert3": {
+      "layer_0": 0.0301,
+      "layer_1": 0.6611,
+      "layer_2": 0.7567,
+      "layer_46": 0.8534
+    },
+    "kron_rel_error_at_0.612061_bpw_down_proj_expert3": {
+      "layer_0": 0.6525,
+      "layer_1": 0.8451,
+      "layer_2": 0.9228,
+      "layer_46": 0.9582
+    },
+    "codec_rival_rel_error_layer0_experts_3_7": {"gate_proj": 0.2252168506383896, "down_proj": 0.4260842502117157},
+    "layer_46_up_proj_kron_rel_error_at_budget": 0.8576,
+    "layer_10_gate_proj_kron_rel_error_at_budget": 0.8267,
+    "extra_kron_splits_gate_1536x4096_layer46": {
+      "(48,64,32,64)": 0.8648, "(24,128,64,32)": 0.8648, "(384,4,4,1024)": 0.8671
+    },
+    "scale_invariant_kronecker_control": {
+      "note": "Kron on row-normalized directions + billed bf16 row scales (rank reduced to pay for scales)",
+      "gate_layer46": {"bpw": 2.490967, "rel_error": 0.8534},
+      "down_layer46": {"bpw": 0.622477, "rel_error": 0.9582},
+      "conclusion": "row-scale invariance is NOT the source of the codec's advantage at layer 46; this defends the lane"
+    },
+    "kron_rank_sensitivity_gate_layer46": {"r191": 0.8534, "r382": 0.7313, "r764": 0.5218},
+    "layer0_row_norm_profile_gate": {"min": 0.0, "median": 0.00341, "max": 0.939783},
+    "layer46_row_norm_profile_gate": {"min": 0.716822, "median": 0.953432, "max": 0.999639},
+    "F_a_layer0_row_normalized_excess_over_null": {"gate_proj": 0.00102, "down_proj": 0.00018}
+  },
+  "bit_accounting": {
+    "kronecker_recomputed_by_hand": {
+      "gate": "191*(1*2048+1536*2)*16 + 512 = 15647232 bits / 6291456 weights = 2.487061 BPW  [MATCHES]",
+      "down": "47*(2*1536+2048*1)*16 + 512 = 3850752 bits / 6291456 weights = 0.612061 BPW  [MATCHES]"
+    },
+    "whole_model_ceiling": "qwen_structural_plan.ledger(inv, keep=64, GATE_RUNGS['2.5'], DOWN_RUNGS['0.625']) = 0.948410027 complete BPW, legal_under_one_bit_ceiling=True. The module's S64 header claim is CONFIRMED by re-running the ledger.",
+    "defect": "qwen_subhalfbit_search.expert_bits (used for the codec rival) omits the M01' per-row bf16 scale that qwen_structural_plan.ledger bills as a separate 'scales' component (ROW_SCALE_BITS=16/row). The rival ships those scales (codec_baseline calls apply_refit, which decodes as direction*s2[:,None]). Under-bill: gate 1536*16/6291456 = 0.003906 BPW, down 4096*16/6291456 = 0.010417 BPW. Corrected rival rates: gate 2.504641, down 0.636151.",
+    "effect_on_verdict": "none in direction - Kronecker remains the strictly cheaper artifact - but the report's 'charged exactly and generously' sentence is wrong about the rival side.",
+    "unbilled_bits_funding_a_win": "none found; F-b's only win (layer 0 gate) is at a rate 0.0136 BPW BELOW the rival's, and 0.0175 below once the rival's row scales are added."
+  },
+  "selftest_mutation_audit": {
+    "caught": [
+      "kron_svals transpose(0,2,1,3) -> (0,1,2,3)  [Van Loan rearrangement destroyed]",
+      "kron_rel_error tail sum s2[rank:] -> head sum s2[:rank]  [error inverted]",
+      "_rownorm norm -> ones  [row normalization disabled]",
+      "template_share ev[-1]/e -> ev[-1]/(e*e)  [null mis-scaled]",
+      "kron_bits drops the B-factor term"
+    ],
+    "survived_undetected": [
+      "METADATA_BITS = 64*8 -> 0  (the per-tensor metadata charge is not pinned by any assert)",
+      "factor width 16 -> 8 bits in BOTH kron_bits and kron_rank_for_budget  (a 2x under-bill is self-consistent and invisible; the assert only checks internal consistency, never the bf16 width)",
+      "delta_residual 1 - c*c -> 1 - abs(c)  (asserts only probe c=+-1 and c~0, where both formulas agree)"
+    ],
+    "self_check_actually_fails_when_broken": true,
+    "caveat": "core geometry is guarded; the BIT CHARGE is not. Mis-billing the factor width would not fire any assert. Measured sensitivity: even at 4x the rank (a 4-bit factor mis-bill) layer-46 gate Kronecker reaches only 0.5218, still worse than the codec's 0.2391, so this gap does not flip the layer-46 result."
+  },
+  "proxy_laundering": {
+    "found": false,
+    "notes": [
+      "All tensors read from models/qwen3-235b-a22b via SafetensorsIndexReader; measure() hard-refuses on source_present()==False.",
+      "No activation/calibration proxy is used anywhere: codec_baseline passes importance=None, so the 'activation-aware' half of the codec is OFF and only the scale-invariant VQ is exercised - which is what the report says.",
+      "Weight-space framing is stated in the module docstring, the report payload and the claim. No capability language is smuggled in."
+    ]
+  },
+  "bound_abuse": {
+    "found": false,
+    "notes": [
+      "No Shannon/Gaussian rate-distortion bound is invoked. F-b's optimality is Eckart-Young on the Van Loan rearrangement, which is exact.",
+      "qwen_structural_plan.rd_floor (the memoryless-Gaussian floor, an UPPER bound on achievable rel_error) is NOT used by this lane. Clean.",
+      "Residual over-claim: 'the best any Kronecker method of this rank can do' is only true for the FIXED (m1,n1,m2,n2) and the FIXED row/column ordering. Permuted / block-diagonal Kronecker families (Monarch-style) are untested."
+    ]
+  },
+  "refutations": [
+    "F-b generalization is false. Kronecker is not structurally dead: at the identical rung it beats the incumbent codec 0.0301 vs 0.2252 on layer 0 gate_proj, and the rel_error rises monotonically with depth (L0 0.0301, L1 0.6611, L2 0.7567, L46 0.8534). One layer was sampled and the result was reported as a family-level kill.",
+    "The lane's own layer-0 caveat does not cover F-b. It argues layer 0 cannot rescue hypotheses about cross-expert/cross-layer TYING - but F-b is a single-tensor factorisation, so the exemption is inapplicable to the one sub-method that has an artifact.",
+    "'Eight splits agree within 0.011, so no cleverer factorisation shape rescues it' is a cost-ranked prefix, not a search: all 8 have identical per-rank cost 5120 and the tie-break biases toward small m1. I scored balanced (48,64,32,64) and (24,128,64,32) and a costlier (384,4,4,1024) - all worse - so the conclusion survives on layer 46, but the stated basis for it is weaker than claimed, and permuted Kronecker is untested entirely.",
+    "'Charged exactly' is wrong on the rival side: SHB.expert_bits omits the per-row bf16 scales the codec actually ships (0.003906 BPW gate, 0.010417 BPW down), which qwen_structural_plan.ledger bills separately. Direction of the comparison is unaffected.",
+    "The selftest does not guard bit honesty. METADATA_BITS -> 0 and a bf16 -> 8-bit factor mis-bill both pass. The bit accounting is currently trust-me, not test-me.",
+    "caveat 3 is backwards. Fitting the codec on 2 experts while billing the codebook over a 64-expert cluster makes the rival's rel_error OPTIMISTIC (a 64-expert joint fit is strictly harder than a 2-expert fit) while its bits are the amortized best case. The rival is favoured on both axes, not 'conservative'.",
+    "F-a's negative covers index-aligned templates only; a flattened or row-index-aligned cosine is blind to a shared row dictionary under permutation. (Low impact: that family is the incumbent VQ, and F-a additionally holds at layer 0 on my measurement.)",
+    "row_aligned_cosine returns a SIGNED mean over rows, while template_share reports mean ABSOLUTE off-diagonal cosine. The report's 'agrees at 0.00168' is comparing two different statistics; on down_proj they differ in sign (-0.000216 vs +0.000392)."
+  ],
+  "what_survives": [
+    "F-a DEAD verdict (confirmed, and extended to layer 0 by this audit).",
+    "F-c DEAD verdict (confirmed as reported).",
+    "F-b DEAD on layers 1, 2, 10, 46 for gate_proj/up_proj/down_proj and on layer 0 down_proj.",
+    "Row-scale invariance is not the codec's edge at layer 46: a scale-invariant Kronecker control at the same complete rate reproduces 0.8534 / 0.9582 exactly.",
+    "Whole-model S64_g2.5_d0.625 = 0.948410027 complete BPW, legal under the 1.0 ceiling."
+  ],
+  "recommended_correction": "Downgrade F-b from 'DEAD / structural / nothing here should be built on' to 'DEAD for layers >= 1 at the S64 rungs; LIVE and codec-beating on layer 0 gate/up'. Re-run measure() with --layer 0 and record it in the report, replace caveat 2 (which wrongly generalizes the tying exemption to F-b), fix the rival's bits by adding qwen_function_aware_codec.scale_bits to the SHB.expert_bits charge, and add two asserts that pin METADATA_BITS and the bf16 factor width. The correct forward-looking statement is depth-adaptive allocation (Kronecker on the early non-Gaussian layers, VQ elsewhere), which remains a weight-space hypothesis only and still requires a parent-vs-packed forward before any frontier claim.",
+  "measurement_budget": "<= 4 expert tensors resident at any moment, freed between reads; no writes outside this file."
+}
