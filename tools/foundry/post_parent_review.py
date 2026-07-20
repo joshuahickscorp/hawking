@@ -26,6 +26,11 @@ priors invalidates every stale ack automatically. No silent methodology drift.
 
 LAW: byte plan is not capability. Only a real parent-vs-packed forward with mean
 symmetric KL <= 0.10 AND next-token argmax agreement >= 0.95 selects a frontier.
+
+LAW: the one-bit ceiling. complete_artifact_bits / original_weight_count <= 1/1, with
+nothing excluded as overhead. A next-parent program containing any candidate above the
+ceiling blocks the launch, and every adapter inherits the ceiling through its rebase
+prescription plus a declared sub-bit closure plan.
 """
 from __future__ import annotations
 
@@ -36,6 +41,9 @@ import os
 import re
 import sys
 from datetime import datetime, timezone
+from fractions import Fraction
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 SCHEMA_NS = "hawking.foundry.post_parent_review"
 
@@ -47,9 +55,45 @@ CAPABILITY_LAW = {
     "rule": "byte plan != capability; only a real parent-vs-packed forward selects a frontier",
 }
 
+# The ceiling. Travels into every prescription, every gate and every adapter.
+ONE_BIT_CEILING_LAW = {
+    "law": "Hawking does not climb above one bit to discover where conventional "
+           "quantization works. Hawking changes the representation, model, allocation "
+           "and treatment until useful intelligence survives at one bit or below.",
+    "ceiling": "1/1",
+    "rule": "complete_artifact_bits / original_weight_count <= 1/1",
+    "complete_bits_include": [
+        "indices", "codebooks", "scales", "metadata", "alignment", "protected_islands",
+        "doctor_bytes", "pass_through_tensors", "packaging", "runtime_required_tables",
+    ],
+    "nothing_excluded_as_overhead": True,
+    "expert_only_bpw_is_not_whole_model_bpw": True,
+    "forbidden_permanently": [
+        "any candidate above 1 BPW", "1.2 safety anchor", "1.5", "2.0", "3.0",
+        "automatic Escape Receipt", "upward bracketing",
+    ],
+    "quality_reference": "the parent BF16 model; a compressed high-rate anchor is not "
+                         "required and must not be scheduled",
+    "rate_change_law": "downward only, after materially distinct method families are "
+                       "exhausted at the ceiling; upward never",
+}
+
+# Program keys that would schedule above the ceiling. Mirrors gravity_potency.
+_ESCAPE_KEYS = ("escape_receipt", "safety_anchor", "quality_anchor", "anchor_rate",
+                "high_rate_anchor", "escape_hatch", "upward_bracket")
+
 # Measured falsifications that must travel forward as NEGATIVE transfer so no
 # future parent spends budget re-deriving them.
 NEGATIVE_TRANSFER_PRIORS = [
+    {
+        "id": "raw_weight_pq_vq_at_one_bit",
+        "claim": "PQ/VQ coding of the raw weights reaches one bit or below",
+        "verdict": "FALSIFIED",
+        "evidence": "qwen3-235b:F1 real forward, 6 prompts, 94 layers, healthy parent control (ppl 1.61 to 39.33): A1_1p0 at complete 1.0075 BPW collapsed 6/6 (symKL 7.6 to 10.9, argmax 0.0); R2_subhalf at complete 0.4930 BPW collapsed 6/6 (symKL 9.3 to 13.5, argmax 0.0)",
+        "forbidden": ["raw-weight PQ/VQ as the route to the ceiling", "raising the rate in response"],
+        "replacement": "methods that CHANGE the source (QAT, distillation, compressibility training, structured pruning, learned sharing) are not bound by the rate-distortion limit of the original weights",
+        "scope": "a negative result for THAT FAMILY; not evidence that every Hawking method below one bit is impossible",
+    },
     {
         "id": "inter_expert_redundancy_zero",
         "claim": "experts share exploitable redundancy",
@@ -177,6 +221,64 @@ def rank_methods(methods):
     return scored, note
 
 
+# ---------------------------------------------------------------- ceiling
+
+
+def _complete_bpw(value):
+    """COMPLETE bits per original weight, exact. Decimals are read from their digits."""
+    if isinstance(value, dict):
+        if "complete_bits" in value and "original_weight_count" in value:
+            return Fraction(int(value["complete_bits"]), int(value["original_weight_count"]))
+        for key in ("complete_bpw", "bpw", "rate"):
+            if key in value:
+                return _complete_bpw(value[key])
+        raise ValueError("candidate declares no COMPLETE BPW: keys %s" % sorted(value))
+    s = str(value).strip()
+    if "/" in s:
+        n, d = s.split("/", 1)
+        return Fraction(int(n), int(d))
+    return Fraction(s)
+
+
+def ceiling_violations(program):
+    """Every way a >1 BPW candidate could enter a next-parent program.
+
+    Delegates to gravity_potency.ceiling_failures when importable; the local fallback
+    exists so an import failure can never open the ceiling.
+    """
+    if not program:
+        return []
+    try:
+        import gravity_potency  # type: ignore
+
+        return list(gravity_potency.ceiling_failures(program))
+    except Exception:
+        pass
+    out = []
+    items = [("rates[%d]" % i, r) for i, r in enumerate(program.get("rates") or [])]
+    items += [("candidates[%s]" % (c.get("id") if isinstance(c, dict) else i), c)
+              for i, c in enumerate(program.get("candidates") or [])]
+    for key in ("start_rate", "complete_bpw"):
+        if program.get(key) is not None:
+            items.append((key, program[key]))
+    for label, value in items:
+        try:
+            q = _complete_bpw(value)
+        except (ValueError, TypeError, ZeroDivisionError) as exc:
+            out.append("%s: %s" % (label, exc))
+            continue
+        if q > 1:
+            out.append(
+                "%s declares complete BPW %d/%d above the one-bit ceiling 1/1; nothing may "
+                "be excluded as overhead" % (label, q.numerator, q.denominator))
+    for key in _ESCAPE_KEYS:
+        if program.get(key):
+            out.append(
+                "%r is an escape or safety-anchor mechanism that schedules above the "
+                "one-bit ceiling; forbidden permanently" % key)
+    return out
+
+
 # ---------------------------------------------------------------- evidence
 
 
@@ -276,6 +378,8 @@ def build_methodology_review(ev, harvest):
         },
         "capability_gate_result": harvest["capability_gate_result"],
         "law": CAPABILITY_LAW,
+        "ceiling_law": ONE_BIT_CEILING_LAW,
+        "next_parent_ceiling_violations": ceiling_violations(ev.get("next_parent") or {}),
     }
     return review, render_methodology_md(review, harvest)
 
@@ -291,6 +395,12 @@ def render_methodology_md(review, harvest):
         "## Law",
         "byte plan is not capability. mean symmetric KL <= %.2f AND next token argmax agreement >= %.2f."
         % (CAPABILITY_LAW["mean_symmetric_kl_max"], CAPABILITY_LAW["next_token_argmax_agreement_min"]),
+        "",
+        "## One-bit ceiling",
+        ONE_BIT_CEILING_LAW["law"],
+        "%s. Complete bits include %s." % (ONE_BIT_CEILING_LAW["rule"], ", ".join(ONE_BIT_CEILING_LAW["complete_bits_include"])),
+        "forbidden permanently: %s." % ", ".join(ONE_BIT_CEILING_LAW["forbidden_permanently"]),
+        "next-parent ceiling violations: %s" % (review.get("next_parent_ceiling_violations") or "none"),
         "",
         "## Assumptions confirmed",
     ]
@@ -327,11 +437,14 @@ def _ev(d):
 
 def _rate_priors(ev):
     curve = sorted((ev.get("representation") or {}).get("rate_response", []), key=lambda r: r.get("rate_bpw", 0))
+    legal = [r for r in curve if float(r.get("rate_bpw", 0)) <= 1.0]
     return {
-        "search_start_bpw": curve[-1]["rate_bpw"] if curve else None,
+        "search_start_bpw": legal[-1]["rate_bpw"] if legal else 1.0,
+        "ceiling": "1/1",
         "measured_curve": curve,
+        "above_ceiling_excluded": [r for r in curve if float(r.get("rate_bpw", 0)) > 1.0],
         "not_a_selection": True,
-        "note": "rate priors seed the search only; a real forward selects",
+        "note": "rate priors seed the search only, never above the ceiling; a real forward selects",
     }
 
 
@@ -343,6 +456,18 @@ def build_adapter_rebase_matrix(ev, harvest, adapters):
         "organ_inversion": org["inversion"],
         "candidate_ordering": [w.get("name") for w in harvest["representation_winners"]]
         + ["DO_NOT_ATTEMPT:" + n["id"] for n in harvest["negative_transfer_constraints"]],
+        "one_bit_ceiling": ONE_BIT_CEILING_LAW,
+        "subbit_closure_requirement": {
+            "objective": "maximize capability subject to complete BPW <= 1/1",
+            "adapter_must_declare": "subbit_closure_plan: which materially distinct method "
+                                    "families it will attempt AT the ceiling",
+            "method_families_in_order": [
+                "quantization_aware_training", "compressibility_training", "distillation",
+                "learned_sharing", "structured_pruning", "representation_geometry",
+                "allocation",
+            ],
+            "answer_to_failure": "a different METHOD at the same rate, never a higher rate",
+        },
         "rate_priors": _rate_priors(ev),
         "doctor_eligibility": {
             "eligible": [d.get("target") for d in harvest["doctor"]["successes"]],
@@ -363,7 +488,9 @@ def build_adapter_rebase_matrix(ev, harvest, adapters):
         "quality_probes": (ev.get("quality") or {}).get("probes", []),
         "stopping_rules": {
             "capability_law": CAPABILITY_LAW,
+            "ceiling_law": ONE_BIT_CEILING_LAW,
             "stop_on": "collapsed logits at any rate; a 0.3 BPW file with collapsed logits is not a win",
+            "never": "raise the rate above 1/1 in response to a collapse",
         },
         "negative_transfer": harvest["negative_transfer_constraints"],
     }
@@ -374,6 +501,7 @@ def build_adapter_rebase_matrix(ev, harvest, adapters):
         pres["consumes_parent_lessons"] = sorted(set(list(a.get("consumes_parent_lessons", [])) + [ev["parent"]["id"]]))
         pres["unverified_assumptions"] = a.get("unverified_assumptions", [])
         pres["falsification_plan"] = a.get("falsification_plan")
+        pres["subbit_closure_plan"] = a.get("subbit_closure_plan")
         pres["prescription_digest"] = digest(pres)
         entries[a["id"]] = pres
     return {
@@ -408,6 +536,7 @@ def build_quality_rebase(ev, harvest):
         "parent": ev["parent"],
         "provisional": is_provisional(ev),
         "law": CAPABILITY_LAW,
+        "ceiling_law": ONE_BIT_CEILING_LAW,
         "probes": q.get("probes", []),
         "domains_collapsing_first": q.get("domains_collapsing_first", []),
         "failures": q.get("failures", []),
@@ -434,11 +563,22 @@ def build_gravity_method_promotion(ev, harvest):
     for n in harvest["negative_transfer_constraints"]:
         methods.append({"id": n["id"], "name": n.get("claim"), "status": "FALSIFIED", "evidence": n.get("evidence")})
     ranked, backend_note = rank_methods(methods)
+    # A method that carries its own rate may not be blessed above the ceiling, whatever
+    # its potency says.
+    for m in ranked:
+        if not any(k in m for k in ("complete_bpw", "bpw", "rate", "complete_bits")):
+            continue
+        bad = ceiling_violations({"candidates": [m]})
+        if bad:
+            m["ceiling_violation"] = bad
+            m["potency"] = min(m.get("potency", 0.0), -1.0)
+    ranked.sort(key=lambda m: (-m.get("potency", 0.0), m.get("id", "")))
     return {
         "schema": SCHEMA_NS + ".gravity_method_promotion.v1",
         "generated_at_utc": _utc(),
         "parent": ev["parent"],
         "provisional": is_provisional(ev),
+        "ceiling_law": ONE_BIT_CEILING_LAW,
         "potency_backend": backend_note,
         "promoted": [m for m in ranked if m.get("potency", 0) >= 3.0],
         "retained_candidate": [m for m in ranked if 0 < m.get("potency", 0) < 3.0],
@@ -466,6 +606,7 @@ def update_cross_parent_matrix(path, ev, harvest, review):
     }
     doc["negative_transfer"] = NEGATIVE_TRANSFER_PRIORS
     doc["law"] = CAPABILITY_LAW
+    doc["ceiling_law"] = ONE_BIT_CEILING_LAW
     doc["updated_at_utc"] = _utc()
     return _write_json(path, doc)
 
@@ -572,18 +713,26 @@ def find_stale_adapters(parent, adapters, matrix=None):
             reasons.append("does not declare remaining unverified assumptions")
         if not a.get("falsification_plan"):
             reasons.append("does not declare how it will falsify the transferred priors")
+        if not a.get("subbit_closure_plan"):
+            reasons.append("does not declare a subbit_closure_plan (how it will attempt sub-bit closure at complete BPW <= 1/1)")
+        else:
+            bad = ceiling_violations(a["subbit_closure_plan"])
+            if bad:
+                reasons.append("subbit_closure_plan breaches the one-bit ceiling: " + "; ".join(bad))
         if reasons:
             stale.append({"adapter_id": a["id"], "reasons": reasons})
     return stale
 
 
-def build_gate_state(out_dir, ev, adapters, matrix=None, heavy_lease_held=False, storage=None):
+def build_gate_state(out_dir, ev, adapters, matrix=None, heavy_lease_held=False, storage=None,
+                     next_parent_program=None):
     p = slug(ev["parent"]["id"])
     present = {}
     for name in REQUIRED_PER_PARENT:
         present[name] = os.path.exists(os.path.join(out_dir, p + "_" + name))
     for name in REQUIRED_GLOBAL:
         present[name] = os.path.exists(os.path.join(out_dir, name))
+    program = next_parent_program if next_parent_program is not None else (ev.get("next_parent") or {})
     return {
         "completed_parent": ev["parent"]["id"],
         "parent_run_status": ev["run_status"],
@@ -592,6 +741,8 @@ def build_gate_state(out_dir, ev, adapters, matrix=None, heavy_lease_held=False,
         "stale_adapters": find_stale_adapters(ev["parent"], adapters, matrix),
         "heavy_lease_held": heavy_lease_held,
         "storage": storage or {},
+        "next_parent_program": program,
+        "ceiling_violations": ceiling_violations(program),
     }
 
 
@@ -601,8 +752,17 @@ def can_launch_next_parent(state):
     Download is a separate gate: see can_start_next_download. A pending review
     never blocks a download, and a satisfied review never authorises a heavy
     launch while the single heavy lease is held.
+
+    Ceiling conformance is checked here too: a next-parent program carrying any
+    candidate above complete BPW 1/1, or any Escape Receipt or safety anchor, blocks
+    the launch no matter how clean the review is.
     """
     reasons = []
+    breaches = state.get("ceiling_violations")
+    if breaches is None:
+        breaches = ceiling_violations(state.get("next_parent_program"))
+    if breaches:
+        reasons.append("next-parent program breaches the one-bit ceiling: " + "; ".join(breaches))
     if state.get("parent_run_status") not in SEALED_STATUSES:
         reasons.append("parent %s run_status %s is not complete or honest_boundary_sealed" % (state.get("completed_parent"), state.get("parent_run_status")))
     if state.get("review_provisional"):

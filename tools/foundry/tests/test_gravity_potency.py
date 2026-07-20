@@ -113,22 +113,26 @@ def test_report_prints_vector_and_refuses_one_number(foundry):
 
 # ── 3. no-senility law ────────────────────────────────────────────────────────────────
 PREV = {"parent_id": "gpt-oss-120b:F0", "lowest_credible_bpw": "2/5", "start_rate": "3/5"}
+CEILING_METHODS = ["quantization_aware_training", "distillation"]
 
 
 def test_no_senility_passes_an_aggressive_program(foundry):
     out = gp.check_no_senility(
         {"parent_id": "qwen3-235b:F1", "start_rate": "3/5",
+         "ceiling_methods": CEILING_METHODS,
          "rates": ["1/1", "3/5", "2/5", "1/3", "1/4"]}, PREV)
     assert out["ok"] is True, out["failures"]
 
 
 def test_no_senility_fails_a_timid_program(foundry):
     out = gp.check_no_senility(
-        {"parent_id": "qwen3-235b:F1", "start_rate": "7/10", "rates": ["1/1", "17/20", "7/10"]},
+        {"parent_id": "qwen3-235b:F1", "start_rate": "7/10",
+         "ceiling_methods": ["quantization_aware_training"],
+         "rates": ["1/1", "7/10"]},
         PREV)
     assert out["ok"] is False
     joined = " ".join(out["failures"])
-    assert "high sub-bit challenger" in joined
+    assert "materially distinct method family at the ceiling" in joined
     assert "lowest credible region" in joined
     assert "lower-rate stress point" in joined
 
@@ -137,17 +141,18 @@ def test_no_senility_fails_size_justified_rate_raise(foundry):
     out = gp.check_no_senility(
         {"parent_id": "deepseek-685b:F2", "start_rate": "7/10",
          "start_rate_reason": "685B is much larger than the 120B parent, start safer",
-         "start_rate_evidence": "b" * 64,
+         "ceiling_methods": CEILING_METHODS,
          "rates": ["1/1", "7/10", "2/5", "1/3", "1/4"]}, PREV)
     assert out["ok"] is False
     assert any("size argument" in f for f in out["failures"])
 
 
-def test_no_senility_fails_unjustified_rate_raise(foundry):
+def test_no_senility_fails_any_upward_start_rate_move(foundry):
     out = gp.check_no_senility(
         {"parent_id": "deepseek-685b:F2", "start_rate": "7/10",
+         "ceiling_methods": CEILING_METHODS,
          "rates": ["1/1", "7/10", "2/5", "1/3", "1/4"]}, PREV)
-    assert any("without a measured start_rate_evidence" in f for f in out["failures"])
+    assert any("upward rate change is never legal" in f for f in out["failures"])
 
 
 def test_no_senility_rejects_off_ladder_and_rounded_rates(foundry):
@@ -159,33 +164,43 @@ def test_no_senility_rejects_off_ladder_and_rounded_rates(foundry):
 
 # ── 4. rate discipline ────────────────────────────────────────────────────────────────
 def _full_sweep(rate):
-    return [{"rate": rate, "lever": lever, "exhausted": True} for lever in gp.LEVER_ORDER]
+    return [{"rate": rate, "method_family": f, "exhausted": True}
+            for f in gp.METHOD_FAMILY_ORDER]
 
 
-def test_rate_discipline_allows_raise_after_full_sweep(foundry):
-    out = gp.check_rate_discipline(_full_sweep("1/4") + _full_sweep("1/3"))
+def test_rate_discipline_allows_lowering_after_full_sweep(foundry):
+    out = gp.check_rate_discipline(_full_sweep("1/1") + _full_sweep("1/2"))
     assert out["ok"] is True, out["failures"]
-    assert out["may_raise_rate"] is True
+    assert out["may_lower_rate"] is True
+    assert out["may_raise_rate"] is False
 
 
-def test_rate_discipline_fails_premature_raise(foundry):
-    history = _full_sweep("1/4")[:3] + [{"rate": "1/3", "lever": "representation"}]
+def test_rate_discipline_fails_premature_lowering(foundry):
+    history = _full_sweep("1/1")[:3] + [
+        {"rate": "1/2", "method_family": "quantization_aware_training"}]
     out = gp.check_rate_discipline(history)
     assert out["ok"] is False
-    assert "levers unexhausted" in out["failures"][0]
-    assert "routing_aware_allocation" in out["failures"][0]
+    assert "rate lowered 1/1 -> 1/2" in out["failures"][0]
+    assert "allocation" in out["failures"][0]
 
 
-def test_rate_discipline_fails_out_of_order_lever(foundry):
-    out = gp.check_rate_discipline([{"rate": "1/4", "lever": "doctor_within_budget"}])
+def test_rate_discipline_fails_out_of_order_family(foundry):
+    out = gp.check_rate_discipline([{"rate": "1/4", "method_family": "allocation"}])
     assert out["ok"] is False
     assert "before" in out["failures"][0]
 
 
-def test_rate_discipline_names_the_next_lever(foundry):
-    out = gp.check_rate_discipline(_full_sweep("1/4")[:2])
-    assert out["next_lever"] == "sharing_scope"
-    assert out["may_raise_rate"] is False
+def test_rate_discipline_names_the_next_family(foundry):
+    out = gp.check_rate_discipline(_full_sweep("1/1")[:2])
+    assert out["next_method_family"] == "distillation"
+    assert out["may_lower_rate"] is False
+
+
+def test_rate_discipline_still_reads_legacy_lever_histories(foundry):
+    legacy = [{"rate": "1/4", "lever": lever, "exhausted": True} for lever in gp.LEVER_ORDER]
+    out = gp.check_rate_discipline(legacy)
+    assert out["ok"] is True, out["failures"]
+    assert out["ordering"] == "lever"
 
 
 # ── 5. negative transfer atlas ────────────────────────────────────────────────────────

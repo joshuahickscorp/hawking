@@ -61,6 +61,10 @@ def adapters(acks=None):
             "consumes_parent_lessons": ["synth-9b"],
             "unverified_assumptions": ["row_norm"],
             "falsification_plan": "re-measure gate/up rel_err at matched rate; if down beats gate the inversion prior is dead",
+            "subbit_closure_plan": {
+                "rates": ["1/1", "1/2"],
+                "method_families": ["quantization_aware_training", "distillation"],
+            },
             "rebase_acks": acks or {},
         }
     ]
@@ -230,17 +234,30 @@ def test_download_blocked_only_by_storage(tmp_path):
 # ---------------------------------------------------------------- real F1 consumer
 
 
-def test_f1_qwen_bundle_generates_provisional_artifacts(tmp_path):
+def test_f1_qwen_bundle_is_sealed_and_blocks_on_stale_adapters(tmp_path):
+    """F1 sealed at honest_boundary_sealed. The review no longer blocks; adapters do."""
     ev = ppr.load_evidence(os.path.join(_HERE, "evidence", "f1_qwen3_235b.json"))
+    assert ev["run_status"] == "honest_boundary_sealed"
     out = str(tmp_path / "review")
     written = ppr.generate(ev, out, adapters())
     harvest = json.load(open(written["VULTURE_HARVEST.json"]))
-    assert harvest["provisional"] is True
+    assert harvest["provisional"] is False
     assert harvest["organ_sensitivity"]["dominant_failure_organ"] == "gate"
     cross = json.load(open(written["CROSS_PARENT_TRANSFER_MATRIX.json"]))
-    assert cross["parents"]["qwen3-235b-a22b-instruct-2507"]["provisional"] is True
+    assert cross["parents"]["qwen3-235b-a22b-instruct-2507"]["provisional"] is False
+    # nothing passed the gate at any rate, and the over-ceiling point is never a seed
+    assert harvest["capability_gate_result"]["selected_frontier"] is None
+    matrix = json.load(open(written["ADAPTER_REBASE_MATRIX.json"]))
+    priors = next(iter(matrix["adapters"].values()))["rate_priors"]
+    assert priors["search_start_bpw"] <= 1.0
+    assert [r["rate_bpw"] for r in priors["above_ceiling_excluded"]] == [1.007471652]
+    # a sealed review alone satisfies the gate; the real Tier-A registry does not
     ok, _ = ppr.can_launch_next_parent(ppr.build_gate_state(out, ev, []))
-    assert ok is False
+    assert ok is True
+    with open(os.path.join(_HERE, "adapters", "tier_a_registry.json")) as fh:
+        registry = json.load(fh)["adapters"]
+    ok, reasons = ppr.can_launch_next_parent(ppr.build_gate_state(out, ev, registry, matrix))
+    assert ok is False and "stale adapters" in reasons[0]
 
 
 def test_f0_then_f1_accumulate_in_cross_parent_matrix(tmp_path):

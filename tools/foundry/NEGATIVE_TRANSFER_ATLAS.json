@@ -1,5 +1,5 @@
 {
-  "created_at": "2026-07-20T19:29:43+00:00",
+  "created_at": "2026-07-20T20:17:11+00:00",
   "entries": {
     "calibration_88_tokens": {
       "killed_by": "at 88 tokens the median routing split is only 63.6 percent stable and 26.1 percent of cells never route at all",
@@ -36,6 +36,13 @@
       "reopen_condition": "a future parent uses a NON-conditional-mean quantizer whose residual is measurably non-orthogonal to the reconstruction",
       "verdict": "algebraically pinned, not merely unhelpful"
     },
+    "raw_weight_pq_vq_at_one_bit": {
+      "killed_by": "qwen3-235b:F1 real forward, 6 prompts, 94 layers, healthy parent control (ppl 1.61 to 39.33): A1_1p0 at complete 1.0075 BPW collapsed 6/6 (symKL 7.6 to 10.9, argmax agreement 0.0) and R2_subhalf at complete 0.4930 BPW collapsed 6/6 (symKL 9.3 to 13.5, argmax agreement 0.0)",
+      "lever": "PQ/VQ coding of the RAW weights as the route to one bit or below",
+      "parent": "qwen3-235b:F1",
+      "reopen_condition": "never on raw weights. A method that changes the source is not this lever and is not blocked by this entry",
+      "verdict": "the raw-weight PQ/VQ family is dead at about one bit. This kills THAT FAMILY, not the sub-bit program: the correct response is a method that CHANGES the source (QAT, distillation, compressibility training, structured pruning, learned sharing), never a higher rate"
+    },
     "ternary_factorization": {
       "killed_by": "loses to VQ at matched rate",
       "lever": "ternary factorization instead of VQ",
@@ -52,5 +59,5 @@
     }
   },
   "schema": "hawking.foundry.negative_transfer_atlas.v1",
-  "sha256": "2d9e38dca3f47e34e1c2f42b2fa5d2298d0b01bab0599129868e701443088273"
+  "sha256": "e22139943a2647042969f08e3a26c2d382fff5e59a34996428606b9d02929675"
 }
