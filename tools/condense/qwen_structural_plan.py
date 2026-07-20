@@ -159,6 +159,13 @@ def ledger(inv, keep: int, gate_spec: dict[str, Any], down_spec: dict[str, Any],
             comp["codebooks"] += cb_bits
             comp["scales"] += t.shape[0] * ROW_SCALE_BITS + 16     # row scales + output gain
             comp["metadata"] += SHB.METADATA_BITS_PER_TENSOR
+            doc = spec.get("doctor")
+            if doc:
+                import qwen_function_aware_codec as _FAC
+                comp["doctor"] += _FAC.doctor_bits(
+                    t.shape, doctor_dim=int(doc["dim"]), doctor_k=int(doc["k"]),
+                    doctor_stages=int(doc.get("stages", 1)),
+                    protect_frac=float(doc["protect_frac"]), cluster=keep)
             comp["alignment"] += max(0, bits - idx_bits - cb_bits - 16 -
                                      SHB.METADATA_BITS_PER_TENSOR)
         elif oc in SHB._DENSE_ORGANS:

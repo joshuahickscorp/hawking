@@ -274,6 +274,56 @@ def apply_refit(books, w: np.ndarray, *, dim: int,
     return direction * s2[:, None]
 
 
+def fit_doctor(mats: list[np.ndarray], base_books, *, dim: int, k: int, stages: int,
+               doctor_dim: int, doctor_k: int, doctor_stages: int, protect_frac: float,
+               seed: int = 0, iters: int = 4):
+    """Lane B M10: fit a correction codebook on the residual of the rows the base codec FAILED on.
+
+    Diagnosis-driven, not uniform: the protected set is chosen by measured residual energy per row
+    after the base pass, which is the direct read on where the base representation lost the
+    function. Rows are ranked by ||w_i - base_i|| / ||w_i|| so a large row that was coded well is
+    not protected ahead of a small row that was destroyed.
+    """
+    pool = []
+    for m in mats:
+        base = apply_refit(base_books, m, dim=dim)
+        rows = protected_rows(m, base, protect_frac)
+        r = np.asarray(m, np.float32)[rows] - base[rows]
+        u, _ = normalize_rows(r)
+        pool.append(u)
+    return fit(pool, dim=doctor_dim, k=doctor_k, stages=doctor_stages, seed=seed + 977,
+               row_scale=True, iters=iters)
+
+
+def protected_rows(w: np.ndarray, base: np.ndarray, frac: float) -> np.ndarray:
+    """Row indices with the worst RELATIVE reconstruction error, `frac` of them."""
+    num = np.linalg.norm(np.asarray(w, np.float32) - base, axis=1)
+    den = np.maximum(np.linalg.norm(np.asarray(w, np.float32), axis=1), _EPS)
+    n = max(1, int(round(frac * w.shape[0])))
+    return np.sort(np.argsort(-(num / den))[:n])
+
+
+def apply_doctor(base_books, doctor_books, w: np.ndarray, *, dim: int, doctor_dim: int,
+                 protect_frac: float) -> np.ndarray:
+    """Base decode, then add the coded residual back on the protected rows only."""
+    out = apply_refit(base_books, w, dim=dim)
+    rows = protected_rows(w, out, protect_frac)
+    resid = np.asarray(w, np.float32)[rows] - out[rows]
+    out[rows] = out[rows] + apply_refit(doctor_books, resid, dim=doctor_dim)
+    return out
+
+
+def doctor_bits(shape: tuple[int, int], *, doctor_dim: int, doctor_k: int, doctor_stages: int,
+                protect_frac: float, cluster: int) -> int:
+    """Exact Doctor cost: correction indices + amortized correction codebook + per-protected-row
+    bf16 scale + a one-bit-per-row protection bitmap. Every one of these ships in the artifact."""
+    rows, cols = shape
+    n_prot = max(1, int(round(protect_frac * rows)))
+    idx = (n_prot * cols // doctor_dim) * doctor_stages * math.ceil(math.log2(doctor_k))
+    cb = doctor_stages * doctor_k * doctor_dim * 16 // max(1, cluster)
+    return int(idx + cb + n_prot * 16 + rows)
+
+
 def occupancy(books, w: np.ndarray, *, dim: int, row_scale: bool = True,
               importance: np.ndarray | None = None) -> dict[str, float]:
     """The M01 falsification metric: how much of the billed index rate is actually spent.

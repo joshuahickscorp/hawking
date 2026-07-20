@@ -198,6 +198,22 @@ LADDER: dict[str, dict[str, Any]] = {
                 "-inf before the top-k, then the k weights renormalize as usual. That is a real "
                 "change to the model and only the forward may judge it.",
     },
+    "S64_doctor": {
+        "kind": "packed",
+        "keep_experts": 64,
+        "gate_up": {"family": "function_aware", "dim": 8, "k": 1024, "stages": 2},
+        "down": {"family": "function_aware", "dim": 16, "k": 1024, "stages": 1,
+                 "doctor": {"dim": 16, "k": 1024, "stages": 1, "protect_frac": 0.5}},
+        "note": "SAME-BUDGET DOCTOR (Lane B M10) on top of S64_structural. The structural arm "
+                "leaves 0.0516 BPW of headroom under the 1/1 ceiling; this spends ALL of it on a "
+                "diagnosis-driven sparse residual over down_proj, the organ whose rate-distortion "
+                "floor is now the worst in the artifact. Protected rows are chosen by measured "
+                "RELATIVE residual energy after the base pass - where the base representation "
+                "actually lost the function - not uniformly and not by row norm. Doctor bytes are "
+                "billed INSIDE the ceiling: correction indices, amortized correction codebook, one "
+                "bf16 scale per protected row, and a one-bit-per-row protection bitmap. Measured "
+                "on real down_proj at layer 46: rel_error 0.7038 -> 0.6074 for +0.319 organ bpw.",
+    },
     "R5_rownorm_strat": {
         "kind": "packed",
         "gate_up": {"family": "shared_grammar", "dim": 16, "k": 1024, "stages": 1, "strata": 2},
@@ -211,7 +227,7 @@ LADDER: dict[str, dict[str, Any]] = {
 # PASS), then the aggressive end. If A1 passes and R2 fails, the cliff is already bracketed and rows
 # 4-5 bisect it. If R2 passes, the anchors are moot and the remaining budget goes to the moonshots.
 # A truncated run therefore still yields a cliff location rather than only "everything collapsed".
-LADDER_ORDER = ["R0_parent", "S64_structural", "A1_1p0", "R2_subhalf_best", "R1_c1_corrected",
+LADDER_ORDER = ["R0_parent", "S64_structural", "S64_doctor", "A1_1p0", "R2_subhalf_best", "R1_c1_corrected",
                 "A2_0p85", "R4_highdim_vq", "R5_rownorm_strat", "R3_routing_aware"]
 
 ORGANS = ("gate", "up", "down")
@@ -464,7 +480,14 @@ def _pack_organ(spec: dict[str, Any], books, w: np.ndarray, seed: int) -> np.nda
     if fam == "function_aware":
         # scale-invariant decode with the closed-form optimal per-row scale substituted back in.
         # Identical artifact layout to shared_grammar plus the billed bf16 scale per row.
-        return FAC.apply_refit(books, np.ascontiguousarray(w, np.float32), dim=int(spec["dim"]))
+        wf = np.ascontiguousarray(w, np.float32)
+        doc = spec.get("doctor")
+        if doc:
+            base_bk, doc_bk = books
+            return FAC.apply_doctor(base_bk, doc_bk, wf, dim=int(spec["dim"]),
+                                    doctor_dim=int(doc["dim"]),
+                                    protect_frac=float(doc["protect_frac"]))
+        return FAC.apply_refit(books, wf, dim=int(spec["dim"]))
     if fam == "shared_grammar":
         return _apply_grammar(spec, books, w)
     if fam in ("product_quant", "transform_pq"):
@@ -827,10 +850,18 @@ def lockstep_logits(fwd, variants: list[str], plan: dict[str, list[str]],
                     if cold and not LADDER[v].get("cold_frac"):
                         continue
                     if spec["family"] == "function_aware":
-                        books[(v, grp, cold)] = FAC.fit(
-                            [np.ascontiguousarray(m, np.float32) for m in fit_mats[grp]],
-                            dim=int(spec["dim"]), k=int(spec["k"]),
-                            stages=int(spec.get("stages", 1)), seed=L * 131 + 7, iters=4)
+                        mats = [np.ascontiguousarray(m, np.float32) for m in fit_mats[grp]]
+                        base = FAC.fit(mats, dim=int(spec["dim"]), k=int(spec["k"]),
+                                       stages=int(spec.get("stages", 1)), seed=L * 131 + 7,
+                                       iters=4)
+                        doc = spec.get("doctor")
+                        books[(v, grp, cold)] = base if not doc else (
+                            base, FAC.fit_doctor(
+                                mats, base, dim=int(spec["dim"]), k=int(spec["k"]),
+                                stages=int(spec.get("stages", 1)), doctor_dim=int(doc["dim"]),
+                                doctor_k=int(doc["k"]), doctor_stages=int(doc.get("stages", 1)),
+                                protect_frac=float(doc["protect_frac"]), seed=L * 131 + 7,
+                                iters=4))
                     else:
                         books[(v, grp, cold)] = _fit_grammar(spec, fit_mats[grp], seed=L * 131 + 7)
 

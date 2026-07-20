@@ -29,6 +29,14 @@
       "reopen_condition": "a future parent's schedule has MEASURED cross-layer expert reuse (cache hit rate > 0) instead of a single lockstep pass",
       "verdict": "correct cap is ~20GB; aggressive RAM only where real reuse exists"
     },
+    "post_hoc_coding_of_frozen_weights": {
+      "evidence": "reports/subbit_reset/M01_FUNCTION_AWARE_PROBE.json",
+      "killed_by": "the best function-aware codec measured is AT the memoryless-Gaussian rate-distortion floor. L0 gate: 0.6435 measured vs 0.6484 floor at 0.625 index bpw (below it). Every other gate/up cell within 8 percent of the floor. down at 0.156 bpw: 0.90-0.92 measured vs 0.8974 floor. There is no headroom left in the marginal distribution, and the floor itself is catastrophic for capability.",
+      "lever": "any post-hoc fixed-weight codec improvement at a fixed sub-bit index rate",
+      "parent": "qwen3-235b-a22b:F1",
+      "reopen_condition": "a codec exploits structure BEYOND the marginal (the atlas already kills inter-expert redundancy, shared bases and entropy coding), or the index rate rises because the inventory shrank",
+      "verdict": "Lane A is CLOSED at these rates. This is NOT a licence to raise the ceiling: it is the proof that the SOURCE must change (inventory, training, topology) at the same ceiling."
+    },
     "posthoc_scalar_gain": {
       "killed_by": "optimal gain pinned at exactly 1.0; k-means reconstruction is a conditional mean so the residual is orthogonal to the reconstruction, and cosine is gain-invariant",
       "lever": "post-hoc scalar gain correction on a PQ artifact",
@@ -42,6 +50,14 @@
       "parent": "qwen3-235b:F1",
       "reopen_condition": "never on raw weights. A method that changes the source is not this lever and is not blocked by this entry",
       "verdict": "the raw-weight PQ/VQ family is dead at about one bit. This kills THAT FAMILY, not the sub-bit program: the correct response is a method that CHANGES the source (QAT, distillation, compressibility training, structured pruning, learned sharing), never a higher rate"
+    },
+    "row_norm_stratification_premise": {
+      "evidence": "reports/subbit_reset/M01_FUNCTION_AWARE_PROBE.json",
+      "killed_by": "the PREMISE does not reproduce. The sealed diagnosis claimed 94 percent of gate/up rows collapse onto ONE codeword. Measured on real weights at the exact R2 geometry (d16 k1024, 5 layers x 3 organs x 8 experts): single-codeword share is 0.0267 mean and never exceeds 0.047 in any cell. The 94 percent figure belonged to a different (k=32) geometry and does not transfer.",
+      "lever": "row-norm-stratified codebooks (declared R5_rownorm_strat, never run)",
+      "parent": "qwen3-235b-a22b:F1",
+      "reopen_condition": "a parent measures single-codeword share >= 0.20 at its own deployed geometry",
+      "verdict": "the stated pathology is absent; stratification has nothing to fix. Its STRONGER form (per-row scale normalization, M01') was built and does help, but only 2.8 percent mean."
     },
     "ternary_factorization": {
       "killed_by": "loses to VQ at matched rate",
@@ -59,5 +75,5 @@
     }
   },
   "schema": "hawking.foundry.negative_transfer_atlas.v1",
-  "sha256": "e22139943a2647042969f08e3a26c2d382fff5e59a34996428606b9d02929675"
+  "sha256": "15d4e4e296a7e5280a4946b1ff592b54b15ed7576065ff40662e22c936c356f0"
 }
