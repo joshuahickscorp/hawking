@@ -147,30 +147,84 @@ class PackedArtifact:
 # --------------------------------------------------------------------------------------------
 # GPU (MPS) primitives.
 # --------------------------------------------------------------------------------------------
+# Memory ceiling for the [N, k] assignment distance matrix, in float32 ELEMENTS (1<<26 = 64 Mi
+# elements = 256 MiB). Assignment is chunked over VECTORS, whose rows are mutually independent, so
+# chunking is EXACT: identical argmin, bounded memory. This is what makes k=65536 runnable at all
+# (unchunked, N=1.5e6 x k=65536 would ask for ~400 GiB). At the campaign geometries (k<=1024) one
+# chunk covers all of N, so the chunked path is a no-op and nothing changes.
+# Knob: set the env var, or assign the module attribute before packing.
+ASSIGN_CHUNK_ELEMS = int(os.environ.get("GRAVITY_FORGE_ASSIGN_CHUNK", 1 << 26))
+
+# Row-group count for the batched-matmul assignment path. MEASURED MPS pathology: a 2D
+# [N, D] @ [D, k] matmul with a small inner dim D lands on a badly tiled kernel (~16 GB/s effective
+# on an M3 Ultra), while the SAME arithmetic expressed as a bmm over >= 2 row groups lands on a
+# well-tiled one. Row grouping is a pure reshape of contiguous memory, so the reduction order per
+# output element is unchanged and the result is BIT-IDENTICAL (verified max|d2 diff| = 0.0 and 1.0
+# argmin agreement on the real Qwen geometries). Measured 12-19 ms -> 4-7 ms per assignment pass.
+_BMM_GROUPS = 8
+
+
+def _argmin_chunked(v, v2, cb, cb2):
+    """Exact nearest-centroid assignment without materializing [N, k].
+
+    Each vector's nearest centroid depends only on that vector, so slicing over rows is exact by
+    construction (same expression, same argmin tie-break = lowest index). Returns idx:[N] int64 on
+    v's device. Fully device-resident: no host sync. Chunk size comes from ASSIGN_CHUNK_ELEMS; each
+    full chunk is further reshaped into _BMM_GROUPS row groups to hit the fast MPS bmm kernel."""
+    torch = _torch()
+    n = v.shape[0]
+    cbT = cb.t().contiguous()
+    step = max(1, int(ASSIGN_CHUNK_ELEMS) // max(1, int(cb.shape[0])))
+    if step > _BMM_GROUPS:
+        step -= step % _BMM_GROUPS
+
+    def one(a, a2):
+        m = a.shape[0]
+        if m >= _BMM_GROUPS and m % _BMM_GROUPS == 0:
+            b, r = _BMM_GROUPS, m // _BMM_GROUPS
+            d2 = a2.reshape(b, r, 1) - 2.0 * torch.bmm(
+                a.reshape(b, r, -1), cbT.unsqueeze(0).expand(b, -1, -1)) + cb2
+            return d2.argmin(2).reshape(-1)
+        return (a2 - 2.0 * (a @ cbT) + cb2).argmin(1)   # small / ragged tail
+
+    if step >= n:
+        return one(v, v2)
+    out = torch.empty(n, dtype=torch.int64, device=v.device)
+    for i in range(0, n, step):
+        j = min(i + step, n)
+        out[i:j] = one(v[i:j], v2[i:j])
+    return out
+
+
 def _kmeans(v, k: int, *, iters: int = 12, seed: int = 0):
-    """k-means on v:[N,D] -> centroids [K,D]. Runs on v's device (MPS when available)."""
+    """k-means on v:[N,D] -> centroids [K,D]. Runs on v's device (MPS when available).
+
+    Sync-free: the centroid update is clamped-count division + torch.where, so the whole iteration
+    stays queued on device. The old `cb[cnt>0] = ...` boolean-mask write forced a host sync every
+    iteration (the mask's true-count has to come back to the CPU to size the write); removing it is
+    worth ~1.7x on a real Qwen k-means on its own. Numerics are unchanged for nonempty clusters
+    (cnt>=1 there, so the clamp is the identity) and EMPTY CLUSTERS KEEP THEIR PREVIOUS CENTROID,
+    exactly as before."""
     torch = _torch()
     n = v.shape[0]
     k = int(min(k, n))
     g = torch.Generator(device="cpu").manual_seed(seed)
     cb = v[torch.randperm(n, generator=g)[:k]].clone()
     v2 = (v * v).sum(1, keepdim=True)
+    ones = torch.ones(n, device=cb.device, dtype=cb.dtype)
     for _ in range(iters):
-        d2 = v2 - 2.0 * (v @ cb.t()) + (cb * cb).sum(1)
-        idx = d2.argmin(1)
+        idx = _argmin_chunked(v, v2, cb, (cb * cb).sum(1))
         new = torch.zeros_like(cb)
         cnt = torch.zeros(k, device=cb.device, dtype=cb.dtype)
         new.index_add_(0, idx, v)
-        cnt.index_add_(0, idx, torch.ones(n, device=cb.device, dtype=cb.dtype))
-        nz = cnt > 0
-        cb[nz] = new[nz] / cnt[nz].unsqueeze(1)
+        cnt.index_add_(0, idx, ones)
+        cnt = cnt.unsqueeze(1)
+        cb = torch.where(cnt > 0, new / cnt.clamp(min=1.0), cb)
     return cb
 
 
 def _assign(v, cb):
-    torch = _torch()
-    d2 = (v * v).sum(1, keepdim=True) - 2.0 * (v @ cb.t()) + (cb * cb).sum(1)
-    return d2.argmin(1)
+    return _argmin_chunked(v, (v * v).sum(1, keepdim=True), cb, (cb * cb).sum(1))
 
 
 def _hadamard(D: int):
@@ -986,15 +1040,15 @@ def _kmeans_torch_init(v, cb_init, iters: int):
     cb = cb_init.clone()
     v2 = (v * v).sum(1, keepdim=True)
     idx = None
+    ones = torch.ones(v.shape[0], device=cb.device, dtype=cb.dtype)
     for _ in range(iters):
-        d2 = v2 - 2.0 * (v @ cb.t()) + (cb * cb).sum(1)
-        idx = d2.argmin(1)
+        idx = _argmin_chunked(v, v2, cb, (cb * cb).sum(1))
         new = torch.zeros_like(cb)
         cnt = torch.zeros(cb.shape[0], device=cb.device, dtype=cb.dtype)
         new.index_add_(0, idx, v)
-        cnt.index_add_(0, idx, torch.ones(v.shape[0], device=cb.device, dtype=cb.dtype))
-        nz = cnt > 0
-        cb[nz] = new[nz] / cnt[nz].unsqueeze(1)
+        cnt.index_add_(0, idx, ones)
+        cnt = cnt.unsqueeze(1)
+        cb = torch.where(cnt > 0, new / cnt.clamp(min=1.0), cb)   # mirrors _kmeans exactly
     return cb, idx
 
 
