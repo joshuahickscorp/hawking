@@ -584,7 +584,7 @@ def h_transfer_qwen_priority(st: dict) -> None:
     if _dl_alive():                        # downloader running in parallel -> report progress (deduped)
         msg = (f"Qwen download below {DISK_PAUSE_GB:.0f} GB target ({free:.0f} GB); letting the running job finish"
                if free < DISK_PAUSE_GB else
-               f"Qwen download {got}/{total} shards, {QWEN_DL_WORKERS} parallel workers + hf_transfer, free {free:.0f} GB")
+               f"Qwen download {got}/{total} shards, {QWEN_DL_WORKERS} parallel workers + xet high-perf, free {free:.0f} GB")
         _telegram_once("qwen_dl_progress", msg, 1800); return
     if free < DISK_PAUSE_GB:               # not running + below target -> do NOT start a new download
         _telegram_once("transfer_paused",
@@ -596,10 +596,15 @@ def h_transfer_qwen_priority(st: dict) -> None:
         proc = subprocess.Popen([PY, "-c", _QWEN_DL_SCRIPT, QWEN_REPO, QWEN_REV, str(QWEN_DIR), str(QWEN_DL_WORKERS)],
                                 stdout=lh, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL, cwd=str(ROOT),
                                 start_new_session=True,
-                                env={**os.environ, "HF_HUB_DISABLE_TELEMETRY": "1", "HF_HUB_ENABLE_HF_TRANSFER": "1"})
+                                # Qwen shards are Xet-backed (x-xet-hash present), so hf_xet serves and
+                                # HF_HUB_ENABLE_HF_TRANSFER is IGNORED. HF_XET_HIGH_PERFORMANCE is the real
+                                # lever: aggressive per-file chunk concurrency to fill a fat uplink. Keep
+                                # HF_HUB_ENABLE_HF_TRANSFER as a harmless fallback for any non-xet file.
+                                env={**os.environ, "HF_HUB_DISABLE_TELEMETRY": "1",
+                                     "HF_HUB_ENABLE_HF_TRANSFER": "1", "HF_XET_HIGH_PERFORMANCE": "1"})
     _write(QWEN_DL_PID, {"pid": proc.pid, "started_at": _now(), "workers": QWEN_DL_WORKERS})
-    _telegram(f"Qwen full download launched (parallel): {total} shards, {QWEN_DL_WORKERS} workers x hf_transfer "
-              f"multi-connection, one local copy, resumable. {got}/{total} present.")
+    _telegram(f"Qwen full download launched (parallel): {total} shards, {QWEN_DL_WORKERS} workers x xet high-perf "
+              f"chunk-concurrency, one local copy, resumable. {got}/{total} present.")
 
 
 def h_run_q0q1q2(st: dict) -> None:
