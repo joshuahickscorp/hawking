@@ -1,6 +1,6 @@
 #!/usr/bin/env python3.12
-"""Overnight ladder-handoff supervisor: 120B final -> conclusion -> safe source release -> Qwen
-priority transfer -> Q0/Q1/Q2 -> detached Qwen controller, as a launchd-supervised, restart-safe,
+"""Overnight ladder-handoff supervisor: 120B final -> conclusion -> safe source release -> full
+resident Qwen download -> Q0/Q1/Q2 -> detached Qwen controller, as a launchd-supervised, restart-safe,
 idempotent STATE MACHINE (not a shell child of any chat session).
 
 Each tick (launchd StartInterval) advances at most one transition. Every transition has: an immutable
@@ -12,8 +12,9 @@ state is final AND full verification passes.
 Safety (load-bearing): source deletion touches ONLY the seven exact GPT-OSS shard absolute paths,
 each re-verified (exists, exact name, under the model/original dir, not mapped by any process), only
 after all 15 release gates are green; it never globs and never removes the parent directory or any
-metadata. Qwen transfer keeps one physical payload copy, honors disk floors (pause < 100 GB, hard
-stop < 40 GB), and prefers shard-serial. Telegram is fail-closed. Secrets stay in the Keychain/0600
+metadata. Qwen transfer keeps one complete physical payload copy and refuses range-only or
+shard-serial progression. It starts only after 120B release and only when the completed download can
+leave at least 100 GB free. Telegram is fail-closed. Secrets stay in the Keychain/0600
 file (reused from the Doctor supervisor). This module does NOT touch the live Doctor controller.
 """
 from __future__ import annotations
@@ -21,6 +22,7 @@ from __future__ import annotations
 import json
 import os
 import shutil
+import struct
 import subprocess
 import sys
 import time
@@ -419,9 +421,10 @@ def h_evaluate_source_release(st: dict) -> None:
     if ok:
         _advance(st, "RELEASE_120B_SOURCE", "evaluate_source_release", receipt)
     else:
-        # Not authorized -> do NOT delete. Proceed to Qwen via shard-serial streaming (no deletion needed).
-        _telegram("release not authorized -> keeping 120B source, Qwen goes shard-serial.")
-        _advance(st, "ADMIT_QWEN", "evaluate_source_release", {**receipt, "mode": "shard_serial_no_release"})
+        # New directive: Qwen must be a complete resident checkpoint. Do not bypass a failed 120B
+        # release gate with range reads or shard-serial processing; stay here and retry after repair.
+        _telegram_once("release_gate_hold", "release not authorized -> 120B retained and Qwen full "
+                       "download remains blocked. No shard-serial fallback.")
 
 
 def _lsof_maps(path: Path) -> bool:
@@ -433,12 +436,9 @@ def _lsof_maps(path: Path) -> bool:
 
 
 def _skip_release_shard_serial(st: dict, reason: str) -> None:
-    """Safe alternate that keeps the chain moving: do NOT delete, keep the 120B source, and stream
-    Qwen shard-serial instead. Used whenever deletion is unauthorized or the source is not in a
-    perfectly-deletable state - progressing without any destructive action."""
-    _telegram_once("release_skip", f"skipping 120B deletion ({reason}); source kept, Qwen shard-serial.")
-    _advance(st, "ADMIT_QWEN", "release_source",
-             {"mode": "shard_serial_no_release", "reason": reason, "input_identity": st.get("input_identity")})
+    """Compatibility name for the old fallback, now a hard hold under the full-resident directive."""
+    _telegram_once("release_hold", f"120B release held ({reason}); source kept and Qwen full download "
+                   "blocked. Shard-serial/range fallback is disabled.")
 
 
 def h_release_120b_source(st: dict) -> None:
@@ -514,38 +514,21 @@ def _complete_release(st: dict) -> None:
 def h_admit_qwen(st: dict) -> None:
     idx = _read(QWEN_META / "model.safetensors.index.json")
     wm = idx.get("weight_map", {})
-    # priority-source plan: the shards required for config/tokenizer, one bounded decode, layer-0
-    # attention, layer-0 router, one complete selected expert, one bounded complete-layer Q2 path.
-    need_tensors = ([t for t in wm if t.startswith("model.layers.0.self_attn.")]
-                    + ["model.layers.0.mlp.gate.weight", "model.embed_tokens.weight", "model.norm.weight"]
-                    + [t for t in wm if t.startswith("model.layers.0.mlp.experts.0.")]
-                    + [t for t in wm if t.startswith("model.layers.0.mlp.experts.") and ".experts.1." in t][:0])
-    priority_shards = sorted({wm[t] for t in need_tensors if t in wm})
-
-    # FULL dependency-ordered sweep = MAXIMAL coverage: every shard, streamed one bounded window at a
-    # time (layer-0 first ... last layer, then embed/norm/head), so the entire model (all 94 layers,
-    # all 128 experts) can be tested without ever holding the 437.9 GiB resident.
-    def _min_layer(shard: str) -> int:
-        ls = [int(t.split(".")[2]) for t in wm
-              if wm[t] == shard and t.startswith("model.layers.") and t.split(".")[2].isdigit()]
-        return min(ls) if ls else -1  # non-layer tensors (embed/norm/lm_head) sort first
-    full_sweep = sorted({*wm.values()}, key=lambda s: (_min_layer(s), s))
-
+    full_shards = sorted(set(wm.values()))
+    required_bytes = int((idx.get("metadata") or {}).get("total_size") or 0)
     plan = {"repo": QWEN_REPO, "immutable_revision": QWEN_REV,
-            "n_priority_shards": len(priority_shards), "priority_shards": priority_shards,
-            "total_shards": len(full_sweep), "full_sweep_shards": full_sweep,
-            "coverage": ("phase1 = priority shards (Q0/Q1/Q2 feasibility); phase2 = FULL SWEEP over all "
-                         "shards, shard-serial, one window at a time = maximal model coverage. Each swept "
-                         "shard is processed + measured + released before the next. The per-shard "
-                         "compression TEST requires the Qwen compute engine (real forward + per-expert "
-                         "packer, the analog of gptoss_real_forward.py) - the next real build."),
-            "storage": "one payload copy; shard-serial; disk floors pause<100GB hardstop<40GB"}
-    _write(GF / "QWEN3_235B_PRIORITY_PLAN.json", plan)   # idempotent rewrite; safe to re-run each tick
+            "mode": "FULL_RESIDENT_ONLY", "total_shards": len(full_shards),
+            "full_checkpoint_files": full_shards, "required_payload_bytes": required_bytes,
+            "coverage": "download and retain the complete immutable 118-file checkpoint before compute",
+            "forbidden": ["HTTP range execution", "priority-only transfer", "shard-serial compute"],
+            "storage": "one complete payload copy; projected post-download free space >=100 GB"}
+    _write(GF / "QWEN3_235B_FULL_RESIDENT_PLAN.json", plan)
     if _claim("admit_qwen"):   # claim dedups the telegram only; advance always runs (no-wedge)
-        _telegram(f"Qwen admitted @ {QWEN_REV[:12]}. Phase1 = {len(priority_shards)} priority shards (Q0/Q1/Q2); "
-                  f"phase2 = full sweep over all {len(full_sweep)} shards (maximal coverage, shard-serial).")
+        _telegram(f"Qwen full-resident download admitted @ {QWEN_REV[:12]}: all {len(full_shards)} "
+                  "checkpoint files, no range/shard-serial fallback.")
     _advance(st, "TRANSFER_QWEN_PRIORITY", "admit_qwen",
-             {"priority_shards": priority_shards, "input_identity": QWEN_REV})
+             {"mode": "FULL_RESIDENT_ONLY", "total_shards": len(full_shards),
+              "required_payload_bytes": required_bytes, "input_identity": QWEN_REV})
 
 
 QWEN_DL_WORKERS = int(os.environ.get("HAWKING_QWEN_DL_WORKERS", "16"))  # parallel files; xet splits each
@@ -572,6 +555,65 @@ def _qwen_present() -> tuple[int, int]:
     return got, len(shards)
 
 
+def _qwen_required_bytes() -> int:
+    idx = _read(QWEN_META / "model.safetensors.index.json")
+    return int((idx.get("metadata") or {}).get("total_size") or 0)
+
+
+def _verify_qwen_full_source() -> tuple[bool, dict]:
+    """Header-verify every resident shard and bind its tensor inventory to the pinned index.
+
+    This reads only safetensors headers, not 438 GiB of tensor payload, but it proves every indexed
+    file is present, structurally complete, and accounts for the index's exact payload byte total.
+    """
+    idx = _read(QWEN_META / "model.safetensors.index.json")
+    wm = idx.get("weight_map") or {}
+    shards = sorted(set(wm.values()))
+    expected_total = int((idx.get("metadata") or {}).get("total_size") or 0)
+    if not wm or len(shards) != 118 or expected_total <= 0:
+        return False, {"reason": "pinned index missing or not the expected 118-file checkpoint"}
+    for meta_name in ("config.json", "tokenizer.json"):
+        if not ((QWEN_DIR / meta_name).is_file() or (QWEN_META / meta_name).is_file()):
+            return False, {"reason": f"required metadata missing: {meta_name}"}
+    names_seen: set[str] = set()
+    payload_total = 0
+    try:
+        for shard in shards:
+            path = QWEN_DIR / shard
+            if not path.is_file() or path.stat().st_size <= 8:
+                return False, {"reason": f"checkpoint file absent/truncated: {shard}"}
+            with path.open("rb") as fh:
+                prefix = fh.read(8)
+                if len(prefix) != 8:
+                    return False, {"reason": f"short safetensors prefix: {shard}"}
+                hlen = struct.unpack("<Q", prefix)[0]
+                if not 2 <= hlen <= 200 * 1024 * 1024:
+                    return False, {"reason": f"unsafe safetensors header length: {shard}"}
+                header = json.loads(fh.read(hlen))
+            header.pop("__metadata__", None)
+            expected_names = {name for name, mapped in wm.items() if mapped == shard}
+            if set(header) != expected_names:
+                return False, {"reason": f"index/header tensor inventory mismatch: {shard}"}
+            max_end = 0
+            for name, row in header.items():
+                start, end = row.get("data_offsets", [-1, -1])
+                if not isinstance(start, int) or not isinstance(end, int) or start < 0 or end <= start:
+                    return False, {"reason": f"invalid tensor range: {name}"}
+                max_end = max(max_end, end)
+            data_start = 8 + hlen
+            if path.stat().st_size < data_start + max_end:
+                return False, {"reason": f"checkpoint file payload truncated: {shard}"}
+            payload_total += max_end
+            names_seen.update(header)
+    except Exception as exc:
+        return False, {"reason": f"full-source verification error: {type(exc).__name__}: {exc}"}
+    ok = names_seen == set(wm) and payload_total == expected_total
+    return ok, {"files": len(shards), "tensors": len(names_seen),
+                "payload_bytes": payload_total, "expected_payload_bytes": expected_total,
+                "revision": QWEN_REV, "mode": "FULL_RESIDENT_ONLY",
+                "reason": "complete checkpoint verified" if ok else "payload/index total mismatch"}
+
+
 def _dl_alive() -> bool:
     pid = _read(QWEN_DL_PID).get("pid")
     return bool(pid and _pid_alive(pid))
@@ -591,36 +633,47 @@ def _kill_downloader() -> None:
 
 def h_transfer_qwen_priority(st: dict) -> None:
     got, total = _qwen_present()
-    if total and got >= total:            # FULL_DISK_RESIDENT complete + verified
+    if any(p.exists() for p in SHARDS):
         _kill_downloader()
-        _telegram(f"Qwen full source resident: {got}/{total} shards on disk, one copy, "
+        _telegram_once("qwen_wait_120b_release", "Qwen full download blocked until all seven 120B "
+                       "source shards are safely released. No concurrent parent residency.")
+        return
+    if total and got >= total:
+        verified, verification = _verify_qwen_full_source()
+        if not verified:
+            _kill_downloader()
+            _telegram_once("qwen_full_verify_fail", f"Qwen files present but full-checkpoint verify "
+                           f"failed: {verification.get('reason')}")
+            return
+        _kill_downloader()
+        _telegram(f"Qwen complete source resident and header-verified: {got}/{total} files, one copy, "
                   f"free {_disk_free_gb():.0f} GB. Running Q0/Q1/Q2.")
         _advance(st, "RUN_QWEN_Q0_Q1_Q2", "transfer_qwen_priority",
-                 {"shards": got, "input_identity": QWEN_REV}); return
+                 {"files": got, "verification": verification,
+                  "mode": "FULL_RESIDENT_ONLY", "input_identity": QWEN_REV}); return
     free = _disk_free_gb()
-    if free < DISK_HARDSTOP_GB:            # hard stop: kill the parallel job, self-heal when disk recovers
+    if free < DISK_TARGET_GB:
         _kill_downloader()
-        _telegram_once("disk_hardstop", f"Qwen transfer hard-stopped: free {free:.0f} GB < "
-                       f"{DISK_HARDSTOP_GB} GB. Killed downloader; resumes when disk recovers."); return
-    if _dl_alive():                        # downloader running in parallel -> report progress (deduped)
-        msg = (f"Qwen download below {DISK_PAUSE_GB:.0f} GB target ({free:.0f} GB); letting the running job finish"
-               if free < DISK_PAUSE_GB else
-               f"Qwen download {got}/{total} shards, {QWEN_DL_WORKERS} parallel workers + xet high-perf, free {free:.0f} GB")
-        _telegram_once("qwen_dl_progress", msg, 1800); return
-    # Only a FRESH start needs the comfortable 100 GB target. RESUMING an existing partial download
-    # (got > 0) is safe down to the hard-stop floor: it is one resumable copy and the worker enforces
-    # the floor at write cadence, so gating resume on the 100 GB pause target would strand an
-    # interrupted transfer forever (the partial itself holds free below 100 for most of a 438 GB pull).
-    if got == 0 and free < DISK_PAUSE_GB:
-        _telegram_once("transfer_paused",
-                       f"Qwen download paused: free {free:.0f} GB < {DISK_PAUSE_GB} GB target (no partial to resume)."); return
+        _telegram_once("disk_target_stop", f"Qwen full download stopped: free {free:.0f} GB < "
+                       f"{DISK_TARGET_GB} GB reserve."); return
+    if _dl_alive():
+        _telegram_once("qwen_dl_progress", f"Qwen complete-checkpoint download {got}/{total} files, "
+                       f"free {free:.0f} GB", 1800); return
+    required_gb = _qwen_required_bytes() / 1e9
+    resident_gb = sum((QWEN_DIR / s).stat().st_size for s in _qwen_shards()
+                      if (QWEN_DIR / s).is_file()) / 1e9
+    projected_free = free - max(0.0, required_gb - resident_gb)
+    if projected_free < DISK_TARGET_GB:
+        _telegram_once("full_download_headroom", f"Qwen full download not started: projected free "
+                       f"{projected_free:.1f} GB < {DISK_TARGET_GB:.0f} GB reserve. Finish 120B release first.")
+        return
     # (re)launch ONE detached parallel downloader via the disk-floor worker: snapshot_download with N
     # workers + xet high-perf, one physical copy in local_dir (no HF cache dup), resumable across
     # kills/reboots, and self-aborting the instant free disk drops below the hard reserve.
     QWEN_DIR.mkdir(parents=True, exist_ok=True)
     with open(QWEN_DL_LOG, "ab") as lh:
         proc = subprocess.Popen([PY, str(QWEN_DL_WORKER), QWEN_REPO, QWEN_REV, str(QWEN_DIR),
-                                 str(QWEN_DL_WORKERS), str(DISK_HARDSTOP_GB)],
+                                 str(QWEN_DL_WORKERS), str(DISK_TARGET_GB)],
                                 stdout=lh, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL, cwd=str(ROOT),
                                 start_new_session=True,
                                 # Qwen shards are Xet-backed (x-xet-hash present), so hf_xet serves and
@@ -630,8 +683,8 @@ def h_transfer_qwen_priority(st: dict) -> None:
                                 env={**os.environ, "HF_HUB_DISABLE_TELEMETRY": "1",
                                      "HF_HUB_ENABLE_HF_TRANSFER": "1", "HF_XET_HIGH_PERFORMANCE": "1"})
     _write(QWEN_DL_PID, {"pid": proc.pid, "started_at": _now(), "workers": QWEN_DL_WORKERS})
-    _telegram(f"Qwen full download launched (parallel): {total} shards, {QWEN_DL_WORKERS} workers x xet high-perf "
-              f"chunk-concurrency, disk-floor guarded, one local copy, resumable. {got}/{total} present.")
+    _telegram(f"Qwen complete-checkpoint download launched: all {total} files, {QWEN_DL_WORKERS} "
+              f"workers, one local copy, {DISK_TARGET_GB:.0f} GB reserve. {got}/{total} present.")
 
 
 def h_run_q0q1q2(st: dict) -> None:

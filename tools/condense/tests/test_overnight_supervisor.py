@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import json
 import os
+import struct
 import sys
 import types
 from pathlib import Path
@@ -219,7 +220,7 @@ def test_04_deletion_gate_red_refuses(tmp_path, monkeypatch):
     _build_release(mod, ctx, monkeypatch, all_green=False)
     orig = list(ctx.SHARDS)
     mod.h_release_120b_source(mod._read(ctx.SM_STATE))
-    assert mod._read(ctx.SM_STATE)["state"] == "ADMIT_QWEN"   # shard-serial, source kept, nothing deleted
+    assert mod._read(ctx.SM_STATE)["state"] == "RELEASE_120B_SOURCE"  # hard hold; no Qwen fallback
     for p in orig:
         assert p.exists(), f"shard deleted with red gates: {p.name}"
 
@@ -269,8 +270,8 @@ def test_06_interrupted_qwen_download_retries_and_respects_floors(tmp_path, monk
     mod.h_transfer_qwen_priority(mod._read(ctx.SM_STATE))
     assert mod._read(ctx.SM_STATE)["state"] == "TRANSFER_QWEN_PRIORITY"
     assert any("qwen_download_worker" in " ".join(c) for c in ctx.popen_calls), "no disk-floor downloader launched"
-    # the downloader gets the hard-stop reserve as its write-cadence floor
-    assert any(str(mod.DISK_HARDSTOP_GB) in c for c in ctx.popen_calls[-1]), "worker not passed the disk floor"
+    # the downloader gets the full 100 GB target as its write-cadence floor
+    assert any(str(mod.DISK_TARGET_GB) in c for c in ctx.popen_calls[-1]), "worker not passed the disk floor"
     assert (ctx.SM / "qwen_downloader.pid.json").exists()
     assert any("parallel" in m or "workers" in m for m in ctx.tg)
 
@@ -280,7 +281,7 @@ def test_06_interrupted_qwen_download_retries_and_respects_floors(tmp_path, monk
     monkeypatch.setattr(mod, "_disk_free_gb", lambda: 30.0)
     mod.h_transfer_qwen_priority(mod._read(ctx.SM_STATE))
     assert mod._read(ctx.SM_STATE)["state"] == "TRANSFER_QWEN_PRIORITY"
-    assert any("hard-stop" in m for m in ctx.tg)
+    assert any("stopped" in m for m in ctx.tg)
     assert not ctx.popen_calls, "must not launch below hard-stop"
 
     # (c) below pause, no partial, no downloader -> pause, do NOT start a FRESH download.
@@ -289,17 +290,17 @@ def test_06_interrupted_qwen_download_retries_and_respects_floors(tmp_path, monk
     monkeypatch.setattr(mod, "_disk_free_gb", lambda: 70.0)
     mod.h_transfer_qwen_priority(mod._read(ctx.SM_STATE))
     assert mod._read(ctx.SM_STATE)["state"] == "TRANSFER_QWEN_PRIORITY"
-    assert any("paused" in m for m in ctx.tg)
+    assert any("stopped" in m for m in ctx.tg)
     assert not ctx.popen_calls, "must not fresh-start below pause"
 
-    # (c2) partial present + below pause + no downloader -> RESUME (a resumable partial is safe down to
-    # the hard-stop floor; gating resume on the 100 GB target would strand an interrupted transfer).
+    # (c2) partial present + below the 100 GB reserve -> remain stopped. Full-resident mode never
+    # trades away the final reserve merely because a partial exists.
     ctx.popen_calls.clear(); ctx.tg.clear()
     (ctx.QWEN_DIR / "s1.safetensors").write_bytes(b"x")   # 1 of 2 = partial
     mod._write(ctx.SM_STATE, transfer_state())
     mod.h_transfer_qwen_priority(mod._read(ctx.SM_STATE))
     assert mod._read(ctx.SM_STATE)["state"] == "TRANSFER_QWEN_PRIORITY"
-    assert any("qwen_download_worker" in " ".join(c) for c in ctx.popen_calls), "must resume a partial below pause"
+    assert not ctx.popen_calls, "must not resume a partial below the full-resident reserve"
     os.remove(str(ctx.QWEN_DIR / "s1.safetensors"))
 
     # (d) all shards present -> advance to RUN_Q.
@@ -307,6 +308,8 @@ def test_06_interrupted_qwen_download_retries_and_respects_floors(tmp_path, monk
     (ctx.QWEN_DIR / "s2.safetensors").write_bytes(b"x")
     ctx.tg.clear()
     monkeypatch.setattr(mod, "_disk_free_gb", lambda: 300.0)
+    monkeypatch.setattr(mod, "_verify_qwen_full_source",
+                        lambda: (True, {"files": 2, "mode": "FULL_RESIDENT_ONLY"}))
     mod._write(ctx.SM_STATE, transfer_state())
     mod.h_transfer_qwen_priority(mod._read(ctx.SM_STATE))
     assert mod._read(ctx.SM_STATE)["state"] == "RUN_QWEN_Q0_Q1_Q2"
@@ -327,7 +330,7 @@ def test_07_disk_floor_hardstop_and_pause(tmp_path, monkeypatch):
     monkeypatch.setattr(mod, "_disk_free_gb", lambda: mod.DISK_HARDSTOP_GB - 1)
     mod.h_transfer_qwen_priority(mod._read(ctx.SM_STATE))
     assert mod._read(ctx.SM_STATE)["state"] == "TRANSFER_QWEN_PRIORITY"
-    assert any("hard-stop" in m.lower() for m in ctx.tg)
+    assert any("stopped" in m.lower() for m in ctx.tg)
 
     # between floors, no downloader -> pause, no launch
     mod._write(ctx.SM_STATE, {"state": "TRANSFER_QWEN_PRIORITY", "entered_at": mod._now()})
@@ -335,8 +338,38 @@ def test_07_disk_floor_hardstop_and_pause(tmp_path, monkeypatch):
     monkeypatch.setattr(mod, "_disk_free_gb", lambda: (mod.DISK_HARDSTOP_GB + mod.DISK_PAUSE_GB) / 2)
     mod.h_transfer_qwen_priority(mod._read(ctx.SM_STATE))
     assert mod._read(ctx.SM_STATE)["state"] == "TRANSFER_QWEN_PRIORITY"
-    assert any("paused" in m for m in ctx.tg)
+    assert any("stopped" in m for m in ctx.tg)
     assert not ctx.popen_calls
+
+
+def test_07b_full_resident_verifier_binds_all_118_files(tmp_path, monkeypatch):
+    mod = osup
+    ctx = _configure(mod, monkeypatch, tmp_path)
+    ctx.QWEN_META.mkdir(parents=True, exist_ok=True)
+    ctx.QWEN_DIR.mkdir(parents=True, exist_ok=True)
+    (ctx.QWEN_META / "config.json").write_text("{}")
+    (ctx.QWEN_META / "tokenizer.json").write_text("{}")
+    weight_map = {}
+    for i in range(1, 119):
+        shard = f"model-{i:05d}-of-00118.safetensors"
+        name = f"tensor.{i}"
+        weight_map[name] = shard
+        header = json.dumps({name: {"dtype": "BF16", "shape": [1],
+                                    "data_offsets": [0, 2]}}).encode()
+        with (ctx.QWEN_DIR / shard).open("wb") as fh:
+            fh.write(struct.pack("<Q", len(header)))
+            fh.write(header)
+            fh.write(b"\x00\x00")
+    mod._write(ctx.QWEN_META / "model.safetensors.index.json",
+               {"metadata": {"total_size": 118 * 2}, "weight_map": weight_map})
+    ok, report = mod._verify_qwen_full_source()
+    assert ok is True, report
+    assert report["files"] == 118 and report["payload_bytes"] == 236
+
+    # One truncated file must fail closed.
+    (ctx.QWEN_DIR / "model-00077-of-00118.safetensors").write_bytes(b"short")
+    ok2, report2 = mod._verify_qwen_full_source()
+    assert ok2 is False and "truncated" in report2["reason"]
 
 
 # -- 8. restart during every state: no crash, no double side effect -------------------------
@@ -369,7 +402,7 @@ def test_09_claim_dedups_telegram_but_never_wedges_advance(tmp_path, monkeypatch
     # First pass: builds the plan, telegrams, advances.
     mod._write(ctx.SM_STATE, admit_state())
     mod.h_admit_qwen(mod._read(ctx.SM_STATE))
-    plan_path = ctx.GF / "QWEN3_235B_PRIORITY_PLAN.json"
+    plan_path = ctx.GF / "QWEN3_235B_FULL_RESIDENT_PLAN.json"
     assert plan_path.exists()
     assert mod._read(ctx.SM_STATE)["state"] == "TRANSFER_QWEN_PRIORITY"
     assert any("admitted" in m.lower() for m in ctx.tg)
@@ -413,6 +446,8 @@ def test_11_successful_qwen_ignition_path(tmp_path, monkeypatch):
     ctx.QWEN_DIR.mkdir(parents=True, exist_ok=True)
     mod._write(ctx.QWEN_META / "model.safetensors.index.json", {"weight_map": {"a": plan_shard}})
     (ctx.QWEN_DIR / plan_shard).write_bytes(b"qwen-bytes")  # full source present -> transfer completes
+    monkeypatch.setattr(mod, "_verify_qwen_full_source",
+                        lambda: (True, {"files": 1, "mode": "FULL_RESIDENT_ONLY"}))
     # A live controller with a first checkpoint sealed: LAUNCH hands off to MONITOR.
     monkeypatch.setattr(mod, "_pid_alive", lambda pid: pid == 4242)
     mod._write(ctx.QWEN_LEASE, {"pid": 4242, "owner": "com.hawking.qwen_transfer"})

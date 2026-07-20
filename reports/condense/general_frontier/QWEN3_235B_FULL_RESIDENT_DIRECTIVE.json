@@ -1,0 +1,41 @@
+{
+  "schema": "hawking.qwen3_235b.full_resident_directive.v1",
+  "generated_at_utc": "2026-07-20T13:25:00Z",
+  "status": "WAITING_FOR_120B_RELEASE",
+  "qwen_checkpoint_preserved": true,
+  "active_processes": 0,
+  "active_launch_jobs": 0,
+  "source": {
+    "repo": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+    "revision": "ac9c66cc9b46af7306746a9250f23d47083d689e",
+    "payload_bytes": 470187269120,
+    "checkpoint_files": 118
+  },
+  "policy": {
+    "mode": "FULL_RESIDENT_ONLY",
+    "one_complete_local_copy": true,
+    "start_only_after_120b_release": true,
+    "minimum_projected_and_live_free_bytes": 100000000000,
+    "verify_before_compute": [
+      "all 118 indexed files present",
+      "every safetensors header parses",
+      "per-file header tensor inventory exactly matches the pinned index",
+      "summed payload bytes equal index metadata.total_size",
+      "config and tokenizer retained"
+    ],
+    "disabled_paths": [
+      "HTTP range-backed forward",
+      "priority shard phase",
+      "shard-serial full-model sweep",
+      "Qwen admission while any 120B source shard remains"
+    ]
+  },
+  "disk_projection": {
+    "free_before_120b_release_gib": 489,
+    "gpt_oss_120b_source_release_gib_approx": 61,
+    "qwen_source_gib_approx": 438,
+    "projected_free_after_release_and_qwen_gib_approx": 112
+  },
+  "implementation": "tools/condense/overnight_supervisor.py",
+  "claim": "directive checkpoint only; full Qwen download has not started"
+}

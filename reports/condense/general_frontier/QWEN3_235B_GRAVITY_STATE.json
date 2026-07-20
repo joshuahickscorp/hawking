@@ -1,12 +1,36 @@
 {
-  "diagnosis_receipt": "reports/condense/general_frontier/QWEN3_235B_Q2_T5_RECEIPT.json",
-  "diagnosis_sha256": "63b4b393b4ed2d82ee1ef50758037c128f1ef663eaa1d2ba350dc2f821ab8f2f",
-  "dominant_failure_organ": "gate",
-  "final": false,
-  "next_frontier_move": "Qwen refutes the direct 120B robustness ordering on this activation: move budget from down islands into activation-aware gate/up PQ, holding <=0.77 BPW. A billed output-gain calibration is admitted because it removes material error.",
-  "q2_receipt": "/private/tmp/hawking-status.S3Ry7K/reports/condense/general_frontier/QWEN3_235B_Q2_RECEIPT.json",
   "schema": "hawking.qwen3_235b.gravity_state.v1",
-  "status": "Q2_DIAGNOSED_NEXT_CANDIDATE_READY",
-  "target_whole_artifact_bpw_ceiling": 0.77,
-  "updated_at": "2026-07-20T13:08:12Z"
+  "status": "CHECKPOINTED_FULL_RESIDENT_PENDING_120B_RELEASE",
+  "updated_at": "2026-07-20T13:25:00Z",
+  "final": false,
+  "activity": {
+    "qwen_download_running": false,
+    "qwen_compute_running": false,
+    "hawking_launch_jobs_loaded": false,
+    "range_or_shard_serial_mode_enabled": false
+  },
+  "checkpoint": {
+    "q2_receipt": "reports/condense/general_frontier/QWEN3_235B_Q2_RECEIPT.json",
+    "q2_sha256": "9a466fb74e33e06ae02c279dee745d02f3ecf423742d1828b3a4a66311781a22",
+    "t5_receipt": "reports/condense/general_frontier/QWEN3_235B_Q2_T5_RECEIPT.json",
+    "t5_sha256": "63b4b393b4ed2d82ee1ef50758037c128f1ef663eaa1d2ba350dc2f821ab8f2f",
+    "dominant_failure_organ": "gate",
+    "target_whole_artifact_bpw_ceiling": 0.77
+  },
+  "directive": {
+    "source_mode": "FULL_RESIDENT_ONLY",
+    "repo": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+    "revision": "ac9c66cc9b46af7306746a9250f23d47083d689e",
+    "destination": "models/qwen3-235b-a22b",
+    "checkpoint_files_required": 118,
+    "source_payload_bytes": 470187269120,
+    "minimum_post_download_free_bytes": 100000000000,
+    "forbidden": [
+      "HTTP range execution",
+      "priority-only source transfer",
+      "shard-serial compute before the full checkpoint is resident"
+    ]
+  },
+  "blocking_gate": "finish, verify, harvest, and safely release the seven GPT-OSS-120B source shards",
+  "next": "after the 120B 15/15 release gate passes, download and header-verify the complete immutable Qwen checkpoint before resuming Gravity"
 }
