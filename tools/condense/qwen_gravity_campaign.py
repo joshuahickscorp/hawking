@@ -312,8 +312,19 @@ LADDER: dict[str, dict[str, Any]] = {
 # 4-5 bisect it. If R2 passes, the anchors are moot and the remaining budget goes to the moonshots.
 # A truncated run therefore still yields a cliff location rather than only "everything collapsed".
 LADDER_ORDER = ["R0_parent", "S64_structural", "S64_doctor", "D1_route_only",
-                "D2_recon_only", "S32_recon_first", "S2A_adaptive_k", "S64_gamma", "A1_1p0", "R2_subhalf_best", "R1_c1_corrected",
-                "A2_0p85", "R4_highdim_vq", "R5_rownorm_strat", "R3_routing_aware"]
+                "D2_recon_only", "S32_recon_first", "S2A_adaptive_k", "S64_gamma"]
+
+# RETIRED, not skipped. A1_1p0, R2_subhalf_best, R1_c1_corrected, A2_0p85, R4_highdim_vq,
+# R5_rownorm_strat and R3_routing_aware are all the RAW-WEIGHT PQ/VQ family that F1 already sealed
+# as a capability failure (argmax agreement exactly 0.0 on all six domains, at BOTH 1.0075 and
+# 0.4930 complete BPW). Running them would re-litigate a closed family for roughly seven hours of
+# heavy compute and zero methodology. Two cannot legally run at all: A1_1p0 is 1.0075 complete BPW,
+# which the one-bit ceiling forbids, and R5_rownorm_strat is premised on a "94 pct of gate/up rows
+# collapse onto ONE codeword" pathology this campaign MEASURED at 0.0267 (max 0.047). They stay
+# DEFINED in LADDER so their specs remain auditable and a future parent can re-admit one under the
+# no-repetition law; they are simply not queued.
+RETIRED_RUNGS = ("A1_1p0", "R2_subhalf_best", "R1_c1_corrected", "A2_0p85",
+                 "R4_highdim_vq", "R5_rownorm_strat", "R3_routing_aware")
 
 ORGANS = ("gate", "up", "down")
 _GROUP = {"gate": "gate_up", "up": "gate_up", "down": "down"}
