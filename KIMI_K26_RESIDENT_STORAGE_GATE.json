@@ -1,0 +1,39 @@
+{
+  "schema": "hawking.kimi_k26.resident_storage_gate.v1",
+  "sealed_at": "2026-07-21T04:07:16Z",
+  "volume": "/System/Volumes/Data",
+  "free_bytes_at_gate": 645389557760,
+  "official_source_bytes": 595204999341,
+  "source_bytes_already_present": 27011133,
+  "remaining_source_bytes": 595177988208,
+  "largest_shard_bytes": 9809050936,
+  "minimum_reserve_bytes": 34359738368,
+  "target_reserve_bytes": 51539607552,
+  "projected_post_download_free_bytes": 50211569552,
+  "minimum_reserve_green": true,
+  "target_48_gib_gap_bytes": 1328038000,
+  "target_48_gib_disposition": "Preserved rather than cleaning an active uv cache or unrelated project build tree; the hard gate retains 14,851,831,184 bytes above its minimum reserve.",
+  "cleanup_receipts": [
+    {
+      "path": "/Users/scammermike/Downloads/hawking-hide-build/target",
+      "resolved_path": "/Users/scammermike/Downloads/hawking-hide-build/target",
+      "device": 16777233,
+      "inode": 15331787,
+      "allocated_bytes_released": 32450625536,
+      "rebuildable": true,
+      "processes_stopped_cleanly": [86841, 89339, 89378],
+      "open_files_before_delete": 0,
+      "source_tree_preserved": true,
+      "rebuild_command": "cargo build --workspace"
+    }
+  ],
+  "one_copy_destination": "/Users/scammermike/.cache/huggingface/hub/models--moonshotai--Kimi-K2.6",
+  "disk_floor_guard_enabled": true,
+  "mop": {
+    "resolved": "/Users/scammermike/Downloads/mop",
+    "device": 16777233,
+    "inode": 1233332,
+    "untouched": true
+  },
+  "state": "GREEN_RESIDENT_ADMISSION"
+}

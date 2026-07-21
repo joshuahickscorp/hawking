@@ -1,0 +1,64 @@
+{
+  "schema": "hawking.kimi_k26.source_admission.v1",
+  "admitted_at": "2026-07-21T04:07:15Z",
+  "repo": "moonshotai/Kimi-K2.6",
+  "revision": "7eb5002f6aadc958aed6a9177b7ed26bb94011bb",
+  "identity_uses_main": false,
+  "official_manifest": {
+    "file_count": 96,
+    "complete_logical_source_bytes": 595204999341,
+    "weight_bytes": 595177988208,
+    "weight_shards": 64,
+    "largest_shard_bytes": 9809050936,
+    "index_tensor_entries": 208550,
+    "index_weight_total_size": 595148192736,
+    "runtime_manifest_path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/KIMI_K26_OFFICIAL_MANIFEST.json",
+    "runtime_manifest_seal_sha256": "0251988d17e45a4942e152ad27d59feb2bd00873256d967487eb08d9b248334a"
+  },
+  "license": {
+    "name": "Modified MIT License",
+    "copyright": "Copyright (c) 2026 Moonshot AI",
+    "sha256": "1d4ab2d8404287de44429024a78b58d3aabc4df9d0c490e73fec9ff1fd842529",
+    "commercial_display_condition_present": true
+  },
+  "sealed_assets": {
+    "config_sha256": "85825ca6e18cbe539eb83ee09eedfb3f4222265929f06e9f535a6d9364f55899",
+    "tensor_index_sha256": "00a982d005d6e39b25cfcb379a7e6d57f393fc0346e70892ea4271c259c0d1e3",
+    "tokenizer": "tiktoken.model + tokenization_kimi.py + tokenizer_config.json",
+    "chat_template": "chat_template.jinja",
+    "generation_config": "generation_config.json",
+    "custom_code": [
+      "configuration_deepseek.py",
+      "configuration_kimi_k25.py",
+      "modeling_deepseek.py",
+      "modeling_kimi_k25.py",
+      "kimi_k25_processor.py",
+      "kimi_k25_vision_processing.py",
+      "media_utils.py",
+      "tool_declaration_ts.py"
+    ]
+  },
+  "architecture_verified_from_official_config": {
+    "outer_model_type": "kimi_k25",
+    "text_model_type": "kimi_k2",
+    "text_architecture": "DeepseekV3ForCausalLM",
+    "hidden_size": 7168,
+    "layers": 61,
+    "routed_experts": 384,
+    "shared_experts": 1,
+    "active_routed_experts_per_token": 8,
+    "context_tokens": 262144,
+    "mla": {
+      "q_lora_rank": 1536,
+      "kv_lora_rank": 512,
+      "qk_nope_head_dim": 128,
+      "qk_rope_head_dim": 64,
+      "v_head_dim": 128
+    },
+    "native_source": "compressed-tensors pack-quantized symmetric INT4, group size 32, routed experts only",
+    "modality": "image-text with separable DeepSeek-V3-compatible text core",
+    "vision_layers": 27
+  },
+  "one_copy_destination": "/Users/scammermike/.cache/huggingface/hub/models--moonshotai--Kimi-K2.6",
+  "status": "GREEN"
+}

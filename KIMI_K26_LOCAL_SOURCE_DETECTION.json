@@ -1,0 +1,36 @@
+{
+  "schema": "hawking.kimi_k26.local_source_detection.v1",
+  "detected_at": "2026-07-21T03:53:55Z",
+  "repo": "moonshotai/Kimi-K2.6",
+  "classification": "PARTIAL_RESUMABLE_LOCAL",
+  "authoritative_candidate": {
+    "root": "/Users/scammermike/.cache/huggingface/hub/models--moonshotai--Kimi-K2.6",
+    "snapshot": "/Users/scammermike/.cache/huggingface/hub/models--moonshotai--Kimi-K2.6/snapshots/7eb5002f6aadc958aed6a9177b7ed26bb94011bb",
+    "ref_main": "7eb5002f6aadc958aed6a9177b7ed26bb94011bb",
+    "present_files_at_detection": [
+      {
+        "path": "config.json",
+        "bytes": 5416,
+        "sha256": "85825ca6e18cbe539eb83ee09eedfb3f4222265929f06e9f535a6d9364f55899"
+      }
+    ],
+    "official_weight_shards_present": 0,
+    "official_weight_shards_required": 64,
+    "model_index_present": false,
+    "tokenizer_assets_present": false,
+    "chat_template_present": false,
+    "custom_code_present": false,
+    "vision_processor_assets_present": false
+  },
+  "search_scope": {
+    "home_and_known_model_cache_roots_searched": true,
+    "mop_pruned_from_search": true,
+    "spotlight_cross_check": true,
+    "state_files_not_treated_as_source": true
+  },
+  "other_complete_or_partial_kimi_k26_sources": [],
+  "duplicate_complete_sources": 0,
+  "action": "RESUME_SAME_CONTENT_ADDRESSED_CACHE_DESTINATION",
+  "local_dir_copy_forbidden": true,
+  "status": "GREEN"
+}

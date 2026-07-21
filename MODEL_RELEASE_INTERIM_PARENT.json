@@ -1,0 +1,26 @@
+{
+  "schema": "hawking.kimi_k26.interim_parent_release.v1",
+  "sealed_at": "2026-07-21T03:55:00Z",
+  "family": "deepseek-v4-flash-dspark",
+  "repo": "deepseek-ai/DeepSeek-V4-Flash-DSpark",
+  "revision": "62af8fffb2f7030cac4de2f0169f5b8d1101b646",
+  "license": "MIT",
+  "source_root": "/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark",
+  "release_state_on_kimi_handoff": "RAW_SOURCE_ALREADY_RELEASED_BY_PRECEDING_STORAGE_CAMPAIGN",
+  "raw_shards_before_release": 48,
+  "raw_source_bytes_released": 166886535336,
+  "raw_shards_present_at_kimi_precheck": 0,
+  "retained_bytes": 24228571,
+  "retained": [
+    "official repository, revision, license, README and .gitattributes",
+    "config, tokenizer, generation config and tensor index",
+    "official inference/configuration code",
+    "corrected logical-weight and source-format ledgers",
+    "one-copy, deletion, dependency and byte-reconciliation receipts",
+    "all Hawking code and scientific notes"
+  ],
+  "active_forward_or_controller_dependencies_at_kimi_precheck": 0,
+  "rehydration_command_recorded_in": "reports/condense/storage_stripdown/MODEL_RELEASE_deepseek-v4-flash-dspark.json",
+  "k2_6_selection_supersedes_interim_parent": true,
+  "status": "GREEN"
+}

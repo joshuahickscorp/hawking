@@ -1,0 +1,37 @@
+{
+  "schema": "hawking.kimi_k26.rollback.v1",
+  "sealed_at": "2026-07-21T04:07:15Z",
+  "controller": {
+    "label": "com.hawking.kimi-k26-doctor-prime",
+    "plist": "/Users/scammermike/Library/LaunchAgents/com.hawking.kimi-k26-doctor-prime.plist",
+    "runtime": "/Users/scammermike/Library/Application Support/Hawking/KimiK26",
+    "stop_preserves_sealed_work": true,
+    "stop_command": "python3 tools/kimi_k26_campaign.py stop",
+    "unload_command": "launchctl bootout gui/$(id -u) /Users/scammermike/Library/LaunchAgents/com.hawking.kimi-k26-doctor-prime.plist"
+  },
+  "source": {
+    "authoritative_root": "/Users/scammermike/.cache/huggingface/hub/models--moonshotai--Kimi-K2.6",
+    "revision": "7eb5002f6aadc958aed6a9177b7ed26bb94011bb",
+    "layout": "one content-addressed Hugging Face cache copy",
+    "partial_download_is_resumable": true,
+    "automatic_source_deletion": false
+  },
+  "interim_parent": {
+    "rehydration_receipt": "reports/condense/storage_stripdown/MODEL_RELEASE_deepseek-v4-flash-dspark.json",
+    "metadata_retained": true,
+    "automatic_rehydration": false
+  },
+  "hide_build": {
+    "source_tree": "/Users/scammermike/Downloads/hawking-hide-build",
+    "source_preserved": true,
+    "removed_tree": "/Users/scammermike/Downloads/hawking-hide-build/target",
+    "recoverable_by_rebuild": true,
+    "rebuild_command": "cargo build --workspace"
+  },
+  "mop": {
+    "path": "/Users/scammermike/Downloads/mop",
+    "touched": false,
+    "rollback_required": false
+  },
+  "status": "SEALED"
+}

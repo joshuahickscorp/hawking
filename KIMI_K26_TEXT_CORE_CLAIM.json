@@ -1,0 +1,27 @@
+{
+  "schema": "hawking.kimi_k26.text_core_claim.v1",
+  "sealed_at": "2026-07-21T04:07:15Z",
+  "repo": "moonshotai/Kimi-K2.6",
+  "revision": "7eb5002f6aadc958aed6a9177b7ed26bb94011bb",
+  "first_capability_claim": "TEXT_CORE_ONLY",
+  "included": [
+    "official tokenizer and chat protocol",
+    "embeddings",
+    "MLA and attention",
+    "routers",
+    "shared expert",
+    "routed experts and top-8 combine",
+    "normalization and residual stream",
+    "LM head",
+    "thinking and tool formatting where supported"
+  ],
+  "vision": {
+    "source_present_after_download": true,
+    "adapter_mapped": true,
+    "included_in_first_capability_claim": false,
+    "multimodal_preservation_claimed": false
+  },
+  "promotion_requires_real_logits": true,
+  "synthetic_adapter_evidence_is_not_parent_parity": true,
+  "status": "SEALED"
+}
