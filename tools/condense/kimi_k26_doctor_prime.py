@@ -276,7 +276,7 @@ def doctor_auction(ledger_path: Path, causal_path: Path, output: Path) -> dict[s
         "all_kimi_logical_weights": int(ledger["all_logical_original_weights"]),
         "kimi_text_core_logical_weights": int(ledger["text_core_logical_weights"]),
         "compressible_logical_weights": int(ledger["compressible_logical_weights"]),
-        "active_logical_weights": int(ledger["text_core_logical_weights"]),
+        "active_logical_weights": int(ledger["active_text_core_logical_weights_per_token"]),
     }
     rows = []
     for candidate_id, target, base_share, doctor_share, envelope in CANDIDATES:

@@ -36,6 +36,7 @@ def test_exact_byte_auction_never_crosses_candidate_rate(tmp_path: Path) -> None
         "all_logical_original_weights": denominator,
         "text_core_logical_weights": 990_000_000,
         "compressible_logical_weights": 900_000_000,
+        "active_text_core_logical_weights_per_token": 120_000_000,
         "seal_sha256": "ledger",
     })
     write(causal, {"status": "PASS", "seal_sha256": "causal"})

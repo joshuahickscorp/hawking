@@ -37,6 +37,8 @@ import tiktoken
 REPO = "moonshotai/Kimi-K2.6"
 REVISION = "7eb5002f6aadc958aed6a9177b7ed26bb94011bb"
 PREFIX = "language_model.model"
+MLX_CACHE_LIMIT_BYTES = 4 * 1024**3
+MLX_MEMORY_LIMIT_BYTES = 48 * 1024**3
 DTYPES = {
     "BF16": ml_dtypes.bfloat16, "F16": np.float16, "F32": np.float32,
     "I32": np.int32, "I64": np.int64, "U8": np.uint8, "I8": np.int8,
@@ -230,7 +232,8 @@ def yarn_correction_dim(rotations: float, dimension: int, base: float,
 
 def yarn_cos_sin(sequence: int, dimension: int, *, base: float, factor: float,
                  original_context: int, beta_fast: float, beta_slow: float,
-                 mscale: float, mscale_all_dim: float) -> tuple[mx.array, mx.array]:
+                 mscale: float, mscale_all_dim: float,
+                 positions: np.ndarray | None = None) -> tuple[mx.array, mx.array]:
     exponent = np.arange(0, dimension, 2, dtype=np.float32) / dimension
     extra = 1.0 / np.power(base, exponent)
     interpolated = 1.0 / (factor * np.power(base, exponent))
@@ -242,7 +245,11 @@ def yarn_cos_sin(sequence: int, dimension: int, *, base: float, factor: float,
     ramp = np.clip((np.arange(dimension // 2, dtype=np.float32) - low) / (high - low), 0, 1)
     inverse_mask = 1.0 - ramp
     inverse_frequency = interpolated * (1 - inverse_mask) + extra * inverse_mask
-    frequencies = np.outer(np.arange(sequence, dtype=np.float32), inverse_frequency)
+    position_values = (np.arange(sequence, dtype=np.float32) if positions is None else
+                       np.asarray(positions, dtype=np.float32))
+    if position_values.shape != (sequence,):
+        raise ReferenceError("RoPE position vector does not match sequence length")
+    frequencies = np.outer(position_values, inverse_frequency)
     embedding = np.concatenate((frequencies, frequencies), axis=-1)
     amplitude = yarn_get_mscale(factor, mscale) / yarn_get_mscale(factor, mscale_all_dim)
     return mx.array(np.cos(embedding) * amplitude), mx.array(np.sin(embedding) * amplitude)
@@ -267,7 +274,8 @@ def official_rope_layout(x: mx.array) -> mx.array:
 
 
 def attention(x: mx.array, shard: TensorShard, layer: int,
-              config: dict[str, Any]) -> tuple[mx.array, dict[str, Any]]:
+              config: dict[str, Any],
+              segment_lengths: list[int] | None = None) -> tuple[mx.array, dict[str, Any]]:
     base = f"{PREFIX}.layers.{layer}.self_attn"
     heads = int(config["num_attention_heads"])
     q_nope_dim = int(config["qk_nope_head_dim"])
@@ -295,12 +303,18 @@ def attention(x: mx.array, shard: TensorShard, layer: int,
     k_pe = mx.transpose(mx.reshape(k_pe, (sequence, 1, rope_dim)), (1, 0, 2))
 
     rope = config["rope_scaling"]
+    segment_lengths = segment_lengths or [sequence]
+    if sum(segment_lengths) != sequence:
+        raise ReferenceError("attention segment lengths do not cover the token sequence")
+    positions = np.concatenate([np.arange(length, dtype=np.float32)
+                                for length in segment_lengths])
     cosine, sine = yarn_cos_sin(
         sequence, rope_dim, base=float(config["rope_theta"]), factor=float(rope["factor"]),
         original_context=int(rope["original_max_position_embeddings"]),
         beta_fast=float(rope["beta_fast"]), beta_slow=float(rope["beta_slow"]),
         mscale=float(rope.get("mscale", 1.0)),
         mscale_all_dim=float(rope.get("mscale_all_dim", 0.0)),
+        positions=positions,
     )
     cosine = cosine.astype(q_pe.dtype)
     sine = sine.astype(q_pe.dtype)
@@ -318,7 +332,13 @@ def attention(x: mx.array, shard: TensorShard, layer: int,
     # is both more faithful and cheaper than depending on a fused-kernel dtype policy.
     scores = mx.matmul(queries.astype(mx.float32),
                        mx.swapaxes(keys.astype(mx.float32), -1, -2)) * scale
-    causal = np.triu(np.full((sequence, sequence), -np.inf, dtype=np.float32), 1)
+    causal = np.full((sequence, sequence), -np.inf, dtype=np.float32)
+    offset = 0
+    for length in segment_lengths:
+        causal[offset:offset + length, offset:offset + length] = np.triu(
+            np.full((length, length), -np.inf, dtype=np.float32), 1
+        )
+        offset += length
     probabilities = mx.softmax(scores + mx.array(causal)[None, :, :], axis=-1)
     attended = mx.matmul(probabilities.astype(values.dtype), values)
     attended = mx.reshape(mx.transpose(attended, (1, 0, 2)),
@@ -327,7 +347,7 @@ def attention(x: mx.array, shard: TensorShard, layer: int,
     mx.eval(output)
     return output, {"heads": heads, "sequence": sequence, "query_dim": q_nope_dim + rope_dim,
                     "value_dim": value_dim, "q_rank": q_rank, "kv_rank": kv_rank,
-                    "softmax_scale": scale}
+                    "softmax_scale": scale, "segment_lengths": segment_lengths}
 
 
 def routed_moe(x: mx.array, shard: TensorShard, layer: int,
@@ -382,11 +402,12 @@ def routed_moe(x: mx.array, shard: TensorShard, layer: int,
 
 
 def layer_forward(hidden: mx.array, shard: TensorShard, layer: int,
-                  config: dict[str, Any]) -> tuple[mx.array, dict[str, Any]]:
+                  config: dict[str, Any],
+                  segment_lengths: list[int] | None = None) -> tuple[mx.array, dict[str, Any]]:
     layer_base = f"{PREFIX}.layers.{layer}"
     normalized = rms_norm(hidden, shard.mlx(layer_base + ".input_layernorm.weight"),
                           float(config["rms_norm_eps"]))
-    attn, attn_info = attention(normalized, shard, layer, config)
+    attn, attn_info = attention(normalized, shard, layer, config, segment_lengths)
     hidden = (hidden + attn).astype(mx.bfloat16)
     normalized = rms_norm(hidden, shard.mlx(layer_base + ".post_attention_layernorm.weight"),
                           float(config["rms_norm_eps"]))
@@ -407,6 +428,13 @@ def layer_forward(hidden: mx.array, shard: TensorShard, layer: int,
         raise ReferenceError(
             f"silent tensor omission in layer {layer}: {unaccounted[:4]}"
         )
+    hidden_f32 = np.asarray(hidden.astype(mx.float32))
+    segment_hashes = []
+    offset = 0
+    for length in segment_lengths or [hidden.shape[0]]:
+        segment_hashes.append(hashlib.sha256(
+            hidden_f32[offset:offset + length].tobytes()).hexdigest())
+        offset += length
     return hidden, {"attention": attn_info, "moe": moe_info,
                     "tensor_audit": {
                         "source_tensors": len(shard.names()),
@@ -415,9 +443,9 @@ def layer_forward(hidden: mx.array, shard: TensorShard, layer: int,
                             len(conditionally_inactive),
                         "unaccounted_tensors": [],
                     },
-                    "finite": bool(np.isfinite(np.asarray(hidden.astype(mx.float32))).all()),
-                    "hidden_sha256": hashlib.sha256(
-                        np.asarray(hidden.astype(mx.float32)).tobytes()).hexdigest()}
+                    "finite": bool(np.isfinite(hidden_f32).all()),
+                    "hidden_sha256": hashlib.sha256(hidden_f32.tobytes()).hexdigest(),
+                    "segment_hidden_sha256": segment_hashes}
 
 
 def shard_path(root: Path, number: int) -> Path:
@@ -447,45 +475,64 @@ def deterministic_signature(result: dict[str, Any]) -> str:
     ).encode()).hexdigest()
 
 
-def top_logits(hidden: mx.array, tail: TensorShard, *, chunk: int = 4096,
-               top_k: int = 20) -> tuple[list[int], list[float], dict[str, float]]:
+def top_logits_batch(hidden: mx.array, tail: TensorShard, positions: list[int], *,
+                     chunk: int = 4096, top_k: int = 20
+                     ) -> list[tuple[list[int], list[float], dict[str, float]]]:
     weight = tail.numpy("language_model.lm_head.weight")
-    last = hidden[-1:].astype(mx.bfloat16)
+    last = mx.take(hidden, mx.array(positions, dtype=mx.int32), axis=0).astype(mx.bfloat16)
     pieces = []
     for start in range(0, weight.shape[0], chunk):
         matrix = mx.array(np.asarray(weight[start:start + chunk]))
         logits = linear(last, matrix).astype(mx.float32)
         mx.eval(logits)
-        pieces.append(np.asarray(logits)[0])
-    all_logits = np.concatenate(pieces)
+        pieces.append(np.asarray(logits))
+    all_logits = np.concatenate(pieces, axis=-1)
     if not np.isfinite(all_logits).all():
         raise ReferenceError("non-finite final logits")
-    ids = np.argpartition(all_logits, -top_k)[-top_k:]
-    ids = ids[np.argsort(all_logits[ids])[::-1]]
-    shifted = all_logits - np.max(all_logits)
-    probability = np.exp(shifted)
-    probability /= probability.sum()
-    entropy = float(-np.sum(probability * np.log(probability + 1e-30)))
-    return ids.tolist(), all_logits[ids].astype(float).tolist(), {
-        "min": float(all_logits.min()), "max": float(all_logits.max()),
-        "mean": float(all_logits.mean()), "std": float(all_logits.std()), "entropy": entropy,
-    }
+    results = []
+    for row in all_logits:
+        ids = np.argpartition(row, -top_k)[-top_k:]
+        ids = ids[np.argsort(row[ids])[::-1]]
+        shifted = row - np.max(row)
+        probability = np.exp(shifted)
+        probability /= probability.sum()
+        entropy = float(-np.sum(probability * np.log(probability + 1e-30)))
+        results.append((ids.tolist(), row[ids].astype(float).tolist(), {
+            "min": float(row.min()), "max": float(row.max()),
+            "mean": float(row.mean()), "std": float(row.std()), "entropy": entropy,
+        }))
+    return results
 
 
-def forward_prompt(root: Path, text: str, *, progress: Callable[[int, dict[str, Any]], None] | None = None,
-                   chat: bool = False, thinking: bool = False,
-                   checkpoint_dir: Path | None = None) -> dict[str, Any]:
+def top_logits(hidden: mx.array, tail: TensorShard, *, chunk: int = 4096,
+               top_k: int = 20) -> tuple[list[int], list[float], dict[str, float]]:
+    return top_logits_batch(hidden, tail, [hidden.shape[0] - 1],
+                            chunk=chunk, top_k=top_k)[0]
+
+
+def forward_batch(root: Path, requests: list[dict[str, Any]], *,
+                  progress: Callable[[int, dict[str, Any]], None] | None = None,
+                  checkpoint_dir: Path | None = None) -> list[dict[str, Any]]:
     started = time.time()
     config = read_json(root / "config.json")["text_config"]
     tokenizer = KimiTokenizer(root)
-    rendered = tokenizer.user_prompt(text, thinking=thinking) if chat else text
-    token_ids = tokenizer.encode(rendered)
-    if not token_ids or len(token_ids) > 64:
-        raise ReferenceError(f"probe token length outside bounded 1..64 envelope: {len(token_ids)}")
+    prepared = []
+    for request in requests:
+        text = str(request["text"])
+        chat, thinking = bool(request.get("chat")), bool(request.get("thinking"))
+        rendered = tokenizer.user_prompt(text, thinking=thinking) if chat else text
+        ids = tokenizer.encode(rendered)
+        if not ids or len(ids) > 64:
+            raise ReferenceError(f"probe token length outside bounded 1..64 envelope: {len(ids)}")
+        prepared.append({**request, "rendered": rendered, "token_ids": ids,
+                         "chat": chat, "thinking": thinking})
+    segment_lengths = [len(item["token_ids"]) for item in prepared]
+    token_ids = [token for item in prepared for token in item["token_ids"]]
     checkpoint = read_json(checkpoint_dir / "checkpoint.json") if checkpoint_dir else {}
     start_layer = 0
     layers: list[dict[str, Any]] = []
     if (checkpoint.get("revision") == REVISION and checkpoint.get("token_ids") == token_ids and
+            checkpoint.get("segment_lengths") == segment_lengths and
             isinstance(checkpoint.get("completed_layer"), int) and checkpoint_dir and
             len(checkpoint.get("layers", [])) == int(checkpoint["completed_layer"]) + 1):
         hidden_path = checkpoint_dir / "hidden.npy"
@@ -510,7 +557,7 @@ def forward_prompt(root: Path, text: str, *, progress: Callable[[int, dict[str, 
         expected_prefix = f"{PREFIX}.layers.{layer}."
         if not any(name.startswith(expected_prefix) for name in shard.names()):
             raise ReferenceError(f"layer/shard order mismatch at layer {layer}")
-        hidden, info = layer_forward(hidden, shard, layer, config)
+        hidden, info = layer_forward(hidden, shard, layer, config, segment_lengths)
         info.update({"layer": layer, "shard": shard.path.name,
                      "seconds": time.time() - per_layer_started})
         layers.append(info)
@@ -518,7 +565,8 @@ def forward_prompt(root: Path, text: str, *, progress: Callable[[int, dict[str, 
             hidden_array = np.asarray(hidden.astype(mx.float32))
             hidden_hash = atomic_npy(checkpoint_dir / "hidden.npy", hidden_array)
             atomic_json(checkpoint_dir / "checkpoint.json", {
-                "revision": REVISION, "token_ids": token_ids, "completed_layer": layer,
+                "revision": REVISION, "token_ids": token_ids,
+                "segment_lengths": segment_lengths, "completed_layer": layer,
                 "hidden_npy_sha256": hidden_hash, "layers": layers, "updated_at": now(),
             })
         if progress:
@@ -528,7 +576,8 @@ def forward_prompt(root: Path, text: str, *, progress: Callable[[int, dict[str, 
         mx.clear_cache()
     tail = TensorShard(shard_path(root, 62))
     hidden = rms_norm(hidden, tail.mlx(f"{PREFIX}.norm.weight"), float(config["rms_norm_eps"]))
-    ids, values, stats = top_logits(hidden, tail)
+    final_positions = (np.cumsum(segment_lengths) - 1).astype(int).tolist()
+    logits = top_logits_batch(hidden, tail, final_positions)
     expected_tail = {
         f"{PREFIX}.embed_tokens.weight", f"{PREFIX}.norm.weight",
         "language_model.lm_head.weight",
@@ -537,26 +586,64 @@ def forward_prompt(root: Path, text: str, *, progress: Callable[[int, dict[str, 
         raise ReferenceError(
             f"text boundary shard has unaccounted tensors: {sorted(tail.names() ^ expected_tail)}"
         )
-    decoded = [tokenizer.decode([token]) for token in ids]
-    result = {
-        "schema": "hawking.kimi_k26.reference_forward_probe.v1", "status": "PASS",
-        "source": source_identity(root), "input_text": text, "rendered_prompt": rendered,
-        "chat_protocol": chat, "thinking": thinking, "token_ids": token_ids,
-        "token_count": len(token_ids), "finite_logits": True,
-        "top_token_ids": ids, "top_token_text": decoded, "top_logits": values,
-        "logit_stats": stats, "layers": layers, "runtime_seconds": time.time() - started,
-        "runtime": "MLX_METAL_NATIVE_INT4_SELECTED_EXPERTS",
-        "complete_model_dequantized": False, "max_source_shards_mapped_at_once": 1,
-        "tensor_omission_audit": {
-            "layer_unaccounted_tensors": 0, "text_boundary_unaccounted_tensors": 0,
-            "unselected_routed_expert_tensors_are_conditionally_inactive": True,
-        },
-        "vision_executed": False, "official_runtime_parity_claimed": False,
-    }
-    result["deterministic_signature_sha256"] = deterministic_signature(result)
-    result["result_sha256"] = hashlib.sha256(json.dumps(
-        result, sort_keys=True, separators=(",", ":"), allow_nan=False).encode()).hexdigest()
-    return result
+    identity = source_identity(root)
+    results = []
+    offset = 0
+    for segment_index, (item, logit_row) in enumerate(zip(prepared, logits, strict=True)):
+        length = segment_lengths[segment_index]
+        segment_layers = []
+        for shared_layer in layers:
+            layer = json.loads(json.dumps(shared_layer))
+            layer["hidden_sha256"] = layer.pop("segment_hidden_sha256")[segment_index]
+            layer["attention"]["batch_total_sequence"] = layer["attention"]["sequence"]
+            layer["attention"]["sequence"] = length
+            layer["attention"]["segment_lengths"] = [length]
+            route_indices = layer["moe"].get("route_indices", [])[offset:offset + length]
+            route_sums = layer["moe"].get("route_weight_sums", [])[offset:offset + length]
+            if route_indices:
+                layer["moe"]["route_indices"] = route_indices
+                layer["moe"]["route_weight_sums"] = route_sums
+                layer["moe"]["used_experts"] = sorted(
+                    {int(expert) for token in route_indices for expert in token}
+                )
+                layer["moe"]["used_expert_count"] = len(layer["moe"]["used_experts"])
+            segment_layers.append(layer)
+        ids, values, stats = logit_row
+        result = {
+            "schema": "hawking.kimi_k26.reference_forward_probe.v1", "status": "PASS",
+            "source": identity, "input_text": item["text"],
+            "rendered_prompt": item["rendered"], "chat_protocol": item["chat"],
+            "thinking": item["thinking"], "token_ids": item["token_ids"],
+            "token_count": length, "finite_logits": True, "top_token_ids": ids,
+            "top_token_text": [tokenizer.decode([token]) for token in ids],
+            "top_logits": values, "logit_stats": stats, "layers": segment_layers,
+            "runtime_seconds": time.time() - started,
+            "runtime": "MLX_METAL_NATIVE_INT4_SELECTED_EXPERTS_BATCHED_BLOCK_DIAGONAL",
+            "execution_layout": "BATCHED_BLOCK_DIAGONAL",
+            "batch_probe_count": len(prepared), "batch_total_tokens": len(token_ids),
+            "source_layer_reads_for_batch": 61,
+            "mlx_cache_limit_bytes": MLX_CACHE_LIMIT_BYTES,
+            "mlx_memory_limit_bytes": MLX_MEMORY_LIMIT_BYTES,
+            "complete_model_dequantized": False, "max_source_shards_mapped_at_once": 1,
+            "tensor_omission_audit": {
+                "layer_unaccounted_tensors": 0, "text_boundary_unaccounted_tensors": 0,
+                "unselected_routed_expert_tensors_are_conditionally_inactive": True,
+            },
+            "vision_executed": False, "official_runtime_parity_claimed": False,
+        }
+        result["deterministic_signature_sha256"] = deterministic_signature(result)
+        result["result_sha256"] = hashlib.sha256(json.dumps(
+            result, sort_keys=True, separators=(",", ":"), allow_nan=False).encode()).hexdigest()
+        results.append(result)
+        offset += length
+    return results
+
+
+def forward_prompt(root: Path, text: str, *, progress: Callable[[int, dict[str, Any]], None] | None = None,
+                   chat: bool = False, thinking: bool = False,
+                   checkpoint_dir: Path | None = None) -> dict[str, Any]:
+    return forward_batch(root, [{"text": text, "chat": chat, "thinking": thinking}],
+                         progress=progress, checkpoint_dir=checkpoint_dir)[0]
 
 
 PROBES = [
@@ -576,49 +663,62 @@ PROBES = [
 
 def run_suite(root: Path, output: Path) -> dict[str, Any]:
     output.mkdir(parents=True, exist_ok=True)
-    results = []
+    by_id: dict[str, dict[str, Any]] = {}
+    pending = []
     for probe in PROBES:
         path = output / f"probe_{probe['id']}.json"
         cached = read_json(path)
         if (cached.get("status") == "PASS" and
                 cached.get("source", {}).get("revision") == REVISION and
-                cached.get("deterministic_signature_sha256")):
-            results.append(cached)
-            continue
+                cached.get("deterministic_signature_sha256") and
+                cached.get("execution_layout") == "BATCHED_BLOCK_DIAGONAL"):
+            by_id[probe["id"]] = cached
+        else:
+            pending.append(probe)
 
+    if pending:
         layer_state = output / "active_probe.json"
 
         def record(layer: int, info: dict[str, Any]) -> None:
-            atomic_json(layer_state, {"probe": probe["id"], "layer": layer,
+            atomic_json(layer_state, {"probe": f"batch_{len(pending)}_probes", "layer": layer,
                                       "layers_total": 61, "updated_at": now(),
                                       "shard": info["shard"],
                                       "hidden_sha256": info["hidden_sha256"]})
 
-        result = forward_prompt(root, probe["text"], progress=record,
-                                chat=bool(probe.get("chat")), thinking=bool(probe.get("thinking")),
-                                checkpoint_dir=output / f"checkpoint_{probe['id']}")
-        result["probe_id"] = probe["id"]
-        expected = probe["expected"]
-        result["expected_fragments"] = expected
-        result["coherent_next_token"] = (not expected or
-                                          any(fragment in result["top_token_text"]
-                                              for fragment in expected))
-        atomic_json(path, result)
-        results.append(result)
+        batch_key = hashlib.sha256(json.dumps(
+            [probe["id"] for probe in pending], separators=(",", ":")
+        ).encode()).hexdigest()[:16]
+        batch_results = forward_batch(
+            root, pending, progress=record,
+            checkpoint_dir=output / f"checkpoint_batch_{batch_key}",
+        )
+        for probe, result in zip(pending, batch_results, strict=True):
+            result["probe_id"] = probe["id"]
+            expected = probe["expected"]
+            result["expected_fragments"] = expected
+            result["coherent_next_token"] = (
+                not expected or any(fragment in result["top_token_text"] for fragment in expected)
+            )
+            atomic_json(output / f"probe_{probe['id']}.json", result)
+            by_id[probe["id"]] = result
+    results = [by_id[probe["id"]] for probe in PROBES]
     replay_target = next(result for result in results if result.get("probe_id") == "mathematics")
     def replay_record(layer: int, info: dict[str, Any]) -> None:
         atomic_json(output / "active_probe.json", {
-            "probe": "mathematics_replay", "layer": layer, "layers_total": 61,
+            "probe": "batch_replay_8_probes", "layer": layer, "layers_total": 61,
             "updated_at": now(), "shard": info["shard"],
             "hidden_sha256": info["hidden_sha256"],
         })
 
-    replay = forward_prompt(root, "2 + 2 =", progress=replay_record,
-                            checkpoint_dir=output / "checkpoint_mathematics_replay")
+    replay_results = forward_batch(root, PROBES, progress=replay_record,
+                                   checkpoint_dir=output / "checkpoint_batch_replay")
+    replay_by_id = dict(zip((probe["id"] for probe in PROBES), replay_results, strict=True))
+    replay = replay_by_id["mathematics"]
     replay["probe_id"] = "mathematics_replay"
-    replay_match = (
-        replay["deterministic_signature_sha256"] ==
-        replay_target["deterministic_signature_sha256"]
+    replay_match = all(
+        by_id[probe["id"]]["deterministic_signature_sha256"] ==
+        replay_by_id[probe["id"]]["deterministic_signature_sha256"]
+        for probe in PROBES
     )
     atomic_json(output / "probe_mathematics_replay.json", replay)
     finite = all(result.get("finite_logits") for result in results)
@@ -631,8 +731,10 @@ def run_suite(root: Path, output: Path) -> dict[str, Any]:
         "coherent_probe_count": coherent,
         "deterministic_replay": {
             "status": "PASS" if replay_match else "FAIL",
-            "comparison": "exact signature over source, tokens, float32 top logits, "
-                          "every layer hidden hash, and every router selection",
+            "comparison": "all eight block-diagonal probes replayed; exact signature over "
+                          "source, tokens, float32 top logits, every layer hidden hash, and "
+                          "every router selection",
+            "probe_signatures_compared": len(PROBES),
             "first_signature_sha256": replay_target["deterministic_signature_sha256"],
             "replay_signature_sha256": replay["deterministic_signature_sha256"],
         },
@@ -641,6 +743,9 @@ def run_suite(root: Path, output: Path) -> dict[str, Any]:
         "validation_claim": "COHERENT_TEXT_CORE_NEXT_TOKEN_BEHAVIOR" if finite and coherent == len(results) and replay_match
                             else "INSTRUMENT_FAILURE_OR_INSUFFICIENT_COHERENCE",
         "runtime": "MLX Metal; native packed routed experts; one source shard window",
+        "source_layer_read_passes": 2,
+        "speed_law": "eight validation probes share one block-diagonal layer-outer pass; "
+                     "one independent mathematics pass proves deterministic replay",
         "probes": [{"id": result.get("probe_id"), "token_count": result.get("token_count"),
                     "top_token_text": result.get("top_token_text", [])[:10],
                     "coherent": result.get("coherent_next_token"),
@@ -654,6 +759,8 @@ def run_suite(root: Path, output: Path) -> dict[str, Any]:
 
 
 def main() -> int:
+    mx.set_cache_limit(MLX_CACHE_LIMIT_BYTES)
+    mx.set_memory_limit(MLX_MEMORY_LIMIT_BYTES)
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
     probe = sub.add_parser("probe")

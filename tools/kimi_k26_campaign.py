@@ -455,7 +455,7 @@ def status_snapshot(state: dict[str, Any]) -> dict[str, Any]:
         "next_action": next_action_for(str(state.get("state"))),
         "last_telegram_delivery": read_json(NOTIFY_STATE, {}),
         "blocker": state.get("blocker"),
-        "resources": {"free_disk_bytes": disk_free(), **memory_snapshot()},
+        "resources": {"free_disk_bytes": disk_free(), **memory_snapshot(), **swap_snapshot()},
         "control": {"pause_after_checkpoint": state.get("pause_after_checkpoint", False),
                     "stop_requested": state.get("stop_requested", False)},
     }
@@ -476,6 +476,7 @@ def write_status(state: dict[str, Any]) -> None:
 - ETA: {snapshot.get('eta_text')}
 - Free disk: {snapshot['resources']['free_disk_bytes']/1024**3:.1f} GiB
 - Available memory estimate: {snapshot['resources'].get('available_bytes_estimate', 0)/1024**3:.1f} GiB
+- Swap used: {(snapshot['resources'].get('swap_used_bytes') or 0)/1024**3:.1f} GiB (16 GiB guard)
 - Current file/layer: `{snapshot.get('current_file') or snapshot.get('current_layer') or 'n/a'}`
 - Sealed/failed checkpoints: {snapshot.get('sealed_count')}/{snapshot.get('failed_count')}
 - Best candidate / complete BPW: `{snapshot.get('best_candidate')}` / `{snapshot.get('complete_bpw')}`
@@ -785,6 +786,8 @@ def verify_source(state: dict[str, Any]) -> dict[str, Any]:
                          "complete_views": complete_views,
                          "distinct_physical_inode_sets": len(physical_fingerprints)})
     verification = seal({"schema": "hawking.kimi_k26.source_verification.v1",
+                         "status": "PASS" if not failures and disk_free() >= max(
+                             MIN_RESERVE, 2 * manifest["largest_shard"]) else "FAIL",
                          "verified_at": now(), "repo": REPO_ID, "revision": REVISION,
                          "source_root": str(MODEL_CACHE), "snapshot": str(SNAPSHOT),
                          "file_count": manifest["file_count"], "weight_shards": len(official_shards),
@@ -796,6 +799,8 @@ def verify_source(state: dict[str, Any]) -> dict[str, Any]:
                                                               2 * manifest["largest_shard"])})
     atomic_json(VERIFICATION, verification)
     one_copy = seal({"schema": "hawking.kimi_k26.one_copy.v1", "verified_at": now(),
+                     "status": "PASS" if len(physical_fingerprints) == 1 and
+                     len(complete_views) == 1 and not non_authoritative else "FAIL",
                      "authoritative_layout": "huggingface_content_addressed_cache",
                      "source_root": str(MODEL_CACHE), "snapshot_view": str(SNAPSHOT),
                      "local_dir_copy": None, "unique_content_inodes": len(inodes),
@@ -952,29 +957,55 @@ def build_ledger(state: dict[str, Any]) -> dict[str, Any]:
     shared = organs.get("shared_expert", {}).get("logical_weights", 0)
     attention = organs.get("attention_mla", {}).get("logical_weights", 0)
     installed_bits = physical_tensor_bits + metadata_bits
+    weight_shard_file_bytes = sum(
+        int(item["size"]) for item in manifest["files"]
+        if item["path"].startswith("model-") and item["path"].endswith(".safetensors")
+    )
+    container_overhead_bits = weight_shard_file_bytes * 8 - installed_bits
+    if container_overhead_bits < 0:
+        raise CampaignError("safetensors payload exceeds its official shard file bytes")
+    if routed % 384:
+        raise CampaignError("routed-expert denominator does not divide across 384 experts")
+    active_routed = routed // 384 * 8
+    active_text = text_weights - routed + active_routed
     ledger = seal({
-        "schema": "hawking.kimi_k26.logical_weight_ledger.v1", "sealed_at": now(),
+        "schema": "hawking.kimi_k26.logical_weight_ledger.v1", "status": "PASS",
+        "sealed_at": now(),
         "repo": REPO_ID, "revision": REVISION, "tensor_count": tensor_count,
         "all_logical_original_weights": logical_weights,
         "compressible_logical_weights": packed_logical,
         "routed_expert_logical_weights": routed,
+        "active_routed_expert_logical_weights_per_token": active_routed,
         "shared_expert_logical_weights": shared,
         "attention_logical_weights": attention,
         "vision_logical_weights": vision_weights,
         "text_core_logical_weights": text_weights,
-        "official_source_bits_per_logical_weight": installed_bits / logical_weights,
+        "active_text_core_logical_weights_per_token": active_text,
+        "official_source_bits_per_logical_weight": manifest["total_bytes"] * 8 / logical_weights,
+        "weight_shard_file_bits_per_logical_weight":
+            weight_shard_file_bytes * 8 / logical_weights,
+        "tensor_payload_bits_per_logical_weight": installed_bits / logical_weights,
+        "complete_official_source_bytes": manifest["total_bytes"],
+        "weight_shard_file_bytes": weight_shard_file_bytes,
+        "safetensors_container_overhead_bits": container_overhead_bits,
         "physical_weight_payload_bits": physical_tensor_bits,
         "scale_and_metadata_bits": metadata_bits, "organs": organs,
         "denominator_rule": "I32 weight_packed stores eight signed INT4 logical weights; "
                             "scale/shape tensors are installed bits, not logical weights",
+        "active_denominator_rule": "all non-routed text weights plus 8/384 of each "
+                                   "routed-expert layer for one token",
     })
-    fmt = seal({"schema": "hawking.kimi_k26.source_format_ledger.v1", "sealed_at": now(),
+    fmt = seal({"schema": "hawking.kimi_k26.source_format_ledger.v1", "status": "PASS",
+                "sealed_at": now(),
                 "repo": REPO_ID, "revision": REVISION, "format": "compressed-tensors pack-quantized",
                 "packed_dtype": "I32", "packing_factor": 8, "logical_bits": 4,
                 "group_size": 32, "physical_weight_payload_bits": physical_tensor_bits,
                 "packed_logical_weights": packed_logical,
                 "packed_physical_bits": packed_physical_bits,
                 "scale_and_metadata_bits": metadata_bits, "dtypes": dtypes,
+                "complete_official_source_bytes": manifest["total_bytes"],
+                "weight_shard_file_bytes": weight_shard_file_bytes,
+                "safetensors_container_overhead_bits": container_overhead_bits,
                 "unrecognized_layouts": []})
     atomic_json(LEDGER, ledger)
     atomic_json(FORMAT_LEDGER, fmt)
@@ -1061,13 +1092,19 @@ def managed_stage(state: dict[str, Any], command: list[str], log_name: str,
                         f"{active.get('probe', 'probe')} layer "
                         f"{int(active.get('layer', -1)) + 1}/{active.get('layers_total', 61)}"
                     )
-                    probes = ["factual", "science", "coding", "mathematics", "reasoning",
-                              "instruction", "tool_thinking_protocol", "rare_token",
-                              "mathematics_replay"]
                     probe_id = str(active.get("probe"))
-                    probe_index = probes.index(probe_id) if probe_id in probes else 0
-                    complete_units = probe_index * 61 + int(active.get("layer", -1)) + 1
-                    total_units = len(probes) * 61
+                    if probe_id.startswith("batch_replay"):
+                        pass_index, total_passes = 1, 2
+                    elif probe_id.startswith("batch_"):
+                        pass_index, total_passes = 0, 2
+                    else:
+                        probes = ["factual", "science", "coding", "mathematics", "reasoning",
+                                  "instruction", "tool_thinking_protocol", "rare_token",
+                                  "mathematics_replay"]
+                        pass_index = probes.index(probe_id) if probe_id in probes else 0
+                        total_passes = len(probes)
+                    complete_units = pass_index * 61 + int(active.get("layer", -1)) + 1
+                    total_units = total_passes * 61
                     epoch = float(state.setdefault("reference_epoch", time.time()))
                     elapsed = max(0.001, time.time() - epoch)
                     rate = complete_units / elapsed
@@ -1461,13 +1498,19 @@ def status_command() -> None:
 def sync_evidence(repo_root: Path) -> None:
     target = repo_root / "reports/condense/kimi_k26"
     target.mkdir(parents=True, exist_ok=True)
-    for path in (STATE, HEARTBEAT, MANIFEST, VERIFICATION, ONE_COPY, LEDGER, FORMAT_LEDGER,
-                 REFERENCE_EVIDENCE, PARENT_VALIDATION, CORPUS_INTEGRITY, CAUSAL_ATLAS,
-                 BYTE_AUCTION, TOURNAMENT, FIRST_CHECKPOINT, NEXT_EXPERIMENT,
-                 PHONE_JSON, PHONE_MD,
-                 RUNTIME / "KIMI_K26_ADAPTER_TWIN.json"):
+    evidence_paths = (STATE, HEARTBEAT, MANIFEST, VERIFICATION, ONE_COPY, LEDGER, FORMAT_LEDGER,
+                      REFERENCE_EVIDENCE, PARENT_VALIDATION, CORPUS_INTEGRITY, CAUSAL_ATLAS,
+                      BYTE_AUCTION, TOURNAMENT, FIRST_CHECKPOINT, NEXT_EXPERIMENT,
+                      PHONE_JSON, PHONE_MD, RUNTIME / "KIMI_K26_ADAPTER_TWIN.json")
+    for path in evidence_paths:
         if path.exists():
             shutil.copy2(path, target / path.name)
+    required_root = (STATE, VERIFICATION, ONE_COPY, LEDGER, FORMAT_LEDGER, PARENT_VALIDATION,
+                     CORPUS_INTEGRITY, CAUSAL_ATLAS, BYTE_AUCTION, TOURNAMENT,
+                     PHONE_JSON, PHONE_MD)
+    for path in required_root:
+        if path.exists():
+            shutil.copy2(path, repo_root / path.name)
     print(target)
 
 
