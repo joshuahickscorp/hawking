@@ -1,0 +1,85 @@
+{
+  "candidate_count": 6,
+  "candidates": [
+    {
+      "candidate": "P0",
+      "complete_physical_bpw": null,
+      "fidelity": "F5_PARENT_REFERENCE",
+      "quality": {
+        "coherent_probe_count": 8,
+        "deterministic_replay": "PASS",
+        "finite_probe_count": 8
+      },
+      "role": "official parent text-core reference",
+      "status": "SEALED"
+    },
+    {
+      "candidate": "P1",
+      "complete_physical_bpw": null,
+      "fidelity": "F0_EXACT_BYTE_ADMISSION",
+      "next_gate": "F1 single-layer output-space representation probe on disjoint corpus",
+      "role": "BASE_HEAVY",
+      "status": "ADMITTED_PENDING_F1",
+      "target_complete_bpw": "49/50"
+    },
+    {
+      "candidate": "P2",
+      "complete_physical_bpw": null,
+      "fidelity": "F0_EXACT_BYTE_ADMISSION",
+      "next_gate": "F1 single-layer output-space representation probe on disjoint corpus",
+      "role": "BALANCED_DOCTOR",
+      "status": "ADMITTED_PENDING_F1",
+      "target_complete_bpw": "49/50"
+    },
+    {
+      "candidate": "P3",
+      "complete_physical_bpw": null,
+      "fidelity": "F0_EXACT_BYTE_ADMISSION",
+      "next_gate": "F1 single-layer output-space representation probe on disjoint corpus",
+      "role": "DOCTOR_HEAVY",
+      "status": "ADMITTED_PENDING_F1",
+      "target_complete_bpw": "49/50"
+    },
+    {
+      "candidate": "P4",
+      "complete_physical_bpw": null,
+      "fidelity": "F0_EXACT_BYTE_ADMISSION",
+      "next_gate": "F1 single-layer output-space representation probe on disjoint corpus",
+      "role": "ARCHITECTURE_SPECIFIC_075",
+      "status": "ADMITTED_PENDING_F1",
+      "target_complete_bpw": "3/4"
+    },
+    {
+      "candidate": "P5",
+      "complete_physical_bpw": null,
+      "fidelity": "F0_EXACT_BYTE_ADMISSION",
+      "next_gate": "F1 single-layer output-space representation probe on disjoint corpus",
+      "role": "AGGRESSIVE_050",
+      "status": "ADMITTED_PENDING_F1",
+      "target_complete_bpw": "1/2"
+    }
+  ],
+  "claim_boundary": "P0 is real parent evidence; P1-P5 are F0 admissions, not packed results",
+  "complete_physical_bpw_best_compact": null,
+  "current_best": "P0_OFFICIAL_PARENT_REFERENCE",
+  "fidelity_funnel": [
+    "F0",
+    "F1",
+    "F2",
+    "F3",
+    "F4",
+    "F5"
+  ],
+  "max_full_fidelity_candidates": 6,
+  "next_experiment": "P1_AND_P5_F1_REPRESENTATION_BRACKET",
+  "retirement_rule": "fail closed at each gate; never infer family death from one mismatched configuration",
+  "schema": "hawking.kimi_k26.tournament.v1",
+  "seal_sha256": "bc04ee522a98016dd451ff15d3aa96c1e571059f20cf99ad0f647abd9a5f4ba3",
+  "sealed_at": "2026-07-21T05:40:45Z",
+  "source": {
+    "repo": "moonshotai/Kimi-K2.6",
+    "revision": "7eb5002f6aadc958aed6a9177b7ed26bb94011bb"
+  },
+  "status": "PASS",
+  "tournament_state": "ACTIVE"
+}

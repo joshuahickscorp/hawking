@@ -1,0 +1,29 @@
+{
+  "all_61_text_layers_in_official_order": true,
+  "claim_boundary": "TEXT_CORE_ONLY; no multimodal preservation claim",
+  "coherent_probe_count": 8,
+  "complete_model_dequantized": false,
+  "deterministic_replay": {
+    "comparison": "two independent five-token mathematics passes; exact signature over source, tokens, float32 top logits, every layer hidden hash, and every router selection",
+    "first_signature_sha256": "f9fdc33630d475e7c4854329130f5e1fb287f1f9c02f87da3a0c4e4e8a3c811d",
+    "probe_signatures_compared": 1,
+    "replay_signature_sha256": "f9fdc33630d475e7c4854329130f5e1fb287f1f9c02f87da3a0c4e4e8a3c811d",
+    "status": "PASS"
+  },
+  "official_runtime_parity_claimed": false,
+  "official_tokenizer_and_chat_protocol": true,
+  "parent_validation_seal_sha256": "8283f3f1588c841a00205cf06c31408347a2a77b2c12a4ec566742219b919a24",
+  "probe_count": 8,
+  "real_logits": true,
+  "reference_program_sha256": "43bda2bf42a24646aff9203793c95b5ee16320db41a4dc20e1fcf049d1edf18e",
+  "repo": "moonshotai/Kimi-K2.6",
+  "revision": "7eb5002f6aadc958aed6a9177b7ed26bb94011bb",
+  "runtime": "MLX Metal native official packed INT4; selected experts only",
+  "schema": "hawking.kimi_k26.reference_forward.v1",
+  "seal_sha256": "c401e0f4a245b6e01261c2216bdff0e3e988a43f8001fa63d0b9917a12a0fe82",
+  "sealed_at": "2026-07-21T05:40:12Z",
+  "silent_tensor_omission": false,
+  "source_shard_window": 1,
+  "status": "PASS",
+  "vision": "SOURCE_PRESENT_ADAPTER_MAPPED_NOT_INCLUDED_IN_FIRST_CAPABILITY_CLAIM"
+}

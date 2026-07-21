@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 import sys
@@ -81,3 +82,11 @@ def test_deterministic_signature_excludes_runtime_measurements() -> None:
     changed["layers"][0]["seconds"] = 99.0
     changed["runtime_seconds"] = 101.0
     assert kimi.deterministic_signature(template) == kimi.deterministic_signature(changed)
+
+
+def test_canonical_seal_preserves_utf8_probe_text() -> None:
+    value = {"top_token_text": ["用户"], "status": "PASS"}
+    expected = json.dumps(value, sort_keys=True, separators=(",", ":"),
+                          ensure_ascii=False, allow_nan=False).encode()
+    assert kimi.canonical(value) == expected
+    assert hashlib.sha256(kimi.canonical(value)).hexdigest() == hashlib.sha256(expected).hexdigest()

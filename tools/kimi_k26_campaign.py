@@ -24,7 +24,6 @@ import plistlib
 import re
 import shutil
 import signal
-import stat
 import struct
 import subprocess
 import sys
@@ -421,6 +420,29 @@ def next_action_for(state_name: str) -> str:
     }.get(state_name, "inspect state")
 
 
+def retry_state_for_blocker(blocker: str) -> str | None:
+    """Return the last restart-safe stage for a repairable sealed-stage failure."""
+    routes = (
+        ("disk-floor guard", "FREE_STORAGE"),
+        ("bounded source forward failed", "BUILD_REFERENCE"),
+        ("Kimi clean-corpus integrity artifact", "BUILD_DOCTOR"),
+        ("causal intervention harness failed", "RUN_CAUSAL"),
+        ("exact Doctor byte auction failed", "RUN_TOURNAMENT"),
+        ("tournament F0/first checkpoint failed", "RUN_TOURNAMENT"),
+    )
+    return next((state for prefix, state in routes if blocker.startswith(prefix)), None)
+
+
+def control_snapshot(state: dict[str, Any]) -> dict[str, bool]:
+    control = read_json(CONTROL, {})
+    return {
+        "pause_after_checkpoint": bool(control.get(
+            "pause_after_checkpoint", state.get("pause_after_checkpoint", False))),
+        "stop_requested": bool(control.get(
+            "stop_requested", state.get("stop_requested", False))),
+    }
+
+
 def status_snapshot(state: dict[str, Any]) -> dict[str, Any]:
     manifest = read_json(MANIFEST, {})
     prog = progress(manifest, state) if manifest.get("files") else {}
@@ -456,8 +478,7 @@ def status_snapshot(state: dict[str, Any]) -> dict[str, Any]:
         "last_telegram_delivery": read_json(NOTIFY_STATE, {}),
         "blocker": state.get("blocker"),
         "resources": {"free_disk_bytes": disk_free(), **memory_snapshot(), **swap_snapshot()},
-        "control": {"pause_after_checkpoint": state.get("pause_after_checkpoint", False),
-                    "stop_requested": state.get("stop_requested", False)},
+        "control": control_snapshot(state),
     }
 
 
@@ -1278,6 +1299,16 @@ def run_tournament(state: dict[str, Any]) -> dict[str, Any]:
     return transition(state, "SEAL_RESULT", "P0 and five legal F0 candidates admitted")
 
 
+def rebind_advancing_experiment() -> None:
+    """Keep the sealed advancing-work receipt bound to the current restart-safe owner."""
+    evidence = read_json(NEXT_EXPERIMENT, {})
+    if evidence.get("status") != "ADVANCING" or not valid_seal(evidence):
+        return
+    evidence.update({"controller_pid": os.getpid(), "heavy_lease": str(LEASE),
+                     "controller_rebound_at": now()})
+    atomic_json(NEXT_EXPERIMENT, seal(evidence))
+
+
 def step(state: dict[str, Any]) -> dict[str, Any]:
     name = state["state"]
     state = control_flags(state)
@@ -1363,6 +1394,8 @@ def run_loop() -> int:
             atomic_json(CONTROL, {"pause_after_checkpoint": False, "stop_requested": False})
             save_state(state)
         checkpoint(state, "controller:started", "exclusive lease acquired")
+        if state.get("state") == "MONITOR":
+            rebind_advancing_experiment()
         while True:
             if stop_signal:
                 atomic_json(CONTROL, {"pause_after_checkpoint": False, "stop_requested": True})
@@ -1510,9 +1543,10 @@ def sync_evidence(repo_root: Path) -> None:
     for path in evidence_paths:
         if path.exists():
             shutil.copy2(path, target / path.name)
-    required_root = (STATE, VERIFICATION, ONE_COPY, LEDGER, FORMAT_LEDGER, PARENT_VALIDATION,
-                     CORPUS_INTEGRITY, CAUSAL_ATLAS, BYTE_AUCTION, TOURNAMENT,
-                     PHONE_JSON, PHONE_MD)
+    required_root = (STATE, VERIFICATION, ONE_COPY, LEDGER, FORMAT_LEDGER,
+                     RUNTIME / "KIMI_K26_ADAPTER_TWIN.json", REFERENCE_EVIDENCE,
+                     PARENT_VALIDATION, CORPUS_INTEGRITY, CAUSAL_ATLAS, BYTE_AUCTION,
+                     TOURNAMENT, FIRST_CHECKPOINT, NEXT_EXPERIMENT, PHONE_JSON, PHONE_MD)
     for path in required_root:
         if path.exists():
             shutil.copy2(path, repo_root / path.name)
@@ -1541,9 +1575,18 @@ def main(argv: list[str] | None = None) -> int:
         print("pause requested; the latest sealed checkpoint and resumable partials are preserved")
     elif args.command == "resume":
         state = load_state()
-        if state.get("state") == "BLOCKED" and str(state.get("blocker", "")).startswith(
-                "disk-floor guard"):
-            state.update({"state": "FREE_STORAGE", "status": "RUNNING", "blocker": None})
+        if state.get("state") == "BLOCKED":
+            retry_state = retry_state_for_blocker(str(state.get("blocker", "")))
+            if retry_state:
+                state.update({"state": retry_state, "status": "RUNNING", "blocker": None,
+                              "entered_at": now()})
+                state["history"] = (state.get("history", []) + [{
+                    "at": now(), "to": retry_state,
+                    "note": "phone resume after repairable sealed-stage failure",
+                }])[-128:]
+                save_state(state)
+        elif state.get("status") in {"PAUSED_AFTER_CHECKPOINT", "RESOURCE_GUARD_PAUSED"}:
+            state.update({"status": "RUNNING", "blocker": None, "entered_at": now()})
             save_state(state)
         set_control(pause=False, stop=False)
         print("resume requested")

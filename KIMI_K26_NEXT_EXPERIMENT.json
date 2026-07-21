@@ -1,0 +1,14 @@
+{
+  "controller_pid": 76038,
+  "controller_rebound_at": "2026-07-21T05:51:21Z",
+  "current_action": "freeze disjoint unique-token probes and real routed-expert output seam",
+  "experiment": "P1_AND_P5_F1_REPRESENTATION_BRACKET",
+  "hard_boundary": "no candidate result or compact capability is claimed before F1 executes",
+  "heavy_lease": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/kimi_k26.heavy.lease",
+  "repo": "moonshotai/Kimi-K2.6",
+  "revision": "7eb5002f6aadc958aed6a9177b7ed26bb94011bb",
+  "schema": "hawking.kimi_k26.next_experiment.v1",
+  "seal_sha256": "a291e230c3108f1ca1962903a71663b2611c1f64c69264d0bca1d6fb0531032e",
+  "started_at": "2026-07-21T05:41:00Z",
+  "status": "ADVANCING"
+}

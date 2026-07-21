@@ -1,0 +1,23 @@
+{
+  "auction_seal_sha256": "0a2b405011fc0ebab5c447e769a2ff81afacfc04d06a7a7df04c86c90d331bfc",
+  "checkpoint_id": "P0_PARENT_AND_F0_DOCTOR_ADMISSION",
+  "compact_capability_claim": "NONE_YET",
+  "next_experiment": "P1_AND_P5_F1_REPRESENTATION_BRACKET",
+  "next_experiment_status": "ADVANCING_UNDER_DETACHED_CONTROLLER",
+  "parent_validation_seal_sha256": "8283f3f1588c841a00205cf06c31408347a2a77b2c12a4ec566742219b919a24",
+  "schema": "hawking.kimi_k26.first_scientific_checkpoint.v1",
+  "seal_sha256": "dc993f375487ba1fa5ca94e7c0aa8523204cc1735b73c9fd537630ed13f4ac42",
+  "sealed_at": "2026-07-21T05:40:45Z",
+  "sealed_evidence": [
+    "coherent deterministic full text-core parent forward",
+    "clean corpus gate",
+    "causal intervention harness",
+    "exact F0 installed-byte auction"
+  ],
+  "source": {
+    "repo": "moonshotai/Kimi-K2.6",
+    "revision": "7eb5002f6aadc958aed6a9177b7ed26bb94011bb"
+  },
+  "status": "PASS",
+  "tournament_seal_sha256": "bc04ee522a98016dd451ff15d3aa96c1e571059f20cf99ad0f647abd9a5f4ba3"
+}

@@ -53,6 +53,12 @@ def now() -> str:
     return dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
 
 
+def canonical(value: Any) -> bytes:
+    """Match the controller's UTF-8 canonical JSON seal representation."""
+    return json.dumps(value, sort_keys=True, separators=(",", ":"),
+                      ensure_ascii=False, allow_nan=False).encode()
+
+
 def atomic_json(path: Path, value: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_name(f".{path.name}.{os.getpid()}.{time.time_ns()}.tmp")
@@ -758,8 +764,7 @@ def run_suite(root: Path, output: Path) -> dict[str, Any]:
                     "runtime_seconds": result.get("runtime_seconds"),
                     "result_sha256": result.get("result_sha256")} for result in results],
     }
-    suite["seal_sha256"] = hashlib.sha256(json.dumps(
-        suite, sort_keys=True, separators=(",", ":"), allow_nan=False).encode()).hexdigest()
+    suite["seal_sha256"] = hashlib.sha256(canonical(suite)).hexdigest()
     atomic_json(output / "KIMI_K26_PARENT_FORWARD_VALIDATION.json", suite)
     return suite
 def main() -> int:

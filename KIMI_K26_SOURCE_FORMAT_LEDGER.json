@@ -1,0 +1,38 @@
+{
+  "complete_official_source_bytes": 595204999341,
+  "dtypes": {
+    "BF16": {
+      "physical_bits": 702436286208,
+      "physical_elements": 43902267888,
+      "tensors": 70250
+    },
+    "F32": {
+      "physical_bits": 737280,
+      "physical_elements": 23040,
+      "tensors": 60
+    },
+    "I32": {
+      "physical_bits": 4058748518400,
+      "physical_elements": 126835891200,
+      "tensors": 138240
+    }
+  },
+  "format": "compressed-tensors pack-quantized",
+  "group_size": 32,
+  "logical_bits": 4,
+  "packed_dtype": "I32",
+  "packed_logical_weights": 1014686023680,
+  "packed_physical_bits": 4058744094720,
+  "packing_factor": 8,
+  "physical_weight_payload_bits": 4253831782400,
+  "repo": "moonshotai/Kimi-K2.6",
+  "revision": "7eb5002f6aadc958aed6a9177b7ed26bb94011bb",
+  "safetensors_container_overhead_bits": 238363776,
+  "scale_and_metadata_bits": 507353759488,
+  "schema": "hawking.kimi_k26.source_format_ledger.v1",
+  "seal_sha256": "78155ef11418ca526497b1607413562543c888a4c4510837a4f001c809b9882c",
+  "sealed_at": "2026-07-21T05:07:07Z",
+  "status": "PASS",
+  "unrecognized_layouts": [],
+  "weight_shard_file_bytes": 595177988208
+}

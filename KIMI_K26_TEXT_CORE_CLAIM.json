@@ -23,5 +23,19 @@
   },
   "promotion_requires_real_logits": true,
   "synthetic_adapter_evidence_is_not_parent_parity": true,
-  "status": "SEALED"
+  "validated_at": "2026-07-21T05:45:15Z",
+  "source_verification_seal_sha256": "867b40c58795c0b5fdd5a0ca9e6c9529f0b2ab92d89f3aaf56ca5e17c39a7b25",
+  "logical_weight_ledger_seal_sha256": "865d9b512ed2c80dbef572e0c45d1b9c586bf15279d0385d5ce2aa85ce42524a",
+  "source_format_ledger_seal_sha256": "78155ef11418ca526497b1607413562543c888a4c4510837a4f001c809b9882c",
+  "reference_forward_seal_sha256": "c401e0f4a245b6e01261c2216bdff0e3e988a43f8001fa63d0b9917a12a0fe82",
+  "parent_validation_seal_sha256": "8283f3f1588c841a00205cf06c31408347a2a77b2c12a4ec566742219b919a24",
+  "parent_validation": {
+    "status": "PASS",
+    "finite_probe_count": 8,
+    "coherent_probe_count": 8,
+    "deterministic_replay": "PASS",
+    "official_runtime_parity_claimed": false
+  },
+  "status": "SEALED",
+  "seal_sha256": "56836f20222f985fd8b8985482849e489d905aaa05205dc9d233461fdcd98cc3"
 }
