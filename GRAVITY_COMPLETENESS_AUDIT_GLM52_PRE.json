@@ -1,0 +1,387 @@
+{
+  "axes": [
+    "source_authority",
+    "source_precision",
+    "logical_weight_accounting",
+    "physical_artifact_accounting",
+    "adapter_fidelity",
+    "teacher_forward_fidelity",
+    "streaming_completeness",
+    "resume_recovery",
+    "data_integrity",
+    "causal_diagnosis",
+    "doctor_breadth",
+    "native_studentization",
+    "rate_exploration",
+    "full_model_artifact",
+    "capability_evaluation",
+    "direct_runtime",
+    "metal_execution",
+    "speed_efficiency",
+    "resource_utilization",
+    "scientific_transfer",
+    "reproducibility"
+  ],
+  "evidence": {
+    "GLM52_PRE": [
+      {
+        "bytes": 5066,
+        "fields": [
+          "status",
+          "admission_decision",
+          "rollback_exception"
+        ],
+        "path": "GLM52_HANDOFF_PRECHECK.json",
+        "sha256": "124dd4f105bff1841005cb8cba83178b975b47cb0ca74a90fab6e601892b1b28"
+      },
+      {
+        "bytes": 4846,
+        "fields": [
+          "status",
+          "source_release",
+          "recovered_bytes"
+        ],
+        "path": "KIMI_K26_SOURCE_RELEASE_FOR_GLM52.json",
+        "sha256": "227c1cc6773d113d2ac8f8e20295485f4207a3d586cb2bd0cc301b9e34bedc80"
+      }
+    ],
+    "GPT_OSS_120B": [
+      {
+        "bytes": 3688,
+        "fields": [
+          "source_authority",
+          "immutable_revision",
+          "tensor_formats",
+          "tensor_count",
+          "index_consistent"
+        ],
+        "path": "reports/condense/gravity_forge/condensation/GPT_OSS_120B_SOURCE_RECEIPT.json",
+        "sha256": "8a5850a637d65804f90913c63077e11c2fab92892b18f2d20a4c97f332d41c3d"
+      },
+      {
+        "bytes": 2137,
+        "fields": [
+          "result.logical_weight_count",
+          "result.complete_physical_bits",
+          "result.realized_whole_artifact_bpw"
+        ],
+        "path": "reports/condense/second_light/GPT_OSS_120B_SECOND_LIGHT_BASELINE.json",
+        "sha256": "6d0a73a55012915b01da045ebf71c734dd1cd4d433aa993fcb39aff052240d06"
+      },
+      {
+        "bytes": 2463,
+        "fields": [
+          "forward",
+          "rows",
+          "packed_control_rvq_1bpw",
+          "verdict"
+        ],
+        "path": "reports/condense/general_frontier/GPT_OSS_120B_G4_RESULT.json",
+        "sha256": "c440a3df4ecdc3efa92e87080c14f06a0643b636263f900364adcc1bb308d98a"
+      },
+      {
+        "bytes": 1402,
+        "fields": [
+          "status",
+          "resume"
+        ],
+        "path": "reports/condense/second_light/evidence/CRASH_RESUME_PROOF.json",
+        "sha256": "8cc2ed2443cc3d362e1b1264249269f7454f1c882a85b7b764d4b62e965381f6"
+      },
+      {
+        "bytes": 2730,
+        "fields": [
+          "status",
+          "parity"
+        ],
+        "path": "reports/condense/second_light/evidence/PQ_CPU_METAL_PARITY.json",
+        "sha256": "b1d0bf7a619ce158fabd5510b0dfea049666981ba39cf1ebb19e01c7470b5e3d"
+      }
+    ],
+    "KIMI_K26": [
+      {
+        "bytes": 757,
+        "fields": [
+          "weight_shards",
+          "source_bytes",
+          "index_tensor_count",
+          "failures"
+        ],
+        "path": "KIMI_K26_SOURCE_VERIFICATION.json",
+        "sha256": "84de24e651f9e1a17d7b4d86b5142ebc86d37a6ae4987d4e018f80128d958a89"
+      },
+      {
+        "bytes": 2826,
+        "fields": [
+          "all_logical_original_weights",
+          "tensor_count",
+          "denominator_rule"
+        ],
+        "path": "KIMI_K26_LOGICAL_WEIGHT_LEDGER.json",
+        "sha256": "8025db9206e13ae8fcb4cd54a98681d4a3ea3517a97a3656610f7e5b4b24af55"
+      },
+      {
+        "bytes": 2624,
+        "fields": [
+          "checks",
+          "metal_k1",
+          "source_parent_parity_claimed",
+          "binding.quantization"
+        ],
+        "path": "KIMI_K26_ADAPTER_TWIN.json",
+        "sha256": "723546c650bc064d65c876b61e93984dcd9f036261c0c92703cd47b915cb771f"
+      },
+      {
+        "bytes": 1504,
+        "fields": [
+          "all_61_text_layers_in_official_order",
+          "real_logits",
+          "deterministic_replay"
+        ],
+        "path": "KIMI_K26_REFERENCE_FORWARD.json",
+        "sha256": "5c3fdb4dc2b08962c006ebea2e43afb83603e8e77ab4f48299177d3fdd7d083b"
+      },
+      {
+        "bytes": 177249,
+        "fields": [
+          "best_deployable_candidate",
+          "fidelity",
+          "causal_diagnosis",
+          "doctor_versus_native"
+        ],
+        "path": "KIMI_K26_GRAVITY_FINAL.json",
+        "sha256": "fbb2fbf0486a7edfe30015d7f1e6d623c776d98dda5c676ef0f2957a92cdf80f"
+      },
+      {
+        "bytes": 9628,
+        "fields": [
+          "corpus"
+        ],
+        "path": "KIMI_K26_CORPUS_INTEGRITY.json",
+        "sha256": "1b75504059b5e172da1cb92831e6392f850397f43dcab525b9f07102d0585dbe"
+      }
+    ],
+    "QWEN3_235B": [
+      {
+        "bytes": 1410,
+        "fields": [
+          "immutable_revision",
+          "config_summary.torch_dtype",
+          "n_weight_shards",
+          "weight_bytes"
+        ],
+        "path": "reports/condense/general_frontier/QWEN3_235B_SOURCE_ADMISSION.json",
+        "sha256": "9626f9c03dc639fc066c284d4082ab3c5ba01f9fde9f03a55c011f3377a9a34e"
+      },
+      {
+        "bytes": 43553,
+        "fields": [
+          "payload_count",
+          "payload_bytes",
+          "revision",
+          "scientific_conclusion"
+        ],
+        "path": "reports/condense/storage_stripdown/MODEL_RELEASE_qwen3-235b-a22b.json",
+        "sha256": "080b882bd14a4c010b01a1b6c49d1dfac798f19e1b8e3edf1edc4015408093af"
+      },
+      {
+        "bytes": 8083,
+        "fields": [
+          "status",
+          "final",
+          "ladder",
+          "capability_passes",
+          "promote_thresholds"
+        ],
+        "path": "reports/condense/storage_stripdown/qwen_final_evidence/QWEN_GRAVITY_STATE.json",
+        "sha256": "d572df6ae0fc2b410b01f5df4b9ba3926daf786f00a0635f87acbcd01511d361"
+      },
+      {
+        "bytes": 11466,
+        "fields": [
+          "parent.original_weight_count",
+          "A_bpw_potency",
+          "B_decision_speed",
+          "honesty"
+        ],
+        "path": "reports/condense/storage_stripdown/qwen_final_evidence/QWEN235B_VULTURE_HARVEST.json",
+        "sha256": "c5de2a1a0dac7ed1a3b524285f474240d922b9c81f21fa9113227286fe65a4b9"
+      },
+      {
+        "bytes": 1264,
+        "fields": [
+          "status",
+          "files"
+        ],
+        "path": "reports/condense/storage_stripdown/qwen_final_evidence/parent_logits/MANIFEST.json",
+        "sha256": "5085b29e41a30b5da4cd7a286f65c07be36ce4187137932a61dbc96c160ebe46"
+      }
+    ]
+  },
+  "generated_at": "2026-07-21T20:46:37.989383Z",
+  "honest_status": {
+    "not_proven_at_entry": [
+      "capability-preserving complete model below 1 BPW",
+      "capability-preserving complete model at 0.50 BPW",
+      "universal cross-parent compression law",
+      "native functional studentization beyond Kimi one-block contextual F1",
+      "direct high-performance native runtime for every giant architecture",
+      "any GLM-5.2 scientific result"
+    ],
+    "operationally_proven_before_glm": [
+      "giant official-source admission and traversal on prior parents",
+      "exact complete-BPW accounting",
+      "bounded source readers and durable controllers",
+      "crash/resume or checkpoint durability",
+      "Apple-local resource control",
+      "component-level Metal execution"
+    ],
+    "scientifically_proven_before_glm": [
+      "reproducible negative full-model capability evidence on GPT-OSS and Qwen",
+      "cross-parent causal negative science",
+      "Doctor and representation families can be compared without free bytes",
+      "Kimi upstream-state error is primary and routing is a secondary conditional amplifier"
+    ]
+  },
+  "model_boundaries": {
+    "GLM52_PRE": "Handoff and planning only at the frozen boundary; no teacher forward, corpus, artifact, Metal execution, or capability result.",
+    "GPT_OSS_120B": "Official mixed MXFP4-expert/BF16-control parent; complete 0.76976-BPW physical baseline and real full-forward negative, not a BF16-teacher success.",
+    "KIMI_K26": "Official packed-INT4 parent; strongest retained evidence is local F1/F2, with no complete compact capability artifact.",
+    "QWEN3_235B": "Official BF16 parent and real 94-layer parent-versus-packed negative; Python reference runtime and no retained standalone native complete payload."
+  },
+  "schema": "hawking.gravity_completeness_audit.glm52_pre.v1",
+  "scores": {
+    "GLM52_PRE": {
+      "axes": {
+        "adapter_fidelity": 1,
+        "capability_evaluation": 0,
+        "causal_diagnosis": 1,
+        "data_integrity": 0,
+        "direct_runtime": 0,
+        "doctor_breadth": 1,
+        "full_model_artifact": 0,
+        "logical_weight_accounting": 1,
+        "metal_execution": 0,
+        "native_studentization": 1,
+        "physical_artifact_accounting": 1,
+        "rate_exploration": 1,
+        "reproducibility": 1,
+        "resource_utilization": 1,
+        "resume_recovery": 1,
+        "scientific_transfer": 2,
+        "source_authority": 1,
+        "source_precision": 1,
+        "speed_efficiency": 1,
+        "streaming_completeness": 1,
+        "teacher_forward_fidelity": 0
+      },
+      "maximum": 105,
+      "mean": 0.7619047619047619,
+      "total": 16
+    },
+    "GPT_OSS_120B": {
+      "axes": {
+        "adapter_fidelity": 4,
+        "capability_evaluation": 5,
+        "causal_diagnosis": 4,
+        "data_integrity": 3,
+        "direct_runtime": 4,
+        "doctor_breadth": 4,
+        "full_model_artifact": 4,
+        "logical_weight_accounting": 5,
+        "metal_execution": 2,
+        "native_studentization": 0,
+        "physical_artifact_accounting": 5,
+        "rate_exploration": 4,
+        "reproducibility": 4,
+        "resource_utilization": 4,
+        "resume_recovery": 4,
+        "scientific_transfer": 5,
+        "source_authority": 5,
+        "source_precision": 3,
+        "speed_efficiency": 4,
+        "streaming_completeness": 4,
+        "teacher_forward_fidelity": 4
+      },
+      "maximum": 105,
+      "mean": 3.857142857142857,
+      "total": 81
+    },
+    "KIMI_K26": {
+      "axes": {
+        "adapter_fidelity": 4,
+        "capability_evaluation": 3,
+        "causal_diagnosis": 3,
+        "data_integrity": 3,
+        "direct_runtime": 3,
+        "doctor_breadth": 3,
+        "full_model_artifact": 1,
+        "logical_weight_accounting": 4,
+        "metal_execution": 3,
+        "native_studentization": 2,
+        "physical_artifact_accounting": 2,
+        "rate_exploration": 3,
+        "reproducibility": 3,
+        "resource_utilization": 4,
+        "resume_recovery": 4,
+        "scientific_transfer": 4,
+        "source_authority": 5,
+        "source_precision": 3,
+        "speed_efficiency": 4,
+        "streaming_completeness": 4,
+        "teacher_forward_fidelity": 4
+      },
+      "maximum": 105,
+      "mean": 3.2857142857142856,
+      "total": 69
+    },
+    "QWEN3_235B": {
+      "axes": {
+        "adapter_fidelity": 4,
+        "capability_evaluation": 5,
+        "causal_diagnosis": 5,
+        "data_integrity": 4,
+        "direct_runtime": 4,
+        "doctor_breadth": 4,
+        "full_model_artifact": 4,
+        "logical_weight_accounting": 5,
+        "metal_execution": 2,
+        "native_studentization": 0,
+        "physical_artifact_accounting": 4,
+        "rate_exploration": 5,
+        "reproducibility": 4,
+        "resource_utilization": 4,
+        "resume_recovery": 3,
+        "scientific_transfer": 5,
+        "source_authority": 5,
+        "source_precision": 5,
+        "speed_efficiency": 4,
+        "streaming_completeness": 4,
+        "teacher_forward_fidelity": 4
+      },
+      "maximum": 105,
+      "mean": 4.0,
+      "total": 84
+    }
+  },
+  "scoring": {
+    "axis_count": 21,
+    "maximum_total": 105,
+    "plans_and_unexecuted_code_maximum": 1,
+    "range": [
+      0,
+      5
+    ],
+    "score_5": "Reproducible capability-fidelity evidence on the axis; a reproducible negative can earn 5 for evaluation maturity.",
+    "score_5_does_not_mean_capability_pass": true
+  },
+  "seal_sha256": "d298c265b3ecede35fcb3f0809aa004ea2a41bd2c11c1da51b741949e60648bd",
+  "snapshot": {
+    "at_utc": "2026-07-21T20:29:51.121903Z",
+    "boundary": "Immediately after verified Kimi handoff/release and before GLM source admission, header audit, adapter, or runtime work.",
+    "branch": "campaign/glm52-bf16-xet-gravity",
+    "later_glm_artifacts_excluded_from_scores": true,
+    "repository_head": "8d634af9702aa965728f057661b5d1fad1883f45"
+  },
+  "status": "PASS_FROZEN_PRE_CAMPAIGN_BASELINE"
+}

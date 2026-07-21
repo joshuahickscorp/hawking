@@ -1,0 +1,119 @@
+{
+  "admission_gates": {
+    "all_index_tensors_mapped_to_verified_headers": true,
+    "body_stream": false,
+    "current_xet_stack": true,
+    "dependency_schedule_complete": true,
+    "exact_logical_weight_denominator": true,
+    "immutable_revision": true,
+    "license_verified": true,
+    "official_file_manifest_complete": true,
+    "unknown_layouts": 0
+  },
+  "admitted_at": "2026-07-21T20:44:12.252793Z",
+  "architecture": {
+    "architecture": "GlmMoeDsaForCausalLM",
+    "custom_code_required": false,
+    "main_layers": 78,
+    "model_type": "glm_moe_dsa",
+    "mtp_layers": 1,
+    "official_transformers_mtp_supported": false
+  },
+  "body_stream_blockers": [
+    "Xet throughput/autotune has not run",
+    "GLM synthetic twin and official bounded reference parity are not green",
+    "physical compact writer/reader/direct execution is not green",
+    "crash-safe fetch/verify/capture/pack/seal/evict integration is not green"
+  ],
+  "evidence": {
+    "architecture_contract_seal_sha256": "dd1fea044872734b74572f57b3bd7d4966110d8f9001c115e0d989994189948f",
+    "dependency_graph_seal_sha256": "a08d1ad1b040856a3ed0649d615faf37f3304000c7e00d3f22561d51519b40b9",
+    "logical_weight_ledger_seal_sha256": "d479791a7f3c279f0d1cc56a6203e214e4e2610da04010ba020347603dacb0db",
+    "official_manifest_seal_sha256": "b33bd06003d391df48b34c25cfb1bd49db38baeeb8d3c6b8bbf1a38c9b88138a",
+    "source_format_ledger_seal_sha256": "14d1e124fdbb9286e0122736a2cf3ff857c375a7abf9204043d8b356f29f6d8e",
+    "streaming_schedule_seal_sha256": "58eda0a6e6c750e9fcdd4850457a443417ee883c0256a9eea43067a2d00ea9d3"
+  },
+  "experiment_identity_uses_main": false,
+  "license": {
+    "path": "/Users/scammermike/.cache/huggingface/hub/models--zai-org--GLM-5.2/snapshots/b4734de4facf877f85769a911abafc5283eab3d9/LICENSE",
+    "sha256": "f4a18c6ae40b0a8e7d2b7667f52f6e1994e54a46430d2e172b73cb8c9b5eb0d7",
+    "spdx": "MIT"
+  },
+  "local_runtime": {
+    "current_hf_xet_stack_gate": "PASS",
+    "current_versions_verified_live_on_2026_07_21": {
+      "hf_xet": "1.5.2",
+      "huggingface_hub": "1.24.0",
+      "safetensors": "0.8.0",
+      "tokenizers": "0.22.2",
+      "transformers": "5.14.1"
+    },
+    "isolated_environment_required": true,
+    "official_checkpoint_saved_by_transformers": "5.12.0",
+    "packages": {
+      "hf_xet": "1.5.2",
+      "httpx": "0.27.2",
+      "huggingface_hub": "1.24.0",
+      "mlx": "0.31.2",
+      "safetensors": "0.8.0",
+      "tokenizers": "0.22.2",
+      "torch": "2.6.0",
+      "transformers": "5.14.1"
+    },
+    "platform": "macOS-27.0-arm64-arm-64bit",
+    "python": "3.12.6",
+    "python_executable": "/Users/scammermike/Downloads/hawking/.venv/glm52/bin/python",
+    "requirements_lock": {
+      "path": "tools/condense/requirements-glm52.txt",
+      "sha256": "a76685378424816dd54cbf6f60cd1a3d36b1e26d8326f08ed7284f6accd8cbdd"
+    },
+    "tokenizers_compatibility_note": "Transformers 5.14.1 requires tokenizers>=0.22.0,<=0.23.0; 0.23.0 has no stable PyPI release, so 0.22.2 is the newest stable compatible release verified for this campaign."
+  },
+  "main_matches_pinned_revision_at_admission": true,
+  "main_resolved_live": "b4734de4facf877f85769a911abafc5283eab3d9",
+  "repo": "zai-org/GLM-5.2",
+  "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+  "schema": "hawking.glm52.source_admission.v1",
+  "seal_sha256": "ad3051491582640d9b1a81fac5ceda51c76f5af5082cb6c94bc448cb9f46cdb7",
+  "source": {
+    "complete_source_resident": false,
+    "files": 295,
+    "largest_shard": {
+      "bytes": 5368361544,
+      "path": "model-00200-of-00282.safetensors"
+    },
+    "logical_bytes": 1506693036946,
+    "logical_weight_denominator": 753329940480,
+    "source_allocated_bytes": "UNAVAILABLE_UNTIL_MATERIALIZED",
+    "source_mode": "VULTURE_XET_STREAMING",
+    "tensor_payload_bytes": 1506659919872,
+    "weight_container_bytes": 1506667387408,
+    "weight_shards": 282
+  },
+  "status": "ADMITTED_CONTROL_PLANE_HEADERS_AND_PLAN_BODY_PENDING",
+  "storage": {
+    "bf16_body_admitted_now": false,
+    "filesystem_free_bytes": 641575751680,
+    "filesystem_total_bytes": 994662584320,
+    "filesystem_used_bytes": 353086832640,
+    "one_copy_status": {
+      "authoritative_location": "/Users/scammermike/.cache/huggingface/hub/models--zai-org--GLM-5.2",
+      "control_plane_content_addressed_copy": 1,
+      "local_dir_copy": null,
+      "snapshot_view": "/Users/scammermike/.cache/huggingface/hub/models--zai-org--GLM-5.2/snapshots/b4734de4facf877f85769a911abafc5283eab3d9",
+      "weight_body_copies": 0
+    },
+    "schedule_operational_reserve_bytes": 10734792512
+  },
+  "xet": {
+    "autotune_status": "PENDING",
+    "body_bytes_read": 0,
+    "deprecated_or_absent_range_get_variable_must_not_be_assumed": "HF_XET_NUM_CONCURRENT_RANGE_GETS",
+    "fixed_download_concurrency_variable_for_current_stack": "HF_XET_FIXED_DOWNLOAD_CONCURRENCY",
+    "header_range_bytes_read": 7467536,
+    "hf_transfer_allowed": false,
+    "official_xet_objects": 283,
+    "tokenizer_xet_objects": 1,
+    "weight_xet_objects": 282
+  }
+}

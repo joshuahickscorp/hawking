@@ -1,0 +1,9 @@
+# Immutable-control-plane runtime for the GLM-5.2 BF16/Xet campaign.
+# Install inside an isolated Python 3.12 environment.  The tokenizer pin is
+# intentional: Transformers 5.14.1 accepts >=0.22.0,<=0.23.0, and 0.23.0 has
+# no stable PyPI release as of the 2026-07-21 admission.
+huggingface_hub==1.24.0
+hf_xet==1.5.2
+transformers==5.14.1
+safetensors==0.8.0
+tokenizers==0.22.2
