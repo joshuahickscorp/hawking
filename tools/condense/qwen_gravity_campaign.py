@@ -226,6 +226,24 @@ LADDER: dict[str, dict[str, Any]] = {
                 "the ceiling is not the same as proposing an artifact above the ceiling, and this "
                 "one is fenced so it can never become one.",
     },
+    "S32_recon_first": {
+        "kind": "packed",
+        "keep_experts": 32,
+        "gate_up": {"family": "function_aware", "dim": 8, "k": 1024, "stages": 4},
+        "down": {"family": "function_aware", "dim": 8, "k": 1024, "stages": 1},
+        "note": "GENERATION S2, RECONSTRUCTION-FIRST. Admitted by the sealed D1/D2 causal "
+                "decomposition, which found S1 RECONSTRUCTION_BOUND: with perfect experts and only "
+                "the router masked (D1) the model keeps argmax 0.3850 and symKL 4.297, but with "
+                "perfect routing and packed experts (D2) it is already at argmax 0.0863 / symKL "
+                "7.879 - 91.6 pct of the total S64 loss. Reconstruction is the binding cause, so "
+                "the correct trade is MORE routing loss for BETTER reconstruction, not less. "
+                "Quartering the inventory to 32 survivors funds gate/up at 5.0 index bpw (RD floor "
+                "0.0312 against 0.1768 at S64) and down at 1.25. Complete 0.947079561 BPW, legal. "
+                "The cost is real and measured: keep-32 retains only 52.3 pct of top-8 routing "
+                "decisions (worst layer 41.5) on the 1313-token disjoint calibration, against 79.2 "
+                "pct at keep-64. D1 says that cost is the cheaper half of the trade. This forward "
+                "is what decides whether that reading survives contact.",
+    },
     "S2A_adaptive_k": {
         "kind": "packed",
         "adaptive_program": "QWEN235B_ADAPTIVE_EXPERT_PROGRAM.json",
@@ -294,7 +312,7 @@ LADDER: dict[str, dict[str, Any]] = {
 # 4-5 bisect it. If R2 passes, the anchors are moot and the remaining budget goes to the moonshots.
 # A truncated run therefore still yields a cliff location rather than only "everything collapsed".
 LADDER_ORDER = ["R0_parent", "S64_structural", "S64_doctor", "D1_route_only",
-                "D2_recon_only", "S2A_adaptive_k", "S64_gamma", "A1_1p0", "R2_subhalf_best", "R1_c1_corrected",
+                "D2_recon_only", "S32_recon_first", "S2A_adaptive_k", "S64_gamma", "A1_1p0", "R2_subhalf_best", "R1_c1_corrected",
                 "A2_0p85", "R4_highdim_vq", "R5_rownorm_strat", "R3_routing_aware"]
 
 ORGANS = ("gate", "up", "down")
@@ -981,7 +999,18 @@ def lockstep_logits(fwd, variants: list[str], plan: dict[str, list[str]],
             fit_mats = _mats(fit_by_var[v])
             for grp in ("gate_up", "down"):
                 for cold in (False, True):
-                    spec = (LADDER[v].get(f"cold_{grp}") if cold else LADDER[v].get(grp))
+                    if LADDER[v].get("adaptive_program"):
+                        # Adaptive candidates carry NO gate_up/down keys on the ladder entry -
+                        # their spec is per-layer in the sealed byte-auction program. Resolving it
+                        # the same way the pack loop does is what keeps fit and pack in agreement;
+                        # reading LADDER directly here silently fitted nothing and handed
+                        # _pack_organ a None codebook.
+                        if cold:
+                            continue
+                        sample = fit_by_var[v][0] if fit_by_var[v] else 0
+                        spec = _specs_for(v, L, sample, g.n_experts)[0][grp]
+                    else:
+                        spec = (LADDER[v].get(f"cold_{grp}") if cold else LADDER[v].get(grp))
                     if spec is None or spec.get("family") not in ("shared_grammar",
                                                                   "function_aware"):  # noqa: E501
                         continue

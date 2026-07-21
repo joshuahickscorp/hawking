@@ -1,0 +1,52 @@
+{
+  "bpw": {
+    "legal_under_one_bit_ceiling": false,
+    "organ_bpw": {},
+    "promotable": false,
+    "scope": "DIAGNOSTIC: all 128 experts at the survivor rate, ILLEGAL as an artifact",
+    "whole_model_bpw": 1.856994233
+  },
+  "capability_pass": false,
+  "diagnostic_only": true,
+  "divergence_vs_parent": {
+    "mean_logit_cosine": 0.57252,
+    "mean_sym_kl": 6.63498,
+    "mean_top5_overlap": 0.0909,
+    "next_token_argmax_agreement": 0.1818
+  },
+  "domain": "instruction",
+  "honesty": "REAL parent-vs-packed Qwen3-MoE forward with expert_hook substitution; BPW is whole-model from the exact byte ledger, never expert-only; weight-space error is NOT a pass criterion",
+  "kind": "packed",
+  "ladder_sha": "2434964c31db5473",
+  "logits_finite": true,
+  "n_tokens": 11,
+  "note": "CAUSAL CONTROL for the S1 decomposition, isolating RECONSTRUCTION loss. The full 128-expert router runs UNMASKED (no routing mass is lost at all) while every expert is packed at the exact rates S64_structural gives its survivors. Whatever quality this loses is caused by reconstruction error and nothing else. DIAGNOSTIC ONLY: coding 128 experts at the survivor rate costs about 1.9 complete BPW, which is ILLEGAL under the 1/1 ceiling. It is permanently ineligible for promotion and is never reported as a candidate. Measuring a causal control above the ceiling is not the same as proposing an artifact above the ceiling, and this one is fenced so it can never become one.",
+  "promotion_blocked_reason": "causal control for the S1 failure decomposition; its byte cost is not a legal artifact and it may never be promoted regardless of measured quality",
+  "prompt_id": "instr_list",
+  "quality": {
+    "n_positions": 10,
+    "nll": 7.47616,
+    "perplexity": 1765.4559
+  },
+  "row_id": "instr_list__D2_recon_only",
+  "sealed_at": "2026-07-21T00:22:40Z",
+  "sha256": "ea006596d0d0940e86eba38aca90ac3af6a7ed0d826edc613968d09ba1d245a7",
+  "spec": {
+    "diagnostic_only": true,
+    "down": {
+      "dim": 16,
+      "family": "function_aware",
+      "k": 1024,
+      "stages": 1
+    },
+    "gate_up": {
+      "dim": 8,
+      "family": "function_aware",
+      "k": 1024,
+      "stages": 2
+    },
+    "kind": "packed"
+  },
+  "variant": "D2_recon_only",
+  "verdict": "CAUSAL_CONTROL_not_a_candidate"
+}
