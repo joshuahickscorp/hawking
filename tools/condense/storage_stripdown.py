@@ -21,6 +21,7 @@ import argparse
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import time
@@ -155,17 +156,36 @@ def gate(path: Path, prot: dict, expected_dev: int) -> tuple[bool, str]:
 
 # ── active-mapping gate ─────────────────────────────────────────────────────────────────
 def mapped_paths(dirs: list[str]) -> set[str]:
-    """Absolute paths currently open/mapped by any live process, restricted to dirs."""
+    """Absolute paths currently open/mapped by any live process, restricted to dirs.
+
+    `lsof +D` alone is NOT sufficient and this is not theoretical: a process executing a binary
+    inside the tree holds it as a `txt` descriptor, which +D does not report. Measured live -
+    `lsof -w +D .../hawking-hide-build/target` returned nothing while hide-serve was running out
+    of target/debug/hide-serve, and only `lsof -d txt` found it. So the open-file walk is unioned
+    with a global txt/cwd/rtd sweep filtered to the same prefixes.
+    """
     out: set[str] = set()
     for d in dirs:
         try:
             res = subprocess.run(["lsof", "-w", "-Fn", "+D", d], capture_output=True,
-                                 text=True, timeout=180)
+                                 text=True, timeout=300)
         except Exception:
             return {"__LSOF_FAILED__"}  # fail-closed: caller must treat as "everything mapped"
         for line in res.stdout.splitlines():
             if line.startswith("n/"):
                 out.add(line[1:])
+    try:
+        res = subprocess.run(["lsof", "-w", "-Fn", "-d", "txt,cwd,rtd"], capture_output=True,
+                             text=True, timeout=300)
+    except Exception:
+        return {"__LSOF_FAILED__"}
+    prefixes = [str(Path(d).resolve()) for d in dirs]
+    for line in res.stdout.splitlines():
+        if not line.startswith("n/"):
+            continue
+        p = line[1:]
+        if any(p == pre or p.startswith(pre + os.sep) for pre in prefixes):
+            out.add(p)
     return out
 
 
@@ -566,6 +586,56 @@ def cmd_release(args) -> dict:
 
 
 # ── final verification ──────────────────────────────────────────────────────────────────
+RECLAIMABLE_NAMES = {"target", "node_modules", ".build", "build", "__pycache__"}
+
+
+def cmd_reclaim(args) -> dict:
+    """Remove REBUILDABLE build trees only. Each must pass the protected-path gate, be named
+    like a build directory, and have no live process holding anything inside it."""
+    prot = protected_set()
+    dev = os.stat(DATA_VOLUME).st_dev
+    before = free_bytes()
+    results = []
+    for raw in args.dir or []:
+        d = Path(raw)
+        ok, why = gate(d, prot, dev)
+        if not ok:
+            results.append({"path": str(d), "action": "refused", "reason": why})
+            continue
+        if not d.is_dir():
+            results.append({"path": str(d), "action": "refused", "reason": "not a directory"})
+            continue
+        if d.name not in RECLAIMABLE_NAMES:
+            results.append({"path": str(d), "action": "refused",
+                            "reason": f"{d.name!r} is not a build-directory name; this command "
+                                      f"only removes rebuildable trees"})
+            continue
+        holders = mapped_paths([str(d)])
+        if "__LSOF_FAILED__" in holders:
+            results.append({"path": str(d), "action": "refused", "reason": "lsof failed"})
+            continue
+        if holders:
+            results.append({"path": str(d), "action": "refused",
+                            "reason": f"{len(holders)} file(s) held by a live process"})
+            continue
+        n = dir_bytes(d)
+        shutil.rmtree(d, ignore_errors=False)
+        results.append({"path": str(d), "action": "removed", "allocated_bytes": n,
+                        "restore": args.restore or "rebuild with the project's build command"})
+    receipt = {
+        "schema": "hawking.storage_stripdown.reclaim.v1", "generated_at": now(),
+        "results": results,
+        "removed": sum(1 for r in results if r["action"] == "removed"),
+        "refused": [r for r in results if r["action"] == "refused"],
+        "bytes_removed": sum(r.get("allocated_bytes", 0) for r in results),
+        "free_before": before, "free_after": free_bytes(),
+        "note": "every path here is a rebuildable build product. No source, no evidence, no "
+                "model payload, and nothing under a protected root.",
+    }
+    write(OUT / f"STORAGE_RECLAIM_RECEIPT_{int(time.time())}.json", receipt)
+    return receipt
+
+
 def cmd_verify(_args) -> dict:
     prot = protected_set()
     mop = HOME / "Downloads/mop"
@@ -629,7 +699,25 @@ def self_check() -> None:
     assert not ok, f"GATE BROKEN: a system path passed the deletion gate ({why})"
     ok, why = gate(ROOT / "does-not-exist-xyz", prot, dev)
     assert not ok and why == "does not exist", why
-    print("self_check: OK (MOP, .git, /etc and missing paths all rejected)")
+
+    # A tree containing a RUNNING executable must read as mapped. `lsof +D` does not report txt
+    # descriptors, so this asserts the txt/cwd sweep is doing its job.
+    try:
+        res = subprocess.run(["lsof", "-w", "-Fn", "-d", "txt"], capture_output=True,
+                             text=True, timeout=120)
+        running = [ln[1:] for ln in res.stdout.splitlines()
+                   if ln.startswith("n/") and "/target/" in ln]
+    except Exception:
+        running = []
+    if running:
+        tree = str(Path(running[0]).parent)
+        assert mapped_paths([tree]), \
+            f"GATE BROKEN: {tree} holds a running executable but read as unmapped"
+        print(f"self_check: OK (MOP, .git, /etc, missing paths rejected; live-exec tree "
+              f"{tree} correctly reads as mapped)")
+    else:
+        print("self_check: OK (MOP, .git, /etc and missing paths all rejected; "
+              "no running in-tree executable available to exercise the mapping check)")
 
 
 def main() -> int:
@@ -648,6 +736,9 @@ def main() -> int:
     p.add_argument("--license", default="unknown")
     p.add_argument("--conclusion", default="")
     p.add_argument("--evidence", default="")
+    p = sub.add_parser("reclaim")
+    p.add_argument("--dir", action="append", help="rebuildable build directory to remove")
+    p.add_argument("--restore", help="the command that regenerates these trees")
     p = sub.add_parser("execute")
     p.add_argument("--go", action="store_true", help="actually unlink (default is dry run)")
     sub.add_parser("verify")
@@ -657,7 +748,8 @@ def main() -> int:
         self_check()
         return 0
     fn = {"protect": cmd_protect, "inventory": cmd_inventory, "plan": cmd_plan,
-          "release": cmd_release, "execute": cmd_execute, "verify": cmd_verify}[args.cmd]
+          "release": cmd_release, "execute": cmd_execute, "verify": cmd_verify,
+          "reclaim": cmd_reclaim}[args.cmd]
     out = fn(args)
     print(json.dumps(out, indent=2, sort_keys=True, default=str))
     return 1 if out.get("status") == "BLOCKED" else 0

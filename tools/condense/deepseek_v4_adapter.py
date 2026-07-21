@@ -301,13 +301,42 @@ def shard_plan(meta: Path = DEFAULT_META, organ: str = ORGAN_EXPERT) -> dict[str
     return {k: sorted(v) for k, v in sorted(plan.items())}
 
 
+def routed_expert_pack_factor(name: str, shape: list[int], cfg: dict[str, Any]) -> int:
+    """How many logical weights are packed into each stored element.
+
+    MEASURED, not assumed. The routed experts of this checkpoint store two fp4 values per int8
+    byte: `layers.0.ffn.experts.0.w1.weight` is I8 [2048, 2048] while hidden_size is 4096, and the
+    SHARED expert's w1 is F8_E4M3 [2048, 4096] unpacked. Taking numel straight from the header
+    would halve the routed-expert denominator and make every future BPW read twice as compressed
+    as it truly is. Verified factor 2.0 on w1, w2 and w3 alike.
+    """
+    m = _RE_EXPERT.match(name)
+    if not m or m.group(5) != "weight" or len(shape) != 2:
+        return 1
+    H = int(cfg["hidden_size"]) if "hidden_size" in cfg else int(cfg["dim"])
+    I = int(cfg.get("moe_intermediate_size") or cfg["moe_inter_dim"])
+    expected_in = I if m.group(4) == "2" else H     # w2 maps I->H; w1/w3 map H->I
+    stored_in = shape[1]
+    if stored_in == expected_in:
+        return 1
+    if stored_in * 2 == expected_in:
+        return 2
+    raise DeepSeekV4AdapterError(
+        f"{name}: stored in-features {stored_in} is neither {expected_in} nor half of it; "
+        f"the packing layout is not what this adapter was verified against")
+
+
 def verify_against_source(model_dir: Path) -> dict[str, Any]:
     """Read the REAL safetensors headers once the shards are resident and reconcile byte-exactly."""
     model_dir = Path(model_dir)
+    cfg = load_config(model_dir / "_meta") if (model_dir / "_meta" / "config.json").exists() \
+        else json.loads((model_dir / "config.json").read_text())
     idx = json.loads((model_dir / "model.safetensors.index.json").read_text())
     total_size = int(idx.get("metadata", {}).get("total_size", 0))
     per_organ: Counter = Counter()
     per_organ_params: Counter = Counter()
+    per_organ_stored: Counter = Counter()
+    pack_factors: Counter = Counter()
     seen = 0
     for shard in sorted({*idx["weight_map"].values()}):
         p = model_dir / shard
@@ -328,17 +357,32 @@ def verify_against_source(model_dir: Path) -> dict[str, Any]:
             numel = 1
             for d in spec["shape"]:
                 numel *= d
-            per_organ_params[organ] += numel
+            factor = routed_expert_pack_factor(name, spec["shape"], cfg)
+            if factor != 1:
+                pack_factors[f"{organ}:{spec['dtype']}"] = factor
+            per_organ_stored[organ] += numel
+            per_organ_params[organ] += numel * factor
             seen += nbytes
+    owc_compressible = sum(per_organ_params[o] for o in COMPRESSIBLE_ORGANS)
+    owc_all = sum(per_organ_params.values())
     return {
         "status": "GREEN" if seen == total_size else "RED",
         "bytes_seen": seen, "index_total_size": total_size,
         "byte_exact": seen == total_size,
         "bytes_by_organ": dict(per_organ.most_common()),
-        "elements_by_organ": dict(per_organ_params.most_common()),
-        "original_weight_count_compressible": sum(
-            per_organ_params[o] for o in COMPRESSIBLE_ORGANS),
-        "original_weight_count_all": sum(per_organ_params.values()),
+        "stored_elements_by_organ": dict(per_organ_stored.most_common()),
+        "logical_weights_by_organ": dict(per_organ_params.most_common()),
+        "pack_factors_detected": dict(pack_factors),
+        "original_weight_count_compressible": owc_compressible,
+        "original_weight_count_all": owc_all,
+        "source_bits_per_weight_by_organ": {
+            o: round(per_organ[o] * 8 / per_organ_params[o], 4)
+            for o in per_organ if per_organ_params[o]},
+        "denominator_warning":
+            "original_weight_count uses LOGICAL weights, i.e. stored elements x the measured pack "
+            "factor. The routed experts pack two fp4 values per int8 byte, so taking numel "
+            "straight from the safetensors header would HALVE this denominator and make every "
+            "candidate report roughly twice the compression it actually achieved.",
     }
 
 
@@ -399,6 +443,21 @@ def self_check() -> None:
     assert classify("layers.7.attn.compressor.wkv.weight")["organ"] == ORGAN_COMPRESSOR
     assert classify("layers.7.attn.indexer.compressor.wkv.weight")["organ"] == ORGAN_INDEXER
     assert classify("layers.7.attn.wkv.weight")["organ"] == ORGAN_ATTN_MLA
+
+    # The fp4 pack factor must be MEASURED from the shape, and an unexpected layout must raise
+    # rather than silently produce a wrong ledger denominator.
+    c = {"hidden_size": 4096, "moe_intermediate_size": 2048}
+    assert routed_expert_pack_factor("layers.0.ffn.experts.0.w1.weight", [2048, 2048], c) == 2
+    assert routed_expert_pack_factor("layers.0.ffn.experts.0.w2.weight", [4096, 1024], c) == 2
+    assert routed_expert_pack_factor("layers.0.ffn.experts.0.w3.weight", [2048, 2048], c) == 2
+    assert routed_expert_pack_factor("layers.0.ffn.experts.0.w1.weight", [2048, 4096], c) == 1
+    assert routed_expert_pack_factor("layers.0.ffn.shared_experts.w1.weight", [2048, 4096], c) == 1
+    try:
+        routed_expert_pack_factor("layers.0.ffn.experts.0.w1.weight", [2048, 999], c)
+    except DeepSeekV4AdapterError:
+        pass
+    else:
+        raise AssertionError("an unrecognised packing layout did not raise")
 
     # An unknown name must RAISE, never be silently bucketed.
     for bad in ("layers.3.attn.brand_new_thing", "totally.unknown", "layers.3.ffn.mystery"):

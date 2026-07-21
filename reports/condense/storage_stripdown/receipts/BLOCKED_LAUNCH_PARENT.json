@@ -1,0 +1,6 @@
+{
+  "reason": "launch packet RED: no campaign runner for 'deepseek_v4': a real parent-vs-packed forward does not exist for this architecture. Upstream ships a CUDA/Triton reference at _meta/inference/model.py + kernel.py; porting it to the Metal/CPU path (MLA + sparse indexer + DSpark compressor + hyper-connections + fp8/fp4 block-scale dequant) is the blocking build item. Until it exists, no capability claim, no BPW ledger and no promotion is legal for this parent.",
+  "receipt": "BLOCKED_LAUNCH_PARENT",
+  "sealed_at": "2026-07-21T03:26:11Z",
+  "state": "LAUNCH_PARENT"
+}
