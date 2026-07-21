@@ -280,7 +280,7 @@ def doctor_auction(ledger_path: Path, causal_path: Path, output: Path) -> dict[s
         "active_logical_weights": int(ledger["active_text_core_logical_weights_per_token"]),
     }
     free_bytes = shutil.disk_usage(Path.home()).free
-    retained_floor_bytes = 32 * 1024**3
+    retained_floor_bytes = 82 * 1024**3
     rows = []
     for candidate_id, target, base_share, doctor_share, envelope in CANDIDATES:
         total_bytes = (denominators["all_kimi_logical_weights"] * target.numerator //

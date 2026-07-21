@@ -1,0 +1,9 @@
+{
+  "attempted_at": "2026-07-21T18:14:12Z",
+  "checkpoint_id": "long-run:disk-floor-82gib-stop",
+  "credentials_available": true,
+  "delivered": true,
+  "message_sha256": "4bf24ac758b55117df9cf3abb50c01479fcfd704e2f4de4128ee291174b58a8a",
+  "schema": "hawking.kimi_k26.long_run_telegram.v1",
+  "seal_sha256": "5674951e3b0a9d6343056c564ee50396062993a4192ed4ca8ee7b10ebbd18ccf"
+}

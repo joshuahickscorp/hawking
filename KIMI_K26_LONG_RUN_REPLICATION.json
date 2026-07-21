@@ -1,0 +1,953 @@
+{
+  "baseline": {
+    "adversarial_low_margin": {
+      "hidden": {
+        "cosine_mean": 0.9993719458580017,
+        "cosine_min": 0.9929172396659851,
+        "cosine_p10": 0.9984560608863831,
+        "norm_ratio": 0.9995256066322327,
+        "normalized_rmse": 0.0368000827729702,
+        "relative_l2": 0.03680011257529259
+      },
+      "route_matches": 53,
+      "route_set_agreement": 0.6794871794871795,
+      "row_relative_l2_mean": 0.025691766291856766,
+      "selection": "TEACHER_MARGIN_BOTTOM_QUARTILE",
+      "threshold": 0.0006076693534851074,
+      "tokens": 78
+    },
+    "hidden": {
+      "cosine_mean": 0.9990062713623047,
+      "cosine_min": 0.9754164218902588,
+      "cosine_p10": 0.9976915121078491,
+      "norm_ratio": 0.9897217154502869,
+      "normalized_rmse": 0.0725121945142746,
+      "relative_l2": 0.07251086086034775
+    },
+    "route_matches": 253,
+    "route_set_agreement": 0.8187702265372169,
+    "row_relative_l2_mean": 0.02840154990553856,
+    "tokens": 309
+  },
+  "capture": {
+    "bytes": 79761851,
+    "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/long_run/LR03/LR03_REPLICATION_CAPTURE.npz",
+    "sha256": "364ac009796943966106cee37c089f3cf9b8a6c1d8b61ec65b47b111a3a7f80f"
+  },
+  "causal_interpretation": "A route-only or low-rank state/MoE repair must improve both the original held-out split and this untouched replication split; otherwise apparent norm-weighted rescue is not a robust capability-preserving representation.",
+  "config": {
+    "adversarial_selection": "TEACHER_MARGIN_BOTTOM_QUARTILE",
+    "payload_refit": false,
+    "payload_selection_uses_replication": false,
+    "prompt_count": 12,
+    "seed": 26072103,
+    "segments": [
+      "new_factual",
+      "new_science",
+      "new_code",
+      "new_math",
+      "new_logic",
+      "new_instruction",
+      "new_tool_protocol",
+      "new_rare_unicode",
+      "adversarial_punctuation",
+      "adversarial_boundary",
+      "adversarial_multilingual",
+      "adversarial_schema"
+    ]
+  },
+  "decision": "REPLICATED_NO_PROMOTABLE_REPAIR",
+  "duration_seconds": 23.01130223274231,
+  "ended_at": "2026-07-21T17:26:29Z",
+  "evidence_parent": {
+    "guard_audit_seal_sha256": "a4ceaab1601b746f9d74812f0be1d860399292e03933484f95091331c1598bd7",
+    "lr02_seal_sha256": "454402d139356a1abcfa426ace236f5701a56cf968bff04c9ff26c5634145c6a"
+  },
+  "experiment_id": "LR03_NEW_SPLIT_ADVERSARIAL_REPLICATION",
+  "faults": [],
+  "hypothesis": "The LR02 held-out harm replicates on new contexts, especially low-margin tokens.",
+  "input_capture": {
+    "attention": {
+      "heads": 64,
+      "kv_rank": 512,
+      "q_rank": 1536,
+      "query_dim": 192,
+      "segment_lengths": [
+        15,
+        18,
+        26,
+        34,
+        23,
+        26,
+        24,
+        30,
+        26,
+        22,
+        34,
+        31
+      ],
+      "sequence": 309,
+      "softmax_scale": 0.14467962580268923,
+      "value_dim": 128
+    },
+    "layer_zero": {
+      "attention": {
+        "heads": 64,
+        "kv_rank": 512,
+        "q_rank": 1536,
+        "query_dim": 192,
+        "segment_lengths": [
+          15,
+          18,
+          26,
+          34,
+          23,
+          26,
+          24,
+          30,
+          26,
+          22,
+          34,
+          31
+        ],
+        "sequence": 309,
+        "softmax_scale": 0.14467962580268923,
+        "value_dim": 128
+      },
+      "finite": true,
+      "hidden_sha256": "0a72edd61fe39f1c5335c68a84aa82db9ff4bd8b2f84e6591ee8277ae48bf7f7",
+      "moe": {
+        "kind": "dense",
+        "used_expert_count": 0
+      },
+      "segment_hidden_sha256": [
+        "85ec87ac7028f5cefbdc749e32b2a52abd9b8feec647c64027a2600c2abc6243",
+        "841559d6bb67bf8533deb2563317acee8123c9e3b833113ac300e29b3c6a4125",
+        "fa14f837976dd5984140d9dbd5de411d1b325b53e55ffb5281a6dfbaf55db143",
+        "a9d37c22d4511fa6b223fa577f9d6c6812c1c383986a9ab80c36a523e5e1b7e9",
+        "a1caf74954600efd382bb7b6b30d882d9270653a2d8dd3a1b4a780287137d68e",
+        "b626a1cf5873a5f3afd54ffcb3292a5b348b50537155bc3e9e7221ef4fed49d7",
+        "215b2e691e2672053d86deb3a5b5514a9ff13e276e1cbb84fd0a13789bf7f5f5",
+        "88e755a8d21a22bf0bbdb1f97b76d7d12f58c87768bb37059c6dab824fb44750",
+        "c620c596610ac43bdae3095503bebe65f81feb7c5725c5e7dc2fec6515c57d28",
+        "dc97b5431cf40cbae19c8e0584c93b9a90bf69d5ab455788b6c97c7d4f11b8b7",
+        "a2ddc9a78258293670f7ac0f9045aa444447dcbaf388e5943ea6b1472c1d2379",
+        "4903a1326384e486f5aef41098d942d3c68033b519ab75ca52d8dfc9b7652c52"
+      ],
+      "tensor_audit": {
+        "accessed_tensors": 12,
+        "conditionally_inactive_routed_expert_tensors": 0,
+        "source_tensors": 12,
+        "unaccounted_tensors": []
+      }
+    }
+  },
+  "layer1": {
+    "config_top_k": 8,
+    "native_sentinel_vs_compact": {
+      "cosine_mean": 0.2405853271484375,
+      "cosine_min": -0.06350485235452652,
+      "cosine_p10": 0.07541374862194061,
+      "norm_ratio": 1.7642714977264404,
+      "normalized_rmse": 1.7336939573287964,
+      "relative_l2": 1.7336896657943726
+    },
+    "residual_hidden": {
+      "cosine_mean": 0.999457597732544,
+      "cosine_min": 0.9736800789833069,
+      "cosine_p10": 0.9999998807907104,
+      "norm_ratio": 0.995869517326355,
+      "normalized_rmse": 0.055034950375556946,
+      "relative_l2": 0.05503494292497635
+    },
+    "routed_output": {
+      "cosine_mean": 0.9972308874130249,
+      "cosine_min": 0.8425379395484924,
+      "cosine_p10": 0.9999998807907104,
+      "norm_ratio": 0.9404164552688599,
+      "normalized_rmse": 0.22700968384742737,
+      "relative_l2": 0.22700954973697662
+    },
+    "sentinel_route_slots": 21,
+    "sentinel_routed_tokens": 21,
+    "used_experts": [
+      0,
+      1,
+      4,
+      5,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      23,
+      24,
+      26,
+      28,
+      30,
+      31,
+      33,
+      34,
+      36,
+      37,
+      38,
+      39,
+      41,
+      43,
+      44,
+      45,
+      47,
+      48,
+      49,
+      50,
+      51,
+      53,
+      54,
+      55,
+      56,
+      57,
+      59,
+      60,
+      62,
+      63,
+      64,
+      66,
+      67,
+      68,
+      70,
+      71,
+      72,
+      73,
+      74,
+      75,
+      76,
+      77,
+      78,
+      79,
+      80,
+      81,
+      82,
+      83,
+      84,
+      86,
+      87,
+      88,
+      89,
+      90,
+      92,
+      93,
+      94,
+      95,
+      96,
+      97,
+      98,
+      99,
+      100,
+      101,
+      102,
+      104,
+      105,
+      106,
+      107,
+      108,
+      110,
+      111,
+      112,
+      113,
+      115,
+      116,
+      118,
+      121,
+      122,
+      124,
+      125,
+      126,
+      127,
+      128,
+      129,
+      130,
+      134,
+      135,
+      136,
+      137,
+      138,
+      141,
+      142,
+      143,
+      145,
+      147,
+      148,
+      149,
+      150,
+      151,
+      152,
+      153,
+      154,
+      155,
+      156,
+      157,
+      159,
+      160,
+      161,
+      162,
+      163,
+      164,
+      165,
+      166,
+      167,
+      168,
+      170,
+      171,
+      174,
+      175,
+      176,
+      177,
+      178,
+      179,
+      181,
+      182,
+      183,
+      184,
+      185,
+      186,
+      187,
+      189,
+      191,
+      192,
+      193,
+      195,
+      196,
+      197,
+      199,
+      200,
+      201,
+      202,
+      203,
+      204,
+      205,
+      206,
+      208,
+      209,
+      210,
+      211,
+      213,
+      214,
+      217,
+      218,
+      219,
+      220,
+      221,
+      223,
+      224,
+      225,
+      226,
+      227,
+      228,
+      230,
+      231,
+      232,
+      233,
+      234,
+      235,
+      236,
+      238,
+      239,
+      240,
+      241,
+      242,
+      243,
+      244,
+      245,
+      246,
+      247,
+      248,
+      249,
+      250,
+      251,
+      252,
+      253,
+      254,
+      256,
+      257,
+      258,
+      259,
+      260,
+      261,
+      262,
+      263,
+      264,
+      265,
+      266,
+      268,
+      269,
+      270,
+      271,
+      272,
+      273,
+      274,
+      275,
+      276,
+      277,
+      278,
+      279,
+      280,
+      281,
+      282,
+      284,
+      285,
+      288,
+      289,
+      290,
+      291,
+      292,
+      293,
+      294,
+      295,
+      297,
+      298,
+      299,
+      301,
+      302,
+      303,
+      304,
+      306,
+      307,
+      310,
+      311,
+      312,
+      313,
+      314,
+      315,
+      316,
+      317,
+      318,
+      319,
+      321,
+      322,
+      323,
+      324,
+      326,
+      328,
+      330,
+      331,
+      333,
+      335,
+      336,
+      337,
+      338,
+      341,
+      342,
+      344,
+      345,
+      346,
+      347,
+      348,
+      350,
+      352,
+      354,
+      355,
+      356,
+      357,
+      358,
+      360,
+      361,
+      362,
+      364,
+      365,
+      366,
+      367,
+      368,
+      369,
+      370,
+      371,
+      372,
+      373,
+      376,
+      377,
+      378,
+      379,
+      380,
+      381,
+      382
+    ]
+  },
+  "layer3_amplification": {
+    "HYBRID_R12X2": {
+      "hidden": {
+        "cosine_mean": 0.9981666803359985,
+        "cosine_min": 0.9801783561706543,
+        "cosine_p10": 0.9952729344367981,
+        "norm_ratio": 0.9938520789146423,
+        "normalized_rmse": 0.06705856323242188,
+        "relative_l2": 0.0670570433139801
+      },
+      "hidden_sha256": "ac880b74299d839b703505c62905055cf40a8693a1b0e6875e32f3dcdd924ceb",
+      "route_matches": 203,
+      "route_set_agreement": 0.656957928802589
+    },
+    "NATURAL_STUDENT": {
+      "hidden": {
+        "cosine_mean": 0.9987491965293884,
+        "cosine_min": 0.9788234829902649,
+        "cosine_p10": 0.9966289401054382,
+        "norm_ratio": 0.9698687195777893,
+        "normalized_rmse": 0.08646435290575027,
+        "relative_l2": 0.08646256476640701
+      },
+      "hidden_sha256": "7783260846c2fe6e3103173985f1417fa8362fe5d2c4fb967e62f09db4a1f19c",
+      "route_matches": 242,
+      "route_set_agreement": 0.7831715210355987
+    },
+    "TEACHER": {
+      "hidden": {
+        "cosine_mean": 1.0,
+        "cosine_min": 0.9999998807907104,
+        "cosine_p10": 0.9999998807907104,
+        "norm_ratio": 1.0,
+        "normalized_rmse": 0.0,
+        "relative_l2": 0.0
+      },
+      "hidden_sha256": "2fecf60428ec2a8e2bdcd0e591895881c52a3bde983e577e07671b987e6a6a4e",
+      "route_matches": 309,
+      "route_set_agreement": 1.0
+    }
+  },
+  "next_run_rationale": "Run shrinkage/rank boundary falsification from calibration-only cross-validation, then validate the single preregistered winner on another untouched split.",
+  "replication_frontier": [
+    {
+      "adversarial_low_margin": {
+        "hidden": {
+          "cosine_mean": 0.9989534020423889,
+          "cosine_min": 0.989397406578064,
+          "cosine_p10": 0.9980655908584595,
+          "norm_ratio": 1.0004452466964722,
+          "normalized_rmse": 0.046827275305986404,
+          "relative_l2": 0.04682730510830879
+        },
+        "relative_l2_improvement": {
+          "ci95_high": -0.0074319875745389305,
+          "ci95_low": -0.017609597698230152,
+          "mean": -0.012479404465128213,
+          "n": 78
+        },
+        "route_matches": 31,
+        "route_set_agreement": 0.3974358974358974,
+        "row_relative_l2_mean": 0.03817117214202881,
+        "tokens": 78
+      },
+      "all_tokens": {
+        "hidden": {
+          "cosine_mean": 0.9988182187080383,
+          "cosine_min": 0.9780623912811279,
+          "cosine_p10": 0.997373104095459,
+          "norm_ratio": 0.9906286597251892,
+          "normalized_rmse": 0.07237062603235245,
+          "relative_l2": 0.07236936688423157
+        },
+        "relative_l2_improvement": {
+          "ci95_high": -0.005648971405174149,
+          "ci95_low": -0.010254220979161633,
+          "mean": -0.008034088472537334,
+          "n": 309
+        },
+        "route_matches": 209,
+        "route_set_agreement": 0.6763754045307443,
+        "row_relative_l2_mean": 0.03643564134836197
+      },
+      "candidate": "FIRST_DIVERGENCE_PROTECTION_R12",
+      "complete_bpw": 0.9426284063430059,
+      "complete_physical_bytes": 5189192,
+      "domain_summary": {
+        "code": {
+          "route_set_agreement": 0.5384615384615384,
+          "row_relative_l2_mean": 0.037797242403030396,
+          "tokens": 52
+        },
+        "prose": {
+          "route_set_agreement": 0.7628865979381443,
+          "row_relative_l2_mean": 0.03922902047634125,
+          "tokens": 97
+        },
+        "reasoning": {
+          "route_set_agreement": 0.6582278481012658,
+          "row_relative_l2_mean": 0.035026874393224716,
+          "tokens": 79
+        },
+        "tool_format": {
+          "route_set_agreement": 0.6790123456790124,
+          "row_relative_l2_mean": 0.03359033912420273,
+          "tokens": 81
+        }
+      },
+      "payload_sha256": "934e1bcbd03c97b151613bebd6f2b4a6b895bb21739f3021ba39e59155911073",
+      "prior_lr02_decision": "RETIRE_HELDOUT_HARM",
+      "prior_lr02_improvement": {
+        "ci95_high": -0.0042505796487275205,
+        "ci95_low": -0.017299975082659944,
+        "mean": -0.010357730166956049,
+        "n": 61
+      },
+      "replication_decision": "RETIRED_NO_TWO_SPLIT_BENEFIT"
+    },
+    {
+      "adversarial_low_margin": {
+        "hidden": {
+          "cosine_mean": 0.9989292621612549,
+          "cosine_min": 0.9893864989280701,
+          "cosine_p10": 0.9979484677314758,
+          "norm_ratio": 1.0003362894058228,
+          "normalized_rmse": 0.04744639992713928,
+          "relative_l2": 0.04744642600417137
+        },
+        "relative_l2_improvement": {
+          "ci95_high": -0.007767570091005508,
+          "ci95_low": -0.01838257887537997,
+          "mean": -0.01299615009711721,
+          "n": 78
+        },
+        "route_matches": 30,
+        "route_set_agreement": 0.38461538461538464,
+        "row_relative_l2_mean": 0.03868791460990906,
+        "tokens": 78
+      },
+      "all_tokens": {
+        "hidden": {
+          "cosine_mean": 0.9988364577293396,
+          "cosine_min": 0.9780504107475281,
+          "cosine_p10": 0.9974122643470764,
+          "norm_ratio": 0.9940981864929199,
+          "normalized_rmse": 0.06675378233194351,
+          "relative_l2": 0.06675296276807785
+        },
+        "relative_l2_improvement": {
+          "ci95_high": -0.005488678243299071,
+          "ci95_low": -0.010390029744543497,
+          "mean": -0.00792194290906432,
+          "n": 309
+        },
+        "route_matches": 207,
+        "route_set_agreement": 0.6699029126213593,
+        "row_relative_l2_mean": 0.03632349148392677
+      },
+      "candidate": "PRE_ROUTER_STATE_R24",
+      "complete_bpw": 0.973861331031436,
+      "complete_physical_bytes": 5361130,
+      "domain_summary": {
+        "code": {
+          "route_set_agreement": 0.5384615384615384,
+          "row_relative_l2_mean": 0.03758907690644264,
+          "tokens": 52
+        },
+        "prose": {
+          "route_set_agreement": 0.7422680412371134,
+          "row_relative_l2_mean": 0.03838955610990524,
+          "tokens": 97
+        },
+        "reasoning": {
+          "route_set_agreement": 0.6582278481012658,
+          "row_relative_l2_mean": 0.035449013113975525,
+          "tokens": 79
+        },
+        "tool_format": {
+          "route_set_agreement": 0.6790123456790124,
+          "row_relative_l2_mean": 0.033889736980199814,
+          "tokens": 81
+        }
+      },
+      "payload_sha256": "b7ff730817ce6409a676fe9fe84dfd5e56ec0914081e5b0959d47684ab1dcaf8",
+      "prior_lr02_decision": "RETIRE_HELDOUT_HARM",
+      "prior_lr02_improvement": {
+        "ci95_high": -0.0021034376844611064,
+        "ci95_low": -0.01593719646754507,
+        "mean": -0.008711499085680384,
+        "n": 61
+      },
+      "replication_decision": "RETIRED_NO_TWO_SPLIT_BENEFIT"
+    },
+    {
+      "adversarial_low_margin": {
+        "hidden": {
+          "cosine_mean": 0.9989721775054932,
+          "cosine_min": 0.9895046949386597,
+          "cosine_p10": 0.9979693293571472,
+          "norm_ratio": 0.9992522597312927,
+          "normalized_rmse": 0.04667891189455986,
+          "relative_l2": 0.04667893424630165
+        },
+        "relative_l2_improvement": {
+          "ci95_high": -0.005584921017259311,
+          "ci95_low": -0.016526892782451633,
+          "mean": -0.011072396867884656,
+          "n": 78
+        },
+        "route_matches": 30,
+        "route_set_agreement": 0.38461538461538464,
+        "row_relative_l2_mean": 0.03676416724920273,
+        "tokens": 78
+      },
+      "all_tokens": {
+        "hidden": {
+          "cosine_mean": 0.9988344311714172,
+          "cosine_min": 0.9776343703269958,
+          "cosine_p10": 0.9973903298377991,
+          "norm_ratio": 0.989662230014801,
+          "normalized_rmse": 0.0735112875699997,
+          "relative_l2": 0.07350987941026688
+        },
+        "relative_l2_improvement": {
+          "ci95_high": -0.0035876979510010517,
+          "ci95_low": -0.008127880184877284,
+          "mean": -0.005920577894528562,
+          "n": 309
+        },
+        "route_matches": 208,
+        "route_set_agreement": 0.6731391585760518,
+        "row_relative_l2_mean": 0.03432212769985199
+      },
+      "candidate": "LOW_MARGIN_ROUTER_R24",
+      "complete_bpw": 0.9418509347098214,
+      "complete_physical_bytes": 5184912,
+      "domain_summary": {
+        "code": {
+          "route_set_agreement": 0.5384615384615384,
+          "row_relative_l2_mean": 0.03668859228491783,
+          "tokens": 52
+        },
+        "prose": {
+          "route_set_agreement": 0.7422680412371134,
+          "row_relative_l2_mean": 0.03769873455166817,
+          "tokens": 97
+        },
+        "reasoning": {
+          "route_set_agreement": 0.6708860759493671,
+          "row_relative_l2_mean": 0.03279946371912956,
+          "tokens": 79
+        },
+        "tool_format": {
+          "route_set_agreement": 0.6790123456790124,
+          "row_relative_l2_mean": 0.030244389548897743,
+          "tokens": 81
+        }
+      },
+      "payload_sha256": "08773166660e6553fbf29087e0a7913f2708a2328cce42a39d36601329c88d0b",
+      "prior_lr02_decision": "RETIRE_HELDOUT_HARM",
+      "prior_lr02_improvement": {
+        "ci95_high": -0.0020955564154571554,
+        "ci95_low": -0.014875668114562687,
+        "mean": -0.008124207635028441,
+        "n": 61
+      },
+      "replication_decision": "RETIRED_NO_TWO_SPLIT_BENEFIT"
+    },
+    {
+      "adversarial_low_margin": {
+        "hidden": {
+          "cosine_mean": 0.9991267323493958,
+          "cosine_min": 0.9925687313079834,
+          "cosine_p10": 0.9980738759040833,
+          "norm_ratio": 0.9999144077301025,
+          "normalized_rmse": 0.04171670600771904,
+          "relative_l2": 0.04171670973300934
+        },
+        "relative_l2_improvement": {
+          "ci95_high": -0.008087937777282861,
+          "ci95_low": -0.011818183513167194,
+          "mean": -0.009888869465495914,
+          "n": 78
+        },
+        "route_matches": 53,
+        "route_set_agreement": 0.6794871794871795,
+        "row_relative_l2_mean": 0.03558063879609108,
+        "tokens": 78
+      },
+      "all_tokens": {
+        "hidden": {
+          "cosine_mean": 0.9988099336624146,
+          "cosine_min": 0.9742137789726257,
+          "cosine_p10": 0.997505247592926,
+          "norm_ratio": 0.9942733645439148,
+          "normalized_rmse": 0.06787947565317154,
+          "relative_l2": 0.06787879765033722
+        },
+        "relative_l2_improvement": {
+          "ci95_high": -0.007959032535830265,
+          "ci95_low": -0.010514848345052752,
+          "mean": -0.00931394773665032,
+          "n": 309
+        },
+        "route_matches": 253,
+        "route_set_agreement": 0.8187702265372169,
+        "row_relative_l2_mean": 0.037715498358011246
+      },
+      "candidate": "WEIGHTED_MOE_OUTPUT_R24",
+      "complete_bpw": 0.9738651457287016,
+      "complete_physical_bytes": 5361151,
+      "domain_summary": {
+        "code": {
+          "route_set_agreement": 0.8461538461538461,
+          "row_relative_l2_mean": 0.03426670655608177,
+          "tokens": 52
+        },
+        "prose": {
+          "route_set_agreement": 0.8041237113402062,
+          "row_relative_l2_mean": 0.04071394354104996,
+          "tokens": 97
+        },
+        "reasoning": {
+          "route_set_agreement": 0.8227848101265823,
+          "row_relative_l2_mean": 0.036004599183797836,
+          "tokens": 79
+        },
+        "tool_format": {
+          "route_set_agreement": 0.8148148148148148,
+          "row_relative_l2_mean": 0.0380074642598629,
+          "tokens": 81
+        }
+      },
+      "payload_sha256": "66f3130f3435f94bafbf7b4dae244908cd8e4ef1b8fd4fd65be7fdedc25e07c0",
+      "prior_lr02_decision": "RETIRE_HELDOUT_HARM",
+      "prior_lr02_improvement": {
+        "ci95_high": -0.005226642248358149,
+        "ci95_low": -0.011761603820839989,
+        "mean": -0.009026688050295486,
+        "n": 61
+      },
+      "replication_decision": "RETIRED_NO_TWO_SPLIT_BENEFIT"
+    },
+    {
+      "adversarial_low_margin": {
+        "hidden": {
+          "cosine_mean": 0.9986236691474915,
+          "cosine_min": 0.9889919757843018,
+          "cosine_p10": 0.9976527690887451,
+          "norm_ratio": 0.9977691173553467,
+          "normalized_rmse": 0.0519440583884716,
+          "relative_l2": 0.0519440732896328
+        },
+        "relative_l2_improvement": {
+          "ci95_high": -0.016782016610989395,
+          "ci95_low": -0.027024774087998922,
+          "mean": -0.02185969601552456,
+          "n": 78
+        },
+        "route_matches": 31,
+        "route_set_agreement": 0.3974358974358974,
+        "row_relative_l2_mean": 0.047551464289426804,
+        "tokens": 78
+      },
+      "all_tokens": {
+        "hidden": {
+          "cosine_mean": 0.998571515083313,
+          "cosine_min": 0.9788332581520081,
+          "cosine_p10": 0.9969762563705444,
+          "norm_ratio": 0.9941157102584839,
+          "normalized_rmse": 0.06562653928995132,
+          "relative_l2": 0.06562593579292297
+        },
+        "relative_l2_improvement": {
+          "ci95_high": -0.014358447280766677,
+          "ci95_low": -0.020799153979301068,
+          "mean": -0.0176743878214394,
+          "n": 309
+        },
+        "route_matches": 209,
+        "route_set_agreement": 0.6763754045307443,
+        "row_relative_l2_mean": 0.046075936406850815
+      },
+      "candidate": "HYBRID_R12X2",
+      "complete_bpw": 0.9765592302594867,
+      "complete_physical_bytes": 5375982,
+      "domain_summary": {
+        "code": {
+          "route_set_agreement": 0.5384615384615384,
+          "row_relative_l2_mean": 0.043841518461704254,
+          "tokens": 52
+        },
+        "prose": {
+          "route_set_agreement": 0.7628865979381443,
+          "row_relative_l2_mean": 0.045873288065195084,
+          "tokens": 97
+        },
+        "reasoning": {
+          "route_set_agreement": 0.6582278481012658,
+          "row_relative_l2_mean": 0.04384680837392807,
+          "tokens": 79
+        },
+        "tool_format": {
+          "route_set_agreement": 0.6790123456790124,
+          "row_relative_l2_mean": 0.049927156418561935,
+          "tokens": 81
+        }
+      },
+      "payload_sha256": "5a82118daacd1e43154114022da5293423c7a0f1f1736d955e59636a7ac5c5de",
+      "prior_lr02_decision": "RETIRE_HELDOUT_HARM",
+      "prior_lr02_improvement": {
+        "ci95_high": -0.00929400625669199,
+        "ci95_low": -0.02715523807316652,
+        "mean": -0.018527407107538866,
+        "n": 61
+      },
+      "replication_decision": "RETIRED_NO_TWO_SPLIT_BENEFIT"
+    }
+  ],
+  "resource_observations": {
+    "after": {
+      "disk_floor_bytes": 34359738368,
+      "disk_headroom_bytes": 9664651264,
+      "floor_green": true,
+      "free_disk_bytes": 44024389632,
+      "memory_pressure": "The system has 103079215104 (6291456 pages with a page size of 16384).\nSystem-wide memory free percentage: 91%",
+      "swap": "total = 2048.00M  used = 611.56M  free = 1436.44M  (encrypted)",
+      "thermals": "Note: No thermal warning level has been recorded\nNote: No performance warning level has been recorded\nNote: No CPU power status has been recorded"
+    },
+    "before": {
+      "disk_floor_bytes": 34359738368,
+      "disk_headroom_bytes": 9747980288,
+      "floor_green": true,
+      "free_disk_bytes": 44107718656,
+      "memory_pressure": "The system has 103079215104 (6291456 pages with a page size of 16384).\nSystem-wide memory free percentage: 92%",
+      "swap": "total = 2048.00M  used = 611.56M  free = 1436.44M  (encrypted)",
+      "thermals": "Note: No thermal warning level has been recorded\nNote: No performance warning level has been recorded\nNote: No CPU power status has been recorded"
+    }
+  },
+  "retries": 0,
+  "schema": "hawking.kimi_k26.long_run_replication.v1",
+  "seal_sha256": "07136a12d4394a6830fc7cbc697c90e612231f53ac4284bbffb767543d840935",
+  "source": {
+    "config_sha256": "85825ca6e18cbe539eb83ee09eedfb3f4222265929f06e9f535a6d9364f55899",
+    "index_sha256": "00a982d005d6e39b25cfcb379a7e6d57f393fc0346e70892ea4271c259c0d1e3",
+    "repo": "moonshotai/Kimi-K2.6",
+    "revision": "7eb5002f6aadc958aed6a9177b7ed26bb94011bb",
+    "shards_present": 64,
+    "snapshot": "/Users/scammermike/.cache/huggingface/hub/models--moonshotai--Kimi-K2.6/snapshots/7eb5002f6aadc958aed6a9177b7ed26bb94011bb"
+  },
+  "started_at": "2026-07-21T17:26:06Z",
+  "status": "PASS",
+  "strongest_by_norm_weighted_f2": "HYBRID_R12X2",
+  "tokenization": {
+    "segment_lengths": [
+      15,
+      18,
+      26,
+      34,
+      23,
+      26,
+      24,
+      30,
+      26,
+      22,
+      34,
+      31
+    ],
+    "token_id_sha256": "07ee8da185699ef9bd0dc8a25a56de49939c93ac5b3f841f3358f6f571f04a04",
+    "tokens": 309
+  }
+}
