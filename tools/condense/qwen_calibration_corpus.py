@@ -159,9 +159,31 @@ def build(min_tokens: int = 1200, tokenizer: Any = None) -> dict[str, Any]:
         rep += 1
         assert rep < 64, "corpus failed to reach the token target"
     body = "".join(p["text"] for p in prompts)
+    # DIVERSITY ACCOUNTING, added after this corpus caused a false result. `n_tokens` counts
+    # POSITIONS, and positions are not information. Repeating the segment list to hit a token
+    # target adds positions and no diversity at all: measured, min_tokens=1200 and min_tokens=20000
+    # both yield exactly 540 unique token ids from the same 12 distinct segments. For any quantity
+    # that is a pure function of the token id - layer-0 MoE input is rmsnorm(embed[id]) - a
+    # position-level fit/score split then puts the SAME embedding row in both halves, which is how
+    # S3A measured a fit/score overlap of 1.000 and reported an 11-20 pct "held-out" gain that
+    # vanished (to -1.77 pct) under a split by unique id and segment. Any caller doing a
+    # generalization split MUST split on unique_token_ids or segment_ids, never on positions.
+    ids = [i for p in prompts for i in p["ids"]]
+    uniq = sorted(set(ids))
+    unique_segments = len({p["id"].split("#")[0] for p in prompts})
+    repeated = len(prompts) > unique_segments
     return {"schema": SCHEMA, "n_prompts": len(prompts), "n_tokens": total,
             "min_tokens_requested": min_tokens, "n_segments": len(SEGMENTS),
             "disjoint_from_scored_holdout": True,
+            "n_positions": len(ids), "n_unique_token_ids": len(uniq),
+            "n_unique_segments": unique_segments, "segments_repeated": repeated,
+            "unique_token_ids": uniq,
+            "diversity_warning": (
+                "n_tokens counts POSITIONS, not information. This corpus repeats its "
+                f"{unique_segments} distinct segments to reach the token target, so it carries "
+                f"only {len(uniq)} unique token ids no matter how large min_tokens is. Split on "
+                "unique_token_ids or segment id, NEVER on position, or fit and score will share "
+                "rows." if repeated else "no repetition: every position is from a distinct pass"),
             "sha256": hashlib.sha256(body.encode()).hexdigest(), "prompts": prompts}
 
 
@@ -177,6 +199,24 @@ def demo() -> None:
     assert big["n_tokens"] >= 1200 and big["sha256"] != a["sha256"]
     doms = {p["domain"] for p in big["prompts"]}
     assert {"code", "math", "reasoning", "instruction", "tool_format", "prose"} <= doms, doms
+
+    # The diversity ceiling must be REPORTED, not discoverable only by an experiment failing.
+    # Raising the token target must not raise the unique-id count, and the corpus must say so.
+    assert big["segments_repeated"] and "NEVER on position" in big["diversity_warning"]
+    # Real token ids need the real tokenizer; without it `ids` is empty and there is nothing to
+    # count, so the id-level invariants are only asserted when the tokenizer is present.
+    try:
+        from tokenizers import Tokenizer  # type: ignore
+        tk = Tokenizer.from_file("models/qwen3-235b-a22b/_meta/tokenizer.json")
+    except Exception:
+        tk = None
+    if tk is not None:
+        b2 = build(min_tokens=1200, tokenizer=tk)
+        huge = build(min_tokens=20000, tokenizer=tk)
+        assert b2["n_unique_token_ids"] < b2["n_positions"], "repetition must be visible"
+        assert huge["n_positions"] > 10 * b2["n_positions"]
+        assert huge["n_unique_token_ids"] == b2["n_unique_token_ids"], (
+            "a bigger token target must not appear to add diversity when it does not")
     print(json.dumps({"ok": True, "n_prompts": big["n_prompts"], "n_tokens_char_estimate":
                       big["n_tokens"], "sha256": big["sha256"][:16], "domains": sorted(doms)},
                      indent=2))

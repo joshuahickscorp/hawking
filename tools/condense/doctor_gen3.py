@@ -131,7 +131,13 @@ TREATMENTS: tuple[Treatment, ...] = (
         treats=("quantization_reconstruction", "activation_shift", "direction_distortion"),
         installed_bits_per_tensor="0 - gamma already ships as a native pass-through tensor",
         prior_recovery=0.60, prior_bpw_cost=0.0,
-        provenance="Lane C adversarial: data-free h = post_attention_layernorm.weight^2 recovers "
+        provenance="CIRCULARITY WARNING from the up_proj patch: the predictor (gamma^2 anisotropy) "
+                   "and the scoring metric (gamma-weighted Frobenius) SHARE gamma, so part of this "
+                   "win is definitional. Against an ISOTROPIC control, gamma-weighted VQ LOSES 9/9 "
+                   "up_proj cells (L0 0.2308 -> 0.7611). Deep-layer gain is tiny even in its own "
+                   "metric (0.04 pct at L93). Scope it to L0-L2 and re-measure in a metric that "
+                   "does not contain gamma before transferring. "
+                   "Lane C adversarial: data-free h = post_attention_layernorm.weight^2 recovers "
                    "83 pct of a 60 pct layer-0 output-error cut; log-corr(h, gamma^2) = 0.9918. "
                    "Gain tracks gamma anisotropy, which is 1.843 at L0 and 0.062 at L93, so the "
                    "0.60 prior is a LAYER-0 number and must be scaled by measured anisotropy.",
@@ -235,8 +241,20 @@ TREATMENTS: tuple[Treatment, ...] = (
         treats=("quantization_reconstruction", "direction_distortion", "activation_shift"),
         installed_bits_per_tensor="0 - training moves the latent weights; the artifact schema and "
                                   "byte count are unchanged (asserted byte-identical)",
-        prior_recovery=None, prior_bpw_cost=0.0,
-        provenance="S3A claimed 14.1/11.3/2.45 pct held-out output-error gains at layer 0 at "
+        prior_recovery=0.0, prior_bpw_cost=0.0,
+        provenance="SEALED NEGATIVE under a disjoint probe. S3A claimed 14.1/11.3/2.45 pct "
+                   "held-out gains at layer 0; re-scored on a split by UNIQUE TOKEN ID and corpus "
+                   "SEGMENT (fit/score energy capture 0.058-0.099) the mean gain is -1.77 pct over "
+                   "27 expert-cells and only 1 of 13 low-capture cells is positive. The same code "
+                   "reproduces the original +11.4 pct on the old position-level split, so the "
+                   "collapse is caused by the split, not the module. ROOT CAUSE, measured: the "
+                   "frozen calibration corpus repeats 12 segments to hit its token target, so "
+                   "1313 positions carry only 540 unique ids; layer-0 MoE input is "
+                   "rmsnorm(embed[id]), a pure function of the id; the split was by POSITION, so "
+                   "the same embedding row sat in both halves. Capture 1.000 was row duplication. "
+                   "The straight-through step still fires (eta pinned at the top of the grid every "
+                   "round) - it descends the fit objective and does not transfer. "
+                   "[superseded text] S3A claimed 14.1/11.3/2.45 pct held-out gains at layer 0 at "
                    "byte-identical cost. The adversary REFUTED the 'held-out' label: the fraction "
                    "of held-out activation energy lying inside the FIT split's row space is "
                    "1.000 / 0.991 / 0.424 / 1.000 at layer 0, and the per-expert gain is MONOTONE "
@@ -245,8 +263,11 @@ TREATMENTS: tuple[Treatment, ...] = (
                    "layer 46's proxy has overlap 0.007-0.023, i.e. a genuinely disjoint probe, so "
                    "the contrast measures probe rank and not depth. The ZERO-BIT property is the "
                    "one solid claim and survives: both arms serialize byte-identically.",
-        status="untested",
-        reopen="score on a split whose held-out energy capture inside the fit span is below ~0.1 "
+        status="dead",
+        reopen="a parent with a calibration corpus large enough that a LOW-CAPTURE probe and a "
+               "large fit span are simultaneously obtainable (this one caps at 540 unique ids), "
+               "plus real multi-layer activations rather than a layer-0 embedding proxy. "
+               "Historic condition: score on a split whose held-out energy capture is below ~0.1 "
                "(at layer 0 that needs far more than 1400 calibration tokens, or scoring against "
                "the full corpus rather than each expert's own routed tokens), and vary the split "
                "seed so 'wins under every seed' actually varies the evaluation set"),
