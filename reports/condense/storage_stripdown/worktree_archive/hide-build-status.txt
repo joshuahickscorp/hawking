@@ -1,0 +1,235 @@
+ M Cargo.lock
+ M Cargo.toml
+ M app/src/App.tsx
+ M app/src/ipc.ts
+ M app/src/shell/ChatPane.tsx
+ M app/src/shell/FloatingChat.tsx
+ M app/src/shell/SideBar.tsx
+ M app/src/shell/StateTimeline.tsx
+ M app/src/shell/StatusBar.tsx
+ M app/src/shell/Toolbar.tsx
+ D app/src/shell/autocompact.test.ts
+ D app/src/shell/autocompact.ts
+ M app/src/shell/onboarding.ts
+ M app/src/store.test.ts
+ M app/src/store.ts
+ M app/src/surfaces/Chat.tsx
+ M app/src/surfaces/ContextStack.tsx
+ M app/src/surfaces/Settings.tsx
+ M app/src/surfaces/chat/Conversation.tsx
+ M app/src/surfaces/chat/SteerBar.tsx
+ M app/src/surfaces/chat/structure.tsx
+ M app/src/surfaces/contextstack/parts.tsx
+ M app/src/surfaces/contextstack/state.ts
+ M app/src/surfaces/fleet/FleetView.tsx
+ M app/src/surfaces/home/ChatPanel.tsx
+ M app/src/surfaces/home/Home.tsx
+ M app/src/surfaces/home/HomeComposer.tsx
+ M app/src/surfaces/ide/CodeActions.tsx
+ M app/src/surfaces/ide/Editor.tsx
+ M app/src/surfaces/ide/Explorer.tsx
+ M app/src/surfaces/ide/HunkReview.tsx
+ M app/src/surfaces/ide/Terminal.tsx
+ M app/src/surfaces/ide/types.ts
+ M app/src/ui.tsx
+ M app/src/wire.ts
+A  crates/hawking-context/Cargo.toml
+A  crates/hawking-context/src/budget.rs
+A  crates/hawking-context/src/compiler.rs
+A  crates/hawking-context/src/embed.rs
+A  crates/hawking-context/src/fidelity.rs
+A  crates/hawking-context/src/kv.rs
+A  crates/hawking-context/src/lib.rs
+A  crates/hawking-context/src/manifest.rs
+A  crates/hawking-context/src/memory.rs
+A  crates/hawking-context/src/profiles.rs
+A  crates/hawking-context/src/recall.rs
+A  crates/hawking-context/src/sources.rs
+A  crates/hawking-eval/Cargo.toml
+A  crates/hawking-eval/src/lib.rs
+A  crates/hawking-index/Cargo.toml
+A  crates/hawking-index/src/daemon.rs
+A  crates/hawking-index/src/graph.rs
+A  crates/hawking-index/src/lib.rs
+A  crates/hawking-index/src/merkle.rs
+A  crates/hawking-index/src/parse/chunker.rs
+A  crates/hawking-index/src/parse/grammars.rs
+A  crates/hawking-index/src/parse/mod.rs
+A  crates/hawking-index/src/query.rs
+A  crates/hawking-index/src/semantic.rs
+A  crates/hawking-index/src/store.rs
+A  crates/hawking-orch/Cargo.toml
+A  crates/hawking-orch/src/adapters.rs
+A  crates/hawking-orch/src/confidence.rs
+A  crates/hawking-orch/src/difficulty.rs
+A  crates/hawking-orch/src/escalation.rs
+A  crates/hawking-orch/src/executor.rs
+A  crates/hawking-orch/src/grammar.rs
+A  crates/hawking-orch/src/http_client.rs
+A  crates/hawking-orch/src/inference.rs
+A  crates/hawking-orch/src/lib.rs
+A  crates/hawking-orch/src/registry.rs
+A  crates/hawking-orch/src/router.rs
+A  crates/hawking-orch/src/sampler.rs
+A  crates/hawking-orch/src/scheduler.rs
+A  crates/hawking-orch/src/supervisor.rs
+A  crates/hawking-orch/src/tool_spec_decode.rs
+A  crates/hawking-research/Cargo.toml
+A  crates/hawking-research/src/bridge.rs
+A  crates/hawking-research/src/cas.rs
+A  crates/hawking-research/src/checkpoint.rs
+A  crates/hawking-research/src/experiments.rs
+A  crates/hawking-research/src/ingest.rs
+A  crates/hawking-research/src/kg.rs
+A  crates/hawking-research/src/lib.rs
+A  crates/hawking-research/src/litmap.rs
+A  crates/hawking-research/src/pipeline.rs
+A  crates/hawking-research/src/run_ledger.rs
+A  crates/hawking-research/src/runtime_client.rs
+A  crates/hawking-research/src/verify.rs
+AM crates/hide-backend/Cargo.toml
+AM crates/hide-backend/src/commands.rs
+AM crates/hide-backend/src/connectors.rs
+AM crates/hide-backend/src/digest.rs
+AM crates/hide-backend/src/host.rs
+A  crates/hide-backend/src/interrupt.rs
+AM crates/hide-backend/src/lib.rs
+A  crates/hide-backend/src/model_provider.rs
+AM crates/hide-backend/src/replay.rs
+A  crates/hide-backend/src/security.rs
+AM crates/hide-backend/src/services.rs
+A  crates/hide-backend/src/supervisor.rs
+AM crates/hide-backend/src/tools.rs
+A  crates/hide-backend/src/tq_metadata.rs
+A  crates/hide-backend/src/ui_bus.rs
+A  crates/hide-core/Cargo.toml
+AM crates/hide-core/src/api.rs
+A  crates/hide-core/src/config.rs
+A  crates/hide-core/src/error.rs
+A  crates/hide-core/src/event.rs
+A  crates/hide-core/src/ids.rs
+A  crates/hide-core/src/lib.rs
+A  crates/hide-core/src/migration.rs
+A  crates/hide-core/src/observability.rs
+A  crates/hide-core/src/permission.rs
+AM crates/hide-core/src/persistence.rs
+A  crates/hide-core/src/plugin.rs
+A  crates/hide-core/src/project.rs
+A  crates/hide-core/src/runtime.rs
+A  crates/hide-core/src/security.rs
+A  crates/hide-core/src/supervision.rs
+AM crates/hide-core/src/tool.rs
+A  crates/hide-core/src/types.rs
+A  crates/hide-fleet/Cargo.toml
+A  crates/hide-fleet/src/batch.rs
+A  crates/hide-fleet/src/fleetview.rs
+A  crates/hide-fleet/src/isolate.rs
+A  crates/hide-fleet/src/lib.rs
+A  crates/hide-fleet/src/manager.rs
+A  crates/hide-fleet/src/merge.rs
+A  crates/hide-fleet/src/patterns.rs
+A  crates/hide-fleet/src/queue.rs
+A  crates/hide-fleet/src/remote.rs
+A  crates/hide-fleet/src/resources.rs
+A  crates/hide-fleet/src/scheduler.rs
+A  crates/hide-fleet/tests/kernel_integration.rs
+A  crates/hide-kernel/Cargo.toml
+A  crates/hide-kernel/src/checkpoint.rs
+A  crates/hide-kernel/src/cooperate.rs
+A  crates/hide-kernel/src/govern.rs
+A  crates/hide-kernel/src/lib.rs
+A  crates/hide-kernel/src/machine/driver.rs
+A  crates/hide-kernel/src/machine/effects.rs
+A  crates/hide-kernel/src/machine/guards.rs
+A  crates/hide-kernel/src/machine/mod.rs
+AM crates/hide-kernel/src/machine/state.rs
+A  crates/hide-kernel/src/plan/dag.rs
+A  crates/hide-kernel/src/plan/mod.rs
+A  crates/hide-kernel/src/plan/planner.rs
+A  crates/hide-kernel/src/plan/replan.rs
+A  crates/hide-kernel/src/plan/schema.rs
+A  crates/hide-kernel/src/projection.rs
+A  crates/hide-kernel/src/runtime_client.rs
+A  crates/hide-kernel/src/search/mod.rs
+A  crates/hide-kernel/src/search/strategy.rs
+A  crates/hide-kernel/src/session.rs
+A  crates/hide-kernel/src/skills/mod.rs
+A  crates/hide-kernel/src/subagent/mod.rs
+A  crates/hide-kernel/src/tools/mod.rs
+A  crates/hide-kernel/src/tools/parse.rs
+A  crates/hide-kernel/src/tools/runner.rs
+A  crates/hide-kernel/src/verify/deterministic.rs
+A  crates/hide-kernel/src/verify/gate.rs
+A  crates/hide-kernel/src/verify/mod.rs
+A  crates/hide-kernel/src/verify/oracle.rs
+A  crates/hide-kernel/src/verify/probabilistic.rs
+A  crates/hide-kernel/tests/full_run.rs
+A  crates/hide-personalize/Cargo.toml
+A  crates/hide-personalize/src/curate.rs
+A  crates/hide-personalize/src/eval.rs
+A  crates/hide-personalize/src/kv_handoff.rs
+A  crates/hide-personalize/src/lib.rs
+A  crates/hide-personalize/src/prompts.rs
+A  crates/hide-personalize/src/records.rs
+A  crates/hide-personalize/src/retrieval.rs
+A  crates/hide-personalize/src/rlef.rs
+A  crates/hide-personalize/src/store.rs
+A  crates/hide-personalize/src/world.rs
+A  crates/hide-security/Cargo.toml
+A  crates/hide-security/src/audit.rs
+A  crates/hide-security/src/lib.rs
+A  crates/hide-security/src/redaction.rs
+A  crates/hide-security/src/sandbox.rs
+A  crates/hide-security/src/storage.rs
+AM crates/hide-serve/Cargo.toml
+AM crates/hide-serve/src/lib.rs
+A  crates/hide-serve/src/main.rs
+A  crates/hide-tools/Cargo.toml
+A  crates/hide-tools/src/common.rs
+A  crates/hide-tools/src/edit.rs
+A  crates/hide-tools/src/fs.rs
+A  crates/hide-tools/src/git.rs
+A  crates/hide-tools/src/lib.rs
+A  crates/hide-tools/src/mcp.rs
+A  crates/hide-tools/src/memory.rs
+A  crates/hide-tools/src/proc.rs
+A  crates/hide-tools/src/registry.rs
+A  crates/hide-tools/src/search.rs
+A  crates/hide-tools/src/shell.rs
+A  crates/hide-tools/src/spec_helpers.rs
+?? app/src/generated/
+?? app/src/shell/ModelChooser.tsx
+?? app/src/shell/StateTimeline.test.ts
+?? app/src/shell/StatusBar.test.ts
+?? app/src/surfaces/chat/actions.test.ts
+?? app/src/surfaces/chat/actions.ts
+?? app/src/surfaces/chat/structure.test.ts
+?? app/src/surfaces/contextstack/state.test.ts
+?? app/src/surfaces/home/actions.test.ts
+?? app/src/surfaces/home/actions.ts
+?? app/src/surfaces/ide/livegate.test.ts
+?? app/src/surfaces/ide/review.test.ts
+?? app/src/surfaces/ide/terminal.test.ts
+?? app/src/ui.test.ts
+?? crates/hide-acp/
+?? crates/hide-backend/src/approval.rs
+?? crates/hide-backend/src/compat_instructions.rs
+?? crates/hide-backend/src/initialize.rs
+?? crates/hide-backend/src/live_thread.rs
+?? crates/hide-backend/src/memory.rs
+?? crates/hide-backend/src/plan_domain.rs
+?? crates/hide-backend/src/policy.rs
+?? crates/hide-backend/src/process.rs
+?? crates/hide-backend/src/program.rs
+?? crates/hide-backend/src/rewind.rs
+?? crates/hide-backend/src/rpc.rs
+?? crates/hide-backend/tests/
+?? crates/hide-browser/
+?? crates/hide-compat/
+?? crates/hide-extension-registry/
+?? crates/hide-program-runtime/
+?? crates/hide-protocol/
+?? crates/hide-sdk/
+?? crates/hide-state/
+?? crates/hide-verify/
+?? docs/hide-impl/
