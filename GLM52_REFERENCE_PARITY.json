@@ -1,0 +1,573 @@
+{
+  "acceptance_threshold_policy": {
+    "index_tie_policy_amendment": {
+      "date": "2026-07-21",
+      "preregistration_claimed": false,
+      "reason": "The initial run exposed one exact-zero ReLU top-k tie. Strict 79/80 agreement remains reported; the amended gate requires independently passing raw score parity and exact tie-equivalence evidence.",
+      "status": "AMENDED_AFTER_INITIAL_79_OF_80_DIAGNOSTIC"
+    },
+    "main_cache_layer_and_metal_thresholds": "declared before the final acceptance run",
+    "thresholds": {
+      "cpu_vs_metal": {
+        "maximum_absolute_logit_error": 0.003,
+        "minimum_logit_cosine": 0.999999,
+        "minimum_top1_agreement": 1.0,
+        "relative_frobenius_logit_error": 0.0005
+      },
+      "hf_main_vs_numpy_reference": {
+        "maximum_absolute_logit_error": 0.003,
+        "minimum_logit_cosine": 0.999999,
+        "minimum_top1_agreement": 1.0,
+        "relative_frobenius_logit_error": 0.0005
+      },
+      "index_scores": {
+        "maximum_absolute_error": 1e-05,
+        "minimum_cosine": 0.9999,
+        "relative_frobenius_error": 0.01,
+        "tie_absolute_tolerance": 1e-07
+      },
+      "per_layer_hidden_outputs": {
+        "maximum_absolute_logit_error": 0.0015,
+        "minimum_logit_cosine": 0.999999,
+        "minimum_top1_agreement": 1.0,
+        "relative_frobenius_logit_error": 0.0006
+      },
+      "prefill_vs_tokenwise": {
+        "maximum_absolute_logit_error": 1e-05,
+        "minimum_top1_agreement": 1.0,
+        "relative_frobenius_logit_error": 1e-05
+      }
+    }
+  },
+  "claim_boundary": {
+    "capability": "NOT_CLAIMED",
+    "mtp_parity": "Synthetic source conformance and self-consistency only. No external pinned MTP runtime was executed; generic Transformers MTP parity is explicitly not claimed.",
+    "official_bf16_parent_forward": "PENDING_FIRST_ADMITTED_SOURCE_WINDOW",
+    "official_transformers_parity": "Architecture-preserving synthetic main graph only."
+  },
+  "cpu_vs_metal": {
+    "available": true,
+    "metrics": {
+      "cosine": 0.9999999403953552,
+      "finite": true,
+      "maximum_absolute_error": 0.0024069249629974365,
+      "mean_absolute_error": 4.4236589019419625e-05,
+      "relative_frobenius_error": 0.0003279611701145768,
+      "shape": [
+        1,
+        20,
+        64
+      ],
+      "status": "PASS",
+      "thresholds": {
+        "maximum_absolute_logit_error": 0.003,
+        "minimum_logit_cosine": 0.999999,
+        "minimum_top1_agreement": 1.0,
+        "relative_frobenius_logit_error": 0.0005
+      },
+      "top1_agreement": 1.0
+    }
+  },
+  "indexer": {
+    "causally_effective_set_agreement": 0.9875,
+    "comparisons": 80,
+    "note": "Strict set agreement is reported without adjustment. Tie-aware agreement counts a disagreement only when both runtimes assign the exchanged causal candidates equal scores within the frozen tolerance; raw score parity is independently gated. A top-k call may also return arbitrary future-token filler when fewer than k causal keys exist. Raw score parity uses identical captured official activations in both implementations; the separately reported propagated top-k comparison includes upstream numerical drift.",
+    "per_full_layer": {
+      "0": {
+        "causally_effective_set_equal": 19,
+        "queries": 20,
+        "raw_set_equal": 19,
+        "tie_aware_causally_effective_set_equal": 20
+      },
+      "1": {
+        "causally_effective_set_equal": 20,
+        "queries": 20,
+        "raw_set_equal": 20,
+        "tie_aware_causally_effective_set_equal": 20
+      },
+      "2": {
+        "causally_effective_set_equal": 20,
+        "queries": 20,
+        "raw_set_equal": 20,
+        "tie_aware_causally_effective_set_equal": 20
+      },
+      "6": {
+        "causally_effective_set_equal": 20,
+        "queries": 20,
+        "raw_set_equal": 20,
+        "tie_aware_causally_effective_set_equal": 20
+      }
+    },
+    "raw_set_agreement": 0.9875,
+    "score_parity": {
+      "cosine": 1.0,
+      "finite_causal_scores": 840,
+      "maximum_absolute_error": 2.9103830456733704e-11,
+      "mean_absolute_error": 6.426067360523757e-13,
+      "relative_frobenius_error": 1.9825833419417904e-07,
+      "status": "PASS",
+      "thresholds": {
+        "maximum_absolute_error": 1e-05,
+        "minimum_cosine": 0.9999,
+        "relative_frobenius_error": 0.01,
+        "tie_absolute_tolerance": 1e-07
+      }
+    },
+    "tie_aware_causally_effective_set_agreement": 1.0,
+    "tie_equivalent_disagreements": 1,
+    "tie_evidence": [
+      {
+        "layer": 0,
+        "official_candidate_scores": [
+          0.0,
+          0.0
+        ],
+        "official_only": [
+          1
+        ],
+        "position": 18,
+        "query": 18,
+        "reference_candidate_scores": [
+          0.0,
+          0.0
+        ],
+        "reference_only": [
+          0
+        ]
+      }
+    ]
+  },
+  "indexshare_same_object_on_shared_layers": {
+    "3": true,
+    "4": true,
+    "5": true
+  },
+  "instrument_binding": {
+    "local_source_sha256": {
+      "tools/condense/glm52_adapter.py": "f4ca10c3f8f790fa35dac112fdadc58066fc745a2a4b260fbed9fc40e8f3903a",
+      "tools/condense/glm52_common.py": "6e67ada54b6b4dac24b50682b3d900de349f33d545921fb10169625507201eb2",
+      "tools/condense/glm52_parity.py": "90b51e99095dbfb9e427f40b67ba7e7eb81557344e3d77060f43887af83d2332",
+      "tools/condense/glm52_reference.py": "18c480e5484ed8dae70bb7be8c1bc3e38124c0094e2c71d569e2a897611b21d7",
+      "tools/condense/glm52_synthetic.py": "b4b83812cbe016333a75503f49d24a4077e5dbad8ab0dbcba6362fb4ee31433b",
+      "tools/condense/requirements-glm52.txt": "6a5f4e9e952b02659e9b4ef8251ccc81a0702b2427efa5bb7cbfd939c61c7cd7"
+    },
+    "rebuild_is_timing_and_timestamp_free": true,
+    "repository_base_commit": "753c73dc0685ce470090aba3e49c62fe4a4f9b08"
+  },
+  "long_context_indexer_shape_probe": {
+    "configured_maximum_positions": 1048576,
+    "full_attention_or_model_executed": false,
+    "key_cache_shape": [
+      1,
+      1048576,
+      4
+    ],
+    "official_configured_index_topk": 2048,
+    "official_selection_shape_exercised": true,
+    "one_million_context_capability_claimed": false,
+    "score_shape": [
+      1,
+      1,
+      1048576
+    ],
+    "selected_indices_in_range": true,
+    "selected_scores_finite": true,
+    "status": "PASS_OFFICIAL_SELECTION_SHAPE_ONLY_NO_CAPABILITY_CLAIM",
+    "synthetic_fixture_index_topk": 2,
+    "tested_key_count": 1048576,
+    "topk_shape": [
+      1,
+      1,
+      2048
+    ]
+  },
+  "mtp": {
+    "compute_dtypes": {
+      "bounded_reader_decode": "float32",
+      "mtp_logits": "float32",
+      "reference_activations_and_accumulation": "float32",
+      "stored_weights": [
+        "BF16",
+        "F32 router correction bias"
+      ]
+    },
+    "external_pinned_runtime_executed": false,
+    "finite_logits": true,
+    "not_backbone_last_full_index": true,
+    "physical_layer": 7,
+    "position_zero_shifted_embedding_exactly_zero": true,
+    "runtime_authority": {
+      "commit": "96a739289e07530cd7d8fc03665746edae8177e7",
+      "iteration_indexshare": "https://github.com/vllm-project/vllm/blob/96a739289e07530cd7d8fc03665746edae8177e7/vllm/model_executor/models/deepseek_v2.py#L1085-L1175",
+      "mtp_boundary": "https://github.com/vllm-project/vllm/blob/96a739289e07530cd7d8fc03665746edae8177e7/vllm/model_executor/models/deepseek_mtp.py#L91-L173",
+      "project": "vLLM",
+      "role": "pinned semantic source reference; not executed in this parity run"
+    },
+    "status": "PASS_SYNTHETIC_SOURCE_CONFORMANCE_AND_SELF_CONSISTENCY",
+    "step_one_reuses_step_zero_index": true,
+    "step_zero_computes_own_index": true,
+    "step_zero_step_one_index_exact": true,
+    "step_zero_step_one_logits_exact": true,
+    "transformers_parity_claimed": false
+  },
+  "official_prefill_vs_tokenwise_cache": {
+    "cosine": 0.9999999403953552,
+    "finite": true,
+    "maximum_absolute_error": 4.172325134277344e-07,
+    "mean_absolute_error": 6.835216481704265e-08,
+    "relative_frobenius_error": 1.2451070574570622e-07,
+    "shape": [
+      1,
+      20,
+      64
+    ],
+    "status": "PASS",
+    "top1_agreement": 1.0
+  },
+  "official_transformers_main_vs_numpy_reference": {
+    "cosine": 0.9999998211860657,
+    "finite": true,
+    "maximum_absolute_error": 0.002396881580352783,
+    "mean_absolute_error": 7.787381036905572e-05,
+    "relative_frobenius_error": 0.00033230442204512656,
+    "shape": [
+      1,
+      20,
+      64
+    ],
+    "status": "PASS",
+    "thresholds": {
+      "maximum_absolute_logit_error": 0.003,
+      "minimum_logit_cosine": 0.999999,
+      "minimum_top1_agreement": 1.0,
+      "relative_frobenius_logit_error": 0.0005
+    },
+    "top1_agreement": 1.0
+  },
+  "per_layer_output_metrics": {
+    "0": {
+      "cosine": 0.9999999403953552,
+      "finite": true,
+      "maximum_absolute_error": 0.001089438796043396,
+      "mean_absolute_error": 2.5394107069587335e-05,
+      "relative_frobenius_error": 0.00044406461529433727,
+      "shape": [
+        1,
+        20,
+        32
+      ],
+      "status": "PASS",
+      "thresholds": {
+        "maximum_absolute_logit_error": 0.0015,
+        "minimum_logit_cosine": 0.999999,
+        "minimum_top1_agreement": 1.0,
+        "relative_frobenius_logit_error": 0.0006
+      },
+      "top1_agreement": 1.0
+    },
+    "1": {
+      "cosine": 0.9999998807907104,
+      "finite": true,
+      "maximum_absolute_error": 0.0010896474123001099,
+      "mean_absolute_error": 2.5423516490263864e-05,
+      "relative_frobenius_error": 0.00044409179827198386,
+      "shape": [
+        1,
+        20,
+        32
+      ],
+      "status": "PASS",
+      "thresholds": {
+        "maximum_absolute_logit_error": 0.0015,
+        "minimum_logit_cosine": 0.999999,
+        "minimum_top1_agreement": 1.0,
+        "relative_frobenius_logit_error": 0.0006
+      },
+      "top1_agreement": 1.0
+    },
+    "2": {
+      "cosine": 0.9999999403953552,
+      "finite": true,
+      "maximum_absolute_error": 0.0010897666215896606,
+      "mean_absolute_error": 2.543277878430672e-05,
+      "relative_frobenius_error": 0.0004440108605194837,
+      "shape": [
+        1,
+        20,
+        32
+      ],
+      "status": "PASS",
+      "thresholds": {
+        "maximum_absolute_logit_error": 0.0015,
+        "minimum_logit_cosine": 0.999999,
+        "minimum_top1_agreement": 1.0,
+        "relative_frobenius_logit_error": 0.0006
+      },
+      "top1_agreement": 1.0
+    },
+    "3": {
+      "cosine": 0.9999998807907104,
+      "finite": true,
+      "maximum_absolute_error": 0.0010911673307418823,
+      "mean_absolute_error": 2.993175803567283e-05,
+      "relative_frobenius_error": 0.00044476904440671206,
+      "shape": [
+        1,
+        20,
+        32
+      ],
+      "status": "PASS",
+      "thresholds": {
+        "maximum_absolute_logit_error": 0.0015,
+        "minimum_logit_cosine": 0.999999,
+        "minimum_top1_agreement": 1.0,
+        "relative_frobenius_logit_error": 0.0006
+      },
+      "top1_agreement": 1.0
+    },
+    "4": {
+      "cosine": 0.9999997615814209,
+      "finite": true,
+      "maximum_absolute_error": 0.0010893791913986206,
+      "mean_absolute_error": 3.0472350772470236e-05,
+      "relative_frobenius_error": 0.00044479401549324393,
+      "shape": [
+        1,
+        20,
+        32
+      ],
+      "status": "PASS",
+      "thresholds": {
+        "maximum_absolute_logit_error": 0.0015,
+        "minimum_logit_cosine": 0.999999,
+        "minimum_top1_agreement": 1.0,
+        "relative_frobenius_logit_error": 0.0006
+      },
+      "top1_agreement": 1.0
+    },
+    "5": {
+      "cosine": 0.9999999403953552,
+      "finite": true,
+      "maximum_absolute_error": 0.001089140772819519,
+      "mean_absolute_error": 3.144556103507057e-05,
+      "relative_frobenius_error": 0.0004452585708349943,
+      "shape": [
+        1,
+        20,
+        32
+      ],
+      "status": "PASS",
+      "thresholds": {
+        "maximum_absolute_logit_error": 0.0015,
+        "minimum_logit_cosine": 0.999999,
+        "minimum_top1_agreement": 1.0,
+        "relative_frobenius_logit_error": 0.0006
+      },
+      "top1_agreement": 1.0
+    },
+    "6": {
+      "cosine": 0.9999998807907104,
+      "finite": true,
+      "maximum_absolute_error": 0.00110723078250885,
+      "mean_absolute_error": 3.406794348848052e-05,
+      "relative_frobenius_error": 0.0004498884954955429,
+      "shape": [
+        1,
+        20,
+        32
+      ],
+      "status": "PASS",
+      "thresholds": {
+        "maximum_absolute_logit_error": 0.0015,
+        "minimum_logit_cosine": 0.999999,
+        "minimum_top1_agreement": 1.0,
+        "relative_frobenius_logit_error": 0.0006
+      },
+      "top1_agreement": 1.0
+    }
+  },
+  "reference_deterministic_exact_replay": true,
+  "reference_prefill_vs_tokenwise_cache": {
+    "cosine": 1.0,
+    "finite": true,
+    "maximum_absolute_error": 4.172325134277344e-07,
+    "mean_absolute_error": 6.806313024299016e-08,
+    "relative_frobenius_error": 1.2457468301363406e-07,
+    "shape": [
+      1,
+      20,
+      64
+    ],
+    "status": "PASS",
+    "top1_agreement": 1.0
+  },
+  "router": {
+    "all_router_weight_sums_2_5": true,
+    "canonical_expert_set_agreement": 1.0,
+    "comparisons": 80,
+    "maximum_matched_weight_delta": 4.172325134277344e-07
+  },
+  "runtime": {
+    "environment": {
+      "all_direct_imports_within_environment": true,
+      "host_paths_sealed": false,
+      "locked_distribution_count": 38,
+      "locked_versions": {
+        "annotated-doc": "0.0.4",
+        "anyio": "4.14.2",
+        "certifi": "2026.6.17",
+        "click": "8.4.2",
+        "filelock": "3.32.0",
+        "fsspec": "2026.6.0",
+        "h11": "0.16.0",
+        "hf-xet": "1.5.2",
+        "httpcore": "1.0.9",
+        "httpx": "0.28.1",
+        "huggingface-hub": "1.24.0",
+        "idna": "3.18",
+        "iniconfig": "2.3.0",
+        "jinja2": "3.1.6",
+        "markdown-it-py": "4.2.0",
+        "markupsafe": "3.0.3",
+        "mdurl": "0.1.2",
+        "mpmath": "1.3.0",
+        "networkx": "3.6.1",
+        "numpy": "2.2.6",
+        "packaging": "26.2",
+        "pip": "26.1.2",
+        "pluggy": "1.6.0",
+        "pygments": "2.20.0",
+        "pytest": "9.1.0",
+        "pyyaml": "6.0.3",
+        "regex": "2026.7.19",
+        "rich": "15.0.0",
+        "safetensors": "0.8.0",
+        "setuptools": "83.0.0",
+        "shellingham": "1.5.4",
+        "sympy": "1.13.1",
+        "tokenizers": "0.22.2",
+        "torch": "2.6.0",
+        "tqdm": "4.69.0",
+        "transformers": "5.14.1",
+        "typer": "0.27.0",
+        "typing-extensions": "4.16.0"
+      },
+      "python": "3.12.6",
+      "requirements_sha256": "6a5f4e9e952b02659e9b4ef8251ccc81a0702b2427efa5bb7cbfd939c61c7cd7",
+      "status": "PASS_ISOLATED_FULLY_PINNED",
+      "system_site_packages": false
+    },
+    "metal_available": true,
+    "numpy": "2.2.6",
+    "numpy_reference_compute_dtype": "numpy.float32",
+    "official_main_compute_dtype": "torch.float32",
+    "torch": "2.6.0",
+    "transformers": "5.14.1",
+    "transformers_config_module": "transformers.models.glm_moe_dsa.configuration_glm_moe_dsa",
+    "transformers_config_sha256": "5a81164be746307431ad998f789b6b0bca20eb4c14a726552eb3730268413997",
+    "transformers_modeling_module": "transformers.models.glm_moe_dsa.modeling_glm_moe_dsa",
+    "transformers_modeling_sha256": "adb8317a21716b01273046e46c807f14f0dbaf035af59b60d52bd6bc3007cf72"
+  },
+  "schema": "hawking.glm52.reference_parity.v1",
+  "seal_sha256": "4d5793444ba55583d22f1887f828e8985244d38dfd53248aaa2912815a745f5c",
+  "sequence_exceeds_index_topk": true,
+  "sequence_tokens": 20,
+  "status": "PASS_SYNTHETIC_MAIN_AND_MTP_SELF_CONSISTENCY_SOURCE_PARENT_PENDING",
+  "synthetic_fixture": {
+    "architecture": {
+      "core_logical_elements": 1660456,
+      "core_tensor_count": 3187,
+      "experts_per_token": 8,
+      "full_tensor_count": 3978,
+      "gate_up_order": [
+        "gate_proj",
+        "up_proj"
+      ],
+      "index_topk": 2,
+      "indexer_types_main": [
+        "full",
+        "full",
+        "full",
+        "shared",
+        "shared",
+        "shared",
+        "full"
+      ],
+      "main_layers": 7,
+      "mtp_indexer_type": "full",
+      "mtp_logical_elements": 409152,
+      "mtp_physical_layer": 7,
+      "mtp_tensor_count": 791,
+      "physical_layers": 8,
+      "profile": "synthetic",
+      "routed_expert_count": 256,
+      "router_normalizes_topk_probability": true,
+      "router_scoring_function": "sigmoid",
+      "router_selection": "top-8-of-256",
+      "router_topk_method": "noaux_tc",
+      "router_weight_sum_after_scaling": 2.5,
+      "shared_expert_count": 1,
+      "source_dtypes": [
+        "BF16",
+        "F32"
+      ]
+    },
+    "deterministic": true,
+    "long_context_indexer_contract": {
+      "capability_claimed": false,
+      "maximum_positions": 1048576,
+      "shape_probe_required": true
+    },
+    "network_access": false,
+    "profile": "synthetic",
+    "routing_fixture": {
+      "all_positive_hidden_probe_is_tie_free": true,
+      "correction_bias_is_strictly_increasing_f32": true,
+      "router_rows": "constant positive BF16 fractions 1/256..256/256"
+    },
+    "schema": "hawking.glm52.synthetic_fixture.v1",
+    "shards": [
+      {
+        "file_bytes": 73600,
+        "name": "model-00001-of-00003.safetensors",
+        "payload_bytes": 67968,
+        "section": "CORE",
+        "sha256": "29c2c36835f67b2a0fd3f25a8eb92e5318bfbcf8cce31dfb517c34d206c3a04b",
+        "tensor_count": 54
+      },
+      {
+        "file_bytes": 3612624,
+        "name": "model-00002-of-00003.safetensors",
+        "payload_bytes": 3254992,
+        "section": "CORE",
+        "sha256": "fbeac2cedca6a1fc3bfe062f38d0b3030c1e70dca0f58c4b91190799750729fc",
+        "tensor_count": 3133
+      },
+      {
+        "file_bytes": 907784,
+        "name": "model-00003-of-00003.safetensors",
+        "payload_bytes": 818816,
+        "section": "MTP",
+        "sha256": "ab6381141c103ce9b27593b96f2d395303751a477393d8401139eadcf84ff49a",
+        "tensor_count": 791
+      }
+    ],
+    "views": {
+      "full": {
+        "directory": "full",
+        "index_sha256": "7a592b34f7a7ab1477a0a1f01a0fdd06ff6e19c2212fe7291050dcd8a5840020",
+        "payload_bytes": 4141776,
+        "shard_count": 3,
+        "tensor_count": 3978
+      },
+      "main_only": {
+        "directory": "main_only",
+        "index_sha256": "00ea4a685a4dca0b3fe265d630bc6c764f8828fd9bb900114e74cec92fffc170",
+        "is_exact_core_filter": true,
+        "payload_bytes": 3322960,
+        "shard_count": 2,
+        "tensor_count": 3187
+      }
+    }
+  }
+}

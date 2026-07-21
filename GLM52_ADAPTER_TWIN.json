@@ -1,0 +1,293 @@
+{
+  "binding": {
+    "core_runtime": "official Transformers eager main graph",
+    "mtp_runtime": "synthetic physical checkpoint plus custom self-consistency reference; pinned vLLM semantics inspected but not executed",
+    "official_repo": "zai-org/GLM-5.2",
+    "official_revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "source_class": [
+      "OFFICIAL_BF16_TEACHER",
+      "VULTURE_XET_STREAMING",
+      "TEXT_GENERATION"
+    ]
+  },
+  "checks": {
+    "expert_gate_then_up": true,
+    "full_shared_pattern": [
+      "full",
+      "full",
+      "full",
+      "shared",
+      "shared",
+      "shared",
+      "full"
+    ],
+    "hardlinked_core_shards": true,
+    "main_only_is_exact_core_filter": true,
+    "mtp_has_full_indexer": true,
+    "official_schema_sweep": {
+      "actual_logical_elements": 753329940480,
+      "actual_tensor_count": 59585,
+      "dtype_mismatches": [],
+      "expected_logical_elements": 753329940480,
+      "expected_tensor_count": 59585,
+      "graph_seal_sha256": "a08d1ad1b040856a3ed0649d615faf37f3304000c7e00d3f22561d51519b40b9",
+      "missing": [],
+      "official_config_sha256": "185f93ee6d12548e16a847e279dc0c3c90b1524c970b0866b42fb545747d859a",
+      "shape_mismatches": [],
+      "status": "PASS",
+      "unknown": []
+    },
+    "official_tokenizer_chat_assembly": {
+      "asset_sha256": {
+        "chat_template.jinja": "172dc74a35e1752df75ecfb2b2cf9326d2852bb1379868ebeec9571654489679",
+        "generation_config.json": "ac76b43d8683d3b930126870fc8be73d8679308fe752fa1f381096d8354f6a55",
+        "tokenizer.json": "19e773648cb4e65de8660ea6365e10acca112d42a854923df93db4a6f333a82d",
+        "tokenizer_config.json": "98b1271574f41abf89427ae2dda030d94dc9478f0edc5a8bd240db213c6fd5fc"
+      },
+      "chat_receipt": {
+        "begins_with_glm_mask_sop": true,
+        "contains_tool_call": false,
+        "contains_tool_catalog": false,
+        "contains_tool_response": false,
+        "ends_with_generation_think": true,
+        "generation_eos_token_ids": [
+          154820,
+          154827,
+          154829
+        ],
+        "generation_pad_token_id": 154820,
+        "reasoning_effort": "max",
+        "rendered_sha256": "b4734fce5ff910708cdeaa20dc8a4aec84ec4afa86efec9e4ce8e816bfb27199",
+        "thinking_enabled": true,
+        "token_count": 23,
+        "token_ids_sha256": "a542c9a5bde9ab470a6f53e5c0673badbd0039f0a015527ce5e9103d0f6682f7",
+        "tool_count": 0
+      },
+      "generation_eos_token_ids": [
+        154820,
+        154827,
+        154829
+      ],
+      "generation_pad_token_id": 154820,
+      "model_max_length": 1048576,
+      "padded_model_vocabulary_size": 154880,
+      "status": "PASS",
+      "tool_chat_receipt": {
+        "begins_with_glm_mask_sop": true,
+        "contains_tool_call": true,
+        "contains_tool_catalog": true,
+        "contains_tool_response": true,
+        "ends_with_generation_think": true,
+        "generation_eos_token_ids": [
+          154820,
+          154827,
+          154829
+        ],
+        "generation_pad_token_id": 154820,
+        "reasoning_effort": "max",
+        "rendered_sha256": "3dca940cb148e0d49f3a61d1cc420c1d04c30cc683f3fc336b248b3ac1af2e4c",
+        "thinking_enabled": false,
+        "token_count": 180,
+        "token_ids_sha256": "e07b2ea2eacbe82840536c1a54bd339ab7e36c294594c4b473204594f23143e4",
+        "tool_count": 1
+      },
+      "vocabulary_size": 154856
+    },
+    "sample_packed_expert_shape": [
+      32,
+      32
+    ],
+    "shared_layers_have_no_indexer_tensors": true,
+    "streaming_window_admission": {
+      "carry_algebra_validated": true,
+      "complete_index_retained": true,
+      "complete_index_tensor_count": 3978,
+      "resident_shards": [
+        "model-00001-of-00003.safetensors",
+        "model-00002-of-00003.safetensors"
+      ],
+      "resident_tensor_count": 3187,
+      "status": "PASS"
+    },
+    "synthetic_core_tensor_count": 3187,
+    "synthetic_full_tensor_count": 3978,
+    "synthetic_mtp_tensor_count": 791
+  },
+  "instrument_binding": {
+    "local_source_sha256": {
+      "tools/condense/glm52_adapter.py": "f4ca10c3f8f790fa35dac112fdadc58066fc745a2a4b260fbed9fc40e8f3903a",
+      "tools/condense/glm52_common.py": "6e67ada54b6b4dac24b50682b3d900de349f33d545921fb10169625507201eb2",
+      "tools/condense/glm52_parity.py": "90b51e99095dbfb9e427f40b67ba7e7eb81557344e3d77060f43887af83d2332",
+      "tools/condense/glm52_reference.py": "18c480e5484ed8dae70bb7be8c1bc3e38124c0094e2c71d569e2a897611b21d7",
+      "tools/condense/glm52_synthetic.py": "b4b83812cbe016333a75503f49d24a4077e5dbad8ab0dbcba6362fb4ee31433b",
+      "tools/condense/requirements-glm52.txt": "6a5f4e9e952b02659e9b4ef8251ccc81a0702b2427efa5bb7cbfd939c61c7cd7"
+    },
+    "rebuild_is_timing_and_timestamp_free": true,
+    "repository_base_commit": "753c73dc0685ce470090aba3e49c62fe4a4f9b08"
+  },
+  "runtime": {
+    "environment": {
+      "all_direct_imports_within_environment": true,
+      "host_paths_sealed": false,
+      "locked_distribution_count": 38,
+      "locked_versions": {
+        "annotated-doc": "0.0.4",
+        "anyio": "4.14.2",
+        "certifi": "2026.6.17",
+        "click": "8.4.2",
+        "filelock": "3.32.0",
+        "fsspec": "2026.6.0",
+        "h11": "0.16.0",
+        "hf-xet": "1.5.2",
+        "httpcore": "1.0.9",
+        "httpx": "0.28.1",
+        "huggingface-hub": "1.24.0",
+        "idna": "3.18",
+        "iniconfig": "2.3.0",
+        "jinja2": "3.1.6",
+        "markdown-it-py": "4.2.0",
+        "markupsafe": "3.0.3",
+        "mdurl": "0.1.2",
+        "mpmath": "1.3.0",
+        "networkx": "3.6.1",
+        "numpy": "2.2.6",
+        "packaging": "26.2",
+        "pip": "26.1.2",
+        "pluggy": "1.6.0",
+        "pygments": "2.20.0",
+        "pytest": "9.1.0",
+        "pyyaml": "6.0.3",
+        "regex": "2026.7.19",
+        "rich": "15.0.0",
+        "safetensors": "0.8.0",
+        "setuptools": "83.0.0",
+        "shellingham": "1.5.4",
+        "sympy": "1.13.1",
+        "tokenizers": "0.22.2",
+        "torch": "2.6.0",
+        "tqdm": "4.69.0",
+        "transformers": "5.14.1",
+        "typer": "0.27.0",
+        "typing-extensions": "4.16.0"
+      },
+      "python": "3.12.6",
+      "requirements_sha256": "6a5f4e9e952b02659e9b4ef8251ccc81a0702b2427efa5bb7cbfd939c61c7cd7",
+      "status": "PASS_ISOLATED_FULLY_PINNED",
+      "system_site_packages": false
+    },
+    "metal_available": true,
+    "numpy": "2.2.6",
+    "numpy_reference_compute_dtype": "numpy.float32",
+    "official_main_compute_dtype": "torch.float32",
+    "torch": "2.6.0",
+    "transformers": "5.14.1",
+    "transformers_config_module": "transformers.models.glm_moe_dsa.configuration_glm_moe_dsa",
+    "transformers_config_sha256": "5a81164be746307431ad998f789b6b0bca20eb4c14a726552eb3730268413997",
+    "transformers_modeling_module": "transformers.models.glm_moe_dsa.modeling_glm_moe_dsa",
+    "transformers_modeling_sha256": "adb8317a21716b01273046e46c807f14f0dbaf035af59b60d52bd6bc3007cf72"
+  },
+  "schema": "hawking.glm52.adapter_twin.v1",
+  "seal_sha256": "ca98d39c66d6bccaf40459d45d1666a88d92a604896775591fdddfafb7c44665",
+  "sequence_exceeds_index_topk": true,
+  "sequence_tokens": 20,
+  "source_parent_parity_claimed": false,
+  "source_parent_parity_pending_reason": "No BF16 payload shard has been admitted; only immutable headers and the architecture-preserving twin were read.",
+  "status": "PASS_SYNTHETIC_TWIN_AND_OFFICIAL_HEADER_TOKENIZER_SCHEMA",
+  "synthetic_fixture": {
+    "architecture": {
+      "core_logical_elements": 1660456,
+      "core_tensor_count": 3187,
+      "experts_per_token": 8,
+      "full_tensor_count": 3978,
+      "gate_up_order": [
+        "gate_proj",
+        "up_proj"
+      ],
+      "index_topk": 2,
+      "indexer_types_main": [
+        "full",
+        "full",
+        "full",
+        "shared",
+        "shared",
+        "shared",
+        "full"
+      ],
+      "main_layers": 7,
+      "mtp_indexer_type": "full",
+      "mtp_logical_elements": 409152,
+      "mtp_physical_layer": 7,
+      "mtp_tensor_count": 791,
+      "physical_layers": 8,
+      "profile": "synthetic",
+      "routed_expert_count": 256,
+      "router_normalizes_topk_probability": true,
+      "router_scoring_function": "sigmoid",
+      "router_selection": "top-8-of-256",
+      "router_topk_method": "noaux_tc",
+      "router_weight_sum_after_scaling": 2.5,
+      "shared_expert_count": 1,
+      "source_dtypes": [
+        "BF16",
+        "F32"
+      ]
+    },
+    "deterministic": true,
+    "long_context_indexer_contract": {
+      "capability_claimed": false,
+      "maximum_positions": 1048576,
+      "shape_probe_required": true
+    },
+    "network_access": false,
+    "profile": "synthetic",
+    "routing_fixture": {
+      "all_positive_hidden_probe_is_tie_free": true,
+      "correction_bias_is_strictly_increasing_f32": true,
+      "router_rows": "constant positive BF16 fractions 1/256..256/256"
+    },
+    "schema": "hawking.glm52.synthetic_fixture.v1",
+    "shards": [
+      {
+        "file_bytes": 73600,
+        "name": "model-00001-of-00003.safetensors",
+        "payload_bytes": 67968,
+        "section": "CORE",
+        "sha256": "29c2c36835f67b2a0fd3f25a8eb92e5318bfbcf8cce31dfb517c34d206c3a04b",
+        "tensor_count": 54
+      },
+      {
+        "file_bytes": 3612624,
+        "name": "model-00002-of-00003.safetensors",
+        "payload_bytes": 3254992,
+        "section": "CORE",
+        "sha256": "fbeac2cedca6a1fc3bfe062f38d0b3030c1e70dca0f58c4b91190799750729fc",
+        "tensor_count": 3133
+      },
+      {
+        "file_bytes": 907784,
+        "name": "model-00003-of-00003.safetensors",
+        "payload_bytes": 818816,
+        "section": "MTP",
+        "sha256": "ab6381141c103ce9b27593b96f2d395303751a477393d8401139eadcf84ff49a",
+        "tensor_count": 791
+      }
+    ],
+    "views": {
+      "full": {
+        "directory": "full",
+        "index_sha256": "7a592b34f7a7ab1477a0a1f01a0fdd06ff6e19c2212fe7291050dcd8a5840020",
+        "payload_bytes": 4141776,
+        "shard_count": 3,
+        "tensor_count": 3978
+      },
+      "main_only": {
+        "directory": "main_only",
+        "index_sha256": "00ea4a685a4dca0b3fe265d630bc6c764f8828fd9bb900114e74cec92fffc170",
+        "is_exact_core_filter": true,
+        "payload_bytes": 3322960,
+        "shard_count": 2,
+        "tensor_count": 3187
+      }
+    }
+  }
+}

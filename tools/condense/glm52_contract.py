@@ -293,19 +293,29 @@ def validate_config(config: dict[str, Any]) -> dict[str, Any]:
     return {"status": "PASS", "expected": expected, "mismatches": {}}
 
 
+def locked_requirement_versions() -> dict[str, str]:
+    path = REPO_ROOT / "tools/condense/requirements-glm52.txt"
+    locked: dict[str, str] = {}
+    for raw_line in path.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#"):
+            continue
+        if line.count("==") != 1:
+            raise Glm52Error(f"unlocked GLM runtime requirement: {line!r}")
+        name, version = line.split("==", 1)
+        normalized = re.sub(r"[-_.]+", "-", name).lower()
+        if not version or normalized in locked:
+            raise Glm52Error(f"duplicate/invalid GLM runtime requirement: {line!r}")
+        locked[normalized] = version
+    if not locked:
+        raise Glm52Error("GLM runtime requirements lock is empty")
+    return locked
+
+
 def package_versions() -> dict[str, str]:
-    names = (
-        "huggingface_hub",
-        "hf_xet",
-        "transformers",
-        "safetensors",
-        "tokenizers",
-        "torch",
-        "mlx",
-        "httpx",
-    )
+    locked = locked_requirement_versions()
     versions: dict[str, str] = {}
-    for name in names:
+    for name in sorted(locked):
         try:
             versions[name] = importlib.metadata.version(name)
         except importlib.metadata.PackageNotFoundError:
@@ -1315,14 +1325,29 @@ def build_source_admission(
     main_revision: str,
 ) -> dict[str, Any]:
     versions = package_versions()
-    current_verified = {
-        "huggingface_hub": "1.24.0",
-        "hf_xet": "1.5.2",
+    current_verified = locked_requirement_versions()
+    lock_gate = versions == current_verified
+    xet_stack = {
+        "huggingface-hub": "1.24.0",
+        "hf-xet": "1.5.2",
         "transformers": "5.14.1",
         "safetensors": "0.8.0",
         "tokenizers": "0.22.2",
     }
-    current_gate = all(versions.get(name) == version for name, version in current_verified.items())
+    current_gate = all(versions.get(name) == version for name, version in xet_stack.items())
+    environment_root = Path(sys.prefix).resolve()
+    environment_config = environment_root / "pyvenv.cfg"
+    environment_text = (
+        environment_config.read_text(encoding="utf-8")
+        if environment_config.is_file() else ""
+    )
+    isolated_gate = bool(
+        sys.prefix != sys.base_prefix
+        and re.search(
+            r"(?im)^include-system-site-packages\s*=\s*false\s*$",
+            environment_text,
+        )
+    )
     disk = shutil.disk_usage(REPO_ROOT)
     return seal({
         "schema": "hawking.glm52.source_admission.v1",
@@ -1363,12 +1388,14 @@ def build_source_admission(
             "python_executable": sys.executable,
             "platform": platform.platform(),
             "isolated_environment_required": True,
+            "isolated_environment_gate": "PASS" if isolated_gate else "FAIL",
             "requirements_lock": {
                 "path": "tools/condense/requirements-glm52.txt",
                 "sha256": sha256_file(REPO_ROOT / "tools/condense/requirements-glm52.txt"),
             },
             "packages": versions,
             "current_versions_verified_live_on_2026_07_21": current_verified,
+            "complete_requirements_lock_gate": "PASS" if lock_gate else "FAIL",
             "current_hf_xet_stack_gate": "PASS" if current_gate else "FAIL_UPGRADE_REQUIRED",
             "tokenizers_compatibility_note": (
                 "Transformers 5.14.1 requires tokenizers>=0.22.0,<=0.23.0; "

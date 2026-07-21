@@ -34,4 +34,4 @@ This is a dependency-correct disk admission plan, not an Xet throughput result. 
 | `W018` | 6 | 26 | 22 | 4 | 117951154616 |
 | `W019` | 4 | 14 | 10 | 0 | 53615616104 |
 
-Schedule seal: `58eda0a6e6c750e9fcdd4850457a443417ee883c0256a9eea43067a2d00ea9d3`.
+Schedule seal: `ca765d5197d25a888ebc1e31ca5d03cae4492235d3470dd6c93c53f98682af89`.

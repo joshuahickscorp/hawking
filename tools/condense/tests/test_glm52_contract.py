@@ -16,7 +16,7 @@ if str(CONDENSE) not in sys.path:
     sys.path.insert(0, str(CONDENSE))
 
 import glm52_contract as contract  # noqa: E402
-from glm52_common import Glm52Error, seal, sha256_file, verify_sealed  # noqa: E402
+from glm52_common import Glm52Error, canonical, seal, sha256_file, verify_sealed  # noqa: E402
 
 
 def _read(name: str) -> dict:
@@ -141,6 +141,12 @@ def test_admission_records_header_only_and_one_copy(artifacts: dict[str, dict]) 
     assert admission["xet"]["header_range_bytes_read"] == 7_467_536
     assert admission["xet"]["body_bytes_read"] == 0
     assert admission["local_runtime"]["current_hf_xet_stack_gate"] == "PASS"
+    assert admission["local_runtime"]["isolated_environment_gate"] == "PASS"
+    assert admission["local_runtime"]["complete_requirements_lock_gate"] == "PASS"
+    assert admission["local_runtime"]["requirements_lock"]["sha256"] == sha256_file(
+        REPO_ROOT / "tools/condense/requirements-glm52.txt"
+    )
+    assert admission["local_runtime"]["packages"] == contract.package_versions()
     assert manifest["one_copy"]["weight_body_copies"] == 0
 
 
@@ -157,3 +163,40 @@ def test_pre_audit_is_frozen_and_evidence_bound() -> None:
     for rows in audit["evidence"].values():
         for row in rows:
             assert sha256_file(REPO_ROOT / row["path"]) == row["sha256"]
+
+
+def test_external_matrix_separates_nominal_from_canonical_rates() -> None:
+    matrix = _read("GRAVITY_EXTERNAL_BASELINE_MATRIX.json")
+    assert len(matrix["methods"]) == 13
+    qmoe = next(row for row in matrix["methods"] if row["method"] == "QMoE")
+    assert qmoe["closest_giant_moe_prior"] is True
+    assert qmoe["rate"]["canonical_artifact_bpw"] == 0.807
+    stbllm = next(row for row in matrix["methods"] if row["method"] == "STBLLM")
+    assert stbllm["rate"]["nominal_or_method_bpw"][0] < 1
+    assert stbllm["rate"]["decoded_tensor_payload_bpw"]["2_of_4_kernel_floor_before_metadata"] > 1
+    assert "First sub-1-bit PTQ." in matrix["claim_policy"]["unsafe"]
+    required = {
+        "source_or_teacher_precision",
+        "architecture_class",
+        "largest_evaluated_scale",
+        "compression_regime",
+        "weight_activation_scope",
+        "physical_accounting_level",
+    }
+    for row in matrix["methods"]:
+        assert set(row["structured_comparison"]) == required
+        precision = row["structured_comparison"]["source_or_teacher_precision"]
+        assert (
+            "BF16" in precision
+            or precision.startswith("none:")
+            or precision.startswith("NOT_REPORTED_BY_PRIMARY_SOURCE;")
+        )
+        for source in row["sources"]:
+            if source["kind"] == "paper":
+                assert len(source["content_identity"]["sha256"]) == 64
+            else:
+                assert len(source["commit"]) == 40
+
+    import glm52_external_baselines as external
+
+    assert canonical(matrix) == canonical(external.build())

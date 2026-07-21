@@ -9335,10 +9335,10 @@
     "weight_body_copies": 0
   },
   "repo": "zai-org/GLM-5.2",
-  "resolved_at": "2026-07-21T20:44:11.411034Z",
+  "resolved_at": "2026-07-21T22:07:16.165051Z",
   "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
   "schema": "hawking.glm52.official_manifest.v1",
-  "seal_sha256": "b33bd06003d391df48b34c25cfb1bd49db38baeeb8d3c6b8bbf1a38c9b88138a",
+  "seal_sha256": "ef4e3cbf6b4b6ddc52aa7278d657a9f7f63254fa72d35591cc8f6c5c706c4791",
   "smallest_weight_shard": {
     "bytes": 293618224,
     "path": "model-00282-of-00282.safetensors"
