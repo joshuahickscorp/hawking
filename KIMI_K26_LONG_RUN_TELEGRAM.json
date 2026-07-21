@@ -1,9 +1,9 @@
 {
-  "attempted_at": "2026-07-21T19:21:59Z",
-  "checkpoint_id": "gravity-final:M5-complete",
+  "attempted_at": "2026-07-21T19:28:27Z",
+  "checkpoint_id": "gravity-final:closed",
   "credentials_available": true,
   "delivered": true,
-  "message_sha256": "8c8893adacf14918e2a30ecb3e6677d2fd3a042675dc13a516a6ffd6eb85c40e",
+  "message_sha256": "a0851a8ae599809fc01720b66734ebdda1b0421d24cfb90a97e3015d2ac9c34b",
   "schema": "hawking.kimi_k26.long_run_telegram.v1",
-  "seal_sha256": "a2d949c077b8971de40ca390464ffccb705d04a4e345b315bc18012243ed15a7"
+  "seal_sha256": "f338df0be1eae642b28e8322d26e74825dc63c71b9502812f3a6d2b2d48bfb08"
 }

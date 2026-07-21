@@ -84,7 +84,8 @@ class ClosureError(RuntimeError):
 
 def canonical(value: Any) -> bytes:
     return json.dumps(
-        value, sort_keys=True, separators=(",", ":"), allow_nan=False,
+        value, sort_keys=True, separators=(",", ":"), ensure_ascii=False,
+        allow_nan=False,
     ).encode("utf-8")
 
 
@@ -1154,20 +1155,29 @@ def prepare(repo: Path) -> dict[str, Any]:
 
 
 def finalize(repo: Path, *, check_only: bool) -> dict[str, Any]:
+    existing_path = repo / FINAL_JSON
+    if existing_path.is_file():
+        existing = verify_sealed_json(existing_path)
+        audit = chapter.audit(repo)
+        if audit.get("status") != "PASS":
+            raise ClosureError(f"live final guard failed: {audit.get('failures')}")
+        runtime_final = RUNTIME / FINAL_JSON
+        if (not runtime_final.is_file() or
+                sha256_file(runtime_final) != sha256_file(existing_path)):
+            raise ClosureError("runtime final report is absent or differs from the repo report")
+        terminal_rows = [row for row in verify_jsonl(repo / CHAPTER_LEDGER)
+                         if row.get("event") == "FINAL_CHAPTER_CLOSED"]
+        if len(terminal_rows) != 1:
+            raise ClosureError("final report requires exactly one terminal ledger row")
+        return {"status": "ALREADY_CLOSED", "terminal_outcome": existing["terminal_outcome"],
+                "input_fingerprint_sha256": existing["input_fingerprint_sha256"],
+                "seal_sha256": existing["seal_sha256"]}
     prepared = prepare(repo)
     final = prepared["final"]
     if check_only:
         return {"status": "READY", "terminal_outcome": final["terminal_outcome"],
                 "input_fingerprint_sha256": final["input_fingerprint_sha256"],
                 "seal_sha256": final["seal_sha256"]}
-    existing_path = repo / FINAL_JSON
-    if existing_path.is_file():
-        existing = verify_sealed_json(existing_path)
-        if existing.get("input_fingerprint_sha256") == final["input_fingerprint_sha256"]:
-            return {"status": "ALREADY_CLOSED", "terminal_outcome": existing["terminal_outcome"],
-                    "input_fingerprint_sha256": existing["input_fingerprint_sha256"],
-                    "seal_sha256": existing["seal_sha256"]}
-        raise ClosureError("a final report exists for a different evidence fingerprint")
     final_md = markdown(final)
     transfer_md = transfer_markdown(final)
     # All validation occurs above.  These writes are atomic and the sole source

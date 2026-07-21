@@ -3,7 +3,7 @@
   "active_light_lanes": [],
   "controller": {
     "alive": true,
-    "heartbeat_age_seconds": 29.06962,
+    "heartbeat_age_seconds": 23.431654,
     "heartbeat_current": true,
     "heartbeat_state": "MONITOR",
     "heartbeat_status": "RUNNING",
@@ -19,33 +19,31 @@
   "experiments_completed": 13,
   "f2_promotable": false,
   "latest_result": {
-    "decision": "ALL_JUSTIFIED_BRANCHES_TERMINAL_READY_FOR_FINAL_REPORT",
-    "evidence_seal_sha256": "6776748c50fbcdf45a3441144dda55986592530e60e0e39d5307745cb8248ce7",
-    "experiment_id": "GRAVITY_N3_N5_M1_M7_TERMINAL_ADJUDICATION",
-    "ledger_seal_sha256": "cae9ad2a21165935d8514b12d1b746099f8d7985fed4c0bc9a5db5331bd3f382",
-    "terminal_outcome_recommendation": "OUTCOME_C_TESTED_NONLINEAR_REGION_CLOSED_ORACLE_INFORMATION_REMAINS_UNPHYSICALIZED",
-    "unresolved_branches": []
+    "decision": "OUTCOME_C",
+    "evidence_seal_sha256": "63e478a1b24da9604b18cb3388fa478bac1b2fa1a24f2953cc601d8aa445823a",
+    "experiment_id": "GRAVITY_FINAL_CLOSURE",
+    "input_fingerprint_sha256": "1ad1fcc4e466cd12fb106c82243bbfa494ab2792d52d76e8926833ccb4a31801"
   },
   "mop_protected": true,
-  "next_experiment": "KIMI_GRAVITY_FINAL_AND_NEXT_PARENT_TRANSFER",
+  "next_experiment": "NEXT_PARENT_TRANSFER",
   "nonlinear_families_adjudicated": 6,
   "one_copy": true,
   "oneoffs_adjudicated": 7,
-  "phase": "GRAVITY_ONEOFF_CLOSURE_COMPLETE",
+  "phase": "GRAVITY_FINAL_CLOSURE",
   "primary_causal_diagnosis": "UPSTREAM_STATE_PRIMARY_ROUTE_SECONDARY_CONDITIONAL_AMPLIFIER",
   "resources": {
     "disk_floor_bytes": 5368709120,
-    "disk_headroom_bytes": 38638657536,
+    "disk_headroom_bytes": 38502600704,
     "floor_green": true,
-    "free_disk_bytes": 44007366656,
-    "memory_pressure": "The system has 103079215104 (6291456 pages with a page size of 16384).\nSystem-wide memory free percentage: 90%",
+    "free_disk_bytes": 43871309824,
+    "memory_pressure": "The system has 103079215104 (6291456 pages with a page size of 16384).\nSystem-wide memory free percentage: 92%",
     "swap": "total = 2048.00M  used = 579.56M  free = 1468.44M  (encrypted)",
     "thermals": "Note: No thermal warning level has been recorded\nNote: No performance warning level has been recorded\nNote: No CPU power status has been recorded"
   },
   "schema": "hawking.kimi_k26.final_chapter_status.v1",
-  "seal_sha256": "7f95bb03e55621939f8e29357a6f15bb247fe90ce46263166e141f83ca7bf71f",
+  "seal_sha256": "d22003fb5705eb91891b13a494c4bbd21faf90dc665163a4f4347b6f83e68121",
   "started_at": "2026-07-21T18:56:37Z",
-  "status": "READY_FOR_FINAL_REPORT",
-  "updated_at": "2026-07-21T19:23:12Z",
-  "wall_clock_seconds": 1595.0
+  "status": "CLOSED",
+  "updated_at": "2026-07-21T19:28:03Z",
+  "wall_clock_seconds": 1886.516311
 }
