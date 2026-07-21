@@ -1,9 +1,9 @@
 {
   "active_experiment": null,
-  "audit_seal_sha256": "d8ea0d2fa28b43c9b3c7238dace5fd8e5d207f8b14472295648f20592ff0b658",
+  "audit_seal_sha256": "97c9954db65609d5cb9d21123c5a673a2db019df77c3e08594f9b5620a79d1e8",
   "controller": {
     "alive": true,
-    "heartbeat_age_seconds": 2.639402,
+    "heartbeat_age_seconds": 2.289114,
     "heartbeat_current": true,
     "heartbeat_state": "MONITOR",
     "heartbeat_status": "RUNNING",
@@ -19,10 +19,10 @@
   "experiments_completed": 13,
   "latest_result": {
     "decision": "STOP_EARLY_PRESERVE_SOURCE_CONTROLLER_AND_MOP",
-    "deficit_bytes": 46142599168,
+    "deficit_bytes": 45904011264,
     "event": "LR14_DISK_FLOOR_POLICY",
     "floor_increase_bytes": 53687091200,
-    "free_disk_bytes": 41904230400,
+    "free_disk_bytes": 42142818304,
     "guard_failure": "DISK_FLOOR_RISK",
     "new_floor_bytes": 88046829568,
     "old_floor_bytes": 34359738368,
@@ -37,18 +37,18 @@
   "primary_causal_diagnosis": "UPSTREAM_STATE_PRIMARY_ROUTE_SECONDARY_CONDITIONAL_AMPLIFIER",
   "resources": {
     "disk_floor_bytes": 88046829568,
-    "disk_headroom_bytes": -46142599168,
+    "disk_headroom_bytes": -45904011264,
     "floor_green": false,
-    "free_disk_bytes": 41904230400,
+    "free_disk_bytes": 42142818304,
     "memory_pressure": "The system has 103079215104 (6291456 pages with a page size of 16384).\nSystem-wide memory free percentage: 92%",
     "swap": "total = 2048.00M  used = 579.56M  free = 1468.44M  (encrypted)",
     "thermals": "Note: No thermal warning level has been recorded\nNote: No performance warning level has been recorded\nNote: No CPU power status has been recorded"
   },
   "schema": "hawking.kimi_k26.long_run_status.v1",
   "scientific_hypothesis": "At 0.90859 complete BPW, compact expert-output drift reaches the next block before routing, low native margins amplify that drift into expert entry/exit, but routing is secondary: exact route restoration rescues only 10.7% while hidden restoration rescues 100%. Under <=0.98 BPW, learned low-rank state/router/MoE repairs trade high-energy outlier improvement for statistically significant typical-token and low-margin harm.",
-  "seal_sha256": "1b28aba2d917a3a3d0ba8b41295d1e1c5adbae54e9471980ce179debbe6e17ee",
+  "seal_sha256": "5f162cfdecdb860635756bc3e744169cc54552df7b7bad03ea3406d002f775ec",
   "started_at": "2026-07-21T16:52:21Z",
   "status": "STOPPED_DISK_FLOOR",
-  "updated_at": "2026-07-21T18:15:14Z",
-  "wall_clock_seconds": 4973.669273
+  "updated_at": "2026-07-21T18:16:14Z",
+  "wall_clock_seconds": 5033.320494
 }

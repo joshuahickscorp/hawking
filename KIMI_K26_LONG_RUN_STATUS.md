@@ -2,8 +2,8 @@
 
 - Status: **STOPPED_DISK_FLOOR**
 - Started: `2026-07-21T16:52:21Z`
-- Updated: `2026-07-21T18:15:14Z`
-- Wall-clock managed: `4973.7s`
+- Updated: `2026-07-21T18:16:14Z`
+- Wall-clock managed: `5033.3s`
 - Experiments completed: `13`
 - Active experiment: `none`
 - Current best: `P1_DUAL_PATH_RECOVERY_R16X2_LOCAL_F1_ONLY` / `0.9085909525553385` BPW
@@ -13,8 +13,8 @@
 ## Guards
 
 - Controller PID/lease: `13332` / `True`
-- Heartbeat age: `2.639402` seconds
-- Free disk/headroom: `39.03` / `-42.97` GiB
+- Heartbeat age: `2.289114` seconds
+- Free disk/headroom: `39.25` / `-42.75` GiB
 - MOP protected: `True`
 - Sole Kimi source: `True`
 
@@ -23,10 +23,10 @@
 ```json
 {
   "decision": "STOP_EARLY_PRESERVE_SOURCE_CONTROLLER_AND_MOP",
-  "deficit_bytes": 46142599168,
+  "deficit_bytes": 45904011264,
   "event": "LR14_DISK_FLOOR_POLICY",
   "floor_increase_bytes": 53687091200,
-  "free_disk_bytes": 41904230400,
+  "free_disk_bytes": 42142818304,
   "guard_failure": "DISK_FLOOR_RISK",
   "new_floor_bytes": 88046829568,
   "old_floor_bytes": 34359738368,
