@@ -465,6 +465,9 @@ def write_status(state: dict[str, Any]) -> None:
     snapshot = status_snapshot(state)
     atomic_json(PHONE_JSON, snapshot)
     p = snapshot["progress"]
+    throughput_text = (f"{p.get('throughput_bytes_per_second', 0)/1e6:.1f} MB/s"
+                       if snapshot.get("source_state") == "KIMI_DOWNLOAD_RUNNING"
+                       else "complete")
     md = f"""# Kimi K2.6 Doctor Prime
 
 - State: **{snapshot['state']}** ({snapshot.get('status')})
@@ -472,7 +475,7 @@ def write_status(state: dict[str, Any]) -> None:
 - Lease live: `{snapshot.get('lease_live')}`; heartbeat age: `{snapshot.get('heartbeat_age_seconds')}` s
 - Source: `{snapshot.get('source_state')}`
 - Progress: {snapshot.get('progress_text')}
-- Throughput: {p.get('throughput_bytes_per_second', 0)/1e6:.1f} MB/s
+- Download throughput/state: {throughput_text}
 - ETA: {snapshot.get('eta_text')}
 - Free disk: {snapshot['resources']['free_disk_bytes']/1024**3:.1f} GiB
 - Available memory estimate: {snapshot['resources'].get('available_bytes_estimate', 0)/1024**3:.1f} GiB

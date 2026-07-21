@@ -13,6 +13,13 @@
   "minimum_reserve_green": true,
   "target_48_gib_gap_bytes": 1328038000,
   "target_48_gib_disposition": "Preserved rather than cleaning an active uv cache or unrelated project build tree; the hard gate retains 14,851,831,184 bytes above its minimum reserve.",
+  "actual_post_download": {
+    "measured_free_bytes": 51162480640,
+    "minimum_reserve_green": true,
+    "bytes_above_32_gib_floor": 16802742272,
+    "target_48_gib_gap_bytes": 377126912,
+    "disposition": "The target is 359.66 MiB short, but the hard reserve is green. A read-only cache audit found no additional in-scope Hawking rebuild tree large enough; unrelated projects, active uv state, MOP, and user data remain untouched."
+  },
   "cleanup_receipts": [
     {
       "path": "/Users/scammermike/Downloads/hawking-hide-build/target",

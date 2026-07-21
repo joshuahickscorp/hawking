@@ -15,6 +15,7 @@ import json
 import math
 import os
 from pathlib import Path
+import shutil
 import time
 from typing import Any
 
@@ -278,6 +279,8 @@ def doctor_auction(ledger_path: Path, causal_path: Path, output: Path) -> dict[s
         "compressible_logical_weights": int(ledger["compressible_logical_weights"]),
         "active_logical_weights": int(ledger["active_text_core_logical_weights_per_token"]),
     }
+    free_bytes = shutil.disk_usage(Path.home()).free
+    retained_floor_bytes = 32 * 1024**3
     rows = []
     for candidate_id, target, base_share, doctor_share, envelope in CANDIDATES:
         total_bytes = (denominators["all_kimi_logical_weights"] * target.numerator //
@@ -306,6 +309,8 @@ def doctor_auction(ledger_path: Path, causal_path: Path, output: Path) -> dict[s
             },
             "complete_bpw_by_denominator": rates, "hard_rate_law_pass": legal,
             "artifact_status": "F0_BYTE_BUDGET_ONLY_NOT_PACKED",
+            "resident_fit_with_32_gib_floor":
+                total_bytes + retained_floor_bytes <= free_bytes,
         })
     passed = all(row["hard_rate_law_pass"] for row in rows)
     artifact = seal({
@@ -320,6 +325,17 @@ def doctor_auction(ledger_path: Path, causal_path: Path, output: Path) -> dict[s
         ),
         "hard_rate_law": "installed_bits / all Kimi logical weights <= candidate target <= 1",
         "denominators": denominators, "doctor_gets_no_free_bytes": True,
+        "resident_execution": {
+            "free_bytes_at_auction": free_bytes,
+            "retained_floor_bytes": retained_floor_bytes,
+            "maximum_new_artifact_bytes_without_crossing_floor":
+                max(0, free_bytes - retained_floor_bytes),
+            "full_candidate_fits_now": [
+                row["candidate"] for row in rows if row["resident_fit_with_32_gib_floor"]
+            ],
+            "current_scope": "F1/F2 component artifacts only until a full candidate fits "
+                             "without releasing the resident source or crossing the disk floor",
+        },
         "conditional_treatments_bill_installed_bits": True,
         "blocked_qwen_defaults": [
             "uniform_frozen_weight_pq_vq", "fixed_expert_omission",
