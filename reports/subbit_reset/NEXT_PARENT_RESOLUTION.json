@@ -1,0 +1,282 @@
+{
+  "schema": "hawking.subbit_reset.next_parent_resolution.v1",
+  "generated_at_utc": "2026-07-20T21:45:00Z",
+  "worktree": "/Users/scammermike/HawkingWorktrees/subbit-reset",
+  "branch": "campaign/subbit-capability-density-reset",
+  "verdict": "NEXT PARENT = Qwen/Qwen3.5-397B-A17B (ladder slot F2), rev 8472618112abcbd45acbcdc58436aff4233c23f7. IT DOES NOT FIT ON THIS BOX. Measured free disk is 114.66 GiB; the bf16 source is 751.41 GiB. Even after releasing the entire 437.9 GiB Qwen3-235B source the ceiling is 552.58 GiB, still 198.83 GiB short. Full staging is physically impossible on the internal SSD under any deletion of model files. The only staged-source paths are bounded shard-serial streaming (~8 GiB working set, ~751 GiB of network per pass, re-paid per pass), external storage, or a smaller parent. Additionally the F2 admission gate is CLOSED on its own terms: it requires the F1 235B source released, and the 235B source is resident AND under an active heavy forward (pid 62852).",
+
+  "1_ladder_resolution": {
+    "next_parent": "Qwen/Qwen3.5-397B-A17B",
+    "ladder_slot": "F2",
+    "authoritative_source": "reports/condense/general_frontier/ADAPTIVE_LADDER_PARENT_REGISTRY.json (generated_at 2026-07-19T20:10:00Z; dag_edges F0->F1->F2->F3->F4 + OPT_480B, OPT_1_6T)",
+    "why_this_one": "The campaign just sealed on Qwen3-235B-A22B = F1 (NEXT_PARENT_LAUNCH_PACKET.json predecessor.parent.model). The registry's dag_edges name the successor edge {from: F1, to: F2, gate: 'release F1 (235B) full source -> admit F2 (397B)'}.",
+    "sources_disagree": true,
+    "disagreements": [
+      {
+        "source": "reports/condense/general_frontier/ADAPTIVE_LADDER_PARENT_REGISTRY.json",
+        "generated_at": "2026-07-19T20:10:00Z",
+        "says": "F0 openai/gpt-oss-120b (present) | F1 Qwen/Qwen3-235B-A22B-Instruct-2507 (admitted) | F2 Qwen/Qwen3.5-397B-A17B (prep) | F3 deepseek-ai/DeepSeek-V3.2 (absent) | F4 moonshotai/Kimi-K2.6 (absent) | OPT_480B Qwen/Qwen3-Coder-480B-A35B-Instruct | OPT_1_6T deepseek-ai/DeepSeek-V4-Pro",
+        "status": "NEWEST and the only source that contains Qwen3.5-397B at all. Treated as authoritative."
+      },
+      {
+        "source": "reports/condense/general_frontier/GENERAL_FRONTIER_PARENTS.json",
+        "generated_at": "2026-07-19T02:45:00Z",
+        "says": "F0 openai/gpt-oss-120b (active_foundry) | F1 model_id null, status reserved_unpopulated | F2 deepseek-ai/DeepSeek-V3.2 (source_absent_prep_only, expected_source_bytes 1370793842752) | F3 moonshotai/Kimi-K2.6 | F4 deepseek-ai/DeepSeek-V4-Pro (optional_blocked)",
+        "conflict": "SLOT COLLISION. Labels are shifted by one relative to the adaptive registry because F1 was still unpopulated when it was written. Its 'F2' is the adaptive registry's 'F3'. If you read this file alone you would resolve the next parent as DeepSeek-V3.2, which is wrong under the newer ladder and also carries a stale bf16 1.37 TiB source estimate that the adaptive registry corrects to fp8 ~671 GiB.",
+        "resolution": "superseded by the 2026-07-19T20:10Z adaptive registry"
+      },
+      {
+        "source": "tools/condense/studio_manifest.py:83-207 FRONTIER_MODELS",
+        "says": "235B-A22B (Qwen/Qwen3-235B-A22B), 405B (meta-llama/Llama-3.1-405B-Instruct), 671B (deepseek-ai/DeepSeek-V3), DeepSeek-V4-Flash, DeepSeek-V4-Pro, GLM-5.2, Kimi-K2.6, Kimi-K2.7-Code, Kimi-K2-Instruct",
+        "conflict": "This is a PROCUREMENT manifest, not a labelled F-ladder: no F-slots, no DAG, no admission gates. It does NOT contain Qwen3.5-397B at all, and it pins the 235B as 'Qwen/Qwen3-235B-A22B' where the adaptive registry pins 'Qwen/Qwen3-235B-A22B-Instruct-2507' with rev ac9c66cc9b46af7306746a9250f23d47083d689e. Two different repo ids for the parent that was just measured.",
+        "resolution": "not a ladder of record for parent succession; useful only for storage/wave math"
+      },
+      {
+        "source": "BASELINES.md:101-115 (FRONTIER table)",
+        "says": "mirrors studio_manifest FRONTIER_MODELS; '235B-A22B | Qwen/Qwen3-235B-A22B'. No 397B row.",
+        "conflict": "same stale repo id as studio_manifest; no next-parent semantics"
+      },
+      {
+        "source": "MODELS.md:3",
+        "says": "'What has actually been run and checked on this hardware (Apple M3 Pro, 18 GB)'; Qwen2.5-era dense models, 'Qwen3-MoE | Untested'",
+        "conflict": "STALE BY A WHOLE MACHINE. Names an 18 GB M3 Pro, not the 96 GB M3 Ultra. Contains no frontier parent ladder. Must not be used for parent resolution.",
+        "resolution": "discard for this purpose"
+      }
+    ],
+    "gate_state": "F2 is NOT eligible. eligible_when = '235B (F1) full source RELEASED from disk'. models/qwen3-235b-a22b is 438 GiB resident and pid 62852 (qwen_gravity_campaign.py run --candidates S32_recon_first,S2A_adaptive_k) has been running on it for 1h02m. Separately QWEN35_397B_STORAGE_PLAN.json admission_gate requires GPT_OSS_120B_SOURCE_RELEASE_READINESS = AUTHORIZED, which is DENIED with 6 red gates (05_final_result_sealed, 06_artifact_sealed_and_load_tested, 07_checkpoint_graph_sealed, 08_reproduction_sealed, 10_no_running_process_maps_source, 11_no_queued_experiment_references_source)."
+  },
+
+  "2_identity": {
+    "repo": "Qwen/Qwen3.5-397B-A17B",
+    "immutable_revision": "8472618112abcbd45acbcdc58436aff4233c23f7",
+    "revision_pinned": true,
+    "license": "apache-2.0",
+    "gated": false,
+    "last_modified": "2026-04-24",
+    "source_format": "bf16 safetensors (torch_dtype bfloat16). NOT fp8, NOT MXFP4, NOT compressed-tensors. This is the reason it is enormous: ~2 bytes/param unquantized.",
+    "architecture": "Qwen3_5MoeForConditionalGeneration (model_type qwen3_5_moe), multimodal image-text-to-text wrapper; text core model_type qwen3_5_moe_text",
+    "declared_parameter_count": {
+      "nominal_from_repo_name": "397B total / 17B active",
+      "analytic_total_params": 396234469376,
+      "analytic_source": "reports/condense/general_frontier/QWEN35_397B_ADAPTER_PLAN.json architecture.total_params_analytic",
+      "config_carries_no_param_count": true,
+      "honesty": "396,234,469,376 is an ANALYTIC count derived from config geometry, not a published figure. Bind original_weight_count from the resident tensor index at admission before any Fraction ledger is computed; the ceiling denominator must never be a name-derived number."
+    },
+    "config": {
+      "text_core": {
+        "num_hidden_layers": 60,
+        "hidden_size": 4096,
+        "head_dim": 256,
+        "num_attention_heads": 32,
+        "num_key_value_heads": 2,
+        "num_experts": 512,
+        "num_experts_per_tok": 10,
+        "moe_intermediate_size": 1024,
+        "shared_expert_intermediate_size": 1024,
+        "mlp_only_layers": "[] (every layer is MoE)",
+        "mtp_num_hidden_layers": 1,
+        "max_position_embeddings": 262144,
+        "vocab_size": 248320,
+        "layer_types_pattern": "45x linear_attention (Gated-DeltaNet) + 15x full_attention, full_attention_interval=4; full-attn layer indices 3,7,11,...,59"
+      },
+      "vision": {"depth": 27, "hidden_size": 1152, "out_hidden_size": 4096, "patch_size": 16},
+      "provenance": "reports/condense/general_frontier/QWEN35_397B_SOURCE_ADMISSION_DRAFT.json config_summary; cross-checked against ADAPTIVE_LADDER_PARENT_REGISTRY.json F2.live_verified_properties.text_config"
+    },
+    "tokenizer": {
+      "status": "NOT resolved locally. The sealed admission draft downloaded only config.json (4177 B), generation_config.json (244 B) and model.safetensors.index.json (303440 B). No tokenizer.json, no tokenizer_config.json, no hash.",
+      "consequence": "there is no tokenizer binding for this parent; a calibration corpus cannot be tokenized and corpus_integrity.py cannot be run against it until the tokenizer assets are fetched (tiny, metadata-only, but not yet done)."
+    },
+    "tensor_index": {
+      "file": "model.safetensors.index.json",
+      "resident_at": "/Users/scammermike/Downloads/hawking/models/qwen3.5-397b-a17b/_meta (332 KB on disk, metadata only)",
+      "n_files": 107,
+      "n_weight_shards": 94,
+      "shard_naming": "model.safetensors-00001-of-00094.safetensors .. model.safetensors-00094-of-00094.safetensors",
+      "avg_shard_bytes": 8582938738,
+      "avg_shard_gib": 7.99,
+      "weight_bytes": 806796241352,
+      "total_bytes": 806819566361
+    },
+    "expert_tensor_patterns_unconfirmed": [
+      "model.language_model.layers.{L}.mlp.experts.{E}.gate_proj.weight",
+      "model.language_model.layers.{L}.mlp.experts.{E}.up_proj.weight",
+      "model.language_model.layers.{L}.mlp.experts.{E}.down_proj.weight"
+    ],
+    "expert_tensor_patterns_note": "QWEN35_397B_ADAPTER_PLAN.json states these follow the qwen3_moe convention and are 'to be confirmed against the resident index.json at admission'. The index IS resident (332 KB). Confirming the real tensor names is a zero-cost step that has not been taken."
+  },
+
+  "3_physical_feasibility": {
+    "decisive": true,
+    "verdict": "CANNOT BE STAGED. Not now, not after releasing the 235B, not after deleting every model file on the box.",
+    "measurement": {
+      "method": "os.statvfs('/System/Volumes/Data') and df -k, run live 2026-07-20",
+      "volume_total_gib": 926.4,
+      "free_bytes_measured": 123115536384,
+      "free_gib_measured": 114.66,
+      "note": "df -k reported 117173120 KiB avail on /dev/disk3s5 in the same window; statvfs f_bavail gives 114.66 GiB. Both are ~112-115 GiB, an order of magnitude below what every sealed 397B plan assumes."
+    },
+    "requirement_vs_reality": {
+      "source_gib_required": 751.41,
+      "free_gib_now": 114.66,
+      "deficit_now_gib": 636.75,
+      "free_after_releasing_235b_gib": 552.58,
+      "deficit_after_releasing_235b_gib": 198.83,
+      "fits_now": false,
+      "fits_after_f1_release": false
+    },
+    "stale_plan_drift": {
+      "sealed_plans_assume_free_gib": 539.7,
+      "measured_free_gib": 114.66,
+      "drift_gib": 425.0,
+      "cause": "the 438 GiB Qwen3-235B source landed on disk after QWEN35_397B_STORAGE_PLAN.json / QWEN35_397B_SOURCE_ADMISSION_DRAFT.json were written (both quote disk_free_bytes 579487981568). Their 'free_after_120b_release_gib: 600.5' figure is now wrong by ~430 GiB. Every 397B feasibility number in the sealed prep pack is stale.",
+      "the_plans_already_said_no": "even on their OWN optimistic numbers the storage plan concluded fits_397b_full_resident_after_120b_release=false with a 151.0 GiB gap. The measured gap is 198.83 GiB. The direction of the conclusion is unchanged; only its size got worse."
+    },
+    "reserve_violation": {
+      "declared_disk_reserve_gb": 150.0,
+      "provenance": "tools/condense/studio_manifest.py:46 disk_reserve_gb=150.0; storage_budget_gb = ssd_gb - disk_reserve_gb (studio_manifest.py:32-34)",
+      "measured_free_gib": 114.66,
+      "status": "The box is ALREADY inside its own declared safety reserve. Under the repo's own storage law there is currently zero admissible payload budget for any new source, of any size.",
+      "second_defect": "studio_manifest.py:44 declares ssd_tb=1.0 -> ssd_gb=1000.0, and size_frontier.py:53 computes physical_ssd_gb = ssd_tb*1000. The actual volume is 926.4 GiB. Every storage_ceiling_b number size_frontier prints is computed from nominal capacity, never from measured free space. size_frontier.analyze() has no free-disk term at all (size_frontier.py:50-80)."
+    },
+    "options": [
+      {
+        "option": "bounded shard-serial streaming",
+        "already_specified": "QWEN35_397B_STORAGE_PLAN.json streaming_plan: resident metadata (~23 MB) addresses each tensor to its shard; stream one ~8.6 GiB shard, transform/measure, flush, advance. working_set_bound_gib 7.99.",
+        "disk_feasible": true,
+        "honest_cost": "751.4 GiB of network per full pass, re-paid on every pass that touches all shards. Qwen's campaign made many passes over its source; a streamed parent turns each of those into a ~751 GiB download. This is a science-throughput cost, not a storage cost, and it is the real reason streaming is not a free workaround.",
+        "prerequisites": "tokenizer assets fetched; Range-GET reader extended per plan; explicit authorization for a ~751 GiB transfer; 235B source released first"
+      },
+      {
+        "option": "external NVMe",
+        "disk_feasible": true,
+        "cost": "751.4 GiB + artifact headroom on an external volume; sustained read becomes the forward-pass bottleneck rather than the 6 GB/s internal figure size_frontier.py:44 assumes. No such volume is present or referenced anywhere in the repo."
+      },
+      {
+        "option": "a smaller parent",
+        "disk_feasible": "conditionally",
+        "detail": "Nothing on the F-ladder at or above F2 fits in 114.66 GiB. After releasing the 235B (552.58 GiB free) the sources that would fit are DeepSeek-V3.2 fp8 ~671 GiB (NO), Kimi-K2.6 int4 595.1 GiB (NO, exceeds 552.58), DeepSeek-V4-Pro fp8 ~805 GiB (NO). From the studio_manifest procurement list only DeepSeek-V4-Flash-DSpark (~168 GB fp4+fp8 mixed, studio_manifest.py:132) fits after a 235B release, and it is not on the F-ladder at all. In 114.66 GiB free RIGHT NOW, the only frontier-class source that fits is gpt-oss-120b at 60.8 GiB, which is F0, already measured, and already NEGATIVE.",
+        "implication": "the ladder as written has no admissible next rung on this hardware without either a release + a smaller off-ladder parent, or streaming, or external storage"
+      }
+    ]
+  },
+
+  "4_adapter_readiness": {
+    "registry": "tools/foundry/adapters/tier_a_registry.json (schema hawking.foundry.tier_a_adapter_registry.v1)",
+    "adapters_present": [
+      {"id": "llama", "tier": "A", "status": "existing"},
+      {"id": "gemma2", "tier": "A", "status": "existing"},
+      {"id": "phi3", "tier": "A", "status": "existing"},
+      {"id": "olmoe", "tier": "A", "status": "existing"},
+      {"id": "mixtral", "tier": "A", "status": "existing"},
+      {"id": "gpt_oss", "tier": "A", "status": "existing"},
+      {"id": "mamba2", "tier": "A", "status": "existing"},
+      {"id": "qwen3_moe", "tier": "A", "status": "planned"}
+    ],
+    "adapter_for_qwen3_5_moe": "DOES NOT EXIST. There is no qwen3_5_moe entry in the registry at any status.",
+    "nearest_adapter": "qwen3_moe, and it is status 'planned', i.e. it does not exist either. It is also the WRONG shape: qwen3_moe is 128 experts / top-8 / no shared expert / uniform full attention (the F1 geometry). qwen3_5_moe is 512 experts / top-10 / +1 shared expert / 45 Gated-DeltaNet linear-attention layers interleaved with 15 full-attention layers / +1 MTP layer / multimodal wrapper. ADAPTIVE_LADDER_PARENT_REGISTRY F2.honesty_notes says it outright: 'adapter grammar must be re-derived, not inherited'.",
+    "registry_is_stale_by_its_own_rule": "tools/foundry/adapters/tier_a_registry.json note: 'An entry is STALE until it carries a rebase_ack for each completed parent whose prescription_digest matches'. Every one of the 8 adapters has rebase_acks {GRAVITY_METHOD_V2/qwen3-235b-a22b-instruct-2507: PENDING}. All 8 are stale against the parent that just sealed.",
+    "synthetic_twin_must_cover": [
+      "512-expert per-layer stacks with top-10 routing (5.1x the expert count and 1.25x the top-k of F1) - the byte auction and per-expert allocation code has never been exercised at this width",
+      "an always-on shared expert (intermediate 1024) alongside the routed experts; F1 had none, so no code path bills or protects it",
+      "router weight [512, 4096] per layer x 60 - discrete top-10 selection over 512 candidates, brittleness untested at this fan-out",
+      "hybrid layer map: 45 Gated-DeltaNet LINEAR-ATTENTION layers + 15 full-attention layers at interval 4 (indices 3,7,...,59). Nothing in the repo's adapter set or reference forward models a Gated-DeltaNet recurrent state. This is the single largest unbuilt piece.",
+      "1 MTP head layer (pass-through/excluded, but it must still be BILLED or explicitly scoped out of original_weight_count with the exclusion recorded)",
+      "vision tower (depth 27, hidden 1152, out_hidden 4096) - excluded from the sub-bit scope, therefore its parameters must be excluded from BOTH numerator and denominator with the omission written into the ledger, exactly as qwen_structural_plan.py's omission-aware accounting demands",
+      "vocab 248320 embed + lm_head, head_dim 256, GQA 32q/2kv - geometry no existing twin uses",
+      "tensor-name grammar: patterns are model.language_model.layers.* (multimodal wrapper prefix), NOT model.layers.* - every regex in the F1 tooling will miss"
+    ],
+    "cheap_next_step": "The 303 KB tensor index is already resident at models/qwen3.5-397b-a17b/_meta. Confirming the real tensor names, per-tensor shapes and exact original_weight_count from it costs no network and no compute, and it is the only 397B work that is currently legal."
+  },
+
+  "5_runtime_boundary": {
+    "rust_engine_state": {
+      "qwen3moe": "routed to a stub. crates/hawking-core/src/model/mod.rs:81-83 matches \"qwen2moe\" | \"qwen3moe\" | \"qwen-moe\" -> qwen_moe::QwenMoE::load; crates/hawking-core/src/model/qwen_moe.rs:5 is documented 'Phase 0: stub returning Unimplemented' and returns Error::Unimplemented at load (line 18), forward (line 28) and forward_tokens (line 44).",
+      "qwen3_5_moe": "NOT ROUTED AT ALL. The match in crates/hawking-core/src/model/mod.rs recognises only llama, deepseek2/deepseek-v2/deepseek2-lite, qwen2/qwen2.5/qwen, qwen2moe/qwen3moe/qwen-moe, rwkv7. Anything else falls to the catch-all at mod.rs:89-93 returning Error::Model(\"unknown architecture ...\"). Loading a Qwen3.5-397B artifact is a hard error, not a stub error.",
+      "same_for_downstream_rungs": "deepseek_v32 (F3), kimi_k25 (F4) and deepseek_v4 (OPT_1_6T) are likewise unrouted."
+    },
+    "execution_claim_permitted": "PYTHON REFERENCE FORWARD ONLY. Any capability number produced for Qwen3.5-397B must be labelled a Python-reference measurement, exactly as NEXT_PARENT_LAUNCH_PACKET.json EXECUTION_PATH_REALITY requires for its predecessor.",
+    "execution_claim_forbidden": [
+      "'direct-executable' or 'serve-ready' in any form",
+      "any tok/s, resident-footprint or paging claim on the .tq serve path",
+      "any size_frontier.py regime label (RESIDENT / MOE-PAGED / DENSE-OOC) presented as an execution result - those are projections from a tool whose own docstring (size_frontier.py:17-18) says 'Projection tool; the OOC pager + per-expert .tq serve are the Rust serve build'"
+    ],
+    "prerequisites_for_any_execution_claim": [
+      "the per-expert .tq WRITER exists and round-trips byte-exactly",
+      "a Rust provider for qwen3_5_moe exists, which additionally requires a Gated-DeltaNet linear-attention kernel that does not exist anywhere in this tree",
+      "until both land, 'direct execution' for this parent is further away than it was for F1, not closer: F1 at least had an arch string the router recognised"
+    ]
+  },
+
+  "law_compliance": {
+    "ceiling": "complete_bits / original_weight_count <= 1/1, exact Fraction via tools/foundry/one_bit_ceiling.py (present, 12983 bytes)",
+    "nothing_proposed": "This report proposes no rate, no candidate and no schedule. No bits were allocated.",
+    "denominator_warning": "original_weight_count for this parent is NOT bound. The analytic 396,234,469,376 must not be used as a Fraction denominator; bind it from the resident tensor index, and record the vision/MTP omissions explicitly, before any ledger is computed."
+  },
+
+  "what_failed": [
+    "F2 admission gate: requires the F1 235B source released. 438 GiB resident, heavy forward pid 62852 active on it.",
+    "GPT_OSS_120B_SOURCE_RELEASE_READINESS: DENIED, 6 red gates.",
+    "Physical staging: 751.41 GiB source vs 114.66 GiB measured free; 198.83 GiB short even after a full 235B release.",
+    "Storage reserve: 114.66 GiB free is already below the declared 150 GB disk_reserve_gb.",
+    "Tokenizer: not resolved, not hashed, not resident. No corpus can be tokenized for this parent.",
+    "Adapter: no qwen3_5_moe adapter exists; the nearest (qwen3_moe) is 'planned' and geometrically wrong. All 8 Tier-A entries are stale (rebase_acks PENDING).",
+    "Runtime: qwen3_5_moe is not a recognised architecture in the Rust engine; it hard-errors rather than stubbing.",
+    "Ladder hygiene: three in-repo sources give three different answers, and one (MODELS.md) still describes an 18 GB M3 Pro."
+  ],
+
+  "honesty_caveats": [
+    "Free disk was measured live in one window; it moves as the running campaign writes. 114.66 GiB (statvfs) vs ~111.75 GiB (df -k) in the same minute. The conclusion is insensitive to a few GiB either way: the deficit is 636.75 GiB.",
+    "751.41 GiB is the sealed HfApi files_metadata total from QWEN35_397B_SOURCE_ADMISSION_DRAFT.json, not a re-verified live query. No network call was made by this report.",
+    "396,234,469,376 params is analytic from config geometry, not published. '397B / A17B' is name-derived.",
+    "The 15/45 attention split, 512 experts and top-10 come from the sealed config summary, which was itself resolved from a real config.json download. The tensor NAME patterns were never confirmed against the index and are labelled unconfirmed above.",
+    "This report performed no compute, took no lease, downloaded nothing, and deleted nothing. It read files and ran statvfs.",
+    "That the successor is Qwen3.5-397B is a reading of the newest registry's DAG. It is a scheduling fact from a JSON file, not a scientific result, and GENERAL_FRONTIER_PARENTS.json would give a different answer if read alone.",
+    "Nothing here is evidence about compressibility. Every capability statement about the predecessor remains the sealed NEGATIVE."
+  ],
+
+  "recommendation": [
+    "Do not schedule a 397B campaign. It cannot stage its source, its admission gate is closed, its adapter does not exist, its tokenizer is unresolved, and its architecture hard-errors in the engine.",
+    "Reconcile the ladder first: GENERAL_FRONTIER_PARENTS.json, ADAPTIVE_LADDER_PARENT_REGISTRY.json, studio_manifest.FRONTIER_MODELS and BASELINES.md must name one successor and one repo id for F1. Right now they name three.",
+    "Add a measured-free-disk term to the feasibility path. studio_manifest storage_budget_gb and size_frontier.analyze() both compute from nominal 1000 GB capacity and would have called this fit 'fine'.",
+    "Free work available now, in order: confirm tensor names + exact original_weight_count from the resident 303 KB index; fetch and hash the tokenizer (a few MB); write the qwen3_5_moe synthetic twin from the config geometry. All three are zero-network-weight, zero-lease, and all three are prerequisites regardless of which parent is eventually admitted.",
+    "The honest alternative to a 397B campaign is to keep working the F1 corpse: the RECONSTRUCTION_BOUND classification is the finding, and it does not need a bigger parent to be attacked. A parent that cannot be staged buys no new evidence."
+  ],
+
+  "self_check": {
+    "passed": true,
+    "fails_when_broken": true,
+    "assertion": "assert src_bytes > free_bytes and src_bytes > free_bytes + f1_source_bytes",
+    "inputs": {
+      "src_bytes": 806819566361,
+      "free_bytes": 123115536384,
+      "f1_source_bytes": 470211497053
+    },
+    "computed": {
+      "deficit_now_gib": 636.75,
+      "deficit_after_f1_release_gib": 198.83
+    },
+    "why_it_fails_when_broken": "if free disk were actually sufficient (the claim this report turns on), either assertion would raise and the verdict would be falsified. The numbers are read from statvfs and from the sealed admission draft, not hardcoded."
+  },
+
+  "provenance_index": {
+    "tools/condense/studio_manifest.py:37-49": "M3_ULTRA_96GB profile: ram 96, weight_budget 78, ssd_tb 1.0, disk_reserve_gb 150.0, scratch 64, cache 32",
+    "tools/condense/studio_manifest.py:32-34": "storage_budget_gb = ssd_gb - disk_reserve_gb (nominal, not measured)",
+    "tools/condense/studio_manifest.py:83-207": "FRONTIER_MODELS procurement list (no 397B)",
+    "tools/condense/size_frontier.py:27-43": "DEVICES; studio-m3ultra-96 default",
+    "tools/condense/size_frontier.py:50-80": "analyze(); no free-disk term",
+    "BASELINES.md:101-115": "FRONTIER table, 235B pinned as Qwen/Qwen3-235B-A22B",
+    "MODELS.md:3": "stale hardware line, Apple M3 Pro 18 GB",
+    "reports/condense/general_frontier/ADAPTIVE_LADDER_PARENT_REGISTRY.json": "authoritative F0..F4 DAG + live-verified F2 config",
+    "reports/condense/general_frontier/GENERAL_FRONTIER_PARENTS.json": "older, slot-colliding ladder",
+    "reports/condense/general_frontier/QWEN35_397B_SOURCE_ADMISSION_DRAFT.json": "rev, license, 94 shards, 751.4 GiB, config summary, metadata-only resolution",
+    "reports/condense/general_frontier/QWEN35_397B_STORAGE_PLAN.json": "streaming plan, one-parent storage law, 151.0 GiB gap on stale numbers",
+    "reports/condense/general_frontier/QWEN35_397B_ADAPTER_PLAN.json": "organ map, total_params_analytic 396234469376, unconfirmed tensor patterns",
+    "reports/condense/general_frontier/QWEN35_397B_PREP_SEALED.json": "prep sealed, heavy download NOT started",
+    "reports/condense/general_frontier/GPT_OSS_120B_SOURCE_RELEASE_READINESS.json": "DENIED, 6 red gates",
+    "reports/subbit_reset/NEXT_PARENT_LAUNCH_PACKET.json": "predecessor = Qwen3-235B-A22B; EXECUTION_PATH_REALITY; funnel F0..F5",
+    "tools/foundry/adapters/tier_a_registry.json": "8 Tier-A adapters, qwen3_moe planned, no qwen3_5_moe, all rebase_acks PENDING",
+    "crates/hawking-core/src/model/mod.rs:81-83": "qwen3moe -> QwenMoE::load",
+    "crates/hawking-core/src/model/mod.rs:89-93": "catch-all unknown architecture error",
+    "crates/hawking-core/src/model/qwen_moe.rs:5,18,28,44": "Phase 0 stub; Error::Unimplemented on load/forward/forward_tokens"
+  }
+}

@@ -1,0 +1,114 @@
+{
+  "role": "adversarial evidence agent",
+  "target": "tools/condense/doctor_causal_harness.py + reports/subbit_reset/DOCTOR_PRIME_CAUSAL_HARNESS.json",
+  "verdict_upheld": false,
+  "severity": "material",
+  "bit_accounting_correct": true,
+  "self_check_actually_fails_when_broken": "partial - 1 of 6 components covered",
+
+  "what_survived": {
+    "reproducibility": "self-check rerun by me reproduces reports/subbit_reset/DOCTOR_PRIME_CAUSAL_HARNESS.json BYTE-IDENTICAL (json equality on all keys). 0.24 s wall for BOTH the green run and the broken-lever run; the claimed 0.3 s is honest.",
+    "line_count": "568 lines, exactly as claimed",
+    "twin_geometry": "hidden 16, 4 experts, top_k 2, 6 positions, 2-block and 8-block - all as claimed",
+    "all_reported_symkl": "every key_number reproduces exactly",
+    "staging_claim_attack6": "SURVIVES ARITHMETIC. models/qwen3-235b-a22b holds 118 real .safetensors shards totalling 470,191,875,040 bytes = 437.9 GiB, matching the docstring's '438 GiB'. source_present() legitimately returns True (all 118 indexed shards are regular files). df: 114 GiB free / 926 GiB. The reported pre-existing failure is real and correctly attributed: 13 passed, 1 failed, tools/condense/tests/test_qwen_real_forward.py::test_real_source_is_untested_pending_source, and the build agent did not touch that file.",
+    "proxy_laundering": "CLEAN. Module docstring, report JSON scope field and honesty_caveats all label symKL/argmax as output-space PROXIES on a synthetic twin, disclaim any parent/capability/rate claim, and explicitly state corpus disjointness is NOT enforced. No weight-space number is dressed as capability. No split is asserted anywhere.",
+    "bit_law": "bits_billed=0 is correct. The harness installs no payload, imports nothing from tools/foundry/one_bit_ceiling.py, and proposes no allocation, so there is nothing to run through the ceiling. No 0.98/1.0 exposure exists in this artifact.",
+    "dense_shadow": "no bit-law dense shadow - nothing compact is proposed."
+  },
+
+  "refutations": [
+    {
+      "id": "R1",
+      "severity": "material",
+      "claim_attacked": "'ALL_TEACHER through the harness == plain qwen_real_forward.logits_for' and, by extension, that every reported symKL is measured against a true teacher baseline.",
+      "finding": "doctor_causal_harness.py:299 reads the embedding table UNCONDITIONALLY from the student: x = student.reader.bf16_rows('model.embed_tokens.weight', ids). There is no 'embeddings' entry in COMPONENTS (line 73), so embeddings can never be held at teacher fidelity. ALL_TEACHER is therefore not all-teacher.",
+      "measured": "I built a student whose ONLY lesion is embed_tokens *= 0.5 on the sealed 2-block twin. CausalHarness(teacher, that_student).logits(ids, ALL_TEACHER) vs teacher.logits_for(ids): symKL = 0.11140721, max abs logit diff = 1.1626 (logit absmax 1.859, std 0.654). Self-check assertion 0 (atol 1e-4) would FAIL - i.e. the corruption is large, not subtle.",
+      "why_it_passed": "the twin's _pack lesion (line 431) short-circuits on '.mlp.experts.' not in name, so embeddings are never touched and the defect is invisible by construction.",
+      "impact": "0.1114 contamination is ~26x the entire 8-block full-student signal the receipt reports (0.004230). Any real sub-bit treatment that quantizes embed_tokens - the standard case - silently poisons the baseline AND every intervention, and the harness offers no selector to isolate it."
+    },
+    {
+      "id": "R2",
+      "severity": "material",
+      "claim_attacked": "'self_check_fails_when_broken: true' and 'Every requested boundary falls out'.",
+      "finding": "I copied the file to a scratch dir and ran a 15-mutation battery. Three of the six components are DEAD CODE PATHS under the self-check: hard-wiring the attention, router and norms selectors to always resolve to the teacher leaves the self-check FULLY GREEN, individually and all three together.",
+      "mutation_results": {
+        "M0_pristine": "no assert (correct baseline)",
+        "M1_break_lever(experts)": "FIRES - 'packing experts did not move the output distribution'",
+        "M2_router_mask_dead": "FIRES - 'masking routing did not move the output distribution'",
+        "M3_reset_dead": "FIRES - 'reset after last block did not restore'",
+        "M4_teacher_tensors_dead": "FIRES - 'teacher_tensors substitution did not take'",
+        "M5_block_scope_dead (student_at ignores blocks)": "FIRES - 'hidden reset at k != teacher prefix 0..k'",
+        "M6_norms_pick_hardwired_teacher": "GREEN - NOT DETECTED",
+        "M7_router_pick_hardwired_teacher": "GREEN - NOT DETECTED",
+        "M8_attention_pick_hardwired_teacher": "GREEN - NOT DETECTED",
+        "M9_lm_head_pick_hardwired_teacher": "GREEN - NOT DETECTED",
+        "M10_final_norm_pick_hardwired_teacher": "GREEN - NOT DETECTED",
+        "M12_lm_head_AND_final_norm_both_dead": "FIRES - 'final_norm/lm_head boundary is dead' (only the DISJUNCTION is tested; neither head organ is individually covered)",
+        "M13_attention+router+norms_ALL_dead": "GREEN - NOT DETECTED",
+        "M14_pick_always_teacher": "FIRES (only via the experts assertion)",
+        "M15_everything_teacher": "FIRES (only via the experts assertion)"
+      },
+      "root_cause": "the twin's student lesion (_pack) modifies ONLY mlp.experts.* tensors, so student and teacher are byte-identical for q/k/v/o_proj, input_layernorm, post_attention_layernorm and mlp.gate. Every selector over those tensors is unobservable no matter how it is wired.",
+      "consequence": "the report's enumerated boundaries - 'student router + teacher expert outputs = student={\"router\"}', 'teacher attn + student MoE', 'student attn + teacher MoE' - are ASSERTED, not demonstrated. Exactly one lesion selector (experts) plus three surgical extras (router_mask, teacher_tensors, reset) carry evidence. The build agent's own framing ('Targeted, not a blanket inversion') understates this: it is not that the lever is targeted, it is that 3/6 selectors have zero coverage."
+    },
+    {
+      "id": "R3",
+      "severity": "minor",
+      "claim_attacked": "the COMPONENTS taxonomy - 'norms' as a selectable organ.",
+      "finding": "qwen_real_forward.py:439 shows _attention() reads model.layers.L.input_layernorm.weight from its OWN reader. So the 'attention' selector silently also owns input_layernorm, q_norm and k_norm; 'norms' covers post_attention_layernorm ONLY. Neither the docstring nor the report says so. On any student that degrades norm weights, 'teacher norms' does not mean teacher norms."
+    },
+    {
+      "id": "R4",
+      "severity": "minor",
+      "claim_attacked": "'marginal_damage_by_block' as per-block damage attribution.",
+      "finding": "marginal is a CONDITIONAL difference (block i's contribution given the whole tail is already lesioned), not the damage block i does alone. Measured on the 8-block twin: single-block-only expert lesion at blocks 0/3/6 = 0.00209115 / 0.00019627 / 0.00025445, versus marginal_damage_by_block[0/3/6] = 0.0020806 / 0.0000449 / 0.0000532 - a 4-5x discrepancy at blocks 3 and 6. Rank order happens to survive here; magnitude does not. The field name invites misreading as attribution."
+    },
+    {
+      "id": "R5",
+      "severity": "minor",
+      "claim_attacked": "'0.3 s wall, single core, no lease' as a usable operating characteristic.",
+      "finding": "twin-only cost. models/qwen3-235b-a22b/config.json: num_hidden_layers=94, num_experts=128, top_k=8, hidden=4096. propagation_graph does 2*(n_layers+1) = 190 full 94-block forwards plus the baseline, each streaming experts out of a 437.9 GiB source, with teacher AND student PressureAwareCache instances live simultaneously (student_forward wraps the teacher reader - there is no independent student checkpoint, so the full-precision parent must be resident for every measurement), and a THIRD lockstep stream whenever reset_to_teacher_after is set. Nothing in the receipt bounds real-parent cost, and 'no lease' does not generalise."
+    },
+    {
+      "id": "R6",
+      "severity": "minor",
+      "claim_attacked": "corpus gating.",
+      "finding": "confirmed by grep: the harness imports neither corpus_integrity nor one_bit_ceiling. The build agent discloses this honestly, but commit d0a494d7 landed corpus_integrity as 'the hard precondition' one commit earlier, and this consumer ships with zero enforcement - a caller passing a contaminated split gets a green number with no warning. Disclosure in prose is not a gate."
+    }
+  ],
+
+  "confirmed_numbers": {
+    "report_reproduces_bit_identical": true,
+    "self_check_wall_seconds_both_runs": 0.244,
+    "harness_lines": 568,
+    "D1_route_masked_sym_kl": 0.000774136904685575,
+    "D2_experts_packed_sym_kl": 0.0007574740890968484,
+    "S1_composed_sym_kl": 0.0010686745357681247,
+    "parts_sum_sym_kl": 0.0015316109937824234,
+    "sub_additive": true,
+    "D1_D2_gap": 1.66628e-05,
+    "D1_D2_assertion_threshold": 1e-06,
+    "deep_full_student_sym_kl": 0.004230253240607935,
+    "twin_logit_absmax": 1.8592100143432617,
+    "twin_logit_std": 0.6536972522735596,
+    "assert0_atol": 0.0001,
+    "R1_all_teacher_contamination_symkl_under_embed_lesion": 0.11140721292646223,
+    "R1_contamination_vs_deep_signal_ratio": 26.3,
+    "R1_max_abs_logit_diff": 1.1626029014587402,
+    "mutations_run": 15,
+    "mutations_detected": 7,
+    "components_with_selector_coverage": 1,
+    "components_total": 6,
+    "qwen235b_shards": 118,
+    "qwen235b_total_bytes": 470191875040,
+    "qwen235b_total_gib": 437.9,
+    "qwen235b_num_hidden_layers": 94,
+    "disk_free_gib": 114,
+    "disk_used_gib": 762,
+    "test_suite": "13 passed, 1 failed (pre-existing, correctly attributed)",
+    "bits_billed": 0
+  },
+
+  "recommended_correction": "Downgrade the verdict from 'SELF-CHECK GREEN' to 'MECHANISM PARTIALLY VALIDATED: 1 of 6 lesion selectors covered'. Three fixes before this is used on any parent. (1) FIX R1 - add 'embeddings' to COMPONENTS and source the embedding gather through _pick, or at minimum assert at construction that teacher and student embed_tokens are byte-identical; today ALL_TEACHER is not all-teacher and the baseline is silently contaminated by 0.111 symKL under an embedding lesion, 26x the whole reported signal. (2) FIX R2 - the twin's _pack lesion must perturb attention, router (mlp.gate) and norm tensors too, and the self-check must gain one 'this organ moved the output when named and did not when unnamed' assertion PER component; today attention, router and norms can all be hard-wired to the teacher with the check still green, so the report's boundary enumeration is unproven. (3) Rename marginal_damage_by_block to conditional_marginal_by_block (R4) and fold input_layernorm/q_norm/k_norm into a documented 'attention owns its pre-norm' note or a separate selector (R3). Also worth doing: gate any non-twin call site on corpus_integrity.token_split (R6) and record the real-parent cost model - 190 x 94-block forwards over 437.9 GiB with two caches resident (R5). Everything else the agent claimed - reproducibility, twin geometry, all symKL values, bits_billed=0, the honesty boundary, the 437.9 GiB staging arithmetic, and the correctly-attributed pre-existing test failure - survives adversarial check unchanged."
+}
