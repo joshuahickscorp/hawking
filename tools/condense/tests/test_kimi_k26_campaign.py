@@ -61,7 +61,10 @@ def test_resume_clears_monitor_pause(tmp_path: Path, monkeypatch) -> None:
         **campaign.initial_state(), "state": "MONITOR", "status": "PAUSED_AFTER_CHECKPOINT",
     })
     assert campaign.main(["resume"]) == 0
-    assert json.loads(state_path.read_text())["status"] == "RUNNING"
+    resumed = json.loads(state_path.read_text())
+    assert resumed["status"] == "RUNNING"
+    assert not resumed["pause_after_checkpoint"]
+    assert not resumed["stop_requested"]
 
 
 def test_restart_rebinds_advancing_experiment(tmp_path: Path, monkeypatch) -> None:

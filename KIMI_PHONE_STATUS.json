@@ -10,17 +10,17 @@
   "current_layer": "P1/P5 F1 representation bracket preflight advancing",
   "eta_text": "done",
   "failed_count": 0,
-  "generated_at": "2026-07-21T05:51:42Z",
-  "heartbeat_age_seconds": 21.402403116226196,
+  "generated_at": "2026-07-21T05:53:42Z",
+  "heartbeat_age_seconds": 10.750636100769043,
   "last_telegram_delivery": {
     "checkpoint_id": "controller:started",
-    "delivered_at": "2026-07-21T05:51:21Z",
-    "seal_sha256": "7d82495bb361acbd70c28de3ce2c7eaa3d4496e285f33abc209e4336c0dfd1a6"
+    "delivered_at": "2026-07-21T05:53:32Z",
+    "seal_sha256": "6ecd3419688e71b92abad9f9272aa6e4ed814d7ced610fa718fe9d5baf656486"
   },
   "lease": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/kimi_k26.heavy.lease",
   "lease_live": true,
   "next_action": "monitor the next advancing experiment",
-  "pid": 76038,
+  "pid": 80723,
   "primary_metrics": {
     "causal_harness": "PASS",
     "coherent_probes": 8,
@@ -30,7 +30,7 @@
     "finite_probes": 8,
     "real_candidate_diagnosis": "PENDING_F1"
   },
-  "process_group": 76038,
+  "process_group": 80723,
   "progress": {
     "bytes_done": 595204999341,
     "bytes_total": 595204999341,
@@ -39,20 +39,20 @@
     "files_total": 96,
     "shards_done": 64,
     "shards_total": 64,
-    "throughput_bytes_per_second": 94989427.65817986
+    "throughput_bytes_per_second": 93199312.17652075
   },
   "progress_text": "P0 sealed; P1/P5 F1 bracket preflight advancing",
   "resources": {
-    "available_bytes_estimate": 48707305472,
-    "free_disk_bytes": 51644416000,
-    "free_pages": 52909,
+    "available_bytes_estimate": 49847107584,
+    "free_disk_bytes": 51642781696,
+    "free_pages": 107589,
     "page_size": 16384,
     "swap_free_bytes": 1109393408,
     "swap_total_bytes": 2147483648,
     "swap_used_bytes": 1038090240
   },
   "schema": "hawking.kimi_phone_status.v1",
-  "sealed_count": 84,
+  "sealed_count": 85,
   "source_state": "KIMI_DOWNLOAD_COMPLETE",
   "state": "MONITOR",
   "status": "RUNNING"

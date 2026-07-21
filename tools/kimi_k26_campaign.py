@@ -1393,6 +1393,7 @@ def run_loop() -> int:
             state["status"] = "RUNNING"
             atomic_json(CONTROL, {"pause_after_checkpoint": False, "stop_requested": False})
             save_state(state)
+        state = control_flags(state)
         checkpoint(state, "controller:started", "exclusive lease acquired")
         if state.get("state") == "MONITOR":
             rebind_advancing_experiment()
@@ -1579,6 +1580,7 @@ def main(argv: list[str] | None = None) -> int:
             retry_state = retry_state_for_blocker(str(state.get("blocker", "")))
             if retry_state:
                 state.update({"state": retry_state, "status": "RUNNING", "blocker": None,
+                              "pause_after_checkpoint": False, "stop_requested": False,
                               "entered_at": now()})
                 state["history"] = (state.get("history", []) + [{
                     "at": now(), "to": retry_state,
@@ -1586,7 +1588,9 @@ def main(argv: list[str] | None = None) -> int:
                 }])[-128:]
                 save_state(state)
         elif state.get("status") in {"PAUSED_AFTER_CHECKPOINT", "RESOURCE_GUARD_PAUSED"}:
-            state.update({"status": "RUNNING", "blocker": None, "entered_at": now()})
+            state.update({"status": "RUNNING", "blocker": None,
+                          "pause_after_checkpoint": False, "stop_requested": False,
+                          "entered_at": now()})
             save_state(state)
         set_control(pause=False, stop=False)
         print("resume requested")

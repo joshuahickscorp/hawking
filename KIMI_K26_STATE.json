@@ -162,9 +162,9 @@
     "checkpoint_id": "controller:started",
     "complete_bpw": null,
     "detail": "exclusive lease acquired",
-    "free_disk_bytes": 51703201792,
+    "free_disk_bytes": 51643109376,
     "next_action": "monitor the next advancing experiment",
-    "pid": 76038,
+    "pid": 80723,
     "progress": {
       "bytes_done": 595204999341,
       "bytes_total": 595204999341,
@@ -173,17 +173,17 @@
       "files_total": 96,
       "shards_done": 64,
       "shards_total": 64,
-      "throughput_bytes_per_second": 95313124.52244338
+      "throughput_bytes_per_second": 93358150.39988415
     },
-    "seal_sha256": "7d82495bb361acbd70c28de3ce2c7eaa3d4496e285f33abc209e4336c0dfd1a6",
-    "sealed_at": "2026-07-21T05:51:21Z",
+    "seal_sha256": "6ecd3419688e71b92abad9f9272aa6e4ed814d7ced610fa718fe9d5baf656486",
+    "sealed_at": "2026-07-21T05:53:31Z",
     "state": "MONITOR"
   },
   "last_download_notice_shards": 57,
   "last_telegram_delivery": {
     "checkpoint_id": "controller:started",
-    "delivered_at": "2026-07-21T05:51:21Z",
-    "seal_sha256": "7d82495bb361acbd70c28de3ce2c7eaa3d4496e285f33abc209e4336c0dfd1a6"
+    "delivered_at": "2026-07-21T05:53:32Z",
+    "seal_sha256": "6ecd3419688e71b92abad9f9272aa6e4ed814d7ced610fa718fe9d5baf656486"
   },
   "last_verify_notice_shards": 64,
   "logical_weight_denominator": 1026879004160,
@@ -192,7 +192,7 @@
     "inode": 1233332,
     "path": "/Users/scammermike/Downloads/mop"
   },
-  "pause_after_checkpoint": true,
+  "pause_after_checkpoint": false,
   "primary_metrics": {
     "causal_harness": "PASS",
     "coherent_probes": 8,
@@ -206,7 +206,7 @@
   "repo": "moonshotai/Kimi-K2.6",
   "revision": "7eb5002f6aadc958aed6a9177b7ed26bb94011bb",
   "schema": "hawking.kimi_k26_campaign.v1",
-  "sealed_checkpoints": 84,
+  "sealed_checkpoints": 85,
   "snapshot": "/Users/scammermike/.cache/huggingface/hub/models--moonshotai--Kimi-K2.6/snapshots/7eb5002f6aadc958aed6a9177b7ed26bb94011bb",
   "source_root": "/Users/scammermike/.cache/huggingface/hub/models--moonshotai--Kimi-K2.6",
   "source_state": "KIMI_DOWNLOAD_COMPLETE",
@@ -225,7 +225,7 @@
     "target_reserve_bytes": 51539607552
   },
   "text_core_logical_weight_denominator": 1026408209408,
-  "updated_at": "2026-07-21T05:51:21Z",
+  "updated_at": "2026-07-21T05:53:32Z",
   "verified": {
     ".eval_results/aime_2026.yaml": {
       "digest": "0a65bf750321931ae794061d22a042a8f4c9787e",
