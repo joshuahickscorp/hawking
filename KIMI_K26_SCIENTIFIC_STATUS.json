@@ -1,0 +1,39 @@
+{
+  "best_local_candidate": {
+    "actual_complete_bpw": 0.9085909525553385,
+    "candidate": "P1_DUAL_PATH_RECOVERY_R16X2",
+    "f1_score": {
+      "cosine_mean": 0.9134416580200195,
+      "cosine_min": 0.7387071847915649,
+      "cosine_p10": 0.8825182318687439,
+      "norm_ratio": 0.7918347120285034,
+      "normalized_rmse": 0.4794468879699707,
+      "relative_l2": 0.4794468283653259
+    },
+    "terminal_verdict": "COLLAPSE_F2_SPARSE"
+  },
+  "current_best_bpw": null,
+  "current_best_candidate": "NONE_PROMOTABLE_AT_OR_BELOW_0.98_BPW",
+  "current_best_capability": {
+    "evidence_level": "NO_F2_SURVIVOR"
+  },
+  "current_doctor_allocation": {
+    "architecture": "DUAL_PATH_RECOVERY_R16X2",
+    "bytes": 974848,
+    "status": "RETIRED_AFTER_F2_ROUTER_INSTABILITY"
+  },
+  "current_dominant_bottleneck": "DISCONTINUOUS_NATIVE_TOPK_ROUTER_SENSITIVITY",
+  "current_failure_mode": "ROUTE_SET_INSTABILITY_AFTER_RESIDUAL_PROPAGATION",
+  "current_next_experiment": "NONE_WITHIN_CLOSED_TESTED_CONSTRAINTS",
+  "current_scientific_hypothesis": "Under the tested Kimi K2.6 layer-1 routed-expert constraints, no complete physical representation at or below 0.98 BPW is promotable beyond F1. Independent residual-weight PQ, salience-protected islands, shared additive grammar, and fixed-index functional codebook training fail routed expert-output fidelity. Sample-limited functional hidden-state recovery can pass local F1 at 0.908591 BPW, but its residual perturbation changes the next exact layer's native top-8 route set on 21.875% of held-out tokens, preventing F2 promotion.",
+  "reopen_condition": "A materially nonlocal router-co-designed representation, a larger disjoint Doctor training capture, or a complete physical rate above 0.98 BPW.",
+  "schema": "hawking.kimi_k26.scientific_status.v2",
+  "scientific_law_seal_sha256": "38d3a944ccc78d57bf936571689a8fdf25872791820fda19628886e009907437",
+  "seal_sha256": "18e3f01c5ce7cca299a80d9222573e4b3dab0a4a47f84e2bc4932652ae3e0a1c",
+  "source": {
+    "repo": "moonshotai/Kimi-K2.6",
+    "revision": "7eb5002f6aadc958aed6a9177b7ed26bb94011bb"
+  },
+  "status": "BOUNDARY_ESTABLISHED",
+  "updated_at": "2026-07-21T16:02:30Z"
+}

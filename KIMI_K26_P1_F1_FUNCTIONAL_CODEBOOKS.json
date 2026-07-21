@@ -1,0 +1,98 @@
+{
+  "candidate_verdict": "DEGRADED_F1",
+  "claim_boundary": "F1 ONE REAL SENTINEL EXPERT; not full shard capability",
+  "current_next_experiment": "ESTABLISH_SUB_1BPW_KIMI_EXPERT_REPRESENTATION_BOUNDARY",
+  "decision": "RETIRE_P1_FUNCTIONAL_CODEBOOK_INSTANCE",
+  "fit_uses_score_data": false,
+  "layer": 1,
+  "metrics": {
+    "fit_expert_output": {
+      "cosine_mean": 0.9614412784576416,
+      "cosine_min": 0.9265281558036804,
+      "cosine_p10": 0.9559236168861389,
+      "norm_ratio": 1.1060476303100586,
+      "normalized_rmse": 0.3335634171962738,
+      "relative_l2": 0.3335634171962738
+    },
+    "fit_nonlinear_hidden": {
+      "cosine_mean": 0.9631134271621704,
+      "cosine_min": 0.9337315559387207,
+      "cosine_p10": 0.9484933018684387,
+      "norm_ratio": 1.0671004056930542,
+      "normalized_rmse": 0.30391207337379456,
+      "relative_l2": 0.30391213297843933
+    },
+    "score_cosine_gain_vs_weight_residual_pq": 0.029857873916625977,
+    "score_expert_output": {
+      "cosine_mean": 0.8680386543273926,
+      "cosine_min": 0.7439541220664978,
+      "cosine_p10": 0.8324233293533325,
+      "norm_ratio": 0.884066104888916,
+      "normalized_rmse": 0.5631265640258789,
+      "relative_l2": 0.5631265640258789
+    },
+    "score_nonlinear_hidden": {
+      "cosine_mean": 0.8614908456802368,
+      "cosine_min": 0.7560745477676392,
+      "cosine_p10": 0.8154765963554382,
+      "norm_ratio": 0.8347844481468201,
+      "normalized_rmse": 0.5817925930023193,
+      "relative_l2": 0.5817925930023193
+    }
+  },
+  "payload": {
+    "base_component_bytes": 4022298,
+    "bytes": 5248919,
+    "component_count": 27,
+    "doctor_component_bytes": 1220627,
+    "header_overhead_bytes": 5994,
+    "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/f1_functional_codebooks/P1_FUNCTIONAL_CODEBOOKS.k26f1",
+    "sha256": "9d635a12af987142458d6af390e562a34b4849716a19f53c7ae9df470348a529"
+  },
+  "physical_budget": {
+    "actual_complete_bpw": 0.9534779503231957,
+    "all_payload_bytes_counted": true,
+    "base_ceiling_bytes": 4046192,
+    "complete_ceiling_bytes": 5394923,
+    "doctor_ceiling_bytes": 1240832,
+    "logical_weights_represented": 44040192,
+    "overhead_ceiling_bytes": 107899,
+    "target_complete_bpw": "49/50",
+    "target_complete_bpw_decimal": 0.98,
+    "unused_ceiling_bytes": 146004
+  },
+  "reuse": {
+    "base_refits": 0,
+    "parent_forwards": 0,
+    "physical_indices_reused": true,
+    "protected_rows_reused": true,
+    "teacher_captures": 0
+  },
+  "runtime_seconds": 7.710258960723877,
+  "schema": "hawking.kimi_k26.f1_functional_codebooks_result.v1",
+  "seal_sha256": "cb6e20a127aef44736e72a00d4e7b431c05e4f1924c86ba41c3cb0f5fc1d22c0",
+  "sealed_at": "2026-07-21T15:58:58Z",
+  "sentinel_expert": 0,
+  "source": {
+    "repo": "moonshotai/Kimi-K2.6",
+    "revision": "7eb5002f6aadc958aed6a9177b7ed26bb94011bb"
+  },
+  "status": "PASS",
+  "training": {
+    "optimizer": "ADAM_QUANTIZATION_AWARE_FIXED_INDICES",
+    "phase_losses": {
+      "expert_output": {
+        "first": 0.08804289251565933,
+        "last": 0.06434919685125351
+      },
+      "joint_route_weighted_output": {
+        "first": 0.11465728282928467,
+        "last": 0.09117104858160019
+      },
+      "nonlinear_hidden": {
+        "first": 0.21055187284946442,
+        "last": 0.07446634769439697
+      }
+    }
+  }
+}

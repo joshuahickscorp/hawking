@@ -1,0 +1,192 @@
+{
+  "candidate_verdict": "COLLAPSE_F2_SPARSE",
+  "claim_boundary": "ONE PROMOTED COMPACT EXPERT SUBSTITUTED IN COMPLETE ACTIVE LAYER-1 PATH, THEN EXACT LAYER-2; not a full compact shard or end-to-end capability",
+  "classification_correction": {
+    "corrected_at": "2026-07-21T15:48:46Z",
+    "prior_seal_sha256": "241a3dec2cb515edb79e7b075059fe7ee3da564bcc57afca9c65c218da15e51c",
+    "reason": "Activation/logit fidelity remained bounded; threshold failure was downstream route-set instability.",
+    "scientific_compute_repeated": false
+  },
+  "current_next_experiment": "F1_SHARED_GRAMMAR_VS_PROTECTED_ISLANDS_CACHED_SEAM",
+  "decision": "RETIRE_P1_HIDDEN_DOCTOR_FOR_ROUTING_INSTABILITY",
+  "diagnosis_metrics_reason_next_decision": {
+    "diagnosis": "ROUTE_SET_INSTABILITY_AFTER_RESIDUAL_PROPAGATION",
+    "metrics": {
+      "layer_two_score_hidden": {
+        "cosine_mean": 0.994979739189148,
+        "cosine_min": 0.9784379601478577,
+        "cosine_p10": 0.9878827333450317,
+        "norm_ratio": 0.9505082964897156,
+        "normalized_rmse": 0.11557242274284363,
+        "relative_l2": 0.11557244509458542
+      },
+      "layer_two_score_logit_sketch": {
+        "cosine_mean": 0.9947546124458313,
+        "cosine_min": 0.9751647114753723,
+        "cosine_p10": 0.9881523847579956,
+        "norm_ratio": 0.9939115047454834,
+        "normalized_rmse": 0.10290727019309998,
+        "relative_l2": 0.10290730744600296
+      },
+      "route_set_agreement": 0.78125
+    },
+    "next_decision": "RETIRE_P1_HIDDEN_DOCTOR_FOR_ROUTING_INSTABILITY",
+    "reason": "Activation and sampled-logit errors remain bounded, but downstream native top-8 route sets are unstable."
+  },
+  "experiment": "P1_F2_SPARSE_SUBSTITUTION_PROPAGATION",
+  "layer_one": {
+    "active_expert_count": 45,
+    "active_experts": [
+      0,
+      5,
+      13,
+      33,
+      39,
+      50,
+      51,
+      53,
+      54,
+      72,
+      83,
+      95,
+      96,
+      116,
+      134,
+      142,
+      154,
+      155,
+      157,
+      161,
+      165,
+      166,
+      170,
+      179,
+      182,
+      192,
+      195,
+      231,
+      232,
+      236,
+      240,
+      248,
+      260,
+      261,
+      264,
+      294,
+      297,
+      299,
+      301,
+      313,
+      326,
+      335,
+      341,
+      356,
+      367
+    ],
+    "f1_float_teacher_vs_native_int4": {
+      "cosine_mean": 0.9999906420707703,
+      "cosine_min": 0.9999763369560242,
+      "cosine_p10": 0.9999858736991882,
+      "norm_ratio": 0.9994592666625977,
+      "normalized_rmse": 0.004565745126456022,
+      "relative_l2": 0.00456574559211731
+    },
+    "full_layer_hidden": {
+      "cosine_mean": 0.996058464050293,
+      "cosine_min": 0.9700819849967957,
+      "cosine_p10": 0.9923760294914246,
+      "norm_ratio": 0.9834396839141846,
+      "normalized_rmse": 0.0943603515625,
+      "relative_l2": 0.09436043351888657
+    },
+    "route_slots": 512,
+    "score_full_layer_hidden": {
+      "cosine_mean": 0.9933644533157349,
+      "cosine_min": 0.9700819849967957,
+      "cosine_p10": 0.9880621433258057,
+      "norm_ratio": 0.9700627326965332,
+      "normalized_rmse": 0.12385933846235275,
+      "relative_l2": 0.12385943531990051
+    },
+    "sentinel_route_slots": 63,
+    "source_shard": "a609fccff2406505ae575850a51470474e8bb3eb825ddd208f84aae31cfb4960",
+    "tensor_audit": {
+      "active_expert_tensors_accessed": 405,
+      "cached_attention_norm_and_router_reused": true,
+      "source_tensors": 3470,
+      "unselected_experts_conditionally_inactive": true
+    }
+  },
+  "layer_two": {
+    "candidate_used_experts": 51,
+    "full_layer_hidden": {
+      "cosine_mean": 0.9970255494117737,
+      "cosine_min": 0.9784379601478577,
+      "cosine_p10": 0.9936936497688293,
+      "norm_ratio": 0.9729751348495483,
+      "normalized_rmse": 0.08772709965705872,
+      "relative_l2": 0.08772718161344528
+    },
+    "native_route_jaccard_mean": 0.9513888888888888,
+    "native_route_set_agreement": 0.78125,
+    "score_full_layer_hidden": {
+      "cosine_mean": 0.994979739189148,
+      "cosine_min": 0.9784379601478577,
+      "cosine_p10": 0.9878827333450317,
+      "norm_ratio": 0.9505082964897156,
+      "normalized_rmse": 0.11557242274284363,
+      "relative_l2": 0.11557244509458542
+    },
+    "source_shard": "f79ae8d220ecbba674c1224bbb36e2ad826ccc365765a89fab57555af47a8540",
+    "teacher_used_experts": 49,
+    "tensor_audit": {
+      "accessed_tensors": 482,
+      "conditionally_inactive_routed_expert_tensors": 2988,
+      "source_tensors": 3470,
+      "unaccounted_tensors": []
+    }
+  },
+  "logit_sketch": {
+    "all_tokens": {
+      "cosine_mean": 0.9968575239181519,
+      "cosine_min": 0.9751647114753723,
+      "cosine_p10": 0.9934056997299194,
+      "norm_ratio": 0.9965305924415588,
+      "normalized_rmse": 0.07968839257955551,
+      "relative_l2": 0.07968843728303909
+    },
+    "kind": "DETERMINISTIC_2048_VOCAB_ROW_EARLY_EXIT_SKETCH",
+    "not_full_model_logits": true,
+    "sample_id_sha256": "bfeee2ce8cb1e527b8459b1e3b601ddece18bdf7e7bd97db35d7c33686fcacd0",
+    "sample_size": 2048,
+    "sampled_top1_agreement": 0.90625,
+    "sampled_top20_overlap_mean": 0.9234375,
+    "score_tokens": {
+      "cosine_mean": 0.9947546124458313,
+      "cosine_min": 0.9751647114753723,
+      "cosine_p10": 0.9881523847579956,
+      "norm_ratio": 0.9939115047454834,
+      "normalized_rmse": 0.10290727019309998,
+      "relative_l2": 0.10290730744600296
+    },
+    "vocabulary_size": 163840
+  },
+  "promoted_payload_sha256": "3546c9b17f720d6d5197c8a8d1dae80e5994e053a808de708aef6bb5e97561bb",
+  "reuse": {
+    "layer_one_attention_runs": 0,
+    "layer_one_routing_runs": 0,
+    "layer_zero_runs": 0,
+    "parent_forwards_repeated": 0,
+    "teacher_captures": 0
+  },
+  "runtime_seconds": 4.978888034820557,
+  "schema": "hawking.kimi_k26.f2_sparse_propagation.v1",
+  "seal_sha256": "ee4bd6d12afccd57c7bff00b31243c7eb4e80095e1200166412b8cdce0251f38",
+  "sealed_at": "2026-07-21T15:47:30Z",
+  "source": {
+    "repo": "moonshotai/Kimi-K2.6",
+    "revision": "7eb5002f6aadc958aed6a9177b7ed26bb94011bb"
+  },
+  "status": "PASS",
+  "teacher_capture_seal_sha256": "a195efcfef2c253c7fc3b908db318e5746e4a4c23fabf0d4008b5d83e941c800"
+}

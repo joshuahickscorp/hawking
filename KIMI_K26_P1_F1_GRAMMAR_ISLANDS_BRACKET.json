@@ -1,0 +1,73 @@
+{
+  "current_best_bpw": 0.9510269619169689,
+  "current_best_candidate": "P1_PROTECTED_ISLANDS",
+  "current_best_capability": {
+    "cosine_mean": 0.7863376140594482,
+    "cosine_min": 0.5632032155990601,
+    "cosine_p10": 0.6879943013191223,
+    "norm_ratio": 0.623742938041687,
+    "normalized_rmse": 0.6133893132209778,
+    "relative_l2": 0.6133896112442017
+  },
+  "current_dominant_bottleneck": "WEIGHT_SPACE_OBJECTIVE_MISMATCH",
+  "current_failure_mode": "ROUTED_EXPERT_OUTPUT_REPRESENTATION_LOSS",
+  "current_next_experiment": "P1_FUNCTIONAL_CODEBOOK_ROUTE_STABILITY_OBJECTIVE_F1",
+  "current_scientific_hypothesis": "At 0.98 BPW, neither shared additive weight grammar nor salience-protected independent PQ preserves routed expert output; the remaining reachable axis is functional codebook fitting against output and routing stability rather than weight residual.",
+  "decision": "NO_PROMOTION_RETIRE_BOTH_FAMILIES_AT_P1_INSTANCE",
+  "diagnosis_metrics_reason_next_decision": {
+    "diagnosis": "BOTH_WEIGHT_SPACE_FAMILIES_FAIL_F1_CLUSTER",
+    "metrics": {
+      "cosine_mean": 0.7863376140594482,
+      "cosine_min": 0.5632032155990601,
+      "cosine_p10": 0.6879943013191223,
+      "norm_ratio": 0.623742938041687,
+      "normalized_rmse": 0.6133893132209778,
+      "relative_l2": 0.6133896112442017
+    },
+    "next_decision": "NO_PROMOTION_RETIRE_BOTH_FAMILIES_AT_P1_INSTANCE",
+    "reason": "At 0.98 BPW, neither shared additive weight grammar nor salience-protected independent PQ preserves routed expert output; the remaining reachable axis is functional codebook fitting against output and routing stability rather than weight residual."
+  },
+  "experiment": "P1_F1_SHARED_GRAMMAR_VS_PROTECTED_ISLANDS",
+  "experts": [
+    0,
+    116,
+    165,
+    50,
+    5,
+    182,
+    154,
+    72
+  ],
+  "family_results": {
+    "PROTECTED_ISLANDS": {
+      "actual_bpw": 0.9510269619169689,
+      "aggregate_score_cosine": 0.7821149230003357,
+      "routed_score_cosine": 0.7863376140594482,
+      "seal_sha256": "a507f0764cfcbd4fe83aa54283880e11e0668b350022191660c7cea9fdf2b623",
+      "verdict": "DEGRADED_F1"
+    },
+    "SHARED_ADDITIVE_GRAMMAR": {
+      "actual_bpw": 0.9559132031032017,
+      "aggregate_score_cosine": 0.7688037157058716,
+      "routed_score_cosine": 0.7723102569580078,
+      "seal_sha256": "10fe8fca8a5a2bd01e4569ca274cae9a6cd51c62b9af52a63c47f34368a21fff",
+      "verdict": "DEGRADED_F1"
+    }
+  },
+  "reuse": {
+    "attention_runs": 0,
+    "parent_forwards": 0,
+    "routing_runs": 0,
+    "teacher_captures": 0
+  },
+  "runtime_seconds": 16.82820987701416,
+  "schema": "hawking.kimi_k26.f1_grammar_islands_bracket.v1",
+  "seal_sha256": "7b733ca0128d8f80bd3590bd9a5bbaa8a3d8c6ab2173b3f6ee22968a60f95c4c",
+  "sealed_at": "2026-07-21T15:53:44Z",
+  "source": {
+    "repo": "moonshotai/Kimi-K2.6",
+    "revision": "7eb5002f6aadc958aed6a9177b7ed26bb94011bb"
+  },
+  "status": "PASS",
+  "teacher_capture_seal_sha256": "a195efcfef2c253c7fc3b908db318e5746e4a4c23fabf0d4008b5d83e941c800"
+}

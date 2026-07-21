@@ -1,0 +1,101 @@
+{
+  "current_best_architecture": "DUAL_PATH_RECOVERY_R16X2",
+  "current_best_bpw": 0.9085909525553385,
+  "current_best_candidate": "P1",
+  "current_best_capability": {
+    "cosine_mean": 0.9134416580200195,
+    "cosine_min": 0.7387071847915649,
+    "cosine_p10": 0.8825182318687439,
+    "norm_ratio": 0.7918347120285034,
+    "normalized_rmse": 0.4794468879699707,
+    "relative_l2": 0.4794468283653259
+  },
+  "current_doctor_allocation": {
+    "architecture": "DUAL_PATH_RECOVERY_R16X2",
+    "diagonal_ridge": 6.879839929752052e-06,
+    "doctor_component_bytes": 974848,
+    "fit_uses_score_data": false,
+    "paths": [
+      {
+        "captured_feature_energy": 0.7153253555297852,
+        "path": "expert_input",
+        "rank": 16
+      },
+      {
+        "captured_feature_energy": 0.8931986689567566,
+        "path": "base_output",
+        "rank": 16
+      }
+    ],
+    "ridge": 0.08811732530593873
+  },
+  "current_dominant_bottleneck": "CROSS_LAYER_GENERALIZATION_UNTESTED",
+  "current_failure_mode": "NONE_AT_F1_SENTINEL",
+  "current_next_experiment": "P1_F2_HIDDEN_DOCTOR_EARLY_MIDDLE_LATE_REPLICATION",
+  "current_scientific_hypothesis": "Kimi compact experts prefer functional hidden-state recovery over independent weight-residual reconstruction at the tested envelope.",
+  "decision": "PROMOTE_P1_HIDDEN_DOCTOR_TO_F2",
+  "diagnosis_metrics_reason_next_decision": {
+    "diagnosis": "NONE_AT_F1_SENTINEL",
+    "metrics": {
+      "cosine_mean": 0.9134416580200195,
+      "cosine_min": 0.7387071847915649,
+      "cosine_p10": 0.8825182318687439,
+      "norm_ratio": 0.7918347120285034,
+      "normalized_rmse": 0.4794468879699707,
+      "relative_l2": 0.4794468283653259
+    },
+    "next_decision": "PROMOTE_P1_HIDDEN_DOCTOR_TO_F2",
+    "reason": "Kimi compact experts prefer functional hidden-state recovery over independent weight-residual reconstruction at the tested envelope."
+  },
+  "experiment": "F1_DOCTOR_WEIGHT_REPAIR_VS_HIDDEN_STATE_RECOVERY",
+  "reuse": {
+    "base_refits": 0,
+    "parent_forwards": 0,
+    "routing_runs": 0,
+    "teacher_captures": 0
+  },
+  "runtime_seconds": 0.5743350982666016,
+  "schema": "hawking.kimi_k26.f1_doctor_auction.v1",
+  "seal_sha256": "31167334c247acc2e1812a49962d9f31af9e6b5216ce3a3a2cdbab11f69851c8",
+  "sealed_at": "2026-07-21T15:41:29Z",
+  "source": {
+    "repo": "moonshotai/Kimi-K2.6",
+    "revision": "7eb5002f6aadc958aed6a9177b7ed26bb94011bb"
+  },
+  "status": "PASS",
+  "teacher_capture_seal_sha256": "a195efcfef2c253c7fc3b908db318e5746e4a4c23fabf0d4008b5d83e941c800",
+  "variant_results": [
+    {
+      "actual_bpw": 0.9007126944405692,
+      "architecture": "BASE_OUTPUT_RECOVERY_R31",
+      "candidate": "P1",
+      "score_cosine": 0.9100090861320496,
+      "seal_sha256": "bbd59704130dbb88902d087dfaf3eb69cf96215c8d1afb3a66984a42e8fb673c",
+      "verdict": "SURVIVES_F1"
+    },
+    {
+      "actual_bpw": 0.9085909525553385,
+      "architecture": "DUAL_PATH_RECOVERY_R16X2",
+      "candidate": "P1",
+      "score_cosine": 0.9134416580200195,
+      "seal_sha256": "dc87eb2c850268f148b80df7c21e4192f69701876cf6f3ad24a708458514a21d",
+      "verdict": "SURVIVES_F1"
+    },
+    {
+      "actual_bpw": 0.42510550362723215,
+      "architecture": "BASE_OUTPUT_RECOVERY_R31",
+      "candidate": "P5",
+      "score_cosine": 0.8777552843093872,
+      "seal_sha256": "31edaa4837a586f9e3b300aaa693d15cfe917d5828c279cf2e7116f6c8463835",
+      "verdict": "DEGRADED_F1"
+    },
+    {
+      "actual_bpw": 0.4329837617420015,
+      "architecture": "DUAL_PATH_RECOVERY_R16X2",
+      "candidate": "P5",
+      "score_cosine": 0.8707313537597656,
+      "seal_sha256": "58837a98c0505ca34c77162dbd8a14d82f983710efc2df50ddef572fa5fffbcc",
+      "verdict": "DEGRADED_F1"
+    }
+  ]
+}
