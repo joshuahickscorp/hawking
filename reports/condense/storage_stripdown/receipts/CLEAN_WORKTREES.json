@@ -1,0 +1,13 @@
+{
+  "receipt": "CLEAN_WORKTREES",
+  "refused": [
+    {
+      "action": "refused",
+      "path": "/Users/scammermike/Downloads/hawking-hide-parity-research",
+      "reason": "1 unique commits and no archive branch",
+      "rule": "clean and level with its own pushed upstream"
+    }
+  ],
+  "removed": 1,
+  "sealed_at": "2026-07-21T02:53:03Z"
+}
