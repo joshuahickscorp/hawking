@@ -1,0 +1,253 @@
+{
+ "schema": "next_parent_launch_packet/v1",
+ "intent": "A NARROWER, FASTER, MORE AGGRESSIVE run than Qwen got: max 6 full-fidelity candidates, decision-first fidelity funnel, explicit retirement rules, and a hard wall-clock cap.",
+ "predecessor": {
+  "parent": {
+   "model": "Qwen3-235B-A22B",
+   "arch": "qwen3moe",
+   "n_layers": 94,
+   "n_experts_per_layer": 128,
+   "top_k": 8,
+   "original_weight_count": 235093634560,
+   "source_bytes_gib": 438
+  },
+  "verdict": "SEALED NEGATIVE - no capability pass at any rate <= 1.0 complete BPW; S1 collapse 12/12; classification RECONSTRUCTION_BOUND"
+ },
+ "law": {
+  "ceiling": "complete_bits / original_weight_count <= 1/1, exact Fraction arithmetic via tools/foundry/one_bit_ceiling.py",
+  "doctor_gets_no_free_bytes": true,
+  "conditional_treatments_bill_installed_bits": true,
+  "enforcement": "F0 runs at PROPOSAL time; an illegal candidate is never packed"
+ },
+ "NON_NEGOTIABLE_ORDERING": {
+  "rule": "REPRESENTATION QUALITY IS TESTED BEFORE ANY BUDGET IS SPENT ON ROUTING POLICY",
+  "basis": "D1/D2 causal decomposition, sealed, classification RECONSTRUCTION_BOUND: D1_route_only (perfect bf16 experts, router masked to the same 64) symKL 4.297 argmax 0.3850; D2_recon_only (full 128 router, experts packed at survivor rate) symKL 7.879 argmax 0.0863. Reconstruction reproduces 91.6 pct of the loss, routing 50.0 pct, and the parts sum SUB-additively (12.18 vs 8.60).",
+  "consequence": "adaptive-K, survivor selection, router correction and every other routing lever are BLOCKED behind an F1 representation pass. On Qwen they were bought first and the bytes were wasted.",
+  "both_D_arms_are_fenced_diagnostic_controls_never_promotable": true
+ },
+ "EXECUTION_PATH_REALITY": {
+  "finding": "qwen3moe is an Unimplemented STUB in the Rust engine",
+  "evidence": "crates/hawking-core/src/model/mod.rs routes 'qwen2moe' | 'qwen3moe' | 'qwen-moe' to qwen_moe::QwenMoE::load, and crates/hawking-core/src/model/qwen_moe.rs is documented 'Phase 0: stub returning Unimplemented' with Error::Unimplemented on load, forward and forward_tokens",
+  "consequence": "EVERY artifact in this campaign is direct-executable in the PYTHON reference forward ONLY. None of them are executable on the .tq serve path.",
+  "requirement_for_the_next_parent": "a next parent claiming DIRECT EXECUTION needs the PER-EXPERT .tq WRITER FIRST. Until that writer exists and round-trips, 'direct-executable' is a Python-reference claim and must be labelled as one.",
+  "scheduling": "if direct execution is a campaign goal, the .tq writer is a PREREQUISITE task, not a follow-up - it changes what the ledger has to account for"
+ },
+ "tournament": {
+  "max_full_fidelity_candidates": 6,
+  "candidates": [
+   {
+    "id": "T0",
+    "role": "source-native reference",
+    "name": "native_bf16_reference",
+    "target_complete_bpw_max": "0",
+    "target_complete_bpw_max_float": 0.0,
+    "description": "the unpacked parent itself, forward-run on the frozen prompt set with logits cached. Not a compression candidate - it is the denominator.",
+    "consumes_qwen_lessons": [
+     "parent logits cached once and reused across every pass",
+     "6 frozen holdout prompts, chosen and sealed BEFORE any candidate runs"
+    ],
+    "refuses_to_repeat": [
+     "scoring candidates against a re-run parent (nondeterminism leaked into every early Qwen delta)"
+    ],
+    "falsifies_first": "that the harness reproduces the parent bit-for-bit across two runs; if it does not, every downstream delta is noise",
+    "targets_lower_bpw_how": "n/a - reference",
+    "reduces_time_to_decision_how": "one forward, amortized across the entire tournament",
+    "funnel_entry": "F5 directly (it is the reference, it must be exact)"
+   },
+   {
+    "id": "T1",
+    "role": "Qwen's strongest transferable method",
+    "name": "organ_split_gvq_adaptive_k",
+    "target_complete_bpw_max": "9968536/10000000",
+    "target_complete_bpw_max_float": 0.9968536,
+    "description": "gamma-weighted VQ on gate_proj/up_proj at 4x the down_proj index rate, dim8/k1024/stages2, with the exact byte auction setting per-layer K. Layer-0 kronecker exception carried but RE-TESTED, not assumed.",
+    "consumes_qwen_lessons": [
+     "organ split 4:1 gate_up:down",
+     "free structural rule gvq/gvq/vq instead of a shipped 2-bit mode field",
+     "exact byte auction over the ceiling (K 48..96, mean 65.4 on Qwen)",
+     "second-codebook-stage capacity is what earns bytes"
+    ],
+    "refuses_to_repeat": [
+     "shipping a per-cell mode field for a 1.35 pct margin",
+     "trusting a routing calibration under ~7448 tokens for per-expert allocation",
+     "transferring Doctor Gen1's row selector as if it were the mechanism"
+    ],
+    "falsifies_first": "that the 4:1 organ split is a property of MoE SwiGLU rather than of Qwen's particular gamma anisotropy (1.843 at L0, 0.062 at L93)",
+    "targets_lower_bpw_how": "the auction spends the ceiling where marginal predicted error per bit is steepest, which on Qwen bought 84 of 94 layers a richer down rung than uniform-64 at the same total",
+    "reduces_time_to_decision_how": "it is the incumbent - if T1 fails F2 the whole transfer thesis is dead in ~30 minutes and the field narrows to T3/T5",
+    "funnel_entry": "F1"
+   },
+   {
+    "id": "T2",
+    "role": "T1 + Doctor Gen3 diagnosis-matched treatment",
+    "name": "T1_plus_residual_stage",
+    "target_complete_bpw_max": "1/1",
+    "target_complete_bpw_max_float": 1.0,
+    "description": "T1 with a second residual codebook stage installed on the cells the diagnosis names, billed at INSTALLED bits. Treatment set selected by doctor_gen3.escalate() against the measured diagnosis, not chosen by hand.",
+    "consumes_qwen_lessons": [
+     "Doctor Gen1 bought 10.5 pct symKL for 0.0513 complete BPW - the only capability-fidelity Doctor number that exists",
+     "the SECOND CODEBOOK STAGE is the active ingredient, not the row selector",
+     "conditional treatments bill INSTALLED bits"
+    ],
+    "refuses_to_repeat": [
+     "giving Doctor free bytes",
+     "sparse-residual row selection heuristics that random rows match to within 1-4 pct",
+     "low-rank residual (dead: error is high rank, top-64 SVD holds 3-9 pct)"
+    ],
+    "falsifies_first": "that Doctor recovery per bit is monotone in parent size - on Qwen it bought 10.5 pct off 8.599, which is 77x the gate; if the new parent's T1 lands within ~10x of the gate this treatment is decisive, otherwise it is decoration",
+    "targets_lower_bpw_how": "it does not - it spends the last 0.0031 BPW of headroom. It is only proposed because T1 leaves that headroom unspent.",
+    "reduces_time_to_decision_how": "runs only if T1 passes F2; otherwise never packed",
+    "funnel_entry": "F2 (gated on T1 clearing F2)"
+   },
+   {
+    "id": "T3",
+    "role": "architecture-specific challenger",
+    "name": "native_structure_challenger",
+    "target_complete_bpw_max": "95/100",
+    "target_complete_bpw_max_float": 0.95,
+    "description": "a codec chosen from the NEW parent's own measured structure rather than Qwen's: Van Loan spectrum concentration per cell (kronecker where concentrated), measured expert off-diagonal cosine (tying only if >= 0.10), measured residual rank (low-rank only if actually low rank). Every branch is gated on a measurement that Qwen failed and might pass here.",
+    "consumes_qwen_lessons": [
+     "the reopening conditions for all four dead representations, as explicit numeric gates rather than as prose"
+    ],
+    "refuses_to_repeat": [
+     "carrying a Qwen-shaped codec onto a different topology and calling the resulting loss a property of the method",
+     "admitting kronecker globally - admission is PER-CELL and must win in OUTPUT space at equal-or-fewer bits"
+    ],
+    "falsifies_first": "that the RECONSTRUCTION_BOUND classification is parent-specific. If the new parent is ALSO reconstruction-bound at 91 pct, sub-1.0 MoE compression is a representation problem in general and no routing work is ever justified.",
+    "targets_lower_bpw_how": "any reopened structural mechanism (real expert similarity, real low-rank residual) is worth 0.1-0.3 BPW that Qwen's orthogonal experts made unreachable",
+    "reduces_time_to_decision_how": "its four reopening probes are all data-free or single-layer - the entire branch resolves at F1 cost",
+    "funnel_entry": "F1"
+   },
+   {
+    "id": "T4",
+    "role": "challenger + Doctor",
+    "name": "T3_plus_diagnosis_matched_doctor",
+    "target_complete_bpw_max": "1/1",
+    "target_complete_bpw_max_float": 1.0,
+    "description": "T3 with doctor_gen3.escalate() run against T3's OWN diagnosis, auctioned over the residual headroom T3 leaves. Treatments are refused at proposal time if their status is dead/negative and no reopening condition is measured true.",
+    "consumes_qwen_lessons": [
+     "doctor_gen3 status ladder and reopening conditions",
+     "installed-bits billing for conditional treatments"
+    ],
+    "refuses_to_repeat": [
+     "router_distill (negative, KL term provably inert)",
+     "expert_merge (dead, best survivor 0.885+ held-out rel err)",
+     "layerwise QAT scored on an overlapping split"
+    ],
+    "falsifies_first": "that Doctor treatments are architecture-portable at all - T2 and T4 apply the same treatment family to two different codecs on the same parent, so the T2/T4 delta isolates codec-dependence from parent-dependence",
+    "targets_lower_bpw_how": "same as T2 - spends headroom, does not create it",
+    "reduces_time_to_decision_how": "gated on T3 clearing F2; shares T3's packed experts",
+    "funnel_entry": "F2 (gated on T3 clearing F2)"
+   },
+   {
+    "id": "T5",
+    "role": "aggressive lower-rate stress candidate",
+    "name": "half_rate_stress",
+    "target_complete_bpw_max": "1/2",
+    "target_complete_bpw_max_float": 0.5,
+    "description": "the winner of T1/T3 re-rated to ~0.5 complete BPW (Qwen's lowest LEGAL packed arm was 0.498895437). Purpose is to locate the collapse KNEE, not to pass.",
+    "consumes_qwen_lessons": [
+     "Qwen's 0.4930 and 1.0075 BPW arms both gave argmax EXACTLY 0.0, so the parent had no knee inside the legal band at all - the campaign never learned where the cliff was because it never bracketed it"
+    ],
+    "refuses_to_repeat": [
+     "running only near the ceiling and inferring a curve from one end"
+    ],
+    "falsifies_first": "that the new parent has a knee inside the legal band. If T5 and T1 score within each other's spread, rate is not the binding variable and the whole rate ladder is the wrong axis - that finding is worth more than a pass.",
+    "targets_lower_bpw_how": "directly - it IS the low-rate probe",
+    "reduces_time_to_decision_how": "it is run EARLY and in PARALLEL with T1 at F2, not last. Two points bracket the curve; one point does not.",
+    "funnel_entry": "F2 (parallel with T1)"
+   }
+  ]
+ },
+ "fidelity_funnel": [
+  {
+   "stage": "F0",
+   "name": "ledger legality",
+   "cost": "seconds",
+   "asks": "does the candidate's exact Fraction complete_bits / original_weight_count <= 1/1?",
+   "kills": "anything above 1.0, before a single byte is packed",
+   "gate": "Fraction arithmetic via tools/foundry/one_bit_ceiling.py; no float comparison"
+  },
+  {
+   "stage": "F1",
+   "name": "single-layer representation probe",
+   "cost": "minutes, 1 layer",
+   "asks": "at this rate, does the packed expert set reproduce layer output on a DISJOINT probe?",
+   "kills": "any candidate whose representation is already reconstruction-bound at layer 0-2",
+   "gate": "held-out capture inside the fit span <= 0.10, PROVEN and reported, not asserted; split by corpus SEGMENT over UNIQUE token ids, seed-varied",
+   "note": "RECONSTRUCTION_BOUND rule: this stage runs BEFORE any routing-policy work"
+  },
+  {
+   "stage": "F2",
+   "name": "sparse-layer forward (3 layers packed, 91 native)",
+   "cost": "~10 min",
+   "asks": "does packing L0/L46/L93 alone already move symKL off the parent?",
+   "kills": "candidates whose per-layer damage x 94 cannot fit under the gate even optimistically",
+   "gate": "extrapolated 94-layer symKL under a linear-damage upper bound must be <= 1.0 (10x the final gate) or the candidate is retired"
+  },
+  {
+   "stage": "F3",
+   "name": "quarter-depth forward (24 of 94 layers packed, stratified)",
+   "cost": "~20 min",
+   "asks": "is damage sub-linear, linear, or super-linear in packed depth?",
+   "kills": "super-linear candidates - they cannot survive full depth",
+   "gate": "symKL at 24 layers <= 0.25 x the F2-extrapolated 94-layer value"
+  },
+  {
+   "stage": "F4",
+   "name": "full-depth forward, 2 prompts, cached parent logits",
+   "cost": "~15 min",
+   "asks": "the real question, at 1/3 the prompt cost",
+   "kills": "everything that collapses; expected to kill most of the field",
+   "gate": "symKL <= 0.10 AND argmax >= 0.95 on 2 prompts"
+  },
+  {
+   "stage": "F5",
+   "name": "full fidelity: full depth, 6 frozen holdout prompts",
+   "cost": "~1.5 h",
+   "asks": "sealed capability verdict",
+   "kills": "nothing new is expected to reach here; reaching F5 is itself the result",
+   "gate": "symKL <= 0.10 AND argmax >= 0.95 on all 6, paired against cached parent logits"
+  }
+ ],
+ "retirement_rules": [
+  "A candidate that fails any funnel gate is RETIRED at that stage and never re-entered at a higher fidelity. No 'but it might recover deeper' appeals.",
+  "A candidate that requires a mechanism marked DEAD in QWEN235B_VULTURE_HARVEST is refused at PROPOSAL time unless its reopening condition is MEASURED true on the new parent first.",
+  "A treatment whose fit/score split has not been PROVEN disjoint (held-out capture inside the fit span reported and <= 0.10) may not carry a positive verdict. Unproven split = no claim.",
+  "If two candidates reach the same funnel stage with results inside each other's seed spread, the CHEAPER one advances and the other is retired. Ties are broken by cost, not by hope.",
+  "Any self-check that does not call the shipping code path is treated as a FAILED self-check.",
+  "The tournament stops the moment a candidate seals at F5, or the moment the field is empty. There is no consolation round at a higher rate - higher rate means above the ceiling.",
+  "Total wall-clock cap: if the field has not produced an F4 pass within 24 h of compute, the campaign seals NEGATIVE on this parent and the harvest is updated, not extended."
+ ],
+ "first_assumption_to_falsify": "That the RECONSTRUCTION_BOUND classification is Qwen-specific. Run D1/D2 on the new parent at F1 cost BEFORE the tournament opens: if reconstruction again reproduces >=90 pct of the loss, every routing lever is retired unrun and the tournament collapses to T1/T3/T5 representation candidates only.",
+ "time_to_decision_plan": {
+  "prerequisite_hours": {
+   "parent_logit_cache": 1.5,
+   "D1_D2_on_new_parent": 0.5
+  },
+  "funnel_hours_estimate": {
+   "F0": 0.0,
+   "F1": 0.5,
+   "F2": 1.0,
+   "F3": 1.5,
+   "F4": 1.5,
+   "F5": 4.5
+  },
+  "total_hours_estimate": 11.0,
+  "hard_cap_hours": 24.0,
+  "label": "ESTIMATES derived from Qwen's measured 51-70 s per layer per packing variant and 28-57 s/layer observed under contention; not stopwatch measurements of this plan",
+  "levers_applied": [
+   "cached parent logits",
+   "expert-outer/candidate-inner loop",
+   "33 pct spec memoization",
+   "7 dead rungs retired unrun",
+   "T5 run in PARALLEL with T1 rather than last"
+  ]
+ },
+ "honesty": [
+  "No candidate here has been run. Every number in this packet is either inherited from a sealed Qwen measurement or an explicitly labelled estimate.",
+  "Output error on a calibration batch is a PROXY; only F4/F5 produce capability evidence.",
+  "The 0.5 BPW T5 target is Qwen's lowest LEGAL packed rate, not a rate that ever worked.",
+  "Direct execution is a PYTHON-REFERENCE claim on this codebase today."
+ ]
+}
