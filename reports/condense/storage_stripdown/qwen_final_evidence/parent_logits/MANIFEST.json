@@ -1,0 +1,30 @@
+{
+  "schema": "hawking.storage_stripdown.parent_logits_manifest.v1",
+  "why": "bf16 parent reference logits for the six frozen holdout prompts. Every Qwen3-235B candidate in the sealed ladder was scored against these. The 437.9 GiB source that produced them has been released, so regenerating them costs a full re-download plus a full parent forward. They were untracked and gitignored; they are force-added here.",
+  "files": {
+    "code_py.npy": {
+      "bytes": 16409216,
+      "sha256": "4046c01514e9f5a403f67b46488b350ffceb0d9534960ac71609cbbfcc0ba8e7"
+    },
+    "gen_paris.npy": {
+      "bytes": 3038848,
+      "sha256": "59a5558a352135dc652faed5fd1d83bc989eb141ad5cc0eadcbe20e6a0eb2cd8"
+    },
+    "gen_science.npy": {
+      "bytes": 5469824,
+      "sha256": "0545b80ebaf894449d7f40225449fac1c2f0ad47c1feac8704b73c42c5427d15"
+    },
+    "instr_list.npy": {
+      "bytes": 6685312,
+      "sha256": "5d79d08513e572791dfa7adac6321f8103dd7fb68e725b01fb88f5bf5b15a87d"
+    },
+    "math_add.npy": {
+      "bytes": 12155008,
+      "sha256": "50bf052c2f2fde0b983cf6ae4ca386cb49d77ac39b9b521b30ea85c76d223464"
+    },
+    "reason_syllogism.npy": {
+      "bytes": 9724032,
+      "sha256": "e25bc810594236c1140f87209a3aa03e81fe3f98b8df96c07a3320eb57f57aa8"
+    }
+  }
+}
