@@ -39,6 +39,8 @@
     <string>0</string>
     <key>HF_XET_HIGH_PERFORMANCE</key>
     <string>1</string>
+    <key>KIMI_K26_DISK_FLOOR_BYTES</key>
+    <string>5368709120</string>
   </dict>
 </dict>
 </plist>

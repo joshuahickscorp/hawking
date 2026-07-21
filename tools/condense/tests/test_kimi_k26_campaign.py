@@ -12,6 +12,16 @@ if str(ROOT) not in sys.path:
 from tools import kimi_k26_campaign as campaign  # noqa: E402
 
 
+def test_authoritative_disk_floor_is_five_gib() -> None:
+    assert campaign.DEFAULT_DISK_FLOOR_BYTES == 5 * 1024**3
+    assert campaign.MIN_RESERVE == 5 * 1024**3
+    assert campaign.TARGET_RESERVE == campaign.MIN_RESERVE
+    assert not campaign.disk_floor_green(campaign.MIN_RESERVE)
+    assert campaign.disk_floor_green(campaign.MIN_RESERVE + 1)
+    assert not campaign.can_start_atomic_write(campaign.MIN_RESERVE + 10, 10)
+    assert campaign.can_start_atomic_write(campaign.MIN_RESERVE + 11, 10)
+
+
 def test_telegram_outbox_advances_only_after_delivery(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setattr(campaign, "STATE", tmp_path / "state.json")
     monkeypatch.setattr(campaign, "TELEGRAM_OUTBOX", tmp_path / "outbox.json")

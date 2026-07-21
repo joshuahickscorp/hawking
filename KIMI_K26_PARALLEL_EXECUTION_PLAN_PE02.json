@@ -1,0 +1,66 @@
+{
+  "execution_id": "PE02_NONLINEAR_TOURNAMENT_M2_M7",
+  "lanes": [
+    {
+      "name": "nonlinear_f0_f1_tournament",
+      "lane": "HEAVY_LANE",
+      "task": "NG_N1_N2_N4_N6_TOURNAMENT",
+      "command": [
+        "/Library/Frameworks/Python.framework/Versions/3.12/bin/python3.12",
+        "tools/condense/kimi_k26_gravity_nonlinear.py",
+        "tournament",
+        "--repo",
+        "/Users/scammermike/Downloads/hawking",
+        "--source",
+        "/Users/scammermike/.cache/huggingface/hub/models--moonshotai--Kimi-K2.6/snapshots/7eb5002f6aadc958aed6a9177b7ed26bb94011bb",
+        "--output-dir",
+        "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/gravity_nonlinear"
+      ],
+      "maximum_atomic_write_bytes": 200000000,
+      "logical_disk_read_bytes": 963024576,
+      "logical_disk_write_bytes": 50000000,
+      "contention_effect": "COMPARE_MPS_TOURNAMENT_TIMING_WITH_BOUNDED_CPU_DIAGNOSTICS"
+    },
+    {
+      "name": "m2_cached_gate",
+      "lane": "CPU_LIGHT_LANE",
+      "task": "M2_LOW_MARGIN_CONDITIONAL_DIAGNOSTIC",
+      "command": [
+        "/Library/Frameworks/Python.framework/Versions/3.12/bin/python3.12",
+        "tools/condense/kimi_k26_gravity_oneoffs.py",
+        "--repo",
+        "/Users/scammermike/Downloads/hawking",
+        "--stage",
+        "m2"
+      ],
+      "maximum_atomic_write_bytes": 10485760,
+      "logical_disk_read_bytes": 797355448,
+      "logical_disk_write_bytes": 10485760,
+      "contention_effect": "FROZEN_CPU_GATE_DIAGNOSTIC_CONCURRENT_WITH_HEAVY_MPS"
+    },
+    {
+      "name": "m7_common_score_baseline",
+      "lane": "CPU_LIGHT_LANE",
+      "task": "M7_ORACLE_TO_PHYSICAL_GAP_BASELINE",
+      "command": [
+        "/Library/Frameworks/Python.framework/Versions/3.12/bin/python3.12",
+        "tools/condense/kimi_k26_gravity_oneoffs.py",
+        "--repo",
+        "/Users/scammermike/Downloads/hawking",
+        "--stage",
+        "m7"
+      ],
+      "maximum_atomic_write_bytes": 10485760,
+      "logical_disk_read_bytes": 396670012,
+      "logical_disk_write_bytes": 10485760,
+      "contention_effect": "FROZEN_COMMON_SCORE_ATTRIBUTION_CONCURRENT_WITH_HEAVY_MPS"
+    }
+  ],
+  "policy": {
+    "maximum_heavy_lanes": 1,
+    "memory_available_floor_bytes": 25769803776,
+    "maximum_swap_growth_bytes": 536870912,
+    "hard_disk_floor_bytes": 5368709120,
+    "backoff": "TERMINATE_CPU_LIGHT_LANES_FIRST"
+  }
+}

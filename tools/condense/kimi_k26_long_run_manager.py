@@ -28,7 +28,9 @@ REVISION = f1.REVISION
 SNAPSHOT = (Path.home() / ".cache/huggingface/hub/models--moonshotai--Kimi-K2.6" /
             "snapshots" / REVISION)
 MOP = Path.home() / "Downloads/mop"
-MIN_FREE = 82 * 1024 ** 3
+MIN_FREE = int(os.environ.get("KIMI_K26_DISK_FLOOR_BYTES", str(5 * 1024 ** 3)))
+if MIN_FREE != 5 * 1024**3:
+    raise RuntimeError("KIMI_K26_DISK_FLOOR_BYTES must equal exactly 5368709120")
 STATUS_JSON = "KIMI_K26_LONG_RUN_STATUS.json"
 STATUS_MD = "KIMI_K26_LONG_RUN_STATUS.md"
 LEDGER = "KIMI_K26_LONG_RUN_LEDGER.jsonl"
@@ -164,7 +166,7 @@ def resource_snapshot() -> dict[str, Any]:
                               capture_output=True, check=False).stdout.strip()
     return {"free_disk_bytes": usage.free, "disk_floor_bytes": MIN_FREE,
             "disk_headroom_bytes": usage.free - MIN_FREE,
-            "floor_green": usage.free >= MIN_FREE, "swap": swap,
+            "floor_green": usage.free > MIN_FREE, "swap": swap,
             "memory_pressure": memory[-2000:], "thermals": thermals[-2000:]}
 
 

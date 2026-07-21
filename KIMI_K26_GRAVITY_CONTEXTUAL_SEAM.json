@@ -1,0 +1,349 @@
+{
+  "capture": {
+    "bytes": 159631326,
+    "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/gravity_nonlinear/KIMI_K26_GRAVITY_CONTEXTUAL_SEAM.npz",
+    "sha256": "51e4287a848145666e56df1e2237b694509fd8f01b996c558e853f1365ff617b"
+  },
+  "claim_boundary": "CONTEXTUAL_LAYER1_EXPERT0_FUNCTION_AND_ROUTES; no repeated parent forward",
+  "contextual_parent_metrics": {
+    "fit": {
+      "cosine_mean": 0.18723388016223907,
+      "cosine_min": -0.05799274891614914,
+      "cosine_p10": 0.07154499739408493,
+      "norm_ratio": 2.5832624435424805,
+      "normalized_rmse": 2.552110433578491,
+      "relative_l2": 2.552064895629883
+    },
+    "score": {
+      "cosine_mean": 0.18443579971790314,
+      "cosine_min": -0.05799274891614914,
+      "cosine_p10": 0.073348768055439,
+      "norm_ratio": 2.578333854675293,
+      "normalized_rmse": 2.549161434173584,
+      "relative_l2": 2.549118757247925
+    }
+  },
+  "experiment_id": "NG0_CONTEXTUAL_EXPERT0_SEAM",
+  "inputs": {
+    "fit": {
+      "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/long_run/LR11/LR11_UPSTREAM_F2_CAPTURE.npz",
+      "sha256": "cdc9e196aabcfc7f66b17ccd3e3858a197610f15f60f2b853f8cd5027203fad6",
+      "split": {
+        "domain_names": {
+          "0": "code",
+          "1": "prose",
+          "2": "reasoning",
+          "3": "tool_format"
+        },
+        "requests": [
+          {
+            "chat": false,
+            "domain": "prose",
+            "id": "upstream_f2_00",
+            "text": "Ocean circulation redistributes heat, dissolved gases, nutrients, and salt. Surface winds initiate broad currents while temperature and salinity gradients drive deep overturning. Measurements from floats, satellites, and research vessels disagree slightly because they sample different scales and times. A careful summary must separate direct observations from model-dependent inference. Provide one counterexample, one intervention, and one quantitative stopping rule. Do not treat a ranking change as a causal explanation unless the downstream output changes.",
+            "thinking": false
+          },
+          {
+            "chat": false,
+            "domain": "prose",
+            "id": "upstream_f2_01",
+            "text": "A municipal archive contains council minutes, engineering drawings, tax rolls, and correspondence written under changing administrative rules. Dates may refer to filing, approval, or later transcription. The historian cross-checks handwriting, paper, and cited events before treating any claim as contemporaneous evidence. Provide one counterexample, one intervention, and one quantitative stopping rule. Do not treat a ranking change as a causal explanation unless the downstream output changes.",
+            "thinking": false
+          },
+          {
+            "chat": false,
+            "domain": "prose",
+            "id": "upstream_f2_02",
+            "text": "Photosynthesis couples photon absorption to charge separation and chemical storage. Pigment complexes transfer excitation toward reaction centers, but excess energy must be dissipated to avoid damage. Temperature, water availability, and carbon dioxide alter the observed rate, so a single limiting-factor explanation is rarely sufficient. Provide one counterexample, one intervention, and one quantitative stopping rule. Do not treat a ranking change as a causal explanation unless the downstream output changes.",
+            "thinking": false
+          },
+          {
+            "chat": false,
+            "domain": "code",
+            "id": "upstream_f2_03",
+            "text": "A streaming parser receives arbitrary byte chunks and must emit complete records without losing delimiters split across reads. The implementation tracks quote state, escape state, nesting depth, and a bounded buffer. It rejects malformed input deterministically and reports the absolute byte offset of the first error. Provide one counterexample, one intervention, and one quantitative stopping rule. Do not treat a ranking change as a causal explanation unless the downstream output changes.",
+            "thinking": false
+          },
+          {
+            "chat": false,
+            "domain": "code",
+            "id": "upstream_f2_04",
+            "text": "A concurrent work queue supports cancellation, retry limits, and idempotent result publication. Workers claim leases with monotonic deadlines, renew only while making progress, and write results through compare-and-swap. Recovery must distinguish an expired worker from a slow but healthy one without executing irreversible work twice. Provide one counterexample, one intervention, and one quantitative stopping rule. Do not treat a ranking change as a causal explanation unless the downstream output changes.",
+            "thinking": false
+          },
+          {
+            "chat": false,
+            "domain": "code",
+            "id": "upstream_f2_05",
+            "text": "A numerical kernel computes stable log-sum-exp over rows containing finite values, negative infinity, and occasionally NaN. The contract defines propagation rules, empty-row behavior, dtype promotion, and a tolerance for reference comparisons. Tests cover extreme magnitudes and non-contiguous slices. Provide one counterexample, one intervention, and one quantitative stopping rule. Do not treat a ranking change as a causal explanation unless the downstream output changes.",
+            "thinking": false
+          },
+          {
+            "chat": false,
+            "domain": "reasoning",
+            "id": "upstream_f2_06",
+            "text": "Four laboratories share two instruments under precedence, maintenance, and cool-down constraints. Atlas must finish before Boreal begins; Cygnus cannot overlap maintenance; Delta needs both instruments for its final stage. Determine which ordering claims follow in every feasible schedule and which depend on an unstated duration. Provide one counterexample, one intervention, and one quantitative stopping rule. Do not treat a ranking change as a causal explanation unless the downstream output changes.",
+            "thinking": false
+          },
+          {
+            "chat": false,
+            "domain": "reasoning",
+            "id": "upstream_f2_07",
+            "text": "A bag contains red, blue, and green tokens. Two are drawn without replacement, a color-dependent token is then added, and a third draw is made. Compare conditional outcomes without assuming independence. State the sample space explicitly and identify which observations change the denominator. Provide one counterexample, one intervention, and one quantitative stopping rule. Do not treat a ranking change as a causal explanation unless the downstream output changes.",
+            "thinking": false
+          },
+          {
+            "chat": false,
+            "domain": "reasoning",
+            "id": "upstream_f2_08",
+            "text": "An integer sequence is defined by alternating affine recurrences. On odd steps it triples and subtracts four; on even steps it halves after adding six. Determine fixed points, possible cycles, and the assumptions required for every term to remain integral. Provide one counterexample, one intervention, and one quantitative stopping rule. Do not treat a ranking change as a causal explanation unless the downstream output changes.",
+            "thinking": false
+          },
+          {
+            "chat": true,
+            "domain": "tool_format",
+            "id": "upstream_f2_09",
+            "text": "The requested operation must first validate a content hash, confirm that the lease owner matches the running process, and check that free space remains above a hard floor. Return a machine-readable decision with separate evidence fields. Never infer success from the absence of an error message. Provide one counterexample, one intervention, and one quantitative stopping rule. Do not treat a ranking change as a causal explanation unless the downstream output changes.",
+            "thinking": true
+          },
+          {
+            "chat": true,
+            "domain": "tool_format",
+            "id": "upstream_f2_10",
+            "text": "Transform the supplied observations into one JSON object with keys hypothesis, measurement, uncertainty, and next_test. Preserve numeric precision, represent unavailable values as null, and do not insert explanatory markdown. A failed invariant must set status to blocked and name the exact invariant. Provide one counterexample, one intervention, and one quantitative stopping rule. Do not treat a ranking change as a causal explanation unless the downstream output changes.",
+            "thinking": false
+          },
+          {
+            "chat": true,
+            "domain": "tool_format",
+            "id": "upstream_f2_11",
+            "text": "Review a proposed database migration in three phases: reversible preflight, bounded execution, and postcondition verification. The output schema includes affected_rows, rollback, duration_ms, and evidence_hash. Do not claim rollback is possible unless the backup identity has been verified. Provide one counterexample, one intervention, and one quantitative stopping rule. Do not treat a ranking change as a causal explanation unless the downstream output changes.",
+            "thinking": true
+          },
+          {
+            "chat": false,
+            "domain": "prose",
+            "id": "upstream_f2_12",
+            "text": "The expression \u27e8\u03c8|H|\u03c8\u27e9 combines brackets, operators, and a normalized state. Nearby text may include \u03be\u21920\u207a, an integral around \u0393, accented names, Arabic \u0627\u0644\u0639\u0631\u0628\u064a\u0629, Japanese \u65e5\u672c\u8a9e, and emoji. Token boundaries should not be mistaken for semantic boundaries when scripts and punctuation mix. Provide one counterexample, one intervention, and one quantitative stopping rule. Do not treat a ranking change as a causal explanation unless the downstream output changes.",
+            "thinking": false
+          },
+          {
+            "chat": false,
+            "domain": "code",
+            "id": "upstream_f2_13",
+            "text": "Given rows like {id:17, score:0.00001, tags:[\"\u03b1\",\"\u03b2\"]}, sort by descending score, then ascending id, while preserving stability for exact ties. Serialize with canonical key order, reject duplicate identifiers, and compute a checksum over UTF-8 bytes rather than displayed glyphs. Provide one counterexample, one intervention, and one quantitative stopping rule. Do not treat a ranking change as a causal explanation unless the downstream output changes.",
+            "thinking": false
+          },
+          {
+            "chat": false,
+            "domain": "reasoning",
+            "id": "upstream_f2_14",
+            "text": "At a top-eight cutoff, candidates in positions eight and nine differ by a very small margin. A perturbation changes both scores and normalization weights. Explain why a set change, a rank change without set change, and a weight change with neither rank nor set change are distinct events with different downstream consequences. Provide one counterexample, one intervention, and one quantitative stopping rule. Do not treat a ranking change as a causal explanation unless the downstream output changes.",
+            "thinking": false
+          },
+          {
+            "chat": true,
+            "domain": "tool_format",
+            "id": "upstream_f2_15",
+            "text": "Emit exactly one XML element named result with attributes status and confidence. Its children must be evidence, diagnosis, and next-experiment in that order. Escape ampersands, preserve Unicode content, and include no preamble or trailing commentary. Provide one counterexample, one intervention, and one quantitative stopping rule. Do not treat a ranking change as a causal explanation unless the downstream output changes.",
+            "thinking": true
+          }
+        ],
+        "segment_lengths": [
+          93,
+          84,
+          87,
+          84,
+          88,
+          83,
+          87,
+          82,
+          79,
+          90,
+          90,
+          89,
+          95,
+          92,
+          90,
+          84
+        ]
+      },
+      "tokens": 1397
+    },
+    "score": {
+      "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/long_run/LR12/LR12_UPSTREAM_REPLICATION_CAPTURE.npz",
+      "sha256": "3cf5906608984416d62a9173f51ac2615ddf36ba0d2a37fed76d06e8e0b53634",
+      "split": {
+        "domain_names": {
+          "0": "code",
+          "1": "prose",
+          "2": "reasoning",
+          "3": "tool_format"
+        },
+        "requests": [
+          {
+            "chat": true,
+            "domain": "tool_format",
+            "id": "upstream_f2_00",
+            "text": "Emit exactly one XML element named result with attributes status and confidence. Its children must be evidence, diagnosis, and next-experiment in that order. Escape ampersands, preserve Unicode content, and include no preamble or trailing commentary. Audit the conclusion under a changed ordering and a new boundary example. Quantify both immediate rescue and next-layer amplification before deciding whether the candidate survives.",
+            "thinking": false
+          },
+          {
+            "chat": false,
+            "domain": "reasoning",
+            "id": "upstream_f2_01",
+            "text": "At a top-eight cutoff, candidates in positions eight and nine differ by a very small margin. A perturbation changes both scores and normalization weights. Explain why a set change, a rank change without set change, and a weight change with neither rank nor set change are distinct events with different downstream consequences. Audit the conclusion under a changed ordering and a new boundary example. Quantify both immediate rescue and next-layer amplification before deciding whether the candidate survives.",
+            "thinking": false
+          },
+          {
+            "chat": false,
+            "domain": "code",
+            "id": "upstream_f2_02",
+            "text": "Given rows like {id:17, score:0.00001, tags:[\"\u03b1\",\"\u03b2\"]}, sort by descending score, then ascending id, while preserving stability for exact ties. Serialize with canonical key order, reject duplicate identifiers, and compute a checksum over UTF-8 bytes rather than displayed glyphs. Audit the conclusion under a changed ordering and a new boundary example. Quantify both immediate rescue and next-layer amplification before deciding whether the candidate survives.",
+            "thinking": false
+          },
+          {
+            "chat": false,
+            "domain": "prose",
+            "id": "upstream_f2_03",
+            "text": "The expression \u27e8\u03c8|H|\u03c8\u27e9 combines brackets, operators, and a normalized state. Nearby text may include \u03be\u21920\u207a, an integral around \u0393, accented names, Arabic \u0627\u0644\u0639\u0631\u0628\u064a\u0629, Japanese \u65e5\u672c\u8a9e, and emoji. Token boundaries should not be mistaken for semantic boundaries when scripts and punctuation mix. Audit the conclusion under a changed ordering and a new boundary example. Quantify both immediate rescue and next-layer amplification before deciding whether the candidate survives.",
+            "thinking": false
+          },
+          {
+            "chat": true,
+            "domain": "tool_format",
+            "id": "upstream_f2_04",
+            "text": "Review a proposed database migration in three phases: reversible preflight, bounded execution, and postcondition verification. The output schema includes affected_rows, rollback, duration_ms, and evidence_hash. Do not claim rollback is possible unless the backup identity has been verified. Audit the conclusion under a changed ordering and a new boundary example. Quantify both immediate rescue and next-layer amplification before deciding whether the candidate survives.",
+            "thinking": false
+          },
+          {
+            "chat": true,
+            "domain": "tool_format",
+            "id": "upstream_f2_05",
+            "text": "Transform the supplied observations into one JSON object with keys hypothesis, measurement, uncertainty, and next_test. Preserve numeric precision, represent unavailable values as null, and do not insert explanatory markdown. A failed invariant must set status to blocked and name the exact invariant. Audit the conclusion under a changed ordering and a new boundary example. Quantify both immediate rescue and next-layer amplification before deciding whether the candidate survives.",
+            "thinking": true
+          },
+          {
+            "chat": true,
+            "domain": "tool_format",
+            "id": "upstream_f2_06",
+            "text": "The requested operation must first validate a content hash, confirm that the lease owner matches the running process, and check that free space remains above a hard floor. Return a machine-readable decision with separate evidence fields. Never infer success from the absence of an error message. Audit the conclusion under a changed ordering and a new boundary example. Quantify both immediate rescue and next-layer amplification before deciding whether the candidate survives.",
+            "thinking": false
+          },
+          {
+            "chat": false,
+            "domain": "reasoning",
+            "id": "upstream_f2_07",
+            "text": "An integer sequence is defined by alternating affine recurrences. On odd steps it triples and subtracts four; on even steps it halves after adding six. Determine fixed points, possible cycles, and the assumptions required for every term to remain integral. Audit the conclusion under a changed ordering and a new boundary example. Quantify both immediate rescue and next-layer amplification before deciding whether the candidate survives.",
+            "thinking": false
+          },
+          {
+            "chat": false,
+            "domain": "reasoning",
+            "id": "upstream_f2_08",
+            "text": "A bag contains red, blue, and green tokens. Two are drawn without replacement, a color-dependent token is then added, and a third draw is made. Compare conditional outcomes without assuming independence. State the sample space explicitly and identify which observations change the denominator. Audit the conclusion under a changed ordering and a new boundary example. Quantify both immediate rescue and next-layer amplification before deciding whether the candidate survives.",
+            "thinking": false
+          },
+          {
+            "chat": false,
+            "domain": "reasoning",
+            "id": "upstream_f2_09",
+            "text": "Four laboratories share two instruments under precedence, maintenance, and cool-down constraints. Atlas must finish before Boreal begins; Cygnus cannot overlap maintenance; Delta needs both instruments for its final stage. Determine which ordering claims follow in every feasible schedule and which depend on an unstated duration. Audit the conclusion under a changed ordering and a new boundary example. Quantify both immediate rescue and next-layer amplification before deciding whether the candidate survives.",
+            "thinking": false
+          },
+          {
+            "chat": false,
+            "domain": "code",
+            "id": "upstream_f2_10",
+            "text": "A numerical kernel computes stable log-sum-exp over rows containing finite values, negative infinity, and occasionally NaN. The contract defines propagation rules, empty-row behavior, dtype promotion, and a tolerance for reference comparisons. Tests cover extreme magnitudes and non-contiguous slices. Audit the conclusion under a changed ordering and a new boundary example. Quantify both immediate rescue and next-layer amplification before deciding whether the candidate survives.",
+            "thinking": false
+          },
+          {
+            "chat": false,
+            "domain": "code",
+            "id": "upstream_f2_11",
+            "text": "A concurrent work queue supports cancellation, retry limits, and idempotent result publication. Workers claim leases with monotonic deadlines, renew only while making progress, and write results through compare-and-swap. Recovery must distinguish an expired worker from a slow but healthy one without executing irreversible work twice. Audit the conclusion under a changed ordering and a new boundary example. Quantify both immediate rescue and next-layer amplification before deciding whether the candidate survives.",
+            "thinking": false
+          },
+          {
+            "chat": false,
+            "domain": "code",
+            "id": "upstream_f2_12",
+            "text": "A streaming parser receives arbitrary byte chunks and must emit complete records without losing delimiters split across reads. The implementation tracks quote state, escape state, nesting depth, and a bounded buffer. It rejects malformed input deterministically and reports the absolute byte offset of the first error. Audit the conclusion under a changed ordering and a new boundary example. Quantify both immediate rescue and next-layer amplification before deciding whether the candidate survives.",
+            "thinking": false
+          },
+          {
+            "chat": false,
+            "domain": "prose",
+            "id": "upstream_f2_13",
+            "text": "Photosynthesis couples photon absorption to charge separation and chemical storage. Pigment complexes transfer excitation toward reaction centers, but excess energy must be dissipated to avoid damage. Temperature, water availability, and carbon dioxide alter the observed rate, so a single limiting-factor explanation is rarely sufficient. Audit the conclusion under a changed ordering and a new boundary example. Quantify both immediate rescue and next-layer amplification before deciding whether the candidate survives.",
+            "thinking": false
+          },
+          {
+            "chat": false,
+            "domain": "prose",
+            "id": "upstream_f2_14",
+            "text": "A municipal archive contains council minutes, engineering drawings, tax rolls, and correspondence written under changing administrative rules. Dates may refer to filing, approval, or later transcription. The historian cross-checks handwriting, paper, and cited events before treating any claim as contemporaneous evidence. Audit the conclusion under a changed ordering and a new boundary example. Quantify both immediate rescue and next-layer amplification before deciding whether the candidate survives.",
+            "thinking": false
+          },
+          {
+            "chat": false,
+            "domain": "prose",
+            "id": "upstream_f2_15",
+            "text": "Ocean circulation redistributes heat, dissolved gases, nutrients, and salt. Surface winds initiate broad currents while temperature and salinity gradients drive deep overturning. Measurements from floats, satellites, and research vessels disagree slightly because they sample different scales and times. A careful summary must separate direct observations from model-dependent inference. Audit the conclusion under a changed ordering and a new boundary example. Quantify both immediate rescue and next-layer amplification before deciding whether the candidate survives.",
+            "thinking": false
+          }
+        ],
+        "segment_lengths": [
+          84,
+          89,
+          91,
+          94,
+          89,
+          88,
+          90,
+          78,
+          81,
+          86,
+          82,
+          87,
+          83,
+          86,
+          83,
+          92
+        ]
+      },
+      "tokens": 1383
+    }
+  },
+  "parent": {
+    "base_component_bytes": 4022298,
+    "complete_bpw": 0.9085909525553385,
+    "name": "P1_DUAL_PATH_RECOVERY_R16X2",
+    "payload_sha256": "3546c9b17f720d6d5197c8a8d1dae80e5994e053a808de708aef6bb5e97561bb",
+    "physical_bytes": 5001815
+  },
+  "reuse": {
+    "native_expert_evaluations": 2,
+    "parent_forwards": 0,
+    "router_evaluations": 2,
+    "serialized_base_payload_reused": true,
+    "teacher_captures": 0
+  },
+  "routing": {
+    "fit_sentinel_tokens": 36,
+    "score_sentinel_tokens": 36
+  },
+  "schema": "hawking.kimi_k26.gravity_nonlinear.v1.contextual_seam",
+  "seal_sha256": "4a65b94f5e95114fbb7b91b79fec14adde58f9005f62609abaa9c85ddb3f2916",
+  "sealed_at": "2026-07-21T19:09:08Z",
+  "source": {
+    "config_sha256": "85825ca6e18cbe539eb83ee09eedfb3f4222265929f06e9f535a6d9364f55899",
+    "index_sha256": "00a982d005d6e39b25cfcb379a7e6d57f393fc0346e70892ea4271c259c0d1e3",
+    "repo": "moonshotai/Kimi-K2.6",
+    "revision": "7eb5002f6aadc958aed6a9177b7ed26bb94011bb",
+    "shards_present": 64,
+    "snapshot": "/Users/scammermike/.cache/huggingface/hub/models--moonshotai--Kimi-K2.6/snapshots/7eb5002f6aadc958aed6a9177b7ed26bb94011bb"
+  },
+  "status": "PASS"
+}

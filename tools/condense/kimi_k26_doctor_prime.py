@@ -26,6 +26,13 @@ REVISION = "7eb5002f6aadc958aed6a9177b7ed26bb94011bb"
 REPO = "moonshotai/Kimi-K2.6"
 
 
+def disk_floor_bytes() -> int:
+    value = int(os.environ.get("KIMI_K26_DISK_FLOOR_BYTES", str(5 * 1024**3)))
+    if value != 5 * 1024**3:
+        raise RuntimeError("KIMI_K26_DISK_FLOOR_BYTES must equal exactly 5368709120")
+    return value
+
+
 def now() -> str:
     return dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
 
@@ -280,7 +287,7 @@ def doctor_auction(ledger_path: Path, causal_path: Path, output: Path) -> dict[s
         "active_logical_weights": int(ledger["active_text_core_logical_weights_per_token"]),
     }
     free_bytes = shutil.disk_usage(Path.home()).free
-    retained_floor_bytes = 82 * 1024**3
+    retained_floor_bytes = disk_floor_bytes()
     rows = []
     for candidate_id, target, base_share, doctor_share, envelope in CANDIDATES:
         total_bytes = (denominators["all_kimi_logical_weights"] * target.numerator //
@@ -309,8 +316,8 @@ def doctor_auction(ledger_path: Path, causal_path: Path, output: Path) -> dict[s
             },
             "complete_bpw_by_denominator": rates, "hard_rate_law_pass": legal,
             "artifact_status": "F0_BYTE_BUDGET_ONLY_NOT_PACKED",
-            "resident_fit_with_32_gib_floor":
-                total_bytes + retained_floor_bytes <= free_bytes,
+            "resident_fit_with_hard_floor":
+                total_bytes + retained_floor_bytes < free_bytes,
         })
     passed = all(row["hard_rate_law_pass"] for row in rows)
     artifact = seal({
@@ -331,7 +338,7 @@ def doctor_auction(ledger_path: Path, causal_path: Path, output: Path) -> dict[s
             "maximum_new_artifact_bytes_without_crossing_floor":
                 max(0, free_bytes - retained_floor_bytes),
             "full_candidate_fits_now": [
-                row["candidate"] for row in rows if row["resident_fit_with_32_gib_floor"]
+                row["candidate"] for row in rows if row["resident_fit_with_hard_floor"]
             ],
             "current_scope": "F1/F2 component artifacts only until a full candidate fits "
                              "without releasing the resident source or crossing the disk floor",

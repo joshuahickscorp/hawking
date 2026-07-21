@@ -47,4 +47,4 @@ def test_exact_byte_auction_never_crosses_candidate_rate(tmp_path: Path) -> None
         installed_bits = row["installed_byte_ceiling"] * 8
         assert installed_bits * target_denominator <= denominator * numerator
         assert sum(row["allocation_bytes"].values()) == row["installed_byte_ceiling"]
-        assert isinstance(row["resident_fit_with_32_gib_floor"], bool)
+        assert isinstance(row["resident_fit_with_hard_floor"], bool)

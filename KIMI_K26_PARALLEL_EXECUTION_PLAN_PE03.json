@@ -1,0 +1,67 @@
+{
+  "execution_id": "PE03_EXACT_RATE_LADDER_HOOKS_TESTS",
+  "lanes": [
+    {
+      "name": "m5_exact_rate_ladder",
+      "lane": "HEAVY_LANE",
+      "task": "M5_RATE_STRESS_LADDER",
+      "command": [
+        "/Library/Frameworks/Python.framework/Versions/3.12/bin/python3.12",
+        "tools/condense/kimi_k26_gravity_rate_ladder.py",
+        "ladder",
+        "--repo",
+        "/Users/scammermike/Downloads/hawking",
+        "--source",
+        "/Users/scammermike/.cache/huggingface/hub/models--moonshotai--Kimi-K2.6/snapshots/7eb5002f6aadc958aed6a9177b7ed26bb94011bb"
+      ],
+      "maximum_atomic_write_bytes": 4128768,
+      "logical_disk_read_bytes": 963024576,
+      "logical_disk_write_bytes": 8697937,
+      "contention_effect": "COMPARE_MPS_RATE_LADDER_WITH_SEAL_AND_POLICY_CPU_LANES"
+    },
+    {
+      "name": "oneoff_terminal_hooks",
+      "lane": "CPU_LIGHT_LANE",
+      "task": "M2_M3_M4_M6_PREREQUISITE_HOOKS",
+      "command": [
+        "/Library/Frameworks/Python.framework/Versions/3.12/bin/python3.12",
+        "tools/condense/kimi_k26_gravity_oneoffs.py",
+        "--repo",
+        "/Users/scammermike/Downloads/hawking",
+        "--stage",
+        "hooks",
+        "--tournament-artifact",
+        "/Users/scammermike/Downloads/hawking/KIMI_K26_GRAVITY_NONLINEAR_TOURNAMENT.json"
+      ],
+      "maximum_atomic_write_bytes": 1048576,
+      "logical_disk_read_bytes": 1048576,
+      "logical_disk_write_bytes": 1048576,
+      "contention_effect": "SMALL_JSON_SEAL_LANE"
+    },
+    {
+      "name": "policy_and_serialization_tests",
+      "lane": "CPU_LIGHT_LANE",
+      "task": "FLOOR_AND_PAYLOAD_REGRESSION",
+      "command": [
+        "/Library/Frameworks/Python.framework/Versions/3.12/bin/python3.12",
+        "-m",
+        "pytest",
+        "-q",
+        "tools/condense/tests/test_kimi_k26_campaign.py",
+        "tools/condense/tests/test_kimi_k26_doctor_prime.py",
+        "tools/condense/tests/test_kimi_k26_disk_policy.py"
+      ],
+      "maximum_atomic_write_bytes": 1048576,
+      "logical_disk_read_bytes": 2097152,
+      "logical_disk_write_bytes": 1048576,
+      "contention_effect": "SHORT_CPU_REGRESSION_CONTROL"
+    }
+  ],
+  "policy": {
+    "maximum_heavy_lanes": 1,
+    "memory_available_floor_bytes": 25769803776,
+    "maximum_swap_growth_bytes": 536870912,
+    "hard_disk_floor_bytes": 5368709120,
+    "backoff": "TERMINATE_CPU_LIGHT_LANES_FIRST"
+  }
+}

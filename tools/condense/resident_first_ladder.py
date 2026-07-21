@@ -3,7 +3,7 @@
 
 Storage law (declared by the campaign that commissioned this tool):
 
-    MIN_RESERVE       = max(32 GiB, 2 x largest official shard, 3% of the writable volume)
+    MIN_RESERVE       = 5 GiB
     WORKING_HEADROOM  = max(16 GiB, one largest shard, projected compact-checkpoint bytes)
 
     FULL_RESIDENT_COMFORTABLE : source + WORKING_HEADROOM + 80 GiB <= free
@@ -149,7 +149,7 @@ def resolve_config(repo: str) -> dict:
 
 def fit(source_bytes: int, largest_shard: int, total_params: float, free: int,
         volume: int) -> dict:
-    min_reserve = max(32 * GIB, 2 * largest_shard, int(0.03 * volume))
+    min_reserve = 5 * GIB
     # A complete artifact at the campaign's 1/1 BPW ceiling is one bit per original weight.
     compact_ckpt = int(total_params / 8) if total_params else 0
     working = max(16 * GIB, largest_shard, compact_ckpt)
@@ -239,7 +239,7 @@ def build(free_override: int | None, comment: str) -> dict:
         "generated_at": now(),
         "comment": comment,
         "law": {
-            "min_reserve": "max(32 GiB, 2 x largest shard, 3% of volume)",
+            "min_reserve": "5 GiB hard floor; per-write headroom is billed separately",
             "working_headroom": "max(16 GiB, largest shard, projected compact checkpoint)",
             "compact_checkpoint_projection": "total_params / 8 bytes, i.e. one complete bit per "
                                              "original weight - the campaign's 1/1 BPW ceiling",

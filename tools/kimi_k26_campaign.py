@@ -81,8 +81,14 @@ MOP = Path.home() / "Downloads/mop"
 CACHE_ROOT = Path.home() / ".cache/huggingface/hub"
 MODEL_CACHE = CACHE_ROOT / "models--moonshotai--Kimi-K2.6"
 SNAPSHOT = MODEL_CACHE / "snapshots" / REVISION
-MIN_RESERVE = 82 * 1024**3
-TARGET_RESERVE = 48 * 1024**3
+DEFAULT_DISK_FLOOR_BYTES = 5 * 1024**3
+CONFIGURED_DISK_FLOOR_BYTES = int(os.environ.get(
+    "KIMI_K26_DISK_FLOOR_BYTES", str(DEFAULT_DISK_FLOOR_BYTES),
+))
+if CONFIGURED_DISK_FLOOR_BYTES != DEFAULT_DISK_FLOOR_BYTES:
+    raise RuntimeError("KIMI_K26_DISK_FLOOR_BYTES must equal exactly 5368709120")
+MIN_RESERVE = DEFAULT_DISK_FLOOR_BYTES
+TARGET_RESERVE = MIN_RESERVE
 AVAILABLE_MEMORY_FLOOR = 12 * 1024**3
 SWAP_USED_CEILING = 16 * 1024**3
 TOKEN_SERVICE = "com.hawking.doctorv5.telegram.bot-token"
@@ -161,6 +167,16 @@ def log(message: str) -> None:
 
 def disk_free() -> int:
     return shutil.disk_usage(Path.home()).free
+
+
+def disk_floor_green(free_bytes: int) -> bool:
+    """The hard floor is strict: at or below it, write-heavy work is paused."""
+    return int(free_bytes) > MIN_RESERVE
+
+
+def can_start_atomic_write(free_bytes: int, required_bytes: int) -> bool:
+    """Admit one bounded atomic write only if its completion leaves the floor green."""
+    return disk_floor_green(int(free_bytes) - max(0, int(required_bytes)))
 
 
 def memory_snapshot() -> dict[str, int | None]:
@@ -477,7 +493,11 @@ def status_snapshot(state: dict[str, Any]) -> dict[str, Any]:
         "next_action": next_action_for(str(state.get("state"))),
         "last_telegram_delivery": read_json(NOTIFY_STATE, {}),
         "blocker": state.get("blocker"),
-        "resources": {"free_disk_bytes": disk_free(), **memory_snapshot(), **swap_snapshot()},
+        "resources": {"free_disk_bytes": disk_free(),
+                      "disk_floor_bytes": MIN_RESERVE,
+                      "disk_headroom_bytes": disk_free() - MIN_RESERVE,
+                      "disk_floor_green": disk_free() > MIN_RESERVE,
+                      **memory_snapshot(), **swap_snapshot()},
         "control": control_snapshot(state),
     }
 
@@ -499,6 +519,7 @@ def write_status(state: dict[str, Any]) -> None:
 - Download throughput/state: {throughput_text}
 - ETA: {snapshot.get('eta_text')}
 - Free disk: {snapshot['resources']['free_disk_bytes']/1024**3:.1f} GiB
+- Hard disk floor/headroom: {snapshot['resources']['disk_floor_bytes']/1024**3:.1f} / {snapshot['resources']['disk_headroom_bytes']/1024**3:.1f} GiB
 - Available memory estimate: {snapshot['resources'].get('available_bytes_estimate', 0)/1024**3:.1f} GiB
 - Swap used: {(snapshot['resources'].get('swap_used_bytes') or 0)/1024**3:.1f} GiB (16 GiB guard)
 - Current file/layer: `{snapshot.get('current_file') or snapshot.get('current_layer') or 'n/a'}`
@@ -579,13 +600,13 @@ def storage_gate(state: dict[str, Any]) -> dict[str, Any]:
     free = disk_free()
     present_bytes = progress(manifest, state)["bytes_done"]
     remaining = manifest["total_bytes"] - present_bytes
-    reserve = max(MIN_RESERVE, 2 * manifest["largest_shard"])
+    reserve = MIN_RESERVE
     projected = free - remaining
     state["storage_gate"] = {"free_bytes": free, "present_source_bytes": present_bytes,
                              "remaining_source_bytes": remaining, "reserve_bytes": reserve,
                              "target_reserve_bytes": TARGET_RESERVE,
                              "projected_post_download_free_bytes": projected}
-    if projected < reserve:
+    if not disk_floor_green(projected):
         state["blocker"] = f"BLOCKED_RESIDENT_SHORTFALL: {reserve - projected} bytes"
         state["status"] = "BLOCKED"
         return transition(state, "BLOCKED", state["blocker"])
@@ -643,10 +664,10 @@ def download_one(state: dict[str, Any]) -> dict[str, Any]:
         return state
     state["status"] = "RUNNING"
     missing = [item for item in manifest["files"] if not file_present(item)]
-    reserve = max(MIN_RESERVE, 2 * manifest["largest_shard"])
+    reserve = MIN_RESERVE
     remaining_allocation = sum(max(0, int(item["size"]) - incomplete_allocated(item))
                                for item in missing)
-    if disk_free() - remaining_allocation < reserve:
+    if not can_start_atomic_write(disk_free(), remaining_allocation):
         state["blocker"] = (f"disk-floor guard: the remaining official snapshot would leave less "
                             f"than {reserve} bytes")
         state["source_state"] = "KIMI_DOWNLOAD_BLOCKED"
@@ -810,8 +831,8 @@ def verify_source(state: dict[str, Any]) -> dict[str, Any]:
                          "complete_views": complete_views,
                          "distinct_physical_inode_sets": len(physical_fingerprints)})
     verification = seal({"schema": "hawking.kimi_k26.source_verification.v1",
-                         "status": "PASS" if not failures and disk_free() >= max(
-                             MIN_RESERVE, 2 * manifest["largest_shard"]) else "FAIL",
+                         "status": "PASS" if not failures and
+                         disk_floor_green(disk_free()) else "FAIL",
                          "verified_at": now(), "repo": REPO_ID, "revision": REVISION,
                          "source_root": str(MODEL_CACHE), "snapshot": str(SNAPSHOT),
                          "file_count": manifest["file_count"], "weight_shards": len(official_shards),
@@ -819,8 +840,7 @@ def verify_source(state: dict[str, Any]) -> dict[str, Any]:
                          (index.get("metadata") or {}).get("total_size"),
                          "index_tensor_count": len(index.get("weight_map", {})),
                          "failures": failures, "post_download_free_bytes": disk_free(),
-                         "reserve_green": disk_free() >= max(MIN_RESERVE,
-                                                              2 * manifest["largest_shard"])})
+                         "reserve_green": disk_floor_green(disk_free())})
     atomic_json(VERIFICATION, verification)
     one_copy = seal({"schema": "hawking.kimi_k26.one_copy.v1", "verified_at": now(),
                      "status": "PASS" if len(physical_fingerprints) == 1 and
@@ -1158,7 +1178,7 @@ def managed_stage(state: dict[str, Any], command: list[str], log_name: str,
             elif int(swap.get("swap_used_bytes") or 0) > SWAP_USED_CEILING:
                 reason = "swap ceiling crossed; child stopped at resumable checkpoint"
                 state["status"] = "RESOURCE_GUARD_PAUSED"
-            elif disk_free() < MIN_RESERVE:
+            elif not disk_floor_green(disk_free()):
                 reason = "disk reserve crossed; child stopped at resumable checkpoint"
                 state["status"] = "RESOURCE_GUARD_PAUSED"
             if reason:
@@ -1389,6 +1409,16 @@ def run_loop() -> int:
     signal.signal(signal.SIGINT, request_stop)
     try:
         state = load_state()
+        state["disk_policy"] = {
+            "schema": "hawking.kimi_k26.disk_policy.v1",
+            "hard_floor_bytes": MIN_RESERVE,
+            "comparison": "free_disk_bytes > hard_floor_bytes",
+            "source": "KIMI_K26_DISK_FLOOR_BYTES with 5 GiB default",
+        }
+        if isinstance(state.get("storage_gate"), dict):
+            state["storage_gate"]["reserve_bytes"] = MIN_RESERVE
+            state["storage_gate"]["target_reserve_bytes"] = MIN_RESERVE
+        save_state(state)
         if state.get("status") == "STOPPED_PRESERVED":
             state["status"] = "RUNNING"
             atomic_json(CONTROL, {"pause_after_checkpoint": False, "stop_requested": False})
@@ -1472,7 +1502,8 @@ def install(repo_root: Path) -> None:
         "StandardOutPath": str(RUNTIME / "launchd.out.log"),
         "StandardErrorPath": str(RUNTIME / "launchd.err.log"),
         "EnvironmentVariables": {"PYTHONUNBUFFERED": "1", "HF_HUB_DISABLE_XET": "0",
-                                 "HF_XET_HIGH_PERFORMANCE": "1"},
+                                 "HF_XET_HIGH_PERFORMANCE": "1",
+                                 "KIMI_K26_DISK_FLOOR_BYTES": str(MIN_RESERVE)},
     }
     PLIST.parent.mkdir(parents=True, exist_ok=True)
     temporary = PLIST.with_suffix(".plist.tmp")
