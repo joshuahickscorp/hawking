@@ -1093,23 +1093,25 @@ def managed_stage(state: dict[str, Any], command: list[str], log_name: str,
                         f"{int(active.get('layer', -1)) + 1}/{active.get('layers_total', 61)}"
                     )
                     probe_id = str(active.get("probe"))
-                    if probe_id.startswith("batch_replay"):
-                        pass_index, total_passes = 1, 2
+                    layer_unit = int(active.get("layer", -1)) + 1
+                    if probe_id.startswith("determinism_a"):
+                        complete_units, total_units = 61 + 0.2 * layer_unit, 61 * 1.4
+                    elif probe_id.startswith("determinism_b"):
+                        complete_units, total_units = 61 * 1.2 + 0.2 * layer_unit, 61 * 1.4
                     elif probe_id.startswith("batch_"):
-                        pass_index, total_passes = 0, 2
+                        complete_units, total_units = layer_unit, 61 * 1.4
                     else:
                         probes = ["factual", "science", "coding", "mathematics", "reasoning",
                                   "instruction", "tool_thinking_protocol", "rare_token",
                                   "mathematics_replay"]
                         pass_index = probes.index(probe_id) if probe_id in probes else 0
-                        total_passes = len(probes)
-                    complete_units = pass_index * 61 + int(active.get("layer", -1)) + 1
-                    total_units = total_passes * 61
+                        complete_units = pass_index * 61 + layer_unit
+                        total_units = len(probes) * 61
                     epoch = float(state.setdefault("reference_epoch", time.time()))
                     elapsed = max(0.001, time.time() - epoch)
                     rate = complete_units / elapsed
                     state["stage_progress_text"] = (
-                        f"reference {complete_units}/{total_units} layer-probe units; "
+                        f"reference {complete_units:.1f}/{total_units:.1f} weighted layer units; "
                         f"source 64/64 shards"
                     )
                     state["stage_eta_seconds"] = ((total_units - complete_units) / rate
