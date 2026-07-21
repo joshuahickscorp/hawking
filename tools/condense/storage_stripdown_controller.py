@@ -354,10 +354,18 @@ def t_clean_worktrees(st: dict) -> dict:
             results.append({**wt, "action": "refused",
                             "reason": f"{len(dirty['out'].splitlines())} dirty files"})
             continue
-        # Preserve unique commits before removing anything.
+        # Preserve unique commits before removing anything. "Unique" means unreachable from
+        # anything pushed - a branch level with its OWN upstream is already preserved and does
+        # not need an archive branch, even though it has commits origin/main lacks.
         uniq = run(["git", "rev-list", "--count", "origin/main..HEAD"], cwd=p)
         n_unique = int(uniq["out"].strip() or 0)
-        preserved = None
+        up = run(["git", "rev-parse", "--abbrev-ref", "@{u}"], cwd=p)
+        upstream = up["out"].strip() if up["rc"] == 0 else ""
+        if upstream:
+            ahead = run(["git", "rev-list", "--count", f"{upstream}..HEAD"], cwd=p)
+            if ahead["rc"] == 0 and int(ahead["out"].strip() or 0) == 0:
+                n_unique = 0  # every commit is on the remote already
+        preserved = {"already_pushed_to": upstream} if upstream and not n_unique else None
         if n_unique:
             br = wt.get("archive_branch")
             if not br:

@@ -1,0 +1,40 @@
+{
+  "amended_at": "2026-07-21T02:53:41Z",
+  "generated_at": "2026-07-21T02:53:03Z",
+  "kept": [
+    "/Users/scammermike/Downloads/hawking",
+    "/Users/scammermike/HawkingWorktrees/subbit-reset",
+    "/Users/scammermike/Downloads/hawking-hide-build"
+  ],
+  "results": [
+    {
+      "action": "removed",
+      "note": "the first pass refused this because it counted commits against origin/main only. HEAD is contained in its own pushed upstream, which is preservation; the rule now checks upstream before demanding an archive branch.",
+      "path": "/Users/scammermike/Downloads/hawking-hide-parity-research",
+      "preserved": {
+        "ahead_of_upstream": 0,
+        "already_pushed_to": "origin/research/hide-claude-parity-2026-07-19",
+        "dirty_files": 0
+      },
+      "reason": null,
+      "rule": "clean and level with its own pushed upstream"
+    },
+    {
+      "action": "removed",
+      "archive_branch": "archive/deep-architecture-foundry-2026-07-20",
+      "err": "",
+      "path": "/Users/scammermike/HawkingWorktrees/deep-architecture-foundry",
+      "preserved": {
+        "archive_branch": "archive/deep-architecture-foundry-2026-07-20",
+        "bundle": "/Users/scammermike/Downloads/hawking/reports/condense/storage_stripdown/worktree_archive_deep-architecture-foundry.bundle",
+        "bundle_verify_rc": 0,
+        "push_rc": 0,
+        "unique_commits": 3
+      },
+      "rc": 0,
+      "rule": "clean; its unique commits must be pushed to an archive branch first"
+    }
+  ],
+  "schema": "hawking.storage_stripdown.worktree_cleanup.v1",
+  "worktrees_after": "/Users/scammermike/Downloads/hawking                      513cc95c [campaign/storage-stripdown-resident-first]\n/Users/scammermike/Downloads/hawking-hide-build           4fbca8bc [build/hide-impl-2026-07-19]\n/Users/scammermike/Downloads/hawking-hide-parity-research 454b3013 [research/hide-claude-parity-2026-07-19]\n/Users/scammermike/HawkingWorktrees/subbit-reset          c2019114 [campaign/subbit-capability-density-reset]\n"
+}

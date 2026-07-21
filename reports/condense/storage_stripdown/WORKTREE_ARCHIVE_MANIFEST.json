@@ -1,0 +1,18 @@
+{
+  "archives": [
+    {
+      "archive_branch": "archive/deep-architecture-foundry-2026-07-20",
+      "bundle": "/Users/scammermike/Downloads/hawking/reports/condense/storage_stripdown/worktree_archive_deep-architecture-foundry.bundle",
+      "bundle_verify_rc": 0,
+      "push_rc": 0,
+      "unique_commits": 3
+    },
+    {
+      "already_pushed_to": "origin/research/hide-claude-parity-2026-07-19",
+      "unique_commits": 0,
+      "worktree": "hawking-hide-parity-research"
+    }
+  ],
+  "generated_at": "2026-07-21T02:53:03Z",
+  "schema": "hawking.storage_stripdown.worktree_archive.v1"
+}
