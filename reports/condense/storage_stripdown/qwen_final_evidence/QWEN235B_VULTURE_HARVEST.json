@@ -1,0 +1,222 @@
+{
+ "schema": "qwen235b_vulture_harvest/v1",
+ "purpose": "Two monotonic gains the NEXT parent inherits without re-earning them: (A) BPW potency, (B) decision speed. Everything here is a measured campaign artifact or an explicitly labelled prediction. Nothing here is a capability claim.",
+ "parent": {
+  "model": "Qwen3-235B-A22B",
+  "arch": "qwen3moe",
+  "n_layers": 94,
+  "n_experts_per_layer": 128,
+  "top_k": 8,
+  "original_weight_count": 235093634560,
+  "source_bytes_gib": 438
+ },
+ "A_bpw_potency": {
+  "lowest_legal_bpw_tested": {
+   "arm_id": "S128_g0.625_d0.15625",
+   "complete_bpw": 0.498895437,
+   "complete_bpw_exact": "458152897/918334510",
+   "legal_under_one_bit_ceiling": true,
+   "source": "reports/subbit_reset/S_STRUCTURAL_PLAN.json",
+   "status": "LEGAL, PACKED, NEVER CAPABILITY-PASSED"
+  },
+  "richest_legal_arm_for_this_inventory": {
+   "arm_id": "S128_g1.25_d0.3125",
+   "complete_bpw": 0.951385404,
+   "complete_bpw_exact": "873690049/918334510",
+   "note": "the most rate the 1.0 ceiling buys at keep-128; everything richer (S128_g1.25_d0.625 at 1.051903792) is ILLEGAL and was never run"
+  },
+  "lowest_FUNCTIONAL_bpw": {
+   "value": null,
+   "verdict": "NO FUNCTIONAL RATE EXISTS ON THIS PARENT AT OR BELOW 1.0 COMPLETE BPW",
+   "evidence": [
+    "S1 full forward, 94 layers, 6 frozen holdout prompts, cached parent logits: S64_structural 0.948410027 BPW symKL 8.599 argmax 0.0735 cos 0.434 top5 0.080",
+    "S64_doctor 0.999769787 BPW symKL 7.699 argmax 0.0922 cos 0.468 top5 0.143",
+    "gate wants symKL <= 0.10 and argmax >= 0.95: COLLAPSE 12/12",
+    "earlier fixed-weight PQ/VQ family: argmax EXACTLY 0.0 at 1.0075 and at 0.4930 BPW"
+   ],
+   "inheritance": "the next parent must NOT assume a functional sub-1.0 rate exists; it must PROVE one at F1 before any budget is spent past F1"
+  },
+  "best_organ_allocation": {
+   "rule": "buy gate_proj and up_proj at 4x the index rate of down_proj",
+   "shipped_split": {
+    "gate_up_index_bpw": 1.25,
+    "down_index_bpw": 0.3125
+   },
+   "rung": {
+    "dim": 8,
+    "k": 1024,
+    "stages": 2,
+    "complete_bits_per_gate_or_up_tensor": 15733264
+   },
+   "why": "at equal complete bits the gamma-anisotropic organs (gate_proj, up_proj - both read the post-attention-LayerNorm output) convert bits into output-error reduction faster than down_proj, whose input is the SwiGLU intermediate",
+   "per_cell_codec_mode": {
+    "free_structural_rule": "gvq for gate_proj and up_proj, vq for down_proj",
+    "measured_exceptions": "2 of 27 measured cells move off the free rule, BOTH at layer 0 (gate_proj and up_proj -> kronecker, concentration 0.999497, up_proj output 0.014315 vs gvq 0.081316)",
+    "portfolio_margin_vs_free_rule_pct": 1.3514,
+    "portfolio_margin_vs_equal_bits_universal_vq_pct": 4.0496,
+    "inheritance": "do NOT ship a 2-bit per-cell mode field. Ship the free structural rule plus a hardcoded layer-0 kronecker exception, and re-test that exception on the new parent's layer 0 only."
+   },
+   "source": "reports/subbit_reset/S3D_CODEC_PORTFOLIO.json, reports/subbit_reset/S3D_UP_PROJ_PATCH.json"
+  },
+  "adaptive_k_distribution": {
+   "method": "exact byte auction over the 1.0 complete-BPW ceiling (qwen_adaptive_k)",
+   "K_min": 48,
+   "K_max": 96,
+   "K_mean": 65.4,
+   "layers_buying_a_richer_down_rung_than_uniform_64": 84,
+   "n_layers": 94,
+   "complete_bpw_at_auction": 0.996853694,
+   "predicted_mean_layer_error": 0.46213,
+   "uniform_64_predicted_mean_layer_error": 0.521819,
+   "status": "PREDICTED under the packer's own predictor, NOT forward-measured",
+   "inheritance": "the auction MECHANISM transfers (spend the ceiling where the predictor says marginal error per bit is steepest); the K numbers themselves are Qwen-topology-bound and must be re-auctioned per parent"
+  },
+  "routing_coverage": {
+   "corpus": "1313-token disjoint corpus",
+   "keep_64_of_128_retention": 0.792,
+   "keep_32_of_128_retention": 0.523,
+   "withdrawn_figure": "the 92.2 pct keep-64 retention from the 88-token calibration is WITHDRAWN - it was collected ON the scored prompts",
+   "calibration_trust": "1313 tokens is NOT trustworthy for per-expert allocation: only 81.0 pct of hot/cold assignments survive resampling at 95 pct and 2.1 pct of experts are never routed; a stable median partition needs ~7448 tokens",
+   "inheritance": "budget >= 7448 calibration tokens BEFORE any per-expert allocation, or use routing only as a coarse quartile aggregate"
+  },
+  "doctor_recovery_per_bit": {
+   "only_capability_fidelity_doctor_measurement_in_the_campaign": true,
+   "treatment": "sparse_residual_doctor_gen1",
+   "delta_complete_bpw": 0.0513,
+   "sym_kl": [
+    8.599,
+    7.699
+   ],
+   "sym_kl_reduction_pct": 10.5,
+   "argmax": [
+    0.0735,
+    0.0922
+   ],
+   "cosine": [
+    0.434,
+    0.468
+   ],
+   "top5": [
+    0.08,
+    0.143
+   ],
+   "recovery_per_0.01_complete_bpw_pct_symkl": 2.05,
+   "mechanism_CORRECTED": "the ROW SELECTOR is not the mechanism - random rows recover 96-99 pct of the gain; the SECOND CODEBOOK STAGE earns the bytes",
+   "inheritance": "transfer the second-stage capacity, NOT the selector heuristic; and note that 10.5 pct off 8.599 is still 77x the 0.10 gate - Doctor at this potency cannot close a collapse, only decorate one"
+  },
+  "dead_representations": [
+   {
+    "id": "expert_merge",
+    "evidence": "best single survivor median held-out rel err 0.885/0.993/0.995 at L0/L3/L7; 4-survivor LS 0.863/0.988/0.995; ~1.0 is the trivial zero predictor",
+    "reopen": "best-single-survivor held-out rel err <= 0.5"
+   },
+   {
+    "id": "router_distill",
+    "evidence": "masked 0.0784 beats bias 0.0993, low-rank r8 0.1176, full survivor-row retune 0.0927; the KL term is provably INERT (softmax restricted to survivors IS the renormalized teacher)",
+    "reopen": "large survivor-restricted oracle gap AND a student that generalizes to held-out ids"
+   },
+   {
+    "id": "expert_templates_and_cross_layer_tying",
+    "evidence": "row-normalized mean off-diagonal expert cosine 0.00168 (raw 0.00166) - orthogonal in both spaces; cross-layer same-index tying indistinguishable from a different-index control at 1e-7",
+    "reopen": "row-normalized mean off-diagonal expert cosine >= 0.10"
+   },
+   {
+    "id": "low_rank_residual_as_default",
+    "evidence": "quantization error is HIGH rank; top-64 SVD captures 3-9 pct of energy; rank-64 healed TQ3 0.114 -> 0.104 for 4.6 bpw",
+    "reopen": "residual MEASURED low rank on the parent in question"
+   },
+   {
+    "id": "entropy_coding_of_lloyd_indices",
+    "evidence": "Lloyd index distribution is close to uniform by construction; the coder returns less than its own table costs",
+    "reopen": "none"
+   },
+   {
+    "id": "fixed_weight_PQ_VQ_family",
+    "evidence": "argmax EXACTLY 0.0 at both 1.0075 and 0.4930 BPW; 7 ladder rungs RETIRED (not deleted)",
+    "reopen": "none on this parent"
+   },
+   {
+    "id": "layerwise_QAT_as_a_free_win",
+    "evidence": "under a genuinely disjoint probe (capture 0.058-0.099) mean gain -1.92 pct over 13 low-capture expert-cells, 1 of 13 positive; the sealed +11.4 pct reproduces only on the ORIGINAL position-level split (capture 1.000/0.991/0.422). Root cause: the corpus repeats 12 segments so 1313 positions carry 540 UNIQUE ids and layer-0 MoE input is a pure function of the id - the same embedding row was in both halves",
+    "reopen": "a corpus with enough unique ids to give a large fit span AND capture <= 0.1"
+   }
+  ],
+  "structural_finding_that_outranks_all_rate_work": {
+   "classification": "RECONSTRUCTION_BOUND",
+   "D1_route_only": {
+    "sym_kl": 4.297,
+    "argmax": 0.385,
+    "setup": "perfect bf16 experts, router masked to the same 64"
+   },
+   "D2_recon_only": {
+    "sym_kl": 7.879,
+    "argmax": 0.0863,
+    "setup": "full 128 router, experts packed at survivor rate"
+   },
+   "share_of_loss": {
+    "reconstruction_pct": 91.6,
+    "routing_pct": 50.0,
+    "additivity": "SUB-additive, parts 12.18 vs whole 8.60"
+   },
+   "both_arms_are_fenced_diagnostic_controls_never_promotable": true,
+   "inheritance": "TEST REPRESENTATION QUALITY BEFORE SPENDING ANYTHING ON ROUTING POLICY"
+  }
+ },
+ "B_decision_speed": {
+  "measured_costs_this_campaign": {
+   "pack_seconds_per_layer_per_packing_variant": [
+    51,
+    70
+   ],
+   "observed_seconds_per_layer_under_contention": [
+    28,
+    57
+   ],
+   "layers_per_full_forward": 94,
+   "source_gib": 438,
+   "parent_logits": "cached once, reused across EVERY pass - the single largest saving in the campaign; a parent forward is never re-run to score a candidate",
+   "loop_order": "expert-OUTER / candidate-INNER: each expert tensor is read from disk once and every candidate scores against it before it is freed",
+   "spec_memoization_saving_pct": 33,
+   "spec_memoization_mechanism": "identical (family, dim, k, stages) specs recur across candidates; memoizing the packed result across the candidate-inner loop removed 33 pct of pack work",
+   "dead_method_time_avoided": {
+    "legacy_rungs_retired_unrun": 7,
+    "hours_saved_estimate": 7,
+    "label": "ESTIMATE from per-rung pack cost, not a stopwatch"
+   }
+  },
+  "derived_planning_numbers": {
+   "label": "DERIVED ESTIMATES from the measured per-layer costs above, not separately timed",
+   "one_full_94_layer_forward_minutes": [
+    44,
+    89
+   ],
+   "one_full_94_layer_pack_variant_minutes": [
+    80,
+    110
+   ],
+   "cost_of_a_6_candidate_full_fidelity_tournament_hours": [
+    8,
+    11
+   ],
+   "implication": "full fidelity is ~1.5 h per candidate. A 6-candidate tournament is affordable ONLY because F0-F4 kill most candidates before they reach it."
+  },
+  "process_levers_that_transfer": [
+   "cache parent logits once per (prompt set, parent) and never recompute",
+   "expert-outer / candidate-inner tensor loop; <= 4 expert tensors resident, freed eagerly",
+   "memoize packed results by exact spec across candidates (33 pct measured)",
+   "retire a rung UNRUN when its mechanism is already sealed dead - 7 rungs, ~7 h",
+   "exact Fraction bit accounting at PROPOSAL time, so no illegal candidate is ever packed",
+   "adversarial re-score of every positive result BEFORE it is inherited - 4 of this campaign's headline claims were corrected or withdrawn by that pass"
+  ],
+  "process_failures_that_cost_time": [
+   "fit/score splits asserted rather than proven disjoint: S3A and S2C both produced headline gains that a disjointness audit erased. Cost: two full sub-campaigns.",
+   "a green self-check over a dead code path: S3D's self-check asserted fixed_rule_mode('up_proj') == 'gvq' and passed while RUNGS had no 'up_proj' key, so measure_cell raised KeyError and 0 of 18 cells were up_proj - 6016 of 18048 coded expert tensors went unmeasured. ALWAYS make the self-check call the shipping path.",
+   "weight-space proxies scored for months before the first real forward; the forward then collapsed 12/12. Buy the cheapest real forward FIRST."
+  ]
+ },
+ "honesty": [
+  "Weight-space and activation-proxy error are NOT capability. The only capability-fidelity measurements in this campaign are the S1 full forward and the D1/D2 controls, and all of them are collapses.",
+  "Every gain in section A is either (i) forward-measured and still short of the gate, (ii) predicted under a packer's own predictor, or (iii) a proxy on a calibration batch. Each is labelled inline.",
+  "The section B derived numbers are arithmetic on measured per-layer costs, not stopwatch measurements of whole runs."
+ ]
+}

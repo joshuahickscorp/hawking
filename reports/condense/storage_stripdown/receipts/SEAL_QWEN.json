@@ -1,0 +1,21 @@
+{
+  "branch": "campaign/subbit-capability-density-reset",
+  "capability_passes": [],
+  "evidence_copied": [
+    "QWEN_GRAVITY_STATE.json",
+    "qwen_gravity.heartbeat.json",
+    "QWEN235B_VULTURE_HARVEST.json",
+    "NEXT_PARENT_LAUNCH_PACKET.json"
+  ],
+  "evidence_dir": "/Users/scammermike/Downloads/hawking/reports/condense/storage_stripdown/qwen_final_evidence",
+  "final": true,
+  "push_rc": 0,
+  "push_tag_rc": 0,
+  "qwen_state_status": "SEALED",
+  "receipt": "SEAL_QWEN",
+  "rows_done": 42,
+  "rows_total": 6,
+  "sealed_at": "2026-07-21T02:44:27Z",
+  "subbit_unsolved": true,
+  "tag": "qwen3-235b-sealed-20260721"
+}

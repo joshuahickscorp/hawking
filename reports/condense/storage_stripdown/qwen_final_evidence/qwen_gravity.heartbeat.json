@@ -1,0 +1,25 @@
+{
+  "available_ram_gb": 18.9,
+  "beat_at": "2026-07-21T02:40:02Z",
+  "campaign": "qwen_gravity",
+  "expert_cache": {
+    "cache_gb": 63.98,
+    "disk_reserve_gb": 30.0,
+    "entries": 910,
+    "evictions": 2900,
+    "floor_gb": 12.0,
+    "max_gb": 64.0,
+    "name": "qwen_gravity_experts",
+    "peak_entries": 911
+  },
+  "free_disk_gb": 123.1,
+  "label": "com.hawking.qwen_gravity",
+  "layer": 94,
+  "layers_total": 94,
+  "phase": "lm_head",
+  "pid": 92568,
+  "rows_done": 0,
+  "rows_total": 6,
+  "schema": "hawking.successor.watchdog.v1",
+  "status": "RUNNING"
+}
