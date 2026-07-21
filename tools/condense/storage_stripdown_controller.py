@@ -64,9 +64,13 @@ KEEP_WORKTREES = [str(ROOT), str(QWEN_WT), str(Path.home() / "Downloads/hawking-
 # The Hugging Face hub cache is NOT here on purpose: MOP pulls facebook/vjepa2-* (7.5 GiB)
 # through it, so it is a MOP build product and this campaign may not clean it. It is also a
 # hard-protected root in storage_stripdown.PROTECTED_ROOTS, so the gate would refuse it anyway.
-CACHE_TARGETS = [
-    Path.home() / ".cache/codex-runtimes",
-]
+#
+# ~/.cache/codex-runtimes is NOT here either, and it should not have been: it is another tool's
+# environment cache, which the campaign's own rules put on the report-only list, not the
+# auto-clean list. It was cleaned once (28,369 files, 1.51 GiB) before that was caught. The
+# deletion was allowed to finish rather than be interrupted, because a half-removed runtime tree
+# does not self-heal while a fully absent one re-downloads on next use. Not repeated.
+CACHE_TARGETS: list[Path] = []
 
 GIB = 1 << 30
 TICK_SECONDS = 120
