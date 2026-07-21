@@ -67,12 +67,14 @@ CAUSAL_ATLAS = RUNTIME / "KIMI_K26_CAUSAL_ATLAS.json"
 BYTE_AUCTION = RUNTIME / "KIMI_K26_DOCTOR_BYTE_AUCTION.json"
 TOURNAMENT = RUNTIME / "KIMI_K26_TOURNAMENT.json"
 FIRST_CHECKPOINT = RUNTIME / "KIMI_K26_FIRST_CHECKPOINT.json"
+NEXT_EXPERIMENT = RUNTIME / "KIMI_K26_NEXT_EXPERIMENT.json"
 REFERENCE_RUN = RUNTIME / "reference_run"
 PHONE_JSON = RUNTIME / "KIMI_PHONE_STATUS.json"
 PHONE_MD = RUNTIME / "KIMI_PHONE_STATUS.md"
 LOG = RUNTIME / "kimi_k26_campaign.log"
 CREDS = RUNTIME / ".telegram_creds.json"
 NOTIFY_STATE = RUNTIME / "telegram_delivery.json"
+TELEGRAM_OUTBOX = RUNTIME / "telegram_outbox.json"
 PLIST = Path.home() / f"Library/LaunchAgents/{LABEL}.plist"
 HF = Path("/Library/Frameworks/Python.framework/Versions/3.12/bin/hf")
 PYTHON = Path("/Library/Frameworks/Python.framework/Versions/3.12/bin/python3.12")
@@ -324,6 +326,19 @@ def telegram(message: str) -> bool:
         return False
 
 
+def flush_telegram_outbox() -> None:
+    pending = read_json(TELEGRAM_OUTBOX, [])
+    if not isinstance(pending, list) or not pending:
+        return
+    record = pending[0]
+    if telegram(str(record.get("message", ""))):
+        atomic_json(NOTIFY_STATE, {
+            "checkpoint_id": record.get("checkpoint_id"),
+            "seal_sha256": record.get("seal_sha256"), "delivered_at": now(),
+        })
+        atomic_json(TELEGRAM_OUTBOX, pending[1:])
+
+
 def checkpoint(state: dict[str, Any], checkpoint_id: str, detail: str = "") -> None:
     snapshot = status_snapshot(state)
     record = seal({"checkpoint_id": checkpoint_id, "sealed_at": now(), "detail": detail,
@@ -334,17 +349,28 @@ def checkpoint(state: dict[str, Any], checkpoint_id: str, detail: str = "") -> N
     delivery = read_json(NOTIFY_STATE, {})
     delivered = delivery.get("seal_sha256") == record["seal_sha256"]
     if not delivered:
-        msg = (f"[Kimi K2.6] {checkpoint_id}\nstate: {record['state']}\n"
-               f"progress: {snapshot.get('progress_text')}\n"
-               f"ETA: {snapshot.get('eta_text')}\n"
-               f"free disk: {snapshot['resources']['free_disk_bytes']/1024**3:.1f} GiB\n"
+        runtime_seconds = max(0, int(time.time() - dt.datetime.fromisoformat(
+            state.get("started_at", now()).replace("Z", "+00:00")).timestamp()))
+        msg = (f"[Kimi K2.6] {checkpoint_id}\nstate/status: {record['state']} / "
+               f"{state.get('status')}\nstage/candidate: {state.get('current_layer') or '-'} / "
+               f"{snapshot.get('best_candidate') or '-'}\nprogress: {snapshot.get('progress_text')}\n"
+               f"complete BPW: {snapshot.get('complete_bpw')}\n"
+               f"metrics: {json.dumps(snapshot.get('primary_metrics'), sort_keys=True)[:500]}\n"
+               f"runtime: {runtime_seconds}s\nETA: {snapshot.get('eta_text')}\n"
+               f"free RAM/disk: {snapshot['resources'].get('available_bytes_estimate', 0)/1024**3:.1f} / "
+               f"{snapshot['resources']['free_disk_bytes']/1024**3:.1f} GiB\n"
                f"PID: {os.getpid()}\nnext: {snapshot.get('next_action')}\n"
-               f"seal: {record['seal_sha256'][:16]}")
-        if telegram(msg):
-            atomic_json(NOTIFY_STATE, {"checkpoint_id": checkpoint_id,
-                                       "seal_sha256": record["seal_sha256"],
-                                       "delivered_at": now()})
-            delivered = True
+               f"checkpoint identity: {checkpoint_id} + {record['seal_sha256']}")
+        pending = read_json(TELEGRAM_OUTBOX, [])
+        if not isinstance(pending, list):
+            pending = []
+        if not any(item.get("seal_sha256") == record["seal_sha256"] for item in pending):
+            pending.append({"checkpoint_id": checkpoint_id,
+                            "seal_sha256": record["seal_sha256"], "message": msg,
+                            "queued_at": now()})
+            atomic_json(TELEGRAM_OUTBOX, pending)
+        flush_telegram_outbox()
+        delivered = read_json(NOTIFY_STATE, {}).get("seal_sha256") == record["seal_sha256"]
     state["last_checkpoint"] = record
     state["last_telegram_delivery"] = read_json(NOTIFY_STATE, {}) if delivered else delivery
     state["sealed_checkpoints"] = int(state.get("sealed_checkpoints", 0)) + 1
@@ -405,11 +431,15 @@ def status_snapshot(state: dict[str, Any]) -> dict[str, Any]:
             hb["beat_at"].replace("Z", "+00:00")).timestamp())
     except (KeyError, ValueError):
         pass
-    eta = prog.get("eta_seconds")
+    eta = state.get("stage_eta_seconds")
+    if eta is None:
+        eta = prog.get("eta_seconds")
     eta_text = "computing" if eta is None else (
         "done" if eta <= 0 else f"{int(eta // 3600)}h {int((eta % 3600) // 60)}m")
-    progress_text = (f"{prog.get('shards_done', 0)}/{prog.get('shards_total', 64)} shards; "
-                     f"{prog.get('bytes_done', 0)/1e9:.2f}/{prog.get('bytes_total', 0)/1e9:.2f} GB")
+    progress_text = state.get("stage_progress_text") or (
+        f"{prog.get('shards_done', 0)}/{prog.get('shards_total', 64)} shards; "
+        f"{prog.get('bytes_done', 0)/1e9:.2f}/{prog.get('bytes_total', 0)/1e9:.2f} GB"
+    )
     return {
         "schema": "hawking.kimi_phone_status.v1", "generated_at": now(),
         "state": state.get("state"), "status": state.get("status"), "pid": hb.get("pid"),
@@ -466,6 +496,7 @@ python3 tools/kimi_k26_campaign.py stop
 
 
 def heartbeat(state: dict[str, Any]) -> None:
+    flush_telegram_outbox()
     snapshot = status_snapshot(state)
     atomic_json(HEARTBEAT, {"schema": "hawking.kimi_k26.heartbeat.v1", "beat_at": now(),
                             "pid": os.getpid(), "process_group": os.getpgrp(),
@@ -615,7 +646,26 @@ def download_one(state: dict[str, Any]) -> dict[str, Any]:
             process = subprocess.Popen(command, stdout=output, stderr=output, env=env,
                                        start_new_session=False)
             while process.poll() is None:
+                state = control_flags(state)
+                if state.get("stop_requested") or state.get("pause_after_checkpoint"):
+                    terminate_child(process)
+                    if state.get("stop_requested"):
+                        state["status"] = "STOPPED_PRESERVED"
+                        detail = "Xet resumable partials and all sealed files preserved"
+                        checkpoint_id = "controller:stopped"
+                    else:
+                        state["status"] = "PAUSED_AFTER_CHECKPOINT"
+                        detail = "paused at latest landed-file checkpoint; Xet partials preserved"
+                        checkpoint_id = "controller:paused"
+                    save_state(state)
+                    checkpoint(state, checkpoint_id, detail)
+                    return state
                 prog = progress(manifest, state)
+                live_missing = int(prog["files_total"]) - int(prog["files_done"])
+                live_label = f"Xet bulk snapshot ({live_missing} files missing)"
+                if state.get("current_file") != live_label:
+                    state["current_file"] = live_label
+                    save_state(state)
                 shard_count = int(prog["shards_done"])
                 last_notice = int(state.get("last_download_notice_shards", 0))
                 if shard_count == manifest["weight_shards"] or shard_count >= last_notice + 6:
@@ -687,6 +737,53 @@ def verify_source(state: dict[str, Any]) -> dict[str, Any]:
             inodes.add((st.st_dev, st.st_ino))
         except OSError:
             pass
+    candidate_indexes = {SNAPSHOT / "model.safetensors.index.json"}
+    for root in (CACHE_ROOT, Path.home() / "Library/Caches/huggingface/hub",
+                 Path.home() / "Downloads/hawking/models", Path.home() / "models"):
+        if root.exists():
+            candidate_indexes.update(root.rglob("model.safetensors.index.json"))
+    spotlight = subprocess.run(
+        ["/usr/bin/mdfind", "kMDItemFSName == 'model.safetensors.index.json'"],
+        text=True, capture_output=True, check=False,
+    )
+    candidate_indexes.update(Path(line) for line in spotlight.stdout.splitlines() if line.strip())
+    source_views = []
+    physical_fingerprints = set()
+    mop_string = str(MOP.resolve()) + os.sep
+    authoritative = SNAPSHOT.resolve()
+    for candidate_index in sorted(candidate_indexes, key=str):
+        # Never stat, resolve, or read a candidate under protected MOP.
+        if str(candidate_index).startswith(mop_string):
+            continue
+        candidate_root = candidate_index.parent
+        config = read_json(candidate_root / "config.json", {})
+        if config.get("model_type") != "kimi_k25" or \
+                (config.get("text_config") or {}).get("model_type") != "kimi_k2":
+            continue
+        candidate_shards = sorted(candidate_root.glob("model-*-of-000064.safetensors"))
+        complete = len(candidate_shards) == 64
+        fingerprint = None
+        if complete:
+            try:
+                fingerprint = tuple(sorted(
+                    (path.resolve(strict=True).stat().st_dev,
+                     path.resolve(strict=True).stat().st_ino) for path in candidate_shards
+                ))
+                physical_fingerprints.add(fingerprint)
+            except OSError:
+                complete = False
+        source_views.append({
+            "path": str(candidate_root), "complete": complete,
+            "authoritative_snapshot": candidate_root.resolve() == authoritative,
+            "physical_inode_set_sha256": hashlib.sha256(canonical(fingerprint)).hexdigest()
+            if fingerprint else None,
+        })
+    complete_views = [view for view in source_views if view["complete"]]
+    non_authoritative = [view for view in complete_views if not view["authoritative_snapshot"]]
+    if len(physical_fingerprints) != 1 or len(complete_views) != 1 or non_authoritative:
+        failures.append({"reason": "duplicate_or_ambiguous_complete_kimi_source",
+                         "complete_views": complete_views,
+                         "distinct_physical_inode_sets": len(physical_fingerprints)})
     verification = seal({"schema": "hawking.kimi_k26.source_verification.v1",
                          "verified_at": now(), "repo": REPO_ID, "revision": REVISION,
                          "source_root": str(MODEL_CACHE), "snapshot": str(SNAPSHOT),
@@ -702,7 +799,12 @@ def verify_source(state: dict[str, Any]) -> dict[str, Any]:
                      "authoritative_layout": "huggingface_content_addressed_cache",
                      "source_root": str(MODEL_CACHE), "snapshot_view": str(SNAPSHOT),
                      "local_dir_copy": None, "unique_content_inodes": len(inodes),
-                     "model_source_copies": 1, "mop_excluded": str(MOP.resolve())})
+                     "complete_source_views": complete_views,
+                     "non_authoritative_complete_views": non_authoritative,
+                     "distinct_physical_source_inode_sets": len(physical_fingerprints),
+                     "model_source_copies": len(physical_fingerprints),
+                     "spotlight_and_known_roots_scanned": True,
+                     "mop_excluded_without_traversal": str(MOP.resolve())})
     atomic_json(ONE_COPY, one_copy)
     if failures or not verification["reserve_green"]:
         state["blocker"] = f"source verification failed: {failures[:3]}"
@@ -955,10 +1057,29 @@ def managed_stage(state: dict[str, Any], command: list[str], log_name: str,
             if active_path:
                 active = read_json(active_path, {})
                 if active:
-                    state["current_layer"] = (
+                    label = (
                         f"{active.get('probe', 'probe')} layer "
                         f"{int(active.get('layer', -1)) + 1}/{active.get('layers_total', 61)}"
                     )
+                    probes = ["factual", "science", "coding", "mathematics", "reasoning",
+                              "instruction", "tool_thinking_protocol", "rare_token",
+                              "mathematics_replay"]
+                    probe_id = str(active.get("probe"))
+                    probe_index = probes.index(probe_id) if probe_id in probes else 0
+                    complete_units = probe_index * 61 + int(active.get("layer", -1)) + 1
+                    total_units = len(probes) * 61
+                    epoch = float(state.setdefault("reference_epoch", time.time()))
+                    elapsed = max(0.001, time.time() - epoch)
+                    rate = complete_units / elapsed
+                    state["stage_progress_text"] = (
+                        f"reference {complete_units}/{total_units} layer-probe units; "
+                        f"source 64/64 shards"
+                    )
+                    state["stage_eta_seconds"] = ((total_units - complete_units) / rate
+                                                  if rate > 0 else None)
+                    if state.get("current_layer") != label:
+                        state["current_layer"] = label
+                        save_state(state)
             memory = memory_snapshot()
             swap = swap_snapshot()
             reason = None
@@ -1036,6 +1157,8 @@ def build_reference(state: dict[str, Any]) -> dict[str, Any]:
     })
     atomic_json(REFERENCE_EVIDENCE, reference)
     state.update({"current_layer": None, "best_candidate": "P0_OFFICIAL_PARENT_REFERENCE",
+                  "stage_progress_text": "parent reference 9/9 probes sealed",
+                  "stage_eta_seconds": 0,
                   "primary_metrics": {"coherent_probes": suite["coherent_probe_count"],
                                       "finite_probes": suite["finite_probe_count"],
                                       "deterministic_replay": "PASS"}})
@@ -1096,10 +1219,20 @@ def run_tournament(state: dict[str, Any]) -> dict[str, Any]:
         state.update({"status": "BLOCKED", "blocker": "tournament F0/first checkpoint failed"})
         return transition(state, "BLOCKED", state["blocker"])
     state.update({"best_candidate": "P0_OFFICIAL_PARENT_REFERENCE", "complete_bpw": None,
-                  "current_layer": "P1/P5 F1 representation bracket queued",
+                  "current_layer": "P1/P5 F1 representation bracket preflight advancing",
+                  "stage_progress_text": "P0 sealed; P1/P5 F1 bracket preflight advancing",
+                  "stage_eta_seconds": None,
                   "primary_metrics": {**(state.get("primary_metrics") or {}),
                                       "doctor_byte_auction": "PASS",
                                       "compact_capability": "NONE_YET"}})
+    atomic_json(NEXT_EXPERIMENT, seal({
+        "schema": "hawking.kimi_k26.next_experiment.v1", "status": "ADVANCING",
+        "started_at": now(), "repo": REPO_ID, "revision": REVISION,
+        "experiment": "P1_AND_P5_F1_REPRESENTATION_BRACKET",
+        "current_action": "freeze disjoint unique-token probes and real routed-expert output seam",
+        "heavy_lease": str(LEASE), "controller_pid": os.getpid(),
+        "hard_boundary": "no candidate result or compact capability is claimed before F1 executes",
+    }))
     return transition(state, "SEAL_RESULT", "P0 and five legal F0 candidates admitted")
 
 
@@ -1252,7 +1385,6 @@ def install(repo_root: Path) -> None:
     official_manifest(refresh=True)
     if not STATE.exists():
         save_state(initial_state())
-    atomic_json(CONTROL, {"pause_after_checkpoint": False, "stop_requested": False})
     fallback = save_fallback_credentials()
     plist = {
         "Label": LABEL,
@@ -1275,8 +1407,34 @@ def install(repo_root: Path) -> None:
     os.replace(temporary, PLIST)
     os.chmod(PLIST, 0o644)
     domain = f"gui/{os.getuid()}"
+    old_pid = read_json(HEARTBEAT, {}).get("pid")
     subprocess.run(["/bin/launchctl", "bootout", domain, str(PLIST)],
                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)
+    for _ in range(60):
+        if not old_pid or not pid_alive(old_pid):
+            break
+        time.sleep(1)
+    if old_pid and pid_alive(old_pid):
+        raise CampaignError(f"existing controller PID {old_pid} did not stop for reinstall")
+    installed_state = load_state()
+    one_copy = read_json(ONE_COPY, {})
+    if (installed_state.get("source_state") == "KIMI_DOWNLOAD_COMPLETE" and
+            not one_copy.get("spotlight_and_known_roots_scanned")):
+        installed_state.update({
+            "state": "VERIFY_SOURCE", "status": "RUNNING", "blocker": None,
+            "entered_at": now(), "current_layer": None,
+            "stage_progress_text": "re-run strengthened one-copy audit and exact packed ledger",
+            "stage_eta_seconds": None,
+        })
+        installed_state["history"] = (installed_state.get("history", []) + [{
+            "at": now(), "to": "VERIFY_SOURCE",
+            "note": "controller upgrade: strengthened duplicate scan and pack geometry audit",
+        }])[-128:]
+        save_state(installed_state)
+    # The prior signal handler may have written a stop flag while draining.  Clear it only after
+    # that process is gone, then bootstrap the new immutable installed program.
+    atomic_json(CONTROL, {"pause_after_checkpoint": False, "stop_requested": False,
+                          "requested_at": now()})
     result = subprocess.run(["/bin/launchctl", "bootstrap", domain, str(PLIST)],
                             text=True, capture_output=True, check=False)
     if result.returncode != 0:
@@ -1305,7 +1463,8 @@ def sync_evidence(repo_root: Path) -> None:
     target.mkdir(parents=True, exist_ok=True)
     for path in (STATE, HEARTBEAT, MANIFEST, VERIFICATION, ONE_COPY, LEDGER, FORMAT_LEDGER,
                  REFERENCE_EVIDENCE, PARENT_VALIDATION, CORPUS_INTEGRITY, CAUSAL_ATLAS,
-                 BYTE_AUCTION, TOURNAMENT, FIRST_CHECKPOINT, PHONE_JSON, PHONE_MD,
+                 BYTE_AUCTION, TOURNAMENT, FIRST_CHECKPOINT, NEXT_EXPERIMENT,
+                 PHONE_JSON, PHONE_MD,
                  RUNTIME / "KIMI_K26_ADAPTER_TWIN.json"):
         if path.exists():
             shutil.copy2(path, target / path.name)
@@ -1331,7 +1490,7 @@ def main(argv: list[str] | None = None) -> int:
         status_command()
     elif args.command == "pause-after-checkpoint":
         set_control(pause=True, stop=False)
-        print("pause requested; the active file will finish and seal first")
+        print("pause requested; the latest sealed checkpoint and resumable partials are preserved")
     elif args.command == "resume":
         state = load_state()
         if state.get("state") == "BLOCKED" and str(state.get("blocker", "")).startswith(
