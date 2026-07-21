@@ -139,11 +139,45 @@ def _block_organ(rest: str) -> str:
 
 
 # ── loading ─────────────────────────────────────────────────────────────────────────────
+# The repo ships TWO configs with different spellings for the same geometry: the HF-style root
+# config.json (model_type, architectures, quantization_config, num_hidden_layers, hidden_size) and
+# inference/config.json, the reference implementation's own (n_layers, dim, dtype, scale_fmt,
+# expert_dtype). Neither alone is sufficient: only the root names the architecture, only the
+# inference one names the expert dtype. Merge them and fail loudly if they disagree.
+_ALIASES = {"n_layers": "num_hidden_layers", "dim": "hidden_size",
+            "n_activated_experts": "num_experts_per_tok", "n_heads": "num_attention_heads",
+            "moe_inter_dim": "moe_intermediate_size", "n_hash_layers": "num_hash_layers"}
+# NOT an alias pair: inference/config.json n_mtp_layers=3 counts stacked MTP BLOCKS, while root
+# config.json num_nextn_predict_layers=1 counts tokens predicted per step. The tensor index
+# arbitrates and agrees with the former: mtp.{N}.ffn.experts.* holds 2304 = 3 x 256 x 3 tensors,
+# i.e. three MTP stacks. Both values are kept, neither is reconciled away.
+_MTP_SEMANTICS = {"n_mtp_layers": "stacked MTP blocks (inference/config.json; index-confirmed)",
+                  "num_nextn_predict_layers": "tokens predicted per step (root config.json)"}
+
+
 def load_config(meta: Path = DEFAULT_META) -> dict[str, Any]:
-    cfg = json.loads((Path(meta) / "config.json").read_text())
+    meta = Path(meta)
+    root = json.loads((meta / "config.json").read_text())
+    inf_path = meta / "inference_config.json"
+    inf = json.loads(inf_path.read_text()) if inf_path.exists() else {}
+    cfg: dict[str, Any] = {**root}
+    for short, long in _ALIASES.items():
+        a, b = inf.get(short), root.get(long)
+        if a is not None and b is not None and int(a) != int(b):
+            raise DeepSeekV4AdapterError(
+                f"the two configs disagree on {short}/{long}: {a} vs {b}")
+        cfg[short] = a if a is not None else b
+    for k, v in inf.items():
+        cfg.setdefault(k, v)
+    # dtype/scale_fmt live only in the inference config; quantization_config only in the root.
+    q = root.get("quantization_config") or {}
+    cfg.setdefault("dtype", q.get("quant_method"))
     for k in ("n_layers", "n_routed_experts", "dim", "vocab_size"):
-        if k not in cfg:
-            raise DeepSeekV4AdapterError(f"config missing {k!r}")
+        if cfg.get(k) is None:
+            raise DeepSeekV4AdapterError(f"config missing {k!r} in both config files")
+    if root.get("model_type") and root["model_type"] != EXPECTED_MODEL_TYPE:
+        raise DeepSeekV4AdapterError(
+            f"model_type {root['model_type']!r} != {EXPECTED_MODEL_TYPE!r}")
     return cfg
 
 
@@ -204,6 +238,8 @@ def inventory(meta: Path = DEFAULT_META) -> dict[str, Any]:
                       "moe_inter_dim", "n_heads", "head_dim", "q_lora_rank", "o_lora_rank",
                       "index_n_heads", "index_head_dim", "index_topk", "hc_mult",
                       "dspark_target_layer_ids", "dspark_markov_rank", "window_size")},
+        "mtp_semantics": _MTP_SEMANTICS,
+        "mtp_stacks_from_index": len({int(n.split(".")[1]) for n in wm if n.startswith("mtp.")}),
         "index_total_size_bytes": total_size,
         "tensor_count": len(wm),
         "shard_count": len(shards),
