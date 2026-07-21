@@ -638,7 +638,7 @@ def t_launch(st: dict) -> dict:
     claim("LAUNCH_PARENT")
     adm = SS.read(OUT / "NEXT_PARENT_ADMISSION.json")
     arch = (adm.get("config") or {}).get("model_type")
-    gates, red = {}, []
+    gates, red, packet_extra = {}, [], {}
     for name, rel in DOCTOR_PRIME_GATES:
         p = ROOT / rel
         if not p.exists():
@@ -651,8 +651,35 @@ def t_launch(st: dict) -> dict:
     if not gates["parent_adapter_module"]:
         red.append(f"no adapter module for architecture {arch!r}; the parent cannot be read "
                    f"by the foundry yet")
+    else:
+        # An adapter that only maps organs is not a campaign. Prove it reconciles against the
+        # RESIDENT shards before calling anything green.
+        r = run([PY, str(adapter_file), "verify", "--model-dir", adm["local_dir"]], timeout=3600)
+        try:
+            v = json.loads(r["out"])
+        except Exception:  # noqa: BLE001
+            v = {"status": "RED", "error": r["err"][-300:]}
+        gates["adapter_reconciles_against_source"] = v.get("status") == "GREEN"
+        packet_extra = {"source_reconciliation": v}
+        if v.get("status") != "GREEN":
+            red.append(f"adapter did not reconcile against the resident shards: "
+                       f"{v.get('status')} {v.get('error', '')}"[:300])
+
+    # The gate that actually decides whether science can start: a runnable parent-vs-packed
+    # forward for THIS architecture. Organ mapping is necessary and nowhere near sufficient.
+    runner = ROOT / f"tools/condense/{arch}_gravity_campaign.py" if arch else None
+    gates["parent_campaign_runner"] = bool(runner and runner.exists())
+    if not gates["parent_campaign_runner"]:
+        red.append(
+            f"no campaign runner for {arch!r}: a real parent-vs-packed forward does not exist "
+            f"for this architecture. Upstream ships a CUDA/Triton reference at "
+            f"_meta/inference/model.py + kernel.py; porting it to the Metal/CPU path (MLA + "
+            f"sparse indexer + DSpark compressor + hyper-connections + fp8/fp4 block-scale "
+            f"dequant) is the blocking build item. Until it exists, no capability claim, no "
+            f"BPW ledger and no promotion is legal for this parent.")
     packet = {"schema": "hawking.storage_stripdown.launch_packet.v1", "generated_at": now(),
               "repo": adm["repo"], "architecture": arch, "gates": gates, "red": red,
+              **packet_extra,
               "status": "GREEN" if not red else "RED",
               "runtime_boundary": "PYTHON REFERENCE FORWARD ONLY. The Rust engine does not route "
                                   f"{arch!r}; no tok/s or serve claim may be made for this parent.",
