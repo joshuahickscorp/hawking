@@ -1,5 +1,10 @@
 {
   "entries": {
+    "conditional_residual": {
+      "provenance": "untested on this parent",
+      "reopen": "",
+      "status": "untested"
+    },
     "expert_merge": {
       "provenance": "Lane E, adversarially UPHELD: best single surviving expert reconstructs an omitted expert with median held-out rel error 0.885/0.993/0.995 at L0/L3/L7; a 4-survivor least-squares merge reaches 0.863/0.988/0.995. ~1.0 is the trivial zero predictor. The adversary's found contamination ran IN THE MERGE'S FAVOUR.",
       "reopen": "a parent measuring best-single-survivor reconstruction error <= 0.5 held out",
@@ -10,17 +15,27 @@
       "reopen": "a parent measuring row-normalized mean off-diagonal expert cosine >= 0.10",
       "status": "dead"
     },
+    "layerwise_qat": {
+      "provenance": "S3A claimed 14.1/11.3/2.45 pct held-out output-error gains at layer 0 at byte-identical cost. The adversary REFUTED the 'held-out' label: the fraction of held-out activation energy lying inside the FIT split's row space is 1.000 / 0.991 / 0.424 / 1.000 at layer 0, and the per-expert gain is MONOTONE in that overlap (19.8 / 11.6 / 4.0 / 18.0 pct). That is fit-span descent, not generalization. The layer-0-wins / layer-46-loses contrast is CONFOUNDED: layer 46's proxy has overlap 0.007-0.023, i.e. a genuinely disjoint probe, so the contrast measures probe rank and not depth. The ZERO-BIT property is the one solid claim and survives: both arms serialize byte-identically.",
+      "reopen": "score on a split whose held-out energy capture inside the fit span is below ~0.1 (at layer 0 that needs far more than 1400 calibration tokens, or scoring against the full corpus rather than each expert's own routed tokens), and vary the split seed so 'wins under every seed' actually varies the evaluation set",
+      "status": "untested"
+    },
     "low_rank_residual": {
       "provenance": "docs/dead_levers.md: quantization error is HIGH rank; LoRA plateaus ~step 25 and rank-64 SVD healed TQ3 only 0.114 -> 0.104 while costing 4.6 bpw. Also data-free low-rank residual NO-GO (top-64 SVD captures 3-9 pct of energy).",
       "reopen": "only when the residual is MEASURED low rank on the parent in question",
       "status": "dead"
     },
+    "protected_islands": {
+      "provenance": "untested on this parent at the S64 rates",
+      "reopen": "",
+      "status": "untested"
+    },
     "router_distill": {
-      "provenance": "S2C: a survivor-restricted ORACLE halves layer-0 weighted-output error (reachable headroom 0.573 vs masked baseline 0.0784), but NO trained student captured it on held-out token ids - every variant overfit the train ids.",
+      "provenance": "S2C: no trained student beat plain masking on held-out ids. Masked 0.0784; bias 0.0993, low-rank r8 0.1176, full survivor-row retune 0.0927 - all worse. The KL term is provably INERT: softmax restricted to survivors IS the teacher renormalized onto survivors, so KL = 0 exactly and any correction only raises it. TWO CORRECTIONS from the adversary: (a) the '57.3 pct reachable headroom' figure is WITHDRAWN - the oracle was scored on only the first 16 holdout tokens, which are a biased-easy head subset (retained routing mass 0.969 vs 0.939 for the rest), against a masked baseline measured over all 96; (b) the 'students overfit' diagnosis is unproven - the zero-free-parameter masked arm itself shows 0.0521 train vs 0.0784 holdout, so the split is not exchangeable and the train/holdout delta is not a clean generalization measurement. The NEGATIVE verdict stands: every arm was scored on the same holdout.",
       "reopen": "a parent where the survivor-restricted oracle gap is large AND a student generalizes to held-out ids",
       "status": "negative"
     }
   },
-  "rule": "a dead or negative treatment may be re-proposed ONLY under the no-repetition law: a materially different diagnosis, an architecture that changes reachability, a different rate regime, or an implementation that removes the prior blocker",
+  "rule": "a dead or negative treatment may be re-proposed ONLY under the no-repetition law",
   "schema": "hawking.doctor.negative_transfer_atlas.v1"
 }

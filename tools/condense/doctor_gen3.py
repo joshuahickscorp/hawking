@@ -23,8 +23,11 @@ controller cannot re-propose them:
   * expert_merge          DEAD. Omitted experts are not reconstructible from survivors (best single
                           survivor median held-out rel error 0.885/0.993/0.995; 4-survivor
                           least-squares 0.863/0.988/0.995 - the trivial zero predictor).
-  * router_distill        NEGATIVE. A survivor-restricted ORACLE halves layer-0 weighted-output
-                          error, but no trained student captures it on held-out ids; all overfit.
+  * router_distill        NEGATIVE. No trained student beats plain masking on held-out ids
+                          (masked 0.0784 vs bias 0.0993, low-rank 0.1176, full retune 0.0927), and
+                          the KL term is provably inert. An earlier "57.3 pct reachable headroom"
+                          figure is WITHDRAWN: the oracle was scored on a biased-easy 16-token
+                          head subset against a baseline measured over all 96.
   * low_rank_residual     DEAD as a default (docs/dead_levers.md): quantization error is high rank.
                           Retained ONLY as a diagnosis-gated option when the residual is measured
                           low rank, which it has not been on this parent.
@@ -158,7 +161,13 @@ TREATMENTS: tuple[Treatment, ...] = (
         provenance="S1 FULL FORWARD, the only capability-fidelity Doctor measurement in the "
                    "campaign: S64_structural -> S64_doctor at +0.0513 complete BPW moved symKL "
                    "8.599 -> 7.699 (10.5 pct), argmax 0.0735 -> 0.0922, cosine 0.434 -> 0.468, "
-                   "top5 0.080 -> 0.143. Paired, same six prompts, same direction on all four.",
+                   "top5 0.080 -> 0.143. Paired, same six prompts, same direction on all four. "
+                   "MECHANISM CORRECTED by the S3C adversary: the ROW SELECTOR is not the "
+                   "mechanism. Gen1's 'worst RELATIVE residual energy' rows beat RANDOM row "
+                   "selection by only +1.8 and +0.9 pct, inside the seed spread, and random rows "
+                   "recover 96-99 pct of the entire gain. What earns the bytes is the SECOND "
+                   "CODEBOOK STAGE (added residual capacity), not where it is pointed. Do not "
+                   "transfer the selector as if it were the active ingredient.",
         status="alive"),
     Treatment(
         id="low_rank_residual", rung="E2", space="parameter",
@@ -195,9 +204,18 @@ TREATMENTS: tuple[Treatment, ...] = (
         treats=("router_redistribution",),
         installed_bits_per_tensor="per-survivor logit bias (K floats) or a low-rank router correction",
         prior_recovery=0.0, prior_bpw_cost=0.0,
-        provenance="S2C: a survivor-restricted ORACLE halves layer-0 weighted-output error "
-                   "(reachable headroom 0.573 vs masked baseline 0.0784), but NO trained student "
-                   "captured it on held-out token ids - every variant overfit the train ids.",
+        provenance="S2C: no trained student beat plain masking on held-out ids. Masked 0.0784; "
+                   "bias 0.0993, low-rank r8 0.1176, full survivor-row retune 0.0927 - all worse. "
+                   "The KL term is provably INERT: softmax restricted to survivors IS the teacher "
+                   "renormalized onto survivors, so KL = 0 exactly and any correction only raises "
+                   "it. TWO CORRECTIONS from the adversary: (a) the '57.3 pct reachable headroom' "
+                   "figure is WITHDRAWN - the oracle was scored on only the first 16 holdout "
+                   "tokens, which are a biased-easy head subset (retained routing mass 0.969 vs "
+                   "0.939 for the rest), against a masked baseline measured over all 96; (b) the "
+                   "'students overfit' diagnosis is unproven - the zero-free-parameter masked arm "
+                   "itself shows 0.0521 train vs 0.0784 holdout, so the split is not exchangeable "
+                   "and the train/holdout delta is not a clean generalization measurement. The "
+                   "NEGATIVE verdict stands: every arm was scored on the same holdout.",
         status="negative",
         reopen="a parent where the survivor-restricted oracle gap is large AND a student "
                "generalizes to held-out ids"),
@@ -217,13 +235,21 @@ TREATMENTS: tuple[Treatment, ...] = (
         treats=("quantization_reconstruction", "direction_distortion", "activation_shift"),
         installed_bits_per_tensor="0 - training moves the latent weights; the artifact schema and "
                                   "byte count are unchanged (asserted byte-identical)",
-        prior_recovery=0.14, prior_bpw_cost=0.0,
-        provenance="S3A: straight-through latent-weight step vs an identical loop with it "
-                   "disabled, byte-identical artifacts. L0 gate 0.04666 -> 0.04009 (14.1 pct), "
-                   "L0 up 0.04470 -> 0.03964 (11.3 pct), L0 down 2.45 pct. L46 cells were fed a "
-                   "GAUSSIAN PROXY and show -0.4 to -0.8 pct, so depth is UNTESTED, not refuted.",
-        status="alive",
-        reopen="needs real activations at depth, which requires a full teacher forward"),
+        prior_recovery=None, prior_bpw_cost=0.0,
+        provenance="S3A claimed 14.1/11.3/2.45 pct held-out output-error gains at layer 0 at "
+                   "byte-identical cost. The adversary REFUTED the 'held-out' label: the fraction "
+                   "of held-out activation energy lying inside the FIT split's row space is "
+                   "1.000 / 0.991 / 0.424 / 1.000 at layer 0, and the per-expert gain is MONOTONE "
+                   "in that overlap (19.8 / 11.6 / 4.0 / 18.0 pct). That is fit-span descent, not "
+                   "generalization. The layer-0-wins / layer-46-loses contrast is CONFOUNDED: "
+                   "layer 46's proxy has overlap 0.007-0.023, i.e. a genuinely disjoint probe, so "
+                   "the contrast measures probe rank and not depth. The ZERO-BIT property is the "
+                   "one solid claim and survives: both arms serialize byte-identically.",
+        status="untested",
+        reopen="score on a split whose held-out energy capture inside the fit span is below ~0.1 "
+               "(at layer 0 that needs far more than 1400 calibration tokens, or scoring against "
+               "the full corpus rather than each expert's own routed tokens), and vary the split "
+               "seed so 'wins under every seed' actually varies the evaluation set"),
     Treatment(
         id="structural_adaptive_k", rung="E6", space="structural",
         treats=("routing_omission", "quantization_reconstruction"),

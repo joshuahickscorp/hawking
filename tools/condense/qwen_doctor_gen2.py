@@ -176,6 +176,40 @@ def router_capacity_e() -> dict[str, Any]:
                     "treatment with positive measured utility per bit."}
 
 
+ARM_PRICE = {"doctor_gen1": "doctor_per_expert",
+             "doctor_gen2A_output_fit_codebook": "doctor_per_expert",
+             "doctor_gen2B_output_row_select": "doctor_per_expert",
+             "doctor_gen2AB_both": "doctor_per_expert",
+             "down_rung_up": "down_rung_up_per_expert",
+             "gate_up_rung_up": "gate_up_rung_up_per_expert"}
+
+
+def per_expert_sign_check(per_expert: list[dict[str, Any]], bits: dict[str, int]) -> dict[str, Any]:
+    """Does the auction verdict hold EXPERT BY EXPERT, or only on the 3-expert mean?
+
+    The mean margin between the best Doctor arm and the next treatment is a couple of percent, which
+    is not a difference a 3-expert sample can defend. So the honest statistic is the sign: on how
+    many experts does a Doctor arm out-earn every non-Doctor treatment, and on how many does Gen2
+    out-earn Gen1. A 3/3 sign with a 2 percent mean margin is weak evidence; a 2/3 sign is none.
+    """
+    winners, gen2b_vs_gen1, rows = [], [], []
+    for p in per_expert:
+        s = p["sq_err"]
+        u = {a: (s["base_no_doctor"] - s[a]) / bits[k] for a, k in ARM_PRICE.items() if a in s}
+        best = max(u, key=lambda a: u[a])
+        winners.append(best)
+        if "doctor_gen2B_output_row_select" in u and "doctor_gen1" in u:
+            gen2b_vs_gen1.append(u["doctor_gen2B_output_row_select"] > u["doctor_gen1"])
+        rows.append({"expert": p["expert"], "winner": best,
+                     "utility_per_bit": {a: v for a, v in sorted(u.items(), key=lambda kv: -kv[1])}})
+    n = len(per_expert)
+    return {"n_experts": n, "per_expert": rows,
+            "doctor_arm_wins": sum(1 for w in winners if w.startswith("doctor")),
+            "gen2B_beats_gen1_on_n_experts": sum(gen2b_vs_gen1),
+            "unanimous_for_doctor": bool(n and all(w.startswith("doctor") for w in winners)),
+            "unanimous_for_gen2B": bool(gen2b_vs_gen1 and all(gen2b_vs_gen1))}
+
+
 def rank(entries: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Rank competing uses of the same marginal bits by output-error reduction PER BIT.
 
@@ -503,6 +537,7 @@ def build_report(m: dict[str, Any]) -> dict[str, Any]:
             "doctor_utility_per_bit": best_doc["utility_per_bit"],
             "beaten_by": [e["id"] for e in losers],
             "doctor_keeps_its_slot": doctor_keeps_slot,
+            "per_expert_sign_check": per_expert_sign_check(m["per_expert"], m["bits"]),
             "router_capacity_e": {
                 "in_auction_unit": False,
                 "any_paid_arm_beats_masking":
@@ -524,6 +559,16 @@ def build_report(m: dict[str, Any]) -> dict[str, Any]:
             f"(b) is measured on only {m['marginal_expert'].get('n_score_tokens', 0)} score tokens "
             "- the marginal expert is by construction the coldest one, so its sample is the "
             "smallest in the table and its utility is the least precise number here.",
+            "The Lloyd fits run on MPS and are NOT bit-reproducible: two independent runs of this "
+            "stage moved each arm's mean utility per bit by up to ~1 percent. Margins smaller than "
+            "that are ties, and the report says so rather than ranking them. Specifically the "
+            "Doctor-vs-(d) margin is of that order for Gen1 and the auction rank between them is "
+            "NOT a defensible ordering; the Gen2B-over-Gen1 margin (~5 percent) is larger than the "
+            "observed run spread and held on both runs.",
+            "Three survivor experts (hottest, 16th, coldest of the 64) at ONE layer is a tiny "
+            "sample. The deliverable is the ORDER OF MAGNITUDE separation - Doctor and (d) within "
+            "a few percent of each other, (b) 4x below them, (c) 40x below - not the top-two "
+            "ordering.",
             "(e) router capacity is READ from the sealed S2C report, not re-measured. Its unit "
             "(median relative error of the whole MoE output) is NOT this auction's unit "
             "(absolute squared output error of one expert's weighted contribution), so it is "
@@ -585,6 +630,16 @@ def selftest() -> dict[str, Any]:
     assert e5["arms"] and "verdict" in e5, e5
     l0 = [a for a in e5["arms"] if a["layer"] == 0 and (a["extra_bits_whole_model"] or 0) > 0]
     assert l0 and not any(a["beats_masked_holdout"] for a in l0), l0
+
+    # 3c. The per-expert sign check must see through a mean that one expert dominates.
+    pe = [{"expert": 0, "sq_err": {"base_no_doctor": 10.0, "doctor_gen1": 9.0,
+                                   "doctor_gen2B_output_row_select": 8.0, "down_rung_up": 0.0}},
+          {"expert": 1, "sq_err": {"base_no_doctor": 10.0, "doctor_gen1": 9.9,
+                                   "doctor_gen2B_output_row_select": 9.8, "down_rung_up": 9.95}}]
+    sc = per_expert_sign_check(pe, {"doctor_per_expert": 100, "down_rung_up_per_expert": 100,
+                                    "gate_up_rung_up_per_expert": 100})
+    assert sc["doctor_arm_wins"] == 1 and not sc["unanimous_for_doctor"], sc
+    assert sc["gen2B_beats_gen1_on_n_experts"] == 2 and sc["unanimous_for_gen2B"], sc
 
     # 4. The auction ranks by utility PER BIT, not by raw delta.
     r = rank([{"id": "cheap", "bits": 10, "delta_sq_err": 5.0},
