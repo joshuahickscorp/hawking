@@ -24,8 +24,14 @@
   "margin_bytes": 359482450617,
   "n_weight_shards": 48,
   "one_copy_law": "exactly one physical copy: snapshot_download with local_dir and HF_HUB_DISABLE_XET symlink duplication disabled; the hub cache is not kept as a second materialised copy",
+  "rehydration_receipt": "reports/condense/storage_stripdown/MODEL_RELEASE_deepseek-v4-flash-dspark.json",
+  "release_reason": "explicit decision to move on, NOT a scientific verdict. The parent was staged, verified byte-exact and fully organ-mapped, but never run: no deepseek_v4 parent-vs-packed forward exists, so the launch packet was RED and no capability claim or BPW ledger was ever produced.",
+  "released": true,
+  "released_at": "2026-07-21T03:44:03Z",
   "repo": "deepseek-ai/DeepSeek-V4-Flash-DSpark",
   "schema": "hawking.storage_stripdown.parent_admission.v1",
+  "science_retained": "reports/condense/storage_stripdown/NEXT_PARENT_SOURCE_RECONCILIATION.json",
   "source_bytes": 166898666055,
+  "what_survives": "config.json, tokenizer.json, tokenizer_config.json, model.safetensors.index.json, _meta/, and the upstream inference/ reference (model.py + kernel.py) - 23 MiB, everything needed to rebuild the forward or rehydrate.",
   "why": "native fp8 e4m3 frontier MoE, 1M context, DeepSeek family; maximal distance from the just-sealed Qwen3-235B and the only frontier-class parent whose source is ALREADY sub-8-bit"
 }

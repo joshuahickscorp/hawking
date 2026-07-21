@@ -1,955 +1,395 @@
 {
   "expected_dev": 16777233,
-  "expected_recoverable_bytes": 470192021504,
-  "file_count": 118,
+  "expected_recoverable_bytes": 166886617088,
+  "file_count": 48,
   "files": [
     {
-      "allocated_bytes": 3994083328,
+      "allocated_bytes": 3568771072,
       "device": 16777233,
-      "inode": 17465526,
-      "logical_bytes": 3994082120,
+      "inode": 18799276,
+      "logical_bytes": 3568770544,
       "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00071-of-00118.safetensors"
+      "path": "/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark/model-00035-of-00048.safetensors"
     },
     {
-      "allocated_bytes": 3994083328,
+      "allocated_bytes": 3590025216,
       "device": 16777233,
-      "inode": 17471281,
-      "logical_bytes": 3994082176,
+      "inode": 18796612,
+      "logical_bytes": 3590024776,
       "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00082-of-00118.safetensors"
+      "path": "/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark/model-00008-of-00048.safetensors"
     },
     {
-      "allocated_bytes": 3994083328,
+      "allocated_bytes": 3590029312,
       "device": 16777233,
-      "inode": 17457496,
-      "logical_bytes": 3994081856,
+      "inode": 18798298,
+      "logical_bytes": 3590026352,
       "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00008-of-00118.safetensors"
+      "path": "/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark/model-00030-of-00048.safetensors"
     },
     {
-      "allocated_bytes": 3997212672,
+      "allocated_bytes": 3610456064,
       "device": 16777233,
-      "inode": 17463684,
-      "logical_bytes": 3997211632,
+      "inode": 18800431,
+      "logical_bytes": 3610455184,
       "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00030-of-00118.safetensors"
+      "path": "/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark/model-00046-of-00048.safetensors"
     },
     {
-      "allocated_bytes": 3994083328,
+      "allocated_bytes": 3568771072,
       "device": 16777233,
-      "inode": 17464954,
-      "logical_bytes": 3994082184,
+      "inode": 18796605,
+      "logical_bytes": 3568768976,
       "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00049-of-00118.safetensors"
+      "path": "/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark/model-00007-of-00048.safetensors"
     },
     {
-      "allocated_bytes": 3997212672,
+      "allocated_bytes": 3568771072,
       "device": 16777233,
-      "inode": 17472448,
-      "logical_bytes": 3997211632,
+      "inode": 18800418,
+      "logical_bytes": 3568770544,
       "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00111-of-00118.safetensors"
+      "path": "/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark/model-00043-of-00048.safetensors"
     },
     {
-      "allocated_bytes": 3994083328,
+      "allocated_bytes": 3566321664,
       "device": 16777233,
-      "inode": 17471060,
-      "logical_bytes": 3994082176,
+      "inode": 18796588,
+      "logical_bytes": 3566321192,
       "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00074-of-00118.safetensors"
+      "path": "/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark/model-00002-of-00048.safetensors"
     },
     {
-      "allocated_bytes": 3994083328,
+      "allocated_bytes": 3590029312,
       "device": 16777233,
-      "inode": 17471649,
-      "logical_bytes": 3994082176,
+      "inode": 18798281,
+      "logical_bytes": 3590026352,
       "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00087-of-00118.safetensors"
+      "path": "/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark/model-00028-of-00048.safetensors"
     },
     {
-      "allocated_bytes": 3994083328,
+      "allocated_bytes": 3590025216,
       "device": 16777233,
-      "inode": 17472555,
-      "logical_bytes": 3994082176,
+      "inode": 18796614,
+      "logical_bytes": 3590024776,
       "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00114-of-00118.safetensors"
+      "path": "/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark/model-00010-of-00048.safetensors"
     },
     {
-      "allocated_bytes": 3988824064,
+      "allocated_bytes": 3568771072,
       "device": 16777233,
-      "inode": 17464383,
-      "logical_bytes": 3988822680,
+      "inode": 18796619,
+      "logical_bytes": 3568770544,
       "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00035-of-00118.safetensors"
+      "path": "/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark/model-00015-of-00048.safetensors"
     },
     {
-      "allocated_bytes": 3994083328,
+      "allocated_bytes": 3590029312,
       "device": 16777233,
-      "inode": 17464801,
-      "logical_bytes": 3994082176,
+      "inode": 18797497,
+      "logical_bytes": 3590026352,
       "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00043-of-00118.safetensors"
+      "path": "/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark/model-00022-of-00048.safetensors"
     },
     {
-      "allocated_bytes": 3994083328,
+      "allocated_bytes": 3568771072,
       "device": 16777233,
-      "inode": 17457492,
-      "logical_bytes": 3994081856,
+      "inode": 18798274,
+      "logical_bytes": 3568770544,
       "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00002-of-00118.safetensors"
+      "path": "/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark/model-00027-of-00048.safetensors"
     },
     {
-      "allocated_bytes": 3994083328,
+      "allocated_bytes": 3590025216,
       "device": 16777233,
-      "inode": 17471669,
-      "logical_bytes": 3994082176,
+      "inode": 18796604,
+      "logical_bytes": 3590024776,
       "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00088-of-00118.safetensors"
+      "path": "/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark/model-00006-of-00048.safetensors"
     },
     {
-      "allocated_bytes": 3994083328,
+      "allocated_bytes": 3560112128,
       "device": 16777233,
-      "inode": 17464841,
-      "logical_bytes": 3994082144,
+      "inode": 18800435,
+      "logical_bytes": 3560111960,
       "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00046-of-00118.safetensors"
+      "path": "/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark/model-00047-of-00048.safetensors"
     },
     {
-      "allocated_bytes": 3994083328,
+      "allocated_bytes": 3566321664,
       "device": 16777233,
-      "inode": 17457498,
-      "logical_bytes": 3994081856,
+      "inode": 18796583,
+      "logical_bytes": 3566321192,
       "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00007-of-00118.safetensors"
+      "path": "/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark/model-00003-of-00048.safetensors"
     },
     {
-      "allocated_bytes": 3994083328,
+      "allocated_bytes": 3590029312,
       "device": 16777233,
-      "inode": 17465051,
-      "logical_bytes": 3994082184,
+      "inode": 18800412,
+      "logical_bytes": 3590026352,
       "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00054-of-00118.safetensors"
+      "path": "/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark/model-00042-of-00048.safetensors"
     },
     {
-      "allocated_bytes": 3994083328,
+      "allocated_bytes": 3590029312,
       "device": 16777233,
-      "inode": 17457528,
-      "logical_bytes": 3994082088,
+      "inode": 18799272,
+      "logical_bytes": 3590026352,
       "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00015-of-00118.safetensors"
+      "path": "/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark/model-00034-of-00048.safetensors"
     },
     {
-      "allocated_bytes": 3994083328,
+      "allocated_bytes": 3692777472,
       "device": 16777233,
-      "inode": 17463628,
-      "logical_bytes": 3994082176,
+      "inode": 18800441,
+      "logical_bytes": 3692775244,
       "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00028-of-00118.safetensors"
+      "path": "/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark/model-00048-of-00048.safetensors"
     },
     {
-      "allocated_bytes": 3994083328,
+      "allocated_bytes": 3568771072,
       "device": 16777233,
-      "inode": 17464967,
-      "logical_bytes": 3994082136,
+      "inode": 18798291,
+      "logical_bytes": 3568770544,
       "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00051-of-00118.safetensors"
+      "path": "/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark/model-00031-of-00048.safetensors"
     },
     {
-      "allocated_bytes": 3994083328,
+      "allocated_bytes": 3568771072,
       "device": 16777233,
-      "inode": 17472424,
-      "logical_bytes": 3994082176,
+      "inode": 18796613,
+      "logical_bytes": 3568768976,
       "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00109-of-00118.safetensors"
+      "path": "/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark/model-00009-of-00048.safetensors"
     },
     {
-      "allocated_bytes": 3994083328,
+      "allocated_bytes": 3568771072,
       "device": 16777233,
-      "inode": 17465506,
-      "logical_bytes": 3994082176,
+      "inode": 18797499,
+      "logical_bytes": 3568770544,
       "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00069-of-00118.safetensors"
+      "path": "/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark/model-00023-of-00048.safetensors"
     },
     {
-      "allocated_bytes": 3994083328,
+      "allocated_bytes": 3590029312,
       "device": 16777233,
-      "inode": 17457516,
-      "logical_bytes": 3994081784,
+      "inode": 18798259,
+      "logical_bytes": 3590026352,
       "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00010-of-00118.safetensors"
+      "path": "/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark/model-00026-of-00048.safetensors"
     },
     {
-      "allocated_bytes": 3988824064,
+      "allocated_bytes": 3568771072,
       "device": 16777233,
-      "inode": 17471954,
-      "logical_bytes": 3988822776,
+      "inode": 18796615,
+      "logical_bytes": 3568768976,
       "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00095-of-00118.safetensors"
+      "path": "/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark/model-00011-of-00048.safetensors"
     },
     {
-      "allocated_bytes": 3994083328,
+      "allocated_bytes": 3568771072,
       "device": 16777233,
-      "inode": 17465493,
-      "logical_bytes": 3994082120,
+      "inode": 18798297,
+      "logical_bytes": 3568770544,
       "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00066-of-00118.safetensors"
+      "path": "/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark/model-00029-of-00048.safetensors"
     },
     {
-      "allocated_bytes": 3994083328,
+      "allocated_bytes": 3590029312,
       "device": 16777233,
-      "inode": 17463619,
-      "logical_bytes": 3994082176,
+      "inode": 18796617,
+      "logical_bytes": 3590026352,
       "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00027-of-00118.safetensors"
+      "path": "/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark/model-00014-of-00048.safetensors"
     },
     {
-      "allocated_bytes": 3993018368,
+      "allocated_bytes": 3568771072,
       "device": 16777233,
-      "inode": 17472318,
-      "logical_bytes": 3993016808,
+      "inode": 18797427,
+      "logical_bytes": 3568770544,
       "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00106-of-00118.safetensors"
+      "path": "/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark/model-00017-of-00048.safetensors"
     },
     {
-      "allocated_bytes": 3988824064,
+      "allocated_bytes": 3590029312,
       "device": 16777233,
-      "inode": 17471677,
-      "logical_bytes": 3988822768,
+      "inode": 18796618,
+      "logical_bytes": 3590026352,
       "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00090-of-00118.safetensors"
+      "path": "/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark/model-00012-of-00048.safetensors"
     },
     {
-      "allocated_bytes": 3994083328,
+      "allocated_bytes": 3568771072,
       "device": 16777233,
-      "inode": 17465386,
-      "logical_bytes": 3994082176,
+      "inode": 18797498,
+      "logical_bytes": 3568770544,
       "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00063-of-00118.safetensors"
+      "path": "/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark/model-00025-of-00048.safetensors"
     },
     {
-      "allocated_bytes": 3994083328,
+      "allocated_bytes": 3590029312,
       "device": 16777233,
-      "inode": 17472256,
-      "logical_bytes": 3994082176,
+      "inode": 18797479,
+      "logical_bytes": 3590026352,
       "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00103-of-00118.safetensors"
+      "path": "/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark/model-00020-of-00048.safetensors"
     },
     {
-      "allocated_bytes": 3994083328,
+      "allocated_bytes": 3590029312,
       "device": 16777233,
-      "inode": 17460152,
-      "logical_bytes": 3994082176,
+      "inode": 18797470,
+      "logical_bytes": 3590026352,
       "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00022-of-00118.safetensors"
+      "path": "/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark/model-00018-of-00048.safetensors"
     },
     {
-      "allocated_bytes": 3994083328,
+      "allocated_bytes": 3590029312,
       "device": 16777233,
-      "inode": 17457514,
-      "logical_bytes": 3994081856,
+      "inode": 18798301,
+      "logical_bytes": 3590026352,
       "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00003-of-00118.safetensors"
+      "path": "/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark/model-00032-of-00048.safetensors"
     },
     {
-      "allocated_bytes": 3994083328,
+      "allocated_bytes": 3568771072,
       "device": 16777233,
-      "inode": 17471673,
-      "logical_bytes": 3994082176,
+      "inode": 18799287,
+      "logical_bytes": 3568770544,
       "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00089-of-00118.safetensors"
+      "path": "/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark/model-00037-of-00048.safetensors"
     },
     {
-      "allocated_bytes": 3994083328,
+      "allocated_bytes": 3590029312,
       "device": 16777233,
-      "inode": 17464788,
-      "logical_bytes": 3994082176,
+      "inode": 18799305,
+      "logical_bytes": 3590026352,
       "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00042-of-00118.safetensors"
+      "path": "/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark/model-00038-of-00048.safetensors"
     },
     {
-      "allocated_bytes": 3994083328,
+      "allocated_bytes": 3568771072,
       "device": 16777233,
-      "inode": 17457499,
-      "logical_bytes": 3994081856,
+      "inode": 18799301,
+      "logical_bytes": 3568770544,
       "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00006-of-00118.safetensors"
+      "path": "/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark/model-00041-of-00048.safetensors"
     },
     {
-      "allocated_bytes": 3994083328,
+      "allocated_bytes": 3568771072,
       "device": 16777233,
-      "inode": 17464874,
-      "logical_bytes": 3994082176,
+      "inode": 18796600,
+      "logical_bytes": 3568768976,
       "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00047-of-00118.safetensors"
+      "path": "/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark/model-00005-of-00048.safetensors"
     },
     {
-      "allocated_bytes": 3998277632,
+      "allocated_bytes": 3590029312,
       "device": 16777233,
-      "inode": 17472438,
-      "logical_bytes": 3998276288,
+      "inode": 18800426,
+      "logical_bytes": 3590026352,
       "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00110-of-00118.safetensors"
+      "path": "/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark/model-00044-of-00048.safetensors"
     },
     {
-      "allocated_bytes": 3994083328,
+      "allocated_bytes": 3590029312,
       "device": 16777233,
-      "inode": 17463778,
-      "logical_bytes": 3994082160,
+      "inode": 18797496,
+      "logical_bytes": 3590026352,
       "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00031-of-00118.safetensors"
+      "path": "/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark/model-00024-of-00048.safetensors"
     },
     {
-      "allocated_bytes": 3994083328,
+      "allocated_bytes": 3568771072,
       "device": 16777233,
-      "inode": 17464943,
-      "logical_bytes": 3994082176,
+      "inode": 18797475,
+      "logical_bytes": 3568770544,
       "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00048-of-00118.safetensors"
+      "path": "/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark/model-00019-of-00048.safetensors"
     },
     {
-      "allocated_bytes": 3994083328,
+      "allocated_bytes": 3568771072,
       "device": 16777233,
-      "inode": 17471285,
-      "logical_bytes": 3994082176,
+      "inode": 18797483,
+      "logical_bytes": 3568770544,
       "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00083-of-00118.safetensors"
+      "path": "/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark/model-00021-of-00048.safetensors"
     },
     {
-      "allocated_bytes": 3988824064,
+      "allocated_bytes": 3590029312,
       "device": 16777233,
-      "inode": 17465510,
-      "logical_bytes": 3988822752,
+      "inode": 18796620,
+      "logical_bytes": 3590026352,
       "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00070-of-00118.safetensors"
+      "path": "/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark/model-00016-of-00048.safetensors"
     },
     {
-      "allocated_bytes": 3988824064,
+      "allocated_bytes": 3568771072,
       "device": 16777233,
-      "inode": 17457503,
-      "logical_bytes": 3988822456,
+      "inode": 18796616,
+      "logical_bytes": 3568770544,
       "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00009-of-00118.safetensors"
+      "path": "/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark/model-00013-of-00048.safetensors"
     },
     {
-      "allocated_bytes": 3994083328,
+      "allocated_bytes": 3568771072,
       "device": 16777233,
-      "inode": 17464379,
-      "logical_bytes": 3994082200,
+      "inode": 18799303,
+      "logical_bytes": 3568770544,
       "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00034-of-00118.safetensors"
+      "path": "/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark/model-00039-of-00048.safetensors"
     },
     {
-      "allocated_bytes": 3994083328,
+      "allocated_bytes": 3590029312,
       "device": 16777233,
-      "inode": 17472780,
-      "logical_bytes": 3994082200,
+      "inode": 18799302,
+      "logical_bytes": 3590026352,
       "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00115-of-00118.safetensors"
+      "path": "/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark/model-00040-of-00048.safetensors"
     },
     {
-      "allocated_bytes": 3994083328,
+      "allocated_bytes": 1059065856,
       "device": 16777233,
-      "inode": 17471298,
-      "logical_bytes": 3994082104,
+      "inode": 18796580,
+      "logical_bytes": 1059061856,
       "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00086-of-00118.safetensors"
+      "path": "/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark/model-00001-of-00048.safetensors"
     },
     {
-      "allocated_bytes": 3988824064,
+      "allocated_bytes": 1059336192,
       "device": 16777233,
-      "inode": 17471070,
-      "logical_bytes": 3988822752,
+      "inode": 18800427,
+      "logical_bytes": 1059332516,
       "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00075-of-00118.safetensors"
+      "path": "/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark/model-00045-of-00048.safetensors"
     },
     {
-      "allocated_bytes": 3994083328,
+      "allocated_bytes": 3596230656,
       "device": 16777233,
-      "inode": 17472353,
-      "logical_bytes": 3994082160,
+      "inode": 18796586,
+      "logical_bytes": 3596229272,
       "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00107-of-00118.safetensors"
+      "path": "/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark/model-00004-of-00048.safetensors"
     },
     {
-      "allocated_bytes": 3994083328,
+      "allocated_bytes": 3568771072,
       "device": 16777233,
-      "inode": 17463618,
-      "logical_bytes": 3994082160,
+      "inode": 18798295,
+      "logical_bytes": 3568770544,
       "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00026-of-00118.safetensors"
+      "path": "/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark/model-00033-of-00048.safetensors"
     },
     {
-      "allocated_bytes": 3994083328,
+      "allocated_bytes": 3590029312,
       "device": 16777233,
-      "inode": 17465498,
-      "logical_bytes": 3994082176,
+      "inode": 18799282,
+      "logical_bytes": 3590026352,
       "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00067-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3994083328,
-      "device": 16777233,
-      "inode": 17471916,
-      "logical_bytes": 3994082176,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00094-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3994083328,
-      "device": 16777233,
-      "inode": 17460154,
-      "logical_bytes": 3994082176,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00023-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3994083328,
-      "device": 16777233,
-      "inode": 17472139,
-      "logical_bytes": 3994082168,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00102-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3994083328,
-      "device": 16777233,
-      "inode": 17465357,
-      "logical_bytes": 3994082176,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00062-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3994083328,
-      "device": 16777233,
-      "inode": 17471689,
-      "logical_bytes": 3994082096,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00091-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3988824064,
-      "device": 16777233,
-      "inode": 17457519,
-      "logical_bytes": 3988822776,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00014-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3988824064,
-      "device": 16777233,
-      "inode": 17465232,
-      "logical_bytes": 3988822720,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00055-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3994083328,
-      "device": 16777233,
-      "inode": 17465502,
-      "logical_bytes": 3994082176,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00068-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3994083328,
-      "device": 16777233,
-      "inode": 17457502,
-      "logical_bytes": 3994081856,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00011-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3994083328,
-      "device": 16777233,
-      "inode": 17472357,
-      "logical_bytes": 3994082176,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00108-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3998277632,
-      "device": 16777233,
-      "inode": 17463660,
-      "logical_bytes": 3998276288,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00029-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3988824064,
-      "device": 16777233,
-      "inode": 17464959,
-      "logical_bytes": 3988822712,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00050-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3994083328,
-      "device": 16777233,
-      "inode": 17472025,
-      "logical_bytes": 3994082176,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00098-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3994083328,
-      "device": 16777233,
-      "inode": 17457500,
-      "logical_bytes": 3994081856,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00012-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3994083328,
-      "device": 16777233,
-      "inode": 17464981,
-      "logical_bytes": 3994082176,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00053-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3994083328,
-      "device": 16777233,
-      "inode": 17460132,
-      "logical_bytes": 3994082176,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00017-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3994083328,
-      "device": 16777233,
-      "inode": 17465256,
-      "logical_bytes": 3994082128,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00056-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3994083328,
-      "device": 16777233,
-      "inode": 17465339,
-      "logical_bytes": 3994082176,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00059-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3994083328,
-      "device": 16777233,
-      "inode": 17460141,
-      "logical_bytes": 3994082088,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00020-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3994083328,
-      "device": 16777233,
-      "inode": 17472105,
-      "logical_bytes": 3994082088,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00101-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3994083328,
-      "device": 16777233,
-      "inode": 17460133,
-      "logical_bytes": 3994082176,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00018-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3994083328,
-      "device": 16777233,
-      "inode": 17465352,
-      "logical_bytes": 3994082128,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00061-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3994083328,
-      "device": 16777233,
-      "inode": 17471684,
-      "logical_bytes": 3994082176,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00092-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3994083328,
-      "device": 16777233,
-      "inode": 17472253,
-      "logical_bytes": 3994082176,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00104-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3993018368,
-      "device": 16777233,
-      "inode": 17463563,
-      "logical_bytes": 3993016808,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00025-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3994083328,
-      "device": 16777233,
-      "inode": 17465488,
-      "logical_bytes": 3994082176,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00064-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3994083328,
-      "device": 16777233,
-      "inode": 17472014,
-      "logical_bytes": 3994082176,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00097-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3994083328,
-      "device": 16777233,
-      "inode": 17464391,
-      "logical_bytes": 3994082176,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00037-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3988824064,
-      "device": 16777233,
-      "inode": 17472871,
-      "logical_bytes": 3988822680,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00116-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3988824064,
-      "device": 16777233,
-      "inode": 17471294,
-      "logical_bytes": 3988822760,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00085-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3994083328,
-      "device": 16777233,
-      "inode": 17471072,
-      "logical_bytes": 3994082112,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00076-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3994083328,
-      "device": 16777233,
-      "inode": 17472458,
-      "logical_bytes": 3994082176,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00113-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3994083328,
-      "device": 16777233,
-      "inode": 17463820,
-      "logical_bytes": 3994082176,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00032-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3988824064,
-      "device": 16777233,
-      "inode": 17471272,
-      "logical_bytes": 3988822760,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00080-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3994083328,
-      "device": 16777233,
-      "inode": 17471056,
-      "logical_bytes": 3994082176,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00073-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3994083328,
-      "device": 16777233,
-      "inode": 17457497,
-      "logical_bytes": 3994081784,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00005-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3994083328,
-      "device": 16777233,
-      "inode": 17464827,
-      "logical_bytes": 3994082192,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00044-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3994083328,
-      "device": 16777233,
-      "inode": 17471107,
-      "logical_bytes": 3994082176,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00079-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3994083328,
-      "device": 16777233,
-      "inode": 17464784,
-      "logical_bytes": 3994082144,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00041-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3994083328,
-      "device": 16777233,
-      "inode": 17464395,
-      "logical_bytes": 3994082176,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00038-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3988824064,
-      "device": 16777233,
-      "inode": 17460137,
-      "logical_bytes": 3988822776,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00019-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3994083328,
-      "device": 16777233,
-      "inode": 17471688,
-      "logical_bytes": 3994082176,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00093-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3988824064,
-      "device": 16777233,
-      "inode": 17465345,
-      "logical_bytes": 3988822736,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00060-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3988824064,
-      "device": 16777233,
-      "inode": 17472058,
-      "logical_bytes": 3988822776,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00100-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3994083328,
-      "device": 16777233,
-      "inode": 17465329,
-      "logical_bytes": 3994082176,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00058-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3994083328,
-      "device": 16777233,
-      "inode": 17460145,
-      "logical_bytes": 3994082160,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00021-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3994083328,
-      "device": 16777233,
-      "inode": 17472000,
-      "logical_bytes": 3994082088,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00096-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3988824064,
-      "device": 16777233,
-      "inode": 17465489,
-      "logical_bytes": 3988822744,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00065-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3939557376,
-      "device": 16777233,
-      "inode": 17460158,
-      "logical_bytes": 3939555920,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00024-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3952140288,
-      "device": 16777233,
-      "inode": 17472303,
-      "logical_bytes": 3952138960,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00105-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3994083328,
-      "device": 16777233,
-      "inode": 17464971,
-      "logical_bytes": 3994082176,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00052-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3994083328,
-      "device": 16777233,
-      "inode": 17472034,
-      "logical_bytes": 3994082176,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00099-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3994083328,
-      "device": 16777233,
-      "inode": 17457517,
-      "logical_bytes": 3994081944,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00013-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3994083328,
-      "device": 16777233,
-      "inode": 17465297,
-      "logical_bytes": 3994082176,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00057-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3994083328,
-      "device": 16777233,
-      "inode": 17457550,
-      "logical_bytes": 3994082176,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00016-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3988824064,
-      "device": 16777233,
-      "inode": 17464832,
-      "logical_bytes": 3988822704,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00045-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3988824064,
-      "device": 16777233,
-      "inode": 17457501,
-      "logical_bytes": 3988822448,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00004-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3070275584,
-      "device": 16777233,
-      "inode": 17472882,
-      "logical_bytes": 3070273928,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00118-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3988824064,
-      "device": 16777233,
-      "inode": 17464763,
-      "logical_bytes": 3988822696,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00040-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3994083328,
-      "device": 16777233,
-      "inode": 17464399,
-      "logical_bytes": 3994082200,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00039-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3991957504,
-      "device": 16777233,
-      "inode": 17457515,
-      "logical_bytes": 3991955880,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00001-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3994083328,
-      "device": 16777233,
-      "inode": 17471077,
-      "logical_bytes": 3994082176,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00078-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3994083328,
-      "device": 16777233,
-      "inode": 17471071,
-      "logical_bytes": 3994082176,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00077-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3994083328,
-      "device": 16777233,
-      "inode": 17471289,
-      "logical_bytes": 3994082176,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00084-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3994083328,
-      "device": 16777233,
-      "inode": 17472878,
-      "logical_bytes": 3994082152,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00117-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3994083328,
-      "device": 16777233,
-      "inode": 17464387,
-      "logical_bytes": 3994082152,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00036-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3994083328,
-      "device": 16777233,
-      "inode": 17471052,
-      "logical_bytes": 3994082176,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00072-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3994083328,
-      "device": 16777233,
-      "inode": 17471276,
-      "logical_bytes": 3994082104,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00081-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3994083328,
-      "device": 16777233,
-      "inode": 17464375,
-      "logical_bytes": 3994082176,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00033-of-00118.safetensors"
-    },
-    {
-      "allocated_bytes": 3994083328,
-      "device": 16777233,
-      "inode": 17472453,
-      "logical_bytes": 3994082160,
-      "nlink": 1,
-      "path": "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b/model-00112-of-00118.safetensors"
+      "path": "/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark/model-00036-of-00048.safetensors"
     }
   ],
-  "free_bytes_before": 124190007296,
-  "generated_at": "2026-07-21T02:48:59Z",
+  "free_bytes_before": 450223394816,
+  "generated_at": "2026-07-21T03:43:24Z",
   "keep_dirs": [
     "/Users/scammermike/Downloads/mop"
   ],
@@ -979,9 +419,17 @@
   "rejected": [],
   "rejected_count": 0,
   "release_dirs": [
-    "/Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b"
+    "/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark"
   ],
   "running_processes_at_plan_time": [
+    {
+      "command": "/bin/zsh -c source /Users/scammermike/.claude/shell-snapshots/snapshot-zsh-1784600588001-pp4165.sh 2>/dev/null || true && setopt NO_EXTENDED_GLOB NO_BARE_GLOB_QUAL 2>/dev/null || true && eval 'cd /Users/scammermike/Downloads/hawking\\012python3.12 tools/condense/storage_stripdown.py protect >/dev/null\\012python3.12 tools/condense/storage_stripdown.py inventory >/dev/null 2>&1\\012python3.12 tools/co",
+      "pid": 7576
+    },
+    {
+      "command": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python tools/condense/storage_stripdown.py plan --release /Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark --keep /Users/scammermike/Downloads/mop",
+      "pid": 7646
+    },
     {
       "command": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python tools/condense/qwen_checkpoint_notifier.py --watch --interval 90 --pid 24649",
       "pid": 25305
@@ -989,22 +437,6 @@
     {
       "command": "/Users/scammermike/Downloads/hawking-hide-build/app/node_modules/.pnpm/@esbuild+darwin-arm64@0.28.1/node_modules/@esbuild/darwin-arm64/bin/esbuild --service=0.28.1 --ping",
       "pid": 89378
-    },
-    {
-      "command": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python tools/condense/storage_stripdown_controller.py loop",
-      "pid": 96446
-    },
-    {
-      "command": "caffeinate -dimsu /Library/Frameworks/Python.framework/Versions/3.12/bin/python3.12 tools/condense/storage_stripdown_controller.py loop",
-      "pid": 96448
-    },
-    {
-      "command": "tail -f -n +1 /Users/scammermike/Downloads/hawking/reports/condense/storage_stripdown/controller.log",
-      "pid": 96608
-    },
-    {
-      "command": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python tools/condense/storage_stripdown.py plan --release /Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b --keep /Users/scammermike/Downloads/mop",
-      "pid": 97096
     }
   ],
   "schema": "hawking.storage_stripdown.delete_manifest.v1",

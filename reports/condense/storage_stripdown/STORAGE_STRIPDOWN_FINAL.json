@@ -1,16 +1,17 @@
 {
-  "bytes_unlinked_by_manifest": 470192021504,
+  "bytes_unlinked_by_manifest": 637078638592,
   "delete_receipts": [
-    "/Users/scammermike/Downloads/hawking/reports/condense/storage_stripdown/STORAGE_STRIPDOWN_DELETE_RECEIPT_1784602261.json"
+    "/Users/scammermike/Downloads/hawking/reports/condense/storage_stripdown/STORAGE_STRIPDOWN_DELETE_RECEIPT_1784602261.json",
+    "/Users/scammermike/Downloads/hawking/reports/condense/storage_stripdown/STORAGE_STRIPDOWN_DELETE_RECEIPT_1784605409.json"
   ],
   "discrepancy_note": "realized free delta can differ from bytes unlinked because of APFS purgeable space, local snapshots holding freed extents, hardlinked blocks with surviving references, and concurrent writers.",
-  "free_bytes_at_campaign_start": 124183527424,
-  "free_bytes_now": 596252856320,
-  "generated_at": "2026-07-21T02:57:30Z",
+  "free_bytes_at_campaign_start": 450142543872,
+  "free_bytes_now": 617108668416,
+  "generated_at": "2026-07-21T03:43:37Z",
   "hawking_repo_healthy": true,
   "manifest_survivor_count": 0,
   "manifest_survivors": [],
-  "mop_bytes": 23358013440,
+  "mop_bytes": 23358550016,
   "mop_intact": true,
   "mop_root": "/Users/scammermike/Downloads/mop",
   "protected_roots": [
@@ -35,8 +36,20 @@
     "/Applications",
     "/Users/scammermike/Downloads/hawking/.git"
   ],
-  "realized_free_delta": 472069328896,
+  "realized_free_delta": 166966124544,
   "running_processes": [
+    {
+      "command": "/bin/zsh -c source /Users/scammermike/.claude/shell-snapshots/snapshot-zsh-1784600588001-pp4165.sh 2>/dev/null || true && setopt NO_EXTENDED_GLOB NO_BARE_GLOB_QUAL 2>/dev/null || true && eval 'cd /Users/scammermike/Downloads/hawking\\012python3.12 tools/condense/storage_stripdown.py verify 2>&1 | python3.12 -c \"\\012import json,sys; d=json.load(sys.stdin)\\012print('\"'\"'MOP intact:'\"'\"',d['\"'\"'mop_in",
+      "pid": 7675
+    },
+    {
+      "command": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python tools/condense/storage_stripdown.py verify",
+      "pid": 7677
+    },
+    {
+      "command": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python -c \\012import json,sys; d=json.load(sys.stdin)\\012print('MOP intact:',d['mop_intact'],round(d['mop_bytes']/2**30,2),'GiB')\\012print('repo healthy:',d['hawking_repo_healthy'])\\012print('manifest survivors:',d['manifest_survivor_count'])\\012print('free now:',round(d['free_bytes_now']/2**30,1),'GiB =',round(",
+      "pid": 7678
+    },
     {
       "command": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python tools/condense/qwen_checkpoint_notifier.py --watch --interval 90 --pid 24649",
       "pid": 25305
@@ -44,42 +57,6 @@
     {
       "command": "/Users/scammermike/Downloads/hawking-hide-build/app/node_modules/.pnpm/@esbuild+darwin-arm64@0.28.1/node_modules/@esbuild/darwin-arm64/bin/esbuild --service=0.28.1 --ping",
       "pid": 89378
-    },
-    {
-      "command": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python tools/condense/storage_stripdown_controller.py loop",
-      "pid": 96446
-    },
-    {
-      "command": "caffeinate -dimsu /Library/Frameworks/Python.framework/Versions/3.12/bin/python3.12 tools/condense/storage_stripdown_controller.py loop",
-      "pid": 96448
-    },
-    {
-      "command": "tail -f -n +1 /Users/scammermike/Downloads/hawking/reports/condense/storage_stripdown/controller.log",
-      "pid": 96608
-    },
-    {
-      "command": "/bin/zsh -c source /Users/scammermike/.claude/shell-snapshots/snapshot-zsh-1784600588001-pp4165.sh 2>/dev/null || true && setopt NO_EXTENDED_GLOB NO_BARE_GLOB_QUAL 2>/dev/null || true && eval 'until [ -f /Users/scammermike/Downloads/hawking/reports/condense/storage_stripdown/receipts/RESEQUENCE_LADDER.json ] || [ \"$(python3.12 -c \"import json;print(json.load(open('\"'\"'/Users/scammermike/Downloads/",
-      "pid": 97403
-    },
-    {
-      "command": "/bin/zsh -c source /Users/scammermike/.claude/shell-snapshots/snapshot-zsh-1784600588001-pp4165.sh 2>/dev/null || true && setopt NO_EXTENDED_GLOB NO_BARE_GLOB_QUAL 2>/dev/null || true && eval 'until [ -f /Users/scammermike/Downloads/hawking/reports/condense/storage_stripdown/NEXT_PARENT_ADMISSION.json ] || [ \"$(python3.12 -c \"import json;print(json.load(open('\"'\"'/Users/scammermike/Downloads/hawki",
-      "pid": 97833
-    },
-    {
-      "command": "/bin/zsh -c source /Users/scammermike/.claude/shell-snapshots/snapshot-zsh-1784600588001-pp4165.sh 2>/dev/null || true && setopt NO_EXTENDED_GLOB NO_BARE_GLOB_QUAL 2>/dev/null || true && eval 'until [ -f /Users/scammermike/Downloads/hawking/reports/condense/storage_stripdown/NEXT_PARENT_ADMISSION.json ] || [ \"$(python3.12 -c \"import json;print(json.load(open('\"'\"'/Users/scammermike/Downloads/hawki",
-      "pid": 98060
-    },
-    {
-      "command": "/bin/zsh -c source /Users/scammermike/.claude/shell-snapshots/snapshot-zsh-1784600588001-pp4165.sh 2>/dev/null || true && setopt NO_EXTENDED_GLOB NO_BARE_GLOB_QUAL 2>/dev/null || true && eval 'sleep 100; tail -4 reports/condense/storage_stripdown/controller.log; cat reports/condense/storage_stripdown/STORAGE_STRIPDOWN_FINAL.md 2>/dev/null' < /dev/null && pwd -P >| /tmp/claude-4efd-cwd",
-      "pid": 98109
-    },
-    {
-      "command": "/bin/zsh -c source /Users/scammermike/.claude/shell-snapshots/snapshot-zsh-1784600588001-pp4165.sh 2>/dev/null || true && setopt NO_EXTENDED_GLOB NO_BARE_GLOB_QUAL 2>/dev/null || true && eval 'until [ -f /Users/scammermike/Downloads/hawking/reports/condense/storage_stripdown/DOWNLOAD_PARENT_PROGRESS.json ] || [ \"$(python3.12 -c \"import json;print(json.load(open('\"'\"'/Users/scammermike/Downloads/ha",
-      "pid": 98157
-    },
-    {
-      "command": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python tools/condense/storage_stripdown.py verify",
-      "pid": 98218
     }
   ],
   "schema": "hawking.storage_stripdown.final.v1"
