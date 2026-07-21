@@ -1,0 +1,74 @@
+{
+  "schema": "hawking.kimi_k26.device_cleanse.final.v1",
+  "state": "CLEANSE_COMPLETE",
+  "completed_at": "2026-07-21T20:03:02Z",
+  "authorization": "Permanently remove Kimi-related resident data and implementation artifacts, retaining only progress/scientific evidence.",
+  "evidence_anchor": {
+    "branch": "campaign/kimi-k26-doctor-prime",
+    "closure_commit": "0210e5aa05f0e3c69d6f2022c539c9dc90cce322",
+    "official_revision": "7eb5002f6aadc958aed6a9177b7ed26bb94011bb",
+    "official_source_bytes": 595204999341,
+    "official_weight_shards": 64,
+    "official_manifest_seal_sha256": "22123f6ed9ae2688da383b5de8c671e70071802e6fc1ca0a16df90c607885c60",
+    "gravity_final_seal_sha256": "63e478a1b24da9604b18cb3388fa478bac1b2fa1a24f2953cc601d8aa445823a"
+  },
+  "deleted": {
+    "hugging_face_model_cache_roots": [
+      "models--moonshotai--Kimi-K2.6",
+      "models--moonshotai--Kimi-K2.7-Code",
+      "models--moonshotai--Kimi-K2-Instruct",
+      "models--moonshotai--Kimi-Linear-48B-A3B-Instruct"
+    ],
+    "kimi_k2_6_source_allocated_bytes": 595205144576,
+    "kimi_runtime_allocated_bytes": 2310508544,
+    "kimi_runtime_logical_bytes": 2310060963,
+    "installed_launchd_plist": true,
+    "hugging_face_lock_directories": 4,
+    "runtime_credentials_logs_captures_payloads_and_checkpoints": true,
+    "active_checkout_tracked_files": 41,
+    "active_checkout_tracked_lines": 18799,
+    "generated_bytecode_files": 57,
+    "external_clean_worktree_adapter_descriptors": 3
+  },
+  "execution": {
+    "parallel_workers": 4,
+    "elapsed_seconds": 2.317191,
+    "target_allocated_bytes_before": 597515689984,
+    "immediate_free_bytes_before": 43543277568,
+    "immediate_free_bytes_after": 641059192832,
+    "immediate_free_bytes_delta": 597515915264,
+    "current_free_bytes": 641056800768,
+    "current_free_gb": 641.056801,
+    "current_free_gib": 597.03067
+  },
+  "preserved": {
+    "authoritative_repository_progress_and_scientific_reports": true,
+    "normal_git_history": true,
+    "mop_project": true,
+    "shared_hugging_face_xet_cache": "preserved because contents are not uniquely attributable to Kimi",
+    "runtime_progress_archive": {
+      "path": "reports/condense/kimi_k26/KIMI_K26_RUNTIME_PROGRESS_ARCHIVE.zip",
+      "file_count": 102,
+      "uncompressed_bytes": 5831526,
+      "archive_bytes": 898063,
+      "sha256": "7e48036324cf2cfa307eb839f542e87ba2998f4777c2e39aa589d2b71c4fda7d",
+      "contains_text_evidence_only": true,
+      "contains_credentials_or_binary_payloads": false
+    }
+  },
+  "verification": {
+    "kimi_hugging_face_cache_roots_remaining": 0,
+    "kimi_k2_6_runtime_exists": false,
+    "kimi_launchd_service_loaded": false,
+    "kimi_processes_remaining": 0,
+    "installed_kimi_launchd_plist_exists": false,
+    "runtime_progress_archive_integrity_error": null,
+    "mop_touched": false
+  },
+  "recovery_boundary": {
+    "resident_model_and_runtime": "permanently deleted; model data requires a new download",
+    "active_checkout_implementation": "deleted from the checkout but recoverable from normal Git history",
+    "progress_and_scientific_results": "retained and sealed"
+  },
+  "seal_sha256": "b08ce29c12bbc3c2d37bc9f3154013df6316c261599d22843fef4289b48891c9"
+}
