@@ -242,6 +242,65 @@ def _bundle(world: Mapping[str, Any], probe: FakeProbe | None = None) -> dict[st
     )
 
 
+def _replacement_capsule(world: Mapping[str, Any]) -> dict[str, Any]:
+    return phase1.seal_document(
+        {
+            "schema": "hawking.kimi_k26.phase2.replacement_capsule_verification.v1",
+            "status": "PASS_DETERMINISTIC_SEMANTIC_REPLACEMENT_CAPSULE",
+            "session": os.fspath(world["layout"].session),
+            "payload": {
+                "filename": phase1.BEST_PAYLOAD_BASENAME,
+                "logical_bytes": phase1.BEST_PAYLOAD_BYTES,
+                "sha256": release.phase2_recovery.PINNED_REPLACEMENT_BINARY_SHA256[
+                    phase1.BEST_PAYLOAD_BASENAME
+                ],
+            },
+            "teacher_capture": {
+                "filename": phase1.TEACHER_CAPTURE_BASENAME,
+                "logical_bytes": phase1.TEACHER_CAPTURE_BYTES,
+                "sha256": phase1.TEACHER_CAPTURE_SHA256,
+            },
+            "teacher_receipt": {
+                "filename": "teacher_capture.json",
+                "logical_bytes": release.phase2_recovery.PINNED_SEED_RECEIPT_BYTES,
+                "sha256": release.phase2_recovery.PINNED_SEED_RECEIPT_SHA256,
+            },
+            "lineage": {
+                "filename": release.phase2_recovery.REPLACEMENT_LINEAGE,
+                "seal_sha256": "2" * 64,
+            },
+            "original_bytes_status": release.phase2_recovery.ORIGINAL_BYTES_STATUS,
+            "replacement_lineage_verified": True,
+            "deterministic_profile_verified": True,
+            "semantic_equivalence_verified": True,
+            "retained_replays_verified": True,
+            "pinned_replacement_hash_verified": True,
+            "exact_original_stop_condition_met": False,
+            "replacement_capability": (
+                "REPRODUCIBLE_LOCAL_F1_ROLLBACK_PAYLOAD_WITH_FROZEN_"
+                "GEOMETRY_BUDGETS_VERDICTS_AND_TEACHER"
+            ),
+            "residual_gap": {
+                "byte_identity": "NOT_REPRODUCED",
+                "semantic_numeric_absolute_tolerance": (
+                    release.phase2_recovery.SEMANTIC_ABSOLUTE_TOLERANCE
+                ),
+                "maximum_observed_absolute_residual": 0.0001,
+                "capability_boundary": "LOCAL_F1_ONLY_NOT_F2_PROMOTABLE",
+            },
+            "retained_replay_verification": {
+                "status": "PASS_TWO_RETAINED_REPLAYS_INDEPENDENTLY_VERIFIED",
+                "records_compared": 2
+                * len(release.phase2_recovery.FROZEN_SEMANTIC_RECORDS),
+            },
+            "mop_touched": False,
+            "shared_xet_used": False,
+            "network_accessed": False,
+            "delete_capability_present": False,
+        }
+    )
+
+
 def _execute(
     world: Mapping[str, Any],
     bundle: Mapping[str, Any],
@@ -288,6 +347,39 @@ def test_inventory_is_exact_64_weights_32_metadata_and_xet(tmp_path: pathlib.Pat
     assert inventory["recursive_delete_used"] is False
     assert bundle["status"] == "PASS_CONFIRMATION_REQUIRED"
     assert bundle["confirmation_token"] == release.derive_confirmation_token(bundle["audit"])
+
+
+def test_strict_replacement_capsule_is_release_compatible(tmp_path: pathlib.Path) -> None:
+    world = _fake_world(tmp_path)
+    world["capsule"] = _replacement_capsule(world)
+    bundle = _bundle(world)
+    verified = release.verify_bundle(bundle)
+    assert verified["status"] == "PASS_CONFIRMATION_REQUIRED"
+    assert (
+        verified["capsule_verification"]["original_bytes_status"]
+        == "UNRECOVERABLE_ORIGINAL_BYTES"
+    )
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("semantic_equivalence_verified", False),
+        ("original_bytes_status", "EXACT_ORIGINAL_BYTES"),
+        ("shared_xet_used", True),
+        ("delete_capability_present", True),
+    ],
+)
+def test_unsafe_or_unverified_replacement_capsule_is_rejected(
+    tmp_path: pathlib.Path, field: str, value: Any
+) -> None:
+    world = _fake_world(tmp_path)
+    capsule = _replacement_capsule(world)
+    capsule.pop("seal_sha256")
+    capsule[field] = value
+    world["capsule"] = phase1.seal_document(capsule)
+    with pytest.raises(release.Phase2ReleaseError, match="strict replacement"):
+        _bundle(world)
 
 
 def test_incomplete_transfer_blob_is_never_a_weight_target_and_blocks(

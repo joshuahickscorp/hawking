@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.hawking.emergency.detached.campaign</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/bin/caffeinate</string>
+        <string>-dimsu</string>
+        <string>--</string>
+        <string>/Library/Frameworks/Python.framework/Versions/3.12/bin/python3.12</string>
+        <string>/Users/scammermike/Downloads/hawking-emergency-executor/tools/condense/emergency_detached_campaign.py</string>
+        <string>tick</string>
+        <string>--state-root</string>
+        <string>/Users/scammermike/Library/Application Support/Hawking/EmergencyDetachedCampaign</string>
+    </array>
+    <key>WorkingDirectory</key>
+    <string>/Users/scammermike/Downloads/hawking-emergency-executor</string>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>StartInterval</key>
+    <integer>30</integer>
+    <key>ProcessType</key>
+    <string>Interactive</string>
+    <key>ThrottleInterval</key>
+    <integer>10</integer>
+    <key>ExitTimeOut</key>
+    <integer>30</integer>
+    <key>Umask</key>
+    <integer>63</integer>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PYTHONDONTWRITEBYTECODE</key>
+        <string>1</string>
+        <key>PYTHONUNBUFFERED</key>
+        <string>1</string>
+        <key>HF_HUB_DISABLE_IMPLICIT_TOKEN</key>
+        <string>1</string>
+        <key>LC_ALL</key>
+        <string>C</string>
+    </dict>
+    <key>StandardOutPath</key>
+    <string>/Users/scammermike/Library/Application Support/Hawking/EmergencyDetachedCampaign/logs/launchd.stdout.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/scammermike/Library/Application Support/Hawking/EmergencyDetachedCampaign/logs/launchd.stderr.log</string>
+</dict>
+</plist>

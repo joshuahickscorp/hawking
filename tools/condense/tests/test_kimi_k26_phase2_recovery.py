@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import ast
+import copy
 import contextlib
 import hashlib
 import os
@@ -106,11 +107,16 @@ class FakeRunner:
         if self.returncode_on_call == call_number:
             return subprocess.CompletedProcess(list(argv), 19, b"", b"fake failure")
         output = Path(argv[list(argv).index("--output-dir") + 1])
-        source = self.bracket_raw if call_number == 1 else self.doctor_raw
-        corrupt = self.corrupt_bracket if call_number == 1 else self.corrupt_doctor
+        is_bracket = "--source" in argv
+        source = self.bracket_raw if is_bracket else self.doctor_raw
+        corrupt = self.corrupt_bracket if is_bracket else self.corrupt_doctor
         for name, raw in source.items():
             value = raw + b"tampered" if name == corrupt else raw
-            _write_private(output / name, value)
+            target = output / name
+            if target.exists():
+                assert target.read_bytes() == value
+            else:
+                _write_private(target, value)
         return subprocess.CompletedProcess(list(argv), 0, b'{"status":"PASS"}\n', b"")
 
 
@@ -189,38 +195,44 @@ def _candidate_result(
                 "doctor_component_bytes": 1_220_627,
                 "header_overhead_bytes": 5_831 if p1 else 4_962,
             },
+            "metrics": {"held_out_score": 0.75 if p1 else 0.25},
         }
     )
     return raw
 
 
 def _doctor_result(spec: phase2.BinarySpec) -> bytes:
+    candidate = "P1" if spec.filename.startswith("P1_") else "P5"
+    architecture = spec.filename.removesuffix(".k26f1").removeprefix(candidate + "_")
+    p1 = candidate == "P1"
+    dual = architecture == "DUAL_PATH_RECOVERY_R16X2"
     _, raw = _sealed_bytes(
         {
             "schema": "hawking.kimi_k26.f1_hidden_doctor_result.v1",
             "status": "PASS",
-            "candidate": "P1",
-            "architecture": "DUAL_PATH_RECOVERY_R16X2",
+            "candidate": candidate,
+            "architecture": architecture,
             "source": {"repo": phase1.KIMI_REPO, "revision": phase1.KIMI_REVISION},
             "layer": 1,
             "sentinel_expert": 0,
-            "candidate_verdict": "SURVIVES_F1",
+            "candidate_verdict": "SURVIVES_F1" if p1 and dual else "DEGRADED_F1",
             "physical_budget": {
-                "target_complete_bpw": "49/50",
-                "complete_ceiling_bytes": 5_394_923,
-                "base_ceiling_bytes": 4_046_192,
-                "doctor_ceiling_bytes": 1_240_832,
-                "overhead_ceiling_bytes": 107_899,
+                "target_complete_bpw": "49/50" if p1 else "1/2",
+                "complete_ceiling_bytes": 5_394_923 if p1 else 2_752_512,
+                "base_ceiling_bytes": 4_046_192 if p1 else 1_431_306,
+                "doctor_ceiling_bytes": 1_240_832 if p1 else 1_238_630,
+                "overhead_ceiling_bytes": 107_899 if p1 else 82_576,
                 "logical_weights_represented": 44_040_192,
                 "all_payload_bytes_counted": True,
             },
             "payload": {
                 "bytes": spec.logical_bytes,
                 "sha256": spec.sha256,
-                "base_component_bytes": 4_022_298,
-                "doctor_component_bytes": 974_848,
+                "base_component_bytes": 4_022_298 if p1 else 1_404_937,
+                "doctor_component_bytes": 974_848 if dual else 931_478,
                 "header_overhead_bytes": 4_669,
             },
+            "metrics": {"held_out_score": 0.9 if p1 and dual else 0.4},
         }
     )
     return raw
@@ -320,11 +332,24 @@ def world(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> World:
             "layer": 1,
             "token_overlap": 0,
             "sentinel_expert": 0,
+            "captured_at": "2026-01-01T00:00:00Z",
+            "claim_boundary": "ONE_REAL_LAYER_ONE_SENTINEL_EXPERT; teacher captured once",
+            "fit_token_ids": [1],
+            "score_token_ids": [2],
+            "token_ids": [1, 2],
+            "sentinel_fit_route_slots": 1,
+            "sentinel_score_route_slots": 1,
             "capture_bytes": len(teacher),
             "capture_sha256": _sha(teacher),
         }
     )
     assert capture["status"] == "PASS"
+    monkeypatch.setattr(
+        phase2, "PINNED_SEED_RELATIVE", phase2.PurePosixPath("run-failed/thread1.frozen")
+    )
+    monkeypatch.setattr(phase2, "PINNED_SEED_RECEIPT", capture)
+    monkeypatch.setattr(phase2, "PINNED_SEED_RECEIPT_BYTES", len(capture_json))
+    monkeypatch.setattr(phase2, "PINNED_SEED_RECEIPT_SHA256", _sha(capture_json))
     generic = _sealed_bytes({"schema": "hawking.test.output.v1", "status": "PASS"})[1]
     bracket_raw = {
         "teacher_capture.npz": teacher,
@@ -347,12 +372,39 @@ def world(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> World:
     }
     for spec in doctor_specs:
         result_name = spec.filename.removesuffix(".k26f1") + "_RESULT.json"
-        doctor_raw[result_name] = (
-            _doctor_result(spec)
-            if spec.filename == phase1.BEST_PAYLOAD_BASENAME
-            else generic
-        )
+        doctor_raw[result_name] = _doctor_result(spec)
     doctor_raw["KIMI_K26_F1_DOCTOR_AUCTION.json"] = generic
+
+    frozen_semantic_raw = {
+        name: raw
+        for name, raw in {**bracket_raw, **doctor_raw}.items()
+        if name in {
+            "P1_F1_RESULT.json",
+            "P5_F1_RESULT.json",
+            "P1_BASE_OUTPUT_RECOVERY_R31_RESULT.json",
+            "P1_DUAL_PATH_RECOVERY_R16X2_RESULT.json",
+            "P5_BASE_OUTPUT_RECOVERY_R31_RESULT.json",
+            "P5_DUAL_PATH_RECOVERY_R16X2_RESULT.json",
+        }
+    }
+    frozen_semantics = {
+        name: phase1.strict_json_bytes(raw, label=f"fake frozen semantic {name}")
+        for name, raw in frozen_semantic_raw.items()
+    }
+    monkeypatch.setattr(
+        phase2,
+        "FROZEN_SEMANTIC_RECORDS",
+        tuple(
+            phase2.FrozenSemanticSpec(
+                f"fake/{name}",
+                name,
+                len(raw),
+                _sha(raw),
+                frozen_semantics[name]["seal_sha256"],
+            )
+            for name, raw in sorted(frozen_semantic_raw.items())
+        ),
+    )
 
     events: list[str] = []
     calls: list[dict[str, Any]] = []
@@ -418,6 +470,7 @@ def world(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> World:
         verify_archive=_archive_document,
         verify_runtime=_runtime_document,
         load_historical_sources=lambda: dict(historical),
+        load_frozen_semantics=lambda: dict(frozen_semantics),
         extract_records=extract_records,
         verify_capsule=verify_capsule,
         exclusive_lease=lease,
@@ -764,6 +817,176 @@ def test_extracts_only_three_frozen_records_and_verify_is_read_only(world: World
     assert not world.calls
     assert "extract" not in world.events
     assert "lease-enter" not in world.events
+
+
+def _different_same_size(raw: bytes) -> bytes:
+    assert raw
+    return bytes([raw[0] ^ 1]) + raw[1:]
+
+
+def test_auto_discovered_seed_builds_honest_replacement_without_mutating_seed(
+    world: World,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    root = world.layout.build / phase2.PHASE2_ROOT
+    _private(root)
+    failed_run = root / "run-failed"
+    _private(failed_run)
+    seed = failed_run / "thread1.frozen"
+    _private(seed)
+    _write_private(seed / "teacher_capture.npz", world.bracket_raw["teacher_capture.npz"])
+    _write_private(seed / "teacher_capture.json", world.bracket_raw["teacher_capture.json"])
+    seed_before = {
+        path.name: (path.read_bytes(), path.stat().st_ino, stat.S_IMODE(path.stat().st_mode))
+        for path in seed.iterdir()
+    }
+
+    p1 = _different_same_size(world.bracket_raw["P1_sentinel_expert.k26f1"])
+    p5 = _different_same_size(world.bracket_raw["P5_sentinel_expert.k26f1"])
+    world.runner.bracket_raw["P1_sentinel_expert.k26f1"] = p1
+    world.runner.bracket_raw["P5_sentinel_expert.k26f1"] = p5
+    world.runner.bracket_raw["P1_F1_RESULT.json"] = _candidate_result(
+        "P1", phase2.BinarySpec("P1_sentinel_expert.k26f1", len(p1), _sha(p1))
+    )
+    world.runner.bracket_raw["P5_F1_RESULT.json"] = _candidate_result(
+        "P5", phase2.BinarySpec("P5_sentinel_expert.k26f1", len(p5), _sha(p5))
+    )
+    for spec in phase2.DOCTOR_BINARIES:
+        replacement = _different_same_size(world.runner.doctor_raw[spec.filename])
+        world.runner.doctor_raw[spec.filename] = replacement
+        replacement_spec = phase2.BinarySpec(spec.filename, len(replacement), _sha(replacement))
+        world.runner.doctor_raw[
+            spec.filename.removesuffix(".k26f1") + "_RESULT.json"
+        ] = _doctor_result(replacement_spec)
+
+    pinned_binaries = {
+        name: _sha(raw)
+        for name, raw in {**world.runner.bracket_raw, **world.runner.doctor_raw}.items()
+        if name.endswith(".k26f1")
+    }
+    pinned_results = {
+        name: phase2._result_projection_sha256(  # noqa: SLF001
+            phase1.strict_json_bytes(raw, label=f"fake replacement {name}")
+        )
+        for name, raw in {**world.runner.bracket_raw, **world.runner.doctor_raw}.items()
+        if name in world.hooks.load_frozen_semantics()
+    }
+    monkeypatch.setattr(phase2, "PINNED_REPLACEMENT_BINARY_SHA256", pinned_binaries)
+    monkeypatch.setattr(
+        phase2, "PINNED_REPLACEMENT_RESULT_PROJECTION_SHA256", pinned_results
+    )
+
+    world.hooks = phase2.Phase2Hooks(
+        **{
+            **world.hooks.__dict__,
+            "verify_capsule": lambda layout: phase2.verify_capsule_for_release(
+                layout,
+                mop_root=world.mop,
+                shared_xet=world.shared,
+                frozen_semantics=world.hooks.load_frozen_semantics(),
+            ),
+        }
+    )
+    result = _generate(world)
+    assert result["status"] == "PASS_DETERMINISTIC_SEMANTIC_REPLACEMENT_CAPSULE"
+    assert result["original_bytes_status"] == "UNRECOVERABLE_ORIGINAL_BYTES"
+    assert result["exact_original_stop_condition_met"] is False
+    assert len(world.calls) == 4
+    for call in world.calls:
+        assert {
+            key: call["env"][key] for key in phase2.DETERMINISTIC_THREAD_ENVIRONMENT
+        } == phase2.DETERMINISTIC_THREAD_ENVIRONMENT
+        assert any(
+            "torch.use_deterministic_algorithms(True)" in argument
+            for argument in call["argv"]
+        )
+
+    seed_after = {
+        path.name: (path.read_bytes(), path.stat().st_ino, stat.S_IMODE(path.stat().st_mode))
+        for path in seed.iterdir()
+    }
+    assert seed_after == seed_before
+    capsule_names = {path.name for path in world.layout.capsule.iterdir()}
+    assert capsule_names == phase2._replacement_capsule_names()  # noqa: SLF001
+    for path in world.layout.capsule.iterdir():
+        assert stat.S_IMODE(path.stat().st_mode) == 0o600
+        assert path.stat().st_nlink == 1
+    verification = phase2.verify_capsule_for_release(
+        world.layout,
+        mop_root=world.mop,
+        shared_xet=world.shared,
+        frozen_semantics=world.hooks.load_frozen_semantics(),
+    )
+    assert verification["semantic_equivalence_verified"] is True
+    assert verification["retained_replays_verified"] is True
+    assert verification["pinned_replacement_hash_verified"] is True
+    assert verification["payload"]["sha256"] != phase1.BEST_PAYLOAD_SHA256
+    lineage = phase1.strict_json_bytes(
+        (world.layout.capsule / phase2.REPLACEMENT_LINEAGE).read_bytes(),
+        label="test replacement lineage",
+    )
+    assert lineage["original_bytes_status"] == "UNRECOVERABLE_ORIGINAL_BYTES"
+    assert all(
+        row["status"] == "UNRECOVERABLE_ORIGINAL_BYTES"
+        for row in lineage["original_binaries"]
+    )
+    assert lineage["residual_gap"]["byte_identity"] == "NOT_REPRODUCED"
+
+    selected_path = world.layout.capsule / phase1.BEST_PAYLOAD_BASENAME
+    forged = _different_same_size(selected_path.read_bytes())
+    selected_path.write_bytes(forged)
+    os.chmod(selected_path, 0o600)
+    forged_lineage = dict(lineage)
+    forged_lineage.pop("seal_sha256")
+    forged_lineage["selected_replacement"] = {
+        **forged_lineage["selected_replacement"],
+        "sha256": _sha(forged),
+    }
+    resealed = phase1.seal_document(forged_lineage)
+    lineage_path = world.layout.capsule / phase2.REPLACEMENT_LINEAGE
+    lineage_path.write_bytes(phase1.canonical_json(resealed) + b"\n")
+    os.chmod(lineage_path, 0o600)
+    with pytest.raises(phase2.Phase2RecoveryError, match="pinned object"):
+        phase2.verify_capsule_for_release(
+            world.layout,
+            mop_root=world.mop,
+            shared_xet=world.shared,
+            frozen_semantics=world.hooks.load_frozen_semantics(),
+        )
+
+
+@pytest.mark.parametrize("mutation", ["numeric_residual", "geometry"])
+def test_frozen_semantic_verifier_rejects_material_change(
+    world: World, mutation: str
+) -> None:
+    frozen = world.hooks.load_frozen_semantics()["P1_F1_RESULT.json"]
+    actual = copy.deepcopy(frozen)
+    if mutation == "numeric_residual":
+        actual["metrics"]["held_out_score"] += 0.01
+        match = "numeric residual"
+    else:
+        actual["physical_budget"]["complete_ceiling_bytes"] += 1
+        match = "frozen semantic value"
+    with pytest.raises(phase2.Phase2RecoveryError, match=match):
+        phase2._compare_frozen_semantics(  # noqa: SLF001
+            actual, frozen, label="test frozen semantic"
+        )
+
+
+def test_generate_parser_supports_optional_seed_without_controller_change() -> None:
+    parser = phase2.build_parser()
+    plain = parser.parse_args(["generate", "--session", "/private/example"])
+    explicit = parser.parse_args(
+        [
+            "generate",
+            "--session",
+            "/private/example",
+            "--seed-stage",
+            "/private/example/build/phase2-recovery/run-old/thread1.frozen",
+        ]
+    )
+    assert plain.seed_stage is None
+    assert explicit.seed_stage.name == "thread1.frozen"
 
 
 def test_no_delete_api_and_cli_has_only_three_commands() -> None:

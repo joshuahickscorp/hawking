@@ -31,9 +31,11 @@ from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 from typing import Any, Protocol
 
-try:
-    from tools.condense import kimi_k26_release_cycle as phase1
-except ModuleNotFoundError:  # direct script execution
+if __package__:
+    from . import kimi_k26_phase2_recovery as phase2_recovery
+    from . import kimi_k26_release_cycle as phase1
+else:  # direct script execution or top-level test import
+    import kimi_k26_phase2_recovery as phase2_recovery  # type: ignore[no-redef]
     import kimi_k26_release_cycle as phase1  # type: ignore[no-redef]
 
 
@@ -329,10 +331,78 @@ def _verify_evidence_inputs(
             or source_value.get("logical_bytes") != manifest.get("total_bytes") \
             or source_value.get("weight_bytes") != manifest.get("weight_bytes"):
         _fail("source verification is not exact Phase-1 source evidence")
-    if capsule_value.get("schema") != "hawking.kimi_k26.release_cycle.rollback_capsule.v1" \
-            or capsule_value.get("status") != "PASS_EXACT_PAYLOAD_RESULT_CAPTURE" \
-            or capsule_value.get("mop_touched") is not False:
-        _fail("rollback capsule verification is not exact Phase-1 evidence")
+    legacy_capsule = (
+        capsule_value.get("schema")
+        == "hawking.kimi_k26.release_cycle.rollback_capsule.v1"
+        and capsule_value.get("status") == "PASS_EXACT_PAYLOAD_RESULT_CAPTURE"
+        and capsule_value.get("mop_touched") is False
+    )
+    residual = capsule_value.get("residual_gap")
+    replacement_capsule = (
+        capsule_value.get("schema")
+        == "hawking.kimi_k26.phase2.replacement_capsule_verification.v1"
+        and capsule_value.get("status")
+        == "PASS_DETERMINISTIC_SEMANTIC_REPLACEMENT_CAPSULE"
+        and capsule_value.get("original_bytes_status")
+        == phase2_recovery.ORIGINAL_BYTES_STATUS
+        and capsule_value.get("replacement_lineage_verified") is True
+        and capsule_value.get("deterministic_profile_verified") is True
+        and capsule_value.get("semantic_equivalence_verified") is True
+        and capsule_value.get("retained_replays_verified") is True
+        and capsule_value.get("pinned_replacement_hash_verified") is True
+        and capsule_value.get("exact_original_stop_condition_met") is False
+        and capsule_value.get("replacement_capability")
+        == (
+            "REPRODUCIBLE_LOCAL_F1_ROLLBACK_PAYLOAD_WITH_FROZEN_"
+            "GEOMETRY_BUDGETS_VERDICTS_AND_TEACHER"
+        )
+        and isinstance(residual, dict)
+        and residual.get("byte_identity") == "NOT_REPRODUCED"
+        and residual.get("semantic_numeric_absolute_tolerance")
+        == phase2_recovery.SEMANTIC_ABSOLUTE_TOLERANCE
+        and isinstance(residual.get("maximum_observed_absolute_residual"), float)
+        and 0.0 <= residual["maximum_observed_absolute_residual"]
+        <= phase2_recovery.SEMANTIC_ABSOLUTE_TOLERANCE
+        and residual.get("capability_boundary") == "LOCAL_F1_ONLY_NOT_F2_PROMOTABLE"
+        and isinstance(capsule_value.get("payload"), dict)
+        and capsule_value["payload"].get("filename") == phase1.BEST_PAYLOAD_BASENAME
+        and capsule_value["payload"].get("logical_bytes") == phase1.BEST_PAYLOAD_BYTES
+        and isinstance(capsule_value["payload"].get("sha256"), str)
+        and HEX64_RE.fullmatch(capsule_value["payload"]["sha256"]) is not None
+        and capsule_value["payload"]["sha256"]
+        == phase2_recovery.PINNED_REPLACEMENT_BINARY_SHA256.get(
+            phase1.BEST_PAYLOAD_BASENAME
+        )
+        and isinstance(capsule_value.get("teacher_capture"), dict)
+        and capsule_value["teacher_capture"].get("filename")
+        == phase1.TEACHER_CAPTURE_BASENAME
+        and capsule_value["teacher_capture"].get("logical_bytes")
+        == phase1.TEACHER_CAPTURE_BYTES
+        and capsule_value["teacher_capture"].get("sha256")
+        == phase1.TEACHER_CAPTURE_SHA256
+        and isinstance(capsule_value.get("teacher_receipt"), dict)
+        and capsule_value["teacher_receipt"].get("filename") == "teacher_capture.json"
+        and capsule_value["teacher_receipt"].get("logical_bytes")
+        == phase2_recovery.PINNED_SEED_RECEIPT_BYTES
+        and capsule_value["teacher_receipt"].get("sha256")
+        == phase2_recovery.PINNED_SEED_RECEIPT_SHA256
+        and isinstance(capsule_value.get("lineage"), dict)
+        and capsule_value["lineage"].get("filename")
+        == phase2_recovery.REPLACEMENT_LINEAGE
+        and isinstance(capsule_value["lineage"].get("seal_sha256"), str)
+        and HEX64_RE.fullmatch(capsule_value["lineage"]["seal_sha256"]) is not None
+        and isinstance(capsule_value.get("retained_replay_verification"), dict)
+        and capsule_value["retained_replay_verification"].get("status")
+        == "PASS_TWO_RETAINED_REPLAYS_INDEPENDENTLY_VERIFIED"
+        and capsule_value["retained_replay_verification"].get("records_compared")
+        == 2 * len(phase2_recovery.FROZEN_SEMANTIC_RECORDS)
+        and capsule_value.get("mop_touched") is False
+        and capsule_value.get("shared_xet_used") is False
+        and capsule_value.get("network_accessed") is False
+        and capsule_value.get("delete_capability_present") is False
+    )
+    if not legacy_capsule and not replacement_capsule:
+        _fail("rollback capsule is neither exact legacy nor strict replacement evidence")
     return source_value, capsule_value
 
 
@@ -2931,7 +3001,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             phase1.validate_layout(layout)
             manifest = _load_official_manifest()
             source = phase1.verify_source(layout)
-            capsule = phase1.verify_payload_result_capture(layout)
+            capsule = phase2_recovery.verify_capsule_for_release(layout)
             value = build_release_bundle(
                 layout,
                 manifest,
@@ -2960,7 +3030,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                 confirmation_token=args.confirm,
                 manifest=manifest,
                 source_verifier=lambda candidate: phase1.verify_source(candidate),
-                capsule_verifier=lambda candidate: phase1.verify_payload_result_capture(candidate),
+                capsule_verifier=lambda candidate: phase2_recovery.verify_capsule_for_release(
+                    candidate
+                ),
                 probe=SystemAuditProbe(),
             )
         elif args.command == "reconcile":
@@ -2971,7 +3043,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 layout,
                 bundle,
                 confirmation_token=args.confirm,
-                capsule_verifier=lambda candidate: phase1.verify_payload_result_capture(
+                capsule_verifier=lambda candidate: phase2_recovery.verify_capsule_for_release(
                     candidate
                 ),
             )

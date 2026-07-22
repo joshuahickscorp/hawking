@@ -21,6 +21,7 @@ import fcntl
 import hashlib
 import io
 import json
+import math
 import os
 import platform
 import signal
@@ -28,6 +29,7 @@ import stat
 import subprocess
 import sys
 import time
+import zipfile
 from collections.abc import Callable, Iterator, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
@@ -64,12 +66,84 @@ BOOTSTRAP = (
     "sys.argv=sys.argv[1:];"
     "sys.path[:0]=[sys.argv.pop(1),sys.argv.pop(1)];"
     "sys.pycache_prefix=sys.argv.pop(1);"
+    "import torch;"
+    "torch.set_num_threads(1);"
+    "torch.set_num_interop_threads(1);"
+    "torch.use_deterministic_algorithms(True);"
+    "torch.backends.mps.is_available=lambda:False;"
     "runpy.run_path(script,run_name='__main__')"
 )
 MAX_CHILD_OUTPUT_BYTES = 2 * 1024 * 1024
 PHASE2_ROOT = PurePosixPath("phase2-recovery")
 FINAL_RECEIPT = PurePosixPath("KIMI_K26_PHASE2_RECOVERY.json")
+REPLACEMENT_LINEAGE = "KIMI_K26_REPLACEMENT_LINEAGE.json"
+ORIGINAL_BYTES_STATUS = "UNRECOVERABLE_ORIGINAL_BYTES"
+SEMANTIC_ABSOLUTE_TOLERANCE = 1.25e-4
 DOWNLOAD_LEASE_NAME = ".kimi-k26-download-supervisor.lease"
+PINNED_SEED_RELATIVE = PurePosixPath(
+    "run-15984-129208744283166/thread1.cIdySO"
+)
+PINNED_SEED_RECEIPT_BYTES = 1_665
+PINNED_SEED_RECEIPT_SHA256 = (
+    "0a536fa6cc4fbbcd5dacbe6672279dcded22b82785dad874116bdd38127ca893"
+)
+PINNED_SEED_RECEIPT: dict[str, Any] = {
+    "capture_bytes": 6_036_848,
+    "capture_sha256": "ffac463e8c28fc7df1490c511ee74c602ac2b0f520856110c63d35a5ac8df981",
+    "captured_at": "2026-07-22T03:58:18Z",
+    "claim_boundary": "ONE_REAL_LAYER_ONE_SENTINEL_EXPERT; teacher captured once",
+    "fit_token_ids": [
+        0, 2, 3, 6, 9, 10, 13, 15, 16, 25, 26, 29, 30, 31, 34, 36,
+        41, 46, 47, 48, 49, 51, 52, 55, 56, 59, 60, 61, 62, 64, 65, 69,
+    ],
+    "layer": 1,
+    "revision": "7eb5002f6aadc958aed6a9177b7ed26bb94011bb",
+    "schema": "hawking.kimi_k26.f1_teacher_capture.v1",
+    "score_token_ids": [
+        1, 4, 5, 7, 8, 11, 12, 14, 17, 18, 19, 20, 21, 22, 23, 24,
+        27, 28, 32, 33, 35, 37, 38, 39, 40, 42, 43, 44, 45, 50, 53, 54,
+    ],
+    "seal_sha256": "9fb9319ecccc6721822b5bafcd37c05dc5168213b3f79180137b971322c3c6da",
+    "sentinel_expert": 0,
+    "sentinel_fit_route_slots": 32,
+    "sentinel_score_route_slots": 31,
+    "status": "PASS",
+    "token_ids": [
+        0, 2, 3, 6, 9, 10, 13, 15, 16, 25, 26, 29, 30, 31, 34, 36,
+        41, 46, 47, 48, 49, 51, 52, 55, 56, 59, 60, 61, 62, 64, 65, 69,
+        1, 4, 5, 7, 8, 11, 12, 14, 17, 18, 19, 20, 21, 22, 23, 24,
+        27, 28, 32, 33, 35, 37, 38, 39, 40, 42, 43, 44, 45, 50, 53, 54,
+    ],
+    "token_overlap": 0,
+}
+PINNED_REPLACEMENT_BINARY_SHA256: dict[str, str] = {
+    "P1_sentinel_expert.k26f1": "99a8f7141f85baf83d5e5a87af35c2e0991777808483d1311126ec347f03cb95",
+    "P5_sentinel_expert.k26f1": "17fbd5a0f44a56760e77600c0e266ae13dbd327a7cf8de70c16013af8408b09b",
+    "P1_BASE_OUTPUT_RECOVERY_R31.k26f1": "0ac1f48b1f8e76e749c3802a17d9d9006f00a0a971d0922023759dfdd8a19a3f",
+    "P1_DUAL_PATH_RECOVERY_R16X2.k26f1": "4e353d0c6e2134e1c1c6c46f52f8cb63a42eadf8e281ab31c71fb007a87a756c",
+    "P5_BASE_OUTPUT_RECOVERY_R31.k26f1": "cd4f34f7f29fda6061de6b2e72468d6630cc69d6b611d07c610ae6010b8de8a5",
+    "P5_DUAL_PATH_RECOVERY_R16X2.k26f1": "0d69479f969d7169970d0f82351a53f7c95964a61264bb3a5cc57cb23585db7e",
+}
+PINNED_REPLACEMENT_RESULT_PROJECTION_SHA256: dict[str, str] = {
+    "P1_F1_RESULT.json": "a8c2db6c0da4b1e747d932d90494c34abd9311cdc57dd98ad7d0231652a3f62a",
+    "P5_F1_RESULT.json": "3f3548c95b089f627db9c8312a351646da385a13ce9faa75cf9512cec22e0c4f",
+    "P1_BASE_OUTPUT_RECOVERY_R31_RESULT.json": "183a6c469e65e8184087a2137ad6239d03ed528c0e0b43f42e6ef910f4f4fbac",
+    "P1_DUAL_PATH_RECOVERY_R16X2_RESULT.json": "a4005567909647164538c6973f92c95e8062bc67242fdf5a080abb2c67da8e57",
+    "P5_BASE_OUTPUT_RECOVERY_R31_RESULT.json": "ccc17de97b64b57d2d24db1c67670386e37650585e470971c856c3816ce7b8ca",
+    "P5_DUAL_PATH_RECOVERY_R16X2_RESULT.json": "a79437fd8d13e443d83004ff3e8be078e40ade9e68f88815c43759a859027c37",
+}
+DETERMINISTIC_THREAD_ENVIRONMENT: dict[str, str] = {
+    "OMP_NUM_THREADS": "1",
+    "OMP_DYNAMIC": "FALSE",
+    "MKL_NUM_THREADS": "1",
+    "MKL_DYNAMIC": "FALSE",
+    "OPENBLAS_NUM_THREADS": "1",
+    "VECLIB_MAXIMUM_THREADS": "1",
+    "NUMEXPR_NUM_THREADS": "1",
+    "BLIS_NUM_THREADS": "1",
+    "ACCELERATE_NUM_THREADS": "1",
+    "PYTORCH_ENABLE_MPS_FALLBACK": "0",
+}
 
 _NOFOLLOW = getattr(os, "O_NOFOLLOW", 0)
 _CLOEXEC = getattr(os, "O_CLOEXEC", 0)
@@ -245,6 +319,61 @@ FROZEN_RECORDS: tuple[FrozenRecordSpec, ...] = (
 
 
 @dataclass(frozen=True)
+class FrozenSemanticSpec:
+    archive_path: str
+    output_filename: str
+    logical_bytes: int
+    sha256: str
+    seal_sha256: str
+
+
+FROZEN_SEMANTIC_RECORDS: tuple[FrozenSemanticSpec, ...] = (
+    FrozenSemanticSpec(
+        "f1_representation_bracket/P1_F1_RESULT.json",
+        "P1_F1_RESULT.json",
+        8_160,
+        "bde4b6309fca646d8818d7f00575d01dcd634b066a96495a97de498a7fed5c8e",
+        "6308701a90debd16f50faa08d090710b935550f560869d0501aae7f66c947fa5",
+    ),
+    FrozenSemanticSpec(
+        "f1_representation_bracket/P5_F1_RESULT.json",
+        "P5_F1_RESULT.json",
+        8_143,
+        "5f0be6555cac98b7da8a19a52e4609c2d6907761b094fa528293feb1bcff7907",
+        "f4ccbb23694bb0519aafe91e5011f342f079c7ed2a598001f8e46328d0f4e793",
+    ),
+    FrozenSemanticSpec(
+        "f1_representation_bracket/doctor_auction/P1_BASE_OUTPUT_RECOVERY_R31_RESULT.json",
+        "P1_BASE_OUTPUT_RECOVERY_R31_RESULT.json",
+        3_612,
+        "a853e4417e7baf34b78e8bcceafc88bb3d203e578821d7de372ec2fd678e2719",
+        "bbd59704130dbb88902d087dfaf3eb69cf96215c8d1afb3a66984a42e8fb673c",
+    ),
+    FrozenSemanticSpec(
+        "f1_representation_bracket/doctor_auction/P1_DUAL_PATH_RECOVERY_R16X2_RESULT.json",
+        "P1_DUAL_PATH_RECOVERY_R16X2_RESULT.json",
+        3_736,
+        "6823316702811fe185dbe2756778be738b606d6c87f240606cf7f2e0b6e82f37",
+        "dc87eb2c850268f148b80df7c21e4192f69701876cf6f3ad24a708458514a21d",
+    ),
+    FrozenSemanticSpec(
+        "f1_representation_bracket/doctor_auction/P5_BASE_OUTPUT_RECOVERY_R31_RESULT.json",
+        "P5_BASE_OUTPUT_RECOVERY_R31_RESULT.json",
+        3_593,
+        "c6ee0050ff00856424ce74373c3ee31ac3fcf6c25b951eb8f610a19af4ed97b7",
+        "31edaa4837a586f9e3b300aaa693d15cfe917d5828c279cf2e7116f6c8463835",
+    ),
+    FrozenSemanticSpec(
+        "f1_representation_bracket/doctor_auction/P5_DUAL_PATH_RECOVERY_R16X2_RESULT.json",
+        "P5_DUAL_PATH_RECOVERY_R16X2_RESULT.json",
+        3_714,
+        "0708198fb32b2604725a05903d7f53bbbdaf9f423bbc1b4850ff8620f25cfc2c",
+        "58837a98c0505ca34c77162dbd8a14d82f983710efc2df50ddef572fa5fffbcc",
+    ),
+)
+
+
+@dataclass(frozen=True)
 class BinarySpec:
     filename: str
     logical_bytes: int
@@ -345,6 +474,7 @@ class Phase2Hooks:
     verify_archive: Callable[[], dict[str, Any]]
     verify_runtime: Callable[[], dict[str, Any]]
     load_historical_sources: Callable[[], Mapping[str, bytes]]
+    load_frozen_semantics: Callable[[], Mapping[str, dict[str, Any]]]
     extract_records: Callable[[phase1.SessionLayout, set[str]], dict[str, Any]]
     verify_capsule: Callable[[phase1.SessionLayout], dict[str, Any]]
     exclusive_lease: Callable[[phase1.SessionLayout], ContextManager[int]]
@@ -372,6 +502,7 @@ class Phase2Hooks:
             verify_archive=lambda: phase1.verify_recovery_archive(archive_path),
             verify_runtime=verify_generation_runtime,
             load_historical_sources=lambda: load_historical_sources(REPO_ROOT),
+            load_frozen_semantics=lambda: load_frozen_semantics(archive_path),
             extract_records=lambda layout, names: phase1.extract_sanitized_recovery(
                 layout,
                 archive_path=archive_path,
@@ -379,7 +510,7 @@ class Phase2Hooks:
                 mop_root=mop_root,
                 shared_xet=shared_xet,
             ),
-            verify_capsule=lambda layout: phase1.verify_payload_result_capture(
+            verify_capsule=lambda layout: verify_capsule_for_release(
                 layout, mop_root=mop_root, shared_xet=shared_xet
             ),
             exclusive_lease=_live_exclusive_lease,
@@ -569,6 +700,62 @@ def load_historical_sources(repo_root: Path = REPO_ROOT) -> dict[str, bytes]:
     return values
 
 
+def load_frozen_semantics(
+    archive_path: Path = phase1.SANITIZED_ARCHIVE,
+) -> dict[str, dict[str, Any]]:
+    """Load six exact self-sealed result records from the sanitized archive.
+
+    The archive is first verified in full by Phase 1.  No binary payload is
+    accepted from it: the frozen archive is semantic authority only.
+    """
+    raw = phase1._archive_bytes(archive_path)  # noqa: SLF001
+    phase1._verify_archive_raw(raw)  # noqa: SLF001
+    documents: dict[str, dict[str, Any]] = {}
+    with zipfile.ZipFile(io.BytesIO(raw)) as archive:
+        names = set(archive.namelist())
+        if any(name.endswith(".k26f1") for name in names):
+            _fail("sanitized archive unexpectedly contains an original binary payload")
+        for spec in FROZEN_SEMANTIC_RECORDS:
+            if spec.archive_path not in names:
+                _fail(f"frozen semantic record is absent: {spec.archive_path}")
+            record_raw = archive.read(spec.archive_path)
+            if (
+                len(record_raw) != spec.logical_bytes
+                or _hash_bytes(record_raw) != spec.sha256
+            ):
+                _fail(f"frozen semantic record bytes changed: {spec.archive_path}")
+            value = phase1.strict_json_bytes(
+                record_raw, label=f"frozen semantic record {spec.archive_path}"
+            )
+            phase1.verify_sealed_document(
+                value, label=f"frozen semantic record {spec.archive_path}"
+            )
+            if value.get("seal_sha256") != spec.seal_sha256:
+                _fail(f"frozen semantic seal changed: {spec.archive_path}")
+            documents[spec.output_filename] = value
+    if set(documents) != {spec.output_filename for spec in FROZEN_SEMANTIC_RECORDS}:
+        _fail("frozen semantic result allowlist changed")
+    return documents
+
+
+def _validate_frozen_semantics(
+    values: Mapping[str, dict[str, Any]],
+) -> dict[str, dict[str, Any]]:
+    expected = {spec.output_filename: spec for spec in FROZEN_SEMANTIC_RECORDS}
+    if set(values) != set(expected):
+        _fail("frozen semantic result allowlist changed")
+    verified: dict[str, dict[str, Any]] = {}
+    for name in sorted(expected):
+        value = values[name]
+        if not isinstance(value, dict):
+            _fail(f"frozen semantic record is malformed: {name}")
+        phase1.verify_sealed_document(value, label=f"frozen semantic record {name}")
+        if value.get("seal_sha256") != expected[name].seal_sha256:
+            _fail(f"frozen semantic record seal changed: {name}")
+        verified[name] = value
+    return verified
+
+
 def _record_target(record_path: str) -> Path:
     if (
         not record_path
@@ -699,6 +886,10 @@ def verify_generation_runtime() -> dict[str, Any]:
             "site_packages": os.fspath(SITE_PACKAGES),
             "python_flags": ["-I", "-S", "-B"],
             "bootstrap_sha256": _hash_bytes(BOOTSTRAP.encode("utf-8")),
+            "deterministic_profile": "PINNED_CPU_SINGLE_THREAD_V1",
+            "deterministic_thread_environment": dict(DETERMINISTIC_THREAD_ENVIRONMENT),
+            "torch_deterministic_algorithms": True,
+            "torch_mps_forced_unavailable": True,
             "sandbox_profile": SANDBOX_PROFILE,
             "sandbox_profile_sha256": _hash_bytes(SANDBOX_PROFILE.encode("utf-8")),
             "package_imports_executed_by_verifier": False,
@@ -928,6 +1119,167 @@ def _path_exists_nofollow(path: Path) -> bool:
     return True
 
 
+def _seed_capture_facts(layout: phase1.SessionLayout, seed: Path) -> dict[str, Any]:
+    """Validate one failed-stage teacher capture without changing it."""
+    root = layout.build / PHASE2_ROOT
+    clean = Path(os.path.normpath(os.fspath(seed)))
+    if not seed.is_absolute() or clean != seed or not phase1._within(clean, root):  # noqa: SLF001
+        _fail("seed stage must be one normalized absolute path inside Phase-2 build")
+    expected_seed = root.joinpath(*PINNED_SEED_RELATIVE.parts)
+    if clean != expected_seed:
+        _fail(f"seed stage is not the one pinned recovery seed: {expected_seed}")
+    descriptor = phase1._open_absolute_directory(clean)  # noqa: SLF001
+    try:
+        metadata = os.fstat(descriptor)
+        if metadata.st_uid != os.getuid() or stat.S_IMODE(metadata.st_mode) != 0o700:
+            _fail("seed stage is not an owned private 0700 directory")
+    finally:
+        os.close(descriptor)
+    capture_path = clean / "teacher_capture.npz"
+    receipt_path = clean / "teacher_capture.json"
+    capture = phase1._hash_regular(  # noqa: SLF001
+        capture_path, label="read-only seed teacher capture", expected_uid=os.getuid()
+    )
+    receipt_facts = phase1._hash_regular(  # noqa: SLF001
+        receipt_path, label="read-only seed teacher receipt", expected_uid=os.getuid()
+    )
+    for label, facts in (("capture", capture), ("receipt", receipt_facts)):
+        if facts["hard_links"] != 1 or facts["mode"] not in {"0600", "0644"}:
+            _fail(f"seed teacher {label} is not a private-parent single-link file")
+    if (
+        capture["logical_bytes"] != phase1.TEACHER_CAPTURE_BYTES
+        or capture["sha256"] != phase1.TEACHER_CAPTURE_SHA256
+    ):
+        _fail("seed teacher capture is not the exact historical teacher evidence")
+    if (
+        receipt_facts["logical_bytes"] != PINNED_SEED_RECEIPT_BYTES
+        or receipt_facts["sha256"] != PINNED_SEED_RECEIPT_SHA256
+    ):
+        _fail("seed teacher receipt is not the full pinned receipt")
+    receipt_raw = phase1._read_regular_bytes(  # noqa: SLF001
+        receipt_path,
+        label="read-only seed teacher receipt",
+        maximum_bytes=2_000_000,
+        expected_uid=os.getuid(),
+    )
+    receipt = phase1.strict_json_bytes(receipt_raw, label="read-only seed teacher receipt")
+    phase1.verify_sealed_document(receipt, label="read-only seed teacher receipt")
+    if receipt != PINNED_SEED_RECEIPT:
+        _fail("seed teacher receipt fields or full token membership changed")
+    return phase1.seal_document(
+        {
+            "schema": "hawking.kimi_k26.phase2.seed_capture.v1",
+            "status": "PASS_EXACT_READ_ONLY_TEACHER_SEED",
+            "seed_stage": os.fspath(clean),
+            "directory_inode": int(metadata.st_ino),
+            "directory_mode": "0700",
+            "capture": capture,
+            "receipt": receipt_facts,
+            "teacher_capture_seal_sha256": receipt["seal_sha256"],
+            "source_files_mutated": False,
+        }
+    )
+
+
+def _discover_seed_stage(layout: phase1.SessionLayout) -> Path | None:
+    """Find the frozen failed-stage capture deterministically for plain generate."""
+    root = layout.build / PHASE2_ROOT
+    candidate = root.joinpath(*PINNED_SEED_RELATIVE.parts)
+    if not _path_exists_nofollow(candidate):
+        return None
+    try:
+        _seed_capture_facts(layout, candidate)
+    except (OSError, phase1.ReleaseCycleError, Phase2RecoveryError):
+        return None
+    return candidate
+
+
+def _copy_seed_capture(
+    layout: phase1.SessionLayout, seed: Path, stage: Path
+) -> dict[str, Any]:
+    before = _seed_capture_facts(layout, seed)
+    raws: dict[str, bytes] = {}
+    for name, maximum in (
+        ("teacher_capture.npz", phase1.TEACHER_CAPTURE_BYTES),
+        ("teacher_capture.json", 2_000_000),
+    ):
+        raws[name] = phase1._read_regular_bytes(  # noqa: SLF001
+            seed / name,
+            label=f"read-only seed {name}",
+            maximum_bytes=maximum,
+            expected_uid=os.getuid(),
+        )
+    after = _seed_capture_facts(layout, seed)
+    if after != before:
+        _fail("seed capture changed while making the private copy")
+    f1_fd = phase1._open_absolute_directory(stage / "f1")  # noqa: SLF001
+    try:
+        for name in ("teacher_capture.npz", "teacher_capture.json"):
+            phase1._write_new_private_file(  # noqa: SLF001
+                f1_fd, PurePosixPath(name), raws[name]
+            )
+        os.fsync(f1_fd)
+    finally:
+        os.close(f1_fd)
+    return phase1.seal_document(
+        {
+            "schema": "hawking.kimi_k26.phase2.seed_copy.v1",
+            "status": "PASS_PRIVATE_COPY_FROM_UNCHANGED_READ_ONLY_SEED",
+            "seed": before,
+            "destination_stage": os.fspath(stage / "f1"),
+            "destination_mode": "0600",
+            "source_files_mutated": False,
+            "hardlinks_created": False,
+        }
+    )
+
+
+def _verify_seed_copy_unchanged(
+    layout: phase1.SessionLayout,
+    seed: Path,
+    stage: Path,
+    seed_copy: Mapping[str, Any],
+) -> dict[str, Any]:
+    source_after = _seed_capture_facts(layout, seed)
+    if source_after != seed_copy.get("seed"):
+        _fail("pinned seed changed after generator execution")
+    destination_capture = phase1._hash_regular(  # noqa: SLF001
+        stage / "f1/teacher_capture.npz",
+        label="post-generator copied teacher capture",
+        expected_uid=os.getuid(),
+    )
+    destination_receipt = phase1._hash_regular(  # noqa: SLF001
+        stage / "f1/teacher_capture.json",
+        label="post-generator copied teacher receipt",
+        expected_uid=os.getuid(),
+    )
+    if (
+        destination_capture["logical_bytes"] != phase1.TEACHER_CAPTURE_BYTES
+        or destination_capture["sha256"] != phase1.TEACHER_CAPTURE_SHA256
+        or destination_capture["mode"] != "0600"
+        or destination_capture["hard_links"] != 1
+        or destination_receipt["logical_bytes"] != PINNED_SEED_RECEIPT_BYTES
+        or destination_receipt["sha256"] != PINNED_SEED_RECEIPT_SHA256
+        or destination_receipt["mode"] != "0600"
+        or destination_receipt["hard_links"] != 1
+    ):
+        _fail("private teacher copy changed during generator execution")
+    copied_receipt = _strict_self_sealed(
+        stage / "f1/teacher_capture.json", label="post-generator copied teacher receipt"
+    )
+    if copied_receipt != PINNED_SEED_RECEIPT:
+        _fail("private teacher receipt or token membership changed during generation")
+    return phase1.seal_document(
+        {
+            "schema": "hawking.kimi_k26.phase2.seed_postcheck.v1",
+            "status": "PASS_SOURCE_AND_PRIVATE_COPY_UNCHANGED_POST_GENERATORS",
+            "source_seed": source_after,
+            "destination_capture": destination_capture,
+            "destination_receipt": destination_receipt,
+        }
+    )
+
+
 def _verify_frozen_record(layout: phase1.SessionLayout, spec: FrozenRecordSpec) -> dict[str, Any]:
     path = layout.recovery / spec.relative_path
     raw = phase1._read_regular_bytes(  # noqa: SLF001
@@ -1012,6 +1364,7 @@ def _generation_environment(stage: Path) -> dict[str, str]:
         "PYTHONSAFEPATH": "1",
         "PYTHONHASHSEED": "0",
         "PYTHONPYCACHEPREFIX": os.fspath(stage / "pycache"),
+        **DETERMINISTIC_THREAD_ENVIRONMENT,
         "PATH": "/usr/bin:/bin",
         "LC_ALL": "C",
         "LANG": "C",
@@ -1175,6 +1528,318 @@ def _require_subset(value: Mapping[str, Any], expected: Mapping[str, Any], *, la
     for key, item in expected.items():
         if value.get(key) != item:
             _fail(f"{label} field {key} changed")
+
+
+_SEMANTIC_DYNAMIC_PATHS = frozenset(
+    {
+        "/payload/path",
+        "/payload/sha256",
+        "/seal_sha256",
+        "/sealed_at",
+        "/teacher_capture_seal_sha256",
+    }
+)
+_REPLAY_PROJECTION_DYNAMIC_PATHS = frozenset(
+    {"/payload/path", "/seal_sha256", "/sealed_at"}
+)
+
+
+def _result_projection(value: Any, path: str = "") -> Any:
+    if isinstance(value, dict):
+        return {
+            key: (
+                "__REPLAY_DYNAMIC_FIELD__"
+                if f"{path}/{key}" in _REPLAY_PROJECTION_DYNAMIC_PATHS
+                else _result_projection(item, f"{path}/{key}")
+            )
+            for key, item in value.items()
+        }
+    if isinstance(value, list):
+        return [
+            _result_projection(item, f"{path}/{index}")
+            for index, item in enumerate(value)
+        ]
+    return value
+
+
+def _result_projection_sha256(value: Mapping[str, Any]) -> str:
+    return _hash_bytes(phase1.canonical_json(_result_projection(dict(value))))
+
+
+def _compare_frozen_semantics(
+    actual: Any,
+    frozen: Any,
+    *,
+    label: str,
+    tolerance: float = SEMANTIC_ABSOLUTE_TOLERANCE,
+) -> dict[str, Any]:
+    maximum = 0.0
+    maximum_path = ""
+    numeric_fields = 0
+
+    def compare(left: Any, right: Any, path: str) -> None:
+        nonlocal maximum, maximum_path, numeric_fields
+        if isinstance(right, dict):
+            if not isinstance(left, dict) or set(left) != set(right):
+                _fail(f"{label} semantic object shape changed at {path or '/'}")
+            for key in sorted(right):
+                child_path = f"{path}/{key}"
+                if child_path not in _SEMANTIC_DYNAMIC_PATHS:
+                    compare(left[key], right[key], child_path)
+            return
+        if isinstance(right, list):
+            if not isinstance(left, list) or len(left) != len(right):
+                _fail(f"{label} semantic list shape changed at {path or '/'}")
+            for index, (left_item, right_item) in enumerate(zip(left, right, strict=True)):
+                compare(left_item, right_item, f"{path}/{index}")
+            return
+        if isinstance(right, bool) or right is None or isinstance(right, (str, int)):
+            if type(left) is not type(right) or left != right:
+                _fail(f"{label} frozen semantic value changed at {path or '/'}")
+            return
+        if isinstance(right, float):
+            if not isinstance(left, float) or not math.isfinite(left) or not math.isfinite(right):
+                _fail(f"{label} non-finite or non-float metric at {path or '/'}")
+            residual = abs(left - right)
+            numeric_fields += 1
+            if residual > maximum:
+                maximum = residual
+                maximum_path = path
+            if residual > tolerance:
+                _fail(
+                    f"{label} numeric residual {residual:.12g} exceeds {tolerance:.12g} "
+                    f"at {path or '/'}"
+                )
+            return
+        _fail(f"{label} unsupported frozen semantic value at {path or '/'}")
+
+    compare(actual, frozen, "")
+    return {
+        "status": "PASS_EXACT_SHAPE_AND_PINNED_NUMERIC_TOLERANCE",
+        "absolute_tolerance": tolerance,
+        "maximum_absolute_residual": maximum,
+        "maximum_residual_path": maximum_path,
+        "numeric_fields_compared": numeric_fields,
+        "dynamic_paths_excluded": sorted(_SEMANTIC_DYNAMIC_PATHS),
+    }
+
+
+def _verify_replacement_binary(
+    directory: Path, spec: BinarySpec, *, label: str
+) -> dict[str, Any]:
+    facts = phase1._hash_regular(  # noqa: SLF001
+        directory / spec.filename, label=label, expected_uid=os.getuid()
+    )
+    expected = {
+        "logical_bytes": spec.logical_bytes,
+        "mode": "0600",
+        "uid": os.getuid(),
+        "hard_links": 1,
+    }
+    for key, value in expected.items():
+        if facts.get(key) != value:
+            _fail(f"{label} {key} changed")
+    pinned_sha256 = PINNED_REPLACEMENT_BINARY_SHA256.get(spec.filename)
+    if pinned_sha256 is None or facts["sha256"] != pinned_sha256:
+        _fail(f"{label} does not match the independently reproduced pinned hash")
+    return {"filename": spec.filename, **facts}
+
+
+def _require_result_payload_binding(
+    result: Mapping[str, Any], binary: Mapping[str, Any], *, label: str
+) -> None:
+    payload = result.get("payload")
+    if not isinstance(payload, dict):
+        _fail(f"{label} payload accounting is malformed")
+    if (
+        payload.get("bytes") != binary.get("logical_bytes")
+        or payload.get("sha256") != binary.get("sha256")
+    ):
+        _fail(f"{label} does not bind the generated replacement payload")
+
+
+def _verify_replacement_bracket_outputs(
+    stage: Path, frozen: Mapping[str, dict[str, Any]]
+) -> dict[str, Any]:
+    directory = stage / "f1"
+    _verify_private_inventory(directory, BRACKET_EXPECTED_FILES, label="bracket output")
+    capture = _verify_binary(
+        directory, BRACKET_BINARIES[0], label="exact recovered teacher capture"
+    )
+    binaries = [capture] + [
+        _verify_replacement_binary(
+            directory, spec, label=f"replacement bracket binary {spec.filename}"
+        )
+        for spec in BRACKET_BINARIES[1:]
+    ]
+    by_name = {row["filename"]: row for row in binaries}
+    capture_receipt = _strict_self_sealed(
+        directory / "teacher_capture.json", label="reused teacher capture receipt"
+    )
+    _require_subset(
+        capture_receipt,
+        {
+            "schema": "hawking.kimi_k26.f1_teacher_capture.v1",
+            "status": "PASS",
+            "revision": phase1.KIMI_REVISION,
+            "layer": 1,
+            "token_overlap": 0,
+            "sentinel_expert": 0,
+            "capture_bytes": phase1.TEACHER_CAPTURE_BYTES,
+            "capture_sha256": phase1.TEACHER_CAPTURE_SHA256,
+        },
+        label="reused teacher capture receipt",
+    )
+    rows: list[dict[str, Any]] = []
+    for candidate in ("P1", "P5"):
+        filename = f"{candidate}_F1_RESULT.json"
+        if filename not in frozen:
+            _fail(f"frozen semantic map omitted {filename}")
+        result = _strict_self_sealed(directory / filename, label=f"replacement {filename}")
+        payload_name = f"{candidate}_sentinel_expert.k26f1"
+        _require_result_payload_binding(
+            result, by_name[payload_name], label=f"replacement {filename}"
+        )
+        comparison = _compare_frozen_semantics(
+            result, frozen[filename], label=f"replacement {filename}"
+        )
+        projection_sha256 = _result_projection_sha256(result)
+        if projection_sha256 != PINNED_REPLACEMENT_RESULT_PROJECTION_SHA256.get(filename):
+            _fail(f"replacement {filename} does not match the reproduced projection")
+        rows.append(
+            {
+                "filename": filename,
+                "seal_sha256": result["seal_sha256"],
+                "frozen_seal_sha256": frozen[filename]["seal_sha256"],
+                "comparison": comparison,
+                "projection_sha256": projection_sha256,
+            }
+        )
+    return phase1.seal_document(
+        {
+            "schema": "hawking.kimi_k26.phase2.replacement_bracket_outputs.v1",
+            "status": "PASS_REPLACEMENT_BRACKET_SEMANTICS_WITHIN_PINNED_TOLERANCE",
+            "binaries": binaries,
+            "capture_receipt_seal_sha256": capture_receipt["seal_sha256"],
+            "semantic_results": rows,
+            "original_binary_hashes_required": False,
+            "original_bytes_status": ORIGINAL_BYTES_STATUS,
+        }
+    )
+
+
+def _verify_replacement_doctor_outputs(
+    stage: Path, frozen: Mapping[str, dict[str, Any]]
+) -> dict[str, Any]:
+    directory = stage / "doctor"
+    _verify_private_inventory(directory, DOCTOR_EXPECTED_FILES, label="Doctor output")
+    binaries = [
+        _verify_replacement_binary(
+            directory, spec, label=f"replacement Doctor binary {spec.filename}"
+        )
+        for spec in DOCTOR_BINARIES
+    ]
+    by_name = {row["filename"]: row for row in binaries}
+    rows: list[dict[str, Any]] = []
+    for spec in DOCTOR_BINARIES:
+        filename = spec.filename.removesuffix(".k26f1") + "_RESULT.json"
+        if filename not in frozen:
+            _fail(f"frozen semantic map omitted {filename}")
+        result = _strict_self_sealed(directory / filename, label=f"replacement {filename}")
+        _require_result_payload_binding(
+            result, by_name[spec.filename], label=f"replacement {filename}"
+        )
+        comparison = _compare_frozen_semantics(
+            result, frozen[filename], label=f"replacement {filename}"
+        )
+        projection_sha256 = _result_projection_sha256(result)
+        if projection_sha256 != PINNED_REPLACEMENT_RESULT_PROJECTION_SHA256.get(filename):
+            _fail(f"replacement {filename} does not match the reproduced projection")
+        rows.append(
+            {
+                "filename": filename,
+                "seal_sha256": result["seal_sha256"],
+                "frozen_seal_sha256": frozen[filename]["seal_sha256"],
+                "comparison": comparison,
+                "projection_sha256": projection_sha256,
+            }
+        )
+    best_name = "P1_DUAL_PATH_RECOVERY_R16X2_RESULT.json"
+    best = _strict_self_sealed(directory / best_name, label="replacement best Doctor result")
+    _require_subset(
+        best,
+        {
+            "schema": "hawking.kimi_k26.f1_hidden_doctor_result.v1",
+            "status": "PASS",
+            "candidate": "P1",
+            "architecture": "DUAL_PATH_RECOVERY_R16X2",
+            "source": {"repo": phase1.KIMI_REPO, "revision": phase1.KIMI_REVISION},
+            "layer": 1,
+            "sentinel_expert": 0,
+            "candidate_verdict": "SURVIVES_F1",
+        },
+        label="replacement best Doctor result",
+    )
+    return phase1.seal_document(
+        {
+            "schema": "hawking.kimi_k26.phase2.replacement_doctor_outputs.v1",
+            "status": "PASS_ALL_FOUR_REPLACEMENT_DOCTOR_SEMANTICS_WITHIN_PINNED_TOLERANCE",
+            "binaries": binaries,
+            "semantic_results": rows,
+            "selected_replacement": by_name[phase1.BEST_PAYLOAD_BASENAME],
+            "frozen_best_result_remains_historical_authority": True,
+            "original_binary_hashes_required": False,
+            "original_bytes_status": ORIGINAL_BYTES_STATUS,
+        }
+    )
+
+
+def _verify_replay_agreement(
+    replay_rows: Sequence[tuple[Mapping[str, Any], Mapping[str, Any]]],
+) -> dict[str, Any]:
+    if len(replay_rows) != 2:
+        _fail("replacement requires exactly two independent replay rows")
+    first_bracket, first_doctor = replay_rows[0]
+    second_bracket, second_doctor = replay_rows[1]
+    first_binaries = {
+        row["filename"]: row["sha256"]
+        for record in (first_bracket, first_doctor)
+        for row in record["binaries"]
+        if row["filename"] != BRACKET_BINARIES[0].filename
+    }
+    second_binaries = {
+        row["filename"]: row["sha256"]
+        for record in (second_bracket, second_doctor)
+        for row in record["binaries"]
+        if row["filename"] != BRACKET_BINARIES[0].filename
+    }
+    if first_binaries != second_binaries or first_binaries != PINNED_REPLACEMENT_BINARY_SHA256:
+        _fail("independent replacement replay binary hashes did not agree exactly")
+    first_results = {
+        row["filename"]: row["projection_sha256"]
+        for record in (first_bracket, first_doctor)
+        for row in record["semantic_results"]
+    }
+    second_results = {
+        row["filename"]: row["projection_sha256"]
+        for record in (second_bracket, second_doctor)
+        for row in record["semantic_results"]
+    }
+    if (
+        first_results != second_results
+        or first_results != PINNED_REPLACEMENT_RESULT_PROJECTION_SHA256
+    ):
+        _fail("independent replacement replay result projections did not agree exactly")
+    return phase1.seal_document(
+        {
+            "schema": "hawking.kimi_k26.phase2.replay_agreement.v1",
+            "status": "PASS_TWO_FRESH_PINNED_REPLAYS_EXACTLY_AGREE",
+            "replay_count": 2,
+            "binary_sha256": first_binaries,
+            "result_projection_sha256": first_results,
+            "raw_result_hashes_expected_to_differ_for_path_and_time": True,
+        }
+    )
 
 
 def _verify_bracket_outputs(stage: Path) -> dict[str, Any]:
@@ -1453,14 +2118,658 @@ def _stage_capsule(layout: phase1.SessionLayout, stage: Path) -> dict[str, Any]:
 def _verify_capsule_authority(
     layout: phase1.SessionLayout, hooks: Phase2Hooks
 ) -> tuple[dict[str, Any], dict[str, Any]]:
-    shape = _capsule_shape(layout)
     verification = hooks.verify_capsule(layout)
-    phase1.verify_sealed_document(verification, label="Phase-1 capsule verification")
-    if verification.get("schema") != "hawking.kimi_k26.release_cycle.rollback_capsule.v1":
-        _fail("Phase-1 capsule verification schema changed")
-    if verification.get("status") != "PASS_EXACT_PAYLOAD_RESULT_CAPTURE":
-        _fail("Phase-1 capsule verification did not pass")
+    phase1.verify_sealed_document(verification, label="Phase-2 capsule verification")
+    identity = (verification.get("schema"), verification.get("status"))
+    legacy = (
+        "hawking.kimi_k26.release_cycle.rollback_capsule.v1",
+        "PASS_EXACT_PAYLOAD_RESULT_CAPTURE",
+    )
+    replacement = (
+        "hawking.kimi_k26.phase2.replacement_capsule_verification.v1",
+        "PASS_DETERMINISTIC_SEMANTIC_REPLACEMENT_CAPSULE",
+    )
+    if identity == legacy:
+        shape = _capsule_shape(layout)
+    elif identity == replacement:
+        shape = phase1.seal_document(
+            {
+                "schema": "hawking.kimi_k26.phase2.capsule_shape.v1",
+                "status": "PASS_EXACT_RETAINED_DUAL_REPLAY_REPLACEMENT_FILES",
+                "capsule": os.fspath(layout.capsule),
+                "directory_mode": "0700",
+                "binaries": [verification["payload"], verification["teacher_capture"]],
+                "lineage": verification["lineage"],
+                "retained_replay_verification": verification[
+                    "retained_replay_verification"
+                ],
+                "file_count": len(_replacement_capsule_names()),
+                "extra_entries": 0,
+            }
+        )
+    else:
+        _fail("capsule verification is neither exact legacy nor strict replacement evidence")
     return shape, verification
+
+
+def _original_binary_rows() -> list[dict[str, Any]]:
+    return [
+        {
+            "stage": stage,
+            "filename": spec.filename,
+            "logical_bytes": spec.logical_bytes,
+            "expected_original_sha256": spec.sha256,
+            "status": ORIGINAL_BYTES_STATUS,
+        }
+        for stage, specifications in (
+            ("bracket", BRACKET_BINARIES[1:]),
+            ("doctor", DOCTOR_BINARIES),
+        )
+        for spec in specifications
+    ]
+
+
+def _replacement_payload_specs() -> tuple[BinarySpec, ...]:
+    return (*BRACKET_BINARIES[1:], *DOCTOR_BINARIES)
+
+
+def _replacement_result_to_binary() -> dict[str, BinarySpec]:
+    return {
+        "P1_F1_RESULT.json": BRACKET_BINARIES[1],
+        "P5_F1_RESULT.json": BRACKET_BINARIES[2],
+        **{
+            spec.filename.removesuffix(".k26f1") + "_RESULT.json": spec
+            for spec in DOCTOR_BINARIES
+        },
+    }
+
+
+def _replay_capsule_name(replay: int, filename: str) -> str:
+    if replay not in {1, 2} or "/" in filename or "\x00" in filename:
+        _fail("unsafe replacement replay capsule name")
+    return f"replay{replay}__{filename}"
+
+
+def _replacement_capsule_names() -> set[str]:
+    retained = {
+        _replay_capsule_name(replay, name)
+        for replay in (1, 2)
+        for name in (
+            *(spec.filename for spec in _replacement_payload_specs()),
+            *_replacement_result_to_binary(),
+        )
+    }
+    return retained | {
+        phase1.BEST_PAYLOAD_BASENAME,
+        phase1.TEACHER_CAPTURE_BASENAME,
+        "teacher_capture.json",
+        REPLACEMENT_LINEAGE,
+    }
+
+
+def _frozen_semantic_rows() -> list[dict[str, Any]]:
+    return [
+        {
+            "archive_path": spec.archive_path,
+            "output_filename": spec.output_filename,
+            "logical_bytes": spec.logical_bytes,
+            "sha256": spec.sha256,
+            "seal_sha256": spec.seal_sha256,
+        }
+        for spec in FROZEN_SEMANTIC_RECORDS
+    ]
+
+
+def _build_replacement_lineage(
+    *,
+    layout: phase1.SessionLayout,
+    stages: Sequence[Path],
+    preflight_record: Mapping[str, Any],
+    frozen_records: Mapping[str, Any],
+    seed_copies: Sequence[Mapping[str, Any]],
+    seed_postchecks: Sequence[Mapping[str, Any]],
+    replay_rows: Sequence[tuple[Mapping[str, Any], Mapping[str, Any]]],
+    replay_agreement: Mapping[str, Any],
+    generator_runs: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    comparisons = [
+        row["comparison"]
+        for bracket, doctor in replay_rows
+        for record in (bracket, doctor)
+        for row in record["semantic_results"]
+    ]
+    maximum_residual = max(
+        (float(row["maximum_absolute_residual"]) for row in comparisons), default=0.0
+    )
+    selected = dict(replay_rows[0][1]["selected_replacement"])
+    selected.pop("git_blob_sha1", None)
+    selected.pop("allocated_bytes", None)
+    selected.pop("device", None)
+    selected.pop("inode", None)
+    selected.pop("uid", None)
+    selected.pop("mode", None)
+    selected.pop("hard_links", None)
+    lineage = phase1.seal_document(
+        {
+            "schema": "hawking.kimi_k26.phase2.replacement_lineage.v1",
+            "status": "PASS_DETERMINISTIC_SINGLE_THREAD_SEMANTIC_REPLACEMENT",
+            "session": os.fspath(layout.session),
+            "historical_generator_commit": HISTORICAL_COMMIT,
+            "historical_generator_tree": HISTORICAL_TREE,
+            "source_verification_seal_sha256": preflight_record["source_verification"][
+                "seal_sha256"
+            ],
+            "recovery_archive_verification_seal_sha256": preflight_record[
+                "recovery_archive_verification"
+            ]["seal_sha256"],
+            "generation_runtime_verification_seal_sha256": preflight_record[
+                "generation_runtime_verification"
+            ]["seal_sha256"],
+            "historical_export_verification_seal_sha256": preflight_record[
+                "historical_export_verification"
+            ]["seal_sha256"],
+            "frozen_records_seal_sha256": frozen_records["seal_sha256"],
+            "teacher_seed": {
+                "pinned_relative_path": os.fspath(PINNED_SEED_RELATIVE),
+                "receipt_bytes": PINNED_SEED_RECEIPT_BYTES,
+                "receipt_sha256": PINNED_SEED_RECEIPT_SHA256,
+                "receipt_seal_sha256": PINNED_SEED_RECEIPT["seal_sha256"],
+                "fit_token_ids": PINNED_SEED_RECEIPT["fit_token_ids"],
+                "score_token_ids": PINNED_SEED_RECEIPT["score_token_ids"],
+                "token_ids": PINNED_SEED_RECEIPT["token_ids"],
+            },
+            "teacher_seed_copies": list(seed_copies),
+            "teacher_seed_postchecks": list(seed_postchecks),
+            "teacher_capture": {
+                "filename": phase1.TEACHER_CAPTURE_BASENAME,
+                "logical_bytes": phase1.TEACHER_CAPTURE_BYTES,
+                "sha256": phase1.TEACHER_CAPTURE_SHA256,
+                "exact_historical_bytes_recovered": True,
+            },
+            "deterministic_profile": {
+                "profile": "PINNED_CPU_SINGLE_THREAD_V1",
+                "environment": dict(DETERMINISTIC_THREAD_ENVIRONMENT),
+                "python_bootstrap_sha256": _hash_bytes(BOOTSTRAP.encode("utf-8")),
+                "torch_num_threads": 1,
+                "torch_num_interop_threads": 1,
+                "torch_deterministic_algorithms": True,
+                "torch_mps_forced_unavailable": True,
+                "numpy_blas_threads": 1,
+            },
+            "frozen_semantic_records": _frozen_semantic_rows(),
+            "semantic_verification": {
+                "status": "PASS_EXACT_GEOMETRY_BUDGETS_VERDICTS_AND_PINNED_NUMERIC_TOLERANCE",
+                "absolute_tolerance": SEMANTIC_ABSOLUTE_TOLERANCE,
+                "maximum_absolute_residual": maximum_residual,
+                "records_compared": len(comparisons),
+                "replay_verification_seals": [
+                    {
+                        "replay": index,
+                        "bracket": bracket["seal_sha256"],
+                        "doctor": doctor["seal_sha256"],
+                    }
+                    for index, (bracket, doctor) in enumerate(replay_rows, start=1)
+                ],
+            },
+            "replay_agreement": replay_agreement,
+            "generator_runs": list(generator_runs),
+            "pinned_replacement_binary_sha256": dict(
+                PINNED_REPLACEMENT_BINARY_SHA256
+            ),
+            "pinned_result_projection_sha256": dict(
+                PINNED_REPLACEMENT_RESULT_PROJECTION_SHA256
+            ),
+            "retained_capsule_evidence": sorted(_replacement_capsule_names()),
+            "original_binaries": _original_binary_rows(),
+            "original_bytes_status": ORIGINAL_BYTES_STATUS,
+            "original_binary_present_in_sanitized_archive": False,
+            "original_bytes_search_authority": {
+                "status": ORIGINAL_BYTES_STATUS,
+                "allowlisted_scopes_checked": [
+                    "PINNED_SANITIZED_ARCHIVE",
+                    "PINNED_HISTORICAL_COMMIT_ALLOWLIST",
+                    "PINNED_PHASE2_SEED",
+                ],
+                "global_filesystem_absence_claimed": False,
+            },
+            "exact_original_stop_condition_met": False,
+            "selected_replacement": selected,
+            "replacement_capability": (
+                "REPRODUCIBLE_LOCAL_F1_ROLLBACK_PAYLOAD_WITH_FROZEN_"
+                "GEOMETRY_BUDGETS_VERDICTS_AND_TEACHER"
+            ),
+            "residual_gap": {
+                "byte_identity": "NOT_REPRODUCED",
+                "semantic_numeric_absolute_tolerance": SEMANTIC_ABSOLUTE_TOLERANCE,
+                "maximum_observed_absolute_residual": maximum_residual,
+                "capability_boundary": "LOCAL_F1_ONLY_NOT_F2_PROMOTABLE",
+            },
+            "frozen_historical_best_remains_authoritative": True,
+            "source_files_copied": False,
+            "source_files_mutated": False,
+            "network_accessed_by_generators": False,
+            "mop_touched": False,
+            "shared_xet_used": False,
+            "delete_capability_present": False,
+        }
+    )
+    if len(stages) != 2:
+        _fail("replacement lineage requires exactly two fresh stages")
+    stage_fd = phase1._open_absolute_directory(stages[0])  # noqa: SLF001
+    try:
+        phase1._write_new_private_file(  # noqa: SLF001
+            stage_fd,
+            PurePosixPath(REPLACEMENT_LINEAGE),
+            phase1.canonical_json(lineage) + b"\n",
+        )
+        os.fsync(stage_fd)
+    finally:
+        os.close(stage_fd)
+    return lineage
+
+
+def _stage_replacement_capsule(
+    layout: phase1.SessionLayout, stages: Sequence[Path]
+) -> None:
+    if len(stages) != 2:
+        _fail("replacement capsule requires exactly two replay stages")
+    if _path_exists_nofollow(layout.capsule):
+        _fail("replacement capsule destination already exists; refusing overwrite")
+    build_fd = phase1._open_absolute_directory(layout.build)  # noqa: SLF001
+    try:
+        capsule_fd = _mkdir_exclusive(build_fd, PurePosixPath("capsule"))
+    finally:
+        os.close(build_fd)
+    sources = {
+        phase1.BEST_PAYLOAD_BASENAME: stages[0]
+        / "doctor"
+        / phase1.BEST_PAYLOAD_BASENAME,
+        phase1.TEACHER_CAPTURE_BASENAME: stages[0] / "f1" / "teacher_capture.npz",
+        "teacher_capture.json": stages[0] / "f1" / "teacher_capture.json",
+        REPLACEMENT_LINEAGE: stages[0] / REPLACEMENT_LINEAGE,
+    }
+    result_to_binary = _replacement_result_to_binary()
+    for replay, stage in enumerate(stages, start=1):
+        for spec in BRACKET_BINARIES[1:]:
+            sources[_replay_capsule_name(replay, spec.filename)] = stage / "f1" / spec.filename
+        for spec in DOCTOR_BINARIES:
+            sources[_replay_capsule_name(replay, spec.filename)] = (
+                stage / "doctor" / spec.filename
+            )
+        for result_name in result_to_binary:
+            subdirectory = "f1" if result_name in {
+                "P1_F1_RESULT.json", "P5_F1_RESULT.json"
+            } else "doctor"
+            sources[_replay_capsule_name(replay, result_name)] = (
+                stage / subdirectory / result_name
+            )
+    if set(sources) != _replacement_capsule_names():
+        _fail("replacement capsule source allowlist changed")
+    try:
+        for name, source in sources.items():
+            raw = phase1._read_regular_bytes(  # noqa: SLF001
+                source,
+                label=f"replacement capsule source {name}",
+                maximum_bytes=16_000_000,
+                expected_uid=os.getuid(),
+            )
+            phase1._write_new_private_file(  # noqa: SLF001
+                capsule_fd, PurePosixPath(name), raw
+            )
+        os.fsync(capsule_fd)
+    finally:
+        os.close(capsule_fd)
+
+
+def _verify_retained_replays(
+    layout: phase1.SessionLayout,
+    frozen: Mapping[str, dict[str, Any]],
+) -> tuple[dict[str, Any], list[tuple[dict[str, Any], dict[str, Any]]]]:
+    result_to_binary = _replacement_result_to_binary()
+    replay_rows: list[tuple[dict[str, Any], dict[str, Any]]] = []
+    replay_evidence: list[dict[str, Any]] = []
+    for replay in (1, 2):
+        binaries: dict[str, dict[str, Any]] = {}
+        for spec in _replacement_payload_specs():
+            capsule_name = _replay_capsule_name(replay, spec.filename)
+            facts = phase1._hash_regular(  # noqa: SLF001
+                layout.capsule / capsule_name,
+                label=f"retained replay {replay} binary {spec.filename}",
+                expected_uid=os.getuid(),
+            )
+            if (
+                facts["logical_bytes"] != spec.logical_bytes
+                or facts["sha256"]
+                != PINNED_REPLACEMENT_BINARY_SHA256.get(spec.filename)
+                or facts["mode"] != "0600"
+                or facts["hard_links"] != 1
+            ):
+                _fail(f"retained replay {replay} binary is not pinned: {spec.filename}")
+            binaries[spec.filename] = {"filename": spec.filename, **facts}
+        bracket_results: list[dict[str, Any]] = []
+        doctor_results: list[dict[str, Any]] = []
+        for result_name, spec in result_to_binary.items():
+            result = _strict_self_sealed(
+                layout.capsule / _replay_capsule_name(replay, result_name),
+                label=f"retained replay {replay} result {result_name}",
+            )
+            _require_result_payload_binding(
+                result,
+                binaries[spec.filename],
+                label=f"retained replay {replay} result {result_name}",
+            )
+            comparison = _compare_frozen_semantics(
+                result,
+                frozen[result_name],
+                label=f"retained replay {replay} result {result_name}",
+            )
+            projection_sha256 = _result_projection_sha256(result)
+            if (
+                projection_sha256
+                != PINNED_REPLACEMENT_RESULT_PROJECTION_SHA256.get(result_name)
+            ):
+                _fail(f"retained replay {replay} result projection changed: {result_name}")
+            row = {
+                "filename": result_name,
+                "seal_sha256": result["seal_sha256"],
+                "frozen_seal_sha256": frozen[result_name]["seal_sha256"],
+                "comparison": comparison,
+                "projection_sha256": projection_sha256,
+            }
+            if result_name in {"P1_F1_RESULT.json", "P5_F1_RESULT.json"}:
+                bracket_results.append(row)
+            else:
+                doctor_results.append(row)
+        bracket = phase1.seal_document(
+            {
+                "schema": "hawking.kimi_k26.phase2.retained_replay_bracket.v1",
+                "status": "PASS_RETAINED_REPLAY_BRACKET",
+                "binaries": [
+                    binaries[spec.filename] for spec in BRACKET_BINARIES[1:]
+                ],
+                "semantic_results": sorted(
+                    bracket_results, key=lambda row: row["filename"]
+                ),
+            }
+        )
+        doctor = phase1.seal_document(
+            {
+                "schema": "hawking.kimi_k26.phase2.retained_replay_doctor.v1",
+                "status": "PASS_RETAINED_REPLAY_DOCTOR",
+                "binaries": [binaries[spec.filename] for spec in DOCTOR_BINARIES],
+                "semantic_results": sorted(
+                    doctor_results, key=lambda row: row["filename"]
+                ),
+                "selected_replacement": binaries[phase1.BEST_PAYLOAD_BASENAME],
+            }
+        )
+        replay_rows.append((bracket, doctor))
+        replay_evidence.append(
+            {
+                "replay": replay,
+                "bracket_seal_sha256": bracket["seal_sha256"],
+                "doctor_seal_sha256": doctor["seal_sha256"],
+            }
+        )
+    agreement = _verify_replay_agreement(replay_rows)
+    maximum_residual = max(
+        float(row["comparison"]["maximum_absolute_residual"])
+        for bracket, doctor in replay_rows
+        for record in (bracket, doctor)
+        for row in record["semantic_results"]
+    )
+    verification = phase1.seal_document(
+        {
+            "schema": "hawking.kimi_k26.phase2.retained_replays.v1",
+            "status": "PASS_TWO_RETAINED_REPLAYS_INDEPENDENTLY_VERIFIED",
+            "replays": replay_evidence,
+            "agreement": agreement,
+            "records_compared": 2 * len(FROZEN_SEMANTIC_RECORDS),
+            "maximum_absolute_residual": maximum_residual,
+            "absolute_tolerance": SEMANTIC_ABSOLUTE_TOLERANCE,
+        }
+    )
+    return verification, replay_rows
+
+
+def verify_capsule_for_release(
+    layout: phase1.SessionLayout,
+    *,
+    mop_root: Path = phase1.MOP_ROOT,
+    shared_xet: Path = phase1.SHARED_HF_XET_ROOT,
+    frozen_semantics: Mapping[str, dict[str, Any]] | None = None,
+) -> dict[str, Any]:
+    """Read-only verifier for either the legacy exact or replacement capsule."""
+    phase1.validate_layout(layout, mop_root=mop_root, shared_xet=shared_xet)
+    descriptor = phase1._open_absolute_directory(layout.capsule)  # noqa: SLF001
+    try:
+        metadata = os.fstat(descriptor)
+        if metadata.st_uid != os.getuid() or stat.S_IMODE(metadata.st_mode) != 0o700:
+            _fail("capsule directory must be owned private mode 0700")
+        names = set(os.listdir(descriptor))
+    finally:
+        os.close(descriptor)
+    legacy_names = {spec.filename for spec in CAPSULE_BINARIES}
+    replacement_names = _replacement_capsule_names()
+    if names == legacy_names:
+        return phase1.verify_payload_result_capture(
+            layout, mop_root=mop_root, shared_xet=shared_xet
+        )
+    if names != replacement_names:
+        _fail(
+            f"capsule inventory is neither legacy nor replacement: "
+            f"missing={sorted(replacement_names-names)} extra={sorted(names-replacement_names)}"
+        )
+    for name in sorted(names):
+        facts = phase1._hash_regular(  # noqa: SLF001
+            layout.capsule / name,
+            label=f"replacement capsule {name}",
+            expected_uid=os.getuid(),
+        )
+        if facts["mode"] != "0600" or facts["hard_links"] != 1:
+            _fail(f"replacement capsule file is not private single-link: {name}")
+    capture = phase1._hash_regular(  # noqa: SLF001
+        layout.capsule / phase1.TEACHER_CAPTURE_BASENAME,
+        label="replacement capsule teacher capture",
+        expected_uid=os.getuid(),
+    )
+    if (
+        capture["logical_bytes"] != phase1.TEACHER_CAPTURE_BYTES
+        or capture["sha256"] != phase1.TEACHER_CAPTURE_SHA256
+    ):
+        _fail("replacement capsule teacher capture is not exact")
+    teacher_receipt_facts = phase1._hash_regular(  # noqa: SLF001
+        layout.capsule / "teacher_capture.json",
+        label="replacement capsule teacher receipt",
+        expected_uid=os.getuid(),
+    )
+    if (
+        teacher_receipt_facts["logical_bytes"] != PINNED_SEED_RECEIPT_BYTES
+        or teacher_receipt_facts["sha256"] != PINNED_SEED_RECEIPT_SHA256
+    ):
+        _fail("replacement capsule teacher receipt is not the full pinned receipt")
+    teacher_receipt = _strict_self_sealed(
+        layout.capsule / "teacher_capture.json",
+        label="replacement capsule teacher receipt",
+    )
+    if teacher_receipt != PINNED_SEED_RECEIPT:
+        _fail("replacement capsule teacher token membership changed")
+    payload = phase1._hash_regular(  # noqa: SLF001
+        layout.capsule / phase1.BEST_PAYLOAD_BASENAME,
+        label="replacement capsule payload",
+        expected_uid=os.getuid(),
+    )
+    if (
+        payload["logical_bytes"] != phase1.BEST_PAYLOAD_BYTES
+        or payload["sha256"]
+        != PINNED_REPLACEMENT_BINARY_SHA256.get(phase1.BEST_PAYLOAD_BASENAME)
+    ):
+        _fail("replacement capsule selected payload is not the reproduced pinned object")
+    semantic_authority = _validate_frozen_semantics(
+        frozen_semantics if frozen_semantics is not None else load_frozen_semantics()
+    )
+    retained_replays, replay_rows = _verify_retained_replays(
+        layout, semantic_authority
+    )
+    lineage = _strict_self_sealed(
+        layout.capsule / REPLACEMENT_LINEAGE, label="replacement capsule lineage"
+    )
+    _require_subset(
+        lineage,
+        {
+            "schema": "hawking.kimi_k26.phase2.replacement_lineage.v1",
+            "status": "PASS_DETERMINISTIC_SINGLE_THREAD_SEMANTIC_REPLACEMENT",
+            "session": os.fspath(layout.session),
+            "historical_generator_commit": HISTORICAL_COMMIT,
+            "historical_generator_tree": HISTORICAL_TREE,
+            "original_bytes_status": ORIGINAL_BYTES_STATUS,
+            "original_binary_present_in_sanitized_archive": False,
+            "exact_original_stop_condition_met": False,
+            "frozen_historical_best_remains_authoritative": True,
+            "source_files_copied": False,
+            "source_files_mutated": False,
+            "network_accessed_by_generators": False,
+            "mop_touched": False,
+            "shared_xet_used": False,
+            "delete_capability_present": False,
+        },
+        label="replacement capsule lineage",
+    )
+    selected = lineage.get("selected_replacement")
+    if not isinstance(selected, dict) or selected != {
+        "filename": phase1.BEST_PAYLOAD_BASENAME,
+        "logical_bytes": payload["logical_bytes"],
+        "sha256": payload["sha256"],
+    }:
+        _fail("replacement lineage does not exactly bind the installed payload")
+    teacher = lineage.get("teacher_capture")
+    if teacher != {
+        "filename": phase1.TEACHER_CAPTURE_BASENAME,
+        "logical_bytes": phase1.TEACHER_CAPTURE_BYTES,
+        "sha256": phase1.TEACHER_CAPTURE_SHA256,
+        "exact_historical_bytes_recovered": True,
+    }:
+        _fail("replacement lineage does not exactly bind the teacher capture")
+    expected_seed = {
+        "pinned_relative_path": os.fspath(PINNED_SEED_RELATIVE),
+        "receipt_bytes": PINNED_SEED_RECEIPT_BYTES,
+        "receipt_sha256": PINNED_SEED_RECEIPT_SHA256,
+        "receipt_seal_sha256": PINNED_SEED_RECEIPT["seal_sha256"],
+        "fit_token_ids": PINNED_SEED_RECEIPT["fit_token_ids"],
+        "score_token_ids": PINNED_SEED_RECEIPT["score_token_ids"],
+        "token_ids": PINNED_SEED_RECEIPT["token_ids"],
+    }
+    if lineage.get("teacher_seed") != expected_seed:
+        _fail("replacement lineage altered the pinned seed identity")
+    if lineage.get("original_binaries") != _original_binary_rows():
+        _fail("replacement lineage altered the unrecoverable original byte identities")
+    if lineage.get("frozen_semantic_records") != _frozen_semantic_rows():
+        _fail("replacement lineage altered frozen semantic authority")
+    if lineage.get("pinned_replacement_binary_sha256") != PINNED_REPLACEMENT_BINARY_SHA256:
+        _fail("replacement lineage altered pinned binary hashes")
+    if (
+        lineage.get("pinned_result_projection_sha256")
+        != PINNED_REPLACEMENT_RESULT_PROJECTION_SHA256
+    ):
+        _fail("replacement lineage altered pinned result projections")
+    if lineage.get("retained_capsule_evidence") != sorted(_replacement_capsule_names()):
+        _fail("replacement lineage altered retained capsule evidence")
+    search_authority = lineage.get("original_bytes_search_authority")
+    if search_authority != {
+        "status": ORIGINAL_BYTES_STATUS,
+        "allowlisted_scopes_checked": [
+            "PINNED_SANITIZED_ARCHIVE",
+            "PINNED_HISTORICAL_COMMIT_ALLOWLIST",
+            "PINNED_PHASE2_SEED",
+        ],
+        "global_filesystem_absence_claimed": False,
+    }:
+        _fail("replacement lineage overstates original-byte search authority")
+    expected_profile = {
+        "profile": "PINNED_CPU_SINGLE_THREAD_V1",
+        "environment": dict(DETERMINISTIC_THREAD_ENVIRONMENT),
+        "python_bootstrap_sha256": _hash_bytes(BOOTSTRAP.encode("utf-8")),
+        "torch_num_threads": 1,
+        "torch_num_interop_threads": 1,
+        "torch_deterministic_algorithms": True,
+        "torch_mps_forced_unavailable": True,
+        "numpy_blas_threads": 1,
+    }
+    if lineage.get("deterministic_profile") != expected_profile:
+        _fail("replacement lineage deterministic profile changed")
+    semantic = lineage.get("semantic_verification")
+    if (
+        not isinstance(semantic, dict)
+        or semantic.get("status")
+        != "PASS_EXACT_GEOMETRY_BUDGETS_VERDICTS_AND_PINNED_NUMERIC_TOLERANCE"
+        or semantic.get("absolute_tolerance") != SEMANTIC_ABSOLUTE_TOLERANCE
+        or semantic.get("records_compared") != 2 * len(FROZEN_SEMANTIC_RECORDS)
+        or not isinstance(semantic.get("maximum_absolute_residual"), float)
+        or not math.isfinite(semantic["maximum_absolute_residual"])
+        or semantic["maximum_absolute_residual"] > SEMANTIC_ABSOLUTE_TOLERANCE
+        or semantic["maximum_absolute_residual"]
+        != retained_replays["maximum_absolute_residual"]
+    ):
+        _fail("replacement lineage semantic verification is not strict")
+    residual = lineage.get("residual_gap")
+    if (
+        not isinstance(residual, dict)
+        or residual.get("byte_identity") != "NOT_REPRODUCED"
+        or residual.get("semantic_numeric_absolute_tolerance")
+        != SEMANTIC_ABSOLUTE_TOLERANCE
+        or residual.get("capability_boundary") != "LOCAL_F1_ONLY_NOT_F2_PROMOTABLE"
+        or residual.get("maximum_observed_absolute_residual")
+        != retained_replays["maximum_absolute_residual"]
+    ):
+        _fail("replacement lineage does not disclose the residual capability gap")
+    if lineage.get("replay_agreement") != retained_replays["agreement"]:
+        _fail("replacement lineage replay agreement differs from retained evidence")
+    selected_replay_hashes = {
+        doctor["selected_replacement"]["sha256"] for _bracket, doctor in replay_rows
+    }
+    if selected_replay_hashes != {payload["sha256"]}:
+        _fail("installed selected payload differs from retained independent replays")
+    lineage_facts = phase1._hash_regular(  # noqa: SLF001
+        layout.capsule / REPLACEMENT_LINEAGE,
+        label="replacement capsule lineage",
+        expected_uid=os.getuid(),
+    )
+    return phase1.seal_document(
+        {
+            "schema": "hawking.kimi_k26.phase2.replacement_capsule_verification.v1",
+            "status": "PASS_DETERMINISTIC_SEMANTIC_REPLACEMENT_CAPSULE",
+            "session": os.fspath(layout.session),
+            "payload": {"filename": phase1.BEST_PAYLOAD_BASENAME, **payload},
+            "teacher_capture": {
+                "filename": phase1.TEACHER_CAPTURE_BASENAME,
+                **capture,
+            },
+            "teacher_receipt": {
+                "filename": "teacher_capture.json",
+                **teacher_receipt_facts,
+                "seal_sha256": teacher_receipt["seal_sha256"],
+            },
+            "lineage": {
+                "filename": REPLACEMENT_LINEAGE,
+                **lineage_facts,
+                "seal_sha256": lineage["seal_sha256"],
+            },
+            "original_bytes_status": ORIGINAL_BYTES_STATUS,
+            "replacement_lineage_verified": True,
+            "deterministic_profile_verified": True,
+            "semantic_equivalence_verified": True,
+            "retained_replays_verified": True,
+            "pinned_replacement_hash_verified": True,
+            "retained_replay_verification": retained_replays,
+            "exact_original_stop_condition_met": False,
+            "replacement_capability": lineage["replacement_capability"],
+            "residual_gap": residual,
+            "mop_touched": False,
+            "shared_xet_used": False,
+            "network_accessed": False,
+            "delete_capability_present": False,
+        }
+    )
 
 
 @contextlib.contextmanager
@@ -1605,10 +2914,18 @@ def _receipt_document(
     capsule_shape: dict[str, Any],
     capsule_verification: dict[str, Any],
 ) -> dict[str, Any]:
+    replacement = (
+        capsule_verification.get("schema")
+        == "hawking.kimi_k26.phase2.replacement_capsule_verification.v1"
+    )
     return phase1.seal_document(
         {
             "schema": "hawking.kimi_k26.phase2.recovery.v1",
-            "status": "PASS_EXACT_RECOVERED_CAPSULE",
+            "status": (
+                "PASS_DETERMINISTIC_SEMANTIC_REPLACEMENT_CAPSULE"
+                if replacement
+                else "PASS_EXACT_RECOVERED_CAPSULE"
+            ),
             "session": os.fspath(layout.session),
             "historical_commit": HISTORICAL_COMMIT,
             "preflight_seal_sha256": preflight_record["seal_sha256"],
@@ -1635,13 +2952,28 @@ def _receipt_document(
             ]["seal_sha256"],
             "frozen_records_seal_sha256": frozen_records["seal_sha256"],
             "capsule_shape": capsule_shape,
-            "phase1_capsule_verification": capsule_verification,
-            "capsule_files": sorted(spec.filename for spec in CAPSULE_BINARIES),
+            "capsule_verification": capsule_verification,
+            "phase1_capsule_verification": (
+                None if replacement else capsule_verification
+            ),
+            "capsule_files": (
+                sorted(_replacement_capsule_names())
+                if replacement
+                else sorted(spec.filename for spec in CAPSULE_BINARIES)
+            ),
             "capsule_extra_entries": 0,
+            "original_bytes_status": (
+                ORIGINAL_BYTES_STATUS if replacement else "EXACT_ORIGINAL_BYTES"
+            ),
+            "replacement_lineage_verified": replacement,
+            "semantic_equivalence_verified": replacement,
+            "exact_original_stop_condition_met": not replacement,
             "source_files_copied": False,
             "historical_checkout_used": False,
             "historical_archive_used": False,
             "network_accessed_by_generators": False,
+            "mop_touched": False,
+            "shared_xet_used": False,
             "delete_capability_present": False,
         }
     )
@@ -1672,26 +3004,31 @@ def generate(
     layout: phase1.SessionLayout,
     *,
     hooks: Phase2Hooks | None = None,
+    seed_stage: Path | None = None,
     mop_root: Path = phase1.MOP_ROOT,
     shared_xet: Path = phase1.SHARED_HF_XET_ROOT,
 ) -> dict[str, Any]:
     """Run the two generators only after the caller explicitly selects this action."""
     selected = hooks or Phase2Hooks.live(mop_root=mop_root, shared_xet=shared_xet)
-    initial = preflight(
-        layout, hooks=selected, mop_root=mop_root, shared_xet=shared_xet
-    )
     previous_umask = os.umask(0o077)
     try:
         with selected.exclusive_lease(layout) as lease_descriptor:
             guarded = preflight(
                 layout, hooks=selected, mop_root=mop_root, shared_xet=shared_xet
             )
-            if guarded["source_verification"]["seal_sha256"] != initial[
-                "source_verification"
-            ]["seal_sha256"]:
-                _fail("source authority changed before lease acquisition")
             frozen = _ensure_frozen_records(layout, selected)
             if _path_exists_nofollow(layout.capsule):
+                if _path_exists_nofollow(layout.capsule / REPLACEMENT_LINEAGE):
+                    shape, verified = _verify_capsule_authority(layout, selected)
+                    receipt = _receipt_document(
+                        layout=layout,
+                        preflight_record=guarded,
+                        frozen_records=frozen,
+                        capsule_shape=shape,
+                        capsule_verification=verified,
+                    )
+                    _write_receipt(layout, receipt)
+                    return receipt
                 partial = _capsule_partial_state(layout)
                 if partial["complete"]:
                     shape, verified = _verify_capsule_authority(layout, selected)
@@ -1710,53 +3047,141 @@ def generate(
                 "historical_export_verification"
             ]["seal_sha256"]:
                 _fail("historical source binding changed under lease")
-            stage = _fresh_stage(layout)
-            _write_export(stage, values)
-            environment = _generation_environment(stage)
-            bracket_argv = _python_argv(
-                stage,
-                "kimi_k26_f1_bracket.py",
-                [
-                    "--source",
-                    os.fspath(layout.snapshot),
-                    "--corpus",
-                    os.fspath(stage / "export/KIMI_K26_CORPUS_INTEGRITY.json"),
-                    "--output-dir",
-                    os.fspath(stage / "f1"),
-                ],
-            )
-            doctor_argv = _python_argv(
-                stage,
-                "kimi_k26_f1_doctor_auction.py",
-                [
-                    "--source-dir",
-                    os.fspath(stage / "f1"),
-                    "--output-dir",
-                    os.fspath(stage / "doctor"),
-                ],
-            )
+            selected_seed = seed_stage or _discover_seed_stage(layout)
+            semantic_authority: dict[str, dict[str, Any]] | None = None
+            if selected_seed is not None:
+                _seed_capture_facts(layout, selected_seed)
+                semantic_authority = _validate_frozen_semantics(
+                    selected.load_frozen_semantics()
+                )
+            stages = [_fresh_stage(layout)]
+            if selected_seed is not None:
+                stages.append(_fresh_stage(layout))
+            seed_copies: list[dict[str, Any]] = []
+            for stage in stages:
+                _write_export(stage, values)
+                if selected_seed is not None:
+                    seed_copies.append(_copy_seed_capture(layout, selected_seed, stage))
+            replay_rows: list[tuple[dict[str, Any], dict[str, Any]]] = []
+            seed_postchecks: list[dict[str, Any]] = []
+            generator_runs: list[dict[str, Any]] = []
             with selected.source_guard(layout, guarded["source_verification"]):
-                _run_generator(
-                    selected,
-                    argv=bracket_argv,
-                    environment=environment,
-                    cwd=stage,
-                    lease_descriptor=lease_descriptor,
-                    label="historical F1 bracket",
-                )
-                _verify_bracket_outputs(stage)
-                _run_generator(
-                    selected,
-                    argv=doctor_argv,
-                    environment=environment,
-                    cwd=stage,
-                    lease_descriptor=lease_descriptor,
-                    label="historical Doctor auction",
-                )
-                _verify_doctor_outputs(stage)
+                for replay, stage in enumerate(stages, start=1):
+                    environment = _generation_environment(stage)
+                    bracket_argv = _python_argv(
+                        stage,
+                        "kimi_k26_f1_bracket.py",
+                        [
+                            "--source",
+                            os.fspath(layout.snapshot),
+                            "--corpus",
+                            os.fspath(
+                                stage / "export/KIMI_K26_CORPUS_INTEGRITY.json"
+                            ),
+                            "--output-dir",
+                            os.fspath(stage / "f1"),
+                        ],
+                    )
+                    doctor_argv = _python_argv(
+                        stage,
+                        "kimi_k26_f1_doctor_auction.py",
+                        [
+                            "--source-dir",
+                            os.fspath(stage / "f1"),
+                            "--output-dir",
+                            os.fspath(stage / "doctor"),
+                        ],
+                    )
+                    bracket_run = _run_generator(
+                        selected,
+                        argv=bracket_argv,
+                        environment=environment,
+                        cwd=stage,
+                        lease_descriptor=lease_descriptor,
+                        label=f"historical F1 bracket replay {replay}",
+                    )
+                    if selected_seed is None:
+                        bracket_verification = _verify_bracket_outputs(stage)
+                    else:
+                        assert semantic_authority is not None
+                        bracket_verification = _verify_replacement_bracket_outputs(
+                            stage, semantic_authority
+                        )
+                    doctor_run = _run_generator(
+                        selected,
+                        argv=doctor_argv,
+                        environment=environment,
+                        cwd=stage,
+                        lease_descriptor=lease_descriptor,
+                        label=f"historical Doctor auction replay {replay}",
+                    )
+                    if selected_seed is None:
+                        doctor_verification = _verify_doctor_outputs(stage)
+                    else:
+                        assert semantic_authority is not None
+                        doctor_verification = _verify_replacement_doctor_outputs(
+                            stage, semantic_authority
+                        )
+                        seed_postchecks.append(
+                            _verify_seed_copy_unchanged(
+                                layout,
+                                selected_seed,
+                                stage,
+                                seed_copies[replay - 1],
+                            )
+                        )
+                    replay_rows.append((bracket_verification, doctor_verification))
+                    generator_runs.append(
+                        {
+                            "replay": replay,
+                            "stage": os.fspath(stage),
+                            "bracket": bracket_run,
+                            "doctor": doctor_run,
+                        }
+                    )
             _scan_no_incomplete(layout.hub)
             _scan_no_incomplete(layout.xet)
-            shape = _stage_capsule(layout, stage)
+            if selected_seed is None:
+                shape = _stage_capsule(layout, stages[0])
+            else:
+                replay_agreement = _verify_replay_agreement(replay_rows)
+                _build_replacement_lineage(
+                    layout=layout,
+                    stages=stages,
+                    preflight_record=guarded,
+                    frozen_records=frozen,
+                    seed_copies=seed_copies,
+                    seed_postchecks=seed_postchecks,
+                    replay_rows=replay_rows,
+                    replay_agreement=replay_agreement,
+                    generator_runs=generator_runs,
+                )
+                _stage_replacement_capsule(layout, stages)
+                assert semantic_authority is not None
+                replacement_verification = verify_capsule_for_release(
+                    layout,
+                    mop_root=mop_root,
+                    shared_xet=shared_xet,
+                    frozen_semantics=semantic_authority,
+                )
+                shape = phase1.seal_document(
+                    {
+                        "schema": "hawking.kimi_k26.phase2.capsule_shape.v1",
+                        "status": "PASS_EXACT_RETAINED_DUAL_REPLAY_REPLACEMENT_FILES",
+                        "capsule": os.fspath(layout.capsule),
+                        "directory_mode": "0700",
+                        "binaries": [
+                            replacement_verification["payload"],
+                            replacement_verification["teacher_capture"],
+                        ],
+                        "lineage": replacement_verification["lineage"],
+                        "retained_replay_verification": replacement_verification[
+                            "retained_replay_verification"
+                        ],
+                        "file_count": len(_replacement_capsule_names()),
+                        "extra_entries": 0,
+                    }
+                )
             final_shape, verified = _verify_capsule_authority(layout, selected)
             if final_shape["seal_sha256"] != shape["seal_sha256"]:
                 _fail("capsule changed between installation and final verification")
@@ -1816,6 +3241,15 @@ def build_parser() -> argparse.ArgumentParser:
     for name in ("preflight", "generate", "verify"):
         command = commands.add_parser(name)
         command.add_argument("--session", required=True, help="exact dedicated Phase-1 session")
+        if name == "generate":
+            command.add_argument(
+                "--seed-stage",
+                type=Path,
+                help=(
+                    "optional exact failed-stage f1/thread1 directory; when omitted, "
+                    "discover the exact teacher capture inside this session"
+                ),
+            )
     return parser
 
 
@@ -1826,7 +3260,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         if args.command == "preflight":
             result = preflight(layout)
         elif args.command == "generate":
-            result = generate(layout)
+            result = generate(layout, seed_stage=args.seed_stage)
         elif args.command == "verify":
             result = verify(layout)
         else:  # argparse makes this unreachable
