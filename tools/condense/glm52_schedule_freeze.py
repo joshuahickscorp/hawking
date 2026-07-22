@@ -40,6 +40,16 @@ FINAL_STATUS = "FROZEN_AFTER_XET_AUTOTUNE"
 PRELIMINARY_SCHEMA = "hawking.glm52.streaming_schedule.v1"
 PRELIMINARY_STATUS = "PRELIMINARY_DEPENDENCY_COMPLETE_PENDING_XET_AUTOTUNE"
 RAW_RESULT_SEAL_EVIDENCE_KEY = "raw_xet_autotune_result_seal_sha256"
+RESOURCE_POLICY_PATH = "GLM52_RESOURCE_RESERVE_POLICY.json"
+RESOURCE_POLICY_SEAL_SHA256 = (
+    "b33692a9e43aa37c59325ffd1b317d0d069e788c20f4f32cc3840b32ec901cca"
+)
+RESOURCE_POLICY_REQUIRED_FREE_DISK_BYTES = 416_036_394_619
+_REQUIRED_RESOURCE_POLICY_BINDINGS = frozenset({
+    ("AUTOTUNE_XET", "resource_reserve_policy"),
+    ("ASSEMBLE_ARTIFACT", "resource_reserve_policy"),
+    ("COMPLETE", "resource_reserve_policy"),
+})
 
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 _PRELIMINARY_FIELDS = frozenset({
@@ -119,6 +129,7 @@ _FINAL_FIELDS = frozenset({
     "maximum_simultaneous_shards_active_plus_prefetch_upper_bound",
     "selected_profile",
     "autotune_binding",
+    "resource_policy_binding",
     "dependency_freeze",
     "windows",
     "evidence",
@@ -178,6 +189,41 @@ def _validated_contract(contract: Mapping[str, Any]) -> dict[str, Any]:
     if value["source_revision"] != xet_live.REVISION:
         raise ScheduleFreezeError("campaign contract source revision differs from live Xet")
     return value
+
+
+def _resource_policy_binding(contract: Mapping[str, Any]) -> dict[str, Any]:
+    matches: list[tuple[str, str]] = []
+    expected_policy = {
+        "path": RESOURCE_POLICY_PATH,
+        "expected_seal_sha256": RESOURCE_POLICY_SEAL_SHA256,
+        "expected_schema": "hawking.glm52.resource_reserve_policy.v1",
+        "allowed_statuses": ["FROZEN_CONSERVATIVE_PRELIVE_POLICY"],
+        "validator_id": "sealed_exact_v1",
+        "validator_source_sha256": state.EVIDENCE_VALIDATOR_SOURCE_SHA256[
+            "sealed_exact_v1"
+        ],
+        "require_producer_hmac": False,
+    }
+    for gate_name, gate in contract["state_gates"].items():
+        for artifact_name, policy in gate["required_artifacts"].items():
+            if policy.get("path") == RESOURCE_POLICY_PATH:
+                if policy != expected_policy:
+                    raise ScheduleFreezeError(
+                        "expected contract resource policy binding is not exact"
+                    )
+                matches.append((gate_name, artifact_name))
+    if len(matches) != len(set(matches)) \
+            or set(matches) != _REQUIRED_RESOURCE_POLICY_BINDINGS:
+        raise ScheduleFreezeError(
+            "expected contract resource policy gate bindings are missing, misplaced, "
+            "or duplicated"
+        )
+    return {
+        "path": RESOURCE_POLICY_PATH,
+        "seal_sha256": RESOURCE_POLICY_SEAL_SHA256,
+        "required_free_disk_bytes": RESOURCE_POLICY_REQUIRED_FREE_DISK_BYTES,
+        "expected_contract_sha256": contract["seal_sha256"],
+    }
 
 
 def _expected_artifact_policy(
@@ -356,12 +402,13 @@ def _validate_attested_result(
     *,
     plan: Mapping[str, Any],
     contract: Mapping[str, Any],
-    auth: state.TelegramAuthConfig,
+    auth: state.EvidenceAuthConfig,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
-    if not isinstance(auth, state.TelegramAuthConfig):
+    if not isinstance(auth, state.EvidenceAuthConfig):
         raise ScheduleFreezeError("producer authentication is required")
-    if auth.expected_chat_identity_digest != contract["expected_chat_identity_digest"]:
-        raise ScheduleFreezeError("producer authentication chat identity differs from contract")
+    if auth.campaign_id != contract["campaign_id"] \
+            or auth.source_revision != contract["source_revision"]:
+        raise ScheduleFreezeError("producer authentication identity differs from contract")
     try:
         outer = verify_sealed(dict(result), label="producer-attested Xet result")
     except Glm52Error as exc:
@@ -421,7 +468,7 @@ def attest_xet_autotune_result(
     xet_autotune_plan: Mapping[str, Any],
     expected_campaign_contract: Mapping[str, Any],
     *,
-    auth: state.TelegramAuthConfig,
+    auth: state.EvidenceAuthConfig,
     controller_anchor_sha256: str,
     root: Path = REPO_ROOT,
     rebuild_plan: bool = True,
@@ -439,8 +486,9 @@ def attest_xet_autotune_result(
         root=Path(root),
         rebuild_plan=rebuild_plan,
     )
-    if not isinstance(auth, state.TelegramAuthConfig) \
-            or auth.expected_chat_identity_digest != contract["expected_chat_identity_digest"]:
+    if not isinstance(auth, state.EvidenceAuthConfig) \
+            or auth.campaign_id != contract["campaign_id"] \
+            or auth.source_revision != contract["source_revision"]:
         raise ScheduleFreezeError("producer authentication differs from the campaign contract")
     if not _is_sha256(controller_anchor_sha256):
         raise ScheduleFreezeError("controller_anchor_sha256 must be 64 lowercase hex")
@@ -506,7 +554,7 @@ def freeze_schedule(
     producer_attested_xet_result: Mapping[str, Any],
     expected_campaign_contract: Mapping[str, Any],
     *,
-    auth: state.TelegramAuthConfig,
+    auth: state.EvidenceAuthConfig,
     root: Path = REPO_ROOT,
     rebuild_plan: bool = True,
 ) -> dict[str, Any]:
@@ -530,6 +578,7 @@ def freeze_schedule(
         "steady": _clone(raw_result["selections"]["steady"]),
     }
     windows = _final_windows(preliminary, contract)
+    resource_policy_binding = _resource_policy_binding(contract)
     window_schedule_sha256 = _sha256(contract["window_schedule"])
     evidence = {
         "producer": "glm52-schedule-freezer",
@@ -569,6 +618,7 @@ def freeze_schedule(
             "preliminary_schedule_seal_sha256": preliminary["seal_sha256"],
             "selected_profile_sha256": _sha256(selected_profile),
         },
+        "resource_policy_binding": resource_policy_binding,
         "dependency_freeze": {
             "status": "IMMUTABLE_FROM_PRE_AUTOTUNE_EXPECTED_CONTRACT",
             "window_schedule_sha256": window_schedule_sha256,
@@ -595,7 +645,7 @@ def validate_frozen_schedule(
     producer_attested_xet_result: Mapping[str, Any],
     expected_campaign_contract: Mapping[str, Any],
     *,
-    auth: state.TelegramAuthConfig,
+    auth: state.EvidenceAuthConfig,
     root: Path = REPO_ROOT,
     rebuild_plan: bool = True,
 ) -> dict[str, Any]:

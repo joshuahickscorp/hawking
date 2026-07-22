@@ -12,5 +12,5 @@ MTP status is synthetic source conformance and self-consistency only. The pinned
 
 The official BF16 parent forward remains pending because no payload shard has yet been admitted. No synthetic result is presented as source-parent or capability evidence.
 
-Adapter seal: `ca98d39c66d6bccaf40459d45d1666a88d92a604896775591fdddfafb7c44665`.
-Reference seal: `4d5793444ba55583d22f1887f828e8985244d38dfd53248aaa2912815a745f5c`.
+Adapter seal: `8e2f0c5dfbc9647c240373ad207d6572ba6aad85d8fa1d521c9f7f1b93eb11fe`.
+Reference seal: `6b7d9764f8af6d1d795bada3966d7b73807941a092c781d0fca1a9daeb2dafa1`.

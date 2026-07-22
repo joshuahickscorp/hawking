@@ -147,6 +147,20 @@ def test_admission_records_header_only_and_one_copy(artifacts: dict[str, dict]) 
         REPO_ROOT / "tools/condense/requirements-glm52.txt"
     )
     assert admission["local_runtime"]["packages"] == contract.package_versions()
+    assert admission["toolchain_binding"] == {
+        "generator": {
+            "path": "tools/condense/glm52_contract.py",
+            "sha256": sha256_file(REPO_ROOT / "tools/condense/glm52_contract.py"),
+        },
+        "shared_common": {
+            "path": "tools/condense/glm52_common.py",
+            "sha256": sha256_file(REPO_ROOT / "tools/condense/glm52_common.py"),
+        },
+        "requirements_lock": {
+            "path": "tools/condense/requirements-glm52.txt",
+            "sha256": sha256_file(REPO_ROOT / "tools/condense/requirements-glm52.txt"),
+        },
+    }
     assert manifest["one_copy"]["weight_body_copies"] == 0
 
 

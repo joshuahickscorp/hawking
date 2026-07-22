@@ -13,4 +13,4 @@ Status: **PASS_OFFLINE_PLAN_BODY_NOT_READ**
 - A separate live executor exists at `tools/condense/glm52_xet_live.py`; this offline plan alone does not authorize execution, which remains controller/Telegram gated.
 - The 10 GiB cache trial is skipped because planned refetches are zero and the pinned cache path is inert.
 
-Plan seal: `52dd152cd603a6e094126ef7ff047383785058b1e013d664af475afb25a4a916`.
+Plan seal: `4d752cf7cf40c1a65b4abe15e9a321adf20a03aba818dead2a69b1ef232f4f26`.

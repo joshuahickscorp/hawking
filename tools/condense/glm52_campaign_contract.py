@@ -30,12 +30,14 @@ if str(HERE) not in sys.path:
 
 import glm52_contract as source_contract  # noqa: E402
 import glm52_state as state  # noqa: E402
+import glm52_terminal_proofs as terminal_proofs  # noqa: E402
 from glm52_common import (  # noqa: E402
     Glm52Error,
     REPO_ROOT,
     atomic_json,
     canonical,
     seal,
+    sha256_file,
     verify_sealed,
 )
 
@@ -47,6 +49,10 @@ OFFICIAL_REVISION = source_contract.REVISION
 EXACT_SHARDS = source_contract.EXPECTED_SHARDS
 EXACT_TENSORS = source_contract.EXPECTED_TENSORS
 EXACT_WINDOWS = 20
+RESOURCE_POLICY_SEAL_SHA256 = (
+    "b33692a9e43aa37c59325ffd1b317d0d069e788c20f4f32cc3840b32ec901cca"
+)
+RESOURCE_POLICY_REQUIRED_FREE_DISK_BYTES = 416_036_394_619
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 _UTC_RE = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$")
 
@@ -154,6 +160,12 @@ INPUT_SPECS: tuple[InputSpec, ...] = (
         "hawking.glm52.xet_autotune_plan.v2",
         "PASS_OFFLINE_PLAN_BODY_NOT_READ",
     ),
+    InputSpec(
+        "resource_reserve_policy",
+        "GLM52_RESOURCE_RESERVE_POLICY.json",
+        "hawking.glm52.resource_reserve_policy.v1",
+        "FROZEN_CONSERVATIVE_PRELIVE_POLICY",
+    ),
 )
 INPUT_BY_KEY = {spec.key: spec for spec in INPUT_SPECS}
 INPUT_BY_FILENAME = {spec.filename: spec for spec in INPUT_SPECS}
@@ -176,6 +188,7 @@ ASSEMBLE_ARTIFACT_PATHS: dict[str, str] = {
     "gravity_pre_audit": "GRAVITY_COMPLETENESS_AUDIT_GLM52_PRE.json",
     "external_baseline_matrix": "GRAVITY_EXTERNAL_BASELINE_MATRIX.json",
     "xet_autotune_plan": "GLM52_XET_AUTOTUNE_PLAN.json",
+    "resource_reserve_policy": "GLM52_RESOURCE_RESERVE_POLICY.json",
     "xet_autotune_result": "GLM52_XET_AUTOTUNE.json",
     "adapter_twin": "GLM52_ADAPTER_TWIN.json",
     "reference_parity": "GLM52_REFERENCE_PARITY.json",
@@ -376,6 +389,24 @@ def _validate_admission_bindings(artifacts: Mapping[str, Mapping[str, Any]]) -> 
     }
     if admission.get("evidence") != expected_evidence:
         raise CampaignContractError("source admission does not bind the exact source ledgers")
+    expected_toolchain = {
+        "generator": {
+            "path": "tools/condense/glm52_contract.py",
+            "sha256": sha256_file(HERE / "glm52_contract.py"),
+        },
+        "shared_common": {
+            "path": "tools/condense/glm52_common.py",
+            "sha256": sha256_file(HERE / "glm52_common.py"),
+        },
+        "requirements_lock": {
+            "path": "tools/condense/requirements-glm52.txt",
+            "sha256": sha256_file(HERE / "requirements-glm52.txt"),
+        },
+    }
+    if admission.get("toolchain_binding") != expected_toolchain:
+        raise CampaignContractError(
+            "source admission does not bind the live generator/common/requirements toolchain"
+        )
     gates = admission.get("admission_gates")
     required_true = {
         "all_index_tensors_mapped_to_verified_headers",
@@ -477,6 +508,43 @@ def _validate_closure_inputs(artifacts: Mapping[str, Mapping[str, Any]]) -> None
         raise CampaignContractError("external baseline matrix claim boundary is incomplete")
 
 
+def _validate_resource_policy(artifacts: Mapping[str, Mapping[str, Any]]) -> None:
+    policy = artifacts["resource_reserve_policy"]
+    derived = policy.get("derived")
+    activation = policy.get("activation")
+    prefetch = policy.get("prefetch_control")
+    provisional = policy.get("provisional_control_limits")
+    if policy.get("seal_sha256") != RESOURCE_POLICY_SEAL_SHA256 \
+            or policy.get("repo") != OFFICIAL_REPO \
+            or policy.get("revision") != OFFICIAL_REVISION \
+            or not isinstance(derived, dict) \
+            or derived.get("required_free_disk_bytes") != \
+            RESOURCE_POLICY_REQUIRED_FREE_DISK_BYTES \
+            or not isinstance(activation, dict) \
+            or activation.get("live_xet_result_required") is not True \
+            or activation.get("final_schedule_must_bind_this_policy_seal") is not True \
+            or activation.get("worker_must_hold_controller_lease") is not True \
+            or activation.get("eviction_must_remain_disabled_until_all_are_true") is not True \
+            or activation.get(
+                "live_allocated_byte_measurement_required_before_materialized_xet_body_acquisition"
+            ) is not True \
+            or activation.get(
+                "remote_logical_bytes_authorize_materialized_body_acquisition"
+            ) is not False \
+            or not isinstance(prefetch, dict) \
+            or prefetch.get("mode") != "SERIALIZED_OR_PARTIAL_PREFETCH" \
+            or prefetch.get("full_two_complete_window_pipeline_preregistered") is not False \
+            or prefetch.get(
+                "largest_adjacent_active_plus_prefetch_union_remote_logical_bytes"
+            ) != 236_190_533_120 \
+            or prefetch.get("largest_adjacent_full_prefetch_deficit_bytes") != \
+            10_764_360_827 \
+            or not isinstance(provisional, dict) \
+            or provisional.get("derived_from_sealed_input_evidence") is not False \
+            or provisional.get("live_measurement_required") is not True:
+        raise CampaignContractError("resource reserve policy is not the exact fail-closed freeze")
+
+
 def validate_and_derive(
     artifacts: Mapping[str, Mapping[str, Any]],
 ) -> DerivedContractInputs:
@@ -515,15 +583,18 @@ def validate_and_derive(
         path = row.get("path")
         logical_bytes = _positive_int(row.get("logical_bytes"), f"manifest {path}.logical_bytes")
         xet_hash = row.get("xet_hash")
+        lfs_sha256 = row.get("lfs_sha256")
         if row.get("role") != "WEIGHT_SHARD" or row.get("referenced_by_index") is not True \
-                or not isinstance(xet_hash, str) or _SHA256_RE.fullmatch(xet_hash) is None:
+                or not isinstance(xet_hash, str) or _SHA256_RE.fullmatch(xet_hash) is None \
+                or not isinstance(lfs_sha256, str) \
+                or _SHA256_RE.fullmatch(lfs_sha256) is None:
             raise CampaignContractError(f"manifest shard identity is incomplete: {path}")
         manifest_by_path[str(path)] = row
         source_shards.append({
             "path": path,
             "logical_bytes": logical_bytes,
-            "content_hash": xet_hash,
-            "content_hash_kind": "xet",
+            "xet_hash": xet_hash,
+            "lfs_sha256": lfs_sha256,
         })
     if sum(row["logical_bytes"] for row in source_shards) != state.OFFICIAL_WEIGHT_LOGICAL_BYTES:
         raise CampaignContractError("official manifest shard bytes do not sum exactly")
@@ -668,6 +739,7 @@ def validate_and_derive(
     _validate_admission_bindings(artifacts)
     _validate_xet_plan_bindings(artifacts)
     _validate_closure_inputs(artifacts)
+    _validate_resource_policy(artifacts)
     if artifacts["reference_parity"].get("claim_boundary", {}).get(
         "official_bf16_parent_forward"
     ) != "PENDING_FIRST_ADMITTED_SOURCE_WINDOW":
@@ -748,20 +820,26 @@ def _artifact_specs(
 
 
 def _checklist_specs(items: Sequence[str]) -> dict[str, dict[str, Any]]:
-    return {
-        item: {
+    result: dict[str, dict[str, Any]] = {}
+    grounded = set(terminal_proofs.READY_STOP_CONDITIONS)
+    for item in items:
+        validator_id = (
+            "terminal_semantic_proof_v1"
+            if item in grounded
+            else "stop_condition_blocked_v1"
+        )
+        result[item] = {
             "path": f"evidence/stop_conditions/{item}.json",
             "expected_seal_sha256": None,
             "expected_schema": state.STOP_CONDITION_EVIDENCE_SCHEMA,
             "allowed_statuses": ["PASS"],
-            "validator_id": "stop_condition_blocked_v1",
+            "validator_id": validator_id,
             "validator_source_sha256": state.EVIDENCE_VALIDATOR_SOURCE_SHA256[
-                "stop_condition_blocked_v1"
+                validator_id
             ],
             "require_producer_hmac": True,
         }
-        for item in items
-    }
+    return result
 
 
 def _state_gates(input_seals: Mapping[str, str]) -> dict[str, dict[str, Any]]:
@@ -785,6 +863,14 @@ def _state_gates(input_seals: Mapping[str, str]) -> dict[str, dict[str, Any]]:
         }
 
     return {
+        "CLOSE_KIMI": gate(
+            {},
+            ("kimi_final_evidence_verified",),
+        ),
+        "RELEASE_KIMI_SOURCE": gate(
+            {},
+            ("kimi_raw_source_safely_released",),
+        ),
         "AUTOTUNE_XET": gate(
             {
                 "official_source_manifest": "GLM52_OFFICIAL_MANIFEST.json",
@@ -792,6 +878,7 @@ def _state_gates(input_seals: Mapping[str, str]) -> dict[str, dict[str, Any]]:
                 "tensor_coverage_ledger": "GLM52_SHARD_DEPENDENCY_GRAPH.json",
                 "source_admission": "GLM52_SOURCE_ADMISSION.json",
                 "xet_autotune_plan": "GLM52_XET_AUTOTUNE_PLAN.json",
+                "resource_reserve_policy": "GLM52_RESOURCE_RESERVE_POLICY.json",
             },
             ("official_source_admitted", "offline_xet_plan_sealed"),
         ),

@@ -68,4 +68,4 @@ This admission establishes corpus hygiene only. A capability claim remains forbi
 
 The 256K rung is not admitted without resource-valid execution evidence. The 1M rung is explicitly not admitted until the exact runtime executes it safely; shorter tests do not support a 1M preservation claim.
 
-Manifest seal: `3308812999285e8dcbeea5dd6d4ba88ed4b13efba0e7a70778d5de08846ec3e2`
+Manifest seal: `7f5eff81a10c01b231e829d5870d6e8290a745a4bacdf4dfe74c4d0e5080e767`

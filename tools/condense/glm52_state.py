@@ -37,12 +37,16 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable, Iterable, Mapping, Sequence, TextIO
 
+from cryptography.exceptions import InvalidSignature
+from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
+
 from glm52_common import (
     Glm52Error,
     atomic_json,
     canonical,
     read_sealed_json,
     seal,
+    sha256_file,
     utc_now,
     verify_sealed,
 )
@@ -54,16 +58,31 @@ LEASE_SCHEMA = "hawking.glm52.controller_lease.v1"
 TELEGRAM_RECEIPT_SCHEMA = "hawking.glm52.telegram_delivery_receipt.v3"
 WINDOW_EVENT_SCHEMA = "hawking.glm52.window_event.v1"
 WINDOW_RECORD_SCHEMA = "hawking.glm52.window_record.v1"
-EXPECTED_CONTRACT_SCHEMA = "hawking.glm52.expected_campaign_contract.v2"
+EXPECTED_CONTRACT_SCHEMA = "hawking.glm52.expected_campaign_contract.v3"
 TERMINAL_EVIDENCE_SCHEMA = "hawking.glm52.state_terminal_evidence.v2"
 TRANSITION_INTENT_SCHEMA = "hawking.glm52.state_transition_intent.v1"
 CONTROLLER_ANCHOR_SCHEMA = "hawking.glm52.controller_anchor.v1"
 CAMPAIGN_STATUS_SCHEMA = "hawking.glm52.canonical_campaign_status.v1"
 STOP_CONDITION_EVIDENCE_SCHEMA = "hawking.glm52.stop_condition_evidence.v1"
+NOTIFICATION_HEAD_BINDING_SCHEMA = "hawking.glm52.notification_head_binding.v1"
 GENESIS_HASH = "0" * 64
 WINDOW_LEDGER_FILENAME = "GLM52_WINDOW_LEDGER.jsonl"
 OFFICIAL_WEIGHT_SHARD_COUNT = 282
 OFFICIAL_WEIGHT_LOGICAL_BYTES = 1_506_667_387_408
+OFFICIAL_RESOURCE_POLICY_PATH = "GLM52_RESOURCE_RESERVE_POLICY.json"
+OFFICIAL_RESOURCE_POLICY_SCHEMA = "hawking.glm52.resource_reserve_policy.v1"
+OFFICIAL_RESOURCE_POLICY_STATUS = "FROZEN_CONSERVATIVE_PRELIVE_POLICY"
+OFFICIAL_RESOURCE_POLICY_SEAL_SHA256 = (
+    "b33692a9e43aa37c59325ffd1b317d0d069e788c20f4f32cc3840b32ec901cca"
+)
+OFFICIAL_RESOURCE_POLICY_REQUIRED_FREE_DISK_BYTES = 416_036_394_619
+OFFICIAL_RESOURCE_POLICY_LOCATIONS = frozenset(
+    {
+        ("AUTOTUNE_XET", "resource_reserve_policy"),
+        ("ASSEMBLE_ARTIFACT", "resource_reserve_policy"),
+        ("COMPLETE", "resource_reserve_policy"),
+    }
+)
 OFFICIAL_ASSEMBLY_REQUIRED_ARTIFACTS = frozenset(
     {
         "official_source_manifest",
@@ -245,6 +264,7 @@ _TENSOR_NEXT = {
 
 _CLAIM_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:/@+-]{7,255}$")
 _HEX64_RE = re.compile(r"^[0-9a-f]{64}$")
+_HEX128_RE = re.compile(r"^[0-9a-f]{128}$")
 _HEX40_RE = re.compile(r"^[0-9a-f]{40}$")
 _SAFE_STATUS_NAME_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.:/@+\-]{0,127}$")
 _RATE_RE = re.compile(r"^[0-9]+(?:\.[0-9]+)?$")
@@ -254,7 +274,7 @@ _UTC_Z_RE = re.compile(
 MAX_TELEGRAM_MESSAGE_CHARS = 4096
 CONTROLLER_HEARTBEAT_MAX_AGE_SECONDS = 120
 
-_EVIDENCE_VALIDATOR_SOURCES: dict[str, str] = {
+_EVIDENCE_VALIDATOR_DESCRIPTIONS: dict[str, str] = {
     "sealed_exact_v1": (
         "require strict JSON, valid self-seal, exact frozen seal, exact schema, allowed status"
     ),
@@ -271,8 +291,8 @@ _EVIDENCE_VALIDATOR_SOURCES: dict[str, str] = {
     ),
     "frozen_schedule_v2": (
         "require post-Xet frozen schedule, exact contract window dependency/acquisition membership, "
-        "plan/preliminary/result seals, selected-profile hash, campaign identity, evidence hash, "
-        "and producer HMAC"
+        "plan/preliminary/result seals, selected-profile hash, exact resource-policy binding, "
+        "campaign identity, evidence hash, and producer HMAC"
     ),
     "xet_autotune_result_v1": (
         "reconstruct the exact raw live-Xet result from its authenticated original seal, validate "
@@ -285,11 +305,20 @@ _EVIDENCE_VALIDATOR_SOURCES: dict[str, str] = {
     "stop_condition_blocked_v1": (
         "fail closed until this stop condition is derived from grounded campaign evidence"
     ),
+    "terminal_semantic_proof_v1": (
+        "re-derive the named offline-ready stop condition from no-follow trusted artifact "
+        "bytes, require an exact validator-source binding and a proven PASS, then require "
+        "an independent evidence-producer HMAC"
+    ),
 }
+_STATE_VALIDATOR_IMPLEMENTATION_SHA256 = sha256_file(Path(__file__).resolve())
 EVIDENCE_VALIDATOR_SOURCE_SHA256: dict[str, str] = {
-    name: hashlib.sha256(source.encode("utf-8")).hexdigest()
-    for name, source in _EVIDENCE_VALIDATOR_SOURCES.items()
+    name: _STATE_VALIDATOR_IMPLEMENTATION_SHA256
+    for name in _EVIDENCE_VALIDATOR_DESCRIPTIONS
 }
+EVIDENCE_VALIDATOR_SOURCE_SHA256["terminal_semantic_proof_v1"] = sha256_file(
+    Path(__file__).with_name("glm52_terminal_proofs.py").resolve()
+)
 
 
 # Telegram event names are controller policy, never caller-controlled strings.
@@ -356,6 +385,59 @@ class TelegramAuthConfig:
         return _is_sha256(recorded) and hmac.compare_digest(
             self.authenticate(body), str(recorded)
         )
+
+    def _key_material_identity(self) -> str:
+        return _auth_key_material_identity(self._hmac_key)
+
+
+class EvidenceAuthConfig:
+    """Independent in-memory authenticator for scientific producer evidence."""
+
+    __slots__ = ("_hmac_key", "campaign_id", "source_revision")
+
+    def __init__(
+        self,
+        *,
+        hmac_key: bytes,
+        campaign_id: str,
+        source_revision: str,
+    ):
+        if not isinstance(hmac_key, bytes) or len(hmac_key) < 32:
+            raise StateError("evidence HMAC key must be at least 32 bytes")
+        _validate_identity(campaign_id, source_revision, "evidence-auth")
+        self._hmac_key = bytes(hmac_key)
+        self.campaign_id = campaign_id
+        self.source_revision = source_revision
+
+    def __repr__(self) -> str:
+        return (
+            "EvidenceAuthConfig(hmac_key=<redacted>, "
+            f"campaign_id={self.campaign_id!r}, source_revision={self.source_revision!r})"
+        )
+
+    def authenticate(self, body: Mapping[str, Any]) -> str:
+        envelope = {
+            "schema": "hawking.glm52.evidence_auth_envelope.v1",
+            "campaign_id": self.campaign_id,
+            "source_revision": self.source_revision,
+            "body": dict(body),
+        }
+        return hmac.new(self._hmac_key, canonical(envelope), hashlib.sha256).hexdigest()
+
+    def verify(self, body: Mapping[str, Any], recorded: Any) -> bool:
+        return _is_sha256(recorded) and hmac.compare_digest(
+            self.authenticate(body), str(recorded)
+        )
+
+    def _key_material_identity(self) -> str:
+        return _auth_key_material_identity(self._hmac_key)
+
+
+def _auth_key_material_identity(key: bytes) -> str:
+    """Private equality fingerprint used only to prohibit cross-role key reuse."""
+    return hashlib.sha256(
+        b"hawking.glm52.auth-key-material-identity.v1\0" + key
+    ).hexdigest()
 
 
 def _sha256(value: Any) -> str:
@@ -444,14 +526,14 @@ def telegram_chat_identity_digest(chat_id: str | int) -> str:
 
 
 def seal_producer_authenticated_evidence(
-    body: Mapping[str, Any], *, auth: TelegramAuthConfig
+    body: Mapping[str, Any], *, auth: EvidenceAuthConfig
 ) -> dict[str, Any]:
     """Add the campaign producer HMAC and self-seal used by future gate artifacts."""
     value = _require_object(dict(body), "producer evidence body")
     if "seal_sha256" in value or "producer_hmac_sha256" in value:
         raise StateError("producer evidence body must not contain generated authentication fields")
-    if not isinstance(auth, TelegramAuthConfig):
-        raise StateError("producer evidence requires TelegramAuthConfig")
+    if not isinstance(auth, EvidenceAuthConfig):
+        raise StateError("producer evidence requires EvidenceAuthConfig")
     signature = auth.authenticate({
         "schema": "hawking.glm52.evidence_producer_auth.v1",
         "artifact": value,
@@ -463,8 +545,8 @@ def _validate_contract_shard(shard: Any, *, label: str) -> dict[str, Any]:
     if not isinstance(shard, dict) or set(shard) != {
         "path",
         "logical_bytes",
-        "content_hash",
-        "content_hash_kind",
+        "xet_hash",
+        "lfs_sha256",
     }:
         raise StateError(f"{label} has an invalid source-shard identity schema")
     value = _clone(shard)
@@ -472,10 +554,10 @@ def _validate_contract_shard(shard: Any, *, label: str) -> dict[str, Any]:
     size = value.get("logical_bytes")
     if isinstance(size, bool) or not isinstance(size, int) or size <= 0:
         raise StateError(f"{label}.logical_bytes must be positive")
-    if not _is_sha256(value.get("content_hash")):
-        raise StateError(f"{label}.content_hash must be a sha256/Xet hash")
-    if value.get("content_hash_kind") not in {"sha256", "xet"}:
-        raise StateError(f"{label}.content_hash_kind invalid")
+    if not _is_sha256(value.get("xet_hash")):
+        raise StateError(f"{label}.xet_hash must be a 64-hex Xet acquisition identity")
+    if not _is_sha256(value.get("lfs_sha256")):
+        raise StateError(f"{label}.lfs_sha256 must be the full-file LFS SHA-256")
     return value
 
 
@@ -511,12 +593,14 @@ def _validate_evidence_policy(value: Any, *, label: str) -> dict[str, Any]:
         "campaign_artifact_v1", "stop_condition_v1", "phone_status_v2",
         "frozen_schedule_v2", "xet_autotune_result_v1",
         "future_artifact_blocked_v1", "stop_condition_blocked_v1",
+        "terminal_semantic_proof_v1",
     }:
         raise StateError(f"{label} has no frozen seal or semantic validator")
     if expected_seal is None and validator_id in {
         "campaign_artifact_v1", "stop_condition_v1", "frozen_schedule_v2",
         "xet_autotune_result_v1", "phone_status_v2",
         "future_artifact_blocked_v1", "stop_condition_blocked_v1",
+        "terminal_semantic_proof_v1",
     } and policy["require_producer_hmac"] is not True:
         raise StateError(f"{label} future evidence must require producer HMAC")
     if validator_id == "sealed_exact_v1" and expected_seal is None:
@@ -749,6 +833,21 @@ def _validate_expected_contract(value: Any) -> dict[str, Any]:
     )) or not complete["required_artifacts"] or not complete["required_checklist"]:
         raise StateError("COMPLETE gate lacks mandatory campaign closure requirements")
     if source["profile"] == "OFFICIAL_GLM52_BF16":
+        for gate_name, stop_condition in (
+            ("CLOSE_KIMI", "kimi_final_evidence_verified"),
+            ("RELEASE_KIMI_SOURCE", "kimi_raw_source_safely_released"),
+        ):
+            gate = validated_gates.get(gate_name)
+            if gate is None or set(gate["required_checklist"]) != {stop_condition}:
+                raise StateError(
+                    f"official {gate_name} gate must require {stop_condition}"
+                )
+            policy = gate["required_checklist"][stop_condition]
+            if policy["validator_id"] != "terminal_semantic_proof_v1" \
+                    or policy["require_producer_hmac"] is not True:
+                raise StateError(
+                    f"official {gate_name} stop proof must be grounded and authenticated"
+                )
         if not OFFICIAL_ASSEMBLY_REQUIRED_ARTIFACTS.issubset(
             assembly["required_artifacts"]
         ):
@@ -763,6 +862,36 @@ def _validate_expected_contract(value: Any) -> dict[str, Any]:
                 raise StateError(
                     f"official ASSEMBLE artifact requires a frozen expected seal: {name}"
                 )
+        resource_locations = {
+            (gate_name, artifact_name)
+            for gate_name, gate in validated_gates.items()
+            for artifact_name, policy in gate["required_artifacts"].items()
+            if artifact_name == "resource_reserve_policy"
+            or policy["path"] == OFFICIAL_RESOURCE_POLICY_PATH
+        }
+        if resource_locations != OFFICIAL_RESOURCE_POLICY_LOCATIONS:
+            raise StateError(
+                "official resource policy must occur exactly at "
+                "AUTOTUNE_XET/ASSEMBLE_ARTIFACT/COMPLETE.resource_reserve_policy"
+            )
+        resource_policies = [
+            validated_gates[gate_name]["required_artifacts"][artifact_name]
+            for gate_name, artifact_name in sorted(OFFICIAL_RESOURCE_POLICY_LOCATIONS)
+        ]
+        reference_resource_policy = resource_policies[0]
+        if any(policy != reference_resource_policy for policy in resource_policies[1:]):
+            raise StateError("official resource policy bindings differ across state gates")
+        if reference_resource_policy["path"] != OFFICIAL_RESOURCE_POLICY_PATH \
+                or reference_resource_policy["expected_schema"] != \
+                OFFICIAL_RESOURCE_POLICY_SCHEMA \
+                or reference_resource_policy["allowed_statuses"] != [
+                    OFFICIAL_RESOURCE_POLICY_STATUS
+                ] \
+                or reference_resource_policy["validator_id"] != "sealed_exact_v1" \
+                or reference_resource_policy["require_producer_hmac"] is not False \
+                or reference_resource_policy["expected_seal_sha256"] != \
+                OFFICIAL_RESOURCE_POLICY_SEAL_SHA256:
+            raise StateError("official resource policy binding is not exact")
         if not OFFICIAL_COMPLETE_REQUIRED_ARTIFACTS.issubset(
             complete["required_artifacts"]
         ):
@@ -817,7 +946,7 @@ def make_state_terminal_evidence(
     *,
     artifact_root: str | os.PathLike[str],
     controller_anchor: Mapping[str, Any],
-    evidence_auth: TelegramAuthConfig | None = None,
+    evidence_auth: EvidenceAuthConfig | None = None,
     created_at: str | None = None,
 ) -> dict[str, Any]:
     """Snapshot a gated state's evidence from the trusted filesystem.
@@ -896,6 +1025,55 @@ def make_state_terminal_evidence(
     return evidence
 
 
+def make_grounded_stop_condition_evidence(
+    contract: Mapping[str, Any],
+    stop_condition: str,
+    *,
+    artifact_root: str | os.PathLike[str],
+    evidence_auth: EvidenceAuthConfig,
+) -> dict[str, Any]:
+    """Derive and authenticate one official offline-ready stop receipt.
+
+    The caller supplies only the stop-condition name.  Scientific facts, file hashes,
+    seals, and scope are re-derived by the dedicated no-follow validator.  A BLOCKED
+    semantic result can never be promoted into a PASS receipt.
+    """
+    validated = _validate_expected_contract(contract)
+    if not isinstance(evidence_auth, EvidenceAuthConfig):
+        raise StateError("grounded stop evidence requires EvidenceAuthConfig")
+    if evidence_auth.campaign_id != validated["campaign_id"] \
+            or evidence_auth.source_revision != validated["source_revision"]:
+        raise StateError("evidence authentication identity differs from contract")
+    store = TrustedArtifactStore(artifact_root)
+    try:
+        import glm52_terminal_proofs as terminal_proofs
+
+        proof = terminal_proofs.derive_stop_proof(store.root, stop_condition)
+    except ImportError as exc:
+        raise StateError(f"terminal semantic validator is unavailable: {exc}") from exc
+    except terminal_proofs.TerminalProofError as exc:
+        raise StateError(f"terminal semantic proof failed: {exc}") from exc
+    if proof.get("campaign_id") != validated["campaign_id"] \
+            or proof.get("source_revision") != validated["source_revision"]:
+        raise StateError("terminal semantic proof identity differs from contract")
+    if proof.get("status") != "PASS" or proof.get("proven") is not True:
+        blockers = proof.get("blockers") if isinstance(proof.get("blockers"), list) else []
+        raise StateError(
+            f"stop condition remains BLOCKED: {stop_condition}; blockers={blockers}"
+        )
+    body = {
+        "schema": STOP_CONDITION_EVIDENCE_SCHEMA,
+        "status": "PASS",
+        "stop_condition": stop_condition,
+        "campaign_id": validated["campaign_id"],
+        "source_revision": validated["source_revision"],
+        "expected_contract_sha256": validated["seal_sha256"],
+        "evidence": proof,
+        "evidence_sha256": _sha256(proof),
+    }
+    return seal_producer_authenticated_evidence(body, auth=evidence_auth)
+
+
 def _validate_xet_autotune_result_artifact(
     store: "TrustedArtifactStore",
     artifact: Mapping[str, Any],
@@ -964,7 +1142,7 @@ def _snapshot_policy_evidence(
     contract: Mapping[str, Any],
     stop_condition: str | None = None,
     phone_anchor: Mapping[str, Any] | None = None,
-    evidence_auth: TelegramAuthConfig | None = None,
+    evidence_auth: EvidenceAuthConfig | None = None,
 ) -> dict[str, Any]:
     normalized = _validate_evidence_policy(policy, label=label)
     artifact, file_sha256 = store.read_sealed(normalized["path"], label=label)
@@ -986,7 +1164,7 @@ def _snapshot_policy_evidence(
         )
     if validator_id in {
         "campaign_artifact_v1", "stop_condition_v1", "xet_autotune_result_v1",
-        "frozen_schedule_v2",
+        "frozen_schedule_v2", "terminal_semantic_proof_v1",
     }:
         for key, expected in (
             ("campaign_id", contract["campaign_id"]),
@@ -1000,6 +1178,27 @@ def _snapshot_policy_evidence(
             raise StateError(f"{label} semantic evidence is empty")
         if artifact.get("evidence_sha256") != _sha256(semantic_evidence):
             raise StateError(f"{label} semantic evidence hash mismatch")
+    if validator_id == "terminal_semantic_proof_v1":
+        if stop_condition is None:
+            raise StateError(f"{label} terminal semantic validator requires a stop condition")
+        try:
+            import glm52_terminal_proofs as terminal_proofs
+
+            proven = terminal_proofs.validate_stop_proof(
+                store.root,
+                stop_condition,
+                artifact["evidence"],
+            )
+        except ImportError as exc:
+            raise StateError(f"{label} terminal semantic validator unavailable: {exc}") from exc
+        except terminal_proofs.TerminalProofError as exc:
+            raise StateError(f"{label} terminal semantic proof failed: {exc}") from exc
+        source_binding = proven.get("validator_source")
+        if not isinstance(source_binding, dict) or source_binding.get("sha256") != \
+                normalized["validator_source_sha256"]:
+            raise StateError(f"{label} terminal semantic validator-source mismatch")
+        if proven.get("status") != "PASS" or proven.get("proven") is not True:
+            raise StateError(f"{label} terminal semantic proof is not proven PASS")
     if validator_id == "xet_autotune_result_v1":
         _validate_xet_autotune_result_artifact(
             store,
@@ -1034,6 +1233,22 @@ def _snapshot_policy_evidence(
         if binding["xet_autotune_plan_seal_sha256"] != expected_plan \
                 or binding["preliminary_schedule_seal_sha256"] != expected_preliminary:
             raise StateError(f"{label} plan/preliminary schedule binding mismatch")
+        resource_policy = contract["state_gates"].get("AUTOTUNE_XET", {}).get(
+            "required_artifacts", {}
+        ).get("resource_reserve_policy")
+        if not isinstance(resource_policy, dict) \
+                or resource_policy.get("path") != OFFICIAL_RESOURCE_POLICY_PATH \
+                or not _is_sha256(resource_policy.get("expected_seal_sha256")):
+            raise StateError(f"{label} contract lacks the exact resource policy")
+        expected_resource_binding = {
+            "path": OFFICIAL_RESOURCE_POLICY_PATH,
+            "seal_sha256": resource_policy["expected_seal_sha256"],
+            "required_free_disk_bytes":
+                OFFICIAL_RESOURCE_POLICY_REQUIRED_FREE_DISK_BYTES,
+            "expected_contract_sha256": contract["seal_sha256"],
+        }
+        if artifact.get("resource_policy_binding") != expected_resource_binding:
+            raise StateError(f"{label} resource policy binding mismatch")
         windows = artifact.get("windows")
         if not isinstance(windows, list) or len(windows) != len(contract["window_schedule"]):
             raise StateError(f"{label} window inventory mismatch")
@@ -1057,7 +1272,7 @@ def _snapshot_policy_evidence(
         if normalized_windows != contract["window_schedule"]:
             raise StateError(f"{label} changed frozen window dependency membership")
     if normalized["require_producer_hmac"]:
-        if not isinstance(evidence_auth, TelegramAuthConfig):
+        if not isinstance(evidence_auth, EvidenceAuthConfig):
             raise StateError(f"{label} requires configured producer authentication")
         signature = artifact.get("producer_hmac_sha256")
         producer_body = {
@@ -1142,7 +1357,7 @@ def _validate_terminal_evidence(
     *,
     artifact_store: "TrustedArtifactStore",
     controller_anchor: Mapping[str, Any],
-    evidence_auth: TelegramAuthConfig | None = None,
+    evidence_auth: EvidenceAuthConfig | None = None,
 ) -> dict[str, Any]:
     gates = contract["state_gates"]
     if state not in gates:
@@ -1290,16 +1505,166 @@ class TrustedArtifactStore:
     """
 
     def __init__(self, root: str | os.PathLike[str], *, max_bytes: int = 256 * 1024 * 1024):
-        self.root = Path(root)
-        try:
-            root_stat = self.root.lstat()
-        except OSError as exc:
-            raise StateError(f"trusted artifact root is unavailable: {exc}") from exc
-        if stat.S_ISLNK(root_stat.st_mode) or not stat.S_ISDIR(root_stat.st_mode):
-            raise StateError("trusted artifact root must be a real directory, not a symlink")
+        root_path = os.fspath(root)
+        if not isinstance(root_path, str) or not os.path.isabs(root_path):
+            raise StateError("trusted artifact root must be an absolute text path")
+        if root_path.startswith("//") or os.path.normpath(root_path) != root_path:
+            raise StateError("trusted artifact root must be a normalized absolute path")
+        if not getattr(os, "O_NOFOLLOW", 0) or not getattr(os, "O_DIRECTORY", 0):
+            raise StateError("trusted artifact reads require O_NOFOLLOW and O_DIRECTORY")
+        self._root_path = root_path
+        self.root = Path(root_path)
         if isinstance(max_bytes, bool) or not isinstance(max_bytes, int) or max_bytes <= 0:
             raise StateError("trusted artifact read limit must be positive")
         self.max_bytes = max_bytes
+        descriptors, _, root_stat = self._open_absolute_root()
+        self._root_identity = self._identity(root_stat)
+        for descriptor in reversed(descriptors):
+            os.close(descriptor)
+
+    @staticmethod
+    def _identity(metadata: os.stat_result) -> tuple[int, int, int]:
+        return (
+            int(metadata.st_dev),
+            int(metadata.st_ino),
+            stat.S_IFMT(metadata.st_mode),
+        )
+
+    @classmethod
+    def _fingerprint(cls, metadata: os.stat_result) -> tuple[int, ...]:
+        return (
+            *cls._identity(metadata),
+            int(metadata.st_size),
+            int(metadata.st_nlink),
+            int(metadata.st_mtime_ns),
+            int(metadata.st_ctime_ns),
+        )
+
+    @staticmethod
+    def _lstat_at(component: str, directory_fd: int) -> os.stat_result:
+        return os.stat(component, dir_fd=directory_fd, follow_symlinks=False)
+
+    def _open_absolute_root(
+        self,
+    ) -> tuple[
+        list[int],
+        list[tuple[str, tuple[int, int, int]]],
+        os.stat_result,
+    ]:
+        flags = (
+            os.O_RDONLY
+            | getattr(os, "O_CLOEXEC", 0)
+            | getattr(os, "O_NOFOLLOW", 0)
+            | getattr(os, "O_DIRECTORY", 0)
+        )
+        descriptors: list[int] = []
+        links: list[tuple[str, tuple[int, int, int]]] = []
+        try:
+            named_root = os.stat("/", follow_symlinks=False)
+            filesystem_root = os.open("/", flags)
+            descriptors.append(filesystem_root)
+            if self._identity(named_root) != self._identity(os.fstat(filesystem_root)):
+                raise StateError("filesystem root changed while opening artifact root")
+            for component in (
+                item for item in self._root_path.split("/") if item
+            ):
+                named = self._lstat_at(component, descriptors[-1])
+                if stat.S_ISLNK(named.st_mode) or not stat.S_ISDIR(named.st_mode):
+                    raise StateError(
+                        f"trusted artifact root component is not a real directory: {component!r}"
+                    )
+                child = os.open(component, flags, dir_fd=descriptors[-1])
+                try:
+                    opened = os.fstat(child)
+                except OSError:
+                    os.close(child)
+                    raise
+                if self._identity(named) != self._identity(opened):
+                    os.close(child)
+                    raise StateError(
+                        f"trusted artifact root component changed while opening: {component!r}"
+                    )
+                links.append((component, self._identity(opened)))
+                descriptors.append(child)
+            return descriptors, links, os.fstat(descriptors[-1])
+        except BaseException as exc:
+            for descriptor in reversed(descriptors):
+                os.close(descriptor)
+            if isinstance(exc, OSError):
+                raise StateError(
+                    f"trusted artifact root is unavailable: {exc}"
+                ) from exc
+            raise
+
+    def _verify_chain(
+        self,
+        descriptors: Sequence[int],
+        links: Sequence[tuple[str, tuple[int, int, int]]],
+        *,
+        label: str,
+    ) -> None:
+        if len(descriptors) != len(links) + 1:
+            raise StateError(f"{label} descriptor chain is malformed")
+        for index, (component, expected) in enumerate(links):
+            try:
+                named = self._lstat_at(component, descriptors[index])
+                opened = os.fstat(descriptors[index + 1])
+            except OSError as exc:
+                raise StateError(
+                    f"{label} component changed during evidence read: {component!r}: {exc}"
+                ) from exc
+            if stat.S_ISLNK(named.st_mode) or self._identity(named) != expected \
+                    or self._identity(opened) != expected:
+                raise StateError(
+                    f"{label} component identity changed: {component!r}"
+                )
+
+    def _open_relative_directories(
+        self, root_fd: int, components: Sequence[str]
+    ) -> tuple[list[int], list[tuple[str, tuple[int, int, int]]]]:
+        flags = (
+            os.O_RDONLY
+            | getattr(os, "O_CLOEXEC", 0)
+            | getattr(os, "O_NOFOLLOW", 0)
+            | getattr(os, "O_DIRECTORY", 0)
+        )
+        descriptors = [os.dup(root_fd)]
+        links: list[tuple[str, tuple[int, int, int]]] = []
+        try:
+            for component in components:
+                named = self._lstat_at(component, descriptors[-1])
+                if stat.S_ISLNK(named.st_mode) or not stat.S_ISDIR(named.st_mode):
+                    raise StateError(
+                        f"trusted evidence component is not a real directory: {component!r}"
+                    )
+                child = os.open(component, flags, dir_fd=descriptors[-1])
+                try:
+                    opened = os.fstat(child)
+                except OSError:
+                    os.close(child)
+                    raise
+                if self._identity(named) != self._identity(opened):
+                    os.close(child)
+                    raise StateError(
+                        f"trusted evidence directory changed while opening: {component!r}"
+                    )
+                links.append((component, self._identity(opened)))
+                descriptors.append(child)
+            return descriptors, links
+        except BaseException as exc:
+            for descriptor in reversed(descriptors):
+                os.close(descriptor)
+            if isinstance(exc, OSError):
+                raise StateError(f"cannot securely open trusted evidence: {exc}") from exc
+            raise
+
+    def _after_read_before_post_fstat(self, relative_path: str, fd: int) -> None:
+        """Adversarial-test seam; production performs no action here."""
+
+    def _after_post_fstat_before_name_recheck(
+        self, relative_path: str, fd: int
+    ) -> None:
+        """Adversarial-test seam; production performs no action here."""
 
     @staticmethod
     def _parts(relative_path: Any) -> tuple[str, ...]:
@@ -1314,38 +1679,85 @@ class TrustedArtifactStore:
 
     def read_bytes(self, relative_path: str) -> bytes:
         parts = self._parts(relative_path)
-        nofollow = getattr(os, "O_NOFOLLOW", 0)
-        directory_flags = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0) | nofollow
-        descriptor = os.open(self.root, directory_flags)
-        try:
-            for component in parts[:-1]:
-                child = os.open(component, directory_flags, dir_fd=descriptor)
+        root_descriptors, root_links, root_stat = self._open_absolute_root()
+        if self._identity(root_stat) != self._root_identity:
+            for descriptor in reversed(root_descriptors):
                 os.close(descriptor)
-                descriptor = child
-            file_descriptor = os.open(parts[-1], os.O_RDONLY | nofollow, dir_fd=descriptor)
-            try:
-                metadata = os.fstat(file_descriptor)
-                if not stat.S_ISREG(metadata.st_mode):
-                    raise StateError(f"trusted evidence is not a regular file: {relative_path}")
-                if metadata.st_size > self.max_bytes:
+            raise StateError("trusted artifact root identity changed after initialization")
+        directory_descriptors: list[int] = []
+        file_descriptor: int | None = None
+        try:
+            directory_descriptors, directory_links = self._open_relative_directories(
+                root_descriptors[-1], parts[:-1]
+            )
+            parent_fd = directory_descriptors[-1]
+            leaf = parts[-1]
+            named_pre = self._lstat_at(leaf, parent_fd)
+            if stat.S_ISLNK(named_pre.st_mode) or not stat.S_ISREG(named_pre.st_mode):
+                raise StateError(f"trusted evidence is not a regular file: {relative_path}")
+            if int(named_pre.st_nlink) != 1:
+                raise StateError(f"trusted evidence must have one hard link: {relative_path}")
+            file_descriptor = os.open(
+                leaf,
+                os.O_RDONLY
+                | getattr(os, "O_CLOEXEC", 0)
+                | getattr(os, "O_NOFOLLOW", 0)
+                | getattr(os, "O_NONBLOCK", 0),
+                dir_fd=parent_fd,
+            )
+            descriptor_pre = os.fstat(file_descriptor)
+            if self._fingerprint(named_pre) != self._fingerprint(descriptor_pre):
+                raise StateError(f"trusted evidence changed while opening: {relative_path}")
+            if descriptor_pre.st_size > self.max_bytes:
+                raise StateError(f"trusted evidence exceeds read limit: {relative_path}")
+            chunks: list[bytes] = []
+            total = 0
+            while True:
+                chunk = os.read(
+                    file_descriptor,
+                    min(1024 * 1024, self.max_bytes + 1 - total),
+                )
+                if not chunk:
+                    break
+                chunks.append(chunk)
+                total += len(chunk)
+                if total > self.max_bytes:
                     raise StateError(f"trusted evidence exceeds read limit: {relative_path}")
-                chunks: list[bytes] = []
-                total = 0
-                while True:
-                    chunk = os.read(file_descriptor, min(1024 * 1024, self.max_bytes + 1 - total))
-                    if not chunk:
-                        break
-                    chunks.append(chunk)
-                    total += len(chunk)
-                    if total > self.max_bytes:
-                        raise StateError(f"trusted evidence exceeds read limit: {relative_path}")
-                return b"".join(chunks)
-            finally:
-                os.close(file_descriptor)
+            self._after_read_before_post_fstat(relative_path, file_descriptor)
+            descriptor_post = os.fstat(file_descriptor)
+            if self._fingerprint(descriptor_pre) != self._fingerprint(descriptor_post) \
+                    or total != int(descriptor_post.st_size):
+                raise StateError(f"trusted evidence changed while reading: {relative_path}")
+            self._after_post_fstat_before_name_recheck(
+                relative_path, file_descriptor
+            )
+            named_post = self._lstat_at(leaf, parent_fd)
+            if self._fingerprint(named_post) != self._fingerprint(descriptor_post):
+                raise StateError(
+                    f"trusted evidence name changed after reading: {relative_path}"
+                )
+            self._verify_chain(
+                directory_descriptors,
+                directory_links,
+                label="trusted evidence directory",
+            )
+            self._verify_chain(
+                root_descriptors,
+                root_links,
+                label="trusted artifact root",
+            )
+            if self._identity(os.fstat(root_descriptors[-1])) != self._root_identity:
+                raise StateError("trusted artifact root identity changed during read")
+            return b"".join(chunks)
         except OSError as exc:
             raise StateError(f"cannot securely open trusted evidence {relative_path}: {exc}") from exc
         finally:
-            os.close(descriptor)
+            if file_descriptor is not None:
+                os.close(file_descriptor)
+            for descriptor in reversed(directory_descriptors):
+                os.close(descriptor)
+            for descriptor in reversed(root_descriptors):
+                os.close(descriptor)
 
     def read_sealed(self, relative_path: str, *, label: str) -> tuple[dict[str, Any], str]:
         raw = self.read_bytes(relative_path)
@@ -1506,22 +1918,252 @@ class SingletonLease:
         if not self.held:
             raise StateError("controller mutation refused: singleton lease is not held")
 
+    @staticmethod
+    def _identity(metadata: os.stat_result) -> tuple[int, int, int]:
+        return (
+            int(metadata.st_dev),
+            int(metadata.st_ino),
+            stat.S_IFMT(metadata.st_mode),
+        )
+
+    @classmethod
+    def _file_fingerprint(cls, metadata: os.stat_result) -> tuple[int, ...]:
+        """Identity and mutable metadata that must remain stable before writing."""
+        return (
+            *cls._identity(metadata),
+            int(metadata.st_mode),
+            int(metadata.st_nlink),
+            int(metadata.st_uid),
+            int(metadata.st_gid),
+            int(metadata.st_size),
+            int(metadata.st_mtime_ns),
+            int(metadata.st_ctime_ns),
+        )
+
+    @staticmethod
+    def _require_safe_lease_file(metadata: os.stat_result, *, label: str) -> None:
+        if not stat.S_ISREG(metadata.st_mode):
+            raise StateError(f"{label} is not a regular file")
+        if int(metadata.st_nlink) != 1:
+            raise StateError(f"{label} must have exactly one hard link")
+        get_euid = getattr(os, "geteuid", None)
+        file_uid = getattr(metadata, "st_uid", None)
+        if callable(get_euid) and file_uid is not None \
+                and int(file_uid) != int(get_euid()):
+            raise StateError(f"{label} is not owned by the current user")
+
+    @classmethod
+    def _verify_directory_chain(
+        cls,
+        descriptors: Sequence[int],
+        links: Sequence[tuple[str, tuple[int, int, int]]],
+        *,
+        label: str,
+    ) -> None:
+        if len(descriptors) != len(links) + 1:
+            raise StateError(f"{label} descriptor chain is malformed")
+        for index, (component, expected) in enumerate(links):
+            try:
+                named = os.stat(
+                    component,
+                    dir_fd=descriptors[index],
+                    follow_symlinks=False,
+                )
+                opened = os.fstat(descriptors[index + 1])
+            except OSError as exc:
+                raise StateError(
+                    f"{label} changed while acquiring lease: {component!r}: {exc}"
+                ) from exc
+            if stat.S_ISLNK(named.st_mode) \
+                    or not stat.S_ISDIR(named.st_mode) \
+                    or cls._identity(named) != expected \
+                    or cls._identity(opened) != expected:
+                raise StateError(
+                    f"{label} identity changed while acquiring lease: {component!r}"
+                )
+
+    def _open_parent_chain(
+        self,
+    ) -> tuple[str, str, list[int], list[tuple[str, tuple[int, int, int]]]]:
+        """Open/create the lexical parent one component at a time without symlinks."""
+        nofollow = getattr(os, "O_NOFOLLOW", 0)
+        directory = getattr(os, "O_DIRECTORY", 0)
+        cloexec = getattr(os, "O_CLOEXEC", 0)
+        if not nofollow or not directory or not cloexec:
+            raise StateError(
+                "singleton lease acquisition requires O_NOFOLLOW, O_DIRECTORY, and O_CLOEXEC"
+            )
+        absolute_path = os.path.abspath(os.fspath(self.path))
+        leaf = os.path.basename(absolute_path)
+        if leaf in {"", ".", ".."}:
+            raise StateError("singleton lease path must name a file")
+        parent = os.path.dirname(absolute_path)
+        components = tuple(item for item in parent.split(os.sep) if item)
+        flags = os.O_RDONLY | nofollow | directory | cloexec
+        descriptors: list[int] = []
+        links: list[tuple[str, tuple[int, int, int]]] = []
+        try:
+            named_root = os.stat(os.sep, follow_symlinks=False)
+            root_fd = os.open(os.sep, flags)
+            descriptors.append(root_fd)
+            opened_root = os.fstat(root_fd)
+            if self._identity(named_root) != self._identity(opened_root) \
+                    or not stat.S_ISDIR(opened_root.st_mode):
+                raise StateError("filesystem root changed while opening singleton lease")
+            for component in components:
+                try:
+                    named = os.stat(
+                        component,
+                        dir_fd=descriptors[-1],
+                        follow_symlinks=False,
+                    )
+                except FileNotFoundError:
+                    try:
+                        os.mkdir(component, mode=0o777, dir_fd=descriptors[-1])
+                    except FileExistsError:
+                        pass
+                    named = os.stat(
+                        component,
+                        dir_fd=descriptors[-1],
+                        follow_symlinks=False,
+                    )
+                if stat.S_ISLNK(named.st_mode) or not stat.S_ISDIR(named.st_mode):
+                    raise StateError(
+                        f"singleton lease parent component is not a real directory: {component!r}"
+                    )
+                child_fd = os.open(component, flags, dir_fd=descriptors[-1])
+                try:
+                    opened = os.fstat(child_fd)
+                except OSError:
+                    os.close(child_fd)
+                    raise
+                if self._identity(named) != self._identity(opened):
+                    os.close(child_fd)
+                    raise StateError(
+                        "singleton lease parent component changed while opening: "
+                        f"{component!r}"
+                    )
+                links.append((component, self._identity(opened)))
+                descriptors.append(child_fd)
+            self._verify_directory_chain(
+                descriptors,
+                links,
+                label="singleton lease parent",
+            )
+            return absolute_path, leaf, descriptors, links
+        except BaseException as exc:
+            for descriptor in reversed(descriptors):
+                os.close(descriptor)
+            if isinstance(exc, OSError):
+                raise StateError(
+                    f"cannot securely open singleton lease parent: {exc}"
+                ) from exc
+            raise
+
+    def _after_lock_before_prewrite_revalidation(
+        self, parent_fd: int, leaf: str, lease_fd: int
+    ) -> None:
+        """Adversarial-test seam; production performs no action here."""
+
+    def _open_lease_file(self, parent_fd: int, leaf: str) -> tuple[int, os.stat_result]:
+        """Safely open an existing lease or exclusively create a new one."""
+        flags = (
+            os.O_RDWR
+            | getattr(os, "O_CLOEXEC", 0)
+            | getattr(os, "O_NOFOLLOW", 0)
+            | getattr(os, "O_NONBLOCK", 0)
+        )
+        for _attempt in range(16):
+            try:
+                named = os.stat(leaf, dir_fd=parent_fd, follow_symlinks=False)
+            except FileNotFoundError:
+                try:
+                    descriptor = os.open(
+                        leaf,
+                        flags | os.O_CREAT | os.O_EXCL,
+                        0o666,
+                        dir_fd=parent_fd,
+                    )
+                except FileExistsError:
+                    continue
+                try:
+                    opened = os.fstat(descriptor)
+                    named_created = os.stat(
+                        leaf, dir_fd=parent_fd, follow_symlinks=False
+                    )
+                    self._require_safe_lease_file(
+                        opened, label="new singleton lease file"
+                    )
+                    if self._file_fingerprint(named_created) != self._file_fingerprint(opened):
+                        raise StateError(
+                            "new singleton lease name changed while creating"
+                        )
+                    return descriptor, opened
+                except BaseException:
+                    os.close(descriptor)
+                    raise
+            self._require_safe_lease_file(named, label="singleton lease file")
+            descriptor = os.open(leaf, flags, dir_fd=parent_fd)
+            try:
+                opened = os.fstat(descriptor)
+                self._require_safe_lease_file(opened, label="singleton lease descriptor")
+                if self._file_fingerprint(named) != self._file_fingerprint(opened):
+                    raise StateError("singleton lease file changed while opening")
+                return descriptor, opened
+            except BaseException:
+                os.close(descriptor)
+                raise
+        raise StateError("singleton lease path did not stabilize while opening")
+
     def acquire(self) -> "SingletonLease":
         if self.held:
             raise StateError("singleton lease already held by this handle")
-        self.path.parent.mkdir(parents=True, exist_ok=True)
-        key = str(self.path.resolve())
+        absolute_path, leaf, parent_descriptors, parent_links = self._open_parent_chain()
+        key = absolute_path
         with _PROCESS_LEASES_LOCK:
             if key in _PROCESS_LEASES:
+                for parent_descriptor in reversed(parent_descriptors):
+                    os.close(parent_descriptor)
                 raise StateError(f"already-running: singleton lease held in this process: {self.path}")
             _PROCESS_LEASES.add(key)
         handle: TextIO | None = None
+        descriptor: int | None = None
         try:
-            handle = self.path.open("a+", encoding="utf-8")
+            parent_fd = parent_descriptors[-1]
+            descriptor, descriptor_pre = self._open_lease_file(parent_fd, leaf)
             try:
-                fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+                fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
             except BlockingIOError as exc:
                 raise StateError(f"already-running: singleton lease held: {self.path}") from exc
+            self._after_lock_before_prewrite_revalidation(parent_fd, leaf, descriptor)
+            descriptor_post_lock = os.fstat(descriptor)
+            self._require_safe_lease_file(
+                descriptor_post_lock, label="locked singleton lease descriptor"
+            )
+            try:
+                named_post_lock = os.stat(
+                    leaf, dir_fd=parent_fd, follow_symlinks=False
+                )
+            except OSError as exc:
+                raise StateError(
+                    f"singleton lease name changed before owner-record write: {exc}"
+                ) from exc
+            self._require_safe_lease_file(
+                named_post_lock, label="locked singleton lease file"
+            )
+            if self._file_fingerprint(descriptor_pre) != self._file_fingerprint(
+                descriptor_post_lock
+            ) or self._file_fingerprint(named_post_lock) != self._file_fingerprint(
+                descriptor_post_lock
+            ):
+                raise StateError(
+                    "singleton lease file changed before owner-record write"
+                )
+            self._verify_directory_chain(
+                parent_descriptors,
+                parent_links,
+                label="singleton lease parent",
+            )
             stamp = seal(
                 {
                     "schema": LEASE_SCHEMA,
@@ -1532,12 +2174,37 @@ class SingletonLease:
                     "acquired_at": utc_now(),
                 }
             )
-            handle.seek(0)
-            handle.truncate()
-            handle.write(json.dumps(stamp, sort_keys=True, separators=(",", ":")) + "\n")
-            handle.flush()
-            os.fsync(handle.fileno())
-            _fsync_directory(self.path.parent)
+            encoded = (
+                json.dumps(stamp, sort_keys=True, separators=(",", ":")) + "\n"
+            ).encode("utf-8")
+            os.ftruncate(descriptor, 0)
+            os.lseek(descriptor, 0, os.SEEK_SET)
+            view = memoryview(encoded)
+            while view:
+                written = os.write(descriptor, view)
+                if written <= 0:
+                    raise StateError(f"short owner-record write to {self.path}")
+                view = view[written:]
+            os.fsync(descriptor)
+            named_after_write = os.stat(
+                leaf, dir_fd=parent_fd, follow_symlinks=False
+            )
+            descriptor_after_write = os.fstat(descriptor)
+            self._require_safe_lease_file(
+                descriptor_after_write, label="written singleton lease descriptor"
+            )
+            if self._file_fingerprint(named_after_write) != self._file_fingerprint(
+                descriptor_after_write
+            ):
+                raise StateError("singleton lease name changed during owner-record write")
+            self._verify_directory_chain(
+                parent_descriptors,
+                parent_links,
+                label="singleton lease parent",
+            )
+            os.fsync(parent_fd)
+            handle = os.fdopen(descriptor, "r+", encoding="utf-8")
+            descriptor = None
             self._handle = handle
             self._registry_key = key
             return self
@@ -1548,9 +2215,18 @@ class SingletonLease:
                 except OSError:
                     pass
                 handle.close()
+            elif descriptor is not None:
+                try:
+                    fcntl.flock(descriptor, fcntl.LOCK_UN)
+                except OSError:
+                    pass
+                os.close(descriptor)
             with _PROCESS_LEASES_LOCK:
                 _PROCESS_LEASES.discard(key)
             raise
+        finally:
+            for parent_descriptor in reversed(parent_descriptors):
+                os.close(parent_descriptor)
 
     def close(self) -> None:
         if self._handle is None:
@@ -1679,6 +2355,154 @@ def _validate_controller_anchor(value: Any) -> dict[str, Any]:
     if anchor.get("anchor_sha256") != _controller_anchor_hash(anchor):
         raise StateError("controller anchor hash mismatch")
     return anchor
+
+
+def _validate_notification_file_identity(value: Any, label: str) -> dict[str, int]:
+    identity = _require_object(value, label)
+    if set(identity) != {"device", "inode"}:
+        raise StateError(f"{label} schema invalid")
+    for key in ("device", "inode"):
+        amount = identity.get(key)
+        minimum = 1 if key == "inode" else 0
+        if isinstance(amount, bool) or not isinstance(amount, int) or amount < minimum:
+            raise StateError(f"{label}.{key} invalid")
+    return identity
+
+
+def _validate_notification_head_binding(value: Any) -> dict[str, Any]:
+    """Validate the controller-anchored identity of one notification journal head."""
+    binding = _require_object(value, "notification head binding")
+    required = {
+        "schema",
+        "campaign_id",
+        "source_revision",
+        "controller_epoch",
+        "expected_contract_sha256",
+        "producer_public_key",
+        "producer_key_id",
+        "receipt_key_id",
+        "reconciliation_key_id",
+        "expected_chat_identity_digest",
+        "expected_bot_identity_digest",
+        "path_sha256",
+        "parent_identity",
+        "journal_identity",
+        "lock_identity",
+        "entry_count",
+        "head_chain_sha256",
+        "head_entry_signature",
+        "head_document_sha256",
+        "head_signature",
+        "binding_signature",
+        "previous_binding_sha256",
+        "observed_at",
+        "seal_sha256",
+    }
+    if set(binding) != required or binding.get("schema") != NOTIFICATION_HEAD_BINDING_SCHEMA:
+        raise StateError("notification head binding schema/fields invalid")
+    _validate_identity(
+        binding.get("campaign_id"),
+        binding.get("source_revision"),
+        binding.get("controller_epoch"),
+    )
+    public_key_hex = binding.get("producer_public_key")
+    if not isinstance(public_key_hex, str) or _HEX64_RE.fullmatch(public_key_hex) is None:
+        raise StateError("notification producer public key invalid")
+    public_key_raw = bytes.fromhex(public_key_hex)
+    if binding.get("producer_key_id") != hashlib.sha256(public_key_raw).hexdigest():
+        raise StateError("notification producer key identity mismatch")
+    for key in (
+        "expected_contract_sha256",
+        "path_sha256",
+        "head_chain_sha256",
+        "head_document_sha256",
+        "receipt_key_id",
+        "reconciliation_key_id",
+        "expected_chat_identity_digest",
+        "expected_bot_identity_digest",
+    ):
+        if not _is_sha256(binding.get(key)):
+            raise StateError(f"notification head binding {key} invalid")
+    _validate_notification_file_identity(binding.get("parent_identity"), "notification parent")
+    _validate_notification_file_identity(binding.get("journal_identity"), "notification journal")
+    _validate_notification_file_identity(binding.get("lock_identity"), "notification lock")
+    count = binding.get("entry_count")
+    if isinstance(count, bool) or not isinstance(count, int) or count < 0:
+        raise StateError("notification head binding entry_count invalid")
+    entry_signature = binding.get("head_entry_signature")
+    if count == 0:
+        if binding["head_chain_sha256"] != GENESIS_HASH or entry_signature is not None:
+            raise StateError("notification genesis head binding is inconsistent")
+    elif not isinstance(entry_signature, str) or _HEX128_RE.fullmatch(entry_signature) is None:
+        raise StateError("notification head entry signature invalid")
+    if not isinstance(binding.get("head_signature"), str) \
+            or _HEX128_RE.fullmatch(binding["head_signature"]) is None:
+        raise StateError("notification head signature invalid")
+    if not isinstance(binding.get("binding_signature"), str) \
+            or _HEX128_RE.fullmatch(binding["binding_signature"]) is None:
+        raise StateError("notification binding signature invalid")
+    predecessor = binding.get("previous_binding_sha256")
+    if predecessor is not None and not _is_sha256(predecessor):
+        raise StateError("notification head predecessor binding invalid")
+    _parse_utc_z(binding.get("observed_at"), "notification head observed_at")
+    try:
+        verify_sealed(binding, label="notification head binding")
+    except Glm52Error as exc:
+        raise StateError(str(exc)) from exc
+    signed = {
+        key: item for key, item in binding.items()
+        if key not in {"binding_signature", "seal_sha256"}
+    }
+    envelope = {
+        "schema": "hawking.glm52.notification_head_binding_auth.v1",
+        "binding": signed,
+    }
+    try:
+        Ed25519PublicKey.from_public_bytes(public_key_raw).verify(
+            bytes.fromhex(binding["binding_signature"]),
+            canonical(envelope),
+        )
+    except (InvalidSignature, ValueError):
+        raise StateError("notification binding Ed25519 signature invalid") from None
+    return binding
+
+
+def _validate_notification_binding_advance(
+    previous: Mapping[str, Any] | None,
+    current_value: Mapping[str, Any],
+) -> dict[str, Any]:
+    current = _validate_notification_head_binding(current_value)
+    if previous is None:
+        if current["entry_count"] != 0 or current["previous_binding_sha256"] is not None:
+            raise StateError("first notification head binding must be exact genesis")
+        return current
+    old = _validate_notification_head_binding(previous)
+    immutable = {
+        "campaign_id",
+        "source_revision",
+        "controller_epoch",
+        "expected_contract_sha256",
+        "producer_public_key",
+        "producer_key_id",
+        "receipt_key_id",
+        "reconciliation_key_id",
+        "expected_chat_identity_digest",
+        "expected_bot_identity_digest",
+        "path_sha256",
+        "parent_identity",
+        "journal_identity",
+        "lock_identity",
+    }
+    if any(current[key] != old[key] for key in immutable):
+        raise StateError("notification journal identity changed across controller bindings")
+    if current["entry_count"] != old["entry_count"] + 1:
+        raise StateError("notification controller binding must advance exactly one entry")
+    if current["previous_binding_sha256"] != old["seal_sha256"]:
+        raise StateError("notification controller binding predecessor mismatch")
+    if _parse_utc_z(current["observed_at"], "notification head observed_at") < \
+            _parse_utc_z(old["observed_at"], "prior notification head observed_at"):
+        raise StateError("notification controller binding time regressed")
+    return current
 
 
 def _campaign_status_hash(status: Mapping[str, Any]) -> str:
@@ -3045,6 +3869,7 @@ class Controller:
         source_revision: str,
         expected_contract: Mapping[str, Any],
         telegram_auth: TelegramAuthConfig,
+        evidence_auth: EvidenceAuthConfig,
         allow_synthetic_contract: bool = False,
         controller_epoch: str = "glm52-controller-v2",
     ):
@@ -3067,7 +3892,16 @@ class Controller:
         if telegram_auth.expected_chat_identity_digest != \
                 self.expected_contract["expected_chat_identity_digest"]:
             raise StateError("Telegram auth chat identity differs from expected contract")
+        if not isinstance(evidence_auth, EvidenceAuthConfig):
+            raise StateError("controller requires EvidenceAuthConfig")
+        if evidence_auth.campaign_id != campaign_id \
+                or evidence_auth.source_revision != source_revision:
+            raise StateError("evidence auth identity differs from controller")
+        if evidence_auth._key_material_identity() == \
+                telegram_auth._key_material_identity():
+            raise StateError("Telegram and scientific evidence authentication keys must differ")
         self.telegram_auth = telegram_auth
+        self.evidence_auth = evidence_auth
         self.expected_contract_sha256 = self.expected_contract["seal_sha256"]
         self.events = HashChainLog(self.root / "GLM52_CONTROLLER_EVENTS.jsonl", schema=EVENT_SCHEMA)
         self.checkpoint_path = self.root / "GLM52_CONTROLLER_CHECKPOINT.json"
@@ -3431,7 +4265,7 @@ class Controller:
                 to_state,
                 artifact_root=self.artifact_root,
                 controller_anchor=anchor,
-                evidence_auth=self.telegram_auth,
+                evidence_auth=self.evidence_auth,
                 created_at=prepared_timestamp,
             )
         _validate_terminal_evidence(
@@ -3440,7 +4274,7 @@ class Controller:
             state_payload.get("terminal_evidence"),
             artifact_store=self.artifact_store,
             controller_anchor=anchor,
-            evidence_auth=self.telegram_auth,
+            evidence_auth=self.evidence_auth,
         )
         gate = self.expected_contract["state_gates"].get(to_state)
         if gate is not None:
@@ -3512,6 +4346,7 @@ class Controller:
         transition_count = 0
         heartbeat: dict[str, Any] | None = None
         telegram: dict[str, Any] | None = None
+        notification_journal: dict[str, Any] | None = None
         telegram_response_hashes: set[str] = set()
         telegram_message_ids: set[tuple[str, int]] = set()
         window_events = self.window_ledger.log.verified_events()
@@ -3608,7 +4443,7 @@ class Controller:
                     state_payload.get("terminal_evidence"),
                     artifact_store=self.artifact_store,
                     controller_anchor=anchor,
-                    evidence_auth=self.telegram_auth,
+                    evidence_auth=self.evidence_auth,
                 )
                 event_heartbeat = payload.get("heartbeat")
                 if not isinstance(event_heartbeat, dict) or event_heartbeat.get("state") != to_state:
@@ -3646,6 +4481,40 @@ class Controller:
                     "delivery_proof_kind": "BOT_API_RESPONSE",
                     "event_seq": event["seq"],
                 }
+            elif kind == "NOTIFICATION_HEAD":
+                if state is None:
+                    raise StateError("notification journal cannot bind before controller genesis")
+                required = {
+                    "campaign_id",
+                    "source_revision",
+                    "controller_epoch",
+                    "expected_contract_sha256",
+                    "notification_binding",
+                    "request_sha256",
+                }
+                if set(payload) != required:
+                    raise StateError("notification head event payload schema invalid")
+                binding = _validate_notification_binding_advance(
+                    notification_journal,
+                    payload.get("notification_binding"),
+                )
+                if binding["campaign_id"] != self.campaign_id \
+                        or binding["source_revision"] != self.source_revision \
+                        or binding["controller_epoch"] != self.controller_epoch \
+                        or binding["expected_contract_sha256"] != self.expected_contract_sha256:
+                    raise StateError("notification head binding differs from controller identity")
+                request = {
+                    "kind": "NOTIFICATION_HEAD",
+                    "campaign_id": self.campaign_id,
+                    "source_revision": self.source_revision,
+                    "controller_epoch": self.controller_epoch,
+                    "expected_contract_sha256": self.expected_contract_sha256,
+                    "claim_id": event["claim_id"],
+                    "notification_binding": binding,
+                }
+                if payload.get("request_sha256") != _sha256(request):
+                    raise StateError("notification head request identity mismatch")
+                notification_journal = binding
             elif kind == "HEARTBEAT":
                 if state is None or payload.get("state") != state:
                     raise StateError(f"heartbeat state mismatch at seq {event['seq']}")
@@ -3680,6 +4549,7 @@ class Controller:
             "state_transition_count": transition_count,
             "heartbeat": heartbeat,
             "telegram": telegram,
+            "notification_journal": notification_journal,
         }
 
     def _checkpoint_document(
@@ -3761,6 +4631,73 @@ class Controller:
             raise StateError("checkpoint post-write content mismatch")
         return checkpoint
 
+    def notification_journal_binding(self) -> dict[str, Any] | None:
+        """Return the controller-anchored notification head under the live lease."""
+        self.lease.assert_held()
+        checkpoint = self.resume()
+        binding = checkpoint.get("notification_journal")
+        if binding is None:
+            return None
+        return copy.deepcopy(_validate_notification_head_binding(binding))
+
+    def anchor_notification_journal_head(
+        self, binding_value: Mapping[str, Any]
+    ) -> dict[str, Any]:
+        """Durably bind exactly one authenticated notification-head advance.
+
+        The binding is independently signed by the notification producer.  The
+        controller event chain and checkpoint make journal/head deletion, prefix
+        rollback, and path replacement observable on the next operation.
+        """
+        self.lease.assert_held()
+        binding = _validate_notification_head_binding(binding_value)
+        if binding["campaign_id"] != self.campaign_id \
+                or binding["source_revision"] != self.source_revision \
+                or binding["controller_epoch"] != self.controller_epoch \
+                or binding["expected_contract_sha256"] != self.expected_contract_sha256:
+            raise StateError("notification binding identity differs from controller")
+        checkpoint = self.resume()
+        previous = checkpoint.get("notification_journal")
+        if previous == binding:
+            return checkpoint
+        _validate_notification_binding_advance(previous, binding)
+        claim_id = (
+            f"notification-head:{binding['entry_count']:08d}:"
+            f"{binding['seal_sha256'][:24]}"
+        )
+        request = {
+            "kind": "NOTIFICATION_HEAD",
+            "campaign_id": self.campaign_id,
+            "source_revision": self.source_revision,
+            "controller_epoch": self.controller_epoch,
+            "expected_contract_sha256": self.expected_contract_sha256,
+            "claim_id": claim_id,
+            "notification_binding": binding,
+        }
+        request_sha256 = _sha256(request)
+        existing = self.events.find_claim(claim_id)
+        if existing is not None:
+            payload = existing.get("payload")
+            if existing.get("kind") != "NOTIFICATION_HEAD" \
+                    or not isinstance(payload, dict) \
+                    or payload.get("request_sha256") != request_sha256:
+                raise StateError("notification-head claim was reused for different bytes")
+            return self.resume()
+        self._claim_in_other_log(claim_id, target="controller")
+        self.events.append(
+            "NOTIFICATION_HEAD",
+            claim_id,
+            {
+                "campaign_id": self.campaign_id,
+                "source_revision": self.source_revision,
+                "controller_epoch": self.controller_epoch,
+                "expected_contract_sha256": self.expected_contract_sha256,
+                "notification_binding": binding,
+                "request_sha256": request_sha256,
+            },
+        )
+        return self._write_checkpoint()
+
     def _read_checkpoint(self) -> dict[str, Any]:
         try:
             checkpoint = read_sealed_json(self.checkpoint_path)
@@ -3830,6 +4767,7 @@ class Controller:
                 "window_summary",
                 "window_resume_plan",
                 "campaign_completeness",
+                "notification_journal",
             ):
                 if checkpoint.get(key) != expected.get(key):
                     raise StateError(f"checkpoint replay mismatch for {key} (split-brain)")
@@ -3962,7 +4900,7 @@ class Controller:
                 evidence,
                 artifact_store=self.artifact_store,
                 controller_anchor=current_anchor,
-                evidence_auth=self.telegram_auth,
+                evidence_auth=self.evidence_auth,
             )
             if gate["require_source_complete"] or gate["require_final_source_eviction"]:
                 self.window_ledger.assert_complete_source_coverage()
@@ -3975,7 +4913,7 @@ class Controller:
                 intent["state_payload"].get("terminal_evidence"),
                 artifact_store=self.artifact_store,
                 controller_anchor=current_anchor,
-                evidence_auth=self.telegram_auth,
+                evidence_auth=self.evidence_auth,
             )
         if intent["state_payload"] != expected_state_payload:
             raise StateError("prepared transition final payload contains caller-controlled evidence")
@@ -4158,6 +5096,221 @@ class Controller:
         self._write_checkpoint()
         return result
 
+    def notification_snapshot(self) -> dict[str, Any]:
+        """Derive a sealed notification view from live verified controller state.
+
+        This is the only production source for auxiliary notification facts.  It
+        accepts no caller telemetry, paths, counters, milestone claims, or evidence
+        hashes.  Controller and window logs are replayed under the held lease, the
+        current checkpoint is reconciled, and terminal evidence has already passed
+        the controller's trusted-artifact validators during replay.
+        """
+        self.lease.assert_held()
+        checkpoint = self.resume(recover_single_tail=False)
+        if checkpoint.get("state") == "BLOCKED":
+            raise StateError("BLOCKED controller state cannot produce milestone notifications")
+        events = self.events.verified_events()
+        records, _, window_events = self.window_ledger._replay()
+        if checkpoint.get("event_count") != len(events) \
+                or checkpoint.get("event_head_hash") != self.events.head_hash(events) \
+                or checkpoint.get("window_event_count") != len(window_events) \
+                or checkpoint.get("window_event_head_hash") != \
+                self.window_ledger.log.head_hash(window_events):
+            raise StateError("notification snapshot checkpoint/log anchors differ")
+
+        source_specs = {
+            item["path"]: item for item in self.expected_contract["source"]["shards"]
+        }
+        fetched: set[str] = set()
+        verified: set[str] = set()
+        latest_source: dict[str, str] = {}
+        for scheduled in self.expected_contract["window_schedule"]:
+            record = records.get(scheduled["window_id"])
+            if record is None:
+                continue
+            for path, disposition in record["source_coverage"].items():
+                latest_source[path] = disposition
+                if SOURCE_COVERAGE_STATES.index(disposition) >= \
+                        SOURCE_COVERAGE_STATES.index("FETCHED"):
+                    fetched.add(path)
+                if SOURCE_COVERAGE_STATES.index(disposition) >= \
+                        SOURCE_COVERAGE_STATES.index("HASH_VERIFIED"):
+                    verified.add(path)
+        evicted = {path for path, disposition in latest_source.items() if disposition == "EVICTED"}
+        verified_logical_bytes = sum(source_specs[path]["logical_bytes"] for path in verified)
+        expected_logical_bytes = self.expected_contract["source"]["expected_logical_bytes"]
+        window_records = sorted(records.values(), key=lambda item: item["schedule_index"])
+        phase_counts = {
+            "verified": sum(
+                WINDOW_PHASES.index(item["phase"]) >= WINDOW_PHASES.index("VERIFIED")
+                for item in window_records
+            ),
+            "completed": sum(
+                WINDOW_PHASES.index(item["phase"]) >= WINDOW_PHASES.index("SEALED")
+                for item in window_records
+            ),
+            "evicted": sum(item["phase"] == "EVICTED" for item in window_records),
+        }
+        terminal_tensor_count = sum(
+            disposition in TENSOR_TERMINAL_STATES
+            for item in window_records
+            for disposition in item["tensor_coverage"].values()
+        )
+        source_summary = self.window_ledger.summary()["source_accounting"]
+        duration_seconds = 0.0
+        for record in window_records:
+            if record["download_start"] is None or record["download_end"] is None:
+                continue
+            started = _parse_utc_z(record["download_start"], "window download_start")
+            ended = _parse_utc_z(record["download_end"], "window download_end")
+            if ended < started:
+                raise StateError("window download end precedes its start")
+            duration_seconds += (ended - started).total_seconds()
+        network_bytes = source_summary["total_network_bytes"]
+        throughput = network_bytes / duration_seconds if duration_seconds > 0 else 0.0
+        eta_seconds = (
+            int(max(0, expected_logical_bytes - verified_logical_bytes) / throughput)
+            if throughput > 0 else None
+        )
+
+        selected_record: dict[str, Any] | None = None
+        active = checkpoint.get("active_window_id")
+        if isinstance(active, str) and active in records:
+            selected_record = records[active]
+        elif window_records:
+            selected_record = window_records[-1]
+        selected_schedule = (
+            copy.deepcopy(
+                self.expected_contract["window_schedule"][selected_record["schedule_index"]]
+            )
+            if selected_record is not None else None
+        )
+        organs: set[str] = set()
+        layers: set[int] = set()
+        if selected_record is not None:
+            for dependency in selected_record["layer_organ_dependencies"]:
+                if not isinstance(dependency, dict):
+                    continue
+                organ = dependency.get("organ")
+                layer = dependency.get("layer")
+                if isinstance(organ, str) and organ:
+                    organs.add(organ)
+                if not isinstance(layer, bool) and isinstance(layer, int) and layer >= 0:
+                    layers.add(layer)
+
+        latest_transition = next(
+            (event for event in reversed(events) if event["kind"] == "STATE_TRANSITION"),
+            None,
+        )
+        terminal_evidence = None
+        if latest_transition is not None:
+            candidate = latest_transition["payload"]["transition_intent"]["state_payload"].get(
+                "terminal_evidence"
+            )
+            if candidate is not None:
+                terminal_evidence = _require_object(candidate, "notification terminal evidence")
+        evidence_seals: dict[str, str] = {
+            "expected_contract": self.expected_contract_sha256,
+            "controller_checkpoint": checkpoint["seal_sha256"],
+        }
+        if selected_record is not None:
+            evidence_seals["window_record"] = selected_record["seal_sha256"]
+        if terminal_evidence is not None:
+            evidence_seals["terminal_evidence"] = terminal_evidence["seal_sha256"]
+            for group in ("artifact_seals", "checklist"):
+                values = terminal_evidence.get(group)
+                if not isinstance(values, dict):
+                    continue
+                for name, item in values.items():
+                    if isinstance(item, dict) and _is_sha256(item.get("seal_sha256")):
+                        evidence_seals[f"{group}:{name}"] = item["seal_sha256"]
+
+        final_result: dict[str, Any] | None = None
+        if checkpoint["state"] == "COMPLETE" and terminal_evidence is not None:
+            complete_gate = self.expected_contract["state_gates"].get("COMPLETE", {})
+            specs = complete_gate.get("required_artifacts", {}) \
+                if isinstance(complete_gate, dict) else {}
+            terminal_spec = specs.get("terminal_outcome") \
+                if isinstance(specs, dict) else None
+            if isinstance(terminal_spec, dict):
+                document, _ = self.artifact_store.read_sealed(
+                    terminal_spec["path"], label="notification terminal outcome"
+                )
+                outcome = document.get("outcome")
+                half_bit = document.get("half_bit_classification")
+                if isinstance(outcome, str) and isinstance(half_bit, str):
+                    evidence_seals["terminal_outcome"] = document["seal_sha256"]
+                    final_result = {
+                        "outcome": outcome,
+                        "half_bit_classification": half_bit,
+                        "final_report_seal_sha256": document["seal_sha256"],
+                        "result_status": document.get("status"),
+                    }
+
+        snapshot = {
+            "schema": "hawking.glm52.notification_snapshot.v1",
+            "campaign_id": self.campaign_id,
+            "source_revision": self.source_revision,
+            "controller_epoch": self.controller_epoch,
+            "expected_contract_sha256": self.expected_contract_sha256,
+            "state": checkpoint["state"],
+            "controller_anchor": self._controller_anchor(checkpoint),
+            "source": {
+                "expected_shard_count": len(source_specs),
+                "expected_logical_bytes": expected_logical_bytes,
+                "fetched_shard_count": len(fetched),
+                "verified_shard_count": len(verified),
+                "evicted_shard_count": len(evicted),
+                "verified_logical_bytes": verified_logical_bytes,
+                "verified_paths_sha256": _sha256(sorted(verified)),
+                "network_bytes": network_bytes,
+                "throughput_bytes_per_second": throughput,
+                "eta_seconds": eta_seconds,
+            },
+            "windows": {
+                **phase_counts,
+                "total": len(self.expected_contract["window_schedule"]),
+            },
+            "tensors": {
+                "terminal": terminal_tensor_count,
+                "total": self.expected_contract["tensors"]["expected_tensor_count"],
+            },
+            "current_window": (
+                {
+                    "record": copy.deepcopy(selected_record),
+                    "schedule": selected_schedule,
+                    "organs": sorted(organs),
+                    "layers": sorted(layers),
+                }
+                if selected_record is not None else None
+            ),
+            "best_metrics": (
+                copy.deepcopy(selected_record["metrics"])
+                if selected_record is not None else {}
+            ),
+            "candidate_rates": [],
+            "resources": self._sample_resources(),
+            "process": {
+                "pid": os.getpid(),
+                "lease_held": True,
+                "lease_owner": self.lease.owner,
+            },
+            "evidence_seals": dict(sorted(evidence_seals.items())),
+            "terminal_evidence": copy.deepcopy(terminal_evidence),
+            "final_result": copy.deepcopy(final_result),
+            "captured_at": utc_now(),
+        }
+        sealed_snapshot = seal(snapshot)
+        events_after = self.events.verified_events()
+        _, _, window_events_after = self.window_ledger._replay()
+        if len(events_after) != len(events) \
+                or self.events.head_hash(events_after) != self.events.head_hash(events) \
+                or len(window_events_after) != len(window_events) \
+                or self.window_ledger.log.head_hash(window_events_after) != \
+                self.window_ledger.log.head_hash(window_events):
+            raise StateError("controller logs changed while deriving notification snapshot")
+        return sealed_snapshot
+
     def status(self) -> dict[str, Any]:
         events_ok, event_reasons = self.events.verify_chain()
         windows_ok, window_reasons = self.window_ledger.log.verify_chain()
@@ -4188,6 +5341,7 @@ class Controller:
                     "state", "blocked_from", "active_window_id", "state_transition_count",
                     "heartbeat", "telegram", "last_claim_id", "last_window_claim_id",
                     "window_summary", "window_resume_plan", "campaign_completeness",
+                    "notification_journal",
                 ):
                     if checkpoint.get(key) != expected.get(key):
                         raise StateError(f"checkpoint replay differs for {key}")
@@ -4264,11 +5418,16 @@ def selfcheck() -> dict[str, Any]:
         hmac_key=b"glm52-offline-selfcheck-key-material-32-bytes",
         expected_chat_identity_digest=chat_digest,
     )
+    evidence_auth = EvidenceAuthConfig(
+        hmac_key=b"glm52-offline-selfcheck-evidence-key-32-bytes",
+        campaign_id=campaign_id,
+        source_revision=revision,
+    )
     shard = {
         "path": "model-00001-of-00001.safetensors",
         "logical_bytes": 1024,
-        "content_hash": "a" * 64,
-        "content_hash_kind": "xet",
+        "xet_hash": "a" * 64,
+        "lfs_sha256": "b" * 64,
     }
     gates = {
         "ASSEMBLE_ARTIFACT": {
@@ -4338,13 +5497,15 @@ def selfcheck() -> dict[str, Any]:
         created_at="2026-07-21T00:00:00Z",
     )
     with tempfile.TemporaryDirectory() as directory:
+        trusted_directory = Path(directory).resolve()
         controller = Controller(
-            Path(directory) / "state",
-            artifact_root=directory,
+            trusted_directory / "state",
+            artifact_root=trusted_directory,
             campaign_id=campaign_id,
             source_revision=revision,
             expected_contract=contract,
             telegram_auth=auth,
+            evidence_auth=evidence_auth,
             allow_synthetic_contract=True,
         )
         with controller:

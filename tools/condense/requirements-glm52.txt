@@ -13,6 +13,10 @@ numpy==2.2.6
 torch==2.6.0
 # Exact acceptance-test runner used to rebuild and verify the sealed evidence.
 pytest==9.1.0
+# Ed25519 role separation for the durable notification outbox.  The journal
+# receives verifier-only keys for sender/operator authority; private signing
+# keys never enter the controller or journal verifier objects.
+cryptography==43.0.1
 
 # Fully pinned transitive closure observed in the isolated Python 3.12.6
 # acceptance environment.  Keeping these here prevents a later resolver run
@@ -22,6 +26,7 @@ annotated-doc==0.0.4
 anyio==4.14.2
 certifi==2026.6.17
 click==8.4.2
+cffi==1.17.1
 filelock==3.32.0
 fsspec==2026.6.0
 h11==0.16.0
@@ -38,6 +43,7 @@ networkx==3.6.1
 packaging==26.2
 pip==26.1.2
 pluggy==1.6.0
+pycparser==2.22
 Pygments==2.20.0
 PyYAML==6.0.3
 regex==2026.7.19

@@ -1,0 +1,291 @@
+{
+  "activation": {
+    "authority": "EXPECTED_CONTRACT_V3_EXACT_SEAL_PLUS_LIVE_RESOURCE_SAMPLE",
+    "eviction_must_remain_disabled_until_all_are_true": true,
+    "final_schedule_must_bind_this_policy_seal": true,
+    "live_allocated_byte_measurement_required_before_materialized_xet_body_acquisition": true,
+    "live_xet_result_required": true,
+    "remote_logical_bytes_authorize_materialized_body_acquisition": false,
+    "worker_must_hold_controller_lease": true
+  },
+  "created_at": "2026-07-21T22:07:16Z",
+  "derived": {
+    "additional_reserved_bytes": 323753476911,
+    "full_window_plus_prefetch_headroom_deficit_bytes": 10764360827,
+    "maximum_scheduled_resident_window_bytes": 134336513960,
+    "operational_reserve_floor_bytes": 92282917708,
+    "preregistered_free_disk_bytes": 641462566912,
+    "preregistered_usable_raw_window_bytes": 225426172293,
+    "required_free_disk_bytes": 416036394619,
+    "required_window_plus_prefetch_headroom_bytes": 236190533120
+  },
+  "input_seals": {
+    "kimi_byte_auction": "d8b8f02b2e19c4bee39cf8a5ceb91f05e1878ee18e889c2bcf5f88ccc1b42719",
+    "logical_weight_ledger": "d479791a7f3c279f0d1cc56a6203e214e4e2610da04010ba020347603dacb0db",
+    "official_manifest": "ef4e3cbf6b4b6ddc52aa7278d657a9f7f63254fa72d35591cc8f6c5c706c4791",
+    "streaming_schedule": "ca765d5197d25a888ebc1e31ca5d03cae4492235d3470dd6c93c53f98682af89"
+  },
+  "notes": [
+    "The largest legal 0.98-BPW artifact is reserved both as an atomic write and as the preserved current best.",
+    "The full 0.98+0.75+0.50 artifact ladder and teacher evidence remain additionally reserved.",
+    "This static bound never substitutes for a fresh authenticated disk/RAM/swap observation.",
+    "Remote logical shard bytes are scheduling proxies, not allocated-byte upper bounds.",
+    "The RAM, swap, and checkpoint limits are preregistered provisional controls, not derived evidence."
+  ],
+  "policy": {
+    "active_scratch_bytes": 0,
+    "current_best_artifact_bytes": 92282917708,
+    "emergency_floor_bytes": 5368709120,
+    "largest_atomic_source_write_bytes": 5368361544,
+    "largest_compact_shard_write_bytes": 92282917708,
+    "maximum_swap_used_bytes": 8589934592,
+    "minimum_available_ram_bytes": 17179869184,
+    "next_checkpoint_write_bytes": 1073741824,
+    "projected_remaining_compact_bytes": 209990720908,
+    "projected_teacher_evidence_bytes": 21474836480,
+    "rollback_capsule_bytes": 5001815,
+    "two_largest_official_source_shards_bytes": 10734792512,
+    "xet_reconstruction_scratch_bytes": 10734792512
+  },
+  "prefetch_control": {
+    "full_two_complete_window_pipeline_preregistered": false,
+    "largest_adjacent_active_plus_prefetch_union_remote_logical_bytes": 236190533120,
+    "largest_adjacent_full_prefetch_deficit_bytes": 10764360827,
+    "largest_adjacent_transition": [
+      "W017",
+      "W018"
+    ],
+    "live_allocated_byte_measurement_required_before_materialized_xet_body_acquisition": true,
+    "maximum_additional_prefetch_allocated_bytes_formula": "max(0, min(maximum_materialized_raw_allocated_bytes - live_materialized_raw_allocated_bytes_before_prefetch, live_disk_free_bytes - required_free_disk_bytes))",
+    "maximum_additional_prefetch_logical_proxy_ceiling_bytes": 107186793789,
+    "maximum_materialized_raw_allocated_bytes": 225426172293,
+    "mode": "SERIALIZED_OR_PARTIAL_PREFETCH",
+    "remote_logical_bytes_are_allocated_upper_bounds": false,
+    "transition_count": 19,
+    "transitions": [
+      {
+        "active_resident_remote_logical_bytes": 123281520256,
+        "active_window_id": "W000",
+        "adjacent_union_remote_logical_bytes": 193241580856,
+        "full_prefetch_remote_logical_deficit_bytes": 0,
+        "prefetch_window_id": "W001",
+        "preregistered_additional_prefetch_logical_proxy_ceiling_bytes": 102144652037,
+        "preregistered_mode": "LIVE_ALLOCATED_MEASUREMENT_REQUIRED",
+        "requested_prefetch_remote_logical_bytes": 69960060600,
+        "transition_index": 0
+      },
+      {
+        "active_resident_remote_logical_bytes": 128920131520,
+        "active_window_id": "W001",
+        "adjacent_union_remote_logical_bytes": 187895708856,
+        "full_prefetch_remote_logical_deficit_bytes": 0,
+        "prefetch_window_id": "W002",
+        "preregistered_additional_prefetch_logical_proxy_ceiling_bytes": 96506040773,
+        "preregistered_mode": "LIVE_ALLOCATED_MEASUREMENT_REQUIRED",
+        "requested_prefetch_remote_logical_bytes": 58975577336,
+        "transition_index": 1
+      },
+      {
+        "active_resident_remote_logical_bytes": 134322077792,
+        "active_window_id": "W002",
+        "adjacent_union_remote_logical_bytes": 193297655112,
+        "full_prefetch_remote_logical_deficit_bytes": 0,
+        "prefetch_window_id": "W003",
+        "preregistered_additional_prefetch_logical_proxy_ceiling_bytes": 91104094501,
+        "preregistered_mode": "LIVE_ALLOCATED_MEASUREMENT_REQUIRED",
+        "requested_prefetch_remote_logical_bytes": 58975577320,
+        "transition_index": 2
+      },
+      {
+        "active_resident_remote_logical_bytes": 134333353424,
+        "active_window_id": "W003",
+        "adjacent_union_remote_logical_bytes": 193308930760,
+        "full_prefetch_remote_logical_deficit_bytes": 0,
+        "prefetch_window_id": "W004",
+        "preregistered_additional_prefetch_logical_proxy_ceiling_bytes": 91092818869,
+        "preregistered_mode": "LIVE_ALLOCATED_MEASUREMENT_REQUIRED",
+        "requested_prefetch_remote_logical_bytes": 58975577336,
+        "transition_index": 3
+      },
+      {
+        "active_resident_remote_logical_bytes": 134336513960,
+        "active_window_id": "W004",
+        "adjacent_union_remote_logical_bytes": 187952105968,
+        "full_prefetch_remote_logical_deficit_bytes": 0,
+        "prefetch_window_id": "W005",
+        "preregistered_additional_prefetch_logical_proxy_ceiling_bytes": 91089658333,
+        "preregistered_mode": "LIVE_ALLOCATED_MEASUREMENT_REQUIRED",
+        "requested_prefetch_remote_logical_bytes": 53615592008,
+        "transition_index": 4
+      },
+      {
+        "active_resident_remote_logical_bytes": 128970107088,
+        "active_window_id": "W005",
+        "adjacent_union_remote_logical_bytes": 187819854680,
+        "full_prefetch_remote_logical_deficit_bytes": 0,
+        "prefetch_window_id": "W006",
+        "preregistered_additional_prefetch_logical_proxy_ceiling_bytes": 96456065205,
+        "preregistered_mode": "LIVE_ALLOCATED_MEASUREMENT_REQUIRED",
+        "requested_prefetch_remote_logical_bytes": 58849747592,
+        "transition_index": 5
+      },
+      {
+        "active_resident_remote_logical_bytes": 128847788056,
+        "active_window_id": "W006",
+        "adjacent_union_remote_logical_bytes": 187823365376,
+        "full_prefetch_remote_logical_deficit_bytes": 0,
+        "prefetch_window_id": "W007",
+        "preregistered_additional_prefetch_logical_proxy_ceiling_bytes": 96578384237,
+        "preregistered_mode": "LIVE_ALLOCATED_MEASUREMENT_REQUIRED",
+        "requested_prefetch_remote_logical_bytes": 58975577320,
+        "transition_index": 6
+      },
+      {
+        "active_resident_remote_logical_bytes": 128973617768,
+        "active_window_id": "W007",
+        "adjacent_union_remote_logical_bytes": 182582788248,
+        "full_prefetch_remote_logical_deficit_bytes": 0,
+        "prefetch_window_id": "W008",
+        "preregistered_additional_prefetch_logical_proxy_ceiling_bytes": 96452554525,
+        "preregistered_mode": "LIVE_ALLOCATED_MEASUREMENT_REQUIRED",
+        "requested_prefetch_remote_logical_bytes": 53609170480,
+        "transition_index": 7
+      },
+      {
+        "active_resident_remote_logical_bytes": 123607210920,
+        "active_window_id": "W008",
+        "adjacent_union_remote_logical_bytes": 198669889648,
+        "full_prefetch_remote_logical_deficit_bytes": 0,
+        "prefetch_window_id": "W009",
+        "preregistered_additional_prefetch_logical_proxy_ceiling_bytes": 101818961373,
+        "preregistered_mode": "LIVE_ALLOCATED_MEASUREMENT_REQUIRED",
+        "requested_prefetch_remote_logical_bytes": 75062678728,
+        "transition_index": 8
+      },
+      {
+        "active_resident_remote_logical_bytes": 134321484064,
+        "active_window_id": "W009",
+        "adjacent_union_remote_logical_bytes": 193303482912,
+        "full_prefetch_remote_logical_deficit_bytes": 0,
+        "prefetch_window_id": "W010",
+        "preregistered_additional_prefetch_logical_proxy_ceiling_bytes": 91104688229,
+        "preregistered_mode": "LIVE_ALLOCATED_MEASUREMENT_REQUIRED",
+        "requested_prefetch_remote_logical_bytes": 58981998848,
+        "transition_index": 9
+      },
+      {
+        "active_resident_remote_logical_bytes": 118240804032,
+        "active_window_id": "W010",
+        "adjacent_union_remote_logical_bytes": 193297423136,
+        "full_prefetch_remote_logical_deficit_bytes": 0,
+        "prefetch_window_id": "W011",
+        "preregistered_additional_prefetch_logical_proxy_ceiling_bytes": 107185368261,
+        "preregistered_mode": "LIVE_ALLOCATED_MEASUREMENT_REQUIRED",
+        "requested_prefetch_remote_logical_bytes": 75056619104,
+        "transition_index": 10
+      },
+      {
+        "active_resident_remote_logical_bytes": 134321845808,
+        "active_window_id": "W011",
+        "adjacent_union_remote_logical_bytes": 214744871864,
+        "full_prefetch_remote_logical_deficit_bytes": 0,
+        "prefetch_window_id": "W012",
+        "preregistered_additional_prefetch_logical_proxy_ceiling_bytes": 91104326485,
+        "preregistered_mode": "LIVE_ALLOCATED_MEASUREMENT_REQUIRED",
+        "requested_prefetch_remote_logical_bytes": 80423026056,
+        "transition_index": 11
+      },
+      {
+        "active_resident_remote_logical_bytes": 128969875224,
+        "active_window_id": "W012",
+        "adjacent_union_remote_logical_bytes": 198666147120,
+        "full_prefetch_remote_logical_deficit_bytes": 0,
+        "prefetch_window_id": "W013",
+        "preregistered_additional_prefetch_logical_proxy_ceiling_bytes": 96456297069,
+        "preregistered_mode": "LIVE_ALLOCATED_MEASUREMENT_REQUIRED",
+        "requested_prefetch_remote_logical_bytes": 69696271896,
+        "transition_index": 12
+      },
+      {
+        "active_resident_remote_logical_bytes": 118243121128,
+        "active_window_id": "W013",
+        "adjacent_union_remote_logical_bytes": 214746827032,
+        "full_prefetch_remote_logical_deficit_bytes": 0,
+        "prefetch_window_id": "W014",
+        "preregistered_additional_prefetch_logical_proxy_ceiling_bytes": 107183051165,
+        "preregistered_mode": "LIVE_ALLOCATED_MEASUREMENT_REQUIRED",
+        "requested_prefetch_remote_logical_bytes": 96503705904,
+        "transition_index": 13
+      },
+      {
+        "active_resident_remote_logical_bytes": 134317741312,
+        "active_window_id": "W014",
+        "adjacent_union_remote_logical_bytes": 230821809136,
+        "full_prefetch_remote_logical_deficit_bytes": 5395636843,
+        "prefetch_window_id": "W015",
+        "preregistered_additional_prefetch_logical_proxy_ceiling_bytes": 91108430981,
+        "preregistered_mode": "SERIALIZED_OR_PARTIAL_PREFETCH",
+        "requested_prefetch_remote_logical_bytes": 96504067824,
+        "transition_index": 14
+      },
+      {
+        "active_resident_remote_logical_bytes": 134311681720,
+        "active_window_id": "W015",
+        "adjacent_union_remote_logical_bytes": 230821809184,
+        "full_prefetch_remote_logical_deficit_bytes": 5395636891,
+        "prefetch_window_id": "W016",
+        "preregistered_additional_prefetch_logical_proxy_ceiling_bytes": 91114490573,
+        "preregistered_mode": "SERIALIZED_OR_PARTIAL_PREFETCH",
+        "requested_prefetch_remote_logical_bytes": 96510127464,
+        "transition_index": 15
+      },
+      {
+        "active_resident_remote_logical_bytes": 123591349248,
+        "active_window_id": "W016",
+        "adjacent_union_remote_logical_bytes": 214735069864,
+        "full_prefetch_remote_logical_deficit_bytes": 0,
+        "prefetch_window_id": "W017",
+        "preregistered_additional_prefetch_logical_proxy_ceiling_bytes": 101834823045,
+        "preregistered_mode": "LIVE_ALLOCATED_MEASUREMENT_REQUIRED",
+        "requested_prefetch_remote_logical_bytes": 91143720616,
+        "transition_index": 16
+      },
+      {
+        "active_resident_remote_logical_bytes": 118239378504,
+        "active_window_id": "W017",
+        "adjacent_union_remote_logical_bytes": 236190533120,
+        "full_prefetch_remote_logical_deficit_bytes": 10764360827,
+        "prefetch_window_id": "W018",
+        "preregistered_additional_prefetch_logical_proxy_ceiling_bytes": 107186793789,
+        "preregistered_mode": "SERIALIZED_OR_PARTIAL_PREFETCH",
+        "requested_prefetch_remote_logical_bytes": 117951154616,
+        "transition_index": 17
+      },
+      {
+        "active_resident_remote_logical_bytes": 134313998752,
+        "active_window_id": "W018",
+        "adjacent_union_remote_logical_bytes": 187929614856,
+        "full_prefetch_remote_logical_deficit_bytes": 0,
+        "prefetch_window_id": "W019",
+        "preregistered_additional_prefetch_logical_proxy_ceiling_bytes": 91112173541,
+        "preregistered_mode": "LIVE_ALLOCATED_MEASUREMENT_REQUIRED",
+        "requested_prefetch_remote_logical_bytes": 53615616104,
+        "transition_index": 18
+      }
+    ],
+    "when_live_full_prefetch_exceeds_ceiling": "SERIALIZED_OR_PARTIAL_PREFETCH"
+  },
+  "provisional_control_limits": {
+    "derived_from_sealed_input_evidence": false,
+    "live_measurement_required": true,
+    "maximum_swap_used_bytes": 8589934592,
+    "minimum_available_ram_bytes": 17179869184,
+    "next_checkpoint_write_bytes": 1073741824,
+    "status": "PREREGISTERED_PROVISIONAL_NOT_DERIVED_FROM_SEALED_INPUTS"
+  },
+  "repo": "zai-org/GLM-5.2",
+  "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+  "schema": "hawking.glm52.resource_reserve_policy.v1",
+  "seal_sha256": "b33692a9e43aa37c59325ffd1b317d0d069e788c20f4f32cc3840b32ec901cca",
+  "status": "FROZEN_CONSERVATIVE_PRELIVE_POLICY"
+}

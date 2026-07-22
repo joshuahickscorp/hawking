@@ -5,6 +5,7 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
+import os
 import pathlib
 import sys
 
@@ -27,15 +28,100 @@ TENSOR = "model.layers.0.self_attn.q_proj.weight"
 CHAT_ID = -100424242
 CHAT_DIGEST = gs.telegram_chat_identity_digest(CHAT_ID)
 HMAC_KEY = b"offline-test-only-hmac-key-32-bytes-minimum!!"
+EVIDENCE_HMAC_KEY = b"offline-test-only-evidence-key-32-bytes-minimum!!"
 
 
-def _source_shard(path=SHARD, logical_bytes=5_000_000_000, content_hash=HASH_A):
+def _source_shard(
+    path=SHARD,
+    logical_bytes=5_000_000_000,
+    xet_hash=HASH_A,
+    lfs_sha256=HASH_B,
+):
     return {
         "path": path,
         "logical_bytes": logical_bytes,
-        "content_hash": content_hash,
-        "content_hash_kind": "xet",
+        "xet_hash": xet_hash,
+        "lfs_sha256": lfs_sha256,
     }
+
+
+def test_evidence_policies_bind_actual_validator_module_bytes() -> None:
+    implementation_sha256 = hashlib.sha256(
+        pathlib.Path(gs.__file__).resolve().read_bytes()
+    ).hexdigest()
+    terminal_sha256 = hashlib.sha256(
+        CONDENSE.joinpath("glm52_terminal_proofs.py").read_bytes()
+    ).hexdigest()
+    assert gs.EVIDENCE_VALIDATOR_SOURCE_SHA256["terminal_semantic_proof_v1"] == (
+        terminal_sha256
+    )
+    assert {
+        value
+        for key, value in gs.EVIDENCE_VALIDATOR_SOURCE_SHA256.items()
+        if key != "terminal_semantic_proof_v1"
+    } == {implementation_sha256}
+
+
+def test_trusted_artifact_store_rejects_root_replacement_and_symlink_ancestor(
+    tmp_path,
+) -> None:
+    real_parent = tmp_path / "real-parent"
+    root = real_parent / "artifacts"
+    root.mkdir(parents=True)
+    (root / "proof.json").write_bytes(b"{}")
+    store = gs.TrustedArtifactStore(root)
+    assert store.read_bytes("proof.json") == b"{}"
+
+    moved = real_parent / "artifacts-old"
+    root.rename(moved)
+    root.mkdir()
+    (root / "proof.json").write_bytes(b"{}")
+    with pytest.raises(gs.StateError, match="root identity changed"):
+        store.read_bytes("proof.json")
+
+    alias = tmp_path / "alias"
+    alias.symlink_to(real_parent, target_is_directory=True)
+    with pytest.raises(gs.StateError, match="root component"):
+        gs.TrustedArtifactStore(alias / "artifacts")
+
+
+def test_trusted_artifact_store_rejects_hardlinks_and_read_time_mutation(
+    tmp_path,
+) -> None:
+    root = tmp_path / "artifacts"
+    root.mkdir()
+    source = root / "proof.json"
+    source.write_bytes(b"1234")
+    linked = root / "linked.json"
+    linked.hardlink_to(source)
+    store = gs.TrustedArtifactStore(root)
+    with pytest.raises(gs.StateError, match="one hard link"):
+        store.read_bytes("proof.json")
+    linked.unlink()
+
+    class MutatingStore(gs.TrustedArtifactStore):
+        def _after_read_before_post_fstat(self, relative_path, fd):
+            (self.root / relative_path).write_bytes(b"5678")
+
+    with pytest.raises(gs.StateError, match="changed while reading"):
+        MutatingStore(root).read_bytes("proof.json")
+
+
+def test_trusted_artifact_store_rejects_name_to_inode_swap(tmp_path) -> None:
+    root = tmp_path / "artifacts"
+    root.mkdir()
+    path = root / "proof.json"
+    path.write_bytes(b"1234")
+
+    class SwappingStore(gs.TrustedArtifactStore):
+        def _after_post_fstat_before_name_recheck(self, relative_path, fd):
+            replacement = self.root / "replacement.json"
+            replacement.write_bytes(b"1234")
+            (self.root / relative_path).unlink()
+            replacement.rename(self.root / relative_path)
+
+    with pytest.raises(gs.StateError, match="name changed"):
+        SwappingStore(root).read_bytes("proof.json")
 
 
 def _state_gates():
@@ -107,6 +193,20 @@ def _state_gates():
     }
 
 
+def _resource_policy(expected=HASH_A):
+    return {
+        "path": gs.OFFICIAL_RESOURCE_POLICY_PATH,
+        "expected_seal_sha256": expected,
+        "expected_schema": gs.OFFICIAL_RESOURCE_POLICY_SCHEMA,
+        "allowed_statuses": [gs.OFFICIAL_RESOURCE_POLICY_STATUS],
+        "validator_id": "sealed_exact_v1",
+        "validator_source_sha256": gs.EVIDENCE_VALIDATOR_SOURCE_SHA256[
+            "sealed_exact_v1"
+        ],
+        "require_producer_hmac": False,
+    }
+
+
 def _contract():
     shard = _source_shard()
     return gs.make_expected_campaign_contract(
@@ -141,6 +241,14 @@ def _auth():
     )
 
 
+def _evidence_auth():
+    return gs.EvidenceAuthConfig(
+        hmac_key=EVIDENCE_HMAC_KEY,
+        campaign_id=CAMPAIGN,
+        source_revision=REVISION,
+    )
+
+
 def _wrap_xet_raw_result(raw, contract):
     semantic = {
         "raw_xet_autotune_result_seal_sha256": raw["seal_sha256"],
@@ -158,7 +266,7 @@ def _wrap_xet_raw_result(raw, contract):
         "evidence": semantic,
         "evidence_sha256": gs._sha256(semantic),
     })
-    return gs.seal_producer_authenticated_evidence(body, auth=_auth())
+    return gs.seal_producer_authenticated_evidence(body, auth=_evidence_auth())
 
 
 def _xet_result_for_plan(plan, contract):
@@ -276,6 +384,7 @@ def _controller(tmp_path):
         source_revision=REVISION,
         expected_contract=_contract(),
         telegram_auth=_auth(),
+        evidence_auth=_evidence_auth(),
         allow_synthetic_contract=True,
     )
 
@@ -462,7 +571,7 @@ def _terminal_evidence(controller, state):
             "evidence_sha256": gs._sha256(semantic),
         }
         value = (
-            gs.seal_producer_authenticated_evidence(body, auth=controller.telegram_auth)
+            gs.seal_producer_authenticated_evidence(body, auth=controller.evidence_auth)
             if spec["require_producer_hmac"] else seal(body)
         )
         atomic_json(root / spec["path"], value)
@@ -479,7 +588,7 @@ def _terminal_evidence(controller, state):
             "evidence_sha256": gs._sha256(semantic),
         }
         value = gs.seal_producer_authenticated_evidence(
-            body, auth=controller.telegram_auth
+            body, auth=controller.evidence_auth
         )
         atomic_json(root / spec["path"], value)
     checkpoint = controller.resume()
@@ -515,7 +624,7 @@ def _terminal_evidence(controller, state):
         atomic_json(
             root / gate["required_phone_status_path"],
             gs.seal_producer_authenticated_evidence(
-                phone_body, auth=controller.telegram_auth
+                phone_body, auth=controller.evidence_auth
             ),
         )
     return gs.make_state_terminal_evidence(
@@ -523,7 +632,7 @@ def _terminal_evidence(controller, state):
         state,
         artifact_root=root,
         controller_anchor=anchor,
-        evidence_auth=controller.telegram_auth,
+        evidence_auth=controller.evidence_auth,
         created_at="2026-07-21T12:10:00Z",
     )
 
@@ -698,7 +807,7 @@ def test_xet_result_validator_reconstructs_raw_result_and_rejects_signed_fabrica
         policy,
         label="Xet result",
         contract=contract,
-        evidence_auth=_auth(),
+        evidence_auth=_evidence_auth(),
     )
     assert snapshot["seal_sha256"] == wrapped["seal_sha256"]
 
@@ -713,7 +822,9 @@ def test_xet_result_validator_reconstructs_raw_result_and_rejects_signed_fabrica
     )
     atomic_json(
         tmp_path / policy["path"],
-        gs.seal_producer_authenticated_evidence(unanchored_body, auth=_auth()),
+        gs.seal_producer_authenticated_evidence(
+            unanchored_body, auth=_evidence_auth()
+        ),
     )
     with pytest.raises(gs.StateError, match="producing controller anchor"):
         gs._snapshot_policy_evidence(
@@ -721,7 +832,7 @@ def test_xet_result_validator_reconstructs_raw_result_and_rejects_signed_fabrica
             policy,
             label="Xet result",
             contract=contract,
-            evidence_auth=_auth(),
+            evidence_auth=_evidence_auth(),
         )
 
     fabricated_body = copy.deepcopy(raw)
@@ -738,7 +849,7 @@ def test_xet_result_validator_reconstructs_raw_result_and_rejects_signed_fabrica
             policy,
             label="Xet result",
             contract=contract,
-            evidence_auth=_auth(),
+            evidence_auth=_evidence_auth(),
         )
 
 
@@ -750,6 +861,10 @@ def test_frozen_schedule_validator_reaches_window_membership_and_checks_producer
     contract_body["state_gates"]["AUTOTUNE_XET"] = {
         "required_artifacts": {
             "xet_autotune_plan": {"expected_seal_sha256": HASH_A},
+            "resource_reserve_policy": {
+                "path": gs.OFFICIAL_RESOURCE_POLICY_PATH,
+                "expected_seal_sha256": "d" * 64,
+            },
         }
     }
     contract_body["state_gates"]["ASSEMBLE_ARTIFACT"]["required_artifacts"][
@@ -780,11 +895,18 @@ def test_frozen_schedule_validator_reaches_window_membership_and_checks_producer
                 "selected_profile_sha256": gs._sha256(profile),
             },
             "selected_profile": profile,
+            "resource_policy_binding": {
+                "path": gs.OFFICIAL_RESOURCE_POLICY_PATH,
+                "seal_sha256": "d" * 64,
+                "required_free_disk_bytes":
+                    gs.OFFICIAL_RESOURCE_POLICY_REQUIRED_FREE_DISK_BYTES,
+                "expected_contract_sha256": contract["seal_sha256"],
+            },
             "windows": copy.deepcopy(contract["window_schedule"]),
             "evidence": schedule_evidence,
             "evidence_sha256": gs._sha256(schedule_evidence),
         },
-        auth=_auth(),
+        auth=_evidence_auth(),
     )
     policy = {
         "path": "GLM52_STREAMING_SCHEDULE.json",
@@ -803,9 +925,30 @@ def test_frozen_schedule_validator_reaches_window_membership_and_checks_producer
         policy,
         label="frozen schedule",
         contract=contract,
-        evidence_auth=_auth(),
+        evidence_auth=_evidence_auth(),
     )
     assert snapshot["seal_sha256"] == schedule["seal_sha256"]
+
+    wrong_resource_body = {
+        key: copy.deepcopy(item)
+        for key, item in schedule.items()
+        if key not in {"seal_sha256", "producer_hmac_sha256"}
+    }
+    wrong_resource_body["resource_policy_binding"]["required_free_disk_bytes"] -= 1
+    atomic_json(
+        tmp_path / policy["path"],
+        gs.seal_producer_authenticated_evidence(
+            wrong_resource_body, auth=_evidence_auth()
+        ),
+    )
+    with pytest.raises(gs.StateError, match="resource policy binding mismatch"):
+        gs._snapshot_policy_evidence(
+            gs.TrustedArtifactStore(tmp_path),
+            policy,
+            label="frozen schedule",
+            contract=contract,
+            evidence_auth=_evidence_auth(),
+        )
 
     wrong_identity_body = {
         key: copy.deepcopy(item)
@@ -815,7 +958,9 @@ def test_frozen_schedule_validator_reaches_window_membership_and_checks_producer
     wrong_identity_body["campaign_id"] = "different-campaign"
     atomic_json(
         tmp_path / policy["path"],
-        gs.seal_producer_authenticated_evidence(wrong_identity_body, auth=_auth()),
+        gs.seal_producer_authenticated_evidence(
+            wrong_identity_body, auth=_evidence_auth()
+        ),
     )
     with pytest.raises(gs.StateError, match="campaign_id identity mismatch"):
         gs._snapshot_policy_evidence(
@@ -823,7 +968,7 @@ def test_frozen_schedule_validator_reaches_window_membership_and_checks_producer
             policy,
             label="frozen schedule",
             contract=contract,
-            evidence_auth=_auth(),
+            evidence_auth=_evidence_auth(),
         )
 
     tampered = copy.deepcopy(schedule)
@@ -836,7 +981,7 @@ def test_frozen_schedule_validator_reaches_window_membership_and_checks_producer
             policy,
             label="frozen schedule",
             contract=contract,
-            evidence_auth=_auth(),
+            evidence_auth=_evidence_auth(),
         )
 
 
@@ -864,7 +1009,7 @@ def test_unimplemented_official_evidence_cannot_be_satisfied_by_signed_pass(
     path = "future.json"
     atomic_json(
         tmp_path / path,
-        gs.seal_producer_authenticated_evidence(body, auth=_auth()),
+        gs.seal_producer_authenticated_evidence(body, auth=_evidence_auth()),
     )
     policy = {
         "path": path,
@@ -883,7 +1028,7 @@ def test_unimplemented_official_evidence_cannot_be_satisfied_by_signed_pass(
             policy,
             label="unimplemented evidence",
             contract=contract,
-            evidence_auth=_auth(),
+            evidence_auth=_evidence_auth(),
         )
 
 
@@ -898,12 +1043,39 @@ def test_official_source_profile_enforces_exact_282_shards_bytes_and_grounding(
                 per_shard if index < 281
                 else gs.OFFICIAL_WEIGHT_LOGICAL_BYTES - (281 * per_shard)
             ),
-            content_hash=f"{index:064x}",
+            xet_hash=f"{index:064x}",
+            lfs_sha256=f"{index + 1:064x}",
         )
         for index in range(gs.OFFICIAL_WEIGHT_SHARD_COUNT)
     ]
     paths = [item["path"] for item in shards]
     official_gates = json.loads(json.dumps(_state_gates()))
+    for gate_name, stop_condition in (
+        ("CLOSE_KIMI", "kimi_final_evidence_verified"),
+        ("RELEASE_KIMI_SOURCE", "kimi_raw_source_safely_released"),
+    ):
+        official_gates[gate_name] = {
+            "require_source_complete": False,
+            "require_tensor_complete": False,
+            "require_final_source_eviction": False,
+            "require_telegram_delivery": True,
+            "require_phone_status": False,
+            "required_phone_status_path": None,
+            "required_artifacts": {},
+            "required_checklist": {
+                stop_condition: {
+                    "path": f"evidence/{stop_condition}.json",
+                    "expected_seal_sha256": None,
+                    "expected_schema": gs.STOP_CONDITION_EVIDENCE_SCHEMA,
+                    "allowed_statuses": ["PASS"],
+                    "validator_id": "terminal_semantic_proof_v1",
+                    "validator_source_sha256": gs.EVIDENCE_VALIDATOR_SOURCE_SHA256[
+                        "terminal_semantic_proof_v1"
+                    ],
+                    "require_producer_hmac": True,
+                }
+            },
+        }
     official_gates["ASSEMBLE_ARTIFACT"]["required_artifacts"] = {
         name: {
             "path": f"reports/{name}.json",
@@ -932,6 +1104,23 @@ def test_official_source_profile_enforces_exact_282_shards_bytes_and_grounding(
         }
         for name in gs.OFFICIAL_COMPLETE_REQUIRED_ARTIFACTS
     }
+    resource_policy = _resource_policy(gs.OFFICIAL_RESOURCE_POLICY_SEAL_SHA256)
+    official_gates["AUTOTUNE_XET"] = {
+        "require_source_complete": False,
+        "require_tensor_complete": False,
+        "require_final_source_eviction": False,
+        "require_telegram_delivery": True,
+        "require_phone_status": False,
+        "required_phone_status_path": None,
+        "required_artifacts": {
+            "resource_reserve_policy": copy.deepcopy(resource_policy),
+        },
+        "required_checklist": {},
+    }
+    for gate_name in ("ASSEMBLE_ARTIFACT", "COMPLETE"):
+        official_gates[gate_name]["required_artifacts"][
+            "resource_reserve_policy"
+        ] = copy.deepcopy(resource_policy)
     official_gates["COMPLETE"]["required_checklist"] = {
         item: {
             "path": f"evidence/{item}.json",
@@ -968,6 +1157,33 @@ def test_official_source_profile_enforces_exact_282_shards_bytes_and_grounding(
     )
     assert contract["source"]["expected_shard_count"] == 282
     assert contract["source"]["expected_logical_bytes"] == 1_506_667_387_408
+
+    missing_policy_body = copy.deepcopy(contract)
+    missing_policy_body.pop("seal_sha256")
+    missing_policy_body["state_gates"]["AUTOTUNE_XET"][
+        "required_artifacts"
+    ].pop("resource_reserve_policy")
+    with pytest.raises(gs.StateError, match="resource policy must occur exactly"):
+        gs._validate_expected_contract(seal(missing_policy_body))
+
+    duplicated_policy_body = copy.deepcopy(contract)
+    duplicated_policy_body.pop("seal_sha256")
+    duplicated_policy_body["state_gates"]["CLOSE_KIMI"]["required_artifacts"][
+        "misplaced_policy"
+    ] = copy.deepcopy(resource_policy)
+    with pytest.raises(gs.StateError, match="resource policy must occur exactly"):
+        gs._validate_expected_contract(seal(duplicated_policy_body))
+
+    substituted_policy_body = copy.deepcopy(contract)
+    substituted_policy_body.pop("seal_sha256")
+    substituted_seal = "c" * 64
+    for gate_name, artifact_name in gs.OFFICIAL_RESOURCE_POLICY_LOCATIONS:
+        substituted_policy_body["state_gates"][gate_name]["required_artifacts"][
+            artifact_name
+        ]["expected_seal_sha256"] = substituted_seal
+    with pytest.raises(gs.StateError, match="resource policy binding is not exact"):
+        gs._validate_expected_contract(seal(substituted_policy_body))
+
     ledger = gs.WindowLedger(
         tmp_path / "official-window-ledger.jsonl",
         campaign_id=CAMPAIGN,
@@ -1012,6 +1228,31 @@ def test_controller_requires_explicit_opt_in_for_synthetic_contract(tmp_path):
             source_revision=REVISION,
             expected_contract=_contract(),
             telegram_auth=_auth(),
+            evidence_auth=_evidence_auth(),
+        )
+
+
+def test_scientific_evidence_auth_is_independent_from_telegram(tmp_path):
+    with pytest.raises(gs.StateError, match="requires EvidenceAuthConfig"):
+        gs.seal_producer_authenticated_evidence(
+            {"schema": "test.evidence.v1", "status": "PASS"},
+            auth=_auth(),  # type: ignore[arg-type]
+        )
+    reused_key = gs.EvidenceAuthConfig(
+        hmac_key=HMAC_KEY,
+        campaign_id=CAMPAIGN,
+        source_revision=REVISION,
+    )
+    with pytest.raises(gs.StateError, match="keys must differ"):
+        gs.Controller(
+            tmp_path / "controller",
+            artifact_root=tmp_path,
+            campaign_id=CAMPAIGN,
+            source_revision=REVISION,
+            expected_contract=_contract(),
+            telegram_auth=_auth(),
+            evidence_auth=reused_key,
+            allow_synthetic_contract=True,
         )
 
 
@@ -1242,6 +1483,111 @@ def test_singleton_lease_refuses_second_controller(tmp_path):
         first.close()
     second.acquire()
     second.close()
+
+
+def test_singleton_lease_rejects_static_symlink_and_hardlink_without_touching_victim(
+    tmp_path,
+):
+    victim = tmp_path / "victim"
+    victim_bytes = b"must-not-be-truncated-or-overwritten"
+    victim.write_bytes(victim_bytes)
+
+    symlink_path = tmp_path / "symlink.lease"
+    symlink_path.symlink_to(victim)
+    with pytest.raises(gs.StateError, match="not a regular file"):
+        gs.SingletonLease(
+            symlink_path,
+            campaign_id=CAMPAIGN,
+            controller_epoch="symlink-test",
+        ).acquire()
+    assert victim.read_bytes() == victim_bytes
+
+    symlink_path.unlink()
+    hardlink_path = tmp_path / "hardlink.lease"
+    hardlink_path.hardlink_to(victim)
+    with pytest.raises(gs.StateError, match="exactly one hard link"):
+        gs.SingletonLease(
+            hardlink_path,
+            campaign_id=CAMPAIGN,
+            controller_epoch="hardlink-test",
+        ).acquire()
+    assert victim.read_bytes() == victim_bytes
+
+
+def test_singleton_lease_revalidates_name_after_lock_before_any_write(tmp_path):
+    victim = tmp_path / "victim"
+    victim_bytes = b"victim-bytes-must-survive-path-swap"
+    victim.write_bytes(victim_bytes)
+    lease_path = tmp_path / "controller.lease"
+    original_lease_bytes = b"old-owner-record-must-not-be-truncated"
+    lease_path.write_bytes(original_lease_bytes)
+
+    class NameSwappingLease(gs.SingletonLease):
+        def _after_lock_before_prewrite_revalidation(
+            self, parent_fd, leaf, lease_fd
+        ):
+            os.rename(
+                leaf,
+                "controller-original.lease",
+                src_dir_fd=parent_fd,
+                dst_dir_fd=parent_fd,
+            )
+            os.symlink(str(victim), leaf, dir_fd=parent_fd)
+
+    lease = NameSwappingLease(
+        lease_path,
+        campaign_id=CAMPAIGN,
+        controller_epoch="name-swap-test",
+    )
+    with pytest.raises(gs.StateError, match="not a regular file|before owner-record write"):
+        lease.acquire()
+    assert victim.read_bytes() == victim_bytes
+    assert (tmp_path / "controller-original.lease").read_bytes() == original_lease_bytes
+
+
+def test_singleton_lease_revalidates_parent_identity_before_any_write(tmp_path):
+    parent = tmp_path / "lease-parent"
+    parent.mkdir()
+    lease_path = parent / "controller.lease"
+    original_lease_bytes = b"old-owner-record-must-survive-parent-swap"
+    lease_path.write_bytes(original_lease_bytes)
+    moved_parent = tmp_path / "lease-parent-original"
+    replacement_bytes = b"replacement-victim-must-not-be-touched"
+
+    class ParentSwappingLease(gs.SingletonLease):
+        def _after_lock_before_prewrite_revalidation(
+            self, parent_fd, leaf, lease_fd
+        ):
+            parent.rename(moved_parent)
+            parent.mkdir()
+            (parent / leaf).write_bytes(replacement_bytes)
+
+    lease = ParentSwappingLease(
+        lease_path,
+        campaign_id=CAMPAIGN,
+        controller_epoch="parent-swap-test",
+    )
+    with pytest.raises(gs.StateError, match="parent identity changed"):
+        lease.acquire()
+    assert (moved_parent / "controller.lease").read_bytes() == original_lease_bytes
+    assert (parent / "controller.lease").read_bytes() == replacement_bytes
+
+
+def test_singleton_lease_rejects_file_not_owned_by_effective_user(
+    tmp_path, monkeypatch
+):
+    lease_path = tmp_path / "controller.lease"
+    original = b"foreign-owner-sentinel"
+    lease_path.write_bytes(original)
+    actual_uid = lease_path.stat().st_uid
+    monkeypatch.setattr(gs.os, "geteuid", lambda: actual_uid + 1)
+    with pytest.raises(gs.StateError, match="not owned by the current user"):
+        gs.SingletonLease(
+            lease_path,
+            campaign_id=CAMPAIGN,
+            controller_epoch="foreign-owner-test",
+        ).acquire()
+    assert lease_path.read_bytes() == original
 
 
 def test_resume_rejects_checkpoint_tamper_and_log_truncation(tmp_path):

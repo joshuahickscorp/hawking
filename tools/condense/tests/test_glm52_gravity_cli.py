@@ -18,6 +18,8 @@ for directory in (TOOLS, CONDENSE):
         sys.path.insert(0, str(directory))
 
 import glm52_gravity as cli  # noqa: E402
+import glm52_evidence_auth as gea  # noqa: E402
+import glm52_grounding_auth as gga  # noqa: E402
 import glm52_state as gs  # noqa: E402
 import glm52_telegram as gt  # noqa: E402
 from glm52_common import (  # noqa: E402
@@ -36,6 +38,8 @@ TENSOR = "model.layers.0.self_attn.q_proj.weight"
 CHAT_ID = 100424242
 CHAT_DIGEST = gs.telegram_chat_identity_digest(CHAT_ID)
 KEY = b"offline-cli-test-hmac-key-at-least-32-bytes!!"
+EVIDENCE_KEY = b"e" * 32
+GROUNDING_KEY = b"g" * 32
 
 
 class FakeKeychain:
@@ -49,19 +53,31 @@ class FakeKeychain:
         self.values[service] = value
 
 
-def _keychain(key: bytes = KEY, chat_id: int = CHAT_ID) -> FakeKeychain:
-    return FakeKeychain({
+def _keychain(
+    key: bytes = KEY,
+    chat_id: int = CHAT_ID,
+    evidence_key: bytes = EVIDENCE_KEY,
+    grounding_key: bytes | None = GROUNDING_KEY,
+) -> FakeKeychain:
+    values = {
         gt.CHAT_SERVICE: str(chat_id),
         gt.HMAC_SERVICE: base64.urlsafe_b64encode(key).decode("ascii"),
-    })
+        gea.EVIDENCE_HMAC_SERVICE:
+            base64.urlsafe_b64encode(evidence_key).decode("ascii"),
+    }
+    if grounding_key is not None:
+        values[gga.GROUNDING_HMAC_SERVICE] = (
+            base64.urlsafe_b64encode(grounding_key).decode("ascii")
+        )
+    return FakeKeychain(values)
 
 
 def _source_shard():
     return {
         "path": SHARD,
         "logical_bytes": 4096,
-        "content_hash": "a" * 64,
-        "content_hash_kind": "xet",
+        "xet_hash": "a" * 64,
+        "lfs_sha256": "b" * 64,
     }
 
 
@@ -158,6 +174,14 @@ def _auth():
     return gs.TelegramAuthConfig(hmac_key=KEY, expected_chat_identity_digest=CHAT_DIGEST)
 
 
+def _evidence_auth():
+    return gs.EvidenceAuthConfig(
+        hmac_key=EVIDENCE_KEY,
+        campaign_id=CAMPAIGN,
+        source_revision=REVISION,
+    )
+
+
 def _delivery(controller, intent):
     claim_id = intent["claim_id"]
     message_id = int(hashlib.sha256(claim_id.encode()).hexdigest()[:12], 16) + 1
@@ -203,6 +227,7 @@ def _setup(tmp_path, *, reach_freeze=False):
         source_revision=REVISION,
         expected_contract=_contract(),
         telegram_auth=_auth(),
+        evidence_auth=_evidence_auth(),
         allow_synthetic_contract=True,
     )
     with controller:
@@ -282,6 +307,12 @@ def test_status_is_deterministic_atomic_sealed_and_secret_free(tmp_path):
     assert KEY not in persisted
     assert base64.b64encode(KEY) not in persisted
     assert base64.urlsafe_b64encode(KEY) not in persisted
+    assert EVIDENCE_KEY not in persisted
+    assert base64.b64encode(EVIDENCE_KEY) not in persisted
+    assert base64.urlsafe_b64encode(EVIDENCE_KEY) not in persisted
+    assert GROUNDING_KEY not in persisted
+    assert base64.b64encode(GROUNDING_KEY) not in persisted
+    assert base64.urlsafe_b64encode(GROUNDING_KEY) not in persisted
     assert str(CHAT_ID).encode() not in persisted
     assert b"receipt_hmac_key_env" not in persisted
 
@@ -306,14 +337,75 @@ def test_config_and_key_are_required_and_tamper_is_rejected(tmp_path):
     # intent exists, replay is authenticated and the wrong key turns status red.
     cli.run_command(runtime, "stop")
     assert cli.build_phone_status(wrong_key_runtime)["overall_status"] == "RED"
-    with pytest.raises(cli.CliError, match="invalid producer authentication"):
+    with pytest.raises(cli.CliError, match="controller HMAC authentication failed"):
         cli.run_command(wrong_key_runtime, "resume")
+    wrong_evidence_runtime = cli.load_runtime(
+        config_path,
+        keychain=_keychain(evidence_key=b"x" * 32),
+    )
+    with pytest.raises(cli.CliError, match="invalid producer authentication"):
+        cli.run_command(wrong_evidence_runtime, "status")
 
     config = json.loads(config_path.read_text())
     config["controller_epoch"] = "tampered-controller-epoch"
     atomic_json(config_path, config)
     with pytest.raises(cli.CliError, match="seal mismatch"):
         cli.load_runtime(config_path, keychain=keychain)
+
+
+def test_grounding_provider_is_sealed_exact_and_runtime_exposes_grounder(tmp_path):
+    runtime, config_path, keychain = _setup(tmp_path)
+    config = read_sealed_json(config_path)
+    assert config["schema"] == cli.CONFIG_SCHEMA
+    assert config["grounding_auth"] == {
+        "credential_provider": "macOS Keychain",
+        "producer_hmac_key_service": gga.GROUNDING_HMAC_SERVICE,
+        "keychain_account": gga.KEYCHAIN_ACCOUNT,
+    }
+    assert isinstance(runtime.grounding_auth, gga.ProducerAuthenticator)
+    assert "redacted" in repr(runtime.grounding_auth)
+
+    tampered = json.loads(config_path.read_text())
+    tampered["grounding_auth"]["keychain_account"] = "attacker-selected-account"
+    tampered.pop("seal_sha256")
+    alternate_path = tmp_path / "tampered-grounding-config.json"
+    atomic_json(alternate_path, seal(tampered))
+    with pytest.raises(cli.CliError, match="fixed grounding Keychain service/account"):
+        cli.load_runtime(alternate_path, keychain=keychain)
+
+
+def test_grounding_credential_absent_or_malformed_fails_runtime_load(tmp_path):
+    _, config_path, _ = _setup(tmp_path)
+    with pytest.raises(cli.CliError, match="filesystem observation authentication is not configured"):
+        cli.load_runtime(config_path, keychain=_keychain(grounding_key=None))
+
+    malformed = _keychain()
+    malformed.values[gga.GROUNDING_HMAC_SERVICE] = "not-base64!"
+    with pytest.raises(cli.CliError, match="filesystem observation authentication is invalid"):
+        cli.load_runtime(config_path, keychain=malformed)
+
+
+@pytest.mark.parametrize(
+    ("telegram_key", "evidence_key", "grounding_key"),
+    (
+        (b"r" * 32, b"e" * 32, b"r" * 32),
+        (b"t" * 32, b"r" * 32, b"r" * 32),
+        (b"r" * 32, b"r" * 32, b"g" * 32),
+    ),
+)
+def test_all_authentication_role_keys_must_be_pairwise_distinct(
+    tmp_path, telegram_key, evidence_key, grounding_key
+):
+    _, config_path, _ = _setup(tmp_path)
+    with pytest.raises(cli.CliError, match="must be pairwise distinct"):
+        cli.load_runtime(
+            config_path,
+            keychain=_keychain(
+                key=telegram_key,
+                evidence_key=evidence_key,
+                grounding_key=grounding_key,
+            ),
+        )
 
 
 def test_phone_output_is_contract_bound_and_existing_tamper_is_not_overwritten(tmp_path):

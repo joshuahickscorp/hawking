@@ -83,25 +83,25 @@
     {
       "path": "GLM52_SOURCE_ADMISSION.json",
       "schema": "hawking.glm52.source_admission.v1",
-      "seal_sha256": "9ba6ac297c61a26b1cfad3914c8e5f8302d41c5e04e40d37d153967e96a498ab",
+      "seal_sha256": "f6d80dcfd32ce77d591958c70771a41ce4ce0c00d167caa6a35a46267c42ddbe",
       "status": "ADMITTED_CONTROL_PLANE_HEADERS_AND_PLAN_BODY_PENDING"
     },
     {
       "path": "GLM52_ADAPTER_TWIN.json",
       "schema": "hawking.glm52.adapter_twin.v1",
-      "seal_sha256": "ca98d39c66d6bccaf40459d45d1666a88d92a604896775591fdddfafb7c44665",
+      "seal_sha256": "8e2f0c5dfbc9647c240373ad207d6572ba6aad85d8fa1d521c9f7f1b93eb11fe",
       "status": "PASS_SYNTHETIC_TWIN_AND_OFFICIAL_HEADER_TOKENIZER_SCHEMA"
     },
     {
       "path": "GLM52_REFERENCE_PARITY.json",
       "schema": "hawking.glm52.reference_parity.v1",
-      "seal_sha256": "4d5793444ba55583d22f1887f828e8985244d38dfd53248aaa2912815a745f5c",
+      "seal_sha256": "6b7d9764f8af6d1d795bada3966d7b73807941a092c781d0fca1a9daeb2dafa1",
       "status": "PASS_SYNTHETIC_MAIN_AND_MTP_SELF_CONSISTENCY_SOURCE_PARENT_PENDING"
     },
     {
       "path": "GLM52_CORPUS_INTEGRITY.json",
       "schema": "hawking.glm52.corpus_integrity.v2",
-      "seal_sha256": "3308812999285e8dcbeea5dd6d4ba88ed4b13efba0e7a70778d5de08846ec3e2",
+      "seal_sha256": "7f5eff81a10c01b231e829d5870d6e8290a745a4bacdf4dfe74c4d0e5080e767",
       "status": "PASS"
     }
   ],
@@ -1001,7 +1001,7 @@
     "window_count": 20
   },
   "schema": "hawking.glm52.xet_autotune_plan.v2",
-  "seal_sha256": "52dd152cd603a6e094126ef7ff047383785058b1e013d664af475afb25a4a916",
+  "seal_sha256": "4d752cf7cf40c1a65b4abe15e9a321adf20a03aba818dead2a69b1ef232f4f26",
   "selection_policy": {
     "acquisition_burst": "fastest safe profile; high-performance may compete",
     "confidence_tie_break": [
@@ -1045,7 +1045,7 @@
       {
         "path": "tools/condense/glm52_state.py",
         "role": "controller_state",
-        "sha256": "595f9d5f9b8f40ccf7a2eb3f942495ee2db5feff4cbd46378cdfed72eb1d35ca"
+        "sha256": "2e910fb12ecd5f5f74bb44bf3e19180cef0f9155991ad1e1336ba45da6e9590e"
       },
       {
         "path": "tools/condense/glm52_xet_live.py",
@@ -1055,7 +1055,7 @@
       {
         "path": "tools/condense/requirements-glm52.txt",
         "role": "requirements_lock",
-        "sha256": "6a5f4e9e952b02659e9b4ef8251ccc81a0702b2427efa5bb7cbfd939c61c7cd7"
+        "sha256": "b70154b77468197abe5e7986830b005286b1091deba5b8a2878b20bba5791835"
       }
     ],
     "runtime_probe_fields_sha256": "a24d57196540cbc9c7461e1cd46254c7edadf49b0787569c48ac0500e16f4095",

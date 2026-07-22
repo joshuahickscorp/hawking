@@ -46,10 +46,11 @@ def _sha(text: str) -> str:
     return hashlib.sha256(text.encode()).hexdigest()
 
 
-def _auth() -> state.TelegramAuthConfig:
-    return state.TelegramAuthConfig(
+def _auth() -> state.EvidenceAuthConfig:
+    return state.EvidenceAuthConfig(
         hmac_key=HMAC_KEY,
-        expected_chat_identity_digest=CHAT_DIGEST,
+        campaign_id=CAMPAIGN,
+        source_revision=REVISION,
     )
 
 
@@ -192,6 +193,12 @@ def _preliminary() -> dict[str, Any]:
 
 
 def _contract(plan: Mapping[str, Any], preliminary: Mapping[str, Any]) -> dict[str, Any]:
+    resource_policy = _exact_policy(
+        freezer.RESOURCE_POLICY_PATH,
+        "hawking.glm52.resource_reserve_policy.v1",
+        "FROZEN_CONSERVATIVE_PRELIVE_POLICY",
+        freezer.RESOURCE_POLICY_SEAL_SHA256,
+    )
     autotune_gate = _gate({
         "xet_autotune_plan": _exact_policy(
             "GLM52_XET_AUTOTUNE_PLAN.json",
@@ -199,6 +206,7 @@ def _contract(plan: Mapping[str, Any], preliminary: Mapping[str, Any]) -> dict[s
             plan["status"],
             plan["seal_sha256"],
         ),
+        "resource_reserve_policy": copy.deepcopy(resource_policy),
     })
     assembly_gate = _gate(
         {
@@ -208,13 +216,17 @@ def _contract(plan: Mapping[str, Any], preliminary: Mapping[str, Any]) -> dict[s
                 preliminary["status"],
                 preliminary["seal_sha256"],
             ),
+            "resource_reserve_policy": copy.deepcopy(resource_policy),
         },
         source=True,
         tensor=True,
         eviction=True,
     )
     complete_gate = _gate(
-        {"final": _future_policy("GLM52_FINAL_TEST.json", "offline.final.v1")},
+        {
+            "final": _future_policy("GLM52_FINAL_TEST.json", "offline.final.v1"),
+            "resource_reserve_policy": copy.deepcopy(resource_policy),
+        },
         source=True,
         tensor=True,
         eviction=True,
@@ -233,8 +245,8 @@ def _contract(plan: Mapping[str, Any], preliminary: Mapping[str, Any]) -> dict[s
         source_shards=[{
             "path": SHARD,
             "logical_bytes": 64,
-            "content_hash": _sha("source"),
-            "content_hash_kind": "xet",
+            "xet_hash": _sha("source-xet"),
+            "lfs_sha256": _sha("source-lfs"),
         }],
         expected_tensors=[TENSOR],
         window_schedule=[{
@@ -350,7 +362,7 @@ def _raw_result(plan: Mapping[str, Any]) -> dict[str, Any]:
     })
 
 
-def _reauth(value: Mapping[str, Any], auth: state.TelegramAuthConfig) -> dict[str, Any]:
+def _reauth(value: Mapping[str, Any], auth: state.EvidenceAuthConfig) -> dict[str, Any]:
     body = {
         key: copy.deepcopy(item) for key, item in value.items()
         if key not in {"seal_sha256", "producer_hmac_sha256"}
@@ -421,6 +433,12 @@ def test_attestation_and_freeze_bind_every_immutable_input(
             canonical(schedule["selected_profile"])
         ).hexdigest(),
     }
+    assert schedule["resource_policy_binding"] == {
+        "path": freezer.RESOURCE_POLICY_PATH,
+        "seal_sha256": freezer.RESOURCE_POLICY_SEAL_SHA256,
+        "required_free_disk_bytes": freezer.RESOURCE_POLICY_REQUIRED_FREE_DISK_BYTES,
+        "expected_contract_sha256": bundle["contract"]["seal_sha256"],
+    }
     assert bundle["attested"]["evidence"]["controller_anchor_sha256"] == bundle["anchor"]
     assert schedule["evidence"]["network_access"] is False
     assert schedule["evidence"]["model_body_bytes_read"] == 0
@@ -437,6 +455,77 @@ def test_attestation_and_freeze_bind_every_immutable_input(
         auth=bundle["auth"],
         rebuild_plan=False,
     ) == schedule
+
+
+def test_freeze_refuses_contract_without_exact_resource_policy(
+    bundle: Mapping[str, Any],
+) -> None:
+    contract = copy.deepcopy(bundle["contract"])
+    contract.pop("seal_sha256")
+    contract["state_gates"]["AUTOTUNE_XET"]["required_artifacts"].pop(
+        "resource_reserve_policy"
+    )
+    contract = seal(contract)
+    attested = freezer.attest_xet_autotune_result(
+        bundle["raw"],
+        bundle["plan"],
+        contract,
+        auth=bundle["auth"],
+        controller_anchor_sha256=bundle["anchor"],
+        rebuild_plan=False,
+    )
+    with pytest.raises(freezer.ScheduleFreezeError, match="resource policy"):
+        freezer.freeze_schedule(
+            bundle["preliminary"],
+            bundle["plan"],
+            attested,
+            contract,
+            auth=bundle["auth"],
+            rebuild_plan=False,
+        )
+
+
+@pytest.mark.parametrize("mutation", ("misplaced", "duplicated"))
+def test_freeze_refuses_misplaced_or_duplicate_resource_policy_bindings(
+    bundle: Mapping[str, Any], mutation: str
+) -> None:
+    contract = copy.deepcopy(bundle["contract"])
+    contract.pop("seal_sha256")
+    if mutation == "misplaced":
+        policy = contract["state_gates"]["AUTOTUNE_XET"][
+            "required_artifacts"
+        ].pop("resource_reserve_policy")
+        contract["state_gates"]["AUTOTUNE_XET"]["required_artifacts"][
+            "misplaced_resource_policy"
+        ] = policy
+    else:
+        policy = contract["state_gates"]["COMPLETE"]["required_artifacts"][
+            "resource_reserve_policy"
+        ]
+        contract["state_gates"]["COMPLETE"]["required_artifacts"][
+            "duplicate_resource_policy"
+        ] = copy.deepcopy(policy)
+    contract = seal(contract)
+    attested = freezer.attest_xet_autotune_result(
+        bundle["raw"],
+        bundle["plan"],
+        contract,
+        auth=bundle["auth"],
+        controller_anchor_sha256=bundle["anchor"],
+        rebuild_plan=False,
+    )
+    with pytest.raises(
+        freezer.ScheduleFreezeError,
+        match="missing, misplaced, or duplicated",
+    ):
+        freezer.freeze_schedule(
+            bundle["preliminary"],
+            bundle["plan"],
+            attested,
+            contract,
+            auth=bundle["auth"],
+            rebuild_plan=False,
+        )
 
 
 def test_freeze_does_not_mutate_any_input(bundle: Mapping[str, Any]) -> None:
@@ -643,12 +732,13 @@ def test_freeze_rejects_reauthenticated_result_without_controller_anchor(
         )
 
 
-def test_freeze_rejects_auth_for_another_chat(bundle: Mapping[str, Any]) -> None:
-    wrong = state.TelegramAuthConfig(
+def test_freeze_rejects_auth_for_another_campaign(bundle: Mapping[str, Any]) -> None:
+    wrong = state.EvidenceAuthConfig(
         hmac_key=HMAC_KEY,
-        expected_chat_identity_digest=_sha("another-chat"),
+        campaign_id="another-campaign",
+        source_revision=REVISION,
     )
-    with pytest.raises(freezer.ScheduleFreezeError, match="chat identity"):
+    with pytest.raises(freezer.ScheduleFreezeError, match="identity"):
         freezer.freeze_schedule(
             bundle["preliminary"],
             bundle["plan"],

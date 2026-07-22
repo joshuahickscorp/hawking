@@ -24,7 +24,6 @@ import os
 import re
 import secrets
 import stat
-import subprocess
 import sys
 import threading
 import urllib.parse
@@ -35,6 +34,10 @@ from pathlib import Path
 from typing import Any, Callable, Iterator, Mapping, Protocol, Sequence
 
 from glm52_common import Glm52Error, canonical, utc_now
+from glm52_evidence_auth import (
+    _get_generic_password_native,
+    _set_generic_password_native,
+)
 from glm52_state import (
     StateError,
     TELEGRAM_RECEIPT_SCHEMA,
@@ -203,18 +206,24 @@ class TelegramTransport(Protocol):
 
 
 class MacOSKeychain:
-    """Minimal ``security`` adapter that sends new secret data over stdin.
+    """In-process Security.framework adapter for Telegram credentials.
 
-    The documented trailing ``-w`` form prompts for the password.  Supplying
-    that prompt through stdin avoids exposing credentials in argv or env.
+    ``security add-generic-password -w`` does not consume the password from
+    stdin when no argument follows ``-w``; it can silently store an empty
+    password.  Passing the value after ``-w`` would expose it in argv.  Both
+    reads and writes therefore use Security.framework in this process, so a
+    credential never crosses an argv, environment, stdin, or subprocess
+    boundary.
     """
 
     def __init__(
         self,
         *,
-        runner: Callable[..., subprocess.CompletedProcess[str]] = subprocess.run,
+        native_reader: Callable[[str, str], str | None] | None = None,
+        native_writer: Callable[[str, str, str], None] | None = None,
     ) -> None:
-        self._runner = runner
+        self._native_reader = native_reader or _get_generic_password_native
+        self._native_writer = native_writer or _set_generic_password_native
 
     @staticmethod
     def _validate_service(service: str) -> str:
@@ -225,26 +234,11 @@ class MacOSKeychain:
     def get(self, service: str) -> str | None:
         service = self._validate_service(service)
         try:
-            result = self._runner(
-                [
-                    "/usr/bin/security",
-                    "find-generic-password",
-                    "-a",
-                    KEYCHAIN_ACCOUNT,
-                    "-s",
-                    service,
-                    "-w",
-                ],
-                text=True,
-                capture_output=True,
-                check=False,
-                timeout=20,
-            )
+            value = self._native_reader(service, KEYCHAIN_ACCOUNT)
         except Exception:
             raise TelegramSecurityError("macOS Keychain read failed") from None
-        if result.returncode != 0:
+        if value is None:
             return None
-        value = result.stdout.rstrip("\r\n")
         if not value or "\n" in value or "\r" in value:
             raise TelegramSecurityError("macOS Keychain returned an invalid credential")
         return value
@@ -252,31 +246,10 @@ class MacOSKeychain:
     def set(self, service: str, value: str) -> None:
         service = self._validate_service(service)
         _validate_keychain_value(value)
-        arguments = [
-            "/usr/bin/security",
-            "add-generic-password",
-            "-U",
-            "-a",
-            KEYCHAIN_ACCOUNT,
-            "-s",
-            service,
-            "-w",
-        ]
-        if value in arguments:
-            raise AssertionError("secret entered Keychain process arguments")
         try:
-            result = self._runner(
-                arguments,
-                input=value + "\n",
-                text=True,
-                capture_output=True,
-                check=False,
-                timeout=20,
-            )
+            self._native_writer(service, KEYCHAIN_ACCOUNT, value)
         except Exception:
             raise TelegramSecurityError("macOS Keychain write failed") from None
-        if result.returncode != 0:
-            raise TelegramSecurityError("macOS Keychain rejected the credential")
 
 
 class UrllibTelegramTransport:
@@ -394,6 +367,17 @@ def _secret_digest(kind: str, value: str | bytes) -> str:
             "kind": kind,
             "secret_sha256": hashlib.sha256(raw).hexdigest(),
         })
+    ).hexdigest()
+
+
+def _notification_bot_identity_digest(token: str) -> str:
+    """Return the notification verifier's public bot-ID identity from a valid token."""
+    valid = _validate_token(token)
+    bot_id, separator, _secret = valid.partition(":")
+    if separator != ":" or not bot_id.isascii() or not bot_id.isdigit():
+        raise TelegramSecurityError("Telegram bot credential shape is invalid")
+    return hashlib.sha256(
+        b"hawking.glm52.telegram-bot-identity.v1\0" + bot_id.encode("ascii")
     ).hexdigest()
 
 
@@ -565,6 +549,9 @@ def credential_status(keychain: Keychain) -> dict[str, bool | str]:
     result["token_configured"] = valid_token is not None
     if valid_token is not None:
         result["token_identity_digest"] = _secret_digest("bot_token", valid_token)
+        result["notification_bot_identity_digest"] = (
+            _notification_bot_identity_digest(valid_token)
+        )
 
     chat = _keychain_get(keychain, CHAT_SERVICE)
     try:

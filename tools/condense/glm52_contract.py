@@ -45,6 +45,7 @@ from glm52_common import (  # noqa: E402
     atomic_text,
     canonical,
     git_blob_sha1,
+    read_sealed_json,
     seal,
     sha256_file,
     utc_now,
@@ -1404,6 +1405,22 @@ def build_source_admission(
             ),
             "official_checkpoint_saved_by_transformers": "5.12.0",
         },
+        "toolchain_binding": {
+            "generator": {
+                "path": "tools/condense/glm52_contract.py",
+                "sha256": sha256_file(Path(__file__)),
+            },
+            "shared_common": {
+                "path": "tools/condense/glm52_common.py",
+                "sha256": sha256_file(REPO_ROOT / "tools/condense/glm52_common.py"),
+            },
+            "requirements_lock": {
+                "path": "tools/condense/requirements-glm52.txt",
+                "sha256": sha256_file(
+                    REPO_ROOT / "tools/condense/requirements-glm52.txt"
+                ),
+            },
+        },
         "xet": {
             "official_xet_objects": 283,
             "weight_xet_objects": 282,
@@ -1519,6 +1536,66 @@ def run_admission(*, workers: int) -> dict[str, Any]:
     }
 
 
+def refresh_source_admission_offline() -> dict[str, Any]:
+    """Refresh only mutable local-runtime admission facts without network/body I/O.
+
+    The immutable header-derived ledgers remain byte-for-byte inputs.  This command is
+    used after an intentional lock/tooling update so the admission cannot silently pin
+    stale runtime provenance.  It never calls ``snapshot_download`` or ``HfApi``.
+    """
+    artifacts = {
+        "manifest": read_sealed_json(REPO_ROOT / "GLM52_OFFICIAL_MANIFEST.json"),
+        "architecture": read_sealed_json(REPO_ROOT / "GLM52_ARCHITECTURE_CONTRACT.json"),
+        "logical": read_sealed_json(REPO_ROOT / "GLM52_LOGICAL_WEIGHT_LEDGER.json"),
+        "source_format": read_sealed_json(REPO_ROOT / "GLM52_SOURCE_FORMAT_LEDGER.json"),
+        "graph": read_sealed_json(REPO_ROOT / "GLM52_SHARD_DEPENDENCY_GRAPH.json"),
+        "schedule": read_sealed_json(
+            REPO_ROOT / "GLM52_STREAMING_SCHEDULE_PRE_AUTOTUNE.json"
+        ),
+    }
+    existing = read_sealed_json(REPO_ROOT / "GLM52_SOURCE_ADMISSION.json")
+    expected = {
+        "official_manifest_seal_sha256": artifacts["manifest"]["seal_sha256"],
+        "architecture_contract_seal_sha256": artifacts["architecture"]["seal_sha256"],
+        "logical_weight_ledger_seal_sha256": artifacts["logical"]["seal_sha256"],
+        "source_format_ledger_seal_sha256": artifacts["source_format"]["seal_sha256"],
+        "dependency_graph_seal_sha256": artifacts["graph"]["seal_sha256"],
+        "streaming_schedule_seal_sha256": artifacts["schedule"]["seal_sha256"],
+    }
+    if existing.get("evidence") != expected:
+        raise Glm52Error(
+            "offline admission refresh refuses drifted immutable header-ledger inputs"
+        )
+    license_path = Path(str(existing.get("license", {}).get("path", "")))
+    snapshot = license_path.parent.resolve()
+    if snapshot.name != REVISION or not license_path.is_file():
+        raise Glm52Error("offline admission refresh lacks the pinned local control snapshot")
+    if existing.get("main_resolved_live") != REVISION \
+            or existing.get("revision") != REVISION:
+        raise Glm52Error("offline admission refresh lacks the prior immutable-main binding")
+    admission = build_source_admission(
+        manifest=artifacts["manifest"],
+        architecture=artifacts["architecture"],
+        logical=artifacts["logical"],
+        source_format=artifacts["source_format"],
+        graph=artifacts["graph"],
+        schedule=artifacts["schedule"],
+        snapshot=snapshot,
+        main_revision=REVISION,
+    )
+    atomic_json(REPO_ROOT / "GLM52_SOURCE_ADMISSION.json", admission)
+    return {
+        "status": admission["status"],
+        "network_access": False,
+        "model_body_bytes_read": 0,
+        "immutable_input_seals_unchanged": True,
+        "requirements_lock_sha256": admission["local_runtime"][
+            "requirements_lock"
+        ]["sha256"],
+        "admission_seal_sha256": admission["seal_sha256"],
+    }
+
+
 def selfcheck() -> dict[str, Any]:
     config = {
         "num_hidden_layers": 78,
@@ -1567,10 +1644,13 @@ def main() -> int:
     subparsers = parser.add_subparsers(dest="command", required=True)
     admit = subparsers.add_parser("admit")
     admit.add_argument("--workers", type=int, default=16)
+    subparsers.add_parser("refresh-admission-offline")
     subparsers.add_parser("selfcheck")
     args = parser.parse_args()
     if args.command == "selfcheck":
         result = selfcheck()
+    elif args.command == "refresh-admission-offline":
+        result = refresh_source_admission_offline()
     else:
         result = run_admission(workers=args.workers)
     print(json.dumps(result, indent=2, sort_keys=True, ensure_ascii=False))

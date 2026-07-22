@@ -6,6 +6,7 @@ import copy
 import hashlib
 import json
 import pathlib
+import shutil
 import sys
 
 import pytest
@@ -18,7 +19,14 @@ if str(CONDENSE) not in sys.path:
 
 import glm52_campaign_contract as campaign  # noqa: E402
 import glm52_state as state  # noqa: E402
-from glm52_common import canonical, read_sealed_json, seal, verify_sealed  # noqa: E402
+import glm52_terminal_proofs as terminal_proofs  # noqa: E402
+from glm52_common import (  # noqa: E402
+    atomic_json,
+    canonical,
+    read_sealed_json,
+    seal,
+    verify_sealed,
+)
 
 
 CHAT_DIGEST = hashlib.sha256(b"offline-test-rotated-private-chat").hexdigest()
@@ -63,10 +71,29 @@ def test_builds_exact_official_contract_and_losslessly_maps_eviction(
     assert contract["source_revision"] == campaign.OFFICIAL_REVISION
     assert contract["expected_chat_identity_digest"] == CHAT_DIGEST
     assert contract["created_at"] == CREATED_AT
+    resource_policy = contract["state_gates"]["AUTOTUNE_XET"][
+        "required_artifacts"
+    ]["resource_reserve_policy"]
+    assert resource_policy["path"] == "GLM52_RESOURCE_RESERVE_POLICY.json"
+    assert resource_policy["expected_seal_sha256"] == \
+        artifacts["resource_reserve_policy"]["seal_sha256"]
+    assert resource_policy["validator_id"] == "sealed_exact_v1"
     assert contract["source"]["profile"] == "OFFICIAL_GLM52_BF16"
     assert contract["source"]["expected_shard_count"] == 282
     assert contract["source"]["expected_logical_bytes"] == 1_506_667_387_408
     assert len({row["path"] for row in contract["source"]["shards"]}) == 282
+    manifest_by_path = {
+        row["path"]: row
+        for row in artifacts["official_manifest"]["files"]
+        if row.get("is_weight") is True
+    }
+    for shard in contract["source"]["shards"]:
+        assert set(shard) == {
+            "path", "logical_bytes", "xet_hash", "lfs_sha256"
+        }
+        manifest_row = manifest_by_path[shard["path"]]
+        assert shard["xet_hash"] == manifest_row["xet_hash"]
+        assert shard["lfs_sha256"] == manifest_row["lfs_sha256"]
     assert contract["tensors"]["expected_tensor_count"] == 59_585
     assert len(set(contract["tensors"]["names"])) == 59_585
     assert len(contract["window_schedule"]) == 20
@@ -81,11 +108,76 @@ def test_builds_exact_official_contract_and_losslessly_maps_eviction(
     assert contract["window_schedule"][-1]["carry_out_shards"] == []
 
 
+def test_contract_rejects_resealed_resource_policy_substitution(
+    artifacts: dict[str, dict],
+) -> None:
+    changed = copy.deepcopy(artifacts)
+    policy = copy.deepcopy(changed["resource_reserve_policy"])
+    policy.pop("seal_sha256")
+    policy["policy"]["maximum_swap_used_bytes"] += 1
+    changed["resource_reserve_policy"] = seal(policy)
+    with pytest.raises(campaign.CampaignContractError, match="resource reserve policy"):
+        campaign.build_contract_from_artifacts(
+            changed,
+            chat_identity_digest=CHAT_DIGEST,
+            created_at=CREATED_AT,
+        )
+
+
+def test_grounded_terminal_receipt_rederives_pass_and_refuses_blocked_release(
+    tmp_path: pathlib.Path,
+    official_contract: dict,
+) -> None:
+    stop_condition = "adapter_twin_green"
+    proof = terminal_proofs.derive_stop_proof(REPO_ROOT, stop_condition)
+    for binding_group in ("artifact_bindings", "document_bindings"):
+        for relative in proof[binding_group]:
+            destination = tmp_path / relative
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(REPO_ROOT / relative, destination)
+    auth = state.EvidenceAuthConfig(
+        hmac_key=b"g" * 32,
+        campaign_id=official_contract["campaign_id"],
+        source_revision=official_contract["source_revision"],
+    )
+    receipt = state.make_grounded_stop_condition_evidence(
+        official_contract,
+        stop_condition,
+        artifact_root=tmp_path.resolve(),
+        evidence_auth=auth,
+    )
+    policy = official_contract["state_gates"]["BUILD_REFERENCE"][
+        "required_checklist"
+    ][stop_condition]
+    target = tmp_path / policy["path"]
+    target.parent.mkdir(parents=True, exist_ok=True)
+    atomic_json(target, receipt)
+    grounded = state._snapshot_policy_evidence(
+        state.TrustedArtifactStore(tmp_path.resolve()),
+        policy,
+        label="grounded adapter stop",
+        contract=official_contract,
+        stop_condition=stop_condition,
+        evidence_auth=auth,
+    )
+    assert grounded["status"] == "PASS"
+    assert grounded["seal_sha256"] == receipt["seal_sha256"]
+    with pytest.raises(state.StateError, match="remains BLOCKED"):
+        state.make_grounded_stop_condition_evidence(
+            official_contract,
+            "kimi_raw_source_safely_released",
+            artifact_root=REPO_ROOT,
+            evidence_auth=auth,
+        )
+
+
 def test_state_gates_freeze_inputs_and_require_all_terminal_evidence(
     artifacts: dict[str, dict], official_contract: dict
 ) -> None:
     gates = official_contract["state_gates"]
     assert set(gates) == {
+        "CLOSE_KIMI",
+        "RELEASE_KIMI_SOURCE",
         "AUTOTUNE_XET",
         "BUILD_ADAPTER",
         "BUILD_REFERENCE",
@@ -102,6 +194,19 @@ def test_state_gates_freeze_inputs_and_require_all_terminal_evidence(
         "FINAL_GRAVITY_AUDIT",
         "COMPLETE",
     }
+    assert set(gates["CLOSE_KIMI"]["required_checklist"]) == {
+        "kimi_final_evidence_verified"
+    }
+    assert set(gates["RELEASE_KIMI_SOURCE"]["required_checklist"]) == {
+        "kimi_raw_source_safely_released"
+    }
+    for state_name in ("CLOSE_KIMI", "RELEASE_KIMI_SOURCE"):
+        policy = next(iter(gates[state_name]["required_checklist"].values()))
+        assert policy["validator_id"] == "terminal_semantic_proof_v1"
+        assert policy["validator_source_sha256"] == (
+            state.EVIDENCE_VALIDATOR_SOURCE_SHA256["terminal_semantic_proof_v1"]
+        )
+        assert policy["require_producer_hmac"] is True
     assembly = gates["ASSEMBLE_ARTIFACT"]
     complete = gates["COMPLETE"]
     assert all(assembly[key] is True for key in (
@@ -156,10 +261,13 @@ def test_state_gates_freeze_inputs_and_require_all_terminal_evidence(
         == "future_artifact_blocked_v1"
         for label in blocked_future
     )
-    assert all(
-        policy["validator_id"] == "stop_condition_blocked_v1"
-        for policy in complete["required_checklist"].values()
-    )
+    grounded = set(campaign.terminal_proofs.READY_STOP_CONDITIONS)
+    for stop_condition, policy in complete["required_checklist"].items():
+        assert policy["validator_id"] == (
+            "terminal_semantic_proof_v1"
+            if stop_condition in grounded
+            else "stop_condition_blocked_v1"
+        )
 
 
 def test_existing_closure_inputs_are_frozen_and_fetch_has_prerequisite_gates(
@@ -291,6 +399,16 @@ def test_count_and_schedule_tampering_fail_even_when_resealed(
     wrong_schedule["streaming_schedule"] = seal(schedule)
     with pytest.raises(campaign.CampaignContractError, match="window 0 schema mismatch"):
         campaign.validate_and_derive(wrong_schedule)
+
+
+def test_contract_v3_refuses_xet_only_source_identity(
+    official_contract: dict,
+) -> None:
+    xet_only = copy.deepcopy(official_contract)
+    xet_only["source"]["shards"][0].pop("lfs_sha256")
+    xet_only.pop("seal_sha256")
+    with pytest.raises(state.StateError, match="source-shard identity schema"):
+        state._validate_expected_contract(seal(xet_only))
 
 
 def test_stale_xet_input_binding_is_rejected(artifacts: dict[str, dict]) -> None:

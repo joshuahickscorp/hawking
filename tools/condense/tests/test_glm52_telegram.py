@@ -7,7 +7,6 @@ import concurrent.futures
 import hashlib
 import json
 import pathlib
-import subprocess
 import sys
 import threading
 from typing import Any, Mapping
@@ -208,38 +207,44 @@ def test_services_are_unique_and_glm_specific() -> None:
     assert gt.KEYCHAIN_ACCOUNT == "hawking-glm52-gravity"
 
 
-def test_macos_keychain_writes_secret_only_through_stdin() -> None:
-    calls: list[tuple[list[str], dict[str, Any]]] = []
+def test_macos_keychain_reads_and_writes_only_through_native_framework() -> None:
+    reads: list[tuple[str, str]] = []
+    writes: list[tuple[str, str, str]] = []
 
-    def runner(arguments, **kwargs):
-        calls.append((list(arguments), dict(kwargs)))
-        return subprocess.CompletedProcess(arguments, 0, stdout="", stderr="")
+    def reader(service: str, account: str) -> str | None:
+        reads.append((service, account))
+        return TOKEN
 
-    store = gt.MacOSKeychain(runner=runner)
+    def writer(service: str, account: str, value: str) -> None:
+        writes.append((service, account, value))
+
+    store = gt.MacOSKeychain(native_reader=reader, native_writer=writer)
     store.set(gt.TOKEN_SERVICE, TOKEN)
-    arguments, kwargs = calls[0]
-    assert TOKEN not in arguments
-    assert arguments[-1] == "-w"
-    assert kwargs["input"] == TOKEN + "\n"
-    assert "env" not in kwargs
+    assert store.get(gt.TOKEN_SERVICE) == TOKEN
+    assert writes == [(gt.TOKEN_SERVICE, gt.KEYCHAIN_ACCOUNT, TOKEN)]
+    assert reads == [(gt.TOKEN_SERVICE, gt.KEYCHAIN_ACCOUNT)]
+    assert "subprocess" not in vars(store)
 
 
 def test_macos_keychain_errors_never_echo_secret() -> None:
-    def runner(arguments, **_kwargs):
-        return subprocess.CompletedProcess(arguments, 1, stdout="", stderr=f"bad {TOKEN}")
+    def writer(_service: str, _account: str, _value: str) -> None:
+        raise RuntimeError(f"native backend accidentally included {TOKEN}")
 
     with pytest.raises(gt.TelegramSecurityError) as caught:
-        gt.MacOSKeychain(runner=runner).set(gt.TOKEN_SERVICE, TOKEN)
+        gt.MacOSKeychain(native_writer=writer).set(gt.TOKEN_SERVICE, TOKEN)
     assert TOKEN not in str(caught.value)
     assert TOKEN not in repr(caught.value)
 
 
 @pytest.mark.parametrize("operation", ["get", "set"])
 def test_macos_keychain_redacts_backend_exceptions(operation: str) -> None:
-    def runner(_arguments, **_kwargs):
+    def reader(_service: str, _account: str) -> str | None:
         raise RuntimeError(f"backend accidentally included {TOKEN}")
 
-    store = gt.MacOSKeychain(runner=runner)
+    def writer(_service: str, _account: str, _value: str) -> None:
+        raise RuntimeError(f"backend accidentally included {TOKEN}")
+
+    store = gt.MacOSKeychain(native_reader=reader, native_writer=writer)
     with pytest.raises(gt.TelegramSecurityError) as caught:
         if operation == "get":
             store.get(gt.TOKEN_SERVICE)
@@ -351,6 +356,9 @@ def test_hmac_key_is_generated_at_32_bytes_and_never_returned() -> None:
 def test_public_status_contains_only_booleans_and_digests() -> None:
     status = gt.credential_status(_configured_keychain())
     assert status["ready"] is True
+    assert status["notification_bot_identity_digest"] == hashlib.sha256(
+        b"hawking.glm52.telegram-bot-identity.v1\0" + TOKEN.split(":", 1)[0].encode()
+    ).hexdigest()
     for value in status.values():
         assert isinstance(value, bool) or (isinstance(value, str) and gt.SHA256_RE.fullmatch(value))
     rendered = json.dumps(status)

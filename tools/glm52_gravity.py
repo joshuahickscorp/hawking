@@ -29,6 +29,8 @@ if str(_CONDENSE) not in sys.path:
     sys.path.insert(0, str(_CONDENSE))
 
 import glm52_state as state  # noqa: E402
+import glm52_evidence_auth as evidence_module  # noqa: E402
+import glm52_grounding_auth as grounding_module  # noqa: E402
 import glm52_telegram as telegram_module  # noqa: E402
 from glm52_common import (  # noqa: E402
     Glm52Error,
@@ -42,7 +44,7 @@ from glm52_common import (  # noqa: E402
 )
 
 
-CONFIG_SCHEMA = "hawking.glm52.controller_cli_config.v2"
+CONFIG_SCHEMA = "hawking.glm52.controller_cli_config.v4"
 CONTROL_EVENT_SCHEMA = "hawking.glm52.operator_control_event.v1"
 CONTROL_PAYLOAD_SCHEMA = "hawking.glm52.operator_control_request.v1"
 CONTROL_APPLIED_EVENT_SCHEMA = "hawking.glm52.operator_control_applied_event.v1"
@@ -86,7 +88,19 @@ class Runtime:
     allow_synthetic_contract: bool
     expected_contract: dict[str, Any]
     telegram_auth: state.TelegramAuthConfig
+    evidence_auth: state.EvidenceAuthConfig
+    grounding_auth: grounding_module.ProducerAuthenticator
     contract_phone_status_path: str
+
+    def __post_init__(self) -> None:
+        _validate_authentication_role_separation(
+            telegram_auth=self.telegram_auth,
+            evidence_auth=self.evidence_auth,
+            grounding_auth=self.grounding_auth,
+        )
+        if self.evidence_auth.campaign_id != self.campaign_id \
+                or self.evidence_auth.source_revision != self.source_revision:
+            raise CliError("evidence authenticator campaign identity mismatch")
 
     @property
     def phone_json_path(self) -> Path:
@@ -120,6 +134,7 @@ class Runtime:
             source_revision=self.source_revision,
             expected_contract=self.expected_contract,
             telegram_auth=self.telegram_auth,
+            evidence_auth=self.evidence_auth,
             allow_synthetic_contract=self.allow_synthetic_contract,
             controller_epoch=self.controller_epoch,
         )
@@ -179,9 +194,66 @@ def _validate_telegram_provider(config: Mapping[str, Any]) -> str:
     return digest
 
 
+def _validate_evidence_provider(config: Mapping[str, Any]) -> None:
+    evidence_config = config.get("evidence_auth")
+    if not isinstance(evidence_config, dict) or set(evidence_config) != {
+        "credential_provider", "producer_hmac_key_service",
+    }:
+        raise CliError("config.evidence_auth has missing or unknown fields")
+    if evidence_config.get("credential_provider") != "macOS Keychain" \
+            or evidence_config.get("producer_hmac_key_service") != \
+            evidence_module.EVIDENCE_HMAC_SERVICE:
+        raise CliError("config.evidence_auth does not name the fixed evidence Keychain service")
+
+
+def _validate_grounding_provider(config: Mapping[str, Any]) -> None:
+    grounding_config = config.get("grounding_auth")
+    if not isinstance(grounding_config, dict) or set(grounding_config) != {
+        "credential_provider", "producer_hmac_key_service", "keychain_account",
+    }:
+        raise CliError("config.grounding_auth has missing or unknown fields")
+    if grounding_config.get("credential_provider") != "macOS Keychain" \
+            or grounding_config.get("producer_hmac_key_service") != \
+            grounding_module.GROUNDING_HMAC_SERVICE \
+            or grounding_config.get("keychain_account") != \
+            grounding_module.KEYCHAIN_ACCOUNT:
+        raise CliError(
+            "config.grounding_auth does not name the fixed grounding Keychain "
+            "service/account"
+        )
+
+
+def _validate_authentication_role_separation(
+    *,
+    telegram_auth: state.TelegramAuthConfig,
+    evidence_auth: state.EvidenceAuthConfig,
+    grounding_auth: grounding_module.ProducerAuthenticator,
+) -> None:
+    if not isinstance(telegram_auth, state.TelegramAuthConfig):
+        raise CliError("TelegramAuthConfig is required")
+    if not isinstance(evidence_auth, state.EvidenceAuthConfig):
+        raise CliError("EvidenceAuthConfig is required")
+    if not isinstance(grounding_auth, grounding_module.ProducerAuthenticator):
+        raise CliError("grounding ProducerAuthenticator is required")
+    # These equality fingerprints are domain-separated and remain in memory.  No key
+    # or fingerprint is written to the sealed controller configuration.
+    identities = {
+        telegram_auth._key_material_identity(),
+        evidence_auth._key_material_identity(),
+        grounding_auth._key_material_identity(),
+    }
+    if len(identities) != 3:
+        raise CliError(
+            "Telegram receipt, scientific evidence, and filesystem grounding "
+            "producer keys must be pairwise distinct"
+        )
+
+
 def load_runtime(
     config_path: str | os.PathLike[str], *,
     keychain: telegram_module.Keychain | None = None,
+    evidence_keychain: evidence_module.Keychain | None = None,
+    grounding_keychain: grounding_module.Keychain | None = None,
 ) -> Runtime:
     path = Path(config_path).resolve(strict=False)
     config = _strict_json(path)
@@ -200,6 +272,8 @@ def load_runtime(
         "phone_status_directory",
         "allow_synthetic_contract",
         "telegram",
+        "evidence_auth",
+        "grounding_auth",
         "seal_sha256",
     }
     if set(config) != required:
@@ -216,6 +290,8 @@ def load_runtime(
     if not isinstance(revision, str) or re.fullmatch(r"[0-9a-f]{40}", revision) is None:
         raise CliError("source_revision must be an immutable 40-hex revision")
     chat_digest = _validate_telegram_provider(config)
+    _validate_evidence_provider(config)
+    _validate_grounding_provider(config)
     contract_path = _resolve_path(path, config["expected_contract_path"], "expected_contract_path")
     try:
         contract = read_sealed_json(contract_path)
@@ -248,6 +324,14 @@ def load_runtime(
         auth = telegram_module.load_telegram_auth(
             keychain or telegram_module.MacOSKeychain()
         )
+        evidence_auth = evidence_module.load_evidence_auth(
+            evidence_keychain or keychain or evidence_module.MacOSKeychain(),
+            campaign_id=config["campaign_id"],
+            source_revision=config["source_revision"],
+        )
+        grounding_auth = grounding_module.load_grounding_auth(
+            grounding_keychain or keychain or grounding_module.MacOSKeychain()
+        )
         if auth.expected_chat_identity_digest != chat_digest:
             raise CliError(
                 "Keychain private-chat identity differs from CLI/contract binding"
@@ -266,10 +350,17 @@ def load_runtime(
             allow_synthetic_contract=config["allow_synthetic_contract"],
             expected_contract=contract,
             telegram_auth=auth,
+            evidence_auth=evidence_auth,
+            grounding_auth=grounding_auth,
             contract_phone_status_path=contract_phone_path,
         )
         runtime.controller()
-    except (state.StateError, telegram_module.TelegramSecurityError) as exc:
+    except (
+        state.StateError,
+        telegram_module.TelegramSecurityError,
+        evidence_module.EvidenceSecurityError,
+        grounding_module.GroundingSecurityError,
+    ) as exc:
         raise CliError(str(exc)) from exc
     return runtime
 
@@ -303,6 +394,15 @@ def make_config(
                 "credential_provider": "macOS Keychain",
                 "private_chat_id_service": telegram_module.CHAT_SERVICE,
                 "receipt_hmac_key_service": telegram_module.HMAC_SERVICE,
+            },
+            "evidence_auth": {
+                "credential_provider": "macOS Keychain",
+                "producer_hmac_key_service": evidence_module.EVIDENCE_HMAC_SERVICE,
+            },
+            "grounding_auth": {
+                "credential_provider": "macOS Keychain",
+                "producer_hmac_key_service": grounding_module.GROUNDING_HMAC_SERVICE,
+                "keychain_account": grounding_module.KEYCHAIN_ACCOUNT,
             },
         }
     )
@@ -889,7 +989,7 @@ def build_phone_status(runtime: Runtime) -> dict[str, Any]:
     }
     try:
         return state.seal_producer_authenticated_evidence(
-            document, auth=runtime.telegram_auth
+            document, auth=runtime.evidence_auth
         )
     except state.StateError as exc:
         raise CliError(f"phone-status producer authentication failed: {exc}") from exc
@@ -950,7 +1050,7 @@ def _validate_existing_phone_status(
             for key, item in previous.items()
             if key not in {"seal_sha256", "producer_hmac_sha256"}
         }
-        if not runtime.telegram_auth.verify(
+        if not runtime.evidence_auth.verify(
             {
                 "schema": "hawking.glm52.evidence_producer_auth.v1",
                 "artifact": producer_body,
@@ -1058,12 +1158,19 @@ def main(
     argv: Sequence[str] | None = None, *,
     environ: Mapping[str, str] | None = None,
     keychain: telegram_module.Keychain | None = None,
+    evidence_keychain: evidence_module.Keychain | None = None,
+    grounding_keychain: grounding_module.Keychain | None = None,
 ) -> int:
     env = os.environ if environ is None else environ
     args = build_parser().parse_args(argv)
     config_path = args.config or _default_config_path(env)
     try:
-        runtime = load_runtime(config_path, keychain=keychain)
+        runtime = load_runtime(
+            config_path,
+            keychain=keychain,
+            evidence_keychain=evidence_keychain,
+            grounding_keychain=grounding_keychain,
+        )
         result = run_command(runtime, args.command)
     except (CliError, state.StateError, Glm52Error, OSError) as exc:
         print(

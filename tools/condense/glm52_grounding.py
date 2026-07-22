@@ -34,6 +34,7 @@ FILE_OBSERVATION_SCHEMA = "hawking.glm52.grounded_file_observation.v1"
 ABSENCE_OBSERVATION_SCHEMA = "hawking.glm52.grounded_absence_observation.v1"
 RESOURCE_SAMPLE_SCHEMA = "hawking.glm52.grounded_resource_sample.v1"
 AUTHENTICATION_DOMAIN = "hawking.glm52.grounding.producer-auth.v1"
+_KEY_MATERIAL_IDENTITY_DOMAIN = b"hawking.glm52.auth-key-material-identity.v1\0"
 
 _KNOWN_SCHEMAS = frozenset(
     {FILE_OBSERVATION_SCHEMA, ABSENCE_OBSERVATION_SCHEMA, RESOURCE_SAMPLE_SCHEMA}
@@ -87,6 +88,15 @@ class ProducerAuthenticator:
     @property
     def key_identity_sha256(self) -> str:
         return self._key_identity_sha256
+
+    def _key_material_identity(self) -> str:
+        """Return an in-memory equality fingerprint for cross-role reuse checks.
+
+        This deliberately uses the same private domain as the controller's other
+        authenticators.  It is not a serialized producer identity and never exposes
+        the key bytes.
+        """
+        return hashlib.sha256(_KEY_MATERIAL_IDENTITY_DOMAIN + self._key).hexdigest()
 
     def authenticate(self, body: Mapping[str, Any]) -> str:
         envelope = {"domain": AUTHENTICATION_DOMAIN, "observation": dict(body)}

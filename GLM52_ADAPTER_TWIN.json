@@ -120,7 +120,7 @@
       "tools/condense/glm52_parity.py": "90b51e99095dbfb9e427f40b67ba7e7eb81557344e3d77060f43887af83d2332",
       "tools/condense/glm52_reference.py": "18c480e5484ed8dae70bb7be8c1bc3e38124c0094e2c71d569e2a897611b21d7",
       "tools/condense/glm52_synthetic.py": "b4b83812cbe016333a75503f49d24a4077e5dbad8ab0dbcba6362fb4ee31433b",
-      "tools/condense/requirements-glm52.txt": "6a5f4e9e952b02659e9b4ef8251ccc81a0702b2427efa5bb7cbfd939c61c7cd7"
+      "tools/condense/requirements-glm52.txt": "b70154b77468197abe5e7986830b005286b1091deba5b8a2878b20bba5791835"
     },
     "rebuild_is_timing_and_timestamp_free": true,
     "repository_base_commit": "753c73dc0685ce470090aba3e49c62fe4a4f9b08"
@@ -129,12 +129,14 @@
     "environment": {
       "all_direct_imports_within_environment": true,
       "host_paths_sealed": false,
-      "locked_distribution_count": 38,
+      "locked_distribution_count": 41,
       "locked_versions": {
         "annotated-doc": "0.0.4",
         "anyio": "4.14.2",
         "certifi": "2026.6.17",
+        "cffi": "1.17.1",
         "click": "8.4.2",
+        "cryptography": "43.0.1",
         "filelock": "3.32.0",
         "fsspec": "2026.6.0",
         "h11": "0.16.0",
@@ -154,6 +156,7 @@
         "packaging": "26.2",
         "pip": "26.1.2",
         "pluggy": "1.6.0",
+        "pycparser": "2.22",
         "pygments": "2.20.0",
         "pytest": "9.1.0",
         "pyyaml": "6.0.3",
@@ -171,7 +174,7 @@
         "typing-extensions": "4.16.0"
       },
       "python": "3.12.6",
-      "requirements_sha256": "6a5f4e9e952b02659e9b4ef8251ccc81a0702b2427efa5bb7cbfd939c61c7cd7",
+      "requirements_sha256": "b70154b77468197abe5e7986830b005286b1091deba5b8a2878b20bba5791835",
       "status": "PASS_ISOLATED_FULLY_PINNED",
       "system_site_packages": false
     },
@@ -187,7 +190,7 @@
     "transformers_modeling_sha256": "adb8317a21716b01273046e46c807f14f0dbaf035af59b60d52bd6bc3007cf72"
   },
   "schema": "hawking.glm52.adapter_twin.v1",
-  "seal_sha256": "ca98d39c66d6bccaf40459d45d1666a88d92a604896775591fdddfafb7c44665",
+  "seal_sha256": "8e2f0c5dfbc9647c240373ad207d6572ba6aad85d8fa1d521c9f7f1b93eb11fe",
   "sequence_exceeds_index_topk": true,
   "sequence_tokens": 20,
   "source_parent_parity_claimed": false,

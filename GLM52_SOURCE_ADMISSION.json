@@ -10,7 +10,7 @@
     "official_file_manifest_complete": true,
     "unknown_layouts": 0
   },
-  "admitted_at": "2026-07-21T22:07:16.964892Z",
+  "admitted_at": "2026-07-22T01:05:34.033833Z",
   "architecture": {
     "architecture": "GlmMoeDsaForCausalLM",
     "custom_code_required": false,
@@ -46,7 +46,9 @@
       "annotated-doc": "0.0.4",
       "anyio": "4.14.2",
       "certifi": "2026.6.17",
+      "cffi": "1.17.1",
       "click": "8.4.2",
+      "cryptography": "43.0.1",
       "filelock": "3.32.0",
       "fsspec": "2026.6.0",
       "h11": "0.16.0",
@@ -66,6 +68,7 @@
       "packaging": "26.2",
       "pip": "26.1.2",
       "pluggy": "1.6.0",
+      "pycparser": "2.22",
       "pygments": "2.20.0",
       "pytest": "9.1.0",
       "pyyaml": "6.0.3",
@@ -89,7 +92,9 @@
       "annotated-doc": "0.0.4",
       "anyio": "4.14.2",
       "certifi": "2026.6.17",
+      "cffi": "1.17.1",
       "click": "8.4.2",
+      "cryptography": "43.0.1",
       "filelock": "3.32.0",
       "fsspec": "2026.6.0",
       "h11": "0.16.0",
@@ -109,6 +114,7 @@
       "packaging": "26.2",
       "pip": "26.1.2",
       "pluggy": "1.6.0",
+      "pycparser": "2.22",
       "pygments": "2.20.0",
       "pytest": "9.1.0",
       "pyyaml": "6.0.3",
@@ -130,7 +136,7 @@
     "python_executable": "/Users/scammermike/Downloads/hawking/.venv/glm52/bin/python",
     "requirements_lock": {
       "path": "tools/condense/requirements-glm52.txt",
-      "sha256": "6a5f4e9e952b02659e9b4ef8251ccc81a0702b2427efa5bb7cbfd939c61c7cd7"
+      "sha256": "b70154b77468197abe5e7986830b005286b1091deba5b8a2878b20bba5791835"
     },
     "tokenizers_compatibility_note": "Transformers 5.14.1 requires tokenizers>=0.22.0,<=0.23.0; 0.23.0 has no stable PyPI release, so 0.22.2 is the newest stable compatible release verified for this campaign."
   },
@@ -139,7 +145,7 @@
   "repo": "zai-org/GLM-5.2",
   "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
   "schema": "hawking.glm52.source_admission.v1",
-  "seal_sha256": "9ba6ac297c61a26b1cfad3914c8e5f8302d41c5e04e40d37d153967e96a498ab",
+  "seal_sha256": "f6d80dcfd32ce77d591958c70771a41ce4ce0c00d167caa6a35a46267c42ddbe",
   "source": {
     "complete_source_resident": false,
     "files": 295,
@@ -158,9 +164,9 @@
   "status": "ADMITTED_CONTROL_PLANE_HEADERS_AND_PLAN_BODY_PENDING",
   "storage": {
     "bf16_body_admitted_now": false,
-    "filesystem_free_bytes": 641462566912,
+    "filesystem_free_bytes": 638846349312,
     "filesystem_total_bytes": 994662584320,
-    "filesystem_used_bytes": 353200017408,
+    "filesystem_used_bytes": 355816235008,
     "one_copy_status": {
       "authoritative_location": "/Users/scammermike/.cache/huggingface/hub/models--zai-org--GLM-5.2",
       "control_plane_content_addressed_copy": 1,
@@ -169,6 +175,20 @@
       "weight_body_copies": 0
     },
     "schedule_operational_reserve_bytes": 10734792512
+  },
+  "toolchain_binding": {
+    "generator": {
+      "path": "tools/condense/glm52_contract.py",
+      "sha256": "f96c052b849b1f7d0171f8864a91f846fc3bfd6e440a8ec318ae086c8ed8f340"
+    },
+    "requirements_lock": {
+      "path": "tools/condense/requirements-glm52.txt",
+      "sha256": "b70154b77468197abe5e7986830b005286b1091deba5b8a2878b20bba5791835"
+    },
+    "shared_common": {
+      "path": "tools/condense/glm52_common.py",
+      "sha256": "6e67ada54b6b4dac24b50682b3d900de349f33d545921fb10169625507201eb2"
+    }
   },
   "xet": {
     "autotune_status": "PENDING",
