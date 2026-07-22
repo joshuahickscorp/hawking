@@ -1,0 +1,59 @@
+{
+  "bounds": {
+    "batch": 1,
+    "logit_lens_vocabulary_rows": 1024,
+    "max_single_tensor_bytes": 335544320,
+    "no_unrestricted_activation_corpus": true
+  },
+  "calibration": {
+    "disjoint_by_construction": true,
+    "kind": "sealed deterministic synthetic token-id probe",
+    "membership_hash": "sha256 over canonical {split, token_ids}",
+    "natural_text": false,
+    "splits": [
+      "teacher_fit",
+      "teacher_holdout"
+    ],
+    "tokens": 8
+  },
+  "capability_claim_permitted": false,
+  "capsule_directory": "/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/source_fetch/teacher/capsules",
+  "captured_evidence": [
+    "input hidden state",
+    "attention input",
+    "IndexShare selection",
+    "indexer scores",
+    "attention output",
+    "post-attention residual",
+    "pre-router hidden state",
+    "router logits",
+    "top-8 indices",
+    "top-8 weights",
+    "8th-versus-9th margin",
+    "shared-expert output",
+    "weighted routed-expert output",
+    "post-MoE state",
+    "post-block residual",
+    "logit-lens short logits over a sealed vocabulary subset"
+  ],
+  "invariant": "A shard may be evicted only when every text-layer organ it carries is either sealed in a teacher capsule or already unrecoverable because its sibling shards were destroyed under the pre-capture policy.",
+  "ledger_path": "/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/source_fetch/teacher/GLM52_TEACHER_EVIDENCE_LEDGER.jsonl",
+  "limitations": [
+    "The calibration probe is synthetic token ids, not natural text, so routing statistics are not the natural-text routing distribution.",
+    "A window captured before its upstream layers were resident is seeded from the embedding table; its chain gap is recorded per capsule.",
+    "Capsules are teacher evidence for representation fitting. They are not an evaluation and permit no capability claim."
+  ],
+  "pipeline": [
+    "VERIFY",
+    "TEACHER_CAPTURE",
+    "PROBE",
+    "PACK",
+    "SEAL",
+    "EVICT"
+  ],
+  "repo": "zai-org/GLM-5.2",
+  "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+  "schema": "hawking.glm52.teacher_evidence_policy.v1",
+  "seal_sha256": "5ebb017388040903d2f9167523ddb61488eddda23104b638de99052e920d0b41",
+  "status": "ARMED"
+}

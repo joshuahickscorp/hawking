@@ -16,12 +16,14 @@ lets a 1.507 TB parent end as a ~83 GB artifact this machine can actually host. 
 requires all four -- verified, probed, packed, and unneeded downstream -- so no shard is
 ever discarded having given up less than everything cheap it had.
 
-What is still missing is the capability half.  The full pipeline seals a window after
-CAPTURE_TEACHER and a forward pass; there is no teacher forward here, so eviction is
-recorded as ``VERIFIED_NOT_SEALED`` and the packing evidence is F0 (exact physical
-accounting) plus F1 (weight-space reconstruction error) only.  Weight-space error is a
-PROXY.  A complete, correctly-billed, executable sub-1-BPW artifact is NOT evidence that
-the model still works -- that requires teacher capture, output divergence, and evaluation,
+Teacher capture now runs inside the loop: ``glm52_teacher_capture`` executes the sealed
+reference forward over every still-resident layer a body carries and seals the capsule
+before the body can be unlinked, so the pipeline is VERIFY -> TEACHER_CAPTURE ->
+PROBE/PACK -> SEAL -> EVICT.  What is still missing is the rest of the capability half:
+the packing evidence is F0 (exact physical accounting) plus F1 (weight-space
+reconstruction error) only, and weight-space error is a PROXY.  A complete,
+correctly-billed, executable sub-1-BPW artifact is NOT evidence that the model still
+works -- that requires fitting against these capsules, output divergence, and evaluation,
 none of which happen in this module.
 
 Modes:
@@ -58,6 +60,7 @@ SOURCE_ROOT = Path(
 LEDGER = STATE_DIR / "SOURCE_FETCH_LEDGER.jsonl"
 PROGRESS = STATE_DIR / "progress.json"
 LOCK = STATE_DIR / "fetch.lock"
+DEFERRED = STATE_DIR / "deferred_evictions.json"
 PROBES = STATE_DIR / "probes"
 ROLLUP = STATE_DIR / "GLM52_SOURCE_WEIGHT_ATLAS.json"
 GRAPH = ROOT / "GLM52_SHARD_DEPENDENCY_GRAPH.json"
@@ -198,30 +201,30 @@ def _probe_shard(name: str, rows: list[dict]) -> dict:
 
 
 # Eviction is the only irreversible step in the loop, and a BF16 window carries teacher
-# states that no downstream stage can reconstruct once the body is gone.  While teacher-
-# evidence capture is not yet wired into the gate, every eviction destroys information a
-# future representation will need and can only recover by refetching from the network.
-# Pausing costs disk, which the floor already bounds; not pausing costs evidence, which
-# nothing bounds.
-EVICTION_PAUSED = os.environ.get("GLM52_EVICTION_PAUSED", "0") == "1"
+# states that no downstream stage can reconstruct once the body is gone.  The default is
+# therefore PAUSED: an operator who has not said otherwise gets the outcome where the
+# worst case is a full disk, which the floor already bounds, rather than the one where
+# the worst case is destroyed evidence, which nothing bounds.
+EVICTION_PAUSED = os.environ.get("GLM52_EVICTION_PAUSED", "1") == "1"
 
 
 def _evict(names: list[str], *, verified: set[str], probed: set[str], packed: set[str],
-           protected: set[str]) -> list[dict]:
-    if EVICTION_PAUSED:
-        return []
+           protected: set[str], authorized: set[str]) -> list[dict]:
     """Unlink exact schedule-named bodies that are fully accounted for and unneeded.
 
-    Five independent conditions, all required: the schedule named it for eviction, a
+    Six independent conditions, all required: the schedule named it for eviction, a
     VERIFIED receipt exists so the body is reproducible, its weight evidence is captured,
-    its weights are already represented in the compact artifact, and no later window
-    carries it in.  The body streams past once -- evicting a shard that has not been both
-    probed and packed would throw away the single visit its bytes get.  Anything failing
-    one condition is left alone rather than force-removed.
+    its weights are already represented in the compact artifact, the teacher capture gate
+    authorized it, and no later window carries it in.  The body streams past once --
+    evicting a shard that has not been probed, packed and teacher-captured would throw
+    away the single visit its bytes get.  Anything failing one condition is left alone
+    rather than force-removed.
     """
+    if EVICTION_PAUSED:
+        return []
     freed = []
     for name in names:
-        if (name in protected or name not in verified
+        if (name in protected or name not in verified or name not in authorized
                 or name not in probed or name not in packed):
             continue
         target = SOURCE_ROOT / name
@@ -231,6 +234,53 @@ def _evict(names: list[str], *, verified: set[str], probed: set[str], packed: se
         target.unlink()
         freed.append({"shard": name, "bytes": size})
     return freed
+
+
+def _deferred() -> set[str]:
+    """Shards a previous window offered for eviction and the gate refused."""
+    if not DEFERRED.exists():
+        return set()
+    try:
+        return {name for name in _read_json(DEFERRED)["shards"]
+                if (SOURCE_ROOT / name).exists()}
+    except (KeyError, TypeError, ValueError, OSError):
+        return set()
+
+
+def _teacher_authority(candidates: set[str], window: str) -> dict:
+    """Capture the teacher evidence these bodies still owe, then rule on eviction.
+
+    A capture failure denies authority rather than granting it: the shards stay,
+    the disk grows against a bounded floor, and the evidence survives.  Refused
+    shards are carried into the next window's candidate set, so a refusal defers
+    an eviction instead of stranding a body on disk for the rest of the run.
+    """
+    try:
+        import glm52_teacher_capture as teacher
+
+        authority = teacher.capture_for_eviction(candidates)
+    except Exception as exc:  # noqa: BLE001 - never let the gate kill the stream
+        _append_ledger({"event": "TEACHER_GATE_ERROR", "window": window,
+                        "error": f"{type(exc).__name__}: {exc}",
+                        "authorized": [], "at": _now()})
+        return {"authorized": []}
+    still_refused = sorted(
+        set(authority["refused_uncaptured_but_capturable"])
+        | set(authority["refused_incomplete_organs"])
+    )
+    _write_json(DEFERRED, {"shards": still_refused, "window": window, "at": _now()})
+    _append_ledger({
+        "event": "TEACHER_GATE", "window": window,
+        "authorized": sorted(authority["authorized"]),
+        "refused_uncaptured_but_capturable":
+            authority["refused_uncaptured_but_capturable"],
+        "refused_incomplete_organs": authority["refused_incomplete_organs"],
+        "authorized_with_unrecoverable_organs":
+            authority["authorized_with_unrecoverable_organs"],
+        "capture_outcome": authority.get("capture_outcome", {}),
+        "at": _now(),
+    })
+    return authority
 
 
 def _fetch_one(row: dict, repo: str, revision: str) -> dict:
@@ -431,19 +481,24 @@ def run() -> int:
                 break
 
         if MODE == "stream":
-            candidates = set(window.get("evict_after_seal_shards", []))
+            candidates = set(window.get("evict_after_seal_shards", [])) | _deferred()
             _drain_probes(candidates)  # evidence must be durable before the body goes
+            authority = _teacher_authority(candidates, wid)
             freed = _evict(sorted(candidates),
                            verified=verified, probed=probed, packed=packed,
-                           protected=_protected_after(schedule, index))
+                           protected=_protected_after(schedule, index),
+                           authorized=set(authority["authorized"]))
             if freed:
                 evicted_bytes += sum(f["bytes"] for f in freed)
                 _append_ledger({
                     "event": "EVICT", "window": wid,
-                    "basis": "VERIFIED_NOT_SEALED",
-                    "note": "hash-verified against sealed manifest; NOT teacher-captured, "
-                            "fit, packed or sealed -- one attributed refetch is required "
-                            "when the scientific pipeline runs",
+                    "basis": "VERIFIED_PROBED_PACKED_TEACHER_CAPTURED",
+                    "note": "hash-verified against the sealed manifest, probed, packed, "
+                            "and every still-capturable layer it carries is sealed in a "
+                            "teacher capsule; layers already destroyed under the "
+                            "pre-capture policy are listed as unrecoverable, not captured",
+                    "unrecoverable_organs":
+                        authority.get("authorized_with_unrecoverable_organs", {}),
                     "shards": [f["shard"] for f in freed],
                     "freed_bytes": sum(f["bytes"] for f in freed), "at": _now(),
                 })
@@ -551,6 +606,209 @@ def rollup() -> int:
     return 0
 
 
+SAFE_TO_LEAVE_JSON = STATE_DIR / "GLM52_SAFE_TO_LEAVE_STATUS.json"
+SAFE_TO_LEAVE_MD = STATE_DIR / "GLM52_SAFE_TO_LEAVE_STATUS.md"
+# Keychain service names owned by glm52_telegram.  Presence is checked, never the value.
+TELEGRAM_SERVICES = (
+    "com.hawking.glm52.gravity.telegram.bot-token",
+    "com.hawking.glm52.gravity.telegram.chat-id",
+)
+
+
+def _run(argv: list[str], timeout: float = 5.0) -> str:
+    import subprocess
+
+    try:
+        return subprocess.run(argv, capture_output=True, text=True,
+                              timeout=timeout, check=False).stdout
+    except (OSError, subprocess.SubprocessError):
+        return ""
+
+
+def _host_health() -> dict:
+    swap_text = _run(["/usr/sbin/sysctl", "-n", "vm.swapusage"])
+    thermal = _run(["/usr/bin/pmset", "-g", "therm"])
+    try:
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        from emergency_detached_campaign import parse_swap_used
+
+        swap_used = parse_swap_used(swap_text)
+    except Exception:  # noqa: BLE001 - a status writer never fails on a parse
+        swap_used = None
+    usage = shutil.disk_usage(str(SOURCE_ROOT if SOURCE_ROOT.exists() else ROOT))
+    return {
+        "free_disk_bytes": usage.free,
+        "disk_floor_bytes": DISK_FLOOR_BYTES,
+        "disk_above_floor": usage.free > DISK_FLOOR_BYTES,
+        "physical_memory_bytes": int(_run(["/usr/sbin/sysctl", "-n", "hw.memsize"]) or 0),
+        "swap_used_bytes": swap_used,
+        "swap_raw": swap_text.strip(),
+        "thermal_green": "No thermal warning level has been recorded" in thermal,
+    }
+
+
+def _controller() -> dict:
+    pids = [int(value) for value in _run(
+        ["/usr/bin/pgrep", "-f", "glm52_source_fetch.py run"]).split()]
+    live = [pid for pid in pids if pid != os.getpid()]
+    label = _run(["/bin/launchctl", "list", "com.hawking.glm52.source-fetch"])
+    caffeinate = bool(_run(["/usr/bin/pgrep", "-f", "caffeinate.*glm52_source_fetch"]).strip())
+    pgid = None
+    if live:
+        try:
+            pgid = os.getpgid(live[0])
+        except OSError:
+            pgid = None
+    heartbeat = None
+    if PROGRESS.exists():
+        heartbeat = round(time.time() - PROGRESS.stat().st_mtime, 1)
+    return {
+        "pids": live,
+        "pgid": pgid,
+        "launchd_label": "com.hawking.glm52.source-fetch",
+        "launchd_loaded": bool(label.strip()),
+        "caffeinate_active": caffeinate,
+        "lease_path": str(LOCK),
+        "lease_held": bool(live),
+        "heartbeat_age_seconds": heartbeat,
+        "eviction_paused": EVICTION_PAUSED,
+    }
+
+
+def safe_to_leave() -> int:
+    """Write the local status pair that replaces Telegram as the leave-it signal."""
+    import glm52_teacher_capture as teacher
+
+    progress = _read_json(PROGRESS) if PROGRESS.exists() else {"state": "NOT_STARTED"}
+    rows = _ledger_rows()
+    manifest = _read_json(MANIFEST)
+    by_path = {f["path"]: f for f in manifest["files"] if f.get("is_weight")}
+    resident = _resident(manifest)
+    evictions = [row for row in rows if row.get("event") == "EVICT"]
+    faults = [row for row in rows
+              if str(row.get("status", "")).endswith("ERROR")
+              or str(row.get("event", "")).endswith("ERROR")
+              or row.get("status") in {"HASH_MISMATCH", "SIZE_MISMATCH"}]
+    packed = sorted(COMPACT.glob("*.gravity")) if COMPACT.exists() else []
+    pack_rows = [row for row in rows if row.get("status") == "PACKED"]
+    teacher_status = teacher.status()
+    ledger_rows = teacher_status["ledger_rows"]
+
+    health = _host_health()
+    controller = _controller()
+    telegram = "OPTIONAL_CONFIGURED" if all(
+        _run(["/usr/bin/security", "find-generic-password", "-s", service]).strip()
+        for service in TELEGRAM_SERVICES
+    ) else "OPTIONAL_NOT_CONFIGURED"
+
+    blockers = []
+    if not controller["pids"]:
+        blockers.append("no live controller process")
+    if not controller["launchd_loaded"]:
+        blockers.append("launchd job is not loaded")
+    if not health["disk_above_floor"]:
+        blockers.append("free disk is at or below the floor")
+    if teacher_status["capsule_count"] == 0:
+        blockers.append("no sealed teacher capsule exists")
+    if teacher_status["capturable_now"]:
+        blockers.append(
+            f"{len(teacher_status['capturable_now'])} resident layers are uncaptured"
+        )
+    if EVICTION_PAUSED:
+        blockers.append("eviction is paused, so the stream cannot complete unattended")
+
+    status_obj = {
+        "schema": "hawking.glm52.safe_to_leave.v1",
+        "endpoint": "SAFE_TO_LEAVE" if not blockers else "NOT_SAFE_TO_LEAVE",
+        "blockers": blockers,
+        "controller": controller,
+        "source": {
+            "state": progress.get("state"),
+            "current_window": progress.get("window"),
+            "shards_verified": progress.get("shards_verified_total"),
+            "shards_probed": progress.get("shards_probed_total"),
+            "shards_packed": progress.get("shards_packed_total"),
+            "total_source_shards": 282,
+            "resident_shards": len(resident),
+            "resident_bytes": sum(by_path[n]["logical_bytes"] for n in resident),
+            "fraction_verified": progress.get("source_fraction_verified"),
+        },
+        "teacher": {
+            "capsule_count": teacher_status["capsule_count"],
+            "captured_layers": teacher_status["captured_layers"],
+            "capsule_bytes_total": teacher_status["capsule_bytes_total"],
+            "latest_capsule_seal": teacher_status["latest_capsule_seal"],
+            "ledger_rows": ledger_rows,
+            "ledger_path": teacher_status["ledger_path"],
+            "uncaptured_resident_layers": teacher_status["capturable_now"],
+            "policy_sealed": teacher_status["policy_sealed"],
+        },
+        "eviction": {
+            "paused": EVICTION_PAUSED,
+            "gate": "VERIFIED + PROBED + PACKED + TEACHER_CAPTURED + NOT_CARRIED_FORWARD",
+            "events": len(evictions),
+            "last_eviction_at": evictions[-1]["at"] if evictions else None,
+            "last_eviction_basis": evictions[-1].get("basis") if evictions else None,
+            "last_eviction_shards": evictions[-1].get("shards", []) if evictions else [],
+        },
+        "compact": {
+            "format": ".gravity",
+            "shards": len(packed),
+            "bytes": sum(path.stat().st_size for path in packed),
+            "mean_whole_shard_bpw": round(
+                sum(row["whole_shard_bpw"] for row in pack_rows) / len(pack_rows), 6
+            ) if pack_rows else None,
+            "root": str(COMPACT),
+        },
+        "host": health,
+        "telegram": telegram,
+        "current_experiment": f"source traversal {progress.get('window')} with teacher "
+                              f"capture armed",
+        "next_experiment": "BASELINE_A block-level trajectory verdict "
+                           "(REACHABLE / REPAIRABLE / DEAD / INVALID)",
+        "last_fault": faults[-1] if faults else None,
+        "faults_total": len(faults),
+        "updated_at": _now(),
+    }
+    _write_json(SAFE_TO_LEAVE_JSON, status_obj)
+
+    lines = [
+        "# GLM-5.2 safe-to-leave status",
+        "",
+        f"- endpoint: **{status_obj['endpoint']}**",
+        f"- blockers: {', '.join(blockers) if blockers else 'none'}",
+        f"- controller pids: {controller['pids']} pgid {controller['pgid']} "
+        f"launchd {'loaded' if controller['launchd_loaded'] else 'ABSENT'} "
+        f"caffeinate {'active' if controller['caffeinate_active'] else 'ABSENT'}",
+        f"- lease: {controller['lease_path']} held={controller['lease_held']} "
+        f"heartbeat age {controller['heartbeat_age_seconds']}s",
+        f"- source: {status_obj['source']['shards_verified']}/282 verified, "
+        f"{status_obj['source']['resident_shards']} resident, "
+        f"window {status_obj['source']['current_window']}, "
+        f"state {status_obj['source']['state']}",
+        f"- teacher: {teacher_status['capsule_count']} capsules, layers "
+        f"{teacher_status['captured_layers']}, ledger {ledger_rows} rows, "
+        f"latest seal {teacher_status['latest_capsule_seal']}",
+        f"- eviction: paused={EVICTION_PAUSED}, {len(evictions)} events, last "
+        f"{status_obj['eviction']['last_eviction_at']}",
+        f"- compact: {status_obj['compact']['shards']} .gravity shards, "
+        f"{status_obj['compact']['bytes']} bytes, mean BPW "
+        f"{status_obj['compact']['mean_whole_shard_bpw']}",
+        f"- disk: {health['free_disk_bytes']} free against a "
+        f"{health['disk_floor_bytes']} floor",
+        f"- swap: {health['swap_raw']} | thermal green: {health['thermal_green']}",
+        f"- telegram: {telegram}",
+        f"- next experiment: {status_obj['next_experiment']}",
+        f"- updated: {status_obj['updated_at']}",
+        "",
+    ]
+    tmp = SAFE_TO_LEAVE_MD.with_suffix(".md.tmp")
+    tmp.write_text("\n".join(lines))
+    os.replace(tmp, SAFE_TO_LEAVE_MD)
+    print(json.dumps(status_obj, indent=2, sort_keys=True))
+    return 0
+
+
 def selftest() -> int:
     """Schedule/eviction invariants against the real sealed artifacts.  No network, no writes."""
     manifest = _read_json(MANIFEST)
@@ -594,4 +852,4 @@ def selftest() -> int:
 if __name__ == "__main__":
     command = sys.argv[1] if len(sys.argv) > 1 else "run"
     raise SystemExit({"run": run, "status": status, "selftest": selftest,
-                      "rollup": rollup}[command]())
+                      "rollup": rollup, "safe-to-leave": safe_to_leave}[command]())
