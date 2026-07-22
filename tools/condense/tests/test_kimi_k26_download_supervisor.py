@@ -19,6 +19,7 @@ if str(CONDENSE) not in sys.path:
 
 import kimi_k26_download_supervisor as supervisor  # noqa: E402
 import kimi_k26_release_cycle as phase1  # noqa: E402
+import kimi_k26_stale_download_cleanup as cleanup  # noqa: E402
 
 
 def _private(path: Path) -> None:
@@ -327,6 +328,115 @@ def _hooks(layout: phase1.SessionLayout, *, ramp: bool = True, events=None) -> F
 
 def _read_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _ensure_blob_directory(layout: phase1.SessionLayout) -> None:
+    if not layout.model_cache.exists():
+        _private(layout.model_cache)
+    if not layout.blobs.exists():
+        _private(layout.blobs)
+
+
+def _manifest_sha() -> str:
+    manifest = json.loads(phase1.OFFICIAL_MANIFEST.read_text(encoding="utf-8"))
+    return next(row["sha256"] for row in manifest["files"] if row["sha256"])
+
+
+def _write_incomplete(
+    layout: phase1.SessionLayout, *, nonce: str = "deadbeef"
+) -> Path:
+    _ensure_blob_directory(layout)
+    path = layout.blobs / f"{_manifest_sha()}.{nonce}.incomplete"
+    path.write_bytes(b"strict-process-unique-partial" * 64)
+    os.chmod(path, 0o600)
+    return path
+
+
+def _seed_resource_guarded_ramp_history(layout: phase1.SessionLayout) -> None:
+    invocation_id = "guarded-ramp"
+    status = phase1.seal_document(
+        {
+            "schema": "hawking.kimi_k26.download_supervisor.status.v1",
+            "status": "RESOURCE_GUARD_TERMINATED_RESUMABLE_CACHE_PRESERVED",
+            "invocation_id": invocation_id,
+            "pid": 42002,
+            "exit_code": -9,
+            "initial_workers": 8,
+            "final_workers": 16,
+            "ramp_evaluated": True,
+            "ramp_performed": True,
+        }
+    )
+    status_name = f"status.{invocation_id}.json"
+    supervisor._write_new_document(layout, status_name, status)
+    event_ns = 1
+    with supervisor.JournalWriter(layout) as journal:
+        def append(event: str, payload: dict[str, Any]) -> None:
+            nonlocal event_ns
+            journal.append(
+                event=event,
+                invocation_id=invocation_id,
+                timestamp_utc=f"2026-07-21T00:00:00.{event_ns:06d}Z",
+                monotonic_ns=event_ns,
+                payload=payload,
+            )
+            event_ns += 1
+
+        append(
+            "CHILD_STARTED",
+            {"pid": 42001, "profile": "primary-8", "workers": 8},
+        )
+        append(
+            "RAMP_16_EVALUATED",
+            {
+                "pid": 42001,
+                "below_target": True,
+                "phase1_16_profile_available": True,
+                "measured_network_bytes_per_second": 20_000_000.0,
+                "target_network_bytes_per_second": 750_000_000,
+            },
+        )
+        append(
+            "RAMP_8_PROCESS_STOPPED",
+            {
+                "pid": 42001,
+                "prior_pid_fully_exited": True,
+                "same_resumable_cache": True,
+            },
+        )
+        append(
+            "CHILD_EXITED",
+            {
+                "pid": 42001,
+                "profile": "primary-8",
+                "workers": 8,
+                "exit_code": -15,
+            },
+        )
+        append(
+            "CHILD_STARTED",
+            {"pid": 42002, "profile": "ramp-16", "workers": 16},
+        )
+        append(
+            "CHILD_EXITED",
+            {
+                "pid": 42002,
+                "profile": "ramp-16",
+                "workers": 16,
+                "exit_code": -9,
+            },
+        )
+        append(
+            "INVOCATION_FINISHED",
+            {
+                "pid": 42002,
+                "status": status["status"],
+                "exit_code": -9,
+                "status_path": os.fspath(layout.evidence / status_name),
+                "status_seal_sha256": status["seal_sha256"],
+                "resumable_cache_preserved": True,
+            },
+        )
 
 
 def test_preflight_and_status_start_no_process_or_network_and_write_nothing(
@@ -645,6 +755,123 @@ def test_sustained_low_measured_transfer_serially_restarts_at_16(
     ]
 
 
+def test_clean_prior_measured_ramp_resumes_directly_at_sealed_16(
+    tmp_path: Path,
+) -> None:
+    layout = _layout(tmp_path)
+    policy = supervisor.SupervisorPolicy(
+        monitor_interval_seconds=0.25,
+        network_sample_interval_seconds=0.25,
+        ramp_warmup_seconds=0,
+        ramp_measurement_seconds=0.5,
+        ramp_target_bytes_per_second=1_000_000_000,
+        ramp_min_counter_samples=3,
+        termination_grace_seconds=1,
+    )
+    first_factory = FakePopenFactory(
+        [
+            FakeProcess(41100, exit_after_polls=999),
+            FakeProcess(41101, exit_after_polls=1),
+        ]
+    )
+    first = supervisor.run(
+        layout,
+        invocation_id="measured-clean",
+        hooks=_hooks(layout).hooks(),
+        sampler=FakeSampler(),
+        network_probe=FakeNetwork(increment=10_000_000),
+        process_auditor=FakeProcessAuditor(),
+        clock=FakeClock(),
+        popen_factory=first_factory,
+        policy=policy,
+    )
+    assert first["ramp_performed"] is True
+
+    resumed_factory = FakePopenFactory([FakeProcess(41102, exit_after_polls=1)])
+    resumed = supervisor.run(
+        layout,
+        invocation_id="measured-clean-resume",
+        hooks=_hooks(layout).hooks(),
+        sampler=FakeSampler(),
+        network_probe=FakeNetwork(),
+        process_auditor=FakeProcessAuditor(),
+        clock=FakeClock(),
+        popen_factory=resumed_factory,
+        policy=policy,
+    )
+    assert resumed["initial_workers"] == 16
+    assert resumed["final_workers"] == 16
+    assert resumed["resumed_directly_at_16"] is True
+    assert resumed["initial_profile_authority"]["status"] == (
+        "RESUME_DIRECTLY_AT_PHASE1_SEALED_16"
+    )
+    assert resumed["initial_profile_authority"][
+        "cleanup_receipt_seal_sha256"
+    ] is None
+    assert [call[0] for call in resumed_factory.calls] == [_argv(layout, 16)]
+
+
+def test_resource_guarded_ramp_requires_exact_cleanup_receipt_for_direct_16(
+    tmp_path: Path,
+) -> None:
+    layout = _layout(tmp_path)
+    _seed_resource_guarded_ramp_history(layout)
+    blocked_factory = FakePopenFactory([FakeProcess(41103, exit_after_polls=1)])
+    blocked_network = FakeNetwork()
+    with pytest.raises(
+        supervisor.DownloadSupervisorError, match="cleanup audit/receipt"
+    ):
+        supervisor.run(
+            layout,
+            invocation_id="guarded-without-receipt",
+            hooks=_hooks(layout).hooks(),
+            sampler=FakeSampler(),
+            network_probe=blocked_network,
+            process_auditor=FakeProcessAuditor(),
+            clock=FakeClock(),
+            popen_factory=blocked_factory,
+        )
+    assert blocked_network.captures == 0
+    assert blocked_factory.calls == []
+
+    partial = _write_incomplete(layout)
+    cleanup_hooks = cleanup.CleanupHooks(
+        phase1=_hooks(layout).hooks(),
+        process_auditor=FakeProcessAuditor(),
+        sampler=FakeSampler(),
+        clock=FakeClock(),
+    )
+    audit_value = cleanup.audit(
+        layout, cleanup_id="guarded-cleanup", hooks=cleanup_hooks
+    )
+    receipt = cleanup.execute(
+        layout,
+        cleanup_id="guarded-cleanup",
+        confirmation_inventory_seal=audit_value["inventory"]["seal_sha256"],
+        hooks=cleanup_hooks,
+    )
+    assert not partial.exists()
+    assert receipt["prior_invocation_id"] == "guarded-ramp"
+    assert receipt["removed_file_count"] == 1
+
+    resumed_factory = FakePopenFactory([FakeProcess(41104, exit_after_polls=1)])
+    resumed = supervisor.run(
+        layout,
+        invocation_id="guarded-with-receipt",
+        hooks=_hooks(layout).hooks(),
+        sampler=FakeSampler(),
+        network_probe=FakeNetwork(),
+        process_auditor=FakeProcessAuditor(),
+        clock=FakeClock(),
+        popen_factory=resumed_factory,
+    )
+    assert resumed["resumed_directly_at_16"] is True
+    assert resumed["initial_profile_authority"][
+        "cleanup_receipt_seal_sha256"
+    ] == receipt["seal_sha256"]
+    assert [call[0] for call in resumed_factory.calls] == [_argv(layout, 16)]
+
+
 def test_ramp_uses_only_post_warmup_measurement_window(tmp_path: Path) -> None:
     layout = _layout(tmp_path)
     primary = FakeProcess(41011, exit_after_polls=999)
@@ -831,6 +1058,50 @@ def test_preexec_process_conflict_fails_before_runtime_or_popen(tmp_path: Path) 
     durable = _read_json(layout.evidence / "status.manual-conflict-run.json")
     assert durable["pid"] is None
     assert "manually launched" in durable["fault"]
+
+
+def test_incomplete_appearing_at_final_boundary_blocks_before_popen(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    layout = _layout(tmp_path)
+    events: list[str] = []
+    hooks = _hooks(layout, events=events)
+    factory = FakePopenFactory([FakeProcess(41105, exit_after_polls=1)], events)
+    real_scan = supervisor._scan_nonresumable_incomplete_files
+    scan_calls = 0
+
+    def racing_scan(
+        current_layout: phase1.SessionLayout, *, manifest_path: Path
+    ) -> dict[str, Any]:
+        nonlocal scan_calls
+        scan_calls += 1
+        if scan_calls == 3:
+            _write_incomplete(current_layout, nonce="0123abcd")
+        return real_scan(current_layout, manifest_path=manifest_path)
+
+    monkeypatch.setattr(
+        supervisor, "_scan_nonresumable_incomplete_files", racing_scan
+    )
+    with pytest.raises(
+        supervisor.DownloadSupervisorError, match="nonresumable"
+    ):
+        supervisor.run(
+            layout,
+            invocation_id="incomplete-race",
+            hooks=hooks.hooks(),
+            sampler=FakeSampler(),
+            network_probe=FakeNetwork(),
+            process_auditor=FakeProcessAuditor(events),
+            clock=FakeClock(),
+            popen_factory=factory,
+        )
+    assert scan_calls == 3
+    assert events[-1] == "process-audited"
+    assert "popen" not in events
+    assert factory.calls == []
+    durable = _read_json(layout.evidence / "status.incomplete-race.json")
+    assert durable["pid"] is None
+    assert ".incomplete files are nonresumable" in durable["fault"]
 
 
 def test_native_auditor_matches_exact_structured_tokens_not_substrings(

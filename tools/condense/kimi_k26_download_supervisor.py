@@ -46,6 +46,7 @@ except ModuleNotFoundError:  # direct ``python tools/condense/...py`` execution
 # The accepted historical allocation is the exact complete source view plus
 # its filesystem metadata.  Runtime is the measured retained runtime budget.
 PROJECTED_SOURCE_LOGICAL_BYTES = phase1.KIMI_TOTAL_BYTES
+KIMI_MANIFEST_SHA256_OBJECTS = 67
 PROJECTED_SOURCE_ALLOCATED_BYTES = 595_205_144_576
 PROJECTED_RUNTIME_ALLOCATED_BYTES = 2_310_770_688
 PROJECTED_HEADROOM_BYTES = 25_322_093_168
@@ -75,10 +76,20 @@ _DIRECTORY = getattr(os, "O_DIRECTORY", 0)
 _INVOCATION_ID = re.compile(r"[a-z0-9][a-z0-9._-]{0,63}\Z")
 _INTERFACE = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.:-]{0,31}\Z")
 _HEX64 = re.compile(r"[0-9a-f]{64}\Z")
+_PROCESS_UNIQUE_INCOMPLETE = re.compile(
+    r"(?P<manifest_sha256>[0-9a-f]{64})\."
+    r"(?P<process_nonce>[0-9a-f]{8})\.incomplete\Z"
+)
 _GENESIS = "0" * 64
 _JOURNAL_NAME = "kimi-k26-download-supervisor.journal.jsonl"
 _LEASE_NAME = ".kimi-k26-download-supervisor.lease"
 _MAX_JOURNAL_BYTES = 128 * 1024 * 1024
+_CLEANUP_AUDIT_EVENT = "STALE_INCOMPLETE_AUDITED"
+_CLEANUP_STARTED_EVENT = "STALE_INCOMPLETE_CLEANUP_STARTED"
+_CLEANUP_UNLINK_EVENT = "STALE_INCOMPLETE_UNLINK_COMMITTED"
+_CLEANUP_PARTIAL_EVENT = "STALE_INCOMPLETE_CLEANUP_PARTIAL_FAILURE"
+_CLEANUP_COMPLETED_EVENT = "STALE_INCOMPLETE_CLEANUP_COMPLETED"
+_CLEANUP_RECEIPT_SCHEMA = "hawking.kimi_k26.stale_download_cleanup.receipt.v1"
 
 
 class DownloadSupervisorError(RuntimeError):
@@ -424,6 +435,196 @@ def _validated_plan(
     _validate_execution_directories(layout)
     _profiles_from_plan(plan, layout)
     return plan
+
+
+def _verified_manifest_sha256_rows(
+    manifest_path: Path,
+) -> tuple[dict[str, dict[str, Any]], dict[str, Any]]:
+    """Return only exact manifest SHA-256 identities used by Xet temp names."""
+    verification = phase1.verify_manifest(manifest_path)
+    raw = phase1._read_regular_bytes(  # noqa: SLF001
+        phase1._require_absolute_clean(  # noqa: SLF001
+            manifest_path, label="official manifest path"
+        ),
+        label="official manifest for incomplete-name audit",
+        maximum_bytes=1_000_000,
+        expected_uid=os.getuid(),
+    )
+    manifest = phase1._manifest_from_bytes(  # noqa: SLF001
+        raw, label="official manifest for incomplete-name audit"
+    )
+    rows: dict[str, dict[str, Any]] = {}
+    for item in manifest["files"]:
+        digest = item["sha256"]
+        if digest is None:
+            continue
+        if digest in rows:
+            _fail("official manifest repeats a SHA-256 content identity")
+        rows[digest] = {
+            "path": item["path"],
+            "expected_logical_bytes": item["size"],
+        }
+    if len(rows) != KIMI_MANIFEST_SHA256_OBJECTS:
+        _fail("official manifest SHA-256 identity count changed")
+    return rows, verification
+
+
+def _incomplete_file_facts(
+    name: str,
+    metadata: os.stat_result,
+    *,
+    manifest_row: Mapping[str, Any],
+    manifest_sha256: str,
+    process_nonce: str,
+) -> dict[str, Any]:
+    if not stat.S_ISREG(metadata.st_mode):
+        _fail(f"nonresumable incomplete entry is not regular: {name}")
+    if metadata.st_uid != os.getuid():
+        _fail(f"nonresumable incomplete entry has wrong owner: {name}")
+    if metadata.st_nlink != 1:
+        _fail(f"nonresumable incomplete entry has unsafe hard-link count: {name}")
+    if stat.S_IMODE(metadata.st_mode) != 0o600:
+        _fail(f"nonresumable incomplete entry mode is not 0600: {name}")
+    expected_size = manifest_row.get("expected_logical_bytes")
+    if isinstance(expected_size, bool) or not isinstance(expected_size, int):
+        _fail("manifest incomplete-file size binding is malformed")
+    if metadata.st_size < 0 or metadata.st_size > expected_size:
+        _fail(f"nonresumable incomplete entry exceeds its manifest object: {name}")
+    return {
+        "name": name,
+        "manifest_sha256": manifest_sha256,
+        "manifest_path": manifest_row["path"],
+        "manifest_logical_bytes": expected_size,
+        "process_nonce": process_nonce,
+        "device": int(metadata.st_dev),
+        "inode": int(metadata.st_ino),
+        "logical_bytes": int(metadata.st_size),
+        "blocks": int(metadata.st_blocks),
+        "allocated_bytes": int(metadata.st_blocks) * 512,
+        "mtime_ns": int(metadata.st_mtime_ns),
+        "ctime_ns": int(metadata.st_ctime_ns),
+        "uid": int(metadata.st_uid),
+        "gid": int(metadata.st_gid),
+        "mode": f"{stat.S_IMODE(metadata.st_mode):04o}",
+        "hard_links": int(metadata.st_nlink),
+    }
+
+
+def _scan_nonresumable_incomplete_files(
+    layout: phase1.SessionLayout,
+    *,
+    manifest_path: Path = phase1.OFFICIAL_MANIFEST,
+) -> dict[str, Any]:
+    """Descriptor-scan exact HF 1.24 process-unique Xet temp objects.
+
+    The scanner never uses a glob and never follows a symlink.  Any leaf that
+    merely ends in ``.incomplete`` but is not the exact
+    ``<manifest-sha256>.<8-lowerhex>.incomplete`` shape is a blocker rather
+    than something this instrument silently ignores.
+    """
+    manifest_rows, manifest_verification = _verified_manifest_sha256_rows(
+        manifest_path
+    )
+    try:
+        descriptor = phase1._open_absolute_directory(layout.blobs)  # noqa: SLF001
+    except FileNotFoundError:
+        files: list[dict[str, Any]] = []
+        root_present = False
+        root_identity = None
+    else:
+        root_present = True
+        try:
+            root_metadata = os.fstat(descriptor)
+            if root_metadata.st_uid != os.getuid():
+                _fail("dedicated blob directory has the wrong owner")
+            root_identity = {
+                "device": int(root_metadata.st_dev),
+                "inode": int(root_metadata.st_ino),
+                "uid": int(root_metadata.st_uid),
+                "mode": f"{stat.S_IMODE(root_metadata.st_mode):04o}",
+            }
+            files = []
+            for name in sorted(os.listdir(descriptor)):
+                if not name.endswith(".incomplete"):
+                    continue
+                match = _PROCESS_UNIQUE_INCOMPLETE.fullmatch(name)
+                if match is None:
+                    _fail(
+                        "unknown .incomplete leaf is not an exact HF 1.24 "
+                        f"manifest-SHA/process-nonce name: {name}"
+                    )
+                digest = match.group("manifest_sha256")
+                manifest_row = manifest_rows.get(digest)
+                if manifest_row is None:
+                    _fail(
+                        "process-unique .incomplete leaf is not bound to the "
+                        f"official Kimi manifest: {name}"
+                    )
+                named_before = os.stat(
+                    name, dir_fd=descriptor, follow_symlinks=False
+                )
+                facts = _incomplete_file_facts(
+                    name,
+                    named_before,
+                    manifest_row=manifest_row,
+                    manifest_sha256=digest,
+                    process_nonce=match.group("process_nonce"),
+                )
+                named_after = os.stat(
+                    name, dir_fd=descriptor, follow_symlinks=False
+                )
+                if not phase1._identity_equal(  # noqa: SLF001
+                    named_before, named_after
+                ) or named_before.st_mtime_ns != named_after.st_mtime_ns \
+                        or named_before.st_blocks != named_after.st_blocks \
+                        or named_before.st_ctime_ns != named_after.st_ctime_ns:
+                    _fail(f"nonresumable incomplete entry changed during scan: {name}")
+                files.append(facts)
+        finally:
+            os.close(descriptor)
+    return phase1.seal_document(
+        {
+            "schema": (
+                "hawking.kimi_k26.download_supervisor."
+                "nonresumable_incomplete_inventory.v1"
+            ),
+            "status": "PASS_EXACT_INVENTORY",
+            "session": os.fspath(layout.session),
+            "blobs_root": os.fspath(layout.blobs),
+            "blobs_root_present": root_present,
+            "blobs_root_identity": root_identity,
+            "manifest_verification_seal_sha256": manifest_verification[
+                "seal_sha256"
+            ],
+            "manifest_seal_sha256": manifest_verification[
+                "manifest_seal_sha256"
+            ],
+            "filename_contract": (
+                "LOWERCASE_MANIFEST_SHA256_DOT_8_LOWERHEX_DOT_INCOMPLETE"
+            ),
+            "file_count": len(files),
+            "logical_bytes": sum(item["logical_bytes"] for item in files),
+            "allocated_bytes": sum(item["allocated_bytes"] for item in files),
+            "files": files,
+            "glob_used": False,
+            "network_accessed": False,
+            "filesystem_written": False,
+        }
+    )
+
+
+def _assert_no_nonresumable_incomplete(inventory: dict[str, Any]) -> None:
+    phase1.verify_sealed_document(
+        inventory, label="nonresumable incomplete inventory"
+    )
+    count = inventory.get("file_count")
+    if isinstance(count, bool) or not isinstance(count, int) or count < 0:
+        _fail("nonresumable incomplete inventory count is malformed")
+    if count:
+        _fail(
+            f"{count} process-unique .incomplete files are nonresumable; "
+            "run the sealed two-phase stale cleanup before launching"
+        )
 
 
 def _allocated_bytes_fd(descriptor: int, seen: set[tuple[int, int]]) -> int:
@@ -1121,6 +1322,347 @@ def _assert_no_unfinished_live_child(entries: Sequence[dict[str, Any]]) -> None:
             )
 
 
+def _read_finished_status(
+    layout: phase1.SessionLayout, entry: dict[str, Any]
+) -> dict[str, Any]:
+    payload = entry.get("payload")
+    if not isinstance(payload, dict):
+        _fail("finished invocation journal payload is malformed")
+    invocation = entry.get("invocation_id")
+    if not isinstance(invocation, str) or _INVOCATION_ID.fullmatch(invocation) is None:
+        _fail("finished invocation id is malformed")
+    raw_path = payload.get("status_path")
+    if not isinstance(raw_path, str):
+        _fail("finished invocation has no status path")
+    path = Path(raw_path)
+    if path.parent != layout.evidence or path.name != raw_path.rsplit("/", 1)[-1]:
+        _fail("finished invocation status path escapes exact evidence directory")
+    raw = _read_evidence_leaf(layout, path.name, maximum_bytes=2_000_000)
+    if raw is None:
+        _fail("finished invocation status document is absent")
+    status_value = phase1.strict_json_bytes(raw, label="finished invocation status")
+    phase1.verify_sealed_document(status_value, label="finished invocation status")
+    if status_value.get("schema") != "hawking.kimi_k26.download_supervisor.status.v1":
+        _fail("finished invocation status schema changed")
+    if status_value.get("invocation_id") != invocation:
+        _fail("finished invocation status id disagrees with journal")
+    if status_value.get("seal_sha256") != payload.get("status_seal_sha256"):
+        _fail("finished invocation status seal disagrees with journal")
+    if status_value.get("status") != payload.get("status"):
+        _fail("finished invocation status outcome disagrees with journal")
+    if status_value.get("exit_code") != payload.get("exit_code"):
+        _fail("finished invocation exit code disagrees with journal")
+    return status_value
+
+
+def _latest_finished_context(
+    layout: phase1.SessionLayout, entries: Sequence[dict[str, Any]]
+) -> dict[str, Any] | None:
+    for index in range(len(entries) - 1, -1, -1):
+        entry = entries[index]
+        if entry.get("event") != "INVOCATION_FINISHED":
+            continue
+        return {
+            "index": index,
+            "entry": entry,
+            "status": _read_finished_status(layout, entry),
+        }
+    return None
+
+
+def _measured_ramp_authority(
+    entries: Sequence[dict[str, Any]], *, before_index: int
+) -> dict[str, Any] | None:
+    """Recover the latest exact 8-worker measurement and serial-stop proof."""
+    for evaluation_index in range(before_index, -1, -1):
+        evaluation = entries[evaluation_index]
+        if evaluation.get("event") != "RAMP_16_EVALUATED":
+            continue
+        payload = evaluation.get("payload")
+        if not isinstance(payload, dict) or payload.get("below_target") is not True \
+                or payload.get("phase1_16_profile_available") is not True:
+            continue
+        measured = payload.get("measured_network_bytes_per_second")
+        target = payload.get("target_network_bytes_per_second")
+        if isinstance(measured, bool) or not isinstance(measured, (int, float)) \
+                or isinstance(target, bool) or not isinstance(target, (int, float)) \
+                or measured < 0 or target <= 0 or measured >= target:
+            _fail("sealed ramp decision has inconsistent below-target evidence")
+        invocation = evaluation.get("invocation_id")
+        pid = payload.get("pid")
+        if not isinstance(invocation, str) or not isinstance(pid, int) or pid <= 1:
+            _fail("sealed ramp decision lacks an exact invocation/PID")
+
+        started: dict[str, Any] | None = None
+        for candidate in reversed(entries[:evaluation_index]):
+            candidate_payload = candidate.get("payload")
+            if candidate.get("event") == "CHILD_STARTED" \
+                    and candidate.get("invocation_id") == invocation \
+                    and isinstance(candidate_payload, dict) \
+                    and candidate_payload.get("pid") == pid \
+                    and candidate_payload.get("workers") == 8 \
+                    and candidate_payload.get("profile") == "primary-8":
+                started = candidate
+                break
+        if started is None:
+            _fail("sealed ramp decision has no matching primary child start")
+
+        stop_index: int | None = None
+        stop: dict[str, Any] | None = None
+        for index in range(evaluation_index + 1, before_index + 1):
+            candidate = entries[index]
+            candidate_payload = candidate.get("payload")
+            if candidate.get("event") == "RAMP_8_PROCESS_STOPPED" \
+                    and candidate.get("invocation_id") == invocation \
+                    and isinstance(candidate_payload, dict) \
+                    and candidate_payload.get("pid") == pid:
+                stop_index = index
+                stop = candidate
+                break
+        if stop is None or stop_index is None:
+            continue
+        stop_payload = stop["payload"]
+        if stop_payload.get("prior_pid_fully_exited") is not True \
+                or stop_payload.get("same_resumable_cache") is not True:
+            _fail("sealed ramp stop does not prove serial same-cache restart")
+
+        exited: dict[str, Any] | None = None
+        for candidate in entries[stop_index + 1 : before_index + 1]:
+            candidate_payload = candidate.get("payload")
+            if candidate.get("event") == "CHILD_EXITED" \
+                    and candidate.get("invocation_id") == invocation \
+                    and isinstance(candidate_payload, dict) \
+                    and candidate_payload.get("pid") == pid \
+                    and candidate_payload.get("workers") == 8 \
+                    and candidate_payload.get("profile") == "primary-8":
+                exited = candidate
+                break
+        if exited is None:
+            continue
+        return phase1.seal_document(
+            {
+                "schema": "hawking.kimi_k26.download_supervisor.ramp_resume_authority.v1",
+                "status": "PASS_PRIOR_MEASURED_RAMP_AND_SERIAL_PRIMARY_EXIT",
+                "measurement_invocation_id": invocation,
+                "primary_pid": pid,
+                "ramp_evaluation_entry_seal_sha256": evaluation["seal_sha256"],
+                "primary_stop_entry_seal_sha256": stop["seal_sha256"],
+                "primary_exit_entry_seal_sha256": exited["seal_sha256"],
+                "measured_network_bytes_per_second": measured,
+                "target_network_bytes_per_second": target,
+                "below_target": True,
+                "phase1_16_profile_available": True,
+                "prior_pid_fully_exited": True,
+                "same_resumable_cache": True,
+            }
+        )
+    return None
+
+
+def _verified_cleanup_receipt_for_resume(
+    layout: phase1.SessionLayout,
+    entries: Sequence[dict[str, Any]],
+    *,
+    prior: dict[str, Any],
+    incomplete_inventory: dict[str, Any],
+) -> dict[str, Any] | None:
+    prior_entry = prior["entry"]
+    prior_status = prior["status"]
+    prior_id = prior_entry["invocation_id"]
+    after_prior = entries[prior["index"] + 1 :]
+    audits = [
+        entry
+        for entry in after_prior
+        if entry.get("event") == _CLEANUP_AUDIT_EVENT
+        and isinstance(entry.get("payload"), dict)
+        and entry["payload"].get("prior_invocation_id") == prior_id
+    ]
+    incomplete_audit_present = any(
+        isinstance(entry["payload"].get("file_count"), int)
+        and not isinstance(entry["payload"].get("file_count"), bool)
+        and entry["payload"]["file_count"] > 0
+        for entry in audits
+    )
+    receipt_required = (
+        prior_status.get("status")
+        == "RESOURCE_GUARD_TERMINATED_RESUMABLE_CACHE_PRESERVED"
+        or incomplete_audit_present
+    )
+    if not receipt_required:
+        return None
+    if not audits:
+        _fail("resource-guarded direct-16 resume requires a cleanup audit/receipt")
+    audit = audits[-1]
+    completions = [
+        entry
+        for entry in after_prior
+        if entry.get("event") == _CLEANUP_COMPLETED_EVENT
+        and isinstance(entry.get("payload"), dict)
+        and entry["payload"].get("prior_invocation_id") == prior_id
+        and entry["payload"].get("audit_event_seal_sha256")
+        == audit["seal_sha256"]
+    ]
+    if not completions:
+        _fail("direct-16 resume requires the exact completed cleanup receipt")
+    completed = completions[-1]
+    payload = completed["payload"]
+    audit_payload = audit["payload"]
+    if completed.get("invocation_id") != audit.get("invocation_id"):
+        _fail("cleanup completion id disagrees with its audit")
+    for key in (
+        "removed_inventory_seal_sha256",
+        "removed_file_count",
+        "removed_logical_bytes",
+        "removed_allocated_bytes",
+    ):
+        audit_key = {
+            "removed_file_count": "file_count",
+            "removed_logical_bytes": "logical_bytes",
+            "removed_allocated_bytes": "allocated_bytes",
+        }.get(key, key)
+        if payload.get(key) != audit_payload.get(audit_key):
+            _fail(f"cleanup completion {key} disagrees with the audited inventory")
+    audit_index = entries.index(audit)
+    completed_index = entries.index(completed)
+    if completed_index <= audit_index:
+        _fail("cleanup completion precedes its audit")
+    progress = [
+        entry
+        for entry in entries[audit_index + 1 : completed_index]
+        if entry.get("event") == _CLEANUP_UNLINK_EVENT
+        and entry.get("invocation_id") == audit.get("invocation_id")
+        and isinstance(entry.get("payload"), dict)
+        and entry["payload"].get("audit_event_seal_sha256")
+        == audit["seal_sha256"]
+    ]
+    audited_count = audit_payload.get("file_count")
+    if isinstance(audited_count, bool) or not isinstance(audited_count, int) \
+            or audited_count < 0 or len(progress) != audited_count:
+        _fail("cleanup progress does not commit every audited inventory row")
+    for row_index, entry in enumerate(progress):
+        progress_payload = entry["payload"]
+        if progress_payload.get("row_index") != row_index \
+                or progress_payload.get("removed_inventory_seal_sha256") != (
+                    audit_payload.get("removed_inventory_seal_sha256")
+                ):
+            _fail("cleanup progress is not the exact audited inventory prefix")
+    progress_seals = [entry["seal_sha256"] for entry in progress]
+    progress_chain = hashlib.sha256(
+        phase1.canonical_json({"entry_seal_sha256s": progress_seals})
+    ).hexdigest()
+    receipt_name = payload.get("receipt_name")
+    if not isinstance(receipt_name, str) or "/" in receipt_name \
+            or receipt_name in {"", ".", ".."}:
+        _fail("cleanup completion event has an unsafe receipt name")
+    raw = _read_evidence_leaf(layout, receipt_name, maximum_bytes=2_000_000)
+    if raw is None:
+        _fail("cleanup receipt referenced by journal is absent")
+    receipt = phase1.strict_json_bytes(raw, label="stale incomplete cleanup receipt")
+    phase1.verify_sealed_document(receipt, label="stale incomplete cleanup receipt")
+    exact = {
+        "schema": _CLEANUP_RECEIPT_SCHEMA,
+        "status": "PASS_EXACT_STALE_INCOMPLETE_CLEANUP",
+        "session": os.fspath(layout.session),
+        "prior_invocation_id": prior_id,
+        "prior_invocation_status": prior_status["status"],
+        "prior_invocation_journal_head_sha256": prior_entry["seal_sha256"],
+        "prior_status_seal_sha256": prior_status["seal_sha256"],
+        "manifest_verification_seal_sha256": incomplete_inventory[
+            "manifest_verification_seal_sha256"
+        ],
+        "manifest_seal_sha256": incomplete_inventory["manifest_seal_sha256"],
+        "audit_document_seal_sha256": audit_payload.get("audit_seal_sha256"),
+        "audit_event_seal_sha256": audit["seal_sha256"],
+        "removed_inventory_seal_sha256": payload.get(
+            "removed_inventory_seal_sha256"
+        ),
+        "removed_file_count": payload.get("removed_file_count"),
+        "removed_logical_bytes": payload.get("removed_logical_bytes"),
+        "removed_allocated_bytes": payload.get("removed_allocated_bytes"),
+        "post_cleanup_inventory_seal_sha256": incomplete_inventory[
+            "seal_sha256"
+        ],
+        "post_cleanup_incomplete_count": 0,
+        "progress_entry_seal_sha256s": progress_seals,
+        "progress_chain_sha256": progress_chain,
+        "all_original_inventory_rows_committed": True,
+        "supervisor_journal_head_before_final_receipt": entries[
+            completed_index - 1
+        ]["seal_sha256"],
+    }
+    for key, expected in exact.items():
+        if receipt.get(key) != expected:
+            _fail(f"cleanup receipt {key} is not bound to the direct-16 resume")
+    if receipt.get("seal_sha256") != payload.get("receipt_seal_sha256"):
+        _fail("cleanup receipt seal disagrees with completion journal event")
+    if payload.get("progress_chain_sha256") != progress_chain \
+            or payload.get("all_original_inventory_rows_committed") is not True:
+        _fail("cleanup completion does not bind the committed unlink chain")
+    if audited_count and receipt.get("blob_directory_fsynced") is not True:
+        _fail("cleanup receipt does not prove the blob directory was fsynced")
+    if incomplete_inventory.get("file_count") != 0:
+        _fail("cleanup receipt cannot authorize resume while incompletes remain")
+    return receipt
+
+
+def _select_initial_profile(
+    layout: phase1.SessionLayout,
+    entries: Sequence[dict[str, Any]],
+    *,
+    primary: TransferProfile,
+    ramp: TransferProfile | None,
+    incomplete_inventory: dict[str, Any],
+) -> tuple[TransferProfile, dict[str, Any]]:
+    prior = _latest_finished_context(layout, entries)
+    if prior is None:
+        return primary, phase1.seal_document(
+            {
+                "schema": "hawking.kimi_k26.download_supervisor.initial_profile.v1",
+                "status": "PRISTINE_OR_NO_FINISHED_RAMP_AUTHORITY_START_PRIMARY_8",
+                "workers": 8,
+                "prior_invocation_id": None,
+                "ramp_resume_authority": None,
+                "cleanup_receipt_seal_sha256": None,
+            }
+        )
+    ramp_authority = _measured_ramp_authority(
+        entries, before_index=prior["index"]
+    )
+    if ramp_authority is None:
+        return primary, phase1.seal_document(
+            {
+                "schema": "hawking.kimi_k26.download_supervisor.initial_profile.v1",
+                "status": "NO_VERIFIED_PRIOR_RAMP_AUTHORITY_START_PRIMARY_8",
+                "workers": 8,
+                "prior_invocation_id": prior["entry"]["invocation_id"],
+                "ramp_resume_authority": None,
+                "cleanup_receipt_seal_sha256": None,
+            }
+        )
+    if ramp is None:
+        _fail("prior measured ramp exists but the sealed Phase-1 16 profile is absent")
+    cleanup_receipt = _verified_cleanup_receipt_for_resume(
+        layout,
+        entries,
+        prior=prior,
+        incomplete_inventory=incomplete_inventory,
+    )
+    return ramp, phase1.seal_document(
+        {
+            "schema": "hawking.kimi_k26.download_supervisor.initial_profile.v1",
+            "status": "RESUME_DIRECTLY_AT_PHASE1_SEALED_16",
+            "workers": 16,
+            "prior_invocation_id": prior["entry"]["invocation_id"],
+            "prior_invocation_status": prior["status"]["status"],
+            "prior_status_seal_sha256": prior["status"]["seal_sha256"],
+            "ramp_resume_authority": ramp_authority,
+            "cleanup_receipt_seal_sha256": None
+            if cleanup_receipt is None
+            else cleanup_receipt["seal_sha256"],
+        }
+    )
+
+
 def _capacity_document(snapshot: ResourceSnapshot) -> dict[str, Any]:
     if isinstance(snapshot.free_disk_bytes, bool) or snapshot.free_disk_bytes < 0:
         _fail("free-disk sampler returned an invalid value")
@@ -1193,6 +1735,10 @@ def preflight(
         _fail("free disk is below the invariant runtime headroom floor")
     if not capacity["remaining_projected_capacity_pass"]:
         _fail("free disk cannot hold the remaining exact source/runtime/headroom")
+    incomplete_inventory = _scan_nonresumable_incomplete_files(
+        layout, manifest_path=manifest_path
+    )
+    _assert_no_nonresumable_incomplete(incomplete_inventory)
     primary, ramp = _profiles_from_plan(plan, layout)
     return phase1.seal_document(
         {
@@ -1224,6 +1770,11 @@ def preflight(
             "resumable_cache_policy": (
                 "PRESERVE_CACHE_NEVER_CONCURRENT_COOPERATING_SUPERVISORS"
             ),
+            "nonresumable_incomplete_inventory": {
+                "file_count": incomplete_inventory["file_count"],
+                "inventory_seal_sha256": incomplete_inventory["seal_sha256"],
+                "filename_contract": incomplete_inventory["filename_contract"],
+            },
             "manual_process_exclusion": {
                 "preflight_status": "DEFERRED_TO_IMMEDIATE_PRE_POPEN_RUN_GATE",
                 "scope": "BEST_EFFORT_SNAPSHOT_WITH_POST_SNAPSHOT_RACE",
@@ -1331,6 +1882,7 @@ def _launch_child(
     stderr_descriptor: int,
     lease_descriptor: int,
     process_auditor: ProcessAuditor,
+    manifest_path: Path,
 ) -> tuple[ChildProcess, dict[str, Any]]:
     # This verifier is intentionally adjacent to Popen.  It re-hashes/rebinds
     # the exact Phase-1 CLI, shebang chain, interpreter, and distributions after
@@ -1344,6 +1896,10 @@ def _launch_child(
         "BEST_EFFORT_WITH_RACE"
     ):
         _fail("pre-exec process audit did not grant launch")
+    incomplete_inventory = _scan_nonresumable_incomplete_files(
+        layout, manifest_path=manifest_path
+    )
+    _assert_no_nonresumable_incomplete(incomplete_inventory)
     hooks.verify_runtime(plan["transfer_runtime"])
     process = popen_factory(
         list(profile.argv),
@@ -1568,6 +2124,18 @@ def run(
             ):
                 _fail("capacity changed after lease acquisition")
 
+            incomplete_inventory = _scan_nonresumable_incomplete_files(
+                layout, manifest_path=manifest_path
+            )
+            _assert_no_nonresumable_incomplete(incomplete_inventory)
+            initial_profile, initial_profile_authority = _select_initial_profile(
+                layout,
+                journal.entries,
+                primary=primary,
+                ramp=ramp,
+                incomplete_inventory=incomplete_inventory,
+            )
+
             network_path = selected_network.capture_active_default()
             phase1.verify_sealed_document(network_path, label="active network path")
             interface = network_path.get("interface")
@@ -1597,6 +2165,11 @@ def run(
                     "conditional_ramp_profile": None
                     if ramp is None
                     else dataclasses.asdict(ramp),
+                    "initial_profile": dataclasses.asdict(initial_profile),
+                    "initial_profile_authority": initial_profile_authority,
+                    "nonresumable_incomplete_inventory_seal_sha256": (
+                        incomplete_inventory["seal_sha256"]
+                    ),
                     "capacity": capacity,
                     "umask": "0077",
                     "stdin": "DEVNULL",
@@ -1615,13 +2188,18 @@ def run(
                     "intent_path": os.fspath(layout.evidence / intent_name),
                     "phase1_plan_seal_sha256": plan["seal_sha256"],
                     "network_path_seal_sha256": network_path["seal_sha256"],
+                    "initial_workers": initial_profile.workers,
+                    "initial_profile_authority_seal_sha256": (
+                        initial_profile_authority["seal_sha256"]
+                    ),
                 },
             )
 
             metrics = _Metrics()
-            profile = primary
+            profile = initial_profile
             profile_index = 0
-            ramp_evaluated = False
+            resumed_directly_at_16 = profile.workers == 16
+            ramp_evaluated = resumed_directly_at_16
             ramp_performed = False
             child_exit_code: int | None = None
             final_state = "FAILED_BEFORE_CHILD_EXIT"
@@ -1679,6 +2257,7 @@ def run(
                         stderr_descriptor=stderr_descriptor,
                         lease_descriptor=lease_descriptor,
                         process_auditor=selected_process_auditor,
+                        manifest_path=manifest_path,
                     )
                     child_pid = int(process.pid)
                     if child_pid <= 1:
@@ -2029,7 +2608,10 @@ def run(
                     "exit_code": child_exit_code,
                     "resource_violation": violation,
                     "primary_workers": 8,
+                    "initial_workers": initial_profile.workers,
                     "final_workers": profile.workers,
+                    "resumed_directly_at_16": resumed_directly_at_16,
+                    "initial_profile_authority": initial_profile_authority,
                     "ramp_evaluated": ramp_evaluated,
                     "ramp_performed": ramp_performed,
                     "metrics": metrics.summary(),
