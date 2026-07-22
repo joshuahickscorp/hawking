@@ -16,7 +16,9 @@ from __future__ import annotations
 import argparse
 import base64
 import contextlib
+import ctypes
 import csv
+import errno
 import fcntl
 import hashlib
 import io
@@ -77,6 +79,7 @@ MAX_CHILD_OUTPUT_BYTES = 2 * 1024 * 1024
 PHASE2_ROOT = PurePosixPath("phase2-recovery")
 FINAL_RECEIPT = PurePosixPath("KIMI_K26_PHASE2_RECOVERY.json")
 REPLACEMENT_LINEAGE = "KIMI_K26_REPLACEMENT_LINEAGE.json"
+REPLACEMENT_CAPSULE_STAGE_PREFIX = ".capsule-stage-"
 ORIGINAL_BYTES_STATUS = "UNRECOVERABLE_ORIGINAL_BYTES"
 SEMANTIC_ABSOLUTE_TOLERANCE = 1.25e-4
 DOWNLOAD_LEASE_NAME = ".kimi-k26-download-supervisor.lease"
@@ -125,12 +128,12 @@ PINNED_REPLACEMENT_BINARY_SHA256: dict[str, str] = {
     "P5_DUAL_PATH_RECOVERY_R16X2.k26f1": "0d69479f969d7169970d0f82351a53f7c95964a61264bb3a5cc57cb23585db7e",
 }
 PINNED_REPLACEMENT_RESULT_PROJECTION_SHA256: dict[str, str] = {
-    "P1_F1_RESULT.json": "a8c2db6c0da4b1e747d932d90494c34abd9311cdc57dd98ad7d0231652a3f62a",
-    "P5_F1_RESULT.json": "3f3548c95b089f627db9c8312a351646da385a13ce9faa75cf9512cec22e0c4f",
-    "P1_BASE_OUTPUT_RECOVERY_R31_RESULT.json": "183a6c469e65e8184087a2137ad6239d03ed528c0e0b43f42e6ef910f4f4fbac",
-    "P1_DUAL_PATH_RECOVERY_R16X2_RESULT.json": "a4005567909647164538c6973f92c95e8062bc67242fdf5a080abb2c67da8e57",
-    "P5_BASE_OUTPUT_RECOVERY_R31_RESULT.json": "ccc17de97b64b57d2d24db1c67670386e37650585e470971c856c3816ce7b8ca",
-    "P5_DUAL_PATH_RECOVERY_R16X2_RESULT.json": "a79437fd8d13e443d83004ff3e8be078e40ade9e68f88815c43759a859027c37",
+    "P1_F1_RESULT.json": "88ddc3f52772ef808c41b2035838775218c29f1505e85d21a963d40ebb2fd097",
+    "P5_F1_RESULT.json": "91602aec2555ff595b607bcda51e4c01b99fd9d9524faaf323c2e6b1e10b0634",
+    "P1_BASE_OUTPUT_RECOVERY_R31_RESULT.json": "952b303373ec3a4a34169b4cf12e49a89930db7ebc88e928eddc05e042ffa0d9",
+    "P1_DUAL_PATH_RECOVERY_R16X2_RESULT.json": "762424080d7cfcd3e50ea42841a393b44dffbd20a1ff29852145e09bc5dd0f28",
+    "P5_BASE_OUTPUT_RECOVERY_R31_RESULT.json": "b608e1e5ce694b0043a5b94e6dc7e8fb1131d6dcb4c74738738951b907cafab6",
+    "P5_DUAL_PATH_RECOVERY_R16X2_RESULT.json": "35bf8dec318b14f61d1ccd9282eb171b7a8db11644895fc7ace46adf4e6a9d7e",
 }
 DETERMINISTIC_THREAD_ENVIRONMENT: dict[str, str] = {
     "OMP_NUM_THREADS": "1",
@@ -2368,18 +2371,106 @@ def _build_replacement_lineage(
     return lineage
 
 
+def _atomic_publish_directory_noreplace(
+    parent_fd: int, source: str, destination: str
+) -> None:
+    """Atomically publish one same-parent directory without replacement."""
+    for label, value in (("source", source), ("destination", destination)):
+        if (
+            not value
+            or value in {".", ".."}
+            or "/" in value
+            or "\\" in value
+            or "\x00" in value
+        ):
+            _fail(f"unsafe replacement capsule publish {label}")
+    libc = ctypes.CDLL(None, use_errno=True)
+    source_raw = os.fsencode(source)
+    destination_raw = os.fsencode(destination)
+    if sys.platform == "darwin":
+        function = getattr(libc, "renameatx_np", None)
+        if function is None:
+            _fail("Darwin atomic no-replace directory publish is unavailable")
+        function.argtypes = [
+            ctypes.c_int,
+            ctypes.c_char_p,
+            ctypes.c_int,
+            ctypes.c_char_p,
+            ctypes.c_uint,
+        ]
+        function.restype = ctypes.c_int
+        flags = 0x00000004  # RENAME_EXCL
+    elif sys.platform.startswith("linux"):
+        function = getattr(libc, "renameat2", None)
+        if function is None:
+            _fail("Linux atomic no-replace directory publish is unavailable")
+        function.argtypes = [
+            ctypes.c_int,
+            ctypes.c_char_p,
+            ctypes.c_int,
+            ctypes.c_char_p,
+            ctypes.c_uint,
+        ]
+        function.restype = ctypes.c_int
+        flags = 0x00000001  # RENAME_NOREPLACE
+    else:
+        _fail("atomic no-replace directory publish requires Darwin or Linux")
+    ctypes.set_errno(0)
+    result = function(
+        parent_fd,
+        source_raw,
+        parent_fd,
+        destination_raw,
+        flags,
+    )
+    if result != 0:
+        error = ctypes.get_errno()
+        if error in {errno.EEXIST, errno.ENOTEMPTY}:
+            _fail("replacement capsule destination appeared before atomic publish")
+        _fail(f"atomic replacement capsule publish failed: {os.strerror(error)}")
+
+
+def _verify_replacement_capsule_stage(
+    stage: Path, expected: Mapping[str, tuple[int, str]]
+) -> os.stat_result:
+    descriptor = phase1._open_absolute_directory(stage)  # noqa: SLF001
+    try:
+        metadata = os.fstat(descriptor)
+        if metadata.st_uid != os.getuid() or stat.S_IMODE(metadata.st_mode) != 0o700:
+            _fail("replacement capsule stage is not an owned private 0700 directory")
+        names = set(os.listdir(descriptor))
+        if names != set(expected):
+            _fail(
+                "replacement capsule stage inventory changed: "
+                f"missing={sorted(set(expected)-names)} "
+                f"extra={sorted(names-set(expected))}"
+            )
+    finally:
+        os.close(descriptor)
+    for name in sorted(expected):
+        logical_bytes, sha256 = expected[name]
+        facts = phase1._hash_regular(  # noqa: SLF001
+            stage / name,
+            label=f"replacement capsule staged file {name}",
+            expected_uid=os.getuid(),
+        )
+        required = {
+            "logical_bytes": logical_bytes,
+            "sha256": sha256,
+            "mode": "0600",
+            "uid": os.getuid(),
+            "hard_links": 1,
+        }
+        if any(facts.get(key) != value for key, value in required.items()):
+            _fail(f"replacement capsule staged file changed: {name}")
+    return metadata
+
+
 def _stage_replacement_capsule(
     layout: phase1.SessionLayout, stages: Sequence[Path]
 ) -> None:
     if len(stages) != 2:
         _fail("replacement capsule requires exactly two replay stages")
-    if _path_exists_nofollow(layout.capsule):
-        _fail("replacement capsule destination already exists; refusing overwrite")
-    build_fd = phase1._open_absolute_directory(layout.build)  # noqa: SLF001
-    try:
-        capsule_fd = _mkdir_exclusive(build_fd, PurePosixPath("capsule"))
-    finally:
-        os.close(build_fd)
     sources = {
         phase1.BEST_PAYLOAD_BASENAME: stages[0]
         / "doctor"
@@ -2405,7 +2496,21 @@ def _stage_replacement_capsule(
             )
     if set(sources) != _replacement_capsule_names():
         _fail("replacement capsule source allowlist changed")
+    build_fd = phase1._open_absolute_directory(layout.build)  # noqa: SLF001
+    capsule_fd: int | None = None
+    stage_name = (
+        f"{REPLACEMENT_CAPSULE_STAGE_PREFIX}{os.getpid()}-{time.monotonic_ns()}"
+    )
+    stage_path = layout.build / stage_name
     try:
+        try:
+            os.stat("capsule", dir_fd=build_fd, follow_symlinks=False)
+        except FileNotFoundError:
+            pass
+        else:
+            _fail("replacement capsule destination already exists; refusing overwrite")
+        capsule_fd = _mkdir_exclusive(build_fd, PurePosixPath(stage_name))
+        expected: dict[str, tuple[int, str]] = {}
         for name, source in sources.items():
             raw = phase1._read_regular_bytes(  # noqa: SLF001
                 source,
@@ -2416,9 +2521,32 @@ def _stage_replacement_capsule(
             phase1._write_new_private_file(  # noqa: SLF001
                 capsule_fd, PurePosixPath(name), raw
             )
+            expected[name] = (len(raw), _hash_bytes(raw))
         os.fsync(capsule_fd)
+        staged = _verify_replacement_capsule_stage(stage_path, expected)
+        os.fsync(build_fd)
+        _atomic_publish_directory_noreplace(build_fd, stage_name, "capsule")
+        os.fsync(build_fd)
+        published_fd = os.open(
+            "capsule",
+            os.O_RDONLY | _DIRECTORY | _NOFOLLOW | _CLOEXEC,
+            dir_fd=build_fd,
+        )
+        try:
+            published = os.fstat(published_fd)
+            if (
+                (published.st_dev, published.st_ino) != (staged.st_dev, staged.st_ino)
+                or published.st_uid != os.getuid()
+                or stat.S_IMODE(published.st_mode) != 0o700
+                or set(os.listdir(published_fd)) != set(expected)
+            ):
+                _fail("atomically published replacement capsule identity changed")
+        finally:
+            os.close(published_fd)
     finally:
-        os.close(capsule_fd)
+        if capsule_fd is not None:
+            os.close(capsule_fd)
+        os.close(build_fd)
 
 
 def _verify_retained_replays(

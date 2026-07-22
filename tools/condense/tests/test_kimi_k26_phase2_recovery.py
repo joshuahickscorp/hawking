@@ -824,6 +824,172 @@ def _different_same_size(raw: bytes) -> bytes:
     return bytes([raw[0] ^ 1]) + raw[1:]
 
 
+def test_replay_projection_uses_the_exact_pinned_dynamic_marker() -> None:
+    value = {
+        "payload": {"path": "/volatile", "sha256": "a" * 64},
+        "seal_sha256": "b" * 64,
+        "sealed_at": "volatile",
+        "metric": 1.25,
+    }
+    assert phase2._result_projection(value) == {  # noqa: SLF001
+        "payload": {
+            "path": "__REPLAY_DYNAMIC_FIELD__",
+            "sha256": "a" * 64,
+        },
+        "seal_sha256": "__REPLAY_DYNAMIC_FIELD__",
+        "sealed_at": "__REPLAY_DYNAMIC_FIELD__",
+        "metric": 1.25,
+    }
+    assert phase2._result_projection_sha256(value) == (  # noqa: SLF001
+        "0e93dca07334eee190bb951ff21a4df71b05c2ce86961d6c4cd3db0766ca4a03"
+    )
+
+
+def _replacement_publish_stages(world: World) -> list[Path]:
+    root = world.layout.build / "replacement-publish-sources"
+    _private(root)
+    stages: list[Path] = []
+    for replay in (1, 2):
+        stage = root / f"replay-{replay}"
+        _private(stage)
+        _private(stage / "f1")
+        _private(stage / "doctor")
+        for name, raw in world.bracket_raw.items():
+            _write_private(stage / "f1" / name, raw)
+        for name, raw in world.doctor_raw.items():
+            _write_private(stage / "doctor" / name, raw)
+        stages.append(stage)
+    _write_private(stages[0] / phase2.REPLACEMENT_LINEAGE, b"test-lineage\n")
+    return stages
+
+
+def test_replacement_capsule_is_fsynced_then_atomically_published(
+    world: World, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    stages = _replacement_publish_stages(world)
+    synced: list[tuple[int, int]] = []
+    real_fsync = os.fsync
+    real_publish = phase2._atomic_publish_directory_noreplace  # noqa: SLF001
+
+    def track_fsync(descriptor: int) -> None:
+        metadata = os.fstat(descriptor)
+        synced.append((metadata.st_dev, metadata.st_ino))
+        real_fsync(descriptor)
+
+    def observe_publish(parent_fd: int, source: str, destination: str) -> None:
+        assert destination == "capsule"
+        assert not world.layout.capsule.exists()
+        source_fd = os.open(
+            source,
+            os.O_RDONLY | getattr(os, "O_DIRECTORY", 0),
+            dir_fd=parent_fd,
+        )
+        try:
+            parent = os.fstat(parent_fd)
+            staged = os.fstat(source_fd)
+            assert synced[-2:] == [
+                (staged.st_dev, staged.st_ino),
+                (parent.st_dev, parent.st_ino),
+            ]
+            assert stat.S_IMODE(staged.st_mode) == 0o700
+            assert set(os.listdir(source_fd)) == phase2._replacement_capsule_names()  # noqa: SLF001
+        finally:
+            os.close(source_fd)
+        real_publish(parent_fd, source, destination)
+
+    monkeypatch.setattr(phase2.os, "fsync", track_fsync)
+    monkeypatch.setattr(
+        phase2, "_atomic_publish_directory_noreplace", observe_publish
+    )
+    phase2._stage_replacement_capsule(world.layout, stages)  # noqa: SLF001
+
+    assert {
+        path.name for path in world.layout.capsule.iterdir()
+    } == phase2._replacement_capsule_names()  # noqa: SLF001
+    assert stat.S_IMODE(world.layout.capsule.stat().st_mode) == 0o700
+    assert not list(
+        world.layout.build.glob(f"{phase2.REPLACEMENT_CAPSULE_STAGE_PREFIX}*")
+    )
+
+
+def test_replacement_capsule_population_crash_is_invisible_and_retryable(
+    world: World, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    stages = _replacement_publish_stages(world)
+    real_write = phase1._write_new_private_file  # noqa: SLF001
+    writes = 0
+
+    def crash_after_fifth_write(
+        root_fd: int, relative: phase2.PurePosixPath, raw: bytes
+    ) -> None:
+        nonlocal writes
+        real_write(root_fd, relative, raw)
+        writes += 1
+        if writes == 5:
+            raise RuntimeError("simulated crash while populating private capsule stage")
+
+    monkeypatch.setattr(phase1, "_write_new_private_file", crash_after_fifth_write)
+    with pytest.raises(RuntimeError, match="simulated crash"):
+        phase2._stage_replacement_capsule(world.layout, stages)  # noqa: SLF001
+    assert not world.layout.capsule.exists()
+    abandoned = list(
+        world.layout.build.glob(f"{phase2.REPLACEMENT_CAPSULE_STAGE_PREFIX}*")
+    )
+    assert len(abandoned) == 1
+    assert stat.S_IMODE(abandoned[0].stat().st_mode) == 0o700
+    assert 0 < len(list(abandoned[0].iterdir())) < len(
+        phase2._replacement_capsule_names()  # noqa: SLF001
+    )
+
+    monkeypatch.setattr(phase1, "_write_new_private_file", real_write)
+    phase2._stage_replacement_capsule(world.layout, stages)  # noqa: SLF001
+    assert {
+        path.name for path in world.layout.capsule.iterdir()
+    } == phase2._replacement_capsule_names()  # noqa: SLF001
+    assert abandoned[0].exists()
+    assert list(
+        world.layout.build.glob(f"{phase2.REPLACEMENT_CAPSULE_STAGE_PREFIX}*")
+    ) == abandoned
+
+
+def test_replacement_capsule_atomic_publish_never_overwrites_racing_destination(
+    world: World, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    stages = _replacement_publish_stages(world)
+    real_publish = phase2._atomic_publish_directory_noreplace  # noqa: SLF001
+    foreign = b"foreign-capsule-authority"
+    foreign_identity: tuple[int, int] | None = None
+
+    def create_destination_then_publish(
+        parent_fd: int, source: str, destination: str
+    ) -> None:
+        nonlocal foreign_identity
+        _private(world.layout.capsule)
+        _write_private(world.layout.capsule / "FOREIGN", foreign)
+        metadata = (world.layout.capsule / "FOREIGN").stat()
+        foreign_identity = (metadata.st_dev, metadata.st_ino)
+        real_publish(parent_fd, source, destination)
+
+    monkeypatch.setattr(
+        phase2, "_atomic_publish_directory_noreplace", create_destination_then_publish
+    )
+    with pytest.raises(
+        phase2.Phase2RecoveryError, match="destination appeared before atomic publish"
+    ):
+        phase2._stage_replacement_capsule(world.layout, stages)  # noqa: SLF001
+    foreign_path = world.layout.capsule / "FOREIGN"
+    metadata = foreign_path.stat()
+    assert foreign_path.read_bytes() == foreign
+    assert (metadata.st_dev, metadata.st_ino) == foreign_identity
+    staged = list(
+        world.layout.build.glob(f"{phase2.REPLACEMENT_CAPSULE_STAGE_PREFIX}*")
+    )
+    assert len(staged) == 1
+    assert {
+        path.name for path in staged[0].iterdir()
+    } == phase2._replacement_capsule_names()  # noqa: SLF001
+
+
 def test_auto_discovered_seed_builds_honest_replacement_without_mutating_seed(
     world: World,
     monkeypatch: pytest.MonkeyPatch,
@@ -931,6 +1097,11 @@ def test_auto_discovered_seed_builds_honest_replacement_without_mutating_seed(
         for row in lineage["original_binaries"]
     )
     assert lineage["residual_gap"]["byte_identity"] == "NOT_REPRODUCED"
+
+    world.calls.clear()
+    second = _generate(world)
+    assert second == result
+    assert not world.calls
 
     selected_path = world.layout.capsule / phase1.BEST_PAYLOAD_BASENAME
     forged = _different_same_size(selected_path.read_bytes())

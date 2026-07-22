@@ -52,7 +52,7 @@ EXPECTED_OPERATION_FILE_SHA256 = {
     "reports/condense/kimi_k26/KIMI_K26_OFFICIAL_MANIFEST.json": "a4584e22df830b040d87e3ce1b3d17fe9e13221bc3849c8f791073d9fa8c07fe",
     "tools/condense/glm52_xet_autotune.py": "6ba224ddef71ac2b3b5d968b4bd92707a5e0d9db37b3eb060365e92d7597548f",
     "tools/condense/glm52_xet_live_driver.py": "f9ad68b36c28f6f4b6b7d55a2bf0b824c7a91aac88ef7c7a030eb9337224af0d",
-    "tools/condense/kimi_k26_phase2_recovery.py": "eca20d70ed13fcd66716a4fc839f936cacc2c167a70c62825fbb99d2e40d32ff",
+    "tools/condense/kimi_k26_phase2_recovery.py": "9aee86831902e655620ef7205c89ca945ffebdebf84cd512e1bcf3e25f51d477",
     "tools/condense/kimi_k26_phase2_release.py": "9770f52c92e210db9204c47f2ac4e9b1f499d8b10002b9131ba20de6217185d1",
     "tools/condense/kimi_k26_release_cycle.py": "109d29d1acf18c1a20cc5156284f1c5a7566e295531f0324c46e055be3f5bdf7",
     "tools/glm52_gravity.py": "181ea54be84a313261916979eca2d36a6598d8092762ed2ba8ed827142f068eb",
@@ -63,7 +63,7 @@ SESSION = Path(
 )
 STATE_ROOT = Path(
     "/Users/scammermike/Library/Application Support/Hawking/"
-    "EmergencyDetachedCampaign"
+    "EmergencyDetachedCampaign-v2"
 )
 # Tests and the install subcommand validate the plist adjacent to the invoked
 # controller source.  The plist invocation itself is deliberately frozen to a

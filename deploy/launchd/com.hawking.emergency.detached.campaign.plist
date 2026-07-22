@@ -13,7 +13,7 @@
         <string>/Users/scammermike/Downloads/hawking-emergency-executor/tools/condense/emergency_detached_campaign.py</string>
         <string>tick</string>
         <string>--state-root</string>
-        <string>/Users/scammermike/Library/Application Support/Hawking/EmergencyDetachedCampaign</string>
+        <string>/Users/scammermike/Library/Application Support/Hawking/EmergencyDetachedCampaign-v2</string>
     </array>
     <key>WorkingDirectory</key>
     <string>/Users/scammermike/Downloads/hawking-emergency-executor</string>
@@ -41,8 +41,8 @@
         <string>C</string>
     </dict>
     <key>StandardOutPath</key>
-    <string>/Users/scammermike/Library/Application Support/Hawking/EmergencyDetachedCampaign/logs/launchd.stdout.log</string>
+    <string>/Users/scammermike/Library/Application Support/Hawking/EmergencyDetachedCampaign-v2/logs/launchd.stdout.log</string>
     <key>StandardErrorPath</key>
-    <string>/Users/scammermike/Library/Application Support/Hawking/EmergencyDetachedCampaign/logs/launchd.stderr.log</string>
+    <string>/Users/scammermike/Library/Application Support/Hawking/EmergencyDetachedCampaign-v2/logs/launchd.stderr.log</string>
 </dict>
 </plist>
