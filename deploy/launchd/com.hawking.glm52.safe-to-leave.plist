@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>GLM52_EVICTION_PAUSED</key>
+		<string>0</string>
+		<key>GLM52_FETCH_DISK_FLOOR_BYTES</key>
+		<string>75000000000</string>
+		<key>PYTHONUNBUFFERED</key>
+		<string>1</string>
+	</dict>
+	<key>Label</key>
+	<string>com.hawking.glm52.safe-to-leave</string>
+	<key>Nice</key>
+	<integer>10</integer>
+	<key>ProcessType</key>
+	<string>Background</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/Users/scammermike/Downloads/hawking/.venv/glm52/bin/python</string>
+		<string>/Users/scammermike/Downloads/hawking/tools/condense/glm52_source_fetch.py</string>
+		<string>safe-to-leave</string>
+	</array>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>StandardErrorPath</key>
+	<string>/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/source_fetch/safe_to_leave.stderr.log</string>
+	<key>StandardOutPath</key>
+	<string>/dev/null</string>
+	<key>StartInterval</key>
+	<integer>300</integer>
+	<key>WorkingDirectory</key>
+	<string>/Users/scammermike/Downloads/hawking</string>
+</dict>
+</plist>
