@@ -17,7 +17,7 @@ import stat
 import subprocess
 from dataclasses import dataclass, fields
 from datetime import datetime, timezone
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal, InvalidOperation, ROUND_CEILING, ROUND_FLOOR
 from pathlib import Path
 from typing import Any, Callable, Mapping, Sequence
 
@@ -855,18 +855,27 @@ def parse_linux_meminfo(text: str) -> MemorySample:
     )
 
 
-def _unit_bytes(number: str, unit: str) -> int:
+def _unit_bytes(number: str, unit: str, *, rounding: str = ROUND_CEILING) -> int:
+    """Convert one ``vm.swapusage`` quantity to bytes, resolving rounding conservatively.
+
+    ``vm.swapusage`` prints a *display* value rounded to two decimals, so the exact byte
+    count is not recoverable: "220.56M" is any value in a ~5 KB band.  Demanding an
+    integral byte count therefore rejected almost every real reading -- only quantities
+    landing on a 1/256 MB boundary passed, so the sampler failed intermittently as a
+    function of live swap rather than of anything being wrong.
+
+    The safety policy is preserved by resolving the ambiguity against ourselves instead of
+    guessing a midpoint: consumption is rounded UP and headroom is rounded DOWN, so a
+    derived value never claims more room than the machine can prove it has.
+    """
     powers = {"K": 1, "M": 2, "G": 3, "T": 4}
     try:
-        result = Decimal(number) * (Decimal(1024) ** powers[unit.upper()])
+        exact = Decimal(number) * (Decimal(1024) ** powers[unit.upper()])
     except (InvalidOperation, KeyError) as exc:
         raise GroundingError(f"invalid Darwin swap quantity: {number}{unit}") from exc
-    if result != result.to_integral_value():
-        raise GroundingError(
-            "Darwin swap quantity is not an integral byte count: "
-            f"{number}{unit}"
-        )
-    return int(result)
+    if exact < 0:
+        raise GroundingError(f"negative Darwin swap quantity: {number}{unit}")
+    return int(exact.to_integral_value(rounding=rounding))
 
 
 def parse_darwin_memory(
@@ -894,12 +903,23 @@ def parse_darwin_memory(
         raise GroundingError(f"Darwin vm_stat is missing fields: {missing_pages}")
     available_ram = sum(page_values[name] for name in available_names) * page_size
 
-    swap_values = {
-        match.group(1).lower(): _unit_bytes(match.group(2), match.group(3))
-        for match in _SWAP_VALUE_RE.finditer(swapusage)
-    }
+    # Consumption rounds up, headroom rounds down: the rounded display value is resolved
+    # against us, never in our favour, so admission can never be granted on a number the
+    # machine has not proven.  "total" rounds down for the same reason -- it is the cap a
+    # used-versus-total comparison is checked against.
+    _SWAP_ROUNDING = {"used": ROUND_CEILING, "total": ROUND_FLOOR, "free": ROUND_FLOOR}
+    swap_values = {}
+    for match in _SWAP_VALUE_RE.finditer(swapusage):
+        field = match.group(1).lower()
+        swap_values[field] = _unit_bytes(
+            match.group(2), match.group(3),
+            rounding=_SWAP_ROUNDING.get(field, ROUND_CEILING))
     if "total" not in swap_values or "used" not in swap_values:
         raise GroundingError("Darwin vm.swapusage omitted total or used")
+    # Rounding the two fields in opposite directions can invert a genuine equality at the
+    # cap (a full 1024.00M swap reads used=total), so clamp rather than fail: the clamp is
+    # still the conservative reading, and the invariant below stays meaningful.
+    swap_values["used"] = min(swap_values["used"], swap_values["total"])
     return MemorySample(
         total_ram_bytes=total_ram,
         available_ram_bytes=available_ram,
