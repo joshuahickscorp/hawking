@@ -647,6 +647,22 @@ def _host_health() -> dict:
     }
 
 
+def _controller_environment(pid: int) -> dict[str, str]:
+    """The live process's actual environment.
+
+    Never infer this from a plist or from our own environment: launchd keeps the
+    plist copy it loaded, so a rewritten file can disagree with what is running,
+    and a status writer that reads its own env will happily report a pause that
+    the controller never received.
+    """
+    text = _run(["/bin/ps", "eww", "-p", str(pid)])
+    return dict(
+        token.split("=", 1)
+        for token in text.split()
+        if token.startswith("GLM52_") and "=" in token
+    )
+
+
 def _controller() -> dict:
     pids = [int(value) for value in _run(
         ["/usr/bin/pgrep", "-f", "glm52_source_fetch.py run"]).split()]
@@ -659,9 +675,13 @@ def _controller() -> dict:
             pgid = os.getpgid(live[0])
         except OSError:
             pgid = None
-    heartbeat = None
-    if PROGRESS.exists():
-        heartbeat = round(time.time() - PROGRESS.stat().st_mtime, 1)
+    # The progress file only ticks when a fetch completes, and a healthy run can
+    # spend half an hour packing without fetching anything.  Heartbeat is the most
+    # recent durable artifact of any kind, or the run reads dead while it works.
+    beats = [path.stat().st_mtime for path in (PROGRESS, LEDGER, COMPACT, PROBES)
+             if path.exists()]
+    heartbeat = round(time.time() - max(beats), 1) if beats else None
+    environment = _controller_environment(live[0]) if live else {}
     return {
         "pids": live,
         "pgid": pgid,
@@ -671,7 +691,10 @@ def _controller() -> dict:
         "lease_path": str(LOCK),
         "lease_held": bool(live),
         "heartbeat_age_seconds": heartbeat,
-        "eviction_paused": EVICTION_PAUSED,
+        "environment": environment,
+        # The controller's own value, not this process's.
+        "eviction_paused": environment.get("GLM52_EVICTION_PAUSED", "1") == "1"
+        if live else None,
     }
 
 
@@ -714,8 +737,8 @@ def safe_to_leave() -> int:
         blockers.append(
             f"{len(teacher_status['capturable_now'])} resident layers are uncaptured"
         )
-    if EVICTION_PAUSED:
-        blockers.append("eviction is paused, so the stream cannot complete unattended")
+    if controller["eviction_paused"]:
+        blockers.append("the controller is running with eviction paused")
 
     status_obj = {
         "schema": "hawking.glm52.safe_to_leave.v1",
@@ -744,7 +767,7 @@ def safe_to_leave() -> int:
             "policy_sealed": teacher_status["policy_sealed"],
         },
         "eviction": {
-            "paused": EVICTION_PAUSED,
+            "paused": controller["eviction_paused"],
             "gate": "VERIFIED + PROBED + PACKED + TEACHER_CAPTURED + NOT_CARRIED_FORWARD",
             "events": len(evictions),
             "last_eviction_at": evictions[-1]["at"] if evictions else None,
@@ -789,7 +812,8 @@ def safe_to_leave() -> int:
         f"- teacher: {teacher_status['capsule_count']} capsules, layers "
         f"{teacher_status['captured_layers']}, ledger {ledger_rows} rows, "
         f"latest seal {teacher_status['latest_capsule_seal']}",
-        f"- eviction: paused={EVICTION_PAUSED}, {len(evictions)} events, last "
+        f"- eviction: paused={controller['eviction_paused']}, "
+        f"{len(evictions)} events, last "
         f"{status_obj['eviction']['last_eviction_at']}",
         f"- compact: {status_obj['compact']['shards']} .gravity shards, "
         f"{status_obj['compact']['bytes']} bytes, mean BPW "
