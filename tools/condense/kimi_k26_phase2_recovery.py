@@ -46,6 +46,9 @@ HISTORICAL_COMMIT = "0210e5aa05f0e3c69d6f2022c539c9dc90cce322"
 HISTORICAL_TREE = "f2ca03a67a0f11423e34badcac2586325c2652e1"
 HISTORICAL_PARENT = "543147b4076e0eccdf00a678612fd8febc196f46"
 CORPUS_SEAL_SHA256 = "91e6cdd09bfcc293f67dcdf7d7c675c4a615aeccac1ea4147411e61636ffd5f6"
+CORPUS_TOKENIZER_SHA256 = (
+    "b6c497a7469b33ced9c38afb1ad6e47f03f5e5dc05f15930799210ec050c5103"
+)
 
 GIT = Path("/usr/bin/git")
 SANDBOX_EXEC = Path("/usr/bin/sandbox-exec")
@@ -418,10 +421,12 @@ def _verify_blob_mapping(values: Mapping[str, bytes]) -> dict[str, Any]:
     phase1.verify_sealed_document(corpus, label="frozen historical corpus")
     if corpus.get("seal_sha256") != CORPUS_SEAL_SHA256:
         _fail("historical corpus canonical seal changed")
-    if corpus.get("status") != "PASS" or corpus.get("source") != {
+    frozen_corpus_source = {
         "repo": phase1.KIMI_REPO,
         "revision": phase1.KIMI_REVISION,
-    }:
+        "tokenizer_sha256": CORPUS_TOKENIZER_SHA256,
+    }
+    if corpus.get("status") != "PASS" or corpus.get("source") != frozen_corpus_source:
         _fail("historical corpus source authority changed")
     return phase1.seal_document(
         {

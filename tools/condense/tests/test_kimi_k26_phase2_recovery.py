@@ -244,7 +244,11 @@ def world(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> World:
         {
             "schema": "hawking.test.corpus.v1",
             "status": "PASS",
-            "source": {"repo": phase1.KIMI_REPO, "revision": phase1.KIMI_REVISION},
+            "source": {
+                "repo": phase1.KIMI_REPO,
+                "revision": phase1.KIMI_REVISION,
+                "tokenizer_sha256": phase2.CORPUS_TOKENIZER_SHA256,
+            },
         }
     )
     monkeypatch.setattr(phase2, "CORPUS_SEAL_SHA256", corpus["seal_sha256"])
@@ -534,6 +538,62 @@ def test_tampered_historical_blob_blocks_before_export_or_process(world: World) 
         _generate(world)
     assert not world.calls
     assert not (world.layout.build / "phase2-recovery").exists()
+
+
+def _replace_fake_corpus_source(
+    world: World,
+    monkeypatch: pytest.MonkeyPatch,
+    source: dict[str, str],
+) -> dict[str, bytes]:
+    corpus, corpus_raw = _sealed_bytes(
+        {"schema": "hawking.test.corpus.v1", "status": "PASS", "source": source}
+    )
+    historical = dict(world.historical)
+    historical["KIMI_K26_CORPUS_INTEGRITY.json"] = corpus_raw
+    specs = tuple(
+        phase2.BlobSpec(spec.relative_path, _git_blob(corpus_raw), len(corpus_raw), _sha(corpus_raw))
+        if spec.relative_path == "KIMI_K26_CORPUS_INTEGRITY.json"
+        else spec
+        for spec in phase2.HISTORICAL_BLOBS
+    )
+    monkeypatch.setattr(phase2, "HISTORICAL_BLOBS", specs)
+    monkeypatch.setattr(phase2, "CORPUS_SEAL_SHA256", corpus["seal_sha256"])
+    return historical
+
+
+def test_live_shaped_frozen_corpus_source_authority_is_accepted(world: World) -> None:
+    verification = phase2._verify_blob_mapping(world.historical)  # noqa: SLF001
+    assert verification["corpus_seal_sha256"] == phase2.CORPUS_SEAL_SHA256
+    corpus = phase1.strict_json_bytes(
+        world.historical["KIMI_K26_CORPUS_INTEGRITY.json"], label="test corpus"
+    )
+    assert corpus["source"] == {
+        "repo": phase1.KIMI_REPO,
+        "revision": phase1.KIMI_REVISION,
+        "tokenizer_sha256": phase2.CORPUS_TOKENIZER_SHA256,
+    }
+
+
+@pytest.mark.parametrize("mutation", ["missing", "wrong", "extra"])
+def test_frozen_corpus_rejects_nonexact_source_fields(
+    world: World,
+    monkeypatch: pytest.MonkeyPatch,
+    mutation: str,
+) -> None:
+    source = {
+        "repo": phase1.KIMI_REPO,
+        "revision": phase1.KIMI_REVISION,
+        "tokenizer_sha256": phase2.CORPUS_TOKENIZER_SHA256,
+    }
+    if mutation == "missing":
+        source.pop("tokenizer_sha256")
+    elif mutation == "wrong":
+        source["tokenizer_sha256"] = "0" * 64
+    else:
+        source["branch"] = "main"
+    historical = _replace_fake_corpus_source(world, monkeypatch, source)
+    with pytest.raises(phase2.Phase2RecoveryError, match="corpus source authority changed"):
+        phase2._verify_blob_mapping(historical)  # noqa: SLF001
 
 
 def _install_fake_git_reader(
