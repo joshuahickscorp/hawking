@@ -197,8 +197,19 @@ def _probe_shard(name: str, rows: list[dict]) -> dict:
     }
 
 
+# Eviction is the only irreversible step in the loop, and a BF16 window carries teacher
+# states that no downstream stage can reconstruct once the body is gone.  While teacher-
+# evidence capture is not yet wired into the gate, every eviction destroys information a
+# future representation will need and can only recover by refetching from the network.
+# Pausing costs disk, which the floor already bounds; not pausing costs evidence, which
+# nothing bounds.
+EVICTION_PAUSED = os.environ.get("GLM52_EVICTION_PAUSED", "0") == "1"
+
+
 def _evict(names: list[str], *, verified: set[str], probed: set[str], packed: set[str],
            protected: set[str]) -> list[dict]:
+    if EVICTION_PAUSED:
+        return []
     """Unlink exact schedule-named bodies that are fully accounted for and unneeded.
 
     Five independent conditions, all required: the schedule named it for eviction, a
