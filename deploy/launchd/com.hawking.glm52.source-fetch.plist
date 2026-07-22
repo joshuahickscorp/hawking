@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>GLM52_COMPACT_ROOT</key>
+		<string>/Users/scammermike/Desktop/GLM52-Gravity-SubBit</string>
+		<key>GLM52_FETCH_DISK_FLOOR_BYTES</key>
+		<string>75000000000</string>
+		<key>GLM52_FETCH_MODE</key>
+		<string>stream</string>
+		<key>GLM52_FETCH_WORKERS</key>
+		<string>6</string>
+		<key>GLM52_PACK_WORKERS</key>
+		<string>3</string>
+		<key>GLM52_PROBE_WORKERS</key>
+		<string>6</string>
+		<key>HF_HUB_DISABLE_IMPLICIT_TOKEN</key>
+		<string>1</string>
+		<key>HF_HUB_DISABLE_TELEMETRY</key>
+		<string>1</string>
+		<key>HF_XET_HIGH_PERFORMANCE</key>
+		<string>1</string>
+		<key>PYTHONUNBUFFERED</key>
+		<string>1</string>
+	</dict>
+	<key>KeepAlive</key>
+	<dict>
+		<key>Crashed</key>
+		<true/>
+		<key>SuccessfulExit</key>
+		<false/>
+	</dict>
+	<key>Label</key>
+	<string>com.hawking.glm52.source-fetch</string>
+	<key>Nice</key>
+	<integer>5</integer>
+	<key>ProcessType</key>
+	<string>Background</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/usr/bin/caffeinate</string>
+		<string>-is</string>
+		<string>--</string>
+		<string>/Users/scammermike/Downloads/hawking/.venv/glm52/bin/python</string>
+		<string>/Users/scammermike/Downloads/hawking/tools/condense/glm52_source_fetch.py</string>
+		<string>run</string>
+	</array>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>StandardErrorPath</key>
+	<string>/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/source_fetch/launchd.stderr.log</string>
+	<key>StandardOutPath</key>
+	<string>/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/source_fetch/launchd.stdout.log</string>
+	<key>ThrottleInterval</key>
+	<integer>30</integer>
+	<key>WorkingDirectory</key>
+	<string>/Users/scammermike/Downloads/hawking</string>
+</dict>
+</plist>
