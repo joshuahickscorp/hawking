@@ -87,6 +87,24 @@ REQUIRED_FILE_SETTINGS = (8, 16, 24, 32, 48)
 MAX_TESTED_FILE_SETTING = max(REQUIRED_FILE_SETTINGS)
 PRELIMINARY_SCHEDULE_MAX_DISPATCH = 23
 
+RESOURCE_POLICY_PATH = "GLM52_RESOURCE_RESERVE_POLICY.json"
+RESOURCE_POLICY_SCHEMA = "hawking.glm52.resource_reserve_policy.v1"
+RESOURCE_POLICY_STATUS = "FROZEN_CONSERVATIVE_PRELIVE_POLICY"
+RESOURCE_POLICY_SEAL_SHA256 = (
+    "b33692a9e43aa37c59325ffd1b317d0d069e788c20f4f32cc3840b32ec901cca"
+)
+REQUIRED_FREE_DISK_BYTES = 416_036_394_619
+MINIMUM_AVAILABLE_RAM_BYTES = 17_179_869_184
+MAXIMUM_SWAP_USED_BYTES = 8_589_934_592
+MAXIMUM_SWAP_GROWTH_BYTES = 0
+MAXIMUM_MATERIALIZED_RAW_ALLOCATED_BYTES = 225_426_172_293
+MAXIMUM_ADDITIONAL_PREFETCH_LOGICAL_PROXY_CEILING_BYTES = 107_186_793_789
+MAXIMUM_ADDITIONAL_PREFETCH_ALLOCATED_BYTES_FORMULA = (
+    "max(0, min(maximum_materialized_raw_allocated_bytes - "
+    "live_materialized_raw_allocated_bytes_before_prefetch, "
+    "live_disk_free_bytes - required_free_disk_bytes))"
+)
+
 PLAN_SCHEMA = "hawking.glm52.xet_autotune_plan.v2"
 PREFLIGHT_SCHEMA = "hawking.glm52.xet_autotune_preflight.v1"
 EXECUTION_AUTHORITY_SCHEMA = "hawking.glm52.xet_execution_authority.v3"
@@ -141,6 +159,11 @@ INPUT_CONTRACTS: tuple[tuple[str, str, tuple[str, ...]], ...] = (
         "hawking.glm52.corpus_integrity.v2",
         ("PASS_", "PASS"),
     ),
+    (
+        RESOURCE_POLICY_PATH,
+        RESOURCE_POLICY_SCHEMA,
+        (RESOURCE_POLICY_STATUS,),
+    ),
 )
 
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
@@ -171,6 +194,7 @@ LIVE_OBSERVATION_FIELDS = frozenset({
     "retry_rate",
     "temporary_amplification_ratio",
     "actual_network_bytes",
+    "materialized_raw_allocated_bytes",
 })
 SELECTABLE_TRIAL_MEASUREMENTS = frozenset({
     "peak_cpu_percent",
@@ -313,6 +337,71 @@ def _input_refs(inputs: Mapping[str, Mapping[str, Any]]) -> list[dict[str, str]]
     ]
 
 
+def resource_policy_binding(policy: Mapping[str, Any]) -> dict[str, Any]:
+    """Return the exact live ceilings admitted by the frozen reserve policy."""
+    if policy.get("schema") != RESOURCE_POLICY_SCHEMA \
+            or policy.get("status") != RESOURCE_POLICY_STATUS \
+            or policy.get("repo") != REPO_ID \
+            or policy.get("revision") != REVISION \
+            or policy.get("seal_sha256") != RESOURCE_POLICY_SEAL_SHA256:
+        raise Glm52Error("resource reserve policy immutable identity mismatch")
+    derived = policy.get("derived")
+    controls = policy.get("provisional_control_limits")
+    declared = policy.get("policy")
+    prefetch = policy.get("prefetch_control")
+    activation = policy.get("activation")
+    if not all(isinstance(item, Mapping) for item in (
+        derived, controls, declared, prefetch, activation,
+    )):
+        raise Glm52Error("resource reserve policy control blocks are incomplete")
+    if derived.get("required_free_disk_bytes") != REQUIRED_FREE_DISK_BYTES \
+            or controls.get("minimum_available_ram_bytes") != \
+            MINIMUM_AVAILABLE_RAM_BYTES \
+            or controls.get("maximum_swap_used_bytes") != \
+            MAXIMUM_SWAP_USED_BYTES \
+            or declared.get("minimum_available_ram_bytes") != \
+            MINIMUM_AVAILABLE_RAM_BYTES \
+            or declared.get("maximum_swap_used_bytes") != \
+            MAXIMUM_SWAP_USED_BYTES \
+            or prefetch.get("maximum_materialized_raw_allocated_bytes") != \
+            MAXIMUM_MATERIALIZED_RAW_ALLOCATED_BYTES \
+            or prefetch.get(
+                "maximum_additional_prefetch_logical_proxy_ceiling_bytes"
+            ) != MAXIMUM_ADDITIONAL_PREFETCH_LOGICAL_PROXY_CEILING_BYTES \
+            or prefetch.get(
+                "maximum_additional_prefetch_allocated_bytes_formula"
+            ) != MAXIMUM_ADDITIONAL_PREFETCH_ALLOCATED_BYTES_FORMULA:
+        raise Glm52Error("resource reserve policy live ceilings changed")
+    if controls.get("live_measurement_required") is not True \
+            or activation.get(
+                "live_allocated_byte_measurement_required_before_materialized_xet_body_acquisition"
+            ) is not True \
+            or prefetch.get(
+                "live_allocated_byte_measurement_required_before_materialized_xet_body_acquisition"
+            ) is not True \
+            or prefetch.get("remote_logical_bytes_are_allocated_upper_bounds") is not False:
+        raise Glm52Error("resource reserve policy live measurement semantics changed")
+    return {
+        "path": RESOURCE_POLICY_PATH,
+        "schema": RESOURCE_POLICY_SCHEMA,
+        "status": RESOURCE_POLICY_STATUS,
+        "seal_sha256": RESOURCE_POLICY_SEAL_SHA256,
+        "required_free_disk_bytes": REQUIRED_FREE_DISK_BYTES,
+        "minimum_available_ram_bytes": MINIMUM_AVAILABLE_RAM_BYTES,
+        "maximum_swap_used_bytes": MAXIMUM_SWAP_USED_BYTES,
+        "maximum_swap_growth_bytes": MAXIMUM_SWAP_GROWTH_BYTES,
+        "maximum_materialized_raw_allocated_bytes":
+            MAXIMUM_MATERIALIZED_RAW_ALLOCATED_BYTES,
+        "maximum_additional_prefetch_logical_proxy_ceiling_bytes":
+            MAXIMUM_ADDITIONAL_PREFETCH_LOGICAL_PROXY_CEILING_BYTES,
+        "maximum_additional_prefetch_allocated_bytes_formula":
+            MAXIMUM_ADDITIONAL_PREFETCH_ALLOCATED_BYTES_FORMULA,
+        "live_allocated_byte_measurement_required": True,
+        "remote_logical_bytes_are_allocated_upper_bounds": False,
+        "thermal_warning_allowed": False,
+    }
+
+
 def load_and_validate_inputs(root: Path = REPO_ROOT) -> dict[str, dict[str, Any]]:
     """Load the eight sealed prerequisites and reject any identity drift."""
     result: dict[str, dict[str, Any]] = {}
@@ -344,6 +433,7 @@ def load_and_validate_inputs(root: Path = REPO_ROOT) -> dict[str, dict[str, Any]
     adapter = result["GLM52_ADAPTER_TWIN.json"]
     reference = result["GLM52_REFERENCE_PARITY.json"]
     corpus = result["GLM52_CORPUS_INTEGRITY.json"]
+    resource_policy = result[RESOURCE_POLICY_PATH]
 
     if manifest.get("source_logical_bytes") != EXPECTED_SOURCE_BYTES \
             or manifest.get("weight_shards") != EXPECTED_WEIGHT_SHARDS:
@@ -381,6 +471,8 @@ def load_and_validate_inputs(root: Path = REPO_ROOT) -> dict[str, dict[str, Any]
     if not isinstance(scope, dict) or scope.get("model_payload_downloaded") is not False \
             or scope.get("network_access_used") is not False:
         raise Glm52Error("corpus integrity artifact is not offline/body-free")
+
+    resource_policy_binding(resource_policy)
 
     reconcile_schedule(schedule)
     return result
@@ -779,6 +871,7 @@ def build_plan(
     manifest = inputs["GLM52_OFFICIAL_MANIFEST.json"]
     source_format = inputs["GLM52_SOURCE_FORMAT_LEDGER.json"]
     schedule = inputs["GLM52_STREAMING_SCHEDULE_PRE_AUTOTUNE.json"]
+    reserve_policy = resource_policy_binding(inputs[RESOURCE_POLICY_PATH])
     ranges = build_ranges(manifest, source_format, range_bytes=range_bytes)
     matrix = build_trial_matrix(ranges, range_bytes=range_bytes)
     range_payload = sum(row["planned_payload_bytes"] for row in matrix)
@@ -800,6 +893,7 @@ def build_plan(
         "source_mode": "VULTURE_XET_STREAMING",
         "inputs": _input_refs(inputs),
         "toolchain_binding": toolchain_binding(),
+        "resource_reserve_policy": reserve_policy,
         "body_read_boundary": {
             "planner_network_access": False,
             "planner_model_body_bytes_read": 0,
@@ -824,10 +918,18 @@ def build_plan(
                 "retry_rate": "finite ratio in [0,1]",
                 "temporary_amplification_ratio": "finite nonnegative ratio",
                 "actual_network_bytes": "nonnegative cumulative trial byte counter",
+                "materialized_raw_allocated_bytes": (
+                    "nonnegative live allocated bytes beneath the materialized-Xet root"
+                ),
             },
             "actual_network_counter_must_be_monotonic": True,
             "actual_network_delta_must_be_positive": True,
             "trial_network_cap_enforced_before_selection": True,
+            "resource_policy_enforced_before_go": True,
+            "resource_policy_enforced_at_every_live_sample": True,
+            "subsecond_trial_sampling": (
+                "baseline plus immediate post-GO plus result-boundary sample"
+            ),
             "selection_requires_aggregates": sorted(SELECTABLE_TRIAL_MEASUREMENTS),
         },
         "range_strategy": {
@@ -994,6 +1096,9 @@ def verify_plan(plan: Mapping[str, Any], *, root: Path = REPO_ROOT, rebuild: boo
     inputs = load_and_validate_inputs(root)
     if value.get("inputs") != _input_refs(inputs):
         raise Glm52Error("Xet autotune plan input seals are stale")
+    expected_resource_policy = resource_policy_binding(inputs[RESOURCE_POLICY_PATH])
+    if value.get("resource_reserve_policy") != expected_resource_policy:
+        raise Glm52Error("Xet autotune plan resource reserve policy binding changed")
     if value.get("toolchain_binding") != toolchain_binding():
         raise Glm52Error("Xet autotune plan toolchain binding is stale")
     ranges = value.get("range_strategy", {}).get("body_ranges")
@@ -1064,6 +1169,10 @@ def evaluate_resource_trial(
     required_free_bytes: int,
     required_available_ram_bytes: int,
     trial_network_cap_bytes: int,
+    maximum_swap_used_bytes: int = MAXIMUM_SWAP_USED_BYTES,
+    maximum_swap_growth_bytes: int = MAXIMUM_SWAP_GROWTH_BYTES,
+    maximum_materialized_raw_allocated_bytes: int =
+        MAXIMUM_MATERIALIZED_RAW_ALLOCATED_BYTES,
     heavy_lane_regressions: Sequence[float] = (),
     complete_source_views: int = 0,
 ) -> dict[str, Any]:
@@ -1071,6 +1180,12 @@ def evaluate_resource_trial(
     _require_int(required_free_bytes, "required_free_bytes")
     _require_int(required_available_ram_bytes, "required_available_ram_bytes")
     _require_int(trial_network_cap_bytes, "trial_network_cap_bytes", minimum=1)
+    _require_int(maximum_swap_used_bytes, "maximum_swap_used_bytes")
+    _require_int(maximum_swap_growth_bytes, "maximum_swap_growth_bytes")
+    _require_int(
+        maximum_materialized_raw_allocated_bytes,
+        "maximum_materialized_raw_allocated_bytes",
+    )
     _require_int(complete_source_views, "complete_source_views")
     reasons: list[str] = []
     observations = [before, *samples, after]
@@ -1090,6 +1205,7 @@ def evaluate_resource_trial(
             "free_disk_bytes",
             "available_ram_bytes",
             "actual_network_bytes",
+            "materialized_raw_allocated_bytes",
         }:
             try:
                 _require_int(observation[key], f"sample[{index}].{key}")
@@ -1124,6 +1240,10 @@ def evaluate_resource_trial(
     peak_swapouts = max(int(item["swapouts"]) for item in observations)
     min_disk = min(int(item["free_disk_bytes"]) for item in observations)
     min_ram = min(int(item["available_ram_bytes"]) for item in observations)
+    baseline_allocated = int(before["materialized_raw_allocated_bytes"])
+    peak_allocated = max(
+        int(item["materialized_raw_allocated_bytes"]) for item in observations
+    )
     network_counters = [int(item["actual_network_bytes"]) for item in observations]
     actual_network_bytes = network_counters[-1] - network_counters[0]
     peak_cpu = max(float(item["cpu_percent"]) for item in observations)
@@ -1133,7 +1253,9 @@ def evaluate_resource_trial(
     maximum_temporary_amplification = max(
         float(item["temporary_amplification_ratio"]) for item in observations
     )
-    if peak_swap > baseline_swap:
+    if peak_swap > maximum_swap_used_bytes:
+        reasons.append("ABSOLUTE_SWAP_CEILING")
+    if peak_swap - baseline_swap > maximum_swap_growth_bytes:
         reasons.append("SWAP_GROWTH")
     if peak_swapouts > baseline_swapouts:
         reasons.append("NEW_SWAPOUTS")
@@ -1143,6 +1265,15 @@ def evaluate_resource_trial(
         reasons.append("DISK_FLOOR_RISK")
     if min_ram < required_available_ram_bytes:
         reasons.append("RAM_FLOOR_RISK")
+    if peak_allocated > maximum_materialized_raw_allocated_bytes:
+        reasons.append("MATERIALIZED_RAW_ALLOCATION_CEILING")
+    allocation_growth = peak_allocated - baseline_allocated
+    live_growth_ceiling = min(
+        maximum_materialized_raw_allocated_bytes - baseline_allocated,
+        min_disk - required_free_bytes,
+    )
+    if allocation_growth > max(0, live_growth_ceiling):
+        reasons.append("LIVE_ALLOCATION_GROWTH_CEILING")
     if complete_source_views > 1:
         reasons.append("DUPLICATED_COMPLETE_SOURCE_VIEW")
     if any(right < left for left, right in zip(network_counters, network_counters[1:])):
@@ -1173,8 +1304,15 @@ def evaluate_resource_trial(
             "peak_swap_used_bytes": peak_swap,
             "baseline_swapouts": baseline_swapouts,
             "peak_swapouts": peak_swapouts,
+            "maximum_swap_used_bytes": maximum_swap_used_bytes,
+            "maximum_swap_growth_bytes": maximum_swap_growth_bytes,
             "minimum_free_disk_bytes": min_disk,
             "minimum_available_ram_bytes": min_ram,
+            "baseline_materialized_raw_allocated_bytes": baseline_allocated,
+            "peak_materialized_raw_allocated_bytes": peak_allocated,
+            "maximum_materialized_raw_allocated_bytes":
+                maximum_materialized_raw_allocated_bytes,
+            "live_allocation_growth_ceiling_bytes": max(0, live_growth_ceiling),
             "peak_cpu_percent": peak_cpu,
             "peak_disk_write_bytes_per_second": peak_disk_write,
             "maximum_reconstruction_latency_seconds": maximum_latency,

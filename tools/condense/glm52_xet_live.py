@@ -92,14 +92,15 @@ SAFE_TRIAL_RE = re.compile(r"^[A-Z0-9][A-Z0-9_]{0,63}$")
 SPEC_FIELDS = frozenset({
     "schema", "status", "repo", "revision", "plan_seal_sha256",
     "capability_seal_sha256", "trial", "targets", "network_budget",
-    "execution", "public_hub_auth", "credentials_serialized", "seal_sha256",
+    "resource_policy", "execution", "public_hub_auth", "credentials_serialized",
+    "seal_sha256",
 })
 RESULT_FIELDS = frozenset({
     "schema", "status", "repo", "revision", "plan_seal_sha256",
     "spec_seal_sha256", "capability_seal_sha256", "trial_binding",
     "runtime", "public_hub_auth", "range_results", "stream_measurement",
     "network_accounting", "xet_log_evidence", "resource_observations",
-    "body_persistence", "process", "failure", "seal_sha256",
+    "resource_policy", "body_persistence", "process", "failure", "seal_sha256",
 })
 AUTOTUNE_RESULT_FIELDS = frozenset({
     "schema", "status", "repo", "revision", "bindings", "coverage",
@@ -115,6 +116,7 @@ BASE_RESOURCE_FIELDS = frozenset({
     "schema", "sampled_monotonic_ns", "pid", "swap_used_bytes", "swapouts",
     "thermal_warning", "free_disk_bytes", "available_ram_bytes", "cpu_percent",
     "process_rss_bytes", "disk_write_bytes_per_second",
+    "materialized_raw_allocated_bytes",
 })
 OPTIONAL_XET_SAMPLE_FIELDS = frozenset({
     "reconstruction_latency_seconds", "retry_rate", "temporary_amplification_ratio",
@@ -195,6 +197,38 @@ def _exact_fields(value: Mapping[str, Any], expected: frozenset[str], label: str
         )
 
 
+def _expected_resource_policy_binding() -> dict[str, Any]:
+    return {
+        "path": autotune.RESOURCE_POLICY_PATH,
+        "schema": autotune.RESOURCE_POLICY_SCHEMA,
+        "status": autotune.RESOURCE_POLICY_STATUS,
+        "seal_sha256": autotune.RESOURCE_POLICY_SEAL_SHA256,
+        "required_free_disk_bytes": autotune.REQUIRED_FREE_DISK_BYTES,
+        "minimum_available_ram_bytes": autotune.MINIMUM_AVAILABLE_RAM_BYTES,
+        "maximum_swap_used_bytes": autotune.MAXIMUM_SWAP_USED_BYTES,
+        "maximum_swap_growth_bytes": autotune.MAXIMUM_SWAP_GROWTH_BYTES,
+        "maximum_materialized_raw_allocated_bytes":
+            autotune.MAXIMUM_MATERIALIZED_RAW_ALLOCATED_BYTES,
+        "maximum_additional_prefetch_logical_proxy_ceiling_bytes":
+            autotune.MAXIMUM_ADDITIONAL_PREFETCH_LOGICAL_PROXY_CEILING_BYTES,
+        "maximum_additional_prefetch_allocated_bytes_formula":
+            autotune.MAXIMUM_ADDITIONAL_PREFETCH_ALLOCATED_BYTES_FORMULA,
+        "live_allocated_byte_measurement_required": True,
+        "remote_logical_bytes_are_allocated_upper_bounds": False,
+        "thermal_warning_allowed": False,
+    }
+
+
+def _resource_policy_from_plan(plan: Mapping[str, Any]) -> dict[str, Any]:
+    policy = plan.get("resource_reserve_policy")
+    expected = _expected_resource_policy_binding()
+    if not isinstance(policy, Mapping) or dict(policy) != expected:
+        raise Glm52Error(
+            "live Xet plan does not bind the exact frozen resource reserve policy"
+        )
+    return expected
+
+
 def _validate_plan_environment(value: Any) -> dict[str, str]:
     if not isinstance(value, Mapping):
         raise Glm52Error("trial environment must be an object")
@@ -228,6 +262,7 @@ def validate_live_plan(
         raise Glm52Error("sealed trial matrix lacks a required file-concurrency setting")
     for row in matrix:
         _validate_plan_environment(row.get("environment"))
+    _resource_policy_from_plan(value)
     return value
 
 
@@ -300,7 +335,7 @@ def _execution_block(timeout_seconds: float, sample_interval_seconds: float) -> 
     interval = _require_number(
         sample_interval_seconds,
         "sample_interval_seconds",
-        minimum=0.05,
+        minimum=0.01,
         maximum=timeout,
     )
     return {
@@ -308,6 +343,8 @@ def _execution_block(timeout_seconds: float, sample_interval_seconds: float) -> 
         "child_protocol": CHILD_PROTOCOL,
         "timeout_seconds": timeout,
         "sample_interval_seconds": interval,
+        "sampling_mode": "BASELINE_IMMEDIATE_POST_GO_ADAPTIVE_PERIODIC_RESULT_BOUNDARY",
+        "minimum_resource_samples": 3,
         "stream_api": "hf_xet.XetSession.new_download_stream_group.download_stream",
         "body_sink": "IN_MEMORY_SHA256_ONLY",
         "body_file_writes_allowed": False,
@@ -323,7 +360,7 @@ def build_trial_spec(
     campaign_consumed_bytes: int,
     trial_network_cap_bytes: int,
     timeout_seconds: float = 900.0,
-    sample_interval_seconds: float = 1.0,
+    sample_interval_seconds: float = 0.05,
     root: Path = REPO_ROOT,
     rebuild_plan: bool = True,
 ) -> dict[str, Any]:
@@ -361,6 +398,7 @@ def build_trial_spec(
             trial_cap_bytes=trial_network_cap_bytes,
             planned_payload_bytes=planned,
         ),
+        "resource_policy": _resource_policy_from_plan(value),
         "execution": _execution_block(timeout_seconds, sample_interval_seconds),
         "public_hub_auth": {
             "repository_visibility": "PUBLIC",
@@ -382,7 +420,7 @@ def build_largest_validation_spec(
     campaign_consumed_bytes: int,
     trial_network_cap_bytes: int,
     timeout_seconds: float = 1800.0,
-    sample_interval_seconds: float = 1.0,
+    sample_interval_seconds: float = 0.05,
     root: Path = REPO_ROOT,
     rebuild_plan: bool = True,
 ) -> dict[str, Any]:
@@ -447,6 +485,7 @@ def build_largest_validation_spec(
             trial_cap_bytes=trial_network_cap_bytes,
             planned_payload_bytes=size,
         ),
+        "resource_policy": _resource_policy_from_plan(value),
         "execution": _execution_block(timeout_seconds, sample_interval_seconds),
         "public_hub_auth": {
             "repository_visibility": "PUBLIC",
@@ -533,12 +572,17 @@ def validate_trial_spec(spec: Mapping[str, Any], plan: Mapping[str, Any]) -> dic
     )
     if dict(budget) != expected_budget:
         raise Glm52Error("live Xet budget arithmetic changed")
+    if value.get("resource_policy") != _resource_policy_from_plan(plan):
+        raise Glm52Error("live Xet spec resource policy binding changed")
     execution = value.get("execution")
     if not isinstance(execution, Mapping) \
             or execution.get("fresh_subprocess_required") is not True \
             or execution.get("body_file_writes_allowed") is not False \
             or execution.get("destructive_gc_allowed") is not False \
-            or execution.get("child_protocol") != CHILD_PROTOCOL:
+            or execution.get("child_protocol") != CHILD_PROTOCOL \
+            or execution.get("sampling_mode") != \
+            "BASELINE_IMMEDIATE_POST_GO_ADAPTIVE_PERIODIC_RESULT_BOUNDARY" \
+            or execution.get("minimum_resource_samples") != 3:
         raise Glm52Error("live Xet execution boundary is invalid")
     auth = value.get("public_hub_auth")
     if not isinstance(auth, Mapping) \
@@ -1007,6 +1051,17 @@ def parse_netstat_link_bytes(text: str) -> int:
     return total
 
 
+def parse_du_allocated_bytes(text: str) -> int:
+    fields = text.strip().split()
+    if len(fields) < 2:
+        raise Glm52Error("cannot parse Darwin du allocated bytes")
+    try:
+        kibibytes = int(fields[0])
+    except ValueError as exc:
+        raise Glm52Error("Darwin du allocated bytes is nonnumeric") from exc
+    return _require_int(kibibytes, "Darwin du allocated KiB") * 1024
+
+
 class DarwinResourceSampler:
     """Strict read-only macOS sampler; any unavailable field aborts the trial."""
 
@@ -1067,6 +1122,9 @@ class DarwinResourceSampler:
             free_disk = shutil.disk_usage(self.scratch_root).free
         except OSError as exc:
             raise Glm52Error(f"cannot sample free disk for {self.scratch_root}: {exc}") from exc
+        allocated = parse_du_allocated_bytes(
+            self.command_runner(("/usr/bin/du", "-sk", str(self.scratch_root)))
+        )
         return {
             "schema": RESOURCE_SAMPLE_SCHEMA,
             "sampled_monotonic_ns": self.clock_ns(),
@@ -1079,6 +1137,7 @@ class DarwinResourceSampler:
             "cpu_percent": cpu,
             "process_rss_bytes": rss,
             "disk_write_bytes_per_second": self._disk_rate(),
+            "materialized_raw_allocated_bytes": allocated,
         }
 
 
@@ -1116,6 +1175,7 @@ def _validate_resource_sample(value: Mapping[str, Any], *, pid: int) -> dict[str
     for key in (
         "sampled_monotonic_ns", "swap_used_bytes", "swapouts", "free_disk_bytes",
         "available_ram_bytes", "process_rss_bytes",
+        "materialized_raw_allocated_bytes",
     ):
         _require_int(result.get(key), f"resource sample {key}")
     if not isinstance(result.get("thermal_warning"), bool):
@@ -1130,6 +1190,60 @@ def _validate_resource_sample(value: Mapping[str, Any], *, pid: int) -> dict[str
             result[key], key, maximum=1.0 if key == "retry_rate" else None
         )
     return result
+
+
+def _enforce_resource_policy_sample(
+    sample: Mapping[str, Any],
+    *,
+    baseline: Mapping[str, Any],
+    policy: Mapping[str, Any],
+) -> dict[str, int]:
+    """Fail immediately when one pre-GO/live sample crosses any frozen ceiling."""
+    if dict(policy) != _expected_resource_policy_binding():
+        raise Glm52Error("resource sampler received a substituted reserve policy")
+    reasons: list[str] = []
+    free_disk = int(sample["free_disk_bytes"])
+    available_ram = int(sample["available_ram_bytes"])
+    swap_used = int(sample["swap_used_bytes"])
+    swap_growth = swap_used - int(baseline["swap_used_bytes"])
+    swapout_growth = int(sample["swapouts"]) - int(baseline["swapouts"])
+    allocated = int(sample["materialized_raw_allocated_bytes"])
+    baseline_allocated = int(baseline["materialized_raw_allocated_bytes"])
+    allocation_growth = allocated - baseline_allocated
+    live_allocation_growth_ceiling = max(0, min(
+        int(policy["maximum_materialized_raw_allocated_bytes"])
+        - baseline_allocated,
+        free_disk - int(policy["required_free_disk_bytes"]),
+    ))
+    if sample.get("thermal_warning") is not False:
+        reasons.append("THERMAL_WARNING")
+    if free_disk < int(policy["required_free_disk_bytes"]):
+        reasons.append("DISK_FLOOR_RISK")
+    if available_ram < int(policy["minimum_available_ram_bytes"]):
+        reasons.append("RAM_FLOOR_RISK")
+    if swap_used > int(policy["maximum_swap_used_bytes"]):
+        reasons.append("ABSOLUTE_SWAP_CEILING")
+    if swap_growth > int(policy["maximum_swap_growth_bytes"]):
+        reasons.append("SWAP_GROWTH")
+    if swapout_growth > 0:
+        reasons.append("NEW_SWAPOUTS")
+    if allocated > int(policy["maximum_materialized_raw_allocated_bytes"]):
+        reasons.append("MATERIALIZED_RAW_ALLOCATION_CEILING")
+    if allocation_growth > live_allocation_growth_ceiling:
+        reasons.append("LIVE_ALLOCATION_GROWTH_CEILING")
+    if reasons:
+        raise Glm52Error(
+            "live Xet resource policy crossed: " + ",".join(sorted(set(reasons)))
+        )
+    return {
+        "free_disk_bytes": free_disk,
+        "available_ram_bytes": available_ram,
+        "swap_used_bytes": swap_used,
+        "swap_growth_bytes": swap_growth,
+        "materialized_raw_allocated_bytes": allocated,
+        "materialized_raw_allocation_growth_bytes": allocation_growth,
+        "live_allocation_growth_ceiling_bytes": live_allocation_growth_ceiling,
+    }
 
 
 class _LogAccumulator:
@@ -1245,6 +1359,9 @@ def _planner_observation(
         "thermal_warning": sample["thermal_warning"],
         "free_disk_bytes": sample["free_disk_bytes"],
         "available_ram_bytes": sample["available_ram_bytes"],
+        "materialized_raw_allocated_bytes": sample[
+            "materialized_raw_allocated_bytes"
+        ],
         "cpu_percent": sample["cpu_percent"],
         "disk_write_bytes_per_second": sample["disk_write_bytes_per_second"],
         "reconstruction_latency_seconds": _metric(
@@ -1309,6 +1426,18 @@ def _build_trial_result(
         raise Glm52Error("live trial requires before, runtime, and after samples")
     if any(right < left for left, right in zip(network_samples, network_samples[1:])):
         raise Glm52Error("network counter regressed during live Xet trial")
+    policy = spec.get("resource_policy")
+    if not isinstance(policy, Mapping) or dict(policy) != \
+            _expected_resource_policy_binding():
+        raise Glm52Error("live trial result lacks the exact reserve policy")
+    policy_checks = [
+        _enforce_resource_policy_sample(
+            sample,
+            baseline=raw_samples[0],
+            policy=policy,
+        )
+        for sample in raw_samples
+    ]
     actual = network_samples[-1] - network_samples[0]
     cap = spec["network_budget"]["trial_network_cap_bytes"]
     if actual <= 0 or actual > cap:
@@ -1382,6 +1511,8 @@ def _build_trial_result(
             "trial_network_cap_bytes": cap,
             "counter_monotonic": True,
             "cap_enforced_during_execution": True,
+            "post_child_exit_counter_included": True,
+            "cap_crossing_cancellation_then_counter_required": True,
         },
         "xet_log_evidence": dict(log_evidence),
         "resource_observations": {
@@ -1400,6 +1531,31 @@ def _build_trial_result(
                 )
                 if observation[key] is None
             }),
+        },
+        "resource_policy": {
+            "binding": dict(policy),
+            "enforced_before_go": True,
+            "enforced_during_execution": True,
+            "sample_count": len(raw_samples),
+            "minimum_free_disk_bytes": min(
+                item["free_disk_bytes"] for item in policy_checks
+            ),
+            "minimum_available_ram_bytes": min(
+                item["available_ram_bytes"] for item in policy_checks
+            ),
+            "maximum_swap_used_bytes_observed": max(
+                item["swap_used_bytes"] for item in policy_checks
+            ),
+            "maximum_swap_growth_bytes_observed": max(
+                item["swap_growth_bytes"] for item in policy_checks
+            ),
+            "maximum_materialized_raw_allocated_bytes_observed": max(
+                item["materialized_raw_allocated_bytes"] for item in policy_checks
+            ),
+            "maximum_materialized_raw_allocation_growth_bytes_observed": max(
+                item["materialized_raw_allocation_growth_bytes"]
+                for item in policy_checks
+            ),
         },
         "body_persistence": {
             "python_body_file_writes": 0,
@@ -1448,6 +1604,14 @@ def execute_trial(
 
     timeout = float(trial_spec["execution"]["timeout_seconds"])
     interval = float(trial_spec["execution"]["sample_interval_seconds"])
+    expected_ten_gbe_seconds = (
+        int(trial_spec["trial"]["planned_payload_bytes"]) * 8 / 10_000_000_000
+    )
+    polling_interval = min(
+        interval,
+        max(0.01, expected_ten_gbe_seconds / 4),
+    )
+    policy = trial_spec["resource_policy"]
     deadline = time.monotonic() + timeout
     argv = [sys.executable, str(Path(__file__).resolve()), "_child"]
     try:
@@ -1476,6 +1640,37 @@ def execute_trial(
     stderr_thread.start()
     raw_samples: list[dict[str, Any]] = []
     network_samples: list[int] = []
+
+    def capture_live_sample(label: str) -> None:
+        sample = _validate_resource_sample(
+            resource_sampler.sample(process.pid), pid=process.pid
+        )
+        baseline = raw_samples[0] if raw_samples else sample
+        _enforce_resource_policy_sample(
+            sample,
+            baseline=baseline,
+            policy=policy,
+        )
+        counter = _require_int(network_counter.snapshot(), label)
+        if network_samples and counter < network_samples[-1]:
+            raise Glm52Error("network counter regressed during live Xet trial")
+        raw_samples.append(sample)
+        network_samples.append(counter)
+        if len(network_samples) > 1 and counter - network_samples[0] \
+                > trial_spec["network_budget"]["trial_network_cap_bytes"]:
+            _cancel_child(process)
+            post_cancel = _require_int(
+                network_counter.snapshot(), "network post-cancellation"
+            )
+            if post_cancel < counter:
+                raise Glm52Error(
+                    "network counter regressed during cap cancellation accounting"
+                )
+            network_samples[-1] = post_cancel
+            raise Glm52Error(
+                "live Xet trial crossed its network cap; cancellation-accounted "
+                f"delta={post_cancel - network_samples[0]}"
+            )
     try:
         process.stdin.write(json.dumps(trial_spec, sort_keys=True, separators=(",", ":")) + "\n")
         process.stdin.flush()
@@ -1486,19 +1681,24 @@ def execute_trial(
             "spec_seal_sha256": trial_spec["seal_sha256"],
         }:
             raise Glm52Error("live Xet child readiness handshake is invalid")
-        raw_samples.append(_validate_resource_sample(resource_sampler.sample(process.pid), pid=process.pid))
-        network_samples.append(_require_int(network_counter.snapshot(), "network baseline"))
+        capture_live_sample("network baseline")
         process.stdin.write(json.dumps({
             "command": "GO", "spec_seal_sha256": trial_spec["seal_sha256"],
         }, sort_keys=True, separators=(",", ":")) + "\n")
         process.stdin.flush()
+        # This immediate post-GO sample guarantees a real live boundary even when a
+        # 10GbE transfer completes before the first periodic polling interval.
+        capture_live_sample("network immediate post-GO")
 
         result_message: dict[str, Any] | None = None
         while result_message is None:
             if time.monotonic() >= deadline:
                 raise Glm52Error("live Xet child exceeded its sealed timeout")
             try:
-                line = stdout_lines.get(timeout=min(interval, max(0.01, deadline - time.monotonic())))
+                line = stdout_lines.get(timeout=min(
+                    polling_interval,
+                    max(0.01, deadline - time.monotonic()),
+                ))
             except queue.Empty:
                 line = None
             if line == "":
@@ -1510,22 +1710,9 @@ def execute_trial(
                         or set(message) != {"protocol", "status", "result"}:
                     raise Glm52Error("live Xet child returned an invalid protocol message")
                 result_message = message
-            raw_samples.append(
-                _validate_resource_sample(resource_sampler.sample(process.pid), pid=process.pid)
-            )
-            network_samples.append(_require_int(network_counter.snapshot(), "network counter"))
-            if network_samples[-1] < network_samples[0]:
-                raise Glm52Error("network counter regressed during live Xet trial")
-            if network_samples[-1] - network_samples[0] \
-                    > trial_spec["network_budget"]["trial_network_cap_bytes"]:
-                raise Glm52Error("live Xet trial crossed its network cap")
+            capture_live_sample("network counter")
         child = _validate_child_result(result_message["result"], trial_spec)
-        # The child remains alive until ACK, making the final process sample strict.
-        if len(raw_samples) < 2:
-            raw_samples.append(
-                _validate_resource_sample(resource_sampler.sample(process.pid), pid=process.pid)
-            )
-            network_samples.append(_require_int(network_counter.snapshot(), "network final"))
+        # The child remains alive until ACK, making every resource sample strict.
         process.stdin.write(json.dumps({
             "command": "ACK", "spec_seal_sha256": trial_spec["seal_sha256"],
         }, sort_keys=True, separators=(",", ":")) + "\n")
@@ -1536,12 +1723,21 @@ def execute_trial(
             raise Glm52Error("live Xet child did not exit after ACK") from exc
         if returncode != 0:
             raise Glm52Error(f"live Xet child exited with status {returncode}")
+        post_exit_network = _require_int(
+            network_counter.snapshot(), "network post-child-exit"
+        )
+        if post_exit_network < network_samples[-1]:
+            raise Glm52Error("network counter regressed after live Xet child exit")
+        network_samples[-1] = post_exit_network
+        if post_exit_network - network_samples[0] \
+                > trial_spec["network_budget"]["trial_network_cap_bytes"]:
+            raise Glm52Error(
+                "live Xet trial crossed its network cap at post-exit accounting"
+            )
         stdout_thread.join(timeout=1)
         stderr_thread.join(timeout=1)
-        if len(raw_samples) < 3:
-            # Duplicate neither values nor claims: obtain an additional real sample while
-            # the protocol is live in normal operation.  A too-fast fake child is refused.
-            raise Glm52Error("live Xet trial produced no runtime resource sample")
+        if len(raw_samples) < trial_spec["execution"]["minimum_resource_samples"]:
+            raise Glm52Error("live Xet trial produced incomplete resource sampling")
         log_evidence = logs.summarize()
         result = _build_trial_result(
             trial_spec,
@@ -1639,6 +1835,8 @@ def validate_trial_result(result: Mapping[str, Any], *, plan: Mapping[str, Any])
     if not isinstance(network, Mapping) or set(network) != {
         "counter_evidence", "baseline_bytes", "final_bytes", "actual_network_bytes",
         "trial_network_cap_bytes", "counter_monotonic", "cap_enforced_during_execution",
+        "post_child_exit_counter_included",
+        "cap_crossing_cancellation_then_counter_required",
     }:
         raise Glm52Error("live Xet network accounting shape is invalid")
     baseline = _require_int(network.get("baseline_bytes"), "network.baseline_bytes")
@@ -1647,7 +1845,11 @@ def validate_trial_result(result: Mapping[str, Any], *, plan: Mapping[str, Any])
     cap = _require_int(network.get("trial_network_cap_bytes"), "network.trial_network_cap_bytes", minimum=1)
     if final - baseline != actual or actual > cap \
             or network.get("counter_monotonic") is not True \
-            or network.get("cap_enforced_during_execution") is not True:
+            or network.get("cap_enforced_during_execution") is not True \
+            or network.get("post_child_exit_counter_included") is not True \
+            or network.get(
+                "cap_crossing_cancellation_then_counter_required"
+            ) is not True:
         raise Glm52Error("live Xet network accounting arithmetic/gates failed")
     resource = value.get("resource_observations")
     if not isinstance(resource, Mapping) or set(resource) != {
@@ -1662,6 +1864,60 @@ def validate_trial_result(result: Mapping[str, Any], *, plan: Mapping[str, Any])
     if resource.get("required_metrics_complete") is not complete \
             or (value["status"] == "PASS_COMPLETE_MEASURED") is not complete:
         raise Glm52Error("live Xet status does not match required metric availability")
+    resource_policy = value.get("resource_policy")
+    policy_fields = {
+        "binding", "enforced_before_go", "enforced_during_execution",
+        "sample_count", "minimum_free_disk_bytes", "minimum_available_ram_bytes",
+        "maximum_swap_used_bytes_observed", "maximum_swap_growth_bytes_observed",
+        "maximum_materialized_raw_allocated_bytes_observed",
+        "maximum_materialized_raw_allocation_growth_bytes_observed",
+    }
+    expected_policy = _resource_policy_from_plan(plan)
+    if not isinstance(resource_policy, Mapping) \
+            or set(resource_policy) != policy_fields \
+            or resource_policy.get("binding") != expected_policy \
+            or resource_policy.get("enforced_before_go") is not True \
+            or resource_policy.get("enforced_during_execution") is not True \
+            or resource_policy.get("sample_count") != \
+            len(resource["samples"]) + 2:
+        raise Glm52Error("live Xet result reserve policy evidence is invalid")
+    policy_observations = [
+        resource["before"], *resource["samples"], resource["after"]
+    ]
+    try:
+        checks = [
+            _enforce_resource_policy_sample(
+                observation,
+                baseline=policy_observations[0],
+                policy=expected_policy,
+            )
+            for observation in policy_observations
+        ]
+    except (KeyError, TypeError, ValueError, Glm52Error) as exc:
+        raise Glm52Error(f"live Xet result crossed reserve policy: {exc}") from exc
+    expected_policy_measurements = {
+        "minimum_free_disk_bytes": min(item["free_disk_bytes"] for item in checks),
+        "minimum_available_ram_bytes": min(
+            item["available_ram_bytes"] for item in checks
+        ),
+        "maximum_swap_used_bytes_observed": max(
+            item["swap_used_bytes"] for item in checks
+        ),
+        "maximum_swap_growth_bytes_observed": max(
+            item["swap_growth_bytes"] for item in checks
+        ),
+        "maximum_materialized_raw_allocated_bytes_observed": max(
+            item["materialized_raw_allocated_bytes"] for item in checks
+        ),
+        "maximum_materialized_raw_allocation_growth_bytes_observed": max(
+            item["materialized_raw_allocation_growth_bytes"] for item in checks
+        ),
+    }
+    if any(
+        resource_policy.get(key) != expected
+        for key, expected in expected_policy_measurements.items()
+    ):
+        raise Glm52Error("live Xet result reserve policy measurements changed")
     body = value.get("body_persistence")
     if not isinstance(body, Mapping) or body.get("python_body_file_writes") != 0 \
             or body.get("python_body_file_paths") != [] \
@@ -1805,6 +2061,12 @@ def assemble_autotune_result(
     value = validate_live_plan(plan, root=root, rebuild=rebuild_plan)
     free_floor = _require_int(required_free_bytes, "required_free_bytes")
     ram_floor = _require_int(required_available_ram_bytes, "required_available_ram_bytes")
+    reserve_policy = _resource_policy_from_plan(value)
+    if free_floor != reserve_policy["required_free_disk_bytes"] \
+            or ram_floor != reserve_policy["minimum_available_ram_bytes"]:
+        raise Glm52Error(
+            "caller resource floors differ from the frozen reserve policy"
+        )
     expected_ids = [row["trial_id"] for row in value["trial_matrix"]]
     if len(trial_results) != len(expected_ids):
         raise Glm52Error("autotune result requires exactly 12 trial results")
@@ -1832,6 +2094,11 @@ def assemble_autotune_result(
             required_free_bytes=free_floor,
             required_available_ram_bytes=ram_floor,
             trial_network_cap_bytes=result["network_accounting"]["trial_network_cap_bytes"],
+            maximum_swap_used_bytes=reserve_policy["maximum_swap_used_bytes"],
+            maximum_swap_growth_bytes=reserve_policy["maximum_swap_growth_bytes"],
+            maximum_materialized_raw_allocated_bytes=reserve_policy[
+                "maximum_materialized_raw_allocated_bytes"
+            ],
             heavy_lane_regressions=resource["heavy_lane_regressions"],
             complete_source_views=resource["complete_source_views"],
         )
@@ -1914,6 +2181,7 @@ def assemble_autotune_result(
             "plan_input_refs_sha256": _canonical_sha256(input_refs),
             "source_refs": source_refs,
             "live_executor_sha256": sha256_file(Path(__file__).resolve()),
+            "resource_reserve_policy": reserve_policy,
         },
         "coverage": {
             "trial_ids_in_plan_order": expected_ids,
@@ -2064,6 +2332,7 @@ def validate_autotune_result(
     if not isinstance(bindings, Mapping) or set(bindings) != {
         "plan_seal_sha256", "plan_toolchain_binding_sha256",
         "plan_input_refs_sha256", "source_refs", "live_executor_sha256",
+        "resource_reserve_policy",
     } or bindings.get("plan_seal_sha256") != plan.get("seal_sha256") \
             or bindings.get("plan_toolchain_binding_sha256") != _canonical_sha256(
                 plan.get("toolchain_binding")
@@ -2071,6 +2340,8 @@ def validate_autotune_result(
                 plan.get("inputs")
             ) or bindings.get("live_executor_sha256") != sha256_file(Path(__file__).resolve()):
         raise Glm52Error("live Xet autotune result plan/tool/input binding mismatch")
+    if bindings.get("resource_reserve_policy") != _resource_policy_from_plan(plan):
+        raise Glm52Error("live Xet autotune result resource policy binding mismatch")
     source_refs = [
         dict(item) for item in plan.get("inputs", [])
         if isinstance(item, Mapping) and item.get("path") in {
@@ -2138,6 +2409,8 @@ def _child_main() -> int:
     # Full plan validation happens in the trusted parent before spawn.  The
     # child rechecks its self-contained shape, sealed targets, and environment.
     _exact_fields(spec, SPEC_FIELDS, "child live Xet spec")
+    if spec.get("resource_policy") != _expected_resource_policy_binding():
+        raise Glm52Error("child live Xet spec resource policy binding changed")
     _validate_child_environment(spec)
     print(json.dumps({
         "protocol": CHILD_PROTOCOL,

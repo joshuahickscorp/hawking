@@ -124,6 +124,9 @@ def _fake_plan() -> dict[str, Any]:
         "status": "PASS_OFFLINE_PLAN_BODY_NOT_READ",
         "repo": freezer.xet_live.REPO_ID,
         "revision": REVISION,
+        "resource_reserve_policy": (
+            freezer.xet_live._expected_resource_policy_binding()
+        ),
         "inputs": [
             {
                 "path": path,
@@ -308,6 +311,9 @@ def _raw_result(plan: Mapping[str, Any]) -> dict[str, Any]:
             "live_executor_sha256": hashlib.sha256(
                 pathlib.Path(freezer.xet_live.__file__).read_bytes()
             ).hexdigest(),
+            "resource_reserve_policy": copy.deepcopy(
+                plan["resource_reserve_policy"]
+            ),
         },
         "coverage": {
             "trial_ids_in_plan_order": list(TRIAL_IDS),

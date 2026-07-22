@@ -103,6 +103,12 @@
       "schema": "hawking.glm52.corpus_integrity.v2",
       "seal_sha256": "7f5eff81a10c01b231e829d5870d6e8290a745a4bacdf4dfe74c4d0e5080e767",
       "status": "PASS"
+    },
+    {
+      "path": "GLM52_RESOURCE_RESERVE_POLICY.json",
+      "schema": "hawking.glm52.resource_reserve_policy.v1",
+      "seal_sha256": "b33692a9e43aa37c59325ffd1b317d0d069e788c20f4f32cc3840b32ec901cca",
+      "status": "FROZEN_CONSERVATIVE_PRELIVE_POLICY"
     }
   ],
   "largest_shard_validation": {
@@ -127,6 +133,7 @@
       "cpu_percent": "finite nonnegative percent; aggregate cores may exceed 100",
       "disk_write_bytes_per_second": "finite nonnegative bytes/second",
       "free_disk_bytes": "nonnegative integer bytes",
+      "materialized_raw_allocated_bytes": "nonnegative live allocated bytes beneath the materialized-Xet root",
       "reconstruction_latency_seconds": "finite nonnegative seconds",
       "retry_rate": "finite ratio in [0,1]",
       "swap_used_bytes": "nonnegative integer bytes",
@@ -134,6 +141,8 @@
       "temporary_amplification_ratio": "finite nonnegative ratio",
       "thermal_warning": "boolean"
     },
+    "resource_policy_enforced_at_every_live_sample": true,
+    "resource_policy_enforced_before_go": true,
     "selection_requires_aggregates": [
       "actual_network_bytes",
       "maximum_reconstruction_latency_seconds",
@@ -143,6 +152,7 @@
       "peak_disk_write_bytes_per_second",
       "trial_network_cap_bytes"
     ],
+    "subsecond_trial_sampling": "baseline plus immediate post-GO plus result-boundary sample",
     "trial_network_cap_enforced_before_selection": true
   },
   "network_budget": {
@@ -896,6 +906,22 @@
     "trial_assignment_policy": "CANONICAL_ORDERED_PREFIX_BY_CALLER_STREAM_COUNT"
   },
   "repo": "zai-org/GLM-5.2",
+  "resource_reserve_policy": {
+    "live_allocated_byte_measurement_required": true,
+    "maximum_additional_prefetch_allocated_bytes_formula": "max(0, min(maximum_materialized_raw_allocated_bytes - live_materialized_raw_allocated_bytes_before_prefetch, live_disk_free_bytes - required_free_disk_bytes))",
+    "maximum_additional_prefetch_logical_proxy_ceiling_bytes": 107186793789,
+    "maximum_materialized_raw_allocated_bytes": 225426172293,
+    "maximum_swap_growth_bytes": 0,
+    "maximum_swap_used_bytes": 8589934592,
+    "minimum_available_ram_bytes": 17179869184,
+    "path": "GLM52_RESOURCE_RESERVE_POLICY.json",
+    "remote_logical_bytes_are_allocated_upper_bounds": false,
+    "required_free_disk_bytes": 416036394619,
+    "schema": "hawking.glm52.resource_reserve_policy.v1",
+    "seal_sha256": "b33692a9e43aa37c59325ffd1b317d0d069e788c20f4f32cc3840b32ec901cca",
+    "status": "FROZEN_CONSERVATIVE_PRELIVE_POLICY",
+    "thermal_warning_allowed": false
+  },
   "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
   "runtime_compatibility": {
     "effective_cache_1g": {
@@ -1001,7 +1027,7 @@
     "window_count": 20
   },
   "schema": "hawking.glm52.xet_autotune_plan.v2",
-  "seal_sha256": "4d752cf7cf40c1a65b4abe15e9a321adf20a03aba818dead2a69b1ef232f4f26",
+  "seal_sha256": "76aea7240ab81bf0d932b6f9af635d9fa6ef29acbe1c47ca321787a6caf5bf88",
   "selection_policy": {
     "acquisition_burst": "fastest safe profile; high-performance may compete",
     "confidence_tie_break": [
@@ -1035,7 +1061,7 @@
       {
         "path": "tools/condense/glm52_xet_autotune.py",
         "role": "planner_generator",
-        "sha256": "f34c7b35187ab7f7d33e4811f95fec1674cf92318c3d5487e6196a5fe40c5bd3"
+        "sha256": "6ba224ddef71ac2b3b5d968b4bd92707a5e0d9db37b3eb060365e92d7597548f"
       },
       {
         "path": "tools/condense/glm52_common.py",
@@ -1050,7 +1076,7 @@
       {
         "path": "tools/condense/glm52_xet_live.py",
         "role": "live_executor",
-        "sha256": "3c6648a182d65799ef8a2069327847b6088c32977f8783c209754fa62040e343"
+        "sha256": "04d14645207011957e24dd60b13cf89682bcc997f51a0bde62cbd4f7d46a3c0e"
       },
       {
         "path": "tools/condense/requirements-glm52.txt",

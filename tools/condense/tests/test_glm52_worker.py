@@ -336,6 +336,9 @@ def _make_xet_result(
             "live_executor_sha256": hashlib.sha256(
                 pathlib.Path(xet_live.__file__).read_bytes()
             ).hexdigest(),
+            "resource_reserve_policy": copy.deepcopy(
+                plan["resource_reserve_policy"]
+            ),
         },
         "coverage": {
             "trial_ids_in_plan_order": trial_ids,

@@ -85,6 +85,31 @@ def test_plan_is_sealed_deterministic_and_body_free(plan: dict, runtime_receipt:
     assert plan["claims"]["xet_autotune_complete"] is False
 
 
+def test_plan_binds_exact_resource_policy_and_rejects_substitution(plan: dict) -> None:
+    policy = plan["resource_reserve_policy"]
+    assert policy == autotune.resource_policy_binding(
+        autotune.load_and_validate_inputs()[autotune.RESOURCE_POLICY_PATH]
+    )
+    assert policy["seal_sha256"] == autotune.RESOURCE_POLICY_SEAL_SHA256
+    assert policy["required_free_disk_bytes"] == 416_036_394_619
+    assert policy["minimum_available_ram_bytes"] == 17_179_869_184
+    assert policy["maximum_swap_used_bytes"] == 8_589_934_592
+    assert policy["maximum_swap_growth_bytes"] == 0
+    assert policy["maximum_materialized_raw_allocated_bytes"] == 225_426_172_293
+    assert policy["live_allocated_byte_measurement_required"] is True
+    assert any(
+        item["path"] == autotune.RESOURCE_POLICY_PATH
+        and item["seal_sha256"] == autotune.RESOURCE_POLICY_SEAL_SHA256
+        for item in plan["inputs"]
+    )
+
+    substituted = copy.deepcopy(plan)
+    substituted.pop("seal_sha256")
+    substituted["resource_reserve_policy"]["required_free_disk_bytes"] -= 1
+    with pytest.raises(Glm52Error, match="resource reserve policy binding"):
+        autotune.verify_plan(seal(substituted), rebuild=False)
+
+
 def test_committed_plan_is_rebuilt_against_current_sealed_inputs() -> None:
     committed = json.loads(
         (REPO_ROOT / "GLM52_XET_AUTOTUNE_PLAN.json").read_text(encoding="utf-8")
@@ -260,6 +285,7 @@ def _sample(**updates: object) -> dict:
         "retry_rate": 0.01,
         "temporary_amplification_ratio": 1.1,
         "actual_network_bytes": 0,
+        "materialized_raw_allocated_bytes": 10,
     }
     value.update(updates)
     return value
@@ -351,6 +377,19 @@ def test_resource_verdict_rejects_each_safety_boundary(
     verdict = _resource(samples=samples, after=after, complete_source_views=views)
     assert verdict["status"] == "FAIL"
     assert reason in verdict["reasons"]
+
+
+def test_resource_verdict_enforces_absolute_swap_and_live_allocation_ceilings() -> None:
+    absolute_swap = _resource(maximum_swap_used_bytes=99)
+    assert "ABSOLUTE_SWAP_CEILING" in absolute_swap["reasons"]
+
+    absolute_allocation = _resource(
+        maximum_materialized_raw_allocated_bytes=9,
+    )
+    assert "MATERIALIZED_RAW_ALLOCATION_CEILING" in absolute_allocation["reasons"]
+
+    live_growth = _resource(samples=[_sample(materialized_raw_allocated_bytes=211)])
+    assert "LIVE_ALLOCATION_GROWTH_CEILING" in live_growth["reasons"]
 
 
 def _trial(

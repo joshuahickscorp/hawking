@@ -439,6 +439,7 @@ def _validate_xet_plan_bindings(artifacts: Mapping[str, Mapping[str, Any]]) -> N
         "GLM52_ADAPTER_TWIN.json",
         "GLM52_REFERENCE_PARITY.json",
         "GLM52_CORPUS_INTEGRITY.json",
+        "GLM52_RESOURCE_RESERVE_POLICY.json",
     }
     rows = plan.get("inputs")
     if not isinstance(rows, list) or len(rows) != len(expected_names):
@@ -459,7 +460,26 @@ def _validate_xet_plan_bindings(artifacts: Mapping[str, Mapping[str, Any]]) -> N
             "status": spec.status,
             "seal_sha256": actual["seal_sha256"],
         }:
+            if filename == "GLM52_RESOURCE_RESERVE_POLICY.json":
+                raise CampaignContractError(
+                    "resource reserve policy binding in the Xet plan is stale or malformed"
+                )
             raise CampaignContractError(f"Xet plan has a stale or malformed binding: {filename}")
+    reserve = plan.get("resource_reserve_policy")
+    if not isinstance(reserve, dict) \
+            or reserve.get("path") != state.OFFICIAL_RESOURCE_POLICY_PATH \
+            or reserve.get("schema") != state.OFFICIAL_RESOURCE_POLICY_SCHEMA \
+            or reserve.get("status") != state.OFFICIAL_RESOURCE_POLICY_STATUS \
+            or reserve.get("seal_sha256") != \
+            state.OFFICIAL_RESOURCE_POLICY_SEAL_SHA256 \
+            or reserve.get("required_free_disk_bytes") != \
+            state.OFFICIAL_RESOURCE_POLICY_REQUIRED_FREE_DISK_BYTES \
+            or reserve.get("live_allocated_byte_measurement_required") is not True \
+            or reserve.get("remote_logical_bytes_are_allocated_upper_bounds") is not False \
+            or reserve.get("thermal_warning_allowed") is not False:
+        raise CampaignContractError(
+            "Xet plan does not bind the exact frozen live resource policy"
+        )
     boundary = plan.get("body_read_boundary")
     authority = plan.get("execution_authority")
     claims = plan.get("claims")

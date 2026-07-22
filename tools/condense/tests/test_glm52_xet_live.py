@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import io
 import json
 import os
 import pathlib
@@ -111,6 +112,7 @@ def _fake_plan() -> dict[str, Any]:
             )
         ],
         "toolchain_binding": {"schema": "test", "sha256": _sha("toolchain")},
+        "resource_reserve_policy": live._expected_resource_policy_binding(),
         "range_strategy": {"body_ranges": ranges, "range_bytes": 16},
         "trial_matrix": matrix,
         "largest_shard_validation": {
@@ -227,6 +229,27 @@ def test_trial_spec_is_exact_sealed_and_projects_ordered_ranges(plan: dict[str, 
     assert spec["credentials_serialized"] is False
     assert spec["public_hub_auth"]["refresh_headers_serialized"] is False
     assert live.validate_trial_spec(spec, plan) == spec
+
+
+def test_spec_and_result_reject_resource_policy_substitution(plan: dict[str, Any]) -> None:
+    spec = _spec(plan)
+    assert spec["resource_policy"] == live._expected_resource_policy_binding()
+    substituted = json.loads(json.dumps(spec))
+    substituted.pop("seal_sha256")
+    substituted["resource_policy"]["minimum_available_ram_bytes"] -= 1
+    with pytest.raises(Glm52Error, match="resource policy binding"):
+        live.validate_trial_spec(seal(substituted), plan)
+
+    result = _result_for_spec(
+        spec,
+        elapsed=0.1,
+        actual_network=spec["trial"]["planned_payload_bytes"],
+    )
+    forged = json.loads(json.dumps(result))
+    forged.pop("seal_sha256")
+    forged["resource_policy"]["binding"]["maximum_swap_used_bytes"] -= 1
+    with pytest.raises(Glm52Error, match="reserve policy"):
+        live.validate_trial_result(seal(forged), plan=plan)
 
 
 def test_spec_budget_and_environment_are_fail_closed(plan: dict[str, Any]) -> None:
@@ -437,6 +460,7 @@ en0 1500 <Link#2> aa:bb 20 0 200 30 0 300 0
 bridge0* 1500 <Link#3> aa:cc 40 0 400 50 0 500 0
 """
     assert live.parse_netstat_link_bytes(netstat) == 500
+    assert live.parse_du_allocated_bytes("123\t/tmp/xet\n") == 123 * 1024
     with pytest.raises(Glm52Error):
         live.parse_swapusage("unavailable")
     with pytest.raises(Glm52Error):
@@ -490,17 +514,51 @@ def _resource_sample(pid: int, **updates: Any) -> dict[str, Any]:
         "swap_used_bytes": 100,
         "swapouts": 7,
         "thermal_warning": False,
-        "free_disk_bytes": 100_000,
-        "available_ram_bytes": 100_000,
+        "free_disk_bytes": live.autotune.REQUIRED_FREE_DISK_BYTES + 10_000_000,
+        "available_ram_bytes": live.autotune.MINIMUM_AVAILABLE_RAM_BYTES + 10_000_000,
         "cpu_percent": 20.0,
         "process_rss_bytes": 1_000,
         "disk_write_bytes_per_second": 100.0,
+        "materialized_raw_allocated_bytes": 1_000,
         "reconstruction_latency_seconds": 0.1,
         "retry_rate": 0.01,
         "temporary_amplification_ratio": 1.1,
     }
     value.update(updates)
     return value
+
+
+@pytest.mark.parametrize(
+    ("updates", "reason"),
+    [
+        ({"thermal_warning": True}, "THERMAL_WARNING"),
+        ({"free_disk_bytes": live.autotune.REQUIRED_FREE_DISK_BYTES - 1},
+         "DISK_FLOOR_RISK"),
+        ({"available_ram_bytes": live.autotune.MINIMUM_AVAILABLE_RAM_BYTES - 1},
+         "RAM_FLOOR_RISK"),
+        ({"swap_used_bytes": live.autotune.MAXIMUM_SWAP_USED_BYTES + 1},
+         "ABSOLUTE_SWAP_CEILING"),
+        ({"swap_used_bytes": 101}, "SWAP_GROWTH"),
+        ({"swapouts": 8}, "NEW_SWAPOUTS"),
+        ({"materialized_raw_allocated_bytes":
+          live.autotune.MAXIMUM_MATERIALIZED_RAW_ALLOCATED_BYTES + 1},
+         "MATERIALIZED_RAW_ALLOCATION_CEILING"),
+        ({"materialized_raw_allocated_bytes": 10_001_001},
+         "LIVE_ALLOCATION_GROWTH_CEILING"),
+    ],
+)
+def test_live_resource_policy_enforcement_is_fail_closed(
+    updates: dict[str, Any],
+    reason: str,
+) -> None:
+    baseline = _resource_sample(123)
+    sample = _resource_sample(123, **updates)
+    with pytest.raises(Glm52Error, match=reason):
+        live._enforce_resource_policy_sample(
+            sample,
+            baseline=baseline,
+            policy=live._expected_resource_policy_binding(),
+        )
 
 
 def _log_evidence() -> dict[str, Any]:
@@ -560,6 +618,190 @@ def _child_for_spec(
         "python_body_file_writes": 0,
         "error": None,
     })
+
+
+class _WritePipe:
+    def __init__(self) -> None:
+        self.writes: list[str] = []
+
+    def write(self, value: str) -> int:
+        self.writes.append(value)
+        return len(value)
+
+    def flush(self) -> None:
+        return None
+
+    def close(self) -> None:
+        return None
+
+
+class _ProtocolProcess:
+    pid = 123
+
+    def __init__(self, spec: Mapping[str, Any], child: Mapping[str, Any]) -> None:
+        self.stdin = _WritePipe()
+        self.stdout = io.StringIO("".join((
+            json.dumps({
+                "protocol": live.CHILD_PROTOCOL,
+                "status": "READY",
+                "spec_seal_sha256": spec["seal_sha256"],
+            }) + "\n",
+            json.dumps({
+                "protocol": live.CHILD_PROTOCOL,
+                "status": "RESULT",
+                "result": child,
+            }) + "\n",
+        )))
+        self.stderr = io.StringIO(json.dumps({
+            "retry_rate": 0.01,
+            "reconstruction_latency_seconds": 0.01,
+            "temporary_amplification_ratio": 1.01,
+        }) + "\n")
+        self.returncode: int | None = None
+
+    def poll(self) -> int | None:
+        return self.returncode
+
+    def wait(self, timeout: float) -> int:
+        del timeout
+        self.returncode = 0
+        return 0
+
+
+class _Samples:
+    def __init__(self, samples: list[dict[str, Any]]) -> None:
+        self.samples = iter(samples)
+        self.calls = 0
+
+    def sample(self, pid: int) -> Mapping[str, Any]:
+        assert pid == 123
+        self.calls += 1
+        return next(self.samples)
+
+
+class _Network:
+    def __init__(self, counters: list[int]) -> None:
+        self.counters = iter(counters)
+        self.calls = 0
+
+    def snapshot(self) -> int:
+        self.calls += 1
+        return next(self.counters)
+
+    def evidence(self) -> Mapping[str, Any]:
+        return {
+            "schema": live.NETWORK_COUNTER_SCHEMA,
+            "method": "TEST_FAKE_NO_NETWORK",
+            "scope": "TEST",
+            "counts_unrelated_host_traffic": True,
+            "monotonicity_required": True,
+            "credentials_serialized": False,
+        }
+
+
+def _authorized_spec(plan: Mapping[str, Any], *, cap: int = 10_000):
+    provisional = _spec(plan, cap=cap)
+    capability = _capability(provisional)
+    return (
+        _spec(plan, capability_seal=capability["seal_sha256"], cap=cap),
+        capability,
+    )
+
+
+def test_subsecond_protocol_gets_three_real_samples_without_body_or_network(
+    plan: dict[str, Any],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    spec, capability = _authorized_spec(plan)
+    child = _child_for_spec(spec, elapsed=0.02)
+    process = _ProtocolProcess(spec, child)
+    sampler = _Samples([
+        _resource_sample(123, sampled_monotonic_ns=index)
+        for index in (1, 2, 3)
+    ])
+    actual = spec["trial"]["planned_payload_bytes"]
+    counter = _Network([1_000, 1_010, 1_000 + actual, 1_000 + actual])
+    monkeypatch.setenv(live.EXECUTE_ENV, "1")
+    monkeypatch.setattr(subprocess, "Popen", lambda *_args, **_kwargs: process)
+
+    result = live.execute_trial(
+        plan,
+        spec,
+        capability,
+        capability_verifier=_Verifier(),
+        resource_sampler=sampler,
+        network_counter=counter,
+    )
+    assert result["status"] == "PASS_COMPLETE_MEASURED"
+    assert result["resource_policy"]["sample_count"] == 3
+    assert len(result["resource_observations"]["samples"]) == 1
+    assert sampler.calls == 3
+    assert counter.calls == 4
+    assert result["network_accounting"]["post_child_exit_counter_included"] is True
+    assert result["network_accounting"][
+        "cap_crossing_cancellation_then_counter_required"
+    ] is True
+    assert result["body_persistence"]["python_body_file_writes"] == 0
+
+
+def test_cap_crossing_cancels_then_accounts_post_cancel_counter(
+    plan: dict[str, Any],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    spec, capability = _authorized_spec(plan, cap=1_000)
+    process = _ProtocolProcess(spec, _child_for_spec(spec, elapsed=0.02))
+    sampler = _Samples([_resource_sample(123), _resource_sample(123)])
+    counter = _Network([1_000, 2_001, 2_010])
+    cancellations: list[int] = []
+    monkeypatch.setenv(live.EXECUTE_ENV, "1")
+    monkeypatch.setattr(subprocess, "Popen", lambda *_args, **_kwargs: process)
+    monkeypatch.setattr(
+        live,
+        "_cancel_child",
+        lambda candidate: cancellations.append(candidate.pid),
+    )
+    with pytest.raises(Glm52Error, match="cancellation-accounted delta=1010"):
+        live.execute_trial(
+            plan,
+            spec,
+            capability,
+            capability_verifier=_Verifier(),
+            resource_sampler=sampler,
+            network_counter=counter,
+        )
+    assert cancellations == [123, 123]
+    assert counter.calls == 3
+    assert not any('"command":"ACK"' in item for item in process.stdin.writes)
+
+
+def test_pre_go_thermal_gate_cancels_before_go(
+    plan: dict[str, Any],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    spec, capability = _authorized_spec(plan)
+    process = _ProtocolProcess(spec, _child_for_spec(spec, elapsed=0.02))
+    sampler = _Samples([_resource_sample(123, thermal_warning=True)])
+    counter = _Network([1_000])
+    cancellations: list[int] = []
+    monkeypatch.setenv(live.EXECUTE_ENV, "1")
+    monkeypatch.setattr(subprocess, "Popen", lambda *_args, **_kwargs: process)
+    monkeypatch.setattr(
+        live,
+        "_cancel_child",
+        lambda candidate: cancellations.append(candidate.pid),
+    )
+    with pytest.raises(Glm52Error, match="THERMAL_WARNING"):
+        live.execute_trial(
+            plan,
+            spec,
+            capability,
+            capability_verifier=_Verifier(),
+            resource_sampler=sampler,
+            network_counter=counter,
+        )
+    assert cancellations == [123]
+    assert counter.calls == 0
+    assert not any('"command":"GO"' in item for item in process.stdin.writes)
 
 
 def _result_for_spec(
@@ -670,8 +912,8 @@ def test_overall_assembler_requires_all_12_and_two_full_largest_hashes(plan: dic
         plan,
         results,
         validations,
-        required_free_bytes=1,
-        required_available_ram_bytes=1,
+        required_free_bytes=live.autotune.REQUIRED_FREE_DISK_BYTES,
+        required_available_ram_bytes=live.autotune.MINIMUM_AVAILABLE_RAM_BYTES,
         rebuild_plan=False,
     )
     verify_sealed(overall)
@@ -718,8 +960,8 @@ def test_overall_assembler_requires_all_12_and_two_full_largest_hashes(plan: dic
             plan,
             results[:-1],
             validations,
-            required_free_bytes=1,
-            required_available_ram_bytes=1,
+            required_free_bytes=live.autotune.REQUIRED_FREE_DISK_BYTES,
+            required_available_ram_bytes=live.autotune.MINIMUM_AVAILABLE_RAM_BYTES,
             rebuild_plan=False,
         )
     with pytest.raises(Glm52Error, match="two full"):
@@ -727,8 +969,17 @@ def test_overall_assembler_requires_all_12_and_two_full_largest_hashes(plan: dic
             plan,
             results,
             validations[:1],
-            required_free_bytes=1,
-            required_available_ram_bytes=1,
+            required_free_bytes=live.autotune.REQUIRED_FREE_DISK_BYTES,
+            required_available_ram_bytes=live.autotune.MINIMUM_AVAILABLE_RAM_BYTES,
+            rebuild_plan=False,
+        )
+    with pytest.raises(Glm52Error, match="caller resource floors differ"):
+        live.assemble_autotune_result(
+            plan,
+            results,
+            validations,
+            required_free_bytes=live.autotune.REQUIRED_FREE_DISK_BYTES - 1,
+            required_available_ram_bytes=live.autotune.MINIMUM_AVAILABLE_RAM_BYTES,
             rebuild_plan=False,
         )
 
