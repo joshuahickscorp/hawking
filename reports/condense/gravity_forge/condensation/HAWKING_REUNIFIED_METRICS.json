@@ -1,0 +1,60 @@
+{
+  "at": "2026-07-18T22:57:26Z",
+  "honest_note": "Seed/Default/Performance profiles collapse onto Candidate C and hit their targets dramatically because C is a self-contained, Metal-accelerated, direct-quant runtime. The Development profile (142,812 LOC active owned) exceeds target because it carries the proven multi-arch engine (hawking-core 60k), Python control tooling (51k), and HIDE (6k) whose capability the Seed does not yet replicate. Reducing it to <=35k/50k WITHOUT losing capability is a genuine migration campaign (rewrite each remaining arch/serving/kernel surface as a thin Seed-IR adapter), NOT a one-turn deletion. Deleting proven capability to hit a number is explicitly refused.",
+  "profiles": {
+    "Default": {
+      "capabilities": [
+        "+ Llama adapter + Forge (ternary sub-bit) + Doctor rescue + local CLI"
+      ],
+      "loc": 2204,
+      "offline": true,
+      "packs": [
+        "hawking-seed-c"
+      ],
+      "status": "PASS (2204 - the Seed IS a self-contained default for the Llama/SmolLM path)",
+      "target": "<=10000"
+    },
+    "Development": {
+      "loc": 142812,
+      "packs": [
+        "hawking-seed-c",
+        "hawking-core",
+        "hawking",
+        "hawking-serve",
+        "hawking-speculate",
+        "hawking-bench",
+        "shaders",
+        "tools",
+        "app/HIDE"
+      ],
+      "status": "OVER (142,812) - includes the full proven multi-model engine + Python control + HIDE; this is the accretion disk still to condense",
+      "target": "<=35000"
+    },
+    "Performance": {
+      "loc": 2204,
+      "packs": [
+        "hawking-seed-c (Metal LM-head 15x)"
+      ],
+      "status": "PASS (2204; Metal already on the measured bottleneck; broader kernels are additive)",
+      "target": "<=20000"
+    },
+    "Seed": {
+      "binary_bytes": 601584,
+      "capabilities": [
+        "authority",
+        "direct-quant runtime",
+        "pack verify",
+        "CLI"
+      ],
+      "loc": 2204,
+      "packs": [
+        "hawking-seed-c"
+      ],
+      "status": "PASS (2204)",
+      "target": "<=3000",
+      "tests": 23
+    }
+  },
+  "schema": "hawking.reunified_metrics.v1",
+  "sha256": "274d38a60625600f2528faf7d064e153195b3a59e5f164a4adacb1cc4edcda57"
+}

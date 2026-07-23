@@ -1,0 +1,67 @@
+{
+  "execution_id": "PE01_CONTEXTUAL_CAPTURE_M1_POLICY_TESTS",
+  "lanes": [
+    {
+      "name": "contextual_native_seam",
+      "lane": "HEAVY_LANE",
+      "task": "NG0_CONTEXTUAL_EXPERT0_SEAM",
+      "command": [
+        "/Library/Frameworks/Python.framework/Versions/3.12/bin/python3.12",
+        "tools/condense/kimi_k26_gravity_nonlinear.py",
+        "capture",
+        "--repo",
+        "/Users/scammermike/Downloads/hawking",
+        "--source",
+        "/Users/scammermike/.cache/huggingface/hub/models--moonshotai--Kimi-K2.6/snapshots/7eb5002f6aadc958aed6a9177b7ed26bb94011bb",
+        "--output-dir",
+        "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/gravity_nonlinear"
+      ],
+      "maximum_atomic_write_bytes": 175000000,
+      "logical_disk_read_bytes": 10771562238,
+      "logical_disk_write_bytes": 160000000,
+      "contention_effect": "MEASURED_AGAINST_SIMULTANEOUS_CACHED_CPU_ANALYSIS"
+    },
+    {
+      "name": "m1_cached_oracle",
+      "lane": "CPU_LIGHT_LANE",
+      "task": "M1_TEACHER_HIDDEN_REPAIR_BANDWIDTH_CACHED_STAGE",
+      "command": [
+        "/Library/Frameworks/Python.framework/Versions/3.12/bin/python3.12",
+        "tools/condense/kimi_k26_gravity_oneoffs.py",
+        "--repo",
+        "/Users/scammermike/Downloads/hawking",
+        "--stage",
+        "m1"
+      ],
+      "maximum_atomic_write_bytes": 5394923,
+      "logical_disk_read_bytes": 797355448,
+      "logical_disk_write_bytes": 64739076,
+      "contention_effect": "COMPARE_DURATION_AND_BACKOFF_WITH_NATIVE_SEAM_CAPTURE"
+    },
+    {
+      "name": "disk_policy_regression",
+      "lane": "CPU_LIGHT_LANE",
+      "task": "FIVE_GIB_POLICY_REGRESSION",
+      "command": [
+        "/Library/Frameworks/Python.framework/Versions/3.12/bin/python3.12",
+        "-m",
+        "pytest",
+        "-q",
+        "tools/condense/tests/test_kimi_k26_campaign.py",
+        "tools/condense/tests/test_kimi_k26_doctor_prime.py",
+        "tools/condense/tests/test_kimi_k26_disk_policy.py"
+      ],
+      "maximum_atomic_write_bytes": 1048576,
+      "logical_disk_read_bytes": 2097152,
+      "logical_disk_write_bytes": 1048576,
+      "contention_effect": "SHORT_CONTROL_LANE_FOR_POLICY_GUARD_COST"
+    }
+  ],
+  "policy": {
+    "maximum_heavy_lanes": 1,
+    "memory_available_floor_bytes": 25769803776,
+    "maximum_swap_growth_bytes": 536870912,
+    "hard_disk_floor_bytes": 5368709120,
+    "backoff": "TERMINATE_CPU_LIGHT_LANES_FIRST"
+  }
+}

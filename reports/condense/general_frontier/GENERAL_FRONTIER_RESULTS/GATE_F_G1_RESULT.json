@@ -1,0 +1,104 @@
+{
+  "block": 0,
+  "candidates": {
+    "mlp1": {
+      "A1_pq_doctor~pq": {
+        "calibration_div": 0.00561,
+        "capability_parity": false,
+        "experts_exercised_cal": 16,
+        "validation_div": 0.00538
+      },
+      "A2_product_quant": {
+        "calibration_div": 0.00555,
+        "capability_parity": false,
+        "experts_exercised_cal": 16,
+        "validation_div": 0.00543
+      },
+      "A3_pq_islands": {
+        "calibration_div": 0.00546,
+        "capability_parity": false,
+        "experts_exercised_cal": 16,
+        "validation_div": 0.00534
+      },
+      "A4_source_native": {
+        "calibration_div": 0.0,
+        "capability_parity": false,
+        "experts_exercised_cal": 16,
+        "validation_div": 0.0
+      }
+    },
+    "mlp2": {
+      "B1_pq_islands": {
+        "calibration_div": 0.15006,
+        "capability_parity": false,
+        "experts_exercised_cal": 16,
+        "validation_div": 0.14919
+      },
+      "B2_naive_rvq": {
+        "calibration_div": 0.44783,
+        "capability_parity": false,
+        "experts_exercised_cal": 16,
+        "validation_div": 0.44679
+      },
+      "B3_product_quant": {
+        "calibration_div": 0.60256,
+        "capability_parity": false,
+        "experts_exercised_cal": 16,
+        "validation_div": 0.60975
+      },
+      "B4_source_native": {
+        "calibration_div": 0.0,
+        "capability_parity": false,
+        "experts_exercised_cal": 16,
+        "validation_div": 0.0
+      }
+    }
+  },
+  "cpu_metal_parity": {
+    "D": 16,
+    "S": 1,
+    "assignment_agreement": 1.0,
+    "authoritative": "cpu",
+    "candidate_ks": "[16, 64, 256]",
+    "codebook_relerr_cpu": 0.86993,
+    "codebook_relerr_metal": 0.86993,
+    "device": "mps",
+    "k": 64,
+    "note": "CPU (numpy) authoritative; MPS reductions may reorder near-ties",
+    "pass_match": true,
+    "ranking_cpu": "[2, 1, 0]",
+    "ranking_match": true,
+    "ranking_metal": "[2, 1, 0]",
+    "relerr_delta": 0.0,
+    "tol": 0.002,
+    "verdict_cpu": "collapse",
+    "verdict_metal": "collapse",
+    "within_tol": true
+  },
+  "g1_verdict": "G1 REPRODUCES the geometry finding on a larger sample with calibration/validation separation + CPU/Metal parity. mlp1 robust to all PQ (~0.005); mlp2 pq_protected_islands wins decisively (val 0.149 vs rvq 0.447, plain PQ 0.610), stable cal/val. Still synthetic-activation PROXY (capability_parity False), NOT a capability pass. Next: G2 complete-layer + G3 true-residual/holdout.",
+  "gate": "G1_larger_expert_reproduction",
+  "generated_at": "2026-07-19T02:34:58Z",
+  "honesty": "synthetic-activation functional-divergence PROXY, calibration/validation split, capability_parity False. Directional larger reproduction, NOT a capability pass. True-residual + real Harmony activations + holdout are the next fidelity (G3/G4).",
+  "n_calibration_inputs": 16,
+  "n_validation_inputs": 12,
+  "schema": "hawking.general_frontier.g1_result.v1",
+  "seconds": 156.9,
+  "sha256": "f186379dd07a3509abca1bee15b39cab69787f6a6979a6c3e0f9ff6b4a822cba",
+  "winner_selection_fix": "source_native (identity) controls EXCLUDED from winner selection; they are equal-byte reference boundaries (0.0 divergence trivially), not sub-bit candidates",
+  "winners": {
+    "mlp1": {
+      "beats_baseline_0688": true,
+      "calibration_div": 0.00546,
+      "candidate": "A3_pq_islands",
+      "source_native_control_div": 0.0,
+      "validation_div": 0.00534
+    },
+    "mlp2": {
+      "beats_baseline_0688": true,
+      "calibration_div": 0.15006,
+      "candidate": "B1_pq_islands",
+      "source_native_control_div": 0.0,
+      "validation_div": 0.14919
+    }
+  }
+}

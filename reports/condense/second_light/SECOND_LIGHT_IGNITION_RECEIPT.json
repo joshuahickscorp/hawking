@@ -1,0 +1,121 @@
+{
+  "best_candidate": {
+    "rel_error": 0.676851,
+    "row_id": "r0000",
+    "whole_artifact_bpw": 0.750016
+  },
+  "capability_claim": false,
+  "controller_child_pid": 84690,
+  "current_state": "RUNNING",
+  "ignited": true,
+  "lease": {
+    "holder_pid": 84690,
+    "label": "com.hawking.second_light",
+    "live": true,
+    "path": "/Users/scammermike/Downloads/hawking/reports/condense/second_light/leases/second_light.lease"
+  },
+  "max_experts": 128,
+  "note": "Durable full-scope PQ pass launched. Experts pack at full 128-expert scope; embedding rows use a labelled representative-slice budget extrapolation. This is the durable search producing the first complete candidate; NOT a capability pass or Event Horizon. Sub-bit expert divergence remains large (negative science).",
+  "notification": {
+    "note": "launch event routed through succ_telegram.emit if configured",
+    "status": {
+      "configured": true
+    },
+    "telegram_available": true
+  },
+  "observed_advance": [
+    {
+      "current_row": "r0000",
+      "done": 0,
+      "hb_age": 6.9,
+      "hb_fresh": true,
+      "lease_live": true,
+      "state": "RUNNING",
+      "t": 6.1
+    },
+    {
+      "current_row": "r0000",
+      "done": 0,
+      "hb_age": 13.0,
+      "hb_fresh": true,
+      "lease_live": true,
+      "state": "RUNNING",
+      "t": 12.2
+    },
+    {
+      "current_row": "r0000",
+      "done": 0,
+      "hb_age": 19.2,
+      "hb_fresh": true,
+      "lease_live": true,
+      "state": "RUNNING",
+      "t": 18.4
+    },
+    {
+      "current_row": "r0001",
+      "done": 1,
+      "hb_age": 3.4,
+      "hb_fresh": true,
+      "lease_live": true,
+      "state": "RUNNING",
+      "t": 24.6
+    },
+    {
+      "current_row": "r0001",
+      "done": 1,
+      "hb_age": 9.6,
+      "hb_fresh": true,
+      "lease_live": true,
+      "state": "RUNNING",
+      "t": 30.8
+    },
+    {
+      "current_row": "r0001",
+      "done": 1,
+      "hb_age": 15.8,
+      "hb_fresh": true,
+      "lease_live": true,
+      "state": "RUNNING",
+      "t": 37.0
+    },
+    {
+      "current_row": "r0002",
+      "done": 2,
+      "hb_age": 4.0,
+      "hb_fresh": true,
+      "lease_live": true,
+      "state": "RUNNING",
+      "t": 43.2
+    }
+  ],
+  "program_sha256": "3a4061f2b8d467b4a994ce3f46224ffb96f4bcab3f88abd5b2e10925b22ce760",
+  "quality_contract_sha256": "6edc2121a93ca4d7c033851c6189fcd53b4d54c2920262706cbeb0f437758994",
+  "readiness_sha256": "54585505487fab94fc02c95a74757b64fdf1a6cdc3ca281ea5e3b1cb82238e5d",
+  "resource_snapshot": {
+    "cpu_count": 28,
+    "disk_path": "/Users/scammermike/Downloads/hawking/reports/condense/second_light",
+    "free_disk_gb": 601.474,
+    "physical_memory_bytes": 103079215104,
+    "read_only": true,
+    "sampled_at": "2026-07-19T00:34:29+00:00",
+    "schema": "hawking.successor.resource_sample.v1",
+    "self_rss_bytes": 3978559488,
+    "swap": {
+      "available": true,
+      "free_bytes": 1300957757,
+      "total_bytes": 2147483648,
+      "used_bytes": 846525890
+    },
+    "thermal": {
+      "available": false
+    },
+    "total_disk_gb": 994.663
+  },
+  "rows_sealed_at_observe_end": 2,
+  "schema": "hawking.second_light.ignition_receipt.v1",
+  "seed_commit": "7f237ed36a64ed1b19886b32a1d17f82af50c5bd",
+  "sha256": "34158770bb6323b9b00b4a285874344e8d7ef44bccdbc622c5bab94bbf5ebe95",
+  "source_manifest_sha256": "49675804250bdba09fcfa682363443be9c1bdd99d278d6f064ce44b7ff59ab40",
+  "start_time": "2026-07-19T00:33:49Z",
+  "total_queue_rows": 183
+}

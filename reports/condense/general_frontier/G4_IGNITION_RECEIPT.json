@@ -1,0 +1,43 @@
+{
+  "schema": "hawking.full_frontier.g4_ignition_receipt.v1",
+  "gate": "G4_short_end_to_end_real_forward",
+  "generation": "M",
+  "ignited": true,
+  "capability_claim": false,
+  "controller_pid": 48797,
+  "controller_pgid": 48797,
+  "controller_ppid": 1,
+  "caffeinate_child_pid": 48798,
+  "lease": {"label": "com.hawking.frontier_g4", "path": "reports/condense/general_frontier/G4/leases/frontier_g4.lease", "live": true},
+  "detach_cmd": "caffeinate -i -s python3.12 tools/condense/gravity_frontier_g4_controller.py run",
+  "durability": "survives terminal/chat/IDE closure (reparented to init pgid 48797) + caffeinate blocks idle sleep; per-row sealed checkpoints + resume survive controller restart; NOT installed as a reboot-persistent launchd agent (repo convention + persistent-config caution)",
+  "start_time": "2026-07-19T19:04:00Z",
+
+  "instrument": {
+    "module": "tools/condense/gptoss_real_forward.py",
+    "what": "FIRST real coherent full-model GPT-OSS-120B forward in the campaign; bounded-streaming (~65GB read/forward, no offload); correct gpt-oss activation (interleaved gate/up, clamp 7, alpha 1.702, (up+1)*glu) vs transformers modeling_gpt_oss; residual threaded through 36 blocks + final norm + unembed",
+    "validation": {"prompt": "The capital of France is", "top_next_token": " Paris", "prob": 0.405, "also_top8": " London", "forward_seconds": 189, "logits_finite": true, "vocab": 201088},
+    "parity_boundary": "empirical-by-coherence, NOT bit-exact HF (checkpoint is OpenAI-format so a transformers reference cannot be loaded on 96GB)"
+  },
+
+  "observed_advancement": [
+    {"row_id": "gen_paris__original", "sealed": true, "real_perplexity": 27.4325, "forward_seconds": 190.8},
+    {"row_id": "gen_science__original", "sealed_by_detached_pid": 48797, "real_perplexity": 6.6751, "forward_seconds": 263.6, "sealed_at": "2026-07-19T19:08:46Z"},
+    {"row_id": "code_py__original", "state": "forwarding (row admitted, progressing)"}
+  ],
+  "rows_done": 2,
+  "rows_total": 12,
+  "failed_rows": 0,
+  "eta_seconds_remaining": 1318,
+  "queue": "6 original parent rows (real logits + self-NLL/PPL) then 6 sub-bit RVQ@1.0bpw rows (real logit KL / top5 / argmax-agreement / PPL-delta vs original)",
+
+  "sealed_thresholds": {"promote_mean_sym_kl_max": 0.10, "promote_next_token_argmax_agreement_min": 0.95, "law": "not lowered after seeing results"},
+  "expected_science": "NEGATIVE at sub-bit (consistent with G0-G3 proxy + Second-Light 0.688 divergence), now at REAL fidelity -> seals the honest G4 boundary; small chance of a surprise. The parent real PPL map is the never-before-measured reference the quality contract requires.",
+
+  "resources_at_ignition": {"platform": "M3 Ultra 28-core", "forward_compute": "CPU numpy (bounded streaming); MPS used only for RVQ packing", "mem_free_gb": 72.7, "swap_used_mb": 419, "disk_free_gb": 563, "controller_rss_gb": 8.2, "thermal": "not sampled"},
+
+  "giants": {"685B": "source-absent + gated -> prep-only, NO handoff this session", "1T": "source-absent + gated -> prep-only, NO handoff this session"},
+  "cuda": "BLOCKED (no sealed cloud budget); Apple-only lane",
+  "rollback": "git reset --hard 4fbca8bc (HEAD==origin/main; nothing committed). Kill controller: kill 48797. No source mutated (byte-range read-only).",
+  "authoritative_main": "4fbca8bc6d33117707933793bb3293d9463c049f"
+}

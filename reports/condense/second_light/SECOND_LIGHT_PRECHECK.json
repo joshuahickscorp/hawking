@@ -1,0 +1,165 @@
+{
+  "authoritative_main_branch": "main",
+  "authoritative_main_commit": "7f237ed36a64ed1b19886b32a1d17f82af50c5bd",
+  "determination": {
+    "advancing_is_measured_not_hardcoded": true,
+    "bounded_calibration_not_called_full_run": true,
+    "committed_json_not_trusted": true,
+    "full_run_status": "NOT_STARTED",
+    "historical_pid_not_trusted": true,
+    "reason": "MEASURED: Second Light lease live=False, heartbeat_fresh=False, advancing=False, completed_rows=0/183. full_run_status=NOT_STARTED derived from the live controller state (fcntl flock liveness), not from any committed JSON or historical PID. Other hawking heavy owners: 0 (MoP is a separate project and is excluded)."
+  },
+  "evidence": {
+    "hawking_heavy_processes": [],
+    "launchd_jobs": [
+      {
+        "alive": false,
+        "label": "com.hawking.second_light",
+        "last_exit_status": null,
+        "pid": null
+      },
+      {
+        "alive": false,
+        "label": "com.hawking.doctorv5.telegram",
+        "last_exit_status": "19200",
+        "pid": null
+      },
+      {
+        "alive": false,
+        "label": "com.hawking.doctorv5ultra.post120b",
+        "last_exit_status": "512",
+        "pid": null
+      },
+      {
+        "alive": false,
+        "label": "com.hawking.doctorv5ultra.autoresume",
+        "last_exit_status": null,
+        "pid": null
+      },
+      {
+        "alive": false,
+        "label": "com.hawking.frontier",
+        "last_exit_status": null,
+        "pid": null
+      }
+    ],
+    "lease_pid_heartbeat_files": [
+      {
+        "path": "reports/condense/gravity_forge/condensation/HAWKING_120B_RELEASE_CLOSURE.json",
+        "preview": "{\n  \"at\": \"2026-07-18T22:58:26Z\",\n  \"bindings_missing\": [\n    \"120B source manifest\",\n    \"120B tokenizer\",\n    \"expert byte ranges\",\n    \"router layout\",\n    \"source hashes\",\n    \"license binding\"\n  "
+      },
+      {
+        "path": "reports/condense/gravity_forge/condensation/PRE_SEED_RELEASE.json",
+        "preview": "{\n  \"binaries\": {\n    \"hawking\": \"builds (cargo build --workspace green)\"\n  },\n  \"generated_at\": \"2026-07-18T03:26:01Z\",\n  \"metrics\": {\n    \"cli_loc\": 4851,\n    \"hawking_core_src\": 52413,\n    \"owned_p"
+      },
+      {
+        "path": "reports/condense/gravity_forge/condensation/HAWKING_RELEASE_CLOSURE.json",
+        "preview": "{\n  \"at\": \"2026-07-18T22:57:26Z\",\n  \"bindings\": {\n    \"default_pack\": \"self-contained\",\n    \"doctor\": \"subbit rescue\",\n    \"forge\": \"subbit ternary + int8\",\n    \"gravity_law\": \"crates/hawking-seed-c/s"
+      }
+    ],
+    "prior_ignition_claims": [
+      {
+        "claim": "one Gravity run ignited",
+        "commit": "0504b0f7",
+        "verdict": "UNTRUSTED per Section 0; reclassified as FIRST-LIGHT CALIBRATION; no live process, no advancing queue, no fresh heartbeat"
+      },
+      {
+        "claim": "120B source FAIL CLOSED (absent) -> run NOT launched",
+        "commit": "80b1f1c2",
+        "verdict": "source-absent condition since RESOLVED; source now present+verified"
+      }
+    ]
+  },
+  "full_run_status": "NOT_STARTED",
+  "generated_at": "2026-07-19T00:32:27Z",
+  "mandated_questions": {
+    "controller_pid": null,
+    "is_a_controller_currently_alive": false,
+    "is_it_processing_the_complete_program": false,
+    "last_checkpoint_time": null,
+    "lease_held": null,
+    "percent_of_complete_program_done": 0.0,
+    "queue_advancing": false
+  },
+  "resources": {
+    "cpu": "Apple M3 Ultra",
+    "disk_free_gb": 560.2,
+    "disk_total_gb": 926.4,
+    "hw_model": "Mac15,14",
+    "logical_cores": 28,
+    "ram_gb": 96.0,
+    "thermal": "Note: No thermal warning level has been recorded\nNote: No performance warning level has been recorded\nNote: No CPU power status has been recorded"
+  },
+  "schema": "hawking.second_light.precheck.v1",
+  "second_light_live_state": {
+    "advancing": false,
+    "available": true,
+    "completed_rows": 0,
+    "current_row": null,
+    "heartbeat_beat_at": null,
+    "heartbeat_fresh": false,
+    "lease_holder_pid": null,
+    "lease_live": false,
+    "percent_done": 0.0,
+    "state": "NOT_STARTED",
+    "total_rows": 183
+  },
+  "sha256": "691822a4db509f2bb9c89429c4c399f218cf50731fe1ce66641afe7e2a87c797",
+  "source_receipt": {
+    "chat_template_present": true,
+    "config": {
+      "experts_per_token": 4,
+      "head_dim": 64,
+      "hidden_size": 2880,
+      "initial_context_length": 4096,
+      "intermediate_size": 2880,
+      "num_attention_heads": 64,
+      "num_experts": 128,
+      "num_hidden_layers": 36,
+      "num_key_value_heads": 8,
+      "rope_ntk_alpha": 1,
+      "rope_ntk_beta": 32,
+      "rope_scaling_factor": 32.0,
+      "rope_theta": 150000,
+      "sliding_window": 128,
+      "swiglu_limit": 7.0,
+      "vocab_size": 201088
+    },
+    "manifest_sha256": "d0152de427fd5e33ee7d8e7c10d0b9f1955bcb0772396639364779e1b08db8be",
+    "present": true,
+    "shard_count": 7,
+    "shards": [
+      {
+        "bytes": 10544040680,
+        "name": "model--00001-of-00007.safetensors"
+      },
+      {
+        "bytes": 10488721680,
+        "name": "model--00002-of-00007.safetensors"
+      },
+      {
+        "bytes": 10488721688,
+        "name": "model--00003-of-00007.safetensors"
+      },
+      {
+        "bytes": 10488721672,
+        "name": "model--00004-of-00007.safetensors"
+      },
+      {
+        "bytes": 10488721680,
+        "name": "model--00005-of-00007.safetensors"
+      },
+      {
+        "bytes": 10433402600,
+        "name": "model--00006-of-00007.safetensors"
+      },
+      {
+        "bytes": 2316539800,
+        "name": "model--00007-of-00007.safetensors"
+      }
+    ],
+    "tensor_count": 543,
+    "tokenizer_bytes": 27868174,
+    "tokenizer_present": true
+  }
+}

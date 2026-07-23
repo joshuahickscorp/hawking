@@ -1,0 +1,113 @@
+{
+  "binding": {
+    "claim_boundary": "TEXT_CORE_ONLY",
+    "outer_model_type": "kimi_k25",
+    "quantization": {
+      "format": "pack-quantized",
+      "group_size": 32,
+      "num_bits": 4,
+      "quant_method": "compressed-tensors",
+      "symmetric": true
+    },
+    "text": {
+      "hidden_size": 7168,
+      "kv_lora_rank": 512,
+      "max_position_embeddings": 262144,
+      "model_type": "kimi_k2",
+      "n_group": 1,
+      "n_routed_experts": 384,
+      "n_shared_experts": 1,
+      "norm_topk_prob": true,
+      "num_experts_per_tok": 8,
+      "num_hidden_layers": 61,
+      "q_lora_rank": 1536,
+      "qk_nope_head_dim": 128,
+      "qk_rope_head_dim": 64,
+      "rms_norm_eps": 1e-05,
+      "rope_theta": 50000.0,
+      "routed_scaling_factor": 2.827,
+      "scoring_func": "sigmoid",
+      "topk_group": 1,
+      "topk_method": "noaux_tc",
+      "v_head_dim": 128
+    },
+    "vision_layers": 27
+  },
+  "checks": {
+    "compressed_tensors_int4_i32_roundtrip": true,
+    "deterministic_replay": true,
+    "functional_metal_k1": true,
+    "group32_symmetric_dequantization": true,
+    "mla_cpu_reference": true,
+    "noaux_tc_router": true,
+    "normalization_residual_logits": true,
+    "official_config_bound": true,
+    "shared_plus_routed_expert_combine": true
+  },
+  "metal_k1": {
+    "max_abs_error": 4.76837158203125e-07,
+    "operator": "mlx.quantized_matmul affine INT4 group32",
+    "rows_checked": 8,
+    "source_shape": [
+      7168,
+      2048
+    ],
+    "status": "PASS",
+    "tensor": "language_model.model.layers.1.mlp.experts.0.down_proj"
+  },
+  "repo": "moonshotai/Kimi-K2.6",
+  "revision": "7eb5002f6aadc958aed6a9177b7ed26bb94011bb",
+  "runtime_claim": "SYNTHETIC_CPU_REFERENCE_AND_BOUND_REAL_SOURCE_METAL_K1",
+  "schema": "hawking.kimi_k26.adapter_twin.v1",
+  "seal_sha256": "9ec121755d11a89e305840f597bde304d0bc5579180008fe8e9e83cf2301bfa9",
+  "source_parent_parity_claimed": false,
+  "status": "PASS",
+  "synthetic": {
+    "experts": 12,
+    "hidden": 32,
+    "logits_sha256": "97ace5e69ed542aba42169d4d088919f44ba2c6dc722d96b39b761f6bb273463",
+    "mla_shapes": {
+      "k": [
+        2,
+        4,
+        8
+      ],
+      "output": [
+        2,
+        32
+      ],
+      "q": [
+        2,
+        4,
+        12
+      ],
+      "score": [
+        2,
+        4
+      ],
+      "v": [
+        2,
+        4,
+        8
+      ]
+    },
+    "route_indices": [
+      [
+        4,
+        3,
+        11
+      ],
+      [
+        11,
+        2,
+        5
+      ]
+    ],
+    "route_weight_sums": [
+      2.827000141143799,
+      2.827000141143799
+    ],
+    "top_k": 3
+  },
+  "vision_claimed": false
+}

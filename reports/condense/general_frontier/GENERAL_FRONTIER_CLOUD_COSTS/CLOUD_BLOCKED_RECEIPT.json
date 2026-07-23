@@ -1,0 +1,35 @@
+{
+  "actions_taken": {
+    "gpus_provisioned": 0,
+    "paid_resource_launched": false,
+    "plan_only": true,
+    "pods_created": 0,
+    "spend_incurred": 0
+  },
+  "authorization_required": true,
+  "budget_schema_ref": "GENERAL_FRONTIER_CLOUD_COSTS/CLOUD_BUDGET_SCHEMA.json",
+  "checks": {
+    "HAWKING_CLOUD_BUDGET_present": false,
+    "HAWKING_CLOUD_MAX_HOURLY_present": false,
+    "HAWKING_CLOUD_MAX_HOURS_present": false,
+    "cuda_credentials_present": false,
+    "operator_signature_present": false,
+    "sealed_budget_object_present": false
+  },
+  "generated_at": "2026-07-19T02:41:00Z",
+  "goal_ref": "Part 26-30, 59 (CUDA/cloud lane)",
+  "kernel_commit": "e2609f94",
+  "lane": "CUDA / RunPod cloud backend",
+  "note": "Part 28 law: a cloud/RunPod credential or API key does NOT imply a budget or permission to spend. The lane stays BLOCKED until a full sealed, operator-signed budget exists. This receipt records that NO paid resource was launched.",
+  "provisioning_plan_ref": "GENERAL_FRONTIER_BACKEND_PARITY/CUDA_PROVISIONING_PLAN.json",
+  "reason": "no sealed cost authorization; budget not inferred from API-key presence",
+  "schema": "hawking.general_frontier.cloud_blocked.v1",
+  "sha256": "4991726a6eb01a6acc93fc2098e632fb6c27182588c886f9e7c9d7e8ab190323",
+  "status": "BLOCKED",
+  "to_unblock": [
+    "Author a sealed budget object populating every required_field in CLOUD_BUDGET_SCHEMA.json.",
+    "Set HAWKING_CLOUD_BUDGET, HAWKING_CLOUD_MAX_HOURLY, HAWKING_CLOUD_MAX_HOURS to the sealed values.",
+    "Obtain operator signature on the sealed budget (Part 28: key presence is NOT authorization).",
+    "Re-run the lane readiness gate; only a green gate authorizes provisioning."
+  ]
+}

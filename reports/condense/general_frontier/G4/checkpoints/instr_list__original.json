@@ -1,0 +1,19 @@
+{
+  "active_generation": "M",
+  "domain": "instruction",
+  "forward_seconds": 328.2,
+  "honesty": "real full-model from-config forward (coherence-validated, not bit-exact HF); packed=naive sub-bit RVQ lower bound; capability tier requires meeting sealed thresholds",
+  "logits_finite": true,
+  "n_tokens": 11,
+  "prompt_id": "instr_list",
+  "quality": {
+    "n_positions": 10,
+    "nll": 2.50593,
+    "perplexity": 12.255
+  },
+  "rate_bpw": null,
+  "row_id": "instr_list__original",
+  "sealed_at": "2026-07-19T19:36:05Z",
+  "sha256": "512cc08b5c4952219b33748da8ef045f4033757016b43d03ef22f8dac961c596",
+  "variant": "original"
+}

@@ -1,0 +1,16 @@
+{
+  "bytes_on_disk": 166910763907,
+  "duplicate_hub_blobs": 26,
+  "free_bytes_after": 450975916032,
+  "generated_at": "2026-07-21T03:21:48Z",
+  "local_dir": "/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark",
+  "official_bytes": 166898666055,
+  "one_copy_verified": false,
+  "problems": [],
+  "receipt": "VERIFY_PARENT",
+  "repo": "deepseek-ai/DeepSeek-V4-Flash-DSpark",
+  "schema": "hawking.storage_stripdown.parent_verification.v1",
+  "sealed_at": "2026-07-21T03:21:48Z",
+  "shards_on_disk": 48,
+  "status": "GREEN"
+}

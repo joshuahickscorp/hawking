@@ -1,0 +1,356 @@
+{
+  "blocked_qwen_defaults": [
+    "uniform_frozen_weight_pq_vq",
+    "fixed_expert_omission",
+    "weight_cosine_expert_merging",
+    "weight_similarity_shared_bases",
+    "entropy_coding_primary_lever",
+    "post_hoc_scalar_gain",
+    "qwen_form_router_distillation",
+    "qwen_form_layerwise_qat",
+    "global_gamma_weighted_coding"
+  ],
+  "causal_harness_seal_sha256": "2431bd70e44f810cc4440f133e00190fd01b4656fb8ce1a220e7bc229a19484b",
+  "claim_boundary": "F0 exact installed-byte ceilings pass; no compact payload, realized BPW, or compact capability result is claimed",
+  "conditional_treatments_bill_installed_bits": true,
+  "denominators": {
+    "active_logical_weights": 32861477888,
+    "all_kimi_logical_weights": 1026879004160,
+    "compressible_logical_weights": 1014686023680,
+    "kimi_text_core_logical_weights": 1026408209408
+  },
+  "doctor_gets_no_free_bytes": true,
+  "hard_rate_law": "installed_bits / all Kimi logical weights <= candidate target <= 1",
+  "ledger_seal_sha256": "865d9b512ed2c80dbef572e0c45d1b9c586bf15279d0385d5ce2aa85ce42524a",
+  "resident_execution": {
+    "current_scope": "F1/F2 component artifacts only until a full candidate fits without releasing the resident source or crossing the disk floor",
+    "free_bytes_at_auction": 50931433472,
+    "full_candidate_fits_now": [],
+    "maximum_new_artifact_bytes_without_crossing_floor": 16571695104,
+    "retained_floor_bytes": 34359738368
+  },
+  "rows": [
+    {
+      "allocation_bytes": {
+        "compact_base": 94344508506,
+        "doctor": 28932315942,
+        "serialization_runtime_overhead": 2515853561
+      },
+      "allocation_fraction_of_total": {
+        "compact_base": 0.7499999999940378,
+        "doctor": 0.22999999999944354,
+        "serialization_runtime_overhead": 0.02000000000651866
+      },
+      "artifact_status": "F0_BYTE_BUDGET_ONLY_NOT_PACKED",
+      "candidate": "P1",
+      "complete_bpw_by_denominator": {
+        "active_logical_weights": {
+          "decimal_bpw": 30.623742106239384,
+          "denominator_weights": 32861477888,
+          "numerator_bits": 1006341424072
+        },
+        "all_kimi_logical_weights": {
+          "decimal_bpw": 0.9799999999953256,
+          "denominator_weights": 1026879004160,
+          "numerator_bits": 1006341424072
+        },
+        "compressible_logical_weights": {
+          "decimal_bpw": 0.9917761756708382,
+          "denominator_weights": 1014686023680,
+          "numerator_bits": 1006341424072
+        },
+        "kimi_text_core_logical_weights": {
+          "decimal_bpw": 0.9804495081468865,
+          "denominator_weights": 1026408209408,
+          "numerator_bits": 1006341424072
+        }
+      },
+      "envelope": "BASE_HEAVY",
+      "hard_rate_law_pass": true,
+      "installed_byte_ceiling": 125792678009,
+      "resident_fit_with_32_gib_floor": false,
+      "target_complete_bpw": "49/50",
+      "target_complete_bpw_decimal": 0.98
+    },
+    {
+      "allocation_bytes": {
+        "compact_base": 71701826465,
+        "doctor": 50317071203,
+        "serialization_runtime_overhead": 3773780341
+      },
+      "allocation_fraction_of_total": {
+        "compact_base": 0.5699999999989666,
+        "doctor": 0.3999999999952302,
+        "serialization_runtime_overhead": 0.0300000000058032
+      },
+      "artifact_status": "F0_BYTE_BUDGET_ONLY_NOT_PACKED",
+      "candidate": "P2",
+      "complete_bpw_by_denominator": {
+        "active_logical_weights": {
+          "decimal_bpw": 30.623742106239384,
+          "denominator_weights": 32861477888,
+          "numerator_bits": 1006341424072
+        },
+        "all_kimi_logical_weights": {
+          "decimal_bpw": 0.9799999999953256,
+          "denominator_weights": 1026879004160,
+          "numerator_bits": 1006341424072
+        },
+        "compressible_logical_weights": {
+          "decimal_bpw": 0.9917761756708382,
+          "denominator_weights": 1014686023680,
+          "numerator_bits": 1006341424072
+        },
+        "kimi_text_core_logical_weights": {
+          "decimal_bpw": 0.9804495081468865,
+          "denominator_weights": 1026408209408,
+          "numerator_bits": 1006341424072
+        }
+      },
+      "envelope": "BALANCED_DOCTOR",
+      "hard_rate_law_pass": true,
+      "installed_byte_ceiling": 125792678009,
+      "resident_fit_with_32_gib_floor": false,
+      "target_complete_bpw": "49/50",
+      "target_complete_bpw_decimal": 0.98
+    },
+    {
+      "allocation_bytes": {
+        "compact_base": 46543290863,
+        "doctor": 75475606805,
+        "serialization_runtime_overhead": 3773780341
+      },
+      "allocation_fraction_of_total": {
+        "compact_base": 0.36999999999737665,
+        "doctor": 0.5999999999968202,
+        "serialization_runtime_overhead": 0.0300000000058032
+      },
+      "artifact_status": "F0_BYTE_BUDGET_ONLY_NOT_PACKED",
+      "candidate": "P3",
+      "complete_bpw_by_denominator": {
+        "active_logical_weights": {
+          "decimal_bpw": 30.623742106239384,
+          "denominator_weights": 32861477888,
+          "numerator_bits": 1006341424072
+        },
+        "all_kimi_logical_weights": {
+          "decimal_bpw": 0.9799999999953256,
+          "denominator_weights": 1026879004160,
+          "numerator_bits": 1006341424072
+        },
+        "compressible_logical_weights": {
+          "decimal_bpw": 0.9917761756708382,
+          "denominator_weights": 1014686023680,
+          "numerator_bits": 1006341424072
+        },
+        "kimi_text_core_logical_weights": {
+          "decimal_bpw": 0.9804495081468865,
+          "denominator_weights": 1026408209408,
+          "numerator_bits": 1006341424072
+        }
+      },
+      "envelope": "DOCTOR_HEAVY",
+      "hard_rate_law_pass": true,
+      "installed_byte_ceiling": 125792678009,
+      "resident_fit_with_32_gib_floor": false,
+      "target_complete_bpw": "49/50",
+      "target_complete_bpw_decimal": 0.98
+    },
+    {
+      "allocation_bytes": {
+        "compact_base": 59687342116,
+        "doctor": 33694467324,
+        "serialization_runtime_overhead": 2888097200
+      },
+      "allocation_fraction_of_total": {
+        "compact_base": 0.61999999999169,
+        "doctor": 0.35,
+        "serialization_runtime_overhead": 0.03000000000830997
+      },
+      "artifact_status": "F0_BYTE_BUDGET_ONLY_NOT_PACKED",
+      "candidate": "P4",
+      "complete_bpw_by_denominator": {
+        "active_logical_weights": {
+          "decimal_bpw": 23.436537326315396,
+          "denominator_weights": 32861477888,
+          "numerator_bits": 770159253120
+        },
+        "all_kimi_logical_weights": {
+          "decimal_bpw": 0.75,
+          "denominator_weights": 1026879004160,
+          "numerator_bits": 770159253120
+        },
+        "compressible_logical_weights": {
+          "decimal_bpw": 0.7590123793435475,
+          "denominator_weights": 1014686023680,
+          "numerator_bits": 770159253120
+        },
+        "kimi_text_core_logical_weights": {
+          "decimal_bpw": 0.7503440113404818,
+          "denominator_weights": 1026408209408,
+          "numerator_bits": 770159253120
+        }
+      },
+      "envelope": "ARCHITECTURE_SPECIFIC_075",
+      "hard_rate_law_pass": true,
+      "installed_byte_ceiling": 96269906640,
+      "resident_fit_with_32_gib_floor": false,
+      "target_complete_bpw": "3/4",
+      "target_complete_bpw_decimal": 0.75
+    },
+    {
+      "allocation_bytes": {
+        "compact_base": 33373567635,
+        "doctor": 28880971992,
+        "serialization_runtime_overhead": 1925398133
+      },
+      "allocation_fraction_of_total": {
+        "compact_base": 0.5199999999968837,
+        "doctor": 0.45,
+        "serialization_runtime_overhead": 0.03000000000311624
+      },
+      "artifact_status": "F0_BYTE_BUDGET_ONLY_NOT_PACKED",
+      "candidate": "P5",
+      "complete_bpw_by_denominator": {
+        "active_logical_weights": {
+          "decimal_bpw": 15.624358217543596,
+          "denominator_weights": 32861477888,
+          "numerator_bits": 513439502080
+        },
+        "all_kimi_logical_weights": {
+          "decimal_bpw": 0.5,
+          "denominator_weights": 1026879004160,
+          "numerator_bits": 513439502080
+        },
+        "compressible_logical_weights": {
+          "decimal_bpw": 0.5060082528956984,
+          "denominator_weights": 1014686023680,
+          "numerator_bits": 513439502080
+        },
+        "kimi_text_core_logical_weights": {
+          "decimal_bpw": 0.5002293408936546,
+          "denominator_weights": 1026408209408,
+          "numerator_bits": 513439502080
+        }
+      },
+      "envelope": "AGGRESSIVE_050",
+      "hard_rate_law_pass": true,
+      "installed_byte_ceiling": 64179937760,
+      "resident_fit_with_32_gib_floor": false,
+      "target_complete_bpw": "1/2",
+      "target_complete_bpw_decimal": 0.5
+    }
+  ],
+  "schema": "hawking.kimi_k26.doctor_byte_auction.v1",
+  "seal_sha256": "0a2b405011fc0ebab5c447e769a2ff81afacfc04d06a7a7df04c86c90d331bfc",
+  "sealed_at": "2026-07-21T05:40:30Z",
+  "source": {
+    "repo": "moonshotai/Kimi-K2.6",
+    "revision": "7eb5002f6aadc958aed6a9177b7ed26bb94011bb"
+  },
+  "status": "PASS",
+  "treatment_library": [
+    {
+      "id": "organ_specific_base",
+      "status": "OPEN",
+      "targets": [
+        "attention_mla",
+        "routed_expert"
+      ]
+    },
+    {
+      "id": "protected_tensors_directions",
+      "status": "OPEN",
+      "targets": [
+        "norm",
+        "router",
+        "shared_expert"
+      ]
+    },
+    {
+      "id": "residual_additive_codebooks",
+      "status": "OPEN",
+      "targets": [
+        "routed_expert_output"
+      ]
+    },
+    {
+      "id": "hidden_state_repair",
+      "status": "OPEN",
+      "targets": [
+        "residual_propagation"
+      ]
+    },
+    {
+      "id": "router_logit_correction",
+      "status": "GATED_BY_ROUTING_DIAGNOSIS",
+      "targets": [
+        "router"
+      ]
+    },
+    {
+      "id": "expert_output_fallback",
+      "status": "OPEN",
+      "targets": [
+        "weighted_moe_output"
+      ]
+    },
+    {
+      "id": "shared_expert_protection",
+      "status": "OPEN",
+      "targets": [
+        "shared_expert"
+      ]
+    },
+    {
+      "id": "weighted_moe_output_repair",
+      "status": "OPEN",
+      "targets": [
+        "routed_expert_output"
+      ]
+    },
+    {
+      "id": "normalization_residual_correction",
+      "status": "OPEN",
+      "targets": [
+        "norm",
+        "residual"
+      ]
+    },
+    {
+      "id": "logit_ranking_repair",
+      "status": "GATED_BY_LOGIT_HEAD_DIAGNOSIS",
+      "targets": [
+        "lm_head"
+      ]
+    },
+    {
+      "id": "trainable_codebooks",
+      "status": "OPEN",
+      "targets": [
+        "compressible_weights"
+      ]
+    },
+    {
+      "id": "clean_data_distillation",
+      "status": "OPEN",
+      "targets": [
+        "all_text_core"
+      ]
+    },
+    {
+      "id": "conditional_token_triggered_repair",
+      "status": "BILLS_INSTALLED_BITS",
+      "targets": [
+        "activation"
+      ]
+    },
+    {
+      "id": "structural_redesign",
+      "status": "GATED_BY_CAUSAL_JUSTIFICATION",
+      "targets": [
+        "architecture"
+      ]
+    }
+  ]
+}

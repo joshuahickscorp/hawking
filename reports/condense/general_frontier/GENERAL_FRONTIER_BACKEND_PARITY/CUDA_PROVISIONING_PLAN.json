@@ -1,0 +1,185 @@
+{
+  "authorization": {
+    "authorized": false,
+    "blocked_receipt_ref": "GENERAL_FRONTIER_CLOUD_COSTS/CLOUD_BLOCKED_RECEIPT.json",
+    "budget_schema_ref": "GENERAL_FRONTIER_CLOUD_COSTS/CLOUD_BUDGET_SCHEMA.json",
+    "note": "Reproducible plan only. NO pod is created until a sealed budget authorizes the lane."
+  },
+  "auto_terminate_triggers": {
+    "budget": "cumulative spend reaches max_total_spend OR pod price exceeds max_hourly_price -> terminate",
+    "completion": "science program completes and artifacts+receipts pulled back -> terminate",
+    "drain": "operator/controller drain signal or lost controller contact (on_disconnect) -> terminate",
+    "failure": "unrecoverable job failure or repeated crash-loop -> terminate",
+    "idle": "GPU/controller idle beyond termination_policy.idle_timeout_minutes -> terminate",
+    "integrity": "source/artifact hash mismatch, driver/compute-capability out of contract, or image digest drift -> terminate"
+  },
+  "container_digest_plan": {
+    "base_image_family": "nvidia/cuda runtime (devel variant for kernel build)",
+    "build_provenance": {
+      "kernel_commit_baked_in": "e2609f94",
+      "lockfile_required": true,
+      "note": "Digest is populated by the reproducible build step at authorization time; unset while BLOCKED.",
+      "reproducible_build": true,
+      "sbom_required": true
+    },
+    "digest_pinning": "image referenced as <registry>/<repo>@sha256:<digest>; tags are advisory only",
+    "digest_value": null,
+    "strategy": "immutable, digest-pinned image; build reproducibly then reference by sha256 digest, never a floating tag"
+  },
+  "cuda_version": {
+    "max_tested": "12.6",
+    "min": "12.1",
+    "note": "Target chosen for Ampere/Hopper support; pin exact toolkit in the digest-pinned image.",
+    "target": "12.4"
+  },
+  "driver_reqs": {
+    "compute_capability_min": "8.0",
+    "compute_capability_supported": [
+      "8.0",
+      "8.6",
+      "8.9",
+      "9.0"
+    ],
+    "min_nvidia_driver": "550.54",
+    "note": "Driver is host-provided by RunPod; validate at pod boot before any work runs.",
+    "recommended_driver": ">=550.90"
+  },
+  "generated_at": "2026-07-19T02:41:00Z",
+  "goal_ref": "Part 26-30, 59 (CUDA/cloud backend parity)",
+  "gpu_type_candidates": [
+    {
+      "class": "NVIDIA A100 80GB PCIe",
+      "compute_capability": "8.0",
+      "role": "baseline parity target",
+      "vram_gb": 80
+    },
+    {
+      "class": "NVIDIA A100 SXM 80GB",
+      "compute_capability": "8.0",
+      "role": "throughput",
+      "vram_gb": 80
+    },
+    {
+      "class": "NVIDIA H100 80GB PCIe",
+      "compute_capability": "9.0",
+      "role": "fast Forge/Gravity",
+      "vram_gb": 80
+    },
+    {
+      "class": "NVIDIA H100 SXM 80GB",
+      "compute_capability": "9.0",
+      "role": "fast Forge/Gravity",
+      "vram_gb": 80
+    },
+    {
+      "class": "NVIDIA L40S 48GB",
+      "compute_capability": "8.9",
+      "role": "cost-efficient smaller shards",
+      "vram_gb": 48
+    }
+  ],
+  "kernel_commit": "e2609f94",
+  "library_versions": {
+    "cuda_toolkit": "12.4",
+    "cudnn": "9.x",
+    "note": "Exact patch versions are frozen in the image lockfile at build; must match the Apple-lane science deps where they intersect.",
+    "numpy": "pinned via lockfile",
+    "python": "3.11",
+    "safetensors": "pinned via lockfile",
+    "torch": "2.4.x (+cu124)",
+    "transformers": "pinned via lockfile"
+  },
+  "note": "Reproducible RunPod/container plan for the CUDA backend. PLAN ONLY: no pod created, no spend incurred. Provisioning is gated on a sealed, operator-signed budget (Part 28). One science, two backends: CUDA contributes device operators only; identity/quality/Gravity/evidence are shared.",
+  "one_science_two_backends": {
+    "backend_specific_only": [
+      "device kernels (Metal/MPS vs CUDA)",
+      "memory placement + streaming packer bindings",
+      "dtype/packing operators tuned per device",
+      "provisioning + teardown adapter (RunPod)"
+    ],
+    "parity_requirement": "CUDA outputs must reproduce the Apple-lane artifact identity and pass the identical quality contract; divergence beyond sealed tolerance FAILS parity and the lane is not promoted.",
+    "principle": "One science, two backends. The Apple/MPS lane and the CUDA/cloud lane run the SAME science: same source artifact, same identity/provenance, same quality contract, same Gravity search, same evidence ledger and sealing. Only backend-specific OPERATORS differ (device kernels, memory placement, dtype packing). Nothing science-bearing is backend-specific.",
+    "shared_across_backends": [
+      "source artifact (byte-identical weights + manifest)",
+      "identity / provenance receipts",
+      "quality contract (thresholds, oracle, capability gate)",
+      "Gravity geometry-search program and ranking",
+      "evidence ledger, ByteLedger accounting, and sha256 sealing"
+    ]
+  },
+  "runpod_adapter": {
+    "description": "Backend-specific provisioning/teardown operator. Every op is a no-op (refused) while the lane is BLOCKED.",
+    "operations": {
+      "cost_monitor": {
+        "blocked": true,
+        "op": "track cumulative spend vs max_total_spend + per-hour vs max_hourly_price; arm auto-terminate",
+        "preconditions": [
+          "budget authorized"
+        ]
+      },
+      "logs": {
+        "blocked": true,
+        "op": "stream pod logs to the controller for evidence",
+        "preconditions": [
+          "pod exists"
+        ]
+      },
+      "network_volume": {
+        "blocked": true,
+        "op": "create/attach persistent network volume for source + artifacts + receipts",
+        "preconditions": [
+          "storage_budget defined",
+          "size <= network_volume_gb"
+        ]
+      },
+      "pod_create": {
+        "blocked": true,
+        "op": "create pod from template on an approved_gpu_class within max_hourly_price",
+        "preconditions": [
+          "sealed budget authorized",
+          "gpu_class in approved_gpu_classes",
+          "price <= max_hourly_price",
+          "live pod_count < max_pod_count",
+          "gpu_count budget available"
+        ]
+      },
+      "status": {
+        "blocked": true,
+        "op": "poll pod lifecycle + GPU health + compute-capability/driver validation",
+        "preconditions": [
+          "pod exists"
+        ]
+      },
+      "template": {
+        "blocked": true,
+        "op": "register/pin the pod template (digest-pinned image, env, volume mount, ports)",
+        "preconditions": [
+          "container_digest resolved",
+          "network_volume defined"
+        ]
+      },
+      "terminate": {
+        "always_available_on_live_pod": true,
+        "blocked": true,
+        "op": "tear down pod + dispose/retain volume per policy; emit sealed teardown receipt",
+        "preconditions": []
+      }
+    }
+  },
+  "schema": "hawking.general_frontier.cuda_provisioning_plan.v1",
+  "sha256": "b81b400a9f4950fb69e016de13fc8036f26d09481f4177a557813331b223ef83",
+  "status": "PLAN_ONLY_BLOCKED",
+  "teardown": {
+    "note": "No pod may leak: terminate is idempotent and emits a sealed receipt for every lifecycle end.",
+    "receipt_fields": [
+      "pod_id",
+      "gpu_class",
+      "wall_clock_hours",
+      "final_spend",
+      "volume_disposition",
+      "trigger",
+      "artifacts_returned_sha256"
+    ],
+    "require_teardown_receipt": true
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "baseline": "SECOND-LIGHT PQ BASELINE (0.770 BPW, functional divergence ~0.688, NO capability)",
+  "closure_sha": "ff6c1777",
+  "controller": "gravity_frontier_controller.py (building; singleton lease com.hawking.gravity_frontier, distinct from second_light)",
+  "frozen_commit": "b4655883",
+  "generated_at": "2026-07-19T01:29:18Z",
+  "packs_cli_excluded": "per Section 21 - not executed in this frontier line; preserved on codex/packs-absorption-scaffold + codex/cli-consolidation-scaffold",
+  "program": "32 geometry trial rows (8 geometries x 2 expert classes x 2 rates 3/4 & 1/1)",
+  "program_sha": "57abbb13",
+  "quality_contract_sha": "2c1405f9",
+  "schema": "hawking.gravity_frontier.state.v1",
+  "search_doctrine": "geometry-before-rate; ranking = functional output divergence (real reference forward)",
+  "sha256": "f900834ae93506ac37c2b571f9e3bb69bc63a529bd6998e4f4b7fb350023f087",
+  "status": "frontier machinery being built; readiness + ignition pending controller",
+  "tag": "hawking-second-light-baseline"
+}

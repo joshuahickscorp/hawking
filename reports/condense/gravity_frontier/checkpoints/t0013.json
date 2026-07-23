@@ -1,0 +1,60 @@
+{
+  "controller_pid": 18615,
+  "elapsed_seconds": 6.478,
+  "family": "pq_doctor_lowrank",
+  "metrics": {
+    "budget_bits": 7548416,
+    "budget_shrunk_for_test": false,
+    "doctor": {
+      "added_bytes": 129728,
+      "byte_budget": 155520,
+      "err_after": 0.73240221,
+      "err_before": 0.74979663,
+      "functional_recon_rebuilt": true,
+      "treatment": "residual_codebook",
+      "within_budget": true
+    },
+    "functional_divergence": 0.60074,
+    "functional_evidence": {
+      "capability_parity": false,
+      "max_output_rel_div": 0.61356,
+      "mean_output_rel_div": 0.60074,
+      "min_output_rel_div": 0.59586,
+      "n_experts_exercised": 3,
+      "n_inputs": 4,
+      "signal": "proxy_output_synthetic_activations"
+    },
+    "functional_metric": "output_divergence (reference MoE forward, routed experts)",
+    "n_weights": 8294400,
+    "physical_bits": 7275520,
+    "sample_layer": 0,
+    "target_total_bits": 7548416,
+    "weight_meta": {
+      "representative_expert": 0,
+      "representative_of_class": "expert_mlp2",
+      "sample_layer": 0
+    },
+    "weight_rel_error": 0.732402,
+    "whole_artifact_bpw": 0.87716,
+    "within_budget": true
+  },
+  "params": {
+    "dim": 16,
+    "doctor": "residual_codebook",
+    "doctor_bpw": 0.15,
+    "k": 64,
+    "subspaces": 2
+  },
+  "priority_rank": 5,
+  "program_sha256": "d0fa8ced7aad25f7004729a1ab5be2139f08864541129016aad1bfa29dece9a1",
+  "protected_island_strategy": null,
+  "rate": "3/4",
+  "representation_family": "pq_doctor_lowrank",
+  "row_id": "t0013",
+  "schema": "hawking.gravity_frontier.trial_checkpoint.v1",
+  "sealed_at": "2026-07-19T01:47:14+00:00",
+  "sharing_group": "expert_mlp2_pq_doctor_lowrank",
+  "status": "SEALED",
+  "tensor_class": "expert_mlp2",
+  "trial_sha256": "30e120811d3b57ba6e2bacfdecb2608d89ee92ff2d1c308a5df8624789741bfe"
+}

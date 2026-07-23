@@ -1,0 +1,28 @@
+{
+  "caveat": "program_sha256 includes a generated_at timestamp so it is NOT byte-stable across regenerations; the program CONTENT (rows, budgets, families, params) and the trial SCIENCE are deterministic + stable. Recommend hashing program content excluding timestamp for a stable generation identity.",
+  "frozen_commit": "e2609f94",
+  "gate": "G0_reproduction",
+  "generated_at": "2026-07-19T02:34:36Z",
+  "identity_checks": {
+    "exact_budgets_bound_all_rows": true,
+    "functional_metric_declared_all_rows": true,
+    "total_trials": 32,
+    "winners_confirmed": {
+      "expert_mlp1": "pq_doctor_lowrank 0.00832",
+      "expert_mlp2": "pq_protected_islands 0.184"
+    }
+  },
+  "reproduced": {
+    "note": "re-ran 4 trials fresh from the frozen tools; functional divergences match the committed geometry-search result exactly (deterministic)",
+    "samples": {
+      "t0000_transform_pq": 0.00872,
+      "t0001_transform_pq": 0.59779,
+      "t0002_product_quant": 0.00865,
+      "t0003_product_quant": 0.60702
+    },
+    "trial_functional_divergences_match": true
+  },
+  "schema": "hawking.general_frontier.g0_result.v1",
+  "sha256": "5e3dca8f4b17ee9c321fe46058c046d7faf2aecb97204e28380243b775718cc2",
+  "verdict": "G0 PASS - 32-trial geometry science reproduces deterministically from the frozen commit"
+}

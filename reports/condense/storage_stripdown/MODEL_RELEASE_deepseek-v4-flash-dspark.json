@@ -1,0 +1,980 @@
+{
+  "evidence_retained_at": "reports/condense/storage_stripdown/NEXT_PARENT_SOURCE_RECONCILIATION.json",
+  "family": "deepseek-v4-flash-dspark",
+  "generated_at": "2026-07-21T03:42:49Z",
+  "license": "mit",
+  "local_dir": "/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark",
+  "payload_bytes": 166886535336,
+  "payload_count": 48,
+  "payload_files": [
+    {
+      "bytes": 1059061856,
+      "name": "model-00001-of-00048.safetensors"
+    },
+    {
+      "bytes": 3566321192,
+      "name": "model-00002-of-00048.safetensors"
+    },
+    {
+      "bytes": 3566321192,
+      "name": "model-00003-of-00048.safetensors"
+    },
+    {
+      "bytes": 3596229272,
+      "name": "model-00004-of-00048.safetensors"
+    },
+    {
+      "bytes": 3568768976,
+      "name": "model-00005-of-00048.safetensors"
+    },
+    {
+      "bytes": 3590024776,
+      "name": "model-00006-of-00048.safetensors"
+    },
+    {
+      "bytes": 3568768976,
+      "name": "model-00007-of-00048.safetensors"
+    },
+    {
+      "bytes": 3590024776,
+      "name": "model-00008-of-00048.safetensors"
+    },
+    {
+      "bytes": 3568768976,
+      "name": "model-00009-of-00048.safetensors"
+    },
+    {
+      "bytes": 3590024776,
+      "name": "model-00010-of-00048.safetensors"
+    },
+    {
+      "bytes": 3568768976,
+      "name": "model-00011-of-00048.safetensors"
+    },
+    {
+      "bytes": 3590026352,
+      "name": "model-00012-of-00048.safetensors"
+    },
+    {
+      "bytes": 3568770544,
+      "name": "model-00013-of-00048.safetensors"
+    },
+    {
+      "bytes": 3590026352,
+      "name": "model-00014-of-00048.safetensors"
+    },
+    {
+      "bytes": 3568770544,
+      "name": "model-00015-of-00048.safetensors"
+    },
+    {
+      "bytes": 3590026352,
+      "name": "model-00016-of-00048.safetensors"
+    },
+    {
+      "bytes": 3568770544,
+      "name": "model-00017-of-00048.safetensors"
+    },
+    {
+      "bytes": 3590026352,
+      "name": "model-00018-of-00048.safetensors"
+    },
+    {
+      "bytes": 3568770544,
+      "name": "model-00019-of-00048.safetensors"
+    },
+    {
+      "bytes": 3590026352,
+      "name": "model-00020-of-00048.safetensors"
+    },
+    {
+      "bytes": 3568770544,
+      "name": "model-00021-of-00048.safetensors"
+    },
+    {
+      "bytes": 3590026352,
+      "name": "model-00022-of-00048.safetensors"
+    },
+    {
+      "bytes": 3568770544,
+      "name": "model-00023-of-00048.safetensors"
+    },
+    {
+      "bytes": 3590026352,
+      "name": "model-00024-of-00048.safetensors"
+    },
+    {
+      "bytes": 3568770544,
+      "name": "model-00025-of-00048.safetensors"
+    },
+    {
+      "bytes": 3590026352,
+      "name": "model-00026-of-00048.safetensors"
+    },
+    {
+      "bytes": 3568770544,
+      "name": "model-00027-of-00048.safetensors"
+    },
+    {
+      "bytes": 3590026352,
+      "name": "model-00028-of-00048.safetensors"
+    },
+    {
+      "bytes": 3568770544,
+      "name": "model-00029-of-00048.safetensors"
+    },
+    {
+      "bytes": 3590026352,
+      "name": "model-00030-of-00048.safetensors"
+    },
+    {
+      "bytes": 3568770544,
+      "name": "model-00031-of-00048.safetensors"
+    },
+    {
+      "bytes": 3590026352,
+      "name": "model-00032-of-00048.safetensors"
+    },
+    {
+      "bytes": 3568770544,
+      "name": "model-00033-of-00048.safetensors"
+    },
+    {
+      "bytes": 3590026352,
+      "name": "model-00034-of-00048.safetensors"
+    },
+    {
+      "bytes": 3568770544,
+      "name": "model-00035-of-00048.safetensors"
+    },
+    {
+      "bytes": 3590026352,
+      "name": "model-00036-of-00048.safetensors"
+    },
+    {
+      "bytes": 3568770544,
+      "name": "model-00037-of-00048.safetensors"
+    },
+    {
+      "bytes": 3590026352,
+      "name": "model-00038-of-00048.safetensors"
+    },
+    {
+      "bytes": 3568770544,
+      "name": "model-00039-of-00048.safetensors"
+    },
+    {
+      "bytes": 3590026352,
+      "name": "model-00040-of-00048.safetensors"
+    },
+    {
+      "bytes": 3568770544,
+      "name": "model-00041-of-00048.safetensors"
+    },
+    {
+      "bytes": 3590026352,
+      "name": "model-00042-of-00048.safetensors"
+    },
+    {
+      "bytes": 3568770544,
+      "name": "model-00043-of-00048.safetensors"
+    },
+    {
+      "bytes": 3590026352,
+      "name": "model-00044-of-00048.safetensors"
+    },
+    {
+      "bytes": 1059332516,
+      "name": "model-00045-of-00048.safetensors"
+    },
+    {
+      "bytes": 3610455184,
+      "name": "model-00046-of-00048.safetensors"
+    },
+    {
+      "bytes": 3560111960,
+      "name": "model-00047-of-00048.safetensors"
+    },
+    {
+      "bytes": 3692775244,
+      "name": "model-00048-of-00048.safetensors"
+    }
+  ],
+  "rehydration_command": "python3.12 -c \"from huggingface_hub import snapshot_download; snapshot_download('deepseek-ai/DeepSeek-V4-Flash-DSpark', revision='62af8fffb2f7030cac4de2f0169f5b8d1101b646', local_dir='/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark')\"",
+  "repo": "deepseek-ai/DeepSeek-V4-Flash-DSpark",
+  "retained_bytes": 24228571,
+  "retained_metadata": [
+    {
+      "bytes": 1,
+      "name": ".cache/huggingface/.gitignore"
+    },
+    {
+      "bytes": 191,
+      "name": ".cache/huggingface/CACHEDIR.TAG"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/.gitattributes.lock"
+    },
+    {
+      "bytes": 100,
+      "name": ".cache/huggingface/download/.gitattributes.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/LICENSE.lock"
+    },
+    {
+      "bytes": 100,
+      "name": ".cache/huggingface/download/LICENSE.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/README.md.lock"
+    },
+    {
+      "bytes": 99,
+      "name": ".cache/huggingface/download/README.md.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/config.json.lock"
+    },
+    {
+      "bytes": 100,
+      "name": ".cache/huggingface/download/config.json.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/encoding/README.md.lock"
+    },
+    {
+      "bytes": 100,
+      "name": ".cache/huggingface/download/encoding/README.md.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/encoding/encoding_dsv4.py.lock"
+    },
+    {
+      "bytes": 99,
+      "name": ".cache/huggingface/download/encoding/encoding_dsv4.py.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/encoding/test_encoding_dsv4.py.lock"
+    },
+    {
+      "bytes": 100,
+      "name": ".cache/huggingface/download/encoding/test_encoding_dsv4.py.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/encoding/tests/test_input_1.json.lock"
+    },
+    {
+      "bytes": 100,
+      "name": ".cache/huggingface/download/encoding/tests/test_input_1.json.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/encoding/tests/test_input_2.json.lock"
+    },
+    {
+      "bytes": 101,
+      "name": ".cache/huggingface/download/encoding/tests/test_input_2.json.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/encoding/tests/test_input_3.json.lock"
+    },
+    {
+      "bytes": 100,
+      "name": ".cache/huggingface/download/encoding/tests/test_input_3.json.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/encoding/tests/test_input_4.json.lock"
+    },
+    {
+      "bytes": 101,
+      "name": ".cache/huggingface/download/encoding/tests/test_input_4.json.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/encoding/tests/test_output_1.txt.lock"
+    },
+    {
+      "bytes": 100,
+      "name": ".cache/huggingface/download/encoding/tests/test_output_1.txt.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/encoding/tests/test_output_2.txt.lock"
+    },
+    {
+      "bytes": 101,
+      "name": ".cache/huggingface/download/encoding/tests/test_output_2.txt.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/encoding/tests/test_output_3.txt.lock"
+    },
+    {
+      "bytes": 100,
+      "name": ".cache/huggingface/download/encoding/tests/test_output_3.txt.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/encoding/tests/test_output_4.txt.lock"
+    },
+    {
+      "bytes": 101,
+      "name": ".cache/huggingface/download/encoding/tests/test_output_4.txt.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/generation_config.json.lock"
+    },
+    {
+      "bytes": 100,
+      "name": ".cache/huggingface/download/generation_config.json.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/inference/README.md.lock"
+    },
+    {
+      "bytes": 100,
+      "name": ".cache/huggingface/download/inference/README.md.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/inference/config.json.lock"
+    },
+    {
+      "bytes": 100,
+      "name": ".cache/huggingface/download/inference/config.json.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/inference/convert.py.lock"
+    },
+    {
+      "bytes": 100,
+      "name": ".cache/huggingface/download/inference/convert.py.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/inference/generate.py.lock"
+    },
+    {
+      "bytes": 100,
+      "name": ".cache/huggingface/download/inference/generate.py.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/inference/kernel.py.lock"
+    },
+    {
+      "bytes": 100,
+      "name": ".cache/huggingface/download/inference/kernel.py.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/inference/model.py.lock"
+    },
+    {
+      "bytes": 100,
+      "name": ".cache/huggingface/download/inference/model.py.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/inference/requirements.txt.lock"
+    },
+    {
+      "bytes": 100,
+      "name": ".cache/huggingface/download/inference/requirements.txt.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/model-00001-of-00048.safetensors.lock"
+    },
+    {
+      "bytes": 125,
+      "name": ".cache/huggingface/download/model-00001-of-00048.safetensors.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/model-00002-of-00048.safetensors.lock"
+    },
+    {
+      "bytes": 124,
+      "name": ".cache/huggingface/download/model-00002-of-00048.safetensors.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/model-00003-of-00048.safetensors.lock"
+    },
+    {
+      "bytes": 124,
+      "name": ".cache/huggingface/download/model-00003-of-00048.safetensors.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/model-00004-of-00048.safetensors.lock"
+    },
+    {
+      "bytes": 124,
+      "name": ".cache/huggingface/download/model-00004-of-00048.safetensors.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/model-00005-of-00048.safetensors.lock"
+    },
+    {
+      "bytes": 123,
+      "name": ".cache/huggingface/download/model-00005-of-00048.safetensors.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/model-00006-of-00048.safetensors.lock"
+    },
+    {
+      "bytes": 125,
+      "name": ".cache/huggingface/download/model-00006-of-00048.safetensors.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/model-00007-of-00048.safetensors.lock"
+    },
+    {
+      "bytes": 124,
+      "name": ".cache/huggingface/download/model-00007-of-00048.safetensors.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/model-00008-of-00048.safetensors.lock"
+    },
+    {
+      "bytes": 124,
+      "name": ".cache/huggingface/download/model-00008-of-00048.safetensors.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/model-00009-of-00048.safetensors.lock"
+    },
+    {
+      "bytes": 124,
+      "name": ".cache/huggingface/download/model-00009-of-00048.safetensors.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/model-00010-of-00048.safetensors.lock"
+    },
+    {
+      "bytes": 124,
+      "name": ".cache/huggingface/download/model-00010-of-00048.safetensors.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/model-00011-of-00048.safetensors.lock"
+    },
+    {
+      "bytes": 124,
+      "name": ".cache/huggingface/download/model-00011-of-00048.safetensors.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/model-00012-of-00048.safetensors.lock"
+    },
+    {
+      "bytes": 124,
+      "name": ".cache/huggingface/download/model-00012-of-00048.safetensors.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/model-00013-of-00048.safetensors.lock"
+    },
+    {
+      "bytes": 124,
+      "name": ".cache/huggingface/download/model-00013-of-00048.safetensors.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/model-00014-of-00048.safetensors.lock"
+    },
+    {
+      "bytes": 124,
+      "name": ".cache/huggingface/download/model-00014-of-00048.safetensors.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/model-00015-of-00048.safetensors.lock"
+    },
+    {
+      "bytes": 125,
+      "name": ".cache/huggingface/download/model-00015-of-00048.safetensors.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/model-00016-of-00048.safetensors.lock"
+    },
+    {
+      "bytes": 125,
+      "name": ".cache/huggingface/download/model-00016-of-00048.safetensors.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/model-00017-of-00048.safetensors.lock"
+    },
+    {
+      "bytes": 124,
+      "name": ".cache/huggingface/download/model-00017-of-00048.safetensors.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/model-00018-of-00048.safetensors.lock"
+    },
+    {
+      "bytes": 125,
+      "name": ".cache/huggingface/download/model-00018-of-00048.safetensors.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/model-00019-of-00048.safetensors.lock"
+    },
+    {
+      "bytes": 124,
+      "name": ".cache/huggingface/download/model-00019-of-00048.safetensors.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/model-00020-of-00048.safetensors.lock"
+    },
+    {
+      "bytes": 125,
+      "name": ".cache/huggingface/download/model-00020-of-00048.safetensors.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/model-00021-of-00048.safetensors.lock"
+    },
+    {
+      "bytes": 125,
+      "name": ".cache/huggingface/download/model-00021-of-00048.safetensors.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/model-00022-of-00048.safetensors.lock"
+    },
+    {
+      "bytes": 124,
+      "name": ".cache/huggingface/download/model-00022-of-00048.safetensors.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/model-00023-of-00048.safetensors.lock"
+    },
+    {
+      "bytes": 125,
+      "name": ".cache/huggingface/download/model-00023-of-00048.safetensors.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/model-00024-of-00048.safetensors.lock"
+    },
+    {
+      "bytes": 124,
+      "name": ".cache/huggingface/download/model-00024-of-00048.safetensors.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/model-00025-of-00048.safetensors.lock"
+    },
+    {
+      "bytes": 125,
+      "name": ".cache/huggingface/download/model-00025-of-00048.safetensors.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/model-00026-of-00048.safetensors.lock"
+    },
+    {
+      "bytes": 124,
+      "name": ".cache/huggingface/download/model-00026-of-00048.safetensors.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/model-00027-of-00048.safetensors.lock"
+    },
+    {
+      "bytes": 125,
+      "name": ".cache/huggingface/download/model-00027-of-00048.safetensors.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/model-00028-of-00048.safetensors.lock"
+    },
+    {
+      "bytes": 124,
+      "name": ".cache/huggingface/download/model-00028-of-00048.safetensors.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/model-00029-of-00048.safetensors.lock"
+    },
+    {
+      "bytes": 124,
+      "name": ".cache/huggingface/download/model-00029-of-00048.safetensors.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/model-00030-of-00048.safetensors.lock"
+    },
+    {
+      "bytes": 125,
+      "name": ".cache/huggingface/download/model-00030-of-00048.safetensors.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/model-00031-of-00048.safetensors.lock"
+    },
+    {
+      "bytes": 124,
+      "name": ".cache/huggingface/download/model-00031-of-00048.safetensors.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/model-00032-of-00048.safetensors.lock"
+    },
+    {
+      "bytes": 123,
+      "name": ".cache/huggingface/download/model-00032-of-00048.safetensors.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/model-00033-of-00048.safetensors.lock"
+    },
+    {
+      "bytes": 123,
+      "name": ".cache/huggingface/download/model-00033-of-00048.safetensors.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/model-00034-of-00048.safetensors.lock"
+    },
+    {
+      "bytes": 125,
+      "name": ".cache/huggingface/download/model-00034-of-00048.safetensors.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/model-00035-of-00048.safetensors.lock"
+    },
+    {
+      "bytes": 125,
+      "name": ".cache/huggingface/download/model-00035-of-00048.safetensors.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/model-00036-of-00048.safetensors.lock"
+    },
+    {
+      "bytes": 125,
+      "name": ".cache/huggingface/download/model-00036-of-00048.safetensors.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/model-00037-of-00048.safetensors.lock"
+    },
+    {
+      "bytes": 124,
+      "name": ".cache/huggingface/download/model-00037-of-00048.safetensors.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/model-00038-of-00048.safetensors.lock"
+    },
+    {
+      "bytes": 124,
+      "name": ".cache/huggingface/download/model-00038-of-00048.safetensors.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/model-00039-of-00048.safetensors.lock"
+    },
+    {
+      "bytes": 125,
+      "name": ".cache/huggingface/download/model-00039-of-00048.safetensors.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/model-00040-of-00048.safetensors.lock"
+    },
+    {
+      "bytes": 125,
+      "name": ".cache/huggingface/download/model-00040-of-00048.safetensors.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/model-00041-of-00048.safetensors.lock"
+    },
+    {
+      "bytes": 125,
+      "name": ".cache/huggingface/download/model-00041-of-00048.safetensors.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/model-00042-of-00048.safetensors.lock"
+    },
+    {
+      "bytes": 125,
+      "name": ".cache/huggingface/download/model-00042-of-00048.safetensors.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/model-00043-of-00048.safetensors.lock"
+    },
+    {
+      "bytes": 124,
+      "name": ".cache/huggingface/download/model-00043-of-00048.safetensors.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/model-00044-of-00048.safetensors.lock"
+    },
+    {
+      "bytes": 123,
+      "name": ".cache/huggingface/download/model-00044-of-00048.safetensors.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/model-00045-of-00048.safetensors.lock"
+    },
+    {
+      "bytes": 124,
+      "name": ".cache/huggingface/download/model-00045-of-00048.safetensors.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/model-00046-of-00048.safetensors.lock"
+    },
+    {
+      "bytes": 124,
+      "name": ".cache/huggingface/download/model-00046-of-00048.safetensors.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/model-00047-of-00048.safetensors.lock"
+    },
+    {
+      "bytes": 124,
+      "name": ".cache/huggingface/download/model-00047-of-00048.safetensors.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/model-00048-of-00048.safetensors.lock"
+    },
+    {
+      "bytes": 124,
+      "name": ".cache/huggingface/download/model-00048-of-00048.safetensors.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/model.safetensors.index.json.lock"
+    },
+    {
+      "bytes": 100,
+      "name": ".cache/huggingface/download/model.safetensors.index.json.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/tokenizer.json.lock"
+    },
+    {
+      "bytes": 100,
+      "name": ".cache/huggingface/download/tokenizer.json.metadata"
+    },
+    {
+      "bytes": 0,
+      "name": ".cache/huggingface/download/tokenizer_config.json.lock"
+    },
+    {
+      "bytes": 100,
+      "name": ".cache/huggingface/download/tokenizer_config.json.metadata"
+    },
+    {
+      "bytes": 1519,
+      "name": ".gitattributes"
+    },
+    {
+      "bytes": 1084,
+      "name": "LICENSE"
+    },
+    {
+      "bytes": 14362,
+      "name": "README.md"
+    },
+    {
+      "bytes": 1519,
+      "name": "_meta/.gitattributes"
+    },
+    {
+      "bytes": 1084,
+      "name": "_meta/LICENSE"
+    },
+    {
+      "bytes": 951,
+      "name": "_meta/README.md"
+    },
+    {
+      "bytes": 1888,
+      "name": "_meta/config.json"
+    },
+    {
+      "bytes": 6639,
+      "name": "_meta/convert.py"
+    },
+    {
+      "bytes": 27908,
+      "name": "_meta/encoding_dsv4.py"
+    },
+    {
+      "bytes": 5804,
+      "name": "_meta/generate.py"
+    },
+    {
+      "bytes": 170,
+      "name": "_meta/generation_config.json"
+    },
+    {
+      "bytes": 1162,
+      "name": "_meta/inference_config.json"
+    },
+    {
+      "bytes": 22198,
+      "name": "_meta/kernel.py"
+    },
+    {
+      "bytes": 45118,
+      "name": "_meta/model.py"
+    },
+    {
+      "bytes": 5602871,
+      "name": "_meta/model.safetensors.index.json"
+    },
+    {
+      "bytes": 92,
+      "name": "_meta/requirements.txt"
+    },
+    {
+      "bytes": 3741,
+      "name": "_meta/test_encoding_dsv4.py"
+    },
+    {
+      "bytes": 6367146,
+      "name": "_meta/tokenizer.json"
+    },
+    {
+      "bytes": 801,
+      "name": "_meta/tokenizer_config.json"
+    },
+    {
+      "bytes": 1888,
+      "name": "config.json"
+    },
+    {
+      "bytes": 8118,
+      "name": "encoding/README.md"
+    },
+    {
+      "bytes": 27908,
+      "name": "encoding/encoding_dsv4.py"
+    },
+    {
+      "bytes": 3741,
+      "name": "encoding/test_encoding_dsv4.py"
+    },
+    {
+      "bytes": 2748,
+      "name": "encoding/tests/test_input_1.json"
+    },
+    {
+      "bytes": 526,
+      "name": "encoding/tests/test_input_2.json"
+    },
+    {
+      "bytes": 4546,
+      "name": "encoding/tests/test_input_3.json"
+    },
+    {
+      "bytes": 2730,
+      "name": "encoding/tests/test_input_4.json"
+    },
+    {
+      "bytes": 2390,
+      "name": "encoding/tests/test_output_1.txt"
+    },
+    {
+      "bytes": 342,
+      "name": "encoding/tests/test_output_2.txt"
+    },
+    {
+      "bytes": 3313,
+      "name": "encoding/tests/test_output_3.txt"
+    },
+    {
+      "bytes": 2552,
+      "name": "encoding/tests/test_output_4.txt"
+    },
+    {
+      "bytes": 170,
+      "name": "generation_config.json"
+    },
+    {
+      "bytes": 951,
+      "name": "inference/README.md"
+    },
+    {
+      "bytes": 1162,
+      "name": "inference/config.json"
+    },
+    {
+      "bytes": 6639,
+      "name": "inference/convert.py"
+    },
+    {
+      "bytes": 5804,
+      "name": "inference/generate.py"
+    },
+    {
+      "bytes": 22198,
+      "name": "inference/kernel.py"
+    },
+    {
+      "bytes": 45118,
+      "name": "inference/model.py"
+    },
+    {
+      "bytes": 92,
+      "name": "inference/requirements.txt"
+    },
+    {
+      "bytes": 5602871,
+      "name": "model.safetensors.index.json"
+    },
+    {
+      "bytes": 6367146,
+      "name": "tokenizer.json"
+    },
+    {
+      "bytes": 801,
+      "name": "tokenizer_config.json"
+    }
+  ],
+  "revision": "62af8fffb2f7030cac4de2f0169f5b8d1101b646",
+  "rollback": "the source is a public immutable revision on the Hub; re-download restores it byte-for-byte. Nothing unique to this machine is in the payload.",
+  "schema": "hawking.storage_stripdown.model_release.v1",
+  "scientific_conclusion": "STAGED AND FULLY CHARACTERISED, NEVER RUN. Source reconciled byte-exact (166,878,536,440 B); original_weight_count bound at 313,441,826,494 logical weights (routed experts pack two fp4 per int8 byte, factor 2.0); routed experts 305,613,766,656 weights at 4.12 source bits/weight = 94.3 percent of artifact bytes. No capability claim was made: the launch packet is RED on parent_campaign_runner because no deepseek_v4 parent-vs-packed forward exists. Released on an explicit decision to move on, not on a scientific verdict."
+}

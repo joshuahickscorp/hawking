@@ -1,0 +1,68 @@
+{
+  "120b_source_receipt": {
+    "manifest": "reports/condense/subbit_frontier/GRAVITY_120B_PROVENANCE.json",
+    "model": "openai/gpt-oss-120b",
+    "present": true,
+    "revision": "b5c939de"
+  },
+  "baseline_tag": "hawking-second-light-baseline",
+  "controller_scripts": {
+    "frontier": {
+      "file": "tools/condense/gravity_frontier_controller.py",
+      "sha16": "4b6703e44612d3d8"
+    },
+    "g1": {
+      "file": "tools/condense/gravity_frontier_g1.py",
+      "sha16": "a43835720d692210"
+    }
+  },
+  "generated_at": "2026-07-19T02:59:43Z",
+  "generation": "F",
+  "hawking_commit": "f55212337ecc8fb8e234b64dd4f3b05f1e2bec4c",
+  "law": "Workers + controller bind this generation. Later code = next generation; cannot mutate a live run.",
+  "notification_protocol": "succ_telegram.emit",
+  "providers": {
+    "block_forward": {
+      "file": "tools/condense/gptoss_block.py",
+      "sha16": "b0b2ce5f0840e3af"
+    },
+    "cpu_reference": {
+      "impl": "gravity_forge numpy paths + pq_cpu_metal_parity"
+    },
+    "doctor": {
+      "impl": "gravity_forge.doctor_pq"
+    },
+    "forge": {
+      "file": "tools/condense/gravity_forge.py",
+      "sha16": "253cf68aad0cb64b"
+    },
+    "metal": {
+      "impl": "gravity_forge MPS _kmeans/_assign + second_light_pack streaming"
+    },
+    "runtime": {
+      "file": "tools/condense/gptoss_moe_runtime.py",
+      "sha16": "e3f4791a3095ef72"
+    }
+  },
+  "quality_contract": "reports/condense/gravity_frontier/GPT_OSS_120B_FRONTIER_QUALITY_CONTRACT.json",
+  "rollback": {
+    "command": "git reset --hard e2609f94",
+    "pre_baseline": "7f237ed3",
+    "pre_gate_f": "e2609f94"
+  },
+  "schema": "hawking.frontier.generation_f.v1",
+  "schemas": {
+    "checkpoint": "hawking.gravity_frontier.trial_checkpoint.v1",
+    "program": "hawking.gpt_oss_120b.gravity_frontier_program.v1"
+  },
+  "second_light_baseline": "b4655883",
+  "seed_commit": "f55212337ecc8fb8e234b64dd4f3b05f1e2bec4c",
+  "sha256": "e0857398278efe1d01ea433738d00410add4a792d3e5a112248d7e51ebab128b",
+  "status_protocol": "gravity_frontier_status.py (flock-live truth)",
+  "tag": "hawking-frontier-gate-f",
+  "tokenizer_harmony_receipt": {
+    "chat_template": "models/gpt-oss-120b/chat_template.jinja",
+    "tokenizer": "models/gpt-oss-120b/tokenizer.json",
+    "vocab": 201088
+  }
+}

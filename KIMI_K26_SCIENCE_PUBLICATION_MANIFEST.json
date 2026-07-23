@@ -1,0 +1,43 @@
+{
+  "artifacts": {
+    "KIMI_K26_F1_DOCTOR_AUCTION.json": {
+      "bytes": 3721,
+      "content_seal_sha256": "31167334c247acc2e1812a49962d9f31af9e6b5216ce3a3a2cdbab11f69851c8",
+      "sha256": "e1249f47daef4c8c379da311f07b8158132d9d02507dd7b9e9da4fe69bc29287"
+    },
+    "KIMI_K26_F1_REPRESENTATION_BRACKET.json": {
+      "bytes": 3214,
+      "content_seal_sha256": "430f42a2e3731e9a4b55ee4c80f7330682266d22cdf42e494c14f04c1cbb5f02",
+      "sha256": "d2b556a08e0af4d2dcd2b5135e77337de48e31b3ad4eaeeff53987e9e7067603"
+    },
+    "KIMI_K26_P1_F1_FUNCTIONAL_CODEBOOKS.json": {
+      "bytes": 3339,
+      "content_seal_sha256": "cb6e20a127aef44736e72a00d4e7b431c05e4f1924c86ba41c3cb0f5fc1d22c0",
+      "sha256": "f0b429563c27d47ad0480a9f5b87fc61f046d13e4fdcff678ff6198abe6b5c43"
+    },
+    "KIMI_K26_P1_F1_GRAMMAR_ISLANDS_BRACKET.json": {
+      "bytes": 3007,
+      "content_seal_sha256": "7b733ca0128d8f80bd3590bd9a5bbaa8a3d8c6ab2173b3f6ee22968a60f95c4c",
+      "sha256": "d1f53dafd628df714c58aa5010aae072fa86686b85c0e56b292e90d635028374"
+    },
+    "KIMI_K26_P1_F2_SPARSE_PROPAGATION.json": {
+      "bytes": 6173,
+      "content_seal_sha256": "ee4bd6d12afccd57c7bff00b31243c7eb4e80095e1200166412b8cdce0251f38",
+      "sha256": "6cb20417aa5d0ab5fb1a0c79bb59f92bb869cf4a32ff12dcfcaa1234570a0f16"
+    },
+    "KIMI_K26_SCIENTIFIC_LAW.json": {
+      "bytes": 4558,
+      "content_seal_sha256": "38d3a944ccc78d57bf936571689a8fdf25872791820fda19628886e009907437",
+      "sha256": "7c8259972dd59b6cd9f020456c9a178d78f38a5dfb6317f7438c03b982c49934"
+    },
+    "KIMI_K26_SCIENTIFIC_STATUS.json": {
+      "bytes": 2174,
+      "content_seal_sha256": "18e3f01c5ce7cca299a80d9222573e4b3dab0a4a47f84e2bc4932652ae3e0a1c",
+      "sha256": "4b3db029a531548cba2b305e5b4664868d7b87dd6ca80c7ad3d6784c051385a8"
+    }
+  },
+  "schema": "hawking.kimi_k26.science_publication_manifest.v1",
+  "seal_sha256": "e2161afee6962a208a7b8da95246e7daa828f0b3728bde306eb5e20961fec8d3",
+  "sealed_at": "2026-07-21T16:02:30Z",
+  "status": "PASS"
+}

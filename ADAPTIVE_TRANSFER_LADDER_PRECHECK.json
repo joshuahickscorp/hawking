@@ -1,0 +1,79 @@
+{
+  "schema": "hawking.adaptive_transfer_ladder.precheck.v1",
+  "generated_at_utc": "2026-07-19T19:40:00Z",
+  "campaign": "ADAPTIVE TRANSFER LADDER (F0 120B -> F1 235B -> F2 397B -> F3 685B -> F4 1T)",
+
+  "git": {
+    "head": "4fbca8bc6d33117707933793bb3293d9463c049f",
+    "origin_main": "4fbca8bc6d33117707933793bb3293d9463c049f",
+    "head_equals_origin_main": true,
+    "branch": "main",
+    "remote": "git@github.com:joshuahickscorp/hawking.git",
+    "uncommitted_this_campaign": [
+      "tools/condense/gptoss_real_forward.py (validated real forward)",
+      "tools/condense/gravity_frontier_g4_controller.py (durable G4 gate)",
+      "MODEL_LADDER_IGNITION_PRECHECK.{json,md}",
+      "reports/condense/general_frontier/FRONTIER_AUTO_PROGRESSION.json (edited)",
+      "reports/condense/general_frontier/G4_IGNITION_RECEIPT.json",
+      "G4 sealed checkpoints + state (reports/condense/general_frontier/G4/)"
+    ],
+    "commit_authorization": "this /goal authorizes commits/pushes/PRs/merges when green; global rule: never attribute Claude in git"
+  },
+
+  "g4_live": {
+    "classification": "RUNNING (healthy) - do not interrupt",
+    "controller_pid": 48797,
+    "controller_pgid": 48797,
+    "pid_alive": true,
+    "lease": "com.hawking.frontier_g4 (live)",
+    "program": "12 rows: 6 original-parent (real logits+self-NLL/PPL) then 6 sub-bit RVQ@1.0bpw (real divergence vs original)",
+    "rows_done": 6,
+    "rows_total": 12,
+    "originals_all_sealed": true,
+    "current_row": "gen_paris__rvq1.0 (first packed row, forwarding)",
+    "eta_seconds": 1902,
+    "parent_real_perplexity_by_prompt": {"code_py": 1.9202, "reason_syllogism": 3.4641, "math_add": 5.1396, "gen_science": 6.6751, "instr_list": 12.255, "gen_paris": 27.4325},
+    "note": "first-ever real parent PPL in the campaign; domain-ordered (code lowest, factual-completion highest) corroborates forward correctness"
+  },
+
+  "real_forward": {
+    "module": "tools/condense/gptoss_real_forward.py",
+    "validated": "The capital of France is -> ' Paris' p=0.405, 36 blocks 189s, finite logits over 201088 vocab",
+    "parity": "empirical-by-coherence (correct gpt-oss activation: interleaved gate/up, clamp 7, alpha 1.702, (up+1)*gate*sigmoid(alpha*gate); attention sinks + GQA match transformers eager); NOT bit-exact HF (OpenAI-format checkpoint)",
+    "adversarial_audit": "PENDING - forward-based tests (different prompt, wrong activation ordering, corrupt tensor, missing shard, config-dim) queued to run after G4 frees the heavy lease"
+  },
+
+  "qwen3_235b_admission": {
+    "repo": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+    "immutable_revision": "ac9c66cc9b46af7306746a9250f23d47083d689e",
+    "license": "apache-2.0",
+    "verified_architecture": {"model_type": "qwen3_moe", "arch": "Qwen3MoeForCausalLM", "layers": 94, "experts": 128, "experts_per_tok": 8, "attn_heads": 64, "kv_heads": 4, "hidden": 4096, "moe_intermediate": 1536, "vocab": 151936, "dtype": "bfloat16", "max_pos": 262144, "tie_word_embeddings": false},
+    "matches_prompt_expectations": true,
+    "total_gib": 437.9,
+    "weight_shards": 118,
+    "metadata_downloaded": "models/qwen3-235b-a22b/_meta (config, tokenizer, index, generation_config)",
+    "receipt": "reports/condense/general_frontier/QWEN3_235B_SOURCE_ADMISSION.json"
+  },
+
+  "storage_and_ladder_gating": {
+    "disk_free_gib": 559.7,
+    "gpt_oss_120b_source_gib": 61,
+    "qwen_full_coexist_with_120b": false,
+    "qwen_required_mode": "full_after_120b_release OR shard_serial_stream (one-parent storage law)",
+    "honest_gating_chain_to_qwen_transfer": [
+      "1. G4 completes (packed rows) + sealed (~30 min)",
+      "2. tensor-class correction wave (C0-C5) + G5 adaptive decision (or honest boundary) sealed",
+      "3. 120B source release gates (15) pass -> release 61GB (rehydratable from openai/gpt-oss-120b) OR commit to shard-streaming Qwen",
+      "4. download 437.9 GiB Qwen (hours) OR shard-serial stream",
+      "5. Qwen adapter + synthetic-twin Q0/Q1/Q2 tests green",
+      "6. launch durable Qwen transfer controller"
+    ],
+    "honest_note": "steps 2-4 are multi-hour+ and gate the Qwen heavy transfer; this session makes maximal real progress but 'advancing Qwen checkpoints' is downstream of the 120B seal + source release/stream and will not be faked"
+  },
+
+  "resources": {"platform": "M3 Ultra 96GB/28c", "mem_free_gb_at_precheck": 72, "disk_free_gib": 559.7, "network": "HF reachable HTTP 200", "hf_client": "huggingface_hub 1.13.0 + hf_transfer + hf CLI", "one_heavy_lease": "held by G4 (48797)"},
+
+  "required_ladder": {"F0": "openai/gpt-oss-120b (active, G4 running)", "F1": "Qwen/Qwen3-235B-A22B-Instruct-2507 (admitted)", "F2": "Qwen/Qwen3.5-397B-A17B (prep)", "F3": "deepseek-ai/DeepSeek-V3.2 (register)", "F4": "moonshotai/Kimi-K2.6 (register)"},
+  "cuda": "BLOCKED (no sealed budget); Apple-only",
+  "rollback": "git reset --hard 4fbca8bc; kill 48797 to stop G4; no source mutated (byte-range read-only); Qwen metadata-only downloaded"
+}

@@ -1,0 +1,115 @@
+{
+  "best_nonlinear": {
+    "missing": "sealed oneoff_exports.M7.best_nonlinear common-score capture",
+    "required_fields": {
+      "attribution": "REPRESENTATION|OPTIMIZATION|BYTE_BUDGET|MIXED_UNRESOLVED",
+      "capture": {
+        "array_key": "candidate hidden",
+        "path": "npz",
+        "sha256": "hex"
+      },
+      "complete_bpw": "number",
+      "complete_physical_bytes": "integer",
+      "name": "candidate",
+      "score_context_sha256": "c787163ba869a1e23bcf21b82e3aeccb426f4c75cfa16127332a3aec7765bdb7"
+    },
+    "status": "WAITING_PREREQUISITE"
+  },
+  "common_score": {
+    "capture": {
+      "artifact": "KIMI_K26_LONG_RUN_UPSTREAM_REPLICATION.json",
+      "artifact_seal_sha256": "810a67028e0232795d67473cc9529700d7c7b9677a7342d44f416b7fb13b97a1",
+      "bytes": 396670012,
+      "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/long_run/LR12/LR12_UPSTREAM_REPLICATION_CAPTURE.npz",
+      "sha256": "3cf5906608984416d62a9173f51ac2615ddf36ba0d2a37fed76d06e8e0b53634"
+    },
+    "context_sha256": "c787163ba869a1e23bcf21b82e3aeccb426f4c75cfa16127332a3aec7765bdb7",
+    "name": "LR12",
+    "tokens": 1383
+  },
+  "decision": "WAITING_BEST_NONLINEAR_PHYSICAL_ON_LR12_COMMON_SCORE",
+  "definition": "explained_fraction=(E_baseline-E_variant)/(E_baseline-E_oracle), computed per token before averaging; E_oracle=0 at hidden restoration boundary",
+  "ended_at": "2026-07-21T19:11:20Z",
+  "experiment_id": "M7_ORACLE_TO_PHYSICAL_GAP_CACHED_STAGE",
+  "inputs": {
+    "bootstrap_draws": 2000,
+    "lr12": {
+      "artifact": "KIMI_K26_LONG_RUN_UPSTREAM_REPLICATION.json",
+      "artifact_seal_sha256": "810a67028e0232795d67473cc9529700d7c7b9677a7342d44f416b7fb13b97a1",
+      "bytes": 396670012,
+      "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/long_run/LR12/LR12_UPSTREAM_REPLICATION_CAPTURE.npz",
+      "sha256": "3cf5906608984416d62a9173f51ac2615ddf36ba0d2a37fed76d06e8e0b53634"
+    },
+    "nonlinear_export": null,
+    "score_context_sha256": "c787163ba869a1e23bcf21b82e3aeccb426f4c75cfa16127332a3aec7765bdb7",
+    "seed": 26072121,
+    "stage": "M7",
+    "tournament": {
+      "searched": [
+        "/Users/scammermike/Downloads/hawking/KIMI_K26_CONTEXTUAL_SEAM_TOURNAMENT.json",
+        "/Users/scammermike/Downloads/hawking/KIMI_K26_GRAVITY_CONTEXTUAL_SEAMS.json",
+        "/Users/scammermike/Downloads/hawking/KIMI_K26_FINAL_NONLINEAR_TOURNAMENT.json",
+        "/Users/scammermike/Downloads/hawking/KIMI_K26_FINAL_CHAPTER_TOURNAMENT.json",
+        "/Users/scammermike/Downloads/hawking/KIMI_K26_FINAL_BYTE_AUCTION.json"
+      ],
+      "status": "ABSENT"
+    }
+  },
+  "requires_real_model_forward": false,
+  "run_fingerprint_sha256": "e14b2a263bdb2411868c9e4abac6a93b17b0c2dcb6a050a43058ab2ebf202f44",
+  "schema": "hawking.kimi_k26.gravity.m7_oracle_gap.v1",
+  "seal_sha256": "5f82435a0c655b2384a1bfffb90e3d0106f7aa448d7f9c0e2687bc3adef4434e",
+  "started_at": "2026-07-21T19:11:20Z",
+  "status": "PARTIAL_WAITING_PREREQUISITE",
+  "terminal_attribution_criteria": {
+    "BYTE_BUDGET_LIMITED": "same architecture succeeds over budget and degrades monotonically under the ceiling",
+    "OPTIMIZATION_LIMITED": "seed/fit instability or failed convergence",
+    "REPRESENTATION_LIMITED": "converged fit and score both plateau with residual error",
+    "fallback": "MIXED_UNRESOLVED; never infer a cause without its named control"
+  },
+  "variants": {
+    "BEST_LINEAR_RETIRED_LR12": {
+      "explained_fraction_ci95": {
+        "ci95_high": 0.0018401509145839572,
+        "ci95_low": -0.06674999189312018,
+        "draws": 2000,
+        "mean": -0.026479137040196842,
+        "method": "PAIRED_TOKEN_BOOTSTRAP",
+        "n": 1383
+      },
+      "oracle_rescue_explained_fraction": -0.026479137040196842,
+      "quality": {
+        "cosine_mean": 0.9995163083076477,
+        "cosine_min": 0.9678120613098145,
+        "cosine_p10": 0.9989719986915588,
+        "norm_ratio": 0.9952930808067322,
+        "relative_l2": 0.05219298601150513
+      },
+      "row_relative_l2_mean": 0.015953555894915934
+    },
+    "CURRENT_090859_BASELINE": {
+      "oracle_rescue_explained_fraction": 0.0,
+      "quality": {
+        "cosine_mean": 0.9995176196098328,
+        "cosine_min": 0.9678120613098145,
+        "cosine_p10": 0.9989580512046814,
+        "norm_ratio": 0.9952901601791382,
+        "relative_l2": 0.05220846086740494
+      },
+      "row_relative_l2_mean": 0.015959737764332047
+    },
+    "TEACHER_HIDDEN_ORACLE": {
+      "deployable": false,
+      "oracle_rescue_explained_fraction": 1.0,
+      "quality": {
+        "cosine_mean": 1.0,
+        "cosine_min": 0.9999998807907104,
+        "cosine_p10": 0.9999999403953552,
+        "norm_ratio": 1.0,
+        "relative_l2": 0.0
+      },
+      "row_relative_l2_mean": 0.0,
+      "teacher_access_at_inference": true
+    }
+  }
+}

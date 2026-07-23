@@ -1,0 +1,53 @@
+{
+  "bytes_removed": 0,
+  "free_after": 428378275840,
+  "free_before": 428379402240,
+  "generated_at": "2026-07-21T03:17:58Z",
+  "note": "every path here is a rebuildable build product. No source, no evidence, no model payload, and nothing under a protected root.",
+  "refused": [
+    {
+      "action": "refused",
+      "path": "/Users/scammermike/Downloads/hawking-hide-build/target",
+      "reason": "1 file(s) held by a live process"
+    },
+    {
+      "action": "refused",
+      "path": "/Users/scammermike/Library/Caches/go-build",
+      "reason": "inside protected root /Users/scammermike/Library"
+    },
+    {
+      "action": "refused",
+      "path": "/Users/scammermike/Downloads/mop/.venv",
+      "reason": "inside protected root /Users/scammermike/Downloads/mop"
+    },
+    {
+      "action": "refused",
+      "path": "/Users/scammermike/Downloads/hawking/reports",
+      "reason": "'reports' is not a build-directory name; this command only removes rebuildable trees"
+    }
+  ],
+  "removed": 0,
+  "results": [
+    {
+      "action": "refused",
+      "path": "/Users/scammermike/Downloads/hawking-hide-build/target",
+      "reason": "1 file(s) held by a live process"
+    },
+    {
+      "action": "refused",
+      "path": "/Users/scammermike/Library/Caches/go-build",
+      "reason": "inside protected root /Users/scammermike/Library"
+    },
+    {
+      "action": "refused",
+      "path": "/Users/scammermike/Downloads/mop/.venv",
+      "reason": "inside protected root /Users/scammermike/Downloads/mop"
+    },
+    {
+      "action": "refused",
+      "path": "/Users/scammermike/Downloads/hawking/reports",
+      "reason": "'reports' is not a build-directory name; this command only removes rebuildable trees"
+    }
+  ],
+  "schema": "hawking.storage_stripdown.reclaim.v1"
+}

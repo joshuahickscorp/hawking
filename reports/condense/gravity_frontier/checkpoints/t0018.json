@@ -1,0 +1,49 @@
+{
+  "controller_pid": 18615,
+  "elapsed_seconds": 2.936,
+  "family": "product_quant",
+  "metrics": {
+    "budget_bits": 16755200,
+    "budget_shrunk_for_test": false,
+    "functional_divergence": 0.00865,
+    "functional_evidence": {
+      "capability_parity": false,
+      "max_output_rel_div": 0.00951,
+      "mean_output_rel_div": 0.00865,
+      "min_output_rel_div": 0.00796,
+      "n_experts_exercised": 3,
+      "n_inputs": 4,
+      "signal": "proxy_output_synthetic_activations"
+    },
+    "functional_metric": "output_divergence (reference MoE forward, routed experts)",
+    "n_weights": 16588800,
+    "physical_bits": 12458496,
+    "sample_layer": 0,
+    "target_total_bits": 16755200,
+    "weight_meta": {
+      "representative_expert": 0,
+      "representative_of_class": "expert_mlp1",
+      "sample_layer": 0
+    },
+    "weight_rel_error": 0.67675,
+    "whole_artifact_bpw": 0.751019,
+    "within_budget": true
+  },
+  "params": {
+    "dim": 16,
+    "k": 64,
+    "subspaces": 2
+  },
+  "priority_rank": 1,
+  "program_sha256": "d0fa8ced7aad25f7004729a1ab5be2139f08864541129016aad1bfa29dece9a1",
+  "protected_island_strategy": null,
+  "rate": "1/1",
+  "representation_family": "product_quant",
+  "row_id": "t0018",
+  "schema": "hawking.gravity_frontier.trial_checkpoint.v1",
+  "sealed_at": "2026-07-19T01:47:41+00:00",
+  "sharing_group": "expert_mlp1_product_quant",
+  "status": "SEALED",
+  "tensor_class": "expert_mlp1",
+  "trial_sha256": "940d101c8b58aa6aeb40ac5499582f1dc661c18fc7aaef5c28e009bc9806a84b"
+}

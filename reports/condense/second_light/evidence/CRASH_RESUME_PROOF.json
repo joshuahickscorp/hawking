@@ -1,0 +1,47 @@
+{
+  "all_five_scenarios_green": true,
+  "generated_at": "2026-07-19T00:14:31Z",
+  "not_started_after_reset": true,
+  "pytest": "tools/condense/tests/test_second_light_controller.py :: 12 passed",
+  "rollback_green": true,
+  "scenarios": {
+    "after_receipt_before_transition": {
+      "idempotent_no_redo": true,
+      "kill_exit_nonzero": true,
+      "resume_done_rows": 4,
+      "resume_finished_all": true,
+      "second_resume_processed": 0
+    },
+    "after_write_before_receipt": {
+      "idempotent_no_redo": true,
+      "kill_exit_nonzero": true,
+      "resume_done_rows": 4,
+      "resume_finished_all": true,
+      "second_resume_processed": 0
+    },
+    "eval": {
+      "idempotent_no_redo": true,
+      "kill_exit_nonzero": false,
+      "resume_done_rows": 4,
+      "resume_finished_all": true,
+      "second_resume_processed": 0
+    },
+    "fitting": {
+      "idempotent_no_redo": true,
+      "kill_exit_nonzero": false,
+      "resume_done_rows": 4,
+      "resume_finished_all": true,
+      "second_resume_processed": 0
+    },
+    "packing": {
+      "idempotent_no_redo": true,
+      "kill_exit_nonzero": false,
+      "resume_done_rows": 4,
+      "resume_finished_all": true,
+      "second_resume_processed": 0
+    }
+  },
+  "schema": "hawking.second_light.crash_resume_proof.v1",
+  "sha256": "3e5efcb3cb5ac9ef1c519d7cac0e0ffd110da0b0edb1c3bc0997c53f51af7a9a",
+  "singleton_proven": true
+}

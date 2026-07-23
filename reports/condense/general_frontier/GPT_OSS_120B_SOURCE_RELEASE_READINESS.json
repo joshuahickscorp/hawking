@@ -1,0 +1,277 @@
+{
+  "decision_reason": "6 blocking gate(s) red (05_final_result_sealed, 06_artifact_sealed_and_load_tested, 07_checkpoint_graph_sealed, 08_reproduction_sealed, 10_no_running_process_maps_source, 11_no_queued_experiment_references_source)",
+  "deleted_anything": false,
+  "disk": {
+    "free_after_release_gib": 600.5,
+    "free_gib": 539.7,
+    "release_reclaims_gib": 60.8
+  },
+  "gates": {
+    "01_exact_root_identified": {
+      "reason": "exact root resolved and matches sealed receipt",
+      "receipt_source_root": "/Users/scammermike/Downloads/hawking/models/gpt-oss-120b",
+      "repository": "openai/gpt-oss-120b",
+      "source_root": "/Users/scammermike/Downloads/hawking/models/gpt-oss-120b",
+      "status": "green"
+    },
+    "02_immutable_revision_sealed": {
+      "immutable_revision": "b5c939de8f754692c1647ca79fbf85e8c1e70f8a",
+      "reason": "immutable 40-hex revision sealed in receipt",
+      "status": "green"
+    },
+    "03_file_names_sizes_hashes_sealed": {
+      "files_in_manifest": 12,
+      "full_rehash_run_live": false,
+      "hashes_sealed_in_receipt": true,
+      "reason": "all sealed file names present; on-disk sizes match sealed manifest; sha256 sealed for every file (full re-hash of 60.8 GiB is a heavy op deferred to pre-deletion verification)",
+      "size_mismatches": [],
+      "sizes_verified_live": 12,
+      "status": "green"
+    },
+    "04_tokenizer_config_index_retained": {
+      "reason": "tokenizer + config + index + dtypes present and excluded from the deletion set (source stays rehydratable/content-addressable without weight bytes)",
+      "retained_in_deletion_set": [],
+      "retained_missing": [],
+      "retained_present": [
+        "original/config.json",
+        "original/dtypes.json",
+        "original/model.safetensors.index.json",
+        "tokenizer.json",
+        "tokenizer_config.json",
+        "special_tokens_map.json",
+        "chat_template.jinja"
+      ],
+      "status": "green"
+    },
+    "05_final_result_sealed": {
+      "g4_next": "correction wave (tensor-class C2/C3) then adaptive G5 decision",
+      "g4_status": "COMPLETE",
+      "g4_verdict": "NEGATIVE at real fidelity: uniform sub-bit RVQ@1.0 preserves no capability (3 collapse, 3 degraded, 0 pass; next-token agreement 0.11-0.63 vs 0.95 gate). This is the first REAL-forward (real logits, r",
+      "g5_still_pending_in_ladder": true,
+      "reason": "G4 is sealed COMPLETE+NEGATIVE but the FINAL conclusion is not: G5_120B (adaptive whole-model) / tensor-class correction wave is still the pending successor in the ladder; no sealed G5-or-boundary result exists",
+      "sealed_final_result_files": [],
+      "status": "red"
+    },
+    "06_artifact_sealed_and_load_tested": {
+      "baseline_functional_divergence": 0.688,
+      "capability_parity": false,
+      "evidence_level": "PROXY",
+      "g4_capability_candidates": [],
+      "reason": "no capability-preserving artifact exists to seal or load-test: capability_parity is False and G4 real-forward is NEGATIVE (0 promote candidates; uniform sub-bit is the sealed negative control)",
+      "status": "red"
+    },
+    "07_checkpoint_graph_sealed": {
+      "immutable_program_hash": null,
+      "parents_file_present": true,
+      "reason": "parent DAG file is present but the checkpoint graph is NOT sealed: immutable_program_hash is null (Gate-F durable controller / byte-stable program hash not yet built per state.current_blockers)",
+      "status": "red"
+    },
+    "08_reproduction_sealed": {
+      "closure_bindings_missing": [
+        "120B source manifest",
+        "120B tokenizer",
+        "expert byte ranges",
+        "router layout",
+        "source hashes",
+        "license binding"
+      ],
+      "closure_status": "BLOCKED (fail-closed)",
+      "reason": "reproduction/release closure is NOT sealed: HAWKING_120B_RELEASE_CLOSURE.json status is 'BLOCKED (fail-closed)' and predates the source restore (its bindings_missing list is now satisfied on disk but the closure has not been re-run/content-addressed against the resident source)",
+      "status": "red"
+    },
+    "09_official_rehydration_route_verified": {
+      "live_check": {
+        "attempted": true,
+        "gated": false,
+        "n_siblings": 37,
+        "resolved": true,
+        "resolved_sha": "b5c939de8f754692c1647ca79fbf85e8c1e70f8a",
+        "sha_matches_revision": true
+      },
+      "reason": "official rehydration route sealed in receipt (openai/gpt-oss-120b @ b5c939de) and confirmed live via HfApi.model_info",
+      "route": "openai/gpt-oss-120b @ b5c939de8f754692c1647ca79fbf85e8c1e70f8a",
+      "sealed_receipt_route_ok": true,
+      "status": "green"
+    },
+    "10_no_running_process_maps_source": {
+      "note": "command-line (argv) scan only; on macOS without lsof/psutil open file descriptors are not enumerable, so a consumer that neither names the model path nor runs a known 120B script would be missed",
+      "reason": "2 live process(es) reference the 120B source / a heavy consumer (the one Apple heavy lease is held) - deletion would corrupt an in-flight read",
+      "scan": {
+        "available": true,
+        "matches": [
+          {
+            "command": "/bin/zsh -c source /Users/scammermike/.claude/shell-snapshots/snapshot-zsh-1784485868007-ct60p4.sh 2>/dev/null || true && setopt NO_EXTENDED_GLOB NO_BARE_GLOB_QUAL 2>/dev/null || true && eval 'cd /Users/scammermike/Downloads/hawking\\012PY=/Library/Frameworks/Python.framework/Versions/3.12/bin/python3.12\\012LOG=/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/83a649fc-7dfb-4cfc-8d31-396",
+            "matched_pattern": "gptoss_real_forward",
+            "pid": 87397,
+            "rss_gib": 0.0
+          },
+          {
+            "command": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python -m pytest tools/condense/tests/test_gptoss_real_forward_adversarial.py -q -k heavy and (wrong_activation or capital_of_france) -rA",
+            "matched_pattern": "gptoss_real_forward",
+            "pid": 87400,
+            "rss_gib": 10.83
+          }
+        ],
+        "method": "ps -Axww argv scan (lsof-free, psutil-free)"
+      },
+      "status": "red"
+    },
+    "11_no_queued_experiment_references_source": {
+      "active_parent_id": "gpt-oss-120b",
+      "adaptive_g5_program_present": true,
+      "correction_wave_pending": true,
+      "ladder_successors_referencing": [
+        "G5_120B"
+      ],
+      "reason": "queued/active experiments still reference the 120B source: active_parent=gpt-oss-120b, ladder_successors=['G5_120B'], correction_wave_pending=True, adaptive_G5_program_present=True",
+      "status": "red"
+    },
+    "12_rollback_exists": {
+      "per_file_hashes_sealed": true,
+      "reason": "rollback exists: exact HF revision + retained index/config/tokenizer + sealed per-file sha256 allow verified re-fetch of the deleted shards",
+      "retained_metadata_present": true,
+      "rollback_route": "openai/gpt-oss-120b @ b5c939de8f754692c1647ca79fbf85e8c1e70f8a",
+      "status": "green"
+    },
+    "13_qwen_storage_admission_requires_release": {
+      "disk_free_gib": 539.7,
+      "free_after_release_gib": 600.5,
+      "qwen_235b_fits_only_after_release": false,
+      "qwen_235b_weight_gib": 437.9,
+      "qwen_397b_still_needs_streaming_after_release": true,
+      "qwen_397b_weight_gib": 751.4,
+      "reason": "confirmed: admitting the larger Qwen parent depends on releasing the 120B source (397B (751.4 GiB) exceeds disk even after release -> bounded shard-serial streaming, and the one-parent storage law forbids the 120B source co-resident with a second giant working set)",
+      "release_reclaims_gib": 60.8,
+      "status": "green"
+    },
+    "14_exact_deletion_paths_listed": {
+      "action_taken": "NONE (list emitted as data only; no filesystem mutation)",
+      "delete_only_these": [
+        {
+          "abs_path": "/Users/scammermike/Downloads/hawking/models/gpt-oss-120b/original/model--00001-of-00007.safetensors",
+          "bytes": 10544040680,
+          "exists": true,
+          "sealed_bytes": 10544040680,
+          "sealed_sha256": "68a8dc1f8e2e5996cb702f14332a25ddf3463daeab2df68e21ca09ef181203c3"
+        },
+        {
+          "abs_path": "/Users/scammermike/Downloads/hawking/models/gpt-oss-120b/original/model--00002-of-00007.safetensors",
+          "bytes": 10488721680,
+          "exists": true,
+          "sealed_bytes": 10488721680,
+          "sealed_sha256": "19b8f0d5c7dc3195c61a711d08384a1f85624f018186da541585c0f97ac61020"
+        },
+        {
+          "abs_path": "/Users/scammermike/Downloads/hawking/models/gpt-oss-120b/original/model--00003-of-00007.safetensors",
+          "bytes": 10488721688,
+          "exists": true,
+          "sealed_bytes": 10488721688,
+          "sealed_sha256": "0dbccd746d50e9543e8016d0a43ab4487c7f86d72349b1ef17abdfec509d0701"
+        },
+        {
+          "abs_path": "/Users/scammermike/Downloads/hawking/models/gpt-oss-120b/original/model--00004-of-00007.safetensors",
+          "bytes": 10488721672,
+          "exists": true,
+          "sealed_bytes": 10488721672,
+          "sealed_sha256": "bcc73cf6d18f96a2e62428758463157cc12768f410873152a50d3929a64cd049"
+        },
+        {
+          "abs_path": "/Users/scammermike/Downloads/hawking/models/gpt-oss-120b/original/model--00005-of-00007.safetensors",
+          "bytes": 10488721680,
+          "exists": true,
+          "sealed_bytes": 10488721680,
+          "sealed_sha256": "15fd69843e9cc6fdf2db0efe0cf0979b49a6ba84b3a38169b2fabc5479d04a7d"
+        },
+        {
+          "abs_path": "/Users/scammermike/Downloads/hawking/models/gpt-oss-120b/original/model--00006-of-00007.safetensors",
+          "bytes": 10433402600,
+          "exists": true,
+          "sealed_bytes": 10433402600,
+          "sealed_sha256": "3aedef2ee0a5a78a003b3f74fd6883033946b80097bf41e4f4715d95066f0588"
+        },
+        {
+          "abs_path": "/Users/scammermike/Downloads/hawking/models/gpt-oss-120b/original/model--00007-of-00007.safetensors",
+          "bytes": 2316539800,
+          "exists": true,
+          "sealed_bytes": 2316539800,
+          "sealed_sha256": "20d5dfcad1ed6c50aa3c0da7d3f08828dba72b5f58686a987bf3a8f01659cda6"
+        }
+      ],
+      "explicitly_retain_do_not_delete": [
+        "/Users/scammermike/Downloads/hawking/models/gpt-oss-120b/original/config.json",
+        "/Users/scammermike/Downloads/hawking/models/gpt-oss-120b/original/dtypes.json",
+        "/Users/scammermike/Downloads/hawking/models/gpt-oss-120b/original/model.safetensors.index.json",
+        "/Users/scammermike/Downloads/hawking/models/gpt-oss-120b/tokenizer.json",
+        "/Users/scammermike/Downloads/hawking/models/gpt-oss-120b/tokenizer_config.json",
+        "/Users/scammermike/Downloads/hawking/models/gpt-oss-120b/special_tokens_map.json",
+        "/Users/scammermike/Downloads/hawking/models/gpt-oss-120b/chat_template.jinja"
+      ],
+      "reason": "exact deletion path list emitted as DATA (7 expert shards; config/dtypes/index/tokenizer explicitly NOT in the set). This tool does not delete anything.",
+      "status": "green"
+    },
+    "15_post_release_verification_plan": {
+      "acceptance": "all sealed sha256 match AND index/header/tokenizer revalidate AND bounded real-forward is coherent",
+      "plan": [
+        "1. Re-fetch the 7 deleted shards from the sealed route (openai/gpt-oss-120b @ b5c939de8f754692c1647ca79fbf85e8c1e70f8a) into original/ (gated download; authorization + >=61 GiB free required).",
+        "2. For each re-fetched shard, sha256 it and assert equality with the sealed sha256 in GPT_OSS_120B_SOURCE_RECEIPT.json (byte-identity, not just size).",
+        "3. Re-validate the retained model.safetensors.index.json against the re-fetched shards: every weight_map target resolves and total_size matches (65,248,815,744).",
+        "4. Re-parse all 7 safetensors headers (543 tensors) and confirm the MXFP4 expert / BF16 attn+router layout unchanged.",
+        "5. Roundtrip the retained tokenizer (tokenizer.json + tokenizer_config.json, o200k_harmony, vocab 201088) and confirm the Harmony chat_template loads.",
+        "6. Run one bounded real-forward coherence check ('The capital of France is' -> ' Paris') via gptoss_real_forward.py to confirm the rehydrated source is live.",
+        "7. Re-run this readiness evaluator; gate g03 (sizes) and g12 (rollback) must be green against the rehydrated source before any further campaign use."
+      ],
+      "reason": "post-release verification plan authored (re-fetch -> hash-verify -> index/header/tokenizer revalidate -> bounded real-forward -> re-grade)",
+      "status": "green"
+    }
+  },
+  "generated_at_utc": "2026-07-19T23:06:45Z",
+  "honesty": "Every gate is derived from a live probe of the resident repo, receipts, disk, and process tree at run time. Green means the condition holds NOW. The campaign science is NEGATIVE at sub-bit (G4 real-forward NEGATIVE, capability_parity False); the conclusion-dependent gates (final result, artifact load-test, checkpoint/reproduction seal) are therefore RED and the source MUST be retained. No bytes were deleted.",
+  "live_consumers_of_source": [
+    {
+      "command": "/bin/zsh -c source /Users/scammermike/.claude/shell-snapshots/snapshot-zsh-1784485868007-ct60p4.sh 2>/dev/null || true && setopt NO_EXTENDED_GLOB NO_BARE_GLOB_QUAL 2>/dev/null || true && eval 'cd /Users/scammermike/Downloads/hawking\\012PY=/Library/Frameworks/Python.framework/Versions/3.12/bin/python3.12\\012LOG=/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/83a649fc-7dfb-4cfc-8d31-396",
+      "matched_pattern": "gptoss_real_forward",
+      "pid": 87397,
+      "rss_gib": 0.0
+    },
+    {
+      "command": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python -m pytest tools/condense/tests/test_gptoss_real_forward_adversarial.py -q -k heavy and (wrong_activation or capital_of_france) -rA",
+      "matched_pattern": "gptoss_real_forward",
+      "pid": 87400,
+      "rss_gib": 10.83
+    }
+  ],
+  "parent": "gpt-oss-120b",
+  "read_only": true,
+  "rehydration_route": "openai/gpt-oss-120b @ b5c939de8f754692c1647ca79fbf85e8c1e70f8a",
+  "release_authorized": false,
+  "release_decision": "DENIED",
+  "schema": "hawking.gpt_oss_120b.source_release_readiness.v1",
+  "sha256": "eef9bed4aafaf6591a0089ca4ca381da5fc22ea0c3462c8a1406873261861192",
+  "source_root": "/Users/scammermike/Downloads/hawking/models/gpt-oss-120b",
+  "summary": {
+    "green": 9,
+    "green_gates": [
+      "01_exact_root_identified",
+      "02_immutable_revision_sealed",
+      "03_file_names_sizes_hashes_sealed",
+      "04_tokenizer_config_index_retained",
+      "09_official_rehydration_route_verified",
+      "12_rollback_exists",
+      "13_qwen_storage_admission_requires_release",
+      "14_exact_deletion_paths_listed",
+      "15_post_release_verification_plan"
+    ],
+    "pending": 0,
+    "pending_gates": [],
+    "red": 6,
+    "red_gates": [
+      "05_final_result_sealed",
+      "06_artifact_sealed_and_load_tested",
+      "07_checkpoint_graph_sealed",
+      "08_reproduction_sealed",
+      "10_no_running_process_maps_source",
+      "11_no_queued_experiment_references_source"
+    ],
+    "total_gates": 15
+  }
+}

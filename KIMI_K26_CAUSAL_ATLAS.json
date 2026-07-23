@@ -1,0 +1,144 @@
+{
+  "axis_recovery_fraction": {
+    "ATTENTION_MLA_BOUND": -0.02841338314811992,
+    "LOGIT_HEAD_BOUND": 0.014237880425603922,
+    "RESIDUAL_PROPAGATION_BOUND": 0.4371785627941288,
+    "ROUTED_EXPERT_OUTPUT_BOUND": 0.7817187434725185,
+    "ROUTING_BOUND": 0.13311742106076085,
+    "SHARED_EXPERT_BOUND": 0.042963358238849
+  },
+  "claim_boundary": "INTERVENTION_WIRING_AND_CLASSIFIER_VALIDATED; no real compact candidate diagnosis is claimed",
+  "classes_supported": [
+    "ATTENTION_MLA_BOUND",
+    "ROUTING_BOUND",
+    "SHARED_EXPERT_BOUND",
+    "ROUTED_EXPERT_OUTPUT_BOUND",
+    "RESIDUAL_PROPAGATION_BOUND",
+    "LOGIT_HEAD_BOUND",
+    "MIXED_BOUND"
+  ],
+  "classified_ground_truth": "ROUTED_EXPERT_OUTPUT_BOUND",
+  "controls": [
+    {
+      "control": "teacher_attention_mla__student_moe",
+      "metrics": {
+        "argmax_agreement": 0.6727272727272727,
+        "logit_cosine": 0.9372803252806733,
+        "recovery_fraction": -0.02841338314811992,
+        "symmetric_kl": 0.01640754939316947
+      }
+    },
+    {
+      "control": "student_attention_mla__teacher_moe",
+      "metrics": {
+        "argmax_agreement": 0.9090909090909091,
+        "logit_cosine": 0.9982470522081358,
+        "recovery_fraction": 0.9705417495031133,
+        "symmetric_kl": 0.0004699838683394616
+      }
+    },
+    {
+      "control": "teacher_router__student_experts",
+      "metrics": {
+        "argmax_agreement": 0.6909090909090909,
+        "logit_cosine": 0.9477320602590805,
+        "recovery_fraction": 0.13311742106076085,
+        "symmetric_kl": 0.013830448888640273
+      }
+    },
+    {
+      "control": "student_router__teacher_expert_outputs",
+      "metrics": {
+        "argmax_agreement": 0.8545454545454545,
+        "logit_cosine": 0.9867944895133501,
+        "recovery_fraction": 0.7817187434725185,
+        "symmetric_kl": 0.003482510590356563
+      }
+    },
+    {
+      "control": "teacher_shared_expert__student_routed_experts",
+      "metrics": {
+        "argmax_agreement": 0.7090909090909091,
+        "logit_cosine": 0.9413674359252947,
+        "recovery_fraction": 0.042963358238849,
+        "symmetric_kl": 0.015268788045815919
+      }
+    },
+    {
+      "control": "student_shared_expert__teacher_routed_experts",
+      "metrics": {
+        "argmax_agreement": 0.8545454545454545,
+        "logit_cosine": 0.9867944895133501,
+        "recovery_fraction": 0.7817187434725185,
+        "symmetric_kl": 0.003482510590356563
+      }
+    },
+    {
+      "control": "teacher_final_norm_unembed",
+      "metrics": {
+        "argmax_agreement": 0.6363636363636364,
+        "logit_cosine": 0.9395819201899072,
+        "recovery_fraction": 0.014237880425603922,
+        "symmetric_kl": 0.015727081086130554
+      }
+    },
+    {
+      "control": "hidden_reset_early",
+      "metrics": {
+        "argmax_agreement": 0.7090909090909091,
+        "logit_cosine": 0.9661301716010796,
+        "recovery_fraction": 0.4371785627941288,
+        "symmetric_kl": 0.00897938580128331
+      }
+    },
+    {
+      "control": "hidden_reset_middle",
+      "metrics": {
+        "argmax_agreement": 0.8,
+        "logit_cosine": 0.9831273975564649,
+        "recovery_fraction": 0.718055217630508,
+        "symmetric_kl": 0.00449821347979053
+      }
+    },
+    {
+      "control": "hidden_reset_late",
+      "metrics": {
+        "argmax_agreement": 0.9454545454545454,
+        "logit_cosine": 0.999071994291382,
+        "recovery_fraction": 0.9846778282880624,
+        "symmetric_kl": 0.00024445353716097325
+      }
+    }
+  ],
+  "corpus_seal_sha256": "91e6cdd09bfcc293f67dcdf7d7c675c4a615aeccac1ea4147411e61636ffd5f6",
+  "evidence_level": "F0_SYNTHETIC_ARCHITECTURE_PRESERVING_TWIN",
+  "full_student_metrics": {
+    "argmax_agreement": 0.6909090909090909,
+    "logit_cosine": 0.9386239485427171,
+    "symmetric_kl": 0.015954235584666958
+  },
+  "known_injected_ground_truth": "ROUTED_EXPERT_OUTPUT_BOUND",
+  "parent_validation_seal_sha256": "8283f3f1588c841a00205cf06c31408347a2a77b2c12a4ec566742219b919a24",
+  "real_parent_candidate_classification": "PENDING_FIRST_F1_COMPACT_CANDIDATE",
+  "required_real_controls": [
+    "teacher_attention_mla__student_moe",
+    "student_attention_mla__teacher_moe",
+    "teacher_router__student_experts",
+    "student_router__teacher_expert_outputs",
+    "teacher_shared_expert__student_routed_experts",
+    "student_shared_expert__teacher_routed_experts",
+    "teacher_final_norm_unembed",
+    "hidden_reset_early",
+    "hidden_reset_middle",
+    "hidden_reset_late"
+  ],
+  "schema": "hawking.kimi_k26.causal_atlas.v1",
+  "seal_sha256": "2431bd70e44f810cc4440f133e00190fd01b4656fb8ce1a220e7bc229a19484b",
+  "sealed_at": "2026-07-21T05:40:14Z",
+  "source": {
+    "repo": "moonshotai/Kimi-K2.6",
+    "revision": "7eb5002f6aadc958aed6a9177b7ed26bb94011bb"
+  },
+  "status": "PASS",
+  "teacher_replay_exact": true
+}

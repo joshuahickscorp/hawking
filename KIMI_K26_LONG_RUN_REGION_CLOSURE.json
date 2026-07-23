@@ -1,0 +1,284 @@
+{
+  "causal_closure": {
+    "crossed_route_weight_rescue": 0.4633315352170363,
+    "diagnosis": "UPSTREAM_STATE_PRIMARY_ROUTE_SECONDARY_CONDITIONAL_AMPLIFIER",
+    "indices_plus_weights_rescue": 0.16251102407945606,
+    "matched_route_weight_rescue": 0.009398756188791713,
+    "material_errors_with_routes_matched": 33,
+    "mismatch_minus_match_error": {
+      "ci95_high": 0.07658362117429178,
+      "ci95_low": 0.05802167318334653,
+      "left_n": 148,
+      "mean": 0.0669342419696587,
+      "right_n": 536
+    },
+    "pooled_route_change": {
+      "ci95_high": 0.24853801169590642,
+      "ci95_low": 0.18567251461988304,
+      "mean": 0.21637426900584794,
+      "n": 684
+    },
+    "teacher_hidden_rescue": 1.0,
+    "teacher_moe_rescue": 0.3621104691892316
+  },
+  "causal_interpretation": "The tested region is closed by replicated intervention ordering and replicated physical failures, not by absence of route correlation. Routing is a strong conditional amplifier whose correction cannot remove the upstream state error.",
+  "closed_families": [
+    "first-divergence low-margin state protection",
+    "low-margin router-logit correction",
+    "pre-router low-rank hidden repair",
+    "weighted-MoE-output low-rank repair",
+    "pre-router plus post-MoE hybrid",
+    "calibration-CV post-MoE shrinkage",
+    "upstream compact-output linear residual"
+  ],
+  "compute_accounting_so_far": {
+    "completed_experiment_seconds": 203.52357244491577,
+    "invalid_retry_seconds": 364.0,
+    "ledger_completed_experiments": 12,
+    "ledger_faults": 4
+  },
+  "correlated_not_proven": [
+    "Norm-weighted hidden error often improves under low-rank repair.",
+    "That norm-weighted improvement does not establish capability preservation."
+  ],
+  "current_best": {
+    "candidate": "P1_DUAL_PATH_RECOVERY_R16X2_LOCAL_F1_ONLY",
+    "complete_bpw": 0.9085909525553385,
+    "f1_cosine": 0.9134416580200195,
+    "f2_promotable": false
+  },
+  "decision": "TESTED_LINEAR_REPAIR_REGION_CLOSED",
+  "duration_seconds": 1.2304508686065674,
+  "ended_at": "2026-07-21T18:00:16Z",
+  "evidence_verification": {
+    "artifact_seals": {
+      "KIMI_K26_LONG_RUN_BASELINE_AUDIT.json": "2935c1ffc9833f44ac6127818d804097e589ba8431899244038768546d2baf31",
+      "KIMI_K26_LONG_RUN_CONTROL_CAUSAL.json": "b7acbc36f72d48b318b0cd52ccb2f524d7b29a4455b08a033ccbfab6bd90812d",
+      "KIMI_K26_LONG_RUN_INTERVENTION_REPLICATION.json": "3c3bd634ef7cfcbb634018ee990d3ec499b6910c712af277379e626735eb5eda",
+      "KIMI_K26_LONG_RUN_LARGE_FALSIFICATION.json": "0930b2c83fb55a894cd00d558e7dcd1a83497c12737a1691c522eddfa49dda55",
+      "KIMI_K26_LONG_RUN_POOLED_CAUSAL_LAW.json": "663c70385107c20c2da80bd0ae510b950b3fb174b63915a33fe42b0b029fefc0",
+      "KIMI_K26_LONG_RUN_REPAIR_BRACKET.json": "454402d139356a1abcfa426ace236f5701a56cf968bff04c9ff26c5634145c6a",
+      "KIMI_K26_LONG_RUN_REPLICATION.json": "07136a12d4394a6830fc7cbc697c90e612231f53ac4284bbffb767543d840935",
+      "KIMI_K26_LONG_RUN_SHRINKAGE_BOUNDARY.json": "9093a6b74c7e3881dd117f24cf4e4651cd7c89938929f18d03ade42464e5024a",
+      "KIMI_K26_LONG_RUN_STRATIFIED_RESCUE.json": "df3c4cc62fff7f9e3c25113d076e1603da0d5b64bb1551513b5406281476b97e",
+      "KIMI_K26_LONG_RUN_UNTOUCHED_VALIDATION.json": "5ef10b448d17722510b1741b3fc368ab7ce7bfb02caf8b4fef541af35164a6c8",
+      "KIMI_K26_LONG_RUN_UPSTREAM_AUCTION.json": "f98e81213a7525008ed5130799d7abd35b6c19428c84ef31ca5e1da8cdf37caf",
+      "KIMI_K26_LONG_RUN_UPSTREAM_F2.json": "254122fff882c136ec93f6f56cefd7beaeecc5aea58381ef69ee5828d3d7ffbb",
+      "KIMI_K26_LONG_RUN_UPSTREAM_REPLICATION.json": "810a67028e0232795d67473cc9529700d7c7b9677a7342d44f416b7fb13b97a1"
+    },
+    "capture_hashes": {
+      "KIMI_K26_LONG_RUN_CONTROL_CAUSAL.json": {
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/long_run/LR01/LR01_CONTROL_CAPTURE.npz",
+        "sha256": "5557e29d3b286c430fc2a9dabe00b05d849a943fa69ce72b5ab84d0f7f7facb6",
+        "valid": true
+      },
+      "KIMI_K26_LONG_RUN_INTERVENTION_REPLICATION.json": {
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/long_run/LR08/LR08_INTERVENTION_CAPTURE.npz",
+        "sha256": "c67767b807d535f150da63527dd156e603db1302d62011eed903ca7d09fa69b6",
+        "valid": true
+      },
+      "KIMI_K26_LONG_RUN_LARGE_FALSIFICATION.json": {
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/long_run/LR07/LR07_LARGE_CAPTURE.npz",
+        "sha256": "3db68d81bfe8d56b29dbb73ea57abf980379d3fc70ec55c065f8d29fffb704d6",
+        "valid": true
+      },
+      "KIMI_K26_LONG_RUN_REPLICATION.json": {
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/long_run/LR03/LR03_REPLICATION_CAPTURE.npz",
+        "sha256": "364ac009796943966106cee37c089f3cf9b8a6c1d8b61ec65b47b111a3a7f80f",
+        "valid": true
+      },
+      "KIMI_K26_LONG_RUN_UNTOUCHED_VALIDATION.json": {
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/long_run/LR05/LR05_VALIDATION_CAPTURE.npz",
+        "sha256": "318be926d9265462377de6217b0d862ac3fe0b96d1f2040e8cd717cc622b5950",
+        "valid": true
+      },
+      "KIMI_K26_LONG_RUN_UPSTREAM_F2.json": {
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/long_run/LR11/LR11_UPSTREAM_F2_CAPTURE.npz",
+        "sha256": "cdc9e196aabcfc7f66b17ccd3e3858a197610f15f60f2b853f8cd5027203fad6",
+        "valid": true
+      },
+      "KIMI_K26_LONG_RUN_UPSTREAM_REPLICATION.json": {
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/long_run/LR12/LR12_UPSTREAM_REPLICATION_CAPTURE.npz",
+        "sha256": "3cf5906608984416d62a9173f51ac2615ddf36ba0d2a37fed76d06e8e0b53634",
+        "valid": true
+      }
+    },
+    "guard_audit_seal_sha256": "026958764e0495b823d23540168b983c55716123880e4578680e8fc04604103f",
+    "ledger_records": 34,
+    "ledger_seals_valid": true
+  },
+  "experiment_id": "LR13_REGION_CLOSURE_AUDIT",
+  "faults": [],
+  "hypothesis": "All tested linear repair allocations under 0.98 BPW are causally closed.",
+  "negative_results": {
+    "lr02_all_rows_typical_token_harm": true,
+    "lr03_replication_all_rows_typical_token_harm": true,
+    "lr05_shrinkage_untouched_failure": "RETIRE_SHRINKAGE_SURVIVOR_UNTOUCHED_FAILURE",
+    "lr07_large_shrinkage_mean_harm": {
+      "ci95_high": -0.0016059813282804122,
+      "ci95_low": -0.0018371859467881666,
+      "mean": -0.0017217304847242302,
+      "n": 2572
+    },
+    "upstream_first_f2_gain": {
+      "ci95_high": 0.0002935092009441647,
+      "ci95_low": 9.129537938965344e-06,
+      "mean": 0.00013685700509953196,
+      "n": 1397
+    },
+    "upstream_replication_failure": {
+      "ci95_high": 0.00020638734722794167,
+      "ci95_low": -0.00020338789260992003,
+      "mean": 6.1818665541325976e-06,
+      "n": 1383
+    }
+  },
+  "next_architecture": "Test a representation-side nonlinear structural allocation at F0/F1 that directly reduces compact expert-output state error before any router. Do not spend more bits on generic downstream low-rank Doctor paths; require disjoint-score F1 evidence before F2.",
+  "next_run_rationale": "Hold guards through the required wall-clock boundary, then report closure.",
+  "physical_frontier": [
+    {
+      "candidate": "FIRST_DIVERGENCE_PROTECTION_R12",
+      "complete_bpw": 0.9426284063430059,
+      "complete_physical_bytes": 5189192,
+      "decision": "RETIRE_HELDOUT_HARM",
+      "heldout_improvement": {
+        "ci95_high": -0.0042505796487275205,
+        "ci95_low": -0.017299975082659944,
+        "mean": -0.010357730166956049,
+        "n": 61
+      }
+    },
+    {
+      "candidate": "PRE_ROUTER_STATE_R24",
+      "complete_bpw": 0.973861331031436,
+      "complete_physical_bytes": 5361130,
+      "decision": "RETIRE_HELDOUT_HARM",
+      "heldout_improvement": {
+        "ci95_high": -0.0021034376844611064,
+        "ci95_low": -0.01593719646754507,
+        "mean": -0.008711499085680384,
+        "n": 61
+      }
+    },
+    {
+      "candidate": "LOW_MARGIN_ROUTER_R24",
+      "complete_bpw": 0.9418509347098214,
+      "complete_physical_bytes": 5184912,
+      "decision": "RETIRE_HELDOUT_HARM",
+      "heldout_improvement": {
+        "ci95_high": -0.0020955564154571554,
+        "ci95_low": -0.014875668114562687,
+        "mean": -0.008124207635028441,
+        "n": 61
+      }
+    },
+    {
+      "candidate": "WEIGHTED_MOE_OUTPUT_R24",
+      "complete_bpw": 0.9738651457287016,
+      "complete_physical_bytes": 5361151,
+      "decision": "RETIRE_HELDOUT_HARM",
+      "heldout_improvement": {
+        "ci95_high": -0.005226642248358149,
+        "ci95_low": -0.011761603820839989,
+        "mean": -0.009026688050295486,
+        "n": 61
+      }
+    },
+    {
+      "candidate": "HYBRID_R12X2",
+      "complete_bpw": 0.9765592302594867,
+      "complete_physical_bytes": 5375982,
+      "decision": "RETIRE_HELDOUT_HARM",
+      "heldout_improvement": {
+        "ci95_high": -0.00929400625669199,
+        "ci95_low": -0.02715523807316652,
+        "mean": -0.018527407107538866,
+        "n": 61
+      }
+    },
+    {
+      "candidate": "POST_MOE_HIDDEN_CV_R12_S025",
+      "complete_bpw": 0.9426155090332031,
+      "decision": "RETIRE_SHRINKAGE_SURVIVOR_UNTOUCHED_FAILURE",
+      "heldout_improvement": {
+        "ci95_high": 0.0007184047677721766,
+        "ci95_low": -0.0003421894415236597,
+        "mean": 0.0001350463445340267,
+        "n": 289
+      }
+    },
+    {
+      "candidate": "UPSTREAM_RESIDUAL_CV",
+      "complete_bpw": 0.9165534973144531,
+      "decision": "RETIRE_UPSTREAM_RESIDUAL_REPLICATION_FAILED",
+      "first_f2_improvement": {
+        "ci95_high": 0.0002935092009441647,
+        "ci95_low": 9.129537938965344e-06,
+        "mean": 0.00013685700509953196,
+        "n": 1397
+      },
+      "replication_f2_improvement": {
+        "ci95_high": 0.00020638734722794167,
+        "ci95_low": -0.00020338789260992003,
+        "mean": 6.1818665541325976e-06,
+        "n": 1383
+      }
+    }
+  ],
+  "proven": [
+    "Compact perturbation exists before the layer-2 router.",
+    "Low within-split router margin increases route-crossing risk but is not sufficient.",
+    "Material residual damage occurs with exact top-8 route sets still matched.",
+    "Teacher route indices plus weights produce only a minority causal rescue.",
+    "Teacher hidden restoration is a full causal rescue at the tested block.",
+    "All five <=0.98-BPW repair rows harm the typical token on two splits.",
+    "The calibration-CV shrinkage survivor fails untouched low-margin validation."
+  ],
+  "resource_observations": {
+    "after": {
+      "disk_floor_bytes": 34359738368,
+      "disk_headroom_bytes": 7886823424,
+      "floor_green": true,
+      "free_disk_bytes": 42246561792,
+      "memory_pressure": "The system has 103079215104 (6291456 pages with a page size of 16384).\nSystem-wide memory free percentage: 92%",
+      "swap": "total = 2048.00M  used = 587.56M  free = 1460.44M  (encrypted)",
+      "thermals": "Note: No thermal warning level has been recorded\nNote: No performance warning level has been recorded\nNote: No CPU power status has been recorded"
+    },
+    "before": {
+      "disk_floor_bytes": 34359738368,
+      "disk_headroom_bytes": 7887900672,
+      "floor_green": true,
+      "free_disk_bytes": 42247639040,
+      "memory_pressure": "The system has 103079215104 (6291456 pages with a page size of 16384).\nSystem-wide memory free percentage: 92%",
+      "swap": "total = 2048.00M  used = 587.56M  free = 1460.44M  (encrypted)",
+      "thermals": "Note: No thermal warning level has been recorded\nNote: No performance warning level has been recorded\nNote: No CPU power status has been recorded"
+    }
+  },
+  "retries": 0,
+  "sample_accounting": {
+    "heldout_tokens": 8672,
+    "intervention_tokens": 2636,
+    "large_falsification_tokens": 2572,
+    "pooled_original_tokens": 684,
+    "stratified_intervention_tokens": 256
+  },
+  "schema": "hawking.kimi_k26.long_run_region_closure.v1",
+  "scope": {
+    "base_complete_bpw": 0.9085909525553385,
+    "base_representation": "P1_DUAL_PATH_RECOVERY_R16X2",
+    "complete_bpw_ceiling": 0.98,
+    "layers_tested": [
+      1,
+      2,
+      3
+    ],
+    "top_k": 8
+  },
+  "seal_sha256": "4a599fab04e1f6ba758c4314bd9e3cb9354b4205e2ab4d754e87ab5b2440282d",
+  "started_at": "2026-07-21T18:00:15Z",
+  "status": "PASS",
+  "unresolved": [
+    "Whether a nonlinear token-conditional repair can avoid the observed domain tradeoff.",
+    "Whether a representation below the compact expert, rather than a downstream Doctor, can remove the upstream state error at equal BPW."
+  ]
+}

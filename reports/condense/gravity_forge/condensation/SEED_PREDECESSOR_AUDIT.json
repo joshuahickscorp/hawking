@@ -1,0 +1,33 @@
+{
+  "authoritative_main": "41bc0e028b3f",
+  "decision": "fast-forward main to 41bc0e02 (the one proven linear superset); classify stale branches superseded/historical; seal pre-seed-final. main NOT yet pushed (awaiting explicit go for the primary-branch rewrite).",
+  "generated_at": "2026-07-18T03:26:01Z",
+  "method": "live git/pack/process audit; not trusting transcript",
+  "packs": {
+    "in_git_manifests": [
+      "hawking-adapters-extra",
+      "hawking-hide-desktop",
+      "hawking-lab-cli",
+      "hawking-legacy-runtime-capsule-v1"
+    ],
+    "tarball_contents": "local ~/Downloads/hawking-packs/ (NOT in git); source recoverable from git history (pre-removal commits)"
+  },
+  "process_state": {
+    "gravity_enabled": false,
+    "heavy_hawking_process": "none",
+    "safe_to_merge": true
+  },
+  "prs": {
+    "#26 (gravity-forge, DRAFT)": "merged to main via fast-forward",
+    "#27 (clean-slate-collapse, DRAFT)": "merged to main via fast-forward"
+  },
+  "schema": "hawking.seed_predecessor_audit.v1",
+  "sha256": "1909bd0f0446fc24189f9ee6f8c0e40019c776d488d9bc15e135d02aa6d3de94",
+  "tracks": {
+    "codex/clean-slate-collapse@41bc0e02": "green_and_mergeable -> MERGED to main (fast-forward, 25 commits: Gravity Forge + Stage A + NUCLEAR PASTA collapse + speculate extraction)",
+    "codex/concurrency-scheduler, codex/doctor-v5-swap-gate-fix, codex/hawking-studio-stabilization, codex/studio-threads20-merge, codex/hawking-worktree-consolidation": "superseded -> the retired doctor_v5/studio campaign the collapse physically removed+capsuled; merging would RE-ADD removed code (do NOT merge)",
+    "codex/gravity-forge@24163935": "green_but_stacked -> ancestor of collapse, merged transitively",
+    "codex/hawking-gravity, codex/condenser-ecosystem-frontier": "historical -> already integrated upstream (origin gone)",
+    "feat/hide-launcher, serve/rwkv-multiseq-fix, chore/ci-green": "experimental/historical -> not in the proven lineage; leave as-is"
+  }
+}

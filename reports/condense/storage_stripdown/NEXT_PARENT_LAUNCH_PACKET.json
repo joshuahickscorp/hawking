@@ -1,0 +1,109 @@
+{
+  "architecture": "deepseek_v4",
+  "gates": {
+    "adapter": true,
+    "adapter_reconciles_against_source": true,
+    "corpus_integrity": true,
+    "doctor_prime_byte_auction": true,
+    "doctor_prime_causal_harness": true,
+    "doctor_prime_treatment_abi": true,
+    "one_bit_ceiling": true,
+    "parent_adapter_module": true,
+    "parent_campaign_runner": false
+  },
+  "generated_at": "2026-07-21T03:26:10Z",
+  "next_build_items": [
+    "no campaign runner for 'deepseek_v4': a real parent-vs-packed forward does not exist for this architecture. Upstream ships a CUDA/Triton reference at _meta/inference/model.py + kernel.py; porting it to the Metal/CPU path (MLA + sparse indexer + DSpark compressor + hyper-connections + fp8/fp4 block-scale dequant) is the blocking build item. Until it exists, no capability claim, no BPW ledger and no promotion is legal for this parent."
+  ],
+  "red": [
+    "no campaign runner for 'deepseek_v4': a real parent-vs-packed forward does not exist for this architecture. Upstream ships a CUDA/Triton reference at _meta/inference/model.py + kernel.py; porting it to the Metal/CPU path (MLA + sparse indexer + DSpark compressor + hyper-connections + fp8/fp4 block-scale dequant) is the blocking build item. Until it exists, no capability claim, no BPW ledger and no promotion is legal for this parent."
+  ],
+  "repo": "deepseek-ai/DeepSeek-V4-Flash-DSpark",
+  "runtime_boundary": "PYTHON REFERENCE FORWARD ONLY. The Rust engine does not route 'deepseek_v4'; no tok/s or serve claim may be made for this parent.",
+  "schema": "hawking.storage_stripdown.launch_packet.v1",
+  "source_reconciliation": {
+    "byte_exact": true,
+    "bytes_by_organ": {
+      "attn.compressor": 525722624,
+      "attn.indexer": 275353344,
+      "attn.mla": 4920218880,
+      "attn.norm": 911360,
+      "attn.sink": 11776,
+      "embed": 1059061760,
+      "ffn.experts": 157437394944,
+      "ffn.gate": 115129344,
+      "ffn.shared_experts": 1157698560,
+      "hyper_connection.block": 144975588,
+      "hyper_connection.head": 262164,
+      "lm_head": 1059061760,
+      "mtp": 50334720,
+      "mtp.confidence_head": 8704,
+      "mtp.markov_head": 132382720,
+      "norm": 8192
+    },
+    "bytes_seen": 166878536440,
+    "denominator_warning": "original_weight_count uses LOGICAL weights, i.e. stored elements x the measured pack factor. The routed experts pack two fp4 values per int8 byte, so taking numel straight from the safetensors header would HALVE this denominator and make every candidate report roughly twice the compression it actually achieved.",
+    "index_total_size": 166878536440,
+    "logical_weights_by_organ": {
+      "attn.compressor": 261464576,
+      "attn.indexer": 225740928,
+      "attn.mla": 4920218880,
+      "attn.norm": 455680,
+      "attn.sink": 2944,
+      "embed": 529530880,
+      "ffn.experts": 305613766656,
+      "ffn.gate": 50572544,
+      "ffn.shared_experts": 1157698560,
+      "hyper_connection.block": 36243897,
+      "hyper_connection.head": 65541,
+      "lm_head": 529530880,
+      "mtp": 50334720,
+      "mtp.confidence_head": 4352,
+      "mtp.markov_head": 66191360,
+      "norm": 4096
+    },
+    "original_weight_count_all": 313441826494,
+    "original_weight_count_compressible": 306771465216,
+    "pack_factors_detected": {
+      "ffn.experts:I8": 2
+    },
+    "source_bits_per_weight_by_organ": {
+      "attn.compressor": 16.0855,
+      "attn.indexer": 9.7582,
+      "attn.mla": 8.0,
+      "attn.norm": 16.0,
+      "attn.sink": 32.0,
+      "embed": 16.0,
+      "ffn.experts": 4.1212,
+      "ffn.gate": 18.2121,
+      "ffn.shared_experts": 8.0,
+      "hyper_connection.block": 32.0,
+      "hyper_connection.head": 32.0,
+      "lm_head": 16.0,
+      "mtp": 8.0,
+      "mtp.confidence_head": 16.0,
+      "mtp.markov_head": 16.0,
+      "norm": 16.0
+    },
+    "status": "GREEN",
+    "stored_elements_by_organ": {
+      "attn.compressor": 261464576,
+      "attn.indexer": 225740928,
+      "attn.mla": 4920218880,
+      "attn.norm": 455680,
+      "attn.sink": 2944,
+      "embed": 529530880,
+      "ffn.experts": 157437394944,
+      "ffn.gate": 50572544,
+      "ffn.shared_experts": 1157698560,
+      "hyper_connection.block": 36243897,
+      "hyper_connection.head": 65541,
+      "lm_head": 529530880,
+      "mtp": 50334720,
+      "mtp.confidence_head": 4352,
+      "mtp.markov_head": 66191360,
+      "norm": 4096
+    }
+  },
+  "status": "RED"
+}

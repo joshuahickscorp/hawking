@@ -1,0 +1,19 @@
+{
+  "active_generation": "M",
+  "domain": "code",
+  "forward_seconds": 513.1,
+  "honesty": "real full-model from-config forward (coherence-validated, not bit-exact HF); packed=naive sub-bit RVQ lower bound; capability tier requires meeting sealed thresholds",
+  "logits_finite": true,
+  "n_tokens": 27,
+  "prompt_id": "code_py",
+  "quality": {
+    "n_positions": 26,
+    "nll": 0.65244,
+    "perplexity": 1.9202
+  },
+  "rate_bpw": null,
+  "row_id": "code_py__original",
+  "sealed_at": "2026-07-19T19:17:19Z",
+  "sha256": "471707796e27865fc95fe27db5674169e562a567ef31b5053ece6a15802b45f0",
+  "variant": "original"
+}

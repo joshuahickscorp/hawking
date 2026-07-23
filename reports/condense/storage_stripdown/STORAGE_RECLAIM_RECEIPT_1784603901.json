@@ -1,0 +1,48 @@
+{
+  "bytes_removed": 13279019008,
+  "free_after": 439951638528,
+  "free_before": 428377227264,
+  "generated_at": "2026-07-21T03:18:21Z",
+  "note": "every path here is a rebuildable build product. No source, no evidence, no model payload, and nothing under a protected root.",
+  "refused": [],
+  "removed": 6,
+  "results": [
+    {
+      "action": "removed",
+      "allocated_bytes": 7548973056,
+      "path": "/Users/scammermike/Downloads/computexchange/agent/target",
+      "restore": "cargo build / swift build in the owning project"
+    },
+    {
+      "action": "removed",
+      "allocated_bytes": 3593244672,
+      "path": "/Users/scammermike/Downloads/computexchange/token-spec-poc/target",
+      "restore": "cargo build / swift build in the owning project"
+    },
+    {
+      "action": "removed",
+      "allocated_bytes": 484458496,
+      "path": "/Users/scammermike/Downloads/computexchange/macapp/.build",
+      "restore": "cargo build / swift build in the owning project"
+    },
+    {
+      "action": "removed",
+      "allocated_bytes": 378146816,
+      "path": "/Users/scammermike/Downloads/computexchange/renderer/target",
+      "restore": "cargo build / swift build in the owning project"
+    },
+    {
+      "action": "removed",
+      "allocated_bytes": 525541376,
+      "path": "/Users/scammermike/Downloads/computexchange/spec-engine/target",
+      "restore": "cargo build / swift build in the owning project"
+    },
+    {
+      "action": "removed",
+      "allocated_bytes": 748654592,
+      "path": "/Users/scammermike/Downloads/hawking/target",
+      "restore": "cargo build / swift build in the owning project"
+    }
+  ],
+  "schema": "hawking.storage_stripdown.reclaim.v1"
+}

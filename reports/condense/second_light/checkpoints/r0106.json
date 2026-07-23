@@ -1,0 +1,29 @@
+{
+  "controller_pid": 84690,
+  "elapsed_seconds": 0.181,
+  "is_subbit": false,
+  "layer": 34,
+  "metrics": {
+    "bits_each": 16,
+    "budget_bits": 5898752,
+    "budget_shrunk_for_test": false,
+    "kept_original": true,
+    "kept_reason": "router top-k selection is capability-critical; sub-bit router perturbs routing and is deferred until experts pass; bytes counted in whole-artifact",
+    "n_weights_full": 368640,
+    "n_weights_packed": 368640,
+    "physical_bits": 5898240,
+    "rel_error": 0.0,
+    "target_total_bits": 5898752,
+    "whole_artifact_bpw": 16.00139,
+    "within_budget": true
+  },
+  "program_sha256": "3a4061f2b8d467b4a994ce3f46224ffb96f4bcab3f88abd5b2e10925b22ce760",
+  "representation_family": "kept_original",
+  "row_id": "r0106",
+  "row_sha256": "beaec4b03b5e7e41a8254c1b3d9497501564f66bfad62ec00d4663a91d7ea24e",
+  "schema": "hawking.second_light.row_checkpoint.v1",
+  "sealed_at": "2026-07-19T00:59:11+00:00",
+  "status": "SEALED",
+  "tensor_class": "router",
+  "tensor_group": "block.34.mlp.gate.weight"
+}

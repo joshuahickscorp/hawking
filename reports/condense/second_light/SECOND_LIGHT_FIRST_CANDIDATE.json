@@ -1,0 +1,20 @@
+{
+  "budget_bpw": 0.92788,
+  "compression_vs_source_x": 5.8,
+  "expert_tensor_rel_error_mean": 0.554,
+  "full_scope_experts": true,
+  "generated_at": "2026-07-19T01:03:18Z",
+  "logical_weights": 116829156672,
+  "note": "Doctor + protected-island reserves were budgeted but unspent in this base pass, so realized BPW (0.770) is below the reserved budget (0.928). Every row within its exact budget.",
+  "output_gib": 10.47,
+  "realized_whole_artifact_bpw": 0.76976,
+  "rows_failed": 0,
+  "rows_sealed": 183,
+  "schema": "hawking.second_light.first_candidate_artifact.v1",
+  "science": "NEGATIVE at sub-bit (weight-space proxy ~0.55; true-residual output divergence ~0.69). This is the first COMPLETE candidate artifact with exact byte accounting + resumable checkpoints - NOT a capability pass, NOT an Event Horizon.",
+  "sha256": "71211c4cc3de85e8512b454f7c369d942ad15fe80be0f8955cebe2ea040f47d5",
+  "source_gib": 60.77,
+  "status": "COMPLETE",
+  "under_budget": true,
+  "whole_artifact_bits": 89930626766
+}

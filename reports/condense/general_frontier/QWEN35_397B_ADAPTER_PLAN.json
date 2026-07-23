@@ -1,0 +1,154 @@
+{
+  "architecture": {
+    "active_note": "top_k=10 of 512 experts per token + 1 shared expert + per-layer attention -> ~17B active (A17B).",
+    "family": "Qwen3.5-MoE (qwen3_5_moe) - hybrid Gated-DeltaNet/full-attention + MoE, multimodal",
+    "hybrid_layer_map": {
+      "full_attention_layer_count": 15,
+      "full_attention_layer_indices": [
+        3,
+        7,
+        11,
+        15,
+        19,
+        23,
+        27,
+        31,
+        35,
+        39,
+        43,
+        47,
+        51,
+        55,
+        59
+      ],
+      "linear_attention_layer_count": 45,
+      "pattern": "3x linear_attention then 1x full_attention (interval 4); all layers are MoE (mlp_only_layers=[])."
+    },
+    "num_hidden_layers": 60,
+    "total_params_analytic": 396234469376,
+    "total_params_nominal": "~397B (A17B active: top-10 of 512 experts + shared expert + attention)"
+  },
+  "condensation_frontier": {
+    "doctrine": "carry the sealed Gate-F candidate set forward: full-rank PQ base + protected islands (mlp2/down) / PQ-Doctor-lowrank residual (mlp1/up); router + attention + embed/head + vision + MTP stay source-native. Capability-gated; the 120B science is NEGATIVE at uniform sub-bit, so promotion requires a real-forward capability pass on 397B, not a proxy.",
+    "primary_target_organ": "moe_experts",
+    "primary_target_param_share_pct": 97.555,
+    "protected_organs": [
+      "shared_expert",
+      "moe_router",
+      "full_attention",
+      "linear_attention_gated_deltanet",
+      "embeddings_and_lm_head",
+      "vision_encoder",
+      "mtp_head"
+    ]
+  },
+  "immutable_revision": "8472618112abcbd45acbcdc58436aff4233c23f7",
+  "organs": [
+    {
+      "analytic_param_count": 386547056640,
+      "approx_param_share_pct": 97.555,
+      "condensation_policy": "PRIMARY_TARGET",
+      "geometry": "512 experts x {gate,up,down}_proj, moe_intermediate=1024, hidden=4096, per layer x 60 layers",
+      "note": "exact tensor prefix to be confirmed against the resident index.json at admission (patterns follow qwen3_moe convention).",
+      "organ": "moe_experts",
+      "rationale": "512-expert MoE stacks are ~the entire parameter budget; this is the only organ where sub-bit representation search can move the whole-artifact BPW. Apply the sealed Gate-F candidate doctrine (full-rank PQ base + protected islands / Doctor residual), per-tensor-class, capability-gated.",
+      "tensor_name_patterns": [
+        "model.language_model.layers.{L}.mlp.experts.{E}.gate_proj.weight",
+        "model.language_model.layers.{L}.mlp.experts.{E}.up_proj.weight",
+        "model.language_model.layers.{L}.mlp.experts.{E}.down_proj.weight"
+      ]
+    },
+    {
+      "analytic_param_count": 754974720,
+      "approx_param_share_pct": 0.191,
+      "condensation_policy": "PROTECTED (source-native until parent-bound evidence)",
+      "geometry": "1 always-on expert, shared_intermediate=1024, x 60 layers",
+      "organ": "shared_expert",
+      "rationale": "always-on path; capability-sensitive relative to its small size.",
+      "tensor_name_patterns": [
+        "model.language_model.layers.{L}.mlp.shared_expert.*"
+      ]
+    },
+    {
+      "analytic_param_count": 125829120,
+      "approx_param_share_pct": 0.032,
+      "condensation_policy": "PROTECTED (source-native, never sub-bit)",
+      "geometry": "router [512, 4096] per layer x 60 (top-10 of 512)",
+      "organ": "moe_router",
+      "rationale": "expert selection is discrete and brittle; tiny param share, high leverage.",
+      "tensor_name_patterns": [
+        "model.language_model.layers.{L}.mlp.gate.weight"
+      ]
+    },
+    {
+      "analytic_param_count": 1069547520,
+      "approx_param_share_pct": 0.27,
+      "condensation_policy": "PROTECTED (source-native)",
+      "geometry": "GQA heads=32/2, head_dim=256, partial_rotary=0.25, rope_theta=10000000, mrope [11, 11, 10] interleaved; 15 layers",
+      "organ": "full_attention",
+      "rationale": "the 15 global-attention layers carry long-range routing of the hybrid; small share, protect first.",
+      "tensor_name_patterns": [
+        "model.language_model.layers.{L}.self_attn.{q,k,v,o}_proj.weight (L in 3,7,11,15,19,23,27,31,35,39,43,47,51,55,59)"
+      ]
+    },
+    {
+      "analytic_note": "ESTIMATE (conv/gate/beta terms approximated from geometry; exact bytes require the resident safetensors headers).",
+      "analytic_param_count": 5287034880,
+      "approx_param_share_pct": 1.334,
+      "condensation_policy": "PROTECTED (source-native; SSM-state critical)",
+      "geometry": "Gated DeltaNet: key_heads=16 x key_dim=128, value_heads=64 x value_dim=128, short_conv k=4, output_gate=True, ssm_dtype=float32",
+      "organ": "linear_attention_gated_deltanet",
+      "rationale": "recurrent linear-attention state is float32 and error-accumulating over sequence; sub-bit here risks state drift. Protect until dedicated evidence.",
+      "tensor_name_patterns": [
+        "model.language_model.layers.{L}.linear_attn.* (L in 0,1,2,4,5,6,... ; 45 layers)"
+      ]
+    },
+    {
+      "analytic_param_count": 2034237440,
+      "approx_param_share_pct": 0.513,
+      "condensation_policy": "PROTECTED (source-native)",
+      "geometry": "vocab=248320 x hidden=4096, tie_word_embeddings=False",
+      "organ": "embeddings_and_lm_head",
+      "rationale": "vocab 248320 is large; embedding/head quality is capability-critical.",
+      "tensor_name_patterns": [
+        "model.language_model.embed_tokens.weight",
+        "lm_head.weight"
+      ]
+    },
+    {
+      "analytic_note": "ESTIMATE (block-level approximation; excludes patch embed + norm bias).",
+      "analytic_param_count": 415789056,
+      "approx_param_share_pct": 0.105,
+      "condensation_policy": "PROTECTED / OUT-OF-SCOPE for text condensation",
+      "geometry": "ViT depth=27, hidden=1152, patch=16, spatial_merge=2, out_hidden=4096 (projects into text hidden 4096)",
+      "organ": "vision_encoder",
+      "rationale": "multimodal projector + ViT are out of the text-BPW objective; keep native.",
+      "tensor_name_patterns": [
+        "model.visual.* (ViT depth 27)",
+        "model.visual.merger.*"
+      ]
+    },
+    {
+      "analytic_param_count": null,
+      "approx_param_share_pct": null,
+      "condensation_policy": "PROTECTED (source-native; speculative-decode head)",
+      "geometry": "mtp_num_hidden_layers=1, dedicated_embeddings=False",
+      "organ": "mtp_head",
+      "rationale": "MTP is a speculative-decode accelerator head; keep native, optional at serve.",
+      "tensor_name_patterns": [
+        "model.mtp.* (multi-token prediction)"
+      ]
+    }
+  ],
+  "repo": "Qwen/Qwen3.5-397B-A17B",
+  "resolution_method": "config.json (text_config + vision_config) fetched as metadata; analytic param counts computed from geometry.",
+  "risks": [
+    "Gated-DeltaNet linear-attention state (float32 ssm) is error-accumulating; treat as protected until dedicated per-organ evidence.",
+    "Router (top-10 of 512) is high-leverage / tiny; never sub-bit.",
+    "Multimodal: vision encoder + projector are out of the text-BPW scope but must remain loadable for the model to run; do not touch.",
+    "Tensor name prefixes are convention-inferred; confirm against the resident model.safetensors.index.json weight_map before any transform."
+  ],
+  "schema": "hawking.qwen35_397b.adapter_plan.v1",
+  "sha256": "398c1e7f04fac0ce5bd77ca51fe0fc818f34e31de8edb230b5d52cc86852f47e",
+  "status": "DRAFT (organ map from live config; PREP-ONLY, no weights resident)"
+}

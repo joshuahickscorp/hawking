@@ -1,0 +1,205 @@
+{
+  "authorization_law": {
+    "budget_not_inferred_from_key_presence": true,
+    "note": "Part 28: presence of a cloud/RunPod API key or credential does NOT constitute a budget or a launch authorization. A sealed budget object (all required_fields present + operator-signed) is the ONLY authorization to provision paid resources.",
+    "operator_signature_required": true,
+    "sealed_budget_required": true
+  },
+  "env_vars_read": {
+    "HAWKING_CLOUD_BUDGET": {
+      "current_value": null,
+      "description": "Sealed total-spend ceiling. ABSENT -> lane BLOCKED. Its mere presence is NOT authorization; must accompany a full sealed budget object.",
+      "maps_to": "max_total_spend",
+      "present": false
+    },
+    "HAWKING_CLOUD_MAX_HOURLY": {
+      "current_value": null,
+      "description": "Sealed max price per pod-hour. ABSENT -> no per-hour ceiling can be enforced -> provisioning refused.",
+      "maps_to": "max_hourly_price",
+      "present": false
+    },
+    "HAWKING_CLOUD_MAX_HOURS": {
+      "current_value": null,
+      "description": "Sealed wall-clock ceiling in hours. ABSENT -> runtime watchdog cannot be armed -> provisioning refused.",
+      "maps_to": "max_runtime",
+      "present": false
+    }
+  },
+  "generated_at": "2026-07-19T02:41:00Z",
+  "goal_ref": "Part 26-30, 59 (CUDA/cloud lane)",
+  "kernel_commit": "e2609f94",
+  "purpose": "Declares the fields a sealed cloud-cost authorization MUST contain before any paid resource may be provisioned. No values are populated: NO cloud budget is authorized (HAWKING_CLOUD_BUDGET absent). The CUDA/RunPod lane is BLOCKED. This is a schema + budget contract ONLY - launch nothing.",
+  "required_fields": {
+    "approved_gpu_classes": {
+      "allowed_examples": [
+        "NVIDIA A100 80GB PCIe",
+        "NVIDIA A100 SXM 80GB",
+        "NVIDIA H100 80GB PCIe",
+        "NVIDIA H100 SXM 80GB",
+        "NVIDIA L40S 48GB"
+      ],
+      "current_value": null,
+      "description": "Allow-list of GPU SKUs permitted for this budget. A pod on any class not on this list is refused/terminated.",
+      "required": true,
+      "type": "array<string>"
+    },
+    "budget_currency": {
+      "allowed_examples": [
+        "USD"
+      ],
+      "current_value": null,
+      "description": "ISO 4217 currency code for all spend fields (e.g. 'USD').",
+      "required": true,
+      "type": "string"
+    },
+    "cloud_provider": {
+      "allowed_examples": [
+        "runpod"
+      ],
+      "current_value": null,
+      "description": "Provider identifier for the paid lane (e.g. 'runpod'). No default; must be explicit.",
+      "required": true,
+      "type": "string"
+    },
+    "egress_policy": {
+      "current_value": null,
+      "description": "What may leave the pod and where. Artifacts/receipts pull back to the Apple/main lane; no other egress.",
+      "fields": {
+        "allowed_destinations": {
+          "description": "Explicit allow-list of egress destinations (e.g. the network volume, operator-controlled object store).",
+          "type": "array<string>"
+        },
+        "max_egress_gb": {
+          "description": "Ceiling on outbound bytes.",
+          "type": "number"
+        },
+        "max_egress_spend": {
+          "description": "Ceiling on egress spend, counted against max_total_spend.",
+          "type": "number",
+          "unit": "budget_currency"
+        },
+        "no_source_egress": {
+          "description": "Model source weights never leave the pod; only quantized artifact + sealed receipts return.",
+          "type": "boolean"
+        }
+      },
+      "required": true,
+      "type": "object"
+    },
+    "max_gpu_count": {
+      "current_value": null,
+      "description": "Max total GPUs summed across all live pods. Refused above this count.",
+      "required": true,
+      "type": "integer"
+    },
+    "max_hourly_price": {
+      "current_value": null,
+      "description": "Max acceptable price per pod-hour. Pod create is refused above this; a running pod exceeding it is terminated.",
+      "env_binding": "HAWKING_CLOUD_MAX_HOURLY",
+      "required": true,
+      "type": "number",
+      "unit": "budget_currency/hour"
+    },
+    "max_pod_count": {
+      "current_value": null,
+      "description": "Max number of concurrently live pods across the lane. Provisioning beyond this count is refused.",
+      "required": true,
+      "type": "integer"
+    },
+    "max_runtime": {
+      "current_value": null,
+      "description": "Wall-clock ceiling per pod (and lane). Idle+runtime watchdog terminates on breach.",
+      "env_binding": "HAWKING_CLOUD_MAX_HOURS",
+      "required": true,
+      "type": "number",
+      "unit": "hours"
+    },
+    "max_total_spend": {
+      "current_value": null,
+      "description": "Hard ceiling on cumulative spend for the entire lane. Cost monitor auto-terminates at this ceiling.",
+      "env_binding": "HAWKING_CLOUD_BUDGET",
+      "required": true,
+      "type": "number",
+      "unit": "budget_currency"
+    },
+    "storage_budget": {
+      "current_value": null,
+      "description": "Persistent + container storage caps and their spend.",
+      "fields": {
+        "container_disk_gb": {
+          "description": "Max ephemeral container disk per pod.",
+          "type": "integer"
+        },
+        "max_storage_spend": {
+          "description": "Ceiling on storage spend, counted against max_total_spend.",
+          "type": "number",
+          "unit": "budget_currency"
+        },
+        "network_volume_gb": {
+          "description": "Max size of the network volume.",
+          "type": "integer"
+        }
+      },
+      "required": true,
+      "type": "object"
+    },
+    "termination_policy": {
+      "current_value": null,
+      "description": "Conditions under which pods are auto-terminated and how teardown is proven.",
+      "fields": {
+        "auto_terminate_on": {
+          "allowed_examples": [
+            "budget",
+            "idle",
+            "failure",
+            "integrity",
+            "drain",
+            "completion"
+          ],
+          "description": "Trigger set: budget, idle, failure, integrity, drain, completion.",
+          "type": "array<string>"
+        },
+        "idle_timeout_minutes": {
+          "description": "Idle wall-clock before idle-termination fires.",
+          "type": "integer"
+        },
+        "on_disconnect": {
+          "description": "Behavior if the controller loses contact (default: terminate).",
+          "type": "string"
+        },
+        "require_teardown_receipt": {
+          "description": "Terminate must emit a sealed teardown receipt (pod id, final cost, volume disposition).",
+          "type": "boolean"
+        }
+      },
+      "required": true,
+      "type": "object"
+    }
+  },
+  "schema": "hawking.general_frontier.cloud_budget_schema.v1",
+  "sha256": "2fdb5fda8311643dcb4966724d757f9dfa1bd4878d9808a2f0fd589d7797dcb5",
+  "status": "UNSET",
+  "validation": {
+    "all_required_present": false,
+    "authorized": false,
+    "env_missing": [
+      "HAWKING_CLOUD_BUDGET",
+      "HAWKING_CLOUD_MAX_HOURLY",
+      "HAWKING_CLOUD_MAX_HOURS"
+    ],
+    "missing": [
+      "cloud_provider",
+      "budget_currency",
+      "max_total_spend",
+      "max_hourly_price",
+      "max_pod_count",
+      "max_gpu_count",
+      "max_runtime",
+      "approved_gpu_classes",
+      "storage_budget",
+      "egress_policy",
+      "termination_policy"
+    ],
+    "verdict": "NO sealed budget -> CUDA/RunPod lane BLOCKED. Provisioning plan only; launch nothing."
+  }
+}

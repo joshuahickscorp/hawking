@@ -1,0 +1,29 @@
+{
+  "controller_pid": 84690,
+  "elapsed_seconds": 0.138,
+  "is_subbit": false,
+  "layer": null,
+  "metrics": {
+    "bits_each": 16,
+    "budget_bits": 645092864,
+    "budget_shrunk_for_test": false,
+    "kept_original": true,
+    "kept_reason": "normalization params, biases, and attention sinks are tiny and precision-sensitive; kept bf16, every byte counted in whole-artifact BPW",
+    "n_weights_full": 40318272,
+    "n_weights_packed": 40318272,
+    "physical_bits": 645092352,
+    "rel_error": 0.0,
+    "target_total_bits": 645092864,
+    "whole_artifact_bpw": 16.00001,
+    "within_budget": true
+  },
+  "program_sha256": "3a4061f2b8d467b4a994ce3f46224ffb96f4bcab3f88abd5b2e10925b22ce760",
+  "representation_family": "kept_original",
+  "row_id": "r0182",
+  "row_sha256": "7c9f9524d4350c1035bb958b66987af50ff5f2a2f252ac16bda4a69eeb2ca2cd",
+  "schema": "hawking.second_light.row_checkpoint.v1",
+  "sealed_at": "2026-07-19T01:01:30+00:00",
+  "status": "SEALED",
+  "tensor_class": "kept_original_small",
+  "tensor_group": "norms+biases+sinks"
+}

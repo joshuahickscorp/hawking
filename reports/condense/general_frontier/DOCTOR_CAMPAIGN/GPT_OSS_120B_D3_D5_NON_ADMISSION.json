@@ -1,0 +1,32 @@
+{
+  "D3_non_admission": {
+    "candidate": "D3 tensor-class PQ + protected islands (islands on BOTH classes)",
+    "distinct_axis_tested_elsewhere": "islands-on-sensitive-class is tested in D2/D4/D6; robust-class-plain-PQ in D2/D6; robust-class-plus-doctor in D4.",
+    "mapping_would_be": {
+      "mlp1": "pq_protected_islands",
+      "mlp2": "pq_protected_islands"
+    },
+    "proof": "mlp1: islands add a protected-byte reserve on a class G1 shows is ROBUST (island vs plain PQ statistically indistinguishable at ~0.0053), so D3 spends MORE bytes than D2's mlp1 plain product_quant for no measurable mlp1 gain -> strictly byte-dominated by D2 on mlp1. mlp2: D3's mlp2 islands is IDENTICAL to the mlp2 islands already run in D2, D4, and D6. Therefore D3 introduces no scientifically distinct point: it is bracketed between D2 (cheaper mlp1) and D4 (mlp1 + doctor) and cannot beat either at equal whole-artifact budget.",
+    "verdict": "DOMINATED / REDUNDANT"
+  },
+  "D5_non_admission": {
+    "candidate": "D5 residual/additive PQ + Doctor (doctor on BOTH classes)",
+    "distinct_axis_tested_elsewhere": "mlp1+doctor in D4; mlp2 islands in D2/D4/D6; asymmetric byte reallocation in D6.",
+    "mapping_would_be": {
+      "mlp1": "pq_doctor_lowrank",
+      "mlp2": "pq_doctor_lowrank"
+    },
+    "proof": "mlp1: D5's mlp1 pq_doctor_lowrank is IDENTICAL to D4's mlp1 (already running). mlp2: D5 applies a doctor/residual-codebook to mlp2, but G1/G3 show the winning mlp2 treatment is ISLANDS (val 0.149) which decisively beats the residual-codebook family on the heavy-tailed mlp2 residual; spending mlp2's residual budget on a doctor codebook is therefore inferior to spending it on islands at equal bytes -> D5 is byte-dominated on mlp2 by D4 and D6 (both use mlp2 islands). D5 cannot exceed D4.",
+    "verdict": "DOMINATED"
+  },
+  "context": "The 28-row Doctor campaign runs D0/diagnosis/D2/D4/D6. D1 is the sealed G4 uniform control. D3 and D5 are resolved here by DOMINATION under sealed prior evidence, not executed (executing them would require a second local heavy controller, which the one-heavy-lease law forbids while pid 5267 runs).",
+  "coverage_conclusion": "The running D0/D1(G4)/D2/D4/D6 + diagnosis set spans every scientifically distinct axis the Doctor ladder can express under the sealed tensor-class evidence: untreated control (D1), tensor-class PQ (D2), tensor-class + mlp1-doctor (D4), asymmetric global allocation (D6), and organ-isolation diagnosis. D3 and D5 are dominated and are not admitted. Reopening condition: if D2/D4/D6 leave the pass/fail boundary genuinely open (a treated candidate within ~0.05 symmetric-KL of the gate), re-admit D3/D5 as a targeted equal-byte tiebreak.",
+  "generated_at_utc": "2026-07-19T23:22:00Z",
+  "schema": "hawking.gpt_oss_120b.doctor_ladder_non_admission.v1",
+  "sealed_prior_evidence": {
+    "G1_result": "GATE_F_G1_RESULT.json - mlp1 (up/gate) ROBUST: all PQ variants statistically indistinguishable (val ~0.0053); mlp2 (down) SENSITIVE: pq_protected_islands val 0.14919 decisively beats naive_rvq 0.447 and plain PQ 0.610.",
+    "G3_transfer": "G3_TRANSFER.json - mlp1 winner family pq_doctor_lowrank (plain PQ base + tiny doctor helps only marginally); mlp2 winner pq_protected_islands across all layers.",
+    "interpretation": "For mlp1 the plain full-rank PQ base is already near-optimal (small doctor is the only useful add). For mlp2 the ISLANDS mechanism is the winning treatment; the doctor/residual-codebook mechanism is inferior on the heavy-tailed mlp2 residual."
+  },
+  "sha256": "d5ac33fa4d30397613453c464483c222428b3826f76d8f3ed9eb3502f90f7c33"
+}

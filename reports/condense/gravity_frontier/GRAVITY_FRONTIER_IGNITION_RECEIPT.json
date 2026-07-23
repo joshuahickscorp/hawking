@@ -1,0 +1,28 @@
+{
+  "capability_claim": false,
+  "controller_child_pid": 18615,
+  "current_state": "RUNNING",
+  "geometry_frontier": null,
+  "ignited": true,
+  "lease": {
+    "label": "com.hawking.gravity_frontier",
+    "live": true
+  },
+  "note": "durable geometry SEARCH launched (functional-divergence ranked). Not a capability pass.",
+  "observed": [
+    {
+      "current_row": "t0006",
+      "done": 6,
+      "lease_live": true,
+      "state": "RUNNING"
+    }
+  ],
+  "program_sha256": "d0fa8ced7aad25f7004729a1ab5be2139f08864541129016aad1bfa29dece9a1",
+  "readiness_sha256": "721a51477258301cb0686020bf147797895ec628d759ae394bd70d37489b75d8",
+  "run_closure_commit": "b465588384cf9cf7107f3144df1d6bf558bf3581",
+  "schema": "hawking.gravity_frontier.ignition_receipt.v1",
+  "sha256": "6830423c85a492b9170c560a2079421d86a386a96d8a61f8e2eb403f7b59a156",
+  "start_time": "2026-07-19T01:46:13Z",
+  "total_trials": 32,
+  "trials_done_at_observe": 6
+}

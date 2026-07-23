@@ -1,0 +1,13 @@
+{
+  "attempted": 48,
+  "bytes_unlinked": 166886617088,
+  "deleted": 48,
+  "empty_dirs_removed": [],
+  "executed_at": "2026-07-21T03:43:29Z",
+  "failed": [],
+  "free_bytes_after": 617110155264,
+  "free_bytes_before": 450223411200,
+  "manifest_generated_at": "2026-07-21T03:43:24Z",
+  "realized_recovery_bytes": 166886744064,
+  "schema": "hawking.storage_stripdown.delete_receipt.v1"
+}

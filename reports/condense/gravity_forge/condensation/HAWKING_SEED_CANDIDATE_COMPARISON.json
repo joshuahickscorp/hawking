@@ -1,0 +1,93 @@
+{
+  "candidates": {
+    "A": {
+      "auditability": "low (delegates to 52k engine)",
+      "authority_LOC": 1068,
+      "binary": "1.68 MB",
+      "branch": "codex/hawking-seed-a",
+      "direct_quant_exec": "N/A (delegated)",
+      "f2_120b": "no",
+      "metal": "yes (via predecessor)",
+      "model_support": "many (predecessor engine)",
+      "name": "Rust microkernel (delegates to predecessor)",
+      "parity": "bit-identical (delegated)",
+      "peak_rss": "381 MB",
+      "pr": 28,
+      "runtime_LOC": "52413 (hawking-core, delegated)",
+      "ship_LOC": 53481,
+      "subbit_direct": "no",
+      "throughput": "predecessor engine (Metal)"
+    },
+    "B": {
+      "auditability": "high (1,945 LOC in-crate)",
+      "authority_LOC": 417,
+      "binary": "0.55 MB",
+      "branch": "codex/hawking-seed-b",
+      "direct_quant_exec": "no (dequants to f32 at load)",
+      "f2_120b": "no",
+      "metal": "no (scalar CPU)",
+      "model_support": "SmolLM/Llama (one)",
+      "name": "self-contained scalar runtime",
+      "parity": "bit-identical",
+      "peak_rss": "726 MB",
+      "pr": 29,
+      "runtime_LOC": 1090,
+      "ship_LOC": 1945,
+      "subbit_direct": "no",
+      "throughput": "9.68 tok/s (scalar CPU)"
+    },
+    "C": {
+      "auditability": "high (2,204 LOC in-crate)",
+      "authority_LOC": 420,
+      "binary": "0.60 MB",
+      "branch": "codex/hawking-seed-c",
+      "direct_quant_exec": "YES (mmap, per-row tile dequant, no dense shadow)",
+      "f2_120b": "bounded bridge (fail-closed on absent asset + synthetic MoE proof)",
+      "metal": "YES (15x LM-head, measured, argmax agrees)",
+      "model_support": "SmolLM/Llama + MoE-ready IR (Route/Expert/WeightedCombine)",
+      "name": "Event Horizon engine (direct-quant + Metal)",
+      "parity": "bit-identical",
+      "peak_rss": "212 MB",
+      "pr": 30,
+      "runtime_LOC": "1011 + adapter 92 + metal 78 + subbit 195 + f2 153",
+      "ship_LOC": 2204,
+      "subbit_direct": "YES (0.401 BPW ternary latent factor, executed directly)",
+      "throughput": "~3-6 tok/s direct-quant CPU (Metal 15x on the bottleneck; generate() uses CPU for bit-identical parity)"
+    }
+  },
+  "dimensions": [
+    "authority LOC",
+    "complete ship LOC",
+    "runtime LOC",
+    "binary size",
+    "model support",
+    "direct quantized execution",
+    "Metal",
+    "peak RSS",
+    "throughput",
+    "sub-bit direct execution",
+    "120B F2 bridge",
+    "parity",
+    "auditability"
+  ],
+  "generated_at": "2026-07-18T22:32:37Z",
+  "honest_caveats": [
+    "The 120B F2 bridge could NOT run against the real GPT-OSS-120B: that asset is absent on this machine, so the real path fails closed and the MoE contract is proven on a bounded SYNTHETIC parent-shaped fixture. No 120B capability is claimed.",
+    "C's CPU decode throughput (~3-6 tok/s) is LOWER than B's (9.68) because C dequantizes on the fly (incl. per-element f16 rounding across the 49k-row LM head) rather than precomputing dense f32. This is the honest cost of removing the dense shadow; the Metal path (15x on the bottleneck) is the intended remedy and is measured but not yet wired into the decode loop.",
+    "Metal logits are within 6.7e-6 of CPU (argmax agrees) but not bit-identical; parity is therefore taken on the CPU path."
+  ],
+  "schema": "hawking.seed_candidate_comparison.v1",
+  "selection": {
+    "features_to_import_into_final_seed": [
+      "From B: an OPTIONAL dequant-at-load 'dense-fast' profile could be offered for tiny models where RAM is abundant and raw CPU throughput matters - but it reintroduces the dense shadow, so the preferred path is to SIMD/Metal the direct-quant gemv instead.",
+      "Wire the validated Metal LM-head into the decode loop (with a near-tie guard) so C gets both bounded memory AND Metal speed while preserving bit-identical tokens - the single highest-value optimization.",
+      "The shared authority (record/state/gravity/pack/evidence, ~420 LOC) is identical across B and C; the final Seed keeps it as-is."
+    ],
+    "final_seed_branch": "codex/hawking-seed-c (tag hawking-seed-final)",
+    "merge_pr": 30,
+    "not_selected_disposition": "A (PR #28) and B (PR #29) are kept as SEALED EXPERIMENTS (branches + tags retained); their draft PRs are superseded by C. Not merged.",
+    "rationale": "Selection is NOT by LOC alone. C dominates on the axes that matter for Hawking's mission (sub-bit-first, giant parents, hardware-native): direct-quant execution with 3.5x lower memory than B (212 vs 726 MB), Metal-native acceleration (15x measured on the bottleneck), genuine sub-bit direct execution (<1.0 BPW), and an MoE-ready IR + 120B F2 bridge that make it giant-model-extensible - all in 2,204 LOC (under the 3,000 gravitational target) with the SAME bit-identical parity and in-crate auditability as B. A is rejected: it delegates model math to the 52k predecessor engine (the very thing the Seed exists to escape) and ships ~53k LOC. B is a superb pure-dense-CPU result but its f32 dequant-at-load (726 MB, no Metal, no direct-quant, no sub-bit, no MoE path) does not scale to giant parents - the dense shadow is exactly what C removes.",
+    "winner": "C"
+  },
+  "sha256": "535ef92f0908a972591362478ce4091d3ce9cfa39233fed1712f93c7367bde17"
+}

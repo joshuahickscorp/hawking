@@ -1,0 +1,677 @@
+{
+  "accounting_verdict": "QMoE is the only surveyed method clearly publishing a full giant-MoE checkpoint plus all metadata below one BPW (0.807). NanoQuant and LittleBit publish informative whole-model payload/memory figures but not canonical artifact audits.",
+  "claim_policy": {
+    "defensible_novelty_if_achieved": "The conjunction of official GLM-5.2 BF16 source, 753B-class autoregressive MoE, complete canonical artifact under 1 BPW, auditable metadata, capability-preserving generation evaluation, and measured Apple-local execution—not sub-1-bit compression by itself.",
+    "safe": [
+      "Gravity targets a fully auditable canonical-artifact rate below 1 BPW for official GLM-5.2 BF16 weights.",
+      "QMoE is the closest prior giant-MoE baseline and already demonstrates a fully metadata-accounted 0.807-BPW checkpoint; Gravity evaluates a materially different autoregressive GLM architecture and capability regime.",
+      "NanoQuant and LittleBit establish dense low-rank binary references under different training budgets, scales, hardware, and denominators.",
+      "External results are contextual baselines, not a cross-paper leaderboard."
+    ],
+    "unsafe": [
+      "First sub-1-bit PTQ.",
+      "First fully accounted giant-MoE sub-1-bit checkpoint.",
+      "Better than QMoE, NanoQuant, or LittleBit without matched model, tokenizer, harness, denominator, and hardware.",
+      "Treating BitNet 1.58, STBLLM 0.55, BTC index rate, or quantized-matrix BPW as complete physical artifact BPW."
+    ]
+  },
+  "instrument_binding": {
+    "common_sha256": "6e67ada54b6b4dac24b50682b3d900de349f33d545921fb10169625507201eb2",
+    "generator": "tools/condense/glm52_external_baselines.py",
+    "generator_sha256": "5a8f216905578f64bf6573fa1598250531d31fcf1a2d77ae1dd2a9e68ba65477",
+    "repository_base_commit": "753c73dc0685ce470090aba3e49c62fe4a4f9b08",
+    "timestamp_free_deterministic_rebuild": true
+  },
+  "methods": [
+    {
+      "evaluation": "broad peer-size general, math, code, instruction and dialogue tests; no floating-teacher preservation contract",
+      "glm_comparability": "architecture context only: dense 2.4B native pretraining, not GLM PTQ",
+      "method": "BitNet b1.58 / b1.58 2B4T",
+      "method_class": "native ternary architecture trained from scratch",
+      "rate": {
+        "canonical_artifact_bpw": null,
+        "decoded_tensor_payload_bpw": null,
+        "nominal_meaning": "log2(3), not a stored-file rate",
+        "nominal_or_method_bpw": 1.5849625007,
+        "physical_boundary": "GPU format packs four trits per byte: 2 physical bits per linear weight before higher-precision embeddings/other tensors"
+      },
+      "reproducibility": "public weights and code",
+      "runtime": "CUDA kernels and bitnet.cpp CPU runtime",
+      "scope": "dense 0.7B-3.9B experiments; released 2.4B; ternary linear weights and per-token INT8 activations",
+      "sources": [
+        {
+          "content_identity": {
+            "captured_at_cutoff": "2026-07-21",
+            "format": "PDF",
+            "retrieval_url": "https://arxiv.org/pdf/2402.17764",
+            "sha256": "bcd625e89f95c39dc9143af4174978fcf2467eb9659d86f8da448d7d9366c332"
+          },
+          "kind": "paper",
+          "title": "The Era of 1-bit LLMs",
+          "url": "https://arxiv.org/abs/2402.17764"
+        },
+        {
+          "content_identity": {
+            "captured_at_cutoff": "2026-07-21",
+            "format": "PDF",
+            "retrieval_url": "https://arxiv.org/pdf/2504.12285",
+            "sha256": "af78afa2409dc8c50ef16574d80081c340d93ea52656be5224640b6eec7f5f01"
+          },
+          "kind": "paper",
+          "title": "BitNet b1.58 2B4T",
+          "url": "https://arxiv.org/abs/2504.12285"
+        },
+        {
+          "commit": "16da220ae2b510caff437d403288882687f44ae5",
+          "kind": "code",
+          "title": "microsoft/BitNet",
+          "url": "https://github.com/microsoft/BitNet/tree/16da220ae2b510caff437d403288882687f44ae5"
+        }
+      ],
+      "structured_comparison": {
+        "architecture_class": "DENSE",
+        "compression_regime": "NATIVE_LOW_BIT_TRAINING",
+        "largest_evaluated_scale": "3.9B experiments; 2.4B released",
+        "physical_accounting_level": "METHOD_RATE_ONLY",
+        "source_or_teacher_precision": "none: native ternary training from scratch",
+        "weight_activation_scope": "ternary linear weights plus per-token INT8 activations"
+      },
+      "training": "2B4T uses 4T-token pretraining plus SFT/DPO; not post-training compression"
+    },
+    {
+      "evaluation": "WikiText-2 and eight zero-shot commonsense tasks",
+      "glm_comparability": "useful below-3-bit representation evidence; not PTQ, MoE, complete storage, or GLM scale",
+      "method": "ParetoQ",
+      "method_class": "QAT initialized from floating pretrained checkpoints",
+      "rate": {
+        "canonical_artifact_bpw": null,
+        "decoded_tensor_payload_bpw": null,
+        "nominal_or_method_bpw": [
+          1,
+          1.58,
+          2,
+          3,
+          4
+        ],
+        "physical_boundary": "effective model size includes embeddings but not complete metadata/container accounting; ternary generally requires 2 physical bits"
+      },
+      "reproducibility": "public code; paper results used internal Meta infrastructure",
+      "runtime": "preliminary CPU 2-bit kernel",
+      "scope": "dense MobileLLM 125M-1.5B and Llama-3 1/3/8B; embeddings/output stay floating",
+      "sources": [
+        {
+          "content_identity": {
+            "captured_at_cutoff": "2026-07-21",
+            "format": "PDF",
+            "retrieval_url": "https://arxiv.org/pdf/2502.02631",
+            "sha256": "8c9b4ec1beaea9af616f78b12f6238275dbd4fae760544b4177df818cdc7ffa8"
+          },
+          "kind": "paper",
+          "title": "ParetoQ",
+          "url": "https://arxiv.org/abs/2502.02631"
+        },
+        {
+          "commit": "7b36b8de958aada6508e620c8dc544e6ed6c39b4",
+          "kind": "code",
+          "title": "facebookresearch/ParetoQ",
+          "url": "https://github.com/facebookresearch/ParetoQ/tree/7b36b8de958aada6508e620c8dc544e6ed6c39b4"
+        }
+      ],
+      "structured_comparison": {
+        "architecture_class": "DENSE",
+        "compression_regime": "QAT",
+        "largest_evaluated_scale": "Llama-3 8B",
+        "physical_accounting_level": "PARTIAL_MODEL_SIZE",
+        "source_or_teacher_precision": "NOT_REPORTED_BY_PRIMARY_SOURCE; floating pretrained checkpoints",
+        "weight_activation_scope": "quantized decoder weights; embeddings/output remain floating"
+      },
+      "training": "up to 30B QAT tokens at <=2 bits on 16 GPUs"
+    },
+    {
+      "evaluation": "WikiText/PTB/C4 perplexity and several zero-shot tasks",
+      "glm_comparability": "dense >=2-bit NVIDIA PTQ reference only",
+      "method": "QuIP",
+      "method_class": "training-free Hessian-aware weight-only PTQ with incoherence and LDLQ",
+      "rate": {
+        "canonical_artifact_bpw": null,
+        "decoded_tensor_payload_bpw": null,
+        "nominal_or_method_bpw": [
+          2,
+          3,
+          4
+        ],
+        "physical_boundary": "transforms/scales/unquantized tensors/packaging are not fully accounted"
+      },
+      "reproducibility": "public code",
+      "runtime": "OPT-66B A6000 about 81 ms/token versus 53 ms for paper's OPTQ comparison",
+      "scope": "dense OPT 125M-66B and Llama-2 70B; W2/3/4A16",
+      "sources": [
+        {
+          "content_identity": {
+            "captured_at_cutoff": "2026-07-21",
+            "format": "PDF",
+            "retrieval_url": "https://arxiv.org/pdf/2307.13304",
+            "sha256": "782982b03b97f6437df021d122ed15779454318032888db38d24b038e2062d93"
+          },
+          "kind": "paper",
+          "title": "QuIP",
+          "url": "https://arxiv.org/abs/2307.13304"
+        },
+        {
+          "commit": "ac92cfc7a22f6100009e2caf53bb72257d3f3184",
+          "kind": "code",
+          "title": "Cornell-RelaxML/QuIP",
+          "url": "https://github.com/Cornell-RelaxML/QuIP/tree/ac92cfc7a22f6100009e2caf53bb72257d3f3184"
+        }
+      ],
+      "structured_comparison": {
+        "architecture_class": "DENSE",
+        "compression_regime": "WEIGHT_ONLY_PTQ",
+        "largest_evaluated_scale": "OPT 66B / Llama-2 70B",
+        "physical_accounting_level": "QUANTIZED_MATRICES_ONLY",
+        "source_or_teacher_precision": "NOT_REPORTED_BY_PRIMARY_SOURCE; floating pretrained OPT/Llama checkpoints",
+        "weight_activation_scope": "W2/3/4 A16"
+      },
+      "training": "calibration/Hessian computation, no model retraining"
+    },
+    {
+      "evaluation": "perplexity, five zero-shot tasks, limited chat generations",
+      "glm_comparability": "closest established extreme lattice/VQ family with a MoE appendix, but only 2-bit and incomplete accounting",
+      "method": "QuIP#",
+      "method_class": "Hadamard incoherence plus E8 lattice codebooks",
+      "rate": {
+        "canonical_artifact_bpw": null,
+        "decoded_tensor_payload_bpw": null,
+        "nominal_or_method_bpw": [
+          2,
+          3,
+          4
+        ],
+        "physical_boundary": "codebook/sign overhead <0.01 BPW per quantized matrix, but lm-head/norms/floating tensors excluded"
+      },
+      "reproducibility": "public code and models",
+      "runtime": "RTX 4090 proof-of-concept 32.74 tok/s for Llama-2-70B",
+      "scope": "dense Llama 7B-70B; appendix Falcon-180B and no-FT Mixtral-8x7B",
+      "sources": [
+        {
+          "content_identity": {
+            "captured_at_cutoff": "2026-07-21",
+            "format": "PDF",
+            "retrieval_url": "https://arxiv.org/pdf/2402.04396",
+            "sha256": "2a5c4c103ba31f4a889344d95059c40e96841761e725500829f00b5a16c3d825"
+          },
+          "kind": "paper",
+          "title": "QuIP#",
+          "url": "https://arxiv.org/abs/2402.04396"
+        },
+        {
+          "commit": "1d8f873e9a2a8b86b12bb1064c312c5689b77d98",
+          "kind": "code",
+          "title": "Cornell-RelaxML/quip-sharp",
+          "url": "https://github.com/Cornell-RelaxML/quip-sharp/tree/1d8f873e9a2a8b86b12bb1064c312c5689b77d98"
+        }
+      ],
+      "structured_comparison": {
+        "architecture_class": "DENSE_AND_MOE",
+        "compression_regime": "WEIGHT_ONLY_PTQ_WITH_OPTIONAL_CALIBRATION_FT",
+        "largest_evaluated_scale": "Falcon 180B; Mixtral-8x7B appendix",
+        "physical_accounting_level": "QUANTIZED_MATRICES_ONLY",
+        "source_or_teacher_precision": "NOT_REPORTED_BY_PRIMARY_SOURCE; floating pretrained checkpoints",
+        "weight_activation_scope": "quantized weight matrices; activations floating"
+      },
+      "training": "main results use calibration fine-tuning; no-FT variant exists"
+    },
+    {
+      "evaluation": "perplexity, zero-shot tasks, MMLU and GSM8K appendix",
+      "glm_comparability": "MoE/PTQ relevant, but not sub-1-bit and far smaller",
+      "method": "AQLM",
+      "method_class": "additive multi-codebook weight-only PTQ",
+      "rate": {
+        "canonical_artifact_bpw": null,
+        "decoded_tensor_payload_bpw": null,
+        "nominal_or_method_bpw": [
+          1.97,
+          2.07
+        ],
+        "physical_boundary": "codes, FP16 codebooks and scales for quantized matrices only; floating parameters/artifact overhead excluded"
+      },
+      "reproducibility": "public code and models",
+      "runtime": "70B quantization 10-14 days on one A100 or 3-4 days on eight; NVIDIA/CPU inference kernels",
+      "scope": "dense Llama-2 7/13/70B, Mistral-7B, Mixtral-8x7B; Mixtral gate unquantized",
+      "sources": [
+        {
+          "content_identity": {
+            "captured_at_cutoff": "2026-07-21",
+            "format": "PDF",
+            "retrieval_url": "https://arxiv.org/pdf/2401.06118",
+            "sha256": "41f0da86fb91478587ab70136b3101f79820c223244cb055bb962cc7c31347f4"
+          },
+          "kind": "paper",
+          "title": "AQLM",
+          "url": "https://arxiv.org/abs/2401.06118"
+        },
+        {
+          "commit": "e79a896ed6656fe4ed06193d42d004e7d0bbdbb2",
+          "kind": "code",
+          "title": "Vahe1994/AQLM",
+          "url": "https://github.com/Vahe1994/AQLM/tree/e79a896ed6656fe4ed06193d42d004e7d0bbdbb2"
+        }
+      ],
+      "structured_comparison": {
+        "architecture_class": "DENSE_AND_MOE",
+        "compression_regime": "WEIGHT_ONLY_PTQ_WITH_OPTIONAL_KL_DISTILLATION",
+        "largest_evaluated_scale": "Llama-2 70B / Mixtral-8x7B",
+        "physical_accounting_level": "QUANTIZED_MATRICES_ONLY",
+        "source_or_teacher_precision": "NOT_REPORTED_BY_PRIMARY_SOURCE; floating pretrained checkpoints",
+        "weight_activation_scope": "additive-codebook weights; Mixtral router floating; activations floating"
+      },
+      "training": "beam/block refinement; optional 4M-16M-token full-model KL distillation"
+    },
+    {
+      "evaluation": "perplexity and five zero-shot tasks",
+      "glm_comparability": "dense >=2-bit paper evidence; repo-scale claims are unmatched",
+      "method": "VPTQ",
+      "method_class": "second-order vector PTQ with residual/outlier codebooks",
+      "rate": {
+        "canonical_artifact_bpw": null,
+        "decoded_tensor_payload_bpw": null,
+        "nominal_or_method_bpw": [
+          2.02,
+          2.26
+        ],
+        "physical_boundary": "Transformer-block indices/codebooks/scales only; embeddings/head/nonlinear tensors/packaging excluded"
+      },
+      "reproducibility": "public CUDA/Triton tools; community models carry a caveat",
+      "runtime": "four A100s: about 2 h at 7B and 19 h at 70B",
+      "scope": "peer-reviewed dense Llama-2/3 and Mistral through 70B; later repo scale claims are not equivalent paper evidence",
+      "sources": [
+        {
+          "content_identity": {
+            "captured_at_cutoff": "2026-07-21",
+            "format": "PDF",
+            "retrieval_url": "https://aclanthology.org/2024.emnlp-main.467.pdf",
+            "sha256": "74c41bf6249808b581378784e68e6dc15426e48abce53bb72daa287e56abc8f7"
+          },
+          "kind": "paper",
+          "title": "VPTQ",
+          "url": "https://aclanthology.org/2024.emnlp-main.467/"
+        },
+        {
+          "commit": "942c3151026c26a5fae62807c65c630ff19e3893",
+          "kind": "code",
+          "title": "microsoft/VPTQ",
+          "url": "https://github.com/microsoft/VPTQ/tree/942c3151026c26a5fae62807c65c630ff19e3893"
+        }
+      ],
+      "structured_comparison": {
+        "architecture_class": "DENSE",
+        "compression_regime": "WEIGHT_ONLY_PTQ",
+        "largest_evaluated_scale": "70B peer-reviewed",
+        "physical_accounting_level": "QUANTIZED_MATRICES_ONLY",
+        "source_or_teacher_precision": "NOT_REPORTED_BY_PRIMARY_SOURCE; floating pretrained checkpoints",
+        "weight_activation_scope": "vector-quantized Transformer block weights; activations floating"
+      },
+      "training": "layer/end-to-end calibration refinement"
+    },
+    {
+      "evaluation": "WikiText and five zero-shot tasks; optional GSM8K LoRA",
+      "glm_comparability": "PTQ/MoE relevance, but >=2-bit and non-Apple",
+      "method": "GPTVQ",
+      "method_class": "Hessian-aware vector PTQ with EM codebooks",
+      "rate": {
+        "canonical_artifact_bpw": null,
+        "decoded_tensor_payload_bpw": null,
+        "nominal_or_method_bpw": [
+          2.125,
+          4.125
+        ],
+        "physical_boundary": "formula includes index/quantized-codebook overhead but not a complete model denominator or artifact"
+      },
+      "reproducibility": "algorithm public; headline mobile engine not fully released",
+      "runtime": "one H100 roughly 3-11 h for 70B; Snapdragon proof on Llama-3-8B",
+      "scope": "dense Llama/Mistral through 70B plus Mixtral-8x7B",
+      "sources": [
+        {
+          "content_identity": {
+            "captured_at_cutoff": "2026-07-21",
+            "format": "PDF",
+            "retrieval_url": "https://arxiv.org/pdf/2402.15319",
+            "sha256": "dfcfae2e7b180f82348b8e538b80c9b874f65b37fecbc924142cdbe35bfef3ed"
+          },
+          "kind": "paper",
+          "title": "GPTVQ",
+          "url": "https://arxiv.org/abs/2402.15319"
+        },
+        {
+          "commit": "fd8a3ced81f767018a28a51a91af96777f885f9f",
+          "kind": "code",
+          "title": "Qualcomm-AI-research/gptvq",
+          "url": "https://github.com/Qualcomm-AI-research/gptvq/tree/fd8a3ced81f767018a28a51a91af96777f885f9f"
+        }
+      ],
+      "structured_comparison": {
+        "architecture_class": "DENSE_AND_MOE",
+        "compression_regime": "WEIGHT_ONLY_PTQ_WITH_OPTIONAL_REFINEMENT",
+        "largest_evaluated_scale": "70B / Mixtral-8x7B",
+        "physical_accounting_level": "METHOD_FORMULA_ONLY",
+        "source_or_teacher_precision": "NOT_REPORTED_BY_PRIMARY_SOURCE; floating pretrained checkpoints",
+        "weight_activation_scope": "vector-quantized weights; activations floating"
+      },
+      "training": "optional centroid or LoRA refinement"
+    },
+    {
+      "evaluation": "perplexity, seven zero-shot tasks, dialogue examples",
+      "glm_comparability": "warning that 1-bit arithmetic is not 1 physical BPW; dense only",
+      "method": "BiLLM",
+      "method_class": "training-free Hessian/saliency binary PTQ",
+      "rate": {
+        "canonical_artifact_bpw": null,
+        "decoded_tensor_payload_bpw": 2.88,
+        "nominal_or_method_bpw": [
+          1.07,
+          1.13
+        ],
+        "physical_boundary": "headline is arithmetic weight rate; checkpoint ratios imply 1.5-1.9, while NanoQuant complete-decode re-accounting gives ~2.88 due to scales/means/bitmaps"
+      },
+      "reproducibility": "public code",
+      "runtime": "no optimized end-to-end binary inference kernel",
+      "scope": "dense OPT 1.3B-66B and Llama/Vicuna 7B-70B",
+      "sources": [
+        {
+          "content_identity": {
+            "captured_at_cutoff": "2026-07-21",
+            "format": "PDF",
+            "retrieval_url": "https://arxiv.org/pdf/2402.04291",
+            "sha256": "8cd1d9045c93e8cd033f131e87ed4bec932919c2a8a6719b7bc34d34b8330c6f"
+          },
+          "kind": "paper",
+          "title": "BiLLM",
+          "url": "https://arxiv.org/abs/2402.04291"
+        },
+        {
+          "commit": "dc137ebbf62d4b31e8a82ba6bf9e18a51a298dcb",
+          "kind": "code",
+          "title": "Aaronhuang-778/BiLLM",
+          "url": "https://github.com/Aaronhuang-778/BiLLM/tree/dc137ebbf62d4b31e8a82ba6bf9e18a51a298dcb"
+        }
+      ],
+      "structured_comparison": {
+        "architecture_class": "DENSE",
+        "compression_regime": "WEIGHT_ONLY_PTQ",
+        "largest_evaluated_scale": "70B",
+        "physical_accounting_level": "REACCOUNTED_DECODED_PAYLOAD_ONLY",
+        "source_or_teacher_precision": "NOT_REPORTED_BY_PRIMARY_SOURCE; floating pretrained checkpoints",
+        "weight_activation_scope": "binary weights; activations floating"
+      },
+      "training": "no retraining"
+    },
+    {
+      "evaluation": "perplexity and seven zero-shot tasks; no strong free-form suite",
+      "glm_comparability": "not MoE and not physically sub-1-bit",
+      "method": "STBLLM",
+      "method_class": "training-free N:M sparse binary PTQ",
+      "rate": {
+        "canonical_artifact_bpw": null,
+        "decoded_tensor_payload_bpw": {
+          "2_of_4_kernel_floor_before_metadata": 1.5,
+          "nanoquant_reaccount_4_of_8": 3.5,
+          "nanoquant_reaccount_6_of_8": 4.0,
+          "nanoquant_reaccount_8_of_8": 4.13
+        },
+        "nominal_or_method_bpw": [
+          0.53,
+          0.85
+        ],
+        "physical_boundary": "own 2:4 kernel stores six bits per four original weights before scales/group metadata"
+      },
+      "reproducibility": "public code",
+      "runtime": "NVIDIA sparse tensor-core layer benchmark; not end-to-end generation",
+      "scope": "dense OPT/Llama/Mistral through 70B",
+      "sources": [
+        {
+          "content_identity": {
+            "captured_at_cutoff": "2026-07-21",
+            "format": "PDF",
+            "retrieval_url": "https://arxiv.org/pdf/2408.01803",
+            "sha256": "de6890f45c441e899e2f766ad56c980db321dc8a59e79d013ca09ab6eb0bd726"
+          },
+          "kind": "paper",
+          "title": "STBLLM",
+          "url": "https://openreview.net/forum?id=6XUSDvBFkV"
+        },
+        {
+          "commit": "6fe628759852ffb993ad1113577ef1f118ef9a2c",
+          "kind": "code",
+          "title": "pprp/STBLLM",
+          "url": "https://github.com/pprp/STBLLM/tree/6fe628759852ffb993ad1113577ef1f118ef9a2c"
+        }
+      ],
+      "structured_comparison": {
+        "architecture_class": "DENSE",
+        "compression_regime": "SPARSE_BINARY_WEIGHT_ONLY_PTQ",
+        "largest_evaluated_scale": "70B",
+        "physical_accounting_level": "NOMINAL_RATE_WITH_KERNEL_FLOOR",
+        "source_or_teacher_precision": "NOT_REPORTED_BY_PRIMARY_SOURCE; floating pretrained checkpoints",
+        "weight_activation_scope": "N:M sparse binary weights; activations floating"
+      },
+      "training": "post-training; no MoE support"
+    },
+    {
+      "closest_giant_moe_prior": true,
+      "evaluation": "C4 masked-LM validation loss plus Arxiv/GitHub/StackExchange/Wikipedia losses; no modern autoregressive capability suite",
+      "glm_comparability": "critical closest prior: giant BF16-source MoE, complete sub-1 artifact and direct runtime; materially different encoder-decoder MLM, unusual zero-heavy experts, and shallow capability evidence",
+      "method": "QMoE",
+      "method_class": "retraining-free GPTQ-style expert PTQ plus lossless dictionary/entropy encoding",
+      "rate": {
+        "artifact_gb": 158.6,
+        "canonical_artifact_bpw": 0.807,
+        "compression_ratio": 19.81,
+        "decoded_tensor_payload_bpw": null,
+        "nominal_or_method_bpw": 0.8,
+        "physical_boundary": "paper states full model plus all metadata; expert natural sparsity 88.6%",
+        "source_gb": 3142.0
+      },
+      "reproducibility": "public compressed checkpoints, code and CUDA kernel",
+      "runtime": "direct compressed inference on 4xA6000 or 8xRTX3090, under 5% over idealized BF16 lower bound",
+      "scope": "official BF16 SwitchTransformer base/large-128 and c2048 1.6T; ternary experts, BF16 non-experts",
+      "sources": [
+        {
+          "content_identity": {
+            "captured_at_cutoff": "2026-07-21",
+            "format": "PDF",
+            "retrieval_url": "https://proceedings.mlsys.org/paper_files/paper/2024/file/c74b624843218d9b6713fcf299d6d5e4-Paper-Conference.pdf",
+            "sha256": "b5c60a998594fd5759e9d5a95dadf657696da0a7607c6811b6d702f4554f741b"
+          },
+          "kind": "paper",
+          "title": "QMoE: Sub-1-Bit Compression of Trillion-Parameter Models",
+          "url": "https://proceedings.mlsys.org/paper_files/paper/2024/file/c74b624843218d9b6713fcf299d6d5e4-Paper-Conference.pdf"
+        },
+        {
+          "commit": "9110baa9466f2a7d8590e3c5dc3a5e11f7446604",
+          "kind": "code",
+          "title": "IST-DASLab/qmoe",
+          "url": "https://github.com/IST-DASLab/qmoe/tree/9110baa9466f2a7d8590e3c5dc3a5e11f7446604"
+        }
+      ],
+      "structured_comparison": {
+        "architecture_class": "MOE",
+        "compression_regime": "WEIGHT_ONLY_PTQ_PLUS_LOSSLESS_ENTROPY_CODING",
+        "largest_evaluated_scale": "Switch c2048 1.6T",
+        "physical_accounting_level": "CANONICAL_COMPLETE_ARTIFACT",
+        "source_or_teacher_precision": "official BF16 SwitchTransformer checkpoints",
+        "weight_activation_scope": "ternary experts; BF16 non-experts; activations floating"
+      },
+      "training": "post-training; one A6000, about 16 h for c2048"
+    },
+    {
+      "evaluation": "WikiText and seven zero-shot tasks",
+      "glm_comparability": "peer-reviewed sub-1 claim but accounting/reproducibility insufficient for physical comparison",
+      "method": "BTC-LLM",
+      "method_class": "binary-codebook PTQ with learnable invertible transform",
+      "rate": {
+        "canonical_artifact_bpw": null,
+        "decoded_tensor_payload_bpw": null,
+        "nominal_or_method_bpw": [
+          0.7,
+          1.11
+        ],
+        "physical_boundary": "formula omits required row scales/biases and floating embeddings/head; reported memory is not an audited artifact",
+        "reported_llama2_7b_model_memory_gb_at_0_7": 0.65
+      },
+      "reproducibility": "code repository at cutoff contains only a nine-byte README; no algorithm/kernels/checkpoints",
+      "runtime": "preliminary H800 layer kernel, not a matched end-to-end runtime",
+      "scope": "dense Llama 7B-65B, Qwen and FBI-LLM",
+      "sources": [
+        {
+          "content_identity": {
+            "captured_at_cutoff": "2026-07-21",
+            "format": "PDF",
+            "retrieval_url": "https://aclanthology.org/2026.acl-long.1066.pdf",
+            "sha256": "9630dd96cbcb2a7bf9d9aa85aaec1d7a25c4eb507cf56c765e68a871713d70b2"
+          },
+          "kind": "paper",
+          "title": "BTC-LLM",
+          "url": "https://aclanthology.org/2026.acl-long.1066/"
+        },
+        {
+          "commit": "a265b9acdebd8156e545e6a16427a8635c2e7095",
+          "kind": "code",
+          "title": "Chooovy/BTC-LLM",
+          "url": "https://github.com/Chooovy/BTC-LLM/tree/a265b9acdebd8156e545e6a16427a8635c2e7095"
+        }
+      ],
+      "structured_comparison": {
+        "architecture_class": "DENSE",
+        "compression_regime": "GRADIENT_OPTIMIZED_WEIGHT_ONLY_PTQ",
+        "largest_evaluated_scale": "Llama 65B",
+        "physical_accounting_level": "INCOMPLETE_REPORTED_MEMORY",
+        "source_or_teacher_precision": "NOT_REPORTED_BY_PRIMARY_SOURCE; floating pretrained checkpoints",
+        "weight_activation_scope": "binary-codebook weights; activations floating"
+      },
+      "training": "block gradient optimization; not gradient-free"
+    },
+    {
+      "evaluation": "perplexity, six zero-shot tasks and limited qualitative generation",
+      "glm_comparability": "strongest dense PTQ comparator; dense 70B, gradient-calibrated, CUDA-only and not artifact-audited",
+      "method": "NanoQuant",
+      "method_class": "low-rank binary-factor PTQ with ADMM and scale-only KL distillation",
+      "rate": {
+        "canonical_artifact_bpw": null,
+        "decoded_tensor_payload_bpw": 0.667,
+        "llama2_70b_payload_gb_at_0_55": 5.75,
+        "llama2_70b_source_gb": 137.95,
+        "nominal_or_method_bpw": [
+          1.0,
+          0.8,
+          0.55
+        ],
+        "physical_boundary": "nominal rate covers decoder-block linear factors plus FP16 row/column scales; whole-model number is memory/payload, not canonical file audit"
+      },
+      "reproducibility": "open CUDA quantization/GEMV/GEMM code; no official prequantized collection identified",
+      "runtime": "one H100, about 13 h at 70B; RTX3050 20.11 tok/s and 5.86 GB peak for nominal 0.55",
+      "scope": "dense Llama/Qwen/Gemma/Rnj-1 0.6B-70B; no MoE support listed",
+      "sources": [
+        {
+          "content_identity": {
+            "captured_at_cutoff": "2026-07-21",
+            "format": "PDF",
+            "retrieval_url": "https://arxiv.org/pdf/2602.06694",
+            "sha256": "474824b66c7760856ee262eb7cfaa957ebbbba621423225f5ac661c3db9d22a3"
+          },
+          "kind": "paper",
+          "title": "NanoQuant",
+          "url": "https://arxiv.org/abs/2602.06694"
+        },
+        {
+          "commit": "a9e0a430881ff80d83b622c3129e330dc33c04f5",
+          "kind": "code",
+          "title": "SamsungLabs/NanoQuant",
+          "url": "https://github.com/SamsungLabs/NanoQuant/tree/a9e0a430881ff80d83b622c3129e330dc33c04f5"
+        }
+      ],
+      "structured_comparison": {
+        "architecture_class": "DENSE",
+        "compression_regime": "WEIGHT_ONLY_PTQ_WITH_SCALE_KL_DISTILLATION",
+        "largest_evaluated_scale": "70B",
+        "physical_accounting_level": "WHOLE_MODEL_DECODED_PAYLOAD_NOT_CANONICAL_FILE",
+        "source_or_teacher_precision": "NOT_REPORTED_BY_PRIMARY_SOURCE; floating pretrained dense checkpoints",
+        "weight_activation_scope": "binary-factor weights and FP16 scales; activations floating"
+      },
+      "training": "128x2048 calibration tokens, eight-epoch block reconstruction, one H100"
+    },
+    {
+      "evaluation": "perplexity, seven zero-shot tasks and qualitative generations showing degradation at extremes",
+      "glm_comparability": "important sub-1 QAT representation reference; not one-pass PTQ, MoE, or GLM scale",
+      "method": "LittleBit",
+      "method_class": "low-rank binary-factor QAT",
+      "rate": {
+        "canonical_artifact_bpw": null,
+        "decoded_tensor_payload_bpw": 0.927,
+        "llama2_13b_payload_gb_at_nominal_0_55": 1.51,
+        "llama2_13b_source_gb": 26.06,
+        "nominal_or_method_bpw": [
+          0.1,
+          1.0
+        ],
+        "physical_boundary": "nominal covers Transformer factors/scales; 70B figures are estimates and 70B QAT was not run"
+      },
+      "reproducibility": "public training/evaluation code",
+      "runtime": "A100 custom kernel; Llama-2-7B nominal 0.1 reports 203.2 tok/s versus 82.6 FP16",
+      "scope": "dense OPT/Llama/Phi/QwQ evaluated through 32B; embeddings/lm-head FP16",
+      "sources": [
+        {
+          "content_identity": {
+            "captured_at_cutoff": "2026-07-21",
+            "format": "PDF",
+            "retrieval_url": "https://arxiv.org/pdf/2506.13771",
+            "sha256": "54508221ea5b5d77d98012cbd0b4f5f08351523a4a1b58d85f7f32691bf63ea8"
+          },
+          "kind": "paper",
+          "title": "LittleBit",
+          "url": "https://arxiv.org/abs/2506.13771"
+        },
+        {
+          "commit": "933857ed1443b53fc43a875c2cf64249e3c56f0c",
+          "kind": "code",
+          "title": "SamsungLabs/LittleBit",
+          "url": "https://github.com/SamsungLabs/LittleBit/tree/933857ed1443b53fc43a875c2cf64249e3c56f0c"
+        }
+      ],
+      "structured_comparison": {
+        "architecture_class": "DENSE",
+        "compression_regime": "QAT",
+        "largest_evaluated_scale": "32B executed; 70B estimated only",
+        "physical_accounting_level": "WHOLE_MODEL_DECODED_PAYLOAD_NOT_CANONICAL_FILE",
+        "source_or_teacher_precision": "NOT_REPORTED_BY_PRIMARY_SOURCE; floating pretrained dense checkpoints",
+        "weight_activation_scope": "binary-factor decoder weights; FP16 embeddings/head; activations floating"
+      },
+      "training": "about 1B tokens; typically 4xH100, QwQ-32B 32xA100"
+    }
+  ],
+  "rate_taxonomy": {
+    "canonical_artifact_bpw": "Actual checkpoint bytes including all tensors, scales, codebooks, bitmaps, offsets, padding, headers, manifest and configuration.",
+    "decoded_tensor_payload_bpw": "All tensors required to reconstruct or infer, divided by original logical weights.",
+    "nominal_or_method_bpw": "Index/arithmetic/quantized-matrix rate claimed by the method.",
+    "ranking_rule": "Rates from different taxonomy levels are not ranked as equal evidence."
+  },
+  "research_cutoff": "2026-07-21",
+  "schema": "hawking.gravity_external_baseline_matrix.v1",
+  "seal_sha256": "c69b5d636944fbbfcdc76c72ce3441e323add538b94a3566b25f251f1ff49206",
+  "secondary_context": [
+    {
+      "code": "https://github.com/ZHITENGLI/ARB-LLM/tree/55701970b9d881238b45bdf3cc6daf0a96a89f7e",
+      "decoded_complete_estimate_bpw": "2.50-2.52 per NanoQuant",
+      "method": "ARB-LLM",
+      "nominal": "binary PTQ",
+      "paper": "https://openreview.net/forum?id=ZU8OdDLTts"
+    },
+    {
+      "decoded_complete_estimate_bpw": 3.25,
+      "method": "HBLLM",
+      "nominal_bpw": 1.08,
+      "paper": "https://papers.nips.cc/paper_files/paper/2025/hash/e1b45fc5715c2b2ba878ea744b5ef267-Abstract-Conference.html"
+    }
+  ],
+  "source_policy": "Primary paper PDFs are content-hashed; official code repositories are commit-pinned. No secondary result is used for a method row.",
+  "status": "PASS_PRIMARY_SOURCE_COMPARISON"
+}

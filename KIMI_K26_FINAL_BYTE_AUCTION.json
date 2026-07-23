@@ -1,0 +1,4703 @@
+{
+  "closure_fingerprint_sha256": "6ffbe5d0b42c053d07a151843e115105383ed1be01ae6c7febd8bd9b0d0b0f4c",
+  "current_best": {
+    "allocation": {
+      "base_component_bytes": 4022298,
+      "doctor_component_bytes": 974848,
+      "header_overhead_bytes": 4669,
+      "unused_ceiling_bytes": 393108
+    },
+    "candidate": "P1_DUAL_PATH_RECOVERY_R16X2",
+    "complete_bpw": 0.9085909525553385,
+    "complete_physical_bytes": 5001815,
+    "f2_promotable": false,
+    "payload": {
+      "base_component_bytes": 4022298,
+      "bytes": 5001815,
+      "component_count": 22,
+      "doctor_component_bytes": 974848,
+      "hash_verified": true,
+      "header_overhead_bytes": 4669,
+      "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/f1_representation_bracket/doctor_auction/P1_DUAL_PATH_RECOVERY_R16X2.k26f1",
+      "sha256": "3546c9b17f720d6d5197c8a8d1dae80e5994e053a808de708aef6bb5e97561bb"
+    }
+  },
+  "decision": "RETAIN_P1_DUAL_PATH_AS_CURRENT_BEST",
+  "doctor_versus_native": {
+    "conclusion": "Zero-Doctor native rows were tested and retired; Doctor remains justified for this local parent, not proven globally optimal.",
+    "doctor_parent_bytes": 974848,
+    "zero_doctor_native_rows": [
+      {
+        "ablation_of": null,
+        "candidate": "N6_NATIVE_SWIGLU_W244_INT8",
+        "complete_bpw": 0.9642697288876488,
+        "complete_physical_bytes": 5308328,
+        "deterministic_decode": true,
+        "family": "N6",
+        "frozen_score_metrics": {
+          "all_tokens": {
+            "candidate": {
+              "cosine_mean": 0.6490073204040527,
+              "cosine_min": -0.15099313855171204,
+              "cosine_p10": 0.384660005569458,
+              "norm_ratio": 1.165022373199463,
+              "normalized_rmse": 1.031510829925537,
+              "relative_l2": 1.0315011739730835
+            },
+            "parent": {
+              "cosine_mean": 0.18443579971790314,
+              "cosine_min": -0.05799274891614914,
+              "cosine_p10": 0.073348768055439,
+              "norm_ratio": 2.578333854675293,
+              "normalized_rmse": 2.549161434173584,
+              "relative_l2": 2.549118757247925
+            }
+          },
+          "candidate_hidden_sha256": "e55a66229c5d7b04a4853d8a3e09067f05bff335fbbfce4f25aedb34381fe4ea",
+          "candidate_output_sha256": "26d0c47e5b3b93a30df91a40785277af5727b0e832114e1acbb64d7c66963459",
+          "domains": {
+            "code": {
+              "ci95_high": 0.6386445397304163,
+              "ci95_low": -1.478190170476834,
+              "mean": -0.1566791766219669,
+              "n": 9
+            },
+            "prose": {
+              "ci95_high": 0.22912516616857984,
+              "ci95_low": -4.4788134514139255,
+              "mean": -1.9915526050787706,
+              "n": 13
+            },
+            "reasoning": {
+              "ci95_high": 0.6640621266327799,
+              "ci95_low": -3.9052595905959606,
+              "mean": -0.9544321596622467,
+              "n": 8
+            },
+            "tool_format": {
+              "ci95_high": 0.28079739212989807,
+              "ci95_low": -1.9173991183439891,
+              "mean": -0.7028052608172098,
+              "n": 6
+            }
+          },
+          "frozen_split": "LR12_CHANGED_ORDER_AND_SUFFIX_NO_REFIT",
+          "immediate_residual_hidden": {
+            "candidate": {
+              "cosine_mean": 0.9927381873130798,
+              "cosine_min": 0.9210038781166077,
+              "cosine_p10": 0.9851887822151184,
+              "norm_ratio": 0.9956012964248657,
+              "normalized_rmse": 0.11458934843540192,
+              "relative_l2": 0.11458948254585266,
+              "tokens": 36
+            },
+            "paired_relative_l2_improvement": {
+              "ci95_high": 0.03425080640008674,
+              "ci95_low": -0.024959310537411104,
+              "mean": 0.00767834331943757,
+              "n": 36
+            },
+            "parent": {
+              "cosine_mean": 0.9925264716148376,
+              "cosine_min": 0.9684832096099854,
+              "cosine_p10": 0.9817931652069092,
+              "norm_ratio": 0.9709984660148621,
+              "normalized_rmse": 0.1452856957912445,
+              "relative_l2": 0.14528584480285645,
+              "tokens": 36
+            }
+          },
+          "isolated_regression": {
+            "candidate": {
+              "cosine_mean": 0.5984457731246948,
+              "cosine_min": 0.23118308186531067,
+              "cosine_p10": 0.4936245381832123,
+              "norm_ratio": 0.3700192868709564,
+              "normalized_rmse": 0.8646779656410217,
+              "relative_l2": 0.8646780252456665
+            },
+            "parent": {
+              "cosine_mean": 0.9134424924850464,
+              "cosine_min": 0.7387098073959351,
+              "cosine_p10": 0.8825187087059021,
+              "norm_ratio": 0.7918260097503662,
+              "normalized_rmse": 0.47944605350494385,
+              "relative_l2": 0.4794459939002991
+            },
+            "tokens": 32
+          },
+          "low_margin_routed": {
+            "candidate": {
+              "cosine_mean": 0.2590925991535187,
+              "cosine_min": 0.11225559562444687,
+              "cosine_p10": 0.14162299036979675,
+              "norm_ratio": 2.952700614929199,
+              "normalized_rmse": 2.9525949954986572,
+              "relative_l2": 2.9525952339172363,
+              "tokens": 2
+            },
+            "paired_relative_l2_improvement": {
+              "ci95_high": 1.0581457614898682,
+              "ci95_low": -1.977036952972412,
+              "mean": -0.459445595741272,
+              "n": 2
+            },
+            "parent": {
+              "cosine_mean": 0.15445663034915924,
+              "cosine_min": 0.07870714366436005,
+              "cosine_p10": 0.093857042491436,
+              "norm_ratio": 2.545947790145874,
+              "normalized_rmse": 2.568632125854492,
+              "relative_l2": 2.5686323642730713,
+              "tokens": 2
+            },
+            "threshold": 0.0001910477876663208
+          },
+          "routed_tokens": {
+            "candidate": {
+              "cosine_mean": 0.614277720451355,
+              "cosine_min": -0.15099313855171204,
+              "cosine_p10": 0.11427567899227142,
+              "norm_ratio": 1.7007081508636475,
+              "normalized_rmse": 1.4421231746673584,
+              "relative_l2": 1.442123293876648,
+              "tokens": 36
+            },
+            "cosine_gain": 0.1663895547389984,
+            "paired_relative_l2_improvement": {
+              "ci95_high": -0.08652573869460153,
+              "ci95_low": -2.2673681336765488,
+              "mean": -1.0875718138284154,
+              "n": 36
+            },
+            "parent": {
+              "cosine_mean": 0.44788816571235657,
+              "cosine_min": 0.07870714366436005,
+              "cosine_p10": 0.1269996464252472,
+              "norm_ratio": 0.9441009163856506,
+              "normalized_rmse": 0.837938666343689,
+              "relative_l2": 0.837938666343689,
+              "tokens": 36
+            },
+            "relative_l2_rescue_fraction": -1.2979133885466707
+          }
+        },
+        "physical_payload": {
+          "all_payload_bytes_counted": true,
+          "base_component_bytes": 5306272,
+          "bytes": 5308328,
+          "complete_bpw": 0.9642697288876488,
+          "complete_ceiling_bytes": 5394923,
+          "component_count": 8,
+          "doctor_component_bytes": 0,
+          "hash_verified": true,
+          "header_overhead_bytes": 2056,
+          "logical_weights_represented": 44040192,
+          "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/gravity_nonlinear/N6_NATIVE_SWIGLU_W244_INT8.k26f1",
+          "sha256": "caf781d9c7f0dc3c3b75e5d53dc96a684806f39c7acbc79171d50142ace8d6a2"
+        },
+        "row_seal_sha256": "365f71d35356a305aaa179ba425c97cf945b9ebeca7e544fb1bd9fb1ce16103d",
+        "teacher_access_at_inference": false,
+        "within_0_98_bpw": true
+      },
+      {
+        "ablation_of": "N6_NATIVE_SWIGLU_W244_INT8",
+        "candidate": "N6_LINEAR_NATIVE_R366_ABLATION",
+        "complete_bpw": 0.9641260419573102,
+        "complete_physical_bytes": 5307537,
+        "deterministic_decode": true,
+        "family": "N6",
+        "frozen_score_metrics": {
+          "all_tokens": {
+            "candidate": {
+              "cosine_mean": 0.3646111488342285,
+              "cosine_min": 0.012130816467106342,
+              "cosine_p10": 0.1370188295841217,
+              "norm_ratio": 1.4366341829299927,
+              "normalized_rmse": 1.3182599544525146,
+              "relative_l2": 1.3182603120803833
+            },
+            "parent": {
+              "cosine_mean": 0.18443579971790314,
+              "cosine_min": -0.05799274891614914,
+              "cosine_p10": 0.073348768055439,
+              "norm_ratio": 2.578333854675293,
+              "normalized_rmse": 2.549161434173584,
+              "relative_l2": 2.549118757247925
+            }
+          },
+          "candidate_hidden_sha256": "aa9faf23c00c44ad41c535f34d56a86036659186d31ca0e2c0f4c204744411b6",
+          "candidate_output_sha256": "5d64013186dd960d4cbad901ba4d8ef13241c1feb39e7817aee2de06eb65e3f3",
+          "domains": {
+            "code": {
+              "ci95_high": 0.6802010323438379,
+              "ci95_low": 0.21471963657273185,
+              "mean": 0.4422035581535763,
+              "n": 9
+            },
+            "prose": {
+              "ci95_high": 0.4031311059227357,
+              "ci95_low": -2.745451128941316,
+              "mean": -0.7659397835914905,
+              "n": 13
+            },
+            "reasoning": {
+              "ci95_high": 0.47899354211986084,
+              "ci95_low": 0.004085540771484375,
+              "mean": 0.2333684377372265,
+              "n": 8
+            },
+            "tool_format": {
+              "ci95_high": 0.12856948375701904,
+              "ci95_low": -2.87126624584198,
+              "mean": -0.9098576704661051,
+              "n": 6
+            }
+          },
+          "frozen_split": "LR12_CHANGED_ORDER_AND_SUFFIX_NO_REFIT",
+          "immediate_residual_hidden": {
+            "candidate": {
+              "cosine_mean": 0.9925544261932373,
+              "cosine_min": 0.9724334478378296,
+              "cosine_p10": 0.9805030226707458,
+              "norm_ratio": 0.9823055863380432,
+              "normalized_rmse": 0.1372550129890442,
+              "relative_l2": 0.13725516200065613,
+              "tokens": 36
+            },
+            "paired_relative_l2_improvement": {
+              "ci95_high": 0.011206404360321666,
+              "ci95_low": -0.011538010210238604,
+              "mean": 0.0013477306347340345,
+              "n": 36
+            },
+            "parent": {
+              "cosine_mean": 0.9925264716148376,
+              "cosine_min": 0.9684832096099854,
+              "cosine_p10": 0.9817931652069092,
+              "norm_ratio": 0.9709984660148621,
+              "normalized_rmse": 0.1452856957912445,
+              "relative_l2": 0.14528584480285645,
+              "tokens": 36
+            }
+          },
+          "isolated_regression": {
+            "candidate": {
+              "cosine_mean": 0.5464370250701904,
+              "cosine_min": 0.21629838645458221,
+              "cosine_p10": 0.4029335379600525,
+              "norm_ratio": 0.5270119309425354,
+              "normalized_rmse": 0.863347053527832,
+              "relative_l2": 0.863347053527832
+            },
+            "parent": {
+              "cosine_mean": 0.9134424924850464,
+              "cosine_min": 0.7387098073959351,
+              "cosine_p10": 0.8825187087059021,
+              "norm_ratio": 0.7918260097503662,
+              "normalized_rmse": 0.47944605350494385,
+              "relative_l2": 0.4794459939002991
+            },
+            "tokens": 32
+          },
+          "low_margin_routed": {
+            "candidate": {
+              "cosine_mean": 0.2625613808631897,
+              "cosine_min": 0.012130816467106342,
+              "cosine_p10": 0.06221693381667137,
+              "norm_ratio": 4.984836578369141,
+              "normalized_rmse": 4.948047637939453,
+              "relative_l2": 4.9480485916137695,
+              "tokens": 2
+            },
+            "paired_relative_l2_improvement": {
+              "ci95_high": 0.7154170274734497,
+              "ci95_low": -5.7556562423706055,
+              "mean": -2.520119607448578,
+              "n": 2
+            },
+            "parent": {
+              "cosine_mean": 0.15445663034915924,
+              "cosine_min": 0.07870714366436005,
+              "cosine_p10": 0.093857042491436,
+              "norm_ratio": 2.545947790145874,
+              "normalized_rmse": 2.568632125854492,
+              "relative_l2": 2.5686323642730713,
+              "tokens": 2
+            },
+            "threshold": 0.0001910477876663208
+          },
+          "routed_tokens": {
+            "candidate": {
+              "cosine_mean": 0.6068990230560303,
+              "cosine_min": 0.012130816467106342,
+              "cosine_p10": 0.21128840744495392,
+              "norm_ratio": 1.173596978187561,
+              "normalized_rmse": 0.9460296630859375,
+              "relative_l2": 0.9460296630859375,
+              "tokens": 36
+            },
+            "cosine_gain": 0.1590108573436737,
+            "paired_relative_l2_improvement": {
+              "ci95_high": 0.3040371665110192,
+              "ci95_low": -1.1389099427188436,
+              "mean": -0.26582176900572246,
+              "n": 36
+            },
+            "parent": {
+              "cosine_mean": 0.44788816571235657,
+              "cosine_min": 0.07870714366436005,
+              "cosine_p10": 0.1269996464252472,
+              "norm_ratio": 0.9441009163856506,
+              "normalized_rmse": 0.837938666343689,
+              "relative_l2": 0.837938666343689,
+              "tokens": 36
+            },
+            "relative_l2_rescue_fraction": -0.3172329666628524
+          }
+        },
+        "physical_payload": {
+          "all_payload_bytes_counted": true,
+          "base_component_bytes": 5305784,
+          "bytes": 5307537,
+          "complete_bpw": 0.9641260419573102,
+          "complete_ceiling_bytes": 5394923,
+          "component_count": 6,
+          "doctor_component_bytes": 0,
+          "hash_verified": true,
+          "header_overhead_bytes": 1753,
+          "logical_weights_represented": 44040192,
+          "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/gravity_nonlinear/N6_LINEAR_NATIVE_R366_ABLATION.k26f1",
+          "sha256": "79c8f768e7c460fb99964ad76387217e1ddd5fcf86f6387d3aaa97ae9b4b51b8"
+        },
+        "row_seal_sha256": "68dd20794fe32f420ff578a083b18241ef66843d038d0e69ef192429a0739a46",
+        "teacher_access_at_inference": false,
+        "within_0_98_bpw": true
+      }
+    ]
+  },
+  "evidence": {
+    "M1": {
+      "bytes": 893933,
+      "path": "/Users/scammermike/Downloads/hawking/KIMI_K26_GRAVITY_M1_ORACLE_BANDWIDTH.json",
+      "seal_sha256": "8ff3234bf77ca96bc3bbb6858745fa37ec937e0d4ce5829283480e29e4a52de2",
+      "sha256": "9b1d4e4b845b8f7e09fde82033f15d46e72774a356bb1e85ac1d67865b555d4f",
+      "status": "PRESENT_AND_SEALED"
+    },
+    "M2": {
+      "bytes": 8429,
+      "path": "/Users/scammermike/Downloads/hawking/KIMI_K26_GRAVITY_M2_CONDITIONAL_GATE.json",
+      "seal_sha256": "c1a001c4bedb40ffc0b6a590514259fe7a198aaac402ffb5b691d5010c7881a1",
+      "sha256": "dd7ade56c60914111e741275080328fe4b6df0a91370dd4cceb11111d4386f9b",
+      "status": "PRESENT_AND_SEALED"
+    },
+    "M5": {
+      "bytes": 57419,
+      "path": "/Users/scammermike/Downloads/hawking/KIMI_K26_GRAVITY_RATE_LADDER.json",
+      "seal_sha256": "b03e1c75c591f43ba3ba8beeb88c6a21537c673e746e947f8a5e7098f9ee45b8",
+      "sha256": "e52d752815ea5a09f51c656100f4aa6d732fcb960bc8a107e338cacf2d7fbcc0",
+      "status": "PRESENT_AND_SEALED"
+    },
+    "M7": {
+      "bytes": 4837,
+      "path": "/Users/scammermike/Downloads/hawking/KIMI_K26_GRAVITY_M7_ORACLE_GAP.json",
+      "seal_sha256": "5f82435a0c655b2384a1bfffb90e3d0106f7aa448d7f9c0e2687bc3adef4434e",
+      "sha256": "32e02c93dd65842dace6f5f95f5c850a1b244d8dc25bceef49a272afdccbae9c",
+      "status": "PRESENT_AND_SEALED"
+    },
+    "contextual_seam": {
+      "bytes": 24946,
+      "path": "/Users/scammermike/Downloads/hawking/KIMI_K26_GRAVITY_CONTEXTUAL_SEAM.json",
+      "seal_sha256": "4a65b94f5e95114fbb7b91b79fec14adde58f9005f62609abaa9c85ddb3f2916",
+      "sha256": "aea346789442fdc306566718c7631eb18a5e7865cafb50c61ce9c46dc2844762",
+      "status": "PRESENT_AND_SEALED"
+    },
+    "current_parent": {
+      "payload": {
+        "base_component_bytes": 4022298,
+        "bytes": 5001815,
+        "component_count": 22,
+        "doctor_component_bytes": 974848,
+        "hash_verified": true,
+        "header_overhead_bytes": 4669,
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/f1_representation_bracket/doctor_auction/P1_DUAL_PATH_RECOVERY_R16X2.k26f1",
+        "sha256": "3546c9b17f720d6d5197c8a8d1dae80e5994e053a808de708aef6bb5e97561bb"
+      },
+      "result": {
+        "bytes": 3736,
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/f1_representation_bracket/doctor_auction/P1_DUAL_PATH_RECOVERY_R16X2_RESULT.json",
+        "seal_sha256": "dc87eb2c850268f148b80df7c21e4192f69701876cf6f3ad24a708458514a21d",
+        "sha256": "6823316702811fe185dbe2756778be738b606d6c87f240606cf7f2e0b6e82f37",
+        "status": "PRESENT_AND_SEALED"
+      }
+    },
+    "embedded_file_receipts_verified": [
+      {
+        "bytes": 151043,
+        "path": "/Users/scammermike/Downloads/hawking/KIMI_K26_GRAVITY_NONLINEAR_TOURNAMENT.json",
+        "sha256": "718303e898e42c301f87fdfadfed1b882a6a875faefebdbc66022ed5e8339787"
+      },
+      {
+        "bytes": 159631326,
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/gravity_nonlinear/KIMI_K26_GRAVITY_CONTEXTUAL_SEAM.npz",
+        "sha256": "51e4287a848145666e56df1e2237b694509fd8f01b996c558e853f1365ff617b"
+      },
+      {
+        "bytes": 5059622,
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/gravity_nonlinear/N1_AFFINE_R68_ABLATION.k26f1",
+        "sha256": "560e8ae9e44314196a1da5e041bdf8a0390c085255cd4354c35edbd11ea5c901"
+      },
+      {
+        "bytes": 5021264,
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/gravity_nonlinear/N1_GATED_RESIDUAL_R48_H96_O80.k26f1",
+        "sha256": "56cecaaac64c77ebc88dd10572fa1ddd06efbee19bf1dcb43a201a6a3cf36369"
+      },
+      {
+        "bytes": 4040633,
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/gravity_nonlinear/N2_CONSTANT_CODEBOOK_K1_ABLATION.k26f1",
+        "sha256": "9a8eea5181dab92a9f3a0ecdb54b7bb7462344ff860aa18a605cb61d6560699b"
+      },
+      {
+        "bytes": 4861246,
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/gravity_nonlinear/N2_FUNCTIONAL_CODEBOOK_K8_I32_O80.k26f1",
+        "sha256": "1a91c76d0904563fcf74458452738a81d977d10f9c272a12f923c27014fc9567"
+      },
+      {
+        "bytes": 4747247,
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/gravity_nonlinear/N4_AFFINE_I16_O80_ABLATION.k26f1",
+        "sha256": "17b6100e5c19cf51d953b241fdbb222185255dcb6d7aca02bc300a9237eeec32"
+      },
+      {
+        "bytes": 4786165,
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/gravity_nonlinear/N4_QUANTILE_SPLINE_I16_K16_O80.k26f1",
+        "sha256": "f7d861006c070b965e9a367a3486059b3f5398d12e42bdd236ba4e14328992f5"
+      },
+      {
+        "bytes": 5307537,
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/gravity_nonlinear/N6_LINEAR_NATIVE_R366_ABLATION.k26f1",
+        "sha256": "79c8f768e7c460fb99964ad76387217e1ddd5fcf86f6387d3aaa97ae9b4b51b8"
+      },
+      {
+        "bytes": 5308328,
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/gravity_nonlinear/N6_NATIVE_SWIGLU_W244_INT8.k26f1",
+        "sha256": "caf781d9c7f0dc3c3b75e5d53dc96a684806f39c7acbc79171d50142ace8d6a2"
+      },
+      {
+        "bytes": 1816657,
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/gravity_rate_ladder/M5_NATIVE_LINEAR_RATE_033.k26f1",
+        "sha256": "f1e7c585fd5783cc578f5c42b3aecf36ebc48d04d03832815284cad775e02cf7"
+      },
+      {
+        "bytes": 2752512,
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/gravity_rate_ladder/M5_NATIVE_LINEAR_RATE_050.k26f1",
+        "sha256": "e2a47527bb0b13822bef42092ae1873d6868f021205be2961a4d91fcfce1999b"
+      },
+      {
+        "bytes": 4128768,
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/gravity_rate_ladder/M5_NATIVE_LINEAR_RATE_075.k26f1",
+        "sha256": "886b5cc0aa58bf6ce153eb2da39766bb67a31d4611553cc68ea1b5b0f8a1a6be"
+      },
+      {
+        "bytes": 232055,
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/oneoffs/M1/M1_L1_R16_B16_F44_ORACLE_TOP_ERROR.k26oracle",
+        "sha256": "527ee7eba4ccc75a930efb7e81d4a06ee4eaea8cbbc5c3cb626261fc3405d821"
+      },
+      {
+        "bytes": 59466,
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/oneoffs/M1/M1_L1_R16_B4_F44_ORACLE_TOP_ERROR.k26oracle",
+        "sha256": "ea6420c74c3af0535016b1174b245ffaf143456cddd037bb562676aa24f4752e"
+      },
+      {
+        "bytes": 15999,
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/oneoffs/M1/M1_L1_R4_B4_F173_PERIODIC.k26oracle",
+        "sha256": "070431c5d2e92cab46387b587a412ca6d64d0e267d0c06843360b8b7e488743e"
+      },
+      {
+        "bytes": 15740,
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/oneoffs/M1/M1_L1_R4_B4_F44_PERIODIC.k26oracle",
+        "sha256": "aa1632f1800291d1dabac83255f85fb4cdc0222adffc1e0b997f50e2c649f602"
+      },
+      {
+        "bytes": 30514,
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/oneoffs/M1/M1_L1_R4_B8_F44_ORACLE_TOP_ERROR.k26oracle",
+        "sha256": "f7b6885a57c7e920edcc9194c8d82d103359969a6a0246801c092ea5d440c30b"
+      },
+      {
+        "bytes": 924408,
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/oneoffs/M1/M1_L1_R64_B16_F44_ORACLE_TOP_ERROR.k26oracle",
+        "sha256": "581412ef30f310e7a17476ab0d050f2d5293b46ba2b34f9debafa4c47a833197"
+      },
+      {
+        "bytes": 61018,
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/oneoffs/M1/M1_L2_R16_B4_F173_ORACLE_TOP_ERROR.k26oracle",
+        "sha256": "b236958f7c60f78d826d091924e745da891545d454dea3c0f9a432fe6c9e4f48"
+      },
+      {
+        "bytes": 130128,
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/oneoffs/M1/M1_L2_R16_B8_F692_ORACLE_TOP_ERROR.k26oracle",
+        "sha256": "31b86ea1c1881548b0d7203a2aa97bec0666a4c3f33e7e6f531078cf3851829f"
+      },
+      {
+        "bytes": 275183,
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/oneoffs/M1/M1_L2_R32_B8_F1383_PERIODIC.k26oracle",
+        "sha256": "e6e5cca7c1c40eac2c6647a039d2a93a4dd8cbea3a8aa5eabcda15b924bdddb4"
+      },
+      {
+        "bytes": 15740,
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/oneoffs/M1/M1_L2_R4_B4_F44_PERIODIC.k26oracle",
+        "sha256": "9d234f943459677ab11cf373a642aeb25db687e8c9471cac9b84bdf65b1cc4f8"
+      },
+      {
+        "bytes": 30857,
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/oneoffs/M1/M1_L2_R4_B8_F87_ORACLE_TOP_ERROR.k26oracle",
+        "sha256": "d17b352264a9e86764984ee8b2b5320771efd65cbb456d54bff5102cfeeb44c5"
+      },
+      {
+        "bytes": 1095449,
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/oneoffs/M1/M1_L2_R64_B16_F1383_PERIODIC.k26oracle",
+        "sha256": "84bb8c3605883fa6c576f16e913c04c27256ffac9c4e52230d43c2b58b78797e"
+      },
+      {
+        "bytes": 2778,
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/oneoffs/M2/M2_CONDITIONAL_TRIGGER_GATE.k26gate",
+        "sha256": "32b46d0c2295c7641cb975b5b8dc5fd6b076b9ad32812d5bd25260c88d30e717"
+      },
+      {
+        "bytes": 400685436,
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/long_run/LR11/LR11_UPSTREAM_F2_CAPTURE.npz",
+        "sha256": "cdc9e196aabcfc7f66b17ccd3e3858a197610f15f60f2b853f8cd5027203fad6"
+      },
+      {
+        "bytes": 396670012,
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/long_run/LR12/LR12_UPSTREAM_REPLICATION_CAPTURE.npz",
+        "sha256": "3cf5906608984416d62a9173f51ac2615ddf36ba0d2a37fed76d06e8e0b53634"
+      }
+    ],
+    "hooks": {
+      "bytes": 6985,
+      "path": "/Users/scammermike/Downloads/hawking/KIMI_K26_GRAVITY_ONEOFF_HOOKS.json",
+      "seal_sha256": "9a7dca52275790fb6e4fc199a9cea89895149e52690a1e859188368f3ee96e7c",
+      "sha256": "3c5311e44c22e00aee05241d86d3c9c5f89b6a70bc49d046fc9c59a62fd260d7",
+      "status": "PRESENT_AND_SEALED"
+    },
+    "optional": {
+      "M1_DOWNSTREAM": {
+        "searched": [
+          "/Users/scammermike/Downloads/hawking/KIMI_K26_GRAVITY_M1_DOWNSTREAM.json",
+          "/Users/scammermike/Downloads/hawking/KIMI_K26_GRAVITY_M1_F2.json"
+        ],
+        "status": "ABSENT"
+      },
+      "M2_PHYSICAL": {
+        "searched": [
+          "/Users/scammermike/Downloads/hawking/KIMI_K26_GRAVITY_M2_PHYSICAL.json",
+          "/Users/scammermike/Downloads/hawking/KIMI_K26_GRAVITY_M2_F2.json"
+        ],
+        "status": "ABSENT"
+      },
+      "M3": {
+        "searched": [
+          "/Users/scammermike/Downloads/hawking/KIMI_K26_GRAVITY_M3_STUDENTIZATION.json"
+        ],
+        "status": "ABSENT"
+      },
+      "M4": {
+        "searched": [
+          "/Users/scammermike/Downloads/hawking/KIMI_K26_GRAVITY_M4_CROSS_LAYER_ANCHOR.json"
+        ],
+        "status": "ABSENT"
+      },
+      "M6": {
+        "searched": [
+          "/Users/scammermike/Downloads/hawking/KIMI_K26_GRAVITY_M6_DOCTOR_INVERSION.json"
+        ],
+        "status": "ABSENT"
+      },
+      "N3": {
+        "searched": [
+          "/Users/scammermike/Downloads/hawking/KIMI_K26_GRAVITY_N3_ASYMMETRIC_ALLOCATION.json",
+          "/Users/scammermike/Downloads/hawking/KIMI_K26_GRAVITY_N3.json"
+        ],
+        "status": "ABSENT"
+      },
+      "N5": {
+        "searched": [
+          "/Users/scammermike/Downloads/hawking/KIMI_K26_GRAVITY_N5_COLD_EXPERTS.json",
+          "/Users/scammermike/Downloads/hawking/KIMI_K26_GRAVITY_N5.json"
+        ],
+        "status": "ABSENT"
+      }
+    },
+    "tournament": {
+      "bytes": 151043,
+      "path": "/Users/scammermike/Downloads/hawking/KIMI_K26_GRAVITY_NONLINEAR_TOURNAMENT.json",
+      "seal_sha256": "8c201bbf527c66daf99f3c87de3fb26978c55f66635dd414a7ec641e721f3b6e",
+      "sha256": "718303e898e42c301f87fdfadfed1b882a6a875faefebdbc66022ed5e8339787",
+      "status": "PRESENT_AND_SEALED"
+    }
+  },
+  "nondeployable_oracle_and_gate_accounting": {
+    "m1_oracle_payloads": [
+      {
+        "boundary_rescue_ci95": {
+          "ci95_high": 0.06821775934818768,
+          "ci95_low": 0.0,
+          "mean": 0.022739253116062556,
+          "method": "PAIRED_TOKEN_BOOTSTRAP",
+          "n": 1383
+        },
+        "deployable": false,
+        "layer": 1,
+        "payload": {
+          "bytes": 15740,
+          "component_bytes": 14456,
+          "components": [
+            {
+              "count": 28672,
+              "encoding": "SIGNED_SYMMETRIC_4BIT_LSB",
+              "name": "direction_basis_values",
+              "nbytes": 14336,
+              "sha256": "9de3879043f647cb28b6abf7f9bb37e9a44836988800b9e6a8fcab3c7f4358ab",
+              "shape": [
+                4,
+                7168
+              ]
+            },
+            {
+              "count": 4,
+              "encoding": "FLOAT32_LE",
+              "name": "direction_basis_scales",
+              "nbytes": 16,
+              "sha256": "578e7c291c7cda0b00682092d3cce8686d38c5b27a3a88716e903fb6a8d65b7a",
+              "shape": [
+                4
+              ]
+            },
+            {
+              "count": 176,
+              "encoding": "SIGNED_SYMMETRIC_4BIT_LSB",
+              "name": "oracle_coefficients_values",
+              "nbytes": 88,
+              "sha256": "3dc869e4503ddaa537b89129550317127ab1ec6fd07538ee8e2c5cf8be04860a",
+              "shape": [
+                44,
+                4
+              ]
+            },
+            {
+              "count": 4,
+              "encoding": "FLOAT32_LE",
+              "name": "oracle_coefficients_scales",
+              "nbytes": 16,
+              "sha256": "d1f36c5c7c78b9245dac7a52e34da208641d05e6186dcab04f4d49692a74ca35",
+              "shape": [
+                4
+              ]
+            }
+          ],
+          "hash_verified": true,
+          "header_bytes": 1284,
+          "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/oneoffs/M1/M1_L1_R4_B4_F44_PERIODIC.k26oracle",
+          "sha256": "aa1632f1800291d1dabac83255f85fb4cdc0222adffc1e0b997f50e2c649f602"
+        },
+        "precision_bits": 4,
+        "rank": 4,
+        "token_fraction": 0.03181489515545915,
+        "within_incremental_0_98_bpw": true
+      },
+      {
+        "boundary_rescue_ci95": {
+          "ci95_high": 0.2665616702280487,
+          "ci95_low": 0.032215247639341096,
+          "mean": 0.13614593811693937,
+          "method": "PAIRED_TOKEN_BOOTSTRAP",
+          "n": 1383
+        },
+        "deployable": false,
+        "layer": 1,
+        "payload": {
+          "bytes": 15999,
+          "component_bytes": 14714,
+          "components": [
+            {
+              "count": 28672,
+              "encoding": "SIGNED_SYMMETRIC_4BIT_LSB",
+              "name": "direction_basis_values",
+              "nbytes": 14336,
+              "sha256": "9de3879043f647cb28b6abf7f9bb37e9a44836988800b9e6a8fcab3c7f4358ab",
+              "shape": [
+                4,
+                7168
+              ]
+            },
+            {
+              "count": 4,
+              "encoding": "FLOAT32_LE",
+              "name": "direction_basis_scales",
+              "nbytes": 16,
+              "sha256": "578e7c291c7cda0b00682092d3cce8686d38c5b27a3a88716e903fb6a8d65b7a",
+              "shape": [
+                4
+              ]
+            },
+            {
+              "count": 692,
+              "encoding": "SIGNED_SYMMETRIC_4BIT_LSB",
+              "name": "oracle_coefficients_values",
+              "nbytes": 346,
+              "sha256": "92924b5517130be8e0d7b24c0de30f801a9e1c0f5ff7cd0c0f1c0c4e7c98accc",
+              "shape": [
+                173,
+                4
+              ]
+            },
+            {
+              "count": 4,
+              "encoding": "FLOAT32_LE",
+              "name": "oracle_coefficients_scales",
+              "nbytes": 16,
+              "sha256": "dcd27734fe4780456f662c6f61f12cebfdd4f625e208df936b0c3a566c15553b",
+              "shape": [
+                4
+              ]
+            }
+          ],
+          "hash_verified": true,
+          "header_bytes": 1285,
+          "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/oneoffs/M1/M1_L1_R4_B4_F173_PERIODIC.k26oracle",
+          "sha256": "070431c5d2e92cab46387b587a412ca6d64d0e267d0c06843360b8b7e488743e"
+        },
+        "precision_bits": 4,
+        "rank": 4,
+        "token_fraction": 0.12509038322487345,
+        "within_incremental_0_98_bpw": true
+      },
+      {
+        "boundary_rescue_ci95": {
+          "ci95_high": 0.8964897894171163,
+          "ci95_low": 0.33415866741643174,
+          "mean": 0.5931158014595685,
+          "method": "PAIRED_TOKEN_BOOTSTRAP",
+          "n": 1383
+        },
+        "deployable": false,
+        "layer": 1,
+        "payload": {
+          "bytes": 30514,
+          "component_bytes": 29056,
+          "components": [
+            {
+              "count": 28672,
+              "encoding": "SIGNED_SYMMETRIC_8BIT_LSB",
+              "name": "direction_basis_values",
+              "nbytes": 28672,
+              "sha256": "2cc75d9c1883717c9ce3a6688ee41603e21ceee0ed155798b01092cddb7d9a86",
+              "shape": [
+                4,
+                7168
+              ]
+            },
+            {
+              "count": 4,
+              "encoding": "FLOAT32_LE",
+              "name": "direction_basis_scales",
+              "nbytes": 16,
+              "sha256": "98ca79327f16d275e6d85787d8234b980fef6a8f04b344c07ea9fea9653ad301",
+              "shape": [
+                4
+              ]
+            },
+            {
+              "count": 176,
+              "encoding": "SIGNED_SYMMETRIC_8BIT_LSB",
+              "name": "oracle_coefficients_values",
+              "nbytes": 176,
+              "sha256": "984423e61993c64c0752a71d3d844e29fc3c015bc929404d3250a56b08e8165f",
+              "shape": [
+                44,
+                4
+              ]
+            },
+            {
+              "count": 4,
+              "encoding": "FLOAT32_LE",
+              "name": "oracle_coefficients_scales",
+              "nbytes": 16,
+              "sha256": "f62c3b1c36b00df7b36d4144be5421908c4061481ea510f3f1d8f5432f32fded",
+              "shape": [
+                4
+              ]
+            },
+            {
+              "count": 44,
+              "encoding": "UINT32_LE",
+              "name": "score_token_indices",
+              "nbytes": 176,
+              "sha256": "8a564741e78952ab1c31325712a27ef52d92ed1ce4c3f3848933fae79c363020",
+              "shape": [
+                44
+              ]
+            }
+          ],
+          "hash_verified": true,
+          "header_bytes": 1458,
+          "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/oneoffs/M1/M1_L1_R4_B8_F44_ORACLE_TOP_ERROR.k26oracle",
+          "sha256": "f7b6885a57c7e920edcc9194c8d82d103359969a6a0246801c092ea5d440c30b"
+        },
+        "precision_bits": 8,
+        "rank": 4,
+        "token_fraction": 0.03181489515545915,
+        "within_incremental_0_98_bpw": true
+      },
+      {
+        "boundary_rescue_ci95": {
+          "ci95_high": 0.9371262710256056,
+          "ci95_low": 0.3657030087283465,
+          "mean": 0.6315519602110006,
+          "method": "PAIRED_TOKEN_BOOTSTRAP",
+          "n": 1383
+        },
+        "deployable": false,
+        "layer": 1,
+        "payload": {
+          "bytes": 59466,
+          "component_bytes": 58000,
+          "components": [
+            {
+              "count": 114688,
+              "encoding": "SIGNED_SYMMETRIC_4BIT_LSB",
+              "name": "direction_basis_values",
+              "nbytes": 57344,
+              "sha256": "ef3131ee1ddc9d56faef67199b9f39d721fd85f1406e2a6d708d5a70e2c4f6bb",
+              "shape": [
+                16,
+                7168
+              ]
+            },
+            {
+              "count": 16,
+              "encoding": "FLOAT32_LE",
+              "name": "direction_basis_scales",
+              "nbytes": 64,
+              "sha256": "1ba89ca88b5cbb69045168a638a325c9772263e5fb10c98499817249648ae37a",
+              "shape": [
+                16
+              ]
+            },
+            {
+              "count": 704,
+              "encoding": "SIGNED_SYMMETRIC_4BIT_LSB",
+              "name": "oracle_coefficients_values",
+              "nbytes": 352,
+              "sha256": "2464581442764ef11d6c8a0dde86cdb6bf4e56cfff0df9c7743fa0f13dbc2421",
+              "shape": [
+                44,
+                16
+              ]
+            },
+            {
+              "count": 16,
+              "encoding": "FLOAT32_LE",
+              "name": "oracle_coefficients_scales",
+              "nbytes": 64,
+              "sha256": "5b7623dfc919d734e113b73334c84ea68a9b69676e7a3576671374f652db6761",
+              "shape": [
+                16
+              ]
+            },
+            {
+              "count": 44,
+              "encoding": "UINT32_LE",
+              "name": "score_token_indices",
+              "nbytes": 176,
+              "sha256": "8a564741e78952ab1c31325712a27ef52d92ed1ce4c3f3848933fae79c363020",
+              "shape": [
+                44
+              ]
+            }
+          ],
+          "hash_verified": true,
+          "header_bytes": 1466,
+          "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/oneoffs/M1/M1_L1_R16_B4_F44_ORACLE_TOP_ERROR.k26oracle",
+          "sha256": "ea6420c74c3af0535016b1174b245ffaf143456cddd037bb562676aa24f4752e"
+        },
+        "precision_bits": 4,
+        "rank": 16,
+        "token_fraction": 0.03181489515545915,
+        "within_incremental_0_98_bpw": true
+      },
+      {
+        "boundary_rescue_ci95": {
+          "ci95_high": 1.351034467652169,
+          "ci95_low": 0.5715403898223684,
+          "mean": 0.9515112578121354,
+          "method": "PAIRED_TOKEN_BOOTSTRAP",
+          "n": 1383
+        },
+        "deployable": false,
+        "layer": 1,
+        "payload": {
+          "bytes": 232055,
+          "component_bytes": 230960,
+          "components": [
+            {
+              "count": 114688,
+              "encoding": "FLOAT16_LE",
+              "name": "direction_basis_values",
+              "nbytes": 229376,
+              "sha256": "c3ebddb3b58dce8470972f26b0bf938637d231c6383671d981eed02d75a8c16d",
+              "shape": [
+                16,
+                7168
+              ]
+            },
+            {
+              "count": 704,
+              "encoding": "FLOAT16_LE",
+              "name": "oracle_coefficients_values",
+              "nbytes": 1408,
+              "sha256": "d004ddb1d4693b79b3d0870cbb4dd64e991824c7dceddd88469d14939c778ae6",
+              "shape": [
+                44,
+                16
+              ]
+            },
+            {
+              "count": 44,
+              "encoding": "UINT32_LE",
+              "name": "score_token_indices",
+              "nbytes": 176,
+              "sha256": "8a564741e78952ab1c31325712a27ef52d92ed1ce4c3f3848933fae79c363020",
+              "shape": [
+                44
+              ]
+            }
+          ],
+          "hash_verified": true,
+          "header_bytes": 1095,
+          "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/oneoffs/M1/M1_L1_R16_B16_F44_ORACLE_TOP_ERROR.k26oracle",
+          "sha256": "527ee7eba4ccc75a930efb7e81d4a06ee4eaea8cbbc5c3cb626261fc3405d821"
+        },
+        "precision_bits": 16,
+        "rank": 16,
+        "token_fraction": 0.03181489515545915,
+        "within_incremental_0_98_bpw": true
+      },
+      {
+        "boundary_rescue_ci95": {
+          "ci95_high": 1.4095437956130061,
+          "ci95_low": 0.6121341573559119,
+          "mean": 0.9903027421553054,
+          "method": "PAIRED_TOKEN_BOOTSTRAP",
+          "n": 1383
+        },
+        "deployable": false,
+        "layer": 1,
+        "payload": {
+          "bytes": 924408,
+          "component_bytes": 923312,
+          "components": [
+            {
+              "count": 458752,
+              "encoding": "FLOAT16_LE",
+              "name": "direction_basis_values",
+              "nbytes": 917504,
+              "sha256": "651827085e3ec97980ce7cbb619714df3031247241870dab48c4ce58e62722c8",
+              "shape": [
+                64,
+                7168
+              ]
+            },
+            {
+              "count": 2816,
+              "encoding": "FLOAT16_LE",
+              "name": "oracle_coefficients_values",
+              "nbytes": 5632,
+              "sha256": "3593fb77867458d909f99388962d2de8fd2344083ace9e95056736291b49098b",
+              "shape": [
+                44,
+                64
+              ]
+            },
+            {
+              "count": 44,
+              "encoding": "UINT32_LE",
+              "name": "score_token_indices",
+              "nbytes": 176,
+              "sha256": "8a564741e78952ab1c31325712a27ef52d92ed1ce4c3f3848933fae79c363020",
+              "shape": [
+                44
+              ]
+            }
+          ],
+          "hash_verified": true,
+          "header_bytes": 1096,
+          "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/oneoffs/M1/M1_L1_R64_B16_F44_ORACLE_TOP_ERROR.k26oracle",
+          "sha256": "581412ef30f310e7a17476ab0d050f2d5293b46ba2b34f9debafa4c47a833197"
+        },
+        "precision_bits": 16,
+        "rank": 64,
+        "token_fraction": 0.03181489515545915,
+        "within_incremental_0_98_bpw": false
+      },
+      {
+        "boundary_rescue_ci95": {
+          "ci95_high": 0.004733497457279714,
+          "ci95_low": 1.3242210705515582e-06,
+          "mean": 0.0016458971703049005,
+          "method": "PAIRED_TOKEN_BOOTSTRAP",
+          "n": 1383
+        },
+        "deployable": false,
+        "layer": 2,
+        "payload": {
+          "bytes": 15740,
+          "component_bytes": 14456,
+          "components": [
+            {
+              "count": 28672,
+              "encoding": "SIGNED_SYMMETRIC_4BIT_LSB",
+              "name": "direction_basis_values",
+              "nbytes": 14336,
+              "sha256": "a83e40f05b179e79419d1edfce1c154c71cb503984094686f2a521868a886c6d",
+              "shape": [
+                4,
+                7168
+              ]
+            },
+            {
+              "count": 4,
+              "encoding": "FLOAT32_LE",
+              "name": "direction_basis_scales",
+              "nbytes": 16,
+              "sha256": "abef6a3b046db1014333513e27fac64637ae6eecf1437bf4c53e62a9b13bd6ad",
+              "shape": [
+                4
+              ]
+            },
+            {
+              "count": 176,
+              "encoding": "SIGNED_SYMMETRIC_4BIT_LSB",
+              "name": "oracle_coefficients_values",
+              "nbytes": 88,
+              "sha256": "4e14366f26c9e2383ecf4b9f50b73f3479ce167749a554cbd1f3f8d0285917dd",
+              "shape": [
+                44,
+                4
+              ]
+            },
+            {
+              "count": 4,
+              "encoding": "FLOAT32_LE",
+              "name": "oracle_coefficients_scales",
+              "nbytes": 16,
+              "sha256": "2b90b0b209646849865f513d1e3065ae984d5624a195ff229dfe948ef3b51c76",
+              "shape": [
+                4
+              ]
+            }
+          ],
+          "hash_verified": true,
+          "header_bytes": 1284,
+          "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/oneoffs/M1/M1_L2_R4_B4_F44_PERIODIC.k26oracle",
+          "sha256": "9d234f943459677ab11cf373a642aeb25db687e8c9471cac9b84bdf65b1cc4f8"
+        },
+        "precision_bits": 4,
+        "rank": 4,
+        "token_fraction": 0.03181489515545915,
+        "within_incremental_0_98_bpw": true
+      },
+      {
+        "boundary_rescue_ci95": {
+          "ci95_high": 0.1466317249405529,
+          "ci95_low": 0.04864556542688239,
+          "mean": 0.09469328854196321,
+          "method": "PAIRED_TOKEN_BOOTSTRAP",
+          "n": 1383
+        },
+        "deployable": false,
+        "layer": 2,
+        "payload": {
+          "bytes": 30857,
+          "component_bytes": 29400,
+          "components": [
+            {
+              "count": 28672,
+              "encoding": "SIGNED_SYMMETRIC_8BIT_LSB",
+              "name": "direction_basis_values",
+              "nbytes": 28672,
+              "sha256": "deae4a15af7711899dbef341d1c9586437a0da61338bbbb7b7c3b9102781ed47",
+              "shape": [
+                4,
+                7168
+              ]
+            },
+            {
+              "count": 4,
+              "encoding": "FLOAT32_LE",
+              "name": "direction_basis_scales",
+              "nbytes": 16,
+              "sha256": "ee15601266a147db3edf2e1b71fdad51c8065b293697621dbfb49ec5fac364ce",
+              "shape": [
+                4
+              ]
+            },
+            {
+              "count": 348,
+              "encoding": "SIGNED_SYMMETRIC_8BIT_LSB",
+              "name": "oracle_coefficients_values",
+              "nbytes": 348,
+              "sha256": "e9a0f5ec549a8e8e1376fcc710c4c493808d2f3255189c1f90d22193515826b2",
+              "shape": [
+                87,
+                4
+              ]
+            },
+            {
+              "count": 4,
+              "encoding": "FLOAT32_LE",
+              "name": "oracle_coefficients_scales",
+              "nbytes": 16,
+              "sha256": "38de05444ef7937b4d288a10cf9fa659bc2a511d0e90c4a7ac8e13563bf081db",
+              "shape": [
+                4
+              ]
+            },
+            {
+              "count": 87,
+              "encoding": "UINT32_LE",
+              "name": "score_token_indices",
+              "nbytes": 348,
+              "sha256": "8490fc9cd0e2fc5122fcca9ffc0d8f490a27498cec5d2ea3d5379708e7cb0c5c",
+              "shape": [
+                87
+              ]
+            }
+          ],
+          "hash_verified": true,
+          "header_bytes": 1457,
+          "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/oneoffs/M1/M1_L2_R4_B8_F87_ORACLE_TOP_ERROR.k26oracle",
+          "sha256": "d17b352264a9e86764984ee8b2b5320771efd65cbb456d54bff5102cfeeb44c5"
+        },
+        "precision_bits": 8,
+        "rank": 4,
+        "token_fraction": 0.06290672451193059,
+        "within_incremental_0_98_bpw": true
+      },
+      {
+        "boundary_rescue_ci95": {
+          "ci95_high": 0.14411251070840492,
+          "ci95_low": 0.0644459361486365,
+          "mean": 0.10292699089666774,
+          "method": "PAIRED_TOKEN_BOOTSTRAP",
+          "n": 1383
+        },
+        "deployable": false,
+        "layer": 2,
+        "payload": {
+          "bytes": 61018,
+          "component_bytes": 59548,
+          "components": [
+            {
+              "count": 114688,
+              "encoding": "SIGNED_SYMMETRIC_4BIT_LSB",
+              "name": "direction_basis_values",
+              "nbytes": 57344,
+              "sha256": "ab722487160900f3fe1e70ffc09e27cb3e914076c1ec812c33e9fbd98e4ec73d",
+              "shape": [
+                16,
+                7168
+              ]
+            },
+            {
+              "count": 16,
+              "encoding": "FLOAT32_LE",
+              "name": "direction_basis_scales",
+              "nbytes": 64,
+              "sha256": "4a5a9d26199602dffcce51caeedfa0d1f020f2dc114cc40f8248f1bb2a7da4ed",
+              "shape": [
+                16
+              ]
+            },
+            {
+              "count": 2768,
+              "encoding": "SIGNED_SYMMETRIC_4BIT_LSB",
+              "name": "oracle_coefficients_values",
+              "nbytes": 1384,
+              "sha256": "313cbaa9d58b912ad80c739026ef18cf7b10fe493d881ab7e77da67d5dc8ab27",
+              "shape": [
+                173,
+                16
+              ]
+            },
+            {
+              "count": 16,
+              "encoding": "FLOAT32_LE",
+              "name": "oracle_coefficients_scales",
+              "nbytes": 64,
+              "sha256": "17e88521435cc6e13a54aa6b046bb27df0f997d65c24c57e1eb533b801bcf02c",
+              "shape": [
+                16
+              ]
+            },
+            {
+              "count": 173,
+              "encoding": "UINT32_LE",
+              "name": "score_token_indices",
+              "nbytes": 692,
+              "sha256": "ade5b705015a8c76f445d7a88d75b790781a493780e65b97fa551f50bea462cb",
+              "shape": [
+                173
+              ]
+            }
+          ],
+          "hash_verified": true,
+          "header_bytes": 1470,
+          "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/oneoffs/M1/M1_L2_R16_B4_F173_ORACLE_TOP_ERROR.k26oracle",
+          "sha256": "b236958f7c60f78d826d091924e745da891545d454dea3c0f9a432fe6c9e4f48"
+        },
+        "precision_bits": 4,
+        "rank": 16,
+        "token_fraction": 0.12509038322487345,
+        "within_incremental_0_98_bpw": true
+      },
+      {
+        "boundary_rescue_ci95": {
+          "ci95_high": 0.2813013113658614,
+          "ci95_low": 0.14033567054674012,
+          "mean": 0.20464341525355204,
+          "method": "PAIRED_TOKEN_BOOTSTRAP",
+          "n": 1383
+        },
+        "deployable": false,
+        "layer": 2,
+        "payload": {
+          "bytes": 130128,
+          "component_bytes": 128656,
+          "components": [
+            {
+              "count": 114688,
+              "encoding": "SIGNED_SYMMETRIC_8BIT_LSB",
+              "name": "direction_basis_values",
+              "nbytes": 114688,
+              "sha256": "2c4e066cbbd05e7d8e3a07a8dbc4907d7900822aebfc55b9b41b6e8f54cadf5e",
+              "shape": [
+                16,
+                7168
+              ]
+            },
+            {
+              "count": 16,
+              "encoding": "FLOAT32_LE",
+              "name": "direction_basis_scales",
+              "nbytes": 64,
+              "sha256": "5876ea6e8aa76f6a5bd166528528cb4e7bd1b01262b49cd3c5ec61485e88de66",
+              "shape": [
+                16
+              ]
+            },
+            {
+              "count": 11072,
+              "encoding": "SIGNED_SYMMETRIC_8BIT_LSB",
+              "name": "oracle_coefficients_values",
+              "nbytes": 11072,
+              "sha256": "d5ca44534f464f8da0196d05a6facbd70b74c31fc348afd449673c8263571a2d",
+              "shape": [
+                692,
+                16
+              ]
+            },
+            {
+              "count": 16,
+              "encoding": "FLOAT32_LE",
+              "name": "oracle_coefficients_scales",
+              "nbytes": 64,
+              "sha256": "70bb0b98e9181089ed7737942b049f9a98c9020a48b5e06ff9dad50415ff1128",
+              "shape": [
+                16
+              ]
+            },
+            {
+              "count": 692,
+              "encoding": "UINT32_LE",
+              "name": "score_token_indices",
+              "nbytes": 2768,
+              "sha256": "f881a4a2230001a1312d52a64d56efc6595ed5db3f61f162ab30b0ed1a554854",
+              "shape": [
+                692
+              ]
+            }
+          ],
+          "hash_verified": true,
+          "header_bytes": 1472,
+          "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/oneoffs/M1/M1_L2_R16_B8_F692_ORACLE_TOP_ERROR.k26oracle",
+          "sha256": "31b86ea1c1881548b0d7203a2aa97bec0666a4c3f33e7e6f531078cf3851829f"
+        },
+        "precision_bits": 8,
+        "rank": 16,
+        "token_fraction": 0.5003615328994938,
+        "within_incremental_0_98_bpw": true
+      },
+      {
+        "boundary_rescue_ci95": {
+          "ci95_high": 0.33394926601637404,
+          "ci95_low": 0.19346242948516115,
+          "mean": 0.26064509923271106,
+          "method": "PAIRED_TOKEN_BOOTSTRAP",
+          "n": 1383
+        },
+        "deployable": false,
+        "layer": 2,
+        "payload": {
+          "bytes": 275183,
+          "component_bytes": 273888,
+          "components": [
+            {
+              "count": 229376,
+              "encoding": "SIGNED_SYMMETRIC_8BIT_LSB",
+              "name": "direction_basis_values",
+              "nbytes": 229376,
+              "sha256": "7e39941065dc111294d6296297ea36c030f0a6a11fc1b49aed13523983c6226f",
+              "shape": [
+                32,
+                7168
+              ]
+            },
+            {
+              "count": 32,
+              "encoding": "FLOAT32_LE",
+              "name": "direction_basis_scales",
+              "nbytes": 128,
+              "sha256": "bd0c661c41e524cd5430b18fc27290e37ee0845b58167a3e262c12450cee473b",
+              "shape": [
+                32
+              ]
+            },
+            {
+              "count": 44256,
+              "encoding": "SIGNED_SYMMETRIC_8BIT_LSB",
+              "name": "oracle_coefficients_values",
+              "nbytes": 44256,
+              "sha256": "f12f695419c018e2678d54abc45f9e9116f4114b3e6942121534fee3a7c0d7d3",
+              "shape": [
+                1383,
+                32
+              ]
+            },
+            {
+              "count": 32,
+              "encoding": "FLOAT32_LE",
+              "name": "oracle_coefficients_scales",
+              "nbytes": 128,
+              "sha256": "0d9c12ab383bf00f6ab921e3a3f96aff8ac1478f8141e7286a9fbe0ec49d8150",
+              "shape": [
+                32
+              ]
+            }
+          ],
+          "hash_verified": true,
+          "header_bytes": 1295,
+          "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/oneoffs/M1/M1_L2_R32_B8_F1383_PERIODIC.k26oracle",
+          "sha256": "e6e5cca7c1c40eac2c6647a039d2a93a4dd8cbea3a8aa5eabcda15b924bdddb4"
+        },
+        "precision_bits": 8,
+        "rank": 32,
+        "token_fraction": 1.0,
+        "within_incremental_0_98_bpw": true
+      },
+      {
+        "boundary_rescue_ci95": {
+          "ci95_high": 0.3997539656792129,
+          "ci95_low": 0.2563578865602541,
+          "mean": 0.3253300016157359,
+          "method": "PAIRED_TOKEN_BOOTSTRAP",
+          "n": 1383
+        },
+        "deployable": false,
+        "layer": 2,
+        "payload": {
+          "bytes": 1095449,
+          "component_bytes": 1094528,
+          "components": [
+            {
+              "count": 458752,
+              "encoding": "FLOAT16_LE",
+              "name": "direction_basis_values",
+              "nbytes": 917504,
+              "sha256": "d5f63f719070d60107d0d410f5ac8b2c00d09af2fea0fb6011dfd1c6ecf6ef99",
+              "shape": [
+                64,
+                7168
+              ]
+            },
+            {
+              "count": 88512,
+              "encoding": "FLOAT16_LE",
+              "name": "oracle_coefficients_values",
+              "nbytes": 177024,
+              "sha256": "5d0326deafe3bb4d75c59e4bf469c7703eed899dd614d244963822ae81b79359",
+              "shape": [
+                1383,
+                64
+              ]
+            }
+          ],
+          "hash_verified": true,
+          "header_bytes": 921,
+          "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/oneoffs/M1/M1_L2_R64_B16_F1383_PERIODIC.k26oracle",
+          "sha256": "84bb8c3605883fa6c576f16e913c04c27256ffac9c4e52230d43c2b58b78797e"
+        },
+        "precision_bits": 16,
+        "rank": 64,
+        "token_fraction": 1.0,
+        "within_incremental_0_98_bpw": false
+      }
+    ],
+    "m2_gate_payload": {
+      "bytes": 2778,
+      "component_bytes": 1321,
+      "components": [
+        {
+          "count": 145,
+          "encoding": "SIGNED_SYMMETRIC_8BIT_LSB",
+          "name": "logistic_weight_and_bias_values",
+          "nbytes": 145,
+          "sha256": "eb30bd6ed9852d1a3d1305184e715634f30c8d88ef02559a12c8c32db4280951",
+          "shape": [
+            1,
+            145
+          ]
+        },
+        {
+          "count": 1,
+          "encoding": "FLOAT32_LE",
+          "name": "logistic_weight_and_bias_scales",
+          "nbytes": 4,
+          "sha256": "bca5b241c3966806efb42520605029faa711e7599a81730b32bc3fb383e8381f",
+          "shape": [
+            1
+          ]
+        },
+        {
+          "count": 144,
+          "encoding": "FLOAT32_LE",
+          "name": "feature_mean",
+          "nbytes": 576,
+          "sha256": "8b31df20767c2e2d99e307e25b0c897c091d90e0d1e80841c08eb75b210a6023",
+          "shape": [
+            144
+          ]
+        },
+        {
+          "count": 144,
+          "encoding": "FLOAT32_LE",
+          "name": "feature_scale",
+          "nbytes": 576,
+          "sha256": "70f44ae5f572a13a22f9ca96b6e8a717936e7268366deabaa01e0eb5f1fa87c1",
+          "shape": [
+            144
+          ]
+        },
+        {
+          "count": 5,
+          "encoding": "FLOAT32_LE",
+          "name": "trigger_thresholds",
+          "nbytes": 20,
+          "sha256": "e9dd89341dbd93e42b1f38be697ba806a47a3b1845d00b37a31da85ed0405b21",
+          "shape": [
+            5
+          ]
+        }
+      ],
+      "hash_verified": true,
+      "header_bytes": 1457,
+      "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/oneoffs/M2/M2_CONDITIONAL_TRIGGER_GATE.k26gate",
+      "sha256": "32b46d0c2295c7641cb975b5b8dc5fd6b076b9ad32812d5bd25260c88d30e717"
+    }
+  },
+  "nonlinear_family_adjudication": {
+    "N1": {
+      "evidence": {
+        "family_record": {
+          "ablation": "N1_AFFINE_R68_ABLATION",
+          "ablation_comparison": {
+            "ablation_relative_l2": 0.5046910047531128,
+            "candidate_beats_ablation": true,
+            "candidate_relative_l2": 0.3204815685749054,
+            "seed": 26072162
+          },
+          "candidate": "N1_GATED_RESIDUAL_R48_H96_O80",
+          "decision": "RETIRE_AT_CONTEXTUAL_F1",
+          "reasons": [
+            "ISOLATED_COSINE_REGRESSION",
+            "ISOLATED_TAIL_REGRESSION"
+          ]
+        },
+        "tournament_seal_sha256": "8c201bbf527c66daf99f3c87de3fb26978c55f66635dd414a7ec641e721f3b6e"
+      },
+      "id": "N1",
+      "reason": null,
+      "source_decision": "RETIRE_AT_CONTEXTUAL_F1",
+      "state": "TESTED_REJECTED",
+      "tested_scope": "CONTEXTUAL_LAYER1_EXPERT0_F0_F1"
+    },
+    "N2": {
+      "evidence": {
+        "family_record": {
+          "ablation": "N2_CONSTANT_CODEBOOK_K1_ABLATION",
+          "ablation_comparison": {
+            "ablation_relative_l2": 0.7403726577758789,
+            "candidate_beats_ablation": true,
+            "candidate_relative_l2": 0.6056955456733704,
+            "seed": 26072162
+          },
+          "candidate": "N2_FUNCTIONAL_CODEBOOK_K8_I32_O80",
+          "decision": "RETIRE_AT_CONTEXTUAL_F1",
+          "reasons": [
+            "ISOLATED_COSINE_REGRESSION",
+            "ISOLATED_TAIL_REGRESSION"
+          ]
+        },
+        "tournament_seal_sha256": "8c201bbf527c66daf99f3c87de3fb26978c55f66635dd414a7ec641e721f3b6e"
+      },
+      "id": "N2",
+      "reason": null,
+      "source_decision": "RETIRE_AT_CONTEXTUAL_F1",
+      "state": "TESTED_REJECTED",
+      "tested_scope": "CONTEXTUAL_LAYER1_EXPERT0_F0_F1"
+    },
+    "N3": {
+      "evidence": {
+        "searched": [
+          "/Users/scammermike/Downloads/hawking/KIMI_K26_GRAVITY_N3_ASYMMETRIC_ALLOCATION.json",
+          "/Users/scammermike/Downloads/hawking/KIMI_K26_GRAVITY_N3.json"
+        ],
+        "status": "ABSENT"
+      },
+      "id": "N3",
+      "reason": "N3 requires a surviving representation family plus multi-layer/expert sensitivity evidence to reallocate.",
+      "scientific_interpretation": "This is not a tested failure. The experiment is inadmissible because its required parent representation did not survive contextual F1.",
+      "state": "PREREQUISITE_ABSENT",
+      "tested_scope": null
+    },
+    "N4": {
+      "evidence": {
+        "family_record": {
+          "ablation": "N4_AFFINE_I16_O80_ABLATION",
+          "ablation_comparison": {
+            "ablation_relative_l2": 0.6466177701950073,
+            "candidate_beats_ablation": true,
+            "candidate_relative_l2": 0.4561343193054199,
+            "seed": 26072162
+          },
+          "candidate": "N4_QUANTILE_SPLINE_I16_K16_O80",
+          "decision": "RETIRE_AT_CONTEXTUAL_F1",
+          "reasons": [
+            "ISOLATED_COSINE_REGRESSION",
+            "ISOLATED_TAIL_REGRESSION"
+          ]
+        },
+        "tournament_seal_sha256": "8c201bbf527c66daf99f3c87de3fb26978c55f66635dd414a7ec641e721f3b6e"
+      },
+      "id": "N4",
+      "reason": null,
+      "source_decision": "RETIRE_AT_CONTEXTUAL_F1",
+      "state": "TESTED_REJECTED",
+      "tested_scope": "CONTEXTUAL_LAYER1_EXPERT0_F0_F1"
+    },
+    "N5": {
+      "evidence": {
+        "searched": [
+          "/Users/scammermike/Downloads/hawking/KIMI_K26_GRAVITY_N5_COLD_EXPERTS.json",
+          "/Users/scammermike/Downloads/hawking/KIMI_K26_GRAVITY_N5.json"
+        ],
+        "status": "ABSENT"
+      },
+      "id": "N5",
+      "reason": "N5 requires a viable contextual residual generator and cross-expert cold/high-use captures.",
+      "scientific_interpretation": "This is not a tested failure. The experiment is inadmissible because its required parent representation did not survive contextual F1.",
+      "state": "PREREQUISITE_ABSENT",
+      "tested_scope": null
+    },
+    "N6": {
+      "evidence": {
+        "family_record": {
+          "ablation": "N6_LINEAR_NATIVE_R366_ABLATION",
+          "ablation_comparison": {
+            "ablation_relative_l2": 0.9460296630859375,
+            "candidate_beats_ablation": false,
+            "candidate_relative_l2": 1.442123293876648,
+            "seed": 26072162
+          },
+          "candidate": "N6_NATIVE_SWIGLU_W244_INT8",
+          "decision": "RETIRE_AT_CONTEXTUAL_F1",
+          "reasons": [
+            "ROUTED_OUTPUT_CI_NOT_POSITIVE",
+            "IMMEDIATE_HIDDEN_CI_NOT_POSITIVE",
+            "ISOLATED_COSINE_REGRESSION",
+            "ISOLATED_TAIL_REGRESSION",
+            "DOES_NOT_BEAT_MANDATORY_ABLATION"
+          ]
+        },
+        "tournament_seal_sha256": "8c201bbf527c66daf99f3c87de3fb26978c55f66635dd414a7ec641e721f3b6e"
+      },
+      "id": "N6",
+      "reason": null,
+      "source_decision": "RETIRE_AT_CONTEXTUAL_F1",
+      "state": "TESTED_REJECTED",
+      "tested_scope": "CONTEXTUAL_LAYER1_EXPERT0_F0_F1"
+    }
+  },
+  "physical_rate_law": {
+    "all_payloads_hash_and_size_verified": true,
+    "complete_ceiling_bpw": 0.9799999055408296,
+    "complete_ceiling_bytes": 5394923,
+    "logical_weights": 44040192
+  },
+  "rate_stress_candidates": [
+    {
+      "actual_complete_bpw": 0.75,
+      "capability_density": {
+        "contextual_routed_cosine_per_bpw": 0.8061770598093668,
+        "one_minus_relative_l2_per_bpw": 0.14695477485656738
+      },
+      "frozen_score_metrics": {
+        "all_tokens": {
+          "candidate": {
+            "cosine_mean": 0.37636643648147583,
+            "cosine_min": -0.04962365701794624,
+            "cosine_p10": 0.15788085758686066,
+            "norm_ratio": 1.3342907428741455,
+            "normalized_rmse": 1.227283239364624,
+            "relative_l2": 1.2272849082946777
+          },
+          "parent": {
+            "cosine_mean": 0.18443579971790314,
+            "cosine_min": -0.05799274891614914,
+            "cosine_p10": 0.073348768055439,
+            "norm_ratio": 2.578333854675293,
+            "normalized_rmse": 2.549161434173584,
+            "relative_l2": 2.549118757247925
+          }
+        },
+        "candidate_hidden_sha256": "cb6cd00053400b87d30f45245c0b1dc90207e585d8e94c154d43f47b807b9df2",
+        "candidate_output_sha256": "2d571eb76cfa9b3300c2e5c6ac7ff3f21733817651c7cd2054908b42b8751862",
+        "domains": {
+          "code": {
+            "ci95_high": 0.5568126908606953,
+            "ci95_low": -0.35046688715616864,
+            "mean": 0.16131589147779676,
+            "n": 9
+          },
+          "prose": {
+            "ci95_high": 0.4664211918528266,
+            "ci95_low": -1.4142014716680233,
+            "mean": -0.34336995619993943,
+            "n": 13
+          },
+          "reasoning": {
+            "ci95_high": 0.4863274618983269,
+            "ci95_low": 0.02147034239023924,
+            "mean": 0.23989415168762207,
+            "n": 8
+          },
+          "tool_format": {
+            "ci95_high": 0.1567510962486267,
+            "ci95_low": -3.105579674243927,
+            "mean": -0.9730210304260254,
+            "n": 6
+          }
+        },
+        "frozen_split": "LR12_CHANGED_ORDER_AND_SUFFIX_NO_REFIT",
+        "immediate_residual_hidden": {
+          "candidate": {
+            "cosine_mean": 0.9928263425827026,
+            "cosine_min": 0.9757862091064453,
+            "cosine_p10": 0.9815500974655151,
+            "norm_ratio": 0.9751744270324707,
+            "normalized_rmse": 0.136966273188591,
+            "relative_l2": 0.13696639239788055,
+            "tokens": 36
+          },
+          "paired_relative_l2_improvement": {
+            "ci95_high": 0.010581518217481468,
+            "ci95_low": -0.010247403250024137,
+            "mean": 0.0013998918907923831,
+            "n": 36
+          },
+          "parent": {
+            "cosine_mean": 0.9925264716148376,
+            "cosine_min": 0.9684832096099854,
+            "cosine_p10": 0.9817931652069092,
+            "norm_ratio": 0.9709984660148621,
+            "normalized_rmse": 0.1452856957912445,
+            "relative_l2": 0.14528584480285645,
+            "tokens": 36
+          }
+        },
+        "isolated_regression": {
+          "candidate": {
+            "cosine_mean": 0.541557788848877,
+            "cosine_min": 0.2230236977338791,
+            "cosine_p10": 0.41756361722946167,
+            "norm_ratio": 0.4681522846221924,
+            "normalized_rmse": 0.8647670149803162,
+            "relative_l2": 0.8647670149803162
+          },
+          "parent": {
+            "cosine_mean": 0.9134424924850464,
+            "cosine_min": 0.7387098073959351,
+            "cosine_p10": 0.8825187087059021,
+            "norm_ratio": 0.7918260097503662,
+            "normalized_rmse": 0.47944605350494385,
+            "relative_l2": 0.4794459939002991
+          }
+        },
+        "low_margin_routed": {
+          "candidate": {
+            "cosine_mean": 0.18041864037513733,
+            "cosine_min": 0.10026751458644867,
+            "cosine_p10": 0.11629773676395416,
+            "norm_ratio": 6.068922996520996,
+            "normalized_rmse": 5.984380722045898,
+            "relative_l2": 5.984381198883057,
+            "tokens": 2
+          },
+          "paired_relative_l2_improvement": {
+            "ci95_high": -1.5793612003326416,
+            "ci95_low": -6.240924835205078,
+            "mean": -3.91014301776886,
+            "n": 2
+          },
+          "threshold": 0.0001910477876663208
+        },
+        "routed_tokens": {
+          "candidate": {
+            "cosine_mean": 0.6046327948570251,
+            "cosine_min": 0.08753462880849838,
+            "cosine_p10": 0.20846819877624512,
+            "norm_ratio": 1.0723137855529785,
+            "normalized_rmse": 0.8897840976715088,
+            "relative_l2": 0.8897839188575745,
+            "tokens": 36
+          },
+          "cosine_gain": 0.15674462914466858,
+          "paired_relative_l2_improvement": {
+            "ci95_high": 0.2516159370127653,
+            "ci95_low": -0.7671975606017643,
+            "mean": -0.19252609378761715,
+            "n": 36
+          },
+          "parent": {
+            "cosine_mean": 0.44788816571235657,
+            "cosine_min": 0.07870714366436005,
+            "cosine_p10": 0.1269996464252472,
+            "norm_ratio": 0.9441009163856506,
+            "normalized_rmse": 0.837938666343689,
+            "relative_l2": 0.837938666343689,
+            "tokens": 36
+          },
+          "relative_l2_rescue_fraction": -0.2297615583580799
+        }
+      },
+      "grouped_cv": {
+        "all_tokens": {
+          "cosine_mean": 0.27743983268737793,
+          "cosine_min": -0.002960371086373925,
+          "cosine_p10": 0.07561066746711731,
+          "norm_ratio": 1.5759997367858887,
+          "normalized_rmse": 1.5866838693618774,
+          "relative_l2": 1.5866791009902954
+        },
+        "folds": [
+          {
+            "candidate": {
+              "cosine_mean": 0.24412189424037933,
+              "cosine_min": -0.002960371086373925,
+              "cosine_p10": 0.04646185040473938,
+              "norm_ratio": 1.7330889701843262,
+              "normalized_rmse": 1.7771854400634766,
+              "relative_l2": 1.7771872282028198,
+              "tokens": 93
+            },
+            "fold": 0,
+            "paired_vs_parent": {
+              "ci95_high": 2.6587341417228023,
+              "ci95_low": 1.8655207913729452,
+              "mean": 2.247811955790366,
+              "n": 93
+            },
+            "routed_tokens": 4,
+            "tokens": 93
+          },
+          {
+            "candidate": {
+              "cosine_mean": 0.22660844027996063,
+              "cosine_min": 0.009766546078026295,
+              "cosine_p10": 0.06319580227136612,
+              "norm_ratio": 1.6749974489212036,
+              "normalized_rmse": 1.687920093536377,
+              "relative_l2": 1.6879216432571411,
+              "tokens": 84
+            },
+            "fold": 1,
+            "paired_vs_parent": {
+              "ci95_high": 2.9124356170850145,
+              "ci95_low": 2.0122281501335757,
+              "mean": 2.4545253359136128,
+              "n": 84
+            },
+            "routed_tokens": 4,
+            "tokens": 84
+          },
+          {
+            "candidate": {
+              "cosine_mean": 0.2469242364168167,
+              "cosine_min": 0.010279163718223572,
+              "cosine_p10": 0.056864332407712936,
+              "norm_ratio": 1.7256882190704346,
+              "normalized_rmse": 1.773006558418274,
+              "relative_l2": 1.77301025390625,
+              "tokens": 87
+            },
+            "fold": 2,
+            "paired_vs_parent": {
+              "ci95_high": 2.8805689598637065,
+              "ci95_low": 1.9744923448083045,
+              "mean": 2.401875956990253,
+              "n": 87
+            },
+            "routed_tokens": 3,
+            "tokens": 87
+          },
+          {
+            "candidate": {
+              "cosine_mean": 0.2645145654678345,
+              "cosine_min": 0.0362396314740181,
+              "cosine_p10": 0.07719840854406357,
+              "norm_ratio": 1.6735233068466187,
+              "normalized_rmse": 1.662523865699768,
+              "relative_l2": 1.662523865699768,
+              "tokens": 84
+            },
+            "fold": 3,
+            "paired_vs_parent": {
+              "ci95_high": 2.714311782448065,
+              "ci95_low": 1.8360441072356133,
+              "mean": 2.2627527855691456,
+              "n": 84
+            },
+            "routed_tokens": 3,
+            "tokens": 84
+          },
+          {
+            "candidate": {
+              "cosine_mean": 0.263438880443573,
+              "cosine_min": 0.011675059795379639,
+              "cosine_p10": 0.07997609674930573,
+              "norm_ratio": 1.5586860179901123,
+              "normalized_rmse": 1.5862175226211548,
+              "relative_l2": 1.5862191915512085,
+              "tokens": 88
+            },
+            "fold": 4,
+            "paired_vs_parent": {
+              "ci95_high": 2.7138434466482564,
+              "ci95_low": 1.9205418994480914,
+              "mean": 2.3022262921387497,
+              "n": 88
+            },
+            "routed_tokens": 2,
+            "tokens": 88
+          },
+          {
+            "candidate": {
+              "cosine_mean": 0.2988947927951813,
+              "cosine_min": 0.009818801656365395,
+              "cosine_p10": 0.05209265276789665,
+              "norm_ratio": 1.462009310722351,
+              "normalized_rmse": 1.4997612237930298,
+              "relative_l2": 1.4997611045837402,
+              "tokens": 83
+            },
+            "fold": 5,
+            "paired_vs_parent": {
+              "ci95_high": 2.8643833537417724,
+              "ci95_low": 1.9319676727056503,
+              "mean": 2.386574197964496,
+              "n": 83
+            },
+            "routed_tokens": 3,
+            "tokens": 83
+          },
+          {
+            "candidate": {
+              "cosine_mean": 0.2285926789045334,
+              "cosine_min": 0.010618857108056545,
+              "cosine_p10": 0.0631633996963501,
+              "norm_ratio": 1.9236619472503662,
+              "normalized_rmse": 1.9523437023162842,
+              "relative_l2": 1.952349066734314,
+              "tokens": 87
+            },
+            "fold": 6,
+            "paired_vs_parent": {
+              "ci95_high": 2.5784099609002302,
+              "ci95_low": 1.7663747309782039,
+              "mean": 2.1555303259827623,
+              "n": 87
+            },
+            "routed_tokens": 3,
+            "tokens": 87
+          },
+          {
+            "candidate": {
+              "cosine_mean": 0.3076600730419159,
+              "cosine_min": 0.026833774521946907,
+              "cosine_p10": 0.08155042678117752,
+              "norm_ratio": 1.4699430465698242,
+              "normalized_rmse": 1.4331889152526855,
+              "relative_l2": 1.4331912994384766,
+              "tokens": 82
+            },
+            "fold": 7,
+            "paired_vs_parent": {
+              "ci95_high": 3.03281548624722,
+              "ci95_low": 2.2235722218708296,
+              "mean": 2.6189553497768028,
+              "n": 82
+            },
+            "routed_tokens": 2,
+            "tokens": 82
+          },
+          {
+            "candidate": {
+              "cosine_mean": 0.2602042853832245,
+              "cosine_min": 0.029233114793896675,
+              "cosine_p10": 0.09555072337388992,
+              "norm_ratio": 1.7448724508285522,
+              "normalized_rmse": 1.755402684211731,
+              "relative_l2": 1.7554070949554443,
+              "tokens": 79
+            },
+            "fold": 8,
+            "paired_vs_parent": {
+              "ci95_high": 2.9671801004417335,
+              "ci95_low": 2.088273332315155,
+              "mean": 2.5147821171374263,
+              "n": 79
+            },
+            "routed_tokens": 2,
+            "tokens": 79
+          },
+          {
+            "candidate": {
+              "cosine_mean": 0.30998358130455017,
+              "cosine_min": 0.06749632954597473,
+              "cosine_p10": 0.10665731877088547,
+              "norm_ratio": 1.399976372718811,
+              "normalized_rmse": 1.4075028896331787,
+              "relative_l2": 1.4075015783309937,
+              "tokens": 90
+            },
+            "fold": 9,
+            "paired_vs_parent": {
+              "ci95_high": 2.8352893362111518,
+              "ci95_low": 1.9474434267150031,
+              "mean": 2.3624373892943065,
+              "n": 90
+            },
+            "routed_tokens": 1,
+            "tokens": 90
+          },
+          {
+            "candidate": {
+              "cosine_mean": 0.3283677101135254,
+              "cosine_min": 0.04953807219862938,
+              "cosine_p10": 0.12317286431789398,
+              "norm_ratio": 1.6382745504379272,
+              "normalized_rmse": 1.5522346496582031,
+              "relative_l2": 1.5522366762161255,
+              "tokens": 90
+            },
+            "fold": 10,
+            "paired_vs_parent": {
+              "ci95_high": 2.854736334350374,
+              "ci95_low": 2.0174516019721827,
+              "mean": 2.4269626928700343,
+              "n": 90
+            },
+            "routed_tokens": 1,
+            "tokens": 90
+          },
+          {
+            "candidate": {
+              "cosine_mean": 0.29530996084213257,
+              "cosine_min": 0.03178216516971588,
+              "cosine_p10": 0.08423489332199097,
+              "norm_ratio": 1.5208245515823364,
+              "normalized_rmse": 1.4640518426895142,
+              "relative_l2": 1.4640517234802246,
+              "tokens": 89
+            },
+            "fold": 11,
+            "paired_vs_parent": {
+              "ci95_high": 3.1323594375272816,
+              "ci95_low": 2.166523990570829,
+              "mean": 2.6373350754212797,
+              "n": 89
+            },
+            "routed_tokens": 2,
+            "tokens": 89
+          },
+          {
+            "candidate": {
+              "cosine_mean": 0.3135490417480469,
+              "cosine_min": 0.022637462243437767,
+              "cosine_p10": 0.09390103816986084,
+              "norm_ratio": 1.4532145261764526,
+              "normalized_rmse": 1.5116286277770996,
+              "relative_l2": 1.5116289854049683,
+              "tokens": 95
+            },
+            "fold": 12,
+            "paired_vs_parent": {
+              "ci95_high": 2.059554700067169,
+              "ci95_low": 1.44911633378581,
+              "mean": 1.751244572589272,
+              "n": 95
+            },
+            "routed_tokens": 2,
+            "tokens": 95
+          },
+          {
+            "candidate": {
+              "cosine_mean": 0.2671031653881073,
+              "cosine_min": 0.03245256096124649,
+              "cosine_p10": 0.10996977239847183,
+              "norm_ratio": 1.5773900747299194,
+              "normalized_rmse": 1.6543341875076294,
+              "relative_l2": 1.6543340682983398,
+              "tokens": 92
+            },
+            "fold": 13,
+            "paired_vs_parent": {
+              "ci95_high": 2.0866280665540176,
+              "ci95_low": 1.4961113251259794,
+              "mean": 1.794180835718694,
+              "n": 92
+            },
+            "routed_tokens": 1,
+            "tokens": 92
+          },
+          {
+            "candidate": {
+              "cosine_mean": 0.2719232738018036,
+              "cosine_min": 0.025161879137158394,
+              "cosine_p10": 0.09765744209289551,
+              "norm_ratio": 1.7050950527191162,
+              "normalized_rmse": 1.7072943449020386,
+              "relative_l2": 1.707298994064331,
+              "tokens": 90
+            },
+            "fold": 14,
+            "paired_vs_parent": {
+              "ci95_high": 2.812793805996577,
+              "ci95_low": 2.0386265825894143,
+              "mean": 2.416144363085429,
+              "n": 90
+            },
+            "routed_tokens": 1,
+            "tokens": 90
+          },
+          {
+            "candidate": {
+              "cosine_mean": 0.30848440527915955,
+              "cosine_min": 0.01836998015642166,
+              "cosine_p10": 0.09554418921470642,
+              "norm_ratio": 1.3166530132293701,
+              "normalized_rmse": 1.3097331523895264,
+              "relative_l2": 1.3097326755523682,
+              "tokens": 84
+            },
+            "fold": 15,
+            "paired_vs_parent": {
+              "ci95_high": 2.717015761545017,
+              "ci95_low": 1.8287813977471419,
+              "mean": 2.261148473336583,
+              "n": 84
+            },
+            "routed_tokens": 2,
+            "tokens": 84
+          }
+        ],
+        "grouping": "LEAVE_ONE_CONTEXT_SEGMENT_OUT_LR11",
+        "prediction_sha256": "82f372283b9f28004805f6c5697c2923e88bedefb217db389a0bbce54f24f584",
+        "rank": 283,
+        "rate": "0.75",
+        "routed_paired_vs_parent": {
+          "ci95_high": 0.16454920872218082,
+          "ci95_low": -0.02745215358833472,
+          "mean": 0.06762889193163978,
+          "n": 36
+        },
+        "routed_tokens": {
+          "cosine_mean": 0.36906468868255615,
+          "cosine_min": 0.023853423073887825,
+          "cosine_p10": 0.09884000569581985,
+          "norm_ratio": 0.8821182250976562,
+          "normalized_rmse": 0.9145793914794922,
+          "relative_l2": 0.9145797491073608,
+          "tokens": 36
+        }
+      },
+      "payload": {
+        "actual_complete_bpw": 0.75,
+        "all_payload_bytes_counted": true,
+        "base_component_bytes": 4115564,
+        "bytes": 4128768,
+        "component_count": 7,
+        "doctor_component_bytes": 0,
+        "exact_target_bytes": true,
+        "hash_verified": true,
+        "header_overhead_bytes": 2115,
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/gravity_rate_ladder/M5_NATIVE_LINEAR_RATE_075.k26f1",
+        "reserve_bytes": 11089,
+        "sha256": "886b5cc0aa58bf6ce153eb2da39766bb67a31d4611553cc68ea1b5b0f8a1a6be",
+        "target_bytes": 4128768
+      },
+      "physical_payload": {
+        "actual_complete_bpw": 0.75,
+        "all_payload_bytes_counted": true,
+        "base_component_bytes": 4115564,
+        "bytes": 4128768,
+        "component_count": 7,
+        "doctor_component_bytes": 0,
+        "exact_target_bytes": true,
+        "header_overhead_bytes": 2115,
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/gravity_rate_ladder/M5_NATIVE_LINEAR_RATE_075.k26f1",
+        "reserve_bytes": 11089,
+        "sha256": "886b5cc0aa58bf6ce153eb2da39766bb67a31d4611553cc68ea1b5b0f8a1a6be",
+        "target_bytes": 4128768
+      },
+      "physical_rate": {
+        "actual_bytes": 4128768,
+        "actual_complete_bpw": 0.75,
+        "all_headers_scales_matrices_and_reserve_billed": true,
+        "container_and_descriptor_bytes": 2115,
+        "deterministic_billed_reserve_bytes": 11089,
+        "exact_ceiling_hit": true,
+        "functional_component_bytes": 4115564,
+        "target_bytes": 4128768,
+        "target_complete_bpw": "0.75"
+      },
+      "rank": 283,
+      "rate": "0.75",
+      "screen_verdict": "DEGRADED_BUT_NOT_IRRECOVERABLE_F1",
+      "seal_sha256": "e13ccec4b845be140d6531c630c60316443b15ed8c08b45d3c7b8d82bc1d0e56",
+      "strict_admission_reasons": [
+        "ROUTED_OUTPUT_CI_NOT_POSITIVE",
+        "IMMEDIATE_HIDDEN_CI_NOT_POSITIVE",
+        "ISOLATED_COSINE_REGRESSION",
+        "ISOLATED_TAIL_REGRESSION",
+        "LOW_MARGIN_SIGNIFICANT_HARM"
+      ],
+      "strict_final_verdict": "RETIRED_STRICT_CONTEXTUAL_F1"
+    },
+    {
+      "actual_complete_bpw": 0.5,
+      "capability_density": {
+        "contextual_routed_cosine_per_bpw": 1.2188576459884644,
+        "one_minus_relative_l2_per_bpw": 0.3893665075302124
+      },
+      "frozen_score_metrics": {
+        "all_tokens": {
+          "candidate": {
+            "cosine_mean": 0.38627856969833374,
+            "cosine_min": 0.01808173395693302,
+            "cosine_p10": 0.162923201918602,
+            "norm_ratio": 1.2155828475952148,
+            "normalized_rmse": 1.1225996017456055,
+            "relative_l2": 1.1226012706756592
+          },
+          "parent": {
+            "cosine_mean": 0.18443579971790314,
+            "cosine_min": -0.05799274891614914,
+            "cosine_p10": 0.073348768055439,
+            "norm_ratio": 2.578333854675293,
+            "normalized_rmse": 2.549161434173584,
+            "relative_l2": 2.549118757247925
+          }
+        },
+        "candidate_hidden_sha256": "655244e962c856ee914564611bf590644e95ed571c24733bfa006abcf0c1d0e1",
+        "candidate_output_sha256": "64afc89ce1560ffa51f8c4491ea9241bdf886d946e12925b584a2881e991c1d8",
+        "domains": {
+          "code": {
+            "ci95_high": 0.8175377448399862,
+            "ci95_low": 0.22219291660520765,
+            "mean": 0.5182895726627774,
+            "n": 9
+          },
+          "prose": {
+            "ci95_high": 0.3823421633014312,
+            "ci95_low": -1.7206534906075552,
+            "mean": -0.43871669127390933,
+            "n": 13
+          },
+          "reasoning": {
+            "ci95_high": 0.6513755613937974,
+            "ci95_low": 0.12749871071428062,
+            "mean": 0.372330978512764,
+            "n": 8
+          },
+          "tool_format": {
+            "ci95_high": 0.4397006630897522,
+            "ci95_low": -0.6613808870315552,
+            "mean": -0.05432424942652384,
+            "n": 6
+          }
+        },
+        "frozen_split": "LR12_CHANGED_ORDER_AND_SUFFIX_NO_REFIT",
+        "immediate_residual_hidden": {
+          "candidate": {
+            "cosine_mean": 0.9934148788452148,
+            "cosine_min": 0.9747004508972168,
+            "cosine_p10": 0.9850142002105713,
+            "norm_ratio": 0.9740678668022156,
+            "normalized_rmse": 0.13536956906318665,
+            "relative_l2": 0.1353697031736374,
+            "tokens": 36
+          },
+          "paired_relative_l2_improvement": {
+            "ci95_high": 0.012622855324298144,
+            "ci95_low": -0.0011844360825812648,
+            "mean": 0.006379369853271378,
+            "n": 36
+          },
+          "parent": {
+            "cosine_mean": 0.9925264716148376,
+            "cosine_min": 0.9684832096099854,
+            "cosine_p10": 0.9817931652069092,
+            "norm_ratio": 0.9709984660148621,
+            "normalized_rmse": 0.1452856957912445,
+            "relative_l2": 0.14528584480285645,
+            "tokens": 36
+          }
+        },
+        "isolated_regression": {
+          "candidate": {
+            "cosine_mean": 0.5732718110084534,
+            "cosine_min": 0.19978675246238708,
+            "cosine_p10": 0.46518248319625854,
+            "norm_ratio": 0.44359147548675537,
+            "normalized_rmse": 0.8534808158874512,
+            "relative_l2": 0.8534806966781616
+          },
+          "parent": {
+            "cosine_mean": 0.9134424924850464,
+            "cosine_min": 0.7387098073959351,
+            "cosine_p10": 0.8825187087059021,
+            "norm_ratio": 0.7918260097503662,
+            "normalized_rmse": 0.47944605350494385,
+            "relative_l2": 0.4794459939002991
+          }
+        },
+        "low_margin_routed": {
+          "candidate": {
+            "cosine_mean": 0.18103815615177155,
+            "cosine_min": 0.01808173395693302,
+            "cosine_p10": 0.050673022866249084,
+            "norm_ratio": 2.7367160320281982,
+            "normalized_rmse": 2.7736213207244873,
+            "relative_l2": 2.7736217975616455,
+            "tokens": 2
+          },
+          "paired_relative_l2_improvement": {
+            "ci95_high": 0.7330511808395386,
+            "ci95_low": -1.3814692497253418,
+            "mean": -0.3242090344429016,
+            "n": 2
+          },
+          "threshold": 0.0001910477876663208
+        },
+        "routed_tokens": {
+          "candidate": {
+            "cosine_mean": 0.6094288229942322,
+            "cosine_min": 0.01808173395693302,
+            "cosine_p10": 0.22696636617183685,
+            "norm_ratio": 1.0032161474227905,
+            "normalized_rmse": 0.8053169250488281,
+            "relative_l2": 0.8053167462348938,
+            "tokens": 36
+          },
+          "cosine_gain": 0.1615406572818756,
+          "paired_relative_l2_improvement": {
+            "ci95_high": 0.3949608091678885,
+            "ci95_low": -0.4697036823878686,
+            "mean": 0.04483309719297621,
+            "n": 36
+          },
+          "parent": {
+            "cosine_mean": 0.44788816571235657,
+            "cosine_min": 0.07870714366436005,
+            "cosine_p10": 0.1269996464252472,
+            "norm_ratio": 0.9441009163856506,
+            "normalized_rmse": 0.837938666343689,
+            "relative_l2": 0.837938666343689,
+            "tokens": 36
+          },
+          "relative_l2_rescue_fraction": 0.05350403197002901
+        }
+      },
+      "grouped_cv": {
+        "all_tokens": {
+          "cosine_mean": 0.27545878291130066,
+          "cosine_min": -0.025989867746829987,
+          "cosine_p10": 0.07202111184597015,
+          "norm_ratio": 1.4923230409622192,
+          "normalized_rmse": 1.5331071615219116,
+          "relative_l2": 1.5331029891967773
+        },
+        "folds": [
+          {
+            "candidate": {
+              "cosine_mean": 0.22817496955394745,
+              "cosine_min": 0.008117318153381348,
+              "cosine_p10": 0.04741048440337181,
+              "norm_ratio": 1.6824721097946167,
+              "normalized_rmse": 1.7496410608291626,
+              "relative_l2": 1.7496432065963745,
+              "tokens": 93
+            },
+            "fold": 0,
+            "paired_vs_parent": {
+              "ci95_high": 2.6036315747005965,
+              "ci95_low": 1.8702395042104107,
+              "mean": 2.2203308824569947,
+              "n": 93
+            },
+            "routed_tokens": 4,
+            "tokens": 93
+          },
+          {
+            "candidate": {
+              "cosine_mean": 0.21947336196899414,
+              "cosine_min": 0.01705743744969368,
+              "cosine_p10": 0.0597478449344635,
+              "norm_ratio": 1.557773470878601,
+              "normalized_rmse": 1.610297679901123,
+              "relative_l2": 1.6102991104125977,
+              "tokens": 84
+            },
+            "fold": 1,
+            "paired_vs_parent": {
+              "ci95_high": 3.098889911263472,
+              "ci95_low": 2.1645123369104806,
+              "mean": 2.6190432345583323,
+              "n": 84
+            },
+            "routed_tokens": 4,
+            "tokens": 84
+          },
+          {
+            "candidate": {
+              "cosine_mean": 0.22894078493118286,
+              "cosine_min": 0.008361662738025188,
+              "cosine_p10": 0.05670851096510887,
+              "norm_ratio": 1.6669682264328003,
+              "normalized_rmse": 1.738198161125183,
+              "relative_l2": 1.7382017374038696,
+              "tokens": 87
+            },
+            "fold": 2,
+            "paired_vs_parent": {
+              "ci95_high": 2.890454616149267,
+              "ci95_low": 2.0302520983520593,
+              "mean": 2.448738742148739,
+              "n": 87
+            },
+            "routed_tokens": 3,
+            "tokens": 87
+          },
+          {
+            "candidate": {
+              "cosine_mean": 0.2846044898033142,
+              "cosine_min": 0.03441828489303589,
+              "cosine_p10": 0.08485126495361328,
+              "norm_ratio": 1.4726868867874146,
+              "normalized_rmse": 1.5261305570602417,
+              "relative_l2": 1.5261310338974,
+              "tokens": 84
+            },
+            "fold": 3,
+            "paired_vs_parent": {
+              "ci95_high": 3.071048277421367,
+              "ci95_low": 2.1147931059378955,
+              "mean": 2.593009671285039,
+              "n": 84
+            },
+            "routed_tokens": 3,
+            "tokens": 84
+          },
+          {
+            "candidate": {
+              "cosine_mean": 0.2735803425312042,
+              "cosine_min": 0.03895650804042816,
+              "cosine_p10": 0.0692358985543251,
+              "norm_ratio": 1.4521411657333374,
+              "normalized_rmse": 1.5328853130340576,
+              "relative_l2": 1.5328867435455322,
+              "tokens": 88
+            },
+            "fold": 4,
+            "paired_vs_parent": {
+              "ci95_high": 2.8854509190063586,
+              "ci95_low": 2.0526694858954713,
+              "mean": 2.4492841268127616,
+              "n": 88
+            },
+            "routed_tokens": 2,
+            "tokens": 88
+          },
+          {
+            "candidate": {
+              "cosine_mean": 0.2884787321090698,
+              "cosine_min": 0.035758014768362045,
+              "cosine_p10": 0.056010711938142776,
+              "norm_ratio": 1.3972760438919067,
+              "normalized_rmse": 1.4549872875213623,
+              "relative_l2": 1.4549871683120728,
+              "tokens": 83
+            },
+            "fold": 5,
+            "paired_vs_parent": {
+              "ci95_high": 2.88309044414256,
+              "ci95_low": 1.98858382999897,
+              "mean": 2.4248529852154745,
+              "n": 83
+            },
+            "routed_tokens": 3,
+            "tokens": 83
+          },
+          {
+            "candidate": {
+              "cosine_mean": 0.2544712722301483,
+              "cosine_min": -0.025989867746829987,
+              "cosine_p10": 0.059294555336236954,
+              "norm_ratio": 1.7875863313674927,
+              "normalized_rmse": 1.8046516180038452,
+              "relative_l2": 1.804656744003296,
+              "tokens": 87
+            },
+            "fold": 6,
+            "paired_vs_parent": {
+              "ci95_high": 2.810401525339861,
+              "ci95_low": 1.943699554979116,
+              "mean": 2.3567823007188995,
+              "n": 87
+            },
+            "routed_tokens": 3,
+            "tokens": 87
+          },
+          {
+            "candidate": {
+              "cosine_mean": 0.28858742117881775,
+              "cosine_min": 0.007763482630252838,
+              "cosine_p10": 0.0917210653424263,
+              "norm_ratio": 1.4224143028259277,
+              "normalized_rmse": 1.4055302143096924,
+              "relative_l2": 1.405532717704773,
+              "tokens": 82
+            },
+            "fold": 7,
+            "paired_vs_parent": {
+              "ci95_high": 3.1573283276179946,
+              "ci95_low": 2.24664460086241,
+              "mean": 2.691414040763204,
+              "n": 82
+            },
+            "routed_tokens": 2,
+            "tokens": 82
+          },
+          {
+            "candidate": {
+              "cosine_mean": 0.2571128308773041,
+              "cosine_min": 0.0362095981836319,
+              "cosine_p10": 0.06329264491796494,
+              "norm_ratio": 1.6090617179870605,
+              "normalized_rmse": 1.656434178352356,
+              "relative_l2": 1.6564387083053589,
+              "tokens": 79
+            },
+            "fold": 8,
+            "paired_vs_parent": {
+              "ci95_high": 3.2153087066132815,
+              "ci95_low": 2.2788818879972528,
+              "mean": 2.731804288640807,
+              "n": 79
+            },
+            "routed_tokens": 2,
+            "tokens": 79
+          },
+          {
+            "candidate": {
+              "cosine_mean": 0.330827534198761,
+              "cosine_min": 0.02361636608839035,
+              "cosine_p10": 0.13019995391368866,
+              "norm_ratio": 1.3182921409606934,
+              "normalized_rmse": 1.3298335075378418,
+              "relative_l2": 1.3298327922821045,
+              "tokens": 90
+            },
+            "fold": 9,
+            "paired_vs_parent": {
+              "ci95_high": 2.897296304023928,
+              "ci95_low": 2.0589006697800425,
+              "mean": 2.4655754877461327,
+              "n": 90
+            },
+            "routed_tokens": 1,
+            "tokens": 90
+          },
+          {
+            "candidate": {
+              "cosine_mean": 0.33790871500968933,
+              "cosine_min": 0.057621702551841736,
+              "cosine_p10": 0.13793770968914032,
+              "norm_ratio": 1.5249345302581787,
+              "normalized_rmse": 1.477928876876831,
+              "relative_l2": 1.477931022644043,
+              "tokens": 90
+            },
+            "fold": 10,
+            "paired_vs_parent": {
+              "ci95_high": 2.964146361980174,
+              "ci95_low": 2.0983663894732794,
+              "mean": 2.5223984917004905,
+              "n": 90
+            },
+            "routed_tokens": 1,
+            "tokens": 90
+          },
+          {
+            "candidate": {
+              "cosine_mean": 0.29617175459861755,
+              "cosine_min": 0.027688290923833847,
+              "cosine_p10": 0.08470459282398224,
+              "norm_ratio": 1.4647414684295654,
+              "normalized_rmse": 1.4518824815750122,
+              "relative_l2": 1.451882243156433,
+              "tokens": 89
+            },
+            "fold": 11,
+            "paired_vs_parent": {
+              "ci95_high": 3.1013736090633306,
+              "ci95_low": 2.160239247241047,
+              "mean": 2.6181818394178755,
+              "n": 89
+            },
+            "routed_tokens": 2,
+            "tokens": 89
+          },
+          {
+            "candidate": {
+              "cosine_mean": 0.26383286714553833,
+              "cosine_min": 0.013042716309428215,
+              "cosine_p10": 0.06899524480104446,
+              "norm_ratio": 1.478606104850769,
+              "normalized_rmse": 1.5808261632919312,
+              "relative_l2": 1.580827236175537,
+              "tokens": 95
+            },
+            "fold": 12,
+            "paired_vs_parent": {
+              "ci95_high": 1.9592490393393918,
+              "ci95_low": 1.3417282593250275,
+              "mean": 1.6469341008286726,
+              "n": 95
+            },
+            "routed_tokens": 2,
+            "tokens": 95
+          },
+          {
+            "candidate": {
+              "cosine_mean": 0.28698670864105225,
+              "cosine_min": 0.030431630089879036,
+              "cosine_p10": 0.1045427918434143,
+              "norm_ratio": 1.4576586484909058,
+              "normalized_rmse": 1.5529087781906128,
+              "relative_l2": 1.5529086589813232,
+              "tokens": 92
+            },
+            "fold": 13,
+            "paired_vs_parent": {
+              "ci95_high": 2.283467469591162,
+              "ci95_low": 1.6648768073514753,
+              "mean": 1.9700999661632206,
+              "n": 92
+            },
+            "routed_tokens": 1,
+            "tokens": 92
+          },
+          {
+            "candidate": {
+              "cosine_mean": 0.27397045493125916,
+              "cosine_min": -0.011557773686945438,
+              "cosine_p10": 0.08877392113208771,
+              "norm_ratio": 1.625769853591919,
+              "normalized_rmse": 1.6423815488815308,
+              "relative_l2": 1.6423859596252441,
+              "tokens": 90
+            },
+            "fold": 14,
+            "paired_vs_parent": {
+              "ci95_high": 2.9128278751340178,
+              "ci95_low": 2.1387559507787226,
+              "mean": 2.5062429553932613,
+              "n": 90
+            },
+            "routed_tokens": 1,
+            "tokens": 90
+          },
+          {
+            "candidate": {
+              "cosine_mean": 0.2920425534248352,
+              "cosine_min": 0.026941807940602303,
+              "cosine_p10": 0.08460494130849838,
+              "norm_ratio": 1.263485312461853,
+              "normalized_rmse": 1.2919070720672607,
+              "relative_l2": 1.291906476020813,
+              "tokens": 84
+            },
+            "fold": 15,
+            "paired_vs_parent": {
+              "ci95_high": 2.736646381942999,
+              "ci95_low": 1.810155583705221,
+              "mean": 2.252462314707892,
+              "n": 84
+            },
+            "routed_tokens": 2,
+            "tokens": 84
+          }
+        ],
+        "grouping": "LEAVE_ONE_CONTEXT_SEGMENT_OUT_LR11",
+        "prediction_sha256": "1c0de8dc0aaa482087815a721a60758663297c2d766e28e85e8791cd14a01912",
+        "rank": 187,
+        "rate": "0.50",
+        "routed_paired_vs_parent": {
+          "ci95_high": 0.21781050124102172,
+          "ci95_low": 0.004590859139959019,
+          "mean": 0.10583434502283733,
+          "n": 36
+        },
+        "routed_tokens": {
+          "cosine_mean": 0.3582904636859894,
+          "cosine_min": 0.06145095080137253,
+          "cosine_p10": 0.08893629908561707,
+          "norm_ratio": 0.8041513562202454,
+          "normalized_rmse": 0.915618360042572,
+          "relative_l2": 0.9156187176704407,
+          "tokens": 36
+        }
+      },
+      "payload": {
+        "actual_complete_bpw": 0.5,
+        "all_payload_bytes_counted": true,
+        "base_component_bytes": 2738924,
+        "bytes": 2752512,
+        "component_count": 7,
+        "doctor_component_bytes": 0,
+        "exact_target_bytes": true,
+        "hash_verified": true,
+        "header_overhead_bytes": 2114,
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/gravity_rate_ladder/M5_NATIVE_LINEAR_RATE_050.k26f1",
+        "reserve_bytes": 11474,
+        "sha256": "e2a47527bb0b13822bef42092ae1873d6868f021205be2961a4d91fcfce1999b",
+        "target_bytes": 2752512
+      },
+      "physical_payload": {
+        "actual_complete_bpw": 0.5,
+        "all_payload_bytes_counted": true,
+        "base_component_bytes": 2738924,
+        "bytes": 2752512,
+        "component_count": 7,
+        "doctor_component_bytes": 0,
+        "exact_target_bytes": true,
+        "header_overhead_bytes": 2114,
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/gravity_rate_ladder/M5_NATIVE_LINEAR_RATE_050.k26f1",
+        "reserve_bytes": 11474,
+        "sha256": "e2a47527bb0b13822bef42092ae1873d6868f021205be2961a4d91fcfce1999b",
+        "target_bytes": 2752512
+      },
+      "physical_rate": {
+        "actual_bytes": 2752512,
+        "actual_complete_bpw": 0.5,
+        "all_headers_scales_matrices_and_reserve_billed": true,
+        "container_and_descriptor_bytes": 2114,
+        "deterministic_billed_reserve_bytes": 11474,
+        "exact_ceiling_hit": true,
+        "functional_component_bytes": 2738924,
+        "target_bytes": 2752512,
+        "target_complete_bpw": "0.50"
+      },
+      "rank": 187,
+      "rate": "0.50",
+      "screen_verdict": "SURVIVES_CONTEXTUAL_F1",
+      "seal_sha256": "0dae62576fa6349841f25b40d40acfad7a923c0ffdf7ac20afc8df883faedbc7",
+      "strict_admission_reasons": [
+        "ROUTED_OUTPUT_CI_NOT_POSITIVE",
+        "IMMEDIATE_HIDDEN_CI_NOT_POSITIVE",
+        "ISOLATED_COSINE_REGRESSION",
+        "ISOLATED_TAIL_REGRESSION"
+      ],
+      "strict_final_verdict": "RETIRED_STRICT_CONTEXTUAL_F1"
+    },
+    {
+      "actual_complete_bpw": 0.3299998328799293,
+      "capability_density": {
+        "contextual_routed_cosine_per_bpw": 1.9194533214029947,
+        "one_minus_relative_l2_per_bpw": 0.7814174693544241
+      },
+      "frozen_score_metrics": {
+        "all_tokens": {
+          "candidate": {
+            "cosine_mean": 0.4508436620235443,
+            "cosine_min": 0.08177720755338669,
+            "cosine_p10": 0.22106115520000458,
+            "norm_ratio": 0.9987027049064636,
+            "normalized_rmse": 0.935524046421051,
+            "relative_l2": 0.93552565574646
+          },
+          "parent": {
+            "cosine_mean": 0.18443579971790314,
+            "cosine_min": -0.05799274891614914,
+            "cosine_p10": 0.073348768055439,
+            "norm_ratio": 2.578333854675293,
+            "normalized_rmse": 2.549161434173584,
+            "relative_l2": 2.549118757247925
+          }
+        },
+        "candidate_hidden_sha256": "97e59dcfa5f3f198367187317a47f425d911fb9dfaf16c696c950b7951fa7fe5",
+        "candidate_output_sha256": "bedad28a28f8902c557780931e5484966092dc97ac8ab4c8dd57da6223b2ee4b",
+        "domains": {
+          "code": {
+            "ci95_high": 0.7624480406443278,
+            "ci95_low": 0.17095272408591378,
+            "mean": 0.464181383450826,
+            "n": 9
+          },
+          "prose": {
+            "ci95_high": 0.6822084849843613,
+            "ci95_low": -0.36717647038973295,
+            "mean": 0.2163114960377033,
+            "n": 13
+          },
+          "reasoning": {
+            "ci95_high": 1.0173251975327733,
+            "ci95_low": 0.11897898279130459,
+            "mean": 0.5169475898146629,
+            "n": 8
+          },
+          "tool_format": {
+            "ci95_high": 0.4867492616176605,
+            "ci95_low": -1.6532218158245087,
+            "mean": -0.35205334424972534,
+            "n": 6
+          }
+        },
+        "frozen_split": "LR12_CHANGED_ORDER_AND_SUFFIX_NO_REFIT",
+        "immediate_residual_hidden": {
+          "candidate": {
+            "cosine_mean": 0.9933873414993286,
+            "cosine_min": 0.9776287078857422,
+            "cosine_p10": 0.9842255115509033,
+            "norm_ratio": 0.9649184346199036,
+            "normalized_rmse": 0.14006370306015015,
+            "relative_l2": 0.1400638222694397,
+            "tokens": 36
+          },
+          "paired_relative_l2_improvement": {
+            "ci95_high": 0.015246732460541862,
+            "ci95_low": 0.00022067747583302423,
+            "mean": 0.008359820142181383,
+            "n": 36
+          },
+          "parent": {
+            "cosine_mean": 0.9925264716148376,
+            "cosine_min": 0.9684832096099854,
+            "cosine_p10": 0.9817931652069092,
+            "norm_ratio": 0.9709984660148621,
+            "normalized_rmse": 0.1452856957912445,
+            "relative_l2": 0.14528584480285645,
+            "tokens": 36
+          }
+        },
+        "isolated_regression": {
+          "candidate": {
+            "cosine_mean": 0.6028115749359131,
+            "cosine_min": 0.23598532378673553,
+            "cosine_p10": 0.5019151568412781,
+            "norm_ratio": 0.4018893539905548,
+            "normalized_rmse": 0.8497823476791382,
+            "relative_l2": 0.8497823476791382
+          },
+          "parent": {
+            "cosine_mean": 0.9134424924850464,
+            "cosine_min": 0.7387098073959351,
+            "cosine_p10": 0.8825187087059021,
+            "norm_ratio": 0.7918260097503662,
+            "normalized_rmse": 0.47944605350494385,
+            "relative_l2": 0.4794459939002991
+          }
+        },
+        "low_margin_routed": {
+          "candidate": {
+            "cosine_mean": 0.21710248291492462,
+            "cosine_min": 0.14011695981025696,
+            "cosine_p10": 0.15551406145095825,
+            "norm_ratio": 3.869572401046753,
+            "normalized_rmse": 3.834726333618164,
+            "relative_l2": 3.834726572036743,
+            "tokens": 2
+          },
+          "paired_relative_l2_improvement": {
+            "ci95_high": 0.49752843379974365,
+            "ci95_low": -3.4167561531066895,
+            "mean": -1.459613859653473,
+            "n": 2
+          },
+          "threshold": 0.0001910477876663208
+        },
+        "routed_tokens": {
+          "candidate": {
+            "cosine_mean": 0.6334192752838135,
+            "cosine_min": 0.11606212705373764,
+            "cosine_p10": 0.33532965183258057,
+            "norm_ratio": 0.8617544174194336,
+            "normalized_rmse": 0.7421327829360962,
+            "relative_l2": 0.7421323657035828,
+            "tokens": 36
+          },
+          "cosine_gain": 0.1855311095714569,
+          "paired_relative_l2_improvement": {
+            "ci95_high": 0.5361923317528433,
+            "ci95_low": -0.07312001097533437,
+            "mean": 0.25035951534907025,
+            "n": 36
+          },
+          "parent": {
+            "cosine_mean": 0.44788816571235657,
+            "cosine_min": 0.07870714366436005,
+            "cosine_p10": 0.1269996464252472,
+            "norm_ratio": 0.9441009163856506,
+            "normalized_rmse": 0.837938666343689,
+            "relative_l2": 0.837938666343689,
+            "tokens": 36
+          },
+          "relative_l2_rescue_fraction": 0.2987802394195553
+        }
+      },
+      "grouped_cv": {
+        "all_tokens": {
+          "cosine_mean": 0.22701159119606018,
+          "cosine_min": -0.014090432785451412,
+          "cosine_p10": 0.06240764632821083,
+          "norm_ratio": 1.4420806169509888,
+          "normalized_rmse": 1.5555047988891602,
+          "relative_l2": 1.5555006265640259
+        },
+        "folds": [
+          {
+            "candidate": {
+              "cosine_mean": 0.18893323838710785,
+              "cosine_min": -0.0065127830021083355,
+              "cosine_p10": 0.04421943426132202,
+              "norm_ratio": 1.609777808189392,
+              "normalized_rmse": 1.7338464260101318,
+              "relative_l2": 1.7338486909866333,
+              "tokens": 93
+            },
+            "fold": 0,
+            "paired_vs_parent": {
+              "ci95_high": 2.653875794141523,
+              "ci95_low": 1.8998184375865486,
+              "mean": 2.262916806564536,
+              "n": 93
+            },
+            "routed_tokens": 4,
+            "tokens": 93
+          },
+          {
+            "candidate": {
+              "cosine_mean": 0.15663951635360718,
+              "cosine_min": 0.01633012481033802,
+              "cosine_p10": 0.03975009545683861,
+              "norm_ratio": 1.5360814332962036,
+              "normalized_rmse": 1.7112553119659424,
+              "relative_l2": 1.7112566232681274,
+              "tokens": 84
+            },
+            "fold": 1,
+            "paired_vs_parent": {
+              "ci95_high": 3.0562878854572775,
+              "ci95_low": 2.1031261825845355,
+              "mean": 2.563874290812583,
+              "n": 84
+            },
+            "routed_tokens": 4,
+            "tokens": 84
+          },
+          {
+            "candidate": {
+              "cosine_mean": 0.18821009993553162,
+              "cosine_min": 0.0222775936126709,
+              "cosine_p10": 0.04661104083061218,
+              "norm_ratio": 1.6094245910644531,
+              "normalized_rmse": 1.7330405712127686,
+              "relative_l2": 1.733044147491455,
+              "tokens": 87
+            },
+            "fold": 2,
+            "paired_vs_parent": {
+              "ci95_high": 3.0077534119630682,
+              "ci95_low": 2.083175328682209,
+              "mean": 2.5289055588601648,
+              "n": 87
+            },
+            "routed_tokens": 3,
+            "tokens": 87
+          },
+          {
+            "candidate": {
+              "cosine_mean": 0.21319419145584106,
+              "cosine_min": 0.0017016124911606312,
+              "cosine_p10": 0.06875044107437134,
+              "norm_ratio": 1.4341363906860352,
+              "normalized_rmse": 1.5693016052246094,
+              "relative_l2": 1.569301962852478,
+              "tokens": 84
+            },
+            "fold": 3,
+            "paired_vs_parent": {
+              "ci95_high": 2.9790920418288027,
+              "ci95_low": 2.0604478164975135,
+              "mean": 2.497142051657041,
+              "n": 84
+            },
+            "routed_tokens": 3,
+            "tokens": 84
+          },
+          {
+            "candidate": {
+              "cosine_mean": 0.2233905792236328,
+              "cosine_min": 0.028096841648221016,
+              "cosine_p10": 0.07248479872941971,
+              "norm_ratio": 1.4382718801498413,
+              "normalized_rmse": 1.5532238483428955,
+              "relative_l2": 1.5532251596450806,
+              "tokens": 88
+            },
+            "fold": 4,
+            "paired_vs_parent": {
+              "ci95_high": 2.8065159457989712,
+              "ci95_low": 1.9907345802946523,
+              "mean": 2.388632483780384,
+              "n": 88
+            },
+            "routed_tokens": 2,
+            "tokens": 88
+          },
+          {
+            "candidate": {
+              "cosine_mean": 0.2331114560365677,
+              "cosine_min": -0.00444723991677165,
+              "cosine_p10": 0.05678686499595642,
+              "norm_ratio": 1.3685953617095947,
+              "normalized_rmse": 1.4743032455444336,
+              "relative_l2": 1.474303126335144,
+              "tokens": 83
+            },
+            "fold": 5,
+            "paired_vs_parent": {
+              "ci95_high": 2.870466484452587,
+              "ci95_low": 1.9565084740699055,
+              "mean": 2.391846650336162,
+              "n": 83
+            },
+            "routed_tokens": 3,
+            "tokens": 83
+          },
+          {
+            "candidate": {
+              "cosine_mean": 0.2052885890007019,
+              "cosine_min": 0.017081886529922485,
+              "cosine_p10": 0.05962410569190979,
+              "norm_ratio": 1.7606961727142334,
+              "normalized_rmse": 1.842838168144226,
+              "relative_l2": 1.8428434133529663,
+              "tokens": 87
+            },
+            "fold": 6,
+            "paired_vs_parent": {
+              "ci95_high": 2.7581672759062945,
+              "ci95_low": 1.9076259555830353,
+              "mean": 2.3210053875528533,
+              "n": 87
+            },
+            "routed_tokens": 3,
+            "tokens": 87
+          },
+          {
+            "candidate": {
+              "cosine_mean": 0.22685855627059937,
+              "cosine_min": 0.019202223047614098,
+              "cosine_p10": 0.0820779800415039,
+              "norm_ratio": 1.401386022567749,
+              "normalized_rmse": 1.5260134935379028,
+              "relative_l2": 1.5260158777236938,
+              "tokens": 82
+            },
+            "fold": 7,
+            "paired_vs_parent": {
+              "ci95_high": 2.9980938971042637,
+              "ci95_low": 2.174803645581734,
+              "mean": 2.5677938032441023,
+              "n": 82
+            },
+            "routed_tokens": 2,
+            "tokens": 82
+          },
+          {
+            "candidate": {
+              "cosine_mean": 0.21779251098632812,
+              "cosine_min": 0.011613288894295692,
+              "cosine_p10": 0.07290064543485641,
+              "norm_ratio": 1.5044533014297485,
+              "normalized_rmse": 1.6212551593780518,
+              "relative_l2": 1.6212598085403442,
+              "tokens": 79
+            },
+            "fold": 8,
+            "paired_vs_parent": {
+              "ci95_high": 3.2177696937624414,
+              "ci95_low": 2.3360361849205407,
+              "mean": 2.7743108672431753,
+              "n": 79
+            },
+            "routed_tokens": 2,
+            "tokens": 79
+          },
+          {
+            "candidate": {
+              "cosine_mean": 0.2418002486228943,
+              "cosine_min": 0.020542345941066742,
+              "cosine_p10": 0.09769973158836365,
+              "norm_ratio": 1.3036246299743652,
+              "normalized_rmse": 1.4245628118515015,
+              "relative_l2": 1.424561619758606,
+              "tokens": 90
+            },
+            "fold": 9,
+            "paired_vs_parent": {
+              "ci95_high": 2.8219587627053264,
+              "ci95_low": 1.9606603712340196,
+              "mean": 2.3713871624734666,
+              "n": 90
+            },
+            "routed_tokens": 1,
+            "tokens": 90
+          },
+          {
+            "candidate": {
+              "cosine_mean": 0.280990332365036,
+              "cosine_min": 0.057458650320768356,
+              "cosine_p10": 0.10757569968700409,
+              "norm_ratio": 1.445944905281067,
+              "normalized_rmse": 1.5124281644821167,
+              "relative_l2": 1.5124303102493286,
+              "tokens": 90
+            },
+            "fold": 10,
+            "paired_vs_parent": {
+              "ci95_high": 2.9009878174795043,
+              "ci95_low": 2.0826102250152165,
+              "mean": 2.4881723622481027,
+              "n": 90
+            },
+            "routed_tokens": 1,
+            "tokens": 90
+          },
+          {
+            "candidate": {
+              "cosine_mean": 0.2603505253791809,
+              "cosine_min": 0.04049544781446457,
+              "cosine_p10": 0.08847154676914215,
+              "norm_ratio": 1.3832687139511108,
+              "normalized_rmse": 1.4424992799758911,
+              "relative_l2": 1.4424989223480225,
+              "tokens": 89
+            },
+            "fold": 11,
+            "paired_vs_parent": {
+              "ci95_high": 3.1169622873322345,
+              "ci95_low": 2.2279407165860863,
+              "mean": 2.656559669569637,
+              "n": 89
+            },
+            "routed_tokens": 2,
+            "tokens": 89
+          },
+          {
+            "candidate": {
+              "cosine_mean": 0.2038763165473938,
+              "cosine_min": -0.014090432785451412,
+              "cosine_p10": 0.04584737867116928,
+              "norm_ratio": 1.401045799255371,
+              "normalized_rmse": 1.5805423259735107,
+              "relative_l2": 1.5805431604385376,
+              "tokens": 95
+            },
+            "fold": 12,
+            "paired_vs_parent": {
+              "ci95_high": 1.9438728780181787,
+              "ci95_low": 1.3627468443387434,
+              "mean": 1.6491175356664156,
+              "n": 95
+            },
+            "routed_tokens": 2,
+            "tokens": 95
+          },
+          {
+            "candidate": {
+              "cosine_mean": 0.23894253373146057,
+              "cosine_min": 0.001163304434157908,
+              "cosine_p10": 0.08590484410524368,
+              "norm_ratio": 1.4150731563568115,
+              "normalized_rmse": 1.5590367317199707,
+              "relative_l2": 1.5590367317199707,
+              "tokens": 92
+            },
+            "fold": 13,
+            "paired_vs_parent": {
+              "ci95_high": 2.265484320210374,
+              "ci95_low": 1.6590447494193263,
+              "mean": 1.9438249831614287,
+              "n": 92
+            },
+            "routed_tokens": 1,
+            "tokens": 92
+          },
+          {
+            "candidate": {
+              "cosine_mean": 0.2806742489337921,
+              "cosine_min": 0.05571708083152771,
+              "cosine_p10": 0.10916538536548615,
+              "norm_ratio": 1.5424076318740845,
+              "normalized_rmse": 1.59365713596344,
+              "relative_l2": 1.5936617851257324,
+              "tokens": 90
+            },
+            "fold": 14,
+            "paired_vs_parent": {
+              "ci95_high": 3.007299065987269,
+              "ci95_low": 2.206223551101155,
+              "mean": 2.5815055357085335,
+              "n": 90
+            },
+            "routed_tokens": 1,
+            "tokens": 90
+          },
+          {
+            "candidate": {
+              "cosine_mean": 0.26923054456710815,
+              "cosine_min": 0.018578512594103813,
+              "cosine_p10": 0.0650719702243805,
+              "norm_ratio": 1.2124788761138916,
+              "normalized_rmse": 1.2821834087371826,
+              "relative_l2": 1.2821828126907349,
+              "tokens": 84
+            },
+            "fold": 15,
+            "paired_vs_parent": {
+              "ci95_high": 2.712389460330208,
+              "ci95_low": 1.8344572663839376,
+              "mean": 2.2598942745299566,
+              "n": 84
+            },
+            "routed_tokens": 2,
+            "tokens": 84
+          }
+        ],
+        "grouping": "LEAVE_ONE_CONTEXT_SEGMENT_OUT_LR11",
+        "prediction_sha256": "93ea7b1c243b68d0fb0e5ca345a13e9f20544a08caf52da29e0bdaa63681e8bb",
+        "rank": 122,
+        "rate": "0.33",
+        "routed_paired_vs_parent": {
+          "ci95_high": 0.20704500596556402,
+          "ci95_low": -0.06331687710351414,
+          "mean": 0.06816795137193468,
+          "n": 36
+        },
+        "routed_tokens": {
+          "cosine_mean": 0.2618786096572876,
+          "cosine_min": 0.03675062954425812,
+          "cosine_p10": 0.051408879458904266,
+          "norm_ratio": 0.6915357112884521,
+          "normalized_rmse": 1.005128026008606,
+          "relative_l2": 1.0051288604736328,
+          "tokens": 36
+        }
+      },
+      "payload": {
+        "actual_complete_bpw": 0.3299998328799293,
+        "all_payload_bytes_counted": true,
+        "base_component_bytes": 1806824,
+        "bytes": 1816657,
+        "component_count": 7,
+        "doctor_component_bytes": 0,
+        "exact_target_bytes": true,
+        "hash_verified": true,
+        "header_overhead_bytes": 2109,
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/gravity_rate_ladder/M5_NATIVE_LINEAR_RATE_033.k26f1",
+        "reserve_bytes": 7724,
+        "sha256": "f1e7c585fd5783cc578f5c42b3aecf36ebc48d04d03832815284cad775e02cf7",
+        "target_bytes": 1816657
+      },
+      "physical_payload": {
+        "actual_complete_bpw": 0.3299998328799293,
+        "all_payload_bytes_counted": true,
+        "base_component_bytes": 1806824,
+        "bytes": 1816657,
+        "component_count": 7,
+        "doctor_component_bytes": 0,
+        "exact_target_bytes": true,
+        "header_overhead_bytes": 2109,
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/gravity_rate_ladder/M5_NATIVE_LINEAR_RATE_033.k26f1",
+        "reserve_bytes": 7724,
+        "sha256": "f1e7c585fd5783cc578f5c42b3aecf36ebc48d04d03832815284cad775e02cf7",
+        "target_bytes": 1816657
+      },
+      "physical_rate": {
+        "actual_bytes": 1816657,
+        "actual_complete_bpw": 0.3299998328799293,
+        "all_headers_scales_matrices_and_reserve_billed": true,
+        "container_and_descriptor_bytes": 2109,
+        "deterministic_billed_reserve_bytes": 7724,
+        "exact_ceiling_hit": true,
+        "functional_component_bytes": 1806824,
+        "target_bytes": 1816657,
+        "target_complete_bpw": "0.33"
+      },
+      "rank": 122,
+      "rate": "0.33",
+      "screen_verdict": "SURVIVES_CONTEXTUAL_F1",
+      "seal_sha256": "3ec7e6a5166d43edafc65ccfc78689a097f71c70a801c7cf01a03721e5e10886",
+      "strict_admission_reasons": [
+        "ROUTED_OUTPUT_CI_NOT_POSITIVE",
+        "ISOLATED_COSINE_REGRESSION",
+        "ISOLATED_TAIL_REGRESSION"
+      ],
+      "strict_final_verdict": "RETIRED_STRICT_CONTEXTUAL_F1"
+    }
+  ],
+  "schema": "hawking.kimi_k26.final_byte_auction.v1",
+  "seal_sha256": "d8b8f02b2e19c4bee39cf8a5ceb91f05e1878ee18e889c2bcf5f88ccc1b42719",
+  "sealed_at": "2026-07-21T19:23:12Z",
+  "status": "PASS",
+  "tested_physical_candidates": [
+    {
+      "ablation_of": null,
+      "candidate": "N1_GATED_RESIDUAL_R48_H96_O80",
+      "complete_bpw": 0.9121239071800595,
+      "complete_physical_bytes": 5021264,
+      "deterministic_decode": true,
+      "family": "N1",
+      "frozen_score_metrics": {
+        "all_tokens": {
+          "candidate": {
+            "cosine_mean": 0.7337952852249146,
+            "cosine_min": 0.4056030511856079,
+            "cosine_p10": 0.560075581073761,
+            "norm_ratio": 0.7660665512084961,
+            "normalized_rmse": 0.5627897381782532,
+            "relative_l2": 0.5627909898757935
+          },
+          "parent": {
+            "cosine_mean": 0.18443579971790314,
+            "cosine_min": -0.05799274891614914,
+            "cosine_p10": 0.073348768055439,
+            "norm_ratio": 2.578333854675293,
+            "normalized_rmse": 2.549161434173584,
+            "relative_l2": 2.549118757247925
+          }
+        },
+        "candidate_hidden_sha256": "664684b79ee1dc82670476fcb32ac9254be30d3ae79cac902ad9b17188979128",
+        "candidate_output_sha256": "7be25a8bd6dd570166a2911a5ba3260135e45c266668f8746996f61a14c7c927",
+        "domains": {
+          "code": {
+            "ci95_high": 1.2980913751655154,
+            "ci95_low": 0.6136659880479177,
+            "mean": 0.9557884534200033,
+            "n": 9
+          },
+          "prose": {
+            "ci95_high": 1.5513562230536573,
+            "ci95_low": 0.7386298391108329,
+            "mean": 1.1187833501742437,
+            "n": 13
+          },
+          "reasoning": {
+            "ci95_high": 1.5172399987466634,
+            "ci95_low": 0.3989878185093403,
+            "mean": 0.9305809140205383,
+            "n": 8
+          },
+          "tool_format": {
+            "ci95_high": 1.74546213944753,
+            "ci95_low": 0.4976029396057129,
+            "mean": 1.0873085260391235,
+            "n": 6
+          }
+        },
+        "frozen_split": "LR12_CHANGED_ORDER_AND_SUFFIX_NO_REFIT",
+        "immediate_residual_hidden": {
+          "candidate": {
+            "cosine_mean": 0.998093843460083,
+            "cosine_min": 0.9881480932235718,
+            "cosine_p10": 0.9912415742874146,
+            "norm_ratio": 0.9883999824523926,
+            "normalized_rmse": 0.07365278899669647,
+            "relative_l2": 0.07365287840366364,
+            "tokens": 36
+          },
+          "paired_relative_l2_improvement": {
+            "ci95_high": 0.0757974426417301,
+            "ci95_low": 0.045705778709250605,
+            "mean": 0.06030644913617936,
+            "n": 36
+          },
+          "parent": {
+            "cosine_mean": 0.9925264716148376,
+            "cosine_min": 0.9684832096099854,
+            "cosine_p10": 0.9817931652069092,
+            "norm_ratio": 0.9709984660148621,
+            "normalized_rmse": 0.1452856957912445,
+            "relative_l2": 0.14528584480285645,
+            "tokens": 36
+          }
+        },
+        "isolated_regression": {
+          "candidate": {
+            "cosine_mean": 0.7981089353561401,
+            "cosine_min": 0.6439599394798279,
+            "cosine_p10": 0.7628508806228638,
+            "norm_ratio": 0.6134104132652283,
+            "normalized_rmse": 0.6635016798973083,
+            "relative_l2": 0.6635016202926636
+          },
+          "parent": {
+            "cosine_mean": 0.9134424924850464,
+            "cosine_min": 0.7387098073959351,
+            "cosine_p10": 0.8825187087059021,
+            "norm_ratio": 0.7918260097503662,
+            "normalized_rmse": 0.47944605350494385,
+            "relative_l2": 0.4794459939002991
+          },
+          "tokens": 32
+        },
+        "low_margin_routed": {
+          "candidate": {
+            "cosine_mean": 0.7251542806625366,
+            "cosine_min": 0.5942743420600891,
+            "cosine_p10": 0.6204503178596497,
+            "norm_ratio": 0.8097320199012756,
+            "normalized_rmse": 0.6115925908088684,
+            "relative_l2": 0.6115926504135132,
+            "tokens": 2
+          },
+          "paired_relative_l2_improvement": {
+            "ci95_high": 2.4720637798309326,
+            "ci95_low": 1.7164462804794312,
+            "mean": 2.094255030155182,
+            "n": 2
+          },
+          "parent": {
+            "cosine_mean": 0.15445663034915924,
+            "cosine_min": 0.07870714366436005,
+            "cosine_p10": 0.093857042491436,
+            "norm_ratio": 2.545947790145874,
+            "normalized_rmse": 2.568632125854492,
+            "relative_l2": 2.5686323642730713,
+            "tokens": 2
+          },
+          "threshold": 0.0001910477876663208
+        },
+        "routed_tokens": {
+          "candidate": {
+            "cosine_mean": 0.8606531023979187,
+            "cosine_min": 0.5942743420600891,
+            "cosine_p10": 0.757534921169281,
+            "norm_ratio": 0.9110156893730164,
+            "normalized_rmse": 0.3204818665981293,
+            "relative_l2": 0.3204815685749054,
+            "tokens": 36
+          },
+          "cosine_gain": 0.41276493668556213,
+          "paired_relative_l2_improvement": {
+            "ci95_high": 1.2674197013386421,
+            "ci95_low": 0.7927991812013917,
+            "mean": 1.0309660583734512,
+            "n": 36
+          },
+          "parent": {
+            "cosine_mean": 0.44788816571235657,
+            "cosine_min": 0.07870714366436005,
+            "cosine_p10": 0.1269996464252472,
+            "norm_ratio": 0.9441009163856506,
+            "normalized_rmse": 0.837938666343689,
+            "relative_l2": 0.837938666343689,
+            "tokens": 36
+          },
+          "relative_l2_rescue_fraction": 1.2303598100706217
+        }
+      },
+      "physical_payload": {
+        "all_payload_bytes_counted": true,
+        "base_component_bytes": 4022298,
+        "bytes": 5021264,
+        "complete_bpw": 0.9121239071800595,
+        "complete_ceiling_bytes": 5394923,
+        "component_count": 27,
+        "doctor_component_bytes": 993024,
+        "hash_verified": true,
+        "header_overhead_bytes": 5942,
+        "logical_weights_represented": 44040192,
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/gravity_nonlinear/N1_GATED_RESIDUAL_R48_H96_O80.k26f1",
+        "sha256": "56cecaaac64c77ebc88dd10572fa1ddd06efbee19bf1dcb43a201a6a3cf36369"
+      },
+      "row_seal_sha256": "35ffb15cf383a0817710546bcdf1d6c22cb2398e9aa4289a04d4741a824e0a2c",
+      "teacher_access_at_inference": false,
+      "within_0_98_bpw": true
+    },
+    {
+      "ablation_of": "N1_GATED_RESIDUAL_R48_H96_O80",
+      "candidate": "N1_AFFINE_R68_ABLATION",
+      "complete_bpw": 0.9190917242140997,
+      "complete_physical_bytes": 5059622,
+      "deterministic_decode": true,
+      "family": "N1",
+      "frozen_score_metrics": {
+        "all_tokens": {
+          "candidate": {
+            "cosine_mean": 0.5901689529418945,
+            "cosine_min": 0.10481104254722595,
+            "cosine_p10": 0.3809826374053955,
+            "norm_ratio": 0.848517894744873,
+            "normalized_rmse": 0.6982415318489075,
+            "relative_l2": 0.6982436776161194
+          },
+          "parent": {
+            "cosine_mean": 0.18443579971790314,
+            "cosine_min": -0.05799274891614914,
+            "cosine_p10": 0.073348768055439,
+            "norm_ratio": 2.578333854675293,
+            "normalized_rmse": 2.549161434173584,
+            "relative_l2": 2.549118757247925
+          }
+        },
+        "candidate_hidden_sha256": "96f31cec2b317491966403f9ed925384d04f537b1c6fb2a24ee53f0c4c0a38e1",
+        "candidate_output_sha256": "58338c35a98c97dbc77e31a016af982d23520cc7bede7802eea355cd873bf369",
+        "domains": {
+          "code": {
+            "ci95_high": 1.0840786560542055,
+            "ci95_low": 0.34386946451332834,
+            "mean": 0.7141117288006676,
+            "n": 9
+          },
+          "prose": {
+            "ci95_high": 1.0593031060237152,
+            "ci95_low": 0.5328805457514066,
+            "mean": 0.7993439940305856,
+            "n": 13
+          },
+          "reasoning": {
+            "ci95_high": 1.2078793987631797,
+            "ci95_low": 0.33793148770928383,
+            "mean": 0.7453218288719654,
+            "n": 8
+          },
+          "tool_format": {
+            "ci95_high": 1.2723078429698944,
+            "ci95_low": 0.2855125367641449,
+            "mean": 0.7503904104232788,
+            "n": 6
+          }
+        },
+        "frozen_split": "LR12_CHANGED_ORDER_AND_SUFFIX_NO_REFIT",
+        "immediate_residual_hidden": {
+          "candidate": {
+            "cosine_mean": 0.9962102174758911,
+            "cosine_min": 0.983599066734314,
+            "cosine_p10": 0.9898452758789062,
+            "norm_ratio": 0.9735816717147827,
+            "normalized_rmse": 0.10858340561389923,
+            "relative_l2": 0.10858350247144699,
+            "tokens": 36
+          },
+          "paired_relative_l2_improvement": {
+            "ci95_high": 0.03995778889382362,
+            "ci95_low": 0.027197211391628826,
+            "mean": 0.033375102250526346,
+            "n": 36
+          },
+          "parent": {
+            "cosine_mean": 0.9925264716148376,
+            "cosine_min": 0.9684832096099854,
+            "cosine_p10": 0.9817931652069092,
+            "norm_ratio": 0.9709984660148621,
+            "normalized_rmse": 0.1452856957912445,
+            "relative_l2": 0.14528584480285645,
+            "tokens": 36
+          }
+        },
+        "isolated_regression": {
+          "candidate": {
+            "cosine_mean": 0.7870172262191772,
+            "cosine_min": 0.6289423704147339,
+            "cosine_p10": 0.7507226467132568,
+            "norm_ratio": 0.6094599962234497,
+            "normalized_rmse": 0.6735871434211731,
+            "relative_l2": 0.6735870242118835
+          },
+          "parent": {
+            "cosine_mean": 0.9134424924850464,
+            "cosine_min": 0.7387098073959351,
+            "cosine_p10": 0.8825187087059021,
+            "norm_ratio": 0.7918260097503662,
+            "normalized_rmse": 0.47944605350494385,
+            "relative_l2": 0.4794459939002991
+          },
+          "tokens": 32
+        },
+        "low_margin_routed": {
+          "candidate": {
+            "cosine_mean": 0.5549501180648804,
+            "cosine_min": 0.5136154294013977,
+            "cosine_p10": 0.5218823552131653,
+            "norm_ratio": 1.3878941535949707,
+            "normalized_rmse": 1.2012399435043335,
+            "relative_l2": 1.2012399435043335,
+            "tokens": 2
+          },
+          "paired_relative_l2_improvement": {
+            "ci95_high": 1.8512648344039917,
+            "ci95_low": 1.1319741010665894,
+            "mean": 1.4916194677352905,
+            "n": 2
+          },
+          "parent": {
+            "cosine_mean": 0.15445663034915924,
+            "cosine_min": 0.07870714366436005,
+            "cosine_p10": 0.093857042491436,
+            "norm_ratio": 2.545947790145874,
+            "normalized_rmse": 2.568632125854492,
+            "relative_l2": 2.5686323642730713,
+            "tokens": 2
+          },
+          "threshold": 0.0001910477876663208
+        },
+        "routed_tokens": {
+          "candidate": {
+            "cosine_mean": 0.744168221950531,
+            "cosine_min": 0.10481104254722595,
+            "cosine_p10": 0.5318190455436707,
+            "norm_ratio": 0.8136373162269592,
+            "normalized_rmse": 0.5046911835670471,
+            "relative_l2": 0.5046910047531128,
+            "tokens": 36
+          },
+          "cosine_gain": 0.29628005623817444,
+          "paired_relative_l2_improvement": {
+            "ci95_high": 0.9436770907706684,
+            "ci95_low": 0.5750228067239126,
+            "mean": 0.7578720715310838,
+            "n": 36
+          },
+          "parent": {
+            "cosine_mean": 0.44788816571235657,
+            "cosine_min": 0.07870714366436005,
+            "cosine_p10": 0.1269996464252472,
+            "norm_ratio": 0.9441009163856506,
+            "normalized_rmse": 0.837938666343689,
+            "relative_l2": 0.837938666343689,
+            "tokens": 36
+          },
+          "relative_l2_rescue_fraction": 0.9044481439650321
+        }
+      },
+      "physical_payload": {
+        "all_payload_bytes_counted": true,
+        "base_component_bytes": 4022298,
+        "bytes": 5059622,
+        "complete_bpw": 0.9190917242140997,
+        "complete_ceiling_bytes": 5394923,
+        "component_count": 21,
+        "doctor_component_bytes": 1032464,
+        "hash_verified": true,
+        "header_overhead_bytes": 4860,
+        "logical_weights_represented": 44040192,
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/gravity_nonlinear/N1_AFFINE_R68_ABLATION.k26f1",
+        "sha256": "560e8ae9e44314196a1da5e041bdf8a0390c085255cd4354c35edbd11ea5c901"
+      },
+      "row_seal_sha256": "710b646de7f2c0d217776c5b61e7ffb1550cd1f1fe2a16bc2240345d97d45473",
+      "teacher_access_at_inference": false,
+      "within_0_98_bpw": true
+    },
+    {
+      "ablation_of": null,
+      "candidate": "N2_FUNCTIONAL_CODEBOOK_K8_I32_O80",
+      "complete_bpw": 0.8830562773204985,
+      "complete_physical_bytes": 4861246,
+      "deterministic_decode": true,
+      "family": "N2",
+      "frozen_score_metrics": {
+        "all_tokens": {
+          "candidate": {
+            "cosine_mean": 0.5841624736785889,
+            "cosine_min": -0.08108949661254883,
+            "cosine_p10": 0.45236918330192566,
+            "norm_ratio": 0.8646034002304077,
+            "normalized_rmse": 0.766142725944519,
+            "relative_l2": 0.766137957572937
+          },
+          "parent": {
+            "cosine_mean": 0.18443579971790314,
+            "cosine_min": -0.05799274891614914,
+            "cosine_p10": 0.073348768055439,
+            "norm_ratio": 2.578333854675293,
+            "normalized_rmse": 2.549161434173584,
+            "relative_l2": 2.549118757247925
+          }
+        },
+        "candidate_hidden_sha256": "38fc634cad446ee399e4b0288fd476355d553a7bb704620376fe063291d50d6e",
+        "candidate_output_sha256": "acb29cc6f0dc69e92af348523ec747fe3589c9c355891ebd54a1a0f7913bc489",
+        "domains": {
+          "code": {
+            "ci95_high": 0.8325614617930518,
+            "ci95_low": 0.5719732244809469,
+            "mean": 0.7004263069894578,
+            "n": 9
+          },
+          "prose": {
+            "ci95_high": 1.2863431196946364,
+            "ci95_low": 0.5860444058592503,
+            "mean": 0.892256498336792,
+            "n": 13
+          },
+          "reasoning": {
+            "ci95_high": 1.1910927444696426,
+            "ci95_low": 0.3942771404981613,
+            "mean": 0.7149575278162956,
+            "n": 8
+          },
+          "tool_format": {
+            "ci95_high": 1.2428687612215679,
+            "ci95_low": -0.754879355430603,
+            "mean": 0.19120905796686807,
+            "n": 6
+          }
+        },
+        "frozen_split": "LR12_CHANGED_ORDER_AND_SUFFIX_NO_REFIT",
+        "immediate_residual_hidden": {
+          "candidate": {
+            "cosine_mean": 0.9941714406013489,
+            "cosine_min": 0.9567010402679443,
+            "cosine_p10": 0.9748231172561646,
+            "norm_ratio": 0.9912937879562378,
+            "normalized_rmse": 0.10970223695039749,
+            "relative_l2": 0.10970228910446167,
+            "tokens": 36
+          },
+          "paired_relative_l2_improvement": {
+            "ci95_high": 0.06730592563463789,
+            "ci95_low": 0.006974977689484755,
+            "mean": 0.037652486081545554,
+            "n": 36
+          },
+          "parent": {
+            "cosine_mean": 0.9925264716148376,
+            "cosine_min": 0.9684832096099854,
+            "cosine_p10": 0.9817931652069092,
+            "norm_ratio": 0.9709984660148621,
+            "normalized_rmse": 0.1452856957912445,
+            "relative_l2": 0.14528584480285645,
+            "tokens": 36
+          }
+        },
+        "isolated_regression": {
+          "candidate": {
+            "cosine_mean": 0.7540132403373718,
+            "cosine_min": 0.6134334802627563,
+            "cosine_p10": 0.7040934562683105,
+            "norm_ratio": 0.7375732660293579,
+            "normalized_rmse": 0.703941285610199,
+            "relative_l2": 0.7039413452148438
+          },
+          "parent": {
+            "cosine_mean": 0.9134424924850464,
+            "cosine_min": 0.7387098073959351,
+            "cosine_p10": 0.8825187087059021,
+            "norm_ratio": 0.7918260097503662,
+            "normalized_rmse": 0.47944605350494385,
+            "relative_l2": 0.4794459939002991
+          },
+          "tokens": 32
+        },
+        "low_margin_routed": {
+          "candidate": {
+            "cosine_mean": 0.3372543454170227,
+            "cosine_min": 0.18981868028640747,
+            "cosine_p10": 0.21930581331253052,
+            "norm_ratio": 1.0547802448272705,
+            "normalized_rmse": 1.291415810585022,
+            "relative_l2": 1.2914159297943115,
+            "tokens": 2
+          },
+          "paired_relative_l2_improvement": {
+            "ci95_high": 2.400099754333496,
+            "ci95_low": 0.813494086265564,
+            "mean": 1.60679692029953,
+            "n": 2
+          },
+          "parent": {
+            "cosine_mean": 0.15445663034915924,
+            "cosine_min": 0.07870714366436005,
+            "cosine_p10": 0.093857042491436,
+            "norm_ratio": 2.545947790145874,
+            "normalized_rmse": 2.568632125854492,
+            "relative_l2": 2.5686323642730713,
+            "tokens": 2
+          },
+          "threshold": 0.0001910477876663208
+        },
+        "routed_tokens": {
+          "candidate": {
+            "cosine_mean": 0.5949388742446899,
+            "cosine_min": 0.08952400833368301,
+            "cosine_p10": 0.2828519940376282,
+            "norm_ratio": 1.0149204730987549,
+            "normalized_rmse": 0.6056958436965942,
+            "relative_l2": 0.6056955456733704,
+            "tokens": 36
+          },
+          "cosine_gain": 0.14705070853233337,
+          "paired_relative_l2_improvement": {
+            "ci95_high": 0.940463339123461,
+            "ci95_low": 0.43545223627653384,
+            "mean": 0.6880579392115275,
+            "n": 36
+          },
+          "parent": {
+            "cosine_mean": 0.44788816571235657,
+            "cosine_min": 0.07870714366436005,
+            "cosine_p10": 0.1269996464252472,
+            "norm_ratio": 0.9441009163856506,
+            "normalized_rmse": 0.837938666343689,
+            "relative_l2": 0.837938666343689,
+            "tokens": 36
+          },
+          "relative_l2_rescue_fraction": 0.8211316255566056
+        }
+      },
+      "physical_payload": {
+        "all_payload_bytes_counted": true,
+        "base_component_bytes": 4022298,
+        "bytes": 4861246,
+        "complete_bpw": 0.8830562773204985,
+        "complete_ceiling_bytes": 5394923,
+        "component_count": 23,
+        "doctor_component_bytes": 833728,
+        "hash_verified": true,
+        "header_overhead_bytes": 5220,
+        "logical_weights_represented": 44040192,
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/gravity_nonlinear/N2_FUNCTIONAL_CODEBOOK_K8_I32_O80.k26f1",
+        "sha256": "1a91c76d0904563fcf74458452738a81d977d10f9c272a12f923c27014fc9567"
+      },
+      "row_seal_sha256": "fe457152198f616948ba69b18b6e27de2d7cff5b40fde53e6c1ffa773fe64817",
+      "teacher_access_at_inference": false,
+      "within_0_98_bpw": true
+    },
+    {
+      "ablation_of": "N2_FUNCTIONAL_CODEBOOK_K8_I32_O80",
+      "candidate": "N2_CONSTANT_CODEBOOK_K1_ABLATION",
+      "complete_bpw": 0.7339900788806734,
+      "complete_physical_bytes": 4040633,
+      "deterministic_decode": true,
+      "family": "N2",
+      "frozen_score_metrics": {
+        "all_tokens": {
+          "candidate": {
+            "cosine_mean": 0.5825809836387634,
+            "cosine_min": 0.30562666058540344,
+            "cosine_p10": 0.4414363205432892,
+            "norm_ratio": 0.481937974691391,
+            "normalized_rmse": 0.7754279375076294,
+            "relative_l2": 0.7754247784614563
+          },
+          "parent": {
+            "cosine_mean": 0.18443579971790314,
+            "cosine_min": -0.05799274891614914,
+            "cosine_p10": 0.073348768055439,
+            "norm_ratio": 2.578333854675293,
+            "normalized_rmse": 2.549161434173584,
+            "relative_l2": 2.549118757247925
+          }
+        },
+        "candidate_hidden_sha256": "9f0eb3fad4846dee7f5a8cd0d1b7d048b1d7e2f0b823d201b2ecd23245bf83a3",
+        "candidate_output_sha256": "fae7cc2fa75977a03685f56ed6a618c0be791e3a3e59d812ac57b0365ff076e7",
+        "domains": {
+          "code": {
+            "ci95_high": 1.0102802515029907,
+            "ci95_low": 0.11791756881607904,
+            "mean": 0.5676088134447733,
+            "n": 9
+          },
+          "prose": {
+            "ci95_high": 1.2998320433955928,
+            "ci95_low": 0.42753435843265974,
+            "mean": 0.8319649283702557,
+            "n": 13
+          },
+          "reasoning": {
+            "ci95_high": 1.2041591817513109,
+            "ci95_low": 0.07533811833709479,
+            "mean": 0.6060782596468925,
+            "n": 8
+          },
+          "tool_format": {
+            "ci95_high": 1.564855436484019,
+            "ci95_low": -0.07931721210479736,
+            "mean": 0.6415011088053385,
+            "n": 6
+          }
+        },
+        "frozen_split": "LR12_CHANGED_ORDER_AND_SUFFIX_NO_REFIT",
+        "immediate_residual_hidden": {
+          "candidate": {
+            "cosine_mean": 0.991276741027832,
+            "cosine_min": 0.9735022783279419,
+            "cosine_p10": 0.9772092700004578,
+            "norm_ratio": 0.9409950375556946,
+            "normalized_rmse": 0.16948425769805908,
+            "relative_l2": 0.1694844365119934,
+            "tokens": 36
+          },
+          "paired_relative_l2_improvement": {
+            "ci95_high": 0.009218048252579238,
+            "ci95_low": -0.01277834036736749,
+            "mean": -0.0016692420209033622,
+            "n": 36
+          },
+          "parent": {
+            "cosine_mean": 0.9925264716148376,
+            "cosine_min": 0.9684832096099854,
+            "cosine_p10": 0.9817931652069092,
+            "norm_ratio": 0.9709984660148621,
+            "normalized_rmse": 0.1452856957912445,
+            "relative_l2": 0.14528584480285645,
+            "tokens": 36
+          }
+        },
+        "isolated_regression": {
+          "candidate": {
+            "cosine_mean": 0.7713336944580078,
+            "cosine_min": 0.6560153365135193,
+            "cosine_p10": 0.7450804710388184,
+            "norm_ratio": 0.49989616870880127,
+            "normalized_rmse": 0.7111236453056335,
+            "relative_l2": 0.7111235857009888
+          },
+          "parent": {
+            "cosine_mean": 0.9134424924850464,
+            "cosine_min": 0.7387098073959351,
+            "cosine_p10": 0.8825187087059021,
+            "norm_ratio": 0.7918260097503662,
+            "normalized_rmse": 0.47944605350494385,
+            "relative_l2": 0.4794459939002991
+          },
+          "tokens": 32
+        },
+        "low_margin_routed": {
+          "candidate": {
+            "cosine_mean": 0.49103647470474243,
+            "cosine_min": 0.4788156747817993,
+            "cosine_p10": 0.481259822845459,
+            "norm_ratio": 0.38043826818466187,
+            "normalized_rmse": 0.8774323463439941,
+            "relative_l2": 0.8774324059486389,
+            "tokens": 2
+          },
+          "paired_relative_l2_improvement": {
+            "ci95_high": 2.3988840579986572,
+            "ci95_low": 1.356545090675354,
+            "mean": 1.8777145743370056,
+            "n": 2
+          },
+          "parent": {
+            "cosine_mean": 0.15445663034915924,
+            "cosine_min": 0.07870714366436005,
+            "cosine_p10": 0.093857042491436,
+            "norm_ratio": 2.545947790145874,
+            "normalized_rmse": 2.568632125854492,
+            "relative_l2": 2.5686323642730713,
+            "tokens": 2
+          },
+          "threshold": 0.0001910477876663208
+        },
+        "routed_tokens": {
+          "candidate": {
+            "cosine_mean": 0.6377978920936584,
+            "cosine_min": 0.4006994664669037,
+            "cosine_p10": 0.5104707479476929,
+            "norm_ratio": 0.46237996220588684,
+            "normalized_rmse": 0.7403725981712341,
+            "relative_l2": 0.7403726577758789,
+            "tokens": 36
+          },
+          "cosine_gain": 0.18990972638130188,
+          "paired_relative_l2_improvement": {
+            "ci95_high": 0.961595813309153,
+            "ci95_low": 0.4177802298218012,
+            "mean": 0.6839348922173182,
+            "n": 36
+          },
+          "parent": {
+            "cosine_mean": 0.44788816571235657,
+            "cosine_min": 0.07870714366436005,
+            "cosine_p10": 0.1269996464252472,
+            "norm_ratio": 0.9441009163856506,
+            "normalized_rmse": 0.837938666343689,
+            "relative_l2": 0.837938666343689,
+            "tokens": 36
+          },
+          "relative_l2_rescue_fraction": 0.8162111616135821
+        }
+      },
+      "physical_payload": {
+        "all_payload_bytes_counted": true,
+        "base_component_bytes": 4022298,
+        "bytes": 4040633,
+        "complete_bpw": 0.7339900788806734,
+        "complete_ceiling_bytes": 5394923,
+        "component_count": 16,
+        "doctor_component_bytes": 14336,
+        "hash_verified": true,
+        "header_overhead_bytes": 3999,
+        "logical_weights_represented": 44040192,
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/gravity_nonlinear/N2_CONSTANT_CODEBOOK_K1_ABLATION.k26f1",
+        "sha256": "9a8eea5181dab92a9f3a0ecdb54b7bb7462344ff860aa18a605cb61d6560699b"
+      },
+      "row_seal_sha256": "c764ea88f125a37fb1d15bb6ee039df0645090fce02a98474c5888a18ed6eea4",
+      "teacher_access_at_inference": false,
+      "within_0_98_bpw": true
+    },
+    {
+      "ablation_of": null,
+      "candidate": "N4_QUANTILE_SPLINE_I16_K16_O80",
+      "complete_bpw": 0.8694176446823847,
+      "complete_physical_bytes": 4786165,
+      "deterministic_decode": true,
+      "family": "N4",
+      "frozen_score_metrics": {
+        "all_tokens": {
+          "candidate": {
+            "cosine_mean": 0.5726267099380493,
+            "cosine_min": 0.12752722203731537,
+            "cosine_p10": 0.4056176245212555,
+            "norm_ratio": 0.7060313820838928,
+            "normalized_rmse": 0.6749557256698608,
+            "relative_l2": 0.6749569177627563
+          },
+          "parent": {
+            "cosine_mean": 0.18443579971790314,
+            "cosine_min": -0.05799274891614914,
+            "cosine_p10": 0.073348768055439,
+            "norm_ratio": 2.578333854675293,
+            "normalized_rmse": 2.549161434173584,
+            "relative_l2": 2.549118757247925
+          }
+        },
+        "candidate_hidden_sha256": "9e64178ca7176f4c22d449d2bb473dfdee64b1c4c7177fe4568c4f89d63b5194",
+        "candidate_output_sha256": "180fb0b424d73a58868c484825f8333c42e485d695d2811f72faed87b1af871b",
+        "domains": {
+          "code": {
+            "ci95_high": 1.1234875553184085,
+            "ci95_low": 0.45720395868023234,
+            "mean": 0.7974133458402421,
+            "n": 9
+          },
+          "prose": {
+            "ci95_high": 1.3214980850426052,
+            "ci95_low": 0.558604353093184,
+            "mean": 0.9306402000097128,
+            "n": 13
+          },
+          "reasoning": {
+            "ci95_high": 1.2771924092434346,
+            "ci95_low": 0.30740899611264466,
+            "mean": 0.7639277502894402,
+            "n": 8
+          },
+          "tool_format": {
+            "ci95_high": 1.5687104264895122,
+            "ci95_low": 0.22618967294692993,
+            "mean": 0.8462963501612345,
+            "n": 6
+          }
+        },
+        "frozen_split": "LR12_CHANGED_ORDER_AND_SUFFIX_NO_REFIT",
+        "immediate_residual_hidden": {
+          "candidate": {
+            "cosine_mean": 0.9961265921592712,
+            "cosine_min": 0.9777756929397583,
+            "cosine_p10": 0.9836795330047607,
+            "norm_ratio": 0.9743109345436096,
+            "normalized_rmse": 0.10758345574140549,
+            "relative_l2": 0.10758356750011444,
+            "tokens": 36
+          },
+          "paired_relative_l2_improvement": {
+            "ci95_high": 0.050411890688378154,
+            "ci95_low": 0.026454839766180762,
+            "mean": 0.038001218267406024,
+            "n": 36
+          },
+          "parent": {
+            "cosine_mean": 0.9925264716148376,
+            "cosine_min": 0.9684832096099854,
+            "cosine_p10": 0.9817931652069092,
+            "norm_ratio": 0.9709984660148621,
+            "normalized_rmse": 0.1452856957912445,
+            "relative_l2": 0.14528584480285645,
+            "tokens": 36
+          }
+        },
+        "isolated_regression": {
+          "candidate": {
+            "cosine_mean": 0.7737727165222168,
+            "cosine_min": 0.6500500440597534,
+            "cosine_p10": 0.7036893367767334,
+            "norm_ratio": 0.552181601524353,
+            "normalized_rmse": 0.6900461316108704,
+            "relative_l2": 0.6900460720062256
+          },
+          "parent": {
+            "cosine_mean": 0.9134424924850464,
+            "cosine_min": 0.7387098073959351,
+            "cosine_p10": 0.8825187087059021,
+            "norm_ratio": 0.7918260097503662,
+            "normalized_rmse": 0.47944605350494385,
+            "relative_l2": 0.4794459939002991
+          },
+          "tokens": 32
+        },
+        "low_margin_routed": {
+          "candidate": {
+            "cosine_mean": 0.4683144986629486,
+            "cosine_min": 0.4649430811405182,
+            "cosine_p10": 0.4656173586845398,
+            "norm_ratio": 0.6688346862792969,
+            "normalized_rmse": 0.909815788269043,
+            "relative_l2": 0.9098158478736877,
+            "tokens": 2
+          },
+          "paired_relative_l2_improvement": {
+            "ci95_high": 2.3934319019317627,
+            "ci95_low": 1.3138964176177979,
+            "mean": 1.8536641597747803,
+            "n": 2
+          },
+          "parent": {
+            "cosine_mean": 0.15445663034915924,
+            "cosine_min": 0.07870714366436005,
+            "cosine_p10": 0.093857042491436,
+            "norm_ratio": 2.545947790145874,
+            "normalized_rmse": 2.568632125854492,
+            "relative_l2": 2.5686323642730713,
+            "tokens": 2
+          },
+          "threshold": 0.0001910477876663208
+        },
+        "routed_tokens": {
+          "candidate": {
+            "cosine_mean": 0.7358700037002563,
+            "cosine_min": 0.33352747559547424,
+            "cosine_p10": 0.4683144986629486,
+            "norm_ratio": 0.8075935244560242,
+            "normalized_rmse": 0.4561344087123871,
+            "relative_l2": 0.4561343193054199,
+            "tokens": 36
+          },
+          "cosine_gain": 0.2879818379878998,
+          "paired_relative_l2_improvement": {
+            "ci95_high": 1.0874991214316752,
+            "ci95_low": 0.6194838043716219,
+            "mean": 0.8462289671103159,
+            "n": 36
+          },
+          "parent": {
+            "cosine_mean": 0.44788816571235657,
+            "cosine_min": 0.07870714366436005,
+            "cosine_p10": 0.1269996464252472,
+            "norm_ratio": 0.9441009163856506,
+            "normalized_rmse": 0.837938666343689,
+            "relative_l2": 0.837938666343689,
+            "tokens": 36
+          },
+          "relative_l2_rescue_fraction": 1.0098936844659543
+        }
+      },
+      "physical_payload": {
+        "all_payload_bytes_counted": true,
+        "base_component_bytes": 4022298,
+        "bytes": 4786165,
+        "complete_bpw": 0.8694176446823847,
+        "complete_ceiling_bytes": 5394923,
+        "component_count": 23,
+        "doctor_component_bytes": 758656,
+        "hash_verified": true,
+        "header_overhead_bytes": 5211,
+        "logical_weights_represented": 44040192,
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/gravity_nonlinear/N4_QUANTILE_SPLINE_I16_K16_O80.k26f1",
+        "sha256": "f7d861006c070b965e9a367a3486059b3f5398d12e42bdd236ba4e14328992f5"
+      },
+      "row_seal_sha256": "01efe05a08e10753633f82807a440d23cb62898ad06e236707828067da73ab15",
+      "teacher_access_at_inference": false,
+      "within_0_98_bpw": true
+    },
+    {
+      "ablation_of": "N4_QUANTILE_SPLINE_I16_K16_O80",
+      "candidate": "N4_AFFINE_I16_O80_ABLATION",
+      "complete_bpw": 0.8623481023879278,
+      "complete_physical_bytes": 4747247,
+      "deterministic_decode": true,
+      "family": "N4",
+      "frozen_score_metrics": {
+        "all_tokens": {
+          "candidate": {
+            "cosine_mean": 0.60167396068573,
+            "cosine_min": 0.2884289622306824,
+            "cosine_p10": 0.4646919071674347,
+            "norm_ratio": 0.5644023418426514,
+            "normalized_rmse": 0.7293685674667358,
+            "relative_l2": 0.7293674349784851
+          },
+          "parent": {
+            "cosine_mean": 0.18443579971790314,
+            "cosine_min": -0.05799274891614914,
+            "cosine_p10": 0.073348768055439,
+            "norm_ratio": 2.578333854675293,
+            "normalized_rmse": 2.549161434173584,
+            "relative_l2": 2.549118757247925
+          }
+        },
+        "candidate_hidden_sha256": "ad14049b01a0af0a5b92814fdddb378ecb2131a689d316c576ca087bb2552ea3",
+        "candidate_output_sha256": "50f611a66c01b2295010606ccbcb76ed2f96c6e0ba0c18b4600bab309d8315f0",
+        "domains": {
+          "code": {
+            "ci95_high": 1.0049060513575874,
+            "ci95_low": 0.21362830532921684,
+            "mean": 0.610141290558709,
+            "n": 9
+          },
+          "prose": {
+            "ci95_high": 1.28231819661764,
+            "ci95_low": 0.49457521186425135,
+            "mean": 0.8548231583375198,
+            "n": 13
+          },
+          "reasoning": {
+            "ci95_high": 1.2036720365285873,
+            "ci95_low": 0.12555991113185883,
+            "mean": 0.6360910832881927,
+            "n": 8
+          },
+          "tool_format": {
+            "ci95_high": 1.4911993940671284,
+            "ci95_low": -0.0002828240394592285,
+            "mean": 0.6936938365300497,
+            "n": 6
+          }
+        },
+        "frozen_split": "LR12_CHANGED_ORDER_AND_SUFFIX_NO_REFIT",
+        "immediate_residual_hidden": {
+          "candidate": {
+            "cosine_mean": 0.9934895634651184,
+            "cosine_min": 0.9760206341743469,
+            "cosine_p10": 0.9822953939437866,
+            "norm_ratio": 0.9490870237350464,
+            "normalized_rmse": 0.14656616747379303,
+            "relative_l2": 0.14656631648540497,
+            "tokens": 36
+          },
+          "paired_relative_l2_improvement": {
+            "ci95_high": 0.016852871512269812,
+            "ci95_low": 0.004647990942208303,
+            "mean": 0.010652922352568971,
+            "n": 36
+          },
+          "parent": {
+            "cosine_mean": 0.9925264716148376,
+            "cosine_min": 0.9684832096099854,
+            "cosine_p10": 0.9817931652069092,
+            "norm_ratio": 0.9709984660148621,
+            "normalized_rmse": 0.1452856957912445,
+            "relative_l2": 0.14528584480285645,
+            "tokens": 36
+          }
+        },
+        "isolated_regression": {
+          "candidate": {
+            "cosine_mean": 0.7882949113845825,
+            "cosine_min": 0.6545310616493225,
+            "cosine_p10": 0.756023645401001,
+            "norm_ratio": 0.5263171195983887,
+            "normalized_rmse": 0.6903218030929565,
+            "relative_l2": 0.6903217434883118
+          },
+          "parent": {
+            "cosine_mean": 0.9134424924850464,
+            "cosine_min": 0.7387098073959351,
+            "cosine_p10": 0.8825187087059021,
+            "norm_ratio": 0.7918260097503662,
+            "normalized_rmse": 0.47944605350494385,
+            "relative_l2": 0.4794459939002991
+          },
+          "tokens": 32
+        },
+        "low_margin_routed": {
+          "candidate": {
+            "cosine_mean": 0.43818938732147217,
+            "cosine_min": 0.411471426486969,
+            "cosine_p10": 0.41681501269340515,
+            "norm_ratio": 0.6048714518547058,
+            "normalized_rmse": 0.9269941449165344,
+            "relative_l2": 0.9269942045211792,
+            "tokens": 2
+          },
+          "paired_relative_l2_improvement": {
+            "ci95_high": 2.3922338485717773,
+            "ci95_low": 1.2908153533935547,
+            "mean": 1.841524600982666,
+            "n": 2
+          },
+          "parent": {
+            "cosine_mean": 0.15445663034915924,
+            "cosine_min": 0.07870714366436005,
+            "cosine_p10": 0.093857042491436,
+            "norm_ratio": 2.545947790145874,
+            "normalized_rmse": 2.568632125854492,
+            "relative_l2": 2.5686323642730713,
+            "tokens": 2
+          },
+          "threshold": 0.0001910477876663208
+        },
+        "routed_tokens": {
+          "candidate": {
+            "cosine_mean": 0.6476077437400818,
+            "cosine_min": 0.3957841098308563,
+            "cosine_p10": 0.42488640546798706,
+            "norm_ratio": 0.5549158453941345,
+            "normalized_rmse": 0.6466177701950073,
+            "relative_l2": 0.6466177701950073,
+            "tokens": 36
+          },
+          "cosine_gain": 0.19971957802772522,
+          "paired_relative_l2_improvement": {
+            "ci95_high": 0.9861893646419048,
+            "ci95_low": 0.4705351249211364,
+            "mean": 0.7181906766361661,
+            "n": 36
+          },
+          "parent": {
+            "cosine_mean": 0.44788816571235657,
+            "cosine_min": 0.07870714366436005,
+            "cosine_p10": 0.1269996464252472,
+            "norm_ratio": 0.9441009163856506,
+            "normalized_rmse": 0.837938666343689,
+            "relative_l2": 0.837938666343689,
+            "tokens": 36
+          },
+          "relative_l2_rescue_fraction": 0.8570921780826295
+        }
+      },
+      "physical_payload": {
+        "all_payload_bytes_counted": true,
+        "base_component_bytes": 4022298,
+        "bytes": 4747247,
+        "complete_bpw": 0.8623481023879278,
+        "complete_ceiling_bytes": 5394923,
+        "component_count": 22,
+        "doctor_component_bytes": 719904,
+        "hash_verified": true,
+        "header_overhead_bytes": 5045,
+        "logical_weights_represented": 44040192,
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/gravity_nonlinear/N4_AFFINE_I16_O80_ABLATION.k26f1",
+        "sha256": "17b6100e5c19cf51d953b241fdbb222185255dcb6d7aca02bc300a9237eeec32"
+      },
+      "row_seal_sha256": "9b96d3c24845edb89871e6fba583d0d2459c2cb27bb6d14c1075128c903453b9",
+      "teacher_access_at_inference": false,
+      "within_0_98_bpw": true
+    },
+    {
+      "ablation_of": null,
+      "candidate": "N6_NATIVE_SWIGLU_W244_INT8",
+      "complete_bpw": 0.9642697288876488,
+      "complete_physical_bytes": 5308328,
+      "deterministic_decode": true,
+      "family": "N6",
+      "frozen_score_metrics": {
+        "all_tokens": {
+          "candidate": {
+            "cosine_mean": 0.6490073204040527,
+            "cosine_min": -0.15099313855171204,
+            "cosine_p10": 0.384660005569458,
+            "norm_ratio": 1.165022373199463,
+            "normalized_rmse": 1.031510829925537,
+            "relative_l2": 1.0315011739730835
+          },
+          "parent": {
+            "cosine_mean": 0.18443579971790314,
+            "cosine_min": -0.05799274891614914,
+            "cosine_p10": 0.073348768055439,
+            "norm_ratio": 2.578333854675293,
+            "normalized_rmse": 2.549161434173584,
+            "relative_l2": 2.549118757247925
+          }
+        },
+        "candidate_hidden_sha256": "e55a66229c5d7b04a4853d8a3e09067f05bff335fbbfce4f25aedb34381fe4ea",
+        "candidate_output_sha256": "26d0c47e5b3b93a30df91a40785277af5727b0e832114e1acbb64d7c66963459",
+        "domains": {
+          "code": {
+            "ci95_high": 0.6386445397304163,
+            "ci95_low": -1.478190170476834,
+            "mean": -0.1566791766219669,
+            "n": 9
+          },
+          "prose": {
+            "ci95_high": 0.22912516616857984,
+            "ci95_low": -4.4788134514139255,
+            "mean": -1.9915526050787706,
+            "n": 13
+          },
+          "reasoning": {
+            "ci95_high": 0.6640621266327799,
+            "ci95_low": -3.9052595905959606,
+            "mean": -0.9544321596622467,
+            "n": 8
+          },
+          "tool_format": {
+            "ci95_high": 0.28079739212989807,
+            "ci95_low": -1.9173991183439891,
+            "mean": -0.7028052608172098,
+            "n": 6
+          }
+        },
+        "frozen_split": "LR12_CHANGED_ORDER_AND_SUFFIX_NO_REFIT",
+        "immediate_residual_hidden": {
+          "candidate": {
+            "cosine_mean": 0.9927381873130798,
+            "cosine_min": 0.9210038781166077,
+            "cosine_p10": 0.9851887822151184,
+            "norm_ratio": 0.9956012964248657,
+            "normalized_rmse": 0.11458934843540192,
+            "relative_l2": 0.11458948254585266,
+            "tokens": 36
+          },
+          "paired_relative_l2_improvement": {
+            "ci95_high": 0.03425080640008674,
+            "ci95_low": -0.024959310537411104,
+            "mean": 0.00767834331943757,
+            "n": 36
+          },
+          "parent": {
+            "cosine_mean": 0.9925264716148376,
+            "cosine_min": 0.9684832096099854,
+            "cosine_p10": 0.9817931652069092,
+            "norm_ratio": 0.9709984660148621,
+            "normalized_rmse": 0.1452856957912445,
+            "relative_l2": 0.14528584480285645,
+            "tokens": 36
+          }
+        },
+        "isolated_regression": {
+          "candidate": {
+            "cosine_mean": 0.5984457731246948,
+            "cosine_min": 0.23118308186531067,
+            "cosine_p10": 0.4936245381832123,
+            "norm_ratio": 0.3700192868709564,
+            "normalized_rmse": 0.8646779656410217,
+            "relative_l2": 0.8646780252456665
+          },
+          "parent": {
+            "cosine_mean": 0.9134424924850464,
+            "cosine_min": 0.7387098073959351,
+            "cosine_p10": 0.8825187087059021,
+            "norm_ratio": 0.7918260097503662,
+            "normalized_rmse": 0.47944605350494385,
+            "relative_l2": 0.4794459939002991
+          },
+          "tokens": 32
+        },
+        "low_margin_routed": {
+          "candidate": {
+            "cosine_mean": 0.2590925991535187,
+            "cosine_min": 0.11225559562444687,
+            "cosine_p10": 0.14162299036979675,
+            "norm_ratio": 2.952700614929199,
+            "normalized_rmse": 2.9525949954986572,
+            "relative_l2": 2.9525952339172363,
+            "tokens": 2
+          },
+          "paired_relative_l2_improvement": {
+            "ci95_high": 1.0581457614898682,
+            "ci95_low": -1.977036952972412,
+            "mean": -0.459445595741272,
+            "n": 2
+          },
+          "parent": {
+            "cosine_mean": 0.15445663034915924,
+            "cosine_min": 0.07870714366436005,
+            "cosine_p10": 0.093857042491436,
+            "norm_ratio": 2.545947790145874,
+            "normalized_rmse": 2.568632125854492,
+            "relative_l2": 2.5686323642730713,
+            "tokens": 2
+          },
+          "threshold": 0.0001910477876663208
+        },
+        "routed_tokens": {
+          "candidate": {
+            "cosine_mean": 0.614277720451355,
+            "cosine_min": -0.15099313855171204,
+            "cosine_p10": 0.11427567899227142,
+            "norm_ratio": 1.7007081508636475,
+            "normalized_rmse": 1.4421231746673584,
+            "relative_l2": 1.442123293876648,
+            "tokens": 36
+          },
+          "cosine_gain": 0.1663895547389984,
+          "paired_relative_l2_improvement": {
+            "ci95_high": -0.08652573869460153,
+            "ci95_low": -2.2673681336765488,
+            "mean": -1.0875718138284154,
+            "n": 36
+          },
+          "parent": {
+            "cosine_mean": 0.44788816571235657,
+            "cosine_min": 0.07870714366436005,
+            "cosine_p10": 0.1269996464252472,
+            "norm_ratio": 0.9441009163856506,
+            "normalized_rmse": 0.837938666343689,
+            "relative_l2": 0.837938666343689,
+            "tokens": 36
+          },
+          "relative_l2_rescue_fraction": -1.2979133885466707
+        }
+      },
+      "physical_payload": {
+        "all_payload_bytes_counted": true,
+        "base_component_bytes": 5306272,
+        "bytes": 5308328,
+        "complete_bpw": 0.9642697288876488,
+        "complete_ceiling_bytes": 5394923,
+        "component_count": 8,
+        "doctor_component_bytes": 0,
+        "hash_verified": true,
+        "header_overhead_bytes": 2056,
+        "logical_weights_represented": 44040192,
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/gravity_nonlinear/N6_NATIVE_SWIGLU_W244_INT8.k26f1",
+        "sha256": "caf781d9c7f0dc3c3b75e5d53dc96a684806f39c7acbc79171d50142ace8d6a2"
+      },
+      "row_seal_sha256": "365f71d35356a305aaa179ba425c97cf945b9ebeca7e544fb1bd9fb1ce16103d",
+      "teacher_access_at_inference": false,
+      "within_0_98_bpw": true
+    },
+    {
+      "ablation_of": "N6_NATIVE_SWIGLU_W244_INT8",
+      "candidate": "N6_LINEAR_NATIVE_R366_ABLATION",
+      "complete_bpw": 0.9641260419573102,
+      "complete_physical_bytes": 5307537,
+      "deterministic_decode": true,
+      "family": "N6",
+      "frozen_score_metrics": {
+        "all_tokens": {
+          "candidate": {
+            "cosine_mean": 0.3646111488342285,
+            "cosine_min": 0.012130816467106342,
+            "cosine_p10": 0.1370188295841217,
+            "norm_ratio": 1.4366341829299927,
+            "normalized_rmse": 1.3182599544525146,
+            "relative_l2": 1.3182603120803833
+          },
+          "parent": {
+            "cosine_mean": 0.18443579971790314,
+            "cosine_min": -0.05799274891614914,
+            "cosine_p10": 0.073348768055439,
+            "norm_ratio": 2.578333854675293,
+            "normalized_rmse": 2.549161434173584,
+            "relative_l2": 2.549118757247925
+          }
+        },
+        "candidate_hidden_sha256": "aa9faf23c00c44ad41c535f34d56a86036659186d31ca0e2c0f4c204744411b6",
+        "candidate_output_sha256": "5d64013186dd960d4cbad901ba4d8ef13241c1feb39e7817aee2de06eb65e3f3",
+        "domains": {
+          "code": {
+            "ci95_high": 0.6802010323438379,
+            "ci95_low": 0.21471963657273185,
+            "mean": 0.4422035581535763,
+            "n": 9
+          },
+          "prose": {
+            "ci95_high": 0.4031311059227357,
+            "ci95_low": -2.745451128941316,
+            "mean": -0.7659397835914905,
+            "n": 13
+          },
+          "reasoning": {
+            "ci95_high": 0.47899354211986084,
+            "ci95_low": 0.004085540771484375,
+            "mean": 0.2333684377372265,
+            "n": 8
+          },
+          "tool_format": {
+            "ci95_high": 0.12856948375701904,
+            "ci95_low": -2.87126624584198,
+            "mean": -0.9098576704661051,
+            "n": 6
+          }
+        },
+        "frozen_split": "LR12_CHANGED_ORDER_AND_SUFFIX_NO_REFIT",
+        "immediate_residual_hidden": {
+          "candidate": {
+            "cosine_mean": 0.9925544261932373,
+            "cosine_min": 0.9724334478378296,
+            "cosine_p10": 0.9805030226707458,
+            "norm_ratio": 0.9823055863380432,
+            "normalized_rmse": 0.1372550129890442,
+            "relative_l2": 0.13725516200065613,
+            "tokens": 36
+          },
+          "paired_relative_l2_improvement": {
+            "ci95_high": 0.011206404360321666,
+            "ci95_low": -0.011538010210238604,
+            "mean": 0.0013477306347340345,
+            "n": 36
+          },
+          "parent": {
+            "cosine_mean": 0.9925264716148376,
+            "cosine_min": 0.9684832096099854,
+            "cosine_p10": 0.9817931652069092,
+            "norm_ratio": 0.9709984660148621,
+            "normalized_rmse": 0.1452856957912445,
+            "relative_l2": 0.14528584480285645,
+            "tokens": 36
+          }
+        },
+        "isolated_regression": {
+          "candidate": {
+            "cosine_mean": 0.5464370250701904,
+            "cosine_min": 0.21629838645458221,
+            "cosine_p10": 0.4029335379600525,
+            "norm_ratio": 0.5270119309425354,
+            "normalized_rmse": 0.863347053527832,
+            "relative_l2": 0.863347053527832
+          },
+          "parent": {
+            "cosine_mean": 0.9134424924850464,
+            "cosine_min": 0.7387098073959351,
+            "cosine_p10": 0.8825187087059021,
+            "norm_ratio": 0.7918260097503662,
+            "normalized_rmse": 0.47944605350494385,
+            "relative_l2": 0.4794459939002991
+          },
+          "tokens": 32
+        },
+        "low_margin_routed": {
+          "candidate": {
+            "cosine_mean": 0.2625613808631897,
+            "cosine_min": 0.012130816467106342,
+            "cosine_p10": 0.06221693381667137,
+            "norm_ratio": 4.984836578369141,
+            "normalized_rmse": 4.948047637939453,
+            "relative_l2": 4.9480485916137695,
+            "tokens": 2
+          },
+          "paired_relative_l2_improvement": {
+            "ci95_high": 0.7154170274734497,
+            "ci95_low": -5.7556562423706055,
+            "mean": -2.520119607448578,
+            "n": 2
+          },
+          "parent": {
+            "cosine_mean": 0.15445663034915924,
+            "cosine_min": 0.07870714366436005,
+            "cosine_p10": 0.093857042491436,
+            "norm_ratio": 2.545947790145874,
+            "normalized_rmse": 2.568632125854492,
+            "relative_l2": 2.5686323642730713,
+            "tokens": 2
+          },
+          "threshold": 0.0001910477876663208
+        },
+        "routed_tokens": {
+          "candidate": {
+            "cosine_mean": 0.6068990230560303,
+            "cosine_min": 0.012130816467106342,
+            "cosine_p10": 0.21128840744495392,
+            "norm_ratio": 1.173596978187561,
+            "normalized_rmse": 0.9460296630859375,
+            "relative_l2": 0.9460296630859375,
+            "tokens": 36
+          },
+          "cosine_gain": 0.1590108573436737,
+          "paired_relative_l2_improvement": {
+            "ci95_high": 0.3040371665110192,
+            "ci95_low": -1.1389099427188436,
+            "mean": -0.26582176900572246,
+            "n": 36
+          },
+          "parent": {
+            "cosine_mean": 0.44788816571235657,
+            "cosine_min": 0.07870714366436005,
+            "cosine_p10": 0.1269996464252472,
+            "norm_ratio": 0.9441009163856506,
+            "normalized_rmse": 0.837938666343689,
+            "relative_l2": 0.837938666343689,
+            "tokens": 36
+          },
+          "relative_l2_rescue_fraction": -0.3172329666628524
+        }
+      },
+      "physical_payload": {
+        "all_payload_bytes_counted": true,
+        "base_component_bytes": 5305784,
+        "bytes": 5307537,
+        "complete_bpw": 0.9641260419573102,
+        "complete_ceiling_bytes": 5394923,
+        "component_count": 6,
+        "doctor_component_bytes": 0,
+        "hash_verified": true,
+        "header_overhead_bytes": 1753,
+        "logical_weights_represented": 44040192,
+        "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/final_chapter/gravity_nonlinear/N6_LINEAR_NATIVE_R366_ABLATION.k26f1",
+        "sha256": "79c8f768e7c460fb99964ad76387217e1ddd5fcf86f6387d3aaa97ae9b4b51b8"
+      },
+      "row_seal_sha256": "68dd20794fe32f420ff578a083b18241ef66843d038d0e69ef192429a0739a46",
+      "teacher_access_at_inference": false,
+      "within_0_98_bpw": true
+    }
+  ],
+  "unresolved_branches": []
+}

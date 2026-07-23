@@ -1,0 +1,45 @@
+{
+  "acceptance": {
+    "complete_BPW_below_1": true,
+    "direct_compact_execution": true,
+    "doctor_same_rate": true,
+    "repeatable": true,
+    "sealed": true,
+    "treatment_improves": true
+  },
+  "at": "2026-07-18T23:16:51Z",
+  "base_compact_bits": "ternary A+B+scale",
+  "complete_bpw": 0.9899,
+  "doctor_bits": 207024,
+  "doctor_within_same_rate": true,
+  "expert": 56,
+  "expert_tensor": "block.0.mlp.mlp1_weight.blocks (MXFP4 [128,5760,2880])",
+  "layer": 0,
+  "model_never_densely_materialized": true,
+  "n_experts": 128,
+  "note": "parent-bound sub-bit F2 on a REAL gpt-oss-120b expert (MXFP4), executed directly through Candidate C's ternary operator with same-budget Doctor rescue. No full-model quality claimed (F2 is a bounded component test).",
+  "parent": "openai/gpt-oss-120b",
+  "peak_rss_bytes": 26132480,
+  "reference_output_checksum": "f80933dbc9919263",
+  "repeatable": true,
+  "revision": "b5c939de8f754692c1647ca79fbf85e8c1e70f8a",
+  "router_tensor": "block.0.mlp.gate.weight (BF16 [128,2880])",
+  "schema": "hawking.gpt_oss_120b_f2.v1",
+  "selected_experts": [
+    56,
+    123,
+    95,
+    29
+  ],
+  "sha256": "6000282b8124244caa42a7e0956f8b2baeae35ed92645f33b8b8b465330fcd3e",
+  "shard": "model--00001-of-00007.safetensors",
+  "source_bytes_read": 1520640,
+  "subbit_below_one_bpw": true,
+  "tested_slice": [
+    512,
+    512
+  ],
+  "top_k": 4,
+  "treated_divergence": 0.8986,
+  "untreated_divergence": 0.9946
+}

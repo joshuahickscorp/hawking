@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.hawking.glm52.gravity</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/bin/caffeinate</string>
+    <string>-dimsu</string>
+    <string>/Users/scammermike/Downloads/hawking/.venv/glm52/bin/python</string>
+    <string>/Users/scammermike/Downloads/hawking/tools/condense/glm52_worker.py</string>
+    <string>--config</string>
+    <string>/Users/scammermike/Downloads/hawking/GLM52_WORKER_CONFIG.json</string>
+    <string>--under-caffeinate</string>
+    <string>run</string>
+  </array>
+
+  <key>WorkingDirectory</key>
+  <string>/Users/scammermike/Downloads/hawking</string>
+
+  <key>RunAtLoad</key>
+  <true/>
+
+  <key>KeepAlive</key>
+  <dict>
+    <key>Crashed</key>
+    <true/>
+    <key>SuccessfulExit</key>
+    <false/>
+  </dict>
+
+  <key>ProcessType</key>
+  <string>Background</string>
+
+  <key>ThrottleInterval</key>
+  <integer>30</integer>
+
+  <key>StandardOutPath</key>
+  <string>/Users/scammermike/Library/Logs/com.hawking.glm52.gravity.stdout.log</string>
+
+  <key>StandardErrorPath</key>
+  <string>/Users/scammermike/Library/Logs/com.hawking.glm52.gravity.stderr.log</string>
+
+  <key>Umask</key>
+  <integer>63</integer>
+</dict>
+</plist>

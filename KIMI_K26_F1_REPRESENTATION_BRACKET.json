@@ -1,0 +1,71 @@
+{
+  "candidate_results": {
+    "P1": {
+      "actual_bpw": 0.9534483410063244,
+      "seal_sha256": "6308701a90debd16f50faa08d090710b935550f560869d0501aae7f66c947fa5",
+      "verdict": "DEGRADED_F1"
+    },
+    "P5": {
+      "actual_bpw": 0.4778409685407366,
+      "seal_sha256": "f4ccbb23694bb0519aafe91e5011f342f079c7ed2a598001f8e46328d0f4e793",
+      "verdict": "COLLAPSE_F1"
+    }
+  },
+  "claim_boundary": "REAL F1 SENTINEL-EXPERT OUTPUT EVIDENCE; not end-to-end capability",
+  "collapse_location": {
+    "before_or_after_residual_propagation": "VISIBLE_AT_FIRST_RESIDUAL_ADD",
+    "before_or_after_routing": "AFTER_ROUTING",
+    "downstream_propagation_tested": false
+  },
+  "corpus_seal_sha256": "91e6cdd09bfcc293f67dcdf7d7c675c4a615aeccac1ea4147411e61636ffd5f6",
+  "current_best_bpw": 0.9534483410063244,
+  "current_best_candidate": "P1",
+  "current_best_capability": {
+    "cosine_mean": 0.8381807804107666,
+    "cosine_min": 0.7619336843490601,
+    "cosine_p10": 0.808784008026123,
+    "evidence_level": "F1_SENTINEL_EXPERT_OUTPUT",
+    "norm_ratio": 0.5701561570167542,
+    "normalized_rmse": 0.6126910448074341,
+    "relative_l2": 0.6126910448074341
+  },
+  "current_doctor_allocation": {
+    "bpw": 0.2217296418689546,
+    "bytes": 1220627,
+    "recovery_fraction": 0.13841840465857969
+  },
+  "current_dominant_bottleneck": "ROUTED_EXPERT_REPRESENTATION",
+  "current_failure_mode": "EXPERT_OUTPUT_DEGRADATION_AFTER_ROUTING",
+  "current_next_experiment": "F1_SHARED_GRAMMAR_VS_PROTECTED_ISLANDS_ON_CACHED_TEACHER_SEAM",
+  "current_scientific_hypothesis": "If PQ+residual Doctor fails, Kimi expert intelligence prefers shared grammar or protected-island geometry over independent weight reconstruction; if it survives, the next uncertainty is layer generalization.",
+  "decision": "NO_PROMOTION",
+  "diagnosis_metrics_reason_next_decision": {
+    "diagnosis": "EXPERT_OUTPUT_DEGRADATION_AFTER_ROUTING",
+    "metrics": {
+      "cosine_mean": 0.8381807804107666,
+      "cosine_min": 0.7619336843490601,
+      "cosine_p10": 0.808784008026123,
+      "evidence_level": "F1_SENTINEL_EXPERT_OUTPUT",
+      "norm_ratio": 0.5701561570167542,
+      "normalized_rmse": 0.6126910448074341,
+      "relative_l2": 0.6126910448074341
+    },
+    "next_decision": "NO_PROMOTION",
+    "reason": "Neither concrete PQ+Doctor representation survived F1; retain the envelopes but retire these representation instances and test a materially different geometry."
+  },
+  "experiment": "P1_AND_P5_F1_REPRESENTATION_BRACKET",
+  "layer": 1,
+  "parent_forwards_repeated": 0,
+  "reason": "Neither concrete PQ+Doctor representation survived F1; retain the envelopes but retire these representation instances and test a materially different geometry.",
+  "runtime_seconds": 7.578760862350464,
+  "schema": "hawking.kimi_k26.f1_representation_bracket.v1",
+  "seal_sha256": "430f42a2e3731e9a4b55ee4c80f7330682266d22cdf42e494c14f04c1cbb5f02",
+  "sealed_at": "2026-07-21T15:35:41Z",
+  "source": {
+    "repo": "moonshotai/Kimi-K2.6",
+    "revision": "7eb5002f6aadc958aed6a9177b7ed26bb94011bb"
+  },
+  "status": "PASS",
+  "teacher_capture_seal_sha256": "a195efcfef2c253c7fc3b908db318e5746e4a4c23fabf0d4008b5d83e941c800",
+  "teacher_captures": 1
+}

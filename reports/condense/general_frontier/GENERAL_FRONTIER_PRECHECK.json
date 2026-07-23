@@ -1,0 +1,45 @@
+{
+  "boundaries": {
+    "bounded_winners_not_auto_promoted": true,
+    "cuda_lane": "blocked on budget",
+    "current_0770_not_auto_champion": true,
+    "giant_lanes": "blocked on source",
+    "no_proxy_overclaim": true,
+    "no_second_heavy_controller": true,
+    "only_real_compute_lane": "120B Apple (Gate-F)"
+  },
+  "cloud_authorization": {
+    "HAWKING_CLOUD_BUDGET_present": false,
+    "cuda_credentials_present": false,
+    "verdict": "CUDA/RunPod lane BLOCKED - no sealed budget. Provisioning plan only; NO paid resource launch. Budget NOT inferred from key presence (Part 28)."
+  },
+  "generated_at": "2026-07-19T02:29:32Z",
+  "handoff": {
+    "accepted": true,
+    "baseline": "b4655883",
+    "baseline_tag": "hawking-second-light-baseline",
+    "expected_main": "e2609f94",
+    "note": "e2609f94 is HEAD=origin/main; accepted handoff. Second-Light + 32-trial accepted as priors, NOT rerun except G0.",
+    "verified_main": "e2609f9452bcc9c97cfa960d6ef362567a048727"
+  },
+  "live_truth": {
+    "classification": "completed (no authoritative_live process)",
+    "frontier_state": "COMPLETE (lease released)",
+    "heavy_controller_alive": false,
+    "second_light_state": "COMPLETE"
+  },
+  "resources": {
+    "disk_free_gb": 559.4,
+    "load_note": "MoP separate CPU load present; one Apple heavy lease policy enforced",
+    "platform": "M3 Ultra 28-core, MPS",
+    "ram_gb": 96.0
+  },
+  "schema": "hawking.general_frontier.precheck.v1",
+  "sha256": "b0da327a6f19af5dcea2aa8aeef8e78c610a01d64465c105dd7ad9ecd4de476e",
+  "sources": {
+    "deepseek_685b": "ABSENT locally (contract deepseek-v3.2-685b.json exists) -> source-authority/adapter prep only",
+    "deepseek_v4_1_6t": "ABSENT (contract exists) -> optional post-frontier, admission-gated, NOT activated",
+    "gpt_oss_120b": "PRESENT (models/gpt-oss-120b, 61GiB, tokenizer+Harmony)",
+    "kimi_1t": "ABSENT locally (contract kimi-k2.6-1t.json exists) -> prep only"
+  }
+}

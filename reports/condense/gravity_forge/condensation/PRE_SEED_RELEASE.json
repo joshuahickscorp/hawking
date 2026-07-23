@@ -1,0 +1,45 @@
+{
+  "binaries": {
+    "hawking": "builds (cargo build --workspace green)"
+  },
+  "generated_at": "2026-07-18T03:26:01Z",
+  "metrics": {
+    "cli_loc": 4851,
+    "hawking_core_src": 52413,
+    "owned_product_src": 88418,
+    "python_spine": 19270,
+    "speculate_crate": 6312,
+    "total_tracked": 336864
+  },
+  "note": "The old implementation is the reference oracle for Seed. Full capability recoverable via git history + sealed packs. Sub-bit-first Gravity law intact.",
+  "packs": [
+    "hawking-legacy-runtime-capsule-v1",
+    "hawking-hide-desktop",
+    "hawking-lab-cli",
+    "hawking-adapters-extra",
+    "hawking-speculate(crate)",
+    "hawking-bench(pack)"
+  ],
+  "rollback": {
+    "command": "git branch -f main hawking-pre-collapse-main",
+    "commit": "088aa661",
+    "tag": "hawking-pre-collapse-main"
+  },
+  "run_readiness": {
+    "forge_program": "materialized, launch-disabled",
+    "gravity_enabled": false,
+    "heavy_run": "NOT launched"
+  },
+  "schema": "hawking.pre_seed_release.v1",
+  "sha256": "a7dbd65baa84a0fa8852ce3b7da31a854934fcdc49701f4e1512656ff9021543",
+  "source_commit": "41bc0e028b3f93658eff0263ca84354320222977",
+  "tag": "hawking-pre-seed-final",
+  "tests": {
+    "decode_parity": "GREEN (bit-identical)",
+    "gravity_law": "34 pass",
+    "hawking_core_lib": "123 pass",
+    "hawking_speculate_lib": "123 pass",
+    "python_active": "165 pass"
+  },
+  "tree": "main (fast-forward of codex/clean-slate-collapse)"
+}

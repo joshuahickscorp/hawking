@@ -1,0 +1,323 @@
+{
+  "causal_interpretation": "At 0.90859 complete BPW, compact expert-output drift reaches the next block before routing, low native margins amplify that drift into expert entry/exit, but routing is secondary: exact route restoration rescues only 10.7% while hidden restoration rescues 100%. Under <=0.98 BPW, learned low-rank state/router/MoE repairs trade high-energy outlier improvement for statistically significant typical-token and low-margin harm.",
+  "config": {
+    "material_row_error": 0.05,
+    "pooling": "WITHIN_SPLIT_MARGIN_QUARTILES",
+    "seed": 26072106,
+    "splits": [
+      "LR01_REFERENCE_PROBES",
+      "LR03_NEW_SPLIT",
+      "LR05_UNTOUCHED"
+    ]
+  },
+  "decision": "CLOSE_TESTED_LOW_RANK_REPAIR_REGION_PENDING_LARGE_HELDOUT_FALSIFICATION",
+  "duration_seconds": 0.4290001392364502,
+  "ended_at": "2026-07-21T17:36:12Z",
+  "evidence_parent": {
+    "audit": "673d0f9c723c6559c074343fef39aae7db3865cd4ee8707785fa7428e9db62b5",
+    "lr01": "b7acbc36f72d48b318b0cd52ccb2f524d7b29a4455b08a033ccbfab6bd90812d",
+    "lr02": "454402d139356a1abcfa426ace236f5701a56cf968bff04c9ff26c5634145c6a",
+    "lr03": "07136a12d4394a6830fc7cbc697c90e612231f53ac4284bbffb767543d840935",
+    "lr04": "9093a6b74c7e3881dd117f24cf4e4651cd7c89938929f18d03ade42464e5024a",
+    "lr05": "5ef10b448d17722510b1741b3fc368ab7ce7bfb02caf8b4fef541af35164a6c8"
+  },
+  "experiment_id": "LR06_POOLED_CAUSAL_LAW",
+  "faults": [],
+  "hypothesis": "Low router margin predicts route crossing, but upstream state remains causal when routes agree.",
+  "intervention_evidence": {
+    "counterfactual_numerical_floor_relative_l2": 0.001254,
+    "indices_only_rescue": 0.08575791981424963,
+    "indices_plus_weights_rescue": 0.10720909201637008,
+    "teacher_hidden_restore_rescue": 1.0,
+    "teacher_weighted_moe_rescue": 0.3519069476657277
+  },
+  "next_run_rationale": "Challenge the pooled law on a larger, longer-context held-out set with no tuning.",
+  "per_split": {
+    "LR01_REFERENCE_PROBES": {
+      "bottom_margin_quartile": {
+        "material_error_rate": 0.3181818181818182,
+        "route_change": 0.3181818181818182,
+        "tokens": 22
+      },
+      "hidden": {
+        "cosine_mean": 0.9982894062995911,
+        "cosine_min": 0.9753893613815308,
+        "cosine_p10": 0.9965226650238037,
+        "norm_ratio": 0.9776780009269714,
+        "normalized_rmse": 0.09622108936309814,
+        "relative_l2": 0.09622081369161606
+      },
+      "route_set_change": {
+        "ci95_high": 0.29069767441860467,
+        "ci95_low": 0.11627906976744186,
+        "mean": 0.19767441860465115,
+        "n": 86
+      },
+      "row_relative_l2": {
+        "ci95_high": 0.05186012686747342,
+        "ci95_low": 0.03242677623016196,
+        "mean": 0.04155515352545609,
+        "n": 86
+      },
+      "tokens": 86
+    },
+    "LR03_NEW_SPLIT": {
+      "bottom_margin_quartile": {
+        "material_error_rate": 0.12987012987012986,
+        "route_change": 0.3116883116883117,
+        "tokens": 77
+      },
+      "hidden": {
+        "cosine_mean": 0.9990062713623047,
+        "cosine_min": 0.9754164218902588,
+        "cosine_p10": 0.9976915121078491,
+        "norm_ratio": 0.9897217154502869,
+        "normalized_rmse": 0.0725121945142746,
+        "relative_l2": 0.07251086086034775
+      },
+      "route_set_change": {
+        "ci95_high": 0.22330097087378642,
+        "ci95_low": 0.13915857605177995,
+        "mean": 0.18122977346278318,
+        "n": 309
+      },
+      "row_relative_l2": {
+        "ci95_high": 0.032469747794270636,
+        "ci95_low": 0.024458803767926123,
+        "mean": 0.028401549947734403,
+        "n": 309
+      },
+      "tokens": 309
+    },
+    "LR05_UNTOUCHED": {
+      "bottom_margin_quartile": {
+        "material_error_rate": 0.19444444444444445,
+        "route_change": 0.4166666666666667,
+        "tokens": 72
+      },
+      "hidden": {
+        "cosine_mean": 0.9983011484146118,
+        "cosine_min": 0.9541198015213013,
+        "cosine_p10": 0.9966426491737366,
+        "norm_ratio": 0.9888610243797302,
+        "normalized_rmse": 0.08674777299165726,
+        "relative_l2": 0.08674577623605728
+      },
+      "route_set_change": {
+        "ci95_high": 0.31141868512110726,
+        "ci95_low": 0.21107266435986158,
+        "mean": 0.25951557093425603,
+        "n": 289
+      },
+      "row_relative_l2": {
+        "ci95_high": 0.043145753975005356,
+        "ci95_low": 0.032411757662205935,
+        "mean": 0.03755177568264022,
+        "n": 289
+      },
+      "tokens": 289
+    }
+  },
+  "pooled": {
+    "bottom_margin_quartile_classifier": {
+      "precision": 0.3583815028901734,
+      "recall": 0.4189189189189189,
+      "selected_fraction": 0.25292397660818716
+    },
+    "by_within_split_margin_quartile": {
+      "0": {
+        "material_error_rate": 0.18128654970760233,
+        "route_change": {
+          "ci95_high": 0.4269005847953216,
+          "ci95_low": 0.28654970760233917,
+          "mean": 0.3567251461988304,
+          "n": 171
+        },
+        "row_relative_l2": {
+          "ci95_high": 0.03250047849710453,
+          "ci95_low": 0.02464363503362439,
+          "mean": 0.028445109253890856,
+          "n": 171
+        },
+        "tokens": 171
+      },
+      "1": {
+        "material_error_rate": 0.2235294117647059,
+        "route_change": {
+          "ci95_high": 0.3058823529411765,
+          "ci95_low": 0.18235294117647058,
+          "mean": 0.2411764705882353,
+          "n": 170
+        },
+        "row_relative_l2": {
+          "ci95_high": 0.04033898864304373,
+          "ci95_low": 0.02714026438859839,
+          "mean": 0.033329592420555214,
+          "n": 170
+        },
+        "tokens": 170
+      },
+      "2": {
+        "material_error_rate": 0.24705882352941178,
+        "route_change": {
+          "ci95_high": 0.24705882352941178,
+          "ci95_low": 0.12941176470588237,
+          "mean": 0.18823529411764706,
+          "n": 170
+        },
+        "row_relative_l2": {
+          "ci95_high": 0.04827148400185465,
+          "ci95_low": 0.0326508144652197,
+          "mean": 0.04007436661871479,
+          "n": 170
+        },
+        "tokens": 170
+      },
+      "3": {
+        "material_error_rate": 0.17341040462427745,
+        "route_change": {
+          "ci95_high": 0.12138728323699421,
+          "ci95_low": 0.04046242774566474,
+          "mean": 0.08092485549132948,
+          "n": 173
+        },
+        "row_relative_l2": {
+          "ci95_high": 0.04044443711118955,
+          "ci95_low": 0.027688560946279264,
+          "mean": 0.033869934047577696,
+          "n": 173
+        },
+        "tokens": 173
+      }
+    },
+    "margin_percentile_vs_route_mismatch_point_biserial_correlation": -0.26067915626866894,
+    "margin_rank_vs_error_rank_correlation": 0.019270252985489768,
+    "material_error_rate_when_routes_match": 0.061567164179104475,
+    "material_error_rate_when_routes_mismatch": 0.7297297297297297,
+    "material_error_with_routes_matched_tokens": 33,
+    "mismatch_minus_match_error": {
+      "ci95_high": 0.07658362117429178,
+      "ci95_low": 0.05802167318334653,
+      "left_n": 148,
+      "mean": 0.0669342419696587,
+      "right_n": 536
+    },
+    "route_match_damage": {
+      "ci95_high": 0.021281276249093067,
+      "ci95_low": 0.017730223842455185,
+      "mean": 0.01943862207282557,
+      "n": 536
+    },
+    "route_mismatch_damage": {
+      "ci95_high": 0.09574728781212676,
+      "ci95_low": 0.07750603398685722,
+      "mean": 0.08637286404248427,
+      "n": 148
+    },
+    "route_set_change": {
+      "ci95_high": 0.24853801169590642,
+      "ci95_low": 0.18567251461988304,
+      "mean": 0.21637426900584794,
+      "n": 684
+    },
+    "row_relative_l2": {
+      "ci95_high": 0.03730391160348751,
+      "ci95_low": 0.030844936920523952,
+      "mean": 0.03392146975047102,
+      "n": 684
+    },
+    "tokens": 684
+  },
+  "repair_evidence": {
+    "lr02_all_five_rows_harm_typical_token": true,
+    "lr03_all_five_rows_harm_typical_token": true,
+    "lr04_calibration_cv_survivor": {
+      "baseline_row_relative_l2_mean": 0.0625857338309288,
+      "bias": false,
+      "folds": [
+        "factual",
+        "science",
+        "coding",
+        "mathematics"
+      ],
+      "improvement": {
+        "ci95_high": 0.0014362959843128922,
+        "ci95_low": 0.00028459614701569077,
+        "mean": 0.0008072615787386894,
+        "n": 25
+      },
+      "rank": 12,
+      "ridge_fraction": 0.0001,
+      "row_relative_l2_mean": 0.0617784783244133,
+      "shrinkage": 0.25
+    },
+    "lr05_untouched_survivor": {
+      "all_tokens": {
+        "ci95_high": 0.0007184047677721766,
+        "ci95_low": -0.0003421894415236597,
+        "mean": 0.0001350463445340267,
+        "n": 289
+      },
+      "decision": "RETIRE_SHRINKAGE_SURVIVOR_UNTOUCHED_FAILURE",
+      "low_margin": {
+        "ci95_high": -0.0002321527889700069,
+        "ci95_low": -0.000798070634881111,
+        "mean": -0.000498500990694108,
+        "n": 73
+      }
+    }
+  },
+  "resource_observations": {
+    "after": {
+      "disk_floor_bytes": 34359738368,
+      "disk_headroom_bytes": 9535422464,
+      "floor_green": true,
+      "free_disk_bytes": 43895160832,
+      "memory_pressure": "The system has 103079215104 (6291456 pages with a page size of 16384).\nSystem-wide memory free percentage: 92%",
+      "swap": "total = 2048.00M  used = 603.56M  free = 1444.44M  (encrypted)",
+      "thermals": "Note: No thermal warning level has been recorded\nNote: No performance warning level has been recorded\nNote: No CPU power status has been recorded"
+    },
+    "before": {
+      "disk_floor_bytes": 34359738368,
+      "disk_headroom_bytes": 9535590400,
+      "floor_green": true,
+      "free_disk_bytes": 43895328768,
+      "memory_pressure": "The system has 103079215104 (6291456 pages with a page size of 16384).\nSystem-wide memory free percentage: 92%",
+      "swap": "total = 2048.00M  used = 603.56M  free = 1444.44M  (encrypted)",
+      "thermals": "Note: No thermal warning level has been recorded\nNote: No performance warning level has been recorded\nNote: No CPU power status has been recorded"
+    }
+  },
+  "retries": 0,
+  "schema": "hawking.kimi_k26.long_run_pooled_causal_law.v1",
+  "scientific_law": {
+    "correlated_not_proven": [
+      "Norm-weighted hidden error often improves under low-rank repair.",
+      "That norm-weighted improvement does not establish capability preservation."
+    ],
+    "proven": [
+      "Compact perturbation exists before the layer-2 router.",
+      "Low within-split router margin increases route-crossing risk but is not sufficient.",
+      "Material residual damage occurs with exact top-8 route sets still matched.",
+      "Teacher route indices plus weights produce only a minority causal rescue.",
+      "Teacher hidden restoration is a full causal rescue at the tested block.",
+      "All five <=0.98-BPW repair rows harm the typical token on two splits.",
+      "The calibration-CV shrinkage survivor fails untouched low-margin validation."
+    ],
+    "scope": {
+      "base_candidate": "P1_DUAL_PATH_RECOVERY_R16X2",
+      "base_complete_bpw": 0.9085909525553385,
+      "independent_splits": 3,
+      "independent_tokens": 684,
+      "physical_repair_families": 6,
+      "tested_complete_bpw_ceiling": 0.98
+    },
+    "statement": "At 0.90859 complete BPW, compact expert-output drift reaches the next block before routing, low native margins amplify that drift into expert entry/exit, but routing is secondary: exact route restoration rescues only 10.7% while hidden restoration rescues 100%. Under <=0.98 BPW, learned low-rank state/router/MoE repairs trade high-energy outlier improvement for statistically significant typical-token and low-margin harm.",
+    "unresolved": [
+      "Whether a nonlinear token-conditional repair can avoid the observed domain tradeoff.",
+      "Whether a representation below the compact expert, rather than a downstream Doctor, can remove the upstream state error at equal BPW."
+    ]
+  },
+  "seal_sha256": "663c70385107c20c2da80bd0ae510b950b3fb174b63915a33fe42b0b029fefc0",
+  "started_at": "2026-07-21T17:36:12Z",
+  "status": "PASS"
+}

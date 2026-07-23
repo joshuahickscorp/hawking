@@ -1,0 +1,144 @@
+{
+  "apparatus_readiness_green": true,
+  "capability_status": {
+    "capability_pass_at_subbit": false,
+    "gate2_promote_threshold": 0.6,
+    "note": "sub-bit expert PQ output divergence remains a large perturbation; the durable campaign explores geometry-before-rate and escalates rate where sub-bit fails the capability threshold. No capability pass or Event Horizon is claimed.",
+    "subbit_expert_output_divergence_mean": 0.68792
+  },
+  "conditions": {
+    "01_full_run_status_not_started": {
+      "kind": "apparatus",
+      "note": "live process/lease/heartbeat probe, not committed JSON",
+      "value": true
+    },
+    "02_first_light_reclassified_calibration": {
+      "kind": "apparatus",
+      "note": "First-Light sealed as calibration with boundary statement",
+      "value": true
+    },
+    "03_source_receipt_valid": {
+      "kind": "apparatus",
+      "note": "543 tensors, 7 shards present, manifest rebuilt to real path",
+      "value": true
+    },
+    "04_tokenizer_harmony_valid": {
+      "kind": "apparatus",
+      "note": "tokenizer.json + chat_template.jinja present",
+      "value": true
+    },
+    "05_candidate_c_seed_frozen_green": {
+      "kind": "apparatus",
+      "note": "Candidate C / Event Horizon Seed frozen and green",
+      "value": true
+    },
+    "06_pq_forge_family_complete": {
+      "kind": "apparatus",
+      "note": "PQ first-class lifecycle inspect/fit/pack/measure/execute/validate/repairability",
+      "value": true
+    },
+    "07_protected_island_mechanism_complete": {
+      "kind": "apparatus",
+      "note": "4 island strategies, billed inside budget",
+      "value": true
+    },
+    "08_pq_aware_doctor_complete": {
+      "kind": "apparatus",
+      "note": "PQ-aware Doctor within budget, no uncounted dense residual",
+      "value": true
+    },
+    "09_direct_compact_cpu_path_green": {
+      "kind": "apparatus",
+      "note": "direct compact matvec CPU reference matches dense within tolerance",
+      "value": true
+    },
+    "10_direct_compact_metal_path_green": {
+      "kind": "apparatus",
+      "note": "direct compact execute on MPS",
+      "value": true
+    },
+    "11_cpu_metal_scientific_parity_green": {
+      "kind": "apparatus",
+      "note": "same ranking, same pass/fail, bounded metric delta",
+      "value": true
+    },
+    "12_expert_gate_green": {
+      "kind": "apparatus",
+      "note": "representative expert sample across layers ran on real source",
+      "value": true
+    },
+    "13_full_layer_gate_green": {
+      "kind": "apparatus",
+      "note": "all-expert single-layer gate ran (bounded sample labelled)",
+      "value": true
+    },
+    "14_multi_layer_gate_green": {
+      "kind": "apparatus",
+      "note": "early/mid/late layers ran",
+      "value": true
+    },
+    "15_short_end_to_end_quality_gate_green": {
+      "kind": "apparatus",
+      "note": "short logits/token comparison ran",
+      "value": true
+    },
+    "16_quality_contract_sealed": {
+      "kind": "apparatus",
+      "note": "gates 1-7 + invariants + tolerances sealed before promotion",
+      "value": true
+    },
+    "17_exact_program_sealed": {
+      "kind": "apparatus",
+      "note": "183 rows, complete scope, exact budgets",
+      "value": true
+    },
+    "18_crash_resume_green": {
+      "kind": "apparatus",
+      "note": "5 kill/resume scenarios proven",
+      "value": true
+    },
+    "19_one_controller_lease_green": {
+      "kind": "apparatus",
+      "note": "singleton lease enforced",
+      "value": true
+    },
+    "20_resource_admission_green": {
+      "kind": "apparatus",
+      "note": "disk headroom > 60 GiB; no competing HAWKING heavy owner (MoP is a separate CPU-bound project; PQ campaign is MPS/GPU-bound; contention flagged)",
+      "value": true
+    },
+    "21_status_heartbeat_green": {
+      "kind": "apparatus",
+      "note": "hawking status reflects live truth; stale PID does not report RUNNING",
+      "value": true
+    },
+    "22_rollback_green": {
+      "kind": "apparatus",
+      "note": "controller state reset/rollback proven",
+      "value": true
+    },
+    "23_output_roots_writable": {
+      "kind": "apparatus",
+      "note": "checkpoint + evidence roots writable",
+      "value": true
+    },
+    "24_no_competing_heavy_hawking_process": {
+      "kind": "apparatus",
+      "note": "no hawking heavy owner holds the lease",
+      "value": true
+    },
+    "25_full_run_still_not_started": {
+      "kind": "apparatus",
+      "note": "re-confirmed NOT_STARTED at readiness time",
+      "value": true
+    }
+  },
+  "gate_law": "No red gate is made green by weakening its threshold after seeing results.",
+  "generated_at": "2026-07-19T00:33:05Z",
+  "green_count": 25,
+  "ignition_semantics": "Ignition launches the DURABLE SEARCH campaign over the complete program. It requires apparatus readiness green (source/program/contract/controller/parity/crash-resume/singleton/status). It does NOT assert a sub-bit capability pass; the campaign measures capability per-row and escalates rate per the program stopping rules.",
+  "readiness_sha256": "54585505487fab94fc02c95a74757b64fdf1a6cdc3ca281ea5e3b1cb82238e5d",
+  "red_conditions": [],
+  "schema": "hawking.second_light.pq_readiness.v1",
+  "total_conditions": 25
+}

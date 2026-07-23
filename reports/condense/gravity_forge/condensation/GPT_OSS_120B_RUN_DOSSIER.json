@@ -1,0 +1,58 @@
+{
+  "at": "2026-07-18T23:28:55Z",
+  "boundary": "execution+infrastructure proof only; NOT a quality solution or capability run. Divergence remains high; no full-model claim.",
+  "next_family_evidence": {
+    "pq_0p5bpw_subdim8_K16": 0.785,
+    "pq_beats_ternary_experts": "32/32",
+    "product_quantization_subdim8_K256": {
+      "bpw_amortized": 1.0,
+      "rel_err_mean": 0.5425698049366474
+    },
+    "ternary_rank8": {
+      "rel_err_mean": 0.9854774866253138
+    }
+  },
+  "plateau_diagnosis": {
+    "conclusion": "of the ~0.99 error, low-rank truncation accounts for ~0.92 and ternary sign-quantization adds only ~0.07. The bottleneck is RANK, not quantization precision. Richer levels at the same low rank cannot help.",
+    "finding": "the experts are HIGH-RANK (effective rank ~104/256 for 90% energy); low-rank factorization hits a truncation floor",
+    "svd_rank64_error": 0.51,
+    "svd_rank8_error": 0.916,
+    "ternary_quant_penalty": 0.07,
+    "ternary_rank8_error": 0.986
+  },
+  "residual_structure": {
+    "col_energy_top10pct": "15.4% (mild concentration)",
+    "heavy_tailed": true,
+    "implication": "a small protected-island outlier reserve captures disproportionate residual",
+    "kurtosis": 5.19
+  },
+  "run_distributions": {
+    "all_subbit": true,
+    "doctor_improvement": {
+      "all_nonneg": true,
+      "max": 0.17618863235682536,
+      "mean": 0.12665621090531753
+    },
+    "rank_selected": {
+      "r4": 98,
+      "r8": 30
+    },
+    "treated_div": {
+      "max": 0.9190994910017254,
+      "mean": 0.8684329149033003,
+      "min": 0.8244588763686855,
+      "sd": 0.020542707998828225
+    },
+    "untreated_div": {
+      "max": 1.008770548002912,
+      "mean": 0.9950891258086177,
+      "min": 0.9765087689563521,
+      "sd": 0.005576657019256403
+    }
+  },
+  "schema": "hawking.120b_run_dossier.v1",
+  "scope": "layer 0, 128 experts, 256x256 bounded slices (mlp1 MXFP4)",
+  "selected_next_forge_family": "PRODUCT/VECTOR QUANTIZATION with a codebook shared+amortized across experts (full-rank, sub-bit), optionally hybridized with a protected-island outlier reserve for the heavy tail. Low-rank latent factorization is REJECTED for these high-rank experts.",
+  "sha256": "10ede1d19fb90aa9cd1e5a163b11cff14a7178ce3ae5216702cc311312f60d88",
+  "source": "openai/gpt-oss-120b @ b5c939de"
+}

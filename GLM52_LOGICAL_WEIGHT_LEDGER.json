@@ -1,0 +1,251 @@
+{
+  "alias_policy": {
+    "every_stored_tensor_counted_once": true,
+    "stored_aliases": 0,
+    "tie_word_embeddings": false
+  },
+  "authority": "Every tensor shape/dtype/extent was read from the immutable official shard header by HTTP Range; no headline parameter count was used as the denominator.",
+  "budget_class_warning": "Control-sensitive versus compressible is a provisional pilot allocation label, not permission to omit or store source-native bytes for free.",
+  "logical_weight_denominator": 753329940480,
+  "major_accounting_views": {
+    "all_declared_model_weights": {
+      "logical_weights": 753329940480,
+      "source_payload_bytes": 1506659919872,
+      "tensor_count": 59585
+    },
+    "all_routed_expert_weights_including_mtp": {
+      "logical_weights": 734439407616,
+      "source_payload_bytes": 1468878815232,
+      "tensor_count": 58368
+    },
+    "attention_weights": {
+      "logical_weights": 13036552192,
+      "source_payload_bytes": 26073104384,
+      "tensor_count": 395
+    },
+    "dense_layer_weights": {
+      "logical_weights": 1202696448,
+      "source_payload_bytes": 2405392896,
+      "tensor_count": 51
+    },
+    "embedding_weights": {
+      "logical_weights": 951582720,
+      "source_payload_bytes": 1903165440,
+      "tensor_count": 1
+    },
+    "indexer_weights": {
+      "logical_weights": 206181888,
+      "source_payload_bytes": 412363776,
+      "tensor_count": 110
+    },
+    "lm_head_weights": {
+      "logical_weights": 951582720,
+      "source_payload_bytes": 1903165440,
+      "tensor_count": 1
+    },
+    "main_text_model_logical_weights": {
+      "logical_weights": 743377019904,
+      "source_payload_bytes": 1486754078208,
+      "tensor_count": 58794
+    },
+    "main_text_routed_expert_weights": {
+      "logical_weights": 724775731200,
+      "source_payload_bytes": 1449551462400,
+      "tensor_count": 57600
+    },
+    "mtp_logical_weights": {
+      "logical_weights": 9952920576,
+      "source_payload_bytes": 19905841664,
+      "tensor_count": 791
+    },
+    "mtp_routed_expert_weights": {
+      "logical_weights": 9663676416,
+      "source_payload_bytes": 19327352832,
+      "tensor_count": 768
+    },
+    "normalization_weights": {
+      "logical_weights": 1197568,
+      "source_payload_bytes": 2395136,
+      "tensor_count": 320
+    },
+    "provisional_compressible_weights": {
+      "logical_weights": 753003003904,
+      "source_payload_bytes": 1506006007808,
+      "tensor_count": 59003
+    },
+    "provisional_control_sensitive_weights": {
+      "logical_weights": 326936576,
+      "source_payload_bytes": 653912064,
+      "tensor_count": 582
+    },
+    "router_control_weights": {
+      "logical_weights": 19456,
+      "source_payload_bytes": 77824,
+      "tensor_count": 76
+    },
+    "router_weights": {
+      "logical_weights": 119537664,
+      "source_payload_bytes": 239075328,
+      "tensor_count": 76
+    },
+    "shared_expert_weights": {
+      "logical_weights": 2868903936,
+      "source_payload_bytes": 5737807872,
+      "tensor_count": 228
+    },
+    "sparse_text_layer_weights": {
+      "logical_weights": 740271151872,
+      "source_payload_bytes": 1480542342144,
+      "tensor_count": 58740
+    }
+  },
+  "mtp_policy": {
+    "included_in_complete_denominator": true,
+    "official_transformers_runtime_omits_mtp": true,
+    "optional_pack_allowed_only_with_billed_bytes": true,
+    "physically_present": true
+  },
+  "primary_categories": {
+    "attention": {
+      "logical_weights": 13036552192,
+      "source_payload_bytes": 26073104384,
+      "tensor_count": 395
+    },
+    "dense_mlp": {
+      "logical_weights": 679477248,
+      "source_payload_bytes": 1358954496,
+      "tensor_count": 9
+    },
+    "embeddings": {
+      "logical_weights": 951582720,
+      "source_payload_bytes": 1903165440,
+      "tensor_count": 1
+    },
+    "indexer": {
+      "logical_weights": 206181888,
+      "source_payload_bytes": 412363776,
+      "tensor_count": 110
+    },
+    "lm_head": {
+      "logical_weights": 951582720,
+      "source_payload_bytes": 1903165440,
+      "tensor_count": 1
+    },
+    "mtp_head_norm": {
+      "logical_weights": 6144,
+      "source_payload_bytes": 12288,
+      "tensor_count": 1
+    },
+    "mtp_normalization": {
+      "logical_weights": 12288,
+      "source_payload_bytes": 24576,
+      "tensor_count": 2
+    },
+    "mtp_projection": {
+      "logical_weights": 75497472,
+      "source_payload_bytes": 150994944,
+      "tensor_count": 1
+    },
+    "normalization": {
+      "logical_weights": 1179136,
+      "source_payload_bytes": 2358272,
+      "tensor_count": 317
+    },
+    "routed_expert": {
+      "logical_weights": 734439407616,
+      "source_payload_bytes": 1468878815232,
+      "tensor_count": 58368
+    },
+    "router": {
+      "logical_weights": 119537664,
+      "source_payload_bytes": 239075328,
+      "tensor_count": 76
+    },
+    "router_control": {
+      "logical_weights": 19456,
+      "source_payload_bytes": 77824,
+      "tensor_count": 76
+    },
+    "shared_expert": {
+      "logical_weights": 2868903936,
+      "source_payload_bytes": 5737807872,
+      "tensor_count": 228
+    }
+  },
+  "provisional_budget_classes": {
+    "COMPRESSIBLE_CANDIDATE": {
+      "logical_weights": 753003003904,
+      "source_payload_bytes": 1506006007808,
+      "tensor_count": 59003
+    },
+    "CONTROL_SENSITIVE_CANDIDATE": {
+      "logical_weights": 326936576,
+      "source_payload_bytes": 653912064,
+      "tensor_count": 582
+    }
+  },
+  "rate_budgets": {
+    "hard_1_bpw": {
+      "denominator": 1,
+      "maximum_complete_physical_bytes": 94166242560,
+      "numerator": 1
+    },
+    "planned_0_98_bpw": {
+      "denominator": 50,
+      "maximum_complete_physical_bytes": 92282917708,
+      "numerator": 49
+    },
+    "rate_0_25_bpw": {
+      "denominator": 4,
+      "maximum_complete_physical_bytes": 23541560640,
+      "numerator": 1
+    },
+    "rate_0_33_represented_as_one_third_bpw": {
+      "denominator": 3,
+      "maximum_complete_physical_bytes": 31388747520,
+      "numerator": 1
+    },
+    "rate_0_50_bpw": {
+      "denominator": 2,
+      "maximum_complete_physical_bytes": 47083121280,
+      "numerator": 1
+    },
+    "rate_0_75_bpw": {
+      "denominator": 4,
+      "maximum_complete_physical_bytes": 70624681920,
+      "numerator": 3
+    }
+  },
+  "repo": "zai-org/GLM-5.2",
+  "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+  "schema": "hawking.glm52.logical_weight_ledger.v1",
+  "seal_sha256": "d479791a7f3c279f0d1cc56a6203e214e4e2610da04010ba020347603dacb0db",
+  "sections": {
+    "main_text": {
+      "logical_weights": 743377019904,
+      "source_payload_bytes": 1486754078208,
+      "tensor_count": 58794
+    },
+    "mtp": {
+      "logical_weights": 9952920576,
+      "source_payload_bytes": 19905841664,
+      "tensor_count": 791
+    }
+  },
+  "source_dtype_caveat": "The teacher source class is BF16, but 76 e_score_correction_bias tensors (19,456 elements) are physically F32 and are billed exactly.",
+  "source_dtype_summary": {
+    "BF16": {
+      "logical_weights": 753329921024,
+      "source_payload_bytes": 1506659842048,
+      "tensor_count": 59509
+    },
+    "F32": {
+      "logical_weights": 19456,
+      "source_payload_bytes": 77824,
+      "tensor_count": 76
+    }
+  },
+  "source_payload_bytes": 1506659919872,
+  "status": "PASS_HEADER_DERIVED",
+  "tensor_count": 59585
+}

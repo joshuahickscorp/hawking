@@ -1,0 +1,29 @@
+{
+  "architecture": "qwen3_5_moe multimodal; text core 60L, 45x linear-attention + 15x full-attention, 512 experts top-10 + shared, hidden 4096, moe_intermediate 1024, vocab 248320; separate vision tower (depth 27)",
+  "drafts": {
+    "adapter_plan": {
+      "present": true,
+      "sha256": "88f218fee7d004dc049a300e38943af059afc170e620f0f4e5a21964f5133b85"
+    },
+    "admission_draft": {
+      "license": "apache-2.0",
+      "present": true,
+      "revision": "8472618112abcbd45acbcdc58436aff4233c23f7",
+      "sha256": "47283961ee7d38186d0b03fe810e0b52e23b9cd9ea7b44905bf907f087646aa0"
+    },
+    "storage_plan": {
+      "present": true,
+      "sha256": "243a809dd345a83d7338b2695ae1befdc914b3974e2488b5127ca5b212639bd7"
+    }
+  },
+  "generated_at_utc": "2026-07-19T23:25:00Z",
+  "heavy_download": "NOT started (per directive). Gated after the 235B lifecycle permits (235B source release / stream).",
+  "immutable_revision": "8472618112abcbd45acbcdc58436aff4233c23f7",
+  "license": "apache-2.0",
+  "repo": "Qwen/Qwen3.5-397B-A17B",
+  "resolved_live": true,
+  "schema": "hawking.qwen35_397b.prep_sealed.v1",
+  "sha256": "8fda8265c8a70e543133270a5335ed89a164869735277c0043d41534c1d48083",
+  "status": "397B PREPARATION SEALED - source resolved + admission draft + adapter plan + storage plan present and hashed; awaiting 235B lifecycle.",
+  "text_vision_claim_separation": "text-core is the required active endpoint; vision path is separate and not required for the text transfer."
+}

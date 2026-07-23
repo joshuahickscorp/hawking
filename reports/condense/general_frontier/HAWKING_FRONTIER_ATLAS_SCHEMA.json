@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "hawking.frontier_atlas.schema.v1",
+  "title": "Hawking Frontier Atlas Observation Record",
+  "description": "Cross-scale memory (goal Part 35). ONE JSONL line per sealed frontier observation. Binds a physical-quantization measurement to (parent x revision x architecture x scale x organ x layer x expert x representation x rate x doctor x backend x source_precision) and its measured cost and quality, tagged by evidence_level so provisional proxies are never confused with verified capability passes. Records are append-only observations, never champions: promotion to a WIN requires a capability_pass=true observation at F4 or higher. The atlas is a ledger of what was measured, not a ranking of what is best.",
+  "type": "object",
+  "required": [
+    "parent",
+    "revision",
+    "architecture_family",
+    "scale",
+    "tensor_organ",
+    "representation",
+    "rate",
+    "backend",
+    "source_precision",
+    "quality_metrics",
+    "evidence_level"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "parent": {
+      "type": "string",
+      "description": "Source model identity, family-level (e.g. 'gpt-oss-120b', 'deepseek-v3.2-685b', 'kimi-k2.6-1t'). The parent an observation was drawn from."
+    },
+    "revision": {
+      "type": "string",
+      "description": "Exact frozen source revision the observation binds to, e.g. 'openai/gpt-oss-120b @ b5c939de'. Pins reproducibility to a specific weight commit."
+    },
+    "architecture_family": {
+      "type": "string",
+      "enum": ["moe", "dense", "hybrid_recurrent", "ssm", "other"],
+      "description": "Structural family. Cross-scale comparisons are only valid within a family; the atlas records it so a reader never averages an MoE expert against a dense projection."
+    },
+    "scale": {
+      "type": "string",
+      "description": "Parameter scale label of the parent, e.g. '120b', '685b', '1t', '1.6t'. Free-form label, not a resident-footprint claim."
+    },
+    "tensor_organ": {
+      "type": "string",
+      "description": "Which structural organ the observation is measured over. 'whole-artifact' = the complete assembled candidate; otherwise a tensor class such as 'expert_mlp1' (up/gate proj), 'expert_mlp2' (down proj), 'attn_qkv', 'attn_o', 'router', 'embed', 'lm_head'.",
+      "examples": ["whole-artifact", "expert_mlp1", "expert_mlp2", "attn_qkv", "router"]
+    },
+    "layer": {
+      "type": ["integer", "null"],
+      "description": "0-indexed layer the observation is scoped to, or null when the observation spans all layers (whole-artifact or per-tensor-class representative)."
+    },
+    "expert": {
+      "type": ["integer", "null"],
+      "description": "0-indexed expert index the observation is scoped to, or null when it spans all experts or the parent is not MoE."
+    },
+    "representation": {
+      "type": "string",
+      "description": "The quantization / coding family applied, e.g. 'PQ' (product_quant), 'transform_pq', 'pq_doctor_lowrank', 'pq_protected_islands', 'naive_rvq', 'repairability_shaped', 'ternary', 'mxfp4'."
+    },
+    "rate": {
+      "type": ["number", "null"],
+      "description": "Realized coding rate in bits-per-weight (BPW). For whole-artifact records this is the exact whole-artifact BPW including all overhead; for organ records it is the per-organ realized BPW. null when not applicable."
+    },
+    "doctor": {
+      "type": ["string", "null"],
+      "description": "Recovery / repair mechanism reserved or applied. e.g. 'reserve-only', 'lowrank', 'protected_islands_reserve', 'qat', 'kd', or null for none. Doctor spend is already included in 'rate'."
+    },
+    "backend": {
+      "type": "string",
+      "description": "Compute backend the observation was produced on, e.g. 'apple/mps', 'apple', 'metal', 'cpu', 'cuda'. Backend parity is not assumed; the atlas records which lane a number came from."
+    },
+    "source_precision": {
+      "type": "string",
+      "description": "Native precision of the source weights the observation quantizes from, e.g. 'mxfp4', 'bf16', 'f16', 'fp8'."
+    },
+    "physical_bytes": {
+      "type": ["integer", "null"],
+      "description": "Realized physical size in bytes of the coded artifact/organ (byte-equivalent, floor of physical_bits/8). null when not separately accounted at organ granularity. Use physical_bits for the exact bit-packed count."
+    },
+    "physical_bits": {
+      "type": ["integer", "null"],
+      "description": "Exact bit-packed physical size in bits. Authoritative for sub-byte accounting; physical_bytes is the byte-rounded convenience view."
+    },
+    "quality_metrics": {
+      "type": "object",
+      "description": "Measured quality. Whether a record is a pass is governed ONLY by capability_pass together with evidence_level; divergence/error fields are diagnostic. All divergence/error means are dimensionless in [0,1].",
+      "properties": {
+        "capability_pass": {"type": ["boolean", "null"], "description": "True only for a real functional-quality contract pass. Proxy observations set this false or null."},
+        "capability_parity": {"type": ["boolean", "null"], "description": "True only when measured against a verified full-precision parity reference at adequate sample. Proxy/synthetic-activation observations are false."},
+        "true_residual_output_divergence_mean": {"type": ["number", "null"], "description": "Mean output divergence measured with the true residual (not a synthetic-activation proxy)."},
+        "functional_divergence": {"type": ["number", "null"], "description": "Functional / output-space divergence for this observation. On proxy records this is a synthetic-activation PROXY, not a verified capability metric."},
+        "weight_rel_error_mean": {"type": ["number", "null"], "description": "Mean relative weight-space reconstruction error."},
+        "budget_bpw": {"type": ["number", "null"], "description": "Declared BPW budget the observation was held under."},
+        "within_budget": {"type": ["boolean", "null"], "description": "Whether every accounted row landed within budget."},
+        "proxy": {"type": ["string", "null"], "description": "Named proxy method when the quality is not a verified capability measurement, e.g. 'synthetic-activation output-divergence'."},
+        "sample_note": {"type": ["string", "null"], "description": "Sampling caveat, e.g. 'small n_inputs; DIRECTIONAL geometry science, not a verified capability pass'."}
+      },
+      "additionalProperties": true
+    },
+    "runtime": {
+      "type": ["object", "null"],
+      "description": "Measured runtime (decode/prefill tok/s, wall time). null when not measured for this observation.",
+      "additionalProperties": true
+    },
+    "memory": {
+      "type": ["object", "null"],
+      "description": "Measured memory footprint (resident GiB, peak). null when not measured.",
+      "additionalProperties": true
+    },
+    "energy": {
+      "type": ["object", "null"],
+      "description": "Measured energy (J/tok, watts). null when not measured (clean-room energy still queued per house rules).",
+      "additionalProperties": true
+    },
+    "evidence_level": {
+      "type": "string",
+      "enum": [
+        "F0_declared",
+        "F1_bounded_proxy",
+        "F2_reproduced_proxy",
+        "F3_provisional_negative",
+        "F4_capability_measured",
+        "F5_adversarially_verified"
+      ],
+      "description": "Confidence tier. F0=declared plan only. F1=bounded proxy (single-run synthetic-activation, small n). F2=reproduced proxy (replayed/independent). F3=provisional (complete artifact + exact accounting, quality resolved but NEGATIVE at contract). F4=capability measured against a real forward/eval. F5=adversarially verified capability pass. Only F4+ with capability_pass=true may be cited as a WIN or Event Horizon."
+    },
+    "provenance": {
+      "type": ["object", "null"],
+      "description": "Where the observation was sealed: source report path(s), row_id, controller identity, sha256 of the sealing artifact.",
+      "additionalProperties": true
+    }
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "coexist_with_120b_source": {
+    "fits_full_397b_resident_after_release": false,
+    "free_after_120b_release_gib": 600.5,
+    "release_120b_reclaims_gib": 60.8,
+    "required_mode": "bounded_shard_serial_streaming"
+  },
+  "config_summary": {
+    "architectures": [
+      "Qwen3_5MoeForConditionalGeneration"
+    ],
+    "model_type": "qwen3_5_moe",
+    "text": {
+      "head_dim": 256,
+      "hidden_size": 4096,
+      "layer_types_pattern": "45x linear_attention + 15x full_attention (full_attention_interval=4)",
+      "max_position_embeddings": 262144,
+      "moe_intermediate_size": 1024,
+      "mtp_num_hidden_layers": 1,
+      "num_attention_heads": 32,
+      "num_experts": 512,
+      "num_experts_per_tok": 10,
+      "num_hidden_layers": 60,
+      "num_key_value_heads": 2,
+      "shared_expert_intermediate_size": 1024,
+      "torch_dtype": "bfloat16",
+      "vocab_size": 248320
+    },
+    "vision": {
+      "depth": 27,
+      "hidden_size": 1152,
+      "out_hidden_size": 4096,
+      "patch_size": 16
+    }
+  },
+  "disk_free_bytes": 579487981568,
+  "disk_free_gib": 539.7,
+  "gated": false,
+  "immutable_revision": "8472618112abcbd45acbcdc58436aff4233c23f7",
+  "license": "apache-2.0",
+  "metadata_dir": "/Users/scammermike/Downloads/hawking/models/qwen3.5-397b-a17b/_meta",
+  "metadata_files_downloaded": {
+    "config.json": 4177,
+    "generation_config.json": 244,
+    "model.safetensors.index.json": 303440
+  },
+  "modality": "image-text-to-text (+ video); vision encoder + text MoE decoder",
+  "multimodal": true,
+  "n_files": 107,
+  "n_weight_shards": 94,
+  "repo": "Qwen/Qwen3.5-397B-A17B",
+  "resolution_method": "HfApi.model_info(files_metadata=True) + tiny metadata files (config.json, generation_config.json, model.safetensors.index.json). NO weight bytes downloaded; NO model loaded.",
+  "schema": "hawking.qwen35_397b.source_admission.v1",
+  "sha256": "aa4c7d0381509ce3fcbf862bdad706fe5c1104e1c19dd8f5e57d60a72f311d15",
+  "shard_naming": "model.safetensors-00001-of-00094.safetensors .. model.safetensors-00094-of-00094.safetensors",
+  "status": "DRAFT - admission PENDING (source-absent locally; gated on 120B release + streaming)",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "qwen3_5_moe",
+    "image-text-to-text",
+    "conversational",
+    "license:apache-2.0",
+    "eval-results",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "total_bytes": 806819566361,
+  "total_gib": 751.4,
+  "verdict": "397B source RESOLVES live (metadata-only): apache-2.0, ungated, revision 8472618112ab, 94 shards / 751.4 GiB. Admission is PREP-ONLY: the weights are NOT resident and CANNOT be fully resident even after the 120B release (751.4 GiB > free-after-release). Admission requires (a) the 120B source release [see GPT_OSS_120B_SOURCE_RELEASE_READINESS.json, currently DENIED] and (b) bounded shard-serial streaming, never full residence.",
+  "weight_bytes": 806796241352,
+  "weight_gib": 751.4
+}

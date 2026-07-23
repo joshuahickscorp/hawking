@@ -1,0 +1,13 @@
+{
+  "counts": {
+    "does_not_fit_fully": 9,
+    "full_resident_comfortable": 9,
+    "full_resident_squeezed": 0,
+    "pending_official_source": 0
+  },
+  "rc": 0,
+  "receipt": "RESEQUENCE_LADDER",
+  "revision": "62af8fffb2f7030cac4de2f0169f5b8d1101b646",
+  "sealed_at": "2026-07-21T02:59:36Z",
+  "selected": "deepseek-ai/DeepSeek-V4-Flash-DSpark"
+}

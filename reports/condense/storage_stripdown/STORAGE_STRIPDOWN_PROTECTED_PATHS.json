@@ -1,0 +1,197 @@
+{
+  "authoritative_hawking_repo": "/Users/scammermike/Downloads/hawking",
+  "data_volume": "/System/Volumes/Data",
+  "expected_dev": 16777233,
+  "free_bytes": 124183527424,
+  "generated_at": "2026-07-21T02:46:28Z",
+  "home": "/Users/scammermike",
+  "mop_bytes": 23358013440,
+  "mop_resolved_ok": true,
+  "mop_root": "/Users/scammermike/Downloads/mop",
+  "protected": [
+    {
+      "declared": "/Users/scammermike/Downloads/mop",
+      "exists": true,
+      "ids": [
+        16777233,
+        1233332
+      ],
+      "resolved": "/Users/scammermike/Downloads/mop"
+    },
+    {
+      "declared": "/Users/scammermike/Downloads/mop-data",
+      "exists": true,
+      "ids": [
+        16777233,
+        13293587
+      ],
+      "resolved": "/Users/scammermike/Downloads/mop-data"
+    },
+    {
+      "declared": "/Users/scammermike/Downloads/mop-experimental-method-reformation",
+      "exists": true,
+      "ids": [
+        16777233,
+        18523434
+      ],
+      "resolved": "/Users/scammermike/Downloads/mop-experimental-method-reformation"
+    },
+    {
+      "declared": "/Users/scammermike/Downloads/mop_expansion_bundle",
+      "exists": true,
+      "ids": [
+        16777233,
+        14004529
+      ],
+      "resolved": "/Users/scammermike/Downloads/mop_expansion_bundle"
+    },
+    {
+      "declared": "/Users/scammermike/Library",
+      "exists": true,
+      "ids": [
+        16777233,
+        1313845
+      ],
+      "resolved": "/Users/scammermike/Library"
+    },
+    {
+      "declared": "/Users/scammermike/Documents",
+      "exists": true,
+      "ids": [
+        16777233,
+        899276
+      ],
+      "resolved": "/Users/scammermike/Documents"
+    },
+    {
+      "declared": "/Users/scammermike/Pictures",
+      "exists": true,
+      "ids": [
+        16777233,
+        1582639
+      ],
+      "resolved": "/Users/scammermike/Pictures"
+    },
+    {
+      "declared": "/Users/scammermike/Desktop",
+      "exists": true,
+      "ids": [
+        16777233,
+        899224
+      ],
+      "resolved": "/Users/scammermike/Desktop"
+    },
+    {
+      "declared": "/Users/scammermike/.ssh",
+      "exists": true,
+      "ids": [
+        16777233,
+        875011
+      ],
+      "resolved": "/Users/scammermike/.ssh"
+    },
+    {
+      "declared": "/Users/scammermike/.gnupg",
+      "exists": true,
+      "ids": [
+        16777233,
+        836258
+      ],
+      "resolved": "/Users/scammermike/.gnupg"
+    },
+    {
+      "declared": "/Users/scammermike/.config",
+      "exists": true,
+      "ids": [
+        16777233,
+        820510
+      ],
+      "resolved": "/Users/scammermike/.config"
+    },
+    {
+      "declared": "/Users/scammermike/.cache/huggingface",
+      "exists": true,
+      "ids": [
+        16777233,
+        720709
+      ],
+      "resolved": "/Users/scammermike/.cache/huggingface"
+    },
+    {
+      "declared": "/System",
+      "exists": true,
+      "ids": [
+        16777233,
+        1152921500311879703
+      ],
+      "resolved": "/System"
+    },
+    {
+      "declared": "/Library",
+      "exists": true,
+      "ids": [
+        16777233,
+        472142
+      ],
+      "resolved": "/Library"
+    },
+    {
+      "declared": "/usr",
+      "exists": true,
+      "ids": [
+        16777233,
+        1152921500312601547
+      ],
+      "resolved": "/usr"
+    },
+    {
+      "declared": "/bin",
+      "exists": true,
+      "ids": [
+        16777233,
+        1152921500312601350
+      ],
+      "resolved": "/bin"
+    },
+    {
+      "declared": "/sbin",
+      "exists": true,
+      "ids": [
+        16777233,
+        1152921500312601431
+      ],
+      "resolved": "/sbin"
+    },
+    {
+      "declared": "/private/etc",
+      "exists": true,
+      "ids": [
+        16777233,
+        475412
+      ],
+      "resolved": "/private/etc"
+    },
+    {
+      "declared": "/Applications",
+      "exists": true,
+      "ids": [
+        16777233,
+        475629
+      ],
+      "resolved": "/Applications"
+    },
+    {
+      "declared": "/Users/scammermike/Downloads/hawking/.git",
+      "exists": true,
+      "ids": [
+        16777233,
+        1116480
+      ],
+      "resolved": "/Users/scammermike/Downloads/hawking/.git"
+    }
+  ],
+  "rule": "a deletion candidate is rejected if it resolves to, or through, any protected root by path or by device/inode; if it is a symlink; if it sits on another volume; if it is not owned by the invoking uid; or if any check raises.",
+  "schema": "hawking.storage_stripdown.protected_paths.v1",
+  "status": "GREEN",
+  "volume_total_bytes": 994662584320
+}

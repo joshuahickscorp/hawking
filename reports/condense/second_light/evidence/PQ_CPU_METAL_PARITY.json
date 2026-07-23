@@ -1,0 +1,99 @@
+{
+  "all_green": true,
+  "cpu_execute_green": true,
+  "details": {
+    "cpu_execute_rel_err_vs_dense": 1.74e-07,
+    "doctor": {
+      "per_channel_scale": {
+        "added_bytes": 5760,
+        "delta": 0.01044041,
+        "ok": true,
+        "within_budget": true
+      },
+      "residual_codebook": {
+        "added_bytes": 129728,
+        "delta": 0.01786947,
+        "ok": true,
+        "within_budget": true
+      },
+      "sparse_residual": {
+        "added_bytes": 149799,
+        "delta": 0.08265752,
+        "ok": true,
+        "within_budget": true
+      }
+    },
+    "inspect": {
+      "cols": 2880,
+      "effective_rank_90": 790,
+      "effective_rank_frac": 0.2743,
+      "residual_kurtosis": 0.552,
+      "rows": 2880,
+      "spectral_tail_ratio": 0.0,
+      "valid_subvector_dims": "[4, 8, 16]"
+    },
+    "islands": {
+      "activation_aware": {
+        "ok": true,
+        "selected": 6
+      },
+      "magnitude": {
+        "ok": true,
+        "selected": 6
+      },
+      "residual_energy": {
+        "ok": true,
+        "selected": 6
+      },
+      "sensitivity": {
+        "ok": true,
+        "selected": 6
+      }
+    },
+    "islands_increase_bpw": true,
+    "measure_whole_bpw": 0.7520370370370371,
+    "parity": {
+      "D": 16,
+      "S": 1,
+      "assignment_agreement": 1.0,
+      "authoritative": "cpu",
+      "candidate_ks": "[16, 64, 256]",
+      "codebook_relerr_cpu": 0.86993,
+      "codebook_relerr_metal": 0.86993,
+      "device": "mps",
+      "k": 64,
+      "note": "CPU (numpy) authoritative; MPS reductions may reorder near-ties",
+      "pass_match": true,
+      "ranking_cpu": "[2, 1, 0]",
+      "ranking_match": true,
+      "ranking_metal": "[2, 1, 0]",
+      "relerr_delta": 0.0,
+      "tol": 0.002,
+      "verdict_cpu": "collapse",
+      "verdict_metal": "collapse",
+      "within_tol": true
+    },
+    "selftest_pq_signals": {
+      "pq_cpu_metal_within_tol": true,
+      "pq_deterministic_bytes": true,
+      "pq_doctor_reduces_error": true,
+      "pq_doctor_within_budget": true,
+      "pq_effective_rank_90": 7,
+      "pq_execute_rel_err_vs_recon": 1.2e-07,
+      "pq_execute_within_tol": true,
+      "pq_family_verbs": 7,
+      "pq_islands_increase_bpw": true,
+      "pq_whole_bpw": 0.6328
+    }
+  },
+  "doctor_complete": true,
+  "generated_at": "2026-07-19T00:14:16Z",
+  "honesty": "weight-space + decode-exactness metrics; not a capability pass; CPU authoritative",
+  "islands_complete": true,
+  "metal_execute_green": true,
+  "parity_green": true,
+  "pq_family_complete": true,
+  "real_tensor": "block.0.expert.0.mlp2 [2880,2880] from source MXFP4",
+  "schema": "hawking.second_light.pq_parity.v1",
+  "sha256": "4c55366330a40a64d4679d55b6ffb6c4174155729041b0a4d780bce136b8e3b5"
+}

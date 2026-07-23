@@ -1,0 +1,78 @@
+{
+  "audited_at": "2026-07-21T16:52:21Z",
+  "baseline": {
+    "best_candidate_complete_bpw": 0.9085909525553385,
+    "f1_cosine": 0.9134416580200195,
+    "f2_top8_route_set_change": 0.21875,
+    "head": "0458b2fbcb53150aa4d12ad2df6c69487a6f5f28",
+    "reported_commit": "0458b2fb",
+    "tested_region_bpw_ceiling": 0.98,
+    "tested_region_failed_f2": true
+  },
+  "controller": {
+    "alive": true,
+    "heartbeat_age_seconds": 4.710012,
+    "heartbeat_current": true,
+    "heartbeat_state": "MONITOR",
+    "heartbeat_status": "RUNNING",
+    "lease_matches": true,
+    "lease_pid": 80723,
+    "lease_process_group": 80723,
+    "pid": 80723,
+    "process_group": 80723
+  },
+  "failures": [],
+  "git": {
+    "head": "0458b2fbcb53150aa4d12ad2df6c69487a6f5f28",
+    "upstream": "0458b2fbcb53150aa4d12ad2df6c69487a6f5f28"
+  },
+  "mop": {
+    "device": 16777233,
+    "inode": 1233332,
+    "matches_baseline": true,
+    "path": "/Users/scammermike/Downloads/mop",
+    "source_outside_mop": true
+  },
+  "resources": {
+    "disk_floor_bytes": 34359738368,
+    "disk_headroom_bytes": 11328888832,
+    "floor_green": true,
+    "free_disk_bytes": 45688627200,
+    "memory_pressure": "The system has 103079215104 (6291456 pages with a page size of 16384).\nSystem-wide memory free percentage: 92%",
+    "swap": "total = 2048.00M  used = 942.00M  free = 1106.00M  (encrypted)",
+    "thermals": "Note: No thermal warning level has been recorded\nNote: No performance warning level has been recorded\nNote: No CPU power status has been recorded"
+  },
+  "schema": "hawking.kimi_k26.long_run_audit.v1",
+  "seal_sha256": "2935c1ffc9833f44ac6127818d804097e589ba8431899244038768546d2baf31",
+  "source": {
+    "complete_views": [
+      {
+        "authoritative": true,
+        "complete": true,
+        "path": "/Users/scammermike/.cache/huggingface/hub/models--moonshotai--Kimi-K2.6/snapshots/7eb5002f6aadc958aed6a9177b7ed26bb94011bb",
+        "physical_inode_set_sha256": "18157c548e24ef7b34097c7ea6768f88aae7dc5d0be6cfdc15b3625c87561677"
+      }
+    ],
+    "distinct_physical_inode_sets": 1,
+    "failures": [],
+    "file_count_checked": 96,
+    "mop_excluded_without_traversal": "/Users/scammermike/Downloads/mop",
+    "one_copy": true,
+    "status": "PASS",
+    "unique_content_inodes": 96
+  },
+  "status": "PASS",
+  "telegram_prior_delivery": {
+    "checkpoint_id": "controller:started",
+    "delivered_at": "2026-07-21T05:53:32Z",
+    "seal_sha256": "6ecd3419688e71b92abad9f9272aa6e4ed814d7ced610fa718fe9d5baf656486"
+  },
+  "verified_seals": {
+    "official_manifest": "22123f6ed9ae2688da383b5de8c671e70071802e6fc1ca0a16df90c607885c60",
+    "one_copy": "4698b36b3bd33de9adcdee396e8bf9757edd208815895968ff535f81d2861289",
+    "publication": "e2161afee6962a208a7b8da95246e7daa828f0b3728bde306eb5e20961fec8d3",
+    "science_law": "38d3a944ccc78d57bf936571689a8fdf25872791820fda19628886e009907437",
+    "science_status": "18e3f01c5ce7cca299a80d9222573e4b3dab0a4a47f84e2bc4932652ae3e0a1c",
+    "source_verification": "867b40c58795c0b5fdd5a0ca9e6c9529f0b2ab92d89f3aaf56ca5e17c39a7b25"
+  }
+}

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.hawking.glm52.readiness-gate</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/scammermike/Downloads/hawking/.venv/glm52/bin/python</string>
+        <string>/Users/scammermike/Downloads/hawking/tools/condense/glm52_readiness_gate.py</string>
+    </array>
+    <key>WorkingDirectory</key>
+    <string>/Users/scammermike/Downloads/hawking</string>
+    <key>StartInterval</key>
+    <integer>300</integer>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>ProcessType</key>
+    <string>Background</string>
+    <key>StandardOutPath</key>
+    <string>/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/readiness_gate/launchd.stdout.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/readiness_gate/launchd.stderr.log</string>
+</dict>
+</plist>

@@ -3,6 +3,7 @@ resolver = "2"
 members = [
     "crates/hawking",
     "crates/hawking-core",
+    "crates/hawking-seed-c",
     "crates/hawking-speculate",
     "crates/hawking-serve",
     "crates/hawking-bench",

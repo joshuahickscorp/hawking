@@ -1,0 +1,124 @@
+{
+  "schema": "hawking.model_ladder.ignition_precheck.v1",
+  "generated_at_utc": "2026-07-19T18:40:00Z",
+  "session_role": "detached ignition / resume of the existing Frontier",
+  "verdict": "RESUME (not adopt): no live controller anywhere; G0-G3 sealed; next uncompleted gate is G4; G4's required real HF-validated forward is UNBUILT and is the honest execution work this session; giants source-absent and gated; CUDA budget-absent.",
+
+  "git": {
+    "head": "4fbca8bc6d33117707933793bb3293d9463c049f",
+    "origin_main": "4fbca8bc6d33117707933793bb3293d9463c049f",
+    "head_equals_origin_main": true,
+    "branch": "main",
+    "working_tree": "clean except two untracked out-of-scope IDE docs (docs/plans/hawking_ide_*_2026_07_19.md)",
+    "reported_handoff_commits_verified": {
+      "c9280be3_frontier_resumed_at_G3": true,
+      "0adcab57_packs_absorbed": true,
+      "4fbca8bc_packs_retired": "== HEAD"
+    }
+  },
+
+  "hardware": {
+    "chip": "Apple M3 Ultra",
+    "cpu_cores": 28,
+    "cpu_layout": "20 performance + 8 efficiency",
+    "unified_memory_gb": 96,
+    "memory_free_gb_at_precheck": 79,
+    "disk_free_gb": 563,
+    "swap_used_mb": 419,
+    "note": "This is the M3 Ultra 96GB box, NOT the M1 Ultra 128GB/8TB that some docs assume."
+  },
+
+  "live_process_truth": {
+    "authoritative_controller_alive": false,
+    "method": "ps sweep for controller/frontier/forge/gravity/ladder/second_light + per-PID ps -p on every lease PID",
+    "lease_pids_checked": {"96622_frontier_g3": "DEAD", "84690_second_light": "DEAD", "41651_frontier_g2": "DEAD", "27566_gravity_frontier_g0": "DEAD"},
+    "stale_leases_cleared_this_session": [
+      "reports/condense/gravity_frontier/leases/gravity_frontier.lease (was already absent/cleared)",
+      "reports/condense/general_frontier/G2/leases/frontier_g2.lease",
+      "reports/condense/general_frontier/G3/leases/frontier_g3.lease",
+      "reports/condense/second_light/leases/second_light.lease"
+    ],
+    "leases_live_after_clear": 0,
+    "launchd_hawking_jobs": {"com.hawking.doctorv5.telegram": "last exit 75 (dead)", "com.hawking.doctorv5ultra.post120b": "last exit 2 (dead)"},
+    "unrelated_load": "a ~/Downloads/mop pytest was hammering CPU during early verification; it finished. The frontier lane is MPS/memory-bound and would contend with it; none live now.",
+    "one_heavy_lease": "FREE"
+  },
+
+  "active_generation": {
+    "name": "M",
+    "generation_declared_sha256": "82703c54d98ae59c65287990d6142cd529b1280181463dce55c7e289bc4a71f7",
+    "generation_file": "reports/mechanics_thermodynamics/HAWKING_GENERATION_M.json",
+    "provider_map": "reports/mechanics_thermodynamics/HAWKING_GENERATION_M_PROVIDER_MAP.json",
+    "base_execution_provider": "m2_shared_lookup_linear (EXACT parity to Gen-F direct-compact: logit cos 1.0, next-token 1.0; lowers FLOPs/movement/dispatches, quality-neutral)",
+    "generation_f_rollback": "e0857398"
+  },
+
+  "source": {
+    "parent": "gpt-oss-120b",
+    "hf_or_source_id": "openai/gpt-oss-120b @ b5c939de",
+    "root": "models/gpt-oss-120b",
+    "present": true,
+    "on_disk_gib": 60.77,
+    "total_size_bytes": 65248815744,
+    "shards": 7,
+    "checkpoint_format": "ORIGINAL OpenAI format (tensor names block.N.mlp.mlp1_weight.blocks), NOT HF transformers naming; transformers.from_pretrained cannot load it directly -> repo's byte-range ProvenanceReader is the loader",
+    "dtypes": {"BF16": 399, "FP4_mxfp4_experts": 72, "UE8_scales": 72},
+    "tokenizer": "tokenizer.json (tokenizers lib loads; vocab 200019 active / 201088 nominal) + chat_template.jinja (Harmony)",
+    "architecture": "36 layers x 128 experts x top-k4; hidden 2880; intermediate 2880; GQA 64Q/8KV head_dim 64; rope_theta 150000; sliding_window 128; swiglu_limit 7.0"
+  },
+
+  "environment": {
+    "controller_interpreter": "/Library/Frameworks/Python.framework/Versions/3.12/bin/python3.12",
+    "python": "3.12.6",
+    "torch": "2.6.0 (mps available: true)",
+    "transformers": "5.6.2 (gpt_oss architecture PRESENT; used as the parity math reference, cannot load original-format 120B)",
+    "safetensors_numpy_tokenizers": "present",
+    "default_python3_warning": "the shell default python3 is Homebrew 3.14.5 with NO torch/transformers; the controllers require the 3.12 framework interpreter"
+  },
+
+  "gate_ladder": {
+    "G0_reproduction": "SEALED (PASS)",
+    "G1_larger_expert": "SEALED (reproduces; PROXY)",
+    "G2_complete_layer": "SEALED (COMPLETE; ignition receipt g2 ran to completion)",
+    "G3_cross_layer_transfer": "SEALED (COMPLETE; g3_000..g3_023 all sealed; G3_TRANSFER.json transfer_sha256 present; last heartbeat g3_023/row_done/SEALED @ 06:40Z)",
+    "G4_short_end_to_end_real_forward": "PENDING and UNBUILT (no g4 controller; requires the real HF-validated full-model forward that does not exist yet)",
+    "G5_complete_120b_artifact": "PENDING",
+    "resume_point": "G4"
+  },
+
+  "science_truth": {
+    "verdict": "NEGATIVE and converging at sub-bit; no Event Horizon; no capability pass anywhere",
+    "second_light_baseline": {"whole_artifact_bpw": 0.76976, "functional_divergence_mean": 0.68792, "weight_rel_error_mean": 0.554, "capability_pass": false, "rows": "183/183"},
+    "g3_reality": {"complete_layer_bpw_range": [2.122848, 3.249939], "note": "assembling a real complete layer costs 2.1-3.25 BPW, NOT sub-bit", "weighted_combine_divergence_range": [0.552531, 0.857999], "capability_parity": false, "mlp1_transfers_to_late": false, "mlp2_transfers": true},
+    "all_forwards_to_date": "APPROXIMATION / synthetic-Harmony-token / relative orig-vs-packed divergence only. The repo's own _swiglu is non-parity (split-half + plain SiLU); correct only for RELATIVE comparison where the wrong activation cancels. NO real logits, PPL, or coherent generation has ever been produced in this campaign.",
+    "generation_m_mechanics": "RUN_ALL_COMPLETE; champions are speed/representation wins (2.5-3.3x lookup-linear at zero quality cost) that only apply once a quality-POSITIVE representation exists (none does)."
+  },
+
+  "g4_feasibility": {
+    "required": "HF-validated full-model forward: real logits, logit_kl, topk_overlap, next_token_agreement, PPL/NLL, deterministic gen (quality contract end_to_end tier)",
+    "naive_transformers": "STRUCTURAL OOM on 96GB: mxfp4->bf16 dequant of 120B ~= 234GB; and the checkpoint is OpenAI-format so transformers cannot load it directly regardless",
+    "chosen_route": "extend the PROVEN bounded-streaming per-expert loader (gptoss_moe_runtime.py selftest green on real source: experts_loaded 4, forward_out_finite true) to a full 36-layer real forward with the CORRECT gpt-oss activation (interleaved gate/up, clamp 7, alpha 1.702, (up+1)*glu) + final norm + unembed + real tokenizer",
+    "memory": "BOUNDED (stream one block + a handful of experts at a time; ~65GB read per forward; NO offload needed; fits 96GB comfortably)",
+    "parity_reference": "transformers 5.6.2 modeling_gpt_oss.py (activation, router softmax-over-topk, attention sinks -> repo attention already matches; RoPE + gate/up interleave ordering validated empirically by coherent next-token prediction)",
+    "validity_gate": "coherent next-token prediction on real English/code prompts = empirical parity validator; garbage output => convention wrong => fix and retry"
+  },
+
+  "giants": {
+    "685B": {"id": "deepseek-ai/DeepSeek-V3.2", "source": "ABSENT local", "status": "prep-only", "eligible_when": "120B G3(done) + one full-rank family + one Doctor path + frozen contract + Apple exec + whole-artifact projection + (CUDA parity OR blocked receipt)"},
+    "1T": {"id": "moonshotai/Kimi-K2.6", "source": "ABSENT local", "status": "prep-only", "eligible_when": "120B G5-or-boundary + 685B parent-bound F2 + Kimi source authority + text/full claim separation"},
+    "1.6T": {"id": "deepseek-ai/DeepSeek-V4-Pro", "status": "optional; NOT activated"},
+    "honest_note": "No giant hands off THIS session: both are source-absent AND gated behind 120B G5. This is a verified fact, not an excuse. Disk (563GB free) cannot even hold a giant in a runnable precision."
+  },
+
+  "cuda": {"status": "BLOCKED", "reason": "no sealed cloud budget; credentials-absent; budget NOT inferred from key presence. Apple is the active lane."},
+
+  "blockers_exact": [
+    "G4 real HF-validated full-model forward is unbuilt (this session's build target)",
+    "the repo _swiglu activation is non-parity (fixed in the new forward)",
+    "685B/1T sources absent + gated (prep-only)",
+    "CUDA budget absent (Apple-only lane)"
+  ],
+
+  "rollback": "git reset --hard 4fbca8bc  (current HEAD == origin/main; nothing committed this session). Gate rollbacks: G3 e2609f94; Mechanics f5521233. No source is mutated; all reads are byte-range read-only.",
+  "authorization": "The /goal directive authorizes launch once integrity+resource gates pass. Integrity: GREEN (clean tree, source verified, no live controller). Resource: GREEN (79GB free, 563GB disk, one heavy lease free). Launch target = the honest next gate G4 (build the real forward, then the durable G4 controller)."
+}

@@ -1,0 +1,131 @@
+{
+  "claim_boundary": "Hooks are preregistered terminal rules, not evidence that the corresponding one-off ran. A hook closes only when its sealed export is adjudicated.",
+  "generated_at": "2026-07-21T19:19:32Z",
+  "hooks": {
+    "M2": {
+      "criteria": {
+        "F0_reject": "nondeterministic decode OR nonfinite output OR unbilled component OR complete_physical_bytes>5394923",
+        "F1_reject": "paired pre-router row-relative-L2 improvement CI95 low<=0 OR candidate cosine<=same-split parent OR any domain/low-margin stratum CI95 high<0",
+        "F2_reject": "paired hidden improvement CI95 low<=0 OR route_matches<parent OR layer3 relative-L2>parent",
+        "replication": "new prompt construction, context membership hash, and seed without refit"
+      },
+      "extra_reject": "static or worst-case BPW>0.98 OR gate precision<=event prevalence OR top-error-decile false-negative rate>0.50",
+      "name": "CONDITIONAL_HIGH_PRECISION_ISLANDS",
+      "prerequisites": [
+        "serialized conditional residual/high-precision module",
+        "inference-available gate and fully encoded threshold policy",
+        "LR11 fit/CV and LR12 score trigger predictions"
+      ],
+      "real_forward": "only one frozen winner through cached layers 2-3",
+      "required_export": "oneoff_exports.M2"
+    },
+    "M3": {
+      "criteria": {
+        "F0_reject": "nondeterministic decode OR nonfinite output OR unbilled component OR complete_physical_bytes>5394923",
+        "F1_reject": "paired pre-router row-relative-L2 improvement CI95 low<=0 OR candidate cosine<=same-split parent OR any domain/low-margin stratum CI95 high<0",
+        "F2_reject": "paired hidden improvement CI95 low<=0 OR route_matches<parent OR layer3 relative-L2>parent",
+        "replication": "new prompt construction, context membership hash, and seed without refit"
+      },
+      "extra_reject": "fit-only gain, score CI crossing zero, or more bytes than comparator",
+      "name": "NATIVE_STUDENTIZATION",
+      "prerequisites": [
+        "exact native expert targets for LR11/LR12 cached x_l1",
+        "serialized teacher-free functional student",
+        "byte-matched parent comparison"
+      ],
+      "real_forward": "expert-only target capture; layers 2-3 only after frozen F1 win",
+      "required_export": "oneoff_exports.M3"
+    },
+    "M4": {
+      "criteria": {
+        "F0_reject": "nondeterministic decode OR nonfinite output OR unbilled component OR complete_physical_bytes>5394923",
+        "F1_reject": "paired pre-router row-relative-L2 improvement CI95 low<=0 OR candidate cosine<=same-split parent OR any domain/low-margin stratum CI95 high<0",
+        "F2_reject": "paired hidden improvement CI95 low<=0 OR route_matches<parent OR layer3 relative-L2>parent",
+        "replication": "new prompt construction, context membership hash, and seed without refit"
+      },
+      "name": "CROSS_LAYER_STATE_ANCHOR",
+      "prerequisites": [
+        "one physical compact representation installable at layers 2,31,60",
+        "teacher and compact trajectories on identical contexts"
+      ],
+      "real_forward": "required at early/middle/late sentinels when prerequisite is met",
+      "required_export": "oneoff_exports.M4",
+      "terminal_prerequisite_reject": "PREREQUISITE_ABSENT when no coherent multi-layer compact candidate exists; a synthetic sentinel perturbation is not admissible evidence"
+    },
+    "M6": {
+      "criteria": {
+        "F0_reject": "nondeterministic decode OR nonfinite output OR unbilled component OR complete_physical_bytes>5394923",
+        "F1_reject": "paired pre-router row-relative-L2 improvement CI95 low<=0 OR candidate cosine<=same-split parent OR any domain/low-margin stratum CI95 high<0",
+        "F2_reject": "paired hidden improvement CI95 low<=0 OR route_matches<parent OR layer3 relative-L2>parent",
+        "replication": "new prompt construction, context membership hash, and seed without refit"
+      },
+      "extra_reject": "native superiority requires a replicated byte-matched win; a CI crossing zero means no demonstrated advantage, not Doctor optimality",
+      "name": "DOCTOR_REMOVAL_NATIVE_INVERSION",
+      "prerequisites": [
+        "current base+Doctor row",
+        "same base+native module capped at 974848 bytes",
+        "same base+native module at full legal ceiling"
+      ],
+      "real_forward": "cached F1 first; only one native winner through layers 2-3",
+      "required_export": "oneoff_exports.M6"
+    }
+  },
+  "inputs": {
+    "stage": "HOOKS",
+    "statuses": {
+      "M2": {
+        "export_seal_inherited_from_tournament": "8c201bbf527c66daf99f3c87de3fb26978c55f66635dd414a7ec641e721f3b6e",
+        "required_export": "oneoff_exports.M2",
+        "status": "WAITING_PREREQUISITE"
+      },
+      "M3": {
+        "export_seal_inherited_from_tournament": "8c201bbf527c66daf99f3c87de3fb26978c55f66635dd414a7ec641e721f3b6e",
+        "required_export": "oneoff_exports.M3",
+        "status": "WAITING_PREREQUISITE"
+      },
+      "M4": {
+        "export_seal_inherited_from_tournament": "8c201bbf527c66daf99f3c87de3fb26978c55f66635dd414a7ec641e721f3b6e",
+        "required_export": "oneoff_exports.M4",
+        "status": "WAITING_PREREQUISITE"
+      },
+      "M6": {
+        "export_seal_inherited_from_tournament": "8c201bbf527c66daf99f3c87de3fb26978c55f66635dd414a7ec641e721f3b6e",
+        "required_export": "oneoff_exports.M6",
+        "status": "WAITING_PREREQUISITE"
+      }
+    },
+    "tournament": {
+      "bytes": 151043,
+      "path": "/Users/scammermike/Downloads/hawking/KIMI_K26_GRAVITY_NONLINEAR_TOURNAMENT.json",
+      "seal_sha256": "8c201bbf527c66daf99f3c87de3fb26978c55f66635dd414a7ec641e721f3b6e",
+      "sha256": "718303e898e42c301f87fdfadfed1b882a6a875faefebdbc66022ed5e8339787",
+      "status": "PRESENT_AND_SEALED"
+    }
+  },
+  "prerequisite_status": {
+    "M2": {
+      "export_seal_inherited_from_tournament": "8c201bbf527c66daf99f3c87de3fb26978c55f66635dd414a7ec641e721f3b6e",
+      "required_export": "oneoff_exports.M2",
+      "status": "WAITING_PREREQUISITE"
+    },
+    "M3": {
+      "export_seal_inherited_from_tournament": "8c201bbf527c66daf99f3c87de3fb26978c55f66635dd414a7ec641e721f3b6e",
+      "required_export": "oneoff_exports.M3",
+      "status": "WAITING_PREREQUISITE"
+    },
+    "M4": {
+      "export_seal_inherited_from_tournament": "8c201bbf527c66daf99f3c87de3fb26978c55f66635dd414a7ec641e721f3b6e",
+      "required_export": "oneoff_exports.M4",
+      "status": "WAITING_PREREQUISITE"
+    },
+    "M6": {
+      "export_seal_inherited_from_tournament": "8c201bbf527c66daf99f3c87de3fb26978c55f66635dd414a7ec641e721f3b6e",
+      "required_export": "oneoff_exports.M6",
+      "status": "WAITING_PREREQUISITE"
+    }
+  },
+  "run_fingerprint_sha256": "f1d1927e978c0fad013560325540e47ecf512f52447473570d3c5a894719d52f",
+  "schema": "hawking.kimi_k26.gravity.oneoff_hooks.v1",
+  "seal_sha256": "9a7dca52275790fb6e4fc199a9cea89895149e52690a1e859188368f3ee96e7c",
+  "status": "PASS"
+}

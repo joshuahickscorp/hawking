@@ -1,0 +1,320 @@
+{
+  "candidate": {
+    "complete_bpw": 0.9165534973144531,
+    "complete_physical_bytes": 5045649,
+    "name": "UPSTREAM_RESIDUAL_CV",
+    "payload": {
+      "bytes": 43834,
+      "component_count": 5,
+      "header_bytes": 810,
+      "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/long_run/LR10/LR10_UPSTREAM_RESIDUAL.k26repair",
+      "sha256": "224ace2ced75f8cf8b4c12e7e8c2bb87b83ba15a2ac90755681995b436c532d9"
+    },
+    "shrinkage": 0.125
+  },
+  "capture": {
+    "bytes": 400685436,
+    "path": "/Users/scammermike/Library/Application Support/Hawking/KimiK26/long_run/LR11/LR11_UPSTREAM_F2_CAPTURE.npz",
+    "sha256": "cdc9e196aabcfc7f66b17ccd3e3858a197610f15f60f2b853f8cd5027203fad6"
+  },
+  "causal_interpretation": "The candidate modifies the compact expert output before layer-1 residual propagation; F2 promotion requires a paired held-out token improvement without route loss.",
+  "config": {
+    "candidate_count": 1,
+    "prompt_count": 16,
+    "refit": false,
+    "repeated_parent_forward": false,
+    "retuning": false,
+    "seed": 26072111,
+    "shared_parent_forward": true
+  },
+  "decision": "PROMOTE_UPSTREAM_RESIDUAL_TO_REPLICATION",
+  "duration_seconds": 61.63588881492615,
+  "ended_at": "2026-07-21T17:54:31Z",
+  "evidence_parent": {
+    "guard_audit_seal_sha256": "0c447946574bd3bac2f3754cc204953d8792c28ec5a85ec9ce177dbadacb8f69",
+    "lr10_seal_sha256": "f98e81213a7525008ed5130799d7abd35b6c19428c84ef31ca5e1da8cdf37caf"
+  },
+  "experiment_id": "LR11_UPSTREAM_RESIDUAL_HELDOUT_F2",
+  "f1_untouched": {
+    "all_tokens_candidate": {
+      "cosine_mean": 0.18723423779010773,
+      "cosine_min": -0.05800701305270195,
+      "cosine_p10": 0.07153632491827011,
+      "norm_ratio": 2.5833258628845215,
+      "normalized_rmse": 2.5521035194396973,
+      "relative_l2": 2.5520899295806885
+    },
+    "all_tokens_parent": {
+      "cosine_mean": 0.18723388016223907,
+      "cosine_min": -0.05799274891614914,
+      "cosine_p10": 0.07154499739408493,
+      "norm_ratio": 2.5832624435424805,
+      "normalized_rmse": 2.552110433578491,
+      "relative_l2": 2.552064895629883
+    },
+    "routed_candidate": {
+      "cosine_mean": 0.4478980302810669,
+      "cosine_min": 0.07869166135787964,
+      "cosine_p10": 0.12702131271362305,
+      "norm_ratio": 0.9439830183982849,
+      "normalized_rmse": 0.8379184007644653,
+      "relative_l2": 0.8379185795783997
+    },
+    "routed_parent": {
+      "cosine_mean": 0.44788822531700134,
+      "cosine_min": 0.07870714366436005,
+      "cosine_p10": 0.1269996464252472,
+      "norm_ratio": 0.9441011548042297,
+      "normalized_rmse": 0.8379386067390442,
+      "relative_l2": 0.8379391431808472
+    },
+    "routed_tokens": 36
+  },
+  "f2": {
+    "candidate": {
+      "hidden": {
+        "cosine_mean": 0.9995233416557312,
+        "cosine_min": 0.9678120613098145,
+        "cosine_p10": 0.9989582896232605,
+        "norm_ratio": 0.9953300356864929,
+        "normalized_rmse": 0.051870640367269516,
+        "relative_l2": 0.05186425521969795
+      },
+      "route_matches": 1241,
+      "route_set_agreement": 0.8883321403006442,
+      "row_relative_l2_mean": 0.015576603822410107
+    },
+    "domain_improvement": {
+      "code": {
+        "ci95_high": 0.000396102312844923,
+        "ci95_low": -4.657128856313396e-05,
+        "mean": 0.00012291095055832986,
+        "n": 347
+      },
+      "prose": {
+        "ci95_high": 0.00011886660454530157,
+        "ci95_low": 1.3965551357477654e-06,
+        "mean": 4.350112862677461e-05,
+        "n": 359
+      },
+      "reasoning": {
+        "ci95_high": 0.0008211068248051803,
+        "ci95_low": 3.0274071628034954e-06,
+        "mean": 0.00031892881424237904,
+        "n": 338
+      },
+      "tool_format": {
+        "ci95_high": 0.0004036920678586813,
+        "ci95_low": -0.00022627661207812196,
+        "mean": 7.117363141464444e-05,
+        "n": 353
+      }
+    },
+    "paired_row_relative_l2_improvement": {
+      "ci95_high": 0.0002935092009441647,
+      "ci95_low": 9.129537938965344e-06,
+      "mean": 0.00013685700509953196,
+      "n": 1397
+    },
+    "parent": {
+      "hidden": {
+        "cosine_mean": 0.9995185136795044,
+        "cosine_min": 0.9678120613098145,
+        "cosine_p10": 0.9988933205604553,
+        "norm_ratio": 0.9953331351280212,
+        "normalized_rmse": 0.05193121358752251,
+        "relative_l2": 0.05192486569285393
+      },
+      "route_matches": 1238,
+      "route_set_agreement": 0.886184681460272,
+      "row_relative_l2_mean": 0.015713460743427277
+    }
+  },
+  "faults": [],
+  "hypothesis": "The microscopic LR10 held-out F1 gain survives untouched F2 propagation.",
+  "input_capture": {
+    "attention": {
+      "heads": 64,
+      "kv_rank": 512,
+      "q_rank": 1536,
+      "query_dim": 192,
+      "segment_lengths": [
+        93,
+        84,
+        87,
+        84,
+        88,
+        83,
+        87,
+        82,
+        79,
+        90,
+        90,
+        89,
+        95,
+        92,
+        90,
+        84
+      ],
+      "sequence": 1397,
+      "softmax_scale": 0.14467962580268923,
+      "value_dim": 128
+    },
+    "layer_zero": {
+      "attention": {
+        "heads": 64,
+        "kv_rank": 512,
+        "q_rank": 1536,
+        "query_dim": 192,
+        "segment_lengths": [
+          93,
+          84,
+          87,
+          84,
+          88,
+          83,
+          87,
+          82,
+          79,
+          90,
+          90,
+          89,
+          95,
+          92,
+          90,
+          84
+        ],
+        "sequence": 1397,
+        "softmax_scale": 0.14467962580268923,
+        "value_dim": 128
+      },
+      "finite": true,
+      "hidden_sha256": "142e38e77ac87f7d323a8f8afd92edb8fa6879ba3e2c6497c03ee20d5f4d5257",
+      "moe": {
+        "kind": "dense",
+        "used_expert_count": 0
+      },
+      "segment_hidden_sha256": [
+        "6b4d805ae9c2461fc165daad39c3efd2d9a1e2ca035ea958824f470775151ff5",
+        "142dfb7476c3f1f2024be009f3cb0bc83a17b7004595241b06d9771ac3b2974e",
+        "6aa603abbd956899d1cb5956acc8478da57e54fcd3ef68508cc030033c10960e",
+        "46532a717f6fb0b29cf82e0ab723a0893daa9bf27200c462a3e4724cda64b9d8",
+        "743dafb393f58182927e3ee98c4db33fbd585b6d5980afc9e05238972fbe66ad",
+        "d4d6fc37e2e70e534f9089ea2737ca58bc9a8df54357bd49923e6830c4983bee",
+        "a93296d1543e9d08f3e551983bc8ef02d277d36c7260fb8866077c9547305ba7",
+        "1afb3be65de92a1d2b117113aba4b9637b0af159b4585888aaa34a592cd5d74c",
+        "7584fde5df8dcbf813e6da2b4998e47a939ded806b46ed89f2f3591151ab8af3",
+        "d1a462038601a2fb33954c8a88edae5c0cfba0259dd0cb135bdf8fa9370ffb14",
+        "8b070793b12bd63c63fa033e23817cec9307eebe870143b57c604c2c429cb2cd",
+        "630843dcd6e4e7a4a24274032d88404434c6d1ada3703e8166ce86026960eaa3",
+        "f184c09aca0b04ab6162cad127f74b5148e05ab950499a7c84aed19fa93bd8c9",
+        "9b90bbf453ab0ed2fcb61b70bb454c0de221f4d7e9935feeada635145dd0b8c0",
+        "e5ad79c9abb908f90e19d3c3200f9c40c5eea15e3e6e09e6e6558d67c5a0017b",
+        "7a62bd97b6cb3d6d41f05b6d542e6ecf52cdf211d0b4165469976aa4f6a677ff"
+      ],
+      "tensor_audit": {
+        "accessed_tensors": 12,
+        "conditionally_inactive_routed_expert_tensors": 0,
+        "source_tensors": 12,
+        "unaccounted_tensors": []
+      }
+    }
+  },
+  "layer3_amplification": {
+    "CANDIDATE": {
+      "hidden": {
+        "cosine_mean": 0.9993610978126526,
+        "cosine_min": 0.9713036417961121,
+        "cosine_p10": 0.9983725547790527,
+        "norm_ratio": 0.9855595231056213,
+        "normalized_rmse": 0.07652538269758224,
+        "relative_l2": 0.07651589810848236
+      },
+      "hidden_sha256": "4e8c90fda49376597fc421da34f98e4c84bba807f698eb3ee733d25a8c9fe7ee",
+      "route_matches": 1180,
+      "route_set_agreement": 0.8446671438797423
+    },
+    "PARENT": {
+      "hidden": {
+        "cosine_mean": 0.9993560314178467,
+        "cosine_min": 0.9713036417961121,
+        "cosine_p10": 0.9983150362968445,
+        "norm_ratio": 0.98565274477005,
+        "normalized_rmse": 0.0765049159526825,
+        "relative_l2": 0.07649547606706619
+      },
+      "hidden_sha256": "873dadfa265890d88f87d9aa56dad5f3def7620b9d0c3d3a2f87162fbae490b4",
+      "route_matches": 1183,
+      "route_set_agreement": 0.8468146027201146
+    },
+    "TEACHER": {
+      "hidden": {
+        "cosine_mean": 1.0,
+        "cosine_min": 0.9999998807907104,
+        "cosine_p10": 0.9999999403953552,
+        "norm_ratio": 1.0,
+        "normalized_rmse": 0.0,
+        "relative_l2": 0.0
+      },
+      "hidden_sha256": "4bf3b8dcec17bc14a5c681f1b80acd85644d80a7144489fc5f5fd1c19e020b96",
+      "route_matches": 1397,
+      "route_set_agreement": 1.0
+    }
+  },
+  "next_run_rationale": "Replicate the promoted upstream representation on a new split and seed.",
+  "resource_observations": {
+    "after": {
+      "disk_floor_bytes": 34359738368,
+      "disk_headroom_bytes": 8371650560,
+      "floor_green": true,
+      "free_disk_bytes": 42731388928,
+      "memory_pressure": "The system has 103079215104 (6291456 pages with a page size of 16384).\nSystem-wide memory free percentage: 92%",
+      "swap": "total = 2048.00M  used = 587.56M  free = 1460.44M  (encrypted)",
+      "thermals": "Note: No thermal warning level has been recorded\nNote: No performance warning level has been recorded\nNote: No CPU power status has been recorded"
+    },
+    "before": {
+      "disk_floor_bytes": 34359738368,
+      "disk_headroom_bytes": 8859795456,
+      "floor_green": true,
+      "free_disk_bytes": 43219533824,
+      "memory_pressure": "The system has 103079215104 (6291456 pages with a page size of 16384).\nSystem-wide memory free percentage: 92%",
+      "swap": "total = 2048.00M  used = 595.56M  free = 1452.44M  (encrypted)",
+      "thermals": "Note: No thermal warning level has been recorded\nNote: No performance warning level has been recorded\nNote: No CPU power status has been recorded"
+    }
+  },
+  "retries": 0,
+  "schema": "hawking.kimi_k26.long_run_upstream_f2.v1",
+  "seal_sha256": "254122fff882c136ec93f6f56cefd7beaeecc5aea58381ef69ee5828d3d7ffbb",
+  "source": {
+    "config_sha256": "85825ca6e18cbe539eb83ee09eedfb3f4222265929f06e9f535a6d9364f55899",
+    "index_sha256": "00a982d005d6e39b25cfcb379a7e6d57f393fc0346e70892ea4271c259c0d1e3",
+    "repo": "moonshotai/Kimi-K2.6",
+    "revision": "7eb5002f6aadc958aed6a9177b7ed26bb94011bb",
+    "shards_present": 64,
+    "snapshot": "/Users/scammermike/.cache/huggingface/hub/models--moonshotai--Kimi-K2.6/snapshots/7eb5002f6aadc958aed6a9177b7ed26bb94011bb"
+  },
+  "started_at": "2026-07-21T17:53:29Z",
+  "status": "PASS",
+  "tokenization": {
+    "segment_lengths": [
+      93,
+      84,
+      87,
+      84,
+      88,
+      83,
+      87,
+      82,
+      79,
+      90,
+      90,
+      89,
+      95,
+      92,
+      90,
+      84
+    ],
+    "token_id_sha256": "f8cf93c05f58724ee819dc9638dbd72b0a9187ab40e90951ab6d6213e6c91290",
+    "tokens": 1397
+  }
+}

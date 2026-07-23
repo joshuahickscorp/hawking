@@ -1,0 +1,30 @@
+{
+  "schema": "hawking.qwen3_235b.q0_source_feasibility.v1",
+  "generated_at_utc": "2026-07-19T19:55:00Z",
+  "gate": "Q0_physical_source_feasibility",
+  "repo": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+  "immutable_revision": "ac9c66cc9b46af7306746a9250f23d47083d689e",
+  "method": "HTTP Range-GET of the safetensors HEADER only (first 8 bytes = header length, then the JSON header). No weight bytes downloaded. Bounded-streaming path proven on the real official source.",
+  "verified_tensors_real_bytes": {
+    "model.embed_tokens.weight": {"dtype": "BF16", "shape": [151936, 4096]},
+    "model.layers.0.mlp.gate.weight": {"dtype": "BF16", "shape": [128, 4096], "role": "router (128 experts)"},
+    "model.layers.0.mlp.experts.0.gate_proj.weight": {"dtype": "BF16", "shape": [1536, 4096]},
+    "model.layers.0.mlp.experts.0.down_proj.weight": {"dtype": "BF16", "shape": [4096, 1536]},
+    "model.layers.0.self_attn.q_proj.weight": {"dtype": "BF16", "shape": [8192, 4096], "role": "64 heads x 128 head_dim"},
+    "model.layers.1.mlp.experts.0.down_proj.weight": {"dtype": "BF16", "shape": [4096, 1536], "role": "multi-layer confirmed"}
+  },
+  "matches_admission": true,
+  "consistency_checks": {
+    "hidden_size_4096": true,
+    "moe_intermediate_1536": true,
+    "num_experts_128": true,
+    "vocab_151936": true,
+    "dtype_bf16": true,
+    "expert_tensor_scheme": "model.layers.{L}.mlp.experts.{E}.{gate,up,down}_proj.weight",
+    "router_tensor": "model.layers.{L}.mlp.gate.weight"
+  },
+  "shards_probed": ["model-00001-of-00118.safetensors", "model-00002-of-00118.safetensors"],
+  "n_weight_shards_total": 118,
+  "verdict": "Q0 PASS - official Qwen3-235B source is byte-readable and layout-verified against the config via bounded Range-GET; heavy shard-serial streaming is feasible. Q1/Q2 (bounded tensor decode + router/expert forward) run after the 120B seal + adapter tests.",
+  "storage_note": "No weights resident; 0 disk consumed beyond metadata. Full transfer still gated by the one-parent storage law (120B source release or shard-serial stream)."
+}

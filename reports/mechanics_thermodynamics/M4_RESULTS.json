@@ -1,0 +1,318 @@
+{
+  "candidates": [
+    {
+      "admissible": true,
+      "candidate": "fused_pq_islands_doctor",
+      "causal_delta": {
+        "control": "M4(fused) vs M4(separate-kernel); adds doctor over M3",
+        "doctor_bits": 9342976,
+        "fuse_quality_match_rel": 0.0,
+        "island_bits": 31896356,
+        "launch_fused": 19.0,
+        "launch_reduction": 8.0,
+        "launch_separate": 27.0,
+        "quality_matches_unfused": true,
+        "temp_fused": 3075840.0,
+        "temp_reduction_bytes": 69120.0,
+        "temp_separate": 3144960.0,
+        "wall_fused_over_separate": 1.0404
+      },
+      "control_vs": "M4_separate",
+      "energy": {
+        "class": "UNAVAILABLE"
+      },
+      "extra": {
+        "doctor_stages": 1,
+        "strategy": "activation_aware"
+      },
+      "mech_vector": {
+        "definitions": {
+          "Bbit": "bit ops",
+          "F16": "logical FP16/BF16 ops",
+          "F32": "logical FP32 ops",
+          "Fint": "integer ops",
+          "Klaunch": "Metal dispatch count",
+          "Llookup": "table/gather/codebook lookups",
+          "Mread": "bytes read",
+          "Mwrite": "bytes written",
+          "Ssync": "waits/barriers/sync",
+          "Ttemporary": "peak temporary bytes"
+        },
+        "labels": {
+          "Bbit": "ANALYTICAL",
+          "F16": "ANALYTICAL",
+          "F32": "ANALYTICAL",
+          "Fint": "ANALYTICAL",
+          "Klaunch": "ESTIMATED",
+          "Llookup": "ANALYTICAL",
+          "Mread": "ANALYTICAL",
+          "Mwrite": "ANALYTICAL",
+          "Ssync": "MEASURED",
+          "Ttemporary": "ANALYTICAL"
+        },
+        "schema": "hawking.mechanics.cost_schema.v1",
+        "vector": {
+          "Bbit": 0.0,
+          "F16": 0.0,
+          "F32": 15943680.0,
+          "Fint": 0.0,
+          "Klaunch": 19.0,
+          "Llookup": 3111092.0,
+          "Mread": 10479616.0,
+          "Mwrite": 138240.0,
+          "Ssync": 1.0,
+          "Ttemporary": 3075840.0
+        }
+      },
+      "no_dense_shadow": {
+        "bounded_under_half_dense": true,
+        "full_dense_bytes": 66355200.0,
+        "peak_temporary_bytes": 3075840.0
+      },
+      "quality": {
+        "cosine_vs_dense_mean": 0.593607,
+        "rel_error_vs_dense_max": 0.818959,
+        "rel_error_vs_dense_mean": 0.804737
+      },
+      "quality_gate": {
+        "baseline_div": null,
+        "combine_div": null,
+        "quality_admissible": true,
+        "tol": 1e-06,
+        "verdict": "fused_matches_unfused"
+      },
+      "rate": {
+        "base_index_bits": 16588800,
+        "doctor_bits": 9342976,
+        "island_bits": 31896356,
+        "n_experts": 4,
+        "physical_bytes": 7294117,
+        "shared_codebook": true,
+        "total_bits": 58352932,
+        "total_weights": 66355200,
+        "whole_artifact_bpw": 0.879403
+      },
+      "stage": "M4",
+      "tensor_class": "mlp1",
+      "timing_ms": {
+        "M4_fused": {
+          "iqr_ms": 0.04804,
+          "mad_ms": 0.03287,
+          "max_ms": 20.79262,
+          "median_ms": 20.43042,
+          "min_ms": 19.0465,
+          "n": 5,
+          "p25_ms": 20.39754,
+          "p75_ms": 20.44558
+        },
+        "M4_separate": {
+          "iqr_ms": 1.03179,
+          "mad_ms": 0.74558,
+          "max_ms": 20.93888,
+          "median_ms": 19.63642,
+          "min_ms": 18.89083,
+          "n": 5,
+          "p25_ms": 19.50079,
+          "p75_ms": 20.53258
+        }
+      }
+    },
+    {
+      "admissible": true,
+      "candidate": "fused_pq_islands_doctor",
+      "causal_delta": {
+        "control": "M4(fused) vs M4(separate-kernel); adds doctor over M3",
+        "doctor_bits": 5195776,
+        "fuse_quality_match_rel": 0.0,
+        "island_bits": 16040016,
+        "launch_fused": 19.0,
+        "launch_reduction": 8.0,
+        "launch_separate": 27.0,
+        "quality_matches_unfused": true,
+        "temp_fused": 1566720.0,
+        "temp_reduction_bytes": 57600.0,
+        "temp_separate": 1624320.0,
+        "wall_fused_over_separate": 1.0527
+      },
+      "control_vs": "M4_separate",
+      "energy": {
+        "class": "UNAVAILABLE"
+      },
+      "extra": {
+        "doctor_stages": 1,
+        "strategy": "magnitude"
+      },
+      "mech_vector": {
+        "definitions": {
+          "Bbit": "bit ops",
+          "F16": "logical FP16/BF16 ops",
+          "F32": "logical FP32 ops",
+          "Fint": "integer ops",
+          "Klaunch": "Metal dispatch count",
+          "Llookup": "table/gather/codebook lookups",
+          "Mread": "bytes read",
+          "Mwrite": "bytes written",
+          "Ssync": "waits/barriers/sync",
+          "Ttemporary": "peak temporary bytes"
+        },
+        "labels": {
+          "Bbit": "ANALYTICAL",
+          "F16": "ANALYTICAL",
+          "F32": "ANALYTICAL",
+          "Fint": "ANALYTICAL",
+          "Klaunch": "ESTIMATED",
+          "Llookup": "ANALYTICAL",
+          "Mread": "ANALYTICAL",
+          "Mwrite": "ANALYTICAL",
+          "Ssync": "MEASURED",
+          "Ttemporary": "ANALYTICAL"
+        },
+        "schema": "hawking.mechanics.cost_schema.v1",
+        "vector": {
+          "Bbit": 0.0,
+          "F16": 0.0,
+          "F32": 12407040.0,
+          "Fint": 0.0,
+          "Klaunch": 19.0,
+          "Llookup": 1555548.0,
+          "Mread": 5295616.0,
+          "Mwrite": 92160.0,
+          "Ssync": 1.0,
+          "Ttemporary": 1566720.0
+        }
+      },
+      "no_dense_shadow": {
+        "bounded_under_half_dense": true,
+        "full_dense_bytes": 33177600.0,
+        "peak_temporary_bytes": 1566720.0
+      },
+      "quality": {
+        "cosine_vs_dense_mean": 0.978706,
+        "rel_error_vs_dense_max": 0.281188,
+        "rel_error_vs_dense_mean": 0.199821
+      },
+      "quality_gate": {
+        "baseline_div": null,
+        "combine_div": null,
+        "quality_admissible": true,
+        "tol": 1e-06,
+        "verdict": "fused_matches_unfused"
+      },
+      "rate": {
+        "base_index_bits": 8294400,
+        "doctor_bits": 5195776,
+        "island_bits": 16040016,
+        "n_experts": 4,
+        "physical_bytes": 3756874,
+        "shared_codebook": true,
+        "total_bits": 30054992,
+        "total_weights": 33177600,
+        "whole_artifact_bpw": 0.905882
+      },
+      "stage": "M4",
+      "tensor_class": "mlp2",
+      "timing_ms": {
+        "M4_fused": {
+          "iqr_ms": 0.99471,
+          "mad_ms": 0.52042,
+          "max_ms": 10.20042,
+          "median_ms": 9.68,
+          "min_ms": 6.70125,
+          "n": 5,
+          "p25_ms": 8.80746,
+          "p75_ms": 9.80217
+        },
+        "M4_separate": {
+          "iqr_ms": 0.55358,
+          "mad_ms": 0.42088,
+          "max_ms": 9.93446,
+          "median_ms": 9.19583,
+          "min_ms": 3.52338,
+          "n": 5,
+          "p25_ms": 9.06313,
+          "p75_ms": 9.61671
+        }
+      }
+    }
+  ],
+  "causal_control": {
+    "controls": "fused vs separate-kernel",
+    "law": "quality must MATCH unfused (same math)",
+    "per_tensor_causal": {
+      "mlp1": {
+        "control": "M4(fused) vs M4(separate-kernel); adds doctor over M3",
+        "doctor_bits": 9342976,
+        "fuse_quality_match_rel": 0.0,
+        "island_bits": 31896356,
+        "launch_fused": 19.0,
+        "launch_reduction": 8.0,
+        "launch_separate": 27.0,
+        "quality_matches_unfused": true,
+        "temp_fused": 3075840.0,
+        "temp_reduction_bytes": 69120.0,
+        "temp_separate": 3144960.0,
+        "wall_fused_over_separate": 1.0404
+      },
+      "mlp2": {
+        "control": "M4(fused) vs M4(separate-kernel); adds doctor over M3",
+        "doctor_bits": 5195776,
+        "fuse_quality_match_rel": 0.0,
+        "island_bits": 16040016,
+        "launch_fused": 19.0,
+        "launch_reduction": 8.0,
+        "launch_separate": 27.0,
+        "quality_matches_unfused": true,
+        "temp_fused": 1566720.0,
+        "temp_reduction_bytes": 57600.0,
+        "temp_separate": 1624320.0,
+        "wall_fused_over_separate": 1.0527
+      }
+    }
+  },
+  "energy": {
+    "contract_ref": "reports/mechanics_thermodynamics/HAWKING_ENERGY_MEASUREMENT_CONTRACT.json",
+    "energy_class": "UNAVAILABLE",
+    "policy": "mechanics+quality proceed; thermodynamics labelled UNAVAILABLE; no invented estimates",
+    "reason": "powermetrics requires sudo (not bypassed, Bible \u00a733/\u00a768); no defensible non-sudo whole-system power method"
+  },
+  "identity": {
+    "block": 0,
+    "candidate_id": "gen-M.runall.block0.experts83-86-12-48",
+    "confidence": "mechanics ANALYTICAL + wall MEASURED(contaminated); CPU authoritative; combine-divergence proxy_output synthetic activations, NOT capability parity",
+    "config": {
+      "D": 64,
+      "cond_threshold": 0.02,
+      "doctor_k": 256,
+      "doctor_stages": 1,
+      "fn_gate": 0.05,
+      "island_budget_frac": 0.03,
+      "iters": 6,
+      "k": 256,
+      "need_delta": 0.001,
+      "stages": 2
+    },
+    "generated_at": "2026-07-19T05:13:10Z",
+    "hardware": {
+      "chip": "Apple M3 Ultra",
+      "contamination": "concurrent MoP CPU load (~24 procs, load ~22); timing contaminated_by_concurrent_cpu_load",
+      "model": "Mac15,14",
+      "mps": true,
+      "os": "27.0",
+      "profile_ref": "reports/mechanics_thermodynamics/HAWKING_APPLE_MECHANICS_PROFILE.json",
+      "python": "3.12.6",
+      "torch": "2.6.0"
+    },
+    "parent": "GPT-OSS-120B (Generation-F frozen)",
+    "reps": 5,
+    "routed_experts": [
+      83,
+      86,
+      12,
+      48
+    ]
+  },
+  "note": "wall MEASURED contaminated_by_concurrent_cpu_load; mechanics ANALYTICAL; CPU authoritative; energy UNAVAILABLE",
+  "schema": "hawking.mechanics.run_all.v1",
+  "sha256": "ed8cc74ac8e08350da80f9c9ed386823fe4e86c5ad15df0e8d14eec6c1f7f45c",
+  "stage": "M4"
+}

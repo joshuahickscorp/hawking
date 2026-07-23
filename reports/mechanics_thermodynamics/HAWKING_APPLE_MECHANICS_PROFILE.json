@@ -1,0 +1,24 @@
+{
+  "chip": "Apple M3 Ultra",
+  "cpu_topology": {
+    "E": 8,
+    "P": 20,
+    "logical": 28
+  },
+  "generated_at": "2026-07-19T04:35:48Z",
+  "gpu": "M3 Ultra integrated (MPS)",
+  "metal_counter_sampling": "not accessed via python/torch (Objective-C/Swift MTLCounterSampleBuffer not wired); timing via wallclock + torch.mps.synchronize",
+  "model": "Mac15,14",
+  "os": "27.0",
+  "power_mode": "default",
+  "power_samplers": {
+    "external_meter": "none",
+    "powermetrics": "requires sudo - UNAVAILABLE"
+  },
+  "recommended_working_set": "bounded tiles; one heavy lease",
+  "schema": "hawking.mechanics.apple_profile.v1",
+  "sha256": "c43f6393351b7c3cb26a40a97737a0ccaea7efccb35cdcb207bfa4a7ac9c7da6",
+  "thermal_state": "nominal",
+  "toolchain": "torch 2.6.0 MPS (no Xcode CLT metal counters via python)",
+  "unified_memory_gb": 96.0
+}

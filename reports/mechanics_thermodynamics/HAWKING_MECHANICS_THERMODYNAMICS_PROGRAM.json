@@ -1,0 +1,1512 @@
+{
+  "backend": "apple_mps + cpu_reference (CUDA blocked-receipt only)",
+  "fidelity_order": [
+    "A_operator_microbench",
+    "B_expert_tournament",
+    "C_complete_layer",
+    "D_short_model_path"
+  ],
+  "generated_at": "2026-07-19T04:37:34Z",
+  "laws": {
+    "apple_only": true,
+    "cpu_authoritative": true,
+    "energy_unavailable": true,
+    "exact_artifact_accounting": true,
+    "no_dense_shadow": true,
+    "quality_first": true,
+    "stage_order_strict": true
+  },
+  "note": "immutable tournament definition; broad-then-narrow (A broad, B survivors, C strongest+controls, D finalists). Multi-session; resume from ledger.",
+  "parent": "openai/gpt-oss-120b (Generation F frozen e0857398)",
+  "program_sha256": "a4ab32586862cce7cb29b029022b78a7d902516ca08cb0ef0369bd7dfba492c3",
+  "rows": [
+    {
+      "candidate": "transform_pq_execute",
+      "controls": "source-native + equal-byte",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "B0:transform_pq_execute:mlp1",
+      "stage": "B0",
+      "stage_name": "source_native_direct_compact_baseline",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp1"
+    },
+    {
+      "candidate": "transform_pq_execute",
+      "controls": "source-native + equal-byte",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "B0:transform_pq_execute:mlp2",
+      "stage": "B0",
+      "stage_name": "source_native_direct_compact_baseline",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp2"
+    },
+    {
+      "candidate": "transform_pq_execute",
+      "controls": "source-native + equal-byte",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "B0:transform_pq_execute:router_control",
+      "stage": "B0",
+      "stage_name": "source_native_direct_compact_baseline",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "router_control"
+    },
+    {
+      "candidate": "transform_pq_execute",
+      "controls": "source-native + equal-byte",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "B0:transform_pq_execute:attn_control",
+      "stage": "B0",
+      "stage_name": "source_native_direct_compact_baseline",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "attn_control"
+    },
+    {
+      "candidate": "product_quant_execute",
+      "controls": "source-native + equal-byte",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "B0:product_quant_execute:mlp1",
+      "stage": "B0",
+      "stage_name": "source_native_direct_compact_baseline",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp1"
+    },
+    {
+      "candidate": "product_quant_execute",
+      "controls": "source-native + equal-byte",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "B0:product_quant_execute:mlp2",
+      "stage": "B0",
+      "stage_name": "source_native_direct_compact_baseline",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp2"
+    },
+    {
+      "candidate": "product_quant_execute",
+      "controls": "source-native + equal-byte",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "B0:product_quant_execute:router_control",
+      "stage": "B0",
+      "stage_name": "source_native_direct_compact_baseline",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "router_control"
+    },
+    {
+      "candidate": "product_quant_execute",
+      "controls": "source-native + equal-byte",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "B0:product_quant_execute:attn_control",
+      "stage": "B0",
+      "stage_name": "source_native_direct_compact_baseline",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "attn_control"
+    },
+    {
+      "candidate": "source_native",
+      "controls": "source-native + equal-byte",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "B0:source_native:mlp1",
+      "stage": "B0",
+      "stage_name": "source_native_direct_compact_baseline",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp1"
+    },
+    {
+      "candidate": "source_native",
+      "controls": "source-native + equal-byte",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "B0:source_native:mlp2",
+      "stage": "B0",
+      "stage_name": "source_native_direct_compact_baseline",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp2"
+    },
+    {
+      "candidate": "source_native",
+      "controls": "source-native + equal-byte",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "B0:source_native:router_control",
+      "stage": "B0",
+      "stage_name": "source_native_direct_compact_baseline",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "router_control"
+    },
+    {
+      "candidate": "source_native",
+      "controls": "source-native + equal-byte",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "B0:source_native:attn_control",
+      "stage": "B0",
+      "stage_name": "source_native_direct_compact_baseline",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "attn_control"
+    },
+    {
+      "candidate": "pq_tile_recon@varied_tiles",
+      "controls": "M1 vs B1 = direct lookup vs reconstruction, same artifact",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "B1:pq_tile_recon@varied_tiles:mlp1",
+      "stage": "B1",
+      "stage_name": "bounded_reconstruction_control",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp1"
+    },
+    {
+      "candidate": "pq_tile_recon@varied_tiles",
+      "controls": "M1 vs B1 = direct lookup vs reconstruction, same artifact",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "B1:pq_tile_recon@varied_tiles:mlp2",
+      "stage": "B1",
+      "stage_name": "bounded_reconstruction_control",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp2"
+    },
+    {
+      "candidate": "lookup_linear_d8",
+      "controls": "M1 vs B1",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "M1:lookup_linear_d8:mlp1",
+      "stage": "M1",
+      "stage_name": "lookup_linear_pq",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp1"
+    },
+    {
+      "candidate": "lookup_linear_d8",
+      "controls": "M1 vs B1",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "M1:lookup_linear_d8:mlp2",
+      "stage": "M1",
+      "stage_name": "lookup_linear_pq",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp2"
+    },
+    {
+      "candidate": "lookup_linear_d16",
+      "controls": "M1 vs B1",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "M1:lookup_linear_d16:mlp1",
+      "stage": "M1",
+      "stage_name": "lookup_linear_pq",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp1"
+    },
+    {
+      "candidate": "lookup_linear_d16",
+      "controls": "M1 vs B1",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "M1:lookup_linear_d16:mlp2",
+      "stage": "M1",
+      "stage_name": "lookup_linear_pq",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp2"
+    },
+    {
+      "candidate": "per_expert_table_control",
+      "controls": "M2 vs M1 = shared reuse vs independent",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "M2:per_expert_table_control:mlp1",
+      "stage": "M2",
+      "stage_name": "shared_lookup_linear_moe",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp1"
+    },
+    {
+      "candidate": "per_expert_table_control",
+      "controls": "M2 vs M1 = shared reuse vs independent",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "M2:per_expert_table_control:mlp2",
+      "stage": "M2",
+      "stage_name": "shared_lookup_linear_moe",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp2"
+    },
+    {
+      "candidate": "shared_table",
+      "controls": "M2 vs M1 = shared reuse vs independent",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "M2:shared_table:mlp1",
+      "stage": "M2",
+      "stage_name": "shared_lookup_linear_moe",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp1"
+    },
+    {
+      "candidate": "shared_table",
+      "controls": "M2 vs M1 = shared reuse vs independent",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "M2:shared_table:mlp2",
+      "stage": "M2",
+      "stage_name": "shared_lookup_linear_moe",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp2"
+    },
+    {
+      "candidate": "layer_group_share",
+      "controls": "M2 vs M1 = shared reuse vs independent",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "M2:layer_group_share:mlp1",
+      "stage": "M2",
+      "stage_name": "shared_lookup_linear_moe",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp1"
+    },
+    {
+      "candidate": "layer_group_share",
+      "controls": "M2 vs M1 = shared reuse vs independent",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "M2:layer_group_share:mlp2",
+      "stage": "M2",
+      "stage_name": "shared_lookup_linear_moe",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp2"
+    },
+    {
+      "candidate": "cluster_share",
+      "controls": "M2 vs M1 = shared reuse vs independent",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "M2:cluster_share:mlp1",
+      "stage": "M2",
+      "stage_name": "shared_lookup_linear_moe",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp1"
+    },
+    {
+      "candidate": "cluster_share",
+      "controls": "M2 vs M1 = shared reuse vs independent",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "M2:cluster_share:mlp2",
+      "stage": "M2",
+      "stage_name": "shared_lookup_linear_moe",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp2"
+    },
+    {
+      "candidate": "islands_off_control",
+      "controls": "M3 vs M2 = islands vs none",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "M3:islands_off_control:mlp1",
+      "stage": "M3",
+      "stage_name": "shared_moe_plus_islands",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp1"
+    },
+    {
+      "candidate": "islands_off_control",
+      "controls": "M3 vs M2 = islands vs none",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "M3:islands_off_control:mlp2",
+      "stage": "M3",
+      "stage_name": "shared_moe_plus_islands",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp2"
+    },
+    {
+      "candidate": "magnitude",
+      "controls": "M3 vs M2 = islands vs none",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "M3:magnitude:mlp1",
+      "stage": "M3",
+      "stage_name": "shared_moe_plus_islands",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp1"
+    },
+    {
+      "candidate": "magnitude",
+      "controls": "M3 vs M2 = islands vs none",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "M3:magnitude:mlp2",
+      "stage": "M3",
+      "stage_name": "shared_moe_plus_islands",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp2"
+    },
+    {
+      "candidate": "residual_energy",
+      "controls": "M3 vs M2 = islands vs none",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "M3:residual_energy:mlp1",
+      "stage": "M3",
+      "stage_name": "shared_moe_plus_islands",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp1"
+    },
+    {
+      "candidate": "residual_energy",
+      "controls": "M3 vs M2 = islands vs none",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "M3:residual_energy:mlp2",
+      "stage": "M3",
+      "stage_name": "shared_moe_plus_islands",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp2"
+    },
+    {
+      "candidate": "activation_aware",
+      "controls": "M3 vs M2 = islands vs none",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "M3:activation_aware:mlp1",
+      "stage": "M3",
+      "stage_name": "shared_moe_plus_islands",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp1"
+    },
+    {
+      "candidate": "activation_aware",
+      "controls": "M3 vs M2 = islands vs none",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "M3:activation_aware:mlp2",
+      "stage": "M3",
+      "stage_name": "shared_moe_plus_islands",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp2"
+    },
+    {
+      "candidate": "sensitivity",
+      "controls": "M3 vs M2 = islands vs none",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "M3:sensitivity:mlp1",
+      "stage": "M3",
+      "stage_name": "shared_moe_plus_islands",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp1"
+    },
+    {
+      "candidate": "sensitivity",
+      "controls": "M3 vs M2 = islands vs none",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "M3:sensitivity:mlp2",
+      "stage": "M3",
+      "stage_name": "shared_moe_plus_islands",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp2"
+    },
+    {
+      "candidate": "separate_kernel_control",
+      "controls": "M4 vs M3 = fused Doctor vs islands-only/unfused",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "M4:separate_kernel_control:mlp1",
+      "stage": "M4",
+      "stage_name": "fused_pq_islands_doctor",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp1"
+    },
+    {
+      "candidate": "separate_kernel_control",
+      "controls": "M4 vs M3 = fused Doctor vs islands-only/unfused",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "M4:separate_kernel_control:mlp2",
+      "stage": "M4",
+      "stage_name": "fused_pq_islands_doctor",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp2"
+    },
+    {
+      "candidate": "fused_base_islands",
+      "controls": "M4 vs M3 = fused Doctor vs islands-only/unfused",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "M4:fused_base_islands:mlp1",
+      "stage": "M4",
+      "stage_name": "fused_pq_islands_doctor",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp1"
+    },
+    {
+      "candidate": "fused_base_islands",
+      "controls": "M4 vs M3 = fused Doctor vs islands-only/unfused",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "M4:fused_base_islands:mlp2",
+      "stage": "M4",
+      "stage_name": "fused_pq_islands_doctor",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp2"
+    },
+    {
+      "candidate": "fully_fused_base_islands_doctor",
+      "controls": "M4 vs M3 = fused Doctor vs islands-only/unfused",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "M4:fully_fused_base_islands_doctor:mlp1",
+      "stage": "M4",
+      "stage_name": "fused_pq_islands_doctor",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp1"
+    },
+    {
+      "candidate": "fully_fused_base_islands_doctor",
+      "controls": "M4 vs M3 = fused Doctor vs islands-only/unfused",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "M4:fully_fused_base_islands_doctor:mlp2",
+      "stage": "M4",
+      "stage_name": "fused_pq_islands_doctor",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp2"
+    },
+    {
+      "candidate": "always_on_control",
+      "controls": "M5 vs M4 = conditional vs always-on",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "M5:always_on_control:mlp1",
+      "stage": "M5",
+      "stage_name": "conditional_doctor",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp1"
+    },
+    {
+      "candidate": "always_on_control",
+      "controls": "M5 vs M4 = conditional vs always-on",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "M5:always_on_control:mlp2",
+      "stage": "M5",
+      "stage_name": "conditional_doctor",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp2"
+    },
+    {
+      "candidate": "router_confidence_gate",
+      "controls": "M5 vs M4 = conditional vs always-on",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "M5:router_confidence_gate:mlp1",
+      "stage": "M5",
+      "stage_name": "conditional_doctor",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp1"
+    },
+    {
+      "candidate": "router_confidence_gate",
+      "controls": "M5 vs M4 = conditional vs always-on",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "M5:router_confidence_gate:mlp2",
+      "stage": "M5",
+      "stage_name": "conditional_doctor",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp2"
+    },
+    {
+      "candidate": "margin_gate",
+      "controls": "M5 vs M4 = conditional vs always-on",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "M5:margin_gate:mlp1",
+      "stage": "M5",
+      "stage_name": "conditional_doctor",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp1"
+    },
+    {
+      "candidate": "margin_gate",
+      "controls": "M5 vs M4 = conditional vs always-on",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "M5:margin_gate:mlp2",
+      "stage": "M5",
+      "stage_name": "conditional_doctor",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp2"
+    },
+    {
+      "candidate": "residual_syndrome_gate",
+      "controls": "M5 vs M4 = conditional vs always-on",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "M5:residual_syndrome_gate:mlp1",
+      "stage": "M5",
+      "stage_name": "conditional_doctor",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp1"
+    },
+    {
+      "candidate": "residual_syndrome_gate",
+      "controls": "M5 vs M4 = conditional vs always-on",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "M5:residual_syndrome_gate:mlp2",
+      "stage": "M5",
+      "stage_name": "conditional_doctor",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp2"
+    },
+    {
+      "candidate": "two_stage_residual_pq",
+      "controls": "M6 vs M4 = richer codebook stages at equal bytes",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "M6:two_stage_residual_pq:mlp1",
+      "stage": "M6",
+      "stage_name": "residual_additive_lookup",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp1"
+    },
+    {
+      "candidate": "two_stage_residual_pq",
+      "controls": "M6 vs M4 = richer codebook stages at equal bytes",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "M6:two_stage_residual_pq:mlp2",
+      "stage": "M6",
+      "stage_name": "residual_additive_lookup",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp2"
+    },
+    {
+      "candidate": "additive_multicodebook",
+      "controls": "M6 vs M4 = richer codebook stages at equal bytes",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "M6:additive_multicodebook:mlp1",
+      "stage": "M6",
+      "stage_name": "residual_additive_lookup",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp1"
+    },
+    {
+      "candidate": "additive_multicodebook",
+      "controls": "M6 vs M4 = richer codebook stages at equal bytes",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "M6:additive_multicodebook:mlp2",
+      "stage": "M6",
+      "stage_name": "residual_additive_lookup",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp2"
+    },
+    {
+      "candidate": "same_rate_M4_control",
+      "controls": "M6 vs M4 = richer codebook stages at equal bytes",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "M6:same_rate_M4_control:mlp1",
+      "stage": "M6",
+      "stage_name": "residual_additive_lookup",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp1"
+    },
+    {
+      "candidate": "same_rate_M4_control",
+      "controls": "M6 vs M4 = richer codebook stages at equal bytes",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "M6:same_rate_M4_control:mlp2",
+      "stage": "M6",
+      "stage_name": "residual_additive_lookup",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp2"
+    },
+    {
+      "candidate": "stronger_single_stage_control",
+      "controls": "M6 vs M4 = richer codebook stages at equal bytes",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "M6:stronger_single_stage_control:mlp1",
+      "stage": "M6",
+      "stage_name": "residual_additive_lookup",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp1"
+    },
+    {
+      "candidate": "stronger_single_stage_control",
+      "controls": "M6 vs M4 = richer codebook stages at equal bytes",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "M6:stronger_single_stage_control:mlp2",
+      "stage": "M6",
+      "stage_name": "residual_additive_lookup",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp2"
+    },
+    {
+      "candidate": "one_bit_plane_or_ternary_block",
+      "controls": "source-native + equal-byte",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "M7:one_bit_plane_or_ternary_block:mlp1",
+      "stage": "M7",
+      "stage_name": "optional_bit_oriented_control",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp1"
+    },
+    {
+      "candidate": "one_bit_plane_or_ternary_block",
+      "controls": "source-native + equal-byte",
+      "energy_method": "UNAVAILABLE",
+      "fidelity_ladder": [
+        "A_operator_microbench",
+        "B_expert_tournament",
+        "C_complete_layer",
+        "D_short_model_path"
+      ],
+      "mechanical_metrics": "10-dim vector",
+      "quality_metrics": [
+        "operator",
+        "expert",
+        "layer",
+        "short_path"
+      ],
+      "row_id": "M7:one_bit_plane_or_ternary_block:mlp2",
+      "stage": "M7",
+      "stage_name": "optional_bit_oriented_control",
+      "stopping_rule": "stage complete when a candidate reaches D OR all rejected with sealed evidence",
+      "tensor_class": "mlp2"
+    }
+  ],
+  "schema": "hawking.mechanics.program.v1",
+  "stage_order": [
+    "B0",
+    "B1",
+    "M1",
+    "M2",
+    "M3",
+    "M4",
+    "M5",
+    "M6",
+    "M7(optional)"
+  ],
+  "stages": [
+    {
+      "candidates": [
+        "transform_pq_execute",
+        "product_quant_execute",
+        "source_native"
+      ],
+      "name": "source_native_direct_compact_baseline",
+      "role": "reference",
+      "stage": "B0"
+    },
+    {
+      "candidates": [
+        "pq_tile_recon@varied_tiles"
+      ],
+      "causal": "M1 vs B1 = direct lookup vs reconstruction, same artifact",
+      "name": "bounded_reconstruction_control",
+      "role": "control",
+      "stage": "B1"
+    },
+    {
+      "candidates": [
+        "lookup_linear_d8",
+        "lookup_linear_d16"
+      ],
+      "causal": "M1 vs B1",
+      "name": "lookup_linear_pq",
+      "stage": "M1"
+    },
+    {
+      "candidates": [
+        "per_expert_table_control",
+        "shared_table",
+        "layer_group_share",
+        "cluster_share"
+      ],
+      "causal": "M2 vs M1 = shared reuse vs independent",
+      "name": "shared_lookup_linear_moe",
+      "stage": "M2"
+    },
+    {
+      "candidates": [
+        "islands_off_control",
+        "magnitude",
+        "residual_energy",
+        "activation_aware",
+        "sensitivity"
+      ],
+      "causal": "M3 vs M2 = islands vs none",
+      "name": "shared_moe_plus_islands",
+      "stage": "M3"
+    },
+    {
+      "candidates": [
+        "separate_kernel_control",
+        "fused_base_islands",
+        "fully_fused_base_islands_doctor"
+      ],
+      "causal": "M4 vs M3 = fused Doctor vs islands-only/unfused",
+      "name": "fused_pq_islands_doctor",
+      "stage": "M4"
+    },
+    {
+      "candidates": [
+        "always_on_control",
+        "router_confidence_gate",
+        "margin_gate",
+        "residual_syndrome_gate"
+      ],
+      "causal": "M5 vs M4 = conditional vs always-on",
+      "hard_gate": "false_negative_rate",
+      "name": "conditional_doctor",
+      "stage": "M5"
+    },
+    {
+      "candidates": [
+        "two_stage_residual_pq",
+        "additive_multicodebook",
+        "same_rate_M4_control",
+        "stronger_single_stage_control"
+      ],
+      "causal": "M6 vs M4 = richer codebook stages at equal bytes",
+      "name": "residual_additive_lookup",
+      "stage": "M6"
+    },
+    {
+      "admission": "only if M0-M6 not delayed; full-rank; not low-rank base",
+      "candidates": [
+        "one_bit_plane_or_ternary_block"
+      ],
+      "name": "optional_bit_oriented_control",
+      "role": "optional",
+      "stage": "M7"
+    }
+  ],
+  "total_rows": 60
+}

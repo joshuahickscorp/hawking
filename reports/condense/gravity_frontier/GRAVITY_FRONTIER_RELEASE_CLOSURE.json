@@ -1,0 +1,22 @@
+{
+  "binding": "the frontier controller + workers bind to this exact frozen commit; packs integration + CLI consolidation may not mutate this closure while the campaign runs (Section 6/21)",
+  "frozen_commit": "b465588384cf9cf7107f3144df1d6bf558bf3581",
+  "generated_at": "2026-07-19T01:27:55Z",
+  "run_critical_closure": {
+    "checkpoint_writer": "eco_common.atomic_write_json + seal_field",
+    "cpu_references": "gravity_forge CPU numpy paths + pq_cpu_metal_parity",
+    "doctor_treatments": "gravity_forge.doctor_pq",
+    "gptoss_adapter": "tools/condense/gptoss_moe_runtime.py + gptoss_block.py",
+    "gravity_controller": "tools/condense/gravity_frontier_controller.py (being built, binds this commit)",
+    "metal_kernels": "gravity_forge (_kmeans/_assign on MPS) + second_light_pack streaming",
+    "pq_forge": "tools/condense/gravity_forge.py",
+    "protected_island_provider": "gravity_forge.select_protected_islands / pack_pq_protected_islands",
+    "quality_evaluator": "gravity_forge.output_divergence + gptoss_moe_runtime.moe_forward_reference",
+    "seed_authority": "crates/hawking-seed-c",
+    "source_reader": "gptoss_moe_runtime.ProvenanceReader + second_light_source_manifest.py",
+    "status_heartbeat": "gravity_frontier_status.py + succ_watchdog.heartbeat"
+  },
+  "schema": "hawking.gravity_frontier.release_closure.v1",
+  "sha256": "ff6c1777adad2f0b94498f0b5185757c564f35a79bcd4c947813c63673931c47",
+  "tag": "hawking-second-light-baseline"
+}

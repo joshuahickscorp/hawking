@@ -1,0 +1,24 @@
+[package]
+name = "hawking-seed-c"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Candidate C: hardware-native, direct-compact, sub-bit-capable Hawking Seed (Event Horizon engine)"
+
+[[bin]]
+name = "hawking-seed-c"
+path = "src/main.rs"
+
+# Direct-quant + Metal-native. NO hawking-core, no full f32 model expansion. `memmap2` maps the
+# compressed model; `metal` drives the M3 Ultra; `half` is the f16 primitive. Authority via serde/sha2.
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+sha2 = { workspace = true }
+thiserror = { workspace = true }
+half = { workspace = true }
+memmap2 = { workspace = true }
+metal = "0.29"

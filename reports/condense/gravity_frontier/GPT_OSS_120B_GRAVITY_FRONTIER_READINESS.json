@@ -1,0 +1,88 @@
+{
+  "all_green": true,
+  "frozen_commit": "b465588384cf9cf7107f3144df1d6bf558bf3581",
+  "gates": {
+    "10_doctor_green": {
+      "green": true
+    },
+    "11_cpu_execution_green": {
+      "green": true
+    },
+    "12_metal_execution_green": {
+      "green": true
+    },
+    "13_cpu_metal_parity_green": {
+      "green": true
+    },
+    "14_expert_gate_green": {
+      "green": true
+    },
+    "15_full_layer_gate_green": {
+      "green": true
+    },
+    "16_multi_layer_gate_green": {
+      "green": true
+    },
+    "17_end_to_end_gate_green": {
+      "green": true
+    },
+    "18_exact_full_program_sealed": {
+      "green": true
+    },
+    "19_crash_resume_green": {
+      "green": true
+    },
+    "1_second_light_verified": {
+      "green": true
+    },
+    "20_controller_lease_green": {
+      "green": true
+    },
+    "21_status_heartbeat_green": {
+      "green": true
+    },
+    "22_resource_admission_green": {
+      "green": true
+    },
+    "23_rollback_green": {
+      "green": true
+    },
+    "24_no_competing_heavy_process": {
+      "green": true
+    },
+    "25_frontier_run_still_not_started": {
+      "green": true
+    },
+    "2_baseline_committed_tagged": {
+      "green": true
+    },
+    "3_run_critical_closure_frozen": {
+      "green": true
+    },
+    "4_source_receipt_valid": {
+      "green": true
+    },
+    "5_tokenizer_harmony_valid": {
+      "green": true
+    },
+    "6_quality_contract_sealed": {
+      "green": true
+    },
+    "7_pq_provider_green": {
+      "green": true
+    },
+    "8_residual_additive_provider_green": {
+      "green": true
+    },
+    "9_protected_islands_green": {
+      "green": true
+    }
+  },
+  "generated_at": "2026-07-19T01:46:13Z",
+  "green": 25,
+  "note": "gates are apparatus + baseline provenance; capability remains negative (functional divergence >> threshold). Ignition launches the durable GEOMETRY SEARCH, not a capability claim.",
+  "red": [],
+  "schema": "hawking.gpt_oss_120b.gravity_frontier_readiness.v1",
+  "sha256": "721a51477258301cb0686020bf147797895ec628d759ae394bd70d37489b75d8",
+  "total": 25
+}

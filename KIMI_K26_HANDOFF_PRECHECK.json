@@ -1,0 +1,112 @@
+{
+  "schema": "hawking.kimi_k26.handoff_precheck.v1",
+  "recorded_at": "2026-07-21T03:53:23Z",
+  "authoritative_repository": "/Users/scammermike/Downloads/hawking",
+  "starting_branch": "campaign/storage-stripdown-resident-first",
+  "starting_head": "2e968ad602b3e951e68b76da1bac8e57f5f00949",
+  "origin_main_after_fetch": "4fbca8bc6d33117707933793bb3293d9463c049f",
+  "campaign_branch": "campaign/kimi-k26-doctor-prime",
+  "working_tree_policy": "Pre-existing modified and untracked user files were preserved in place when the campaign branch was created.",
+  "worktrees": [
+    {
+      "path": "/Users/scammermike/Downloads/hawking",
+      "branch": "campaign/storage-stripdown-resident-first",
+      "head": "2e968ad602b3e951e68b76da1bac8e57f5f00949"
+    },
+    {
+      "path": "/Users/scammermike/Downloads/hawking-hide-build",
+      "branch": "build/hide-impl-2026-07-19",
+      "head": "4fbca8bc6d33117707933793bb3293d9463c049f",
+      "dirty_source_preserved": true
+    },
+    {
+      "path": "/Users/scammermike/HawkingWorktrees/subbit-reset",
+      "branch": "campaign/subbit-capability-density-reset",
+      "head": "c20191143ae8294a3502e90c0984846c624e5185"
+    }
+  ],
+  "model_source_roots": [
+    "/Users/scammermike/Downloads/hawking/models",
+    "/Users/scammermike/.cache/huggingface/hub"
+  ],
+  "kimi_candidate": {
+    "path": "/Users/scammermike/.cache/huggingface/hub/models--moonshotai--Kimi-K2.6",
+    "revision_view": "7eb5002f6aadc958aed6a9177b7ed26bb94011bb",
+    "actual_files_at_precheck": ["config.json"],
+    "allocated_bytes_at_precheck": 12288,
+    "classification": "PARTIAL_RESUMABLE_LOCAL"
+  },
+  "interim_parent": {
+    "repo": "deepseek-ai/DeepSeek-V4-Flash-DSpark",
+    "revision": "62af8fffb2f7030cac4de2f0169f5b8d1101b646",
+    "path": "/Users/scammermike/Downloads/hawking/models/deepseek-v4-flash-dspark",
+    "state": "RAW_WEIGHT_SHARDS_ALREADY_RELEASED; METADATA_ONLY",
+    "retained_bytes": 24228571
+  },
+  "active_processes_at_precheck": [
+    {
+      "pid": 86841,
+      "process_group": 86821,
+      "command": "./target/debug/hide-serve /tmp/hide-preview-repo --port 8744",
+      "disposition": "gracefully stopped before removing only its rebuildable target tree"
+    },
+    {
+      "pid": 89339,
+      "process_group": 89270,
+      "command": "vite --port 5273 --strictPort",
+      "disposition": "gracefully stopped with its HIDE dev process group"
+    },
+    {
+      "pid": 89378,
+      "process_group": 89270,
+      "command": "esbuild --service=0.28.1 --ping",
+      "disposition": "gracefully stopped with its HIDE dev process group"
+    },
+    {
+      "pid": 25305,
+      "command": "qwen_checkpoint_notifier.py --watch --interval 90 --pid 24649",
+      "disposition": "stopped because the watched Qwen PID was absent and that queue is retired"
+    }
+  ],
+  "active_model_or_heavy_processes_at_precheck": 0,
+  "active_build_processes_at_precheck": 0,
+  "leases": [
+    {
+      "path": "reports/condense/storage_stripdown/storage_stripdown.lease",
+      "recorded_pid": 4576,
+      "live": false,
+      "classification": "STALE_RECORD"
+    }
+  ],
+  "launchd": {
+    "loaded_hawking_agents_at_precheck": [],
+    "mop_agent_observed_and_untouched": "com.mop.generation1.telegram",
+    "existing_hawking_plists_observed_but_not_loaded": true
+  },
+  "telegram": {
+    "keychain_credentials_available": true,
+    "launchd_fallback_created_later": true,
+    "secrets_printed": false
+  },
+  "memory": {
+    "physical_bytes": 103079215104,
+    "swap_total_bytes": 2147483648,
+    "swap_used_bytes": 1080033280
+  },
+  "storage_at_precheck": {
+    "volume": "/System/Volumes/Data",
+    "total_bytes": 994662584320,
+    "free_bytes": 617159221248,
+    "df_and_apfs_free_bytes_reconciled": true,
+    "purgeable_bytes_counted_as_free": false
+  },
+  "mop": {
+    "declared": "/Users/scammermike/Downloads/mop",
+    "resolved": "/Users/scammermike/Downloads/mop",
+    "device": 16777233,
+    "inode": 1233332,
+    "protected": true,
+    "touched": false
+  },
+  "status": "GREEN"
+}
