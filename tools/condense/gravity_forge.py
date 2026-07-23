@@ -147,6 +147,40 @@ class PackedArtifact:
 # --------------------------------------------------------------------------------------------
 # GPU (MPS) primitives.
 # --------------------------------------------------------------------------------------------
+# The [N,K] distance matrix is the only working-set term that scales with the tensor, and it
+# scales past the machine: GLM-5.2's embedding table is 951,582,720 weights, so at dim=8 it is
+# 118,947,840 subvectors, and against 128 centroids that single allocation is 60.9 GB.  It took
+# the MPS allocator out and left roughly 67 GB wired.
+#
+# Only the distance and the argmin are blocked here.  The accumulation stays one index_add_
+# over the whole tensor: an earlier attempt chunked that too, and reading the count vector
+# while its per-block writes were still queued produced GPU address faults and a cb[nz]
+# update whose two sides disagreed on how many rows the mask selected.
+_DISTANCE_BUDGET_BYTES = int(os.environ.get("GRAVITY_KMEANS_DISTANCE_BUDGET_BYTES", 1 << 30))
+
+
+def _chunk_rows(n: int, k: int) -> int:
+    return max(1, min(n, _DISTANCE_BUDGET_BYTES // max(1, k * 4)))
+
+
+def _argmin_chunked(v, v2, cb, step: int):
+    """Nearest centroid per row, holding the distance block to ``step`` rows."""
+    torch = _torch()
+    n = v.shape[0]
+    cb_t = cb.t()
+    cb_sq = (cb * cb).sum(1)
+    if step >= n:
+        return (v2 - 2.0 * (v @ cb_t) + cb_sq).argmin(1)
+    out = torch.empty(n, device=v.device, dtype=torch.int64)
+    for start in range(0, n, step):
+        stop = min(start + step, n)
+        # disjoint destination slices, so no block ever reads another block's writes
+        out[start:stop] = (
+            v2[start:stop] - 2.0 * (v[start:stop] @ cb_t) + cb_sq
+        ).argmin(1)
+    return out
+
+
 def _kmeans(v, k: int, *, iters: int = 12, seed: int = 0):
     """k-means on v:[N,D] -> centroids [K,D]. Runs on v's device (MPS when available)."""
     torch = _torch()
@@ -155,9 +189,9 @@ def _kmeans(v, k: int, *, iters: int = 12, seed: int = 0):
     g = torch.Generator(device="cpu").manual_seed(seed)
     cb = v[torch.randperm(n, generator=g)[:k]].clone()
     v2 = (v * v).sum(1, keepdim=True)
+    step = _chunk_rows(n, k)
     for _ in range(iters):
-        d2 = v2 - 2.0 * (v @ cb.t()) + (cb * cb).sum(1)
-        idx = d2.argmin(1)
+        idx = _argmin_chunked(v, v2, cb, step)
         new = torch.zeros_like(cb)
         cnt = torch.zeros(k, device=cb.device, dtype=cb.dtype)
         new.index_add_(0, idx, v)
@@ -168,9 +202,8 @@ def _kmeans(v, k: int, *, iters: int = 12, seed: int = 0):
 
 
 def _assign(v, cb):
-    torch = _torch()
-    d2 = (v * v).sum(1, keepdim=True) - 2.0 * (v @ cb.t()) + (cb * cb).sum(1)
-    return d2.argmin(1)
+    v2 = (v * v).sum(1, keepdim=True)
+    return _argmin_chunked(v, v2, cb, _chunk_rows(v.shape[0], cb.shape[0]))
 
 
 def _hadamard(D: int):

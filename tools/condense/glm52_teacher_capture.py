@@ -750,7 +750,16 @@ def verify_capsule(identity: str, *, capsule_dir: Path | None = None) -> dict[st
 
 
 def captured_layers(*, capsule_dir: Path | None = None) -> set[int]:
-    """Layers with a sealed capsule.  Cheap: reads receipts, not capsules."""
+    """Layers whose capsule payload is present and matches its sealed receipt.
+
+    This is the set the eviction gate consults, so it must not be satisfied by a
+    receipt alone.  A sealed receipt beside a missing, truncated or zeroed .npz
+    describes evidence that no longer exists, and authorizing an eviction on it
+    destroys the BF16 body that was the only way to recreate it.  The payload
+    digest is checked here rather than the full metric reproduction of
+    ``verify_capsule``, which is far too expensive to run at every window
+    boundary; a hash mismatch is exactly the condition that must fail closed.
+    """
     out_dir = Path(capsule_dir) if capsule_dir is not None else CAPSULES
     if not out_dir.exists():
         return set()
@@ -759,6 +768,18 @@ def captured_layers(*, capsule_dir: Path | None = None) -> set[int]:
         try:
             receipt = verify_sealed(json.loads(path.read_text()), label=str(path))
         except (Glm52Error, json.JSONDecodeError, OSError):
+            continue
+        capsule = out_dir / f"{receipt['capsule_id']}.npz"
+        try:
+            if capsule.stat().st_size != int(receipt["capsule_bytes"]):
+                continue
+            digest = hashlib.sha256()
+            with capsule.open("rb") as handle:
+                for block in iter(lambda: handle.read(8 << 20), b""):
+                    digest.update(block)
+            if digest.hexdigest() != receipt["capsule_sha256"]:
+                continue
+        except (KeyError, OSError):
             continue
         layers.update(int(value) for value in receipt.get("layers", []))
     return layers
