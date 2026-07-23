@@ -1,41 +1,47 @@
 {
-  "depth": 1,
+  "depth": 3,
   "forward": "validated streamed forward, official DeepseekV4DecoderLayer, real weights",
   "hc_mult": 4,
   "layer": 5,
-  "max_amplification": 0.6275039733501754,
-  "min_amplification": 0.2933573876554837,
+  "max_amplification": 0.8218788923844653,
+  "min_amplification": 0.6406908329676416,
   "not_evidence_of": "capability; bounded tokens, one stratum, few magnitudes.",
   "parent": "deepseek-ai/DeepSeek-V4-Flash",
   "rows": [
     {
-      "entering_relative_l2": 0.19942699372768402,
+      "entering_relative_l2": 0.1907617598772049,
       "fraction": 0.25,
-      "geometric_mean_amplification": 0.2933573876554837,
+      "geometric_mean_amplification": 0.6406908329676416,
       "per_layer": [
-        0.2933573876554837
+        0.31207868734135535,
+        1.0021298840687776,
+        0.8409252763036305
       ]
     },
     {
-      "entering_relative_l2": 0.3986393213272095,
+      "entering_relative_l2": 0.3814106583595276,
       "fraction": 0.5,
-      "geometric_mean_amplification": 0.3310764126148428,
+      "geometric_mean_amplification": 0.6626503135370283,
       "per_layer": [
-        0.3310764126148428
+        0.34825853503253396,
+        1.0038642419967247,
+        0.8322934365195267
       ]
     },
     {
-      "entering_relative_l2": 0.7970837354660034,
+      "entering_relative_l2": 0.762633204460144,
       "fraction": 1.0,
-      "geometric_mean_amplification": 0.6275039733501754,
+      "geometric_mean_amplification": 0.8218788923844653,
       "per_layer": [
-        0.6275039733501754
+        0.6565362721379879,
+        0.9807632259406251,
+        0.8621852376768582
       ]
     }
   ],
   "schema": "hawking.deepseek_v4.amplification.v1",
-  "seq_len": 8,
-  "student_local_skill_at_L": 0.19961214065551758,
+  "seq_len": 32,
+  "student_local_skill_at_L": 0.2656458616256714,
   "verdict": "CONTRACTIVE",
   "vs_glm": "GLM was EXPANSIVE_AT_EVERY_TESTED_MAGNITUDE at strata 3/38/74; this is the hyper-connection residual's answer to the same question",
   "worse_at_smaller": false

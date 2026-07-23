@@ -1,0 +1,39 @@
+{
+  "schema": "hawking.deepseek_v4.contraction_verdict.v1",
+  "sealed_at": "2026-07-24T00:30:00Z",
+  "parent": "deepseek-ai/DeepSeek-V4-Flash",
+  "revision": "60d8d70770c6776ff598c94bb586a859a38244f1",
+  "verdict": "CONTRACTIVE_FUNCTIONAL_ESCAPE_EXISTS",
+  "significance": "the first cross-parent result that points AWAY from the GLM expansive law: the functional escape exists AND the residual stream does not amplify its error",
+  "forward": "validated streamed forward, official DeepseekV4DecoderLayer, real dequantized weights, one block resident at a time",
+  "functional_escape": {
+    "exists": true,
+    "layer_5_contextual_skill": 0.1823,
+    "layer_5_skill_lower": 0.0392,
+    "layer_5_centered_cosine": 0.7586,
+    "shuffled_control": -0.0137,
+    "input": "real contextual pre-MoE hidden, not embedding-seeded",
+    "note": "bounded: 224 positions, one layer, thin lower bound"
+  },
+  "amplification": {
+    "verdict": "CONTRACTIVE_AT_BOTH_TESTED_STRATA",
+    "layer_5_depth_3": {"geo_amp": [0.6407, 0.6627, 0.8219], "student_skill": 0.2656,
+                        "reading": "strongly contractive; the student's error shrinks to 64-82 percent through three layers"},
+    "layer_20_depth_3": {"geo_amp": [0.9857, 0.9682, 0.9609], "entering_relative_l2": [0.0102, 0.0198, 0.0393],
+                         "reading": "marginally contractive; at this stratum the MoE is a tiny fraction of the block output so the perturbation is small and near-neutral"},
+    "layer_38": "PENDING (39-layer prefix, running)",
+    "contrast_with_glm": "GLM was EXPANSIVE_AT_EVERY_TESTED_MAGNITUDE, 1.4 to 2.4x, at strata 3/38/74; DeepSeek is below 1.0 at every tested magnitude at both strata"
+  },
+  "mechanism_hypothesis": "the manifold-constrained hyper-connections (four streams mixed by a doubly-stochastic Sinkhorn matrix) are contractive by construction; a doubly-stochastic mix cannot increase the l2 of a deviation on average, which is the opposite of GLM's single-stream residual that amplified it",
+  "what_this_reopens": "a functional stream on DeepSeek is now scientifically plausible where it was refuted on GLM. The contraction-first pilot's promotion gate (block skill + rollout stability + cross-depth replication + physical accounting + runtime path) can proceed, because the propagation gate that killed GLM is passed here",
+  "what_is_still_required_before_promotion": [
+    "stronger existence statistics (more positions, tighter lower bound)",
+    "the layer 38 late-stratum amplification (pending)",
+    "a multi-layer rollout with a student in every layer, not a single-layer perturbation",
+    "router-margin and route-agreement propagation",
+    "exact complete-model physical accounting at fp4-relative rates",
+    "a direct runtime path"
+  ],
+  "not_evidence_of": "capability, a full-model result, or a promoted representation. Bounded tokens, two strata, modest student skill. This is a paradigm-direction result, not a servable model.",
+  "honest_status": "DeepSeek is the first parent where the functional escape both exists and survives propagation in the tested regime. That is a real, bounded, cross-parent positive, and it flips the cross-parent frontier from leaning-negative to open-and-promising, without yet being a promotion."
+}
