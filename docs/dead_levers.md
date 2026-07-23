@@ -468,3 +468,21 @@ Before opening a wedge, audit:
 - [[silicon-solutions-2026-05-29]] — the 16-solution silicon audit (2 LIVE→shipped, 11 dead); source of the Silicon-architecture kills section
 - [[sub4bit-quant-oracle-2026-05-29]], [[qtip-quality-oracle-2026-05-31]] — the weight-RMSE + QTIP proxy oracles behind the 2026-06-01 Colab verdicts
 - [[moat-status-forward-path-2026-05-31]] — post-sweep moat: prefix-cache + draft-tuning live; sub-Q4 byte-cut routes through QTIP only (now leaning NO-GO)
+
+---
+
+## 🪦 Sub-bit weight-space compression of a large MoE expert path (GLM-5.2, Generation B)
+
+**Status:** NO-GO on this parent — measured 2026-07-23 across four representation families at a matched rate, replicated on two windows, with an above-ceiling oracle locating the recovery point.
+
+**Type:** Type-1 on GLM-5.2. A measured property of the parent, not of one codec: four families making different structural assumptions land within 0.116 and 0.157 block output cosine at 0.75 complete BPW.
+
+**Evidence:** `reports/condense/glm52_generation_b/GLM52_GENERATION_B_PILOT_RESULTS.json`, `GLM52_GENERATION_B_ALLOCATION_PROBE.json`, `GLM52_PILOT_MEASUREMENTS.jsonl`. Block output cosine against sealed teacher capsules on window L38: 0.041 at 0.3306 BPW, 0.086 at 0.4990, 0.154 at 0.7531, 0.269 at 0.8931, and 0.700 at 2.0169 (above the one-bit law, diagnostic only). Reaching the 0.50 trajectory floor takes about 1.5 BPW against a ceiling of 1.0. Replicated on L74. The dense path is NOT bound: layer 0 clears the floor at 0.709 under the same codec, so the failure is specific to the routed experts, which are 97.492 percent of the weight.
+
+**Levers checked and closed:** (1) rate, by the curve above; (2) asymmetric BIT allocation, by arithmetic — spending zero on every other role raises the expert path only to 1.0186 BPW, and moving everything else from half a bit to zero changes the expert budget by 1.2 percent; (3) asymmetric REPRESENTATION allocation, by measurement — a hybrid giving attention to PQ and experts to low rank keeps both advantages and buys 1.8 percent of block output; (4) a shared basis across the layer's 256 experts, which spends four times the rank of per-tensor low rank and holds the expert path less than half as well (0.0348 vs 0.0811), so the experts do not share a low-dimensional subspace.
+
+**Relationship to the existing kills:** this independently reproduces the low-rank codec kill (L1.4, 2026-05-30) on a 753B MoE parent rather than a 3B dense one. The activation-weighted reframe was **not** run: it is a recorded Type-1 kill (2026-05-31) and re-opening it is forbidden.
+
+**Resurrection check:** only for a representation that is not a closed-form function of the weights. Section 6.1's student is fitted against the block's OUTPUT on the teacher trajectory, which no decomposition reaches. Do not rebuild any weight-space codec for a large MoE expert path under one bit without new evidence about the parent, not about the codec.
+
+**Killing memory:** [[glm52-pq-expert-function-bound-2026-07-23]].

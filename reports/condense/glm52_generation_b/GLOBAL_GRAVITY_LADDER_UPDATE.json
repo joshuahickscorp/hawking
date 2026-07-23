@@ -1,0 +1,97 @@
+{
+  "container_gap": "v1 describes tensors, not side information shared across them, so a shared basis, a runtime table or a serialized Doctor state has no home. Section 5.2 requires both to be billed, so the next parent needs this before either can ship.",
+  "dead_levers_respected": {
+    "independently_reproduced_on_a_new_parent": [
+      "low-rank codec (Type-1, 2026-05-30): rank 71 mean weight error 0.9497"
+    ],
+    "not_re_litigated": [
+      "activation-weighted / data-aware SVD (Type-1, 2026-05-31)"
+    ]
+  },
+  "families_closed_on_this_parent": {
+    "glm52.functional.block.v1": {
+      "block_cosine_at_0.75": 0.1443,
+      "finding": "256 experts do not share a subspace"
+    },
+    "glm52.hybrid.by_role.v1": {
+      "block_cosine_at_0.75": 0.1566,
+      "gain_over_best_single": 0.018
+    },
+    "glm52.lowrank.r1.v1": {
+      "block_cosine_at_0.75": 0.1162,
+      "reproduces_existing_kill": "docs/dead_levers.md L1.4"
+    },
+    "glm52.pq.r0.v1": {
+      "block_cosine_at_0.75": 0.1539,
+      "verdict": "FAMILY_BOUND"
+    }
+  },
+  "git_commit": "1e3f33227ebe26ef77ee188078357573db39c9cd",
+  "law": {
+    "above_ceiling_points_are_diagnostic": [
+      "2.0169"
+    ],
+    "curve_complete_bpw_to_block_cosine": {
+      "0.3306": 0.0409,
+      "0.4990": 0.0857,
+      "0.7531": 0.1539,
+      "0.8931": 0.2694,
+      "2.0169": 0.6997
+    },
+    "dense_path_not_bound": {
+      "block_cosine": 0.7092,
+      "window": "W_L00_L00"
+    },
+    "replicated_windows": [
+      "W_L38_L38",
+      "W_L74_L74"
+    ],
+    "statement": "GLM-5.2's routed-expert path needs about 1.5 bits per weight under closed-form weight-space compression to retain half the teacher's block direction; the one-bit law allows 1.0, where the measured curve sits near 0.30",
+    "taxonomy": "EXPERT_FUNCTION_BOUND"
+  },
+  "levers_closed_by_arithmetic": {
+    "asymmetric_bit_allocation": {
+      "max_expert_rate_under_one_bit": 1.0186,
+      "requirement": [
+        1.297,
+        1.461
+      ],
+      "why": "routed experts are 97.492 percent of the weight; nothing can donate"
+    }
+  },
+  "open_directions": [
+    "a student fitted against block output rather than weights (section 6.1)",
+    "the IndexShare-aware attention student (section 6.2)",
+    "IndexShare selection itself, untested at 256 positions against index_topk 2048"
+  ],
+  "recommendation_for_next_parent": "run the above-ceiling oracle on one window before building any rate ladder. One rung at twice the target rate separates rate-bound from family-bound for the cost of a single window, and it would have saved most of this run's compute.",
+  "rung": {
+    "architecture": "GlmMoeDsaForCausalLM, 78 layers, 256 routed experts, IndexShare",
+    "outcome": "OUTCOME_C_TESTED_SUB_ONE_BIT_REGION_CLOSES_NEGATIVELY",
+    "outcome_detail": "complete research artifacts exist and verify at four exact rates with complete tensor coverage, and the tested sub-0.75 region closes negatively on the routed-expert path across four representation families",
+    "parameters": 753329940480,
+    "parent": "zai-org/GLM-5.2",
+    "release_readiness": false,
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "routed_expert_weight_share": 0.97492,
+    "stamp": "RESEARCH_ONLY_NOT_RELEASED"
+  },
+  "schema": "hawking.global_gravity_ladder_update.v1",
+  "sealed_at": "2026-07-23T15:39:25Z",
+  "throughput": {
+    "corrects_prior_note": "parallelism does raise this link, by 17.8 percent, then saturates",
+    "selected_concurrent_files": 8,
+    "source_byte_amplification": 1.0,
+    "teacher_capture_seconds_per_sparse_layer": 22.7,
+    "xet_4_files_mbps": 1984,
+    "xet_8_files_mbps": 2001,
+    "xet_serial_mbps": 1698
+  },
+  "transfers_unchanged": [
+    "hawking.gravity.container.v1",
+    "complete-BPW accounting reconciled against physical bytes",
+    "protected organs carried natively and billed from stored bytes",
+    "natural split-disjoint teacher capture",
+    "trajectory measurement against a sealed capsule"
+  ]
+}
