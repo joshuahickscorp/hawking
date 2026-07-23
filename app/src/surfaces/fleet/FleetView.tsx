@@ -1,12 +1,18 @@
 /*
-  FleetView.tsx — Fork & Try N. The move cloud tools can't price: fork the agent's RWKV state into N
-  parallel attempts (a memcpy, ~free on already-paid silicon), watch them all radiate, keep the best.
-  Renders store.fleet as compact branch cards. (Backend forks real state in plan 2; until then App
-  seeds the branches optimistically, honestly framed as local.)
+  FleetView.tsx: Fork and Try N. Renders store.fleet as compact branch cards.
+
+  HONEST SCOPE (remediation stage): no Rust code publishes a `fleet` projection. The ONLY producer is
+  the mock transport (src/ipc.ts), so `store.fleet` is empty on every live host and this surface never
+  renders a card there. Nothing is seeded by App any more either. It is kept because the mock run is
+  the demo of the fork-and-try shape, not because a live fleet exists.
+
+  RETIRED with this stage: the "keep best" button. It fired the `focus_run` custom name, which no host
+  arm handles, under a tooltip promising to discard the other branches. Nothing was kept and nothing
+  was discarded. The catalog's `promote_run` is a different capability (promote ONE run to a durable
+  background job, offered in Home's Background rail), not a keep-one-discard-the-rest, so there was
+  nothing honest to re-point this at. `stop` stays: cancel_run is real.
 */
-import { sendIntent } from "../../ipc";
-import { useStore, type FleetRun } from "../../store";
-import { intent } from "../../wire";
+import { noticeFailure, runCommand, useStore, type FleetRun } from "../../store";
 import { Radiate } from "../../shell/Radiate";
 
 const STATE: Record<FleetRun["state"], { label: string; color: string }> = {
@@ -25,8 +31,8 @@ export function FleetView() {
     return (
       <div className="fleet">
         <p className="fleet__pitch">
-          No attempts yet. When a task benefits from parallel tries, HIDE forks the agent state into
-          branches and runs them here on your machine. Keep the best, discard the rest.
+          No attempts yet. Parallel attempts are a demo of the fork-and-try shape; no host publishes
+          a fleet yet, so nothing runs here on a live workspace.
         </p>
       </div>
     );
@@ -51,8 +57,8 @@ function Branch({ run, live }: { run: FleetRun; live?: string }) {
   const s = STATE[run.state];
   const pct = run.steps ? Math.round((run.step / run.steps) * 100) : 0;
   const isActive = run.state === "active";
-  const keep = () => void sendIntent(intent.custom("focus_run", { run_id: run.id }));
-  const stop = () => void sendIntent(intent.cancelRun(run.id));
+  // Through the spine: the card used to build a cancel_run Intent itself and skip its guards.
+  const stop = () => void runCommand("cancel_run", { run_id: run.id }).catch(noticeFailure("command"));
   return (
     <li className={["branch", isActive && "branch--alive"].filter(Boolean).join(" ")}>
       <div className="branch__top">
@@ -66,9 +72,6 @@ function Branch({ run, live }: { run: FleetRun; live?: string }) {
         <div className="branch__fill" style={{ width: `${pct}%` }} />
       </div>
       <div className="branch__actions">
-        <button className="branch__keep" onClick={keep} title="Keep this branch, discard the rest">
-          keep best
-        </button>
         <button className="branch__stop" onClick={stop} disabled={!isActive} title="Stop this attempt">
           stop
         </button>

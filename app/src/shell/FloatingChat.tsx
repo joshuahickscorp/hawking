@@ -5,8 +5,9 @@
 */
 import { useEffect, useRef, type PointerEvent as ReactPointerEvent } from "react";
 import { useStore } from "../store";
-import { Chat } from "../surfaces/Chat";
+import { Chat, NewChatButton } from "../surfaces/Chat";
 import { Icon } from "./icons";
+import { modelId } from "./ModelChooser";
 
 export function FloatingChat({
   pos,
@@ -22,7 +23,7 @@ export function FloatingChat({
   onPopToChat: () => void;
 }) {
   const manifest = useStore((s) => s.manifest);
-  const model = manifest?.model?.id ?? "qwen2.5";
+  const model = modelId(manifest);
   const drag = useRef<{ dx: number; dy: number } | null>(null);
 
   const onPointerDown = (e: ReactPointerEvent) => {
@@ -66,9 +67,8 @@ export function FloatingChat({
         <span className="floatchat__title">Executor</span>
         <span className="floatchat__model">{model}</span>
         <div className="floatchat__actions">
-          <button className="floatchat__icon" title="New chat" aria-label="New chat">
-            <Icon name="plus" size={15} />
-          </button>
+          {/* One shared New-chat control (surfaces/Chat.tsx), identical here and in ChatPane. */}
+          <NewChatButton className="floatchat__icon" size={15} />
           <button className="floatchat__icon" title="Open in Chat (picture in picture)" aria-label="Open in Chat" onClick={onPopToChat}>
             <Icon name="pip" size={14} />
           </button>

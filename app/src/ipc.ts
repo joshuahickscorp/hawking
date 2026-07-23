@@ -19,8 +19,14 @@ const USE_MOCK = TRANSPORT !== "live";
 
 export interface Transport {
   sendIntent(intent: Intent): Promise<IntentAck>;
-  /** Subscribe to the ordered UiEvent stream. Returns an unsubscribe fn. afterSeq backfills the gap first. */
-  subscribeUi(onEvent: (ev: UiEvent) => void, onError: (err: Error) => void, afterSeq?: number): () => void;
+  /** Subscribe to the ordered UiEvent stream. Returns an unsubscribe fn. The backfill runs on EVERY
+   *  connect, including the first, scoped to the session `session()` names when it names one. */
+  subscribeUi(
+    onEvent: (ev: UiEvent) => void,
+    onError: (err: Error) => void,
+    afterSeq?: number,
+    session?: () => string | null,
+  ): () => void;
   callConnector<T = unknown>(id: ConnectorId, method: string, params: unknown): Promise<T>;
 }
 
@@ -38,7 +44,12 @@ class LiveTransport implements Transport {
     return (await r.json()) as IntentAck; // accepted:false is a 200 body, not an HTTP error
   }
 
-  subscribeUi(onEvent: (ev: UiEvent) => void, onError: (err: Error) => void, afterSeq?: number): () => void {
+  subscribeUi(
+    onEvent: (ev: UiEvent) => void,
+    onError: (err: Error) => void,
+    afterSeq?: number,
+    session?: () => string | null,
+  ): () => void {
     let closed = false;
     let ws: WebSocket | null = null;
     let notified = false; // report a socket drop once per outage, not on every 1s reconnect tick
@@ -47,11 +58,15 @@ class LiveTransport implements Transport {
       if (closed) return;
       try {
         // Pull catch-up first (GET ?after_seq=N) to fill any gap, then resume the live socket.
-        if (fromSeq > 0) {
-          const gap = await this.catchUp(fromSeq);
-          for (const ev of gap) onEvent(ev);
-          fromSeq = gap.length ? gap[gap.length - 1].seq : fromSeq;
-        }
+        // UNCONDITIONALLY: this used to be guarded on `fromSeq > 0`, and the cursor is 0 on a fresh
+        // store AND on any reconnect that has not yet seen a live frame, so the one connect that
+        // matters most - a browser reload against a host holding a durable log - hydrated nothing.
+        // The socket is a live forward only (hide-serve forward_ui_events), so whatever the durable
+        // log holds arrives here or nowhere. Scoped to the session the caller is rendering, so the
+        // backfill cannot splice fifty other sessions into one transcript.
+        const gap = await this.catchUp(fromSeq, session?.() ?? null);
+        for (const ev of gap) onEvent(ev);
+        fromSeq = gap.length ? gap[gap.length - 1].seq : fromSeq;
       } catch (e) {
         onError(e instanceof Error ? e : new Error(String(e)));
       }
@@ -92,8 +107,9 @@ class LiveTransport implements Transport {
     };
   }
 
-  private async catchUp(afterSeq: number): Promise<UiEvent[]> {
-    const r = await fetch(`${BASE}/v1/hide/events?after_seq=${afterSeq}`);
+  private async catchUp(afterSeq: number, sessionId: string | null): Promise<UiEvent[]> {
+    const scope = sessionId ? `&session_id=${encodeURIComponent(sessionId)}` : "";
+    const r = await fetch(`${BASE}/v1/hide/events?after_seq=${afterSeq}${scope}`);
     if (!r.ok) throw new Error(`catch-up failed: ${r.status}`);
     return (await r.json()) as UiEvent[];
   }
@@ -239,7 +255,12 @@ class MockTransport implements Transport {
     this.later(t + 320, () => this.emit({ type: "projection_patch", data: { projection: "turn", patch: { run_id: MOCK_RUN, phase: "done" } } }));
   }
 
-  subscribeUi(onEvent: (ev: UiEvent) => void, _onError: (err: Error) => void, _afterSeq?: number): () => void {
+  subscribeUi(
+    onEvent: (ev: UiEvent) => void,
+    _onError: (err: Error) => void,
+    _afterSeq?: number,
+    _session?: () => string | null,
+  ): () => void {
     this.listeners.add(onEvent);
     // Ambient boot stream: runtime comes up, the courtyard digest + session list arrive, the fleet
     // shows two parallel agents.
@@ -284,6 +305,7 @@ export const subscribeUi = (
   onEvent: (ev: UiEvent) => void,
   onError: (err: Error) => void,
   afterSeq?: number,
-) => transport.subscribeUi(onEvent, onError, afterSeq);
+  session?: () => string | null,
+) => transport.subscribeUi(onEvent, onError, afterSeq, session);
 export const callConnector = <T = unknown>(id: ConnectorId, method: string, params: unknown) =>
   transport.callConnector<T>(id, method, params);

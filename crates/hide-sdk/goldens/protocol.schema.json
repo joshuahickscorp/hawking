@@ -1,0 +1,2595 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "Agent": {
+      "description": "An agent: a worker in the agent tree (Bible sec 14). The root agent has no parent; sub-agents record their parent and the host records their children, so the tree is walkable from either end.",
+      "properties": {
+        "budget": {
+          "$ref": "#/definitions/Budget",
+          "default": {
+            "tokens": null,
+            "tool_calls": null,
+            "usd_micros": null,
+            "wall_ms": null
+          }
+        },
+        "children": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "context_scope": {
+          "$ref": "#/definitions/ContextScope"
+        },
+        "effects": {
+          "default": [],
+          "items": {
+            "$ref": "#/definitions/Effect"
+          },
+          "type": "array"
+        },
+        "id": {
+          "type": "string"
+        },
+        "model_policy": {
+          "$ref": "#/definitions/ModelPolicy"
+        },
+        "parent": {
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "return_policy": {
+          "$ref": "#/definitions/ReturnPolicy"
+        },
+        "role": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "context_scope",
+        "id",
+        "model_policy",
+        "return_policy",
+        "role"
+      ],
+      "type": "object"
+    },
+    "AgentMessage": {
+      "properties": {
+        "text": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "text"
+      ],
+      "type": "object"
+    },
+    "AgentResult": {
+      "properties": {
+        "agent": {
+          "type": "string"
+        },
+        "outcome": {
+          "$ref": "#/definitions/CompletionStatus"
+        },
+        "summary": {
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "agent",
+        "outcome"
+      ],
+      "type": "object"
+    },
+    "AgentSpawn": {
+      "properties": {
+        "agent": {
+          "type": "string"
+        },
+        "objective": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "agent",
+        "objective",
+        "role"
+      ],
+      "type": "object"
+    },
+    "ApprovalDecision": {
+      "enum": [
+        "approved",
+        "denied",
+        "deferred"
+      ],
+      "type": "string"
+    },
+    "ApprovalRequest": {
+      "description": "A request for the user to approve an effectful action before it runs.",
+      "properties": {
+        "action": {
+          "type": "string"
+        },
+        "detail": {
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "effects": {
+          "default": [],
+          "items": {
+            "$ref": "#/definitions/Effect"
+          },
+          "type": "array"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "risk": {
+          "$ref": "#/definitions/Risk"
+        }
+      },
+      "required": [
+        "action",
+        "request_id",
+        "risk"
+      ],
+      "type": "object"
+    },
+    "ApprovalResult": {
+      "properties": {
+        "decision": {
+          "$ref": "#/definitions/ApprovalDecision"
+        },
+        "reason": {
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "request_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "decision",
+        "request_id"
+      ],
+      "type": "object"
+    },
+    "Artifact": {
+      "description": "A produced artifact: a file, patch, report, or other output. `produced_by` links back to the plan step (Bible sec 14) that generated it.",
+      "properties": {
+        "created_ms": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "digest": {
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "id": {
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/definitions/ArtifactKind"
+        },
+        "name": {
+          "type": "string"
+        },
+        "path": {
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "produced_by": {
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "size_bytes": {
+          "default": null,
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "created_ms",
+        "id",
+        "kind",
+        "name"
+      ],
+      "type": "object"
+    },
+    "ArtifactKind": {
+      "description": "The kind of artifact a step or turn produces.",
+      "enum": [
+        "file",
+        "patch",
+        "report",
+        "binary",
+        "log",
+        "other"
+      ],
+      "type": "string"
+    },
+    "Attachment": {
+      "description": "An attachment carried on a user message. Mirrors `hide_core::types::BlobRef` so the compat bridge maps between them losslessly.",
+      "properties": {
+        "hash": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "media_type": {
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "size_bytes": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "hash",
+        "id",
+        "size_bytes"
+      ],
+      "type": "object"
+    },
+    "Blocker": {
+      "description": "The turn cannot proceed and needs the user. Distinct from an error: a blocker is a solvable stall, not a failure.",
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "needs": {
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "code",
+        "message"
+      ],
+      "type": "object"
+    },
+    "Budget": {
+      "description": "The resource budget an agent may spend.",
+      "properties": {
+        "tokens": {
+          "default": null,
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "tool_calls": {
+          "default": null,
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "usd_micros": {
+          "default": null,
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "wall_ms": {
+          "default": null,
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "Checkpoint": {
+      "description": "A checkpoint: a named, restorable boundary in a thread. It may bind a state capsule (the runtime bytes) and/or a VCS ref (the source-tree position).",
+      "properties": {
+        "at_turn": {
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "capsule": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/StateCapsuleRef"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "created_ms": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "id": {
+          "type": "string"
+        },
+        "label": {
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "session": {
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "thread": {
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "vcs_ref": {
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "created_ms",
+        "id"
+      ],
+      "type": "object"
+    },
+    "ClientCapabilities": {
+      "description": "What the client can do. The server ANDs these with its own to reach the effective capability set.",
+      "properties": {
+        "approvals": {
+          "default": false,
+          "type": "boolean"
+        },
+        "experimental": {
+          "additionalProperties": true,
+          "default": {},
+          "type": "object"
+        },
+        "fs": {
+          "default": false,
+          "type": "boolean"
+        },
+        "streaming": {
+          "default": false,
+          "type": "boolean"
+        },
+        "subscriptions": {
+          "default": false,
+          "type": "boolean"
+        },
+        "terminal": {
+          "default": false,
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
+    "Completion": {
+      "description": "The turn finished. Carries the terminal status and an optional summary.",
+      "properties": {
+        "status": {
+          "$ref": "#/definitions/CompletionStatus"
+        },
+        "summary": {
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "type": "object"
+    },
+    "CompletionStatus": {
+      "description": "Terminal outcome of a turn, agent, or completion item.",
+      "enum": [
+        "success",
+        "partial",
+        "failed",
+        "cancelled"
+      ],
+      "type": "string"
+    },
+    "ContextReceipt": {
+      "description": "A context receipt: the honest ledger of what was pulled into context for a turn (Bible: bounded recall is the moat, so the receipt is first-class).",
+      "properties": {
+        "note": {
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sources": {
+          "default": [],
+          "items": {
+            "$ref": "#/definitions/ContextSource"
+          },
+          "type": "array"
+        },
+        "total_token_estimate": {
+          "default": null,
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "ContextScope": {
+      "description": "What a sub-agent is allowed to see of its parent's context.",
+      "properties": {
+        "exclude": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "include": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "inherit_parent": {
+          "default": false,
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
+    "ContextSource": {
+      "description": "One source folded into the model's context, with the tokens it cost.",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "token_estimate": {
+          "default": null,
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "trust": {
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "uri": {
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "type": "object"
+    },
+    "Cost": {
+      "description": "An estimated cost. Every field is optional so a planner can declare only what it can estimate. These are estimates, not measurements -- the honest framing this crate holds to.",
+      "properties": {
+        "tokens": {
+          "default": null,
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "usd_micros": {
+          "default": null,
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "wall_ms": {
+          "default": null,
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "Diff": {
+      "description": "A per-file diff with reviewable status.",
+      "properties": {
+        "diff_id": {
+          "type": "string"
+        },
+        "hunks": {
+          "default": [],
+          "items": {
+            "$ref": "#/definitions/DiffHunk"
+          },
+          "type": "array"
+        },
+        "path": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/definitions/DiffStatus"
+        }
+      },
+      "required": [
+        "diff_id",
+        "path",
+        "status"
+      ],
+      "type": "object"
+    },
+    "DiffHunk": {
+      "properties": {
+        "new_lines": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "new_start": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "old_lines": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "old_start": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "text": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "new_lines",
+        "new_start",
+        "old_lines",
+        "old_start",
+        "text"
+      ],
+      "type": "object"
+    },
+    "DiffStatus": {
+      "enum": [
+        "proposed",
+        "applied",
+        "rejected",
+        "reverted"
+      ],
+      "type": "string"
+    },
+    "Effect": {
+      "description": "A declared side effect. A step or agent lists the effects it may cause so a scope check can gate it before execution. Kept protocol-local (rather than reusing another crate's effect enum) so this schema authority is self-contained.",
+      "enum": [
+        "read_fs",
+        "write_fs",
+        "network",
+        "process",
+        "shell",
+        "vcs",
+        "environment",
+        "approval",
+        "agent_spawn",
+        "state",
+        "other"
+      ],
+      "type": "string"
+    },
+    "ErrorItem": {
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "message"
+      ],
+      "type": "object"
+    },
+    "InitializeRequest": {
+      "description": "The client's opening message (sec 15.3): who it is, which protocol versions it speaks (highest preference first), and what it can do.",
+      "properties": {
+        "capabilities": {
+          "$ref": "#/definitions/ClientCapabilities"
+        },
+        "client": {
+          "$ref": "#/definitions/PeerInfo"
+        },
+        "protocolVersions": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "capabilities",
+        "client",
+        "protocolVersions"
+      ],
+      "type": "object"
+    },
+    "InitializeResult": {
+      "description": "The server's reply: who it is, the ONE negotiated protocol version, and its capabilities.",
+      "properties": {
+        "capabilities": {
+          "$ref": "#/definitions/ServerCapabilities"
+        },
+        "protocolVersion": {
+          "type": "string"
+        },
+        "server": {
+          "$ref": "#/definitions/PeerInfo"
+        }
+      },
+      "required": [
+        "capabilities",
+        "protocolVersion",
+        "server"
+      ],
+      "type": "object"
+    },
+    "Interrupt": {
+      "description": "An interrupt of the running turn (sec 15 `turn/interrupt`).",
+      "properties": {
+        "reason": {
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "Item": {
+      "description": "An item: one event in a turn, ordered by `seq`. The `kind` payload is flattened so an item is a single flat object on the wire.",
+      "oneOf": [
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "user_message"
+              ],
+              "type": "string"
+            },
+            "payload": {
+              "$ref": "#/definitions/UserMessage"
+            }
+          },
+          "required": [
+            "kind",
+            "payload"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "agent_message"
+              ],
+              "type": "string"
+            },
+            "payload": {
+              "$ref": "#/definitions/AgentMessage"
+            }
+          },
+          "required": [
+            "kind",
+            "payload"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "reasoning_summary"
+              ],
+              "type": "string"
+            },
+            "payload": {
+              "$ref": "#/definitions/ReasoningSummary"
+            }
+          },
+          "required": [
+            "kind",
+            "payload"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "plan"
+              ],
+              "type": "string"
+            },
+            "payload": {
+              "$ref": "#/definitions/Plan"
+            }
+          },
+          "required": [
+            "kind",
+            "payload"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "plan_mutation"
+              ],
+              "type": "string"
+            },
+            "payload": {
+              "$ref": "#/definitions/PlanMutation"
+            }
+          },
+          "required": [
+            "kind",
+            "payload"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "context_receipt"
+              ],
+              "type": "string"
+            },
+            "payload": {
+              "$ref": "#/definitions/ContextReceipt"
+            }
+          },
+          "required": [
+            "kind",
+            "payload"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "tool_call"
+              ],
+              "type": "string"
+            },
+            "payload": {
+              "$ref": "#/definitions/ToolCall"
+            }
+          },
+          "required": [
+            "kind",
+            "payload"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "tool_result"
+              ],
+              "type": "string"
+            },
+            "payload": {
+              "$ref": "#/definitions/ToolResult"
+            }
+          },
+          "required": [
+            "kind",
+            "payload"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "shell_stream"
+              ],
+              "type": "string"
+            },
+            "payload": {
+              "$ref": "#/definitions/ShellStream"
+            }
+          },
+          "required": [
+            "kind",
+            "payload"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "patch"
+              ],
+              "type": "string"
+            },
+            "payload": {
+              "$ref": "#/definitions/Patch"
+            }
+          },
+          "required": [
+            "kind",
+            "payload"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "diff"
+              ],
+              "type": "string"
+            },
+            "payload": {
+              "$ref": "#/definitions/Diff"
+            }
+          },
+          "required": [
+            "kind",
+            "payload"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "approval_request"
+              ],
+              "type": "string"
+            },
+            "payload": {
+              "$ref": "#/definitions/ApprovalRequest"
+            }
+          },
+          "required": [
+            "kind",
+            "payload"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "approval_result"
+              ],
+              "type": "string"
+            },
+            "payload": {
+              "$ref": "#/definitions/ApprovalResult"
+            }
+          },
+          "required": [
+            "kind",
+            "payload"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "verification_request"
+              ],
+              "type": "string"
+            },
+            "payload": {
+              "$ref": "#/definitions/VerificationRequest"
+            }
+          },
+          "required": [
+            "kind",
+            "payload"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "verification_receipt"
+              ],
+              "type": "string"
+            },
+            "payload": {
+              "$ref": "#/definitions/VerificationReceipt"
+            }
+          },
+          "required": [
+            "kind",
+            "payload"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "artifact"
+              ],
+              "type": "string"
+            },
+            "payload": {
+              "$ref": "#/definitions/Artifact"
+            }
+          },
+          "required": [
+            "kind",
+            "payload"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "checkpoint"
+              ],
+              "type": "string"
+            },
+            "payload": {
+              "$ref": "#/definitions/Checkpoint"
+            }
+          },
+          "required": [
+            "kind",
+            "payload"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "state_capsule"
+              ],
+              "type": "string"
+            },
+            "payload": {
+              "$ref": "#/definitions/StateCapsuleRef"
+            }
+          },
+          "required": [
+            "kind",
+            "payload"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "agent_spawn"
+              ],
+              "type": "string"
+            },
+            "payload": {
+              "$ref": "#/definitions/AgentSpawn"
+            }
+          },
+          "required": [
+            "kind",
+            "payload"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "agent_result"
+              ],
+              "type": "string"
+            },
+            "payload": {
+              "$ref": "#/definitions/AgentResult"
+            }
+          },
+          "required": [
+            "kind",
+            "payload"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "steer"
+              ],
+              "type": "string"
+            },
+            "payload": {
+              "$ref": "#/definitions/Steer"
+            }
+          },
+          "required": [
+            "kind",
+            "payload"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "interrupt"
+              ],
+              "type": "string"
+            },
+            "payload": {
+              "$ref": "#/definitions/Interrupt"
+            }
+          },
+          "required": [
+            "kind",
+            "payload"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "error"
+              ],
+              "type": "string"
+            },
+            "payload": {
+              "$ref": "#/definitions/ErrorItem"
+            }
+          },
+          "required": [
+            "kind",
+            "payload"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "completion"
+              ],
+              "type": "string"
+            },
+            "payload": {
+              "$ref": "#/definitions/Completion"
+            }
+          },
+          "required": [
+            "kind",
+            "payload"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "blocker"
+              ],
+              "type": "string"
+            },
+            "payload": {
+              "$ref": "#/definitions/Blocker"
+            }
+          },
+          "required": [
+            "kind",
+            "payload"
+          ],
+          "type": "object"
+        }
+      ],
+      "properties": {
+        "created_ms": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "id": {
+          "type": "string"
+        },
+        "seq": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "turn": {
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "created_ms",
+        "id",
+        "seq"
+      ],
+      "type": "object"
+    },
+    "ItemDelta": {
+      "description": "A streaming delta applied to an already-added item (for token-by-token agent messages and live shell output).",
+      "properties": {
+        "append_text": {
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "shell_chunk": {
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "Method": {
+      "description": "The closed set of request methods (Bible sec 15), grouped by namespace. Serializes as its slash-namespaced string.",
+      "enum": [
+        "workspace/create",
+        "workspace/open",
+        "workspace/close",
+        "workspace/get",
+        "workspace/list",
+        "environment/create",
+        "environment/get",
+        "environment/list",
+        "environment/dispose",
+        "session/new",
+        "session/get",
+        "session/list",
+        "session/close",
+        "thread/new",
+        "thread/get",
+        "thread/list",
+        "thread/fork",
+        "thread/fork_ephemeral",
+        "thread/merge_summary",
+        "goal/set",
+        "goal/get",
+        "goal/list",
+        "turn/create",
+        "turn/get",
+        "turn/steer",
+        "turn/interrupt",
+        "turn/pause",
+        "turn/resume",
+        "item/get",
+        "item/list",
+        "item/subscribe",
+        "agent/spawn",
+        "agent/get",
+        "agent/list",
+        "agent/result",
+        "checkpoint/create",
+        "checkpoint/list",
+        "checkpoint/restore",
+        "state/save",
+        "state/load",
+        "state/fork",
+        "state/release",
+        "state/inspect",
+        "approval/request",
+        "approval/respond",
+        "artifact/get",
+        "artifact/list",
+        "artifact/put"
+      ],
+      "type": "string"
+    },
+    "ModelPolicy": {
+      "description": "The model policy an agent runs under.\n\nDEFERRED_MODEL_REQUIRED: this only names a policy; binding a policy to an actual model and honoring `allow_fallback` at inference time is the job of a model-bearing runtime and is not implemented or claimed here.",
+      "properties": {
+        "allow_fallback": {
+          "default": false,
+          "type": "boolean"
+        },
+        "policy": {
+          "description": "A named policy (for example `\"default\"`, `\"cheap\"`, `\"frontier\"`).",
+          "type": "string"
+        },
+        "tier": {
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "policy"
+      ],
+      "type": "object"
+    },
+    "Notification": {
+      "description": "Server-to-client notifications (Bible sec 15.5). Adjacently tagged with a slash-namespaced `method`, matching the request namespaces so a client routes both by the same key.",
+      "oneOf": [
+        {
+          "properties": {
+            "method": {
+              "enum": [
+                "session/updated"
+              ],
+              "type": "string"
+            },
+            "params": {
+              "properties": {
+                "session": {
+                  "type": "string"
+                },
+                "status": {
+                  "$ref": "#/definitions/SessionStatus"
+                }
+              },
+              "required": [
+                "session",
+                "status"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "method",
+            "params"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "method": {
+              "enum": [
+                "thread/updated"
+              ],
+              "type": "string"
+            },
+            "params": {
+              "properties": {
+                "thread": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "thread"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "method",
+            "params"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "method": {
+              "enum": [
+                "turn/started"
+              ],
+              "type": "string"
+            },
+            "params": {
+              "properties": {
+                "turn": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "turn"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "method",
+            "params"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "method": {
+              "enum": [
+                "turn/updated"
+              ],
+              "type": "string"
+            },
+            "params": {
+              "properties": {
+                "status": {
+                  "$ref": "#/definitions/TurnStatus"
+                },
+                "turn": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "status",
+                "turn"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "method",
+            "params"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "method": {
+              "enum": [
+                "turn/completed"
+              ],
+              "type": "string"
+            },
+            "params": {
+              "properties": {
+                "status": {
+                  "$ref": "#/definitions/CompletionStatus"
+                },
+                "turn": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "status",
+                "turn"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "method",
+            "params"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "method": {
+              "enum": [
+                "item/added"
+              ],
+              "type": "string"
+            },
+            "params": {
+              "properties": {
+                "item": {
+                  "$ref": "#/definitions/Item"
+                }
+              },
+              "required": [
+                "item"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "method",
+            "params"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "method": {
+              "enum": [
+                "item/updated"
+              ],
+              "type": "string"
+            },
+            "params": {
+              "properties": {
+                "item": {
+                  "$ref": "#/definitions/Item"
+                }
+              },
+              "required": [
+                "item"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "method",
+            "params"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "method": {
+              "enum": [
+                "item/delta"
+              ],
+              "type": "string"
+            },
+            "params": {
+              "properties": {
+                "delta": {
+                  "$ref": "#/definitions/ItemDelta"
+                },
+                "item": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "delta",
+                "item"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "method",
+            "params"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "method": {
+              "enum": [
+                "plan/updated"
+              ],
+              "type": "string"
+            },
+            "params": {
+              "properties": {
+                "plan": {
+                  "$ref": "#/definitions/Plan"
+                }
+              },
+              "required": [
+                "plan"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "method",
+            "params"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "method": {
+              "enum": [
+                "tool/progress"
+              ],
+              "type": "string"
+            },
+            "params": {
+              "properties": {
+                "call_id": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "call_id",
+                "message"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "method",
+            "params"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "method": {
+              "enum": [
+                "approval/requested"
+              ],
+              "type": "string"
+            },
+            "params": {
+              "properties": {
+                "request": {
+                  "$ref": "#/definitions/ApprovalRequest"
+                }
+              },
+              "required": [
+                "request"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "method",
+            "params"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "method": {
+              "enum": [
+                "checkpoint/created"
+              ],
+              "type": "string"
+            },
+            "params": {
+              "properties": {
+                "checkpoint": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "checkpoint"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "method",
+            "params"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "method": {
+              "enum": [
+                "agent/spawned"
+              ],
+              "type": "string"
+            },
+            "params": {
+              "properties": {
+                "agent": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "agent"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "method",
+            "params"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "method": {
+              "enum": [
+                "agent/updated"
+              ],
+              "type": "string"
+            },
+            "params": {
+              "properties": {
+                "agent": {
+                  "type": "string"
+                },
+                "status": {
+                  "$ref": "#/definitions/TurnStatus"
+                }
+              },
+              "required": [
+                "agent",
+                "status"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "method",
+            "params"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "method": {
+              "enum": [
+                "state/saved"
+              ],
+              "type": "string"
+            },
+            "params": {
+              "properties": {
+                "capsule": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "capsule"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "method",
+            "params"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "method": {
+              "enum": [
+                "runtime/status"
+              ],
+              "type": "string"
+            },
+            "params": {
+              "properties": {
+                "detail": {
+                  "default": null,
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "status": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "status"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "method",
+            "params"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "method": {
+              "enum": [
+                "error"
+              ],
+              "type": "string"
+            },
+            "params": {
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "method",
+            "params"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "method": {
+              "enum": [
+                "custom"
+              ],
+              "type": "string"
+            },
+            "params": {
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "payload": true
+              },
+              "required": [
+                "name",
+                "payload"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "method",
+            "params"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "Patch": {
+      "description": "A proposed multi-file patch, carried as a unified diff.",
+      "properties": {
+        "files": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "patch_id": {
+          "type": "string"
+        },
+        "summary": {
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "unified_diff": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "patch_id",
+        "unified_diff"
+      ],
+      "type": "object"
+    },
+    "PeerInfo": {
+      "description": "Identifies the peer at either end of the handshake.",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version"
+      ],
+      "type": "object"
+    },
+    "Plan": {
+      "description": "A plan: a DAG of steps that reaches a goal.",
+      "properties": {
+        "created_ms": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "goal": {
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "id": {
+          "type": "string"
+        },
+        "steps": {
+          "items": {
+            "$ref": "#/definitions/PlanStep"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "created_ms",
+        "id",
+        "steps"
+      ],
+      "type": "object"
+    },
+    "PlanMutation": {
+      "properties": {
+        "detail": {
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "kind": {
+          "$ref": "#/definitions/PlanMutationKind"
+        },
+        "plan": {
+          "type": "string"
+        },
+        "step": {
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "kind",
+        "plan"
+      ],
+      "type": "object"
+    },
+    "PlanMutationKind": {
+      "description": "What changed about a plan.",
+      "enum": [
+        "add_step",
+        "remove_step",
+        "update_step",
+        "reorder",
+        "replace"
+      ],
+      "type": "string"
+    },
+    "PlanStep": {
+      "description": "One node in the plan DAG. Its edges are `dependencies`; a valid plan is acyclic and every dependency resolves to another step in the same plan (checked by [`Plan::validate_dag`]).",
+      "properties": {
+        "acceptance_oracle": {
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "cost": {
+          "$ref": "#/definitions/Cost",
+          "default": {
+            "tokens": null,
+            "usd_micros": null,
+            "wall_ms": null
+          }
+        },
+        "dependencies": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "effects": {
+          "default": [],
+          "items": {
+            "$ref": "#/definitions/Effect"
+          },
+          "type": "array"
+        },
+        "expected_artifacts": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "id": {
+          "type": "string"
+        },
+        "objective": {
+          "type": "string"
+        },
+        "parallelizable": {
+          "default": false,
+          "type": "boolean"
+        },
+        "rollback_boundary": {
+          "$ref": "#/definitions/RollbackBoundary",
+          "default": {
+            "kind": "none",
+            "reference": null
+          }
+        },
+        "scope": {
+          "$ref": "#/definitions/Scope"
+        }
+      },
+      "required": [
+        "id",
+        "objective",
+        "scope"
+      ],
+      "type": "object"
+    },
+    "ReasoningSummary": {
+      "properties": {
+        "text": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "text"
+      ],
+      "type": "object"
+    },
+    "ReturnPolicy": {
+      "description": "How a sub-agent's results return to its parent.",
+      "oneOf": [
+        {
+          "description": "Return only a summary of what happened.",
+          "enum": [
+            "summary"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "Return the full transcript of the sub-agent's turns.",
+          "enum": [
+            "full_transcript"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "Return the produced artifacts only.",
+          "enum": [
+            "artifacts"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "Return a state capsule the parent can rebind.",
+          "enum": [
+            "state_capsule"
+          ],
+          "type": "string"
+        }
+      ]
+    },
+    "Risk": {
+      "description": "Risk banding on an action that may need approval. Mirrors the concept in `hide_core::types::RiskLevel` but is defined locally so the schema authority stays self-contained.",
+      "enum": [
+        "trivial",
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "type": "string"
+    },
+    "RollbackBoundary": {
+      "description": "The rollback boundary a step commits to before mutating anything.",
+      "properties": {
+        "kind": {
+          "$ref": "#/definitions/RollbackKind"
+        },
+        "reference": {
+          "default": null,
+          "description": "A reference to the boundary marker (checkpoint id, capsule id, stash ref), when the kind implies one.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "type": "object"
+    },
+    "RollbackKind": {
+      "description": "How far a step's effects can be unwound if it is rejected or fails.",
+      "oneOf": [
+        {
+          "description": "Nothing to undo.",
+          "enum": [
+            "none"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "Undo by restoring a checkpoint.",
+          "enum": [
+            "checkpoint"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "Undo by reloading a state capsule.",
+          "enum": [
+            "state_capsule"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "Undo by dropping a VCS stash.",
+          "enum": [
+            "git_stash"
+          ],
+          "type": "string"
+        }
+      ]
+    },
+    "Scope": {
+      "description": "The blast radius a step is allowed to touch. `paths` are the files or globs it may read/write; `network` says whether it may reach out.",
+      "properties": {
+        "description": {
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "network": {
+          "default": false,
+          "type": "boolean"
+        },
+        "paths": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "ServerCapabilities": {
+      "description": "What the server offers.",
+      "properties": {
+        "agents": {
+          "default": false,
+          "type": "boolean"
+        },
+        "checkpoints": {
+          "default": false,
+          "type": "boolean"
+        },
+        "experimental": {
+          "additionalProperties": true,
+          "default": {},
+          "type": "object"
+        },
+        "methods": {
+          "default": [],
+          "items": {
+            "$ref": "#/definitions/Method"
+          },
+          "type": "array"
+        },
+        "remote": {
+          "default": false,
+          "type": "boolean"
+        },
+        "state": {
+          "default": false,
+          "type": "boolean"
+        },
+        "streaming": {
+          "default": false,
+          "type": "boolean"
+        },
+        "subscriptions": {
+          "default": false,
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
+    "Session": {
+      "description": "A session: one working context over a workspace. Threads (including forks) hang off it; the session references them by id so a session stays a light header while threads carry the turn history.",
+      "properties": {
+        "created_ms": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "environment": {
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "id": {
+          "type": "string"
+        },
+        "repository": {
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "$ref": "#/definitions/SessionStatus"
+        },
+        "threads": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "title": {
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "workspace": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "created_ms",
+        "id",
+        "status",
+        "workspace"
+      ],
+      "type": "object"
+    },
+    "SessionStatus": {
+      "description": "Lifecycle state of a session.",
+      "enum": [
+        "active",
+        "idle",
+        "closed"
+      ],
+      "type": "string"
+    },
+    "ShellChannel": {
+      "enum": [
+        "stdout",
+        "stderr"
+      ],
+      "type": "string"
+    },
+    "ShellStream": {
+      "description": "A chunk of a running command's output stream.",
+      "properties": {
+        "call_id": {
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "channel": {
+          "$ref": "#/definitions/ShellChannel"
+        },
+        "chunk": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "channel",
+        "chunk"
+      ],
+      "type": "object"
+    },
+    "StateCapsuleRef": {
+      "description": "A pointer to a state capsule held by `hide-state`. This is only a reference: it names the capsule and pins its digest and identity binding so a reader can locate and verify the bytes.\n\nDEFERRED_MODEL_REQUIRED: the live production of capsule bytes from a running engine, and their rebind into a runtime, is not implemented here and cannot be claimed. `hide-state` defines the byte schema; a model-bearing runtime fills it. This struct only carries the address and the integrity pins.",
+      "properties": {
+        "capsule_id": {
+          "description": "The capsule id as known to the `hide-state` store.",
+          "type": "string"
+        },
+        "created_ms": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "digest": {
+          "description": "Integrity digest of the capsule payload (verified by `hide-state`).",
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "model_id": {
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "size_bytes": {
+          "default": null,
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "capsule_id",
+        "created_ms",
+        "digest",
+        "id"
+      ],
+      "type": "object"
+    },
+    "Steer": {
+      "description": "A mid-turn steering directive from the user (sec 15 `turn/steer`).",
+      "properties": {
+        "directive": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "directive"
+      ],
+      "type": "object"
+    },
+    "Thread": {
+      "description": "A thread: an ordered line of turns within a session. Forking a thread (sec 15 `thread/fork`, `thread/fork_ephemeral`) records the parent and the turn it branched from, so lineage is always recoverable. An ephemeral fork is a scratch branch whose only durable return is a merge summary (`thread/merge_summary`).",
+      "properties": {
+        "created_ms": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "ephemeral": {
+          "default": false,
+          "type": "boolean"
+        },
+        "forked_at_turn": {
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "id": {
+          "type": "string"
+        },
+        "parent": {
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "session": {
+          "type": "string"
+        },
+        "title": {
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "turns": {
+          "items": {
+            "$ref": "#/definitions/Turn"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "created_ms",
+        "id",
+        "session",
+        "turns"
+      ],
+      "type": "object"
+    },
+    "ToolCall": {
+      "properties": {
+        "arguments": true,
+        "call_id": {
+          "type": "string"
+        },
+        "tool": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "arguments",
+        "call_id",
+        "tool"
+      ],
+      "type": "object"
+    },
+    "ToolResult": {
+      "properties": {
+        "call_id": {
+          "type": "string"
+        },
+        "error": {
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "output": true
+      },
+      "required": [
+        "call_id",
+        "ok",
+        "output"
+      ],
+      "type": "object"
+    },
+    "Turn": {
+      "description": "A turn: one authored contribution to a thread, carrying an ordered list of items. `parent_turn` records causal provenance (the \"why\" spine).",
+      "properties": {
+        "created_ms": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "id": {
+          "type": "string"
+        },
+        "items": {
+          "items": {
+            "$ref": "#/definitions/Item"
+          },
+          "type": "array"
+        },
+        "parent_turn": {
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "role": {
+          "$ref": "#/definitions/TurnRole"
+        },
+        "status": {
+          "$ref": "#/definitions/TurnStatus"
+        },
+        "thread": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "created_ms",
+        "id",
+        "items",
+        "role",
+        "status",
+        "thread"
+      ],
+      "type": "object"
+    },
+    "TurnRole": {
+      "description": "Who authored a turn.",
+      "enum": [
+        "user",
+        "agent",
+        "system",
+        "tool"
+      ],
+      "type": "string"
+    },
+    "TurnStatus": {
+      "description": "Lifecycle state of a turn. `steer`/`interrupt`/`pause`/`resume` (sec 15) move a turn between these.",
+      "enum": [
+        "pending",
+        "running",
+        "paused",
+        "completed",
+        "interrupted",
+        "failed"
+      ],
+      "type": "string"
+    },
+    "UserMessage": {
+      "properties": {
+        "attachments": {
+          "default": [],
+          "items": {
+            "$ref": "#/definitions/Attachment"
+          },
+          "type": "array"
+        },
+        "text": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "text"
+      ],
+      "type": "object"
+    },
+    "VerificationOutcome": {
+      "enum": [
+        "pass",
+        "fail",
+        "inconclusive"
+      ],
+      "type": "string"
+    },
+    "VerificationReceipt": {
+      "description": "The receipt returned when an oracle finishes grading.",
+      "properties": {
+        "detail": {
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "oracle": {
+          "type": "string"
+        },
+        "outcome": {
+          "$ref": "#/definitions/VerificationOutcome"
+        },
+        "request_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "oracle",
+        "outcome",
+        "request_id"
+      ],
+      "type": "object"
+    },
+    "VerificationRequest": {
+      "description": "A request to grade a target against an oracle.",
+      "properties": {
+        "oracle": {
+          "type": "string"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "target": {
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "oracle",
+        "request_id"
+      ],
+      "type": "object"
+    }
+  },
+  "protocolVersion": "hide.agent.v1",
+  "roots": [
+    "Session",
+    "Thread",
+    "Turn",
+    "Item",
+    "Method",
+    "Notification",
+    "InitializeRequest",
+    "InitializeResult",
+    "Plan",
+    "Agent"
+  ],
+  "title": "HIDE Agent Protocol"
+}

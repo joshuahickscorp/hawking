@@ -1,0 +1,21 @@
+[package]
+name = "hide-acp"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Agent Client Protocol (ACP) server boundary so HIDE appears as an agent inside ACP-speaking editors (Bible sec 10, sec 69). Wire shapes are spec-derived from the public Apache-2.0 ACP spec; model-free."
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+# Projected FROM: the ONE HIDE schema authority. hide-acp maps its Items and
+# Notifications onto ACP session updates and maps an ACP prompt back into a
+# HIDE turn intent.
+hide-protocol = { path = "../hide-protocol" }
+
+[features]
+default = []

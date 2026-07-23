@@ -1,0 +1,1158 @@
+{
+  "generated_ms": 1784594723953,
+  "server": {
+    "url": "http://127.0.0.1:8744",
+    "healthz": "ok",
+    "workspace": "/tmp/hide-preview-repo"
+  },
+  "model": {
+    "served": false,
+    "reason": "HIDE_MODEL_WEIGHTS unset, so BackendHost::maybe_boot_runtime returns None and no runtime is supervised.",
+    "consequence": "Agent TURNS are DEFERRED_MODEL_REQUIRED. Every other step in this file ran LIVE against this hide-serve; none is covered only by the Rust unit tests."
+  },
+  "repo_state": {
+    "before": {
+      "README.md": "8d4715c5b4d7c61ed58538633a95e349c97c14da3af28b0e9b4b75f08c7dd4e8",
+      "src/pool.rs": "32d5e7e08796e6922cb01b68fc1d3ade336e8e994e73ba63d7518ed6db868590",
+      "src/retry.rs": "bc0a519ee561aaa4ee8cd4ca32834035b756269e520931d2af4dc26770f9271a"
+    },
+    "after_including_harness_restore": {
+      "README.md": "8d4715c5b4d7c61ed58538633a95e349c97c14da3af28b0e9b4b75f08c7dd4e8",
+      "src/pool.rs": "32d5e7e08796e6922cb01b68fc1d3ade336e8e994e73ba63d7518ed6db868590",
+      "src/retry.rs": "bc0a519ee561aaa4ee8cd4ca32834035b756269e520931d2af4dc26770f9271a"
+    },
+    "note": "The harness restores src/pool.rs, src/retry.rs and README.md to their pre-run contents at the end so the sequence replays deterministically. The per-step `disk` blocks record the real mid-run byte changes."
+  },
+  "coverage": {
+    "ran_live_and_held": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "ran_live_and_did_not_hold": {},
+    "not_attempted": {
+      "0": "DEFERRED_MODEL_REQUIRED: no model is served (HIDE_MODEL_WEIGHTS unset, so BackendHost::maybe_boot_runtime returns None). A submit_turn would ack accepted and then surface 'model offline' rather than generate. Not attempted, not faked."
+    }
+  },
+  "steps": [
+    {
+      "step": 0,
+      "title": "agent turn (submit_turn) runs live",
+      "status": "SKIPPED",
+      "sent": [],
+      "proof": [],
+      "disk": [],
+      "notes": [
+        "Everything below is host capability and DID run live against this hide-serve; no step in this file is covered only by the Rust unit tests."
+      ],
+      "reason": "DEFERRED_MODEL_REQUIRED: no model is served (HIDE_MODEL_WEIGHTS unset, so BackendHost::maybe_boot_runtime returns None). A submit_turn would ack accepted and then surface 'model offline' rather than generate. Not attempted, not faked."
+    },
+    {
+      "step": 1,
+      "title": "workspace_add_repo + workspace_set_repo_trust (Ask -> gate -> release)",
+      "status": "PASS",
+      "sent": [
+        {
+          "request": {
+            "POST": "/v1/hide/intent",
+            "body": {
+              "type": "custom",
+              "data": {
+                "name": "workspace_set_repo_trust",
+                "payload": {
+                  "repo_id": "preview",
+                  "root_path": "/tmp/hide-preview-repo",
+                  "trust": "trusted"
+                }
+              }
+            }
+          },
+          "ack": {
+            "accepted": true,
+            "held": true,
+            "event_seq": 649,
+            "message": "held for approval: gate=command:1"
+          }
+        },
+        {
+          "request": {
+            "name": "approve_gate",
+            "payload": {
+              "gate": "command:1"
+            }
+          },
+          "ack": {
+            "accepted": true,
+            "held": false,
+            "event_seq": 650,
+            "message": null
+          }
+        }
+      ],
+      "proof": [
+        {
+          "live": "security_gate",
+          "gate": "command:1",
+          "message": "approval required before workspace_set_repo_trust takes effect"
+        },
+        {
+          "durable": "event_seq=649 user.intent.custom.workspace_set_repo_trust"
+        },
+        {
+          "live": "custom.repo_trust_set",
+          "repo": {
+            "branch": null,
+            "index_ref": null,
+            "instructions_ref": null,
+            "policy_ref": null,
+            "repo_id": "preview",
+            "root_path": "/tmp/hide-preview-repo",
+            "trust": "trusted"
+          }
+        }
+      ],
+      "disk": [],
+      "notes": [
+        "workspace_add_repo has NO wire name; the trust intent carries root_path and the host creates the node (host.rs handle_memory_workspace_env_intent)."
+      ]
+    },
+    {
+      "step": 2,
+      "title": "new_session + goal_set",
+      "status": "PASS",
+      "sent": [
+        {
+          "request": {
+            "name": "new_session",
+            "payload": {}
+          },
+          "ack": {
+            "accepted": true,
+            "held": false,
+            "event_seq": 651,
+            "message": null
+          }
+        },
+        {
+          "request": {
+            "name": "goal_set",
+            "payload": {
+              "session_id": "ses_01KY124Q0GCJ677T69J138V4BK",
+              "condition": "harden the pool retry path",
+              "acceptance": [
+                "src/pool.rs declares a max_idle guard",
+                "src/retry.rs documents jitter"
+              ]
+            }
+          },
+          "ack": {
+            "accepted": true,
+            "held": false,
+            "event_seq": 652,
+            "message": null
+          }
+        }
+      ],
+      "proof": [
+        {
+          "live": "projection_patch/turn",
+          "session_id": "ses_01KY124Q0GCJ677T69J138V4BK",
+          "patch": {
+            "phase": "idle",
+            "run_id": null
+          }
+        },
+        {
+          "live": "custom.goal_set",
+          "record": {
+            "acceptance": [
+              "src/pool.rs declares a max_idle guard",
+              "src/retry.rs documents jitter"
+            ],
+            "condition": "harden the pool retry path",
+            "created_ms": 1784594717717,
+            "goal_id": "goal_e4c7403b7e840cc44e03b290",
+            "session_id": "ses_01KY124Q0GCJ677T69J138V4BK",
+            "status": "active",
+            "updated_ms": 1784594717717
+          }
+        },
+        {
+          "durable": "event_seq=652 user.intent.custom.goal_set"
+        }
+      ],
+      "disk": [],
+      "notes": []
+    },
+    {
+      "step": 3,
+      "title": "grant_write_lease (Ask -> gate -> release), scoped to src/",
+      "status": "PASS",
+      "sent": [
+        {
+          "request": {
+            "name": "grant_write_lease",
+            "payload": {
+              "repo_id": "preview",
+              "scopes": [
+                "src"
+              ],
+              "session_id": "ses_01KY124Q0GCJ677T69J138V4BK"
+            }
+          },
+          "ack": {
+            "accepted": true,
+            "held": true,
+            "event_seq": 653,
+            "message": "held for approval: gate=command:2"
+          }
+        },
+        {
+          "request": {
+            "name": "approve_gate",
+            "payload": {
+              "gate": "command:2"
+            }
+          },
+          "ack": {
+            "accepted": true,
+            "held": false,
+            "event_seq": 654,
+            "message": null
+          }
+        }
+      ],
+      "proof": [
+        {
+          "live": "projection_patch/status",
+          "write_lease": {
+            "active": true,
+            "granted_ms": 1784594717729,
+            "lease_id": "gnt_01KY124Q11118K209BJV8P6B7H",
+            "note": "granted",
+            "repo_id": "preview",
+            "scopes": [
+              "/tmp/hide-preview-repo/src"
+            ]
+          }
+        }
+      ],
+      "disk": [],
+      "notes": [
+        "The grant runs ONLY from host.rs released_effect, so the human approval at the gate IS the grant condition."
+      ]
+    },
+    {
+      "step": 4,
+      "title": "multi-file edit through the app's own write path (save_file)",
+      "status": "PASS",
+      "sent": [
+        {
+          "request": {
+            "name": "save_file",
+            "payload": {
+              "path": "src/pool.rs",
+              "content": "<218 bytes>"
+            }
+          },
+          "ack": {
+            "accepted": true,
+            "held": false,
+            "event_seq": 655,
+            "message": null
+          }
+        },
+        {
+          "request": {
+            "name": "save_file",
+            "payload": {
+              "path": "src/retry.rs",
+              "content": "<124 bytes>"
+            }
+          },
+          "ack": {
+            "accepted": true,
+            "held": false,
+            "event_seq": 659,
+            "message": null
+          }
+        },
+        {
+          "request": {
+            "name": "save_file",
+            "payload": {
+              "path": "src/pool.rs",
+              "content": "clobbered",
+              "base_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+              "session_id": "ses_01KY124Q0GCJ677T69J138V4BK"
+            }
+          },
+          "ack": {
+            "accepted": false,
+            "held": false,
+            "event_seq": 663,
+            "message": "tool error: write of src/pool.rs refused: CONFLICT: base_hash mismatch (on-disk 424f7cca140acb08d395b14d814b23e5bbfa7491c2fe314e7dc9ddeb57dc3285, expected 0000000000000000000000000000000000000000000000000000000000000000)"
+          }
+        }
+      ],
+      "proof": [
+        {
+          "applier": "base_hash conflict refused",
+          "ack": {
+            "accepted": false,
+            "held": false,
+            "event_seq": 663,
+            "message": "tool error: write of src/pool.rs refused: CONFLICT: base_hash mismatch (on-disk 424f7cca140acb08d395b14d814b23e5bbfa7491c2fe314e7dc9ddeb57dc3285, expected 0000000000000000000000000000000000000000000000000000000000000000)"
+          }
+        }
+      ],
+      "disk": [
+        {
+          "path": "src/pool.rs",
+          "sha256_before": "32d5e7e08796e6922cb01b68fc1d3ade336e8e994e73ba63d7518ed6db868590",
+          "sha256_after": "26956b01bb09c180cbd123f78cc5cbc7886ab2a5bb81938e47e98635e68ceef4",
+          "bytes_before": 166,
+          "bytes_after": 218
+        },
+        {
+          "path": "src/retry.rs",
+          "sha256_before": "bc0a519ee561aaa4ee8cd4ca32834035b756269e520931d2af4dc26770f9271a",
+          "sha256_after": "5e325ff8ea85cd05d7a95193e7bf193dcbec6c8f163484aaae9251404ac84b3c",
+          "bytes_before": 57,
+          "bytes_after": 124
+        }
+      ],
+      "notes": [
+        "save_file is the ONE wire-reachable workspace write. It routes BackendHost::save_file_effect -> dispatch_tool -> edit.write_file (the same verifying applier an agent edit takes, and the same call site where the tool events and the diff capture live). The fs connector no longer carries a write arm at all, so there is no second write channel to drift.",
+        "Not atomic across files: two save_file intents are two independent applies. A single transactional multi-file patch has no wire shape."
+      ]
+    },
+    {
+      "step": 5,
+      "title": "DiffProposal recorded and a diff projection published",
+      "status": "PASS",
+      "sent": [],
+      "proof": [
+        {
+          "live_diff_projection_frames": 2,
+          "live_diff_chip_frames": 2,
+          "durable_diff_projection_frames": 2,
+          "durable_tool_rows_for_the_save": 3
+        },
+        {
+          "diff_id": "diff-editor-ses_01KY124Q0GCJ677T69J138V4BK",
+          "run_id": "editor-ses_01KY124Q0GCJ677T69J138V4BK",
+          "hunks": [
+            {
+              "hunk_id": "diff-editor-ses_01KY124Q0GCJ677T69J138V4BK-h0",
+              "file": "/tmp/hide-preview-repo/src/pool.rs",
+              "status": "pending"
+            },
+            {
+              "hunk_id": "diff-editor-ses_01KY124Q0GCJ677T69J138V4BK-h1",
+              "file": "/tmp/hide-preview-repo/src/retry.rs",
+              "status": "pending"
+            }
+          ]
+        }
+      ],
+      "disk": [],
+      "notes": []
+    },
+    {
+      "step": 6,
+      "title": "reject one hunk, keep the other, prove it on disk",
+      "status": "PASS",
+      "sent": [
+        {
+          "request": {
+            "POST": "/v1/hide/intent",
+            "body": {
+              "type": "accept_diff",
+              "data": {
+                "run_id": "editor-ses_01KY124Q0GCJ677T69J138V4BK",
+                "diff_id": "diff-editor-ses_01KY124Q0GCJ677T69J138V4BK",
+                "hunk_id": "diff-editor-ses_01KY124Q0GCJ677T69J138V4BK-h0"
+              }
+            }
+          },
+          "ack": {
+            "accepted": true,
+            "held": false,
+            "event_seq": 666,
+            "message": null
+          }
+        },
+        {
+          "request": {
+            "POST": "/v1/hide/intent",
+            "body": {
+              "type": "reject_diff",
+              "data": {
+                "run_id": "editor-ses_01KY124Q0GCJ677T69J138V4BK",
+                "diff_id": "diff-editor-ses_01KY124Q0GCJ677T69J138V4BK",
+                "hunk_id": "diff-editor-ses_01KY124Q0GCJ677T69J138V4BK-h1"
+              }
+            }
+          },
+          "ack": {
+            "accepted": true,
+            "held": false,
+            "event_seq": 668,
+            "message": null
+          }
+        }
+      ],
+      "proof": [
+        {
+          "live": "projection_patch/diff",
+          "patch": {
+            "after": "pub fn backoff(attempt: u32) -> u64 {\n    1 << attempt\n}\n\n// jitter: full-jitter backoff documented by the preview workflow\n",
+            "before": "pub fn backoff(attempt: u32) -> u64 {\n    1 << attempt\n}\n",
+            "diff_id": "diff-editor-ses_01KY124Q0GCJ677T69J138V4BK",
+            "hunks": [
+              {
+                "base_hash": "39da24c6818b51e37fb69c8d2f6b9a8cbc19801747fff15f9363d14940b44787",
+                "file": "/tmp/hide-preview-repo/src/pool.rs",
+                "header": "@@ -9,0 +9,2 @@ /tmp/hide-preview-repo/src/pool.rs",
+                "hunk_id": "diff-editor-ses_01KY124Q0GCJ677T69J138V4BK-h0",
+                "id": "diff-editor-ses_01KY124Q0GCJ677T69J138V4BK-h0",
+                "lines": [
+                  {
+                    "kind": "ctx",
+                    "newNo": 6,
+                    "oldNo": 6,
+                    "text": "pub fn release(n: usize) -> usize {"
+                  },
+                  {
+                    "kind": "ctx",
+                    "newNo": 7,
+                    "oldNo": 7,
+                    "text": "    n - 1"
+                  },
+                  {
+                    "kind": "ctx",
+                    "newNo": 8,
+                    "oldNo": 8,
+                    "text": "}"
+                  },
+                  {
+                    "kind": "add",
+                    "newNo": 9,
+                    "oldNo": null,
+                    "text": ""
+                  },
+                  {
+                    "kind": "add",
+                    "newNo": 10,
+                    "oldNo": null,
+                    "text": "// TODO: cap max_idle before the retry ladder runs"
+                  }
+                ],
+                "provenance": {
+                  "agent": "edit.write_file",
+                  "plan_step": null,
+                  "turn": 0
+                },
+                "status": "accepted"
+              },
+              {
+                "base_hash": "1027148c09964a06b1732badf9fd9f8244d8ec05aa3a1e3e836eaefef1f884e1",
+                "file": "/tmp/hide-preview-repo/src/retry.rs",
+                "header": "@@ -4,0 +4,2 @@ /tmp/hide-preview-repo/src/retry.rs",
+                "hunk_id": "diff-editor-ses_01KY124Q0GCJ677T69J138V4BK-h1",
+                "id": "diff-editor-ses_01KY124Q0GCJ677T69J138V4BK-h1",
+                "lines": [
+                  {
+                    "kind": "ctx",
+                    "newNo": 1,
+                    "oldNo": 1,
+                    "text": "pub fn backoff(attempt: u32) -> u64 {"
+                  },
+                  {
+                    "kind": "ctx",
+                    "newNo": 2,
+                    "oldNo": 2,
+                    "text": "    1 << attempt"
+                  },
+                  {
+                    "kind": "ctx",
+                    "newNo": 3,
+                    "oldNo": 3,
+                    "text": "}"
+                  },
+                  {
+                    "kind": "add",
+                    "newNo": 4,
+                    "oldNo": null,
+                    "text": ""
+                  },
+                  {
+                    "kind": "add",
+                    "newNo": 5,
+                    "oldNo": null,
+                    "text": "// jitter: full-jitter backoff documented by the preview workflow"
+                  }
+                ],
+                "provenance": {
+                  "agent": "edit.write_file",
+                  "plan_step": null,
+                  "turn": 1
+                },
+                "status": "pending"
+              }
+            ],
+            "lang": "rust",
+            "path": "/tmp/hide-preview-repo/src/retry.rs",
+            "run_id": "editor-ses_01KY124Q0GCJ677T69J138V4BK"
+          }
+        }
+      ],
+      "disk": [
+        {
+          "path": "src/retry.rs",
+          "sha256_after_reject": "bc0a519ee561aaa4ee8cd4ca32834035b756269e520931d2af4dc26770f9271a",
+          "reverted_to_pre_image": true
+        },
+        {
+          "path": "src/pool.rs",
+          "sha256_after_accept": "26956b01bb09c180cbd123f78cc5cbc7886ab2a5bb81938e47e98635e68ceef4",
+          "kept": true
+        }
+      ],
+      "notes": [
+        "The intent shapes: {\"type\":\"accept_diff\",\"data\":{\"run_id\":..,\"diff_id\":..,\"hunk_id\":..}} and the same for reject_diff. reject_diff with hunk_id omitted is remapped by host.rs effect_command to the `revert_diff` command, which is ApprovalPolicy::Ask, so the whole-diff revert is gated while a single-hunk reject is not."
+      ]
+    },
+    {
+      "step": 7,
+      "title": "run_static_analysis -> durable verify.result + diagnostics projection",
+      "status": "PASS",
+      "sent": [
+        {
+          "request": {
+            "name": "run_static_analysis",
+            "payload": {
+              "session_id": "ses_01KY124Q0GCJ677T69J138V4BK",
+              "paths": [
+                "src/pool.rs",
+                "src/retry.rs"
+              ]
+            }
+          },
+          "ack": {
+            "accepted": true,
+            "held": false,
+            "event_seq": 674,
+            "message": null
+          }
+        }
+      ],
+      "proof": [
+        {
+          "live": "custom.verification_receipt",
+          "verification_id": "va-535b32d7d94290b4-1784594718707",
+          "tier": "tier1_deterministic",
+          "verdict": {
+            "status": "pass"
+          },
+          "findings": [
+            {
+              "check": "todo_marker",
+              "file": "src/pool.rs",
+              "line": 10,
+              "message": "`TODO` marker found",
+              "severity": "info"
+            }
+          ]
+        },
+        {
+          "live": "projection_patch/diagnostics",
+          "patch": {
+            "by_file": [],
+            "errors": 0,
+            "last_verification_id": "va-535b32d7d94290b4-1784594718707",
+            "warnings": 0
+          }
+        },
+        {
+          "durable": "verify.result",
+          "seq": 675
+        }
+      ],
+      "disk": [],
+      "notes": []
+    },
+    {
+      "step": 8,
+      "title": "checkpoint_create -> change -> checkpoint_rewind(code) -> checkpoint_fork",
+      "status": "PASS",
+      "sent": [
+        {
+          "request": {
+            "name": "checkpoint_create",
+            "payload": {
+              "session_id": "ses_01KY124Q0GCJ677T69J138V4BK",
+              "label": "before the post-checkpoint change"
+            }
+          },
+          "ack": {
+            "accepted": true,
+            "held": false,
+            "event_seq": 676,
+            "message": null
+          }
+        },
+        {
+          "request": {
+            "name": "save_file",
+            "payload": {
+              "path": "src/pool.rs",
+              "content": "<post-checkpoint change>"
+            }
+          },
+          "ack": {
+            "accepted": true,
+            "held": false,
+            "event_seq": 677,
+            "message": null
+          }
+        },
+        {
+          "request": {
+            "name": "checkpoint_rewind",
+            "payload": {
+              "checkpoint_id": "ckpt_4e407c17e84d1b5baacd7ecc",
+              "target": "code"
+            }
+          },
+          "ack": {
+            "accepted": true,
+            "held": true,
+            "event_seq": 681,
+            "message": "held for approval: gate=command:3"
+          }
+        },
+        {
+          "request": {
+            "name": "approve_gate",
+            "payload": {
+              "gate": "command:3"
+            }
+          },
+          "ack": null
+        },
+        {
+          "request": {
+            "name": "checkpoint_fork",
+            "payload": {
+              "checkpoint_id": "ckpt_4e407c17e84d1b5baacd7ecc"
+            }
+          },
+          "ack": {
+            "accepted": true,
+            "held": false,
+            "event_seq": 699,
+            "message": null
+          }
+        }
+      ],
+      "proof": [
+        {
+          "live": "custom.checkpoint_created",
+          "checkpoint_id": "ckpt_4e407c17e84d1b5baacd7ecc",
+          "at_seq": 675,
+          "coverage": {
+            "artifacts": {
+              "count": 0,
+              "digest": "af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262"
+            },
+            "goal": {
+              "condition": "harden the pool retry path",
+              "goal_id": "goal_e4c7403b7e840cc44e03b290",
+              "status": "Active"
+            },
+            "live_state_capsule": null,
+            "plan": {
+              "count": 0,
+              "digest": ""
+            },
+            "repo_state": {
+              "count": 2,
+              "digest": "d271d9a6ddbfe9ba21d59ba0d6f87914197093ac9496cb80eb2301cfb818cb0d"
+            },
+            "thread": {
+              "count": 0,
+              "digest": "af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262"
+            }
+          }
+        },
+        {
+          "live": "custom.write_lease_revoked",
+          "reason": "the session was rewound past the grant"
+        },
+        {
+          "durable_events_before_rewind": 786,
+          "after": 810,
+          "conversation_survived": true
+        },
+        {
+          "rpc": "session/get",
+          "child": "ses_01KY124SGERA4P6KXM4TR0CAQ6",
+          "node": {
+            "created_ms": 1784594720366,
+            "origin": "ephemeral_fork",
+            "parent_session_id": "ses_01KY124Q0GCJ677T69J138V4BK",
+            "read_only": false,
+            "relationship": "ephemeral_fork",
+            "session_id": "ses_01KY124SGERA4P6KXM4TR0CAQ6"
+          }
+        }
+      ],
+      "disk": [
+        {
+          "path": "src/pool.rs",
+          "sha256_at_checkpoint": "26956b01bb09c180cbd123f78cc5cbc7886ab2a5bb81938e47e98635e68ceef4",
+          "sha256_after_post_checkpoint_change": "97980741faf3994c9d4cca9e3fee21df21e9f12cd19f1368d2e6b1250d1cfaeb",
+          "sha256_after_code_rewind": "26956b01bb09c180cbd123f78cc5cbc7886ab2a5bb81938e47e98635e68ceef4",
+          "reverted": true
+        }
+      ],
+      "notes": []
+    },
+    {
+      "step": 9,
+      "title": "start a sandboxed terminal process, stream it, attach, stop, capture",
+      "status": "PASS",
+      "sent": [
+        {
+          "request": {
+            "POST": "/v1/hide/intent",
+            "body": {
+              "type": "run_command",
+              "data": {
+                "argv": [
+                  "sh",
+                  "-c",
+                  "for i in 1 2 3; do echo tick $i; sleep 1; done"
+                ],
+                "cwd": null
+              }
+            }
+          },
+          "ack": {
+            "accepted": true,
+            "held": false,
+            "event_seq": 715,
+            "message": null
+          }
+        },
+        {
+          "request": {
+            "name": "attach_process",
+            "payload": {
+              "process": "proc:1",
+              "session_id": "ses_01KY124Q0GCJ677T69J138V4BK"
+            }
+          },
+          "ack": {
+            "accepted": true,
+            "held": false,
+            "event_seq": 716,
+            "message": null
+          }
+        },
+        {
+          "request": {
+            "name": "capture_process_artifact",
+            "payload": {
+              "process": "proc:1"
+            }
+          },
+          "ack": {
+            "accepted": true,
+            "held": false,
+            "event_seq": 717,
+            "message": null
+          }
+        },
+        {
+          "request": {
+            "name": "stop_process",
+            "payload": {
+              "process": "proc:1"
+            }
+          },
+          "ack": {
+            "accepted": true,
+            "held": false,
+            "event_seq": 718,
+            "message": null
+          }
+        }
+      ],
+      "proof": [
+        {
+          "live": "tool_progress",
+          "call_id": "proc:1",
+          "messages": [
+            "tick 1",
+            "tick 2",
+            "tick 3"
+          ]
+        },
+        {
+          "live": "custom.process_attached",
+          "process": "proc:1",
+          "replayed_lines": 3
+        },
+        {
+          "live": "custom.process_artifact",
+          "artifact": {
+            "hash": "270fce787a7ead2b68557805cd2c4d18bb06558d92fdca0f21d85ee016fe4df1",
+            "id": "blb_01KY124VW56FJ9TDJSWK95JZAW",
+            "media_type": "text/plain",
+            "size_bytes": 20
+          }
+        },
+        {
+          "refusal": "unknown process proc:does-not-exist"
+        }
+      ],
+      "disk": [],
+      "notes": [
+        "The process runs sandbox-confined through ProcessSupervisor (host.rs spawn_supervised), the same confinement shell.run gets."
+      ]
+    },
+    {
+      "step": 10,
+      "title": "run_search returns typed hits",
+      "status": "PASS",
+      "sent": [
+        {
+          "request": {
+            "name": "create_side_chat",
+            "payload": {
+              "session_id": "ses_01KY124Q0GCJ677T69J138V4BK"
+            }
+          },
+          "ack": {
+            "accepted": true,
+            "held": false,
+            "event_seq": 720,
+            "message": null
+          }
+        },
+        {
+          "request": {
+            "name": "merge_side_chat",
+            "payload": {
+              "side_chat": "ses_01KY124VXJNCTWCT95HWWTNRKY",
+              "parent": "ses_01KY124Q0GCJ677T69J138V4BK",
+              "summary": "pool retry hardening: max_idle guard and jitter backoff reviewed"
+            }
+          },
+          "ack": {
+            "accepted": true,
+            "held": false,
+            "event_seq": 739,
+            "message": null
+          }
+        },
+        {
+          "request": {
+            "name": "run_search",
+            "payload": {
+              "query": "jitter",
+              "limit": 10
+            }
+          },
+          "ack": {
+            "accepted": true,
+            "held": false,
+            "event_seq": 741,
+            "message": null
+          }
+        },
+        {
+          "request": {
+            "name": "run_search",
+            "payload": {
+              "query": "src/pool.rs",
+              "limit": 10
+            }
+          },
+          "ack": {
+            "accepted": true,
+            "held": false,
+            "event_seq": 742,
+            "message": null
+          }
+        }
+      ],
+      "proof": [
+        {
+          "live": "custom.search_results",
+          "query": "jitter",
+          "count": 10,
+          "hit": {
+            "event_id": "evt_01KY10MHBGPGJ9GCAFYYDJFV8K",
+            "kind": "session.merge_summary",
+            "role": "side_chat",
+            "seq": 30,
+            "session_id": "ses_01KY10FV1MKZJ6ER1M1HDW58EQ",
+            "snippet": "pool retry hardening: max_idle guard and jitter backoff reviewed",
+            "ts": 1784593139056044
+          }
+        },
+        {
+          "live": "custom.search_results",
+          "query": "src/pool.rs",
+          "count": 10,
+          "hit": {
+            "event_id": "evt_01KY11Y3FJKX72A08T5EH0CEEF",
+            "kind": "tool.result",
+            "role": "tool",
+            "seq": 187,
+            "session_id": "ses_01KY11Y3EKNAR8YP38A62S9330",
+            "snippet": "...:\"write_file\"}],\"committed\":true,\"path\":\"/tmp/hide-preview-repo/src/pool.rs\",\"post_hash\":\"424f7cca140acb08d395b14d814b23e5bbfa7491c2fe314e7...",
+            "ts": 1784594501106206
+          }
+        }
+      ],
+      "disk": [],
+      "notes": [
+        "replay::extract_item recognizes FIVE event kinds: user.intent.submit_turn, agent.message, tool.result, token/token_batch, session.merge_summary. That list is UNCHANGED and does not need widening: the save path now records a real tool.result, so a model-free session's own edits are searchable by path (see the second proof). Widening it to user.intent.custom.* would put every button press (approve_gate, pty_input) in the transcript, which is noise rather than history; verify.result and checkpoint.* have their own typed readers."
+      ]
+    },
+    {
+      "step": 11,
+      "title": "export a review receipt and read it back",
+      "status": "PASS",
+      "sent": [
+        {
+          "request": {
+            "name": "export_review_receipt",
+            "payload": {
+              "session_id": "ses_01KY124Q0GCJ677T69J138V4BK",
+              "diff_id": "diff-editor-ses_01KY124Q0GCJ677T69J138V4BK"
+            }
+          },
+          "ack": {
+            "accepted": true,
+            "held": false,
+            "event_seq": 743,
+            "message": null
+          }
+        },
+        {
+          "request": {
+            "POST": "/v1/hide/rpc",
+            "body": {
+              "method": "artifact/put",
+              "params": {}
+            }
+          },
+          "ack": {
+            "status": "not_implemented",
+            "method": "artifact/put",
+            "reason": "the artifact store is not built (DEFERRED)"
+          }
+        }
+      ],
+      "proof": [
+        {
+          "readback": "GET /v1/hide/events?after_seq=674",
+          "verify_result_payload": {
+            "command": null,
+            "duration_ms": 0,
+            "findings": [
+              {
+                "check": "todo_marker",
+                "file": "src/pool.rs",
+                "line": 10,
+                "message": "`TODO` marker found",
+                "severity": "info"
+              }
+            ],
+            "oracle": "static_analysis",
+            "scope": [
+              "src/pool.rs",
+              "src/retry.rs"
+            ],
+            "source_hash": "535b32d7d94290b406c9a99a9b327980c71a49bbd6048e0de576de0aabfe9cea",
+            "started_ms": 1784594718707,
+            "tier": "tier1_deterministic",
+            "verdict": {
+              "status": "pass"
+            },
+            "verification_id": "va-535b32d7d94290b4-1784594718707"
+          }
+        },
+        {
+          "live": "custom.diff_review_receipt",
+          "diff_id": "diff-editor-ses_01KY124Q0GCJ677T69J138V4BK",
+          "seal": "181e2d8c06856e98bf7d7ed4ec77b1febcfa2d56618987d7d2f6459e441efbbd",
+          "hunks": 4,
+          "verification_before": 0,
+          "verification_after": 1
+        },
+        {
+          "durable": "diff.receipt",
+          "seq": 744
+        }
+      ],
+      "disk": [],
+      "notes": [
+        "artifact/put is still not_implemented (the artifact store is DEFERRED); the review receipt is durable in the event log, which is where it reads back from."
+      ]
+    },
+    {
+      "step": 12,
+      "title": "an out-of-scope write is still refused while the lease is active, then the lease revokes",
+      "status": "PASS",
+      "sent": [
+        {
+          "request": {
+            "name": "grant_write_lease",
+            "payload": {
+              "repo_id": "preview",
+              "scopes": [
+                "src"
+              ],
+              "session_id": "ses_01KY124Q0GCJ677T69J138V4BK"
+            }
+          },
+          "ack": {
+            "accepted": true,
+            "held": true,
+            "event_seq": 745,
+            "message": "held for approval: gate=command:4"
+          }
+        },
+        {
+          "request": {
+            "name": "save_file",
+            "payload": {
+              "path": "src/retry.rs",
+              "content": "<in-scope probe>"
+            }
+          },
+          "ack": {
+            "accepted": true,
+            "held": false,
+            "event_seq": 747,
+            "message": null
+          }
+        },
+        {
+          "request": {
+            "name": "save_file",
+            "payload": {
+              "path": "README.md",
+              "content": "<out-of-scope probe>"
+            }
+          },
+          "ack": {
+            "accepted": true,
+            "held": true,
+            "event_seq": 751,
+            "message": "held for approval: gate=command:5 (no matching policy rule)"
+          }
+        },
+        {
+          "request": {
+            "name": "deny_gate",
+            "payload": {
+              "gate": "command:5"
+            }
+          },
+          "ack": null
+        },
+        {
+          "request": {
+            "name": "revoke_write_lease",
+            "payload": {}
+          },
+          "ack": {
+            "accepted": true,
+            "held": false,
+            "event_seq": 753,
+            "message": null
+          }
+        },
+        {
+          "request": {
+            "name": "save_file",
+            "payload": {
+              "path": "src/retry.rs",
+              "content": "<post-revocation probe>"
+            }
+          },
+          "ack": {
+            "accepted": true,
+            "held": true,
+            "event_seq": 754,
+            "message": "held for approval: gate=command:6 (no matching policy rule)"
+          }
+        }
+      ],
+      "proof": [
+        {
+          "live": "projection_patch/status",
+          "write_lease": {
+            "active": true,
+            "granted_ms": 1784594723844,
+            "lease_id": "gnt_01KY124X04CBAJ871WY2NT0MKM",
+            "note": "granted",
+            "repo_id": "preview",
+            "scopes": [
+              "/tmp/hide-preview-repo/src"
+            ]
+          }
+        },
+        {
+          "refusal": "held for approval: gate=command:5 (no matching policy rule)"
+        },
+        {
+          "live": "custom.write_lease_revoked",
+          "reason": "revoked by the user"
+        },
+        {
+          "live": "projection_patch/status",
+          "write_lease": {
+            "active": false,
+            "granted_ms": null,
+            "lease_id": null,
+            "note": "revoked by the user",
+            "repo_id": null,
+            "scopes": []
+          }
+        },
+        {
+          "post_revocation_write": "held at the gate, lease no longer relaxes the Ask policy"
+        }
+      ],
+      "disk": [
+        {
+          "path": "README.md",
+          "sha256": "8d4715c5b4d7c61ed58538633a95e349c97c14da3af28b0e9b4b75f08c7dd4e8",
+          "unchanged": true
+        }
+      ],
+      "notes": [
+        "Twelve revocation triggers are read in ONE place (host.rs handle_intent lease_revocation). This run exercised two of them: checkpoint_rewind in step 8 and revoke_write_lease here."
+      ]
+    }
+  ],
+  "defects": []
+}

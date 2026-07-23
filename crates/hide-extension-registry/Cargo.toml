@@ -1,0 +1,25 @@
+[package]
+name = "hide-extension-registry"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Unified capability registry with progressive disclosure, effect declaration, scope enforcement, and provenance pinning (Bible sec 24, model-free)"
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+# Bridge source: the builtin tool catalog (hide-tools) and the ToolRegistry /
+# ToolSpec types it is expressed in (hide-core). Used by src/builtin_tools.rs to
+# enumerate the catalog and derive one CapabilityManifest per tool.
+hide-tools = { path = "../hide-tools" }
+hide-core = { path = "../hide-core" }
+
+[dev-dependencies]
+tempfile = "3"
+
+[features]
+default = []

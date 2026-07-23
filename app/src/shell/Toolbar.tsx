@@ -4,7 +4,8 @@
   model + status + live context now live on the Explorer workcard, and forking is auto-invoked by the
   workflows, so the old center status chip and the Try-N control are gone.
 */
-import { useStore } from "../store";
+import { boundShortcuts, useStore } from "../store";
+import { keyLabel } from "../surfaces/chat/actions";
 import { Icon } from "./icons";
 import { LogoH } from "./Mark";
 
@@ -28,6 +29,13 @@ export function Toolbar({
   onCancel: () => void;
 }) {
   const runPhase = useStore((s) => s.runPhase);
+  // Chord labels are READ from the bound-key table, never spelled out here: the hand-written
+  // "Cmd B" / "Cmd I" / "Cmd J" were wrong wherever Mod is Ctrl, and the bound Mod+. for cancel_run
+  // was shown nowhere at all.
+  const chord = (id: string) => {
+    const b = boundShortcuts().find((k) => k.id === id);
+    return b ? ` (${keyLabel(b.shortcut)})` : "";
+  };
   const ws = useStore((s) => s.home?.workspace);
   const working = runPhase === "executing" || runPhase === "planning" || runPhase === "awaiting";
   const inCode = mode === "code";
@@ -36,7 +44,7 @@ export function Toolbar({
     <header className="toolbar glass">
       <div className="toolbar__group toolbar__left">
         {inCode ? (
-          <button className="toolbar__icon" title="Toggle navigator (Cmd B)" aria-label="Toggle navigator" onClick={onToggleSidebar}>
+          <button className="toolbar__icon" title={`Toggle navigator${chord("toggle.sidebar")}`} aria-label="Toggle navigator" onClick={onToggleSidebar}>
             <Icon name="sidebar-toggle" size={17} strokeWidth={1.5} />
           </button>
         ) : null}
@@ -67,7 +75,7 @@ export function Toolbar({
           </button>
         </div>
         {inCode ? (
-          <button className="toolbar__icon" title="Cancel run" aria-label="Stop" onClick={onCancel} disabled={!working}>
+          <button className="toolbar__icon" title={`Cancel run${chord("cancel_run")}`} aria-label="Stop" onClick={onCancel} disabled={!working}>
             <Icon name="stop" size={12} />
           </button>
         ) : null}
@@ -87,7 +95,7 @@ export function Toolbar({
         {inCode ? (
           <button
             className={["toolbar__icon", chatOpen && "toolbar__icon--active"].filter(Boolean).join(" ")}
-            title="Executor (Cmd I)"
+            title={`Executor${chord("toggle.chat")}`}
             aria-label="Executor"
             aria-pressed={chatOpen}
             onClick={onToggleChat}
@@ -95,11 +103,11 @@ export function Toolbar({
             <Icon name="sparkle" size={17} strokeWidth={1.4} />
           </button>
         ) : null}
-        <button className="toolbar__icon" title="Settings" aria-label="Settings" onClick={onSettings}>
+        <button className="toolbar__icon" title={`Settings${chord("open.settings")}`} aria-label="Settings" onClick={onSettings}>
           <Icon name="settings" size={17} strokeWidth={1.5} />
         </button>
         {inCode ? (
-          <button className="toolbar__icon" title="Toggle panel (Cmd J)" aria-label="Toggle panel" onClick={onTogglePanel}>
+          <button className="toolbar__icon" title={`Toggle panel${chord("toggle.panel")}`} aria-label="Toggle panel" onClick={onTogglePanel}>
             <Icon name="panel-toggle" size={17} strokeWidth={1.5} />
           </button>
         ) : null}

@@ -1,0 +1,75 @@
+[package]
+name = "hide-backend"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Backend composition and connector facade for HIDE"
+
+[dependencies]
+hide-core = { path = "../hide-core" }
+hide-kernel = { path = "../hide-kernel" }
+hide-fleet = { path = "../hide-fleet" }
+hide-personalize = { path = "../hide-personalize" }
+hide-security = { path = "../hide-security" }
+hide-tools = { path = "../hide-tools" }
+# Bible sec 40 / sec 24: the unified capability registry. The policy/effect
+# ledger reads each tool's DECLARED effects from here (via
+# build_builtin_tool_registry) rather than hardcoding an effect table.
+hide-extension-registry = { path = "../hide-extension-registry" }
+# Bible sec 15, sec 78.1 #2: the elevated Agent Server protocol authority
+# (Method / Notification / Initialize). The host RPC dispatcher (crate::rpc)
+# maps each protocol Method onto an existing BackendHost capability, additively,
+# and reuses the compat bridge's UiEvent -> Notification mapping. Model-free.
+hide-protocol = { path = "../hide-protocol" }
+# Book V sec 18-19: the bounded programmatic-tool sandbox. The backend supplies
+# the read-only host handles (search/file/index/git) and runs programs through it.
+hide-program-runtime = { path = "../hide-program-runtime" }
+# Bible sec 20 / sec 78.1 #11: read + resolve a repo's Claude Code migration
+# config (CLAUDE.md tree + un-scoped rules) so its launch instructions fold into
+# the compiled turn context. Pure parsing + precedence, no model.
+hide-compat = { path = "../hide-compat" }
+# Bible Book IX sec 28-29 / sec 78.1 #6: the deterministic verification plane.
+# The host wires its model-free StaticAnalysisOracle into a durable verification
+# path (typed Findings + Verdict + a verify.result-shaped receipt) and exposes
+# the review-role profiles as DATA. Probabilistic review execution stays
+# DEFERRED_MODEL_REQUIRED: no model is called on this path.
+hide-verify = { path = "../hide-verify" }
+hawking-context = { path = "../hawking-context" }
+hawking-index = { path = "../hawking-index" }
+# Spine A: read the .tq (strand v2) artifact to derive a measured effective-context multiplier.
+strand-quant = { path = "../../vendor/strand-quant" }
+hawking-orch = { path = "../hawking-orch" }
+hawking-research = { path = "../hawking-research" }
+futures = { workspace = true }
+parking_lot = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+# Durable Checkpoint integrity: a blake3 digest over a checkpoint's boundary
+# identity (session + seq + boundary event), so a restore can verify the boundary
+# was not tampered. Same hash family as the event-log chain (hide-core).
+blake3 = { workspace = true }
+# The host owns the async runtime (§4.9): a multi-threaded tokio runtime drives
+# the RuntimeSupervisor's health-poll loop, the broadcast UiEvent bus, and the
+# HTTP ModelProvider. `tokio` is now a real (non-dev) dependency.
+tokio = { workspace = true }
+# HTTP-only seam to the supervised `hawking serve` (T5: no engine-crate link).
+reqwest = { workspace = true }
+async-trait = { workspace = true }
+# Durable background jobs (bible sec 73-75): a FileChange trigger matches a
+# changed path against a glob; globset gives the same `**`-spanning semantics the
+# fs.glob tool already uses. Already in the lockfile via hide-tools.
+globset = { workspace = true }
+
+[target.'cfg(unix)'.dependencies]
+# Used only for the `runtime.lock` liveness check (`kill(pid, 0)` — signal 0
+# probes whether the lock-holding pid is still alive without touching it), so the
+# lock is genuinely fail-closed against a live host. Already in the lockfile via
+# tokio/reqwest; pinned here as a concrete dep.
+libc = "0.2"
+
+[dev-dependencies]
+tokio = { workspace = true }

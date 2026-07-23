@@ -1,0 +1,21 @@
+[package]
+name = "hide-program-runtime"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Sandboxed, deterministic programmatic tool runtime: an in-crate interpreter over a small program AST with no ambient authority (Bible Book V, sec 18-19). Model-free."
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+blake3 = { workspace = true }
+
+[dev-dependencies]
+serde_json = { workspace = true }
+
+[features]
+default = []

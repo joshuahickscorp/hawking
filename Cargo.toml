@@ -7,13 +7,76 @@ members = [
     "crates/hawking-speculate",
     "crates/hawking-serve",
     "crates/hawking-bench",
+    # HIDE product backend, rehydrated from sealed pack 5a99d0e2 on 2026-07-19 (Phase 1a).
+    # HTTP-coupled to the runtime (no Rust dep on hawking-core/serve), so it compiles
+    # independent of the core's API drift. hide-fleet/personalize=REDESIGN, research=ARCHIVE
+    # (kept for now to compile hide-backend; trimmed in Phase 1b).
+    "crates/hide-core",
+    "crates/hide-serve",
+    "crates/hide-backend",
+    "crates/hide-kernel",
+    "crates/hide-tools",
+    "crates/hide-security",
+    "crates/hide-fleet",
+    "crates/hide-personalize",
+    "crates/hawking-context",
+    "crates/hawking-index",
+    "crates/hawking-orch",
+    "crates/hawking-research",
+    "crates/hawking-eval",
+    # HIDE config-compatibility readers (Bible sec 58 / Phase 11): model-free parsing
+    # so a repo configured for another agent migrates to HIDE with minimal changes.
+    "crates/hide-compat",
+    # HIDE unified capability registry (Bible sec 24): one ABI for every extension
+    # kind with progressive disclosure, declared effects, scope enforcement, and
+    # provenance pinning. Model-free; deterministic logic over manifests.
+    "crates/hide-extension-registry",
+    # HIDE state-capsule schemas (Bible sec 23, sec 56): capsule header/identity
+    # schemas, integrity digests, compatibility binding, and stores. Model-free;
+    # the live runtime that produces these bytes is DEFERRED_MODEL_REQUIRED.
+    "crates/hide-state",
+    # HIDE Agent Server schema authority (Bible sec 14 semantic object model +
+    # sec 15 protocol): the ONE serde+schemars source the whole server derives
+    # its wire from. An evolution of hide-core::api (Intent/UiEvent), reconciled
+    # by a compat bridge. Model-free; model-dependent legs are marked
+    # DEFERRED_MODEL_REQUIRED in doc comments.
+    "crates/hide-protocol",
+    # HIDE sandboxed programmatic tool runtime (Bible Book V, sec 18-19): a
+    # deterministic in-crate interpreter over a small program AST with NO ambient
+    # authority. Programs call only granted read-oriented host handles and may
+    # PREPARE (never execute) typed WriteProposals. Model-free.
+    "crates/hide-program-runtime",
+    # HIDE browser + visual evidence and verification model (Bible Book VIII
+    # sec 27): a BrowserStep evidence record, a BrowserDriver trait, a
+    # deterministic ReplayDriver over recorded sessions, a functional
+    # VisualAcceptance oracle, and Design Mode annotations. Model-free; a real
+    # chromium/CDP driver is out of scope (DEFERRED_MODEL_REQUIRED-adjacent).
+    "crates/hide-browser",
+    # HIDE Agent Client Protocol (ACP) server boundary (Bible sec 10, sec 69):
+    # ACP message/session types, capability negotiation, and a bidirectional
+    # projection between the hide-protocol schema authority and ACP session
+    # updates so HIDE appears as an agent inside ACP-speaking editors. Wire
+    # shapes are spec-derived from the public Apache-2.0 ACP spec; model-free.
+    "crates/hide-acp",
+    # HIDE generated client SDK + codegen (Bible sec 15.7): the ONE schema
+    # source (hide-protocol) generates the protocol JSON Schema and the frontend
+    # TypeScript types (no handwritten frontend mirror types), and drives a thin
+    # async client over a Transport trait. Model-free; the real loopback/HTTP
+    # transport is DEFERRED_MODEL_REQUIRED-adjacent and out of scope.
+    "crates/hide-sdk",
+    # HIDE verification plane (Bible Book IX, sec 28-29): tiers, the Oracle trait,
+    # verdicts + evidence, stable receipts, a REAL deterministic static-analysis
+    # oracle, a re-review dependency model, and Tier4 review-role profiles.
+    # Deterministic and model-free; probabilistic review execution is
+    # DEFERRED_MODEL_REQUIRED (profiles + selector only, no model call).
+    "crates/hide-verify",
     "tools/q4k_fast",
     "tools/awq_bake",
     "tools/tq_bake",
 ]
 # Absorbed STRAND quant track (from ~/Downloads/strand, tag `quant-handoff`). These are
 # self-contained packages (concrete deps, no workspace inheritance) consumed by path
-# dependency where wired — kept OUT of the default workspace build so `cargo build
+# dependency where wired - kept OUT of the default workspace build so `cargo build
 # --workspace` and all golden hashes are unchanged. Build/test them standalone with
 # `cargo test --manifest-path vendor/strand-quant/Cargo.toml`. strand-decode-kernel is
 # strand's reference runtime + gate harness (not a hawking build dep; mirror source).

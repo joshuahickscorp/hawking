@@ -1,0 +1,24 @@
+[package]
+name = "hide-verify"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "The verification plane (Bible Book IX, sec 28-29): tiers, oracles, receipts, a real deterministic static-analysis oracle, a re-review dependency model, and review-role profiles. Deterministic and model-free; probabilistic review execution is DEFERRED_MODEL_REQUIRED (data only)."
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+regex = { workspace = true }
+blake3 = { workspace = true }
+walkdir = { workspace = true }
+
+[dev-dependencies]
+serde_json = { workspace = true }
+tempfile = "3"
+
+[features]
+default = []

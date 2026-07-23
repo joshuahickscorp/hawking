@@ -1,26 +1,35 @@
 /*
   Editor.tsx: the Monaco editor group (v3). Two states:
     - no pending diff: a plain Monaco editor on the open file (ProjectionPatch{editor}, OpenFile).
+      A selection resolves to a stable SourceRef (path, line range, content hash) and opens the
+      CodeActions menu; the ref is re-hashed from the live buffer so a stale selection is caught.
     - pending diff: Monaco's DiffEditor (the agent's proposed change) on the left, the per-hunk
       HunkReview gesture on the right. Inline-by-default, with a side-by-side toggle for large diffs.
-      Accept/reject route AcceptDiff/RejectDiff.
+
+  The diff bar has two phases and never more than its two controls: while hunks are pending it
+  accepts the WHOLE diff (accept_diff with no hunk_id, which is how the host reads "all of it",
+  walking its own record so every hunk it applies keeps its provenance) or reverts it; once every
+  hunk is decided the same two slots become that same whole-diff revert and closing the review.
+  ONE revert command (`revert_diff`) serves both phases, because it is one host effect and it is
+  approval-gated: a second button for it was a way around the gate. There is no provenance-free
+  accept-all.
 
   Re-housed from a Monaco DiffEditor wrapper + hunk controls, recast in v3 via the hide-observatory
   theme (monacoTheme.ts): grayscale concrete, light as the only accent, Geist Mono. It must never read
   as VS Code. The diff-accept gesture is the HunkReview component, the single source of per-hunk review
   logic in the IDE.
 */
-import { useCallback, useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { DiffEditor, Editor as MonacoEditor, type Monaco } from "@monaco-editor/react";
 import type { editor as MEditor } from "monaco-editor";
-import { callConnector, sendIntent } from "../../ipc";
-import { useStore } from "../../store";
-import { intent } from "../../wire";
+import { callConnector } from "../../ipc";
+import { runCommand, useStore } from "../../store";
 import { HIDE_EDITOR_OPTIONS, HIDE_THEME, configureMonacoLoader, registerHideTheme } from "./monacoTheme";
-import { HunkReview } from "./HunkReview";
-import { CodeActions } from "./CodeActions";
+import { HunkReview, diffActionSpec, runDiffAction, type DiffActionId } from "./HunkReview";
+import { CodeActions, sourceRef, type SourceRef } from "./CodeActions";
 import { Radiate } from "../../shell/Radiate";
-import { applyHunkStatus, MOCK_FILE_BODY, type DiffDoc } from "./types";
+import { applyHunkStatus, MOCK_FILE_BODY, mockOnly, type DiffDoc } from "./types";
+import { ackState, heldNote } from "../../wire";
 
 // Point the loader at bundled monaco once (air-gap: no CDN fetch).
 configureMonacoLoader();
@@ -47,11 +56,10 @@ export function EditorGroup({
   return <FilePane openPath={openPath} beforeMount={beforeMount} />;
 }
 
-// DiffReview — the inline diff the Executor proposes, with the fast accept/reject gesture (Tab applies
-// the whole diff, Esc rejects) layered over the per-hunk HunkReview for granular control. The gesture
-// is the Cursor-style "tab to apply"; Tab is not hijacked while you are hand-editing the modified
-// buffer (Monaco's hidden input keeps it for indentation). When the backend streams the change
-// (second plan), the same surface fills in live; today the diff arrives whole via ProjectionPatch{diff}.
+// DiffReview: the inline diff the Executor proposes, with the per-hunk HunkReview beside it for
+// granular control. NO bare key acts on the whole diff. The two whole-diff verbs are the two
+// buttons in the diff bar, and the per-hunk keys (a, r, j, k, m, d) are scoped to this region by
+// HunkReview.reviewKeysActive and touch one hunk at a time.
 function DiffReview({
   diff,
   sideBySide,
@@ -66,55 +74,96 @@ function DiffReview({
   onDiffChange: (next: DiffDoc | null) => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
+  const [note, setNote] = useState<string | null>(null);
   useEffect(() => {
     ref.current?.focus();
   }, [diff.diff_id]);
 
-  const acceptAll = useCallback(() => {
-    onDiffChange(null); // optimistic: clear the pending diff (host applies + echoes the new buffer)
-    void sendIntent(intent.acceptDiff(diff.run_id, diff.diff_id));
-  }, [diff.run_id, diff.diff_id, onDiffChange]);
+  const pending = diff.hunks.filter((h) => h.status === "pending").length;
+  const decided = diff.hunks.length > 0 && pending === 0;
 
-  const rejectAll = useCallback(() => {
-    onDiffChange(null);
-    void sendIntent(intent.rejectDiff(diff.run_id, diff.diff_id));
-  }, [diff.run_id, diff.diff_id, onDiffChange]);
+  // One whole-diff dispatch point. The status flip stays local (optimistic) until the host echoes
+  // its own diff record, and every hunk keeps the provenance it was recorded with.
+  const runWhole = useCallback(
+    (id: DiffActionId) => {
+      const spec = diffActionSpec(id);
+      setNote(`${spec.label}: working`);
+      void runDiffAction(id, { diffId: diff.diff_id, runId: diff.run_id })
+        .then((ack) => {
+          const state = ackState(ack);
+          if (state === "refused") {
+            setNote(ack.message ?? "The host refused that action");
+            return;
+          }
+          // HELD: the host recorded the request and parked the effect at the approval gate. Nothing
+          // was written, so the note must not say done and no hunk status may flip.
+          if (state === "held") {
+            setNote(heldNote(spec.label));
+            return;
+          }
+          setNote(`${spec.label}: done`);
+          const status = id === "accept_all" ? "accepted" : "rejected";
+          onDiffChange(
+            diff.hunks.reduce(
+              (doc, h) => (h.status === "pending" || id !== "accept_all" ? applyHunkStatus(doc, h.id, status) : doc),
+              diff,
+            ),
+          );
+        })
+        .catch((e) => setNote(e instanceof Error ? e.message : String(e)));
+      ref.current?.focus();
+    },
+    [diff, onDiffChange],
+  );
 
-  const onKeyDown = (e: ReactKeyboardEvent) => {
-    const el = document.activeElement as HTMLElement | null;
-    const editing = !!el && el.classList.contains("inputarea"); // Monaco's hidden textarea
-    if (e.key === "Tab" && !editing) {
-      e.preventDefault();
-      acceptAll();
-    } else if (e.key === "Escape") {
-      e.preventDefault();
-      rejectAll();
-    }
-  };
+  // NEITHER Escape NOR Tab is bound here, deliberately.
+  //   Escape used to reject the whole diff (reverting every changed file) while the shell was using
+  //   the same key to close overlays, so one keystroke meant two things and one of them destroyed
+  //   work with no confirmation.
+  //   Tab used to accept the whole diff to disk, with preventDefault, from any focused control in
+  //   this region: the first Tab a keyboard user pressed to reach the accept button wrote every
+  //   hunk, and focus could never leave the region at all. Both defects were the same key.
+  // The two whole-diff verbs are the two buttons below. Tab moves focus and nothing else.
 
   return (
-    <div ref={ref} tabIndex={-1} className="diffreview" role="region" aria-label="Proposed edit" onKeyDown={onKeyDown} style={{ display: "flex", flexDirection: "column", height: "100%", minHeight: 0, minWidth: 0, outline: "none" }}>
+    <div ref={ref} tabIndex={-1} className="diffreview" role="region" aria-label="Proposed edit" style={{ display: "flex", flexDirection: "column", height: "100%", minHeight: 0, minWidth: 0, outline: "none" }}>
       <div style={{ display: "grid", gridTemplateColumns: "1fr minmax(300px, 38%)", flex: 1, minHeight: 0, minWidth: 0 }}>
         <DiffPane diff={diff} sideBySide={sideBySide} onToggle={onToggle} beforeMount={beforeMount} />
         <div style={{ borderLeft: "1px solid var(--border)", minHeight: 0, minWidth: 0, overflow: "hidden" }}>
-          <HunkReview
-            doc={diff}
-            onAct={(hunk, action) => {
-              // Optimistic local flip + the real intent (AcceptDiff/RejectDiff{run_id,diff_id}).
-              onDiffChange(applyHunkStatus(diff, hunk.id, action === "accept" ? "accepted" : "rejected"));
-              const i = action === "accept" ? intent.acceptDiff(diff.run_id, diff.diff_id) : intent.rejectDiff(diff.run_id, diff.diff_id);
-              void sendIntent(i);
-            }}
-          />
+          <HunkReview doc={diff} onStatus={(hunkId, status) => onDiffChange(applyHunkStatus(diff, hunkId, status))} />
         </div>
       </div>
       <div className="diffbar">
         <span className="diffbar__hint">
-          <kbd>Tab</kbd> apply all<span className="diffbar__sep">/</span><kbd>Esc</kbd> reject<span className="diffbar__sep">/</span>or review each hunk at right
+          {decided ? (
+            <>every hunk decided<span className="diffbar__sep">/</span>revert the whole diff, or close the review</>
+          ) : (
+            <>
+              {pending} pending<span className="diffbar__sep">/</span>accept all and revert all are buttons, so no stray key writes or reverts your files<span className="diffbar__sep">/</span>or review each hunk at right
+            </>
+          )}
         </span>
+        <span role="status" aria-live="polite" className="diffbar__hint">{note}</span>
         <div className="diffbar__actions">
-          <button className="diffbar__btn" onClick={rejectAll}>reject</button>
-          <button className="diffbar__btn diffbar__btn--accent" onClick={acceptAll}>apply all</button>
+          {decided ? (
+            <>
+              <button className="diffbar__btn" title={diffActionSpec("revert_all").label} onClick={() => runWhole("revert_all")}>
+                revert all
+              </button>
+              <button className="diffbar__btn diffbar__btn--accent" title="Close this review" onClick={() => onDiffChange(null)}>
+                close review
+              </button>
+            </>
+          ) : (
+            <>
+              <button className="diffbar__btn" title={diffActionSpec("revert_all").label} onClick={() => runWhole("revert_all")}>
+                revert all
+              </button>
+              <button className="diffbar__btn diffbar__btn--accent" title={diffActionSpec("accept_all").label} onClick={() => runWhole("accept_all")}>
+                accept all
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>
@@ -160,26 +209,48 @@ function DiffPane({
   );
 }
 
+/** Read a ref's line range back out of the live buffer, so the selection's content hash can be
+ *  re-checked. Returns null when the buffer is gone or no longer reaches those lines. */
+function readRangeFrom(ed: MEditor.IStandaloneCodeEditor | null, ref: SourceRef): string | null {
+  const model = ed?.getModel();
+  if (!model || model.getLineCount() < ref.endLine) return null;
+  return model.getValueInRange({
+    startLineNumber: ref.startLine,
+    startColumn: 1,
+    endLineNumber: ref.endLine,
+    endColumn: model.getLineMaxColumn(ref.endLine),
+  });
+}
+
 function FilePane({ openPath, beforeMount }: { openPath: string | null; beforeMount: (m: Monaco) => void }) {
   const editorRef = useRef<MEditor.IStandaloneCodeEditor | null>(null);
-  const [sel, setSel] = useState<{ text: string; top: number; left: number } | null>(null);
+  const [sel, setSel] = useState<{ ref: SourceRef; top: number; left: number } | null>(null);
   const pushNotice = useStore((s) => s.pushNotice);
-  // The open file's real body from the fs connector; falls back to the mock stub (dev / no backend).
-  const [body, setBody] = useState<{ text: string; lang: string } | null>(null);
+  // The open file's real body from the fs connector. The mock stub stands in ONLY on the mock
+  // transport. There is no invented placeholder buffer any more: a body that was never really read
+  // is an error state, not an editable buffer, because Cmd+S below writes the buffer to disk.
+  // `hash` is the host's blake3 of the text that was read. It rides back out on save as `base_hash`
+  // so a file an agent changed since this buffer was opened CONFLICTS instead of being clobbered.
+  const [body, setBody] = useState<{ text: string; lang: string; hash?: string } | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   useEffect(() => {
-    if (!openPath) {
-      setBody(null);
-      return;
-    }
+    setBody(null);
+    setLoadError(null);
+    if (!openPath) return;
     let alive = true;
-    callConnector<{ text?: string; lang?: string }>("fs", "read_file", { path: openPath })
+    const fallback = (why: string) => {
+      const stub = mockOnly(MOCK_FILE_BODY)?.[openPath];
+      if (stub) setBody(stub);
+      else setLoadError(why);
+    };
+    callConnector<{ text?: string; lang?: string; hash?: string }>("fs", "read_file", { path: openPath })
       .then((r) => {
         if (!alive) return;
-        if (typeof r?.text === "string") setBody({ text: r.text, lang: r.lang ?? "plaintext" });
-        else setBody(MOCK_FILE_BODY[openPath] ?? null);
+        if (typeof r?.text === "string") setBody({ text: r.text, lang: r.lang ?? "plaintext", hash: r.hash });
+        else fallback("The host returned no content for this file");
       })
-      .catch(() => {
-        if (alive) setBody(MOCK_FILE_BODY[openPath] ?? null);
+      .catch((e) => {
+        if (alive) fallback(e instanceof Error ? e.message : String(e));
       });
     return () => {
       alive = false;
@@ -196,43 +267,110 @@ function FilePane({ openPath, beforeMount }: { openPath: string | null; beforeMo
     );
   }
 
+  // Never mount an editable buffer over a file whose body did not really load: saving it would
+  // write this app's invention over the real file.
+  if (loadError || !body) {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", height: "100%", minHeight: 0 }}>
+        <TabRow path={openPath} suffix={null} />
+        <div style={{ display: "grid", placeItems: "center", flex: 1, minHeight: 0, color: "var(--text-3)", textAlign: "center" }}>
+          {loadError ? (
+            <div role="alert" style={{ maxWidth: 420 }} className="t-body">
+              Could not read {openPath}. {loadError}
+            </div>
+          ) : (
+            <Loading />
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", minHeight: 0 }}>
       <TabRow path={openPath} suffix={null} />
       <div style={{ flex: 1, minHeight: 0, position: "relative" }}>
         <MonacoEditor
           path={openPath}
-          language={body?.lang ?? "plaintext"}
-          value={body?.text ?? `// ${openPath}\n// (host streams this buffer as projection_patch{editor})\n`}
+          language={body.lang}
+          value={body.text}
           theme={HIDE_THEME}
           beforeMount={beforeMount}
           onMount={(ed, monaco) => {
             editorRef.current = ed;
+            // The save. It is the catalog's `save_file` (Mod+S, listed in the Settings keyboard
+            // table), dispatched through the ONE spine, so the host runs it on the permission-gated
+            // applier: a write the policy refuses comes back HELD at the approval gate with the
+            // policy's own reason, never as a bare "save failed".
             ed.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
               const content = ed.getModel()?.getValue() ?? "";
-              void callConnector("fs", "write_file", { path: openPath, content })
-                .then(() => pushNotice({ kind: "info", code: "fs", message: `saved ${openPath}` }))
-                .catch(() => pushNotice({ kind: "error", code: "fs", message: `save failed ${openPath}` }));
-              void sendIntent(intent.custom("save_file", { path: openPath })); // notify the agent loop
+              void runCommand("save_file", { path: openPath, content, base_hash: body.hash ?? null })
+                .then((ack) => {
+                  const state = ackState(ack);
+                  if (state === "accepted") {
+                    pushNotice({ kind: "info", code: "save_file", message: `saved ${openPath}` });
+                    return;
+                  }
+                  pushNotice({
+                    kind: state === "held" ? "info" : "error",
+                    code: "save_file",
+                    message: ack.message ?? `save refused ${openPath}`,
+                  });
+                })
+                .catch((e) =>
+                  pushNotice({
+                    kind: "error",
+                    code: "save_file",
+                    message: e instanceof Error ? e.message : String(e),
+                  }),
+                );
             });
-            // Highlight-to-100x: a Liquid-Glass action popover follows a non-empty selection.
+            // A non-empty selection resolves to a stable SourceRef (path, whole-line range, content
+            // hash) and the contextual action menu follows it. Whole lines, so the same range can be
+            // read back later and compared: that is what makes a stale selection detectable.
             ed.onDidChangeCursorSelection((e) => {
               const model = ed.getModel();
-              const txt = model ? model.getValueInRange(e.selection) : "";
-              if (txt.trim().length > 1) {
-                const vp = ed.getScrolledVisiblePosition(e.selection.getStartPosition());
-                if (vp) setSel({ text: txt, top: Math.max(4, vp.top - 40), left: Math.min(Math.max(8, vp.left), 360) });
-              } else {
+              if (!model || model.getValueInRange(e.selection).trim().length <= 1) {
                 setSel(null);
+                return;
               }
+              const startLine = e.selection.startLineNumber;
+              const endLine = e.selection.endLineNumber;
+              const text = model.getValueInRange({
+                startLineNumber: startLine,
+                startColumn: 1,
+                endLineNumber: endLine,
+                endColumn: model.getLineMaxColumn(endLine),
+              });
+              const vp = ed.getScrolledVisiblePosition(e.selection.getStartPosition());
+              if (vp)
+                setSel({
+                  ref: sourceRef(openPath, startLine, endLine, text),
+                  top: Math.max(4, vp.top - 40),
+                  left: Math.min(Math.max(8, vp.left), 360),
+                });
             });
             ed.onDidScrollChange(() => setSel(null));
-            ed.onDidBlurEditorWidget(() => setSel(null));
+            // Focusing the menu blurs the editor widget, so the dismissal checks where focus landed.
+            // Without this the menu closed on its own mount focus and could never be clicked.
+            ed.onDidBlurEditorWidget(() => {
+              setTimeout(() => {
+                if (!document.activeElement?.closest(".codeactions")) setSel(null);
+              }, 0);
+            });
           }}
           loading={<Loading />}
           options={{ ...HIDE_EDITOR_OPTIONS, readOnly: false }}
         />
-        {sel ? <CodeActions text={sel.text} top={sel.top} left={sel.left} onDone={() => setSel(null)} /> : null}
+        {sel ? (
+          <CodeActions
+            sel={sel.ref}
+            top={sel.top}
+            left={sel.left}
+            readRange={(r) => readRangeFrom(editorRef.current, r)}
+            onDone={() => setSel(null)}
+          />
+        ) : null}
       </div>
     </div>
   );

@@ -7,12 +7,10 @@
 import { useEffect, useLayoutEffect, useMemo, useReducer, useRef } from "react";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
-import { sendIntent } from "../../ipc";
-import { useStore } from "../../store";
-import { intent } from "../../wire";
+import { runCommand, useStore } from "../../store";
 import { Display } from "../../ui";
-import type { DiffChip, DiffChipPatch, PlanPatch, PlanStep } from "./parts";
-import { DiffChipRow, InlineGate, PlanCard, ToolChipRow } from "./structure";
+import type { DiffChip, DiffChipPatch } from "./parts";
+import { DiffChipRow, InlineGate, PlanCard, ToolChipRow, type PlanProjection } from "./structure";
 
 marked.setOptions({ gfm: true, breaks: true });
 
@@ -20,14 +18,16 @@ export function Conversation({ onOpenDiff }: { onOpenDiff?: (path: string) => vo
   const messages = useStore((s) => s.messages);
   const tools = useStore((s) => s.tools);
   const gate = useStore((s) => s.gate);
-  const dismissGate = useStore((s) => s.dismissGate);
-  const activeRunId = useStore((s) => s.activeRunId);
-  const plan = useStore((s) => s.projections.plan as PlanPatch | undefined);
+  // The ONE gate handler pair lives in the store, so the shell overlay and this inline capsule
+  // cannot drift (consolidation decision: MERGE the two handler pairs, KEEP both presentations).
+  const approveGate = useStore((s) => s.approveGate);
+  const denyGate = useStore((s) => s.denyGate);
+  const sessionId = useStore((s) => s.sessionId);
+  const plan = useStore((s) => s.projections.plan as PlanProjection | undefined);
   const diffPatch = useStore((s) => s.projections.diff_chip as DiffChipPatch | undefined);
   const chips: DiffChip[] = diffPatch?.chips ?? [];
 
   const scrollRef = useRef<HTMLDivElement>(null);
-  const runId = activeRunId ?? plan?.run_id ?? chips[0]?.run_id ?? "";
 
   const streamingLen = messages.reduce((n, m) => n + (m.streaming ? m.text.length : 0), 0);
   useRafGovernor(streamingLen);
@@ -37,22 +37,10 @@ export function Conversation({ onOpenDiff }: { onOpenDiff?: (path: string) => vo
     if (el) el.scrollTop = el.scrollHeight;
   }, [messages, tools.length, chips.length, gate]);
 
-  const approvePlan = () => void sendIntent(intent.custom("approve_plan", { run_id: runId }));
-  const editStep = (step: PlanStep, title: string) =>
-    void sendIntent(intent.custom("edit_plan_step", { run_id: runId, step_id: step.id, title }));
-  const reorder = (from: number, to: number) => void sendIntent(intent.custom("reorder_plan", { run_id: runId, from, to }));
   // Opening a diff routes to the editor (which owns accept/reject); the host may also switch chambers.
   const openDiff = (c: DiffChip) => {
-    void sendIntent(intent.openFile(c.path));
+    void runCommand("open_file", { path: c.path });
     onOpenDiff?.(c.path);
-  };
-  const approveGate = () => {
-    if (gate) void sendIntent(intent.custom("approve_gate", { gate: gate.gate }));
-    dismissGate();
-  };
-  const denyGate = () => {
-    if (gate) void sendIntent(intent.custom("deny_gate", { gate: gate.gate }));
-    dismissGate();
   };
 
   const empty = messages.length === 0 && tools.length === 0 && !plan && chips.length === 0;
@@ -68,7 +56,7 @@ export function Conversation({ onOpenDiff }: { onOpenDiff?: (path: string) => vo
           {messages.map((m) => (
             <Message key={m.id} role={m.role} text={m.text} streaming={m.streaming} />
           ))}
-          {plan ? <PlanCard plan={plan} onApprove={approvePlan} onEditStep={editStep} onReorder={reorder} /> : null}
+          {plan ? <PlanCard plan={plan} sessionId={sessionId} /> : null}
           <ToolChipRow tools={tools} />
           <DiffChipRow chips={chips} onOpen={openDiff} />
           {gate ? <InlineGate gate={gate.gate} message={gate.message} onApprove={approveGate} onDismiss={denyGate} /> : null}

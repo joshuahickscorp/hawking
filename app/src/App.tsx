@@ -1,7 +1,17 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from "react";
-import { connectStore, useStore } from "./store";
-import { TRANSPORT_KIND, sendIntent } from "./ipc";
-import { intent } from "./wire";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  boundShortcuts,
+  commandById,
+  connectStore,
+  hasSessionActivity,
+  matchesShortcut,
+  paletteCommands,
+  runCommand,
+  SHELL_COMMANDS,
+  useStore,
+} from "./store";
+import { ackState, heldNote } from "./wire";
+import { TRANSPORT_KIND } from "./ipc";
 import { SideBar } from "./shell/SideBar";
 // The Code chamber carries Monaco (~4.5MB). Lazy so the Chat front door never parses the editor at
 // boot; it loads on first entry to Code. Prefetched on Toolbar hover of the Code tab.
@@ -13,21 +23,33 @@ import { StatusBar } from "./shell/StatusBar";
 import { Settings } from "./surfaces/Settings";
 import { CommandPalette, Gate, type Command } from "./ui";
 import { useFocusTrap } from "./shell/a11y";
-import { useAutoCompact } from "./shell/autocompact";
 import { MOCK_DIFF, parseDiff, type DiffDoc } from "./surfaces/ide/types";
 import { Home } from "./surfaces/home/Home";
+import type { ChatPanelKind } from "./surfaces/home/ChatPanel";
 import type { PermMode } from "./surfaces/home/HomeComposer";
 
 // The two chambers: Chat (Claude Code style, the front door) and Code (the IDE, Cursor style).
 type Mode = "chat" | "code";
 
-const INITIAL_FILE = "crates/pool/src/guard.rs";
+// The boot tab is a MOCK fixture path (it exists only in surfaces/ide/types.ts). On a live host
+// there is no file this app may assume, so nothing is opened until the user opens one.
+const INITIAL_FILE = TRANSPORT_KIND === "mock" ? "crates/pool/src/guard.rs" : null;
 
 // Lightweight UI-state persistence: the shell layout survives a restart. Wrapped in try/catch so a
 // disabled localStorage never breaks boot.
+//
+// The namespace carries the transport. Persisted state includes workspace-shaped content (the open
+// tab list and the active path), and the mock transport's content is FIXTURE content that does not
+// exist on a live host. Sharing one namespace let a dev session's fixture tabs reopen against a real
+// workspace, which produced real user.intent.open_file events for files that were never there and an
+// error panel the user did not ask for. Keying by transport keeps the two worlds apart.
+// ponytail: transport-scoped, not workspace-scoped. Switching a live host between two repositories
+// still carries tabs across. Upgrade is keying on the workspace root once the shell knows it at boot.
+const PERSIST_NS = "hide." + TRANSPORT_KIND + ".";
+
 function persisted<T>(key: string, fallback: T): T {
   try {
-    const v = localStorage.getItem("hide." + key);
+    const v = localStorage.getItem(PERSIST_NS + key);
     return v == null ? fallback : (JSON.parse(v) as T);
   } catch {
     return fallback;
@@ -35,7 +57,7 @@ function persisted<T>(key: string, fallback: T): T {
 }
 function persist(key: string, value: unknown): void {
   try {
-    localStorage.setItem("hide." + key, JSON.stringify(value));
+    localStorage.setItem(PERSIST_NS + key, JSON.stringify(value));
   } catch {
     /* storage unavailable */
   }
@@ -44,13 +66,11 @@ function persist(key: string, value: unknown): void {
 export function App() {
   // Boot into Chat (the front door); walk to Code (the IDE) via the pop-out. Migrate any legacy "home".
   const [mode, setMode] = useState<Mode>(() => (persisted<string>("mode", "chat") === "code" ? "code" : "chat"));
-  // Permission mode governs the security gate: bypass auto-approves, ask/auto prompt (see below).
-  // Never silently resume Bypass across a restart: it auto-approves every gated command, so a
-  // persisted bypass would run unattended on the next launch. Boot such a session back to "ask".
-  const [permMode, setPermMode] = useState<PermMode>(() => {
-    const saved = persisted<PermMode>("permMode", "ask");
-    return saved === "bypass" ? "ask" : saved;
-  });
+  // Permission mode governs the security gate: bypass auto-approves, ask prompts (see below).
+  // Never resumed across a restart: bypass auto-approves every gated command, so a persisted one
+  // would run unattended on the next launch. Every session therefore boots into "ask", which is why
+  // this is the one piece of shell state that is not persisted.
+  const [permMode, setPermMode] = useState<PermMode>("ask");
   const [sidebarOpen, setSidebarOpen] = useState(() => persisted("sidebarOpen", true));
   const [chatOpen, setChatOpen] = useState(() => persisted("chatOpen", true));
   const [chatFloating, setChatFloating] = useState(() => persisted("chatFloating", true));
@@ -64,12 +84,14 @@ export function App() {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [openPath, setOpenPath] = useState<string | null>(() => persisted("openPath", INITIAL_FILE));
-  const [tabs, setTabs] = useState<string[]>(() => persisted("tabs", [INITIAL_FILE]));
+  const [tabs, setTabs] = useState<string[]>(() => persisted("tabs", INITIAL_FILE ? [INITIAL_FILE] : []));
   const [diff, setDiff] = useState<DiffDoc | null>(null);
+  // The conversation's side panel. Lifted out of Home so the ONE command spine owns the toggles (a
+  // panel that only a mouse could reach had no palette or keyboard path at all).
+  const [panel, setPanel] = useState<ChatPanelKind | null>(null);
 
   // Persist the layout whenever it changes.
   useEffect(() => persist("mode", mode), [mode]);
-  useEffect(() => persist("permMode", permMode), [permMode]);
   useEffect(() => persist("sidebarOpen", sidebarOpen), [sidebarOpen]);
   useEffect(() => persist("chatOpen", chatOpen), [chatOpen]);
   useEffect(() => persist("chatFloating", chatFloating), [chatFloating]);
@@ -80,26 +102,40 @@ export function App() {
 
   const runtimeStatus = useStore((s) => s.runtimeStatus);
   const runtimeDetail = useStore((s) => s.runtimeDetail);
-  const activeRunId = useStore((s) => s.activeRunId);
   const notices = useStore((s) => s.notices);
   const gate = useStore((s) => s.gate);
-  const dismissGate = useStore((s) => s.dismissGate);
+  const approveGate = useStore((s) => s.approveGate);
+  const denyGate = useStore((s) => s.denyGate);
+  const pushNotice = useStore((s) => s.pushNotice);
   const diffPatch = useStore((s) => s.projections.diff);
+  const sessions = useStore((s) => s.sessions);
+  const openSession = useStore((s) => s.openSession);
+  // The same condition Home gates its side-panel bar on, read from the ONE selector both share,
+  // because the palette rows for those panels are only honest while it holds.
+  const hasConversation = useStore(hasSessionActivity);
 
   useEffect(() => connectStore(), []);
 
-  // Secret, proactive context compaction: the condenser mindset applied to the live window. Watches the
-  // engine's watermark and compacts ahead of the cliff during work, silently. No cap ever reaches the UI.
-  useAutoCompact();
+  // RETIRED: the proactive auto-compaction hook. It fired `compact_context`, whose host arm was
+  // empty, and it re-armed only on an occupancy drop that only a real compaction produces, so it was
+  // a one-shot no-op per session. Real compaction is budget-driven span admission inside the context
+  // compiler (crates/hawking-context compiler.rs); nothing in the app has to ask for it.
 
   // Bypass permissions: when the operator has opted into full autonomy, a security gate is auto-approved
   // instead of prompting. ask/auto still surface the lit approval capsule (the human-in-the-loop default).
+  // Once per gate: the decision now stays pending until the host records it, and a host that
+  // REFUSES the approval puts the prompt back. Re-firing on that would spin, so a refused bypass
+  // approval falls through to the human, which is the safe direction.
+  const autoApproved = useRef<string | null>(null);
   useEffect(() => {
-    if (gate && permMode === "bypass") {
-      void sendIntent(intent.custom("approve_gate", { gate: gate.gate }));
-      dismissGate();
+    if (!gate) {
+      autoApproved.current = null;
+      return;
     }
-  }, [gate, permMode, dismissGate]);
+    if (permMode !== "bypass" || autoApproved.current === gate.gate) return;
+    autoApproved.current = gate.gate;
+    approveGate();
+  }, [gate, permMode, approveGate]);
 
   // Lift the IDE's diff lifecycle into the shell so the editor area and SCM view share it.
   const hostDiff = useMemo(() => parseDiff(diffPatch as Record<string, unknown> | undefined), [diffPatch]);
@@ -114,28 +150,93 @@ export function App() {
     }
   }, [hostDiff]);
 
+  // The side panels live on the Chat stage, so opening one from the palette walks there rather than
+  // flipping state under a chamber that does not render it. Like every run-scoped command, it shows
+  // nothing until there is a conversation to show it beside; that is the same condition the icon bar
+  // itself appears under, not a dead entry.
+  const togglePanelFace = useCallback((k: ChatPanelKind) => {
+    setMode("chat");
+    setPanel((cur) => (cur === k ? null : k));
+  }, []);
+
+  // The Navigator, the bottom panel and the Executor pane are Code-chamber furniture: nothing
+  // renders them in Chat. Their chords are advertised in Settings and beside their palette rows, so
+  // they walk to the chamber that shows them rather than flipping state under one that does not,
+  // exactly as togglePanelFace walks to Chat. Advertised means live, everywhere it is advertised.
+  const inCode = useCallback((f: () => void) => () => {
+    setMode("code");
+    f();
+  }, []);
+
+  // The handlers for the local-only shell commands (SHELL_COMMANDS carries their ids and keys).
+  const shellHandlers = useMemo<Record<string, () => void>>(
+    () => ({
+      "go.chat": () => setMode("chat"),
+      "go.code": () => setMode("code"),
+      "toggle.chat": inCode(() => setChatOpen((v) => !v)),
+      "toggle.float": inCode(() => setChatFloating((v) => !v)),
+      "toggle.panel": inCode(() => setPanelOpen((v) => !v)),
+      "toggle.sidebar": inCode(() => setSidebarOpen((v) => !v)),
+      "toggle.palette": () => setPaletteOpen((v) => !v),
+      "open.settings": () => setSettingsOpen(true),
+      "perm.ask": () => setPermMode("ask"),
+      "perm.bypass": () => setPermMode("bypass"),
+      // Same toggle the panel bar performs: pressing the open panel closes it.
+      "panel.terminal": () => togglePanelFace("terminal"),
+      "panel.diff": () => togglePanelFace("diff"),
+      "panel.preview": () => togglePanelFace("preview"),
+      "panel.tools": () => togglePanelFace("tools"),
+      "panel.artifacts": () => togglePanelFace("artifacts"),
+      "panel.context": () => togglePanelFace("context"),
+    }),
+    [togglePanelFace, inCode],
+  );
+
+  // ONE resolver for every gesture: a shell id runs locally, anything else is a catalog command and
+  // goes through the spine. The palette and every catalog chord land here, and this is the only
+  // feedback either of them gets, so the ACK is read, not discarded: a refusal (unreachable binding,
+  // missing argument) and a hold at the approval gate both surface as a notice. Dropping the ack
+  // meant a keyboard user pressing a gated chord saw nothing at all happen.
+  const runFromSpine = useCallback(
+    (id: string) => {
+      const local = shellHandlers[id];
+      if (local) return local();
+      void runCommand(id)
+        .then((ack) => {
+          const state = ackState(ack);
+          if (state === "accepted") return;
+          pushNotice(
+            state === "held"
+              ? { kind: "info", code: "command", message: heldNote(commandById(id)?.title ?? id) }
+              : { kind: "error", code: "command", message: ack.message ?? `${id} was refused` },
+          );
+        })
+        .catch((e) =>
+          pushNotice({ kind: "error", code: "command", message: e instanceof Error ? e.message : String(e) }),
+        );
+    },
+    [shellHandlers, pushNotice],
+  );
+
+  // Keyboard bindings are DERIVED (shell keys plus every catalog keyboard_shortcut the shell owns),
+  // never a second hand-written list.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      const mod = e.metaKey || e.ctrlKey;
-      if (mod && e.key.toLowerCase() === "p") {
+      for (const b of boundShortcuts()) {
+        if (!matchesShortcut(b.shortcut, e)) continue;
         e.preventDefault();
-        setPaletteOpen((v) => !v);
-      } else if (mod && e.key.toLowerCase() === "j") {
-        e.preventDefault();
-        setPanelOpen((v) => !v);
-      } else if (mod && e.key.toLowerCase() === "b") {
-        e.preventDefault();
-        setSidebarOpen((v) => !v);
-      } else if (mod && e.key.toLowerCase() === "i") {
-        e.preventDefault();
-        setChatOpen((v) => !v);
-      } else if (e.key === "Escape" && chatFloating) {
-        setChatOpen(false);
+        runFromSpine(b.id);
+        return;
       }
+      // Escape closes ONE thing: the innermost open overlay. This listener is the outermost of
+      // several, so it stands down whenever something nearer the user is open (the palette, Settings
+      // and the gate each close themselves), which is what kept a single Escape from closing the
+      // palette and the Executor at once.
+      if (e.key === "Escape" && chatFloating && !paletteOpen && !settingsOpen && !gate) setChatOpen(false);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [chatFloating]);
+  }, [chatFloating, runFromSpine, paletteOpen, settingsOpen, gate]);
 
   const openFile = (path: string) => {
     setOpenPath(path);
@@ -150,33 +251,34 @@ export function App() {
     });
   };
 
-  const cancelRun = () => {
-    if (activeRunId) void sendIntent(intent.cancelRun(activeRunId));
-  };
+  const cancelRun = () => runFromSpine("cancel_run");
 
-  // Approve-and-proceed: tell the engine the gate is cleared (it releases + runs the held command),
-  // then drop the prompt. Deny tells the engine to drop the held command. Mirrors the Executor's
-  // inline gate. Both carry the gate id the SecurityGate was emitted with.
-  const approveGate = () => {
-    if (gate) void sendIntent(intent.custom("approve_gate", { gate: gate.gate }));
-    dismissGate();
-  };
-  const denyGate = () => {
-    if (gate) void sendIntent(intent.custom("deny_gate", { gate: gate.gate }));
-    dismissGate();
-  };
-
-  const commands = useMemo<Command[]>(
-    () => [
-      { id: "go.chat", label: "Go to Chat", run: () => setMode("chat") },
-      { id: "go.code", label: "Go to Code", run: () => setMode("code") },
-      { id: "toggle.chat", label: "Toggle Executor", run: () => setChatOpen((v) => !v) },
-      { id: "toggle.float", label: "Executor: Float / Dock", run: () => setChatFloating((v) => !v) },
-      { id: "toggle.panel", label: "Toggle Terminal", run: () => setPanelOpen((v) => !v) },
-      { id: "toggle.sidebar", label: "Toggle Navigator", run: () => setSidebarOpen((v) => !v) },
-    ],
-    [],
-  );
+  // Palette entries are DERIVED: the local-only shell commands merged with every catalog command the
+  // palette can actually run. No second command list. The shortcut on a row is read from the SAME
+  // bound-key table the shell binds from, so the palette can only show a chord that really fires.
+  const commands = useMemo<Command[]>(() => {
+    const keys = new Map(boundShortcuts().map((b) => [b.id, b.shortcut]));
+    // The side panels hang off a live conversation (Home renders the panel bar and the panel itself
+    // only when there are messages), so with none there is nothing for the row to open. It is
+    // withheld rather than offered as a silent no-op.
+    const shell = SHELL_COMMANDS.filter((c) => hasConversation || !c.id.startsWith("panel."));
+    return [
+      ...[...shell, ...paletteCommands()].map((c) => ({
+        id: c.id,
+        label: c.title,
+        shortcut: keys.get(c.id) ?? null,
+        run: () => runFromSpine(c.id),
+      })),
+      // `open_session` needs the id of a session, which a bare palette gesture cannot invent, so it
+      // is offered once per RECENT instead: the argument comes from the row, not from the user.
+      ...sessions.slice(0, 8).map((s) => ({
+        id: `open_session:${s.id}`,
+        label: `Open session: ${s.title}`,
+        shortcut: null,
+        run: () => openSession(s.id),
+      })),
+    ];
+  }, [runFromSpine, sessions, openSession, hasConversation]);
 
   const degraded = runtimeStatus === "degraded" || runtimeStatus === "failed" || runtimeStatus === "down";
 
@@ -209,6 +311,9 @@ export function App() {
           onSettings={() => setSettingsOpen(true)}
           permMode={permMode}
           onPermMode={setPermMode}
+          panel={panel}
+          onPanel={togglePanelFace}
+          onClosePanel={() => setPanel(null)}
         />
       ) : (
         <div className="vsc-body">
@@ -237,7 +342,8 @@ export function App() {
         </div>
       )}
 
-      <StatusBar />
+      {/* The open editor tabs are the file list the Problems counter offers to the analyzer. */}
+      <StatusBar openPaths={tabs} />
 
       {mode === "code" && chatOpen && chatFloating ? (
         <FloatingChat
@@ -250,7 +356,15 @@ export function App() {
       ) : null}
 
       {degraded ? <DegradedToast status={runtimeStatus} detail={runtimeDetail} /> : null}
-      {gate ? <GatePrompt message={gate.message} gateId={gate.gate} onApprove={approveGate} onDeny={denyGate} /> : null}
+      {gate ? (
+        <GatePrompt
+          message={gate.message}
+          gateId={gate.gate}
+          deciding={!!gate.deciding}
+          onApprove={approveGate}
+          onDeny={denyGate}
+        />
+      ) : null}
       <CommandPalette open={paletteOpen} commands={commands} onClose={() => setPaletteOpen(false)} />
       {settingsOpen ? <Settings onClose={() => setSettingsOpen(false)} /> : null}
       {/* notices surface in the status bar */}
@@ -267,25 +381,24 @@ function DegradedToast({ status, detail }: { status: string; detail: string | nu
   );
 }
 
+// The security gate. Escape is DELIBERATELY not bound: it used to deny, which made the one key every
+// overlay in this app uses to close itself into a decision on a paused step of a live turn (one press
+// meant "close the palette", "close the Executor" AND "deny"). A gate is answered by its two buttons
+// and by nothing else, and it stays up until the host records the answer (store.decideGate).
 function GatePrompt({
   message,
   gateId,
+  deciding,
   onApprove,
   onDeny,
 }: {
   message: string;
   gateId: string;
+  deciding: boolean;
   onApprove: () => void;
   onDeny: () => void;
 }) {
   const trapRef = useFocusTrap<HTMLDivElement>();
-  useEffect(() => {
-    const onEsc = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onDeny();
-    };
-    document.addEventListener("keydown", onEsc);
-    return () => document.removeEventListener("keydown", onEsc);
-  }, [onDeny]);
   return (
     <div className="gate-overlay" role="presentation">
       <div
@@ -301,9 +414,14 @@ function GatePrompt({
           {message}
         </div>
         <div style={{ display: "flex", gap: "var(--ma-2)", justifyContent: "flex-end" }}>
-          <button className="text-button" onClick={onDeny}>Deny</button>
-          <Gate onClick={onApprove} title={gateId}>Approve</Gate>
+          <button className="text-button" onClick={onDeny} disabled={deciding}>Deny</button>
+          <Gate onClick={onApprove} title={gateId} disabled={deciding}>Approve</Gate>
         </div>
+        {deciding ? (
+          <div role="status" aria-live="polite" className="t-micro" style={{ marginTop: "var(--ma-2)", color: "var(--text-dim)" }}>
+            recording your decision
+          </div>
+        ) : null}
       </div>
     </div>
   );

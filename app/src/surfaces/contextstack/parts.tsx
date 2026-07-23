@@ -6,7 +6,35 @@
   These are LOCAL primitives (the surface owns them; ui.tsx is not touched). Every prop is preserved
   so ContextStack.tsx — and the steer logic — keep working unchanged.
 */
-import { useState, type CSSProperties, type ReactNode } from "react";
+import { useId, useState, type CSSProperties, type ReactNode } from "react";
+import type { ActionState } from "./state";
+
+/*
+  ActionMark: what a control's last dispatch actually did. Shape AND word, never pigment alone:
+  a pending action reads "in progress", a refused one reads "failed" with the host's reason in the
+  tooltip. Renders nothing while idle so a resting row stays quiet.
+*/
+export function ActionMark({ state, message }: { state: ActionState; message?: string }) {
+  if (state === "idle") return null;
+  const word = state === "pending" ? "in progress" : state === "done" ? "done" : "failed";
+  const glyph = state === "pending" ? "~" : state === "done" ? "✓" : "✗";
+  return (
+    <span
+      role="img"
+      aria-label={word}
+      title={message ? `${word}: ${message}` : word}
+      style={{
+        flex: "0 0 auto",
+        width: 12,
+        textAlign: "center",
+        fontSize: "var(--fs-label)",
+        color: state === "failed" ? "var(--red)" : state === "done" ? "var(--green)" : "var(--text-dim)",
+      }}
+    >
+      {glyph}
+    </span>
+  );
+}
 
 /* A compact tree row: ~22px, content + trailing controls, hover background. */
 export function Line({ children, onClick, title }: { children: ReactNode; onClick?: () => void; title?: string }) {
@@ -39,39 +67,58 @@ export function Line({ children, onClick, title }: { children: ReactNode; onClic
 */
 export function HardwareToggle({
   label,
+  name,
   on,
   onToggle,
   tone = "light",
   title,
+  disabled = false,
+  status = "idle",
+  message,
 }: {
   label: string;
+  /** Accessible name when the two-letter label is not enough on its own. */
+  name?: string;
   on: boolean;
   onToggle: () => void;
   tone?: "light" | "mute" | "bad";
   title?: string;
+  /** Blocked: the capability needs something this row does not have. The title says what. */
+  disabled?: boolean;
+  status?: ActionState;
+  message?: string;
 }) {
   const litColor = tone === "bad" ? "var(--red)" : "var(--accent)";
   return (
-    <button
-      title={title ?? label}
-      aria-pressed={on}
-      onClick={onToggle}
-      className="ctx-toggle"
-      style={{
-        flex: "0 0 auto",
-        fontSize: "var(--fs-label)",
-        letterSpacing: "0.04em",
-        textTransform: "uppercase",
-        padding: "1px 6px",
-        borderRadius: "var(--radius-sm)",
-        color: on ? "var(--accent-text)" : "var(--text-dim)",
-        background: on ? litColor : "transparent",
-        border: "1px solid",
-        borderColor: on ? "transparent" : "var(--input-border)",
-      }}
-    >
-      {label}
-    </button>
+    <span style={{ flex: "0 0 auto", display: "flex", alignItems: "center", gap: 2 }}>
+      <ActionMark state={status} message={message} />
+      <button
+        title={title ?? label}
+        aria-label={name ?? label}
+        aria-pressed={on}
+        aria-disabled={disabled}
+        aria-busy={status === "pending"}
+        disabled={disabled}
+        onClick={onToggle}
+        className="ctx-toggle"
+        style={{
+          flex: "0 0 auto",
+          fontSize: "var(--fs-label)",
+          letterSpacing: "0.04em",
+          textTransform: "uppercase",
+          padding: "1px 6px",
+          borderRadius: "var(--radius-sm)",
+          color: disabled ? "var(--text-dim)" : on ? "var(--accent-text)" : "var(--text-dim)",
+          background: on && !disabled ? litColor : "transparent",
+          border: "1px solid",
+          borderColor: on && !disabled ? "transparent" : "var(--input-border)",
+          opacity: disabled ? 0.45 : 1,
+          cursor: disabled ? "not-allowed" : "pointer",
+        }}
+      >
+        {label}
+      </button>
+    </span>
   );
 }
 
@@ -99,12 +146,19 @@ export function Stratum({
 }) {
   const [open, setOpen] = useState(defaultOpen);
   const hasBody = children != null;
+  const bodyId = useId();
 
   return (
     <section className="ctx-section">
       <header className="ctx-section__head" style={{ display: "flex", alignItems: "center", gap: "var(--ma-1)" }}>
         <button
           className="ctx-section__toggle"
+          // A disclosure states whether it is open and what it controls; a section with no body is a
+          // label, so it is disabled rather than left in the tab order doing nothing. Every other
+          // disclosure in the tree (StatusBar, structure.tsx, Home, HunkReview) already does this.
+          aria-expanded={hasBody ? open : undefined}
+          aria-controls={hasBody ? bodyId : undefined}
+          disabled={!hasBody}
           onClick={() => hasBody && setOpen((v) => !v)}
           style={{
             display: "flex",
@@ -146,6 +200,7 @@ export function Stratum({
           </span>
           {live ? (
             <span
+              role="img"
               aria-label="active"
               title="agent active"
               style={{ flex: "0 0 auto", width: 6, height: 6, borderRadius: "50%", background: "var(--accent)" }}
@@ -173,7 +228,7 @@ export function Stratum({
       </header>
 
       {hasBody && open ? (
-        <div className="ctx-section__body" style={{ display: "flex", flexDirection: "column" }}>
+        <div id={bodyId} className="ctx-section__body" style={{ display: "flex", flexDirection: "column" }}>
           {children}
         </div>
       ) : null}
@@ -236,6 +291,9 @@ export function NoteField({ value, onCommit, placeholder }: { value?: string; on
 export function OkMark({ ok }: { ok: boolean }) {
   return (
     <span
+      // role="img" (as ActionMark above): aria-label on a role-less span is not reliably exposed, and
+      // this glyph is the only thing that tells a passing tool/build/test row from a failing one.
+      role="img"
       aria-label={ok ? "ok" : "fail"}
       style={{
         flex: "0 0 auto",

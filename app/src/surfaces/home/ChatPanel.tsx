@@ -2,16 +2,23 @@
   ChatPanel.tsx — the active-chat side panel (Claude Code's Terminal / Diff / Preview, recast). A
   full-height right column beside the conversation; the switcher lives in the Chat stage and toggles which
   face shows. Terminal and the diff review are the real IDE components, reused; Preview is the local view;
-  Tools is the agent's live tool feed; Artifacts is what the run produced.
+  Tools is the agent's live tool feed; Artifacts is what the run produced; Context is the Context Stack,
+  the receipt for what went into the window.
+
+  The Context face is where the Context Stack MOUNTS. It was built, wired to real checkpoint / fork /
+  memory commands, and imported by nothing at all, so the whole surface rendered nowhere. It belongs
+  beside the conversation it reports on, and it costs one tab in a switcher that already exists rather
+  than a new permanent control.
 */
+import { ContextStack } from "../ContextStack";
 import { Terminal } from "../ide/Terminal";
-import { HunkReview, type HunkAction } from "../ide/HunkReview";
-import type { DiffDoc, Hunk } from "../ide/types";
+import { HunkReview } from "../ide/HunkReview";
+import type { DiffDoc, HunkStatus } from "../ide/types";
 import { Icon } from "../../shell/icons";
 import { Preview } from "./Preview";
 import { useStore } from "../../store";
 
-export type ChatPanelKind = "terminal" | "diff" | "preview" | "tools" | "artifacts";
+export type ChatPanelKind = "terminal" | "diff" | "preview" | "tools" | "artifacts" | "context";
 
 const TITLE: Record<ChatPanelKind, string> = {
   terminal: "Terminal",
@@ -19,6 +26,7 @@ const TITLE: Record<ChatPanelKind, string> = {
   preview: "Preview",
   tools: "Tools",
   artifacts: "Artifacts",
+  context: "Context",
 };
 
 // The agent's tool calls, newest first. Real data (tool_progress stream), not a placeholder.
@@ -65,12 +73,14 @@ export function ChatPanel({
   panel,
   onClose,
   diff,
-  onDiffAct,
+  onDiffStatus,
 }: {
   panel: ChatPanelKind;
   onClose: () => void;
   diff: DiffDoc | null;
-  onDiffAct: (hunk: Hunk, action: HunkAction) => void;
+  // The optimistic local flip only. HunkReview owns the dispatch, so a per-hunk gesture here carries
+  // its hunk_id exactly like the one in the Code chamber.
+  onDiffStatus: (hunkId: string, status: HunkStatus) => void;
 }) {
   return (
     <aside className="home-panel" aria-label={TITLE[panel]}>
@@ -84,7 +94,7 @@ export function ChatPanel({
         {panel === "terminal" ? <Terminal /> : null}
         {panel === "diff" ? (
           diff ? (
-            <HunkReview doc={diff} onAct={onDiffAct} />
+            <HunkReview doc={diff} onStatus={onDiffStatus} />
           ) : (
             <div className="home-panel__empty t-body">No changes yet. Edits the agent proposes show here.</div>
           )
@@ -92,6 +102,7 @@ export function ChatPanel({
         {panel === "preview" ? <Preview /> : null}
         {panel === "tools" ? <ToolsPanel /> : null}
         {panel === "artifacts" ? <ArtifactsPanel diff={diff} /> : null}
+        {panel === "context" ? <ContextStack /> : null}
       </div>
     </aside>
   );

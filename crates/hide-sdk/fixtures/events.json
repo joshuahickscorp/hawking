@@ -1,0 +1,154 @@
+{
+  "items": {
+    "agent_message": {
+      "created_ms": 1001,
+      "id": "itm_agent",
+      "kind": "agent_message",
+      "payload": {
+        "text": "reproducing it now"
+      },
+      "seq": 1,
+      "turn": "trn_1"
+    },
+    "completion": {
+      "created_ms": 1005,
+      "id": "itm_done",
+      "kind": "completion",
+      "payload": {
+        "status": "success",
+        "summary": "retry test is green"
+      },
+      "seq": 5,
+      "turn": "trn_1"
+    },
+    "plan": {
+      "created_ms": 1002,
+      "id": "itm_plan",
+      "kind": "plan",
+      "payload": {
+        "created_ms": 900,
+        "goal": null,
+        "id": "pln_1",
+        "steps": [
+          {
+            "acceptance_oracle": null,
+            "cost": {
+              "tokens": 1200,
+              "usd_micros": null,
+              "wall_ms": 30000
+            },
+            "dependencies": [],
+            "effects": [
+              "read_fs",
+              "shell"
+            ],
+            "expected_artifacts": [
+              "repro.log"
+            ],
+            "id": "stp_1",
+            "objective": "reproduce the flake",
+            "parallelizable": false,
+            "rollback_boundary": {
+              "kind": "none",
+              "reference": null
+            },
+            "scope": {
+              "description": "the retry module only",
+              "network": false,
+              "paths": [
+                "src/retry.ts"
+              ]
+            }
+          }
+        ]
+      },
+      "seq": 2,
+      "turn": "trn_1"
+    },
+    "tool_call": {
+      "created_ms": 1003,
+      "id": "itm_call",
+      "kind": "tool_call",
+      "payload": {
+        "arguments": {
+          "cmd": "cargo test -p retry"
+        },
+        "call_id": "tcl_1",
+        "tool": "tool_bash"
+      },
+      "seq": 3,
+      "turn": "trn_1"
+    },
+    "tool_result": {
+      "created_ms": 1004,
+      "id": "itm_result",
+      "kind": "tool_result",
+      "payload": {
+        "call_id": "tcl_1",
+        "error": null,
+        "ok": true,
+        "output": {
+          "code": 0,
+          "passed": 12
+        }
+      },
+      "seq": 4,
+      "turn": "trn_1"
+    },
+    "user_message": {
+      "created_ms": 1000,
+      "id": "itm_user",
+      "kind": "user_message",
+      "payload": {
+        "attachments": [],
+        "text": "the retry test flakes on CI"
+      },
+      "seq": 0,
+      "turn": "trn_1"
+    }
+  },
+  "notifications": {
+    "approval_requested": {
+      "method": "approval/requested",
+      "params": {
+        "request": {
+          "action": "write src/retry.ts",
+          "detail": "apply the one-line fix",
+          "effects": [
+            "write_fs"
+          ],
+          "request_id": "apr_1",
+          "risk": "low"
+        }
+      }
+    },
+    "item_added": {
+      "method": "item/added",
+      "params": {
+        "item": {
+          "created_ms": 1001,
+          "id": "itm_agent",
+          "kind": "agent_message",
+          "payload": {
+            "text": "reproducing it now"
+          },
+          "seq": 1,
+          "turn": "trn_1"
+        }
+      }
+    },
+    "runtime_status": {
+      "method": "runtime/status",
+      "params": {
+        "detail": null,
+        "status": "ready"
+      }
+    },
+    "turn_started": {
+      "method": "turn/started",
+      "params": {
+        "turn": "trn_1"
+      }
+    }
+  }
+}
