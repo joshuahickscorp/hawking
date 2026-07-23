@@ -50,6 +50,42 @@ def test_pack_leaves_no_partial_and_verifies(tmp_path):
     assert gravity_format.verify(gravity)["ok"], "packed artifact does not verify"
 
 
+def test_ladder_survey_samples_experts_but_never_the_production_rung(tmp_path, monkeypatch):
+    """Sampling may thin the rate survey; it may never thin the artifact."""
+    monkeypatch.setattr(pack, "LADDER_SAMPLE_EVERY", 2)
+    shard, rows = _tiny_shard(tmp_path)
+    base = rows[0]
+    rows = []
+    for index in range(4):  # four identically shaped routed-expert tensors
+        row = dict(base)
+        row["name"] = f"model.layers.0.mlp.experts.{index}.gate_proj.weight"
+        row["category"], row["expert"] = "routed_expert", index
+        rows.append(row)
+    out = tmp_path / "compact"
+    receipt = pack.pack_shard(shard, rows, out)
+
+    assert receipt["ladder_sample_every_nth_routed_expert"] == 2
+    assert receipt["ladder_tensors_fully_surveyed"] == 2, "expected every 2nd expert surveyed"
+
+    header = gravity_format.read_header(out / "model-00001-of-00282.gravity")
+    survey = header["compression"]["ladder_survey"]
+    assert survey["production_rung_coverage"] == "ALL_TENSORS"
+    assert survey["routed_expert_tensors_seen"] == 4
+
+    full = thin = 0
+    for entry in header["tensors"]:
+        by_rung = {r["rung"]: r for r in entry["ladder"]}
+        assert by_rung[pack.PRODUCTION_RUNG].get("admitted"), \
+            "the production rung must be fitted on every tensor"
+        if by_rung["R2"].get("sampled_out"):
+            thin += 1
+            # a skipped measurement must be legible as skipped, not as a failure
+            assert by_rung["R2"]["reason"] == "NOT_IN_THIS_TENSOR_LADDER_SAMPLE"
+        else:
+            full += 1
+    assert (full, thin) == (2, 2)
+
+
 def test_a_partial_write_never_takes_the_final_name(tmp_path, monkeypatch):
     """If the write dies, the .gravity name must still be absent."""
     shard, rows = _tiny_shard(tmp_path)

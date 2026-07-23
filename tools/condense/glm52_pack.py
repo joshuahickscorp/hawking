@@ -148,6 +148,14 @@ LADDER = (
     {"rung": "R4", "dim": 32, "k": 256, "nominal_bpw": 0.261},
 )
 PRODUCTION_RUNG = "R0"
+# The non-production rungs are a rate survey, not the artifact.  Fitting all three on every
+# tensor made the ladder the whole cost of a pack (measured 1.24 s x 213 tensors ~= the
+# 264 s one-worker pack_seconds), and it was re-establishing a near-constant: across the
+# routed-expert tensors, which are all the same shape, R2 and R4 relative error have
+# stdev 1.8e-4 and 1.0e-4.  Every routed-expert tensor is therefore a repeat measurement of
+# a quantity already known to four decimals.  Survey every Nth of them and keep the rest of
+# the model exhaustive: non-routed tensors are shape-diverse and stay fully measured.
+LADDER_SAMPLE_EVERY = int(os.environ.get("GLM52_LADDER_SAMPLE_EVERY", "32"))
 # Router/normalization/control tensors: 582 of 59,585 tensors and ~0.1% of all weights, so
 # holding them at source precision costs almost nothing in whole-model BPW while keeping
 # the control path exact.  Compressing the router to save 0.1% would be a bad trade.
@@ -177,16 +185,26 @@ def rung_is_admissible(rung: dict, elements: int) -> bool:
     return (index_cost + fixed) < BPW_CEILING
 
 
-def pack_tensor_ladder(weights: np.ndarray, *, ladder=LADDER, seed: int = 0) -> list[dict]:
-    """Run every admissible ladder rung on one tensor while its bytes are resident.
+def pack_tensor_ladder(weights: np.ndarray, *, ladder=LADDER, seed: int = 0,
+                       rungs: frozenset[str] | None = None) -> list[dict]:
+    """Run the requested admissible ladder rungs on one tensor while its bytes are resident.
 
-    The source streams past once, so all rungs are measured in the single visit rather than
+    The source streams past once, so rungs are measured in the single visit rather than
     re-fetching per rate.  Rungs whose fixed costs cannot amortize over this tensor are
-    skipped rather than emitted as illegal artifacts.  Returns one metrics row per admitted
-    rung; no rung is written here.
+    skipped rather than emitted as illegal artifacts.  Returns one metrics row per rung; no
+    rung is written here.
+
+    ``rungs`` restricts which rungs are actually fitted.  A rung left out still gets a row,
+    marked ``sampled_out``, because a measurement that was never taken and a measurement
+    that failed must not look the same in the record.
     """
     rows = []
     for rung in ladder:
+        if rungs is not None and rung["rung"] not in rungs:
+            rows.append({"rung": rung["rung"], "dim": rung["dim"], "k": rung["k"],
+                         "admitted": False, "sampled_out": True,
+                         "reason": "NOT_IN_THIS_TENSOR_LADDER_SAMPLE", "artifact": None})
+            continue
         if not rung_is_admissible(rung, weights.size):
             rows.append({"rung": rung["rung"], "dim": rung["dim"], "k": rung["k"],
                          "admitted": False,
@@ -336,6 +354,9 @@ def pack_shard(shard_path: Path, rows: list[dict], out_dir: Path, *,
     compact_bits = 0
     total_weights = 0
     offset = 0
+    all_rungs = frozenset(rung["rung"] for rung in LADDER)
+    surveyed = 0
+    routed_seen = 0
     with open(shard_path, "rb", buffering=0) as source:
         for row in ordered:
             if row["dtype"] != "BF16":
@@ -353,7 +374,16 @@ def pack_shard(shard_path: Path, rows: list[dict], out_dir: Path, *,
                                 "billed_bpw": 16.0, "elements": int(weights.size)})
                 continue
 
-            ladder_rows = pack_tensor_ladder(weights, seed=seed)
+            # Deterministic by position, not random: the same shard always surveys the
+            # same tensors, so a re-pack reproduces the record exactly.
+            if row.get("expert") is None or LADDER_SAMPLE_EVERY <= 1:
+                rungs = all_rungs
+            else:
+                rungs = (all_rungs if routed_seen % LADDER_SAMPLE_EVERY == 0
+                         else frozenset({production_rung}))
+                routed_seen += 1
+            surveyed += rungs == all_rungs
+            ladder_rows = pack_tensor_ladder(weights, seed=seed, rungs=rungs)
             chosen = next((r for r in ladder_rows
                            if r["rung"] == production_rung and r["admitted"]), None)
             if chosen is None:  # no admissible rung: protect rather than exceed the ceiling
@@ -401,6 +431,15 @@ def pack_shard(shard_path: Path, rows: list[dict], out_dir: Path, *,
             "codec": "gravity-pq", "production_rung": production_rung,
             "packed_bpw": (sum(len(b) for _, b in payloads) * 8 / max(1, packed_weights)),
             "whole_shard_bpw": compact_bits / max(1, total_weights),
+            # The production rung is fitted on every tensor and is the artifact.  The other
+            # rungs are a survey; this says exactly how much of one this shard carries.
+            "ladder_survey": {
+                "production_rung_coverage": "ALL_TENSORS",
+                "other_rungs_sampled_every_nth_routed_expert": LADDER_SAMPLE_EVERY,
+                "non_routed_tensors_fully_surveyed": True,
+                "tensors_fully_surveyed": surveyed,
+                "routed_expert_tensors_seen": routed_seen,
+            },
             "protected_budget_class": PROTECTED_BUDGET_CLASS,
             "evidence_level": "F0_PHYSICAL_AND_F1_WEIGHT_SPACE_PROXY_ONLY",
             "not_evidence_of": "output divergence, capability, or end-to-end behaviour",
@@ -416,6 +455,8 @@ def pack_shard(shard_path: Path, rows: list[dict], out_dir: Path, *,
         "production_rung": production_rung,
         "tensors": len(entries), "weights": total_weights,
         "compact_bytes": offset,
+        "ladder_tensors_fully_surveyed": surveyed,
+        "ladder_sample_every_nth_routed_expert": LADDER_SAMPLE_EVERY,
         "whole_shard_bpw": compact_bits / max(1, total_weights),
         "evidence_level": "F0_PHYSICAL_AND_F1_WEIGHT_SPACE_PROXY_ONLY",
         "not_evidence_of": "output divergence, capability, or end-to-end behaviour",
