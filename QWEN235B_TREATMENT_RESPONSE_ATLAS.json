@@ -1,0 +1,334 @@
+{
+  "schema": "hawking.qwen.treatment_response_atlas.v1",
+  "parent": "qwen3-235b-a22b-instruct-2507",
+  "campaign": "campaign/subbit-capability-density-reset",
+  "generated_at_utc": "2026-07-20",
+  "status": "CLOSURE. Priors for the next parent, not universal truths.",
+  "library_source": "tools/condense/doctor_gen3.py TREATMENTS (13 entries), plus the two closure re-measurements",
+
+  "THE_ONE_REAL_FORWARD": {
+    "treatment": "sparse_residual_doctor_gen1",
+    "statement": "EXACTLY ONE treatment in this campaign has a real-forward capability-fidelity measurement: the Doctor Gen1 sparse residual, S64_structural -> S64_doctor. Every other recovery number in this file is calibration-output-proxy or weight-space and MUST NOT be read as capability.",
+    "and_it_still_fails_the_gate": "S64_doctor lands at symKL 7.699 against a 0.10 gate and argmax 0.0922 against a 0.95 gate. The Doctor's win is a real, paired, four-metric-consistent improvement INSIDE a total collapse."
+  },
+
+  "evidence_class_legend": {
+    "real_forward": "94-layer parent-vs-packed forward, 6 frozen holdout prompts, cached parent logits",
+    "calibration_output_proxy": "output-space squared error on real routed activations at one or a few layers - a PROXY",
+    "weight_space": "tensor reconstruction error - not a capability claim at all",
+    "predicted": "an exact byte auction under a predictor, never measured on any forward"
+  },
+
+  "treatments": [
+    {
+      "id": "sparse_residual_doctor_gen1",
+      "rung": "E2",
+      "rung_name": "sparse or structured residual",
+      "space": "parameter",
+      "treats": ["quantization_reconstruction", "direction_distortion"],
+      "status": "alive",
+      "bits_consumed": {
+        "formula": "correction indices + amortized correction codebook + one bf16 scale per protected row + 1 bit per row protection bitmap",
+        "per_expert_tensor_bits": 2007040,
+        "whole_model_bits": 12074352640,
+        "whole_model_bits_derivation": "2007040 * 64 survivors * 94 layers",
+        "complete_bpw_cost": 0.051359760,
+        "ledger_check": "0.948410027 + 0.051359760 = 0.999769787 <= 1.0, and that literal appears in the sealed S64_doctor checkpoints",
+        "unbilled_bits_found": "none - the importance vector h and the row-selection criterion are encoder-time only and correctly absent from the inference ledger"
+      },
+      "measured_recovery": {
+        "mean_sym_kl": [8.599, 7.699],
+        "relative_sym_kl_reduction": 0.105,
+        "mean_argmax_agreement": [0.0735, 0.0922],
+        "mean_logit_cosine": [0.434, 0.468],
+        "mean_top5_overlap": [0.080, 0.143],
+        "design": "paired, same six prompts, same direction on all four metrics"
+      },
+      "evidence_class": "real_forward",
+      "adversary": "UPHELD on the win and the bit ledger, but REFUTED on the MECHANISM. The S3C adversary re-derived all four prices independently and found no unbilled bit, verified fit/score hygiene in code (even-prompt fit / odd-prompt score, 5 fit / 4 score prompts, 478/370 tokens, disjointness asserted at token AND prompt level), and confirmed the activations are a genuine 46-layer forward over real shards.",
+      "mechanism_correction": "The ROW SELECTOR is NOT the mechanism. Gen1's 'worst RELATIVE residual energy' rows beat RANDOM row selection by only +1.8 and +0.9 pct, inside the seed spread, and random rows recover 96-99 pct of the entire gain. What earns the bytes is the SECOND CODEBOOK STAGE (added residual capacity), not where it is pointed. Do not transfer the selector as if it were the active ingredient.",
+      "reopening_condition": "n/a - alive. It must be RE-PRICED on any new parent because 0.0514 complete BPW is a function of this parent's expert count, keep fraction and tensor shapes.",
+      "evidence": ["S1_FAILURE_DECOMPOSITION.json", "reports/subbit_reset/S3C_DOCTOR_GEN2.json", "reports/subbit_reset/S3C_DOCTOR_GEN2_ADVERSARIAL.json"]
+    },
+
+    {
+      "id": "gamma_weighted_coding",
+      "rung": "E0",
+      "rung_name": "scale / bias / routing calibration",
+      "space": "function",
+      "treats": ["quantization_reconstruction", "activation_shift", "direction_distortion"],
+      "status": "alive",
+      "bits_consumed": {"formula": "0 - gamma already ships as a native pass-through tensor", "complete_bpw_cost": 0.0},
+      "measured_recovery": {
+        "prior_recovery": 0.60,
+        "what_it_is": "60 pct layer-0 output-error cut; a data-free h = post_attention_layernorm.weight^2 recovers 83 pct of that gain",
+        "predictor_fit": "log-corr(h, gamma^2) = 0.9918 at layer 0",
+        "scaling_law": "gain tracks gamma anisotropy, 1.8428 at L0 down to 0.0621 at L93, so the 0.60 prior is a LAYER-0 number and must be scaled by MEASURED anisotropy on any new parent"
+      },
+      "evidence_class": "calibration_output_proxy",
+      "adversary": "UPHELD, and it was the adversary that produced the data-free 83 pct result.",
+      "circularity_declared": "for gate_proj and up_proj the predictor (gamma^2 anisotropy) and the scoring metric (gamma-weighted Frobenius) share gamma, so part of the win is definitional. The isotropic control is reported per cell and the gamma-favoured arm LOSES it in 9/9 up_proj cells (L0 0.230828 -> 0.761149).",
+      "reopening_condition": "n/a - alive, but zero-gain wherever measured anisotropy is near zero",
+      "evidence": ["reports/subbit_reset/LANE_C_COMPRESSIBILITY_ADVERSARIAL.json", "reports/subbit_reset/GAMMA_ANISOTROPY_ALL_LAYERS.json", "reports/subbit_reset/S3D_UP_PROJ_PATCH.json"]
+    },
+
+    {
+      "id": "row_scale_refit",
+      "rung": "E0",
+      "rung_name": "scale / bias / routing calibration",
+      "space": "parameter",
+      "treats": ["scale_magnitude_distortion"],
+      "status": "alive",
+      "bits_consumed": {"formula": "0 - the bf16 row scale already ships, it just carries a better value", "complete_bpw_cost": 0.0},
+      "measured_recovery": {
+        "mean_rel_error": [0.7746, 0.7526],
+        "mean_gain_pct": 2.8,
+        "n_cells": 15,
+        "largest_L0_gate": [0.7214, 0.6435],
+        "vanishing_L70": [0.7041, 0.7029]
+      },
+      "evidence_class": "weight_space",
+      "adversary": "UPHELD as a small real gain, while REFUTING the stronger premise it was proposed under (row-norm stratification: measured single-codeword share 0.0267 mean, never above 0.047, vs a sealed claim of 94 pct).",
+      "reopening_condition": "n/a - alive and free. Its size is proportional to the parent's row-norm span; measure that before budgeting any expectation.",
+      "evidence": ["reports/subbit_reset/M01_FUNCTION_AWARE_PROBE.json"]
+    },
+
+    {
+      "id": "residual_additive_codebook",
+      "rung": "E3",
+      "rung_name": "residual / additive codebook",
+      "space": "parameter",
+      "treats": ["quantization_reconstruction", "direction_distortion"],
+      "status": "alive",
+      "bits_consumed": {"formula": "extra RVQ stage: (n/dim) * ceil(log2 k) + amortized codebook", "complete_bpw_cost": 0.319, "scope": "on that organ"},
+      "measured_recovery": {"rel_error": [0.7038, 0.6074], "relative_reduction": 0.137, "cell": "real down_proj L46"},
+      "evidence_class": "weight_space",
+      "adversary": "not separately attacked; it is the generalization of the mechanism the S3C adversary IDENTIFIED as the load-bearing part of Doctor Gen1.",
+      "reopening_condition": "n/a - alive, but at 0.319 bpw it is expensive; it must win a byte auction against a plain rung increase on the same organ, which is exactly the falsification the Gen2 program runs.",
+      "evidence": ["tools/condense/doctor_gen3.py#residual_additive_codebook", "reports/subbit_reset/S3C_DOCTOR_GEN2.json"]
+    },
+
+    {
+      "id": "kronecker_repair",
+      "rung": "E3",
+      "rung_name": "residual / additive codebook",
+      "space": "parameter",
+      "treats": ["quantization_reconstruction"],
+      "status": "alive",
+      "scope": "PER-CELL ONLY, effectively layer 0",
+      "bits_consumed": {"formula": "Kronecker factors A (m1 x n1) and B (m2 x n2) at rank r, bf16", "complete_bpw_cost": -0.013, "note": "NEGATIVE byte cost on L0 gate: 2.487061 vs the incumbent 2.500735"},
+      "measured_recovery": {
+        "L0_gate_rel_error": [0.2252, 0.0301],
+        "relative_reduction": 0.866,
+        "decay_with_depth": {"L0": 0.0301, "L1": 0.6611, "L2": 0.7567, "L46": "0.85+"},
+        "up_proj_closure_patch": "L0 up_proj also selects kron - all four admission conditions true, concentration 0.999497, output 0.014315 vs free-rule gvq 0.081316, a 0.755-decade win. L1..L93 up_proj select gvq."
+      },
+      "evidence_class": "weight_space, plus a surrogate output space under the synthetic input model x = gamma (*) z",
+      "adversary": "The lane declared Kronecker 'structurally dead, nothing here should be built on'. Its own VERIFIER REFUTED that: the lane had skipped layer 0 under an exemption written for cross-expert TYING methods, which does not apply to a single-tensor factorisation. Dead for layers >= 1 at the S64 rungs; live and codec-beating on layer 0.",
+      "reopening_condition": "admitted per cell ONLY when the Van Loan spectrum is concentrated AND it beats the incumbent at equal-or-fewer bits AND it wins in OUTPUT space. Never admit globally.",
+      "closure_correction": "the shipped S3D grid had NO up_proj key in RUNGS, so measure_cell(...,'up_proj',...) raised KeyError and build() looped only gate_proj/down_proj - 0 of 18 cells were up_proj although up_proj is 6016 of 18048 coded expert tensors. The shipped self-check asserted a rule function while the code path it described could not run: a green check over a dead path. Patched: portfolio-vs-free-rule margin corrects from 0.8276 pct over 18 cells to 1.3514 pct over 27 cells; vs the equal-bits universal vq baseline 4.0496 pct. Only 2 of 27 cells move off the free structural rule, both at layer 0, so the 2-bit mode field is still not worth shipping. NO ledger change - up_proj was always billed (18048 = 94 x 64 x 3), the omission was in the measurement grid only, so 0.948410180077 complete BPW stands.",
+      "evidence": ["reports/subbit_reset/LANE_F_GENERATED_PARAMS_ADVERSARIAL.json", "reports/subbit_reset/S3D_CODEC_PORTFOLIO.json", "reports/subbit_reset/S3D_CODEC_PORTFOLIO_ADVERSARIAL.json", "reports/subbit_reset/S3D_UP_PROJ_PATCH.json"]
+    },
+
+    {
+      "id": "structural_adaptive_k",
+      "rung": "E6",
+      "rung_name": "structural expert or topology change",
+      "space": "structural",
+      "treats": ["routing_omission", "quantization_reconstruction"],
+      "status": "alive",
+      "bits_consumed": {"formula": "survivor bitmap (n_experts bits per layer) + the rate the freed budget buys on survivors", "complete_bpw_cost": 0.0, "artifact_complete_bpw": 0.996853694},
+      "measured_recovery": {
+        "prior_recovery": 0.115,
+        "what_it_is": "PREDICTED mean layer error 0.46213 vs 0.521819 for uniform-64 under the identical predictor",
+        "auction": "K spans 48..96 (mean 65.4); 84 of 94 layers buy a richer down rung than uniform-64 gave them"
+      },
+      "evidence_class": "predicted",
+      "adversary": "not yet attacked. A forward is CURRENTLY RUNNING (S32_recon_first + S2A_adaptive_k) and will be the first real measurement of this treatment.",
+      "reopening_condition": "n/a - alive but UNVERIFIED. It must not be described as a measured recovery until that forward lands.",
+      "evidence": ["tools/condense/doctor_gen3.py#structural_adaptive_k", "S1_FAILURE_DECOMPOSITION.json"]
+    },
+
+    {
+      "id": "layerwise_qat",
+      "rung": "E5",
+      "rung_name": "layerwise QAT",
+      "space": "function",
+      "treats": ["quantization_reconstruction", "direction_distortion", "activation_shift"],
+      "status": "negative_under_disjoint_probe",
+      "status_was": "untested (after the first adversary); originally shipped as a +14.1/11.3/2.45 pct win",
+      "bits_consumed": {
+        "formula": "0 - training moves the latent weights; the artifact schema and byte count are unchanged",
+        "complete_bpw_cost": 0.0,
+        "byte_verification": "re-verified byte-level at closure: control and treatment serialize to identical lengths (gate/up 2001920 B, down 532480 B) with differing content, and LC.artifact_bits is the same integer for both arms. 'Byte-identical' means byte-LENGTH identity; the index stream necessarily differs in content because the weights moved, which is the point."
+      },
+      "measured_recovery": {
+        "on_the_original_position_level_split": {"gain_pct": 11.4, "reproduces": true, "measured_fit_span_capture": [1.000, 0.991, 0.422]},
+        "on_a_genuinely_disjoint_split": {"capture": [0.058, 0.099], "mean_gain_pct_over_13_low_capture_cells": -1.92, "cells_positive": "1 of 13", "mean_gain_pct_over_all_27_cells": -1.77},
+        "per_cell": [
+          {"split_seed": 0, "organ": "gate", "capture": 0.096, "gain_pct": -1.56},
+          {"split_seed": 0, "organ": "up", "capture": 0.096, "gain_pct": -0.42},
+          {"split_seed": 0, "organ": "down", "capture": 0.236, "gain_pct": -1.06},
+          {"split_seed": 1, "organ": "gate", "capture": 0.087, "gain_pct": -1.22},
+          {"split_seed": 1, "organ": "up", "capture": 0.087, "gain_pct": -2.57},
+          {"split_seed": 1, "organ": "down", "capture": 0.229, "gain_pct": -5.84},
+          {"split_seed": 2, "organ": "gate", "capture": 0.096, "gain_pct": -0.51},
+          {"split_seed": 2, "organ": "up", "capture": 0.096, "gain_pct": -2.60},
+          {"split_seed": 2, "organ": "down", "capture": 0.236, "gain_pct": -0.14}
+        ],
+        "reading": "the gain was FIT-SPAN DESCENT. The straight-through step still FIRES (chosen eta = 1.0, top of grid, every round) - it descends the fit objective and fails to transfer."
+      },
+      "evidence_class": "calibration_output_proxy",
+      "adversary": "REFUTED twice. Adversary 1 killed the 'held-out' label (held-out energy inside the fit span 1.000/0.991/0.424/1.000 at layer 0; per-expert gain MONOTONE in that overlap at 19.8/11.6/4.0/18.0 pct) and showed the layer-0-wins / layer-46-loses contrast was CONFOUNDED by probe rank, not depth. The closure re-measurement then ROOT-CAUSED the overlap and reproduced the collapse.",
+      "root_cause_of_the_original_overlap": "qwen_calibration_corpus repeats its 12 segments to reach the token target, so 1313 corpus positions carry only 540 UNIQUE token ids; layer-0 MoE input is rmsnorm(embed[id]), a pure function of the id; LC.routed_split splits POSITIONS. The same embedding row was literally in both halves - capture 1.000 was row duplication, not near-degeneracy.",
+      "the_zero_bit_property_survives": true,
+      "reopening_condition": "a parent (or a bigger frozen corpus) where a fit span large enough to train on and a probe with held-out capture <= 0.1 are SIMULTANEOUSLY obtainable, with the split proven disjoint in unique-id/segment space and varied across seeds. Also reopens under real multi-layer activations rather than the layer-0 rmsnorm(embed[id]) proxy.",
+      "evidence": ["reports/subbit_reset/S3A_LAYERWISE_QAT.json", "reports/subbit_reset/S3A_LAYERWISE_QAT_ADVERSARIAL.json", "reports/subbit_reset/S3A_DISJOINT_RESCORE.json", "tools/condense/qwen_qat_disjoint.py"]
+    },
+
+    {
+      "id": "router_distill",
+      "rung": "E4",
+      "rung_name": "router / expert function-space distillation",
+      "space": "routing",
+      "treats": ["router_redistribution"],
+      "status": "negative",
+      "bits_consumed": {"formula": "per-survivor logit bias (K floats) or a low-rank router correction", "complete_bpw_cost": 0.0, "note": "priced but never installed - no arm earned it"},
+      "measured_recovery": {
+        "prior_recovery": 0.0,
+        "masked_baseline": 0.0784,
+        "logit_bias": 0.0993,
+        "low_rank_r8": 0.1176,
+        "full_survivor_row_retune": 0.0927,
+        "reading": "no trained student beats plain masking on held-out ids; every arm is WORSE"
+      },
+      "evidence_class": "calibration_output_proxy",
+      "adversary": "UPHELD the negative and WITHDREW the campaign's own headroom figure. The '57.3 pct reachable headroom' is withdrawn - the oracle was scored on only the first 16 holdout tokens, a biased-easy head subset (retained routing mass 0.969 vs 0.939 for the rest), against a baseline measured over all 96. The adversary also noted the holdout is not exchangeable, so the train/holdout delta is not a clean generalization measurement; every arm was scored on the same holdout, so the ordering stands.",
+      "algebraic_note": "The KL term is provably INERT: softmax restricted to survivors IS the teacher renormalized onto survivors, so KL = 0 exactly and any correction only raises it.",
+      "reopening_condition": "a parent where the survivor-restricted oracle gap is large AND a student generalizes to held-out ids",
+      "evidence": ["reports/subbit_reset/S2C_ROUTER_DISTILL.json", "reports/subbit_reset/S2C_ROUTER_DISTILL_ADVERSARIAL.json"]
+    },
+
+    {
+      "id": "expert_merge",
+      "rung": "E4",
+      "rung_name": "router / expert function-space distillation",
+      "space": "routing",
+      "treats": ["routing_omission", "expert_substitution"],
+      "status": "dead",
+      "bits_consumed": {"formula": "per-(layer, omitted expert) coefficient vector over survivors", "complete_bpw_cost": null, "note": "never priced - it never earned a price"},
+      "measured_recovery": {
+        "prior_recovery": 0.0,
+        "best_single_survivor_median_holdout_rel_error": {"L0": 0.885, "L3": 0.993, "L7": 0.995},
+        "four_survivor_least_squares": {"L0": 0.863, "L3": 0.988, "L7": 0.995},
+        "reading": "~1.0 is the TRIVIAL ZERO PREDICTOR. There is no low-dimensional surviving-expert subspace containing a cold expert's function."
+      },
+      "evidence_class": "weight_space / calibration_output_proxy on routed tokens",
+      "adversary": "UPHELD and STRENGTHENED. The verifier found in-sample contamination in the per-expert medians (singleton-hit experts fit and scored on the same token); the contamination runs IN THE MERGE'S FAVOUR, so the true wall is at least this hard.",
+      "reopening_condition": "a parent measuring best-single-survivor reconstruction error <= 0.5 on held-out routed tokens at its own keep fraction",
+      "evidence": ["reports/subbit_reset/LANE_E_DISTILL_GATE.json", "reports/subbit_reset/LANE_E_DISTILL_GATE_ADVERSARIAL.json"]
+    },
+
+    {
+      "id": "generated_tied_params",
+      "rung": "E7",
+      "rung_name": "generated / tied parameter studentization",
+      "space": "structural",
+      "treats": ["quantization_reconstruction"],
+      "status": "dead",
+      "bits_consumed": {"formula": "template bank + per-expert delta codes", "complete_bpw_cost": null},
+      "measured_recovery": {
+        "prior_recovery": 0.0,
+        "off_diagonal_expert_cosine_raw_vs_row_normalized": {"gate": [0.00166, 0.00168], "down": [0.00039, 0.00039]},
+        "best_single_shared_template_energy": 0.2513,
+        "orthogonal_null": 0.2500,
+        "cross_layer_same_index_tying": "indistinguishable from a different-index control at 1e-7"
+      },
+      "evidence_class": "weight_space",
+      "adversary": "UPHELD, and the row-norm RESCUE hypothesis is FALSIFIED: raw and row-normalized cosine agree to 3 significant figures, so the 15-decade row-norm span was not what killed the raw-space test - the experts are genuinely mutually orthogonal in BOTH spaces. The metric carries a positive control proving it WOULD detect norm-swamping (a synthetic pair sharing one 1e4-scale row reads 0.9+ raw and <0.3 normalized), so this is a real measurement rather than a blind instrument.",
+      "reopening_condition": "a parent measuring row-normalized mean off-diagonal expert cosine >= 0.10",
+      "evidence": ["reports/subbit_reset/LANE_F_GENERATED_PARAMS.json", "reports/subbit_reset/LANE_F_GENERATED_PARAMS_ADVERSARIAL.json"]
+    },
+
+    {
+      "id": "low_rank_residual",
+      "rung": "E2",
+      "rung_name": "sparse or structured residual",
+      "space": "parameter",
+      "treats": ["quantization_reconstruction"],
+      "status": "dead",
+      "bits_consumed": {"formula": "rank * (rows + cols) * 16", "complete_bpw_cost": 4.6, "note": "measured cost on the TQ3 attempt; the ceiling forbids it outright at that price"},
+      "measured_recovery": {
+        "prior_recovery": null,
+        "tq3_heal": [0.114, 0.104],
+        "lora_plateau": "~step 25",
+        "data_free_variant": "top-64 SVD captures 3-9 pct of energy - NO-GO",
+        "reading": "quantization error is HIGH rank"
+      },
+      "evidence_class": "weight_space",
+      "adversary": "carried from docs/dead_levers.md; not separately attacked in this campaign.",
+      "reopening_condition": "only when the residual is MEASURED low rank on the parent in question. Retained as a diagnosis-gated option, never as a default.",
+      "evidence": ["docs/dead_levers.md", "tools/condense/doctor_gen3.py#low_rank_residual"]
+    },
+
+    {
+      "id": "protected_islands",
+      "rung": "E1",
+      "rung_name": "protected rows, columns, channels, islands",
+      "space": "parameter",
+      "treats": ["quantization_reconstruction", "rare_token_collapse", "domain_collapse"],
+      "status": "untested",
+      "bits_consumed": {"formula": "native_bits(selected rows) + 1 bit per row selector bitmap", "complete_bpw_cost": null},
+      "measured_recovery": null,
+      "evidence_class": "none",
+      "adversary": "n/a - never run at the S64 rates on this parent.",
+      "reopening_condition": "n/a - untested, so it cannot be priced and therefore cannot be promoted. Note the Gen1 mechanism correction argues its VALUE would come from the added capacity, not from clever island selection.",
+      "evidence": ["tools/condense/doctor_gen3.py#protected_islands"]
+    },
+
+    {
+      "id": "conditional_residual",
+      "rung": "E3",
+      "rung_name": "residual / additive codebook",
+      "space": "dynamic",
+      "treats": ["rare_token_collapse", "domain_collapse", "logit_ranking_collapse"],
+      "status": "untested",
+      "conditional": true,
+      "bits_consumed": {"formula": "a residual stage that fires on a trigger; INSTALLED bits are billed IN FULL even though active bits per token are lower", "complete_bpw_cost": null},
+      "measured_recovery": null,
+      "evidence_class": "none",
+      "adversary": "n/a",
+      "reopening_condition": "n/a - untested. THE LAW: conditional treatments bill INSTALLED bits. There are no free bytes for a stage that only sometimes fires.",
+      "evidence": ["tools/condense/doctor_gen3.py#conditional_residual"]
+    }
+  ],
+
+  "doctor_gen2_falsification": {
+    "question": "does the Doctor keep its 0.0514 BPW, or does a plain rung increase buy more per bit?",
+    "result_as_shipped": "doctor keeps its slot; best arm a_doctor_gen2B; doctor arm wins 3/3 experts; gen2B beats gen1 on 2/3 (experts 51 and 25; expert 14 goes to gen1)",
+    "utility_per_bit_expert_51": {"doctor_gen2B_output_row_select": 1.0603687e-06, "doctor_gen1": 1.0172993e-06, "down_rung_up": 9.961988e-07, "doctor_gen2A_output_fit_codebook": 9.385071e-07, "doctor_gen2AB_both": 9.228131e-07, "gate_up_rung_up": 2.5638315e-08},
+    "adversary_verdict_upheld": false,
+    "material_refutation": "the h (measured output sensitivity) weighting contributes NOTHING. Setting h to ones - plain UNWEIGHTED absolute squared residual energy, which uses no activations, no calibration and no training - matches or beats G2-B on 2/2 experts tested. The entire G2-B gain is the switch from RELATIVE to ABSOLUTE residual energy, not the output-sensitivity weighting.",
+    "what_survived_adversarial_re_derivation": "the whole bit ledger (doctor 2007040; down rung delta 3930112; gate/up rung delta 31465472; one expert 35518000), the fit/score hygiene (checked in code, no leak), the reality of the activations (re-read expert 51 and 25 weights from models/qwen3-235b-a22b and reproduced base sq_err 9.6751 vs report 9.678 and gen1 delta 2.046 vs report 2.044), and the self-check (four independent mutations all fire).",
+    "honesty": "gate/up_rung_up loses by ~40x per bit, which is why the Doctor survives the auction at all. This is a PROXY auction at ONE layer (46) on 3 survivor experts, not a whole-model result.",
+    "evidence": ["reports/subbit_reset/S3C_DOCTOR_GEN2.json", "reports/subbit_reset/S3C_DOCTOR_GEN2_ADVERSARIAL.json"]
+  },
+
+  "counts": {
+    "n_treatments": 13,
+    "alive": 6,
+    "negative": 2,
+    "dead": 3,
+    "untested": 2,
+    "with_a_real_forward_measurement": 1
+  },
+
+  "honesty": [
+    "Only sparse_residual_doctor_gen1 has a REAL FORWARD measurement. Everything else in this file is proxy-tier: calibration-output-proxy, weight-space, or merely predicted.",
+    "The one real-forward win is a 10.5 pct symKL reduction INSIDE a total collapse. It does not approach the gate and is not a capability claim.",
+    "Two treatments changed status during closure: layerwise_qat from untested to negative_under_disjoint_probe, and kronecker_repair's up_proj coverage from unmeasured to measured (portfolio margin 0.8276 pct -> 1.3514 pct, no ledger change).",
+    "structural_adaptive_k's 11.5 pct is PREDICTED under a predictor, never forward-measured. The forward is running now.",
+    "Untested treatments cannot be priced and therefore cannot be promoted. That is a rule, not a caveat.",
+    "Every zero-bit treatment (gamma_weighted_coding, row_scale_refit, layerwise_qat, structural_adaptive_k) was re-checked for hidden bits. Encoder-time quantities (importance vectors, selection criteria, split definitions) are correctly absent from the inference ledger. Doctor gets no free bytes."
+  ]
+}

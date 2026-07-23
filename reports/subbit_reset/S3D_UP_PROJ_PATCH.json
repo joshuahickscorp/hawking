@@ -1,0 +1,568 @@
+{
+  "bias_direction": "LOW / understated. Reported 0.8276 pct, corrected 1.3514 pct (+0.5238 points, +63.3 pct relative). The omitted organ contained the single largest per-cell win in the grid (L0.up_proj kron, 0.755 decades over the free rule), so dropping it pulled the portfolio's advantage toward zero. Absolute error levels also shift: the 27-cell means (0.356423 portfolio / 0.361306 free rule) are lower than the 18-cell means because up_proj cells are easier than down_proj cells, so the 18-cell and 27-cell absolute numbers are NOT comparable - only the margins are.",
+  "bit_charge": {
+    "note": "no bit charge changed. up_proj arms are charged by the same SHB.expert_bits / G.kron_bits calls at the same rung as gate_proj, and the shipped ledger already billed up_proj (coded_expert_tensors = 18048 = 94 layers x 64 kept experts x 3 organs). The omission was in the MEASUREMENT grid, not in the accounting, so incumbent_everywhere_complete_bpw 0.948410026538 and portfolio_complete_bpw 0.948410180077 stand and remain <= 1.0.",
+    "rvq_inadmissible_everywhere_on_up_proj": true,
+    "up_proj_complete_bits_per_tensor": {
+      "gvq": 15733264,
+      "kron": 15729152,
+      "rvq": 15745552,
+      "vq": 15733264
+    }
+  },
+  "corrected_margin": {
+    "detail": {
+      "best_universal_codec": "rvq",
+      "best_universal_mean": 0.369333,
+      "cells_off_the_free_rule": [
+        "L0.gate_proj:kron",
+        "L0.up_proj:kron"
+      ],
+      "free_rule_mean_output_rel_error": 0.361306,
+      "margin_pct_vs_best_universal": 3.4955,
+      "margin_pct_vs_free_rule": 1.3514,
+      "n_cells": 27,
+      "portfolio_mean_output_rel_error": 0.356423,
+      "universal_codec_means": {
+        "kron": 0.786368,
+        "rvq": 0.369333,
+        "vq": 0.371466
+      }
+    },
+    "n_cells": 27,
+    "vs_best_universal_codec_pct": 3.4955,
+    "vs_free_structural_rule_pct": 1.3514,
+    "vs_vq_equal_bits_universal_pct": 4.0496
+  },
+  "corrected_selection_table": [
+    {
+      "free_rule_mode": "vq",
+      "layer": 0,
+      "organ": "down_proj",
+      "selected": "vq",
+      "selected_output_rel_error": 0.32401
+    },
+    {
+      "free_rule_mode": "gvq",
+      "layer": 0,
+      "organ": "gate_proj",
+      "selected": "kron",
+      "selected_output_rel_error": 0.014847
+    },
+    {
+      "free_rule_mode": "gvq",
+      "layer": 0,
+      "organ": "up_proj",
+      "selected": "kron",
+      "selected_output_rel_error": 0.014315
+    },
+    {
+      "free_rule_mode": "vq",
+      "layer": 1,
+      "organ": "down_proj",
+      "selected": "vq",
+      "selected_output_rel_error": 0.670364
+    },
+    {
+      "free_rule_mode": "gvq",
+      "layer": 1,
+      "organ": "gate_proj",
+      "selected": "gvq",
+      "selected_output_rel_error": 0.199886
+    },
+    {
+      "free_rule_mode": "gvq",
+      "layer": 1,
+      "organ": "up_proj",
+      "selected": "gvq",
+      "selected_output_rel_error": 0.204256
+    },
+    {
+      "free_rule_mode": "vq",
+      "layer": 2,
+      "organ": "down_proj",
+      "selected": "vq",
+      "selected_output_rel_error": 0.704915
+    },
+    {
+      "free_rule_mode": "gvq",
+      "layer": 2,
+      "organ": "gate_proj",
+      "selected": "gvq",
+      "selected_output_rel_error": 0.219058
+    },
+    {
+      "free_rule_mode": "gvq",
+      "layer": 2,
+      "organ": "up_proj",
+      "selected": "gvq",
+      "selected_output_rel_error": 0.220073
+    },
+    {
+      "free_rule_mode": "vq",
+      "layer": 5,
+      "organ": "down_proj",
+      "selected": "vq",
+      "selected_output_rel_error": 0.702709
+    },
+    {
+      "free_rule_mode": "gvq",
+      "layer": 5,
+      "organ": "gate_proj",
+      "selected": "gvq",
+      "selected_output_rel_error": 0.235174
+    },
+    {
+      "free_rule_mode": "gvq",
+      "layer": 5,
+      "organ": "up_proj",
+      "selected": "gvq",
+      "selected_output_rel_error": 0.2354
+    },
+    {
+      "free_rule_mode": "vq",
+      "layer": 18,
+      "organ": "down_proj",
+      "selected": "vq",
+      "selected_output_rel_error": 0.703457
+    },
+    {
+      "free_rule_mode": "gvq",
+      "layer": 18,
+      "organ": "gate_proj",
+      "selected": "gvq",
+      "selected_output_rel_error": 0.231773
+    },
+    {
+      "free_rule_mode": "gvq",
+      "layer": 18,
+      "organ": "up_proj",
+      "selected": "gvq",
+      "selected_output_rel_error": 0.231789
+    },
+    {
+      "free_rule_mode": "vq",
+      "layer": 46,
+      "organ": "down_proj",
+      "selected": "vq",
+      "selected_output_rel_error": 0.70201
+    },
+    {
+      "free_rule_mode": "gvq",
+      "layer": 46,
+      "organ": "gate_proj",
+      "selected": "gvq",
+      "selected_output_rel_error": 0.236519
+    },
+    {
+      "free_rule_mode": "gvq",
+      "layer": 46,
+      "organ": "up_proj",
+      "selected": "gvq",
+      "selected_output_rel_error": 0.236258
+    },
+    {
+      "free_rule_mode": "vq",
+      "layer": 70,
+      "organ": "down_proj",
+      "selected": "vq",
+      "selected_output_rel_error": 0.702849
+    },
+    {
+      "free_rule_mode": "gvq",
+      "layer": 70,
+      "organ": "gate_proj",
+      "selected": "gvq",
+      "selected_output_rel_error": 0.233971
+    },
+    {
+      "free_rule_mode": "gvq",
+      "layer": 70,
+      "organ": "up_proj",
+      "selected": "gvq",
+      "selected_output_rel_error": 0.231942
+    },
+    {
+      "free_rule_mode": "vq",
+      "layer": 90,
+      "organ": "down_proj",
+      "selected": "vq",
+      "selected_output_rel_error": 0.702577
+    },
+    {
+      "free_rule_mode": "gvq",
+      "layer": 90,
+      "organ": "gate_proj",
+      "selected": "gvq",
+      "selected_output_rel_error": 0.240286
+    },
+    {
+      "free_rule_mode": "gvq",
+      "layer": 90,
+      "organ": "up_proj",
+      "selected": "gvq",
+      "selected_output_rel_error": 0.239881
+    },
+    {
+      "free_rule_mode": "vq",
+      "layer": 93,
+      "organ": "down_proj",
+      "selected": "vq",
+      "selected_output_rel_error": 0.703418
+    },
+    {
+      "free_rule_mode": "gvq",
+      "layer": 93,
+      "organ": "gate_proj",
+      "selected": "gvq",
+      "selected_output_rel_error": 0.240738
+    },
+    {
+      "free_rule_mode": "gvq",
+      "layer": 93,
+      "organ": "up_proj",
+      "selected": "gvq",
+      "selected_output_rel_error": 0.240956
+    }
+  ],
+  "gamma_weighting_legitimacy": "gvq IS legitimate for up_proj: up_proj's organ input is the post_attention_layernorm OUTPUT, exactly as for gate_proj, so the surrogate input model x = gamma (*) z and the column weight diag(gamma) are the same structurally-correct zeroth-order model there. gvq is NOT legitimate for down_proj, whose input is the SwiGLU intermediate that gamma does not describe; down_proj keeps the isotropic metric and the plain vq arm, unchanged.",
+  "honesty_caveats": [
+    "NOT CAPABILITY. Surrogate output space on a synthetic input model x = gamma (*) z; no forward ran. The sealed S1 94-layer forward COLLAPSES 12/12 (symKL 7.7-8.6 vs a gate of 0.10) and nothing measured here is evidence against that.",
+    "CIRCULARITY, same as the parent module: for up_proj the predictor (gamma^2 anisotropy) and the scoring metric (gamma-weighted Frobenius) share gamma, so gvq's win in that metric is partly definitional. The isotropic control is reported per cell and gvq LOSES it in 9/9 up_proj cells (e.g. L0 0.230828 -> 0.761149), exactly as on gate_proj.",
+    "ASYMMETRIC ADMISSION BAR, inherited and declared: Kronecker must win BOTH metric spaces, gvq only the gamma-weighted one. Under Kronecker's own rule gvq would be refused 9/9 on up_proj and the free structural rule would collapse to plain vq there too.",
+    "FIT/SCORE OVERLAP, inherited: codebooks are fit on the same 3-expert cluster they are scored on, identically for every arm. This is the incumbent protocol, not a disjoint split, and it is NOT claimed as one.",
+    "COVERAGE: 9 of 94 layers measured for up_proj, matching the parent sample. The other 85 layers are unmeasured; nothing here predicts them.",
+    "DEEP-LAYER gvq GAIN IS TINY on up_proj: 0.04 pct at L93, 0.3 pct at L90, 2-9 pct at L1-L2 - in a metric gvq is definitionally fitted to. This does not justify switching codec on 93 of 94 layers; scope it to L0-L2 as the adversary recommended.",
+    "The 27-cell absolute means are not comparable to the 18-cell absolute means (different cell mix); only the margins are.",
+    "MEASUREMENT ONLY. No file in tools/ was modified; RUNGS['up_proj'] = RUNGS['gate_proj'] was injected at runtime in a scratchpad driver, so the codec, the rates and the bit charge are byte-for-byte the shipped ones.",
+    "best_universal_codec is reported as rvq for continuity with the shipped key, but rvq is NOT at equal complete bits (+12288 bits per tensor, 15745552 vs 15733264) and is inadmissible in all 27 cells including every up_proj cell. The like-for-like universal baseline is vq (0.371466 over 27 cells), against which the corrected portfolio margin is 4.0496 pct."
+  ],
+  "n_up_proj_cells_measured": 9,
+  "original_margin": {
+    "detail": {
+      "best_universal_codec": "rvq",
+      "best_universal_mean": 0.439519,
+      "cells_off_the_free_rule": [
+        "L0.gate_proj:kron"
+      ],
+      "free_rule_mean_output_rel_error": 0.435189,
+      "margin_pct_vs_best_universal": 1.8048,
+      "margin_pct_vs_free_rule": 0.8276,
+      "n_cells": 18,
+      "portfolio_mean_output_rel_error": 0.431587,
+      "universal_codec_means": {
+        "kron": 0.813786,
+        "rvq": 0.439519,
+        "vq": 0.442824
+      }
+    },
+    "n_cells": 18,
+    "vs_best_universal_codec_pct": 1.8048,
+    "vs_free_structural_rule_pct": 0.8276
+  },
+  "schema": "hawking.gravity.codec_portfolio.up_proj_patch.v1",
+  "self_check": {
+    "independent_reproduction_of_adversary_up_proj_spot_values_within_5e-5": true,
+    "measure_cell_up_proj_raises_KeyError_without_patch": true,
+    "passed": true,
+    "recomputed_18_cell_margin_pct": 0.8276,
+    "recomputed_shipped_18_cell_margin_matches": true,
+    "reproduction_detail": {
+      "L0_up_gvq": {
+        "abs_delta": 1.8e-05,
+        "adversary": 0.081334,
+        "mine": 0.081316
+      },
+      "L0_up_kron": {
+        "abs_delta": 0.0,
+        "adversary": 0.014315,
+        "mine": 0.014315
+      },
+      "L0_up_vq": {
+        "abs_delta": 9e-06,
+        "adversary": 0.156915,
+        "mine": 0.156906
+      },
+      "L46_up_gvq": {
+        "abs_delta": 1e-06,
+        "adversary": 0.236259,
+        "mine": 0.236258
+      },
+      "L46_up_vq": {
+        "abs_delta": 3e-06,
+        "adversary": 0.241376,
+        "mine": 0.241379
+      }
+    },
+    "rerun": "python3.12 tools/condense/qwen_codec_portfolio.py --self-check  (parent module logic), and this report's numbers are reproduced by measuring layers 0,1,2,5,18,46,70,90,93 with RUNGS['up_proj']=RUNGS['gate_proj']",
+    "shipped_18_cell_margin_pct": 0.8276,
+    "up_arms_charged_identically_to_gate_arms": true
+  },
+  "self_check_passed": true,
+  "up_proj_cell_detail": [
+    {
+      "anisotropy_decades": 1.842777,
+      "complete_bits_per_tensor": {
+        "gvq": 15733264,
+        "kron": 15729152,
+        "rvq": 15745552,
+        "vq": 15733264
+      },
+      "free_rule_mode": "gvq",
+      "gvq_output": 0.081316,
+      "gvq_weight_space": 0.761149,
+      "kron_admitted": true,
+      "kron_concentration": 0.999497,
+      "kron_output": 0.014315,
+      "layer": 0,
+      "organ": "up_proj",
+      "rvq_output": 0.126055,
+      "selected": "kron",
+      "vq_output": 0.156906,
+      "vq_weight_space": 0.230828
+    },
+    {
+      "anisotropy_decades": 0.903508,
+      "complete_bits_per_tensor": {
+        "gvq": 15733264,
+        "kron": 15729152,
+        "rvq": 15745552,
+        "vq": 15733264
+      },
+      "free_rule_mode": "gvq",
+      "gvq_output": 0.204256,
+      "gvq_weight_space": 0.321985,
+      "kron_admitted": false,
+      "kron_concentration": 0.462027,
+      "kron_output": 0.703389,
+      "layer": 1,
+      "organ": "up_proj",
+      "rvq_output": 0.224498,
+      "selected": "gvq",
+      "vq_output": 0.226144,
+      "vq_weight_space": 0.245005
+    },
+    {
+      "anisotropy_decades": 0.553984,
+      "complete_bits_per_tensor": {
+        "gvq": 15733264,
+        "kron": 15729152,
+        "rvq": 15745552,
+        "vq": 15733264
+      },
+      "free_rule_mode": "gvq",
+      "gvq_output": 0.220073,
+      "gvq_weight_space": 0.297707,
+      "kron_admitted": false,
+      "kron_concentration": 0.356096,
+      "kron_output": 0.791189,
+      "layer": 2,
+      "organ": "up_proj",
+      "rvq_output": 0.235903,
+      "selected": "gvq",
+      "vq_output": 0.232957,
+      "vq_weight_space": 0.242521
+    },
+    {
+      "anisotropy_decades": 0.117801,
+      "complete_bits_per_tensor": {
+        "gvq": 15733264,
+        "kron": 15729152,
+        "rvq": 15745552,
+        "vq": 15733264
+      },
+      "free_rule_mode": "gvq",
+      "gvq_output": 0.2354,
+      "gvq_weight_space": 0.284809,
+      "kron_admitted": false,
+      "kron_concentration": 0.324819,
+      "kron_output": 0.823877,
+      "layer": 5,
+      "organ": "up_proj",
+      "rvq_output": 0.24509,
+      "selected": "gvq",
+      "vq_output": 0.239983,
+      "vq_weight_space": 0.241486
+    },
+    {
+      "anisotropy_decades": 0.495885,
+      "complete_bits_per_tensor": {
+        "gvq": 15733264,
+        "kron": 15729152,
+        "rvq": 15745552,
+        "vq": 15733264
+      },
+      "free_rule_mode": "gvq",
+      "gvq_output": 0.231789,
+      "gvq_weight_space": 0.289693,
+      "kron_admitted": false,
+      "kron_concentration": 0.286093,
+      "kron_output": 0.842419,
+      "layer": 18,
+      "organ": "up_proj",
+      "rvq_output": 0.244409,
+      "selected": "gvq",
+      "vq_output": 0.239005,
+      "vq_weight_space": 0.241262
+    },
+    {
+      "anisotropy_decades": 0.202582,
+      "complete_bits_per_tensor": {
+        "gvq": 15733264,
+        "kron": 15729152,
+        "rvq": 15745552,
+        "vq": 15733264
+      },
+      "free_rule_mode": "gvq",
+      "gvq_output": 0.236258,
+      "gvq_weight_space": 0.288724,
+      "kron_admitted": false,
+      "kron_concentration": 0.270983,
+      "kron_output": 0.857648,
+      "layer": 46,
+      "organ": "up_proj",
+      "rvq_output": 0.246234,
+      "selected": "gvq",
+      "vq_output": 0.241379,
+      "vq_weight_space": 0.240905
+    },
+    {
+      "anisotropy_decades": 0.457595,
+      "complete_bits_per_tensor": {
+        "gvq": 15733264,
+        "kron": 15729152,
+        "rvq": 15745552,
+        "vq": 15733264
+      },
+      "free_rule_mode": "gvq",
+      "gvq_output": 0.231942,
+      "gvq_weight_space": 0.304637,
+      "kron_admitted": false,
+      "kron_concentration": 0.315275,
+      "kron_output": 0.827942,
+      "layer": 70,
+      "organ": "up_proj",
+      "rvq_output": 0.246002,
+      "selected": "gvq",
+      "vq_output": 0.240727,
+      "vq_weight_space": 0.241743
+    },
+    {
+      "anisotropy_decades": 0.018287,
+      "complete_bits_per_tensor": {
+        "gvq": 15733264,
+        "kron": 15729152,
+        "rvq": 15745552,
+        "vq": 15733264
+      },
+      "free_rule_mode": "gvq",
+      "gvq_output": 0.239881,
+      "gvq_weight_space": 0.246827,
+      "kron_admitted": false,
+      "kron_concentration": 0.256943,
+      "kron_output": 0.861773,
+      "layer": 90,
+      "organ": "up_proj",
+      "rvq_output": 0.24606,
+      "selected": "gvq",
+      "vq_output": 0.240592,
+      "vq_weight_space": 0.241102
+    },
+    {
+      "anisotropy_decades": 0.062068,
+      "complete_bits_per_tensor": {
+        "gvq": 15733264,
+        "kron": 15729152,
+        "rvq": 15745552,
+        "vq": 15733264
+      },
+      "free_rule_mode": "gvq",
+      "gvq_output": 0.240956,
+      "gvq_weight_space": 0.242582,
+      "kron_admitted": false,
+      "kron_concentration": 0.258563,
+      "kron_output": 0.861244,
+      "layer": 93,
+      "organ": "up_proj",
+      "rvq_output": 0.246407,
+      "selected": "gvq",
+      "vq_output": 0.241064,
+      "vq_weight_space": 0.240971
+    }
+  ],
+  "up_proj_only": {
+    "best_universal_codec": "gvq",
+    "best_universal_mean": 0.213541,
+    "cells_off_the_free_rule": [
+      "L0.up_proj:kron"
+    ],
+    "free_rule_mean_output_rel_error": 0.213541,
+    "margin_pct_vs_best_universal": 3.4862,
+    "margin_pct_vs_free_rule": 3.4862,
+    "n_cells": 9,
+    "portfolio_mean_output_rel_error": 0.206097,
+    "universal_codec_means": {
+      "gvq": 0.213541,
+      "kron": 0.731533,
+      "rvq": 0.228962,
+      "vq": 0.228751
+    }
+  },
+  "verdict": "HOLE CLOSED, VERDICT DIRECTION SURVIVES, SHIPPED NUMBERS DO NOT. All 9 up_proj cells were measured at the identical rung and identical exact bit charge as gate_proj (up_proj shares gate_proj's rung: dim8/k1024/stages2, 15733264 complete bits per tensor). The portfolio-vs-free-rule margin rises from 0.8276 pct over 18 cells to 1.3514 pct over 27 cells: the omission biased the reported margin LOW (understated by 0.5238 points, a 63 pct relative understatement). The shipped exception list ['L0.gate_proj'] is WRONG: L0.up_proj also admits Kronecker on all four conditions (concentration 0.999497, output 0.014315 vs free-rule gvq 0.081316 - a 0.755-decade win) at 15729152 <= 15733264 complete bits. The correct list is ['L0.gate_proj','L0.up_proj']. The other 8 up_proj cells select gvq, which coincides with the free structural rule, so the selector still buys nothing outside layer 0 and the 2-bit mode field is still not worth shipping. NOT A CAPABILITY CLAIM: surrogate gamma-input output space, no forward ran; sealed S1 collapses 12/12 and nothing here touches that.",
+  "wrong_exception_entries": [
+    {
+      "corrected": [
+        "L0.gate_proj:kron",
+        "L0.up_proj:kron"
+      ],
+      "entry": "cells_off_the_rule = ['L0.gate_proj:kron']",
+      "why_wrong": "incomplete - L0.up_proj:kron is admitted on all four conditions and is missing. Correct list is ['L0.gate_proj:kron','L0.up_proj:kron']."
+    },
+    {
+      "corrected": 2,
+      "entry": "n_cells_off_the_rule = 1",
+      "why_wrong": "2 of 27, not 1 of 18."
+    },
+    {
+      "corrected": 27,
+      "entry": "n_cells = 18",
+      "why_wrong": "the sample is 9 layers x 3 organs = 27 cells; up_proj is 6016 of 18048 coded expert tensors and 0 of them were measured."
+    },
+    {
+      "corrected": 1.3514,
+      "entry": "free_structural_rule.relative_gain_pct = 0.8276",
+      "why_wrong": "biased low by the omission."
+    },
+    {
+      "corrected": [
+        0.356423,
+        0.361306
+      ],
+      "entry": "portfolio_mean_output_rel_error = 0.431587 / free rule 0.435189",
+      "why_wrong": "18-cell means over a grid missing a third of the organ inventory."
+    },
+    {
+      "corrected": "gvq_over_18_cells = 0.213275",
+      "entry": "mean_output_rel_error_per_single_codec.gvq_over_9_cells",
+      "why_wrong": "gvq is legal on gate AND up, so it exists in 18 of 27 cells, not 9."
+    },
+    {
+      "corrected": [
+        "L0.gate_proj",
+        "L0.up_proj"
+      ],
+      "entry": "kron_admitted_cells = ['L0.gate_proj']",
+      "why_wrong": "L0.up_proj also admits Kronecker (concentration 0.999497)."
+    },
+    {
+      "corrected": "assignment now measured for up_proj on the 9 sampled layers: L0=kron, all others=gvq",
+      "entry": "whole_model_mode_assignment_gate_up",
+      "why_wrong": "key claims gate AND up coverage but the assignment was derived from gate cells only; up_proj was never in the organ loop."
+    },
+    {
+      "corrected": "add 'up_proj' to RUNGS and to the organ loop in build()",
+      "entry": "self-check assert fixed_rule_mode('up_proj') == 'gvq'",
+      "why_wrong": "the assert passed while the code path it describes raised KeyError - it tested the rule function, never the measurement. Verified: measure_cell(...,'up_proj',...) raises KeyError with the shipped RUNGS."
+    }
+  ]
+}

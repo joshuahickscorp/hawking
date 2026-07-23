@@ -1,0 +1,973 @@
+{
+  "anchors": {
+    "D1_routing_only": {
+      "argmax": 0.385,
+      "keep": 64,
+      "symkl": 4.297,
+      "what": "perfect bf16 experts, router masked to the same 64 survivors"
+    },
+    "D2_recon_only": {
+      "argmax": 0.0863,
+      "keep": 128,
+      "symkl": 7.879,
+      "what": "full 128 router, experts packed at the survivor rate"
+    },
+    "S64_doctor": {
+      "argmax": 0.0922,
+      "base_bpw": 0.9484,
+      "complete_bpw": 0.999769787,
+      "doctor_bpw": 0.0513,
+      "keep": 64,
+      "symkl": 7.699,
+      "what": "the best full-forward artifact Qwen ever produced"
+    },
+    "S64_joint_undoctored": {
+      "keep": 64,
+      "symkl": 8.6,
+      "what": "joint routing+reconstruction, no Doctor"
+    }
+  },
+  "budget_frame": {
+    "mandatory_overhead_bits": 9288872192,
+    "mandatory_overhead_share_of_planned": 0.040318,
+    "note": "overhead is pass-through organs, dense islands, packaging reserve and the resident survivor bitmap. It is NOT free and it eats the same 0.98, which is why base + doctor shares never sum to 1.0.",
+    "original_weight_count": 235093634560,
+    "planned_budget_bits": 230391761868
+  },
+  "capability_gate": {
+    "argmax_min": 0.95,
+    "symkl_max": 0.1
+  },
+  "central_finding_law_disagreement": {
+    "cells_passing_gate_under_optimistic_linear_doctor_law": 5,
+    "cells_passing_gate_under_saturating_doctor_law": 0,
+    "min_doctor_bpw_among_optimistic_passes": 0.484634,
+    "verdict": "THE PREDICTOR CANNOT DECIDE. The two readings of the single measured Doctor point - linear in budget, or saturating - disagree about whether DOCTOR_HEAVY reaches the capability gate. Under the saturating reading nothing on the legal grid comes within ~70x of symKL 0.10; under the linear reading a large-Doctor cell reaches it. Both readings fit the one anchor exactly. Only a forward can separate them, which is exactly why this module promotes nothing.",
+    "what_would_separate_them": "a SECOND Doctor budget point on a real forward at the same base (e.g. S64 base with Doctor at ~0.15 BPW): the linear law predicts symKL ~5.9, the saturating law ~7.4. One forward measures the curvature and kills one law."
+  },
+  "claim": "BYTE PLAN AND PREDICTOR ONLY. This module allocates bytes and orders candidates. It selects nothing. Only a real parent-vs-packed forward may select a frontier.",
+  "coverage_by_K": {
+    "112": 0.988783,
+    "128": 1.0,
+    "32": 0.523389,
+    "48": 0.673655,
+    "64": 0.791735,
+    "80": 0.883021,
+    "96": 0.948726
+  },
+  "doctor_heavy_codeability": {
+    "0.35": {
+      "base_bits": 80637116654,
+      "base_share_of_planned": 0.35,
+      "expert_params_full_128": 227096395776,
+      "lowest_gate_rung_on_the_ladder_bpw": 0.625,
+      "per_K": {
+        "112": {
+          "available_bits_per_surviving_weight": 0.405804,
+          "codeable_by_existing_gate_ladder": false,
+          "note_upper_bound": "codebooks and row scales are inside this number, so the true INDEX rate is strictly lower",
+          "rd_floor_rel_error_at_that_rate": 0.754815,
+          "richest_affordable_gate_rung": null,
+          "surviving_expert_params": 198709346304
+        },
+        "128": {
+          "available_bits_per_surviving_weight": 0.355079,
+          "codeable_by_existing_gate_ladder": false,
+          "note_upper_bound": "codebooks and row scales are inside this number, so the true INDEX rate is strictly lower",
+          "rd_floor_rel_error_at_that_rate": 0.781827,
+          "richest_affordable_gate_rung": null,
+          "surviving_expert_params": 227096395776
+        },
+        "32": {
+          "available_bits_per_surviving_weight": 1.420315,
+          "codeable_by_existing_gate_ladder": true,
+          "note_upper_bound": "codebooks and row scales are inside this number, so the true INDEX rate is strictly lower",
+          "rd_floor_rel_error_at_that_rate": 0.373631,
+          "richest_affordable_gate_rung": "1.25",
+          "surviving_expert_params": 56774098944
+        },
+        "48": {
+          "available_bits_per_surviving_weight": 0.946877,
+          "codeable_by_existing_gate_ladder": true,
+          "note_upper_bound": "codebooks and row scales are inside this number, so the true INDEX rate is strictly lower",
+          "rd_floor_rel_error_at_that_rate": 0.518754,
+          "richest_affordable_gate_rung": "0.625",
+          "surviving_expert_params": 85161148416
+        },
+        "64": {
+          "available_bits_per_surviving_weight": 0.710158,
+          "codeable_by_existing_gate_ladder": true,
+          "note_upper_bound": "codebooks and row scales are inside this number, so the true INDEX rate is strictly lower",
+          "rd_floor_rel_error_at_that_rate": 0.611253,
+          "richest_affordable_gate_rung": "0.625",
+          "surviving_expert_params": 113548197888
+        },
+        "80": {
+          "available_bits_per_surviving_weight": 0.568126,
+          "codeable_by_existing_gate_ladder": false,
+          "note_upper_bound": "codebooks and row scales are inside this number, so the true INDEX rate is strictly lower",
+          "rd_floor_rel_error_at_that_rate": 0.674492,
+          "richest_affordable_gate_rung": null,
+          "surviving_expert_params": 141935247360
+        },
+        "96": {
+          "available_bits_per_surviving_weight": 0.473438,
+          "codeable_by_existing_gate_ladder": false,
+          "note_upper_bound": "codebooks and row scales are inside this number, so the true INDEX rate is strictly lower",
+          "rd_floor_rel_error_at_that_rate": 0.720246,
+          "richest_affordable_gate_rung": null,
+          "surviving_expert_params": 170322296832
+        }
+      }
+    },
+    "0.50": {
+      "base_bits": 115195880934,
+      "base_share_of_planned": 0.5,
+      "expert_params_full_128": 227096395776,
+      "lowest_gate_rung_on_the_ladder_bpw": 0.625,
+      "per_K": {
+        "112": {
+          "available_bits_per_surviving_weight": 0.57972,
+          "codeable_by_existing_gate_ladder": false,
+          "note_upper_bound": "codebooks and row scales are inside this number, so the true INDEX rate is strictly lower",
+          "rd_floor_rel_error_at_that_rate": 0.669093,
+          "richest_affordable_gate_rung": null,
+          "surviving_expert_params": 198709346304
+        },
+        "128": {
+          "available_bits_per_surviving_weight": 0.507255,
+          "codeable_by_existing_gate_ladder": false,
+          "note_upper_bound": "codebooks and row scales are inside this number, so the true INDEX rate is strictly lower",
+          "rd_floor_rel_error_at_that_rate": 0.70356,
+          "richest_affordable_gate_rung": null,
+          "surviving_expert_params": 227096395776
+        },
+        "32": {
+          "available_bits_per_surviving_weight": 2.029022,
+          "codeable_by_existing_gate_ladder": true,
+          "note_upper_bound": "codebooks and row scales are inside this number, so the true INDEX rate is strictly lower",
+          "rd_floor_rel_error_at_that_rate": 0.245021,
+          "richest_affordable_gate_rung": "1.25",
+          "surviving_expert_params": 56774098944
+        },
+        "48": {
+          "available_bits_per_surviving_weight": 1.352681,
+          "codeable_by_existing_gate_ladder": true,
+          "note_upper_bound": "codebooks and row scales are inside this number, so the true INDEX rate is strictly lower",
+          "rd_floor_rel_error_at_that_rate": 0.391564,
+          "richest_affordable_gate_rung": "1.25",
+          "surviving_expert_params": 85161148416
+        },
+        "64": {
+          "available_bits_per_surviving_weight": 1.014511,
+          "codeable_by_existing_gate_ladder": true,
+          "note_upper_bound": "codebooks and row scales are inside this number, so the true INDEX rate is strictly lower",
+          "rd_floor_rel_error_at_that_rate": 0.494996,
+          "richest_affordable_gate_rung": "0.625",
+          "surviving_expert_params": 113548197888
+        },
+        "80": {
+          "available_bits_per_surviving_weight": 0.811609,
+          "codeable_by_existing_gate_ladder": true,
+          "note_upper_bound": "codebooks and row scales are inside this number, so the true INDEX rate is strictly lower",
+          "rd_floor_rel_error_at_that_rate": 0.569746,
+          "richest_affordable_gate_rung": "0.625",
+          "surviving_expert_params": 141935247360
+        },
+        "96": {
+          "available_bits_per_surviving_weight": 0.676341,
+          "codeable_by_existing_gate_ladder": true,
+          "note_upper_bound": "codebooks and row scales are inside this number, so the true INDEX rate is strictly lower",
+          "rd_floor_rel_error_at_that_rate": 0.62575,
+          "richest_affordable_gate_rung": "0.625",
+          "surviving_expert_params": 170322296832
+        }
+      }
+    },
+    "0.72": {
+      "base_bits": 165882068545,
+      "base_share_of_planned": 0.72,
+      "expert_params_full_128": 227096395776,
+      "lowest_gate_rung_on_the_ladder_bpw": 0.625,
+      "per_K": {
+        "112": {
+          "available_bits_per_surviving_weight": 0.834798,
+          "codeable_by_existing_gate_ladder": true,
+          "note_upper_bound": "codebooks and row scales are inside this number, so the true INDEX rate is strictly lower",
+          "rd_floor_rel_error_at_that_rate": 0.560662,
+          "richest_affordable_gate_rung": "0.625",
+          "surviving_expert_params": 198709346304
+        },
+        "128": {
+          "available_bits_per_surviving_weight": 0.730448,
+          "codeable_by_existing_gate_ladder": true,
+          "note_upper_bound": "codebooks and row scales are inside this number, so the true INDEX rate is strictly lower",
+          "rd_floor_rel_error_at_that_rate": 0.602717,
+          "richest_affordable_gate_rung": "0.625",
+          "surviving_expert_params": 227096395776
+        },
+        "32": {
+          "available_bits_per_surviving_weight": 2.921791,
+          "codeable_by_existing_gate_ladder": true,
+          "note_upper_bound": "codebooks and row scales are inside this number, so the true INDEX rate is strictly lower",
+          "rd_floor_rel_error_at_that_rate": 0.131963,
+          "richest_affordable_gate_rung": "2.5",
+          "surviving_expert_params": 56774098944
+        },
+        "48": {
+          "available_bits_per_surviving_weight": 1.947861,
+          "codeable_by_existing_gate_ladder": true,
+          "note_upper_bound": "codebooks and row scales are inside this number, so the true INDEX rate is strictly lower",
+          "rd_floor_rel_error_at_that_rate": 0.2592,
+          "richest_affordable_gate_rung": "1.25",
+          "surviving_expert_params": 85161148416
+        },
+        "64": {
+          "available_bits_per_surviving_weight": 1.460896,
+          "codeable_by_existing_gate_ladder": true,
+          "note_upper_bound": "codebooks and row scales are inside this number, so the true INDEX rate is strictly lower",
+          "rd_floor_rel_error_at_that_rate": 0.363268,
+          "richest_affordable_gate_rung": "1.25",
+          "surviving_expert_params": 113548197888
+        },
+        "80": {
+          "available_bits_per_surviving_weight": 1.168717,
+          "codeable_by_existing_gate_ladder": true,
+          "note_upper_bound": "codebooks and row scales are inside this number, so the true INDEX rate is strictly lower",
+          "rd_floor_rel_error_at_that_rate": 0.444817,
+          "richest_affordable_gate_rung": "0.625",
+          "surviving_expert_params": 141935247360
+        },
+        "96": {
+          "available_bits_per_surviving_weight": 0.97393,
+          "codeable_by_existing_gate_ladder": true,
+          "note_upper_bound": "codebooks and row scales are inside this number, so the true INDEX rate is strictly lower",
+          "rd_floor_rel_error_at_that_rate": 0.509117,
+          "richest_affordable_gate_rung": "0.625",
+          "surviving_expert_params": 170322296832
+        }
+      }
+    }
+  },
+  "envelopes": {
+    "BALANCED": {
+      "K": 64,
+      "band": {
+        "base": [
+          0.5,
+          0.6
+        ],
+        "doctor": [
+          0.35,
+          0.45
+        ]
+      },
+      "band_realizable": true,
+      "base_bits": 119028148224,
+      "base_share_of_planned": 0.516634,
+      "complete_bits": 228088867072,
+      "complete_bpw": 0.970204351,
+      "coverage": 0.791735,
+      "doctor_bits": 99771846656,
+      "doctor_protect_frac": 0.35,
+      "doctor_rung": "2.5",
+      "doctor_share_of_planned": 0.433053,
+      "down_index_bpw": 0.625,
+      "down_rung": "0.625",
+      "envelope": "BALANCED",
+      "exact_verification": {
+        "doctor_share_of_exact_ledger": 0.437425,
+        "exact_complete_bits": 228088867072,
+        "exact_complete_bpw": 0.9702043507000515,
+        "exact_complete_bpw_rational": "890972137/918334510",
+        "exact_ledger_components": {
+          "alignment": 0,
+          "codebooks": 49283072,
+          "doctor": 99771846656,
+          "indices": 118279372800,
+          "metadata": 9240576,
+          "packaging": 536870912,
+          "pass_through_tensors": 801541632,
+          "protected_islands": 7950447616,
+          "runtime_tables": 12032,
+          "scales": 690251776
+        },
+        "legal_under_hard_one_bit_ceiling": true,
+        "legal_under_planned_0p98": true,
+        "one_bit_ceiling_verdict": {
+          "legal": true,
+          "reasons": []
+        }
+      },
+      "fixed_bits": 9288872192,
+      "gate_index_bpw": 1.25,
+      "gate_rung": "1.25",
+      "marginal_utility": {
+        "_note": "only 3 of the 9 auction lanes have a quality price. A joint auction cannot be SOLVED over nine lanes when six of them are unpriced; it can only be bounded.",
+        "_unpriced_lane_count": 6,
+        "base_fidelity": {
+          "cost_bit_equivalents": 0.410649581,
+          "delta_bpw": 0.402597629,
+          "evidence_class": "extrapolated_from_four_anchors",
+          "expected_delta_quality_symkl": 1.794365,
+          "promotable": false,
+          "step": "rungs -> g2.5/d0.625",
+          "utility": 4.369576
+        },
+        "expert_inventory": {
+          "cost_bit_equivalents": 0.129053514,
+          "delta_bpw": 0.126523053,
+          "evidence_class": "extrapolated_from_four_anchors",
+          "expected_delta_quality_symkl": 0.318636,
+          "promotable": false,
+          "step": "K -> 80",
+          "utility": 2.469019
+        },
+        "residual_codebooks": {
+          "cost_bit_equivalents": 0.235706332,
+          "delta_bpw": 0.181312563,
+          "evidence_class": "extrapolated_from_four_anchors",
+          "expected_delta_quality_symkl": 0.000442,
+          "promotable": false,
+          "step": "protect_frac -> 0.5",
+          "utility": 0.001874
+        }
+      },
+      "overhead_share_of_planned": 0.040318,
+      "prediction": {
+        "evidence_class": "extrapolated_from_four_anchors",
+        "gate_symkl_max": 0.1,
+        "optimistic_doctor_law_in_range": true,
+        "optimistic_doctor_law_out_of_range_note": null,
+        "passes_gate_under_optimistic_law": false,
+        "passes_gate_under_saturating_law": false,
+        "predicted_symkl_band_with_stipulated_uncertainty": [
+          1.1543,
+          10.7131
+        ],
+        "predicted_symkl_optimistic_doctor_law": 1.4329,
+        "predicted_symkl_point": 8.9694,
+        "predicted_symkl_point_law": "saturating",
+        "predicted_symkl_saturating_doctor_law": 8.9694,
+        "promotable": false,
+        "stipulated_relative_uncertainty": 0.1944,
+        "undoctored_symkl": 10.7507
+      },
+      "routing_only_floor_over_gate": 43.0,
+      "routing_only_floor_symkl": 4.297,
+      "unpriced_lanes": {
+        "expert_fallback": {
+          "bits": 1849034144,
+          "extra_decode_stages": 0,
+          "resident_share": 0.0,
+          "share_of_planned_budget": 0.008026,
+          "utility": {
+            "cost_bit_equivalents": 0.007865097,
+            "delta_bpw": 0.007865097,
+            "promotable": false,
+            "reason": "no measured quality anchor for this lane; unpriced lanes may not bid",
+            "utility": null
+          },
+          "what": "one extra generic expert per layer at the same rungs, catching tokens routed to an omitted expert",
+          "why_unpriced": "Lane E measured that an omitted expert is NOT reconstructible from survivors (best single survivor 0.885-0.995 held-out relative error, i.e. no better than zero), so the prior on this lane is ~no gain - but that is a prior, not a price"
+        },
+        "hidden_state_repair": {
+          "bits": 394264576,
+          "extra_decode_stages": 1,
+          "resident_share": 1.0,
+          "share_of_planned_budget": 0.001711,
+          "utility": {
+            "cost_bit_equivalents": 0.003354107,
+            "delta_bpw": 0.001677053,
+            "promotable": false,
+            "reason": "no measured quality anchor for this lane; unpriced lanes may not bid",
+            "utility": null
+          },
+          "what": "rank-32 bf16 low-rank correction on the hidden state at every layer",
+          "why_unpriced": "never measured on any Qwen arm"
+        },
+        "logit_repair": {
+          "bits": 79888384,
+          "extra_decode_stages": 1,
+          "resident_share": 1.0,
+          "share_of_planned_budget": 0.000347,
+          "utility": {
+            "cost_bit_equivalents": 0.00067963,
+            "delta_bpw": 0.000339815,
+            "promotable": false,
+            "reason": "no measured quality anchor for this lane; unpriced lanes may not bid",
+            "utility": null
+          },
+          "what": "rank-32 bf16 correction on the lm_head output",
+          "why_unpriced": "never measured; and symKL is measured ON the logits, so a logit repair fitted to the calibration batch would be scored on the same quantity it was fitted to - circular unless held out"
+        },
+        "metadata_and_runtime": {
+          "bits": 536882944,
+          "extra_decode_stages": 0,
+          "resident_share": 1.0,
+          "share_of_planned_budget": 0.00233,
+          "utility": {
+            "cost_bit_equivalents": 0.004567397,
+            "delta_bpw": 0.002283698,
+            "promotable": false,
+            "reason": "no measured quality anchor for this lane; unpriced lanes may not bid",
+            "utility": null
+          },
+          "what": "packaging reserve plus the resident survivor bitmap",
+          "why_unpriced": "mandatory, not a bidder: dQ is zero by construction and the bits are not optional"
+        },
+        "protected_tensors": {
+          "bits": 119204265984,
+          "extra_decode_stages": 0,
+          "resident_share": 1.0,
+          "share_of_planned_budget": 0.517398,
+          "utility": {
+            "cost_bit_equivalents": 1.014100328,
+            "delta_bpw": 0.507050164,
+            "promotable": false,
+            "reason": "no measured quality anchor for this lane; unpriced lanes may not bid",
+            "utility": null
+          },
+          "what": "upgrade the dense islands (embed, lm_head, q/k/v/o) from PQ dim32/k16 to native bf16",
+          "why_unpriced": "no arm ever varied the island rate against a forward"
+        },
+        "router_capacity": {
+          "bits": 72192,
+          "extra_decode_stages": 0,
+          "resident_share": 1.0,
+          "share_of_planned_budget": 0.0,
+          "utility": {
+            "cost_bit_equivalents": 6.14e-07,
+            "delta_bpw": 3.07e-07,
+            "promotable": false,
+            "reason": "no measured quality anchor for this lane; unpriced lanes may not bid",
+            "utility": null
+          },
+          "what": "per-layer omitted-expert -> survivor remap table (ceil(log2 K) bits each)",
+          "why_unpriced": "router distillation IN ITS QWEN FORM is dead; no anchor exists for a remap table, and D2 prices only the FULL router, not a remapped one"
+        }
+      }
+    },
+    "BASE_HEAVY": {
+      "K": 96,
+      "band": {
+        "base": [
+          0.7,
+          0.75
+        ],
+        "doctor": [
+          0.2,
+          0.25
+        ]
+      },
+      "band_not_realizable_reason": "envelope band base 0.7-0.75 / doctor 0.2-0.25 of the planned 0.98 is NOT REALIZABLE on the existing rung ladder; nearest legal cell is base 0.6979 / doctor 0.2339, L1 miss 0.0021",
+      "band_realizable": false,
+      "base_bits": 160800388608,
+      "base_share_of_planned": 0.697943,
+      "complete_bits": 223971041408,
+      "complete_bpw": 0.952688667,
+      "coverage": 0.948726,
+      "doctor_bits": 53881780608,
+      "doctor_protect_frac": 0.5,
+      "doctor_rung": "0.625",
+      "doctor_share_of_planned": 0.23387,
+      "down_index_bpw": 0.3125,
+      "down_rung": "0.3125",
+      "envelope": "BASE_HEAVY",
+      "exact_verification": {
+        "doctor_share_of_exact_ledger": 0.240575,
+        "exact_complete_bits": 223971041408,
+        "exact_complete_bpw": 0.9526886673353918,
+        "exact_complete_bpw_rational": "1749773761/1836669020",
+        "exact_ledger_components": {
+          "alignment": 81216,
+          "codebooks": 73915584,
+          "doctor": 53881780608,
+          "indices": 159677153280,
+          "metadata": 13860864,
+          "packaging": 536870912,
+          "pass_through_tensors": 801541632,
+          "protected_islands": 7950447616,
+          "runtime_tables": 12032,
+          "scales": 1035377664
+        },
+        "legal_under_hard_one_bit_ceiling": true,
+        "legal_under_planned_0p98": true,
+        "one_bit_ceiling_verdict": {
+          "legal": true,
+          "reasons": []
+        }
+      },
+      "fixed_bits": 9288872192,
+      "gate_index_bpw": 1.25,
+      "gate_rung": "1.25",
+      "marginal_utility": {
+        "_note": "only 3 of the 9 auction lanes have a quality price. A joint auction cannot be SOLVED over nine lanes when six of them are unpriced; it can only be bounded.",
+        "_unpriced_lane_count": 6,
+        "base_fidelity": {
+          "cost_bit_equivalents": 0.076869943,
+          "delta_bpw": 0.075362689,
+          "evidence_class": "extrapolated_from_four_anchors",
+          "expected_delta_quality_symkl": 0.567298,
+          "promotable": false,
+          "step": "rungs -> g1.25/d0.625",
+          "utility": 7.379973
+        },
+        "expert_inventory": {
+          "cost_bit_equivalents": 0.116224369,
+          "delta_bpw": 0.11394546,
+          "evidence_class": "extrapolated_from_four_anchors",
+          "expected_delta_quality_symkl": 0.013732,
+          "promotable": false,
+          "step": "K -> 112",
+          "utility": 0.118151
+        },
+        "residual_codebooks": {
+          "cost_bit_equivalents": 0.089032987,
+          "delta_bpw": 0.068486913,
+          "evidence_class": "extrapolated_from_four_anchors",
+          "expected_delta_quality_symkl": 0.01532,
+          "promotable": false,
+          "step": "protect_frac -> 0.65",
+          "utility": 0.172073
+        }
+      },
+      "overhead_share_of_planned": 0.040318,
+      "prediction": {
+        "evidence_class": "extrapolated_from_four_anchors",
+        "gate_symkl_max": 0.1,
+        "optimistic_doctor_law_in_range": true,
+        "optimistic_doctor_law_out_of_range_note": null,
+        "passes_gate_under_optimistic_law": false,
+        "passes_gate_under_saturating_law": false,
+        "predicted_symkl_band_with_stipulated_uncertainty": [
+          2.7242,
+          14.002
+        ],
+        "predicted_symkl_optimistic_doctor_law": 5.8158,
+        "predicted_symkl_point": 9.1421,
+        "predicted_symkl_point_law": "saturating",
+        "predicted_symkl_saturating_doctor_law": 9.1421,
+        "promotable": false,
+        "stipulated_relative_uncertainty": 0.5316,
+        "undoctored_symkl": 10.9334
+      },
+      "routing_only_floor_over_gate": 10.6,
+      "routing_only_floor_symkl": 1.0579,
+      "unpriced_lanes": {
+        "expert_fallback": {
+          "bits": 1664223376,
+          "extra_decode_stages": 0,
+          "resident_share": 0.0,
+          "share_of_planned_budget": 0.007223,
+          "utility": {
+            "cost_bit_equivalents": 0.007078981,
+            "delta_bpw": 0.007078981,
+            "promotable": false,
+            "reason": "no measured quality anchor for this lane; unpriced lanes may not bid",
+            "utility": null
+          },
+          "what": "one extra generic expert per layer at the same rungs, catching tokens routed to an omitted expert",
+          "why_unpriced": "Lane E measured that an omitted expert is NOT reconstructible from survivors (best single survivor 0.885-0.995 held-out relative error, i.e. no better than zero), so the prior on this lane is ~no gain - but that is a prior, not a price"
+        },
+        "hidden_state_repair": {
+          "bits": 394264576,
+          "extra_decode_stages": 1,
+          "resident_share": 1.0,
+          "share_of_planned_budget": 0.001711,
+          "utility": {
+            "cost_bit_equivalents": 0.003354107,
+            "delta_bpw": 0.001677053,
+            "promotable": false,
+            "reason": "no measured quality anchor for this lane; unpriced lanes may not bid",
+            "utility": null
+          },
+          "what": "rank-32 bf16 low-rank correction on the hidden state at every layer",
+          "why_unpriced": "never measured on any Qwen arm"
+        },
+        "logit_repair": {
+          "bits": 79888384,
+          "extra_decode_stages": 1,
+          "resident_share": 1.0,
+          "share_of_planned_budget": 0.000347,
+          "utility": {
+            "cost_bit_equivalents": 0.00067963,
+            "delta_bpw": 0.000339815,
+            "promotable": false,
+            "reason": "no measured quality anchor for this lane; unpriced lanes may not bid",
+            "utility": null
+          },
+          "what": "rank-32 bf16 correction on the lm_head output",
+          "why_unpriced": "never measured; and symKL is measured ON the logits, so a logit repair fitted to the calibration batch would be scored on the same quantity it was fitted to - circular unless held out"
+        },
+        "metadata_and_runtime": {
+          "bits": 536882944,
+          "extra_decode_stages": 0,
+          "resident_share": 1.0,
+          "share_of_planned_budget": 0.00233,
+          "utility": {
+            "cost_bit_equivalents": 0.004567397,
+            "delta_bpw": 0.002283698,
+            "promotable": false,
+            "reason": "no measured quality anchor for this lane; unpriced lanes may not bid",
+            "utility": null
+          },
+          "what": "packaging reserve plus the resident survivor bitmap",
+          "why_unpriced": "mandatory, not a bidder: dQ is zero by construction and the bits are not optional"
+        },
+        "protected_tensors": {
+          "bits": 119204265984,
+          "extra_decode_stages": 0,
+          "resident_share": 1.0,
+          "share_of_planned_budget": 0.517398,
+          "utility": {
+            "cost_bit_equivalents": 1.014100328,
+            "delta_bpw": 0.507050164,
+            "promotable": false,
+            "reason": "no measured quality anchor for this lane; unpriced lanes may not bid",
+            "utility": null
+          },
+          "what": "upgrade the dense islands (embed, lm_head, q/k/v/o) from PQ dim32/k16 to native bf16",
+          "why_unpriced": "no arm ever varied the island rate against a forward"
+        },
+        "router_capacity": {
+          "bits": 84224,
+          "extra_decode_stages": 0,
+          "resident_share": 1.0,
+          "share_of_planned_budget": 0.0,
+          "utility": {
+            "cost_bit_equivalents": 7.17e-07,
+            "delta_bpw": 3.58e-07,
+            "promotable": false,
+            "reason": "no measured quality anchor for this lane; unpriced lanes may not bid",
+            "utility": null
+          },
+          "what": "per-layer omitted-expert -> survivor remap table (ceil(log2 K) bits each)",
+          "why_unpriced": "router distillation IN ITS QWEN FORM is dead; no anchor exists for a remap table, and D2 prices only the FULL router, not a remapped one"
+        }
+      }
+    },
+    "DOCTOR_HEAVY": {
+      "K": 48,
+      "band": {
+        "base": [
+          0.3,
+          0.4
+        ],
+        "doctor": [
+          0.55,
+          0.65
+        ]
+      },
+      "band_realizable": true,
+      "base_bits": 80437192704,
+      "base_share_of_planned": 0.349132,
+      "complete_bits": 228511570784,
+      "complete_bpw": 0.972002373,
+      "coverage": 0.673655,
+      "doctor_bits": 138785505888,
+      "doctor_protect_frac": 0.65,
+      "doctor_rung": "2.5",
+      "doctor_share_of_planned": 0.602389,
+      "down_index_bpw": 0.3125,
+      "down_rung": "0.3125",
+      "envelope": "DOCTOR_HEAVY",
+      "exact_verification": {
+        "doctor_share_of_exact_ledger": 0.607346,
+        "exact_complete_bits": 228511570784,
+        "exact_complete_bpw": 0.9720023734869769,
+        "exact_complete_bpw_rational": "7140986587/7346676080",
+        "exact_ledger_components": {
+          "alignment": 81216,
+          "codebooks": 73915584,
+          "doctor": 138785505888,
+          "indices": 79838576640,
+          "metadata": 6930432,
+          "packaging": 536870912,
+          "pass_through_tensors": 801541632,
+          "protected_islands": 7950447616,
+          "runtime_tables": 12032,
+          "scales": 517688832
+        },
+        "legal_under_hard_one_bit_ceiling": true,
+        "legal_under_planned_0p98": true,
+        "one_bit_ceiling_verdict": {
+          "legal": true,
+          "reasons": []
+        }
+      },
+      "fixed_bits": 9288872192,
+      "gate_index_bpw": 1.25,
+      "gate_rung": "1.25",
+      "marginal_utility": {
+        "_note": "only 3 of the 9 auction lanes have a quality price. A joint auction cannot be SOLVED over nine lanes when six of them are unpriced; it can only be bounded.",
+        "_unpriced_lane_count": 6,
+        "base_fidelity": {
+          "cost_bit_equivalents": 0.038381411,
+          "delta_bpw": 0.037628834,
+          "evidence_class": "extrapolated_from_four_anchors",
+          "expected_delta_quality_symkl": 0.478556,
+          "promotable": false,
+          "step": "rungs -> g1.25/d0.625",
+          "utility": 12.468428
+        },
+        "expert_inventory": {
+          "cost_bit_equivalents": 0.116223534,
+          "delta_bpw": 0.113944641,
+          "evidence_class": "extrapolated_from_four_anchors",
+          "expected_delta_quality_symkl": 0.70399,
+          "promotable": false,
+          "step": "K -> 64",
+          "utility": 6.057208
+        },
+        "residual_codebooks": {
+          "cost_bit_equivalents": 0.177387732,
+          "delta_bpw": 0.136452102,
+          "evidence_class": "extrapolated_from_four_anchors",
+          "expected_delta_quality_symkl": 1.9e-05,
+          "promotable": false,
+          "step": "protect_frac -> 0.8",
+          "utility": 0.000107
+        }
+      },
+      "overhead_share_of_planned": 0.040318,
+      "prediction": {
+        "evidence_class": "extrapolated_from_four_anchors",
+        "gate_symkl_max": 0.1,
+        "optimistic_doctor_law_in_range": false,
+        "optimistic_doctor_law_out_of_range_note": "doctor_bpw 0.5903 exceeds the linear law's zero crossing 0.4897; a linear extrapolation predicting ZERO loss is unphysical, so the band collapses onto the saturating law",
+        "passes_gate_under_optimistic_law": false,
+        "passes_gate_under_saturating_law": false,
+        "predicted_symkl_band_with_stipulated_uncertainty": [
+          5.5744,
+          14.836
+        ],
+        "predicted_symkl_optimistic_doctor_law": 10.2052,
+        "predicted_symkl_point": 10.2052,
+        "predicted_symkl_point_law": "saturating",
+        "predicted_symkl_saturating_doctor_law": 10.2052,
+        "promotable": false,
+        "stipulated_relative_uncertainty": 0.4538,
+        "undoctored_symkl": 12.2326
+      },
+      "routing_only_floor_over_gate": 67.3,
+      "routing_only_floor_symkl": 6.7333,
+      "unpriced_lanes": {
+        "expert_fallback": {
+          "bits": 1664994176,
+          "extra_decode_stages": 0,
+          "resident_share": 0.0,
+          "share_of_planned_budget": 0.007227,
+          "utility": {
+            "cost_bit_equivalents": 0.00708226,
+            "delta_bpw": 0.00708226,
+            "promotable": false,
+            "reason": "no measured quality anchor for this lane; unpriced lanes may not bid",
+            "utility": null
+          },
+          "what": "one extra generic expert per layer at the same rungs, catching tokens routed to an omitted expert",
+          "why_unpriced": "Lane E measured that an omitted expert is NOT reconstructible from survivors (best single survivor 0.885-0.995 held-out relative error, i.e. no better than zero), so the prior on this lane is ~no gain - but that is a prior, not a price"
+        },
+        "hidden_state_repair": {
+          "bits": 394264576,
+          "extra_decode_stages": 1,
+          "resident_share": 1.0,
+          "share_of_planned_budget": 0.001711,
+          "utility": {
+            "cost_bit_equivalents": 0.003354107,
+            "delta_bpw": 0.001677053,
+            "promotable": false,
+            "reason": "no measured quality anchor for this lane; unpriced lanes may not bid",
+            "utility": null
+          },
+          "what": "rank-32 bf16 low-rank correction on the hidden state at every layer",
+          "why_unpriced": "never measured on any Qwen arm"
+        },
+        "logit_repair": {
+          "bits": 79888384,
+          "extra_decode_stages": 1,
+          "resident_share": 1.0,
+          "share_of_planned_budget": 0.000347,
+          "utility": {
+            "cost_bit_equivalents": 0.00067963,
+            "delta_bpw": 0.000339815,
+            "promotable": false,
+            "reason": "no measured quality anchor for this lane; unpriced lanes may not bid",
+            "utility": null
+          },
+          "what": "rank-32 bf16 correction on the lm_head output",
+          "why_unpriced": "never measured; and symKL is measured ON the logits, so a logit repair fitted to the calibration batch would be scored on the same quantity it was fitted to - circular unless held out"
+        },
+        "metadata_and_runtime": {
+          "bits": 536882944,
+          "extra_decode_stages": 0,
+          "resident_share": 1.0,
+          "share_of_planned_budget": 0.00233,
+          "utility": {
+            "cost_bit_equivalents": 0.004567397,
+            "delta_bpw": 0.002283698,
+            "promotable": false,
+            "reason": "no measured quality anchor for this lane; unpriced lanes may not bid",
+            "utility": null
+          },
+          "what": "packaging reserve plus the resident survivor bitmap",
+          "why_unpriced": "mandatory, not a bidder: dQ is zero by construction and the bits are not optional"
+        },
+        "protected_tensors": {
+          "bits": 119204265984,
+          "extra_decode_stages": 0,
+          "resident_share": 1.0,
+          "share_of_planned_budget": 0.517398,
+          "utility": {
+            "cost_bit_equivalents": 1.014100328,
+            "delta_bpw": 0.507050164,
+            "promotable": false,
+            "reason": "no measured quality anchor for this lane; unpriced lanes may not bid",
+            "utility": null
+          },
+          "what": "upgrade the dense islands (embed, lm_head, q/k/v/o) from PQ dim32/k16 to native bf16",
+          "why_unpriced": "no arm ever varied the island rate against a forward"
+        },
+        "router_capacity": {
+          "bits": 72192,
+          "extra_decode_stages": 0,
+          "resident_share": 1.0,
+          "share_of_planned_budget": 0.0,
+          "utility": {
+            "cost_bit_equivalents": 6.14e-07,
+            "delta_bpw": 3.07e-07,
+            "promotable": false,
+            "reason": "no measured quality anchor for this lane; unpriced lanes may not bid",
+            "utility": null
+          },
+          "what": "per-layer omitted-expert -> survivor remap table (ceil(log2 K) bits each)",
+          "why_unpriced": "router distillation IN ITS QWEN FORM is dead; no anchor exists for a remap table, and D2 prices only the FULL router, not a remapped one"
+        }
+      }
+    }
+  },
+  "hard_ceiling": "1/1",
+  "law": "complete_bits / original_weight_count <= 1/1, exact Fraction, verified through tools/foundry/one_bit_ceiling.py",
+  "loss_model": {
+    "A_routing": 20.632367,
+    "B_recon": 19.89479,
+    "anchors_used": 4,
+    "coverage_at_K64": 0.791735,
+    "doctor_optimistic_law_breaks_above_bpw": 0.489656,
+    "doctor_optimistic_linear_slope_per_bpw": 2.04225,
+    "doctor_saturating_asymptote_max_gain": 0.16574,
+    "form": "L = ((A*(1-C))^s + (B*e)^s)^(1/s) * g(doctor_bpw)",
+    "free_parameters": 4,
+    "honesty": "The fit is EXACT because it is exactly determined. Reproducing the four anchors is arithmetic, not validation. Every value away from an anchor is an extrapolation off a single point in that direction.",
+    "recon_scalar_at_anchor_rungs": 0.396033,
+    "residual_degrees_of_freedom": 0,
+    "s_subadditivity": 2.398085,
+    "uncertainty_schedule": {
+      "floor": 0.1,
+      "per_coverage": 2.0,
+      "per_log2_rate": 0.25,
+      "provenance": "stipulated, NOT measured"
+    }
+  },
+  "n_legal_cells": 729,
+  "parent": "qwen3-235b-a22b-instruct-2507",
+  "part_vii_answer": {
+    "answer_under_the_only_measured_doctor_point": "NO, and it is not close. At every envelope the marginal utility of a base byte exceeds that of a Doctor byte by 2-4 orders of magnitude once Doctor is past a few percent of the budget, because the single measured Doctor point read as a saturating law caps Doctor's total achievable gain at 16.6 percent of the loss. The unconstrained joint optimum lands at base 0.773 / doctor 0.186 of the planned ceiling - richer in Doctor than Qwen's accidental 95/5 leftover, but nowhere near DOCTOR_HEAVY.",
+    "does_the_base_become_uncodeable": "PARTLY, and this is a hard structural fact independent of any loss model. At a base share of 0.35 the surviving-expert budget is 0.355 bits per surviving weight at K=128 - BELOW the lowest gate rung on the ladder (0.625) - so a DOCTOR_HEAVY base is literally uncodeable at K >= 80. It becomes codeable only by omitting experts: K<=64 leaves 0.710 bpw and K<=48 leaves 0.947 bpw. So DOCTOR_HEAVY does not just buy Doctor bytes with base fidelity, it buys them with ROUTING COVERAGE, and the routing-only floor at K=48 is 6.733 symKL = 67x the capability gate before reconstruction or Doctor enter at all. That bounds the whole experiment.",
+    "question": "Does a deliberately ROUGH base plus a POWERFUL healer beat a faithful base with weak repair?",
+    "the_caveat_that_makes_this_not_a_kill": "The saturating law is one of two readings of ONE point. The linear reading says the opposite. See central_finding_law_disagreement. This is a byte plan; only a forward decides."
+  },
+  "planned_ceiling": "49/50 (0.98)",
+  "promotion_flag": {
+    "evidence_class_required_for_promotion": "measured_forward",
+    "may_promote_on_predicted_utility": false,
+    "reason": "U(t) is built from a zero-residual-degrees-of-freedom fit to four sealed anchors. It orders candidates for a forward to adjudicate and selects nothing. Promotion requires a real parent-vs-packed forward."
+  },
+  "routing_only_floor": {
+    "capability_gate_symkl_max": 0.1,
+    "consequence": "Under this attribution EVERY arm with expert omission is bounded away from the capability gate BEFORE reconstruction or Doctor enter. The bound is independent of the base rate, the codec and both Doctor laws; only K=128 (no omission at all) clears it, and K=112 - which omits just 16 of 128 experts - still predicts ~2.3x the gate on routing loss alone.",
+    "definition": "L_route(K) = A*(1-C(K)) with A fit on the D1 causal control (perfect bf16 experts, router masked to the same 64 survivors, symKL 4.297)",
+    "doctor_attribution_ambiguity": "The S64_doctor anchor cannot attribute its 8.600 -> 7.699 gain between the routing and reconstruction terms. This module's cell predictions apply g(d) to the JOINT loss, which is the reading GENEROUS to Doctor. This floor is the other reading. Both fit the same anchor; a forward that Doctors a full-128-router arm would separate them.",
+    "honesty": "L_route is linear in (1-C) because ONE point determines it. Curvature is unmeasured and could move this bound in either direction.",
+    "smallest_K_whose_routing_floor_clears_the_gate": 128,
+    "symkl_floor_by_K": {
+      "112": 0.2314,
+      "128": 0.0,
+      "32": 9.8336,
+      "48": 6.7333,
+      "64": 4.297,
+      "80": 2.4136,
+      "96": 1.0579
+    }
+  },
+  "routing_source": "reports/subbit_reset/QWEN3_235B_ROUTING_CALIBRATION_1200.json",
+  "routing_tokens": 1313,
+  "routing_trust_warning": "NOT trustworthy for PER-EXPERT bit allocation. Only 81.0 percent of (layer, expert) hot/cold assignments survive token resampling at 95 percent, and 2.1 percent of experts are never routed at all on 1313 tokens (expected count per expert is only 82.062). A stable median partition needs roughly 7448 tokens (median expert: 290). Until then use the routing signal only as a COARSE aggregate (quartile bands, or the lower-variance softmax_mass which has no zeros), and gate any allocation on a real parent-vs-packed forward.",
+  "schema": "hawking.gravity.doctor_byte_auction.v1",
+  "shadow_prices": {
+    "lam_L": 0.0,
+    "lam_L_provenance": "stipulated zero; no latency was ever measured for these lanes",
+    "lam_M": 1.0
+  },
+  "unconstrained_joint_optimum": {
+    "K": 48,
+    "base_bits": 178005330432,
+    "base_share_of_planned": 0.77262,
+    "complete_bits": 230194578368,
+    "complete_bpw": 0.979161255,
+    "coverage": 0.673655,
+    "doctor_bits": 42900375744,
+    "doctor_protect_frac": 0.1,
+    "doctor_rung": "5.0",
+    "doctor_share_of_planned": 0.186206,
+    "down_index_bpw": 1.25,
+    "down_rung": "1.25",
+    "exact_verification": {
+      "doctor_share_of_exact_ledger": 0.186366,
+      "exact_complete_bits": 230194578368,
+      "exact_complete_bpw": 0.9791612554667035,
+      "exact_complete_bpw_rational": "3596790287/3673338040",
+      "exact_ledger_components": {
+        "alignment": 54144,
+        "codebooks": 61597824,
+        "doctor": 42900375744,
+        "indices": 177419059200,
+        "metadata": 6930432,
+        "packaging": 536870912,
+        "pass_through_tensors": 801541632,
+        "protected_islands": 7950447616,
+        "runtime_tables": 12032,
+        "scales": 517688832
+      },
+      "legal_under_hard_one_bit_ceiling": true,
+      "legal_under_planned_0p98": true,
+      "one_bit_ceiling_verdict": {
+        "legal": true,
+        "reasons": []
+      }
+    },
+    "fixed_bits": 9288872192,
+    "gate_index_bpw": 2.5,
+    "gate_rung": "2.5",
+    "overhead_share_of_planned": 0.040318,
+    "prediction": {
+      "evidence_class": "extrapolated_from_four_anchors",
+      "gate_symkl_max": 0.1,
+      "optimistic_doctor_law_in_range": true,
+      "optimistic_doctor_law_out_of_range_note": null,
+      "passes_gate_under_optimistic_law": false,
+      "passes_gate_under_saturating_law": false,
+      "predicted_symkl_band_with_stipulated_uncertainty": [
+        3.0268,
+        10.2558
+      ],
+      "predicted_symkl_optimistic_doctor_law": 5.3476,
+      "predicted_symkl_point": 7.1519,
+      "predicted_symkl_point_law": "saturating",
+      "predicted_symkl_saturating_doctor_law": 7.1519,
+      "promotable": false,
+      "stipulated_relative_uncertainty": 0.434,
+      "undoctored_symkl": 8.5245
+    }
+  }
+}

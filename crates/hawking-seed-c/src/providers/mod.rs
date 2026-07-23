@@ -30,3 +30,6 @@ pub mod speculation;
 pub mod validation;
 pub mod experiment;
 pub mod profiles;
+pub mod ir;
+pub mod source_formats;
+pub mod tokenizer_protocols;

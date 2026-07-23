@@ -1,0 +1,47 @@
+{
+  "bpw": {
+    "legal_under_one_bit_ceiling": false,
+    "organ_bpw": {},
+    "promotable": false,
+    "scope": "DIAGNOSTIC: bf16 experts, masked router",
+    "whole_model_bpw": 16.0
+  },
+  "capability_pass": false,
+  "diagnostic_only": true,
+  "divergence_vs_parent": {
+    "mean_logit_cosine": 0.53696,
+    "mean_sym_kl": 3.89572,
+    "mean_top5_overlap": 0.32,
+    "next_token_argmax_agreement": 0.6
+  },
+  "domain": "factual",
+  "honesty": "REAL parent-vs-packed Qwen3-MoE forward with expert_hook substitution; BPW is whole-model from the exact byte ledger, never expert-only; weight-space error is NOT a pass criterion",
+  "kind": "packed",
+  "ladder_sha": "2434964c31db5473",
+  "logits_finite": true,
+  "n_tokens": 5,
+  "note": "CAUSAL CONTROL for the S1 decomposition, isolating ROUTING loss. Every expert is served at source bf16 (perfect reconstruction) while the router is masked to the SAME 64-expert survivor set S64_structural uses. Whatever quality this loses is caused by omitted routing mass and nothing else. DIAGNOSTIC ONLY: its experts are uncompressed, so its complete BPW is 16 and it is permanently ineligible for promotion. It exists to answer a causal question, not to be a candidate.",
+  "promotion_blocked_reason": "causal control for the S1 failure decomposition; its byte cost is not a legal artifact and it may never be promoted regardless of measured quality",
+  "prompt_id": "gen_paris",
+  "quality": {
+    "n_positions": 4,
+    "nll": 7.4162,
+    "perplexity": 1662.7074
+  },
+  "row_id": "gen_paris__D1_route_only",
+  "sealed_at": "2026-07-21T00:22:36Z",
+  "sha256": "c4ccec95a5c5812a54b2615c575dd2d517637a5147ef0f4bf5905d8e9413b020",
+  "spec": {
+    "diagnostic_only": true,
+    "down": {
+      "family": "passthrough"
+    },
+    "gate_up": {
+      "family": "passthrough"
+    },
+    "keep_experts": 64,
+    "kind": "packed"
+  },
+  "variant": "D1_route_only",
+  "verdict": "CAUSAL_CONTROL_not_a_candidate"
+}

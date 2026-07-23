@@ -1,0 +1,133 @@
+{
+  "created_at": "2026-07-20T20:17:11+00:00",
+  "entries": {
+    "calibration_88_tokens": {
+      "killed_by": "at 88 tokens the median routing split is only 63.6 percent stable and 26.1 percent of cells never route at all",
+      "lever": "routing-frequency allocation calibrated on ~88 tokens",
+      "parent": "gpt-oss-120b:F0",
+      "reopen_condition": "never at 88; use >= 1000 calibration tokens",
+      "verdict": "the lever is alive, the 88-token calibration is dead; needs ~1000 tokens"
+    },
+    "cross_expert_and_cross_layer_tying": {
+      "evidence": [
+        "reports/subbit_reset/LANE_F_GENERATED_PARAMS.json"
+      ],
+      "instrument_validated": "the metric carries a positive control proving it WOULD detect norm-swamping (synthetic pair sharing one 1e4-scale row reads 0.9+ raw, <0.3 normalized), so this is a real measurement rather than a blind instrument",
+      "killed_by": "raw and row-normalized mean |off-diagonal cosine| agree to 3 significant figures (gate 0.00166 vs 0.00168; down 0.00039 both). The 15-decade row-norm span was NOT what killed the raw-space cosine test - the experts are genuinely mutually orthogonal in both spaces. Best single shared template explains 0.2513 of 4 experts' energy against an orthogonal null of exactly 0.2500. Same-expert-index cross-layer tying is indistinguishable from a different-index control at 1e-7.",
+      "lever": "expert templates + deltas in row-normalized space; same-expert-index cross-layer tying",
+      "parent": "qwen3-235b-a22b:F1",
+      "reopen_condition": "a parent measures row-normalized mean off-diagonal expert cosine >= 0.10",
+      "verdict": "DEAD, and the row-norm rescue hypothesis is falsified."
+    },
+    "entropy_coded_pq_indices": {
+      "killed_by": "measured 0.0 to 0.7 percent, not the hoped 10 to 25 percent; Lloyd-optimal indices are near-uniform by construction",
+      "lever": "entropy coding of trained PQ indices",
+      "parent": "gpt-oss-120b:F0",
+      "reopen_condition": "a future parent uses NON-Lloyd (biased or stratified) codebooks whose measured index entropy is <= 0.9 of uniform",
+      "verdict": "the gain is inside the noise of the byte plan"
+    },
+    "expert_merging_omitted_from_survivors": {
+      "adversary_note": "the verifier found in-sample contamination in the per-expert medians (singleton-hit experts fit and scored on the same token). The contamination runs IN THE MERGE'S FAVOUR, so the true wall is at least this hard. Verdict strengthened, not weakened.",
+      "evidence": [
+        "reports/subbit_reset/LANE_E_DISTILL_GATE.json",
+        "reports/subbit_reset/LANE_E_DISTILL_GATE_ADVERSARIAL.json"
+      ],
+      "killed_by": "median held-out relative error of the BEST single surviving expert is 0.885/0.993/0.995 at L0/L3/L7; a 4-survivor least-squares merge only reaches 0.863/0.988/0.995. ~1.0 means the reconstruction is no better than predicting zero. Same wall as inter_expert_redundancy: there is no low-dimensional surviving-expert subspace containing a cold expert's function.",
+      "lever": "reconstruct an omitted MoE expert from a learned combination of surviving experts",
+      "parent": "qwen3-235b-a22b:F1",
+      "reopen_condition": "a parent measures best-single-survivor reconstruction error <= 0.5 on held-out routed tokens at its own keep fraction",
+      "verdict": "DEAD. Upheld under adversarial attack."
+    },
+    "inter_expert_redundancy": {
+      "killed_by": "mean pairwise cosine between experts = 1e-4; experts are mutually orthogonal",
+      "lever": "delta coding / shared low-rank bases / cluster-mean subtraction across experts",
+      "parent": "gpt-oss-120b:F0",
+      "reopen_condition": "a future parent measures mean pairwise expert cosine >= 0.10 on its own weights",
+      "verdict": "dead on arrival: there is no shared component to subtract"
+    },
+    "kronecker_factorisation": {
+      "evidence": [
+        "reports/subbit_reset/LANE_F_GENERATED_PARAMS_ADVERSARIAL.json"
+      ],
+      "killed_by": "at depth the Van Loan rearrangement spectrum is nearly flat - the top Kronecker component holds 0.27 percent of gate energy - so the rank the 2.5 bpw budget buys (191 of 2048) captures only 27.2 percent of energy: rel_error 0.853 vs the incumbent 0.239 at the same rung.",
+      "lever": "Kronecker / tensor-product factorisation W ~ A (x) B of a single expert tensor",
+      "parent": "qwen3-235b-a22b:F1",
+      "reopen_condition": "any layer whose Van Loan spectrum is not flat; check before assuming depth behaviour transfers to the first block",
+      "the_exception": "layer 0 gate_proj: 0.0301 vs the incumbent codec's 0.2252, at 2.487061 vs 2.500735 complete BPW - a 7.5x error reduction at a CHEAPER rate. The lane skipped layer 0 under an exemption written for cross-expert TYING methods, which does not apply to a single-tensor factorisation.",
+      "verdict": "DEAD for layers >= 1 at the S64 rungs; LIVE and codec-beating on layer 0. The lane's original 'structurally dead, nothing here should be built on' was REFUTED by its verifier."
+    },
+    "large_expert_cache": {
+      "killed_by": "0 evictions at a 64GB cap; RAM 70->18GB free and swap down to 906MB free. A single lockstep pass has zero cross-layer reuse",
+      "lever": "aggressive expert cache (64GB cap) for a single lockstep pass",
+      "parent": "gpt-oss-120b:F0",
+      "reopen_condition": "a future parent's schedule has MEASURED cross-layer expert reuse (cache hit rate > 0) instead of a single lockstep pass",
+      "verdict": "correct cap is ~20GB; aggressive RAM only where real reuse exists"
+    },
+    "layer_zero_is_a_different_source": {
+      "evidence": [
+        "reports/subbit_reset/SHANNON_BOUND_ADVERSARIAL.json",
+        "reports/subbit_reset/LANE_A2_LAYER0_CODEC.json",
+        "reports/subbit_reset/LANE_C_COMPRESSIBILITY_ADVERSARIAL.json",
+        "reports/subbit_reset/LANE_F_GENERATED_PARAMS_ADVERSARIAL.json"
+      ],
+      "finding": "layer 0 is not a hard cell, it is a DIFFERENT SOURCE, and the codec that is near-optimal for layers >= 1 is badly mismatched to it. Converging evidence: (a) Shannon-bound probe: L0 down is 3.014 bits non-Gaussian with 1.328 decades of unexploited gap, vs 0.012-0.018 bits and 0.06 decades at L46/L93. (b) Column-scale modulation removes the non-Gaussianity completely (3.0143 -> -0.0035 bits) and closes 42 percent of the distortion gap. (c) Activation-aware coding cuts L0 gate held-out output error ~60 percent. (d) Kronecker factorisation, declared structurally dead at depth, BEATS the incumbent codec on L0 gate: 0.0301 vs 0.2252 rel_error at a CHEAPER complete rate (2.487 vs 2.501 BPW). Error rises monotonically with depth: L0 0.0301, L1 0.6611, L2 0.7567, L46 0.85+.",
+      "killed_by": "nothing - this is a POSITIVE entry recording where the campaign found real headroom.",
+      "lever": "treating all 94 layers as one coding problem",
+      "parent": "qwen3-235b-a22b:F1",
+      "reopen_condition": "N/A - live. The scope is bounded: layer 0 is 1/94 of the model, so exploiting it fully is worth about 1 percent of total bits. Its value is as a DIAGNOSTIC that the source is layer-dependent and a per-layer codec selector is warranted.",
+      "the_predictor": "post_attention_layernorm gamma^2 anisotropy (decades p99/p50) predicts where function-aware coding pays, and it is DATA-FREE: L0 1.8428, L1 0.9035, L2 0.5540, L70 0.4576, L23 0.3112, L46 0.2026, L93 0.0621. A data-free h = gamma^2 recovers 83 percent of the gain that a full routed-token calibration pipeline buys (log-corr(h, gamma^2) = 0.9918 at layer 0).",
+      "verdict": "LIVE AND CONVERGENT. Three independent lanes found the same thing without coordination."
+    },
+    "post_hoc_coding_of_frozen_weights": {
+      "evidence": [
+        "reports/subbit_reset/M01_FUNCTION_AWARE_PROBE.json",
+        "reports/subbit_reset/SHANNON_BOUND_ADVERSARIAL.json"
+      ],
+      "killed_by": "Across mid and late layers the coded-space weights ARE essentially Gaussian (non-Gaussianity 0.012-0.018 bits), so there the original conclusion survives: down_proj sits 0.059 decades from its true Shannon bound (measured 0.7026 vs 0.6568) and gate 0.27-0.28 decades (0.2427 vs 0.1749). Best possible post-hoc gain on gate is a factor of ~1.4 in rel_error.",
+      "lever": "any post-hoc fixed-weight codec improvement at a fixed sub-bit index rate",
+      "named_exception": "LAYER 0 IS NOT EXHAUSTED. Its down_proj measures 3.014 bits of non-Gaussianity and sits 1.328 decades from its Shannon bound (0.3701 measured vs 0.0803 achievable); layer 0 gate is 0.669 bits non-Gaussian and 0.791 decades off. An organ- and layer-specific codec for the first block is a live, named, unexploited lever - do not transfer 'Lane A is closed' to it.",
+      "parent": "qwen3-235b-a22b:F1",
+      "reopen_condition": "any cell measuring >= 0.5 decades of gap to its OWN Shannon lower bound, which is a measurement every future parent must now make rather than assuming the Gaussian number",
+      "the_overclaim_and_its_correction": "This campaign first sealed Lane A on the grounds that the codec matched sqrt(2^-2R). That reasoning was WRONG: sqrt(2^-2R) is the GAUSSIAN rate-distortion function, and among sources of equal variance the Gaussian MAXIMIZES differential entropy, so its D(R) is an UPPER bound on the distortion any same-variance source requires. Matching it proves the codec is as good as if the weights were Gaussian; it proves nothing about the true floor. The correct floor is the Shannon lower bound D(R) >= (1/2 pi e) 2^(2h) 2^(-2R) using the MEASURED differential entropy h. Re-measured with a Kozachenko-Leonenko estimator (validated to 0.011 bits against the analytic Gaussian entropy) on the real weights in the coded space.",
+      "verdict": "NEARLY exhausted, NOT closed. CORRECTED from an earlier overclaim in this same campaign."
+    },
+    "posthoc_scalar_gain": {
+      "killed_by": "optimal gain pinned at exactly 1.0; k-means reconstruction is a conditional mean so the residual is orthogonal to the reconstruction, and cosine is gain-invariant",
+      "lever": "post-hoc scalar gain correction on a PQ artifact",
+      "parent": "gpt-oss-120b:F0",
+      "reopen_condition": "a future parent uses a NON-conditional-mean quantizer whose residual is measurably non-orthogonal to the reconstruction",
+      "verdict": "algebraically pinned, not merely unhelpful"
+    },
+    "raw_weight_pq_vq_at_one_bit": {
+      "killed_by": "qwen3-235b:F1 real forward, 6 prompts, 94 layers, healthy parent control (ppl 1.61 to 39.33): A1_1p0 at complete 1.0075 BPW collapsed 6/6 (symKL 7.6 to 10.9, argmax agreement 0.0) and R2_subhalf at complete 0.4930 BPW collapsed 6/6 (symKL 9.3 to 13.5, argmax agreement 0.0)",
+      "lever": "PQ/VQ coding of the RAW weights as the route to one bit or below",
+      "parent": "qwen3-235b:F1",
+      "reopen_condition": "never on raw weights. A method that changes the source is not this lever and is not blocked by this entry",
+      "verdict": "the raw-weight PQ/VQ family is dead at about one bit. This kills THAT FAMILY, not the sub-bit program: the correct response is a method that CHANGES the source (QAT, distillation, compressibility training, structured pruning, learned sharing), never a higher rate"
+    },
+    "row_norm_stratification_premise": {
+      "evidence": "reports/subbit_reset/M01_FUNCTION_AWARE_PROBE.json",
+      "killed_by": "the PREMISE does not reproduce. The sealed diagnosis claimed 94 percent of gate/up rows collapse onto ONE codeword. Measured on real weights at the exact R2 geometry (d16 k1024, 5 layers x 3 organs x 8 experts): single-codeword share is 0.0267 mean and never exceeds 0.047 in any cell. The 94 percent figure belonged to a different (k=32) geometry and does not transfer.",
+      "lever": "row-norm-stratified codebooks (declared R5_rownorm_strat, never run)",
+      "parent": "qwen3-235b-a22b:F1",
+      "reopen_condition": "a parent measures single-codeword share >= 0.20 at its own deployed geometry",
+      "verdict": "the stated pathology is absent; stratification has nothing to fix. Its STRONGER form (per-row scale normalization, M01') was built and does help, but only 2.8 percent mean."
+    },
+    "ternary_factorization": {
+      "killed_by": "loses to VQ at matched rate",
+      "lever": "ternary factorization instead of VQ",
+      "parent": "gpt-oss-120b:F0",
+      "reopen_condition": "a future parent diagnoses a weight distribution where ternary beats VQ at a matched exact rate on a real forward",
+      "verdict": "dominated at every matched rate tested"
+    },
+    "uniform_subbit_allocation": {
+      "killed_by": "F0 real forward: both the uniform and the treated artifact collapsed",
+      "lever": "uniform sub-bit allocation across organs (and its treated variant)",
+      "parent": "gpt-oss-120b:F0",
+      "reopen_condition": "a future parent measures NO organ sensitivity split (gate and down degrade within 10 percent of each other)",
+      "verdict": "superseded by organ inversion (mlp1 gate+up sensitive, mlp2 down tolerant), confirmed by F1 qwen3-235b dominant_failure_organ = gate"
+    }
+  },
+  "schema": "hawking.foundry.negative_transfer_atlas.v1",
+  "sha256": "d9df76d65795598599756df2ded20b47d8e6b2d9c1cc99d63eeec5b9dd51f7ab"
+}

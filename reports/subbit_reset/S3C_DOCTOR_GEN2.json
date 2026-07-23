@@ -1,0 +1,399 @@
+{
+  "QWEN235B_DOCTOR_GEN2_PROGRAM": {
+    "diagnosis_to_treatment": [
+      {
+        "diagnosis": "down_proj carries the worst rate-distortion floor in the S64 artifact (0.625 index bpw)",
+        "measured": {
+          "arm": "doctor_gen1",
+          "bits": 2007040,
+          "delta_sq_err": 0.7703189750512441,
+          "utility_per_bit": 3.838084816701432e-07
+        },
+        "treatment": "sparse residual Doctor on down_proj, protected rows only"
+      },
+      {
+        "diagnosis": "Gen1 fits the correction codebook by unweighted Lloyd on the WEIGHT residual, but the artifact must preserve the OUTPUT",
+        "measured": {
+          "auction_rank": 4,
+          "bits": 2007040,
+          "delta_sq_err": 0.710741271575292,
+          "id": "a_doctor_gen2A",
+          "treatment": "Doctor, output-fitted correction codebook",
+          "utility_per_bit": 3.5412411888915617e-07
+        },
+        "treatment": "G2-A output-weighted Lloyd on the residual (h = diag E[a a^T])"
+      },
+      {
+        "diagnosis": "Gen1 selects protected rows by relative residual energy, which is blind to how much each row's residual reaches the output",
+        "measured": {
+          "auction_rank": 1,
+          "bits": 2007040,
+          "delta_sq_err": 0.8052494128545126,
+          "id": "a_doctor_gen2B",
+          "treatment": "Doctor, output-sensitivity row selection",
+          "utility_per_bit": 4.012124386432321e-07
+        },
+        "treatment": "G2-B row selection by measured output sensitivity, same bitmap bytes"
+      },
+      {
+        "diagnosis": "the S64_doctor artifact sits at 0.999769787 complete BPW, so the Doctor's bits are bits some other treatment is not getting",
+        "measured": {
+          "doctor_best": "a_doctor_gen2B",
+          "doctor_utility_per_bit": 4.012124386432321e-07,
+          "winner": "a_doctor_gen2B",
+          "winner_utility_per_bit": 4.012124386432321e-07
+        },
+        "treatment": "byte auction against K+1, gate/up rung, down rung"
+      }
+    ],
+    "ranked_marginal_utility": [
+      {
+        "auction_rank": 1,
+        "bits": 2007040,
+        "delta_sq_err": 0.8052494128545126,
+        "id": "a_doctor_gen2B",
+        "treatment": "Doctor, output-sensitivity row selection",
+        "utility_per_bit": 4.012124386432321e-07
+      },
+      {
+        "auction_rank": 2,
+        "bits": 2007040,
+        "delta_sq_err": 0.7703189750512441,
+        "id": "a_doctor_gen1",
+        "treatment": "Doctor residual on down_proj (Gen1)",
+        "utility_per_bit": 3.838084816701432e-07
+      },
+      {
+        "auction_rank": 3,
+        "bits": 3930112,
+        "delta_sq_err": 1.4913458029429119,
+        "id": "d_down_rung_up",
+        "treatment": "down 0.625 -> 1.25 index bpw",
+        "utility_per_bit": 3.794664892356533e-07
+      },
+      {
+        "auction_rank": 4,
+        "bits": 2007040,
+        "delta_sq_err": 0.710741271575292,
+        "id": "a_doctor_gen2A",
+        "treatment": "Doctor, output-fitted correction codebook",
+        "utility_per_bit": 3.5412411888915617e-07
+      },
+      {
+        "auction_rank": 5,
+        "bits": 2007040,
+        "delta_sq_err": 0.708460529645284,
+        "id": "a_doctor_gen2AB",
+        "treatment": "Doctor, both Gen2 changes",
+        "utility_per_bit": 3.5298774794985853e-07
+      },
+      {
+        "auction_rank": 6,
+        "bits": 35518000,
+        "delta_sq_err": 3.869020938873291,
+        "id": "b_one_more_expert",
+        "treatment": "K 64 -> 65 (expert 80 restored)",
+        "utility_per_bit": 1.089312725624554e-07
+      },
+      {
+        "auction_rank": 7,
+        "bits": 31465472,
+        "delta_sq_err": 0.2975717782974243,
+        "id": "c_gate_up_rung_up",
+        "treatment": "gate/up 2.5 -> 5.0 index bpw",
+        "utility_per_bit": 9.457089291316664e-09
+      }
+    ]
+  },
+  "ceiling": "complete_bits / original_weight_count <= 1/1",
+  "claim": "PROXY ONLY. Output-space squared error on a calibration batch of REAL routed activations at one layer. Weight-space error is not a capability claim and output-space error on calibration is not capability either. No frontier is selected here; only a real parent-vs-packed 94-layer forward may select one.",
+  "falsification": {
+    "beaten_by": [],
+    "doctor_best_arm": "a_doctor_gen2B",
+    "doctor_keeps_its_slot": true,
+    "doctor_utility_per_bit": 4.012124386432321e-07,
+    "gen2_beats_gen1": true,
+    "per_expert_sign_check": {
+      "doctor_arm_wins": 3,
+      "gen2B_beats_gen1_on_n_experts": 2,
+      "n_experts": 3,
+      "per_expert": [
+        {
+          "expert": 51,
+          "utility_per_bit": {
+            "doctor_gen1": 1.0172993286835904e-06,
+            "doctor_gen2AB_both": 9.228130897545085e-07,
+            "doctor_gen2A_output_fit_codebook": 9.385070630482264e-07,
+            "doctor_gen2B_output_row_select": 1.0603687212783462e-06,
+            "down_rung_up": 9.961988497379858e-07,
+            "gate_up_rung_up": 2.563831514483223e-08
+          },
+          "winner": "doctor_gen2B_output_row_select"
+        },
+        {
+          "expert": 25,
+          "utility_per_bit": {
+            "doctor_gen1": 8.023260826511043e-08,
+            "doctor_gen2AB_both": 9.149050444592626e-08,
+            "doctor_gen2A_output_fit_codebook": 7.980383162823867e-08,
+            "doctor_gen2B_output_row_select": 9.106897406888251e-08,
+            "down_rung_up": 9.101381254347974e-08,
+            "gate_up_rung_up": 1.8787030228824626e-09
+          },
+          "winner": "doctor_gen2AB_both"
+        },
+        {
+          "expert": 14,
+          "utility_per_bit": {
+            "doctor_gen1": 5.389350806172861e-08,
+            "doctor_gen2AB_both": 4.465964964914079e-08,
+            "doctor_gen2A_output_fit_codebook": 4.4061461991003274e-08,
+            "doctor_gen2B_output_row_select": 5.2199620582467436e-08,
+            "down_rung_up": 5.1186805425494244e-08,
+            "gate_up_rung_up": 8.54249706235296e-10
+          },
+          "winner": "doctor_gen1"
+        }
+      ],
+      "unanimous_for_doctor": true,
+      "unanimous_for_gen2B": false
+    },
+    "router_capacity_e": {
+      "any_paid_arm_beats_masking": true,
+      "in_auction_unit": false,
+      "source_verdict": "NEGATIVE - masking wins"
+    },
+    "rule": "if the Doctor's marginal output-error reduction per bit is below (b), (c) or (d) then the Doctor loses its bytes, regardless of its S1 forward win"
+  },
+  "generated_at": "2026-07-21T00:00:19Z",
+  "honesty_caveats": [
+    "Output-space error on a calibration batch is a PROXY, not capability.",
+    "Measured at ONE layer (46) on a sample of survivor experts, not the whole model.",
+    "(b) uses the SEALED Lane E MISS_COST=1.0; the top-k renormalisation perturbation from restoring an expert is a second-order term that is NOT modelled.",
+    "The shared codebook is fitted PER EXPERT while its bytes are charged amortised over 64 survivors, exactly as the deployed ledger does; every coded arm is flattered equally, so the ranking is the deliverable and the absolute errors are optimistic.",
+    "Codebooks, importance vectors and protected-row choices come from the FIT prompts; every reported number is measured on the disjoint SCORE prompts.",
+    "(b) is measured on only 22 score tokens - the marginal expert is by construction the coldest one, so its sample is the smallest in the table and its utility is the least precise number here.",
+    "The Lloyd fits run on MPS and are NOT bit-reproducible: two independent runs of this stage moved each arm's mean utility per bit by up to ~1 percent. Margins smaller than that are ties, and the report says so rather than ranking them. Specifically the Doctor-vs-(d) margin is of that order for Gen1 and the auction rank between them is NOT a defensible ordering; the Gen2B-over-Gen1 margin (~5 percent) is larger than the observed run spread and held on both runs.",
+    "Three survivor experts (hottest, 16th, coldest of the 64) at ONE layer is a tiny sample. The deliverable is the ORDER OF MAGNITUDE separation - Doctor and (d) within a few percent of each other, (b) 4x below them, (c) 40x below - not the top-two ordering.",
+    "(e) router capacity is READ from the sealed S2C report, not re-measured. Its unit (median relative error of the whole MoE output) is NOT this auction's unit (absolute squared output error of one expert's weighted contribution), so it is reported alongside the ranking rather than inside it."
+  ],
+  "measurement": {
+    "auction": [
+      {
+        "auction_rank": 1,
+        "bits": 2007040,
+        "delta_sq_err": 0.8052494128545126,
+        "id": "a_doctor_gen2B",
+        "treatment": "Doctor, output-sensitivity row selection",
+        "utility_per_bit": 4.012124386432321e-07
+      },
+      {
+        "auction_rank": 2,
+        "bits": 2007040,
+        "delta_sq_err": 0.7703189750512441,
+        "id": "a_doctor_gen1",
+        "treatment": "Doctor residual on down_proj (Gen1)",
+        "utility_per_bit": 3.838084816701432e-07
+      },
+      {
+        "auction_rank": 3,
+        "bits": 3930112,
+        "delta_sq_err": 1.4913458029429119,
+        "id": "d_down_rung_up",
+        "treatment": "down 0.625 -> 1.25 index bpw",
+        "utility_per_bit": 3.794664892356533e-07
+      },
+      {
+        "auction_rank": 4,
+        "bits": 2007040,
+        "delta_sq_err": 0.710741271575292,
+        "id": "a_doctor_gen2A",
+        "treatment": "Doctor, output-fitted correction codebook",
+        "utility_per_bit": 3.5412411888915617e-07
+      },
+      {
+        "auction_rank": 5,
+        "bits": 2007040,
+        "delta_sq_err": 0.708460529645284,
+        "id": "a_doctor_gen2AB",
+        "treatment": "Doctor, both Gen2 changes",
+        "utility_per_bit": 3.5298774794985853e-07
+      },
+      {
+        "auction_rank": 6,
+        "bits": 35518000,
+        "delta_sq_err": 3.869020938873291,
+        "id": "b_one_more_expert",
+        "treatment": "K 64 -> 65 (expert 80 restored)",
+        "utility_per_bit": 1.089312725624554e-07
+      },
+      {
+        "auction_rank": 7,
+        "bits": 31465472,
+        "delta_sq_err": 0.2975717782974243,
+        "id": "c_gate_up_rung_up",
+        "treatment": "gate/up 2.5 -> 5.0 index bpw",
+        "utility_per_bit": 9.457089291316664e-09
+      }
+    ],
+    "bits": {
+      "doctor_per_expert": 2007040,
+      "down_rung_up_per_expert": 3930112,
+      "gate_up_rung_up_per_expert": 31465472,
+      "one_expert_per_layer": 35518000
+    },
+    "layer": 46,
+    "marginal_expert": {
+      "coded_sq_err": 4.765492916107178,
+      "delta_sq_err": 3.869020938873291,
+      "expert": 80,
+      "n_score_tokens": 22,
+      "omitted_sq_err": 8.634513854980469
+    },
+    "per_expert": [
+      {
+        "expert": 51,
+        "n_score_tokens": 51,
+        "output_energy": 16.212642669677734,
+        "rel_err": {
+          "base_no_doctor": 0.7725635626376656,
+          "doctor_gen1": 0.6862347594959851,
+          "doctor_gen2AB_both": 0.6947050058825859,
+          "doctor_gen2A_output_fit_codebook": 0.6933052817789415,
+          "doctor_gen2B_output_row_select": 0.6823389044852596,
+          "down_rung_up": 0.5961254650447941,
+          "gate_up_rung_up": 0.7396591482892937
+        },
+        "sq_err": {
+          "base_no_doctor": 9.67658805847168,
+          "doctor_gen1": 7.634827613830566,
+          "doctor_gen2AB_both": 7.824465274810791,
+          "doctor_gen2A_output_fit_codebook": 7.792966842651367,
+          "doctor_gen2B_output_row_select": 7.5483856201171875,
+          "down_rung_up": 5.761415004730225,
+          "gate_up_rung_up": 8.869866371154785
+        }
+      },
+      {
+        "expert": 25,
+        "n_score_tokens": 33,
+        "output_energy": 1.6795603036880493,
+        "rel_err": {
+          "base_no_doctor": 0.6667249979147695,
+          "doctor_gen1": 0.590462451844297,
+          "doctor_gen2AB_both": 0.5789585069528096,
+          "doctor_gen2A_output_fit_codebook": 0.5908961721787012,
+          "doctor_gen2B_output_row_select": 0.5793933662884931,
+          "down_rung_up": 0.4811996515406413,
+          "gate_up_rung_up": 0.6397858557941062
+        },
+        "sq_err": {
+          "base_no_doctor": 0.7466018795967102,
+          "doctor_gen1": 0.585571825504303,
+          "doctor_gen2AB_both": 0.5629767775535583,
+          "doctor_gen2A_output_fit_codebook": 0.5864323973655701,
+          "doctor_gen2B_output_row_select": 0.5638228058815002,
+          "down_rung_up": 0.38890740275382996,
+          "gate_up_rung_up": 0.6874876022338867
+        }
+      },
+      {
+        "expert": 14,
+        "n_score_tokens": 9,
+        "output_energy": 0.7550573348999023,
+        "rel_err": {
+          "base_no_doctor": 0.7914651362477756,
+          "doctor_gen1": 0.6950979433338738,
+          "doctor_gen2AB_both": 0.7125348694055983,
+          "doctor_gen2A_output_fit_codebook": 0.713649774217003,
+          "doctor_gen2B_output_row_select": 0.6983292366142565,
+          "down_rung_up": 0.5999892705670193,
+          "gate_up_rung_up": 0.768646830768587
+        },
+        "sq_err": {
+          "base_no_doctor": 0.472980797290802,
+          "doctor_gen1": 0.3648143708705902,
+          "doctor_gen2AB_both": 0.3833470940589905,
+          "doctor_gen2A_output_fit_codebook": 0.3845476806163788,
+          "doctor_gen2B_output_row_select": 0.36821407079696655,
+          "down_rung_up": 0.271810919046402,
+          "gate_up_rung_up": 0.44610142707824707
+        }
+      }
+    ],
+    "router_capacity_e": {
+      "any_paid_arm_beats_masking": true,
+      "arms": [
+        {
+          "arm": "bias",
+          "beats_masked_holdout": false,
+          "extra_bits_whole_model": 96256,
+          "holdout_delta_vs_masked": 0.020916864275932312,
+          "layer": 0,
+          "masked_holdout_rel_err": 0.07841208577156067
+        },
+        {
+          "arm": "full",
+          "beats_masked_holdout": false,
+          "extra_bits_whole_model": 0,
+          "holdout_delta_vs_masked": 0.014327891170978546,
+          "layer": 0,
+          "masked_holdout_rel_err": 0.07841208577156067
+        },
+        {
+          "arm": "lowrank",
+          "beats_masked_holdout": false,
+          "extra_bits_whole_model": 50053120,
+          "holdout_delta_vs_masked": 0.03914637863636017,
+          "layer": 0,
+          "masked_holdout_rel_err": 0.07841208577156067
+        },
+        {
+          "arm": "bias",
+          "beats_masked_holdout": true,
+          "extra_bits_whole_model": 96256,
+          "holdout_delta_vs_masked": -0.006659567356109619,
+          "layer": 46,
+          "masked_holdout_rel_err": 0.5172778964042664
+        },
+        {
+          "arm": "full",
+          "beats_masked_holdout": false,
+          "extra_bits_whole_model": 0,
+          "holdout_delta_vs_masked": 0.029173076152801514,
+          "layer": 46,
+          "masked_holdout_rel_err": 0.5172778964042664
+        },
+        {
+          "arm": "lowrank",
+          "beats_masked_holdout": false,
+          "extra_bits_whole_model": 50053120,
+          "holdout_delta_vs_masked": 0.04006415605545044,
+          "layer": 46,
+          "masked_holdout_rel_err": 0.5172778964042664
+        }
+      ],
+      "note": "NOT in this auction's unit and therefore not ranked inside it. S2C's sealed verdict is NEGATIVE - no trained router student beats plain masking on held-out token ids at layer 0, and the single layer-46 win (bias, -0.0067 relative error for 96256 whole-model bits) is unreplicated and of the opposite sign to layer 0. Router capacity therefore cannot outrank a treatment with positive measured utility per bit.",
+      "present": true,
+      "source": "/Users/scammermike/HawkingWorktrees/subbit-reset/reports/subbit_reset/S2C_ROUTER_DISTILL.json",
+      "unit": "median relative error of the whole MoE output vs the 128-expert teacher",
+      "verdict": {
+        "layer0_masked_holdout_rel_err": 0.07841208577156067,
+        "layer0_reachable_headroom_frac": 0.5733120440088817,
+        "layer0_students_beating_masked": [],
+        "note": "Headroom is real (a survivor-restricted oracle halves the error) but no trained student captures it on held-out token ids; every student overfits the train ids. Consistent with the sealed finding that omitted expert function is not reconstructible: the router can only reorder survivors.",
+        "result": "NEGATIVE - masking wins"
+      }
+    },
+    "split": {
+      "n_fit_tokens": 478,
+      "n_score_tokens": 370,
+      "prompt_disjoint": true
+    },
+    "survivor_count": 64
+  },
+  "parent": "qwen3-235b-a22b-instruct-2507",
+  "schema": "hawking.gravity.doctor_gen2.v1",
+  "sha256": "a6625cf087e302f998f4d71995e118c3136e840b62bdd353983750fbf0e339b4",
+  "stage": "S3C_DOCTOR_GEN2"
+}

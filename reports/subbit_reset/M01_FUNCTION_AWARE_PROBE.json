@@ -1,0 +1,1009 @@
+{
+  "aggregate": {
+    "error_reduction_fraction": 0.028461,
+    "gate_error_improves_at_identical_rate": true,
+    "gate_single_codeword_below_0.20": true,
+    "mean_rel_error_baseline": 0.774596,
+    "mean_rel_error_scale_invariant": 0.75255,
+    "mean_single_codeword_share_baseline": 0.026716,
+    "mean_single_codeword_share_scale_invariant": 0.016072,
+    "verdict": "LEVER_ALIVE"
+  },
+  "cells": [
+    {
+      "arms": {
+        "baseline_raw_lloyd": {
+          "max_rel_error": 0.741993,
+          "mean_index_entropy_bits": 8.960633,
+          "mean_output_weighted_rel_error": null,
+          "mean_rel_error": 0.721436,
+          "mean_single_codeword_share": 0.047388,
+          "mean_used_fraction": 0.964478,
+          "seconds": 3.5
+        },
+        "scale_invariant": {
+          "max_rel_error": 0.657798,
+          "mean_index_entropy_bits": 9.083292,
+          "mean_output_weighted_rel_error": null,
+          "mean_rel_error": 0.643523,
+          "mean_single_codeword_share": 0.101595,
+          "mean_used_fraction": 1.0,
+          "seconds": 3.11
+        }
+      },
+      "cell": {
+        "layer": 0,
+        "n_experts": 8,
+        "organ": "gate",
+        "shape": [
+          1536,
+          4096
+        ]
+      },
+      "config": {
+        "dim": 16,
+        "iters": 6,
+        "k": 1024,
+        "n_tensors": 8,
+        "seed": 0,
+        "shape": [
+          1536,
+          4096
+        ],
+        "stages": 1
+      },
+      "extra_bpw_row_scale": 0.003906,
+      "falsification": {
+        "gate_error_improves_at_identical_rate": true,
+        "gate_single_codeword_below_0.20": true,
+        "rel_error": [
+          0.721436,
+          0.643523
+        ],
+        "single_codeword_share": [
+          0.047388,
+          0.101595
+        ],
+        "verdict": "LEVER_ALIVE"
+      },
+      "index_bpw": 0.625,
+      "load_and_fit_seconds": 6.8,
+      "row_norm_span": {
+        "decades": 15.539727210998535,
+        "max": 1.5098367929458618,
+        "min": 4.357153627241678e-16,
+        "p50": 0.002233095932751894
+      },
+      "schema": "hawking.gravity.function_aware_codec.v1"
+    },
+    {
+      "arms": {
+        "baseline_raw_lloyd": {
+          "max_rel_error": 0.743878,
+          "mean_index_entropy_bits": 8.987555,
+          "mean_output_weighted_rel_error": null,
+          "mean_rel_error": 0.725997,
+          "mean_single_codeword_share": 0.043253,
+          "mean_used_fraction": 0.9646,
+          "seconds": 2.23
+        },
+        "scale_invariant": {
+          "max_rel_error": 0.660313,
+          "mean_index_entropy_bits": 9.09812,
+          "mean_output_weighted_rel_error": null,
+          "mean_rel_error": 0.647951,
+          "mean_single_codeword_share": 0.087825,
+          "mean_used_fraction": 1.0,
+          "seconds": 2.88
+        }
+      },
+      "cell": {
+        "layer": 0,
+        "n_experts": 8,
+        "organ": "up",
+        "shape": [
+          1536,
+          4096
+        ]
+      },
+      "config": {
+        "dim": 16,
+        "iters": 6,
+        "k": 1024,
+        "n_tensors": 8,
+        "seed": 0,
+        "shape": [
+          1536,
+          4096
+        ],
+        "stages": 1
+      },
+      "extra_bpw_row_scale": 0.003906,
+      "falsification": {
+        "gate_error_improves_at_identical_rate": true,
+        "gate_single_codeword_below_0.20": true,
+        "rel_error": [
+          0.725997,
+          0.647951
+        ],
+        "single_codeword_share": [
+          0.043253,
+          0.087825
+        ],
+        "verdict": "LEVER_ALIVE"
+      },
+      "index_bpw": 0.625,
+      "load_and_fit_seconds": 5.3,
+      "row_norm_span": {
+        "decades": 15.467255592346191,
+        "max": 1.284274697303772,
+        "min": 4.379275480846e-16,
+        "p50": 0.002149030566215515
+      },
+      "schema": "hawking.gravity.function_aware_codec.v1"
+    },
+    {
+      "arms": {
+        "baseline_raw_lloyd": {
+          "max_rel_error": 0.849663,
+          "mean_index_entropy_bits": 8.453748,
+          "mean_output_weighted_rel_error": null,
+          "mean_rel_error": 0.746024,
+          "mean_single_codeword_share": 0.039471,
+          "mean_used_fraction": 0.67749,
+          "seconds": 0.89
+        },
+        "scale_invariant": {
+          "max_rel_error": 0.845967,
+          "mean_index_entropy_bits": 8.677955,
+          "mean_output_weighted_rel_error": null,
+          "mean_rel_error": 0.733144,
+          "mean_single_codeword_share": 0.02823,
+          "mean_used_fraction": 0.690796,
+          "seconds": 1.16
+        }
+      },
+      "cell": {
+        "layer": 0,
+        "n_experts": 8,
+        "organ": "down",
+        "shape": [
+          4096,
+          1536
+        ]
+      },
+      "config": {
+        "dim": 64,
+        "iters": 6,
+        "k": 1024,
+        "n_tensors": 8,
+        "seed": 0,
+        "shape": [
+          4096,
+          1536
+        ],
+        "stages": 1
+      },
+      "extra_bpw_row_scale": 0.010417,
+      "falsification": {
+        "gate_error_improves_at_identical_rate": true,
+        "gate_single_codeword_below_0.20": true,
+        "rel_error": [
+          0.746024,
+          0.733144
+        ],
+        "single_codeword_share": [
+          0.039471,
+          0.02823
+        ],
+        "verdict": "LEVER_ALIVE"
+      },
+      "index_bpw": 0.15625,
+      "load_and_fit_seconds": 2.3,
+      "row_norm_span": {
+        "decades": 1.6707382202148438,
+        "max": 4.064087390899658,
+        "min": 0.08674107491970062,
+        "p50": 0.24582192301750183
+      },
+      "schema": "hawking.gravity.function_aware_codec.v1"
+    },
+    {
+      "arms": {
+        "baseline_raw_lloyd": {
+          "max_rel_error": 0.849012,
+          "mean_index_entropy_bits": 9.309862,
+          "mean_output_weighted_rel_error": null,
+          "mean_rel_error": 0.728541,
+          "mean_single_codeword_share": 0.035769,
+          "mean_used_fraction": 0.958496,
+          "seconds": 2.21
+        },
+        "scale_invariant": {
+          "max_rel_error": 0.70372,
+          "mean_index_entropy_bits": 9.992462,
+          "mean_output_weighted_rel_error": null,
+          "mean_rel_error": 0.702783,
+          "mean_single_codeword_share": 0.001625,
+          "mean_used_fraction": 0.999756,
+          "seconds": 2.94
+        }
+      },
+      "cell": {
+        "layer": 23,
+        "n_experts": 8,
+        "organ": "gate",
+        "shape": [
+          1536,
+          4096
+        ]
+      },
+      "config": {
+        "dim": 16,
+        "iters": 6,
+        "k": 1024,
+        "n_tensors": 8,
+        "seed": 0,
+        "shape": [
+          1536,
+          4096
+        ],
+        "stages": 1
+      },
+      "extra_bpw_row_scale": 0.003906,
+      "falsification": {
+        "gate_error_improves_at_identical_rate": true,
+        "gate_single_codeword_below_0.20": true,
+        "rel_error": [
+          0.728541,
+          0.702783
+        ],
+        "single_codeword_share": [
+          0.035769,
+          0.001625
+        ],
+        "verdict": "LEVER_ALIVE"
+      },
+      "index_bpw": 0.625,
+      "load_and_fit_seconds": 5.4,
+      "row_norm_span": {
+        "decades": 5.438138484954834,
+        "max": 1.570443868637085,
+        "min": 5.726427389163291e-06,
+        "p50": 0.9094556570053101
+      },
+      "schema": "hawking.gravity.function_aware_codec.v1"
+    },
+    {
+      "arms": {
+        "baseline_raw_lloyd": {
+          "max_rel_error": 0.852946,
+          "mean_index_entropy_bits": 9.316026,
+          "mean_output_weighted_rel_error": null,
+          "mean_rel_error": 0.728788,
+          "mean_single_codeword_share": 0.036417,
+          "mean_used_fraction": 0.95752,
+          "seconds": 2.19
+        },
+        "scale_invariant": {
+          "max_rel_error": 0.703661,
+          "mean_index_entropy_bits": 9.995013,
+          "mean_output_weighted_rel_error": null,
+          "mean_rel_error": 0.702696,
+          "mean_single_codeword_share": 0.00132,
+          "mean_used_fraction": 1.0,
+          "seconds": 2.87
+        }
+      },
+      "cell": {
+        "layer": 23,
+        "n_experts": 8,
+        "organ": "up",
+        "shape": [
+          1536,
+          4096
+        ]
+      },
+      "config": {
+        "dim": 16,
+        "iters": 6,
+        "k": 1024,
+        "n_tensors": 8,
+        "seed": 0,
+        "shape": [
+          1536,
+          4096
+        ],
+        "stages": 1
+      },
+      "extra_bpw_row_scale": 0.003906,
+      "falsification": {
+        "gate_error_improves_at_identical_rate": true,
+        "gate_single_codeword_below_0.20": true,
+        "rel_error": [
+          0.728788,
+          0.702696
+        ],
+        "single_codeword_share": [
+          0.036417,
+          0.00132
+        ],
+        "verdict": "LEVER_ALIVE"
+      },
+      "index_bpw": 0.625,
+      "load_and_fit_seconds": 5.3,
+      "row_norm_span": {
+        "decades": 5.1600847244262695,
+        "max": 1.3950200080871582,
+        "min": 9.649301318859216e-06,
+        "p50": 0.9071497321128845
+      },
+      "schema": "hawking.gravity.function_aware_codec.v1"
+    },
+    {
+      "arms": {
+        "baseline_raw_lloyd": {
+          "max_rel_error": 0.949958,
+          "mean_index_entropy_bits": 8.932858,
+          "mean_output_weighted_rel_error": null,
+          "mean_rel_error": 0.922054,
+          "mean_single_codeword_share": 0.041808,
+          "mean_used_fraction": 0.793701,
+          "seconds": 0.77
+        },
+        "scale_invariant": {
+          "max_rel_error": 0.916701,
+          "mean_index_entropy_bits": 9.701481,
+          "mean_output_weighted_rel_error": null,
+          "mean_rel_error": 0.908466,
+          "mean_single_codeword_share": 0.004111,
+          "mean_used_fraction": 0.968872,
+          "seconds": 1.1
+        }
+      },
+      "cell": {
+        "layer": 23,
+        "n_experts": 8,
+        "organ": "down",
+        "shape": [
+          4096,
+          1536
+        ]
+      },
+      "config": {
+        "dim": 64,
+        "iters": 6,
+        "k": 1024,
+        "n_tensors": 8,
+        "seed": 0,
+        "shape": [
+          4096,
+          1536
+        ],
+        "stages": 1
+      },
+      "extra_bpw_row_scale": 0.010417,
+      "falsification": {
+        "gate_error_improves_at_identical_rate": true,
+        "gate_single_codeword_below_0.20": true,
+        "rel_error": [
+          0.922054,
+          0.908466
+        ],
+        "single_codeword_share": [
+          0.041808,
+          0.004111
+        ],
+        "verdict": "LEVER_ALIVE"
+      },
+      "index_bpw": 0.15625,
+      "load_and_fit_seconds": 2.2,
+      "row_norm_span": {
+        "decades": 1.2570077180862427,
+        "max": 1.3916478157043457,
+        "min": 0.07700548321008682,
+        "p50": 0.5874893069267273
+      },
+      "schema": "hawking.gravity.function_aware_codec.v1"
+    },
+    {
+      "arms": {
+        "baseline_raw_lloyd": {
+          "max_rel_error": 0.829667,
+          "mean_index_entropy_bits": 9.46463,
+          "mean_output_weighted_rel_error": null,
+          "mean_rel_error": 0.723964,
+          "mean_single_codeword_share": 0.022077,
+          "mean_used_fraction": 0.99939,
+          "seconds": 2.16
+        },
+        "scale_invariant": {
+          "max_rel_error": 0.703661,
+          "mean_index_entropy_bits": 9.996601,
+          "mean_output_weighted_rel_error": null,
+          "mean_rel_error": 0.702768,
+          "mean_single_codeword_share": 0.001197,
+          "mean_used_fraction": 1.0,
+          "seconds": 2.86
+        }
+      },
+      "cell": {
+        "layer": 46,
+        "n_experts": 8,
+        "organ": "gate",
+        "shape": [
+          1536,
+          4096
+        ]
+      },
+      "config": {
+        "dim": 16,
+        "iters": 6,
+        "k": 1024,
+        "n_tensors": 8,
+        "seed": 0,
+        "shape": [
+          1536,
+          4096
+        ],
+        "stages": 1
+      },
+      "extra_bpw_row_scale": 0.003906,
+      "falsification": {
+        "gate_error_improves_at_identical_rate": true,
+        "gate_single_codeword_below_0.20": true,
+        "rel_error": [
+          0.723964,
+          0.702768
+        ],
+        "single_codeword_share": [
+          0.022077,
+          0.001197
+        ],
+        "verdict": "LEVER_ALIVE"
+      },
+      "index_bpw": 0.625,
+      "load_and_fit_seconds": 5.3,
+      "row_norm_span": {
+        "decades": 2.110873222351074,
+        "max": 1.3439387083053589,
+        "min": 0.010411329567432404,
+        "p50": 0.8858607411384583
+      },
+      "schema": "hawking.gravity.function_aware_codec.v1"
+    },
+    {
+      "arms": {
+        "baseline_raw_lloyd": {
+          "max_rel_error": 0.837183,
+          "mean_index_entropy_bits": 9.450763,
+          "mean_output_weighted_rel_error": null,
+          "mean_rel_error": 0.72484,
+          "mean_single_codeword_share": 0.020483,
+          "mean_used_fraction": 0.99939,
+          "seconds": 2.2
+        },
+        "scale_invariant": {
+          "max_rel_error": 0.70365,
+          "mean_index_entropy_bits": 9.996844,
+          "mean_output_weighted_rel_error": null,
+          "mean_rel_error": 0.702703,
+          "mean_single_codeword_share": 0.001181,
+          "mean_used_fraction": 1.0,
+          "seconds": 2.87
+        }
+      },
+      "cell": {
+        "layer": 46,
+        "n_experts": 8,
+        "organ": "up",
+        "shape": [
+          1536,
+          4096
+        ]
+      },
+      "config": {
+        "dim": 16,
+        "iters": 6,
+        "k": 1024,
+        "n_tensors": 8,
+        "seed": 0,
+        "shape": [
+          1536,
+          4096
+        ],
+        "stages": 1
+      },
+      "extra_bpw_row_scale": 0.003906,
+      "falsification": {
+        "gate_error_improves_at_identical_rate": true,
+        "gate_single_codeword_below_0.20": true,
+        "rel_error": [
+          0.72484,
+          0.702703
+        ],
+        "single_codeword_share": [
+          0.020483,
+          0.001181
+        ],
+        "verdict": "LEVER_ALIVE"
+      },
+      "index_bpw": 0.625,
+      "load_and_fit_seconds": 5.3,
+      "row_norm_span": {
+        "decades": 1.7489286661148071,
+        "max": 1.0912567377090454,
+        "min": 0.01945352368056774,
+        "p50": 0.8825010061264038
+      },
+      "schema": "hawking.gravity.function_aware_codec.v1"
+    },
+    {
+      "arms": {
+        "baseline_raw_lloyd": {
+          "max_rel_error": 0.975012,
+          "mean_index_entropy_bits": 8.988675,
+          "mean_output_weighted_rel_error": null,
+          "mean_rel_error": 0.926565,
+          "mean_single_codeword_share": 0.018628,
+          "mean_used_fraction": 0.849365,
+          "seconds": 0.79
+        },
+        "scale_invariant": {
+          "max_rel_error": 0.91851,
+          "mean_index_entropy_bits": 9.980515,
+          "mean_output_weighted_rel_error": null,
+          "mean_rel_error": 0.915549,
+          "mean_single_codeword_share": 0.001394,
+          "mean_used_fraction": 0.994263,
+          "seconds": 1.1
+        }
+      },
+      "cell": {
+        "layer": 46,
+        "n_experts": 8,
+        "organ": "down",
+        "shape": [
+          4096,
+          1536
+        ]
+      },
+      "config": {
+        "dim": 64,
+        "iters": 6,
+        "k": 1024,
+        "n_tensors": 8,
+        "seed": 0,
+        "shape": [
+          4096,
+          1536
+        ],
+        "stages": 1
+      },
+      "extra_bpw_row_scale": 0.010417,
+      "falsification": {
+        "gate_error_improves_at_identical_rate": true,
+        "gate_single_codeword_below_0.20": true,
+        "rel_error": [
+          0.926565,
+          0.915549
+        ],
+        "single_codeword_share": [
+          0.018628,
+          0.001394
+        ],
+        "verdict": "LEVER_ALIVE"
+      },
+      "index_bpw": 0.15625,
+      "load_and_fit_seconds": 2.1,
+      "row_norm_span": {
+        "decades": 0.8761674761772156,
+        "max": 1.3424228429794312,
+        "min": 0.1785343736410141,
+        "p50": 0.5613758563995361
+      },
+      "schema": "hawking.gravity.function_aware_codec.v1"
+    },
+    {
+      "arms": {
+        "baseline_raw_lloyd": {
+          "max_rel_error": 0.704837,
+          "mean_index_entropy_bits": 9.996446,
+          "mean_output_weighted_rel_error": null,
+          "mean_rel_error": 0.704138,
+          "mean_single_codeword_share": 0.001201,
+          "mean_used_fraction": 1.0,
+          "seconds": 2.15
+        },
+        "scale_invariant": {
+          "max_rel_error": 0.70305,
+          "mean_index_entropy_bits": 9.996805,
+          "mean_output_weighted_rel_error": null,
+          "mean_rel_error": 0.702906,
+          "mean_single_codeword_share": 0.001189,
+          "mean_used_fraction": 1.0,
+          "seconds": 2.85
+        }
+      },
+      "cell": {
+        "layer": 70,
+        "n_experts": 8,
+        "organ": "gate",
+        "shape": [
+          1536,
+          4096
+        ]
+      },
+      "config": {
+        "dim": 16,
+        "iters": 6,
+        "k": 1024,
+        "n_tensors": 8,
+        "seed": 0,
+        "shape": [
+          1536,
+          4096
+        ],
+        "stages": 1
+      },
+      "extra_bpw_row_scale": 0.003906,
+      "falsification": {
+        "gate_error_improves_at_identical_rate": true,
+        "gate_single_codeword_below_0.20": true,
+        "rel_error": [
+          0.704138,
+          0.702906
+        ],
+        "single_codeword_share": [
+          0.001201,
+          0.001189
+        ],
+        "verdict": "LEVER_ALIVE"
+      },
+      "index_bpw": 0.625,
+      "load_and_fit_seconds": 5.2,
+      "row_norm_span": {
+        "decades": 0.39741048216819763,
+        "max": 1.823919653892517,
+        "min": 0.7304579615592957,
+        "p50": 1.1031317710876465
+      },
+      "schema": "hawking.gravity.function_aware_codec.v1"
+    },
+    {
+      "arms": {
+        "baseline_raw_lloyd": {
+          "max_rel_error": 0.70547,
+          "mean_index_entropy_bits": 9.996429,
+          "mean_output_weighted_rel_error": null,
+          "mean_rel_error": 0.704117,
+          "mean_single_codeword_share": 0.001202,
+          "mean_used_fraction": 1.0,
+          "seconds": 2.12
+        },
+        "scale_invariant": {
+          "max_rel_error": 0.702949,
+          "mean_index_entropy_bits": 9.996863,
+          "mean_output_weighted_rel_error": null,
+          "mean_rel_error": 0.702802,
+          "mean_single_codeword_share": 0.001187,
+          "mean_used_fraction": 1.0,
+          "seconds": 2.93
+        }
+      },
+      "cell": {
+        "layer": 70,
+        "n_experts": 8,
+        "organ": "up",
+        "shape": [
+          1536,
+          4096
+        ]
+      },
+      "config": {
+        "dim": 16,
+        "iters": 6,
+        "k": 1024,
+        "n_tensors": 8,
+        "seed": 0,
+        "shape": [
+          1536,
+          4096
+        ],
+        "stages": 1
+      },
+      "extra_bpw_row_scale": 0.003906,
+      "falsification": {
+        "gate_error_improves_at_identical_rate": true,
+        "gate_single_codeword_below_0.20": true,
+        "rel_error": [
+          0.704117,
+          0.702802
+        ],
+        "single_codeword_share": [
+          0.001202,
+          0.001187
+        ],
+        "verdict": "LEVER_ALIVE"
+      },
+      "index_bpw": 0.625,
+      "load_and_fit_seconds": 5.3,
+      "row_norm_span": {
+        "decades": 0.24509593844413757,
+        "max": 1.5367319583892822,
+        "min": 0.8739814162254333,
+        "p50": 1.0996856689453125
+      },
+      "schema": "hawking.gravity.function_aware_codec.v1"
+    },
+    {
+      "arms": {
+        "baseline_raw_lloyd": {
+          "max_rel_error": 0.916528,
+          "mean_index_entropy_bits": 9.946794,
+          "mean_output_weighted_rel_error": null,
+          "mean_rel_error": 0.916168,
+          "mean_single_codeword_share": 0.001399,
+          "mean_used_fraction": 0.97522,
+          "seconds": 0.79
+        },
+        "scale_invariant": {
+          "max_rel_error": 0.91573,
+          "mean_index_entropy_bits": 9.987265,
+          "mean_output_weighted_rel_error": null,
+          "mean_rel_error": 0.915342,
+          "mean_single_codeword_share": 0.001353,
+          "mean_used_fraction": 0.997437,
+          "seconds": 1.11
+        }
+      },
+      "cell": {
+        "layer": 70,
+        "n_experts": 8,
+        "organ": "down",
+        "shape": [
+          4096,
+          1536
+        ]
+      },
+      "config": {
+        "dim": 64,
+        "iters": 6,
+        "k": 1024,
+        "n_tensors": 8,
+        "seed": 0,
+        "shape": [
+          4096,
+          1536
+        ],
+        "stages": 1
+      },
+      "extra_bpw_row_scale": 0.010417,
+      "falsification": {
+        "gate_error_improves_at_identical_rate": true,
+        "gate_single_codeword_below_0.20": true,
+        "rel_error": [
+          0.916168,
+          0.915342
+        ],
+        "single_codeword_share": [
+          0.001399,
+          0.001353
+        ],
+        "verdict": "LEVER_ALIVE"
+      },
+      "index_bpw": 0.15625,
+      "load_and_fit_seconds": 2.2,
+      "row_norm_span": {
+        "decades": 0.6035183668136597,
+        "max": 1.6677910089492798,
+        "min": 0.41554996371269226,
+        "p50": 0.7033265829086304
+      },
+      "schema": "hawking.gravity.function_aware_codec.v1"
+    },
+    {
+      "arms": {
+        "baseline_raw_lloyd": {
+          "max_rel_error": 0.739348,
+          "mean_index_entropy_bits": 9.422979,
+          "mean_output_weighted_rel_error": null,
+          "mean_rel_error": 0.715603,
+          "mean_single_codeword_share": 0.031071,
+          "mean_used_fraction": 0.916138,
+          "seconds": 2.15
+        },
+        "scale_invariant": {
+          "max_rel_error": 0.70303,
+          "mean_index_entropy_bits": 9.971183,
+          "mean_output_weighted_rel_error": null,
+          "mean_rel_error": 0.702713,
+          "mean_single_codeword_share": 0.002692,
+          "mean_used_fraction": 0.999268,
+          "seconds": 2.92
+        }
+      },
+      "cell": {
+        "layer": 93,
+        "n_experts": 8,
+        "organ": "gate",
+        "shape": [
+          1536,
+          4096
+        ]
+      },
+      "config": {
+        "dim": 16,
+        "iters": 6,
+        "k": 1024,
+        "n_tensors": 8,
+        "seed": 0,
+        "shape": [
+          1536,
+          4096
+        ],
+        "stages": 1
+      },
+      "extra_bpw_row_scale": 0.003906,
+      "falsification": {
+        "gate_error_improves_at_identical_rate": true,
+        "gate_single_codeword_below_0.20": true,
+        "rel_error": [
+          0.715603,
+          0.702713
+        ],
+        "single_codeword_share": [
+          0.031071,
+          0.002692
+        ],
+        "verdict": "LEVER_ALIVE"
+      },
+      "index_bpw": 0.625,
+      "load_and_fit_seconds": 5.2,
+      "row_norm_span": {
+        "decades": 10.442320823669434,
+        "max": 2.4322426319122314,
+        "min": 8.78387432234895e-11,
+        "p50": 1.1471333503723145
+      },
+      "schema": "hawking.gravity.function_aware_codec.v1"
+    },
+    {
+      "arms": {
+        "baseline_raw_lloyd": {
+          "max_rel_error": 0.748671,
+          "mean_index_entropy_bits": 9.413199,
+          "mean_output_weighted_rel_error": null,
+          "mean_rel_error": 0.717244,
+          "mean_single_codeword_share": 0.030713,
+          "mean_used_fraction": 0.915527,
+          "seconds": 2.17
+        },
+        "scale_invariant": {
+          "max_rel_error": 0.703092,
+          "mean_index_entropy_bits": 9.97602,
+          "mean_output_weighted_rel_error": null,
+          "mean_rel_error": 0.702778,
+          "mean_single_codeword_share": 0.002112,
+          "mean_used_fraction": 0.999878,
+          "seconds": 2.88
+        }
+      },
+      "cell": {
+        "layer": 93,
+        "n_experts": 8,
+        "organ": "up",
+        "shape": [
+          1536,
+          4096
+        ]
+      },
+      "config": {
+        "dim": 16,
+        "iters": 6,
+        "k": 1024,
+        "n_tensors": 8,
+        "seed": 0,
+        "shape": [
+          1536,
+          4096
+        ],
+        "stages": 1
+      },
+      "extra_bpw_row_scale": 0.003906,
+      "falsification": {
+        "gate_error_improves_at_identical_rate": true,
+        "gate_single_codeword_below_0.20": true,
+        "rel_error": [
+          0.717244,
+          0.702778
+        ],
+        "single_codeword_share": [
+          0.030713,
+          0.002112
+        ],
+        "verdict": "LEVER_ALIVE"
+      },
+      "index_bpw": 0.625,
+      "load_and_fit_seconds": 5.2,
+      "row_norm_span": {
+        "decades": 10.434205055236816,
+        "max": 2.385115146636963,
+        "min": 8.776152027323292e-11,
+        "p50": 1.1860934495925903
+      },
+      "schema": "hawking.gravity.function_aware_codec.v1"
+    },
+    {
+      "arms": {
+        "baseline_raw_lloyd": {
+          "max_rel_error": 0.929246,
+          "mean_index_entropy_bits": 8.520304,
+          "mean_output_weighted_rel_error": null,
+          "mean_rel_error": 0.913468,
+          "mean_single_codeword_share": 0.029864,
+          "mean_used_fraction": 0.704712,
+          "seconds": 0.81
+        },
+        "scale_invariant": {
+          "max_rel_error": 0.916597,
+          "mean_index_entropy_bits": 9.658927,
+          "mean_output_weighted_rel_error": null,
+          "mean_rel_error": 0.902133,
+          "mean_single_codeword_share": 0.00407,
+          "mean_used_fraction": 0.979004,
+          "seconds": 1.17
+        }
+      },
+      "cell": {
+        "layer": 93,
+        "n_experts": 8,
+        "organ": "down",
+        "shape": [
+          4096,
+          1536
+        ]
+      },
+      "config": {
+        "dim": 64,
+        "iters": 6,
+        "k": 1024,
+        "n_tensors": 8,
+        "seed": 0,
+        "shape": [
+          4096,
+          1536
+        ],
+        "stages": 1
+      },
+      "extra_bpw_row_scale": 0.010417,
+      "falsification": {
+        "gate_error_improves_at_identical_rate": true,
+        "gate_single_codeword_below_0.20": true,
+        "rel_error": [
+          0.913468,
+          0.902133
+        ],
+        "single_codeword_share": [
+          0.029864,
+          0.00407
+        ],
+        "verdict": "LEVER_ALIVE"
+      },
+      "index_bpw": 0.15625,
+      "load_and_fit_seconds": 2.1,
+      "row_norm_span": {
+        "decades": 1.7630246877670288,
+        "max": 6.971067905426025,
+        "min": 0.1203024834394455,
+        "p50": 0.6299232244491577
+      },
+      "schema": "hawking.gravity.function_aware_codec.v1"
+    }
+  ],
+  "claim": "weight-space and occupancy evidence only; no capability is claimed",
+  "evidence_class": "F1_TENSOR_F2_EXPERT",
+  "parent": "qwen3-235b-a22b-instruct-2507",
+  "schema": "hawking.gravity.function_aware_probe.v1",
+  "source": "models/qwen3-235b-a22b"
+}

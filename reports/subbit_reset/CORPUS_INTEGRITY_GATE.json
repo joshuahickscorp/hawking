@@ -1,0 +1,182 @@
+{
+  "corpus": {
+    "duplicate_context_windows_dropped": 1,
+    "n_documents": 400,
+    "overlap": {
+      "codec_calibration|doctor_training": {
+        "context_hash_overlap": 0,
+        "document_overlap": 0
+      },
+      "codec_calibration|holdout": {
+        "context_hash_overlap": 0,
+        "document_overlap": 0
+      },
+      "codec_calibration|protected_domain_holdout": {
+        "context_hash_overlap": 0,
+        "document_overlap": 0
+      },
+      "codec_calibration|routing_calibration": {
+        "context_hash_overlap": 0,
+        "document_overlap": 0
+      },
+      "codec_calibration|validation": {
+        "context_hash_overlap": 0,
+        "document_overlap": 0
+      },
+      "doctor_training|holdout": {
+        "context_hash_overlap": 0,
+        "document_overlap": 0
+      },
+      "doctor_training|protected_domain_holdout": {
+        "context_hash_overlap": 0,
+        "document_overlap": 0
+      },
+      "doctor_training|routing_calibration": {
+        "context_hash_overlap": 0,
+        "document_overlap": 0
+      },
+      "doctor_training|validation": {
+        "context_hash_overlap": 0,
+        "document_overlap": 0
+      },
+      "holdout|protected_domain_holdout": {
+        "context_hash_overlap": 0,
+        "document_overlap": 0
+      },
+      "holdout|routing_calibration": {
+        "context_hash_overlap": 0,
+        "document_overlap": 0
+      },
+      "holdout|validation": {
+        "context_hash_overlap": 0,
+        "document_overlap": 0
+      },
+      "protected_domain_holdout|routing_calibration": {
+        "context_hash_overlap": 0,
+        "document_overlap": 0
+      },
+      "protected_domain_holdout|validation": {
+        "context_hash_overlap": 0,
+        "document_overlap": 0
+      },
+      "routing_calibration|validation": {
+        "context_hash_overlap": 0,
+        "document_overlap": 0
+      }
+    },
+    "roots": [
+      "/Users/scammermike/HawkingWorktrees/subbit-reset/tools",
+      "/Users/scammermike/HawkingWorktrees/subbit-reset/docs"
+    ],
+    "schema": "hawking.doctor_prime.corpus_integrity.v1",
+    "splits": {
+      "codec_calibration": {
+        "domains": [
+          "code",
+          "tool_format"
+        ],
+        "n_documents": 91,
+        "n_segments": 2889,
+        "n_unique_context_hashes": 2889,
+        "n_unique_token_ids": null,
+        "positions": 1479168
+      },
+      "doctor_training": {
+        "domains": [
+          "code",
+          "prose",
+          "tool_format"
+        ],
+        "n_documents": 92,
+        "n_segments": 2058,
+        "n_unique_context_hashes": 2058,
+        "n_unique_token_ids": null,
+        "positions": 1053696
+      },
+      "holdout": {
+        "domains": [
+          "code",
+          "prose",
+          "tool_format"
+        ],
+        "n_documents": 38,
+        "n_segments": 875,
+        "n_unique_context_hashes": 875,
+        "n_unique_token_ids": null,
+        "positions": 448000
+      },
+      "protected_domain_holdout": {
+        "domains": [
+          "code",
+          "prose",
+          "tool_format"
+        ],
+        "n_documents": 34,
+        "n_segments": 978,
+        "n_unique_context_hashes": 978,
+        "n_unique_token_ids": null,
+        "positions": 500736
+      },
+      "routing_calibration": {
+        "domains": [
+          "code",
+          "prose",
+          "tool_format"
+        ],
+        "n_documents": 110,
+        "n_segments": 2669,
+        "n_unique_context_hashes": 2669,
+        "n_unique_token_ids": null,
+        "positions": 1366528
+      },
+      "validation": {
+        "domains": [
+          "code",
+          "prose",
+          "tool_format"
+        ],
+        "n_documents": 35,
+        "n_segments": 872,
+        "n_unique_context_hashes": 872,
+        "n_unique_token_ids": null,
+        "positions": 446464
+      }
+    }
+  },
+  "gate": {
+    "checked": [
+      "cross-split context-window overlap",
+      "cross-split document overlap",
+      "repeated context windows",
+      "empty splits",
+      "scored prompts inside calibration"
+    ],
+    "failures": [],
+    "n_documents": 400,
+    "passed": true
+  },
+  "growth": {
+    "axes": {
+      "n_documents": [
+        40,
+        200
+      ],
+      "n_segments": [
+        768,
+        5049
+      ],
+      "n_unique_context_hashes": [
+        768,
+        5049
+      ]
+    },
+    "axes_that_grew": [
+      "n_documents",
+      "n_segments",
+      "n_unique_context_hashes"
+    ],
+    "passed": true,
+    "rule": "increasing the requested corpus size must increase at least one diversity axis; more positions at flat diversity is not a larger corpus"
+  },
+  "schema": "hawking.doctor_prime.corpus_integrity.v1"
+}

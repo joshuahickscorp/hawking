@@ -1,0 +1,114 @@
+{
+  "schema": "hawking.adversarial.doctor_treatment_abi.v1",
+  "target": "/Users/scammermike/HawkingWorktrees/subbit-reset/tools/condense/doctor_treatment_abi.py",
+  "target_report": "reports/subbit_reset/DOCTOR_PRIME_TREATMENT_ABI.json",
+  "method": "re-derived every byte count from the layout functions + header field widths; ran the self-check; rebuilt the ledger and ran tools/foundry/one_bit_ceiling.py independently; 8-mutant kill test on a /tmp copy; two dense-shadow laundering constructions",
+  "verdict_upheld": false,
+  "bit_accounting_correct": true,
+  "severity": "material",
+
+  "confirmed": {
+    "header_bits": "192 = 32+8+8+16+16+8+32+32+8+32, matches the encode() writer exactly",
+    "sparse_residual": "296 (hdr+count+3 params) + 64 bitmap + 1024 indices + 32768 codebook + 128 scales = 34280 bits = 4285 bytes, pad 0. Re-derived from the layout, matches serialized length.",
+    "installed_bits_total": 271096,
+    "active_bits_per_token_total": "1147688/5",
+    "conditional": "installed 41600 > inner 41224; active 208/5 = 41600/1000. Wrapper bills the trigger table.",
+    "ledger_component_sum": "271096, equals the serialized bit total",
+    "independent_ceiling_run": "CompleteByteLedger rebuilt from the emitted components -> assert_complete_bpw_le_one = legal, 33887/4194304 = 0.008079290390014648 BPW at 33554432 weights; CeilingViolation raised at 1024 weights",
+    "no_allocation_above_ceiling": "the only rate present is a 0.008 BPW FIXTURE; nothing approaches 0.98 or 1.0",
+    "self_check_runtime": "0.29 s, no model, no lease, heavy Qwen forward undisturbed",
+    "self_check_green_and_fails_when_broken": "reproduced in-tree and on a /tmp copy"
+  },
+
+  "refutations": [
+    {
+      "id": "R1",
+      "severity": "material",
+      "claim": "'ledger_components refuses such an artifact' / 'no dense shadow'",
+      "refutation": "The predicate is defeated by the module's own conditional wrapper. wrap_conditional carries the inner artifact as an 8-bit non-native inner_blob field, so requires_dense_shadow() on the wrapper is False and native_elements() is 0 even when the inner artifact is a verified dense shadow.",
+      "evidence": "protected_islands rows=64/64 -> requires_dense_shadow True; wrap_conditional(that) -> requires_dense_shadow False, native_elements 0; ledger_components ACCEPTED it (131712 bits) and report() returned legal=True.",
+      "fix": "wrap_conditional must assert not inner.requires_dense_shadow(), and requires_dense_shadow must recurse through inner_blob (decode it) rather than looking only at top-level native fields."
+    },
+    {
+      "id": "R2",
+      "severity": "material",
+      "claim": "same, second construction",
+      "refutation": "The predicate is per-artifact. Sixteen protected_islands artifacts of 4/64 rows each on the SAME (layer, expert, organ) sum to 8192 native elements = the whole 64x128 tensor. Each passes individually; ledger_components accepted all sixteen.",
+      "evidence": "16 x protected_islands(rows=64, cols=128, R=4) -> native total 8192 >= rows*cols 8192, ledger accepted.",
+      "fix": "aggregate native_elements per (layer, expert, organ) inside ledger_components before applying the predicate."
+    },
+    {
+      "id": "R3",
+      "severity": "minor",
+      "claim": "'verified against an INDEPENDENT closed-form for sparse_residual'",
+      "refutation": "The closed form (line 410) is written in terms of the module's own HEADER_BITS and PARAM_WIDTH, so it cannot detect a change in either. Mutating PARAM_WIDTH 32 -> 31 leaves the self-check fully GREEN and even leaves the byte count identical (4285 bytes, 271096 installed, same BPW) because the pad absorbs the 3 lost bits. The reported key number param_field_width_bits = 32 is therefore unverified by any check in the file.",
+      "evidence": "/tmp mutant PARAM_WIDTH=31 -> self_check_passed True, self_check_fails_when_broken True, sparse bytes 4285, bpw 33887/4194304 unchanged.",
+      "fix": "write the closed form with the literals 192 and 32, not the imported constants."
+    },
+    {
+      "id": "R4",
+      "severity": "minor",
+      "claim": "'pad -> alignment' is billed and tested",
+      "refutation": "Dead code path in the self-check. All seven demo artifacts are byte-aligned before padding (pads: 0,0,0,0,0,0,0) and the emitted ledger reports alignment = 0. Mutating total_bits() to drop the pad entirely (return raw) leaves the self-check GREEN. The mechanism does work when forced (protected_islands rows=5 -> raw 2285, pad 3, alignment slot 3), but nothing in the shipped check exercises it.",
+      "evidence": "/tmp mutant 'return raw' SURVIVED green; ledger alignment component is the string '0'.",
+      "fix": "add one demo artifact whose payload is not a multiple of 8 bits so the alignment slot is nonzero."
+    },
+    {
+      "id": "R5",
+      "severity": "minor",
+      "claim": "active_bits_per_token is the bits the runtime must READ per token",
+      "refutation": "For a conditional it is total_bits * fire_num/fire_den, which multiplies the trigger table by the fire rate too. The trigger table has to be consulted on EVERY token to decide whether to fire, so true active bits are at least trigger_table_bits + inner_bits*rate. The number errs optimistic (small). It does not affect billing, which uses installed.",
+      "fix": "active = always-resident fields + fired fields * rate."
+    },
+    {
+      "id": "R6",
+      "severity": "minor",
+      "claim": "'every bit lands in a slot'",
+      "refutation": "True per artifact, but packaging is always 0: there is no container, index, manifest or checksum over a SET of artifacts. A real candidate shipping thousands of these needs a per-artifact index that this ledger does not model. Conservative direction is not established here, it is simply absent."
+    },
+    {
+      "id": "R7",
+      "severity": "none",
+      "claim": "demo ledger 0.008 BPW",
+      "refutation": "Not a refutation, a confirmation of the agent's own caveat: 33554432 = 64*128*4096 is a made-up denominator and eight toy artifacts with random payloads. It is a FIXTURE and carries no rate information about any candidate. Nothing in the report presents it otherwise."
+    }
+  ],
+
+  "mutation_kill_test": {
+    "harness": "copy to /tmp/abimut, PYTHONPATH to tools/foundry+tools/condense, baseline GREEN confirmed before mutating",
+    "note": "first run of this test produced six false 'caught' results from ModuleNotFoundError; re-run with PYTHONPATH set. Reporting only the corrected run.",
+    "caught": [
+      "HEADER_BITS 192 -> 184 (encode length assert)",
+      "_idx_w off-by-one (closed form)",
+      "row_scales width 16 -> 15 (closed form)",
+      "ledger metadata drops the 8-bit param count (component sum assert)",
+      "conditional active rate /1000000 (installed>=active assert)",
+      "requires_dense_shadow -> return False (dense shadow admitted)"
+    ],
+    "survived_green": [
+      "PARAM_WIDTH 32 -> 31 (see R3)",
+      "total_bits drops pad-to-byte (see R4)"
+    ],
+    "kill_rate": "6/8"
+  },
+
+  "proxy_laundering": {
+    "found": false,
+    "note": "No synthetic twin, no calibration-batch number, no weight-space number is presented as capability anywhere in this module or its report. The module measures nothing but bits and says so. The Qwen sealed negative (best S64_doctor 0.999769787 complete BPW, symKL 7.699, argmax 0.0922 vs gate 0.10/0.95) is untouched and unclaimed."
+  },
+
+  "mechanism_attribution": {
+    "applicable": "no gain is claimed, so there is no gain to reattribute",
+    "substitute_test": "the mutation kill test above is the attribution test for the only claimed mechanism (layout exactness). 6/8 kills; the two survivors are named in R3 and R4."
+  },
+
+  "next_parent_resolution": {
+    "claims_made_by_this_build": "none - the report asserts no staging, no disk, no next-parent claim",
+    "df_independent": "/System/Volumes/Data 926Gi total, 762Gi used, 115Gi available, 87% capacity (measured this session)"
+  },
+
+  "self_check_actually_fails_when_broken": true,
+  "self_check_coverage_caveat": "the built-in _fails_when_broken probe fires genuinely (verified on a /tmp copy), but it exercises exactly one assert. Two of my eight mutants pass it.",
+
+  "recommended_correction": "Keep the module. Three edits before any promotion path uses requires_dense_shadow as a gate: (1) wrap_conditional asserts not inner.requires_dense_shadow() and the predicate recurses into inner_blob; (2) ledger_components aggregates native elements per (layer, expert, organ) before applying the predicate; (3) the sparse_residual closed form uses the literals 192 and 32, plus one demo artifact with a non-byte-multiple payload so the alignment slot is exercised. Downgrade the report's verdict language from 'refuses an artifact that carries a full-precision copy' to 'refuses a top-level, single-artifact full-precision copy', and drop 'independent' from the closed-form claim."
+}

@@ -1,0 +1,731 @@
+{
+  "schema": "hawking.gravity.layerwise_qat.v1",
+  "generated_at": "2026-07-20T23:47:05Z",
+  "source": "models/qwen3-235b-a22b",
+  "method": "alternating exact-rate optimisation (hard assign / activation-weighted Lloyd / closed-form bf16 row scale) with an optional straight-through latent-weight step; control = identical loop with eta forced to 0",
+  "rate_note": "S64 survivor rates, unchanged: gate/up dim=8 k=1024 stages=2 = 2.5 index bpw, down dim=16 k=1024 stages=1 = 0.625. Whole-model complete BPW of the S64_structural plan is 0.948410027 <= 1. This module proposes no rate.",
+  "n_calibration_tokens": 1400,
+  "rounds": 4,
+  "lloyd_iters": 5,
+  "eta_grid": [
+    0.0,
+    0.1,
+    0.25,
+    0.5,
+    1.0
+  ],
+  "fit_vector_subsample": 400000,
+  "seeds": [
+    0,
+    1
+  ],
+  "cells": [
+    {
+      "layer": 0,
+      "organ": "gate_proj",
+      "experts": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "activation_provenance": "real_tokens",
+      "spec": {
+        "dim": 8,
+        "k": 1024,
+        "stages": 2
+      },
+      "index_bpw": 2.5,
+      "complete_bits_per_tensor_control": 15755792,
+      "complete_bits_per_tensor_treatment": 15755792,
+      "bits_identical": true,
+      "complete_bpw_this_tensor": 2.504316,
+      "weight_rel_error_control": 0.803786,
+      "weight_rel_error_treatment": 0.805729,
+      "output_rel_error_heldout_control": 0.043624,
+      "output_rel_error_heldout_treatment": 0.037235,
+      "qat_gain_pct_heldout": 14.6498,
+      "qat_gain_pct_heldout_per_seed": [
+        16.118,
+        13.1817
+      ],
+      "wins_all_seeds": true,
+      "per_seed": [
+        {
+          "seed": 0,
+          "output_rel_error_heldout_control": 0.043498,
+          "output_rel_error_heldout_treatment": 0.036487,
+          "weight_rel_error_control": 0.804416,
+          "weight_rel_error_treatment": 0.805089,
+          "fit_trace_control": [
+            0.043151,
+            0.043419,
+            0.043859,
+            0.043516
+          ],
+          "fit_trace_treatment": [
+            0.043103,
+            0.044264,
+            0.043452,
+            0.042473
+          ],
+          "best_round_control": 0,
+          "best_round_treatment": 3,
+          "chosen_eta_per_round": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "qat_step_fit_gain_per_round": [
+            0.00894386,
+            0.00962949,
+            0.01029948,
+            0.00990223
+          ]
+        },
+        {
+          "seed": 1,
+          "output_rel_error_heldout_control": 0.04375,
+          "output_rel_error_heldout_treatment": 0.037983,
+          "weight_rel_error_control": 0.803156,
+          "weight_rel_error_treatment": 0.806368,
+          "fit_trace_control": [
+            0.043309,
+            0.044246,
+            0.043781,
+            0.043016
+          ],
+          "fit_trace_treatment": [
+            0.043328,
+            0.045689,
+            0.045517,
+            0.04423
+          ],
+          "best_round_control": 3,
+          "best_round_treatment": 3,
+          "chosen_eta_per_round": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "qat_step_fit_gain_per_round": [
+            0.00845297,
+            0.01100637,
+            0.01142568,
+            0.01061366
+          ]
+        }
+      ],
+      "n_fit_tokens": [
+        35,
+        44,
+        32,
+        33
+      ],
+      "n_heldout_tokens": [
+        35,
+        44,
+        33,
+        33
+      ],
+      "routed_token_counts": [
+        70,
+        88,
+        65,
+        66
+      ]
+    },
+    {
+      "layer": 0,
+      "organ": "up_proj",
+      "experts": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "activation_provenance": "real_tokens",
+      "spec": {
+        "dim": 8,
+        "k": 1024,
+        "stages": 2
+      },
+      "index_bpw": 2.5,
+      "complete_bits_per_tensor_control": 15755792,
+      "complete_bits_per_tensor_treatment": 15755792,
+      "bits_identical": true,
+      "complete_bpw_this_tensor": 2.504316,
+      "weight_rel_error_control": 0.801316,
+      "weight_rel_error_treatment": 0.797659,
+      "output_rel_error_heldout_control": 0.042776,
+      "output_rel_error_heldout_treatment": 0.037087,
+      "qat_gain_pct_heldout": 13.2974,
+      "qat_gain_pct_heldout_per_seed": [
+        13.1117,
+        13.4831
+      ],
+      "wins_all_seeds": true,
+      "per_seed": [
+        {
+          "seed": 0,
+          "output_rel_error_heldout_control": 0.042298,
+          "output_rel_error_heldout_treatment": 0.036752,
+          "weight_rel_error_control": 0.806528,
+          "weight_rel_error_treatment": 0.800405,
+          "fit_trace_control": [
+            0.042502,
+            0.041699,
+            0.042098,
+            0.041771
+          ],
+          "fit_trace_treatment": [
+            0.042428,
+            0.042774,
+            0.040985,
+            0.042086
+          ],
+          "best_round_control": 1,
+          "best_round_treatment": 3,
+          "chosen_eta_per_round": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "qat_step_fit_gain_per_round": [
+            0.00935101,
+            0.01000596,
+            0.00883103,
+            0.00999854
+          ]
+        },
+        {
+          "seed": 1,
+          "output_rel_error_heldout_control": 0.043254,
+          "output_rel_error_heldout_treatment": 0.037422,
+          "weight_rel_error_control": 0.796104,
+          "weight_rel_error_treatment": 0.794914,
+          "fit_trace_control": [
+            0.042129,
+            0.041974,
+            0.042428,
+            0.042684
+          ],
+          "fit_trace_treatment": [
+            0.041721,
+            0.042575,
+            0.042067,
+            0.041709
+          ],
+          "best_round_control": 1,
+          "best_round_treatment": 3,
+          "chosen_eta_per_round": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "qat_step_fit_gain_per_round": [
+            0.00800351,
+            0.00987294,
+            0.00920808,
+            0.00918514
+          ]
+        }
+      ],
+      "n_fit_tokens": [
+        35,
+        44,
+        32,
+        33
+      ],
+      "n_heldout_tokens": [
+        35,
+        44,
+        33,
+        33
+      ],
+      "routed_token_counts": [
+        70,
+        88,
+        65,
+        66
+      ]
+    },
+    {
+      "layer": 0,
+      "organ": "down_proj",
+      "experts": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "activation_provenance": "real_tokens",
+      "spec": {
+        "dim": 16,
+        "k": 1024,
+        "stages": 1
+      },
+      "index_bpw": 0.625,
+      "complete_bits_per_tensor_control": 4000272,
+      "complete_bits_per_tensor_treatment": 4000272,
+      "bits_identical": true,
+      "complete_bpw_this_tensor": 0.635826,
+      "weight_rel_error_control": 0.9999,
+      "weight_rel_error_treatment": 0.996327,
+      "output_rel_error_heldout_control": 0.178279,
+      "output_rel_error_heldout_treatment": 0.169119,
+      "qat_gain_pct_heldout": 5.1398,
+      "qat_gain_pct_heldout_per_seed": [
+        5.3736,
+        4.906
+      ],
+      "wins_all_seeds": true,
+      "per_seed": [
+        {
+          "seed": 0,
+          "output_rel_error_heldout_control": 0.176919,
+          "output_rel_error_heldout_treatment": 0.167412,
+          "weight_rel_error_control": 1.012733,
+          "weight_rel_error_treatment": 1.003649,
+          "fit_trace_control": [
+            0.104113,
+            0.101923,
+            0.102134,
+            0.101628
+          ],
+          "fit_trace_treatment": [
+            0.104113,
+            0.10044,
+            0.099056,
+            0.098163
+          ],
+          "best_round_control": 3,
+          "best_round_treatment": 2,
+          "chosen_eta_per_round": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "qat_step_fit_gain_per_round": [
+            0.01746564,
+            0.01418598,
+            0.01430487,
+            0.0119631
+          ]
+        },
+        {
+          "seed": 1,
+          "output_rel_error_heldout_control": 0.179638,
+          "output_rel_error_heldout_treatment": 0.170825,
+          "weight_rel_error_control": 0.987067,
+          "weight_rel_error_treatment": 0.989005,
+          "fit_trace_control": [
+            0.103494,
+            0.105611,
+            0.10256,
+            0.104278
+          ],
+          "fit_trace_treatment": [
+            0.103489,
+            0.100546,
+            0.098564,
+            0.10028
+          ],
+          "best_round_control": 2,
+          "best_round_treatment": 2,
+          "chosen_eta_per_round": [
+            1.0,
+            1.0,
+            1.0,
+            0.5
+          ],
+          "qat_step_fit_gain_per_round": [
+            0.01688251,
+            0.01346991,
+            0.0129852,
+            0.01220446
+          ]
+        }
+      ],
+      "n_fit_tokens": [
+        35,
+        44,
+        32,
+        33
+      ],
+      "n_heldout_tokens": [
+        35,
+        44,
+        33,
+        33
+      ],
+      "routed_token_counts": [
+        70,
+        88,
+        65,
+        66
+      ]
+    },
+    {
+      "layer": 46,
+      "organ": "gate_proj",
+      "experts": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "activation_provenance": "gaussian_proxy",
+      "spec": {
+        "dim": 8,
+        "k": 1024,
+        "stages": 2
+      },
+      "index_bpw": 2.5,
+      "complete_bits_per_tensor_control": 15755792,
+      "complete_bits_per_tensor_treatment": 15755792,
+      "bits_identical": true,
+      "complete_bpw_this_tensor": 2.504316,
+      "weight_rel_error_control": 0.292957,
+      "weight_rel_error_treatment": 0.294561,
+      "output_rel_error_heldout_control": 0.237698,
+      "output_rel_error_heldout_treatment": 0.239245,
+      "qat_gain_pct_heldout": -0.6509,
+      "qat_gain_pct_heldout_per_seed": [
+        -0.7102,
+        -0.5916
+      ],
+      "wins_all_seeds": false,
+      "per_seed": [
+        {
+          "seed": 0,
+          "output_rel_error_heldout_control": 0.237388,
+          "output_rel_error_heldout_treatment": 0.239074,
+          "weight_rel_error_control": 0.292926,
+          "weight_rel_error_treatment": 0.294542,
+          "fit_trace_control": [
+            0.235997,
+            0.236652,
+            0.236713,
+            0.235957
+          ],
+          "fit_trace_treatment": [
+            0.235953,
+            0.279206,
+            0.281128,
+            0.280995
+          ],
+          "best_round_control": 3,
+          "best_round_treatment": 0,
+          "chosen_eta_per_round": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "qat_step_fit_gain_per_round": [
+            0.0936066,
+            0.12726521,
+            0.12823178,
+            0.1281428
+          ]
+        },
+        {
+          "seed": 1,
+          "output_rel_error_heldout_control": 0.238008,
+          "output_rel_error_heldout_treatment": 0.239416,
+          "weight_rel_error_control": 0.292989,
+          "weight_rel_error_treatment": 0.29458,
+          "fit_trace_control": [
+            0.236072,
+            0.236368,
+            0.236004,
+            0.23692
+          ],
+          "fit_trace_treatment": [
+            0.23597,
+            0.278505,
+            0.281013,
+            0.281223
+          ],
+          "best_round_control": 2,
+          "best_round_treatment": 0,
+          "chosen_eta_per_round": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "qat_step_fit_gain_per_round": [
+            0.09282016,
+            0.12642911,
+            0.12833678,
+            0.1284689
+          ]
+        }
+      ],
+      "n_fit_tokens": [
+        87,
+        27,
+        59,
+        52
+      ],
+      "n_heldout_tokens": [
+        87,
+        28,
+        59,
+        53
+      ],
+      "routed_token_counts": [
+        174,
+        55,
+        118,
+        105
+      ]
+    },
+    {
+      "layer": 46,
+      "organ": "up_proj",
+      "experts": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "activation_provenance": "gaussian_proxy",
+      "spec": {
+        "dim": 8,
+        "k": 1024,
+        "stages": 2
+      },
+      "index_bpw": 2.5,
+      "complete_bits_per_tensor_control": 15755792,
+      "complete_bits_per_tensor_treatment": 15755792,
+      "bits_identical": true,
+      "complete_bpw_this_tensor": 2.504316,
+      "weight_rel_error_control": 0.291243,
+      "weight_rel_error_treatment": 0.292544,
+      "output_rel_error_heldout_control": 0.238156,
+      "output_rel_error_heldout_treatment": 0.239355,
+      "qat_gain_pct_heldout": -0.5036,
+      "qat_gain_pct_heldout_per_seed": [
+        -0.6062,
+        -0.4011
+      ],
+      "wins_all_seeds": false,
+      "per_seed": [
+        {
+          "seed": 0,
+          "output_rel_error_heldout_control": 0.238187,
+          "output_rel_error_heldout_treatment": 0.239631,
+          "weight_rel_error_control": 0.291129,
+          "weight_rel_error_treatment": 0.292488,
+          "fit_trace_control": [
+            0.235966,
+            0.23597,
+            0.236269,
+            0.236339
+          ],
+          "fit_trace_treatment": [
+            0.235952,
+            0.279741,
+            0.281226,
+            0.281651
+          ],
+          "best_round_control": 0,
+          "best_round_treatment": 0,
+          "chosen_eta_per_round": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "qat_step_fit_gain_per_round": [
+            0.09285237,
+            0.12753386,
+            0.12882561,
+            0.12903939
+          ]
+        },
+        {
+          "seed": 1,
+          "output_rel_error_heldout_control": 0.238124,
+          "output_rel_error_heldout_treatment": 0.239079,
+          "weight_rel_error_control": 0.291356,
+          "weight_rel_error_treatment": 0.292601,
+          "fit_trace_control": [
+            0.236255,
+            0.236525,
+            0.236132,
+            0.236523
+          ],
+          "fit_trace_treatment": [
+            0.23625,
+            0.279479,
+            0.280917,
+            0.281102
+          ],
+          "best_round_control": 2,
+          "best_round_treatment": 0,
+          "chosen_eta_per_round": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "qat_step_fit_gain_per_round": [
+            0.09309413,
+            0.12734933,
+            0.12842072,
+            0.1282128
+          ]
+        }
+      ],
+      "n_fit_tokens": [
+        87,
+        27,
+        59,
+        52
+      ],
+      "n_heldout_tokens": [
+        87,
+        28,
+        59,
+        53
+      ],
+      "routed_token_counts": [
+        174,
+        55,
+        118,
+        105
+      ]
+    },
+    {
+      "layer": 46,
+      "organ": "down_proj",
+      "experts": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "activation_provenance": "gaussian_proxy",
+      "spec": {
+        "dim": 16,
+        "k": 1024,
+        "stages": 1
+      },
+      "index_bpw": 0.625,
+      "complete_bits_per_tensor_control": 4000272,
+      "complete_bits_per_tensor_treatment": 4000272,
+      "bits_identical": true,
+      "complete_bpw_this_tensor": 0.635826,
+      "weight_rel_error_control": 0.728213,
+      "weight_rel_error_treatment": 0.737532,
+      "output_rel_error_heldout_control": 0.666681,
+      "output_rel_error_heldout_treatment": 0.669825,
+      "qat_gain_pct_heldout": -0.4716,
+      "qat_gain_pct_heldout_per_seed": [
+        -0.4418,
+        -0.5015
+      ],
+      "wins_all_seeds": false,
+      "per_seed": [
+        {
+          "seed": 0,
+          "output_rel_error_heldout_control": 0.666316,
+          "output_rel_error_heldout_treatment": 0.66926,
+          "weight_rel_error_control": 0.728197,
+          "weight_rel_error_treatment": 0.737406,
+          "fit_trace_control": [
+            0.641358,
+            0.64043,
+            0.641749,
+            0.641823
+          ],
+          "fit_trace_treatment": [
+            0.641388,
+            0.565409,
+            0.529512,
+            0.508558
+          ],
+          "best_round_control": 1,
+          "best_round_treatment": 3,
+          "chosen_eta_per_round": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "qat_step_fit_gain_per_round": [
+            0.18333899,
+            0.15072679,
+            0.13717341,
+            0.13020404
+          ]
+        },
+        {
+          "seed": 1,
+          "output_rel_error_heldout_control": 0.667046,
+          "output_rel_error_heldout_treatment": 0.670391,
+          "weight_rel_error_control": 0.728229,
+          "weight_rel_error_treatment": 0.737658,
+          "fit_trace_control": [
+            0.642509,
+            0.640888,
+            0.641169,
+            0.64082
+          ],
+          "fit_trace_treatment": [
+            0.642517,
+            0.565017,
+            0.528487,
+            0.508904
+          ],
+          "best_round_control": 3,
+          "best_round_treatment": 3,
+          "chosen_eta_per_round": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "qat_step_fit_gain_per_round": [
+            0.18515534,
+            0.14997018,
+            0.13624516,
+            0.13072977
+          ]
+        }
+      ],
+      "n_fit_tokens": [
+        87,
+        27,
+        59,
+        52
+      ],
+      "n_heldout_tokens": [
+        87,
+        28,
+        59,
+        53
+      ],
+      "routed_token_counts": [
+        174,
+        55,
+        118,
+        105
+      ]
+    }
+  ],
+  "n_cells_where_weights_moved": 6,
+  "verdict": "S3A_QAT_ALIVE_LAYER0_ONLY",
+  "verdict_note": "Scored ONLY on real_tokens cells, and a cell counts as a win only if it wins under EVERY seed. gaussian_proxy cells (deeper layers) validate the machinery and carry no evidence about those layers. Real-token activations exist only at layer 0 without a multi-layer forward, and layer 0 is the campaign's known coding exception, so a _LAYER0_ONLY verdict does NOT generalise to depth.",
+  "honesty": "Output-space relative error on a HELD-OUT, disjoint routed-token split is a PROXY for capability, not capability. Weight-space error is not a capability claim. No forward was run and no frontier is selected. Every reported number comes from the EXACT PACKED artifact: bf16 codebooks, integer index stream, bf16 row scales. Zero bits are added; the latent trained weights are a training-only object that is genuinely absent from the artifact.",
+  "wall_seconds": 321.9
+}

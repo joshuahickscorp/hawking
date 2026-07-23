@@ -1,0 +1,65 @@
+{
+  "bpw": {
+    "coded_expert_tensors": 18048,
+    "complete_bpw_exact": "870957657/918334510",
+    "complete_bytes": 27870645024,
+    "components": {
+      "alignment": 0,
+      "codebooks": 73924608,
+      "doctor": 0,
+      "indices": 212902871040,
+      "metadata": 9240576,
+      "packaging": 536870912,
+      "pass_through_tensors": 801541632,
+      "protected_islands": 7950447616,
+      "runtime_tables": 12032,
+      "scales": 690251776
+    },
+    "legal_under_one_bit_ceiling": true,
+    "omitted_expert_tensors": 18048,
+    "organ_bpw": {},
+    "scope": "complete artifact, omission-aware",
+    "whole_model_bpw": 0.948410027
+  },
+  "capability_pass": false,
+  "divergence_vs_parent": {
+    "mean_logit_cosine": 0.40371,
+    "mean_sym_kl": 10.67711,
+    "mean_top5_overlap": 0.0444,
+    "next_token_argmax_agreement": 0.0
+  },
+  "domain": "general",
+  "honesty": "REAL parent-vs-packed Qwen3-MoE forward with expert_hook substitution; BPW is whole-model from the exact byte ledger, never expert-only; weight-space error is NOT a pass criterion",
+  "kind": "packed",
+  "ladder_sha": "ad109e5135f7f81c",
+  "logits_finite": true,
+  "n_tokens": 9,
+  "note": "STRUCTURAL (Lane D M05+M09 x Lane A M01'). The inventory is a free variable under a fixed complete ceiling: keeping the 64 hottest experts per layer and spending the freed budget on the survivors is BUDGET-NEUTRAL, so gate/up rises 0.625 -> 2.5 index bpw and its rate-distortion floor falls 0.6484 -> 0.1768. Complete 0.9484 BPW by qwen_structural_plan.ledger, legal under the 1/1 ceiling. Survivors are coded with the scale-invariant function-aware codec (per-row bf16 scale billed). The router's top-k is taken over survivors ONLY: omitted experts are masked to -inf before the top-k, then the k weights renormalize as usual. That is a real change to the model and only the forward may judge it.",
+  "prompt_id": "gen_science",
+  "quality": {
+    "n_positions": 8,
+    "nll": 8.67761,
+    "perplexity": 5869.9738
+  },
+  "row_id": "gen_science__S64_structural",
+  "sealed_at": "2026-07-20T22:53:06Z",
+  "sha256": "236c63bc2c6c7e6bd9e3377f1c2bad72b76f060f55b1ea3d9d433edb1a89933b",
+  "spec": {
+    "down": {
+      "dim": 16,
+      "family": "function_aware",
+      "k": 1024,
+      "stages": 1
+    },
+    "gate_up": {
+      "dim": 8,
+      "family": "function_aware",
+      "k": 1024,
+      "stages": 2
+    },
+    "keep_experts": 64,
+    "kind": "packed"
+  },
+  "variant": "S64_structural",
+  "verdict": "collapse"
+}

@@ -1,0 +1,912 @@
+{
+  "schema": "hawking.gravity.qat_disjoint_rescore.v1",
+  "generated_at": "2026-07-21T00:58:53Z",
+  "source": "models/qwen3-235b-a22b",
+  "supersedes": "reports/subbit_reset/S3A_LAYERWISE_QAT.json (held-out label only)",
+  "capture_target": 0.1,
+  "root_cause_of_the_original_overlap": "qwen_calibration_corpus repeats its 12 segments to hit the token target, so 1313 corpus positions carry only 540 unique ids; layer-0 MoE input is rmsnorm(embed[id]), a pure function of the id; LC.routed_split splits POSITIONS. The same embedding row therefore appears in both halves, which is why capture measured 1.000.",
+  "split": "unique ids only, partitioned by corpus SEGMENT (6 fit / 6 score segments, seed-varied), scored against the FULL held-out segment activation matrix",
+  "rounds": 3,
+  "lloyd_iters": 5,
+  "lloyd_seed": 0,
+  "split_seeds": [
+    0,
+    1,
+    2
+  ],
+  "eta_grid": [
+    0.0,
+    0.1,
+    0.25,
+    0.5,
+    1.0
+  ],
+  "cells": [
+    {
+      "split_seed": 0,
+      "layer": 0,
+      "organ": "gate_proj",
+      "experts": [
+        0,
+        1,
+        2
+      ],
+      "fit_segments": [
+        "cal_rare",
+        "cal_code_sql",
+        "cal_prose_expo",
+        "cal_instr_steps",
+        "cal_math_calc",
+        "cal_tool_json"
+      ],
+      "hold_segments": [
+        "cal_code_py",
+        "cal_fact_recall",
+        "cal_math_proof",
+        "cal_reason_chain",
+        "cal_prose_narrative",
+        "cal_code_rust"
+      ],
+      "spec": {
+        "dim": 8,
+        "k": 1024,
+        "stages": 2
+      },
+      "complete_bits_per_tensor_control": 15755792,
+      "complete_bits_per_tensor_treatment": 15755792,
+      "serialized_bytes_control": 2001920,
+      "serialized_bytes_treatment": 2001920,
+      "serialized_length_identical": true,
+      "payload_content_differs": true,
+      "chosen_eta_per_round_control": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "chosen_eta_per_round_treatment": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "mean_capture_fraction": 0.09598,
+      "max_capture_fraction": 0.12672,
+      "mean_gain_pct_full": -1.5644,
+      "mean_gain_pct_low_capture_only": -2.4893,
+      "n_experts_at_or_below_capture_target": 2,
+      "per_expert": [
+        {
+          "expert": 0,
+          "capture_fraction_full_corpus_probe": 0.06689,
+          "capture_fraction_routed_probe": 0.37821,
+          "n_fit_tokens": 3,
+          "n_score_tokens_full": 246,
+          "n_score_tokens_routed": 7,
+          "control_error_full": 0.073972,
+          "treatment_error_full": 0.075871,
+          "gain_pct_full": -2.5672,
+          "control_error_routed": 0.043144,
+          "treatment_error_routed": 0.043115,
+          "gain_pct_routed": 0.0677
+        },
+        {
+          "expert": 1,
+          "capture_fraction_full_corpus_probe": 0.09433,
+          "capture_fraction_routed_probe": 0.38864,
+          "n_fit_tokens": 5,
+          "n_score_tokens_full": 246,
+          "n_score_tokens_routed": 2,
+          "control_error_full": 0.087363,
+          "treatment_error_full": 0.08947,
+          "gain_pct_full": -2.4113,
+          "control_error_routed": 0.036732,
+          "treatment_error_routed": 0.033818,
+          "gain_pct_routed": 7.9355
+        },
+        {
+          "expert": 2,
+          "capture_fraction_full_corpus_probe": 0.12672,
+          "capture_fraction_routed_probe": 0.25057,
+          "n_fit_tokens": 29,
+          "n_score_tokens_full": 246,
+          "n_score_tokens_routed": 17,
+          "control_error_full": 0.082996,
+          "treatment_error_full": 0.082759,
+          "gain_pct_full": 0.2853,
+          "control_error_routed": 0.074442,
+          "treatment_error_routed": 0.074557,
+          "gain_pct_routed": -0.1547
+        }
+      ]
+    },
+    {
+      "split_seed": 0,
+      "layer": 0,
+      "organ": "up_proj",
+      "experts": [
+        0,
+        1,
+        2
+      ],
+      "fit_segments": [
+        "cal_rare",
+        "cal_code_sql",
+        "cal_prose_expo",
+        "cal_instr_steps",
+        "cal_math_calc",
+        "cal_tool_json"
+      ],
+      "hold_segments": [
+        "cal_code_py",
+        "cal_fact_recall",
+        "cal_math_proof",
+        "cal_reason_chain",
+        "cal_prose_narrative",
+        "cal_code_rust"
+      ],
+      "spec": {
+        "dim": 8,
+        "k": 1024,
+        "stages": 2
+      },
+      "complete_bits_per_tensor_control": 15755792,
+      "complete_bits_per_tensor_treatment": 15755792,
+      "serialized_bytes_control": 2001920,
+      "serialized_bytes_treatment": 2001920,
+      "serialized_length_identical": true,
+      "payload_content_differs": true,
+      "chosen_eta_per_round_control": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "chosen_eta_per_round_treatment": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "mean_capture_fraction": 0.09598,
+      "max_capture_fraction": 0.12672,
+      "mean_gain_pct_full": -0.423,
+      "mean_gain_pct_low_capture_only": -0.6694,
+      "n_experts_at_or_below_capture_target": 2,
+      "per_expert": [
+        {
+          "expert": 0,
+          "capture_fraction_full_corpus_probe": 0.06689,
+          "capture_fraction_routed_probe": 0.37821,
+          "n_fit_tokens": 3,
+          "n_score_tokens_full": 246,
+          "n_score_tokens_routed": 7,
+          "control_error_full": 0.075971,
+          "treatment_error_full": 0.076831,
+          "gain_pct_full": -1.1325,
+          "control_error_routed": 0.039196,
+          "treatment_error_routed": 0.038011,
+          "gain_pct_routed": 3.0231
+        },
+        {
+          "expert": 1,
+          "capture_fraction_full_corpus_probe": 0.09433,
+          "capture_fraction_routed_probe": 0.38864,
+          "n_fit_tokens": 5,
+          "n_score_tokens_full": 246,
+          "n_score_tokens_routed": 2,
+          "control_error_full": 0.088656,
+          "treatment_error_full": 0.088839,
+          "gain_pct_full": -0.2064,
+          "control_error_routed": 0.040385,
+          "treatment_error_routed": 0.039248,
+          "gain_pct_routed": 2.8146
+        },
+        {
+          "expert": 2,
+          "capture_fraction_full_corpus_probe": 0.12672,
+          "capture_fraction_routed_probe": 0.25057,
+          "n_fit_tokens": 29,
+          "n_score_tokens_full": 246,
+          "n_score_tokens_routed": 17,
+          "control_error_full": 0.084852,
+          "treatment_error_full": 0.084793,
+          "gain_pct_full": 0.0699,
+          "control_error_routed": 0.074639,
+          "treatment_error_routed": 0.073709,
+          "gain_pct_routed": 1.2457
+        }
+      ]
+    },
+    {
+      "split_seed": 0,
+      "layer": 0,
+      "organ": "down_proj",
+      "experts": [
+        0,
+        1,
+        2
+      ],
+      "fit_segments": [
+        "cal_rare",
+        "cal_code_sql",
+        "cal_prose_expo",
+        "cal_instr_steps",
+        "cal_math_calc",
+        "cal_tool_json"
+      ],
+      "hold_segments": [
+        "cal_code_py",
+        "cal_fact_recall",
+        "cal_math_proof",
+        "cal_reason_chain",
+        "cal_prose_narrative",
+        "cal_code_rust"
+      ],
+      "spec": {
+        "dim": 16,
+        "k": 1024,
+        "stages": 1
+      },
+      "complete_bits_per_tensor_control": 4000272,
+      "complete_bits_per_tensor_treatment": 4000272,
+      "serialized_bytes_control": 532480,
+      "serialized_bytes_treatment": 532480,
+      "serialized_length_identical": true,
+      "payload_content_differs": true,
+      "chosen_eta_per_round_control": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "chosen_eta_per_round_treatment": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "mean_capture_fraction": 0.23597,
+      "max_capture_fraction": 0.43357,
+      "mean_gain_pct_full": -1.0557,
+      "mean_gain_pct_low_capture_only": null,
+      "n_experts_at_or_below_capture_target": 0,
+      "per_expert": [
+        {
+          "expert": 0,
+          "capture_fraction_full_corpus_probe": 0.16473,
+          "capture_fraction_routed_probe": 0.24403,
+          "n_fit_tokens": 3,
+          "n_score_tokens_full": 246,
+          "n_score_tokens_routed": 7,
+          "control_error_full": 0.20146,
+          "treatment_error_full": 0.203941,
+          "gain_pct_full": -1.2317,
+          "control_error_routed": 0.125737,
+          "treatment_error_routed": 0.12987,
+          "gain_pct_routed": -3.2867
+        },
+        {
+          "expert": 1,
+          "capture_fraction_full_corpus_probe": 0.43357,
+          "capture_fraction_routed_probe": 0.58781,
+          "n_fit_tokens": 5,
+          "n_score_tokens_full": 246,
+          "n_score_tokens_routed": 2,
+          "control_error_full": 0.188022,
+          "treatment_error_full": 0.18717,
+          "gain_pct_full": 0.4532,
+          "control_error_routed": 0.106276,
+          "treatment_error_routed": 0.105769,
+          "gain_pct_routed": 0.4777
+        },
+        {
+          "expert": 2,
+          "capture_fraction_full_corpus_probe": 0.10961,
+          "capture_fraction_routed_probe": 0.06623,
+          "n_fit_tokens": 29,
+          "n_score_tokens_full": 246,
+          "n_score_tokens_routed": 17,
+          "control_error_full": 0.478792,
+          "treatment_error_full": 0.490228,
+          "gain_pct_full": -2.3885,
+          "control_error_routed": 0.479902,
+          "treatment_error_routed": 0.484456,
+          "gain_pct_routed": -0.949
+        }
+      ]
+    },
+    {
+      "split_seed": 1,
+      "layer": 0,
+      "organ": "gate_proj",
+      "experts": [
+        0,
+        1,
+        2
+      ],
+      "fit_segments": [
+        "cal_prose_narrative",
+        "cal_tool_json",
+        "cal_instr_steps",
+        "cal_prose_expo",
+        "cal_math_calc",
+        "cal_code_py"
+      ],
+      "hold_segments": [
+        "cal_code_rust",
+        "cal_rare",
+        "cal_code_sql",
+        "cal_reason_chain",
+        "cal_math_proof",
+        "cal_fact_recall"
+      ],
+      "spec": {
+        "dim": 8,
+        "k": 1024,
+        "stages": 2
+      },
+      "complete_bits_per_tensor_control": 15755792,
+      "complete_bits_per_tensor_treatment": 15755792,
+      "serialized_bytes_control": 2001920,
+      "serialized_bytes_treatment": 2001920,
+      "serialized_length_identical": true,
+      "payload_content_differs": true,
+      "chosen_eta_per_round_control": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "chosen_eta_per_round_treatment": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "mean_capture_fraction": 0.08667,
+      "max_capture_fraction": 0.10708,
+      "mean_gain_pct_full": -1.2164,
+      "mean_gain_pct_low_capture_only": -1.6851,
+      "n_experts_at_or_below_capture_target": 2,
+      "per_expert": [
+        {
+          "expert": 0,
+          "capture_fraction_full_corpus_probe": 0.05901,
+          "capture_fraction_routed_probe": 0.3695,
+          "n_fit_tokens": 3,
+          "n_score_tokens_full": 258,
+          "n_score_tokens_routed": 7,
+          "control_error_full": 0.078686,
+          "treatment_error_full": 0.080678,
+          "gain_pct_full": -2.5316,
+          "control_error_routed": 0.046608,
+          "treatment_error_routed": 0.04412,
+          "gain_pct_routed": 5.3396
+        },
+        {
+          "expert": 1,
+          "capture_fraction_full_corpus_probe": 0.09391,
+          "capture_fraction_routed_probe": 0.61717,
+          "n_fit_tokens": 6,
+          "n_score_tokens_full": 258,
+          "n_score_tokens_routed": 1,
+          "control_error_full": 0.091793,
+          "treatment_error_full": 0.092563,
+          "gain_pct_full": -0.8386,
+          "control_error_routed": 0.02962,
+          "treatment_error_routed": 0.037178,
+          "gain_pct_routed": -25.5153
+        },
+        {
+          "expert": 2,
+          "capture_fraction_full_corpus_probe": 0.10708,
+          "capture_fraction_routed_probe": 0.22484,
+          "n_fit_tokens": 23,
+          "n_score_tokens_full": 258,
+          "n_score_tokens_routed": 23,
+          "control_error_full": 0.084556,
+          "treatment_error_full": 0.084792,
+          "gain_pct_full": -0.279,
+          "control_error_routed": 0.074337,
+          "treatment_error_routed": 0.07385,
+          "gain_pct_routed": 0.655
+        }
+      ]
+    },
+    {
+      "split_seed": 1,
+      "layer": 0,
+      "organ": "up_proj",
+      "experts": [
+        0,
+        1,
+        2
+      ],
+      "fit_segments": [
+        "cal_prose_narrative",
+        "cal_tool_json",
+        "cal_instr_steps",
+        "cal_prose_expo",
+        "cal_math_calc",
+        "cal_code_py"
+      ],
+      "hold_segments": [
+        "cal_code_rust",
+        "cal_rare",
+        "cal_code_sql",
+        "cal_reason_chain",
+        "cal_math_proof",
+        "cal_fact_recall"
+      ],
+      "spec": {
+        "dim": 8,
+        "k": 1024,
+        "stages": 2
+      },
+      "complete_bits_per_tensor_control": 15755792,
+      "complete_bits_per_tensor_treatment": 15755792,
+      "serialized_bytes_control": 2001920,
+      "serialized_bytes_treatment": 2001920,
+      "serialized_length_identical": true,
+      "payload_content_differs": true,
+      "chosen_eta_per_round_control": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "chosen_eta_per_round_treatment": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "mean_capture_fraction": 0.08667,
+      "max_capture_fraction": 0.10708,
+      "mean_gain_pct_full": -2.5667,
+      "mean_gain_pct_low_capture_only": -2.5027,
+      "n_experts_at_or_below_capture_target": 2,
+      "per_expert": [
+        {
+          "expert": 0,
+          "capture_fraction_full_corpus_probe": 0.05901,
+          "capture_fraction_routed_probe": 0.3695,
+          "n_fit_tokens": 3,
+          "n_score_tokens_full": 258,
+          "n_score_tokens_routed": 7,
+          "control_error_full": 0.077724,
+          "treatment_error_full": 0.080917,
+          "gain_pct_full": -4.1082,
+          "control_error_routed": 0.042447,
+          "treatment_error_routed": 0.042622,
+          "gain_pct_routed": -0.4103
+        },
+        {
+          "expert": 1,
+          "capture_fraction_full_corpus_probe": 0.09391,
+          "capture_fraction_routed_probe": 0.61717,
+          "n_fit_tokens": 6,
+          "n_score_tokens_full": 258,
+          "n_score_tokens_routed": 1,
+          "control_error_full": 0.091147,
+          "treatment_error_full": 0.091965,
+          "gain_pct_full": -0.8971,
+          "control_error_routed": 0.03189,
+          "treatment_error_routed": 0.030814,
+          "gain_pct_routed": 3.3747
+        },
+        {
+          "expert": 2,
+          "capture_fraction_full_corpus_probe": 0.10708,
+          "capture_fraction_routed_probe": 0.22484,
+          "n_fit_tokens": 23,
+          "n_score_tokens_full": 258,
+          "n_score_tokens_routed": 23,
+          "control_error_full": 0.085029,
+          "treatment_error_full": 0.08732,
+          "gain_pct_full": -2.6948,
+          "control_error_routed": 0.073267,
+          "treatment_error_routed": 0.073021,
+          "gain_pct_routed": 0.3351
+        }
+      ]
+    },
+    {
+      "split_seed": 1,
+      "layer": 0,
+      "organ": "down_proj",
+      "experts": [
+        0,
+        1,
+        2
+      ],
+      "fit_segments": [
+        "cal_prose_narrative",
+        "cal_tool_json",
+        "cal_instr_steps",
+        "cal_prose_expo",
+        "cal_math_calc",
+        "cal_code_py"
+      ],
+      "hold_segments": [
+        "cal_code_rust",
+        "cal_rare",
+        "cal_code_sql",
+        "cal_reason_chain",
+        "cal_math_proof",
+        "cal_fact_recall"
+      ],
+      "spec": {
+        "dim": 16,
+        "k": 1024,
+        "stages": 1
+      },
+      "complete_bits_per_tensor_control": 4000272,
+      "complete_bits_per_tensor_treatment": 4000272,
+      "serialized_bytes_control": 532480,
+      "serialized_bytes_treatment": 532480,
+      "serialized_length_identical": true,
+      "payload_content_differs": true,
+      "chosen_eta_per_round_control": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "chosen_eta_per_round_treatment": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "mean_capture_fraction": 0.22934,
+      "max_capture_fraction": 0.46986,
+      "mean_gain_pct_full": -5.8409,
+      "mean_gain_pct_low_capture_only": -3.6292,
+      "n_experts_at_or_below_capture_target": 1,
+      "per_expert": [
+        {
+          "expert": 0,
+          "capture_fraction_full_corpus_probe": 0.11949,
+          "capture_fraction_routed_probe": 0.17248,
+          "n_fit_tokens": 3,
+          "n_score_tokens_full": 258,
+          "n_score_tokens_routed": 7,
+          "control_error_full": 0.206349,
+          "treatment_error_full": 0.21681,
+          "gain_pct_full": -5.0697,
+          "control_error_routed": 0.141329,
+          "treatment_error_routed": 0.163133,
+          "gain_pct_routed": -15.4275
+        },
+        {
+          "expert": 1,
+          "capture_fraction_full_corpus_probe": 0.46986,
+          "capture_fraction_routed_probe": 0.57596,
+          "n_fit_tokens": 6,
+          "n_score_tokens_full": 258,
+          "n_score_tokens_routed": 1,
+          "control_error_full": 0.160718,
+          "treatment_error_full": 0.174899,
+          "gain_pct_full": -8.8238,
+          "control_error_routed": 0.076798,
+          "treatment_error_routed": 0.092585,
+          "gain_pct_routed": -20.5559
+        },
+        {
+          "expert": 2,
+          "capture_fraction_full_corpus_probe": 0.09867,
+          "capture_fraction_routed_probe": 0.07356,
+          "n_fit_tokens": 23,
+          "n_score_tokens_full": 258,
+          "n_score_tokens_routed": 23,
+          "control_error_full": 0.44791,
+          "treatment_error_full": 0.464166,
+          "gain_pct_full": -3.6292,
+          "control_error_routed": 0.452772,
+          "treatment_error_routed": 0.463382,
+          "gain_pct_routed": -2.3434
+        }
+      ]
+    },
+    {
+      "split_seed": 2,
+      "layer": 0,
+      "organ": "gate_proj",
+      "experts": [
+        0,
+        1,
+        2
+      ],
+      "fit_segments": [
+        "cal_code_sql",
+        "cal_code_py",
+        "cal_rare",
+        "cal_reason_chain",
+        "cal_tool_json",
+        "cal_prose_expo"
+      ],
+      "hold_segments": [
+        "cal_math_calc",
+        "cal_math_proof",
+        "cal_fact_recall",
+        "cal_instr_steps",
+        "cal_prose_narrative",
+        "cal_code_rust"
+      ],
+      "spec": {
+        "dim": 8,
+        "k": 1024,
+        "stages": 2
+      },
+      "complete_bits_per_tensor_control": 15755792,
+      "complete_bits_per_tensor_treatment": 15755792,
+      "serialized_bytes_control": 2001920,
+      "serialized_bytes_treatment": 2001920,
+      "serialized_length_identical": true,
+      "payload_content_differs": true,
+      "chosen_eta_per_round_control": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "chosen_eta_per_round_treatment": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "mean_capture_fraction": 0.09625,
+      "max_capture_fraction": 0.14747,
+      "mean_gain_pct_full": -0.5084,
+      "mean_gain_pct_low_capture_only": -0.218,
+      "n_experts_at_or_below_capture_target": 2,
+      "per_expert": [
+        {
+          "expert": 0,
+          "capture_fraction_full_corpus_probe": 0.05835,
+          "capture_fraction_routed_probe": 0.41755,
+          "n_fit_tokens": 4,
+          "n_score_tokens_full": 235,
+          "n_score_tokens_routed": 6,
+          "control_error_full": 0.08342,
+          "treatment_error_full": 0.082992,
+          "gain_pct_full": 0.5134,
+          "control_error_routed": 0.046983,
+          "treatment_error_routed": 0.041627,
+          "gain_pct_routed": 11.3989
+        },
+        {
+          "expert": 1,
+          "capture_fraction_full_corpus_probe": 0.08293,
+          "capture_fraction_routed_probe": 0.61717,
+          "n_fit_tokens": 6,
+          "n_score_tokens_full": 235,
+          "n_score_tokens_routed": 1,
+          "control_error_full": 0.096369,
+          "treatment_error_full": 0.097284,
+          "gain_pct_full": -0.9493,
+          "control_error_routed": 0.02963,
+          "treatment_error_routed": 0.036855,
+          "gain_pct_routed": -24.3832
+        },
+        {
+          "expert": 2,
+          "capture_fraction_full_corpus_probe": 0.14747,
+          "capture_fraction_routed_probe": 0.27539,
+          "n_fit_tokens": 28,
+          "n_score_tokens_full": 235,
+          "n_score_tokens_routed": 18,
+          "control_error_full": 0.084831,
+          "treatment_error_full": 0.085755,
+          "gain_pct_full": -1.0893,
+          "control_error_routed": 0.071376,
+          "treatment_error_routed": 0.071768,
+          "gain_pct_routed": -0.5495
+        }
+      ]
+    },
+    {
+      "split_seed": 2,
+      "layer": 0,
+      "organ": "up_proj",
+      "experts": [
+        0,
+        1,
+        2
+      ],
+      "fit_segments": [
+        "cal_code_sql",
+        "cal_code_py",
+        "cal_rare",
+        "cal_reason_chain",
+        "cal_tool_json",
+        "cal_prose_expo"
+      ],
+      "hold_segments": [
+        "cal_math_calc",
+        "cal_math_proof",
+        "cal_fact_recall",
+        "cal_instr_steps",
+        "cal_prose_narrative",
+        "cal_code_rust"
+      ],
+      "spec": {
+        "dim": 8,
+        "k": 1024,
+        "stages": 2
+      },
+      "complete_bits_per_tensor_control": 15755792,
+      "complete_bits_per_tensor_treatment": 15755792,
+      "serialized_bytes_control": 2001920,
+      "serialized_bytes_treatment": 2001920,
+      "serialized_length_identical": true,
+      "payload_content_differs": true,
+      "chosen_eta_per_round_control": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "chosen_eta_per_round_treatment": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "mean_capture_fraction": 0.09625,
+      "max_capture_fraction": 0.14747,
+      "mean_gain_pct_full": -2.6032,
+      "mean_gain_pct_low_capture_only": -3.0831,
+      "n_experts_at_or_below_capture_target": 2,
+      "per_expert": [
+        {
+          "expert": 0,
+          "capture_fraction_full_corpus_probe": 0.05835,
+          "capture_fraction_routed_probe": 0.41755,
+          "n_fit_tokens": 4,
+          "n_score_tokens_full": 235,
+          "n_score_tokens_routed": 6,
+          "control_error_full": 0.079767,
+          "treatment_error_full": 0.082768,
+          "gain_pct_full": -3.7615,
+          "control_error_routed": 0.041656,
+          "treatment_error_routed": 0.041638,
+          "gain_pct_routed": 0.0444
+        },
+        {
+          "expert": 1,
+          "capture_fraction_full_corpus_probe": 0.08293,
+          "capture_fraction_routed_probe": 0.61717,
+          "n_fit_tokens": 6,
+          "n_score_tokens_full": 235,
+          "n_score_tokens_routed": 1,
+          "control_error_full": 0.092678,
+          "treatment_error_full": 0.094907,
+          "gain_pct_full": -2.4046,
+          "control_error_routed": 0.029835,
+          "treatment_error_routed": 0.028386,
+          "gain_pct_routed": 4.8582
+        },
+        {
+          "expert": 2,
+          "capture_fraction_full_corpus_probe": 0.14747,
+          "capture_fraction_routed_probe": 0.27539,
+          "n_fit_tokens": 28,
+          "n_score_tokens_full": 235,
+          "n_score_tokens_routed": 18,
+          "control_error_full": 0.085675,
+          "treatment_error_full": 0.087083,
+          "gain_pct_full": -1.6434,
+          "control_error_routed": 0.070737,
+          "treatment_error_routed": 0.069739,
+          "gain_pct_routed": 1.4118
+        }
+      ]
+    },
+    {
+      "split_seed": 2,
+      "layer": 0,
+      "organ": "down_proj",
+      "experts": [
+        0,
+        1,
+        2
+      ],
+      "fit_segments": [
+        "cal_code_sql",
+        "cal_code_py",
+        "cal_rare",
+        "cal_reason_chain",
+        "cal_tool_json",
+        "cal_prose_expo"
+      ],
+      "hold_segments": [
+        "cal_math_calc",
+        "cal_math_proof",
+        "cal_fact_recall",
+        "cal_instr_steps",
+        "cal_prose_narrative",
+        "cal_code_rust"
+      ],
+      "spec": {
+        "dim": 16,
+        "k": 1024,
+        "stages": 1
+      },
+      "complete_bits_per_tensor_control": 4000272,
+      "complete_bits_per_tensor_treatment": 4000272,
+      "serialized_bytes_control": 532480,
+      "serialized_bytes_treatment": 532480,
+      "serialized_length_identical": true,
+      "payload_content_differs": true,
+      "chosen_eta_per_round_control": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "chosen_eta_per_round_treatment": [
+        0.5,
+        1.0,
+        1.0
+      ],
+      "mean_capture_fraction": 0.23605,
+      "max_capture_fraction": 0.41252,
+      "mean_gain_pct_full": -0.1405,
+      "mean_gain_pct_low_capture_only": null,
+      "n_experts_at_or_below_capture_target": 0,
+      "per_expert": [
+        {
+          "expert": 0,
+          "capture_fraction_full_corpus_probe": 0.14164,
+          "capture_fraction_routed_probe": 0.23096,
+          "n_fit_tokens": 4,
+          "n_score_tokens_full": 235,
+          "n_score_tokens_routed": 6,
+          "control_error_full": 0.204457,
+          "treatment_error_full": 0.20473,
+          "gain_pct_full": -0.1338,
+          "control_error_routed": 0.134961,
+          "treatment_error_routed": 0.13604,
+          "gain_pct_routed": -0.7992
+        },
+        {
+          "expert": 1,
+          "capture_fraction_full_corpus_probe": 0.41252,
+          "capture_fraction_routed_probe": 0.57596,
+          "n_fit_tokens": 6,
+          "n_score_tokens_full": 235,
+          "n_score_tokens_routed": 1,
+          "control_error_full": 0.182586,
+          "treatment_error_full": 0.181881,
+          "gain_pct_full": 0.3863,
+          "control_error_routed": 0.076781,
+          "treatment_error_routed": 0.072747,
+          "gain_pct_routed": 5.2537
+        },
+        {
+          "expert": 2,
+          "capture_fraction_full_corpus_probe": 0.15398,
+          "capture_fraction_routed_probe": 0.1363,
+          "n_fit_tokens": 28,
+          "n_score_tokens_full": 235,
+          "n_score_tokens_routed": 18,
+          "control_error_full": 0.510087,
+          "treatment_error_full": 0.513524,
+          "gain_pct_full": -0.6739,
+          "control_error_routed": 0.559959,
+          "treatment_error_routed": 0.560929,
+          "gain_pct_routed": -0.1733
+        }
+      ]
+    }
+  ],
+  "positive_control_original_split": {
+    "split": "original LC.routed_split over corpus POSITIONS (duplicate ids in both halves)",
+    "provenance": "real_tokens",
+    "organ": "gate_proj",
+    "capture_fraction_per_expert": [
+      1.0,
+      0.99062,
+      0.4224
+    ],
+    "control_error": 0.046659,
+    "treatment_error": 0.04135,
+    "gain_pct": 11.378,
+    "note": "reproduces the sealed S3A win under the sealed split, so the collapse in the disjoint cells is caused by the SPLIT and not by this module"
+  },
+  "n_low_capture_expert_cells": 13,
+  "mean_gain_pct_low_capture": -1.9172,
+  "mean_gain_pct_all_cells": -1.7688,
+  "survives_disjoint": false,
+  "bits_identical": true,
+  "verdict": "S3A_QAT_SEALED_NEGATIVE_UNDER_DISJOINT_PROBE",
+  "honesty": "Output relative error on a calibration probe is a PROXY for capability, not capability; no forward was run. Layer-0 input is itself rmsnorm(embed[id]) with the attention sublayer and residual skipped. Scoring on the full held-out segment matrix is a distribution shift away from the expert's routed tokens; the routed-probe score is reported alongside with its own, higher, capture. The frozen corpus holds only 540 unique ids, so a low-capture probe and a large fit span cannot both be had here.",
+  "wall_seconds": 144.3
+}

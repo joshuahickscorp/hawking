@@ -1,0 +1,106 @@
+{
+  "schema": "hawking.gravity.doctor_gen2.adversarial.v1",
+  "stage": "S3C_DOCTOR_GEN2_ADVERSARIAL",
+  "target_file": "/Users/scammermike/HawkingWorktrees/subbit-reset/tools/condense/qwen_doctor_gen2.py",
+  "target_report": "/Users/scammermike/HawkingWorktrees/subbit-reset/reports/subbit_reset/S3C_DOCTOR_GEN2.json",
+  "verdict_upheld": false,
+  "severity": "material",
+  "bit_accounting_correct": true,
+  "self_check_actually_fails_when_broken": true,
+
+  "what_survived": {
+    "bit_ledger": "Re-derived independently from qwen_subhalfbit_search.expert_bits, qwen_function_aware_codec.doctor_bits and qwen_structural_plan.{GATE_RUNGS,DOWN_RUNGS,ROW_SCALE_BITS}. All four prices reproduce exactly: doctor 2,007,040; down rung delta 3,930,112; gate/up rung delta 31,465,472; one expert 35,518,000 (= 2*(15,732,752+24,576) + (3,936,272+65,536) + 3*512 metadata). Whole-model 2,007,040*64*94 = 12,074,352,640 = 0.051359760 complete BPW over 235,093,634,560; 0.948410027 (S_STRUCTURAL_PLAN, verified in file) + 0.051359760 = 0.999769787 <= 1.0, and that literal appears in the sealed S64_doctor checkpoints. No unbilled bit found: correction indices, amortised correction codebook, per-protected-row bf16 scale, per-row protection bitmap all charged; the importance vector h and the row-selection criterion are encoder-time only and correctly absent from the inference ledger.",
+    "fit_score_hygiene": "Checked in code, not prose. _split is even-prompt-fit / odd-prompt-score, measure() asserts token AND prompt disjointness, h_x = importance_from_activations(X[fit_t]), h_a from a_fit on t_fit only, protected rows from the fit-derived h. 5 fit / 4 score prompts, 478/370 tokens. No leak found.",
+    "activations_are_real": "Cache /tmp/qwen_doctor_gen2_acts.npz (12.9 MB) holds a genuine 46-layer forward over real shards; I re-read expert 51 and 25 weights from models/qwen3-235b-a22b and reproduced the report's own base and gen1 numbers to 3-4 significant figures (e51 base sq_err 9.6751 vs report 9.678, gen1 delta 2.046 vs report 2.044). Not synthetic, not laundered.",
+    "self_check": "Passes as shipped. Four independent mutations copied to /tmp all fire: DOCTOR k 1024->512 (AssertionError 1808384), protect_frac 0.5->0.25 (1007616), KEEP 64->32 (2011136), and killing the h weighting in rows_by_output_sensitivity (row-selection assert). The self-check is real."
+  },
+
+  "refutations": [
+    {
+      "id": "R1",
+      "severity": "material",
+      "claim_attacked": "G2-B wins because it picks protected rows by MEASURED OUTPUT SENSITIVITY sum_j h_j (w_ij-b_ij)^2 - the campaign's 'trainable selection' result, and the only thing giving the Doctor daylight over (d).",
+      "finding": "The h weighting contributes NOTHING. Setting h to ones - i.e. plain UNWEIGHTED absolute squared residual energy, which uses no activations, no calibration and no training - matches or beats G2-B on 2/2 experts tested. The entire G2-B gain is the switch from RELATIVE residual energy (Gen1) to ABSOLUTE residual energy. Same failure shape the campaign already booked once when routed-token calibration was credited for a win 83 percent recoverable from LayerNorm gamma alone.",
+      "measurement": {
+        "note": "delta_sq_err = base_no_doctor - arm, two Lloyd seeds each, gate/up held at the base rung, identical bytes for every arm",
+        "expert_51": {"base_no_doctor": 9.675090, "gen1_relative": [2.045811, 1.978387], "gen2B_h_weighted": [2.128891, 2.090487], "ABLATE_abs_energy_h_ones": [2.122118, 2.109223], "ABLATE_random_rows": [1.981193, 1.970751]},
+        "expert_25": {"base_no_doctor": 0.745617, "gen1_relative": [0.156663, 0.162409], "gen2B_h_weighted": [0.183346, 0.182033], "ABLATE_abs_energy_h_ones": [0.187533, 0.181214], "ABLATE_random_rows": [0.161381, 0.154960]},
+        "h_free_share_of_gen2B_gain_over_gen1": {"expert_51": 1.06, "expert_25": 1.08},
+        "row_overlap_with_gen1_selection": {"gen2B": 0.568, "abs_energy_h_ones": 0.627, "random": 0.504}
+      },
+      "consequence": "The Gen2 deliverable is misattributed. G2-A is a sealed negative (agreed). G2-B is not an output-sensitivity result at all - it is a calibration-free correction to Gen1's relative-energy selector. 'Gen2 is half a win' should read: Gen2 is zero wins; Gen1's selector had a bug worth ~5 percent and fixing it needs no activations."
+    },
+    {
+      "id": "R2",
+      "severity": "material",
+      "claim_attacked": "Gen1's mechanism: 'a sparse residual over the rows with the worst RELATIVE residual energy'.",
+      "finding": "Gen1's row selector is statistically indistinguishable from RANDOM row selection. Mean delta gen1 vs random: e51 2.0121 vs 1.9760 (+1.8 pct), e25 0.15954 vs 0.15817 (+0.9 pct) - both inside the measured seed spread (below). Random rows recover 96-99 percent of Gen1's entire gain. Essentially all of the Doctor's utility comes from spending 50 percent of the rows on a second codebook stage, not from WHICH rows.",
+      "consequence": "The 'protected row' story is decoration on Gen1. Any claim that the Doctor's row selection is the mechanism is refuted."
+    },
+    {
+      "id": "R3",
+      "severity": "material",
+      "claim_attacked": "'run_to_run_spread_pct: 1' and 'the Gen2B-over-Gen1 margin (~5 percent) is larger than the observed run spread'.",
+      "finding": "The stated ~1 percent spread is understated by 3-4x. Changing ONLY the Lloyd seed (17 -> 4242), with row selection and bytes fixed, moved a single arm's delta by up to 3.7 percent: gen1 3.4 pct (e51) and 3.7 pct (e25), h_ones 3.5 pct (e25). Because expert 51 supplies 88 percent of the 3-expert summed delta, a seed swing on e51 alone moves the reported arm mean by ~3 percent.",
+      "consequence": "gen1_over_down_rung_pct = 1.14 is noise (report concedes). best_doctor_over_down_rung_pct = 5.73 is only ~1.6 seed-sigma and is NOT the 'real daylight' the verdict claims. gen2B_over_gen1_pct = 4.53 is ~1.3 seed-sigma AND is fully explained by R1."
+    },
+    {
+      "id": "R4",
+      "severity": "material",
+      "claim_attacked": "'a Doctor arm out-earns every non-Doctor treatment on 3/3 experts' (doctor_arm_wins 3/3, unanimous_for_doctor true).",
+      "finding": "Two aggregation artifacts. (a) The 3/3 sign is a max over FOUR correlated Doctor arms against TWO non-Doctor arms - a multiple-comparison win, and the winning arm is a different one on each expert (e51 gen2B, e25 gen2AB, e14 gen1). Fix the arm and the sign collapses: gen2B beats (d) on 2/3 (e51 +6.4 pct, e25 +0.06 pct, e14 -1.9 pct) and gen1 beats (d) on 2/3 (e51 +2.1 pct, e25 -11.9 pct, e14 +5.3 pct). The module's own docstring states 'a 2/3 sign is none'. (b) The arm mean is an energy-weighted mean dominated 88 percent by the hottest expert, which the sampler deliberately includes at 1/3 weight although it is 1 of 64 survivors. Under equal weight per expert (mean of per-expert utility ratios): gen1/(d) = 0.985 - Gen1 LOSES to (d); gen2B/(d) = 1.028, inside the R3 seed spread.",
+      "consequence": "'DOCTOR KEEPS ITS SLOT' is not established at either aggregation. Under mean-of-ratios the Doctor and (d) are a tie at best and Gen1 is behind."
+    },
+    {
+      "id": "R5",
+      "severity": "minor",
+      "claim_attacked": "'Every arm priced with the existing exact ledger, no approximations.'",
+      "finding": "doctor_bits() omits METADATA_BITS_PER_TENSOR (512) and the byte alignment that expert_bits() applies to every competing tensor. The Doctor is undercharged 512 bits per expert-tensor = 3,080,192 bits whole-model. Corrected complete BPW 0.999782893, still <= 1.0, and the utility-per-bit ranking is unchanged (0.026 pct).",
+      "consequence": "Ledger is materially right, cosmetically inconsistent. The self-check pins the wrong number (2_007_040 rather than 2_007_552) but pins it hard, so it is a stable convention, not drift."
+    },
+    {
+      "id": "R6",
+      "severity": "minor",
+      "claim_attacked": "Inherited bound language.",
+      "finding": "qwen_structural_plan.rd_floor is the memoryless-Gaussian R(D), which is an UPPER bound on achievable distortion (Gaussian is the worst-case source), yet is called a 'floor'; its own docstring reports a codec measuring 0.6435 BELOW the 0.6484 'floor', which is the proof it is not a floor. S3C imports SP and quotes that framing in its header. NOT load-bearing: no S3C number is derived from rd_floor, and S3C makes no optimality or exhaustion claim. Flagged so the wording is not reused where it would be load-bearing.",
+      "consequence": "No S3C number changes."
+    },
+    {
+      "id": "R7",
+      "severity": "minor",
+      "claim_attacked": "Generality of the auction ordering.",
+      "finding": "One layer (46), three experts chosen by rank {0, 16, 63} of 64, one routing calibration, gate/up frozen at the base rung. Not tested at another layer or organ; the concurrent 94-layer forward made a second capture unaffordable within this agent's budget. Combined with R3 and R4, the top-two ordering has no support and the report's own fallback claim (order-of-magnitude separation: (b) ~4x below, (c) ~40x below) is the only part of the auction that survives.",
+      "consequence": "Keep the order-of-magnitude finding, drop the ordering."
+    }
+  ],
+
+  "confirmed_numbers": {
+    "doctor_bits_per_expert": 2007040,
+    "down_rung_up_bits_per_expert": 3930112,
+    "gate_up_rung_up_bits_per_expert": 31465472,
+    "one_more_expert_bits_per_layer": 35518000,
+    "doctor_whole_model_bits": 12074352640,
+    "doctor_complete_bpw": 0.05135975996371954,
+    "s64_structural_bpw": 0.948410027,
+    "s64_doctor_complete_bpw": 0.999769787,
+    "ceiling_satisfied": true,
+    "corrected_doctor_bpw_with_tensor_metadata": 0.999782893,
+    "fit_tokens": 478,
+    "score_tokens": 370,
+    "n_prompts": 9,
+    "expert51_base_sq_err_reproduced": 9.675089836120605,
+    "expert51_report_base_sq_err": 9.678,
+    "expert25_base_sq_err_reproduced": 0.7456169128417969,
+    "expert51_share_of_3expert_summed_delta": 0.88,
+    "measured_seed_only_spread_pct": 3.7,
+    "claimed_run_to_run_spread_pct": 1,
+    "gen2B_gain_over_gen1_recovered_by_h_equals_ones": {"expert_51": 1.06, "expert_25": 1.08},
+    "gen1_gain_recovered_by_random_rows": {"expert_51": 0.982, "expert_25": 0.991},
+    "mean_of_ratios_gen1_over_down_rung": 0.985,
+    "mean_of_ratios_gen2B_over_down_rung": 1.028,
+    "gen2B_beats_down_rung_per_expert": "2/3",
+    "gen1_beats_down_rung_per_expert": "2/3"
+  },
+
+  "recommended_correction": "Rewrite the verdict as: the byte auction is a TIE between the Doctor and (d) down-rung-up at layer 46, not a Doctor win, and Gen2 delivers no trainable result. Concretely: (1) replace the G2-B claim with the ablation - the gain is the RELATIVE -> ABSOLUTE residual-energy switch, reproduced with h = ones on 2/2 experts, so it is a calibration-free fix to Gen1's selector and should be folded into Gen1 rather than shipped as a Gen2 'trainable selection' result; keep G2-A sealed negative. (2) Report Gen1's selector as no better than random rows (+1.8/+0.9 pct on the two experts measured); the Doctor's utility is the second codebook stage, not the row choice. (3) Raise run_to_run_spread_pct from 1 to >=4 (measured 3.7 pct from the Lloyd SEED alone at fixed rows) and re-label every margin below that - including best_doctor_over_down_rung_pct 5.73 - as a tie. (4) Replace the energy-weighted 3-expert mean with the mean of per-expert utility RATIOS, or weight experts by deployment frequency; under mean-of-ratios Gen1 is 1.5 pct BELOW (d) and gen2B is 2.8 pct above, i.e. within noise. (5) Stop reporting doctor_arm_wins as a max over four correlated arms; fix one arm before taking a sign, which gives 2/3 - which the module's own docstring calls no evidence. (6) Optional: add METADATA_BITS_PER_TENSOR + byte alignment to doctor_bits (0.999782893 BPW, still legal) so the Doctor is priced on the same convention as its competitors. Nothing here changes the ceiling result or the order-of-magnitude finding that (b) is ~4x and (c) ~40x below the top group - those stand."
+}

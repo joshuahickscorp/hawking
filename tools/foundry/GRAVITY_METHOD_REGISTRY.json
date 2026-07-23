@@ -1,0 +1,305 @@
+{
+  "created_at": "2026-07-20T19:29:43+00:00",
+  "current_generation": "GRAVITY_METHOD_V2",
+  "generations": {
+    "GRAVITY_METHOD_V1": {
+      "candidate_priors": {
+        "honest_boundary_f0": {
+          "claim": "sub-bit uniform AND treated both collapsed on a real forward",
+          "status": "sealed_negative_result"
+        },
+        "organ_inversion": {
+          "action": "allocate bits to gate/up first, spend the slack on down",
+          "claim": "mlp1 (gate+up) is the SENSITIVE organ; mlp2 (down) tolerates more.",
+          "evidence": "F0 gpt-oss-120b real forward; F1 qwen3-235b dominant_failure_organ=gate"
+        },
+        "routing_frequency_allocation": {
+          "claim": "allocate rate by measured expert routing frequency",
+          "requirement": "~1000 calibration tokens; 88 is NOT enough (median split 63.6 percent stable, 26.1 percent of cells never route)",
+          "status": "alive"
+        },
+        "row_norm_stratification": {
+          "claim": "94 percent of gate/up rows collapse onto ONE codeword because row norms span 1e-5..0.91; stratify by row norm",
+          "status": "alive_untested"
+        },
+        "space_filling_gain": {
+          "claim": "rel_error falls monotonically with VQ dimension at fixed rate",
+          "measured": {
+            "d16k256": 0.757,
+            "d32k65536": 0.668,
+            "d8k16": 0.782
+          },
+          "status": "alive"
+        }
+      },
+      "generation": 1,
+      "kernel_set": {
+        "doctor": [
+          "doctor_static",
+          "doctor_conditional"
+        ],
+        "organ_split": [
+          "mlp1_gate_up",
+          "mlp2_down",
+          "attn",
+          "embed_head_passthru"
+        ],
+        "representation": [
+          "pq_vq",
+          "trellis_free_scalar"
+        ],
+        "vq_dimensions": [
+          8,
+          16,
+          32
+        ]
+      },
+      "key": "GRAVITY_METHOD_V1",
+      "method_version": "GRAVITY_METHOD_V1",
+      "parents_completed": [
+        "gpt-oss-120b:F0"
+      ],
+      "parents_in_flight": [
+        "qwen3-235b:F1"
+      ],
+      "promoted_by_review_sha256": null,
+      "provider_revision": {
+        "engine": "tools/condense/gravity_forge.py + gptoss_subbit_packer.py",
+        "forward": "tools/condense/gptoss_real_forward.py",
+        "foundry": "hawking.deep-architecture-foundry"
+      },
+      "quality_contract": {
+        "enforcer": "tools/foundry/quality_contract.py (same thresholds)",
+        "law": "byte plan != capability; only a real parent-vs-packed forward selects a frontier",
+        "mean_symmetric_kl_max": "1/10",
+        "min_capability_tokens": 1000,
+        "next_token_argmax_agreement_min": "19/20",
+        "weakening_forbidden": true
+      },
+      "rate_ladder": [
+        {
+          "den": 1,
+          "label": "1/1",
+          "num": 1,
+          "value": 1.0
+        },
+        {
+          "den": 20,
+          "label": "17/20",
+          "num": 17,
+          "value": 0.85
+        },
+        {
+          "den": 10,
+          "label": "7/10",
+          "num": 7,
+          "value": 0.7
+        },
+        {
+          "den": 5,
+          "label": "3/5",
+          "num": 3,
+          "value": 0.6
+        },
+        {
+          "den": 2,
+          "label": "1/2",
+          "num": 1,
+          "value": 0.5
+        },
+        {
+          "den": 5,
+          "label": "2/5",
+          "num": 2,
+          "value": 0.4
+        },
+        {
+          "den": 3,
+          "label": "1/3",
+          "num": 1,
+          "value": 0.3333333333333333
+        },
+        {
+          "den": 4,
+          "label": "1/4",
+          "num": 1,
+          "value": 0.25
+        }
+      ],
+      "sealed_at": "2026-07-20T19:29:43+00:00",
+      "sha256": "bd3be1b4cada06313cb028328cdef3bf71e905ff6c106f465db1c9fddda4994c",
+      "source_revision": {
+        "note": "re-downloadable from the pinned revision; harvest completed before release",
+        "parent": "openai/gpt-oss-120b",
+        "pinned": true,
+        "status": "released_after_harvest"
+      },
+      "storage_policy": {
+        "expert_cache_cap_bytes": 21474836480,
+        "rationale": "a single lockstep pass has ZERO cross-layer reuse; a 64GB cap gave 0 evictions, drove RAM 70->18GB and swap to 906MB free. Aggressive RAM only where real reuse exists.",
+        "source_release": "release source after harvest; re-download from pinned revision"
+      }
+    },
+    "GRAVITY_METHOD_V2": {
+      "candidate_priors": {
+        "inventory_is_a_free_variable": {
+          "claim": "under a FIXED complete ceiling, halving the expert inventory and doubling the survivor rate is budget-neutral, so the rate-distortion floor on the surviving experts falls without spending a single extra bit",
+          "measured": {
+            "S64_doctor_complete_bpw": 0.999769787,
+            "S64_g2.5_d0.625_complete_bpw": 0.948410027,
+            "gate_up_rd_floor": [
+              0.6484,
+              0.1768
+            ]
+          },
+          "status": "ALIVE_UNDER_TEST"
+        },
+        "organ_inversion": {
+          "action": "allocate bits to gate/up first, spend the slack on down",
+          "claim": "mlp1 (gate+up) is the SENSITIVE organ; mlp2 (down) tolerates more.",
+          "evidence": "F0 gpt-oss-120b real forward; F1 qwen3-235b dominant_failure_organ=gate"
+        },
+        "post_hoc_rate_distortion_wall": {
+          "claim": "post-hoc coding of frozen weights is near its bound in mid/late layers, with layer 0 a measured exception",
+          "measured": {
+            "down_L0": {
+              "gap_decades": 1.328,
+              "non_gaussianity_bits": 3.014,
+              "rel_error": 0.3701,
+              "shannon_lower_bound": 0.0803
+            },
+            "down_L46_L93": {
+              "gap_decades": 0.059,
+              "rel_error": 0.7026,
+              "shannon_lower_bound": 0.6568
+            },
+            "gate_L46_L93": {
+              "gap_decades": 0.284,
+              "rel_error": 0.2427,
+              "shannon_lower_bound": 0.1749
+            }
+          },
+          "methodology_correction": "the Gaussian D(R) is an UPPER bound, not a floor. Every future rate-distortion claim must use the Shannon lower bound with a MEASURED differential entropy.",
+          "status": "SEALED_NEARLY_EXHAUSTED_WITH_NAMED_EXCEPTION"
+        },
+        "routing_frequency_allocation": {
+          "claim": "allocate rate by measured expert routing frequency",
+          "requirement": "1200-token corpus DISJOINT from the scored holdout; the sealed 88-token statistics were collected on the scored prompts themselves",
+          "status": "alive"
+        },
+        "row_norm_stratification": {
+          "claim": "94 percent of gate/up rows collapse onto ONE codeword",
+          "evidence": "measured single-codeword share 0.0267 mean, max 0.047, on real Qwen3-235B at d16 k1024 across 5 layers x 3 organs x 8 experts",
+          "status": "PREMISE_FALSIFIED"
+        },
+        "same_budget_doctor": {
+          "claim": "spend the ceiling remainder on a diagnosis-driven sparse residual over the organ with the worst rate-distortion floor",
+          "measured": {
+            "down_L46_rel_error": [
+              0.7038,
+              0.6074
+            ],
+            "organ_bpw_cost": 0.319
+          },
+          "status": "ALIVE_MEASURED"
+        },
+        "scale_invariant_vq": {
+          "claim": "quantize the row DIRECTION and ship one bf16 scale per row",
+          "measured": {
+            "best_cell_L0_gate": [
+              0.7214,
+              0.6435
+            ],
+            "extra_bpw_gate_up": 0.003906,
+            "mean_rel_error": [
+              0.774596,
+              0.75255
+            ]
+          },
+          "note": "the strictly stronger form of row-norm stratification; wins in proportion to the row-norm span of the cell and vanishes where the span is flat",
+          "status": "ALIVE_MEASURED_SMALL"
+        }
+      },
+      "ceiling": {
+        "enforced_by": "tools/foundry/one_bit_ceiling.assert_complete_bpw_le_one",
+        "rule": "complete_bits / original_weight_count <= 1/1",
+        "upward_bracketing": "PERMANENTLY REJECTED. No 1.2 / 1.5 / 2 / 3 BPW anchor may be scheduled. SUBBIT_UNSOLVED is emitted instead of an Escape Receipt."
+      },
+      "mandatory_for_every_future_adapter": [
+        "state which Qwen3-235B failure it avoids (name the atlas entry)",
+        "state which materially NEW method family it begins with, not which hyperparameter it retunes",
+        "state how it falsifies the assumption it transferred in",
+        "start at least as aggressively as this generation: no parent may begin above 1.0 complete BPW because a previous parent's codec failed",
+        "declare calibration and scored holdout separately and prove them disjoint",
+        "never argue exhaustion from the Gaussian rate-distortion value; measure the source's own differential entropy and compare against the Shannon lower bound per organ and per layer"
+      ],
+      "parent_of_record": "qwen3-235b-a22b-instruct-2507",
+      "quality_contract": {
+        "enforcer": "tools/foundry/quality_contract.py (same thresholds)",
+        "law": "byte plan != capability; only a real parent-vs-packed forward selects a frontier",
+        "mean_symmetric_kl_max": "1/10",
+        "min_capability_tokens": 1000,
+        "next_token_argmax_agreement_min": "19/20",
+        "weakening_forbidden": true
+      },
+      "rate_ladder": [
+        {
+          "den": 1,
+          "label": "1/1",
+          "num": 1,
+          "value": 1.0
+        },
+        {
+          "den": 20,
+          "label": "17/20",
+          "num": 17,
+          "value": 0.85
+        },
+        {
+          "den": 10,
+          "label": "7/10",
+          "num": 7,
+          "value": 0.7
+        },
+        {
+          "den": 5,
+          "label": "3/5",
+          "num": 3,
+          "value": 0.6
+        },
+        {
+          "den": 2,
+          "label": "1/2",
+          "num": 1,
+          "value": 0.5
+        },
+        {
+          "den": 5,
+          "label": "2/5",
+          "num": 2,
+          "value": 0.4
+        },
+        {
+          "den": 3,
+          "label": "1/3",
+          "num": 1,
+          "value": 0.3333333333333333
+        },
+        {
+          "den": 4,
+          "label": "1/4",
+          "num": 1,
+          "value": 0.25
+        }
+      ],
+      "sealed_at": "2026-07-20T21:11:23+00:00",
+      "storage_policy": {
+        "expert_cache_cap_bytes": 21474836480,
+        "rationale": "a single lockstep pass has ZERO cross-layer reuse; a 64GB cap gave 0 evictions, drove RAM 70->18GB and swap to 906MB free. Aggressive RAM only where real reuse exists.",
+        "source_release": "release source after harvest; re-download from pinned revision"
+      },
+      "supersedes": "GRAVITY_METHOD_V1"
+    }
+  },
+  "schema": "hawking.foundry.gravity_method_registry.v1"
+}

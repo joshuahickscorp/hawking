@@ -1,0 +1,133 @@
+{
+  "bit_accounting_correct": true,
+  "confirmed": {
+    "anchors_are_parent_not_twin": "D1 4.297 / D2 7.879 / S64 8.599 / S64_doctor 7.699 traced to QWEN235B_VULTURE_HARVEST.json (S1 full forward, 94 layers, 6 frozen holdout prompts, cached parent logits). NOT the synthetic-twin values in DOCTOR_PRIME_CAUSAL_HARNESS.json (D1 7.7e-4, D2 7.6e-4).",
+    "coverage_by_K_recomputed_from_calibration": {
+      "112": 0.988783,
+      "128": 1.0,
+      "32": 0.523389,
+      "48": 0.673655,
+      "64": 0.791735,
+      "80": 0.883021,
+      "96": 0.948726
+    },
+    "exact_bpw_rationals_reproduced": {
+      "BALANCED": "890972137/918334510",
+      "BASE_HEAVY": "1749773761/1836669020",
+      "DOCTOR_HEAVY": "7140986587/7346676080"
+    },
+    "free_disk": "116Gi available on /System/Volumes/Data (926Gi, 87% used). This claim makes no staging or download assertion, so there is nothing disk-dependent to refute.",
+    "heavy_job_untouched": "pid 62852 qwen_gravity_campaign still running; all adversary work was metadata-only, <2s wall.",
+    "indices_recomputed_from_shapes_independently": {
+      "BALANCED": 118279372800,
+      "BASE_HEAVY": 159677153280,
+      "DOCTOR_HEAVY": 79838576640,
+      "note": "94 layers x K x (2*1536*4096*gate + 4096*1536*down), bit-for-bit match"
+    },
+    "mandatory_lanes_are_billed": "metadata_and_runtime (536882944 bits) appears in the exact ledger as packaging 536870912 + runtime_tables 12032. No mandatory lane is left out of the ceiling check.",
+    "mutation_kills": [
+      "PLANNED_CEILING 49/50 -> 3/2: AssertionError",
+      "D1 anchor 4.297 -> 3.000: AssertionError",
+      "LossModel.A drops /(1-cov64): AssertionError",
+      "doctor_gain_band returns (opt,opt): AssertionError",
+      "sub-additivity exponent s forced to 1.0: AssertionError 12.176",
+      "saturating gain G_sat halved: AssertionError (0.9476, 8.1495)"
+    ],
+    "no_dense_shadow": "islands+pass_through bill 1.094376 bits per dense (non-expert) weight over 7,997,238,784 dense params; components byte-identical to the sealed S64_g2.5_d0.625 arm in S_STRUCTURAL_PLAN.json. protected_tensors (bf16 upgrade, 119204265984 bits) is a genuine OPTIONAL upgrade lane, not a required full-precision copy.",
+    "one_bit_ceiling_rerun_by_adversary": {
+      "BALANCED": "(True, [])",
+      "BASE_HEAVY": "(True, [])",
+      "DOCTOR_HEAVY": "(True, [])"
+    },
+    "planned_budget_bits": "floor(49/50 * 235093634560) = 230391761868, exact match",
+    "routing_only_floor_recomputed": {
+      "112": 0.2314,
+      "128": 0.0,
+      "32": 9.8336,
+      "48": 6.7333,
+      "64": 4.297,
+      "80": 2.4135,
+      "96": 1.0579
+    }
+  },
+  "proxy_laundering_check": "CLEAN on provenance, but restated for the record: every symKL in this module - anchors included - is an output-space distance on 6 frozen holdout prompts, and every cell prediction is a zero-residual-DOF extrapolation. The module says so, sets promotable False everywhere, and demo() asserts it. No capability claim is made or implied.",
+  "recommended_correction": "Two edits. (1) In codeability(), replace `rate >= lowest_gate` with the blended minimum (2*min(GATE_RUNGS) + min(DOWN_RUNGS))/3, or better, call AK.layer_bits at the cheapest legal rung pair and compare bits to bits; then restate the finding as uncodeable at K>=96, K=80 fits with 16 pct headroom. (2) Demote finding (2) from 'does not depend on the Doctor law' to 'holds under a LINEAR routing law; K=112 clears at routing-law exponent p>=1.29, which is unmeasured'. Optionally add the aggregate unpriced-lane BPW (1.47-1.49, illegal) and re-seal the S64 anchor at 8.599. Everything else - the byte ledger, the three envelopes, the ceiling enforcement, and the self-check - stands as claimed and was independently reproduced bit-for-bit.",
+  "refutations": [
+    {
+      "claim": "a DOCTOR_HEAVY base is literally uncodeable at K>=80 on the existing rung ladder",
+      "correction": "the uncodeability threshold is K>=96, not K>=80. K=80 fits with 16 pct headroom. The report's per_K table marks K=80 and K=96 uncodeable; K=80 is wrong.",
+      "defect": "the feasibility test compares the blended budget rate against the cheapest GATE rung only. down_proj is 1/3 of expert weights and its ladder goes to 0.15625, so the cheapest legal blended payload rate is (2*0.625 + 0.15625)/3 = 0.46875, not 0.625.",
+      "exact_rebill_at_cheapest_legal_rung_pair_gate0.625_down0.15625_incl_codebooks_and_scales": {
+        "K112": 94517099264,
+        "K112_ratio": 1.1721,
+        "K128": 107998269440,
+        "K128_ratio": 1.3393,
+        "K80": 67554446080,
+        "K80_codeable": true,
+        "K80_ratio": 0.8378,
+        "K96": 81035808768,
+        "K96_codeable": false,
+        "K96_ratio": 1.0049,
+        "base_budget_bits_at_share_0.35": 80637116654
+      },
+      "id": "R1",
+      "impact": "finding (1) survives in weakened form. No envelope's legality changes - DOCTOR_HEAVY itself is at K=48.",
+      "severity": "material",
+      "status": "REFUTED at K=80",
+      "where": "tools/condense/doctor_byte_auction.py:459 codeable_by_existing_gate_ladder = bool(rate >= lowest_gate) where lowest_gate = min(GATE_RUNGS) = 0.625"
+    },
+    {
+      "claim": "finding (2) does NOT depend on the Doctor law: with routing loss anchored on D1, only K=128 has a routing-only floor under the 0.10 gate",
+      "correction": "restate as: under a LINEAR routing law only K=128 clears; the K=112 arm flips under mild convexity (p>=1.29) that no measurement excludes. K<=96 is robust (needs p>=2.7). Do not list this alongside the byte-exact findings as assumption-free.",
+      "defect": "the finding is independent of the DOCTOR law but fully dependent on L_route being LINEAR in (1-C), itself a one-point fit off the same D1 anchor. Under L = 4.297 * ((1-C)/(1-C64))^p the gate is cleared at K=112 for any p >= 1.287.",
+      "exponent_needed_to_clear_gate": {
+        "K112": 1.287,
+        "K80": 6.519,
+        "K96": 2.683
+      },
+      "id": "R2",
+      "impact": "the report discloses this in honesty caveat 4, but the headline sentence 'every omission arm is bounded away from capability' is not supported by the evidence class.",
+      "severity": "material",
+      "status": "REFUTED as stated (independence overclaimed)"
+    },
+    {
+      "claim": "sealed anchors",
+      "defect": "QWEN235B_VULTURE_HARVEST.json records S64_structural symKL 8.599; ANCHORS['S64_joint_undoctored'] uses 8.600 and demo() asserts 8.600 as the sealed value, so the self-check now guards a rounded number rather than the receipt. Separately ANCHORS['S64_doctor']['base_bpw'] = 0.9484 is labelled a BASE rate but the source 0.948410027 is the COMPLETE bpw of the undoctored arm (islands, packaging and scales included).",
+      "id": "R3",
+      "impact": "numeric effect ~1e-4 on g0; base_bpw is never read by the model (grep: it appears only in the ANCHORS literal). Mislabel would misfit any future re-fitter.",
+      "severity": "minor",
+      "status": "DRIFT"
+    },
+    {
+      "claim": "the six unpriced lanes are priced in bytes so a reader sees the displacement",
+      "correction": "add one line: the unpriced lanes cannot all be bought; protected_tensors alone (0.5174 of planned) exceeds the entire remaining headroom.",
+      "defect": "the aggregate is never stated and it is illegal. Base ledger + all six lanes: BASE_HEAVY 1.4711, BALANCED 1.4894, DOCTOR_HEAVY 1.4904 complete BPW - 47-49 pct over the HARD ceiling. one_bit_ceiling rejects all three.",
+      "id": "R4",
+      "severity": "minor",
+      "status": "INCOMPLETE"
+    },
+    {
+      "claim": "mechanism attribution on the survivor selector",
+      "coverage_random_selector": {
+        "112": 0.875407,
+        "128": 1.0,
+        "32": 0.24993,
+        "48": 0.375146,
+        "64": 0.499952,
+        "80": 0.624903,
+        "96": 0.749047
+      },
+      "id": "R5",
+      "result": "the measured top8-count selector carries +0.2918 coverage at K=64 over random (0.7917 vs 0.5000). Randomizing the selector makes every routing floor strictly worse, so finding (2)'s direction survives selector randomization.",
+      "severity": "none",
+      "status": "MECHANISM CONFIRMED, no misattribution",
+      "test": "importance set to ones (random K survivors per layer, 20 draws)"
+    }
+  ],
+  "schema": "hawking.gravity.doctor_byte_auction.adversarial.v1",
+  "self_check_actually_fails_when_broken": true,
+  "severity": "material",
+  "target": "tools/condense/doctor_byte_auction.py",
+  "target_report": "reports/subbit_reset/DOCTOR_PRIME_BYTE_AUCTION.json",
+  "verdict_upheld": false
+}

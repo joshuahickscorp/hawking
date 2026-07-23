@@ -1,0 +1,103 @@
+{
+  "schema": "hawking.subbit_reset.next_parent_resolution_adversarial.v1",
+  "generated_at_utc": "2026-07-20T22:20:00Z",
+  "target": "reports/subbit_reset/NEXT_PARENT_RESOLUTION.json",
+  "verdict_upheld": true,
+  "severity": "minor",
+  "headline": "The decisive claim survives independent arithmetic with an enormous margin. 397B cannot be staged. Six numeric/labelling defects found, none of which move the conclusion; the largest is a GB-vs-GiB mixup in the Kimi comparison that shrinks a stated 42.5 GiB margin to 1.7 GiB.",
+
+  "independently_confirmed": {
+    "free_disk": {
+      "statvfs_bavail_bytes": 123133513728,
+      "statvfs_gib": 114.68,
+      "df_k_avail_kib": 120247576,
+      "df_k_gib": 114.68,
+      "note": "df and statvfs AGREE to the byte in my window (114.68 GiB). The report's own note claiming df showed 117173120 KiB (111.75 GiB) is not reproducible now; drift, not defect. Report used 123115536384 (114.66 GiB); mine is 17,977,344 B higher. Immaterial."
+    },
+    "volume_total_gib": 926.35,
+    "source_397b_serialized_total_bytes": 806795875168,
+    "source_397b_serialized_gib": 751.3872,
+    "f1_235b_resident": "CONFIRMED 438G at /Users/scammermike/Downloads/hawking/models/qwen3-235b-a22b (worktree path is a symlink). The registry's own honesty_note still says 'full 437.9 GiB source NOT yet resident' - the registry is stale, the report is right.",
+    "heavy_pid_62852": "CONFIRMED running 01:06+ elapsed, RSS 32.1 GB, tools/condense/qwen_gravity_campaign.py run --candidates S32_recon_first,S2A_adaptive_k --fit-experts 3",
+    "gpt_oss_120b_release": "CONFIRMED DENIED, release_authorized=false, exactly 6 red gates, ids match verbatim (05,06,07,08,10,11)",
+    "tier_a_registry": "CONFIRMED 8 adapters, 7 'existing' + 1 'planned', all 8 carry rebase_acks {GRAVITY_METHOD_V2/qwen3-235b-a22b-instruct-2507: PENDING}. No qwen3_5_moe entry.",
+    "rust_runtime": "CONFIRMED mod.rs:81 routes 'qwen2moe'|'qwen3moe'|'qwen-moe' only; catch-all Error::Model unknown architecture at 89-93; qwen_moe.rs is a documented Phase-0 stub returning Error::Unimplemented at load/generate.",
+    "studio_manifest": "CONFIRMED disk_reserve_gb=150.0 at line 46, ssd_tb=1.0 at 44, no 397B anywhere, 235B pinned as 'Qwen/Qwen3-235B-A22B' at line 86 (vs registry '...-Instruct-2507').",
+    "slot_collision": "CONFIRMED GENERAL_FRONTIER_PARENTS.json: F1 model_id null / reserved_unpopulated, F2 = deepseek-ai/DeepSeek-V3.2. Reading it alone resolves the wrong parent.",
+    "tokenizer": "CONFIRMED _meta contains exactly config.json, generation_config.json, model.safetensors.index.json. No tokenizer.",
+    "staging_arithmetic": "751.39 - 114.68 = 636.71 GiB short now. Ceiling after deleting EVERY model file = 552.60 GiB, still 198.79 GiB short. Non-model used is ~324 GiB, so the shortfall is not closeable by any model deletion."
+  },
+
+  "refutations": [
+    {
+      "id": "R1",
+      "class": "bit_accounting",
+      "claim": "streaming_working_set_bound_gib = 7.99",
+      "finding": "This is total_bytes/94, an AVERAGE presented as a BOUND. Re-derived from the resident index (not the formula): 60 of the 94 shards each hold EXACTLY ONE tensor, model.language_model.layers.N.mlp.experts.gate_up_proj = [512,4096,2048] bf16 = 8,589,934,592 B = 8.0000 GiB. A safetensors tensor cannot span shards, so the minimum deserializable unit already exceeds the stated bound. Remaining 34 shards average 7.982 GiB.",
+      "correction": "streaming_working_set_bound_gib = 8.00 (proven floor, per-tensor). Magnitude 0.01 GiB - the label is wrong, the number is not far wrong.",
+      "moves_verdict": false
+    },
+    {
+      "id": "R2",
+      "class": "bit_accounting",
+      "claim": "analytic_total_params = 396,234,469,376",
+      "finding": "Derived from the config formula, not the serialized layout, which was resident and free to read. index.json metadata.total_size = 806,795,875,168 B bf16 => 403,397,937,584 params for the whole checkpoint (text + vision + MTP). The report's figure is 7.16B low and its exclusion scope is undeclared in key_numbers.",
+      "correction": "Bind original_weight_count to 403,397,937,584 whole-checkpoint, or state explicitly which organs 396.23B excludes. The report's own caveat (do not use as a Fraction denominator) already prevents harm.",
+      "moves_verdict": false
+    },
+    {
+      "id": "R3",
+      "class": "unit_error",
+      "claim": "'Kimi-K2.6 int4 595.1 GiB (NO, exceeds 552.58)' and 'DeepSeek-V3.2 stale bf16 1.37 TiB'",
+      "finding": "595,148,192,736 B = 554.27 GiB, not 595.1 GiB (595.1 is decimal GB). 1,370,793,842,752 B = 1.247 TiB, not 1.37 TiB (1.37 is decimal TB). Decimal-GB values are labelled GiB inside a GiB comparison the report calls decisive.",
+      "correction": "Kimi-K2.6 = 554.27 GiB. It still exceeds the 552.60 GiB post-release ceiling, but by 1.67 GiB, not 42.5. The conclusion holds on a razor, not a margin - and it would flip under a few GiB of unrelated cleanup. Say so.",
+      "moves_verdict": false
+    },
+    {
+      "id": "R4",
+      "class": "reproducibility",
+      "claim": "self_check_passed: true, fails_when_broken: true",
+      "finding": "No code file exists. The self-check is prose plus hardcoded inputs in the JSON; 'passed' was asserted, not executed by any artifact in the deliverable. I reconstructed the assertion and ran it: it passes at MUT=1.0 and correctly raises AssertionError at MUT=0.5 (src 403.4 GB < free+f1). The LOGIC is live and falsifiable. The DELIVERABLE has no runnable path. Note also the first conjunct (src > free) is redundant given the second.",
+      "correction": "Ship the check as a runnable file that reads statvfs live rather than replaying frozen inputs; drop the redundant conjunct.",
+      "moves_verdict": false
+    },
+    {
+      "id": "R5",
+      "class": "overclaim_scope",
+      "claim": "'IT DOES NOT FIT ON THIS BOX'",
+      "finding": "751.39 GiB < 926.35 GiB total volume. What is proven is 'does not fit under any deletion of MODEL files' (ceiling 552.60 GiB), which the body states correctly. The verdict headline is broader than the proof.",
+      "correction": "Reword the headline to the body's scope.",
+      "moves_verdict": false
+    },
+    {
+      "id": "R6",
+      "class": "resolved_unknown",
+      "claim": "'Expert tensor NAME patterns are labelled unconfirmed'",
+      "finding": "Now confirmed from the resident index at zero cost, and the shape matters for the adapter: the 60 text layers use FUSED stacks (mlp.experts.gate_up_proj [512,4096,2048], mlp.experts.down_proj [512,1024,4096]) while the single MTP layer uses UNFUSED per-expert names (mtp.layers.0.mlp.experts.{i}.{gate,up,down}_proj.weight, 1536 tensors across shards 93-94). Attention is linear_attn.{in_proj_qkv,in_proj_a,in_proj_b,in_proj_z,conv1d,A_log,dt_bias,norm,out_proj}. Shared expert is mlp.shared_expert.* plus mlp.shared_expert_gate. Prefix is model.language_model.layers.* as the report predicted.",
+      "correction": "Record these names. An adapter must handle BOTH a fused and an unfused expert layout in the same checkpoint - a requirement the adapter plan does not currently state.",
+      "moves_verdict": false
+    }
+  ],
+
+  "attacks_not_applicable": {
+    "one_bit_ceiling": "tools/foundry/one_bit_ceiling.py takes a CompleteByteLedger of a treatment. This report contains no treatment, no allocation, no BPW claim. Nothing to run; no allocation exceeds 0.98 planned or 1.0 hard because none is declared.",
+    "dense_shadow": "No compact treatment is proposed. N/A. (Forward-looking: an fp32 working copy of the 8.0 GiB fused expert stack would be 16 GiB, which the streaming plan's 7.99 figure does not budget for.)",
+    "proxy_laundering": "None found. The report explicitly declines to present anything as capability evidence, labels the successor as a scheduling fact from a JSON file, and preserves the F1 sealed NEGATIVE unchanged. Its one formula-over-layout slip is R2.",
+    "mechanism_attribution": "No mechanism and no claimed gain. Nothing to ablate."
+  },
+
+  "bit_accounting_correct": false,
+  "self_check_actually_fails_when_broken": true,
+  "self_check_evidence": "Reconstructed assertion, MUT=1.0 -> PASSED; MUT=0.5 -> AssertionError 'FALSIFIED src=403409783180 free=123115536384 f1=470211497053', exit 1.",
+
+  "recommended_correction": "Keep the verdict and the recommendation - do not schedule a 397B campaign. Apply six edits: (1) streaming_working_set_bound_gib 7.99 -> 8.00, relabelled from average to per-tensor floor; (2) bind original_weight_count to the serialized 403,397,937,584 or declare 396.23B's exclusion scope; (3) fix Kimi-K2.6 to 554.27 GiB and DeepSeek-V3.2 to 1.247 TiB, and state that Kimi misses the post-release ceiling by only 1.67 GiB; (4) ship the self-check as a runnable file reading statvfs live, minus the redundant conjunct; (5) narrow the verdict headline from 'does not fit on this box' to 'does not fit under any deletion of model files'; (6) promote the tensor names from 'unconfirmed' to confirmed, recording the fused-text / unfused-MTP split as a new adapter requirement.",
+
+  "provenance": [
+    "os.statvfs + df -k on /System/Volumes/Data, live 2026-07-20",
+    "/Users/scammermike/Downloads/hawking/models/qwen3.5-397b-a17b/_meta/model.safetensors.index.json (resident, 303 KB, no network)",
+    "reports/condense/general_frontier/{ADAPTIVE_LADDER_PARENT_REGISTRY,GENERAL_FRONTIER_PARENTS,QWEN35_397B_SOURCE_ADMISSION_DRAFT,QWEN35_397B_STORAGE_PLAN,GPT_OSS_120B_SOURCE_RELEASE_READINESS}.json",
+    "tools/foundry/adapters/tier_a_registry.json; tools/condense/studio_manifest.py; crates/hawking-core/src/model/{mod.rs,qwen_moe.rs}",
+    "ps -p 62852; du -sh models/*"
+  ],
+  "boundaries_honored": "No network call, no lease, no heavy compute, nothing downloaded or deleted, no edit to NEXT_PARENT_RESOLUTION.json, no git operation. Only this file written."
+}
