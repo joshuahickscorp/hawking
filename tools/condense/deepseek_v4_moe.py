@@ -293,6 +293,63 @@ def probe(layer: int, *, fit_count: int = 3072, score_count: int = 1024) -> dict
     return result
 
 
+def probe_decompose(layer: int, *, fit_count: int = 3072, score_count: int = 1024) -> dict:
+    """Isolate what a functional student can and cannot fit in the DeepSeek MoE.
+
+    The shared expert is a plain SwiGLU applied to every token with no routing; the routed
+    part is a sum of six of 256 experts chosen by a sharp gate. Fitting the student against
+    each separately says whether the negative is the routing or the whole organ, and that
+    conclusion is robust to the embedding-seeding confound because the shared expert has no
+    routing to be starved of context.
+    """
+    import hawking_null_metric as metric
+    import glm52_moe_student as student
+
+    index = _index()
+    experts = {e: _load_expert(f"layers.{layer}.ffn.experts.{e}", index)
+               for e in range(N_ROUTED)}
+    shared = _load_expert(f"layers.{layer}.ffn.shared_experts", index)
+
+    def parts(split, count):
+        tokens = _calibration_tokens(split, count)
+        x = embedding_seeded_inputs(tokens, layer, index)
+        out = moe_forward(x, layer, index, experts=experts)
+        shared_out = _expert_forward(x, shared)
+        return (x.astype(np.float64), out["post_moe"].astype(np.float64),
+                (out["post_moe"] - shared_out).astype(np.float64),
+                shared_out.astype(np.float64))
+
+    fit = [parts(s, fit_count // 3) for s in ("fit", "router", "doctor")]
+    x_fit = np.concatenate([f[0] for f in fit])
+    targets_fit = {"full": np.concatenate([f[1] for f in fit]),
+                   "routed_only": np.concatenate([f[2] for f in fit]),
+                   "shared_only": np.concatenate([f[3] for f in fit])}
+    xs, full_s, routed_s, shared_s = parts("score", score_count)
+    targets_score = {"full": full_s, "routed_only": routed_s, "shared_only": shared_s}
+
+    rows = {}
+    for name, y_fit in targets_fit.items():
+        null = metric.fit_null(y_fit)
+        fitted = student.fit(x_fit.astype(np.float32), y_fit.astype(np.float32),
+                             hidden=1024, seed=17, replaced_weights=1)
+        pred = student.apply_student(fitted["blob"], xs.astype(np.float32))
+        s = metric.score(targets_score[name], pred, null)
+        rows[name] = {"skill": s["skill"], "skill_lower": s["skill_lower"],
+                      "centered_cosine": s["centered_cosine"],
+                      "null_raw_cosine": metric.constant_null_raw_cosine(targets_score[name], null),
+                      "target_rms": float(np.sqrt(np.mean(targets_score[name] ** 2)))}
+    result = {
+        "schema": "hawking.deepseek_v4.moe_decomposition.v1",
+        "layer": layer, "components": rows,
+        "mechanism": ("routing_dominated" if rows["shared_only"]["skill"]
+                      > rows["routed_only"]["skill"] + 0.2 else "whole_organ_hard"),
+        "reading": "if the shared expert is fittable and the routed part is not, the sharp "
+                   "6-of-256 routing is what a smooth functional student cannot capture, "
+                   "independent of the input-context confound.",
+    }
+    return result
+
+
 def selftest() -> int:
     # fp4 decode must land exactly on the e2m1 grid, and the round-trip nibble->value->grid
     # must be a fixed point.
@@ -363,5 +420,15 @@ if __name__ == "__main__":
               f"map_is_the_win={result['map_is_the_win']} "
               f"shuffled_skill={result['shuffled_input_skill']:.4f} "
               f"null_raw={result['constant_null_raw_cosine']:.4f}")
+        raise SystemExit(0)
+    if command == "decompose":
+        layer = int(sys.argv[2]) if len(sys.argv) > 2 else 20
+        res = probe_decompose(layer)
+        out = (Path(__file__).resolve().parents[2] / "reports" / "condense" / "deepseek_v4_flash")
+        out.mkdir(parents=True, exist_ok=True)
+        (out / f"DEEPSEEK_V4_MOE_DECOMPOSE_L{layer:02d}.json").write_text(json.dumps(res, indent=2, sort_keys=True, default=float))
+        for name, r in res["components"].items():
+            print(f"  {name:14} skill {r['skill']:7.4f}  centered {r['centered_cosine']:7.4f}  null_raw {r['null_raw_cosine']:6.4f}  rms {r['target_rms']:.4f}")
+        print("mechanism:", res["mechanism"])
         raise SystemExit(0)
     raise SystemExit(f"unknown command: {command}")

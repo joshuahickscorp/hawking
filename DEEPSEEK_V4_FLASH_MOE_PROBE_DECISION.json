@@ -1,35 +1,66 @@
 {
+  "confound": {
+    "consequence": "this is a real, consistent, null-corrected negative at the MoE organ, but it does not settle whether the functional escape exists with proper pre-MoE hidden states",
+    "input_quality": "the probe uses embedding-seeded ffn_norm(embed[token]) inputs, which carry no attention context, whereas GLM's decisive results used real chained pre_router_hidden from a captured forward",
+    "why_not_resolved_now": "real pre-MoE hidden needs the DeepSeek block forward (MLA + DSA compressor/indexer + hyper-connections), and that forward cannot be validated without reference logits, which do not fit on a 96 GiB box. An unvalidated forward would fabricate the amplification verdict, which the whole null-first thesis forbids."
+  },
+  "corrected_disposition": {
+    "gate_to_a_real_verdict": "real pre-MoE hidden from a reference-logit-validated MLA+DSA+hyper-connection block forward",
+    "verdict": "the embedding-seeded shortcut is INVALID for DeepSeek's functional existence test, proven by the shared-expert control; no parent verdict is issued from it",
+    "what_holds": "the fp4/fp8 dequant is validated and the MoE forward is real; the null-first metric prevented a false positive AND its control caught its own invalid input",
+    "why_gate_is_walled": "reference logits need the model loaded; 160 GB fp4 will not fit or run on a 96 GiB box, so the forward cannot be validated and an amplification verdict from it would be fabricated"
+  },
+  "decomposition_control": {
+    "finding": "the SHARED expert is a smooth SwiGLU with no routing, yet the student also fails to fit it (skill 0.0007, at the constant null). So the negative is NOT the routing and NOT the organ being non-approximable; it is the embedding-seeded input being invalid for a functional existence test on this parent.",
+    "layer_20": {
+      "full_skill": -0.0609,
+      "routed_only_skill": -0.0771,
+      "shared_only_skill": 0.0007
+    },
+    "mechanism": "whole_organ_hard = input-driven, not organ-driven",
+    "tool": "tools/condense/deepseek_v4_moe.py decompose"
+  },
+  "methodology_transfer_confirmed": "the null-corrected metric caught a would-be false positive cross-parent: had this been scored on raw activation cosine, the student's centered 0.09 to 0.13 might have read as partial fidelity; skill against the fit-split constant shows it is worse than a constant.",
+  "not_evidence_of": "a DeepSeek parent verdict of any kind. It is a validated dequant, a real MoE forward, and a proof that embedding-seeded inputs cannot test the functional escape on this architecture.",
+  "parent": "deepseek-ai/DeepSeek-V4-Flash",
+  "protocol_disposition": {
+    "amplification_probe": "BLOCKED on a reference-logit-validated block forward",
+    "next_lane": "either build and validate the MLA+DSA+hyper-connection block forward, or carry the probe to the Qwen3.5 challenger whose linear-attention residual stream is the other structural test",
+    "rate_ladder": "WITHHELD; the functional direction did not survive the existence test, so no 0.75/0.50/0.333 artifacts are built"
+  },
+  "result": {
+    "affine_upper_control_skill": {
+      "L20": -2.7081,
+      "L40": -2.5644
+    },
+    "constant_null_raw_cosine": {
+      "L20": 0.1983,
+      "L40": 0.5516
+    },
+    "functional_student_skill": {
+      "L20": -0.0609,
+      "L40": -0.0921
+    },
+    "layers_probed": [
+      20,
+      40
+    ],
+    "reading": "the functional student loses to a constant on all three targets, but the shared-expert control proves this is an input-quality artifact: random token embeddings do not span a manifold a random-feature student can exploit, unlike the attention-mixed pre_router_hidden GLM used for its decisive results. The probe correctly refused to claim an escape, and its own control revealed why the input is invalid.",
+    "shuffled_input_skill": {
+      "L20": -0.123,
+      "L40": -0.2056
+    },
+    "verdict": "INSTRUMENT_LIMITED_INCONCLUSIVE",
+    "weight_space_constant_skill": 0.0
+  },
+  "revision": "60d8d70770c6776ff598c94bb586a859a38244f1",
   "schema": "hawking.deepseek_v4_flash.moe_probe_decision.v1",
   "sealed_at": "2026-07-23T22:10:00Z",
-  "parent": "deepseek-ai/DeepSeek-V4-Flash",
-  "revision": "60d8d70770c6776ff598c94bb586a859a38244f1",
   "stage": "function-first null-first cross-parent MoE probe (protocol steps 1-4)",
   "what_was_built": {
     "fp4_dequant": "validated: e2m1 nibble decode lands on the grid with 0.0 error, ue8m0 block scale [out,in/32]",
     "fp8_dequant": "e4m3 shared expert with [128,128] block scale",
     "moe_forward": "real: sqrtsoftplus + noaux_tc top-6, SwiGLU with clamp, shared expert, routed scale 1.5; output RMS 0.11, 6 distinct experts routed",
     "tool": "tools/condense/deepseek_v4_moe.py"
-  },
-  "result": {
-    "verdict": "FUNCTIONAL_ESCAPE_DOES_NOT_REPRODUCE_ON_AVAILABLE_INPUTS",
-    "layers_probed": [20, 40],
-    "functional_student_skill": {"L20": -0.0609, "L40": -0.0921},
-    "affine_upper_control_skill": {"L20": -2.7081, "L40": -2.5644},
-    "weight_space_constant_skill": 0.0,
-    "shuffled_input_skill": {"L20": -0.1230, "L40": -0.2056},
-    "constant_null_raw_cosine": {"L20": 0.1983, "L40": 0.5516},
-    "reading": "on both learned-routing layers the functional student and the full affine map LOSE to predicting a constant, so no cheap function reproduces this MoE from the input provided. The DeepSeek MoE output is not mean-dominated (null raw cosine 0.20 to 0.55 versus GLM's 0.83), which is a real architectural difference: the 6-of-256 sqrtsoftplus routing produces a sharply discrete output a smooth student cannot approximate."
-  },
-  "confound": {
-    "input_quality": "the probe uses embedding-seeded ffn_norm(embed[token]) inputs, which carry no attention context, whereas GLM's decisive results used real chained pre_router_hidden from a captured forward",
-    "consequence": "this is a real, consistent, null-corrected negative at the MoE organ, but it does not settle whether the functional escape exists with proper pre-MoE hidden states",
-    "why_not_resolved_now": "real pre-MoE hidden needs the DeepSeek block forward (MLA + DSA compressor/indexer + hyper-connections), and that forward cannot be validated without reference logits, which do not fit on a 96 GiB box. An unvalidated forward would fabricate the amplification verdict, which the whole null-first thesis forbids."
-  },
-  "methodology_transfer_confirmed": "the null-corrected metric caught a would-be false positive cross-parent: had this been scored on raw activation cosine, the student's centered 0.09 to 0.13 might have read as partial fidelity; skill against the fit-split constant shows it is worse than a constant.",
-  "protocol_disposition": {
-    "rate_ladder": "WITHHELD; the functional direction did not survive the existence test, so no 0.75/0.50/0.333 artifacts are built",
-    "amplification_probe": "BLOCKED on a reference-logit-validated block forward",
-    "next_lane": "either build and validate the MLA+DSA+hyper-connection block forward, or carry the probe to the Qwen3.5 challenger whose linear-attention residual stream is the other structural test"
-  },
-  "not_evidence_of": "block, propagation, amplification, or capability. This is one organ on embedding-seeded inputs."
+  }
 }

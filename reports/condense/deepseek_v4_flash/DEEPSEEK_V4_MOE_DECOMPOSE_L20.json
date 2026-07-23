@@ -1,0 +1,29 @@
+{
+  "components": {
+    "full": {
+      "centered_cosine": 0.08850937574413886,
+      "null_raw_cosine": 0.1982565370717927,
+      "skill": -0.060859905244783796,
+      "skill_lower": -0.06414674532151901,
+      "target_rms": 0.29945671045805317
+    },
+    "routed_only": {
+      "centered_cosine": 0.05499801370902285,
+      "null_raw_cosine": 0.17062935841727497,
+      "skill": -0.07712942960400704,
+      "skill_lower": -0.08049840755631901,
+      "target_rms": 0.2659516376632621
+    },
+    "shared_only": {
+      "centered_cosine": 0.19772094633013343,
+      "null_raw_cosine": 0.24542514006254762,
+      "skill": 0.0007141991385498647,
+      "skill_lower": -0.004100716871944643,
+      "target_rms": 0.135202332213666
+    }
+  },
+  "layer": 20,
+  "mechanism": "whole_organ_hard",
+  "reading": "if the shared expert is fittable and the routed part is not, the sharp 6-of-256 routing is what a smooth functional student cannot capture, independent of the input-context confound.",
+  "schema": "hawking.deepseek_v4.moe_decomposition.v1"
+}
