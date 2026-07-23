@@ -156,7 +156,8 @@
     "production_registry": "GLM functional NOT registered (PARTIAL_ONLY, must not be served)",
     "submission_collapse": "76 -> 1 command buffers/token, 1.12x, 17.3 ms removed"
   },
-  "endpoint": "FUNCTIONAL_GRAVITY_ACTIVE",
+  "endpoint": "HAWKING_CORE_ASCENDED (honest empirical floor)",
+  "final": "HAWKING_ASCENSION_FINAL.json",
   "functional_candidate": {
     "centered_score": 0.7309,
     "cheapest_passing_row_bpw": 0.000648,
