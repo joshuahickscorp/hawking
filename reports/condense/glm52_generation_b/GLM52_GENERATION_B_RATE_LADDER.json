@@ -200,6 +200,40 @@
       "role": "materially different representation at a matched rate, section 6 requires the pilot to compare families and not only budgets",
       "rung": "LR2",
       "target_compressed_bpw": 0.3131917317708333
+    },
+    {
+      "band": "B_PRIMARY",
+      "by_category": {
+        "attention": "glm52.pq.r0.v1",
+        "dense_mlp": "glm52.pq.r0.v1",
+        "embeddings": "glm52.pq.r0.v1",
+        "lm_head": "glm52.pq.r0.v1",
+        "mtp_projection": "glm52.pq.r0.v1",
+        "routed_expert": "glm52.lowrank.r1.v1",
+        "shared_expert": "glm52.lowrank.r1.v1"
+      },
+      "evidence": {
+        "attention_output_cosine": {
+          "lowrank": 0.072,
+          "pq": 0.1629
+        },
+        "routed_expert_output_cosine": {
+          "lowrank": 0.0811,
+          "pq": 0.0007
+        }
+      },
+      "kind": "HYBRID_BY_ROLE",
+      "lowrank_target_compressed_bpw": 0.7396240234375,
+      "paired_with": [
+        "G0",
+        "LR0"
+      ],
+      "pq_geometry": {
+        "dim": 32,
+        "k": 8192
+      },
+      "role": "section 6.5 allocation applied to representation rather than to rate. At matched rate the two families are complementary on the same window: product quantization holds attention better and low rank holds the expert path better, so each role takes the codec that wins on it. This costs no extra bits, which is why the rate-allocation probe closing does not close this.",
+      "rung": "HY0"
     }
   ],
   "native_floor": {

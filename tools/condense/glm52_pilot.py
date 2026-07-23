@@ -228,9 +228,15 @@ def pack_window(layers: list[int], rung: dict, *, seed: int = 0, iters: int = 4)
                 np.frombuffer(raw, dtype=np.uint16)).reshape(row["shape"]).astype(np.float32)
             position += 1
 
-            if rung["kind"] == "LOW_RANK":
-                fitted = lowrank.pack_tensor(weights, float(rung["target_compressed_bpw"]),
-                                             seed=seed)
+            codec = rung["kind"]
+            if codec == "HYBRID_BY_ROLE":
+                chosen = rung["by_category"].get(row["category"], "glm52.pq.r0.v1")
+                codec = "LOW_RANK" if chosen == "glm52.lowrank.r1.v1" else "SINGLE_GEOMETRY"
+
+            if codec == "LOW_RANK":
+                target = float(rung.get("target_compressed_bpw")
+                               or rung["lowrank_target_compressed_bpw"])
+                fitted = lowrank.pack_tensor(weights, target, seed=seed)
                 blob = fitted["blob"]
                 payloads.append(({
                     "name": row["name"], "category": row["category"],
@@ -243,7 +249,10 @@ def pack_window(layers: list[int], rung: dict, *, seed: int = 0, iters: int = 4)
                 }, blob))
                 continue
 
-            dim, k = geometry_for(rung, position - 1)
+            if rung["kind"] == "HYBRID_BY_ROLE":
+                dim, k = int(rung["pq_geometry"]["dim"]), int(rung["pq_geometry"]["k"])
+            else:
+                dim, k = geometry_for(rung, position - 1)
             artifact = forge.pack_product_quant(weights, dim=dim, subspaces=1, k=k,
                                                 seed=seed, iters=iters)
             blob = pack.serialize(artifact)

@@ -52,6 +52,7 @@ RUNG_FAMILY = {
     "GC": "glm52.pq.r0.v1", "DX1": "glm52.pq.r0.v1", "DX2": "glm52.pq.r0.v1",
     "LR0": "glm52.lowrank.r1.v1", "LR1": "glm52.lowrank.r1.v1",
     "LR2": "glm52.lowrank.r1.v1",
+    "HY0": "glm52.hybrid.by_role.v1",
 }
 # Rungs above the one-bit law are diagnostics.  They may inform how far a family is from
 # working; they may never be part of the verdict about whether it works, because a verdict
