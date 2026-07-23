@@ -1,0 +1,185 @@
+{
+  "by_budget_class": {
+    "COMPRESSIBLE_CANDIDATE": {
+      "absmax": 2.578125,
+      "elements": 32119324672,
+      "max_exponent_span_log2": 40,
+      "tensors": 2282,
+      "zeroth_order_entropy_bits_per_weight": 10.54476
+    },
+    "CONTROL_SENSITIVE_CANDIDATE": {
+      "absmax": 21.813011169433594,
+      "elements": 37706496,
+      "max_exponent_span_log2": 33,
+      "tensors": 66,
+      "zeroth_order_entropy_bits_per_weight": 10.650362
+    }
+  },
+  "by_category": {
+    "attention": {
+      "absmax": 2.578125,
+      "elements": 1564868608,
+      "max_exponent_span_log2": 38,
+      "tensors": 48,
+      "zeroth_order_entropy_bits_per_weight": 10.663444
+    },
+    "dense_mlp": {
+      "absmax": 0.6015625,
+      "elements": 679477248,
+      "max_exponent_span_log2": 35,
+      "tensors": 9,
+      "zeroth_order_entropy_bits_per_weight": 10.511945
+    },
+    "embeddings": {
+      "absmax": 0.08740234375,
+      "elements": 951582720,
+      "max_exponent_span_log2": 35,
+      "tensors": 1,
+      "zeroth_order_entropy_bits_per_weight": 10.51994
+    },
+    "indexer": {
+      "absmax": 4.46875,
+      "elements": 28115712,
+      "max_exponent_span_log2": 33,
+      "tensors": 15,
+      "zeroth_order_entropy_bits_per_weight": 10.719522
+    },
+    "lm_head": {
+      "absmax": 0.3203125,
+      "elements": 951582720,
+      "max_exponent_span_log2": 34,
+      "tensors": 1,
+      "zeroth_order_entropy_bits_per_weight": 10.498475
+    },
+    "normalization": {
+      "absmax": 1.1953125,
+      "elements": 152064,
+      "max_exponent_span_log2": 19,
+      "tensors": 39,
+      "zeroth_order_entropy_bits_per_weight": 6.026861
+    },
+    "routed_expert": {
+      "absmax": 0.4375,
+      "elements": 27745320960,
+      "max_exponent_span_log2": 40,
+      "tensors": 2205,
+      "zeroth_order_entropy_bits_per_weight": 10.541734
+    },
+    "router": {
+      "absmax": 0.93359375,
+      "elements": 9437184,
+      "max_exponent_span_log2": 26,
+      "tensors": 6,
+      "zeroth_order_entropy_bits_per_weight": 10.518818
+    },
+    "router_control": {
+      "absmax": 21.813011169433594,
+      "elements": 1536,
+      "max_exponent_span_log2": 0,
+      "tensors": 6,
+      "zeroth_order_entropy_bits_per_weight": null
+    },
+    "shared_expert": {
+      "absmax": 1.359375,
+      "elements": 226492416,
+      "max_exponent_span_log2": 37,
+      "tensors": 18,
+      "zeroth_order_entropy_bits_per_weight": 10.492566
+    }
+  },
+  "by_section": {
+    "main_text": {
+      "absmax": 21.813011169433594,
+      "elements": 32157031168,
+      "max_exponent_span_log2": 40,
+      "tensors": 2348,
+      "zeroth_order_entropy_bits_per_weight": 10.544884
+    }
+  },
+  "generated_at": "2026-07-22T17:23:49Z",
+  "note": "Zeroth-order entropy is a context-free coder's rate on the BF16 values as stored. It is an empirical reference point, NOT an achievability bound and NOT a capability result: it models no weight structure and no error tolerance, so a real representation may legally land either side of it.",
+  "schema": "hawking.glm52.source_weight_atlas.v1",
+  "shards": [
+    {
+      "elements": 2671408640,
+      "entropy_bits_per_weight": 10.539514293379293,
+      "shard": "model-00001-of-00282.safetensors",
+      "tensors": 35
+    },
+    {
+      "elements": 2675972096,
+      "entropy_bits_per_weight": 10.481348808017374,
+      "shard": "model-00002-of-00282.safetensors",
+      "tensors": 212
+    },
+    {
+      "elements": 2681435648,
+      "entropy_bits_per_weight": 10.497469001324017,
+      "shard": "model-00038-of-00282.safetensors",
+      "tensors": 196
+    },
+    {
+      "elements": 2683190016,
+      "entropy_bits_per_weight": 10.543236269097319,
+      "shard": "model-00075-of-00282.safetensors",
+      "tensors": 211
+    },
+    {
+      "elements": 2680160256,
+      "entropy_bits_per_weight": 10.8434388584178,
+      "shard": "model-00077-of-00282.safetensors",
+      "tensors": 213
+    },
+    {
+      "elements": 2683190016,
+      "entropy_bits_per_weight": 10.574544617460223,
+      "shard": "model-00116-of-00282.safetensors",
+      "tensors": 211
+    },
+    {
+      "elements": 2680160256,
+      "entropy_bits_per_weight": 10.626424213377092,
+      "shard": "model-00117-of-00282.safetensors",
+      "tensors": 213
+    },
+    {
+      "elements": 2675972096,
+      "entropy_bits_per_weight": 10.479165443893468,
+      "shard": "model-00120-of-00282.safetensors",
+      "tensors": 212
+    },
+    {
+      "elements": 2683190016,
+      "entropy_bits_per_weight": 10.484360199206858,
+      "shard": "model-00156-of-00282.safetensors",
+      "tensors": 211
+    },
+    {
+      "elements": 2683190016,
+      "entropy_bits_per_weight": 10.511425485309658,
+      "shard": "model-00160-of-00282.safetensors",
+      "tensors": 211
+    },
+    {
+      "elements": 2683190016,
+      "entropy_bits_per_weight": 10.484541539319018,
+      "shard": "model-00197-of-00282.safetensors",
+      "tensors": 211
+    },
+    {
+      "elements": 2675972096,
+      "entropy_bits_per_weight": 10.472970019762029,
+      "shard": "model-00201-of-00282.safetensors",
+      "tensors": 212
+    }
+  ],
+  "shards_probed": 12,
+  "total": {
+    "absmax": 21.813011169433594,
+    "elements": 32157031168,
+    "max_exponent_span_log2": 40,
+    "tensors": 2348,
+    "zeroth_order_entropy_bits_per_weight": 10.544884
+  },
+  "total_source_shards": 282
+}

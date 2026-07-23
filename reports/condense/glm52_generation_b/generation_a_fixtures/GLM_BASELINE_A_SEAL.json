@@ -1,0 +1,157 @@
+{
+  "baseline_id": "GLM_BASELINE_A",
+  "control_role": "If the teacher pilot returns DEAD, BASELINE_A is frozen as the negative control and GLM_FORMAT_B supersedes it. These shards are never deleted.",
+  "decoder": {
+    "cpu": "gravity_forge.pq_execute",
+    "measured_parity_real_expert": 1.43e-06,
+    "metal_kernel_version": 2,
+    "parity_tolerance": 0.002,
+    "torch_mps_version": 1
+  },
+  "evidence_level": "F0_PHYSICAL_AND_F1_WEIGHT_SPACE_PROXY_ONLY",
+  "format": {
+    "container_prefix_bytes": 20,
+    "format_version": 1,
+    "header_schema": "hawking.gravity.shard_header.v1",
+    "name": ".gravity",
+    "tensor_header_bytes": 64,
+    "tensor_schema": "hawking.glm52.compact_tensor.v1"
+  },
+  "git": {
+    "branch": "campaign/glm52-bf16-xet-gravity",
+    "commit": "9bd4f9a42988f372c30a30ff756ab632eea96b2d"
+  },
+  "not_evidence_of": "output divergence, capability, trajectory fidelity, or end-to-end behaviour",
+  "pending_gate": "TEACHER_TRAJECTORY_PILOT",
+  "progress": {
+    "compact_bytes": 2348828926,
+    "observed_packed_bpw": 0.8762976477882222,
+    "shards_processed": 8,
+    "weights_covered": 21431713792
+  },
+  "representation": {
+    "bpw_ceiling": 1.0,
+    "codebook_dtype": "float16",
+    "codec": "gravity-pq",
+    "family": "product_quant",
+    "geometry": {
+      "dim": 8,
+      "index_bits": 7,
+      "k": 128
+    },
+    "index_packing": "bit-packed to billed width",
+    "ladder": [
+      {
+        "dim": 8,
+        "k": 128,
+        "nominal_bpw": 0.876,
+        "rung": "R0"
+      },
+      {
+        "dim": 16,
+        "k": 256,
+        "nominal_bpw": 0.505,
+        "rung": "R2"
+      },
+      {
+        "dim": 32,
+        "k": 256,
+        "nominal_bpw": 0.261,
+        "rung": "R4"
+      }
+    ],
+    "production_rung": "R0",
+    "protected_billed_bpw": 16.0,
+    "protected_budget_class": "CONTROL_SENSITIVE_CANDIDATE",
+    "subspaces": 1
+  },
+  "schema": "hawking.gravity.baseline_seal.v1",
+  "seal_sha256": "4b6a84dfa7ef2c360b36464a89598ab1c1ea098c6059f628e043c2585731a0ba",
+  "sealed_at": "2026-07-22T19:11:32Z",
+  "shards": [
+    {
+      "bytes": 293291119,
+      "gravity": "model-00002-of-00282.gravity",
+      "packed_bpw": 0.8763322501346983,
+      "sha256": "1f56708edf691d3d718099be8d637247c5323b926f21e138aa70ee0904dbe8ac",
+      "source_shard": "model-00002-of-00282.safetensors",
+      "tensors": 211,
+      "whole_shard_bpw": 0.876366973895381
+    },
+    {
+      "bytes": 292602472,
+      "gravity": "model-00038-of-00282.gravity",
+      "packed_bpw": 0.8761451865735742,
+      "sha256": "c57864f0409cded96a0b706eb34245fe0766385bb24cbd9ca44a07c2df95cd3b",
+      "source_shard": "model-00038-of-00282.safetensors",
+      "tensors": 181,
+      "whole_shard_bpw": 0.9380434522138209
+    },
+    {
+      "bytes": 293889966,
+      "gravity": "model-00075-of-00282.gravity",
+      "packed_bpw": 0.8762916457915831,
+      "sha256": "94e1e8dda024b3d59d040163d0ac724923f3e921c86211cf0355970da2cbec43",
+      "source_shard": "model-00075-of-00282.safetensors",
+      "tensors": 205,
+      "whole_shard_bpw": 0.8852407307934866
+    },
+    {
+      "bytes": 293755240,
+      "gravity": "model-00076-of-00282.gravity",
+      "packed_bpw": 0.8763427734375,
+      "sha256": "e1c91e03393ff07f7b93ba567b26db94e25e591978fad3bf6b82ab8ab0735eb5",
+      "source_shard": "model-00076-of-00282.safetensors",
+      "tensors": 213,
+      "whole_shard_bpw": 0.8763427734375
+    },
+    {
+      "bytes": 293755228,
+      "gravity": "model-00077-of-00282.gravity",
+      "packed_bpw": 0.8763427734375,
+      "sha256": "6ded97672c7fe9848cf1826929664772220d53a079b286b8ec9f3af1bd6b4f63",
+      "source_shard": "model-00077-of-00282.safetensors",
+      "tensors": 213,
+      "whole_shard_bpw": 0.8763427734375
+    },
+    {
+      "bytes": 293754946,
+      "gravity": "model-00078-of-00282.gravity",
+      "packed_bpw": 0.8763427734375,
+      "sha256": "3992a066d7780584dcfef1a8567806b9484552138396e56a4d6dd4d1b1cecf1c",
+      "source_shard": "model-00078-of-00282.safetensors",
+      "tensors": 213,
+      "whole_shard_bpw": 0.8763427734375
+    },
+    {
+      "bytes": 293889966,
+      "gravity": "model-00079-of-00282.gravity",
+      "packed_bpw": 0.8762916457915831,
+      "sha256": "7f8a755354e953f991395c2b75411bb4d59a193c90c355eac4c8af55571473ba",
+      "source_shard": "model-00079-of-00282.safetensors",
+      "tensors": 205,
+      "whole_shard_bpw": 0.8852407307934866
+    },
+    {
+      "bytes": 293889989,
+      "gravity": "model-00116-of-00282.gravity",
+      "packed_bpw": 0.8762916457915831,
+      "sha256": "07d66d99cdff058db9d611c4ec58d4ea0fba1182cbec77d3954ea8a8eb30f8c0",
+      "source_shard": "model-00116-of-00282.safetensors",
+      "tensors": 205,
+      "whole_shard_bpw": 0.8852407307934866
+    }
+  ],
+  "source_lineage": {
+    "repo": "zai-org/GLM-5.2",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "total_source_shards": 282
+  },
+  "status": "VERSIONED_BASELINE_PENDING_TEACHER_PILOT",
+  "verdicts_possible": [
+    "BASELINE_A_REACHABLE",
+    "BASELINE_A_REPAIRABLE",
+    "BASELINE_A_DEAD",
+    "INSTRUMENT_INVALID"
+  ]
+}
