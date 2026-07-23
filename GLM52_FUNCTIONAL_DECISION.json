@@ -20,6 +20,26 @@
     "metal": "reports/condense/glm52_generation_b/GLM52_FUNCTIONAL_METAL_BENCHMARK.json",
     "runtime": "reports/condense/glm52_generation_b/GLM52_FUNCTIONAL_RUNTIME_RESULT.json"
   },
+  "closure": {
+    "all_expansive_at_every_magnitude": true,
+    "cascade_final_skill": {
+      "L38": 0.6831,
+      "L74": 0.0977
+    },
+    "reading": "the middle and late cascades both confirm that a stack of functional students diverges from the teacher; the late stratum reaches skill 0.098 in four layers. Regenerating the artifacts the lane had overwritten did not change the verdict, it strengthened it.",
+    "sealed_at": "2026-07-23T20:30:00Z",
+    "state": "FINAL_SEALED",
+    "strata_with_amplification_evidence": [
+      3,
+      38,
+      74
+    ],
+    "strata_with_cascade_evidence": [
+      38,
+      74
+    ],
+    "verdict_unchanged_by_regeneration": true
+  },
   "decision": "FUNCTIONAL_PARTIAL_ONLY",
   "decisive_evidence": {
     "contractive_regime_found": false,
@@ -83,7 +103,7 @@
       "probe": "1024-row logit-lens vocabulary subset through the final norm from layer 39",
       "reading": "one functional layer out of 75 already changes the greedy token at nearly half of all positions"
     },
-    "student_in_every_layer": {
+    "student_in_every_layer_L38": {
       "layers": [
         38,
         39,
@@ -106,6 +126,28 @@
         6.12,
         4.47
       ]
+    },
+    "student_in_every_layer_L74": {
+      "final_state_skill": 0.0977,
+      "layers": [
+        74,
+        75,
+        76,
+        77
+      ],
+      "note": "the late stratum compounds worse than the middle: four student layers drive the state to skill 0.098, essentially uncorrelated with the teacher",
+      "relative_l2_trajectory": [
+        0.2293,
+        0.447,
+        0.689,
+        0.918
+      ],
+      "router_top1_trajectory": [
+        0.709,
+        0.381,
+        0.514
+      ],
+      "total_growth": 4.0
     },
     "teacher_only_cascade_geometric_mean": 1.3478
   },

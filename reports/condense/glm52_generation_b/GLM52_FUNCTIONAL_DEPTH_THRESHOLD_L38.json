@@ -1,0 +1,72 @@
+{
+  "contractive_below": null,
+  "experiment": "perturbation_magnitude_sweep",
+  "injected_at": 38,
+  "question": "is there an error magnitude below which the stack is contractive",
+  "rows": [
+    {
+      "first_layer_top1_agreement": 0.986572265625,
+      "first_layer_topk_overlap": 7.896240234375,
+      "geometric_mean_amplification": 2.4067992354239713,
+      "per_layer_amplification": [
+        4.0413226690357025,
+        1.433363043248314
+      ],
+      "relative_l2_after": 0.044524531811475754,
+      "relative_l2_at_injection": 0.007686340715736151,
+      "scale": 0.05
+    },
+    {
+      "first_layer_top1_agreement": 0.96875,
+      "first_layer_topk_overlap": 7.81396484375,
+      "geometric_mean_amplification": 2.031768869861734,
+      "per_layer_amplification": [
+        2.999917304256904,
+        1.376066178451468
+      ],
+      "relative_l2_after": 0.06345973163843155,
+      "relative_l2_at_injection": 0.015372681431472301,
+      "scale": 0.1
+    },
+    {
+      "first_layer_top1_agreement": 0.928955078125,
+      "first_layer_topk_overlap": 7.623291015625,
+      "geometric_mean_amplification": 1.6911364010691294,
+      "per_layer_amplification": [
+        2.193437214745431,
+        1.3038633190843216
+      ],
+      "relative_l2_after": 0.10991257429122925,
+      "relative_l2_at_injection": 0.038431745022535324,
+      "scale": 0.25
+    },
+    {
+      "first_layer_top1_agreement": 0.904296875,
+      "first_layer_topk_overlap": 7.325439453125,
+      "geometric_mean_amplification": 1.5274190533141137,
+      "per_layer_amplification": [
+        1.882422071250721,
+        1.2393654962177971
+      ],
+      "relative_l2_after": 0.179323211312294,
+      "relative_l2_at_injection": 0.07686349004507065,
+      "scale": 0.5
+    },
+    {
+      "first_layer_top1_agreement": 0.850341796875,
+      "first_layer_topk_overlap": 6.742919921875,
+      "geometric_mean_amplification": 1.4175699061036597,
+      "per_layer_amplification": [
+        1.7062898520352412,
+        1.1777040321102694
+      ],
+      "relative_l2_after": 0.30891504883766174,
+      "relative_l2_at_injection": 0.1537269800901413,
+      "scale": 1.0
+    }
+  ],
+  "seconds": 222.9,
+  "stack_is_expansive_at_every_tested_magnitude": true,
+  "student_own_relative_l2": 0.1537269800901413,
+  "teacher_layers_traversed": 2
+}

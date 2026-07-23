@@ -86,6 +86,9 @@
   },
   "residual_stream": {
     "amplification_is_worse_at_smaller_perturbations": true,
+    "cascade_L38_final_skill": 0.6831,
+    "cascade_L74_final_skill": 0.0977,
+    "cascade_note": "student in four consecutive layers: L38 reaches skill 0.683, L74 reaches 0.098",
     "contractive_regime_found": false,
     "layer_03": [
       [
