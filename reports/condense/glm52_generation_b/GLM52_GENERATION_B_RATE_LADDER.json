@@ -1,0 +1,152 @@
+{
+  "billing": {
+    "formula": "N*ceil(log2 k) + k*sub*16 + 512 bits, N = elements/dim",
+    "metadata_bits": 512,
+    "source": "gravity_forge.ByteLedger, not restated"
+  },
+  "generated_at": "2026-07-23T13:37:03Z",
+  "geometries_evaluated": 51,
+  "ladder": [
+    {
+      "band": "B_PRIMARY",
+      "band_ceiling": 0.75,
+      "band_low": 0.7,
+      "complete_bpw": 0.7462468520311318,
+      "compressed_bpw": 0.7396240234375,
+      "confirmation": {
+        "formula_matches_file": true,
+        "ledger_bpw": 0.7396240234375,
+        "predicted_bpw": 0.7396240234375,
+        "relative_frobenius_error": 0.7727480530738831,
+        "serialized_bpw": 0.7396240234375,
+        "serialized_bytes": 1163328,
+        "shape": [
+          2048,
+          6144
+        ]
+      },
+      "dim": 32,
+      "index_bits": 13,
+      "k": 8192,
+      "kind": "SINGLE_GEOMETRY",
+      "role": "primary full-stream candidate",
+      "rung": "G0",
+      "subspaces": 1,
+      "under_one_bit_ceiling": true,
+      "within_band": true
+    },
+    {
+      "allocation_basis": "POSITIONAL_PENDING_PILOT_SENSITIVITY",
+      "allocation_period": 16,
+      "band": "B_HALF",
+      "band_ceiling": 0.5,
+      "band_low": 0.48,
+      "complete_bpw": 0.48817001958930734,
+      "compressed_bpw": 0.48143513997395837,
+      "confirmation": {
+        "lean": {
+          "formula_matches_file": true,
+          "ledger_bpw": 0.4401448567708333,
+          "predicted_bpw": 0.4401448567708333,
+          "relative_frobenius_error": 0.7976511716842651,
+          "serialized_bpw": 0.4401448567708333,
+          "serialized_bytes": 692288,
+          "shape": [
+            2048,
+            6144
+          ]
+        },
+        "rich": {
+          "formula_matches_file": true,
+          "ledger_bpw": 0.5002034505208334,
+          "predicted_bpw": 0.5002034505208334,
+          "relative_frobenius_error": 0.7907096743583679,
+          "serialized_bpw": 0.5002034505208334,
+          "serialized_bytes": 786752,
+          "shape": [
+            2048,
+            6144
+          ]
+        }
+      },
+      "kind": "MIXED_ALLOCATION",
+      "lean": {
+        "complete_bpw": 0.4468976558967276,
+        "compressed_bpw": 0.4401448567708333,
+        "dim": 16,
+        "k": 128
+      },
+      "rich": {
+        "complete_bpw": 0.5069301849041163,
+        "compressed_bpw": 0.5002034505208334,
+        "dim": 8,
+        "k": 16
+      },
+      "rich_fraction": 0.6875,
+      "rich_per_period": 11,
+      "role": "mandatory exact half-bit pilot",
+      "rule": "a routed-expert tensor takes the rich rung when its position within the window modulo 16 is below 11",
+      "rung": "G1",
+      "under_one_bit_ceiling": true,
+      "within_band": true
+    },
+    {
+      "band": "B_THIRD",
+      "band_ceiling": 0.33,
+      "band_low": 0.3,
+      "complete_bpw": 0.3199996271006214,
+      "compressed_bpw": 0.3131917317708333,
+      "confirmation": {
+        "formula_matches_file": true,
+        "ledger_bpw": 0.3131917317708333,
+        "predicted_bpw": 0.3131917317708333,
+        "relative_frobenius_error": 0.8618547320365906,
+        "serialized_bpw": 0.3131917317708333,
+        "serialized_bytes": 492608,
+        "shape": [
+          2048,
+          6144
+        ]
+      },
+      "dim": 16,
+      "index_bits": 5,
+      "k": 32,
+      "kind": "SINGLE_GEOMETRY",
+      "role": "capability-density boundary probe",
+      "rung": "G2",
+      "subspaces": 1,
+      "under_one_bit_ceiling": true,
+      "within_band": true
+    }
+  ],
+  "native_floor": {
+    "bpw": 0.00694381695843254,
+    "element_fraction": 0.00043398855990203376,
+    "note": "0.0434 percent of weight is control-sensitive and carried at source precision; every complete rate pays this and no codec can remove it"
+  },
+  "relative_frobenius_error_is_not_quality": "confirmation error is measured on gaussian noise at the real shape to prove the file matches the ledger; it is a size proof, not an F1 result, and real weight-space and trajectory error come from the pilot",
+  "schema": "hawking.glm52.generation_b_rate_ladder.v1",
+  "shapes": {
+    "confirmation_note": "confirmations run at the true expert shape; the codebook term is fixed per tensor, so a smaller stand-in would report a different rate and still call itself consistent",
+    "confirmation_shape": [
+      2048,
+      6144
+    ],
+    "expert": [
+      [
+        2048,
+        6144
+      ],
+      [
+        6144,
+        2048
+      ]
+    ],
+    "expert_weight_share": 0.97492
+  },
+  "why_the_inherited_ladder_does_not_serve": {
+    "R0": "0.876 compressed, over the 0.75 primary ceiling",
+    "R2": "0.505 compressed, over the 0.50 half-bit ceiling",
+    "R4": "0.261 compressed, under the 0.30 one-third floor"
+  }
+}
