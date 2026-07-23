@@ -1,0 +1,105 @@
+{
+  "all_green": true,
+  "evaluated_at": "2026-07-23T19:16:10Z",
+  "gates": {
+    "g01_source_root_exact": {
+      "bytes": 405394043843,
+      "gb": 405.4,
+      "gib": 377.6,
+      "path": "/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/source",
+      "reason": "source root is a directory of 76 shards, 405.4 GB",
+      "shards": 76,
+      "status": "green"
+    },
+    "g02_immutable_revision_manifest": {
+      "reason": "manifest pins zai-org/GLM-5.2 @ b4734de4facf877f85769a911abafc5283eab3d9",
+      "sealed": true,
+      "status": "green"
+    },
+    "g03_rehydration_receipt": {
+      "conflicts": [],
+      "reason": "76 of 76 resident shards carry an authoritative HF sha256; 0 ledger conflicts",
+      "status": "green"
+    },
+    "g04_teacher_capsules_preserved": {
+      "capsules": 47,
+      "detail": "",
+      "reason": "47 capsules preserved outside the source root; fresh-load ok",
+      "sample_loads": true,
+      "status": "green"
+    },
+    "g05_metric_contract_and_ledger": {
+      "correction_rows": 22,
+      "reason": "metric contract present; correction ledger has 22 sealed rows",
+      "status": "green"
+    },
+    "g06_functional_fixtures": {
+      "detail": "",
+      "gravity_payloads": 1,
+      "reason": "codec selftest passes fresh; 1 sealed .gravity payloads; contract present",
+      "status": "green"
+    },
+    "g07_parity_fixtures": {
+      "detail": "",
+      "reason": "CPU/Metal parity re-verified fresh: pass",
+      "status": "green"
+    },
+    "g08_amplification_evidence": {
+      "reason": "early/middle/late amplification evidence present and expansive",
+      "status": "green",
+      "strata": [
+        "GLM52_FUNCTIONAL_DEPTH_THRESHOLD_L03.json",
+        "GLM52_FUNCTIONAL_DEPTH_THRESHOLD_L38.json",
+        "GLM52_FUNCTIONAL_DEPTH_THRESHOLD_L74.json"
+      ]
+    },
+    "g09_runtime_gravity_fixture": {
+      "detail": "",
+      "reason": "minimal .gravity functional fixture builds and verifies fresh: ok",
+      "status": "green"
+    },
+    "g10_transfer_packet_rollback": {
+      "reason": "transfer packet present; decision closure FINAL_SEALED",
+      "rollback": "re-fetch at the immutable revision per the rehydration receipt",
+      "status": "green"
+    },
+    "g11_no_process_maps_source": {
+      "reason": "no live process opens or names the source root",
+      "scan": {
+        "any_probe_ran": true,
+        "argv": {
+          "available": true,
+          "referencing_processes": 0
+        },
+        "clean": true,
+        "lsof": {
+          "available": true,
+          "open_references": 0
+        },
+        "matches": []
+      },
+      "status": "green"
+    },
+    "g12_isolation": {
+      "protected_not_under_target": true,
+      "reason": "source root is isolated from repo, MOP, capsules, compact and evidence",
+      "status": "green",
+      "target": "/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/source"
+    },
+    "g13_deletion_paths_listed": {
+      "deletion_paths": [
+        "/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/source"
+      ],
+      "reason": "the deletion set is exactly the source root and nothing else",
+      "reclaims_gb": 405.4,
+      "status": "green"
+    }
+  },
+  "green": 13,
+  "release_authorized": true,
+  "repo": "zai-org/GLM-5.2",
+  "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+  "schema": "hawking.glm52.source_release.v1",
+  "source_root": "/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/source",
+  "total": 13
+}
