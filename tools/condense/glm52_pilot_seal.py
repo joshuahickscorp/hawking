@@ -44,6 +44,25 @@ def git_head() -> str:
                           capture_output=True, text=True, check=False).stdout.strip()
 
 
+# Which representation family a rung belongs to.  The slope test compares a family
+# against itself across rates, so mixing two families inside one window would read a
+# family difference as a rate response and produce a verdict about neither.
+RUNG_FAMILY = {
+    "G0": "glm52.pq.r0.v1", "G1": "glm52.pq.r0.v1", "G2": "glm52.pq.r0.v1",
+    "GC": "glm52.pq.r0.v1", "DX1": "glm52.pq.r0.v1", "DX2": "glm52.pq.r0.v1",
+    "LR0": "glm52.lowrank.r1.v1", "LR1": "glm52.lowrank.r1.v1",
+    "LR2": "glm52.lowrank.r1.v1",
+}
+# Rungs above the one-bit law are diagnostics.  They may inform how far a family is from
+# working; they may never be part of the verdict about whether it works, because a verdict
+# built on an illegal rate is a verdict about a candidate that cannot exist.
+DIAGNOSTIC_RUNGS = frozenset({"DX1", "DX2"})
+
+
+def family_of(rung: str) -> str:
+    return RUNG_FAMILY.get(rung, "unknown")
+
+
 def window_kinds() -> dict[str, str]:
     """DENSE, SPARSE_MOE or GLOBAL_ORGANS per pilot window, from the sealed window plan."""
     plan_path = REPORTS / "GLM52_GENERATION_B_WINDOW_PLAN.json"
@@ -123,11 +142,14 @@ def seal() -> int:
     for window, rows in sorted(by_window.items()):
         ladder_rows = []
         for row in sorted(rows, key=lambda item: item["pack"]["complete_bpw"]):
+            row["family"] = family_of(row["propagate"]["rung"])
             stages = row["propagate"]["stages"]
             topk = next((value for key, value in stages.items()
                          if key.endswith("/topk_indices")), None)
             ladder_rows.append({
                 "rung": row["propagate"]["rung"],
+                "family": row["family"],
+                "diagnostic_only": row["propagate"]["rung"] in DIAGNOSTIC_RUNGS,
                 "complete_bpw": row["pack"]["complete_bpw"],
                 "packed_bpw": row["pack"]["packed_bpw"],
                 "artifact_verifies": row["pack"]["verifies"],
@@ -137,9 +159,17 @@ def seal() -> int:
                 "expert_selection_set_agreement": topk["set_agreement"] if topk else None,
                 "stages": {key.split("/", 1)[-1]: value for key, value in stages.items()},
             })
-        windows[window] = {"rungs": ladder_rows, "verdict": family_verdict(rows)}
+        by_family: dict[str, list[dict]] = defaultdict(list)
+        for row in rows:
+            if row["propagate"]["rung"] in DIAGNOSTIC_RUNGS:
+                continue
+            by_family[family_of(row["propagate"]["rung"])].append(row)
+        verdicts_here = {family: family_verdict(members)
+                         for family, members in sorted(by_family.items())}
+        windows[window] = {"rungs": ladder_rows, "by_family": verdicts_here}
 
-    verdicts = {name: block["verdict"]["verdict"] for name, block in windows.items()}
+    verdicts = {f"{name}|{family}": block["by_family"][family]["verdict"]
+                for name, block in windows.items() for family in block["by_family"]}
 
     # Replication means the same verdict on the same KIND of window.  A dense block and a
     # sparse MoE block are different functions carrying different fractions of the weight,
@@ -147,8 +177,9 @@ def seal() -> int:
     # pilot actually localised.
     kinds = window_kinds()
     by_kind: dict[str, dict[str, str]] = defaultdict(dict)
-    for name, verdict in verdicts.items():
-        by_kind[kinds.get(name, "UNKNOWN")][name] = verdict
+    for key, verdict in verdicts.items():
+        name, family = key.split("|", 1)
+        by_kind[f"{kinds.get(name, 'UNKNOWN')}|{family}"][key] = verdict
     replication = {
         kind: {"windows": sorted(members),
                "verdicts": sorted(set(members.values())),
@@ -209,9 +240,12 @@ def seal() -> int:
         "wrote": str(target.relative_to(REPO)),
         "windows": {name: {"rungs": [f"{r['rung']}@{r['complete_bpw']:.4f}"
                                      f"->cos {r['block_output_cosine']:.3f}"
+                                     + ("*" if r["diagnostic_only"] else "")
                                      for r in block["rungs"]],
-                           "verdict": block["verdict"]["verdict"]}
+                           "verdicts": {family: verdict["verdict"]
+                                        for family, verdict in block["by_family"].items()}}
                     for name, block in windows.items()},
+        "diagnostic_rungs_excluded_from_verdicts": sorted(DIAGNOSTIC_RUNGS),
         "replicated": replicated,
     }, indent=2))
     return 0

@@ -11,7 +11,7 @@
     "warning_from_directive": "do not let the control become the selected model by inertia",
     "what": "plain product quantization, single subspace, fp16 codebooks"
   },
-  "git_commit": "201cb0fc748f0622c922ffb11472e90b12181124",
+  "git_commit": "09255597686a22a0c33754f311e812d593947bef",
   "localisation": "the verdicts split by architecture, not by noise: the dense block clears the trajectory floor while both sparse MoE blocks are family-bound at the same codec. Product quantization is not uniformly fatal here, it is fatal to the expert path, which is 97.492 percent of the weight",
   "measurement_limitations": [
     "IndexShare selection is not exercised: the calibration batch is 256 positions and index_topk is 2048, so the indexer returns all keys and set agreement is trivially 1.0 at every rate. Testing it needs sequences longer than 2048.",
@@ -27,42 +27,50 @@
   },
   "replicated_within_a_kind": true,
   "replication_by_window_kind": {
-    "DENSE": {
+    "DENSE|glm52.pq.r0.v1": {
       "replicated": false,
       "verdicts": [
         "TRAJECTORY_REACHABLE"
       ],
       "windows": [
-        "W_L00_L00"
+        "W_L00_L00|glm52.pq.r0.v1"
       ]
     },
-    "SPARSE_MOE": {
+    "SPARSE_MOE|glm52.pq.r0.v1": {
       "replicated": true,
       "verdicts": [
         "REPRESENTATION_FAMILY_BOUND"
       ],
       "windows": [
-        "W_L38_L38",
-        "W_L74_L74"
+        "W_L38_L38|glm52.pq.r0.v1",
+        "W_L74_L74|glm52.pq.r0.v1"
       ]
     }
   },
   "schema": "hawking.glm52.generation_b_pilot_results.v1",
-  "sealed_at": "2026-07-23T14:40:51Z",
+  "sealed_at": "2026-07-23T15:15:39Z",
   "verdicts": {
-    "W_L00_L00": "TRAJECTORY_REACHABLE",
-    "W_L38_L38": "REPRESENTATION_FAMILY_BOUND",
-    "W_L74_L74": "REPRESENTATION_FAMILY_BOUND"
+    "W_L00_L00|glm52.pq.r0.v1": "TRAJECTORY_REACHABLE",
+    "W_L38_L38|glm52.pq.r0.v1": "REPRESENTATION_FAMILY_BOUND",
+    "W_L74_L74|glm52.pq.r0.v1": "REPRESENTATION_FAMILY_BOUND"
   },
   "windows": {
     "W_L00_L00": {
+      "by_family": {
+        "glm52.pq.r0.v1": {
+          "best_carry_out_cosine": 0.7092114123867086,
+          "verdict": "TRAJECTORY_REACHABLE"
+        }
+      },
       "rungs": [
         {
           "artifact_verifies": true,
           "block_output_cosine": 0.7092114123867086,
           "block_output_relative_error": 0.812781188781663,
           "complete_bpw": 0.8550744535000073,
+          "diagnostic_only": false,
           "expert_selection_set_agreement": null,
+          "family": "glm52.pq.r0.v1",
           "packed_bpw": 0.491965182457315,
           "rung": "G0",
           "stages": {
@@ -104,20 +112,30 @@
           },
           "tensor_coverage_complete": true
         }
-      ],
-      "verdict": {
-        "best_carry_out_cosine": 0.7092114123867086,
-        "verdict": "TRAJECTORY_REACHABLE"
-      }
+      ]
     },
     "W_L38_L38": {
+      "by_family": {
+        "glm52.pq.r0.v1": {
+          "best_carry_out_cosine": 0.2693950563085895,
+          "cosine_gain_over_that_span": 0.2285113273763709,
+          "cosine_per_bit": 0.4062283170746741,
+          "extrapolated_bpw_to_reach_floor": 1.4607836072207667,
+          "extrapolation_is_linear_and_crude": true,
+          "rate_span_tested": 0.5625194447839668,
+          "reading": "spending 0.563 more bits per weight moved the block output by 0.229 cosine, a slope of 0.406 per bit, leaving it at 0.269. Reaching 0.50 on that trend would take 1.461 bits per weight, against a ceiling of 1.0. The binding constraint is the representation, not the budget.",
+          "verdict": "REPRESENTATION_FAMILY_BOUND"
+        }
+      },
       "rungs": [
         {
           "artifact_verifies": true,
           "block_output_cosine": 0.04088372893221862,
           "block_output_relative_error": 1.0431321149228552,
           "complete_bpw": 0.33059092549448194,
+          "diagnostic_only": false,
           "expert_selection_set_agreement": 0.0133056640625,
+          "family": "glm52.pq.r0.v1",
           "packed_bpw": 0.3131845732314846,
           "rung": "G2",
           "stages": {
@@ -206,7 +224,9 @@
           "block_output_cosine": 0.0857229238920876,
           "block_output_relative_error": 1.0978693501368924,
           "complete_bpw": 0.49903798534984234,
+          "diagnostic_only": false,
           "expert_selection_set_agreement": 0.02093505859375,
+          "family": "glm52.pq.r0.v1",
           "packed_bpw": 0.48181874792427765,
           "rung": "G1",
           "stages": {
@@ -295,7 +315,9 @@
           "block_output_cosine": 0.15389282740504048,
           "block_output_relative_error": 1.0356514649065682,
           "complete_bpw": 0.7531110358459959,
+          "diagnostic_only": false,
           "expert_selection_set_agreement": 0.118896484375,
+          "family": "glm52.pq.r0.v1",
           "packed_bpw": 0.7361740285619396,
           "rung": "G0",
           "stages": {
@@ -384,7 +406,9 @@
           "block_output_cosine": 0.2693950563085895,
           "block_output_relative_error": 1.066778842888151,
           "complete_bpw": 0.8931103702784488,
+          "diagnostic_only": false,
           "expert_selection_set_agreement": 0.106414794921875,
+          "family": "glm52.pq.r0.v1",
           "packed_bpw": 0.8763288774493524,
           "rung": "GC",
           "stages": {
@@ -468,26 +492,30 @@
           },
           "tensor_coverage_complete": true
         }
-      ],
-      "verdict": {
-        "best_carry_out_cosine": 0.2693950563085895,
-        "cosine_gain_over_that_span": 0.2285113273763709,
-        "cosine_per_bit": 0.4062283170746741,
-        "extrapolated_bpw_to_reach_floor": 1.4607836072207667,
-        "extrapolation_is_linear_and_crude": true,
-        "rate_span_tested": 0.5625194447839668,
-        "reading": "spending 0.563 more bits per weight moved the block output by 0.229 cosine, a slope of 0.406 per bit, leaving it at 0.269. Reaching 0.50 on that trend would take 1.461 bits per weight, against a ceiling of 1.0. The binding constraint is the representation, not the budget.",
-        "verdict": "REPRESENTATION_FAMILY_BOUND"
-      }
+      ]
     },
     "W_L74_L74": {
+      "by_family": {
+        "glm52.pq.r0.v1": {
+          "best_carry_out_cosine": 0.20119669999118442,
+          "cosine_gain_over_that_span": 0.10359295069763856,
+          "cosine_per_bit": 0.7399531656175145,
+          "extrapolated_bpw_to_reach_floor": 1.296924170790343,
+          "extrapolation_is_linear_and_crude": true,
+          "rate_span_tested": 0.13999933443245283,
+          "reading": "spending 0.140 more bits per weight moved the block output by 0.104 cosine, a slope of 0.740 per bit, leaving it at 0.201. Reaching 0.50 on that trend would take 1.297 bits per weight, against a ceiling of 1.0. The binding constraint is the representation, not the budget.",
+          "verdict": "REPRESENTATION_FAMILY_BOUND"
+        }
+      },
       "rungs": [
         {
           "artifact_verifies": true,
           "block_output_cosine": 0.09760374929354586,
           "block_output_relative_error": 1.0844456483377751,
           "complete_bpw": 0.7531110358459959,
+          "diagnostic_only": false,
           "expert_selection_set_agreement": 0.120880126953125,
+          "family": "glm52.pq.r0.v1",
           "packed_bpw": 0.7361740285619396,
           "rung": "G0",
           "stages": {
@@ -576,7 +604,9 @@
           "block_output_cosine": 0.20119669999118442,
           "block_output_relative_error": 1.1551998546560613,
           "complete_bpw": 0.8931103702784488,
+          "diagnostic_only": false,
           "expert_selection_set_agreement": 0.222198486328125,
+          "family": "glm52.pq.r0.v1",
           "packed_bpw": 0.8763288774493524,
           "rung": "GC",
           "stages": {
@@ -660,17 +690,7 @@
           },
           "tensor_coverage_complete": true
         }
-      ],
-      "verdict": {
-        "best_carry_out_cosine": 0.20119669999118442,
-        "cosine_gain_over_that_span": 0.10359295069763856,
-        "cosine_per_bit": 0.7399531656175145,
-        "extrapolated_bpw_to_reach_floor": 1.296924170790343,
-        "extrapolation_is_linear_and_crude": true,
-        "rate_span_tested": 0.13999933443245283,
-        "reading": "spending 0.140 more bits per weight moved the block output by 0.104 cosine, a slope of 0.740 per bit, leaving it at 0.201. Reaching 0.50 on that trend would take 1.297 bits per weight, against a ceiling of 1.0. The binding constraint is the representation, not the budget.",
-        "verdict": "REPRESENTATION_FAMILY_BOUND"
-      }
+      ]
     }
   }
 }
