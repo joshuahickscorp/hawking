@@ -1,0 +1,65 @@
+{
+  "bpw": {
+    "coded_expert_tensors": 9024,
+    "complete_bpw_exact": "173947169/183666902",
+    "complete_bytes": 27831547040,
+    "components": {
+      "alignment": 0,
+      "codebooks": 110886912,
+      "doctor": 0,
+      "indices": 212902871040,
+      "metadata": 4620288,
+      "packaging": 536870912,
+      "pass_through_tensors": 801541632,
+      "protected_islands": 7950447616,
+      "runtime_tables": 12032,
+      "scales": 345125888
+    },
+    "legal_under_one_bit_ceiling": true,
+    "omitted_expert_tensors": 27072,
+    "organ_bpw": {},
+    "scope": "complete artifact, omission-aware",
+    "whole_model_bpw": 0.947079561
+  },
+  "capability_pass": false,
+  "divergence_vs_parent": {
+    "mean_logit_cosine": 0.24522,
+    "mean_sym_kl": 11.43902,
+    "mean_top5_overlap": 0.0222,
+    "next_token_argmax_agreement": 0.0
+  },
+  "domain": "general",
+  "honesty": "REAL parent-vs-packed Qwen3-MoE forward with expert_hook substitution; BPW is whole-model from the exact byte ledger, never expert-only; weight-space error is NOT a pass criterion",
+  "kind": "packed",
+  "ladder_sha": "931d74198c9b6bfd",
+  "logits_finite": true,
+  "n_tokens": 9,
+  "note": "GENERATION S2, RECONSTRUCTION-FIRST. Admitted by the sealed D1/D2 causal decomposition, which found S1 RECONSTRUCTION_BOUND: with perfect experts and only the router masked (D1) the model keeps argmax 0.3850 and symKL 4.297, but with perfect routing and packed experts (D2) it is already at argmax 0.0863 / symKL 7.879 - 91.6 pct of the total S64 loss. Reconstruction is the binding cause, so the correct trade is MORE routing loss for BETTER reconstruction, not less. Quartering the inventory to 32 survivors funds gate/up at 5.0 index bpw (RD floor 0.0312 against 0.1768 at S64) and down at 1.25. Complete 0.947079561 BPW, legal. The cost is real and measured: keep-32 retains only 52.3 pct of top-8 routing decisions (worst layer 41.5) on the 1313-token disjoint calibration, against 79.2 pct at keep-64. D1 says that cost is the cheaper half of the trade. This forward is what decides whether that reading survives contact.",
+  "prompt_id": "gen_science",
+  "quality": {
+    "n_positions": 8,
+    "nll": 8.97066,
+    "perplexity": 7868.8098
+  },
+  "row_id": "gen_science__S32_recon_first",
+  "sealed_at": "2026-07-21T02:00:25Z",
+  "sha256": "326698203be25ae5fba5f5a57da420dc6a81562e60b0b344826a38e435babe60",
+  "spec": {
+    "down": {
+      "dim": 8,
+      "family": "function_aware",
+      "k": 1024,
+      "stages": 1
+    },
+    "gate_up": {
+      "dim": 8,
+      "family": "function_aware",
+      "k": 1024,
+      "stages": 4
+    },
+    "keep_experts": 32,
+    "kind": "packed"
+  },
+  "variant": "S32_recon_first",
+  "verdict": "collapse"
+}
