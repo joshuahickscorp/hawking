@@ -91,7 +91,7 @@
       0.4456
     ]
   },
-  "as_of": "2026-07-23T20:45:00Z",
+  "as_of": "2026-07-23T22:15:00Z",
   "block_latency": {
     "FRT_A_seconds_per_layer": 0.002904,
     "FRT_B_seconds_per_layer": 0.002153,
@@ -129,9 +129,10 @@
   },
   "contraction_first_pilot": {
     "blocked_on": "a deepseek_v4 reference forward for real teacher trajectories",
+    "deepseek_moe_probe": "NEGATIVE on embedding-seeded input (student -0.06/-0.09 skill, loses to constant); fp4 dequant validated; block forward gates the definitive verdict",
     "discrimination": "CONTRACTIVE at gain 0.6, EXPANSIVE at gain 1.6 on synthetic operators",
     "harness": "tools/condense/hawking_contraction_pilot.py",
-    "status": "ACTIVE_SELF_TESTED"
+    "status": "EXERCISED_ON_DEEPSEEK_MOE"
   },
   "controller": {
     "detached": true,
@@ -261,6 +262,7 @@
     "fits": "159.6 GB source, 534.5 GB free, 267.5 GB headroom above the 100 GiB reserve",
     "fixture": "the GLM-5.2 teacher capsules are the reference any new probe implementation is checked against",
     "gate_order_changed": "the amplification probe now runs FIRST, before nulls, before students, before any encoding",
+    "moe_probe": "DEEPSEEK_V4_FLASH_MOE_PROBE_DECISION.json",
     "primary": "deepseek-ai/DeepSeek-V4-Flash, 159.6 GB, 46 shards",
     "primary_admission": "DEEPSEEK_V4_FLASH_SOURCE_ADMISSION.json",
     "protocol": "HAWKING_GRAVITY_CROSS_MODEL_TRANSFER.md",

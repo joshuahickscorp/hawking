@@ -1,10 +1,49 @@
 {
-  "schema": "hawking.contraction_first_pilot.v1",
-  "status": "ACTIVE_AWAITING_TEACHER_FORWARD",
-  "parent": "deepseek-ai/DeepSeek-V4-Flash",
-  "revision": "60d8d70770c6776ff598c94bb586a859a38244f1",
-  "harness": "tools/condense/hawking_contraction_pilot.py",
+  "amplification_gate": {
+    "contraction_threshold": 1.0,
+    "discrimination_proven": "selftest on synthetic operators reports CONTRACTIVE at gain 0.6 (min amp 0.61) and EXPANSIVE at gain 1.6 (min amp 1.47); the discrimination GLM-5.2's residual stream could not offer",
+    "magnitude_fractions": [
+      0.05,
+      0.1,
+      0.25,
+      0.5,
+      1.0
+    ],
+    "verdicts": [
+      "CONTRACTIVE",
+      "THRESHOLD_STABLE",
+      "EXPANSIVE_AT_EVERY_TESTED_MAGNITUDE"
+    ]
+  },
+  "blocked_on": "a reference-logit-validated MLA+DSA+hyper-connection block forward for real pre-MoE hidden and the amplification probe; unvalidatable on a 96 GiB box, so not fabricated",
   "gate_order_changed": "the perturbation amplification gate decides whether propagation-dependent work and the rate ladder run at all; nothing is promoted from a local fit",
+  "harness": "tools/condense/hawking_contraction_pilot.py",
+  "moe_probe_result": {
+    "decision": "DEEPSEEK_V4_FLASH_MOE_PROBE_DECISION.json",
+    "fp4_dequant_validated": true,
+    "functional_student_skill": {
+      "L20": -0.0609,
+      "L40": -0.0921
+    },
+    "layers": [
+      20,
+      40
+    ],
+    "tool": "tools/condense/deepseek_v4_moe.py",
+    "verdict": "functional escape does not reproduce from embedding-seeded input; loses to a constant"
+  },
+  "not_evidence_of": "capability; the harness has only been exercised on a synthetic teacher",
+  "parent": "deepseek-ai/DeepSeek-V4-Flash",
+  "promotion_rule": {
+    "never_from_local_fit": true,
+    "requires_all_of": [
+      "positive null-relative block skill",
+      "rollout stability",
+      "cross-depth replication",
+      "exact physical accounting",
+      "direct runtime path"
+    ]
+  },
   "protocol": [
     "1 fit-split nulls",
     "2 full affine functional upper control",
@@ -17,19 +56,8 @@
     "9 router-margin and route-agreement propagation",
     "10 exact 0.75/0.50/0.333 artifacts only if the functional direction survives propagation"
   ],
-  "promotion_rule": {
-    "never_from_local_fit": true,
-    "requires_all_of": ["positive null-relative block skill", "rollout stability",
-                        "cross-depth replication", "exact physical accounting",
-                        "direct runtime path"]
-  },
-  "amplification_gate": {
-    "magnitude_fractions": [0.05, 0.1, 0.25, 0.5, 1.0],
-    "contraction_threshold": 1.0,
-    "verdicts": ["CONTRACTIVE", "THRESHOLD_STABLE", "EXPANSIVE_AT_EVERY_TESTED_MAGNITUDE"],
-    "discrimination_proven": "selftest on synthetic operators reports CONTRACTIVE at gain 0.6 (min amp 0.61) and EXPANSIVE at gain 1.6 (min amp 1.47); the discrimination GLM-5.2's residual stream could not offer"
-  },
-  "blocked_on": "a deepseek_v4 NumPy reference forward (MLA + DSA index_topk 512 + sqrtsoftplus noaux_tc routing + fp4/E8M0 expert dequant) to provide real teacher trajectories; the harness runs the moment that TeacherProvider exists",
+  "revision": "60d8d70770c6776ff598c94bb586a859a38244f1",
+  "schema": "hawking.contraction_first_pilot.v1",
   "source_precision_note": "experts are already fp4, so a 1.0 complete-BPW target is a ~4x reduction here, not the ~16x a BF16 parent implies; the byte accounting must carry the source-format caveat",
-  "not_evidence_of": "capability; the harness has only been exercised on a synthetic teacher"
+  "status": "MOE_PROBE_RUN_NEGATIVE_ON_AVAILABLE_INPUTS"
 }
