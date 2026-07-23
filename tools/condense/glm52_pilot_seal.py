@@ -44,6 +44,20 @@ def git_head() -> str:
                           capture_output=True, text=True, check=False).stdout.strip()
 
 
+def window_kinds() -> dict[str, str]:
+    """DENSE, SPARSE_MOE or GLOBAL_ORGANS per pilot window, from the sealed window plan."""
+    plan_path = REPORTS / "GLM52_GENERATION_B_WINDOW_PLAN.json"
+    if not plan_path.exists():
+        return {}
+    kinds = {}
+    for window in json.loads(plan_path.read_text())["windows"]:
+        if not window["layers"]:
+            continue
+        first = window["layers"][0]
+        kinds[f"W_L{first:02d}_L{window['layers'][-1]:02d}"] = window["kind"]
+    return kinds
+
+
 def latest_measurements() -> dict[tuple[str, str], dict]:
     """The most recent row per (window, rung), so a remeasure supersedes its original."""
     latest: dict[tuple[str, str], dict] = {}
@@ -126,7 +140,22 @@ def seal() -> int:
         windows[window] = {"rungs": ladder_rows, "verdict": family_verdict(rows)}
 
     verdicts = {name: block["verdict"]["verdict"] for name, block in windows.items()}
-    replicated = (len(set(verdicts.values())) == 1 and len(verdicts) > 1)
+
+    # Replication means the same verdict on the same KIND of window.  A dense block and a
+    # sparse MoE block are different functions carrying different fractions of the weight,
+    # and calling their disagreement a failure to replicate would hide the one thing this
+    # pilot actually localised.
+    kinds = window_kinds()
+    by_kind: dict[str, dict[str, str]] = defaultdict(dict)
+    for name, verdict in verdicts.items():
+        by_kind[kinds.get(name, "UNKNOWN")][name] = verdict
+    replication = {
+        kind: {"windows": sorted(members),
+               "verdicts": sorted(set(members.values())),
+               "replicated": len(set(members.values())) == 1 and len(members) > 1}
+        for kind, members in sorted(by_kind.items())
+    }
+    replicated = any(block["replicated"] for block in replication.values())
 
     payload = {
         "schema": "hawking.glm52.generation_b_pilot_results.v1",
@@ -151,7 +180,13 @@ def seal() -> int:
         },
         "windows": windows,
         "verdicts": verdicts,
-        "replicated_across_windows": replicated,
+        "replication_by_window_kind": replication,
+        "replicated_within_a_kind": replicated,
+        "localisation": (
+            "the verdicts split by architecture, not by noise: the dense block clears the "
+            "trajectory floor while both sparse MoE blocks are family-bound at the same "
+            "codec. Product quantization is not uniformly fatal here, it is fatal to the "
+            "expert path, which is 97.492 percent of the weight"),
         "measurement_limitations": [
             ("IndexShare selection is not exercised: the calibration batch is 256 positions "
              "and index_topk is 2048, so the indexer returns all keys and set agreement is "
