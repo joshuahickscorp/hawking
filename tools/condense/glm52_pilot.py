@@ -42,6 +42,7 @@ import gravity_forge as forge  # noqa: E402
 import gravity_format  # noqa: E402
 import glm52_pack as pack  # noqa: E402
 import glm52_reference as reference  # noqa: E402
+import glm52_functional_student as student  # noqa: E402
 import glm52_lowrank as lowrank  # noqa: E402
 import glm52_shard_probe as probe  # noqa: E402
 import glm52_teacher_capture as teacher  # noqa: E402
@@ -98,8 +99,16 @@ class CompactSource:
     and materializing them all would be 39 GiB of dense weight for a 300 MiB artifact.
     """
 
-    def __init__(self, artifacts: list[Path], fallback: teacher.ShardTensorSource) -> None:
+    def __init__(self, artifacts: list[Path], fallback: teacher.ShardTensorSource,
+                 students: dict[str, Path] | None = None) -> None:
         self.fallback = fallback
+        # projection key -> (blob, expert order).  One shared basis serves 256 experts, so
+        # the blob is loaded once and every expert is a slice of it.
+        self.students: dict[str, dict] = {}
+        for key, path in (students or {}).items():
+            payload = json.loads(path.with_suffix(".json").read_text())
+            self.students[key] = {"blob": path.read_bytes(),
+                                  "order": payload["expert_order"]}
         self.index: dict[str, tuple[Path, dict]] = {}
         for path in artifacts:
             header = gravity_format.read_header(path)
@@ -110,10 +119,24 @@ class CompactSource:
         self.native = 0
         self.fell_back = 0
 
+    def _student_for(self, name: str):
+        for key, entry in self.students.items():
+            if name.endswith(key) and name in entry["order"]:
+                return entry, entry["order"].index(name)
+        return None, None
+
     def tensor(self, name: str) -> np.ndarray:
         if name in self._cache:
             self._cache.move_to_end(name)
             return self._cache[name]
+        entry, position = self._student_for(name)
+        if entry is not None:
+            value = student.reconstruct_expert(entry["blob"], position)
+            self.decoded += 1
+            self._cache[name] = value
+            while len(self._cache) > DECODE_CACHE_TENSORS:
+                self._cache.popitem(last=False)
+            return value
         located = self.index.get(name)
         if located is None:
             # A tensor outside the packed window (the embedding table, an upstream
@@ -190,7 +213,167 @@ def geometry_for(rung: dict, position: int) -> tuple[int, int]:
     return int(side["dim"]), int(side["k"])
 
 
+def pack_student_window(layers: list[int], rung: dict, *, seed: int = 0) -> dict:
+    """Pack a window whose routed experts are replaced by one shared-basis student.
+
+    Non-expert tensors take the paired product-quantization geometry so the comparison
+    isolates the expert path, which is the only thing this family changes.  The student
+    lives beside the container: a basis shared across 256 experts has no home in
+    hawking.gravity.container.v1, which describes tensors and not side information, so
+    the bytes are real and measured but the container integration waits until the family
+    earns it.
+    """
+    rows = window_rows(layers)
+    out_dir = COMPACT / rung["rung"]
+    out_dir.mkdir(parents=True, exist_ok=True)
+    identity = f"W_L{layers[0]:02d}_L{layers[-1]:02d}_{rung['rung']}"
+    target = out_dir / f"{identity}.gravity"
+    dim, k = int(rung["pq_geometry"]["dim"]), int(rung["pq_geometry"]["k"])
+    target_rate = float(rung["student_target_compressed_bpw"])
+
+    expert_rows: dict[str, list[dict]] = {}
+    other_rows: list[dict] = []
+    for row in rows:
+        if row["expert"] is None:
+            other_rows.append(row)
+            continue
+        key = row["name"].rsplit(".", 1)[0].rsplit(".", 1)[-1] + ".weight"
+        expert_rows.setdefault(f"{row['layer']:02d}/{key}", []).append(row)
+
+    handles: dict[str, object] = {}
+
+    def read(row: dict) -> bytes:
+        handle = handles.get(row["shard"])
+        if handle is None:
+            handle = open(SOURCE / row["shard"], "rb", buffering=0)
+            handles[row["shard"]] = handle
+        handle.seek(int(row["absolute_start"]))
+        return handle.read(int(row["payload_bytes"]))
+
+    started = time.time()
+    payloads: list[tuple[dict, bytes]] = []
+    students: dict[str, Path] = {}
+    student_bytes = 0
+    student_elements = 0
+    student_report: dict[str, dict] = {}
+    try:
+        for row in other_rows:
+            raw = read(row)
+            elements = int(np.prod(row["shape"]))
+            native = (row["dtype"] != "BF16"
+                      or row["provisional_budget_class"] == pack.PROTECTED_BUDGET_CLASS)
+            if native:
+                payloads.append(({
+                    "name": row["name"], "category": row["category"],
+                    "layer": row["layer"], "expert": row["expert"],
+                    "shape": row["shape"], "codec": f"native.{row['dtype'].lower()}",
+                    "terminal_state": "PROTECTED_SOURCE_NATIVE",
+                    "elements": elements, "bpw": len(raw) * 8 / max(1, elements),
+                }, raw))
+                continue
+            weights = probe._bf16_to_f32(
+                np.frombuffer(raw, dtype=np.uint16)).reshape(row["shape"]).astype(np.float32)
+            artifact = forge.pack_product_quant(weights, dim=dim, subspaces=1, k=k,
+                                                seed=seed, iters=4)
+            blob = pack.serialize(artifact)
+            payloads.append(({
+                "name": row["name"], "category": row["category"],
+                "layer": row["layer"], "expert": row["expert"],
+                "shape": row["shape"], "codec": "glm52.pq.r0.v1",
+                "terminal_state": "PACKED_IN_CORE_ARTIFACT",
+                "elements": elements, "bpw": len(blob) * 8 / max(1, elements),
+                "dim": dim, "k": k,
+            }, blob))
+
+        for key, group in sorted(expert_rows.items()):
+            group.sort(key=lambda item: item["expert"])
+            blocks = []
+            for row in group:
+                raw = read(row)
+                blocks.append(probe._bf16_to_f32(np.frombuffer(raw, dtype=np.uint16))
+                              .reshape(row["shape"]).astype(np.float32))
+            fitted = student.pack_projection(blocks, target_rate, seed=seed)
+            del blocks
+            stem = key.replace("/", "_L") if "/" in key else key
+            path = out_dir / f"{identity}_{stem.replace('.', '_')}.student"
+            path.write_bytes(fitted["blob"])
+            path.with_suffix(".json").write_text(json.dumps({
+                "projection": key, "rank": fitted["rank"], "bpw": fitted["bpw"],
+                "experts": fitted["experts"], "transposed": fitted["transposed"],
+                "mean_relative_frobenius_error": fitted["mean_relative_frobenius_error"],
+                "fit_seconds": fitted["fit_seconds"],
+                "expert_order": [row["name"] for row in group],
+            }, indent=2))
+            students[key] = path
+            student_bytes += len(fitted["blob"])
+            student_elements += sum(int(np.prod(row["shape"])) for row in group)
+            student_report[key] = {k: v for k, v in fitted.items() if k != "blob"}
+    finally:
+        for handle in handles.values():
+            handle.close()
+
+    partial = target.with_name(target.name + ".partial")
+    container_bytes = sum(len(blob) for _, blob in payloads)
+    container_elements = sum(descriptor["elements"] for descriptor, _ in payloads)
+    # verify reconciles packed_bpw over compressed tensors only, so the claim has to be
+    # computed the same way.  Claiming it over the whole container counts native organ
+    # bytes twice: once in complete and once in packed.
+    container_compressed = [(d, b) for d, b in payloads
+                            if not str(d["codec"]).startswith("native.")]
+    compressed_bytes = sum(len(blob) for _, blob in container_compressed)
+    compressed_elements = sum(d["elements"] for d, _ in container_compressed)
+    all_bytes = container_bytes + student_bytes
+    all_elements = container_elements + student_elements
+    gravity_format.write_shard(
+        partial, payloads,
+        model={"repo": "zai-org/GLM-5.2", "revision": teacher.IMMUTABLE_REVISION,
+               "window": identity},
+        architecture={"type": "GlmMoeDsaForCausalLM", "hidden_layers": 78,
+                      "routed_experts": 256, "shared_experts": 1, "hidden_size": 6144},
+        tokenizer={"kind": "reference", "source": "zai-org/GLM-5.2"},
+        compression={
+            "codec": "glm52.functional.block.v1", "production_rung": rung["rung"],
+            "packed_bpw": compressed_bytes * 8 / max(1, compressed_elements),
+            "complete_bpw": container_bytes * 8 / max(1, container_elements),
+            "note": ("this container holds only the non-expert tensors; the routed experts "
+                     "live in sidecar students and the window rate is reported by the "
+                     "pilot, not by this header"),
+        },
+        shard={"window": identity, "layers": layers})
+    with open(partial, "rb") as handle:
+        os.fsync(handle.fileno())
+    os.replace(partial, target)
+
+    report = gravity_format.verify(target)
+    declared = {row["name"] for row in rows}
+    stored = {d["name"] for d, _ in payloads} | {
+        name for entry in student_report.values() for name in []}
+    covered = stored | {row["name"] for group in expert_rows.values() for row in group}
+    return {
+        "window": identity, "rung": rung["rung"], "layers": layers,
+        "artifact": str(target), "students": {k: str(v) for k, v in students.items()},
+        "artifact_bytes": target.stat().st_size,
+        "student_bytes": student_bytes,
+        "pack_seconds": round(time.time() - started, 2),
+        "tensors": len(payloads) + sum(len(g) for g in expert_rows.values()),
+        "native_tensors": sum(1 for d, _ in payloads
+                              if str(d["codec"]).startswith("native.")),
+        "compressed_tensors": len(payloads) + sum(len(g) for g in expert_rows.values()),
+        "complete_bpw": all_bytes * 8 / max(1, all_elements),
+        "packed_bpw": all_bytes * 8 / max(1, all_elements),
+        "verifies": report["ok"],
+        "tensor_coverage_complete": covered == declared,
+        "absent_tensors": sorted(declared - covered),
+        "student_report": student_report,
+        "rate_is_window_local": (
+            "complete_bpw here is measured from real payload bytes, container tensors plus "
+            "sidecar students, over every declared source weight in the window"),
+    }
+
+
 def pack_window(layers: list[int], rung: dict, *, seed: int = 0, iters: int = 4) -> dict:
+    if rung["kind"] == "FUNCTIONAL_STUDENT":
+        return pack_student_window(layers, rung, seed=seed)
     """Pack every tensor of the window at this rung into one .gravity, exactly billed."""
     rows = window_rows(layers)
     out_dir = COMPACT / rung["rung"]
@@ -376,7 +559,8 @@ def _selection_agreement(expected: np.ndarray, value: np.ndarray) -> dict:
     }
 
 
-def propagate(layers: list[int], rung: dict, artifact: Path) -> dict:
+def propagate(layers: list[int], rung: dict, artifact: Path,
+              students: dict[str, Path] | None = None) -> dict:
     """Run the compact window and diff every stage against the sealed teacher capsule."""
     identity = teacher.capsule_id(layers)
     capsule_path = CAPSULES / f"{identity}.npz"
@@ -387,7 +571,7 @@ def propagate(layers: list[int], rung: dict, artifact: Path) -> dict:
     config = teacher.official_config()
     graph = teacher._graph()
     fallback = teacher.ShardTensorSource(SOURCE, teacher._tensor_table(graph))
-    source = CompactSource([artifact], fallback)
+    source = CompactSource([artifact], fallback, students=students)
 
     hidden = np.asarray(truth[f"layer_{layers[0]:02d}/input_hidden"], dtype=np.float32)
     previous_topk = np.asarray(truth["carry_out_index_selection"], dtype=np.int32) \
@@ -454,7 +638,8 @@ def run(window: str, rung_id: str) -> int:
     if not packed["verifies"] or not packed["tensor_coverage_complete"]:
         print(json.dumps({"status": "REFUSED", **packed}, indent=2))
         return 1
-    measured = propagate(layers, rung, Path(packed["artifact"]))
+    measured = propagate(layers, rung, Path(packed["artifact"]),
+                         students={k: Path(v) for k, v in packed.get("students", {}).items()})
     row = {"at": now(), "pack": packed, "propagate": measured}
     REPORTS.mkdir(parents=True, exist_ok=True)
     with (REPORTS / "GLM52_PILOT_MEASUREMENTS.jsonl").open("a") as handle:

@@ -53,6 +53,8 @@ RUNG_FAMILY = {
     "LR0": "glm52.lowrank.r1.v1", "LR1": "glm52.lowrank.r1.v1",
     "LR2": "glm52.lowrank.r1.v1",
     "HY0": "glm52.hybrid.by_role.v1",
+    "FS0": "glm52.functional.block.v1", "FS1": "glm52.functional.block.v1",
+    "FS2": "glm52.functional.block.v1",
 }
 # Rungs above the one-bit law are diagnostics.  They may inform how far a family is from
 # working; they may never be part of the verdict about whether it works, because a verdict
@@ -199,11 +201,29 @@ def seal() -> int:
                                  "compare against the native-functional direction"),
             "warning_from_directive": "do not let the control become the selected model by inertia",
         },
+        "families_tested": {
+            "glm52.pq.r0.v1": "product quantization, single subspace, fp16 codebooks",
+            "glm52.lowrank.r1.v1": "per-tensor truncated factorization, rank 71 at G0 rate",
+            "glm52.hybrid.by_role.v1": ("product quantization on attention and dense, low "
+                                        "rank on the expert path, same budget"),
+            "glm52.functional.block.v1": ("shared basis across all 256 routed experts per "
+                                          "projection, rank 280 at G0 rate"),
+        },
         "families_not_yet_tested": [
-            "glm52.functional.block.v1 (section 6.1 native functional block student)",
             "glm52.indexshare.student.v1 (section 6.2 IndexShare-aware attention student)",
             "glm52.hybrid.doctor.v1 (section 6.3 native base plus serialized Doctor)",
+            ("a student fitted against block OUTPUT rather than against weights: every "
+             "family above is a weight blueprint, which is exactly what section 6.1 says "
+             "the BF16 model is not"),
         ],
+        "cross_family_finding": (
+            "at a matched 0.75 rate on the same window, four families making different "
+            "structural assumptions land within 0.116 to 0.157 block output cosine. The "
+            "shared-basis student spends four times the rank of per-tensor low rank and "
+            "holds the expert path less than half as well, 0.0348 against 0.0811, so "
+            "GLM-5.2's 256 routed experts do not share a low-dimensional subspace. The "
+            "spread across radically different assumptions is small enough that the limit "
+            "does not look like a choice of codec."),
         "preregistered_thresholds": {
             "trajectory_floor_cosine": TRAJECTORY_FLOOR,
             "bpw_ceiling": BPW_CEILING,

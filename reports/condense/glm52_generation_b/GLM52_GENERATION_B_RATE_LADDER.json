@@ -234,6 +234,57 @@
       },
       "role": "section 6.5 allocation applied to representation rather than to rate. At matched rate the two families are complementary on the same window: product quantization holds attention better and low rank holds the expert path better, so each role takes the codec that wins on it. This costs no extra bits, which is why the rate-allocation probe closing does not close this.",
       "rung": "HY0"
+    },
+    {
+      "band": "B_PRIMARY",
+      "codec": "glm52.functional.block.v1",
+      "complete_bpw": null,
+      "compressed_bpw": 0.7396240234375,
+      "kind": "FUNCTIONAL_STUDENT",
+      "paired_with": "G0",
+      "per_tensor_lowrank_rank_at_same_rate": 71,
+      "pq_geometry": {
+        "dim": 32,
+        "k": 8192
+      },
+      "rank_at_expert_stack": 280,
+      "role": "section 6.1 native functional block student. The 256 routed experts of a layer share one basis per projection and keep only their own coefficients, so the basis costs a 256th of what it costs per expert.",
+      "rung": "FS0",
+      "student_target_compressed_bpw": 0.7396240234375
+    },
+    {
+      "band": "B_HALF",
+      "codec": "glm52.functional.block.v1",
+      "complete_bpw": null,
+      "compressed_bpw": 0.48143513997395837,
+      "kind": "FUNCTIONAL_STUDENT",
+      "paired_with": "G1",
+      "per_tensor_lowrank_rank_at_same_rate": null,
+      "pq_geometry": {
+        "dim": 32,
+        "k": 8192
+      },
+      "rank_at_expert_stack": 182,
+      "role": "section 6.1 native functional block student. The 256 routed experts of a layer share one basis per projection and keep only their own coefficients, so the basis costs a 256th of what it costs per expert.",
+      "rung": "FS1",
+      "student_target_compressed_bpw": 0.48143513997395837
+    },
+    {
+      "band": "B_THIRD",
+      "codec": "glm52.functional.block.v1",
+      "complete_bpw": null,
+      "compressed_bpw": 0.3131917317708333,
+      "kind": "FUNCTIONAL_STUDENT",
+      "paired_with": "G2",
+      "per_tensor_lowrank_rank_at_same_rate": null,
+      "pq_geometry": {
+        "dim": 32,
+        "k": 8192
+      },
+      "rank_at_expert_stack": 118,
+      "role": "section 6.1 native functional block student. The 256 routed experts of a layer share one basis per projection and keep only their own coefficients, so the basis costs a 256th of what it costs per expert.",
+      "rung": "FS2",
+      "student_target_compressed_bpw": 0.3131917317708333
     }
   ],
   "native_floor": {

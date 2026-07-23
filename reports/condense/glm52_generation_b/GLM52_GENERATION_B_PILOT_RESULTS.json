@@ -1,17 +1,24 @@
 {
+  "cross_family_finding": "at a matched 0.75 rate on the same window, four families making different structural assumptions land within 0.116 to 0.157 block output cosine. The shared-basis student spends four times the rank of per-tensor low rank and holds the expert path less than half as well, 0.0348 against 0.0811, so GLM-5.2's 256 routed experts do not share a low-dimensional subspace. The spread across radically different assumptions is small enough that the limit does not look like a choice of codec.",
   "evidence_level": "F2_TRAJECTORY_ON_NATURAL_CORPUS_BATCH",
   "families_not_yet_tested": [
-    "glm52.functional.block.v1 (section 6.1 native functional block student)",
     "glm52.indexshare.student.v1 (section 6.2 IndexShare-aware attention student)",
-    "glm52.hybrid.doctor.v1 (section 6.3 native base plus serialized Doctor)"
+    "glm52.hybrid.doctor.v1 (section 6.3 native base plus serialized Doctor)",
+    "a student fitted against block OUTPUT rather than against weights: every family above is a weight blueprint, which is exactly what section 6.1 says the BF16 model is not"
   ],
+  "families_tested": {
+    "glm52.functional.block.v1": "shared basis across all 256 routed experts per projection, rank 280 at G0 rate",
+    "glm52.hybrid.by_role.v1": "product quantization on attention and dense, low rank on the expert path, same budget",
+    "glm52.lowrank.r1.v1": "per-tensor truncated factorization, rank 71 at G0 rate",
+    "glm52.pq.r0.v1": "product quantization, single subspace, fp16 codebooks"
+  },
   "family_tested": {
     "id": "glm52.pq.r0.v1",
     "role_in_directive": "section 6.4 bounded product/vector control, retained to compare against the native-functional direction",
     "warning_from_directive": "do not let the control become the selected model by inertia",
     "what": "plain product quantization, single subspace, fp16 codebooks"
   },
-  "git_commit": "811a233e7b411aec91c3e26b0b19c0d983498c29",
+  "git_commit": "6a72a38b291e4b8c2bf20267abd9b74c48f45025",
   "localisation": "the verdicts split by architecture, not by noise: the dense block clears the trajectory floor while both sparse MoE blocks are family-bound at the same codec. Product quantization is not uniformly fatal here, it is fatal to the expert path, which is 97.492 percent of the weight",
   "measurement_limitations": [
     "IndexShare selection is not exercised: the calibration batch is 256 positions and index_topk is 2048, so the indexer returns all keys and set agreement is trivially 1.0 at every rate. Testing it needs sequences longer than 2048.",
@@ -34,6 +41,15 @@
       ],
       "windows": [
         "W_L00_L00|glm52.pq.r0.v1"
+      ]
+    },
+    "SPARSE_MOE|glm52.functional.block.v1": {
+      "replicated": false,
+      "verdicts": [
+        "INSUFFICIENT_RATES"
+      ],
+      "windows": [
+        "W_L38_L38|glm52.functional.block.v1"
       ]
     },
     "SPARSE_MOE|glm52.hybrid.by_role.v1": {
@@ -66,9 +82,10 @@
     }
   },
   "schema": "hawking.glm52.generation_b_pilot_results.v1",
-  "sealed_at": "2026-07-23T15:23:35Z",
+  "sealed_at": "2026-07-23T15:33:17Z",
   "verdicts": {
     "W_L00_L00|glm52.pq.r0.v1": "TRAJECTORY_REACHABLE",
+    "W_L38_L38|glm52.functional.block.v1": "INSUFFICIENT_RATES",
     "W_L38_L38|glm52.hybrid.by_role.v1": "INSUFFICIENT_RATES",
     "W_L38_L38|glm52.lowrank.r1.v1": "INSUFFICIENT_RATES",
     "W_L38_L38|glm52.pq.r0.v1": "REPRESENTATION_FAMILY_BOUND",
@@ -136,6 +153,10 @@
     },
     "W_L38_L38": {
       "by_family": {
+        "glm52.functional.block.v1": {
+          "best_carry_out_cosine": 0.14433952249528934,
+          "verdict": "INSUFFICIENT_RATES"
+        },
         "glm52.hybrid.by_role.v1": {
           "best_carry_out_cosine": 0.15662695858370407,
           "verdict": "INSUFFICIENT_RATES"
@@ -334,6 +355,97 @@
               "cosine": 0.9995032465104566,
               "finite_fraction": 1.0,
               "relative_error": 0.03151923649631577
+            }
+          },
+          "tensor_coverage_complete": true
+        },
+        {
+          "artifact_verifies": true,
+          "block_output_cosine": 0.14433952249528934,
+          "block_output_relative_error": 1.0481268381912383,
+          "complete_bpw": 0.7512401379114013,
+          "diagnostic_only": false,
+          "expert_selection_set_agreement": 0.118896484375,
+          "family": "glm52.functional.block.v1",
+          "packed_bpw": 0.7512401379114013,
+          "rung": "FS0",
+          "stages": {
+            "attention_input": {
+              "cosine": 1.0,
+              "finite_fraction": 1.0,
+              "relative_error": 0.0
+            },
+            "attention_output": {
+              "cosine": 0.16294435495408346,
+              "finite_fraction": 1.0,
+              "relative_error": 1.0499973307965407
+            },
+            "block_output": {
+              "cosine": 0.14433952249528934,
+              "finite_fraction": 1.0,
+              "relative_error": 1.0481268381912383
+            },
+            "index_scores": {
+              "cosine": 0.9881822173347486,
+              "finite_fraction": 0.501953125,
+              "relative_error": 0.1624969989598947
+            },
+            "index_selection": {
+              "note": "cosine is not reported: these are labels, not magnitudes",
+              "positional_agreement": 0.5212507247924805,
+              "selection_width": 256,
+              "set_agreement": 1.0
+            },
+            "input_hidden": {
+              "cosine": 1.0,
+              "finite_fraction": 1.0,
+              "relative_error": 0.0
+            },
+            "post_attention_hidden": {
+              "cosine": 0.16263596292261592,
+              "finite_fraction": 1.0,
+              "relative_error": 1.0505556110825622
+            },
+            "post_moe": {
+              "cosine": 0.025528542484820168,
+              "finite_fraction": 1.0,
+              "relative_error": 1.0751335853368256
+            },
+            "pre_router_hidden": {
+              "cosine": 0.15987473085717646,
+              "finite_fraction": 1.0,
+              "relative_error": 1.3023638417242076
+            },
+            "routed_expert_output": {
+              "cosine": 0.034817485796839985,
+              "finite_fraction": 1.0,
+              "relative_error": 1.1509265597272793
+            },
+            "router_logits": {
+              "cosine": 0.22072525700184467,
+              "finite_fraction": 1.0,
+              "relative_error": 1.2626892740768405
+            },
+            "shared_expert_output": {
+              "cosine": 0.040734136078901625,
+              "finite_fraction": 1.0,
+              "relative_error": 1.002018416504373
+            },
+            "topk_indices": {
+              "note": "cosine is not reported: these are labels, not magnitudes",
+              "positional_agreement": 0.0760498046875,
+              "selection_width": 8,
+              "set_agreement": 0.118896484375
+            },
+            "topk_margin_8th_vs_9th": {
+              "cosine": 0.6814226541149674,
+              "finite_fraction": 1.0,
+              "relative_error": 2.333338203563126
+            },
+            "topk_weights": {
+              "cosine": 0.9995029761507777,
+              "finite_fraction": 1.0,
+              "relative_error": 0.03152551959545498
             }
           },
           "tensor_coverage_complete": true
