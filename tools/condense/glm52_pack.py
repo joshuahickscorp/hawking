@@ -39,6 +39,10 @@ import gravity_forge as forge  # noqa: E402
 import gravity_format  # noqa: E402
 
 PACK_SCHEMA = "hawking.glm52.compact_tensor.v1"
+
+
+class PackCoverageError(RuntimeError):
+    """A shard's artifact would not contain every tensor the shard held."""
 MAGIC = b"GLM52CPK"
 # gravity_forge bills exactly this much for per-artifact metadata, so the container header
 # is fixed at the same size and the on-disk file can match the ledger to the byte.
@@ -412,6 +416,19 @@ def pack_shard(shard_path: Path, rows: list[dict], out_dir: Path, *,
             entries.append(descriptor)
             offset += len(payload)
 
+    # Fail closed on the coverage hole rather than write another artifact that the
+    # streamer will treat as proof the source was consumed.  Protected tensors were
+    # billed into compact_bits and counted in `entries`, but only `payloads` reaches
+    # write_shard, so routers, norms, indexer and gate tensors were being accounted
+    # for and then written nowhere while the BF16 body that held them was evicted.
+    written = {descriptor["name"] for descriptor, _ in payloads}
+    absent = [row["name"] for row in ordered if row["name"] not in written]
+    if absent:
+        raise PackCoverageError(
+            f"{shard_path.name}: {len(absent)} of {len(ordered)} source tensors would be "
+            f"billed but not written, including {absent[:3]}. Refusing to emit an "
+            f"artifact that authorizes eviction of weights it does not contain."
+        )
     packed_weights = sum(int(d["elements"]) for d, _ in payloads)
     # Write through a temporary name and rename.  A .gravity is proof a body was
     # consumed, and the streamer treats any file with the right name as packed --
