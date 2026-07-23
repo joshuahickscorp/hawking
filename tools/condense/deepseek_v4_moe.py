@@ -143,7 +143,10 @@ def rmsnorm(x: np.ndarray, weight: np.ndarray) -> np.ndarray:
 
 
 def _swiglu(gate: np.ndarray, up: np.ndarray) -> np.ndarray:
-    gate = np.clip(gate, -SWIGLU_LIMIT, SWIGLU_LIMIT)
+    # Matches DeepseekV4Experts._apply_gate exactly: the gate is clamped on the MAX side
+    # only, the up projection symmetrically, then SiLU(gate) * up. Validated against the
+    # official transformers reference in deepseek_v4_primitive_parity.
+    gate = np.minimum(gate, SWIGLU_LIMIT)
     up = np.clip(up, -SWIGLU_LIMIT, SWIGLU_LIMIT)
     return (gate / (1.0 + np.exp(-gate))) * up
 

@@ -1,0 +1,33 @@
+{
+  "schema": "hawking.deepseek_v4.primitive_parity.v1",
+  "reference": "transformers.models.deepseek_v4 (official)",
+  "validated": [
+    {
+      "primitive": "rmsnorm",
+      "max_abs_error": 7.152557373046875e-07,
+      "matches": true
+    },
+    {
+      "primitive": "moe_router+swiglu",
+      "router_indices_match": true,
+      "router_weight_max_error": 0.0,
+      "swiglu_expert_max_error": 7.62939453125e-06,
+      "matches": true
+    }
+  ],
+  "results": [
+    {
+      "primitive": "rmsnorm",
+      "max_abs_error": 7.152557373046875e-07,
+      "matches": true
+    },
+    {
+      "primitive": "moe_router+swiglu",
+      "router_indices_match": true,
+      "router_weight_max_error": 0.0,
+      "swiglu_expert_max_error": 7.62939453125e-06,
+      "matches": true
+    }
+  ],
+  "all_match": true
+}
