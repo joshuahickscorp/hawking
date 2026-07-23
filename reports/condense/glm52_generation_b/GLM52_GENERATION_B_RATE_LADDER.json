@@ -164,6 +164,42 @@
       "subspaces": 1,
       "under_one_bit_ceiling": false,
       "within_band": true
+    },
+    {
+      "band": "B_PRIMARY",
+      "codec": "glm52.lowrank.r1.v1",
+      "complete_bpw": null,
+      "compressed_bpw": 0.7396240234375,
+      "kind": "LOW_RANK",
+      "paired_with": "G0",
+      "rank_at_expert_shape": 71,
+      "role": "materially different representation at a matched rate, section 6 requires the pilot to compare families and not only budgets",
+      "rung": "LR0",
+      "target_compressed_bpw": 0.7396240234375
+    },
+    {
+      "band": "B_HALF",
+      "codec": "glm52.lowrank.r1.v1",
+      "complete_bpw": null,
+      "compressed_bpw": 0.4792073567708333,
+      "kind": "LOW_RANK",
+      "paired_with": "G1",
+      "rank_at_expert_shape": 46,
+      "role": "materially different representation at a matched rate, section 6 requires the pilot to compare families and not only budgets",
+      "rung": "LR1",
+      "target_compressed_bpw": 0.48143513997395837
+    },
+    {
+      "band": "B_THIRD",
+      "codec": "glm52.lowrank.r1.v1",
+      "complete_bpw": null,
+      "compressed_bpw": 0.3125406901041667,
+      "kind": "LOW_RANK",
+      "paired_with": "G2",
+      "rank_at_expert_shape": 30,
+      "role": "materially different representation at a matched rate, section 6 requires the pilot to compare families and not only budgets",
+      "rung": "LR2",
+      "target_compressed_bpw": 0.3131917317708333
     }
   ],
   "native_floor": {

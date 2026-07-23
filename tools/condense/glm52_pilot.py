@@ -42,6 +42,7 @@ import gravity_forge as forge  # noqa: E402
 import gravity_format  # noqa: E402
 import glm52_pack as pack  # noqa: E402
 import glm52_reference as reference  # noqa: E402
+import glm52_lowrank as lowrank  # noqa: E402
 import glm52_shard_probe as probe  # noqa: E402
 import glm52_teacher_capture as teacher  # noqa: E402
 
@@ -129,6 +130,9 @@ class CompactSource:
                      else raw.astype(np.float32))
             value = value.reshape(entry["shape"])
             self.native += 1
+        elif entry["codec"] == "glm52.lowrank.r1.v1":
+            value = lowrank.reconstruct(blob)
+            self.decoded += 1
         else:
             value = reconstruct(blob)
             self.decoded += 1
@@ -222,8 +226,24 @@ def pack_window(layers: list[int], rung: dict, *, seed: int = 0, iters: int = 4)
 
             weights = probe._bf16_to_f32(
                 np.frombuffer(raw, dtype=np.uint16)).reshape(row["shape"]).astype(np.float32)
-            dim, k = geometry_for(rung, position)
             position += 1
+
+            if rung["kind"] == "LOW_RANK":
+                fitted = lowrank.pack_tensor(weights, float(rung["target_compressed_bpw"]),
+                                             seed=seed)
+                blob = fitted["blob"]
+                payloads.append(({
+                    "name": row["name"], "category": row["category"],
+                    "layer": row["layer"], "expert": row["expert"],
+                    "shape": row["shape"], "codec": "glm52.lowrank.r1.v1",
+                    "terminal_state": "PACKED_IN_CORE_ARTIFACT",
+                    "elements": elements, "bpw": len(blob) * 8 / max(1, elements),
+                    "rank": fitted["rank"],
+                    "relative_frobenius_error": fitted["relative_frobenius_error"],
+                }, blob))
+                continue
+
+            dim, k = geometry_for(rung, position - 1)
             artifact = forge.pack_product_quant(weights, dim=dim, subspaces=1, k=k,
                                                 seed=seed, iters=iters)
             blob = pack.serialize(artifact)
@@ -475,6 +495,15 @@ def selftest() -> int:
 
     single = {"kind": "SINGLE_GEOMETRY", "dim": 32, "k": 8192}
     assert geometry_for(single, 7) == (32, 8192)
+
+    # The low-rank family must decode through the same path propagation uses, or the two
+    # families would be compared through different code and the difference could be the
+    # reader rather than the representation.
+    fitted = lowrank.pack_tensor(
+        np.random.default_rng(1).standard_normal((256, 512)).astype(np.float32), 0.75)
+    restored = lowrank.reconstruct(fitted["blob"])
+    assert restored.shape == (256, 512), restored.shape
+    assert fitted["bpw"] <= 0.75 + 1e-9, fitted["bpw"]
 
     print("glm52_pilot selftest OK")
     return 0
