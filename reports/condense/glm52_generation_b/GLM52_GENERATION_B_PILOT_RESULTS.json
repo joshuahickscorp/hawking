@@ -11,7 +11,7 @@
     "warning_from_directive": "do not let the control become the selected model by inertia",
     "what": "plain product quantization, single subspace, fp16 codebooks"
   },
-  "git_commit": "09255597686a22a0c33754f311e812d593947bef",
+  "git_commit": "811a233e7b411aec91c3e26b0b19c0d983498c29",
   "localisation": "the verdicts split by architecture, not by noise: the dense block clears the trajectory floor while both sparse MoE blocks are family-bound at the same codec. Product quantization is not uniformly fatal here, it is fatal to the expert path, which is 97.492 percent of the weight",
   "measurement_limitations": [
     "IndexShare selection is not exercised: the calibration batch is 256 positions and index_topk is 2048, so the indexer returns all keys and set agreement is trivially 1.0 at every rate. Testing it needs sequences longer than 2048.",
@@ -36,6 +36,24 @@
         "W_L00_L00|glm52.pq.r0.v1"
       ]
     },
+    "SPARSE_MOE|glm52.hybrid.by_role.v1": {
+      "replicated": false,
+      "verdicts": [
+        "INSUFFICIENT_RATES"
+      ],
+      "windows": [
+        "W_L38_L38|glm52.hybrid.by_role.v1"
+      ]
+    },
+    "SPARSE_MOE|glm52.lowrank.r1.v1": {
+      "replicated": false,
+      "verdicts": [
+        "INSUFFICIENT_RATES"
+      ],
+      "windows": [
+        "W_L38_L38|glm52.lowrank.r1.v1"
+      ]
+    },
     "SPARSE_MOE|glm52.pq.r0.v1": {
       "replicated": true,
       "verdicts": [
@@ -48,9 +66,11 @@
     }
   },
   "schema": "hawking.glm52.generation_b_pilot_results.v1",
-  "sealed_at": "2026-07-23T15:15:39Z",
+  "sealed_at": "2026-07-23T15:23:35Z",
   "verdicts": {
     "W_L00_L00|glm52.pq.r0.v1": "TRAJECTORY_REACHABLE",
+    "W_L38_L38|glm52.hybrid.by_role.v1": "INSUFFICIENT_RATES",
+    "W_L38_L38|glm52.lowrank.r1.v1": "INSUFFICIENT_RATES",
     "W_L38_L38|glm52.pq.r0.v1": "REPRESENTATION_FAMILY_BOUND",
     "W_L74_L74|glm52.pq.r0.v1": "REPRESENTATION_FAMILY_BOUND"
   },
@@ -116,6 +136,14 @@
     },
     "W_L38_L38": {
       "by_family": {
+        "glm52.hybrid.by_role.v1": {
+          "best_carry_out_cosine": 0.15662695858370407,
+          "verdict": "INSUFFICIENT_RATES"
+        },
+        "glm52.lowrank.r1.v1": {
+          "best_carry_out_cosine": 0.11622596018858143,
+          "verdict": "INSUFFICIENT_RATES"
+        },
         "glm52.pq.r0.v1": {
           "best_carry_out_cosine": 0.2693950563085895,
           "cosine_gain_over_that_span": 0.2285113273763709,
@@ -403,6 +431,188 @@
         },
         {
           "artifact_verifies": true,
+          "block_output_cosine": 0.15662695858370407,
+          "block_output_relative_error": 1.0337074457853197,
+          "complete_bpw": 0.7531110358459959,
+          "diagnostic_only": false,
+          "expert_selection_set_agreement": 0.11871337890625,
+          "family": "glm52.hybrid.by_role.v1",
+          "packed_bpw": 0.7361740285619396,
+          "rung": "HY0",
+          "stages": {
+            "attention_input": {
+              "cosine": 1.0,
+              "finite_fraction": 1.0,
+              "relative_error": 0.0
+            },
+            "attention_output": {
+              "cosine": 0.16300154288470833,
+              "finite_fraction": 1.0,
+              "relative_error": 1.0499271887473556
+            },
+            "block_output": {
+              "cosine": 0.15662695858370407,
+              "finite_fraction": 1.0,
+              "relative_error": 1.0337074457853197
+            },
+            "index_scores": {
+              "cosine": 0.9881822173347486,
+              "finite_fraction": 0.501953125,
+              "relative_error": 0.1624969989598947
+            },
+            "index_selection": {
+              "note": "cosine is not reported: these are labels, not magnitudes",
+              "positional_agreement": 0.5212507247924805,
+              "selection_width": 256,
+              "set_agreement": 1.0
+            },
+            "input_hidden": {
+              "cosine": 1.0,
+              "finite_fraction": 1.0,
+              "relative_error": 0.0
+            },
+            "post_attention_hidden": {
+              "cosine": 0.16269473202646545,
+              "finite_fraction": 1.0,
+              "relative_error": 1.0504854317397643
+            },
+            "post_moe": {
+              "cosine": 0.055605505334224196,
+              "finite_fraction": 1.0,
+              "relative_error": 0.9987619205344772
+            },
+            "pre_router_hidden": {
+              "cosine": 0.15992567956866385,
+              "finite_fraction": 1.0,
+              "relative_error": 1.3023222570101456
+            },
+            "routed_expert_output": {
+              "cosine": 0.012508771868975874,
+              "finite_fraction": 1.0,
+              "relative_error": 1.0000963687835225
+            },
+            "router_logits": {
+              "cosine": 0.22039159864393867,
+              "finite_fraction": 1.0,
+              "relative_error": 1.262407615008111
+            },
+            "shared_expert_output": {
+              "cosine": 0.06113719176895359,
+              "finite_fraction": 1.0,
+              "relative_error": 0.9985590117606528
+            },
+            "topk_indices": {
+              "note": "cosine is not reported: these are labels, not magnitudes",
+              "positional_agreement": 0.0667724609375,
+              "selection_width": 8,
+              "set_agreement": 0.11871337890625
+            },
+            "topk_margin_8th_vs_9th": {
+              "cosine": 0.6807704934759624,
+              "finite_fraction": 1.0,
+              "relative_error": 2.4421286148041212
+            },
+            "topk_weights": {
+              "cosine": 0.9994873344056665,
+              "finite_fraction": 1.0,
+              "relative_error": 0.03201760799434672
+            }
+          },
+          "tensor_coverage_complete": true
+        },
+        {
+          "artifact_verifies": true,
+          "block_output_cosine": 0.11622596018858143,
+          "block_output_relative_error": 0.9941524967796966,
+          "complete_bpw": 0.756516834141915,
+          "diagnostic_only": false,
+          "expert_selection_set_agreement": 0.046844482421875,
+          "family": "glm52.lowrank.r1.v1",
+          "packed_bpw": 0.7395836100963136,
+          "rung": "LR0",
+          "stages": {
+            "attention_input": {
+              "cosine": 1.0,
+              "finite_fraction": 1.0,
+              "relative_error": 0.0
+            },
+            "attention_output": {
+              "cosine": 0.07201600888682727,
+              "finite_fraction": 1.0,
+              "relative_error": 0.9983465697590336
+            },
+            "block_output": {
+              "cosine": 0.11622596018858143,
+              "finite_fraction": 1.0,
+              "relative_error": 0.9941524967796966
+            },
+            "index_scores": {
+              "cosine": 0.888614025693296,
+              "finite_fraction": 0.501953125,
+              "relative_error": 0.5553935842094948
+            },
+            "index_selection": {
+              "note": "cosine is not reported: these are labels, not magnitudes",
+              "positional_agreement": 0.5104103088378906,
+              "selection_width": 256,
+              "set_agreement": 1.0
+            },
+            "input_hidden": {
+              "cosine": 1.0,
+              "finite_fraction": 1.0,
+              "relative_error": 0.0
+            },
+            "post_attention_hidden": {
+              "cosine": 0.06898147214114737,
+              "finite_fraction": 1.0,
+              "relative_error": 0.9988773874979991
+            },
+            "post_moe": {
+              "cosine": 0.14475141507977138,
+              "finite_fraction": 1.0,
+              "relative_error": 0.9951740329320399
+            },
+            "pre_router_hidden": {
+              "cosine": 0.008388502605361914,
+              "finite_fraction": 1.0,
+              "relative_error": 1.3528677974802168
+            },
+            "routed_expert_output": {
+              "cosine": 0.08108625528275462,
+              "finite_fraction": 1.0,
+              "relative_error": 1.0110316527366887
+            },
+            "router_logits": {
+              "cosine": 0.08590607488845652,
+              "finite_fraction": 1.0,
+              "relative_error": 1.582652509257941
+            },
+            "shared_expert_output": {
+              "cosine": 0.13969521041701166,
+              "finite_fraction": 1.0,
+              "relative_error": 0.9990884758616414
+            },
+            "topk_indices": {
+              "note": "cosine is not reported: these are labels, not magnitudes",
+              "positional_agreement": 0.005859375,
+              "selection_width": 8,
+              "set_agreement": 0.046844482421875
+            },
+            "topk_margin_8th_vs_9th": {
+              "cosine": 0.6668369811879463,
+              "finite_fraction": 1.0,
+              "relative_error": 1.3448444014283214
+            },
+            "topk_weights": {
+              "cosine": 0.9985448082211846,
+              "finite_fraction": 1.0,
+              "relative_error": 0.05398551955333572
+            }
+          },
+          "tensor_coverage_complete": true
+        },
+        {
+          "artifact_verifies": true,
           "block_output_cosine": 0.2693950563085895,
           "block_output_relative_error": 1.066778842888151,
           "complete_bpw": 0.8931103702784488,
@@ -488,6 +698,97 @@
               "cosine": 0.9987270276786797,
               "finite_fraction": 1.0,
               "relative_error": 0.05047958591853604
+            }
+          },
+          "tensor_coverage_complete": true
+        },
+        {
+          "artifact_verifies": true,
+          "block_output_cosine": 0.6996672208222899,
+          "block_output_relative_error": 0.740201558893231,
+          "complete_bpw": 2.016862081238014,
+          "diagnostic_only": true,
+          "expert_selection_set_agreement": 0.473236083984375,
+          "family": "glm52.pq.r0.v1",
+          "packed_bpw": 2.0013288774493523,
+          "rung": "DX2",
+          "stages": {
+            "attention_input": {
+              "cosine": 1.0,
+              "finite_fraction": 1.0,
+              "relative_error": 0.0
+            },
+            "attention_output": {
+              "cosine": 0.7272521306982085,
+              "finite_fraction": 1.0,
+              "relative_error": 0.7190660866928301
+            },
+            "block_output": {
+              "cosine": 0.6996672208222899,
+              "finite_fraction": 1.0,
+              "relative_error": 0.740201558893231
+            },
+            "index_scores": {
+              "cosine": 0.9974170933024782,
+              "finite_fraction": 0.501953125,
+              "relative_error": 0.1652340902809032
+            },
+            "index_selection": {
+              "note": "cosine is not reported: these are labels, not magnitudes",
+              "positional_agreement": 0.538762092590332,
+              "selection_width": 256,
+              "set_agreement": 1.0
+            },
+            "input_hidden": {
+              "cosine": 1.0,
+              "finite_fraction": 1.0,
+              "relative_error": 0.0
+            },
+            "post_attention_hidden": {
+              "cosine": 0.727011394461092,
+              "finite_fraction": 1.0,
+              "relative_error": 0.7194484118645548
+            },
+            "post_moe": {
+              "cosine": 0.4991536121621283,
+              "finite_fraction": 1.0,
+              "relative_error": 0.8788457146771739
+            },
+            "pre_router_hidden": {
+              "cosine": 0.727420701423761,
+              "finite_fraction": 1.0,
+              "relative_error": 0.7417177472850993
+            },
+            "routed_expert_output": {
+              "cosine": 0.3601334457063362,
+              "finite_fraction": 1.0,
+              "relative_error": 0.9896334400161094
+            },
+            "router_logits": {
+              "cosine": 0.7257951875449788,
+              "finite_fraction": 1.0,
+              "relative_error": 0.7855347567086017
+            },
+            "shared_expert_output": {
+              "cosine": 0.6157115131840963,
+              "finite_fraction": 1.0,
+              "relative_error": 0.7880131666105697
+            },
+            "topk_indices": {
+              "note": "cosine is not reported: these are labels, not magnitudes",
+              "positional_agreement": 0.03912353515625,
+              "selection_width": 8,
+              "set_agreement": 0.473236083984375
+            },
+            "topk_margin_8th_vs_9th": {
+              "cosine": 0.5544818984161066,
+              "finite_fraction": 1.0,
+              "relative_error": 0.8537010910567387
+            },
+            "topk_weights": {
+              "cosine": 0.9993914740319846,
+              "finite_fraction": 1.0,
+              "relative_error": 0.034889902119715176
             }
           },
           "tensor_coverage_complete": true

@@ -234,9 +234,9 @@ def pack_window(layers: list[int], rung: dict, *, seed: int = 0, iters: int = 4)
                 codec = "LOW_RANK" if chosen == "glm52.lowrank.r1.v1" else "SINGLE_GEOMETRY"
 
             if codec == "LOW_RANK":
-                target = float(rung.get("target_compressed_bpw")
-                               or rung["lowrank_target_compressed_bpw"])
-                fitted = lowrank.pack_tensor(weights, target, seed=seed)
+                target_rate = float(rung.get("target_compressed_bpw")
+                                    or rung["lowrank_target_compressed_bpw"])
+                fitted = lowrank.pack_tensor(weights, target_rate, seed=seed)
                 blob = fitted["blob"]
                 payloads.append(({
                     "name": row["name"], "category": row["category"],
