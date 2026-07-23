@@ -1001,6 +1001,21 @@ def write_policy() -> dict[str, Any]:
     return policy
 
 
+def recent_ledger(*, limit: int = 20) -> list[dict[str, Any]]:
+    """The tail of the evidence ledger, for callers that watch for failures."""
+    if not LEDGER.exists():
+        return []
+    rows = []
+    for line in LEDGER.read_text().splitlines()[-limit:]:
+        if not line.strip():
+            continue
+        try:
+            rows.append(json.loads(line))
+        except json.JSONDecodeError:
+            continue
+    return rows
+
+
 def status() -> dict[str, Any]:
     receipts = [
         {

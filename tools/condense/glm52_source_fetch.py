@@ -733,10 +733,12 @@ def safe_to_leave() -> int:
         blockers.append("free disk is at or below the floor")
     if teacher_status["capsule_count"] == 0:
         blockers.append("no sealed teacher capsule exists")
-    if teacher_status["capturable_now"]:
-        blockers.append(
-            f"{len(teacher_status['capturable_now'])} resident layers are uncaptured"
-        )
+    # A freshly resident layer being uncaptured is the normal steady state, not a
+    # fault: the gate captures it before anything can evict it.  What is a fault is
+    # a capture that tried and failed, because that is what stalls the stream.
+    if any(row.get("event") == "TEACHER_CAPTURE_FAILED"
+           for row in teacher.recent_ledger(limit=20)):
+        blockers.append("a teacher capture failed in the last 20 ledger rows")
     if controller["eviction_paused"]:
         blockers.append("the controller is running with eviction paused")
 
