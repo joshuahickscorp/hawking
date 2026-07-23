@@ -68,6 +68,9 @@ PAUSE_SAFE_POINTS = frozenset({
     "BETWEEN_WINDOWS",
 })
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
+OFFICIAL_SOURCE_PROFILE = "OFFICIAL_GLM52_BF16"
+SYNTHETIC_SOURCE_PROFILE = "SYNTHETIC_TEST_ONLY"
+DEFAULT_CONTROLLER_EPOCH = "glm52-controller-v2"
 
 
 class CliError(Glm52Error):
@@ -173,6 +176,60 @@ def _resolve_path(config_path: Path, raw: Any, label: str) -> Path:
     if not candidate.is_absolute():
         candidate = config_path.parent / candidate
     return candidate.resolve(strict=False)
+
+
+def _normalized_absolute_path(value: str | os.PathLike[str], label: str) -> Path:
+    try:
+        raw = os.fspath(value)
+    except TypeError as exc:
+        raise CliError(f"{label} must be a normalized absolute path") from exc
+    if not isinstance(raw, str) or not raw or raw != raw.strip():
+        raise CliError(f"{label} must be a non-empty absolute path")
+    candidate = Path(raw)
+    if not candidate.is_absolute() or raw.startswith("//") \
+            or os.path.normpath(raw) != raw:
+        raise CliError(f"{label} must be a normalized absolute path")
+    return candidate
+
+
+def load_expected_contract(
+    expected_contract_path: str | os.PathLike[str],
+) -> dict[str, Any]:
+    """Read one sealed contract without following a symlink or hard-link alias."""
+
+    candidate = _normalized_absolute_path(
+        expected_contract_path, "expected_contract_path"
+    )
+    try:
+        value, _file_sha256 = state.TrustedArtifactStore(
+            os.fspath(candidate.parent)
+        ).read_sealed(candidate.name, label="expected campaign contract")
+        return state._validate_expected_contract(value)
+    except state.StateError as exc:
+        raise CliError(str(exc)) from exc
+
+
+def _contract_phone_output_path(
+    contract: Mapping[str, Any], artifact_root: Path
+) -> tuple[str, Path]:
+    complete_gate = (contract.get("state_gates") or {}).get("COMPLETE")
+    relative = (
+        complete_gate.get("required_phone_status_path")
+        if isinstance(complete_gate, dict)
+        else None
+    )
+    if not isinstance(relative, str) or not relative or relative != relative.strip():
+        raise CliError("expected campaign contract has no COMPLETE phone-status path")
+    path = Path(relative)
+    if path.is_absolute() or relative in {".", ".."} \
+            or any(part in {"", ".", ".."} for part in path.parts):
+        raise CliError("COMPLETE.required_phone_status_path must remain under artifact_root")
+    output = artifact_root.joinpath(*path.parts)
+    if output.name != "GLM52_PHONE_STATUS.json":
+        raise CliError(
+            "COMPLETE.required_phone_status_path must name GLM52_PHONE_STATUS.json"
+        )
+    return relative, output
 
 
 def _validate_telegram_provider(config: Mapping[str, Any]) -> str:
@@ -292,29 +349,29 @@ def load_runtime(
     chat_digest = _validate_telegram_provider(config)
     _validate_evidence_provider(config)
     _validate_grounding_provider(config)
-    contract_path = _resolve_path(path, config["expected_contract_path"], "expected_contract_path")
-    try:
-        contract = read_sealed_json(contract_path)
-    except Glm52Error as exc:
-        raise CliError(str(exc)) from exc
+    controller_root = _resolve_path(path, config["controller_root"], "controller_root")
+    artifact_root = _resolve_path(path, config["artifact_root"], "artifact_root")
+    contract_path = _resolve_path(
+        path, config["expected_contract_path"], "expected_contract_path"
+    )
+    contract = load_expected_contract(contract_path)
     if contract.get("campaign_id") != config.get("campaign_id") \
             or contract.get("source_revision") != config.get("source_revision"):
         raise CliError("CLI config identity differs from expected campaign contract")
+    source_profile = contract.get("source", {}).get("profile")
+    if source_profile == OFFICIAL_SOURCE_PROFILE \
+            and config["allow_synthetic_contract"] is not False:
+        raise CliError("official contract forbids synthetic-contract authorization")
+    if source_profile == SYNTHETIC_SOURCE_PROFILE \
+            and config["allow_synthetic_contract"] is not True:
+        raise CliError("synthetic contract requires explicit synthetic authorization")
     if contract.get("expected_chat_identity_digest") != chat_digest:
         raise CliError("CLI Telegram chat digest differs from expected campaign contract")
-    complete_gate = (contract.get("state_gates") or {}).get("COMPLETE")
-    contract_phone_path = (
-        complete_gate.get("required_phone_status_path")
-        if isinstance(complete_gate, dict)
-        else None
+    contract_phone_path, required_phone_path = _contract_phone_output_path(
+        contract, artifact_root
     )
-    if not isinstance(contract_phone_path, str) or not contract_phone_path:
-        raise CliError("expected campaign contract has no COMPLETE phone-status path")
     phone_directory = _resolve_path(
         path, config["phone_status_directory"], "phone_status_directory"
-    )
-    required_phone_path = _resolve_path(
-        path, contract_phone_path, "COMPLETE.required_phone_status_path"
     )
     if required_phone_path != phone_directory / "GLM52_PHONE_STATUS.json":
         raise CliError(
@@ -340,8 +397,8 @@ def load_runtime(
         runtime = Runtime(
             config_path=path,
             config_sha256=str(config["seal_sha256"]),
-            controller_root=_resolve_path(path, config["controller_root"], "controller_root"),
-            artifact_root=_resolve_path(path, config["artifact_root"], "artifact_root"),
+            controller_root=controller_root,
+            artifact_root=artifact_root,
             expected_contract_path=contract_path,
             phone_status_directory=phone_directory,
             campaign_id=config["campaign_id"],
@@ -375,7 +432,7 @@ def make_config(
     phone_status_directory: str | os.PathLike[str],
     expected_chat_identity_digest: str,
     allow_synthetic_contract: bool = False,
-    controller_epoch: str = "glm52-controller-v2",
+    controller_epoch: str = DEFAULT_CONTROLLER_EPOCH,
 ) -> dict[str, Any]:
     """Create a sealed, secret-free CLI configuration document."""
     return seal(
@@ -405,6 +462,54 @@ def make_config(
                 "keychain_account": grounding_module.KEYCHAIN_ACCOUNT,
             },
         }
+    )
+
+
+def make_config_from_contract(
+    *,
+    expected_contract_path: str | os.PathLike[str],
+    controller_root: str | os.PathLike[str],
+    artifact_root: str | os.PathLike[str],
+    allow_synthetic_contract: bool = False,
+    controller_epoch: str = DEFAULT_CONTROLLER_EPOCH,
+) -> dict[str, Any]:
+    """Derive every controller identity field from exact sealed contract bytes.
+
+    The caller selects only filesystem placement and the controller epoch.  Campaign
+    identity, source revision, Telegram chat identity, source profile, and the phone
+    output location all come from the authoritative contract.
+    """
+
+    contract_path = _normalized_absolute_path(
+        expected_contract_path, "expected_contract_path"
+    )
+    controller_path = _normalized_absolute_path(controller_root, "controller_root")
+    artifact_path = _normalized_absolute_path(artifact_root, "artifact_root")
+    if not isinstance(allow_synthetic_contract, bool):
+        raise CliError("allow_synthetic_contract must be boolean")
+    contract = load_expected_contract(contract_path)
+    source_profile = contract["source"]["profile"]
+    if source_profile == OFFICIAL_SOURCE_PROFILE:
+        if allow_synthetic_contract:
+            raise CliError("official contract forbids synthetic-contract authorization")
+    elif source_profile == SYNTHETIC_SOURCE_PROFILE:
+        if not allow_synthetic_contract:
+            raise CliError("synthetic contract requires explicit synthetic authorization")
+    else:  # Defensive: the authoritative contract validator currently rejects this.
+        raise CliError("expected campaign contract source profile is unsupported")
+    _contract_phone_path, phone_output = _contract_phone_output_path(
+        contract, artifact_path
+    )
+    return make_config(
+        campaign_id=contract["campaign_id"],
+        source_revision=contract["source_revision"],
+        controller_root=controller_path,
+        artifact_root=artifact_path,
+        expected_contract_path=contract_path,
+        phone_status_directory=phone_output.parent,
+        expected_chat_identity_digest=contract["expected_chat_identity_digest"],
+        allow_synthetic_contract=allow_synthetic_contract,
+        controller_epoch=controller_epoch,
     )
 
 

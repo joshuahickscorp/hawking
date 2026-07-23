@@ -1,9 +1,9 @@
 {
-  "decision_reason": "6 blocking gate(s) red (05_final_result_sealed, 06_artifact_sealed_and_load_tested, 07_checkpoint_graph_sealed, 08_reproduction_sealed, 10_no_running_process_maps_source, 11_no_queued_experiment_references_source)",
+  "decision_reason": "5 blocking gate(s) red (05_final_result_sealed, 06_artifact_sealed_and_load_tested, 07_checkpoint_graph_sealed, 08_reproduction_sealed, 11_no_queued_experiment_references_source)",
   "deleted_anything": false,
   "disk": {
-    "free_after_release_gib": 600.5,
-    "free_gib": 539.7,
+    "free_after_release_gib": 559.9,
+    "free_gib": 499.1,
     "release_reclaims_gib": 60.8
   },
   "gates": {
@@ -95,26 +95,13 @@
     },
     "10_no_running_process_maps_source": {
       "note": "command-line (argv) scan only; on macOS without lsof/psutil open file descriptors are not enumerable, so a consumer that neither names the model path nor runs a known 120B script would be missed",
-      "reason": "2 live process(es) reference the 120B source / a heavy consumer (the one Apple heavy lease is held) - deletion would corrupt an in-flight read",
+      "reason": "no running process references the 120B source or its heavy consumers",
       "scan": {
         "available": true,
-        "matches": [
-          {
-            "command": "/bin/zsh -c source /Users/scammermike/.claude/shell-snapshots/snapshot-zsh-1784485868007-ct60p4.sh 2>/dev/null || true && setopt NO_EXTENDED_GLOB NO_BARE_GLOB_QUAL 2>/dev/null || true && eval 'cd /Users/scammermike/Downloads/hawking\\012PY=/Library/Frameworks/Python.framework/Versions/3.12/bin/python3.12\\012LOG=/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/83a649fc-7dfb-4cfc-8d31-396",
-            "matched_pattern": "gptoss_real_forward",
-            "pid": 87397,
-            "rss_gib": 0.0
-          },
-          {
-            "command": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python -m pytest tools/condense/tests/test_gptoss_real_forward_adversarial.py -q -k heavy and (wrong_activation or capital_of_france) -rA",
-            "matched_pattern": "gptoss_real_forward",
-            "pid": 87400,
-            "rss_gib": 10.83
-          }
-        ],
+        "matches": [],
         "method": "ps -Axww argv scan (lsof-free, psutil-free)"
       },
-      "status": "red"
+      "status": "green"
     },
     "11_no_queued_experiment_references_source": {
       "active_parent_id": "gpt-oss-120b",
@@ -134,8 +121,8 @@
       "status": "green"
     },
     "13_qwen_storage_admission_requires_release": {
-      "disk_free_gib": 539.7,
-      "free_after_release_gib": 600.5,
+      "disk_free_gib": 499.1,
+      "free_after_release_gib": 559.9,
       "qwen_235b_fits_only_after_release": false,
       "qwen_235b_weight_gib": 437.9,
       "qwen_397b_still_needs_streaming_after_release": true,
@@ -224,38 +211,26 @@
       "status": "green"
     }
   },
-  "generated_at_utc": "2026-07-19T23:06:45Z",
+  "generated_at_utc": "2026-07-20T16:13:10Z",
   "honesty": "Every gate is derived from a live probe of the resident repo, receipts, disk, and process tree at run time. Green means the condition holds NOW. The campaign science is NEGATIVE at sub-bit (G4 real-forward NEGATIVE, capability_parity False); the conclusion-dependent gates (final result, artifact load-test, checkpoint/reproduction seal) are therefore RED and the source MUST be retained. No bytes were deleted.",
-  "live_consumers_of_source": [
-    {
-      "command": "/bin/zsh -c source /Users/scammermike/.claude/shell-snapshots/snapshot-zsh-1784485868007-ct60p4.sh 2>/dev/null || true && setopt NO_EXTENDED_GLOB NO_BARE_GLOB_QUAL 2>/dev/null || true && eval 'cd /Users/scammermike/Downloads/hawking\\012PY=/Library/Frameworks/Python.framework/Versions/3.12/bin/python3.12\\012LOG=/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/83a649fc-7dfb-4cfc-8d31-396",
-      "matched_pattern": "gptoss_real_forward",
-      "pid": 87397,
-      "rss_gib": 0.0
-    },
-    {
-      "command": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python -m pytest tools/condense/tests/test_gptoss_real_forward_adversarial.py -q -k heavy and (wrong_activation or capital_of_france) -rA",
-      "matched_pattern": "gptoss_real_forward",
-      "pid": 87400,
-      "rss_gib": 10.83
-    }
-  ],
+  "live_consumers_of_source": [],
   "parent": "gpt-oss-120b",
   "read_only": true,
   "rehydration_route": "openai/gpt-oss-120b @ b5c939de8f754692c1647ca79fbf85e8c1e70f8a",
   "release_authorized": false,
   "release_decision": "DENIED",
   "schema": "hawking.gpt_oss_120b.source_release_readiness.v1",
-  "sha256": "eef9bed4aafaf6591a0089ca4ca381da5fc22ea0c3462c8a1406873261861192",
+  "sha256": "f438a26a1e34543da953438d0a1a916dace9393ac39c111d030f56af47c6836f",
   "source_root": "/Users/scammermike/Downloads/hawking/models/gpt-oss-120b",
   "summary": {
-    "green": 9,
+    "green": 10,
     "green_gates": [
       "01_exact_root_identified",
       "02_immutable_revision_sealed",
       "03_file_names_sizes_hashes_sealed",
       "04_tokenizer_config_index_retained",
       "09_official_rehydration_route_verified",
+      "10_no_running_process_maps_source",
       "12_rollback_exists",
       "13_qwen_storage_admission_requires_release",
       "14_exact_deletion_paths_listed",
@@ -263,13 +238,12 @@
     ],
     "pending": 0,
     "pending_gates": [],
-    "red": 6,
+    "red": 5,
     "red_gates": [
       "05_final_result_sealed",
       "06_artifact_sealed_and_load_tested",
       "07_checkpoint_graph_sealed",
       "08_reproduction_sealed",
-      "10_no_running_process_maps_source",
       "11_no_queued_experiment_references_source"
     ],
     "total_gates": 15

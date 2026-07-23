@@ -6,8 +6,8 @@
     <string>com.hawking.overnight.handoff</string>
     <key>ProgramArguments</key>
     <array>
-        <string>/Library/Frameworks/Python.framework/Versions/3.12/bin/python3.12</string>
-        <string>/Users/scammermike/Downloads/hawking/tools/condense/overnight_supervisor.py</string>
+        <string>/bin/sh</string>
+        <string>/Users/scammermike/Downloads/hawking/tools/condense/overnight_tick.sh</string>
     </array>
     <key>WorkingDirectory</key>
     <string>/Users/scammermike/Downloads/hawking</string>

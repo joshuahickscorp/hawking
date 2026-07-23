@@ -7,7 +7,7 @@
 		<key>GLM52_COMPACT_ROOT</key>
 		<string>/Users/scammermike/Desktop/GLM52-Gravity-SubBit</string>
 		<key>GLM52_EVICTION_PAUSED</key>
-		<string>0</string>
+		<string>1</string>
 		<key>GLM52_FETCH_DISK_FLOOR_BYTES</key>
 		<string>75000000000</string>
 		<key>GLM52_FETCH_MODE</key>
@@ -15,7 +15,7 @@
 		<key>GLM52_FETCH_WORKERS</key>
 		<string>6</string>
 		<key>GLM52_PACK_WORKERS</key>
-		<string>3</string>
+		<string>4</string>
 		<key>GLM52_PROBE_WORKERS</key>
 		<string>6</string>
 		<key>HF_HUB_DISABLE_IMPLICIT_TOKEN</key>

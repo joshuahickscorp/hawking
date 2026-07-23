@@ -263,6 +263,43 @@ def _setup(tmp_path, *, reach_freeze=False):
     return runtime, config_path, keychain
 
 
+def test_contract_derived_config_uses_artifact_root_for_phone_status(tmp_path) -> None:
+    artifact_root = tmp_path / "artifacts"
+    artifact_root.mkdir()
+    contract_path = artifact_root / "expected-contract.json"
+    atomic_json(contract_path, _contract())
+    config = cli.make_config_from_contract(
+        expected_contract_path=contract_path,
+        controller_root=tmp_path / "controller",
+        artifact_root=artifact_root,
+        allow_synthetic_contract=True,
+    )
+    assert config["campaign_id"] == CAMPAIGN
+    assert config["source_revision"] == REVISION
+    assert config["telegram"]["expected_chat_identity_digest"] == CHAT_DIGEST
+    assert config["expected_contract_path"] == str(contract_path)
+    assert config["artifact_root"] == str(artifact_root)
+    assert config["phone_status_directory"] == str(artifact_root / "phone")
+    config_path = tmp_path / "controller-config.json"
+    atomic_json(config_path, config)
+    runtime = cli.load_runtime(config_path, keychain=_keychain())
+    assert runtime.phone_json_path == artifact_root / "phone/GLM52_PHONE_STATUS.json"
+    assert runtime.contract_phone_status_path == "phone/GLM52_PHONE_STATUS.json"
+
+
+def test_contract_derived_config_refuses_synthetic_without_explicit_opt_in(
+    tmp_path,
+) -> None:
+    contract_path = tmp_path / "expected-contract.json"
+    atomic_json(contract_path, _contract())
+    with pytest.raises(cli.CliError, match="synthetic contract requires explicit"):
+        cli.make_config_from_contract(
+            expected_contract_path=contract_path,
+            controller_root=tmp_path / "controller",
+            artifact_root=tmp_path,
+        )
+
+
 def test_status_is_deterministic_atomic_sealed_and_secret_free(tmp_path):
     runtime, config_path, keychain = _setup(tmp_path)
     first = cli.run_command(runtime, "status")

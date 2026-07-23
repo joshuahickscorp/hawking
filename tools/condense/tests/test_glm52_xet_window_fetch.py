@@ -8,6 +8,7 @@ import os
 import pathlib
 import sys
 import threading
+import time
 from typing import Any, Iterable, Mapping
 
 import pytest
@@ -97,6 +98,7 @@ class _FakeResourceSampler:
         self.inline_free = list(inline_free or [])
         self.authenticated_calls = 0
         self.inline_calls = 0
+        self.live_memory_calls = 0
 
     def authenticated_sample(
         self,
@@ -145,6 +147,96 @@ class _FakeResourceSampler:
     def allocation_unit_bytes(self, root_fd: int) -> int:
         del root_fd
         return 4096
+
+    def live_memory_sample(self) -> Mapping[str, Any]:
+        self.live_memory_calls += 1
+        return _live_sample()
+
+
+def _live_sample(
+    *,
+    available_ram_bytes: int = 64 * 1024**3,
+    swap_used_bytes: int = 0,
+    swapouts: int = 0,
+) -> dict[str, Any]:
+    return {
+        "schema": fetch.LIVE_MEMORY_SAMPLE_SCHEMA,
+        "sampled_monotonic_ns": time.monotonic_ns(),
+        "available_ram_bytes": available_ram_bytes,
+        "swap_used_bytes": swap_used_bytes,
+        "swapouts": swapouts,
+        "source": "offline-fake-live-memory",
+    }
+
+
+class _SequencedMemorySampler(_FakeResourceSampler):
+    def __init__(self, samples: Iterable[Mapping[str, Any]]) -> None:
+        super().__init__()
+        self.samples = [dict(sample) for sample in samples]
+        if not self.samples:
+            raise ValueError("at least one live sample is required")
+        self._last = dict(self.samples[-1])
+        self._memory_lock = threading.Lock()
+
+    def live_memory_sample(self) -> Mapping[str, Any]:
+        with self._memory_lock:
+            self.live_memory_calls += 1
+            raw = self.samples.pop(0) if self.samples else dict(self._last)
+        raw["sampled_monotonic_ns"] = time.monotonic_ns()
+        return raw
+
+
+class _AbortBlockingProvider(_FakeStreamProvider):
+    """Open one stream that cannot finish until the monitor aborts it."""
+
+    def __init__(self, payloads: Mapping[str, bytes]) -> None:
+        super().__init__(payloads)
+        self.started = threading.Event()
+        self.aborted = threading.Event()
+
+    def open_stream(self, target: Mapping[str, Any]) -> Iterable[bytes]:
+        path = str(target["path"])
+        self.opened.append(path)
+
+        def blocked() -> Iterable[bytes]:
+            with self._lock:
+                self.active += 1
+                self.maximum_active = max(self.maximum_active, self.active)
+            self.started.set()
+            try:
+                if not self.aborted.wait(2):
+                    raise AssertionError("continuous resource monitor did not abort stream")
+                if False:  # pragma: no cover - makes this a zero-byte generator
+                    yield b""
+            finally:
+                with self._lock:
+                    self.active -= 1
+
+        return blocked()
+
+    def abort(self) -> None:
+        self.abort_calls += 1
+        self.aborted.set()
+
+
+def _unit_memory_monitor() -> fetch._ContinuousMemoryMonitor:
+    return fetch._ContinuousMemoryMonitor(
+        sampler=_FakeResourceSampler(),
+        policy=grounding.ResourceReservePolicy(
+            minimum_available_ram_bytes=16 * 1024**3,
+            maximum_swap_used_bytes=8 * 1024**3,
+        ),
+        abort_event=threading.Event(),
+        provider=_FakeStreamProvider({}),
+        fetch_intent_seal_sha256="a" * 64,
+        resource_policy_seal_sha256="b" * 64,
+        resource_before_seal_sha256="c" * 64,
+        source_root_identity={
+            "normalized_path_sha256": "d" * 64,
+            "device": 1,
+            "inode": 2,
+        },
+    )
 
 
 @pytest.fixture
@@ -283,6 +375,40 @@ def test_fake_stream_materializes_exact_scheduled_shard_and_authenticates_receip
     assert receipt["published_paths"] == [bundle["path"]]
     assert receipt["retained_partial_paths"] == []
     assert receipt["worker_dispatch_enabled"] is False
+    monitor = fetch._producer_verify(
+        receipt["continuous_resource_monitor"],
+        auth=bundle["auth"],
+        label="test continuous resource monitor",
+    )
+    assert monitor["status"] == "PASS_CONTINUOUS_RAM_SWAP_GUARD"
+    assert monitor["policy"] == {
+        "minimum_available_ram_bytes": 16 * 1024**3,
+        "maximum_swap_used_bytes": 8 * 1024**3,
+        "maximum_swap_growth_bytes": 0,
+        "maximum_new_swapouts": 0,
+    }
+    assert monitor["bindings"]["fetch_intent_seal_sha256"] == (
+        bundle["intent"]["seal_sha256"]
+    )
+    assert monitor["bindings"]["resource_policy_seal_sha256"] == (
+        bundle["artifacts"].resource_policy["seal_sha256"]
+    )
+    assert monitor["bindings"]["source_root"] == bundle["intent"]["source_root"]
+    assert monitor["sample_attempt_count"] >= 2
+    assert monitor["failure_reasons"] == []
+    assert monitor["monitor_thread_quiesced"] is True
+    assert monitor["stream_workers_quiesced"] is True
+    assert monitor["final_sample_after_stream_quiescence"] is True
+    assert monitor["provider_abort_requested"] is False
+    assert monitor["coverage"] == {
+        "started_before_stream_workers": True,
+        "covered_entire_stream_worker_lifetime": True,
+        "covered_authenticated_prepublish_sample": True,
+        "covered_durable_publish_boundary": True,
+        "ended_after_publish_boundary": True,
+        "unobserved_intervals_claimed_safe": False,
+    }
+    assert monitor["final_sample_after_publish_boundary"] is True
     verified = fetch._producer_verify(
         receipt,
         auth=bundle["auth"],
@@ -432,3 +558,551 @@ def test_import_and_intent_build_are_body_and_stream_free(bundle: Mapping[str, A
     assert bundle["intent"]["worker_dispatch_enabled"] is False
     assert bundle["intent"]["maximum_streamed_body_bytes"] == len(PAYLOAD)
     assert list(bundle["source_root"].iterdir()) == []
+
+
+@pytest.mark.parametrize(
+    "violating_sample,required_reason",
+    [
+        (
+            _live_sample(available_ram_bytes=16 * 1024**3 - 1),
+            "AVAILABLE_RAM_FLOOR",
+        ),
+        (
+            _live_sample(swap_used_bytes=8 * 1024**3 + 1),
+            "ABSOLUTE_SWAP_CEILING",
+        ),
+        (_live_sample(swap_used_bytes=1), "SWAP_GROWTH"),
+        (_live_sample(swapouts=1), "NEW_SWAPOUTS"),
+    ],
+    ids=("ram-floor", "absolute-swap", "swap-growth", "new-swapout"),
+)
+def test_continuous_memory_threshold_aborts_blocked_stream_and_never_publishes(
+    bundle: Mapping[str, Any],
+    monkeypatch: pytest.MonkeyPatch,
+    violating_sample: Mapping[str, Any],
+    required_reason: str,
+) -> None:
+    monkeypatch.setattr(fetch, "LIVE_MEMORY_MONITOR_INTERVAL_SECONDS", 0.005)
+    sampler = _SequencedMemorySampler([_live_sample(), violating_sample])
+    provider = _AbortBlockingProvider({bundle["path"]: PAYLOAD})
+    with pytest.raises(fetch.WindowFetchError, match=required_reason) as captured:
+        _materialize(bundle, provider=provider, sampler=sampler)
+
+    assert provider.started.is_set()
+    assert provider.abort_calls >= 1
+    assert provider.active == 0
+    assert not (bundle["source_root"] / bundle["path"]).exists()
+    partials = list(bundle["source_root"].glob(".*glm52-partial-*"))
+    assert len(partials) == 1
+    assert partials[0].read_bytes() == b""
+    assert captured.value.published_paths == ()
+    assert captured.value.retained_partials
+    monitor = fetch._producer_verify(
+        captured.value.resource_monitor_evidence,
+        auth=bundle["auth"],
+        label="test aborted continuous resource monitor",
+    )
+    assert monitor["status"] == "ABORTED_CONTINUOUS_RAM_SWAP_GUARD"
+    assert required_reason in monitor["failure_reasons"]
+    assert monitor["provider_abort_requested"] is True
+    assert monitor["monitor_thread_quiesced"] is True
+    assert monitor["stream_workers_quiesced"] is True
+    assert monitor["no_publish_after_observed_resource_violation"] is True
+    assert monitor["trigger_sample"] is not None
+    assert monitor["periodic_sample_count"] >= 1
+
+
+def test_monitor_sampling_failure_is_fail_closed_while_stream_is_active(
+    bundle: Mapping[str, Any], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(fetch, "LIVE_MEMORY_MONITOR_INTERVAL_SECONDS", 0.005)
+
+    class FailingSampler(_FakeResourceSampler):
+        def live_memory_sample(self) -> Mapping[str, Any]:
+            self.live_memory_calls += 1
+            if self.live_memory_calls > 1:
+                raise OSError("offline injected counter failure")
+            return _live_sample()
+
+    provider = _AbortBlockingProvider({bundle["path"]: PAYLOAD})
+    with pytest.raises(
+        fetch.WindowFetchError, match="RESOURCE_MONITOR_SAMPLE_FAILED"
+    ) as captured:
+        _materialize(bundle, provider=provider, sampler=FailingSampler())
+    monitor = captured.value.resource_monitor_evidence
+    assert monitor["failure_reasons"] == ["RESOURCE_MONITOR_SAMPLE_FAILED"]
+    assert monitor["sample_error_sha256"] is not None
+    assert monitor["provider_abort_requested"] is True
+    assert provider.active == 0
+    assert not (bundle["source_root"] / bundle["path"]).exists()
+
+
+def test_midstream_ram_violation_retains_written_partial_but_never_publishes(
+    bundle: Mapping[str, Any], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(fetch, "LIVE_MEMORY_MONITOR_INTERVAL_SECONDS", 0.001)
+    first_chunk_consumed = threading.Event()
+
+    class MidstreamSampler(_FakeResourceSampler):
+        def live_memory_sample(self) -> Mapping[str, Any]:
+            self.live_memory_calls += 1
+            if self.live_memory_calls > 1:
+                if not first_chunk_consumed.wait(2):
+                    raise AssertionError("first stream chunk was not consumed")
+                return _live_sample(available_ram_bytes=16 * 1024**3 - 1)
+            return _live_sample()
+
+    class PartialThenBlockProvider(_AbortBlockingProvider):
+        def open_stream(self, target: Mapping[str, Any]) -> Iterable[bytes]:
+            path = str(target["path"])
+            self.opened.append(path)
+
+            def chunks() -> Iterable[bytes]:
+                with self._lock:
+                    self.active += 1
+                    self.maximum_active = max(self.maximum_active, self.active)
+                self.started.set()
+                try:
+                    yield self.payloads[path][:11]
+                    first_chunk_consumed.set()
+                    if not self.aborted.wait(2):
+                        raise AssertionError("monitor did not abort partial stream")
+                finally:
+                    with self._lock:
+                        self.active -= 1
+
+            return chunks()
+
+    provider = PartialThenBlockProvider({bundle["path"]: PAYLOAD})
+    with pytest.raises(fetch.WindowFetchError, match="AVAILABLE_RAM_FLOOR") as captured:
+        _materialize(bundle, provider=provider, sampler=MidstreamSampler())
+    assert provider.active == 0
+    assert provider.abort_calls >= 1
+    assert not (bundle["source_root"] / bundle["path"]).exists()
+    partials = list(bundle["source_root"].glob(".*glm52-partial-*"))
+    assert len(partials) == 1
+    assert partials[0].read_bytes() == PAYLOAD[:11]
+    assert captured.value.published_paths == ()
+    assert captured.value.resource_monitor_evidence[
+        "no_publish_after_observed_resource_violation"
+    ] is True
+
+
+def test_sample_timestamp_freshness_boundaries_are_exact() -> None:
+    maximum_age_ns = int(fetch.LIVE_MEMORY_MONITOR_MAX_BLIND_SECONDS * 1e9)
+    tolerance = fetch.LIVE_MEMORY_SAMPLE_FUTURE_TOLERANCE_NS
+    attempt = 10_000_000_000
+    observed = attempt + 10_000
+
+    assert fetch._sample_timestamp_reasons(
+        attempt,
+        attempt_started_ns=attempt,
+        observed_ns=observed,
+    ) == []
+    assert fetch._sample_timestamp_reasons(
+        observed + tolerance,
+        attempt_started_ns=attempt,
+        observed_ns=observed,
+    ) == []
+    assert fetch._sample_timestamp_reasons(
+        observed + tolerance + 1,
+        attempt_started_ns=attempt,
+        observed_ns=observed,
+    ) == ["SAMPLE_TIMESTAMP_IN_FUTURE"]
+    assert fetch._sample_timestamp_reasons(
+        attempt - 1,
+        attempt_started_ns=attempt,
+        observed_ns=observed,
+    ) == ["SAMPLE_TIMESTAMP_BEFORE_ATTEMPT"]
+
+    old_sample = 20_000_000_000
+    assert fetch._sample_timestamp_reasons(
+        old_sample,
+        attempt_started_ns=old_sample,
+        observed_ns=old_sample + maximum_age_ns,
+    ) == []
+    assert fetch._sample_timestamp_reasons(
+        old_sample,
+        attempt_started_ns=old_sample + 1,
+        observed_ns=old_sample + maximum_age_ns + 1,
+    ) == ["SAMPLE_TIMESTAMP_BEFORE_ATTEMPT", "SAMPLE_TIMESTAMP_TOO_OLD"]
+
+
+def test_monitor_rejects_clock_regression_and_exact_gap_latency_overruns() -> None:
+    maximum_blind_ns = int(fetch.LIVE_MEMORY_MONITOR_MAX_BLIND_SECONDS * 1e9)
+    base = 30_000_000_000
+    monitor = _unit_memory_monitor()
+    assert monitor._record_sample(
+        {**_live_sample(), "sampled_monotonic_ns": base},
+        phase="baseline",
+        attempt_started_ns=base,
+        observed_ns=base,
+    ) == []
+    reasons = monitor._record_sample(
+        {**_live_sample(), "sampled_monotonic_ns": base},
+        phase="periodic",
+        attempt_started_ns=base,
+        observed_ns=base,
+    )
+    assert reasons == ["SAMPLE_CLOCK_NOT_MONOTONIC"]
+
+    exact = _unit_memory_monitor()
+    assert exact._record_sample(
+        {**_live_sample(), "sampled_monotonic_ns": base},
+        phase="baseline",
+        attempt_started_ns=base,
+        observed_ns=base,
+    ) == []
+    assert exact._record_sample(
+        {
+            **_live_sample(),
+            "sampled_monotonic_ns": base + maximum_blind_ns,
+        },
+        phase="periodic",
+        attempt_started_ns=base + maximum_blind_ns,
+        observed_ns=base + maximum_blind_ns,
+    ) == []
+
+    gap = _unit_memory_monitor()
+    assert gap._record_sample(
+        {**_live_sample(), "sampled_monotonic_ns": base},
+        phase="baseline",
+        attempt_started_ns=base,
+        observed_ns=base,
+    ) == []
+    gap_reasons = gap._record_sample(
+        {
+            **_live_sample(),
+            "sampled_monotonic_ns": base + maximum_blind_ns + 1,
+        },
+        phase="periodic",
+        attempt_started_ns=base + maximum_blind_ns + 1,
+        observed_ns=base + maximum_blind_ns + 1,
+    )
+    assert gap_reasons == ["MONITOR_OBSERVATION_GAP"]
+
+    latency = _unit_memory_monitor()
+    latency_reasons = latency._record_sample(
+        {
+            **_live_sample(),
+            "sampled_monotonic_ns": base + maximum_blind_ns + 1,
+        },
+        phase="baseline",
+        attempt_started_ns=base,
+        observed_ns=base + maximum_blind_ns + 1,
+    )
+    assert latency_reasons == ["MONITOR_SAMPLE_LATENCY"]
+
+
+def test_stale_baseline_timestamp_fails_before_any_stream_and_never_publishes(
+    bundle: Mapping[str, Any]
+) -> None:
+    class StaleBaselineSampler(_FakeResourceSampler):
+        def live_memory_sample(self) -> Mapping[str, Any]:
+            self.live_memory_calls += 1
+            return {**_live_sample(), "sampled_monotonic_ns": 1}
+
+    provider = _AbortBlockingProvider({bundle["path"]: PAYLOAD})
+    with pytest.raises(
+        fetch.WindowFetchError, match="SAMPLE_TIMESTAMP_BEFORE_ATTEMPT"
+    ) as captured:
+        _materialize(bundle, provider=provider, sampler=StaleBaselineSampler())
+    assert provider.started.is_set() is False
+    assert provider.active == 0
+    assert not (bundle["source_root"] / bundle["path"]).exists()
+    monitor = captured.value.resource_monitor_evidence
+    assert "SAMPLE_TIMESTAMP_BEFORE_ATTEMPT" in monitor["failure_reasons"]
+    assert "SAMPLE_TIMESTAMP_TOO_OLD" in monitor["failure_reasons"]
+    assert monitor["stream_workers_quiesced"] is True
+    assert monitor["monitor_thread_quiesced"] is True
+    assert monitor["final_sample_after_stream_quiescence"] is False
+    assert monitor["no_publish_after_observed_resource_violation"] is True
+
+
+@pytest.mark.parametrize(
+    "timestamp_mode,required_reason",
+    [
+        ("stale", "SAMPLE_TIMESTAMP_BEFORE_ATTEMPT"),
+        ("future", "SAMPLE_TIMESTAMP_IN_FUTURE"),
+        ("regression", "SAMPLE_CLOCK_NOT_MONOTONIC"),
+    ],
+)
+def test_runtime_timestamp_attack_aborts_active_stream_and_never_publishes(
+    bundle: Mapping[str, Any],
+    monkeypatch: pytest.MonkeyPatch,
+    timestamp_mode: str,
+    required_reason: str,
+) -> None:
+    monkeypatch.setattr(fetch, "LIVE_MEMORY_MONITOR_INTERVAL_SECONDS", 0.001)
+    provider = _AbortBlockingProvider({bundle["path"]: PAYLOAD})
+
+    class TimestampAttackSampler(_FakeResourceSampler):
+        baseline_timestamp = 0
+
+        def live_memory_sample(self) -> Mapping[str, Any]:
+            self.live_memory_calls += 1
+            if self.live_memory_calls == 1:
+                self.baseline_timestamp = time.monotonic_ns()
+                return {
+                    **_live_sample(),
+                    "sampled_monotonic_ns": self.baseline_timestamp,
+                }
+            if not provider.started.wait(2):
+                raise AssertionError("stream did not become active")
+            if timestamp_mode == "future":
+                timestamp = (
+                    time.monotonic_ns()
+                    + fetch.LIVE_MEMORY_SAMPLE_FUTURE_TOLERANCE_NS
+                    + 10_000_000
+                )
+            elif timestamp_mode == "regression":
+                timestamp = self.baseline_timestamp
+            else:
+                timestamp = self.baseline_timestamp + 1
+            return {**_live_sample(), "sampled_monotonic_ns": timestamp}
+
+    with pytest.raises(fetch.WindowFetchError, match=required_reason) as captured:
+        _materialize(
+            bundle,
+            provider=provider,
+            sampler=TimestampAttackSampler(),
+        )
+    assert provider.started.is_set()
+    assert provider.abort_calls >= 1
+    assert provider.active == 0
+    assert not (bundle["source_root"] / bundle["path"]).exists()
+    monitor = captured.value.resource_monitor_evidence
+    assert required_reason in monitor["failure_reasons"]
+    assert monitor["provider_abort_requested"] is True
+    assert monitor["stream_workers_quiesced"] is True
+    assert monitor["monitor_thread_quiesced"] is True
+    assert monitor["no_publish_after_observed_resource_violation"] is True
+
+
+def test_final_sampler_failure_never_publishes_or_claims_a_valid_final_sample(
+    bundle: Mapping[str, Any]
+) -> None:
+    class FinalFailureSampler(_FakeResourceSampler):
+        def live_memory_sample(self) -> Mapping[str, Any]:
+            self.live_memory_calls += 1
+            if self.live_memory_calls == 2:
+                raise OSError("offline injected final-sample failure")
+            return _live_sample()
+
+    provider = _FakeStreamProvider({bundle["path"]: PAYLOAD})
+    with pytest.raises(
+        fetch.WindowFetchError, match="RESOURCE_MONITOR_SAMPLE_FAILED"
+    ) as captured:
+        _materialize(bundle, provider=provider, sampler=FinalFailureSampler())
+    assert provider.active == 0
+    assert not (bundle["source_root"] / bundle["path"]).exists()
+    partials = list(bundle["source_root"].glob(".*glm52-partial-*"))
+    assert len(partials) == 1
+    assert partials[0].read_bytes() == PAYLOAD
+    monitor = captured.value.resource_monitor_evidence
+    assert monitor["status"] == "ABORTED_CONTINUOUS_RAM_SWAP_GUARD"
+    assert monitor["sample_attempt_count"] == 2
+    assert monitor["valid_sample_count"] == 1
+    assert monitor["failure_reasons"] == ["RESOURCE_MONITOR_SAMPLE_FAILED"]
+    assert monitor["final_sample_after_stream_quiescence"] is False
+    assert monitor["stream_workers_quiesced"] is True
+    assert monitor["monitor_thread_quiesced"] is True
+    assert monitor["no_publish_after_observed_resource_violation"] is True
+
+
+def test_poststream_prepublish_swapout_is_observed_before_any_visible_artifact(
+    bundle: Mapping[str, Any]
+) -> None:
+    class PrepublishViolationSampler(_FakeResourceSampler):
+        def live_memory_sample(self) -> Mapping[str, Any]:
+            self.live_memory_calls += 1
+            if self.live_memory_calls == 2:
+                return _live_sample(swapouts=1)
+            return _live_sample()
+
+    provider = _FakeStreamProvider({bundle["path"]: PAYLOAD})
+    with pytest.raises(fetch.WindowFetchError, match="NEW_SWAPOUTS") as captured:
+        _materialize(
+            bundle,
+            provider=provider,
+            sampler=PrepublishViolationSampler(),
+        )
+    assert provider.active == 0
+    assert not (bundle["source_root"] / bundle["path"]).exists()
+    partials = list(bundle["source_root"].glob(".*glm52-partial-*"))
+    assert len(partials) == 1
+    assert partials[0].read_bytes() == PAYLOAD
+    monitor = captured.value.resource_monitor_evidence
+    assert monitor["failure_reasons"] == ["NEW_SWAPOUTS"]
+    assert monitor["stream_workers_quiesced"] is True
+    assert monitor["final_sample_after_stream_quiescence"] is False
+    assert monitor["final_sample_after_publish_boundary"] is False
+    assert monitor["published_paths_at_monitor_evidence_seal"] == []
+    assert monitor["no_publish_after_observed_resource_violation"] is True
+
+
+def test_visibility_gate_rechecks_swap_immediately_before_atomic_rename(
+    bundle: Mapping[str, Any], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(fetch, "LIVE_MEMORY_MONITOR_INTERVAL_SECONDS", 10.0)
+
+    class VisibilityGateViolationSampler(_FakeResourceSampler):
+        def live_memory_sample(self) -> Mapping[str, Any]:
+            self.live_memory_calls += 1
+            if self.live_memory_calls == 4:
+                return _live_sample(swap_used_bytes=1)
+            return _live_sample()
+
+    provider = _FakeStreamProvider({bundle["path"]: PAYLOAD})
+    with pytest.raises(fetch.WindowFetchError, match="SWAP_GROWTH") as captured:
+        _materialize(
+            bundle,
+            provider=provider,
+            sampler=VisibilityGateViolationSampler(),
+        )
+    assert provider.active == 0
+    assert not (bundle["source_root"] / bundle["path"]).exists()
+    partials = list(bundle["source_root"].glob(".*glm52-partial-*"))
+    assert len(partials) == 1
+    assert partials[0].read_bytes() == PAYLOAD
+    monitor = captured.value.resource_monitor_evidence
+    assert monitor["failure_reasons"] == ["SWAP_GROWTH"]
+    assert monitor["final_sample_after_stream_quiescence"] is True
+    assert monitor["final_sample_after_publish_boundary"] is False
+    assert monitor["published_paths_at_monitor_evidence_seal"] == []
+    assert monitor["no_publish_after_observed_resource_violation"] is True
+
+
+def test_slow_cooperative_abort_records_quiescence_deadline_before_safe_return(
+    bundle: Mapping[str, Any], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(fetch, "LIVE_MEMORY_MONITOR_INTERVAL_SECONDS", 0.001)
+    monkeypatch.setattr(fetch, "STREAM_QUIESCENCE_DEADLINE_SECONDS", 0.01)
+    provider_started = threading.Event()
+
+    class ViolationSampler(_FakeResourceSampler):
+        def live_memory_sample(self) -> Mapping[str, Any]:
+            self.live_memory_calls += 1
+            if self.live_memory_calls > 1:
+                if not provider_started.wait(2):
+                    raise AssertionError("provider did not start")
+                return _live_sample(available_ram_bytes=16 * 1024**3 - 1)
+            return _live_sample()
+
+    class SlowAbortProvider(_FakeStreamProvider):
+        def open_stream(self, target: Mapping[str, Any]) -> Iterable[bytes]:
+            path = str(target["path"])
+            self.opened.append(path)
+
+            def chunks() -> Iterable[bytes]:
+                with self._lock:
+                    self.active += 1
+                    self.maximum_active = max(self.maximum_active, self.active)
+                provider_started.set()
+                try:
+                    # Deliberately ignore cooperative abort long enough for the
+                    # bounded quiescence detector, then quiesce so the adapter
+                    # can return without closing a descriptor under this writer.
+                    time.sleep(0.05)
+                    if False:  # pragma: no cover - zero-byte stream
+                        yield b""
+                finally:
+                    with self._lock:
+                        self.active -= 1
+
+            return chunks()
+
+    provider = SlowAbortProvider({bundle["path"]: PAYLOAD})
+    with pytest.raises(
+        fetch.WindowFetchError, match="STREAM_WORKER_QUIESCENCE_DEADLINE"
+    ) as captured:
+        _materialize(bundle, provider=provider, sampler=ViolationSampler())
+    assert provider.abort_calls >= 1
+    assert provider.active == 0
+    assert not (bundle["source_root"] / bundle["path"]).exists()
+    monitor = captured.value.resource_monitor_evidence
+    assert monitor["stream_quiescence_deadline_crossed"] is True
+    assert "STREAM_WORKER_QUIESCENCE_DEADLINE" in monitor["failure_reasons"]
+    assert monitor["stream_workers_quiesced"] is True
+    assert monitor["stream_termination_model"][
+        "inprocess_native_thread_hard_termination_available"
+    ] is False
+    assert monitor["stream_termination_model"][
+        "permanent_hang_requires_subprocess_isolation"
+    ] is True
+
+
+def test_inflight_periodic_sample_cannot_race_clean_stream_exit(
+    bundle: Mapping[str, Any], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(fetch, "LIVE_MEMORY_MONITOR_INTERVAL_SECONDS", 0.001)
+    periodic_entered = threading.Event()
+    release_periodic = threading.Event()
+    provider_completed = threading.Event()
+
+    class RacingSampler(_FakeResourceSampler):
+        def live_memory_sample(self) -> Mapping[str, Any]:
+            self.live_memory_calls += 1
+            if self.live_memory_calls == 2:
+                periodic_entered.set()
+                if not release_periodic.wait(2):
+                    raise AssertionError("test did not release in-flight periodic sample")
+                return _live_sample()
+            return _live_sample()
+
+    class CoordinatedCleanProvider(_FakeStreamProvider):
+        def open_stream(self, target: Mapping[str, Any]) -> Iterable[bytes]:
+            path = str(target["path"])
+            self.opened.append(path)
+
+            def chunks() -> Iterable[bytes]:
+                with self._lock:
+                    self.active += 1
+                    self.maximum_active = max(self.maximum_active, self.active)
+                try:
+                    if not periodic_entered.wait(2):
+                        raise AssertionError("periodic sampler did not enter")
+                    yield self.payloads[path]
+                finally:
+                    with self._lock:
+                        self.active -= 1
+                    provider_completed.set()
+
+            return chunks()
+
+    sampler = RacingSampler()
+    provider = CoordinatedCleanProvider({bundle["path"]: PAYLOAD})
+    result: dict[str, Any] = {}
+
+    def run() -> None:
+        try:
+            result["receipt"] = _materialize(
+                bundle, provider=provider, sampler=sampler
+            )
+        except BaseException as exc:  # surfaced in the asserting test thread
+            result["error"] = exc
+
+    thread = threading.Thread(target=run, name="glm52-clean-exit-race-test")
+    thread.start()
+    assert periodic_entered.wait(2)
+    assert provider_completed.wait(2)
+    deadline = time.monotonic() + 2
+    while provider.active and time.monotonic() < deadline:
+        time.sleep(0.001)
+    assert provider.active == 0
+    # The materializer may be waiting for the same serialized sampler at its
+    # prepublish gate.  Releasing a green in-flight sample must not race the
+    # clean stream exit or duplicate an abort.
+    time.sleep(0.02)
+    release_periodic.set()
+    thread.join(2)
+    assert not thread.is_alive()
+    assert "error" not in result
+    assert provider.abort_calls == 0
+    monitor = result["receipt"]["continuous_resource_monitor"]
+    assert monitor["status"] == "PASS_CONTINUOUS_RAM_SWAP_GUARD"
+    assert monitor["periodic_sample_count"] == 1
+    assert monitor["sample_attempt_count"] >= 5
+    assert monitor["final_sample_after_stream_quiescence"] is True
+    assert monitor["final_sample_after_publish_boundary"] is True
+    assert (bundle["source_root"] / bundle["path"]).read_bytes() == PAYLOAD
