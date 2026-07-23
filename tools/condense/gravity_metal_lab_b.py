@@ -1647,8 +1647,12 @@ def verdict_of(geometries: dict[str, Any], batches: dict[str, Any],
                 "with tpg parity, i.e. lookup-linear loses. Use "
                 "GLM52_KERNEL_SELECTION_MATRIX.json, which gives both grammars the full "
                 "ladder, as the comparator of record.",
-            "vs_production_caveat": "INDEX_TRANSPOSE_HOISTED_OUT_OF_TIMED_REGION_"
-                                    "NOT_A_DROP_IN_REPLACEMENT_CLAIM",
+            # Measured, against a review claim that the production kernel reads the on-disk
+            # layout while the labs read a hoisted transpose: gravity_metal.py:394 does the
+            # identical transpose in _cache_tensor, and the two index buffers are
+            # byte-identical on real gate and down tensors.  Both build it in a cached
+            # upload outside the clock, so the head-to-head is symmetric.
+            "vs_production_caveat": "NONE_INDEX_LAYOUT_IS_SYMMETRIC_MEASURED_BYTE_IDENTICAL",
         }
     ratios = [v.get("vs_best_decode_fma_gpu_median") for v in per_geometry.values()
               if v.get("vs_best_decode_fma_gpu_median")]
