@@ -1,6 +1,6 @@
 {
-  "CROSS_PARENT_GRAVITY_FRONTIER": "OPEN_INSTRUMENT_LIMITED",
-  "DEEPSEEK_FUNCTIONAL_VERDICT": "INCONCLUSIVE_PENDING_VALIDATED_CONTEXTUAL_FORWARD",
+  "CROSS_PARENT_GRAVITY_FRONTIER": "OPEN_AND_PROMISING",
+  "DEEPSEEK_FUNCTIONAL_VERDICT": "CONTRACTIVE_FUNCTIONAL_ESCAPE_EXISTS_BOUNDED",
   "basis": "SCOPED: methodology+metric+runtime ascended; cross-parent scientific frontier OPEN",
   "corrected": {
     "artifacts_beating_a_constant": 0,
@@ -15,7 +15,7 @@
   "correction_2026_07_23": "narrowed from an unconditional floor. DeepSeek did NOT establish a cross-parent floor; its probe is INSTRUMENT_LIMITED_INCONCLUSIVE and supports neither 'functional students fail on DeepSeek' nor 'DeepSeek confirms the GLM law'. Same boundary Kimi's report observed: a negative does not establish a universal lower bound.",
   "directive_basis_quote": "Hawking may ascend with a winning functional architecture, a winning encoding architecture, a hybrid, or an honest empirical floor. It may not ascend with a broken promotion metric.",
   "endpoint": "HAWKING_CORE_ASCENDED",
-  "floor": "methodology, metric system and native runtime have ascended; the cross-parent Gravity frontier is OPEN and instrument-limited, not closed. GLM is scientifically finished (FUNCTIONAL_PARTIAL_ONLY). DeepSeek source+organ validated, functional verdict inconclusive, cross-parent amplification law UNMEASURED.",
+  "floor": "methodology, metric system and native runtime ascended; the cross-parent Gravity frontier is OPEN AND PROMISING. GLM closed FUNCTIONAL_PARTIAL_ONLY (expansive). DeepSeek's functional escape EXISTS and its hyper-connection residual is CONTRACTIVE at the tested strata, the first parent where the escape survives propagation, bounded and not yet promoted.",
   "gated": {
     "definitive_cross_parent_verdict": "needs real pre-MoE hidden from a reference-logit-validated block forward (DeepSeek MLA+DSA+hyper-connections, or Qwen3.5 linear-attention)",
     "servable_sub_bit_model": "none produced on the parents reachable here; complete-token/prefill/true-TPS on a servable model remain open",
@@ -75,6 +75,14 @@
     "glm_source_released_gb": 405.4,
     "reserve_gib": 100,
     "reserve_ok": true
+  },
+  "update_2026_07_24": {
+    "amplification": "CONTRACTIVE at layers 5 (0.64-0.82) and 20 (0.96-0.99), depth 3; the OPPOSITE of GLM's 1.4-2.4x expansive",
+    "deepseek_forward": "BUILT and validated (official DeepseekV4DecoderLayer, streamed, real weights); apparatus wall withdrawn",
+    "functional_escape": "EXISTS on real contextual inputs, layer 5 skill 0.18 lower 0.039 centered 0.76",
+    "significance": "first cross-parent result breaking the GLM expansive law; a functional stream on DeepSeek is now scientifically plausible",
+    "still_bounded": "not a promotion; needs stronger statistics, late-stratum amplification, full rollout, route-agreement, fp4-relative accounting, runtime path",
+    "verdict_doc": "DEEPSEEK_V4_FLASH_CONTRACTION_VERDICT.json"
   },
   "winning_servable_architecture": false
 }
