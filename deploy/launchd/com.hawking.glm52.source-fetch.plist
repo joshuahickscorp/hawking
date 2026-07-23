@@ -37,9 +37,9 @@
 	<key>Label</key>
 	<string>com.hawking.glm52.source-fetch</string>
 	<key>Nice</key>
-	<integer>5</integer>
+	<integer>0</integer>
 	<key>ProcessType</key>
-	<string>Background</string>
+	<string>Standard</string>
 	<key>ProgramArguments</key>
 	<array>
 		<string>/usr/bin/caffeinate</string>
