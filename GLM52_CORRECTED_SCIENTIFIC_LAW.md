@@ -108,18 +108,23 @@ projected over 75 sparse layers       5.3e9
 ```
 
 The magnitude sweep is the decisive measurement. Scaling the student's own error direction
-down does not find a stable regime — it makes the amplification **worse**:
+down does not find a stable regime — it makes the amplification **worse**, and the pattern
+repeats at every stratum measured:
 
-| injected relative L2 | geometric mean amplification | layer-39 router top-1 agreement |
-|---:|---:|---:|
-| 0.0077 | **2.407** | 0.987 |
-| 0.0154 | **2.032** | 0.969 |
-| 0.0384 | **1.691** | 0.929 |
-| 0.0769 | **1.527** | 0.904 |
-| 0.1537 (the student's own) | **1.418** | 0.850 |
+| fraction of the student's own error | L03 early | L38 middle | L74 late |
+|---:|---:|---:|---:|
+| 0.05 | 1.646 | **2.407** | **2.191** |
+| 0.10 | 1.454 | **2.032** | **1.910** |
+| 0.25 | 1.280 | **1.691** | **1.684** |
+| 0.50 | 1.151 | **1.527** | **1.555** |
+| 1.00 (the student's own error) | 1.080 | **1.418** | **1.353** |
+| the student's own relative L2 | 0.0273 | 0.1537 | 0.2293 |
 
-There is no magnitude at which this stack is contractive. A functional student in every
-layer compounds it:
+There is no magnitude at any stratum where this stack contracts. The early layer is the
+mildest — its student is six times more accurate and its amplification is only 1.08× — but
+it is still above one, so even there the error never decays.
+
+A functional student in every layer compounds it:
 
 ```
 students in layers 38, 39, 40, 41

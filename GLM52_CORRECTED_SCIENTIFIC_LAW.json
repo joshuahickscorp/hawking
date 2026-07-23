@@ -1,95 +1,187 @@
 {
-  "schema": "hawking.glm52.corrected_scientific_law.v1",
-  "sealed_at": "2026-07-23T17:15:00Z",
-  "supersedes": "every Generation B pilot verdict reached on raw activation cosine, and the first correction pass that centred by the held-out teacher mean",
-  "metric_contract": "HAWKING_NULL_CORRECTED_METRIC_CONTRACT.json",
+  "causal_statement": "On GLM-5.2, a cheap function of the hidden state predicts a layer's MoE output far better than any representation of that layer's expert weights, and does so at a seventieth of the rate. It still does not produce a model, because this architecture's residual stream amplifies every perturbation it is given, and amplifies small ones hardest.",
+  "functional": {
+    "block": {
+      "centered_cosine": 0.9385,
+      "moe_constant_control": 0.7451,
+      "moe_removed_control": 0.1968,
+      "skill": 0.8806,
+      "skill_lower": 0.8786
+    },
+    "controls": {
+      "identity": -24.1758,
+      "linear_upper_control": 0.5441,
+      "mean_null": 0.0,
+      "shuffled_input": -0.5907,
+      "weight_space_at_0_753_bpw": "negative"
+    },
+    "cross_layer_sharing": {
+      "max_retained_fraction": -4.1189,
+      "verdict": "READOUT_IS_LAYER_SPECIFIC"
+    },
+    "replication_without_refit": {
+      "rows_passing": 24,
+      "rows_total": 24,
+      "skill_range": [
+        0.481,
+        0.5318
+      ],
+      "splits": [
+        "teacher_score",
+        "teacher_cv",
+        "teacher_holdout",
+        "teacher_replication",
+        "teacher_protected",
+        "teacher_longctx"
+      ]
+    },
+    "reproduction": {
+      "centered_cosine": 0.7309,
+      "local_bpw": 0.010375,
+      "seed_spread_in_skill": 0.0025,
+      "seeds": [
+        17,
+        101,
+        202,
+        303
+      ],
+      "skill": 0.5318,
+      "skill_lower": 0.5232
+    },
+    "strata": {
+      "L05_early": 0.6982,
+      "L38_middle": 0.5318,
+      "L74_late": 0.5917,
+      "L77_final": 0.5863
+    },
+    "target": "pre_router_hidden -> post_moe",
+    "the_map_is_the_win_not_the_nonlinearity": "the full linear control reaches 0.5441 against the student's 0.5318; the random features buy 6x fewer bytes for 2 percent less skill",
+    "verdict": "REPLICATES_LOCALLY, FAILS_UNDER_DEPTH"
+  },
   "instrument_defects_found": [
     {
-      "defect": "raw activation cosine used as a promotion metric on a mean-dominated target",
       "consequence": "candidates scoring 0.87 were reported as partial fidelity while losing to a constant whose own raw cosine is 0.83 to 0.90",
+      "defect": "raw activation cosine used as a promotion metric on a mean-dominated target",
       "status": "SUPERSEDED"
     },
     {
-      "defect": "the first correction centred by the teacher's own mean, a statistic of the held-out target",
       "consequence": "the null was handed information the candidate should have had to earn; centred numbers from that pass are void",
+      "defect": "the first correction centred by the teacher's own mean, a statistic of the held-out target",
       "status": "SUPERSEDED, recomputed against a fit-split null"
     }
   ],
-  "weight_space": {
-    "verdict": "CLOSED_NEGATIVE",
-    "artifacts_rescored": 22,
-    "artifacts_beating_a_constant": 0,
-    "best_corrected_block_skill": -1.2141910045733186,
-    "best_corrected_block_skill_at_bpw": 0.8550744535000073,
-    "at_twice_the_legal_ceiling": {"complete_bpw": 2.0169, "corrected_block_skill": -1.7654},
-    "families": {
-      "routed_expert_product_quantization": "CLOSED_NEGATIVE",
-      "per_tensor_low_rank_weight_blueprint": "CLOSED_NEGATIVE",
-      "shared_expert_weight_basis": "CLOSED_NEGATIVE",
-      "by_role_hybrid_weight_blueprint": "CLOSED_NEGATIVE",
-      "pilot_functional_block_weight_family": "CLOSED_NEGATIVE"
-    }
-  },
-  "functional": {
-    "verdict": "REPLICATES_LOCALLY, FAILS_UNDER_DEPTH",
-    "target": "pre_router_hidden -> post_moe",
-    "reproduction": {
-      "seeds": [17, 101, 202, 303],
-      "skill": 0.5318, "skill_lower": 0.5232, "centered_cosine": 0.7309,
-      "local_bpw": 0.010375, "seed_spread_in_skill": 0.0025
+  "metric_contract": "HAWKING_NULL_CORRECTED_METRIC_CONTRACT.json",
+  "not_evidence_of": "capability, full-model quality, or behaviour. Bounded calibration batches of 4096 held-out positions from a sealed corpus; the token-level number is a 1024-row logit-lens probe rather than the model's head.",
+  "question_handed_forward": "what is the per-layer amplification spectrum of the target architecture, and does any architecture have a contractive regime a functional student can live inside",
+  "rate": {
+    "complete_model_bpw_student_h1024": {
+      "bf16_protected": 0.3479,
+      "int4_protected": 0.094592,
+      "int8_protected": 0.179028
     },
-    "controls": {
-      "mean_null": 0.0, "shuffled_input": -0.5907, "identity": -24.1758,
-      "linear_upper_control": 0.5441, "weight_space_at_0_753_bpw": "negative"
-    },
-    "block": {"skill": 0.8806, "skill_lower": 0.8786, "centered_cosine": 0.9385,
-              "moe_removed_control": 0.1968, "moe_constant_control": 0.7451},
-    "strata": {"L05_early": 0.6982, "L38_middle": 0.5318, "L74_late": 0.5917,
-               "L77_final": 0.5863},
-    "replication_without_refit": {"rows_passing": 24, "rows_total": 24,
-                                  "splits": ["teacher_score", "teacher_cv", "teacher_holdout",
-                                             "teacher_replication", "teacher_protected",
-                                             "teacher_longctx"],
-                                  "skill_range": [0.4810, 0.5318]},
-    "cross_layer_sharing": {"verdict": "READOUT_IS_LAYER_SPECIFIC",
-                            "max_retained_fraction": -4.1189},
-    "the_map_is_the_win_not_the_nonlinearity": "the full linear control reaches 0.5441 against the student's 0.5318; the random features buy 6x fewer bytes for 2 percent less skill"
+    "functionally_replaced_fraction": 0.9788909600514913,
+    "logical_weight_denominator": 753329940480,
+    "protected_floor_bpw_at_source_precision": 0.33774463917613917,
+    "verdict": "LEGAL_AND_NOT_THE_BINDING_CONSTRAINT"
   },
   "residual_stream": {
-    "verdict": "EXPANSIVE_AT_EVERY_TESTED_MAGNITUDE",
-    "measured_on": "layers 38 to 41, teacher weights, real attention and real router",
-    "amplification_by_injected_magnitude": [
-      {"relative_l2": 0.00769, "geometric_mean": 2.4068},
-      {"relative_l2": 0.01537, "geometric_mean": 2.0318},
-      {"relative_l2": 0.03843, "geometric_mean": 1.6911},
-      {"relative_l2": 0.07686, "geometric_mean": 1.5274},
-      {"relative_l2": 0.15373, "geometric_mean": 1.4176}
-    ],
-    "contractive_regime_found": false,
     "amplification_is_worse_at_smaller_perturbations": true,
+    "contractive_regime_found": false,
+    "layer_03": [
+      [
+        0.00136,
+        1.6462
+      ],
+      [
+        0.00273,
+        1.4538
+      ],
+      [
+        0.00682,
+        1.2803
+      ],
+      [
+        0.01364,
+        1.1512
+      ],
+      [
+        0.02728,
+        1.0798
+      ]
+    ],
+    "layer_38": [
+      {
+        "geometric_mean": 2.4068,
+        "relative_l2": 0.00769
+      },
+      {
+        "geometric_mean": 2.0318,
+        "relative_l2": 0.01537
+      },
+      {
+        "geometric_mean": 1.6911,
+        "relative_l2": 0.03843
+      },
+      {
+        "geometric_mean": 1.5274,
+        "relative_l2": 0.07686
+      },
+      {
+        "geometric_mean": 1.4176,
+        "relative_l2": 0.15373
+      }
+    ],
+    "measured_on": "layers 3 to 5, 38 to 41 and 74 to 77; teacher weights, real attention, real router",
+    "one_functional_layer_greedy_token_agreement": 0.5525,
+    "replicated_at": [
+      3,
+      38,
+      74
+    ],
+    "strata_note": "early, middle and late all expansive at every tested magnitude; the early stratum is mildest at 1.08x because its student is six times more accurate, but it is still above one",
+    "student_in_every_layer_router_top1_trajectory": [
+      0.8501,
+      0.6506,
+      0.4456
+    ],
     "teacher_only_three_layer_geometric_mean": 1.3478,
-    "student_in_every_layer_router_top1_trajectory": [0.8501, 0.6506, 0.4456],
-    "one_functional_layer_greedy_token_agreement": 0.5525
-  },
-  "rate": {
-    "verdict": "LEGAL_AND_NOT_THE_BINDING_CONSTRAINT",
-    "logical_weight_denominator": 753329940480,
-    "functionally_replaced_fraction": 0.9788909600514913,
-    "protected_floor_bpw_at_source_precision": 0.33774463917613917,
-    "complete_model_bpw_student_h1024": {"bf16_protected": 0.347900,
-                                         "int8_protected": 0.179028,
-                                         "int4_protected": 0.094592}
+    "verdict": "EXPANSIVE_AT_EVERY_TESTED_MAGNITUDE"
   },
   "runtime": {
-    "binding_limit_moved": true,
-    "before": "expert weight traffic at 51.64 GB per token",
     "after": "attention and protected organs at 29.9 GB per token against 0.96 GB of functional payload",
+    "bandwidth_bound_tps": {
+      "functional_bf16_protected": 13.5,
+      "functional_int4_protected": 49.5,
+      "teacher_bf16": 5.1
+    },
+    "before": "expert weight traffic at 51.64 GB per token",
+    "binding_limit_moved": true,
     "measured_bandwidth_gigabytes_per_second": 417.7,
-    "bandwidth_bound_tps": {"teacher_bf16": 5.1, "functional_bf16_protected": 13.5,
-                            "functional_int4_protected": 49.5},
-    "measured_kernel_fraction_of_own_roofline": {"FRT_A": 0.021, "FRT_B": 0.014, "FRT_D": 0.072}
+    "measured_kernel_fraction_of_own_roofline": {
+      "FRT_A": 0.021,
+      "FRT_B": 0.014,
+      "FRT_D": 0.072
+    }
   },
-  "causal_statement": "On GLM-5.2, a cheap function of the hidden state predicts a layer's MoE output far better than any representation of that layer's expert weights, and does so at a seventieth of the rate. It still does not produce a model, because this architecture's residual stream amplifies every perturbation it is given, and amplifies small ones hardest.",
-  "question_handed_forward": "what is the per-layer amplification spectrum of the target architecture, and does any architecture have a contractive regime a functional student can live inside",
-  "not_evidence_of": "capability, full-model quality, or behaviour. Bounded calibration batches of 4096 held-out positions from a sealed corpus; the token-level number is a 1024-row logit-lens probe rather than the model's head."
+  "schema": "hawking.glm52.corrected_scientific_law.v1",
+  "sealed_at": "2026-07-23T17:15:00Z",
+  "supersedes": "every Generation B pilot verdict reached on raw activation cosine, and the first correction pass that centred by the held-out teacher mean",
+  "weight_space": {
+    "artifacts_beating_a_constant": 0,
+    "artifacts_rescored": 22,
+    "at_twice_the_legal_ceiling": {
+      "complete_bpw": 2.0169,
+      "corrected_block_skill": -1.7654
+    },
+    "best_corrected_block_skill": -1.2141910045733186,
+    "best_corrected_block_skill_at_bpw": 0.8550744535000073,
+    "families": {
+      "by_role_hybrid_weight_blueprint": "CLOSED_NEGATIVE",
+      "per_tensor_low_rank_weight_blueprint": "CLOSED_NEGATIVE",
+      "pilot_functional_block_weight_family": "CLOSED_NEGATIVE",
+      "routed_expert_product_quantization": "CLOSED_NEGATIVE",
+      "shared_expert_weight_basis": "CLOSED_NEGATIVE"
+    },
+    "verdict": "CLOSED_NEGATIVE"
+  }
 }

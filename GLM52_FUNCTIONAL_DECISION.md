@@ -29,8 +29,9 @@ It survives everything except depth.
 
 ## What kills it
 
-The GLM-5.2 residual stream is an **expansive** operator. Scaling the student's own error
-direction down does not find a stable regime — it makes the amplification worse:
+The GLM-5.2 residual stream is an **expansive** operator at the early, middle and late
+strata alike. Scaling the student's own error
+direction down does not find a stable regime - it makes the amplification worse. Layer 38:
 
 | injected relative L2 | amplification per layer | layer-39 router top-1 |
 |---:|---:|---:|

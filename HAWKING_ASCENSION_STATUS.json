@@ -11,6 +11,28 @@
   "amplification_law": {
     "amplification_is_worse_at_smaller_perturbations": true,
     "contractive_regime_found": false,
+    "layer_03": [
+      [
+        0.00136,
+        1.6462
+      ],
+      [
+        0.00273,
+        1.4538
+      ],
+      [
+        0.00682,
+        1.2803
+      ],
+      [
+        0.01364,
+        1.1512
+      ],
+      [
+        0.02728,
+        1.0798
+      ]
+    ],
     "layer_38": [
       [
         0.00769,
@@ -57,10 +79,12 @@
     ],
     "one_functional_layer_greedy_token_agreement": 0.5525,
     "replicated_at": [
+      3,
       38,
       74
     ],
     "state": "EXPANSIVE_AT_EVERY_TESTED_MAGNITUDE",
+    "strata_note": "early, middle and late all expansive at every tested magnitude; the early stratum is mildest at 1.08x because its student is six times more accurate, but it is still above one",
     "student_in_four_layers_router_top1": [
       0.8501,
       0.6506,
