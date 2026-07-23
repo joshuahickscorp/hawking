@@ -1,0 +1,1118 @@
+{
+  "schema": "hawking.true_batch1.tps_budget.v1",
+  "evidence_level": "ARITHMETIC_OVER_A_SEALED_MEASURED_LEDGER",
+  "not_evidence_of": "measured throughput, quality, or the reachability of any configuration whose enabling artifact does not exist",
+  "measured_constants": {
+    "bandwidth_bytes_per_second": 736000000000.0,
+    "vendor_bandwidth_not_used": 819000000000.0,
+    "compute_flops": 17703000000000.0,
+    "command_buffer_seconds": 0.0002158,
+    "dispatch_seconds": 7.1e-07,
+    "gpu_cores": 60,
+    "threadgroup_memory_bytes": 32768
+  },
+  "traffic_budget": [
+    {
+      "target_tps": 100,
+      "seconds_per_token": 0.01,
+      "max_bytes_at_100pct": 7360000000,
+      "max_mb_at_100pct": 7360.0,
+      "max_bytes_at_70pct": 5151999999,
+      "max_mb_at_70pct": 5152.0,
+      "max_bytes_at_50pct": 3680000000,
+      "max_mb_at_50pct": 3680.0
+    },
+    {
+      "target_tps": 250,
+      "seconds_per_token": 0.004,
+      "max_bytes_at_100pct": 2944000000,
+      "max_mb_at_100pct": 2944.0,
+      "max_bytes_at_70pct": 2060799999,
+      "max_mb_at_70pct": 2060.8,
+      "max_bytes_at_50pct": 1472000000,
+      "max_mb_at_50pct": 1472.0
+    },
+    {
+      "target_tps": 500,
+      "seconds_per_token": 0.002,
+      "max_bytes_at_100pct": 1472000000,
+      "max_mb_at_100pct": 1472.0,
+      "max_bytes_at_70pct": 1030399999,
+      "max_mb_at_70pct": 1030.4,
+      "max_bytes_at_50pct": 736000000,
+      "max_mb_at_50pct": 736.0
+    },
+    {
+      "target_tps": 1000,
+      "seconds_per_token": 0.001,
+      "max_bytes_at_100pct": 736000000,
+      "max_mb_at_100pct": 736.0,
+      "max_bytes_at_70pct": 515199999,
+      "max_mb_at_70pct": 515.2,
+      "max_bytes_at_50pct": 368000000,
+      "max_mb_at_50pct": 368.0
+    },
+    {
+      "target_tps": 2000,
+      "seconds_per_token": 0.0005,
+      "max_bytes_at_100pct": 368000000,
+      "max_mb_at_100pct": 368.0,
+      "max_bytes_at_70pct": 257599999,
+      "max_mb_at_70pct": 257.6,
+      "max_bytes_at_50pct": 184000000,
+      "max_mb_at_50pct": 184.0
+    },
+    {
+      "target_tps": 5000,
+      "seconds_per_token": 0.0002,
+      "max_bytes_at_100pct": 147200000,
+      "max_mb_at_100pct": 147.2,
+      "max_bytes_at_70pct": 103039999,
+      "max_mb_at_70pct": 103.0,
+      "max_bytes_at_50pct": 73600000,
+      "max_mb_at_50pct": 73.6
+    }
+  ],
+  "depth_budget": [
+    {
+      "target_tps": 100,
+      "seconds_per_token": 0.01,
+      "command_buffers_affordable": 46.339,
+      "one_cb_share_of_budget": 0.0216,
+      "per_layer_submission_tps_ceiling": 59.41,
+      "verdict": "SUBMISSION_NOT_BINDING"
+    },
+    {
+      "target_tps": 250,
+      "seconds_per_token": 0.004,
+      "command_buffers_affordable": 18.536,
+      "one_cb_share_of_budget": 0.0539,
+      "per_layer_submission_tps_ceiling": 59.41,
+      "verdict": "REQUIRES_FEW_COMMAND_BUFFERS"
+    },
+    {
+      "target_tps": 500,
+      "seconds_per_token": 0.002,
+      "command_buffers_affordable": 9.268,
+      "one_cb_share_of_budget": 0.1079,
+      "per_layer_submission_tps_ceiling": 59.41,
+      "verdict": "REQUIRES_FEW_COMMAND_BUFFERS"
+    },
+    {
+      "target_tps": 1000,
+      "seconds_per_token": 0.001,
+      "command_buffers_affordable": 4.634,
+      "one_cb_share_of_budget": 0.2158,
+      "per_layer_submission_tps_ceiling": 59.41,
+      "verdict": "REQUIRES_ONE_COMMAND_GRAPH"
+    },
+    {
+      "target_tps": 2000,
+      "seconds_per_token": 0.0005,
+      "command_buffers_affordable": 2.317,
+      "one_cb_share_of_budget": 0.4316,
+      "per_layer_submission_tps_ceiling": 59.41,
+      "verdict": "REQUIRES_ONE_COMMAND_GRAPH"
+    },
+    {
+      "target_tps": 5000,
+      "seconds_per_token": 0.0002,
+      "command_buffers_affordable": 0.927,
+      "one_cb_share_of_budget": 1.079,
+      "per_layer_submission_tps_ceiling": 59.41,
+      "verdict": "IMPOSSIBLE_WITH_PER_TOKEN_SUBMISSION"
+    }
+  ],
+  "protected_organs": {
+    "names": [
+      "indexer",
+      "router",
+      "normalization",
+      "router_control"
+    ],
+    "active_bytes": 631954944,
+    "share_of_token": 0.12613,
+    "note": "stored at source precision, so they cost 16 bits per weight while the routed experts cost 0.876"
+  },
+  "projections": [
+    {
+      "config": {
+        "name": "shipped-today",
+        "lane": "control",
+        "routed_experts": 8,
+        "sequential_stages": 78,
+        "compress_protected": false,
+        "command_buffers_per_token": 78,
+        "bandwidth_efficiency": 0.7,
+        "evidence": "MEASURED_LEDGER",
+        "blocked_on": null,
+        "note": "the sealed R0 artifact under per-layer submission"
+      },
+      "labels": [],
+      "active_bytes_per_token": 5010218784,
+      "active_mb_per_token": 5010.22,
+      "organs": [
+        {
+          "organ": "routed_expert",
+          "bytes": 2481062400,
+          "share": 0.4952,
+          "stored_bpw_before": 0.87634
+        },
+        {
+          "organ": "attention",
+          "bytes": 1408647552,
+          "share": 0.28115,
+          "stored_bpw_before": 0.87551
+        },
+        {
+          "organ": "indexer",
+          "bytes": 393619968,
+          "share": 0.07856,
+          "stored_bpw_before": 16.0
+        },
+        {
+          "organ": "shared_expert",
+          "bytes": 310132800,
+          "share": 0.0619,
+          "stored_bpw_before": 0.87634
+        },
+        {
+          "organ": "router",
+          "bytes": 235929600,
+          "share": 0.04709,
+          "stored_bpw_before": 16.0
+        },
+        {
+          "organ": "lm_head",
+          "bytes": 104081472,
+          "share": 0.02077,
+          "stored_bpw_before": 0.87502
+        },
+        {
+          "organ": "dense_mlp",
+          "bytes": 74336832,
+          "share": 0.01484,
+          "stored_bpw_before": 0.87522
+        },
+        {
+          "organ": "normalization",
+          "bytes": 2328576,
+          "share": 0.00046,
+          "stored_bpw_before": 16.0
+        },
+        {
+          "organ": "router_control",
+          "bytes": 76800,
+          "share": 2e-05,
+          "stored_bpw_before": 16.0
+        },
+        {
+          "organ": "embeddings",
+          "bytes": 2784,
+          "share": 0.0,
+          "stored_bpw_before": 3.625
+        }
+      ],
+      "traffic_seconds_per_token": 0.009724803540372673,
+      "depth_seconds_per_token": 0.016832399999999997,
+      "token_seconds": 0.016832399999999997,
+      "tokens_per_second": 59.41,
+      "traffic_only_tps": 102.83,
+      "depth_only_tps": 59.41,
+      "binding_constraint": "DEPTH",
+      "evidence": "MEASURED_LEDGER",
+      "blocked_on": null,
+      "reduction_vs_shipped": 1.0
+    },
+    {
+      "config": {
+        "name": "A-kernels-only",
+        "lane": "A",
+        "routed_experts": 8,
+        "sequential_stages": 78,
+        "compress_protected": false,
+        "command_buffers_per_token": 78,
+        "bandwidth_efficiency": 0.7,
+        "evidence": "PROJECTED",
+        "blocked_on": null,
+        "note": "Lane A kernels with the submission model unchanged; the control for whether kernel work alone is visible at the token boundary"
+      },
+      "labels": [
+        "PROJECTED",
+        "NOT_MEASURED",
+        "ASSUMES_70_PERCENT_BANDWIDTH",
+        "ASSUMES_78_COMMAND_BUFFERS_PER_TOKEN"
+      ],
+      "active_bytes_per_token": 5010218784,
+      "active_mb_per_token": 5010.22,
+      "organs": [
+        {
+          "organ": "routed_expert",
+          "bytes": 2481062400,
+          "share": 0.4952,
+          "stored_bpw_before": 0.87634
+        },
+        {
+          "organ": "attention",
+          "bytes": 1408647552,
+          "share": 0.28115,
+          "stored_bpw_before": 0.87551
+        },
+        {
+          "organ": "indexer",
+          "bytes": 393619968,
+          "share": 0.07856,
+          "stored_bpw_before": 16.0
+        },
+        {
+          "organ": "shared_expert",
+          "bytes": 310132800,
+          "share": 0.0619,
+          "stored_bpw_before": 0.87634
+        },
+        {
+          "organ": "router",
+          "bytes": 235929600,
+          "share": 0.04709,
+          "stored_bpw_before": 16.0
+        },
+        {
+          "organ": "lm_head",
+          "bytes": 104081472,
+          "share": 0.02077,
+          "stored_bpw_before": 0.87502
+        },
+        {
+          "organ": "dense_mlp",
+          "bytes": 74336832,
+          "share": 0.01484,
+          "stored_bpw_before": 0.87522
+        },
+        {
+          "organ": "normalization",
+          "bytes": 2328576,
+          "share": 0.00046,
+          "stored_bpw_before": 16.0
+        },
+        {
+          "organ": "router_control",
+          "bytes": 76800,
+          "share": 2e-05,
+          "stored_bpw_before": 16.0
+        },
+        {
+          "organ": "embeddings",
+          "bytes": 2784,
+          "share": 0.0,
+          "stored_bpw_before": 3.625
+        }
+      ],
+      "traffic_seconds_per_token": 0.009724803540372673,
+      "depth_seconds_per_token": 0.016832399999999997,
+      "token_seconds": 0.016832399999999997,
+      "tokens_per_second": 59.41,
+      "traffic_only_tps": 102.83,
+      "depth_only_tps": 59.41,
+      "binding_constraint": "DEPTH",
+      "evidence": "PROJECTED",
+      "blocked_on": null,
+      "reduction_vs_shipped": 1.0
+    },
+    {
+      "config": {
+        "name": "A+G-few-buffers",
+        "lane": "A+G",
+        "routed_experts": 8,
+        "sequential_stages": 78,
+        "compress_protected": false,
+        "command_buffers_per_token": 3,
+        "bandwidth_efficiency": 0.7,
+        "evidence": "PROJECTED",
+        "blocked_on": null,
+        "note": "Lane A plus a partial Lane G: three command buffers per token"
+      },
+      "labels": [
+        "PROJECTED",
+        "NOT_MEASURED",
+        "ASSUMES_70_PERCENT_BANDWIDTH",
+        "ASSUMES_3_COMMAND_BUFFERS_PER_TOKEN"
+      ],
+      "active_bytes_per_token": 5010218784,
+      "active_mb_per_token": 5010.22,
+      "organs": [
+        {
+          "organ": "routed_expert",
+          "bytes": 2481062400,
+          "share": 0.4952,
+          "stored_bpw_before": 0.87634
+        },
+        {
+          "organ": "attention",
+          "bytes": 1408647552,
+          "share": 0.28115,
+          "stored_bpw_before": 0.87551
+        },
+        {
+          "organ": "indexer",
+          "bytes": 393619968,
+          "share": 0.07856,
+          "stored_bpw_before": 16.0
+        },
+        {
+          "organ": "shared_expert",
+          "bytes": 310132800,
+          "share": 0.0619,
+          "stored_bpw_before": 0.87634
+        },
+        {
+          "organ": "router",
+          "bytes": 235929600,
+          "share": 0.04709,
+          "stored_bpw_before": 16.0
+        },
+        {
+          "organ": "lm_head",
+          "bytes": 104081472,
+          "share": 0.02077,
+          "stored_bpw_before": 0.87502
+        },
+        {
+          "organ": "dense_mlp",
+          "bytes": 74336832,
+          "share": 0.01484,
+          "stored_bpw_before": 0.87522
+        },
+        {
+          "organ": "normalization",
+          "bytes": 2328576,
+          "share": 0.00046,
+          "stored_bpw_before": 16.0
+        },
+        {
+          "organ": "router_control",
+          "bytes": 76800,
+          "share": 2e-05,
+          "stored_bpw_before": 16.0
+        },
+        {
+          "organ": "embeddings",
+          "bytes": 2784,
+          "share": 0.0,
+          "stored_bpw_before": 3.625
+        }
+      ],
+      "traffic_seconds_per_token": 0.009724803540372673,
+      "depth_seconds_per_token": 0.0006474,
+      "token_seconds": 0.009724803540372673,
+      "tokens_per_second": 102.83,
+      "traffic_only_tps": 102.83,
+      "depth_only_tps": 1544.64,
+      "binding_constraint": "TRAFFIC",
+      "evidence": "PROJECTED",
+      "blocked_on": null,
+      "reduction_vs_shipped": 1.0
+    },
+    {
+      "config": {
+        "name": "A+G-one-graph",
+        "lane": "A+G",
+        "routed_experts": 8,
+        "sequential_stages": 78,
+        "compress_protected": false,
+        "command_buffers_per_token": 1,
+        "bandwidth_efficiency": 0.7,
+        "evidence": "PROJECTED",
+        "blocked_on": null,
+        "note": "one command graph per token, no CPU in the hot loop"
+      },
+      "labels": [
+        "PROJECTED",
+        "NOT_MEASURED",
+        "ASSUMES_70_PERCENT_BANDWIDTH",
+        "ASSUMES_ONE_COMMAND_GRAPH"
+      ],
+      "active_bytes_per_token": 5010218784,
+      "active_mb_per_token": 5010.22,
+      "organs": [
+        {
+          "organ": "routed_expert",
+          "bytes": 2481062400,
+          "share": 0.4952,
+          "stored_bpw_before": 0.87634
+        },
+        {
+          "organ": "attention",
+          "bytes": 1408647552,
+          "share": 0.28115,
+          "stored_bpw_before": 0.87551
+        },
+        {
+          "organ": "indexer",
+          "bytes": 393619968,
+          "share": 0.07856,
+          "stored_bpw_before": 16.0
+        },
+        {
+          "organ": "shared_expert",
+          "bytes": 310132800,
+          "share": 0.0619,
+          "stored_bpw_before": 0.87634
+        },
+        {
+          "organ": "router",
+          "bytes": 235929600,
+          "share": 0.04709,
+          "stored_bpw_before": 16.0
+        },
+        {
+          "organ": "lm_head",
+          "bytes": 104081472,
+          "share": 0.02077,
+          "stored_bpw_before": 0.87502
+        },
+        {
+          "organ": "dense_mlp",
+          "bytes": 74336832,
+          "share": 0.01484,
+          "stored_bpw_before": 0.87522
+        },
+        {
+          "organ": "normalization",
+          "bytes": 2328576,
+          "share": 0.00046,
+          "stored_bpw_before": 16.0
+        },
+        {
+          "organ": "router_control",
+          "bytes": 76800,
+          "share": 2e-05,
+          "stored_bpw_before": 16.0
+        },
+        {
+          "organ": "embeddings",
+          "bytes": 2784,
+          "share": 0.0,
+          "stored_bpw_before": 3.625
+        }
+      ],
+      "traffic_seconds_per_token": 0.009724803540372673,
+      "depth_seconds_per_token": 0.0002158,
+      "token_seconds": 0.009724803540372673,
+      "tokens_per_second": 102.83,
+      "traffic_only_tps": 102.83,
+      "depth_only_tps": 4633.92,
+      "binding_constraint": "TRAFFIC",
+      "evidence": "PROJECTED",
+      "blocked_on": null,
+      "reduction_vs_shipped": 1.0
+    },
+    {
+      "config": {
+        "name": "B1-compress-protected",
+        "lane": "B",
+        "routed_experts": 8,
+        "sequential_stages": 78,
+        "compress_protected": true,
+        "command_buffers_per_token": 1,
+        "bandwidth_efficiency": 0.7,
+        "evidence": "PROJECTED",
+        "blocked_on": "indexer and router are CONTROL_SENSITIVE_CANDIDATE, protected at source precision by the science stream",
+        "note": "brings the two BF16 organs into the compact codec"
+      },
+      "labels": [
+        "PROJECTED",
+        "NOT_MEASURED",
+        "ASSUMES_70_PERCENT_BANDWIDTH",
+        "ASSUMES_ONE_COMMAND_GRAPH",
+        "ENABLING_ARTIFACT_DOES_NOT_EXIST"
+      ],
+      "active_bytes_per_token": 4412876407,
+      "active_mb_per_token": 4412.88,
+      "organs": [
+        {
+          "organ": "routed_expert",
+          "bytes": 2481062400,
+          "share": 0.56223,
+          "stored_bpw_before": 0.87634
+        },
+        {
+          "organ": "attention",
+          "bytes": 1408647552,
+          "share": 0.31921,
+          "stored_bpw_before": 0.87551
+        },
+        {
+          "organ": "indexer",
+          "bytes": 21558811,
+          "share": 0.00489,
+          "stored_bpw_before": 16.0
+        },
+        {
+          "organ": "shared_expert",
+          "bytes": 310132800,
+          "share": 0.07028,
+          "stored_bpw_before": 0.87634
+        },
+        {
+          "organ": "router",
+          "bytes": 12922011,
+          "share": 0.00293,
+          "stored_bpw_before": 16.0
+        },
+        {
+          "organ": "lm_head",
+          "bytes": 104081472,
+          "share": 0.02359,
+          "stored_bpw_before": 0.87502
+        },
+        {
+          "organ": "dense_mlp",
+          "bytes": 74336832,
+          "share": 0.01685,
+          "stored_bpw_before": 0.87522
+        },
+        {
+          "organ": "normalization",
+          "bytes": 127537,
+          "share": 3e-05,
+          "stored_bpw_before": 16.0
+        },
+        {
+          "organ": "router_control",
+          "bytes": 4206,
+          "share": 0.0,
+          "stored_bpw_before": 16.0
+        },
+        {
+          "organ": "embeddings",
+          "bytes": 2784,
+          "share": 0.0,
+          "stored_bpw_before": 3.625
+        }
+      ],
+      "traffic_seconds_per_token": 0.008565365696816771,
+      "depth_seconds_per_token": 0.0002158,
+      "token_seconds": 0.008565365696816771,
+      "tokens_per_second": 116.75,
+      "traffic_only_tps": 116.75,
+      "depth_only_tps": 4633.92,
+      "binding_constraint": "TRAFFIC",
+      "evidence": "PROJECTED",
+      "blocked_on": "indexer and router are CONTROL_SENSITIVE_CANDIDATE, protected at source precision by the science stream",
+      "reduction_vs_shipped": 1.135
+    },
+    {
+      "config": {
+        "name": "D2-top2-experts",
+        "lane": "D",
+        "routed_experts": 2,
+        "sequential_stages": 78,
+        "compress_protected": true,
+        "command_buffers_per_token": 1,
+        "bandwidth_efficiency": 0.7,
+        "evidence": "PROJECTED",
+        "blocked_on": "requires a distilled router/expert topology validated against teacher trajectory; teacher capsules UNAVAILABLE",
+        "note": "top-8 to top-2 routing with a stronger shared path"
+      },
+      "labels": [
+        "PROJECTED",
+        "NOT_MEASURED",
+        "ASSUMES_70_PERCENT_BANDWIDTH",
+        "ASSUMES_ONE_COMMAND_GRAPH",
+        "ENABLING_ARTIFACT_DOES_NOT_EXIST"
+      ],
+      "active_bytes_per_token": 2552079607,
+      "active_mb_per_token": 2552.08,
+      "organs": [
+        {
+          "organ": "routed_expert",
+          "bytes": 620265600,
+          "share": 0.24304,
+          "stored_bpw_before": 0.87634
+        },
+        {
+          "organ": "attention",
+          "bytes": 1408647552,
+          "share": 0.55196,
+          "stored_bpw_before": 0.87551
+        },
+        {
+          "organ": "indexer",
+          "bytes": 21558811,
+          "share": 0.00845,
+          "stored_bpw_before": 16.0
+        },
+        {
+          "organ": "shared_expert",
+          "bytes": 310132800,
+          "share": 0.12152,
+          "stored_bpw_before": 0.87634
+        },
+        {
+          "organ": "router",
+          "bytes": 12922011,
+          "share": 0.00506,
+          "stored_bpw_before": 16.0
+        },
+        {
+          "organ": "lm_head",
+          "bytes": 104081472,
+          "share": 0.04078,
+          "stored_bpw_before": 0.87502
+        },
+        {
+          "organ": "dense_mlp",
+          "bytes": 74336832,
+          "share": 0.02913,
+          "stored_bpw_before": 0.87522
+        },
+        {
+          "organ": "normalization",
+          "bytes": 127537,
+          "share": 5e-05,
+          "stored_bpw_before": 16.0
+        },
+        {
+          "organ": "router_control",
+          "bytes": 4206,
+          "share": 0.0,
+          "stored_bpw_before": 16.0
+        },
+        {
+          "organ": "embeddings",
+          "bytes": 2784,
+          "share": 0.0,
+          "stored_bpw_before": 3.625
+        }
+      ],
+      "traffic_seconds_per_token": 0.00495357066576087,
+      "depth_seconds_per_token": 0.0002158,
+      "token_seconds": 0.00495357066576087,
+      "tokens_per_second": 201.87,
+      "traffic_only_tps": 201.87,
+      "depth_only_tps": 4633.92,
+      "binding_constraint": "TRAFFIC",
+      "evidence": "PROJECTED",
+      "blocked_on": "requires a distilled router/expert topology validated against teacher trajectory; teacher capsules UNAVAILABLE",
+      "reduction_vs_shipped": 1.963
+    },
+    {
+      "config": {
+        "name": "D3-top1-experts",
+        "lane": "D",
+        "routed_experts": 1,
+        "sequential_stages": 78,
+        "compress_protected": true,
+        "command_buffers_per_token": 1,
+        "bandwidth_efficiency": 0.7,
+        "evidence": "PROJECTED",
+        "blocked_on": "same as D2, plus a shared functional student",
+        "note": "top-1 plus generated correction"
+      },
+      "labels": [
+        "PROJECTED",
+        "NOT_MEASURED",
+        "ASSUMES_70_PERCENT_BANDWIDTH",
+        "ASSUMES_ONE_COMMAND_GRAPH",
+        "ENABLING_ARTIFACT_DOES_NOT_EXIST"
+      ],
+      "active_bytes_per_token": 2241946807,
+      "active_mb_per_token": 2241.95,
+      "organs": [
+        {
+          "organ": "routed_expert",
+          "bytes": 310132800,
+          "share": 0.13833,
+          "stored_bpw_before": 0.87634
+        },
+        {
+          "organ": "attention",
+          "bytes": 1408647552,
+          "share": 0.62831,
+          "stored_bpw_before": 0.87551
+        },
+        {
+          "organ": "indexer",
+          "bytes": 21558811,
+          "share": 0.00962,
+          "stored_bpw_before": 16.0
+        },
+        {
+          "organ": "shared_expert",
+          "bytes": 310132800,
+          "share": 0.13833,
+          "stored_bpw_before": 0.87634
+        },
+        {
+          "organ": "router",
+          "bytes": 12922011,
+          "share": 0.00576,
+          "stored_bpw_before": 16.0
+        },
+        {
+          "organ": "lm_head",
+          "bytes": 104081472,
+          "share": 0.04642,
+          "stored_bpw_before": 0.87502
+        },
+        {
+          "organ": "dense_mlp",
+          "bytes": 74336832,
+          "share": 0.03316,
+          "stored_bpw_before": 0.87522
+        },
+        {
+          "organ": "normalization",
+          "bytes": 127537,
+          "share": 6e-05,
+          "stored_bpw_before": 16.0
+        },
+        {
+          "organ": "router_control",
+          "bytes": 4206,
+          "share": 0.0,
+          "stored_bpw_before": 16.0
+        },
+        {
+          "organ": "embeddings",
+          "bytes": 2784,
+          "share": 0.0,
+          "stored_bpw_before": 3.625
+        }
+      ],
+      "traffic_seconds_per_token": 0.004351604827251553,
+      "depth_seconds_per_token": 0.0002158,
+      "token_seconds": 0.004351604827251553,
+      "tokens_per_second": 229.8,
+      "traffic_only_tps": 229.8,
+      "depth_only_tps": 4633.92,
+      "binding_constraint": "TRAFFIC",
+      "evidence": "PROJECTED",
+      "blocked_on": "same as D2, plus a shared functional student",
+      "reduction_vs_shipped": 2.235
+    },
+    {
+      "config": {
+        "name": "E2-depth-20",
+        "lane": "D+E",
+        "routed_experts": 2,
+        "sequential_stages": 20,
+        "compress_protected": true,
+        "command_buffers_per_token": 1,
+        "bandwidth_efficiency": 0.7,
+        "evidence": "PROJECTED",
+        "blocked_on": "superblock distillation against teacher post-block trajectory; teacher capsules UNAVAILABLE",
+        "note": "78 to 20 stages, top-2 experts"
+      },
+      "labels": [
+        "PROJECTED",
+        "NOT_MEASURED",
+        "ASSUMES_70_PERCENT_BANDWIDTH",
+        "ASSUMES_ONE_COMMAND_GRAPH",
+        "ENABLING_ARTIFACT_DOES_NOT_EXIST"
+      ],
+      "active_bytes_per_token": 731775371,
+      "active_mb_per_token": 731.78,
+      "organs": [
+        {
+          "organ": "routed_expert",
+          "bytes": 159042461,
+          "share": 0.21734,
+          "stored_bpw_before": 0.87634
+        },
+        {
+          "organ": "attention",
+          "bytes": 361191679,
+          "share": 0.49358,
+          "stored_bpw_before": 0.87551
+        },
+        {
+          "organ": "indexer",
+          "bytes": 5527900,
+          "share": 0.00755,
+          "stored_bpw_before": 16.0
+        },
+        {
+          "organ": "shared_expert",
+          "bytes": 79521230,
+          "share": 0.10867,
+          "stored_bpw_before": 0.87634
+        },
+        {
+          "organ": "router",
+          "bytes": 3313336,
+          "share": 0.00453,
+          "stored_bpw_before": 16.0
+        },
+        {
+          "organ": "lm_head",
+          "bytes": 104081472,
+          "share": 0.14223,
+          "stored_bpw_before": 0.87502
+        },
+        {
+          "organ": "dense_mlp",
+          "bytes": 19060726,
+          "share": 0.02605,
+          "stored_bpw_before": 0.87522
+        },
+        {
+          "organ": "normalization",
+          "bytes": 32701,
+          "share": 4e-05,
+          "stored_bpw_before": 16.0
+        },
+        {
+          "organ": "router_control",
+          "bytes": 1078,
+          "share": 0.0,
+          "stored_bpw_before": 16.0
+        },
+        {
+          "organ": "embeddings",
+          "bytes": 2784,
+          "share": 0.0,
+          "stored_bpw_before": 3.625
+        }
+      ],
+      "traffic_seconds_per_token": 0.0014203714499223604,
+      "depth_seconds_per_token": 0.0002158,
+      "token_seconds": 0.0014203714499223604,
+      "tokens_per_second": 704.04,
+      "traffic_only_tps": 704.04,
+      "depth_only_tps": 4633.92,
+      "binding_constraint": "TRAFFIC",
+      "evidence": "PROJECTED",
+      "blocked_on": "superblock distillation against teacher post-block trajectory; teacher capsules UNAVAILABLE",
+      "reduction_vs_shipped": 6.847
+    },
+    {
+      "config": {
+        "name": "E3-depth-10",
+        "lane": "D+E",
+        "routed_experts": 2,
+        "sequential_stages": 10,
+        "compress_protected": true,
+        "command_buffers_per_token": 1,
+        "bandwidth_efficiency": 0.7,
+        "evidence": "PROJECTED",
+        "blocked_on": "same as E2, deeper collapse",
+        "note": "78 to 10 stages, top-2 experts"
+      },
+      "labels": [
+        "PROJECTED",
+        "NOT_MEASURED",
+        "ASSUMES_70_PERCENT_BANDWIDTH",
+        "ASSUMES_ONE_COMMAND_GRAPH",
+        "ENABLING_ARTIFACT_DOES_NOT_EXIST"
+      ],
+      "active_bytes_per_token": 417929813,
+      "active_mb_per_token": 417.93,
+      "organs": [
+        {
+          "organ": "routed_expert",
+          "bytes": 79521230,
+          "share": 0.19027,
+          "stored_bpw_before": 0.87634
+        },
+        {
+          "organ": "attention",
+          "bytes": 180595839,
+          "share": 0.43212,
+          "stored_bpw_before": 0.87551
+        },
+        {
+          "organ": "indexer",
+          "bytes": 2763950,
+          "share": 0.00661,
+          "stored_bpw_before": 16.0
+        },
+        {
+          "organ": "shared_expert",
+          "bytes": 39760615,
+          "share": 0.09514,
+          "stored_bpw_before": 0.87634
+        },
+        {
+          "organ": "router",
+          "bytes": 1656668,
+          "share": 0.00396,
+          "stored_bpw_before": 16.0
+        },
+        {
+          "organ": "lm_head",
+          "bytes": 104081472,
+          "share": 0.24904,
+          "stored_bpw_before": 0.87502
+        },
+        {
+          "organ": "dense_mlp",
+          "bytes": 9530363,
+          "share": 0.0228,
+          "stored_bpw_before": 0.87522
+        },
+        {
+          "organ": "normalization",
+          "bytes": 16350,
+          "share": 4e-05,
+          "stored_bpw_before": 16.0
+        },
+        {
+          "organ": "router_control",
+          "bytes": 539,
+          "share": 0.0,
+          "stored_bpw_before": 16.0
+        },
+        {
+          "organ": "embeddings",
+          "bytes": 2784,
+          "share": 1e-05,
+          "stored_bpw_before": 3.625
+        }
+      ],
+      "traffic_seconds_per_token": 0.0008111991711956522,
+      "depth_seconds_per_token": 0.0002158,
+      "token_seconds": 0.0008111991711956522,
+      "tokens_per_second": 1232.74,
+      "traffic_only_tps": 1232.74,
+      "depth_only_tps": 4633.92,
+      "binding_constraint": "TRAFFIC",
+      "evidence": "PROJECTED",
+      "blocked_on": "same as E2, deeper collapse",
+      "reduction_vs_shipped": 11.988
+    },
+    {
+      "config": {
+        "name": "F-native-functional",
+        "lane": "F",
+        "routed_experts": 1,
+        "sequential_stages": 8,
+        "compress_protected": true,
+        "command_buffers_per_token": 1,
+        "bandwidth_efficiency": 0.7,
+        "evidence": "PROJECTED",
+        "blocked_on": "a Hawking-native student trained end to end; teacher capsules UNAVAILABLE and this is the science stream's lane",
+        "note": "native compact causal model, 8 stages, top-1"
+      },
+      "labels": [
+        "PROJECTED",
+        "NOT_MEASURED",
+        "ASSUMES_70_PERCENT_BANDWIDTH",
+        "ASSUMES_ONE_COMMAND_GRAPH",
+        "ENABLING_ARTIFACT_DOES_NOT_EXIST"
+      ],
+      "active_bytes_per_token": 323352209,
+      "active_mb_per_token": 323.35,
+      "organs": [
+        {
+          "organ": "routed_expert",
+          "bytes": 31808492,
+          "share": 0.09837,
+          "stored_bpw_before": 0.87634
+        },
+        {
+          "organ": "attention",
+          "bytes": 144476672,
+          "share": 0.44681,
+          "stored_bpw_before": 0.87551
+        },
+        {
+          "organ": "indexer",
+          "bytes": 2211160,
+          "share": 0.00684,
+          "stored_bpw_before": 16.0
+        },
+        {
+          "organ": "shared_expert",
+          "bytes": 31808492,
+          "share": 0.09837,
+          "stored_bpw_before": 0.87634
+        },
+        {
+          "organ": "router",
+          "bytes": 1325334,
+          "share": 0.0041,
+          "stored_bpw_before": 16.0
+        },
+        {
+          "organ": "lm_head",
+          "bytes": 104081472,
+          "share": 0.32188,
+          "stored_bpw_before": 0.87502
+        },
+        {
+          "organ": "dense_mlp",
+          "bytes": 7624290,
+          "share": 0.02358,
+          "stored_bpw_before": 0.87522
+        },
+        {
+          "organ": "normalization",
+          "bytes": 13080,
+          "share": 4e-05,
+          "stored_bpw_before": 16.0
+        },
+        {
+          "organ": "router_control",
+          "bytes": 431,
+          "share": 0.0,
+          "stored_bpw_before": 16.0
+        },
+        {
+          "organ": "embeddings",
+          "bytes": 2784,
+          "share": 1e-05,
+          "stored_bpw_before": 3.625
+        }
+      ],
+      "traffic_seconds_per_token": 0.0006276246292701864,
+      "depth_seconds_per_token": 0.0002158,
+      "token_seconds": 0.0006276246292701864,
+      "tokens_per_second": 1593.31,
+      "traffic_only_tps": 1593.31,
+      "depth_only_tps": 4633.92,
+      "binding_constraint": "TRAFFIC",
+      "evidence": "PROJECTED",
+      "blocked_on": "a Hawking-native student trained end to end; teacher capsules UNAVAILABLE and this is the science stream's lane",
+      "reduction_vs_shipped": 15.495
+    }
+  ],
+  "milestones": {
+    "100": {
+      "any_projection_reaches": true,
+      "reachable_without_a_blocked_lane": true,
+      "cheapest_reaching_config": "A+G-few-buffers",
+      "blocked_on": null
+    },
+    "250": {
+      "any_projection_reaches": true,
+      "reachable_without_a_blocked_lane": false,
+      "cheapest_reaching_config": "E2-depth-20",
+      "blocked_on": "superblock distillation against teacher post-block trajectory; teacher capsules UNAVAILABLE"
+    },
+    "500": {
+      "any_projection_reaches": true,
+      "reachable_without_a_blocked_lane": false,
+      "cheapest_reaching_config": "E2-depth-20",
+      "blocked_on": "superblock distillation against teacher post-block trajectory; teacher capsules UNAVAILABLE"
+    },
+    "1000": {
+      "any_projection_reaches": true,
+      "reachable_without_a_blocked_lane": false,
+      "cheapest_reaching_config": "E3-depth-10",
+      "blocked_on": "same as E2, deeper collapse"
+    },
+    "2000": {
+      "any_projection_reaches": false,
+      "reachable_without_a_blocked_lane": false,
+      "cheapest_reaching_config": null,
+      "blocked_on": null
+    },
+    "5000": {
+      "any_projection_reaches": false,
+      "reachable_without_a_blocked_lane": false,
+      "cheapest_reaching_config": null,
+      "blocked_on": null
+    }
+  }
+}
