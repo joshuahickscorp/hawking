@@ -395,6 +395,21 @@ def run() -> int:
                     _append_ledger({"shard": name, "status": "PACK_ERROR",
                                     "error": f"{type(exc).__name__}: {exc}", "at": _now()})
 
+    def _harvest_finished() -> None:
+        """Collect any probe/pack that has finished but nobody asked about.
+
+        ``_drain_probes`` only collects the window's eviction candidates.  A shard
+        every window carries forward -- the embedding/lm_head shard above all -- is
+        never a candidate, so its result sat in an uncollected future until the run
+        ended: its .gravity appeared on disk with no receipt, and a failure would
+        have stayed invisible for the whole traversal.
+        """
+        done = {name for name, future in
+                list(probe_futures.items()) + list(pack_futures.items())
+                if future.done()}
+        if done:
+            _drain_probes(done)
+
     for index, window in enumerate(windows):
         wid = window["window_id"]
         resident = _resident(manifest)
@@ -483,6 +498,7 @@ def run() -> int:
         if MODE == "stream":
             candidates = set(window.get("evict_after_seal_shards", [])) | _deferred()
             _drain_probes(candidates)  # evidence must be durable before the body goes
+            _harvest_finished()  # and nothing finished is left without a receipt
             authority = _teacher_authority(candidates, wid)
             freed = _evict(sorted(candidates),
                            verified=verified, probed=probed, packed=packed,
@@ -835,6 +851,58 @@ def safe_to_leave() -> int:
     return 0
 
 
+def reconcile() -> int:
+    """Give every compact shard a receipt, and prove none of them is truncated.
+
+    Packs whose futures were never collected -- shards carried forward by every
+    window, and anything in flight when the controller restarted -- left a
+    .gravity on disk with no ledger row.  The bytes are the deliverable, so an
+    unreceipted one is an accounting hole, not a spare file.  This reads each
+    orphan's own header and body digest, so a truncated artifact is caught here
+    rather than trusted because its filename looked right.
+    """
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import gravity_format
+
+    receipted = {row["shard"] for row in _ledger_rows() if row.get("status") == "PACKED"}
+    receipted |= {row["shard"] for row in _ledger_rows()
+                  if row.get("event") == "PACK_RECONCILED"}
+    orphans = sorted(path for path in COMPACT.glob("*.gravity")
+                     if path.stem + ".safetensors" not in receipted)
+    results = []
+    for path in orphans:
+        shard = path.stem + ".safetensors"
+        try:
+            report = gravity_format.verify(path)
+            header = gravity_format.read_header(path)
+            row = {
+                "event": "PACK_RECONCILED", "shard": shard, "gravity": path.name,
+                "status": "PACKED" if report["ok"] else "PACK_CORRUPT",
+                "file_bytes": path.stat().st_size,
+                "body_bytes": report["body_bytes"], "tensors": report["tensors"],
+                "body_sha256_ok": report["body_sha256_ok"],
+                "bad_tensors": report["bad_tensors"],
+                "rate_self_consistent": report["rate_self_consistent"],
+                "whole_shard_bpw": header["compression"].get("whole_shard_bpw"),
+                "note": "receipt recovered from the artifact's own header after its "
+                        "pack future went uncollected",
+                "at": _now(),
+            }
+        except Exception as exc:  # noqa: BLE001 - a bad artifact must be recorded, not raised
+            row = {"event": "PACK_RECONCILED", "shard": shard, "gravity": path.name,
+                   "status": "PACK_UNREADABLE",
+                   "error": f"{type(exc).__name__}: {exc}", "at": _now()}
+        _append_ledger(row)
+        results.append(row)
+    print(json.dumps({
+        "orphans": len(orphans),
+        "reconciled": sum(1 for r in results if r["status"] == "PACKED"),
+        "corrupt": [r["shard"] for r in results if r["status"] != "PACKED"],
+        "shards": [r["shard"] for r in results],
+    }, indent=2, sort_keys=True))
+    return 0
+
+
 def selftest() -> int:
     """Schedule/eviction invariants against the real sealed artifacts.  No network, no writes."""
     manifest = _read_json(MANIFEST)
@@ -878,4 +946,5 @@ def selftest() -> int:
 if __name__ == "__main__":
     command = sys.argv[1] if len(sys.argv) > 1 else "run"
     raise SystemExit({"run": run, "status": status, "selftest": selftest,
-                      "rollup": rollup, "safe-to-leave": safe_to_leave}[command]())
+                      "rollup": rollup, "safe-to-leave": safe_to_leave,
+                      "reconcile": reconcile}[command]())

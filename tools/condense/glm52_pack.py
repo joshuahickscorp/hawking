@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import json
 import math
+import os
 import struct
 import sys
 from pathlib import Path
@@ -382,8 +383,14 @@ def pack_shard(shard_path: Path, rows: list[dict], out_dir: Path, *,
             offset += len(payload)
 
     packed_weights = sum(int(d["elements"]) for d, _ in payloads)
+    # Write through a temporary name and rename.  A .gravity is proof a body was
+    # consumed, and the streamer treats any file with the right name as packed --
+    # so a pack killed mid-write would leave a truncated artifact that reads as
+    # complete and authorizes eviction of the BF16 source.  Rename is atomic, which
+    # makes a partial .gravity impossible rather than merely unlikely.
+    partial_path = gravity_path.with_name(gravity_path.name + ".partial")
     gravity_format.write_shard(
-        gravity_path, payloads,
+        partial_path, payloads,
         model={"repo": "zai-org/GLM-5.2",
                "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
                "source_shard": shard_path.name},
@@ -399,6 +406,9 @@ def pack_shard(shard_path: Path, rows: list[dict], out_dir: Path, *,
             "not_evidence_of": "output divergence, capability, or end-to-end behaviour",
         },
         shard={"source": shard_path.name, "of": 282})
+    with open(partial_path, "rb") as handle:
+        os.fsync(handle.fileno())
+    os.replace(partial_path, gravity_path)
 
     return {
         "schema": "hawking.glm52.compact_shard_index.v1",
