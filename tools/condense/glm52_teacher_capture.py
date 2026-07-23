@@ -17,10 +17,12 @@ What a capsule is and is not:
   selections and output, router logits, top-8 identity/weights, the 8th-vs-9th
   margin, shared and weighted-routed expert outputs, the post-MoE state, and the
   post-block residual, at BF16-sourced float32 precision.
-* It is NOT a capability result.  The calibration input is a sealed synthetic
-  token-id probe, not natural text, and windows captured before their upstream
-  layers were resident are seeded from the embedding table rather than chained.
-  Both facts are recorded per capsule and must be carried into any claim.
+* It is NOT a capability result.  The calibration input is a bounded batch of
+  real corpus records, disjoint by split and covering every declared domain, but
+  it is still hundreds of tokens rather than a benchmark; and windows captured
+  before their upstream layers were resident are seeded from the embedding table
+  rather than chained.  Both facts are recorded per capsule and must be carried
+  into any claim.
 
 Bounded by construction: one batch of ``CALIBRATION_TOKENS`` positions, one
 tensor read at a time through an exact shard-local ``pread``, no full activation
@@ -80,10 +82,13 @@ GRAPH_PATH = ROOT / "GLM52_SHARD_DEPENDENCY_GRAPH.json"
 SCHEDULE_PATH = ROOT / "GLM52_STREAMING_SCHEDULE.json"
 MANIFEST_PATH = ROOT / "GLM52_OFFICIAL_MANIFEST.json"
 
-# One batch, this many positions.  Small enough that a capsule is megabytes and a
-# capture is minutes, large enough that routing sees a real spread of experts.
-CALIBRATION_TOKENS = 8
-CALIBRATION_SPLITS = ("teacher_fit", "teacher_holdout")
+# Cap, not length.  A capture is one bounded batch of real records: 16 x 256 x 6144
+# float32 activations is about 100 MiB per layer, and 256 stays far under index_topk so
+# "all previous keys" remains exact rather than approximate.
+CALIBRATION_TOKENS = 256
+CALIBRATION_SPLITS = ("teacher_fit", "teacher_router", "teacher_doctor", "teacher_cv",
+                      "teacher_score", "teacher_holdout", "teacher_replication",
+                      "teacher_protected", "teacher_longctx")
 DEFAULT_SPLIT = "teacher_fit"
 # Every tensor this forward needs fits well under this; o_proj at ~201 MB is the
 # largest.  The cap is what keeps "capture" from becoming "load the checkpoint".
@@ -270,9 +275,56 @@ class ShardTensorSource:
 
 
 def calibration_ids(split: str, *, vocab_size: int, tokens: int = CALIBRATION_TOKENS) -> np.ndarray:
-    """Deterministic, split-disjoint token-id probe bound to the pinned revision."""
-    if split not in CALIBRATION_SPLITS:
-        raise TeacherCaptureError(f"unknown calibration split: {split!r}")
+    """Real token ids from the sealed corpus, drawn from this split's own partition.
+
+    This used to return eight ids from a SHA-256 stream.  Deterministic and disjoint, but
+    uniform over the vocabulary and therefore evidence of nothing: no domain, no language,
+    no router margin, no context length.  A representation fitted against it was fitted
+    against noise, which is the reason Generation A's teacher trajectory never meant what
+    it appeared to mean.
+
+    glm52_capture_program maps each split onto a partition of the corpus contract, whose
+    leakage gates already keep fit, cross-validation, score, held-out and replication
+    apart.  `tokens` is now a cap rather than a length: real records have real lengths.
+    """
+    import glm52_capture_program as program
+
+    if split not in program.SPLIT_PARTITIONS:
+        raise TeacherCaptureError(
+            f"unknown calibration split: {split!r}; "
+            f"expected one of {sorted(program.SPLIT_PARTITIONS)}")
+    if vocab_size < program.corpus.TOKENIZER_VOCAB_SIZE:
+        # A miniature fixture model cannot represent real token ids, and folding them into
+        # its vocabulary would produce text that is no longer text.  Fixtures get a clearly
+        # labelled deterministic probe instead, and calibration_source records which path
+        # ran so a fixture capsule can never be mistaken for evidence.
+        return _fixture_probe(split, vocab_size=vocab_size, tokens=min(tokens, 8))
+    batch, _ = program.batch_for(split)
+    if int(batch.max()) >= vocab_size:
+        raise TeacherCaptureError("corpus produced a token id outside the official vocab")
+    return np.asarray(batch[:, :tokens], dtype=np.int64)
+
+
+def _capsule_note(vocab_size: int) -> str:
+    """Say exactly what this capsule is evidence of, and what it still is not."""
+    if calibration_source(vocab_size) == "NATURAL_CORPUS_PARTITION":
+        return ("Real BF16 block evidence on a bounded batch of real corpus records, "
+                "disjoint by split and covering every declared domain. Hundreds of "
+                "tokens, not a benchmark: not an evaluation, not a capability result.")
+    return ("Fixture capture on a synthetic probe against a miniature vocabulary. "
+            "Machinery evidence only. Never evidence about GLM-5.2.")
+
+
+def calibration_source(vocab_size: int) -> str:
+    """Which calibration path a capture at this vocabulary will take."""
+    import glm52_capture_program as program
+
+    return ("NATURAL_CORPUS_PARTITION" if vocab_size >= program.corpus.TOKENIZER_VOCAB_SIZE
+            else "SYNTHETIC_FIXTURE_PROBE_NOT_EVIDENCE")
+
+
+def _fixture_probe(split: str, *, vocab_size: int, tokens: int) -> np.ndarray:
+    """Deterministic ids for miniature test models.  Never valid on the official vocab."""
     stream = hashlib.sha256(
         canonical({"revision": IMMUTABLE_REVISION, "split": split, "tokens": tokens})
     ).digest()
@@ -361,7 +413,11 @@ def capture_layer(
     cache: reference.ReferenceCache,
 ) -> tuple[np.ndarray, np.ndarray, dict[str, np.ndarray]]:
     """Run one real block and keep exactly the bounded evidence it produced."""
-    positions = np.arange(hidden.shape[1], dtype=np.int64)[None, :]
+    # [B,S], not [1,S]: the RoPE trig table is built per batch row and the reference
+    # rejects a batch-1 position table against a batch-N query, which is what a real
+    # multi-record calibration batch produces.
+    positions = np.broadcast_to(
+        np.arange(hidden.shape[1], dtype=np.int64)[None, :], hidden.shape[:2]).copy()
     indexer_type = config["indexer_types"][layer]
     mlp_type = config["mlp_layer_types"][layer]
     output, topk, trace = reference.decoder_layer(
@@ -504,10 +560,11 @@ def capture_layers(
             f"{identity} is not fully resident; cannot capture: missing {missing[:3]}"
         )
 
-    tokens = CALIBRATION_TOKENS
+    ids = calibration_ids(split, vocab_size=int(config["vocab_size"]),
+                          tokens=CALIBRATION_TOKENS)
+    batch, tokens = int(ids.shape[0]), int(ids.shape[1])
     if tokens > int(config["index_topk"]):
         raise TeacherCaptureError("calibration sequence exceeds index_topk")
-    ids = calibration_ids(split, vocab_size=int(config["vocab_size"]), tokens=tokens)
     membership = membership_sha256(ids, split)
 
     previous = _previous_capsule(layers[0], out_dir)
@@ -526,7 +583,7 @@ def capture_layers(
         # A short probe never exceeds index_topk, so "all previous keys" is not an
         # approximation of the IndexShare selection -- it is exactly what any full
         # indexer layer would return at this length.
-        previous_topk = np.tile(np.arange(tokens, dtype=np.int32), (1, tokens, 1))
+        previous_topk = np.tile(np.arange(tokens, dtype=np.int32), (batch, tokens, 1))
         chain_gap = list(range(layers[0]))
         # Layer zero's real input IS the embedding, so a run starting there has
         # no gap to declare.  Anything deeper is honestly off-distribution.
@@ -579,6 +636,8 @@ def capture_layers(
         },
         "calibration_split": split,
         "calibration_tokens": tokens,
+        "calibration_records": batch,
+        "calibration_source": calibration_source(int(config["vocab_size"])),
         "calibration_vocab_size": int(config["vocab_size"]),
         "calibration_membership_sha256": membership,
         "input_provenance": provenance,
@@ -594,8 +653,7 @@ def capture_layers(
         "capture_seconds": round(time.time() - started, 2),
         "captured_at": utc_now(),
         "capability_claim_permitted": False,
-        "note": "Real BF16 block evidence on a sealed synthetic token-id probe. "
-                "Not natural text, not an evaluation, not a capability result.",
+        "note": _capsule_note(int(config["vocab_size"])),
     })
     atomic_json(out_dir / f"{identity}.json", receipt)
     _append_ledger({
