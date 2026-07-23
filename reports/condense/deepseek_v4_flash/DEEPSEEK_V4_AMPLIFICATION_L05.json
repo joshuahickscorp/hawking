@@ -1,0 +1,42 @@
+{
+  "depth": 1,
+  "forward": "validated streamed forward, official DeepseekV4DecoderLayer, real weights",
+  "hc_mult": 4,
+  "layer": 5,
+  "max_amplification": 0.6275039733501754,
+  "min_amplification": 0.2933573876554837,
+  "not_evidence_of": "capability; bounded tokens, one stratum, few magnitudes.",
+  "parent": "deepseek-ai/DeepSeek-V4-Flash",
+  "rows": [
+    {
+      "entering_relative_l2": 0.19942699372768402,
+      "fraction": 0.25,
+      "geometric_mean_amplification": 0.2933573876554837,
+      "per_layer": [
+        0.2933573876554837
+      ]
+    },
+    {
+      "entering_relative_l2": 0.3986393213272095,
+      "fraction": 0.5,
+      "geometric_mean_amplification": 0.3310764126148428,
+      "per_layer": [
+        0.3310764126148428
+      ]
+    },
+    {
+      "entering_relative_l2": 0.7970837354660034,
+      "fraction": 1.0,
+      "geometric_mean_amplification": 0.6275039733501754,
+      "per_layer": [
+        0.6275039733501754
+      ]
+    }
+  ],
+  "schema": "hawking.deepseek_v4.amplification.v1",
+  "seq_len": 8,
+  "student_local_skill_at_L": 0.19961214065551758,
+  "verdict": "CONTRACTIVE",
+  "vs_glm": "GLM was EXPANSIVE_AT_EVERY_TESTED_MAGNITUDE at strata 3/38/74; this is the hyper-connection residual's answer to the same question",
+  "worse_at_smaller": false
+}
