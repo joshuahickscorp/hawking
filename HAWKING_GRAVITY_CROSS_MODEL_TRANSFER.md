@@ -95,3 +95,29 @@ decide. A goliath body is not downloaded to answer a question three layers can a
 The GLM-5.2 teacher capsules for layers 3, 5, 11, 38, 39, 40, 41, 74, 75, 76 and 77 stay
 resident as the reference fixture: any new probe implementation is checked against them
 before it is trusted on a parent nobody has measured yet.
+
+## Apparatus lesson (2026-07-23, added after the DeepSeek pilot)
+
+The first framing of the DeepSeek wall was wrong and worth recording as a method, not just
+a correction. A parent whose reference does not fit in memory is not unmeasurable:
+
+1. **The official modeling is the validation apparatus.** transformers ships the parent's
+   own modeling classes. Validate each NumPy primitive against them on tiny synthetic
+   weights — a primitive is admitted only when it matches to float tolerance. This caught a
+   real bug (the DeepSeek expert gate is clamped max-only, not symmetric) that no
+   self-consistency check would have.
+
+2. **Stream the forward, do not resident it.** Load one block's weights into the official
+   decoder layer, run it, release it, advance the hidden. Peak residency is one block, so a
+   160 GB fp4 source runs on 96 GiB. Loading real dequantized weights into the reference
+   module gives a forward validated by construction — no NumPy re-derivation to trust.
+
+3. **The input must be contextual.** An embedding-seeded existence test is invalid, and its
+   own shared-expert control will say so (a routing-free SwiGLU that a smooth student still
+   cannot fit is a signal about the input, not the organ). Only real pre-MoE hidden from the
+   streamed forward answers the existence question.
+
+This is the function-first apparatus every next parent inherits: validate primitives against
+the official reference, stream the forward, capture contextual states, then the
+contraction-first pilot is cheap. "No validated implementation exists yet" is a bounded
+engineering blocker with a named missing primitive — never a memory-capacity law.
