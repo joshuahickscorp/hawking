@@ -1,0 +1,800 @@
+{
+  "all_strata_pass": true,
+  "layers_scored": [
+    5,
+    38,
+    74,
+    77
+  ],
+  "skill_range": [
+    0.5317817655258277,
+    0.6981689755638981
+  ],
+  "stage": "FS3",
+  "strata": [
+    {
+      "candidates": [
+        {
+          "alpha": 0.05,
+          "bytes": 12582976,
+          "centered_cosine": 0.8355974996813671,
+          "expanded_bytes": 37748800,
+          "family": "random_feature_student",
+          "gate": {
+            "centered_cosine_at_least": 0.5,
+            "skill_lower_above": 0.0
+          },
+          "label": "student_h1024_s17",
+          "local_bpw": 0.010374505403189254,
+          "normalized_rmse": 0.3174748082160209,
+          "passes": true,
+          "per_position_skill": {
+            "fraction_beating_null": 0.94775390625,
+            "median": 0.8137726919216848,
+            "p05": -0.013032337193831622,
+            "p95": 0.9696872342834401
+          },
+          "positions": 4096,
+          "raw_cosine": 0.948281953664458,
+          "relative_l2": 0.3174697002340664,
+          "rmse": 0.0004849369106352704,
+          "skill": 0.6981689755638981,
+          "skill_lower": 0.6110853988558489,
+          "stored_parameters": 6291456
+        },
+        {
+          "alpha": 0.05,
+          "bytes": 75497536,
+          "centered_cosine": 0.86982262349139,
+          "expanded_bytes": 75497536,
+          "family": "linear_upper_control",
+          "gate": {
+            "centered_cosine_at_least": 0.5,
+            "skill_lower_above": 0.0
+          },
+          "label": "linear_full",
+          "local_bpw": 0.062246768583161506,
+          "normalized_rmse": 0.28510139168312393,
+          "passes": true,
+          "per_position_skill": {
+            "fraction_beating_null": 0.953857421875,
+            "median": 0.8539345227738253,
+            "p05": 0.023378790982516967,
+            "p95": 0.9753082706810982
+          },
+          "positions": 4096,
+          "raw_cosine": 0.9585046705042539,
+          "relative_l2": 0.2850968045702989,
+          "rmse": 0.0004354871143242206,
+          "skill": 0.7565868630762038,
+          "skill_lower": 0.6689680036382397,
+          "stored_parameters": 37748736
+        },
+        {
+          "alpha": 0.05,
+          "bytes": 3670080,
+          "centered_cosine": 0.7831341160078724,
+          "expanded_bytes": 28835904,
+          "family": "structured_random_feature_student",
+          "gate": {
+            "centered_cosine_at_least": 0.5,
+            "skill_lower_above": 0.0
+          },
+          "label": "structured_h1024_r256_s17",
+          "local_bpw": 0.0030259347860265187,
+          "normalized_rmse": 0.36221383967307846,
+          "passes": true,
+          "per_position_skill": {
+            "fraction_beating_null": 0.46337890625,
+            "median": -0.03551482948462947,
+            "p05": -1.005834897805874,
+            "p95": 0.821288637945841
+          },
+          "positions": 4096,
+          "raw_cosine": 0.9321131872436748,
+          "relative_l2": 0.3622080118665602,
+          "rmse": 0.0005532749555387805,
+          "skill": 0.6071059798853481,
+          "skill_lower": 0.5102579214266538,
+          "stored_parameters": 1835008
+        },
+        {
+          "alpha": 0.05,
+          "bytes": 3145792,
+          "centered_cosine": 0.744958341282189,
+          "expanded_bytes": 9437248,
+          "family": "structured_linear_student",
+          "gate": {
+            "centered_cosine_at_least": 0.5,
+            "skill_lower_above": 0.0
+          },
+          "label": "linear_rank256_s0",
+          "local_bpw": 0.0025936659261934164,
+          "normalized_rmse": 0.3903475025594556,
+          "passes": true,
+          "per_position_skill": {
+            "fraction_beating_null": 0.97021484375,
+            "median": 0.7277033759944309,
+            "p05": 0.06790351352217106,
+            "p95": 0.9608230355629833
+          },
+          "positions": 4096,
+          "raw_cosine": 0.9211671879522607,
+          "relative_l2": 0.39034122209891753,
+          "rmse": 0.0005962486063983179,
+          "skill": 0.5437024373942373,
+          "skill_lower": 0.4901284014784394,
+          "stored_parameters": 1572864
+        }
+      ],
+      "constant_null_raw_cosine": 0.8161391018241807,
+      "controls": {
+        "constant_null_raw_cosine": 0.8161391018241807,
+        "identity_passthrough": {
+          "alpha": 0.05,
+          "bytes": 0,
+          "centered_cosine": 0.009093494471440615,
+          "gate": {
+            "centered_cosine_at_least": 0.5,
+            "skill_lower_above": 0.0
+          },
+          "local_bpw": 0.0,
+          "normalized_rmse": 14.886294227349044,
+          "passes": false,
+          "per_position_skill": {
+            "fraction_beating_null": 0.0,
+            "median": -5657.467150426588,
+            "p05": -9879.968697009162,
+            "p95": -189.3709609822787
+          },
+          "positions": 4096,
+          "raw_cosine": 0.01142648130849669,
+          "relative_l2": 14.886054715674703,
+          "rmse": 0.02273853970960211,
+          "skill": -662.6185783925674,
+          "skill_lower": -823.0498686467765
+        },
+        "mean_null": {
+          "alpha": 0.05,
+          "bytes": 12288,
+          "centered_cosine": -0.0005160650211657778,
+          "gate": {
+            "centered_cosine_at_least": 0.5,
+            "skill_lower_above": 0.0
+          },
+          "local_bpw": 1.0131301402338331e-05,
+          "normalized_rmse": 0.5778662502640668,
+          "passes": false,
+          "per_position_skill": {
+            "fraction_beating_null": 0.710205078125,
+            "median": 9.873430406592831e-10,
+            "p05": -1.565052087926233e-09,
+            "p95": 5.507036021645817e-09
+          },
+          "positions": 4096,
+          "raw_cosine": 0.8161391018163496,
+          "relative_l2": 0.5778569527377199,
+          "rmse": 0.0008826800329075787,
+          "skill": -3.629585521025547e-11,
+          "skill_lower": -5.901682476050497e-11
+        },
+        "shuffled_input": {
+          "alpha": 0.05,
+          "bytes": 12582976,
+          "centered_cosine": 0.05140750596289291,
+          "gate": {
+            "centered_cosine_at_least": 0.5,
+            "skill_lower_above": 0.0
+          },
+          "local_bpw": 0.010374505403189254,
+          "normalized_rmse": 0.731136301525629,
+          "passes": false,
+          "per_position_skill": {
+            "fraction_beating_null": 0.4765625,
+            "median": -0.07453760048272906,
+            "p05": -28.562320172098893,
+            "p95": 0.9403157697275978
+          },
+          "positions": 4096,
+          "raw_cosine": 0.71834705640348,
+          "relative_l2": 0.7311245379747723,
+          "rmse": 0.0011167972076508337,
+          "skill": -0.6008182757030651,
+          "skill_lower": -0.8359829319224165
+        }
+      },
+      "fit_positions": 12288,
+      "layer": 5,
+      "status": "SCORED",
+      "stratum": "early"
+    },
+    {
+      "candidates": [
+        {
+          "alpha": 0.05,
+          "bytes": 12582976,
+          "centered_cosine": 0.7309190131487542,
+          "expanded_bytes": 37748800,
+          "family": "random_feature_student",
+          "gate": {
+            "centered_cosine_at_least": 0.5,
+            "skill_lower_above": 0.0
+          },
+          "label": "student_h1024_s17",
+          "local_bpw": 0.010374505403189254,
+          "normalized_rmse": 0.38550719050570786,
+          "passes": true,
+          "per_position_skill": {
+            "fraction_beating_null": 0.995849609375,
+            "median": 0.5172065101552945,
+            "p05": 0.165852888413085,
+            "p95": 0.8053417105964384
+          },
+          "positions": 4096,
+          "raw_cosine": 0.9227614113177185,
+          "relative_l2": 0.3855040996826374,
+          "rmse": 0.03653396137177005,
+          "skill": 0.5317817655258277,
+          "skill_lower": 0.5231699906913899,
+          "stored_parameters": 6291456
+        },
+        {
+          "alpha": 0.05,
+          "bytes": 75497536,
+          "centered_cosine": 0.7394399083348886,
+          "expanded_bytes": 75497536,
+          "family": "linear_upper_control",
+          "gate": {
+            "centered_cosine_at_least": 0.5,
+            "skill_lower_above": 0.0
+          },
+          "label": "linear_full",
+          "local_bpw": 0.062246768583161506,
+          "normalized_rmse": 0.38041352032887926,
+          "passes": true,
+          "per_position_skill": {
+            "fraction_beating_null": 0.991455078125,
+            "median": 0.5351542245421044,
+            "p05": 0.16465473355540278,
+            "p95": 0.7961259914979171
+          },
+          "positions": 4096,
+          "raw_cosine": 0.9248568559743705,
+          "relative_l2": 0.38041047034456443,
+          "rmse": 0.03605124158323205,
+          "skill": 0.5440730703868095,
+          "skill_lower": 0.5345043256475379,
+          "stored_parameters": 37748736
+        },
+        {
+          "alpha": 0.05,
+          "bytes": 3670080,
+          "centered_cosine": 0.6527550321540599,
+          "expanded_bytes": 28835904,
+          "family": "structured_random_feature_student",
+          "gate": {
+            "centered_cosine_at_least": 0.5,
+            "skill_lower_above": 0.0
+          },
+          "label": "structured_h1024_r256_s17",
+          "local_bpw": 0.0030259347860265187,
+          "normalized_rmse": 0.43925737922773783,
+          "passes": true,
+          "per_position_skill": {
+            "fraction_beating_null": 0.7421875,
+            "median": 0.10776092207987287,
+            "p05": -0.2862628887380946,
+            "p95": 0.6534819534752457
+          },
+          "positions": 4096,
+          "raw_cosine": 0.8983907021767878,
+          "relative_l2": 0.43925385745984624,
+          "rmse": 0.04162778936475769,
+          "skill": 0.3921149128002631,
+          "skill_lower": 0.381563541685827,
+          "stored_parameters": 1835008
+        },
+        {
+          "alpha": 0.05,
+          "bytes": 3145792,
+          "centered_cosine": 0.7110024276483875,
+          "expanded_bytes": 9437248,
+          "family": "structured_linear_student",
+          "gate": {
+            "centered_cosine_at_least": 0.5,
+            "skill_lower_above": 0.0
+          },
+          "label": "linear_rank256_s0",
+          "local_bpw": 0.0025936659261934164,
+          "normalized_rmse": 0.39631182714125235,
+          "passes": true,
+          "per_position_skill": {
+            "fraction_beating_null": 0.9970703125,
+            "median": 0.44921973664589165,
+            "p05": 0.1324327130750597,
+            "p95": 0.7566571711071491
+          },
+          "positions": 4096,
+          "raw_cosine": 0.9181532679164793,
+          "relative_l2": 0.39630864969146734,
+          "rmse": 0.03755790122866657,
+          "skill": 0.5051684027843328,
+          "skill_lower": 0.4983348694020314,
+          "stored_parameters": 1572864
+        }
+      ],
+      "constant_null_raw_cosine": 0.8262055158958235,
+      "controls": {
+        "constant_null_raw_cosine": 0.8262055158958235,
+        "identity_passthrough": {
+          "alpha": 0.05,
+          "bytes": 0,
+          "centered_cosine": 0.01320777587999145,
+          "gate": {
+            "centered_cosine_at_least": 0.5,
+            "skill_lower_above": 0.0
+          },
+          "local_bpw": 0.0,
+          "normalized_rmse": 2.826834417645267,
+          "passes": false,
+          "per_position_skill": {
+            "fraction_beating_null": 0.0,
+            "median": -57.941150151569204,
+            "p05": -115.81411490759368,
+            "p95": -5.078446349972392
+          },
+          "positions": 4096,
+          "raw_cosine": 0.07840932457698145,
+          "relative_l2": 2.8268117533594763,
+          "rmse": 0.26789502754323635,
+          "skill": -24.175847419272277,
+          "skill_lower": -25.00052244195892
+        },
+        "mean_null": {
+          "alpha": 0.05,
+          "bytes": 12288,
+          "centered_cosine": -0.002932911854972438,
+          "gate": {
+            "centered_cosine_at_least": 0.5,
+            "skill_lower_above": 0.0
+          },
+          "local_bpw": 1.0131301402338331e-05,
+          "normalized_rmse": 0.5633889458070697,
+          "passes": false,
+          "per_position_skill": {
+            "fraction_beating_null": 0.324951171875,
+            "median": -3.833210415749022e-10,
+            "p05": -1.8159358461389274e-09,
+            "p95": 1.4107597312573716e-09
+          },
+          "positions": 4096,
+          "raw_cosine": 0.8262055158508663,
+          "relative_l2": 0.5633844288081378,
+          "rmse": 0.05339155919866813,
+          "skill": -2.2507373742541859e-10,
+          "skill_lower": -2.427464340648555e-10
+        },
+        "shuffled_input": {
+          "alpha": 0.05,
+          "bytes": 12582976,
+          "centered_cosine": 0.011890500344342735,
+          "gate": {
+            "centered_cosine_at_least": 0.5,
+            "skill_lower_above": 0.0
+          },
+          "local_bpw": 0.010374505403189254,
+          "normalized_rmse": 0.7105536154873106,
+          "passes": false,
+          "per_position_skill": {
+            "fraction_beating_null": 0.383056640625,
+            "median": -0.17422060880073353,
+            "p05": -10.357717751826064,
+            "p95": 0.6035521177804765
+          },
+          "positions": 4096,
+          "raw_cosine": 0.7318088791917957,
+          "relative_l2": 0.7105479185883141,
+          "rmse": 0.06733814304924254,
+          "skill": -0.590658916650995,
+          "skill_lower": -0.6280736894560736
+        }
+      },
+      "fit_positions": 12288,
+      "layer": 38,
+      "status": "SCORED",
+      "stratum": "middle"
+    },
+    {
+      "candidates": [
+        {
+          "alpha": 0.05,
+          "bytes": 12582976,
+          "centered_cosine": 0.7696066710150211,
+          "expanded_bytes": 37748800,
+          "family": "random_feature_student",
+          "gate": {
+            "centered_cosine_at_least": 0.5,
+            "skill_lower_above": 0.0
+          },
+          "label": "student_h1024_s17",
+          "local_bpw": 0.010374505403189254,
+          "normalized_rmse": 0.3262051697193543,
+          "passes": true,
+          "per_position_skill": {
+            "fraction_beating_null": 0.99853515625,
+            "median": 0.7619002228363827,
+            "p05": 0.2102534420555039,
+            "p95": 0.9095906183449292
+          },
+          "positions": 4096,
+          "raw_cosine": 0.9453194339874549,
+          "relative_l2": 0.32620513225413705,
+          "rmse": 0.1416738243739437,
+          "skill": 0.5917206609379884,
+          "skill_lower": 0.5814338648560115,
+          "stored_parameters": 6291456
+        },
+        {
+          "alpha": 0.05,
+          "bytes": 75497536,
+          "centered_cosine": 0.7391455553375941,
+          "expanded_bytes": 75497536,
+          "family": "linear_upper_control",
+          "gate": {
+            "centered_cosine_at_least": 0.5,
+            "skill_lower_above": 0.0
+          },
+          "label": "linear_full",
+          "local_bpw": 0.062246768583161506,
+          "normalized_rmse": 0.35450434590068364,
+          "passes": true,
+          "per_position_skill": {
+            "fraction_beating_null": 0.9814453125,
+            "median": 0.774252802763395,
+            "p05": 0.1518717021046762,
+            "p95": 0.9520489895687135
+          },
+          "positions": 4096,
+          "raw_cosine": 0.9358732824188316,
+          "relative_l2": 0.354504305185254,
+          "rmse": 0.15396440983489837,
+          "skill": 0.517809276242939,
+          "skill_lower": 0.5018157095612753,
+          "stored_parameters": 37748736
+        },
+        {
+          "alpha": 0.05,
+          "bytes": 3670080,
+          "centered_cosine": 0.6999458163315556,
+          "expanded_bytes": 28835904,
+          "family": "structured_random_feature_student",
+          "gate": {
+            "centered_cosine_at_least": 0.5,
+            "skill_lower_above": 0.0
+          },
+          "label": "structured_h1024_r256_s17",
+          "local_bpw": 0.0030259347860265187,
+          "normalized_rmse": 0.3729430439260494,
+          "passes": true,
+          "per_position_skill": {
+            "fraction_beating_null": 0.873291015625,
+            "median": 0.28648841004871434,
+            "p05": -0.11133479093706988,
+            "p95": 0.7225618725199137
+          },
+          "positions": 4096,
+          "raw_cosine": 0.9278672160770849,
+          "relative_l2": 0.372943001092898,
+          "rmse": 0.1619725013926664,
+          "skill": 0.46634479898824,
+          "skill_lower": 0.45723655590477247,
+          "stored_parameters": 1835008
+        },
+        {
+          "alpha": 0.05,
+          "bytes": 3145792,
+          "centered_cosine": 0.7476863663324058,
+          "expanded_bytes": 9437248,
+          "family": "structured_linear_student",
+          "gate": {
+            "centered_cosine_at_least": 0.5,
+            "skill_lower_above": 0.0
+          },
+          "label": "linear_rank256_s0",
+          "local_bpw": 0.0025936659261934164,
+          "normalized_rmse": 0.3399833120356954,
+          "passes": true,
+          "per_position_skill": {
+            "fraction_beating_null": 0.99853515625,
+            "median": 0.739641539345514,
+            "p05": 0.19980393902459342,
+            "p95": 0.9016486639081062
+          },
+          "positions": 4096,
+          "raw_cosine": 0.9404694179093372,
+          "relative_l2": 0.3399832729880324,
+          "rmse": 0.14765779488061556,
+          "skill": 0.5565027565576606,
+          "skill_lower": 0.5460183860824634,
+          "stored_parameters": 1572864
+        }
+      ],
+      "constant_null_raw_cosine": 0.8598681746702149,
+      "controls": {
+        "constant_null_raw_cosine": 0.8598681746702149,
+        "identity_passthrough": {
+          "alpha": 0.05,
+          "bytes": 0,
+          "centered_cosine": -0.022926197815621843,
+          "gate": {
+            "centered_cosine_at_least": 0.5,
+            "skill_lower_above": 0.0
+          },
+          "local_bpw": 0.0,
+          "normalized_rmse": 1.772345584074251,
+          "passes": false,
+          "per_position_skill": {
+            "fraction_beating_null": 0.0,
+            "median": -48.11253227274838,
+            "p05": -62.30213453699279,
+            "p95": -1.493435955474392
+          },
+          "positions": 4096,
+          "raw_cosine": -0.06738815071282737,
+          "relative_l2": 1.7723453805171205,
+          "rmse": 0.7697455476383035,
+          "skill": -11.052372313093633,
+          "skill_lower": -11.502645050149253
+        },
+        "mean_null": {
+          "alpha": 0.05,
+          "bytes": 12288,
+          "centered_cosine": 0.0011469407756967331,
+          "gate": {
+            "centered_cosine_at_least": 0.5,
+            "skill_lower_above": 0.0
+          },
+          "local_bpw": 1.0131301402338331e-05,
+          "normalized_rmse": 0.5105192680939573,
+          "passes": false,
+          "per_position_skill": {
+            "fraction_beating_null": 0.457275390625,
+            "median": -1.0527112515035242e-10,
+            "p05": -1.3737938564517549e-09,
+            "p95": 1.8431036141741686e-09
+          },
+          "positions": 4096,
+          "raw_cosine": 0.8598681746850656,
+          "relative_l2": 0.5105192094599087,
+          "rmse": 0.22172308669934082,
+          "skill": 9.910483544928184e-11,
+          "skill_lower": 7.929511491866492e-11
+        },
+        "shuffled_input": {
+          "alpha": 0.05,
+          "bytes": 12582976,
+          "centered_cosine": 0.003345601119412576,
+          "gate": {
+            "centered_cosine_at_least": 0.5,
+            "skill_lower_above": 0.0
+          },
+          "local_bpw": 0.010374505403189254,
+          "normalized_rmse": 0.6506723336059212,
+          "passes": false,
+          "per_position_skill": {
+            "fraction_beating_null": 0.48095703125,
+            "median": -0.047462500087064874,
+            "p05": -17.108990607138907,
+            "p95": 0.8807300990522231
+          },
+          "positions": 4096,
+          "raw_cosine": 0.778764898477621,
+          "relative_l2": 0.6506722588750469,
+          "rmse": 0.2825928172615347,
+          "skill": -0.6244277734893389,
+          "skill_lower": -0.6662568479495353
+        }
+      },
+      "fit_positions": 12288,
+      "layer": 74,
+      "status": "SCORED",
+      "stratum": "late"
+    },
+    {
+      "candidates": [
+        {
+          "alpha": 0.05,
+          "bytes": 12582976,
+          "centered_cosine": 0.7661599721046446,
+          "expanded_bytes": 37748800,
+          "family": "random_feature_student",
+          "gate": {
+            "centered_cosine_at_least": 0.5,
+            "skill_lower_above": 0.0
+          },
+          "label": "student_h1024_s17",
+          "local_bpw": 0.010374505403189254,
+          "normalized_rmse": 0.32486673671283844,
+          "passes": true,
+          "per_position_skill": {
+            "fraction_beating_null": 0.9990234375,
+            "median": 0.8710153927364246,
+            "p05": 0.49849803671387993,
+            "p95": 0.9654293188457927
+          },
+          "positions": 4096,
+          "raw_cosine": 0.9457882787738848,
+          "relative_l2": 0.32485087971291915,
+          "rmse": 0.13182348253268814,
+          "skill": 0.5862852491460606,
+          "skill_lower": 0.5435983584024874,
+          "stored_parameters": 6291456
+        },
+        {
+          "alpha": 0.05,
+          "bytes": 75497536,
+          "centered_cosine": 0.7445319789726708,
+          "expanded_bytes": 75497536,
+          "family": "linear_upper_control",
+          "gate": {
+            "centered_cosine_at_least": 0.5,
+            "skill_lower_above": 0.0
+          },
+          "label": "linear_full",
+          "local_bpw": 0.062246768583161506,
+          "normalized_rmse": 0.34415960686070424,
+          "passes": true,
+          "per_position_skill": {
+            "fraction_beating_null": 0.990234375,
+            "median": 0.8695571639948874,
+            "p05": 0.40379470661242056,
+            "p95": 0.9787324817432591
+          },
+          "positions": 4096,
+          "raw_cosine": 0.9393456884280382,
+          "relative_l2": 0.3441428081606782,
+          "rmse": 0.1396520874452024,
+          "skill": 0.5356875726495622,
+          "skill_lower": 0.492454118638503,
+          "stored_parameters": 37748736
+        },
+        {
+          "alpha": 0.05,
+          "bytes": 3670080,
+          "centered_cosine": 0.763849330769236,
+          "expanded_bytes": 28835904,
+          "family": "structured_random_feature_student",
+          "gate": {
+            "centered_cosine_at_least": 0.5,
+            "skill_lower_above": 0.0
+          },
+          "label": "structured_h1024_r256_s17",
+          "local_bpw": 0.0030259347860265187,
+          "normalized_rmse": 0.3261796841007671,
+          "passes": true,
+          "per_position_skill": {
+            "fraction_beating_null": 0.9990234375,
+            "median": 0.8477597050939266,
+            "p05": 0.4911842935861608,
+            "p95": 0.9415790008625161
+          },
+          "positions": 4096,
+          "raw_cosine": 0.9453360509507374,
+          "relative_l2": 0.3261637630148562,
+          "rmse": 0.1323562465171152,
+          "skill": 0.5829344392218623,
+          "skill_lower": 0.5404875175505115,
+          "stored_parameters": 1835008
+        },
+        {
+          "alpha": 0.05,
+          "bytes": 3145792,
+          "centered_cosine": 0.7441423210064096,
+          "expanded_bytes": 9437248,
+          "family": "structured_linear_student",
+          "gate": {
+            "centered_cosine_at_least": 0.5,
+            "skill_lower_above": 0.0
+          },
+          "label": "linear_rank256_s0",
+          "local_bpw": 0.0025936659261934164,
+          "normalized_rmse": 0.337403512369723,
+          "passes": true,
+          "per_position_skill": {
+            "fraction_beating_null": 0.99755859375,
+            "median": 0.8522986696154942,
+            "p05": 0.4509564684299676,
+            "p95": 0.9570696567175841
+          },
+          "positions": 4096,
+          "raw_cosine": 0.9413807733191675,
+          "relative_l2": 0.33738704343996084,
+          "rmse": 0.13691061901069074,
+          "skill": 0.5537382004264813,
+          "skill_lower": 0.5148522112293139,
+          "stored_parameters": 1572864
+        }
+      ],
+      "constant_null_raw_cosine": 0.8631233126937446,
+      "controls": {
+        "constant_null_raw_cosine": 0.8631233126937446,
+        "identity_passthrough": {
+          "alpha": 0.05,
+          "bytes": 0,
+          "centered_cosine": -0.03309782511545917,
+          "gate": {
+            "centered_cosine_at_least": 0.5,
+            "skill_lower_above": 0.0
+          },
+          "local_bpw": 0.0,
+          "normalized_rmse": 1.4536229051570992,
+          "passes": false,
+          "per_position_skill": {
+            "fraction_beating_null": 0.00146484375,
+            "median": -67.62797922752418,
+            "p05": -95.8975932581806,
+            "p95": -0.8621460325299191
+          },
+          "positions": 4096,
+          "raw_cosine": -0.07155876223203052,
+          "relative_l2": 1.4535519526841778,
+          "rmse": 0.5898468879455443,
+          "skill": -7.283121449811791,
+          "skill_lower": -8.029821175123558
+        },
+        "mean_null": {
+          "alpha": 0.05,
+          "bytes": 12288,
+          "centered_cosine": 0.01173705711513014,
+          "gate": {
+            "centered_cosine_at_least": 0.5,
+            "skill_lower_above": 0.0
+          },
+          "local_bpw": 1.0131301402338331e-05,
+          "normalized_rmse": 0.5050736862547638,
+          "passes": false,
+          "per_position_skill": {
+            "fraction_beating_null": 0.490234375,
+            "median": -4.0286018965218773e-10,
+            "p05": -2.107391383621149e-08,
+            "p95": 3.450047497688402e-08
+          },
+          "positions": 4096,
+          "raw_cosine": 0.863123312798997,
+          "relative_l2": 0.5050490332124282,
+          "rmse": 0.20494733604129578,
+          "skill": 9.300347159069133e-10,
+          "skill_lower": 6.531143181831567e-10
+        },
+        "shuffled_input": {
+          "alpha": 0.05,
+          "bytes": 12582976,
+          "centered_cosine": 0.004900491774804579,
+          "gate": {
+            "centered_cosine_at_least": 0.5,
+            "skill_lower_above": 0.0
+          },
+          "local_bpw": 0.010374505403189254,
+          "normalized_rmse": 0.6266725383564765,
+          "passes": false,
+          "per_position_skill": {
+            "fraction_beating_null": 0.515625,
+            "median": 0.04631380609014357,
+            "p05": -31.524723438904445,
+            "p95": 0.9246191413855864
+          },
+          "positions": 4096,
+          "raw_cosine": 0.7929157932616203,
+          "relative_l2": 0.6266419499788933,
+          "rmse": 0.2542893656938859,
+          "skill": -0.5394721666049915,
+          "skill_lower": -0.6055550295396054
+        }
+      },
+      "fit_positions": 12288,
+      "layer": 77,
+      "status": "SCORED",
+      "stratum": "final"
+    }
+  ]
+}

@@ -1,0 +1,128 @@
+{
+  "schema": "hawking.glm52.functional_decision.v1",
+  "sealed_at": "2026-07-23T17:05:00Z",
+  "decision": "FUNCTIONAL_PARTIAL_ONLY",
+  "one_line": "The functional escape is real, reproduces, and replicates across layers, documents, domains and seeds, but the GLM-5.2 residual stream amplifies every perturbation it is given, so a per-layer student does not compose into a model.",
+  "glm_full_stream": "DO_NOT_STREAM",
+  "source_bytes_not_streamed": 1506659919872,
+  "next_action": "carry the corrected, function-first, amplification-first methodology to the next architecture parent",
+  "gates": {
+    "FS0_reproduction": {
+      "passes": true,
+      "detail": "fresh process, four fresh seeds, disjoint score split; student h1024 skill 0.5318 lower 0.5232 centered 0.7309 at 0.010375 local BPW; seed spread 0.0025",
+      "controls": {
+        "mean_null_skill": 0.0,
+        "shuffled_input_skill": -0.5907,
+        "identity_skill": -24.1758,
+        "constant_null_raw_cosine": 0.82621,
+        "linear_upper_control_skill": 0.5441
+      }
+    },
+    "FS1_block_insertion": {
+      "passes": true,
+      "detail": "block_output = post_attention_hidden + post_moe exactly; student block skill 0.8806 lower 0.8786 centered 0.9385",
+      "controls": {
+        "moe_removed_entirely_skill": 0.1968,
+        "moe_replaced_by_constant_skill": 0.7451
+      }
+    },
+    "FS2_next_layer_propagation": {
+      "passes": false,
+      "single_step_skill": 0.7589,
+      "single_step_skill_lower": 0.7539,
+      "entering_relative_l2": 0.15373,
+      "leaving_relative_l2": 0.26230,
+      "amplification": 1.7063,
+      "router_top1_agreement": 0.8501,
+      "router_mean_topk_overlap_of_8": 6.7429,
+      "reason_for_failure": "the single-step null-corrected score is positive, but the error grows through the layer rather than decaying"
+    },
+    "FS3_layer_strata": {
+      "passes": true,
+      "detail": "each stratum fitted and scored independently",
+      "skill": {"L05_early": 0.6982, "L38_middle": 0.5318, "L74_late": 0.5917, "L77_final": 0.5863}
+    },
+    "FS4_cross_layer_sharing": {
+      "passes": false,
+      "verdict": "READOUT_IS_LAYER_SPECIFIC",
+      "max_retained_fraction": -4.1189,
+      "detail": "every cross-layer application of a fitted readout scores negative skill; there is no sharing saving available because the feature map is already a shared seed"
+    },
+    "FS5_corpus_and_seed_replication": {
+      "passes": true,
+      "detail": "4 student seeds x 6 splits never fitted on, including protected-domain and long-context holdouts",
+      "rows_passing": 24,
+      "rows_total": 24,
+      "skill_range": [0.4810, 0.5318]
+    },
+    "FS6_complete_physical_auction": {
+      "passes": true,
+      "detail": "complete-model rate is legal at every rung once the protected organs are compressed, and was never the binding constraint",
+      "logical_weight_denominator": 753329940480,
+      "functionally_replaced_fraction": 0.9788909600514913,
+      "protected_floor_bpw_at_source_precision": 0.33774463917613917,
+      "student_h1024_complete_bpw": {
+        "bf16_protected": 0.347900,
+        "int8_protected": 0.179028,
+        "int4_protected": 0.094592
+      }
+    },
+    "FS7_full_stream_admission": {
+      "passes": false,
+      "blocked_by": ["FS2_next_layer_propagation", "depth_composition"]
+    }
+  },
+  "decisive_evidence": {
+    "experiment": "perturbation magnitude sweep through teacher layers 39 and 40",
+    "finding": "the residual stream is expansive at every tested magnitude, and amplification is worst at the smallest perturbations",
+    "rows": [
+      {"injected_relative_l2": 0.00769, "geometric_mean_amplification": 2.4068, "router_top1": 0.987},
+      {"injected_relative_l2": 0.01537, "geometric_mean_amplification": 2.0318, "router_top1": 0.969},
+      {"injected_relative_l2": 0.03843, "geometric_mean_amplification": 1.6911, "router_top1": 0.929},
+      {"injected_relative_l2": 0.07686, "geometric_mean_amplification": 1.5274, "router_top1": 0.904},
+      {"injected_relative_l2": 0.15373, "geometric_mean_amplification": 1.4176, "router_top1": 0.850}
+    ],
+    "contractive_regime_found": false,
+    "teacher_only_cascade_geometric_mean": 1.3478,
+    "projected_over_75_sparse_layers": 5280836384.4,
+    "student_in_every_layer": {
+      "layers": [38, 39, 40, 41],
+      "relative_l2_trajectory": [0.1537, 0.2846, 0.3607, 0.5336],
+      "router_top1_trajectory": [0.8501, 0.6506, 0.4456],
+      "router_topk_overlap_trajectory": [6.74, 6.12, 4.47]
+    },
+    "single_layer_token_effect": {
+      "greedy_token_agreement_after_one_functional_layer": 0.5525,
+      "probe": "1024-row logit-lens vocabulary subset through the final norm from layer 39",
+      "reading": "one functional layer out of 75 already changes the greedy token at nearly half of all positions"
+    }
+  },
+  "why_not_refuted": "FUNCTIONAL_ESCAPE_REFUTED would require the student to fail a null-corrected block, propagation or cross-layer replication gate. It passes the block gate decisively (0.881 skill against a 0.197 no-MoE control), replicates on all four sparse strata, and replicates on six unfitted splits and four seeds without refit. The single-step propagation score is also positive. What fails is composition over depth, which is FUNCTIONAL_PARTIAL_ONLY by the contract's own definition.",
+  "why_not_admitted": "FUNCTIONAL_STREAM_ADMITTED requires FS1 through FS7. FS2's composition gate and FS7 both fail. Streaming 1.51 TB to build a representation whose error grows 1.42x to 2.41x per layer would be spending the source on a known-negative outcome.",
+  "retained": [
+    "the null-corrected metric contract, now global",
+    "the functional-versus-weight-space causal law",
+    "glm52.functional.moe.v1 and its portable generator",
+    "the CPU authority and the three parity-gated Metal grammars",
+    "the amplification probe, which is now a mandatory next-parent gate",
+    "the teacher capsules for layers 3, 5, 11, 38, 39, 40, 41, 74, 75, 76, 77"
+  ],
+  "artifacts": {
+    "law": "GLM52_CORRECTED_SCIENTIFIC_LAW.md",
+    "correction_ledger": "GLM52_METRIC_CORRECTION_LEDGER.jsonl",
+    "experiment_ledger": "reports/condense/glm52_generation_b/GLM52_FUNCTIONAL_EXPERIMENT_LEDGER.jsonl",
+    "fs0": "reports/condense/glm52_generation_b/GLM52_FUNCTIONAL_FS0_REPRODUCTION.json",
+    "fs1": "reports/condense/glm52_generation_b/GLM52_FUNCTIONAL_BLOCK_RESULT.json",
+    "fs2": "reports/condense/glm52_generation_b/GLM52_FUNCTIONAL_PROPAGATION_RESULT.json",
+    "fs3": "reports/condense/glm52_generation_b/GLM52_FUNCTIONAL_LAYER_TRANSFER.json",
+    "fs4": "reports/condense/glm52_generation_b/GLM52_FUNCTIONAL_CROSS_LAYER_SHARING.json",
+    "fs5": "reports/condense/glm52_generation_b/GLM52_FUNCTIONAL_REPLICATION.json",
+    "fs6": "reports/condense/glm52_generation_b/GLM52_FUNCTIONAL_BYTE_AUCTION.json",
+    "depth_perturbation": "reports/condense/glm52_generation_b/GLM52_FUNCTIONAL_DEPTH_PERTURBATION.json",
+    "depth_threshold": "reports/condense/glm52_generation_b/GLM52_FUNCTIONAL_DEPTH_THRESHOLD.json",
+    "depth_cascade": "reports/condense/glm52_generation_b/GLM52_FUNCTIONAL_DEPTH_CASCADE.json",
+    "runtime": "reports/condense/glm52_generation_b/GLM52_FUNCTIONAL_RUNTIME_RESULT.json",
+    "metal": "reports/condense/glm52_generation_b/GLM52_FUNCTIONAL_METAL_BENCHMARK.json"
+  },
+  "not_evidence_of": "capability, full-model quality, or behaviour. Every score is on bounded calibration batches of 4096 held-out positions from a sealed corpus, and the token-level number is a 1024-row logit-lens probe rather than the model's head."
+}

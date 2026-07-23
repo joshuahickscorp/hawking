@@ -1,0 +1,86 @@
+{
+  "schema": "hawking.null_corrected_metric_contract.v1",
+  "sealed_at": "2026-07-23T16:30:00Z",
+  "scope": "every parent, every representation, every promotion decision",
+  "implementation": "tools/condense/hawking_null_metric.py",
+  "executable_form": "tools/condense/hawking_null_metric.py selftest",
+  "supersedes": {
+    "metric": "raw activation cosine as a promotion criterion",
+    "reason": "target activations are mean-dominated, so a constant predictor scores 0.83 to 0.91 raw cosine and every reported weight-space score was below its own null"
+  },
+  "observed_constant_mean_raw_cosine": {
+    "attention_output": 0.909,
+    "block_output": 0.898,
+    "post_moe_layer_38": 0.8310582809758371
+  },
+  "nulls": {
+    "fitted_on": "fit split only",
+    "void_if": "any null statistic is calculated from held-out targets",
+    "permitted": [
+      "training-mean predictor",
+      "training-affine constant when distinct",
+      "identity or residual passthrough",
+      "shuffled-input predictor",
+      "best permitted trivial structural baseline"
+    ],
+    "reference_null_for_skill": "training-mean predictor"
+  },
+  "metrics": {
+    "centered_cosine": "cosine(y - mu_fit, yhat - mu_fit); the promotion cosine",
+    "normalized_rmse": "rmse / std(y)",
+    "per_position_skill": "p05, median, p95, fraction of positions with skill > 0",
+    "raw_cosine": "DIAGNOSTIC ONLY; never promotes",
+    "relative_l2": "norm(yhat - y) / norm(y)",
+    "skill": "1 - SSE(candidate) / SSE(mean-null); signed",
+    "skill_lower": "5th-percentile bootstrap lower bound over held-out positions, 512 resamples"
+  },
+  "gate": {
+    "centered_cosine_at_least": 0.5,
+    "skill_lower_above": 0.0,
+    "domain_gate": "replication on unfitted documents and domains without refit",
+    "seed_gate": "replication under fresh student seeds without refit",
+    "tail_gate": "per-position distribution reported and inspected",
+    "raw_cosine_override": false
+  },
+  "mandatory_controls": [
+    "mean-null",
+    "shuffled input",
+    "identity or passthrough",
+    "full affine/linear upper control",
+    "representation-family ablation",
+    "seed replication",
+    "new-document replication"
+  ],
+  "bootstrap": {
+    "resamples": 512,
+    "alpha": 0.05,
+    "statistic": "ratio of sums over resampled held-out positions, not mean of per-position ratios"
+  },
+  "rate_accounting": {
+    "organ_local_bpw_is_not_model_bpw": true,
+    "must_bill_separately": [
+      "feature-map seed",
+      "generator algorithm id and version",
+      "generator parameters actually stored",
+      "readout weights",
+      "bias and normalisation",
+      "selectors and gates",
+      "Doctor state",
+      "headers and alignment",
+      "runtime tables and per-layer metadata",
+      "protected tensors at source precision",
+      "expanded resident bytes",
+      "active bytes per token"
+    ]
+  },
+  "reissue_rule": [
+    "recompute null-corrected metrics from sealed predictions where they exist",
+    "invalidate only claims that depended on the broken metric",
+    "preserve exact payload, byte and accounting evidence unchanged",
+    "write a superseding receipt naming the artifact and the claim it replaces"
+  ],
+  "artifacts": {
+    "correction_ledger": "GLM52_METRIC_CORRECTION_LEDGER.jsonl",
+    "superseding_law": "GLM52_CORRECTED_SCIENTIFIC_LAW.json"
+  }
+}

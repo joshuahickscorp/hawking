@@ -1,0 +1,242 @@
+{
+  "binding_fact": "the protected residue is 2.11 percent of the logical weights and at source precision costs 0.337745 bits per weight on its own, which is above the one-third rung before a single expert byte is stored",
+  "candidates": [
+    {
+      "all_layers_artifact_bytes": 59774000,
+      "candidate": "linear_rank64",
+      "complete_model_bpw": {
+        "bf16_source": 0.33837941017660583,
+        "int4": 0.08507093079450148,
+        "int8": 0.16950709058853627,
+        "one_bit": 0.021743810948975387,
+        "two_bit": 0.042852850897484085
+      },
+      "complete_model_bytes": {
+        "bf16_source": 31863917616,
+        "int4": 8010809904,
+        "int8": 15961845808,
+        "one_bit": 2047532976,
+        "two_bit": 4035291952
+      },
+      "expanded_feature_map_bytes_all_layers": 119537664,
+      "functional_contribution_bpw": 0.0006347710004666878,
+      "layer_38_skill": 0.4453,
+      "note": "cheapest row that still clears the gate",
+      "organ_local_bpw": 0.0006484593548941323,
+      "per_layer_artifact_bytes": 786500,
+      "resident_bytes_explicit": 179311664,
+      "resident_bytes_procedural": 59774000,
+      "rungs": {
+        "0.333333": {
+          "cheapest_protected_rate_that_reaches": "int8",
+          "reachable_at_bf16_protected": false
+        },
+        "0.500000": {
+          "cheapest_protected_rate_that_reaches": "bf16_source",
+          "reachable_at_bf16_protected": true
+        },
+        "0.750000": {
+          "cheapest_protected_rate_that_reaches": "bf16_source",
+          "reachable_at_bf16_protected": true
+        }
+      }
+    },
+    {
+      "all_layers_artifact_bytes": 239080496,
+      "candidate": "linear_rank256",
+      "complete_model_bpw": {
+        "bf16_source": 0.3402835585330166,
+        "int4": 0.08697507915091222,
+        "int8": 0.17141123894494703,
+        "one_bit": 0.023647959305386136,
+        "two_bit": 0.044756999253894834
+      },
+      "complete_model_bytes": {
+        "bf16_source": 32043224112,
+        "int4": 8190116400,
+        "int8": 16141152304,
+        "one_bit": 2226839472,
+        "two_bit": 4214598448
+      },
+      "expanded_feature_map_bytes_all_layers": 478150656,
+      "functional_contribution_bpw": 0.0025389193568774375,
+      "layer_38_skill": 0.5052,
+      "note": "seeded projection to 256, then a readout; no nonlinearity",
+      "organ_local_bpw": 0.002593669224143092,
+      "per_layer_artifact_bytes": 3145796,
+      "resident_bytes_explicit": 717231152,
+      "resident_bytes_procedural": 239080496,
+      "rungs": {
+        "0.333333": {
+          "cheapest_protected_rate_that_reaches": "int8",
+          "reachable_at_bf16_protected": false
+        },
+        "0.500000": {
+          "cheapest_protected_rate_that_reaches": "bf16_source",
+          "reachable_at_bf16_protected": true
+        },
+        "0.750000": {
+          "cheapest_protected_rate_that_reaches": "bf16_source",
+          "reachable_at_bf16_protected": true
+        }
+      }
+    },
+    {
+      "all_layers_artifact_bytes": 278926384,
+      "candidate": "structured_h1024_r256",
+      "complete_model_bpw": {
+        "bf16_source": 0.340706702612219,
+        "int4": 0.08739822323011462,
+        "int8": 0.1718343830241494,
+        "one_bit": 0.024071103384588524,
+        "two_bit": 0.04518014333309722
+      },
+      "complete_model_bytes": {
+        "bf16_source": 32083070000,
+        "int4": 8229962288,
+        "int8": 16180998192,
+        "one_bit": 2266685360,
+        "two_bit": 4254444336
+      },
+      "expanded_feature_map_bytes_all_layers": 1912602624,
+      "functional_contribution_bpw": 0.0029620634360798264,
+      "layer_38_skill": 0.3921,
+      "note": "random features with a rank-256 factored readout",
+      "organ_local_bpw": 0.0030259380839761938,
+      "per_layer_artifact_bytes": 3670084,
+      "resident_bytes_explicit": 2191529008,
+      "resident_bytes_procedural": 278926384,
+      "rungs": {
+        "0.333333": {
+          "cheapest_protected_rate_that_reaches": "int8",
+          "reachable_at_bf16_protected": false
+        },
+        "0.500000": {
+          "cheapest_protected_rate_that_reaches": "bf16_source",
+          "reachable_at_bf16_protected": true
+        },
+        "0.750000": {
+          "cheapest_protected_rate_that_reaches": "bf16_source",
+          "reachable_at_bf16_protected": true
+        }
+      }
+    },
+    {
+      "all_layers_artifact_bytes": 956306480,
+      "candidate": "student_h1024",
+      "complete_model_bpw": {
+        "bf16_source": 0.3479001519586596,
+        "int4": 0.09459167257655524,
+        "int8": 0.17902783237059003,
+        "one_bit": 0.031264552731029134,
+        "two_bit": 0.05237359267953783
+      },
+      "complete_model_bytes": {
+        "bf16_source": 32760450096,
+        "int4": 8907342384,
+        "int8": 16858378288,
+        "one_bit": 2944065456,
+        "two_bit": 4931824432
+      },
+      "expanded_feature_map_bytes_all_layers": 1912602624,
+      "functional_contribution_bpw": 0.010155512782520438,
+      "layer_38_skill": 0.5318,
+      "note": "random-feature student, seeded projection, fp16 readout",
+      "organ_local_bpw": 0.01037450870113893,
+      "per_layer_artifact_bytes": 12582980,
+      "resident_bytes_explicit": 2868909104,
+      "resident_bytes_procedural": 956306480,
+      "rungs": {
+        "0.333333": {
+          "cheapest_protected_rate_that_reaches": "int8",
+          "reachable_at_bf16_protected": false
+        },
+        "0.500000": {
+          "cheapest_protected_rate_that_reaches": "bf16_source",
+          "reachable_at_bf16_protected": true
+        },
+        "0.750000": {
+          "cheapest_protected_rate_that_reaches": "bf16_source",
+          "reachable_at_bf16_protected": true
+        }
+      }
+    },
+    {
+      "all_layers_artifact_bytes": 5737813040,
+      "candidate": "linear_full",
+      "complete_model_bpw": {
+        "bf16_source": 0.39867744146294626,
+        "int4": 0.14536896208084188,
+        "int8": 0.22980512187487667,
+        "one_bit": 0.0820418422353158,
+        "two_bit": 0.1031508821838245
+      },
+      "complete_model_bytes": {
+        "bf16_source": 37541956656,
+        "int4": 13688848944,
+        "int8": 21639884848,
+        "one_bit": 7725572016,
+        "two_bit": 9713330992
+      },
+      "expanded_feature_map_bytes_all_layers": 0,
+      "functional_contribution_bpw": 0.0609328022868071,
+      "layer_38_skill": 0.5441,
+      "note": "dense upper control; no generated state to hold",
+      "organ_local_bpw": 0.06224677188111118,
+      "per_layer_artifact_bytes": 75497540,
+      "resident_bytes_explicit": 5737813040,
+      "resident_bytes_procedural": 5737813040,
+      "rungs": {
+        "0.333333": {
+          "cheapest_protected_rate_that_reaches": "int8",
+          "reachable_at_bf16_protected": false
+        },
+        "0.500000": {
+          "cheapest_protected_rate_that_reaches": "bf16_source",
+          "reachable_at_bf16_protected": true
+        },
+        "0.750000": {
+          "cheapest_protected_rate_that_reaches": "bf16_source",
+          "reachable_at_bf16_protected": true
+        }
+      }
+    }
+  ],
+  "coverage": {
+    "accounted": 753329940480,
+    "functionally_replaced_weights": 737427868672,
+    "logical_weight_denominator": 753329940480,
+    "protected_fraction": 0.021109039948508698,
+    "protected_weights": 15902071808,
+    "replaced_fraction": 0.9788909600514913,
+    "unaccounted": 0
+  },
+  "moe_layers": 76,
+  "not_billed_here": [
+    "Doctor state, if a diagnosis-matched Doctor is ever fitted",
+    "runtime tables and per-layer metadata beyond the payload header",
+    "KV/state traffic, which is a runtime cost and not an artifact cost"
+  ],
+  "per_layer_replaced_weights": 9702998272,
+  "protected_floor_bpw": {
+    "bf16_source": 0.33774463917613917,
+    "int4": 0.08443615979403479,
+    "int8": 0.16887231958806959,
+    "one_bit": 0.021109039948508698,
+    "two_bit": 0.042218079897017396
+  },
+  "protected_organs": {
+    "attention": 13036552192,
+    "dense_mlp": 679477248,
+    "embeddings": 951582720,
+    "indexer": 206181888,
+    "lm_head": 951582720,
+    "mtp_head_norm": 6144,
+    "mtp_normalization": 12288,
+    "mtp_projection": 75497472,
+    "normalization": 1179136
+  },
+  "schema": "hawking.glm52.functional_byte_auction.v1",
+  "source": "GLM52_LOGICAL_WEIGHT_LEDGER.json, header-derived extents",
+  "stage": "FS6"
+}

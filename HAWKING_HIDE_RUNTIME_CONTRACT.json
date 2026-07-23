@@ -1,0 +1,92 @@
+{
+  "schema": "hawking.hide.runtime_contract.v1",
+  "sealed_at": "2026-07-23T17:20:00Z",
+  "purpose": "HIDE may not assume every Hawking model is a conventional quantized transformer",
+  "status": "CONTRACT_FROZEN_AT_THE_BOUNDARY, HIDE not refactored",
+  "why_not_refactored_yet": "the functional runtime boundary is frozen but the representation is held under FUNCTIONAL_PARTIAL_ONLY, so HIDE gets the schema and the refusal path now and the implementation when a parent admits a functional stream",
+  "model_representation_classes": {
+    "QUANTIZED_TRANSFORMER": {
+      "description": "weights are stored as an approximation of the source tensors and decoded before use",
+      "examples": ["gravity-pq", "glm52.pq.r0.v1", "native.bf16", "native.f32"],
+      "runtime_requires": ["decode", "matmul"]
+    },
+    "FUNCTIONAL_MODEL": {
+      "description": "one or more organs are replaced by a fitted function rather than by an approximation of their weights; there is no tensor to decode",
+      "examples": ["glm52.functional.moe.v1"],
+      "runtime_requires": ["generator", "feature map", "readout"],
+      "new_in": "this contract"
+    }
+  },
+  "runtime_must_expose": {
+    "representation_id": {
+      "type": "string",
+      "example": "glm52.functional.moe.v1",
+      "note": "refuse by name rather than decode an unrecognised codec"
+    },
+    "representation_class": {
+      "type": "enum",
+      "values": ["QUANTIZED_TRANSFORMER", "FUNCTIONAL_MODEL", "HYBRID"]
+    },
+    "generator_id": {
+      "type": "string|null",
+      "example": "gen.splitmix64_boxmuller.v1",
+      "note": "null for classes with no generated state; a runtime that does not implement the named generator must refuse, not approximate"
+    },
+    "artifact_verification": {
+      "type": "object",
+      "fields": ["body_sha256_ok", "bad_tensors", "tensors_without_payload",
+                 "rate_self_consistent"],
+      "source": "gravity_format.verify"
+    },
+    "required_expanded_runtime_state": {
+      "type": "object",
+      "fields": ["expanded_feature_map_bytes", "resident_bytes_explicit",
+                 "resident_bytes_procedural"],
+      "note": "a 12 MB artifact that expands to 37 MB resident is not a 12 MB model"
+    },
+    "load_time_generation": {
+      "type": "object",
+      "fields": ["required", "seconds_estimate", "avoidable_by_grammar"],
+      "note": "the procedural grammar has none; the explicit grammar pays it per layer"
+    },
+    "active_byte_estimate": {
+      "type": "object",
+      "fields": ["active_bytes_per_token", "moe_fraction_of_traffic",
+                 "protected_fraction_of_traffic", "binding_organ"]
+    },
+    "runtime_selection": {
+      "type": "object",
+      "fields": ["available_grammars", "selected", "selection_basis"],
+      "example": {"available_grammars": ["FRT_A", "FRT_B", "FRT_D"], "selected": "FRT_B",
+                  "selection_basis": "lowest resident bytes and lowest measured latency"}
+    },
+    "quality_research_label": {
+      "type": "string",
+      "required": true,
+      "example": "RESEARCH_ONLY, one-stage functional student, not capability",
+      "note": "a functional model must never present to a user as a validated model; the label rides with the artifact"
+    }
+  },
+  "refusal_rules": [
+    "unrecognised representation_id: refuse to load, name the id",
+    "recognised representation_id with unrecognised generator_id: refuse to load, name the generator",
+    "FUNCTIONAL_MODEL without a quality_research_label: refuse to load",
+    "artifact_verification failing on body hash or any tensor hash: refuse to load",
+    "declared expanded runtime state exceeding the unified-memory policy: refuse to load, report the shortfall"
+  ],
+  "capability_schema_addition": {
+    "field": "model.representation_class",
+    "values": ["QUANTIZED_TRANSFORMER", "FUNCTIONAL_MODEL", "HYBRID"],
+    "default_for_existing_models": "QUANTIZED_TRANSFORMER",
+    "breaking": false
+  },
+  "reference_implementation": {
+    "codec": "tools/condense/gravity_functional_codec.py",
+    "cpu_authority": "gravity_functional_codec.execute",
+    "metal_grammars": "tools/condense/gravity_functional_metal.py",
+    "parity_gate": "relative L2 below 5e-2 and cosine above 0.999 against the CPU authority",
+    "measured_worst_case_parity": 0.0002,
+    "end_to_end_proof": "reports/condense/glm52_generation_b/GLM52_FUNCTIONAL_RUNTIME_RESULT.json"
+  },
+  "current_advice_to_hide": "add the capability field and the refusal rules now; do not implement a FUNCTIONAL_MODEL loader until a parent admits a functional stream. The GLM-5.2 functional representation is sealed FUNCTIONAL_PARTIAL_ONLY and must not be served."
+}

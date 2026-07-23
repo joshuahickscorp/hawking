@@ -1,0 +1,326 @@
+{
+  "candidates": [
+    {
+      "alpha": 0.05,
+      "bytes": 12582976,
+      "centered_cosine": 0.7309190131487542,
+      "expanded_bytes": 37748800,
+      "family": "random_feature_student",
+      "gate": {
+        "centered_cosine_at_least": 0.5,
+        "skill_lower_above": 0.0
+      },
+      "label": "student_h1024_s17",
+      "local_bpw": 0.010374505403189254,
+      "normalized_rmse": 0.38550719050570786,
+      "passes": true,
+      "per_position_skill": {
+        "fraction_beating_null": 0.995849609375,
+        "median": 0.5172065101552945,
+        "p05": 0.165852888413085,
+        "p95": 0.8053417105964384
+      },
+      "positions": 4096,
+      "raw_cosine": 0.9227614113177185,
+      "relative_l2": 0.3855040996826374,
+      "rmse": 0.03653396137177005,
+      "skill": 0.5317817655258277,
+      "skill_lower": 0.5231699906913899,
+      "stored_parameters": 6291456
+    },
+    {
+      "alpha": 0.05,
+      "bytes": 12582976,
+      "centered_cosine": 0.7294222714293889,
+      "expanded_bytes": 37748800,
+      "family": "random_feature_student",
+      "gate": {
+        "centered_cosine_at_least": 0.5,
+        "skill_lower_above": 0.0
+      },
+      "label": "student_h1024_s101",
+      "local_bpw": 0.010374505403189254,
+      "normalized_rmse": 0.3862331590882667,
+      "passes": true,
+      "per_position_skill": {
+        "fraction_beating_null": 0.9951171875,
+        "median": 0.5177021323144166,
+        "p05": 0.1569912129500701,
+        "p95": 0.7766128659013017
+      },
+      "positions": 4096,
+      "raw_cosine": 0.9224349932701922,
+      "relative_l2": 0.38623006244470764,
+      "rmse": 0.036602760369053425,
+      "skill": 0.5300166530242196,
+      "skill_lower": 0.5210290267645458,
+      "stored_parameters": 6291456
+    },
+    {
+      "alpha": 0.05,
+      "bytes": 12582976,
+      "centered_cosine": 0.7287246322864828,
+      "expanded_bytes": 37748800,
+      "family": "random_feature_student",
+      "gate": {
+        "centered_cosine_at_least": 0.5,
+        "skill_lower_above": 0.0
+      },
+      "label": "student_h1024_s202",
+      "local_bpw": 0.010374505403189254,
+      "normalized_rmse": 0.38653847342726116,
+      "passes": true,
+      "per_position_skill": {
+        "fraction_beating_null": 0.989501953125,
+        "median": 0.5072400988731267,
+        "p05": 0.14775537930505203,
+        "p95": 0.7760465422982259
+      },
+      "positions": 4096,
+      "raw_cosine": 0.9223349854835929,
+      "relative_l2": 0.38653537433582874,
+      "rmse": 0.03663169456935313,
+      "skill": 0.5292733229063256,
+      "skill_lower": 0.5205868620827786,
+      "stored_parameters": 6291456
+    },
+    {
+      "alpha": 0.05,
+      "bytes": 12582976,
+      "centered_cosine": 0.7305954122100591,
+      "expanded_bytes": 37748800,
+      "family": "random_feature_student",
+      "gate": {
+        "centered_cosine_at_least": 0.5,
+        "skill_lower_above": 0.0
+      },
+      "label": "student_h1024_s303",
+      "local_bpw": 0.010374505403189254,
+      "normalized_rmse": 0.385639942433822,
+      "passes": true,
+      "per_position_skill": {
+        "fraction_beating_null": 0.9921875,
+        "median": 0.5165649864458877,
+        "p05": 0.17471108928044105,
+        "p95": 0.7841307449327577
+      },
+      "positions": 4096,
+      "raw_cosine": 0.9226930439484093,
+      "relative_l2": 0.3856368505464069,
+      "rmse": 0.03654654208085459,
+      "skill": 0.5314592419672579,
+      "skill_lower": 0.5223303931431487,
+      "stored_parameters": 6291456
+    },
+    {
+      "alpha": 0.05,
+      "bytes": 75497536,
+      "centered_cosine": 0.7394399083348886,
+      "expanded_bytes": 75497536,
+      "family": "linear_upper_control",
+      "gate": {
+        "centered_cosine_at_least": 0.5,
+        "skill_lower_above": 0.0
+      },
+      "label": "linear_full",
+      "local_bpw": 0.062246768583161506,
+      "normalized_rmse": 0.38041352032887926,
+      "passes": true,
+      "per_position_skill": {
+        "fraction_beating_null": 0.991455078125,
+        "median": 0.5351542245421044,
+        "p05": 0.16465473355540278,
+        "p95": 0.7961259914979171
+      },
+      "positions": 4096,
+      "raw_cosine": 0.9248568559743705,
+      "relative_l2": 0.38041047034456443,
+      "rmse": 0.03605124158323205,
+      "skill": 0.5440730703868095,
+      "skill_lower": 0.5345043256475379,
+      "stored_parameters": 37748736
+    },
+    {
+      "alpha": 0.05,
+      "bytes": 75509824,
+      "centered_cosine": 0.7400499490287376,
+      "expanded_bytes": 75509824,
+      "family": "affine_upper_control",
+      "gate": {
+        "centered_cosine_at_least": 0.5,
+        "skill_lower_above": 0.0
+      },
+      "label": "affine_full",
+      "local_bpw": 0.06225689988456384,
+      "normalized_rmse": 0.3799996757310652,
+      "passes": true,
+      "per_position_skill": {
+        "fraction_beating_null": 0.99169921875,
+        "median": 0.5357218554104368,
+        "p05": 0.16545783154386956,
+        "p95": 0.7961781153261795
+      },
+      "positions": 4096,
+      "raw_cosine": 0.9250291015534636,
+      "relative_l2": 0.37999662906477166,
+      "rmse": 0.03601202212657128,
+      "skill": 0.5450645191891379,
+      "skill_lower": 0.5355296197505502,
+      "stored_parameters": 37754880
+    },
+    {
+      "alpha": 0.05,
+      "bytes": 786496,
+      "centered_cosine": 0.6688373095708886,
+      "expanded_bytes": 2359360,
+      "family": "structured_linear_student",
+      "gate": {
+        "centered_cosine_at_least": 0.5,
+        "skill_lower_above": 0.0
+      },
+      "label": "linear_rank64_s0",
+      "local_bpw": 0.000648456056944457,
+      "normalized_rmse": 0.4196149152287156,
+      "passes": true,
+      "per_position_skill": {
+        "fraction_beating_null": 0.987548828125,
+        "median": 0.4239582247931596,
+        "p05": 0.08459831236621504,
+        "p95": 0.7301333549606545
+      },
+      "positions": 4096,
+      "raw_cosine": 0.9077158906665409,
+      "relative_l2": 0.4196115509452592,
+      "rmse": 0.03976630133376845,
+      "skill": 0.4452654815843945,
+      "skill_lower": 0.4365941620908787,
+      "stored_parameters": 393216
+    },
+    {
+      "alpha": 0.05,
+      "bytes": 3145792,
+      "centered_cosine": 0.7110024276483875,
+      "expanded_bytes": 9437248,
+      "family": "structured_linear_student",
+      "gate": {
+        "centered_cosine_at_least": 0.5,
+        "skill_lower_above": 0.0
+      },
+      "label": "linear_rank256_s0",
+      "local_bpw": 0.0025936659261934164,
+      "normalized_rmse": 0.39631182714125235,
+      "passes": true,
+      "per_position_skill": {
+        "fraction_beating_null": 0.9970703125,
+        "median": 0.44921973664589165,
+        "p05": 0.1324327130750597,
+        "p95": 0.7566571711071491
+      },
+      "positions": 4096,
+      "raw_cosine": 0.9181532679164793,
+      "relative_l2": 0.39630864969146734,
+      "rmse": 0.03755790122866657,
+      "skill": 0.5051684027843328,
+      "skill_lower": 0.4983348694020314,
+      "stored_parameters": 1572864
+    }
+  ],
+  "controls": {
+    "constant_null_raw_cosine": 0.8262055158958235,
+    "identity_passthrough": {
+      "alpha": 0.05,
+      "bytes": 0,
+      "centered_cosine": 0.01320777587999145,
+      "gate": {
+        "centered_cosine_at_least": 0.5,
+        "skill_lower_above": 0.0
+      },
+      "local_bpw": 0.0,
+      "normalized_rmse": 2.826834417645267,
+      "passes": false,
+      "per_position_skill": {
+        "fraction_beating_null": 0.0,
+        "median": -57.941150151569204,
+        "p05": -115.81411490759368,
+        "p95": -5.078446349972392
+      },
+      "positions": 4096,
+      "raw_cosine": 0.07840932457698145,
+      "relative_l2": 2.8268117533594763,
+      "rmse": 0.26789502754323635,
+      "skill": -24.175847419272277,
+      "skill_lower": -25.00052244195892
+    },
+    "mean_null": {
+      "alpha": 0.05,
+      "bytes": 12288,
+      "centered_cosine": -0.002932911854972438,
+      "gate": {
+        "centered_cosine_at_least": 0.5,
+        "skill_lower_above": 0.0
+      },
+      "local_bpw": 1.0131301402338331e-05,
+      "normalized_rmse": 0.5633889458070697,
+      "passes": false,
+      "per_position_skill": {
+        "fraction_beating_null": 0.324951171875,
+        "median": -3.833210415749022e-10,
+        "p05": -1.8159358461389274e-09,
+        "p95": 1.4107597312573716e-09
+      },
+      "positions": 4096,
+      "raw_cosine": 0.8262055158508663,
+      "relative_l2": 0.5633844288081378,
+      "rmse": 0.05339155919866813,
+      "skill": -2.2507373742541859e-10,
+      "skill_lower": -2.427464340648555e-10
+    },
+    "shuffled_input": {
+      "alpha": 0.05,
+      "bytes": 12582976,
+      "centered_cosine": 0.011890500344342735,
+      "gate": {
+        "centered_cosine_at_least": 0.5,
+        "skill_lower_above": 0.0
+      },
+      "local_bpw": 0.010374505403189254,
+      "normalized_rmse": 0.7105536154873106,
+      "passes": false,
+      "per_position_skill": {
+        "fraction_beating_null": 0.383056640625,
+        "median": -0.17422060880073353,
+        "p05": -10.357717751826064,
+        "p95": 0.6035521177804765
+      },
+      "positions": 4096,
+      "raw_cosine": 0.7318088791917957,
+      "relative_l2": 0.7105479185883141,
+      "rmse": 0.06733814304924254,
+      "skill": -0.590658916650995,
+      "skill_lower": -0.6280736894560736
+    }
+  },
+  "fit_positions": 12288,
+  "fit_splits": [
+    "teacher_fit",
+    "teacher_router",
+    "teacher_doctor"
+  ],
+  "layer": 38,
+  "replaced_weights": 9702998272,
+  "score_positions": 4096,
+  "score_split": "teacher_score",
+  "seed_spread": {
+    "max": 0.5317817655258277,
+    "min": 0.5292733229063256,
+    "range": 0.002508442619502116,
+    "seeds": [
+      17,
+      101,
+      202,
+      303
+    ]
+  },
+  "stage": "FS0",
+  "target": "pre_router_hidden -> post_moe"
+}

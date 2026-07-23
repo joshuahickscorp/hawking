@@ -1,0 +1,117 @@
+{
+  "authority": "tools/condense/gravity_functional_codec.py execute()",
+  "codec": "glm52.functional.moe.v1",
+  "determinism": {
+    "batched_equals_row_by_row": true,
+    "payload_sha256": "e8fff542a1f4fb1a5eebb4aad3268e1cc64972ddb6cf5a5343dccf934c2e8134",
+    "same_payload_same_output_bitwise": true
+  },
+  "frozen": {
+    "dtype": "float16 stored readout, float32 accumulation",
+    "feature_ordering": "row-major index = row * hidden + column",
+    "fit_solver": "Cholesky-free np.linalg.solve on the ridged normal equations",
+    "generator_algorithm": "splitmix64 finalizer, two streams, Box-Muller cosine branch",
+    "generator_version": 1,
+    "regularization": "ridge chosen on a 20 percent split of the fit data only, from (1e-2, 1e-1, 1, 10, 100)",
+    "rounding": "round-to-nearest-even on the float16 store",
+    "seed": "stored in the payload header as uint64"
+  },
+  "generator": "gen.splitmix64_boxmuller.v1",
+  "golden_vector": {
+    "call": "projection(width=8, hidden=4, seed=17)",
+    "purpose": "any reimplementation reproduces this exactly or it is a different codec",
+    "values": [
+      [
+        -0.34246621,
+        0.08806997,
+        -0.33339903,
+        -0.05769884
+      ],
+      [
+        -0.21343568,
+        0.17189409,
+        0.11442677,
+        -0.22245499
+      ],
+      [
+        0.42476264,
+        -0.05636692,
+        -0.12356444,
+        0.69370389
+      ],
+      [
+        -0.3384963,
+        0.04178932,
+        0.3010729,
+        0.30123705
+      ],
+      [
+        0.16707098,
+        0.5109657,
+        0.09435771,
+        0.02727652
+      ],
+      [
+        0.1966517,
+        0.22506087,
+        -0.6990329,
+        -0.05911091
+      ],
+      [
+        0.74445957,
+        -0.57965255,
+        -0.77391201,
+        -0.12108166
+      ],
+      [
+        0.39249572,
+        -0.0034712,
+        0.48613918,
+        -0.25084198
+      ]
+    ]
+  },
+  "metal_parity": {
+    "all_pass": true,
+    "gate": "relative L2 below 5e-2 and cosine above 0.999 against the CPU authority; fp16 readouts and a float32 accumulator will not agree to bit level and are not asked to",
+    "on_real_captured_states": [
+      {
+        "command_buffers": 1,
+        "grammar": "FRT_A",
+        "relative_l2_vs_cpu_authority": 0.00014107949391473085
+      },
+      {
+        "command_buffers": 1,
+        "grammar": "FRT_B",
+        "relative_l2_vs_cpu_authority": 7.271280537679559e-07
+      },
+      {
+        "command_buffers": 1,
+        "grammar": "FRT_B",
+        "relative_l2_vs_cpu_authority": 7.271280537679559e-07
+      }
+    ],
+    "on_synthetic_probe": [
+      {
+        "cpu_authority_cosine": 0.9999997615814209,
+        "cpu_authority_relative_l2": 0.00019977244664914906,
+        "grammar": "FRT_A",
+        "parity": true
+      },
+      {
+        "cpu_authority_cosine": 1.0,
+        "cpu_authority_relative_l2": 7.906691621428763e-07,
+        "grammar": "FRT_B",
+        "parity": true
+      },
+      {
+        "cpu_authority_cosine": 1.0,
+        "cpu_authority_relative_l2": 0.0,
+        "grammar": "FRT_D",
+        "parity": true
+      }
+    ]
+  },
+  "not_bit_identical_and_not_required_to_be": "a float16 readout with a float32 accumulator will not match across two different reduction orders; the gate is relative L2 below 5e-2 and cosine above 0.999, and the measured worst case is 2.0e-4",
+  "schema": "hawking.glm52.functional_cpu_parity.v1"
+}

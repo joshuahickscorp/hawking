@@ -1,0 +1,13 @@
+{"at": "2026-07-23T16:30:40Z", "layer": 38, "primary_centered": 0.7309190131487542, "primary_skill": 0.5317817655258277, "primary_skill_lower": 0.5231699906913899, "seed_range": 0.002508442619502116, "stage": "FS0"}
+{"at": "2026-07-23T16:32:09Z", "centered": 0.9384534120219212, "layer": 38, "passes": true, "residual_only_skill": 0.19677959782203047, "skill": 0.8806306763494857, "stage": "FS1"}
+{"amplification": 1.7062898520352412, "at": "2026-07-23T16:32:48Z", "entering": 0.1537269800901413, "layer": 38, "leaving": 0.26230278611183167, "passes": false, "stage": "FS2", "through": 39}
+{"at": "2026-07-23T16:34:09Z", "layer": 5, "linear_skill": 0.7565868630762038, "stage": "FS3", "stratum": "early", "student_skill": 0.6981689755638981}
+{"at": "2026-07-23T16:34:24Z", "layer": 38, "linear_skill": 0.5440730703868095, "stage": "FS3", "stratum": "middle", "student_skill": 0.5317817655258277}
+{"at": "2026-07-23T16:34:39Z", "layer": 74, "linear_skill": 0.517809276242939, "stage": "FS3", "stratum": "late", "student_skill": 0.5917206609379884}
+{"at": "2026-07-23T16:34:54Z", "layer": 77, "linear_skill": 0.5356875726495622, "stage": "FS3", "stratum": "final", "student_skill": 0.5862852491460606}
+{"all_pass": true, "at": "2026-07-23T16:35:09Z", "layer": 38, "skill_range": [0.481000878595497, 0.5317817655258277], "splits": 6, "stage": "FS5"}
+{"at": "2026-07-23T16:35:27Z", "layers": [5, 38, 74, 77], "max_retained": -4.11893311231857, "stage": "FS4", "verdict": "READOUT_IS_LAYER_SPECIFIC"}
+{"amplification": 1.7220182880430472, "at": "2026-07-23T16:56:26Z", "entering": 0.22927266359329224, "layer": 74, "leaving": 0.3948117196559906, "passes": false, "stage": "FS2", "through": 75}
+{"all_pass": true, "at": "2026-07-23T16:56:38Z", "layer": 74, "skill_range": [0.5483174625725625, 0.5937524120237739], "splits": 4, "stage": "FS5"}
+{"all_pass": true, "at": "2026-07-23T16:56:50Z", "layer": 77, "skill_range": [0.46109427774346534, 0.5862852491460606], "splits": 4, "stage": "FS5"}
+{"all_pass": true, "at": "2026-07-23T16:57:01Z", "layer": 5, "skill_range": [0.563386838913402, 0.7028659495505036], "splits": 4, "stage": "FS5"}

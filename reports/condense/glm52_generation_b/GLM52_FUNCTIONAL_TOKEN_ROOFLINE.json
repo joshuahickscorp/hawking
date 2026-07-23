@@ -1,0 +1,184 @@
+{
+  "active_protected_organs": {
+    "attention": 13036552192,
+    "dense_mlp": 679477248,
+    "indexer": 206181888,
+    "lm_head": 951582720,
+    "mtp_head_norm": 6144,
+    "mtp_normalization": 12288,
+    "mtp_projection": 75497472,
+    "normalization": 1179136
+  },
+  "active_protected_weights": 14950489088,
+  "bandwidth_provenance": "same kernel as FRT-D, widened until occupancy stops binding; this is a measured achievable rate for a strided fp16 read, not a peak figure",
+  "binding_limit_answer": {
+    "after": "attention and the protected organs, at 29.9 GB per token at source precision against 0.96 GB of functional payload",
+    "before": "expert weight traffic, at 51.6 GB per token",
+    "consequence": "compressing attention is now worth more than compressing the expert function again; the expert function is already a rounding error in the token budget",
+    "moved": true
+  },
+  "device": "Apple M3 Ultra",
+  "honest_scope": "weight traffic only. KV and state traffic, activation traffic, kernel launch overhead and the sequential depth of 79 blocks are not in this roofline, so the bandwidth-bound TPS is a ceiling and not a projection.",
+  "measured_bandwidth_bytes_per_second": 417720725627.34686,
+  "measured_bandwidth_gigabytes_per_second": 417.72072562734684,
+  "measured_kernels": {
+    "FRT_A": {
+      "command_buffers_per_token": 76,
+      "fraction_of_roofline": 0.020746658015903707,
+      "measured_seconds_per_layer": 0.002903868749854155,
+      "measured_seconds_per_token_moe_only": 0.22069402498891577,
+      "measured_tps_moe_only": 4.531160279714072
+    },
+    "FRT_B": {
+      "command_buffers_per_token": 76,
+      "fraction_of_roofline": 0.01398835499914825,
+      "measured_seconds_per_layer": 0.0021534187500947153,
+      "measured_seconds_per_token_moe_only": 0.16365982500719836,
+      "measured_tps_moe_only": 6.1102350558911835
+    },
+    "FRT_D": {
+      "command_buffers_per_token": 76,
+      "fraction_of_roofline": 0.0717142198979305,
+      "measured_seconds_per_layer": 0.002520235399424564,
+      "measured_seconds_per_token_moe_only": 0.19153789035626687,
+      "measured_tps_moe_only": 5.2208991032529735
+    }
+  },
+  "moe_layers": 76,
+  "paths": [
+    {
+      "at_protected_rate": {
+        "bf16_source": {
+          "bandwidth_bound_seconds_per_token": 0.19520517901413353,
+          "bandwidth_bound_tps": 5.122814901993951,
+          "binding_organ": "expert_function",
+          "moe_fraction_of_traffic": 0.6333024262701782,
+          "protected_bytes_per_token": 29900978176,
+          "protected_fraction_of_traffic": 0.3666975737298218,
+          "total_bytes_per_token": 81541249024
+        },
+        "int4": {
+          "bandwidth_bound_seconds_per_token": 0.14151922987114982,
+          "bandwidth_bound_tps": 7.066177514606872,
+          "binding_organ": "expert_function",
+          "moe_fraction_of_traffic": 0.8735485177718402,
+          "protected_bytes_per_token": 7475244544,
+          "protected_fraction_of_traffic": 0.12645148222815988,
+          "total_bytes_per_token": 59115515392
+        },
+        "int8": {
+          "bandwidth_bound_seconds_per_token": 0.15941454625214438,
+          "bandwidth_bound_tps": 6.272953275031188,
+          "binding_organ": "expert_function",
+          "moe_fraction_of_traffic": 0.7754870330002416,
+          "protected_bytes_per_token": 14950489088,
+          "protected_fraction_of_traffic": 0.22451296699975837,
+          "total_bytes_per_token": 66590759936
+        }
+      },
+      "moe_bytes_per_token": 51640270848,
+      "path": "teacher_bf16_experts"
+    },
+    {
+      "at_protected_rate": {
+        "bf16_source": {
+          "bandwidth_bound_seconds_per_token": 0.07615992898657664,
+          "bandwidth_bound_tps": 13.130264343815924,
+          "binding_organ": "attention_and_protected_organs",
+          "moe_fraction_of_traffic": 0.060119061605287766,
+          "protected_bytes_per_token": 29900978176,
+          "protected_fraction_of_traffic": 0.9398809383947122,
+          "total_bytes_per_token": 31813580800
+        },
+        "int4": {
+          "bandwidth_bound_seconds_per_token": 0.022473979843592916,
+          "bandwidth_bound_tps": 44.49590179218253,
+          "binding_organ": "attention_and_protected_organs",
+          "moe_fraction_of_traffic": 0.20373175977123023,
+          "protected_bytes_per_token": 7475244544,
+          "protected_fraction_of_traffic": 0.7962682402287697,
+          "total_bytes_per_token": 9387847168
+        },
+        "int8": {
+          "bandwidth_bound_seconds_per_token": 0.040369296224587486,
+          "bandwidth_bound_tps": 24.771301298805795,
+          "binding_organ": "attention_and_protected_organs",
+          "moe_fraction_of_traffic": 0.11341945217785696,
+          "protected_bytes_per_token": 14950489088,
+          "protected_fraction_of_traffic": 0.886580547822143,
+          "total_bytes_per_token": 16863091712
+        }
+      },
+      "moe_bytes_per_token": 1912602624,
+      "path": "FRT_A_explicit"
+    },
+    {
+      "at_protected_rate": {
+        "bf16_source": {
+          "bandwidth_bound_seconds_per_token": 0.07387059725527746,
+          "bandwidth_bound_tps": 13.537185797270077,
+          "binding_organ": "attention_and_protected_organs",
+          "moe_fraction_of_traffic": 0.030991108998182852,
+          "protected_bytes_per_token": 29900978176,
+          "protected_fraction_of_traffic": 0.9690088910018172,
+          "total_bytes_per_token": 30857279488
+        },
+        "int4": {
+          "bandwidth_bound_seconds_per_token": 0.020184648112293743,
+          "bandwidth_bound_tps": 49.54260259761159,
+          "binding_organ": "attention_and_protected_organs",
+          "moe_fraction_of_traffic": 0.11341945217785696,
+          "protected_bytes_per_token": 7475244544,
+          "protected_fraction_of_traffic": 0.886580547822143,
+          "total_bytes_per_token": 8431545856
+        },
+        "int8": {
+          "bandwidth_bound_seconds_per_token": 0.03807996449328832,
+          "bandwidth_bound_tps": 26.260528687631847,
+          "binding_organ": "attention_and_protected_organs",
+          "moe_fraction_of_traffic": 0.060119061605287766,
+          "protected_bytes_per_token": 14950489088,
+          "protected_fraction_of_traffic": 0.9398809383947122,
+          "total_bytes_per_token": 15906790400
+        }
+      },
+      "moe_bytes_per_token": 956301312,
+      "path": "FRT_B_procedural"
+    },
+    {
+      "at_protected_rate": {
+        "bf16_source": {
+          "bandwidth_bound_seconds_per_token": 0.08531725591177332,
+          "bandwidth_bound_tps": 11.720958313920706,
+          "binding_organ": "attention_and_protected_organs",
+          "moe_fraction_of_traffic": 0.16099897073576103,
+          "protected_bytes_per_token": 29900978176,
+          "protected_fraction_of_traffic": 0.839001029264239,
+          "total_bytes_per_token": 35638786048
+        },
+        "int4": {
+          "bandwidth_bound_seconds_per_token": 0.0316313067687896,
+          "bandwidth_bound_tps": 31.614248734949307,
+          "binding_organ": "attention_and_protected_organs",
+          "moe_fraction_of_traffic": 0.4342530167406247,
+          "protected_bytes_per_token": 7475244544,
+          "protected_fraction_of_traffic": 0.5657469832593752,
+          "total_bytes_per_token": 13213052416
+        },
+        "int8": {
+          "bandwidth_bound_seconds_per_token": 0.04952662314978417,
+          "bandwidth_bound_tps": 20.19116055975962,
+          "binding_organ": "attention_and_protected_organs",
+          "moe_fraction_of_traffic": 0.2773455873672842,
+          "protected_bytes_per_token": 14950489088,
+          "protected_fraction_of_traffic": 0.7226544126327158,
+          "total_bytes_per_token": 20688296960
+        }
+      },
+      "moe_bytes_per_token": 5737807872,
+      "path": "FRT_D_direct_linear"
+    }
+  ],
+  "schema": "hawking.glm52.functional_token_roofline.v1",
+  "supersedes": "the 5.914 GB/token estimate, which assumed compressed teacher experts"
+}

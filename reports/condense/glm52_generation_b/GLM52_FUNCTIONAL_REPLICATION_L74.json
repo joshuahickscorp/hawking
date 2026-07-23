@@ -1,0 +1,536 @@
+{
+  "all_pass": true,
+  "fraction_passing": 1.0,
+  "layer": 74,
+  "rows": [
+    {
+      "alpha": 0.05,
+      "bytes": 12582976,
+      "centered_cosine": 0.7696066710150211,
+      "constant_null_raw_cosine": 0.8598681746702149,
+      "expanded_bytes": 37748800,
+      "family": "random_feature_student",
+      "gate": {
+        "centered_cosine_at_least": 0.5,
+        "skill_lower_above": 0.0
+      },
+      "label": "student_h1024_s17",
+      "local_bpw": 0.010374505403189254,
+      "normalized_rmse": 0.3262051697193543,
+      "passes": true,
+      "per_position_skill": {
+        "fraction_beating_null": 0.99853515625,
+        "median": 0.7619002228363827,
+        "p05": 0.2102534420555039,
+        "p95": 0.9095906183449292
+      },
+      "positions": 4096,
+      "raw_cosine": 0.9453194339874549,
+      "refit": false,
+      "relative_l2": 0.32620513225413705,
+      "rmse": 0.1416738243739437,
+      "seed": 17,
+      "skill": 0.5917206609379884,
+      "skill_lower": 0.5814338648560115,
+      "split": "teacher_score",
+      "stored_parameters": 6291456
+    },
+    {
+      "alpha": 0.05,
+      "bytes": 12582976,
+      "centered_cosine": 0.7692886796334998,
+      "constant_null_raw_cosine": 0.8598681746702149,
+      "expanded_bytes": 37748800,
+      "family": "random_feature_student",
+      "gate": {
+        "centered_cosine_at_least": 0.5,
+        "skill_lower_above": 0.0
+      },
+      "label": "student_h1024_s101",
+      "local_bpw": 0.010374505403189254,
+      "normalized_rmse": 0.3264092815123105,
+      "passes": true,
+      "per_position_skill": {
+        "fraction_beating_null": 0.99755859375,
+        "median": 0.7591375099130597,
+        "p05": 0.1974319302251327,
+        "p95": 0.9110286298200323
+      },
+      "positions": 4096,
+      "raw_cosine": 0.945250087623952,
+      "refit": false,
+      "relative_l2": 0.3264092440236511,
+      "rmse": 0.14176247195219271,
+      "seed": 101,
+      "skill": 0.5912095672609659,
+      "skill_lower": 0.5807993948894863,
+      "split": "teacher_score",
+      "stored_parameters": 6291456
+    },
+    {
+      "alpha": 0.05,
+      "bytes": 12582976,
+      "centered_cosine": 0.7696367041734589,
+      "constant_null_raw_cosine": 0.8598681746702149,
+      "expanded_bytes": 37748800,
+      "family": "random_feature_student",
+      "gate": {
+        "centered_cosine_at_least": 0.5,
+        "skill_lower_above": 0.0
+      },
+      "label": "student_h1024_s202",
+      "local_bpw": 0.010374505403189254,
+      "normalized_rmse": 0.32619095959254985,
+      "passes": true,
+      "per_position_skill": {
+        "fraction_beating_null": 0.99755859375,
+        "median": 0.7532729837064369,
+        "p05": 0.20329169882058618,
+        "p95": 0.9080215223911919
+      },
+      "positions": 4096,
+      "raw_cosine": 0.945334286350591,
+      "refit": false,
+      "relative_l2": 0.3261909221289641,
+      "rmse": 0.14166765278870808,
+      "seed": 202,
+      "skill": 0.5917562310352866,
+      "skill_lower": 0.5817735477535503,
+      "split": "teacher_score",
+      "stored_parameters": 6291456
+    },
+    {
+      "alpha": 0.05,
+      "bytes": 12582976,
+      "centered_cosine": 0.7707579727708889,
+      "constant_null_raw_cosine": 0.8598681746702149,
+      "expanded_bytes": 37748800,
+      "family": "random_feature_student",
+      "gate": {
+        "centered_cosine_at_least": 0.5,
+        "skill_lower_above": 0.0
+      },
+      "label": "student_h1024_s303",
+      "local_bpw": 0.010374505403189254,
+      "normalized_rmse": 0.3253924977966508,
+      "passes": true,
+      "per_position_skill": {
+        "fraction_beating_null": 0.998779296875,
+        "median": 0.7620630410724725,
+        "p05": 0.19628378864841486,
+        "p95": 0.9080553275552189
+      },
+      "positions": 4096,
+      "raw_cosine": 0.9455896701650688,
+      "refit": false,
+      "relative_l2": 0.32539246042477016,
+      "rmse": 0.14132087368542523,
+      "seed": 303,
+      "skill": 0.5937524120237739,
+      "skill_lower": 0.5834257656128997,
+      "split": "teacher_score",
+      "stored_parameters": 6291456
+    },
+    {
+      "alpha": 0.05,
+      "bytes": 12582976,
+      "centered_cosine": 0.7462197540441992,
+      "constant_null_raw_cosine": 0.8536737137604271,
+      "expanded_bytes": 37748800,
+      "family": "random_feature_student",
+      "gate": {
+        "centered_cosine_at_least": 0.5,
+        "skill_lower_above": 0.0
+      },
+      "label": "student_h1024_s17",
+      "local_bpw": 0.010374505403189254,
+      "normalized_rmse": 0.3470598909420967,
+      "passes": true,
+      "per_position_skill": {
+        "fraction_beating_null": 1.0,
+        "median": 0.6762691999821675,
+        "p05": 0.22304613175254745,
+        "p95": 0.8989843622751295
+      },
+      "positions": 4096,
+      "raw_cosine": 0.9378843692090113,
+      "refit": false,
+      "relative_l2": 0.34705980993685864,
+      "rmse": 0.15137430091576876,
+      "seed": 17,
+      "skill": 0.5559293790960862,
+      "skill_lower": 0.5496149482380919,
+      "split": "teacher_cv",
+      "stored_parameters": 6291456
+    },
+    {
+      "alpha": 0.05,
+      "bytes": 12582976,
+      "centered_cosine": 0.7451066619051452,
+      "constant_null_raw_cosine": 0.8536737137604271,
+      "expanded_bytes": 37748800,
+      "family": "random_feature_student",
+      "gate": {
+        "centered_cosine_at_least": 0.5,
+        "skill_lower_above": 0.0
+      },
+      "label": "student_h1024_s101",
+      "local_bpw": 0.010374505403189254,
+      "normalized_rmse": 0.3477368014142129,
+      "passes": true,
+      "per_position_skill": {
+        "fraction_beating_null": 1.0,
+        "median": 0.6735244545620762,
+        "p05": 0.22439973807696206,
+        "p95": 0.8978695286513163
+      },
+      "positions": 4096,
+      "raw_cosine": 0.9376364177475025,
+      "refit": false,
+      "relative_l2": 0.3477367202509795,
+      "rmse": 0.15166954347238057,
+      "seed": 101,
+      "skill": 0.5541954466833905,
+      "skill_lower": 0.5475690654705105,
+      "split": "teacher_cv",
+      "stored_parameters": 6291456
+    },
+    {
+      "alpha": 0.05,
+      "bytes": 12582976,
+      "centered_cosine": 0.7464781474470362,
+      "constant_null_raw_cosine": 0.8536737137604271,
+      "expanded_bytes": 37748800,
+      "family": "random_feature_student",
+      "gate": {
+        "centered_cosine_at_least": 0.5,
+        "skill_lower_above": 0.0
+      },
+      "label": "student_h1024_s202",
+      "local_bpw": 0.010374505403189254,
+      "normalized_rmse": 0.3473661338293406,
+      "passes": true,
+      "per_position_skill": {
+        "fraction_beating_null": 1.0,
+        "median": 0.6746597151201746,
+        "p05": 0.22554142622350135,
+        "p95": 0.897897663932913
+      },
+      "positions": 4096,
+      "raw_cosine": 0.9377667136345192,
+      "refit": false,
+      "relative_l2": 0.34736605275262317,
+      "rmse": 0.15150787239486171,
+      "seed": 202,
+      "skill": 0.5551453445682459,
+      "skill_lower": 0.5482463762895056,
+      "split": "teacher_cv",
+      "stored_parameters": 6291456
+    },
+    {
+      "alpha": 0.05,
+      "bytes": 12582976,
+      "centered_cosine": 0.7468796124730381,
+      "constant_null_raw_cosine": 0.8536737137604271,
+      "expanded_bytes": 37748800,
+      "family": "random_feature_student",
+      "gate": {
+        "centered_cosine_at_least": 0.5,
+        "skill_lower_above": 0.0
+      },
+      "label": "student_h1024_s303",
+      "local_bpw": 0.010374505403189254,
+      "normalized_rmse": 0.3468621375115409,
+      "passes": true,
+      "per_position_skill": {
+        "fraction_beating_null": 1.0,
+        "median": 0.6742187049170107,
+        "p05": 0.23964119452057028,
+        "p95": 0.8959128788759714
+      },
+      "positions": 4096,
+      "raw_cosine": 0.9379379650288239,
+      "refit": false,
+      "relative_l2": 0.3468620565524587,
+      "rmse": 0.15128804840406876,
+      "seed": 303,
+      "skill": 0.5564352944855062,
+      "skill_lower": 0.5498547298471028,
+      "split": "teacher_cv",
+      "stored_parameters": 6291456
+    },
+    {
+      "alpha": 0.05,
+      "bytes": 12582976,
+      "centered_cosine": 0.7452419550220628,
+      "constant_null_raw_cosine": 0.8431080128372194,
+      "expanded_bytes": 37748800,
+      "family": "random_feature_student",
+      "gate": {
+        "centered_cosine_at_least": 0.5,
+        "skill_lower_above": 0.0
+      },
+      "label": "student_h1024_s17",
+      "local_bpw": 0.010374505403189254,
+      "normalized_rmse": 0.35870774356724106,
+      "passes": true,
+      "per_position_skill": {
+        "fraction_beating_null": 1.0,
+        "median": 0.6351030755965258,
+        "p05": 0.18243625655392812,
+        "p95": 0.8946329860392563
+      },
+      "positions": 4096,
+      "raw_cosine": 0.9334758787951222,
+      "refit": false,
+      "relative_l2": 0.35870769332725755,
+      "rmse": 0.15675462945953766,
+      "seed": 17,
+      "skill": 0.5551758754159404,
+      "skill_lower": 0.5470006218713264,
+      "split": "teacher_holdout",
+      "stored_parameters": 6291456
+    },
+    {
+      "alpha": 0.05,
+      "bytes": 12582976,
+      "centered_cosine": 0.7463415295491356,
+      "constant_null_raw_cosine": 0.8431080128372194,
+      "expanded_bytes": 37748800,
+      "family": "random_feature_student",
+      "gate": {
+        "centered_cosine_at_least": 0.5,
+        "skill_lower_above": 0.0
+      },
+      "label": "student_h1024_s101",
+      "local_bpw": 0.010374505403189254,
+      "normalized_rmse": 0.35804842054334707,
+      "passes": true,
+      "per_position_skill": {
+        "fraction_beating_null": 1.0,
+        "median": 0.6329214131158419,
+        "p05": 0.1874948801419753,
+        "p95": 0.8952293678494754
+      },
+      "positions": 4096,
+      "raw_cosine": 0.9337239550457889,
+      "refit": false,
+      "relative_l2": 0.3580483703957071,
+      "rmse": 0.15646650650106222,
+      "seed": 101,
+      "skill": 0.5568095912074646,
+      "skill_lower": 0.5485344655418148,
+      "split": "teacher_holdout",
+      "stored_parameters": 6291456
+    },
+    {
+      "alpha": 0.05,
+      "bytes": 12582976,
+      "centered_cosine": 0.7453146701382064,
+      "constant_null_raw_cosine": 0.8431080128372194,
+      "expanded_bytes": 37748800,
+      "family": "random_feature_student",
+      "gate": {
+        "centered_cosine_at_least": 0.5,
+        "skill_lower_above": 0.0
+      },
+      "label": "student_h1024_s202",
+      "local_bpw": 0.010374505403189254,
+      "normalized_rmse": 0.35870628704967594,
+      "passes": true,
+      "per_position_skill": {
+        "fraction_beating_null": 1.0,
+        "median": 0.6308620630352553,
+        "p05": 0.18040783233013194,
+        "p95": 0.8992650716344343
+      },
+      "positions": 4096,
+      "raw_cosine": 0.9334709040564546,
+      "refit": false,
+      "relative_l2": 0.3587062368098963,
+      "rmse": 0.1567539929640192,
+      "seed": 202,
+      "skill": 0.5551794877875553,
+      "skill_lower": 0.5468625712506396,
+      "split": "teacher_holdout",
+      "stored_parameters": 6291456
+    },
+    {
+      "alpha": 0.05,
+      "bytes": 12582976,
+      "centered_cosine": 0.7460320973086605,
+      "constant_null_raw_cosine": 0.8431080128372194,
+      "expanded_bytes": 37748800,
+      "family": "random_feature_student",
+      "gate": {
+        "centered_cosine_at_least": 0.5,
+        "skill_lower_above": 0.0
+      },
+      "label": "student_h1024_s303",
+      "local_bpw": 0.010374505403189254,
+      "normalized_rmse": 0.3582245334621534,
+      "passes": true,
+      "per_position_skill": {
+        "fraction_beating_null": 0.999755859375,
+        "median": 0.6290732516685792,
+        "p05": 0.19238449260498627,
+        "p95": 0.8925859568034606
+      },
+      "positions": 4096,
+      "raw_cosine": 0.9336561524177247,
+      "refit": false,
+      "relative_l2": 0.3582244832898477,
+      "rmse": 0.1565434675252542,
+      "seed": 303,
+      "skill": 0.5563735007371786,
+      "skill_lower": 0.5478940177878487,
+      "split": "teacher_holdout",
+      "stored_parameters": 6291456
+    },
+    {
+      "alpha": 0.05,
+      "bytes": 12582976,
+      "centered_cosine": 0.7412210407693837,
+      "constant_null_raw_cosine": 0.8530248376332267,
+      "expanded_bytes": 37748800,
+      "family": "random_feature_student",
+      "gate": {
+        "centered_cosine_at_least": 0.5,
+        "skill_lower_above": 0.0
+      },
+      "label": "student_h1024_s17",
+      "local_bpw": 0.010374505403189254,
+      "normalized_rmse": 0.3504172701612002,
+      "passes": true,
+      "per_position_skill": {
+        "fraction_beating_null": 1.0,
+        "median": 0.6922226438454191,
+        "p05": 0.19805312583783935,
+        "p95": 0.9099631862445596
+      },
+      "positions": 4096,
+      "raw_cosine": 0.93660002970808,
+      "refit": false,
+      "relative_l2": 0.3504172418433925,
+      "rmse": 0.15431721563990158,
+      "seed": 17,
+      "skill": 0.5492114709476609,
+      "skill_lower": 0.5417330371050402,
+      "split": "teacher_replication",
+      "stored_parameters": 6291456
+    },
+    {
+      "alpha": 0.05,
+      "bytes": 12582976,
+      "centered_cosine": 0.7415908283476673,
+      "constant_null_raw_cosine": 0.8530248376332267,
+      "expanded_bytes": 37748800,
+      "family": "random_feature_student",
+      "gate": {
+        "centered_cosine_at_least": 0.5,
+        "skill_lower_above": 0.0
+      },
+      "label": "student_h1024_s101",
+      "local_bpw": 0.010374505403189254,
+      "normalized_rmse": 0.3502680695170012,
+      "passes": true,
+      "per_position_skill": {
+        "fraction_beating_null": 1.0,
+        "median": 0.6928608238660207,
+        "p05": 0.21290816293765094,
+        "p95": 0.9103553286406637
+      },
+      "positions": 4096,
+      "raw_cosine": 0.9366504004194115,
+      "refit": false,
+      "relative_l2": 0.35026804121125005,
+      "rmse": 0.15425151046511415,
+      "seed": 101,
+      "skill": 0.5495952626503964,
+      "skill_lower": 0.5418836294643338,
+      "split": "teacher_replication",
+      "stored_parameters": 6291456
+    },
+    {
+      "alpha": 0.05,
+      "bytes": 12582976,
+      "centered_cosine": 0.7409010850755916,
+      "constant_null_raw_cosine": 0.8530248376332267,
+      "expanded_bytes": 37748800,
+      "family": "random_feature_student",
+      "gate": {
+        "centered_cosine_at_least": 0.5,
+        "skill_lower_above": 0.0
+      },
+      "label": "student_h1024_s202",
+      "local_bpw": 0.010374505403189254,
+      "normalized_rmse": 0.35076457359166774,
+      "passes": true,
+      "per_position_skill": {
+        "fraction_beating_null": 1.0,
+        "median": 0.6910023535327483,
+        "p05": 0.19456548400783338,
+        "p95": 0.9075014473718563
+      },
+      "positions": 4096,
+      "raw_cosine": 0.9364698202151307,
+      "refit": false,
+      "relative_l2": 0.35076454524579376,
+      "rmse": 0.15447016157874552,
+      "seed": 202,
+      "skill": 0.5483174625725625,
+      "skill_lower": 0.5406454112319691,
+      "split": "teacher_replication",
+      "stored_parameters": 6291456
+    },
+    {
+      "alpha": 0.05,
+      "bytes": 12582976,
+      "centered_cosine": 0.7424158202171938,
+      "constant_null_raw_cosine": 0.8530248376332267,
+      "expanded_bytes": 37748800,
+      "family": "random_feature_student",
+      "gate": {
+        "centered_cosine_at_least": 0.5,
+        "skill_lower_above": 0.0
+      },
+      "label": "student_h1024_s303",
+      "local_bpw": 0.010374505403189254,
+      "normalized_rmse": 0.34977280535628485,
+      "passes": true,
+      "per_position_skill": {
+        "fraction_beating_null": 1.0,
+        "median": 0.6942509753656363,
+        "p05": 0.21668719483019677,
+        "p95": 0.9091444135960491
+      },
+      "positions": 4096,
+      "raw_cosine": 0.936835174333423,
+      "refit": false,
+      "relative_l2": 0.349772777090557,
+      "rmse": 0.1540334053864095,
+      "seed": 303,
+      "skill": 0.5508680684717349,
+      "skill_lower": 0.5431205232632493,
+      "split": "teacher_replication",
+      "stored_parameters": 6291456
+    }
+  ],
+  "seeds_tested": [
+    17,
+    101,
+    202,
+    303
+  ],
+  "skill_range": [
+    0.5483174625725625,
+    0.5937524120237739
+  ],
+  "splits_tested": [
+    "teacher_cv",
+    "teacher_holdout",
+    "teacher_replication",
+    "teacher_score"
+  ],
+  "stage": "FS5"
+}

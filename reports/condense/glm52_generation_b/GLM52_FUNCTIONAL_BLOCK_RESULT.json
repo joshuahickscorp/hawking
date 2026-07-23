@@ -1,0 +1,112 @@
+{
+  "block_identity": "block_output = post_attention_hidden + post_moe, exact in the sealed reference",
+  "candidates": [
+    {
+      "alpha": 0.05,
+      "bytes": 12582976,
+      "centered_cosine": 0.9384534120219212,
+      "gate": {
+        "centered_cosine_at_least": 0.5,
+        "skill_lower_above": 0.0
+      },
+      "label": "student_h1024_s17",
+      "local_bpw": 0.010374505403189254,
+      "normalized_rmse": 0.15372757310169452,
+      "passes": true,
+      "per_position_skill": {
+        "fraction_beating_null": 1.0,
+        "median": 0.8572243596311515,
+        "p05": 0.6986232937790334,
+        "p95": 0.9619374581749045
+      },
+      "positions": 4096,
+      "raw_cosine": 0.9881161176299216,
+      "relative_l2": 0.15372726972681067,
+      "rmse": 0.03653396137204009,
+      "skill": 0.8806306763494857,
+      "skill_lower": 0.8786382842029923
+    },
+    {
+      "alpha": 0.05,
+      "bytes": 75497536,
+      "centered_cosine": 0.9401369116372522,
+      "gate": {
+        "centered_cosine_at_least": 0.5,
+        "skill_lower_above": 0.0
+      },
+      "label": "linear_full",
+      "local_bpw": 0.062246768583161506,
+      "normalized_rmse": 0.15169638516528336,
+      "passes": true,
+      "per_position_skill": {
+        "fraction_beating_null": 1.0,
+        "median": 0.8628634140713953,
+        "p05": 0.702068322622347,
+        "p95": 0.9603117115543136
+      },
+      "positions": 4096,
+      "raw_cosine": 0.9884297693642423,
+      "relative_l2": 0.1516960857988637,
+      "rmse": 0.03605124158331937,
+      "skill": 0.8837642679966079,
+      "skill_lower": 0.8816983252382223
+    }
+  ],
+  "controls": {
+    "block_mean_null": {
+      "note": "the reference null",
+      "skill": 0.0
+    },
+    "constant_null_raw_cosine": 0.895562565914977,
+    "moe_constant_weight_space_equivalent": {
+      "alpha": 0.05,
+      "centered_cosine": 0.8635792425438931,
+      "gate": {
+        "centered_cosine_at_least": 0.5,
+        "skill_lower_above": 0.0
+      },
+      "normalized_rmse": 0.22466095954480103,
+      "passes": true,
+      "per_position_skill": {
+        "fraction_beating_null": 1.0,
+        "median": 0.7268786335087581,
+        "p05": 0.5322500462957928,
+        "p95": 0.8177596053602222
+      },
+      "positions": 4096,
+      "raw_cosine": 0.974442247903387,
+      "relative_l2": 0.22466051618584665,
+      "rmse": 0.0533915591862339,
+      "skill": 0.7450562262828704,
+      "skill_lower": 0.7414443094908271
+    },
+    "residual_only_no_moe": {
+      "alpha": 0.05,
+      "centered_cosine": 0.6472742188947698,
+      "gate": {
+        "centered_cosine_at_least": 0.5,
+        "skill_lower_above": 0.0
+      },
+      "normalized_rmse": 0.39877026788496855,
+      "passes": true,
+      "per_position_skill": {
+        "fraction_beating_null": 0.177734375,
+        "median": -1.2939376162927636,
+        "p05": -1.9149205134710905,
+        "p95": 0.844050855867414
+      },
+      "positions": 4096,
+      "raw_cosine": 0.9176257388405122,
+      "relative_l2": 0.3987694809286006,
+      "rmse": 0.09476931996831824,
+      "skill": 0.19677959782203047,
+      "skill_lower": 0.16740645661043765
+    }
+  },
+  "gate": "student block output beats the block mean-null and the weight-space control with a positive held-out confidence lower bound",
+  "layer": 38,
+  "passes": true,
+  "score_positions": 4096,
+  "stage": "FS1",
+  "target": "block_output"
+}

@@ -1,0 +1,70 @@
+{
+  "amplification": 1.7220182880430472,
+  "entering_relative_l2": 0.22927266359329224,
+  "layer": 74,
+  "leaving_relative_l2": 0.3948117196559906,
+  "next_layer_scores": {
+    "block_output": {
+      "alpha": 0.05,
+      "centered_cosine": 0.7788835367856146,
+      "gate": {
+        "centered_cosine_at_least": 0.5,
+        "skill_lower_above": 0.0
+      },
+      "normalized_rmse": 0.3948189293053056,
+      "passes": true,
+      "per_position_skill": {
+        "fraction_beating_null": 0.99072265625,
+        "median": 0.7179952151633286,
+        "p05": 0.2607584665706113,
+        "p95": 0.9686155800663119
+      },
+      "positions": 4096,
+      "raw_cosine": 0.923699269051593,
+      "relative_l2": 0.3948169668780644,
+      "rmse": 0.34465906071895636,
+      "skill": 0.5595718108946088,
+      "skill_lower": 0.5470355468104102
+    },
+    "post_moe": {
+      "alpha": 0.05,
+      "centered_cosine": 0.6971541324610486,
+      "gate": {
+        "centered_cosine_at_least": 0.5,
+        "skill_lower_above": 0.0
+      },
+      "normalized_rmse": 0.5926646303012746,
+      "passes": true,
+      "per_position_skill": {
+        "fraction_beating_null": 0.949462890625,
+        "median": 0.6595509155734594,
+        "p05": -0.005855659890936338,
+        "p95": 0.9670734935044212
+      },
+      "positions": 4096,
+      "raw_cosine": 0.8345609405059919,
+      "relative_l2": 0.5926645979359745,
+      "rmse": 0.27390387554064877,
+      "skill": 0.3607309155670049,
+      "skill_lower": 0.33879024065689967
+    }
+  },
+  "note": "teacher and student forwards differ only in the MoE output of the perturbed layer; both use the same captured indexer carry",
+  "passes": false,
+  "propagated_through": 75,
+  "relative_l2_by_stage": {
+    "attention_output": 0.37538233399391174,
+    "block_output": 0.3948117196559906,
+    "post_moe": 0.592655599117279,
+    "pre_router_hidden": 0.30222010612487793
+  },
+  "routing": {
+    "fraction_identical_topk_set": 0.363525390625,
+    "mean_overlap_on_lowest_decile_margin": 6.8951219512195125,
+    "mean_topk_overlap_of_8": 6.70263671875,
+    "teacher_margin_median": 0.004927635192871094,
+    "top1_agreement": 0.709228515625
+  },
+  "seconds": 37.3,
+  "stage": "FS2"
+}

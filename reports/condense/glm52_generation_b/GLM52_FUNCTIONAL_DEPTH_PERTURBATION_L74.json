@@ -1,0 +1,66 @@
+{
+  "contractive": false,
+  "experiment": "perturbation_through_teacher_layers",
+  "geometric_mean_amplification": 1.3900562610688008,
+  "injected_at": 74,
+  "per_layer_amplification": [
+    1.7220182880430472,
+    1.0637578661868645,
+    1.46627891901742
+  ],
+  "projected_over_75_sparse_layers": 53386121036.159966,
+  "question": "how does the block stack treat an error it did not create",
+  "relative_l2_after": 0.6158137917518616,
+  "relative_l2_at_injection": 0.22927266359329224,
+  "seconds": 67.3,
+  "steps": [
+    {
+      "layer": 75,
+      "mean_topk_overlap_of_8": 6.70263671875,
+      "relative_l2_by_stage": {
+        "attention_output": 0.37538233399391174,
+        "post_moe": 0.592655599117279,
+        "pre_router_hidden": 0.30222010612487793
+      },
+      "relative_l2_entering": 0.22927266359329224,
+      "relative_l2_leaving": 0.3948117196559906,
+      "step_amplification": 1.7220182880430472,
+      "student_substituted_here": false,
+      "top1_agreement": 0.709228515625
+    },
+    {
+      "layer": 76,
+      "mean_topk_overlap_of_8": 5.762939453125,
+      "relative_l2_by_stage": {
+        "attention_output": 0.29587623476982117,
+        "post_moe": 0.46432504057884216,
+        "pre_router_hidden": 0.348061203956604
+      },
+      "relative_l2_entering": 0.3948117196559906,
+      "relative_l2_leaving": 0.4199840724468231,
+      "step_amplification": 1.0637578661868645,
+      "student_substituted_here": false,
+      "top1_agreement": 0.395263671875
+    },
+    {
+      "layer": 77,
+      "mean_topk_overlap_of_8": 5.40283203125,
+      "relative_l2_by_stage": {
+        "attention_output": 0.4872305393218994,
+        "post_moe": 0.6757182478904724,
+        "pre_router_hidden": 0.43263086676597595
+      },
+      "relative_l2_entering": 0.4199840724468231,
+      "relative_l2_leaving": 0.6158137917518616,
+      "step_amplification": 1.46627891901742,
+      "student_substituted_here": false,
+      "top1_agreement": 0.536376953125
+    }
+  ],
+  "teacher_layers_traversed": [
+    75,
+    76,
+    77
+  ],
+  "total_amplification": 2.685945119232602
+}
