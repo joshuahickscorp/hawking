@@ -1,0 +1,72 @@
+{
+  "bpw": {
+    "coded_expert_tensors": 18048,
+    "complete_bpw_exact": "918123097/918334510",
+    "complete_bytes": 29379939104,
+    "components": {
+      "alignment": 0,
+      "codebooks": 73924608,
+      "doctor": 12074352640,
+      "indices": 212902871040,
+      "metadata": 9240576,
+      "packaging": 536870912,
+      "pass_through_tensors": 801541632,
+      "protected_islands": 7950447616,
+      "runtime_tables": 12032,
+      "scales": 690251776
+    },
+    "legal_under_one_bit_ceiling": true,
+    "omitted_expert_tensors": 18048,
+    "organ_bpw": {},
+    "scope": "complete artifact, omission-aware",
+    "whole_model_bpw": 0.999769787
+  },
+  "capability_pass": false,
+  "divergence_vs_parent": {
+    "mean_logit_cosine": 0.58127,
+    "mean_sym_kl": 7.76302,
+    "mean_top5_overlap": 0.12,
+    "next_token_argmax_agreement": 0.15
+  },
+  "domain": "math",
+  "honesty": "REAL parent-vs-packed Qwen3-MoE forward with expert_hook substitution; BPW is whole-model from the exact byte ledger, never expert-only; weight-space error is NOT a pass criterion",
+  "kind": "packed",
+  "ladder_sha": "931d74198c9b6bfd",
+  "logits_finite": true,
+  "n_tokens": 20,
+  "note": "S64_doctor + DATA-FREE output-aware coding on gate/up. The Lane C adversary showed that the ~60 percent layer-0 output-error cut credited to routed-token calibration is 83 percent recoverable from h = post_attention_layernorm.weight^2 alone (log-corr 0.9918), so the load-bearing quantity is the LayerNorm gamma, not the activations. gamma is ALREADY shipped native as a pass-through tensor, so this costs ZERO additional bits and needs ZERO calibration: complete BPW is identical to S64_doctor at 0.999769787. Applied to gate/up ONLY, because their input IS the post-attention-layernorm output; down_proj's input is the SwiGLU intermediate and gamma does not describe it. Measured gamma^2 anisotropy over all 94 layers: mean 0.293 decades, 45.7 percent of layers above 0.3, layer 0 an outlier at 1.843. Expected gain is large at layer 0 and a few percent at median depth. The trade is real and must be judged by the forward, not asserted: output-aware coding makes WEIGHT-space error substantially worse (0.237 -> 0.806 on L0 gate) while cutting output error, which is the correct direction only if output is what survives.",
+  "prompt_id": "math_add",
+  "quality": {
+    "n_positions": 19,
+    "nll": 5.91271,
+    "perplexity": 369.7058
+  },
+  "row_id": "math_add__S64_gamma",
+  "sealed_at": "2026-07-21T02:40:11Z",
+  "sha256": "9b88a538a0624595d1ce7e71160c33ab39a8694d561a07a9142f34b70ebbf45e",
+  "spec": {
+    "down": {
+      "dim": 16,
+      "doctor": {
+        "dim": 16,
+        "k": 1024,
+        "protect_frac": 0.5,
+        "stages": 1
+      },
+      "family": "function_aware",
+      "k": 1024,
+      "stages": 1
+    },
+    "gate_up": {
+      "dim": 8,
+      "family": "function_aware",
+      "gamma_weighted": true,
+      "k": 1024,
+      "stages": 2
+    },
+    "keep_experts": 64,
+    "kind": "packed"
+  },
+  "variant": "S64_gamma",
+  "verdict": "collapse"
+}
