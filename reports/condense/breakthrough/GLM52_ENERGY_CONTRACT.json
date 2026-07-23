@@ -1,0 +1,343 @@
+{
+  "schema": "hawking.energy_contract/1",
+  "mandate_section": 10,
+  "campaign": "glm52-inference-breakthrough",
+  "branch": "campaign/glm52-inference-breakthrough",
+  "sealed_utc": "2026-07-23T01:39:02Z",
+  "sealed_by": "energy-contract probe (read-only, unprivileged, no sudo invoked)",
+
+  "verdict": "IOREPORT",
+  "verdict_scope": "Energy IS measurable on this machine, unprivileged, via the IOReport 'Energy Model' group. Exactly ONE energy channel is populated: 'GPU Energy' (nJ). CPU, ANE, DRAM and SRAM energy channels enumerate but read identically 0.00 in every sample taken. A whole-system power figure is also readable but its provenance is unverified. Therefore: GPU-domain energy = AVAILABLE; CPU/ANE/DRAM-domain energy = UNAVAILABLE; calibrated wall energy = UNAVAILABLE.",
+  "verdict_alternatives_rejected": {
+    "EXTERNAL_METER": "No external meter present. system_profiler SPUSBDataType returns 0 bytes (no USB devices at all). ioreg -c IOPMPowerSource has no power-source node. pmset -g ps reports 'Now drawing from AC Power' with no battery or UPS. No wall meter, no smart plug, no UPS telemetry.",
+    "POWERMETRICS_WITH_AUTHORIZATION": "Reachable but requires an action only the user may take, and is strictly an upgrade on top of IOREPORT rather than a replacement. See privilege_requirement.upgrade_path. Not selected because it is not the state of the machine as measured.",
+    "UNAVAILABLE": "Rejected on evidence: a nonzero hardware energy counter was read without privilege. See measurement_source.evidence."
+  },
+
+  "measurement_source": {
+    "primary": {
+      "name": "IOReport 'Energy Model' group, channel 'GPU Energy'",
+      "units_native": "nJ (nanojoules), monotonic accumulator",
+      "access_path": "IOReport C API in IOKit, no entitlement, no root",
+      "reader_used": "/opt/homebrew/bin/macmon 0.7.2 (symlink -> ../Cellar/macmon/0.7.2/bin/macmon), subcommands 'pipe' and 'debug'",
+      "privileged": false,
+      "evidence": "macmon debug line 638: 'Energy Model ::  :: GPU Energy (nJ) = 1.62W'. macmon pipe emitted nonzero gpu_power on 60/60 samples across two windows.",
+      "status": "AVAILABLE"
+    },
+    "secondary": {
+      "name": "macmon JSON field 'sys_power'",
+      "units_native": "W",
+      "provenance": "UNVERIFIED. Not a sum of any IOReport Energy Model channels (CPU/ANE/DRAM all read 0 while sys_power read 56-110 W). Believed to be an SMC power key, exact key NOT confirmed by this probe.",
+      "status": "AVAILABLE_BUT_UNVALIDATED",
+      "use_restriction": "MUST NOT be quoted as measured system energy until cross-checked against a physical wall meter. Until then it is a relative indicator only."
+    },
+    "rejected_readers": {
+      "/usr/bin/powermetrics": {
+        "present": true,
+        "mode": "-rwxr-xr-x 1 root wheel 341056, dated Jul 3 02:14",
+        "help_runs_unprivileged": true,
+        "sampling_runs_unprivileged": false,
+        "exact_refusal": "powermetrics must be invoked as the superuser",
+        "refusal_command": "/usr/bin/powermetrics -n 1 -i 1000 --samplers cpu_power",
+        "invoking_user": "scammermike (groups include admin, but powermetrics gates on euid 0 not group)",
+        "vendor_caveat_verbatim": "Note: Average power values reported by powermetrics are estimated and may be inaccurate - hence they should not be used for any comparison between devices, but can be used to help optimize apps for energy efficiency."
+      },
+      "/Users/scammermike/.local/bin/asitop": {
+        "present": true,
+        "runs_unprivileged": false,
+        "reason": "asitop is a powermetrics wrapper; it shells out to sudo. Exact refusal: 'sudo: a terminal is required to read the password; either use the -S option to read from standard input or configure an askpass helper' / 'sudo: a password is required'. No password was supplied and none will be."
+      },
+      "istats": {"present": false, "which_result": "istats not found"},
+      "python_energy_libs": {
+        "interpreter": "/Users/scammermike/Downloads/hawking/.venv/glm52/bin/python (3.12.6)",
+        "pyRAPL": "ABSENT", "codecarbon": "ABSENT", "zeus": "ABSENT", "psutil": "ABSENT",
+        "note": "pyRAPL is Intel-RAPL only and would not apply to Apple silicon regardless."
+      },
+      "bin_scan": {
+        "/usr/local/bin": "no energy tool (2to3, corepack, cursor, exiftool, ffmpeg, firebase, gpg, node/npm/npx, ollama, pip3, prl_* Parallels tools, python3*, tailscale)",
+        "/opt/homebrew/bin": "928 entries; filtered for power|energy|watt|stat|mon|therm|smc|sensor yields only: dbus-daemon, dbus-monitor, h5stat, llama-lookup-stats, macmon, suitesparse_mongoose. macmon is the sole energy tool."
+      }
+    }
+  },
+
+  "sampling_frequency": {
+    "requested_hz": 1.0,
+    "requested_interval_ms": 1000,
+    "measured_interval_s": {"min": 1.091, "median": 1.134, "max": 1.1417, "n_gaps": 39},
+    "measured_overhead_pct": 13.4,
+    "second_window_requested_interval_ms": 500,
+    "second_window_measured_interval_s": {"min": 0.604286, "median": 0.622264, "max": 0.637801, "n_gaps": 19},
+    "grid_uniform": false,
+    "note": "The sampler self-corrects: reported W = delta-nJ / actual-elapsed, so power is not biased by the drift. The SAMPLE GRID is nonetheless non-uniform, so any alignment of an energy sample to a code phase shorter than ~1.2 s is invalid.",
+    "minimum_resolvable_workload_s": 1.2
+  },
+
+  "clock_source": {
+    "energy_timestamps": "macmon-emitted ISO-8601 UTC with microseconds, e.g. 2026-07-23T01:35:01.597136+00:00. Wall clock, subject to NTP adjustment.",
+    "benchmark_timing": "Python time.perf_counter_ns()",
+    "benchmark_timing_impl": "mach_absolute_time()",
+    "benchmark_timing_monotonic": true,
+    "benchmark_timing_adjustable": false,
+    "benchmark_timing_declared_resolution_s": 4.166666666666667e-08,
+    "benchmark_timing_measured_min_nonzero_delta_ns": 41,
+    "benchmark_timing_measured_n": 1869,
+    "clock_correlation_energy_to_benchmark": "UNAVAILABLE. The energy stream carries a wall clock and the benchmark carries a monotonic clock; there is no measured offset between them. Correlation must be done by bracketing (start-marker sample, workload, end-marker sample), never by timestamp arithmetic across the two clocks."
+  },
+
+  "domains_measured": {
+    "GPU": {
+      "status": "AVAILABLE",
+      "channel": "Energy Model :: GPU Energy (nJ)",
+      "measured_W_window_44s_n40": {"min": 1.295, "median": 1.740, "max": 2.205, "mean": 1.757, "stdev": 0.196, "cv_pct": 11.1},
+      "measured_W_window_12s_n20": {"min": 1.1122, "median": 1.5586, "max": 26.3365, "mean": 9.9270, "stdev": 10.5173, "cv_pct": 105.9}
+    },
+    "CPU": {
+      "status": "UNAVAILABLE",
+      "channels_enumerated": "DIE_0/DIE_1 x EACC/PACC0/PACC1 x CPU0..CPU5 x {core, CPM, SRAM}, plus DIE_n_CPU Energy, plus ECPUDTL*/PCPUDTL*/PCPU1DTL* -- 565 Energy Model channels total",
+      "measured": "0.00 on every enumerated channel in the debug dump, and macmon cpu_power read exactly 0.0 on 60/60 pipe samples",
+      "why_not_a_sampling_artifact": "Channels are mJ-granular. Over a 1.13 s sample at load average 20.85 with a busy P-cluster, even 5 W would deposit ~5600 mJ. Zero is not quantization; the channels are not populated on Mac15,14 / macOS 27.0 (26A5378j)."
+    },
+    "ANE": {"status": "UNAVAILABLE", "channels": "ANE0_0, ANE0_1 (mJ)", "measured": "0.00, and macmon ane_power 0.0 on 60/60 samples"},
+    "DRAM": {"status": "UNAVAILABLE", "channels": "DRAM0_0, DRAM0_1 (mJ)", "measured": "0.00, and macmon ram_power 0.0 on 60/60 samples"},
+    "GPU_SRAM": {"status": "UNAVAILABLE", "channels": "GPU SRAM0_0, GPU CS SRAM0_0 (mJ)", "measured": "0.00, and macmon gpu_ram_power 0.0 on 60/60 samples"},
+    "PACKAGE_TOTAL": {"status": "UNAVAILABLE", "reason": "No package-total energy channel is populated. macmon 'all_power' is cpu+gpu+ane and, with cpu and ane both zero, was numerically IDENTICAL to gpu_power on 60/60 samples. It is NOT a system total and MUST NOT be reported as one."},
+    "WALL_AC": {"status": "UNAVAILABLE", "reason": "No external meter. See verdict_alternatives_rejected.EXTERNAL_METER."},
+    "SYSTEM_UNVALIDATED": {
+      "status": "AVAILABLE_BUT_UNVALIDATED",
+      "field": "macmon sys_power",
+      "measured_W_window_44s_n40": {"min": 56.299, "median": 57.961, "max": 71.958, "mean": 59.144, "stdev": 3.128, "cv_pct": 5.3},
+      "measured_W_window_12s_n20": {"min": 55.9039, "median": 77.4417, "max": 110.6417, "mean": 77.0332, "stdev": 19.8477, "cv_pct": 25.8}
+    }
+  },
+
+  "calibration": {
+    "status": "UNAVAILABLE",
+    "reference_instrument": "UNAVAILABLE",
+    "zero_offset": "UNAVAILABLE",
+    "gain": "UNAVAILABLE",
+    "linearity_check": "UNAVAILABLE",
+    "cross_validation_against_powermetrics": "UNAVAILABLE (powermetrics refuses without root; see privilege_requirement)",
+    "note": "The GPU Energy counter is an on-die energy MODEL, not a shunt measurement. Its absolute accuracy is unknown and uncalibratable on this machine. It may be used for A/B deltas of the same workload shape on the same machine within one thermal window; it may NOT be used for absolute joule claims, cross-machine claims, or claims quoted to more than 2 significant figures."
+  },
+
+  "idle_baseline": {
+    "status": "UNAVAILABLE",
+    "reason": "BLOCKED_BY_LIVE_CAMPAIGN",
+    "measured_at_seal": {
+      "load_average_1_5_15": [20.85, 27.74, 29.63],
+      "uptime": "21:37 up 2 days, 9:35",
+      "top_cpu_processes_pct": [411.9, 210.8, 197.1, 190.3, 98.0, 84.1],
+      "gpu_device_utilization_pct": [13, 16],
+      "note": "This is the noise floor of the LIVE CAMPAIGN, not of the machine."
+    },
+    "value_W": "UNAVAILABLE",
+    "unblock_condition": "All five heavy campaign processes quiesced (glm52_source_fetch.py PID 59093 and four mop.temporal.runs.e2 workers), load average below 1.0 for 300 consecutive seconds, GPU Device Utilization below 2 percent, then a 600 s idle capture at 1 Hz. This probe MUST NOT and did NOT stop, pause, or interfere with any of them."
+  },
+
+  "uncertainty": {
+    "instrument_uncertainty": "UNAVAILABLE (uncalibrated; see calibration)",
+    "observed_run_to_run_noise": {
+      "gpu_power_cv_pct_quiet_window": 11.1,
+      "gpu_power_cv_pct_transient_window": 105.9,
+      "sys_power_cv_pct_quiet_window": 5.3,
+      "sys_power_cv_pct_transient_window": 25.8,
+      "interpretation": "The noise floor is NOT STATIONARY. Two windows 4 minutes apart on the same machine gave gpu_power stdev 0.196 W and 10.517 W. Any effect smaller than the larger of the two must be treated as unresolvable."
+    },
+    "current_detection_floor_W": 10.52,
+    "current_detection_floor_basis": "worst observed gpu_power stdev under live-campaign load; 1-sigma",
+    "recommended_significance_rule": "An energy delta is reportable only if it exceeds 3 sigma of the concurrently-measured baseline noise, with sigma re-measured inside the same session, never carried over from a previous session.",
+    "workloads_currently_unresolvable": "Anything shorter than ~1.2 s of sustained GPU work. The single-call kernel timings in this campaign (dense fp16 MPS 0.3674 ms, custom v2 0.5057 ms wall / 0.2096 ms GPU) are three orders of magnitude below the sampling grid and CANNOT be energy-measured one call at a time. They would have to be looped into a >=30 s sustained band."
+  },
+
+  "privilege_requirement": {
+    "current_path_requires_privilege": false,
+    "current_path": "IOReport read via macmon as user scammermike -- no sudo, no entitlement, no password, none requested and none supplied",
+    "upgrade_path": {
+      "what_it_adds": "powermetrics cpu_power / ane_power / DRAM estimates, i.e. the three domains that read UNAVAILABLE above.",
+      "what_it_does_not_add": "Calibration. powermetrics states its own values are estimated and unsuitable for cross-device comparison, so unlocking it does not turn any figure into a calibrated joule.",
+      "single_exact_command_for_the_user_to_run_themselves": "sudo /usr/bin/powermetrics --samplers cpu_power,gpu_power,ane_power -i 1000 -n 5",
+      "who_runs_it": "THE USER, in their own terminal.",
+      "agent_will_not_run_it": true,
+      "agent_will_not_request_or_print_a_password": true,
+      "note": "No sudo command was executed by this probe. No credential was requested, echoed, stored, or inferred."
+    }
+  },
+
+  "raw_log_retention": {
+    "policy": "RETAIN_ALL_SAMPLES_UNAGGREGATED",
+    "format": "JSON Lines, one macmon sample object per line, verbatim as emitted",
+    "aggregation_before_storage": "FORBIDDEN. Medians and stdevs are computed at report time from the retained lines, never in place of them.",
+    "retention_period": "life of the campaign branch; logs are inputs to any energy claim and a claim without its log is void",
+    "location": "reports/condense/breakthrough/energy_raw/<run_id>.jsonl (NOT YET CREATED -- no benchmark run has been energy-logged)",
+    "probe_samples_captured_this_session": {
+      "window_a": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/fece6e70-8f40-4d78-b56e-1480531866f9/scratchpad/macmon20.jsonl (20 samples, 500 ms requested)",
+      "window_b": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/fece6e70-8f40-4d78-b56e-1480531866f9/scratchpad/macmon40.jsonl (40 samples, 1000 ms requested)",
+      "channel_dump": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/fece6e70-8f40-4d78-b56e-1480531866f9/scratchpad/macmon_debug.txt (767 lines)",
+      "caveat": "These are scratchpad paths and are NOT durable. They are the evidence for this contract's numbers, not campaign artifacts. Any energy claim must re-capture into energy_raw/."
+    }
+  },
+
+  "non_energy_observables": {
+    "note": "These are what WILL be logged in place of energy. None of them is energy and none may be converted into energy.",
+    "wall_time": {
+      "source": "Python time.perf_counter_ns()",
+      "implementation": "mach_absolute_time()",
+      "resolution_s": 4.166666666666667e-08,
+      "measured_min_nonzero_delta_ns": 41,
+      "status": "MEASURED_AVAILABLE"
+    },
+    "bytes_moved": {
+      "source": "DERIVED from tensor shapes and packing parameters in the harness (numpy ndarray.nbytes, Metal buffer allocation sizes). NOT a hardware counter.",
+      "hardware_counter_status": "UNAVAILABLE",
+      "getrusage_check": "resource.getrusage(RUSAGE_SELF) returned ru_inblock=0 ru_oublock=0 on Darwin -- these fields are not populated and MUST NOT be used as byte counters",
+      "known_discrepancy": "The derived figure must be the TRUE device-read figure, not the naive one. Ground truth: with groups=8 and stage_x on, true device reads are 1,785,856 B (7.10% of BF16 dense); gravity_metal.py:258-262 bytes_read_per_matvec under-reports this as 1,572,864+2048 (6.26%) by ignoring per-threadgroup re-reads of the codebook and of x. Log the true figure and label the source line.",
+      "status": "DERIVED_NOT_MEASURED"
+    },
+    "executed_operations": {
+      "source": "DERIVED from shapes and loop counts in the harness (e.g. rows x nchunk x D for the gather-accumulate). NOT a hardware counter.",
+      "hardware_counter_status": "UNAVAILABLE without Metal performance-counter capture, which is out of scope for this CPU-only phase",
+      "status": "DERIVED_NOT_MEASURED"
+    },
+    "dispatch_counts": {
+      "source": "DERIVED from the harness -- count of encoder dispatch calls issued, plus threads-in-flight computed from grid and threadgroup sizes",
+      "calibration_anchors_from_ground_truth": {"command_buffer_fixed_cost_us": 215.8, "marginal_dispatch_us": 0.71},
+      "status": "DERIVED_NOT_MEASURED"
+    },
+    "thermal_state": {
+      "sources": [
+        "macmon pipe temp.cpu_temp_avg and temp.gpu_temp_avg (SMC-derived aggregate)",
+        "macmon debug 'SMC temp sensors' section, raw keys (TCMz, TCDX, TCMb, Tp*, Tg*, Te*, TVh*, ...)",
+        "macmon debug 'IOHID' section (NAND CH0 temp, PMU tcal/tdev1-8/tdie1-10)",
+        "pmset -g therm"
+      ],
+      "measured_this_session": {
+        "cpu_temp_avg_C_range_over_44s": [56.62, 59.23],
+        "gpu_temp_avg_C_range_over_44s": [51.37, 51.95],
+        "smc_hot_keys_C": {"TCMz": 81.8, "TCMb": 74.6, "TVD0": 73.5, "TCDX": 64.9, "PMU_tcal": 51.85},
+        "pmset_g_therm": "Note: No thermal warning level has been recorded / Note: No performance warning level has been recorded / Note: No CPU power status has been recorded"
+      },
+      "interpretation": "pmset reports no throttle event has ever been recorded, so there is no throttle log to correlate against. Thermal state is a GATE on when a run is valid, never an input to an energy number.",
+      "status": "MEASURED_AVAILABLE"
+    },
+    "gpu_utilization": {
+      "source": "ioreg -c IOAccelerator -r -d 1, key PerformanceStatistics -> 'Device Utilization %', 'Renderer Utilization %', 'Tiler Utilization %'",
+      "measured_this_session": {"device_pct": [13, 16], "renderer_pct": [12, 15], "tiler_pct": [13, 16], "gpu_core_count": 60},
+      "note": "IOAccelerator GPUConfigurationVariable reports num_cores=80; that is the die-config maximum, not this part. gpu-core-count=60 is authoritative and matches ground truth.",
+      "status": "MEASURED_AVAILABLE",
+      "use_restriction": "FORBIDDEN as an energy input. See forbidden_inferences."
+    },
+    "pstate_residency": {
+      "source": "IOReport groups 'CPU Stats' (46 channels, CPU Complex / CPU Core Performance States, 24Mticks) and 'GPU Stats' (1 channel, GPUPH, 24Mticks), via macmon debug",
+      "measured_sample": "GPUPH = OFF 157882, P1 22280, P3 2443593, P2/P4..P15 all 0",
+      "status": "MEASURED_AVAILABLE",
+      "use_restriction": "FORBIDDEN as an energy input. Residency times a voltage table is a model, not a measurement."
+    },
+    "memory_state": {
+      "source": "macmon pipe memory{ram_total, ram_usage, swap_total, swap_usage}",
+      "measured_this_session": {"ram_total": 103079215104, "ram_usage_at_seal": 82079268864, "swap_total": 3221225472, "swap_usage_at_seal": 1423572992},
+      "note": "Nonzero swap under live load. Swap activity is a confound for any timing comparison and must be recorded per run.",
+      "status": "MEASURED_AVAILABLE"
+    }
+  },
+
+  "forbidden_inferences": {
+    "mandate": "section 10",
+    "rules": [
+      "NEVER convert a utilization percentage (cpu_usage_pct, Device Utilization %, Renderer/Tiler Utilization %) into joules or watts.",
+      "NEVER convert a P-state residency histogram times a voltage/frequency table into joules.",
+      "NEVER convert a temperature (SMC key, PMU tdie, cpu_temp_avg) into power or energy.",
+      "NEVER report macmon 'all_power' as a system total; on this machine it equals gpu_power exactly because cpu and ane read zero.",
+      "NEVER report macmon 'sys_power' as measured energy until it is cross-checked against a physical wall meter; it is an unvalidated relative indicator.",
+      "NEVER quote a joule figure derived from a channel listed UNAVAILABLE in domains_measured, including by substituting a vendor TDP, a datasheet number, or a figure from a different Apple part.",
+      "NEVER estimate a missing domain by difference (e.g. cpu_energy = sys_power - gpu_power); sys_power provenance is unverified so the difference is undefined.",
+      "NEVER carry a noise floor forward from a previous session; sigma is re-measured in-session."
+    ]
+  },
+
+  "benchmark_protocol_if_energy_becomes_available": {
+    "status": "DEFINED_BUT_BLOCKED",
+    "blocking_conditions": [
+      {
+        "id": "B1",
+        "condition": "LIVE_CAMPAIGN_ACTIVE",
+        "detail": "Five heavy processes are running (glm52_source_fetch.py PID 59093 plus four mop.temporal.runs.e2 workers). Load average 20.85/27.74/29.63 at seal time.",
+        "blocks": "idle_baseline capture, and therefore every energy delta that is defined relative to idle",
+        "severity": "BLOCKING, not a caveat. No energy number may be produced while B1 holds. The correct response to B1 is to WAIT, never to subtract an assumed idle.",
+        "clears_when": "load average < 1.0 for 300 consecutive seconds AND GPU Device Utilization < 2 percent AND none of the five PIDs alive. This probe must never cause that by acting on them."
+      },
+      {
+        "id": "B2",
+        "condition": "NO_CALIBRATION",
+        "detail": "calibration.status = UNAVAILABLE. No reference instrument exists on this machine.",
+        "blocks": "any absolute joule claim, any cross-machine claim, any claim beyond 2 significant figures",
+        "severity": "BLOCKING for absolute claims; A/B deltas on identical workload shape within one thermal window remain permitted.",
+        "clears_when": "a wall meter is placed inline and a gain/offset fit is recorded here"
+      },
+      {
+        "id": "B3",
+        "condition": "SUB_GRID_WORKLOAD",
+        "detail": "Sampling grid median 1.134 s; campaign kernel calls are 0.21-0.51 ms.",
+        "blocks": "per-call energy attribution",
+        "severity": "BLOCKING for single-call energy; clears by construction once the workload is looped into a sustained band >= 30 s.",
+        "clears_when": "the measured phase is a sustained loop of >= 30 s at steady occupancy"
+      },
+      {
+        "id": "B4",
+        "condition": "CPU_DRAM_DOMAINS_DARK",
+        "detail": "CPU, DRAM, ANE energy channels read zero.",
+        "blocks": "any total-system-energy-per-token claim, and any claim about a CPU-side optimization such as the unpack_indices 36.6 ms / 190.6 MiB defect",
+        "severity": "BLOCKING for those specific claims. GPU-domain claims are unaffected.",
+        "clears_when": "the user runs the upgrade command themselves, or a wall meter is added"
+      },
+      {
+        "id": "B5",
+        "condition": "GPU_PHASE_NOT_AUTHORIZED",
+        "detail": "This phase is CPU-only by mandate. The GPU energy domain is the only available domain, so the only measurable target is out of scope right now.",
+        "blocks": "execution of this protocol in the current phase",
+        "severity": "BLOCKING",
+        "clears_when": "the serialized GPU phase opens"
+      }
+    ],
+    "steps": {
+      "1_preflight": "Assert B1..B5 all clear. Record load average, GPU Device Utilization, swap_usage, and all five thermal sources into the run header. If any blocking condition holds, ABORT and record the abort; do not degrade to an estimate.",
+      "2_idle_baseline": "600 s at 1 Hz with the benchmark process not started. Retain all samples. Report median and stdev. This is the subtrahend and it must be measured, never assumed.",
+      "3_warmup": "Run the workload continuously for 120 s discarded. Purpose is code/cache/allocator warm and clock ramp, not thermal.",
+      "4_thermal_steady_state": "Continue until cpu_temp_avg and gpu_temp_avg each drift less than 0.5 C over a 120 s window. Only then does measurement begin. Record the entry temperatures; a run whose entry temperature differs from its pair's by more than 1.0 C is void.",
+      "5_paired_repetitions": "A and B are interleaved ABBA ABBA, never blocked AAAA BBBB, so thermal drift cancels to first order. Minimum 8 A-blocks and 8 B-blocks, each block >= 30 s of sustained work. Report the paired per-block delta distribution, not two independent means.",
+      "6_matched_output_contract": "A and B must produce bit-identical output, or output whose divergence is separately sealed and bounded. For this campaign the contract is: identical input tensor, identical shapes ([2048,6144] gate/up, [6144,2048] down), identical token/row count, identical dtype at the boundary, and a recorded max-abs and relative parity figure. Ground truth parity for the custom kernel is 2.1e-4 caused by gravity_metal.py:202 casting the codebook to fp16; that 2.1e-4 is part of the contract and must be restated with every energy claim, never omitted.",
+      "7_report": "Report joules per matched unit of work with the measured idle subtracted, the 3-sigma band, the number of blocks, the thermal entry temperatures, and the parity figure. Round to 2 significant figures. Attach the raw JSONL."
+    },
+    "matched_quality_rule": {
+      "rule": "A lower-quality model or kernel MUST NOT claim an energy win against a higher-quality one.",
+      "enforcement": "An energy comparison is admissible only against a FIXED matched-quality point: either (a) bit-identical output, or (b) both sides driven to an identical, pre-registered quality target on an identical evaluation set, with the quality receipt sealed BEFORE the energy run. If the quality target cannot be met by the cheaper side, the correct report is 'cheaper side does not reach the quality point', and no energy number is published at all.",
+      "specific_to_this_campaign": "The R0 sub-bit representation (packed_bpw 0.87633) is NOT quality-matched to BF16 dense. Therefore no joules-per-token comparison between R0 and BF16 dense may be published under any framing until a matched-quality receipt exists. Additionally the current custom kernel is SLOWER than dense fp16 (0.727x at down, 0.329x at gate/up), so an energy win would be doubly unsupported.",
+      "index_stream_disclosure": "The Metal kernel uploads 8-bit indices while R0 bills 7-bit, so the executed index stream is 14.3% fatter than the artifact. Any energy-per-byte figure must state which of the two it is billing."
+    }
+  },
+
+  "environment": {
+    "hw_model": "Mac15,14",
+    "chip": "Apple M3 Ultra",
+    "cpu_cores": 28,
+    "cpu_core_split_reported_by_macmon": "28:20:8:0 (total:P:E:unused)",
+    "gpu_cores": 60,
+    "ram_bytes": 103079215104,
+    "os_product_version": "27.0",
+    "os_build": "26A5378j",
+    "user": "scammermike",
+    "power_source": "AC Power (pmset -g ps), no battery, no UPS",
+    "sleep_state": "sleep prevented by ChatGPT, Claude, caffeinate x6, screensharingd, powerd; sleep 0, displaysleep 0, lowpowermode 0, SleepDisabled 1",
+    "sleep_note": "lowpowermode 0 confirms no clock cap. The caffeinate holders keep the machine from entering any low-power state, which is good for measurement stability and bad for any attempt to characterize true idle."
+  },
+
+  "actions_not_taken": [
+    "No sudo command was executed.",
+    "No password was requested, printed, stored, or inferred.",
+    "No Python file was created or edited.",
+    "No process was signalled, paused, or killed; PID 59093 and the four mop.temporal.runs.e2 workers were only observed via ps.",
+    "No launchctl or com.hawking.* job was touched.",
+    "Nothing under /Users/scammermike/Downloads/hawking was modified.",
+    "Nothing in /Users/scammermike/Desktop/GLM52-Gravity-SubBit was opened, written, moved, or renamed.",
+    "No GPU or Metal work was performed."
+  ]
+}

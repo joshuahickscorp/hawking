@@ -59,11 +59,35 @@ def pack_indices(indices: np.ndarray, bits: int) -> bytes:
 
 
 def unpack_indices(raw: bytes, count: int, bits: int) -> np.ndarray:
-    """Inverse of :func:`pack_indices`."""
-    unpacked = np.unpackbits(np.frombuffer(raw, dtype=np.uint8))[: count * bits]
-    grid = unpacked.reshape(count, bits).astype(np.uint64)
-    weights = (np.uint64(1) << np.arange(bits - 1, -1, -1, dtype=np.uint64))
-    return (grid * weights).sum(axis=1)
+    """Inverse of :func:`pack_indices`, with temporaries bounded by the payload.
+
+    Eight consecutive indices occupy exactly ``bits`` bytes, so lane ``j`` of every such
+    group sits at one fixed byte offset and one fixed shift.  Reading the eight lanes with
+    strided byte slices never materializes a per-bit grid: the widest temporary is one
+    ``count/8`` window array, against ``count*bits`` bytes for an unpackbits grid.  Output
+    is uint8 for the k<=256 rungs the ladder actually ships.
+    """
+    if not 1 <= bits <= 16:
+        raise ValueError(f"unpack_indices handles 1..16 bits, got {bits}")
+    span = 2 if bits <= 8 else 3  # bytes an index can straddle within its group
+    window_dtype = np.uint16 if bits <= 8 else np.uint32
+    groups = (count + 7) // 8
+    block = np.zeros(groups * bits + span, dtype=np.uint8)
+    source = np.frombuffer(raw, dtype=np.uint8)[: groups * bits]
+    block[: source.size] = source
+    out = np.empty(groups * 8, dtype=np.uint8 if bits <= 8 else np.uint16)
+    stop = groups * bits
+    for j in range(8):
+        start = j * bits
+        base = start // 8
+        window = block[base: base + stop: bits].astype(window_dtype)
+        for extra in range(1, span):
+            window <<= 8
+            window |= block[base + extra: base + extra + stop: bits]
+        window >>= span * 8 - (start % 8) - bits
+        window &= (1 << bits) - 1
+        out[j::8] = window
+    return out[:count]
 
 
 def serialize(artifact: forge.PackedArtifact) -> bytes:

@@ -1,0 +1,213 @@
+{
+  "baselines": [
+    "dense_fp16_mps",
+    "torch_mps_compact",
+    "cpu_authority",
+    "custom_v2",
+    "track_a",
+    "track_b",
+    "selected_hybrid"
+  ],
+  "components": [
+    "gpu_execution",
+    "host_encode",
+    "command_buffer",
+    "end_to_end",
+    "cold_start",
+    "warm_steady_state"
+  ],
+  "contention_cv_threshold": 0.15,
+  "generated_at": "2026-07-23T01:38:33.258182Z",
+  "label": "gravity_bench_lab selftest (CPU only, no GPU work)",
+  "machine": {
+    "bandwidth_roof_gb_s": 736.0,
+    "chip": "Apple M3 Ultra",
+    "command_buffer_fixed_cost_us": 215.8,
+    "compute_roof_gflop_s": 17703.0,
+    "cpu_cores": 28,
+    "gpu_cores": 60,
+    "marginal_dispatch_us": 0.71,
+    "max_threadgroup_memory_bytes": 32768,
+    "metal_version": 4,
+    "model_identifier": "Mac15,14",
+    "observed_machine": "arm64",
+    "observed_platform": "macOS-27.0-arm64-arm-64bit",
+    "ridge_flop_per_byte": 24.05,
+    "thread_execution_width": 32,
+    "unified_memory_gib": 96
+  },
+  "matched": [
+    {
+      "baseline": "cpu_authority",
+      "baseline_median_ms": 0.003375,
+      "candidate": "custom_v2",
+      "candidate_median_ms": 0.135625,
+      "either_side_contended": false,
+      "slower_than_baseline": true,
+      "spec_fingerprint": "ec001c4fcee9442483f2c0797a5b21a1eed7be5b58fc882b8eddce6787874d18",
+      "specs_matched": true,
+      "speedup": 0.02488479262672811,
+      "statistic": "median_ms",
+      "timing_source": "end_to_end"
+    }
+  ],
+  "notes": "Harness proof only. Both sides are CPU; neither figure is a production claim. packed_bpw and on-disk 7-bit index billing are not exercised here.",
+  "refuted_claims": [
+    {
+      "kind": "milliseconds",
+      "name": "dense_fp16_9.012ms",
+      "reason": "dense fp16 MPS was re-measured at 0.3674 ms; 9.012 ms is 24x wrong and is the baseline the retracted 35.9x speedup was divided by",
+      "value": 9.012
+    },
+    {
+      "kind": "ratio",
+      "name": "speedup_35.9x",
+      "reason": "computed against the refuted 9.012 ms dense baseline; the matched single-call result is 0.727x at down and 0.329x at gate/up (custom is SLOWER)",
+      "value": 35.9
+    },
+    {
+      "kind": "parity",
+      "name": "metal_parity_1.4e-6",
+      "reason": "mislabelled: 1.4e-6 belongs to the torch fp32 path. Custom Metal parity is 2.1e-4, caused by gravity_metal.py:202 casting the codebook to fp16",
+      "value": 1.4e-06
+    }
+  ],
+  "results": [
+    {
+      "baseline": "cpu_authority",
+      "notes": "numpy float32 dense matvec, CPU",
+      "reproduced": true,
+      "roofline": {
+        "achieved_gb_s": 156.2548148148148,
+        "achieved_gflop_s": 77.6722962962963,
+        "bytes_moved": 527360,
+        "flops": 262144,
+        "fraction_of_bandwidth_roof": 0.21230273752012882,
+        "fraction_of_compute_roof": 0.00438752167973204,
+        "seconds_used": 3.375e-06,
+        "timing_source": "end_to_end"
+      },
+      "spec": {
+        "batch": 1,
+        "cols": 512,
+        "dependency_shape": "independent_calls",
+        "input_dtype": "float32",
+        "input_seed": 20260722,
+        "output_dtype": "float32",
+        "pack_in_timed_region": false,
+        "reps": 15,
+        "rows": 256,
+        "sync_boundary": "none_cpu_wall_clock",
+        "unpack_in_timed_region": true,
+        "warmup": 3
+      },
+      "spec_fingerprint": "ec001c4fcee9442483f2c0797a5b21a1eed7be5b58fc882b8eddce6787874d18",
+      "timings": {
+        "cold_start": "UNMEASURED",
+        "command_buffer": "UNMEASURED",
+        "end_to_end": {
+          "coefficient_of_variation": 0.05162747117823976,
+          "contention_cv_threshold": 0.15,
+          "count": 15,
+          "is_contended": false,
+          "max_ms": 0.003958,
+          "median_ms": 0.003375,
+          "min_ms": 0.00325,
+          "p95_ms": 0.003958,
+          "raw_samples_ms": [
+            0.003958,
+            0.0035,
+            0.0035,
+            0.003375,
+            0.003583,
+            0.0035,
+            0.003375,
+            0.00325,
+            0.003291,
+            0.003375,
+            0.003333,
+            0.003333,
+            0.003292,
+            0.003333,
+            0.003417
+          ],
+          "stddev_ms": 0.00017424271522655917
+        },
+        "gpu_execution": "UNMEASURED",
+        "host_encode": "UNMEASURED",
+        "warm_steady_state": "UNMEASURED"
+      }
+    },
+    {
+      "baseline": "custom_v2",
+      "notes": "gravity_forge.pq_execute, CPU, D=8 k=128 subspaces=1 rotate=False (R0 geometry, reduced size)",
+      "reproduced": true,
+      "roofline": {
+        "achieved_gb_s": 0.1736552995391705,
+        "achieved_gflop_s": 1.932858986175115,
+        "bytes_moved": 23552,
+        "flops": 262144,
+        "fraction_of_bandwidth_roof": 0.00023594470046082948,
+        "fraction_of_compute_roof": 0.00010918256714540559,
+        "seconds_used": 0.000135625,
+        "timing_source": "end_to_end"
+      },
+      "spec": {
+        "batch": 1,
+        "cols": 512,
+        "dependency_shape": "independent_calls",
+        "input_dtype": "float32",
+        "input_seed": 20260722,
+        "output_dtype": "float32",
+        "pack_in_timed_region": false,
+        "reps": 15,
+        "rows": 256,
+        "sync_boundary": "none_cpu_wall_clock",
+        "unpack_in_timed_region": true,
+        "warmup": 3
+      },
+      "spec_fingerprint": "ec001c4fcee9442483f2c0797a5b21a1eed7be5b58fc882b8eddce6787874d18",
+      "timings": {
+        "cold_start": "UNMEASURED",
+        "command_buffer": "UNMEASURED",
+        "end_to_end": {
+          "coefficient_of_variation": 0.029458911732874363,
+          "contention_cv_threshold": 0.15,
+          "count": 15,
+          "is_contended": false,
+          "max_ms": 0.141792,
+          "median_ms": 0.135625,
+          "min_ms": 0.128125,
+          "p95_ms": 0.141792,
+          "raw_samples_ms": [
+            0.141459,
+            0.136791,
+            0.134166,
+            0.132208,
+            0.131083,
+            0.132333,
+            0.137916,
+            0.136209,
+            0.136625,
+            0.136292,
+            0.135625,
+            0.134917,
+            0.141792,
+            0.128125,
+            0.128709
+          ],
+          "stddev_ms": 0.003995364903771085
+        },
+        "gpu_execution": "UNMEASURED",
+        "host_encode": "UNMEASURED",
+        "warm_steady_state": "UNMEASURED"
+      }
+    }
+  ],
+  "schema": "hawking.glm52.matched_benchmark.v1",
+  "selftest": {
+    "json_round_trip_stable": true,
+    "refuted_guard_live": true,
+    "unmatched_comparison_refused": true
+  }
+}

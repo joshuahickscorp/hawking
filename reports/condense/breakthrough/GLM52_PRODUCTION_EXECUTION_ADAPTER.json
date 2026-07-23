@@ -1,0 +1,302 @@
+{
+  "schema": "hawking.glm52.production_execution_adapter.v1",
+  "generated_utc": "2026-07-22",
+  "worktree": "/Users/scammermike/Downloads/hawking-breakthrough",
+  "branch": "campaign/glm52-inference-breakthrough",
+  "base_commit": "4f6af2eb",
+  "python": "/Users/scammermike/Downloads/hawking/.venv/glm52/bin/python",
+  "artifacts_written": [
+    "tools/condense/gravity_execution_adapter.py",
+    "tools/condense/tests/test_gravity_execution_adapter.py",
+    "reports/condense/breakthrough/GLM52_PRODUCTION_EXECUTION_ADAPTER.json"
+  ],
+  "adapter_source_sha256_at_authoring": "30056878df5154ea3cdd400cae2e3790e7371333e1544308a1ea08acf1b53ddb",
+  "registry_not_populated": true,
+
+  "registry_contract": {
+    "summary": "PRODUCTION_EXECUTION_ADAPTER_REGISTRY is NOT a dispatch table. Nothing is ever called on a registry entry. It is a compiled-in review record: a frozen mapping of adapter_id to the exact five-field manifest that a producer-authenticated readiness receipt must reproduce byte-for-byte. The worker validates a receipt against it; execution is a separate, still-unbuilt dispatcher.",
+    "key_type": "str, must satisfy _require_name (identifier-shaped adapter_id from the receipt)",
+    "value_type": "Mapping[str, Any] with EXACTLY these five keys: interface_version, roles, entry_points, source_path, source_sha256",
+    "what_the_worker_calls_on_an_entry": "nothing. Only Mapping.get(adapter_id), isinstance(..., Mapping) and dict(registered) != expected_registry_entry.",
+    "quoted_declaration": {
+      "file": "tools/condense/glm52_worker.py",
+      "lines": "108-118",
+      "code": "EXECUTION_ADAPTER_INTERFACE = \"hawking.glm52.execution_adapter.v1\"\n# A reviewed source/entry-point registry must be compiled into this module in the\n# same change that introduces the real Controller-bound dispatcher.  An empty\n# immutable registry makes every claimed production adapter ungroundable today.\nPRODUCTION_EXECUTION_ADAPTER_REGISTRY: Mapping[str, Mapping[str, Any]] = (\n    MappingProxyType({})\n)\nPRODUCTION_EXECUTION_ADAPTER_REGISTRY_SHA256 = (\n    \"44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a\"\n)"
+    },
+    "quoted_gate": {
+      "file": "tools/condense/glm52_worker.py",
+      "lines": "1528-1531",
+      "code": "    if not PRODUCTION_EXECUTION_ADAPTER_REGISTRY:\n        raise WorkerError(\n            \"NO_REVIEWED_EXECUTION_ADAPTER_REGISTRY: compiled production registry is empty\"\n        )"
+    },
+    "quoted_entry_shape": {
+      "file": "tools/condense/glm52_worker.py",
+      "lines": "1554-1586",
+      "code": "        registered = PRODUCTION_EXECUTION_ADAPTER_REGISTRY.get(adapter_id)\n        if not isinstance(registered, Mapping):\n            raise WorkerError(f\"execution adapter is absent from reviewed registry: {adapter_id}\")\n        ...\n        expected_registry_entry = {\n            \"interface_version\": item[\"interface_version\"],\n            \"roles\": item[\"roles\"],\n            \"entry_points\": item[\"entry_points\"],\n            \"source_path\": item[\"source_path\"],\n            \"source_sha256\": item[\"source_sha256\"],\n        }\n        if dict(registered) != expected_registry_entry:\n            raise WorkerError(f\"execution adapter differs from reviewed registry: {adapter_id}\")"
+    },
+    "return_contract": "_validate_execution_adapters returns {adapter_count, roles, registered_dispatch_digest, resource_policy_digest, reviewed_registry_sha256}. There is no adapter return value because no adapter is invoked."
+  },
+
+  "worker_validations_in_order": [
+    "_require_exact_keys(subject, {adapters, registered_dispatch_digest, resource_policy_digest})",
+    "subject.resource_policy_digest == the resource-policy receipt's digest, else 'execution adapters bind a different resource policy'",
+    "GATE: `if not PRODUCTION_EXECUTION_ADAPTER_REGISTRY` -> NO_REVIEWED_EXECUTION_ADAPTER_REGISTRY",
+    "adapters is a non-empty list of objects",
+    "per adapter: exact key set {adapter_id, interface_version, roles, entry_points, source_path, source_sha256, resource_policy_digest}",
+    "adapter_id is identifier-shaped and unique across the inventory",
+    "adapter_id present in PRODUCTION_EXECUTION_ADAPTER_REGISTRY (Mapping), else 'absent from reviewed registry'",
+    "interface_version == EXECUTION_ADAPTER_INTERFACE ('hawking.glm52.execution_adapter.v1')",
+    "roles is a non-empty duplicate-free list, every role in REQUIRED_EXECUTION_ROLES",
+    "entry_points keys == set(roles) exactly",
+    "source_path is workspace-relative; bytes are re-read through state.TrustedArtifactStore (no-follow trusted root)",
+    "sha256 of those re-read bytes == source_sha256 (the receipt cannot substitute a hash for the bytes)",
+    "adapter.resource_policy_digest == the policy digest",
+    "dict(registered) == the five-field manifest rebuilt from the receipt (byte-for-byte review match)",
+    "_inspect_registered_adapter_source: AST admission of the source bytes (see review_mechanism)",
+    "union of roles covers all eight REQUIRED_EXECUTION_ROLES, else 'execution adapters lack roles: [...]'",
+    "registered_dispatch_digest == sha256 of the canonicalized normalized inventory"
+  ],
+
+  "what_the_gate_protects_against": {
+    "stated_intent_module_docstring": "Production ``run`` is unavailable until five producer-authenticated readiness receipts ground credential rotation, the notification outbox, the final post-Xet schedule, the enforced resource policy, and concrete execution adapters.  The receipts are not substitutes for the referenced bytes: this module re-reads and hashes every referenced artifact or adapter through no-follow trusted roots.",
+    "stated_intent_inline_comment": "An empty immutable registry makes every claimed production adapter ungroundable today.",
+    "stated_intent_test": {
+      "file": "tools/condense/tests/test_glm52_worker.py",
+      "test": "test_empty_reviewed_registry_hard_blocks_every_claimed_adapter (line 1099)",
+      "shape": "The test constructs a fully self-consistent receipt -- real on-disk source, correct sha256, all eight roles, a non-inert entry point that would PASS _inspect_registered_adapter_source -- and asserts it is still rejected with NO_REVIEWED_EXECUTION_ADAPTER_REGISTRY.",
+      "quoted_assertion": "    assert dict(worker.PRODUCTION_EXECUTION_ADAPTER_REGISTRY) == {}\n    with pytest.raises(\n        worker.WorkerError,\n        match=\"NO_REVIEWED_EXECUTION_ADAPTER_REGISTRY\",\n    ):"
+    },
+    "threat_model": "A readiness receipt is producer-authenticated, but the producer is the campaign itself. A self-consistent receipt can therefore assert 'these eight adapters exist and are production' without any human ever having looked at them. The registry is the out-of-band half of the proof: it lives in reviewed, committed source, so an adapter is only groundable if a human change added its id, roles, entry points, path and hash to this module. The gate protects against self-certification -- not against a bad hash, which the store check already catches.",
+    "how_this_adapter_satisfies_it_rather_than_bypassing_it": "It does not touch the worker, does not populate the registry, and does not weaken the test. It makes itself admissible: the source passes _inspect_registered_adapter_source today (verified in test_source_passes_the_workers_own_registry_admission_inspector), and the registration remains a human, reviewed, one-line diff gated on the evidence listed below."
+  },
+
+  "review_mechanism": {
+    "name": "glm52_worker._inspect_registered_adapter_source",
+    "docstring": "Reject structurally inert adapters and import-time executable effects.",
+    "what_a_new_adapter_must_present": [
+      "A file under the workspace TrustedArtifactStore root, reachable by a normalized relative path, whose sha256 matches the receipt AND the compiled registry entry.",
+      "Parseable Python 3.12.",
+      "Top-level nodes restricted to: module docstring / string expressions, Import, ImportFrom, FunctionDef, AsyncFunctionDef, and Assign/AnnAssign whose value is ast.literal_eval-able. ANY other top-level node (ClassDef, If, Try, For, With, a bare call) raises 'executable top-level effects'.",
+      "No top-level function may carry a decorator, a positional default, or a keyword default.",
+      "No top-level function annotation may contain Call, Await, Yield, YieldFrom, NamedExpr, a comprehension, or Lambda.",
+      "Every declared entry point names an existing top-level function whose name is an identifier, does not start with '_', and contains none of 'test', 'fake', 'stub', 'noop'.",
+      "Every entry-point body (after its docstring) must be non-empty, must not contain ast.Pass, must not begin with ast.Raise, must not be a single Return, and must contain at least one Call.",
+      "No call inside an entry point may resolve to a leaf name containing 'test_only', 'fake', 'stub', or 'noop'."
+    ],
+    "consequence_for_this_adapter": "gravity_execution_adapter.py is written with no class, no decorator, no default argument, no __main__ block and no computed module-level assignment (not even HERE = Path(__file__).resolve().parent, which other modules use but which literal_eval rejects). The caller must therefore put tools/condense on sys.path before import, exactly as glm52_worker already does for its own imports.",
+    "verified": "PASS -- worker._inspect_registered_adapter_source(source_bytes, entry_points={'RUN_WINDOW_FORWARD': 'execute_tensor'}) returns without raising."
+  },
+
+  "adapter": {
+    "module": "tools/condense/gravity_execution_adapter.py",
+    "adapter_id": "gravity_pq_r0",
+    "interface_version": "hawking.glm52.execution_adapter.v1",
+    "roles_claimed": ["RUN_WINDOW_FORWARD"],
+    "entry_point": "execute_tensor(adapter, name, x) -> np.ndarray[rows] float32",
+    "backend_protocol": {
+      "name": "hawking.gravity.execution_backend.v1",
+      "shape": "a Mapping, not a class: {name: str, protocol: str, device: str, can_execute: (geometry)->str|None, matvec: (codes, x, key)->ndarray, release: (key)->None | absent}",
+      "rationale": "The kernel is not selected in this phase. Injecting the backend as a declared mapping keeps the adapter constructible and unit-testable with no GPU and no kernel; wiring a selected kernel later is one mapping plus one registry line, with no edit here.",
+      "veto_is_asked_for_not_discovered": "can_execute(geometry) is called BEFORE matvec, so an unsupported geometry is a named refusal instead of a kernel crash."
+    },
+    "mandate_5_1_bindings": {
+      "gravity_format_version": "SUPPORTED_FORMAT_VERSION = 1; the 20-byte prefix is read directly so the version refusal is named by this adapter rather than by gravity_format's generic error",
+      "tensor_identity": "name, sha256 (verified by read_tensor), shape, elements, category, expert, layer -- carried from the header into the returned record and into the cache key",
+      "geometry": "D, S, sub, k, rows, cols, nchunk, index_bits, rotate -- decoded from the payload, then cross-checked against the descriptor",
+      "rate_bpw": "descriptor bpw reconciled against payload_bytes*8/elements within 1e-6",
+      "decoder": "glm52_pack.deserialize (bit-exact inverse of pack_indices); tensors are read via gravity_format.read_tensor / open_shard, strictly read-only",
+      "selected_metal_grammar": "UNSELECTED_IN_THIS_PHASE -- the slot is the backend protocol; no Metal, MPS or GPU code is imported or executed",
+      "router": "NOT_EXECUTED. Router and router_control are PROTECTED_BUDGET_CLASS CONTROL_SENSITIVE_CANDIDATE, held at source precision, and carry no PQ payload. The adapter refuses them by name instead of pretending to route.",
+      "shared_and_routed_moe_execution": "PER_TENSOR_ONLY. shared_expert and routed_expert differ only in the descriptor's category/expert fields, which are bound and carried; no top-k dispatch exists in this adapter and none is claimed.",
+      "device_and_resource_policy": "device is declared by the injected backend (this module is CPU-only); resource policy is a declared byte budget + explicit cache identity + eviction contract"
+    },
+    "executable_categories": ["attention", "indexer", "routed_expert", "shared_expert"],
+    "refusals": [
+      {"code": "GRAVITY_NOT_A_SHARD", "when": "file is shorter than the 20-byte prefix, or lacks the GRAVITY magic"},
+      {"code": "GRAVITY_FORMAT_VERSION_NEWER_THAN_READER", "when": "prefix format_version > 1"},
+      {"code": "GRAVITY_CODEC_NOT_REVIEWED", "when": "shard or tensor codec != 'gravity-pq'"},
+      {"code": "GRAVITY_RUNG_IS_NOT_PRODUCTION_R0", "when": "descriptor rung != 'R0'"},
+      {"code": "GRAVITY_CATEGORY_NOT_EXECUTABLE_BY_THIS_ADAPTER", "when": "category outside the four executable categories (router, router_control, embeddings, lm_head)"},
+      {"code": "GRAVITY_ROTATED_GEOMETRY_NOT_REVIEWED", "when": "decoded rotate is True"},
+      {"code": "GRAVITY_SUBSPACES_IS_NOT_ONE", "when": "decoded S != 1"},
+      {"code": "GRAVITY_GEOMETRY_DISAGREES_WITH_DESCRIPTOR", "when": "descriptor shape != [rows, cols]; rows*cols != elements; nchunk*D != cols; indices.shape[0] != rows*nchunk"},
+      {"code": "GRAVITY_RATE_DISAGREES_WITH_DESCRIPTOR", "when": "|descriptor.bpw - bytes*8/elements| > 1e-6"},
+      {"code": "GRAVITY_BACKEND_PROTOCOL_MISMATCH", "when": "backend is not a Mapping, declares the wrong protocol, has no name, or lacks a callable can_execute/matvec (or a non-callable release)"},
+      {"code": "GRAVITY_BACKEND_CANNOT_EXECUTE_GEOMETRY", "when": "backend.can_execute(geometry) returns a reason string"},
+      {"code": "GRAVITY_INPUT_LENGTH_DISAGREES_WITH_GEOMETRY", "when": "x is not a 1-D vector of exactly cols elements"},
+      {"code": "GRAVITY_BACKEND_RETURNED_WRONG_SHAPE", "when": "backend result shape != (rows,)"},
+      {"code": "GRAVITY_ENTRY_EXCEEDS_WHOLE_BYTE_BUDGET", "when": "a single tensor's resident bytes exceed the entire declared budget, or the budget is not a positive int"}
+    ],
+    "resource_policy": {
+      "byte_budget": "required constructor argument, no default -- policy that defaults is policy nobody reviewed",
+      "cache_identity": "explicit string '<shard_path>|<tensor_name>|<descriptor sha256>'. Never id(). This is the layer that fixes gravity_metal.py:231 'key or f\"{id(codes):x}\"': CPython reuses addresses after GC, so an id()-keyed cache can serve one tensor's indices under another tensor's name.",
+      "eviction_contract": "LRU_TO_DECLARED_BYTE_BUDGET_WITH_BACKEND_RELEASE",
+      "eviction_clauses": [
+        "Least-recently-used first until resident bytes fit the declared budget.",
+        "Eviction is always safe: every entry is reconstructible from the shard, which is opened read-only and never mutated.",
+        "The backend's optional release(key) is invoked with the SAME key before the entry is dropped, so device-side buffers keyed identically are freed in the same step. This is the clause that prevents the gravity_metal.py never-evicting cache from pinning ~90 GB over a 78-layer x 256-expert walk.",
+        "An entry that cannot fit the whole budget by itself is refused at admission, never retained in violation of the budget."
+      ],
+      "not_reused_and_why": "tools/condense/bounded_cache.PressureAwareCache was considered and not used: its contract is 'grow freely until the machine is near jetsam', with a min_entries floor (default 48) and env-var overrides, which cannot honour a declared byte budget and would make unit tests depend on host RAM. It remains the right tool for the packing lane; it is the wrong tool for a reviewed execution bound.",
+      "known_uncovered_cost": "The byte budget accounts RESIDENT bytes (indices + codebooks). It does not cover decode transients. With the ORIGINAL glm52_pack.unpack_indices that was ~187 MiB per [2048,6144] R0 tensor; a concurrent phase has since replaced it with a bounded implementation (see real_artifact_validation.component_costs_measured.version_attribution), which shrinks but does not formally bound the transient. Note also that glm52_pack.deserialize still casts the indices to int64, so a [2048,6144] R0 tensor costs 12,582,912 resident index bytes for a 1,376,256-byte 7-bit payload -- a 9.1x resident inflation that the byte budget charges honestly and that a later phase should attack."
+    }
+  },
+
+  "real_artifact_validation": {
+    "shard": "/Users/scammermike/Desktop/GLM52-Gravity-SubBit/model-00002-of-00282.gravity",
+    "access": "READ-ONLY (open('rb') via gravity_format.read_header / open_shard / read_tensor). Nothing under GLM52-Gravity-SubBit was written, moved, renamed or deleted.",
+    "shard_header": {
+      "format_version": 1,
+      "schema": "hawking.gravity.shard_header.v1",
+      "codec": "gravity-pq",
+      "production_rung": "R0",
+      "packed_bpw": 0.8763322501346983,
+      "tensor_count": 211,
+      "categories": {"routed_expert": 210, "attention": 1},
+      "rungs": {"R0": 211}
+    },
+    "tensors_executed": {
+      "model.layers.10.mlp.experts.0.gate_proj.weight": {
+        "category": "routed_expert",
+        "shape": [2048, 6144],
+        "geometry": {"D": 8, "S": 1, "sub": 8, "k": 128, "nchunk": 768, "index_bits": 7, "rotate": false},
+        "descriptor_bpw": 0.8763427734375,
+        "observed_bpw_from_bytes": 0.8763427734375,
+        "payload_bytes": 1378368,
+        "resident_bytes": 12587008,
+        "cache_key": "/Users/scammermike/Desktop/GLM52-Gravity-SubBit/model-00002-of-00282.gravity|model.layers.10.mlp.experts.0.gate_proj.weight|678ab21872fea53938701903ec72a494d17d1fab71ab363ecb4f4ecc50530208",
+        "load_ms_samples": [5.533, 6.489, 5.481, 5.276, 4.547],
+        "execute_ms_samples": [15.204, 12.078, 11.463, 11.414, 11.506],
+        "bitwise_identical_to_direct_pq_execute": true,
+        "max_abs_diff": 0.0
+      },
+      "model.layers.10.mlp.experts.0.down_proj.weight": {
+        "category": "routed_expert",
+        "shape": [6144, 2048],
+        "geometry": {"D": 8, "S": 1, "k": 128, "nchunk": 256, "index_bits": 7, "rotate": false},
+        "descriptor_bpw": 0.8763427734375,
+        "payload_bytes": 1378368,
+        "resident_bytes": 12587008,
+        "load_ms_samples": [4.419, 4.723, 4.773, 4.315, 4.645],
+        "execute_ms_samples": [11.686, 11.67, 11.387, 11.596, 11.827],
+        "bitwise_identical_to_direct_pq_execute": true,
+        "max_abs_diff": 0.0
+      },
+      "model.layers.10.mlp.experts.1.up_proj.weight": {
+        "category": "routed_expert",
+        "shape": [2048, 6144],
+        "geometry": {"D": 8, "S": 1, "k": 128, "nchunk": 768, "index_bits": 7, "rotate": false},
+        "descriptor_bpw": 0.8763427734375,
+        "payload_bytes": 1378368,
+        "resident_bytes": 12587008,
+        "load_ms_samples": [4.526, 4.513, 4.715, 4.364, 4.133],
+        "execute_ms_samples": [11.514, 11.714, 11.308, 11.423, 11.689],
+        "bitwise_identical_to_direct_pq_execute": true,
+        "max_abs_diff": 0.0
+      },
+      "model.layers.1.self_attn.q_b_proj.weight": {
+        "category": "attention",
+        "shape": [16384, 2048],
+        "geometry": {"D": 8, "S": 1, "k": 128, "nchunk": 256, "index_bits": 7, "rotate": false},
+        "descriptor_bpw": 0.8755035400390625,
+        "payload_bytes": 3672128,
+        "resident_bytes": 33558528,
+        "load_ms_samples": [10.457, 12.713, 10.867, 10.936, 10.449],
+        "execute_ms_samples": [40.787, 39.821, 39.812, 39.98, 40.128],
+        "bitwise_identical_to_direct_pq_execute": true,
+        "max_abs_diff": 0.0
+      }
+    },
+    "parity_of_the_cpu_path": {
+      "comparison": "gravity_execution_adapter.execute_tensor(cpu_reference_backend) vs a direct gravity_forge.pq_execute(glm52_pack.load_artifact(read_tensor(...)), x)",
+      "result": "bit-identical on all four tensors; max_abs_diff 0.0, relative max gap 0.0",
+      "honest_reading": "This is NOT independent-implementation parity. The CPU backend calls the same pq_execute, so exact equality proves the adapter's binding, refusal, cache-key and dispatch layers introduce no numerical change -- it does not validate a kernel. Backend-vs-CPU parity is UNMEASURED until a kernel is selected and is listed below as required evidence.",
+      "measured_environment": "CPU only. No Metal, MPS, or GPU code was imported or executed in this phase."
+    },
+    "component_costs_measured": {
+      "read_tensor_ms_samples": [1.715, 2.246, 1.66, 1.585, 1.627],
+      "deserialize_ms_samples": [3.568, 3.657, 3.28, 3.098, 2.601, 2.544, 2.489],
+      "unpack_indices_ms_samples": [2.503, 2.238, 2.187, 2.217, 2.357, 2.448, 2.263],
+      "payload": "1,378,368 bytes, 7-bit indices, count 1,572,864",
+      "version_attribution": "IMPORTANT. glm52_pack.unpack_indices was replaced by a concurrent phase in this same shared worktree (uncommitted; visible in `git diff tools/condense/glm52_pack.py`) with a bounded strided-lane implementation. My 2.187-2.503 ms samples are for that NEW implementation, not the one the ground truth measured.",
+      "original_implementation_ms_samples": [39.39, 33.8, 34.15, 35.39, 35.04],
+      "original_vs_ground_truth": "The original unpackbits/uint64-grid implementation, re-measured here on the same real payload, is 33.8-39.4 ms -- consistent with the ground truth's 36.6 ms. The ground truth stands; the defect has since been fixed by another phase.",
+      "new_implementation_agrees_bitwise": true,
+      "peak_transient_status": "UNMEASURED reliably for either version. tracemalloc reported 3.6 MiB peak, but tracemalloc does not track numpy's allocator by default, so that figure is not trustworthy. The derived transient of the ORIGINAL (~187 MiB, from the [1572864*7] uint64 grid and its broadcast product) is consistent with the ground truth's 190.6 MiB; the new implementation's widest temporary is one count/8 window array."
+    }
+  },
+
+  "tests": {
+    "file": "tools/condense/tests/test_gravity_execution_adapter.py",
+    "command": "/Users/scammermike/Downloads/hawking/.venv/glm52/bin/python -m pytest tools/condense/tests/test_gravity_execution_adapter.py -q",
+    "result": "27 passed in 1.47s",
+    "coverage": [
+      "the adapter source passes the worker's own _inspect_registered_adapter_source",
+      "declared refusals == every REFUSAL_ constant the module defines",
+      "each refusal path: not-a-shard (two forms), newer format version, non-R0 rung, non-executable category, rotated geometry, S != 1, shape lie (two forms), element-count lie, rate lie, backend protocol (five forms + non-mapping), backend geometry veto, input length (two forms), output shape, byte budget (entry and constructor)",
+      "descriptor/geometry mismatch detection on a shard whose header lies about a real payload",
+      "injected-backend protocol: the backend receives the decoded codes, the exact x, and the explicit cache key; the veto fires before the backend sees anything",
+      "resource policy: LRU eviction to budget, release(key) called on the evicted key, key ordering after a cache hit, evict_all, cache-hit identity",
+      "real sealed shard: geometry assertions and bit-identical parity, skipped cleanly when the shard is absent"
+    ]
+  },
+
+  "registration": {
+    "status": "NOT PERFORMED. PRODUCTION_EXECUTION_ADAPTER_REGISTRY is untouched and still empty; glm52_worker.py was not edited.",
+    "the_one_line_a_later_reviewed_change_adds": "    \"gravity_pq_r0\": {\n        \"interface_version\": \"hawking.glm52.execution_adapter.v1\",\n        \"roles\": [\"RUN_WINDOW_FORWARD\"],\n        \"entry_points\": {\"RUN_WINDOW_FORWARD\": \"execute_tensor\"},\n        \"source_path\": \"tools/condense/gravity_execution_adapter.py\",\n        \"source_sha256\": \"<sha256 of the file at review time>\",\n    },",
+    "also_required_in_the_same_change": [
+      "PRODUCTION_EXECUTION_ADAPTER_REGISTRY_SHA256 must be recomputed; it is currently the sha256 of the empty registry.",
+      "The five-field entry must match the readiness receipt exactly; any drift raises 'execution adapter differs from reviewed registry'.",
+      "The source_sha256 must be re-taken at review time -- any later edit to the adapter invalidates it."
+    ],
+    "critical_caveat": "Registering this adapter alone does NOT open the readiness gate. It claims one of eight REQUIRED_EXECUTION_ROLES, so _validate_execution_adapters will move past NO_REVIEWED_EXECUTION_ADAPTER_REGISTRY only to fail with 'execution adapters lack roles: [CAPTURE_TEACHER, EVICT_WINDOW, FETCH_WINDOW, FIT_CANDIDATES, PACK_CANDIDATES, SEAL_WINDOW, VERIFY_WINDOW]'. Seven more reviewed adapters are needed for production run authorization, and the Controller-bound dispatcher that would actually call any of them is still unbuilt (the worker still reports NO_SCIENTIFIC_DISPATCH)."
+  },
+
+  "evidence_required_before_registration_may_land": [
+    {
+      "mandate": "5.2 format integrity",
+      "requirement": "gravity_format.verify() PASS on the exact shard(s) the adapter is admitted against, plus a recorded refusal transcript showing the adapter rejects a tampered payload, a version-bumped prefix, a lying shape, and a lying bpw.",
+      "status": "PARTIAL. Refusal transcript exists as a green test suite over synthetic shards; gravity_format.verify() has NOT been run on model-00002-of-00282.gravity in this phase (it reads the whole 24 GB body of the live output directory and was not run against an actively-written tree)."
+    },
+    {
+      "mandate": "5.2 parity",
+      "requirement": "The selected execution backend must match gravity_forge.pq_execute on real R0 tensors, with the tolerance stated and justified, across gate/up ([2048,6144], nchunk 768) and down ([6144,2048], nchunk 256) geometries and at least one attention tensor.",
+      "status": "NOT MET. No kernel is selected. Adapter-vs-direct CPU parity is bit-identical but is the same code path. Note the standing defect: gravity_metal.py:202 casts the codebook to fp16, so the custom kernel's real parity figure is 2.1e-4, not 1.4e-6."
+    },
+    {
+      "mandate": "5.2 real-artifact benchmark",
+      "requirement": "Wall-clock and GPU-time measurements of the selected backend through this adapter on real .gravity tensors, reported against dense fp16 MPS on the same machine, with raw samples.",
+      "status": "NOT MET. The corrected truth is that the current custom kernel is SLOWER than dense fp16 (0.727x at down, 0.329x at gate/up), because gravity_metal.py:87 fixes total threads at `rows` and line 247 divides that fixed grid instead of multiplying it (GRID_UNDERFILLED). A benchmark taken before that is fixed would authorize a regression."
+    },
+    {
+      "mandate": "5.2 safety fixes",
+      "requirement": "The backend handed to this adapter must not contain the known memory-safety defects.",
+      "status": "PARTIALLY DISCHARGED ABOVE THE BACKEND, NOT INSIDE IT.",
+      "detail": [
+        "gravity_metal.py:238 sizes a writable Metal buffer view from xv.nbytes while the allocation is fixed at nchunk*D*4; contents() returns a bare void* with no length, so a longer x writes past the end. The adapter refuses any x whose length != cols before the backend is called (GRAVITY_INPUT_LENGTH_DISAGREES_WITH_GEOMETRY), which closes the path for every caller that goes through the adapter -- it does NOT fix the kernel for direct callers, and the kernel must still be fixed.",
+        "gravity_metal.py:231 'key or f\"{id(codes):x}\"' is superseded for adapter callers by the explicit content key, and the kernel cache must be changed to require a key rather than fall back to id().",
+        "gravity_metal.py never evicts; the backend must implement release(key) so the adapter's eviction contract can reach the device buffers.",
+        "gravity_metal.py:258-262 bytes_read_per_matvec under-reports device traffic (reports 1,572,864 + 2,048 B; true reads with groups=8 and stage_x on are 1,785,856 B). Any traffic claim in the benchmark must use the corrected figure.",
+        "The kernel uploads 8-bit indices while R0 bills 7-bit, so the executed index stream is 14.3% fatter than the artifact; the benchmark must say so rather than quote the billed rate."
+      ]
+    },
+    {
+      "mandate": "5.2 resource bounds",
+      "requirement": "A measured bound on peak resident and peak transient bytes for the intended walk (78 layers x 256 experts x 3 projections), with the byte budget set from that measurement and the eviction contract shown to hold under it.",
+      "status": "PARTIAL. Resident cost is measured (12,587,008 B per [2048,6144] R0 expert tensor; 33,558,528 B for the [16384,2048] attention tensor) and the LRU/release contract is test-green. Transient decode cost is NOT reliably measured and is the dominant unbounded term: glm52_pack.unpack_indices allocates a ~88 MiB uint64 grid plus a ~88 MiB product per tensor. Until that is fixed or bounded, a concurrent-load limit cannot be stated."
+    },
+    {
+      "mandate": "registry mechanics",
+      "requirement": "A recomputed PRODUCTION_EXECUTION_ADAPTER_REGISTRY_SHA256, a producer-authenticated execution_adapters readiness receipt whose five fields reproduce the registry entry exactly and whose resource_policy_digest matches the resource-policy receipt, and adapters for the seven remaining roles.",
+      "status": "NOT MET."
+    }
+  ],
+
+  "explicitly_not_done": [
+    "glm52_worker.py was not edited.",
+    "PRODUCTION_EXECUTION_ADAPTER_REGISTRY was not populated.",
+    "tools/condense/tests/test_glm52_worker.py:1141 still asserts the registry is empty and still passes (47 passed).",
+    "No Metal, MPS or GPU code was imported or executed.",
+    "Nothing under /Users/scammermike/Desktop/GLM52-Gravity-SubBit was written, moved, renamed or deleted.",
+    "No git commit, push, checkout, stash, reset or rebase was run; the changes are uncommitted."
+  ]
+}
