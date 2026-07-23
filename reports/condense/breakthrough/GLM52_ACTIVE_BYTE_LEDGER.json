@@ -1,0 +1,288 @@
+{
+  "architecture": {
+    "attention_blocks": 78,
+    "dense_mlp_layers": 3,
+    "experts_per_token": 8,
+    "full_indexshare_layers": 21,
+    "hidden_size": 6144,
+    "layers": 78,
+    "mtp_exclusion_reason": "speculative head; not on the single-token main-text path",
+    "mtp_layer_excluded": 78,
+    "routed_experts": 256,
+    "shared_experts": 1,
+    "shared_indexshare_layers": 57,
+    "sparse_moe_layers": 75,
+    "vocab_size": 154880
+  },
+  "artifact_validation": {
+    "all_analytic_bytes_match_header": true,
+    "all_shapes_match_adapter": true,
+    "body_sha256": "795c6379c7f79ee1206e2871cb4457ee51ed11ab05dcf8cc2acf1f05815fb82d",
+    "distinct_geometries": [
+      {
+        "adapter_shape_agrees": true,
+        "analytic_bpw": 0.8755035400390625,
+        "analytic_bytes": 3672128,
+        "category": "attention",
+        "delta_bytes": 0,
+        "elements": 33554432,
+        "header_bpw": 0.8755035400390625,
+        "header_bytes": 3672128,
+        "occurrences": 1,
+        "shape": [
+          16384,
+          2048
+        ]
+      },
+      {
+        "adapter_shape_agrees": true,
+        "analytic_bpw": 0.8763427734375,
+        "analytic_bytes": 1378368,
+        "category": "routed_expert",
+        "delta_bytes": 0,
+        "elements": 12582912,
+        "header_bpw": 0.8763427734375,
+        "header_bytes": 1378368,
+        "occurrences": 140,
+        "shape": [
+          2048,
+          6144
+        ]
+      },
+      {
+        "adapter_shape_agrees": true,
+        "analytic_bpw": 0.8763427734375,
+        "analytic_bytes": 1378368,
+        "category": "routed_expert",
+        "delta_bytes": 0,
+        "elements": 12582912,
+        "header_bpw": 0.8763427734375,
+        "header_bytes": 1378368,
+        "occurrences": 70,
+        "shape": [
+          6144,
+          2048
+        ]
+      }
+    ],
+    "packed_bpw": 0.8763322501346983,
+    "production_rung": "R0",
+    "read_only": true,
+    "shard": "/Users/scammermike/Desktop/GLM52-Gravity-SubBit/model-00002-of-00282.gravity",
+    "shard_source": "model-00002-of-00282.safetensors",
+    "tensor_count": 211
+  },
+  "authority": "Every per-tensor byte figure was checked against the sealed .gravity shard header, which is the authority on what is really stored; shapes come from glm52_adapter.tensor_spec, never from a guess.",
+  "evidence_level": "F0_PHYSICAL_ACCOUNTING_ONLY",
+  "kv_reads": {
+    "attended_positions": 2048,
+    "context_length": 4096,
+    "evidence": "ANALYTIC_FROM_CONFIG_SHAPES_ONLY",
+    "full_indexshare_layers": 21,
+    "index_cache_dtype_bytes": null,
+    "index_key_bytes": null,
+    "index_key_elements": 11010048,
+    "index_topk": 2048,
+    "kv_cache_dtype_bytes": null,
+    "kv_latent_bytes": null,
+    "kv_latent_elements": 92012544,
+    "latent_width_derivation": "kv_lora_rank + qk_rope_head_dim = 512 + 64",
+    "latent_width_per_position": 576,
+    "layers_reading_latents": 78,
+    "unknowns": [
+      {
+        "field": "kv_cache_dtype_bytes",
+        "missing_input": "the serving runtime's KV latent cache dtype; no inference runtime exists in this repo"
+      },
+      {
+        "field": "index_cache_dtype_bytes",
+        "missing_input": "the serving runtime's IndexShare key cache dtype; no inference runtime exists in this repo"
+      }
+    ]
+  },
+  "not_evidence_of": "output divergence, capability, or end-to-end behaviour",
+  "per_organ": [
+    {
+      "active_bytes": 2481062400,
+      "dense_bf16_bytes": 45298483200,
+      "dense_equivalent_macs": 22649241600,
+      "elements": 22649241600,
+      "kernel_device_bytes": 3258777600,
+      "organ": "routed_expert",
+      "tensors": 1800,
+      "tensors_without_x_staging": 0,
+      "terminal_states": [
+        "PACKED_IN_CORE_ARTIFACT"
+      ]
+    },
+    {
+      "active_bytes": 1408647552,
+      "dense_bf16_bytes": 25743065088,
+      "dense_equivalent_macs": 12871532544,
+      "elements": 12871532544,
+      "kernel_device_bytes": 33146260992,
+      "organ": "attention",
+      "tensors": 390,
+      "tensors_without_x_staging": 78,
+      "terminal_states": [
+        "PACKED_IN_CORE_ARTIFACT"
+      ]
+    },
+    {
+      "active_bytes": 393619968,
+      "dense_bf16_bytes": 393619968,
+      "dense_equivalent_macs": 196804608,
+      "elements": 196809984,
+      "kernel_device_bytes": 393619968,
+      "organ": "indexer",
+      "tensors": 105,
+      "tensors_without_x_staging": 0,
+      "terminal_states": [
+        "PROTECTED_SOURCE_NATIVE_WITH_BILLED_BYTES"
+      ]
+    },
+    {
+      "active_bytes": 310132800,
+      "dense_bf16_bytes": 5662310400,
+      "dense_equivalent_macs": 2831155200,
+      "elements": 2831155200,
+      "kernel_device_bytes": 407347200,
+      "organ": "shared_expert",
+      "tensors": 225,
+      "tensors_without_x_staging": 0,
+      "terminal_states": [
+        "PACKED_IN_CORE_ARTIFACT"
+      ]
+    },
+    {
+      "active_bytes": 235929600,
+      "dense_bf16_bytes": 235929600,
+      "dense_equivalent_macs": 117964800,
+      "elements": 117964800,
+      "kernel_device_bytes": 235929600,
+      "organ": "router",
+      "tensors": 75,
+      "tensors_without_x_staging": 0,
+      "terminal_states": [
+        "PROTECTED_SOURCE_NATIVE_WITH_BILLED_BYTES"
+      ]
+    },
+    {
+      "active_bytes": 104081472,
+      "dense_bf16_bytes": 1903165440,
+      "dense_equivalent_macs": 951582720,
+      "elements": 951582720,
+      "kernel_device_bytes": 135674880,
+      "organ": "lm_head",
+      "tensors": 1,
+      "tensors_without_x_staging": 0,
+      "terminal_states": [
+        "PACKED_IN_CORE_ARTIFACT"
+      ]
+    },
+    {
+      "active_bytes": 74336832,
+      "dense_bf16_bytes": 1358954496,
+      "dense_equivalent_macs": 679477248,
+      "elements": 679477248,
+      "kernel_device_bytes": 999088128,
+      "organ": "dense_mlp",
+      "tensors": 9,
+      "tensors_without_x_staging": 3,
+      "terminal_states": [
+        "PACKED_IN_CORE_ARTIFACT"
+      ]
+    },
+    {
+      "active_bytes": 2328576,
+      "dense_bf16_bytes": 2328576,
+      "dense_equivalent_macs": 0,
+      "elements": 1164288,
+      "kernel_device_bytes": 2328576,
+      "organ": "normalization",
+      "tensors": 313,
+      "tensors_without_x_staging": 0,
+      "terminal_states": [
+        "PROTECTED_SOURCE_NATIVE_WITH_BILLED_BYTES"
+      ]
+    },
+    {
+      "active_bytes": 76800,
+      "dense_bf16_bytes": 76800,
+      "dense_equivalent_macs": 0,
+      "elements": 19200,
+      "kernel_device_bytes": 76800,
+      "organ": "router_control",
+      "tensors": 75,
+      "tensors_without_x_staging": 0,
+      "terminal_states": [
+        "PROTECTED_SOURCE_NATIVE_WITH_BILLED_BYTES"
+      ]
+    },
+    {
+      "active_bytes": 2784,
+      "dense_bf16_bytes": 12288,
+      "dense_equivalent_macs": 0,
+      "elements": 951582720,
+      "kernel_device_bytes": 2784,
+      "organ": "embeddings",
+      "tensors": 1,
+      "tensors_without_x_staging": 0,
+      "terminal_states": [
+        "PACKED_ROW_GATHER"
+      ]
+    }
+  ],
+  "representation": {
+    "D": 8,
+    "artifact_index_bits": 7,
+    "k": 128,
+    "kernel_index_bits": 8,
+    "kernel_index_stream_inflation": 1.1428571428571428,
+    "rotate": false,
+    "rung": "R0",
+    "subspaces": 1
+  },
+  "schema": "hawking.gravity.active_byte_ledger.v1",
+  "totals": {
+    "active_bytes_per_token": 5010218784,
+    "active_tensors_per_token": 2994,
+    "byte_compression": 16.086711844478206,
+    "dense_bf16_bytes_per_token": 80597945856,
+    "dense_equivalent_macs_per_token": 40297758720,
+    "kernel_amplification_vs_artifact": 7.7000842061431225,
+    "kernel_byte_compression_vs_dense": 2.0891605096531594,
+    "kernel_device_bytes_per_token": 38579106528
+  },
+  "totals_including_kv": {
+    "active_bytes_per_token": null,
+    "kv_bytes_per_token": null
+  },
+  "unknowns": [
+    {
+      "field": "kv_cache_dtype_bytes",
+      "missing_input": "the serving runtime's KV latent cache dtype; no inference runtime exists in this repo"
+    },
+    {
+      "field": "index_cache_dtype_bytes",
+      "missing_input": "the serving runtime's IndexShare key cache dtype; no inference runtime exists in this repo"
+    }
+  ],
+  "x_staging_failures": {
+    "artifact_bytes": 883727424,
+    "cause": "gravity_metal.py:207 stages x only when (k*D + nchunk*D)*4 fits in maxThreadgroupMemoryLength; above that the else-branch at gravity_metal.py:98 streams x from device memory per chunk per thread",
+    "distinct_shapes": [
+      [
+        6144,
+        12288
+      ],
+      [
+        6144,
+        16384
+      ]
+    ],
+    "kernel_device_bytes": 33328668672,
+    "tensors_per_token": 81,
+    "threadgroup_memory_limit_bytes": 32768
+  }
+}
