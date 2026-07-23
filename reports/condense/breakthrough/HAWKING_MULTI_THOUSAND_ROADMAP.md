@@ -26,9 +26,17 @@ work inside it. That number alone decides which submission models are alive:
 
 Two consequences follow directly, and neither depends on kernel quality.
 
-The current runtime submits one command buffer per layer. 78 layers times 215.8 us is 16.8 ms of pure
-submission, so **the shipped submission model caps at 59.41 tok/s** (DERIVED) before a single weight byte
-is read. Every kernel improvement below that ceiling is invisible at the token boundary.
+**Correction to the first published version of this document.** It modelled the runtime as one command
+buffer per layer and derived a 59.41 tok/s floor. That was optimistic by 27x. `gravity_metal.py:486-498`
+opens a command buffer inside `matvec` and waits on it, so the real unit is one buffer per PROJECTION.
+A token's graph is 2,101 dispatches (1 seed plus 75 sparse layers times 28 stages, enumerated by
+`gravity_runtime.moe_layer_stages`), so the shipped submission model costs 453 ms of submission and caps at
+**2.21 tok/s** (DERIVED) before a single weight byte is read. The per-layer figure of 59.41 is retained in
+the ladder as `A+G-per-layer`, because it is the intermediate most readers assume is the starting point
+and it is not. Independent corroboration that 2.21 is the right order: the diagnostic separately derived
+~0.47 tok/s for the current implied token, which is 2.21 with real kernel time added on top.
+
+Every kernel improvement below that ceiling is invisible at the token boundary.
 
 At 5,000 TPS the whole token budget is smaller than one command buffer. **No runtime that submits work per
 token reaches 5,000 TPS on this machine.** It requires a persistent GPU causal loop where the CPU only
@@ -78,8 +86,9 @@ not exist additionally carry `ENABLING_ARTIFACT_DOES_NOT_EXIST`.
 
 | config | lane | MB/token | tok/s | binds | vs shipped | submission | open? |
 |---|---|---:|---:|---|---:|---|---|
-| shipped-today | control | 5,010 | 59.4 | DEPTH | 1.00x | 78 CB | MEASURED ledger |
-| A-kernels-only | A | 5,010 | **59.4** | DEPTH | 1.00x | 78 CB | **OPEN, and moves nothing** |
+| shipped-today | control | 5,010 | **2.2** | DEPTH | 1.00x | 2,101 CB | MEASURED ledger |
+| A-kernels-only | A | 5,010 | **2.2** | DEPTH | 1.00x | 2,101 CB | **OPEN, and moves nothing** |
+| A+G-per-layer | A+G | 5,010 | 59.4 | DEPTH | 1.00x | 78 CB | **OPEN, still depth-bound** |
 | A+G-few-buffers | A+G | 5,010 | 102.8 | TRAFFIC | 1.00x | 3 CB | **OPEN** |
 | A+G-one-graph | A+G | 5,010 | 102.8 | TRAFFIC | 1.00x | 1 graph | **OPEN** |
 | B1-compress-protected | B | 4,413 | 116.8 | TRAFFIC | 1.14x | 1 graph | blocked: science stream owns the protection |
@@ -92,8 +101,14 @@ not exist additionally carry `ENABLING_ARTIFACT_DOES_NOT_EXIST`.
 Reading the ladder honestly:
 
 - **Lane A alone moves nothing.** `A-kernels-only` is the control for that question and it returns the
-  shipped 59.4 tok/s, still DEPTH-bound. Kernels can get arbitrarily better and the token does not change,
+  shipped 2.2 tok/s, still DEPTH-bound. Kernels can get arbitrarily better and the token does not change,
   because submission binds first. This is the row that orders the work.
+- **Even collapsing to one buffer per layer leaves the token depth-bound** at 59.4. The constraint does not
+  flip to TRAFFIC until submission reaches roughly three buffers per token, which is why Lane G's target is
+  a single encoded graph rather than a tidier per-layer loop. `gravity_runtime.py` measures that a whole
+  token's 2,101 dispatches fit inside one 4,096-command indirect command buffer, giving a submission-only
+  ceiling of 4,633.9 tok/s: enough that submission stops binding anywhere below it, and still short of
+  5,000, exactly as section 1 requires.
 - **100 TPS is reachable on open lanes**, and only once submission collapses: three command buffers per
   token already gets there at 102.8, and the binding constraint flips from DEPTH to TRAFFIC on the way.
   That flip is the milestone to actually go and measure.

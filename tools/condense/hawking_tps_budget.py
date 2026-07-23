@@ -43,6 +43,13 @@ VENDOR_BANDWIDTH_BPS = 819e9
 
 BANDWIDTH_EFFICIENCIES = (1.00, 0.70, 0.50)
 
+# What the shipped code actually submits per token.  gravity_metal.matvec opens a command
+# buffer and waits on it, so the unit is one projection, and a token's graph is 2,101 of them
+# (1 + 75 sparse layers x 28 stages; see gravity_runtime.moe_layer_stages).  Modelling this as
+# one buffer per LAYER, which an earlier revision did, understates the submission floor 27x.
+SHIPPED_COMMAND_BUFFERS = 2101
+PER_LAYER_COMMAND_BUFFERS = 78
+
 
 @dataclass(frozen=True)
 class Organ:
@@ -208,7 +215,9 @@ def depth_budget_table() -> list[dict]:
             "command_buffers_affordable": round(affordable, 3),
             "one_cb_share_of_budget": round(share, 4),
             "per_layer_submission_tps_ceiling": round(
-                1.0 / (78 * MEASURED_COMMAND_BUFFER_SECONDS), 2),
+                1.0 / (PER_LAYER_COMMAND_BUFFERS * MEASURED_COMMAND_BUFFER_SECONDS), 2),
+            "shipped_per_projection_submission_tps_ceiling": round(
+                1.0 / (SHIPPED_COMMAND_BUFFERS * MEASURED_COMMAND_BUFFER_SECONDS), 2),
             "verdict": (
                 "IMPOSSIBLE_WITH_PER_TOKEN_SUBMISSION" if share >= 1.0
                 else "REQUIRES_ONE_COMMAND_GRAPH" if share >= 0.20
@@ -228,15 +237,24 @@ def candidate_configs() -> list[Config]:
     root with a capture running, so they are blocked on access rather than on difficulty.
     """
     return [
-        Config("shipped-today", "control", 8, 78, False, 78, 0.70,
+        # gravity_metal.py opens a command buffer inside matvec() and waits on it, so the real
+        # granularity is one buffer PER PROJECTION, not per layer: 2,101 dispatches for a token
+        # (1 + 75 sparse layers x 28 stages, from gravity_runtime.moe_layer_stages).  An earlier
+        # revision of this file modelled 78, one per layer, and understated the floor by 27x.
+        Config("shipped-today", "control", 8, 78, False, SHIPPED_COMMAND_BUFFERS, 0.70,
                evidence="MEASURED_LEDGER",
-               note="the sealed R0 artifact under per-layer submission"),
+               note="the sealed R0 artifact under the submission granularity the code "
+                    "actually uses: one command buffer per projection"),
         # Lane A alone, kept as its own row precisely because it moves nothing: the kernels get
         # arbitrarily better and the token does not, because submission still binds.
-        Config("A-kernels-only", "A", 8, 78, False, 78, 0.70,
+        Config("A-kernels-only", "A", 8, 78, False, SHIPPED_COMMAND_BUFFERS, 0.70,
                evidence="PROJECTED",
                note="Lane A kernels with the submission model unchanged; the control for "
                     "whether kernel work alone is visible at the token boundary"),
+        Config("A+G-per-layer", "A+G", 8, 78, False, 78, 0.70,
+               evidence="PROJECTED",
+               note="one command buffer per layer, the intermediate people assume is the "
+                    "starting point and is not"),
         Config("A+G-few-buffers", "A+G", 8, 78, False, 3, 0.70,
                evidence="PROJECTED",
                note="Lane A plus a partial Lane G: three command buffers per token"),
@@ -416,10 +434,17 @@ def selftest() -> int:
                                      blocked_on="teacher capsules"))
     assert "ENABLING_ARTIFACT_DOES_NOT_EXIST" in blocked["labels"]
 
-    # Lane A alone must not move the token: submission still binds at 78 buffers
-    kernels_only = project(organs, Config("a", "A", command_buffers_per_token=78))
-    assert kernels_only["binding_constraint"] == "DEPTH"
-    assert abs(kernels_only["tokens_per_second"] - 59.41) < 0.1, kernels_only["tokens_per_second"]
+    # Lane A alone must not move the token: submission still binds
+    per_layer = project(organs, Config("a", "A", command_buffers_per_token=PER_LAYER_COMMAND_BUFFERS))
+    assert per_layer["binding_constraint"] == "DEPTH"
+    assert abs(per_layer["tokens_per_second"] - 59.41) < 0.1, per_layer["tokens_per_second"]
+
+    # and the SHIPPED granularity is a command buffer per projection, far worse than per layer
+    shipped = project(organs, Config("s", "control", command_buffers_per_token=SHIPPED_COMMAND_BUFFERS))
+    assert shipped["binding_constraint"] == "DEPTH"
+    assert abs(shipped["tokens_per_second"] - 2.21) < 0.05, shipped["tokens_per_second"]
+    assert shipped["tokens_per_second"] < per_layer["tokens_per_second"] / 20, (
+        "per-projection submission must be far worse than per-layer, or the correction is wrong")
 
     print(json.dumps({"selftest": "PASS", "schema": SCHEMA,
                       "per_layer_submission_ceiling_tps":

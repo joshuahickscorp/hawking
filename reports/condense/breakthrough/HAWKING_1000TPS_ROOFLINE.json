@@ -80,6 +80,7 @@
       "command_buffers_affordable": 46.339,
       "one_cb_share_of_budget": 0.0216,
       "per_layer_submission_tps_ceiling": 59.41,
+      "shipped_per_projection_submission_tps_ceiling": 2.21,
       "verdict": "SUBMISSION_NOT_BINDING"
     },
     {
@@ -88,6 +89,7 @@
       "command_buffers_affordable": 18.536,
       "one_cb_share_of_budget": 0.0539,
       "per_layer_submission_tps_ceiling": 59.41,
+      "shipped_per_projection_submission_tps_ceiling": 2.21,
       "verdict": "REQUIRES_FEW_COMMAND_BUFFERS"
     },
     {
@@ -96,6 +98,7 @@
       "command_buffers_affordable": 9.268,
       "one_cb_share_of_budget": 0.1079,
       "per_layer_submission_tps_ceiling": 59.41,
+      "shipped_per_projection_submission_tps_ceiling": 2.21,
       "verdict": "REQUIRES_FEW_COMMAND_BUFFERS"
     },
     {
@@ -104,6 +107,7 @@
       "command_buffers_affordable": 4.634,
       "one_cb_share_of_budget": 0.2158,
       "per_layer_submission_tps_ceiling": 59.41,
+      "shipped_per_projection_submission_tps_ceiling": 2.21,
       "verdict": "REQUIRES_ONE_COMMAND_GRAPH"
     },
     {
@@ -112,6 +116,7 @@
       "command_buffers_affordable": 2.317,
       "one_cb_share_of_budget": 0.4316,
       "per_layer_submission_tps_ceiling": 59.41,
+      "shipped_per_projection_submission_tps_ceiling": 2.21,
       "verdict": "REQUIRES_ONE_COMMAND_GRAPH"
     },
     {
@@ -120,6 +125,7 @@
       "command_buffers_affordable": 0.927,
       "one_cb_share_of_budget": 1.079,
       "per_layer_submission_tps_ceiling": 59.41,
+      "shipped_per_projection_submission_tps_ceiling": 2.21,
       "verdict": "IMPOSSIBLE_WITH_PER_TOKEN_SUBMISSION"
     }
   ],
@@ -142,11 +148,11 @@
         "routed_experts": 8,
         "sequential_stages": 78,
         "compress_protected": false,
-        "command_buffers_per_token": 78,
+        "command_buffers_per_token": 2101,
         "bandwidth_efficiency": 0.7,
         "evidence": "MEASURED_LEDGER",
         "blocked_on": null,
-        "note": "the sealed R0 artifact under per-layer submission"
+        "note": "the sealed R0 artifact under the submission granularity the code actually uses: one command buffer per projection"
       },
       "labels": [],
       "active_bytes_per_token": 5010218784,
@@ -214,11 +220,11 @@
         }
       ],
       "traffic_seconds_per_token": 0.009724803540372673,
-      "depth_seconds_per_token": 0.016832399999999997,
-      "token_seconds": 0.016832399999999997,
-      "tokens_per_second": 59.41,
+      "depth_seconds_per_token": 0.45339579999999996,
+      "token_seconds": 0.45339579999999996,
+      "tokens_per_second": 2.21,
       "traffic_only_tps": 102.83,
-      "depth_only_tps": 59.41,
+      "depth_only_tps": 2.21,
       "binding_constraint": "DEPTH",
       "evidence": "MEASURED_LEDGER",
       "blocked_on": null,
@@ -231,11 +237,105 @@
         "routed_experts": 8,
         "sequential_stages": 78,
         "compress_protected": false,
-        "command_buffers_per_token": 78,
+        "command_buffers_per_token": 2101,
         "bandwidth_efficiency": 0.7,
         "evidence": "PROJECTED",
         "blocked_on": null,
         "note": "Lane A kernels with the submission model unchanged; the control for whether kernel work alone is visible at the token boundary"
+      },
+      "labels": [
+        "PROJECTED",
+        "NOT_MEASURED",
+        "ASSUMES_70_PERCENT_BANDWIDTH",
+        "ASSUMES_2101_COMMAND_BUFFERS_PER_TOKEN"
+      ],
+      "active_bytes_per_token": 5010218784,
+      "active_mb_per_token": 5010.22,
+      "organs": [
+        {
+          "organ": "routed_expert",
+          "bytes": 2481062400,
+          "share": 0.4952,
+          "stored_bpw_before": 0.87634
+        },
+        {
+          "organ": "attention",
+          "bytes": 1408647552,
+          "share": 0.28115,
+          "stored_bpw_before": 0.87551
+        },
+        {
+          "organ": "indexer",
+          "bytes": 393619968,
+          "share": 0.07856,
+          "stored_bpw_before": 16.0
+        },
+        {
+          "organ": "shared_expert",
+          "bytes": 310132800,
+          "share": 0.0619,
+          "stored_bpw_before": 0.87634
+        },
+        {
+          "organ": "router",
+          "bytes": 235929600,
+          "share": 0.04709,
+          "stored_bpw_before": 16.0
+        },
+        {
+          "organ": "lm_head",
+          "bytes": 104081472,
+          "share": 0.02077,
+          "stored_bpw_before": 0.87502
+        },
+        {
+          "organ": "dense_mlp",
+          "bytes": 74336832,
+          "share": 0.01484,
+          "stored_bpw_before": 0.87522
+        },
+        {
+          "organ": "normalization",
+          "bytes": 2328576,
+          "share": 0.00046,
+          "stored_bpw_before": 16.0
+        },
+        {
+          "organ": "router_control",
+          "bytes": 76800,
+          "share": 2e-05,
+          "stored_bpw_before": 16.0
+        },
+        {
+          "organ": "embeddings",
+          "bytes": 2784,
+          "share": 0.0,
+          "stored_bpw_before": 3.625
+        }
+      ],
+      "traffic_seconds_per_token": 0.009724803540372673,
+      "depth_seconds_per_token": 0.45339579999999996,
+      "token_seconds": 0.45339579999999996,
+      "tokens_per_second": 2.21,
+      "traffic_only_tps": 102.83,
+      "depth_only_tps": 2.21,
+      "binding_constraint": "DEPTH",
+      "evidence": "PROJECTED",
+      "blocked_on": null,
+      "reduction_vs_shipped": 1.0
+    },
+    {
+      "config": {
+        "name": "A+G-per-layer",
+        "lane": "A+G",
+        "routed_experts": 8,
+        "sequential_stages": 78,
+        "compress_protected": false,
+        "command_buffers_per_token": 78,
+        "bandwidth_efficiency": 0.7,
+        "evidence": "PROJECTED",
+        "blocked_on": null,
+        "note": "one command buffer per layer, the intermediate people assume is the starting point and is not"
       },
       "labels": [
         "PROJECTED",
