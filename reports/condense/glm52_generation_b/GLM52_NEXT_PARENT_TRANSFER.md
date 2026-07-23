@@ -10,26 +10,44 @@ four.
 
 ---
 
+## 0. Correction to the first sealing of this packet
+
+The first version of this packet reported raw-activation cosine and drew a recovery point
+from it. That metric was wrong and the numbers built on it are restated below.
+
+These tensors sit on a residual stream and carry a large shared direction across every
+token, so a model that stores only the per-feature mean and knows nothing about any token
+already scores 0.898 raw cosine on block output. Every weight-space rung measured here
+scored between 0.041 and 0.269, which is not partial fidelity, it is **worse than a
+constant**. The earlier claim that the family recovers at 2.017 bits per weight was
+wrong: 0.700 raw is still below the 0.898 null.
+
+Everything is now reported as centered cosine, on the token-varying part, with the null
+stated beside it and a hard gate requiring a candidate to beat the null before any floor
+applies. Every artifact was remeasured from disk under the corrected metric.
+
 ## 1. The parent-specific law
 
-GLM-5.2's routed-expert path, measured on real weights against sealed teacher capsules,
-block output cosine at the window's own complete rate:
+GLM-5.2's routed-expert path, measured on real weights against sealed teacher capsules.
+Block output on the sparse MoE window, centered cosine, with the raw number and the
+constant-mean null beside it. The null is 0.898.
 
 ```text
-0.3306 BPW -> 0.041
-0.4990     -> 0.086
-0.7531     -> 0.154
-0.8931     -> 0.269
-2.0169     -> 0.700      above the one-bit law, diagnostic only
+complete BPW   raw     centered   beats the null
+0.3306         0.041   0.006      no
+0.4990         0.086   0.020      no
+0.7531         0.154   0.022      no
+0.8931         0.269   0.067      no
+2.0169         0.700   0.317      no      above the one-bit law, diagnostic only
 ```
 
-Reaching cosine 0.50, where the compact block still carries half the teacher's direction,
-takes roughly **1.5 bits per weight**. The campaign's law allows 1.0, where the curve sits
-near 0.30. Replicated on a second window in a different region of the model.
+Not one rung beats a constant, at any rate tested, including at twice the legal ceiling.
+Replicated on a second window in a different region: 0.016 centered at 0.7531 and 0.043 at
+0.8931, against a null of 0.890.
 
-The dense path is not bound: layer 0 clears the floor at cosine 0.709 under the same codec
-at a comparable rate. The failure is specific to the routed experts, which carry 97.492
-percent of the weight.
+The dense path is genuinely different. Layer 0 at 0.8551 BPW reaches **centered 0.557**,
+two orders of magnitude above what any sparse window reaches at a comparable rate. The
+failure is specific to the routed experts, which carry 97.492 percent of the weight.
 
 Directive taxonomy: **EXPERT_FUNCTION_BOUND**.
 
@@ -57,8 +75,9 @@ a shared basis across a layer's experts
 asymmetric BIT allocation as a rescue when one role holds most of the weight
 ```
 
-The first three were measured here at a matched rate and landed within 0.116 to 0.157
-block output cosine. The fourth is closed by arithmetic rather than by measurement.
+The first three were measured here at a matched rate and landed within 0.006 and 0.023
+centered block output cosine, none of them beating a constant. The fourth is closed by
+arithmetic rather than by measurement.
 
 Two of these were already dead in `docs/dead_levers.md` for a small dense parent, killed
 2026-05-30 and 2026-05-31. This run reproduced the kill independently on a 753B MoE parent
@@ -70,10 +89,10 @@ and the shared basis at rank 280 reached 0.9746. The activation-weighted reframe
 
 ```text
 best physically exact candidate      0.7531 complete BPW, verified, complete coverage
-its trajectory                       block output cosine 0.154, far below the 0.50 floor
-half-bit candidate                   0.4990 complete BPW, exact, cosine 0.086
+its trajectory                       centered 0.022, and it loses to a constant
+half-bit candidate                   0.4990 complete BPW, exact, centered 0.020
 half-bit verdict                     NOT PROMOTED, trajectory not reachable
-one-third candidate                  0.3306 complete BPW, exact, cosine 0.041
+one-third candidate                  0.3306 complete BPW, exact, centered 0.006
 ```
 
 The half-bit rate has no single legal geometry on these shapes: single-subspace PQ at
@@ -83,9 +102,10 @@ the result does not.
 
 ## 5. First causal divergence
 
-Attention output is already at cosine 0.163 before the MoE runs. The expert path then
-collapses to 0.0007. The router keeps its weight magnitudes, cosine 0.9995, and loses its
-choices: top-8 expert set agreement is 0.119. Natively carried organs are untouched, with
+Attention output is already gone before the MoE runs, at raw 0.163 against its own null of
+0.909. The expert path then collapses to raw 0.0007. The router loses its choices: top-8
+expert set agreement is 0.119, and its surviving weight-magnitude cosine of 0.9995 is
+itself a mean artifact, since the normalised top-8 weights cluster near one eighth. Natively carried organs are untouched, with
 indexer scores at 0.988, which is the protected-tensor policy working.
 
 So the divergence is not one site. Both the attention projections and the expert
@@ -146,6 +166,38 @@ the final layer plus the head
 Run the above-ceiling oracle **first**, not last. One rung at twice the target rate tells
 you whether the family can work at all, for the cost of one window, and it would have
 saved most of this run's compute had it been run before the rate ladder.
+
+## 9a. The one direction that beats its null
+
+A dense student fitted against the block's OUTPUT, replacing the routed and shared experts
+entirely rather than approximating their weights, scored on a corpus partition disjoint
+from every split it was fitted on:
+
+```text
+                        BPW      raw     null    centered
+student, hidden 1024    0.0104   0.923   0.831   0.724
+student, hidden 8192    0.0830   0.928   0.831   0.744
+full linear map         0.0623   0.925   0.831   0.733
+linear, rank 256        0.0052   0.863   0.831   0.562
+linear, rank 64         0.0013   0.758   0.831   0.374   loses to the null
+weight-space at 0.75    0.7531   0.014   0.835   ~0.00  loses to the null
+```
+
+This is the only thing measured in the whole campaign that beats the constant-mean null,
+and it does so at roughly **one seventieth** of the rate every weight-space family was
+given. The first layer is drawn from a seed and stored as the seed, so only the readout
+costs bits, and the readout is solved in closed form.
+
+Three things this is NOT. It is not the nonlinearity: a full linear map reaches 0.733, so
+the random features buy compactness rather than accuracy. It is not activation-weighted
+SVD, which is a recorded Type-1 kill and was not run; this replaces the architecture
+rather than reweighting a decomposition of the same matrices. And it is not a capability
+result: 0.72 centered cosine on one stage of one layer, on 4096 held-out positions from a
+deterministic corpus, says nothing about what the residual 0.28 was carrying.
+
+What it does say is that the 9.84 G expert weights of one layer are, on this distribution,
+approximable to 0.72 centered cosine by 37 M parameters. That is where the next parent
+should start.
 
 ## 10. What is still open
 

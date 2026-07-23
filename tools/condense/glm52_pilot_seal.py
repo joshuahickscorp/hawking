@@ -24,10 +24,19 @@ REPORTS = REPO / "reports/condense/glm52_generation_b"
 MEASUREMENTS = REPORTS / "GLM52_PILOT_MEASUREMENTS.jsonl"
 LADDER_PATH = REPORTS / "GLM52_GENERATION_B_RATE_LADDER.json"
 
-# A block whose output cosine against the teacher is below this is not a degraded block,
-# it is a different function.  Preregistered here rather than chosen after the fact: the
-# threshold is where the compact output carries less than half the teacher's direction.
+# The floor is on CENTERED cosine, and there is a hard gate before it.
+#
+# Raw-activation cosine is not a fidelity metric on a residual stream.  These tensors carry
+# a large shared direction across every token, so predicting the per-feature mean scores
+# 0.898 on block output while knowing nothing about any token.  The first version of this
+# seal used a raw floor of 0.50, which sits far BELOW that null: it would have passed a
+# candidate strictly worse than a constant.  Every rung measured under it is restated here.
+#
+# So: a candidate must first beat the constant-mean null on raw cosine, and then clear this
+# floor on the centered cosine, which is the token-varying part and the only part that
+# carries the block's function.
 TRAJECTORY_FLOOR = 0.50
+MUST_BEAT_CONSTANT_MEAN_NULL = True
 # The campaign's governing law.  A family that would need more than this to reach the
 # floor is closed, because no candidate may exceed one complete bit per source weight.
 BPW_CEILING = 1.0
@@ -94,7 +103,25 @@ def latest_measurements() -> dict[tuple[str, str], dict]:
 def family_verdict(rows: list[dict]) -> dict:
     """Rate-bound or family-bound: the one question the control rung was run to answer."""
     ordered = sorted(rows, key=lambda row: row["pack"]["complete_bpw"])
-    best = max(row["propagate"]["carry_out_cosine"] for row in ordered)
+
+    def score(row: dict) -> float:
+        carry = row["propagate"].get("carry_out")
+        if carry is None:
+            return float("nan")
+        if MUST_BEAT_CONSTANT_MEAN_NULL and not carry["beats_constant_mean"]:
+            # Worse than a constant is not partial fidelity.  Report it as zero signal
+            # rather than as a small positive cosine.
+            return 0.0
+        return carry["centered_cosine"]
+
+    if any(row["propagate"].get("carry_out") is None for row in ordered):
+        return {"verdict": "UNMEASURED_UNDER_CORRECTED_METRIC",
+                "note": ("these rows predate the centered-cosine correction and must be "
+                         "remeasured before any verdict is drawn from them")}
+
+    best = max(score(row) for row in ordered)
+    beat_null = [row["propagate"].get("rung", "?") for row in ordered
+                 if row["propagate"]["carry_out"]["beats_constant_mean"]]
     if best >= TRAJECTORY_FLOOR:
         return {"verdict": "TRAJECTORY_REACHABLE", "best_carry_out_cosine": best}
     if len(ordered) < MIN_RATES_FOR_A_SLOPE:
@@ -102,7 +129,7 @@ def family_verdict(rows: list[dict]) -> dict:
 
     low, high = ordered[0], ordered[-1]
     rate_span = high["pack"]["complete_bpw"] - low["pack"]["complete_bpw"]
-    gain = high["propagate"]["carry_out_cosine"] - low["propagate"]["carry_out_cosine"]
+    gain = score(high) - score(low)
     slope = gain / rate_span if rate_span else 0.0
 
     # The question is not whether more bits help at all, it is whether they can reach the
@@ -113,7 +140,10 @@ def family_verdict(rows: list[dict]) -> dict:
     else:
         required = high["pack"]["complete_bpw"] + (TRAJECTORY_FLOOR - best) / slope
 
-    common = {"best_carry_out_cosine": best, "rate_span_tested": rate_span,
+    common = {"best_carry_out_cosine": best,
+              "metric": "centered cosine, zero when the rung loses to a constant",
+              "rungs_beating_the_constant_mean_null": beat_null,
+              "rate_span_tested": rate_span,
               "cosine_gain_over_that_span": gain,
               "cosine_per_bit": slope,
               "extrapolated_bpw_to_reach_floor": required,
@@ -274,35 +304,40 @@ def seal() -> int:
 
 def selftest() -> int:
     # A family that stays flat as the budget grows is family-bound, not rate-bound.
-    flat = [
-        {"pack": {"complete_bpw": 0.33}, "propagate": {"carry_out_cosine": 0.04}},
-        {"pack": {"complete_bpw": 0.89}, "propagate": {"carry_out_cosine": 0.27}},
-    ]
+    def row(bpw, centered, beats=True):
+        return {"pack": {"complete_bpw": bpw},
+                "propagate": {"carry_out_cosine": centered,
+                              "carry_out": {"centered_cosine": centered,
+                                            "raw_cosine": centered,
+                                            "constant_mean_null_raw_cosine": 0.0,
+                                            "beats_constant_mean": beats}}}
+
+    flat = [row(0.33, 0.04), row(0.89, 0.27)]
     assert family_verdict(flat)["verdict"] == "REPRESENTATION_FAMILY_BOUND", family_verdict(flat)
 
     # One that climbs steeply enough to clear the floor before the ceiling is rate-bound:
     # more budget in the same family would fix it.
-    steep = [
-        {"pack": {"complete_bpw": 0.33}, "propagate": {"carry_out_cosine": 0.10}},
-        {"pack": {"complete_bpw": 0.50}, "propagate": {"carry_out_cosine": 0.45}},
-    ]
+    steep = [row(0.33, 0.10), row(0.50, 0.45)]
     verdict = family_verdict(steep)
     assert verdict["verdict"] == "RATE_BOUND", verdict
     assert verdict["extrapolated_bpw_to_reach_floor"] < BPW_CEILING, verdict
 
     # A family that trends the wrong way is closed without needing an extrapolation.
-    falling = [
-        {"pack": {"complete_bpw": 0.33}, "propagate": {"carry_out_cosine": 0.20}},
-        {"pack": {"complete_bpw": 0.89}, "propagate": {"carry_out_cosine": 0.11}},
-    ]
+    falling = [row(0.33, 0.20), row(0.89, 0.11)]
     assert family_verdict(falling)["verdict"] == "REPRESENTATION_FAMILY_BOUND"
 
     # And one that actually works is neither.
-    good = [
-        {"pack": {"complete_bpw": 0.33}, "propagate": {"carry_out_cosine": 0.40}},
-        {"pack": {"complete_bpw": 0.75}, "propagate": {"carry_out_cosine": 0.93}},
-    ]
+    good = [row(0.33, 0.40), row(0.75, 0.93)]
     assert family_verdict(good)["verdict"] == "TRAJECTORY_REACHABLE", family_verdict(good)
+
+    # A rung that loses to a constant scores zero, however flattering its raw cosine.
+    loser = [dict(r, propagate=dict(r["propagate"], rung=f"R{i}"))
+             for i, r in enumerate([row(0.33, 0.04, beats=False),
+                                    row(0.89, 0.70, beats=False)])]
+    verdict = family_verdict(loser)
+    assert verdict["verdict"] == "REPRESENTATION_FAMILY_BOUND", verdict
+    assert verdict["best_carry_out_cosine"] == 0.0, verdict
+    assert verdict["rungs_beating_the_constant_mean_null"] == [], verdict
 
     print("glm52_pilot_seal selftest OK")
     return 0

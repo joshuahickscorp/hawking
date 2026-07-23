@@ -18,7 +18,7 @@
     "warning_from_directive": "do not let the control become the selected model by inertia",
     "what": "plain product quantization, single subspace, fp16 codebooks"
   },
-  "git_commit": "6a72a38b291e4b8c2bf20267abd9b74c48f45025",
+  "git_commit": "bfaad35ca58b509035ca47f3ac7d6f1728fcd5a9",
   "localisation": "the verdicts split by architecture, not by noise: the dense block clears the trajectory floor while both sparse MoE blocks are family-bound at the same codec. Product quantization is not uniformly fatal here, it is fatal to the expert path, which is 97.492 percent of the weight",
   "measurement_limitations": [
     "IndexShare selection is not exercised: the calibration batch is 256 positions and index_topk is 2048, so the indexer returns all keys and set agreement is trivially 1.0 at every rate. Testing it needs sequences longer than 2048.",
@@ -37,7 +37,7 @@
     "DENSE|glm52.pq.r0.v1": {
       "replicated": false,
       "verdicts": [
-        "TRAJECTORY_REACHABLE"
+        "INSUFFICIENT_RATES"
       ],
       "windows": [
         "W_L00_L00|glm52.pq.r0.v1"
@@ -82,9 +82,9 @@
     }
   },
   "schema": "hawking.glm52.generation_b_pilot_results.v1",
-  "sealed_at": "2026-07-23T15:33:17Z",
+  "sealed_at": "2026-07-23T15:53:15Z",
   "verdicts": {
-    "W_L00_L00|glm52.pq.r0.v1": "TRAJECTORY_REACHABLE",
+    "W_L00_L00|glm52.pq.r0.v1": "INSUFFICIENT_RATES",
     "W_L38_L38|glm52.functional.block.v1": "INSUFFICIENT_RATES",
     "W_L38_L38|glm52.hybrid.by_role.v1": "INSUFFICIENT_RATES",
     "W_L38_L38|glm52.lowrank.r1.v1": "INSUFFICIENT_RATES",
@@ -95,15 +95,15 @@
     "W_L00_L00": {
       "by_family": {
         "glm52.pq.r0.v1": {
-          "best_carry_out_cosine": 0.7092114123867086,
-          "verdict": "TRAJECTORY_REACHABLE"
+          "best_carry_out_cosine": 0.0,
+          "verdict": "INSUFFICIENT_RATES"
         }
       },
       "rungs": [
         {
           "artifact_verifies": true,
           "block_output_cosine": 0.7092114123867086,
-          "block_output_relative_error": 0.812781188781663,
+          "block_output_relative_error": 0.8127811888018714,
           "complete_bpw": 0.8550744535000073,
           "diagnostic_only": false,
           "expert_selection_set_agreement": null,
@@ -112,39 +112,82 @@
           "rung": "G0",
           "stages": {
             "attention_input": {
+              "beats_constant_mean": true,
+              "centered_cosine": 1.0000000000000124,
+              "constant_mean_null_raw_cosine": 0.89609190250006,
               "cosine": 0.9999999999999999,
+              "finite_fraction": 1.0,
+              "raw_cosine": 0.999999999999949,
               "relative_error": 0.0
             },
             "attention_output": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.02461925349199181,
+              "constant_mean_null_raw_cosine": 0.990263786568499,
               "cosine": 0.9066240691777963,
-              "relative_error": 0.7655450191638395
+              "finite_fraction": 1.0,
+              "raw_cosine": 0.9066240691777961,
+              "relative_error": 0.7655450191584386
             },
             "block_output": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.5566667099931335,
+              "constant_mean_null_raw_cosine": 0.8376429824920552,
               "cosine": 0.7092114123867086,
-              "relative_error": 0.812781188781663
+              "finite_fraction": 1.0,
+              "raw_cosine": 0.7092114123867097,
+              "relative_error": 0.8127811888018714
             },
             "index_scores": {
-              "cosine": NaN,
-              "relative_error": NaN
+              "beats_constant_mean": true,
+              "centered_cosine": 0.9968065503903496,
+              "constant_mean_null_raw_cosine": 0.7244255298518649,
+              "cosine": 0.9984932057515433,
+              "finite_fraction": 0.501953125,
+              "raw_cosine": 0.9984932057515431,
+              "relative_error": 0.0550477750956229
             },
             "index_selection": {
-              "exact_agreement": 0.6032466888427734
+              "note": "cosine is not reported: these are labels, not magnitudes",
+              "positional_agreement": 0.6032466888427734,
+              "selection_width": 256,
+              "set_agreement": 1.0
             },
             "input_hidden": {
+              "beats_constant_mean": true,
+              "centered_cosine": 0.9999999999999327,
+              "constant_mean_null_raw_cosine": 0.8522199378486627,
               "cosine": 1.0,
+              "finite_fraction": 1.0,
+              "raw_cosine": 0.9999999999999967,
               "relative_error": 0.0
             },
             "post_attention_hidden": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.6558648284895932,
+              "constant_mean_null_raw_cosine": 0.8439327074325735,
               "cosine": 0.8121018720168349,
-              "relative_error": 0.5996073294606697
+              "finite_fraction": 1.0,
+              "raw_cosine": 0.8121018720168376,
+              "relative_error": 0.5996073294446695
             },
             "post_moe": {
+              "beats_constant_mean": false,
+              "centered_cosine": -0.0013834930691008346,
+              "constant_mean_null_raw_cosine": 0.8348691983681483,
               "cosine": -0.24682330447216766,
-              "relative_error": 1.01622283552875
+              "finite_fraction": 1.0,
+              "raw_cosine": -0.24682330447216916,
+              "relative_error": 1.0162228355253817
             },
             "pre_router_hidden": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.3695835599336479,
+              "constant_mean_null_raw_cosine": 0.9253655049096688,
               "cosine": 0.4606035088748221,
-              "relative_error": 0.9784576329508834
+              "finite_fraction": 1.0,
+              "raw_cosine": 0.4606035088748221,
+              "relative_error": 0.9784576328523374
             }
           },
           "tensor_coverage_complete": true
@@ -154,25 +197,27 @@
     "W_L38_L38": {
       "by_family": {
         "glm52.functional.block.v1": {
-          "best_carry_out_cosine": 0.14433952249528934,
+          "best_carry_out_cosine": 0.0,
           "verdict": "INSUFFICIENT_RATES"
         },
         "glm52.hybrid.by_role.v1": {
-          "best_carry_out_cosine": 0.15662695858370407,
+          "best_carry_out_cosine": 0.0,
           "verdict": "INSUFFICIENT_RATES"
         },
         "glm52.lowrank.r1.v1": {
-          "best_carry_out_cosine": 0.11622596018858143,
+          "best_carry_out_cosine": 0.0,
           "verdict": "INSUFFICIENT_RATES"
         },
         "glm52.pq.r0.v1": {
-          "best_carry_out_cosine": 0.2693950563085895,
-          "cosine_gain_over_that_span": 0.2285113273763709,
-          "cosine_per_bit": 0.4062283170746741,
-          "extrapolated_bpw_to_reach_floor": 1.4607836072207667,
+          "best_carry_out_cosine": 0.0,
+          "cosine_gain_over_that_span": 0.0,
+          "cosine_per_bit": 0.0,
+          "extrapolated_bpw_to_reach_floor": null,
           "extrapolation_is_linear_and_crude": true,
+          "metric": "centered cosine, zero when the rung loses to a constant",
           "rate_span_tested": 0.5625194447839668,
-          "reading": "spending 0.563 more bits per weight moved the block output by 0.229 cosine, a slope of 0.406 per bit, leaving it at 0.269. Reaching 0.50 on that trend would take 1.461 bits per weight, against a ceiling of 1.0. The binding constraint is the representation, not the budget.",
+          "reading": "spending 0.563 more bits per weight moved the block output by 0.000 cosine, a slope of 0.000 per bit, leaving it at 0.000. Reaching 0.50 on that trend would take an unbounded number of bits per weight, against a ceiling of 1.0. The binding constraint is the representation, not the budget.",
+          "rungs_beating_the_constant_mean_null": [],
           "verdict": "REPRESENTATION_FAMILY_BOUND"
         }
       },
@@ -189,23 +234,39 @@
           "rung": "G2",
           "stages": {
             "attention_input": {
+              "beats_constant_mean": true,
+              "centered_cosine": 0.9999999999999618,
+              "constant_mean_null_raw_cosine": 0.887323569479862,
               "cosine": 1.0,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.9999999999998614,
               "relative_error": 0.0
             },
             "attention_output": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.007278522592434588,
+              "constant_mean_null_raw_cosine": 0.9085434142550555,
               "cosine": 0.04512720905831411,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.04512720905831417,
               "relative_error": 1.0550307326815134
             },
             "block_output": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.006402848455804302,
+              "constant_mean_null_raw_cosine": 0.8984292486689768,
               "cosine": 0.04088372893221862,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.04088372893221897,
               "relative_error": 1.0431321149228552
             },
             "index_scores": {
+              "beats_constant_mean": true,
+              "centered_cosine": 0.3716418884153016,
+              "constant_mean_null_raw_cosine": 0.7421896694002628,
               "cosine": 0.8824617578308116,
               "finite_fraction": 0.501953125,
+              "raw_cosine": 0.8824617578308132,
               "relative_error": 0.7080504669054701
             },
             "index_selection": {
@@ -215,38 +276,66 @@
               "set_agreement": 1.0
             },
             "input_hidden": {
+              "beats_constant_mean": true,
+              "centered_cosine": 0.9999999999999327,
+              "constant_mean_null_raw_cosine": 0.8522199378486627,
               "cosine": 1.0,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.9999999999999967,
               "relative_error": 0.0
             },
             "post_attention_hidden": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.007618696701404208,
+              "constant_mean_null_raw_cosine": 0.9083994202141066,
               "cosine": 0.04397586880758863,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.043975868807588504,
               "relative_error": 1.0555916892125015
             },
             "post_moe": {
+              "beats_constant_mean": false,
+              "centered_cosine": -0.00018638229731373742,
+              "constant_mean_null_raw_cosine": 0.8348343267362576,
               "cosine": 0.019679526631640437,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.019679526631640742,
               "relative_error": 1.0007658448254335
             },
             "pre_router_hidden": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.015917549409152233,
+              "constant_mean_null_raw_cosine": 0.8925394189991129,
               "cosine": 0.042636185244175145,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.04263618524417527,
               "relative_error": 1.3903526519886777
             },
             "routed_expert_output": {
+              "beats_constant_mean": false,
+              "centered_cosine": -3.744812423534219e-05,
+              "constant_mean_null_raw_cosine": 0.7971076375870384,
               "cosine": 0.0115362744214971,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.011536274421496875,
               "relative_error": 1.0021093939326038
             },
             "router_logits": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.04741986987717646,
+              "constant_mean_null_raw_cosine": 0.8876846262788692,
               "cosine": 0.06556220854602915,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.06556220854602915,
               "relative_error": 1.5588880537080885
             },
             "shared_expert_output": {
+              "beats_constant_mean": false,
+              "centered_cosine": -0.0001937241554170784,
+              "constant_mean_null_raw_cosine": 0.8587400519072225,
               "cosine": 0.011146010445378244,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.011146010445378229,
               "relative_error": 1.0007020835845595
             },
             "topk_indices": {
@@ -256,13 +345,21 @@
               "set_agreement": 0.0133056640625
             },
             "topk_margin_8th_vs_9th": {
+              "beats_constant_mean": false,
+              "centered_cosine": -0.18316172027884625,
+              "constant_mean_null_raw_cosine": 0.7871650495001028,
               "cosine": 0.5345942499813968,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.5345942499813968,
               "relative_error": 0.9893993122757969
             },
             "topk_weights": {
+              "beats_constant_mean": false,
+              "centered_cosine": -0.019253146971627562,
+              "constant_mean_null_raw_cosine": 0.9997081991764961,
               "cosine": 0.9987510671025576,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.9987510671025573,
               "relative_error": 0.05002236686639526
             }
           },
@@ -280,23 +377,39 @@
           "rung": "G1",
           "stages": {
             "attention_input": {
+              "beats_constant_mean": true,
+              "centered_cosine": 0.9999999999999618,
+              "constant_mean_null_raw_cosine": 0.887323569479862,
               "cosine": 1.0,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.9999999999998614,
               "relative_error": 0.0
             },
             "attention_output": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.025363811173208704,
+              "constant_mean_null_raw_cosine": 0.9085434142550555,
               "cosine": 0.10185189577315648,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.10185189577315687,
               "relative_error": 1.120162966841372
             },
             "block_output": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.020344878621859137,
+              "constant_mean_null_raw_cosine": 0.8984292486689768,
               "cosine": 0.0857229238920876,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.08572292389208815,
               "relative_error": 1.0978693501368924
             },
             "index_scores": {
+              "beats_constant_mean": true,
+              "centered_cosine": 0.5723027263106625,
+              "constant_mean_null_raw_cosine": 0.7421896694002628,
               "cosine": 0.951162304626878,
               "finite_fraction": 0.501953125,
+              "raw_cosine": 0.9511623046268789,
               "relative_error": 0.5727349895830792
             },
             "index_selection": {
@@ -306,38 +419,66 @@
               "set_agreement": 1.0
             },
             "input_hidden": {
+              "beats_constant_mean": true,
+              "centered_cosine": 0.9999999999999327,
+              "constant_mean_null_raw_cosine": 0.8522199378486627,
               "cosine": 1.0,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.9999999999999967,
               "relative_error": 0.0
             },
             "post_attention_hidden": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.0257505141341482,
+              "constant_mean_null_raw_cosine": 0.9083994202141066,
               "cosine": 0.10129503367176645,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.10129503367176727,
               "relative_error": 1.1207585539779803
             },
             "post_moe": {
+              "beats_constant_mean": false,
+              "centered_cosine": -8.778239539509106e-06,
+              "constant_mean_null_raw_cosine": 0.8348343267362576,
               "cosine": 0.01207734146060079,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.01207734146060097,
               "relative_error": 1.0056946455944475
             },
             "pre_router_hidden": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.03387647464191204,
+              "constant_mean_null_raw_cosine": 0.8925394189991129,
               "cosine": 0.09644323167087444,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.09644323167087458,
               "relative_error": 1.3508130787763704
             },
             "routed_expert_output": {
+              "beats_constant_mean": false,
+              "centered_cosine": -0.00012218287446504235,
+              "constant_mean_null_raw_cosine": 0.7971076375870384,
               "cosine": 0.016658465719563056,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.01665846571956364,
               "relative_error": 1.0078130210788416
             },
             "router_logits": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.05666879820242359,
+              "constant_mean_null_raw_cosine": 0.8876846262788692,
               "cosine": 0.07506948597205092,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.07506948597205065,
               "relative_error": 1.4248689673851034
             },
             "shared_expert_output": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.0003138317161781383,
+              "constant_mean_null_raw_cosine": 0.8587400519072225,
               "cosine": 0.010601137554095273,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.010601137554095221,
               "relative_error": 1.003927687447047
             },
             "topk_indices": {
@@ -347,105 +488,22 @@
               "set_agreement": 0.02093505859375
             },
             "topk_margin_8th_vs_9th": {
+              "beats_constant_mean": false,
+              "centered_cosine": -0.044406921621988664,
+              "constant_mean_null_raw_cosine": 0.7871650495001028,
               "cosine": 0.562629488595817,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.562629488595817,
               "relative_error": 0.8331069889049982
             },
             "topk_weights": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.1097541603094553,
+              "constant_mean_null_raw_cosine": 0.9997081991764961,
               "cosine": 0.9995032465104566,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.9995032465104566,
               "relative_error": 0.03151923649631577
-            }
-          },
-          "tensor_coverage_complete": true
-        },
-        {
-          "artifact_verifies": true,
-          "block_output_cosine": 0.14433952249528934,
-          "block_output_relative_error": 1.0481268381912383,
-          "complete_bpw": 0.7512401379114013,
-          "diagnostic_only": false,
-          "expert_selection_set_agreement": 0.118896484375,
-          "family": "glm52.functional.block.v1",
-          "packed_bpw": 0.7512401379114013,
-          "rung": "FS0",
-          "stages": {
-            "attention_input": {
-              "cosine": 1.0,
-              "finite_fraction": 1.0,
-              "relative_error": 0.0
-            },
-            "attention_output": {
-              "cosine": 0.16294435495408346,
-              "finite_fraction": 1.0,
-              "relative_error": 1.0499973307965407
-            },
-            "block_output": {
-              "cosine": 0.14433952249528934,
-              "finite_fraction": 1.0,
-              "relative_error": 1.0481268381912383
-            },
-            "index_scores": {
-              "cosine": 0.9881822173347486,
-              "finite_fraction": 0.501953125,
-              "relative_error": 0.1624969989598947
-            },
-            "index_selection": {
-              "note": "cosine is not reported: these are labels, not magnitudes",
-              "positional_agreement": 0.5212507247924805,
-              "selection_width": 256,
-              "set_agreement": 1.0
-            },
-            "input_hidden": {
-              "cosine": 1.0,
-              "finite_fraction": 1.0,
-              "relative_error": 0.0
-            },
-            "post_attention_hidden": {
-              "cosine": 0.16263596292261592,
-              "finite_fraction": 1.0,
-              "relative_error": 1.0505556110825622
-            },
-            "post_moe": {
-              "cosine": 0.025528542484820168,
-              "finite_fraction": 1.0,
-              "relative_error": 1.0751335853368256
-            },
-            "pre_router_hidden": {
-              "cosine": 0.15987473085717646,
-              "finite_fraction": 1.0,
-              "relative_error": 1.3023638417242076
-            },
-            "routed_expert_output": {
-              "cosine": 0.034817485796839985,
-              "finite_fraction": 1.0,
-              "relative_error": 1.1509265597272793
-            },
-            "router_logits": {
-              "cosine": 0.22072525700184467,
-              "finite_fraction": 1.0,
-              "relative_error": 1.2626892740768405
-            },
-            "shared_expert_output": {
-              "cosine": 0.040734136078901625,
-              "finite_fraction": 1.0,
-              "relative_error": 1.002018416504373
-            },
-            "topk_indices": {
-              "note": "cosine is not reported: these are labels, not magnitudes",
-              "positional_agreement": 0.0760498046875,
-              "selection_width": 8,
-              "set_agreement": 0.118896484375
-            },
-            "topk_margin_8th_vs_9th": {
-              "cosine": 0.6814226541149674,
-              "finite_fraction": 1.0,
-              "relative_error": 2.333338203563126
-            },
-            "topk_weights": {
-              "cosine": 0.9995029761507777,
-              "finite_fraction": 1.0,
-              "relative_error": 0.03152551959545498
             }
           },
           "tensor_coverage_complete": true
@@ -462,23 +520,39 @@
           "rung": "G0",
           "stages": {
             "attention_input": {
+              "beats_constant_mean": true,
+              "centered_cosine": 0.9999999999999618,
+              "constant_mean_null_raw_cosine": 0.887323569479862,
               "cosine": 1.0,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.9999999999998614,
               "relative_error": 0.0
             },
             "attention_output": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.028319904970432016,
+              "constant_mean_null_raw_cosine": 0.9085434142550555,
               "cosine": 0.16294435495408346,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.1629443549540829,
               "relative_error": 1.0499973307965407
             },
             "block_output": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.02213418935759301,
+              "constant_mean_null_raw_cosine": 0.8984292486689768,
               "cosine": 0.15389282740504048,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.15389282740504015,
               "relative_error": 1.0356514649065682
             },
             "index_scores": {
+              "beats_constant_mean": true,
+              "centered_cosine": 0.9707195493127188,
+              "constant_mean_null_raw_cosine": 0.7421896694002628,
               "cosine": 0.9881822173347486,
               "finite_fraction": 0.501953125,
+              "raw_cosine": 0.9881822173347463,
               "relative_error": 0.1624969989598947
             },
             "index_selection": {
@@ -488,38 +562,66 @@
               "set_agreement": 1.0
             },
             "input_hidden": {
+              "beats_constant_mean": true,
+              "centered_cosine": 0.9999999999999327,
+              "constant_mean_null_raw_cosine": 0.8522199378486627,
               "cosine": 1.0,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.9999999999999967,
               "relative_error": 0.0
             },
             "post_attention_hidden": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.02870680257755322,
+              "constant_mean_null_raw_cosine": 0.9083994202141066,
               "cosine": 0.16263596292261592,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.16263596292261606,
               "relative_error": 1.0505556110825622
             },
             "post_moe": {
+              "beats_constant_mean": false,
+              "centered_cosine": -0.0005439143908715357,
+              "constant_mean_null_raw_cosine": 0.8348343267362576,
               "cosine": 0.014043862347127909,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.014043862347128188,
               "relative_error": 1.0069489636162292
             },
             "pre_router_hidden": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.03833450907596847,
+              "constant_mean_null_raw_cosine": 0.8925394189991129,
               "cosine": 0.15987473085717646,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.159874730857177,
               "relative_error": 1.3023638417242076
             },
             "routed_expert_output": {
+              "beats_constant_mean": false,
+              "centered_cosine": -0.0005742753088723054,
+              "constant_mean_null_raw_cosine": 0.7971076375870384,
               "cosine": 0.0007195177840812355,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.0007195177840811408,
               "relative_error": 1.0119074986680936
             },
             "router_logits": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.07893062394331911,
+              "constant_mean_null_raw_cosine": 0.8876846262788692,
               "cosine": 0.22072525700184467,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.22072525700184512,
               "relative_error": 1.2626892740768405
             },
             "shared_expert_output": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.0003263945707311716,
+              "constant_mean_null_raw_cosine": 0.8587400519072225,
               "cosine": 0.040734136078901625,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.040734136078901466,
               "relative_error": 1.002018416504373
             },
             "topk_indices": {
@@ -529,13 +631,21 @@
               "set_agreement": 0.118896484375
             },
             "topk_margin_8th_vs_9th": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.04345069731058363,
+              "constant_mean_null_raw_cosine": 0.7871650495001028,
               "cosine": 0.6814226541149674,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.6814226541149674,
               "relative_error": 2.333338203563126
             },
             "topk_weights": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.10374635352869432,
+              "constant_mean_null_raw_cosine": 0.9997081991764961,
               "cosine": 0.9995029761507777,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.9995029761507779,
               "relative_error": 0.03152551959545498
             }
           },
@@ -553,23 +663,39 @@
           "rung": "HY0",
           "stages": {
             "attention_input": {
+              "beats_constant_mean": true,
+              "centered_cosine": 0.9999999999999618,
+              "constant_mean_null_raw_cosine": 0.887323569479862,
               "cosine": 1.0,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.9999999999998614,
               "relative_error": 0.0
             },
             "attention_output": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.02832448247037379,
+              "constant_mean_null_raw_cosine": 0.9085434142550555,
               "cosine": 0.16300154288470833,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.16300154288470942,
               "relative_error": 1.0499271887473556
             },
             "block_output": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.02273750387799295,
+              "constant_mean_null_raw_cosine": 0.8984292486689768,
               "cosine": 0.15662695858370407,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.15662695858370432,
               "relative_error": 1.0337074457853197
             },
             "index_scores": {
+              "beats_constant_mean": true,
+              "centered_cosine": 0.9707195493127188,
+              "constant_mean_null_raw_cosine": 0.7421896694002628,
               "cosine": 0.9881822173347486,
               "finite_fraction": 0.501953125,
+              "raw_cosine": 0.9881822173347463,
               "relative_error": 0.1624969989598947
             },
             "index_selection": {
@@ -579,38 +705,66 @@
               "set_agreement": 1.0
             },
             "input_hidden": {
+              "beats_constant_mean": true,
+              "centered_cosine": 0.9999999999999327,
+              "constant_mean_null_raw_cosine": 0.8522199378486627,
               "cosine": 1.0,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.9999999999999967,
               "relative_error": 0.0
             },
             "post_attention_hidden": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.028711677429336356,
+              "constant_mean_null_raw_cosine": 0.9083994202141066,
               "cosine": 0.16269473202646545,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.16269473202646662,
               "relative_error": 1.0504854317397643
             },
             "post_moe": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.000467776219717332,
+              "constant_mean_null_raw_cosine": 0.8348343267362576,
               "cosine": 0.055605505334224196,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.05560550533422416,
               "relative_error": 0.9987619205344772
             },
             "pre_router_hidden": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.038342538954794704,
+              "constant_mean_null_raw_cosine": 0.8925394189991129,
               "cosine": 0.15992567956866385,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.1599256795686636,
               "relative_error": 1.3023222570101456
             },
             "routed_expert_output": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.00011361909469426049,
+              "constant_mean_null_raw_cosine": 0.7971076375870384,
               "cosine": 0.012508771868975874,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.012508771868976103,
               "relative_error": 1.0000963687835225
             },
             "router_logits": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.07883580354338239,
+              "constant_mean_null_raw_cosine": 0.8876846262788692,
               "cosine": 0.22039159864393867,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.22039159864393867,
               "relative_error": 1.262407615008111
             },
             "shared_expert_output": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.0004957189803392522,
+              "constant_mean_null_raw_cosine": 0.8587400519072225,
               "cosine": 0.06113719176895359,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.06113719176895348,
               "relative_error": 0.9985590117606528
             },
             "topk_indices": {
@@ -620,13 +774,21 @@
               "set_agreement": 0.11871337890625
             },
             "topk_margin_8th_vs_9th": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.04260546912021079,
+              "constant_mean_null_raw_cosine": 0.7871650495001028,
               "cosine": 0.6807704934759624,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.6807704934759624,
               "relative_error": 2.4421286148041212
             },
             "topk_weights": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.10831674958695925,
+              "constant_mean_null_raw_cosine": 0.9997081991764961,
               "cosine": 0.9994873344056665,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.9994873344056665,
               "relative_error": 0.03201760799434672
             }
           },
@@ -644,23 +806,39 @@
           "rung": "LR0",
           "stages": {
             "attention_input": {
+              "beats_constant_mean": true,
+              "centered_cosine": 0.9999999999999618,
+              "constant_mean_null_raw_cosine": 0.887323569479862,
               "cosine": 1.0,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.9999999999998614,
               "relative_error": 0.0
             },
             "attention_output": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.0032632908642293416,
+              "constant_mean_null_raw_cosine": 0.9085434142550555,
               "cosine": 0.07201600888682727,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.07201600888682604,
               "relative_error": 0.9983465697590336
             },
             "block_output": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.005495276873468776,
+              "constant_mean_null_raw_cosine": 0.8984292486689768,
               "cosine": 0.11622596018858143,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.11622596018858042,
               "relative_error": 0.9941524967796966
             },
             "index_scores": {
+              "beats_constant_mean": true,
+              "centered_cosine": 0.6132827721694215,
+              "constant_mean_null_raw_cosine": 0.7421896694002628,
               "cosine": 0.888614025693296,
               "finite_fraction": 0.501953125,
+              "raw_cosine": 0.8886140256932961,
               "relative_error": 0.5553935842094948
             },
             "index_selection": {
@@ -670,38 +848,66 @@
               "set_agreement": 1.0
             },
             "input_hidden": {
+              "beats_constant_mean": true,
+              "centered_cosine": 0.9999999999999327,
+              "constant_mean_null_raw_cosine": 0.8522199378486627,
               "cosine": 1.0,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.9999999999999967,
               "relative_error": 0.0
             },
             "post_attention_hidden": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.0037011707462637497,
+              "constant_mean_null_raw_cosine": 0.9083994202141066,
               "cosine": 0.06898147214114737,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.06898147214114882,
               "relative_error": 0.9988773874979991
             },
             "post_moe": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.0009870125258027694,
+              "constant_mean_null_raw_cosine": 0.8348343267362576,
               "cosine": 0.14475141507977138,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.1447514150797708,
               "relative_error": 0.9951740329320399
             },
             "pre_router_hidden": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.011199075274744948,
+              "constant_mean_null_raw_cosine": 0.8925394189991129,
               "cosine": 0.008388502605361914,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.00838850260536174,
               "relative_error": 1.3528677974802168
             },
             "routed_expert_output": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.0016485359632080999,
+              "constant_mean_null_raw_cosine": 0.7971076375870384,
               "cosine": 0.08108625528275462,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.08108625528275439,
               "relative_error": 1.0110316527366887
             },
             "router_logits": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.027778044279577765,
+              "constant_mean_null_raw_cosine": 0.8876846262788692,
               "cosine": 0.08590607488845652,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.08590607488845635,
               "relative_error": 1.582652509257941
             },
             "shared_expert_output": {
+              "beats_constant_mean": false,
+              "centered_cosine": -0.001046220613221235,
+              "constant_mean_null_raw_cosine": 0.8587400519072225,
               "cosine": 0.13969521041701166,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.13969521041701213,
               "relative_error": 0.9990884758616414
             },
             "topk_indices": {
@@ -711,13 +917,21 @@
               "set_agreement": 0.046844482421875
             },
             "topk_margin_8th_vs_9th": {
+              "beats_constant_mean": false,
+              "centered_cosine": -0.04761536730708125,
+              "constant_mean_null_raw_cosine": 0.7871650495001028,
               "cosine": 0.6668369811879463,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.6668369811879463,
               "relative_error": 1.3448444014283214
             },
             "topk_weights": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.01656095973791876,
+              "constant_mean_null_raw_cosine": 0.9997081991764961,
               "cosine": 0.9985448082211846,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.9985448082211845,
               "relative_error": 0.05398551955333572
             }
           },
@@ -735,23 +949,39 @@
           "rung": "GC",
           "stages": {
             "attention_input": {
+              "beats_constant_mean": true,
+              "centered_cosine": 0.9999999999999618,
+              "constant_mean_null_raw_cosine": 0.887323569479862,
               "cosine": 1.0,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.9999999999998614,
               "relative_error": 0.0
             },
             "attention_output": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.08244952643998092,
+              "constant_mean_null_raw_cosine": 0.9085434142550555,
               "cosine": 0.28636671994232377,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.2863667199423243,
               "relative_error": 1.0932271260706536
             },
             "block_output": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.06645105754490978,
+              "constant_mean_null_raw_cosine": 0.8984292486689768,
               "cosine": 0.2693950563085895,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.269395056308588,
               "relative_error": 1.066778842888151
             },
             "index_scores": {
+              "beats_constant_mean": true,
+              "centered_cosine": 0.9265366948908745,
+              "constant_mean_null_raw_cosine": 0.7421896694002628,
               "cosine": 0.9897165904347682,
               "finite_fraction": 0.501953125,
+              "raw_cosine": 0.9897165904347662,
               "relative_error": 0.25991148024594435
             },
             "index_selection": {
@@ -761,38 +991,66 @@
               "set_agreement": 1.0
             },
             "input_hidden": {
+              "beats_constant_mean": true,
+              "centered_cosine": 0.9999999999999327,
+              "constant_mean_null_raw_cosine": 0.8522199378486627,
               "cosine": 1.0,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.9999999999999967,
               "relative_error": 0.0
             },
             "post_attention_hidden": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.08274234831489062,
+              "constant_mean_null_raw_cosine": 0.9083994202141066,
               "cosine": 0.28603849502387657,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.2860384950238765,
               "relative_error": 1.0938083915047028
             },
             "post_moe": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.0021630055574328247,
+              "constant_mean_null_raw_cosine": 0.8348343267362576,
               "cosine": 0.09825762206606552,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.09825762206606581,
               "relative_error": 1.010165515679319
             },
             "pre_router_hidden": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.09333821687669462,
+              "constant_mean_null_raw_cosine": 0.8925394189991129,
               "cosine": 0.2831900622397523,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.2831900622397515,
               "relative_error": 1.2034485275339317
             },
             "routed_expert_output": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.0013368138376972294,
+              "constant_mean_null_raw_cosine": 0.7971076375870384,
               "cosine": 0.0482312930444177,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.04823129304441768,
               "relative_error": 1.0331332669444426
             },
             "router_logits": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.09945705021169682,
+              "constant_mean_null_raw_cosine": 0.8876846262788692,
               "cosine": 0.2567602955144657,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.2567602955144661,
               "relative_error": 1.2547093255960948
             },
             "shared_expert_output": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.003958418605518348,
+              "constant_mean_null_raw_cosine": 0.8587400519072225,
               "cosine": 0.109695314947202,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.10969531494720235,
               "relative_error": 1.0029696598545499
             },
             "topk_indices": {
@@ -802,14 +1060,165 @@
               "set_agreement": 0.106414794921875
             },
             "topk_margin_8th_vs_9th": {
+              "beats_constant_mean": false,
+              "centered_cosine": -0.06953312573999215,
+              "constant_mean_null_raw_cosine": 0.7871650495001028,
               "cosine": 0.5278165799287122,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.5278165799287122,
               "relative_error": 0.8680115822612916
             },
             "topk_weights": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.03302484925153287,
+              "constant_mean_null_raw_cosine": 0.9997081991764961,
               "cosine": 0.9987270276786797,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.9987270276786797,
               "relative_error": 0.05047958591853604
+            }
+          },
+          "tensor_coverage_complete": true
+        },
+        {
+          "artifact_verifies": true,
+          "block_output_cosine": 0.14433952249528934,
+          "block_output_relative_error": 1.0481268381912383,
+          "complete_bpw": 1.362923356282849,
+          "diagnostic_only": false,
+          "expert_selection_set_agreement": 0.118896484375,
+          "family": "glm52.functional.block.v1",
+          "packed_bpw": 0.5717517776341305,
+          "rung": "FS0",
+          "stages": {
+            "attention_input": {
+              "beats_constant_mean": true,
+              "centered_cosine": 0.9999999999999618,
+              "constant_mean_null_raw_cosine": 0.887323569479862,
+              "cosine": 1.0,
+              "finite_fraction": 1.0,
+              "raw_cosine": 0.9999999999998614,
+              "relative_error": 0.0
+            },
+            "attention_output": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.028319904970432016,
+              "constant_mean_null_raw_cosine": 0.9085434142550555,
+              "cosine": 0.16294435495408346,
+              "finite_fraction": 1.0,
+              "raw_cosine": 0.1629443549540829,
+              "relative_error": 1.0499973307965407
+            },
+            "block_output": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.021322936295636773,
+              "constant_mean_null_raw_cosine": 0.8984292486689768,
+              "cosine": 0.14433952249528934,
+              "finite_fraction": 1.0,
+              "raw_cosine": 0.14433952249528934,
+              "relative_error": 1.0481268381912383
+            },
+            "index_scores": {
+              "beats_constant_mean": true,
+              "centered_cosine": 0.9707195493127188,
+              "constant_mean_null_raw_cosine": 0.7421896694002628,
+              "cosine": 0.9881822173347486,
+              "finite_fraction": 0.501953125,
+              "raw_cosine": 0.9881822173347463,
+              "relative_error": 0.1624969989598947
+            },
+            "index_selection": {
+              "note": "cosine is not reported: these are labels, not magnitudes",
+              "positional_agreement": 0.5212507247924805,
+              "selection_width": 256,
+              "set_agreement": 1.0
+            },
+            "input_hidden": {
+              "beats_constant_mean": true,
+              "centered_cosine": 0.9999999999999327,
+              "constant_mean_null_raw_cosine": 0.8522199378486627,
+              "cosine": 1.0,
+              "finite_fraction": 1.0,
+              "raw_cosine": 0.9999999999999967,
+              "relative_error": 0.0
+            },
+            "post_attention_hidden": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.02870680257755322,
+              "constant_mean_null_raw_cosine": 0.9083994202141066,
+              "cosine": 0.16263596292261592,
+              "finite_fraction": 1.0,
+              "raw_cosine": 0.16263596292261606,
+              "relative_error": 1.0505556110825622
+            },
+            "post_moe": {
+              "beats_constant_mean": false,
+              "centered_cosine": -0.0018614656715819258,
+              "constant_mean_null_raw_cosine": 0.8348343267362576,
+              "cosine": 0.025528542484820168,
+              "finite_fraction": 1.0,
+              "raw_cosine": 0.025528542484819908,
+              "relative_error": 1.0751335853368256
+            },
+            "pre_router_hidden": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.03833450907596847,
+              "constant_mean_null_raw_cosine": 0.8925394189991129,
+              "cosine": 0.15987473085717646,
+              "finite_fraction": 1.0,
+              "raw_cosine": 0.159874730857177,
+              "relative_error": 1.3023638417242076
+            },
+            "routed_expert_output": {
+              "beats_constant_mean": false,
+              "centered_cosine": -0.003268250184618636,
+              "constant_mean_null_raw_cosine": 0.7971076375870384,
+              "cosine": 0.034817485796839985,
+              "finite_fraction": 1.0,
+              "raw_cosine": 0.034817485796840165,
+              "relative_error": 1.1509265597272793
+            },
+            "router_logits": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.07893062394331911,
+              "constant_mean_null_raw_cosine": 0.8876846262788692,
+              "cosine": 0.22072525700184467,
+              "finite_fraction": 1.0,
+              "raw_cosine": 0.22072525700184512,
+              "relative_error": 1.2626892740768405
+            },
+            "shared_expert_output": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.0003263945707311716,
+              "constant_mean_null_raw_cosine": 0.8587400519072225,
+              "cosine": 0.040734136078901625,
+              "finite_fraction": 1.0,
+              "raw_cosine": 0.040734136078901466,
+              "relative_error": 1.002018416504373
+            },
+            "topk_indices": {
+              "note": "cosine is not reported: these are labels, not magnitudes",
+              "positional_agreement": 0.0760498046875,
+              "selection_width": 8,
+              "set_agreement": 0.118896484375
+            },
+            "topk_margin_8th_vs_9th": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.04345069731058363,
+              "constant_mean_null_raw_cosine": 0.7871650495001028,
+              "cosine": 0.6814226541149674,
+              "finite_fraction": 1.0,
+              "raw_cosine": 0.6814226541149674,
+              "relative_error": 2.333338203563126
+            },
+            "topk_weights": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.10374635352869432,
+              "constant_mean_null_raw_cosine": 0.9997081991764961,
+              "cosine": 0.9995029761507777,
+              "finite_fraction": 1.0,
+              "raw_cosine": 0.9995029761507779,
+              "relative_error": 0.03152551959545498
             }
           },
           "tensor_coverage_complete": true
@@ -826,23 +1235,39 @@
           "rung": "DX2",
           "stages": {
             "attention_input": {
+              "beats_constant_mean": true,
+              "centered_cosine": 0.9999999999999618,
+              "constant_mean_null_raw_cosine": 0.887323569479862,
               "cosine": 1.0,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.9999999999998614,
               "relative_error": 0.0
             },
             "attention_output": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.35594958831114126,
+              "constant_mean_null_raw_cosine": 0.9085434142550555,
               "cosine": 0.7272521306982085,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.7272521306982076,
               "relative_error": 0.7190660866928301
             },
             "block_output": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.3170840194996723,
+              "constant_mean_null_raw_cosine": 0.8984292486689768,
               "cosine": 0.6996672208222899,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.6996672208222925,
               "relative_error": 0.740201558893231
             },
             "index_scores": {
+              "beats_constant_mean": true,
+              "centered_cosine": 0.9745245961889445,
+              "constant_mean_null_raw_cosine": 0.7421896694002628,
               "cosine": 0.9974170933024782,
               "finite_fraction": 0.501953125,
+              "raw_cosine": 0.9974170933024757,
               "relative_error": 0.1652340902809032
             },
             "index_selection": {
@@ -852,38 +1277,66 @@
               "set_agreement": 1.0
             },
             "input_hidden": {
+              "beats_constant_mean": true,
+              "centered_cosine": 0.9999999999999327,
+              "constant_mean_null_raw_cosine": 0.8522199378486627,
               "cosine": 1.0,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.9999999999999967,
               "relative_error": 0.0
             },
             "post_attention_hidden": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.35614633922003297,
+              "constant_mean_null_raw_cosine": 0.9083994202141066,
               "cosine": 0.727011394461092,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.7270113944610928,
               "relative_error": 0.7194484118645548
             },
             "post_moe": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.16198630164648442,
+              "constant_mean_null_raw_cosine": 0.8348343267362576,
               "cosine": 0.4991536121621283,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.49915361216212956,
               "relative_error": 0.8788457146771739
             },
             "pre_router_hidden": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.3884195413031797,
+              "constant_mean_null_raw_cosine": 0.8925394189991129,
               "cosine": 0.727420701423761,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.7274207014237589,
               "relative_error": 0.7417177472850993
             },
             "routed_expert_output": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.1039900028311789,
+              "constant_mean_null_raw_cosine": 0.7971076375870384,
               "cosine": 0.3601334457063362,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.3601334457063357,
               "relative_error": 0.9896334400161094
             },
             "router_logits": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.3806462169198483,
+              "constant_mean_null_raw_cosine": 0.8876846262788692,
               "cosine": 0.7257951875449788,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.725795187544978,
               "relative_error": 0.7855347567086017
             },
             "shared_expert_output": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.23639589619526644,
+              "constant_mean_null_raw_cosine": 0.8587400519072225,
               "cosine": 0.6157115131840963,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.6157115131840923,
               "relative_error": 0.7880131666105697
             },
             "topk_indices": {
@@ -893,13 +1346,21 @@
               "set_agreement": 0.473236083984375
             },
             "topk_margin_8th_vs_9th": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.01809760550064432,
+              "constant_mean_null_raw_cosine": 0.7871650495001028,
               "cosine": 0.5544818984161066,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.5544818984161066,
               "relative_error": 0.8537010910567387
             },
             "topk_weights": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.06444586125401806,
+              "constant_mean_null_raw_cosine": 0.9997081991764961,
               "cosine": 0.9993914740319846,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.9993914740319847,
               "relative_error": 0.034889902119715176
             }
           },
@@ -910,13 +1371,15 @@
     "W_L74_L74": {
       "by_family": {
         "glm52.pq.r0.v1": {
-          "best_carry_out_cosine": 0.20119669999118442,
-          "cosine_gain_over_that_span": 0.10359295069763856,
-          "cosine_per_bit": 0.7399531656175145,
-          "extrapolated_bpw_to_reach_floor": 1.296924170790343,
+          "best_carry_out_cosine": 0.0,
+          "cosine_gain_over_that_span": 0.0,
+          "cosine_per_bit": 0.0,
+          "extrapolated_bpw_to_reach_floor": null,
           "extrapolation_is_linear_and_crude": true,
+          "metric": "centered cosine, zero when the rung loses to a constant",
           "rate_span_tested": 0.13999933443245283,
-          "reading": "spending 0.140 more bits per weight moved the block output by 0.104 cosine, a slope of 0.740 per bit, leaving it at 0.201. Reaching 0.50 on that trend would take 1.297 bits per weight, against a ceiling of 1.0. The binding constraint is the representation, not the budget.",
+          "reading": "spending 0.140 more bits per weight moved the block output by 0.000 cosine, a slope of 0.000 per bit, leaving it at 0.000. Reaching 0.50 on that trend would take an unbounded number of bits per weight, against a ceiling of 1.0. The binding constraint is the representation, not the budget.",
+          "rungs_beating_the_constant_mean_null": [],
           "verdict": "REPRESENTATION_FAMILY_BOUND"
         }
       },
@@ -933,23 +1396,39 @@
           "rung": "G0",
           "stages": {
             "attention_input": {
+              "beats_constant_mean": true,
+              "centered_cosine": 0.9999999999999671,
+              "constant_mean_null_raw_cosine": 0.8874939063662366,
               "cosine": 1.0,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.9999999999999749,
               "relative_error": 0.0
             },
             "attention_output": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.03280470043065443,
+              "constant_mean_null_raw_cosine": 0.9220992122956465,
               "cosine": 0.14869201003022717,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.14869201003022775,
               "relative_error": 1.120965159400062
             },
             "block_output": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.01629766171049747,
+              "constant_mean_null_raw_cosine": 0.8902612475175682,
               "cosine": 0.09760374929354586,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.09760374929354566,
               "relative_error": 1.0844456483377751
             },
             "index_scores": {
+              "beats_constant_mean": true,
+              "centered_cosine": 0.7109520937242363,
+              "constant_mean_null_raw_cosine": 0.732737238140008,
               "cosine": 0.9715161057740649,
               "finite_fraction": 0.501953125,
+              "raw_cosine": 0.9715161057740698,
               "relative_error": 0.480287339208736
             },
             "index_selection": {
@@ -959,38 +1438,66 @@
               "set_agreement": 1.0
             },
             "input_hidden": {
+              "beats_constant_mean": true,
+              "centered_cosine": 0.9999999999999327,
+              "constant_mean_null_raw_cosine": 0.8522199378486627,
               "cosine": 1.0,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.9999999999999967,
               "relative_error": 0.0
             },
             "post_attention_hidden": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.03323627722234043,
+              "constant_mean_null_raw_cosine": 0.92210915692779,
               "cosine": 0.1503812579462846,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.15038125794628462,
               "relative_error": 1.1195883728585316
             },
             "post_moe": {
+              "beats_constant_mean": false,
+              "centered_cosine": -0.0013053290841518693,
+              "constant_mean_null_raw_cosine": 0.8566113598282548,
               "cosine": 0.010424032991076162,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.010424032991076174,
               "relative_error": 1.0151083622200159
             },
             "pre_router_hidden": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.03766921542791816,
+              "constant_mean_null_raw_cosine": 0.9072001672459646,
               "cosine": 0.1420485857275052,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.1420485857275054,
               "relative_error": 1.3135705674729408
             },
             "routed_expert_output": {
+              "beats_constant_mean": false,
+              "centered_cosine": -0.0015785359890178397,
+              "constant_mean_null_raw_cosine": 0.8036071424342349,
               "cosine": -0.0004601823575833199,
               "finite_fraction": 1.0,
+              "raw_cosine": -0.00046018235758368706,
               "relative_error": 1.0270059592795642
             },
             "router_logits": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.09240571436631448,
+              "constant_mean_null_raw_cosine": 0.8765450201216824,
               "cosine": 0.28228681913690656,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.28228681913690656,
               "relative_error": 1.1640429378276387
             },
             "shared_expert_output": {
+              "beats_constant_mean": false,
+              "centered_cosine": -0.000412649571039249,
+              "constant_mean_null_raw_cosine": 0.8964532723103757,
               "cosine": 0.049482121703519025,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.04948212170351886,
               "relative_error": 1.0021335887195837
             },
             "topk_indices": {
@@ -1000,13 +1507,21 @@
               "set_agreement": 0.120880126953125
             },
             "topk_margin_8th_vs_9th": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.11632409681154987,
+              "constant_mean_null_raw_cosine": 0.7416192280992773,
               "cosine": 0.5393481322553838,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.5393481322553838,
               "relative_error": 1.0449291192685375
             },
             "topk_weights": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.19620330494904406,
+              "constant_mean_null_raw_cosine": 0.9997341331009648,
               "cosine": 0.999115126034882,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.999115126034882,
               "relative_error": 0.042069213894747964
             }
           },
@@ -1024,23 +1539,39 @@
           "rung": "GC",
           "stages": {
             "attention_input": {
+              "beats_constant_mean": true,
+              "centered_cosine": 0.9999999999999671,
+              "constant_mean_null_raw_cosine": 0.8874939063662366,
               "cosine": 1.0,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.9999999999999749,
               "relative_error": 0.0
             },
             "attention_output": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.07740314881150342,
+              "constant_mean_null_raw_cosine": 0.9220992122956465,
               "cosine": 0.2676044125126651,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.2676044125126651,
               "relative_error": 1.2282572513482746
             },
             "block_output": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.04257344626534721,
+              "constant_mean_null_raw_cosine": 0.8902612475175682,
               "cosine": 0.20119669999118442,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.20119669999118497,
               "relative_error": 1.1551998546560613
             },
             "index_scores": {
+              "beats_constant_mean": true,
+              "centered_cosine": 0.9568675624135669,
+              "constant_mean_null_raw_cosine": 0.732737238140008,
               "cosine": 0.9900068408314211,
               "finite_fraction": 0.501953125,
+              "raw_cosine": 0.9900068408314168,
               "relative_error": 0.20991564399225304
             },
             "index_selection": {
@@ -1050,38 +1581,66 @@
               "set_agreement": 1.0
             },
             "input_hidden": {
+              "beats_constant_mean": true,
+              "centered_cosine": 0.9999999999999327,
+              "constant_mean_null_raw_cosine": 0.8522199378486627,
               "cosine": 1.0,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.9999999999999967,
               "relative_error": 0.0
             },
             "post_attention_hidden": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.07777123358739951,
+              "constant_mean_null_raw_cosine": 0.92210915692779,
               "cosine": 0.2686041253855321,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.26860412538553147,
               "relative_error": 1.2267486870146622
             },
             "post_moe": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.006079046057172062,
+              "constant_mean_null_raw_cosine": 0.8566113598282548,
               "cosine": 0.08595952078532826,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.08595952078532881,
               "relative_error": 1.0316821728771424
             },
             "pre_router_hidden": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.07332577331138722,
+              "constant_mean_null_raw_cosine": 0.9072001672459646,
               "cosine": 0.2645272820533781,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.2645272820533787,
               "relative_error": 1.216610800120998
             },
             "routed_expert_output": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.0013330360335794568,
+              "constant_mean_null_raw_cosine": 0.8036071424342349,
               "cosine": 0.0239078312824082,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.023907831282408063,
               "relative_error": 1.07737189998581
             },
             "router_logits": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.08551040279451266,
+              "constant_mean_null_raw_cosine": 0.8765450201216824,
               "cosine": 0.3204707672671155,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.3204707672671155,
               "relative_error": 1.093221036806267
             },
             "shared_expert_output": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.01154437112175044,
+              "constant_mean_null_raw_cosine": 0.8964532723103757,
               "cosine": 0.15214561188291387,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.15214561188291456,
               "relative_error": 0.9979883264818582
             },
             "topk_indices": {
@@ -1091,13 +1650,21 @@
               "set_agreement": 0.222198486328125
             },
             "topk_margin_8th_vs_9th": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.07146584719634401,
+              "constant_mean_null_raw_cosine": 0.7416192280992773,
               "cosine": 0.570945001877346,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.570945001877346,
               "relative_error": 0.8543117017642106
             },
             "topk_weights": {
+              "beats_constant_mean": false,
+              "centered_cosine": 0.133135369280122,
+              "constant_mean_null_raw_cosine": 0.9997341331009648,
               "cosine": 0.9994683429914359,
               "finite_fraction": 1.0,
+              "raw_cosine": 0.9994683429914359,
               "relative_error": 0.032611550602391744
             }
           },

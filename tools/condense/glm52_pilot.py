@@ -524,6 +524,42 @@ def _cosine(a: np.ndarray, b: np.ndarray) -> float:
     return float(np.dot(x, y) / denom) if denom else 0.0
 
 
+def _centered_cosine(teacher: np.ndarray, compact: np.ndarray) -> dict:
+    """Cosine on the token-varying part, plus the null a model with no information earns.
+
+    Raw-activation cosine is not a fidelity metric on a residual stream.  These tensors
+    carry a large shared direction across every token, so simply predicting the per-feature
+    mean scores 0.90 on block output while knowing nothing about any token.  A number
+    below that null is not partial fidelity, it is worse than a constant.
+
+    Centering by the TEACHER's mean removes the free part and leaves the part that
+    distinguishes one token from another, which is the only part that carries the block's
+    function.  The null is reported alongside so no reading of the raw number can hide it.
+    """
+    left = np.asarray(teacher, dtype=np.float64)
+    right = np.asarray(compact, dtype=np.float64)
+    shape = (-1, left.shape[-1])
+    left, right = left.reshape(shape), right.reshape(shape)
+    keep = np.isfinite(left) & np.isfinite(right)
+    left = np.where(keep, left, 0.0)
+    right = np.where(keep, right, 0.0)
+
+    mean = left.mean(axis=0, keepdims=True)
+    lc, rc = left - mean, right - mean
+    denom = float(np.linalg.norm(lc) * np.linalg.norm(rc))
+    centered = float((lc * rc).sum() / denom) if denom else 0.0
+
+    constant = np.repeat(mean, left.shape[0], axis=0)
+    raw_null_denom = float(np.linalg.norm(constant) * np.linalg.norm(left))
+    raw_null = float((constant * left).sum() / raw_null_denom) if raw_null_denom else 0.0
+
+    raw_denom = float(np.linalg.norm(left) * np.linalg.norm(right))
+    raw = float((left * right).sum() / raw_denom) if raw_denom else 0.0
+    return {"centered_cosine": centered, "raw_cosine": raw,
+            "constant_mean_null_raw_cosine": raw_null,
+            "beats_constant_mean": raw > raw_null}
+
+
 def _relative(a: np.ndarray, b: np.ndarray) -> float:
     x, y, _ = _finite_pair(a, b)
     denom = float(np.linalg.norm(x))
@@ -606,6 +642,7 @@ def propagate(layers: list[int], rung: dict, artifact: Path,
                 "cosine": _cosine(expected, value),
                 "relative_error": _relative(expected, value),
                 "finite_fraction": _finite_fraction(expected, value),
+                **_centered_cosine(expected, value),
             }
 
     router = {}
@@ -626,6 +663,7 @@ def propagate(layers: list[int], rung: dict, artifact: Path,
         "stages": stages,
         "carry_out_cosine": _cosine(np.asarray(truth["carry_out_hidden"]), hidden),
         "carry_out_relative_error": _relative(np.asarray(truth["carry_out_hidden"]), hidden),
+        "carry_out": _centered_cosine(np.asarray(truth["carry_out_hidden"]), hidden),
         "evidence_level": "F2_TRAJECTORY_ON_NATURAL_CORPUS_BATCH",
         "not_evidence_of": "full-model quality, capability, or end-to-end behaviour",
     }
