@@ -1,0 +1,91 @@
+{
+  "schema": "hawking.hide_handoff_contract.v1",
+  "sealed_at": "2026-07-23T23:45:00Z",
+  "purpose": "freeze the Hawking-to-HIDE boundary so HIDE can be refactored without the Hawking substrate moving underneath it",
+  "supersedes_scope_of": "HAWKING_HIDE_RUNTIME_CONTRACT.json (which stays as the representation-class detail); this is the full frozen surface",
+  "status": "FROZEN_AT_THE_BOUNDARY, implementation deferred until a parent admits a servable compact representation",
+  "contracts": {
+    "gravity_loading_abi": {
+      "frozen": true,
+      "magic": "GRAVITY\\x00",
+      "prefix": "<8sIQ (magic, format_version, header_len)",
+      "header": "hawking.gravity.shard_header.v1 JSON: model, architecture, tokenizer, compression, shard, integrity{body_sha256, tensor_count}, tensors[]",
+      "tensor_descriptor": "name, codec, offset, bytes, sha256, shape, elements, plus codec-specific fields (generator, disposition, replaces for functional organs)",
+      "read_path": "read_header (cheap, header only) -> open_shard -> read_tensor(verify_hash) -> iter_tensors",
+      "reference": "tools/condense/gravity_format.py"
+    },
+    "model_registry": {
+      "frozen": true,
+      "representation_classes": ["QUANTIZED_TRANSFORMER", "FUNCTIONAL_MODEL", "HYBRID"],
+      "default_for_existing": "QUANTIZED_TRANSFORMER",
+      "admission_rule": "a representation is registered production-servable only after its parent survives the contraction-first pilot and exact physical accounting",
+      "current_registry": "EMPTY by contract; GLM functional is FUNCTIONAL_PARTIAL_ONLY and must not be served"
+    },
+    "artifact_validation": {
+      "frozen": true,
+      "required_before_load": ["body_sha256_ok", "no bad_tensors", "no tensors_without_payload", "rate_self_consistent"],
+      "functional_extra": ["generator_id recognised", "all_organs_deterministic"],
+      "refuse_on_failure": true
+    },
+    "runtime_selection": {
+      "frozen": true,
+      "quantized": ["decode", "matmul"],
+      "functional_grammars": ["FRT_A explicit", "FRT_B procedural", "FRT_D direct"],
+      "default_functional": "FRT_B",
+      "selection_basis": "lowest resident bytes and lowest measured latency; FRT_B wins on both",
+      "must_expose": ["available_grammars", "selected", "selection_basis", "active_bytes_per_token", "command_buffers_per_token"]
+    },
+    "functional_model_capability_flag": {
+      "frozen": true,
+      "field": "model.representation_class == FUNCTIONAL_MODEL",
+      "implies": ["a generator_id the runtime must implement or refuse", "expanded runtime state billed separately from artifact bytes", "a mandatory quality_research_label"],
+      "quality_labels": ["RESEARCH_ONLY", "RELEASE_CANDIDATE"],
+      "research_only_must_not_serve_as_validated": true
+    },
+    "load_unload_lifecycle": {
+      "frozen": true,
+      "load": "verify -> map/generate resident state (procedural grammar generates none at load; explicit generates the feature map) -> register",
+      "unload": "release resident state; the streamed pattern proven for DeepSeek loads one block, executes, releases, advances, so peak residency is one block not the whole model",
+      "cold_vs_warm": "cold = verify + full resident materialisation; warm = reuse resident state; both reported per representation"
+    },
+    "context_kv_lifecycle": {
+      "frozen": true,
+      "boundary": "the runtime owns KV/state; the functional MoE replacement is stateless per token and does not touch KV; attention/state organs own their own cache",
+      "note": "for a hybrid (functional MoE + served attention) the attention cache lifecycle is the served path's, unchanged"
+    },
+    "streaming_token_api": {
+      "frozen": true,
+      "surface": "prefill(tokens) -> state; step(state) -> (token, state); one token per step, one replayable graph per token",
+      "status": "surface frozen; implementation waits on a complete servable model"
+    },
+    "tool_call_interruption_resume": {
+      "frozen": true,
+      "surface": "step is resumable from state; a tool-call interruption suspends after a completed token boundary and resumes from the returned state; no partial-token state is exposed"
+    },
+    "telemetry_and_errors": {
+      "frozen": true,
+      "telemetry": ["true_tps", "prefill_tps", "active_bytes_per_token", "command_buffers_per_token", "resident_bytes", "grammar_selected"],
+      "errors": ["unrecognised representation_id (named)", "unrecognised generator_id (named)", "artifact verification failure (which check)", "resident state exceeds unified-memory policy (shortfall reported)", "FUNCTIONAL_MODEL without a quality label"]
+    },
+    "resource_modes": {
+      "frozen": true,
+      "unified_memory_policy_gib": 96,
+      "streamed_residency": "one block at a time is a proven mode (DeepSeek streamed forward); whole-model residency is a mode only for models that fit",
+      "must_refuse": "a declared resident state exceeding the policy, with the shortfall"
+    },
+    "research_vs_release_labels": {
+      "frozen": true,
+      "RESEARCH_ONLY": "may be loaded for measurement, must never present to a user as a validated model",
+      "RELEASE_CANDIDATE": "passed the contraction-first pilot, physical accounting, and a complete-token proof",
+      "current": "no Hawking model is a RELEASE_CANDIDATE; GLM functional is RESEARCH_ONLY, DeepSeek has no admitted representation"
+    }
+  },
+  "do_not_refactor_hide_until": "a parent admits a servable compact representation; the contracts above are stable now so HIDE can build against them, but the FUNCTIONAL_MODEL loader is implemented only when a RELEASE_CANDIDATE exists",
+  "reference_implementations": {
+    "container": "tools/condense/gravity_format.py",
+    "functional_codec": "tools/condense/gravity_functional_codec.py",
+    "cpu_authority": "gravity_functional_codec.execute",
+    "metal_grammars": "tools/condense/gravity_functional_metal.py",
+    "streamed_forward": "tools/condense/deepseek_v4_reference.py"
+  }
+}
