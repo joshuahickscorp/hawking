@@ -1,0 +1,347 @@
+{
+  "schema": "hawking.glm52.mla_attention.v1",
+  "machine": {
+    "platform": "macOS-27.0-arm64-arm-64bit",
+    "bandwidth_gb_s": 736.0
+  },
+  "layer": 2,
+  "geometry": {
+    "verified": true,
+    "tensors": {
+      "kv_a_proj_with_mqa": {
+        "shape": [
+          576,
+          6144
+        ],
+        "sha256": "47e8e66f7e0d8c08c042ece0be00d5555793d9840d0ae6cc36195079c051c5a9",
+        "shard": "model-00038-of-00282.gravity"
+      },
+      "kv_b_proj": {
+        "shape": [
+          28672,
+          512
+        ],
+        "sha256": "d10e2015de3e1ea8b873ed640f8488294392b27dbcb7d316191689a07e1ab1b2",
+        "shard": "model-00038-of-00282.gravity"
+      },
+      "o_proj": {
+        "shape": [
+          6144,
+          16384
+        ],
+        "sha256": "fa819b1d3b863d432500a3b4660b84d34e797d56eb29c48a2e4f524c422e5940",
+        "shard": "model-00038-of-00282.gravity"
+      },
+      "q_a_proj": {
+        "shape": [
+          2048,
+          6144
+        ],
+        "sha256": "ab0d549e7adf13ab5147cd744b93196afb39eedd1269a8a50a1034362e14c7df",
+        "shard": "model-00038-of-00282.gravity"
+      },
+      "q_b_proj": {
+        "shape": [
+          16384,
+          2048
+        ],
+        "sha256": "c6fd2d414532053bff69424c7b13e75f1e0d93dc815b509e78927239b370bd3b",
+        "shard": "model-00038-of-00282.gravity"
+      }
+    },
+    "heads": 64,
+    "qk_nope": 192,
+    "qk_rope": 64,
+    "v_head_dim": 256,
+    "kv_lora_rank": 512,
+    "q_lora_rank": 2048
+  },
+  "plan": {
+    "waves": [
+      {
+        "wave": 0,
+        "reads": "hidden",
+        "dispatches": [
+          "q_a_proj",
+          "kv_a_proj_with_mqa"
+        ],
+        "concurrent": true
+      },
+      {
+        "wave": 1,
+        "reads": "q_a, kv_a[:512]",
+        "dispatches": [
+          "q_b_proj",
+          "kv_b_proj"
+        ],
+        "concurrent": true
+      },
+      {
+        "wave": 2,
+        "reads": "q, kv, kv_cache",
+        "dispatches": [
+          "attention_core"
+        ],
+        "status": "MEASURED_SEPARATELY_NOT_A_WEIGHT_PATH"
+      },
+      {
+        "wave": 3,
+        "reads": "attn_core_out",
+        "dispatches": [
+          "o_proj"
+        ]
+      }
+    ],
+    "command_buffers_per_layer": 3,
+    "command_buffers_provenance": "counted from the three run_batch calls in run(); verify with measured_command_buffers()",
+    "weight_dispatches": 5,
+    "fusion_headroom": {
+      "command_buffers_now": 3,
+      "command_buffers_achievable": 1,
+      "saved_seconds_per_layer": 0.0004316,
+      "saved_ms_per_layer": 0.4316,
+      "saved_ms_per_token_78_layers": 33.66,
+      "blocker": "needs one copy kernel so q_a and kv_a[:512] reach the next wave's x buffers on the GPU instead of via set_x from the host",
+      "status": "NOT_BUILT_ARITHMETIC_ONLY"
+    }
+  },
+  "parity": {
+    "per_stage": {
+      "q_a": {
+        "relative_l2": 2.769301319060625e-07,
+        "max_abs_error": 3.5762786865234375e-07,
+        "finite": true
+      },
+      "q": {
+        "relative_l2": 2.3921402900594796e-07,
+        "max_abs_error": 4.172325134277344e-07,
+        "finite": true
+      },
+      "kv_a": {
+        "relative_l2": 2.6971068944099585e-07,
+        "max_abs_error": 1.5497207641601562e-06,
+        "finite": true
+      },
+      "kv": {
+        "relative_l2": 2.731659347347634e-07,
+        "max_abs_error": 2.086162567138672e-07,
+        "finite": true
+      },
+      "o": {
+        "relative_l2": 3.6452760849166515e-07,
+        "max_abs_error": 1.0132789611816406e-06,
+        "finite": true
+      }
+    },
+    "worst_relative_l2": 3.6452760849166515e-07,
+    "all_finite": true
+  },
+  "parity_authority": "gravity_forge.pq_execute composed through the MLA dependency graph",
+  "activation_source": "SYNTHETIC",
+  "latency_ms": {
+    "median": 1.19012501090765,
+    "min": 0.930207985220477,
+    "p95": 1.8306249985471368,
+    "max": 2.031291020102799,
+    "raw_samples_ms": [
+      1.7031250172294676,
+      1.213000010466203,
+      1.040166971506551,
+      1.283499994315207,
+      1.1129579797852784,
+      1.0637080122251064,
+      1.0700839920900762,
+      1.0381669853813946,
+      1.19162502232939,
+      1.2474170071072876,
+      1.346875011222437,
+      1.7715000140015036,
+      1.3880000042263418,
+      1.5344169805757701,
+      2.031291020102799,
+      1.321416988503188,
+      0.9686659905128181,
+      1.4020000235177577,
+      1.0217079834546894,
+      1.0800420132,
+      1.8306249985471368,
+      1.264249993255362,
+      1.2348330055829138,
+      1.18862499948591,
+      1.0599590023048222,
+      1.040208007907495,
+      1.1364590027369559,
+      1.252666988875717,
+      1.082583999959752,
+      1.131458004238084,
+      1.3415409775916487,
+      1.9995420007035136,
+      1.659958012169227,
+      1.6162500251084566,
+      1.3949590211268514,
+      1.5692920133005828,
+      1.1919999960809946,
+      0.9366250014863908,
+      0.9361660049762577,
+      0.930207985220477,
+      1.0021249763667583,
+      1.8479170103091747,
+      1.1443329858593643,
+      1.6316670225933194,
+      1.0492500150576234,
+      1.0163749975617975,
+      1.3232089986559004,
+      1.1768339900299907,
+      1.0405829816590995,
+      1.0314579994883388,
+      1.3302919978741556,
+      1.1152910010423511,
+      1.0408329835627228,
+      1.1379170173313469,
+      1.216834003571421,
+      1.0653749923221767,
+      1.5573330165352672,
+      1.2494999973569065,
+      1.138666004408151,
+      1.113459002226591
+    ],
+    "coefficient_of_variation": 0.2279559607849745,
+    "is_contended": true
+  },
+  "weight_bytes": {
+    "per_projection": {
+      "q_a_proj": {
+        "shape": [
+          2048,
+          6144
+        ],
+        "elements": 12582912,
+        "compact_index_bytes": 1574912,
+        "dense_bf16_bytes": 25165824
+      },
+      "q_b_proj": {
+        "shape": [
+          16384,
+          2048
+        ],
+        "elements": 33554432,
+        "compact_index_bytes": 4196352,
+        "dense_bf16_bytes": 67108864
+      },
+      "kv_a_proj_with_mqa": {
+        "shape": [
+          576,
+          6144
+        ],
+        "elements": 3538944,
+        "compact_index_bytes": 444416,
+        "dense_bf16_bytes": 7077888
+      },
+      "kv_b_proj": {
+        "shape": [
+          28672,
+          512
+        ],
+        "elements": 14680064,
+        "compact_index_bytes": 1837056,
+        "dense_bf16_bytes": 29360128
+      },
+      "o_proj": {
+        "shape": [
+          6144,
+          16384
+        ],
+        "elements": 100663296,
+        "compact_index_bytes": 12584960,
+        "dense_bf16_bytes": 201326592
+      }
+    },
+    "layer_compact_bytes": 20637696,
+    "layer_dense_bf16_bytes": 330039296,
+    "compression": 15.992,
+    "all_layers_compact_bytes": 1609740288
+  },
+  "kv_ledger_by_context": [
+    {
+      "context": 2048,
+      "latent_elements_per_token_per_layer": 576,
+      "kv_cached_bytes": 184025088,
+      "kv_latent_read_bytes_per_token": 184025088,
+      "kv_latent_read_is_context_flat": false,
+      "index_scan_bytes_per_token": 11010048,
+      "total_kv_bytes_per_token": 195035136,
+      "naive_full_attention_read_bytes_per_token": 184025088,
+      "indexshare_saving_vs_naive": 0.944,
+      "scan_over_latent_ratio": 0.0598,
+      "scan_dominates": false
+    },
+    {
+      "context": 8192,
+      "latent_elements_per_token_per_layer": 576,
+      "kv_cached_bytes": 736100352,
+      "kv_latent_read_bytes_per_token": 184025088,
+      "kv_latent_read_is_context_flat": true,
+      "index_scan_bytes_per_token": 44040192,
+      "total_kv_bytes_per_token": 228065280,
+      "naive_full_attention_read_bytes_per_token": 736100352,
+      "indexshare_saving_vs_naive": 3.228,
+      "scan_over_latent_ratio": 0.2393,
+      "scan_dominates": false
+    },
+    {
+      "context": 32768,
+      "latent_elements_per_token_per_layer": 576,
+      "kv_cached_bytes": 2944401408,
+      "kv_latent_read_bytes_per_token": 184025088,
+      "kv_latent_read_is_context_flat": true,
+      "index_scan_bytes_per_token": 176160768,
+      "total_kv_bytes_per_token": 360185856,
+      "naive_full_attention_read_bytes_per_token": 2944401408,
+      "indexshare_saving_vs_naive": 8.175,
+      "scan_over_latent_ratio": 0.9573,
+      "scan_dominates": false
+    },
+    {
+      "context": 131072,
+      "latent_elements_per_token_per_layer": 576,
+      "kv_cached_bytes": 11777605632,
+      "kv_latent_read_bytes_per_token": 184025088,
+      "kv_latent_read_is_context_flat": true,
+      "index_scan_bytes_per_token": 704643072,
+      "total_kv_bytes_per_token": 888668160,
+      "naive_full_attention_read_bytes_per_token": 11777605632,
+      "indexshare_saving_vs_naive": 13.253,
+      "scan_over_latent_ratio": 3.8291,
+      "scan_dominates": true
+    },
+    {
+      "context": 1048576,
+      "latent_elements_per_token_per_layer": 576,
+      "kv_cached_bytes": 94220845056,
+      "kv_latent_read_bytes_per_token": 184025088,
+      "kv_latent_read_is_context_flat": true,
+      "index_scan_bytes_per_token": 5637144576,
+      "total_kv_bytes_per_token": 5821169664,
+      "naive_full_attention_read_bytes_per_token": 94220845056,
+      "indexshare_saving_vs_naive": 16.186,
+      "scan_over_latent_ratio": 30.6325,
+      "scan_dominates": true
+    }
+  ],
+  "kv_scan_crossover_context": 34230,
+  "spec": {
+    "rows": 6144,
+    "cols": 6144,
+    "batch": 1,
+    "input_seed": 0,
+    "input_dtype": "float32",
+    "output_dtype": "float32",
+    "warmup": 10,
+    "reps": 60,
+    "sync_boundary": "per_call_host_sync",
+    "dependency_shape": "mla_four_dependent_stages_three_command_buffers",
+    "pack_in_timed_region": false,
+    "unpack_in_timed_region": false
+  },
+  "not_evidence_of": "the attention core (RoPE, score GEMV, softmax, value contraction) which touches KV rather than weights and is measured separately; and no complete token, since lm_head, the embedding table, the router and the norms are on no shard"
+}
