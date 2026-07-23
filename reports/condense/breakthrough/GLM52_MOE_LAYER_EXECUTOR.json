@@ -1,0 +1,934 @@
+{
+  "schema": "hawking.glm52.moe_layer_executor.v1",
+  "kernel_version": 1,
+  "generated_at": "2026-07-22T23:30:26-0400",
+  "machine": {
+    "model_identifier": "Mac15,14",
+    "chip": "Apple M3 Ultra",
+    "gpu_cores": 60,
+    "cpu_cores": 28,
+    "unified_memory_gib": 96,
+    "metal_version": 4,
+    "max_threadgroup_memory_bytes": 32768,
+    "thread_execution_width": 32,
+    "bandwidth_roof_gb_s": 736.0,
+    "compute_roof_gflop_s": 17703.0,
+    "command_buffer_fixed_cost_us": 215.8,
+    "marginal_dispatch_us": 0.71,
+    "ridge_flop_per_byte": 24.05,
+    "platform": "macOS-27.0-arm64-arm-64bit",
+    "python": "3.12.6"
+  },
+  "router_status": "ROUTER_ABSENT_FIXED_EXPERT_LIST",
+  "router_note": "model.layers.N.mlp.gate.weight is on none of the 90 shards -- pack_shard carries control tensors at source precision outside the .gravity payload.  The 8 routed experts are a FIXED LIST and the routing weights are a FIXED VECTOR; nothing here made a routing decision and no result may be read as though it had.",
+  "activation_source": "SYNTHETIC",
+  "graph": [
+    "fixed expert list (ROUTER ABSENT)",
+    "Wave A: 8 routed + 1 shared, gate and up, 18 matvecs",
+    "fused reduce + SwiGLU, 9 dispatches",
+    "Wave B: 9 down matvecs into one [nexp][blocks][rows] partials buffer",
+    "fused combine: reduce + routing weight + shared expert + residual, 1 dispatch"
+  ],
+  "plan": {
+    "router_status": "ROUTER_ABSENT_FIXED_EXPERT_LIST",
+    "router_note": "model.layers.N.mlp.gate.weight is on none of the 90 shards -- pack_shard carries control tensors at source precision outside the .gravity payload.  The 8 routed experts are a FIXED LIST and the routing weights are a FIXED VECTOR; nothing here made a routing decision and no result may be read as though it had.",
+    "experts_routed": 8,
+    "shared_expert": true,
+    "shared_expert_integration": "expert slot 8 of 9, routing weight 1.0, same waves and same partials buffer",
+    "geometry": {
+      "gate_up": [
+        2048,
+        6144
+      ],
+      "down": [
+        6144,
+        2048
+      ],
+      "nchunk_gate_up": 768,
+      "nchunk_down": 256,
+      "D": 8,
+      "k": 128
+    },
+    "wave_a": {
+      "config": {
+        "grammar": "lookup-linear",
+        "cbs": 16,
+        "tpg": 1024,
+        "half_table": false,
+        "row4": true,
+        "source": "GLM52_KERNEL_SELECTION_MATRIX.json routed_expert 2048x6144 -> lookup_linear cbs16 tpg1024 blk48 (decided by executed_bytes)"
+      },
+      "shape": {
+        "grammar": "lookup-linear",
+        "cbs": 16,
+        "blocks": 48,
+        "tpg": 1024,
+        "threadgroups": 48,
+        "threads_in_flight": 49152,
+        "rows_per_thread": 2,
+        "dispatches": 2,
+        "command_buffers": 1,
+        "scratch_bytes": 12800,
+        "table_bytes_on_chip": 8192,
+        "table_in_device_memory": false,
+        "half_table": false,
+        "row4": true,
+        "kernel": "ll_blk_f32_r4",
+        "partial_bytes": 393216
+      },
+      "per_tensor_cost": {
+        "grammar": "lookup-linear",
+        "model": "ANALYTIC, not a counter reading",
+        "executed_fp_macs": 786432,
+        "executed_fp_adds": 1572864,
+        "executed_fp_ops": 3145728,
+        "executed_gather_ops": 1572864,
+        "executed_index_byte_reads": 1572864,
+        "dense_equivalent_macs": 12582912,
+        "arithmetic_reduction_vs_decode_fma": 5.333333333333333,
+        "table_bytes_written_to_device": 0,
+        "table_bytes_on_chip": 8192,
+        "index_bytes": 1572864,
+        "codebook_bytes": 98304,
+        "activation_bytes": 24576,
+        "partial_write_bytes": 393216,
+        "partial_read_bytes": 393216,
+        "output_bytes": 8192,
+        "executed_read_bytes": 2088960,
+        "executed_total_bytes": 2490368,
+        "logical_artifact_bytes": 1378304,
+        "dense_bf16_bytes": 25165824,
+        "executed_read_bpw": 1.328125
+      }
+    },
+    "wave_b": {
+      "config": {
+        "grammar": "decode-FMA",
+        "cbs": 32,
+        "tpg": 256,
+        "source": "GLM52_KERNEL_SELECTION_MATRIX.json routed_expert 6144x2048 -> decode_fma_2d blk8 cbs32 tpg256 (decided by gpu median; that matrix ALSO reports this geometry as its one unstable shape, so the lookup-linear alternative is measured here, not assumed away)"
+      },
+      "shape": {
+        "grammar": "decode-FMA",
+        "cbs": 32,
+        "blocks": 8,
+        "tpg": 256,
+        "row_tiles": 24,
+        "threadgroups": 192,
+        "threads_in_flight": 49152,
+        "dispatches": 2,
+        "command_buffers": 1,
+        "scratch_bytes": 5120,
+        "kernel": "dfma_split",
+        "partial_bytes": 196608
+      },
+      "per_tensor_cost": {
+        "grammar": "decode-FMA",
+        "model": "ANALYTIC, not a counter reading",
+        "executed_fp_macs": 12582912,
+        "executed_fp_adds": 0,
+        "executed_fp_ops": 25165824,
+        "executed_gather_ops": 1572864,
+        "executed_index_byte_reads": 1572864,
+        "dense_equivalent_macs": 12582912,
+        "arithmetic_reduction_vs_decode_fma": 1.0,
+        "table_bytes_written_to_device": 0,
+        "table_bytes_on_chip": 0,
+        "index_bytes": 1572864,
+        "codebook_bytes": 393216,
+        "activation_bytes": 196608,
+        "partial_write_bytes": 196608,
+        "partial_read_bytes": 196608,
+        "output_bytes": 24576,
+        "executed_read_bytes": 2359296,
+        "executed_total_bytes": 2580480,
+        "logical_artifact_bytes": 1378304,
+        "dense_bf16_bytes": 25165824,
+        "executed_read_bpw": 1.5
+      }
+    },
+    "tensors_executed": 27,
+    "command_buffers_per_layer": 1,
+    "encoders_per_layer": 4,
+    "dispatches_per_layer": 37,
+    "dispatches_by_stage": {
+      "wave_a": 18,
+      "swiglu": 9,
+      "wave_b": 9,
+      "combine": 1
+    },
+    "threads_in_flight": {
+      "wave_a_per_tensor": 49152,
+      "wave_b_per_tensor": 49152
+    },
+    "scratch_bytes": {
+      "wave_a": 12800,
+      "wave_b": 5120
+    },
+    "byte_ledger": {
+      "model": "ANALYTIC graph ledger, not a counter reading",
+      "wave_a_read_bytes": 30523392,
+      "wave_a_write_bytes": 7077888,
+      "reduce_swiglu_read_bytes": 7077888,
+      "reduce_swiglu_write_bytes": 73728,
+      "wave_b_read_bytes": 19464192,
+      "wave_b_write_bytes": 1769472,
+      "combine_read_bytes": 1794084,
+      "combine_write_bytes": 24576,
+      "executed_read_bytes": 58859556,
+      "executed_write_bytes": 8945664,
+      "executed_total_bytes": 67805220,
+      "layer_artifact_bytes": 37214208,
+      "dense_bf16_bytes": 679477248,
+      "executed_over_artifact": 1.8220250717145452,
+      "read_over_artifact": 1.5816420438129437,
+      "executed_over_dense_bf16": 0.09979027288931387
+    },
+    "arithmetic": {
+      "wave_a_executed_fp_ops": 56623104,
+      "wave_b_executed_fp_ops": 226492416,
+      "dense_equivalent_macs": 339738624,
+      "swiglu_transcendentals": 18432
+    }
+  },
+  "plan_no_shared": {
+    "router_status": "ROUTER_ABSENT_FIXED_EXPERT_LIST",
+    "router_note": "model.layers.N.mlp.gate.weight is on none of the 90 shards -- pack_shard carries control tensors at source precision outside the .gravity payload.  The 8 routed experts are a FIXED LIST and the routing weights are a FIXED VECTOR; nothing here made a routing decision and no result may be read as though it had.",
+    "experts_routed": 8,
+    "shared_expert": false,
+    "shared_expert_integration": "ABSENT (variant)",
+    "geometry": {
+      "gate_up": [
+        2048,
+        6144
+      ],
+      "down": [
+        6144,
+        2048
+      ],
+      "nchunk_gate_up": 768,
+      "nchunk_down": 256,
+      "D": 8,
+      "k": 128
+    },
+    "wave_a": {
+      "config": {
+        "grammar": "lookup-linear",
+        "cbs": 16,
+        "tpg": 1024,
+        "half_table": false,
+        "row4": true,
+        "source": "GLM52_KERNEL_SELECTION_MATRIX.json routed_expert 2048x6144 -> lookup_linear cbs16 tpg1024 blk48 (decided by executed_bytes)"
+      },
+      "shape": {
+        "grammar": "lookup-linear",
+        "cbs": 16,
+        "blocks": 48,
+        "tpg": 1024,
+        "threadgroups": 48,
+        "threads_in_flight": 49152,
+        "rows_per_thread": 2,
+        "dispatches": 2,
+        "command_buffers": 1,
+        "scratch_bytes": 12800,
+        "table_bytes_on_chip": 8192,
+        "table_in_device_memory": false,
+        "half_table": false,
+        "row4": true,
+        "kernel": "ll_blk_f32_r4",
+        "partial_bytes": 393216
+      },
+      "per_tensor_cost": {
+        "grammar": "lookup-linear",
+        "model": "ANALYTIC, not a counter reading",
+        "executed_fp_macs": 786432,
+        "executed_fp_adds": 1572864,
+        "executed_fp_ops": 3145728,
+        "executed_gather_ops": 1572864,
+        "executed_index_byte_reads": 1572864,
+        "dense_equivalent_macs": 12582912,
+        "arithmetic_reduction_vs_decode_fma": 5.333333333333333,
+        "table_bytes_written_to_device": 0,
+        "table_bytes_on_chip": 8192,
+        "index_bytes": 1572864,
+        "codebook_bytes": 98304,
+        "activation_bytes": 24576,
+        "partial_write_bytes": 393216,
+        "partial_read_bytes": 393216,
+        "output_bytes": 8192,
+        "executed_read_bytes": 2088960,
+        "executed_total_bytes": 2490368,
+        "logical_artifact_bytes": 1378304,
+        "dense_bf16_bytes": 25165824,
+        "executed_read_bpw": 1.328125
+      }
+    },
+    "wave_b": {
+      "config": {
+        "grammar": "decode-FMA",
+        "cbs": 32,
+        "tpg": 256,
+        "source": "GLM52_KERNEL_SELECTION_MATRIX.json routed_expert 6144x2048 -> decode_fma_2d blk8 cbs32 tpg256 (decided by gpu median; that matrix ALSO reports this geometry as its one unstable shape, so the lookup-linear alternative is measured here, not assumed away)"
+      },
+      "shape": {
+        "grammar": "decode-FMA",
+        "cbs": 32,
+        "blocks": 8,
+        "tpg": 256,
+        "row_tiles": 24,
+        "threadgroups": 192,
+        "threads_in_flight": 49152,
+        "dispatches": 2,
+        "command_buffers": 1,
+        "scratch_bytes": 5120,
+        "kernel": "dfma_split",
+        "partial_bytes": 196608
+      },
+      "per_tensor_cost": {
+        "grammar": "decode-FMA",
+        "model": "ANALYTIC, not a counter reading",
+        "executed_fp_macs": 12582912,
+        "executed_fp_adds": 0,
+        "executed_fp_ops": 25165824,
+        "executed_gather_ops": 1572864,
+        "executed_index_byte_reads": 1572864,
+        "dense_equivalent_macs": 12582912,
+        "arithmetic_reduction_vs_decode_fma": 1.0,
+        "table_bytes_written_to_device": 0,
+        "table_bytes_on_chip": 0,
+        "index_bytes": 1572864,
+        "codebook_bytes": 393216,
+        "activation_bytes": 196608,
+        "partial_write_bytes": 196608,
+        "partial_read_bytes": 196608,
+        "output_bytes": 24576,
+        "executed_read_bytes": 2359296,
+        "executed_total_bytes": 2580480,
+        "logical_artifact_bytes": 1378304,
+        "dense_bf16_bytes": 25165824,
+        "executed_read_bpw": 1.5
+      }
+    },
+    "tensors_executed": 24,
+    "command_buffers_per_layer": 1,
+    "encoders_per_layer": 4,
+    "dispatches_per_layer": 33,
+    "dispatches_by_stage": {
+      "wave_a": 16,
+      "swiglu": 8,
+      "wave_b": 8,
+      "combine": 1
+    },
+    "threads_in_flight": {
+      "wave_a_per_tensor": 49152,
+      "wave_b_per_tensor": 49152
+    },
+    "scratch_bytes": {
+      "wave_a": 12800,
+      "wave_b": 5120
+    },
+    "byte_ledger": {
+      "model": "ANALYTIC graph ledger, not a counter reading",
+      "wave_a_read_bytes": 27131904,
+      "wave_a_write_bytes": 6291456,
+      "reduce_swiglu_read_bytes": 6291456,
+      "reduce_swiglu_write_bytes": 65536,
+      "wave_b_read_bytes": 17301504,
+      "wave_b_write_bytes": 1572864,
+      "combine_read_bytes": 1597472,
+      "combine_write_bytes": 24576,
+      "executed_read_bytes": 52322336,
+      "executed_write_bytes": 7954432,
+      "executed_total_bytes": 60276768,
+      "layer_artifact_bytes": 33079296,
+      "dense_bf16_bytes": 603979776,
+      "executed_over_artifact": 1.822190169947994,
+      "read_over_artifact": 1.5817245929296682,
+      "executed_over_dense_bf16": 0.09979931513468425
+    },
+    "arithmetic": {
+      "wave_a_executed_fp_ops": 50331648,
+      "wave_b_executed_fp_ops": 201326592,
+      "dense_equivalent_macs": 301989888,
+      "swiglu_transcendentals": 16384
+    }
+  },
+  "extra_kernels": [
+    "reduce_swiglu",
+    "moe_combine"
+  ],
+  "reused_from": "gravity_metal_lab_b (ll_blk_f32_r4, dfma_split, upload cache, 1024-deep command queue, autorelease pool)",
+  "selected_kernels": {
+    "wave_a": {
+      "grammar": "lookup-linear",
+      "cbs": 16,
+      "tpg": 1024,
+      "half_table": false,
+      "row4": true,
+      "source": "GLM52_KERNEL_SELECTION_MATRIX.json routed_expert 2048x6144 -> lookup_linear cbs16 tpg1024 blk48 (decided by executed_bytes)"
+    },
+    "wave_b": {
+      "grammar": "decode-FMA",
+      "cbs": 32,
+      "tpg": 256,
+      "source": "GLM52_KERNEL_SELECTION_MATRIX.json routed_expert 6144x2048 -> decode_fma_2d blk8 cbs32 tpg256 (decided by gpu median; that matrix ALSO reports this geometry as its one unstable shape, so the lookup-linear alternative is measured here, not assumed away)"
+    }
+  },
+  "wave_b_alternative": {
+    "grammar": "lookup-linear",
+    "cbs": 16,
+    "tpg": 1024,
+    "half_table": false,
+    "row4": true,
+    "source": "GLM52_KERNEL_SELECTION_MATRIX.json shared_expert 6144x2048 -> lookup_linear cbs16 tpg1024 blk16"
+  },
+  "unimplemented": {
+    "fused_gate_up_single_kernel": "UNIMPLEMENTED_NOT_MEASURED.  gate and up share x but NOT a codebook (measured: 60 of 60 codebooks on one shard hash distinctly), so a fused kernel would build two independent tables from one staged x.  Its whole saving is one 0.71 us marginal dispatch and one 512 B x stage per expert -- 9 x 0.71 us against a MEASURED 637 us layer, about 1% -- while the two tables raise wave-A scratch from 12800 B to 20992 B and cut threadgroup residency.  Not built because the arithmetic says it loses, and that arithmetic is stated here rather than the result asserted.",
+    "hybrid_within_one_tensor": "UNIMPLEMENTED_NOT_MEASURED (no compiled kernel)"
+  },
+  "provenance": {
+    "layer": 3,
+    "router_present": false,
+    "activation": {
+      "source": "glm52_teacher_capture.py capsules",
+      "path": "/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/source_fetch/teacher/capsules",
+      "directory_exists": true,
+      "status": "UNAVAILABLE",
+      "reason": "capsule directory is inside the live campaign's support root; reading it could race the running teacher capture, so it is reported, not opened",
+      "consequence": "every fixture below carries activation_source=SYNTHETIC"
+    },
+    "experts": [
+      {
+        "gate": {
+          "shard": "model-00075-of-00282.gravity",
+          "shard_path": "/Users/scammermike/Desktop/GLM52-Gravity-SubBit/model-00075-of-00282.gravity",
+          "tensor": "model.layers.3.mlp.experts.0.gate_proj.weight",
+          "sha256": "6c8911891ba0e40f2517d176476ea49ae084de48d36f831a1c0e7986ceb6d77a",
+          "cache_key": "model-00075-of-00282.gravity::model.layers.3.mlp.experts.0.gate_proj.weight::6c8911891ba0e40f2517d176476ea49ae084de48d36f831a1c0e7986ceb6d77a",
+          "layer": 3,
+          "expert": 0,
+          "projection": "gate",
+          "shape": [
+            2048,
+            6144
+          ],
+          "rung": "R0",
+          "bpw": 0.8763427734375,
+          "elements": 12582912,
+          "activation_source": "SYNTHETIC",
+          "activation_provenance": "glm52_teacher_capture.py capsules: UNAVAILABLE"
+        },
+        "up": {
+          "shard": "model-00075-of-00282.gravity",
+          "shard_path": "/Users/scammermike/Desktop/GLM52-Gravity-SubBit/model-00075-of-00282.gravity",
+          "tensor": "model.layers.3.mlp.experts.0.up_proj.weight",
+          "sha256": "f0ee1b60b7fb9c03015582904125933d3690f24567cd2981455c47f0fe799a78",
+          "cache_key": "model-00075-of-00282.gravity::model.layers.3.mlp.experts.0.up_proj.weight::f0ee1b60b7fb9c03015582904125933d3690f24567cd2981455c47f0fe799a78",
+          "layer": 3,
+          "expert": 0,
+          "projection": "up",
+          "shape": [
+            2048,
+            6144
+          ],
+          "rung": "R0",
+          "bpw": 0.8763427734375,
+          "elements": 12582912,
+          "activation_source": "SYNTHETIC",
+          "activation_provenance": "glm52_teacher_capture.py capsules: UNAVAILABLE"
+        },
+        "down": {
+          "shard": "model-00075-of-00282.gravity",
+          "shard_path": "/Users/scammermike/Desktop/GLM52-Gravity-SubBit/model-00075-of-00282.gravity",
+          "tensor": "model.layers.3.mlp.experts.0.down_proj.weight",
+          "sha256": "1de14b2f26fc3abc6c235ef0182338f968ff0b32841df8e913cdca210c70bc40",
+          "cache_key": "model-00075-of-00282.gravity::model.layers.3.mlp.experts.0.down_proj.weight::1de14b2f26fc3abc6c235ef0182338f968ff0b32841df8e913cdca210c70bc40",
+          "layer": 3,
+          "expert": 0,
+          "projection": "down",
+          "shape": [
+            6144,
+            2048
+          ],
+          "rung": "R0",
+          "bpw": 0.8763427734375,
+          "elements": 12582912,
+          "activation_source": "SYNTHETIC",
+          "activation_provenance": "glm52_teacher_capture.py capsules: UNAVAILABLE"
+        }
+      },
+      {
+        "gate": {
+          "shard": "model-00075-of-00282.gravity",
+          "shard_path": "/Users/scammermike/Desktop/GLM52-Gravity-SubBit/model-00075-of-00282.gravity",
+          "tensor": "model.layers.3.mlp.experts.1.gate_proj.weight",
+          "sha256": "af9319381519d1ca20ef1af3cee5cbc3b3d29a900c3f43ae9b2d75157cd2171c",
+          "cache_key": "model-00075-of-00282.gravity::model.layers.3.mlp.experts.1.gate_proj.weight::af9319381519d1ca20ef1af3cee5cbc3b3d29a900c3f43ae9b2d75157cd2171c",
+          "layer": 3,
+          "expert": 1,
+          "projection": "gate",
+          "shape": [
+            2048,
+            6144
+          ],
+          "rung": "R0",
+          "bpw": 0.8763427734375,
+          "elements": 12582912,
+          "activation_source": "SYNTHETIC",
+          "activation_provenance": "glm52_teacher_capture.py capsules: UNAVAILABLE"
+        },
+        "up": {
+          "shard": "model-00075-of-00282.gravity",
+          "shard_path": "/Users/scammermike/Desktop/GLM52-Gravity-SubBit/model-00075-of-00282.gravity",
+          "tensor": "model.layers.3.mlp.experts.1.up_proj.weight",
+          "sha256": "284883bb0e8ff44f5afd2a950a9fe44b00a042fca4d512840b81a4b536ff60a9",
+          "cache_key": "model-00075-of-00282.gravity::model.layers.3.mlp.experts.1.up_proj.weight::284883bb0e8ff44f5afd2a950a9fe44b00a042fca4d512840b81a4b536ff60a9",
+          "layer": 3,
+          "expert": 1,
+          "projection": "up",
+          "shape": [
+            2048,
+            6144
+          ],
+          "rung": "R0",
+          "bpw": 0.8763427734375,
+          "elements": 12582912,
+          "activation_source": "SYNTHETIC",
+          "activation_provenance": "glm52_teacher_capture.py capsules: UNAVAILABLE"
+        },
+        "down": {
+          "shard": "model-00075-of-00282.gravity",
+          "shard_path": "/Users/scammermike/Desktop/GLM52-Gravity-SubBit/model-00075-of-00282.gravity",
+          "tensor": "model.layers.3.mlp.experts.1.down_proj.weight",
+          "sha256": "84abb66e6af8ec029c71bfbe10ca751c75383b181733d5a11473a97ed324c39f",
+          "cache_key": "model-00075-of-00282.gravity::model.layers.3.mlp.experts.1.down_proj.weight::84abb66e6af8ec029c71bfbe10ca751c75383b181733d5a11473a97ed324c39f",
+          "layer": 3,
+          "expert": 1,
+          "projection": "down",
+          "shape": [
+            6144,
+            2048
+          ],
+          "rung": "R0",
+          "bpw": 0.8763427734375,
+          "elements": 12582912,
+          "activation_source": "SYNTHETIC",
+          "activation_provenance": "glm52_teacher_capture.py capsules: UNAVAILABLE"
+        }
+      },
+      {
+        "gate": {
+          "shard": "model-00077-of-00282.gravity",
+          "shard_path": "/Users/scammermike/Desktop/GLM52-Gravity-SubBit/model-00077-of-00282.gravity",
+          "tensor": "model.layers.3.mlp.experts.2.gate_proj.weight",
+          "sha256": "53c8b1c29f23dd69bba5d6a48fe6b9ff7989f16d849d4ad1fed2bfa3d145ced0",
+          "cache_key": "model-00077-of-00282.gravity::model.layers.3.mlp.experts.2.gate_proj.weight::53c8b1c29f23dd69bba5d6a48fe6b9ff7989f16d849d4ad1fed2bfa3d145ced0",
+          "layer": 3,
+          "expert": 2,
+          "projection": "gate",
+          "shape": [
+            2048,
+            6144
+          ],
+          "rung": "R0",
+          "bpw": 0.8763427734375,
+          "elements": 12582912,
+          "activation_source": "SYNTHETIC",
+          "activation_provenance": "glm52_teacher_capture.py capsules: UNAVAILABLE"
+        },
+        "up": {
+          "shard": "model-00077-of-00282.gravity",
+          "shard_path": "/Users/scammermike/Desktop/GLM52-Gravity-SubBit/model-00077-of-00282.gravity",
+          "tensor": "model.layers.3.mlp.experts.2.up_proj.weight",
+          "sha256": "1d726f72477af30de9914c84ce7873e99de9ea879519fafdda08058550aaa1c7",
+          "cache_key": "model-00077-of-00282.gravity::model.layers.3.mlp.experts.2.up_proj.weight::1d726f72477af30de9914c84ce7873e99de9ea879519fafdda08058550aaa1c7",
+          "layer": 3,
+          "expert": 2,
+          "projection": "up",
+          "shape": [
+            2048,
+            6144
+          ],
+          "rung": "R0",
+          "bpw": 0.8763427734375,
+          "elements": 12582912,
+          "activation_source": "SYNTHETIC",
+          "activation_provenance": "glm52_teacher_capture.py capsules: UNAVAILABLE"
+        },
+        "down": {
+          "shard": "model-00077-of-00282.gravity",
+          "shard_path": "/Users/scammermike/Desktop/GLM52-Gravity-SubBit/model-00077-of-00282.gravity",
+          "tensor": "model.layers.3.mlp.experts.2.down_proj.weight",
+          "sha256": "60f07e07352468a886d79cf6da99bacebbff0023f055695b06e3af39ccc3c0e2",
+          "cache_key": "model-00077-of-00282.gravity::model.layers.3.mlp.experts.2.down_proj.weight::60f07e07352468a886d79cf6da99bacebbff0023f055695b06e3af39ccc3c0e2",
+          "layer": 3,
+          "expert": 2,
+          "projection": "down",
+          "shape": [
+            6144,
+            2048
+          ],
+          "rung": "R0",
+          "bpw": 0.8763427734375,
+          "elements": 12582912,
+          "activation_source": "SYNTHETIC",
+          "activation_provenance": "glm52_teacher_capture.py capsules: UNAVAILABLE"
+        }
+      },
+      {
+        "gate": {
+          "shard": "model-00078-of-00282.gravity",
+          "shard_path": "/Users/scammermike/Desktop/GLM52-Gravity-SubBit/model-00078-of-00282.gravity",
+          "tensor": "model.layers.3.mlp.experts.3.gate_proj.weight",
+          "sha256": "586dceb7689160886e13152266a31b86b4200dc2b3846ccf38e7522ab4de7dbc",
+          "cache_key": "model-00078-of-00282.gravity::model.layers.3.mlp.experts.3.gate_proj.weight::586dceb7689160886e13152266a31b86b4200dc2b3846ccf38e7522ab4de7dbc",
+          "layer": 3,
+          "expert": 3,
+          "projection": "gate",
+          "shape": [
+            2048,
+            6144
+          ],
+          "rung": "R0",
+          "bpw": 0.8763427734375,
+          "elements": 12582912,
+          "activation_source": "SYNTHETIC",
+          "activation_provenance": "glm52_teacher_capture.py capsules: UNAVAILABLE"
+        },
+        "up": {
+          "shard": "model-00078-of-00282.gravity",
+          "shard_path": "/Users/scammermike/Desktop/GLM52-Gravity-SubBit/model-00078-of-00282.gravity",
+          "tensor": "model.layers.3.mlp.experts.3.up_proj.weight",
+          "sha256": "ce3c8eecf480fc5ef12e52c9ea77168d3fb156f5a6be591df287149ff2cde4bb",
+          "cache_key": "model-00078-of-00282.gravity::model.layers.3.mlp.experts.3.up_proj.weight::ce3c8eecf480fc5ef12e52c9ea77168d3fb156f5a6be591df287149ff2cde4bb",
+          "layer": 3,
+          "expert": 3,
+          "projection": "up",
+          "shape": [
+            2048,
+            6144
+          ],
+          "rung": "R0",
+          "bpw": 0.8763427734375,
+          "elements": 12582912,
+          "activation_source": "SYNTHETIC",
+          "activation_provenance": "glm52_teacher_capture.py capsules: UNAVAILABLE"
+        },
+        "down": {
+          "shard": "model-00078-of-00282.gravity",
+          "shard_path": "/Users/scammermike/Desktop/GLM52-Gravity-SubBit/model-00078-of-00282.gravity",
+          "tensor": "model.layers.3.mlp.experts.3.down_proj.weight",
+          "sha256": "b4d871b0a52367d743080996c8b2ae8548f2694b68141b3c5ccfbcc17a80d0f4",
+          "cache_key": "model-00078-of-00282.gravity::model.layers.3.mlp.experts.3.down_proj.weight::b4d871b0a52367d743080996c8b2ae8548f2694b68141b3c5ccfbcc17a80d0f4",
+          "layer": 3,
+          "expert": 3,
+          "projection": "down",
+          "shape": [
+            6144,
+            2048
+          ],
+          "rung": "R0",
+          "bpw": 0.8763427734375,
+          "elements": 12582912,
+          "activation_source": "SYNTHETIC",
+          "activation_provenance": "glm52_teacher_capture.py capsules: UNAVAILABLE"
+        }
+      },
+      {
+        "gate": {
+          "shard": "model-00078-of-00282.gravity",
+          "shard_path": "/Users/scammermike/Desktop/GLM52-Gravity-SubBit/model-00078-of-00282.gravity",
+          "tensor": "model.layers.3.mlp.experts.4.gate_proj.weight",
+          "sha256": "51806b1779158517feb1fa17057236d7e74ad9eb177be1ae668c547a894c61fb",
+          "cache_key": "model-00078-of-00282.gravity::model.layers.3.mlp.experts.4.gate_proj.weight::51806b1779158517feb1fa17057236d7e74ad9eb177be1ae668c547a894c61fb",
+          "layer": 3,
+          "expert": 4,
+          "projection": "gate",
+          "shape": [
+            2048,
+            6144
+          ],
+          "rung": "R0",
+          "bpw": 0.8763427734375,
+          "elements": 12582912,
+          "activation_source": "SYNTHETIC",
+          "activation_provenance": "glm52_teacher_capture.py capsules: UNAVAILABLE"
+        },
+        "up": {
+          "shard": "model-00078-of-00282.gravity",
+          "shard_path": "/Users/scammermike/Desktop/GLM52-Gravity-SubBit/model-00078-of-00282.gravity",
+          "tensor": "model.layers.3.mlp.experts.4.up_proj.weight",
+          "sha256": "a42cd073309b008830dc58b0a79adaae754bc201b3623fc86a4feff2444fefb5",
+          "cache_key": "model-00078-of-00282.gravity::model.layers.3.mlp.experts.4.up_proj.weight::a42cd073309b008830dc58b0a79adaae754bc201b3623fc86a4feff2444fefb5",
+          "layer": 3,
+          "expert": 4,
+          "projection": "up",
+          "shape": [
+            2048,
+            6144
+          ],
+          "rung": "R0",
+          "bpw": 0.8763427734375,
+          "elements": 12582912,
+          "activation_source": "SYNTHETIC",
+          "activation_provenance": "glm52_teacher_capture.py capsules: UNAVAILABLE"
+        },
+        "down": {
+          "shard": "model-00078-of-00282.gravity",
+          "shard_path": "/Users/scammermike/Desktop/GLM52-Gravity-SubBit/model-00078-of-00282.gravity",
+          "tensor": "model.layers.3.mlp.experts.4.down_proj.weight",
+          "sha256": "7e1573e45e437920a371a9755e35497ff2eaa7e83c15c25630d3d5d2f19d4400",
+          "cache_key": "model-00078-of-00282.gravity::model.layers.3.mlp.experts.4.down_proj.weight::7e1573e45e437920a371a9755e35497ff2eaa7e83c15c25630d3d5d2f19d4400",
+          "layer": 3,
+          "expert": 4,
+          "projection": "down",
+          "shape": [
+            6144,
+            2048
+          ],
+          "rung": "R0",
+          "bpw": 0.8763427734375,
+          "elements": 12582912,
+          "activation_source": "SYNTHETIC",
+          "activation_provenance": "glm52_teacher_capture.py capsules: UNAVAILABLE"
+        }
+      },
+      {
+        "gate": {
+          "shard": "model-00078-of-00282.gravity",
+          "shard_path": "/Users/scammermike/Desktop/GLM52-Gravity-SubBit/model-00078-of-00282.gravity",
+          "tensor": "model.layers.3.mlp.experts.5.gate_proj.weight",
+          "sha256": "1c78fb2ff12ef1b58757fe5d7a362cd6ec4a3386167aff6f1239b80ac5380770",
+          "cache_key": "model-00078-of-00282.gravity::model.layers.3.mlp.experts.5.gate_proj.weight::1c78fb2ff12ef1b58757fe5d7a362cd6ec4a3386167aff6f1239b80ac5380770",
+          "layer": 3,
+          "expert": 5,
+          "projection": "gate",
+          "shape": [
+            2048,
+            6144
+          ],
+          "rung": "R0",
+          "bpw": 0.8763427734375,
+          "elements": 12582912,
+          "activation_source": "SYNTHETIC",
+          "activation_provenance": "glm52_teacher_capture.py capsules: UNAVAILABLE"
+        },
+        "up": {
+          "shard": "model-00078-of-00282.gravity",
+          "shard_path": "/Users/scammermike/Desktop/GLM52-Gravity-SubBit/model-00078-of-00282.gravity",
+          "tensor": "model.layers.3.mlp.experts.5.up_proj.weight",
+          "sha256": "c65a7ed8975f31c750964e0f32ea8ebec437d5bf31af8c64cf01ad8455af128a",
+          "cache_key": "model-00078-of-00282.gravity::model.layers.3.mlp.experts.5.up_proj.weight::c65a7ed8975f31c750964e0f32ea8ebec437d5bf31af8c64cf01ad8455af128a",
+          "layer": 3,
+          "expert": 5,
+          "projection": "up",
+          "shape": [
+            2048,
+            6144
+          ],
+          "rung": "R0",
+          "bpw": 0.8763427734375,
+          "elements": 12582912,
+          "activation_source": "SYNTHETIC",
+          "activation_provenance": "glm52_teacher_capture.py capsules: UNAVAILABLE"
+        },
+        "down": {
+          "shard": "model-00078-of-00282.gravity",
+          "shard_path": "/Users/scammermike/Desktop/GLM52-Gravity-SubBit/model-00078-of-00282.gravity",
+          "tensor": "model.layers.3.mlp.experts.5.down_proj.weight",
+          "sha256": "d57fa0a19157ee47d5214511be752c789a8de6b9a3a5f1063bd753c680a6e505",
+          "cache_key": "model-00078-of-00282.gravity::model.layers.3.mlp.experts.5.down_proj.weight::d57fa0a19157ee47d5214511be752c789a8de6b9a3a5f1063bd753c680a6e505",
+          "layer": 3,
+          "expert": 5,
+          "projection": "down",
+          "shape": [
+            6144,
+            2048
+          ],
+          "rung": "R0",
+          "bpw": 0.8763427734375,
+          "elements": 12582912,
+          "activation_source": "SYNTHETIC",
+          "activation_provenance": "glm52_teacher_capture.py capsules: UNAVAILABLE"
+        }
+      },
+      {
+        "gate": {
+          "shard": "model-00078-of-00282.gravity",
+          "shard_path": "/Users/scammermike/Desktop/GLM52-Gravity-SubBit/model-00078-of-00282.gravity",
+          "tensor": "model.layers.3.mlp.experts.6.gate_proj.weight",
+          "sha256": "f4c2df8b24e7d1a6805fccd5fbef31eef96f97b8b7994bcad7ff7c838ab09722",
+          "cache_key": "model-00078-of-00282.gravity::model.layers.3.mlp.experts.6.gate_proj.weight::f4c2df8b24e7d1a6805fccd5fbef31eef96f97b8b7994bcad7ff7c838ab09722",
+          "layer": 3,
+          "expert": 6,
+          "projection": "gate",
+          "shape": [
+            2048,
+            6144
+          ],
+          "rung": "R0",
+          "bpw": 0.8763427734375,
+          "elements": 12582912,
+          "activation_source": "SYNTHETIC",
+          "activation_provenance": "glm52_teacher_capture.py capsules: UNAVAILABLE"
+        },
+        "up": {
+          "shard": "model-00078-of-00282.gravity",
+          "shard_path": "/Users/scammermike/Desktop/GLM52-Gravity-SubBit/model-00078-of-00282.gravity",
+          "tensor": "model.layers.3.mlp.experts.6.up_proj.weight",
+          "sha256": "6c302ba2d6d014f698a9efb0026322fdaef562da8de869d86b6f2b60b3c3d46f",
+          "cache_key": "model-00078-of-00282.gravity::model.layers.3.mlp.experts.6.up_proj.weight::6c302ba2d6d014f698a9efb0026322fdaef562da8de869d86b6f2b60b3c3d46f",
+          "layer": 3,
+          "expert": 6,
+          "projection": "up",
+          "shape": [
+            2048,
+            6144
+          ],
+          "rung": "R0",
+          "bpw": 0.8763427734375,
+          "elements": 12582912,
+          "activation_source": "SYNTHETIC",
+          "activation_provenance": "glm52_teacher_capture.py capsules: UNAVAILABLE"
+        },
+        "down": {
+          "shard": "model-00078-of-00282.gravity",
+          "shard_path": "/Users/scammermike/Desktop/GLM52-Gravity-SubBit/model-00078-of-00282.gravity",
+          "tensor": "model.layers.3.mlp.experts.6.down_proj.weight",
+          "sha256": "50bc0447360081307c0a6343b59ff3411b543d1d0c933dec12ae6c2a7153347a",
+          "cache_key": "model-00078-of-00282.gravity::model.layers.3.mlp.experts.6.down_proj.weight::50bc0447360081307c0a6343b59ff3411b543d1d0c933dec12ae6c2a7153347a",
+          "layer": 3,
+          "expert": 6,
+          "projection": "down",
+          "shape": [
+            6144,
+            2048
+          ],
+          "rung": "R0",
+          "bpw": 0.8763427734375,
+          "elements": 12582912,
+          "activation_source": "SYNTHETIC",
+          "activation_provenance": "glm52_teacher_capture.py capsules: UNAVAILABLE"
+        }
+      },
+      {
+        "gate": {
+          "shard": "model-00078-of-00282.gravity",
+          "shard_path": "/Users/scammermike/Desktop/GLM52-Gravity-SubBit/model-00078-of-00282.gravity",
+          "tensor": "model.layers.3.mlp.experts.7.gate_proj.weight",
+          "sha256": "ed870052298359d419918a7bc9751b16d8b7bc0819620fb3f732116d69c641f8",
+          "cache_key": "model-00078-of-00282.gravity::model.layers.3.mlp.experts.7.gate_proj.weight::ed870052298359d419918a7bc9751b16d8b7bc0819620fb3f732116d69c641f8",
+          "layer": 3,
+          "expert": 7,
+          "projection": "gate",
+          "shape": [
+            2048,
+            6144
+          ],
+          "rung": "R0",
+          "bpw": 0.8763427734375,
+          "elements": 12582912,
+          "activation_source": "SYNTHETIC",
+          "activation_provenance": "glm52_teacher_capture.py capsules: UNAVAILABLE"
+        },
+        "up": {
+          "shard": "model-00078-of-00282.gravity",
+          "shard_path": "/Users/scammermike/Desktop/GLM52-Gravity-SubBit/model-00078-of-00282.gravity",
+          "tensor": "model.layers.3.mlp.experts.7.up_proj.weight",
+          "sha256": "6c5a75f2cead4d7998d8f7c99caa3894a820fbebc5cabfe19ee47221b08bc785",
+          "cache_key": "model-00078-of-00282.gravity::model.layers.3.mlp.experts.7.up_proj.weight::6c5a75f2cead4d7998d8f7c99caa3894a820fbebc5cabfe19ee47221b08bc785",
+          "layer": 3,
+          "expert": 7,
+          "projection": "up",
+          "shape": [
+            2048,
+            6144
+          ],
+          "rung": "R0",
+          "bpw": 0.8763427734375,
+          "elements": 12582912,
+          "activation_source": "SYNTHETIC",
+          "activation_provenance": "glm52_teacher_capture.py capsules: UNAVAILABLE"
+        },
+        "down": {
+          "shard": "model-00078-of-00282.gravity",
+          "shard_path": "/Users/scammermike/Desktop/GLM52-Gravity-SubBit/model-00078-of-00282.gravity",
+          "tensor": "model.layers.3.mlp.experts.7.down_proj.weight",
+          "sha256": "12421d119c871770044fcdb08d8049bf7e31ccadfaad339961cc25ea439f323f",
+          "cache_key": "model-00078-of-00282.gravity::model.layers.3.mlp.experts.7.down_proj.weight::12421d119c871770044fcdb08d8049bf7e31ccadfaad339961cc25ea439f323f",
+          "layer": 3,
+          "expert": 7,
+          "projection": "down",
+          "shape": [
+            6144,
+            2048
+          ],
+          "rung": "R0",
+          "bpw": 0.8763427734375,
+          "elements": 12582912,
+          "activation_source": "SYNTHETIC",
+          "activation_provenance": "glm52_teacher_capture.py capsules: UNAVAILABLE"
+        }
+      },
+      {
+        "gate": {
+          "shard": "model-00079-of-00282.gravity",
+          "shard_path": "/Users/scammermike/Desktop/GLM52-Gravity-SubBit/model-00079-of-00282.gravity",
+          "tensor": "model.layers.3.mlp.shared_experts.gate_proj.weight",
+          "sha256": "0eb4bc32bdc0419d1ae2790ca102c326a4501fefbbb9d8e4b8d71592a4e3f40d",
+          "cache_key": "model-00079-of-00282.gravity::model.layers.3.mlp.shared_experts.gate_proj.weight::0eb4bc32bdc0419d1ae2790ca102c326a4501fefbbb9d8e4b8d71592a4e3f40d",
+          "layer": 3,
+          "expert": null,
+          "projection": "gate",
+          "shape": [
+            2048,
+            6144
+          ],
+          "rung": "R0",
+          "bpw": 0.8763427734375,
+          "elements": 12582912,
+          "activation_source": "SYNTHETIC",
+          "activation_provenance": "glm52_teacher_capture.py capsules: UNAVAILABLE"
+        },
+        "up": {
+          "shard": "model-00079-of-00282.gravity",
+          "shard_path": "/Users/scammermike/Desktop/GLM52-Gravity-SubBit/model-00079-of-00282.gravity",
+          "tensor": "model.layers.3.mlp.shared_experts.up_proj.weight",
+          "sha256": "854baf7f9101b041c9a40ee483b88721a2a9981499df7a208b5d831c5860e4d1",
+          "cache_key": "model-00079-of-00282.gravity::model.layers.3.mlp.shared_experts.up_proj.weight::854baf7f9101b041c9a40ee483b88721a2a9981499df7a208b5d831c5860e4d1",
+          "layer": 3,
+          "expert": null,
+          "projection": "up",
+          "shape": [
+            2048,
+            6144
+          ],
+          "rung": "R0",
+          "bpw": 0.8763427734375,
+          "elements": 12582912,
+          "activation_source": "SYNTHETIC",
+          "activation_provenance": "glm52_teacher_capture.py capsules: UNAVAILABLE"
+        },
+        "down": {
+          "shard": "model-00079-of-00282.gravity",
+          "shard_path": "/Users/scammermike/Desktop/GLM52-Gravity-SubBit/model-00079-of-00282.gravity",
+          "tensor": "model.layers.3.mlp.shared_experts.down_proj.weight",
+          "sha256": "a5eb982e649c28df8666bb8c61689e304e1b469b648e06b87de081dbed05cfac",
+          "cache_key": "model-00079-of-00282.gravity::model.layers.3.mlp.shared_experts.down_proj.weight::a5eb982e649c28df8666bb8c61689e304e1b469b648e06b87de081dbed05cfac",
+          "layer": 3,
+          "expert": null,
+          "projection": "down",
+          "shape": [
+            6144,
+            2048
+          ],
+          "rung": "R0",
+          "bpw": 0.8763427734375,
+          "elements": 12582912,
+          "activation_source": "SYNTHETIC",
+          "activation_provenance": "glm52_teacher_capture.py capsules: UNAVAILABLE"
+        }
+      }
+    ]
+  }
+}
