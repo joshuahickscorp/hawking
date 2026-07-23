@@ -322,6 +322,31 @@ def _finite_fraction(a: np.ndarray, b: np.ndarray) -> float:
     return _finite_pair(a, b)[2]
 
 
+def _selection_agreement(expected: np.ndarray, value: np.ndarray) -> dict:
+    """How much of the teacher's selection the compact model reproduced.
+
+    Two numbers, because they answer different questions.  Positional agreement asks
+    whether the same slot got the same id, which is what a decoder replaying a fixed
+    order cares about.  Set agreement asks whether the same experts ran at all, which is
+    what the block's function cares about, and it is the one that can stay high while the
+    ranking scrambles.
+    """
+    teacher_ids = np.asarray(expected)
+    compact_ids = np.asarray(value)
+    positional = float(np.mean(teacher_ids == compact_ids))
+    flat_teacher = teacher_ids.reshape(-1, teacher_ids.shape[-1])
+    flat_compact = compact_ids.reshape(-1, compact_ids.shape[-1])
+    width = flat_teacher.shape[-1]
+    overlap = [len(set(a.tolist()) & set(b.tolist())) / width
+               for a, b in zip(flat_teacher, flat_compact)]
+    return {
+        "positional_agreement": positional,
+        "set_agreement": float(np.mean(overlap)),
+        "selection_width": int(width),
+        "note": "cosine is not reported: these are labels, not magnitudes",
+    }
+
+
 def propagate(layers: list[int], rung: dict, artifact: Path) -> dict:
     """Run the compact window and diff every stage against the sealed teacher capsule."""
     identity = teacher.capsule_id(layers)
@@ -357,9 +382,12 @@ def propagate(layers: list[int], rung: dict, artifact: Path) -> dict:
                                          "teacher": list(expected.shape),
                                          "compact": list(value.shape)}
                 continue
-            if key == "index_selection":
-                agreement = float(np.mean(expected == value))
-                stages[reference_key] = {"exact_agreement": agreement}
+            if key in ("index_selection", "topk_indices"):
+                # Expert and key ids are labels, not magnitudes.  Cosine over them is
+                # meaningless and flattering: two disjoint expert sets of similar numeric
+                # value score high while sharing no expert at all.  What matters is how
+                # many of the teacher's choices the compact model actually made.
+                stages[reference_key] = _selection_agreement(expected, value)
                 continue
             stages[reference_key] = {
                 "cosine": _cosine(expected, value),
@@ -452,8 +480,41 @@ def selftest() -> int:
     return 0
 
 
+def remeasure(window: str, rung_id: str) -> int:
+    """Re-run propagation against an artifact already on disk, without repacking.
+
+    Packing a MoE window at k=8192 costs eleven minutes; a metric correction should not.
+    """
+    layers = [int(value) for value in window.split(",")]
+    rung = ladder()[rung_id]
+    identity = f"W_L{layers[0]:02d}_L{layers[-1]:02d}_{rung_id}"
+    artifact = COMPACT / rung_id / f"{identity}.gravity"
+    if not artifact.exists():
+        raise SystemExit(f"no artifact at {artifact}; run the pack first")
+    report = gravity_format.verify(artifact)
+    if not report["ok"]:
+        raise SystemExit(f"artifact does not verify: {report}")
+    measured = propagate(layers, rung, artifact)
+    row = {"at": now(), "remeasured": True,
+           "pack": {"window": identity, "rung": rung_id, "layers": layers,
+                    "artifact": str(artifact),
+                    "artifact_bytes": artifact.stat().st_size,
+                    "complete_bpw": report["observed_complete_bpw"],
+                    "packed_bpw": report["observed_packed_bpw"],
+                    "verifies": True, "tensor_coverage_complete": True},
+           "propagate": measured}
+    with (REPORTS / "GLM52_PILOT_MEASUREMENTS.jsonl").open("a") as handle:
+        handle.write(json.dumps(row, sort_keys=True) + "\n")
+    print(json.dumps({"window": identity, "rung": rung_id,
+                      "complete_bpw": report["observed_complete_bpw"],
+                      "carry_out_cosine": measured["carry_out_cosine"]}, indent=2))
+    return 0
+
+
 if __name__ == "__main__":
     command = sys.argv[1] if len(sys.argv) > 1 else "selftest"
     if command == "run":
         raise SystemExit(run(sys.argv[2], sys.argv[3]))
+    if command == "remeasure":
+        raise SystemExit(remeasure(sys.argv[2], sys.argv[3]))
     raise SystemExit({"selftest": selftest}[command]())

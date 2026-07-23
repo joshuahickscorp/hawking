@@ -117,6 +117,23 @@
       "subspaces": 1,
       "under_one_bit_ceiling": true,
       "within_band": true
+    },
+    {
+      "band": "B_CONTROL",
+      "band_ceiling": 1.0,
+      "band_low": 0.85,
+      "complete_bpw": 0.8829062676577077,
+      "compressed_bpw": 0.8763427734375,
+      "dim": 8,
+      "index_bits": 7,
+      "k": 128,
+      "kind": "SINGLE_GEOMETRY",
+      "provenance": "the inherited R0 geometry, unchanged, so the comparison is to prior work",
+      "role": "bounded pilot oracle, section 5.1: a 0.90-0.98 row may exist only to decide whether a failure is caused by the representation family or by the rate. Never a full-stream candidate.",
+      "rung": "GC",
+      "subspaces": 1,
+      "under_one_bit_ceiling": true,
+      "within_band": true
     }
   ],
   "native_floor": {
