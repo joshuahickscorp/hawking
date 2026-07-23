@@ -91,7 +91,7 @@
       0.4456
     ]
   },
-  "as_of": "2026-07-23T17:00:00Z",
+  "as_of": "2026-07-23T20:45:00Z",
   "block_latency": {
     "FRT_A_seconds_per_layer": 0.002904,
     "FRT_B_seconds_per_layer": 0.002153,
@@ -127,6 +127,12 @@
       "int8_protected": 0.179028
     }
   },
+  "contraction_first_pilot": {
+    "blocked_on": "a deepseek_v4 reference forward for real teacher trajectories",
+    "discrimination": "CONTRACTIVE at gain 0.6, EXPANSIVE at gain 1.6 on synthetic operators",
+    "harness": "tools/condense/hawking_contraction_pilot.py",
+    "status": "ACTIVE_SELF_TESTED"
+  },
   "controller": {
     "detached": true,
     "heartbeat": "control/functional/controller.heartbeat.json",
@@ -142,6 +148,12 @@
     "glm_full_stream": "DO_NOT_STREAM",
     "sealed": "FUNCTIONAL_PARTIAL_ONLY",
     "source_bytes_not_streamed": 1506659919872
+  },
+  "decoder_lane": {
+    "complete_token_true_tps_prefill": "PENDING a servable parent; GLM is closed",
+    "flop_byte_joule": "GLM52_FUNCTIONAL_FLOP_BYTE_JOULE.json, class FEWER_FLOPS_AND_BYTES, joule UNAVAILABLE",
+    "production_registry": "GLM functional NOT registered (PARTIAL_ONLY, must not be served)",
+    "submission_collapse": "76 -> 1 command buffers/token, 1.12x, 17.3 ms removed"
   },
   "endpoint": "FUNCTIONAL_GRAVITY_ACTIVE",
   "functional_candidate": {
@@ -163,6 +175,15 @@
     "portable_generator": true,
     "representation_class": "FUNCTIONAL_MODEL",
     "spec": "GRAVITY_FUNCTIONAL_CODEC_SPEC.md"
+  },
+  "glm_source_release": {
+    "free_after_gb": 534.5,
+    "gate": "13/13 green, read-only, fresh-process verified",
+    "preserved": "47 capsules, compact fixtures, metric contract, correction ledger, functional payloads, parity fixtures, amplification evidence, transfer packet; MOP and repo untouched",
+    "receipt": "GLM52_SOURCE_RELEASE_RECEIPT.json",
+    "reclaimed_gb": 405.4,
+    "rehydration": "76/76 shards carry an authoritative HF sha256; rollback = re-fetch at the immutable revision",
+    "state": "SEALED"
   },
   "lanes": {
     "closed_parent_body_resident_gb": 405.4,
@@ -237,11 +258,13 @@
     "admission": "HAWKING_NEXT_PARENT_ADMISSION.json",
     "admission_rule": "no parent gets a full stream until the function-versus-weight pilot and the amplification probe have both reported",
     "amplification_challenger": "Qwen/Qwen3.5-397B-A17B, hybrid recurrent-attention, partial fetch only",
+    "fits": "159.6 GB source, 534.5 GB free, 267.5 GB headroom above the 100 GiB reserve",
     "fixture": "the GLM-5.2 teacher capsules are the reference any new probe implementation is checked against",
     "gate_order_changed": "the amplification probe now runs FIRST, before nulls, before students, before any encoding",
     "primary": "deepseek-ai/DeepSeek-V4-Flash, 159.6 GB, 46 shards",
+    "primary_admission": "DEEPSEEK_V4_FLASH_SOURCE_ADMISSION.json",
     "protocol": "HAWKING_GRAVITY_CROSS_MODEL_TRANSFER.md",
-    "status": "ADMITTED_AND_BLOCKED_ON_STORAGE"
+    "status": "FETCHING_COMPLETE_VERIFIED_COPY"
   },
   "not_evidence_of": "capability, full-model quality, or behaviour",
   "propagation_result": {
@@ -251,6 +274,12 @@
     "router_top1_agreement": 0.8501,
     "single_step_skill": 0.7589,
     "single_step_skill_lower": 0.7539
+  },
+  "qwen_challenger": {
+    "adapter": "tools/condense/qwen35_moe_adapter.py",
+    "linear_attention_organ": "new; 405 tensors across 45 mamba-style layers",
+    "status": "METADATA_ADAPTER_WINDOWS_READY",
+    "window_plan": "15/94 shards, partial-only, no goliath download"
   },
   "runtime_status": {
     "all_parity": true,

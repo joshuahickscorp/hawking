@@ -1,0 +1,35 @@
+{
+  "byte_reduction_vs_teacher": 48.0,
+  "classification": "FEWER_FLOPS_AND_BYTES",
+  "flop_note": "the teacher runs 8 experts x 2 x 2048 x 6144 MACs per token per layer for the routed path alone; the student runs 6144 x 1024 + 1024 x 6144 = 12.58 M MACs, a large FLOP cut, but both are far under the memory roofline so bytes bind, not FLOPs",
+  "honest_scope": "MoE path only, batch 1, GLM-5.2 geometry, no attention, no KV, no residual. A complete-token TPS needs a servable model, and GLM is sealed FUNCTIONAL_PARTIAL_ONLY so it is not served.",
+  "joule": {
+    "reason": "no accepted on-device energy source is wired; per the directive no joules are inferred from FLOPs or bytes",
+    "status": "UNAVAILABLE"
+  },
+  "per_layer_functional": {
+    "active_bytes_per_token": 12582912,
+    "generator_calls_per_token": 6291456,
+    "multiply_accumulate_per_token": 12582912,
+    "resident_bytes": 12582912
+  },
+  "per_layer_teacher": {
+    "active_expert_bytes_per_token": 679477248,
+    "active_experts": 8,
+    "note": "eight routed experts plus the shared expert, three [2048,6144] BF16 matrices each"
+  },
+  "schema": "hawking.glm52.functional_flop_byte_joule.v1",
+  "scope": "the functional MoE replacement in isolation on GLM-5.2 geometry; not a complete servable model",
+  "sealed_at": "2026-07-23T20:45:00Z",
+  "submission": {
+    "command_buffers_per_token_after": 1,
+    "command_buffers_per_token_before": 76,
+    "moe_path_speedup": 1.12,
+    "submission_overhead_removed_ms": 17.3
+  },
+  "token_roofline": {
+    "binding_limit_moved_from": "expert weight traffic, at 51.6 GB per token",
+    "binding_limit_moved_to": "attention and the protected organs, at 29.9 GB per token at source precision against 0.96 GB of functional payload",
+    "measured_bandwidth_gb_s": 417.72072562734684
+  }
+}
