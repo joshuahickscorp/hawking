@@ -134,6 +134,36 @@
       "subspaces": 1,
       "under_one_bit_ceiling": true,
       "within_band": true
+    },
+    {
+      "band": "B_DIAGNOSTIC_ABOVE_CEILING",
+      "complete_bpw": 1.5479820903737105,
+      "compressed_bpw": 1.5417073567708333,
+      "dim": 8,
+      "index_bits": 12,
+      "k": 4096,
+      "kind": "SINGLE_GEOMETRY",
+      "never_a_candidate": true,
+      "role": "diagnostic oracle only. Above the one-bit law and therefore never a candidate, run solely to locate where this family recovers so the bar a replacement representation must beat is measured rather than extrapolated.",
+      "rung": "DX1",
+      "subspaces": 1,
+      "under_one_bit_ceiling": false,
+      "within_band": true
+    },
+    {
+      "band": "B_DIAGNOSTIC_ABOVE_CEILING",
+      "complete_bpw": 2.007418030527818,
+      "compressed_bpw": 2.0013427734375,
+      "dim": 4,
+      "index_bits": 8,
+      "k": 256,
+      "kind": "SINGLE_GEOMETRY",
+      "never_a_candidate": true,
+      "role": "diagnostic oracle only. Above the one-bit law and therefore never a candidate, run solely to locate where this family recovers so the bar a replacement representation must beat is measured rather than extrapolated.",
+      "rung": "DX2",
+      "subspaces": 1,
+      "under_one_bit_ceiling": false,
+      "within_band": true
     }
   ],
   "native_floor": {
