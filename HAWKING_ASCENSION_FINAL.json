@@ -1,36 +1,42 @@
 {
-  "schema": "hawking.ascension_final.v1",
-  "sealed_at": "2026-07-23T22:30:00Z",
-  "endpoint": "HAWKING_CORE_ASCENDED",
-  "basis": "HONEST_EMPIRICAL_FLOOR",
-  "metric_broken": false,
-  "winning_servable_architecture": false,
-  "directive_basis_quote": "Hawking may ascend with a winning functional architecture, a winning encoding architecture, a hybrid, or an honest empirical floor. It may not ascend with a broken promotion metric.",
+  "CROSS_PARENT_GRAVITY_FRONTIER": "OPEN_INSTRUMENT_LIMITED",
+  "DEEPSEEK_FUNCTIONAL_VERDICT": "INCONCLUSIVE_PENDING_VALIDATED_CONTEXTUAL_FORWARD",
+  "basis": "SCOPED: methodology+metric+runtime ascended; cross-parent scientific frontier OPEN",
   "corrected": {
-    "metric_contract": "HAWKING_NULL_CORRECTED_METRIC_CONTRACT.json",
-    "implementation": "tools/condense/hawking_null_metric.py",
-    "defects_superseded": ["raw activation cosine on a mean-dominated target", "centering by the held-out teacher mean"],
+    "artifacts_beating_a_constant": 0,
     "artifacts_rescored": 22,
-    "artifacts_beating_a_constant": 0
+    "defects_superseded": [
+      "raw activation cosine on a mean-dominated target",
+      "centering by the held-out teacher mean"
+    ],
+    "implementation": "tools/condense/hawking_null_metric.py",
+    "metric_contract": "HAWKING_NULL_CORRECTED_METRIC_CONTRACT.json"
   },
-  "proven": {
-    "glm_weight_space": "CLOSED_NEGATIVE across PQ, low-rank, shared basis, hybrid, functional-block weight family",
-    "glm_functional_escape": "real: 0.010375 organ-local BPW, skill 0.53 x4 seeds, block skill 0.88, replicates 4 strata + 6 unfitted splits",
-    "glm_residual_stream": "EXPANSIVE_AT_EVERY_TESTED_MAGNITUDE at strata 3/38/74; cascade final skill 0.098 (late); FUNCTIONAL_PARTIAL_ONLY",
-    "rate_not_the_obstacle": "protected 2.11% costs 0.3377 BPW at source precision alone",
-    "native_functional_runtime": "glm52.functional.moe.v1 end-to-end: .gravity -> block -> next-layer token; FRT-B 12.58MB parity 7.9e-7; 417.7 GB/s measured; submission collapse 76->1",
-    "methodology_transfer": "DeepSeek admitted+fetched+verified; fp4/fp8 MoE forward validated (dequant on-grid exact); function-first probe INSTRUMENT_LIMITED_INCONCLUSIVE, shared-expert control proved the input confound; no false positive"
-  },
+  "correction_2026_07_23": "narrowed from an unconditional floor. DeepSeek did NOT establish a cross-parent floor; its probe is INSTRUMENT_LIMITED_INCONCLUSIVE and supports neither 'functional students fail on DeepSeek' nor 'DeepSeek confirms the GLM law'. Same boundary Kimi's report observed: a negative does not establish a universal lower bound.",
+  "directive_basis_quote": "Hawking may ascend with a winning functional architecture, a winning encoding architecture, a hybrid, or an honest empirical floor. It may not ascend with a broken promotion metric.",
+  "endpoint": "HAWKING_CORE_ASCENDED",
+  "floor": "methodology, metric system and native runtime have ascended; the cross-parent Gravity frontier is OPEN and instrument-limited, not closed. GLM is scientifically finished (FUNCTIONAL_PARTIAL_ONLY). DeepSeek source+organ validated, functional verdict inconclusive, cross-parent amplification law UNMEASURED.",
   "gated": {
     "definitive_cross_parent_verdict": "needs real pre-MoE hidden from a reference-logit-validated block forward (DeepSeek MLA+DSA+hyper-connections, or Qwen3.5 linear-attention)",
-    "wall": "160 GB fp4 will not load/run on a 96 GiB box to produce reference logits; an unvalidated forward would fabricate the amplification verdict, so it was not produced",
-    "servable_sub_bit_model": "none produced on the parents reachable here; complete-token/prefill/true-TPS on a servable model remain open"
+    "servable_sub_bit_model": "none produced on the parents reachable here; complete-token/prefill/true-TPS on a servable model remain open",
+    "valid_ways_to_close": [
+      "layer-streamed official-reference forward",
+      "architecture-identical smaller checkpoint for primitive parity",
+      "official runtime outputs for a few fixed probes",
+      "remote one-time reference traces"
+    ],
+    "wall": "NOT a memory-capacity law. A sequential layer-streamed forward (load layer, execute, release, advance hidden) can in principle run the 160 GB source on 96 GiB. The real blocker is apparatus+validation: no independently validated streamed implementation yet exists for DeepSeek MLA + DSA + hyper-connections + mixed FP4/FP8 MoE."
   },
-  "floor": "no weight-space or functional method produced a servable sub-bit model on reachable parents; GLM functional escape is real but does not survive amplification; DeepSeek existence test is instrument-limited; the corrected null-first amplification-first methodology is the durable result",
-  "storage": {"glm_source_released_gb": 405.4, "free_gib": 348.9, "deepseek_resident_gb": 159.6, "reserve_gib": 100, "reserve_ok": true},
-  "rollback": {
-    "glm": "re-fetch zai-org/GLM-5.2 @ b4734de4facf877f85769a911abafc5283eab3d9, verify against GLM52_REHYDRATION_RECEIPT.json",
-    "deepseek": "resident and verified; DEEPSEEK_V4_FLASH_REHYDRATION_RECEIPT.json"
+  "gravity_reframe": "Gravity is not the compression of individual tensors or organs. It is the preservation of a stable causal trajectory under the smallest executable physical system.",
+  "honest_scope": "no capability claim anywhere; every score is on bounded calibration batches; the DeepSeek probe is one organ on embedding-seeded inputs, proven instrument-limited by its own control",
+  "metric_broken": false,
+  "proven": {
+    "glm_functional_escape": "real: 0.010375 organ-local BPW, skill 0.53 x4 seeds, block skill 0.88, replicates 4 strata + 6 unfitted splits",
+    "glm_residual_stream": "EXPANSIVE_AT_EVERY_TESTED_MAGNITUDE at strata 3/38/74; cascade final skill 0.098 (late); FUNCTIONAL_PARTIAL_ONLY",
+    "glm_weight_space": "CLOSED_NEGATIVE across PQ, low-rank, shared basis, hybrid, functional-block weight family",
+    "methodology_transfer": "DeepSeek admitted+fetched+verified; fp4/fp8 MoE forward validated (dequant on-grid exact); function-first probe INSTRUMENT_LIMITED_INCONCLUSIVE, shared-expert control proved the input confound; no false positive",
+    "native_functional_runtime": "glm52.functional.moe.v1 end-to-end: .gravity -> block -> next-layer token; FRT-B 12.58MB parity 7.9e-7; 417.7 GB/s measured; submission collapse 76->1",
+    "rate_not_the_obstacle": "protected 2.11% costs 0.3377 BPW at source precision alone"
   },
   "required_outputs_present": [
     "HAWKING_NULL_CORRECTED_METRIC_CONTRACT.md/.json",
@@ -48,5 +54,27 @@
     "HAWKING_ASCENSION_STATUS.md/.json",
     "HAWKING_ASCENSION_FINAL.md/.json"
   ],
-  "honest_scope": "no capability claim anywhere; every score is on bounded calibration batches; the DeepSeek probe is one organ on embedding-seeded inputs, proven instrument-limited by its own control"
+  "rollback": {
+    "deepseek": "resident and verified; DEEPSEEK_V4_FLASH_REHYDRATION_RECEIPT.json",
+    "glm": "re-fetch zai-org/GLM-5.2 @ b4734de4facf877f85769a911abafc5283eab3d9, verify against GLM52_REHYDRATION_RECEIPT.json"
+  },
+  "schema": "hawking.ascension_final.v1",
+  "scope": [
+    "methodology",
+    "metric system",
+    ".gravity substrate",
+    "packer/source lifecycle",
+    "Apple runtime foundation",
+    "functional-runtime discovery",
+    "HIDE-facing architecture"
+  ],
+  "sealed_at": "2026-07-23T22:30:00Z",
+  "storage": {
+    "deepseek_resident_gb": 159.6,
+    "free_gib": 348.9,
+    "glm_source_released_gb": 405.4,
+    "reserve_gib": 100,
+    "reserve_ok": true
+  },
+  "winning_servable_architecture": false
 }

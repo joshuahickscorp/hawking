@@ -1,17 +1,28 @@
 # Hawking Ascension — final position
 
 ```
-basis:   HONEST_EMPIRICAL_FLOOR
-metric:  corrected and enforced globally (not broken)
-as of:   2026-07-23
-branch:  campaign/glm52-generation-b
+endpoint: HAWKING_CORE_ASCENDED
+scope:    methodology, metric system, .gravity substrate, packer/source lifecycle,
+          Apple runtime foundation, functional-runtime discovery, HIDE-facing architecture
+
+CROSS_PARENT_GRAVITY_FRONTIER:  OPEN_INSTRUMENT_LIMITED
+DEEPSEEK_FUNCTIONAL_VERDICT:    INCONCLUSIVE_PENDING_VALIDATED_CONTEXTUAL_FORWARD
+
+metric:   corrected and enforced globally (not broken)
+as of:    2026-07-23
+branch:   campaign/glm52-generation-b
 ```
 
-The directive permits ascension with a winning functional architecture, a winning encoding
-architecture, a hybrid, or an honest empirical floor — and forbids it only with a broken
-promotion metric. There is no winning servable sub-bit architecture. The metric is
-corrected. So this seals the honest empirical floor, with the complete ledger of what is
-proven and what remains gated.
+Hawking's methodology, metric system and runtime foundation have ascended. The cross-model
+Gravity frontier is still open. This is a scoped seal, not an unconditional floor: calling
+the whole scientific frontier finished would overstate what DeepSeek established, because the
+DeepSeek pilot correctly ended `INSTRUMENT_LIMITED_INCONCLUSIVE` — neither a positive nor a
+negative representation verdict. Missing evidence is not converted into a conclusion.
+
+The most important result is now broader than any BPW headline:
+
+> Gravity is not the compression of individual tensors or organs. It is the preservation of
+> a stable causal trajectory under the smallest executable physical system.
 
 ## What was corrected
 
@@ -59,29 +70,46 @@ own shared-expert control then proved the negative was the embedding-seeded inpu
 organ — so the verdict is `INSTRUMENT_LIMITED_INCONCLUSIVE`, not a false parent claim. The
 null-first metric refused a false positive and caught its own invalid instrument.
 
-## What remains gated, and why
+## What remains gated, and why — corrected
 
 A definitive cross-parent verdict needs real pre-MoE hidden states from a block forward:
 DeepSeek's MLA + DSA compressor/indexer + hyper-connections, or Qwen3.5's linear-attention
-recurrence. That forward cannot be validated without reference logits, and a 160 GB fp4
-model will not load or run on a 96 GiB box to produce them. An amplification verdict from an
-unvalidated forward would fabricate the very thing this campaign exists to prevent, so it was
-not produced. This is the honest wall: not a lack of effort, a lack of ground truth on this
-hardware.
+recurrence.
 
-## The floor
+The earlier draft called this a memory-capacity wall. That was an overstatement. The complete
+source does not have to reside in memory at once: a sequential layer-streamed forward can load
+one layer's tensors, execute the layer, release them, advance the hidden state, and repeat, so
+160 GB of fp4 can in principle run on 96 GiB. The real blocker is narrower and is an
+apparatus + validation wall:
 
-> No weight-space method and no functional method has produced a servable sub-bit model on
-> the parents reachable here. On GLM-5.2 the functional escape is real but does not survive
-> the residual stream's amplification. On DeepSeek-V4-Flash the existence test is
-> instrument-limited by the inputs available without a validated block forward. The corrected,
-> null-first, amplification-first methodology is the durable result, and it is what the next
-> parent — on hardware that can host reference logits — should run first.
+> no independently validated streamed implementation yet exists for DeepSeek
+> MLA + DSA + hyper-connections + mixed FP4/FP8 MoE.
 
-Hawking ascends on this floor: the science is corrected, the function is proven end to end
-where it could be, the native runtime is finished, and every claim is null-corrected. It does
-not ascend on a model it does not have.
+Valid ways to close it, none requiring a permanent move to cloud hardware:
 
 ```
-endpoint: HAWKING_CORE_ASCENDED (honest empirical floor)
+a layer-streamed official-reference forward
+an architecture-identical smaller checkpoint used for primitive parity
+official runtime outputs for several fixed probes
+remote one-time reference traces from larger hardware
 ```
+
+An amplification verdict from an *unvalidated* forward would fabricate the very thing this
+campaign exists to prevent, so it was not produced — but the forward is buildable, and the
+next bounded lane attempts it primitive-first.
+
+## The scoped position
+
+**Legitimately closed:** GLM is scientifically finished (`FUNCTIONAL_PARTIAL_ONLY`); the
+null-first metric system; the `.gravity` substrate and source lifecycle; the Apple runtime
+foundation and functional-runtime discovery.
+
+**Open, instrument-limited:** the cross-parent Gravity frontier. DeepSeek's source and organ
+forward are validated; its functional existence verdict is inconclusive; the cross-parent
+amplification law is unmeasured. This supports neither "functional students fail on DeepSeek"
+nor "DeepSeek confirms the GLM trajectory law" — the same boundary Kimi's report drew when it
+declined to claim a universal lower bound.
+
+Hawking ascends on the corrected science, the proven GLM function, and the finished runtime —
+scoped to methodology and substrate, not to a cross-parent scientific closure it has not
+earned.
