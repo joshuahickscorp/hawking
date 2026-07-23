@@ -108,7 +108,9 @@ heavy      detached controller, pid live, lease + heartbeat + progress ledger
            phase 2: amplification and replication probes on the late and early strata
 light      metric correction, controls, byte auction, codec, CPU authority,
            Metal grammars, roofline, HIDE contract, next-parent protocol
-storage    129.7 GiB free, floor 60 GiB, no goliath fetched
+storage    129.3 GB free (120.5 GiB), floor 60 GiB, no goliath fetched
+           the closed parent's 405.4 GB BF16 body is still resident; eviction is
+           legal (every probed layer has a sealed capsule) but was not authorised
 ```
 
 ## Next

@@ -1,155 +1,290 @@
 {
-  "schema": "hawking.ascension_status.v1",
-  "endpoint": "FUNCTIONAL_GRAVITY_ACTIVE",
+  "active_bytes": {
+    "active_protected_organs": 14950489088,
+    "all_moe_layers_FRT_B": 956301312,
+    "per_layer_FRT_A": 25165824,
+    "per_layer_FRT_B": 12582912,
+    "per_layer_FRT_D": 75497472,
+    "per_layer_teacher": 604110848,
+    "traffic_versus_teacher": 48.0
+  },
+  "amplification_law": {
+    "amplification_is_worse_at_smaller_perturbations": true,
+    "contractive_regime_found": false,
+    "layer_38": [
+      [
+        0.00769,
+        2.4068
+      ],
+      [
+        0.01537,
+        2.0318
+      ],
+      [
+        0.03843,
+        1.6911
+      ],
+      [
+        0.07686,
+        1.5274
+      ],
+      [
+        0.15373,
+        1.4176
+      ]
+    ],
+    "layer_74": [
+      [
+        0.01146,
+        2.191
+      ],
+      [
+        0.02293,
+        1.9098
+      ],
+      [
+        0.05732,
+        1.6839
+      ],
+      [
+        0.11464,
+        1.5548
+      ],
+      [
+        0.22927,
+        1.3534
+      ]
+    ],
+    "one_functional_layer_greedy_token_agreement": 0.5525,
+    "replicated_at": [
+      38,
+      74
+    ],
+    "state": "EXPANSIVE_AT_EVERY_TESTED_MAGNITUDE",
+    "student_in_four_layers_router_top1": [
+      0.8501,
+      0.6506,
+      0.4456
+    ]
+  },
   "as_of": "2026-07-23T17:00:00Z",
+  "block_latency": {
+    "FRT_A_seconds_per_layer": 0.002904,
+    "FRT_B_seconds_per_layer": 0.002153,
+    "FRT_D_seconds_per_layer": 0.00252,
+    "command_buffers_per_layer": 1
+  },
+  "block_result": {
+    "centered_cosine": 0.9385,
+    "moe_constant_control": 0.7451,
+    "moe_removed_control": 0.1968,
+    "passes": true,
+    "skill": 0.8806,
+    "skill_lower": 0.8786
+  },
   "branch": "campaign/glm52-generation-b",
+  "complete_model_projected_bpw": {
+    "functionally_replaced_fraction": 0.9788909600514913,
+    "linear_rank64": {
+      "bf16_protected": 0.338379,
+      "int4_protected": 0.085071,
+      "int8_protected": 0.169507
+    },
+    "logical_weight_denominator": 753329940480,
+    "protected_floor_at_source_precision": 0.33774463917613917,
+    "rungs": {
+      "0.333333": "reachable at int8 protected; NOT reachable at BF16 protected even with a free student",
+      "0.50": "reachable at int8 protected",
+      "0.75": "reachable"
+    },
+    "student_h1024": {
+      "bf16_protected": 0.3479,
+      "int4_protected": 0.094592,
+      "int8_protected": 0.179028
+    }
+  },
+  "controller": {
+    "detached": true,
+    "heartbeat": "control/functional/controller.heartbeat.json",
+    "lane": "glm52_functional_teacher_capture",
+    "lease": "control/functional/controller.lease.json",
+    "phase_1": "42 of 42 teacher capsules captured",
+    "phase_2": "amplification and replication probes across the early, middle and late strata",
+    "progress_ledger": "control/functional/controller.progress.jsonl",
+    "restart_safe": true
+  },
+  "decision": {
+    "document": "GLM52_FUNCTIONAL_DECISION.md",
+    "glm_full_stream": "DO_NOT_STREAM",
+    "sealed": "FUNCTIONAL_PARTIAL_ONLY",
+    "source_bytes_not_streamed": 1506659919872
+  },
+  "endpoint": "FUNCTIONAL_GRAVITY_ACTIVE",
+  "functional_candidate": {
+    "centered_score": 0.7309,
+    "cheapest_passing_row_bpw": 0.000648,
+    "constant_mean_null_raw_cosine": 0.82621,
+    "generator": "gen.splitmix64_boxmuller.v1",
+    "local_exact_rate_bpw": 0.010375,
+    "null_relative_skill": 0.5318,
+    "null_relative_skill_lower": 0.5232,
+    "representation_id": "glm52.functional.moe.v1",
+    "seed_spread_in_skill": 0.0025
+  },
+  "functional_codec": {
+    "container_disposition": "REPLACED_BY_FUNCTIONAL_CODEC",
+    "cpu_authority": "gravity_functional_codec.execute",
+    "cpu_parity": "GLM52_FUNCTIONAL_CPU_PARITY.json",
+    "deterministic": true,
+    "portable_generator": true,
+    "representation_class": "FUNCTIONAL_MODEL",
+    "spec": "GRAVITY_FUNCTIONAL_CODEC_SPEC.md"
+  },
+  "lanes": {
+    "closed_parent_body_resident_gb": 405.4,
+    "disk_floor_gib": 60,
+    "eviction_legal_but_not_authorised": true,
+    "free_disk_gb": 129.3,
+    "free_disk_gib": 120.5,
+    "goliath_fetched": false,
+    "heavy": 1,
+    "light": [
+      "metric correction",
+      "controls",
+      "byte auction",
+      "codec",
+      "CPU authority",
+      "Metal grammars",
+      "roofline",
+      "HIDE contract",
+      "next-parent protocol",
+      "tests",
+      "reporting"
+    ]
+  },
+  "layers_tested": {
+    "all_pass": true,
+    "fitted_and_scored_independently": [
+      5,
+      38,
+      74,
+      77
+    ],
+    "propagation_forwards_run_through": [
+      39,
+      40,
+      41,
+      75,
+      76,
+      77
+    ],
+    "skill": {
+      "L05": 0.6982,
+      "L38": 0.5318,
+      "L74": 0.5917,
+      "L77": 0.5863
+    },
+    "teacher_capsules_resident": [
+      3,
+      5,
+      11,
+      38,
+      39,
+      40,
+      41,
+      74,
+      75,
+      76,
+      77
+    ]
+  },
   "metric_correction": {
+    "artifacts_rescored": 22,
     "contract": "HAWKING_NULL_CORRECTED_METRIC_CONTRACT.json",
-    "implementation": "tools/condense/hawking_null_metric.py",
     "enforced_globally": true,
+    "implementation": "tools/condense/hawking_null_metric.py",
     "instrument_defects_superseded": [
       "raw activation cosine promoting on a mean-dominated target",
       "centering by the held-out teacher mean"
     ],
-    "artifacts_rescored": 22,
     "ledger": "GLM52_METRIC_CORRECTION_LEDGER.jsonl"
   },
-  "weight_space_corrected_verdict": {
-    "state": "CLOSED_NEGATIVE",
-    "artifacts_beating_a_constant": 0,
-    "corrected_block_skill_range": [-5.3791, -1.2142],
-    "at_twice_the_legal_ceiling": {"complete_bpw": 2.0169, "corrected_block_skill": -1.7654}
+  "next_parent": {
+    "admission": "HAWKING_NEXT_PARENT_ADMISSION.json",
+    "admission_rule": "no parent gets a full stream until the function-versus-weight pilot and the amplification probe have both reported",
+    "amplification_challenger": "Qwen/Qwen3.5-397B-A17B, hybrid recurrent-attention, partial fetch only",
+    "fixture": "the GLM-5.2 teacher capsules are the reference any new probe implementation is checked against",
+    "gate_order_changed": "the amplification probe now runs FIRST, before nulls, before students, before any encoding",
+    "primary": "deepseek-ai/DeepSeek-V4-Flash, 159.6 GB, 46 shards",
+    "protocol": "HAWKING_GRAVITY_CROSS_MODEL_TRANSFER.md",
+    "status": "ADMITTED_AND_BLOCKED_ON_STORAGE"
   },
-  "functional_candidate": {
-    "representation_id": "glm52.functional.moe.v1",
-    "generator": "gen.splitmix64_boxmuller.v1",
-    "local_exact_rate_bpw": 0.010375,
-    "cheapest_passing_row_bpw": 0.000648,
-    "null_relative_skill": 0.5318,
-    "null_relative_skill_lower": 0.5232,
-    "centered_score": 0.7309,
-    "constant_mean_null_raw_cosine": 0.82621,
-    "seed_spread_in_skill": 0.0025
-  },
-  "block_result": {
-    "skill": 0.8806, "skill_lower": 0.8786, "centered_cosine": 0.9385,
-    "moe_removed_control": 0.1968, "moe_constant_control": 0.7451, "passes": true
-  },
+  "not_evidence_of": "capability, full-model quality, or behaviour",
   "propagation_result": {
-    "single_step_skill": 0.7589, "single_step_skill_lower": 0.7539,
-    "amplification": 1.7063, "router_top1_agreement": 0.8501, "passes": false,
-    "reason": "the score is positive but the error grows through the layer"
-  },
-  "layers_tested": {
-    "fitted_and_scored_independently": [5, 38, 74, 77],
-    "skill": {"L05": 0.6982, "L38": 0.5318, "L74": 0.5917, "L77": 0.5863},
-    "all_pass": true,
-    "propagation_forwards_run_through": [39, 40, 41, 75, 76, 77],
-    "teacher_capsules_resident": [3, 5, 11, 38, 39, 40, 41, 74, 75, 76, 77]
-  },
-  "amplification_law": {
-    "state": "EXPANSIVE_AT_EVERY_TESTED_MAGNITUDE",
-    "replicated_at": [38, 74],
-    "layer_38": [[0.00769, 2.4068], [0.01537, 2.0318], [0.03843, 1.6911],
-                 [0.07686, 1.5274], [0.15373, 1.4176]],
-    "layer_74": [[0.01146, 2.1910], [0.02293, 1.9098], [0.05732, 1.6839],
-                 [0.11464, 1.5548], [0.22927, 1.3534]],
-    "contractive_regime_found": false,
-    "amplification_is_worse_at_smaller_perturbations": true,
-    "student_in_four_layers_router_top1": [0.8501, 0.6506, 0.4456],
-    "one_functional_layer_greedy_token_agreement": 0.5525
-  },
-  "complete_model_projected_bpw": {
-    "logical_weight_denominator": 753329940480,
-    "functionally_replaced_fraction": 0.9788909600514913,
-    "protected_floor_at_source_precision": 0.33774463917613917,
-    "student_h1024": {"bf16_protected": 0.347900, "int8_protected": 0.179028,
-                      "int4_protected": 0.094592},
-    "linear_rank64": {"bf16_protected": 0.338379, "int8_protected": 0.169507,
-                      "int4_protected": 0.085071},
-    "rungs": {"0.75": "reachable", "0.50": "reachable at int8 protected",
-              "0.333333": "reachable at int8 protected; NOT reachable at BF16 protected even with a free student"}
-  },
-  "functional_codec": {
-    "spec": "GRAVITY_FUNCTIONAL_CODEC_SPEC.md",
-    "cpu_authority": "gravity_functional_codec.execute",
-    "cpu_parity": "GLM52_FUNCTIONAL_CPU_PARITY.json",
-    "container_disposition": "REPLACED_BY_FUNCTIONAL_CODEC",
-    "representation_class": "FUNCTIONAL_MODEL",
-    "deterministic": true,
-    "portable_generator": true
+    "amplification": 1.7063,
+    "passes": false,
+    "reason": "the score is positive but the error grows through the layer",
+    "router_top1_agreement": 0.8501,
+    "single_step_skill": 0.7589,
+    "single_step_skill_lower": 0.7539
   },
   "runtime_status": {
-    "grammars_benchmarked": ["FRT_A", "FRT_B", "FRT_D"],
     "all_parity": true,
-    "worst_parity_relative_l2": 0.0002,
+    "chain": ".gravity -> header verify -> payload read -> CPU authority -> Metal parity -> real block -> layer 39 forward -> greedy token",
+    "end_to_end_chain_verified": true,
+    "grammars_benchmarked": [
+      "FRT_A",
+      "FRT_B",
+      "FRT_D"
+    ],
     "winner": "FRT_B",
     "winner_reason": "lowest resident bytes and lowest latency; in-kernel generation beats reading the projection",
-    "end_to_end_chain_verified": true,
-    "chain": ".gravity -> header verify -> payload read -> CPU authority -> Metal parity -> real block -> layer 39 forward -> greedy token"
+    "worst_parity_relative_l2": 0.0002
   },
-  "active_bytes": {
-    "per_layer_FRT_B": 12582912,
-    "per_layer_FRT_A": 25165824,
-    "per_layer_FRT_D": 75497472,
-    "per_layer_teacher": 604110848,
-    "all_moe_layers_FRT_B": 956301312,
-    "active_protected_organs": 14950489088,
-    "traffic_versus_teacher": 48.0
-  },
-  "block_latency": {
-    "FRT_B_seconds_per_layer": 0.002153,
-    "FRT_A_seconds_per_layer": 0.002904,
-    "FRT_D_seconds_per_layer": 0.002520,
-    "command_buffers_per_layer": 1
+  "schema": "hawking.ascension_status.v1",
+  "tests": {
+    "module_selftests": 11,
+    "module_selftests_passing": 11,
+    "repo_suite": "1610 passed, 1 failed, 33 skipped",
+    "the_one_failure": "tools/condense/tests/test_qwen_gravity_campaign.py::test_ladder_is_data_driven_and_decisive_first, pre-existing, no tracked file was modified by this campaign"
   },
   "true_tps_status": {
-    "measured_bandwidth_gigabytes_per_second": 417.7,
+    "bandwidth_bound_ceiling_tps": {
+      "functional_bf16_protected": 13.5,
+      "functional_int4_protected": 49.5,
+      "teacher_bf16": 5.1
+    },
     "bandwidth_provenance": "measured on this M3 Ultra through the runtime's own kernel at an occupancy where occupancy stops binding",
-    "bandwidth_bound_ceiling_tps": {"teacher_bf16": 5.1, "functional_bf16_protected": 13.5,
-                                    "functional_int4_protected": 49.5},
-    "measured_moe_only_tps": {"FRT_A": 4.53, "FRT_B": 6.11, "FRT_D": 5.22},
-    "measured_fraction_of_own_roofline": {"FRT_A": 0.021, "FRT_B": 0.014, "FRT_D": 0.072},
-    "command_buffers_per_token": 76,
     "binding_limit_moved_from": "expert weight traffic, 51.64 GB per token",
     "binding_limit_moved_to": "attention and protected organs, 29.9 GB per token",
-    "next_runtime_work": ["submission collapse toward one replayable token graph",
-                          "occupancy: 6144 threads is far too few for this device",
-                          "attention compression is now worth more than expert compression"]
+    "command_buffers_per_token": 76,
+    "measured_bandwidth_gigabytes_per_second": 417.7,
+    "measured_fraction_of_own_roofline": {
+      "FRT_A": 0.021,
+      "FRT_B": 0.014,
+      "FRT_D": 0.072
+    },
+    "measured_moe_only_tps": {
+      "FRT_A": 4.53,
+      "FRT_B": 6.11,
+      "FRT_D": 5.22
+    },
+    "next_runtime_work": [
+      "submission collapse toward one replayable token graph",
+      "occupancy: 6144 threads is far too few for this device",
+      "attention compression is now worth more than expert compression"
+    ]
   },
-  "decision": {
-    "sealed": "FUNCTIONAL_PARTIAL_ONLY",
-    "glm_full_stream": "DO_NOT_STREAM",
-    "source_bytes_not_streamed": 1506659919872,
-    "document": "GLM52_FUNCTIONAL_DECISION.md"
-  },
-  "next_parent": {
-    "protocol": "HAWKING_GRAVITY_CROSS_MODEL_TRANSFER.md",
-    "gate_order_changed": "the amplification probe now runs FIRST, before nulls, before students, before any encoding",
-    "admission_rule": "no parent gets a full stream until the function-versus-weight pilot and the amplification probe have both reported",
-    "fixture": "the GLM-5.2 teacher capsules are the reference any new probe implementation is checked against"
-  },
-  "controller": {
-    "lane": "glm52_functional_teacher_capture",
-    "detached": true,
-    "restart_safe": true,
-    "lease": "control/functional/controller.lease.json",
-    "heartbeat": "control/functional/controller.heartbeat.json",
-    "progress_ledger": "control/functional/controller.progress.jsonl",
-    "phase_1": "42 of 42 teacher capsules captured",
-    "phase_2": "amplification and replication probes across the early, middle and late strata"
-  },
-  "lanes": {
-    "heavy": 1,
-    "light": ["metric correction", "controls", "byte auction", "codec", "CPU authority",
-              "Metal grammars", "roofline", "HIDE contract", "next-parent protocol",
-              "tests", "reporting"],
-    "free_disk_gib": 129.3,
-    "disk_floor_gib": 60,
-    "goliath_fetched": false
-  },
-  "tests": {"module_selftests": 11, "module_selftests_passing": 11,
-            "repo_suite": "1610 passed, 1 failed, 33 skipped",
-            "the_one_failure": "tools/condense/tests/test_qwen_gravity_campaign.py::test_ladder_is_data_driven_and_decisive_first, pre-existing, no tracked file was modified by this campaign"},
-  "not_evidence_of": "capability, full-model quality, or behaviour"
+  "weight_space_corrected_verdict": {
+    "artifacts_beating_a_constant": 0,
+    "at_twice_the_legal_ceiling": {
+      "complete_bpw": 2.0169,
+      "corrected_block_skill": -1.7654
+    },
+    "corrected_block_skill_range": [
+      -5.3791,
+      -1.2142
+    ],
+    "state": "CLOSED_NEGATIVE"
+  }
 }
