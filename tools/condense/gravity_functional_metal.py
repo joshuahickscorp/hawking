@@ -247,6 +247,106 @@ class FunctionalMetal:
         command.waitUntilCompleted()
         return self._read(final, count), 1
 
+    def _encode_layer(self, encoder, payload, resident) -> None:
+        """Encode one FRT-B functional MoE (procedural features + readout) into an existing
+        encoder, without committing. This is the unit the submission-collapse benchmark
+        chains: many of these into a single command buffer."""
+        hidden, out_width = payload["hidden"], payload["out_width"]
+        phi, out = resident["phi"], resident["out"]
+        encoder.setBuffer_offset_atIndex_(resident["x"], 0, 0)
+        encoder.setBuffer_offset_atIndex_(phi, 0, 1)
+        encoder.setBuffer_offset_atIndex_(resident["width"], 0, 2)
+        encoder.setBuffer_offset_atIndex_(resident["hidden"], 0, 3)
+        encoder.setBuffer_offset_atIndex_(resident["seed"], 0, 4)
+        encoder.setBuffer_offset_atIndex_(resident["inv_sqrt_width"], 0, 5)
+        self._dispatch(encoder, self.pipelines["features_procedural"], hidden)
+        encoder.setBuffer_offset_atIndex_(resident["readout"], 0, 0)
+        encoder.setBuffer_offset_atIndex_(phi, 0, 1)
+        encoder.setBuffer_offset_atIndex_(out, 0, 2)
+        encoder.setBuffer_offset_atIndex_(resident["hidden"], 0, 3)
+        encoder.setBuffer_offset_atIndex_(resident["out_width"], 0, 4)
+        self._dispatch(encoder, self.pipelines["readout"], out_width)
+
+    def stack_buffers(self, payload, layers: int) -> list:
+        """Pre-allocate one resident buffer set per layer, once, outside any timed path."""
+        return [self.prepare("FRT_B", payload,
+                             np.random.default_rng(i).standard_normal(HIDDEN)
+                             .astype(np.float32))
+                for i in range(layers)]
+
+    def run_stack(self, payload, residents: list, *, collapsed: bool) -> int:
+        """Run the functional MoE across pre-allocated layers; return buffers submitted.
+
+        collapsed=False submits one command buffer per layer, the current per-layer cost:
+        76 layers is 76 submissions per token. collapsed=True encodes every layer into a
+        single command buffer and submits once. Each layer owns its output buffer, so the
+        collapsed path has no false serialisation the split path would not also have.
+        """
+        if collapsed:
+            command = self.queue.commandBuffer()
+            encoder = command.computeCommandEncoder()
+            for resident in residents:
+                self._encode_layer(encoder, payload, resident)
+            encoder.endEncoding()
+            command.commit()
+            command.waitUntilCompleted()
+            return 1
+        for resident in residents:
+            command = self.queue.commandBuffer()
+            encoder = command.computeCommandEncoder()
+            self._encode_layer(encoder, payload, resident)
+            encoder.endEncoding()
+            command.commit()
+            command.waitUntilCompleted()
+        return len(residents)
+
+
+def bench_submission_collapse(layers: int = 76, hidden: int = 1024,
+                              repeats: int = 10) -> dict:
+    """The token-level submission cost: 76 command buffers versus one.
+
+    The functional MoE at each layer is one FRT-B dispatch pair. A whole token runs it once
+    per sparse layer, so the per-layer submission model costs one command buffer per layer.
+    Encoding the stack into a single command buffer is the collapse the roofline said was
+    the runtime work, since the kernels were already at a few percent of bandwidth.
+    """
+    metal = FunctionalMetal()
+    payload = _payload(hidden)
+    residents = metal.stack_buffers(payload, layers)  # allocated once, outside timing
+
+    metal.run_stack(payload, residents, collapsed=False)  # warm
+    split_started = time.perf_counter()
+    for _ in range(repeats):
+        split_buffers = metal.run_stack(payload, residents, collapsed=False)
+    split = (time.perf_counter() - split_started) / repeats
+
+    metal.run_stack(payload, residents, collapsed=True)  # warm
+    collapsed_started = time.perf_counter()
+    for _ in range(repeats):
+        collapsed_buffers = metal.run_stack(payload, residents, collapsed=True)
+    collapsed = (time.perf_counter() - collapsed_started) / repeats
+
+    return {
+        "schema": "hawking.glm52.submission_collapse.v1",
+        "device": str(metal.device.name()),
+        "layers": layers,
+        "repeats": repeats,
+        "per_layer_command_buffers": {
+            "command_buffers_per_token": split_buffers,
+            "seconds_per_token_moe_path": split,
+            "moe_tps": 1.0 / split},
+        "single_command_buffer": {
+            "command_buffers_per_token": collapsed_buffers,
+            "seconds_per_token_moe_path": collapsed,
+            "moe_tps": 1.0 / collapsed},
+        "command_buffer_reduction": f"{split_buffers} -> {collapsed_buffers}",
+        "speedup": split / collapsed,
+        "submission_overhead_seconds_per_token": split - collapsed,
+        "submission_overhead_per_layer_us": (split - collapsed) / layers * 1e6,
+        "reading": "the gap between the two is the per-token command-submission cost the "
+                   "collapse removes; the kernels themselves are unchanged",
+    }
+
 
 def _payload(hidden: int, seed: int = 17, linear: bool = False) -> dict:
     generator = np.random.default_rng(0)
@@ -402,6 +502,14 @@ if __name__ == "__main__":
         payload = bench(int(sys.argv[2]) if len(sys.argv) > 2 else 1024)
         out = Path(__file__).resolve().parents[2] / "reports" / "condense" / \
             "glm52_generation_b" / "GLM52_FUNCTIONAL_METAL_BENCHMARK.json"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(json.dumps(payload, indent=2, sort_keys=True, default=float))
+        print(json.dumps(payload, indent=2, default=float))
+    elif command == "collapse":
+        payload = bench_submission_collapse(
+            int(sys.argv[2]) if len(sys.argv) > 2 else 76)
+        out = Path(__file__).resolve().parents[2] / "reports" / "condense" / \
+            "glm52_generation_b" / "GLM52_FUNCTIONAL_SUBMISSION_COLLAPSE.json"
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_text(json.dumps(payload, indent=2, sort_keys=True, default=float))
         print(json.dumps(payload, indent=2, default=float))

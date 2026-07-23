@@ -1,0 +1,21 @@
+{
+  "command_buffer_reduction": "76 -> 1",
+  "device": "Apple M3 Ultra",
+  "layers": 76,
+  "per_layer_command_buffers": {
+    "command_buffers_per_token": 76,
+    "moe_tps": 6.312359041544947,
+    "seconds_per_token_moe_path": 0.1584193790971767
+  },
+  "reading": "the gap between the two is the per-token command-submission cost the collapse removes; the kernels themselves are unchanged",
+  "repeats": 10,
+  "schema": "hawking.glm52.submission_collapse.v1",
+  "single_command_buffer": {
+    "command_buffers_per_token": 1,
+    "moe_tps": 7.086920665304528,
+    "seconds_per_token_moe_path": 0.14110500839888118
+  },
+  "speedup": 1.1227055715084937,
+  "submission_overhead_per_layer_us": 227.8206670828359,
+  "submission_overhead_seconds_per_token": 0.017314370698295528
+}
