@@ -6,6 +6,7 @@
   },
   "corrected_disposition": {
     "gate_to_a_real_verdict": "real pre-MoE hidden from a PRIMITIVE-VALIDATED layer-streamed contextual forward; if that apparatus cannot be validated after a bounded campaign, seal REFERENCE_FORWARD_UNAVAILABLE_ON_CURRENT_VALIDATED_STACK with the exact missing primitive",
+    "update_2026_07_23_late": "the streamed forward is now BUILT and validated (official code + real weights, one block resident at a time), so REFERENCE_FORWARD_UNAVAILABLE is WITHDRAWN. Real contextual pre-MoE hidden is produced; the embedding-seeded existence test is superseded by a contextual one now running. This decision's negative stands only as the embedding-seeded organ result.",
     "verdict": "the embedding-seeded shortcut is INVALID for DeepSeek's functional existence test, proven by the shared-expert control; no parent verdict is issued from it",
     "what_holds": "the fp4/fp8 dequant is validated and the MoE forward is real; the null-first metric prevented a false positive AND its control caught its own invalid input",
     "why_gate_is_walled": "apparatus+validation, NOT memory capacity. A layer-streamed forward (load layer, execute, release, advance) can run 160 GB fp4 on 96 GiB in principle. The real blocker: no independently validated streamed implementation yet exists for DeepSeek MLA+DSA+hyper-connections+mixed FP4/FP8 MoE. Closable by primitive parity against the official impl or an architecture-identical smaller checkpoint, official probe outputs, or remote reference traces."

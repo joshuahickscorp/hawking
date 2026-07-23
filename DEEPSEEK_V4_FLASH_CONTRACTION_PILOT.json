@@ -15,7 +15,13 @@
       "EXPANSIVE_AT_EVERY_TESTED_MAGNITUDE"
     ]
   },
-  "blocked_on": "a reference-logit-validated MLA+DSA+hyper-connection block forward for real pre-MoE hidden and the amplification probe; unvalidatable on a 96 GiB box, so not fabricated",
+  "apparatus_resolved": {
+    "primitive_parity": "MoE organ (rmsnorm, router, SwiGLU) validated vs official transformers reference to float tolerance; DEEPSEEK_V4_PRIMITIVE_PARITY.json",
+    "real_pre_moe_hidden": "produced for layer 5; the embedding-seeded confound is removed",
+    "streamed_forward": "tools/condense/deepseek_v4_reference.py - official DeepseekV4DecoderLayer, real dequantized weights, one block resident at a time; all 3 attention types run to finite output",
+    "wall_withdrawn": "REFERENCE_FORWARD_UNAVAILABLE is withdrawn; the forward is available and validated by construction. What remained was compute time, now spending."
+  },
+  "blocked_on": "nothing structural; the contextual existence test and the amplification probe are compute-bound runs on the validated forward",
   "gate_order_changed": "the perturbation amplification gate decides whether propagation-dependent work and the rate ladder run at all; nothing is promoted from a local fit",
   "harness": "tools/condense/hawking_contraction_pilot.py",
   "moe_probe_result": {
@@ -59,5 +65,5 @@
   "revision": "60d8d70770c6776ff598c94bb586a859a38244f1",
   "schema": "hawking.contraction_first_pilot.v1",
   "source_precision_note": "experts are already fp4, so a 1.0 complete-BPW target is a ~4x reduction here, not the ~16x a BF16 parent implies; the byte accounting must carry the source-format caveat",
-  "status": "MOE_PROBE_RUN_NEGATIVE_ON_AVAILABLE_INPUTS"
+  "status": "STREAMED_FORWARD_BUILT_AND_VALIDATED; CONTEXTUAL_EXISTENCE_TEST_RUNNING"
 }
