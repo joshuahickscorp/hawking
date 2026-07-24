@@ -1,0 +1,28 @@
+{
+  "deleted_exists_after": false,
+  "deleted_path": "/Users/scammermike/Library/Application Support/Hawking/DeepSeekV4Flash/source",
+  "free_after_gib": 539.4,
+  "free_delta_gb": 159.6,
+  "meta_retained": true,
+  "preserved": [
+    "DEEPSEEK_V4_FLASH_CASCADE_DECISION.json",
+    "DEEPSEEK_V4_FLASH_CONTRACTION_VERDICT.json",
+    "DEEPSEEK_V4_BYTE_AUCTION.json",
+    "DEEPSEEK_V4_RUNTIME_ACCOUNTING.json",
+    "deepseek_v4_reference.py",
+    "deepseek_v4_moe.py",
+    "deepseek_v4_primitive_parity.py",
+    "deepseek_v4_cascade.py",
+    "DEEPSEEK_V4_PRIMITIVE_PARITY.json"
+  ],
+  "readiness_seal": "71c98b2d7ea6bfce4996d32d99407d39273074138d6704f06fc2a268ec6c3513",
+  "reason": "terminal: cascade refuted the independent-per-layer functional paradigm; the validated forward is the official modeling plus a map, not the raw bytes",
+  "reclaimed_bytes": 159628935853,
+  "reclaimed_gb": 159.6,
+  "reclaimed_gib": 148.7,
+  "released_at": "2026-07-24T02:17:00Z",
+  "rollback": "re-fetch deepseek-ai/DeepSeek-V4-Flash @ 60d8d70770c6776ff598c94bb586a859a38244f1, verify against the rehydration receipt",
+  "schema": "hawking.deepseek_v4.release_receipt.v1",
+  "seal_sha256": "6d114ae3140055da1e73d09e823667cdf7df8398a0c65fffa5cb53d51113df19",
+  "shards_deleted": 46
+}
