@@ -1,0 +1,35 @@
+{
+  "schema": "hawking.storage_cleanup_receipt.v1",
+  "cleaned_at": "2026-07-24T03:40:00Z",
+  "context": "post HAWKING_ASCENSION_CLOSED; reclaim closed-campaign working data for the next phase",
+  "free_before_gib": 540,
+  "free_after_gib": 595,
+  "reclaimed_gb": 55,
+  "reclaimed": [
+    {"path": "GLM52Gravity/source_fetch/teacher/capsules_generation_b", "gb": 45,
+     "what": "GLM teacher trajectory capsules (57 npz)",
+     "re_derivable": "re-fetch GLM-5.2 @ b4734de4 per GLM52_REHYDRATION_RECEIPT.json, re-run teacher capture"},
+    {"path": "GLM52Gravity/compact/generation_b_pilot", "gb": 9.7,
+     "what": "GLM pilot .gravity packed windows",
+     "re_derivable": "re-pack from source; not referenced by any committed tool"},
+    {"path": "GLM52Gravity/source_fetch/{probes,hf_home}", "gb": 0.16, "what": "fetch caches"},
+    {"path": "Hawking/{KimiK26ReleaseCycle,EmergencyDetachedCampaign,EmergencyDetachedCampaign-v2}",
+     "gb": 0.27, "what": "old closed-campaign dirs"},
+    {"path": "stray *.log", "gb": 0.01, "what": "run logs"}
+  ],
+  "preserved": [
+    "GLM52Gravity/source_fetch small manifests (SOURCE_FETCH_LEDGER, SOURCE_WEIGHT_ATLAS, SAFE_TO_LEAVE, progress, deferred_evictions)",
+    "GLM52Gravity/source_fetch/teacher/GLM52_TEACHER_EVIDENCE_LEDGER.jsonl",
+    "GLM52Gravity/compact/generation_b_functional (functional payloads, 12M)",
+    "GLM52Gravity/source_fetch/teacher/capsules (generation-a, 47M)",
+    "DeepSeekV4Flash/meta (config + index) + DEEPSEEK_V4_FLASH_REHYDRATION_RECEIPT.json",
+    "Qwen35_397B/meta",
+    "the repository (all committed scientific conclusions, 39 GLM result JSONs) and MOP (untouched)"
+  ],
+  "safety": {
+    "conclusions_committed": "all scientific verdicts, ledgers and decisions are in the repo; only re-derivable raw working data was removed",
+    "rollback": "both parents re-fetchable at immutable revision per their rehydration receipts",
+    "no_process_deps": "verified via lsof before deletion; HAWKING closed, no heavy procs",
+    "untouched": ["repository", "MOP", "~/.cache/huggingface", "rehydration receipts", "small provenance ledgers"]
+  }
+}
