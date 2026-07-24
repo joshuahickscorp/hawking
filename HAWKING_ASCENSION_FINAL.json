@@ -1,7 +1,15 @@
 {
-  "CROSS_PARENT_GRAVITY_FRONTIER": "OPEN_AND_PROMISING",
-  "DEEPSEEK_FUNCTIONAL_VERDICT": "FAVOURABLE_NOT_UNIFORMLY_CONTRACTIVE_ESCAPE_EXISTS_BOUNDED",
+  "CROSS_PARENT_GRAVITY_FRONTIER": "CLOSED_INDEPENDENT_PER_LAYER_STUDENT_DOES_NOT_COMPOSE",
+  "DEEPSEEK_FUNCTIONAL_VERDICT": "FUNCTIONAL_PARTIAL_ONLY_CASCADE_REFUTED",
   "basis": "SCOPED: methodology+metric+runtime ascended; cross-parent scientific frontier OPEN",
+  "cascade_close": {
+    "answer": "NO",
+    "cascade": "student in all 40 sparse layers; first divergence L8, router<0.5 at L4, final skill -168, token agreement 0",
+    "escalation_out_of_scope": "route-aware jointly-trained student (C2); directive says do not reopen search",
+    "mechanism": "router sensitivity under cumulative drift; mild per-layer amplification 1.12 compounds over 40 layers; any nonzero per-layer error accumulates into route divergence",
+    "question": "does the functional student compose across the full model?",
+    "verdict": "FUNCTIONAL_PARTIAL_ONLY on DeepSeek, same terminal category as GLM by a different path"
+  },
   "corrected": {
     "artifacts_beating_a_constant": 0,
     "artifacts_rescored": 22,
@@ -15,7 +23,7 @@
   "correction_2026_07_23": "narrowed from an unconditional floor. DeepSeek did NOT establish a cross-parent floor; its probe is INSTRUMENT_LIMITED_INCONCLUSIVE and supports neither 'functional students fail on DeepSeek' nor 'DeepSeek confirms the GLM law'. Same boundary Kimi's report observed: a negative does not establish a universal lower bound.",
   "directive_basis_quote": "Hawking may ascend with a winning functional architecture, a winning encoding architecture, a hybrid, or an honest empirical floor. It may not ascend with a broken promotion metric.",
   "endpoint": "HAWKING_CORE_ASCENDED",
-  "floor": "methodology, metric and runtime ascended; cross-parent frontier OPEN_AND_PROMISING. GLM closed FUNCTIONAL_PARTIAL_ONLY (expansive 1.4-2.4x). DeepSeek's functional escape EXISTS, fits far better at depth (skill 0.97-0.98), and does not amplify at realistic magnitudes at any tested stratum, but is not uniformly contractive (L38 mild worse-at-smaller). Materially more favourable than GLM; full-cascade composition open; not promoted.",
+  "floor": "methodology, metric and runtime ascended. The cross-parent functional paradigm is CLOSED: independent per-layer functional students do not compose, on GLM (expansive) or DeepSeek (router divergence under cumulative drift), despite the escape existing and being locally strong on both. The durable results are the null-first amplification-first methodology, the validated streamed-forward apparatus, and the finding that single-layer favourability does not imply composition. A route-aware jointly-trained student is the untested escalation, out of scope.",
   "gated": {
     "definitive_cross_parent_verdict": "needs real pre-MoE hidden from a reference-logit-validated block forward (DeepSeek MLA+DSA+hyper-connections, or Qwen3.5 linear-attention)",
     "servable_sub_bit_model": "none produced on the parents reachable here; complete-token/prefill/true-TPS on a servable model remain open",

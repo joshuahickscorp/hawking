@@ -58,6 +58,7 @@
     "the student fits the MoE FAR better at depth than GLM: skill 0.97-0.98 at L20/L38 versus GLM's 0.53, so errors are tiny to begin with",
     "worst-case amplification 1.18 is mild next to GLM's 2.4"
   ],
+  "final_verdict": "FUNCTIONAL_PARTIAL_ONLY (see cascade decision)",
   "forward": "validated streamed forward, official DeepseekV4DecoderLayer, real dequantized weights, one block resident at a time",
   "functional_escape": {
     "exists": true,
@@ -81,6 +82,7 @@
   "schema": "hawking.deepseek_v4.contraction_verdict.v1",
   "sealed_at": "2026-07-24T00:30:00Z",
   "significance": "the first cross-parent result that points AWAY from the GLM expansive law: the functional escape exists AND the residual stream does not amplify its error",
+  "superseded_by_cascade": "DEEPSEEK_V4_FLASH_CASCADE_DECISION.json: the full cascade showed the functional student does NOT compose (router divergence at L4, final skill catastrophic). The favourable single-layer amplification did not imply composition. Final verdict FUNCTIONAL_PARTIAL_ONLY.",
   "verdict": "FAVOURABLE_NOT_UNIFORMLY_CONTRACTIVE",
   "what_is_still_required_before_promotion": [
     "stronger existence statistics (more positions, tighter lower bound)",

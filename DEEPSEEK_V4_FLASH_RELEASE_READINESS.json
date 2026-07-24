@@ -1,0 +1,40 @@
+{
+  "all_green": true,
+  "evaluated_at": "2026-07-24T02:16:45Z",
+  "gates": {
+    "g01_source_present": {
+      "detail": "46 shards",
+      "green": true
+    },
+    "g02_rehydration_receipt": {
+      "detail": "46 shards carry a git-lfs sha256 at the pinned revision",
+      "green": true
+    },
+    "g03_evidence_preserved": {
+      "detail": "9/9 evidence artifacts present",
+      "green": true,
+      "missing": []
+    },
+    "g04_forward_validated": {
+      "detail": "primitive parity vs official transformers reference is green",
+      "green": true
+    },
+    "g05_no_process_maps_source": {
+      "detail": "no live process opens or names the source",
+      "green": true,
+      "scan": {
+        "any_probe_ran": true,
+        "clean": true,
+        "matches": []
+      }
+    },
+    "g06_isolation": {
+      "detail": "source root is isolated from repo and MOP",
+      "green": true
+    }
+  },
+  "repo": "deepseek-ai/DeepSeek-V4-Flash",
+  "revision": "60d8d70770c6776ff598c94bb586a859a38244f1",
+  "schema": "hawking.deepseek_v4.release_readiness.v1",
+  "source_root": "/Users/scammermike/Library/Application Support/Hawking/DeepSeekV4Flash/source"
+}
