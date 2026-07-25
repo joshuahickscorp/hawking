@@ -1,0 +1,143 @@
+{
+  "abi": "hawking.gravity.container.v1",
+  "invariants_exercised": [
+    "compressed and native tensors coexist in one shard",
+    "complete_bpw exceeds packed_bpw when native organs are carried",
+    "every descriptor carries a non-empty payload",
+    "each tensor is readable by name at its declared offset"
+  ],
+  "purpose": "a reader that reproduces these bytes and these verify results reads v1 correctly; regenerate only when format_version changes",
+  "schema": "hawking.gravity.container_test_vectors.v1",
+  "vector": {
+    "body_hex": "000102030405060708090a0b0c0d0e0f1011121314151617000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f000102030405060708090a0b0c0d0e0f",
+    "expected_tensor_reads": {
+      "model.layers.0.mlp.experts.0.gate_proj.weight": "000102030405060708090a0b",
+      "model.layers.0.mlp.experts.1.gate_proj.weight": "0c0d0e0f1011121314151617",
+      "model.layers.0.mlp.gate.e_score_correction_bias": "000102030405060708090a0b0c0d0e0f",
+      "model.layers.0.mlp.gate.weight": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f"
+    },
+    "expected_verify": {
+      "bad_tensors": [],
+      "body_bytes": 104,
+      "body_sha256_ok": true,
+      "claimed_complete_bpw": 2.8493150684931505,
+      "claimed_packed_bpw": 0.75,
+      "complete_rate_self_consistent": true,
+      "format_version": 1,
+      "observed_complete_bpw": 2.8493150684931505,
+      "observed_packed_bpw": 0.75,
+      "ok": true,
+      "packed_rate_self_consistent": true,
+      "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/tmpzkv6lquj/model-00001-of-00001.gravity",
+      "rate_self_consistent": true,
+      "tensors": 4,
+      "tensors_without_payload": []
+    },
+    "file_bytes": 2052,
+    "file_sha256": "af218227322b75689763ef37de6ac7a8dc940041643c28ecfa393b53d2239e83",
+    "header": {
+      "architecture": {
+        "hidden_layers": 78,
+        "hidden_size": 6144,
+        "routed_experts": 256,
+        "shared_experts": 1,
+        "type": "GlmMoeDsaForCausalLM"
+      },
+      "compression": {
+        "codec": "gravity-pq",
+        "complete_bpw": 2.8493150684931505,
+        "packed_bpw": 0.75,
+        "production_rung": "R0"
+      },
+      "format_version": 1,
+      "integrity": {
+        "body_sha256": "49c3463495e8c1d198feca7df736ee4ee6e82ff3e1337a17dea610c4c4940223",
+        "tensor_count": 4
+      },
+      "model": {
+        "repo": "hawking.test/container-v1",
+        "revision": "0000000000000000000000000000000000000000",
+        "source_shard": "model-00001-of-00001.safetensors"
+      },
+      "schema": "hawking.gravity.shard_header.v1",
+      "shard": {
+        "of": 1,
+        "source": "model-00001-of-00001.safetensors"
+      },
+      "tensors": [
+        {
+          "bpw": 0.75,
+          "bytes": 12,
+          "category": "routed_expert",
+          "codec": "glm52.pq.r0.v1",
+          "elements": 128,
+          "expert": 0,
+          "layer": 0,
+          "name": "model.layers.0.mlp.experts.0.gate_proj.weight",
+          "offset": 0,
+          "sha256": "fff3a9bcdd37363d703c1c4f9512533686157868f0d4f16a0f02d0f1da24f9a2",
+          "shape": [
+            8,
+            16
+          ],
+          "terminal_state": "PACKED_IN_CORE_ARTIFACT"
+        },
+        {
+          "bpw": 0.75,
+          "bytes": 12,
+          "category": "routed_expert",
+          "codec": "glm52.pq.r0.v1",
+          "elements": 128,
+          "expert": 1,
+          "layer": 0,
+          "name": "model.layers.0.mlp.experts.1.gate_proj.weight",
+          "offset": 12,
+          "sha256": "34d169384e157254f9f687ef54647bcd98d27ade71de38cb0894f9cdee007488",
+          "shape": [
+            8,
+            16
+          ],
+          "terminal_state": "PACKED_IN_CORE_ARTIFACT"
+        },
+        {
+          "bpw": 16.0,
+          "bytes": 64,
+          "category": "router",
+          "codec": "native.bf16",
+          "elements": 32,
+          "expert": null,
+          "layer": 0,
+          "name": "model.layers.0.mlp.gate.weight",
+          "offset": 24,
+          "sha256": "fdeab9acf3710362bd2658cdc9a29e8f9c757fcf9811603a8c447cd1d9151108",
+          "shape": [
+            4,
+            8
+          ],
+          "terminal_state": "PROTECTED_SOURCE_NATIVE"
+        },
+        {
+          "bpw": 32.0,
+          "bytes": 16,
+          "category": "router_control",
+          "codec": "native.f32",
+          "elements": 4,
+          "expert": null,
+          "layer": 0,
+          "name": "model.layers.0.mlp.gate.e_score_correction_bias",
+          "offset": 88,
+          "sha256": "be45cb2605bf36bebde684841a28f0fd43c69850a3dce5fedba69928ee3a8991",
+          "shape": [
+            4
+          ],
+          "terminal_state": "PROTECTED_SOURCE_NATIVE"
+        }
+      ],
+      "tokenizer": {
+        "kind": "reference",
+        "source": "hawking.test/container-v1"
+      }
+    },
+    "prefix_hex": "4752415649545900010000008807000000000000"
+  }
+}

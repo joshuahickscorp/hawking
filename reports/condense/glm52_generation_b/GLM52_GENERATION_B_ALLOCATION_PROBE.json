@@ -1,0 +1,83 @@
+{
+  "allocation_closes_the_gap": false,
+  "generated_at": "2026-07-23T14:50:56Z",
+  "git_commit": "e9f6a4098d0a7b83d1295fb02bb882a0084fdb35",
+  "measured_requirement": {
+    "max_required_bpw": 1.4607836072207667,
+    "min_required_bpw": 1.296924170790343,
+    "status": "FROM_SEALED_PILOT",
+    "windows": {
+      "W_L38_L38": {
+        "best_carry_out_cosine": 0.2693950563085895,
+        "cosine_per_bit": 0.4062283170746741,
+        "extrapolated_bpw_to_reach_floor": 1.4607836072207667
+      },
+      "W_L74_L74": {
+        "best_carry_out_cosine": 0.20119669999118442,
+        "cosine_per_bit": 0.7399531656175145,
+        "extrapolated_bpw_to_reach_floor": 1.296924170790343
+      }
+    }
+  },
+  "most_generous_expert_rate": 1.0185986039234183,
+  "native_floor_bpw": 0.00694381695843254,
+  "question": "can section 6.5 asymmetric allocation give the expert path the rate the pilot says it needs, without breaking the one-bit law",
+  "reading": "routed experts are 0.975 of the weight, so the budget cannot be moved to them: even spending nothing at all on attention, embeddings, the head, the shared expert and the dense MLPs leaves the expert path 1.0186 bits under the one-bit law, against a measured requirement of 1.296924170790343 to 1.4607836072207667. Asymmetric allocation is the right instinct and the wrong lever here: there is no other role large enough to donate from.",
+  "scenarios": [
+    {
+      "assumption": "everything else free, the absolute bound",
+      "ceiling": 0.75,
+      "ceiling_role": "primary_candidate",
+      "max_expert_rate": 0.762168348184106,
+      "non_expert_rate": 0.0
+    },
+    {
+      "assumption": "everything else at a quarter bit",
+      "ceiling": 0.75,
+      "ceiling_role": "primary_candidate",
+      "max_expert_rate": 0.7558493802421972,
+      "non_expert_rate": 0.25
+    },
+    {
+      "assumption": "everything else at half a bit",
+      "ceiling": 0.75,
+      "ceiling_role": "primary_candidate",
+      "max_expert_rate": 0.7495304123002884,
+      "non_expert_rate": 0.5
+    },
+    {
+      "assumption": "everything else free, the absolute bound",
+      "ceiling": 1.0,
+      "ceiling_role": "one_bit_law",
+      "max_expert_rate": 1.0185986039234183,
+      "non_expert_rate": 0.0
+    },
+    {
+      "assumption": "everything else at a quarter bit",
+      "ceiling": 1.0,
+      "ceiling_role": "one_bit_law",
+      "max_expert_rate": 1.0122796359815096,
+      "non_expert_rate": 0.25
+    },
+    {
+      "assumption": "everything else at half a bit",
+      "ceiling": 1.0,
+      "ceiling_role": "one_bit_law",
+      "max_expert_rate": 1.0059606680396007,
+      "non_expert_rate": 0.5
+    }
+  ],
+  "schema": "hawking.glm52.generation_b_allocation_probe.v1",
+  "verdict": "ALLOCATION_CANNOT_CLOSE",
+  "weight_shares": {
+    "attention": 0.017305235716097368,
+    "dense_mlp": 0.0009019650109314078,
+    "embeddings": 0.0012631685916979208,
+    "lm_head": 0.0012631685916979208,
+    "mtp_projection": 0.0001002183345479342,
+    "protected_native": 0.00043398855990203376,
+    "routed_expert": 0.974923958482304,
+    "shared_expert": 0.0038082967128215
+  },
+  "what_this_does_not_close": "this bounds product quantization at a rate, not the expert path in general. A representation that reaches the trajectory floor at a lower rate is untested and is exactly what sections 6.1 to 6.3 propose."
+}

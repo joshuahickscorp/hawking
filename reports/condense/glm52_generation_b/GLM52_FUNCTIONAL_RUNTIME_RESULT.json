@@ -1,0 +1,119 @@
+{
+  "artifact": "/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/compact/generation_b_functional/GLM52_FUNCTIONAL_L38_L38.gravity",
+  "artifact_bytes": 12584647,
+  "block": {
+    "alpha": 0.05,
+    "centered_cosine": 0.9380191241464017,
+    "gate": {
+      "centered_cosine_at_least": 0.5,
+      "skill_lower_above": 0.0
+    },
+    "normalized_rmse": 0.15423206398699574,
+    "passes": true,
+    "per_position_skill": {
+      "fraction_beating_null": 1.0,
+      "median": 0.8534769451321338,
+      "p05": 0.6827697620571527,
+      "p95": 0.9585474121663025
+    },
+    "positions": 4096,
+    "raw_cosine": 0.98803638201506,
+    "relative_l2": 0.15423175961652047,
+    "rmse": 0.036653855611858396,
+    "skill": 0.8798459173325782,
+    "skill_lower": 0.8779318929682204
+  },
+  "chain": [
+    ".gravity shard written and hash-verified",
+    "payload read back through the container header",
+    "CPU authority executed on real captured states",
+    "Metal grammars parity-checked against the authority",
+    "MoE output substituted inside the real block",
+    "block residual carried into layer 39 with real attention and a real router",
+    "short logit lens taken to a greedy token"
+  ],
+  "container": {
+    "all_organs_deterministic": true,
+    "codec": "glm52.functional.moe.v1",
+    "disposition": "REPLACED_BY_FUNCTIONAL_CODEC",
+    "generator": "gen.splitmix64_boxmuller.v1",
+    "header_verified": true,
+    "replaces": [
+      "model.layers.38.mlp.experts.*",
+      "model.layers.38.mlp.shared_experts.*",
+      "model.layers.38.mlp.gate.weight",
+      "model.layers.38.mlp.gate.e_score_correction_bias"
+    ],
+    "representation": "FUNCTIONAL_MODEL"
+  },
+  "fit": {
+    "local_bpw": 0.01037450870113893,
+    "physical": {
+      "active_bytes_per_token_explicit": 37748804,
+      "active_bytes_per_token_procedural": 12582980,
+      "artifact_bytes": 12582980,
+      "expanded_feature_map_bytes": 25165824,
+      "generator_calls_per_token_procedural": 6291456,
+      "multiply_accumulate_per_token": 12582912,
+      "resident_bytes_explicit_feature_map": 37748804,
+      "resident_bytes_procedural_feature_map": 12582980,
+      "stored_parameters": 6291456
+    },
+    "ridge": 10.0,
+    "score": {
+      "alpha": 0.05,
+      "centered_cosine": 0.7282274685549857,
+      "gate": {
+        "centered_cosine_at_least": 0.5,
+        "skill_lower_above": 0.0
+      },
+      "normalized_rmse": 0.38677231723996036,
+      "passes": true,
+      "per_position_skill": {
+        "fraction_beating_null": 0.990234375,
+        "median": 0.5098239930738198,
+        "p05": 0.1657008022037802,
+        "p95": 0.791503415115052
+      },
+      "positions": 4096,
+      "raw_cosine": 0.9221998447400516,
+      "relative_l2": 0.38676921627367367,
+      "rmse": 0.03665385561078267,
+      "skill": 0.5287036004857932,
+      "skill_lower": 0.5197632261627265
+    }
+  },
+  "honest_scope": "one functional layer inside an otherwise exact teacher forward. Not a complete compact model and not a capability measurement.",
+  "layer": 38,
+  "metal_parity": [
+    {
+      "command_buffers": 1,
+      "grammar": "FRT_A",
+      "relative_l2_vs_cpu_authority": 0.00014107949391473085
+    },
+    {
+      "command_buffers": 1,
+      "grammar": "FRT_B",
+      "relative_l2_vs_cpu_authority": 7.271280537679559e-07
+    },
+    {
+      "command_buffers": 1,
+      "grammar": "FRT_B",
+      "relative_l2_vs_cpu_authority": 7.271280537679559e-07
+    }
+  ],
+  "next_layer_router": {
+    "mean_topk_overlap_of_8": 6.6796875,
+    "top1_agreement": 0.8505859375
+  },
+  "schema": "hawking.glm52.functional_integration.v1",
+  "seconds": 24.8,
+  "token": {
+    "greedy_token_agreement": 0.552490234375,
+    "note": "the logit lens reads a 1024-row vocabulary subset through the final norm from layer 39, which is a probe and not the model's head",
+    "positions": 4096,
+    "student_first_token": 1003,
+    "teacher_first_token": 1003,
+    "vocabulary_subset_rows": 1024
+  }
+}

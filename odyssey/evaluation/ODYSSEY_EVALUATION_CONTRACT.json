@@ -1,0 +1,36 @@
+{
+ "invariants": [
+  "a metric computed on the selection set may never be reported as a result",
+  "no evaluation runs with a fallback model enabled"
+ ],
+ "metrics": [
+  "math aggregate",
+  "per-domain math",
+  "formalization",
+  "long-horizon stability",
+  "trajectory divergence",
+  "throughput",
+  "context viability",
+  "false refusal under profile"
+ ],
+ "reporting": "distributions, not only averages",
+ "schema": "hawking.odyssey.evaluation.v1",
+ "sets": [
+  {
+   "id": "selection",
+   "used_for": "stage gating",
+   "visible_to_training": false
+  },
+  {
+   "id": "hidden",
+   "rule": "never seen by any selection decision",
+   "used_for": "reporting only",
+   "visible_to_training": false
+  },
+  {
+   "id": "sovereignty",
+   "used_for": "false refusal and boundary error",
+   "visible_to_training": false
+  }
+ ]
+}

@@ -1,0 +1,28 @@
+{
+  "schema": "hawking.prometheus.profile.v1",
+  "name": "mathnarrow-v1",
+  "purpose": "Aggressive capability ELIMINATION for mathematical reasoning (Revision 4 arm II.7, H3). Same protected math core as math-v1, but pushes the vestigial band harder and excises cold experts and the deepest non-target structure. Converts the narrowing assumption into a measurement: if MathNarrow beats Math at equal bytes, elimination beats allocation; if it loses, mathematical capability is demonstrably cross-domain and irreducible. Either outcome is a finding.",
+  "control": false,
+  "capability_gates": ["G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8"],
+  "capability_gate_status": "GATED: requires served runtime (S0.8) + gate evaluator (L3) + dead/cold expert census (L4).",
+  "category_tiers": {
+    "routed_expert":  {"tier": "T1", "expert_coalition": "from_cartography", "cold_expert_policy": "excise", "coalition_resolution": "GATED: math coalition -> T0, live non-coalition -> T2, cold/dead experts -> T3 (excised). Census is leg L4."},
+    "shared_expert":  {"tier": "T2", "note": "demoted vs math-v1: shared expert to the floor"},
+    "attention":      {"tier": "T1"},
+    "dense_mlp":      {"tier": "T2"},
+    "embedding":      {"tier": "T0", "vocab_prune": true, "vocab_prune_aggressive": true},
+    "lm_head":        {"tier": "T0", "vocab_prune": true, "vocab_prune_aggressive": true},
+    "router":         {"tier": "T0"},
+    "normalization":  {"tier": "T0"},
+    "indexer":        {"tier": "T0"},
+    "mtp":            {"tier": "T3"},
+    "vision":         {"tier": "T3"},
+    "other":          {"tier": "T3"}
+  },
+  "tier_rates": {
+    "T0": {"native": true},
+    "T1": {"num": 8, "den": 8},
+    "T2": {"num": 1, "den": 8},
+    "T3": {"num": 0, "den": 1}
+  }
+}

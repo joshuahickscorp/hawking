@@ -1,0 +1,80 @@
+{
+ "audit": {
+  "append_only": true,
+  "log": "odyssey/ledger/sandbox_events.jsonl"
+ },
+ "egress": {
+  "rule": "artifacts leave only into odyssey/experiments/, never the network"
+ },
+ "emergency_stop": {
+  "file": "odyssey/launch/STOP",
+  "rule": "presence of this file halts every loop at the next checkpoint boundary"
+ },
+ "filesystem": {
+  "default": "deny",
+  "read": [
+   "odyssey/",
+   "profiles/"
+  ],
+  "write": [
+   "odyssey/ledger/",
+   "odyssey/checkpoints/",
+   "odyssey/experiments/",
+   "odyssey/graveyard/"
+  ]
+ },
+ "ingress": {
+  "rule": "artifacts enter only by content-addressed path"
+ },
+ "network": {
+  "allowlist": [],
+  "default": "deny",
+  "note": "retrieval runs against a pinned snapshot, not the live web"
+ },
+ "process_isolation": {
+  "inherit_env": false,
+  "kind": "subprocess with explicit cwd and env"
+ },
+ "reproducibility": {
+  "environment": {
+   "container": {
+    "digest": null,
+    "gate": "ODYSSEY-ENV-01: digest is recorded on first clean build",
+    "kind": "declared"
+   },
+   "lean": {
+    "pin_kind": "toolchain_file",
+    "toolchain": "leanprover/lean4:v4.15.0"
+   },
+   "mathlib": {
+    "note": "Tier 3 requires the pinned revision; a proof that needs a different Mathlib is a different proof.",
+    "pin_kind": "lakefile_require",
+    "revision": "v4.15.0"
+   },
+   "python": {
+    "packages": [
+     "numpy",
+     "sympy",
+     "mpmath"
+    ],
+    "version": "3.12"
+   }
+  }
+ },
+ "resources": {
+  "max_concurrent_heavy_lanes": 1,
+  "max_wall_clock_hours_per_session": 12,
+  "memory_ceiling_bytes": 103079215104
+ },
+ "schema": "hawking.odyssey.sandbox.v1",
+ "status": "PREPARED_NOT_STARTED",
+ "tools": {
+  "allowlist": [
+   "lean",
+   "python3.12",
+   "sympy",
+   "mpmath"
+  ],
+  "note": "a tool not on this list is a permission event, not a refusal"
+ }
+}

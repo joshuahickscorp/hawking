@@ -1,0 +1,28 @@
+{
+  "schema": "hawking.prometheus.profile.v1",
+  "name": "general-v1",
+  "purpose": "Capability-conditioned allocation for general assistant use. Protects the structural spine and the embedding/head, keeps everything language-general instrumental, excises only what is not language at all (vision). The middle arm: conditioned, but not specialized to mathematics.",
+  "control": false,
+  "capability_gates": ["G1", "G2", "G4", "G5", "G6"],
+  "capability_gate_status": "GATED: requires a served runtime (S0.8) and the gate evaluator (leg L3).",
+  "category_tiers": {
+    "routed_expert":  {"tier": "T1"},
+    "shared_expert":  {"tier": "T1"},
+    "attention":      {"tier": "T1"},
+    "dense_mlp":      {"tier": "T1"},
+    "embedding":      {"tier": "T0"},
+    "lm_head":        {"tier": "T0"},
+    "router":         {"tier": "T0"},
+    "normalization":  {"tier": "T0"},
+    "indexer":        {"tier": "T0"},
+    "mtp":            {"tier": "T2", "note": "multi-token-prediction head: speculative-decode aid, not core capability"},
+    "vision":         {"tier": "T3", "note": "excised: a text math substrate spends no bytes on a vision tower"},
+    "other":          {"tier": "T2"}
+  },
+  "tier_rates": {
+    "T0": {"native": true},
+    "T1": {"num": 8, "den": 8},
+    "T2": {"num": 2, "den": 8},
+    "T3": {"num": 0, "den": 1}
+  }
+}

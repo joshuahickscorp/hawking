@@ -1,0 +1,631 @@
+{
+  "blockers": [],
+  "gates": {
+    "contained_symlinks": [],
+    "forbidden_roots_checked": [
+      "/Users/scammermike/Downloads/mop",
+      "/Users/scammermike/Downloads/mop-data",
+      "/Users/scammermike/.cache/huggingface",
+      "/Users/scammermike/Downloads/hawking"
+    ],
+    "is_symlink": false,
+    "processes_mapping_tree": 0,
+    "real_path": "/Users/scammermike/Library/Mobile Documents/.Trash/GLM52-Gravity-SubBit",
+    "real_path_validation": true,
+    "requested_path": "/Users/scammermike/Library/Mobile Documents/.Trash/GLM52-Gravity-SubBit"
+  },
+  "git": {
+    "branch": "campaign/glm52-generation-b",
+    "commit": "55db6f93944fca2e3dbef209fead55977c903f60"
+  },
+  "manifest": [
+    {
+      "bytes": 12292,
+      "name": ".DS_Store"
+    },
+    {
+      "bytes": 5086,
+      "name": "GLM_BASELINE_A_SEAL.json"
+    },
+    {
+      "bytes": 293291119,
+      "name": "model-00002-of-00282.gravity"
+    },
+    {
+      "bytes": 293755656,
+      "name": "model-00003-of-00282.gravity"
+    },
+    {
+      "bytes": 293755431,
+      "name": "model-00004-of-00282.gravity"
+    },
+    {
+      "bytes": 292510948,
+      "name": "model-00005-of-00282.gravity"
+    },
+    {
+      "bytes": 293755674,
+      "name": "model-00006-of-00282.gravity"
+    },
+    {
+      "bytes": 293755664,
+      "name": "model-00007-of-00282.gravity"
+    },
+    {
+      "bytes": 293755289,
+      "name": "model-00008-of-00282.gravity"
+    },
+    {
+      "bytes": 293890214,
+      "name": "model-00009-of-00282.gravity"
+    },
+    {
+      "bytes": 293755634,
+      "name": "model-00010-of-00282.gravity"
+    },
+    {
+      "bytes": 293755560,
+      "name": "model-00011-of-00282.gravity"
+    },
+    {
+      "bytes": 293755249,
+      "name": "model-00012-of-00282.gravity"
+    },
+    {
+      "bytes": 293890352,
+      "name": "model-00013-of-00282.gravity"
+    },
+    {
+      "bytes": 293755623,
+      "name": "model-00014-of-00282.gravity"
+    },
+    {
+      "bytes": 293755475,
+      "name": "model-00015-of-00282.gravity"
+    },
+    {
+      "bytes": 293890057,
+      "name": "model-00016-of-00282.gravity"
+    },
+    {
+      "bytes": 293755684,
+      "name": "model-00017-of-00282.gravity"
+    },
+    {
+      "bytes": 293755616,
+      "name": "model-00018-of-00282.gravity"
+    },
+    {
+      "bytes": 293755338,
+      "name": "model-00019-of-00282.gravity"
+    },
+    {
+      "bytes": 292511090,
+      "name": "model-00020-of-00282.gravity"
+    },
+    {
+      "bytes": 293755675,
+      "name": "model-00021-of-00282.gravity"
+    },
+    {
+      "bytes": 293755584,
+      "name": "model-00022-of-00282.gravity"
+    },
+    {
+      "bytes": 293755245,
+      "name": "model-00023-of-00282.gravity"
+    },
+    {
+      "bytes": 293890316,
+      "name": "model-00024-of-00282.gravity"
+    },
+    {
+      "bytes": 293755651,
+      "name": "model-00025-of-00282.gravity"
+    },
+    {
+      "bytes": 293755470,
+      "name": "model-00026-of-00282.gravity"
+    },
+    {
+      "bytes": 293890047,
+      "name": "model-00027-of-00282.gravity"
+    },
+    {
+      "bytes": 293755649,
+      "name": "model-00028-of-00282.gravity"
+    },
+    {
+      "bytes": 293755648,
+      "name": "model-00029-of-00282.gravity"
+    },
+    {
+      "bytes": 293755338,
+      "name": "model-00030-of-00282.gravity"
+    },
+    {
+      "bytes": 293890167,
+      "name": "model-00031-of-00282.gravity"
+    },
+    {
+      "bytes": 293755675,
+      "name": "model-00032-of-00282.gravity"
+    },
+    {
+      "bytes": 293755618,
+      "name": "model-00033-of-00282.gravity"
+    },
+    {
+      "bytes": 293755221,
+      "name": "model-00034-of-00282.gravity"
+    },
+    {
+      "bytes": 292511213,
+      "name": "model-00035-of-00282.gravity"
+    },
+    {
+      "bytes": 293755651,
+      "name": "model-00036-of-00282.gravity"
+    },
+    {
+      "bytes": 293755483,
+      "name": "model-00037-of-00282.gravity"
+    },
+    {
+      "bytes": 292602472,
+      "name": "model-00038-of-00282.gravity"
+    },
+    {
+      "bytes": 293755635,
+      "name": "model-00039-of-00282.gravity"
+    },
+    {
+      "bytes": 293755679,
+      "name": "model-00040-of-00282.gravity"
+    },
+    {
+      "bytes": 293755406,
+      "name": "model-00041-of-00282.gravity"
+    },
+    {
+      "bytes": 293890098,
+      "name": "model-00042-of-00282.gravity"
+    },
+    {
+      "bytes": 293755672,
+      "name": "model-00043-of-00282.gravity"
+    },
+    {
+      "bytes": 293755650,
+      "name": "model-00044-of-00282.gravity"
+    },
+    {
+      "bytes": 293755280,
+      "name": "model-00045-of-00282.gravity"
+    },
+    {
+      "bytes": 293890252,
+      "name": "model-00046-of-00282.gravity"
+    },
+    {
+      "bytes": 293755649,
+      "name": "model-00047-of-00282.gravity"
+    },
+    {
+      "bytes": 293755591,
+      "name": "model-00048-of-00282.gravity"
+    },
+    {
+      "bytes": 286099819,
+      "name": "model-00049-of-00282.gravity"
+    },
+    {
+      "bytes": 293271012,
+      "name": "model-00050-of-00282.gravity"
+    },
+    {
+      "bytes": 293755623,
+      "name": "model-00051-of-00282.gravity"
+    },
+    {
+      "bytes": 293755460,
+      "name": "model-00052-of-00282.gravity"
+    },
+    {
+      "bytes": 293890073,
+      "name": "model-00053-of-00282.gravity"
+    },
+    {
+      "bytes": 293755672,
+      "name": "model-00054-of-00282.gravity"
+    },
+    {
+      "bytes": 293755657,
+      "name": "model-00055-of-00282.gravity"
+    },
+    {
+      "bytes": 293755301,
+      "name": "model-00056-of-00282.gravity"
+    },
+    {
+      "bytes": 293890196,
+      "name": "model-00057-of-00282.gravity"
+    },
+    {
+      "bytes": 293755639,
+      "name": "model-00058-of-00282.gravity"
+    },
+    {
+      "bytes": 293755597,
+      "name": "model-00059-of-00282.gravity"
+    },
+    {
+      "bytes": 293755249,
+      "name": "model-00060-of-00282.gravity"
+    },
+    {
+      "bytes": 293890365,
+      "name": "model-00061-of-00282.gravity"
+    },
+    {
+      "bytes": 293755673,
+      "name": "model-00062-of-00282.gravity"
+    },
+    {
+      "bytes": 293755451,
+      "name": "model-00063-of-00282.gravity"
+    },
+    {
+      "bytes": 292509101,
+      "name": "model-00064-of-00282.gravity"
+    },
+    {
+      "bytes": 293753654,
+      "name": "model-00065-of-00282.gravity"
+    },
+    {
+      "bytes": 293753630,
+      "name": "model-00066-of-00282.gravity"
+    },
+    {
+      "bytes": 293753329,
+      "name": "model-00067-of-00282.gravity"
+    },
+    {
+      "bytes": 293888350,
+      "name": "model-00068-of-00282.gravity"
+    },
+    {
+      "bytes": 293753639,
+      "name": "model-00069-of-00282.gravity"
+    },
+    {
+      "bytes": 293753612,
+      "name": "model-00070-of-00282.gravity"
+    },
+    {
+      "bytes": 293753231,
+      "name": "model-00071-of-00282.gravity"
+    },
+    {
+      "bytes": 293888493,
+      "name": "model-00072-of-00282.gravity"
+    },
+    {
+      "bytes": 293753629,
+      "name": "model-00073-of-00282.gravity"
+    },
+    {
+      "bytes": 293753460,
+      "name": "model-00074-of-00282.gravity"
+    },
+    {
+      "bytes": 293889966,
+      "name": "model-00075-of-00282.gravity"
+    },
+    {
+      "bytes": 293755240,
+      "name": "model-00076-of-00282.gravity"
+    },
+    {
+      "bytes": 293755228,
+      "name": "model-00077-of-00282.gravity"
+    },
+    {
+      "bytes": 293754946,
+      "name": "model-00078-of-00282.gravity"
+    },
+    {
+      "bytes": 293889966,
+      "name": "model-00079-of-00282.gravity"
+    },
+    {
+      "bytes": 293753637,
+      "name": "model-00080-of-00282.gravity"
+    },
+    {
+      "bytes": 293753625,
+      "name": "model-00081-of-00282.gravity"
+    },
+    {
+      "bytes": 293753221,
+      "name": "model-00082-of-00282.gravity"
+    },
+    {
+      "bytes": 292509363,
+      "name": "model-00083-of-00282.gravity"
+    },
+    {
+      "bytes": 293753635,
+      "name": "model-00084-of-00282.gravity"
+    },
+    {
+      "bytes": 293753500,
+      "name": "model-00085-of-00282.gravity"
+    },
+    {
+      "bytes": 293888181,
+      "name": "model-00086-of-00282.gravity"
+    },
+    {
+      "bytes": 293753652,
+      "name": "model-00087-of-00282.gravity"
+    },
+    {
+      "bytes": 293753634,
+      "name": "model-00088-of-00282.gravity"
+    },
+    {
+      "bytes": 293753376,
+      "name": "model-00089-of-00282.gravity"
+    },
+    {
+      "bytes": 293888318,
+      "name": "model-00090-of-00282.gravity"
+    },
+    {
+      "bytes": 293753657,
+      "name": "model-00091-of-00282.gravity"
+    },
+    {
+      "bytes": 293753646,
+      "name": "model-00092-of-00282.gravity"
+    },
+    {
+      "bytes": 293753243,
+      "name": "model-00093-of-00282.gravity"
+    },
+    {
+      "bytes": 293888474,
+      "name": "model-00094-of-00282.gravity"
+    },
+    {
+      "bytes": 293753624,
+      "name": "model-00095-of-00282.gravity"
+    },
+    {
+      "bytes": 293753516,
+      "name": "model-00096-of-00282.gravity"
+    },
+    {
+      "bytes": 292509037,
+      "name": "model-00097-of-00282.gravity"
+    },
+    {
+      "bytes": 293753646,
+      "name": "model-00098-of-00282.gravity"
+    },
+    {
+      "bytes": 293753629,
+      "name": "model-00099-of-00282.gravity"
+    },
+    {
+      "bytes": 293753412,
+      "name": "model-00100-of-00282.gravity"
+    },
+    {
+      "bytes": 293888303,
+      "name": "model-00101-of-00282.gravity"
+    },
+    {
+      "bytes": 293753624,
+      "name": "model-00102-of-00282.gravity"
+    },
+    {
+      "bytes": 293753613,
+      "name": "model-00103-of-00282.gravity"
+    },
+    {
+      "bytes": 293753264,
+      "name": "model-00104-of-00282.gravity"
+    },
+    {
+      "bytes": 293888442,
+      "name": "model-00105-of-00282.gravity"
+    },
+    {
+      "bytes": 293753640,
+      "name": "model-00106-of-00282.gravity"
+    },
+    {
+      "bytes": 293753536,
+      "name": "model-00107-of-00282.gravity"
+    },
+    {
+      "bytes": 293888142,
+      "name": "model-00108-of-00282.gravity"
+    },
+    {
+      "bytes": 293753657,
+      "name": "model-00109-of-00282.gravity"
+    },
+    {
+      "bytes": 293753629,
+      "name": "model-00110-of-00282.gravity"
+    },
+    {
+      "bytes": 293753384,
+      "name": "model-00111-of-00282.gravity"
+    },
+    {
+      "bytes": 292509147,
+      "name": "model-00112-of-00282.gravity"
+    },
+    {
+      "bytes": 293753660,
+      "name": "model-00113-of-00282.gravity"
+    },
+    {
+      "bytes": 293753642,
+      "name": "model-00114-of-00282.gravity"
+    },
+    {
+      "bytes": 293753261,
+      "name": "model-00115-of-00282.gravity"
+    },
+    {
+      "bytes": 293889989,
+      "name": "model-00116-of-00282.gravity"
+    },
+    {
+      "bytes": 293755221,
+      "name": "model-00117-of-00282.gravity"
+    },
+    {
+      "bytes": 293755125,
+      "name": "model-00118-of-00282.gravity"
+    },
+    {
+      "bytes": 292974940,
+      "name": "model-00119-of-00282.gravity"
+    },
+    {
+      "bytes": 293291142,
+      "name": "model-00120-of-00282.gravity"
+    },
+    {
+      "bytes": 293753632,
+      "name": "model-00121-of-00282.gravity"
+    },
+    {
+      "bytes": 293889932,
+      "name": "model-00156-of-00282.gravity"
+    },
+    {
+      "bytes": 293755221,
+      "name": "model-00157-of-00282.gravity"
+    },
+    {
+      "bytes": 293755206,
+      "name": "model-00158-of-00282.gravity"
+    },
+    {
+      "bytes": 293754926,
+      "name": "model-00159-of-00282.gravity"
+    },
+    {
+      "bytes": 293889977,
+      "name": "model-00160-of-00282.gravity"
+    },
+    {
+      "bytes": 293889954,
+      "name": "model-00197-of-00282.gravity"
+    },
+    {
+      "bytes": 293755211,
+      "name": "model-00198-of-00282.gravity"
+    },
+    {
+      "bytes": 293755128,
+      "name": "model-00199-of-00282.gravity"
+    },
+    {
+      "bytes": 292974943,
+      "name": "model-00200-of-00282.gravity"
+    },
+    {
+      "bytes": 293291125,
+      "name": "model-00201-of-00282.gravity"
+    },
+    {
+      "bytes": 293889982,
+      "name": "model-00237-of-00282.gravity"
+    },
+    {
+      "bytes": 293755237,
+      "name": "model-00238-of-00282.gravity"
+    },
+    {
+      "bytes": 293755255,
+      "name": "model-00239-of-00282.gravity"
+    },
+    {
+      "bytes": 293754942,
+      "name": "model-00240-of-00282.gravity"
+    },
+    {
+      "bytes": 293889947,
+      "name": "model-00241-of-00282.gravity"
+    },
+    {
+      "bytes": 292510814,
+      "name": "model-00274-of-00282.gravity"
+    },
+    {
+      "bytes": 293755209,
+      "name": "model-00275-of-00282.gravity"
+    },
+    {
+      "bytes": 293755215,
+      "name": "model-00276-of-00282.gravity"
+    },
+    {
+      "bytes": 293754867,
+      "name": "model-00277-of-00282.gravity"
+    },
+    {
+      "bytes": 293889830,
+      "name": "model-00278-of-00282.gravity"
+    },
+    {
+      "bytes": 293755218,
+      "name": "model-00279-of-00282.gravity"
+    },
+    {
+      "bytes": 293755170,
+      "name": "model-00280-of-00282.gravity"
+    },
+    {
+      "bytes": 291615905,
+      "name": "model-00281-of-00282.gravity"
+    },
+    {
+      "bytes": 16065837,
+      "name": "model-00282-of-00282.gravity"
+    }
+  ],
+  "manifest_bytes": 42002448417,
+  "manifest_entries": 146,
+  "manifest_sha256": "06179ebeaeed96ad5cdd2aa1a4407c947701af164cb46be7cf46cd2e8ddde74a",
+  "origin": "configured as GLM52_COMPACT_ROOT at ~/Desktop/GLM52-Gravity-SubBit; the Desktop is iCloud-synced, so the tree was moved to the iCloud trash rather than deleted, and it survived there in full",
+  "path": "/Users/scammermike/Library/Mobile Documents/.Trash/GLM52-Gravity-SubBit",
+  "preserved_fixtures": {
+    "directory": "reports/condense/glm52_generation_b/generation_a_fixtures",
+    "files": [
+      "GLM_BASELINE_A_SEAL.json",
+      "INVALID_ARTIFACT_HEADER_model-00097-of-00282.json",
+      "generation_a_GLM52_SAFE_TO_LEAVE_STATUS.json",
+      "generation_a_GLM52_SOURCE_WEIGHT_ATLAS.json",
+      "generation_a_SOURCE_FETCH_LEDGER.jsonl",
+      "generation_a_TEACHER_EVIDENCE_LEDGER.jsonl",
+      "generation_a_deferred_evictions.json",
+      "generation_a_progress.json"
+    ]
+  },
+  "reclaimed_bytes": 42002448417,
+  "schema": "hawking.glm52.generation_a_desktop_retirement.v1",
+  "sealed_at": "2026-07-23T13:20:04Z",
+  "status": "RETIRED",
+  "verified_absent_after_delete": true,
+  "why_retired": "every artifact in this tree was produced by the packer that billed protected tensors it never wrote, so no file here can support a coverage or BPW claim"
+}

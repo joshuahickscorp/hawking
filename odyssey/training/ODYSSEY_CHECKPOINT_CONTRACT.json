@@ -1,0 +1,18 @@
+{
+ "addressing": "content-addressed by artifact sha256",
+ "required_fields": [
+  "stage",
+  "step",
+  "artifact_sha256",
+  "parent_sha256",
+  "profile_hash",
+  "data_manifest_hash",
+  "objective_hash",
+  "eval_result_hash",
+  "sovereignty_manifest_hash",
+  "wall_clock"
+ ],
+ "retention": "every checkpoint that any evaluation cites is retained; intermediate steps may be pruned only if nothing cites them",
+ "rollback": "any checkpoint may be made current; rollback is a recorded event, never a silent substitution",
+ "schema": "hawking.odyssey.checkpoint.v1"
+}

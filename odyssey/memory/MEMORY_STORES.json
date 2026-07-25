@@ -1,0 +1,41 @@
+{
+ "law": "nothing is deleted; selective context is retrieval, not forgetting",
+ "schema": "hawking.odyssey.memory.v1",
+ "stores": [
+  {
+   "contents": "Every claim ever made, at its current tier.",
+   "id": "M1",
+   "name": "claims"
+  },
+  {
+   "contents": "Every verifier event, with its inputs and its container hash.",
+   "id": "M2",
+   "name": "evidence"
+  },
+  {
+   "contents": "How each investigation moved, including the dead moves.",
+   "id": "M3",
+   "name": "trajectories"
+  },
+  {
+   "contents": "The topology of the investigation space.",
+   "id": "M4",
+   "name": "structure"
+  },
+  {
+   "contents": "Prior-art queries and what they returned, with query hashes.",
+   "id": "M5",
+   "name": "literature"
+  },
+  {
+   "contents": "Compute spent per branch and what it bought.",
+   "id": "M6",
+   "name": "economics"
+  },
+  {
+   "contents": "Refuted and exhausted branches. Nothing is deleted; selective context is retrieval, not forgetting.",
+   "id": "M7",
+   "name": "graveyard"
+  }
+ ]
+}

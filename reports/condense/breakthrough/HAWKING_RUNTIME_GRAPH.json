@@ -1,0 +1,13 @@
+{
+  "schema": "hawking.glm52.persistent_causal_engine.v1.device_probe",
+  "device": "Apple M3 Ultra",
+  "indirect_command_buffer": true,
+  "max_command_count": 4096,
+  "placement_heap": true,
+  "counter_sets": [
+    "timestamp"
+  ],
+  "gpu_timestamps": true,
+  "available": true,
+  "note": "an encoded graph still costs one command-buffer submit per token, 215.8 us, which is a floor this design lowers but does not remove"
+}

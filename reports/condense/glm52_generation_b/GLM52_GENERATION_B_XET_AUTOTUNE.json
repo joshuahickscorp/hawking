@@ -1,0 +1,168 @@
+{
+  "configurations": [
+    {
+      "bytes": 16072665368,
+      "concurrent_files": 1,
+      "disk_written": 16070750208,
+      "failed": 0,
+      "free_disk_after": 211733647360,
+      "free_disk_before": 227804397568,
+      "per_shard_megabits_per_second": [
+        1895.4,
+        1865.8,
+        1905.4
+      ],
+      "per_shard_spread": {
+        "max": 1905.4,
+        "median": 1895.4,
+        "min": 1865.8
+      },
+      "rows": [
+        {
+          "bytes": 5351970840,
+          "megabits_per_second": 1895.4,
+          "seconds": 22.59,
+          "shard": "model-00002-of-00282.safetensors",
+          "status": "VERIFIED"
+        },
+        {
+          "bytes": 5360347320,
+          "megabits_per_second": 1865.8,
+          "seconds": 22.98,
+          "shard": "model-00003-of-00282.safetensors",
+          "status": "VERIFIED"
+        },
+        {
+          "bytes": 5360347208,
+          "megabits_per_second": 1905.4,
+          "seconds": 22.51,
+          "shard": "model-00004-of-00282.safetensors",
+          "status": "VERIFIED"
+        }
+      ],
+      "shards": [
+        "model-00002-of-00282.safetensors",
+        "model-00003-of-00282.safetensors",
+        "model-00004-of-00282.safetensors"
+      ],
+      "sustained_megabits_per_second": 1698.1,
+      "verified": 3,
+      "wall_seconds": 75.72
+    },
+    {
+      "bytes": 16080679992,
+      "concurrent_files": 4,
+      "disk_written": 16083148800,
+      "failed": 0,
+      "free_disk_after": 195650494464,
+      "free_disk_before": 211733643264,
+      "per_shard_megabits_per_second": [
+        703.8,
+        689.6,
+        689.0
+      ],
+      "per_shard_spread": {
+        "max": 703.8,
+        "median": 689.6,
+        "min": 689.0
+      },
+      "rows": [
+        {
+          "bytes": 5359985352,
+          "megabits_per_second": 703.8,
+          "seconds": 60.93,
+          "shard": "model-00005-of-00282.safetensors",
+          "status": "VERIFIED"
+        },
+        {
+          "bytes": 5360347320,
+          "megabits_per_second": 689.6,
+          "seconds": 62.18,
+          "shard": "model-00006-of-00282.safetensors",
+          "status": "VERIFIED"
+        },
+        {
+          "bytes": 5360347320,
+          "megabits_per_second": 689.0,
+          "seconds": 62.24,
+          "shard": "model-00007-of-00282.safetensors",
+          "status": "VERIFIED"
+        }
+      ],
+      "shards": [
+        "model-00005-of-00282.safetensors",
+        "model-00006-of-00282.safetensors",
+        "model-00007-of-00282.safetensors"
+      ],
+      "sustained_megabits_per_second": 1983.7,
+      "verified": 3,
+      "wall_seconds": 64.85
+    },
+    {
+      "bytes": 16087101400,
+      "concurrent_files": 8,
+      "disk_written": 15008165888,
+      "failed": 0,
+      "free_disk_after": 180642324480,
+      "free_disk_before": 195650490368,
+      "per_shard_megabits_per_second": [
+        723.8,
+        695.6,
+        696.6
+      ],
+      "per_shard_spread": {
+        "max": 723.8,
+        "median": 696.6,
+        "min": 695.6
+      },
+      "rows": [
+        {
+          "bytes": 5360347144,
+          "megabits_per_second": 723.8,
+          "seconds": 59.25,
+          "shard": "model-00008-of-00282.safetensors",
+          "status": "VERIFIED"
+        },
+        {
+          "bytes": 5366406944,
+          "megabits_per_second": 695.6,
+          "seconds": 61.72,
+          "shard": "model-00009-of-00282.safetensors",
+          "status": "VERIFIED"
+        },
+        {
+          "bytes": 5360347312,
+          "megabits_per_second": 696.6,
+          "seconds": 61.56,
+          "shard": "model-00010-of-00282.safetensors",
+          "status": "VERIFIED"
+        }
+      ],
+      "shards": [
+        "model-00008-of-00282.safetensors",
+        "model-00009-of-00282.safetensors",
+        "model-00010-of-00282.safetensors"
+      ],
+      "sustained_megabits_per_second": 2000.6,
+      "verified": 3,
+      "wall_seconds": 64.33
+    }
+  ],
+  "generated_at": "2026-07-23T14:44:26Z",
+  "interpretation": "a gain near 1.0 across configurations means the link, not the client, is the ceiling, and raising concurrency only adds queue depth and disk pressure",
+  "method": {
+    "axis": "concurrent whole-file downloads; Xet parallelises chunk ranges within a file",
+    "decision_metric": "bytes landed over wall time, not the mean of per-file rates",
+    "high_performance_mode": "1",
+    "no_wasted_bytes": "each configuration fetches a disjoint group of shards the full stream needs anyway, and every shard is kept",
+    "shards_per_configuration": 3
+  },
+  "not_claimed": "that an untested setting would not do better, or that this holds on a different link",
+  "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+  "schema": "hawking.glm52.generation_b_xet_autotune.v1",
+  "selected": {
+    "concurrent_files": 8,
+    "gain_over_serial": 1.178,
+    "sustained_megabits_per_second": 2000.6
+  }
+}

@@ -1,7 +1,7 @@
 {
-  "beat_at": "2026-07-21T03:05:41Z",
-  "last_band": 0,
-  "pct": 4.915639316911256,
+  "beat_at": "2026-07-21T03:17:48Z",
+  "last_band": 10,
+  "pct": 100.00753767618242,
   "pid": 99230,
   "repo": "deepseek-ai/DeepSeek-V4-Flash-DSpark",
   "started_at": "2026-07-21T03:03:38Z",

@@ -70,6 +70,29 @@ def linear(x: np.ndarray, weight: np.ndarray) -> np.ndarray:
     return np.matmul(x, weight.T, dtype=np.float32)
 
 
+def _linear(source: Mapping[str, np.ndarray] | TensorSource, x: np.ndarray, name: str) -> np.ndarray:
+    """``linear(x, weight_named(name))``, using a real matvec against a packed
+    artifact when the source offers one instead of first reconstructing a
+    dense weight nobody else needs.
+
+    At GLM-5.2 scale several of these weights are hundreds of MB to multiple
+    GB dense; densifying one to read it once is the exact inefficiency
+    ``gravity_forge.pq_execute`` exists to avoid, and doing it once per
+    routed expert per layer (up to 1,872 times for one token) is the
+    difference between a forward pass that finishes and one that does not.
+    Falls back to the original dense path for the plain-dict / dense-array
+    sources every existing test and fixture already uses, so this is
+    additive: nothing that worked before takes a different path.
+    """
+    if isinstance(source, Mapping) or not hasattr(source, "matvec"):
+        return linear(x, _tensor(source, name))
+    x = np.asarray(x, dtype=np.float32)
+    lead, cols = x.shape[:-1], x.shape[-1]
+    flat = x.reshape(-1, cols)
+    y = source.matvec(name, flat.T)  # [cols, B] in, [rows, B] out
+    return np.ascontiguousarray(y.T).reshape(*lead, y.shape[0])
+
+
 def rmsnorm(x: np.ndarray, weight: np.ndarray, eps: float) -> np.ndarray:
     x = np.asarray(x, dtype=np.float32)
     weight = np.asarray(weight, dtype=np.float32)
@@ -281,11 +304,19 @@ def router_topk(
 
 def dense_mlp(
     hidden_states: np.ndarray,
-    gate: np.ndarray,
-    up: np.ndarray,
-    down: np.ndarray,
+    source: Mapping[str, np.ndarray] | TensorSource,
+    prefix: str,
 ) -> np.ndarray:
-    return linear(silu(linear(hidden_states, gate)) * linear(hidden_states, up), down)
+    """SwiGLU MLP for one dense block or one expert, named by `prefix`.
+
+    Takes `source` + `prefix` rather than three materialized weight arrays:
+    a routed layer calls this once per hit expert (up to 8 per token, times
+    78 layers), and each of those three weights is real bytes that only
+    this one call needs -- there is nothing to amortize by densifying first.
+    """
+    gate = _linear(source, hidden_states, f"{prefix}.gate_proj.weight")
+    up = _linear(source, hidden_states, f"{prefix}.up_proj.weight")
+    return _linear(source, silu(gate) * up, f"{prefix}.down_proj.weight")
 
 
 def routed_moe(
@@ -316,21 +347,11 @@ def routed_moe(
         tokens, slots = token_slot[:, 0], token_slot[:, 1]
         current = flat[tokens]
         stem = f"{prefix}.experts.{expert}"
-        expert_out = dense_mlp(
-            current,
-            _tensor(source, f"{stem}.gate_proj.weight"),
-            _tensor(source, f"{stem}.up_proj.weight"),
-            _tensor(source, f"{stem}.down_proj.weight"),
-        )
+        expert_out = dense_mlp(current, source, stem)
         weighted = expert_out * flat_weights[tokens, slots, None]
         np.add.at(routed, tokens, weighted)
     shared_prefix = f"{prefix}.shared_experts"
-    shared = dense_mlp(
-        hidden_states,
-        _tensor(source, f"{shared_prefix}.gate_proj.weight"),
-        _tensor(source, f"{shared_prefix}.up_proj.weight"),
-        _tensor(source, f"{shared_prefix}.down_proj.weight"),
-    )
+    shared = dense_mlp(hidden_states, source, shared_prefix)
     output = routed.reshape(hidden_states.shape) + shared
     return output, {
         "router_logits": router_logits,
@@ -378,22 +399,22 @@ def attention_forward(
     value_dim = int(config["v_head_dim"])
     qk_dim = nope + rope
 
-    q_a = linear(hidden_states, _tensor(source, f"{prefix}.q_a_proj.weight"))
+    q_a = _linear(source, hidden_states, f"{prefix}.q_a_proj.weight")
     if q_a.shape[-1] != q_rank:
         raise Glm52ReferenceError("q_a rank mismatch")
     q_resid = rmsnorm(q_a, _tensor(source, f"{prefix}.q_a_layernorm.weight"), float(config["rms_norm_eps"]))
-    q = linear(q_resid, _tensor(source, f"{prefix}.q_b_proj.weight"))
+    q = _linear(source, q_resid, f"{prefix}.q_b_proj.weight")
     q = q.reshape(batch, sequence, heads, qk_dim).transpose(0, 2, 1, 3)
     q_pass, q_rot = q[..., :nope], q[..., nope:]
 
-    compressed = linear(hidden_states, _tensor(source, f"{prefix}.kv_a_proj_with_mqa.weight"))
+    compressed = _linear(source, hidden_states, f"{prefix}.kv_a_proj_with_mqa.weight")
     k_latent, k_rot = compressed[..., :kv_rank], compressed[..., kv_rank:]
     k_latent = rmsnorm(
         k_latent,
         _tensor(source, f"{prefix}.kv_a_layernorm.weight"),
         float(config["rms_norm_eps"]),
     )
-    kv = linear(k_latent, _tensor(source, f"{prefix}.kv_b_proj.weight"))
+    kv = _linear(source, k_latent, f"{prefix}.kv_b_proj.weight")
     kv = kv.reshape(batch, sequence, heads, nope + value_dim).transpose(0, 2, 1, 3)
     k_pass, values = kv[..., :nope], kv[..., nope:]
     k_rot = k_rot.reshape(batch, 1, sequence, rope)
@@ -460,7 +481,7 @@ def attention_forward(
     probabilities /= np.sum(probabilities, axis=-1, keepdims=True, dtype=np.float32)
     context = np.matmul(probabilities, values_all, dtype=np.float32)
     context = context.transpose(0, 2, 1, 3).reshape(batch, sequence, heads * value_dim)
-    output = linear(context, _tensor(source, f"{prefix}.o_proj.weight"))
+    output = _linear(source, context, f"{prefix}.o_proj.weight")
     return output, topk, {
         "q_resid": q_resid,
         "queries": queries,
@@ -511,13 +532,7 @@ def decoder_layer(
         float(config["rms_norm_eps"]),
     )
     if mlp_type == "dense":
-        mlp_prefix = f"{prefix}.mlp"
-        mlp_output = dense_mlp(
-            mlp_input,
-            _tensor(source, f"{mlp_prefix}.gate_proj.weight"),
-            _tensor(source, f"{mlp_prefix}.up_proj.weight"),
-            _tensor(source, f"{mlp_prefix}.down_proj.weight"),
-        )
+        mlp_output = dense_mlp(mlp_input, source, f"{prefix}.mlp")
         mlp_trace: dict[str, Any] = {"kind": "dense"}
     elif mlp_type == "sparse":
         mlp_output, mlp_trace = routed_moe(mlp_input, source, f"{prefix}.mlp", config)
@@ -593,7 +608,7 @@ def main_forward(
         _tensor(source, "model.norm.weight"),
         float(config["rms_norm_eps"]),
     )
-    logits = linear(final, _tensor(source, "lm_head.weight"))
+    logits = _linear(source, final, "lm_head.weight")
     return logits, cache, {
         "position_ids": np.asarray(position_ids),
         "layers": layers,
@@ -632,7 +647,7 @@ def mtp_forward(
     prefix = f"model.layers.{layer}"
     enorm = rmsnorm(shifted, _tensor(source, f"{prefix}.enorm.weight"), float(config["rms_norm_eps"]))
     hnorm = rmsnorm(previous, _tensor(source, f"{prefix}.hnorm.weight"), float(config["rms_norm_eps"]))
-    fused = linear(np.concatenate([enorm, hnorm], axis=-1), _tensor(source, f"{prefix}.eh_proj.weight"))
+    fused = _linear(source, np.concatenate([enorm, hnorm], axis=-1), f"{prefix}.eh_proj.weight")
 
     reuse = bool(config.get("index_share_for_mtp_iteration", False)) and speculative_step > 0
     if reuse and cache.mtp_iteration_topk is None:
@@ -656,7 +671,7 @@ def mtp_forward(
         _tensor(source, f"{prefix}.shared_head.norm.weight"),
         float(config["rms_norm_eps"]),
     )
-    logits = linear(final, _tensor(source, "lm_head.weight"))
+    logits = _linear(source, final, "lm_head.weight")
     return logits, cache, {
         "speculative_step": speculative_step,
         "reused_step_zero_topk": reuse,

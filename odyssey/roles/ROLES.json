@@ -1,0 +1,115 @@
+{
+ "roles": [
+  {
+   "capabilities": [
+    "schedule",
+    "read_ledger"
+   ],
+   "charter": "Allocates turns across roles and holds no mathematical opinion.",
+   "id": "director",
+   "may_promote": false
+  },
+  {
+   "capabilities": [
+    "read_memory",
+    "write_claim"
+   ],
+   "charter": "Generates candidate claims. May not assert confidence.",
+   "id": "conjecturer",
+   "may_promote": false
+  },
+  {
+   "capabilities": [
+    "read_claim",
+    "write_objection"
+   ],
+   "charter": "Attacks claims. May not prove.",
+   "id": "skeptic",
+   "may_promote": false
+  },
+  {
+   "capabilities": [
+    "read_claim",
+    "write_lean"
+   ],
+   "charter": "Translates to Lean. May not silently weaken a statement.",
+   "id": "formalizer",
+   "may_promote": false
+  },
+  {
+   "capabilities": [
+    "read_lean",
+    "run_lean"
+   ],
+   "charter": "Attempts formal proof. No proof exists without compiler acceptance.",
+   "id": "prover",
+   "may_promote": false
+  },
+  {
+   "capabilities": [
+    "run_sandbox",
+    "write_evidence"
+   ],
+   "charter": "Runs symbolic and numerical experiments. May not treat computation as proof.",
+   "id": "computationalist",
+   "may_promote": false
+  },
+  {
+   "capabilities": [
+    "read_ledger",
+    "write_topology"
+   ],
+   "charter": "Maintains investigation topology. May not generate mathematics.",
+   "id": "cartographer",
+   "may_promote": false
+  },
+  {
+   "capabilities": [
+    "run_retrieval",
+    "write_literature"
+   ],
+   "charter": "Searches prior art. May not judge correctness.",
+   "id": "librarian",
+   "may_promote": false
+  },
+  {
+   "capabilities": [
+    "read_economics",
+    "write_budget"
+   ],
+   "charter": "Allocates compute. Never sees claim content.",
+   "id": "economist",
+   "may_promote": false
+  },
+  {
+   "capabilities": [
+    "read_all",
+    "write_audit"
+   ],
+   "charter": "Audits the system on schedule. Cannot be suppressed or deprioritized.",
+   "id": "adversary",
+   "may_promote": false
+  },
+  {
+   "capabilities": [
+    "read_all",
+    "promote_claim"
+   ],
+   "charter": "Adjudicates admissibility and novelty. Never certifies its own novelty.",
+   "id": "tribunal",
+   "may_promote": true
+  },
+  {
+   "capabilities": [
+    "run_lean",
+    "run_sandbox",
+    "promote_claim"
+   ],
+   "charter": "Compiler and reproduction events. The only non-Tribunal promoter.",
+   "id": "verifier",
+   "may_promote": true
+  }
+ ],
+ "schema": "hawking.odyssey.roles.v1",
+ "structural_property": "roles that generate may not promote; only verifier events and the Tribunal advance evidence status"
+}

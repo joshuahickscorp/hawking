@@ -1,0 +1,441 @@
+{
+ "at": "2026-07-24T20:39:14Z",
+ "checks": [
+  {
+   "check": "package root exists",
+   "detail": "/Users/scammermike/Downloads/hawking/odyssey",
+   "ok": true
+  },
+  {
+   "check": "directory doctrine",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "directory substrate",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "directory data",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "directory teacher_traces",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "directory profiles",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "directory training",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "directory checkpoints",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "directory evaluation",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "directory sandbox",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "directory roles",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "directory ledger",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "directory memory",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "directory verifiers",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "directory tribunal",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "directory retrieval",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "directory economics",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "directory graveyard",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "directory instruments",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "directory forge",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "directory sovereignty",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "directory experiments",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "directory launch",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "directory rollback",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "package manifest exists",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "declared file odyssey/data/ODYSSEY_DATA_MANIFEST.json",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "declared file odyssey/doctrine/DOCTRINE.json",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "declared file odyssey/economics/ECONOMICS.json",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "declared file odyssey/evaluation/ODYSSEY_EVALUATION_CONTRACT.json",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "declared file odyssey/forge/FORGE.json",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "declared file odyssey/graveyard/GRAVEYARD.json",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "declared file odyssey/instruments/INSTRUMENTS.json",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "declared file odyssey/launch/ODYSSEY_FENCE.json",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "declared file odyssey/launch/ODYSSEY_LAUNCH.md",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "declared file odyssey/launch/ODYSSEY_LAUNCH_AUTHORIZED",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "declared file odyssey/ledger/LEDGER_CONTRACT.json",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "declared file odyssey/memory/MEMORY_STORES.json",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "declared file odyssey/profiles/ODYSSEY_PROFILE_MANIFEST.json",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "declared file odyssey/retrieval/RETRIEVAL.json",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "declared file odyssey/roles/ROLES.json",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "declared file odyssey/rollback/ROLLBACK.json",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "declared file odyssey/sandbox/POLICY.json",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "declared file odyssey/sovereignty/LIMIT_REGISTRY.json",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "declared file odyssey/sovereignty/SOVEREIGNTY.json",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "declared file odyssey/substrate/ODYSSEY_SUBSTRATE.json",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "declared file odyssey/teacher_traces/ODYSSEY_TEACHER_TRACE_MANIFEST.json",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "declared file odyssey/training/ODYSSEY_CHECKPOINT_CONTRACT.json",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "declared file odyssey/training/ODYSSEY_OBJECTIVE_CONTRACT.json",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "declared file odyssey/training/ODYSSEY_TRAINING_PLAN.json",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "declared file odyssey/training/run.py",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "declared file odyssey/tribunal/TRIBUNAL.json",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "declared file odyssey/verifiers/VERIFICATION_LATTICE.json",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "manifest declares launch unauthorized",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "fence file exists",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "fence reads false",
+   "detail": "false",
+   "ok": true
+  },
+  {
+   "check": "runner refuses to start",
+   "detail": "exit 1: ODYSSEY_LAUNCH_AUTHORIZED=false -- refusing to start.\nAuthorize deliberately by writing 'true' to /Users/scammermike/Dow",
+   "ok": true
+  },
+  {
+   "check": "parses odyssey/ODYSSEY_DRY_RUN.json",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "parses odyssey/ODYSSEY_PACKAGE.json",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "parses odyssey/data/ODYSSEY_DATA_MANIFEST.json",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "parses odyssey/doctrine/DOCTRINE.json",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "parses odyssey/economics/ECONOMICS.json",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "parses odyssey/evaluation/ODYSSEY_EVALUATION_CONTRACT.json",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "parses odyssey/forge/FORGE.json",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "parses odyssey/graveyard/GRAVEYARD.json",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "parses odyssey/instruments/INSTRUMENTS.json",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "parses odyssey/launch/ODYSSEY_FENCE.json",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "parses odyssey/ledger/LEDGER_CONTRACT.json",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "parses odyssey/memory/MEMORY_STORES.json",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "parses odyssey/profiles/ODYSSEY_PROFILE_MANIFEST.json",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "parses odyssey/retrieval/RETRIEVAL.json",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "parses odyssey/roles/ROLES.json",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "parses odyssey/rollback/ROLLBACK.json",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "parses odyssey/sandbox/POLICY.json",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "parses odyssey/sovereignty/LIMIT_REGISTRY.json",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "parses odyssey/sovereignty/SOVEREIGNTY.json",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "parses odyssey/substrate/ODYSSEY_SUBSTRATE.json",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "parses odyssey/teacher_traces/ODYSSEY_TEACHER_TRACE_MANIFEST.json",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "parses odyssey/training/ODYSSEY_CHECKPOINT_CONTRACT.json",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "parses odyssey/training/ODYSSEY_OBJECTIVE_CONTRACT.json",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "parses odyssey/training/ODYSSEY_TRAINING_PLAN.json",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "parses odyssey/tribunal/TRIBUNAL.json",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "parses odyssey/verifiers/VERIFICATION_LATTICE.json",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "only verifier and tribunal may promote",
+   "detail": "['tribunal', 'verifier']",
+   "ok": true
+  },
+  {
+   "check": "lean pinned",
+   "detail": "leanprover/lean4:v4.15.0",
+   "ok": true
+  },
+  {
+   "check": "mathlib pinned",
+   "detail": "v4.15.0",
+   "ok": true
+  },
+  {
+   "check": "network denied by default",
+   "detail": "",
+   "ok": true
+  }
+ ],
+ "checks_failed": 0,
+ "checks_total": 86,
+ "odyssey_launch_authorized": false,
+ "problems": [],
+ "schema": "hawking.odyssey.validation.v1",
+ "verdict": "DRY_RUN_PASS"
+}

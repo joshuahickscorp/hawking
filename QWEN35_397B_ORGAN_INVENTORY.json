@@ -1,0 +1,208 @@
+{
+  "schema": "hawking.qwen35_moe.inventory.v1",
+  "repo": "Qwen/Qwen3.5-397B-A17B",
+  "revision": "8472618112abcbd45acbcdc58436aff4233c23f7",
+  "total_tensors": 2924,
+  "total_size_gb": 806.8,
+  "layer_types_histogram": {
+    "full_attention": 15,
+    "linear_attention": 45
+  },
+  "organs": {
+    "attn.full": {
+      "tensors": 64,
+      "templates": [
+        "model.language_model.layers.N.self_attn.k_proj.weight",
+        "model.language_model.layers.N.self_attn.o_proj.weight",
+        "model.language_model.layers.N.self_attn.q_proj.weight",
+        "model.language_model.layers.N.self_attn.v_proj.weight",
+        "mtp.layers.N.self_attn.k_proj.weight",
+        "mtp.layers.N.self_attn.o_proj.weight",
+        "mtp.layers.N.self_attn.q_proj.weight",
+        "mtp.layers.N.self_attn.v_proj.weight"
+      ],
+      "shard_count": 3,
+      "stacks": [
+        "mtp",
+        "text"
+      ],
+      "layer_count": 16,
+      "compressible": false
+    },
+    "attn.linear": {
+      "tensors": 405,
+      "templates": [
+        "model.language_model.layers.N.linear_attn.A_log",
+        "model.language_model.layers.N.linear_attn.conv1d.weight",
+        "model.language_model.layers.N.linear_attn.dt_bias",
+        "model.language_model.layers.N.linear_attn.in_proj_a.weight",
+        "model.language_model.layers.N.linear_attn.in_proj_b.weight",
+        "model.language_model.layers.N.linear_attn.in_proj_qkv.weight",
+        "model.language_model.layers.N.linear_attn.in_proj_z.weight",
+        "model.language_model.layers.N.linear_attn.norm.weight",
+        "model.language_model.layers.N.linear_attn.out_proj.weight"
+      ],
+      "shard_count": 3,
+      "stacks": [
+        "text"
+      ],
+      "layer_count": 45,
+      "compressible": false
+    },
+    "attn.norm": {
+      "tensors": 154,
+      "templates": [
+        "model.language_model.layers.N.input_layernorm.weight",
+        "model.language_model.layers.N.post_attention_layernorm.weight",
+        "model.language_model.layers.N.self_attn.k_norm.weight",
+        "model.language_model.layers.N.self_attn.q_norm.weight",
+        "mtp.layers.N.input_layernorm.weight",
+        "mtp.layers.N.post_attention_layernorm.weight",
+        "mtp.layers.N.self_attn.k_norm.weight",
+        "mtp.layers.N.self_attn.q_norm.weight"
+      ],
+      "shard_count": 1,
+      "stacks": [
+        "mtp",
+        "text"
+      ],
+      "layer_count": 60,
+      "compressible": false
+    },
+    "embed": {
+      "tensors": 1,
+      "templates": [
+        "model.language_model.embed_tokens.weight"
+      ],
+      "shard_count": 1,
+      "stacks": [
+        "text"
+      ],
+      "layer_count": 0,
+      "compressible": false
+    },
+    "lm_head": {
+      "tensors": 1,
+      "templates": [
+        "lm_head.weight"
+      ],
+      "shard_count": 1,
+      "stacks": [
+        "top"
+      ],
+      "layer_count": 0,
+      "compressible": false
+    },
+    "moe.experts": {
+      "tensors": 1656,
+      "templates": [
+        "model.language_model.layers.N.mlp.experts.down_proj",
+        "model.language_model.layers.N.mlp.experts.gate_up_proj",
+        "mtp.layers.N.mlp.experts.N.down_proj.weight",
+        "mtp.layers.N.mlp.experts.N.gate_proj.weight",
+        "mtp.layers.N.mlp.experts.N.up_proj.weight"
+      ],
+      "shard_count": 93,
+      "stacks": [
+        "mtp",
+        "text"
+      ],
+      "layer_count": 60,
+      "compressible": true
+    },
+    "moe.gate": {
+      "tensors": 61,
+      "templates": [
+        "model.language_model.layers.N.mlp.gate.weight",
+        "mtp.layers.N.mlp.gate.weight"
+      ],
+      "shard_count": 1,
+      "stacks": [
+        "mtp",
+        "text"
+      ],
+      "layer_count": 60,
+      "compressible": false
+    },
+    "moe.shared_expert": {
+      "tensors": 244,
+      "templates": [
+        "model.language_model.layers.N.mlp.shared_expert.down_proj.weight",
+        "model.language_model.layers.N.mlp.shared_expert.gate_proj.weight",
+        "model.language_model.layers.N.mlp.shared_expert.up_proj.weight",
+        "model.language_model.layers.N.mlp.shared_expert_gate.weight",
+        "mtp.layers.N.mlp.shared_expert.down_proj.weight",
+        "mtp.layers.N.mlp.shared_expert.gate_proj.weight",
+        "mtp.layers.N.mlp.shared_expert.up_proj.weight",
+        "mtp.layers.N.mlp.shared_expert_gate.weight"
+      ],
+      "shard_count": 2,
+      "stacks": [
+        "mtp",
+        "text"
+      ],
+      "layer_count": 60,
+      "compressible": true
+    },
+    "mtp": {
+      "tensors": 4,
+      "templates": [
+        "mtp.fc.weight",
+        "mtp.norm.weight",
+        "mtp.pre_fc_norm_embedding.weight",
+        "mtp.pre_fc_norm_hidden.weight"
+      ],
+      "shard_count": 2,
+      "stacks": [
+        "mtp"
+      ],
+      "layer_count": 0,
+      "compressible": false
+    },
+    "norm": {
+      "tensors": 1,
+      "templates": [
+        "model.language_model.norm.weight"
+      ],
+      "shard_count": 1,
+      "stacks": [
+        "text"
+      ],
+      "layer_count": 0,
+      "compressible": false
+    },
+    "vision": {
+      "tensors": 333,
+      "templates": [
+        "model.visual.blocks.N.attn.proj.bias",
+        "model.visual.blocks.N.attn.proj.weight",
+        "model.visual.blocks.N.attn.qkv.bias",
+        "model.visual.blocks.N.attn.qkv.weight",
+        "model.visual.blocks.N.mlp.linear_fc1.bias",
+        "model.visual.blocks.N.mlp.linear_fc1.weight",
+        "model.visual.blocks.N.mlp.linear_fc2.bias",
+        "model.visual.blocks.N.mlp.linear_fc2.weight",
+        "model.visual.blocks.N.norm1.bias",
+        "model.visual.blocks.N.norm1.weight",
+        "model.visual.blocks.N.norm2.bias",
+        "model.visual.blocks.N.norm2.weight",
+        "model.visual.merger.linear_fc1.bias",
+        "model.visual.merger.linear_fc1.weight",
+        "model.visual.merger.linear_fc2.bias",
+        "model.visual.merger.linear_fc2.weight",
+        "model.visual.merger.norm.bias",
+        "model.visual.merger.norm.weight",
+        "model.visual.patch_embed.proj.bias",
+        "model.visual.patch_embed.proj.weight",
+        "model.visual.pos_embed.weight"
+      ],
+      "shard_count": 2,
+      "stacks": [
+        "vision"
+      ],
+      "layer_count": 0,
+      "compressible": false
+    }
+  },
+  "linear_attention_is_new_organ": true
+}

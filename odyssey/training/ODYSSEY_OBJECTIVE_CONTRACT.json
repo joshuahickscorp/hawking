@@ -1,0 +1,31 @@
+{
+ "forbidden": [
+  "training on any hidden evaluation set",
+  "optimizing a metric that a role can promote by itself",
+  "any objective that rewards answer rate independent of authorization"
+ ],
+ "objectives": [
+  {
+   "loss": "capability-weighted cross-entropy",
+   "reference": "profiles/prometheus/math-v1.json",
+   "stage": "T1",
+   "weighting": "the selected profile's primary/support weights"
+  },
+  {
+   "loss": "quantization-aware distillation to the frozen rate",
+   "note": "the rate is frozen; QAT recovers headroom, it does not spend bytes",
+   "stage": "T2"
+  },
+  {
+   "loss": "trajectory divergence penalty against the parent",
+   "metric": "token and semantic divergence depth, reported as a distribution",
+   "stage": "T3"
+  },
+  {
+   "loss": "false-refusal reduction on verified permitted tasks",
+   "note": "objective is correctly authorized expression, not answer rate",
+   "stage": "T4"
+  }
+ ],
+ "schema": "hawking.odyssey.objective.v1"
+}

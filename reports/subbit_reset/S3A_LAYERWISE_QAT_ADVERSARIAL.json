@@ -1,0 +1,110 @@
+{
+  "schema": "hawking.gravity.layerwise_qat.adversarial.v1",
+  "target_file": "/Users/scammermike/HawkingWorktrees/subbit-reset/tools/condense/qwen_layerwise_qat.py",
+  "target_report": "/Users/scammermike/HawkingWorktrees/subbit-reset/reports/subbit_reset/S3A_LAYERWISE_QAT.json",
+  "verdict_upheld": false,
+  "severity": "material",
+  "headline": "The zero-bit claim and the descent mechanism survive. The word HELD-OUT does not. At layer 0 the 'disjoint' held-out routed tokens lie inside the fit split's row space (measured energy capture 1.000 / 0.991 / 0.424 / 1.000 for experts 0-3), and the QAT update is a rank<=n_fit object living in exactly that span. The reported gain is a monotone function of that overlap (19.8 / 11.6 / 4.0 / 18.0 pct), so it is fit-span memorisation scored on a same-span probe, not generalisation. The layer-0 win vs layer-46 loss is fully explained by overlap (layer 46 capture ~0.007-0.023) and is not evidence about depth.",
+
+  "bit_accounting_correct": true,
+  "self_check_actually_fails_when_broken": true,
+
+  "confirmed_numbers": {
+    "artifact_bits_re_derived_independently": {
+      "gate_up_tensor_shape": [1536, 4096],
+      "gate_up_idx_bits": 15728640,
+      "gate_up_codebook_bits_amortised_over_128": 2048,
+      "gate_up_output_gain_bits": 16,
+      "metadata_bits_per_tensor": 512,
+      "gate_up_row_scale_bits": 24576,
+      "gate_up_total_bits": 15755792,
+      "gate_up_complete_bpw_this_tensor": 2.504316,
+      "down_tensor_shape": [4096, 1536],
+      "down_idx_bits": 3932160,
+      "down_codebook_bits_amortised_over_128": 2048,
+      "down_row_scale_bits": 65536,
+      "down_total_bits": 4000272,
+      "down_complete_bpw_this_tensor": 0.635826,
+      "matches_stage_report": true,
+      "bits_added_by_QAT": 0,
+      "latent_weights_absent_from_artifact_and_not_needed_at_inference": true
+    },
+    "whole_model_reference": {
+      "arm": "S64_g2.5_d0.625",
+      "complete_bpw": 0.948410027,
+      "legal_under_one_bit_ceiling": true,
+      "keep_experts_per_layer": 64,
+      "omitted_expert_tensors": 18048,
+      "note": "the sub-1.0 figure the stage cites is achieved by DROPPING 64 of 128 experts per layer; the stage inherits this without restating it"
+    },
+    "self_check": {
+      "ran": true,
+      "ok": true,
+      "mutations_tested": {
+        "gradient_sign_flipped": "AssertionError: step (d) never fired on the twin",
+        "gradient_zeroed": "AssertionError: step (d) never fired on the twin",
+        "_bf16_gutted_to_noop": "AssertionError: codebook is not on the bf16 grid it is charged at"
+      },
+      "coverage_gap": "on the synthetic twin the self-check PASSES while held-out treatment (0.43409) is WORSE than held-out control (0.430165); the only held-out assert is ot < 2*oc. The check has zero coverage of the claim the verdict rests on."
+    },
+    "subspace_degeneracy_measured_by_this_agent": {
+      "metric": "fraction of held-out activation energy lying in the fit split's row space (QR of X_fit^T)",
+      "layer0_real_tokens_experts_0_3": [1.0, 0.99111, 0.42392, 1.0],
+      "layer0_participation_rank_of_fit_split": [6.8, 3.33, 20.84, 4.71],
+      "layer0_n_fit_tokens": [35, 44, 32, 33],
+      "layer46_gaussian_proxy_experts_0_3": [0.02307, 0.00686, 0.01526, 0.01375],
+      "layer46_participation_rank_of_fit_split": [86.52, 26.95, 58.77, 51.82],
+      "activation_dim": 4096
+    },
+    "per_expert_gain_tracks_overlap_layer0_gate_proj_seed0": [
+      {"expert": 0, "capture": 1.0, "heldout_control": 0.029291, "heldout_treatment": 0.023487, "gain_pct": 19.817},
+      {"expert": 1, "capture": 0.9911, "heldout_control": 0.024602, "heldout_treatment": 0.021757, "gain_pct": 11.565},
+      {"expert": 2, "capture": 0.4239, "heldout_control": 0.068068, "heldout_treatment": 0.065346, "gain_pct": 3.999},
+      {"expert": 3, "capture": 1.0, "heldout_control": 0.024544, "heldout_treatment": 0.020128, "gain_pct": 17.994}
+    ],
+    "mechanism_ablation_layer0_experts_0_1_rounds4": {
+      "arms": "control(eta=0) | treatment(true gradient) | random_dir(same Frobenius norm, random direction, same eta grid) | plain_resid(W_teacher - Q(W_lat), no H shaping)",
+      "cells": [
+        {"organ": "gate_proj", "split_seed": 0, "lloyd_seed": 0, "control": 0.029453, "treatment_gain_pct": 16.216, "random_dir_gain_pct": 0.0, "plain_resid_gain_pct": -0.014},
+        {"organ": "gate_proj", "split_seed": 0, "lloyd_seed": 2, "control": 0.031122, "treatment_gain_pct": 15.886, "random_dir_gain_pct": 2.837, "plain_resid_gain_pct": -2.317},
+        {"organ": "down_proj", "split_seed": 0, "lloyd_seed": 0, "control": 0.070673, "treatment_gain_pct": 16.269, "random_dir_gain_pct": 0.014, "plain_resid_gain_pct": 16.739},
+        {"organ": "down_proj", "split_seed": 0, "lloyd_seed": 2, "control": 0.069253, "treatment_gain_pct": 15.094, "random_dir_gain_pct": 0.010, "plain_resid_gain_pct": 14.495},
+        {"organ": "gate_proj", "split_seed": 3, "lloyd_seed": 0, "control": 0.030410, "treatment_gain_pct": 23.121, "random_dir_gain_pct": 3.838, "plain_resid_gain_pct": 5.962},
+        {"organ": "gate_proj", "split_seed": 3, "lloyd_seed": 2, "control": 0.029472, "treatment_gain_pct": 25.814, "random_dir_gain_pct": -6.077, "plain_resid_gain_pct": -0.825},
+        {"organ": "down_proj", "split_seed": 3, "lloyd_seed": 0, "control": 0.067282, "treatment_gain_pct": 19.846, "random_dir_gain_pct": -0.018, "plain_resid_gain_pct": 16.461},
+        {"organ": "down_proj", "split_seed": 3, "lloyd_seed": 2, "control": 0.067253, "treatment_gain_pct": 21.174, "random_dir_gain_pct": 0.002, "plain_resid_gain_pct": 13.707}
+      ],
+      "reading": [
+        "random-direction control recovers ~0 pct of the gain in 8/8 cells: the win is NOT an artifact of the treatment arm getting 5x more packing attempts per round. The straight-through direction is a real descent direction.",
+        "plain residual (no activation/Hessian shaping) recovers 100 pct of the down_proj gain (16.7 / 14.5 / 16.5 / 13.7 vs 16.3 / 15.1 / 19.8 / 21.2) but ~0 pct of the gate_proj gain. The stage credits step (d)'s H-shaped output metric; for down_proj that credit belongs to plain error feedback.",
+        "a second, independent fit/hold split (split_seed 3) still wins, so the result is not one lucky partition - but every split of a 70-token routed set has the same span degeneracy, so this does not rescue generalisation."
+      ],
+      "wall_seconds": 290.8
+    }
+  },
+
+  "refutations": [
+    "FIT/HOLD DISJOINTNESS IS TOKEN-LEVEL ONLY, AND THE UPDATE IS RANK-LIMITED TO THE FIT SPAN. Measured: at layer 0 the fraction of held-out activation energy inside the fit split's row space is 1.000, 0.991, 0.424, 1.000 for experts 0-3, with fit participation rank 3.3-20.8 in a 4096-dim space (n_fit = 32-44). Step (d) is ((W - Q)X_fit^T)X_fit, whose column space is exactly the fit row space. So the module trains in precisely the subspace it then scores. The report's honesty claim 'the fit cannot game its own scoreboard' is false in the way that matters: the codebook fit cannot, but step (d) - the thing being tested - can and does. Worse, step (d) optimises the FULL second moment X_fit^T X_fit, i.e. the identical object the scoring metric uses, not the diagonal surrogate.",
+    "THE GAIN IS A MONOTONE FUNCTION OF THAT OVERLAP, WHICH IS THE SIGNATURE OF MEMORISATION. Per-expert on layer 0 gate_proj (seed 0): capture 1.000 -> 19.8 pct, 0.991 -> 11.6 pct, 0.424 -> 4.0 pct, 1.000 -> 18.0 pct. Expert 2, the ONLY expert whose held-out tokens genuinely leave the fit span, is also the only one with a realistic control error (0.0681 vs 0.0245-0.0293) and gives a 4 pct gain. Extrapolating the trend to a genuinely disjoint span lands at or below zero.",
+    "THE LAYER-0-WINS / LAYER-46-LOSES CONTRAST IS CONFOUNDED, SO THE 'DEPTH' AND 'CODING EXCEPTION' READINGS ARE BOTH UNSUPPORTED. Layer 46 uses a full-rank Gaussian proxy whose fit/hold overlap is 0.007-0.023 - a genuinely disjoint probe - and loses 0.5 pct. Layer 0 uses a near-degenerate probe with overlap ~1.0 and wins 15 pct. Overlap alone explains both signs. The stage attributes the split to depth ('the depth cell that exists says the opposite') and to layer 0 being the campaign's coding exception; neither is isolated from probe rank. The honest statement is: QAT wins where the evaluation probe is inside the training span and loses where it is not.",
+    "LAYER-0 'REAL TOKENS' IS NOT THE REAL LAYER-0 MoE INPUT. calibration_x builds it as rmsnorm(embed_tokens[ids], post_attention_layernorm.gamma) - the attention sublayer and the residual add are skipped entirely, and the token ids are a random permutation rather than a sequence. It is a real-embedding proxy, more faithful than Gaussian but not an activation. The routing that defines every routed-token set is computed from that same proxy, so 'tokens actually ROUTED to each expert' is also proxy-derived. Calling the cells real_tokens without this qualification is proxy laundering.",
+    "'WINS UNDER BOTH SEEDS' TESTS ALMOST NOTHING. routed_split is called with its default seed=0 in measure(), so both reported seeds share the IDENTICAL 33-44 token held-out set; the seed only varies Lloyd restarts. The report presents 6/6 seed-cell agreement as robustness evidence against a small held-out split, but it is by construction blind to held-out-split variability. (I did vary the split independently - split_seed 3 - and the sign holds, so this is a design flaw in the evidence, not a false result.)",
+    "OUTPUT ERROR OF 0.0436 AT 2.5 INDEX BPW IS AN ARTIFACT OF THE PROBE, NOT A CODEC RESULT. The same artifact has weight-space relative error 0.80 and, against a full-rank probe at layer 46, output error 0.238. A codec that destroys 80 pct of weight energy showing 4 pct output error only means the probe spans <= 44 of 4096 directions. Any downstream reader who compares 0.0436 to the 0.238 depth number - or to any capability target - is comparing two different measuring instruments.",
+    "PARTIAL MECHANISM MISATTRIBUTION ON down_proj. The module's headline mechanism is a straight-through gradient in the H-weighted OUTPUT metric. Ablating H entirely (plain W_teacher - Q(W_lat) error feedback, no activation shaping) recovers 100 pct of the down_proj gain in 4/4 cells (16.7/14.5/16.5/13.7 pct vs the treatment's 16.3/15.1/19.8/21.2 pct) while recovering ~0 pct on gate_proj. Whatever is claimed for the output-metric machinery is only earned on gate/up.",
+    "THE SELF-CHECK HAS ZERO COVERAGE OF THE VERDICT'S CLAIM. It fires correctly for a flipped-sign gradient, a zeroed gradient, and a gutted _bf16 (all three verified by mutation in /tmp copies). But on the module's own synthetic twin the treatment's held-out error is 0.43409 against the control's 0.430165 - the treatment LOSES on held-out - and the check passes, because the only held-out assert is ot < 2*oc. A regression that turned the whole effect negative on held-out data would ship green.",
+    "MINOR, BIT LEDGER: the codebook is amortised over DEPLOY_CLUSTER = 128 while the cited plan arm S64_g2.5_d0.625 keeps only 64 experts per layer (18048 omitted expert tensors). Under that arm the correct amortisation is over 64, doubling the codebook charge to 4096 bits per gate/up tensor (+2048 bits, +0.00033 BPW on that tensor). Immaterial to the ceiling, but the two documents disagree with each other.",
+    "MINOR, INHERITED FRAMING: the stage cites 0.948410027 complete BPW as standing 'untouched and under the 1.0 ceiling'. That arm reaches sub-1.0 by discarding half of every layer's experts. The stage adds no bits and that is true, but the sub-1.0 headline it leans on is not a coding result."
+  ],
+
+  "axes": {
+    "bit_honesty": "PASS. Re-derived expert_bits + scale_bits from qwen_subhalfbit_search.py and qwen_function_aware_codec.py: 15728640 + 2048 + 16 + 512 -> byte-aligned + 24576 = 15755792, and 3932160 + 2048 + 16 + 512 -> byte-aligned + 65536 = 4000272. Both match the stage report exactly. Indices, amortised codebook, output-gain scalar, per-tensor metadata and per-row bf16 scales are all charged; both arms are literally the same integer; no unbilled bits fund the win; the trained latent weights are training-only and are genuinely not needed at inference (the scored path decodes from the index stream + bf16 codebooks + bf16 row scales only, verified by the decode-purity assert and by reading _encode/_decode_idx).",
+    "proxy_laundering": "FAIL. Real Qwen3-235B weights, but the load-bearing activation distribution is a proxy (embedding + rmsnorm, no attention, no residual) AND the fit/hold split is span-degenerate, so the held-out output error is not a generalisation measurement. Weight-space error is correctly never claimed as capability; the module says output error is a proxy - but it then rests its verdict on that proxy's held-out property, which is the property that fails.",
+    "bound_abuse": "N/A. The module makes no optimality, exhaustion, or entropy claim, and cites no Gaussian differential entropy. Nothing to abuse.",
+    "mechanism_attribution": "MIXED. Random-direction ablation recovers ~0 pct in 8/8 cells, so the gain is a genuine descent direction and not an artifact of the treatment arm's 5x larger candidate pool - that part of the claim survives. But an H-free plain-residual ablation recovers the entire down_proj gain, and the layer-0/layer-46 contrast is fully accounted for by probe overlap rather than by depth.",
+    "reproducibility": "PASS. Self-check runs clean in 1.9 s. Three independent mutations in /tmp copies (gradient sign flip, gradient zeroed, _bf16 turned into a no-op) each fire an assert. Stage numbers reproduce: my 2-expert layer-0 runs land at 15-26 pct gate/up and 15-21 pct down, consistent with the 4-expert report's 13-16 pct and 5 pct.",
+    "overclaim": "FAIL on the held-out wording and on the depth reading. Survives a different Lloyd seed (2), a different data split (3), a different expert subset (0,1) and a different per-expert decomposition - the sign is robust. It does not survive a probe that leaves the training span."
+  },
+
+  "recommended_correction": "Withdraw the word 'held-out' from the S3A verdict and rename it, e.g. S3A_QAT_DESCENDS_IN_FIT_SPAN_ONLY. Publish, per cell, the fraction of held-out activation energy inside the fit row space (1.000 / 0.991 / 0.424 / 1.000 at layer 0 vs 0.007-0.023 at layer 46) and the fit participation rank, and state that the layer-0 gain is monotone in that overlap (19.8 / 11.6 / 4.0 / 18.0 pct) so it is fit-span descent, not generalisation - and that the layer-0-wins / layer-46-loses contrast is explained by probe rank, not by depth or by layer 0 being the coding exception. Keep the ZERO-BITS finding as stated; it re-derives exactly and is the one fully solid claim in the stage. Then, before S3A is cited again: (1) score on an activation split whose held-out energy capture in the fit span is below ~0.1, which at layer 0 means far more than 1400 calibration tokens (or scoring against the full corpus X rather than the expert's own routed tokens); (2) pass the routed_split seed through measure() so 'wins under every seed' actually varies the evaluation set; (3) relabel layer-0 activations embedding_proxy, not real_tokens, until a real 1-layer forward supplies attention + residual; (4) add a held-out-gain assert to the self-check, since the current one passes on a twin where the treatment loses on held-out; (5) report the H-free plain-residual arm alongside the treatment, since it takes all of the down_proj credit; (6) reconcile DEPLOY_CLUSTER=128 with the S64 arm's 64 kept experts.",
+  "adversary_notes": "No files were edited except this report. Measurements: <= 4 expert tensors resident at a time, three short runs (291 s + 246 s + a rank probe), no forward pass."
+}

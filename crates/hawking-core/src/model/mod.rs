@@ -6,6 +6,7 @@
 pub mod arch_config;
 pub mod deepseek_v2;
 pub mod expert_cache;
+pub mod gravity_engine;
 pub mod llama;
 pub mod qwen_dense;
 pub mod qwen_moe;
@@ -57,6 +58,22 @@ pub fn load_engine(weights: &Path, mut config: EngineConfig) -> Result<Box<dyn E
                 )));
             }
         }
+    }
+
+    // Dispatch on the container, not the extension: a `.gravity` artifact
+    // opened as a GGUF fails with a magic-number error that says nothing
+    // useful about what actually happened.
+    #[cfg(target_os = "macos")]
+    if gravity_engine::GravityEngine::is_gravity(weights) {
+        let e = gravity_engine::GravityEngine::load(weights, config)?;
+        return Ok(Box::new(e));
+    }
+    #[cfg(not(target_os = "macos"))]
+    if gravity_engine::GravityEngine::is_gravity(weights) {
+        return Err(Error::Model(
+            "this is a .gravity artifact; its runtime is Metal-only and this is not macOS"
+                .into(),
+        ));
     }
 
     let gguf = GgufFile::open(weights)?;

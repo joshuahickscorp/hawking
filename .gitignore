@@ -123,3 +123,6 @@ app/src-tauri/binaries/
 
 # AI-session handoff notes (not documentation)
 docs/plans/hide_build_handoff_*.md
+
+# sovereignty spine bytecode
+tools/sovereignty/__pycache__/

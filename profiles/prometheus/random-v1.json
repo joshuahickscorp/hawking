@@ -1,0 +1,12 @@
+{
+  "schema": "hawking.prometheus.profile.v1",
+  "name": "random-v1",
+  "purpose": "THE CONTROL that makes Claim A credible (Revision 4 arm II.7). Runs the full Prometheus machinery but scrambles the conditioning: it takes the base profile's per-tier BYTE TOTALS and randomly re-assigns which tensor groups land in which tier, holding the artifact's total bytes identical. This separates 'our capability conditioning works' (H2) from 'any non-uniform allocation works' (H1). Without this arm, the two are indistinguishable and only the first is a paper.",
+  "control": true,
+  "base_profile": "math-v1",
+  "seed": 20260723,
+  "matched_bytes_invariant": "The randomized allocation MUST reconcile to the same total physical bytes as the base profile. The pipeline asserts this; a mismatch is a bug, not a result.",
+  "protected_invariant": "Structural tensors that must remain native (router, normalization, indexer) are pinned and never randomized into an excised tier. Randomizing the spine into oblivion would test nothing.",
+  "capability_gates": ["G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8"],
+  "capability_gate_status": "GATED: same evaluator dependency as the base profile."
+}

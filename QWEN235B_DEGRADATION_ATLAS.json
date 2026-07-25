@@ -1,0 +1,234 @@
+{
+  "schema": "hawking.qwen.degradation_atlas.v1",
+  "parent": "qwen3-235b-a22b-instruct-2507",
+  "campaign": "campaign/subbit-capability-density-reset",
+  "generated_at_utc": "2026-07-20",
+  "status": "CLOSURE. This is a PRIOR LIBRARY for the next parent, not a set of universal truths. Every entry names the parent it was measured on and the condition under which it must be re-measured.",
+  "ontology_source": "tools/condense/doctor_gen3.py DIAGNOSES (15 causes)",
+  "gate": {
+    "mean_sym_kl_max": 0.10,
+    "mean_argmax_agreement_min": 0.95,
+    "campaign_result": "NO capability pass exists at any rate in this campaign. Every degradation below is a loss, reported as a loss."
+  },
+  "evidence_classes": {
+    "real_forward": "94-layer parent-vs-packed forward, cached parent logits, 6 frozen holdout prompts. The only class that can support a capability statement.",
+    "calibration_output_proxy": "output-space error on real routed activations at one or a few layers. A PROXY. Never capability.",
+    "weight_space": "reconstruction error on the tensors themselves. Not even a proxy for capability; an upper bound on how well any decoder could do."
+  },
+
+  "degradations": [
+    {
+      "id": "D_RECONSTRUCTION_BOUND",
+      "central": true,
+      "headline": "The S64 collapse is RECONSTRUCTION-BOUND, not routing-bound.",
+      "causes": {
+        "quantization_reconstruction": 0.916,
+        "routing_omission": 0.4997,
+        "mixed_interaction": 1.0
+      },
+      "cause_note": "Weights are shares of the measured symKL loss each isolated control reproduces, not a partition. They sum to more than 1 because the causes are SUB-additive (see magnitude.sum_of_parts).",
+      "localized_by": "Two fenced causal controls at the whole-model level, both run as full 94-layer forwards on the same 6 frozen prompts as the artifact they explain.",
+      "causal_control": {
+        "D1_route_only": "every expert served at SOURCE bf16 (perfect reconstruction), router masked to the SAME 64-expert survivor set S64_structural uses. Isolates routing loss. complete_bpw 16.0, diagnostic_only, promotable false.",
+        "D2_recon_only": "full 128-expert router UNMASKED (zero routing mass lost), every expert packed at the exact rates S64_structural gives its survivors. Isolates reconstruction. complete_bpw 1.856994233, diagnostic_only, promotable false.",
+        "both": "S64_structural itself, complete_bpw 0.948410027",
+        "fencing": "Both controls sit ABOVE the one-bit ceiling and carry capability_pass forced False, verdict CAUSAL_CONTROL_not_a_candidate. Neither is an artifact and neither may ever be promoted."
+      },
+      "magnitude": {
+        "S64_total_sym_kl": 8.59917,
+        "reconstruction_only_sym_kl": 7.87867,
+        "reconstruction_share_of_total": 0.9162,
+        "routing_only_sym_kl": 4.29693,
+        "routing_share_of_total": 0.4997,
+        "sum_of_parts": 12.1756,
+        "superadditive": false,
+        "argmax_split_is_load_bearing": {
+          "D1_route_only_argmax": 0.385,
+          "D2_recon_only_argmax": 0.08632,
+          "S64_structural_argmax": 0.07348,
+          "reading": "With PERFECT experts and only the router masked the model still agrees with the parent on 38.5 pct of next tokens. With PERFECT routing and packed experts it agrees on 8.6 pct - statistically indistinguishable from the 7.4 pct of the full artifact. Coding the survivors at 2.5 / 0.625 index bpw destroys almost everything on its own."
+        }
+      },
+      "confidence": "HIGH for the DIRECTION (reconstruction dominates routing), on this parent at this rate. The share arithmetic is symKL-ratio bookkeeping over 6 prompts, n=6, so treat 91.6 vs 50.0 as an ordering and not as a calibrated percentage.",
+      "consequence": "RECONSTRUCTION_BOUND -> prioritise fewer better-preserved experts, gamma-aware transforms, high-dimensional VQ, per-cell Kronecker, learned Doctor; then layerwise QAT. Trading MORE routing loss for BETTER reconstruction is the admitted direction. This is why S32_recon_first was launched.",
+      "does_not_say": "It does not say routing loss is acceptable. D1 alone is symKL 4.297 against a 0.10 gate - routing loss alone would also fail; it is simply the smaller of the two causes.",
+      "evidence": ["S1_FAILURE_DECOMPOSITION.json"]
+    },
+
+    {
+      "id": "D_S64_TOTAL_COLLAPSE",
+      "headline": "Both shipped one-bit artifacts collapse 12/12 on a real forward.",
+      "causes": {"mixed_interaction": 1.0, "logit_ranking_collapse": 1.0, "quantization_reconstruction": 0.916},
+      "localized_by": "S1 full forward, 6 frozen holdout prompts, 94 layers, cached parent logits, healthy parent control.",
+      "causal_control": "None needed - this is the artifact-level observation the D1/D2 controls decompose.",
+      "magnitude": {
+        "S64_structural": {"complete_bpw": 0.948410027, "mean_sym_kl": 8.59917, "mean_argmax_agreement": 0.07348, "mean_logit_cosine": 0.43373, "mean_top5_overlap": 0.07952, "n": 6},
+        "S64_doctor": {"complete_bpw": 0.999769787, "mean_sym_kl": 7.6989, "mean_argmax_agreement": 0.09215, "mean_logit_cosine": 0.46818, "mean_top5_overlap": 0.1429, "n": 6},
+        "distance_to_gate": "symKL is 77x-86x the 0.10 gate; argmax is 0.073-0.092 against a 0.95 gate. Not a near miss."
+      },
+      "confidence": "HIGH. Real forward, cached parent logits, paired prompts, both arms same six prompts.",
+      "evidence": ["S1_FAILURE_DECOMPOSITION.json"]
+    },
+
+    {
+      "id": "D_RAW_WEIGHT_PQVQ_FAMILY",
+      "headline": "The fixed-weight PQ/VQ family is dead at about one bit: argmax EXACTLY 0.0.",
+      "causes": {"quantization_reconstruction": 1.0, "logit_ranking_collapse": 1.0},
+      "localized_by": "Real forward, 6 prompts, 94 layers, healthy parent control (ppl 1.61 to 39.33).",
+      "causal_control": "The healthy parent control is the control: the parent itself is fine on the same prompts, so the collapse is the artifact and not the harness.",
+      "magnitude": {
+        "A1_1p0": {"complete_bpw": 1.0075, "collapsed": "6/6", "sym_kl_range": [7.6, 10.9], "argmax_agreement": 0.0},
+        "R2_subhalf": {"complete_bpw": 0.4930, "collapsed": "6/6", "sym_kl_range": [9.3, 13.5], "argmax_agreement": 0.0}
+      },
+      "confidence": "HIGH. Real forward at two rates, argmax is exactly zero, not near zero.",
+      "scope": "Kills THAT FAMILY (post-hoc coding of RAW frozen weights), not the sub-bit program. A method that CHANGES the source (QAT, distillation, compressibility training, structured pruning, learned sharing) is not this lever and is not blocked by this entry. The correct response is never a higher rate.",
+      "retired_not_deleted": "the 7 ladder rungs of this family are RETIRED",
+      "evidence": ["tools/foundry/NEGATIVE_TRANSFER_ATLAS.json#raw_weight_pq_vq_at_one_bit"]
+    },
+
+    {
+      "id": "D_ROUTING_OMISSION_AT_KEEP_K",
+      "headline": "Dropping experts loses top-k routing decisions at a measured, keep-fraction-dependent rate.",
+      "causes": {"routing_omission": 1.0, "router_redistribution": 0.5},
+      "localized_by": "Routing calibration over 1313 tokens, 94 layers, 128 experts, top-k; retention scored on a DISJOINT corpus.",
+      "causal_control": "D1_route_only is the causal control for what this omission costs in output space (symKL 4.297, argmax 0.385).",
+      "magnitude": {
+        "keep_64_top8_retention_disjoint_corpus": 0.792,
+        "keep_32_top8_retention": 0.523,
+        "keep_32_worst_layer": 0.415,
+        "withdrawn_number": "an earlier 92.2 pct keep-64 retention is WITHDRAWN: the 88-token routing calibration was collected ON the scored prompts. The disjoint-corpus figure is 79.2 pct."
+      },
+      "confidence": "MEDIUM for per-layer numbers, LOW for per-expert. The 1313-token calibration is explicitly NOT trustworthy for per-expert bit allocation: only 81.0 pct of (layer, expert) hot/cold assignments survive token resampling at 95 pct, 2.07 pct of (layer, expert) pairs are never routed at all (249 pairs across 88 layers), expected count per expert is 82.062, and a stable median partition needs about 7448 tokens.",
+      "usable_as": "COARSE aggregate only - quartile bands, or the lower-variance softmax_mass which has no zeros. Any allocation built on it must be gated on a real parent-vs-packed forward.",
+      "evidence": ["reports/subbit_reset/QWEN3_235B_ROUTING_CALIBRATION_1200.json", "S1_FAILURE_DECOMPOSITION.json"]
+    },
+
+    {
+      "id": "D_LAYER_0_IS_A_DIFFERENT_SOURCE",
+      "headline": "Layer 0 is not a hard cell, it is a DIFFERENT SOURCE. The codec that is near-optimal for layers >= 1 is badly mismatched to it.",
+      "causes": {"quantization_reconstruction": 1.0, "activation_shift": 0.6, "scale_magnitude_distortion": 0.5},
+      "localized_by": "Per-layer probes across L0, L1, L2, L23, L46, L70, L93. Four independent lanes converged without coordination.",
+      "causal_control": "Column-scale modulation as an intervention: applying it REMOVES the non-Gaussianity completely (3.0143 -> -0.0035 bits) and closes 42 pct of the distortion gap, which attributes the excess to a scale structure the codec does not model rather than to intrinsic hardness.",
+      "magnitude": {
+        "L0_down_non_gaussianity_bits": 3.014,
+        "L0_down_decades_to_shannon_lower_bound": 1.328,
+        "L0_down_measured_vs_achievable": [0.3701, 0.0803],
+        "L0_gate_non_gaussianity_bits": 0.669,
+        "L0_gate_decades_off": 0.791,
+        "deep_layer_non_gaussianity_bits": [0.012, 0.018],
+        "deep_layer_decades_off": 0.06,
+        "activation_aware_coding_L0_gate_output_error_cut_pct": 60,
+        "kronecker_L0_gate_rel_error_vs_incumbent": [0.0301, 0.2252],
+        "kronecker_rate_vs_incumbent_complete_bpw": [2.487061, 2.500735],
+        "kronecker_error_by_depth": {"L0": 0.0301, "L1": 0.6611, "L2": 0.7567, "L46": "0.85+"}
+      },
+      "predictor": {
+        "name": "post_attention_layernorm gamma^2 anisotropy (decades p99/p50)",
+        "data_free": true,
+        "values": {"L0": 1.8428, "L1": 0.9035, "L2": 0.5540, "L70": 0.4576, "L23": 0.3112, "L46": 0.2026, "L93": 0.0621},
+        "quality": "a data-free h = gamma^2 recovers 83 pct of the gain a full routed-token calibration pipeline buys; log-corr(h, gamma^2) = 0.9918 at layer 0"
+      },
+      "confidence": "HIGH that the source is layer-dependent (four converging lanes, plus a positive control on the tying metric). MEDIUM on the size of the exploitable gain, which is weight-space and calibration-proxy only.",
+      "bounded_value": "Layer 0 is 1/94 of the model, so exploiting it fully is worth about 1 pct of total bits. Its real value is DIAGNOSTIC: a per-layer codec selector is warranted, and 'lane A is closed' must not be transferred to the first block.",
+      "evidence": ["tools/foundry/NEGATIVE_TRANSFER_ATLAS.json#layer_zero_is_a_different_source", "reports/subbit_reset/SHANNON_BOUND_ADVERSARIAL.json", "reports/subbit_reset/LANE_A2_LAYER0_CODEC.json", "reports/subbit_reset/LANE_C_COMPRESSIBILITY_ADVERSARIAL.json", "reports/subbit_reset/LANE_F_GENERATED_PARAMS_ADVERSARIAL.json", "reports/subbit_reset/GAMMA_ANISOTROPY_ALL_LAYERS.json"]
+    },
+
+    {
+      "id": "D_SCALE_MAGNITUDE_DISTORTION",
+      "headline": "Row magnitude is wrong even where direction is roughly right, and the size of that error tracks the row-norm span.",
+      "causes": {"scale_magnitude_distortion": 1.0},
+      "localized_by": "M01 function-aware probe over 15 real cells (5 layers x 3 organs), scale-invariant VQ vs plain VQ.",
+      "causal_control": "Per-row scale normalization applied and removed on the same cells; the delta IS the attribution.",
+      "magnitude": {
+        "mean_rel_error_before_after": [0.7746, 0.7526],
+        "mean_gain_pct": 2.8,
+        "largest_where_span_largest_L0_gate": [0.7214, 0.6435],
+        "vanishes_where_flat_L70": [0.7041, 0.7029]
+      },
+      "confidence": "MEDIUM. Real weights, 15 cells, but WEIGHT-SPACE only. 2.8 pct mean is small and organ/layer dependent.",
+      "correction_carried": "The related 'row-norm stratification' premise is FALSE on this parent: the sealed claim that 94 pct of gate/up rows collapse onto ONE codeword does not reproduce - measured single-codeword share is 0.0267 mean, never above 0.047, at the deployed d16/k1024 geometry. The 94 pct figure belonged to a k=32 geometry.",
+      "evidence": ["reports/subbit_reset/M01_FUNCTION_AWARE_PROBE.json", "tools/foundry/NEGATIVE_TRANSFER_ATLAS.json#row_norm_stratification_premise"]
+    },
+
+    {
+      "id": "D_ROUTER_REDISTRIBUTION_IS_NOT_TREATABLE_HERE",
+      "headline": "Router redistribution among survivors is a real cause but it is ALREADY at its floor: plain masking is optimal.",
+      "causes": {"router_redistribution": 1.0},
+      "localized_by": "S2C router distillation, four arms scored on held-out ids.",
+      "causal_control": "Plain masking is the null arm. Every trained student is a treatment arm against it, all on the same holdout.",
+      "magnitude": {
+        "masked_baseline": 0.0784,
+        "logit_bias": 0.0993,
+        "low_rank_r8": 0.1176,
+        "full_survivor_row_retune": 0.0927,
+        "kl_term": "provably INERT - softmax restricted to survivors IS the teacher renormalized onto survivors, so KL = 0 exactly and any correction only raises it"
+      },
+      "confidence": "HIGH for the negative direction (algebraic, not just empirical). The adversary noted the holdout is not exchangeable so the train/holdout delta is not a clean generalization measurement, but every arm lost to masking on the SAME holdout, so the ordering stands.",
+      "withdrawn_number": "the S2C '57.3 pct reachable headroom' is WITHDRAWN - the oracle was scored on only the first 16 holdout tokens, a biased-easy head subset (retained routing mass 0.969 vs 0.939 for the rest), against a baseline measured over all 96.",
+      "evidence": ["reports/subbit_reset/S2C_ROUTER_DISTILL.json", "reports/subbit_reset/S2C_ROUTER_DISTILL_ADVERSARIAL.json"]
+    },
+
+    {
+      "id": "D_POSTHOC_CODING_NEARLY_EXHAUSTED_AT_DEPTH",
+      "headline": "At mid and late layers the coded-space weights ARE essentially Gaussian, so post-hoc codec improvement at fixed rate is nearly out of room.",
+      "causes": {"quantization_reconstruction": 1.0},
+      "localized_by": "Kozachenko-Leonenko differential-entropy estimator (validated to 0.011 bits against the analytic Gaussian entropy) on real weights in the coded space, per layer and organ.",
+      "causal_control": "The Shannon LOWER bound computed from MEASURED differential entropy, versus the codec's achieved distortion, per cell.",
+      "magnitude": {
+        "deep_non_gaussianity_bits": [0.012, 0.018],
+        "down_proj_decades_from_own_bound": 0.059,
+        "down_proj_measured_vs_bound": [0.7026, 0.6568],
+        "gate_decades_from_own_bound": [0.27, 0.28],
+        "gate_measured_vs_bound": [0.2427, 0.1749],
+        "best_possible_posthoc_gain_on_gate": "a factor of ~1.4 in rel_error"
+      },
+      "confidence": "HIGH at depth, and this entry is itself a CORRECTION of an earlier overclaim in the same campaign.",
+      "corrected_reasoning": "The campaign first sealed this lane because the codec matched sqrt(2^-2R). That was WRONG: sqrt(2^-2R) is the GAUSSIAN rate-distortion function, and among sources of equal variance the Gaussian MAXIMIZES differential entropy, so its D(R) is an UPPER bound on the distortion any same-variance source requires. Matching it proves the codec is as good as if the weights were Gaussian; it proves nothing about the true floor. Use D(R) >= (1/2 pi e) 2^(2h) 2^(-2R) with MEASURED h.",
+      "named_exception": "LAYER 0 IS NOT EXHAUSTED - see D_LAYER_0_IS_A_DIFFERENT_SOURCE.",
+      "must_re_measure": "every future parent must MEASURE its own Shannon lower bound per cell rather than assuming the Gaussian number",
+      "evidence": ["reports/subbit_reset/M01_FUNCTION_AWARE_PROBE.json", "reports/subbit_reset/SHANNON_BOUND_ADVERSARIAL.json", "tools/foundry/NEGATIVE_TRANSFER_ATLAS.json#post_hoc_coding_of_frozen_weights"]
+    },
+
+    {
+      "id": "D_ORGAN_SENSITIVITY_INVERSION",
+      "headline": "Organs do not degrade alike: mlp1 (gate, up) is sensitive, mlp2 (down) is tolerant. Uniform sub-bit allocation is superseded.",
+      "causes": {"quantization_reconstruction": 1.0, "activation_shift": 0.3},
+      "localized_by": "F0 (gpt-oss-120b) real forward found the split; F1 (qwen3-235b) confirmed dominant_failure_organ = gate.",
+      "causal_control": "F0 ran uniform allocation and the organ-split allocation as separate forwards. Both collapsed, but the sensitivity ordering reproduced on a second parent.",
+      "magnitude": {
+        "shipped_consequence": "gate/up ride a much richer index rung than down at every ladder point: at S64, gate/up 2.5 index bpw vs down 0.625; at S32_recon_first, gate/up 5.0 vs down 1.25",
+        "gamma_scope": "gamma weighting is legitimate for gate_proj AND up_proj (their organ input IS the post-attention-LayerNorm output) and is NOT applied to down_proj, whose input is the SwiGLU intermediate"
+      },
+      "confidence": "MEDIUM-HIGH. Reproduced across two parents. The direction transfers; the exact rung split does not.",
+      "reopen": "a future parent measuring NO organ sensitivity split (gate and down degrade within 10 pct of each other)",
+      "evidence": ["tools/foundry/NEGATIVE_TRANSFER_ATLAS.json#uniform_subbit_allocation", "reports/subbit_reset/S3D_UP_PROJ_PATCH.json", "reports/subbit_reset/S_STRUCTURAL_PLAN.json"]
+    },
+
+    {
+      "id": "D_INSTRUMENT_DEGRADATION_CALIBRATION_CORPUS",
+      "headline": "The frozen calibration corpus is itself a source of measured error: 1313 positions carry only 540 UNIQUE token ids.",
+      "causes": {"activation_shift": 1.0, "mixed_interaction": 0.5},
+      "localized_by": "Direct count on qwen_calibration_corpus, plus the layer-0 identity that MoE input is rmsnorm(embed[id]), a pure function of the id.",
+      "causal_control": "Re-splitting by unique-id-and-corpus-SEGMENT instead of by POSITION, seed-varied, then re-running the identical treatment code. The treatment's sealed +11.4 pct reproduces on the OLD split and vanishes on the new one - so the split, not the module, is the cause.",
+      "magnitude": {
+        "corpus_positions": 1313,
+        "unique_token_ids": 540,
+        "unique_ids_saturate": "min_tokens 1200 and 20000 both yield 540 - the cap is the corpus, not the target",
+        "old_split_measured_fit_span_capture": [1.000, 0.991, 0.422],
+        "new_split_capture": [0.058, 0.099],
+        "effect_on_a_sealed_result": "S3A layerwise QAT: +11.4 pct becomes -1.92 pct mean over 13 low-capture expert-cells, only 1 of 13 positive; -1.77 pct mean over all 27 cells"
+      },
+      "confidence": "HIGH. This is a measured root cause, not a guess: the same embedding row was literally in both halves, so capture 1.000 was ROW DUPLICATION and not near-degeneracy.",
+      "consequence_for_next_parent": "Any fit/score split on a frozen corpus must be proven disjoint in the space the module actually sees (unique ids / segments), never merely in position index. A large fit span and a low-capture probe are not simultaneously obtainable on a 540-unique-id corpus.",
+      "evidence": ["reports/subbit_reset/S3A_DISJOINT_RESCORE.json", "tools/condense/qwen_qat_disjoint.py"]
+    }
+  ],
+
+  "honesty": [
+    "No capability pass exists at any rate in this campaign. Every magnitude here is a loss.",
+    "Only D_RECONSTRUCTION_BOUND, D_S64_TOTAL_COLLAPSE, D_RAW_WEIGHT_PQVQ_FAMILY and the D1/D2 controls rest on a REAL FORWARD. Everything else is calibration-output-proxy or weight-space.",
+    "D1 and D2 sit above the one-bit ceiling (16.0 and 1.857 complete BPW) and may never be promoted. They are instruments.",
+    "The 91.6 / 50.0 shares are symKL-ratio bookkeeping over n=6 prompts. Read them as an ordering.",
+    "Withdrawn and corrected numbers are carried explicitly (S2C 57.3 pct headroom, 92.2 pct keep-64 retention, the Gaussian D(R) floor, the 94 pct single-codeword premise, the Gen1 row selector) so that no downstream reader re-derives them from an older artifact."
+  ]
+}

@@ -1,0 +1,81 @@
+{
+  "schema": "hawking.qwen35_moe.window_plan.v1",
+  "repo": "Qwen/Qwen3.5-397B-A17B",
+  "revision": "8472618112abcbd45acbcdc58436aff4233c23f7",
+  "policy": "PARTIAL_ONLY; the 806.8 GB body is 6.2x free disk and is never resident",
+  "num_text_layers": 60,
+  "strata": {
+    "early_linear": {
+      "stratum_layer": 1,
+      "layer_type": "linear_attention",
+      "successor_layer": 2,
+      "successor_type": "linear_attention",
+      "shards": [
+        "model.safetensors-00018-of-00094.safetensors",
+        "model.safetensors-00045-of-00094.safetensors",
+        "model.safetensors-00069-of-00094.safetensors",
+        "model.safetensors-00083-of-00094.safetensors",
+        "model.safetensors-00091-of-00094.safetensors",
+        "model.safetensors-00092-of-00094.safetensors",
+        "model.safetensors-00094-of-00094.safetensors"
+      ],
+      "shard_count": 7
+    },
+    "middle_full": {
+      "stratum_layer": 31,
+      "layer_type": "full_attention",
+      "successor_layer": 32,
+      "successor_type": "linear_attention",
+      "shards": [
+        "model.safetensors-00010-of-00094.safetensors",
+        "model.safetensors-00021-of-00094.safetensors",
+        "model.safetensors-00065-of-00094.safetensors",
+        "model.safetensors-00071-of-00094.safetensors",
+        "model.safetensors-00091-of-00094.safetensors",
+        "model.safetensors-00092-of-00094.safetensors",
+        "model.safetensors-00094-of-00094.safetensors"
+      ],
+      "shard_count": 7
+    },
+    "late_linear": {
+      "stratum_layer": 56,
+      "layer_type": "linear_attention",
+      "successor_layer": 57,
+      "successor_type": "linear_attention",
+      "shards": [
+        "model.safetensors-00051-of-00094.safetensors",
+        "model.safetensors-00054-of-00094.safetensors",
+        "model.safetensors-00086-of-00094.safetensors",
+        "model.safetensors-00087-of-00094.safetensors",
+        "model.safetensors-00091-of-00094.safetensors",
+        "model.safetensors-00092-of-00094.safetensors",
+        "model.safetensors-00094-of-00094.safetensors"
+      ],
+      "shard_count": 7
+    }
+  },
+  "head_shards": [
+    "model.safetensors-00091-of-00094.safetensors",
+    "model.safetensors-00094-of-00094.safetensors"
+  ],
+  "unique_shards_to_fetch": [
+    "model.safetensors-00010-of-00094.safetensors",
+    "model.safetensors-00018-of-00094.safetensors",
+    "model.safetensors-00021-of-00094.safetensors",
+    "model.safetensors-00045-of-00094.safetensors",
+    "model.safetensors-00051-of-00094.safetensors",
+    "model.safetensors-00054-of-00094.safetensors",
+    "model.safetensors-00065-of-00094.safetensors",
+    "model.safetensors-00069-of-00094.safetensors",
+    "model.safetensors-00071-of-00094.safetensors",
+    "model.safetensors-00083-of-00094.safetensors",
+    "model.safetensors-00086-of-00094.safetensors",
+    "model.safetensors-00087-of-00094.safetensors",
+    "model.safetensors-00091-of-00094.safetensors",
+    "model.safetensors-00092-of-00094.safetensors",
+    "model.safetensors-00094-of-00094.safetensors"
+  ],
+  "unique_shard_count": 15,
+  "of_total_shards": 94,
+  "note": "actual partial fetch is deferred: the heavy lane is the DeepSeek complete download, and the amplification probe needs a qwen3_5_moe reference forward (linear-attention recurrence + full attention + fused-expert MoE) that does not exist yet. This plan is what that fetch will pull when its turn comes."
+}

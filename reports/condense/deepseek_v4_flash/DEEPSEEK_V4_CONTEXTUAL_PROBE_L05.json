@@ -1,0 +1,93 @@
+{
+  "candidates": [
+    {
+      "alpha": 0.05,
+      "bytes": 8388672,
+      "centered_cosine": 0.7585849070939776,
+      "gate": {
+        "centered_cosine_at_least": 0.5,
+        "skill_lower_above": 0.0
+      },
+      "label": "functional_student_h1024",
+      "local_bpw": 0.010374532060504133,
+      "normalized_rmse": 0.8953278055650302,
+      "passes": true,
+      "per_position_skill": {
+        "fraction_beating_null": 0.8348214285714286,
+        "median": 0.05285087464797211,
+        "p05": -0.05810404439404785,
+        "p95": 0.12014245599848758
+      },
+      "positions": 224,
+      "raw_cosine": 0.639985576917267,
+      "relative_l2": 0.8953087141274544,
+      "rmse": 0.29852838725350206,
+      "skill": 0.18228060149650605,
+      "skill_lower": 0.03916885398839808
+    },
+    {
+      "alpha": 0.05,
+      "bytes": 33562688,
+      "centered_cosine": 0.9062461680100208,
+      "gate": {
+        "centered_cosine_at_least": 0.5,
+        "skill_lower_above": 0.0
+      },
+      "label": "affine_upper_control",
+      "local_bpw": 0.04150802209130329,
+      "normalized_rmse": 0.4624494255183657,
+      "passes": false,
+      "per_position_skill": {
+        "fraction_beating_null": 0.33482142857142855,
+        "median": -0.043591749434434446,
+        "p05": -0.7760672428168728,
+        "p95": 0.14350903714618013
+      },
+      "positions": 224,
+      "raw_cosine": 0.9065480415023724,
+      "relative_l2": 0.4624395645218841,
+      "rmse": 0.15419411787304194,
+      "skill": 0.7818432553044566,
+      "skill_lower": -0.19582467314418783
+    },
+    {
+      "alpha": 0.05,
+      "bytes": 8192,
+      "centered_cosine": 0.0,
+      "gate": {
+        "centered_cosine_at_least": 0.5,
+        "skill_lower_above": 0.0
+      },
+      "label": "weight_space_constant",
+      "local_bpw": 1.0131301669638515e-05,
+      "normalized_rmse": 0.990101964074347,
+      "passes": false,
+      "per_position_skill": {
+        "fraction_beating_null": 0.0,
+        "median": 0.0,
+        "p05": 0.0,
+        "p95": 0.0
+      },
+      "positions": 224,
+      "raw_cosine": 0.1405829357659829,
+      "relative_l2": 0.9900808517289837,
+      "rmse": 0.33012885416320437,
+      "skill": 0.0,
+      "skill_lower": 0.0
+    }
+  ],
+  "compared_to_embedding_seeded": "the embedding-seeded probe gave student skill -0.06/-0.09 and a shared-expert control near zero, proving the input invalid; this uses real contextual hidden instead",
+  "constant_null_raw_cosine": 0.1405829357659829,
+  "fit_positions": 224,
+  "forward": "official DeepseekV4DecoderLayer, real dequantized weights, streamed",
+  "functional_escape_exists": true,
+  "input": "REAL contextual pre-MoE hidden from the validated streamed forward",
+  "layer": 5,
+  "map_is_the_win": true,
+  "not_evidence_of": "amplification or capability; that needs perturbation propagation through following blocks, which the same streamed forward supports.",
+  "parent": "deepseek-ai/DeepSeek-V4-Flash",
+  "schema": "hawking.deepseek_v4.contextual_probe.v1",
+  "score_positions": 224,
+  "seq_len": 224,
+  "shuffled_input_skill": -0.013743964305313217
+}

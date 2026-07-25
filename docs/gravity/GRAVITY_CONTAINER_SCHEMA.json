@@ -1,0 +1,163 @@
+{
+  "$id": "https://hawking.local/hawking.gravity.container.v1/header.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": true,
+  "properties": {
+    "architecture": {
+      "type": "object"
+    },
+    "compression": {
+      "properties": {
+        "codec": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "complete_bpw": {
+          "minimum": 0,
+          "type": "number"
+        },
+        "packed_bpw": {
+          "minimum": 0,
+          "type": "number"
+        },
+        "production_rung": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "codec",
+        "packed_bpw"
+      ],
+      "type": "object"
+    },
+    "format_version": {
+      "const": 1
+    },
+    "integrity": {
+      "properties": {
+        "body_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "tensor_count": {
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "body_sha256",
+        "tensor_count"
+      ],
+      "type": "object"
+    },
+    "model": {
+      "properties": {
+        "repo": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "revision": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "source_shard": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "repo",
+        "revision"
+      ],
+      "type": "object"
+    },
+    "schema": {
+      "const": "hawking.gravity.shard_header.v1"
+    },
+    "shard": {
+      "type": "object"
+    },
+    "tensors": {
+      "items": {
+        "properties": {
+          "bpw": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "bytes": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "category": {
+            "type": "string"
+          },
+          "codec": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "elements": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "expert": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "layer": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "name": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "offset": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "sha256": {
+            "pattern": "^[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "shape": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "terminal_state": {
+            "enum": [
+              "PACKED_IN_CORE_ARTIFACT",
+              "PROTECTED_SOURCE_NATIVE"
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "elements",
+          "offset",
+          "bytes",
+          "sha256"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "tokenizer": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "schema",
+    "format_version",
+    "model",
+    "compression",
+    "integrity",
+    "tensors"
+  ],
+  "title": "hawking.gravity.shard_header.v1",
+  "type": "object"
+}

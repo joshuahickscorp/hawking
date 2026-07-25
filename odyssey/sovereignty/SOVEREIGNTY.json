@@ -1,0 +1,48 @@
+{
+ "continuity": {
+  "fallback_allowed": false,
+  "law": "the chosen model answers, or Hawking explains why it did not"
+ },
+ "implementation": "tools/sovereignty/sovereignty.py",
+ "limit_registry": "odyssey/sovereignty/LIMIT_REGISTRY.json",
+ "metrics": {
+  "attribution_completeness": {
+   "status": "computable",
+   "target": 1
+  },
+  "boundary_error_rate": {
+   "gate": "needs a served model and an evaluated prompt set",
+   "status": "GATED"
+  },
+  "false_refusal_rate": {
+   "gate": "needs a served model and an evaluated prompt set",
+   "status": "GATED"
+  },
+  "hidden_intervention_rate": {
+   "status": "computable",
+   "target": 0
+  },
+  "model_continuity_rate": {
+   "status": "computable",
+   "target": 1
+  }
+ },
+ "mode": "strict",
+ "plane_law": "these planes may not impersonate one another",
+ "planes": [
+  "capability",
+  "policy",
+  "permission",
+  "evidence",
+  "resource"
+ ],
+ "refusal_attribution": [
+  "R-CAPABILITY",
+  "R-LEARNED",
+  "R-POLICY",
+  "R-PERMISSION",
+  "R-VERIFICATION",
+  "R-RESOURCE"
+ ],
+ "schema": "hawking.odyssey.sovereignty.v1"
+}

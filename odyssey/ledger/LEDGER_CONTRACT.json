@@ -1,0 +1,28 @@
+{
+ "append_only": true,
+ "correction_policy": "a wrong row is superseded by a new row that names it; rows are never edited or removed",
+ "event_kinds": [
+  "claim",
+  "objection",
+  "formalization",
+  "proof_attempt",
+  "verifier_event",
+  "tribunal_decision",
+  "literature_query",
+  "budget_grant",
+  "sovereignty_event",
+  "sandbox_event",
+  "checkpoint",
+  "rollback"
+ ],
+ "law": "what is not recorded did not happen; what is recorded cannot be revised",
+ "required_fields": [
+  "id",
+  "at",
+  "kind",
+  "role",
+  "parents",
+  "payload_sha256"
+ ],
+ "schema": "hawking.odyssey.ledger.v1"
+}

@@ -1,0 +1,151 @@
+{
+  "artifact": "tools/condense/doctor_causal_harness.py",
+  "scope": "MECHANISM ONLY - synthetic twin with random bf16 weights. No parent, no capability, no rate is claimed. symKL/argmax are output-space PROXIES and are reported as losses.",
+  "bit_law": "diagnostic harness; proposes no payload, bills no bits against the 1.0 bits/weight ceiling.",
+  "twin_2block": "reuses tests/test_qwen_real_forward.py::_build_tiny_checkpoint",
+  "twin_8block": "same fixture writer, num_hidden_layers=8",
+  "student_lesion": "per-row sign*mean codebook on mlp.experts.* only",
+  "D1_route_masked": {
+    "intervention": {
+      "label": "D1_route_masked",
+      "id": "6a33bf1098e2",
+      "student_components": [],
+      "student_blocks": null,
+      "router_mask": [
+        0,
+        1
+      ],
+      "teacher_tensors": [],
+      "reset_to_teacher_after": []
+    },
+    "id": "6a33bf1098e2",
+    "label": "D1_route_masked",
+    "sym_kl": 0.000774136904685575,
+    "argmax_agreement": 1.0,
+    "n_positions": 6
+  },
+  "D2_experts_packed": {
+    "intervention": {
+      "label": "D2_experts_packed",
+      "id": "5c30680bf66f",
+      "student_components": [
+        "experts"
+      ],
+      "student_blocks": null,
+      "router_mask": null,
+      "teacher_tensors": [],
+      "reset_to_teacher_after": []
+    },
+    "id": "5c30680bf66f",
+    "label": "D2_experts_packed",
+    "sym_kl": 0.0007574740890968484,
+    "argmax_agreement": 1.0,
+    "n_positions": 6
+  },
+  "S1_composed": {
+    "intervention": {
+      "label": "D1_route_masked+D2_experts_packed",
+      "id": "8c7c824fdb3d",
+      "student_components": [
+        "experts"
+      ],
+      "student_blocks": null,
+      "router_mask": [
+        0,
+        1
+      ],
+      "teacher_tensors": [],
+      "reset_to_teacher_after": []
+    },
+    "id": "8c7c824fdb3d",
+    "label": "D1_route_masked+D2_experts_packed",
+    "sym_kl": 0.0010686745357681247,
+    "argmax_agreement": 1.0,
+    "n_positions": 6
+  },
+  "sub_additive": true,
+  "parts_sum_sym_kl": 0.0015316109937824234,
+  "propagation_graph_2block": {
+    "lesion_components": [
+      "experts"
+    ],
+    "teacher_components_kept": [
+      "attention",
+      "final_norm",
+      "lm_head",
+      "norms",
+      "router"
+    ],
+    "n_blocks": 2,
+    "full_student_sym_kl": 0.0007574740890968484,
+    "healed_sym_kl_by_k": [
+      0.0007574740890968484,
+      0.0006062395980206235,
+      0.0
+    ],
+    "residual_sym_kl_by_k": [
+      0.0,
+      0.0001793111188531095,
+      0.0007574740890968484
+    ],
+    "marginal_damage_by_block": [
+      0.00015123449107622491,
+      0.0006062395980206235
+    ],
+    "onset_block": 0,
+    "irreversible_block": 0,
+    "onset_frac": 0.05,
+    "irreversible_frac": 0.1
+  },
+  "propagation_graph_8block": {
+    "lesion_components": [
+      "experts"
+    ],
+    "teacher_components_kept": [
+      "attention",
+      "final_norm",
+      "lm_head",
+      "norms",
+      "router"
+    ],
+    "n_blocks": 8,
+    "full_student_sym_kl": 0.004230253240607935,
+    "healed_sym_kl_by_k": [
+      0.004230253240607935,
+      0.0021496412998767834,
+      0.0011410546327912646,
+      0.0006468426113542308,
+      0.000601915740041073,
+      0.0005322644917521858,
+      0.0003190979173225185,
+      0.00026588139413464775,
+      0.0
+    ],
+    "residual_sym_kl_by_k": [
+      0.0,
+      0.002091147938643493,
+      0.0030778662243828967,
+      0.0037113827991698245,
+      0.004169175555107486,
+      0.004424672149447278,
+      0.004144896921495449,
+      0.004249424882633479,
+      0.004230253240607935
+    ],
+    "marginal_damage_by_block": [
+      0.002080611940731152,
+      0.0010085866670855189,
+      0.0004942120214370337,
+      4.492687131315784e-05,
+      6.965124828888717e-05,
+      0.00021316657442966728,
+      5.321652318787077e-05,
+      0.00026588139413464775
+    ],
+    "onset_block": 0,
+    "irreversible_block": 0,
+    "onset_frac": 0.05,
+    "irreversible_frac": 0.1
+  },
+  "self_check_fails_when_broken": true
+}

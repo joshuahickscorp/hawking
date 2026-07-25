@@ -39,6 +39,10 @@ import gravity_forge as forge  # noqa: E402
 import gravity_format  # noqa: E402
 
 PACK_SCHEMA = "hawking.glm52.compact_tensor.v1"
+
+
+class PackCoverageError(RuntimeError):
+    """A shard's artifact would not contain every tensor the shard held."""
 MAGIC = b"GLM52CPK"
 # gravity_forge bills exactly this much for per-artifact metadata, so the container header
 # is fixed at the same size and the on-disk file can match the ledger to the byte.
@@ -60,11 +64,35 @@ def pack_indices(indices: np.ndarray, bits: int) -> bytes:
 
 
 def unpack_indices(raw: bytes, count: int, bits: int) -> np.ndarray:
-    """Inverse of :func:`pack_indices`."""
-    unpacked = np.unpackbits(np.frombuffer(raw, dtype=np.uint8))[: count * bits]
-    grid = unpacked.reshape(count, bits).astype(np.uint64)
-    weights = (np.uint64(1) << np.arange(bits - 1, -1, -1, dtype=np.uint64))
-    return (grid * weights).sum(axis=1)
+    """Inverse of :func:`pack_indices`, with temporaries bounded by the payload.
+
+    Eight consecutive indices occupy exactly ``bits`` bytes, so lane ``j`` of every such
+    group sits at one fixed byte offset and one fixed shift.  Reading the eight lanes with
+    strided byte slices never materializes a per-bit grid: the widest temporary is one
+    ``count/8`` window array, against ``count*bits`` bytes for an unpackbits grid.  Output
+    is uint8 for the k<=256 rungs the ladder actually ships.
+    """
+    if not 1 <= bits <= 16:
+        raise ValueError(f"unpack_indices handles 1..16 bits, got {bits}")
+    span = 2 if bits <= 8 else 3  # bytes an index can straddle within its group
+    window_dtype = np.uint16 if bits <= 8 else np.uint32
+    groups = (count + 7) // 8
+    block = np.zeros(groups * bits + span, dtype=np.uint8)
+    source = np.frombuffer(raw, dtype=np.uint8)[: groups * bits]
+    block[: source.size] = source
+    out = np.empty(groups * 8, dtype=np.uint8 if bits <= 8 else np.uint16)
+    stop = groups * bits
+    for j in range(8):
+        start = j * bits
+        base = start // 8
+        window = block[base: base + stop: bits].astype(window_dtype)
+        for extra in range(1, span):
+            window <<= 8
+            window |= block[base + extra: base + extra + stop: bits]
+        window >>= span * 8 - (start % 8) - bits
+        window &= (1 << bits) - 1
+        out[j::8] = window
+    return out[:count]
 
 
 def serialize(artifact: forge.PackedArtifact) -> bytes:
@@ -357,21 +385,53 @@ def pack_shard(shard_path: Path, rows: list[dict], out_dir: Path, *,
     all_rungs = frozenset(rung["rung"] for rung in LADDER)
     surveyed = 0
     routed_seen = 0
+    def carry_native(row: dict, raw: bytes, elements: int, reason: str) -> None:
+        """Physically store a tensor at source precision and bill exactly its own bytes.
+
+        Billing and storing are the same act here.  Generation A kept them apart: it added
+        elements * 16 to compact_bits and appended a descriptor, but never handed the bytes
+        to write_shard, so every router, norm and indexer tensor was accounted for and
+        written nowhere while the BF16 body that held them was evicted.
+        """
+        nonlocal compact_bits, offset
+        compact_bits += len(raw) * 8
+        descriptor = {
+            "name": row["name"], "category": row["category"],
+            "layer": row.get("layer"), "expert": row.get("expert"),
+            "shape": row["shape"], "codec": f"native.{str(row['dtype']).lower()}",
+            "terminal_state": "PROTECTED_SOURCE_NATIVE",
+            "elements": int(elements),
+            "bpw": len(raw) * 8 / max(1, elements),
+            "reason": reason,
+        }
+        payloads.append((descriptor, raw))
+        entries.append(descriptor)
+        offset += len(raw)
+
     with open(shard_path, "rb", buffering=0) as source:
         for row in ordered:
-            if row["dtype"] != "BF16":
-                continue  # F32 control tensors ride the protected path
             source.seek(int(row["absolute_start"]))
             raw = source.read(int(row["payload_bytes"]))
+            elements = 1
+            for dim in row["shape"]:
+                elements *= int(dim)
+            # Every declared tensor counts in the denominator exactly once, whatever path
+            # it takes.  The complete rate is the campaign's headline, so nothing may be
+            # quietly excluded from it.
+            total_weights += elements
+
+            if row["dtype"] != "BF16":
+                # F32 control tensors (router score-correction bias and friends) are not
+                # ladder candidates, but they are declared source weight and the artifact
+                # is incomplete without them.  Carry the exact source bytes.
+                carry_native(row, raw, elements, "NON_BF16_CONTROL_TENSOR")
+                continue
+
             weights = probe._bf16_to_f32(np.frombuffer(raw, dtype=np.uint16)).reshape(
                 row["shape"]).astype(np.float32)
-            total_weights += weights.size
 
             if row["provisional_budget_class"] == PROTECTED_BUDGET_CLASS:
-                compact_bits += weights.size * 16
-                entries.append({"name": row["name"], "category": row["category"],
-                                "terminal_state": "PROTECTED_SOURCE_NATIVE_WITH_BILLED_BYTES",
-                                "billed_bpw": 16.0, "elements": int(weights.size)})
+                carry_native(row, raw, weights.size, "PROTECTED_BUDGET_CLASS")
                 continue
 
             # Deterministic by position, not random: the same shard always surveys the
@@ -387,11 +447,7 @@ def pack_shard(shard_path: Path, rows: list[dict], out_dir: Path, *,
             chosen = next((r for r in ladder_rows
                            if r["rung"] == production_rung and r["admitted"]), None)
             if chosen is None:  # no admissible rung: protect rather than exceed the ceiling
-                compact_bits += weights.size * 16
-                entries.append({"name": row["name"], "category": row["category"],
-                                "terminal_state": "PROTECTED_SOURCE_NATIVE_WITH_BILLED_BYTES",
-                                "billed_bpw": 16.0, "elements": int(weights.size),
-                                "reason": "NO_ADMISSIBLE_LADDER_RUNG"})
+                carry_native(row, raw, weights.size, "NO_ADMISSIBLE_LADDER_RUNG")
                 continue
 
             payload = serialize(chosen["artifact"])
@@ -412,7 +468,23 @@ def pack_shard(shard_path: Path, rows: list[dict], out_dir: Path, *,
             entries.append(descriptor)
             offset += len(payload)
 
-    packed_weights = sum(int(d["elements"]) for d, _ in payloads)
+    # Fail closed on the coverage hole rather than write another artifact that the
+    # streamer will treat as proof the source was consumed.  Every path above now hands
+    # its bytes to write_shard, so this guard should never fire; it stays because a
+    # future path that forgets to would otherwise be indistinguishable from a good pack,
+    # and the failure mode is deletion of the only body that could recreate the weight.
+    written = {descriptor["name"] for descriptor, _ in payloads}
+    absent = [row["name"] for row in ordered if row["name"] not in written]
+    if absent:
+        raise PackCoverageError(
+            f"{shard_path.name}: {len(absent)} of {len(ordered)} source tensors would be "
+            f"billed but not written, including {absent[:3]}. Refusing to emit an "
+            f"artifact that authorizes eviction of weights it does not contain."
+        )
+    compressed = [(d, b) for d, b in payloads if not str(d["codec"]).startswith("native.")]
+    native = [(d, b) for d, b in payloads if str(d["codec"]).startswith("native.")]
+    packed_weights = sum(int(d["elements"]) for d, _ in compressed)
+    complete_weights = sum(int(d["elements"]) for d, _ in payloads)
     # Write through a temporary name and rename.  A .gravity is proof a body was
     # consumed, and the streamer treats any file with the right name as packed --
     # so a pack killed mid-write would leave a truncated artifact that reads as
@@ -429,8 +501,16 @@ def pack_shard(shard_path: Path, rows: list[dict], out_dir: Path, *,
         tokenizer={"kind": "reference", "source": "zai-org/GLM-5.2"},
         compression={
             "codec": "gravity-pq", "production_rung": production_rung,
-            "packed_bpw": (sum(len(b) for _, b in payloads) * 8 / max(1, packed_weights)),
+            # packed_bpw is what the codec achieved on the tensors it compressed.
+            # complete_bpw is what the shard costs with its native organs carried, and it
+            # is the only rate a candidate may be judged on.  Both reconcile against
+            # physical bytes in gravity_format.verify.
+            "packed_bpw": (sum(len(b) for _, b in compressed) * 8 / max(1, packed_weights)),
+            "complete_bpw": (sum(len(b) for _, b in payloads) * 8 / max(1, complete_weights)),
             "whole_shard_bpw": compact_bits / max(1, total_weights),
+            "native_tensors": len(native),
+            "native_bytes": sum(len(b) for _, b in native),
+            "compressed_tensors": len(compressed),
             # The production rung is fitted on every tensor and is the artifact.  The other
             # rungs are a survey; this says exactly how much of one this shard carries.
             "ladder_survey": {
@@ -457,6 +537,10 @@ def pack_shard(shard_path: Path, rows: list[dict], out_dir: Path, *,
         "compact_bytes": offset,
         "ladder_tensors_fully_surveyed": surveyed,
         "ladder_sample_every_nth_routed_expert": LADDER_SAMPLE_EVERY,
+        "complete_bpw": sum(len(b) for _, b in payloads) * 8 / max(1, complete_weights),
+        "packed_bpw": sum(len(b) for _, b in compressed) * 8 / max(1, packed_weights),
+        "native_tensors": len(native), "compressed_tensors": len(compressed),
+        "tensor_coverage": "COMPLETE_EVERY_DECLARED_TENSOR_PHYSICALLY_PRESENT",
         "whole_shard_bpw": compact_bits / max(1, total_weights),
         "evidence_level": "F0_PHYSICAL_AND_F1_WEIGHT_SPACE_PROXY_ONLY",
         "not_evidence_of": "output divergence, capability, or end-to-end behaviour",

@@ -1,0 +1,36 @@
+{
+  "abi": "hawking.gravity.container.v1",
+  "breaking_change_policy": "a change to any promise requires a new format_version and a new entry here; v1 readers must keep working against v1 files forever",
+  "does_not_promise": [
+    "any particular codec, rung, or geometry",
+    "that a given representation id will still be produced",
+    "tensor ordering beyond the declared offsets",
+    "header fields beyond those named in the schema"
+  ],
+  "extension": ".gravity",
+  "format_version": 1,
+  "prefix": {
+    "bytes": 20,
+    "magic": "GRAVITY\u0000",
+    "struct": "<8sIQ"
+  },
+  "promises": [
+    "the 20-byte prefix and its field order",
+    "the header is UTF-8 JSON at a declared length",
+    "every tensor is locatable by name without reading the body",
+    "every tensor carries a non-empty payload and its own digest",
+    "packed_bpw and complete_bpw both reconcile against physical bytes",
+    "native.<dtype> payloads are exact source bytes and round-trip bit-identically"
+  ],
+  "representation_ids": {
+    "glm52.functional.block.v1": "native functional block student",
+    "glm52.hybrid.doctor.v1": "native base plus a serialized Doctor correction",
+    "glm52.indexshare.student.v1": "IndexShare-aware attention student",
+    "glm52.pq.r0.v1": "product quantization, the Generation A control family",
+    "native.bf16": "exact source bytes, bfloat16",
+    "native.f32": "exact source bytes, float32"
+  },
+  "representation_ids_are_versioned_separately": true,
+  "schema": "hawking.gravity.container_compatibility.v1",
+  "status": "FROZEN"
+}

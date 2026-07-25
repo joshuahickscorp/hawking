@@ -1,0 +1,142 @@
+{
+ "schema": "hawking.doctor.treatment_abi.v1",
+ "title": "Doctor Prime Treatment ABI (Parts VI and XIII)",
+ "file": "tools/condense/doctor_treatment_abi.py",
+ "law": "complete_bits / original_weight_count <= 1/1, exact Fraction, via tools/foundry/one_bit_ceiling.py",
+ "what_it_is": "An exact byte layout for every Doctor treatment: header(192 bits fixed) | params block | declarative fields | pad to byte. One generic bit codec over a per-treatment layout function; payload values are unsigned ints of declared width, bf16 carried as raw uint16 so round-trip is integer-exact. Decode is self-describing (params are serialized).",
+ "treatments_serialized": [
+  "sparse_residual",
+  "protected_islands",
+  "residual_additive_codebook",
+  "router_survivor_bias",
+  "router_lowrank_correction",
+  "kronecker_repair",
+  "adaptive_scales_biases",
+  "conditional"
+ ],
+ "checks": {
+  "round_trip": "decode(encode(t)) == t asserted for all 7 non-wrapper treatments plus the wrapper",
+  "exactness": "independent closed-form bit count for sparse_residual equals total_bits() equals len(encode())*8 exactly",
+  "conditional": "installed_bits > inner total_bits; active_bits_per_token = installed * fire_rate; assert installed >= active",
+  "no_dense_shadow": "requires_dense_shadow() true when native-tagged elements >= rows*cols; ledger_components refuses it",
+  "ledger": "ten one_bit_ceiling components emitted; component sum == serialized bit sum; run through assert_complete_bpw_le_one",
+  "ceiling_bites": "same treatment set against 1024 weights raises CeilingViolation",
+  "fails_when_broken": "codebook field width flipped 16->15 makes the self-check fail (True)"
+ },
+ "demo": {
+  "schema": "hawking.doctor.treatment_abi.v1",
+  "treatments": [
+   {
+    "name": "sparse_residual",
+    "layer": 3,
+    "expert": 11,
+    "organ": "down_proj",
+    "installed_bits": 34280,
+    "active_bits_per_token": "34280",
+    "serialized_bytes": 4285
+   },
+   {
+    "name": "protected_islands",
+    "layer": 3,
+    "expert": 11,
+    "organ": "gate_proj",
+    "installed_bits": 8488,
+    "active_bits_per_token": "8488",
+    "serialized_bytes": 1061
+   },
+   {
+    "name": "residual_additive_codebook",
+    "layer": 5,
+    "expert": 2,
+    "organ": "up_proj",
+    "installed_bits": 41224,
+    "active_bits_per_token": "41224",
+    "serialized_bytes": 5153
+   },
+   {
+    "name": "router_survivor_bias",
+    "layer": 5,
+    "expert": 0,
+    "organ": "router",
+    "installed_bits": 1256,
+    "active_bits_per_token": "1256",
+    "serialized_bytes": 157
+   },
+   {
+    "name": "router_lowrank_correction",
+    "layer": 5,
+    "expert": 0,
+    "organ": "router",
+    "installed_bits": 135464,
+    "active_bits_per_token": "135464",
+    "serialized_bytes": 16933
+   },
+   {
+    "name": "kronecker_repair",
+    "layer": 0,
+    "expert": 1,
+    "organ": "gate_proj",
+    "installed_bits": 6504,
+    "active_bits_per_token": "6504",
+    "serialized_bytes": 813
+   },
+   {
+    "name": "adaptive_scales_biases",
+    "layer": 9,
+    "expert": 4,
+    "organ": "down_proj",
+    "installed_bits": 2280,
+    "active_bits_per_token": "2280",
+    "serialized_bytes": 285
+   },
+   {
+    "name": "conditional",
+    "layer": 5,
+    "expert": 2,
+    "organ": "up_proj",
+    "installed_bits": 41600,
+    "active_bits_per_token": "208/5",
+    "serialized_bytes": 5200
+   }
+  ],
+  "installed_bits_total": 271096,
+  "active_bits_per_token_total": "1147688/5",
+  "ledger": {
+   "schema": "hawking.foundry.one_bit_ceiling.v1",
+   "scope": "whole_model",
+   "components": {
+    "indices": "1088",
+    "codebooks": "65536",
+    "scales": "2176",
+    "metadata": "2240",
+    "alignment": "0",
+    "protected_islands": "8256",
+    "doctor": "55560",
+    "pass_through_tensors": "0",
+    "packaging": "0",
+    "runtime_tables": "136240",
+    "metadata_alignment_reserve_bits": "0"
+   },
+   "itemized_bits": "271096",
+   "reserve_bits": "0",
+   "complete_bits": "271096",
+   "note": "hawking.doctor.treatment_abi.v1",
+   "original_weight_count": 33554432,
+   "complete_bpw_exact": "33887/4194304",
+   "complete_bpw_float": 0.008079290390014648,
+   "legal": true
+  },
+  "ceiling_receipt": {
+   "schema": "hawking.foundry.one_bit_ceiling.v1",
+   "legal": true,
+   "complete_bpw_exact": "33887/4194304",
+   "complete_bpw_float": 0.008079290390014648,
+   "headroom_bits": "33283336",
+   "reserve_bits": "0",
+   "scope": "whole_model"
+  }
+ },
+ "self_check_passed": true,
+ "self_check_fails_when_broken": true,
+ "honesty": "This module counts bits. It measures no capability, no error, no recovery. An exact layout says nothing about whether a treatment helps. Demo payloads are random bits, not fitted parameters, and the demo weight count (rows*cols*4096) is a fixture, not a parent."
+}

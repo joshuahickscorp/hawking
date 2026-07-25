@@ -31,12 +31,14 @@ import hmac
 import os
 import re
 import stat
+import subprocess
 import sys
 import threading
-from concurrent.futures import ThreadPoolExecutor, as_completed
+import time
+from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Iterable, Mapping, Protocol, Sequence
+from typing import Any, Callable, Iterable, Mapping, Protocol, Sequence
 
 HERE = Path(__file__).resolve().parent
 if str(HERE) not in sys.path:
@@ -54,6 +56,15 @@ FETCH_RECEIPT_SCHEMA = "hawking.glm52.xet_window_fetch_receipt.v1"
 RESOURCE_POLICY_SCHEMA = "hawking.glm52.resource_reserve_policy.v1"
 RESOURCE_POLICY_STATUS = "FROZEN_CONSERVATIVE_PRELIVE_POLICY"
 RESOURCE_MAX_AGE_SECONDS = 120
+LIVE_MEMORY_SAMPLE_SCHEMA = "hawking.glm52.xet_window_memory_sample.v1"
+LIVE_MEMORY_MONITOR_SCHEMA = "hawking.glm52.xet_window_memory_monitor.v1"
+LIVE_MEMORY_MONITOR_INTERVAL_SECONDS = 0.25
+LIVE_MEMORY_MONITOR_MAX_BLIND_SECONDS = 1.0
+LIVE_MEMORY_SAMPLE_FUTURE_TOLERANCE_NS = 1_000_000
+LIVE_MEMORY_COMMAND_TIMEOUT_SECONDS = 0.75
+LIVE_MEMORY_MONITOR_JOIN_SECONDS = 3.0
+STREAM_QUIESCENCE_DEADLINE_SECONDS = 30.0
+MAXIMUM_SWAP_GROWTH_BYTES = 0
 MAX_CALLER_CONCURRENCY = 48
 MAX_STREAM_CHUNK_BYTES = 256 * 1024**2
 _HEX64 = re.compile(r"[0-9a-f]{64}\Z")
@@ -71,10 +82,16 @@ class WindowFetchError(Glm52Error):
         *,
         retained_partials: Sequence[str] = (),
         published_paths: Sequence[str] = (),
+        resource_monitor_evidence: Mapping[str, Any] | None = None,
     ) -> None:
         super().__init__(message)
         self.retained_partials = tuple(retained_partials)
         self.published_paths = tuple(published_paths)
+        self.resource_monitor_evidence = (
+            _clone(dict(resource_monitor_evidence))
+            if resource_monitor_evidence is not None
+            else None
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -131,6 +148,9 @@ class ResourceSampler(Protocol):
     def allocation_unit_bytes(self, root_fd: int) -> int:
         """Return a positive conservative allocation unit for inline reservations."""
 
+    def live_memory_sample(self) -> Mapping[str, Any]:
+        """Return one monotonic RAM/swap/swapout observation without network access."""
+
 
 class GroundedResourceSampler:
     """Production sampler backed by authenticated grounding and ``fstatvfs``."""
@@ -160,6 +180,69 @@ class GroundedResourceSampler:
         if unit <= 0:
             raise WindowFetchError("filesystem reported no positive allocation unit")
         return unit
+
+    def live_memory_sample(self) -> Mapping[str, Any]:
+        platform_name = os.uname().sysname.lower()
+        if platform_name == "darwin":
+            vm_stat = _run_live_memory_command(("/usr/bin/vm_stat",))
+            available_ram, swapouts = xet_live.parse_vm_stat(vm_stat)
+            swap_used = xet_live.parse_swapusage(
+                _run_live_memory_command(
+                    ("/usr/sbin/sysctl", "-n", "vm.swapusage")
+                )
+            )
+            source = "darwin:vm_stat+sysctl"
+        elif platform_name == "linux":
+            try:
+                memory = grounding.parse_linux_meminfo(
+                    Path("/proc/meminfo").read_text(encoding="ascii")
+                )
+                vmstat = Path("/proc/vmstat").read_text(encoding="ascii")
+            except (OSError, grounding.GroundingError) as exc:
+                raise WindowFetchError(
+                    f"cannot sample live Linux RAM/swap counters: {exc}"
+                ) from exc
+            matches = re.findall(r"^pswpout\s+([0-9]+)\s*$", vmstat, re.MULTILINE)
+            if len(matches) != 1:
+                raise WindowFetchError("Linux /proc/vmstat lacks one pswpout counter")
+            available_ram = memory.available_ram_bytes
+            swap_used = memory.used_swap_bytes
+            swapouts = int(matches[0])
+            source = "linux:/proc/meminfo+/proc/vmstat"
+        else:
+            raise WindowFetchError(
+                f"continuous RAM/swap monitoring does not support {platform_name!r}"
+            )
+        return {
+            "schema": LIVE_MEMORY_SAMPLE_SCHEMA,
+            "sampled_monotonic_ns": time.monotonic_ns(),
+            "available_ram_bytes": available_ram,
+            "swap_used_bytes": swap_used,
+            "swapouts": swapouts,
+            "source": source,
+        }
+
+
+def _run_live_memory_command(command: Sequence[str]) -> str:
+    """Run one bounded read-only counter command for the continuous guard."""
+    try:
+        completed = subprocess.run(
+            list(command),
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=LIVE_MEMORY_COMMAND_TIMEOUT_SECONDS,
+        )
+    except (OSError, subprocess.SubprocessError) as exc:
+        raise WindowFetchError(
+            f"continuous resource command failed {tuple(command)!r}: {exc}"
+        ) from exc
+    if completed.returncode != 0:
+        raise WindowFetchError(
+            "continuous resource command returned nonzero: "
+            f"{command[0]} ({completed.returncode})"
+        )
+    return completed.stdout
 
 
 def _is_sha256(value: object) -> bool:
@@ -865,6 +948,608 @@ def _prepare_targets(
         raise
 
 
+_LIVE_MEMORY_SAMPLE_FIELDS = {
+    "schema",
+    "sampled_monotonic_ns",
+    "available_ram_bytes",
+    "swap_used_bytes",
+    "swapouts",
+    "source",
+}
+
+
+def _validate_live_memory_sample(value: Mapping[str, Any]) -> dict[str, Any]:
+    if not isinstance(value, Mapping) or set(value) != _LIVE_MEMORY_SAMPLE_FIELDS:
+        raise WindowFetchError(
+            "continuous RAM/swap sampler returned incomplete or unknown fields"
+        )
+    result = dict(value)
+    if result.get("schema") != LIVE_MEMORY_SAMPLE_SCHEMA:
+        raise WindowFetchError("continuous RAM/swap sample schema differs")
+    for key in (
+        "sampled_monotonic_ns",
+        "available_ram_bytes",
+        "swap_used_bytes",
+        "swapouts",
+    ):
+        if type(result.get(key)) is not int or int(result[key]) < 0:
+            raise WindowFetchError(
+                f"continuous RAM/swap sample {key} must be a nonnegative integer"
+            )
+    if not isinstance(result.get("source"), str) or not result["source"]:
+        raise WindowFetchError("continuous RAM/swap sample source is absent")
+    return result
+
+
+def _sample_timestamp_reasons(
+    sampled_monotonic_ns: int,
+    *,
+    attempt_started_ns: int,
+    observed_ns: int,
+) -> list[str]:
+    """Bind a sampler timestamp to the parent clock window that obtained it."""
+    reasons: list[str] = []
+    maximum_age_ns = int(LIVE_MEMORY_MONITOR_MAX_BLIND_SECONDS * 1e9)
+    if sampled_monotonic_ns < attempt_started_ns:
+        reasons.append("SAMPLE_TIMESTAMP_BEFORE_ATTEMPT")
+    if sampled_monotonic_ns > observed_ns + LIVE_MEMORY_SAMPLE_FUTURE_TOLERANCE_NS:
+        reasons.append("SAMPLE_TIMESTAMP_IN_FUTURE")
+    if observed_ns >= sampled_monotonic_ns \
+            and observed_ns - sampled_monotonic_ns > maximum_age_ns:
+        reasons.append("SAMPLE_TIMESTAMP_TOO_OLD")
+    return reasons
+
+
+class _ContinuousMemoryMonitor:
+    """Independent, bounded-evidence RAM/swap guard for all active Xet streams."""
+
+    def __init__(
+        self,
+        *,
+        sampler: ResourceSampler,
+        policy: grounding.ResourceReservePolicy,
+        abort_event: threading.Event,
+        provider: StreamProvider,
+        fetch_intent_seal_sha256: str,
+        resource_policy_seal_sha256: str,
+        resource_before_seal_sha256: str,
+        source_root_identity: Mapping[str, Any],
+    ) -> None:
+        if policy.maximum_swap_used_bytes is None:
+            raise WindowFetchError("continuous monitor requires an absolute swap ceiling")
+        for label, value in (
+            ("fetch intent", fetch_intent_seal_sha256),
+            ("resource policy", resource_policy_seal_sha256),
+            ("resource baseline", resource_before_seal_sha256),
+        ):
+            if not _is_sha256(value):
+                raise WindowFetchError(f"continuous monitor {label} seal is invalid")
+        self.sampler = sampler
+        self.policy = policy
+        self.abort_event = abort_event
+        self.provider = provider
+        self.bindings = {
+            "fetch_intent_seal_sha256": fetch_intent_seal_sha256,
+            "resource_policy_seal_sha256": resource_policy_seal_sha256,
+            "resource_before_seal_sha256": resource_before_seal_sha256,
+            "source_root": _clone(dict(source_root_identity)),
+        }
+        self.stop_event = threading.Event()
+        self.stream_workers_quiesced_event = threading.Event()
+        self.lock = threading.Lock()
+        self.sample_lock = threading.Lock()
+        self.thread: threading.Thread | None = None
+        self.thread_started = False
+        self.thread_quiesced = False
+        self.finished = False
+        self.started_at = utc_now()
+        self.completed_at: str | None = None
+        self.baseline: dict[str, Any] | None = None
+        self.last_sample: dict[str, Any] | None = None
+        self.trigger_sample: dict[str, Any] | None = None
+        self.previous_sample_monotonic_ns: int | None = None
+        self.previous_observed_ns: int | None = None
+        self.sample_attempt_count = 0
+        self.valid_sample_count = 0
+        self.periodic_sample_count = 0
+        self.minimum_available_ram_bytes_observed: int | None = None
+        self.maximum_swap_used_bytes_observed: int | None = None
+        self.maximum_swap_growth_bytes_observed: int | None = None
+        self.maximum_swapouts_observed: int | None = None
+        self.maximum_sample_latency_ns = 0
+        self.maximum_observation_gap_ns = 0
+        self.sample_error_sha256: str | None = None
+        self.failure_reasons: list[str] = []
+        self.provider_abort_requested = False
+        self.provider_abort_error_sha256: str | None = None
+        self.final_sample_after_stream_quiescence = False
+        self.final_sample_after_publish_boundary = False
+        self.stream_quiescence_deadline_crossed = False
+        self.authenticated_prepublish_sample_completed = False
+        self.publish_boundary_complete = False
+        self.sample_chain_sha256 = hashlib.sha256(
+            b"hawking.glm52.xet_window_memory_monitor.sample_chain.v1"
+        ).hexdigest()
+
+    @property
+    def failed(self) -> bool:
+        with self.lock:
+            return bool(self.failure_reasons)
+
+    def _append_chain(self, row: Mapping[str, Any]) -> None:
+        self.sample_chain_sha256 = hashlib.sha256(
+            bytes.fromhex(self.sample_chain_sha256) + canonical(dict(row))
+        ).hexdigest()
+
+    def _trip(
+        self,
+        reasons: Sequence[str],
+        *,
+        active_streams_may_exist: bool,
+    ) -> None:
+        unique = sorted(set(reasons))
+        should_abort_provider = False
+        with self.lock:
+            for reason in unique:
+                if reason not in self.failure_reasons:
+                    self.failure_reasons.append(reason)
+            self.failure_reasons.sort()
+            self.abort_event.set()
+            if active_streams_may_exist and not self.provider_abort_requested:
+                self.provider_abort_requested = True
+                should_abort_provider = True
+        if should_abort_provider:
+            try:
+                self.provider.abort()
+            except Exception as exc:
+                identity = {
+                    "type": type(exc).__name__,
+                    "message": str(exc),
+                }
+                with self.lock:
+                    self.provider_abort_error_sha256 = _sha(identity)
+
+    def _record_sample(
+        self,
+        sample: Mapping[str, Any],
+        *,
+        phase: str,
+        attempt_started_ns: int,
+        observed_ns: int,
+    ) -> list[str]:
+        value = _validate_live_memory_sample(sample)
+        reasons: list[str] = []
+        latency = observed_ns - attempt_started_ns
+        maximum_blind_ns = int(LIVE_MEMORY_MONITOR_MAX_BLIND_SECONDS * 1e9)
+        if latency < 0:
+            reasons.append("MONITOR_CLOCK_REGRESSION")
+            latency = 0
+        if latency > maximum_blind_ns:
+            reasons.append("MONITOR_SAMPLE_LATENCY")
+        with self.lock:
+            self.sample_attempt_count += 1
+            self.valid_sample_count += 1
+            if phase == "periodic":
+                self.periodic_sample_count += 1
+            gap = 0
+            if self.previous_observed_ns is not None:
+                gap = observed_ns - self.previous_observed_ns
+                if gap < 0:
+                    reasons.append("MONITOR_CLOCK_REGRESSION")
+                    gap = 0
+                elif gap > maximum_blind_ns:
+                    reasons.append("MONITOR_OBSERVATION_GAP")
+            sampled_ns = int(value["sampled_monotonic_ns"])
+            reasons.extend(
+                _sample_timestamp_reasons(
+                    sampled_ns,
+                    attempt_started_ns=attempt_started_ns,
+                    observed_ns=observed_ns,
+                )
+            )
+            if self.previous_sample_monotonic_ns is not None \
+                    and sampled_ns <= self.previous_sample_monotonic_ns:
+                reasons.append("SAMPLE_CLOCK_NOT_MONOTONIC")
+            self.previous_sample_monotonic_ns = sampled_ns
+            self.previous_observed_ns = observed_ns
+            self.maximum_sample_latency_ns = max(
+                self.maximum_sample_latency_ns, latency
+            )
+            self.maximum_observation_gap_ns = max(
+                self.maximum_observation_gap_ns, gap
+            )
+            if self.baseline is None:
+                self.baseline = _clone(value)
+            baseline = self.baseline
+            available = int(value["available_ram_bytes"])
+            swap_used = int(value["swap_used_bytes"])
+            swapouts = int(value["swapouts"])
+            swap_growth = swap_used - int(baseline["swap_used_bytes"])
+            swapout_growth = swapouts - int(baseline["swapouts"])
+            if available < self.policy.minimum_available_ram_bytes:
+                reasons.append("AVAILABLE_RAM_FLOOR")
+            if swap_used > int(self.policy.maximum_swap_used_bytes):
+                reasons.append("ABSOLUTE_SWAP_CEILING")
+            if swap_growth > MAXIMUM_SWAP_GROWTH_BYTES:
+                reasons.append("SWAP_GROWTH")
+            if swapout_growth > 0:
+                reasons.append("NEW_SWAPOUTS")
+            if swapout_growth < 0:
+                reasons.append("SWAPOUT_COUNTER_REGRESSION")
+            self.minimum_available_ram_bytes_observed = min(
+                available,
+                self.minimum_available_ram_bytes_observed
+                if self.minimum_available_ram_bytes_observed is not None
+                else available,
+            )
+            self.maximum_swap_used_bytes_observed = max(
+                swap_used,
+                self.maximum_swap_used_bytes_observed
+                if self.maximum_swap_used_bytes_observed is not None
+                else swap_used,
+            )
+            self.maximum_swap_growth_bytes_observed = max(
+                swap_growth,
+                self.maximum_swap_growth_bytes_observed
+                if self.maximum_swap_growth_bytes_observed is not None
+                else swap_growth,
+            )
+            self.maximum_swapouts_observed = max(
+                swapouts,
+                self.maximum_swapouts_observed
+                if self.maximum_swapouts_observed is not None
+                else swapouts,
+            )
+            row = {
+                "ordinal": self.sample_attempt_count,
+                "phase": phase,
+                "attempt_started_monotonic_ns": attempt_started_ns,
+                "observed_monotonic_ns": observed_ns,
+                "sample_latency_ns": latency,
+                "observation_gap_ns": gap,
+                "sample": value,
+                "policy_reasons": sorted(set(reasons)),
+            }
+            self._append_chain(row)
+            self.last_sample = _clone(value)
+            if reasons and self.trigger_sample is None:
+                self.trigger_sample = _clone(value)
+        return sorted(set(reasons))
+
+    def _record_sample_error(
+        self,
+        exc: BaseException,
+        *,
+        phase: str,
+        attempt_started_ns: int,
+        observed_ns: int,
+    ) -> None:
+        identity = {"type": type(exc).__name__, "message": str(exc)}
+        error_sha256 = _sha(identity)
+        latency = max(0, observed_ns - attempt_started_ns)
+        with self.lock:
+            self.sample_attempt_count += 1
+            if phase == "periodic":
+                self.periodic_sample_count += 1
+            gap = 0
+            if self.previous_observed_ns is not None:
+                gap = max(0, observed_ns - self.previous_observed_ns)
+            self.previous_observed_ns = observed_ns
+            self.maximum_sample_latency_ns = max(
+                self.maximum_sample_latency_ns, latency
+            )
+            self.maximum_observation_gap_ns = max(
+                self.maximum_observation_gap_ns, gap
+            )
+            self.sample_error_sha256 = error_sha256
+            self._append_chain(
+                {
+                    "ordinal": self.sample_attempt_count,
+                    "phase": phase,
+                    "attempt_started_monotonic_ns": attempt_started_ns,
+                    "observed_monotonic_ns": observed_ns,
+                    "sample_latency_ns": latency,
+                    "observation_gap_ns": gap,
+                    "sample_error_sha256": error_sha256,
+                    "policy_reasons": ["RESOURCE_MONITOR_SAMPLE_FAILED"],
+                }
+            )
+
+    def _observe(
+        self,
+        phase: str,
+        *,
+        active_streams_may_exist: bool,
+        honor_stop_request: bool,
+    ) -> bool:
+        with self.sample_lock:
+            if honor_stop_request and self.stop_event.is_set():
+                return False
+            attempt_started = time.monotonic_ns()
+            try:
+                raw = self.sampler.live_memory_sample()
+            except BaseException as exc:
+                observed = time.monotonic_ns()
+                if honor_stop_request and self.stop_event.is_set():
+                    return False
+                self._record_sample_error(
+                    exc,
+                    phase=phase,
+                    attempt_started_ns=attempt_started,
+                    observed_ns=observed,
+                )
+                self._trip(
+                    ["RESOURCE_MONITOR_SAMPLE_FAILED"],
+                    active_streams_may_exist=active_streams_may_exist,
+                )
+                return False
+            observed = time.monotonic_ns()
+            # Once the guarded lifetime is known complete, an in-flight periodic
+            # read is superseded by the mandatory synchronous final read.  This
+            # prevents a late sampler return from racing a clean stop.
+            if honor_stop_request and self.stop_event.is_set():
+                return False
+            try:
+                reasons = self._record_sample(
+                    raw,
+                    phase=phase,
+                    attempt_started_ns=attempt_started,
+                    observed_ns=observed,
+                )
+            except BaseException as exc:
+                self._record_sample_error(
+                    exc,
+                    phase=phase,
+                    attempt_started_ns=attempt_started,
+                    observed_ns=observed,
+                )
+                self._trip(
+                    ["RESOURCE_MONITOR_SAMPLE_FAILED"],
+                    active_streams_may_exist=active_streams_may_exist,
+                )
+                return False
+        if reasons:
+            self._trip(
+                reasons,
+                active_streams_may_exist=active_streams_may_exist,
+            )
+            return False
+        return True
+
+    def _run(self) -> None:
+        while not self.stop_event.wait(LIVE_MEMORY_MONITOR_INTERVAL_SECONDS):
+            self._observe(
+                "periodic",
+                active_streams_may_exist=(
+                    not self.stream_workers_quiesced_event.is_set()
+                ),
+                honor_stop_request=True,
+            )
+            if self.failed:
+                return
+
+    def start_before_streams(self) -> None:
+        if self.thread is not None or self.finished:
+            raise WindowFetchError("continuous RAM/swap monitor start was repeated")
+        self._observe(
+            "baseline",
+            active_streams_may_exist=False,
+            honor_stop_request=False,
+        )
+        if self.failed:
+            return
+        self.thread = threading.Thread(
+            target=self._run,
+            name="glm52-window-memory-monitor",
+            daemon=True,
+        )
+        try:
+            self.thread.start()
+            self.thread_started = True
+        except RuntimeError as exc:
+            self._record_sample_error(
+                exc,
+                phase="monitor-thread-start",
+                attempt_started_ns=time.monotonic_ns(),
+                observed_ns=time.monotonic_ns(),
+            )
+            self._trip(
+                ["RESOURCE_MONITOR_THREAD_START_FAILED"],
+                active_streams_may_exist=False,
+            )
+
+    def mark_stream_workers_quiesced(self) -> None:
+        self.stream_workers_quiesced_event.set()
+
+    def note_stream_quiescence_deadline(self) -> None:
+        self.stream_quiescence_deadline_crossed = True
+        self._trip(
+            ["STREAM_WORKER_QUIESCENCE_DEADLINE"],
+            active_streams_may_exist=True,
+        )
+
+    def final_prepublish_gate(self, *, stream_workers_quiesced: bool) -> None:
+        if not stream_workers_quiesced:
+            self._trip(
+                ["STREAM_WORKERS_NOT_QUIESCED_BEFORE_PUBLISH"],
+                active_streams_may_exist=True,
+            )
+            self.raise_if_failed()
+        passed = self._observe(
+            "final-prepublish-gate",
+            active_streams_may_exist=False,
+            honor_stop_request=False,
+        )
+        self.final_sample_after_stream_quiescence = passed
+        self.raise_if_failed()
+
+    def mark_authenticated_prepublish_sample_completed(self) -> None:
+        self.authenticated_prepublish_sample_completed = True
+
+    def publish_checkpoint(self, phase: str) -> None:
+        passed = self._observe(
+            phase,
+            active_streams_may_exist=False,
+            honor_stop_request=False,
+        )
+        if not passed:
+            self.raise_if_failed()
+
+    def finish_after_publish(
+        self,
+        *,
+        stream_workers_quiesced: bool,
+        publish_boundary_complete: bool,
+    ) -> None:
+        if self.finished:
+            return
+        self.publish_boundary_complete = publish_boundary_complete
+        self.stop_event.set()
+        if self.thread is not None and self.thread_started:
+            self.thread.join(LIVE_MEMORY_MONITOR_JOIN_SECONDS)
+            self.thread_quiesced = not self.thread.is_alive()
+        else:
+            self.thread_quiesced = True
+        if not self.thread_quiesced:
+            self._trip(
+                ["RESOURCE_MONITOR_THREAD_DID_NOT_QUIESCE"],
+                active_streams_may_exist=not stream_workers_quiesced,
+            )
+        elif not self.failed and publish_boundary_complete:
+            final_sample_passed = self._observe(
+                "final-after-publish-boundary",
+                active_streams_may_exist=False,
+                honor_stop_request=False,
+            )
+            self.final_sample_after_publish_boundary = (
+                stream_workers_quiesced and final_sample_passed
+            )
+        self.completed_at = utc_now()
+        self.finished = True
+
+    def raise_if_failed(self) -> None:
+        with self.lock:
+            reasons = tuple(self.failure_reasons)
+        if reasons:
+            raise WindowFetchError(
+                "continuous RAM/swap monitor crossed frozen policy: "
+                + ",".join(reasons)
+            )
+
+    def sealed_evidence(
+        self,
+        *,
+        auth: state.EvidenceAuthConfig,
+        stream_workers_quiesced: bool,
+        published_paths: Sequence[str],
+    ) -> dict[str, Any]:
+        if not self.finished or self.completed_at is None:
+            raise WindowFetchError("continuous RAM/swap monitor evidence is not final")
+        with self.lock:
+            reasons = list(self.failure_reasons)
+            body = {
+                "schema": LIVE_MEMORY_MONITOR_SCHEMA,
+                "status": (
+                    "ABORTED_CONTINUOUS_RAM_SWAP_GUARD"
+                    if reasons
+                    else "PASS_CONTINUOUS_RAM_SWAP_GUARD"
+                ),
+                "campaign_id": auth.campaign_id,
+                "source_revision": auth.source_revision,
+                "started_at": self.started_at,
+                "completed_at": self.completed_at,
+                "bindings": _clone(self.bindings),
+                "policy": {
+                    "minimum_available_ram_bytes": (
+                        self.policy.minimum_available_ram_bytes
+                    ),
+                    "maximum_swap_used_bytes": self.policy.maximum_swap_used_bytes,
+                    "maximum_swap_growth_bytes": MAXIMUM_SWAP_GROWTH_BYTES,
+                    "maximum_new_swapouts": 0,
+                },
+                "sample_interval_nanoseconds": int(
+                    LIVE_MEMORY_MONITOR_INTERVAL_SECONDS * 1e9
+                ),
+                "maximum_blind_interval_nanoseconds": int(
+                    LIVE_MEMORY_MONITOR_MAX_BLIND_SECONDS * 1e9
+                ),
+                "sample_future_tolerance_nanoseconds": (
+                    LIVE_MEMORY_SAMPLE_FUTURE_TOLERANCE_NS
+                ),
+                "sample_attempt_count": self.sample_attempt_count,
+                "valid_sample_count": self.valid_sample_count,
+                "periodic_sample_count": self.periodic_sample_count,
+                "sample_chain_sha256": self.sample_chain_sha256,
+                "baseline_sample": _clone(self.baseline),
+                "last_sample": _clone(self.last_sample),
+                "trigger_sample": _clone(self.trigger_sample),
+                "minimum_available_ram_bytes_observed": (
+                    self.minimum_available_ram_bytes_observed
+                ),
+                "maximum_swap_used_bytes_observed": (
+                    self.maximum_swap_used_bytes_observed
+                ),
+                "maximum_swap_growth_bytes_observed": (
+                    self.maximum_swap_growth_bytes_observed
+                ),
+                "maximum_swapouts_observed": self.maximum_swapouts_observed,
+                "maximum_sample_latency_nanoseconds": self.maximum_sample_latency_ns,
+                "maximum_observation_gap_nanoseconds": self.maximum_observation_gap_ns,
+                "failure_reasons": reasons,
+                "sample_error_sha256": self.sample_error_sha256,
+                "provider_abort_requested": self.provider_abort_requested,
+                "provider_abort_error_sha256": self.provider_abort_error_sha256,
+                "monitor_thread_started": self.thread_started,
+                "monitor_thread_quiesced": self.thread_quiesced,
+                "stream_workers_quiesced": stream_workers_quiesced,
+                "stream_quiescence_deadline_seconds": (
+                    STREAM_QUIESCENCE_DEADLINE_SECONDS
+                ),
+                "stream_quiescence_deadline_crossed": (
+                    self.stream_quiescence_deadline_crossed
+                ),
+                "stream_termination_model": {
+                    "provider_cooperative_abort": True,
+                    "inprocess_native_thread_hard_termination_available": False,
+                    "permanent_hang_requires_subprocess_isolation": True,
+                    "deadline_never_closes_descriptors_under_live_writer": True,
+                },
+                "final_sample_after_stream_quiescence": (
+                    self.final_sample_after_stream_quiescence
+                ),
+                "final_sample_after_publish_boundary": (
+                    self.final_sample_after_publish_boundary
+                ),
+                "published_paths_at_monitor_evidence_seal": list(published_paths),
+                "no_publish_after_observed_resource_violation": (
+                    not reasons or not published_paths
+                ),
+                "coverage": {
+                    "started_before_stream_workers": True,
+                    "covered_entire_stream_worker_lifetime": (
+                        stream_workers_quiesced
+                    ),
+                    "covered_authenticated_prepublish_sample": (
+                        self.authenticated_prepublish_sample_completed
+                    ),
+                    "covered_durable_publish_boundary": (
+                        self.publish_boundary_complete
+                    ),
+                    "ended_after_publish_boundary": (
+                        self.final_sample_after_publish_boundary
+                    ),
+                    "unobserved_intervals_claimed_safe": False,
+                },
+                "credentials_serialized": False,
+            }
+        try:
+            return state.seal_producer_authenticated_evidence(body, auth=auth)
+        except state.StateError as exc:
+            raise WindowFetchError(
+                f"cannot authenticate continuous RAM/swap evidence: {exc}"
+            ) from exc
+
+
 class _InlineBudget:
     def __init__(
         self,
@@ -1049,7 +1734,11 @@ def _rename_noreplace(parent_fd: int, source: str, destination: str) -> None:
         )
 
 
-def _publish(item: _OpenTarget) -> dict[str, Any]:
+def _publish(
+    item: _OpenTarget,
+    *,
+    pre_visibility_guard: Callable[[], None],
+) -> dict[str, Any]:
     if item.ready is None:
         raise WindowFetchError("attempted to publish an incomplete shard")
     _verify_relative_parent(item.parent_fds, item.parent_links)
@@ -1065,6 +1754,7 @@ def _publish(item: _OpenTarget) -> dict[str, Any]:
             or stat.S_IMODE(named_partial.st_mode) != 0o444:
         raise WindowFetchError("partial changed before atomic publish")
     _entry_absent(item.parent_fd, item.leaf, label=f"destination {item.target['path']}")
+    pre_visibility_guard()
     _rename_noreplace(item.parent_fd, item.partial_name, item.leaf)
     published = os.stat(item.leaf, dir_fd=item.parent_fd, follow_symlinks=False)
     _safe_file_stat(published, label=f"published shard {item.target['path']}")
@@ -1129,6 +1819,9 @@ def materialize_window(
     provider = stream_provider
     sampler = resource_sampler or GroundedResourceSampler()
     abort_event = threading.Event()
+    memory_monitor: _ContinuousMemoryMonitor | None = None
+    memory_monitor_evidence: dict[str, Any] | None = None
+    stream_workers_quiesced = True
     root_fd = root_fds[-1]
     lock_held = False
     try:
@@ -1193,6 +1886,18 @@ def materialize_window(
             provider = HfXetStreamProvider(
                 _selected_xet_config(context.plan, trial)
             )
+        memory_monitor = _ContinuousMemoryMonitor(
+            sampler=sampler,
+            policy=context.resource_policy,
+            abort_event=abort_event,
+            provider=provider,
+            fetch_intent_seal_sha256=value["seal_sha256"],
+            resource_policy_seal_sha256=context.resource_artifact["seal_sha256"],
+            resource_before_seal_sha256=before["seal_sha256"],
+            source_root_identity=value["source_root"],
+        )
+        memory_monitor.start_before_streams()
+        memory_monitor.raise_if_failed()
         budget = _InlineBudget(
             maximum_body_bytes=total,
             required_free_disk_bytes=context.resource_policy.required_free_disk_bytes,
@@ -1202,11 +1907,13 @@ def materialize_window(
         )
         workers = min(int(value["caller_concurrent_shard_streams"]), len(prepared))
         first_error: BaseException | None = None
-        executor = ThreadPoolExecutor(
-            max_workers=workers,
-            thread_name_prefix="glm52-window-xet",
-        )
+        executor: ThreadPoolExecutor | None = None
         try:
+            executor = ThreadPoolExecutor(
+                max_workers=workers,
+                thread_name_prefix="glm52-window-xet",
+            )
+            stream_workers_quiesced = False
             futures = {
                 executor.submit(
                     _stream_target,
@@ -1217,21 +1924,47 @@ def materialize_window(
                 ): item
                 for item in prepared
             }
-            for future in as_completed(futures):
-                try:
-                    future.result()
-                except BaseException as exc:
-                    if first_error is None:
-                        first_error = exc
-                    abort_event.set()
-                    for other in futures:
-                        other.cancel()
+            pending = set(futures)
+            abort_observed_ns: int | None = None
+            quiescence_deadline_noted = False
+            while pending:
+                completed, pending = wait(
+                    pending,
+                    timeout=min(LIVE_MEMORY_MONITOR_INTERVAL_SECONDS, 0.25),
+                    return_when=FIRST_COMPLETED,
+                )
+                for future in completed:
                     try:
-                        provider.abort()
-                    except Exception:
-                        pass
+                        future.result()
+                    except BaseException as exc:
+                        if first_error is None:
+                            first_error = exc
+                        abort_event.set()
+                if abort_event.is_set():
+                    for other in pending:
+                        other.cancel()
+                    if abort_observed_ns is None:
+                        abort_observed_ns = time.monotonic_ns()
+                        try:
+                            provider.abort()
+                        except Exception:
+                            pass
+                    elif not quiescence_deadline_noted and (
+                        time.monotonic_ns() - abort_observed_ns
+                        > int(STREAM_QUIESCENCE_DEADLINE_SECONDS * 1e9)
+                    ):
+                        quiescence_deadline_noted = True
+                        memory_monitor.note_stream_quiescence_deadline()
+                        # A Python process cannot safely kill one native iterator
+                        # thread.  Keep waiting so descriptors are never closed
+                        # under a live writer; hard termination requires moving
+                        # the provider behind a subprocess boundary.
         finally:
-            executor.shutdown(wait=True, cancel_futures=True)
+            if executor is not None:
+                executor.shutdown(wait=True, cancel_futures=True)
+            stream_workers_quiesced = True
+            memory_monitor.mark_stream_workers_quiesced()
+        memory_monitor.raise_if_failed()
         if first_error is not None:
             if isinstance(first_error, WindowFetchError):
                 raise first_error
@@ -1251,15 +1984,44 @@ def materialize_window(
             root_stat=root_stat,
             authenticator=grounding_authenticator,
         )
+        memory_monitor.mark_authenticated_prepublish_sample_completed()
+        memory_monitor.raise_if_failed()
+        memory_monitor.final_prepublish_gate(
+            stream_workers_quiesced=stream_workers_quiesced
+        )
         grounding._verify_absolute_directory_chain(root_fds, root_links, root_stat)
         outcomes = []
-        for item in prepared:
-            outcome = _publish(item)
+        for index, item in enumerate(prepared):
+            memory_monitor.publish_checkpoint(f"prepublish-shard-{index}")
+            if abort_event.is_set():
+                memory_monitor.raise_if_failed()
+                raise WindowFetchError(
+                    "continuous resource guard aborted before durable publish"
+                )
+            outcome = _publish(
+                item,
+                pre_visibility_guard=lambda index=index: (
+                    memory_monitor.publish_checkpoint(
+                        f"visibility-gate-shard-{index}"
+                    )
+                ),
+            )
             outcomes.append(outcome)
             published_paths.append(str(item.target["path"]))
+            memory_monitor.publish_checkpoint(f"postpublish-shard-{index}")
         for item in prepared:
             _verify_relative_parent(item.parent_fds, item.parent_links)
         grounding._verify_absolute_directory_chain(root_fds, root_links, root_stat)
+        memory_monitor.finish_after_publish(
+            stream_workers_quiesced=stream_workers_quiesced,
+            publish_boundary_complete=True,
+        )
+        memory_monitor.raise_if_failed()
+        memory_monitor_evidence = memory_monitor.sealed_evidence(
+            auth=auth,
+            stream_workers_quiesced=stream_workers_quiesced,
+            published_paths=published_paths,
+        )
         evidence = {
             "schema": FETCH_RECEIPT_SCHEMA,
             "status": "PASS_EXPLICIT_ADAPTER_MATERIALIZATION",
@@ -1271,6 +2033,7 @@ def materialize_window(
             "resource_policy_seal_sha256": context.resource_artifact["seal_sha256"],
             "resource_before_seal_sha256": before["seal_sha256"],
             "resource_prepublish_seal_sha256": prepublish["seal_sha256"],
+            "continuous_resource_monitor": memory_monitor_evidence,
             "schedule_index": value["schedule_index"],
             "window_id": value["window_id"],
             "lane": value["lane"],
@@ -1300,6 +2063,31 @@ def materialize_window(
                 provider.abort()
             except Exception:
                 pass
+        if memory_monitor is not None:
+            if not memory_monitor.finished:
+                if stream_workers_quiesced:
+                    memory_monitor.mark_stream_workers_quiesced()
+                memory_monitor.finish_after_publish(
+                    stream_workers_quiesced=stream_workers_quiesced,
+                    publish_boundary_complete=False,
+                )
+            try:
+                memory_monitor_evidence = memory_monitor.sealed_evidence(
+                    auth=auth,
+                    stream_workers_quiesced=stream_workers_quiesced,
+                    published_paths=published_paths,
+                )
+            except BaseException as evidence_exc:
+                raise WindowFetchError(
+                    "window materialization failed and continuous RAM/swap "
+                    f"evidence could not be sealed: {evidence_exc}",
+                    retained_partials=[
+                        item.partial_path
+                        for item in prepared
+                        if item.target["path"] not in published_paths
+                    ],
+                    published_paths=published_paths,
+                ) from exc
         partials = [
             item.partial_path
             for item in prepared
@@ -1310,11 +2098,13 @@ def materialize_window(
                 str(exc),
                 retained_partials=partials,
                 published_paths=published_paths,
+                resource_monitor_evidence=memory_monitor_evidence,
             ) from exc
         raise WindowFetchError(
             f"window materialization failed: {exc}",
             retained_partials=partials,
             published_paths=published_paths,
+            resource_monitor_evidence=memory_monitor_evidence,
         ) from exc
     finally:
         for item in prepared:

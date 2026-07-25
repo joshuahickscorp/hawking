@@ -1,0 +1,454 @@
+{
+  "endpoint": "GENERATION_A_STOPPED_AND_SEALED",
+  "final_progress": {
+    "_file_mtime_utc": "2026-07-23T04:51:56Z",
+    "aggregate_megabits_per_second": 219.7,
+    "evicted_bytes_this_run": 0,
+    "failed_this_run": 0,
+    "free_disk_bytes": 398759858176,
+    "mode": "stream",
+    "repo": "zai-org/GLM-5.2",
+    "resident_bytes": 193297423136,
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "shards_packed_total": 136,
+    "shards_probed_total": 147,
+    "shards_verified_total": 151,
+    "source_fraction_verified": 0.5338,
+    "state": "RUNNING",
+    "total_source_shards": 282,
+    "updated_at": "2026-07-23T04:51:56Z",
+    "window": "W011",
+    "window_count": 20,
+    "window_index": 11
+  },
+  "git": {
+    "branch": "campaign/glm52-generation-b",
+    "commit": "55db6f93944fca2e3dbef209fead55977c903f60"
+  },
+  "not_evidence_of": "output divergence, capability, or trajectory fidelity; Generation A never reached a teacher-verified verdict",
+  "preserved_fixtures": {
+    "directory": "reports/condense/glm52_generation_b/generation_a_fixtures",
+    "files": [
+      "GLM_BASELINE_A_SEAL.json",
+      "INVALID_ARTIFACT_HEADER_model-00097-of-00282.json",
+      "generation_a_GLM52_SAFE_TO_LEAVE_STATUS.json",
+      "generation_a_GLM52_SOURCE_WEIGHT_ATLAS.json",
+      "generation_a_SOURCE_FETCH_LEDGER.jsonl",
+      "generation_a_TEACHER_EVIDENCE_LEDGER.jsonl",
+      "generation_a_deferred_evictions.json",
+      "generation_a_progress.json"
+    ]
+  },
+  "reproduced_defects": {
+    "capsule_receipts_trusted_without_payloads": {
+      "live_state_note": "every surviving capsule verifies, so the mechanism is a latent authorization hole rather than an observed loss; the distinction is recorded rather than smoothed over",
+      "mechanism": "captured_layers, the set the eviction gate consults, was satisfied by a sealed receipt without opening the .npz it describes",
+      "receipts": 10,
+      "rows": [
+        {
+          "capsule_id": "L00_L00",
+          "digest_matches": true,
+          "layers": [
+            0
+          ],
+          "receipt": "L00_L00.json",
+          "size_matches": true,
+          "verdict": "VERIFIED"
+        },
+        {
+          "capsule_id": "L02_L02",
+          "digest_matches": true,
+          "layers": [
+            2
+          ],
+          "receipt": "L02_L02.json",
+          "size_matches": true,
+          "verdict": "VERIFIED"
+        },
+        {
+          "capsule_id": "L16_L18",
+          "digest_matches": true,
+          "layers": [
+            16,
+            17,
+            18
+          ],
+          "receipt": "L16_L18.json",
+          "size_matches": true,
+          "verdict": "VERIFIED"
+        },
+        {
+          "capsule_id": "L19_L21",
+          "digest_matches": true,
+          "layers": [
+            19,
+            20,
+            21
+          ],
+          "receipt": "L19_L21.json",
+          "size_matches": true,
+          "verdict": "VERIFIED"
+        },
+        {
+          "capsule_id": "L22_L24",
+          "digest_matches": true,
+          "layers": [
+            22,
+            23,
+            24
+          ],
+          "receipt": "L22_L24.json",
+          "size_matches": true,
+          "verdict": "VERIFIED"
+        },
+        {
+          "capsule_id": "L25_L27",
+          "digest_matches": true,
+          "layers": [
+            25,
+            26,
+            27
+          ],
+          "receipt": "L25_L27.json",
+          "size_matches": true,
+          "verdict": "VERIFIED"
+        },
+        {
+          "capsule_id": "L28_L30",
+          "digest_matches": true,
+          "layers": [
+            28,
+            29,
+            30
+          ],
+          "receipt": "L28_L30.json",
+          "size_matches": true,
+          "verdict": "VERIFIED"
+        },
+        {
+          "capsule_id": "L31_L34",
+          "digest_matches": true,
+          "layers": [
+            31,
+            32,
+            33,
+            34
+          ],
+          "receipt": "L31_L34.json",
+          "size_matches": true,
+          "verdict": "VERIFIED"
+        },
+        {
+          "capsule_id": "L35_L37",
+          "digest_matches": true,
+          "layers": [
+            35,
+            36,
+            37
+          ],
+          "receipt": "L35_L37.json",
+          "size_matches": true,
+          "verdict": "VERIFIED"
+        },
+        {
+          "capsule_id": "L38_L40",
+          "digest_matches": true,
+          "layers": [
+            38,
+            39,
+            40
+          ],
+          "receipt": "L38_L40.json",
+          "size_matches": true,
+          "verdict": "VERIFIED"
+        }
+      ],
+      "status": "MECHANISM_REAL_DATA_INTACT",
+      "unverified": 0
+    },
+    "protected_tensors_billed_not_stored": {
+      "checked": 6,
+      "consequence": "the artifact reads as complete, its whole_shard_bpw includes weight it does not carry, and the streamer treats it as proof the BF16 body was consumed and may be evicted",
+      "mechanism": "pack_shard billed protected tensors into compact_bits and recorded them in entries, but only payloads reached write_shard, so every router, router control, normalization and indexer tensor was accounted for at 16 BPW and written nowhere",
+      "rows": [
+        {
+          "absent": [
+            {
+              "budget_class": "CONTROL_SENSITIVE_CANDIDATE",
+              "category": "router_control",
+              "dtype": "F32",
+              "name": "model.layers.34.mlp.gate.e_score_correction_bias",
+              "shape": [
+                256
+              ]
+            },
+            {
+              "budget_class": "CONTROL_SENSITIVE_CANDIDATE",
+              "category": "router",
+              "dtype": "BF16",
+              "name": "model.layers.34.mlp.gate.weight",
+              "shape": [
+                256,
+                6144
+              ]
+            },
+            {
+              "budget_class": "CONTROL_SENSITIVE_CANDIDATE",
+              "category": "normalization",
+              "dtype": "BF16",
+              "name": "model.layers.34.post_attention_layernorm.weight",
+              "shape": [
+                6144
+              ]
+            },
+            {
+              "budget_class": "CONTROL_SENSITIVE_CANDIDATE",
+              "category": "indexer",
+              "dtype": "BF16",
+              "name": "model.layers.34.self_attn.indexer.k_norm.bias",
+              "shape": [
+                128
+              ]
+            },
+            {
+              "budget_class": "CONTROL_SENSITIVE_CANDIDATE",
+              "category": "indexer",
+              "dtype": "BF16",
+              "name": "model.layers.34.self_attn.indexer.k_norm.weight",
+              "shape": [
+                128
+              ]
+            },
+            {
+              "budget_class": "CONTROL_SENSITIVE_CANDIDATE",
+              "category": "indexer",
+              "dtype": "BF16",
+              "name": "model.layers.34.self_attn.indexer.weights_proj.weight",
+              "shape": [
+                32,
+                6144
+              ]
+            },
+            {
+              "budget_class": "CONTROL_SENSITIVE_CANDIDATE",
+              "category": "indexer",
+              "dtype": "BF16",
+              "name": "model.layers.34.self_attn.indexer.wk.weight",
+              "shape": [
+                128,
+                6144
+              ]
+            },
+            {
+              "budget_class": "CONTROL_SENSITIVE_CANDIDATE",
+              "category": "indexer",
+              "dtype": "BF16",
+              "name": "model.layers.34.self_attn.indexer.wq_b.weight",
+              "shape": [
+                4096,
+                2048
+              ]
+            },
+            {
+              "budget_class": "CONTROL_SENSITIVE_CANDIDATE",
+              "category": "normalization",
+              "dtype": "BF16",
+              "name": "model.layers.34.self_attn.kv_a_layernorm.weight",
+              "shape": [
+                512
+              ]
+            },
+            {
+              "budget_class": "CONTROL_SENSITIVE_CANDIDATE",
+              "category": "normalization",
+              "dtype": "BF16",
+              "name": "model.layers.34.self_attn.q_a_layernorm.weight",
+              "shape": [
+                2048
+              ]
+            },
+            {
+              "budget_class": "CONTROL_SENSITIVE_CANDIDATE",
+              "category": "normalization",
+              "dtype": "BF16",
+              "name": "model.layers.35.input_layernorm.weight",
+              "shape": [
+                6144
+              ]
+            }
+          ],
+          "absent_elements": 10959872,
+          "absent_tensors": 11,
+          "artifact_packed_bpw": 0.87629140475372,
+          "artifact_whole_shard_bpw": 0.9381389244686071,
+          "bits_billed_for_absent_payload": 175357952,
+          "declared_tensors": 215,
+          "gravity": "model-00097-of-00282.gravity",
+          "physically_present_tensors": 204,
+          "protected_tensors_declared": 11,
+          "source_shard": "model-00097-of-00282.safetensors"
+        },
+        {
+          "absent": [],
+          "absent_elements": 0,
+          "absent_tensors": 0,
+          "artifact_packed_bpw": 0.8763427734375,
+          "artifact_whole_shard_bpw": 0.8763427734375,
+          "bits_billed_for_absent_payload": 0,
+          "declared_tensors": 213,
+          "gravity": "model-00098-of-00282.gravity",
+          "physically_present_tensors": 213,
+          "protected_tensors_declared": 0,
+          "source_shard": "model-00098-of-00282.safetensors"
+        },
+        {
+          "absent": [],
+          "absent_elements": 0,
+          "absent_tensors": 0,
+          "artifact_packed_bpw": 0.8763427734375,
+          "artifact_whole_shard_bpw": 0.8763427734375,
+          "bits_billed_for_absent_payload": 0,
+          "declared_tensors": 213,
+          "gravity": "model-00099-of-00282.gravity",
+          "physically_present_tensors": 213,
+          "protected_tensors_declared": 0,
+          "source_shard": "model-00099-of-00282.safetensors"
+        },
+        {
+          "absent": [],
+          "absent_elements": 0,
+          "absent_tensors": 0,
+          "artifact_packed_bpw": 0.8763427734375,
+          "artifact_whole_shard_bpw": 0.8763427734375,
+          "bits_billed_for_absent_payload": 0,
+          "declared_tensors": 213,
+          "gravity": "model-00100-of-00282.gravity",
+          "physically_present_tensors": 213,
+          "protected_tensors_declared": 0,
+          "source_shard": "model-00100-of-00282.safetensors"
+        },
+        {
+          "absent": [
+            {
+              "budget_class": "CONTROL_SENSITIVE_CANDIDATE",
+              "category": "router_control",
+              "dtype": "F32",
+              "name": "model.layers.35.mlp.gate.e_score_correction_bias",
+              "shape": [
+                256
+              ]
+            },
+            {
+              "budget_class": "CONTROL_SENSITIVE_CANDIDATE",
+              "category": "router",
+              "dtype": "BF16",
+              "name": "model.layers.35.mlp.gate.weight",
+              "shape": [
+                256,
+                6144
+              ]
+            },
+            {
+              "budget_class": "CONTROL_SENSITIVE_CANDIDATE",
+              "category": "normalization",
+              "dtype": "BF16",
+              "name": "model.layers.35.post_attention_layernorm.weight",
+              "shape": [
+                6144
+              ]
+            },
+            {
+              "budget_class": "CONTROL_SENSITIVE_CANDIDATE",
+              "category": "normalization",
+              "dtype": "BF16",
+              "name": "model.layers.35.self_attn.kv_a_layernorm.weight",
+              "shape": [
+                512
+              ]
+            },
+            {
+              "budget_class": "CONTROL_SENSITIVE_CANDIDATE",
+              "category": "normalization",
+              "dtype": "BF16",
+              "name": "model.layers.35.self_attn.q_a_layernorm.weight",
+              "shape": [
+                2048
+              ]
+            },
+            {
+              "budget_class": "CONTROL_SENSITIVE_CANDIDATE",
+              "category": "normalization",
+              "dtype": "BF16",
+              "name": "model.layers.36.input_layernorm.weight",
+              "shape": [
+                6144
+              ]
+            }
+          ],
+          "absent_elements": 1587968,
+          "absent_tensors": 6,
+          "artifact_packed_bpw": 0.8762916457915831,
+          "artifact_whole_shard_bpw": 0.8852407307934866,
+          "bits_billed_for_absent_payload": 25407488,
+          "declared_tensors": 211,
+          "gravity": "model-00101-of-00282.gravity",
+          "physically_present_tensors": 205,
+          "protected_tensors_declared": 6,
+          "source_shard": "model-00101-of-00282.safetensors"
+        },
+        {
+          "absent": [],
+          "absent_elements": 0,
+          "absent_tensors": 0,
+          "artifact_packed_bpw": 0.8763427734375,
+          "artifact_whole_shard_bpw": 0.8763427734375,
+          "bits_billed_for_absent_payload": 0,
+          "declared_tensors": 213,
+          "gravity": "model-00102-of-00282.gravity",
+          "physically_present_tensors": 213,
+          "protected_tensors_declared": 0,
+          "source_shard": "model-00102-of-00282.safetensors"
+        }
+      ],
+      "shards_with_absent_tensors": 2,
+      "status": "REPRODUCED"
+    }
+  },
+  "residual_state": {
+    "obsolete_artifact_bytes": 42002431039,
+    "obsolete_artifacts": 144,
+    "resident_source_bytes": 193297423136,
+    "resident_source_shards": 37,
+    "teacher_capsules": 10
+  },
+  "schema": "hawking.glm52.generation_a_final_state.v1",
+  "sealed_at": "2026-07-23T13:19:54Z",
+  "source": {
+    "repo": "zai-org/GLM-5.2",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "total_source_shards": 282
+  },
+  "stop": {
+    "fetch_lock_released": true,
+    "no_source_or_artifact_files_mapped": true,
+    "process_group_exited": true,
+    "supported_path": "launchctl bootout gui/<uid>/com.hawking.glm52.source-fetch"
+  },
+  "termination_reason": {
+    "compact_root_evidence": {
+      "configured_root": "/Users/scammermike/Desktop/GLM52-Gravity-SubBit",
+      "note": "the configured compact root was moved to the iCloud trash while the packer was running, so late Generation A packs had no surviving destination",
+      "root_existed_at_seal": false
+    },
+    "primary": "TIER_0_PROTECTED_TENSOR_COVERAGE_DEFECT",
+    "secondary": "CONTROLLER_WEDGED_AT_FULL_CPU_WITH_NO_STATE_ADVANCE",
+    "wedge_evidence": {
+      "cpu_percent_while_stalled": 100.0,
+      "last_state_write_utc": "2026-07-23T04:51:56Z",
+      "note": "the controller held a full core for hours with no safetensors or gravity file open and no ledger row written",
+      "open_source_or_output_files_while_stalled": 0,
+      "stalled_seconds_at_seal": 30478
+    }
+  },
+  "verdict": "INVALID_SUPERSEDED_BY_GENERATION_B"
+}

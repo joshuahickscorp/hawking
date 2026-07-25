@@ -1,0 +1,105 @@
+{
+  "architecture": "x -> SiLU(x @ W1) @ W2, with W1 drawn from a seeded generator and stored as the seed, so only the readout costs bits and the fit is a closed-form ridge solve",
+  "constant_mean_null_raw_cosine": 0.8310582809758371,
+  "controls": {
+    "affine_map": {
+      "beats_null": true,
+      "bpw": 0.062267,
+      "centered": 0.73382
+    },
+    "constant_mean": {
+      "bpw": 0.0,
+      "note": "the null itself",
+      "raw": 0.83106
+    },
+    "full_linear_map": {
+      "beats_null": true,
+      "bpw": 0.062257,
+      "centered": 0.73322
+    },
+    "identity_input": {
+      "note": "post_moe is not mostly its own input",
+      "raw": 0.07841
+    },
+    "linear_rank_256": {
+      "beats_null": true,
+      "bpw": 0.005188,
+      "centered": 0.56233
+    },
+    "linear_rank_64": {
+      "beats_null": false,
+      "bpw": 0.001297,
+      "centered": 0.37406
+    },
+    "shuffled_pairs": {
+      "note": "student on wrong inputs falls below the null, so the score is input-dependent",
+      "raw": 0.73239
+    },
+    "weight_space_at_0.75": {
+      "beats_null": false,
+      "bpw": 0.7531,
+      "centered": 0.0,
+      "raw": 0.014
+    }
+  },
+  "git_commit": "bbcc4a6338acd433478c4e4a4e36cb4a7107ad80",
+  "layer": 38,
+  "not_evidence_of": "capability, full-model quality, or behaviour. One stage of one layer on 4096 held-out positions from a deterministic corpus. The residual 0.28 is unexamined and may be exactly what matters.",
+  "not_the_killed_lever": "activation-weighted SVD is a recorded Type-1 kill and was not run. This replaces the architecture and removes routing entirely rather than reweighting a decomposition of the same matrices.",
+  "open": [
+    "end-to-end block output with the student in place",
+    "generalisation across layers, fitted on layer 38 only",
+    "whether the residual carries the capability"
+  ],
+  "readings": [
+    "this is the only measurement in the campaign that beats the constant-mean null, and it does so at about one seventieth of the rate every weight-space family was given",
+    "the nonlinearity is not the source: a full linear map reaches 0.733 centered, so the random features buy compactness rather than accuracy",
+    "capacity saturates immediately, 0.724 at hidden 1024 and 0.744 at hidden 8192, so the fit is data-limited rather than budget-limited",
+    "9.84 G expert weights are approximable to 0.72 centered cosine by 37 M parameters on this distribution"
+  ],
+  "replaced_weights": 9701425152,
+  "results": {
+    "student_h1024": {
+      "beats_null": true,
+      "bpw": 0.010376,
+      "centered": 0.72443,
+      "raw": 0.92276
+    },
+    "student_h16384": {
+      "beats_null": true,
+      "bpw": 0.166018,
+      "centered": 0.74203,
+      "raw": 0.9275
+    },
+    "student_h4096": {
+      "beats_null": true,
+      "bpw": 0.041505,
+      "centered": 0.74239,
+      "raw": 0.928
+    },
+    "student_h8192": {
+      "beats_null": true,
+      "bpw": 0.083009,
+      "centered": 0.74404,
+      "raw": 0.92828
+    }
+  },
+  "schema": "hawking.glm52.moe_student_result.v1",
+  "scoring": {
+    "disjoint": "a corpus partition disjoint from every split fitted on",
+    "samples": 4096,
+    "split": "teacher_score"
+  },
+  "sealed_at": "2026-07-23T15:54:51Z",
+  "stage": "pre_router_hidden -> post_moe",
+  "training": {
+    "positions_per_record": 256,
+    "samples": 12288,
+    "splits": [
+      "teacher_fit",
+      "teacher_router",
+      "teacher_doctor"
+    ]
+  },
+  "what": "a dense student replacing the routed and shared experts of one layer, fitted against the block's output rather than against any weight matrix"
+}

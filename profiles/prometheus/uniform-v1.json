@@ -1,0 +1,28 @@
+{
+  "schema": "hawking.prometheus.profile.v1",
+  "name": "uniform-v1",
+  "purpose": "Universal quantization policy: no capability conditioning. Every weight-bearing tensor gets the same rate. This is the baseline every conditioned profile must beat (Revision 4 arm II, H1). It is also today's uniform Gravity behavior, expressed as a profile.",
+  "control": false,
+  "capability_gates": ["G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8"],
+  "capability_gate_status": "GATED: requires a served runtime (S0.8) and the G1-G8 evaluator (leg L3). Not run by the deterministic spine.",
+  "category_tiers": {
+    "routed_expert":  {"tier": "T1"},
+    "shared_expert":  {"tier": "T1"},
+    "attention":      {"tier": "T1"},
+    "dense_mlp":      {"tier": "T1"},
+    "embedding":      {"tier": "T1"},
+    "lm_head":        {"tier": "T1"},
+    "mtp":            {"tier": "T1"},
+    "vision":         {"tier": "T1"},
+    "router":         {"tier": "T0"},
+    "normalization":  {"tier": "T0"},
+    "indexer":        {"tier": "T0"},
+    "other":          {"tier": "T1"}
+  },
+  "tier_rates": {
+    "T0": {"native": true},
+    "T1": {"num": 8, "den": 8},
+    "T2": {"num": 2, "den": 8},
+    "T3": {"num": 0, "den": 1}
+  }
+}

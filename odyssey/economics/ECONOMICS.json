@@ -1,0 +1,15 @@
+{
+ "allocator": "economist",
+ "constraint": "the economist never sees claim content",
+ "currency": "verified evidence",
+ "rationale": "refutation and clean exhaustion are rewarded deliberately: a system that only pays for promotion learns to avoid falsification",
+ "rewards": {
+  "clean_branch_exhaustion": 3,
+  "refutation": 5,
+  "tier0_to_tier1": 1,
+  "tier1_to_tier2": 3,
+  "tier2_to_tier3": 10,
+  "tribunal_admission": 25
+ },
+ "schema": "hawking.odyssey.economics.v1"
+}

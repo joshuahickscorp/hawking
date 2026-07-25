@@ -1,0 +1,1907 @@
+{
+  "arms": [
+    {
+      "down_index_bpw": 0.15625,
+      "down_rd_floor_rel_error": 0.897355,
+      "down_spec": {
+        "dim": 64,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_spec": {
+        "dim": 16,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_up_index_bpw": 0.625,
+      "gate_up_rd_floor_rel_error": 0.64842,
+      "id": "S128_g0.625_d0.15625",
+      "keep_experts": 128,
+      "ledger": {
+        "coded_expert_tensors": 36096,
+        "complete_bits": 117287141632,
+        "complete_bpw": 0.498895437,
+        "complete_bpw_exact": "458152897/918334510",
+        "complete_bytes": 14660892704,
+        "components": {
+          "alignment": 0,
+          "codebooks": 147849216,
+          "doctor": 0,
+          "indices": 106451435520,
+          "metadata": 18481152,
+          "packaging": 536870912,
+          "pass_through_tensors": 801541632,
+          "protected_islands": 7950447616,
+          "runtime_tables": 12032,
+          "scales": 1380503552
+        },
+        "keep_experts_per_layer": 128,
+        "legal_under_one_bit_ceiling": true,
+        "n_experts": 128,
+        "n_layers": 94,
+        "omitted_expert_tensors": 0,
+        "original_weight_count": 235093634560
+      }
+    },
+    {
+      "down_index_bpw": 0.3125,
+      "down_rd_floor_rel_error": 0.805245,
+      "down_spec": {
+        "dim": 32,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_up_index_bpw": 1.25,
+      "gate_up_rd_floor_rel_error": 0.420448,
+      "id": "S128_g1.25_d0.3125",
+      "keep_experts": 128,
+      "ledger": {
+        "coded_expert_tensors": 36096,
+        "complete_bits": 223664652544,
+        "complete_bpw": 0.951385404,
+        "complete_bpw_exact": "873690049/918334510",
+        "complete_bytes": 27958081568,
+        "components": {
+          "alignment": 0,
+          "codebooks": 73924608,
+          "doctor": 0,
+          "indices": 212902871040,
+          "metadata": 18481152,
+          "packaging": 536870912,
+          "pass_through_tensors": 801541632,
+          "protected_islands": 7950447616,
+          "runtime_tables": 12032,
+          "scales": 1380503552
+        },
+        "keep_experts_per_layer": 128,
+        "legal_under_one_bit_ceiling": true,
+        "n_experts": 128,
+        "n_layers": 94,
+        "omitted_expert_tensors": 0,
+        "original_weight_count": 235093634560
+      },
+      "richest_legal_for_this_inventory": true
+    },
+    {
+      "down_index_bpw": 0.625,
+      "down_rd_floor_rel_error": 0.64842,
+      "down_spec": {
+        "dim": 16,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_up_index_bpw": 1.25,
+      "gate_up_rd_floor_rel_error": 0.420448,
+      "id": "S128_g1.25_d0.625",
+      "keep_experts": 128,
+      "ledger": {
+        "coded_expert_tensors": 36096,
+        "complete_bits": 247295885568,
+        "complete_bpw": 1.051903792,
+        "complete_bpw_exact": "965999553/918334510",
+        "complete_bytes": 30911985696,
+        "components": {
+          "alignment": 0,
+          "codebooks": 49283072,
+          "doctor": 0,
+          "indices": 236558745600,
+          "metadata": 18481152,
+          "packaging": 536870912,
+          "pass_through_tensors": 801541632,
+          "protected_islands": 7950447616,
+          "runtime_tables": 12032,
+          "scales": 1380503552
+        },
+        "keep_experts_per_layer": 128,
+        "legal_under_one_bit_ceiling": false,
+        "n_experts": 128,
+        "n_layers": 94,
+        "omitted_expert_tensors": 0,
+        "original_weight_count": 235093634560
+      }
+    },
+    {
+      "down_index_bpw": 0.625,
+      "down_rd_floor_rel_error": 0.64842,
+      "down_spec": {
+        "dim": 16,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 2
+      },
+      "gate_up_index_bpw": 2.5,
+      "gate_up_rd_floor_rel_error": 0.176777,
+      "id": "S128_g2.5_d0.625",
+      "keep_experts": 128,
+      "ledger": {
+        "coded_expert_tensors": 36096,
+        "complete_bits": 436567523584,
+        "complete_bpw": 1.856994233,
+        "complete_bpw_exact": "1705341889/918334510",
+        "complete_bytes": 54570940448,
+        "components": {
+          "alignment": 0,
+          "codebooks": 73924608,
+          "doctor": 0,
+          "indices": 425805742080,
+          "metadata": 18481152,
+          "packaging": 536870912,
+          "pass_through_tensors": 801541632,
+          "protected_islands": 7950447616,
+          "runtime_tables": 12032,
+          "scales": 1380503552
+        },
+        "keep_experts_per_layer": 128,
+        "legal_under_one_bit_ceiling": false,
+        "n_experts": 128,
+        "n_layers": 94,
+        "omitted_expert_tensors": 0,
+        "original_weight_count": 235093634560
+      }
+    },
+    {
+      "down_index_bpw": 1.25,
+      "down_rd_floor_rel_error": 0.420448,
+      "down_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 2
+      },
+      "gate_up_index_bpw": 2.5,
+      "gate_up_rd_floor_rel_error": 0.176777,
+      "id": "S128_g2.5_d1.25",
+      "keep_experts": 128,
+      "ledger": {
+        "coded_expert_tensors": 36096,
+        "complete_bits": 483866951936,
+        "complete_bpw": 2.058188231,
+        "complete_bpw_exact": "1890105281/918334510",
+        "complete_bytes": 60483368992,
+        "components": {
+          "alignment": 0,
+          "codebooks": 61603840,
+          "doctor": 0,
+          "indices": 473117491200,
+          "metadata": 18481152,
+          "packaging": 536870912,
+          "pass_through_tensors": 801541632,
+          "protected_islands": 7950447616,
+          "runtime_tables": 12032,
+          "scales": 1380503552
+        },
+        "keep_experts_per_layer": 128,
+        "legal_under_one_bit_ceiling": false,
+        "n_experts": 128,
+        "n_layers": 94,
+        "omitted_expert_tensors": 0,
+        "original_weight_count": 235093634560
+      }
+    },
+    {
+      "down_index_bpw": 1.25,
+      "down_rd_floor_rel_error": 0.420448,
+      "down_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 4
+      },
+      "gate_up_index_bpw": 5.0,
+      "gate_up_rd_floor_rel_error": 0.03125,
+      "id": "S128_g5.0_d1.25",
+      "keep_experts": 128,
+      "ledger": {
+        "coded_expert_tensors": 36096,
+        "complete_bits": 862410227968,
+        "complete_bpw": 3.668369114,
+        "complete_bpw_exact": "3368789953/918334510",
+        "complete_bytes": 107801278496,
+        "components": {
+          "alignment": 0,
+          "codebooks": 110886912,
+          "doctor": 0,
+          "indices": 851611484160,
+          "metadata": 18481152,
+          "packaging": 536870912,
+          "pass_through_tensors": 801541632,
+          "protected_islands": 7950447616,
+          "runtime_tables": 12032,
+          "scales": 1380503552
+        },
+        "keep_experts_per_layer": 128,
+        "legal_under_one_bit_ceiling": false,
+        "n_experts": 128,
+        "n_layers": 94,
+        "omitted_expert_tensors": 0,
+        "original_weight_count": 235093634560
+      }
+    },
+    {
+      "down_index_bpw": 2.5,
+      "down_rd_floor_rel_error": 0.176777,
+      "down_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 2
+      },
+      "gate_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 4
+      },
+      "gate_up_index_bpw": 5.0,
+      "gate_up_rd_floor_rel_error": 0.03125,
+      "id": "S128_g5.0_d2.5",
+      "keep_experts": 128,
+      "ledger": {
+        "coded_expert_tensors": 36096,
+        "complete_bits": 957046046976,
+        "complete_bpw": 4.070914335,
+        "complete_bpw_exact": "3738461121/918334510",
+        "complete_bytes": 119630755872,
+        "components": {
+          "alignment": 0,
+          "codebooks": 123207680,
+          "doctor": 0,
+          "indices": 946234982400,
+          "metadata": 18481152,
+          "packaging": 536870912,
+          "pass_through_tensors": 801541632,
+          "protected_islands": 7950447616,
+          "runtime_tables": 12032,
+          "scales": 1380503552
+        },
+        "keep_experts_per_layer": 128,
+        "legal_under_one_bit_ceiling": false,
+        "n_experts": 128,
+        "n_layers": 94,
+        "omitted_expert_tensors": 0,
+        "original_weight_count": 235093634560
+      }
+    },
+    {
+      "down_index_bpw": 0.15625,
+      "down_rd_floor_rel_error": 0.897355,
+      "down_spec": {
+        "dim": 64,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_spec": {
+        "dim": 16,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_up_index_bpw": 0.625,
+      "gate_up_rd_floor_rel_error": 0.64842,
+      "id": "S96_g0.625_d0.15625",
+      "keep_experts": 96,
+      "ledger": {
+        "coded_expert_tensors": 27072,
+        "complete_bits": 90324680960,
+        "complete_bpw": 0.384207259,
+        "complete_bpw_exact": "70566157/183666902",
+        "complete_bytes": 11290585120,
+        "components": {
+          "alignment": 162432,
+          "codebooks": 147831168,
+          "doctor": 0,
+          "indices": 79838576640,
+          "metadata": 13860864,
+          "packaging": 536870912,
+          "pass_through_tensors": 801541632,
+          "protected_islands": 7950447616,
+          "runtime_tables": 12032,
+          "scales": 1035377664
+        },
+        "keep_experts_per_layer": 96,
+        "legal_under_one_bit_ceiling": true,
+        "n_experts": 128,
+        "n_layers": 94,
+        "omitted_expert_tensors": 9024,
+        "original_weight_count": 235093634560
+      }
+    },
+    {
+      "down_index_bpw": 0.3125,
+      "down_rd_floor_rel_error": 0.805245,
+      "down_spec": {
+        "dim": 32,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_up_index_bpw": 1.25,
+      "gate_up_rd_floor_rel_error": 0.420448,
+      "id": "S96_g1.25_d0.3125",
+      "keep_experts": 96,
+      "ledger": {
+        "coded_expert_tensors": 27072,
+        "complete_bits": 170089260800,
+        "complete_bpw": 0.723495815,
+        "complete_bpw_exact": "132882235/183666902",
+        "complete_bytes": 21261157600,
+        "components": {
+          "alignment": 81216,
+          "codebooks": 73915584,
+          "doctor": 0,
+          "indices": 159677153280,
+          "metadata": 13860864,
+          "packaging": 536870912,
+          "pass_through_tensors": 801541632,
+          "protected_islands": 7950447616,
+          "runtime_tables": 12032,
+          "scales": 1035377664
+        },
+        "keep_experts_per_layer": 96,
+        "legal_under_one_bit_ceiling": true,
+        "n_experts": 128,
+        "n_layers": 94,
+        "omitted_expert_tensors": 9024,
+        "original_weight_count": 235093634560
+      }
+    },
+    {
+      "down_index_bpw": 0.625,
+      "down_rd_floor_rel_error": 0.64842,
+      "down_spec": {
+        "dim": 16,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_up_index_bpw": 1.25,
+      "gate_up_rd_floor_rel_error": 0.420448,
+      "id": "S96_g1.25_d0.625",
+      "keep_experts": 96,
+      "ledger": {
+        "coded_expert_tensors": 27072,
+        "complete_bits": 187806549248,
+        "complete_bpw": 0.798858504,
+        "complete_bpw_exact": "733619333/918334510",
+        "complete_bytes": 23475818656,
+        "components": {
+          "alignment": 108288,
+          "codebooks": 49271040,
+          "doctor": 0,
+          "indices": 177419059200,
+          "metadata": 13860864,
+          "packaging": 536870912,
+          "pass_through_tensors": 801541632,
+          "protected_islands": 7950447616,
+          "runtime_tables": 12032,
+          "scales": 1035377664
+        },
+        "keep_experts_per_layer": 96,
+        "legal_under_one_bit_ceiling": true,
+        "n_experts": 128,
+        "n_layers": 94,
+        "omitted_expert_tensors": 9024,
+        "original_weight_count": 235093634560
+      },
+      "richest_legal_for_this_inventory": true
+    },
+    {
+      "down_index_bpw": 0.625,
+      "down_rd_floor_rel_error": 0.64842,
+      "down_spec": {
+        "dim": 16,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 2
+      },
+      "gate_up_index_bpw": 2.5,
+      "gate_up_rd_floor_rel_error": 0.176777,
+      "id": "S96_g2.5_d0.625",
+      "keep_experts": 96,
+      "ledger": {
+        "coded_expert_tensors": 27072,
+        "complete_bits": 329766486272,
+        "complete_bpw": 1.402702744,
+        "complete_bpw_exact": "1288150337/918334510",
+        "complete_bytes": 41220810784,
+        "components": {
+          "alignment": 162432,
+          "codebooks": 73906560,
+          "doctor": 0,
+          "indices": 319354306560,
+          "metadata": 13860864,
+          "packaging": 536870912,
+          "pass_through_tensors": 801541632,
+          "protected_islands": 7950447616,
+          "runtime_tables": 12032,
+          "scales": 1035377664
+        },
+        "keep_experts_per_layer": 96,
+        "legal_under_one_bit_ceiling": false,
+        "n_experts": 128,
+        "n_layers": 94,
+        "omitted_expert_tensors": 9024,
+        "original_weight_count": 235093634560
+      }
+    },
+    {
+      "down_index_bpw": 1.25,
+      "down_rd_floor_rel_error": 0.420448,
+      "down_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 2
+      },
+      "gate_up_index_bpw": 2.5,
+      "gate_up_rd_floor_rel_error": 0.176777,
+      "id": "S96_g2.5_d1.25",
+      "keep_experts": 96,
+      "ledger": {
+        "coded_expert_tensors": 27072,
+        "complete_bits": 365237953280,
+        "complete_bpw": 1.553585038,
+        "complete_bpw_exact": "285342151/183666902",
+        "complete_bytes": 45654744160,
+        "components": {
+          "alignment": 135360,
+          "codebooks": 61588800,
+          "doctor": 0,
+          "indices": 354838118400,
+          "metadata": 13860864,
+          "packaging": 536870912,
+          "pass_through_tensors": 801541632,
+          "protected_islands": 7950447616,
+          "runtime_tables": 12032,
+          "scales": 1035377664
+        },
+        "keep_experts_per_layer": 96,
+        "legal_under_one_bit_ceiling": false,
+        "n_experts": 128,
+        "n_layers": 94,
+        "omitted_expert_tensors": 9024,
+        "original_weight_count": 235093634560
+      }
+    },
+    {
+      "down_index_bpw": 1.25,
+      "down_rd_floor_rel_error": 0.420448,
+      "down_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 4
+      },
+      "gate_up_index_bpw": 5.0,
+      "gate_up_rd_floor_rel_error": 0.03125,
+      "id": "S96_g5.0_d1.25",
+      "keep_experts": 96,
+      "ledger": {
+        "coded_expert_tensors": 27072,
+        "complete_bits": 649157682944,
+        "complete_bpw": 2.761272904,
+        "complete_bpw_exact": "2535772199/918334510",
+        "complete_bytes": 81144710368,
+        "components": {
+          "alignment": 81216,
+          "codebooks": 110877888,
+          "doctor": 0,
+          "indices": 638708613120,
+          "metadata": 13860864,
+          "packaging": 536870912,
+          "pass_through_tensors": 801541632,
+          "protected_islands": 7950447616,
+          "runtime_tables": 12032,
+          "scales": 1035377664
+        },
+        "keep_experts_per_layer": 96,
+        "legal_under_one_bit_ceiling": false,
+        "n_experts": 128,
+        "n_layers": 94,
+        "omitted_expert_tensors": 9024,
+        "original_weight_count": 235093634560
+      }
+    },
+    {
+      "down_index_bpw": 2.5,
+      "down_rd_floor_rel_error": 0.176777,
+      "down_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 2
+      },
+      "gate_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 4
+      },
+      "gate_up_index_bpw": 5.0,
+      "gate_up_rd_floor_rel_error": 0.03125,
+      "id": "S96_g5.0_d2.5",
+      "keep_experts": 96,
+      "ledger": {
+        "coded_expert_tensors": 27072,
+        "complete_bits": 720137651456,
+        "complete_bpw": 3.063195024,
+        "complete_bpw_exact": "2813037701/918334510",
+        "complete_bytes": 90017206432,
+        "components": {
+          "alignment": 108288,
+          "codebooks": 123195648,
+          "doctor": 0,
+          "indices": 709676236800,
+          "metadata": 13860864,
+          "packaging": 536870912,
+          "pass_through_tensors": 801541632,
+          "protected_islands": 7950447616,
+          "runtime_tables": 12032,
+          "scales": 1035377664
+        },
+        "keep_experts_per_layer": 96,
+        "legal_under_one_bit_ceiling": false,
+        "n_experts": 128,
+        "n_layers": 94,
+        "omitted_expert_tensors": 9024,
+        "original_weight_count": 235093634560
+      }
+    },
+    {
+      "down_index_bpw": 0.15625,
+      "down_rd_floor_rel_error": 0.897355,
+      "down_spec": {
+        "dim": 64,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_spec": {
+        "dim": 16,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_up_index_bpw": 0.625,
+      "gate_up_rd_floor_rel_error": 0.64842,
+      "id": "S64_g0.625_d0.15625",
+      "keep_experts": 64,
+      "ledger": {
+        "coded_expert_tensors": 18048,
+        "complete_bits": 63361931520,
+        "complete_bpw": 0.269517852,
+        "complete_bpw_exact": "49501509/183666902",
+        "complete_bytes": 7920241440,
+        "components": {
+          "alignment": 0,
+          "codebooks": 147849216,
+          "doctor": 0,
+          "indices": 53225717760,
+          "metadata": 9240576,
+          "packaging": 536870912,
+          "pass_through_tensors": 801541632,
+          "protected_islands": 7950447616,
+          "runtime_tables": 12032,
+          "scales": 690251776
+        },
+        "keep_experts_per_layer": 64,
+        "legal_under_one_bit_ceiling": true,
+        "n_experts": 128,
+        "n_layers": 94,
+        "omitted_expert_tensors": 18048,
+        "original_weight_count": 235093634560
+      }
+    },
+    {
+      "down_index_bpw": 0.3125,
+      "down_rd_floor_rel_error": 0.805245,
+      "down_spec": {
+        "dim": 32,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_up_index_bpw": 1.25,
+      "gate_up_rd_floor_rel_error": 0.420448,
+      "id": "S64_g1.25_d0.3125",
+      "keep_experts": 64,
+      "ledger": {
+        "coded_expert_tensors": 18048,
+        "complete_bits": 116513724672,
+        "complete_bpw": 0.495605612,
+        "complete_bpw_exact": "455131737/918334510",
+        "complete_bytes": 14564215584,
+        "components": {
+          "alignment": 0,
+          "codebooks": 73924608,
+          "doctor": 0,
+          "indices": 106451435520,
+          "metadata": 9240576,
+          "packaging": 536870912,
+          "pass_through_tensors": 801541632,
+          "protected_islands": 7950447616,
+          "runtime_tables": 12032,
+          "scales": 690251776
+        },
+        "keep_experts_per_layer": 64,
+        "legal_under_one_bit_ceiling": true,
+        "n_experts": 128,
+        "n_layers": 94,
+        "omitted_expert_tensors": 18048,
+        "original_weight_count": 235093634560
+      }
+    },
+    {
+      "down_index_bpw": 0.625,
+      "down_rd_floor_rel_error": 0.64842,
+      "down_spec": {
+        "dim": 16,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_up_index_bpw": 1.25,
+      "gate_up_rd_floor_rel_error": 0.420448,
+      "id": "S64_g1.25_d0.625",
+      "keep_experts": 64,
+      "ledger": {
+        "coded_expert_tensors": 18048,
+        "complete_bits": 128317020416,
+        "complete_bpw": 0.545812398,
+        "complete_bpw_exact": "501238361/918334510",
+        "complete_bytes": 16039627552,
+        "components": {
+          "alignment": 0,
+          "codebooks": 49283072,
+          "doctor": 0,
+          "indices": 118279372800,
+          "metadata": 9240576,
+          "packaging": 536870912,
+          "pass_through_tensors": 801541632,
+          "protected_islands": 7950447616,
+          "runtime_tables": 12032,
+          "scales": 690251776
+        },
+        "keep_experts_per_layer": 64,
+        "legal_under_one_bit_ceiling": true,
+        "n_experts": 128,
+        "n_layers": 94,
+        "omitted_expert_tensors": 18048,
+        "original_weight_count": 235093634560
+      }
+    },
+    {
+      "down_index_bpw": 0.625,
+      "down_rd_floor_rel_error": 0.64842,
+      "down_spec": {
+        "dim": 16,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 2
+      },
+      "gate_up_index_bpw": 2.5,
+      "gate_up_rd_floor_rel_error": 0.176777,
+      "id": "S64_g2.5_d0.625",
+      "keep_experts": 64,
+      "ledger": {
+        "coded_expert_tensors": 18048,
+        "complete_bits": 222965160192,
+        "complete_bpw": 0.948410027,
+        "complete_bpw_exact": "870957657/918334510",
+        "complete_bytes": 27870645024,
+        "components": {
+          "alignment": 0,
+          "codebooks": 73924608,
+          "doctor": 0,
+          "indices": 212902871040,
+          "metadata": 9240576,
+          "packaging": 536870912,
+          "pass_through_tensors": 801541632,
+          "protected_islands": 7950447616,
+          "runtime_tables": 12032,
+          "scales": 690251776
+        },
+        "keep_experts_per_layer": 64,
+        "legal_under_one_bit_ceiling": true,
+        "n_experts": 128,
+        "n_layers": 94,
+        "omitted_expert_tensors": 18048,
+        "original_weight_count": 235093634560
+      },
+      "richest_legal_for_this_inventory": true
+    },
+    {
+      "down_index_bpw": 1.25,
+      "down_rd_floor_rel_error": 0.420448,
+      "down_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 2
+      },
+      "gate_up_index_bpw": 2.5,
+      "gate_up_rd_floor_rel_error": 0.176777,
+      "id": "S64_g2.5_d1.25",
+      "keep_experts": 64,
+      "ledger": {
+        "coded_expert_tensors": 18048,
+        "complete_bits": 246608713984,
+        "complete_bpw": 1.048980822,
+        "complete_bpw_exact": "963315289/918334510",
+        "complete_bytes": 30826089248,
+        "components": {
+          "alignment": 0,
+          "codebooks": 61603840,
+          "doctor": 0,
+          "indices": 236558745600,
+          "metadata": 9240576,
+          "packaging": 536870912,
+          "pass_through_tensors": 801541632,
+          "protected_islands": 7950447616,
+          "runtime_tables": 12032,
+          "scales": 690251776
+        },
+        "keep_experts_per_layer": 64,
+        "legal_under_one_bit_ceiling": false,
+        "n_experts": 128,
+        "n_layers": 94,
+        "omitted_expert_tensors": 18048,
+        "original_weight_count": 235093634560
+      }
+    },
+    {
+      "down_index_bpw": 1.25,
+      "down_rd_floor_rel_error": 0.420448,
+      "down_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 4
+      },
+      "gate_up_index_bpw": 5.0,
+      "gate_up_rd_floor_rel_error": 0.03125,
+      "id": "S64_g5.0_d1.25",
+      "keep_experts": 64,
+      "ledger": {
+        "coded_expert_tensors": 18048,
+        "complete_bits": 435904993536,
+        "complete_bpw": 1.854176079,
+        "complete_bpw_exact": "1702753881/918334510",
+        "complete_bytes": 54488124192,
+        "components": {
+          "alignment": 0,
+          "codebooks": 110886912,
+          "doctor": 0,
+          "indices": 425805742080,
+          "metadata": 9240576,
+          "packaging": 536870912,
+          "pass_through_tensors": 801541632,
+          "protected_islands": 7950447616,
+          "runtime_tables": 12032,
+          "scales": 690251776
+        },
+        "keep_experts_per_layer": 64,
+        "legal_under_one_bit_ceiling": false,
+        "n_experts": 128,
+        "n_layers": 94,
+        "omitted_expert_tensors": 18048,
+        "original_weight_count": 235093634560
+      }
+    },
+    {
+      "down_index_bpw": 2.5,
+      "down_rd_floor_rel_error": 0.176777,
+      "down_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 2
+      },
+      "gate_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 4
+      },
+      "gate_up_index_bpw": 5.0,
+      "gate_up_rd_floor_rel_error": 0.03125,
+      "id": "S64_g5.0_d2.5",
+      "keep_experts": 64,
+      "ledger": {
+        "coded_expert_tensors": 18048,
+        "complete_bits": 483229063424,
+        "complete_bpw": 2.055474893,
+        "complete_bpw_exact": "1887613529/918334510",
+        "complete_bytes": 60403632928,
+        "components": {
+          "alignment": 0,
+          "codebooks": 123207680,
+          "doctor": 0,
+          "indices": 473117491200,
+          "metadata": 9240576,
+          "packaging": 536870912,
+          "pass_through_tensors": 801541632,
+          "protected_islands": 7950447616,
+          "runtime_tables": 12032,
+          "scales": 690251776
+        },
+        "keep_experts_per_layer": 64,
+        "legal_under_one_bit_ceiling": false,
+        "n_experts": 128,
+        "n_layers": 94,
+        "omitted_expert_tensors": 18048,
+        "original_weight_count": 235093634560
+      }
+    },
+    {
+      "down_index_bpw": 0.15625,
+      "down_rd_floor_rel_error": 0.897355,
+      "down_spec": {
+        "dim": 64,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_spec": {
+        "dim": 16,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_up_index_bpw": 0.625,
+      "gate_up_rd_floor_rel_error": 0.64842,
+      "id": "S48_g0.625_d0.15625",
+      "keep_experts": 48,
+      "ledger": {
+        "coded_expert_tensors": 13536,
+        "complete_bits": 49880665088,
+        "complete_bpw": 0.21217361,
+        "complete_bpw_exact": "97423174/459167255",
+        "complete_bytes": 6235083136,
+        "components": {
+          "alignment": 40608,
+          "codebooks": 147844704,
+          "doctor": 0,
+          "indices": 39919288320,
+          "metadata": 6930432,
+          "packaging": 536870912,
+          "pass_through_tensors": 801541632,
+          "protected_islands": 7950447616,
+          "runtime_tables": 12032,
+          "scales": 517688832
+        },
+        "keep_experts_per_layer": 48,
+        "legal_under_one_bit_ceiling": true,
+        "n_experts": 128,
+        "n_layers": 94,
+        "omitted_expert_tensors": 22560,
+        "original_weight_count": 235093634560
+      }
+    },
+    {
+      "down_index_bpw": 0.3125,
+      "down_rd_floor_rel_error": 0.805245,
+      "down_spec": {
+        "dim": 32,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_up_index_bpw": 1.25,
+      "gate_up_rd_floor_rel_error": 0.420448,
+      "id": "S48_g1.25_d0.3125",
+      "keep_experts": 48,
+      "ledger": {
+        "coded_expert_tensors": 13536,
+        "complete_bits": 89726064896,
+        "complete_bpw": 0.381660971,
+        "complete_bpw_exact": "350492441/918334510",
+        "complete_bytes": 11215758112,
+        "components": {
+          "alignment": 81216,
+          "codebooks": 73915584,
+          "doctor": 0,
+          "indices": 79838576640,
+          "metadata": 6930432,
+          "packaging": 536870912,
+          "pass_through_tensors": 801541632,
+          "protected_islands": 7950447616,
+          "runtime_tables": 12032,
+          "scales": 517688832
+        },
+        "keep_experts_per_layer": 48,
+        "legal_under_one_bit_ceiling": true,
+        "n_experts": 128,
+        "n_layers": 94,
+        "omitted_expert_tensors": 22560,
+        "original_weight_count": 235093634560
+      }
+    },
+    {
+      "down_index_bpw": 0.625,
+      "down_rd_floor_rel_error": 0.64842,
+      "down_spec": {
+        "dim": 16,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_up_index_bpw": 1.25,
+      "gate_up_rd_floor_rel_error": 0.420448,
+      "id": "S48_g1.25_d0.625",
+      "keep_experts": 48,
+      "ledger": {
+        "coded_expert_tensors": 13536,
+        "complete_bits": 98572364288,
+        "complete_bpw": 0.419289805,
+        "complete_bpw_exact": "192524149/459167255",
+        "complete_bytes": 12321545536,
+        "components": {
+          "alignment": 67680,
+          "codebooks": 49275552,
+          "doctor": 0,
+          "indices": 88709529600,
+          "metadata": 6930432,
+          "packaging": 536870912,
+          "pass_through_tensors": 801541632,
+          "protected_islands": 7950447616,
+          "runtime_tables": 12032,
+          "scales": 517688832
+        },
+        "keep_experts_per_layer": 48,
+        "legal_under_one_bit_ceiling": true,
+        "n_experts": 128,
+        "n_layers": 94,
+        "omitted_expert_tensors": 22560,
+        "original_weight_count": 235093634560
+      }
+    },
+    {
+      "down_index_bpw": 0.625,
+      "down_rd_floor_rel_error": 0.64842,
+      "down_spec": {
+        "dim": 16,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 2
+      },
+      "gate_up_index_bpw": 2.5,
+      "gate_up_rd_floor_rel_error": 0.176777,
+      "id": "S48_g2.5_d0.625",
+      "keep_experts": 48,
+      "ledger": {
+        "coded_expert_tensors": 13536,
+        "complete_bits": 169564605440,
+        "complete_bpw": 0.721264128,
+        "complete_bpw_exact": "66236174/91833451",
+        "complete_bytes": 21195575680,
+        "components": {
+          "alignment": 40608,
+          "codebooks": 73920096,
+          "doctor": 0,
+          "indices": 159677153280,
+          "metadata": 6930432,
+          "packaging": 536870912,
+          "pass_through_tensors": 801541632,
+          "protected_islands": 7950447616,
+          "runtime_tables": 12032,
+          "scales": 517688832
+        },
+        "keep_experts_per_layer": 48,
+        "legal_under_one_bit_ceiling": true,
+        "n_experts": 128,
+        "n_layers": 94,
+        "omitted_expert_tensors": 22560,
+        "original_weight_count": 235093634560
+      }
+    },
+    {
+      "down_index_bpw": 1.25,
+      "down_rd_floor_rel_error": 0.420448,
+      "down_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 2
+      },
+      "gate_up_index_bpw": 2.5,
+      "gate_up_rd_floor_rel_error": 0.176777,
+      "id": "S48_g2.5_d1.25",
+      "keep_experts": 48,
+      "ledger": {
+        "coded_expert_tensors": 13536,
+        "complete_bits": 187294202624,
+        "complete_bpw": 0.796679174,
+        "complete_bpw_exact": "731617979/918334510",
+        "complete_bytes": 23411775328,
+        "components": {
+          "alignment": 54144,
+          "codebooks": 61597824,
+          "doctor": 0,
+          "indices": 177419059200,
+          "metadata": 6930432,
+          "packaging": 536870912,
+          "pass_through_tensors": 801541632,
+          "protected_islands": 7950447616,
+          "runtime_tables": 12032,
+          "scales": 517688832
+        },
+        "keep_experts_per_layer": 48,
+        "legal_under_one_bit_ceiling": true,
+        "n_experts": 128,
+        "n_layers": 94,
+        "omitted_expert_tensors": 22560,
+        "original_weight_count": 235093634560
+      },
+      "richest_legal_for_this_inventory": true
+    },
+    {
+      "down_index_bpw": 1.25,
+      "down_rd_floor_rel_error": 0.420448,
+      "down_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 4
+      },
+      "gate_up_index_bpw": 5.0,
+      "gate_up_rd_floor_rel_error": 0.03125,
+      "id": "S48_g5.0_d1.25",
+      "keep_experts": 48,
+      "ledger": {
+        "coded_expert_tensors": 13536,
+        "complete_bits": 329278757120,
+        "complete_bpw": 1.400628127,
+        "complete_bpw_exact": "257249029/183666902",
+        "complete_bytes": 41159844640,
+        "components": {
+          "alignment": 81216,
+          "codebooks": 110877888,
+          "doctor": 0,
+          "indices": 319354306560,
+          "metadata": 6930432,
+          "packaging": 536870912,
+          "pass_through_tensors": 801541632,
+          "protected_islands": 7950447616,
+          "runtime_tables": 12032,
+          "scales": 517688832
+        },
+        "keep_experts_per_layer": 48,
+        "legal_under_one_bit_ceiling": false,
+        "n_experts": 128,
+        "n_layers": 94,
+        "omitted_expert_tensors": 22560,
+        "original_weight_count": 235093634560
+      }
+    },
+    {
+      "down_index_bpw": 2.5,
+      "down_rd_floor_rel_error": 0.176777,
+      "down_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 2
+      },
+      "gate_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 4
+      },
+      "gate_up_index_bpw": 5.0,
+      "gate_up_rd_floor_rel_error": 0.03125,
+      "id": "S48_g5.0_d2.5",
+      "keep_experts": 48,
+      "ledger": {
+        "coded_expert_tensors": 13536,
+        "complete_bits": 364774877696,
+        "complete_bpw": 1.551615289,
+        "complete_bpw_exact": "712450933/459167255",
+        "complete_bytes": 45596859712,
+        "components": {
+          "alignment": 67680,
+          "codebooks": 123200160,
+          "doctor": 0,
+          "indices": 354838118400,
+          "metadata": 6930432,
+          "packaging": 536870912,
+          "pass_through_tensors": 801541632,
+          "protected_islands": 7950447616,
+          "runtime_tables": 12032,
+          "scales": 517688832
+        },
+        "keep_experts_per_layer": 48,
+        "legal_under_one_bit_ceiling": false,
+        "n_experts": 128,
+        "n_layers": 94,
+        "omitted_expert_tensors": 22560,
+        "original_weight_count": 235093634560
+      }
+    },
+    {
+      "down_index_bpw": 0.15625,
+      "down_rd_floor_rel_error": 0.897355,
+      "down_spec": {
+        "dim": 64,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_spec": {
+        "dim": 16,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_up_index_bpw": 0.625,
+      "gate_up_rd_floor_rel_error": 0.64842,
+      "id": "S32_g0.625_d0.15625",
+      "keep_experts": 32,
+      "ledger": {
+        "coded_expert_tensors": 9024,
+        "complete_bits": 36399326464,
+        "complete_bpw": 0.15482906,
+        "complete_bpw_exact": "142184869/918334510",
+        "complete_bytes": 4549915808,
+        "components": {
+          "alignment": 0,
+          "codebooks": 147849216,
+          "doctor": 0,
+          "indices": 26612858880,
+          "metadata": 4620288,
+          "packaging": 536870912,
+          "pass_through_tensors": 801541632,
+          "protected_islands": 7950447616,
+          "runtime_tables": 12032,
+          "scales": 345125888
+        },
+        "keep_experts_per_layer": 32,
+        "legal_under_one_bit_ceiling": true,
+        "n_experts": 128,
+        "n_layers": 94,
+        "omitted_expert_tensors": 27072,
+        "original_weight_count": 235093634560
+      }
+    },
+    {
+      "down_index_bpw": 0.3125,
+      "down_rd_floor_rel_error": 0.805245,
+      "down_spec": {
+        "dim": 32,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_up_index_bpw": 1.25,
+      "gate_up_rd_floor_rel_error": 0.420448,
+      "id": "S32_g1.25_d0.3125",
+      "keep_experts": 32,
+      "ledger": {
+        "coded_expert_tensors": 9024,
+        "complete_bits": 62938260736,
+        "complete_bpw": 0.267715716,
+        "complete_bpw_exact": "245852581/918334510",
+        "complete_bytes": 7867282592,
+        "components": {
+          "alignment": 0,
+          "codebooks": 73924608,
+          "doctor": 0,
+          "indices": 53225717760,
+          "metadata": 4620288,
+          "packaging": 536870912,
+          "pass_through_tensors": 801541632,
+          "protected_islands": 7950447616,
+          "runtime_tables": 12032,
+          "scales": 345125888
+        },
+        "keep_experts_per_layer": 32,
+        "legal_under_one_bit_ceiling": true,
+        "n_experts": 128,
+        "n_layers": 94,
+        "omitted_expert_tensors": 27072,
+        "original_weight_count": 235093634560
+      }
+    },
+    {
+      "down_index_bpw": 0.625,
+      "down_rd_floor_rel_error": 0.64842,
+      "down_spec": {
+        "dim": 16,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_up_index_bpw": 1.25,
+      "gate_up_rd_floor_rel_error": 0.420448,
+      "id": "S32_g1.25_d0.625",
+      "keep_experts": 32,
+      "ledger": {
+        "coded_expert_tensors": 9024,
+        "complete_bits": 68827587840,
+        "complete_bpw": 0.292766701,
+        "complete_bpw_exact": "53771553/183666902",
+        "complete_bytes": 8603448480,
+        "components": {
+          "alignment": 0,
+          "codebooks": 49283072,
+          "doctor": 0,
+          "indices": 59139686400,
+          "metadata": 4620288,
+          "packaging": 536870912,
+          "pass_through_tensors": 801541632,
+          "protected_islands": 7950447616,
+          "runtime_tables": 12032,
+          "scales": 345125888
+        },
+        "keep_experts_per_layer": 32,
+        "legal_under_one_bit_ceiling": true,
+        "n_experts": 128,
+        "n_layers": 94,
+        "omitted_expert_tensors": 27072,
+        "original_weight_count": 235093634560
+      }
+    },
+    {
+      "down_index_bpw": 0.625,
+      "down_rd_floor_rel_error": 0.64842,
+      "down_spec": {
+        "dim": 16,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 2
+      },
+      "gate_up_index_bpw": 2.5,
+      "gate_up_rd_floor_rel_error": 0.176777,
+      "id": "S32_g2.5_d0.625",
+      "keep_experts": 32,
+      "ledger": {
+        "coded_expert_tensors": 9024,
+        "complete_bits": 116163978496,
+        "complete_bpw": 0.494117923,
+        "complete_bpw_exact": "453765541/918334510",
+        "complete_bytes": 14520497312,
+        "components": {
+          "alignment": 0,
+          "codebooks": 73924608,
+          "doctor": 0,
+          "indices": 106451435520,
+          "metadata": 4620288,
+          "packaging": 536870912,
+          "pass_through_tensors": 801541632,
+          "protected_islands": 7950447616,
+          "runtime_tables": 12032,
+          "scales": 345125888
+        },
+        "keep_experts_per_layer": 32,
+        "legal_under_one_bit_ceiling": true,
+        "n_experts": 128,
+        "n_layers": 94,
+        "omitted_expert_tensors": 27072,
+        "original_weight_count": 235093634560
+      }
+    },
+    {
+      "down_index_bpw": 1.25,
+      "down_rd_floor_rel_error": 0.420448,
+      "down_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 2
+      },
+      "gate_up_index_bpw": 2.5,
+      "gate_up_rd_floor_rel_error": 0.176777,
+      "id": "S32_g2.5_d1.25",
+      "keep_experts": 32,
+      "ledger": {
+        "coded_expert_tensors": 9024,
+        "complete_bits": 127979595008,
+        "complete_bpw": 0.544377117,
+        "complete_bpw_exact": "499920293/918334510",
+        "complete_bytes": 15997449376,
+        "components": {
+          "alignment": 0,
+          "codebooks": 61603840,
+          "doctor": 0,
+          "indices": 118279372800,
+          "metadata": 4620288,
+          "packaging": 536870912,
+          "pass_through_tensors": 801541632,
+          "protected_islands": 7950447616,
+          "runtime_tables": 12032,
+          "scales": 345125888
+        },
+        "keep_experts_per_layer": 32,
+        "legal_under_one_bit_ceiling": true,
+        "n_experts": 128,
+        "n_layers": 94,
+        "omitted_expert_tensors": 27072,
+        "original_weight_count": 235093634560
+      }
+    },
+    {
+      "down_index_bpw": 1.25,
+      "down_rd_floor_rel_error": 0.420448,
+      "down_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 4
+      },
+      "gate_up_index_bpw": 5.0,
+      "gate_up_rd_floor_rel_error": 0.03125,
+      "id": "S32_g5.0_d1.25",
+      "keep_experts": 32,
+      "ledger": {
+        "coded_expert_tensors": 9024,
+        "complete_bits": 222652376320,
+        "complete_bpw": 0.947079561,
+        "complete_bpw_exact": "173947169/183666902",
+        "complete_bytes": 27831547040,
+        "components": {
+          "alignment": 0,
+          "codebooks": 110886912,
+          "doctor": 0,
+          "indices": 212902871040,
+          "metadata": 4620288,
+          "packaging": 536870912,
+          "pass_through_tensors": 801541632,
+          "protected_islands": 7950447616,
+          "runtime_tables": 12032,
+          "scales": 345125888
+        },
+        "keep_experts_per_layer": 32,
+        "legal_under_one_bit_ceiling": true,
+        "n_experts": 128,
+        "n_layers": 94,
+        "omitted_expert_tensors": 27072,
+        "original_weight_count": 235093634560
+      },
+      "richest_legal_for_this_inventory": true
+    },
+    {
+      "down_index_bpw": 2.5,
+      "down_rd_floor_rel_error": 0.176777,
+      "down_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 2
+      },
+      "gate_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 4
+      },
+      "gate_up_index_bpw": 5.0,
+      "gate_up_rd_floor_rel_error": 0.03125,
+      "id": "S32_g5.0_d2.5",
+      "keep_experts": 32,
+      "ledger": {
+        "coded_expert_tensors": 9024,
+        "complete_bits": 246320571648,
+        "complete_bpw": 1.047755173,
+        "complete_bpw_exact": "962189733/918334510",
+        "complete_bytes": 30790071456,
+        "components": {
+          "alignment": 0,
+          "codebooks": 123207680,
+          "doctor": 0,
+          "indices": 236558745600,
+          "metadata": 4620288,
+          "packaging": 536870912,
+          "pass_through_tensors": 801541632,
+          "protected_islands": 7950447616,
+          "runtime_tables": 12032,
+          "scales": 345125888
+        },
+        "keep_experts_per_layer": 32,
+        "legal_under_one_bit_ceiling": false,
+        "n_experts": 128,
+        "n_layers": 94,
+        "omitted_expert_tensors": 27072,
+        "original_weight_count": 235093634560
+      }
+    },
+    {
+      "down_index_bpw": 0.15625,
+      "down_rd_floor_rel_error": 0.897355,
+      "down_spec": {
+        "dim": 64,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_spec": {
+        "dim": 16,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_up_index_bpw": 0.625,
+      "gate_up_rd_floor_rel_error": 0.64842,
+      "id": "S16_g0.625_d0.15625",
+      "keep_experts": 16,
+      "ledger": {
+        "coded_expert_tensors": 4512,
+        "complete_bits": 22918023936,
+        "complete_bpw": 0.097484664,
+        "complete_bpw_exact": "89523531/918334510",
+        "complete_bytes": 2864752992,
+        "components": {
+          "alignment": 0,
+          "codebooks": 147849216,
+          "doctor": 0,
+          "indices": 13306429440,
+          "metadata": 2310144,
+          "packaging": 536870912,
+          "pass_through_tensors": 801541632,
+          "protected_islands": 7950447616,
+          "runtime_tables": 12032,
+          "scales": 172562944
+        },
+        "keep_experts_per_layer": 16,
+        "legal_under_one_bit_ceiling": true,
+        "n_experts": 128,
+        "n_layers": 94,
+        "omitted_expert_tensors": 31584,
+        "original_weight_count": 235093634560
+      }
+    },
+    {
+      "down_index_bpw": 0.3125,
+      "down_rd_floor_rel_error": 0.805245,
+      "down_spec": {
+        "dim": 32,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_up_index_bpw": 1.25,
+      "gate_up_rd_floor_rel_error": 0.420448,
+      "id": "S16_g1.25_d0.3125",
+      "keep_experts": 16,
+      "ledger": {
+        "coded_expert_tensors": 4512,
+        "complete_bits": 36150528768,
+        "complete_bpw": 0.153770768,
+        "complete_bpw_exact": "141213003/918334510",
+        "complete_bytes": 4518816096,
+        "components": {
+          "alignment": 0,
+          "codebooks": 73924608,
+          "doctor": 0,
+          "indices": 26612858880,
+          "metadata": 2310144,
+          "packaging": 536870912,
+          "pass_through_tensors": 801541632,
+          "protected_islands": 7950447616,
+          "runtime_tables": 12032,
+          "scales": 172562944
+        },
+        "keep_experts_per_layer": 16,
+        "legal_under_one_bit_ceiling": true,
+        "n_experts": 128,
+        "n_layers": 94,
+        "omitted_expert_tensors": 31584,
+        "original_weight_count": 235093634560
+      }
+    },
+    {
+      "down_index_bpw": 0.625,
+      "down_rd_floor_rel_error": 0.64842,
+      "down_spec": {
+        "dim": 16,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_up_index_bpw": 1.25,
+      "gate_up_rd_floor_rel_error": 0.420448,
+      "id": "S16_g1.25_d0.625",
+      "keep_experts": 16,
+      "ledger": {
+        "coded_expert_tensors": 4512,
+        "complete_bits": 39082871552,
+        "complete_bpw": 0.166243853,
+        "complete_bpw_exact": "152667467/918334510",
+        "complete_bytes": 4885358944,
+        "components": {
+          "alignment": 0,
+          "codebooks": 49283072,
+          "doctor": 0,
+          "indices": 29569843200,
+          "metadata": 2310144,
+          "packaging": 536870912,
+          "pass_through_tensors": 801541632,
+          "protected_islands": 7950447616,
+          "runtime_tables": 12032,
+          "scales": 172562944
+        },
+        "keep_experts_per_layer": 16,
+        "legal_under_one_bit_ceiling": true,
+        "n_experts": 128,
+        "n_layers": 94,
+        "omitted_expert_tensors": 31584,
+        "original_weight_count": 235093634560
+      }
+    },
+    {
+      "down_index_bpw": 0.625,
+      "down_rd_floor_rel_error": 0.64842,
+      "down_spec": {
+        "dim": 16,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 2
+      },
+      "gate_up_index_bpw": 2.5,
+      "gate_up_rd_floor_rel_error": 0.176777,
+      "id": "S16_g2.5_d0.625",
+      "keep_experts": 16,
+      "ledger": {
+        "coded_expert_tensors": 4512,
+        "complete_bits": 62763387648,
+        "complete_bpw": 0.266971872,
+        "complete_bpw_exact": "245169483/918334510",
+        "complete_bytes": 7845423456,
+        "components": {
+          "alignment": 0,
+          "codebooks": 73924608,
+          "doctor": 0,
+          "indices": 53225717760,
+          "metadata": 2310144,
+          "packaging": 536870912,
+          "pass_through_tensors": 801541632,
+          "protected_islands": 7950447616,
+          "runtime_tables": 12032,
+          "scales": 172562944
+        },
+        "keep_experts_per_layer": 16,
+        "legal_under_one_bit_ceiling": true,
+        "n_experts": 128,
+        "n_layers": 94,
+        "omitted_expert_tensors": 31584,
+        "original_weight_count": 235093634560
+      }
+    },
+    {
+      "down_index_bpw": 1.25,
+      "down_rd_floor_rel_error": 0.420448,
+      "down_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 2
+      },
+      "gate_up_index_bpw": 2.5,
+      "gate_up_rd_floor_rel_error": 0.176777,
+      "id": "S16_g2.5_d1.25",
+      "keep_experts": 16,
+      "ledger": {
+        "coded_expert_tensors": 4512,
+        "complete_bits": 68665035520,
+        "complete_bpw": 0.292075265,
+        "complete_bpw_exact": "53644559/183666902",
+        "complete_bytes": 8583129440,
+        "components": {
+          "alignment": 0,
+          "codebooks": 61603840,
+          "doctor": 0,
+          "indices": 59139686400,
+          "metadata": 2310144,
+          "packaging": 536870912,
+          "pass_through_tensors": 801541632,
+          "protected_islands": 7950447616,
+          "runtime_tables": 12032,
+          "scales": 172562944
+        },
+        "keep_experts_per_layer": 16,
+        "legal_under_one_bit_ceiling": true,
+        "n_experts": 128,
+        "n_layers": 94,
+        "omitted_expert_tensors": 31584,
+        "original_weight_count": 235093634560
+      }
+    },
+    {
+      "down_index_bpw": 1.25,
+      "down_rd_floor_rel_error": 0.420448,
+      "down_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 1
+      },
+      "gate_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 4
+      },
+      "gate_up_index_bpw": 5.0,
+      "gate_up_rd_floor_rel_error": 0.03125,
+      "id": "S16_g5.0_d1.25",
+      "keep_experts": 16,
+      "ledger": {
+        "coded_expert_tensors": 4512,
+        "complete_bits": 116026067712,
+        "complete_bpw": 0.493531303,
+        "complete_bpw_exact": "453226827/918334510",
+        "complete_bytes": 14503258464,
+        "components": {
+          "alignment": 0,
+          "codebooks": 110886912,
+          "doctor": 0,
+          "indices": 106451435520,
+          "metadata": 2310144,
+          "packaging": 536870912,
+          "pass_through_tensors": 801541632,
+          "protected_islands": 7950447616,
+          "runtime_tables": 12032,
+          "scales": 172562944
+        },
+        "keep_experts_per_layer": 16,
+        "legal_under_one_bit_ceiling": true,
+        "n_experts": 128,
+        "n_layers": 94,
+        "omitted_expert_tensors": 31584,
+        "original_weight_count": 235093634560
+      }
+    },
+    {
+      "down_index_bpw": 2.5,
+      "down_rd_floor_rel_error": 0.176777,
+      "down_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 2
+      },
+      "gate_spec": {
+        "dim": 8,
+        "family": "shared_grammar",
+        "k": 1024,
+        "stages": 4
+      },
+      "gate_up_index_bpw": 5.0,
+      "gate_up_rd_floor_rel_error": 0.03125,
+      "id": "S16_g5.0_d2.5",
+      "keep_experts": 16,
+      "ledger": {
+        "coded_expert_tensors": 4512,
+        "complete_bits": 127866325760,
+        "complete_bpw": 0.543895312,
+        "complete_bpw_exact": "99895567/183666902",
+        "complete_bytes": 15983290720,
+        "components": {
+          "alignment": 0,
+          "codebooks": 123207680,
+          "doctor": 0,
+          "indices": 118279372800,
+          "metadata": 2310144,
+          "packaging": 536870912,
+          "pass_through_tensors": 801541632,
+          "protected_islands": 7950447616,
+          "runtime_tables": 12032,
+          "scales": 172562944
+        },
+        "keep_experts_per_layer": 16,
+        "legal_under_one_bit_ceiling": true,
+        "n_experts": 128,
+        "n_layers": 94,
+        "omitted_expert_tensors": 31584,
+        "original_weight_count": 235093634560
+      },
+      "richest_legal_for_this_inventory": true
+    }
+  ],
+  "ceiling": "complete_bits / original_weight_count <= 1/1",
+  "claim": "BYTE PLAN ONLY. No capability is claimed; only a real parent-vs-packed forward may select a frontier.",
+  "n_arms": 42,
+  "n_legal": 27,
+  "parent": "qwen3-235b-a22b-instruct-2507",
+  "routing_source": null,
+  "schema": "hawking.gravity.structural_plan.v1"
+}

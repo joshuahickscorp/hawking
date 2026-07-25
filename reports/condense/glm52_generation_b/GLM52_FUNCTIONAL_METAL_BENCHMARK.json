@@ -1,0 +1,67 @@
+{
+  "all_parity": true,
+  "bandwidth_probe": {
+    "achieved_bytes_per_second": 417720725627.34686,
+    "achieved_gigabytes_per_second": 417.72072562734684,
+    "bytes_read_per_call": 3221225472,
+    "kernel": "readout",
+    "note": "same kernel as FRT-D, widened until occupancy stops binding; this is a measured achievable rate for a strided fp16 read, not a peak figure",
+    "seconds_per_call": 0.007711433200165629,
+    "threads": 262144
+  },
+  "device": "Apple M3 Ultra",
+  "grammars": [
+    {
+      "active_bytes_per_token_per_layer": 25165824,
+      "command_buffers_per_call": 1,
+      "cpu_authority_cosine": 0.9999997615814209,
+      "cpu_authority_relative_l2": 0.00019977244664914906,
+      "generator_calls_per_token": 0,
+      "grammar": "FRT_A",
+      "hidden": 1024,
+      "multiply_accumulate_per_token": 12582912,
+      "one_time_upload_seconds": 0.016822542005684227,
+      "parity": true,
+      "resident_bytes_per_layer": 25165824,
+      "seconds_per_layer_call": 0.002903868749854155,
+      "traffic_versus_teacher": 24.0
+    },
+    {
+      "active_bytes_per_token_per_layer": 12582912,
+      "command_buffers_per_call": 1,
+      "cpu_authority_cosine": 1.0,
+      "cpu_authority_relative_l2": 7.906691621428763e-07,
+      "generator_calls_per_token": 6291456,
+      "grammar": "FRT_B",
+      "hidden": 1024,
+      "multiply_accumulate_per_token": 12582912,
+      "one_time_upload_seconds": 0.0020085410214960575,
+      "parity": true,
+      "resident_bytes_per_layer": 12582912,
+      "seconds_per_layer_call": 0.0021534187500947153,
+      "traffic_versus_teacher": 48.0
+    },
+    {
+      "active_bytes_per_token_per_layer": 75497472,
+      "command_buffers_per_call": 1,
+      "cpu_authority_cosine": 1.0,
+      "cpu_authority_relative_l2": 0.0,
+      "generator_calls_per_token": 0,
+      "grammar": "FRT_D",
+      "hidden": 0,
+      "multiply_accumulate_per_token": 37748736,
+      "one_time_upload_seconds": 0.012214209011290222,
+      "parity": true,
+      "resident_bytes_per_layer": 75497472,
+      "seconds_per_layer_call": 0.002520235399424564,
+      "traffic_versus_teacher": 8.0
+    }
+  ],
+  "honest_scope": "one layer, batch 1, one command buffer per call, no residual, no attention, no KV. This is the MoE replacement in isolation.",
+  "parity_gate": "relative L2 below 5e-2 and cosine above 0.999 against the CPU authority; fp16 readouts and a float32 accumulator will not agree to bit level and are not asked to",
+  "repeats": 20,
+  "schema": "hawking.glm52.functional_metal_benchmark.v1",
+  "teacher_active_bytes_per_layer": 603979776,
+  "teacher_active_experts": 8,
+  "unified_memory": true
+}

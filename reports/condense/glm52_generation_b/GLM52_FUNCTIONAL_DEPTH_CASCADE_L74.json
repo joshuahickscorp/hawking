@@ -1,0 +1,87 @@
+{
+  "caveat": "students for the later layers are fitted on capsules seeded from the embedding table, not on states chained from the perturbed layer; the distribution they see here is therefore slightly off-fit",
+  "experiment": "student_in_every_layer",
+  "final_state_vs_teacher": {
+    "alpha": 0.05,
+    "centered_cosine": 0.5382131535817721,
+    "gate": {
+      "centered_cosine_at_least": 0.5,
+      "skill_lower_above": 0.0
+    },
+    "normalized_rmse": 0.9180402524379948,
+    "passes": true,
+    "per_position_skill": {
+      "fraction_beating_null": 0.702392578125,
+      "median": 0.13472518712811082,
+      "p05": -0.42230520520120773,
+      "p95": 0.4390351946400943
+    },
+    "positions": 4096,
+    "raw_cosine": 0.575069737084868,
+    "relative_l2": 0.9180068873563596,
+    "rmse": 1.596019288926769,
+    "skill": 0.09771899070212564,
+    "skill_lower": 0.0902340402483572
+  },
+  "fit_positions_per_student": {
+    "75": 4096,
+    "76": 4096,
+    "77": 12288
+  },
+  "layers_without_a_student": [],
+  "question": "does a stack of functional students hold together",
+  "relative_l2_after": 0.9180060029029846,
+  "relative_l2_at_injection": 0.22927266359329224,
+  "seconds": 67.2,
+  "seeded_at": 74,
+  "steps": [
+    {
+      "layer": 75,
+      "mean_topk_overlap_of_8": 6.70263671875,
+      "relative_l2_by_stage": {
+        "attention_output": 0.37538233399391174,
+        "post_moe": 0.592655599117279,
+        "pre_router_hidden": 0.30222010612487793
+      },
+      "relative_l2_entering": 0.22927266359329224,
+      "relative_l2_leaving": 0.3752985894680023,
+      "step_amplification": 1.63690944915154,
+      "student_substituted_here": true,
+      "top1_agreement": 0.709228515625
+    },
+    {
+      "layer": 76,
+      "mean_topk_overlap_of_8": 5.619140625,
+      "relative_l2_by_stage": {
+        "attention_output": 0.3472670614719391,
+        "post_moe": 0.485537052154541,
+        "pre_router_hidden": 0.3627350330352783
+      },
+      "relative_l2_entering": 0.3752985894680023,
+      "relative_l2_leaving": 0.43053361773490906,
+      "step_amplification": 1.1471762213260757,
+      "student_substituted_here": true,
+      "top1_agreement": 0.380859375
+    },
+    {
+      "layer": 77,
+      "mean_topk_overlap_of_8": 5.220947265625,
+      "relative_l2_by_stage": {
+        "attention_output": 0.5268869400024414,
+        "post_moe": 0.7318098545074463,
+        "pre_router_hidden": 0.4625568091869354
+      },
+      "relative_l2_entering": 0.43053361773490906,
+      "relative_l2_leaving": 0.9180060029029846,
+      "step_amplification": 2.1322516177313364,
+      "student_substituted_here": true,
+      "top1_agreement": 0.513916015625
+    }
+  ],
+  "substituted_layers": [
+    75,
+    76,
+    77
+  ],
+  "total_growth": 4.003992401516473
+}

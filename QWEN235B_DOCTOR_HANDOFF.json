@@ -1,0 +1,184 @@
+{
+  "schema": "hawking.doctor.handoff.v1",
+  "from_parent": "qwen3-235b-a22b-instruct-2507",
+  "from_campaign": "campaign/subbit-capability-density-reset",
+  "doctor_version": "Gen3 (tools/condense/doctor_gen3.py)",
+  "generated_at_utc": "2026-07-20",
+  "law": "complete_bits / original_weight_count <= 1/1, exact Fraction arithmetic via tools/foundry/one_bit_ceiling.py. Nothing above 1.0 may be proposed or promoted. Doctor gets no free bytes. Conditional treatments bill INSTALLED bits.",
+
+  "what_the_doctor_actually_is": "A diagnosis-matched escalation controller, not a compressor. It carries 15 named causes (DIAGNOSES), an 8-rung ladder E0..E7, 13 priced treatments, a no-repetition law (may_propose) that refuses dead and negative treatments without a named reopening reason, and a byte auction that ranks competing uses of a marginal budget by measured recovery per bit. Untested treatments return utility None and are structurally unpromotable.",
+
+  "headline_for_the_next_parent": "This parent is RECONSTRUCTION_BOUND: reconstruction reproduces 91.6 pct of the S64 symKL loss, routing 50.0 pct, sub-additively. Whether the NEXT parent is reconstruction-bound is an OPEN QUESTION and the D1/D2 controls are the instrument that answers it. Run the decomposition FIRST; do not inherit the classification.",
+
+  "run_these_first_on_any_new_parent": [
+    {"order": 1, "measurement": "D1/D2 causal decomposition", "why": "it sets the whole branch of the decision tree; every treatment ordering below is downstream of RECONSTRUCTION_BOUND", "cost": "two extra full forwards, both fenced above the ceiling and never promotable"},
+    {"order": 2, "measurement": "per-layer gamma^2 anisotropy (decades p99/p50) from post_attention_layernorm.weight", "why": "DATA-FREE, costs one tensor read per layer, and predicts where function-aware coding pays. On this parent it spans 1.8428 (L0) to 0.0621 (L93)."},
+    {"order": 3, "measurement": "per-cell Shannon LOWER bound from MEASURED differential entropy (Kozachenko-Leonenko), never the Gaussian D(R)", "why": "the Gaussian number is an UPPER bound on required distortion; matching it proves nothing about the floor. This campaign made that mistake and corrected it."},
+    {"order": 4, "measurement": "best-single-survivor expert reconstruction error on held-out routed tokens, and row-normalized mean off-diagonal expert cosine", "why": "these two numbers are the reopening gates for the three DEAD treatments. Measure them once and the controller knows whether E4 and E7 are alive on this architecture."},
+    {"order": 5, "measurement": "unique-token-id count and segment structure of the calibration corpus", "why": "on this parent 1313 positions carried only 540 unique ids, which silently invalidated a sealed +11.4 pct result. Prove the fit/score split disjoint in the space the module SEES, not in position index."}
+  ],
+
+  "transferable_priors": [
+    {
+      "id": "sparse_residual_doctor_gen1",
+      "transfers": "the MECHANISM and the direction, not the number",
+      "prior": "+0.0514 complete BPW bought a 10.5 pct symKL reduction on a real forward, with argmax, cosine and top5 all moving the same way on the same six prompts",
+      "MECHANISM_CORRECTION_CARRY_THIS": "The ROW SELECTOR is NOT the active ingredient. Gen1's 'worst RELATIVE residual energy' rows beat RANDOM rows by only +1.8 and +0.9 pct, inside the seed spread; random rows recover 96-99 pct of the whole gain. What earns the bytes is the SECOND CODEBOOK STAGE - added residual capacity. Do not port the selector as if it were the treatment, and do not spend engineering on smarter selection. A follow-on adversary showed the same thing again on Gen2: an output-sensitivity (h) weighted selector is matched or beaten by plain UNWEIGHTED absolute residual energy, which needs no activations, no calibration and no training.",
+      "must_re_measure": "the 0.0514 BPW price is a function of expert count, keep fraction and tensor shapes and will be different on any new parent; re-derive it exactly, do not scale it",
+      "evidence": ["S1_FAILURE_DECOMPOSITION.json", "reports/subbit_reset/S3C_DOCTOR_GEN2_ADVERSARIAL.json"]
+    },
+    {
+      "id": "organ_sensitivity_split",
+      "transfers": "the DIRECTION: mlp1 (gate, up) sensitive, mlp2 (down) tolerant",
+      "prior": "reproduced across two parents (gpt-oss-120b F0 found it, qwen3-235b F1 confirmed dominant_failure_organ = gate). Uniform sub-bit allocation across organs is superseded.",
+      "must_re_measure": "the RUNG SPLIT (2.5/0.625 at S64, 5.0/1.25 at S32) is parent- and rate-specific",
+      "reopen_if": "a parent measures NO organ split - gate and down degrading within 10 pct of each other",
+      "evidence": ["tools/foundry/NEGATIVE_TRANSFER_ATLAS.json#uniform_subbit_allocation"]
+    },
+    {
+      "id": "gamma_weighted_coding",
+      "transfers": "the PREDICTOR (data-free h = post_attention_layernorm.weight^2) and the scaling law",
+      "prior": "60 pct layer-0 output-error cut; a data-free h recovers 83 pct of that; log-corr(h, gamma^2) = 0.9918 at L0. Gain tracks anisotropy, so this is a LAYER-0 number that must be scaled by MEASURED anisotropy.",
+      "declared_circularity": "for gate and up the predictor and the gamma-weighted scoring metric share gamma, so part of the win is definitional. Always report the isotropic control - the gamma-favoured arm LOSES it 9/9 on up_proj (L0 0.230828 -> 0.761149).",
+      "scope": "legitimate for gate_proj and up_proj (their input IS the post-attention-LayerNorm output), NOT for down_proj (input is the SwiGLU intermediate)",
+      "evidence": ["reports/subbit_reset/LANE_C_COMPRESSIBILITY_ADVERSARIAL.json", "reports/subbit_reset/S3D_UP_PROJ_PATCH.json"]
+    },
+    {
+      "id": "row_scale_refit",
+      "transfers": "free and always worth taking, sized by the parent's row-norm span",
+      "prior": "mean rel_error 0.7746 -> 0.7526 over 15 real cells, 2.8 pct mean; largest where the row-norm span is largest (L0 gate 0.7214 -> 0.6435), vanishing where flat (L70 0.7041 -> 0.7029)",
+      "carry_the_correction": "its stronger form, row-norm STRATIFIED codebooks, rests on a premise that is FALSE here: measured single-codeword share is 0.0267 mean and never above 0.047 at d16/k1024, against a sealed claim of 94 pct which belonged to a k=32 geometry. Re-measure single-codeword share at the DEPLOYED geometry before believing any stratification story.",
+      "evidence": ["reports/subbit_reset/M01_FUNCTION_AWARE_PROBE.json"]
+    },
+    {
+      "id": "the_ceiling_and_the_auction_machinery",
+      "transfers": "wholly - it is parent-independent",
+      "prior": "exact Fraction bit accounting, adversarial re-derivation of every price, encoder-time quantities excluded from the inference ledger, greedy auction exact only because slots are independent and divisible at the margin (say so when they are not), and self-checks that MUTATE the code to prove they fail when the logic breaks",
+      "carry_the_lesson": "a green self-check over a DEAD CODE PATH is worse than no self-check. The shipped S3D check asserted a rule function while the path it described raised KeyError and could never run. Assert on the OUTPUT of the path you claim to test."
+    },
+    {
+      "id": "sub_additivity_of_causes",
+      "transfers": "as an expectation, not a number",
+      "prior": "isolated causes summed to 12.18 against a total of 8.60. Causes SATURATE rather than stack once one has already flattened the output distribution. Do not budget recovery additively across treatments aimed at different causes.",
+      "evidence": ["S1_FAILURE_DECOMPOSITION.json"]
+    }
+  ],
+
+  "layer_0_specific_MUST_BE_RE_MEASURED": [
+    {
+      "id": "kronecker_repair",
+      "why_layer_0": "L0 gate rel_error 0.0301 vs the incumbent 0.2252 at a CHEAPER complete rate (2.487061 vs 2.500735 BPW), decaying monotonically with depth: L0 0.0301, L1 0.6611, L2 0.7567, L46 0.85+. At depth the Van Loan rearrangement spectrum is nearly flat - the top component holds 0.27 pct of gate energy.",
+      "admission_rule_to_carry": "PER CELL ONLY, and only when the Van Loan spectrum is concentrated AND it beats the incumbent at equal-or-fewer bits AND it wins in OUTPUT space. Under Kronecker's own rule the free structural alternative is refused 9/9 on up_proj; that asymmetric bar is deliberate and should be carried.",
+      "bounded_value": "layer 0 is 1/94 of the model, so full exploitation is worth about 1 pct of total bits. The real value is DIAGNOSTIC.",
+      "closure_status": "up_proj coverage patched at closure. Only 2 of 27 cells move off the free structural rule, both at layer 0, so a 2-bit per-cell mode field is still NOT worth shipping. Portfolio-vs-free-rule margin 1.3514 pct over 27 cells; vs the equal-bits universal vq baseline 4.0496 pct. No ledger change: 0.948410180077 complete BPW stands."
+    },
+    {
+      "id": "layer_0_is_a_different_source",
+      "why_layer_0": "L0 down_proj is 3.014 bits non-Gaussian with 1.328 decades of unexploited gap (0.3701 measured vs 0.0803 achievable); L0 gate is 0.669 bits and 0.791 decades off. Deep layers are 0.012-0.018 bits and 0.06 decades. Column-scale modulation removes the non-Gaussianity entirely (3.0143 -> -0.0035 bits) and closes 42 pct of the distortion gap.",
+      "carry_as": "a WARNING not a result: 'lane A is closed' must never be transferred to a parent's first block. Whether the next parent's first block is also a different source is unmeasured.",
+      "re_measure": "non-Gaussianity in bits and decades-to-own-Shannon-bound, per layer per organ, on the new parent"
+    },
+    {
+      "id": "layerwise_qat_probe_geometry",
+      "why_layer_0": "the whole S3A measurement lives at layer 0 because layer-0 MoE input is rmsnorm(embed[id]), a pure function of the token id - cheap to compute, and exactly why the position-level split leaked. It is also NOT the real activation the module sees in service (attention sublayer and residual add are skipped).",
+      "re_measure": "on real multi-layer activations, or accept that this is a proxy about a proxy"
+    },
+    {
+      "id": "structural_adaptive_k",
+      "why_re_measure": "its 11.5 pct is PREDICTED under a byte auction (K spans 48..96, mean 65.4; 84 of 94 layers buy a richer down rung; 0.996853694 complete BPW), never forward-measured. The verifying forward is running now on THIS parent. Do not carry the number to a new parent before that forward lands, and never carry it as measured."
+    }
+  ],
+
+  "dead_do_not_re_propose": [
+    {
+      "id": "expert_merge",
+      "verdict": "DEAD, adversarially UPHELD and STRENGTHENED",
+      "killed_by": "best single surviving expert reconstructs an omitted expert with median held-out rel error 0.885/0.993/0.995 at L0/L3/L7; a 4-survivor least-squares merge only reaches 0.863/0.988/0.995. ~1.0 is the trivial zero predictor. The adversary's found contamination ran IN THE MERGE'S FAVOUR.",
+      "reopen": "a parent measuring best-single-survivor reconstruction error <= 0.5 on held-out routed tokens at its own keep fraction"
+    },
+    {
+      "id": "generated_tied_params",
+      "verdict": "DEAD, and the row-norm rescue hypothesis is FALSIFIED",
+      "killed_by": "raw and row-normalized mean |off-diagonal cosine| agree to 3 s.f. (gate 0.00166 vs 0.00168; down 0.00039 both) - experts are genuinely mutually orthogonal in BOTH spaces. Best single shared template explains 0.2513 of 4 experts' energy against an orthogonal null of exactly 0.2500. Cross-layer same-index tying is indistinguishable from a different-index control at 1e-7. The metric carries a positive control proving it WOULD detect norm-swamping.",
+      "reopen": "a parent measuring row-normalized mean off-diagonal expert cosine >= 0.10"
+    },
+    {
+      "id": "low_rank_residual",
+      "verdict": "DEAD as a default; retained ONLY as a diagnosis-gated option",
+      "killed_by": "quantization error is HIGH rank. LoRA plateaus around step 25; rank-64 SVD healed TQ3 only 0.114 -> 0.104 while costing 4.6 bpw; data-free top-64 SVD captures 3-9 pct of energy.",
+      "reopen": "only when the residual is MEASURED low rank on the parent in question"
+    },
+    {
+      "id": "router_distill",
+      "verdict": "NEGATIVE (not dead - the mechanism is coherent, it simply has nothing to win)",
+      "killed_by": "no trained student beats plain masking on held-out ids: masked 0.0784 vs bias 0.0993, low-rank r8 0.1176, full retune 0.0927. The KL term is provably INERT - softmax restricted to survivors IS the teacher renormalized onto survivors, so KL = 0 exactly and any correction only raises it.",
+      "reopen": "a parent where the survivor-restricted oracle gap is large AND a student generalizes to held-out ids"
+    },
+    {
+      "id": "raw_weight_pq_vq_at_one_bit",
+      "verdict": "the FAMILY is dead at about one bit, on a real forward",
+      "killed_by": "A1_1p0 at complete 1.0075 BPW collapsed 6/6 (symKL 7.6-10.9, argmax EXACTLY 0.0); R2_subhalf at 0.4930 BPW collapsed 6/6 (symKL 9.3-13.5, argmax 0.0). Its 7 ladder rungs are RETIRED, not deleted.",
+      "reopen": "never on raw weights. A method that CHANGES the source (QAT, distillation, compressibility training, structured pruning, learned sharing) is not this lever and is not blocked by this entry. The correct response is never a higher rate."
+    },
+    {
+      "id": "entropy_coded_pq_indices",
+      "verdict": "the gain is inside the noise of the byte plan",
+      "killed_by": "measured 0.0 to 0.7 pct against a hoped 10-25 pct; Lloyd-optimal indices are near-uniform by construction",
+      "reopen": "a parent using NON-Lloyd (biased or stratified) codebooks whose MEASURED index entropy is <= 0.9 of uniform"
+    },
+    {
+      "id": "posthoc_scalar_gain",
+      "verdict": "algebraically pinned, not merely unhelpful",
+      "killed_by": "optimal gain pins at exactly 1.0 - k-means reconstruction is a conditional mean, so the residual is orthogonal to the reconstruction and cosine is gain-invariant",
+      "reopen": "a parent using a NON-conditional-mean quantizer whose residual is measurably non-orthogonal to the reconstruction"
+    },
+    {
+      "id": "row_norm_stratification_premise",
+      "verdict": "the stated pathology is ABSENT; stratification has nothing to fix",
+      "killed_by": "measured single-codeword share 0.0267 mean, never above 0.047, at the deployed d16/k1024 geometry, against a sealed claim of 94 pct which belonged to a k=32 geometry",
+      "reopen": "a parent measuring single-codeword share >= 0.20 at its own deployed geometry"
+    },
+    {
+      "id": "ternary_factorization",
+      "verdict": "dominated at every matched rate tested",
+      "reopen": "a parent diagnosing a weight distribution where ternary beats VQ at a matched EXACT rate on a real forward"
+    }
+  ],
+
+  "status_changes_at_closure": [
+    {
+      "id": "layerwise_qat",
+      "was": "untested (adversary had killed the 'held-out' label but not the treatment)",
+      "now": "SEALED NEGATIVE under a disjoint probe",
+      "measurement": "-1.92 pct mean over 13 low-capture expert-cells (capture 0.058-0.099), only 1 of 13 positive; -1.77 pct over all 27 cells. The same code reproduces the sealed +11.4 pct on the ORIGINAL position-level split (capture 1.000/0.991/0.422), so the collapse is the SPLIT, not the module.",
+      "root_cause": "qwen_calibration_corpus repeats its 12 segments to hit the token target, so 1313 positions carry only 540 unique ids; layer-0 MoE input is rmsnorm(embed[id]), a pure function of the id; the splitter split POSITIONS. The same embedding row was in both halves - capture 1.000 was ROW DUPLICATION, not near-degeneracy.",
+      "what_survives": "the ZERO-BIT property, re-verified byte-level: control and treatment serialize to identical lengths (gate/up 2001920 B, down 532480 B) with differing content, same artifact_bits integer.",
+      "reopen": "a corpus where a large fit span and a probe with held-out capture <= 0.1 are SIMULTANEOUSLY obtainable, split by unique id / segment and varied across seeds",
+      "files": ["tools/condense/qwen_qat_disjoint.py", "reports/subbit_reset/S3A_DISJOINT_RESCORE.json"]
+    },
+    {
+      "id": "kronecker_repair / codec portfolio",
+      "was": "18 measured cells, gate_proj and down_proj only, claiming gate+up coverage",
+      "now": "27 cells with up_proj patched in at the identical rung and identical exact bit charge (dim8/k1024/stages2, 15733264 complete bits/tensor; kron 15729152; rvq 15745552 and therefore inadmissible in all 9)",
+      "correction": "portfolio-vs-free-rule margin 0.8276 pct over 18 cells -> 1.3514 pct over 27 cells; vs the equal-bits universal vq baseline 4.0496 pct. Verdict direction survives, shipped numbers do not.",
+      "no_ledger_change": "up_proj was always BILLED (18048 = 94 x 64 x 3); the omission was in the measurement grid only. 0.948410180077 complete BPW stands and remains <= 1.0.",
+      "files": ["reports/subbit_reset/S3D_UP_PROJ_PATCH.json"]
+    }
+  ],
+
+  "counts": {
+    "transferable_priors": 6,
+    "layer_0_specific_must_re_measure": 4,
+    "dead_do_not_re_propose": 9,
+    "treatments_in_library": 13,
+    "treatments_with_a_real_forward_measurement": 1
+  },
+
+  "honesty": [
+    "This handoff carries PRIORS, not truths. Every entry names what must be re-measured and every dead entry names its reopening condition, because a controller that cannot reopen is a controller that has stopped measuring.",
+    "No capability pass exists at any rate in this campaign. The Doctor's one real-forward win (symKL 8.599 -> 7.699 for +0.0514 BPW) is an improvement inside a total collapse, 77x from the gate.",
+    "Weight-space error is never a capability claim. Output error on a calibration batch is a proxy. Only a real parent-vs-packed forward under the frozen quality contract may select a frontier or promote anything.",
+    "Two of this campaign's own sealed results were overturned by its own adversaries (the S3A held-out label, the S3D coverage claim) and three of its own numbers were withdrawn (57.3 pct reachable headroom, 92.2 pct keep-64 retention, the Gaussian D(R) floor). The next parent should expect the same rate of self-correction and should budget adversarial passes accordingly.",
+    "The single most transferable lesson is procedural, not scientific: prove the fit/score split disjoint IN THE SPACE THE MODULE SEES, and make the self-check assert on the output of the path it claims to test."
+  ]
+}

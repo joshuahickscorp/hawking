@@ -1,0 +1,29 @@
+{
+  "schema": "hawking.deepseek_v4.cascade_decision.v1",
+  "sealed_at": "2026-07-24T02:45:00Z",
+  "parent": "deepseek-ai/DeepSeek-V4-Flash",
+  "mission_question": "does the functional student compose across the full model?",
+  "answer": "NO",
+  "verdict": "FUNCTIONAL_PARTIAL_ONLY",
+  "cascade": {
+    "mode": "student in all 40 sparse MoE layers, full 43-layer model, validated streamed forward",
+    "seq_len": 192,
+    "first_block_skill_divergence_layer": 8,
+    "first_router_below_0.5_layer": 4,
+    "final_block_skill": -168.6,
+    "mean_per_layer_amplification": 1.121,
+    "min_router_top1_agreement": 0.0,
+    "greedy_token_agreement": 0.0,
+    "L3_first_student_pre_drift": {"skill": 0.931, "router_top1": 1.0}
+  },
+  "mechanism": "router sensitivity under cumulative drift. The first student (L3) fits well at skill 0.93 with perfect routing, but its small error drifts the hidden state enough that the very next router (L4) drops below 0.5 top-1 agreement. Once routing diverges the wrong experts run, the block output diverges, and mild per-layer amplification (1.12 mean) compounds the deviation over 40 layers (1.12^40 ~ 74x) into catastrophic divergence.",
+  "why_robust_to_student_quality": "the killer is not the student fit; it is that ANY nonzero per-layer error, even from a 0.93-skill student, compounds through the sensitive top-6-of-256 router. Independent per-layer functional students cannot compose because their inevitable small errors accumulate into route divergence. A perfect per-layer student is impossible (even 0.97 skill is 3 percent error), so the composition failure is structural.",
+  "relationship_to_single_layer_probes": "the single-layer amplification probes (L5 contractive, L20 near-neutral, L38 mild threshold) measured how the stack treats ONE injected error through a FEW teacher layers. They were favourable. The cascade measures cumulative drift with a student in EVERY layer, and it diverges. Both are honest: a single perturbation is absorbed, but a per-layer error chain is not, because the router re-selects experts once drift accumulates. Favourable single-layer amplification did not imply composition.",
+  "caveat": "students were in-sample fits on 192 positions, underdetermined for a [1024,4096] readout, so deeper students are weak. But the divergence begins at L4 with router disagreement even from the well-fit L3 student, so student quality is not the primary driver.",
+  "escalations_identified_but_out_of_scope": {
+    "C2_route_aware_or_rollout_trained_student": "would require students trained to PRESERVE the next layer's routing, a joint/rollout objective, not an independent per-layer fit. This is a new research direction and the closure directive says do not reopen the search space.",
+    "C3_late_layer_stabilizer": "does not help: divergence begins at L4 (early), so a late real-teacher stabilizer cannot re-anchor the already-diverged stream."
+  },
+  "final_deepseek_verdict": "FUNCTIONAL_PARTIAL_ONLY: the functional escape exists, is locally strong (L3 skill 0.93), and is single-layer favourable, but independent per-layer students do not compose across the full model because router divergence under cumulative drift breaks the cascade by layer 4-8. Same terminal category as GLM, reached by a different mechanism.",
+  "not_evidence_of": "that NO functional model of DeepSeek is possible; a route-aware jointly-trained student is untested and out of scope. This refutes only the independent-per-layer-student paradigm."
+}

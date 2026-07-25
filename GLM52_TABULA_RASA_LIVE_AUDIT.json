@@ -1,0 +1,191 @@
+{
+  "artifacts": {
+    "desktop_bytes": 32310484992,
+    "desktop_output_root": "/Users/scammermike/Desktop/GLM52-Gravity-SubBit",
+    "gravity_files": 111,
+    "representation": "BASELINE_A / glm52 PQ R0 (NEGATIVE CONTROL, unverdicted)"
+  },
+  "endpoint_status": "TABULA_RASA_PREP_IN_PROGRESS",
+  "generated_at": "2026-07-23T04:11:49.250641Z",
+  "host": {
+    "cores": 28,
+    "free_disk_bytes": 417273004032,
+    "physmem": "PhysMem: 95G used (15G wired, 9400M compressor), 192M unused.",
+    "swap": "total = 3072.00M  used = 1501.50M  free = 1570.50M  (encrypted)",
+    "thermal_green": true,
+    "total_disk_bytes": 994662584320
+  },
+  "open_defects_found_this_audit": [
+    {
+      "component": "glm52_source_fetch.safe_to_leave/_controller",
+      "defect": "pgrep -f 'glm52_source_fetch.py run' also matches an auditing shell whose command line contains the string, so PID/env/lease can be attributed to the wrong process",
+      "gate": "8.1 live-process truth",
+      "id": "D1",
+      "severity": "MEDIUM"
+    },
+    {
+      "component": "gravity_forge._kmeans",
+      "defect": "[N,K] distance allocation is proportional to tensor size; 61 GB for the 951,582,720-weight embedding/lm_head, causing MPS OOM and ~67 GB wired retention",
+      "gate": "5.1 largest-tensor safety",
+      "id": "D2",
+      "note": "chunked rewrite 6046c103 caused GPU address faults and a cb[nz] shape mismatch; reverted at 83f28f5e",
+      "severity": "HIGH"
+    },
+    {
+      "component": "gravity_forge.pack_product_quant",
+      "defect": "non-deterministic on MPS: identical weights and seed give 2 distinct hashes over 3 fits; docstring claims determinism",
+      "gate": "5.5 determinism policy",
+      "id": "D3",
+      "severity": "MEDIUM"
+    },
+    {
+      "component": "glm52_teacher_capture",
+      "defect": "calibration is a synthetic token-id probe, and non-zero-start runs declare chain_gap_layers; neither is an authoritative full-run trajectory",
+      "gate": "6.1/6.2 natural corpus + sequential lineage",
+      "id": "D4",
+      "severity": "HIGH"
+    },
+    {
+      "component": "glm52_pack.pack_shard",
+      "defect": "model-00001 (embedding + lm_head) has never packed; artifact would complete at 281/282 missing the vocabulary organ",
+      "gate": "5.1",
+      "id": "D5",
+      "severity": "HIGH"
+    },
+    {
+      "component": "resource policy",
+      "defect": "no automatic backoff; 6 pack workers drove PhysMem to 95G with 207MB unused and 33GB compressor, manually reduced to 4",
+      "gate": "5.2 dynamic resource controller",
+      "id": "D6",
+      "severity": "MEDIUM"
+    }
+  ],
+  "protected_roots": {
+    "mop_dirs": [
+      "/Users/scammermike/Downloads/mop",
+      "/Users/scammermike/Downloads/mop-data",
+      "/Users/scammermike/Downloads/mop-temporal-core-mechanism",
+      "/Users/scammermike/Downloads/mop-temporal-hardening-prep",
+      "/Users/scammermike/Downloads/mop_expansion_bundle"
+    ],
+    "mop_hf_cache": "/Users/scammermike/.cache/huggingface",
+    "policy": "HARD_PROTECTED_NEVER_WRITE_NEVER_DELETE"
+  },
+  "repository": {
+    "branch": "campaign/glm52-bf16-xet-gravity",
+    "campaign_branches": {
+      "campaign/adaptive-transfer-ladder": "c056a105",
+      "campaign/glm52-bf16-xet-gravity": "83f28f5e",
+      "campaign/glm52-inference-breakthrough": "d0448a11",
+      "campaign/hawking-true-batch1-1000tps": "5981b835",
+      "campaign/kimi-k26-doctor-prime": "8d634af9",
+      "campaign/storage-stripdown-resident-first": "2e968ad6",
+      "campaign/subbit-capability-density-reset": "c2019114"
+    },
+    "dirty_tracked": [
+      "deploy/launchd/com.hawking.glm52.source-fetch.plist",
+      "deploy/launchd/com.hawking.overnight.handoff.plist",
+      "reports/condense/general_frontier/GPT_OSS_120B_SOURCE_RELEASE_READINESS.json",
+      "reports/condense/storage_stripdown/DOWNLOAD_PARENT_PROGRESS.json",
+      "reports/condense/storage_stripdown/STORAGE_STRIPDOWN_INVENTORY.md",
+      "reports/condense/storage_stripdown/STORAGE_STRIPDOWN_PROTECTED_PATHS.json",
+      "tools/condense/glm52_worker.py",
+      "tools/condense/glm52_xet_window_fetch.py",
+      "tools/condense/tests/test_glm52_gravity_cli.py",
+      "tools/condense/tests/test_glm52_worker.py",
+      "tools/condense/tests/test_glm52_xet_window_fetch.py",
+      "tools/glm52_gravity.py"
+    ],
+    "head": "83f28f5e4b3aa2ed8da4677175cdbca354fa9e10",
+    "path": "/Users/scammermike/Downloads/hawking",
+    "unpushed": [
+      "83f28f5e Revert \"Bound the k-means distance matrix by the codebook, not the tensor\""
+    ],
+    "untracked": [
+      "docs/plans/hawking_ide_claude_research_handoff_2026_07_19.md",
+      "docs/plans/hawking_ide_frontier_2026_07_19.md",
+      "tools/condense/overnight_tick.sh"
+    ],
+    "worktrees": [
+      "/Users/scammermike/Downloads/hawking                       83f28f5e [campaign/glm52-bf16-xet-gravity]",
+      "/Users/scammermike/Downloads/hawking-1000tps               5981b835 [campaign/hawking-true-batch1-1000tps]",
+      "/Users/scammermike/Downloads/hawking-breakthrough          d0448a11 [campaign/glm52-inference-breakthrough]",
+      "/Users/scammermike/Downloads/hawking-hide-build            4fbca8bc [build/hide-impl-2026-07-19]",
+      "/Users/scammermike/Downloads/hawking-kimi-release-executor 11b17604 [codex/kimi-release-executor]",
+      "/Users/scammermike/HawkingWorktrees/subbit-reset           c2019114 [campaign/subbit-capability-density-reset]"
+    ]
+  },
+  "runtime": {
+    "caffeinate_present": true,
+    "controller_env": {},
+    "controller_pid": 14145,
+    "foreign_heavy_jobs": {
+      "mop_pids": [
+        "13510",
+        "25877",
+        "39851",
+        "40691"
+      ],
+      "note": "deprioritized this session, in-memory only, reverts on their restart",
+      "renice_applied": 20
+    },
+    "launchd_glm_jobs": [
+      "-\t0\tcom.hawking.glm52.readiness-gate",
+      "-\t0\tcom.hawking.glm52.safe-to-leave",
+      "-\t75\tcom.hawking.doctorv5.telegram",
+      "-\t2\tcom.hawking.doctorv5ultra.post120b",
+      "-\t126\tcom.hawking.overnight.handoff",
+      "-\t3\tcom.hawking.emergency.detached.campaign",
+      "15406\t0\tcom.hawking.glm52.source-fetch"
+    ],
+    "lease_holder": "15406",
+    "lease_path": "/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/source_fetch/fetch.lock"
+  },
+  "schema": "hawking.glm52.tabula_rasa_live_audit.v1",
+  "seal_sha256": "2cab73096e5d9dc467ecd37df770c5555a495334afb1f0a08bad0500eb83aed0",
+  "source": {
+    "packed": 111,
+    "probed": 124,
+    "repo": "zai-org/GLM-5.2",
+    "resident_now": 35,
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "source_root": "/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/source",
+    "source_root_bytes": 186198843392,
+    "total_weight_shards": 282,
+    "verified_ever": 147
+  },
+  "teacher": {
+    "calibration": "SEALED_SYNTHETIC_TOKEN_ID_PROBE (not natural text)",
+    "capsule_count": 8,
+    "capsules_with_chain_gap": [
+      "L02_L02",
+      "L16_L18",
+      "L28_L30",
+      "L38_L40"
+    ],
+    "captured_layers": [
+      0,
+      2,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      38,
+      39,
+      40
+    ],
+    "ledger_path": "/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/source_fetch/teacher/GLM52_TEACHER_EVIDENCE_LEDGER.jsonl",
+    "ledger_rows": 14
+  }
+}

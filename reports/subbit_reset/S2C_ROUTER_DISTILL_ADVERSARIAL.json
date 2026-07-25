@@ -1,0 +1,69 @@
+{
+ "bit_accounting_correct": true,
+ "mutation_tests": {
+  "charge_bias": "assert fired",
+  "mix": "assert fired",
+  "oracle_bound": "assert fired",
+  "softmax_temperature_1.7x": "PASSED - hole",
+  "topk_renorm": "assert fired"
+ },
+ "recommended_correction": "Re-score the oracle on all 96 holdout tokens (or score masked on the same 16) before quoting any headroom fraction; the 0.5733 figure is not like-for-like and must be withdrawn or recomputed. Replace the even/odd first-appearance split with a randomized token-id split, or drop the train-vs-holdout overfitting narrative - the zero-parameter masked arm shows the same 50 pct gap. Fix the 1000x bias-BPW arithmetic in the summary prose. The NEGATIVE verdict itself (no student beats masking on held-out ids at layer 0, K=64) is reproducible and stands.",
+ "refutations": [
+  {
+   "axis": "bound/headroom",
+   "finding": "oracle scored on 16 tokens, masked baseline on 96; the 16 are a biased head subset",
+   "measured": {
+    "holdout_all96_mean_retained_mass": 0.8784807324409485,
+    "holdout_first16_mean_retained_mass": 0.9515909552574158,
+    "holdout_first16_median_retained_mass": 0.9693014025688171,
+    "holdout_rest80_median_retained_mass": 0.9391900300979614
+   },
+   "severity": "material"
+  },
+  {
+   "axis": "mechanism",
+   "finding": "overfitting diagnosis unsupported: the only fitted object in the masked arm (survivor set) generalizes to 0.13 pct, yet masked error inflates 50 pct train->holdout; the even/odd first-appearance split is not exchangeable",
+   "measured": {
+    "masked_holdout_rel_err": 0.07841208577156067,
+    "masked_train_rel_err": 0.052077822387218475,
+    "random_survivors_median_retained_holdout": 0.4911653399467468,
+    "random_survivors_median_retained_train": 0.37567585706710815,
+    "train_fitted_survivors_median_retained_holdout": 0.9485609531402588,
+    "train_fitted_survivors_median_retained_train": 0.9497935771942139
+   },
+   "severity": "material"
+  },
+  {
+   "axis": "bit-honesty-prose",
+   "finding": "claim prose states bias delta 0.000000000409 BPW / total 0.948410027409; correct value is 4.094368619556723e-07 / 0.948410436436862 (code and JSON are right, the summary is 1000x off)",
+   "severity": "minor"
+  },
+  {
+   "axis": "bit-honesty-consistency",
+   "finding": "lowrank charged 50053120 bits for a delta that folds into the already-native router rows exactly as `full` does (charged 0). Over-charge, safe direction, but inconsistent.",
+   "severity": "minor"
+  },
+  {
+   "axis": "self-check",
+   "finding": "oracle lower-bound assert is vacuous (D=8, TOP_K=8 -> LS over 8 vectors spans R^8, oracle==0); and a softmax temperature mutation (logit scale 1.7x), which moves every reported number, passes the self-check silently. 4/5 other mutations caught.",
+   "severity": "minor"
+  },
+  {
+   "axis": "overclaim",
+   "finding": "negative rests on ONE layer with an admittedly wrong (attention-free) input; the only other layer measured (46) has the bias arm BEATING masking (-1.3 pct rel) and is discounted as machinery. K=32 never run.",
+   "severity": "minor"
+  }
+ ],
+ "reproduced_on_real_weights": {
+  "S64_structural_complete_bpw": 0.948410027,
+  "calibration_corpus_sha256": "33b05397db03894716a8efa8b4c73ef9c56d70fc35e54be5d9a4fc37511f5572",
+  "original_weight_count": 235093634560,
+  "survivor_train_routing_mass_frac_L0": 0.9267664268272141
+ },
+ "schema": "hawking.subbit.adversarial.v1",
+ "self_check_actually_fails_when_broken": true,
+ "severity": "material",
+ "stage": "S2C_router_distill_adversarial",
+ "target": "tools/condense/qwen_router_distill.py",
+ "verdict_upheld": true
+}

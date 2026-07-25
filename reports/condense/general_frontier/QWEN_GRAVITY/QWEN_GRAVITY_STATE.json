@@ -1,0 +1,88 @@
+{
+  "capability_passes": [],
+  "eta_seconds_remaining": 0,
+  "final": true,
+  "gate": "qwen3_235b_gravity_real_forward",
+  "generated_at": "2026-07-21T02:40:12Z",
+  "honest_note": "every non-parent row is a REAL parent-vs-packed forward. Weight-space reconstruction error is never a pass criterion (the sealed GPT-OSS-120B lesson). BPW is whole-model from the exact byte ledger.",
+  "ladder": {
+    "D1_route_only": "CAUSAL CONTROL for the S1 decomposition, isolating ROUTING loss. Every expert is served at source bf16 (perfect reconstruction) while the router is masked to the SAME 64-expert survivor set S64_structural uses. Whatever quality this loses is caused by omitted routing mass and nothing else. DIAGNOSTIC ONLY: its experts are uncompressed, so its complete BPW is 16 and it is permanently ineligible for promotion. It exists to answer a causal question, not to be a candidate.",
+    "D2_recon_only": "CAUSAL CONTROL for the S1 decomposition, isolating RECONSTRUCTION loss. The full 128-expert router runs UNMASKED (no routing mass is lost at all) while every expert is packed at the exact rates S64_structural gives its survivors. Whatever quality this loses is caused by reconstruction error and nothing else. DIAGNOSTIC ONLY: coding 128 experts at the survivor rate costs about 1.9 complete BPW, which is ILLEGAL under the 1/1 ceiling. It is permanently ineligible for promotion and is never reported as a candidate. Measuring a causal control above the ceiling is not the same as proposing an artifact above the ceiling, and this one is fenced so it can never become one.",
+    "R0_parent": "source-native bf16 experts; the divergence + self-PPL reference. Logits persisted.",
+    "S2A_adaptive_k": "GENERATION S2A. Per-layer expert inventory K_l and per-layer organ rungs chosen by an EXACT global byte auction (qwen_adaptive_k), not a hard-coded 64. The auction minimises sum_l [(1 - C_l(K)) * MISS_COST + C_l(K) * recon_err(rate)] subject to the complete <= 1/1 ceiling, solved as a separable knapsack by Lagrangian bisection - exact, not greedy. MISS_COST = 1.0 is a MEASUREMENT, not a guess: Lane E showed an omitted expert is not reconstructible from survivors (best single survivor median held-out relative error 0.885-0.995, i.e. the trivial zero predictor). Result: K spans 48..96 with mean 65.4 (7 layers at 48, 77 at 64, 5 at 80, 5 at 96), and 84 of 94 layers buy a RICHER down rung (1.25) than S1 used (0.625), funded by cheaper rungs on the remaining 10. Complete 0.996853694 BPW (exact 915445149/918334510), legal. Predicted mean layer error 0.46213 vs 0.521819 for uniform-64 under the identical predictor and ledger. That predictor orders candidates; it does not select. Only this forward does.",
+    "S32_recon_first": "GENERATION S2, RECONSTRUCTION-FIRST. Admitted by the sealed D1/D2 causal decomposition, which found S1 RECONSTRUCTION_BOUND: with perfect experts and only the router masked (D1) the model keeps argmax 0.3850 and symKL 4.297, but with perfect routing and packed experts (D2) it is already at argmax 0.0863 / symKL 7.879 - 91.6 pct of the total S64 loss. Reconstruction is the binding cause, so the correct trade is MORE routing loss for BETTER reconstruction, not less. Quartering the inventory to 32 survivors funds gate/up at 5.0 index bpw (RD floor 0.0312 against 0.1768 at S64) and down at 1.25. Complete 0.947079561 BPW, legal. The cost is real and measured: keep-32 retains only 52.3 pct of top-8 routing decisions (worst layer 41.5) on the 1313-token disjoint calibration, against 79.2 pct at keep-64. D1 says that cost is the cheaper half of the trade. This forward is what decides whether that reading survives contact.",
+    "S64_doctor": "SAME-BUDGET DOCTOR (Lane B M10) on top of S64_structural. The structural arm leaves 0.0516 BPW of headroom under the 1/1 ceiling; this spends ALL of it on a diagnosis-driven sparse residual over down_proj, the organ whose rate-distortion floor is now the worst in the artifact. Protected rows are chosen by measured RELATIVE residual energy after the base pass - where the base representation actually lost the function - not uniformly and not by row norm. Doctor bytes are billed INSIDE the ceiling: correction indices, amortized correction codebook, one bf16 scale per protected row, and a one-bit-per-row protection bitmap. Measured on real down_proj at layer 46: rel_error 0.7038 -> 0.6074 for +0.319 organ bpw.",
+    "S64_gamma": "S64_doctor + DATA-FREE output-aware coding on gate/up. The Lane C adversary showed that the ~60 percent layer-0 output-error cut credited to routed-token calibration is 83 percent recoverable from h = post_attention_layernorm.weight^2 alone (log-corr 0.9918), so the load-bearing quantity is the LayerNorm gamma, not the activations. gamma is ALREADY shipped native as a pass-through tensor, so this costs ZERO additional bits and needs ZERO calibration: complete BPW is identical to S64_doctor at 0.999769787. Applied to gate/up ONLY, because their input IS the post-attention-layernorm output; down_proj's input is the SwiGLU intermediate and gamma does not describe it. Measured gamma^2 anisotropy over all 94 layers: mean 0.293 decades, 45.7 percent of layers above 0.3, layer 0 an outlier at 1.843. Expected gain is large at layer 0 and a few percent at median depth. The trade is real and must be judged by the forward, not asserted: output-aware coding makes WEIGHT-space error substantially worse (0.237 -> 0.806 on L0 gate) while cutting output error, which is the correct direction only if output is what survives.",
+    "S64_structural": "STRUCTURAL (Lane D M05+M09 x Lane A M01'). The inventory is a free variable under a fixed complete ceiling: keeping the 64 hottest experts per layer and spending the freed budget on the survivors is BUDGET-NEUTRAL, so gate/up rises 0.625 -> 2.5 index bpw and its rate-distortion floor falls 0.6484 -> 0.1768. Complete 0.9484 BPW by qwen_structural_plan.ledger, legal under the 1/1 ceiling. Survivors are coded with the scale-invariant function-aware codec (per-row bf16 scale billed). The router's top-k is taken over survivors ONLY: omitted experts are masked to -inf before the top-k, then the k weights renormalize as usual. That is a real change to the model and only the forward may judge it."
+  },
+  "ladder_order": [
+    "R0_parent",
+    "S64_structural",
+    "S64_doctor",
+    "D1_route_only",
+    "D2_recon_only",
+    "S32_recon_first",
+    "S2A_adaptive_k",
+    "S64_gamma"
+  ],
+  "ladder_sha": "931d74198c9b6bfd",
+  "least_divergent": [
+    {
+      "argmax_agreement": 0.7407,
+      "mean_sym_kl": 1.22734,
+      "row_id": "code_py__D1_route_only",
+      "variant": "D1_route_only",
+      "verdict": "CAUSAL_CONTROL_not_a_candidate",
+      "whole_model_bpw": 16.0
+    },
+    {
+      "argmax_agreement": 0.4375,
+      "mean_sym_kl": 2.75265,
+      "row_id": "reason_syllogism__D1_route_only",
+      "variant": "D1_route_only",
+      "verdict": "CAUSAL_CONTROL_not_a_candidate",
+      "whole_model_bpw": 16.0
+    },
+    {
+      "argmax_agreement": 0.6,
+      "mean_sym_kl": 3.89572,
+      "row_id": "gen_paris__D1_route_only",
+      "variant": "D1_route_only",
+      "verdict": "CAUSAL_CONTROL_not_a_candidate",
+      "whole_model_bpw": 16.0
+    },
+    {
+      "argmax_agreement": 0.35,
+      "mean_sym_kl": 4.46408,
+      "row_id": "math_add__D1_route_only",
+      "variant": "D1_route_only",
+      "verdict": "CAUSAL_CONTROL_not_a_candidate",
+      "whole_model_bpw": 16.0
+    },
+    {
+      "argmax_agreement": 0.1818,
+      "mean_sym_kl": 5.513,
+      "row_id": "instr_list__S2A_adaptive_k",
+      "variant": "S2A_adaptive_k",
+      "verdict": "collapse",
+      "whole_model_bpw": 0.996853694
+    }
+  ],
+  "parent_logits_persisted": [
+    "code_py",
+    "gen_paris",
+    "gen_science",
+    "instr_list",
+    "math_add",
+    "reason_syllogism"
+  ],
+  "promote_thresholds": {
+    "argmax_agreement_min": 0.95,
+    "mean_sym_kl_max": 0.1
+  },
+  "routing_partition_source": null,
+  "rows_done": 42,
+  "rows_total": 6,
+  "schema": "hawking.qwen_gravity.state.v1",
+  "status": "SEALED"
+}

@@ -1,0 +1,99 @@
+{
+ "schema": "hawking.foundry.parent_evidence.v1",
+ "provenance": "measured during the F0 GPT-OSS-120B campaign; sealed honest boundary. Numbers are transcribed, not re-derived.",
+ "parent": {
+  "id": "gpt-oss-120b",
+  "label": "120B",
+  "generation": "F0",
+  "architecture": "gpt-oss-moe: 36 layers x 128 experts x top-k4, hidden/intermediate 2880, GQA 64/8",
+  "source_id": "openai/gpt-oss-120b",
+  "source_revision": "b5c939de"
+ },
+ "run_status": "honest_boundary_sealed",
+ "boundary": "sub-bit uniform AND treated both collapsed on a real forward. No frontier selected. Salvage direction is organ inversion.",
+ "representation": {
+  "winners": [
+   {"name": "vq_d32_k65536", "dim": 32, "codebook": 65536, "rate_bpw": 0.5, "rel_error": 0.668, "note": "best measured space-filling gain at fixed rate"},
+   {"name": "vq_d16_k256", "dim": 16, "codebook": 256, "rate_bpw": 0.5, "rel_error": 0.757},
+   {"name": "vq_d8_k16", "dim": 8, "codebook": 16, "rate_bpw": 0.5, "rel_error": 0.782}
+  ],
+  "rate_response": [
+   {"rate_bpw": 0.5, "rel_error": 0.668, "representation": "vq_d32_k65536"},
+   {"rate_bpw": 0.5, "rel_error": 0.757, "representation": "vq_d16_k256"},
+   {"rate_bpw": 0.5, "rel_error": 0.782, "representation": "vq_d8_k16"}
+  ]
+ },
+ "organ_sensitivity": {
+  "organs": {
+   "gate": {"role": "mlp1", "sensitivity": "HIGH", "note": "qualitative at F0; the numeric gate_up vs down_only pair was measured at F1"},
+   "up": {"role": "mlp1", "sensitivity": "HIGH"},
+   "down": {"role": "mlp2", "sensitivity": "LOWER", "note": "tolerates more rate pressure than mlp1"},
+   "attn": {"sensitivity": "UNMEASURED"},
+   "embed": {"sensitivity": "UNMEASURED"},
+   "lm_head": {"sensitivity": "UNMEASURED"}
+  },
+  "dominant_failure_organ": "gate",
+  "inversion": "mlp1/gate+up is the SENSITIVE organ; mlp2/down tolerates more",
+  "inversion_confirmed": true
+ },
+ "doctor": {"successes": [], "failures": [{"target": "sub_bit_uniform", "detail": "collapsed on a real forward"}, {"target": "sub_bit_treated", "detail": "collapsed on a real forward"}]},
+ "routing": {
+  "calibration_tokens": 88,
+  "stable_frac_median": 0.636,
+  "never_routed_frac": 0.261,
+  "required_calibration_tokens": 1000,
+  "verdict": "routing-frequency allocation is ALIVE but needs ~1000 calibration tokens; 88 is not enough"
+ },
+ "activation": {
+  "inter_expert_mean_pairwise_cosine": 0.0001,
+  "residual": 0.9350,
+  "orthogonal_null": 0.9354,
+  "verdict": "experts mutually orthogonal; zero exploitable inter-expert redundancy"
+ },
+ "quality": {
+  "capability_gate": {"mean_symmetric_kl_max": 0.10, "next_token_argmax_agreement_min": 0.95},
+  "result": {"selected_frontier": null, "reason": "both sub-bit candidates collapsed on a real forward"},
+  "failures": [{"probe": "real_parent_vs_packed_forward", "domain": "logits", "metric": "output_divergence", "verdict": "COLLAPSED"}],
+  "probes": ["real_parent_vs_packed_forward"],
+  "domains_collapsing_first": ["logits"]
+ },
+ "runtime": {"timings": [], "dominant_bottleneck": "expert re-streaming from source", "kernel_requirements": []},
+ "resources": {
+  "expert_cache_cap_gib_tested": 64,
+  "evictions": 0,
+  "ram_gb_before_after": [70, 18],
+  "swap_free_mb_at_worst": 906,
+  "correct_cap_gib": 20,
+  "working_set_gib_per_layer": 8
+ },
+ "source_format": {"lessons": [{"id": "mxfp4_moe_blocks", "detail": "source decoder must handle the packed MoE expert blocks directly"}], "decoder_requirements": ["packed MoE expert block decode", "pinned revision re-download"]},
+ "storage": {"mode": "release source after harvest; re-downloadable from pinned revision", "lessons": [{"id": "release_after_harvest", "detail": "source released after harvest; recoverable from openai/gpt-oss-120b @ b5c939de"}]},
+ "assumptions": [
+  {"id": "inter_expert_correlation_absent", "statement": "experts share no exploitable redundancy", "verdict": "CONFIRMED", "evidence": "mean pairwise cosine 1e-4"},
+  {"id": "entropy_coding_negligible", "statement": "entropy coding trained PQ indices is negligible", "verdict": "CONFIRMED", "evidence": "index entropy 7.945/8.0 = 0.0 to 0.7 percent"},
+  {"id": "posthoc_gain_pinned", "statement": "post hoc scalar gain correction is pinned at 1.0", "verdict": "CONFIRMED", "evidence": "k-means recon is a conditional mean; residual orthogonal to recon"},
+  {"id": "organ_inversion", "statement": "mlp1/gate+up is the sensitive organ", "verdict": "CONFIRMED", "evidence": "salvage direction after both sub-bit candidates collapsed"},
+  {"id": "highdim_vq_helps", "statement": "higher dimensional VQ improves rel_error at fixed rate", "verdict": "CONFIRMED", "evidence": "0.782 -> 0.757 -> 0.668 across d8k16, d16k256, d32k65536"},
+  {"id": "row_norm_stratification", "statement": "row-norm stratification recovers the collapsed gate/up rows", "verdict": "OPEN", "evidence": "94 pct of gate/up rows collapse onto ONE codeword; row norms span 1e-5 to 0.91; untested"},
+  {"id": "cache_policy_64gb", "statement": "a large expert cache accelerates the pass", "verdict": "FALSIFIED", "evidence": "0 evictions, RAM 70 to 18 GB, swap free 906MB"}
+ ],
+ "review_answers": {
+  "capability_cliff_moved_with_scale": {"answer": "UNKNOWN at F0 (single parent)", "evidence": "needs F1 to compare"},
+  "geometry_transferred": {"answer": "no prior parent", "evidence": null},
+  "hot_cold_routing_mattered": {"answer": "UNRESOLVED", "evidence": "88-token calibration too weak to decide"},
+  "codebook_sharing_structure_or_amortization": {"answer": "AMORTIZATION ONLY", "evidence": "structure gain measured at zero"},
+  "higher_dimensional_vq_helped": {"answer": "YES", "evidence": "rel_error falls monotonically with VQ dimension at fixed rate"},
+  "row_norm_stratification_helped": {"answer": "UNTESTED", "evidence": "94 pct of gate/up rows collapse onto one codeword"},
+  "organs_consuming_most_rescue_bytes": {"answer": "gate and up (mlp1)", "evidence": "organ inversion; mlp2/down tolerates more"},
+  "quality_domains_collapsing_first": {"answer": "logits", "evidence": "both sub-bit candidates collapsed on a real forward"},
+  "dominant_runtime_bottleneck": {"answer": "expert re-streaming from source", "evidence": "expert-outer/candidate-inner removed 2.7h of re-streaming"}
+ },
+ "methods": [
+  {"id": "routing_frequency_allocation", "name": "routing-frequency allocation", "status": "OPEN", "transfer_breadth": 1.5, "evidence": "alive; needs ~1000 calibration tokens"},
+  {"id": "space_filling_vq_dimension", "name": "higher dimensional VQ", "status": "CONFIRMED_MEASURED", "transfer_breadth": 1.0, "evidence": "0.782 -> 0.668 rel_error at fixed 0.5 rate"},
+  {"id": "row_norm_stratification", "name": "row-norm stratification", "status": "UNTESTED", "transfer_breadth": 2.0, "evidence": "94 pct of gate/up rows collapse onto one codeword"},
+  {"id": "organ_inversion_allocation", "name": "organ inversion byte allocation", "status": "CONFIRMED_MEASURED", "transfer_breadth": 1.0, "evidence": "confirmed on F0 and F1"},
+  {"id": "expert_outer_candidate_inner", "name": "expert-outer candidate-inner loop order", "status": "CONFIRMED_MEASURED", "transfer_breadth": 1.0, "evidence": "removed 2.7h re-streaming"}
+ ],
+ "next_parent": {"storage": {"free_gib": 122, "required_gib": 0, "headroom_gib": 0, "download_in_flight": false}}
+}

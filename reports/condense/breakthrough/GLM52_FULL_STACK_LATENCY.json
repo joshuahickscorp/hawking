@@ -1,0 +1,132 @@
+{
+  "schema": "hawking.glm52.full_stack_latency.v1",
+  "evidence_level": "TWO_MEASURED_COMPONENTS_SUMMED",
+  "not_evidence_of": "a complete token. lm_head, the embedding table, the router and every RMSNorm are on no sealed shard, and the attention core (RoPE, score GEMV over KV, softmax, value contraction) is not executed here.",
+  "components": {
+    "attention_weight_path": {
+      "median_ms": 1.19012501090765,
+      "min_ms": 0.930207985220477,
+      "command_buffers": 3,
+      "evidence": "MEASURED",
+      "parity_relative_l2": 3.6452760849166515e-07,
+      "layer": 2,
+      "activation_source": "SYNTHETIC"
+    },
+    "moe_layer": {
+      "median_ms": 1.0083,
+      "min_ms": 0.9137,
+      "command_buffers": 1,
+      "evidence": "MEASURED",
+      "parity_relative_l2": 2.2568203986061933e-07
+    },
+    "dense_mlp_layer": {
+      "median_ms": 0.3623,
+      "command_buffers": 1,
+      "evidence": "DERIVED"
+    }
+  },
+  "stack": {
+    "attention_ms": 92.8297508507967,
+    "moe_ms": 75.6225,
+    "dense_mlp_ms": 1.0869,
+    "total_ms": 169.53915085079672,
+    "tokens_per_second": 5.8983426245897155,
+    "command_buffers_per_token": 312,
+    "submission_ms": 67.3296,
+    "submission_share": 0.3971330495765757
+  },
+  "projections": {
+    "attention_fused_to_one_cb": {
+      "total_ms": 135.8743508507967,
+      "tokens_per_second": 7.359740773283234,
+      "labels": [
+        "PROJECTED",
+        "NOT_MEASURED",
+        "ASSUMES_ONE_COMMAND_BUFFER_PER_ATTENTION_LAYER"
+      ]
+    },
+    "one_command_graph_per_token": {
+      "total_ms": 102.42535085079672,
+      "tokens_per_second": 9.763207952850488,
+      "labels": [
+        "PROJECTED",
+        "NOT_MEASURED",
+        "ASSUMES_ONE_COMMAND_GRAPH"
+      ]
+    }
+  },
+  "ceilings": {
+    "artifact_floor_tps": 146.9,
+    "selected_bytes_tps_low": 82.5,
+    "selected_bytes_tps_high": 109.7,
+    "measured_fraction_of_selected_ceiling": 0.05376793641376222
+  },
+  "kv_ledger_by_context": [
+    {
+      "context": 2048,
+      "latent_elements_per_token_per_layer": 576,
+      "kv_cached_bytes": 184025088,
+      "kv_latent_read_bytes_per_token": 184025088,
+      "kv_latent_read_is_context_flat": false,
+      "index_scan_bytes_per_token": 11010048,
+      "total_kv_bytes_per_token": 195035136,
+      "naive_full_attention_read_bytes_per_token": 184025088,
+      "indexshare_saving_vs_naive": 0.944,
+      "scan_over_latent_ratio": 0.0598,
+      "scan_dominates": false
+    },
+    {
+      "context": 8192,
+      "latent_elements_per_token_per_layer": 576,
+      "kv_cached_bytes": 736100352,
+      "kv_latent_read_bytes_per_token": 184025088,
+      "kv_latent_read_is_context_flat": true,
+      "index_scan_bytes_per_token": 44040192,
+      "total_kv_bytes_per_token": 228065280,
+      "naive_full_attention_read_bytes_per_token": 736100352,
+      "indexshare_saving_vs_naive": 3.228,
+      "scan_over_latent_ratio": 0.2393,
+      "scan_dominates": false
+    },
+    {
+      "context": 32768,
+      "latent_elements_per_token_per_layer": 576,
+      "kv_cached_bytes": 2944401408,
+      "kv_latent_read_bytes_per_token": 184025088,
+      "kv_latent_read_is_context_flat": true,
+      "index_scan_bytes_per_token": 176160768,
+      "total_kv_bytes_per_token": 360185856,
+      "naive_full_attention_read_bytes_per_token": 2944401408,
+      "indexshare_saving_vs_naive": 8.175,
+      "scan_over_latent_ratio": 0.9573,
+      "scan_dominates": false
+    },
+    {
+      "context": 131072,
+      "latent_elements_per_token_per_layer": 576,
+      "kv_cached_bytes": 11777605632,
+      "kv_latent_read_bytes_per_token": 184025088,
+      "kv_latent_read_is_context_flat": true,
+      "index_scan_bytes_per_token": 704643072,
+      "total_kv_bytes_per_token": 888668160,
+      "naive_full_attention_read_bytes_per_token": 11777605632,
+      "indexshare_saving_vs_naive": 13.253,
+      "scan_over_latent_ratio": 3.8291,
+      "scan_dominates": true
+    },
+    {
+      "context": 1048576,
+      "latent_elements_per_token_per_layer": 576,
+      "kv_cached_bytes": 94220845056,
+      "kv_latent_read_bytes_per_token": 184025088,
+      "kv_latent_read_is_context_flat": true,
+      "index_scan_bytes_per_token": 5637144576,
+      "total_kv_bytes_per_token": 5821169664,
+      "naive_full_attention_read_bytes_per_token": 94220845056,
+      "indexshare_saving_vs_naive": 16.186,
+      "scan_over_latent_ratio": 30.6325,
+      "scan_dominates": true
+    }
+  ],
+  "kv_scan_crossover_context": 34230
+}

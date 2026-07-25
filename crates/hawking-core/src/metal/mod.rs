@@ -244,6 +244,10 @@ pub const SHADER_MEGAKERNEL: &str = include_str!("../../shaders/megakernel_qwen3
 /// shared symbols); appended after the megakernel so it cannot perturb any
 /// existing kernel's codegen.
 pub const SHADER_RWKV7: &str = include_str!("../../shaders/rwkv7.metal");
+/// Product-quantized matvec for `.gravity` `gravity-pq` tensors. Graded against the
+/// frozen fixtures in `tests/fixtures/gravity_pq`, whose authority is the Python
+/// `gravity_forge.pq_execute`.
+pub const SHADER_GRAVITY_PQ: &str = include_str!("../../shaders/gravity_pq.metal");
 /// TQ G4 bitslice decode→GEMV kernel family (`tq` feature). Ported verbatim from
 /// `vendor/strand-decode-kernel/shaders/strand_bitslice.metal`. Compiled into the
 /// runtime library so `pipeline("strand_bitslice_decode")` etc. resolve by name.
@@ -269,6 +273,7 @@ pub fn all_shader_sources() -> String {
         SHADER_MHA,
         SHADER_MEGAKERNEL,
         SHADER_RWKV7,
+        SHADER_GRAVITY_PQ,
     ];
     // The TQ bitslice family is feature-gated: only compiled into the library
     // when `tq` is on.

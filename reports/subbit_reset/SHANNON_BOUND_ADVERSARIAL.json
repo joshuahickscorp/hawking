@@ -1,0 +1,235 @@
+{
+  "aggregate": {
+    "gap_to_shannon_decades": 0.4654,
+    "max_gap_decades": 1.3278,
+    "mean_gap_decades": 0.4654,
+    "verdict": "LANE_A_NEARLY_EXHAUSTED",
+    "why": "some headroom exists but under a factor of ~1.8 in rel_error; it cannot bridge the gap from 0.64 to a survivable reconstruction"
+  },
+  "cells": [
+    {
+      "cell": {
+        "layer": 0,
+        "n_experts": 4,
+        "organ": "gate"
+      },
+      "dim": 8,
+      "h_bits_per_dim": {
+        "gaussian_at_same_variance": 2.05115,
+        "histogram_marginal": 1.484431,
+        "knn_kozachenko_leonenko": 1.382516,
+        "non_gaussianity_bits": 0.668634
+      },
+      "headroom": {
+        "gap_to_shannon_decades": 0.7915,
+        "max_rel_error_improvement_factor": 2.4875
+      },
+      "k": 1024,
+      "mse": {
+        "gaussian_worst_case_D_R": 0.03142615,
+        "measured": 0.07696194,
+        "shannon_lower_bound": 0.0124375
+      },
+      "rate_bits_per_dim": 2.5,
+      "rel_error": {
+        "gaussian_worst_case": 0.176777,
+        "measured": 0.276642,
+        "shannon_lower_bound": 0.111211
+      },
+      "sigma2_coded_space": 1.005637,
+      "stages": 2,
+      "verdict": {
+        "gap_to_shannon_decades": 0.7915,
+        "verdict": "LANE_A_NOT_CLOSED",
+        "why": "the source is materially non-Gaussian and a better post-hoc codec is provably possible; sealing Lane A on the Gaussian number was PREMATURE"
+      }
+    },
+    {
+      "cell": {
+        "layer": 0,
+        "n_experts": 4,
+        "organ": "down"
+      },
+      "dim": 16,
+      "h_bits_per_dim": {
+        "gaussian_at_same_variance": 2.050787,
+        "histogram_marginal": -2.207333,
+        "knn_kozachenko_leonenko": -0.963481,
+        "non_gaussianity_bits": 3.014268
+      },
+      "headroom": {
+        "gap_to_shannon_decades": 1.3278,
+        "max_rel_error_improvement_factor": 4.6119
+      },
+      "k": 1024,
+      "mse": {
+        "gaussian_worst_case_D_R": 0.42260544,
+        "measured": 0.1376949,
+        "shannon_lower_bound": 0.00647388
+      },
+      "rate_bits_per_dim": 0.625,
+      "rel_error": {
+        "gaussian_worst_case": 0.64842,
+        "measured": 0.370124,
+        "shannon_lower_bound": 0.080255
+      },
+      "sigma2_coded_space": 1.005131,
+      "stages": 1,
+      "verdict": {
+        "gap_to_shannon_decades": 1.3278,
+        "verdict": "LANE_A_NOT_CLOSED",
+        "why": "the source is materially non-Gaussian and a better post-hoc codec is provably possible; sealing Lane A on the Gaussian number was PREMATURE"
+      }
+    },
+    {
+      "cell": {
+        "layer": 46,
+        "n_experts": 4,
+        "organ": "gate"
+      },
+      "dim": 8,
+      "h_bits_per_dim": {
+        "gaussian_at_same_variance": 2.050365,
+        "histogram_marginal": 2.013701,
+        "knn_kozachenko_leonenko": 2.034862,
+        "non_gaussianity_bits": 0.015503
+      },
+      "headroom": {
+        "gap_to_shannon_decades": 0.2845,
+        "max_rel_error_improvement_factor": 1.3875
+      },
+      "k": 1024,
+      "mse": {
+        "gaussian_worst_case_D_R": 0.03139194,
+        "measured": 0.05915142,
+        "shannon_lower_bound": 0.03072447
+      },
+      "rate_bits_per_dim": 2.5,
+      "rel_error": {
+        "gaussian_worst_case": 0.176777,
+        "measured": 0.24266,
+        "shannon_lower_bound": 0.174887
+      },
+      "sigma2_coded_space": 1.004542,
+      "stages": 2,
+      "verdict": {
+        "gap_to_shannon_decades": 0.2845,
+        "verdict": "LANE_A_NEARLY_EXHAUSTED",
+        "why": "some headroom exists but under a factor of ~1.8 in rel_error; it cannot bridge the gap from 0.64 to a survivable reconstruction"
+      }
+    },
+    {
+      "cell": {
+        "layer": 46,
+        "n_experts": 4,
+        "organ": "down"
+      },
+      "dim": 16,
+      "h_bits_per_dim": {
+        "gaussian_at_same_variance": 2.050546,
+        "histogram_marginal": 2.022069,
+        "knn_kozachenko_leonenko": 2.06901,
+        "non_gaussianity_bits": -0.018464
+      },
+      "headroom": {
+        "gap_to_shannon_decades": 0.0586,
+        "max_rel_error_improvement_factor": 1.0698
+      },
+      "k": 1024,
+      "mse": {
+        "gaussian_worst_case_D_R": 0.42246394,
+        "measured": 0.49604432,
+        "shannon_lower_bound": 0.43341723
+      },
+      "rate_bits_per_dim": 0.625,
+      "rel_error": {
+        "gaussian_worst_case": 0.64842,
+        "measured": 0.702622,
+        "shannon_lower_bound": 0.656772
+      },
+      "sigma2_coded_space": 1.004794,
+      "stages": 1,
+      "verdict": {
+        "gap_to_shannon_decades": 0.0586,
+        "verdict": "LANE_A_EXHAUSTED",
+        "why": "measured MSE is within 0.15 decades of the true Shannon lower bound for the measured source entropy; there is no meaningful post-hoc headroom left"
+      }
+    },
+    {
+      "cell": {
+        "layer": 93,
+        "n_experts": 4,
+        "organ": "gate"
+      },
+      "dim": 8,
+      "h_bits_per_dim": {
+        "gaussian_at_same_variance": 2.052028,
+        "histogram_marginal": 1.87654,
+        "knn_kozachenko_leonenko": 2.040426,
+        "non_gaussianity_bits": 0.011602
+      },
+      "headroom": {
+        "gap_to_shannon_decades": 0.2714,
+        "max_rel_error_improvement_factor": 1.3668
+      },
+      "k": 1024,
+      "mse": {
+        "gaussian_worst_case_D_R": 0.03146443,
+        "measured": 0.05784293,
+        "shannon_lower_bound": 0.03096241
+      },
+      "rate_bits_per_dim": 2.5,
+      "rel_error": {
+        "gaussian_worst_case": 0.176777,
+        "measured": 0.239685,
+        "shannon_lower_bound": 0.175361
+      },
+      "sigma2_coded_space": 1.006862,
+      "stages": 2,
+      "verdict": {
+        "gap_to_shannon_decades": 0.2714,
+        "verdict": "LANE_A_NEARLY_EXHAUSTED",
+        "why": "some headroom exists but under a factor of ~1.8 in rel_error; it cannot bridge the gap from 0.64 to a survivable reconstruction"
+      }
+    },
+    {
+      "cell": {
+        "layer": 93,
+        "n_experts": 4,
+        "organ": "down"
+      },
+      "dim": 16,
+      "h_bits_per_dim": {
+        "gaussian_at_same_variance": 2.051282,
+        "histogram_marginal": 2.009586,
+        "knn_kozachenko_leonenko": 2.068904,
+        "non_gaussianity_bits": -0.017622
+      },
+      "headroom": {
+        "gap_to_shannon_decades": 0.0587,
+        "max_rel_error_improvement_factor": 1.0699
+      },
+      "k": 1024,
+      "mse": {
+        "gaussian_worst_case_D_R": 0.42289527,
+        "measured": 0.49602246,
+        "shannon_lower_bound": 0.43335337
+      },
+      "rate_bits_per_dim": 0.625,
+      "rel_error": {
+        "gaussian_worst_case": 0.64842,
+        "measured": 0.702248,
+        "shannon_lower_bound": 0.656388
+      },
+      "sigma2_coded_space": 1.00582,
+      "stages": 1,
+      "verdict": {
+        "gap_to_shannon_decades": 0.0587,
+        "verdict": "LANE_A_EXHAUSTED",
+        "why": "measured MSE is within 0.15 decades of the true Shannon lower bound for the measured source entropy; there is no meaningful post-hoc headroom left"
+      }
+    }
+  ],
+  "claim_under_attack": "that matching sqrt(2^-2R) proves post-hoc coding is exhausted",
+  "schema": "hawking.gravity.shannon_bound.v1"
+}

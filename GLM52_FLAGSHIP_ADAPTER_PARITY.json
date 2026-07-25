@@ -1,0 +1,32 @@
+{
+ "schema": "hawking.glm52.flagship_adapter_parity.v1",
+ "artifact": "~/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0",
+ "artifact_bytes": 83138229952,
+ "complete_bpw": 0.882888,
+ "tokens": [7, 1234, 9],
+ "authority": {
+  "runtime": "crates/hawking-core/src/gravity_glm.rs (Rust, lazy multi-shard CPU)",
+  "oracle": "tools/condense/glm52_flagship_oracle.py + glm52_reference.py (numpy)",
+  "note": "both read the same 282 real .gravity shards through the same codec; neither consults source safetensors"
+ },
+ "result": {
+  "argmax": {"rust": 9540, "oracle": 9540, "match": true},
+  "top5": {"rust": [9540, 86755, 67480, 112441, 122609],
+           "oracle": [9540, 86755, 67480, 112441, 122609],
+           "match_exact_order": true},
+  "final_layer_dsa_selection_last_token": {"rust": [1, 2, 0], "oracle": [1, 2, 0], "match": true},
+  "logits": {
+   "count": 154880,
+   "max_abs_diff": 6.079673767089844e-05,
+   "mean_abs_diff": 1.1239958439546172e-05,
+   "note": "float32 reassociation noise over 78 real layers; consistent in scale with the fixture's 2.56e-6 over 4 tiny layers and the Llama instrument's 2.6e-5/6.7e-6 over 16 layers"
+  }
+ },
+ "timing": {
+  "rust_seconds_per_token": 139.37,
+  "rust_peak_rss_bytes": 6899122176,
+  "oracle_seconds_per_token": 31.03,
+  "note": "CPU-only, no acceleration, no batching; not a throughput measurement, a correctness measurement"
+ },
+ "verdict": "M04_SEALED: the Rust GLM-5.2 adapter executes a complete token from the real flagship .gravity artifact and agrees with an independent oracle reading the same bytes, both in continuous logit ranking and in discrete DSA key selection"
+}

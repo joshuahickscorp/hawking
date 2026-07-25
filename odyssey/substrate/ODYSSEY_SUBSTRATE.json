@@ -1,0 +1,23 @@
+{
+ "entries": [
+  {
+   "bytes": 135575252,
+   "note": "Grades the runtime, not the science. Not an Odyssey training target.",
+   "path": "/Users/scammermike/Library/Application Support/Hawking/CampaignS08/llama32-1b-R0.v2.gravity",
+   "present": true,
+   "role": "runtime_instrument",
+   "sha256": "91c8c596343ab79f4e1f06012609b9afd27e2ba73aed9f382da4b2bfbd348e45"
+  },
+  {
+   "gate": "M11: General and Math artifacts are selected and verified",
+   "gate_state": "OPEN",
+   "note": "The selected compact Math artifact from Prometheus. Odyssey trains this and nothing else; a substitute substrate is a different experiment.",
+   "path": null,
+   "present": false,
+   "role": "odyssey_training_substrate"
+  }
+ ],
+ "schema": "hawking.odyssey.substrate.v1",
+ "selected": null,
+ "selection_gate": "M11"
+}

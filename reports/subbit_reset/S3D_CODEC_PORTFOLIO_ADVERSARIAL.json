@@ -1,0 +1,129 @@
+{
+  "bit_accounting_correct": true,
+  "confirmed_numbers": {
+    "NEW_L46_up_proj_gvq_out": 0.236259,
+    "NEW_L46_up_proj_selected": "gvq",
+    "NEW_L46_up_proj_vq_out": 0.241376,
+    "NEW_ablation_L0_gate_gamma_shuffled": 0.571434,
+    "NEW_ablation_L0_gate_no_importance": 0.154507,
+    "NEW_ablation_L0_gate_random_importance": 0.352644,
+    "NEW_ablation_L0_gate_true_gamma": 0.071751,
+    "NEW_free_rule_mean_over_20_cells_incl_up": 0.40755,
+    "NEW_gvq_L0_up_proj_output_rel_error": 0.081334,
+    "NEW_incumbent_L0_down_output_rel_error": 0.32401,
+    "NEW_incumbent_L0_up_proj_output_rel_error": 0.156915,
+    "NEW_kron_L0_up_proj_admitted": true,
+    "NEW_kron_L0_up_proj_concentration": 0.999497,
+    "NEW_kron_L0_up_proj_output_rel_error": 0.014315,
+    "NEW_portfolio_gain_over_free_rule_pct_20_cells": 1.617,
+    "NEW_portfolio_mean_over_20_cells_incl_up": 0.400957,
+    "NEW_portfolio_plus_rvq_complete_bpw": 0.9493535225299459,
+    "NEW_rvq_L0_down_output_rel_error": 0.255733,
+    "NEW_rvq_admissible_in_any_cell": false,
+    "NEW_rvq_complete_bits_delta_per_tensor": 12288,
+    "NEW_rvq_everywhere_whole_model_bpw_cost": 0.0009433425299458691,
+    "coded_expert_tensors": 18048,
+    "incumbent_L0_gate_output_rel_error_experts_345": 0.154507,
+    "incumbent_everywhere_complete_bpw": 0.9484100265381511,
+    "kron_L0_gate_output_rel_error_experts_012": 0.014847,
+    "kron_L0_gate_output_rel_error_experts_345": 0.017401,
+    "kron_admitted_L0_gate_reproduced_on_experts_345": true,
+    "legal_under_one_bit_ceiling": true,
+    "mode_bits_per_tensor": 2,
+    "mode_bits_total": 36096,
+    "mutations_fired": "8/8",
+    "original_weight_count": 235093634560,
+    "portfolio_complete_bpw": 0.9484101800769743,
+    "portfolio_complete_bpw_exact": "435478899/459167255",
+    "selector_surcharge_bpw": 1.5353882323337714e-07,
+    "total_complete_bits": 222965196288
+  },
+  "recommended_correction": "Keep the top-line verdict (selector not worth a 2-bit mode field; predictor works for gamma-weighting and not for Kronecker; nothing here is capability). Fix four things before anything ships. (1) MEASURE up_proj. Add 'up_proj' to RUNGS (same rung as gate_proj) and to the organ loop in build(); the shipped exception list is L0.gate_proj AND L0.up_proj, not L0.gate_proj alone, and the free-rule margin is 1.62 pct over 20 cells, not 0.83 pct over 18. Until up_proj is in the loop, rename whole_model_mode_assignment_gate_up to _gate and stop asserting fixed_rule_mode('up_proj') in the self-check. (2) RETRACT the 'rvq is a null' finding. rvq is inadmissible by construction in all 18 cells (+12288 complete bits each) and could not have moved a selection; it is in fact the best arm at L0.down_proj, the one cell nothing else wins. Re-run the admission against the real constraint - the whole-model 1.0 BPW ceiling, which has 0.05 BPW of headroom - instead of a per-tensor bits <= incumbent test; rvq everywhere costs 9.43e-04 BPW and lands at 0.949354, still legal. (3) RENAME comparison_at_equal_complete_bits, or exclude rvq from universal_codecs: rvq is not at equal complete bits and is currently the reported best_single_codec. (4) SCOPE the gvq recommendation to L0-L2. The measured deep-layer gain is 0.06-2 pct in a metric gvq is definitionally fitted to, while gvq is worse than vq in the isotropic metric in every gate cell measured; a threshold of 0.018287 decades calibrated on L93's 0.06 pct gain does not justify switching the codec on 93 of 94 layers. Also declare the asymmetric admission bar (Kronecker must win both metric spaces, gvq only one) - under Kronecker's own rule gvq is refused 9/9 and the free structural rule collapses to plain vq. Bit accounting, real-weight provenance, mechanism ablation, seed robustness and the self-check all survived unchanged.",
+  "refutations": [
+    "MATERIAL / up_proj WAS NEVER MEASURED, AND THE SHIPPED EXCEPTION LIST IS WRONG BECAUSE OF IT. RUNGS has no 'up_proj' key, so measure_cell(mats,'up_proj',g) raises KeyError; 0 of 18 cells are up_proj, yet up_proj is 6016 of the 18048 coded expert tensors (one third of the coded artifact), the rule is stated as 'gvq on gate/up', fixed_rule_mode('up_proj') returns 'gvq' with a self-check assert behind it, and the report key is literally whole_model_mode_assignment_gate_up. I measured it at the identical rung: L0.up_proj ADMITS Kronecker (concentration 0.999497, output 0.014315 vs incumbent 0.156915 vs free-rule gvq 0.081334, at 15729152 <= 15733264 complete bits, all four admission conditions true). The recommended artifact 'free structural rule + hard-coded exception for L0.gate_proj' therefore leaves L0.up_proj on gvq and forfeits a 0.75-decade win on a tensor of identical size. Correct exception list is L0.gate_proj AND L0.up_proj.",
+    "MATERIAL / THE REPORTED MARGIN IS BIASED LOW BY THAT SAME OMISSION. Adding my two measured up_proj cells (L0 kron 0.014315 vs free-rule 0.081334; L46 gvq 0.236259 both sides) gives 20 cells: portfolio 0.400957 vs free structural rule 0.407550, a 1.62 pct relative gain with 2 of 20 cells off the rule - not the reported 0.83 pct with 1 of 18. The direction of the verdict survives, the quoted key_numbers portfolio_gain_over_free_rule_pct=0.8276 and cells_off_the_free_rule=1 do not.",
+    "MATERIAL / 'THE RVQ ARM IS A NULL' IS A MIS-ATTRIBUTION: rvq is INADMISSIBLE BY CONSTRUCTION in all 18 cells, so it could not have changed a selection regardless of quality. rvq costs +12288 complete bits in EVERY cell (larger codebook: stages*k*dim*16/keep), and select_mode admits non-kron arms only at complete_bits <= incumbent. rvq is not weak: at L0.down_proj it scores 0.255733 vs the incumbent 0.324010, a 21 pct improvement, and L0.down is the ONE cell in the entire grid where no admitted arm beat the incumbent (kron loses there at 0.662247). At L0.gate it also beats vq, 0.121522 vs 0.155274. The what_failed item 'deeper residual stages with coarser vectors are not a lever' is refuted at L0.",
+    "MATERIAL / THE PER-TENSOR '<=' ADMISSION THRESHOLD IS STRICTER THAN THE ACTUAL CONSTRAINT AND KILLED A REAL LEVER. The binding constraint is whole-model complete BPW <= 1.0, not per-tensor bits <= incumbent bits. Charging rvq everywhere costs 12288*18048/235093634560 = 9.4334e-04 BPW, taking the portfolio from 0.948410180 to 0.949354 - still legal, with roughly 0.0506 BPW of ceiling headroom left over. An arm that improves the worst cell in the grid by 21 pct for under 0.1 pct of the ceiling was discarded by an over-tight local rule and then written up as a scientific null.",
+    "MATERIAL / THE SECTION KEY comparison_at_equal_complete_bits IS FALSE FOR rvq, AND rvq IS THE REPORTED best_single_codec. The index RATES are equal (gate 2.5 bpw, down 0.625 bpw); the COMPLETE bits are not - rvq is +12288 per tensor in all 18 cells. So the headline 'the portfolio beats the best universal codec rvq 0.4395' is measured against a baseline that spends more bits than the incumbent and could never ship under the module's own admission rule. This one cuts in the stage agent's disfavour (an inflated bar), but the label is wrong and must not be quoted as an equal-bits comparison.",
+    "MINOR-MATERIAL / THE gvq RECOMMENDATION IS UNSUPPORTED FOR ROUGHLY 91 OF 94 LAYERS. The measured gvq output gain collapses past L2: L5 0.239654->0.235174 (1.9 pct), L46 0.241584->0.236519 (2.1 pct), L90 0.240936->0.240286 (0.27 pct), L93 0.240889->0.240738 (0.06 pct). Meanwhile gvq is WORSE than plain vq in the isotropic metric in EVERY gate cell measured (L0 0.764911 vs 0.230100, i.e. 3.3x worse; even L93 0.242429 vs 0.240777). The gamma-weighted metric is the surrogate gvq is definitionally fitted to and the isotropic metric is the one down_proj is scored under, so at depth the honest reading is wash-to-loss, not win. The gvq_anisotropy_threshold_decades = 0.018287 that produces '93 of 94 layers -> gvq' is set by the MINIMUM anisotropy among gvq-selected measured cells, i.e. by L93, the layer whose gain is 0.06 pct. The threshold is calibrated on a gain indistinguishable from nothing.",
+    "MINOR / UNDECLARED ASYMMETRIC ADMISSION BAR, and it is the asymmetry that produces the headline verdict. kron_admitted requires Kronecker to beat the incumbent in BOTH weight space and output space; select_mode requires gvq only to be cheap-or-equal and to win the OUTPUT metric, with no weight-space condition at all. gvq loses in weight space in all 9 gate cells and is selected in 8 of them. Held to Kronecker's own rule, gvq would be REFUSED in 9 of 9 gate cells and the 'free structural rule' would collapse to plain vq everywhere. The rule is not symmetric and the report does not say so.",
+    "MINOR / SCOPE, restating what the stage agent already declared but which readers will drop: 9 of 94 layers measured, 2 of 3 expert organs measured, 3 of 64 surviving experts fit per cell, fit set == score set for every arm, and the whole sub-1-BPW position rests on DELETING 64 of 128 experts per layer (the BPW denominator is the full 235093634560 original parameters, so omission is what buys the sub-1-bit number). None of this is capability and the sealed S1 forward still collapses 12/12."
+  ],
+  "schema": "hawking.gravity.codec_portfolio.adversarial.v1",
+  "self_check_actually_fails_when_broken": true,
+  "severity": "material",
+  "target": "tools/condense/qwen_codec_portfolio.py + reports/subbit_reset/S3D_CODEC_PORTFOLIO.json",
+  "upheld": {
+    "bit_ledger_reproduced_independently": {
+      "complete_bpw_exact": "435478899/459167255",
+      "complete_bpw_float": 0.9484101800769743,
+      "components_rederived": {
+        "codebooks": "94*64*(2*4096+4096)... = 73924608 MATCH",
+        "indices": "94*64*(2*15728640+3932160) = 212902871040 MATCH",
+        "metadata": "18048*512 + 2*18048 = 9276672 MATCH",
+        "runtime_tables": "94*128 = 12032 MATCH",
+        "scales": "94*64*((1536*16+16)*2+(4096*16+16)) = 690251776 MATCH"
+      },
+      "conservatism_confirmed": [
+        "incumbent rate charged on cheaper kron cells",
+        "mode field billed per tensor (36096) not per cell (564)"
+      ],
+      "kron_rank_is_budget_capped": "L0 gate kron 15729152 <= incumbent 15733264, verified per cell",
+      "legal_under_one_bit_ceiling": true,
+      "no_unbilled_component_found": true,
+      "original_weight_count": 235093634560,
+      "total_bits": 222965196288,
+      "training_only_param_vanished": false
+    },
+    "capability_honesty": "upheld; no forward ran and the module says so in three places",
+    "kron_depth_kill": "reproduced; concentration 0.9995 at L0 falls to 0.08-0.20 at depth",
+    "mechanism_attribution_HOLDS": {
+      "gamma_columns_shuffled": 0.571434,
+      "no_importance": 0.154507,
+      "random_abs_normal_importance": 0.352644,
+      "reading": "both wrong importance vectors are far WORSE than no importance. The gvq gain is caused by gamma being the correct per-column weighting, not by arbitrary non-flat weighting. This is the ablation the brief demanded and it survives.",
+      "test": "L0.gate_proj, disjoint expert cluster {3,4,5}, gamma-weighted output metric",
+      "true_gamma": 0.071751
+    },
+    "no_bound_abuse": "zero occurrences of Shannon/rd_floor/entropy/optimal/exhaust in the report; S3D calls SP.ledger only, never SP.arm where the Gaussian rd_floor lives",
+    "real_weights_not_synthetic": "SafetensorsIndexReader over models/qwen3-235b-a22b bf16; independently re-read by this agent",
+    "seed_robustness_HOLDS": {
+      "concentration": 0.999183,
+      "incumbent_output_rel_error": 0.154507,
+      "kron_admission": {
+        "admitted": true,
+        "beats_output": true,
+        "beats_weight": true,
+        "cheaper_or_equal": true,
+        "structural": true
+      },
+      "kron_output_rel_error": 0.017401,
+      "rank": 192,
+      "reading": "the L0 Kronecker exception is not a cherry-pick",
+      "split": [
+        1,
+        2048,
+        1536,
+        2
+      ],
+      "test": "L0.gate_proj refit on experts {3,4,5} instead of {0,1,2}"
+    },
+    "self_check": {
+      "mutations_injected": 8,
+      "mutations_that_fired": 8,
+      "note": "3 of the 8 sites were NOT claimed by the stage agent and still fired",
+      "passes_s": 1.3,
+      "sites": [
+        "all()->any() in kron_admitted",
+        "KRON_CONCENTRATION_MIN 0.50->0.0",
+        "fixed_rule_mode -> always gvq",
+        "anisotropy p99->p50",
+        "mode_bits ceil->floor",
+        "_unrearrange transpose order",
+        "drop importance from C.fit",
+        "rel_error column weight no-op"
+      ]
+    }
+  },
+  "verdict_upheld": true
+}

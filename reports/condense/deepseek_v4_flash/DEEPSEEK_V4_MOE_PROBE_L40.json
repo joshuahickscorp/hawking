@@ -1,0 +1,92 @@
+{
+  "candidates": [
+    {
+      "alpha": 0.05,
+      "bytes": 8388672,
+      "centered_cosine": 0.12495339925891595,
+      "gate": {
+        "centered_cosine_at_least": 0.5,
+        "skill_lower_above": 0.0
+      },
+      "label": "functional_student_h1024",
+      "local_bpw": 0.010374532060504133,
+      "normalized_rmse": 0.871698898097946,
+      "passes": false,
+      "per_position_skill": {
+        "fraction_beating_null": 0.1005859375,
+        "median": -0.11894049239553195,
+        "p05": -0.22664557893265916,
+        "p95": 0.06465981813085733
+      },
+      "positions": 1024,
+      "raw_cosine": 0.5126319629836125,
+      "relative_l2": 0.8716895220477375,
+      "rmse": 0.6974718836418105,
+      "skill": -0.09213014510566597,
+      "skill_lower": -0.0974976595440761
+    },
+    {
+      "alpha": 0.05,
+      "bytes": 33562688,
+      "centered_cosine": 0.08051080503813919,
+      "gate": {
+        "centered_cosine_at_least": 0.5,
+        "skill_lower_above": 0.0
+      },
+      "label": "affine_upper_control",
+      "local_bpw": 0.04150802209130329,
+      "normalized_rmse": 1.5747945928102174,
+      "passes": false,
+      "per_position_skill": {
+        "fraction_beating_null": 0.0205078125,
+        "median": -2.785232243002115,
+        "p05": -4.369658172879741,
+        "p95": -1.0619244673168977
+      },
+      "positions": 1024,
+      "raw_cosine": 0.2608167290917647,
+      "relative_l2": 1.5747776542168244,
+      "rmse": 1.2600393936403307,
+      "skill": -2.5644229444081237,
+      "skill_lower": -2.6214857164944485
+    },
+    {
+      "alpha": 0.05,
+      "bytes": 8192,
+      "centered_cosine": 0.0,
+      "gate": {
+        "centered_cosine_at_least": 0.5,
+        "skill_lower_above": 0.0
+      },
+      "label": "weight_space_constant",
+      "local_bpw": 1.0131301669638515e-05,
+      "normalized_rmse": 0.8341214694469868,
+      "passes": false,
+      "per_position_skill": {
+        "fraction_beating_null": 0.0,
+        "median": 0.0,
+        "p05": 0.0,
+        "p95": 0.0
+      },
+      "positions": 1024,
+      "raw_cosine": 0.5515990246991644,
+      "relative_l2": 0.8341124975820373,
+      "rmse": 0.6674050796102935,
+      "skill": 0.0,
+      "skill_lower": 0.0
+    }
+  ],
+  "constant_null_raw_cosine": 0.5515990246991644,
+  "expert_precision": "routed fp4-in-I8, shared fp8 e4m3",
+  "fit_positions": 3072,
+  "functional_escape_exists": false,
+  "input": "embedding-seeded ffn_norm(embed[token]); no attention context",
+  "layer": 40,
+  "map_is_the_win": false,
+  "not_evidence_of": "block, propagation, amplification or capability. The DeepSeek block uses MLA, a DSA compressor/indexer and hyper-connections; a propagation verdict needs that block validated against reference logits.",
+  "parent": "deepseek-ai/DeepSeek-V4-Flash",
+  "routing": "learned noaux_tc sqrtsoftplus",
+  "schema": "hawking.deepseek_v4.moe_functional_probe.v1",
+  "score_positions": 1024,
+  "shuffled_input_skill": -0.205623292369993
+}

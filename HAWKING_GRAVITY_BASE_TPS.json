@@ -1,0 +1,82 @@
+{
+  "active_bytes_per_token": 135662020,
+  "architecture": {
+    "head_dim": 64,
+    "heads": 32,
+    "hidden": 2048,
+    "kv_heads": 8,
+    "layers": 16,
+    "vocab": 128256
+  },
+  "artifact": "/Users/scammermike/Library/Application Support/Hawking/CampaignS08/llama32-1b-R0.v2.gravity",
+  "artifact_bytes": 135575252,
+  "cold_load_ms": 680.025,
+  "device_resident_bytes": 135662020,
+  "kv_bytes_per_token": 65536,
+  "measurements": [
+    {
+      "base_true_decode_tps": 105.81331123387055,
+      "command_buffers_per_token": 1.0,
+      "context_tokens": 128,
+      "decode_ms": 151.20970900000003,
+      "decode_ms_per_token_max": 11.947041,
+      "decode_ms_per_token_median": 9.306791,
+      "decode_ms_per_token_min": 7.237165999999999,
+      "decode_tokens": 16,
+      "dispatches_per_token": 210.0,
+      "prefill_ms": 1098.2976249999992,
+      "prefill_tps": 116.5440014495161,
+      "time_to_first_token_ms": 47.143209,
+      "wall_ms": 1250.188
+    },
+    {
+      "base_true_decode_tps": 68.75320704168458,
+      "command_buffers_per_token": 1.0,
+      "context_tokens": 512,
+      "decode_ms": 232.71641699999995,
+      "decode_ms_per_token_max": 27.466167,
+      "decode_ms_per_token_median": 14.386708,
+      "decode_ms_per_token_min": 10.497334,
+      "decode_tokens": 16,
+      "dispatches_per_token": 210.0,
+      "prefill_ms": 5519.911666999998,
+      "prefill_tps": 92.75510748857064,
+      "time_to_first_token_ms": 8.714459000000002,
+      "wall_ms": 5752.912249999999
+    },
+    {
+      "base_true_decode_tps": 29.201520948077896,
+      "command_buffers_per_token": 1.0,
+      "context_tokens": 2048,
+      "decode_ms": 547.916666,
+      "decode_ms_per_token_max": 41.817625,
+      "decode_ms_per_token_median": 34.040625,
+      "decode_ms_per_token_min": 27.768500000000003,
+      "decode_tokens": 16,
+      "dispatches_per_token": 210.0,
+      "prefill_ms": 41934.600959,
+      "prefill_tps": 48.83795131381734,
+      "time_to_first_token_ms": 18.934875,
+      "wall_ms": 42482.929625
+    },
+    {
+      "base_true_decode_tps": 13.337330364526952,
+      "command_buffers_per_token": 1.0,
+      "context_tokens": 8192,
+      "decode_ms": 1199.640375,
+      "decode_ms_per_token_max": 76.4965,
+      "decode_ms_per_token_median": 75.1785,
+      "decode_ms_per_token_min": 73.388334,
+      "decode_tokens": 16,
+      "dispatches_per_token": 210.0,
+      "prefill_ms": 428779.1665420019,
+      "prefill_tps": 19.10540585744046,
+      "time_to_first_token_ms": 59.350874999999995,
+      "wall_ms": 429979.207542
+    }
+  ],
+  "note": "measured, not modelled; no acceleration of any kind is enabled on this path",
+  "schema": "hawking.gravity.base_tps.v1",
+  "scoreboard": "BASE_TRUE_TPS",
+  "warm_load_ms": 368.107042
+}

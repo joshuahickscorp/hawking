@@ -1,0 +1,202 @@
+{
+  "bits_charged": {
+    "extra_bits": 1573056,
+    "extra_bpw": 6.6911892486758446e-06,
+    "extra_bpw_exact": "24579/3673338040",
+    "gate_cols_unused_note": "gate/up (4096 cols) carry only the mode bit, modulation loses there",
+    "keep_experts": 64,
+    "layers_enabled": 1,
+    "of_layers": 94,
+    "sealed_s64_with_doctor_bpw": 0.999769787,
+    "still_legal_under_one_bit_ceiling": true
+  },
+  "cells": [
+    {
+      "bits_charged_per_tensor": 65537,
+      "cell": {
+        "dim": 8,
+        "k": 1024,
+        "layer": 0,
+        "n_experts": 4,
+        "organ": "gate",
+        "stages": 2
+      },
+      "characterisation": {
+        "col_rms_span_decades_after_row_norm": 1.158,
+        "effective_rank": 69.4,
+        "kurtosis_row_normalised": 6.8,
+        "min_dim": 1536,
+        "near_zero_frac_below_0p1_rms": 0.2093,
+        "row_norm_span_decades": 4.94,
+        "top8_col_energy_share": 0.0213
+      },
+      "gap_to_shannon_decades": {
+        "baseline": 0.7795,
+        "closed": -0.4898,
+        "closed_fraction": -0.6284,
+        "modulated": 1.2693
+      },
+      "non_gaussianity_bits": {
+        "after_column_modulation": 1.5407,
+        "original_coded_space": 0.6686
+      },
+      "rate_bits_per_dim": {
+        "baseline": 2.5,
+        "column_scale_surcharge": 0.01041683,
+        "modulated_total": 2.510417
+      },
+      "rel_error": {
+        "baseline": 0.2728,
+        "modulated": 0.4761,
+        "shannon_lower_bound": 0.1112
+      },
+      "shape": [
+        1536,
+        4096
+      ]
+    },
+    {
+      "bits_charged_per_tensor": 24577,
+      "cell": {
+        "dim": 16,
+        "k": 1024,
+        "layer": 0,
+        "n_experts": 4,
+        "organ": "down",
+        "stages": 1
+      },
+      "characterisation": {
+        "col_rms_span_decades_after_row_norm": 2.554,
+        "effective_rank": 68.6,
+        "kurtosis_row_normalised": 52.63,
+        "min_dim": 1536,
+        "near_zero_frac_below_0p1_rms": 0.9364,
+        "row_norm_span_decades": 1.182,
+        "top8_col_energy_share": 0.1315
+      },
+      "gap_to_shannon_decades": {
+        "baseline": 1.3076,
+        "closed": 0.552,
+        "closed_fraction": 0.4221,
+        "modulated": 0.7556
+      },
+      "non_gaussianity_bits": {
+        "after_column_modulation": -0.0035,
+        "original_coded_space": 3.0143
+      },
+      "rate_bits_per_dim": {
+        "baseline": 0.625,
+        "column_scale_surcharge": 0.00390641,
+        "modulated_total": 0.628906
+      },
+      "rel_error": {
+        "baseline": 0.3616,
+        "modulated": 0.191,
+        "shannon_lower_bound": 0.0803
+      },
+      "shape": [
+        4096,
+        1536
+      ]
+    },
+    {
+      "bits_charged_per_tensor": 65537,
+      "cell": {
+        "dim": 8,
+        "k": 1024,
+        "layer": 46,
+        "n_experts": 4,
+        "organ": "gate",
+        "stages": 2
+      },
+      "characterisation": {
+        "col_rms_span_decades_after_row_norm": 0.46,
+        "effective_rank": 1199.2,
+        "kurtosis_row_normalised": 3.03,
+        "min_dim": 1536,
+        "near_zero_frac_below_0p1_rms": 0.0796,
+        "row_norm_span_decades": 0.303,
+        "top8_col_energy_share": 0.0028
+      },
+      "gap_to_shannon_decades": {
+        "baseline": 0.2746,
+        "closed": -0.0003,
+        "closed_fraction": -0.0011,
+        "modulated": 0.2749
+      },
+      "non_gaussianity_bits": {
+        "after_column_modulation": 0.0137,
+        "original_coded_space": 0.0155
+      },
+      "rate_bits_per_dim": {
+        "baseline": 2.5,
+        "column_scale_surcharge": 0.01041683,
+        "modulated_total": 2.510417
+      },
+      "rel_error": {
+        "baseline": 0.2399,
+        "modulated": 0.2383,
+        "shannon_lower_bound": 0.1749
+      },
+      "shape": [
+        1536,
+        4096
+      ]
+    },
+    {
+      "bits_charged_per_tensor": 24577,
+      "cell": {
+        "dim": 16,
+        "k": 1024,
+        "layer": 46,
+        "n_experts": 4,
+        "organ": "down",
+        "stages": 1
+      },
+      "characterisation": {
+        "col_rms_span_decades_after_row_norm": 0.098,
+        "effective_rank": 1231.7,
+        "kurtosis_row_normalised": 3.0,
+        "min_dim": 1536,
+        "near_zero_frac_below_0p1_rms": 0.0793,
+        "row_norm_span_decades": 0.23,
+        "top8_col_energy_share": 0.0061
+      },
+      "gap_to_shannon_decades": {
+        "baseline": 0.0559,
+        "closed": 0.012,
+        "closed_fraction": 0.2147,
+        "modulated": 0.0439
+      },
+      "non_gaussianity_bits": {
+        "after_column_modulation": -0.0228,
+        "original_coded_space": -0.0185
+      },
+      "rate_bits_per_dim": {
+        "baseline": 0.625,
+        "column_scale_surcharge": 0.00390641,
+        "modulated_total": 0.628906
+      },
+      "rel_error": {
+        "baseline": 0.7004,
+        "modulated": 0.6889,
+        "shannon_lower_bound": 0.6568
+      },
+      "shape": [
+        4096,
+        1536
+      ]
+    }
+  ],
+  "dead_sub_levers": [
+    "closed-form refit of the column scales after coding (0.19 -> 0.39 on L0 down, codebook goes stale)",
+    "column preconditioning WITHOUT the c^2 importance (0.37 -> 1.15 on L0 down: it changes the objective, not just the geometry)",
+    "partial exponents c^a for a in {0.25,0.5,0.75}: monotone, no interior optimum on either organ"
+  ],
+  "falsification_bar": "close >= half of the 1.328-decade L0 down gap at equal-or-lower bits",
+  "honesty": "weight-space reconstruction error only; NOT a capability claim. rel_error is the row-normalised quantity qwen_shannon_bound uses, which weights every row equally regardless of row norm.",
+  "l0_down_gap_closed_fraction": 0.4221,
+  "lever": "per-column bf16 scale preconditioner + c^2 diagonal importance, same index rate",
+  "schema": "hawking.gravity.layer0_codec.v1",
+  "verdict": "PARTIAL_WIN_BELOW_BAR"
+}

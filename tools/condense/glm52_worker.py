@@ -48,6 +48,7 @@ import glm52_gravity as gravity  # noqa: E402
 import glm52_notifications as notifications  # noqa: E402
 from glm52_common import (  # noqa: E402
     Glm52Error,
+    atomic_json,
     canonical,
     seal,
     utc_now,
@@ -55,7 +56,8 @@ from glm52_common import (  # noqa: E402
 )
 
 
-WORKER_CONFIG_SCHEMA = "hawking.glm52.persistent_worker_config.v3"
+WORKER_CONFIG_SCHEMA = "hawking.glm52.persistent_worker_config.v4"
+CONFIG_BOOTSTRAP_SCHEMA = "hawking.glm52.runtime_config_bootstrap.v1"
 READINESS_SCHEMA = "hawking.glm52.worker_readiness.v1"
 PREFLIGHT_SCHEMA = "hawking.glm52.worker_preflight.v1"
 STATUS_SCHEMA = "hawking.glm52.worker_status.v1"
@@ -64,9 +66,6 @@ HEARTBEAT_SCHEMA = "hawking.glm52.worker_heartbeat.v1"
 OFFICIAL_CAMPAIGN_ID = "glm52-bf16-xet-gravity"
 OFFICIAL_REVISION = "b4734de4facf877f85769a911abafc5283eab3d9"
 OFFICIAL_CONTRACT_SCHEMA = "hawking.glm52.expected_campaign_contract.v3"
-# Deliberately unset until the official deterministic contract v3 is built and
-# reviewed.  Production authorization is impossible while this remains ``None``.
-OFFICIAL_CONTRACT_SEAL: str | None = None
 OFFICIAL_CONFIG_PROFILE = "OFFICIAL_PRODUCTION"
 SYNTHETIC_CONFIG_PROFILE = "SYNTHETIC_TEST_ONLY"
 OFFICIAL_RESOURCE_POLICY_PATH = "GLM52_RESOURCE_RESERVE_POLICY.json"
@@ -123,6 +122,13 @@ PINNED_WORKSPACE_ROOT = Path("/Users/scammermike/Downloads/hawking")
 PINNED_PYTHON = PINNED_WORKSPACE_ROOT / ".venv/glm52/bin/python"
 PINNED_WORKER = PINNED_WORKSPACE_ROOT / "tools/condense/glm52_worker.py"
 PINNED_WORKER_CONFIG = PINNED_WORKSPACE_ROOT / "GLM52_WORKER_CONFIG.json"
+PINNED_CONTROLLER_CONFIG = PINNED_WORKSPACE_ROOT / "GLM52_CONTROLLER_CONFIG.json"
+PINNED_EXPECTED_CONTRACT = (
+    PINNED_WORKSPACE_ROOT / "GLM52_EXPECTED_CAMPAIGN_CONTRACT.json"
+)
+PINNED_CONTROLLER_ROOT = Path(
+    "/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/controller"
+)
 PINNED_LAUNCHD_PLIST = (
     PINNED_WORKSPACE_ROOT / "deploy/launchd/com.hawking.glm52.gravity.plist"
 )
@@ -148,6 +154,10 @@ PINNED_LAUNCHD_KEYS = frozenset({
 })
 DEFAULT_HEARTBEAT_INTERVAL_SECONDS = 30.0
 MAX_HEARTBEAT_INTERVAL_SECONDS = 60.0
+
+DEFAULT_READINESS_PATHS: Mapping[str, str] = MappingProxyType({
+    kind: f"readiness/{kind}.json" for kind in READINESS_KINDS
+})
 
 EXIT_OK = 0
 EXIT_ERROR = 2
@@ -265,7 +275,7 @@ def _relative_path(value: Any, label: str) -> str:
 @dataclass(frozen=True)
 class ReadinessSpec:
     path: str
-    expected_file_sha256: str
+    expected_file_sha256: str | None
 
 
 @dataclass(frozen=True)
@@ -402,7 +412,7 @@ def make_worker_config(
     workspace_root: str | os.PathLike[str],
     expected_contract_sha256: str,
     expected_contract_created_at: str,
-    readiness: Mapping[str, Mapping[str, str]],
+    readiness: Mapping[str, Mapping[str, Any]],
     evidence_auth: state.EvidenceAuthConfig,
     heartbeat_interval_seconds: float = DEFAULT_HEARTBEAT_INTERVAL_SECONDS,
 ) -> dict[str, Any]:
@@ -527,9 +537,14 @@ def _parse_worker_config_document(value: Mapping[str, Any], path: Path) -> Worke
         _require_exact_keys(spec, {"path", "expected_file_sha256"}, f"readiness.{kind}")
         relative = _relative_path(spec.get("path"), f"readiness.{kind}.path")
         expected_hash = spec.get("expected_file_sha256")
-        if not _is_sha256(expected_hash):
-            raise WorkerError(f"readiness.{kind}.expected_file_sha256 must be a sha256")
-        parsed[kind] = ReadinessSpec(relative, str(expected_hash))
+        if expected_hash is not None and not _is_sha256(expected_hash):
+            raise WorkerError(
+                f"readiness.{kind}.expected_file_sha256 must be null or a sha256"
+            )
+        parsed[kind] = ReadinessSpec(
+            relative,
+            str(expected_hash) if expected_hash is not None else None,
+        )
     return WorkerConfig(
         path=path,
         profile=str(profile),
@@ -566,6 +581,129 @@ def load_worker_config(path: str | os.PathLike[str]) -> WorkerConfig:
     return _parse_worker_config_document(
         _strict_json(raw, label="GLM52 worker config"), candidate
     )
+
+
+def _bootstrap_profile(
+    contract: Mapping[str, Any], *, allow_synthetic_contract: bool
+) -> str:
+    source_profile = contract.get("source", {}).get("profile")
+    if source_profile == gravity.OFFICIAL_SOURCE_PROFILE:
+        if allow_synthetic_contract:
+            raise WorkerError("official bootstrap forbids synthetic-contract authorization")
+        if contract.get("campaign_id") != OFFICIAL_CAMPAIGN_ID \
+                or contract.get("source_revision") != OFFICIAL_REVISION:
+            raise WorkerError("official bootstrap contract identity mismatch")
+        return OFFICIAL_CONFIG_PROFILE
+    if source_profile == gravity.SYNTHETIC_SOURCE_PROFILE:
+        if not allow_synthetic_contract:
+            raise WorkerError(
+                "synthetic bootstrap requires explicit test-only authorization"
+            )
+        return SYNTHETIC_CONFIG_PROFILE
+    raise WorkerError("bootstrap contract source profile is unsupported")
+
+
+def _validate_bootstrap_readiness_receipt(
+    raw: bytes,
+    *,
+    expected_kind: str,
+    contract: Mapping[str, Any],
+    controller_epoch: str,
+    evidence_auth: state.EvidenceAuthConfig,
+) -> dict[str, Any]:
+    value = _strict_json(raw, label=f"{expected_kind} readiness receipt")
+    result = _validate_producer_authenticated_artifact(
+        value,
+        auth=evidence_auth,
+        label=f"{expected_kind} readiness receipt",
+    )
+    _require_exact_keys(result, {
+        "schema",
+        "campaign_id",
+        "source_revision",
+        "controller_epoch",
+        "expected_contract_sha256",
+        "kind",
+        "status",
+        "created_at",
+        "subject",
+        "producer_hmac_sha256",
+        "seal_sha256",
+    }, f"{expected_kind} readiness receipt")
+    if result.get("schema") != READINESS_SCHEMA \
+            or result.get("kind") != expected_kind \
+            or result.get("status") != "PASS":
+        raise WorkerError(f"{expected_kind} readiness status/schema mismatch")
+    for key, expected in (
+        ("campaign_id", contract["campaign_id"]),
+        ("source_revision", contract["source_revision"]),
+        ("controller_epoch", controller_epoch),
+        ("expected_contract_sha256", contract["seal_sha256"]),
+    ):
+        if result.get(key) != expected:
+            raise WorkerError(f"{expected_kind} readiness {key} mismatch")
+    _require_utc_seconds(result.get("created_at"), f"{expected_kind}.created_at")
+    if not isinstance(result.get("subject"), dict):
+        raise WorkerError(f"{expected_kind} readiness subject must be an object")
+    return result
+
+
+def _discover_readiness_bindings(
+    *,
+    artifact_root: Path,
+    readiness_paths: Mapping[str, str],
+    contract: Mapping[str, Any],
+    controller_epoch: str,
+    evidence_auth: state.EvidenceAuthConfig,
+) -> tuple[dict[str, dict[str, Any]], dict[str, dict[str, Any]]]:
+    if set(readiness_paths) != set(READINESS_KINDS):
+        raise WorkerError("bootstrap readiness paths must name every readiness kind")
+    store = state.TrustedArtifactStore(os.fspath(artifact_root))
+    bindings: dict[str, dict[str, Any]] = {}
+    report: dict[str, dict[str, Any]] = {}
+    for kind in READINESS_KINDS:
+        relative = _relative_path(
+            readiness_paths[kind], f"bootstrap readiness.{kind}.path"
+        )
+        absolute = artifact_root.joinpath(*Path(relative).parts)
+        try:
+            os.lstat(absolute)
+        except FileNotFoundError:
+            bindings[kind] = {
+                "path": relative,
+                "expected_file_sha256": None,
+            }
+            report[kind] = {
+                "status": "UNBOUND_MISSING",
+                "path": relative,
+            }
+            continue
+        except OSError as exc:
+            raise WorkerError(f"cannot inspect {kind} readiness path: {exc}") from exc
+        try:
+            raw = store.read_bytes(relative)
+        except state.StateError as exc:
+            raise WorkerError(f"cannot securely read {kind} readiness: {exc}") from exc
+        receipt = _validate_bootstrap_readiness_receipt(
+            raw,
+            expected_kind=kind,
+            contract=contract,
+            controller_epoch=controller_epoch,
+            evidence_auth=evidence_auth,
+        )
+        file_sha256 = _sha256_bytes(raw)
+        bindings[kind] = {
+            "path": relative,
+            "expected_file_sha256": file_sha256,
+        }
+        report[kind] = {
+            "status": "BOUND_AUTHENTICATED_ENVELOPE",
+            "path": relative,
+            "file_sha256": file_sha256,
+            "receipt_seal_sha256": receipt["seal_sha256"],
+            "semantic_worker_preflight_required": True,
+        }
+    return bindings, report
 
 
 def make_readiness_receipt(
@@ -718,13 +856,333 @@ def _validate_worker_config_authority(
     }
 
 
+def _normalized_bootstrap_path(
+    value: str | os.PathLike[str], label: str
+) -> Path:
+    try:
+        raw = os.fspath(value)
+    except TypeError as exc:
+        raise WorkerError(f"{label} must be a normalized absolute path") from exc
+    if not isinstance(raw, str) or not raw or raw != raw.strip():
+        raise WorkerError(f"{label} must be a non-empty absolute path")
+    path = Path(raw)
+    if not path.is_absolute() or raw.startswith("//") \
+            or os.path.normpath(raw) != raw:
+        raise WorkerError(f"{label} must be a normalized absolute path")
+    return path
+
+
+def _read_controller_config_document(
+    path: Path,
+) -> tuple[dict[str, Any], bytes]:
+    try:
+        raw = state.TrustedArtifactStore(os.fspath(path.parent)).read_bytes(path.name)
+    except state.StateError as exc:
+        raise WorkerError(f"cannot securely read controller config: {exc}") from exc
+    value = _strict_json(raw, label="controller CLI config")
+    try:
+        verified = verify_sealed(value, label="controller CLI config")
+    except Glm52Error as exc:
+        raise WorkerError(str(exc)) from exc
+    return verified, raw
+
+
+def _require_official_bootstrap_pins(
+    *,
+    profile: str,
+    expected_contract_path: Path,
+    controller_config_path: Path,
+    worker_config_path: Path,
+    controller_root: Path,
+    artifact_root: Path,
+    workspace_root: Path,
+) -> None:
+    if profile != OFFICIAL_CONFIG_PROFILE:
+        return
+    observed = {
+        "expected_contract_path": expected_contract_path,
+        "controller_config_path": controller_config_path,
+        "worker_config_path": worker_config_path,
+        "controller_root": controller_root,
+        "artifact_root": artifact_root,
+        "workspace_root": workspace_root,
+    }
+    expected = {
+        "expected_contract_path": PINNED_EXPECTED_CONTRACT,
+        "controller_config_path": PINNED_CONTROLLER_CONFIG,
+        "worker_config_path": PINNED_WORKER_CONFIG,
+        "controller_root": PINNED_CONTROLLER_ROOT,
+        "artifact_root": PINNED_WORKSPACE_ROOT,
+        "workspace_root": PINNED_WORKSPACE_ROOT,
+    }
+    mismatches = sorted(
+        key for key, expected_path in expected.items()
+        if observed[key] != expected_path
+    )
+    if mismatches:
+        raise WorkerError(
+            "official bootstrap paths differ from launchd/runtime pins: "
+            f"{mismatches}"
+        )
+
+
+def validate_runtime_configs(
+    *,
+    expected_contract_path: str | os.PathLike[str],
+    controller_config_path: str | os.PathLike[str],
+    worker_config_path: str | os.PathLike[str],
+    evidence_auth: state.EvidenceAuthConfig,
+    allow_synthetic_contract: bool = False,
+) -> dict[str, Any]:
+    """Validate both config files and their local readiness-byte bindings.
+
+    This is intentionally not a production-start preflight.  It does not load
+    Telegram or grounding credentials and can never authorize scientific dispatch.
+    """
+
+    contract_path = _normalized_bootstrap_path(
+        expected_contract_path, "expected_contract_path"
+    )
+    controller_path = _normalized_bootstrap_path(
+        controller_config_path, "controller_config_path"
+    )
+    worker_path = _normalized_bootstrap_path(
+        worker_config_path, "worker_config_path"
+    )
+    try:
+        contract = gravity.load_expected_contract(contract_path)
+    except gravity.CliError as exc:
+        raise WorkerError(str(exc)) from exc
+    profile = _bootstrap_profile(
+        contract, allow_synthetic_contract=allow_synthetic_contract
+    )
+    if not isinstance(evidence_auth, state.EvidenceAuthConfig) \
+            or evidence_auth.campaign_id != contract["campaign_id"] \
+            or evidence_auth.source_revision != contract["source_revision"]:
+        raise WorkerError("bootstrap evidence authority identity mismatch")
+
+    controller_document, controller_raw = _read_controller_config_document(
+        controller_path
+    )
+    controller_epoch = _require_name(
+        controller_document.get("controller_epoch"), "controller config epoch"
+    )
+    if not isinstance(controller_document.get("allow_synthetic_contract"), bool):
+        raise WorkerError("controller config synthetic authorization is invalid")
+    try:
+        expected_controller = gravity.make_config_from_contract(
+            expected_contract_path=contract_path,
+            controller_root=_normalized_bootstrap_path(
+                controller_document.get("controller_root"), "controller_root"
+            ),
+            artifact_root=_normalized_bootstrap_path(
+                controller_document.get("artifact_root"), "artifact_root"
+            ),
+            allow_synthetic_contract=allow_synthetic_contract,
+            controller_epoch=controller_epoch,
+        )
+    except gravity.CliError as exc:
+        raise WorkerError(str(exc)) from exc
+    if canonical(controller_document) != canonical(expected_controller):
+        raise WorkerError(
+            "controller config is not exactly derived from the sealed contract"
+        )
+
+    config = load_worker_config(worker_path)
+    authenticated = _validate_producer_authenticated_artifact(
+        config.document,
+        auth=evidence_auth,
+        label="GLM52 worker config",
+    )
+    if authenticated.get("seal_sha256") != config.seal_sha256:
+        raise WorkerError("worker config authenticated seal mismatch")
+    expected_profile = profile
+    expected_fields = {
+        "profile": expected_profile,
+        "campaign_id": contract["campaign_id"],
+        "source_revision": contract["source_revision"],
+        "controller_config_path": controller_path,
+        "controller_config_file_sha256": _sha256_bytes(controller_raw),
+        "controller_config_seal_sha256": controller_document["seal_sha256"],
+        "controller_root": Path(controller_document["controller_root"]),
+        "artifact_root": Path(controller_document["artifact_root"]),
+        "expected_contract_path": contract_path,
+        "expected_contract_sha256": contract["seal_sha256"],
+        "expected_contract_created_at": contract["created_at"],
+    }
+    mismatches = sorted(
+        key for key, expected in expected_fields.items()
+        if getattr(config, key) != expected
+    )
+    if mismatches:
+        raise WorkerError(
+            "worker config differs from contract/controller authority: "
+            f"{mismatches}"
+        )
+    _require_official_bootstrap_pins(
+        profile=profile,
+        expected_contract_path=contract_path,
+        controller_config_path=controller_path,
+        worker_config_path=worker_path,
+        controller_root=config.controller_root,
+        artifact_root=config.artifact_root,
+        workspace_root=config.workspace_root,
+    )
+
+    configured_paths = {
+        kind: config.readiness[kind].path for kind in READINESS_KINDS
+    }
+    discovered, readiness_report = _discover_readiness_bindings(
+        artifact_root=config.artifact_root,
+        readiness_paths=configured_paths,
+        contract=contract,
+        controller_epoch=controller_epoch,
+        evidence_auth=evidence_auth,
+    )
+    unbound: list[str] = []
+    for kind in READINESS_KINDS:
+        configured_hash = config.readiness[kind].expected_file_sha256
+        discovered_hash = discovered[kind]["expected_file_sha256"]
+        if configured_hash is None:
+            unbound.append(kind)
+            if discovered_hash is not None:
+                readiness_report[kind]["status"] = (
+                    "UNBOUND_VALID_RECEIPT_AVAILABLE_RERUN_BOOTSTRAP"
+                )
+            continue
+        if discovered_hash != configured_hash:
+            raise WorkerError(
+                f"{kind} readiness bytes are missing or differ from worker config"
+            )
+
+    return seal({
+        "schema": CONFIG_BOOTSTRAP_SCHEMA,
+        "status": "CONFIGS_VALIDATED_SCIENTIFIC_DISPATCH_BLOCKED",
+        "config_documents_validated": True,
+        "profile": profile,
+        "campaign_id": contract["campaign_id"],
+        "source_revision": contract["source_revision"],
+        "expected_contract_sha256": contract["seal_sha256"],
+        "controller_config_path": os.fspath(controller_path),
+        "controller_config_file_sha256": _sha256_bytes(controller_raw),
+        "controller_config_seal_sha256": controller_document["seal_sha256"],
+        "worker_config_path": os.fspath(worker_path),
+        "worker_config_seal_sha256": config.seal_sha256,
+        "readiness": readiness_report,
+        "unbound_readiness": unbound,
+        "all_readiness_byte_bound": not unbound,
+        "production_start_authorized": False,
+        "scientific_dispatch_bound": False,
+        "remaining_dispatch_blocker": NO_SCIENTIFIC_DISPATCH_REASON,
+    })
+
+
+def bootstrap_runtime_configs(
+    *,
+    expected_contract_path: str | os.PathLike[str],
+    controller_config_path: str | os.PathLike[str],
+    worker_config_path: str | os.PathLike[str],
+    controller_root: str | os.PathLike[str],
+    artifact_root: str | os.PathLike[str],
+    workspace_root: str | os.PathLike[str],
+    evidence_auth: state.EvidenceAuthConfig,
+    readiness_paths: Mapping[str, str] = DEFAULT_READINESS_PATHS,
+    heartbeat_interval_seconds: float = DEFAULT_HEARTBEAT_INTERVAL_SECONDS,
+    controller_epoch: str = gravity.DEFAULT_CONTROLLER_EPOCH,
+    allow_synthetic_contract: bool = False,
+) -> dict[str, Any]:
+    """Write and post-validate exact controller/worker configs.
+
+    Missing readiness receipts are represented as explicit null byte bindings.  A
+    worker with any such binding remains fail-closed; rerunning this bootstrap after
+    an authenticated receipt exists upgrades only that exact file to a SHA-256 bind.
+    """
+
+    contract_path = _normalized_bootstrap_path(
+        expected_contract_path, "expected_contract_path"
+    )
+    controller_config = _normalized_bootstrap_path(
+        controller_config_path, "controller_config_path"
+    )
+    worker_config = _normalized_bootstrap_path(
+        worker_config_path, "worker_config_path"
+    )
+    controller_runtime_root = _normalized_bootstrap_path(
+        controller_root, "controller_root"
+    )
+    artifacts = _normalized_bootstrap_path(artifact_root, "artifact_root")
+    workspace = _normalized_bootstrap_path(workspace_root, "workspace_root")
+    try:
+        contract = gravity.load_expected_contract(contract_path)
+    except gravity.CliError as exc:
+        raise WorkerError(str(exc)) from exc
+    profile = _bootstrap_profile(
+        contract, allow_synthetic_contract=allow_synthetic_contract
+    )
+    _require_official_bootstrap_pins(
+        profile=profile,
+        expected_contract_path=contract_path,
+        controller_config_path=controller_config,
+        worker_config_path=worker_config,
+        controller_root=controller_runtime_root,
+        artifact_root=artifacts,
+        workspace_root=workspace,
+    )
+    if not isinstance(evidence_auth, state.EvidenceAuthConfig) \
+            or evidence_auth.campaign_id != contract["campaign_id"] \
+            or evidence_auth.source_revision != contract["source_revision"]:
+        raise WorkerError("bootstrap evidence authority identity mismatch")
+    readiness, _readiness_report = _discover_readiness_bindings(
+        artifact_root=artifacts,
+        readiness_paths=readiness_paths,
+        contract=contract,
+        controller_epoch=controller_epoch,
+        evidence_auth=evidence_auth,
+    )
+    try:
+        controller_document = gravity.make_config_from_contract(
+            expected_contract_path=contract_path,
+            controller_root=controller_runtime_root,
+            artifact_root=artifacts,
+            allow_synthetic_contract=allow_synthetic_contract,
+            controller_epoch=controller_epoch,
+        )
+    except gravity.CliError as exc:
+        raise WorkerError(str(exc)) from exc
+    atomic_json(controller_config, controller_document)
+    worker_document = make_worker_config(
+        profile=profile,
+        campaign_id=contract["campaign_id"],
+        source_revision=contract["source_revision"],
+        controller_config_path=controller_config,
+        workspace_root=workspace,
+        expected_contract_sha256=contract["seal_sha256"],
+        expected_contract_created_at=contract["created_at"],
+        heartbeat_interval_seconds=heartbeat_interval_seconds,
+        readiness=readiness,
+        evidence_auth=evidence_auth,
+    )
+    atomic_json(worker_config, worker_document)
+    return validate_runtime_configs(
+        expected_contract_path=contract_path,
+        controller_config_path=controller_config,
+        worker_config_path=worker_config,
+        evidence_auth=evidence_auth,
+        allow_synthetic_contract=allow_synthetic_contract,
+    )
+
+
 def _validate_receipt_envelope(
     raw: bytes,
     *,
     expected_kind: str,
-    expected_file_sha256: str,
+    expected_file_sha256: str | None,
     runtime: gravity.Runtime,
 ) -> dict[str, Any]:
+    if expected_file_sha256 is None:
+        raise WorkerError(
+            f"{expected_kind} readiness receipt is not yet byte-bound in worker config"
+        )
     if _sha256_bytes(raw) != expected_file_sha256:
         raise WorkerError(f"{expected_kind} readiness bytes differ from worker config")
     value = _strict_json(raw, label=f"{expected_kind} readiness receipt")
@@ -1850,15 +2308,17 @@ def evaluate_preflight(
             if config.campaign_id != OFFICIAL_CAMPAIGN_ID \
                     or config.source_revision != OFFICIAL_REVISION:
                 raise WorkerError("official worker config identity mismatch")
-            if OFFICIAL_CONTRACT_SEAL is None:
-                raise WorkerError(
-                    "OFFICIAL_CONTRACT_SEAL_UNSET: reviewed official contract v3 does not exist"
-                )
-            if config.expected_contract_sha256 != OFFICIAL_CONTRACT_SEAL:
-                raise WorkerError("worker config does not bind the compiled official contract seal")
             pass_check(
                 "official_contract_authority",
-                {"official_contract_seal_sha256": OFFICIAL_CONTRACT_SEAL},
+                {
+                    "official_contract_seal_sha256":
+                        config.expected_contract_sha256,
+                    "authority": (
+                        "RUNTIME_CONTRACT_SEAL_BOUND_BY_EVIDENCE_AUTHENTICATED_"
+                        "WORKER_CONFIG"
+                    ),
+                    "compiled_unearned_contract_hash_required": False,
+                },
             )
         elif config.profile == SYNTHETIC_CONFIG_PROFILE and allow_test_profile:
             pass_check(
@@ -2678,11 +3138,60 @@ def build_parser() -> argparse.ArgumentParser:
         help="sealed secret-free worker config",
     )
     parser.add_argument(
+        "--controller-config",
+        type=Path,
+        default=PINNED_CONTROLLER_CONFIG,
+        help="sealed secret-free controller config",
+    )
+    parser.add_argument(
+        "--expected-contract",
+        type=Path,
+        default=PINNED_EXPECTED_CONTRACT,
+        help="authoritative sealed expected campaign contract",
+    )
+    parser.add_argument(
+        "--controller-root",
+        type=Path,
+        default=PINNED_CONTROLLER_ROOT,
+        help="durable controller state directory used by config bootstrap",
+    )
+    parser.add_argument(
+        "--artifact-root",
+        type=Path,
+        default=PINNED_WORKSPACE_ROOT,
+        help="campaign artifact root used by config bootstrap",
+    )
+    parser.add_argument(
+        "--workspace-root",
+        type=Path,
+        default=PINNED_WORKSPACE_ROOT,
+        help="reviewed source/runtime root used by config bootstrap",
+    )
+    parser.add_argument(
+        "--controller-epoch",
+        default=gravity.DEFAULT_CONTROLLER_EPOCH,
+        help="durable controller epoch used by config bootstrap",
+    )
+    parser.add_argument(
+        "--test-only-synthetic-bootstrap",
+        action="store_true",
+        help=argparse.SUPPRESS,
+    )
+    parser.add_argument(
         "--under-caffeinate",
         action="store_true",
         help=argparse.SUPPRESS,
     )
-    parser.add_argument("command", choices=("preflight", "status", "run"))
+    parser.add_argument(
+        "command",
+        choices=(
+            "bootstrap-configs",
+            "validate-configs",
+            "preflight",
+            "status",
+            "run",
+        ),
+    )
     return parser
 
 
@@ -2696,6 +3205,44 @@ def main(
 ) -> int:
     args = build_parser().parse_args(argv)
     try:
+        if args.command in {"bootstrap-configs", "validate-configs"}:
+            try:
+                contract = gravity.load_expected_contract(args.expected_contract)
+            except gravity.CliError as exc:
+                raise WorkerError(str(exc)) from exc
+            provider = (
+                evidence_keychain
+                or gravity.evidence_module.MacOSKeychain()
+            )
+            evidence_auth = gravity.evidence_module.load_evidence_auth(
+                provider,
+                campaign_id=contract["campaign_id"],
+                source_revision=contract["source_revision"],
+            )
+            if args.command == "bootstrap-configs":
+                document = bootstrap_runtime_configs(
+                    expected_contract_path=args.expected_contract,
+                    controller_config_path=args.controller_config,
+                    worker_config_path=args.config,
+                    controller_root=args.controller_root,
+                    artifact_root=args.artifact_root,
+                    workspace_root=args.workspace_root,
+                    evidence_auth=evidence_auth,
+                    controller_epoch=args.controller_epoch,
+                    allow_synthetic_contract=
+                        args.test_only_synthetic_bootstrap,
+                )
+            else:
+                document = validate_runtime_configs(
+                    expected_contract_path=args.expected_contract,
+                    controller_config_path=args.controller_config,
+                    worker_config_path=args.config,
+                    evidence_auth=evidence_auth,
+                    allow_synthetic_contract=
+                        args.test_only_synthetic_bootstrap,
+                )
+            print(json.dumps(document, indent=2, sort_keys=True, allow_nan=False))
+            return EXIT_OK
         config = load_worker_config(args.config)
         telegram_keychain = keychain or gravity.telegram_module.MacOSKeychain()
         report, runtime = preflight(

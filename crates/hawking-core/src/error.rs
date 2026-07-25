@@ -8,6 +8,9 @@ pub enum Error {
     #[error("gguf: {0}")]
     Gguf(String),
 
+    #[error("gravity: {0}")]
+    Gravity(String),
+
     #[error("metal: {0}")]
     Metal(String),
 

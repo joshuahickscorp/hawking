@@ -1,0 +1,160 @@
+{
+ "calibration_corpus_sha256": "33b05397db03894716a8efa8b4c73ef9c56d70fc35e54be5d9a4fc37511f5572",
+ "honesty": [
+  "output-space proxy on calibration tokens, NOT capability",
+  "layer 0 input omits the attention residual",
+  "deep-layer arm is machinery validation, not evidence",
+  "top-8 selection is non-differentiable; training alternates (re-select each step, backprop through the softmax weights only)",
+  "oracle is greedy + unconstrained least squares: looser than any router"
+ ],
+ "layers": [
+  {
+   "K": 64,
+   "arms": {
+    "bias": {
+     "beats_masked_holdout": false,
+     "complete_bpw": 0.948410436436862,
+     "complete_bpw_exact": "87095803342413177/91833451000000000",
+     "extra_bits": 96256,
+     "holdout_delta_vs_masked": 0.020916864275932312,
+     "holdout_median_rel_err": 0.09932895004749298,
+     "kl_teacher_restricted_vs_student": 0.008412894792854786,
+     "legal_under_one_bit_ceiling": true,
+     "lr_selected_on_train_loss": 0.05,
+     "train_loss_best": 0.03154034540057182,
+     "train_loss_first": 0.034856103360652924,
+     "train_loss_last": 0.031540874391794205,
+     "train_median_rel_err": 0.0589631088078022
+    },
+    "full": {
+     "beats_masked_holdout": false,
+     "complete_bpw": 0.948410027,
+     "complete_bpw_exact": "948410027/1000000000",
+     "extra_bits": 0,
+     "holdout_delta_vs_masked": 0.014327891170978546,
+     "holdout_median_rel_err": 0.09273997694253922,
+     "kl_teacher_restricted_vs_student": 0.019017362967133522,
+     "legal_under_one_bit_ceiling": true,
+     "lr_selected_on_train_loss": 0.001,
+     "train_loss_best": 0.027273118495941162,
+     "train_loss_first": 0.034856103360652924,
+     "train_loss_last": 0.027278153225779533,
+     "train_median_rel_err": 0.041250236332416534
+    },
+    "lowrank": {
+     "beats_masked_holdout": false,
+     "complete_bpw": 0.948622934168217,
+     "complete_bpw_exact": "87115317742413177/91833451000000000",
+     "extra_bits": 50053120,
+     "holdout_delta_vs_masked": 0.03914637863636017,
+     "holdout_median_rel_err": 0.11755846440792084,
+     "kl_teacher_restricted_vs_student": 0.029670491814613342,
+     "legal_under_one_bit_ceiling": true,
+     "lr_selected_on_train_loss": 0.01,
+     "train_loss_best": 0.026733355596661568,
+     "train_loss_first": 0.034856103360652924,
+     "train_loss_last": 0.02673741616308689,
+     "train_median_rel_err": 0.04191448166966438
+    },
+    "masked": {
+     "complete_bpw": 0.948410027,
+     "complete_bpw_exact": "948410027/1000000000",
+     "extra_bits": 0,
+     "holdout_median_rel_err": 0.07841208577156067,
+     "kl_teacher_restricted_vs_student": 0.0,
+     "legal_under_one_bit_ceiling": true,
+     "train_median_rel_err": 0.052077822387218475
+    }
+   },
+   "input_label": "REAL weights, attention-free layer-0 input x = RMSNorm(embed(tok)) * post_attention_layernorm.gamma",
+   "layer": 0,
+   "n_holdout": 96,
+   "n_tokens": 192,
+   "n_train": 96,
+   "oracle_greedy_ls_holdout_median_rel_err": 0.03345749260286747,
+   "seconds": 29.9,
+   "survivor_train_routing_mass_frac": 0.9267664268272141
+  },
+  {
+   "K": 64,
+   "arms": {
+    "bias": {
+     "beats_masked_holdout": true,
+     "complete_bpw": 0.948410436436862,
+     "complete_bpw_exact": "87095803342413177/91833451000000000",
+     "extra_bits": 96256,
+     "holdout_delta_vs_masked": -0.006659567356109619,
+     "holdout_median_rel_err": 0.5106183290481567,
+     "kl_teacher_restricted_vs_student": 0.013071070425212383,
+     "legal_under_one_bit_ceiling": true,
+     "lr_selected_on_train_loss": 0.05,
+     "train_loss_best": 0.24476146697998047,
+     "train_loss_first": 0.27356234192848206,
+     "train_loss_last": 0.24755333364009857,
+     "train_median_rel_err": 0.42722123861312866
+    },
+    "full": {
+     "beats_masked_holdout": false,
+     "complete_bpw": 0.948410027,
+     "complete_bpw_exact": "948410027/1000000000",
+     "extra_bits": 0,
+     "holdout_delta_vs_masked": 0.029173076152801514,
+     "holdout_median_rel_err": 0.5464509725570679,
+     "kl_teacher_restricted_vs_student": 0.0575992725789547,
+     "legal_under_one_bit_ceiling": true,
+     "lr_selected_on_train_loss": 0.0001,
+     "train_loss_best": 0.2020767778158188,
+     "train_loss_first": 0.27356234192848206,
+     "train_loss_last": 0.20207905769348145,
+     "train_median_rel_err": 0.37202295660972595
+    },
+    "lowrank": {
+     "beats_masked_holdout": false,
+     "complete_bpw": 0.948622934168217,
+     "complete_bpw_exact": "87115317742413177/91833451000000000",
+     "extra_bits": 50053120,
+     "holdout_delta_vs_masked": 0.04006415605545044,
+     "holdout_median_rel_err": 0.5573420524597168,
+     "kl_teacher_restricted_vs_student": 0.13723008334636688,
+     "legal_under_one_bit_ceiling": true,
+     "lr_selected_on_train_loss": 0.01,
+     "train_loss_best": 0.20166587829589844,
+     "train_loss_first": 0.27356234192848206,
+     "train_loss_last": 0.20258928835391998,
+     "train_median_rel_err": 0.36893585324287415
+    },
+    "masked": {
+     "complete_bpw": 0.948410027,
+     "complete_bpw_exact": "948410027/1000000000",
+     "extra_bits": 0,
+     "holdout_median_rel_err": 0.5172778964042664,
+     "kl_teacher_restricted_vs_student": 0.0,
+     "legal_under_one_bit_ceiling": true,
+     "train_median_rel_err": 0.43424999713897705
+    }
+   },
+   "input_label": "MACHINERY-VALIDATION ONLY: layer-0-shaped input fed to a deep layer; the input distribution is wrong at depth, this is not evidence",
+   "layer": 46,
+   "n_holdout": 96,
+   "n_tokens": 192,
+   "n_train": 96,
+   "oracle_greedy_ls_holdout_median_rel_err": 0.44753298936834235,
+   "seconds": 44.0,
+   "survivor_train_routing_mass_frac": 0.8039453167789822
+  }
+ ],
+ "metric": "median over holdout tokens of ||m_student - m_teacher128|| / ||m_teacher128||",
+ "model": "models/qwen3-235b-a22b",
+ "n_experts": 128,
+ "schema": "hawking.subbit.router_distill.v1",
+ "split": "disjoint token ids (even=train, odd=holdout); x depends only on token id",
+ "stage": "S2C_router_distill",
+ "top_k": 8,
+ "verdict": {
+  "layer0_masked_holdout_rel_err": 0.07841208577156067,
+  "layer0_reachable_headroom_frac": 0.5733120440088817,
+  "layer0_students_beating_masked": [],
+  "note": "Headroom is real (a survivor-restricted oracle halves the error) but no trained student captures it on held-out token ids; every student overfits the train ids. Consistent with the sealed finding that omitted expert function is not reconstructible: the router can only reorder survivors.",
+  "result": "NEGATIVE - masking wins"
+ }
+}

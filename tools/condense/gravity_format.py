@@ -177,22 +177,46 @@ def verify(path: Path) -> dict:
             total_weights += int(entry.get("elements", 0))
 
     body_ok = digest.hexdigest() == header["integrity"]["body_sha256"]
-    # A shard may not claim a rate its own bytes do not support.  Protected tensors carry
-    # no payload here, so they are excluded from the packed-rate reconciliation.
-    packed = [t for t in header["tensors"] if int(t.get("bytes", 0)) > 0
-              and t.get("elements")]
-    observed = (sum(int(t["bytes"]) for t in packed) * 8
-                / max(1, sum(int(t["elements"]) for t in packed))) if packed else 0.0
-    claimed = float(header["compression"].get("packed_bpw", observed))
-    rate_ok = abs(observed - claimed) < 1e-6
+
+    # A shard may not claim a rate its own bytes do not support.  Two rates, because they
+    # answer different questions and only one of them is the campaign's headline:
+    #
+    #   packed_bpw    codec-compressed tensors only.  What the codec achieved.
+    #   complete_bpw  every tensor in the shard, native organs included.  What the model
+    #                 actually costs.  This is the rate a candidate is judged on.
+    #
+    # Both reconcile against physical bytes.  Nothing is excluded from complete_bpw: a
+    # tensor with no payload would drag the rate down while contributing no weight, which
+    # is exactly the accounting hole that invalidated Generation A.
+    carried = [t for t in header["tensors"] if t.get("elements")]
+    compressed = [t for t in carried if not str(t.get("codec", "")).startswith("native.")]
+
+    def rate(entries: list[dict]) -> float:
+        elements = sum(int(t["elements"]) for t in entries)
+        return (sum(int(t.get("bytes", 0)) for t in entries) * 8 / elements) if elements else 0.0
+
+    observed_packed = rate(compressed)
+    observed_complete = rate(carried)
+    claimed_packed = float(header["compression"].get("packed_bpw", observed_packed))
+    claimed_complete = float(header["compression"].get("complete_bpw", observed_complete))
+    packed_ok = abs(observed_packed - claimed_packed) < 1e-6
+    complete_ok = abs(observed_complete - claimed_complete) < 1e-6
+
+    # Every declared tensor must carry bytes.  A zero-byte entry is a billed-but-absent
+    # payload, the Generation A defect, and it is malformed rather than merely suspicious.
+    empty = [t["name"] for t in header["tensors"] if int(t.get("bytes", 0)) == 0]
 
     return {
         "path": str(path), "format_version": header["format_version"],
         "tensors": len(header["tensors"]), "body_bytes": total_bytes,
         "body_sha256_ok": body_ok, "bad_tensors": bad,
-        "observed_packed_bpw": observed, "claimed_packed_bpw": claimed,
-        "rate_self_consistent": rate_ok,
-        "ok": body_ok and not bad and rate_ok,
+        "tensors_without_payload": empty,
+        "observed_packed_bpw": observed_packed, "claimed_packed_bpw": claimed_packed,
+        "observed_complete_bpw": observed_complete, "claimed_complete_bpw": claimed_complete,
+        "rate_self_consistent": packed_ok and complete_ok,
+        "packed_rate_self_consistent": packed_ok,
+        "complete_rate_self_consistent": complete_ok,
+        "ok": body_ok and not bad and packed_ok and complete_ok and not empty,
     }
 
 
@@ -252,9 +276,46 @@ def selftest() -> int:
                     compression={"codec": "gravity-pq", "packed_bpw": 0.001})
         assert not verify(lying)["rate_self_consistent"], "false rate claim went undetected"
 
+        # A shard carrying native organs alongside compressed experts: the two rates must
+        # separate, and complete_bpw must be the one dragged up by the native bytes.
+        organ = ({"name": "model.layers.0.mlp.gate.weight", "elements": 64,
+                  "shape": [2, 32], "category": "router", "codec": "native.bf16",
+                  "terminal_state": "PROTECTED_SOURCE_NATIVE", "bpw": 16.0},
+                 b"\x00\x11" * 64)
+        mixed_path = Path(tmp) / "mixed.gravity"
+        mixed = payloads + [organ]
+        compressed_bits = sum(len(b) for _, b in payloads) * 8
+        compressed_elements = sum(d["elements"] for d, _ in payloads)
+        all_bits = compressed_bits + len(organ[1]) * 8
+        all_elements = compressed_elements + organ[0]["elements"]
+        write_shard(mixed_path, mixed, model={"repo": "x", "revision": "y"},
+                    compression={"codec": "gravity-pq",
+                                 "packed_bpw": compressed_bits / compressed_elements,
+                                 "complete_bpw": all_bits / all_elements})
+        report = verify(mixed_path)
+        assert report["ok"], report
+        assert report["observed_complete_bpw"] > report["observed_packed_bpw"], report
+        assert report["tensors_without_payload"] == [], report
+        assert read_tensor(mixed_path, organ[0]["name"]) == organ[1]
+
+        # A billed-but-absent payload is the Generation A defect and must be malformed,
+        # not merely unusual, even when every hash and the body digest are perfect.
+        hollow = Path(tmp) / "hollow.gravity"
+        write_shard(hollow, payloads + [({"name": "model.layers.0.input_layernorm.weight",
+                                          "elements": 6144, "codec": "native.bf16",
+                                          "bpw": 16.0}, b"")],
+                    model={"repo": "x", "revision": "y"},
+                    compression={"codec": "gravity-pq",
+                                 "packed_bpw": compressed_bits / compressed_elements})
+        hollow_report = verify(hollow)
+        assert not hollow_report["ok"], "a billed-but-absent tensor went undetected"
+        assert hollow_report["tensors_without_payload"] == [
+            "model.layers.0.input_layernorm.weight"], hollow_report
+
     print(json.dumps({"selftest": "PASS", "format": "gravity", "version": FORMAT_VERSION,
                       "prefix_bytes": PREFIX_BYTES, "seek_by_name": True,
-                      "integrity_two_level": True, "false_rate_claim_rejected": True},
+                      "integrity_two_level": True, "false_rate_claim_rejected": True,
+                      "native_organs_carried": True, "empty_payload_rejected": True},
                      indent=2))
     return 0
 

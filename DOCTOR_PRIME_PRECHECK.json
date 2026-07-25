@@ -1,0 +1,61 @@
+{
+  "corpus_integrity_gate": {
+    "duplicate_context_windows_dropped": 1,
+    "failures": [],
+    "growth_passed": true,
+    "n_documents": 400,
+    "note": "HARD GATE. No Doctor Prime experiment may begin until this passes. It caught a real defect on its first full run - one duplicated 512-char context window shared across two distinct documents - which is now globally deduplicated and counted.",
+    "passed": true,
+    "splits": {
+      "codec_calibration": 91,
+      "doctor_training": 92,
+      "holdout": 38,
+      "protected_domain_holdout": 34,
+      "routing_calibration": 110,
+      "validation": 35
+    }
+  },
+  "generated_at_utc": "2026-07-21T01:38:40Z",
+  "honesty": [
+    "no capability pass exists at any rate on Qwen3-235B",
+    "qwen3moe is an Unimplemented stub in the Rust engine: all artifacts are direct-executable in the PYTHON reference forward only, not the .tq serve path"
+  ],
+  "instrument_defect_of_record": {
+    "damage": "S3A layerwise QAT reported +11.4 pct 'held-out' gain; on a split by unique id and segment the same code measures -1.77 pct. The prior was withdrawn and QAT is dead.",
+    "id": "repeated_segment_position_split_leakage",
+    "status": "FIXED and GUARDED. corpus_integrity.py splits by document/context-hash and refuses a shared embedding row via assert_layer0_safe; qwen_calibration_corpus now reports n_unique_token_ids and asserts that a bigger token target does not fake diversity.",
+    "what": "qwen_calibration_corpus repeated 12 segments to reach its token target: 1313 positions carried only 540 unique token ids, and min_tokens=20000 still yielded 540.",
+    "why_it_mattered": "layer-0 MoE input is rmsnorm(embed[id]), a pure function of the token id, and the fit/score split was by POSITION - so the same embedding row sat in both halves."
+  },
+  "planned_ceiling": {
+    "hard": "complete_bits / original_weight_count <= 1/1",
+    "planned": "<= 0.98 unless exact serialization proves otherwise"
+  },
+  "qwen_controller": {
+    "caffeinate": true,
+    "chained_next": "S64_gamma via /tmp/chain.sh",
+    "current_stage": "S32_recon_first + S2A_adaptive_k",
+    "log": "/tmp/s32.log",
+    "pid": 62852,
+    "sealed_rows": {
+      "D1_route_only": 6,
+      "D2_recon_only": 6,
+      "S64_doctor": 6,
+      "S64_structural": 6
+    },
+    "status": "HEALTHY, ADOPTED, NOT RESTARTED",
+    "telegram": "alive, per-row, dedup by row_id + checkpoint seal"
+  },
+  "repository": {
+    "branch": "campaign/subbit-capability-density-reset",
+    "head": "fdb0bc9b",
+    "origin": "git@github.com:joshuahickscorp/hawking.git",
+    "worktree": "/Users/scammermike/HawkingWorktrees/subbit-reset (TCC-safe)"
+  },
+  "resources": {
+    "free_disk_gb": 109.0,
+    "ram_gb": 96,
+    "swap": "total = 9216.00M  used = 8018.38M  free = 1197.62M  (encrypted)"
+  },
+  "schema": "hawking.doctor_prime.precheck.v1"
+}

@@ -1,0 +1,486 @@
+{
+  "schema": "hawking.gravity.generated_params.v1",
+  "source": "models/qwen3-235b-a22b",
+  "honesty": "weight-space reconstruction error only; NOT a capability claim",
+  "rungs": {
+    "gate_up_bpw": 2.5,
+    "down_bpw": 0.625,
+    "gate_spec": {
+      "family": "shared_grammar",
+      "dim": 8,
+      "k": 1024,
+      "stages": 2
+    },
+    "down_spec": {
+      "family": "shared_grammar",
+      "dim": 16,
+      "k": 1024,
+      "stages": 1
+    },
+    "cluster": 64
+  },
+  "layer": 46,
+  "experts": [
+    3,
+    7,
+    19,
+    71
+  ],
+  "next_layer": 47,
+  "methods": {
+    "F_a_templates_normalized_space": {
+      "gate_proj": {
+        "raw": {
+          "n_experts": 4,
+          "mean_abs_offdiag_cosine": 0.0016634018150575175,
+          "max_abs_offdiag_cosine": 0.0019287094843271587,
+          "lambda_max": 1.004995877933297,
+          "rank1_energy_share": 0.25124896948332426,
+          "orthogonal_null": 0.25,
+          "excess_over_orthogonal": 0.0012489694833242582
+        },
+        "row_normalized": {
+          "n_experts": 4,
+          "mean_abs_offdiag_cosine": 0.0016758825641504792,
+          "max_abs_offdiag_cosine": 0.0019434162511621415,
+          "lambda_max": 1.005033542110643,
+          "rank1_energy_share": 0.2512583855276608,
+          "orthogonal_null": 0.25,
+          "excess_over_orthogonal": 0.001258385527660777
+        },
+        "row_aligned_cosine_mean": 0.001675882648366193
+      },
+      "down_proj": {
+        "raw": {
+          "n_experts": 4,
+          "mean_abs_offdiag_cosine": 0.0003858552541301107,
+          "max_abs_offdiag_cosine": 0.0008010478804750762,
+          "lambda_max": 1.0008505868945625,
+          "rank1_energy_share": 0.25021264672364063,
+          "orthogonal_null": 0.25,
+          "excess_over_orthogonal": 0.00021264672364063042
+        },
+        "row_normalized": {
+          "n_experts": 4,
+          "mean_abs_offdiag_cosine": 0.00039210790450495904,
+          "max_abs_offdiag_cosine": 0.000791445893609391,
+          "lambda_max": 1.000839241146505,
+          "rank1_energy_share": 0.25020981028662626,
+          "orthogonal_null": 0.25,
+          "excess_over_orthogonal": 0.00020981028662625523
+        },
+        "row_aligned_cosine_mean": -0.00021554929844569415
+      }
+    },
+    "F_b_kronecker": {
+      "gate_proj": {
+        "shape": [
+          1536,
+          4096
+        ],
+        "splits_tried": [
+          {
+            "split": [
+              1,
+              2048,
+              1536,
+              2
+            ],
+            "max_rank": 2048,
+            "rank_at_budget": 191,
+            "complete_bits": 15647232,
+            "complete_bpw": 2.487061,
+            "rel_error_at_budget": 0.8533779345780803,
+            "rel_error_at_full_rank": 0.0,
+            "top1_energy_share": 0.002658
+          },
+          {
+            "split": [
+              2,
+              1024,
+              768,
+              4
+            ],
+            "max_rank": 2048,
+            "rank_at_budget": 191,
+            "complete_bits": 15647232,
+            "complete_bpw": 2.487061,
+            "rel_error_at_budget": 0.8616048450722847,
+            "rel_error_at_full_rank": 0.0,
+            "top1_energy_share": 0.001917
+          },
+          {
+            "split": [
+              3,
+              1024,
+              512,
+              4
+            ],
+            "max_rank": 2048,
+            "rank_at_budget": 191,
+            "complete_bits": 15647232,
+            "complete_bpw": 2.487061,
+            "rel_error_at_budget": 0.862575135155733,
+            "rel_error_at_full_rank": 0.0,
+            "top1_energy_share": 0.001949
+          },
+          {
+            "split": [
+              4,
+              512,
+              384,
+              8
+            ],
+            "max_rank": 2048,
+            "rank_at_budget": 191,
+            "complete_bits": 15647232,
+            "complete_bpw": 2.487061,
+            "rel_error_at_budget": 0.8637391136877586,
+            "rel_error_at_full_rank": 0.0,
+            "top1_energy_share": 0.001672
+          },
+          {
+            "split": [
+              6,
+              512,
+              256,
+              8
+            ],
+            "max_rank": 2048,
+            "rank_at_budget": 191,
+            "complete_bits": 15647232,
+            "complete_bpw": 2.487061,
+            "rel_error_at_budget": 0.8640909306952759,
+            "rel_error_at_full_rank": 0.0,
+            "top1_energy_share": 0.001692
+          },
+          {
+            "split": [
+              8,
+              256,
+              192,
+              16
+            ],
+            "max_rank": 2048,
+            "rank_at_budget": 191,
+            "complete_bits": 15647232,
+            "complete_bpw": 2.487061,
+            "rel_error_at_budget": 0.8643932242063745,
+            "rel_error_at_full_rank": 0.0,
+            "top1_energy_share": 0.00163
+          },
+          {
+            "split": [
+              12,
+              256,
+              128,
+              16
+            ],
+            "max_rank": 2048,
+            "rank_at_budget": 191,
+            "complete_bits": 15647232,
+            "complete_bpw": 2.487061,
+            "rel_error_at_budget": 0.8645297524861643,
+            "rel_error_at_full_rank": 0.0,
+            "top1_energy_share": 0.001608
+          },
+          {
+            "split": [
+              16,
+              128,
+              96,
+              32
+            ],
+            "max_rank": 2048,
+            "rank_at_budget": 191,
+            "complete_bits": 15647232,
+            "complete_bpw": 2.487061,
+            "rel_error_at_budget": 0.8646775845060265,
+            "rel_error_at_full_rank": 0.0,
+            "top1_energy_share": 0.001601
+          }
+        ],
+        "split": [
+          1,
+          2048,
+          1536,
+          2
+        ],
+        "max_rank": 2048,
+        "rank_at_budget": 191,
+        "complete_bits": 15647232,
+        "complete_bpw": 2.487061,
+        "rel_error_at_budget": 0.8533779345780803,
+        "rel_error_at_full_rank": 0.0,
+        "top1_energy_share": 0.002658,
+        "energy_share_at_budget": 0.271746,
+        "codec_rival": {
+          "spec": {
+            "family": "shared_grammar",
+            "dim": 8,
+            "k": 1024,
+            "stages": 2
+          },
+          "rel_error_mean": 0.23911502957344055,
+          "complete_bits": 15733264,
+          "complete_bpw": 2.500735
+        },
+        "kron_beats_codec": false
+      },
+      "down_proj": {
+        "shape": [
+          4096,
+          1536
+        ],
+        "splits_tried": [
+          {
+            "split": [
+              2,
+              1536,
+              2048,
+              1
+            ],
+            "max_rank": 2048,
+            "rank_at_budget": 47,
+            "complete_bits": 3850752,
+            "complete_bpw": 0.612061,
+            "rel_error_at_budget": 0.958236323260843,
+            "rel_error_at_full_rank": 0.0,
+            "top1_energy_share": 0.002457
+          },
+          {
+            "split": [
+              4,
+              512,
+              1024,
+              3
+            ],
+            "max_rank": 2048,
+            "rank_at_budget": 47,
+            "complete_bits": 3850752,
+            "complete_bpw": 0.612061,
+            "rel_error_at_budget": 0.963691908508278,
+            "rel_error_at_full_rank": 0.0,
+            "top1_energy_share": 0.001629
+          },
+          {
+            "split": [
+              4,
+              768,
+              1024,
+              2
+            ],
+            "max_rank": 2048,
+            "rank_at_budget": 47,
+            "complete_bits": 3850752,
+            "complete_bpw": 0.612061,
+            "rel_error_at_budget": 0.9633045804412115,
+            "rel_error_at_full_rank": 0.0,
+            "top1_energy_share": 0.001652
+          },
+          {
+            "split": [
+              8,
+              256,
+              512,
+              6
+            ],
+            "max_rank": 2048,
+            "rank_at_budget": 47,
+            "complete_bits": 3850752,
+            "complete_bpw": 0.612061,
+            "rel_error_at_budget": 0.9641092630939411,
+            "rel_error_at_full_rank": 0.0,
+            "top1_energy_share": 0.001604
+          },
+          {
+            "split": [
+              8,
+              384,
+              512,
+              4
+            ],
+            "max_rank": 2048,
+            "rank_at_budget": 47,
+            "complete_bits": 3850752,
+            "complete_bpw": 0.612061,
+            "rel_error_at_budget": 0.9640958898852527,
+            "rel_error_at_full_rank": 0.0,
+            "top1_energy_share": 0.001624
+          },
+          {
+            "split": [
+              16,
+              128,
+              256,
+              12
+            ],
+            "max_rank": 2048,
+            "rank_at_budget": 47,
+            "complete_bits": 3850752,
+            "complete_bpw": 0.612061,
+            "rel_error_at_budget": 0.9642359947980559,
+            "rel_error_at_full_rank": 0.0,
+            "top1_energy_share": 0.001609
+          },
+          {
+            "split": [
+              16,
+              192,
+              256,
+              8
+            ],
+            "max_rank": 2048,
+            "rank_at_budget": 47,
+            "complete_bits": 3850752,
+            "complete_bpw": 0.612061,
+            "rel_error_at_budget": 0.964170230845029,
+            "rel_error_at_full_rank": 0.0,
+            "top1_energy_share": 0.001614
+          },
+          {
+            "split": [
+              32,
+              64,
+              128,
+              24
+            ],
+            "max_rank": 2048,
+            "rank_at_budget": 47,
+            "complete_bits": 3850752,
+            "complete_bpw": 0.612061,
+            "rel_error_at_budget": 0.964288555045152,
+            "rel_error_at_full_rank": 0.0,
+            "top1_energy_share": 0.001606
+          }
+        ],
+        "split": [
+          2,
+          1536,
+          2048,
+          1
+        ],
+        "max_rank": 2048,
+        "rank_at_budget": 47,
+        "complete_bits": 3850752,
+        "complete_bpw": 0.612061,
+        "rel_error_at_budget": 0.958236323260843,
+        "rel_error_at_full_rank": 0.0,
+        "top1_energy_share": 0.002457,
+        "energy_share_at_budget": 0.081783,
+        "codec_rival": {
+          "spec": {
+            "family": "shared_grammar",
+            "dim": 16,
+            "k": 1024,
+            "stages": 1
+          },
+          "rel_error_mean": 0.700092613697052,
+          "complete_bits": 3936784,
+          "complete_bpw": 0.625735
+        },
+        "kron_beats_codec": false
+      }
+    },
+    "F_c_cross_layer_tying": {
+      "gate_proj": {
+        "pairs": [
+          {
+            "expert": 3,
+            "same_index": {
+              "flat_cosine": 0.0015217670096790837,
+              "residual_energy_frac": 0.9999976842251682,
+              "row_aligned_cosine": 0.0016774754039943218
+            },
+            "control_diff_index": {
+              "flat_cosine": 0.0024272125276493936,
+              "residual_energy_frac": 0.9999941086393456,
+              "row_aligned_cosine": 0.0024475378450006247
+            }
+          },
+          {
+            "expert": 7,
+            "same_index": {
+              "flat_cosine": 0.0015215285813208806,
+              "residual_energy_frac": 0.9999976849507762,
+              "row_aligned_cosine": 0.001497094170190394
+            },
+            "control_diff_index": {
+              "flat_cosine": 0.002496682889917468,
+              "residual_energy_frac": 0.9999937665745472,
+              "row_aligned_cosine": 0.0024890489876270294
+            }
+          },
+          {
+            "expert": 19,
+            "same_index": {
+              "flat_cosine": 0.0029185857883674412,
+              "residual_energy_frac": 0.9999914818569959,
+              "row_aligned_cosine": 0.0029822811484336853
+            },
+            "control_diff_index": {
+              "flat_cosine": 0.0008434469517060459,
+              "residual_energy_frac": 0.9999992885972396,
+              "row_aligned_cosine": 0.0009668588754720986
+            }
+          }
+        ],
+        "same_index_residual_frac_mean": 0.9999956170109802,
+        "control_residual_frac_mean": 0.9999957212703775,
+        "index_specific_gain": 1e-07
+      },
+      "down_proj": {
+        "pairs": [
+          {
+            "expert": 3,
+            "same_index": {
+              "flat_cosine": 0.0002817896237739643,
+              "residual_energy_frac": 0.999999920594608,
+              "row_aligned_cosine": 0.00029456301126629114
+            },
+            "control_diff_index": {
+              "flat_cosine": -0.00039992621528488236,
+              "residual_energy_frac": 0.9999998400590223,
+              "row_aligned_cosine": -0.00039641137118451297
+            }
+          },
+          {
+            "expert": 7,
+            "same_index": {
+              "flat_cosine": 0.00021769659090908826,
+              "residual_energy_frac": 0.9999999526081943,
+              "row_aligned_cosine": 0.00020036392379552126
+            },
+            "control_diff_index": {
+              "flat_cosine": 0.0006264532981036738,
+              "residual_energy_frac": 0.9999996075562653,
+              "row_aligned_cosine": 0.0006171624409034848
+            }
+          },
+          {
+            "expert": 19,
+            "same_index": {
+              "flat_cosine": 6.641137025495865e-05,
+              "residual_energy_frac": 0.9999999955895299,
+              "row_aligned_cosine": 9.616764145903289e-05
+            },
+            "control_diff_index": {
+              "flat_cosine": -0.00023245922413722415,
+              "residual_energy_frac": 0.9999999459627091,
+              "row_aligned_cosine": -0.0002528351033106446
+            }
+          }
+        ],
+        "same_index_residual_frac_mean": 0.9999999562641108,
+        "control_residual_frac_mean": 0.9999997978593322,
+        "index_specific_gain": -1.6e-07
+      }
+    }
+  },
+  "verdicts": {
+    "F_a_templates_normalized_space": "DEAD: row-normalized experts are still mutually orthogonal; no shared template exists (max excess over the 1/E null 1.26e-03)",
+    "F_b_kronecker": "DEAD: at the S64 rungs the Frobenius-OPTIMAL Kronecker factorisation loses to the incumbent scale-invariant VQ on every organ tested",
+    "F_c_cross_layer_tying": "DEAD: same-index cross-layer pairs are no more predictive than different-index controls (max index-specific residual gain 1.00e-07)"
+  },
+  "elapsed_s": 63.7
+}

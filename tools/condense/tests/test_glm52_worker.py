@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import ast
+import base64
 import copy
 import hashlib
 import json
@@ -23,6 +24,7 @@ for directory in (TOOLS, CONDENSE):
         sys.path.insert(0, str(directory))
 
 import glm52_gravity as gravity  # noqa: E402
+import glm52_evidence_auth as evidence_module  # noqa: E402
 import glm52_grounding as grounding  # noqa: E402
 import glm52_notifications as notifications  # noqa: E402
 import glm52_state as state  # noqa: E402
@@ -44,6 +46,18 @@ GROUNDING_KEY = b"worker-test-grounding-hmac-key-material-0003"
 CREATED_AT = "2026-07-21T00:00:00Z"
 BOT_ID = 424242424
 BOT_DIGEST = notifications.telegram_bot_identity_digest(BOT_ID)
+
+
+class FakeEvidenceKeychain:
+    def __init__(self, key: bytes = b"e" * 32) -> None:
+        self.value = base64.urlsafe_b64encode(key).decode("ascii")
+
+    def get(self, service: str) -> str | None:
+        assert service == evidence_module.EVIDENCE_HMAC_SERVICE
+        return self.value
+
+    def set(self, _service: str, _value: str) -> None:
+        raise AssertionError("test keychain is read-only")
 
 
 def _policy(path: str, schema: str) -> dict:
@@ -1533,7 +1547,7 @@ def test_authenticated_worker_target_substitution_cannot_override_controller_fil
     assert "controller_root" in authority["reason"]
 
 
-def test_unset_official_contract_pin_blocks_any_authenticated_alternate_hash(
+def test_official_contract_authority_uses_authenticated_runtime_bound_seal(
     tmp_path,
 ) -> None:
     readiness = {
@@ -1576,16 +1590,253 @@ def test_unset_official_contract_pin_blocks_any_authenticated_alternate_hash(
         document,
         tmp_path / "official-worker.json",
     )
-    assert worker.OFFICIAL_CONTRACT_SEAL is None
     report = worker.evaluate_preflight(
         config,
         runtime=None,
         runtime_error="offline test",
     )
     pin = report["checks"]["official_contract_authority"]
-    assert pin["status"] == "BLOCKED"
-    assert pin["reason"].startswith("OFFICIAL_CONTRACT_SEAL_UNSET")
+    assert pin["status"] == "PASS"
+    assert pin["detail"] == {
+        "official_contract_seal_sha256": "c" * 64,
+        "authority": (
+            "RUNTIME_CONTRACT_SEAL_BOUND_BY_EVIDENCE_AUTHENTICATED_WORKER_CONFIG"
+        ),
+        "compiled_unearned_contract_hash_required": False,
+    }
+    assert report["checks"]["worker_config_authority"]["status"] == "BLOCKED"
+    assert report["checks"]["contract_v3"]["status"] == "BLOCKED"
     assert report["production_start_authorized"] is False
+
+
+def _bootstrap_fixture(tmp_path: pathlib.Path):
+    artifact_root = tmp_path / "artifacts"
+    artifact_root.mkdir()
+    contract_path = artifact_root / "expected-contract.json"
+    controller_config_path = tmp_path / "GLM52_CONTROLLER_CONFIG.json"
+    worker_config_path = tmp_path / "GLM52_WORKER_CONFIG.json"
+    atomic_json(contract_path, _contract())
+    evidence_auth = state.EvidenceAuthConfig(
+        hmac_key=EVIDENCE_KEY,
+        campaign_id=CAMPAIGN,
+        source_revision=REVISION,
+    )
+    report = worker.bootstrap_runtime_configs(
+        expected_contract_path=contract_path,
+        controller_config_path=controller_config_path,
+        worker_config_path=worker_config_path,
+        controller_root=tmp_path / "controller",
+        artifact_root=artifact_root,
+        workspace_root=tmp_path,
+        evidence_auth=evidence_auth,
+        allow_synthetic_contract=True,
+    )
+    return (
+        report,
+        contract_path,
+        controller_config_path,
+        worker_config_path,
+        artifact_root,
+        evidence_auth,
+    )
+
+
+def test_contract_derived_bootstrap_writes_valid_fail_closed_configs(tmp_path) -> None:
+    (
+        report,
+        contract_path,
+        controller_config_path,
+        worker_config_path,
+        artifact_root,
+        evidence_auth,
+    ) = _bootstrap_fixture(tmp_path)
+    assert report["schema"] == worker.CONFIG_BOOTSTRAP_SCHEMA
+    assert report["config_documents_validated"] is True
+    assert report["profile"] == worker.SYNTHETIC_CONFIG_PROFILE
+    assert report["unbound_readiness"] == list(worker.READINESS_KINDS)
+    assert report["all_readiness_byte_bound"] is False
+    assert report["production_start_authorized"] is False
+    assert report["scientific_dispatch_bound"] is False
+    assert report["remaining_dispatch_blocker"] == (
+        worker.NO_SCIENTIFIC_DISPATCH_REASON
+    )
+
+    controller = json.loads(controller_config_path.read_text(encoding="utf-8"))
+    contract = json.loads(contract_path.read_text(encoding="utf-8"))
+    assert controller["campaign_id"] == contract["campaign_id"]
+    assert controller["source_revision"] == contract["source_revision"]
+    assert controller["telegram"]["expected_chat_identity_digest"] == (
+        contract["expected_chat_identity_digest"]
+    )
+    assert controller["phone_status_directory"] == str(artifact_root)
+    config = worker.load_worker_config(worker_config_path)
+    assert config.expected_contract_sha256 == contract["seal_sha256"]
+    assert all(
+        spec.expected_file_sha256 is None
+        for spec in config.readiness.values()
+    )
+    assert worker.validate_runtime_configs(
+        expected_contract_path=contract_path,
+        controller_config_path=controller_config_path,
+        worker_config_path=worker_config_path,
+        evidence_auth=evidence_auth,
+        allow_synthetic_contract=True,
+    )["seal_sha256"] == report["seal_sha256"]
+
+
+def test_bootstrap_binds_only_existing_authenticated_readiness_bytes(tmp_path) -> None:
+    (
+        _report,
+        contract_path,
+        controller_config_path,
+        worker_config_path,
+        artifact_root,
+        evidence_auth,
+    ) = _bootstrap_fixture(tmp_path)
+    contract = json.loads(contract_path.read_text(encoding="utf-8"))
+    readiness_root = artifact_root / "readiness"
+    readiness_root.mkdir()
+    for kind in worker.READINESS_KINDS:
+        receipt = state.seal_producer_authenticated_evidence(
+            {
+                "schema": worker.READINESS_SCHEMA,
+                "campaign_id": CAMPAIGN,
+                "source_revision": REVISION,
+                "controller_epoch": gravity.DEFAULT_CONTROLLER_EPOCH,
+                "expected_contract_sha256": contract["seal_sha256"],
+                "kind": kind,
+                "status": "PASS",
+                "created_at": CREATED_AT,
+                "subject": {},
+            },
+            auth=evidence_auth,
+        )
+        atomic_json(readiness_root / f"{kind}.json", receipt)
+    report = worker.bootstrap_runtime_configs(
+        expected_contract_path=contract_path,
+        controller_config_path=controller_config_path,
+        worker_config_path=worker_config_path,
+        controller_root=tmp_path / "controller",
+        artifact_root=artifact_root,
+        workspace_root=tmp_path,
+        evidence_auth=evidence_auth,
+        allow_synthetic_contract=True,
+    )
+    assert report["all_readiness_byte_bound"] is True
+    assert report["unbound_readiness"] == []
+    assert report["production_start_authorized"] is False
+    assert all(
+        item["status"] == "BOUND_AUTHENTICATED_ENVELOPE"
+        for item in report["readiness"].values()
+    )
+    config = worker.load_worker_config(worker_config_path)
+    for kind, spec in config.readiness.items():
+        assert spec.expected_file_sha256 == hashlib.sha256(
+            (readiness_root / f"{kind}.json").read_bytes()
+        ).hexdigest()
+
+
+def test_bootstrap_main_uses_only_evidence_keychain_and_never_enables_dispatch(
+    tmp_path,
+    capsys,
+) -> None:
+    artifact_root = tmp_path / "artifacts"
+    artifact_root.mkdir()
+    contract_path = artifact_root / "expected-contract.json"
+    controller_config_path = tmp_path / "GLM52_CONTROLLER_CONFIG.json"
+    worker_config_path = tmp_path / "GLM52_WORKER_CONFIG.json"
+    atomic_json(contract_path, _contract())
+    result = worker.main(
+        [
+            "--config", str(worker_config_path),
+            "--controller-config", str(controller_config_path),
+            "--expected-contract", str(contract_path),
+            "--controller-root", str(tmp_path / "controller"),
+            "--artifact-root", str(artifact_root),
+            "--workspace-root", str(tmp_path),
+            "--test-only-synthetic-bootstrap",
+            "bootstrap-configs",
+        ],
+        evidence_keychain=FakeEvidenceKeychain(),
+    )
+    assert result == worker.EXIT_OK
+    output = json.loads(capsys.readouterr().out)
+    assert output["status"] == "CONFIGS_VALIDATED_SCIENTIFIC_DISPATCH_BLOCKED"
+    assert output["production_start_authorized"] is False
+    assert output["scientific_dispatch_bound"] is False
+    assert controller_config_path.is_file()
+    assert worker_config_path.is_file()
+
+
+def test_top_level_run_execs_exact_caffeinate_argv_then_validates_child_path(
+    tmp_path,
+    monkeypatch,
+    capsys,
+) -> None:
+    runtime = _runtime(tmp_path)
+    config = _worker_config(tmp_path, runtime)
+    monkeypatch.setattr(worker, "load_worker_config", lambda _path: config)
+    monkeypatch.setattr(
+        worker,
+        "preflight",
+        lambda *_args, **_kwargs: ({"production_start_authorized": True}, runtime),
+    )
+    captured: dict[str, object] = {}
+
+    class ExecIntercept(Exception):
+        pass
+
+    def execv(path, argv):
+        captured.update(path=path, argv=list(argv))
+        raise ExecIntercept
+
+    with pytest.raises(ExecIntercept):
+        worker.main(["--config", str(config.path), "run"], execv=execv)
+    assert captured == {
+        "path": str(worker.CAFFEINATE),
+        "argv": worker.caffeinate_exec_argv(config),
+    }
+
+    observed: dict[str, object] = {}
+    monkeypatch.setattr(
+        worker,
+        "inspect_caffeinate_parent",
+        lambda *, expected_argv: (
+            observed.update(expected_argv=list(expected_argv))
+            or {"ok": True}
+        ),
+    )
+    monkeypatch.setattr(
+        worker,
+        "_load_notification_audit_readiness",
+        lambda *_args, **_kwargs: object(),
+    )
+    monkeypatch.setattr(
+        gravity.telegram_module,
+        "credential_status",
+        lambda _keychain: {"ready": True},
+    )
+
+    class FakePersistentWorker:
+        def __init__(self, supplied_runtime, **kwargs):
+            observed["runtime"] = supplied_runtime
+            observed["worker_kwargs"] = kwargs
+
+        def run(self):
+            return {"status": "STOPPED", "reason": "TEST"}
+
+    monkeypatch.setattr(worker, "PersistentWorker", FakePersistentWorker)
+    result = worker.main(
+        ["--config", str(config.path), "--under-caffeinate", "run"],
+        keychain=object(),
+    )
+    assert result == worker.EXIT_OK
+    assert observed["expected_argv"] == worker.caffeinate_exec_argv(config)
+    assert observed["runtime"] is runtime
+    assert json.loads(capsys.readouterr().out) == {
+        "reason": "TEST",
+        "status": "STOPPED",
+    }
 
 
 @pytest.mark.parametrize(

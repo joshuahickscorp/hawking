@@ -1,0 +1,71 @@
+{
+  "bpw": {
+    "coded_expert_tensors": 18048,
+    "complete_bpw_exact": "918123097/918334510",
+    "complete_bytes": 29379939104,
+    "components": {
+      "alignment": 0,
+      "codebooks": 73924608,
+      "doctor": 12074352640,
+      "indices": 212902871040,
+      "metadata": 9240576,
+      "packaging": 536870912,
+      "pass_through_tensors": 801541632,
+      "protected_islands": 7950447616,
+      "runtime_tables": 12032,
+      "scales": 690251776
+    },
+    "legal_under_one_bit_ceiling": true,
+    "omitted_expert_tensors": 18048,
+    "organ_bpw": {},
+    "scope": "complete artifact, omission-aware",
+    "whole_model_bpw": 0.999769787
+  },
+  "capability_pass": false,
+  "divergence_vs_parent": {
+    "mean_logit_cosine": 0.34217,
+    "mean_sym_kl": 9.9103,
+    "mean_top5_overlap": 0.0667,
+    "next_token_argmax_agreement": 0.0
+  },
+  "domain": "general",
+  "honesty": "REAL parent-vs-packed Qwen3-MoE forward with expert_hook substitution; BPW is whole-model from the exact byte ledger, never expert-only; weight-space error is NOT a pass criterion",
+  "kind": "packed",
+  "ladder_sha": "ad109e5135f7f81c",
+  "logits_finite": true,
+  "n_tokens": 9,
+  "note": "SAME-BUDGET DOCTOR (Lane B M10) on top of S64_structural. The structural arm leaves 0.0516 BPW of headroom under the 1/1 ceiling; this spends ALL of it on a diagnosis-driven sparse residual over down_proj, the organ whose rate-distortion floor is now the worst in the artifact. Protected rows are chosen by measured RELATIVE residual energy after the base pass - where the base representation actually lost the function - not uniformly and not by row norm. Doctor bytes are billed INSIDE the ceiling: correction indices, amortized correction codebook, one bf16 scale per protected row, and a one-bit-per-row protection bitmap. Measured on real down_proj at layer 46: rel_error 0.7038 -> 0.6074 for +0.319 organ bpw.",
+  "prompt_id": "gen_science",
+  "quality": {
+    "n_positions": 8,
+    "nll": 7.9785,
+    "perplexity": 2917.5374
+  },
+  "row_id": "gen_science__S64_doctor",
+  "sealed_at": "2026-07-20T22:53:08Z",
+  "sha256": "2f26708c8e5502f8506dcf36c3e8e08f3e12d287b141f546ab502e825df911bf",
+  "spec": {
+    "down": {
+      "dim": 16,
+      "doctor": {
+        "dim": 16,
+        "k": 1024,
+        "protect_frac": 0.5,
+        "stages": 1
+      },
+      "family": "function_aware",
+      "k": 1024,
+      "stages": 1
+    },
+    "gate_up": {
+      "dim": 8,
+      "family": "function_aware",
+      "k": 1024,
+      "stages": 2
+    },
+    "keep_experts": 64,
+    "kind": "packed"
+  },
+  "variant": "S64_doctor",
+  "verdict": "collapse"
+}

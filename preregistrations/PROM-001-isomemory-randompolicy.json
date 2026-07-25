@@ -1,0 +1,75 @@
+{
+  "schema": "hawking.prometheus.preregistration.v1",
+  "id": "PROM-001",
+  "title": "The iso-memory frontier and the RandomPolicy control",
+  "filed": "2026-07-23",
+  "status": "FILED",
+  "gate_to_run": "MODEL LADDER DONE and HAWKING SHIPPABLE",
+  "machinery": "tools/prometheus/prometheus.py",
+  "profiles": [
+    "profiles/prometheus/uniform-v1.json",
+    "profiles/prometheus/general-v1.json",
+    "profiles/prometheus/math-v1.json",
+    "profiles/prometheus/mathnarrow-v1.json",
+    "profiles/prometheus/random-v1.json"
+  ],
+  "hypotheses": {
+    "H1": "Non-uniform allocation beats uniform allocation at equal bytes.",
+    "H2": "Capability-conditioned allocation beats arbitrary non-uniform allocation at equal bytes (Math vs Random).",
+    "H3": "Capability elimination beats capability allocation at equal bytes (MathNarrow vs Math)."
+  },
+  "arms": [
+    "Uniform",
+    "General",
+    "Math",
+    "MathNarrow",
+    "Random"
+  ],
+  "control_arm": "Random",
+  "substrates_in_order": [
+    "Qwen3.5-397B-A17B",
+    "GLM-5.2"
+  ],
+  "sampling_policy": {
+    "bitrates_dense": [
+      "H07",
+      "H065",
+      "H06",
+      "H055",
+      "H05",
+      "H045",
+      "H04"
+    ],
+    "bitrates_sparse": [
+      "H09",
+      "H15"
+    ],
+    "iso_memory_pair": "H08 flagship vs H15 build-first at matched bytes",
+    "coalition_fraction_sweep": [
+      0.02,
+      0.05,
+      0.1,
+      0.2
+    ],
+    "coalition_membership": "GATED on cartography (P4)",
+    "seed": 20260723
+  },
+  "metrics": {
+    "primary": "Math Profile v1 aggregate G1-G8; G3 and G8 discriminating",
+    "secondary": [
+      "per-subdomain retention",
+      "trajectory divergence depth",
+      "tokens/sec",
+      "byte decomposition"
+    ]
+  },
+  "analysis_plan": "Compare arms at matched bytes only. H1 Uniform vs General/Math. H2 Math vs Random (credibility arm). H3 MathNarrow vs Math. Headline = bit gap between Uniform cliff and Math cliff.",
+  "stopping_rule": "Full grid on Qwen3.5 first; stop when H2 resolves at >=3 bitrates or capacity kill K6 fires. No new arms/bitrates post-hoc without PROM-002.",
+  "what_would_falsify": {
+    "H1": "Uniform indistinguishable from General and Math at matched bytes.",
+    "H2": "Math indistinguishable from Random at matched bytes (Claim A false).",
+    "H3": "MathNarrow indistinguishable from Math at matched bytes.",
+    "machinery_invalid": "Random arm fails to reconcile to Math byte total (pipeline asserts against this)."
+  },
+  "content_sha256": "01c38ca141f3c438a229c6e15f228f90aca9c6d5f8893a028a499fa03ad45a2b"
+}

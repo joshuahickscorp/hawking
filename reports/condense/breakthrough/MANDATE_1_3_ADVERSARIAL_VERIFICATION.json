@@ -1,0 +1,361 @@
+{
+  "schema": "hawking.glm52.adversarial_verification.unpack_indices.v1",
+  "date": "2026-07-22",
+  "subject": "tools/condense/glm52_pack.py unpack_indices rewrite (uncommitted, git diff)",
+  "verdict": "CONFIRMED on correctness and cost; three contract changes found, none producing a wrong value in 1..16 bits",
+  "method": "Independent reference derived from pack_indices' contract only (whole payload as one big-endian integer; field i = (big >> (total - (i+1)*bits)) & mask). Compared REF vs verbatim-pre-fix OLD vs NEW.",
+  "harness_paths": [
+    "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/fece6e70-8f40-4d78-b56e-1480531866f9/scratchpad/verify_unpack/artifact_check.py",
+    "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/fece6e70-8f40-4d78-b56e-1480531866f9/scratchpad/verify_unpack/break_it.py",
+    "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/fece6e70-8f40-4d78-b56e-1480531866f9/scratchpad/verify_unpack/mem_check.py",
+    "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/fece6e70-8f40-4d78-b56e-1480531866f9/scratchpad/verify_unpack/ref_check.py"
+  ],
+  "python": "/Users/scammermike/Downloads/hawking/.venv/glm52/bin/python, numpy 2.2.6",
+  "totals": {
+    "value_comparison_cases": 11792,
+    "value_disagreements": 0
+  },
+  "raw": {
+    "break": {
+      "cases": 8544,
+      "n_failures": 0,
+      "failures": [],
+      "truncated_payload": {
+        "7": {
+          "new": "SILENT: returns 100 values, first10=[98, 76, 115, 28, 36, 10, 52, 47, 93, 124], tail10=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]",
+          "old": "RAISES ValueError: cannot reshape array of size 352 into shape (100,7)",
+          "true_first10": [
+            98,
+            76,
+            115,
+            28,
+            36,
+            10,
+            52,
+            47,
+            93,
+            124
+          ]
+        },
+        "8": {
+          "new": "SILENT: returns 100 values, first10=[104, 171, 40, 164, 161, 164, 241, 220, 42, 50], tail10=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]",
+          "old": "RAISES ValueError: cannot reshape array of size 400 into shape (100,8)",
+          "true_first10": [
+            104,
+            171,
+            40,
+            164,
+            161,
+            164,
+            241,
+            220,
+            42,
+            50
+          ]
+        },
+        "9": {
+          "new": "SILENT: returns 100 values, first10=[250, 372, 168, 406, 70, 228, 15, 508, 227, 322], tail10=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]",
+          "old": "RAISES ValueError: cannot reshape array of size 448 into shape (100,9)",
+          "true_first10": [
+            250,
+            372,
+            168,
+            406,
+            70,
+            228,
+            15,
+            508,
+            227,
+            322
+          ]
+        },
+        "16": {
+          "new": "SILENT: returns 100 values, first10=[32724, 18339, 2686, 51366, 39283, 58866, 33167, 731, 24498, 60], tail10=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]",
+          "old": "RAISES ValueError: cannot reshape array of size 800 into shape (100,16)",
+          "true_first10": [
+            32724,
+            18339,
+            2686,
+            51366,
+            39283,
+            58866,
+            33167,
+            731,
+            24498,
+            60
+          ]
+        }
+      },
+      "empty_raw_count10": {
+        "7": {
+          "new": "SILENT zeros: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]",
+          "old": "RAISES ValueError: cannot reshape array of size 0 into shape (10,7)"
+        },
+        "16": {
+          "new": "SILENT zeros: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]",
+          "old": "RAISES ValueError: cannot reshape array of size 0 into shape (10,16)"
+        }
+      }
+    },
+    "mem": {
+      "packbits_shift_claim": {
+        "1": "EXACT",
+        "2": "EXACT",
+        "3": "EXACT",
+        "4": "EXACT",
+        "5": "EXACT",
+        "6": "EXACT",
+        "7": "EXACT",
+        "8": "EXACT",
+        "9": "OverflowError: Python integer -1 out of bounds for uint8",
+        "10": "OverflowError: Python integer -2 out of bounds for uint8",
+        "11": "OverflowError: Python integer -3 out of bounds for uint8",
+        "12": "OverflowError: Python integer -4 out of bounds for uint8",
+        "13": "OverflowError: Python integer -5 out of bounds for uint8",
+        "14": "OverflowError: Python integer -6 out of bounds for uint8",
+        "15": "OverflowError: Python integer -7 out of bounds for uint8",
+        "16": "OverflowError: Python integer -8 out of bounds for uint8"
+      },
+      "R0_gate_up_1572864x7bit": {
+        "count": 1572864,
+        "bits": 7,
+        "payload_bytes": 1376256,
+        "old": {
+          "ms_samples": [
+            33.494,
+            33.157,
+            33.051,
+            32.916,
+            34.796,
+            33.573,
+            33.053
+          ],
+          "ms_median": 33.157,
+          "tracemalloc_peak_bytes": 199820984,
+          "peak_MiB": 190.56,
+          "peak_over_payload": 145.19,
+          "exact_vs_input": true
+        },
+        "new": {
+          "ms_samples": [
+            2.221,
+            2.224,
+            2.366,
+            2.309,
+            2.211,
+            2.556,
+            2.376
+          ],
+          "ms_median": 2.309,
+          "tracemalloc_peak_bytes": 3736666,
+          "peak_MiB": 3.56,
+          "peak_over_payload": 2.72,
+          "exact_vs_input": true
+        }
+      },
+      "attn_q_b_4194304x7bit": {
+        "count": 4194304,
+        "bits": 7,
+        "payload_bytes": 3670016,
+        "old": {
+          "ms_samples": [
+            111.408,
+            112.199,
+            110.28,
+            110.274,
+            110.787,
+            111.893,
+            111.872
+          ],
+          "ms_median": 111.408,
+          "tracemalloc_peak_bytes": 532743864,
+          "peak_MiB": 508.06,
+          "peak_over_payload": 145.16,
+          "exact_vs_input": true
+        },
+        "new": {
+          "ms_samples": [
+            6.439,
+            5.723,
+            6.514,
+            6.358,
+            6.24,
+            7.195,
+            6.734
+          ],
+          "ms_median": 6.439,
+          "tracemalloc_peak_bytes": 9962586,
+          "peak_MiB": 9.5,
+          "peak_over_payload": 2.71,
+          "exact_vs_input": true
+        }
+      }
+    },
+    "art": {
+      "shard": "/Users/scammermike/Desktop/GLM52-Gravity-SubBit/model-00002-of-00282.gravity",
+      "tensors": [
+        {
+          "name": "model.layers.1.self_attn.q_b_proj.weight",
+          "shape_rows_cols": [
+            16384,
+            2048
+          ],
+          "indices_shape": [
+            4194304,
+            1
+          ],
+          "indices_dtype_new": "int64",
+          "indices_dtype_old": "int64",
+          "indices_bit_exact": true,
+          "indices_sha256_new": "336a254e84e376e36a9786b32347942a",
+          "indices_sha256_old": "336a254e84e376e36a9786b32347942a",
+          "narrow_dtype": "uint8",
+          "narrow_matches_int64": true,
+          "pq_execute_bit_identical_new_vs_old": true,
+          "pq_execute_bit_identical_narrow_vs_old": true,
+          "y_sha256_new": "8eec95843f5b256e25ecc80302343a65",
+          "y_sha256_old": "8eec95843f5b256e25ecc80302343a65",
+          "y_sha256_narrow": "8eec95843f5b256e25ecc80302343a65",
+          "max_abs_diff_new_vs_old": 0.0
+        },
+        {
+          "name": "model.layers.10.mlp.experts.0.down_proj.weight",
+          "shape_rows_cols": [
+            6144,
+            2048
+          ],
+          "indices_shape": [
+            1572864,
+            1
+          ],
+          "indices_dtype_new": "int64",
+          "indices_dtype_old": "int64",
+          "indices_bit_exact": true,
+          "indices_sha256_new": "13838c368e9e3c570190747c90199ba8",
+          "indices_sha256_old": "13838c368e9e3c570190747c90199ba8",
+          "narrow_dtype": "uint8",
+          "narrow_matches_int64": true,
+          "pq_execute_bit_identical_new_vs_old": true,
+          "pq_execute_bit_identical_narrow_vs_old": true,
+          "y_sha256_new": "9e3b542014ef5efceb94981832755685",
+          "y_sha256_old": "9e3b542014ef5efceb94981832755685",
+          "y_sha256_narrow": "9e3b542014ef5efceb94981832755685",
+          "max_abs_diff_new_vs_old": 0.0
+        },
+        {
+          "name": "model.layers.10.mlp.experts.0.gate_proj.weight",
+          "shape_rows_cols": [
+            2048,
+            6144
+          ],
+          "indices_shape": [
+            1572864,
+            1
+          ],
+          "indices_dtype_new": "int64",
+          "indices_dtype_old": "int64",
+          "indices_bit_exact": true,
+          "indices_sha256_new": "b0659bb0e9204ab48bf3b0117ca22ea7",
+          "indices_sha256_old": "b0659bb0e9204ab48bf3b0117ca22ea7",
+          "narrow_dtype": "uint8",
+          "narrow_matches_int64": true,
+          "pq_execute_bit_identical_new_vs_old": true,
+          "pq_execute_bit_identical_narrow_vs_old": true,
+          "y_sha256_new": "71830432e7499a5b3373812f628ac688",
+          "y_sha256_old": "71830432e7499a5b3373812f628ac688",
+          "y_sha256_narrow": "71830432e7499a5b3373812f628ac688",
+          "max_abs_diff_new_vs_old": 0.0
+        }
+      ]
+    },
+    "ref": {
+      "cases": 3248,
+      "failures": [],
+      "n_failures": 0,
+      "dtypes": {
+        "1": {
+          "new": "uint8",
+          "old": "uint64"
+        },
+        "2": {
+          "new": "uint8",
+          "old": "uint64"
+        },
+        "3": {
+          "new": "uint8",
+          "old": "uint64"
+        },
+        "4": {
+          "new": "uint8",
+          "old": "uint64"
+        },
+        "5": {
+          "new": "uint8",
+          "old": "uint64"
+        },
+        "6": {
+          "new": "uint8",
+          "old": "uint64"
+        },
+        "7": {
+          "new": "uint8",
+          "old": "uint64"
+        },
+        "8": {
+          "new": "uint8",
+          "old": "uint64"
+        },
+        "9": {
+          "new": "uint16",
+          "old": "uint64"
+        },
+        "10": {
+          "new": "uint16",
+          "old": "uint64"
+        },
+        "11": {
+          "new": "uint16",
+          "old": "uint64"
+        },
+        "12": {
+          "new": "uint16",
+          "old": "uint64"
+        },
+        "13": {
+          "new": "uint16",
+          "old": "uint64"
+        },
+        "14": {
+          "new": "uint16",
+          "old": "uint64"
+        },
+        "15": {
+          "new": "uint16",
+          "old": "uint64"
+        },
+        "16": {
+          "new": "uint16",
+          "old": "uint64"
+        }
+      },
+      "bits_outside_1_16": {
+        "17": {
+          "new": "ValueError: unpack_indices handles 1..16 bits, got 17",
+          "old": "OK_MATCHES_REF"
+        },
+        "20": {
+          "new": "ValueError: unpack_indices handles 1..16 bits, got 20",
+          "old": "OK_MATCHES_REF"
+        },
+        "32": {
+          "new": "ValueError: unpack_indices handles 1..16 bits, got 32",
+          "old": "OK_MATCHES_REF"
+        },
+        "64": {
+          "new": "ValueError: unpack_indices handles 1..16 bits, got 64",
+          "old": "OK_MATCHES_REF"
+        }
+      }
+    }
+  }
+}

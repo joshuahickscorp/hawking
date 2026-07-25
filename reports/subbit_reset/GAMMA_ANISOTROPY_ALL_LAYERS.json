@@ -1,0 +1,472 @@
+[
+ {
+  "layer": 0,
+  "anisotropy_decades": 1.842776612170568,
+  "max_over_mean": 66.93623309925057
+ },
+ {
+  "layer": 1,
+  "anisotropy_decades": 0.9035075660627366,
+  "max_over_mean": 15.202946617797638
+ },
+ {
+  "layer": 2,
+  "anisotropy_decades": 0.5539835095930847,
+  "max_over_mean": 71.65490144851474
+ },
+ {
+  "layer": 3,
+  "anisotropy_decades": 0.24770489605477422,
+  "max_over_mean": 152.85417522469092
+ },
+ {
+  "layer": 4,
+  "anisotropy_decades": 0.2091259544731639,
+  "max_over_mean": 14.81343921197501
+ },
+ {
+  "layer": 5,
+  "anisotropy_decades": 0.11780099409952331,
+  "max_over_mean": 2.696842696546773
+ },
+ {
+  "layer": 6,
+  "anisotropy_decades": 0.11616518913535524,
+  "max_over_mean": 4.806293455302503
+ },
+ {
+  "layer": 7,
+  "anisotropy_decades": 0.1207328886385834,
+  "max_over_mean": 3.6951478920368537
+ },
+ {
+  "layer": 8,
+  "anisotropy_decades": 0.07618009921627887,
+  "max_over_mean": 2.2452532069543603
+ },
+ {
+  "layer": 9,
+  "anisotropy_decades": 0.06583369240089977,
+  "max_over_mean": 1.9757697902078095
+ },
+ {
+  "layer": 10,
+  "anisotropy_decades": 0.1219642665976906,
+  "max_over_mean": 2.1828313468084444
+ },
+ {
+  "layer": 11,
+  "anisotropy_decades": 0.1330004285770717,
+  "max_over_mean": 2.2015878853242943
+ },
+ {
+  "layer": 12,
+  "anisotropy_decades": 0.1693511131820895,
+  "max_over_mean": 2.52910526637638
+ },
+ {
+  "layer": 13,
+  "anisotropy_decades": 0.24386645293714942,
+  "max_over_mean": 3.4158107314160113
+ },
+ {
+  "layer": 14,
+  "anisotropy_decades": 0.32253496547731375,
+  "max_over_mean": 5.432869051305042
+ },
+ {
+  "layer": 15,
+  "anisotropy_decades": 0.35776831847970275,
+  "max_over_mean": 6.16998061238051
+ },
+ {
+  "layer": 16,
+  "anisotropy_decades": 0.39710405683396505,
+  "max_over_mean": 6.589189779969475
+ },
+ {
+  "layer": 17,
+  "anisotropy_decades": 0.43057121833652356,
+  "max_over_mean": 6.980530554052245
+ },
+ {
+  "layer": 18,
+  "anisotropy_decades": 0.4958846990114117,
+  "max_over_mean": 8.339750422443753
+ },
+ {
+  "layer": 19,
+  "anisotropy_decades": 0.4440202703562419,
+  "max_over_mean": 6.722052326122049
+ },
+ {
+  "layer": 20,
+  "anisotropy_decades": 0.3991447098104083,
+  "max_over_mean": 5.714079524381676
+ },
+ {
+  "layer": 21,
+  "anisotropy_decades": 0.34219407904185084,
+  "max_over_mean": 5.2056271521433555
+ },
+ {
+  "layer": 22,
+  "anisotropy_decades": 0.3319168344497399,
+  "max_over_mean": 5.525877715966217
+ },
+ {
+  "layer": 23,
+  "anisotropy_decades": 0.3111676960198987,
+  "max_over_mean": 5.327715773663163
+ },
+ {
+  "layer": 24,
+  "anisotropy_decades": 0.27090175968524494,
+  "max_over_mean": 4.2484885852677605
+ },
+ {
+  "layer": 25,
+  "anisotropy_decades": 0.23759171020249772,
+  "max_over_mean": 4.127671800099093
+ },
+ {
+  "layer": 26,
+  "anisotropy_decades": 0.2166789495776765,
+  "max_over_mean": 3.884141792603703
+ },
+ {
+  "layer": 27,
+  "anisotropy_decades": 0.15836249209524958,
+  "max_over_mean": 2.765256493103789
+ },
+ {
+  "layer": 28,
+  "anisotropy_decades": 0.10736971792555272,
+  "max_over_mean": 2.0757623888874854
+ },
+ {
+  "layer": 29,
+  "anisotropy_decades": 0.08536445197242225,
+  "max_over_mean": 1.9986974032984752
+ },
+ {
+  "layer": 30,
+  "anisotropy_decades": 0.21931503343350275,
+  "max_over_mean": 3.390469295188171
+ },
+ {
+  "layer": 31,
+  "anisotropy_decades": 0.20662112997454452,
+  "max_over_mean": 2.799705120180633
+ },
+ {
+  "layer": 32,
+  "anisotropy_decades": 0.23301113814287427,
+  "max_over_mean": 3.102649554421972
+ },
+ {
+  "layer": 33,
+  "anisotropy_decades": 0.289992318563478,
+  "max_over_mean": 3.6686070176309618
+ },
+ {
+  "layer": 34,
+  "anisotropy_decades": 0.3521825181113625,
+  "max_over_mean": 4.981234987389555
+ },
+ {
+  "layer": 35,
+  "anisotropy_decades": 0.3728290682920583,
+  "max_over_mean": 5.724542978536284
+ },
+ {
+  "layer": 36,
+  "anisotropy_decades": 0.4107818084955609,
+  "max_over_mean": 5.819055142866949
+ },
+ {
+  "layer": 37,
+  "anisotropy_decades": 0.4635828185075664,
+  "max_over_mean": 6.611913093089838
+ },
+ {
+  "layer": 38,
+  "anisotropy_decades": 0.5197365135849104,
+  "max_over_mean": 7.794551511358548
+ },
+ {
+  "layer": 39,
+  "anisotropy_decades": 0.4704254223486757,
+  "max_over_mean": 6.363812959230591
+ },
+ {
+  "layer": 40,
+  "anisotropy_decades": 0.41541488968463985,
+  "max_over_mean": 5.784783335892847
+ },
+ {
+  "layer": 41,
+  "anisotropy_decades": 0.37504144167292613,
+  "max_over_mean": 5.20305859386586
+ },
+ {
+  "layer": 42,
+  "anisotropy_decades": 0.3521825181113625,
+  "max_over_mean": 5.223057590383858
+ },
+ {
+  "layer": 43,
+  "anisotropy_decades": 0.3203613421603809,
+  "max_over_mean": 4.803664027748679
+ },
+ {
+  "layer": 44,
+  "anisotropy_decades": 0.2727637759004154,
+  "max_over_mean": 3.6162059053267277
+ },
+ {
+  "layer": 45,
+  "anisotropy_decades": 0.23348851598605672,
+  "max_over_mean": 3.3404161872154785
+ },
+ {
+  "layer": 46,
+  "anisotropy_decades": 0.20258165794371685,
+  "max_over_mean": 2.923892008550872
+ },
+ {
+  "layer": 47,
+  "anisotropy_decades": 0.28201092981605086,
+  "max_over_mean": 4.1446788251198265
+ },
+ {
+  "layer": 48,
+  "anisotropy_decades": 0.3433642803012523,
+  "max_over_mean": 5.178831333022352
+ },
+ {
+  "layer": 49,
+  "anisotropy_decades": 0.39287212318970793,
+  "max_over_mean": 6.00942314492835
+ },
+ {
+  "layer": 50,
+  "anisotropy_decades": 0.44010828353120973,
+  "max_over_mean": 5.910891468009303
+ },
+ {
+  "layer": 51,
+  "anisotropy_decades": 0.4860760973725889,
+  "max_over_mean": 6.474570003379379
+ },
+ {
+  "layer": 52,
+  "anisotropy_decades": 0.5156096832374023,
+  "max_over_mean": 7.1208017605285345
+ },
+ {
+  "layer": 53,
+  "anisotropy_decades": 0.4596073748827612,
+  "max_over_mean": 6.2006564295131055
+ },
+ {
+  "layer": 54,
+  "anisotropy_decades": 0.4306357649147972,
+  "max_over_mean": 5.6163583090497955
+ },
+ {
+  "layer": 55,
+  "anisotropy_decades": 0.3716397244985009,
+  "max_over_mean": 4.950346567029042
+ },
+ {
+  "layer": 56,
+  "anisotropy_decades": 0.34801661581477755,
+  "max_over_mean": 5.343701572689298
+ },
+ {
+  "layer": 57,
+  "anisotropy_decades": 0.32159514310755044,
+  "max_over_mean": 5.46432197695941
+ },
+ {
+  "layer": 58,
+  "anisotropy_decades": 0.2718177409931039,
+  "max_over_mean": 4.17497874901102
+ },
+ {
+  "layer": 59,
+  "anisotropy_decades": 0.2421745234992866,
+  "max_over_mean": 3.814185337637093
+ },
+ {
+  "layer": 60,
+  "anisotropy_decades": 0.22607902661718443,
+  "max_over_mean": 3.3683168264472108
+ },
+ {
+  "layer": 61,
+  "anisotropy_decades": 0.1770425446035364,
+  "max_over_mean": 2.662175123149049
+ },
+ {
+  "layer": 62,
+  "anisotropy_decades": 0.11690352237776144,
+  "max_over_mean": 2.0157689305221718
+ },
+ {
+  "layer": 63,
+  "anisotropy_decades": 0.11146704049103921,
+  "max_over_mean": 1.8904797270326452
+ },
+ {
+  "layer": 64,
+  "anisotropy_decades": 0.20474581741911713,
+  "max_over_mean": 2.7170854119088843
+ },
+ {
+  "layer": 65,
+  "anisotropy_decades": 0.22622856418556736,
+  "max_over_mean": 2.777450500697864
+ },
+ {
+  "layer": 66,
+  "anisotropy_decades": 0.27789890210222923,
+  "max_over_mean": 3.168938310451545
+ },
+ {
+  "layer": 67,
+  "anisotropy_decades": 0.33886591079601364,
+  "max_over_mean": 3.772978068031653
+ },
+ {
+  "layer": 68,
+  "anisotropy_decades": 0.3921655783844387,
+  "max_over_mean": 5.034474258895497
+ },
+ {
+  "layer": 69,
+  "anisotropy_decades": 0.4238593685687773,
+  "max_over_mean": 5.493947457905884
+ },
+ {
+  "layer": 70,
+  "anisotropy_decades": 0.4575952191433684,
+  "max_over_mean": 5.5494703604746105
+ },
+ {
+  "layer": 71,
+  "anisotropy_decades": 0.49750284298393954,
+  "max_over_mean": 6.353077881540442
+ },
+ {
+  "layer": 72,
+  "anisotropy_decades": 0.5250056054573756,
+  "max_over_mean": 7.286666512825133
+ },
+ {
+  "layer": 73,
+  "anisotropy_decades": 0.475087476285749,
+  "max_over_mean": 6.212332078253469
+ },
+ {
+  "layer": 74,
+  "anisotropy_decades": 0.4264325862474448,
+  "max_over_mean": 5.767401207917397
+ },
+ {
+  "layer": 75,
+  "anisotropy_decades": 0.3656492834292993,
+  "max_over_mean": 5.164994575267533
+ },
+ {
+  "layer": 76,
+  "anisotropy_decades": 0.3229646105941294,
+  "max_over_mean": 5.210167038962775
+ },
+ {
+  "layer": 77,
+  "anisotropy_decades": 0.27899491355844985,
+  "max_over_mean": 4.615314485897983
+ },
+ {
+  "layer": 78,
+  "anisotropy_decades": 0.22335361188092623,
+  "max_over_mean": 3.4745996586799017
+ },
+ {
+  "layer": 79,
+  "anisotropy_decades": 0.19021022708784877,
+  "max_over_mean": 2.90760965458587
+ },
+ {
+  "layer": 80,
+  "anisotropy_decades": 0.1708603906492526,
+  "max_over_mean": 2.4225445301037523
+ },
+ {
+  "layer": 81,
+  "anisotropy_decades": 0.12677395772878583,
+  "max_over_mean": 1.9388914191427
+ },
+ {
+  "layer": 82,
+  "anisotropy_decades": 0.08167250794281028,
+  "max_over_mean": 1.6731110503681377
+ },
+ {
+  "layer": 83,
+  "anisotropy_decades": 0.06860846233997112,
+  "max_over_mean": 1.6301198239531351
+ },
+ {
+  "layer": 84,
+  "anisotropy_decades": 0.05569785747736058,
+  "max_over_mean": 1.3702148890235113
+ },
+ {
+  "layer": 85,
+  "anisotropy_decades": 0.049964576174154285,
+  "max_over_mean": 1.5491202073684835
+ },
+ {
+  "layer": 86,
+  "anisotropy_decades": 0.04316858360934519,
+  "max_over_mean": 1.4175917801759073
+ },
+ {
+  "layer": 87,
+  "anisotropy_decades": 0.04186781367128598,
+  "max_over_mean": 1.6699320689615675
+ },
+ {
+  "layer": 88,
+  "anisotropy_decades": 0.03545753392086307,
+  "max_over_mean": 1.3976822259240875
+ },
+ {
+  "layer": 89,
+  "anisotropy_decades": 0.02879564140128504,
+  "max_over_mean": 1.1622852959808387
+ },
+ {
+  "layer": 90,
+  "anisotropy_decades": 0.01828675887973954,
+  "max_over_mean": 1.1355663235430935
+ },
+ {
+  "layer": 91,
+  "anisotropy_decades": 0.02580156929209529,
+  "max_over_mean": 1.2987886266158153
+ },
+ {
+  "layer": 92,
+  "anisotropy_decades": 0.029163999745994307,
+  "max_over_mean": 1.9350840537357834
+ },
+ {
+  "layer": 93,
+  "anisotropy_decades": 0.062068467479937564,
+  "max_over_mean": 3.0168927664793856
+ }
+]

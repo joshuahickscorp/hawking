@@ -1,0 +1,442 @@
+{
+ "schema": "doctor_parent_transfer_matrix/v1",
+ "source_library": "tools/condense/doctor_gen3.py",
+ "parent_measured_on": {
+  "model": "Qwen3-235B-A22B",
+  "arch": "qwen3moe",
+  "n_layers": 94,
+  "n_experts_per_layer": 128,
+  "top_k": 8,
+  "original_weight_count": 235093634560,
+  "source_bytes_gib": 438
+ },
+ "verdict_vocabulary": {
+  "YES": "transfers as-is; the prior is expected to hold in sign and rough magnitude",
+  "YES_WITH_REMEASURE": "mechanism transfers, magnitude does not - re-measure before billing",
+  "YES_MECHANISM_ONLY": "the procedure transfers, none of its Qwen outputs do",
+  "PER_CELL_ONLY": "never admitted globally; admission is a per-cell measured test",
+  "REOPEN_ONLY": "refused at proposal time until its numeric reopening condition is measured true on the new parent",
+  "UNKNOWN": "untested anywhere - carries no prior",
+  "NO": "dead on measured evidence",
+  "N/A": "the architecture has no such object"
+ },
+ "verdicts_used": [
+  "N/A",
+  "NO",
+  "PER_CELL_ONLY",
+  "REOPEN_ONLY",
+  "UNKNOWN",
+  "YES",
+  "YES_MECHANISM_ONLY",
+  "YES_WITH_REMEASURE"
+ ],
+ "counts": {
+  "alive": 6,
+  "negative": 1,
+  "dead": 3,
+  "untested": 3,
+  "total": 13
+ },
+ "treatments": [
+  {
+   "id": "gamma_weighted_coding",
+   "rung": "E0",
+   "space": "function",
+   "treats": [
+    "quantization_reconstruction",
+    "activation_shift",
+    "direction_distortion"
+   ],
+   "qwen_status": "alive",
+   "installed_bits_per_tensor": "0 - gamma already ships as a native pass-through tensor",
+   "prior_recovery": 0.6,
+   "prior_bpw_cost": 0.0,
+   "conditional": false,
+   "reopen_condition": null,
+   "transfers_to_dense": {
+    "verdict": "YES_WITH_REMEASURE",
+    "why": "dense MLPs have the same RMSNorm gamma in front of gate/up; the 0.60 prior is a LAYER-0 Qwen number and must be rescaled by the new parent's measured gamma anisotropy (Qwen: 1.843 at L0, 0.062 at L93)"
+   },
+   "transfers_to_other_moe": {
+    "verdict": "YES_WITH_REMEASURE",
+    "why": "re-measure gamma anisotropy per layer"
+   },
+   "transfers_across_rate_regime": "gain should GROW as rate falls (more distortion to steer), but this is UNMEASURED below the S64 rates",
+   "must_be_remeasured": [
+    "per-layer gamma anisotropy",
+    "log-corr(h, gamma^2) on the new parent",
+    "output-error cut at the target rate, in OUTPUT space not weight space"
+   ],
+   "architecture_bound": "bound to architectures with a per-channel input scale on the coded organ (RMSNorm gamma feeding gate/up). Fails on any organ whose input is an internal activation (down_proj).",
+   "qwen_provenance": "Lane C adversarial: data-free h = post_attention_layernorm.weight^2 recovers 83 pct of a 60 pct layer-0 output-error cut; log-corr(h, gamma^2) = 0.9918. Gain tracks gamma anisotropy, which is 1.843 at L0 and 0.062 at L93, so the 0.60 prior is a LAYER-0 number and must be scaled by measured anisotropy."
+  },
+  {
+   "id": "row_scale_refit",
+   "rung": "E0",
+   "space": "parameter",
+   "treats": [
+    "scale_magnitude_distortion"
+   ],
+   "qwen_status": "alive",
+   "installed_bits_per_tensor": "0 - the bf16 row scale already ships, it just carries a better value",
+   "prior_recovery": 0.028,
+   "prior_bpw_cost": 0.0,
+   "conditional": false,
+   "reopen_condition": null,
+   "transfers_to_dense": {
+    "verdict": "YES",
+    "why": "pure refit of a scale the codec already ships; the 2.8 pct prior tracks row-norm span, which every dense model also has"
+   },
+   "transfers_to_other_moe": {
+    "verdict": "YES",
+    "why": "no MoE dependence"
+   },
+   "transfers_across_rate_regime": "gain is largest where row-norm span is largest and is rate-insensitive in the measured band",
+   "must_be_remeasured": [
+    "row-norm span per cell",
+    "rel_error delta on a proven-disjoint probe"
+   ],
+   "architecture_bound": "architecture-neutral - any codec that ships a per-row scale.",
+   "qwen_provenance": "M01_FUNCTION_AWARE_PROBE: scale-invariant VQ mean rel_error 0.7746 -> 0.7526 over 15 real cells; largest where row-norm span is largest (L0 gate 0.7214 -> 0.6435), vanishing where flat (L70 0.7041 -> 0.7029)"
+  },
+  {
+   "id": "protected_islands",
+   "rung": "E1",
+   "space": "parameter",
+   "treats": [
+    "quantization_reconstruction",
+    "rare_token_collapse",
+    "domain_collapse"
+   ],
+   "qwen_status": "untested",
+   "installed_bits_per_tensor": "native_bits(selected rows) + 1 bit per row selector bitmap",
+   "prior_recovery": null,
+   "prior_bpw_cost": null,
+   "conditional": false,
+   "reopen_condition": null,
+   "transfers_to_dense": {
+    "verdict": "UNKNOWN",
+    "why": "untested anywhere; the row-selector correction from Gen1 warns that selection heuristics under-deliver vs random"
+   },
+   "transfers_to_other_moe": {
+    "verdict": "UNKNOWN",
+    "why": "untested"
+   },
+   "transfers_across_rate_regime": "cost is native_bits(selected rows) + 1 bit/row, so the treatment gets RELATIVELY more expensive as the base rate falls - re-auction at every rate",
+   "must_be_remeasured": [
+    "everything - untested",
+    "island selection vs a RANDOM-row control (mandatory after the Gen1 selector correction)"
+   ],
+   "architecture_bound": "architecture-neutral.",
+   "qwen_provenance": "untested on this parent at the S64 rates"
+  },
+  {
+   "id": "sparse_residual_doctor_gen1",
+   "rung": "E2",
+   "space": "parameter",
+   "treats": [
+    "quantization_reconstruction",
+    "direction_distortion"
+   ],
+   "qwen_status": "alive",
+   "installed_bits_per_tensor": "correction indices + amortized correction codebook + one bf16 scale per protected row + 1 bit per row protection bitmap",
+   "prior_recovery": 0.105,
+   "prior_bpw_cost": 0.0513,
+   "conditional": false,
+   "reopen_condition": null,
+   "transfers_to_dense": {
+    "verdict": "YES_WITH_REMEASURE",
+    "why": "the active ingredient is second-stage codebook capacity, which is codec-level not architecture-level"
+   },
+   "transfers_to_other_moe": {
+    "verdict": "YES_WITH_REMEASURE",
+    "why": "re-measure recovery-per-bit; on Qwen it was 10.5 pct symKL for 0.0513 BPW, which is decoration against a 77x gap"
+   },
+   "transfers_across_rate_regime": "measured at ONE rate only (0.948 -> 0.9998 BPW). Recovery per bit at 0.5 BPW is entirely unmeasured.",
+   "must_be_remeasured": [
+    "recovery per installed bit at the new rate",
+    "second-stage capacity vs selector, with a random-row control"
+   ],
+   "architecture_bound": "architecture-neutral.",
+   "qwen_provenance": "S1 FULL FORWARD, the only capability-fidelity Doctor measurement in the campaign: S64_structural -> S64_doctor at +0.0513 complete BPW moved symKL 8.599 -> 7.699 (10.5 pct), argmax 0.0735 -> 0.0922, cosine 0.434 -> 0.468, top5 0.080 -> 0.143. Paired, same six prompts, same direction on all four. MECHANISM CORRECTED by the S3C adversary: the ROW SELECTOR is not the mechanism. Gen1's 'worst RELATIVE residual energy' rows beat RANDOM row selection by only +1.8 and +0.9 pct, inside the seed spread, and random rows recover 96-99 pct of the entire gain. What earns the bytes is the SECOND CODEBOOK STAGE (added residual capacity), not where it is pointed. Do not transfer the selector as if it were the active ingredient."
+  },
+  {
+   "id": "low_rank_residual",
+   "rung": "E2",
+   "space": "parameter",
+   "treats": [
+    "quantization_reconstruction"
+   ],
+   "qwen_status": "dead",
+   "installed_bits_per_tensor": "rank * (rows + cols) * 16",
+   "prior_recovery": null,
+   "prior_bpw_cost": null,
+   "conditional": false,
+   "reopen_condition": "only when the residual is MEASURED low rank on the parent in question",
+   "transfers_to_dense": {
+    "verdict": "NO",
+    "why": "dead on measured evidence: quantization residual is high rank"
+   },
+   "transfers_to_other_moe": {
+    "verdict": "REOPEN_ONLY",
+    "why": "reopen only when the residual is MEASURED low rank"
+   },
+   "transfers_across_rate_regime": "dead at every measured rate; the 4.6 bpw cost is disqualifying below 1.0",
+   "must_be_remeasured": [
+    "residual spectrum - reopen only if MEASURED low rank"
+   ],
+   "architecture_bound": "architecture-neutral, dead on evidence not on architecture.",
+   "qwen_provenance": "docs/dead_levers.md: quantization error is HIGH rank; LoRA plateaus ~step 25 and rank-64 SVD healed TQ3 only 0.114 -> 0.104 while costing 4.6 bpw. Also data-free low-rank residual NO-GO (top-64 SVD captures 3-9 pct of energy)."
+  },
+  {
+   "id": "residual_additive_codebook",
+   "rung": "E3",
+   "space": "parameter",
+   "treats": [
+    "quantization_reconstruction",
+    "direction_distortion"
+   ],
+   "qwen_status": "alive",
+   "installed_bits_per_tensor": "extra RVQ stage: (n/dim) * ceil(log2 k) + amortized codebook",
+   "prior_recovery": 0.137,
+   "prior_bpw_cost": 0.319,
+   "conditional": false,
+   "reopen_condition": null,
+   "transfers_to_dense": {
+    "verdict": "YES",
+    "why": "extra RVQ stage is codec-level"
+   },
+   "transfers_to_other_moe": {
+    "verdict": "YES",
+    "why": "codec-level"
+   },
+   "transfers_across_rate_regime": "+0.319 bpw on one organ at one rate; the ratio must be re-measured whenever the base rung changes",
+   "must_be_remeasured": [
+    "bpw cost of the extra stage at the new dim/k",
+    "recovery in OUTPUT space"
+   ],
+   "architecture_bound": "architecture-neutral.",
+   "qwen_provenance": "Doctor Gen1 on real down_proj L46: rel_error 0.7038 -> 0.6074 for +0.319 bpw on that organ. Weight-space, not capability."
+  },
+  {
+   "id": "kronecker_repair",
+   "rung": "E3",
+   "space": "parameter",
+   "treats": [
+    "quantization_reconstruction"
+   ],
+   "qwen_status": "alive",
+   "installed_bits_per_tensor": "Kronecker factors A (m1 x n1) and B (m2 x n2) at rank r, bf16",
+   "prior_recovery": 0.866,
+   "prior_bpw_cost": -0.013,
+   "conditional": false,
+   "reopen_condition": "admitted per cell only when the Van Loan spectrum is concentrated AND it beats the incumbent at equal-or-fewer bits AND it wins in OUTPUT space",
+   "transfers_to_dense": {
+    "verdict": "PER_CELL_ONLY",
+    "why": "depends entirely on the cell's Van Loan spectrum; on Qwen it won at L0 (0.0301 vs 0.2252) and died by L2 (0.7567)"
+   },
+   "transfers_to_other_moe": {
+    "verdict": "PER_CELL_ONLY",
+    "why": "same per-cell admission test"
+   },
+   "transfers_across_rate_regime": "measured at 2.487 vs 2.500 BPW on L0 gate_proj - ABOVE the sub-1.0 band. Its negative byte cost at that rate does NOT imply a negative cost at 0.9 BPW.",
+   "must_be_remeasured": [
+    "Van Loan spectrum concentration per cell",
+    "output-space win vs incumbent",
+    "equal-or-fewer complete bits, exactly"
+   ],
+   "architecture_bound": "bound to weight matrices whose dimensions FACTOR usefully; admission is per-cell on the Van Loan spectrum, never global.",
+   "qwen_provenance": "Lane F adversarial: on L0 gate_proj Kronecker beats the incumbent codec 0.0301 vs 0.2252 rel_error at a CHEAPER complete rate (2.487061 vs 2.500735 BPW) - a negative byte cost. Dies with depth: L0 0.0301, L1 0.6611, L2 0.7567, L46 0.85+. ADMISSION IS PER-CELL, never global."
+  },
+  {
+   "id": "router_distill",
+   "rung": "E4",
+   "space": "routing",
+   "treats": [
+    "router_redistribution"
+   ],
+   "qwen_status": "negative",
+   "installed_bits_per_tensor": "per-survivor logit bias (K floats) or a low-rank router correction",
+   "prior_recovery": 0.0,
+   "prior_bpw_cost": 0.0,
+   "conditional": false,
+   "reopen_condition": "a parent where the survivor-restricted oracle gap is large AND a student generalizes to held-out ids",
+   "transfers_to_dense": {
+    "verdict": "N/A",
+    "why": "no router in a dense model"
+   },
+   "transfers_to_other_moe": {
+    "verdict": "REOPEN_ONLY",
+    "why": "reopen only if the survivor-restricted oracle gap is large AND a student generalizes to held-out ids; on Qwen the KL term was provably inert"
+   },
+   "transfers_across_rate_regime": "negative at keep-64; the oracle gap grows as K falls, so keep-32 is the only regime where the reopening condition could plausibly fire",
+   "must_be_remeasured": [
+    "survivor-restricted oracle gap on a DISJOINT corpus, scored over ALL holdout tokens (the 16-token head subset is what produced the withdrawn 57.3 pct figure)"
+   ],
+   "architecture_bound": "bound to MoE with a learned router.",
+   "qwen_provenance": "S2C: no trained student beat plain masking on held-out ids. Masked 0.0784; bias 0.0993, low-rank r8 0.1176, full survivor-row retune 0.0927 - all worse. The KL term is provably INERT: softmax restricted to survivors IS the teacher renormalized onto survivors, so KL = 0 exactly and any correction only raises it. TWO CORRECTIONS from the adversary: (a) the '57.3 pct reachable headroom' figure is WITHDRAWN - the oracle was scored on only the first 16 holdout tokens, which are a biased-easy head subset (retained routing mass 0.969 vs 0.939 for the rest), against a masked baseline measured over all 96; (b) the 'students overfit' diagnosis is unproven - the zero-free-parameter masked arm itself shows 0.0521 train vs 0.0784 holdout, so the split is not exchangeable and the train/holdout delta is not a clean generalization measurement. The NEGATIVE verdict stands: every arm was scored on the same holdout."
+  },
+  {
+   "id": "expert_merge",
+   "rung": "E4",
+   "space": "routing",
+   "treats": [
+    "routing_omission",
+    "expert_substitution"
+   ],
+   "qwen_status": "dead",
+   "installed_bits_per_tensor": "per-(layer, omitted expert) coefficient vector over survivors",
+   "prior_recovery": 0.0,
+   "prior_bpw_cost": null,
+   "conditional": false,
+   "reopen_condition": "a parent measuring best-single-survivor reconstruction error <= 0.5 held out",
+   "transfers_to_dense": {
+    "verdict": "N/A",
+    "why": "no experts in a dense model"
+   },
+   "transfers_to_other_moe": {
+    "verdict": "REOPEN_ONLY",
+    "why": "reopen only if best-single-survivor held-out rel err <= 0.5; Qwen measured 0.885/0.993/0.995"
+   },
+   "transfers_across_rate_regime": "dead at keep-64/keep-32 on Qwen; error is a property of expert orthogonality, not of rate",
+   "must_be_remeasured": [
+    "best-single-survivor held-out reconstruction error"
+   ],
+   "architecture_bound": "bound to MoE.",
+   "qwen_provenance": "Lane E, adversarially UPHELD: best single surviving expert reconstructs an omitted expert with median held-out rel error 0.885/0.993/0.995 at L0/L3/L7; a 4-survivor least-squares merge reaches 0.863/0.988/0.995. ~1.0 is the trivial zero predictor. The adversary's found contamination ran IN THE MERGE'S FAVOUR."
+  },
+  {
+   "id": "layerwise_qat",
+   "rung": "E5",
+   "space": "function",
+   "treats": [
+    "quantization_reconstruction",
+    "direction_distortion",
+    "activation_shift"
+   ],
+   "qwen_status": "untested",
+   "installed_bits_per_tensor": "0 - training moves the latent weights; the artifact schema and byte count are unchanged (asserted byte-identical)",
+   "prior_recovery": null,
+   "prior_bpw_cost": 0.0,
+   "conditional": false,
+   "reopen_condition": "score on a split whose held-out energy capture inside the fit span is below ~0.1 (at layer 0 that needs far more than 1400 calibration tokens, or scoring against the full corpus rather than each expert's own routed tokens), and vary the split seed so 'wins under every seed' actually varies the evaluation set",
+   "transfers_to_dense": {
+    "verdict": "UNKNOWN",
+    "why": "the mechanism is architecture-neutral; the SEALED NEGATIVE is about the evaluation split, so a dense re-test needs a proven-disjoint probe first"
+   },
+   "transfers_to_other_moe": {
+    "verdict": "REOPEN_ONLY",
+    "why": "reopen only on a probe with held-out capture <= 0.10"
+   },
+   "transfers_across_rate_regime": "zero installed bits at ANY rate - that property is rate-independent and is the one solid claim that survived the adversary",
+   "must_be_remeasured": [
+    "held-out energy capture inside the fit span (must be <= 0.10 and PROVEN)",
+    "unique-token count of the calibration corpus (Qwen's had 540 unique ids behind 1313 positions)",
+    "split seed variation"
+   ],
+   "architecture_bound": "architecture-neutral, but its evaluation is corpus-bound.",
+   "qwen_provenance": "S3A claimed 14.1/11.3/2.45 pct held-out output-error gains at layer 0 at byte-identical cost. The adversary REFUTED the 'held-out' label: the fraction of held-out activation energy lying inside the FIT split's row space is 1.000 / 0.991 / 0.424 / 1.000 at layer 0, and the per-expert gain is MONOTONE in that overlap (19.8 / 11.6 / 4.0 / 18.0 pct). That is fit-span descent, not generalization. The layer-0-wins / layer-46-loses contrast is CONFOUNDED: layer 46's proxy has overlap 0.007-0.023, i.e. a genuinely disjoint probe, so the contrast measures probe rank and not depth. The ZERO-BIT property is the one solid claim and survives: both arms serialize byte-identically."
+  },
+  {
+   "id": "structural_adaptive_k",
+   "rung": "E6",
+   "space": "structural",
+   "treats": [
+    "routing_omission",
+    "quantization_reconstruction"
+   ],
+   "qwen_status": "alive",
+   "installed_bits_per_tensor": "survivor bitmap (n_experts bits per layer) + the rate the freed budget buys on survivors",
+   "prior_recovery": 0.115,
+   "prior_bpw_cost": 0.0,
+   "conditional": false,
+   "reopen_condition": null,
+   "transfers_to_dense": {
+    "verdict": "N/A",
+    "why": "no experts to auction"
+   },
+   "transfers_to_other_moe": {
+    "verdict": "YES_MECHANISM_ONLY",
+    "why": "the byte auction transfers; the K values (48..96, mean 65.4) are Qwen-topology-bound and must be re-auctioned"
+   },
+   "transfers_across_rate_regime": "the auction IS a rate mechanism; it must be re-run for every ceiling",
+   "must_be_remeasured": [
+    "per-layer routing mass on >= 7448 calibration tokens",
+    "the auction itself",
+    "a forward measurement - the Qwen K distribution is PREDICTED, never forward-validated"
+   ],
+   "architecture_bound": "bound to MoE. Meaningless on a dense model - there are no experts to drop.",
+   "qwen_provenance": "qwen_adaptive_k exact byte auction: K spans 48..96 (mean 65.4) and 84 of 94 layers buy a richer down rung than uniform-64 gave them, at 0.996853694 complete BPW. Predicted mean layer error 0.46213 vs 0.521819 for uniform-64 under the identical predictor. PREDICTED, not yet forward-measured."
+  },
+  {
+   "id": "generated_tied_params",
+   "rung": "E7",
+   "space": "structural",
+   "treats": [
+    "quantization_reconstruction"
+   ],
+   "qwen_status": "dead",
+   "installed_bits_per_tensor": "template bank + per-expert delta codes",
+   "prior_recovery": 0.0,
+   "prior_bpw_cost": null,
+   "conditional": false,
+   "reopen_condition": "a parent measuring row-normalized mean off-diagonal expert cosine >= 0.10",
+   "transfers_to_dense": {
+    "verdict": "NO",
+    "why": "dead; and dense models have no expert bank to template"
+   },
+   "transfers_to_other_moe": {
+    "verdict": "REOPEN_ONLY",
+    "why": "reopen only if row-normalized mean off-diagonal expert cosine >= 0.10; Qwen measured 0.00168"
+   },
+   "transfers_across_rate_regime": "dead at every rate",
+   "must_be_remeasured": [
+    "row-normalized mean off-diagonal expert cosine"
+   ],
+   "architecture_bound": "bound to MoE (expert templates) plus a depth-homogeneous stack (cross-layer tying).",
+   "qwen_provenance": "Lane F: expert templates dead (raw and row-normalized off-diagonal cosine agree to 3 s.f., 0.00166 vs 0.00168 - experts are orthogonal in BOTH spaces); cross-layer same-index tying indistinguishable from a different-index control at 1e-7."
+  },
+  {
+   "id": "conditional_residual",
+   "rung": "E3",
+   "space": "dynamic",
+   "treats": [
+    "rare_token_collapse",
+    "domain_collapse",
+    "logit_ranking_collapse"
+   ],
+   "qwen_status": "untested",
+   "installed_bits_per_tensor": "a residual stage that fires on a trigger; INSTALLED bits are billed in full even though active bits per token are lower",
+   "prior_recovery": null,
+   "prior_bpw_cost": null,
+   "conditional": true,
+   "reopen_condition": null,
+   "transfers_to_dense": {
+    "verdict": "UNKNOWN",
+    "why": "untested"
+   },
+   "transfers_to_other_moe": {
+    "verdict": "UNKNOWN",
+    "why": "untested"
+   },
+   "transfers_across_rate_regime": "installed bits are billed in full at every rate, so it is strictly harder to afford as the ceiling tightens",
+   "must_be_remeasured": [
+    "trigger firing rate",
+    "installed vs active bits",
+    "whether the runtime can even execute a triggered stage"
+   ],
+   "architecture_bound": "architecture-neutral; runtime path must support a triggered stage.",
+   "qwen_provenance": "untested on this parent"
+  }
+ ],
+ "global_rules": [
+  "A treatment's Qwen prior_recovery is a PROXY number except for sparse_residual_doctor_gen1, which is the only one measured against a real forward.",
+  "Doctor gets no free bytes on any parent. Conditional treatments bill INSTALLED bits.",
+  "Any treatment carrying a selection heuristic must be re-measured against a RANDOM selection control - the Gen1 row selector failed exactly that test.",
+  "REOPEN_ONLY treatments are refused at proposal time. Measuring the reopening condition is cheap; running the treatment on hope is not."
+ ],
+ "honesty": [
+  "This matrix is a TRANSFER PLAN, not evidence. No treatment in it has been measured on any parent other than Qwen3-235B-A22B.",
+  "Every 'alive' status was earned in weight space or on an activation proxy except sparse_residual_doctor_gen1, and even that one recovered only 10.5 pct of a collapse that is 77x the gate."
+ ]
+}

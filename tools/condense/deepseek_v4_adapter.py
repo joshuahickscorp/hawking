@@ -135,6 +135,15 @@ def _block_organ(rest: str) -> str:
         return ORGAN_CONFIDENCE
     if rest.startswith("main_proj"):
         return ORGAN_MTP
+    # The MTP block's own projections: e_proj lifts the token embedding and h_proj lifts
+    # the previous hidden state before they are combined. Both ship a .scale, so they are
+    # quantized MTP infrastructure, not routed experts, and are billed at their real bytes.
+    if rest.split(".")[0] in ("e_proj", "h_proj"):
+        return ORGAN_MTP
+    # enorm/hnorm are the MTP block's two input norms, the same organ class as every other
+    # block norm.
+    if rest in ("enorm.weight", "hnorm.weight"):
+        return ORGAN_ATTN_NORM
     raise DeepSeekV4AdapterError(f"unrecognized block tensor suffix: {rest!r}")
 
 

@@ -1,0 +1,107 @@
+{
+  "bit_accounting": {
+    "base_complete_bits_derived": 235039512950,
+    "headroom_bits": 54121610,
+    "note_overcharge": "EXPERT_INDEX_BITS=7=ceil(log2 128) but only 64 survivors exist; 6 bits suffice.",
+    "per_row_complete_bpw": 1.0064787170645886,
+    "per_row_merge_bits": 1577226752,
+    "per_row_must_give_up_bits": 1523105142,
+    "scalar_complete_bpw": 0.9997721412657545,
+    "scalar_merge_bits": 553472,
+    "shared_headroom_double_count": {
+      "lane_a2_bits": 1573056,
+      "lane_e_bits": 553472,
+      "note": "both lanes charge against the same 54,121,610-bit headroom over the same sealed 0.999769787 base and each declares itself legal independently; jointly still legal (3.9 percent) but no lane nets the other out."
+    },
+    "status": "CORRECT, reproduced to the digit; conservative (over-charges the index field)",
+    "unspent_headroom_at_m64_scalar": {
+      "bits": 8855552,
+      "fraction_of_headroom": 0.16362321815629655,
+      "legal": true
+    }
+  },
+  "generated_at": "2026-07-20T21:45:25Z",
+  "independent_measurements": {
+    "calibration_retention_reproduced": {
+      "L0": 0.701828,
+      "L3": 0.73829,
+      "L7": 0.774752,
+      "matches_report": true
+    },
+    "layer_selection_bias": {
+      "note": "the three probed layers are the bottom quintile of survivor retention; the report discloses only that they are shallow.",
+      "per_layer_top8_retention_at_keep64": {
+        "max": 0.8373,
+        "mean": 0.7917,
+        "min": 0.7018
+      },
+      "percentile_of_probed_layers": {
+        "L0": 0.0,
+        "L3": 0.021,
+        "L7": 0.202
+      }
+    },
+    "moe_block_output_vs_residual_L0": {
+      "consequence": "the verdict's '~0.30 relative perturbation injected at a layer' is ~8x overstated in residual-stream terms.",
+      "est_moe_output_norm_over_residual_norm_median": 0.1295,
+      "expert_tensors_read": 3,
+      "implied_residual_relative_perturbation_at_0.274_block_rel_err": 0.036,
+      "method": "||y_moe|| estimated as ||f_top1|| * sqrt(sum_k w_k^2) over the true top-8 router weights, i.e. assumes comparable per-expert output norms across the top-8. Order-of-magnitude, L0 only, same probe sentence.",
+      "residual_norm_per_token": [
+        1.88,
+        2.01,
+        2.04,
+        1.73,
+        1.77,
+        1.95,
+        1.99,
+        2.0
+      ],
+      "tokens": 8,
+      "top1_expert": 57
+    }
+  },
+  "not_refuted": [
+    "No proxy laundering. Inputs are the real post-attention-layernorm residual from qwen_real_forward on the real 118-shard checkpoint; weights are real bf16; the claim scope is explicitly weight/activation space and no capability claim is made.",
+    "Bit accounting is exact and reproduces to the digit at both granularities; the complete artifact with the scalar merge is 0.9997721412657545 BPW, legal.",
+    "The scalar merge is genuinely affordable and genuinely does not work; the per-row merge is genuinely illegal by 1,523,105,142 bits (181.57 MiB).",
+    "The recommendation 'treat S64 as unadjudicated until a real parent-vs-packed forward with a task score' is correct and is unaffected by every refutation above."
+  ],
+  "recommended_correction": "Keep the merge-is-dead half; it survives every attack and the in-sample contamination only strengthens it. Fix three things before sealing: (1) drop the word 'held out' for any omitted expert with fewer than 2 routed tokens, or exclude those experts and report the median over experts with n>=2 separately - and rebuild y_c excluding leaked singletons before quoting moe_merge_rel_err_affected_heldout; (2) restate the S64 cost in residual-stream terms (~0.036 at L0, not ~0.30) or stop quoting a per-layer magnitude at all, and disclose that L0/L3/L7 are the bottom quintile of survivor retention; (3) before declaring the merge axis closed, run one m=64 scalar merge with correlation-selected predictors on a single layer - it costs 16.4 percent of the headroom the ledger already has and is the only setting the budget leaves free. Separately, rename qwen_structural_plan.rd_floor: it is the Gaussian upper bound, not a floor.",
+  "refutations": [
+    "FALSE HELD-OUT LABEL. 13/28, 16/26 and 11/27 omitted experts at L0/L3/L7 are routed to on exactly ONE probe token. `fit_hit = [p for p in hit if p%2==0] or hit` and `sc = [p for p in hit if p%2==1] or hit` both fall back to the full hit list, so for those experts the fit set and the score set are the SAME token. The headline medians (0.885/0.993/0.995 and 0.863/0.988/0.995) are in-sample for roughly half their entries and the median sits on them. Honesty caveat 6 as written is false. Direction favours the merge, so the scientific conclusion survives and is in fact strengthened.",
+    "ORACLE LEAK INTO THE BLOCK-LEVEL HELD-OUT NUMBER. A singleton omitted expert whose only hit is an odd token gets its coefficients fit on that token, and y_c is then scored on the same token. moe_merge_rel_err_affected_heldout (0.216/0.179/0.360) is therefore contaminated in the merge's favour. Same direction, same survival of the conclusion, but the number is not clean.",
+    "UNDISCLOSED ADVERSARIAL LAYER SELECTION. L0/L3/L7 sit at percentile 0.000/0.021/0.202 of the 94-layer keep-64 retention distribution (L0 is the single worst layer in the model). The report calls them only 'shallow'.",
+    "SEVERITY OVERCLAIM. 'A ~0.30 relative perturbation injected at a layer' conflates the MoE block output with the residual stream. Measured at L0 with 3 expert tensors: the block output is ~13 percent of the residual norm, so a 0.274 block-output relative error is a ~0.036 residual-relative perturbation. Compounding over 94 layers may still be fatal, but the stated magnitude is ~8x too large.",
+    "THE ONE KNOB THE LEDGER LEAVES FREE WAS NEVER TESTED. m was fixed at 4, spending 1.02 percent of headroom. m=64 (the entire survivor set) at scalar granularity costs 8,855,552 bits = 16.4 percent of headroom and is LEGAL. Predictors are also selected by router tally, not by correlation with the target: no greedy/OMP selection over the 64 survivors was run. 'There is no low-dimensional surviving-expert subspace that contains a cold expert's function' is asserted from a single non-optimally-chosen 4-dimensional subspace. Extrapolating the lane's own m=1 -> m=4 gain (L3: sum of squared correlations 0.0133 -> 0.0235) puts m=64 at roughly 0.95 rel error, so the verdict most likely survives - but it is untested where the budget permits.",
+    "SELF-CHECK DOES NOT COVER THE CLAIM. 7/7 mutations to the measurement path leave `--demo` green. The bit ledger and the synthetic solver are well covered (8/9); the empirical verdict has no runnable check.",
+    "PROBE IS EASIER THAN THE CORPUS AT TWO OF THREE LAYERS. probe_top8_retained 0.773/0.793 vs calibration 0.702/0.738 at L0/L3, i.e. the probe sentence routes MORE into survivors than the calibration corpus, biasing measured damage down at exactly the layers chosen for being worst. Not disclosed.",
+    "INHERITED BOUND ABUSE IN THE PREMISE. Lane E makes no Shannon claim of its own (clean), but it imports qwen_structural_plan, whose rd_floor() = sqrt(2^-2R) is the memoryless-Gaussian D(R) - an UPPER bound - still named and documented as a 'rate-distortion floor' and still emitted as gate_up_rd_floor_rel_error in every arm, after commit 356bf9ef corrected exactly this error elsewhere. The S64-vs-S32 case Lane E is adjudicating rests on that wording.",
+    "TIMING NARRATIVE INCONSISTENCY (observational). L0 completes in 1.7s, which implies on the order of 1 GB/s of expert-shard reads, while the depth_caveat justifies abandoning L46/L70 by a disk saturated at ~500 MB/s. Warm page cache on early shards explains it, but the report leans on saturation as the reason it has no mid-depth data."
+  ],
+  "schema": "hawking.gravity.lane_e.distill_gate.adversarial.v1",
+  "self_check": {
+    "bit_and_solver_mutations_caught": "8/9",
+    "blind_to": [
+      "delete the survivor -inf mask in probe_layer",
+      "KEEP 64 -> 128",
+      "collapse the held-out score rows onto the fit rows",
+      "drop the attention residual in expert_inputs",
+      "replace SwiGLU with a bare gate matmul",
+      "drop the RMSNorm in expert_inputs",
+      "score_rows = fit_rows"
+    ],
+    "conclusion": "demo() covers the bit ledger and a synthetic least-squares solver. Every number the verdict rests on is produced by code the self-check never executes.",
+    "measurement_path_mutations_caught": "0/7",
+    "uncaught_bit_mutation": "must_give_up_bits + 1 (only asserted > 0)"
+  },
+  "severity": "material",
+  "target": {
+    "file": "tools/condense/qwen_distill_gate.py",
+    "report": "reports/subbit_reset/LANE_E_DISTILL_GATE.json"
+  },
+  "verdict_upheld_partial": {
+    "merge_is_dead": true,
+    "s64_costs_0.30_per_layer": false
+  }
+}

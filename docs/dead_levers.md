@@ -468,3 +468,25 @@ Before opening a wedge, audit:
 - [[silicon-solutions-2026-05-29]] — the 16-solution silicon audit (2 LIVE→shipped, 11 dead); source of the Silicon-architecture kills section
 - [[sub4bit-quant-oracle-2026-05-29]], [[qtip-quality-oracle-2026-05-31]] — the weight-RMSE + QTIP proxy oracles behind the 2026-06-01 Colab verdicts
 - [[moat-status-forward-path-2026-05-31]] — post-sweep moat: prefix-cache + draft-tuning live; sub-Q4 byte-cut routes through QTIP only (now leaning NO-GO)
+
+---
+
+## 🪦 Sub-bit weight-space compression of a large MoE expert path (GLM-5.2, Generation B)
+
+**Status:** NO-GO on this parent — measured 2026-07-23 across four representation families at a matched rate, replicated on two windows, with an above-ceiling oracle locating the recovery point.
+
+**Type:** Type-1 on GLM-5.2. A measured property of the parent, not of one codec: four families making different structural assumptions land within 0.116 and 0.157 block output cosine at 0.75 complete BPW.
+
+**Evidence:** `reports/condense/glm52_generation_b/GLM52_GENERATION_B_PILOT_RESULTS.json`, `GLM52_GENERATION_B_ALLOCATION_PROBE.json`, `GLM52_PILOT_MEASUREMENTS.jsonl`. Block output on window L38, **centered** cosine against sealed teacher capsules, with the constant-mean null at 0.898: 0.006 at 0.3306 BPW, 0.020 at 0.4990, 0.022 at 0.7531, 0.067 at 0.8931, and 0.317 at 2.0169 (above the one-bit law, diagnostic only). **Not one rung beats the null**, including at twice the ceiling. Replicated on L74. The dense path is NOT bound: layer 0 reaches centered 0.557, two orders of magnitude above any sparse window at a comparable rate, so the failure is specific to the routed experts, which are 97.492 percent of the weight.
+
+**Metric correction, recorded because the first sealing got it wrong:** raw-activation cosine is not a fidelity metric on a residual stream. These tensors carry a large shared direction across every token, so predicting the per-feature mean scores 0.898 on block output while knowing nothing about any token. The first version of this entry reported raw cosines of 0.041 to 0.700 as partial fidelity and claimed a recovery point at 2.0169 BPW. Both were wrong: every one of those numbers is BELOW the null. All artifacts were remeasured from disk and the verdict now gates on beating the null before any floor applies.
+
+**Levers checked and closed:** (1) rate, by the curve above; (2) asymmetric BIT allocation, by arithmetic — spending zero on every other role raises the expert path only to 1.0186 BPW, and moving everything else from half a bit to zero changes the expert budget by 1.2 percent; (3) asymmetric REPRESENTATION allocation, by measurement — a hybrid giving attention to PQ and experts to low rank keeps both advantages and buys 1.8 percent of block output; (4) a shared basis across the layer's 256 experts, which spends four times the rank of per-tensor low rank and holds the expert path less than half as well (0.0348 vs 0.0811), so the experts do not share a low-dimensional subspace.
+
+**Relationship to the existing kills:** this independently reproduces the low-rank codec kill (L1.4, 2026-05-30) on a 753B MoE parent rather than a 3B dense one. The activation-weighted reframe was **not** run: it is a recorded Type-1 kill (2026-05-31) and re-opening it is forbidden.
+
+**Resurrection check:** only for a representation that is not a closed-form function of the weights. Do not rebuild any weight-space codec for a large MoE expert path under one bit without new evidence about the parent, not about the codec.
+
+**The escape that RAN and worked:** a dense student fitted against the block's OUTPUT, replacing routing entirely, reaches centered 0.724 on a disjoint corpus partition at **0.0104 BPW** and beats the null, where weight-space at 0.7531 reaches 0.000 and does not (`GLM52_MOE_STUDENT_RESULT.json`). Controls: shuffled inputs fall below the null, the identity scores 0.078, and a full linear map reaches 0.733, so the honest claim is that a cheap dense map predicts this MoE's output rather than that random features are clever. Not a capability result: one stage, one layer, 4096 held-out positions, residual 0.28 unexamined. This is NOT the activation-weighted SVD kill, which was not run: it replaces the architecture instead of reweighting a decomposition of the same matrices.
+
+**Killing memory:** [[glm52-pq-expert-function-bound-2026-07-23]].

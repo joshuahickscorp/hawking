@@ -1,0 +1,67 @@
+{
+  "schema": "hawking.runtime_ascension_audit.v1",
+  "sealed_at": "2026-07-23T23:30:00Z",
+  "purpose": "audit the runtime claims against the actual production boundary, and state plainly what is proven versus what a complete servable model still needs",
+  "production_boundary": ".gravity -> reviewed adapter -> complete attention/state -> complete functional/compact block -> complete token -> sampling",
+  "the_distinction_this_audit_enforces": "an integration proof where ONE substituted functional layer reaches a token is NOT proof that a complete Hawking model is runnable. The two are separated below.",
+  "what_is_proven": {
+    "gravity_artifact_verified": {
+      "status": "PROVEN",
+      "evidence": "gravity_format.verify + gravity_functional_codec.verify: body sha256, per-tensor hashes, rate self-consistency, all-organs-deterministic",
+      "artifact": "reports/condense/glm52_generation_b/GLM52_FUNCTIONAL_RUNTIME_RESULT.json"
+    },
+    "reviewed_adapter": {
+      "status": "PARTIAL",
+      "detail": "gravity_execution_adapter exists and is AST-admissible; PRODUCTION_EXECUTION_ADAPTER_REGISTRY is empty by contract (GLM functional is FUNCTIONAL_PARTIAL_ONLY and must not be served). No production adapter is registered because no parent has earned it."
+    },
+    "single_functional_layer_to_token": {
+      "status": "PROVEN_FOR_ONE_LAYER_ONLY",
+      "evidence": "GLM52_FUNCTIONAL_RUNTIME_RESULT.json: .gravity shard -> header verify -> payload read -> CPU authority on real captured states -> Metal parity -> MoE substituted in ONE real GLM block -> residual into layer 39 -> greedy token",
+      "explicit_caveat": "this substitutes the functional MoE in a single layer inside an otherwise teacher forward; it is not a complete compact model forward"
+    },
+    "cpu_metal_parity": {
+      "status": "PROVEN",
+      "evidence": "three Metal grammars parity-gated against the CPU authority, worst case 2.0e-4; FRT-B 7.9e-7"
+    },
+    "measured_bandwidth": {"status": "PROVEN", "value_gb_s": 417.7,
+      "provenance": "measured through the runtime's own kernel at occupancy where occupancy stops binding, not a spec figure"},
+    "active_bytes_per_token": {"status": "PROVEN", "functional_FRT_B_per_layer": 12582912,
+      "all_moe_layers": 956301312, "vs_teacher": "48x less than eight BF16 experts"},
+    "command_buffers_per_token": {"status": "PROVEN", "before": 76, "after": 1,
+      "evidence": "GLM52_FUNCTIONAL_SUBMISSION_COLLAPSE.json"},
+    "flop_byte_verdict": {"status": "PROVEN", "class": "FEWER_FLOPS_AND_BYTES",
+      "evidence": "GLM52_FUNCTIONAL_FLOP_BYTE_JOULE.json"},
+    "energy": {"status": "UNAVAILABLE", "reason": "no accepted on-device energy source wired; no joules inferred from FLOPs or bytes, per contract"}
+  },
+  "what_a_complete_servable_model_still_needs": {
+    "complete_compact_block": {
+      "status": "NOT_PROVEN",
+      "gap": "the GLM integration substitutes only the MoE; a complete block also needs the attention/state path served from .gravity, and GLM is closed FUNCTIONAL_PARTIAL_ONLY so it is not the vehicle. DeepSeek now has a validated streamed forward but no compact representation admitted."
+    },
+    "complete_token_full_model": {
+      "status": "NOT_PROVEN",
+      "gap": "no complete compact model runs all its own layers end to end; the token evidence is one-substituted-layer inside a teacher forward"
+    },
+    "true_batch_1_tps_servable": {
+      "status": "NOT_MEASURED",
+      "gap": "true TPS requires a complete servable model. The measured 6.3->7.1 MoE-path TPS and the 5.1->49.5 bandwidth-bound ceiling are the MoE organ in isolation on GLM geometry, explicitly not a whole-model rate",
+      "moe_path_tps": {"per_layer_submission": 6.3, "single_command_buffer": 7.1},
+      "bandwidth_bound_ceiling_tps": {"teacher_bf16": 5.1, "functional_int4_protected": 49.5}
+    },
+    "prefill": {"status": "NOT_MEASURED", "gap": "needs a complete servable model; not built for a closed parent"},
+    "cold_and_warm_artifact_loading": {
+      "status": "PARTIAL",
+      "measured": "FRT-A one-time upload ~17.5 ms per layer readout+projection; FRT-B procedural has no persistent feature-map upload; FRT-D ~11.6 ms",
+      "gap": "whole-model cold load (all shards, all organs) not timed for a complete compact model"
+    }
+  },
+  "retired_permanently": {
+    "claim": "35.9x",
+    "status": "RETIRED",
+    "valid_mechanisms_only": ["lookup-linear execution", "2D split execution",
+      "native packed execution", "functional organ replacement", "submission collapse",
+      "GPU-resident execution graphs"]
+  },
+  "honest_summary": "the runtime FOUNDATION is proven: a verified .gravity artifact, a deterministic CPU authority, parity-gated Metal grammars, measured bandwidth, active-byte and command-buffer accounting, a FEWER_FLOPS_AND_BYTES verdict, and honest UNAVAILABLE energy. A complete servable Hawking model is NOT proven: the end-to-end token evidence is one substituted functional layer inside a teacher forward, and true whole-model TPS and prefill wait on a compact representation of a parent that survives the contraction-first pilot.",
+  "endpoint_scope": "this audit supports HAWKING_CORE_ASCENDED scoped to the runtime FOUNDATION, and explicitly does NOT claim a runnable complete compact model"
+}

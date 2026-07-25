@@ -1,0 +1,31 @@
+{
+  "capsules_retained": 47,
+  "deleted_exists_after": false,
+  "deleted_path": "/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/source",
+  "free_after_bytes": 534472249344,
+  "free_after_gib": 497.8,
+  "free_before_bytes": 129077268480,
+  "free_delta_gb": 405.4,
+  "preserved_and_untouched": [
+    "teacher capsules",
+    "compact fixtures",
+    "metric contract",
+    "correction ledger",
+    "functional payloads",
+    "parity fixtures",
+    "amplification evidence",
+    "transfer packet",
+    "repository",
+    "MOP"
+  ],
+  "readiness_seal": "f1c8e3b7ca05902a6a1ba2ba7c6339091015f321786499306b7178ca243cb8fd",
+  "reclaimed_bytes_measured": 405394043843,
+  "reclaimed_gb": 405.4,
+  "reclaimed_gib": 377.6,
+  "rehydration_receipt": "/Users/scammermike/Downloads/hawking/GLM52_REHYDRATION_RECEIPT.json",
+  "released_at": "2026-07-23T19:16:42Z",
+  "rollback": "re-fetch zai-org/GLM-5.2 @ b4734de4facf877f85769a911abafc5283eab3d9 and verify against the rehydration receipt",
+  "schema": "hawking.glm52.source_release_receipt.v1",
+  "seal_sha256": "e90b600681dd16bf15e36b10f3ff8ff002b0ece0435c8f0eef61455538017e27",
+  "shards_deleted": 76
+}

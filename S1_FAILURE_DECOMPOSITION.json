@@ -1,0 +1,66 @@
+{
+  "aggregates": {
+    "D1_route_only": {
+      "complete_bpw": 16.0,
+      "mean_argmax_agreement": 0.385,
+      "mean_logit_cosine": 0.54231,
+      "mean_sym_kl": 4.29693,
+      "mean_top5_overlap": 0.35262,
+      "n": 6
+    },
+    "D2_recon_only": {
+      "complete_bpw": 1.856994233,
+      "mean_argmax_agreement": 0.08632,
+      "mean_logit_cosine": 0.50536,
+      "mean_sym_kl": 7.87867,
+      "mean_top5_overlap": 0.10058,
+      "n": 6
+    },
+    "S64_doctor": {
+      "complete_bpw": 0.999769787,
+      "mean_argmax_agreement": 0.09215,
+      "mean_logit_cosine": 0.46818,
+      "mean_sym_kl": 7.6989,
+      "mean_top5_overlap": 0.1429,
+      "n": 6
+    },
+    "S64_structural": {
+      "complete_bpw": 0.948410027,
+      "mean_argmax_agreement": 0.07348,
+      "mean_logit_cosine": 0.43373,
+      "mean_sym_kl": 8.59917,
+      "mean_top5_overlap": 0.07952,
+      "n": 6
+    }
+  },
+  "attribution": {
+    "S64_total_sym_kl": 8.59917,
+    "interpretation": "Reconstruction alone reproduces 91.6 pct of the total S64 symKL loss; routing alone reproduces 50.0 pct. The argmax split is starker and is the load-bearing evidence: with PERFECT experts and only the router masked the model still agrees with the parent on 38.5 pct of next tokens, while with PERFECT routing and packed experts it agrees on 8.6 pct - statistically indistinguishable from the 7.4 pct of the full S64 artifact. Coding the survivors at 2.5/0.625 index bpw destroys almost everything on its own. The parts sum to 12.18 against a total of 8.60, i.e. SUB-additive: the causes saturate rather than stack, which is what you expect once one of them has already flattened the output distribution.",
+    "reconstruction_only_sym_kl": 7.87867,
+    "reconstruction_share_of_total": 0.9162,
+    "routing_only_sym_kl": 4.29693,
+    "routing_share_of_total": 0.4997,
+    "sum_of_parts": 12.1756,
+    "superadditive": false
+  },
+  "classification": "RECONSTRUCTION_BOUND",
+  "consequence": {
+    "decision_tree_branch": "RECONSTRUCTION_BOUND -> prioritise fewer better-preserved experts, gamma-aware transforms, high-dimensional VQ, Kronecker on predicted layers, learned Doctor; then layerwise QAT",
+    "inverts_prior_recommendation": "The Lane E agent recommended 'do NOT go to S32 on the strength of the merge idea'. That recommendation was made before this decomposition existed and is now superseded on its own terms: if reconstruction is the binding cause, trading MORE routing loss for BETTER reconstruction is the correct direction. The merge idea remains dead - S32 is admitted because reconstruction dominates, not because merging works.",
+    "next_admitted_experiment": "S32_recon_first, LAUNCHED: keep 32 survivors, gate/up 5.0 index bpw (RD floor 0.0312 vs 0.1768 at S64), down 1.25. Complete 0.947079561 BPW, legal. Known cost: keep-32 retains only 52.3 pct of top-8 routing decisions (worst layer 41.5) vs 79.2 pct at keep-64 on the 1313-token disjoint calibration."
+  },
+  "design": {
+    "D1_route_only": "every expert served at SOURCE bf16 (perfect reconstruction), router masked to the SAME 64-expert survivor set S64_structural uses. Isolates routing loss.",
+    "D2_recon_only": "full 128-expert router UNMASKED (zero routing mass lost), every expert packed at the exact rates S64_structural gives its survivors. Isolates reconstruction.",
+    "both": "S64_structural itself.",
+    "fencing": "D1 (16 BPW) and D2 (1.857 BPW) are diagnostic_only, capability_pass forced False, verdict CAUSAL_CONTROL_not_a_candidate, promotable false. Neither is an artifact."
+  },
+  "generated_at_utc": "2026-07-21T00:42:12Z",
+  "honesty": [
+    "D1 and D2 are diagnostic controls above the one-bit ceiling and may never be promoted",
+    "D1 at symKL 4.297 is still a catastrophic collapse against the 0.10 gate: routing loss alone would not pass either, it is simply the smaller of the two causes",
+    "no capability pass exists at any rate in this campaign"
+  ],
+  "parent": "qwen3-235b-a22b-instruct-2507",
+  "schema": "hawking.qwen.s1_failure_decomposition.v1"
+}

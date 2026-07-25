@@ -1,0 +1,121 @@
+{
+  "blockers": [
+    "no live controller process",
+    "launchd job is not loaded"
+  ],
+  "compact": {
+    "bytes": 0,
+    "format": ".gravity",
+    "mean_whole_shard_bpw": 0.882795,
+    "root": "/Users/scammermike/Desktop/GLM52-Gravity-SubBit",
+    "shards": 0
+  },
+  "controller": {
+    "caffeinate_active": false,
+    "environment": {},
+    "eviction_paused": null,
+    "heartbeat_age_seconds": 30420.4,
+    "launchd_label": "com.hawking.glm52.source-fetch",
+    "launchd_loaded": false,
+    "lease_held": false,
+    "lease_path": "/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/source_fetch/fetch.lock",
+    "pgid": null,
+    "pids": []
+  },
+  "current_experiment": "source traversal W011 with teacher capture armed",
+  "endpoint": "NOT_SAFE_TO_LEAVE",
+  "eviction": {
+    "events": 29,
+    "gate": "VERIFIED + PROBED + PACKED + TEACHER_CAPTURED + NOT_CARRIED_FORWARD",
+    "last_eviction_at": "2026-07-23T04:24:18Z",
+    "last_eviction_basis": "VERIFIED_PROBED_PACKED_TEACHER_CAPTURED",
+    "last_eviction_shards": [
+      "model-00083-of-00282.safetensors",
+      "model-00084-of-00282.safetensors",
+      "model-00085-of-00282.safetensors",
+      "model-00086-of-00282.safetensors",
+      "model-00087-of-00282.safetensors",
+      "model-00088-of-00282.safetensors",
+      "model-00089-of-00282.safetensors",
+      "model-00090-of-00282.safetensors",
+      "model-00091-of-00282.safetensors",
+      "model-00092-of-00282.safetensors",
+      "model-00093-of-00282.safetensors",
+      "model-00094-of-00282.safetensors",
+      "model-00095-of-00282.safetensors",
+      "model-00096-of-00282.safetensors"
+    ],
+    "paused": null
+  },
+  "faults_total": 5,
+  "host": {
+    "disk_above_floor": true,
+    "disk_floor_bytes": 75000000000,
+    "free_disk_bytes": 397319733248,
+    "physical_memory_bytes": 103079215104,
+    "swap_raw": "total = 3072.00M  used = 1701.69M  free = 1370.31M  (encrypted)",
+    "swap_used_bytes": 1784351294,
+    "thermal_green": true
+  },
+  "last_fault": {
+    "at": "2026-07-23T04:50:15Z",
+    "error": "RuntimeError: MPS backend out of memory (MPS allocated: 123.92 GB, other allocations: 4.60 GB, max allowed: 132.19 GB). Tried to allocate 56.72 GB on private pool. Use PYTORCH_MPS_HIGH_WATERMARK_RATIO=0.0 to disable upper limit for memory allocations (may cause system failure).",
+    "shard": "model-00001-of-00282.safetensors",
+    "status": "PACK_ERROR"
+  },
+  "next_experiment": "BASELINE_A block-level trajectory verdict (REACHABLE / REPAIRABLE / DEAD / INVALID)",
+  "schema": "hawking.glm52.safe_to_leave.v1",
+  "source": {
+    "current_window": "W011",
+    "fraction_verified": 0.5338,
+    "resident_bytes": 193297423136,
+    "resident_shards": 37,
+    "shards_packed": 136,
+    "shards_probed": 147,
+    "shards_verified": 151,
+    "state": "RUNNING",
+    "total_source_shards": 282
+  },
+  "teacher": {
+    "capsule_bytes_total": 49639808,
+    "capsule_count": 10,
+    "captured_layers": [
+      0,
+      2,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40
+    ],
+    "latest_capsule_seal": "2026-07-23T04:50:21.713835Z",
+    "ledger_path": "/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/source_fetch/teacher/GLM52_TEACHER_EVIDENCE_LEDGER.jsonl",
+    "ledger_rows": 16,
+    "policy_sealed": true,
+    "uncaptured_resident_layers": [
+      41
+    ]
+  },
+  "telegram": "OPTIONAL_NOT_CONFIGURED",
+  "updated_at": "2026-07-23T13:19:13Z"
+}

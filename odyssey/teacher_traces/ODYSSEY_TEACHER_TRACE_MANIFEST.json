@@ -1,0 +1,15 @@
+{
+ "existing": {
+  "glm52_teacher_capsules": {
+   "ledger": "/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/source_fetch/teacher/GLM52_TEACHER_EVIDENCE_LEDGER.jsonl",
+   "note": "captured during the flagship traversal; layer-scoped, not trajectory-scoped. Usable for T2, not sufficient for T3."
+  }
+ },
+ "gate": "T3 traces require the flagship source, which is released after M18",
+ "required_for": {
+  "T2": "layer-scoped teacher capsules",
+  "T3": "full trajectory traces from the parent"
+ },
+ "schema": "hawking.odyssey.teacher_traces.v1",
+ "status": "PARTIAL"
+}

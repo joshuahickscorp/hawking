@@ -2,10 +2,10 @@
   "authoritative_hawking_repo": "/Users/scammermike/Downloads/hawking",
   "data_volume": "/System/Volumes/Data",
   "expected_dev": 16777233,
-  "free_bytes": 124183527424,
-  "generated_at": "2026-07-21T02:46:28Z",
+  "free_bytes": 450142543872,
+  "generated_at": "2026-07-21T03:42:55Z",
   "home": "/Users/scammermike",
-  "mop_bytes": 23358013440,
+  "mop_bytes": 23358550016,
   "mop_resolved_ok": true,
   "mop_root": "/Users/scammermike/Downloads/mop",
   "protected": [

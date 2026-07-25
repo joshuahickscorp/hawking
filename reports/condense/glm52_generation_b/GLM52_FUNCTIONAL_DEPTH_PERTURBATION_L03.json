@@ -1,0 +1,50 @@
+{
+  "contractive": false,
+  "experiment": "perturbation_through_teacher_layers",
+  "geometric_mean_amplification": 1.0797969683482311,
+  "injected_at": 3,
+  "per_layer_amplification": [
+    1.0919411801891237,
+    1.0677878204502615
+  ],
+  "projected_over_75_sparse_layers": 316.7070897085074,
+  "question": "how does the block stack treat an error it did not create",
+  "relative_l2_after": 0.031812988221645355,
+  "relative_l2_at_injection": 0.027284767478704453,
+  "seconds": 47.5,
+  "steps": [
+    {
+      "layer": 4,
+      "mean_topk_overlap_of_8": 7.913818359375,
+      "relative_l2_by_stage": {
+        "attention_output": 0.03002365306019783,
+        "post_moe": 0.05946434289216995,
+        "pre_router_hidden": 0.026522882282733917
+      },
+      "relative_l2_entering": 0.027284767478704453,
+      "relative_l2_leaving": 0.029793361201882362,
+      "step_amplification": 1.0919411801891237,
+      "student_substituted_here": false,
+      "top1_agreement": 0.991943359375
+    },
+    {
+      "layer": 5,
+      "mean_topk_overlap_of_8": 7.832275390625,
+      "relative_l2_by_stage": {
+        "attention_output": 0.02415858581662178,
+        "post_moe": 0.07238349318504333,
+        "pre_router_hidden": 0.028340114280581474
+      },
+      "relative_l2_entering": 0.029793361201882362,
+      "relative_l2_leaving": 0.031812988221645355,
+      "step_amplification": 1.0677878204502615,
+      "student_substituted_here": false,
+      "top1_agreement": 0.994140625
+    }
+  ],
+  "teacher_layers_traversed": [
+    4,
+    5
+  ],
+  "total_amplification": 1.165961492854031
+}

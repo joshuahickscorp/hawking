@@ -1,0 +1,16 @@
+{
+ "base_scoreboard": "HAWKING_GRAVITY_BASE_TPS.json",
+ "oracles": [
+  "tools/condense/gravity_llama_reference.py",
+  "tools/condense/glm52_reference.py"
+ ],
+ "runtime": {
+  "abi": "hawking.gravity.container.v1",
+  "adapters": [
+   "llama",
+   "glm_moe_dsa"
+  ],
+  "decoder": "hawking-core .gravity"
+ },
+ "schema": "hawking.odyssey.instruments.v1"
+}

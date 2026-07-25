@@ -1,0 +1,17 @@
+{
+ "admits": [
+  "admissibility",
+  "novelty"
+ ],
+ "law": "the system that produces a claim is never the system that admits it",
+ "note": "the system never certifies its own novelty",
+ "prior_art_protocol": [
+  "pre-register the branch question",
+  "execute a structured query ladder",
+  "exhaust Mathlib search",
+  "write an explicit boundary statement",
+  "require a human expert gate"
+ ],
+ "requires_human_expert_gate": true,
+ "schema": "hawking.odyssey.tribunal.v1"
+}

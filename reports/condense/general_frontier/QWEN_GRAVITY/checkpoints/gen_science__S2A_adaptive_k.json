@@ -1,0 +1,53 @@
+{
+  "bpw": {
+    "K_histogram": {
+      "112": 0,
+      "128": 0,
+      "32": 0,
+      "48": 7,
+      "64": 77,
+      "80": 5,
+      "96": 5
+    },
+    "complete_bpw_exact": "915445149/918334510",
+    "complete_bytes": 29294244768,
+    "legal_under_one_bit_ceiling": true,
+    "organ_bpw": {},
+    "predicted_mean_layer_error": 0.46213,
+    "rung_histogram": {
+      "g1.25_d0.625": 10,
+      "g2.5_d1.25": 84
+    },
+    "scope": "complete artifact, per-layer adaptive inventory",
+    "whole_model_bpw": 0.996853694
+  },
+  "capability_pass": false,
+  "divergence_vs_parent": {
+    "mean_logit_cosine": 0.36473,
+    "mean_sym_kl": 10.00632,
+    "mean_top5_overlap": 0.0667,
+    "next_token_argmax_agreement": 0.0
+  },
+  "domain": "general",
+  "honesty": "REAL parent-vs-packed Qwen3-MoE forward with expert_hook substitution; BPW is whole-model from the exact byte ledger, never expert-only; weight-space error is NOT a pass criterion",
+  "kind": "packed",
+  "ladder_sha": "931d74198c9b6bfd",
+  "logits_finite": true,
+  "n_tokens": 9,
+  "note": "GENERATION S2A. Per-layer expert inventory K_l and per-layer organ rungs chosen by an EXACT global byte auction (qwen_adaptive_k), not a hard-coded 64. The auction minimises sum_l [(1 - C_l(K)) * MISS_COST + C_l(K) * recon_err(rate)] subject to the complete <= 1/1 ceiling, solved as a separable knapsack by Lagrangian bisection - exact, not greedy. MISS_COST = 1.0 is a MEASUREMENT, not a guess: Lane E showed an omitted expert is not reconstructible from survivors (best single survivor median held-out relative error 0.885-0.995, i.e. the trivial zero predictor). Result: K spans 48..96 with mean 65.4 (7 layers at 48, 77 at 64, 5 at 80, 5 at 96), and 84 of 94 layers buy a RICHER down rung (1.25) than S1 used (0.625), funded by cheaper rungs on the remaining 10. Complete 0.996853694 BPW (exact 915445149/918334510), legal. Predicted mean layer error 0.46213 vs 0.521819 for uniform-64 under the identical predictor and ledger. That predictor orders candidates; it does not select. Only this forward does.",
+  "prompt_id": "gen_science",
+  "quality": {
+    "n_positions": 8,
+    "nll": 8.86191,
+    "perplexity": 7057.9362
+  },
+  "row_id": "gen_science__S2A_adaptive_k",
+  "sealed_at": "2026-07-21T02:00:27Z",
+  "sha256": "cad939d8b055e25f0af3a93322d4ba892901ef5321475dd1434b563b6ca4b808",
+  "spec": {
+    "adaptive_program": "QWEN235B_ADAPTIVE_EXPERT_PROGRAM.json",
+    "kind": "packed"
+  },
+  "variant": "S2A_adaptive_k",
+  "verdict": "collapse"
+}

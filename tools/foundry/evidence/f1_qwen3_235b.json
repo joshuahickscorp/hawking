@@ -1,0 +1,924 @@
+{
+ "activation": {
+  "inter_expert_mean_pairwise_cosine": 0.0001,
+  "verdict": "carried from F0; not contradicted at F1"
+ },
+ "assumptions": [
+  {
+   "evidence": "dominant_failure_organ=gate; down_only 0.20 vs gate_up 0.92 rel_err; the inversion was spent correctly at A1_1p0",
+   "id": "organ_inversion",
+   "statement": "mlp1/gate+up is the sensitive organ",
+   "verdict": "CONFIRMED"
+  },
+  {
+   "evidence": "0 evictions at 64GiB, RAM 70 to 18 GB, swap free 906MB; correct cap is 20 GB",
+   "id": "cache_policy_64gb",
+   "statement": "a large expert cache accelerates a single lockstep pass",
+   "verdict": "FALSIFIED"
+  },
+  {
+   "evidence": "parent ppl 1.61 to 39.33 across six domains on the same harness that produced the collapses",
+   "id": "parent_control_health",
+   "statement": "the bf16 control is healthy enough to trust a negative",
+   "verdict": "CONFIRMED"
+  },
+  {
+   "evidence": "120B collapsed at 0.80 to 0.89 per-expert; 235B collapsed at a stricter COMPLETE 1.0075 and 0.4930",
+   "id": "capability_cliff_scale_dependence",
+   "statement": "the capability cliff moves with parent scale",
+   "verdict": "FALSIFIED"
+  },
+  {
+   "evidence": "12/12 packed rows, argmax agreement exactly 0.0, symKL 7.61 to 13.47",
+   "id": "raw_weight_vq_reaches_one_bit",
+   "statement": "raw-weight PQ/VQ preserves capability at ~1 bit",
+   "verdict": "FALSIFIED"
+  },
+  {
+   "evidence": "A1_1p0 applied the inversion and still collapsed 6/6",
+   "id": "organ_inversion_is_sufficient",
+   "statement": "correct organ allocation rescues a sub-bit artifact",
+   "verdict": "FALSIFIED"
+  },
+  {
+   "evidence": "F0 and F1 were both searched entirely below their cliffs; no parent has ever had a passing rate established",
+   "id": "positive_control_ever_established",
+   "statement": "some rate on some parent passed the capability gate",
+   "verdict": "FALSIFIED"
+  },
+  {
+   "evidence": "NOT established and NOT claimed. F1 falsifies one representation family. QAT, distillation, compressibility training, structured pruning and learned sharing change the source and are not bound by the rate-distortion limit of the original weights. All are untested.",
+   "id": "subbit_unreachable_in_principle",
+   "statement": "no Hawking method can preserve capability at or below 1 bit",
+   "verdict": "OPEN"
+  },
+  {
+   "evidence": "R5_rownorm_strat was never reached at F1",
+   "id": "row_norm_stratification",
+   "statement": "row-norm stratification recovers the collapsed gate/up rows",
+   "verdict": "OPEN"
+  },
+  {
+   "evidence": "R3_routing_aware was never reached at F1; routing_partition_source is null",
+   "id": "routing_aware_allocation",
+   "statement": "coldest-quartile harshening buys rate at fixed capability",
+   "verdict": "OPEN"
+  }
+ ],
+ "boundary": "Two complete byte plans, one at 1.0075 BPW and one at 0.4930 BPW, both collapsed 6/6 on a real parent-vs-packed forward with a healthy control. No frontier selected. The falsified object is the raw-weight PQ/VQ representation family at approximately one bit, not sub-bit itself.",
+ "capability_cliff": {
+  "f0_gpt_oss_120b_per_expert_whole_bpw_collapsed_at": [
+   0.80508,
+   0.88845
+  ],
+  "f0_variants": {
+   "D2_tensor_pq": 0.80508,
+   "D4_pq_doctor": 0.88845,
+   "D6_global_alloc": 0.82885
+  },
+  "f1_qwen3_235b_complete_bpw_collapsed_at": [
+   0.493025699,
+   1.007471652
+  ],
+  "moved_with_scale": false,
+  "note": "the cliff did not move with scale. A ~2x parameter count bought nothing: 235B collapsed at a COMPLETE 1.0075 BPW, which is a stricter accounting than the F0 per-expert 0.80 to 0.89 band. Scale is not a rate argument."
+ },
+ "doctor": {
+  "failures": [
+   {
+    "detail": "NOT RUN at F1. No Doctor pass was executed at capability fidelity on Qwen3-235B. Recorded as an untried intervention, not as a failure of Doctor.",
+    "target": "f1_same_budget_doctor"
+   },
+   {
+    "detail": "F0 only: D4_pq_doctor, residual_codebook at 0.15 bpw reserve, per-expert whole 0.88845, collapsed on a real forward (argmax 0.0 to 0.3636).",
+    "target": "f0_residual_codebook_doctor"
+   }
+  ],
+  "honest_note": "same-budget Doctor at capability fidelity was NOT yet run for F1. The F1 collapse therefore does not falsify Doctor; it falsifies the undoctored raw-weight PQ/VQ family.",
+  "successes": []
+ },
+ "methods": [
+  {
+   "evidence": "confirmed independently at F0 and F1; necessary, not sufficient",
+   "id": "organ_inversion_allocation",
+   "name": "organ inversion byte allocation",
+   "status": "CONFIRMED_MEASURED",
+   "transfer_breadth": 2.0
+  },
+  {
+   "evidence": "51MB; removes 1.33h per restart",
+   "id": "persisted_parent_logits",
+   "name": "persisted parent logits",
+   "status": "CONFIRMED_MEASURED",
+   "transfer_breadth": 1.0
+  },
+  {
+   "evidence": "replaces the falsified 64GiB cap",
+   "id": "expert_cache_20gib",
+   "name": "20GiB expert cache cap",
+   "status": "CONFIRMED_MEASURED",
+   "transfer_breadth": 1.0
+  },
+  {
+   "evidence": "parent ppl 1.61 to 39.33 is what makes the F1 negative trustworthy",
+   "id": "healthy_parent_control",
+   "name": "mandatory live bf16 parent control per prompt",
+   "status": "CONFIRMED_MEASURED",
+   "transfer_breadth": 1.5
+  },
+  {
+   "evidence": "changes the source, so it is not bound by the raw-weight rate-distortion limit falsified at F1",
+   "id": "qat_at_ceiling",
+   "name": "quantization-aware training at or below 1 BPW",
+   "status": "UNTESTED",
+   "transfer_breadth": 2.0
+  },
+  {
+   "evidence": "changes the source; untested at any Hawking parent",
+   "id": "distillation_to_subbit_student",
+   "name": "distillation into a sub-bit student",
+   "status": "UNTESTED",
+   "transfer_breadth": 2.0
+  },
+  {
+   "evidence": "makes the weights compressible instead of compressing incompressible weights",
+   "id": "compressibility_training",
+   "name": "compressibility-inducing training",
+   "status": "UNTESTED",
+   "transfer_breadth": 2.0
+  },
+  {
+   "evidence": "reduces original_weight_count, which is the denominator of the ceiling",
+   "id": "structured_pruning_then_subbit",
+   "name": "structured pruning before sub-bit coding",
+   "status": "UNTESTED",
+   "transfer_breadth": 1.5
+  },
+  {
+   "evidence": "post-hoc sharing is dead (cosine 1e-4); LEARNED sharing creates the shared component instead of assuming it",
+   "id": "learned_expert_sharing",
+   "name": "learned (trained) expert sharing",
+   "status": "UNTESTED",
+   "transfer_breadth": 1.5
+  },
+  {
+   "evidence": "never run at F1; Doctor bytes count toward the ceiling",
+   "id": "same_budget_doctor_at_capability",
+   "name": "same-budget Doctor at capability fidelity",
+   "status": "UNTESTED",
+   "transfer_breadth": 1.5
+  }
+ ],
+ "negative_transfer": [
+  {
+   "claim": "raising the rate until something passes locates the capability cliff",
+   "evidence": "F0 searched 0.80 to 0.89 per-expert and F1 searched 0.4930 to 1.0075 complete. Both parents were searched ENTIRELY BELOW their cliffs and neither ever established a passing rate. Two parents of methodology produced zero positive controls, and the response to that is a different method at the ceiling, not a higher rate.",
+   "forbidden": [
+    "upward bracketing",
+    "escape receipt above 1 BPW",
+    "any 1.2/1.5/2.0/3.0 anchor",
+    "bisecting inside a fully collapsed band"
+   ],
+   "id": "upward_bracketing",
+   "replacement": "change the representation at the ceiling. A missing positive control is a reason to change method, not to raise rate.",
+   "verdict": "FALSIFIED AND FORBIDDEN"
+  }
+ ],
+ "next_parent": {
+  "storage": {
+   "download_in_flight": false,
+   "free_gib": 122,
+   "headroom_gib": 0,
+   "required_gib": 0
+  }
+ },
+ "organ_sensitivity": {
+  "dominant_failure_organ": "gate",
+  "inversion": "mlp1/gate+up is the SENSITIVE organ; mlp2/down tolerates more",
+  "inversion_confirmed": true,
+  "inversion_is_necessary_not_sufficient": "A1_1p0 spent the inversion correctly (gate/up 1.25 vs down 0.50) and still collapsed 6/6. Correct allocation inside a failed representation does not rescue it.",
+  "organs": {
+   "attn": {
+    "f1_allocated_bpw": 1.0004,
+    "sensitivity": "UNMEASURED"
+   },
+   "down": {
+    "f1_allocated_bpw": {
+     "A1_1p0": 0.500745138,
+     "R2_subhalf_best": 0.157636007
+    },
+    "rel_error_at_rate": 0.2,
+    "role": "mlp2",
+    "sensitivity": "LOWER"
+   },
+   "embed": {
+    "f1_allocated_bpw": 1.000014,
+    "sensitivity": "UNMEASURED"
+   },
+   "gate": {
+    "f1_allocated_bpw": {
+     "A1_1p0": 1.252698263,
+     "R2_subhalf_best": 0.625409444
+    },
+    "rel_error_at_rate": 0.92,
+    "role": "mlp1",
+    "sensitivity": "HIGH"
+   },
+   "lm_head": {
+    "f1_allocated_bpw": 1.000014,
+    "sensitivity": "UNMEASURED"
+   },
+   "up": {
+    "f1_allocated_bpw": {
+     "A1_1p0": 1.252698263,
+     "R2_subhalf_best": 0.625409444
+    },
+    "rel_error_at_rate": 0.92,
+    "role": "mlp1",
+    "sensitivity": "HIGH"
+   }
+  }
+ },
+ "parent": {
+  "architecture": "qwen3-moe: 94 layers x 128 experts",
+  "generation": "F1",
+  "id": "qwen3-235b-a22b-instruct-2507",
+  "label": "235B",
+  "source_id": "Qwen/Qwen3-235B-A22B-Instruct-2507"
+ },
+ "provenance": "F1 Qwen3-235B campaign, SEALED. Metrics derived directly from the 18 read-only checkpoint rows at /Users/scammermike/hawking-qwen-recovery-20260720/reports/condense/general_frontier/QWEN_GRAVITY/checkpoints (QWEN_GRAVITY_STATE ladder_sha 563ad51128717126, status SEALED). Nothing here is re-derived or re-run.",
+ "quality": {
+  "capability_gate": {
+   "mean_symmetric_kl_max": 0.1,
+   "next_token_argmax_agreement_min": 0.95
+  },
+  "contract_sha256": "3028b5120161113bb42216a37e352927fc10d434a5d777b2c96fc5e8d72f8ead",
+  "domains_collapsing_first": [
+   "all six simultaneously: factual, code, math, science, instruction, reasoning. Next-token argmax agreement is exactly 0.0 on every prompt at both rates, so no domain survived long enough to collapse first."
+  ],
+  "failures": [
+   {
+    "candidate_perplexity": 6828.4145,
+    "complete_bpw": 1.007471652,
+    "domain": "code",
+    "gate_passed": false,
+    "mean_symmetric_kl": 10.82207,
+    "next_token_argmax_agreement": 0.0,
+    "parent_perplexity": 1.6071,
+    "probe": "real_parent_vs_packed_forward",
+    "prompt_id": "code_py",
+    "variant": "A1_1p0",
+    "verdict": "COLLAPSED"
+   },
+   {
+    "candidate_perplexity": 11063.9241,
+    "complete_bpw": 1.007471652,
+    "domain": "factual",
+    "gate_passed": false,
+    "mean_symmetric_kl": 7.60755,
+    "next_token_argmax_agreement": 0.0,
+    "parent_perplexity": 39.3336,
+    "probe": "real_parent_vs_packed_forward",
+    "prompt_id": "gen_paris",
+    "variant": "A1_1p0",
+    "verdict": "COLLAPSED"
+   },
+   {
+    "candidate_perplexity": 8197.5316,
+    "complete_bpw": 1.007471652,
+    "domain": "general",
+    "gate_passed": false,
+    "mean_symmetric_kl": 10.87042,
+    "next_token_argmax_agreement": 0.0,
+    "parent_perplexity": 3.9367,
+    "probe": "real_parent_vs_packed_forward",
+    "prompt_id": "gen_science",
+    "variant": "A1_1p0",
+    "verdict": "COLLAPSED"
+   },
+   {
+    "candidate_perplexity": 7054.679,
+    "complete_bpw": 1.007471652,
+    "domain": "instruction",
+    "gate_passed": false,
+    "mean_symmetric_kl": 8.58743,
+    "next_token_argmax_agreement": 0.0,
+    "parent_perplexity": 8.6193,
+    "probe": "real_parent_vs_packed_forward",
+    "prompt_id": "instr_list",
+    "variant": "A1_1p0",
+    "verdict": "COLLAPSED"
+   },
+   {
+    "candidate_perplexity": 3225.6971,
+    "complete_bpw": 1.007471652,
+    "domain": "math",
+    "gate_passed": false,
+    "mean_symmetric_kl": 8.73956,
+    "next_token_argmax_agreement": 0.0,
+    "parent_perplexity": 4.1008,
+    "probe": "real_parent_vs_packed_forward",
+    "prompt_id": "math_add",
+    "variant": "A1_1p0",
+    "verdict": "COLLAPSED"
+   },
+   {
+    "candidate_perplexity": 10109.956,
+    "complete_bpw": 1.007471652,
+    "domain": "reasoning",
+    "gate_passed": false,
+    "mean_symmetric_kl": 9.54414,
+    "next_token_argmax_agreement": 0.0,
+    "parent_perplexity": 2.842,
+    "probe": "real_parent_vs_packed_forward",
+    "prompt_id": "reason_syllogism",
+    "variant": "A1_1p0",
+    "verdict": "COLLAPSED"
+   },
+   {
+    "candidate_perplexity": 24003.8454,
+    "complete_bpw": 0.493025699,
+    "domain": "code",
+    "gate_passed": false,
+    "mean_symmetric_kl": 12.49193,
+    "next_token_argmax_agreement": 0.0,
+    "parent_perplexity": 1.6071,
+    "probe": "real_parent_vs_packed_forward",
+    "prompt_id": "code_py",
+    "variant": "R2_subhalf_best",
+    "verdict": "COLLAPSED"
+   },
+   {
+    "candidate_perplexity": 34693.3452,
+    "complete_bpw": 0.493025699,
+    "domain": "factual",
+    "gate_passed": false,
+    "mean_symmetric_kl": 9.33958,
+    "next_token_argmax_agreement": 0.0,
+    "parent_perplexity": 39.3336,
+    "probe": "real_parent_vs_packed_forward",
+    "prompt_id": "gen_paris",
+    "variant": "R2_subhalf_best",
+    "verdict": "COLLAPSED"
+   },
+   {
+    "candidate_perplexity": 13461.4125,
+    "complete_bpw": 0.493025699,
+    "domain": "general",
+    "gate_passed": false,
+    "mean_symmetric_kl": 11.9982,
+    "next_token_argmax_agreement": 0.0,
+    "parent_perplexity": 3.9367,
+    "probe": "real_parent_vs_packed_forward",
+    "prompt_id": "gen_science",
+    "variant": "R2_subhalf_best",
+    "verdict": "COLLAPSED"
+   },
+   {
+    "candidate_perplexity": 98960.3393,
+    "complete_bpw": 0.493025699,
+    "domain": "instruction",
+    "gate_passed": false,
+    "mean_symmetric_kl": 11.47795,
+    "next_token_argmax_agreement": 0.0,
+    "parent_perplexity": 8.6193,
+    "probe": "real_parent_vs_packed_forward",
+    "prompt_id": "instr_list",
+    "variant": "R2_subhalf_best",
+    "verdict": "COLLAPSED"
+   },
+   {
+    "candidate_perplexity": 55351.1774,
+    "complete_bpw": 0.493025699,
+    "domain": "math",
+    "gate_passed": false,
+    "mean_symmetric_kl": 13.46753,
+    "next_token_argmax_agreement": 0.0,
+    "parent_perplexity": 4.1008,
+    "probe": "real_parent_vs_packed_forward",
+    "prompt_id": "math_add",
+    "variant": "R2_subhalf_best",
+    "verdict": "COLLAPSED"
+   },
+   {
+    "candidate_perplexity": 19631.1851,
+    "complete_bpw": 0.493025699,
+    "domain": "reasoning",
+    "gate_passed": false,
+    "mean_symmetric_kl": 11.30017,
+    "next_token_argmax_agreement": 0.0,
+    "parent_perplexity": 2.842,
+    "probe": "real_parent_vs_packed_forward",
+    "prompt_id": "reason_syllogism",
+    "variant": "R2_subhalf_best",
+    "verdict": "COLLAPSED"
+   }
+  ],
+  "probes": [
+   "real_parent_vs_packed_forward"
+  ],
+  "prompt_ids": [
+   "code_py",
+   "gen_paris",
+   "gen_science",
+   "instr_list",
+   "math_add",
+   "reason_syllogism"
+  ],
+  "result": {
+   "evidence_class": "SHORT_END_TO_END",
+   "evidence_class_note": "5 tokens per prompt is below the 1000-token CAPABILITY threshold. SHORT_END_TO_END may not SELECT a frontier; it is ample to REJECT one at argmax agreement 0.0.",
+   "reason": "both sealed candidates collapsed 6/6 on a real parent-vs-packed forward against a healthy control; 12 of 12 packed rows failed the gate",
+   "rows_evaluated": 12,
+   "rows_passed": 0,
+   "selected_frontier": null
+  }
+ },
+ "rate_ceiling": {
+  "ceiling": "1/1",
+  "complete_bits_include": [
+   "indices",
+   "codebooks",
+   "scales",
+   "metadata",
+   "alignment",
+   "protected_islands",
+   "doctor_bytes",
+   "pass_through_tensors",
+   "packaging",
+   "runtime_required_tables"
+  ],
+  "expert_only_bpw_is_not_whole_model_bpw": true,
+  "forbidden_permanently": [
+   "any candidate above 1 BPW",
+   "1.2 safety anchor",
+   "1.5",
+   "2.0",
+   "3.0",
+   "automatic Escape Receipt",
+   "upward bracketing"
+  ],
+  "law": "Hawking does not climb above one bit to discover where conventional quantization works. Hawking changes the representation, model, allocation and treatment until useful intelligence survives at one bit or below.",
+  "nothing_excluded_as_overhead": true,
+  "quality_reference": "the parent BF16 model; a compressed high-rate anchor is not required and must not be scheduled",
+  "rate_change_law": "downward only, after materially distinct method families are exhausted at the ceiling; upward never",
+  "rule": "complete_artifact_bits / original_weight_count <= 1/1"
+ },
+ "representation": {
+  "measured": {
+   "A1_1p0": {
+    "argmax_agreement_range": [
+     0.0,
+     0.0
+    ],
+    "capability_pass": false,
+    "collapse_count": 6,
+    "complete_artifact_bytes": 29606271552,
+    "complete_bpw": 1.007471652,
+    "mean_sym_kl_range": [
+     7.60755,
+     10.87042
+    ],
+    "n_prompts": 6,
+    "organ_bpw": {
+     "embed_tokens": 1.000013986,
+     "input_layernorm": 16.125,
+     "lm_head": 1.000013986,
+     "mlp.experts.down_proj": 0.500745138,
+     "mlp.experts.gate_proj": 1.252698263,
+     "mlp.experts.up_proj": 1.252698263,
+     "mlp.gate": 16.000976562,
+     "model.norm": 16.125,
+     "post_attention_layernorm": 16.125,
+     "self_attn.k_norm": 20.0,
+     "self_attn.k_proj": 1.004150391,
+     "self_attn.o_proj": 1.000259399,
+     "self_attn.q_norm": 20.0,
+     "self_attn.q_proj": 1.000259399,
+     "self_attn.v_proj": 1.004150391
+    },
+    "original_weight_count": 235093634591,
+    "over_ceiling": true,
+    "per_prompt": [
+     {
+      "domain": "code",
+      "evidence_class": "SHORT_END_TO_END",
+      "gate": false,
+      "mean_logit_cosine": 0.29958,
+      "mean_sym_kl": 10.82207,
+      "mean_top5_overlap": 0.0889,
+      "n_tokens": 27,
+      "next_token_argmax_agreement": 0.0,
+      "perplexity": 6828.4145,
+      "prompt_id": "code_py",
+      "sha256": "2cc6645709ca5a2d36d8519bed48bb07fba726576cac23d070f3234928623338",
+      "verdict": "collapse"
+     },
+     {
+      "domain": "factual",
+      "evidence_class": "SHORT_END_TO_END",
+      "gate": false,
+      "mean_logit_cosine": 0.39342,
+      "mean_sym_kl": 7.60755,
+      "mean_top5_overlap": 0.04,
+      "n_tokens": 5,
+      "next_token_argmax_agreement": 0.0,
+      "perplexity": 11063.9241,
+      "prompt_id": "gen_paris",
+      "sha256": "d9a4b0ad204c21b9e27ff83aa6a804f5f4dc894e29f5740f683f446875f3ef23",
+      "verdict": "collapse"
+     },
+     {
+      "domain": "general",
+      "evidence_class": "SHORT_END_TO_END",
+      "gate": false,
+      "mean_logit_cosine": 0.52254,
+      "mean_sym_kl": 10.87042,
+      "mean_top5_overlap": 0.0,
+      "n_tokens": 9,
+      "next_token_argmax_agreement": 0.0,
+      "perplexity": 8197.5316,
+      "prompt_id": "gen_science",
+      "sha256": "a4f46cf97d9890bf97b422bbcb69d97c34572fe679954710a2c0fe567e881808",
+      "verdict": "collapse"
+     },
+     {
+      "domain": "instruction",
+      "evidence_class": "SHORT_END_TO_END",
+      "gate": false,
+      "mean_logit_cosine": 0.42252,
+      "mean_sym_kl": 8.58743,
+      "mean_top5_overlap": 0.0545,
+      "n_tokens": 11,
+      "next_token_argmax_agreement": 0.0,
+      "perplexity": 7054.679,
+      "prompt_id": "instr_list",
+      "sha256": "1ac399df50aa98c9d77f87ae1cdc14dfe203c577f02fcfc62320c43a18413f01",
+      "verdict": "collapse"
+     },
+     {
+      "domain": "math",
+      "evidence_class": "SHORT_END_TO_END",
+      "gate": false,
+      "mean_logit_cosine": 0.44767,
+      "mean_sym_kl": 8.73956,
+      "mean_top5_overlap": 0.11,
+      "n_tokens": 20,
+      "next_token_argmax_agreement": 0.0,
+      "perplexity": 3225.6971,
+      "prompt_id": "math_add",
+      "sha256": "bd538701c7b9016ca5ba0dcaa447d84d8e1132bb614fe2f8d690cbfe867f200f",
+      "verdict": "collapse"
+     },
+     {
+      "domain": "reasoning",
+      "evidence_class": "SHORT_END_TO_END",
+      "gate": false,
+      "mean_logit_cosine": 0.47428,
+      "mean_sym_kl": 9.54414,
+      "mean_top5_overlap": 0.0625,
+      "n_tokens": 16,
+      "next_token_argmax_agreement": 0.0,
+      "perplexity": 10109.956,
+      "prompt_id": "reason_syllogism",
+      "sha256": "a999563c55d1fbab6fd8e5c3b4f2b68a586edeca5fd0b11f5ecabcbfd429e5a0",
+      "verdict": "collapse"
+     }
+    ],
+    "spec": {
+     "down": {
+      "dim": 16,
+      "family": "product_quant",
+      "k": 16,
+      "subspaces": 2
+     },
+     "gate_up": {
+      "dim": 32,
+      "family": "product_quant",
+      "k": 32,
+      "subspaces": 8
+     },
+     "kind": "packed"
+    },
+    "variant": "A1_1p0"
+   },
+   "R0_parent": {
+    "healthy": true,
+    "kind": "bf16 source parent, the quality reference",
+    "n_prompts": 6,
+    "per_prompt": [
+     {
+      "domain": "code",
+      "n_tokens": 27,
+      "nll": 0.47446,
+      "perplexity": 1.6071,
+      "prompt_id": "code_py",
+      "sha256": "9be4667a9559cb6af01d49dbe751d982e348e1170ef12f2d5255afe27fbb3f72"
+     },
+     {
+      "domain": "factual",
+      "n_tokens": 5,
+      "nll": 3.67208,
+      "perplexity": 39.3336,
+      "prompt_id": "gen_paris",
+      "sha256": "8a50bcf30a2f1e71045936f806723b707a0edd826018675167303358dec3f431"
+     },
+     {
+      "domain": "general",
+      "n_tokens": 9,
+      "nll": 1.37034,
+      "perplexity": 3.9367,
+      "prompt_id": "gen_science",
+      "sha256": "347fb966d10dbc33570fb3a633d38305a8c8c34d84cc75a744d5860e53fa27bf"
+     },
+     {
+      "domain": "instruction",
+      "n_tokens": 11,
+      "nll": 2.154,
+      "perplexity": 8.6193,
+      "prompt_id": "instr_list",
+      "sha256": "41091e497768e98471f4038f0ccb3cc2204ff3b9c45ccdf02c754602e959aa20"
+     },
+     {
+      "domain": "math",
+      "n_tokens": 20,
+      "nll": 1.41118,
+      "perplexity": 4.1008,
+      "prompt_id": "math_add",
+      "sha256": "56a35e1cabd5c168eb8c17cf3b0ae9d5b11c4e1041607b373b1f9cf97c2d12a9"
+     },
+     {
+      "domain": "reasoning",
+      "n_tokens": 16,
+      "nll": 1.04451,
+      "perplexity": 2.842,
+      "prompt_id": "reason_syllogism",
+      "sha256": "09a9b58c80b415fd17128376e08afafe0a169cdf3b4babfca6f4e5aa57a010ed"
+     }
+    ],
+    "perplexity_range": [
+     1.6071,
+     39.3336
+    ],
+    "variant": "R0_parent",
+    "why_this_matters": "the control is healthy (ppl 1.61 to 39.33 across six domains), so the collapse of every packed row is a property of the representation, not of a broken harness. A negative result is only trustworthy with a live control."
+   },
+   "R2_subhalf_best": {
+    "argmax_agreement_range": [
+     0.0,
+     0.0
+    ],
+    "capability_pass": false,
+    "collapse_count": 6,
+    "complete_artifact_bytes": 14488400448,
+    "complete_bpw": 0.493025699,
+    "mean_sym_kl_range": [
+     9.33958,
+     13.46753
+    ],
+    "n_prompts": 6,
+    "organ_bpw": {
+     "embed_tokens": 1.000013986,
+     "input_layernorm": 16.125,
+     "lm_head": 1.000013986,
+     "mlp.experts.down_proj": 0.157636007,
+     "mlp.experts.gate_proj": 0.625409444,
+     "mlp.experts.up_proj": 0.625409444,
+     "mlp.gate": 16.000976562,
+     "model.norm": 16.125,
+     "post_attention_layernorm": 16.125,
+     "self_attn.k_norm": 20.0,
+     "self_attn.k_proj": 1.004150391,
+     "self_attn.o_proj": 1.000259399,
+     "self_attn.q_norm": 20.0,
+     "self_attn.q_proj": 1.000259399,
+     "self_attn.v_proj": 1.004150391
+    },
+    "original_weight_count": 235093634711,
+    "over_ceiling": false,
+    "per_prompt": [
+     {
+      "domain": "code",
+      "evidence_class": "SHORT_END_TO_END",
+      "gate": false,
+      "mean_logit_cosine": 0.25023,
+      "mean_sym_kl": 12.49193,
+      "mean_top5_overlap": 0.0667,
+      "n_tokens": 27,
+      "next_token_argmax_agreement": 0.0,
+      "perplexity": 24003.8454,
+      "prompt_id": "code_py",
+      "sha256": "02c7440b482f841084d9542a7ffda96aabdc29afbe44f31f9d8c7e4143a55d9d",
+      "verdict": "collapse"
+     },
+     {
+      "domain": "factual",
+      "evidence_class": "SHORT_END_TO_END",
+      "gate": false,
+      "mean_logit_cosine": 0.39801,
+      "mean_sym_kl": 9.33958,
+      "mean_top5_overlap": 0.04,
+      "n_tokens": 5,
+      "next_token_argmax_agreement": 0.0,
+      "perplexity": 34693.3452,
+      "prompt_id": "gen_paris",
+      "sha256": "d74d1f06832f10c08f955e8689398895fe0da0413b807febce4b421f581528ea",
+      "verdict": "collapse"
+     },
+     {
+      "domain": "general",
+      "evidence_class": "SHORT_END_TO_END",
+      "gate": false,
+      "mean_logit_cosine": 0.45972,
+      "mean_sym_kl": 11.9982,
+      "mean_top5_overlap": 0.0,
+      "n_tokens": 9,
+      "next_token_argmax_agreement": 0.0,
+      "perplexity": 13461.4125,
+      "prompt_id": "gen_science",
+      "sha256": "3f8835a8ab7ce5820e5f025d8fe361ee31de9cae161f7b3896c09646d514df97",
+      "verdict": "collapse"
+     },
+     {
+      "domain": "instruction",
+      "evidence_class": "SHORT_END_TO_END",
+      "gate": false,
+      "mean_logit_cosine": 0.37419,
+      "mean_sym_kl": 11.47795,
+      "mean_top5_overlap": 0.0,
+      "n_tokens": 11,
+      "next_token_argmax_agreement": 0.0,
+      "perplexity": 98960.3393,
+      "prompt_id": "instr_list",
+      "sha256": "94d4e81fc431ae5bf1b0d87b2b175ecd424d3e62d31e7ddcdd98803eafbeb9ae",
+      "verdict": "collapse"
+     },
+     {
+      "domain": "math",
+      "evidence_class": "SHORT_END_TO_END",
+      "gate": false,
+      "mean_logit_cosine": 0.32085,
+      "mean_sym_kl": 13.46753,
+      "mean_top5_overlap": 0.0,
+      "n_tokens": 20,
+      "next_token_argmax_agreement": 0.0,
+      "perplexity": 55351.1774,
+      "prompt_id": "math_add",
+      "sha256": "bbd4359b65f0eb470deca238ec983ec980ce231f5a3c7a6b739acf404dce39b9",
+      "verdict": "collapse"
+     },
+     {
+      "domain": "reasoning",
+      "evidence_class": "SHORT_END_TO_END",
+      "gate": false,
+      "mean_logit_cosine": 0.4414,
+      "mean_sym_kl": 11.30017,
+      "mean_top5_overlap": 0.0,
+      "n_tokens": 16,
+      "next_token_argmax_agreement": 0.0,
+      "perplexity": 19631.1851,
+      "prompt_id": "reason_syllogism",
+      "sha256": "b028873e7878f0e54090ca53414f938cacd57b8077c91f6685709b215ff72c82",
+      "verdict": "collapse"
+     }
+    ],
+    "spec": {
+     "down": {
+      "dim": 64,
+      "family": "shared_grammar",
+      "k": 1024,
+      "stages": 1
+     },
+     "gate_up": {
+      "dim": 16,
+      "family": "shared_grammar",
+      "k": 1024,
+      "stages": 1
+     },
+     "kind": "packed"
+    },
+    "variant": "R2_subhalf_best"
+   }
+  },
+  "rate_response": [
+   {
+    "argmax_agreement_range": [
+     0.0,
+     0.0
+    ],
+    "legal_under_ceiling": true,
+    "mean_sym_kl_range": [
+     9.33958,
+     13.46753
+    ],
+    "rate_bpw": 0.493025699,
+    "representation": "shared_grammar gate/up d16 k1024 s1 + down d64 k1024 s1",
+    "verdict": "COLLAPSE 6/6"
+   },
+   {
+    "argmax_agreement_range": [
+     0.0,
+     0.0
+    ],
+    "legal_under_ceiling": false,
+    "mean_sym_kl_range": [
+     7.60755,
+     10.87042
+    ],
+    "note": "1.0075 > 1.0 complete BPW: ILLEGAL under the ceiling. Retained as a measurement, NEVER as a search seed. This point must be rebudgeted to <= 1.0, not climbed past.",
+    "rate_bpw": 1.007471652,
+    "representation": "product_quant gate/up d32 k32 s8 + down d16 k16 s2, organ-inverted",
+    "verdict": "COLLAPSE 6/6"
+   }
+  ],
+  "seed_policy": "the highest legal search seed is 1.0 complete BPW. Any prior derived from this curve that exceeds 1.0 is void by law, including search_start_bpw. Rate priors seed a search; they never select.",
+  "winners": [],
+  "winners_note": "no representation won. Nothing passed the capability gate at any rate."
+ },
+ "resources": {
+  "correct_cap_gib": 20,
+  "evictions": 0,
+  "expert_cache_cap_gib_tested": 64,
+  "lesson": "the resource lesson is the 20 GB cache cap, NOT 64 GB. A single lockstep pass has zero cross-layer expert reuse.",
+  "memory_floor_gib": 20,
+  "ram_gb_before_after": [
+   70,
+   18
+  ],
+  "swap_free_mb_at_worst": 906,
+  "working_set_gib_per_layer": 8
+ },
+ "review_answers": {
+  "capability_cliff_moved_with_scale": {
+   "answer": "NO",
+   "evidence": "120B collapsed at 0.80 to 0.89 per-expert whole BPW (D2 0.80508, D6 0.82885, D4 0.88845); 235B collapsed at COMPLETE 1.0075 and 0.4930 with argmax 0.0 on every prompt. A ~2x parameter count did not move the cliff, and F1's accounting is the stricter of the two."
+  },
+  "codebook_sharing_structure_or_amortization": {
+   "answer": "AMORTIZATION ONLY, reconfirmed",
+   "evidence": "R2_subhalf_best used shared_grammar codebooks amortized over 128 experts and collapsed at least as hard (symKL 9.34 to 13.47) as the unshared PQ at twice the rate"
+  },
+  "dominant_runtime_bottleneck": {
+   "answer": "expert streaming",
+   "evidence": "expert-outer/candidate-inner removed 2.7h of re-streaming; 51MB of persisted parent logits removes 1.33h per restart"
+  },
+  "geometry_transferred": {
+   "answer": "the organ inversion transferred; nothing else did",
+   "evidence": "dominant_failure_organ=gate at both F0 and F1; the inversion was necessary and not sufficient"
+  },
+  "higher_dimensional_vq_helped": {
+   "answer": "NO at capability",
+   "evidence": "the F0 weight-space gain (rel_error 0.782 to 0.668 with VQ dimension) did not convert into any capability at F1; weight-space error remains a proxy, never a pass criterion"
+  },
+  "hot_cold_routing_mattered": {
+   "answer": "UNRESOLVED",
+   "evidence": "R3_routing_aware never executed; routing_partition_source null; the F0 88-token calibration finding stands"
+  },
+  "organs_consuming_most_rescue_bytes": {
+   "answer": "gate and up",
+   "evidence": "gate/up 1.2527 vs down 0.5007 bpw at A1_1p0; gate_up 0.92 vs down_only 0.20 rel_err"
+  },
+  "quality_domains_collapsing_first": {
+   "answer": "all six simultaneously; none survived",
+   "evidence": "next-token argmax agreement exactly 0.0 on factual, code, math, science, instruction and reasoning at both rates"
+  },
+  "row_norm_stratification_helped": {
+   "answer": "UNTESTED",
+   "evidence": "R5_rownorm_strat never reached"
+  }
+ },
+ "routing": {
+  "note": "R3_routing_aware was never reached; the F0 finding that 88 calibration tokens is too weak stands unrefuted and unretested at F1.",
+  "required_calibration_tokens": 1000,
+  "routing_partition_source": null
+ },
+ "run_status": "honest_boundary_sealed",
+ "runtime": {
+  "dominant_bottleneck": "expert streaming",
+  "kernel_requirements": [],
+  "note": "expert-outer/candidate-inner loop order and persisted parent logits (51MB on disk) are the two measured runtime levers.",
+  "timings": []
+ },
+ "schema": "hawking.foundry.parent_evidence.v1",
+ "source_format": {
+  "decoder_requirements": [
+   "fused MoE expert tensor decode",
+   "pinned revision re-download"
+  ],
+  "lessons": [
+   {
+    "detail": "fused per-layer expert tensors; the packer substitutes via expert_hook on a real forward",
+    "id": "qwen3_moe_fused_experts"
+   }
+  ]
+ },
+ "storage": {
+  "lessons": [
+   {
+    "detail": "51MB of persisted parent logits removes 1.33h of re-forward per restart",
+    "id": "persist_parent_logits"
+   }
+  ],
+  "mode": "release source after harvest; re-download from pinned revision"
+ },
+ "verdict": "NEGATIVE RESULT FOR THE RAW-WEIGHT PQ/VQ REPRESENTATION FAMILY AT APPROXIMATELY ONE BIT on Qwen3-235B. The family fails; sub-bit is NOT shown to be impossible, and this is NOT a licence to raise the one-bit ceiling. Methods that change the source (QAT, distillation, compressibility training, structured pruning, learned sharing) are not bound by the rate-distortion limit of the original weights and remain untested. The response to this result is to change representation AT the ceiling, never to bracket upward."
+}

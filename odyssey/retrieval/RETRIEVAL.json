@@ -1,0 +1,18 @@
+{
+ "query_log": "odyssey/ledger/literature_queries.jsonl",
+ "rule": "retrieval never touches the live network during a run; a query that needs a source outside the snapshot is a permission event",
+ "schema": "hawking.odyssey.retrieval.v1",
+ "sources": [
+  {
+   "id": "mathlib",
+   "kind": "pinned_checkout",
+   "revision": "v4.15.0"
+  },
+  {
+   "gate": "ODYSSEY-RET-01: snapshot taken before the first session",
+   "id": "literature",
+   "kind": "pinned_snapshot",
+   "snapshot": null
+  }
+ ]
+}

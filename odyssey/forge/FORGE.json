@@ -1,0 +1,45 @@
+{
+ "objective": "maximum correctly authorized capability expression, not maximum answer rate",
+ "pipeline": [
+  {
+   "id": "F0",
+   "name": "diagnose",
+   "note": "deterministic half built in tools/sovereignty/",
+   "status": "PARTIAL"
+  },
+  {
+   "gate": "needs a served model and an evaluated prompt set",
+   "id": "F1",
+   "name": "locate",
+   "status": "GATED"
+  },
+  {
+   "gate": "needs F1",
+   "id": "F2",
+   "name": "restore_authorized_expression",
+   "status": "GATED"
+  },
+  {
+   "gate": "needs F2",
+   "id": "F3",
+   "name": "validate",
+   "status": "GATED"
+  },
+  {
+   "gate": "needs F3",
+   "id": "F4",
+   "name": "seal",
+   "status": "GATED"
+  }
+ ],
+ "restoration_priority": [
+  "remove unnecessary external routing",
+  "replace blanket topic rules with profile-aware policy",
+  "correct excessive-refusal prompts",
+  "preserve specialist pathways",
+  "apply bounded inference-time steering",
+  "optionally add a narrow recovery adapter on verified false refusals",
+  "alter source post-training only as a separate research lane"
+ ],
+ "schema": "hawking.odyssey.forge.v1"
+}

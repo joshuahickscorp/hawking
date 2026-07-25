@@ -1,0 +1,20 @@
+{
+  "aggregate_megabits_per_second": 219.7,
+  "evicted_bytes_this_run": 0,
+  "failed_this_run": 0,
+  "free_disk_bytes": 398759858176,
+  "mode": "stream",
+  "repo": "zai-org/GLM-5.2",
+  "resident_bytes": 193297423136,
+  "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+  "shards_packed_total": 136,
+  "shards_probed_total": 147,
+  "shards_verified_total": 151,
+  "source_fraction_verified": 0.5338,
+  "state": "RUNNING",
+  "total_source_shards": 282,
+  "updated_at": "2026-07-23T04:51:56Z",
+  "window": "W011",
+  "window_count": 20,
+  "window_index": 11
+}

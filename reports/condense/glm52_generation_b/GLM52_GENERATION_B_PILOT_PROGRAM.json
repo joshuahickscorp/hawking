@@ -1,0 +1,264 @@
+{
+  "generated_at": "2026-07-23T13:32:24Z",
+  "pilot_windows": [
+    {
+      "architectural_role": "global tensors, embeddings, first dense layer",
+      "bytes": 4608140800,
+      "categories_covered": [
+        "attention",
+        "dense_mlp",
+        "embeddings",
+        "indexer",
+        "lm_head",
+        "normalization"
+      ],
+      "elements": 2304070400,
+      "layers": [
+        0
+      ],
+      "pilot": "P0",
+      "shards": [
+        "model-00001-of-00282.safetensors",
+        "model-00282-of-00282.safetensors"
+      ],
+      "tensor_count": 20,
+      "why_these_windows": "the only window carrying embeddings, and the first dense block",
+      "windows": [
+        "W_GLOBAL",
+        "W_L00"
+      ]
+    },
+    {
+      "architectural_role": "final dense layer and dense-to-MoE transition",
+      "bytes": 20537863680,
+      "categories_covered": [
+        "attention",
+        "dense_mlp",
+        "indexer",
+        "normalization",
+        "routed_expert",
+        "router",
+        "router_control",
+        "shared_expert"
+      ],
+      "elements": 10268931584,
+      "layers": [
+        2,
+        3
+      ],
+      "pilot": "P1",
+      "shards": [
+        "model-00038-of-00282.safetensors",
+        "model-00075-of-00282.safetensors",
+        "model-00076-of-00282.safetensors",
+        "model-00077-of-00282.safetensors",
+        "model-00078-of-00282.safetensors",
+        "model-00079-of-00282.safetensors"
+      ],
+      "tensor_count": 799,
+      "why_these_windows": "the dense-to-MoE transition, and layer 2 owns the indexer the first MoE group reuses",
+      "windows": [
+        "W_L02",
+        "W_L03"
+      ]
+    },
+    {
+      "architectural_role": "first sparse MoE layer and first complete IndexShare group",
+      "bytes": 60009995776,
+      "categories_covered": [
+        "attention",
+        "dense_mlp",
+        "indexer",
+        "normalization",
+        "routed_expert",
+        "router",
+        "router_control",
+        "shared_expert"
+      ],
+      "elements": 30004997120,
+      "layers": [
+        2,
+        3,
+        4,
+        5
+      ],
+      "pilot": "P2",
+      "shards": [
+        "model-00038-of-00282.safetensors",
+        "model-00075-of-00282.safetensors",
+        "model-00076-of-00282.safetensors",
+        "model-00077-of-00282.safetensors",
+        "model-00078-of-00282.safetensors",
+        "model-00079-of-00282.safetensors",
+        "model-00116-of-00282.safetensors",
+        "model-00117-of-00282.safetensors",
+        "model-00118-of-00282.safetensors",
+        "model-00119-of-00282.safetensors",
+        "model-00120-of-00282.safetensors",
+        "model-00156-of-00282.safetensors",
+        "model-00157-of-00282.safetensors",
+        "model-00158-of-00282.safetensors",
+        "model-00159-of-00282.safetensors",
+        "model-00160-of-00282.safetensors"
+      ],
+      "tensor_count": 2363,
+      "why_these_windows": "the first complete IndexShare group, owner L2",
+      "windows": [
+        "W_L02",
+        "W_L03",
+        "W_L04",
+        "W_L05"
+      ]
+    },
+    {
+      "architectural_role": "middle sparse/IndexShare group",
+      "bytes": 78963008000,
+      "categories_covered": [
+        "attention",
+        "indexer",
+        "normalization",
+        "routed_expert",
+        "router",
+        "router_control",
+        "shared_expert"
+      ],
+      "elements": 39481502976,
+      "layers": [
+        38,
+        39,
+        40,
+        41
+      ],
+      "pilot": "P3",
+      "shards": [
+        "model-00108-of-00282.safetensors",
+        "model-00109-of-00282.safetensors",
+        "model-00110-of-00282.safetensors",
+        "model-00111-of-00282.safetensors",
+        "model-00112-of-00282.safetensors",
+        "model-00113-of-00282.safetensors",
+        "model-00114-of-00282.safetensors",
+        "model-00115-of-00282.safetensors",
+        "model-00116-of-00282.safetensors",
+        "model-00120-of-00282.safetensors",
+        "model-00121-of-00282.safetensors",
+        "model-00122-of-00282.safetensors",
+        "model-00123-of-00282.safetensors",
+        "model-00124-of-00282.safetensors",
+        "model-00125-of-00282.safetensors",
+        "model-00126-of-00282.safetensors",
+        "model-00127-of-00282.safetensors"
+      ],
+      "tensor_count": 3133,
+      "why_these_windows": "a middle IndexShare group, owner L38",
+      "windows": [
+        "W_L38",
+        "W_L39",
+        "W_L40",
+        "W_L41"
+      ]
+    },
+    {
+      "architectural_role": "late sparse/IndexShare group",
+      "bytes": 78963008000,
+      "categories_covered": [
+        "attention",
+        "indexer",
+        "normalization",
+        "routed_expert",
+        "router",
+        "router_control",
+        "shared_expert"
+      ],
+      "elements": 39481502976,
+      "layers": [
+        74,
+        75,
+        76,
+        77
+      ],
+      "pilot": "P4",
+      "shards": [
+        "model-00256-of-00282.safetensors",
+        "model-00257-of-00282.safetensors",
+        "model-00258-of-00282.safetensors",
+        "model-00259-of-00282.safetensors",
+        "model-00260-of-00282.safetensors",
+        "model-00261-of-00282.safetensors",
+        "model-00262-of-00282.safetensors",
+        "model-00263-of-00282.safetensors",
+        "model-00264-of-00282.safetensors",
+        "model-00265-of-00282.safetensors",
+        "model-00266-of-00282.safetensors",
+        "model-00267-of-00282.safetensors",
+        "model-00268-of-00282.safetensors",
+        "model-00269-of-00282.safetensors",
+        "model-00270-of-00282.safetensors"
+      ],
+      "tensor_count": 3133,
+      "why_these_windows": "the last complete IndexShare group, owner L74",
+      "windows": [
+        "W_L74",
+        "W_L75",
+        "W_L76",
+        "W_L77"
+      ]
+    },
+    {
+      "architectural_role": "final layer, final norm, lm_head, and the MTP boundary",
+      "bytes": 43448250880,
+      "categories_covered": [
+        "attention",
+        "embeddings",
+        "indexer",
+        "lm_head",
+        "mtp_head_norm",
+        "mtp_normalization",
+        "mtp_projection",
+        "normalization",
+        "routed_expert",
+        "router",
+        "router_control",
+        "shared_expert"
+      ],
+      "elements": 21724124928,
+      "layers": [
+        77,
+        78
+      ],
+      "pilot": "P5",
+      "shards": [
+        "model-00001-of-00282.safetensors",
+        "model-00267-of-00282.safetensors",
+        "model-00268-of-00282.safetensors",
+        "model-00269-of-00282.safetensors",
+        "model-00270-of-00282.safetensors",
+        "model-00271-of-00282.safetensors",
+        "model-00272-of-00282.safetensors",
+        "model-00273-of-00282.safetensors",
+        "model-00274-of-00282.safetensors",
+        "model-00282-of-00282.safetensors"
+      ],
+      "tensor_count": 1576,
+      "why_these_windows": "the final layer, the final norm and lm_head, and the MTP boundary",
+      "windows": [
+        "W_L77",
+        "W_GLOBAL",
+        "W_L78"
+      ]
+    }
+  ],
+  "policy": {
+    "literal_shard_zero_is_not_a_proxy": true,
+    "max_windows": 6,
+    "rule": "pilot windows are chosen by architectural role, and a role with no distinct window is dropped rather than filled with a stand-in"
+  },
+  "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+  "schema": "hawking.glm52.generation_b_pilot_program.v1",
+  "totals": {
+    "bytes": 286530267136,
+    "distinct_shards": 52,
+    "elements": 143265129984,
+    "windows": 6
+  }
+}

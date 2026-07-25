@@ -1,0 +1,28 @@
+{
+  "schema": "hawking.prometheus.profile.v1",
+  "name": "math-v1",
+  "purpose": "Capability-conditioned allocation for mathematical reasoning. Protects the math core and the structural spine; PRESERVES the T1 instrumental band (language, code, notation, tool syntax) because six of the nine Ramanujan roles depend on it (Revision 4 arm II.4); pushes non-target world knowledge to the floor; excises what does not serve mathematics at all. The objective is 'spends no bytes on anything that does not serve mathematics', which is architecturally opposite to 'only knows mathematics'.",
+  "control": false,
+  "capability_gates": ["G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8"],
+  "capability_gate_status": "GATED: G3 (formalization) and G8 (proof-criticism) are the discriminating gates; both require the served runtime (S0.8) and the Lean-lite harness (leg L3).",
+  "category_tiers": {
+    "routed_expert":  {"tier": "T1", "expert_coalition": "from_cartography", "coalition_resolution": "GATED: until the causal probe (P3/P4) runs, all routed experts are T1. When cartography lands, the math coalition subset promotes to T0 and the remainder demotes to T2 at matched bytes."},
+    "shared_expert":  {"tier": "T1", "note": "the always-on shared expert carries cross-domain instrumental capability; kept instrumental"},
+    "attention":      {"tier": "T1"},
+    "dense_mlp":      {"tier": "T1"},
+    "embedding":      {"tier": "T0", "vocab_prune": true, "note": "protected, but a math-corpus vocabulary prune reclaims embedding+unembedding bytes (leg L4)"},
+    "lm_head":        {"tier": "T0", "vocab_prune": true},
+    "router":         {"tier": "T0"},
+    "normalization":  {"tier": "T0"},
+    "indexer":        {"tier": "T0"},
+    "mtp":            {"tier": "T3", "note": "excised: multi-token-prediction head is not core reasoning"},
+    "vision":         {"tier": "T3"},
+    "other":          {"tier": "T2"}
+  },
+  "tier_rates": {
+    "T0": {"native": true},
+    "T1": {"num": 8, "den": 8},
+    "T2": {"num": 2, "den": 8},
+    "T3": {"num": 0, "den": 1}
+  }
+}

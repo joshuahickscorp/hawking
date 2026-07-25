@@ -1,0 +1,45 @@
+{
+ "invariants": [
+  "Tier 1 never becomes proof by accumulation",
+  "Tier 2 requires an independent fidelity assessment, not the formalizer's own",
+  "Tier 3 requires a clean-container reproduction against the pinned Mathlib"
+ ],
+ "schema": "hawking.odyssey.verification.v1",
+ "tiers": [
+  {
+   "meaning": "The model said it. No evidentiary weight.",
+   "name": "asserted",
+   "requires": [],
+   "tier": 0
+  },
+  {
+   "meaning": "Reproducible computation over a declared domain. Never becomes proof by accumulation.",
+   "name": "empirically_supported",
+   "requires": [
+    "sandbox_reproduction"
+   ],
+   "tier": 1
+  },
+  {
+   "meaning": "A faithful Lean statement exists and was independently fidelity-assessed.",
+   "name": "formalized",
+   "requires": [
+    "lean_statement_compiles",
+    "independent_fidelity_assessment"
+   ],
+   "tier": 2
+  },
+  {
+   "meaning": "Compiler-accepted proof, no sorry, no undeclared axioms, pinned Mathlib, clean-container reproduction.",
+   "name": "proven",
+   "requires": [
+    "lean_proof_compiles",
+    "no_sorry",
+    "no_undeclared_axioms",
+    "pinned_mathlib",
+    "clean_container_reproduction"
+   ],
+   "tier": 3
+  }
+ ]
+}

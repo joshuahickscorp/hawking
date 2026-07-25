@@ -1,0 +1,48 @@
+{
+  "depth": 3,
+  "forward": "validated streamed forward, official DeepseekV4DecoderLayer, real weights",
+  "hc_mult": 4,
+  "layer": 20,
+  "max_amplification": 0.9857277029280843,
+  "min_amplification": 0.9609025133325246,
+  "not_evidence_of": "capability; bounded tokens, one stratum, few magnitudes.",
+  "parent": "deepseek-ai/DeepSeek-V4-Flash",
+  "rows": [
+    {
+      "entering_relative_l2": 0.0101582370698452,
+      "fraction": 0.25,
+      "geometric_mean_amplification": 0.9857277029280843,
+      "per_layer": [
+        1.021299449800886,
+        0.9541019443709332,
+        0.9829309443530119
+      ]
+    },
+    {
+      "entering_relative_l2": 0.019769681617617607,
+      "fraction": 0.5,
+      "geometric_mean_amplification": 0.968240083783258,
+      "per_layer": [
+        0.9936649259400551,
+        0.9311446383113001,
+        0.9810520874881865
+      ]
+    },
+    {
+      "entering_relative_l2": 0.03934226930141449,
+      "fraction": 1.0,
+      "geometric_mean_amplification": 0.9609025133325246,
+      "per_layer": [
+        1.0049834956622852,
+        0.8974958284221307,
+        0.9836636427684117
+      ]
+    }
+  ],
+  "schema": "hawking.deepseek_v4.amplification.v1",
+  "seq_len": 32,
+  "student_local_skill_at_L": 0.9768236689269543,
+  "verdict": "CONTRACTIVE",
+  "vs_glm": "GLM was EXPANSIVE_AT_EVERY_TESTED_MAGNITUDE at strata 3/38/74; this is the hyper-connection residual's answer to the same question",
+  "worse_at_smaller": true
+}

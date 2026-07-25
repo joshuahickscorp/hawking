@@ -1,0 +1,40 @@
+{
+ "corpora": [
+  {
+   "content_addressed": true,
+   "id": "math-core",
+   "license_required": "permissive",
+   "present": false,
+   "purpose": "T1 primary"
+  },
+  {
+   "content_addressed": true,
+   "id": "support-language",
+   "license_required": "permissive",
+   "present": false,
+   "purpose": "T1 support: technical language, coding, tools"
+  },
+  {
+   "content_addressed": true,
+   "id": "long-horizon",
+   "license_required": "permissive",
+   "present": false,
+   "purpose": "T3 trajectory stabilization"
+  },
+  {
+   "content_addressed": true,
+   "id": "sovereignty-corpus",
+   "license_required": "self-authored",
+   "present": false,
+   "purpose": "T4 permitted/boundary/paraphrase pairs"
+  }
+ ],
+ "gate": "M13: Odyssey substrate and training bundle are complete",
+ "invariants": [
+  "every corpus is content-addressed before a single step reads it",
+  "no corpus overlaps any hidden evaluation set",
+  "license is recorded per corpus, not per collection run"
+ ],
+ "schema": "hawking.odyssey.data.v1",
+ "status": "DECLARED_NOT_COLLECTED"
+}

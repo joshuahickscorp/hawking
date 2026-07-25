@@ -1,0 +1,39 @@
+{
+ "law": "Hawking is not literally unlimited; it is free of invisible limits",
+ "limits": [
+  {
+   "current_value": false,
+   "event_log": "odyssey/ledger/sovereignty_events.jsonl",
+   "id": "L-LAUNCH-01",
+   "owner": "user",
+   "reason": "Odyssey must be started deliberately, in a session that intends it",
+   "scope": "the entire Odyssey run",
+   "threshold": "explicit authorization",
+   "type": "policy",
+   "user_changeable": true
+  },
+  {
+   "current_value": "deny",
+   "event_log": "odyssey/ledger/sandbox_events.jsonl",
+   "id": "L-NET-01",
+   "owner": "sandbox",
+   "reason": "a research loop with live network access is not reproducible",
+   "scope": "all sandboxed processes",
+   "threshold": "deny by default",
+   "type": "permission",
+   "user_changeable": true
+  },
+  {
+   "current_value": 1,
+   "event_log": "odyssey/ledger/sandbox_events.jsonl",
+   "id": "L-HEAVY-01",
+   "owner": "operator",
+   "reason": "one heavy local lane keeps measurements comparable",
+   "scope": "local compute",
+   "threshold": 1,
+   "type": "resource",
+   "user_changeable": true
+  }
+ ],
+ "schema": "hawking.odyssey.limits.v1"
+}

@@ -1,0 +1,99 @@
+{
+  "schema": "hawking.ascension_closed.v1",
+  "endpoint": "HAWKING_ASCENSION_CLOSED",
+  "sealed_at": "2026-07-24T03:15:00Z",
+  "branch": "campaign/glm52-generation-b",
+  "mission": "close Hawking core by answering: does the functional student compose across the full model?",
+  "answer": "NO. Independent per-layer functional students do not compose, on GLM (expansive residual) or DeepSeek (router divergence under cumulative drift), despite the escape existing and being locally strong on both.",
+
+  "deepseek_final_verdict": "FUNCTIONAL_PARTIAL_ONLY",
+  "cascade": {
+    "depth": "all 40 sparse MoE layers of the 43-layer model, validated streamed forward, 192 tokens",
+    "first_block_skill_divergence_layer": 8,
+    "first_router_below_half_layer": 4,
+    "final_block_skill": -168.6,
+    "mean_per_layer_amplification": 1.121,
+    "min_router_top1_agreement": 0.0,
+    "greedy_token_agreement": 0.0,
+    "L3_first_student": {"skill": 0.931, "router_top1": 1.0},
+    "mechanism": "router sensitivity under cumulative drift; the first student fits well but its small error drifts the hidden state until the next router re-selects experts (top-1 below half by L4), and mild per-layer amplification compounds over 40 layers into divergence. Structural, not a fit artifact.",
+    "escalation_out_of_scope": "route-aware jointly-trained student (C2); directive says do not reopen the search space"
+  },
+
+  "glm_final_verdict": "FUNCTIONAL_PARTIAL_ONLY (weight-space closed negative; functional escape expansive at every stratum, fails on propagation)",
+
+  "complete_model_bpw": {
+    "deepseek_student_h1024": {"protected_source": 0.4092, "protected_int8": 0.337, "protected_int4": 0.177},
+    "deepseek_protected_floor": {"source": 0.3922, "int8": 0.32, "int4": 0.16},
+    "rungs": {"0.75": "reachable", "0.50": "reachable", "0.333333": "reachable at int4-protected"},
+    "caveat": "billed at fp4-relative rates; a low BPW here is less impressive than on a BF16 parent because the source experts are already fp4. Not built as a servable candidate because the cascade did not promote.",
+    "billed": "payload + generator seed + protected organs + headers, over 158.07 B logical weights"
+  },
+
+  "runtime_path_working": {
+    "complete_token_forward": "DEMONSTRATED: the validated streamed forward runs embedding -> 43 layers (MLA + DSA + hyper-connections + fp4/fp8 MoE) -> logit lens -> greedy token, official DeepseekV4DecoderLayer with real dequantized weights, one block resident at a time on 96 GiB",
+    "gravity_adapter_block_token": "PROVEN for GLM functional (one substituted MoE layer -> real block -> next-layer token); glm52.functional.moe.v1 .gravity codec, CPU authority, 3 parity-gated Metal grammars",
+    "attention_moe_integrated": "the streamed forward integrates real MLA/DSA attention with the MoE end to end",
+    "embedding_to_logits_to_sampling": "demonstrated via the streamed forward + logit-lens greedy sample"
+  },
+
+  "true_tps_measured": {
+    "glm_functional_moe_path_measured": "6.3 -> 7.1 TPS (Metal FRT-B, submission-collapsed 76->1 command buffers), measured wall-clock, MoE-path only, GLM geometry",
+    "deepseek_complete_model_roofline": {"teacher": 35.7, "functional": 54.0, "unit": "TPS",
+      "basis": "measured 417.7 GB/s bandwidth / analytical active bytes per token; teacher 11.7 GB, functional 7.73 GB"},
+    "wall_clock_served_tps": "UNAVAILABLE: no resident compact model exists (both parents FUNCTIONAL_PARTIAL_ONLY); a served wall-clock TPS requires a promoted parent's compact representation resident, and the streamed forward is streaming-bound (weights re-dequanted per layer) so its wall-clock is not a served rate"
+  },
+
+  "flop_byte_energy_sealed": {
+    "flop_byte_verdict": "GLM FEWER_FLOPS_AND_BYTES; DeepSeek FEWER_BYTES_MODEST (attention is the binding organ because experts are already fp4, so the functional whole-token win is ~1.5x)",
+    "active_bytes": "GLM functional 12.58 MB/layer (48x less than teacher); DeepSeek functional token 7.73 GB vs teacher 11.7 GB",
+    "prefill": "NOT_MEASURED (needs a resident compact model)",
+    "energy": "UNAVAILABLE (no accepted on-device source wired; none inferred)"
+  },
+
+  "overhead_collapse": {
+    "command_buffers_per_token": "76 -> 1 (GLM functional MoE path, measured, 1.12x)",
+    "per_layer_command_buffers": "1 (each functional MoE layer is one command buffer)",
+    "python_in_hot_loop": "the Metal grammars run without Python in the kernel dispatch; the streamed reference forward is Python (measurement apparatus, not a production runtime)"
+  },
+
+  "hide_contracts_frozen": {
+    "document": "HAWKING_HIDE_HANDOFF_CONTRACT.json",
+    "frozen": ["gravity loading ABI", "model registry + admission rule", "artifact validation",
+               "runtime selection + grammars", "functional-model capability flag",
+               "load/unload lifecycle incl. one-block streamed residency", "context/KV lifecycle",
+               "streaming-token API", "tool-call interruption/resume", "telemetry + named errors",
+               "resource modes bound to 96 GiB", "research-only vs release-candidate labels"],
+    "no_hawking_model_is_a_release_candidate": true
+  },
+
+  "storage": {
+    "glm_source": "RELEASED (405.4 GB reclaimed); rehydration receipt, 76/76 shard sha256",
+    "deepseek_source": "RELEASED (159.6 GB reclaimed; terminal, cascade refuted); rehydration receipt, 46/46 shard sha256, meta + evidence + validated forward retained",
+    "free_gib": 539,
+    "reserve_gib": 100,
+    "one_parent_policy": "held; no source resident",
+    "rollback": {"glm": "re-fetch zai-org/GLM-5.2 @ b4734de4...", "deepseek": "re-fetch deepseek-ai/DeepSeek-V4-Flash @ 60d8d707..."}
+  },
+
+  "durable_results": [
+    "the null-first, amplification-first, cascade-decisive methodology and its metric contract",
+    "the validated streamed-forward apparatus: validate primitives vs the official transformers reference, stream one block at a time, use contextual inputs",
+    "the finding that single-layer amplification favourability does NOT imply full-model composition; the cascade is the decisive test",
+    "the functional .gravity codec, CPU authority, and parity-gated Metal grammars",
+    "GLM and DeepSeek both FUNCTIONAL_PARTIAL_ONLY by different mechanisms (expansion vs router-divergence-under-drift)"
+  ],
+
+  "scoped_ascension": {
+    "HAWKING_CORE_ASCENDED": "methodology, metric system, .gravity substrate, source lifecycle, Apple runtime foundation, functional-runtime discovery, HIDE-facing architecture",
+    "cross_parent_functional_paradigm": "CLOSED: independent per-layer functional students do not compose",
+    "metric_broken": false,
+    "winning_servable_architecture": false
+  },
+
+  "next_phase": "refactor, release selection, and HIDE completion. Do not reopen the functional search space. A route-aware jointly-trained student is the only identified path to composition and is a separate future research decision, not part of this closure.",
+
+  "commits_pushed": true,
+  "system_clean": true,
+  "not_evidence_of": "capability, a servable model, or that no functional model of any parent is possible. It refutes the independent-per-layer-student paradigm and closes Hawking core on an honest, scoped basis."
+}

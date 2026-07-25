@@ -1,0 +1,1771 @@
+{
+  "bounds": {
+    "capsule_bytes_per_layer": 805306368,
+    "env_overrides": [
+      "GLM52_CAPTURE_RECORDS",
+      "GLM52_CAPTURE_SEQUENCE"
+    ],
+    "max_records": 16,
+    "max_sequence": 256,
+    "note": "a capsule holds eight [records, sequence, 6144] float32 trajectories, so its size is linear in records*sequence; the frozen program pins the production profile",
+    "pad_id": 0
+  },
+  "corpus_records_total": 171,
+  "domains_available": [
+    "general prose",
+    "factual completion",
+    "science",
+    "mathematics",
+    "reasoning",
+    "coding",
+    "instruction following",
+    "tool formatting",
+    "agentic coding",
+    "rare tokens",
+    "Chinese",
+    "English",
+    "mixed-language",
+    "long-context retrieval",
+    "long-context synthesis"
+  ],
+  "evaluation_splits": [
+    "teacher_cv",
+    "teacher_score",
+    "teacher_holdout",
+    "teacher_replication",
+    "teacher_protected",
+    "teacher_longctx"
+  ],
+  "generated_at": "2026-07-23T13:47:06Z",
+  "promotion_rule": "a candidate is fitted only on train splits and promoted only on evaluation splits; replication must hold without refit",
+  "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+  "schema": "hawking.glm52.generation_b_capture_program.v1",
+  "split_token_overlaps": {},
+  "splits": {
+    "teacher_cv": {
+      "batch_shape": [
+        16,
+        256
+      ],
+      "corpus_partition": "cross-validation",
+      "domains": {
+        "Chinese": 1,
+        "English": 1,
+        "agentic coding": 1,
+        "coding": 1,
+        "factual completion": 1,
+        "general prose": 1,
+        "instruction following": 1,
+        "long-context retrieval": 2,
+        "long-context synthesis": 1,
+        "mathematics": 1,
+        "mixed-language": 1,
+        "rare tokens": 1,
+        "reasoning": 1,
+        "science": 1,
+        "tool formatting": 1
+      },
+      "members": [
+        {
+          "context_rung_tokens": null,
+          "domain": "agentic coding",
+          "kind": "core",
+          "partition": "cross-validation",
+          "record_id": "core-03-agentic-coding",
+          "source": "prompt",
+          "token_ids_sha256": "45a2571a1e6b7eb5bdb0c4da731244cdede814ef7fb2a60d93b23a5cfbae7994",
+          "tokens": 20
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "Chinese",
+          "kind": "core",
+          "partition": "cross-validation",
+          "record_id": "core-03-chinese",
+          "source": "prompt",
+          "token_ids_sha256": "ae25788433f645ee42fe0d584d8f7af9fb482427e20eb26775617601260a9171",
+          "tokens": 24
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "coding",
+          "kind": "core",
+          "partition": "cross-validation",
+          "record_id": "core-03-coding",
+          "source": "prompt",
+          "token_ids_sha256": "d54d40e267d061103b119a6813fff25d57eef21e0f14a5b7fe94785913d76f8d",
+          "tokens": 19
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "English",
+          "kind": "core",
+          "partition": "cross-validation",
+          "record_id": "core-03-english",
+          "source": "prompt",
+          "token_ids_sha256": "a999922bace1a63b78806e5c7e9fafcd66dc9d42148a5d2dd9e1b9410a16a4a2",
+          "tokens": 13
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "factual completion",
+          "kind": "core",
+          "partition": "cross-validation",
+          "record_id": "core-03-factual-completion",
+          "source": "prompt",
+          "token_ids_sha256": "eb00cb4092b042de6367cc51e10300b0205db87fd21949d2e8d2a1374a5c7cfd",
+          "tokens": 26
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "general prose",
+          "kind": "core",
+          "partition": "cross-validation",
+          "record_id": "core-03-general-prose",
+          "source": "prompt",
+          "token_ids_sha256": "c5277813abb103755120948494104a3337d7194c88513b1e34c31143e82545b6",
+          "tokens": 21
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "instruction following",
+          "kind": "core",
+          "partition": "cross-validation",
+          "record_id": "core-03-instruction-following",
+          "source": "prompt",
+          "token_ids_sha256": "c78438693960ccd56e739ced1a0a2595fce0adab5fc0af13f3e1be8f44d7706f",
+          "tokens": 17
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "long-context retrieval",
+          "kind": "core",
+          "partition": "cross-validation",
+          "record_id": "core-03-long-context-retrieval",
+          "source": "prompt",
+          "token_ids_sha256": "7ecc006df0992d385c7d83269f32e3e6d9c3d9acc06a152ff10fd77c4124ae90",
+          "tokens": 22
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "long-context synthesis",
+          "kind": "core",
+          "partition": "cross-validation",
+          "record_id": "core-03-long-context-synthesis",
+          "source": "prompt",
+          "token_ids_sha256": "f221c34510ace1d283334dde39628df1fbe81ceb2609efa54f56d509b6e0c855",
+          "tokens": 17
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "mathematics",
+          "kind": "core",
+          "partition": "cross-validation",
+          "record_id": "core-03-mathematics",
+          "source": "prompt",
+          "token_ids_sha256": "24f57a7116fe72311e5fbd283dce53273273b51132bfa0dc03943fba7ee9f6cf",
+          "tokens": 12
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "mixed-language",
+          "kind": "core",
+          "partition": "cross-validation",
+          "record_id": "core-03-mixed-language",
+          "source": "prompt",
+          "token_ids_sha256": "cdd956e914b0e3e9c6f44521dece8081c831eb007e4d8eb0ed0858c98099ecc2",
+          "tokens": 21
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "rare tokens",
+          "kind": "core",
+          "partition": "cross-validation",
+          "record_id": "core-03-rare-tokens",
+          "source": "prompt",
+          "token_ids_sha256": "03d999016de251ad699cd9060dfc2442646933dc21166849543f8e9f41376cd1",
+          "tokens": 24
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "reasoning",
+          "kind": "core",
+          "partition": "cross-validation",
+          "record_id": "core-03-reasoning",
+          "source": "prompt",
+          "token_ids_sha256": "2b081fc42c99cf30111023b74dd78a5fe598a50254991750cde8f8c361ae7fcc",
+          "tokens": 23
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "science",
+          "kind": "core",
+          "partition": "cross-validation",
+          "record_id": "core-03-science",
+          "source": "prompt",
+          "token_ids_sha256": "1372eb3738343e3632638359b12889f45578b5736a9061637ca74d5f32a720ed",
+          "tokens": 19
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "tool formatting",
+          "kind": "core",
+          "partition": "cross-validation",
+          "record_id": "core-03-tool-formatting",
+          "source": "prompt",
+          "token_ids_sha256": "59dab99eaf60f54b9f040956dee6d110d9fdf7e045357692a0bfe46f51a85162",
+          "tokens": 21
+        },
+        {
+          "context_rung_tokens": 131072,
+          "domain": "long-context retrieval",
+          "kind": "context_ladder",
+          "partition": "cross-validation",
+          "record_id": "ladder-128k-03-long-context-retrieval",
+          "source": "context_window",
+          "token_ids_sha256": "a735aac16a532c4f8cab6fed3523fc73ee780be8641ec7c3cea81fc59f7cba64",
+          "tokens": 256
+        }
+      ],
+      "membership_sha256": "c88afa07553b1f6eec8c76747ee8df7ea9d9e3bdbff2ba9a31baf3b640c87b93",
+      "padded_positions": 3541,
+      "real_tokens": 555,
+      "records": 16
+    },
+    "teacher_doctor": {
+      "batch_shape": [
+        16,
+        256
+      ],
+      "corpus_partition": "Doctor training",
+      "domains": {
+        "Chinese": 1,
+        "English": 1,
+        "agentic coding": 1,
+        "coding": 1,
+        "factual completion": 1,
+        "general prose": 1,
+        "instruction following": 1,
+        "long-context retrieval": 1,
+        "long-context synthesis": 2,
+        "mathematics": 1,
+        "mixed-language": 1,
+        "rare tokens": 1,
+        "reasoning": 1,
+        "science": 1,
+        "tool formatting": 1
+      },
+      "members": [
+        {
+          "context_rung_tokens": null,
+          "domain": "agentic coding",
+          "kind": "core",
+          "partition": "Doctor training",
+          "record_id": "core-02-agentic-coding",
+          "source": "prompt",
+          "token_ids_sha256": "17429bf10f91b39fdfc8377b0be0ef07eb8d229735edc7285c8a89b9a8c5a1d3",
+          "tokens": 18
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "Chinese",
+          "kind": "core",
+          "partition": "Doctor training",
+          "record_id": "core-02-chinese",
+          "source": "prompt",
+          "token_ids_sha256": "2434492ae01ab0bee35c8be4a74bdeab80c3f95b5a3bcd4c4594f2ee2a3fd70d",
+          "tokens": 17
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "coding",
+          "kind": "core",
+          "partition": "Doctor training",
+          "record_id": "core-02-coding",
+          "source": "prompt",
+          "token_ids_sha256": "95f4e6900cf32da61adb0b7720f82115e3270aaa2c094ebff25d4e8e300bab25",
+          "tokens": 13
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "English",
+          "kind": "core",
+          "partition": "Doctor training",
+          "record_id": "core-02-english",
+          "source": "prompt",
+          "token_ids_sha256": "4185cc61addc991c61b68e9b9b26d84e7ef90043c76bc68bc29b03eae0c4dc98",
+          "tokens": 12
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "factual completion",
+          "kind": "core",
+          "partition": "Doctor training",
+          "record_id": "core-02-factual-completion",
+          "source": "prompt",
+          "token_ids_sha256": "d280463a4572c460ab835756b4408573bfece93c8d6ee8fbc329e8629fe33e8c",
+          "tokens": 20
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "general prose",
+          "kind": "core",
+          "partition": "Doctor training",
+          "record_id": "core-02-general-prose",
+          "source": "prompt",
+          "token_ids_sha256": "adb9796261cbcdb7097740981c30266c8614441ca3f54dfc687d63804cec6ec5",
+          "tokens": 36
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "instruction following",
+          "kind": "core",
+          "partition": "Doctor training",
+          "record_id": "core-02-instruction-following",
+          "source": "prompt",
+          "token_ids_sha256": "5125c0a1fe8f43d889b612108916a374292b40f3cf3172ccdf1d9c525d2b6d93",
+          "tokens": 23
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "long-context retrieval",
+          "kind": "core",
+          "partition": "Doctor training",
+          "record_id": "core-02-long-context-retrieval",
+          "source": "prompt",
+          "token_ids_sha256": "386b2cc161f7b1618a715c6c5e95ada4423fc6e82593df79cbf67c86bc516373",
+          "tokens": 26
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "long-context synthesis",
+          "kind": "core",
+          "partition": "Doctor training",
+          "record_id": "core-02-long-context-synthesis",
+          "source": "prompt",
+          "token_ids_sha256": "7d03e4ad00ce753b78d254dda74b19264075ad1103ca02482e5189bb91f17d83",
+          "tokens": 17
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "mathematics",
+          "kind": "core",
+          "partition": "Doctor training",
+          "record_id": "core-02-mathematics",
+          "source": "prompt",
+          "token_ids_sha256": "3896f87df69d6a0a6305d7f7f143e493fd84bb8f645b5911a5a391f22c23d3b1",
+          "tokens": 16
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "mixed-language",
+          "kind": "core",
+          "partition": "Doctor training",
+          "record_id": "core-02-mixed-language",
+          "source": "prompt",
+          "token_ids_sha256": "e6b2545f108bf619a1ebe20cc58ae2c28dce25ba0743bc59aaec5478954aaeb1",
+          "tokens": 16
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "rare tokens",
+          "kind": "core",
+          "partition": "Doctor training",
+          "record_id": "core-02-rare-tokens",
+          "source": "prompt",
+          "token_ids_sha256": "a661a1fed67936d17c57c89727206f2f53aa5e7e2188020018dece257876fbc5",
+          "tokens": 26
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "reasoning",
+          "kind": "core",
+          "partition": "Doctor training",
+          "record_id": "core-02-reasoning",
+          "source": "prompt",
+          "token_ids_sha256": "ae56d98c3414a639e1403a06c416e97a07c7278b1a3fa39739cba2d72619b647",
+          "tokens": 26
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "science",
+          "kind": "core",
+          "partition": "Doctor training",
+          "record_id": "core-02-science",
+          "source": "prompt",
+          "token_ids_sha256": "9ec196c5a07ded215ffa2b4265a5cc2c259ab09bca8443053dfe721d64d99132",
+          "tokens": 26
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "tool formatting",
+          "kind": "core",
+          "partition": "Doctor training",
+          "record_id": "core-02-tool-formatting",
+          "source": "prompt",
+          "token_ids_sha256": "8dffa076454e3aa2f1c1cb24cd8842e272bc420af9bd2e6f783922dc5de233ba",
+          "tokens": 18
+        },
+        {
+          "context_rung_tokens": 131072,
+          "domain": "long-context synthesis",
+          "kind": "context_ladder",
+          "partition": "Doctor training",
+          "record_id": "ladder-128k-02-long-context-synthesis",
+          "source": "context_window",
+          "token_ids_sha256": "2baedb2e756d2e5f9ddabb0ff887ab3038dfc8f6af845e8b0c6ac117643c7f63",
+          "tokens": 256
+        }
+      ],
+      "membership_sha256": "5a479cc70c23e555405ebdae44f493fd4b3a0af2b0d39bf918285f6036f3c704",
+      "padded_positions": 3530,
+      "real_tokens": 566,
+      "records": 16
+    },
+    "teacher_fit": {
+      "batch_shape": [
+        16,
+        256
+      ],
+      "corpus_partition": "representation fit",
+      "domains": {
+        "Chinese": 1,
+        "English": 1,
+        "agentic coding": 1,
+        "coding": 1,
+        "factual completion": 1,
+        "general prose": 1,
+        "instruction following": 1,
+        "long-context retrieval": 1,
+        "long-context synthesis": 2,
+        "mathematics": 1,
+        "mixed-language": 1,
+        "rare tokens": 1,
+        "reasoning": 1,
+        "science": 1,
+        "tool formatting": 1
+      },
+      "members": [
+        {
+          "context_rung_tokens": null,
+          "domain": "agentic coding",
+          "kind": "core",
+          "partition": "representation fit",
+          "record_id": "core-00-agentic-coding",
+          "source": "prompt",
+          "token_ids_sha256": "82313eaf4319a252f6dd37d97cc9f72fe42f8a125043ec9de8d9e714fdccbeac",
+          "tokens": 23
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "Chinese",
+          "kind": "core",
+          "partition": "representation fit",
+          "record_id": "core-00-chinese",
+          "source": "prompt",
+          "token_ids_sha256": "7464092f4c6d9e9c548867024307c2e2c4e8f90c10f437f6fed80bf5f22a33e9",
+          "tokens": 17
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "coding",
+          "kind": "core",
+          "partition": "representation fit",
+          "record_id": "core-00-coding",
+          "source": "prompt",
+          "token_ids_sha256": "ce81fa11ecfa57b289063d75c728b46fd4984f443e4595235a051be4442fb3ce",
+          "tokens": 19
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "English",
+          "kind": "core",
+          "partition": "representation fit",
+          "record_id": "core-00-english",
+          "source": "prompt",
+          "token_ids_sha256": "761d09105601521a84b7e8d77e7aaaa4de8b25ebc1a0443230c9b918bccb538f",
+          "tokens": 21
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "factual completion",
+          "kind": "core",
+          "partition": "representation fit",
+          "record_id": "core-00-factual-completion",
+          "source": "prompt",
+          "token_ids_sha256": "4fdf6d2295d6a38d2fa1727f043894b3d8480fab7e7dacb10ac80708d0e3eba3",
+          "tokens": 22
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "general prose",
+          "kind": "core",
+          "partition": "representation fit",
+          "record_id": "core-00-general-prose",
+          "source": "prompt",
+          "token_ids_sha256": "d1d25fb8538c808f06378ca5cadfb1c90ed70d7fba76a1b7a4245f3d8988ad8a",
+          "tokens": 26
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "instruction following",
+          "kind": "core",
+          "partition": "representation fit",
+          "record_id": "core-00-instruction-following",
+          "source": "prompt",
+          "token_ids_sha256": "3c71c9f2d691224e24ec8771411dbdc882b805189713d2602a3854006f800135",
+          "tokens": 27
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "long-context retrieval",
+          "kind": "core",
+          "partition": "representation fit",
+          "record_id": "core-00-long-context-retrieval",
+          "source": "prompt",
+          "token_ids_sha256": "5004ce0672bd0dbc6857a0ca857e2b7767227aafb2362a03d761f2a1cf3ed08a",
+          "tokens": 17
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "long-context synthesis",
+          "kind": "core",
+          "partition": "representation fit",
+          "record_id": "core-00-long-context-synthesis",
+          "source": "prompt",
+          "token_ids_sha256": "192a00c6e5f26f22e6fe0d93e086fb7682dcddc85db48352a0616146a2ade9eb",
+          "tokens": 16
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "mathematics",
+          "kind": "core",
+          "partition": "representation fit",
+          "record_id": "core-00-mathematics",
+          "source": "prompt",
+          "token_ids_sha256": "99135bc502393fa47b47fcba0dcdabeae805a74c4b88d9a0ee9eba6158d3c101",
+          "tokens": 11
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "mixed-language",
+          "kind": "core",
+          "partition": "representation fit",
+          "record_id": "core-00-mixed-language",
+          "source": "prompt",
+          "token_ids_sha256": "6bfcb8a0f1599f9e12fad26cc5c5874f26f7a7280e54fb5b15c0a10112e3f7e9",
+          "tokens": 17
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "rare tokens",
+          "kind": "core",
+          "partition": "representation fit",
+          "record_id": "core-00-rare-tokens",
+          "source": "prompt",
+          "token_ids_sha256": "3ae0c53190bb650698b0ccc7cb0c9d86bcd95e76d3273c16da66f3ee0c67f5b7",
+          "tokens": 21
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "reasoning",
+          "kind": "core",
+          "partition": "representation fit",
+          "record_id": "core-00-reasoning",
+          "source": "prompt",
+          "token_ids_sha256": "036d9de274d3fa0ee0ae11c8f6a2f4223d261e56d39f8a7bf6d7e8f6c3107d1c",
+          "tokens": 33
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "science",
+          "kind": "core",
+          "partition": "representation fit",
+          "record_id": "core-00-science",
+          "source": "prompt",
+          "token_ids_sha256": "c78e012f7e3a9950c11c5c8c3e89849e924aef69aa46e1b5498698a8b18ee3a8",
+          "tokens": 24
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "tool formatting",
+          "kind": "core",
+          "partition": "representation fit",
+          "record_id": "core-00-tool-formatting",
+          "source": "prompt",
+          "token_ids_sha256": "e0f664510fd1264e720bf7a87156c3c63e5eb4cbb6c3bb358dd4ac574bcbc2b0",
+          "tokens": 26
+        },
+        {
+          "context_rung_tokens": 131072,
+          "domain": "long-context synthesis",
+          "kind": "context_ladder",
+          "partition": "representation fit",
+          "record_id": "ladder-128k-00-long-context-synthesis",
+          "source": "context_window",
+          "token_ids_sha256": "03ba1140ce01f869d4226af76cea294524f5f008c3306782ce0e5bdfd3264aac",
+          "tokens": 256
+        }
+      ],
+      "membership_sha256": "4ff4a6c6ddd53c3d780614e2dc9085fe488cc3f13eb53404aa54dda591b6265b",
+      "padded_positions": 3520,
+      "real_tokens": 576,
+      "records": 16
+    },
+    "teacher_holdout": {
+      "batch_shape": [
+        16,
+        256
+      ],
+      "corpus_partition": "held-out",
+      "domains": {
+        "Chinese": 1,
+        "English": 1,
+        "agentic coding": 1,
+        "coding": 1,
+        "factual completion": 1,
+        "general prose": 1,
+        "instruction following": 1,
+        "long-context retrieval": 2,
+        "long-context synthesis": 1,
+        "mathematics": 1,
+        "mixed-language": 1,
+        "rare tokens": 1,
+        "reasoning": 1,
+        "science": 1,
+        "tool formatting": 1
+      },
+      "members": [
+        {
+          "context_rung_tokens": null,
+          "domain": "agentic coding",
+          "kind": "core",
+          "partition": "held-out",
+          "record_id": "core-05-agentic-coding",
+          "source": "prompt",
+          "token_ids_sha256": "7b8fbb809259a83c53a70e04d1efb91bc616267ee71781bb78b8d25d534dd7f6",
+          "tokens": 19
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "Chinese",
+          "kind": "core",
+          "partition": "held-out",
+          "record_id": "core-05-chinese",
+          "source": "prompt",
+          "token_ids_sha256": "7cd1d86fae7659bf23b203949f8b5bc5ef7805945cfe5e1a6616ffef2c28b1c1",
+          "tokens": 26
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "coding",
+          "kind": "core",
+          "partition": "held-out",
+          "record_id": "core-05-coding",
+          "source": "prompt",
+          "token_ids_sha256": "40f7443120fe7c145ff6badf8dbf8d865ab53af7d7121541c49c65e29713d8b8",
+          "tokens": 16
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "English",
+          "kind": "core",
+          "partition": "held-out",
+          "record_id": "core-05-english",
+          "source": "prompt",
+          "token_ids_sha256": "6a90e919740a4f64ff44c01bb4b1027a86eccaccb3837f44e8904ca56a85c3b4",
+          "tokens": 14
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "factual completion",
+          "kind": "core",
+          "partition": "held-out",
+          "record_id": "core-05-factual-completion",
+          "source": "prompt",
+          "token_ids_sha256": "62a1ec5993c21a646ad36c1ac11258df0fd4b01f4b72515d72999cbc24a6527c",
+          "tokens": 35
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "general prose",
+          "kind": "core",
+          "partition": "held-out",
+          "record_id": "core-05-general-prose",
+          "source": "prompt",
+          "token_ids_sha256": "4d85beb4ed97f10e19838e461235039f5058a14ebbc3882ffbc4b8d5f303e394",
+          "tokens": 20
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "instruction following",
+          "kind": "core",
+          "partition": "held-out",
+          "record_id": "core-05-instruction-following",
+          "source": "prompt",
+          "token_ids_sha256": "4fbd684475c01bccbe1a0a9b2709476d78adf4c80f69ccc135958d987612de86",
+          "tokens": 15
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "long-context retrieval",
+          "kind": "core",
+          "partition": "held-out",
+          "record_id": "core-05-long-context-retrieval",
+          "source": "prompt",
+          "token_ids_sha256": "3830a04c58f05a05fefb029d04761a9c1471972e8fab08a9f528809a532ee550",
+          "tokens": 22
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "long-context synthesis",
+          "kind": "core",
+          "partition": "held-out",
+          "record_id": "core-05-long-context-synthesis",
+          "source": "prompt",
+          "token_ids_sha256": "77a39c8d5ae84079de2080f73233eece1d7402d0062e09f0a0b1f4859055d711",
+          "tokens": 27
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "mathematics",
+          "kind": "core",
+          "partition": "held-out",
+          "record_id": "core-05-mathematics",
+          "source": "prompt",
+          "token_ids_sha256": "b498316324ca9bd8a3ba0b512db2a9b6ca9007e167b48172473cfef2f28e87d5",
+          "tokens": 14
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "mixed-language",
+          "kind": "core",
+          "partition": "held-out",
+          "record_id": "core-05-mixed-language",
+          "source": "prompt",
+          "token_ids_sha256": "4e9e0e2f1fde227093379d87884dd2422affda3b83836bbc5277ebcc46f6b8d8",
+          "tokens": 18
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "rare tokens",
+          "kind": "core",
+          "partition": "held-out",
+          "record_id": "core-05-rare-tokens",
+          "source": "prompt",
+          "token_ids_sha256": "e53a99c6e6109ac4a1fe7a589a2183cfd4d235c5f6f0e844877267d4d394c9d2",
+          "tokens": 24
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "reasoning",
+          "kind": "core",
+          "partition": "held-out",
+          "record_id": "core-05-reasoning",
+          "source": "prompt",
+          "token_ids_sha256": "ac2a2b9285e7abc06cbbcc995ba70233ba75c5ef91ba0bd6d678a1f5f85f1918",
+          "tokens": 30
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "science",
+          "kind": "core",
+          "partition": "held-out",
+          "record_id": "core-05-science",
+          "source": "prompt",
+          "token_ids_sha256": "182b69d7ec2a4fc956ffcd6b8a5b1c10c757d3c361bcbef3b56a7e9d5a97ad66",
+          "tokens": 23
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "tool formatting",
+          "kind": "core",
+          "partition": "held-out",
+          "record_id": "core-05-tool-formatting",
+          "source": "prompt",
+          "token_ids_sha256": "ac235f214c3e166544d5846dadf9105395650214a293775fb4ca41bc921f9ee5",
+          "tokens": 17
+        },
+        {
+          "context_rung_tokens": 131072,
+          "domain": "long-context retrieval",
+          "kind": "context_ladder",
+          "partition": "held-out",
+          "record_id": "ladder-128k-05-long-context-retrieval",
+          "source": "context_window",
+          "token_ids_sha256": "1f4ec23bf675cc3e8361520ed7f023a5b25604171c16b0b9a13e2d916e7436b5",
+          "tokens": 256
+        }
+      ],
+      "membership_sha256": "81b5cd0b65113d8fcd1bc4daccc368c28c4e4eaccc38f617c166fbb75ed1ecbf",
+      "padded_positions": 3520,
+      "real_tokens": 576,
+      "records": 16
+    },
+    "teacher_longctx": {
+      "batch_shape": [
+        16,
+        256
+      ],
+      "corpus_partition": "long-context holdout",
+      "domains": {
+        "Chinese": 1,
+        "English": 1,
+        "agentic coding": 1,
+        "coding": 1,
+        "factual completion": 1,
+        "general prose": 1,
+        "instruction following": 1,
+        "long-context retrieval": 1,
+        "long-context synthesis": 2,
+        "mathematics": 1,
+        "mixed-language": 1,
+        "rare tokens": 1,
+        "reasoning": 1,
+        "science": 1,
+        "tool formatting": 1
+      },
+      "members": [
+        {
+          "context_rung_tokens": null,
+          "domain": "agentic coding",
+          "kind": "core",
+          "partition": "long-context holdout",
+          "record_id": "core-08-agentic-coding",
+          "source": "prompt",
+          "token_ids_sha256": "cea430cadab50be816756e07ad0409390657705bad4f7828f368e0039f31ba12",
+          "tokens": 18
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "Chinese",
+          "kind": "core",
+          "partition": "long-context holdout",
+          "record_id": "core-08-chinese",
+          "source": "prompt",
+          "token_ids_sha256": "eed8d126eaf48cb2f5bc4a74e31456975a3a03cea51a594e39a39acac63d7cea",
+          "tokens": 18
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "coding",
+          "kind": "core",
+          "partition": "long-context holdout",
+          "record_id": "core-08-coding",
+          "source": "prompt",
+          "token_ids_sha256": "ee7931b28ae1582feb5a6e2cc35e1a1e4c7095da061cef57e879165db86b160a",
+          "tokens": 15
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "English",
+          "kind": "core",
+          "partition": "long-context holdout",
+          "record_id": "core-08-english",
+          "source": "prompt",
+          "token_ids_sha256": "874402119b448e56af34926d14a820d9fcf35016b98d53afb547a414816fefb7",
+          "tokens": 13
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "factual completion",
+          "kind": "core",
+          "partition": "long-context holdout",
+          "record_id": "core-08-factual-completion",
+          "source": "prompt",
+          "token_ids_sha256": "e829dd7e7c40f24f6858b07c8146d1d59c8f6d5fa61eff412c00d9e3ed52cf1f",
+          "tokens": 29
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "general prose",
+          "kind": "core",
+          "partition": "long-context holdout",
+          "record_id": "core-08-general-prose",
+          "source": "prompt",
+          "token_ids_sha256": "630b0b9fb85df5ebca1db6b9d8ab49c9ca8400a6e6ebc1c481c873d4aba9d54c",
+          "tokens": 25
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "instruction following",
+          "kind": "core",
+          "partition": "long-context holdout",
+          "record_id": "core-08-instruction-following",
+          "source": "prompt",
+          "token_ids_sha256": "5c576a277ed65d410d376da2163e36d61140e793779eb63c5de5e28b26c5eaa4",
+          "tokens": 15
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "long-context retrieval",
+          "kind": "core",
+          "partition": "long-context holdout",
+          "record_id": "core-08-long-context-retrieval",
+          "source": "prompt",
+          "token_ids_sha256": "757d9189602485f3e372ed1af6bfae89e1287ae73974a766cc1a32b70750f9f3",
+          "tokens": 18
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "long-context synthesis",
+          "kind": "core",
+          "partition": "long-context holdout",
+          "record_id": "core-08-long-context-synthesis",
+          "source": "prompt",
+          "token_ids_sha256": "3a4d000998f1deb4ca17ee10643235ae8447fca48e5d9bda0728467a7cc18ce4",
+          "tokens": 21
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "mathematics",
+          "kind": "core",
+          "partition": "long-context holdout",
+          "record_id": "core-08-mathematics",
+          "source": "prompt",
+          "token_ids_sha256": "0049038573a2c80e200da3cee4c2dbb808b8da36dea24a3d95e1575be0292c17",
+          "tokens": 13
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "mixed-language",
+          "kind": "core",
+          "partition": "long-context holdout",
+          "record_id": "core-08-mixed-language",
+          "source": "prompt",
+          "token_ids_sha256": "3d44faeda9529cbca5ec26e902f165708ad057d936737502d1407303b3325eb1",
+          "tokens": 19
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "rare tokens",
+          "kind": "core",
+          "partition": "long-context holdout",
+          "record_id": "core-08-rare-tokens",
+          "source": "prompt",
+          "token_ids_sha256": "7c1e6894d2468fcc9822fddd594be92aa0307bfd33cffbb9fd0920f544514dc8",
+          "tokens": 23
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "reasoning",
+          "kind": "core",
+          "partition": "long-context holdout",
+          "record_id": "core-08-reasoning",
+          "source": "prompt",
+          "token_ids_sha256": "aa40f957c6a9e94726fcc0c1ccd08eeaa9930a10ef531413b4ddacb8d9c9fa1a",
+          "tokens": 23
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "science",
+          "kind": "core",
+          "partition": "long-context holdout",
+          "record_id": "core-08-science",
+          "source": "prompt",
+          "token_ids_sha256": "2720cb087842da9cb2f2d6a8834d192037fbb56ff460e8660e2a97622e3a16c7",
+          "tokens": 24
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "tool formatting",
+          "kind": "core",
+          "partition": "long-context holdout",
+          "record_id": "core-08-tool-formatting",
+          "source": "prompt",
+          "token_ids_sha256": "8a67480d6193c415bcb59a13c4d9afd28b3219ba28e20919399adb5fa9b0a688",
+          "tokens": 23
+        },
+        {
+          "context_rung_tokens": 131072,
+          "domain": "long-context synthesis",
+          "kind": "context_ladder",
+          "partition": "long-context holdout",
+          "record_id": "ladder-128k-08-long-context-synthesis",
+          "source": "context_window",
+          "token_ids_sha256": "83b623059298b709fdcf540c8bb0794603da0cc111144dcf5f1539320368c57c",
+          "tokens": 256
+        }
+      ],
+      "membership_sha256": "0b20cde4da5f08bce2cf8ba540b93e33801abfe2395d852dae5889d925025864",
+      "padded_positions": 3543,
+      "real_tokens": 553,
+      "records": 16
+    },
+    "teacher_protected": {
+      "batch_shape": [
+        16,
+        256
+      ],
+      "corpus_partition": "protected-domain holdout",
+      "domains": {
+        "Chinese": 1,
+        "English": 1,
+        "agentic coding": 1,
+        "coding": 1,
+        "factual completion": 1,
+        "general prose": 1,
+        "instruction following": 1,
+        "long-context retrieval": 2,
+        "long-context synthesis": 1,
+        "mathematics": 1,
+        "mixed-language": 1,
+        "rare tokens": 1,
+        "reasoning": 1,
+        "science": 1,
+        "tool formatting": 1
+      },
+      "members": [
+        {
+          "context_rung_tokens": null,
+          "domain": "agentic coding",
+          "kind": "core",
+          "partition": "protected-domain holdout",
+          "record_id": "core-07-agentic-coding",
+          "source": "prompt",
+          "token_ids_sha256": "652f2289e04f46b7048d10d7efe2ddc788bfa86aa82d9bae8bb1af70bd333d82",
+          "tokens": 19
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "Chinese",
+          "kind": "core",
+          "partition": "protected-domain holdout",
+          "record_id": "core-07-chinese",
+          "source": "prompt",
+          "token_ids_sha256": "98e37df2c5e12b44cb4cb884e56ff4c39d1faecbbb085b305eaa182d4b0b6706",
+          "tokens": 22
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "coding",
+          "kind": "core",
+          "partition": "protected-domain holdout",
+          "record_id": "core-07-coding",
+          "source": "prompt",
+          "token_ids_sha256": "d9cd061569f9c92f9e5730600f18cb3e65d460b2393c48b2e07d30bc8a442926",
+          "tokens": 16
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "English",
+          "kind": "core",
+          "partition": "protected-domain holdout",
+          "record_id": "core-07-english",
+          "source": "prompt",
+          "token_ids_sha256": "43ba41d279b08ce4b4b20b50be5dcc5c6fbf29dd741dbbb6d940c3606a378017",
+          "tokens": 13
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "factual completion",
+          "kind": "core",
+          "partition": "protected-domain holdout",
+          "record_id": "core-07-factual-completion",
+          "source": "prompt",
+          "token_ids_sha256": "cba0de101160c3da16f5b3bbac756d6ba670c95f9ec36a9f9526f730eeaafd65",
+          "tokens": 23
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "general prose",
+          "kind": "core",
+          "partition": "protected-domain holdout",
+          "record_id": "core-07-general-prose",
+          "source": "prompt",
+          "token_ids_sha256": "6bb20a99cbfb2725624b395cac99265f4dbdcf8abdfec4b394beb4bbc5134255",
+          "tokens": 23
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "instruction following",
+          "kind": "core",
+          "partition": "protected-domain holdout",
+          "record_id": "core-07-instruction-following",
+          "source": "prompt",
+          "token_ids_sha256": "ec15fc368aabf634d2befee7cb3c9cff143b307e0abbcfac3b62b362fe37bf56",
+          "tokens": 19
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "long-context retrieval",
+          "kind": "core",
+          "partition": "protected-domain holdout",
+          "record_id": "core-07-long-context-retrieval",
+          "source": "prompt",
+          "token_ids_sha256": "06b1aeee2d4af635f3f2c375d20971171e57c932d5b6d4aff4ff3d9c273721c9",
+          "tokens": 20
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "long-context synthesis",
+          "kind": "core",
+          "partition": "protected-domain holdout",
+          "record_id": "core-07-long-context-synthesis",
+          "source": "prompt",
+          "token_ids_sha256": "207d854ebf701ba18e0cda81ae70caeeb65414c3ec6f81b6299f7819af5ec635",
+          "tokens": 17
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "mathematics",
+          "kind": "core",
+          "partition": "protected-domain holdout",
+          "record_id": "core-07-mathematics",
+          "source": "prompt",
+          "token_ids_sha256": "de56ab92db52360d153ac0bbaeed61562daf90767a0ae8a512a994f671e3abc8",
+          "tokens": 13
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "mixed-language",
+          "kind": "core",
+          "partition": "protected-domain holdout",
+          "record_id": "core-07-mixed-language",
+          "source": "prompt",
+          "token_ids_sha256": "a8a1a658c1cb2c3031701af358681c32d106e5641957a7bae915449c0f3f523e",
+          "tokens": 18
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "rare tokens",
+          "kind": "core",
+          "partition": "protected-domain holdout",
+          "record_id": "core-07-rare-tokens",
+          "source": "prompt",
+          "token_ids_sha256": "aa887129db541720c316e32497e8a4ce582617e616d7677c5e39da476436960b",
+          "tokens": 17
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "reasoning",
+          "kind": "core",
+          "partition": "protected-domain holdout",
+          "record_id": "core-07-reasoning",
+          "source": "prompt",
+          "token_ids_sha256": "5d15bca887d7474b9a5df56ce3a0f6525335071ad28fef67ae7f026fad7da123",
+          "tokens": 36
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "science",
+          "kind": "core",
+          "partition": "protected-domain holdout",
+          "record_id": "core-07-science",
+          "source": "prompt",
+          "token_ids_sha256": "e3f8271c879c0a8a19564a0f3a81bdc750ad11d2ae945c8ad74ee10e9e08004b",
+          "tokens": 26
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "tool formatting",
+          "kind": "core",
+          "partition": "protected-domain holdout",
+          "record_id": "core-07-tool-formatting",
+          "source": "prompt",
+          "token_ids_sha256": "ac181b4b5c4ce433636d63e60e2984b760fd856c32e642ffe9790b518e748b19",
+          "tokens": 20
+        },
+        {
+          "context_rung_tokens": 131072,
+          "domain": "long-context retrieval",
+          "kind": "context_ladder",
+          "partition": "protected-domain holdout",
+          "record_id": "ladder-128k-07-long-context-retrieval",
+          "source": "context_window",
+          "token_ids_sha256": "8ea80c37c218db9494d5b587784571ddb8ba4934acbfb41ac0b0d35a625b5414",
+          "tokens": 256
+        }
+      ],
+      "membership_sha256": "d836b8457fc643ad4bef5060f51f4a613cd882fc72e6316f1c5588eebde90fbf",
+      "padded_positions": 3538,
+      "real_tokens": 558,
+      "records": 16
+    },
+    "teacher_replication": {
+      "batch_shape": [
+        16,
+        256
+      ],
+      "corpus_partition": "replication",
+      "domains": {
+        "Chinese": 1,
+        "English": 1,
+        "agentic coding": 1,
+        "coding": 1,
+        "factual completion": 1,
+        "general prose": 1,
+        "instruction following": 1,
+        "long-context retrieval": 1,
+        "long-context synthesis": 2,
+        "mathematics": 1,
+        "mixed-language": 1,
+        "rare tokens": 1,
+        "reasoning": 1,
+        "science": 1,
+        "tool formatting": 1
+      },
+      "members": [
+        {
+          "context_rung_tokens": null,
+          "domain": "agentic coding",
+          "kind": "core",
+          "partition": "replication",
+          "record_id": "core-06-agentic-coding",
+          "source": "prompt",
+          "token_ids_sha256": "1057da0770f940a965cbec7c54f29ed1eec8e65e1e863f94e501c0cba5aa16cd",
+          "tokens": 17
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "Chinese",
+          "kind": "core",
+          "partition": "replication",
+          "record_id": "core-06-chinese",
+          "source": "prompt",
+          "token_ids_sha256": "40ff2732517f91f59cc994a4fb9eff75c5d084fd3bc3af12cad9119b9d66d07c",
+          "tokens": 19
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "coding",
+          "kind": "core",
+          "partition": "replication",
+          "record_id": "core-06-coding",
+          "source": "prompt",
+          "token_ids_sha256": "2666c502bbd576e53304d1de7186cbcc49f7cbb6c68cdd2eeeb39cfa7d0bd226",
+          "tokens": 16
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "English",
+          "kind": "core",
+          "partition": "replication",
+          "record_id": "core-06-english",
+          "source": "prompt",
+          "token_ids_sha256": "25a3f30842c8f07380a31cd7bb6598468eaded5e3cd554b27f5342e7338b10e4",
+          "tokens": 17
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "factual completion",
+          "kind": "core",
+          "partition": "replication",
+          "record_id": "core-06-factual-completion",
+          "source": "prompt",
+          "token_ids_sha256": "dedf3d4af088920ce82303be6e9ca8a6a14d882d6344c78f8d0306c01d73cff5",
+          "tokens": 22
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "general prose",
+          "kind": "core",
+          "partition": "replication",
+          "record_id": "core-06-general-prose",
+          "source": "prompt",
+          "token_ids_sha256": "95bb87ddc9ac116646dae4ff6ca1750b92a0836bd5608de6f257c68bc83d94bc",
+          "tokens": 30
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "instruction following",
+          "kind": "core",
+          "partition": "replication",
+          "record_id": "core-06-instruction-following",
+          "source": "prompt",
+          "token_ids_sha256": "0d2d426d78e182183f615156958e57a3757f0aa3fd0b43a8ac1e774fd8998608",
+          "tokens": 22
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "long-context retrieval",
+          "kind": "core",
+          "partition": "replication",
+          "record_id": "core-06-long-context-retrieval",
+          "source": "prompt",
+          "token_ids_sha256": "6cbfb624dbcf6272b1dac9cf51d0339ece8228d970f8902e1191e34274a834a9",
+          "tokens": 21
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "long-context synthesis",
+          "kind": "core",
+          "partition": "replication",
+          "record_id": "core-06-long-context-synthesis",
+          "source": "prompt",
+          "token_ids_sha256": "e7954ffbcaeef7be793e3183896a803a86e40f31bc976b89292d0e9a56d75de9",
+          "tokens": 21
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "mathematics",
+          "kind": "core",
+          "partition": "replication",
+          "record_id": "core-06-mathematics",
+          "source": "prompt",
+          "token_ids_sha256": "c6c2427cced57d16a1e137cbf7169df5d1546468b65c4f83702ac94b7e7c37e5",
+          "tokens": 19
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "mixed-language",
+          "kind": "core",
+          "partition": "replication",
+          "record_id": "core-06-mixed-language",
+          "source": "prompt",
+          "token_ids_sha256": "83df01cf99ac0d93102bdc9c549d245618a7b0333aedc07ac64f24c3cfcc8006",
+          "tokens": 16
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "rare tokens",
+          "kind": "core",
+          "partition": "replication",
+          "record_id": "core-06-rare-tokens",
+          "source": "prompt",
+          "token_ids_sha256": "53beebdd35fdd91027537f4ae1e4ab904b073e16cd30b73f07a82b3081176429",
+          "tokens": 27
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "reasoning",
+          "kind": "core",
+          "partition": "replication",
+          "record_id": "core-06-reasoning",
+          "source": "prompt",
+          "token_ids_sha256": "8702c5cbf6ecec5927f849201c8e64dba5bf93b939076e2c1bac82b31d26d1cc",
+          "tokens": 22
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "science",
+          "kind": "core",
+          "partition": "replication",
+          "record_id": "core-06-science",
+          "source": "prompt",
+          "token_ids_sha256": "54fc4f3bc23a59c0e621203603b5a21310866148611572fb7c388cdc8a29426b",
+          "tokens": 24
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "tool formatting",
+          "kind": "core",
+          "partition": "replication",
+          "record_id": "core-06-tool-formatting",
+          "source": "prompt",
+          "token_ids_sha256": "50cb6d4d245fe506a55285906f6b2ec15d07508bdc154cdcc95704cfc4f59d53",
+          "tokens": 13
+        },
+        {
+          "context_rung_tokens": 131072,
+          "domain": "long-context synthesis",
+          "kind": "context_ladder",
+          "partition": "replication",
+          "record_id": "ladder-128k-06-long-context-synthesis",
+          "source": "context_window",
+          "token_ids_sha256": "ba24299be098ac8e7f7773a1a4029a5fc568d9354c868ad844a1c7b67ee70c66",
+          "tokens": 256
+        }
+      ],
+      "membership_sha256": "db77b940f5b35e029147310f6de17d446ae33fb3264692738e8dc118f6a68a9c",
+      "padded_positions": 3534,
+      "real_tokens": 562,
+      "records": 16
+    },
+    "teacher_router": {
+      "batch_shape": [
+        16,
+        256
+      ],
+      "corpus_partition": "router/indexer calibration",
+      "domains": {
+        "Chinese": 1,
+        "English": 1,
+        "agentic coding": 1,
+        "coding": 1,
+        "factual completion": 1,
+        "general prose": 1,
+        "instruction following": 1,
+        "long-context retrieval": 2,
+        "long-context synthesis": 1,
+        "mathematics": 1,
+        "mixed-language": 1,
+        "rare tokens": 1,
+        "reasoning": 1,
+        "science": 1,
+        "tool formatting": 1
+      },
+      "members": [
+        {
+          "context_rung_tokens": null,
+          "domain": "agentic coding",
+          "kind": "core",
+          "partition": "router/indexer calibration",
+          "record_id": "core-01-agentic-coding",
+          "source": "prompt",
+          "token_ids_sha256": "a7a1252fb2bfe4cade11939ba5bfbda05edc29d17f2d636227566d365e97d36e",
+          "tokens": 25
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "Chinese",
+          "kind": "core",
+          "partition": "router/indexer calibration",
+          "record_id": "core-01-chinese",
+          "source": "prompt",
+          "token_ids_sha256": "363d9c65a375815ea2aac64a88e5a95a03b50dd548c4676f10a7111d993be2d6",
+          "tokens": 18
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "coding",
+          "kind": "core",
+          "partition": "router/indexer calibration",
+          "record_id": "core-01-coding",
+          "source": "prompt",
+          "token_ids_sha256": "ca5e2a91a22e227f1056b1d9082970a71381fb124c29e39cf20adb4dacb55c24",
+          "tokens": 15
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "English",
+          "kind": "core",
+          "partition": "router/indexer calibration",
+          "record_id": "core-01-english",
+          "source": "prompt",
+          "token_ids_sha256": "b9ff020c84242950392d78b88bb1f20eb76020b8d2b494cb6bbf6a55cd2ed0a8",
+          "tokens": 14
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "factual completion",
+          "kind": "core",
+          "partition": "router/indexer calibration",
+          "record_id": "core-01-factual-completion",
+          "source": "prompt",
+          "token_ids_sha256": "96c2ce40da9233d21b3ad1c9447c5f799e4e3026db8443b48236bbdfac8e714c",
+          "tokens": 22
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "general prose",
+          "kind": "core",
+          "partition": "router/indexer calibration",
+          "record_id": "core-01-general-prose",
+          "source": "prompt",
+          "token_ids_sha256": "6cfca26755ff68f08cd567fcf7d95cccc0b09882adec62b8155598da98a853f7",
+          "tokens": 22
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "instruction following",
+          "kind": "core",
+          "partition": "router/indexer calibration",
+          "record_id": "core-01-instruction-following",
+          "source": "prompt",
+          "token_ids_sha256": "37449ea8fcc2f140122fee6ead2ba5bb38f974469101fc1f7bee641567160acb",
+          "tokens": 17
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "long-context retrieval",
+          "kind": "core",
+          "partition": "router/indexer calibration",
+          "record_id": "core-01-long-context-retrieval",
+          "source": "prompt",
+          "token_ids_sha256": "60ecb34edfa5b95e41cbd5f0484ab54d1ea7c98d4f85f571647a47f564415767",
+          "tokens": 20
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "long-context synthesis",
+          "kind": "core",
+          "partition": "router/indexer calibration",
+          "record_id": "core-01-long-context-synthesis",
+          "source": "prompt",
+          "token_ids_sha256": "323972f49ce7ac92c894b2ce2aea6de04f99102ce4f0fa9bdf15c09c6970036b",
+          "tokens": 16
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "mathematics",
+          "kind": "core",
+          "partition": "router/indexer calibration",
+          "record_id": "core-01-mathematics",
+          "source": "prompt",
+          "token_ids_sha256": "9c4bc5cc3d270858cb778960de9ce396db58a8b9bda47e43e75771cb7d22cb2f",
+          "tokens": 10
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "mixed-language",
+          "kind": "core",
+          "partition": "router/indexer calibration",
+          "record_id": "core-01-mixed-language",
+          "source": "prompt",
+          "token_ids_sha256": "950a6da6607c43cb8b59268cd6d0e8e38e346b71e61513c9f5022128b77cb477",
+          "tokens": 14
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "rare tokens",
+          "kind": "core",
+          "partition": "router/indexer calibration",
+          "record_id": "core-01-rare-tokens",
+          "source": "prompt",
+          "token_ids_sha256": "eea40adb53ccf2eba2a52f8811a179723ddad5028c20af4883302fb13dcc595a",
+          "tokens": 19
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "reasoning",
+          "kind": "core",
+          "partition": "router/indexer calibration",
+          "record_id": "core-01-reasoning",
+          "source": "prompt",
+          "token_ids_sha256": "19316b7ba4ec86f1a041d63ff7215e9b8c9667c7dd8fe28d24dcaa2d48e73343",
+          "tokens": 19
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "science",
+          "kind": "core",
+          "partition": "router/indexer calibration",
+          "record_id": "core-01-science",
+          "source": "prompt",
+          "token_ids_sha256": "3d5a52b96ac7e2178279d8bc5cfb43cc7122cfffc1c294cd4c732bca395beab0",
+          "tokens": 27
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "tool formatting",
+          "kind": "core",
+          "partition": "router/indexer calibration",
+          "record_id": "core-01-tool-formatting",
+          "source": "prompt",
+          "token_ids_sha256": "b7454ffa82b75727e672978b404da22c641da6f47a46a0f7ab4aa10449367738",
+          "tokens": 16
+        },
+        {
+          "context_rung_tokens": 131072,
+          "domain": "long-context retrieval",
+          "kind": "context_ladder",
+          "partition": "router/indexer calibration",
+          "record_id": "ladder-128k-01-long-context-retrieval",
+          "source": "context_window",
+          "token_ids_sha256": "78438876192e07cec4d6d7ff5ca610e4495a35ec4f8d2c1dd49a766feea48d99",
+          "tokens": 256
+        }
+      ],
+      "membership_sha256": "34d8c8e87785a37a2f2fbb74514b2c2b528719e10de2a80ef07d30eee7b5e778",
+      "padded_positions": 3566,
+      "real_tokens": 530,
+      "records": 16
+    },
+    "teacher_score": {
+      "batch_shape": [
+        16,
+        256
+      ],
+      "corpus_partition": "score",
+      "domains": {
+        "Chinese": 1,
+        "English": 1,
+        "agentic coding": 1,
+        "coding": 1,
+        "factual completion": 1,
+        "general prose": 1,
+        "instruction following": 1,
+        "long-context retrieval": 1,
+        "long-context synthesis": 2,
+        "mathematics": 1,
+        "mixed-language": 1,
+        "rare tokens": 1,
+        "reasoning": 1,
+        "science": 1,
+        "tool formatting": 1
+      },
+      "members": [
+        {
+          "context_rung_tokens": null,
+          "domain": "agentic coding",
+          "kind": "core",
+          "partition": "score",
+          "record_id": "core-04-agentic-coding",
+          "source": "prompt",
+          "token_ids_sha256": "66a4a21fc7cdd7b4d2700f7f42709d2ef5de60bfda04d413f77fafc3a4fadbd2",
+          "tokens": 19
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "Chinese",
+          "kind": "core",
+          "partition": "score",
+          "record_id": "core-04-chinese",
+          "source": "prompt",
+          "token_ids_sha256": "cb7f8c0357b6eba837a37a09e32c435e11bb72857214ddfdcb18c3bf3825a6a9",
+          "tokens": 18
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "coding",
+          "kind": "core",
+          "partition": "score",
+          "record_id": "core-04-coding",
+          "source": "prompt",
+          "token_ids_sha256": "8c98f47542924fab2e42be887a1b696cccc24de220e35ecfd6d561e809bef4e2",
+          "tokens": 15
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "English",
+          "kind": "core",
+          "partition": "score",
+          "record_id": "core-04-english",
+          "source": "prompt",
+          "token_ids_sha256": "e38e0893bc028ef34e154f96be93fa34880666859b7da261494249412a100d41",
+          "tokens": 10
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "factual completion",
+          "kind": "core",
+          "partition": "score",
+          "record_id": "core-04-factual-completion",
+          "source": "prompt",
+          "token_ids_sha256": "2c1384b5f44af83758ad56f2a1b5092d3f685d0b760d5f1a14c6be5c1990ad91",
+          "tokens": 17
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "general prose",
+          "kind": "core",
+          "partition": "score",
+          "record_id": "core-04-general-prose",
+          "source": "prompt",
+          "token_ids_sha256": "a647275b8eba0c6a91323fdfa423eec13eeececc869dca773f4aecd61b6be22f",
+          "tokens": 24
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "instruction following",
+          "kind": "core",
+          "partition": "score",
+          "record_id": "core-04-instruction-following",
+          "source": "prompt",
+          "token_ids_sha256": "d73f5a4e8affca15870546e10a38b9b4da27965967581fa73e7b501af6ceded5",
+          "tokens": 23
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "long-context retrieval",
+          "kind": "core",
+          "partition": "score",
+          "record_id": "core-04-long-context-retrieval",
+          "source": "prompt",
+          "token_ids_sha256": "509114b105547ee04872779258e5b3bb643eb7cb35c2ec136cf64de0741b4aaf",
+          "tokens": 20
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "long-context synthesis",
+          "kind": "core",
+          "partition": "score",
+          "record_id": "core-04-long-context-synthesis",
+          "source": "prompt",
+          "token_ids_sha256": "0d94b06dffcc62f16cfb181cd6f5081f4c34bc3cd3ff86a3a2c02652a0c5178a",
+          "tokens": 27
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "mathematics",
+          "kind": "core",
+          "partition": "score",
+          "record_id": "core-04-mathematics",
+          "source": "prompt",
+          "token_ids_sha256": "245ab40216373a8296ae385880c10d06d6f9d80b0c3e1e8568368575a19f61ae",
+          "tokens": 15
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "mixed-language",
+          "kind": "core",
+          "partition": "score",
+          "record_id": "core-04-mixed-language",
+          "source": "prompt",
+          "token_ids_sha256": "33d04fbc5591bec09ed24a3366ee3d6aab2c732478c695b273e4202f2d20d4b9",
+          "tokens": 14
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "rare tokens",
+          "kind": "core",
+          "partition": "score",
+          "record_id": "core-04-rare-tokens",
+          "source": "prompt",
+          "token_ids_sha256": "fea99a39e45d4b2ba05c8d7ccf3c6c36ebce178944f442d676783bc6c17281ec",
+          "tokens": 22
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "reasoning",
+          "kind": "core",
+          "partition": "score",
+          "record_id": "core-04-reasoning",
+          "source": "prompt",
+          "token_ids_sha256": "53cb3c9e9deed8ce3acfbfbfbd4b93c601d01a911d798d1f6bdc7a644dd58167",
+          "tokens": 30
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "science",
+          "kind": "core",
+          "partition": "score",
+          "record_id": "core-04-science",
+          "source": "prompt",
+          "token_ids_sha256": "d721ba3154cfc3f1221b0584f2550b8922fc5fd3cd725cbfaaf0d7daf3204575",
+          "tokens": 22
+        },
+        {
+          "context_rung_tokens": null,
+          "domain": "tool formatting",
+          "kind": "core",
+          "partition": "score",
+          "record_id": "core-04-tool-formatting",
+          "source": "prompt",
+          "token_ids_sha256": "92bf4a195c8f00ba95ab379d232593f6915f02ddf9141995f52eaaa9de54ee8c",
+          "tokens": 22
+        },
+        {
+          "context_rung_tokens": 131072,
+          "domain": "long-context synthesis",
+          "kind": "context_ladder",
+          "partition": "score",
+          "record_id": "ladder-128k-04-long-context-synthesis",
+          "source": "context_window",
+          "token_ids_sha256": "b3b1bfa10e36edda43858c6b4e187443cff378e32749bd77e57f3a144e6bb265",
+          "tokens": 256
+        }
+      ],
+      "membership_sha256": "af40873789ecaf3587721ee05f6755f1a0705637bcc63f3246f5daac158f646e",
+      "padded_positions": 3542,
+      "real_tokens": 554,
+      "records": 16
+    }
+  },
+  "splits_disjoint": true,
+  "supersedes": {
+    "what": "synthetic SHA-256 token ids, 8 positions, 2 splits",
+    "why": "an eight-token random probe exercises no domain, no language, no router margin and no context length; a representation fitted against it has been fitted against noise"
+  },
+  "tokenizer": {
+    "bytes": 20217442,
+    "path": "/Users/scammermike/.cache/huggingface/hub/models--zai-org--GLM-5.2/snapshots/b4734de4facf877f85769a911abafc5283eab3d9/tokenizer.json",
+    "vocab_size": 154856
+  },
+  "train_splits": [
+    "teacher_fit",
+    "teacher_router",
+    "teacher_doctor"
+  ]
+}

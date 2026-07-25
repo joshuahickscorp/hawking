@@ -1,0 +1,54 @@
+{
+ "invariants": [
+  "no stage begins before the fence reads true",
+  "every stage emits a checkpoint before the next stage reads it",
+  "T0 must reproduce the frozen baseline or the run stops",
+  "no evaluation set used for selection is ever used for reporting"
+ ],
+ "launch_authorized": false,
+ "schema": "hawking.odyssey.training_plan.v1",
+ "stages": [
+  {
+   "entry_gate": "stage T0 may not start until stage none is sealed",
+   "id": "T0",
+   "intent": "Reproduce the frozen substrate's measured baseline before changing anything. A training run that cannot reproduce its own starting point cannot attribute a delta.",
+   "name": "baseline_reproduction",
+   "status": "PREPARED_NOT_STARTED"
+  },
+  {
+   "entry_gate": "stage T1 may not start until stage T0 is sealed",
+   "id": "T1",
+   "intent": "Continued training under the selected capability profile.",
+   "name": "capability_conditioned_continued_training",
+   "status": "PREPARED_NOT_STARTED"
+  },
+  {
+   "entry_gate": "stage T2 may not start until stage T1 is sealed",
+   "id": "T2",
+   "intent": "Quantization-aware headroom recovery at the frozen rate.",
+   "name": "qat_headroom",
+   "status": "PREPARED_NOT_STARTED"
+  },
+  {
+   "entry_gate": "stage T3 may not start until stage T2 is sealed",
+   "id": "T3",
+   "intent": "Reduce long-horizon divergence from the parent's reasoning trajectory.",
+   "name": "trajectory_stabilization",
+   "status": "PREPARED_NOT_STARTED"
+  },
+  {
+   "entry_gate": "stage T4 may not start until stage T3 is sealed",
+   "id": "T4",
+   "intent": "Restore full authorized expression of the preserved capability inside the profile.",
+   "name": "forge_profile_expression",
+   "status": "PREPARED_NOT_STARTED"
+  },
+  {
+   "entry_gate": "stage T5 may not start until stage T4 is sealed",
+   "id": "T5",
+   "intent": "Hidden-set replication plus the sovereignty gauntlet. Nothing graduates on a seen set.",
+   "name": "hidden_replication_and_sovereignty",
+   "status": "PREPARED_NOT_STARTED"
+  }
+ ]
+}

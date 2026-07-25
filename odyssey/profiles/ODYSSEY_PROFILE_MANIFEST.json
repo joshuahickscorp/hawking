@@ -1,0 +1,28 @@
+{
+ "profiles": [
+  {
+   "name": "general-v1",
+   "sha256": "e295e555717f865da65081320de6f90f8a5a505a9b3aa1f6f341057abe5b2061"
+  },
+  {
+   "name": "math-v1",
+   "sha256": "7cc4e8fca9197df705812e25ab60c2a302ff02cc4f34f61fcf2b2215a9652fa7"
+  },
+  {
+   "name": "mathnarrow-v1",
+   "sha256": "383def0557075b156d41104c334746c57b20d3dd371a8e81f6c47021130065cb"
+  },
+  {
+   "name": "random-v1",
+   "sha256": "2ffabd4e49a0aa0fc302b6bbd16b1f6d035eb2d9b4d3876287be7b96ea0fb71d"
+  },
+  {
+   "name": "uniform-v1",
+   "sha256": "b25bd0080ae399325bcce7cebb5346b184dc908643916abe223504da23247f3d"
+  }
+ ],
+ "schema": "hawking.odyssey.profiles.v1",
+ "selected_for_odyssey": null,
+ "selection_gate": "M11",
+ "source_dir": "profiles/prometheus"
+}

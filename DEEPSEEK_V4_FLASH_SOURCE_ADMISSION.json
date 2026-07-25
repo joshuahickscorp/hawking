@@ -1,0 +1,52 @@
+{
+  "admitted_at": "2026-07-23T19:19:39Z",
+  "architectures": [
+    "DeepseekV4ForCausalLM"
+  ],
+  "download_decision": "DOWNLOAD_COMPLETE_VERIFIED_COPY",
+  "fits_with_reserve": true,
+  "free_bytes": 534461112320,
+  "free_gb": 534.5,
+  "gated": false,
+  "headroom_after_source_and_reserve_gb": 267.5,
+  "immutable_tree_url": "https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash/tree/60d8d70770c6776ff598c94bb586a859a38244f1",
+  "index_topk": 512,
+  "index_total_size": 159609485896,
+  "license": "mit",
+  "model_type": "deepseek_v4",
+  "n_routed_experts": 256,
+  "n_shared_experts": 1,
+  "num_experts_per_tok": 6,
+  "num_hidden_layers": 43,
+  "operational_reserve_bytes": 107374182400,
+  "operational_reserve_gib": 100,
+  "private": false,
+  "quantization_config": {
+    "activation_scheme": "dynamic",
+    "fmt": "e4m3",
+    "quant_method": "fp8",
+    "scale_fmt": "ue8m0",
+    "weight_block_size": [
+      128,
+      128
+    ]
+  },
+  "repo": "deepseek-ai/DeepSeek-V4-Flash",
+  "revision": "60d8d70770c6776ff598c94bb586a859a38244f1",
+  "safetensors_files": 46,
+  "schema": "hawking.deepseek_v4_flash.source_admission.v1",
+  "seal_sha256": "769d5083fed7dab0dffef29e24467d406e1b910225cbb917fbb6e5f73a328a54",
+  "source_bytes_from_blobs": 159617149040,
+  "source_gb_from_blobs": 159.6,
+  "source_precision": {
+    "dtype_parameter_counts": {
+      "BF16": 1415259264,
+      "F32": 36168018,
+      "F8_E4M3": 6023020544,
+      "F8_E8M0": 8858737664,
+      "I64": 2327040,
+      "I8": 141733920768
+    },
+    "note": "native fp4-in-I8 packed experts with F8_E8M0 (ue8m0) scales; NOT BF16. Sub-bit here is a ~4x reduction, not ~16x."
+  }
+}

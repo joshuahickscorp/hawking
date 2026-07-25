@@ -1,0 +1,143 @@
+{
+  "bytes_saved_by_sharing_readout": 0,
+  "cross_layer_application": [
+    {
+      "centered_cosine": -0.0072948147279370025,
+      "fitted_on": 5,
+      "own_layer_skill": 0.5317817655258277,
+      "retained_fraction": -4.11893311231857,
+      "scored_on": 38,
+      "skill": -2.1903735225515613
+    },
+    {
+      "centered_cosine": -0.003316440808880021,
+      "fitted_on": 5,
+      "own_layer_skill": 0.5917206609379884,
+      "retained_fraction": -4.800194646236801,
+      "scored_on": 74,
+      "skill": -2.8403743487022335
+    },
+    {
+      "centered_cosine": -0.014763477831129058,
+      "fitted_on": 5,
+      "own_layer_skill": 0.5862852491460606,
+      "retained_fraction": -5.013203892135318,
+      "scored_on": 77,
+      "skill": -2.939167492920556
+    },
+    {
+      "centered_cosine": 0.002472710240095414,
+      "fitted_on": 38,
+      "own_layer_skill": 0.6981689755638981,
+      "retained_fraction": -62.624105328275945,
+      "scored_on": 5,
+      "skill": -43.72220746264807
+    },
+    {
+      "centered_cosine": -0.0043395884416302126,
+      "fitted_on": 38,
+      "own_layer_skill": 0.5917206609379884,
+      "retained_fraction": -6.033630550772766,
+      "scored_on": 74,
+      "skill": -3.5702238573589
+    },
+    {
+      "centered_cosine": -0.01451863600879194,
+      "fitted_on": 38,
+      "own_layer_skill": 0.5862852491460606,
+      "retained_fraction": -5.436246840373711,
+      "scored_on": 77,
+      "skill": -3.187191333227986
+    },
+    {
+      "centered_cosine": -0.00011045016842100071,
+      "fitted_on": 74,
+      "own_layer_skill": 0.6981689755638981,
+      "retained_fraction": -104.36134671705311,
+      "scored_on": 5,
+      "skill": -72.86185452591376
+    },
+    {
+      "centered_cosine": -0.006738273848882941,
+      "fitted_on": 74,
+      "own_layer_skill": 0.5317817655258277,
+      "retained_fraction": -7.520084001958348,
+      "scored_on": 38,
+      "skill": -3.999043547463942
+    },
+    {
+      "centered_cosine": -0.015129420076518805,
+      "fitted_on": 74,
+      "own_layer_skill": 0.5862852491460606,
+      "retained_fraction": -5.865649403445666,
+      "scored_on": 77,
+      "skill": -3.438943721902584
+    },
+    {
+      "centered_cosine": -0.0018526529702160438,
+      "fitted_on": 77,
+      "own_layer_skill": 0.6981689755638981,
+      "retained_fraction": -162.66253060864986,
+      "scored_on": 5,
+      "skill": -113.5659323576723
+    },
+    {
+      "centered_cosine": 1.4012323130774917e-05,
+      "fitted_on": 77,
+      "own_layer_skill": 0.5317817655258277,
+      "retained_fraction": -10.15213581229663,
+      "scored_on": 38,
+      "skill": -5.398720706121084
+    },
+    {
+      "centered_cosine": -0.0004817151496075705,
+      "fitted_on": 77,
+      "own_layer_skill": 0.5917206609379884,
+      "retained_fraction": -8.706608280699754,
+      "scored_on": 74,
+      "skill": -5.151880006383821
+    }
+  ],
+  "layers": [
+    5,
+    38,
+    74,
+    77
+  ],
+  "max_retained_fraction": -4.11893311231857,
+  "mean_retained_fraction": -32.27455576618471,
+  "note": "the feature map is a shared seed and costs 4 bytes per layer either way; only the readout is a real byte, so sharing it is the only saving on offer",
+  "per_layer_readout": [
+    {
+      "bytes": 12582976,
+      "centered_cosine": 0.8355974996813671,
+      "layer": 5,
+      "local_bpw": 0.010374505403189254,
+      "skill": 0.6981689755638981
+    },
+    {
+      "bytes": 12582976,
+      "centered_cosine": 0.7309190131487542,
+      "layer": 38,
+      "local_bpw": 0.010374505403189254,
+      "skill": 0.5317817655258277
+    },
+    {
+      "bytes": 12582976,
+      "centered_cosine": 0.7696066710150211,
+      "layer": 74,
+      "local_bpw": 0.010374505403189254,
+      "skill": 0.5917206609379884
+    },
+    {
+      "bytes": 12582976,
+      "centered_cosine": 0.7661599721046446,
+      "layer": 77,
+      "local_bpw": 0.010374505403189254,
+      "skill": 0.5862852491460606
+    }
+  ],
+  "shared_feature_map_seed": 17,
+  "stage": "FS4",
+  "verdict": "READOUT_IS_LAYER_SPECIFIC"
+}

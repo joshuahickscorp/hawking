@@ -1,0 +1,16 @@
+{
+ "law": "rollback is a recorded event, never a silent substitution",
+ "procedure": [
+  "halt at the next checkpoint boundary",
+  "record a rollback event naming the checkpoint restored",
+  "restore the named checkpoint as current",
+  "re-run the stage's entry gate before resuming"
+ ],
+ "schema": "hawking.odyssey.rollback.v1",
+ "triggers": [
+  "T0 fails to reproduce the baseline",
+  "a stage regresses a frozen gate",
+  "a sovereignty metric moves in the wrong direction",
+  "the emergency stop file appears"
+ ]
+}

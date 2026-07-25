@@ -1,0 +1,59 @@
+{
+ "fixtures": [
+  {
+   "blob_bytes": 30784,
+   "bpw": 0.939453,
+   "cols": 512,
+   "dim": 8,
+   "fixture": "pq_R0",
+   "fp16_codebook_max_abs_delta": 0.00026758015155792236,
+   "index_bits": 7,
+   "k": 128,
+   "nchunk": 64,
+   "rotate": false,
+   "rows": 512,
+   "rung": "R0",
+   "seed": 0,
+   "sub": 8,
+   "subspaces": 1,
+   "y_abs_max": 1.0748648643493652
+  },
+  {
+   "blob_bytes": 41024,
+   "bpw": 0.625977,
+   "cols": 1024,
+   "dim": 16,
+   "fixture": "pq_R2",
+   "fp16_codebook_max_abs_delta": 0.0002697110176086426,
+   "index_bits": 8,
+   "k": 256,
+   "nchunk": 64,
+   "rotate": false,
+   "rows": 512,
+   "rung": "R2",
+   "seed": 0,
+   "sub": 16,
+   "subspaces": 1,
+   "y_abs_max": 1.3700456619262695
+  },
+  {
+   "blob_bytes": 49216,
+   "bpw": 0.375488,
+   "cols": 2048,
+   "dim": 32,
+   "fixture": "pq_R4",
+   "fp16_codebook_max_abs_delta": 0.0002816617488861084,
+   "index_bits": 8,
+   "k": 256,
+   "nchunk": 64,
+   "rotate": false,
+   "rows": 512,
+   "rung": "R4",
+   "seed": 0,
+   "sub": 32,
+   "subspaces": 1,
+   "y_abs_max": 1.54861319065094
+  }
+ ],
+ "schema": "hawking.gravity.pq_fixture.v1"
+}

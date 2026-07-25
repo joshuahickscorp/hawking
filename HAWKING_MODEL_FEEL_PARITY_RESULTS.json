@@ -1,0 +1,47 @@
+{
+ "schema": "hawking.model_feel_parity.v1",
+ "contract": "HAWKING_MODEL_FEEL_PARITY_CONTRACT.md",
+ "at": "2026-07-24T20:35:00Z",
+ "results": [
+  {
+   "subject": "Llama-3.2-1B",
+   "role": "runtime_instrument",
+   "artifact": "llama32-1b-R0.v2.gravity",
+   "rung": "R0",
+   "complete_bpw": 0.877372084351825,
+   "stage": "SCREENING_GATE",
+   "verdict": "FAIL",
+   "decisive": true,
+   "evidence": {
+    "prompt": "The capital of France is",
+    "greedy_continuation": " settle settle settle settle settle settle settle settle ...",
+    "oracle_top5_for_<bos>Hello_world": ["Ġsettled", "Ġsettles", "Ġsettle", "ewise", "Ġbooster"],
+    "note": "the numpy oracle reading the same container through the same codec predicts the same collapsed distribution, so this is the artifact's behaviour and not a runtime defect"
+   },
+   "execution_correctness": {
+    "verdict": "PASS",
+    "cpu_max_logit_diff_vs_oracle": 2.610683e-05,
+    "gpu_max_logit_diff_vs_oracle": 6.67572e-06,
+    "argmax_and_top5": "exact",
+    "note": "three independent decoders agree on what the payload means: numpy, Rust CPU, Metal"
+   },
+   "interpretation": "a dense 1B model has little redundancy to spend, and 0.877 BPW is past its cliff. This bounds nothing about a 744B MoE flagship, whose expert topology is the redundancy the ladder is designed to exploit.",
+   "consequence": "the instrument is retained to grade the RUNTIME and is not a capability claim; no experience-parity conclusion transfers from it to the flagship"
+  },
+  {
+   "subject": "GLM-5.2",
+   "role": "flagship",
+   "artifact": null,
+   "stage": "GATED",
+   "verdict": "NOT_MEASURED",
+   "gate": "M02: a complete local GLM .gravity artifact",
+   "planned_ladder": {
+    "downward": ["H09", "H08", "H07", "H06", "H05", "H04"],
+    "upward_only_if_broad_parity_fails": ["H10", "H12", "H15"],
+    "rule": "the lowest passing rate is selected; a low headline never overrides the gate"
+   }
+  }
+ ],
+ "selected_general_artifact": null,
+ "selection_gate": "M03: lowest broad parity rate is sealed"
+}

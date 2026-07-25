@@ -1,0 +1,12 @@
+{
+ "authority": "the user, explicitly, in the session that starts Odyssey",
+ "authorized": false,
+ "authorized_by": null,
+ "enforced_at": [
+  "odyssey/training/run.py refuses to start unless the fence file reads true",
+  "odyssey/sandbox/POLICY.json declares network egress denied by default",
+  "tools/campaign/odyssey_package.py validate fails if the fence is not false"
+ ],
+ "note": "Nothing inside the package may write this file. Building the package must never be the same act as authorizing the run.",
+ "schema": "hawking.odyssey.fence.v1"
+}

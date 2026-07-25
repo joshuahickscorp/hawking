@@ -1,0 +1,241 @@
+{
+  "ceiling_note": "complete_bpw_this_tensor is the SURVIVOR-rate charge of one kept expert tensor under the S64 structural plan (keep the 64 hottest experts, double the survivor rate), whose whole-model complete BPW is 0.948410027 <= 1. This module changes no rate and proposes none: before and after carry the identical charge.",
+  "cells": [
+    {
+      "activation_provenance": "real_tokens",
+      "alternation_gain_pct": 0.0,
+      "bits_identical_before_after": true,
+      "complete_bits_per_tensor": 15755792,
+      "complete_bpw_this_tensor": 2.504316,
+      "distill_fit_batch_trace": [
+        0.042839,
+        0.044276,
+        0.044044,
+        0.044646
+      ],
+      "experts": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "importance_decades_p99_over_p50": 2.1865,
+      "index_bpw": 2.5,
+      "layer": 0,
+      "n_fit_tokens": [
+        35,
+        44,
+        32,
+        33
+      ],
+      "n_heldout_tokens": [
+        35,
+        44,
+        33,
+        33
+      ],
+      "organ": "gate_proj",
+      "output_gain_pct": 60.2025,
+      "output_gain_pct_allcorpus": 53.6302,
+      "output_rel_error_after": 0.04332,
+      "output_rel_error_after_allcorpus": 0.066103,
+      "output_rel_error_before": 0.108851,
+      "output_rel_error_before_allcorpus": 0.142556,
+      "output_rel_error_fit_batch_after": 0.042839,
+      "routed_token_counts": [
+        70,
+        88,
+        65,
+        66
+      ],
+      "spec": {
+        "dim": 8,
+        "k": 1024,
+        "stages": 2
+      },
+      "weight_gain_pct": -239.7954,
+      "weight_rel_error_after": 0.805665,
+      "weight_rel_error_before": 0.237103
+    },
+    {
+      "activation_provenance": "real_tokens",
+      "alternation_gain_pct": 6.7426,
+      "bits_identical_before_after": true,
+      "complete_bits_per_tensor": 4000272,
+      "complete_bpw_this_tensor": 0.635826,
+      "distill_fit_batch_trace": [
+        0.10453,
+        0.100546,
+        0.097482,
+        0.098373
+      ],
+      "experts": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "importance_decades_p99_over_p50": 8.3096,
+      "index_bpw": 0.625,
+      "layer": 0,
+      "n_fit_tokens": [
+        35,
+        44,
+        32,
+        33
+      ],
+      "n_heldout_tokens": [
+        35,
+        44,
+        33,
+        33
+      ],
+      "organ": "down_proj",
+      "output_gain_pct": 29.0637,
+      "output_gain_pct_allcorpus": 9.2376,
+      "output_rel_error_after": 0.171385,
+      "output_rel_error_after_allcorpus": 0.244631,
+      "output_rel_error_before": 0.241604,
+      "output_rel_error_before_allcorpus": 0.269529,
+      "output_rel_error_fit_batch_after": 0.097482,
+      "routed_token_counts": [
+        70,
+        88,
+        65,
+        66
+      ],
+      "spec": {
+        "dim": 16,
+        "k": 1024,
+        "stages": 1
+      },
+      "weight_gain_pct": -167.9404,
+      "weight_rel_error_after": 0.994584,
+      "weight_rel_error_before": 0.371196
+    },
+    {
+      "activation_provenance": "gaussian_proxy",
+      "alternation_gain_pct": 0.0,
+      "bits_identical_before_after": true,
+      "complete_bits_per_tensor": 15755792,
+      "complete_bpw_this_tensor": 2.504316,
+      "distill_fit_batch_trace": [
+        0.235886,
+        0.236223,
+        0.236409,
+        0.236187
+      ],
+      "experts": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "importance_decades_p99_over_p50": 0.2298,
+      "index_bpw": 2.5,
+      "layer": 46,
+      "n_fit_tokens": [
+        87,
+        27,
+        59,
+        52
+      ],
+      "n_heldout_tokens": [
+        87,
+        28,
+        59,
+        53
+      ],
+      "organ": "gate_proj",
+      "output_gain_pct": 2.0651,
+      "output_gain_pct_allcorpus": 1.8139,
+      "output_rel_error_after": 0.237598,
+      "output_rel_error_after_allcorpus": 0.237899,
+      "output_rel_error_before": 0.242608,
+      "output_rel_error_before_allcorpus": 0.242294,
+      "output_rel_error_fit_batch_after": 0.235886,
+      "routed_token_counts": [
+        174,
+        55,
+        118,
+        105
+      ],
+      "spec": {
+        "dim": 8,
+        "k": 1024,
+        "stages": 2
+      },
+      "weight_gain_pct": -21.2367,
+      "weight_rel_error_after": 0.293171,
+      "weight_rel_error_before": 0.241817
+    },
+    {
+      "activation_provenance": "gaussian_proxy",
+      "alternation_gain_pct": 0.0592,
+      "bits_identical_before_after": true,
+      "complete_bits_per_tensor": 4000272,
+      "complete_bpw_this_tensor": 0.635826,
+      "distill_fit_batch_trace": [
+        0.641391,
+        0.641011,
+        0.641429,
+        0.64193
+      ],
+      "experts": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "importance_decades_p99_over_p50": 0.512,
+      "index_bpw": 0.625,
+      "layer": 46,
+      "n_fit_tokens": [
+        87,
+        27,
+        59,
+        52
+      ],
+      "n_heldout_tokens": [
+        87,
+        28,
+        59,
+        53
+      ],
+      "organ": "down_proj",
+      "output_gain_pct": 1.6156,
+      "output_gain_pct_allcorpus": 1.4948,
+      "output_rel_error_after": 0.66647,
+      "output_rel_error_after_allcorpus": 0.666162,
+      "output_rel_error_before": 0.677414,
+      "output_rel_error_before_allcorpus": 0.676271,
+      "output_rel_error_fit_batch_after": 0.641011,
+      "routed_token_counts": [
+        174,
+        55,
+        118,
+        105
+      ],
+      "spec": {
+        "dim": 16,
+        "k": 1024,
+        "stages": 1
+      },
+      "weight_gain_pct": -3.7634,
+      "weight_rel_error_after": 0.730492,
+      "weight_rel_error_before": 0.703998
+    }
+  ],
+  "fit_vector_subsample": 400000,
+  "generated_at": "2026-07-20T21:37:51Z",
+  "honesty": "Output-space rel_error on a HELD-OUT calibration batch is a PROXY, not capability. Weight-space error is not a capability claim either. No frontier is selected here. Zero bits are added: before and after ship the identical dim/k/stages payload and the identical one bf16 scale per row.",
+  "lloyd_iters": 5,
+  "method": "output-objective coordinate descent (assign / h-weighted Lloyd / closed-form row scale) at fixed rate and fixed artifact layout",
+  "n_calibration_tokens": 1400,
+  "rounds": 4,
+  "schema": "hawking.qwen3_235b.lane_c.compressibility_train.v1",
+  "source": "models/qwen3-235b-a22b",
+  "verdict": "LANE_C_ALIVE",
+  "verdict_note": "Verdict is scored ONLY on real_tokens cells (layer 0). gaussian_proxy cells are machinery validation and carry no evidence about that layer.",
+  "wall_seconds": 40.6
+}

@@ -1,0 +1,128 @@
+{
+  "schema": "hawking.glm52.breakthrough.mandate.v1",
+  "mandate": "1.3",
+  "subject": "tools/condense/glm52_pack.py::unpack_indices",
+  "status": "FIXED",
+  "evidence_level": "F0_MEASURED_CPU_ONLY",
+  "not_evidence_of": "output divergence, capability, or any GPU claim",
+
+  "defect": {
+    "cause": "unpackbits -> reshape(count,bits) -> astype(uint64) -> broadcast-multiply -> sum(axis=1) materialised three uint64 arrays of count*bits elements",
+    "measured_at_r0_gate_up": {
+      "count": 1572864, "bits": 7, "payload_bytes": 1376256,
+      "ms_median": 33.543, "peak_bytes": 199820624, "peak_over_payload": 145.19
+    }
+  },
+
+  "fix": {
+    "construction": "8 consecutive indices occupy exactly `bits` bytes, so lane j of every group has one fixed byte offset and one fixed shift; 8 strided byte slices into a uint16 (bits<=8) or uint32 (bits<=16) window, shifted and masked in place",
+    "temporary_bound": "one count/8 window array; never a count*bits grid",
+    "output_dtype": "uint8 for bits<=8, uint16 for 9..16, ValueError above 16",
+    "packbits_reasoning_check": "The prompt's np.packbits(grid, axis=1) >> (8-bits) construction is ARITHMETICALLY CORRECT -- pack_indices emits most-significant-bit-first, so grid[:,0] is the MSB and packbits right-pads with zeros. It was NOT used because it still requires the np.unpackbits grid, which is count*bits bytes = exactly 8x the packed payload for any bits, and therefore cannot meet the 4x peak-memory requirement on its own."
+  },
+
+  "benchmark_raw_samples": {
+    "note": "python -m timeit-style perf_counter, 7 samples synthetic / 5 samples real shard, medians reported; CPU only",
+    "synthetic_random_indices": [
+      {"geometry": "gate/up [2048,6144] D=8 nchunk=768", "count": 1572864, "bits": 7,
+       "payload_bytes": 1376256,
+       "before": {"ms_samples": [35.097, 33.171, 33.543, 32.826, 33.398, 33.585, 33.696],
+                  "ms_median": 33.543, "peak_bytes": 199820624, "peak_MiB": 190.56,
+                  "peak_over_payload": 145.19, "dtype": "uint64"},
+       "after": {"ms_samples": [2.436, 2.285, 2.168, 2.165, 2.078, 2.344, 2.299],
+                 "ms_median": 2.285, "peak_bytes": 3736330, "peak_MiB": 3.56,
+                 "peak_over_payload": 2.71, "dtype": "uint8"},
+       "speedup": 14.7, "peak_reduction": 53.5},
+      {"geometry": "down [6144,2048] D=8 nchunk=256", "count": 1572864, "bits": 7,
+       "payload_bytes": 1376256,
+       "before": {"ms_samples": [34.809, 35.293, 34.162, 33.455, 34.665, 33.31, 32.987],
+                  "ms_median": 34.162, "peak_bytes": 199820624, "peak_over_payload": 145.19},
+       "after": {"ms_samples": [2.24, 2.318, 2.328, 2.158, 2.27, 2.297, 2.48],
+                 "ms_median": 2.297, "peak_bytes": 3736330, "peak_over_payload": 2.71},
+       "speedup": 14.9, "peak_reduction": 53.5},
+      {"geometry": "attn q_b_proj [16384,2048] D=8 nchunk=256", "count": 4194304, "bits": 7,
+       "payload_bytes": 3670016,
+       "before": {"ms_samples": [116.271, 116.183, 113.574, 110.983, 113.874, 113.273, 116.854],
+                  "ms_median": 113.874, "peak_bytes": 532743504, "peak_MiB": 508.06,
+                  "peak_over_payload": 145.16},
+       "after": {"ms_samples": [6.393, 6.731, 6.389, 6.415, 6.454, 6.513, 6.338],
+                 "ms_median": 6.415, "peak_bytes": 9962250, "peak_MiB": 9.5,
+                 "peak_over_payload": 2.71},
+       "speedup": 17.8, "peak_reduction": 53.5}
+    ],
+    "real_sealed_artifact": {
+      "shard": "/Users/scammermike/Desktop/GLM52-Gravity-SubBit/model-00002-of-00282.gravity",
+      "access": "READ_ONLY, mtime 2026-07-22 14:34, 211 tensors, 293291119 bytes",
+      "tensors": [
+        {"name": "model.layers.10.mlp.experts.0.gate_proj.weight", "shape": [2048, 6144],
+         "nchunk": 768, "bits": 7, "k": 128, "count": 1572864, "payload_bytes": 1376256,
+         "parity_exact_vs_old": true,
+         "old_ms_samples": [34.494, 33.487, 34.525, 33.564, 35.291], "old_ms_median": 34.494,
+         "new_ms_samples": [2.631, 2.381, 2.308, 2.319, 2.269], "new_ms_median": 2.319,
+         "speedup": 14.9, "old_peak_bytes": 199820624, "new_peak_bytes": 3736330,
+         "old_peak_over_payload": 145.19, "new_peak_over_payload": 2.71, "new_dtype": "uint8"},
+        {"name": "model.layers.10.mlp.experts.0.down_proj.weight", "shape": [6144, 2048],
+         "nchunk": 256, "bits": 7, "k": 128, "count": 1572864, "payload_bytes": 1376256,
+         "parity_exact_vs_old": true,
+         "old_ms_samples": [33.691, 34.557, 34.636, 34.779, 33.655], "old_ms_median": 34.557,
+         "new_ms_samples": [2.653, 2.428, 2.181, 2.467, 2.285], "new_ms_median": 2.428,
+         "speedup": 14.2, "old_peak_bytes": 199820624, "new_peak_bytes": 3736330,
+         "old_peak_over_payload": 145.19, "new_peak_over_payload": 2.71, "new_dtype": "uint8"},
+        {"name": "model.layers.1.self_attn.q_b_proj.weight", "shape": [16384, 2048],
+         "nchunk": 256, "bits": 7, "k": 128, "count": 4194304, "payload_bytes": 3670016,
+         "parity_exact_vs_old": true,
+         "old_ms_samples": [113.793, 113.814, 115.582, 114.321, 114.803], "old_ms_median": 114.321,
+         "new_ms_samples": [6.389, 6.403, 6.512, 6.276, 6.319], "new_ms_median": 6.389,
+         "speedup": 17.9, "old_peak_bytes": 532743504, "new_peak_bytes": 9962250,
+         "old_peak_over_payload": 145.16, "new_peak_over_payload": 2.71, "new_dtype": "uint8"}
+      ],
+      "whole_shard_deserialize_walk": {
+        "tensors": 211, "io_excluded": true,
+        "before": {"seconds": 9.313, "peak_MiB": 511.57},
+        "after": {"seconds": 0.807, "peak_MiB": 36.01},
+        "speedup": 11.5,
+        "derived_whole_model_282_shards_seconds": {"before": 2626.3, "after": 227.6},
+        "derived_label": "DERIVED, not measured: 282 x the one measured shard"
+      }
+    }
+  },
+
+  "requirements": {
+    "exact_parity_bits_1_to_16_incl_non_multiple_of_8_counts": "PASS (144 parametrised cases, reference = verbatim pre-fix implementation)",
+    "no_uint64_broadcast_grid": "PASS (widest temporary is one count/8 uint16 window; asserted by test_no_uint64_grid_allocated)",
+    "peak_temporaries_le_4x_payload_at_r0": "PASS, MEASURED 3736330 B = 2.71x of 1376256 B",
+    "output_dtype_uint8_when_bits_le_8": "PASS",
+    "round_trip_pack_unpack_exact": "PASS",
+    "benchmarked_both_r0_geometries_and_attention": "PASS (note gate/up 2048x768 and down 6144x256 both equal 1572864 indices; attention q_b [16384,2048] is 4194304)"
+  },
+
+  "deserialize_int64_cast": {
+    "decision": "LEFT IN PLACE",
+    "reason": "MEASURED, not assumed: mech_measure.b1_reconstruct_matvec_torch does cbs[s][idx[:, s]] on a torch tensor built straight from codes['indices']. With uint8 torch interprets the index as a BOOLEAN MASK -- the run raised IndexError: The shape of the mask [1024] at index 0 does not match the shape of the indexed tensor [128, 8] at index 0, plus a torch UserWarning that uint8 indexing is deprecated. That is a silent-wrong-answer class of failure at other shapes, so the narrow dtype cannot cross the deserialize boundary.",
+    "consumers_checked": [
+      {"site": "gravity_forge.pq_execute (numpy fancy index)", "uint8_result": "RAN, identical output, max abs gap 0.0 vs the int64 path"},
+      {"site": "mech_measure.b1_reconstruct_matvec_torch:258", "uint8_result": "FAILED, IndexError (uint8 read as boolean mask)"},
+      {"site": "mech_measure.m1_lookup_linear_torch:333", "uint8_result": "RAN, identical output (uint8 + int64 promotes)"},
+      {"site": "gravity_decode.py:96", "uint8_result": "SAFE, casts to int64 itself"},
+      {"site": "gravity_metal.py:219", "uint8_result": "SAFE, casts to uint8 itself"},
+      {"site": "torch.from_numpy(uint16)", "uint8_result": "RAN under torch 2.6.0, but irrelevant since bits<=8 on every ladder rung"}
+    ],
+    "residual_cost": "The cast is now the dominant allocation in deserialize: uint8 in, int64 out is one count*8 byte array (12.6 MB at gate/up, 33.5 MB at q_b_proj). Before the fix it was count*8 in AND count*8 out, so the cast term already halved. Narrowing it further needs mech_measure.py:243 to cast, which is outside this mandate's file ownership."
+  },
+
+  "not_fixed_here": {
+    "pack_indices": "glm52_pack.py:52 has the same defect in the write direction: flat[:, None] >> arange(bits) builds a count*bits uint64 array (88 MB at the gate/up geometry). It was left untouched because this mandate scopes to unpack_indices and because pack_indices is the parity oracle the new decode is tested against. UNMEASURED here."
+  },
+
+  "tests": {
+    "new_file": "tools/condense/tests/test_glm52_pack_indices.py",
+    "new_result": "185 passed in 0.88s",
+    "regression_runs": [
+      {"selector": "tools/condense/tests/ -k glm52 (includes the 185 new)",
+       "result": "716 passed, 661 deselected in 146.62s"},
+      {"selector": "test_glm52_gravity_cli.py test_gravity_forge.py test_second_light_pq.py test_forge_integration.py",
+       "result": "56 passed, 1 warning in 18.06s"},
+      {"selector": "python tools/condense/glm52_pack.py selftest", "result": "PASS"}
+    ]
+  }
+}

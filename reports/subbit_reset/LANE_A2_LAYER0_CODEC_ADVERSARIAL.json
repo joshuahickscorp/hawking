@@ -1,0 +1,88 @@
+{
+  "schema": "hawking.gravity.layer0_codec.adversarial.v1",
+  "target_report": "reports/subbit_reset/LANE_A2_LAYER0_CODEC.json",
+  "target_file": "tools/condense/qwen_layer0_codec.py",
+  "verdict_upheld": true,
+  "headline_verdict_status": "PARTIAL_WIN_BELOW_BAR stands: reproduced exactly, and gets further below the bar under a converged entropy estimate",
+  "severity": "material",
+  "bit_accounting_correct": true,
+  "self_check_actually_fails_when_broken": true,
+
+  "reproduction": {
+    "method": "re-ran cell() on real Qwen3-235B shards, 4 experts, layer 0",
+    "L0_down_seed0": {"rel_error_baseline": 0.3616, "rel_error_modulated": 0.191,
+                      "gap_baseline": 1.3076, "gap_modulated": 0.7555,
+                      "closed": 0.5521, "closed_fraction": 0.4222,
+                      "ng_before": 3.0143, "ng_after": -0.0035,
+                      "matches_claim": true},
+    "L0_down_seed7": {"rel_error_baseline": 0.3631, "rel_error_modulated": 0.191,
+                      "closed_fraction": 0.4278, "seed_stable": true},
+    "L0_up_seed0_NEW": {"rel_error_baseline": 0.2792, "rel_error_modulated": 0.4642,
+                        "closed_fraction": -0.5363,
+                        "note": "the up organ was never measured by the lane; it behaves like gate on this metric"}
+  },
+
+  "break_tests": {
+    "col_scales -> ones (kill preconditioner)": "AssertionError at demo step 2 (modulated 0.389 == baseline 0.389)",
+    "h = c^2 -> ones (kill importance)": "AssertionError at demo step 2 (modulated 0.7404 vs baseline 0.389)",
+    "add_rate -> 0.0 (stop charging surcharge)": "AssertionError at demo step 5",
+    "col_bits drop the +1 mode bit": "AssertionError at demo step 1",
+    "conclusion": "the self-check is load-bearing on all four core invariants"
+  },
+
+  "bit_accounting_rederived": {
+    "col_bits(down [4096,1536])": 24577,
+    "layer0_down_only_bits": 1573056,
+    "exact_bpw": "24579/3673338040",
+    "float_bpw": 6.6911892486758446e-06,
+    "sealed_S64_doctor": 0.999769787,
+    "total": 0.9997764781892486,
+    "legal": true,
+    "structural_plan_charges": ["indices", "codebooks", "scales", "metadata", "alignment",
+                                "doctor", "protected_islands", "pass_through_tensors"],
+    "note": "row scales and codebooks are charged in qwen_structural_plan.ledger, not in the 0.625 index rate; the A2 surcharge is a correct INCREMENT on top of the sealed ledger. Excluding them from R in the Shannon comparison biases the gap UPWARD (conservative), so it does not flatter the lever."
+  },
+
+  "refutation_1_gate_loss_is_a_metric_artifact": {
+    "claim": "the codec HURTS L0 gate badly (0.2728 -> 0.4761), so an encode-time selector plus a mode bit is required",
+    "measured_here_original_space_relative_frobenius": {
+      "L0_gate_baseline": 0.2151, "L0_gate_modulated": 0.1615,
+      "L0_down_baseline": 0.348, "L0_down_modulated": 0.1765
+    },
+    "finding": "on original-space relative Frobenius error the modulation WINS on L0 gate by 25 percent, the opposite sign to the reported loss. The sign of the gate result flips with the choice of weight-space metric, so NO verdict on gate is supportable from weight space. The down win is robust in both metrics.",
+    "consequence_for_bits": {
+      "all_three_organs_at_L0_bits": 9961664,
+      "all_three_organs_bpw": 4.237317619698295e-05,
+      "total_with_sealed_S64": 0.999812160176197,
+      "still_legal": true,
+      "note": "the configuration that is actually better costs 6.3x what the report bills; still legal, but the reported 6.69e-06 is the cost of the wrong configuration"
+    }
+  },
+
+  "refutation_2_the_shannon_gap_denominator_does_not_converge": {
+    "issue": "L0 down is near-degenerate (effective rank ~68 of 1536, 93.6 percent of entries below 0.1 rms). The Kozachenko-Leonenko estimate of h does not converge in n for such a source; it falls monotonically, as it must for a distribution approaching a lower-dimensional support.",
+    "measured_h_L0_down_pool_d16": {"n=10000": -0.8353, "n=20000": -0.9635, "n=40000": -1.0587},
+    "resulting_baseline_gap_decades": {"n=10000": 1.2304, "n=20000": 1.3075, "n=40000": 1.3648},
+    "resulting_closed_fraction": {"n=10000": 0.4486, "n=20000": 0.4222, "n=40000": 0.4004},
+    "seed_sensitivity_at_n20000": [0.4222, 0.4224],
+    "estimator_sanity": "on a true Gaussian the estimator is accurate at d=8 (-0.009 bits) and d=16 (+0.025 bits); the non-convergence is a property of the near-degenerate real source, not of the code",
+    "finding": "42.2 percent is a function of the arbitrary max_n=20000 hyperparameter, not a measured constant. Report it as 0.40-0.45. The direction of the bias is against the lever, so the below-bar verdict is robust; but the gap must NOT be read as achievable headroom, because an unconverged h gives an arbitrarily low (valid but vacuous) lower bound. This is the mirror image of the Gaussian-upper-bound error this campaign already made once."
+  },
+
+  "refutation_3_moved_denominator": {
+    "pre_registered_bar": "close >= half of the SEALED 1.3278-decade L0 down gap, i.e. >= 0.6639 decades",
+    "closed_measured": 0.5521,
+    "fraction_of_pre_registered_bar": 0.4158,
+    "finding": "the report re-based the denominator on its own 1.3076 baseline. It fails either way, so this is non-material to the verdict, but the code's WIN/LOSE branch tests against the re-based number, not the pre-registered one."
+  },
+
+  "not_refuted": {
+    "bound_abuse": "clean. shannon_lower_bound_mse uses the MEASURED knn differential entropy, never the Gaussian value, and the modulated arm's bound is evaluated at the HIGHER rate, which cannot flatter it.",
+    "proxy_laundering": "clean. Real Qwen3-235B shards, no synthetic activations, no proxy activation distribution. The importance vector h = c^2 is derived from the weights themselves and is decoder-derivable from the shipped column scales, so it costs no bits. Every number is labelled weight-space and no capability claim is made.",
+    "seed_fragility": "none. seed 0 vs seed 7 on L0 down: closed_fraction 0.4222 vs 0.4278.",
+    "cheaper_alternative_ablation_i_added": "importance = c^2 WITHOUT the column preconditioner (which would cost zero shipped bits) measures 1.3177 on L0 down vs 0.3616 baseline. The 16-bits-per-column surcharge is genuinely necessary; the lever is not smuggling a free-bits win.",
+    "sub_lever_deaths": "the three sealed-negative sub-levers are consistent with what I measured; I did not find a fourth cheaper form."
+  },
+
+  "recommended_correction": "Keep PARTIAL_WIN_BELOW_BAR. Three edits: (1) delete the L0 gate loss claim and the encode-time-selector rationale built on it - the sign flips under original-space Frobenius, so weight space cannot decide gate; either re-bill all three organs at L0 (9961664 bits, 4.2373e-05 BPW, total 0.999812, still legal) or state the gate/up question as UNDECIDED. (2) Report the closed fraction as a range 0.40-0.45 with the max_n dependence stated, and stop describing the Shannon gap as headroom for a near-degenerate source whose h estimate does not converge. (3) Test the WIN/LOSE branch against the pre-registered 1.3278-decade gap, not a re-based one."
+}

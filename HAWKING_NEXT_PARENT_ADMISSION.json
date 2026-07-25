@@ -1,0 +1,106 @@
+{
+  "schema": "hawking.next_parent_admission.v1",
+  "sealed_at": "2026-07-23T17:30:00Z",
+  "supersedes_entry_gate_of": "HAWKING_LADDER_V3.json",
+  "protocol": "HAWKING_GRAVITY_CROSS_MODEL_TRANSFER.md",
+  "gate_order_changed": "the amplification probe runs FIRST, before nulls, before students, before any encoding work",
+  "closed_parent": {
+    "rung": "F5",
+    "repo": "zai-org/GLM-5.2",
+    "decision": "FUNCTIONAL_PARTIAL_ONLY",
+    "source_not_streamed_bytes": 1506659919872,
+    "reason": "residual stream expansive at every tested magnitude, replicated at layers 38 and 74"
+  },
+  "open_question": "does any architecture have a contractive regime a per-layer functional student can live inside",
+  "selection_rationale": "the question is about the residual-stream operator, so the next parent is chosen for how different its residual and normalisation structure is from GLM-5.2, not for how large it is. A parent whose stack merely repeats GLM's arrangement cannot answer the question no matter how well it compresses.",
+  "primary": {
+    "probe": "P1",
+    "repo": "deepseek-ai/DeepSeek-V4-Flash",
+    "revision": "60d8d70770c6776ff598c94bb586a859a38244f1",
+    "license": "mit",
+    "gated": false,
+    "total_main_gb": 159.6,
+    "shards": 46,
+    "max_shard_gb": 3.6,
+    "why": "the smallest frontier MoE on the ladder and the only one whose complete body fits the storage envelope, so the function-versus-weight pilot and the amplification probe can both run without a partial fetch confounding them",
+    "storage_verdict": "FITS_WHOLE only after GLM-5.2 BF16 source eviction; see storage_constraint"
+  },
+  "amplification_challenger": {
+    "rung": "F2",
+    "repo": "Qwen/Qwen3.5-397B-A17B",
+    "revision": "8472618112abcbd45acbcdc58436aff4233c23f7",
+    "license": "apache-2.0",
+    "total_main_gb": 806.8,
+    "why": "hybrid recurrent-attention. Its residual stream is structurally unlike GLM-5.2's, which makes it the highest-information test of whether EXPANSIVE_AT_EVERY_TESTED_MAGNITUDE is a property of GLM-5.2 or of deep MoE transformers generally.",
+    "fetch_mode": "PARTIAL_ONLY",
+    "storage_verdict": "never fetched whole under the current envelope; the probe needs three strata and their successors, not a body"
+  },
+  "minimal_pilot_window_set": {
+    "principle": "a goliath body is not downloaded to answer a question three layers can answer",
+    "per_parent": [
+      "one early sparse layer and its immediate successor",
+      "one middle sparse layer and its immediate successor",
+      "one late sparse layer and its immediate successor",
+      "the final sparse layer",
+      "embeddings, final norm and a logit-lens row subset for the token probe"
+    ],
+    "estimated_shards": "7 layers plus head organs; on GLM-5.2 the equivalent set was 76 of 282 shards",
+    "capture_splits": ["teacher_fit", "teacher_router", "teacher_doctor", "teacher_score",
+                       "teacher_cv", "teacher_holdout", "teacher_replication",
+                       "teacher_protected", "teacher_longctx"],
+    "measured_capsule_cost": "about 1 GiB and 13 seconds per layer-split on GLM-5.2"
+  },
+  "admission_sequence": [
+    {"step": 1, "gate": "source and adapter truth", "blocking": true,
+     "detail": "header-derived extents, official config, immutable revision, reference forward"},
+    {"step": 2, "gate": "teacher capture for the minimal window set", "blocking": true},
+    {"step": 3, "gate": "AMPLIFICATION PROBE", "blocking": true,
+     "tool": "glm52_functional_cascade.py threshold LAYER 2, renamed for the parent",
+     "decision_rule": {
+       "amplification_below_1_at_student_magnitudes": "PROCEED, a per-layer functional student can compose",
+       "contractive_only_below_a_threshold": "PROCEED with an error budget, and state it",
+       "expansive_at_every_magnitude": "DO NOT STREAM, close the parent, record the spectrum"
+     }},
+    {"step": 4, "gate": "fit-split nulls", "blocking": true},
+    {"step": 5, "gate": "dense/full affine functional upper control", "blocking": true},
+    {"step": 6, "gate": "tiny functional student", "blocking": true},
+    {"step": 7, "gate": "weight-space control", "blocking": false,
+     "detail": "bounded, on pilot fixtures only; it is a control now, not a candidate"},
+    {"step": 8, "gate": "null-corrected skill and exact complete-model cost", "blocking": true},
+    {"step": 9, "gate": "rate ladder", "blocking": true,
+     "detail": "for the surviving paradigm only; no ladder before step 3 reports"}
+  ],
+  "storage_constraint": {
+    "free_bytes_at_seal": 129341718528,
+    "free_gb_at_seal": 129.3,
+    "free_gib_at_seal": 120.5,
+    "policy_target_gb": 600,
+    "glm52_bf16_source_resident_bytes": 405394043843,
+    "glm52_bf16_source_resident_gb": 405.4,
+    "glm52_bf16_source_resident_gib": 377.6,
+    "eviction_is_legal": true,
+    "eviction_legality_basis": "GLM-5.2 is sealed FUNCTIONAL_PARTIAL_ONLY and every probed layer has a sealed teacher capsule, which is the condition the eviction authority requires",
+    "eviction_performed": false,
+    "eviction_authorization": "NOT REQUESTED IN THIS CAMPAIGN. Deleting 378 GB of verified source is irreversible and was not authorised, so it is recorded as the available lever and left to an explicit decision.",
+    "consequence_if_not_evicted": "DeepSeek-V4-Flash at 159.6 GB does not fit in 129.3 GB free; the parent would have to start as a partial fetch of the minimal window set, which the protocol permits but which costs the whole-body option later"
+  },
+  "retired_globally": [
+    "raw-cosine promotion",
+    "any mean-dominated activation metric",
+    "centering by a held-out target statistic",
+    "a weight-space rate ladder before null controls",
+    "activation-weighted SVD",
+    "shared expert-weight basis without architecture evidence",
+    "a full source stream before the amplification probe"
+  ],
+  "reference_fixture": {
+    "purpose": "any new probe implementation is checked against measured GLM-5.2 evidence before it is trusted on a parent nobody has measured",
+    "capsules_resident_layers": [3, 5, 11, 38, 39, 40, 41, 74, 75, 76, 77],
+    "expected_layer_38_threshold_row": {"injected_relative_l2": 0.15373,
+                                        "geometric_mean_amplification": 1.4176},
+    "expected_layer_74_threshold_row": {"injected_relative_l2": 0.22927,
+                                        "geometric_mean_amplification": 1.3534}
+  },
+  "status": "ADMITTED_AND_BLOCKED_ON_STORAGE",
+  "next_autonomous_action": "finish the GLM-5.2 amplification spectrum at the early stratum, then request an explicit decision on evicting the closed parent's BF16 body before fetching DeepSeek-V4-Flash"
+}
