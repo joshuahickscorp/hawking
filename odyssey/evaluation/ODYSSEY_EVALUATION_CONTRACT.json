@@ -11,10 +11,22 @@
   "trajectory divergence",
   "throughput",
   "context viability",
-  "false refusal under profile"
+  "false refusal under profile",
+  "support_halo (G5/T7)"
  ],
  "reporting": "distributions, not only averages",
  "schema": "hawking.odyssey.evaluation.v1",
+ "support_halo": {
+  "gate": "G5",
+  "role": "T7 checkpoint tournament judge on the support halo preserved under math-v1",
+  "rules": "odyssey/evaluation/SUPPORT_HALO_SCORING_RULES.json",
+  "corpus": "odyssey/evaluation/support_halo_corpus_v0.jsonl",
+  "seal": "odyssey/evaluation/SUPPORT_HALO_SEAL.json",
+  "baseline": "odyssey/evaluation/SUPPORT_HALO_BASELINE.json",
+  "harness_rust": "crates/hawking-eval (support_halo module)",
+  "harness_cli": "tools/eval/support_halo_gate.py",
+  "status": "RULES_AND_CORPUS_FROZEN; BASELINE_NOT_RUN"
+ },
  "sets": [
   {
    "id": "selection",

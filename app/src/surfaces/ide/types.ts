@@ -5,6 +5,7 @@
   Kept local to the surface (HARD RULE: no edits to the shared store/wire), parsed defensively
   so a partial host patch never throws. When the mock is the transport, MOCK_DIFF stands in.
 */
+import { TRANSPORT_KIND } from "../../ipc";
 
 // One reviewable hunk: a contiguous run of -/+ lines, reviewed as a unit (j/k to move, a/r to act).
 export type HunkStatus = "pending" | "accepted" | "rejected" | "applied";
@@ -44,6 +45,14 @@ export interface FileNode {
   badge?: "added" | "modified" | "touched";
   children?: FileNode[];
 }
+
+/**
+ * THE gate every demo fixture in this file passes through. Fixtures are invented: invented paths,
+ * invented badges, invented file bodies. On a live host a fixture standing in for a failed read
+ * would be presented as the real workspace, and a save would then write that invention over a real
+ * file, so on "live" this hands back null and the caller shows an honest empty or error state.
+ */
+export const mockOnly = <T>(fixture: T): T | null => (TRANSPORT_KIND === "mock" ? fixture : null);
 
 // ---- Defensive folds from the generic projection bag (Record<string, unknown>) ----
 

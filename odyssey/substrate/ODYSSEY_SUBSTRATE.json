@@ -9,15 +9,19 @@
    "sha256": "91c8c596343ab79f4e1f06012609b9afd27e2ba73aed9f382da4b2bfbd348e45"
   },
   {
-   "gate": "M11: General and Math artifacts are selected and verified",
-   "gate_state": "OPEN",
-   "note": "The selected compact Math artifact from Prometheus. Odyssey trains this and nothing else; a substitute substrate is a different experiment.",
-   "path": null,
-   "present": false,
-   "role": "odyssey_training_substrate"
+   "address_kind": "model_index_sha256",
+   "allocation_manifest_sha256": "b34596f5d4df0b09903845302648736ee2345d7662688176c851a4d749211a83",
+   "bytes": 92038250160,
+   "complete_bpw": 0.9774017488417455,
+   "note": "Mandatory streamed Prometheus Math-Preserve substrate. Odyssey trains this artifact and nothing else.",
+   "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/GLM-5.2-H0.98-Math-Preserve.gravity",
+   "present": true,
+   "profile": "math-v1",
+   "role": "odyssey_training_substrate",
+   "sha256": "33d40c254eb982d4a495f5f0792a116e9d9810d937f5f3969f4f84742b2364d9"
   }
  ],
  "schema": "hawking.odyssey.substrate.v1",
- "selected": null,
- "selection_gate": "M11"
+ "selected": "GLM-5.2-H0.98-Math-Preserve.gravity",
+ "selection_gate": null
 }

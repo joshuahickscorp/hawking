@@ -1,14 +1,17 @@
 /*
   SideBar.tsx — the one side page: the Explorer, with a one-line workcard on top. The model name is
-  the affordance: click it for a context popover (live ceiling, .tq multiplier, recall, state) and the
-  switch-model action. Nothing else is parked here — forking/fleets auto-invoke, context detail is
-  summoned, not displayed. (Invisible until summoned.)
+  the affordance: click it for a context popover (live ceiling, .tq multiplier, recall, state).
+  Nothing else is parked here: forking/fleets auto-invoke, context detail is summoned, not
+  displayed. (Invisible until summoned.)
+
+  Consolidation decision 3.4: the popover's "switch model" button was one of three copies that all
+  fired an empty `switch_model` payload against a host that logs the name and does nothing. It is
+  replaced by the shared ModelChooser, which is the ONE place that choice is presented.
 */
 import { useEffect, useRef, useState } from "react";
-import { sendIntent } from "../ipc";
 import { useStore, type ContextManifest } from "../store";
-import { intent } from "../wire";
 import { Explorer } from "../surfaces/ide/Explorer";
+import { ModelChooser, modelId } from "./ModelChooser";
 
 const fmtTok = (n: number) =>
   n >= 1_000_000 ? `${(n / 1_000_000).toFixed(n % 1_000_000 ? 1 : 0)}M` : n >= 1000 ? `${Math.round(n / 1000)}K` : `${n}`;
@@ -16,11 +19,10 @@ const fmtTok = (n: number) =>
 export function SideBar({ openPath, onOpen }: { openPath: string | null; onOpen: (path: string) => void }) {
   const manifest = useStore((s) => s.manifest);
   const runtimeStatus = useStore((s) => s.runtimeStatus);
-  const pushNotice = useStore((s) => s.pushNotice);
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  const model = manifest?.model?.id ?? "qwen2.5";
+  const model = modelId(manifest);
   const ready = runtimeStatus === "ready";
 
   useEffect(() => {
@@ -39,12 +41,6 @@ export function SideBar({ openPath, onOpen }: { openPath: string | null; onOpen:
     };
   }, [open]);
 
-  const switchModel = () => {
-    void sendIntent(intent.custom("switch_model", {}));
-    pushNotice({ kind: "info", code: "model", message: "switch model" });
-    setOpen(false);
-  };
-
   return (
     <nav className="sidebar" aria-label="Explorer">
       <div className="workcard" ref={ref}>
@@ -61,7 +57,7 @@ export function SideBar({ openPath, onOpen }: { openPath: string | null; onOpen:
           </button>
           <span className="workcard__local">local</span>
         </div>
-        {open ? <ModelPopover manifest={manifest} ready={ready} onSwitch={switchModel} /> : null}
+        {open ? <ModelPopover manifest={manifest} ready={ready} /> : null}
       </div>
       <div className="sidebar__body">
         <Explorer activePath={openPath} onOpen={onOpen} />
@@ -71,16 +67,8 @@ export function SideBar({ openPath, onOpen }: { openPath: string | null; onOpen:
 }
 
 // The context popover summoned from the model name: the live, measured window (ceiling = native x the
-// .tq multiplier, read live) plus recall/state, and the switch-model action. Abundance, not a meter.
-function ModelPopover({
-  manifest,
-  ready,
-  onSwitch,
-}: {
-  manifest: ContextManifest | null;
-  ready: boolean;
-  onSwitch: () => void;
-}) {
+// .tq multiplier, read live) plus recall/state. Abundance, not a meter.
+function ModelPopover({ manifest, ready }: { manifest: ContextManifest | null; ready: boolean }) {
   const native = manifest?.ctx_len_native ?? manifest?.model?.ctx;
   const ceiling = manifest?.live?.effective_ceiling_tokens ?? manifest?.ctx_len_effective;
   const mult = manifest?.tq_multiplier;
@@ -92,10 +80,12 @@ function ModelPopover({
     <div className="modelpop glass" role="dialog" aria-label="Model and context">
       <div className="modelpop__head">
         <span className={"workcard__dot" + (ready ? " workcard__dot--ready" : "")} aria-hidden />
-        <span className="modelpop__title">{manifest?.model?.id ?? "qwen2.5"}</span>
+        <span className="modelpop__title">{modelId(manifest)}</span>
         <span className="modelpop__arch">{manifest?.arch ?? manifest?.model?.arch ?? "local"}</span>
       </div>
-      <Row label="context" value={ceiling ? `${fmtTok(ceiling)}${mult && mult > 1 ? `   ${mult.toFixed(1)}x .tq` : ""}` : "loaded, cached"} />
+      {/* No ceiling means no manifest, which on a model-free host means nothing is loaded at all. The
+          old fallback asserted "loaded, cached" there, claiming the opposite of the truth. */}
+      <Row label="context" value={ceiling ? `${fmtTok(ceiling)}${mult && mult > 1 ? `   ${mult.toFixed(1)}x .tq` : ""}` : "unknown"} />
       {native ? <Row label="native" value={fmtTok(native)} /> : null}
       {ceiling ? (
         <div className="modelpop__bar" aria-hidden>
@@ -104,7 +94,7 @@ function ModelPopover({
       ) : null}
       {typeof fidelity === "number" ? <Row label="recall" value={`${Math.round(fidelity * 100)}%`} /> : null}
       {state ? <Row label="state" value={`${Math.round(state / 1e6)} MB`} /> : null}
-      <button className="modelpop__switch" onClick={onSwitch}>switch model</button>
+      <ModelChooser manifest={manifest} tone="popover" />
     </div>
   );
 }

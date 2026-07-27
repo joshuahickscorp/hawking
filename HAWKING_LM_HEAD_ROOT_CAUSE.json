@@ -1,0 +1,27 @@
+{
+  "schema": "hawking.gravity.lm_head_root_cause.v1",
+  "at": "2026-07-26T19:15:00Z",
+  "finding": "One tensor plausibly accounts for the second-largest time bucket AND roughly a quarter of the active-byte overread. lm_head is re-read and re-widened from bf16 to f32 on the CPU on every single decode token.",
+  "measured_from_the_sealed_artifact": {
+    "tensor": "lm_head.weight",
+    "shape": [154880, 6144],
+    "codec": "native.bf16",
+    "bytes": 1903165440,
+    "gb": 1.90,
+    "elements": 951608320,
+    "sibling": "model.embed_tokens.weight is identical in shape and codec, another 1.90 GB"
+  },
+  "why_it_is_re_read_every_token": "The dense memo added earlier caches DECODED f32 vectors under a byte budget. Widened to f32 this tensor is ~3.81 GB, which exceeds the memo's residency allowance, so it takes the documented 'oversized tensors skip residency but remain in verified' path. Verification is correctly one-shot; the READ and the WIDEN are not.",
+  "what_it_explains": {
+    "final_head_and_sampling_bucket": "631.0 ms/token, 26.2 percent, the second largest bucket. Widening 951,608,320 bf16 elements to f32 on the CPU every token is exactly the shape of that number -- the dense matvec is not obviously the dominant part.",
+    "active_byte_overread": "1.90 GB of the 7.88 GB/token surplus, about 24 percent, before counting the ~3.81 GB f32 temporary the widen materializes."
+  },
+  "the_fix_has_two_parts_and_the_second_may_matter_more": [
+    "A Metal kernel that consumes bf16 DIRECTLY, eliminating the CPU widen entirely.",
+    "Upload once and keep device-resident. 1.90 GB fits trivially inside the 32 GiB cache budget, so after the first token there is no reason to touch host memory for this tensor again. The current path pays the full read every token because the memo's f32 residency budget, not the raw size, is what excludes it."
+  ],
+  "controller_error_caught_before_it_cost_anything": "The first head-to-device contract stated the tensor was f32. It is bf16, which changes the kernel and the parity argument. The lane was killed and relaunched with measured facts roughly two minutes in. Worth noting because the same class of error -- reasoning from an assumed property instead of reading the artifact -- produced the 1,171-versus-624 wait miscount earlier today.",
+  "parity_constraint_carried_into_the_lane": "The host path widens to f32 and accumulates in f32. A GPU bf16 kernel must match bit-for-bit; if it cannot, widen on the DEVICE once at upload rather than abandoning parity. Parity is the gate, not the speedup.",
+  "evidence_level": "ARTIFACT_HEADERS_READ_DIRECTLY_PLUS_MEASURED_LEDGER",
+  "not_evidence_of": "that moving it to device achieves any specific speedup -- this identifies the mechanism, not the gain"
+}

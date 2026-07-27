@@ -1,0 +1,19 @@
+[package]
+name = "hide-browser"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Browser evidence + visual verification model: schemas, a driver trait, and a deterministic replay driver over recorded sessions (Bible Book VIII sec 27). Model-free."
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+blake3 = { workspace = true }
+schemars = "0.8"
+
+[features]
+default = []

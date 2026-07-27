@@ -1,0 +1,64 @@
+{
+  "schema": "hawking.hide.wiring_review.v1",
+  "at": "2026-07-26T03:00:00Z",
+  "subject": "Delegated HIDE increment 1 -- four missing wires",
+  "delegation": {
+    "task_id": "hide-wiring-inc1-20260725-224036",
+    "mode": "delegate",
+    "profile": "power",
+    "model": "grok-4.5/high",
+    "base_commit": "fccb6b3036f94ad85453f130f394b8ff7be4bca9",
+    "branch": "grok/hide-wiring-inc1-20260725-224036",
+    "worktree": "~/.claude-grok/worktrees/hide-wiring-inc1-20260725-224036",
+    "diff": "7 files, +834/-51"
+  },
+  "status": "NOT MERGED. Statically reviewed, tests NOT re-run by Claude.",
+  "wires_verified_by_reading_the_source": [
+    {
+      "wire": "W1 MCP registration",
+      "verdict": "WIRED",
+      "evidence": "host.rs:614 defines register_mcp_servers_at_boot, host.rs:667 calls it on the production boot path, host.rs:622 reaches hide_tools::mcp::register_mcp_servers. Before this, the only callers in the workspace were inside mcp.rs's own #[cfg(test)] module."
+    },
+    {
+      "wire": "W2 fleet dispatch",
+      "verdict": "WIRED",
+      "evidence": "host.rs:497 registers the intent name, host.rs:896 admits it alongside create_worktree/new_session/open_session, host.rs:1291 handles it and host.rs:1303 calls self.fleet_run. Publishes a fleet_run_completed UiEvent (host.rs:1310) and routes failure through effect_failed (host.rs:1316). Before this, fleet_run's only caller was the test at host.rs:7562."
+    },
+    {
+      "wire": "W3 merge funnel",
+      "verdict": "WIRED",
+      "evidence": "manager.rs:544 imports integrate/TournamentSelector/CandidatePatch, manager.rs:591 calls TournamentSelector::select. Emits merge.selected and merge.integrated."
+    },
+    {
+      "wire": "W4 real code index",
+      "verdict": "WIRED",
+      "evidence": "services.rs:1718 calls bind_workspace_code_index on the workspace-open path; services.rs:1595 holds the Option<Arc<SqliteCodeIndex>>. Degradation is correct: index-dir creation failure and SqliteCodeIndex::open failure both return early leaving the empty InMemory default, so a bad index never fails workspace open."
+    }
+  ],
+  "reachability_tests_are_the_right_shape": "host.rs:7689 fleet_run_intent_reaches_fleet_manager dispatches the intent and asserts on the published event rather than calling the method, which is what the contract required -- a direct call would prove nothing, since that is exactly what existed while the subsystem was unreachable.",
+  "contract_compliance": {
+    "wires_closed": "4 of 4",
+    "ingest_bounding": "Bounded by file cap (OPEN_INGEST_FILE_CAP + max_file_bytes) rather than made asynchronous. The contract permitted either; bounded is the smaller change.",
+    "report_format": "NOT COMPLIANT. The returned report is streaming narration. It does not give the per-wire live path with file:line at each hop, does not give before/after workspace test counts, and does not separate pre-existing failures from introduced ones. It asserts 'all four reachability tests passed' and a '200 passed / 2 failed' hide-backend baseline without showing the after-state. The wires were verified here by reading source instead.",
+    "archaeology_not_available_to_the_agent": "The worktree was based on commit fccb6b30, and HIDE_ARCHAEOLOGY.md/.json were staged but never committed in the recon worktree, so the delegated agent could not read them and worked from the contract's named insertion points alone. Commit those reports before the next increment."
+  },
+  "findings": [
+    {
+      "severity": "low",
+      "file": "crates/hide-backend/src/services.rs",
+      "finding": "Dead block: `if n > 0 { let _ = n; }` after bounded_sqlite_ingest. It does nothing. Delete it or make it a real log line."
+    },
+    {
+      "severity": "low",
+      "file": "crates/hide-backend/src/services.rs:1760",
+      "finding": "`seed_code_file` is a new public production method whose doc says it is 'used by tests and by anything that needs to write without knowing the backend'. Write-through to whichever index is live is a defensible abstraction, but it entered the API to serve a test refactor. Confirm it has a non-test caller or make it pub(crate)."
+    },
+    {
+      "severity": "medium",
+      "finding": "Claude has not run the test suite. The delegated agent's pass claim is unverified. Do not merge until `cargo test` is re-run independently and the before/after counts are compared against the archaeology's recorded 616 passed / 4 failed."
+    }
+  ],
+  "why_tests_were_not_run_here": "MOP is suspended with roughly four hours of progress held in the RSS of 25 stopped processes, specifically so PASS3 can have the box. A cargo build and test sweep of a 28-crate Rust workspace would take cores and memory away from the job that pause exists to accelerate. This lane is on a separate branch with nothing waiting on it tonight, so the test run is deferred rather than the pause being spent on it.",
+  "next_action": "After PASS3 finalizes and MOP resumes: run the full workspace suite on the grok branch, compare against 616/4, resolve the two low findings, then merge into build/hide-impl-2026-07-19.",
+  "not_evidence_of": "that the wired subsystems behave correctly under real traffic; static reachability is not runtime correctness"
+}

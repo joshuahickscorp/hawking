@@ -1,0 +1,26 @@
+[package]
+name = "hide-sdk"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "The generated client SDK and codegen for the HIDE Agent Server (Bible sec 15.7): one schema source (hide-protocol) generates the JSON Schema, the frontend TypeScript types, and drives a thin async client. No handwritten frontend mirror types. Model-free."
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+async-trait = { workspace = true }
+tokio = { workspace = true }
+# schemars is a compile-time codegen dependency: hide-sdk reads the schemars
+# schemas that hide-protocol derives and re-projects them (JSON Schema + TS).
+schemars = "0.8"
+# The ONE schema authority. Every generated type here is derived from here, so a
+# protocol change flows into the JSON Schema and the frontend TS automatically.
+hide-protocol = { path = "../hide-protocol" }
+
+[features]
+default = []

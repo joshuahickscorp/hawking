@@ -34,6 +34,7 @@ import hashlib
 import json
 import struct
 import sys
+import time
 from pathlib import Path
 from typing import Any, BinaryIO
 
@@ -66,12 +67,14 @@ def build_header(*, model: dict, tensors: list[dict], body_sha256: str,
 
 def write_shard(path: Path, payloads: list[tuple[dict, bytes]], *, model: dict,
                 compression: dict, tokenizer: dict | None = None,
-                architecture: dict | None = None, shard: dict | None = None) -> dict:
+                architecture: dict | None = None, shard: dict | None = None,
+                telemetry: dict | None = None) -> dict:
     """Write one .gravity shard from (descriptor, payload) pairs.
 
     Offsets are assigned here rather than trusted from callers, so a descriptor can never
     disagree with where its bytes actually landed.
     """
+    hash_started = time.perf_counter()
     digest = hashlib.sha256()
     tensors: list[dict] = []
     offset = 0
@@ -88,14 +91,21 @@ def write_shard(path: Path, payloads: list[tuple[dict, bytes]], *, model: dict,
                           compression=compression, tokenizer=tokenizer,
                           architecture=architecture, shard=shard)
     encoded = json.dumps(header, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    if telemetry is not None:
+        telemetry["hash_manifest_seconds"] = time.perf_counter() - hash_started
 
     tmp = path.with_suffix(path.suffix + ".tmp")
+    write_started = time.perf_counter()
     with open(tmp, "wb") as sink:
         sink.write(struct.pack(PREFIX_STRUCT, MAGIC, FORMAT_VERSION, len(encoded)))
         sink.write(encoded)
         for _, blob in payloads:
             sink.write(blob)
     tmp.replace(path)
+    if telemetry is not None:
+        telemetry["file_write_seconds"] = time.perf_counter() - write_started
+        telemetry["header_bytes"] = PREFIX_BYTES + len(encoded)
+        telemetry["body_bytes"] = offset
     return header
 
 

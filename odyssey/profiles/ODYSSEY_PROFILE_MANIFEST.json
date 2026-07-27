@@ -22,7 +22,7 @@
   }
  ],
  "schema": "hawking.odyssey.profiles.v1",
- "selected_for_odyssey": null,
- "selection_gate": "M11",
+ "selected_for_odyssey": "math-v1",
+ "selection_gate": null,
  "source_dir": "profiles/prometheus"
 }

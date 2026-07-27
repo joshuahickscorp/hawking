@@ -156,3 +156,42 @@ kernel void gemv_f16_simdmat(
         y[base_row + tid] = shmem_out[tid * 8u];
     }
 }
+
+// ── GLM native.bf16 lm_head: device-resident, sequential f32 accumulate ─────
+//
+// Flagship `lm_head.weight` is native.bf16 [V, H] (~1.90 GB). The host path
+// widens every element to f32 then does left-to-right Σ w[c]*x[c] per row.
+// Parallel/simdgroup reduction reassociates and diverges; this kernel matches
+// the host bit-for-bit:
+//   1. widen bf16 → f32 as (u16 bits) << 16  (same as gravity::widen_native)
+//   2. left-to-right mul then add (fp contract off — no FMA reassociation)
+// One thread per output row. Weights stay bf16 on device after first upload.
+//
+// Binding:
+//   0  weight_bits  (rows × cols) ushort  — bf16 bit patterns, row-major
+//   1  act          (cols,)        float
+//   2  out_logits   (rows,)        float
+//   3  n_rows       constant uint
+//   4  n_cols       constant uint
+// Grid: (n_rows, 1, 1)  TG: (1, 1, 1) or any with one logical row per gid
+#pragma clang fp contract(off)
+kernel void gemv_native_bf16_seq(
+    device const ushort* weight_bits [[buffer(0)]],
+    device const float*  act         [[buffer(1)]],
+    device       float*  out_logits  [[buffer(2)]],
+    constant     uint&   n_rows      [[buffer(3)]],
+    constant     uint&   n_cols      [[buffer(4)]],
+    uint                 row_idx     [[thread_position_in_grid]])
+{
+    if (row_idx >= n_rows) return;
+    device const ushort* row_bits =
+        weight_bits + (ulong)row_idx * (ulong)n_cols;
+    float acc = 0.0f;
+    for (uint col = 0u; col < n_cols; ++col) {
+        uint wide_bits = ((uint)row_bits[col]) << 16;
+        float w_val = as_type<float>(wide_bits);
+        float product = w_val * act[col];
+        acc = acc + product;
+    }
+    out_logits[row_idx] = acc;
+}

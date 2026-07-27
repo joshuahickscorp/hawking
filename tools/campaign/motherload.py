@@ -34,33 +34,22 @@ LEDGER = ROOT / "HAWKING_MOTHERLOAD_LEDGER.jsonl"
 STATUS_JSON = ROOT / "HAWKING_MOTHERLOAD_STATUS.json"
 STATUS_MD = ROOT / "HAWKING_MOTHERLOAD_STATUS.md"
 AUDIT_JSON = ROOT / "HAWKING_MOTHERLOAD_LIVE_AUDIT.json"
+ODYSSEY_FENCE = ROOT / "odyssey/launch/ODYSSEY_LAUNCH_AUTHORIZED"
 
 APPSUP = Path.home() / "Library/Application Support/Hawking"
 GLM = APPSUP / "GLM52Gravity"
 FETCH = GLM / "source_fetch"
 
-# Terminal gates, verbatim from HAWKING_MOTHERLOAD_COMPLETION_CAMPAIGN.md §12.
+# Terminal gates replaced by the PROMETHEUS STREAMED PRE-ODYSSEY
+# QUANTIZATION AMENDMENT. Historical M01-M23 rows remain append-only
+# evidence, but they are no longer the endpoint predicate.
 GATES = {
-    "M01": "GLM traversal is 282/282",
-    "M02": "complete local GLM .gravity artifact exists",
-    "M03": "lowest broad parity rate is sealed, sub-bit preferred and H15 maximum",
-    "M04": "full GLM token executes from .gravity",
-    "M05": "measured base TPS and prefill exist",
-    "M06": "acceleration stack is terminal and measured separately",
-    "M07": "GLM runs end to end inside HIDE",
-    "M08": "Prometheus S0 and source decision are sealed",
-    "M09": "Prometheus architecture and profiles are implemented",
-    "M10": "equal-budget Claim A is sealed",
-    "M11": "General and Math artifacts are selected and verified",
-    "M12": "Forge, continuity, sovereignty, and Limit Registry are sealed",
-    "M13": "Odyssey substrate and training bundle are complete",
-    "M14": "sandbox, roles, Ledger, verifiers, Tribunal, and retrieval are scaffolded",
-    "M15": "Lean/Mathlib and evidence environment are pinned",
-    "M16": "Odyssey dry-run validation passes",
-    "M17": "ODYSSEY_LAUNCH_AUTHORIZED remains false",
-    "M18": "rollback/source lifecycle is green",
-    "M19": "all campaign commits are pushed",
-    "M20": "worktree and process state are clean except intentional detached services",
+    "A01": "General artifact is complete and HIDE-tested",
+    "A02": "streamed Prometheus cartography is complete",
+    "A03": "global Math allocation manifest is frozen",
+    "A04": "Math-Preserve.gravity is complete and verified",
+    "A05": "Odyssey package is prepared",
+    "A06": "ODYSSEY_LAUNCH_AUTHORIZED remains false",
 }
 STATES = {"OPEN", "IN_PROGRESS", "BLOCKED", "GREEN", "NEGATIVE_SEALED"}
 CLOSED = {"GREEN", "NEGATIVE_SEALED"}
@@ -238,6 +227,7 @@ def _append(row: dict) -> None:
 def _derive() -> dict:
     gates = {g: {"desc": d, "state": "OPEN", "note": "", "at": None}
              for g, d in GATES.items()}
+    legacy_gate_events = 0
     if LEDGER.exists():
         for line in LEDGER.read_text().splitlines():
             if not line.strip():
@@ -246,16 +236,28 @@ def _derive() -> dict:
             if row.get("kind") == "gate" and row["gate"] in gates:
                 gates[row["gate"]].update(state=row["state"], note=row.get("note", ""),
                                           at=row["at"])
+            elif row.get("kind") == "gate":
+                legacy_gate_events += 1
     closed = sum(1 for g in gates.values() if g["state"] in CLOSED)
+    launch_authorized = (
+        ODYSSEY_FENCE.is_file()
+        and ODYSSEY_FENCE.read_text().strip().lower() == "true"
+    )
     return {
-        "schema": "hawking.motherload.status.v1",
+        "schema": "hawking.motherload.status.v2",
+        "terminal_gate_set": "PROMETHEUS_STREAMED_PRE_ODYSSEY_AMENDMENT",
+        "legacy_gate_events_preserved": legacy_gate_events,
         "updated_at": _now(),
         "gates_total": len(GATES),
         "gates_closed": closed,
         "completion_fraction": round(closed / len(GATES), 4),
         "gates": gates,
-        "odyssey_launch_authorized": False,
-        "endpoint": "HAWKING_ODYSSEY_READY" if closed == len(GATES) else "IN_PROGRESS",
+        "odyssey_launch_authorized": launch_authorized,
+        "endpoint": (
+            "HAWKING_ODYSSEY_READY"
+            if closed == len(GATES) and not launch_authorized
+            else "IN_PROGRESS"
+        ),
     }
 
 
@@ -265,9 +267,9 @@ def _markdown(status: dict) -> str:
     lines = [
         "# Hawking Motherload Completion Status",
         "",
-        f"endpoint: `{status['endpoint']}`  ",
-        f"gates closed: {status['gates_closed']}/{status['gates_total']}  ",
-        f"ODYSSEY_LAUNCH_AUTHORIZED: `{str(status['odyssey_launch_authorized']).lower()}`  ",
+        f"endpoint: `{status['endpoint']}`",
+        f"gates closed: {status['gates_closed']}/{status['gates_total']}",
+        f"ODYSSEY_LAUNCH_AUTHORIZED: `{str(status['odyssey_launch_authorized']).lower()}`",
         f"updated: {status['updated_at']}",
         "",
         "| gate | state | condition | note |",
@@ -317,14 +319,14 @@ def selftest() -> None:
 
         s = seal()
         assert s["gates_closed"] == 0 and s["endpoint"] == "IN_PROGRESS", s
-        assert len(s["gates"]) == 20, "the campaign declares 20 terminal gates"
+        assert len(s["gates"]) == 6, "the amendment declares six terminal gates"
 
-        _append({"kind": "gate", "gate": "M04", "state": "GREEN", "note": "x"})
-        _append({"kind": "gate", "gate": "M04", "state": "BLOCKED", "note": "y"})
+        _append({"kind": "gate", "gate": "A04", "state": "GREEN", "note": "x"})
+        _append({"kind": "gate", "gate": "A04", "state": "BLOCKED", "note": "y"})
         s = seal()
-        assert s["gates"]["M04"]["state"] == "BLOCKED", "last write must win"
+        assert s["gates"]["A04"]["state"] == "BLOCKED", "last write must win"
         assert s["gates_closed"] == 0, s
-        assert "| M04 | blocked |" in STATUS_MD.read_text()
+        assert "| A04 | blocked |" in STATUS_MD.read_text()
 
         # Every gate closed must flip the endpoint, and only then.
         for g in GATES:

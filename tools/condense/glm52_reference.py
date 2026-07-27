@@ -324,8 +324,21 @@ def routed_moe(
     source: Mapping[str, np.ndarray] | TensorSource,
     prefix: str,
     config: Mapping[str, Any],
+    *,
+    retain_per_expert: bool = False,
 ) -> tuple[np.ndarray, dict[str, np.ndarray]]:
-    """Execute only hit experts from separate official checkpoint tensors."""
+    """Execute only hit experts from separate official checkpoint tensors.
+
+    `retain_per_expert` changes nothing about `routed`/`output` -- every array
+    that graded exact against the Rust runtime is computed exactly as before.
+    It only additionally keeps the per-expert `weighted` array this loop
+    already builds before scattering it, instead of discarding it, so a
+    caller can decompose "what if expert e's contribution were zero" as a
+    linear subtraction with no second forward pass. That is a LOCAL,
+    fixed-routing decomposition -- it holds the router's top-k choice fixed
+    rather than re-routing around the ablated expert, which is a different
+    (and much more expensive) question.
+    """
     router_logits, topk_weights, topk_indices = router_topk(
         hidden_states,
         _tensor(source, f"{prefix}.gate.weight"),
@@ -340,6 +353,7 @@ def routed_moe(
     flat_indices = topk_indices.reshape(-1, topk_indices.shape[-1])
     flat_weights = topk_weights.reshape(-1, topk_weights.shape[-1])
     routed = np.zeros_like(flat, dtype=np.float32)
+    per_expert: dict[int, dict[str, np.ndarray]] = {}
     for expert in sorted(set(int(value) for value in flat_indices.ravel())):
         token_slot = np.argwhere(flat_indices == expert)
         if token_slot.size == 0:
@@ -350,16 +364,21 @@ def routed_moe(
         expert_out = dense_mlp(current, source, stem)
         weighted = expert_out * flat_weights[tokens, slots, None]
         np.add.at(routed, tokens, weighted)
+        if retain_per_expert:
+            per_expert[expert] = {"tokens": tokens.copy(), "weighted_output": weighted}
     shared_prefix = f"{prefix}.shared_experts"
     shared = dense_mlp(hidden_states, source, shared_prefix)
     output = routed.reshape(hidden_states.shape) + shared
-    return output, {
+    trace = {
         "router_logits": router_logits,
         "topk_weights": topk_weights,
         "topk_indices": topk_indices,
         "routed_output": routed.reshape(hidden_states.shape),
         "shared_output": shared,
     }
+    if retain_per_expert:
+        trace["per_expert"] = per_expert
+    return output, trace
 
 
 def _append_cache(
@@ -506,6 +525,7 @@ def decoder_layer(
     indexer_type: str,
     previous_topk: np.ndarray | None,
     additive_mask: np.ndarray | None = None,
+    retain_per_expert: bool = False,
 ) -> tuple[np.ndarray, np.ndarray, dict[str, Any]]:
     prefix = f"model.layers.{layer}"
     before = np.asarray(hidden_states, dtype=np.float32)
@@ -535,7 +555,9 @@ def decoder_layer(
         mlp_output = dense_mlp(mlp_input, source, f"{prefix}.mlp")
         mlp_trace: dict[str, Any] = {"kind": "dense"}
     elif mlp_type == "sparse":
-        mlp_output, mlp_trace = routed_moe(mlp_input, source, f"{prefix}.mlp", config)
+        mlp_output, mlp_trace = routed_moe(
+            mlp_input, source, f"{prefix}.mlp", config, retain_per_expert=retain_per_expert
+        )
         mlp_trace = {"kind": "sparse", **mlp_trace}
     else:
         raise Glm52ReferenceError(f"unknown MLP type {mlp_type!r}")

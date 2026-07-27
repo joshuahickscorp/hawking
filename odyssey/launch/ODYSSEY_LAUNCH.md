@@ -12,12 +12,13 @@ Odyssey is **prepared and not started**. `ODYSSEY_LAUNCH_AUTHORIZED` is `false`.
 - the four-tier verification lattice, seven memory stores, branch economics, Graveyard
 - Lean and Mathlib pinned; a Tier-3 proof that needs a different Mathlib is a different proof
 
-## What is not ready, and why
+## Odyssey input
 
-The Odyssey training substrate is the compact Math artifact Prometheus selects, and that
-selection is gated on the flagship traversal (gate M11). Odyssey trains that artifact and
-nothing else; substituting an available model would be a different experiment wearing this
-one's name.
+`GLM-5.2-H0.98-Math-Preserve.gravity` is complete, content-addressed, and selected
+as the mandatory training substrate.  Its PASS3 receipt verifies complete official
+tensor coverage, every shard hash, the frozen per-tensor allocation, and actual
+whole-package compliance with the one-bit law.
+
 
 ## To start Odyssey in the next session
 

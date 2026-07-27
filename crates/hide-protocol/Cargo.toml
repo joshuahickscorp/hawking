@@ -1,0 +1,21 @@
+[package]
+name = "hide-protocol"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "The single schema authority for the HIDE Agent Server: semantic object model + protocol (Bible sec 14, sec 15). Model-free."
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+schemars = "0.8"
+# Depended on by path so the compat bridge maps the current Wire-B transport
+# (Intent/UiEvent) onto this authority WITHOUT refactoring hide-core.
+hide-core = { path = "../hide-core" }
+
+[features]
+default = []

@@ -1,0 +1,26 @@
+{
+  "schema": "hawking.prometheus.pass3_byte_preclearance.v1",
+  "at": "2026-07-26T01:05:00Z",
+  "question": "Will PASS3 finalization refuse the artifact for exceeding the frozen H0.98 ceiling after ~13 hours of packing?",
+  "answer": "No. The frozen allocation predicts every packed tensor's payload byte-for-byte.",
+  "method": "Recompute each sealed tensor's predicted payload from its frozen decision (native -> source payload_bytes; R0/R4 -> ceil(N*index_bits/8) + k*dim*2 + 64) and compare against the byte count the shard header actually records.",
+  "evidence": {
+    "sealed_shards": 29,
+    "sealed_tensors": 5992,
+    "actual_payload_bytes": 12793796416,
+    "predicted_payload_bytes": 12793796416,
+    "delta_bytes": 0,
+    "tensors_with_any_byte_mismatch": 0
+  },
+  "projection": {
+    "whole_model_predicted_payload_bytes": 91965859136,
+    "manifest_predicted_tensor_payload_bytes": 91965859136,
+    "recomputation_agrees_with_frozen_manifest": true,
+    "max_tensor_payload_bytes": 92014482252,
+    "headroom_bytes": 48623116,
+    "packaging_and_runtime_reserve_bytes": 268435456,
+    "max_complete_physical_bytes": 92282917708
+  },
+  "caveat": "This clears the byte ceiling only. It is an F0 physical accounting result and says nothing about output divergence, capability, or whether the sealed artifact executes correctly.",
+  "not_evidence_of": "capability, output divergence, or end-to-end behaviour"
+}

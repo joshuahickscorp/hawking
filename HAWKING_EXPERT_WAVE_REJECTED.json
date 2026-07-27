@@ -1,0 +1,32 @@
+{
+  "schema": "hawking.gravity.expert_wave_rejection.v1",
+  "at": "2026-07-26T20:30:00Z",
+  "verdict": "REJECTED AND REVERTED. The parity gate did its job.",
+  "what_was_attempted": "Collapse the MoE layer to one command buffer: move silu_mul to device, encode gate/up/silu/down into a single TokenCommandBuffer. Static target 234 -> 78 synchronizations per token.",
+  "why_it_was_rejected": [
+    {
+      "failure": "device_silu_mul_matches_host_bit_identical FAILED",
+      "detail": "The device silu diverges from the host at the last 1-2 ULP -- 0.0026828013 against 0.002682801. The formulas are algebraically identical, (g / (1 + exp(-g))) * u on both sides. The divergence is Metal's exp against libm's exp.",
+      "attempted_fix": "Switching the shader to precise::exp did NOT close it. Metal's precise transcendentals still differ from libm in the last bit."
+    },
+    {
+      "failure": "resident_matches_host_state_over_several_prompts FAILED -- a REGRESSION",
+      "detail": "That test passed 3/3 before this merge. The lane's 300 lines in gravity_glm_resident.rs altered the NON-collapsed resident path it was contracted to leave alone, behind an additive flag. Reverting the merge restored it to 3/3 immediately, which confirms the cause.",
+      "severity": "This is worse than the ULP issue. A flagged, additive change silently changed a default path whose parity had already been established and merged."
+    }
+  ],
+  "controller_error_recorded": "I changed the shader from exp to precise::exp while diagnosing, believing the resident path was unaffected. It uses the same kernel, so I perturbed a passing path mid-diagnosis. Reverted. Diagnosing a failure by editing shared code is how a second bug gets attributed to the first.",
+  "the_real_question_this_raises": {
+    "issue": "Bit-identical logits between a CPU reference and a GPU kernel may be unattainable wherever a transcendental is involved. exp, and therefore silu, sigmoid and softmax, are the obvious cases.",
+    "why_it_matters_beyond_this_lane": "Every future device-side kernel that replaces host math will hit this. The Temporal Gravity ladder requires moving attention, routing, the head and sampling to device -- softmax and exp appear in most of them.",
+    "options": [
+      "Keep bit-identical LOGITS as the gate and implement libm-exact expf in Metal. Heavy, fragile, but preserves the strongest contract.",
+      "Move the gate to bit-identical EMITTED TOKENS over a large prompt set, with logit divergence bounded and reported. The campaign's own wording allows this -- 'exact output parity OR the frozen quality contract' -- and output tokens are what the artifact actually promises.",
+      "Keep the host as the reference for transcendental steps only, accepting the readback cost there and collapsing everywhere else."
+    ],
+    "recommendation": "Option 2, but it is a CONTRACT CHANGE and belongs to the user, not to a lane under deadline. Until it is decided, bit-identical logits remains the gate and this lane stays rejected. Choosing the weaker contract in the middle of a failing test is exactly how a quality gate erodes."
+  },
+  "what_survives": "GPU-resident state remains merged, parity-green at 3/3, and measured at exactly 1.00x. The collapse it was meant to enable has not been achieved.",
+  "evidence_level": "MEASURED_ON_DEVICE_PARITY_SUITE",
+  "not_evidence_of": "that the collapse is impossible -- only that this implementation broke a passing path and could not hold bit-identity"
+}

@@ -33,6 +33,12 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 ODYSSEY = ROOT / "odyssey"
+MATH_RECEIPT = ROOT / "GLM52_H0_98_MATH_PRESERVE_RECEIPT.json"
+MATH_ARTIFACT = Path.home() / (
+    "Library/Application Support/Hawking/Models/GLM-5.2/"
+    "b4734de4facf877f85769a911abafc5283eab3d9/"
+    "GLM-5.2-H0.98-Math-Preserve.gravity"
+)
 
 DIRS = [
     "doctrine", "substrate", "data", "teacher_traces", "profiles", "training",
@@ -154,19 +160,12 @@ def _write(path: Path, obj) -> Path:
 def _substrate() -> dict:
     """What Odyssey would train, described honestly whether or not it exists.
 
-    The selected compact artifact comes out of Prometheus, which is gated on the
-    flagship traversal. Naming a path that does not exist yet without saying so is how
-    a dry run passes and a real run does not.
+    The selected compact artifact comes out of streamed Prometheus PASS3. Naming
+    a path that does not exist yet without saying so is how a dry run passes and
+    a real run does not.
     """
-    campaign_status = ROOT / "HAWKING_MOTHERLOAD_STATUS.json"
-    gates = {}
-    if campaign_status.is_file():
-        gates = json.loads(campaign_status.read_text()).get("gates", {})
-
-    def gate_state(gid: str) -> str:
-        return gates.get(gid, {}).get("state", "OPEN")
-
-    # The runtime instrument is real and content-addressed today; the flagship is not.
+    # The runtime instrument is real and content-addressed today.  Math-Preserve
+    # becomes selectable only through PASS3's independently verified receipt.
     instrument = Path.home() / (
         "Library/Application Support/Hawking/CampaignS08/llama32-1b-R0.v2.gravity")
     entries = []
@@ -179,19 +178,51 @@ def _substrate() -> dict:
             "present": True,
             "note": "Grades the runtime, not the science. Not an Odyssey training target.",
         })
-    entries.append({
-        "role": "odyssey_training_substrate",
-        "path": None,
-        "present": False,
-        "gate": "M11: General and Math artifacts are selected and verified",
-        "gate_state": gate_state("M11"),
-        "note": "The selected compact Math artifact from Prometheus. Odyssey trains this "
-                "and nothing else; a substitute substrate is a different experiment.",
-    })
+    selected = None
+    if MATH_RECEIPT.is_file():
+        receipt = json.loads(MATH_RECEIPT.read_text())
+        artifact = Path(receipt.get("artifact", ""))
+        index = artifact / "model.gravity.index.json"
+        observed_index_hash = _sha256(index) if index.is_file() else None
+        ready = (
+            receipt.get("odyssey_input_ready") is True
+            and artifact == MATH_ARTIFACT
+            and artifact.is_dir()
+            and index.is_file()
+            and observed_index_hash == receipt.get("artifact_index_sha256")
+            and receipt.get("coverage", {}).get("verdict") == "COMPLETE"
+            and receipt.get("verification", {}).get("all_shards_ok") is True
+            and receipt.get("byte_ledger", {}).get("legal") is True
+        )
+        if ready:
+            selected = "GLM-5.2-H0.98-Math-Preserve.gravity"
+            entries.append({
+                "role": "odyssey_training_substrate",
+                "path": str(artifact),
+                "present": True,
+                "bytes": int(receipt["byte_ledger"]["actual_package_bytes"]),
+                "address_kind": "model_index_sha256",
+                "sha256": observed_index_hash,
+                "allocation_manifest_sha256": receipt["allocation_manifest_sha256"],
+                "complete_bpw": receipt["actual_complete_bpw"],
+                "profile": "math-v1",
+                "note": "Mandatory streamed Prometheus Math-Preserve substrate. Odyssey "
+                        "trains this artifact and nothing else.",
+            })
+    if selected is None:
+        entries.append({
+            "role": "odyssey_training_substrate",
+            "path": None,
+            "present": False,
+            "gate": "AMENDED-04: Math-Preserve.gravity complete and verified",
+            "gate_state": "OPEN",
+            "note": "The selected compact Math artifact from Prometheus. Odyssey trains "
+                    "this and nothing else; a substitute is a different experiment.",
+        })
     return {
         "schema": "hawking.odyssey.substrate.v1",
-        "selected": None,
-        "selection_gate": "M11",
+        "selected": selected,
+        "selection_gate": None if selected else "AMENDED-04",
         "entries": entries,
     }
 
@@ -255,7 +286,8 @@ def build() -> dict:
     })
 
     # --- substrate -------------------------------------------------------
-    w("substrate/ODYSSEY_SUBSTRATE.json", _substrate())
+    substrate = _substrate()
+    w("substrate/ODYSSEY_SUBSTRATE.json", substrate)
 
     # --- training --------------------------------------------------------
     w("training/ODYSSEY_TRAINING_PLAN.json", {
@@ -350,11 +382,12 @@ def build() -> dict:
         "source_dir": str(profiles_src.relative_to(ROOT)),
         "profiles": [{"name": p.stem, "sha256": _sha256(p)}
                      for p in sorted(profiles_src.glob("*.json"))],
-        "selected_for_odyssey": None,
-        "selection_gate": "M11",
+        "selected_for_odyssey": "math-v1" if substrate["selected"] else None,
+        "selection_gate": None if substrate["selected"] else "AMENDED-04",
     } if profiles_src.is_dir() else {
         "schema": "hawking.odyssey.profiles.v1", "profiles": [],
-        "selected_for_odyssey": None, "selection_gate": "M11"})
+        "selected_for_odyssey": None,
+        "selection_gate": None if substrate["selected"] else "AMENDED-04"})
 
     # --- evaluation ------------------------------------------------------
     w("evaluation/ODYSSEY_EVALUATION_CONTRACT.json", {
@@ -568,7 +601,7 @@ def build() -> dict:
                       "re-run the stage's entry gate before resuming"],
         "law": "rollback is a recorded event, never a silent substitution",
     })
-    w("launch/ODYSSEY_LAUNCH.md", _LAUNCH_MD)
+    w("launch/ODYSSEY_LAUNCH.md", _launch_markdown(bool(substrate["selected"])))
 
     manifest = {
         "schema": "hawking.odyssey.package.v1",
@@ -620,7 +653,25 @@ if __name__ == "__main__":
     raise SystemExit(main(sys.argv))
 '''
 
-_LAUNCH_MD = """# Odyssey Launch Packet
+def _launch_markdown(substrate_ready: bool) -> str:
+    substrate_section = (
+        """## Odyssey input
+
+`GLM-5.2-H0.98-Math-Preserve.gravity` is complete, content-addressed, and selected
+as the mandatory training substrate.  Its PASS3 receipt verifies complete official
+tensor coverage, every shard hash, the frozen per-tensor allocation, and actual
+whole-package compliance with the one-bit law.
+"""
+        if substrate_ready
+        else """## What is not ready, and why
+
+The Odyssey training substrate is the compact Math artifact Prometheus selects.
+It remains gated on AMENDED-04 (Math-Preserve complete and verified). Odyssey
+trains that artifact and nothing else; substituting an available model would be
+a different experiment wearing this one's name.
+"""
+    )
+    return f"""# Odyssey Launch Packet
 
 Odyssey is **prepared and not started**. `ODYSSEY_LAUNCH_AUTHORIZED` is `false`.
 
@@ -634,12 +685,7 @@ Odyssey is **prepared and not started**. `ODYSSEY_LAUNCH_AUTHORIZED` is `false`.
 - the four-tier verification lattice, seven memory stores, branch economics, Graveyard
 - Lean and Mathlib pinned; a Tier-3 proof that needs a different Mathlib is a different proof
 
-## What is not ready, and why
-
-The Odyssey training substrate is the compact Math artifact Prometheus selects, and that
-selection is gated on the flagship traversal (gate M11). Odyssey trains that artifact and
-nothing else; substituting an available model would be a different experiment wearing this
-one's name.
+{substrate_section}
 
 ## To start Odyssey in the next session
 
@@ -731,6 +777,27 @@ def validate() -> dict:
               "latest" not in env["mathlib"]["revision"], env["mathlib"]["revision"])
         check("network denied by default",
               json.loads(sandbox.read_text())["network"]["default"] == "deny")
+
+    # A present Odyssey substrate is a directory addressed by its model index.
+    # Re-check the content address during every validation; build-time existence
+    # is not a durable guarantee.
+    substrate_path = ODYSSEY / "substrate/ODYSSEY_SUBSTRATE.json"
+    if substrate_path.is_file():
+        substrate = json.loads(substrate_path.read_text())
+        selected = [
+            e for e in substrate.get("entries", [])
+            if e.get("role") == "odyssey_training_substrate" and e.get("present")
+        ]
+        if selected:
+            entry = selected[0]
+            artifact = Path(entry["path"])
+            index = artifact / "model.gravity.index.json"
+            observed = _sha256(index) if index.is_file() else None
+            check(
+                "selected substrate content address",
+                artifact == MATH_ARTIFACT and observed == entry.get("sha256"),
+                f"path={artifact}, observed_index_sha256={observed}",
+            )
 
     result = {
         "schema": "hawking.odyssey.validation.v1",

@@ -15,7 +15,7 @@
 //!                           relative to this point)
 //! ```
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fs::File;
 use std::path::Path;
 
@@ -142,9 +142,13 @@ impl GravityShard {
     /// `verify_hash` is set, the payload's SHA-256 is checked against the
     /// descriptor's `sha256` and a mismatch is an error.
     pub fn read_tensor(&self, name: &str, verify_hash: bool) -> Result<Vec<u8>> {
-        let d = self
-            .descriptor(name)
-            .ok_or_else(|| Error::Gravity(format!("no such tensor {name:?}")))?;
+        use crate::cost_ledger::{self, Bucket};
+
+        let d = {
+            let _lookup = cost_ledger::Scope::new(Bucket::ContainerLookup);
+            self.descriptor(name)
+                .ok_or_else(|| Error::Gravity(format!("no such tensor {name:?}")))?
+        };
         let start = self
             .body_offset
             .checked_add(d.offset)
@@ -158,8 +162,13 @@ impl GravityShard {
                 self.mmap.len()
             )));
         }
-        let payload = &self.mmap[start as usize..end as usize];
+        let payload = {
+            let _lookup = cost_ledger::Scope::new(Bucket::ContainerLookup);
+            &self.mmap[start as usize..end as usize]
+        };
         if verify_hash {
+            let _verify = cost_ledger::Scope::new(Bucket::ArtifactVerificationAndSha);
+            cost_ledger::record_sha_verification();
             let mut h = Sha256::new();
             h.update(payload);
             let digest = h.finalize();
@@ -171,6 +180,9 @@ impl GravityShard {
                 )));
             }
         }
+        // Host-side copy out of the mmap. Counts as a hot-loop allocation when
+        // the cost ledger is recording a decode token.
+        cost_ledger::record_allocation(payload.len() as u64);
         Ok(payload.to_vec())
     }
 }
@@ -605,7 +617,7 @@ pub fn widen_native(codec: &str, blob: &[u8]) -> Result<Vec<f32>> {
     })
 }
 
-fn matvec_dense(w: &[f32], x: &[f32], name: &str) -> Result<Vec<f32>> {
+pub(crate) fn matvec_dense(w: &[f32], x: &[f32], name: &str) -> Result<Vec<f32>> {
     if x.is_empty() || w.len() % x.len() != 0 {
         return Err(Error::Gravity(format!(
             "tensor {name:?}: {} values is not a whole number of {}-wide rows",
@@ -618,6 +630,27 @@ fn matvec_dense(w: &[f32], x: &[f32], name: &str) -> Result<Vec<f32>> {
         .collect())
 }
 
+/// Host oracle for device `gemv_native_bf16_seq`: widen little-endian bf16
+/// the same way as [`widen_native`], then left-to-right f32 Σ per row via
+/// [`matvec_dense`]. Public so parity tests (and the GPU module) share one
+/// definition.
+pub fn matvec_bf16_host(weight_le: &[u8], cols: usize, x: &[f32]) -> Result<Vec<f32>> {
+    if x.len() != cols {
+        return Err(Error::Gravity(format!(
+            "matvec_bf16_host: x.len() {} != cols {cols}",
+            x.len()
+        )));
+    }
+    if cols == 0 || weight_le.len() % (cols * 2) != 0 {
+        return Err(Error::Gravity(format!(
+            "matvec_bf16_host: payload {} B is not a whole number of {cols}-wide bf16 rows",
+            weight_le.len()
+        )));
+    }
+    let w = widen_native("native.bf16", weight_le)?;
+    matvec_dense(&w, x, "lm_head.weight")
+}
+
 fn row_dense(w: &[f32], index: usize, cols: usize, name: &str) -> Result<Vec<f32>> {
     let start = index * cols;
     if start + cols > w.len() {
@@ -626,6 +659,187 @@ fn row_dense(w: &[f32], index: usize, cols: usize, name: &str) -> Result<Vec<f32
         )));
     }
     Ok(w[start..start + cols].to_vec())
+}
+
+/// Default byte budget for the Lazy-path native dense/row decoded memo.
+///
+/// The campaign carries a few hundred `native.*` tensors (norms, biases,
+/// router corrections) — about 0.1% of flagship weights. 256 MiB is a
+/// generous ceiling for those widened f32 vectors while still bounding
+/// residency the way the GPU weight cache does.
+pub const DEFAULT_NATIVE_DENSE_MEMO_BUDGET_BYTES: u64 = 256 * 1024 * 1024;
+
+/// Snapshot of the Lazy-path native dense/row memo. Surfaced so a long run
+/// has an explicit residency number rather than an unbounded HashMap.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct NativeDenseMemoStats {
+    pub budget_bytes: u64,
+    pub resident_bytes: u64,
+    pub high_water_bytes: u64,
+    pub entries: usize,
+    pub hits: u64,
+    pub misses: u64,
+    /// Times a payload SHA-256 was actually computed on the dense/row path.
+    /// Integrity still requires **at least one** check per tensor per process
+    /// when `verify_hash` is on; this counter proves repeats are not free.
+    pub verifications: u64,
+    /// Distinct tensors that have been integrity-checked (or admitted after
+    /// a checked load) on the dense/row path.
+    pub verified_tensors: usize,
+    pub evictions: u64,
+}
+
+struct MemoEntry {
+    value: Vec<f32>,
+    bytes: u64,
+    last_tick: u64,
+}
+
+/// Byte-budgeted memo of decoded `native.*` vectors plus a one-shot
+/// verification record for tensors too large to keep decoded (e.g. an
+/// embedding table reached via [`GravityWeights::row`]).
+///
+/// Decode+hash of the same handful of norm/bias tensors used to dominate
+/// warm decode when hashing was on: 78 layers × several tensors × every
+/// token re-read, re-widened, and re-hashed the same bytes. This memo keeps
+/// the widened `Vec<f32>` after the first access so subsequent `dense` /
+/// `row` calls are a clone from RAM. Large tensors skip the decoded cache
+/// (holding a full embedding table would defeat the budget) but still mark
+/// verification done so SHA-256 runs at most once per process.
+struct NativeDenseMemo {
+    decoded: HashMap<String, MemoEntry>,
+    /// Names whose payload has been integrity-checked (or loaded under
+    /// `verify_hash == false`). Large row() targets land here without a
+    /// decoded entry.
+    verified: HashSet<String>,
+    budget_bytes: u64,
+    resident_bytes: u64,
+    high_water_bytes: u64,
+    clock: u64,
+    hits: u64,
+    misses: u64,
+    verifications: u64,
+    evictions: u64,
+}
+
+impl NativeDenseMemo {
+    fn new(budget_bytes: u64) -> Self {
+        Self {
+            decoded: HashMap::new(),
+            verified: HashSet::new(),
+            budget_bytes,
+            resident_bytes: 0,
+            high_water_bytes: 0,
+            clock: 0,
+            hits: 0,
+            misses: 0,
+            verifications: 0,
+            evictions: 0,
+        }
+    }
+
+    fn stats(&self) -> NativeDenseMemoStats {
+        NativeDenseMemoStats {
+            budget_bytes: self.budget_bytes,
+            resident_bytes: self.resident_bytes,
+            high_water_bytes: self.high_water_bytes,
+            entries: self.decoded.len(),
+            hits: self.hits,
+            misses: self.misses,
+            verifications: self.verifications,
+            verified_tensors: self.verified.len(),
+            evictions: self.evictions,
+        }
+    }
+
+    fn is_verified(&self, name: &str) -> bool {
+        self.verified.contains(name)
+    }
+
+    fn has_decoded(&self, name: &str) -> bool {
+        self.decoded.contains_key(name)
+    }
+
+    /// Memo hit: clone the decoded vector and refresh LRU. `None` on miss.
+    fn take_decoded(&mut self, name: &str) -> Option<Vec<f32>> {
+        if let Some(e) = self.decoded.get_mut(name) {
+            self.clock = self.clock.saturating_add(1);
+            e.last_tick = self.clock;
+            self.hits = self.hits.saturating_add(1);
+            Some(e.value.clone())
+        } else {
+            None
+        }
+    }
+
+    fn note_miss(&mut self) {
+        self.misses = self.misses.saturating_add(1);
+    }
+
+    fn record_verification(&mut self, name: &str) {
+        self.verified.insert(name.to_string());
+        self.verifications = self.verifications.saturating_add(1);
+    }
+
+    /// Remember that `name` is safe to re-read without hashing (either we
+    /// just verified it, or `verify_hash` is off so integrity was waived).
+    fn mark_verified_without_hash(&mut self, name: &str) {
+        self.verified.insert(name.to_string());
+    }
+
+    /// Admit a decoded native vector under the byte budget. Oversized
+    /// tensors (or a full cache that cannot free room) skip residency but
+    /// remain in `verified` so hashing is still one-shot.
+    fn admit_decoded(&mut self, name: &str, value: Vec<f32>) {
+        if self.decoded.contains_key(name) {
+            self.clock = self.clock.saturating_add(1);
+            if let Some(e) = self.decoded.get_mut(name) {
+                e.last_tick = self.clock;
+            }
+            return;
+        }
+        let bytes = (value.len() as u64).saturating_mul(4);
+        self.verified.insert(name.to_string());
+        if bytes > self.budget_bytes {
+            return;
+        }
+        while self.resident_bytes.saturating_add(bytes) > self.budget_bytes {
+            if !self.evict_one() {
+                return;
+            }
+        }
+        self.clock = self.clock.saturating_add(1);
+        self.decoded.insert(
+            name.to_string(),
+            MemoEntry {
+                value,
+                bytes,
+                last_tick: self.clock,
+            },
+        );
+        self.resident_bytes = self.resident_bytes.saturating_add(bytes);
+        if self.resident_bytes > self.high_water_bytes {
+            self.high_water_bytes = self.resident_bytes;
+        }
+    }
+
+    fn evict_one(&mut self) -> bool {
+        let victim = self
+            .decoded
+            .iter()
+            .min_by_key(|(_, e)| e.last_tick)
+            .map(|(k, _)| k.clone());
+        let Some(name) = victim else {
+            return false;
+        };
+        if let Some(e) = self.decoded.remove(&name) {
+            self.resident_bytes = self.resident_bytes.saturating_sub(e.bytes);
+            self.evictions = self.evictions.saturating_add(1);
+            true
+        } else {
+            false
+        }
+    }
 }
 
 /// Where a [`GravityWeights`] actually gets its bytes.
@@ -645,15 +859,24 @@ enum Source {
     /// virtual address space, not resident pages) but still unnecessary for
     /// a short run that never touches most of them, so shards open lazily
     /// into `open_shards` on first use and stay there for the model's
-    /// lifetime. A tensor's payload bytes are read, decoded, used, and
-    /// dropped on every call — same as the Python `GravityGlmSource` this
-    /// mirrors. `RefCell` rather than `Mutex`: this path has no `Send+Sync`
-    /// requirement, unlike the GPU model's resident buffers.
+    /// lifetime.
+    ///
+    /// `native.*` tensors reached via [`GravityWeights::dense`] / [`row`]
+    /// are memoized after first decode (byte-budgeted); integrity hashing
+    /// still runs at least once per tensor when `verify_hash` is on, but
+    /// not on every subsequent access. Packed `matvec` payloads remain
+    /// decode-on-call (or GPU-cached by the adapter).
+    ///
+    /// `Mutex` rather than `RefCell`: an `Engine` implementor must be
+    /// `Send + Sync` (the GPU weight cache wraps a `GravityWeights` for its
+    /// `dense`/`row` delegation), and an uncontended lock on a
+    /// single-threaded CPU forward costs nothing worth avoiding.
     Lazy {
         shard_dir: std::path::PathBuf,
         tensor_shard: HashMap<String, String>,
-        open_shards: std::cell::RefCell<HashMap<String, GravityShard>>,
+        open_shards: std::sync::Mutex<HashMap<String, GravityShard>>,
         verify_hash: bool,
+        dense_memo: std::sync::Mutex<NativeDenseMemo>,
     },
 }
 
@@ -738,8 +961,11 @@ impl GravityWeights {
                 source: Source::Lazy {
                     shard_dir: dir.to_path_buf(),
                     tensor_shard,
-                    open_shards: std::cell::RefCell::new(HashMap::new()),
+                    open_shards: std::sync::Mutex::new(HashMap::new()),
                     verify_hash,
+                    dense_memo: std::sync::Mutex::new(NativeDenseMemo::new(
+                        DEFAULT_NATIVE_DENSE_MEMO_BUDGET_BYTES,
+                    )),
                 },
                 header,
             });
@@ -777,8 +1003,11 @@ impl GravityWeights {
             source: Source::Lazy {
                 shard_dir: dir.to_path_buf(),
                 tensor_shard,
-                open_shards: std::cell::RefCell::new(HashMap::new()),
+                open_shards: std::sync::Mutex::new(HashMap::new()),
                 verify_hash,
+                dense_memo: std::sync::Mutex::new(NativeDenseMemo::new(
+                    DEFAULT_NATIVE_DENSE_MEMO_BUDGET_BYTES,
+                )),
             },
             header: header.expect("names is non-empty"),
         })
@@ -788,6 +1017,75 @@ impl GravityWeights {
         match &self.source {
             Source::Eager(t) => t.contains_key(name),
             Source::Lazy { tensor_shard, .. } => tensor_shard.contains_key(name),
+        }
+    }
+
+    /// Every tensor name this model declares. Eager mode only — used to
+    /// enumerate a fixture's tensors for testing; the flagship (Lazy) is
+    /// walked by the forward pass name-by-name, never enumerated wholesale.
+    pub fn tensor_names(&self) -> Vec<String> {
+        match &self.source {
+            Source::Eager(t) => t.keys().cloned().collect(),
+            Source::Lazy { tensor_shard, .. } => tensor_shard.keys().cloned().collect(),
+        }
+    }
+
+    /// Residency of the Lazy-path native dense/row memo. Eager mode returns
+    /// a zeroed snapshot (everything was decoded at open; there is no memo).
+    pub fn dense_memo_stats(&self) -> NativeDenseMemoStats {
+        match &self.source {
+            Source::Eager(_) => NativeDenseMemoStats {
+                budget_bytes: 0,
+                resident_bytes: 0,
+                high_water_bytes: 0,
+                entries: 0,
+                hits: 0,
+                misses: 0,
+                verifications: 0,
+                verified_tensors: 0,
+                evictions: 0,
+            },
+            Source::Lazy { dense_memo, .. } => dense_memo
+                .lock()
+                .expect("gravity dense-memo mutex")
+                .stats(),
+        }
+    }
+
+    /// Raw, undecoded payload bytes plus codec string — what a GPU cache
+    /// wants to upload verbatim, as opposed to [`dense`]/[`matvec`]/[`row`]
+    /// which decode for CPU execution. Lazy mode only: the flagship is the
+    /// only artifact large enough to need a GPU-resident cache in the first
+    /// place, and Eager mode never retains raw bytes past decode.
+    pub fn raw_payload(&self, name: &str) -> Result<(String, Vec<u8>)> {
+        let (codec, blob, _shape) = self.raw_payload_with_shape(name)?;
+        Ok((codec, blob))
+    }
+
+    /// Like [`raw_payload`], but also returns the descriptor shape so a
+    /// device-resident dense path (e.g. `lm_head.weight` as `native.bf16`)
+    /// can size the GEMV without decoding.
+    pub fn raw_payload_with_shape(&self, name: &str) -> Result<(String, Vec<u8>, Vec<u64>)> {
+        match &self.source {
+            Source::Eager(_) => Err(Error::Gravity(
+                "raw_payload: not available in Eager mode (decoded at open, raw bytes discarded)"
+                    .into(),
+            )),
+            Source::Lazy {
+                shard_dir,
+                tensor_shard,
+                open_shards,
+                verify_hash,
+                ..
+            } => Self::with_lazy_shard(shard_dir, tensor_shard, open_shards, name, |shard| {
+                let d = shard
+                    .descriptor(name)
+                    .expect("name came from this shard's own index");
+                let codec = d.codec.clone();
+                let shape = d.shape.clone();
+                let blob = shard.read_tensor(name, *verify_hash)?;
+                Ok((codec, blob, shape))
+            }),
         }
     }
 
@@ -802,19 +1100,27 @@ impl GravityWeights {
     fn with_lazy_shard<T>(
         shard_dir: &Path,
         tensor_shard: &HashMap<String, String>,
-        open_shards: &std::cell::RefCell<HashMap<String, GravityShard>>,
+        open_shards: &std::sync::Mutex<HashMap<String, GravityShard>>,
         name: &str,
         f: impl FnOnce(&GravityShard) -> Result<T>,
     ) -> Result<T> {
         let filename = tensor_shard
             .get(name)
             .ok_or_else(|| Error::Gravity(format!("artifact has no tensor {name:?}")))?;
-        if !open_shards.borrow().contains_key(filename) {
+        if !open_shards
+            .lock()
+            .expect("gravity lazy-shard mutex")
+            .contains_key(filename)
+        {
             let shard = GravityShard::open(&shard_dir.join(filename))?;
-            open_shards.borrow_mut().insert(filename.clone(), shard);
+            open_shards
+                .lock()
+                .expect("gravity lazy-shard mutex")
+                .insert(filename.clone(), shard);
         }
         f(open_shards
-            .borrow()
+            .lock()
+            .expect("gravity lazy-shard mutex")
             .get(filename)
             .expect("just opened or already present"))
     }
@@ -824,10 +1130,19 @@ impl GravityWeights {
     /// here means the artifact disagrees with the runtime about what it is.
     /// Owned rather than borrowed so the same signature covers both a
     /// pre-decoded eager tensor and one decoded fresh on this call.
+    ///
+    /// Lazy mode memoizes the widened vector after the first access (under
+    /// a byte budget). Integrity hashing still runs on the first load when
+    /// `verify_hash` is on, then is skipped for the rest of the process.
     pub fn dense(&self, name: &str) -> Result<Vec<f32>> {
+        use crate::cost_ledger::{self, Bucket};
+        cost_ledger::record_dense_call();
         match &self.source {
             Source::Eager(tensors) => match tensors.get(name) {
-                Some(Tensor::Dense(v)) => Ok(v.clone()),
+                Some(Tensor::Dense(v)) => {
+                    cost_ledger::record_allocation((v.len() * 4) as u64);
+                    Ok(v.clone())
+                }
                 Some(Tensor::Pq(_)) => Err(Error::Gravity(format!(
                     "tensor {name:?} is packed; expected a natively-carried dense tensor"
                 ))),
@@ -838,23 +1153,60 @@ impl GravityWeights {
                 tensor_shard,
                 open_shards,
                 verify_hash,
-            } => Self::with_lazy_shard(shard_dir, tensor_shard, open_shards, name, |shard| {
-                let codec = &shard
-                    .descriptor(name)
-                    .expect("name came from this shard's own index")
-                    .codec;
-                if !codec.starts_with("native.") {
-                    return Err(Error::Gravity(format!(
-                        "tensor {name:?} is packed; expected a natively-carried dense tensor"
-                    )));
+                dense_memo,
+            } => {
+                {
+                    let mut memo = dense_memo.lock().expect("gravity dense-memo mutex");
+                    if let Some(v) = memo.take_decoded(name) {
+                        return Ok(v);
+                    }
+                    memo.note_miss();
                 }
-                widen_native(codec, &shard.read_tensor(name, *verify_hash)?)
-            }),
+                let need_verify = {
+                    let memo = dense_memo.lock().expect("gravity dense-memo mutex");
+                    *verify_hash && !memo.is_verified(name)
+                };
+                let (codec, blob) =
+                    Self::with_lazy_shard(shard_dir, tensor_shard, open_shards, name, |shard| {
+                        let codec = shard
+                            .descriptor(name)
+                            .expect("name came from this shard's own index")
+                            .codec
+                            .clone();
+                        if !codec.starts_with("native.") {
+                            return Err(Error::Gravity(format!(
+                                "tensor {name:?} is packed; expected a natively-carried dense tensor"
+                            )));
+                        }
+                        let blob = shard.read_tensor(name, need_verify)?;
+                        Ok((codec, blob))
+                    })?;
+                let v = {
+                    let _decode = cost_ledger::Scope::new(Bucket::PackedIndexDecode);
+                    widen_native(&codec, &blob)?
+                };
+                {
+                    let mut memo = dense_memo.lock().expect("gravity dense-memo mutex");
+                    if need_verify {
+                        memo.record_verification(name);
+                    } else if !*verify_hash {
+                        memo.mark_verified_without_hash(name);
+                    }
+                    // Re-check: another thread may have admitted since our miss.
+                    if let Some(cached) = memo.take_decoded(name) {
+                        return Ok(cached);
+                    }
+                    memo.admit_decoded(name, v.clone());
+                }
+                Ok(v)
+            }
         }
     }
 
     /// `y = W @ x` for a 2D weight, whichever codec carries it.
     pub fn matvec(&self, name: &str, x: &[f32]) -> Result<Vec<f32>> {
+        use crate::cost_ledger::{self, Bucket};
+        cost_ledger::record_matvec_call();
         match &self.source {
             Source::Eager(tensors) => match tensors.get(name) {
                 Some(Tensor::Pq(t)) => t.matvec(x),
@@ -866,6 +1218,7 @@ impl GravityWeights {
                 tensor_shard,
                 open_shards,
                 verify_hash,
+                ..
             } => Self::with_lazy_shard(shard_dir, tensor_shard, open_shards, name, |shard| {
                 let codec = shard
                     .descriptor(name)
@@ -874,9 +1227,22 @@ impl GravityWeights {
                     .clone();
                 let blob = shard.read_tensor(name, *verify_hash)?;
                 if codec == "gravity-pq" {
-                    PqTensor::from_payload(&blob)?.matvec(x)
+                    let t = {
+                        let _decode = cost_ledger::Scope::new(Bucket::PackedIndexDecode);
+                        PqTensor::from_payload(&blob)?
+                    };
+                    // Exact payload extent (descriptor.bytes); not a page, not
+                    // a whole shard. mmap may still fault full pages into RSS
+                    // — that shows up in page_faults_*, not here.
+                    cost_ledger::record_active_bytes_for(name, blob.len() as u64);
+                    t.matvec(x)
                 } else if codec.starts_with("native.") {
-                    matvec_dense(&widen_native(&codec, &blob)?, x, name)
+                    let w = {
+                        let _decode = cost_ledger::Scope::new(Bucket::PackedIndexDecode);
+                        widen_native(&codec, &blob)?
+                    };
+                    cost_ledger::record_active_bytes_for(name, (w.len() * 4) as u64);
+                    matvec_dense(&w, x, name)
                 } else {
                     Err(Error::Gravity(format!(
                         "tensor {name}: unsupported codec {codec:?}"
@@ -888,7 +1254,17 @@ impl GravityWeights {
 
     /// One row of a 2D weight — the embedding-lookup path. `cols` is needed
     /// only for the dense case, where the payload carries no shape.
+    ///
+    /// Lazy `native.*` rows share the dense memo when the full tensor fits
+    /// the budget (same decoded vector `dense` would keep). Oversized
+    /// tensors — embedding tables — only memoize verification: the full
+    /// table is not retained, but SHA-256 still runs at most once per
+    /// process. Packed (`gravity-pq`) rows verify once the same way, then
+    /// re-read without re-hashing; row-level decoded caching would be wrong
+    /// for a vocab-scale table.
     pub fn row(&self, name: &str, index_: usize, cols: usize) -> Result<Vec<f32>> {
+        use crate::cost_ledger::{self, Bucket};
+        cost_ledger::record_row_call();
         match &self.source {
             Source::Eager(tensors) => match tensors.get(name) {
                 Some(Tensor::Pq(t)) => t.row(index_),
@@ -900,23 +1276,65 @@ impl GravityWeights {
                 tensor_shard,
                 open_shards,
                 verify_hash,
-            } => Self::with_lazy_shard(shard_dir, tensor_shard, open_shards, name, |shard| {
-                let codec = shard
-                    .descriptor(name)
-                    .expect("name came from this shard's own index")
-                    .codec
-                    .clone();
-                let blob = shard.read_tensor(name, *verify_hash)?;
+                dense_memo,
+            } => {
+                {
+                    let mut memo = dense_memo.lock().expect("gravity dense-memo mutex");
+                    if let Some(w) = memo.take_decoded(name) {
+                        return row_dense(&w, index_, cols, name);
+                    }
+                }
+                let need_verify = {
+                    let memo = dense_memo.lock().expect("gravity dense-memo mutex");
+                    *verify_hash && !memo.is_verified(name)
+                };
+                let (codec, blob) =
+                    Self::with_lazy_shard(shard_dir, tensor_shard, open_shards, name, |shard| {
+                        let codec = shard
+                            .descriptor(name)
+                            .expect("name came from this shard's own index")
+                            .codec
+                            .clone();
+                        let blob = shard.read_tensor(name, need_verify)?;
+                        Ok((codec, blob))
+                    })?;
+                {
+                    let mut memo = dense_memo.lock().expect("gravity dense-memo mutex");
+                    if need_verify {
+                        memo.record_verification(name);
+                    } else if !*verify_hash {
+                        memo.mark_verified_without_hash(name);
+                    }
+                }
                 if codec == "gravity-pq" {
+                    // Packed embeddings: verify-once only. Caching every row
+                    // of a vocab-scale table would blow the budget; caching
+                    // the whole decoded matrix is worse.
+                    let _decode = cost_ledger::Scope::new(Bucket::PackedIndexDecode);
                     pq_row(&blob, index_)
                 } else if codec.starts_with("native.") {
-                    row_dense(&widen_native(&codec, &blob)?, index_, cols, name)
+                    let w = {
+                        let _decode = cost_ledger::Scope::new(Bucket::PackedIndexDecode);
+                        widen_native(&codec, &blob)?
+                    };
+                    let row = row_dense(&w, index_, cols, name)?;
+                    {
+                        let mut memo = dense_memo.lock().expect("gravity dense-memo mutex");
+                        if !memo.has_decoded(name) {
+                            memo.note_miss();
+                            // Small native matrices share the dense memo;
+                            // oversize (embedding-scale) tensors skip residency
+                            // but stay in `verified` via admit_decoded.
+                            memo.admit_decoded(name, w);
+                        }
+                    }
+                    Ok(row)
                 } else {
                     Err(Error::Gravity(format!(
                         "tensor {name}: unsupported codec {codec:?}"
                     )))
                 }
-            }),
+            }
         }
     }
 }
@@ -1042,6 +1460,7 @@ pub fn pq_matvec_metal(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::io::Write;
 
     /// `[0,1,126,127,64,3,2,1]` at 7 bits each, MSB-first, packed
     /// numpy-`packbits`-style (56 bits = exactly 7 bytes, no trailing
@@ -1076,5 +1495,191 @@ mod tests {
     fn unpack_bits_rejects_short_stream() {
         let packed: [u8; 6] = [0x00, 0x07, 0xF7, 0xF8, 0x00, 0xC1];
         assert!(unpack_bits(&packed, 8, 7).is_err());
+    }
+
+    /// Minimal multi-shard Lazy fixture: one `model-*.gravity` with native.f32
+    /// tensors so `open_dir` takes the Lazy path (Eager `open` would decode
+    /// once at load and never exercise the memo).
+    fn write_lazy_native_fixture(
+        dir: &Path,
+        tensors: &[(&str, &[f32])],
+    ) -> std::path::PathBuf {
+        let mut body = Vec::new();
+        let mut descs = Vec::new();
+        for &(name, vals) in tensors {
+            let mut blob = Vec::with_capacity(vals.len() * 4);
+            for &v in vals {
+                blob.extend_from_slice(&v.to_le_bytes());
+            }
+            let mut h = Sha256::new();
+            h.update(&blob);
+            let hex: String = h.finalize().iter().map(|b| format!("{b:02x}")).collect();
+            descs.push(serde_json::json!({
+                "name": name,
+                "codec": "native.f32",
+                "offset": body.len() as u64,
+                "bytes": blob.len() as u64,
+                "sha256": hex,
+                "shape": [vals.len() as u64],
+                "elements": vals.len() as u64,
+            }));
+            body.extend_from_slice(&blob);
+        }
+        let header = serde_json::json!({
+            "schema": "hawking.gravity.shard_header.v1",
+            "format_version": 1,
+            "model": {"name": "dense-memo-fixture"},
+            "architecture": {},
+            "tokenizer": {},
+            "compression": {"codec": "native"},
+            "shard": {"index": 1, "count": 1},
+            "integrity": {"tensor_count": descs.len()},
+            "tensors": descs,
+        });
+        let header_bytes = serde_json::to_vec(&header).expect("header json");
+        let path = dir.join("model-00001-of-00001.gravity");
+        let mut f = File::create(&path).expect("create shard");
+        f.write_all(MAGIC).unwrap();
+        f.write_all(&1u32.to_le_bytes()).unwrap();
+        f.write_all(&(header_bytes.len() as u64).to_le_bytes())
+            .unwrap();
+        f.write_all(&header_bytes).unwrap();
+        f.write_all(&body).unwrap();
+        path
+    }
+
+    #[test]
+    fn dense_memo_verifies_once_across_many_calls() {
+        let dir = tempfile::tempdir().expect("tempdir");
+        let vals: Vec<f32> = (0..64).map(|i| (i as f32) * 0.125 - 1.0).collect();
+        write_lazy_native_fixture(dir.path(), &[("norm.weight", &vals)]);
+
+        let weights = GravityWeights::open_dir(dir.path(), true).expect("open_dir");
+        let first = weights.dense("norm.weight").expect("dense #1");
+        assert_eq!(first, vals);
+
+        let after_first = weights.dense_memo_stats();
+        assert_eq!(after_first.verifications, 1, "first dense must verify");
+        assert_eq!(after_first.misses, 1);
+        assert_eq!(after_first.hits, 0);
+        assert_eq!(after_first.entries, 1);
+        assert_eq!(after_first.resident_bytes, 64 * 4);
+        assert!(after_first.budget_bytes >= after_first.resident_bytes);
+
+        for _ in 0..50 {
+            let again = weights.dense("norm.weight").expect("dense repeat");
+            assert_eq!(again, vals);
+        }
+
+        let stats = weights.dense_memo_stats();
+        assert_eq!(
+            stats.verifications, 1,
+            "subsequent dense calls must not re-verify"
+        );
+        assert_eq!(stats.misses, 1);
+        assert_eq!(stats.hits, 50);
+        assert_eq!(stats.entries, 1);
+        assert_eq!(stats.verified_tensors, 1);
+    }
+
+    #[test]
+    fn dense_memo_returns_bit_identical_values() {
+        let dir = tempfile::tempdir().expect("tempdir");
+        // Include subnormals / signed zeros / extremes so widen+cache cannot
+        // quietly re-quantize.
+        let vals = vec![
+            0.0f32,
+            -0.0,
+            1.0,
+            -1.0,
+            f32::from_bits(0x0000_0001), // smallest positive subnormal
+            f32::MIN,
+            f32::MAX,
+            std::f32::consts::PI,
+        ];
+        write_lazy_native_fixture(
+            dir.path(),
+            &[
+                ("a.weight", &vals),
+                ("b.bias", &[0.5, -0.25, 2.0]),
+            ],
+        );
+
+        let weights = GravityWeights::open_dir(dir.path(), true).expect("open_dir");
+        let a0 = weights.dense("a.weight").expect("a cold");
+        let b0 = weights.dense("b.bias").expect("b cold");
+        let a1 = weights.dense("a.weight").expect("a warm");
+        let b1 = weights.dense("b.bias").expect("b warm");
+
+        assert_eq!(a0, vals);
+        assert_eq!(a1, a0);
+        assert_eq!(b0, vec![0.5, -0.25, 2.0]);
+        assert_eq!(b1, b0);
+        // Bit-identical, not merely approximate.
+        for (i, (&x, &y)) in a0.iter().zip(a1.iter()).enumerate() {
+            assert_eq!(x.to_bits(), y.to_bits(), "a.weight[{i}] bits");
+        }
+
+        let stats = weights.dense_memo_stats();
+        assert_eq!(stats.verifications, 2);
+        assert_eq!(stats.hits, 2);
+        assert_eq!(stats.misses, 2);
+        assert_eq!(stats.entries, 2);
+    }
+
+    #[test]
+    fn dense_memo_row_hits_same_decoded_entry() {
+        let dir = tempfile::tempdir().expect("tempdir");
+        // 3×4 matrix laid out row-major as native.f32.
+        let matrix: Vec<f32> = (0..12).map(|i| i as f32).collect();
+        write_lazy_native_fixture(dir.path(), &[("embed.weight", &matrix)]);
+
+        let weights = GravityWeights::open_dir(dir.path(), true).expect("open_dir");
+        let row1 = weights.row("embed.weight", 1, 4).expect("row cold");
+        assert_eq!(row1, vec![4.0, 5.0, 6.0, 7.0]);
+
+        let stats_after_row = weights.dense_memo_stats();
+        assert_eq!(stats_after_row.verifications, 1);
+        assert_eq!(stats_after_row.entries, 1);
+
+        // dense of the same name must hit the memo, not re-verify.
+        let full = weights.dense("embed.weight").expect("dense after row");
+        assert_eq!(full, matrix);
+        let stats = weights.dense_memo_stats();
+        assert_eq!(stats.verifications, 1, "row already verified");
+        assert_eq!(stats.hits, 1);
+    }
+
+    #[test]
+    fn dense_memo_oversized_tensor_skips_residency_but_verifies_once() {
+        let dir = tempfile::tempdir().expect("tempdir");
+        // 8 f32s = 32 bytes; budget of 16 bytes cannot hold the decoded vec.
+        let vals: Vec<f32> = (0..8).map(|i| i as f32).collect();
+        write_lazy_native_fixture(dir.path(), &[("big.weight", &vals)]);
+
+        // Build Lazy source with a tiny budget by opening normally then
+        // swapping is not possible; instead exercise NativeDenseMemo directly
+        // for the oversize rule, and the public path for verify-once via a
+        // normal open (full budget). Direct unit for admit:
+        let mut memo = NativeDenseMemo::new(16);
+        memo.record_verification("big.weight");
+        memo.admit_decoded("big.weight", vals.clone());
+        assert!(!memo.has_decoded("big.weight"));
+        assert!(memo.is_verified("big.weight"));
+        assert_eq!(memo.stats().entries, 0);
+        assert_eq!(memo.stats().verifications, 1);
+        assert_eq!(memo.stats().verified_tensors, 1);
+
+        let weights = GravityWeights::open_dir(dir.path(), true).expect("open_dir");
+        for _ in 0..5 {
+            assert_eq!(
+                weights.dense("big.weight").expect("dense"),
+                vals
+            );
+        }
+        let stats = weights.dense_memo_stats();
+        assert_eq!(stats.verifications, 1);
+        assert_eq!(stats.hits, 4);
+        assert_eq!(stats.misses, 1);
     }
 }

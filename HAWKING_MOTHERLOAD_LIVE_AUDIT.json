@@ -30,9 +30,9 @@
     "tensor_count": 1
    },
    {
-    "body_sha256": "075a7eb0fbffd05713fe3cf9f30061925769108ee83e5b865207b773c1115aa4",
-    "bytes": 327735380,
-    "complete_bpw": 0.9813994761954502,
+    "body_sha256": "38deedeed394abebd47d49c2fd0d3209e01d3ed5473a1985b86cc653357823cd",
+    "bytes": 3925903121,
+    "complete_bpw": 11.756742138858995,
     "model": "zai-org/GLM-5.2",
     "path": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0/model-00001-of-00282.gravity",
     "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
@@ -2569,7 +2569,7 @@
    }
   ]
  },
- "at": "2026-07-25T02:59:58Z",
+ "at": "2026-07-25T03:56:45Z",
  "git": {
   "branch": "campaign/glm52-generation-b",
   "dirty_count": 4,
@@ -2577,17 +2577,17 @@
    "HAWKING_MOTHERLOAD_LEDGER.jsonl",
    "HAWKING_MOTHERLOAD_STATUS.json",
    "HAWKING_MOTHERLOAD_STATUS.md",
-   "tools/sovereignty/sovereignty.py"
+   "GLM52_SELECTED_GENERAL_ARTIFACT.json"
   ],
-  "head": "a6568ab45a8a5884602b66e1872027f5260d5b51",
-  "head_subject": "Add the flagship screening-gate driver",
+  "head": "293e63c541a0b539e0d5a343d200c080de300e75",
+  "head_subject": "Correct the Escape Receipt claim: it does not exist, verified in enforced code",
   "unpushed": 0,
   "upstream": "origin/campaign/glm52-generation-b"
  },
  "host": {
   "cpu_count": 28,
-  "free_disk_bytes": 464840785920,
-  "free_disk_gib": 432.9,
+  "free_disk_bytes": 455532744704,
+  "free_disk_gib": 424.2,
   "physical_memory_bytes": 103079215104,
   "swap_raw": "total = 2048.00M  used = 970.75M  free = 1077.25M  (encrypted)"
  },
@@ -2602,7 +2602,7 @@
  "source": {
   "controller": {
    "eviction_paused": null,
-   "heartbeat_age_seconds": 1866.1,
+   "heartbeat_age_seconds": 5324.8,
    "launchd_label": "com.hawking.glm52.source-fetch",
    "launchd_loaded": true,
    "lease_held": false,

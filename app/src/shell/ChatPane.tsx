@@ -5,8 +5,9 @@
 */
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { useStore } from "../store";
-import { Chat } from "../surfaces/Chat";
+import { Chat, NewChatButton } from "../surfaces/Chat";
 import { Icon } from "./icons";
+import { modelId } from "./ModelChooser";
 
 const MIN_W = 300; // enough for "Describe a task"
 const MAX_W = 760;
@@ -31,7 +32,7 @@ export function ChatPane({
   onPopToChat?: () => void;
 }) {
   const manifest = useStore((s) => s.manifest);
-  const model = manifest?.model?.id ?? "qwen2.5-7b";
+  const model = modelId(manifest);
 
   const [width, setWidth] = useState(readWidth);
   const drag = useRef<{ startX: number; startW: number } | null>(null);
@@ -76,9 +77,8 @@ export function ChatPane({
         <span className="chatpane__title">Executor</span>
         <span className="chatpane__model">{model}</span>
         <div className="chatpane__actions">
-          <button className="icon-button chatpane__icon" title="New chat" aria-label="New chat">
-            <Icon name="plus" size={16} />
-          </button>
+          {/* One shared New-chat control (surfaces/Chat.tsx), identical here and in FloatingChat. */}
+          <NewChatButton className="icon-button chatpane__icon" size={16} />
           {onPopToChat ? (
             <button className="icon-button chatpane__icon" title="Open in Chat (picture in picture)" aria-label="Open in Chat" onClick={onPopToChat}>
               <Icon name="pip" size={15} />

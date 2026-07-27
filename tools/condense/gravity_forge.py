@@ -163,11 +163,50 @@ def _chunk_rows(n: int, k: int) -> int:
     return max(1, min(n, _DISTANCE_BUDGET_BYTES // max(1, k * 4)))
 
 
+# Which arithmetic the k-means assignment step uses. `v1_full_distance` is the original
+# and stays the default, because changing it changes packed bytes and an artifact must be
+# reproducible by ONE deterministic function -- GLM-5.2's Math-Preserve shards 1-33 were
+# sealed under v1 and a mid-run switch would leave the artifact needing two.
+# `v2_lean_argmin` is for a pack that starts clean. Measured 1.57x end-to-end on a real R4
+# fit of a 2048x6144 routed expert. Whichever is selected is recorded in the shard header.
+FIT_KERNEL = os.environ.get("GLM52_FIT_KERNEL", "v1_full_distance")
+FIT_KERNELS = ("v1_full_distance", "v2_lean_argmin")
+
+
 def _argmin_chunked(v, v2, cb, step: int):
-    """Nearest centroid per row, holding the distance block to ``step`` rows."""
+    """Nearest centroid per row, holding the distance block to ``step`` rows.
+
+    Two formulations of the same minimiser:
+
+        v1: argmin_j ( v2_i - 2*a_ij + c_j )
+        v2: argmin_j ( c_j/2 - a_ij )
+
+    They are not merely equivalent in exact arithmetic. `2a` and `c/2` are exact -- scaling
+    by a power of two never rounds -- and float rounding is scale-invariant under powers of
+    two, so fl(c - 2a) == 2 * fl(c/2 - a) EXACTLY. The two differ only through the `v2 -`
+    term, a per-row constant. Subtraction is monotonic in floating point, so it can only
+    collapse a strict inequality into a tie, never invert one; argmin takes the first
+    minimum, so the answer moves only when the larger value came first. That is a real ULP
+    event, and one of them in iteration 1 redirects the whole k-means trajectory -- measured
+    on three real routed-expert fits, all three produced different (equally valid) codebooks.
+    So v2 is faster and correct, and it is NOT byte-compatible with v1.
+
+    v1 materializes three [step, k] float32 blocks (the v2_i subtract, the 2.0 scale, the
+    c_j add) where v2 materializes one. On CPU torch fuses none of them, and at D=32 against
+    k=256 the matmul is thin enough that this traffic, not the arithmetic, is the cost.
+    """
     torch = _torch()
     n = v.shape[0]
     cb_t = cb.t()
+    if FIT_KERNEL == "v2_lean_argmin":
+        half_cb_sq = (cb * cb).sum(1) * 0.5
+        if step >= n:
+            return (half_cb_sq - (v @ cb_t)).argmin(1)
+        out = torch.empty(n, device=v.device, dtype=torch.int64)
+        for start in range(0, n, step):
+            stop = min(start + step, n)
+            out[start:stop] = (half_cb_sq - (v[start:stop] @ cb_t)).argmin(1)
+        return out
     cb_sq = (cb * cb).sum(1)
     if step >= n:
         return (v2 - 2.0 * (v @ cb_t) + cb_sq).argmin(1)

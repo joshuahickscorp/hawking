@@ -805,11 +805,68 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
                             }
                         }
                         Err(e) => {
-                            tracing::warn!(err = %e, "prefill_slots_parallel failed");
+                            // Batch prefill unavailable for this engine/device
+                            // (e.g. Llama still lacks `prefill_slot`, or Metal is
+                            // absent so Qwen's GPU prefill cannot run). Fall back
+                            // to single-stream `Engine::generate` — the same path
+                            // `hawking generate` uses — so real tokens still flow
+                            // over `/v1/hawking/generate` instead of empty
+                            // completions. Serial under the engine lock; correct
+                            // for the HIDE single-turn path.
+                            tracing::warn!(
+                                err = %e,
+                                "prefill_slots_parallel failed; falling back to single-stream generate"
+                            );
                             for &slot_id in &prefilling {
+                                let req = state2
+                                    .driver
+                                    .lock()
+                                    .scheduler
+                                    .slots
+                                    .iter()
+                                    .find(|s| s.id == slot_id)
+                                    .and_then(|s| s.req.clone());
                                 let tx = state2.slot_senders.lock().remove(&slot_id);
-                                if let Some(tx) = tx {
-                                    let _ = tx.blocking_send(Err(()));
+                                match (req, tx) {
+                                    (Some(req), Some(tx)) => {
+                                        let gen_result = {
+                                            let mut engine = state2.engine.lock();
+                                            let mut send_err = false;
+                                            let r = engine.generate(
+                                                req,
+                                                &mut |ev| match ev {
+                                                    hawking_core::StreamEvent::Token {
+                                                        text,
+                                                        ..
+                                                    } => {
+                                                        if tx.blocking_send(Ok(text)).is_err() {
+                                                            send_err = true;
+                                                        } else {
+                                                            state2
+                                                                .tokens_generated
+                                                                .fetch_add(1, Ordering::Relaxed);
+                                                        }
+                                                    }
+                                                    hawking_core::StreamEvent::Done { .. } => {}
+                                                },
+                                            );
+                                            (r, send_err)
+                                        };
+                                        if let Err(gen_err) = gen_result.0 {
+                                            tracing::warn!(
+                                                err = %gen_err,
+                                                slot_id,
+                                                "single-stream generate fallback failed"
+                                            );
+                                            let _ = tx.blocking_send(Err(()));
+                                        } else if gen_result.1 {
+                                            // Client disconnected mid-stream.
+                                        }
+                                    }
+                                    (_, Some(tx)) => {
+                                        let _ = tx.blocking_send(Err(()));
+                                    }
+                                    _ => {}
                                 }
                                 state2.driver.lock().scheduler.release_slot(slot_id);
                             }

@@ -1,0 +1,52 @@
+{
+  "schema": "hawking.hide.archaeology_verification.v1",
+  "at": "2026-07-26T01:50:00Z",
+  "what_this_is": "An independent check of HIDE_ARCHAEOLOGY.md/.json, which was produced by a delegated read-only audit. A delegated report is a claim, not evidence. These are the claims re-derived from the source directly.",
+  "commit_audited": "fccb6b30",
+  "branch": "build/hide-impl-2026-07-19",
+  "claims_checked": [
+    {
+      "claim": "MCP is REAL_UNWIRED -- register_mcp_servers is never called at host boot",
+      "verdict": "CONFIRMED",
+      "evidence": "hide-tools/src/mcp.rs:515 defines register_mcp_servers. Every call site in the workspace is inside that file's own #[cfg(test)] module (mcp.rs:678, :713). No production caller exists anywhere in crates/.",
+      "significance": "A crate that is implemented and unit-tested, reachable by nothing. Exactly the failure mode the archaeology exists to find."
+    },
+    {
+      "claim": "Worktree fleets and the fleet governor are REAL_UNWIRED -- no intent/RPC path reaches fleet_run",
+      "verdict": "CONFIRMED, with a refinement",
+      "evidence": "BackendHost::fleet_run DOES exist (host.rs:2707) and does construct hide_fleet::FleetManager (host.rs:2723), so hide-fleet is genuinely a dependency of the backend. But fleet_run has exactly one caller in the workspace: the test at host.rs:7562. No dispatch table, route, or intent handler reaches it.",
+      "refinement": "The precise statement is not 'hide-fleet is unwired' but 'fleet_run is implemented and has no dispatch site'. hide-backend/src/lib.rs:18 claims 'hide-fleet is now a load-bearing dep: BackendHost::fleet_run schedules a parallel kernel run via FleetManager' -- true of the dependency graph, false of any live path."
+    },
+    {
+      "claim": "The Planner/Executor/Verifier loop, tool parsing, and mid-turn approval sit behind HIDE_KERNEL_TURN, which is off by default",
+      "verdict": "CONFIRMED",
+      "evidence": "kernel_turn_enabled() at host.rs:6124 returns true only for HIDE_KERNEL_TURN in {1,on,true,yes}; unset means false. It has exactly one call site, host.rs:2332, inside SubmitTurn, choosing between the real kernel loop and the single-shot run_turn_core fallback."
+    }
+  ],
+  "correction_to_the_delegated_report": {
+    "the_report_recommended": "'Default-on kernel when model Ready (HIDE_KERNEL_TURN is off by default)' as missing wire #4, framed as one of the highest-leverage fixes.",
+    "why_that_is_wrong": "The flag is not an oversight. host.rs:6115-6123 documents the gate and its two named prerequisites: the kernel path 'stays opt-in until its approval round-trip (effectful-step resume) and answer surfacing land, so nothing ships as a facade (Bible law 18)'. The single-shot fallback is described as complete-as-shipped.",
+    "correct_prescription": "Land the effectful-step approval resume and answer surfacing, THEN flip the default. Flipping it first would ship precisely the facade the cited law forbids -- a turn that appears to plan, use tools and verify while its approval round-trip does not close.",
+    "lesson": "A read-only auditor sees an off switch and reads it as a missing wire. Whether an off switch is a defect or a deliberate gate is an architectural judgment, and it lives in the comment next to it."
+  },
+  "verdict_distribution_as_reported": {
+    "REAL_WIRED": 6,
+    "REAL_UNWIRED": 5,
+    "PARTIAL": 7,
+    "STUB": 0,
+    "OBSOLETE": 0,
+    "BLOCKED": 0,
+    "MISSING": 0
+  },
+  "standing_thesis_status": {
+    "thesis": "HIDE is simultaneously over-built and under-wired.",
+    "status": "SUPPORTED BY EVIDENCE, no longer an impression. Zero subsystems are STUB or MISSING -- nothing claimed is absent. Twelve of eighteen are implemented but not fully reachable from a live entry point.",
+    "consequence_for_the_Continuum": "Continuum step 7 is a wiring programme, not a construction programme. Building new HIDE subsystems before closing the named missing wires would add to the unreachable pile."
+  },
+  "what_was_not_verified": [
+    "The 12 remaining subsystem verdicts were not independently re-derived; three highest-leverage claims were checked hard and all held, which raises confidence in the rest without establishing it.",
+    "The reported test result (616 passed, 4 failed, 2 of them process/shell environment failures) was not re-run here -- the box is packing PASS3 and a cargo test sweep would both contend and be measured under contention."
+  ],
+  "evidence_level": "STATIC_SOURCE_READING",
+  "not_evidence_of": "runtime behaviour, quality, or that wiring the named paths would make them work"
+}

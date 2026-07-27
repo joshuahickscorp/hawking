@@ -1,0 +1,85 @@
+{
+  "schema": "hawking.prometheus.pass3_optimization_audit.v1",
+  "at": "2026-07-26T01:25:00Z",
+  "scope": "The Continuum's bounded PASS3 speed-and-safety gate, run after the active batch sealed and before committing the remaining 249 shards to a scheduler.",
+  "instrumentation": {
+    "added": [
+      "per-stage seconds inside pack_shard (source_read, bf16_decode, fit, serialize, hash_manifest, file_write, fsync, atomic_rename, bookkeeping)",
+      "per-category tensor/weight/byte counts and throughput",
+      "per-batch worker idle, barrier idle, and straggler cost",
+      "per-run scheduler starvation"
+    ],
+    "channel": "PASS3_TELEMETRY.jsonl, a side channel excluded from every artifact and canonical receipt -- nondeterministic timing may never enter evidence",
+    "artifact_impact": "none; proven by test_telemetry_is_a_side_channel_and_does_not_change_artifact_bytes"
+  },
+  "what_the_instrumentation_found": {
+    "fit_share_of_pack_time_percent": 99.5,
+    "barrier_idle_percent": 1.6,
+    "straggler_cost_seconds_of_2607s_batch": 94.4,
+    "conclusion": "Scheduler shape was worth at most ~7 percent (3.6 straggler + ~3.4 serialized fetch). The codec fit was 99.5 percent of the run. Optimizing the scheduler alone would have been optimizing the wrong thing."
+  },
+  "root_cause": {
+    "finding": "pack_shard exempted every rate-overridden tensor from the ladder sampling schedule, fitting all three rungs (R0, R2, R4) and using one.",
+    "why_the_exemption_existed": "The non-survey branch fitted `production_rung` rather than the tensor's own target, so an overridden tensor had to survey every rung merely to guarantee its target got fitted at all. A correctness guard wearing a scientific justification.",
+    "why_it_mattered_here": "The frozen Math allocation overrides 56,076 of 59,585 tensors (94.1 percent). The exemption's 'uncommon case' was the whole model, so the rate survey became the pack.",
+    "fix": "Fit the tensor's own target rung directly. The sampling schedule then applies to every routed expert on equal terms; non-routed tensors (1,217 of 59,585, shape-diverse) stay exhaustively surveyed."
+  },
+  "admissibility": {
+    "payload_bytes_identical": true,
+    "why_identical_is_guaranteed": "Ladder rungs share no RNG state -- _kmeans seeds its own torch.Generator per rung -- so a rung that is not fitted cannot perturb one that is.",
+    "proven_by": [
+      "tools/condense/tests/test_glm52_pack_rate_override.py::test_ladder_sampling_does_not_change_any_tensor_payload",
+      "tools/condense/tests/test_glm52_pack_atomic.py::test_an_overridden_tensor_is_sampled_like_any_other_routed_expert",
+      "live: shards 30-33 packed under the new schedule match the frozen allocation's predicted payload byte-for-byte, delta 0, rung mismatches 0"
+    ],
+    "what_did_change": "The survey record. Each shard header now carries ladder_survey.schedule so a reader can tell which density a given shard's survey rows were taken at; shards 1-29 were sealed under v1 and are unaltered.",
+    "survey_science_retained": "R2 and R4 relative error across routed experts have stdev 1.8e-4 and 1.0e-4 -- every routed expert is a repeat measurement of a quantity already known to four decimals. Sampling every 32nd retains the measurement and drops the repetition."
+  },
+  "scheduler_changes_retained": {
+    "dynamic_shard_work_queue": "replaces fixed PACK_WORKERS-sized barriers",
+    "independent_atomic_seal_per_shard": "receipt, telemetry, eviction and progress publish on each shard's own completion",
+    "immediate_work_stealing": "a finished worker takes the next ready shard without waiting for its batch peers",
+    "fetch_pack_overlap": "producer thread keeps sources resident ahead of the pool; fetch no longer runs serially in front of an idle pool",
+    "bug_found_and_fixed_in_this_change": "wait(FIRST_COMPLETED) watches futures, not the queue. After one momentary queue-empty the pool held at 1 busy worker of 4. Observed live, fixed with a bounded poll used only when a slot is free and a fetch is still pending; a full pipeline costs no wakeups."
+  },
+  "rejected": {
+    "disposable_MPS_fitting_workers": "not attempted. gravity_forge's MPS path has a recorded command-buffer fault on this host that silently poisoned a LATER unrelated tensor's PQ indices rather than raising at the fault. CPU is forced everywhere unattended correctness matters. A 4x deterministic CPU win was available without touching it; taking an unproven Metal win on top would trade a known-good artifact for an unbounded correctness risk.",
+    "more_workers": "not attempted. MOP holds ~19 of 28 cores; the pool is already oversubscribed at 4 workers x 7 torch threads. Increasing workers blindly is forbidden by the campaign and unsupported by the measurement."
+  },
+  "measured_before_after": {
+    "workload": "4 real GLM-5.2 source shards, 213 tensors each, same host, same 4 workers x 7 torch threads",
+    "contention": "MOP held ~19 of 28 cores throughout BOTH arms (running 2h+ before the baseline batch and still running after), so the comparison is paired, not clean-room",
+    "before": {
+      "scheduler": "fixed_batch",
+      "mean_seconds_per_shard": 2565.2,
+      "batch_wall_seconds": 2607.1,
+      "fit_share_percent": 99.5
+    },
+    "after": {
+      "scheduler": "dynamic_queue",
+      "mean_seconds_per_shard": 643.2,
+      "run_wall_seconds": 723.0,
+      "fit_share_percent": 98.2,
+      "starvation_percent": 22.76,
+      "starvation_note": "an artifact of a 4-shard bounded run draining its tail with 4 workers; in a continuous 249-shard run starvation occurs only at the very end"
+    },
+    "speedup_per_shard": 3.99,
+    "speedup_wall": 3.61,
+    "independent_microbenchmark": {
+      "tensor": "one real routed-expert geometry, 2048x6144, 12,582,912 elements",
+      "all_rungs_seconds": 6.2883,
+      "target_rung_only_seconds": 1.6193,
+      "speedup": 3.88,
+      "r4_payload_byte_identical": true
+    }
+  },
+  "projected_remaining": {
+    "shards_remaining_at_audit": 249,
+    "hours_at_old_rate": 44.4,
+    "hours_at_new_rate": 11.1,
+    "hours_saved": 33.3,
+    "caveat": "projection at current MOP contention; an idle box would be faster and a heavier MOP slower"
+  },
+  "evidence_level": "F0_PHYSICAL_AND_TIMING_ONLY",
+  "not_evidence_of": "output divergence, capability, or end-to-end behaviour"
+}

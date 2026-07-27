@@ -1,0 +1,59 @@
+{
+  "schema": "hawking.odyssey.support_halo.report.v0",
+  "status": "NOT_RUN",
+  "gate": "G5",
+  "substrate": {
+    "label": "GLM-5.2-H0.98-Math-Preserve.gravity",
+    "address_kind": "model_index_sha256",
+    "artifact_sha256": "33d40c254eb982d4a495f5f0792a116e9d9810d937f5f3969f4f84742b2364d9"
+  },
+  "aggregate": {
+    "status": "NOT_MEASURABLE",
+    "reason": "Pre-Odyssey baseline not yet generated. Live generation against the Math-Preserve substrate requires the serve path and is deferred while the GPU is occupied by G2 runtime measurement. Rules and corpus are frozen; scores are deliberately absent rather than fabricated."
+  },
+  "dimensions": [
+    {
+      "status": "NOT_MEASURABLE",
+      "dimension": "technical_language",
+      "reason": "baseline generation deferred (no live completions on Math-Preserve)"
+    },
+    {
+      "status": "NOT_MEASURABLE",
+      "dimension": "general_reasoning",
+      "reason": "baseline generation deferred (no live completions on Math-Preserve)"
+    },
+    {
+      "status": "NOT_MEASURABLE",
+      "dimension": "coding",
+      "reason": "baseline generation deferred (no live completions on Math-Preserve)"
+    },
+    {
+      "status": "NOT_MEASURABLE",
+      "dimension": "retrieval",
+      "reason": "baseline generation deferred (no live completions on Math-Preserve); live network retrieval remains out of scope for this harness (in-context document lookup is the measurable proxy once completions exist)"
+    },
+    {
+      "status": "NOT_MEASURABLE",
+      "dimension": "tools",
+      "reason": "baseline generation deferred; tool-call JSON format is scorable offline once completions exist; live hide-tools effect execution is NOT_MEASURABLE on this path"
+    },
+    {
+      "status": "NOT_MEASURABLE",
+      "dimension": "long_context",
+      "reason": "baseline generation deferred (needs device + model generation for needle tasks)"
+    },
+    {
+      "status": "NOT_MEASURABLE",
+      "dimension": "self_correction",
+      "reason": "baseline generation deferred (no live completions on Math-Preserve)"
+    }
+  ],
+  "disqualifications": [],
+  "note": "G5 requires a sealed pre-Odyssey baseline before T0. This file is the reserved slot. Do not fill it with invented numbers. Run tools/eval/support_halo_gate.py print-baseline-command for the deferred command.",
+  "task_scores": [],
+  "rules_sha256": "dc1734b517fef69245f3547f8c2237ef08ca95c8e76495bef4698d7c7e2cae11",
+  "corpus_sha256": "b3ebda04ce48aa84b51faf47bff6284083029e0517b33e8c7c3f55b5fb54ec67",
+  "seed": 0,
+  "no_hidden_fallback": true,
+  "total_completion_chars": 0
+}

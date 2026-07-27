@@ -1,0 +1,96 @@
+{
+  "actual_complete_bpw": 0.9774017488417455,
+  "allocation_manifest_sha256": "b34596f5d4df0b09903845302648736ee2345d7662688176c851a4d749211a83",
+  "artifact": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/GLM-5.2-H0.98-Math-Preserve.gravity",
+  "artifact_index_sha256": "33d40c254eb982d4a495f5f0792a116e9d9810d937f5f3969f4f84742b2364d9",
+  "at": "2026-07-26T09:10:51Z",
+  "byte_ledger": {
+    "actual_package_bytes": 92038250160,
+    "complete_bits": "736306001280",
+    "complete_bpw_exact": "127830903/130786448",
+    "complete_bpw_float": 0.9774017488417455,
+    "component_bytes": {
+      "alignment": 0,
+      "codebooks": 919554048,
+      "doctor": 0,
+      "indices": 22862581760,
+      "metadata": 3614016,
+      "packaging": 52167745,
+      "pass_through_tensors": 653912064,
+      "protected_islands": 67526197248,
+      "runtime_tables": 20223279,
+      "scales": 0
+    },
+    "components": {
+      "alignment": "0",
+      "codebooks": "7356432384",
+      "doctor": "0",
+      "indices": "182900654080",
+      "metadata": "28912128",
+      "metadata_alignment_reserve_bits": "0",
+      "packaging": "417341960",
+      "pass_through_tensors": "5231296512",
+      "protected_islands": "540209577984",
+      "runtime_tables": "161786232",
+      "scales": "0"
+    },
+    "itemization_reconciles": true,
+    "itemized_bits": "736306001280",
+    "legal": true,
+    "note": "Actual packaged bytes for GLM-5.2-H0.98-Math-Preserve.gravity; no modeled-zero or payload-only exclusions.",
+    "original_weight_count": 753329940480,
+    "reserve_bits": "0",
+    "schema": "hawking.foundry.one_bit_ceiling.v1",
+    "scope": "whole_model"
+  },
+  "coverage": {
+    "at": "2026-07-26T09:09:35Z",
+    "compact_root": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/GLM-5.2-H0.98-Math-Preserve.gravity",
+    "complete": true,
+    "dispositions": {
+      "COMPACT_PAYLOAD": 56469,
+      "PROTECTED_NATIVE_PAYLOAD": 3116
+    },
+    "misplaced_tensors": [],
+    "missing_by_source_shard_top": {},
+    "official_shards": 282,
+    "official_tensors": 59585,
+    "packed_shards": 282,
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "schema": "hawking.glm52.assembly_coverage.v1",
+    "shards_outstanding": [],
+    "shards_outstanding_count": 0,
+    "undeclared_count": 0,
+    "undeclared_tensors": [],
+    "verdict": "COMPLETE"
+  },
+  "headroom_bytes": 244667548,
+  "odyssey_input_ready": true,
+  "rate_label": "H0.98",
+  "schema": "hawking.prometheus.math_preserve_receipt.v1",
+  "target_complete_bpw": {
+    "den": 50,
+    "num": 49
+  },
+  "target_max_bytes": 92282917708,
+  "tokenizer_install": {
+    "copied": 0,
+    "existing": 3,
+    "linked": 0
+  },
+  "verification": {
+    "all_shards_ok": true,
+    "decision_mismatches": 0,
+    "frozen_tensor_decisions_verified": 59585,
+    "one_bit_law": {
+      "complete_bpw_exact": "127830903/130786448",
+      "complete_bpw_float": 0.9774017488417455,
+      "headroom_bits": "17023939200",
+      "legal": true,
+      "reserve_bits": "0",
+      "schema": "hawking.foundry.one_bit_ceiling.v1",
+      "scope": "whole_model"
+    },
+    "shards_verified": 282
+  }
+}

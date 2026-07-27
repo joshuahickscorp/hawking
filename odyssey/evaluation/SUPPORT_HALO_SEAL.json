@@ -1,0 +1,11 @@
+{
+  "baseline_status": "NOT_RUN",
+  "corpus_path": "odyssey/evaluation/support_halo_corpus_v0.jsonl",
+  "corpus_sha256": "b3ebda04ce48aa84b51faf47bff6284083029e0517b33e8c7c3f55b5fb54ec67",
+  "n_tasks": 26,
+  "note": "Baseline generation on Math-Preserve is deferred (GPU/runtime measurement). Rules and corpus are frozen now so T7 cannot rewrite the judge after seeing candidates.",
+  "rules_path": "odyssey/evaluation/SUPPORT_HALO_SCORING_RULES.json",
+  "rules_sha256": "dc1734b517fef69245f3547f8c2237ef08ca95c8e76495bef4698d7c7e2cae11",
+  "schema": "hawking.odyssey.support_halo.seal.v0",
+  "status": "FROZEN_PRE_ODYSSEY"
+}

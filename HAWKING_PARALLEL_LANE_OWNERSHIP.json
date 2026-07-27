@@ -1,0 +1,414 @@
+{
+  "schema": "hawking.parallel.lane_ownership.v1",
+  "campaign": "HAWKING_EVOLUTION_PARALLEL_CONTINUATION",
+  "at": "2026-07-27T01:35:00Z",
+  "base_commit": "d9bca273",
+  "base_branch": "campaign/glm52-generation-b",
+  "controller": {
+    "agent": "claude",
+    "retains": [
+      "architecture",
+      "sequencing",
+      "scientific contracts",
+      "artifact semantics",
+      "codec determinism",
+      "security and trust boundaries",
+      "Odyssey promotion authority",
+      "cross-lane integration",
+      "branch topology",
+      "final receipts"
+    ],
+    "may_not_delegate": [
+      "flipping ODYSSEY_LAUNCH_AUTHORIZED",
+      "flipping RAMANUJAN_RESEARCH_AUTHORIZED",
+      "flipping HIDE_KERNEL_TURN default",
+      "merging any lane to main",
+      "destructive consolidation",
+      "accepting a delegated report as evidence"
+    ]
+  },
+  "invariants": [
+    "never share a worktree between two agents",
+    "never let two lanes own the same file set",
+    "never edit the Codex Temporal Gravity lane",
+    "never modify sealed Math-Preserve artifacts or receipts",
+    "never merge main prematurely",
+    "never touch MOP without explicit authorization",
+    "a delegated report is a claim, not evidence"
+  ],
+  "globally_forbidden_paths": [
+    "crates/hawking-core/src/gravity_glm.rs",
+    "crates/hawking-core/src/gravity_glm_resident.rs",
+    "crates/hawking-core/src/numeric_parity.rs",
+    "crates/hawking-core/src/cost_ledger.rs",
+    "crates/hawking-core/src/metal/",
+    "crates/hawking-core/src/kernels/",
+    "crates/hawking-core/shaders/",
+    "odyssey/launch/",
+    "~/Library/Application Support/Hawking/Models/",
+    "~/.cache/huggingface",
+    "~/Downloads/mop",
+    "~/Downloads/mop-data",
+    "~/Downloads/computexchange",
+    "~/Downloads/visionmcp-authority",
+    "GLM52_H0_98_MATH_PRESERVE_RECEIPT.json",
+    "HAWKING_ODYSSEY_READY_AUDIT.json"
+  ],
+  "sealed_inputs": {
+    "math_preserve_artifact": "~/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/GLM-5.2-H0.98-Math-Preserve.gravity",
+    "shards": "282/282",
+    "frozen_decisions": "59585/59585",
+    "mismatches": 0,
+    "complete_bpw": 0.9774017488417455,
+    "complete_bpw_exact": "127830903/130786448",
+    "package_bytes": 92038250160,
+    "allocation_manifest_sha256": "b34596f5d4df0b09903845302648736ee2345d7662688176c851a4d749211a83",
+    "artifact_index_sha256": "33d40c254eb982d4a495f5f0792a116e9d9810d937f5f3969f4f84742b2364d9",
+    "verified_live_at": "2026-07-27T01:28:00Z",
+    "verification_method": "read GLM52_H0_98_MATH_PRESERVE_RECEIPT.json + HAWKING_ODYSSEY_READY_AUDIT.json and confirmed the artifact directory exists on disk"
+  },
+  "fences": {
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "HIDE_KERNEL_TURN": false
+  },
+  "external_lanes": [
+    {
+      "id": "TG",
+      "name": "Temporal Gravity",
+      "owner": "codex",
+      "branch": "codex-owned, not in this checkout",
+      "worktree": "external",
+      "status": "RUNNING_ELSEWHERE",
+      "contract": "consume committed receipts and declared interfaces only; never edit",
+      "expected_outputs": [
+        "TEMPORAL_GRAVITY_STATUS.json",
+        "NUMERIC_PARITY_V2_1.json",
+        "BASE_RUNTIME_RECEIPT.json",
+        "RUNTIME_PROVIDER_CONTRACT.json",
+        "ACCELERATION_PROVIDER_RECEIPT.json",
+        "TEMPORAL_GRAVITY_ASCENT_FINAL.json"
+      ],
+      "outputs_present_now": [
+        "NUMERIC_PARITY_V2_1.md",
+        "NUMERIC_PARITY_V2_1_HARNESS.json",
+        "HAWKING_BASE_TRUE_TPS.json",
+        "HAWKING_COMMAND_GRAPH_AUDIT_20260726.json"
+      ],
+      "outputs_missing_now": [
+        "TEMPORAL_GRAVITY_STATUS.json",
+        "RUNTIME_PROVIDER_CONTRACT.json",
+        "ACCELERATION_PROVIDER_RECEIPT.json",
+        "TEMPORAL_GRAVITY_ASCENT_FINAL.json"
+      ],
+      "known_standing": {
+        "BASE_TRUE_TPS": 0.3961,
+        "waits_per_token": 1171,
+        "gpu_resident_state": "NOT STARTED",
+        "attention_on_device": "NOT STARTED",
+        "kv_on_device": "NOT STARTED"
+      },
+      "no_block_rule": "no lane in this campaign waits on TG. HIDE_KERNEL_TURN stays false until a real provider passes its promotion gate."
+    }
+  ],
+  "abandoned_lanes_preserved": [
+    {
+      "id": "profiler-recover-20260726-203119",
+      "worktree": "~/.claude-grok/worktrees/profiler-recover-20260726-203119",
+      "dirty_files": 7,
+      "domain": "temporal-gravity",
+      "disposition": "process died when the prior session ended; slot freed, worktree PRESERVED with uncommitted work; belongs to the Codex TG lane now, do not restart here"
+    },
+    {
+      "id": "v21-suite-20260726-194028",
+      "worktree": "~/.claude-grok/worktrees/v21-suite-20260726-194028",
+      "dirty_files": 4,
+      "domain": "temporal-gravity",
+      "disposition": "superseded by v21-suite2 which finished; worktree PRESERVED"
+    },
+    {
+      "id": "head-to-device-20260726-153638",
+      "worktree": "~/.claude-grok/worktrees/head-to-device-20260726-153638",
+      "dirty_files": 6,
+      "domain": "temporal-gravity",
+      "disposition": "superseded by head-to-device2 which finished; worktree PRESERVED"
+    },
+    {
+      "id": "hide-live-loop-20260726-140240",
+      "worktree": "~/.claude-grok/worktrees/hide-live-loop-20260726-140240",
+      "dirty_files": 4,
+      "domain": "hide",
+      "disposition": "superseded by hide-live-loop2 (merged as def433ff); worktree PRESERVED"
+    }
+  ],
+  "lanes": [
+    {
+      "id": "L01",
+      "name": "hide-archaeology-v2",
+      "owner": "grok",
+      "mode": "audit",
+      "resource_class": "light-readonly",
+      "task_id": "hide-arch-v2-20260726-213343",
+      "branch": "none (read-only)",
+      "worktree": "/Users/scammermike/Downloads/hawking (read-only sandbox)",
+      "inputs": [
+        "crates/hide-*",
+        "HIDE_ARCHAEOLOGY.json (stale, commit fccb6b30)",
+        "FABRIC_BRIDGE_ARCHAEOLOGY.md"
+      ],
+      "outputs": ["HIDE_ARCHAEOLOGY_V2.md", "HIDE_ARCHAEOLOGY_V2.json"],
+      "forbidden_paths": ["everything except the two deliverables"],
+      "tests": "cargo build --workspace; cargo test -p each hide-* crate; report exit codes, fix nothing",
+      "promotion_gate": "controller re-derives at least three load-bearing verdicts independently before any lane acts on the report",
+      "dependencies": [],
+      "status": "RUNNING",
+      "why_it_exists": "five wiring increments merged after the last archaeology; every prior verdict is stale"
+    },
+    {
+      "id": "L02",
+      "name": "hide-memory-six",
+      "owner": "grok",
+      "mode": "delegate",
+      "resource_class": "light-build",
+      "task_id": "hide-memory-six-20260726-213344",
+      "branch": "grok/hide-memory-six-20260726-213344",
+      "worktree": "~/.claude-grok/worktrees/hide-memory-six-20260726-213344",
+      "inputs": [
+        "crates/hawking-context/src/{memory,recall,compiler,budget,capability,rot,sources}.rs",
+        "crates/hide-state/src/{store,capsule,identity}.rs",
+        "odyssey/memory/MEMORY_STORES.json (read-only vocabulary reference)"
+      ],
+      "outputs": ["crates/hawking-context changes", "HIDE_MEMORY_CLASSES.json"],
+      "forbidden_paths": [
+        "tool registry",
+        "permission system",
+        "hide-fleet",
+        "all globally forbidden paths"
+      ],
+      "tests": "one retention test per class; write-authority enforcement for verification and user; multi-class compile with independent budgets; provenance non-forgeable",
+      "promotion_gate": "six classes with SEPARATE write authority, retention, retrieval and budget. Six labels on one blob store fails.",
+      "dependencies": [],
+      "status": "RUNNING"
+    },
+    {
+      "id": "L03",
+      "name": "odyssey-t0",
+      "owner": "grok",
+      "mode": "delegate",
+      "resource_class": "medium-io",
+      "task_id": "odyssey-t0-20260726-213445",
+      "branch": "grok/odyssey-t0-20260726-213445",
+      "worktree": "~/.claude-grok/worktrees/odyssey-t0-20260726-213445",
+      "inputs": ["odyssey/**", "the sealed Math-Preserve artifact (READ ONLY)"],
+      "outputs": [
+        "ODYSSEY_T0_RECEIPT.json",
+        "ODYSSEY_CONTRACT_CLOSURE.json",
+        "ODYSSEY_FEASIBILITY.json"
+      ],
+      "forbidden_paths": ["odyssey/launch/", "all globally forbidden paths"],
+      "tests": "substrate hash verification fails on a mutated byte; hidden memberships are hash-committed not naming-convention; checkpoint tournament ties to the incumbent",
+      "promotion_gate": "T0 reproduces substrate, data, runtime and known failures FOR REAL. The existing 87/87 dry run is directory-existence checks and does not count.",
+      "dependencies": [],
+      "status": "RUNNING",
+      "known_gap": "odyssey/training/run.py is 35 lines; there is no runnable trainer under the contract skeleton"
+    },
+    {
+      "id": "L04",
+      "name": "fabric-software",
+      "owner": "grok",
+      "mode": "delegate",
+      "resource_class": "light-build",
+      "task_id": "fabric-software-20260726-213447",
+      "branch": "grok/fabric-software-20260726-213447",
+      "worktree": "~/.claude-grok/worktrees/fabric-software-20260726-213447",
+      "inputs": ["crates/hide-fleet/**", "FABRIC_BRIDGE_ARCHAEOLOGY.md"],
+      "outputs": ["FABRIC_SOFTWARE_STATUS.json", "FABRIC_QUALIFICATION_LADDER.json"],
+      "forbidden_paths": ["the inference hot path", "all globally forbidden paths"],
+      "tests": "placement determinism; KV ownership invariant across failure and replan; two-process fixture with injected node death and replay receipt; real resource probe returns real values",
+      "promotion_gate": "software qualification only. FABRIC_HARDWARE_QUALIFICATION_PENDING is the honest terminal state; a simulated result must be labelled simulated in filename, schema, logs and report.",
+      "dependencies": [],
+      "status": "RUNNING",
+      "hardware_reality": "one machine, M3 Ultra 96GB 28 cores, load ~29. No second node exists."
+    },
+    {
+      "id": "L05",
+      "name": "bridge-events-adapters",
+      "owner": "grok",
+      "mode": "delegate",
+      "resource_class": "light-build",
+      "task_id": "bridge-events-20260726-213449",
+      "branch": "grok/bridge-events-20260726-213449",
+      "worktree": "~/.claude-grok/worktrees/bridge-events-20260726-213449",
+      "inputs": ["FABRIC_BRIDGE_ARCHAEOLOGY.md", "crates/hide-protocol", "crates/hide-sdk", "crates/hawking-serve"],
+      "outputs": [
+        "HAWKING_CANONICAL_EVENTS.json",
+        "HAWKING_ADAPTER_REGISTRY.json",
+        "HAWKING_BRIDGE_SURFACE.json"
+      ],
+      "forbidden_paths": ["hide-fleet (L04 owns it)", "all globally forbidden paths"],
+      "tests": "canonical event round-trip per category; deprecated-model adapters produce identical events; a support level asserted without backing evidence fails; schema regeneration produces no diff",
+      "promotion_gate": "support levels used literally. No family is PRODUCTION today. A route returning a plausible canned response is worse than a 501.",
+      "dependencies": [],
+      "status": "RUNNING",
+      "known_gap": "six competing canonical event models; five adapter authorities, none sole"
+    },
+    {
+      "id": "L06",
+      "name": "consolidation-inventory",
+      "owner": "grok",
+      "mode": "audit",
+      "resource_class": "light-readonly",
+      "task_id": "consolidation-inventory-20260726-213450",
+      "branch": "none (read-only)",
+      "worktree": "/Users/scammermike/Downloads/hawking (read-only sandbox)",
+      "inputs": ["the whole repository", "HIDE_ARCHAEOLOGY.md", "FABRIC_BRIDGE_ARCHAEOLOGY.md"],
+      "outputs": ["HAWKING_CONSOLIDATION_INVENTORY.md", "HAWKING_CONSOLIDATION_INVENTORY.json"],
+      "forbidden_paths": ["all of them; this lane deletes and moves nothing"],
+      "tests": "none; read-only",
+      "promotion_gate": "inventory only. Destructive consolidation is deferred until after Math-Frozen, HIDE, Bridge and Fabric are real.",
+      "dependencies": [],
+      "status": "RUNNING",
+      "standing_bias": "a prior dead-code audit found almost nothing safely removable; sealed negatives are scientific history, not dead code; default verdict is KEEP"
+    },
+    {
+      "id": "L18",
+      "name": "gravity-serve",
+      "owner": "grok",
+      "mode": "delegate",
+      "resource_class": "light-build",
+      "task_id": null,
+      "branch": null,
+      "worktree": null,
+      "inputs": [
+        "crates/hawking-serve/**",
+        "crates/hawking/src/main.rs",
+        "crates/hawking-core/examples/gravity_glm_tps.rs",
+        "hawking_core::gravity_glm::gpu::GravityGlmGpu (CALL ONLY, never edit)"
+      ],
+      "outputs": ["HAWKING_GRAVITY_SERVE_RECEIPT.json", "an HTTP path that serves the sealed artifact"],
+      "forbidden_paths": ["editing gravity_glm.rs and gravity_glm_resident.rs (calling them is allowed)", "all globally forbidden paths"],
+      "tests": "one real completion of at least 8 tokens with the text pasted into the report; two prompts produce different continuations; existing serve tests pass with the feature off",
+      "promotion_gate": "no fallback model, ever. A correct slow path is the deliverable; a fast wrong one silently answers G4 and G5 with the wrong model.",
+      "dependencies": [],
+      "status": "QUEUED_HEAD_OF_WAVE_2",
+      "why_it_is_first": "the controller found this is the common cause of Odyssey gates G4 and G5. crates/hawking-serve has zero gravity references; the only executor of the 92GB artifact is an example binary; and tools/eval/support_halo_gate.py prints a prerequisite command using a --gravity flag that does not exist. One wire closes both gates, and it is reachability work, not speed work, so it was never blocked on the Codex lane."
+    },
+    {
+      "id": "L07",
+      "name": "speculation-safety",
+      "owner": "grok",
+      "mode": "delegate",
+      "resource_class": "light-build",
+      "task_id": null,
+      "branch": null,
+      "worktree": null,
+      "inputs": ["crates/hawking-speculate", "crates/hide-backend/src/host.rs"],
+      "outputs": ["HIDE_SPECULATION_SAFETY.json"],
+      "forbidden_paths": ["all globally forbidden paths"],
+      "tests": "draft token cannot reach a durable sink (compile-fail preferred); one test per suspension boundary; rollback restores committed KV bit-identically; accepted-TPS includes rollback cost",
+      "promotion_gate": "type-level separation of Draft and Verified tokens. Convention is not enough.",
+      "dependencies": [],
+      "status": "QUEUED",
+      "queued_because": "concurrency limit 6; launches when a wave-1 slot frees"
+    },
+    {
+      "id": "L08",
+      "name": "hide-os-wiring",
+      "owner": "grok",
+      "mode": "delegate",
+      "resource_class": "light-build",
+      "task_id": null,
+      "branch": null,
+      "worktree": null,
+      "inputs": ["HIDE_ARCHAEOLOGY_V2.json (L01 output)"],
+      "outputs": ["remaining REAL_UNWIRED subsystems moved to REAL_WIRED"],
+      "forbidden_paths": ["all globally forbidden paths"],
+      "tests": "each newly wired subsystem exercised through a live entry point, not a constructed host",
+      "promotion_gate": "no facade: a subsystem is wired only when a live route reaches real code that does real work",
+      "dependencies": ["L01"],
+      "status": "BLOCKED",
+      "blocked_on": "L01 must name the true remaining gaps at HEAD; acting on the stale archaeology would rewire things that are already wired"
+    },
+    {
+      "id": "L09",
+      "name": "ramanujan-migration-prep",
+      "owner": "claude",
+      "mode": "controller",
+      "resource_class": "light",
+      "outputs": ["RAMANUJAN_HANDOFF_CONTRACT.json"],
+      "dependencies": [],
+      "status": "QUEUED",
+      "note": "prepare bindings and contracts only. The repository split happens at HAWKING_EVOLUTION_COMPLETE, not before."
+    },
+    {
+      "id": "L10",
+      "name": "odyssey-t1-t7",
+      "owner": "unassigned",
+      "mode": "heavy",
+      "resource_class": "HEAVY-EXCLUSIVE",
+      "dependencies": ["L03"],
+      "status": "BLOCKED",
+      "blocked_on": [
+        "ODYSSEY_FEASIBILITY.json must first establish whether training a 92GB artifact is possible at all on a 96GB machine at load ~29",
+        "controller must flip ODYSSEY_LAUNCH_AUTHORIZED, which requires G1-G4 of ODYSSEY_PROMOTION_GATE.md",
+        "G2 (runtime truth) currently reads BASE_TRUE_TPS 0.3961 with the dominant decode cost owned by the Codex TG lane",
+        "one exclusive heavy-lane window, which does not exist while MOP holds ~19 of 28 cores"
+      ]
+    },
+    {
+      "id": "L11",
+      "name": "math-frozen",
+      "owner": "unassigned",
+      "resource_class": "HEAVY-EXCLUSIVE",
+      "dependencies": ["L10"],
+      "status": "BLOCKED"
+    },
+    {
+      "id": "L12",
+      "name": "consolidation-execute",
+      "owner": "unassigned",
+      "dependencies": ["L06", "L02", "L04", "L05", "L08", "L11"],
+      "status": "BLOCKED",
+      "blocked_on": "destructive consolidation is forbidden until Math-Frozen, HIDE, Bridge and Fabric software are real"
+    },
+    {
+      "id": "L13",
+      "name": "ramanujan-migrate",
+      "owner": "unassigned",
+      "dependencies": ["L12"],
+      "status": "BLOCKED",
+      "gate": "HAWKING_EVOLUTION_COMPLETE"
+    },
+    {
+      "id": "L14",
+      "name": "ramanujan-cognition",
+      "owner": "unassigned",
+      "dependencies": ["L13"],
+      "status": "BLOCKED"
+    },
+    {
+      "id": "L15",
+      "name": "local-forge-training",
+      "owner": "unassigned",
+      "resource_class": "HEAVY-EXCLUSIVE",
+      "dependencies": ["L13", "L11"],
+      "status": "BLOCKED",
+      "note": "F0-F9. Requires the frozen Math-Frozen Director as teacher."
+    },
+    {
+      "id": "L16",
+      "name": "search-governance",
+      "owner": "unassigned",
+      "dependencies": ["L13"],
+      "status": "BLOCKED"
+    },
+    {
+      "id": "L17",
+      "name": "q0-q6-qualification",
+      "owner": "unassigned",
+      "dependencies": ["L14", "L15", "L16"],
+      "status": "BLOCKED",
+      "gate": "RAMANUJAN_SANDBOX_READY"
+    }
+  ]
+}

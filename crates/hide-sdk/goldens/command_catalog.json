@@ -1,0 +1,1565 @@
+[
+  {
+    "id": "submit_turn",
+    "title": "Send message",
+    "description": "Submit the composer text as a new turn.",
+    "category": "turn",
+    "primary_surface": "chat",
+    "available_surfaces": [
+      "chat",
+      "home",
+      "palette"
+    ],
+    "required_selection": "none",
+    "required_capabilities": [],
+    "effects": [],
+    "approval_policy": "auto",
+    "keyboard_shortcut": "Mod+Enter",
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": "composer.send",
+    "backend_binding": {
+      "kind": "intent",
+      "target": "submit_turn"
+    },
+    "undo_strategy": "none",
+    "receipt_kind": null,
+    "telemetry": "turn.submit"
+  },
+  {
+    "id": "cancel_run",
+    "title": "Cancel run",
+    "description": "Cancel the running turn.",
+    "category": "turn",
+    "primary_surface": "chat",
+    "available_surfaces": [
+      "chat",
+      "status_bar",
+      "palette"
+    ],
+    "required_selection": "none",
+    "required_capabilities": [],
+    "effects": [],
+    "approval_policy": "auto",
+    "keyboard_shortcut": "Mod+.",
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "intent",
+      "target": "cancel_run"
+    },
+    "undo_strategy": "none",
+    "receipt_kind": null,
+    "telemetry": null
+  },
+  {
+    "id": "pause_run",
+    "title": "Pause run",
+    "description": "Pause the running turn.",
+    "category": "turn",
+    "primary_surface": "chat",
+    "available_surfaces": [
+      "chat",
+      "palette"
+    ],
+    "required_selection": "none",
+    "required_capabilities": [],
+    "effects": [],
+    "approval_policy": "auto",
+    "keyboard_shortcut": null,
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "intent",
+      "target": "pause_run"
+    },
+    "undo_strategy": "none",
+    "receipt_kind": null,
+    "telemetry": null
+  },
+  {
+    "id": "resume_run",
+    "title": "Resume run",
+    "description": "Resume a paused turn.",
+    "category": "turn",
+    "primary_surface": "chat",
+    "available_surfaces": [
+      "chat",
+      "palette"
+    ],
+    "required_selection": "none",
+    "required_capabilities": [],
+    "effects": [],
+    "approval_policy": "auto",
+    "keyboard_shortcut": null,
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "intent",
+      "target": "resume_run"
+    },
+    "undo_strategy": "none",
+    "receipt_kind": null,
+    "telemetry": null
+  },
+  {
+    "id": "accept_diff",
+    "title": "Accept diff",
+    "description": "Apply a proposed diff hunk to the working tree.",
+    "category": "diff",
+    "primary_surface": "diff_review",
+    "available_surfaces": [
+      "diff_review",
+      "editor",
+      "ide"
+    ],
+    "required_selection": "hunk",
+    "required_capabilities": [],
+    "effects": [
+      "write_fs"
+    ],
+    "approval_policy": "auto",
+    "keyboard_shortcut": "Mod+Enter",
+    "command_palette": false,
+    "context_menu": true,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "intent",
+      "target": "accept_diff"
+    },
+    "undo_strategy": "reject",
+    "receipt_kind": "patch",
+    "telemetry": null
+  },
+  {
+    "id": "reject_diff",
+    "title": "Reject diff",
+    "description": "Reject a proposed hunk, restoring that file on disk.",
+    "category": "diff",
+    "primary_surface": "diff_review",
+    "available_surfaces": [
+      "diff_review",
+      "editor",
+      "ide"
+    ],
+    "required_selection": "hunk",
+    "required_capabilities": [],
+    "effects": [
+      "write_fs",
+      "state"
+    ],
+    "approval_policy": "auto",
+    "keyboard_shortcut": "Mod+Backspace",
+    "command_palette": false,
+    "context_menu": true,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "intent",
+      "target": "reject_diff"
+    },
+    "undo_strategy": "inverse",
+    "receipt_kind": null,
+    "telemetry": null
+  },
+  {
+    "id": "fork_session",
+    "title": "Fork from here",
+    "description": "Fork a new session from the selected timeline event.",
+    "category": "timeline",
+    "primary_surface": "state_timeline",
+    "available_surfaces": [
+      "state_timeline",
+      "palette"
+    ],
+    "required_selection": "none",
+    "required_capabilities": [
+      "state"
+    ],
+    "effects": [
+      "state"
+    ],
+    "approval_policy": "auto",
+    "keyboard_shortcut": null,
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "intent",
+      "target": "fork_session"
+    },
+    "undo_strategy": "none",
+    "receipt_kind": null,
+    "telemetry": null
+  },
+  {
+    "id": "open_file",
+    "title": "Open file",
+    "description": "Open a file in the editor.",
+    "category": "file",
+    "primary_surface": "ide",
+    "available_surfaces": [
+      "ide",
+      "editor",
+      "palette"
+    ],
+    "required_selection": "file",
+    "required_capabilities": [],
+    "effects": [
+      "read_fs"
+    ],
+    "approval_policy": "auto",
+    "keyboard_shortcut": null,
+    "command_palette": true,
+    "context_menu": true,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "intent",
+      "target": "open_file"
+    },
+    "undo_strategy": "none",
+    "receipt_kind": null,
+    "telemetry": null
+  },
+  {
+    "id": "run_command",
+    "title": "Run command",
+    "description": "Run a shell command in the terminal.",
+    "category": "terminal",
+    "primary_surface": "terminal",
+    "available_surfaces": [
+      "terminal",
+      "palette"
+    ],
+    "required_selection": "none",
+    "required_capabilities": [],
+    "effects": [
+      "shell",
+      "process"
+    ],
+    "approval_policy": "require_sandbox",
+    "keyboard_shortcut": null,
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "intent",
+      "target": "run_command"
+    },
+    "undo_strategy": "none",
+    "receipt_kind": null,
+    "telemetry": null
+  },
+  {
+    "id": "run_static_analysis",
+    "title": "Run static analysis",
+    "description": "Run Tier-1 deterministic static analysis and show real problem counts.",
+    "category": "verify",
+    "primary_surface": "status_bar",
+    "available_surfaces": [
+      "status_bar",
+      "context_stack",
+      "palette"
+    ],
+    "required_selection": "none",
+    "required_capabilities": [],
+    "effects": [
+      "read_fs",
+      "process"
+    ],
+    "approval_policy": "auto",
+    "keyboard_shortcut": null,
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "custom",
+      "target": "run_static_analysis"
+    },
+    "undo_strategy": "none",
+    "receipt_kind": "verification_receipt",
+    "telemetry": null
+  },
+  {
+    "id": "create_side_chat",
+    "title": "New side chat",
+    "description": "Open a side chat thread that can later merge back.",
+    "category": "side_chat",
+    "primary_surface": "chat",
+    "available_surfaces": [
+      "chat",
+      "palette"
+    ],
+    "required_selection": "none",
+    "required_capabilities": [
+      "subscriptions"
+    ],
+    "effects": [
+      "state"
+    ],
+    "approval_policy": "auto",
+    "keyboard_shortcut": "Mod+Shift+N",
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": "chat.new",
+    "backend_binding": {
+      "kind": "custom",
+      "target": "create_side_chat"
+    },
+    "undo_strategy": "none",
+    "receipt_kind": null,
+    "telemetry": null
+  },
+  {
+    "id": "merge_side_chat",
+    "title": "Merge side chat",
+    "description": "Merge a side chat's summary back into the main thread.",
+    "category": "side_chat",
+    "primary_surface": "chat",
+    "available_surfaces": [
+      "chat",
+      "palette"
+    ],
+    "required_selection": "none",
+    "required_capabilities": [],
+    "effects": [
+      "state"
+    ],
+    "approval_policy": "auto",
+    "keyboard_shortcut": null,
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "custom",
+      "target": "merge_side_chat"
+    },
+    "undo_strategy": "inverse",
+    "receipt_kind": null,
+    "telemetry": null
+  },
+  {
+    "id": "checkpoint_create",
+    "title": "Create checkpoint",
+    "description": "Seal an integrity-verified restore point on the timeline.",
+    "category": "checkpoint",
+    "primary_surface": "state_timeline",
+    "available_surfaces": [
+      "state_timeline",
+      "palette"
+    ],
+    "required_selection": "none",
+    "required_capabilities": [
+      "checkpoints",
+      "state"
+    ],
+    "effects": [
+      "state"
+    ],
+    "approval_policy": "auto",
+    "keyboard_shortcut": null,
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "custom",
+      "target": "checkpoint_create"
+    },
+    "undo_strategy": "none",
+    "receipt_kind": "checkpoint",
+    "telemetry": null
+  },
+  {
+    "id": "checkpoint_restore",
+    "title": "Restore checkpoint",
+    "description": "Restore the session to a sealed checkpoint.",
+    "category": "checkpoint",
+    "primary_surface": "state_timeline",
+    "available_surfaces": [
+      "state_timeline",
+      "palette"
+    ],
+    "required_selection": "none",
+    "required_capabilities": [
+      "checkpoints",
+      "state"
+    ],
+    "effects": [
+      "state"
+    ],
+    "approval_policy": "ask",
+    "keyboard_shortcut": null,
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "custom",
+      "target": "checkpoint_restore"
+    },
+    "undo_strategy": "checkpoint",
+    "receipt_kind": null,
+    "telemetry": null
+  },
+  {
+    "id": "memory_add",
+    "title": "Add memory note",
+    "description": "Store a durable outcome-governed note the agent keeps.",
+    "category": "memory",
+    "primary_surface": "context_stack",
+    "available_surfaces": [
+      "context_stack",
+      "editor",
+      "palette"
+    ],
+    "required_selection": "text",
+    "required_capabilities": [],
+    "effects": [
+      "state"
+    ],
+    "approval_policy": "auto",
+    "keyboard_shortcut": null,
+    "command_palette": true,
+    "context_menu": true,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "custom",
+      "target": "memory_add"
+    },
+    "undo_strategy": "inverse",
+    "receipt_kind": null,
+    "telemetry": null
+  },
+  {
+    "id": "memory_supersede",
+    "title": "Supersede memory",
+    "description": "Replace a stale memory while keeping its history.",
+    "category": "memory",
+    "primary_surface": "context_stack",
+    "available_surfaces": [
+      "context_stack",
+      "palette"
+    ],
+    "required_selection": "text",
+    "required_capabilities": [],
+    "effects": [
+      "state"
+    ],
+    "approval_policy": "auto",
+    "keyboard_shortcut": null,
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "custom",
+      "target": "memory_supersede"
+    },
+    "undo_strategy": "inverse",
+    "receipt_kind": null,
+    "telemetry": null
+  },
+  {
+    "id": "memory_record_outcome",
+    "title": "Record memory outcome",
+    "description": "Report that a remembered fact was right or wrong so it self-quarantines.",
+    "category": "memory",
+    "primary_surface": "context_stack",
+    "available_surfaces": [
+      "context_stack",
+      "palette"
+    ],
+    "required_selection": "none",
+    "required_capabilities": [],
+    "effects": [
+      "state"
+    ],
+    "approval_policy": "auto",
+    "keyboard_shortcut": null,
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "custom",
+      "target": "memory_record_outcome"
+    },
+    "undo_strategy": "none",
+    "receipt_kind": null,
+    "telemetry": null
+  },
+  {
+    "id": "memory_revalidate",
+    "title": "Revalidate memory",
+    "description": "Re-check a memory's citations against the repo on disk.",
+    "category": "memory",
+    "primary_surface": "context_stack",
+    "available_surfaces": [
+      "context_stack",
+      "palette"
+    ],
+    "required_selection": "none",
+    "required_capabilities": [],
+    "effects": [
+      "read_fs",
+      "state"
+    ],
+    "approval_policy": "auto",
+    "keyboard_shortcut": null,
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "custom",
+      "target": "memory_revalidate"
+    },
+    "undo_strategy": "none",
+    "receipt_kind": null,
+    "telemetry": null
+  },
+  {
+    "id": "goal_set",
+    "title": "Set goal",
+    "description": "Set a durable goal and acceptance criteria for the session.",
+    "category": "goal",
+    "primary_surface": "home",
+    "available_surfaces": [
+      "home",
+      "chat",
+      "palette"
+    ],
+    "required_selection": "none",
+    "required_capabilities": [],
+    "effects": [
+      "state"
+    ],
+    "approval_policy": "auto",
+    "keyboard_shortcut": null,
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "custom",
+      "target": "goal_set"
+    },
+    "undo_strategy": "inverse",
+    "receipt_kind": null,
+    "telemetry": null
+  },
+  {
+    "id": "goal_clear",
+    "title": "Clear goal",
+    "description": "Clear the session's goal.",
+    "category": "goal",
+    "primary_surface": "home",
+    "available_surfaces": [
+      "home",
+      "palette"
+    ],
+    "required_selection": "none",
+    "required_capabilities": [],
+    "effects": [
+      "state"
+    ],
+    "approval_policy": "auto",
+    "keyboard_shortcut": null,
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "custom",
+      "target": "goal_clear"
+    },
+    "undo_strategy": "inverse",
+    "receipt_kind": null,
+    "telemetry": null
+  },
+  {
+    "id": "goal_evaluate",
+    "title": "Evaluate goal",
+    "description": "Run the deterministic acceptance check for the goal.",
+    "category": "goal",
+    "primary_surface": "home",
+    "available_surfaces": [
+      "home",
+      "chat",
+      "palette"
+    ],
+    "required_selection": "none",
+    "required_capabilities": [],
+    "effects": [
+      "process"
+    ],
+    "approval_policy": "auto",
+    "keyboard_shortcut": null,
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "custom",
+      "target": "goal_evaluate"
+    },
+    "undo_strategy": "none",
+    "receipt_kind": "verification_receipt",
+    "telemetry": null
+  },
+  {
+    "id": "steer",
+    "title": "Steer turn",
+    "description": "Redirect the running turn mid-flight via the interrupt hub.",
+    "category": "steer",
+    "primary_surface": "chat",
+    "available_surfaces": [
+      "chat",
+      "palette"
+    ],
+    "required_selection": "text",
+    "required_capabilities": [
+      "streaming"
+    ],
+    "effects": [],
+    "approval_policy": "auto",
+    "keyboard_shortcut": "Mod+/",
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": "composer.steer",
+    "backend_binding": {
+      "kind": "custom",
+      "target": "redirect_run"
+    },
+    "undo_strategy": "none",
+    "receipt_kind": null,
+    "telemetry": null
+  },
+  {
+    "id": "workspace_set_repo_trust",
+    "title": "Set repo trust",
+    "description": "Trust a repo so its instructions and policy can activate.",
+    "category": "workspace",
+    "primary_surface": "home",
+    "available_surfaces": [
+      "home",
+      "settings",
+      "palette"
+    ],
+    "required_selection": "none",
+    "required_capabilities": [],
+    "effects": [
+      "state"
+    ],
+    "approval_policy": "ask",
+    "keyboard_shortcut": null,
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "custom",
+      "target": "workspace_set_repo_trust"
+    },
+    "undo_strategy": "inverse",
+    "receipt_kind": null,
+    "telemetry": null
+  },
+  {
+    "id": "environment_switch",
+    "title": "Switch environment",
+    "description": "Switch the session's dev, prod, or sandbox environment.",
+    "category": "environment",
+    "primary_surface": "home",
+    "available_surfaces": [
+      "home",
+      "status_bar",
+      "settings",
+      "palette"
+    ],
+    "required_selection": "none",
+    "required_capabilities": [],
+    "effects": [
+      "environment"
+    ],
+    "approval_policy": "auto",
+    "keyboard_shortcut": null,
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "custom",
+      "target": "environment_switch"
+    },
+    "undo_strategy": "inverse",
+    "receipt_kind": null,
+    "telemetry": null
+  },
+  {
+    "id": "run_search",
+    "title": "Search transcript",
+    "description": "Search the session transcript by literal or structured query, over the intent channel.",
+    "category": "search",
+    "primary_surface": "palette",
+    "available_surfaces": [
+      "palette",
+      "chat",
+      "ide"
+    ],
+    "required_selection": "none",
+    "required_capabilities": [],
+    "effects": [
+      "read_fs"
+    ],
+    "approval_policy": "auto",
+    "keyboard_shortcut": null,
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "custom",
+      "target": "run_search"
+    },
+    "undo_strategy": "none",
+    "receipt_kind": null,
+    "telemetry": null
+  },
+  {
+    "id": "checkpoint_rewind",
+    "title": "Rewind to checkpoint",
+    "description": "Rewind code, conversation, or both to a checkpoint on a fresh child session.",
+    "category": "checkpoint",
+    "primary_surface": "state_timeline",
+    "available_surfaces": [
+      "state_timeline",
+      "palette"
+    ],
+    "required_selection": "none",
+    "required_capabilities": [
+      "checkpoints",
+      "state"
+    ],
+    "effects": [
+      "state",
+      "write_fs"
+    ],
+    "approval_policy": "ask",
+    "keyboard_shortcut": null,
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "custom",
+      "target": "checkpoint_rewind"
+    },
+    "undo_strategy": "checkpoint",
+    "receipt_kind": null,
+    "telemetry": null
+  },
+  {
+    "id": "checkpoint_replay",
+    "title": "Replay from checkpoint",
+    "description": "Re-apply the recorded history from a checkpoint forward onto a new lineage.",
+    "category": "checkpoint",
+    "primary_surface": "state_timeline",
+    "available_surfaces": [
+      "state_timeline",
+      "palette"
+    ],
+    "required_selection": "none",
+    "required_capabilities": [
+      "checkpoints",
+      "state"
+    ],
+    "effects": [
+      "state"
+    ],
+    "approval_policy": "auto",
+    "keyboard_shortcut": null,
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "custom",
+      "target": "checkpoint_replay"
+    },
+    "undo_strategy": "none",
+    "receipt_kind": null,
+    "telemetry": null
+  },
+  {
+    "id": "checkpoint_fork",
+    "title": "Fork from checkpoint",
+    "description": "Branch an ephemeral session seeded only with a checkpoint's inherited prefix.",
+    "category": "checkpoint",
+    "primary_surface": "state_timeline",
+    "available_surfaces": [
+      "state_timeline",
+      "palette"
+    ],
+    "required_selection": "none",
+    "required_capabilities": [
+      "checkpoints",
+      "state"
+    ],
+    "effects": [
+      "state"
+    ],
+    "approval_policy": "auto",
+    "keyboard_shortcut": null,
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "custom",
+      "target": "checkpoint_fork"
+    },
+    "undo_strategy": "none",
+    "receipt_kind": null,
+    "telemetry": null
+  },
+  {
+    "id": "checkpoint_compare",
+    "title": "Compare checkpoint",
+    "description": "Show the file-level code differences against a checkpoint or another session.",
+    "category": "checkpoint",
+    "primary_surface": "state_timeline",
+    "available_surfaces": [
+      "state_timeline",
+      "palette"
+    ],
+    "required_selection": "none",
+    "required_capabilities": [
+      "checkpoints"
+    ],
+    "effects": [
+      "read_fs"
+    ],
+    "approval_policy": "auto",
+    "keyboard_shortcut": null,
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "custom",
+      "target": "checkpoint_compare"
+    },
+    "undo_strategy": "none",
+    "receipt_kind": null,
+    "telemetry": null
+  },
+  {
+    "id": "checkpoint_inspect",
+    "title": "Inspect checkpoint",
+    "description": "Verify a checkpoint's integrity and coverage.",
+    "category": "checkpoint",
+    "primary_surface": "state_timeline",
+    "available_surfaces": [
+      "state_timeline",
+      "palette"
+    ],
+    "required_selection": "none",
+    "required_capabilities": [
+      "checkpoints"
+    ],
+    "effects": [
+      "read_fs"
+    ],
+    "approval_policy": "auto",
+    "keyboard_shortcut": null,
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "custom",
+      "target": "checkpoint_inspect"
+    },
+    "undo_strategy": "none",
+    "receipt_kind": null,
+    "telemetry": null
+  },
+  {
+    "id": "approve_plan",
+    "title": "Approve plan",
+    "description": "Approve a plan step, or the whole plan when no step is selected.",
+    "category": "plan",
+    "primary_surface": "context_stack",
+    "available_surfaces": [
+      "context_stack",
+      "chat",
+      "palette"
+    ],
+    "required_selection": "none",
+    "required_capabilities": [],
+    "effects": [
+      "state"
+    ],
+    "approval_policy": "auto",
+    "keyboard_shortcut": null,
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "custom",
+      "target": "approve_plan"
+    },
+    "undo_strategy": "none",
+    "receipt_kind": null,
+    "telemetry": null
+  },
+  {
+    "id": "edit_plan_step",
+    "title": "Edit plan step",
+    "description": "Edit the text of a plan step.",
+    "category": "plan",
+    "primary_surface": "context_stack",
+    "available_surfaces": [
+      "context_stack",
+      "chat",
+      "palette"
+    ],
+    "required_selection": "plan_step",
+    "required_capabilities": [],
+    "effects": [
+      "state"
+    ],
+    "approval_policy": "auto",
+    "keyboard_shortcut": null,
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "custom",
+      "target": "edit_plan_step"
+    },
+    "undo_strategy": "inverse",
+    "receipt_kind": null,
+    "telemetry": null
+  },
+  {
+    "id": "reorder_plan",
+    "title": "Reorder plan",
+    "description": "Reorder the plan's steps to a new permutation.",
+    "category": "plan",
+    "primary_surface": "context_stack",
+    "available_surfaces": [
+      "context_stack",
+      "chat",
+      "palette"
+    ],
+    "required_selection": "none",
+    "required_capabilities": [],
+    "effects": [
+      "state"
+    ],
+    "approval_policy": "auto",
+    "keyboard_shortcut": null,
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "custom",
+      "target": "reorder_plan"
+    },
+    "undo_strategy": "inverse",
+    "receipt_kind": null,
+    "telemetry": null
+  },
+  {
+    "id": "skip_step",
+    "title": "Skip step",
+    "description": "Skip a plan step with a recorded reason.",
+    "category": "plan",
+    "primary_surface": "context_stack",
+    "available_surfaces": [
+      "context_stack",
+      "chat",
+      "palette"
+    ],
+    "required_selection": "plan_step",
+    "required_capabilities": [],
+    "effects": [
+      "state"
+    ],
+    "approval_policy": "auto",
+    "keyboard_shortcut": null,
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "custom",
+      "target": "skip_step"
+    },
+    "undo_strategy": "inverse",
+    "receipt_kind": null,
+    "telemetry": null
+  },
+  {
+    "id": "repair_step",
+    "title": "Repair step",
+    "description": "Re-open a failed plan step so it can be retried.",
+    "category": "plan",
+    "primary_surface": "context_stack",
+    "available_surfaces": [
+      "context_stack",
+      "chat",
+      "palette"
+    ],
+    "required_selection": "plan_step",
+    "required_capabilities": [],
+    "effects": [
+      "state"
+    ],
+    "approval_policy": "auto",
+    "keyboard_shortcut": null,
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "custom",
+      "target": "repair_step"
+    },
+    "undo_strategy": "none",
+    "receipt_kind": null,
+    "telemetry": null
+  },
+  {
+    "id": "promote_run",
+    "title": "Run in background",
+    "description": "Promote a live interactive run to a durable background job without restarting it.",
+    "category": "background",
+    "primary_surface": "status_bar",
+    "available_surfaces": [
+      "status_bar",
+      "home",
+      "palette"
+    ],
+    "required_selection": "none",
+    "required_capabilities": [],
+    "effects": [
+      "state"
+    ],
+    "approval_policy": "auto",
+    "keyboard_shortcut": null,
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "custom",
+      "target": "promote_run"
+    },
+    "undo_strategy": "none",
+    "receipt_kind": null,
+    "telemetry": null
+  },
+  {
+    "id": "resume_run_foreground",
+    "title": "Resume in foreground",
+    "description": "Reattach a reconnecting client to a promoted run and resume it in the foreground.",
+    "category": "background",
+    "primary_surface": "status_bar",
+    "available_surfaces": [
+      "status_bar",
+      "home",
+      "palette"
+    ],
+    "required_selection": "none",
+    "required_capabilities": [],
+    "effects": [
+      "state"
+    ],
+    "approval_policy": "auto",
+    "keyboard_shortcut": null,
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "custom",
+      "target": "resume_run_foreground"
+    },
+    "undo_strategy": "none",
+    "receipt_kind": null,
+    "telemetry": null
+  },
+  {
+    "id": "pty_input",
+    "title": "Terminal input",
+    "description": "Write input bytes to the live terminal process's stdin.",
+    "category": "terminal",
+    "primary_surface": "terminal",
+    "available_surfaces": [
+      "terminal",
+      "palette"
+    ],
+    "required_selection": "none",
+    "required_capabilities": [],
+    "effects": [
+      "process"
+    ],
+    "approval_policy": "auto",
+    "keyboard_shortcut": null,
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "custom",
+      "target": "pty_input"
+    },
+    "undo_strategy": "none",
+    "receipt_kind": null,
+    "telemetry": null
+  },
+  {
+    "id": "pty_resize",
+    "title": "Terminal resize",
+    "description": "Record the live terminal process's column and row geometry.",
+    "category": "terminal",
+    "primary_surface": "terminal",
+    "available_surfaces": [
+      "terminal",
+      "palette"
+    ],
+    "required_selection": "none",
+    "required_capabilities": [],
+    "effects": [],
+    "approval_policy": "auto",
+    "keyboard_shortcut": null,
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "custom",
+      "target": "pty_resize"
+    },
+    "undo_strategy": "none",
+    "receipt_kind": null,
+    "telemetry": null
+  },
+  {
+    "id": "attach_process",
+    "title": "Attach to process",
+    "description": "Re-attach to a running process and replay its buffered output into the terminal.",
+    "category": "terminal",
+    "primary_surface": "terminal",
+    "available_surfaces": [
+      "terminal",
+      "palette"
+    ],
+    "required_selection": "none",
+    "required_capabilities": [],
+    "effects": [
+      "process"
+    ],
+    "approval_policy": "auto",
+    "keyboard_shortcut": null,
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "custom",
+      "target": "attach_process"
+    },
+    "undo_strategy": "none",
+    "receipt_kind": null,
+    "telemetry": null
+  },
+  {
+    "id": "stop_process",
+    "title": "Stop process",
+    "description": "Stop a running process: terminate its group, then kill it after a short grace.",
+    "category": "terminal",
+    "primary_surface": "terminal",
+    "available_surfaces": [
+      "terminal",
+      "palette"
+    ],
+    "required_selection": "none",
+    "required_capabilities": [],
+    "effects": [
+      "process"
+    ],
+    "approval_policy": "auto",
+    "keyboard_shortcut": null,
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "custom",
+      "target": "stop_process"
+    },
+    "undo_strategy": "none",
+    "receipt_kind": null,
+    "telemetry": null
+  },
+  {
+    "id": "capture_process_artifact",
+    "title": "Capture process output",
+    "description": "Preserve a process's captured output as a durable artifact in the blob store.",
+    "category": "terminal",
+    "primary_surface": "terminal",
+    "available_surfaces": [
+      "terminal",
+      "palette"
+    ],
+    "required_selection": "none",
+    "required_capabilities": [],
+    "effects": [
+      "process",
+      "state"
+    ],
+    "approval_policy": "auto",
+    "keyboard_shortcut": null,
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "custom",
+      "target": "capture_process_artifact"
+    },
+    "undo_strategy": "none",
+    "receipt_kind": "artifact",
+    "telemetry": null
+  },
+  {
+    "id": "export_review_receipt",
+    "title": "Export review receipt",
+    "description": "Seal a diff's hunks and their verification receipts into a durable review receipt.",
+    "category": "diff",
+    "primary_surface": "diff_review",
+    "available_surfaces": [
+      "diff_review",
+      "ide",
+      "palette"
+    ],
+    "required_selection": "none",
+    "required_capabilities": [],
+    "effects": [
+      "state"
+    ],
+    "approval_policy": "auto",
+    "keyboard_shortcut": null,
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "custom",
+      "target": "export_review_receipt"
+    },
+    "undo_strategy": "none",
+    "receipt_kind": "diff_review_receipt",
+    "telemetry": null
+  },
+  {
+    "id": "new_session",
+    "title": "New session",
+    "description": "Start a fresh session thread from the launcher or the New-chat menu.",
+    "category": "side_chat",
+    "primary_surface": "home",
+    "available_surfaces": [
+      "home",
+      "chat",
+      "palette"
+    ],
+    "required_selection": "none",
+    "required_capabilities": [],
+    "effects": [
+      "state"
+    ],
+    "approval_policy": "auto",
+    "keyboard_shortcut": null,
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "custom",
+      "target": "new_session"
+    },
+    "undo_strategy": "none",
+    "receipt_kind": null,
+    "telemetry": null
+  },
+  {
+    "id": "revert_diff",
+    "title": "Revert diff",
+    "description": "Revert a whole diff on disk once its hunks are already decided.",
+    "category": "diff",
+    "primary_surface": "diff_review",
+    "available_surfaces": [
+      "diff_review",
+      "ide",
+      "palette"
+    ],
+    "required_selection": "none",
+    "required_capabilities": [],
+    "effects": [
+      "write_fs",
+      "state"
+    ],
+    "approval_policy": "ask",
+    "keyboard_shortcut": null,
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "custom",
+      "target": "revert_diff"
+    },
+    "undo_strategy": "inverse",
+    "receipt_kind": null,
+    "telemetry": null
+  },
+  {
+    "id": "save_file",
+    "title": "Save file",
+    "description": "Write the open editor buffer to disk through the permission-gated applier.",
+    "category": "file",
+    "primary_surface": "editor",
+    "available_surfaces": [
+      "editor",
+      "ide"
+    ],
+    "required_selection": "file",
+    "required_capabilities": [],
+    "effects": [
+      "write_fs"
+    ],
+    "approval_policy": "auto",
+    "keyboard_shortcut": "Mod+S",
+    "command_palette": false,
+    "context_menu": false,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "custom",
+      "target": "save_file"
+    },
+    "undo_strategy": "none",
+    "receipt_kind": null,
+    "telemetry": null
+  },
+  {
+    "id": "create_worktree",
+    "title": "Create worktree",
+    "description": "Request an isolated git worktree on a fresh branch (the host holds it at a gate).",
+    "category": "workspace",
+    "primary_surface": "home",
+    "available_surfaces": [
+      "home",
+      "palette"
+    ],
+    "required_selection": "none",
+    "required_capabilities": [],
+    "effects": [
+      "vcs",
+      "process",
+      "write_fs"
+    ],
+    "approval_policy": "ask",
+    "keyboard_shortcut": null,
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "custom",
+      "target": "create_worktree"
+    },
+    "undo_strategy": "none",
+    "receipt_kind": null,
+    "telemetry": null
+  },
+  {
+    "id": "open_session",
+    "title": "Open session",
+    "description": "Reopen a recorded session and republish its transcript.",
+    "category": "side_chat",
+    "primary_surface": "home",
+    "available_surfaces": [
+      "home",
+      "palette"
+    ],
+    "required_selection": "none",
+    "required_capabilities": [],
+    "effects": [
+      "state"
+    ],
+    "approval_policy": "auto",
+    "keyboard_shortcut": null,
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "custom",
+      "target": "open_session"
+    },
+    "undo_strategy": "none",
+    "receipt_kind": null,
+    "telemetry": null
+  },
+  {
+    "id": "approve_gate",
+    "title": "Approve held command",
+    "description": "Release a command the security gate is holding so it runs.",
+    "category": "terminal",
+    "primary_surface": "chat",
+    "available_surfaces": [
+      "chat",
+      "terminal",
+      "palette"
+    ],
+    "required_selection": "none",
+    "required_capabilities": [],
+    "effects": [
+      "approval"
+    ],
+    "approval_policy": "auto",
+    "keyboard_shortcut": null,
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "custom",
+      "target": "approve_gate"
+    },
+    "undo_strategy": "none",
+    "receipt_kind": null,
+    "telemetry": null
+  },
+  {
+    "id": "deny_gate",
+    "title": "Deny held command",
+    "description": "Drop a command the security gate is holding so it never runs.",
+    "category": "terminal",
+    "primary_surface": "chat",
+    "available_surfaces": [
+      "chat",
+      "terminal",
+      "palette"
+    ],
+    "required_selection": "none",
+    "required_capabilities": [],
+    "effects": [
+      "approval"
+    ],
+    "approval_policy": "auto",
+    "keyboard_shortcut": null,
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "custom",
+      "target": "deny_gate"
+    },
+    "undo_strategy": "none",
+    "receipt_kind": null,
+    "telemetry": null
+  },
+  {
+    "id": "approve_effect",
+    "title": "Approve effectful step",
+    "description": "Let a paused effectful step in the running turn proceed.",
+    "category": "plan",
+    "primary_surface": "chat",
+    "available_surfaces": [
+      "chat",
+      "state_timeline",
+      "palette"
+    ],
+    "required_selection": "none",
+    "required_capabilities": [],
+    "effects": [
+      "approval"
+    ],
+    "approval_policy": "auto",
+    "keyboard_shortcut": null,
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "custom",
+      "target": "approve_effect"
+    },
+    "undo_strategy": "none",
+    "receipt_kind": null,
+    "telemetry": null
+  },
+  {
+    "id": "deny_effect",
+    "title": "Deny effectful step",
+    "description": "Skip a paused effectful step in the running turn.",
+    "category": "plan",
+    "primary_surface": "chat",
+    "available_surfaces": [
+      "chat",
+      "state_timeline",
+      "palette"
+    ],
+    "required_selection": "none",
+    "required_capabilities": [],
+    "effects": [
+      "approval"
+    ],
+    "approval_policy": "auto",
+    "keyboard_shortcut": null,
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "custom",
+      "target": "deny_effect"
+    },
+    "undo_strategy": "none",
+    "receipt_kind": null,
+    "telemetry": null
+  },
+  {
+    "id": "grant_write_lease",
+    "title": "Grant write lease",
+    "description": "Let this task edit files inside a declared, trusted scope without asking per file.",
+    "category": "workspace",
+    "primary_surface": "status_bar",
+    "available_surfaces": [
+      "status_bar",
+      "home",
+      "palette"
+    ],
+    "required_selection": "none",
+    "required_capabilities": [],
+    "effects": [
+      "approval",
+      "state"
+    ],
+    "approval_policy": "ask",
+    "keyboard_shortcut": null,
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "custom",
+      "target": "grant_write_lease"
+    },
+    "undo_strategy": "none",
+    "receipt_kind": null,
+    "telemetry": null
+  },
+  {
+    "id": "revoke_write_lease",
+    "title": "Revoke write lease",
+    "description": "End the active write lease so workspace writes ask for approval again.",
+    "category": "workspace",
+    "primary_surface": "status_bar",
+    "available_surfaces": [
+      "status_bar",
+      "palette"
+    ],
+    "required_selection": "none",
+    "required_capabilities": [],
+    "effects": [
+      "state"
+    ],
+    "approval_policy": "auto",
+    "keyboard_shortcut": null,
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "custom",
+      "target": "revoke_write_lease"
+    },
+    "undo_strategy": "none",
+    "receipt_kind": null,
+    "telemetry": null
+  }
+]

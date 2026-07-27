@@ -1,0 +1,77 @@
+{
+  "schema": "hawking.gravity.glm_base_tps.v1",
+  "scoreboard": "BASE_TRUE_TPS",
+  "note": "measured, not modelled; no acceleration of any kind (spec-decode, prefix-cache, batching) is enabled on this path -- M06 is the separate, later gate for that. GLM's routed MoE means device-resident bytes grow with the run rather than being fixed at load, and cost is content-dependent (different tokens route to different experts), unlike the dense Llama instrument gravity_tps.rs measures. Synthetic pseudo-random token stream, not a real prompt -- it maximizes expert diversity (near-worst-case cache-miss rate) rather than reflecting R0's actual sealed screening-gate behavior (repeated-token collapse, which would cache far better).",
+  "model_dir": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0",
+  "architecture": {
+    "experts_per_tok": 8,
+    "hidden": 6144,
+    "layers": 78,
+    "routed_experts": 256,
+    "vocab": 154880
+  },
+  "open_ms": 46.865292000000004,
+  "runs": {
+    "verified": {
+      "desc": "verify_hash=true: every newly-touched tensor's SHA-256 checked against the artifact's own descriptor before use. The engine registry's production load path (gravity_engine.rs) always runs this way.",
+      "measurements": [
+        {
+          "base_true_decode_tps": 0.15695808028908434,
+          "context_tokens": 4,
+          "decode_ms": 76453.53445900002,
+          "decode_ms_per_token_all": [
+            6523.214125,
+            6512.367292000001,
+            6433.027459,
+            6492.962375,
+            6522.686208,
+            6359.057417,
+            6141.465083,
+            6344.85725,
+            6336.564917000001,
+            6300.4983330000005,
+            6293.42575,
+            6193.40825
+          ],
+          "decode_ms_per_token_max": 6523.214125,
+          "decode_ms_per_token_median": 6359.057417,
+          "decode_ms_per_token_min": 6141.465083,
+          "decode_tokens": 12,
+          "prefill_ms": 45994.656167,
+          "prefill_tps": 0.08696662467649663
+        }
+      ]
+    },
+    "trusted": {
+      "desc": "verify_hash=false: same bytes, no per-tensor SHA-256. Isolates verification cost from unavoidable disk-read + codebook/codes upload cost for a tensor touched for the first time. Not what the production engine path runs -- reported to show the safety/speed tradeoff honestly, not to claim it as the served number.",
+      "measurements": [
+        {
+          "base_true_decode_tps": 0.5694451533390705,
+          "context_tokens": 4,
+          "decode_ms": 21073.144497999998,
+          "decode_ms_per_token_all": [
+            1766.4277909999998,
+            1717.100833,
+            1748.389542,
+            1800.874416,
+            1785.472833,
+            1637.3601250000002,
+            1683.835916,
+            1828.012125,
+            1768.714084,
+            1763.6895,
+            1826.964833,
+            1746.3025
+          ],
+          "decode_ms_per_token_max": 1828.012125,
+          "decode_ms_per_token_median": 1766.4277909999998,
+          "decode_ms_per_token_min": 1637.3601250000002,
+          "decode_tokens": 12,
+          "prefill_ms": 10406.308458,
+          "prefill_tps": 0.3843822250843374
+        }
+      ]
+    }
+  },
+  "finding": "SHA-256 verification of cold-touched tensors dominates: disabling it cut prefill 4.4x (45994ms -> 10406ms) and median decode 3.6x (6359ms -> 1766ms) on an identical 16-token run. Command-buffer batching of independent MoE-expert matvecs (gate/up/down for all touched experts in one TokenCommandBuffer instead of one commit_and_wait per matvec) was tried first on the theory that ~2500 synchronous single-dispatch round trips per token would dominate; it measured a real but modest 12% win, meaning the actual floor at this artifact size is disk read + hash verification of never-before-seen (layer, expert) pairs, not GPU dispatch overhead. A short run touches a small fraction of 78 layers x 256 experts, so these numbers do not represent a cache-warmed steady state -- they are what a cold-to-lightly-warmed multi-shard MoE artifact actually costs, honestly."
+}

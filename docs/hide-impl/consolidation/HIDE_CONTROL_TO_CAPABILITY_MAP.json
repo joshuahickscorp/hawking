@@ -1,0 +1,1102 @@
+{
+  "_meta": {
+    "source": "merged HIDE census catalog (build/hide-impl-2026-07-19)",
+    "total_controls": 108,
+    "seam": "every backend-touching control routes through sendIntent(Intent) in app/src/ipc.ts",
+    "wired_to_legend": "intent name | custom:<name> | connector:<ns.method> | tauri-ipc:<x> | local-only | none/dead",
+    "backend_capability_note": "backend_capability_available names the host capability, intent, or rpc method this control could reach; many are LOG-ONLY (recorded but no host side effect) or backend-only (built but no route)",
+    "clicks_note": "current_clicks_estimate = user gestures to fire the control's promised outcome; for mock/dead controls the outcome is never delivered (estimate 0)",
+    "depth_counts": {
+      "appropriate-as-is": 39,
+      "real-deep": 32,
+      "real-shallow": 17,
+      "dead": 5,
+      "mock": 6,
+      "backend-unwired": 3,
+      "misleading": 5,
+      "duplicate": 1
+    }
+  },
+  "controls": {
+    "app.global_keyboard_shortcuts_cmd_p_j_b_i_esc": {
+      "surface": "App.tsx",
+      "name": "Global keyboard shortcuts (Cmd P/J/B/I, Esc)",
+      "file": "app/src/App.tsx:118",
+      "wired_to": "local-only",
+      "depth": "appropriate-as-is",
+      "backend_capability_available": "none (pure shell chrome)",
+      "current_clicks_estimate": 1,
+      "notes": "Toggle palette / panel / sidebar / Executor pane; Esc closes floating chat"
+    },
+    "app.security_gate_approve_blocking_overlay": {
+      "surface": "App.tsx",
+      "name": "Security Gate Approve (blocking overlay)",
+      "file": "app/src/App.tsx:305",
+      "wired_to": "custom:approve_gate",
+      "depth": "real-deep",
+      "backend_capability_available": "custom approve_gate HOST-HANDLED release gate (host.rs:296,386-388)",
+      "current_clicks_estimate": 1,
+      "notes": "handler approveGate() App.tsx:160; auto-fired when permMode==bypass (App.tsx:97-102)"
+    },
+    "app.security_gate_deny_blocking_overlay": {
+      "surface": "App.tsx",
+      "name": "Security Gate Deny (blocking overlay)",
+      "file": "app/src/App.tsx:304",
+      "wired_to": "custom:deny_gate",
+      "depth": "real-deep",
+      "backend_capability_available": "custom deny_gate HOST-HANDLED drop gate (host.rs:296,389-391)",
+      "current_clicks_estimate": 1,
+      "notes": "handler denyGate() App.tsx:164; Esc also denies (App.tsx:283)"
+    },
+    "app.command_palette_commands_6_shell_view_commands": {
+      "surface": "App.tsx",
+      "name": "Command palette commands (6 shell view commands)",
+      "file": "app/src/App.tsx:171",
+      "wired_to": "local-only",
+      "depth": "appropriate-as-is",
+      "backend_capability_available": "none (pure shell chrome)",
+      "current_clicks_estimate": 2,
+      "notes": "Run one of 6 shell view commands"
+    },
+    "ui.command_palette_input_result_list_cmd_p": {
+      "surface": "ui.tsx",
+      "name": "Command palette input + result list (Cmd P)",
+      "file": "app/src/ui.tsx:72",
+      "wired_to": "local-only",
+      "depth": "appropriate-as-is",
+      "backend_capability_available": "none (pure shell chrome)",
+      "current_clicks_estimate": 2,
+      "notes": "Filter and select a command; arrows/enter navigate"
+    },
+    "toolbar.toggle_navigator_explorer_sidebar": {
+      "surface": "Toolbar.tsx",
+      "name": "Toggle navigator (Explorer sidebar)",
+      "file": "app/src/shell/Toolbar.tsx:39",
+      "wired_to": "local-only",
+      "depth": "appropriate-as-is",
+      "backend_capability_available": "none (pure shell chrome)",
+      "current_clicks_estimate": 1,
+      "notes": "Show/hide the Explorer sidebar"
+    },
+    "toolbar.chamber_tabs_chat_code": {
+      "surface": "Toolbar.tsx",
+      "name": "Chamber tabs Chat / Code",
+      "file": "app/src/shell/Toolbar.tsx:52",
+      "wired_to": "local-only",
+      "depth": "appropriate-as-is",
+      "backend_capability_available": "none (pure shell chrome)",
+      "current_clicks_estimate": 1,
+      "notes": "Switch between Chat and Code chambers"
+    },
+    "toolbar.cancel_run_stop": {
+      "surface": "Toolbar.tsx",
+      "name": "Cancel run (Stop)",
+      "file": "app/src/shell/Toolbar.tsx:70",
+      "wired_to": "cancel_run",
+      "depth": "real-deep",
+      "backend_capability_available": "cancel_run intent -> InterruptHub Abort (commands.rs:89-91), fe_reachable yes",
+      "current_clicks_estimate": 1,
+      "notes": "onCancel -> App.cancelRun() App.tsx:153; disabled unless working; Code chamber only"
+    },
+    "toolbar.executor_toggle_sparkle_cmd_i": {
+      "surface": "Toolbar.tsx",
+      "name": "Executor toggle (sparkle, Cmd I)",
+      "file": "app/src/shell/Toolbar.tsx:88",
+      "wired_to": "local-only",
+      "depth": "appropriate-as-is",
+      "backend_capability_available": "none (pure shell chrome)",
+      "current_clicks_estimate": 1,
+      "notes": "Show/hide the Executor chat pane"
+    },
+    "toolbar.settings_gear": {
+      "surface": "Toolbar.tsx",
+      "name": "Settings (gear)",
+      "file": "app/src/shell/Toolbar.tsx:98",
+      "wired_to": "local-only",
+      "depth": "appropriate-as-is",
+      "backend_capability_available": "none (pure shell chrome)",
+      "current_clicks_estimate": 1,
+      "notes": "Open the Settings dialog"
+    },
+    "toolbar.toggle_panel_cmd_j": {
+      "surface": "Toolbar.tsx",
+      "name": "Toggle panel (Cmd J)",
+      "file": "app/src/shell/Toolbar.tsx:101",
+      "wired_to": "local-only",
+      "depth": "appropriate-as-is",
+      "backend_capability_available": "none (pure shell chrome)",
+      "current_clicks_estimate": 1,
+      "notes": "Show/hide the editor bottom panel/terminal"
+    },
+    "sidebar.model_workcard_button_open_context_popover": {
+      "surface": "SideBar.tsx",
+      "name": "Model workcard button (open context popover)",
+      "file": "app/src/shell/SideBar.tsx:53",
+      "wired_to": "local-only",
+      "depth": "real-shallow",
+      "backend_capability_available": "context_manifest projection (host-emitted, host.rs:2664+); read-only display",
+      "current_clicks_estimate": 1,
+      "notes": "popover reads live manifest; on mock/no-host falls back to constants qwen2.5 / loaded, cached"
+    },
+    "sidebar.switch_model_in_model_popover": {
+      "surface": "SideBar.tsx",
+      "name": "'switch model' (in model popover)",
+      "file": "app/src/shell/SideBar.tsx:107",
+      "wired_to": "custom:switch_model",
+      "depth": "real-shallow",
+      "backend_capability_available": "custom switch_model is LOG-ONLY (no host handler); environment_switch host cap exists but has NO route",
+      "current_clicks_estimate": 1,
+      "notes": "handler SideBar.tsx:42 fires empty payload {} + local notice; no model chooser, no target model"
+    },
+    "statusbar.branch_item_main": {
+      "surface": "StatusBar.tsx",
+      "name": "Branch item ('main')",
+      "file": "app/src/shell/StatusBar.tsx:27",
+      "wired_to": "none/dead",
+      "depth": "dead",
+      "backend_capability_available": "none wired; workspace_repo host cap exists backend-only, no route",
+      "current_clicks_estimate": 0,
+      "notes": "<button> with no onClick; branch label hardcoded 'main' ignoring home.workspace.branch"
+    },
+    "statusbar.problems_counter_0_errors_0_warnings": {
+      "surface": "StatusBar.tsx",
+      "name": "Problems counter (0 errors / 0 warnings)",
+      "file": "app/src/shell/StatusBar.tsx:31",
+      "wired_to": "none/dead",
+      "depth": "mock",
+      "backend_capability_available": "diagnostics projection is FE-registry only (wire.ts:141), no backend emitter",
+      "current_clicks_estimate": 0,
+      "notes": "hardcoded 0/0 spans, never bound to store diagnostics"
+    },
+    "statetimeline.step_dots_scrub_to_state": {
+      "surface": "StateTimeline.tsx",
+      "name": "Step dots (scrub to state)",
+      "file": "app/src/shell/StateTimeline.tsx:44",
+      "wired_to": "scrub_to_event",
+      "depth": "backend-unwired",
+      "backend_capability_available": "scrub_to_event intent is LOG-ONLY (commands.rs:138); time-travel is FE/replay-driven; host scrub_to_event method has NO route",
+      "current_clicks_estimate": 1,
+      "notes": "handler scrub() line 21; file header says backend snapshots state in plan 2; keyed on tool call_id as event_id"
+    },
+    "statetimeline.live_return_to_latest": {
+      "surface": "StateTimeline.tsx",
+      "name": "'live' (return to latest)",
+      "file": "app/src/shell/StateTimeline.tsx:51",
+      "wired_to": "local-only",
+      "depth": "appropriate-as-is",
+      "backend_capability_available": "none (pure shell chrome)",
+      "current_clicks_estimate": 1,
+      "notes": "Deselect scrub, return to newest state"
+    },
+    "statetimeline.fork_from_here": {
+      "surface": "StateTimeline.tsx",
+      "name": "'fork from here'",
+      "file": "app/src/shell/StateTimeline.tsx:53",
+      "wired_to": "fork_session",
+      "depth": "backend-unwired",
+      "backend_capability_available": "fork_session intent IS host-handled (spawn_fork_session, host.rs:324-330,406-408) + session_forked UiEvent; the FE, not the host, is the plan-2 gap",
+      "current_clicks_estimate": 1,
+      "notes": "handler forkHere() line 25; same plan-2 backend gap as scrub"
+    },
+    "chat.chat_composer_attach_button": {
+      "surface": "Chat.tsx",
+      "name": "Chat composer: Attach button",
+      "file": "app/src/surfaces/Chat.tsx:154",
+      "wired_to": "none/dead",
+      "depth": "dead",
+      "backend_capability_available": "none wired",
+      "current_clicks_estimate": 0,
+      "notes": "button has no onClick; only toggles disabled on !ready"
+    },
+    "chat.chat_composer_textarea_enter_submits": {
+      "surface": "Chat.tsx",
+      "name": "Chat composer: textarea (Enter submits)",
+      "file": "app/src/surfaces/Chat.tsx:157",
+      "wired_to": "submit_turn",
+      "depth": "real-deep",
+      "backend_capability_available": "submit_turn intent -> spawn_submit_turn_generation (host.rs:379-381), fe_reachable yes; attachments field exists but FE drops it",
+      "current_clicks_estimate": 1,
+      "notes": "submit() Chat.tsx:50 -> intent.submitTurn(sessionId,text), no attachments"
+    },
+    "chat.chat_composer_voice_mic_record_toggle": {
+      "surface": "Chat.tsx",
+      "name": "Chat composer: Voice mic (record toggle)",
+      "file": "app/src/surfaces/Chat.tsx:172",
+      "wired_to": "local-only",
+      "depth": "mock",
+      "backend_capability_available": "none (no transcription route; no host STT capability)",
+      "current_clicks_estimate": 1,
+      "notes": "MediaRecorder captures real audio then discarded; only a transcribing locally notice, nothing sent/transcribed"
+    },
+    "chat.chat_composer_send_queue_turn": {
+      "surface": "Chat.tsx",
+      "name": "Chat composer: Send / 'Queue turn'",
+      "file": "app/src/surfaces/Chat.tsx:182",
+      "wired_to": "submit_turn",
+      "depth": "misleading",
+      "backend_capability_available": "submit_turn intent (real); custom queue_turn is DECLARED but unused/dead (wire.ts:84)",
+      "current_clicks_estimate": 1,
+      "notes": "labeled Queue turn when live but onClick=submit fires submit_turn, not the registered custom queue_turn (wire.ts:84, never used)"
+    },
+    "steerbar.redirect_input_enter_fires": {
+      "surface": "SteerBar.tsx",
+      "name": "Redirect input (Enter fires)",
+      "file": "app/src/surfaces/chat/SteerBar.tsx:56",
+      "wired_to": "custom:redirect_run",
+      "depth": "real-deep",
+      "backend_capability_available": "custom redirect_run is LOG-ONLY (no host handler); turn/steer is UNBUILT end-to-end (rpc TurnSteer NotImplemented, InterruptHub Steer variant never signaled)",
+      "current_clicks_estimate": 1,
+      "notes": "onRedirect wired in Chat.tsx:59 -> custom redirect_run{run_id,text}"
+    },
+    "steerbar.steer_button": {
+      "surface": "SteerBar.tsx",
+      "name": "Steer button",
+      "file": "app/src/surfaces/chat/SteerBar.tsx:70",
+      "wired_to": "custom:redirect_run",
+      "depth": "real-deep",
+      "backend_capability_available": "custom redirect_run LOG-ONLY; turn/steer UNBUILT (mid-turn steering has no host effect)",
+      "current_clicks_estimate": 1,
+      "notes": "Send redirect text to running run"
+    },
+    "steerbar.resume_button": {
+      "surface": "SteerBar.tsx",
+      "name": "Resume button",
+      "file": "app/src/surfaces/chat/SteerBar.tsx:74",
+      "wired_to": "resume_run",
+      "depth": "real-deep",
+      "backend_capability_available": "resume_run intent -> InterruptHub clears buffered pause (commands.rs:95-98), fe_reachable yes",
+      "current_clicks_estimate": 1,
+      "notes": "onResume Chat.tsx:61"
+    },
+    "steerbar.pause_button": {
+      "surface": "SteerBar.tsx",
+      "name": "Pause button",
+      "file": "app/src/surfaces/chat/SteerBar.tsx:79",
+      "wired_to": "pause_run",
+      "depth": "real-deep",
+      "backend_capability_available": "pause_run intent -> InterruptHub Pause (commands.rs:92-94), fe_reachable yes",
+      "current_clicks_estimate": 1,
+      "notes": "onPause Chat.tsx:60"
+    },
+    "steerbar.cancel_button": {
+      "surface": "SteerBar.tsx",
+      "name": "Cancel button",
+      "file": "app/src/surfaces/chat/SteerBar.tsx:82",
+      "wired_to": "cancel_run",
+      "depth": "real-deep",
+      "backend_capability_available": "cancel_run intent -> InterruptHub Abort, fe_reachable yes",
+      "current_clicks_estimate": 1,
+      "notes": "onCancel Chat.tsx:62"
+    },
+    "conversation.per_codeblock_copy_button": {
+      "surface": "Conversation.tsx",
+      "name": "Per-codeblock Copy button",
+      "file": "app/src/surfaces/chat/Conversation.tsx:120",
+      "wired_to": "local-only",
+      "depth": "appropriate-as-is",
+      "backend_capability_available": "none (browser clipboard)",
+      "current_clicks_estimate": 1,
+      "notes": "injected into each <pre> via navigator.clipboard"
+    },
+    "structure.plancard_approve_plan": {
+      "surface": "structure.tsx",
+      "name": "PlanCard: Approve plan",
+      "file": "app/src/surfaces/chat/structure.tsx:52",
+      "wired_to": "custom:approve_plan",
+      "depth": "real-deep",
+      "backend_capability_available": "custom approve_plan is LOG-ONLY (no host handler); plan projection has no backend emitter (wire.ts:124)",
+      "current_clicks_estimate": 1,
+      "notes": "approvePlan Conversation.tsx:40; only shown when plan.awaiting_approval"
+    },
+    "structure.plancard_edit_step_inline_input": {
+      "surface": "structure.tsx",
+      "name": "PlanCard: Edit step (inline input)",
+      "file": "app/src/surfaces/chat/structure.tsx:143",
+      "wired_to": "custom:edit_plan_step",
+      "depth": "real-deep",
+      "backend_capability_available": "custom edit_plan_step is LOG-ONLY",
+      "current_clicks_estimate": 1,
+      "notes": "editStep Conversation.tsx:41; commit on Enter/blur"
+    },
+    "structure.plancard_reorder_step_up_down": {
+      "surface": "structure.tsx",
+      "name": "PlanCard: Reorder step up/down",
+      "file": "app/src/surfaces/chat/structure.tsx:170",
+      "wired_to": "custom:reorder_plan",
+      "depth": "real-deep",
+      "backend_capability_available": "custom reorder_plan is LOG-ONLY",
+      "current_clicks_estimate": 1,
+      "notes": "reorder Conversation.tsx:43; up 170 / down 175"
+    },
+    "structure.toolchip_row_expand_collapse": {
+      "surface": "structure.tsx",
+      "name": "ToolChip row: expand/collapse",
+      "file": "app/src/surfaces/chat/structure.tsx:198",
+      "wired_to": "local-only",
+      "depth": "appropriate-as-is",
+      "backend_capability_available": "none (display)",
+      "current_clicks_estimate": 1,
+      "notes": "Expand a tool call to show its call_id"
+    },
+    "structure.diffchiprow_open_file": {
+      "surface": "structure.tsx",
+      "name": "DiffChipRow: Open file",
+      "file": "app/src/surfaces/chat/structure.tsx:241",
+      "wired_to": "open_file",
+      "depth": "real-deep",
+      "backend_capability_available": "open_file intent is LOG-ONLY host-side (commands.rs:154); the FE editor performs the open",
+      "current_clicks_estimate": 1,
+      "notes": "openDiff Conversation.tsx:45 -> intent.openFile(path) + onOpenDiff chamber switch"
+    },
+    "structure.diffchiprow_review_fallback": {
+      "surface": "structure.tsx",
+      "name": "DiffChipRow: 'review' fallback",
+      "file": "app/src/surfaces/chat/structure.tsx:265",
+      "wired_to": "open_file",
+      "depth": "duplicate",
+      "backend_capability_available": "open_file intent (same as sibling); duplicate entry point",
+      "current_clicks_estimate": 1,
+      "notes": "calls same onOpen as file button; this branch is what actually renders since Conversation passes no onAccept/onReject"
+    },
+    "structure.diffchiprow_accept_reject_inline_chat": {
+      "surface": "structure.tsx",
+      "name": "DiffChipRow: Accept / Reject (inline chat)",
+      "file": "app/src/surfaces/chat/structure.tsx:257",
+      "wired_to": "accept_diff",
+      "depth": "dead",
+      "backend_capability_available": "accept_diff/reject_diff intents exist but are LOG-ONLY host-side (no apply path); buttons never mount anyway",
+      "current_clicks_estimate": 0,
+      "notes": "only rendered when onAccept&&onReject passed; Conversation.tsx:73 passes neither, so these never render in Executor/Home/Floating chat (accept 257 / reject 260)"
+    },
+    "structure.inlinegate_approve": {
+      "surface": "structure.tsx",
+      "name": "InlineGate: Approve",
+      "file": "app/src/surfaces/chat/structure.tsx:300",
+      "wired_to": "custom:approve_gate",
+      "depth": "real-deep",
+      "backend_capability_available": "custom approve_gate HOST-HANDLED (host.rs:296,386-388)",
+      "current_clicks_estimate": 1,
+      "notes": "approveGate Conversation.tsx:49; duplicate entry point to App overlay gate"
+    },
+    "structure.inlinegate_dismiss": {
+      "surface": "structure.tsx",
+      "name": "InlineGate: Dismiss",
+      "file": "app/src/surfaces/chat/structure.tsx:303",
+      "wired_to": "custom:deny_gate",
+      "depth": "real-deep",
+      "backend_capability_available": "custom deny_gate HOST-HANDLED (host.rs:296,389-391)",
+      "current_clicks_estimate": 1,
+      "notes": "denyGate Conversation.tsx:53"
+    },
+    "chatpane.resize_handle_drag_left_edge": {
+      "surface": "ChatPane.tsx",
+      "name": "Resize handle (drag left edge)",
+      "file": "app/src/shell/ChatPane.tsx:65",
+      "wired_to": "local-only",
+      "depth": "appropriate-as-is",
+      "backend_capability_available": "none (shell chrome)",
+      "current_clicks_estimate": 1,
+      "notes": "pointer-only, width persisted to localStorage"
+    },
+    "chatpane.new_chat_button": {
+      "surface": "ChatPane.tsx",
+      "name": "New chat button",
+      "file": "app/src/shell/ChatPane.tsx:79",
+      "wired_to": "none/dead",
+      "depth": "dead",
+      "backend_capability_available": "custom new_session IS host-handled (emit_new_session) but this control is not wired to it",
+      "current_clicks_estimate": 0,
+      "notes": "button has no onClick"
+    },
+    "chatpane.open_in_chat_pip": {
+      "surface": "ChatPane.tsx",
+      "name": "Open in Chat (pip)",
+      "file": "app/src/shell/ChatPane.tsx:83",
+      "wired_to": "local-only",
+      "depth": "appropriate-as-is",
+      "backend_capability_available": "none (shell chrome)",
+      "current_clicks_estimate": 1,
+      "notes": "Pop the conversation into the Chat chamber"
+    },
+    "chatpane.float_button": {
+      "surface": "ChatPane.tsx",
+      "name": "Float button",
+      "file": "app/src/shell/ChatPane.tsx:87",
+      "wired_to": "local-only",
+      "depth": "appropriate-as-is",
+      "backend_capability_available": "none (shell chrome)",
+      "current_clicks_estimate": 1,
+      "notes": "Undock Executor into a floating panel"
+    },
+    "chatpane.close_button": {
+      "surface": "ChatPane.tsx",
+      "name": "Close button",
+      "file": "app/src/shell/ChatPane.tsx:92",
+      "wired_to": "local-only",
+      "depth": "appropriate-as-is",
+      "backend_capability_available": "none (shell chrome)",
+      "current_clicks_estimate": 1,
+      "notes": "Close the Executor pane"
+    },
+    "floatingchat.header_drag_move": {
+      "surface": "FloatingChat.tsx",
+      "name": "Header drag (move)",
+      "file": "app/src/shell/FloatingChat.tsx:57",
+      "wired_to": "local-only",
+      "depth": "appropriate-as-is",
+      "backend_capability_available": "none (shell chrome)",
+      "current_clicks_estimate": 1,
+      "notes": "Drag the floating Executor by its header"
+    },
+    "floatingchat.new_chat_button": {
+      "surface": "FloatingChat.tsx",
+      "name": "New chat button",
+      "file": "app/src/shell/FloatingChat.tsx:69",
+      "wired_to": "none/dead",
+      "depth": "dead",
+      "backend_capability_available": "custom new_session IS host-handled but this control is not wired to it",
+      "current_clicks_estimate": 0,
+      "notes": "button has no onClick"
+    },
+    "floatingchat.open_in_chat_pip": {
+      "surface": "FloatingChat.tsx",
+      "name": "Open in Chat (pip)",
+      "file": "app/src/shell/FloatingChat.tsx:72",
+      "wired_to": "local-only",
+      "depth": "appropriate-as-is",
+      "backend_capability_available": "none (shell chrome)",
+      "current_clicks_estimate": 1,
+      "notes": "Pop into the Chat chamber"
+    },
+    "floatingchat.dock_button": {
+      "surface": "FloatingChat.tsx",
+      "name": "Dock button",
+      "file": "app/src/shell/FloatingChat.tsx:75",
+      "wired_to": "local-only",
+      "depth": "appropriate-as-is",
+      "backend_capability_available": "none (shell chrome)",
+      "current_clicks_estimate": 1,
+      "notes": "Dock the floating Executor to the side"
+    },
+    "floatingchat.close_button": {
+      "surface": "FloatingChat.tsx",
+      "name": "Close button",
+      "file": "app/src/shell/FloatingChat.tsx:78",
+      "wired_to": "local-only",
+      "depth": "appropriate-as-is",
+      "backend_capability_available": "none (shell chrome)",
+      "current_clicks_estimate": 1,
+      "notes": "Close the floating Executor"
+    },
+    "home.home_rail_chamber_tabs_chat_code": {
+      "surface": "Home.tsx",
+      "name": "Home rail: Chamber tabs Chat / Code",
+      "file": "app/src/surfaces/home/Home.tsx:110",
+      "wired_to": "local-only",
+      "depth": "appropriate-as-is",
+      "backend_capability_available": "none (shell chrome)",
+      "current_clicks_estimate": 1,
+      "notes": "Switch chamber from the home rail"
+    },
+    "home.home_rail_new_session": {
+      "surface": "Home.tsx",
+      "name": "Home rail: New session",
+      "file": "app/src/surfaces/home/Home.tsx:127",
+      "wired_to": "custom:new_session",
+      "depth": "real-deep",
+      "backend_capability_available": "custom new_session HOST-HANDLED emit_new_session (host.rs:346,451) + idle turn ProjectionPatch",
+      "current_clicks_estimate": 1,
+      "notes": "newSession() Home.tsx:82 = local startNewSession() + custom new_session intent"
+    },
+    "home.home_rail_artifacts_nav": {
+      "surface": "Home.tsx",
+      "name": "Home rail: 'Artifacts' nav",
+      "file": "app/src/surfaces/home/Home.tsx:130",
+      "wired_to": "local-only",
+      "depth": "misleading",
+      "backend_capability_available": "artifact/* RPC is NotImplemented (rpc.rs:417-419); no artifact store built",
+      "current_clicks_estimate": 1,
+      "notes": "onClick=onPopToCode (same as pip); label Artifacts does not open an artifacts view"
+    },
+    "home.home_rail_customize_nav": {
+      "surface": "Home.tsx",
+      "name": "Home rail: 'Customize' nav",
+      "file": "app/src/surfaces/home/Home.tsx:133",
+      "wired_to": "local-only",
+      "depth": "appropriate-as-is",
+      "backend_capability_available": "none (shell chrome)",
+      "current_clicks_estimate": 1,
+      "notes": "Open Settings"
+    },
+    "home.home_rail_recent_session_rows": {
+      "surface": "Home.tsx",
+      "name": "Home rail: Recent session rows",
+      "file": "app/src/surfaces/home/Home.tsx:143",
+      "wired_to": "custom:open_session",
+      "depth": "real-shallow",
+      "backend_capability_available": "custom open_session HOST-HANDLED spawn_open_session (host.rs:346,455-458), republishes recorded events; sessions projection has no backend emitter so the list is seeded",
+      "current_clicks_estimate": 1,
+      "notes": "openSession() Home.tsx:89; on mock replays via submit_turn, on live fires custom open_session{session_id}; sessions list is mock/seeded"
+    },
+    "home.home_stage_panel_switcher_tabs_terminal_diff_preview_tools_artifacts": {
+      "surface": "Home.tsx",
+      "name": "Home stage: Panel switcher tabs (Terminal/Diff/Preview/Tools/Artifacts)",
+      "file": "app/src/surfaces/home/Home.tsx:170",
+      "wired_to": "local-only",
+      "depth": "appropriate-as-is",
+      "backend_capability_available": "none (shell chrome)",
+      "current_clicks_estimate": 1,
+      "notes": "Toggle which side panel shows beside the conversation"
+    },
+    "home.diff_panel_hunk_accept_reject_via_hunkreview": {
+      "surface": "Home.tsx",
+      "name": "Diff panel hunk Accept / Reject (via HunkReview)",
+      "file": "app/src/surfaces/home/Home.tsx:69",
+      "wired_to": "accept_diff",
+      "depth": "real-shallow",
+      "backend_capability_available": "accept_diff/reject_diff intents are LOG-ONLY host-side (commands.rs:128-137, no host apply path); carries only {run_id,diff_id}, no hunk id",
+      "current_clicks_estimate": 1,
+      "notes": "onDiffAct Home.tsx:69-74 -> intent.acceptDiff/rejectDiff; applies status optimistically then sends; buttons in ide/HunkReview (a/r hotkeys); diff falls back to MOCK_DIFF on mock"
+    },
+    "homecomposer.worktree_chip": {
+      "surface": "HomeComposer.tsx",
+      "name": "'worktree' chip",
+      "file": "app/src/surfaces/home/HomeComposer.tsx:187",
+      "wired_to": "custom:create_worktree",
+      "depth": "real-shallow",
+      "backend_capability_available": "custom create_worktree HOST-HANDLED spawn_worktree_add (host.rs:346,447-449) runs raw git worktree add streamed; bypasses the git.worktree.add catalog tool",
+      "current_clicks_estimate": 1,
+      "notes": "createWorktree() line 157 fires intent + optimistic notice regardless of ack"
+    },
+    "homecomposer.create_pr_chip": {
+      "surface": "HomeComposer.tsx",
+      "name": "'Create PR' chip",
+      "file": "app/src/surfaces/home/HomeComposer.tsx:190",
+      "wired_to": "custom:create_pr",
+      "depth": "real-shallow",
+      "backend_capability_available": "custom create_pr is LOG-ONLY (no host handler); no PR host capability exists",
+      "current_clicks_estimate": 1,
+      "notes": "createPr() line 161 fires intent + optimistic opening pull request notice, no ack check"
+    },
+    "homecomposer.attachment_chip_remove_x": {
+      "surface": "HomeComposer.tsx",
+      "name": "Attachment chip remove (x)",
+      "file": "app/src/surfaces/home/HomeComposer.tsx:201",
+      "wired_to": "local-only",
+      "depth": "appropriate-as-is",
+      "backend_capability_available": "none (client staging state)",
+      "current_clicks_estimate": 1,
+      "notes": "Remove a staged attachment"
+    },
+    "homecomposer.composer_textarea_enter_submits": {
+      "surface": "HomeComposer.tsx",
+      "name": "Composer textarea (Enter submits)",
+      "file": "app/src/surfaces/home/HomeComposer.tsx:209",
+      "wired_to": "submit_turn",
+      "depth": "real-deep",
+      "backend_capability_available": "submit_turn intent (real); attachments dropped (submit omits staged File[])",
+      "current_clicks_estimate": 1,
+      "notes": "submit() line 146 -> intent.submitTurn(sessionId,text) WITHOUT attachments"
+    },
+    "homecomposer.permission_mode_cycle_ask_auto_bypass": {
+      "surface": "HomeComposer.tsx",
+      "name": "Permission mode cycle (Ask/Auto/Bypass)",
+      "file": "app/src/surfaces/home/HomeComposer.tsx:228",
+      "wired_to": "local-only",
+      "depth": "real-shallow",
+      "backend_capability_available": "none host-side; evaluate_tool_policy host cap exists backend-only with no route; permission mode never reaches the host",
+      "current_clicks_estimate": 1,
+      "notes": "onPermMode only sets client state; bypass drives App auto-approve (App.tsx:97), reset to ask on restart; never sent to host"
+    },
+    "homecomposer.add_context_menu": {
+      "surface": "HomeComposer.tsx",
+      "name": "Add context (+) menu",
+      "file": "app/src/surfaces/home/HomeComposer.tsx:232",
+      "wired_to": "local-only",
+      "depth": "appropriate-as-is",
+      "backend_capability_available": "none (menu chrome)",
+      "current_clicks_estimate": 1,
+      "notes": "Open the add-folder/attach-files menu"
+    },
+    "homecomposer.add_folder_menu_item": {
+      "surface": "HomeComposer.tsx",
+      "name": "'Add folder' menu item",
+      "file": "app/src/surfaces/home/HomeComposer.tsx:245",
+      "wired_to": "custom:open_folder",
+      "depth": "real-shallow",
+      "backend_capability_available": "custom open_folder HOST-HANDLED but recorded-only (host.rs:346,464); deep re-root owned by desktop shell; workspace_add_repo host cap is backend-only",
+      "current_clicks_estimate": 2,
+      "notes": "addFolder() line 54 -> Tauri dialog.open then custom open_folder{path}; on web/no-Tauri degrades to an info notice"
+    },
+    "homecomposer.attach_files_menu_item_hidden_file_input": {
+      "surface": "HomeComposer.tsx",
+      "name": "'Attach files' menu item + hidden file input",
+      "file": "app/src/surfaces/home/HomeComposer.tsx:249",
+      "wired_to": "local-only",
+      "depth": "backend-unwired",
+      "backend_capability_available": "submit_turn.attachments Vec<BlobRef> exists in the contract (api.rs:9-13) but the FE never populates it; no blob store route",
+      "current_clicks_estimate": 2,
+      "notes": "file input line 264; addFiles stages File[] and chips render, but submit() (line 153) omits attachments so files never reach the backend/blob store"
+    },
+    "homecomposer.voice_mic": {
+      "surface": "HomeComposer.tsx",
+      "name": "Voice mic",
+      "file": "app/src/surfaces/home/HomeComposer.tsx:274",
+      "wired_to": "local-only",
+      "depth": "mock",
+      "backend_capability_available": "none (no transcription route; no host STT capability)",
+      "current_clicks_estimate": 1,
+      "notes": "records via MediaRecorder then discards; only a transcribing locally notice"
+    },
+    "homecomposer.model_button_switch_model": {
+      "surface": "HomeComposer.tsx",
+      "name": "Model button (switch model)",
+      "file": "app/src/surfaces/home/HomeComposer.tsx:287",
+      "wired_to": "custom:switch_model",
+      "depth": "real-shallow",
+      "backend_capability_available": "custom switch_model is LOG-ONLY (second of three entry points); environment_switch host cap exists but no route",
+      "current_clicks_estimate": 1,
+      "notes": "switchModel() line 165 fires empty payload; no model chooser"
+    },
+    "homecomposer.effort_button_cycle_standard_extra_max": {
+      "surface": "HomeComposer.tsx",
+      "name": "Effort button (cycle Standard/Extra/Max)",
+      "file": "app/src/surfaces/home/HomeComposer.tsx:290",
+      "wired_to": "custom:switch_profile",
+      "depth": "real-shallow",
+      "backend_capability_available": "custom switch_profile is LOG-ONLY (no host handler)",
+      "current_clicks_estimate": 1,
+      "notes": "cycleEffort() line 166 sets local label + fires switch_profile{profile}"
+    },
+    "homecomposer.open_in_code_pip": {
+      "surface": "HomeComposer.tsx",
+      "name": "Open in Code (pip)",
+      "file": "app/src/surfaces/home/HomeComposer.tsx:293",
+      "wired_to": "local-only",
+      "depth": "appropriate-as-is",
+      "backend_capability_available": "none (shell chrome)",
+      "current_clicks_estimate": 1,
+      "notes": "Open the conversation in the Code chamber"
+    },
+    "homecomposer.send": {
+      "surface": "HomeComposer.tsx",
+      "name": "Send",
+      "file": "app/src/surfaces/home/HomeComposer.tsx:302",
+      "wired_to": "submit_turn",
+      "depth": "real-deep",
+      "backend_capability_available": "submit_turn intent (real); attachments dropped",
+      "current_clicks_estimate": 1,
+      "notes": "same submit(); attachments dropped"
+    },
+    "digest.range_tabs_all_30d_7d": {
+      "surface": "Digest.tsx",
+      "name": "Range tabs (All / 30d / 7d)",
+      "file": "app/src/surfaces/home/Digest.tsx:60",
+      "wired_to": "local-only",
+      "depth": "appropriate-as-is",
+      "backend_capability_available": "home.digest connector feeds data; range is a client slice",
+      "current_clicks_estimate": 1,
+      "notes": "heatmap data is mock/seeded from host digest"
+    },
+    "preview.reload": {
+      "surface": "Preview.tsx",
+      "name": "Reload",
+      "file": "app/src/surfaces/home/Preview.tsx:27",
+      "wired_to": "local-only",
+      "depth": "appropriate-as-is",
+      "backend_capability_available": "none (iframe)",
+      "current_clicks_estimate": 1,
+      "notes": "Force the preview iframe to reload"
+    },
+    "preview.url_input_enter_loads": {
+      "surface": "Preview.tsx",
+      "name": "URL input (Enter loads)",
+      "file": "app/src/surfaces/home/Preview.tsx:32",
+      "wired_to": "local-only",
+      "depth": "appropriate-as-is",
+      "backend_capability_available": "none (iframe)",
+      "current_clicks_estimate": 1,
+      "notes": "Type a local dev-server URL"
+    },
+    "preview.go": {
+      "surface": "Preview.tsx",
+      "name": "Go",
+      "file": "app/src/surfaces/home/Preview.tsx:43",
+      "wired_to": "local-only",
+      "depth": "appropriate-as-is",
+      "backend_capability_available": "none (iframe)",
+      "current_clicks_estimate": 1,
+      "notes": "Load the URL into the iframe"
+    },
+    "chatpanel.close_panel": {
+      "surface": "ChatPanel.tsx",
+      "name": "Close panel",
+      "file": "app/src/surfaces/home/ChatPanel.tsx:79",
+      "wired_to": "local-only",
+      "depth": "appropriate-as-is",
+      "backend_capability_available": "none (shell chrome)",
+      "current_clicks_estimate": 1,
+      "notes": "Close the active side panel"
+    },
+    "settings.close_x_backdrop_esc": {
+      "surface": "Settings.tsx",
+      "name": "Close (x / backdrop / Esc)",
+      "file": "app/src/surfaces/Settings.tsx:69",
+      "wired_to": "local-only",
+      "depth": "appropriate-as-is",
+      "backend_capability_available": "none (dialog chrome)",
+      "current_clicks_estimate": 1,
+      "notes": "Esc handler line 33, backdrop click line 57"
+    },
+    "settings.switch_model": {
+      "surface": "Settings.tsx",
+      "name": "'switch model'",
+      "file": "app/src/surfaces/Settings.tsx:78",
+      "wired_to": "custom:switch_model",
+      "depth": "real-shallow",
+      "backend_capability_available": "custom switch_model is LOG-ONLY (third entry point); no host model-switch capability wired",
+      "current_clicks_estimate": 1,
+      "notes": "switchModel() line 40 empty payload + notice; section exposes model/status/endpoint provenance rows; third switch_model entry point"
+    },
+    "settings.check_for_updates": {
+      "surface": "Settings.tsx",
+      "name": "'check for updates'",
+      "file": "app/src/surfaces/Settings.tsx:94",
+      "wired_to": "tauri-ipc:updater.check",
+      "depth": "real-shallow",
+      "backend_capability_available": "Tauri updater IPC (not a HIDE host capability); real only under desktop shell",
+      "current_clicks_estimate": 1,
+      "notes": "checkUpdates() line 48 -> checkForUpdate() (shell/updater.ts) via window.__TAURI__.updater; on web/dev degrades to managed by the desktop app"
+    },
+    "fleetview.keep_best": {
+      "surface": "FleetView.tsx",
+      "name": "'keep best'",
+      "file": "app/src/surfaces/fleet/FleetView.tsx:69",
+      "wired_to": "custom:focus_run",
+      "depth": "real-shallow",
+      "backend_capability_available": "custom focus_run is LOG-ONLY (no host handler); fleet_run host cap is backend-only (no route); fleet projection has no backend emitter",
+      "current_clicks_estimate": 1,
+      "notes": "keep() line 54 fires focus_run{run_id}; fleet runs are optimistically seeded (App/mock), not real forks yet (plan 2)"
+    },
+    "fleetview.stop": {
+      "surface": "FleetView.tsx",
+      "name": "'stop'",
+      "file": "app/src/surfaces/fleet/FleetView.tsx:72",
+      "wired_to": "cancel_run",
+      "depth": "real-deep",
+      "backend_capability_available": "cancel_run intent -> InterruptHub Abort, fe_reachable yes",
+      "current_clicks_estimate": 1,
+      "notes": "stop() line 55 -> intent.cancelRun(run.id); disabled unless active"
+    },
+    "codeactions.explain_selection": {
+      "surface": "CodeActions.tsx",
+      "name": "Explain selection",
+      "file": "app/src/surfaces/ide/CodeActions.tsx:57",
+      "wired_to": "submit_turn",
+      "depth": "real-deep",
+      "backend_capability_available": "submit_turn intent (real) -> agent turn; agent may dispatch fs.read/search.text to answer",
+      "current_clicks_estimate": 2,
+      "notes": "popover reveals on editor selection (Editor.tsx onDidChangeCursorSelection L219); menu keyboard focus/Up/Down/Enter"
+    },
+    "codeactions.refactor_selection": {
+      "surface": "CodeActions.tsx",
+      "name": "Refactor selection",
+      "file": "app/src/surfaces/ide/CodeActions.tsx:60",
+      "wired_to": "custom:inline_edit",
+      "depth": "real-deep",
+      "backend_capability_available": "custom inline_edit is LOG-ONLY host-side (no handler); resulting edits would flow through edit.* catalog tools if the agent picks them up; diffs gated by accept_diff/reject_diff",
+      "current_clicks_estimate": 2,
+      "notes": "Dispatch custom inline_edit{instruction:refactor, selection} so agent proposes an inline edit"
+    },
+    "codeactions.write_tests_for_selection": {
+      "surface": "CodeActions.tsx",
+      "name": "Write tests for selection",
+      "file": "app/src/surfaces/ide/CodeActions.tsx:63",
+      "wired_to": "submit_turn",
+      "depth": "real-deep",
+      "backend_capability_available": "submit_turn intent (real) -> agent turn; agent may dispatch test.run / edit.* tools",
+      "current_clicks_estimate": 2,
+      "notes": "Dispatch submit_turn with 'Write tests for this code:' + selection, then toast + close"
+    },
+    "codeactions.dismiss_esc": {
+      "surface": "CodeActions.tsx",
+      "name": "Dismiss (Esc)",
+      "file": "app/src/surfaces/ide/CodeActions.tsx:35",
+      "wired_to": "local-only",
+      "depth": "appropriate-as-is",
+      "backend_capability_available": "none (popover chrome)",
+      "current_clicks_estimate": 1,
+      "notes": "header advertises a 4th action 'fork & try 3' via fleet_run but only explain/refactor/test render (doc drift)"
+    },
+    "editor.save_file_cmd_ctrl_s": {
+      "surface": "Editor.tsx",
+      "name": "Save file (Cmd/Ctrl+S)",
+      "file": "app/src/surfaces/ide/Editor.tsx:211",
+      "wired_to": "custom:save_file",
+      "depth": "real-deep",
+      "backend_capability_available": "connector fs.write_file performs the real write; custom save_file intent is LOG-ONLY (notification only)",
+      "current_clicks_estimate": 1,
+      "notes": "actual persistence is connector fs.write_file (L213); custom:save_file intent is only the agent notification"
+    },
+    "editor.diffreview_apply_all": {
+      "surface": "Editor.tsx",
+      "name": "DiffReview: apply all",
+      "file": "app/src/surfaces/ide/Editor.tsx:117",
+      "wired_to": "accept_diff",
+      "depth": "real-deep",
+      "backend_capability_available": "accept_diff intent validated + logged but LOG-ONLY host-side (no host apply path, commands.rs:128-132)",
+      "current_clicks_estimate": 1,
+      "notes": "keyboard Tab (onKeyDown L83-87), suppressed while editing Monaco hidden textarea; diff fed by real projection_patch{diff}"
+    },
+    "editor.diffreview_reject": {
+      "surface": "Editor.tsx",
+      "name": "DiffReview: reject",
+      "file": "app/src/surfaces/ide/Editor.tsx:116",
+      "wired_to": "reject_diff",
+      "depth": "real-deep",
+      "backend_capability_available": "reject_diff intent LOG-ONLY host-side (commands.rs:133-137)",
+      "current_clicks_estimate": 1,
+      "notes": "keyboard Esc (onKeyDown L89)"
+    },
+    "editor.diffpane_inline_side_by_side_view_toggle": {
+      "surface": "Editor.tsx",
+      "name": "DiffPane: inline/side-by-side view toggle",
+      "file": "app/src/surfaces/ide/Editor.tsx:262",
+      "wired_to": "local-only",
+      "depth": "appropriate-as-is",
+      "backend_capability_available": "none (Monaco view option)",
+      "current_clicks_estimate": 1,
+      "notes": "legitimately client-only view state; drives the Monaco option"
+    },
+    "hunkreview.accept_hunk": {
+      "surface": "HunkReview.tsx",
+      "name": "Accept hunk",
+      "file": "app/src/surfaces/ide/HunkReview.tsx:270",
+      "wired_to": "accept_diff",
+      "depth": "misleading",
+      "backend_capability_available": "accept_diff intent LOG-ONLY host-side; edit_hunk custom name DECLARED but unused (wire.ts:82); no per-hunk host granularity",
+      "current_clicks_estimate": 1,
+      "notes": "per-hunk gesture but accept_diff carries NO hunk id -> accepting one hunk fires whole-diff accept; a 2nd hunk re-fires the same accept_diff (duplicate); contract edit_hunk (wire.ts L82) never wired; keys a / Cmd+Enter"
+    },
+    "hunkreview.reject_hunk": {
+      "surface": "HunkReview.tsx",
+      "name": "Reject hunk",
+      "file": "app/src/surfaces/ide/HunkReview.tsx:271",
+      "wired_to": "reject_diff",
+      "depth": "misleading",
+      "backend_capability_available": "reject_diff intent LOG-ONLY host-side; no per-hunk host granularity",
+      "current_clicks_estimate": 1,
+      "notes": "same whole-diff granularity problem; reject_diff has no per-hunk target; keys r / Cmd+Backspace/Delete"
+    },
+    "hunkreview.select_hunk_j_k_click": {
+      "surface": "HunkReview.tsx",
+      "name": "Select hunk (j/k, click)",
+      "file": "app/src/surfaces/ide/HunkReview.tsx:220",
+      "wired_to": "local-only",
+      "depth": "appropriate-as-is",
+      "backend_capability_available": "none (local selection state)",
+      "current_clicks_estimate": 1,
+      "notes": "click target is a bare div onClick (not focusable); full keyboard drive via j/k"
+    },
+    "explorer.filter_search_input": {
+      "surface": "Explorer.tsx",
+      "name": "Filter / search input",
+      "file": "app/src/surfaces/ide/Explorer.tsx:108",
+      "wired_to": "connector:code_index.search",
+      "depth": "real-deep",
+      "backend_capability_available": "code_index.search connector (real); backend semantic search is DEFERRED_MODEL_REQUIRED, literal item/list search exists via rpc but FE-dark",
+      "current_clicks_estimate": 1,
+      "notes": "not an Intent, a connector call; mock code_index returns [] so mock shows local filename matches"
+    },
+    "explorer.clear_filter_x": {
+      "surface": "Explorer.tsx",
+      "name": "Clear filter (x)",
+      "file": "app/src/surfaces/ide/Explorer.tsx:117",
+      "wired_to": "local-only",
+      "depth": "appropriate-as-is",
+      "backend_capability_available": "none (client state)",
+      "current_clicks_estimate": 1,
+      "notes": "setQuery('') clears the filter and restores the tree"
+    },
+    "explorer.open_file_row": {
+      "surface": "Explorer.tsx",
+      "name": "Open file row",
+      "file": "app/src/surfaces/ide/Explorer.tsx:178",
+      "wired_to": "open_file",
+      "depth": "real-deep",
+      "backend_capability_available": "open_file intent LOG-ONLY host-side; FE editor opens via connector fs.read_file",
+      "current_clicks_estimate": 1,
+      "notes": "row is a real <button> with roving tabindex; Enter/Space activate; tree is real fs.tree with MOCK_TREE fallback"
+    },
+    "explorer.expand_collapse_dir_row": {
+      "surface": "Explorer.tsx",
+      "name": "Expand/collapse dir row",
+      "file": "app/src/surfaces/ide/Explorer.tsx:54",
+      "wired_to": "local-only",
+      "depth": "appropriate-as-is",
+      "backend_capability_available": "none (client state)",
+      "current_clicks_estimate": 1,
+      "notes": "For a dir node: toggle the collapsed map (local); also ArrowRight/ArrowLeft"
+    },
+    "explorer.tree_keyboard_navigation": {
+      "surface": "Explorer.tsx",
+      "name": "Tree keyboard navigation",
+      "file": "app/src/surfaces/ide/Explorer.tsx:68",
+      "wired_to": "local-only",
+      "depth": "appropriate-as-is",
+      "backend_capability_available": "none (client state)",
+      "current_clicks_estimate": 1,
+      "notes": "ArrowUp/Down/Home/End move roving focus across visible rows"
+    },
+    "explorer.open_search_hit": {
+      "surface": "Explorer.tsx",
+      "name": "Open search hit",
+      "file": "app/src/surfaces/ide/Explorer.tsx:260",
+      "wired_to": "open_file",
+      "depth": "real-deep",
+      "backend_capability_available": "open_file intent LOG-ONLY host-side; carries optional line (api.rs:39-42)",
+      "current_clicks_estimate": 1,
+      "notes": "hit exposes path, :line, and a code preview snippet (match provenance)"
+    },
+    "terminal.run_command_enter": {
+      "surface": "Terminal.tsx",
+      "name": "Run command (Enter)",
+      "file": "app/src/surfaces/ide/Terminal.tsx:82",
+      "wired_to": "run_command",
+      "depth": "real-shallow",
+      "backend_capability_available": "run_command intent -> spawn_command_run -> exec_command_streamed (host.rs:644-673,3578) runs argv UNSANDBOXED (bypasses shell.run catalog tool), dangerous_command SecurityGate + cwd .. check only; streams tool_progress",
+      "current_clicks_estimate": 1,
+      "notes": "dispatch + ack are real but NO live stdout stream; output only appears via the separate tool_progress echo (L116-127); pty_input/pty_resize custom names defined but never used"
+    },
+    "terminal.abandon_line_ctrl_c": {
+      "surface": "Terminal.tsx",
+      "name": "Abandon line (Ctrl+C)",
+      "file": "app/src/surfaces/ide/Terminal.tsx:93",
+      "wired_to": "local-only",
+      "depth": "appropriate-as-is",
+      "backend_capability_available": "none (local line editor)",
+      "current_clicks_estimate": 1,
+      "notes": "Ctrl+C clears the in-progress input line and reprints the prompt (local line editor)"
+    },
+    "contextstack.snapshot_state": {
+      "surface": "ContextStack.tsx",
+      "name": "Snapshot state",
+      "file": "app/src/surfaces/ContextStack.tsx:62",
+      "wired_to": "none/dead",
+      "depth": "mock",
+      "backend_capability_available": "state/save RPC is NotImplemented (rpc.rs:402-408); durable state-capsule model not built; checkpoint_create host cap exists (via-rpc/custom) but this control is not wired to it",
+      "current_clicks_estimate": 0,
+      "notes": "no intent, no connector, toast only; nothing persisted"
+    },
+    "contextstack.fork_state": {
+      "surface": "ContextStack.tsx",
+      "name": "Fork state",
+      "file": "app/src/surfaces/ContextStack.tsx:70",
+      "wired_to": "custom:fleet_run",
+      "depth": "misleading",
+      "backend_capability_available": "custom fleet_run is LOG-ONLY host-side; state/fork RPC NotImplemented; fork_session host cap exists (via intent) but this control is not wired to it",
+      "current_clicks_estimate": 1,
+      "notes": "wired to a real intent but fleet_run spawns 2 agents on a text task, not the constant-size state memcpy the label promises"
+    },
+    "contextstack.save_skill": {
+      "surface": "ContextStack.tsx",
+      "name": "Save skill",
+      "file": "app/src/surfaces/ContextStack.tsx:79",
+      "wired_to": "none/dead",
+      "depth": "mock",
+      "backend_capability_available": "no host capability for skill-state save; state/save NotImplemented",
+      "current_clicks_estimate": 0,
+      "notes": "Claims to save state as a reusable skill; only pushNotice(saved as a skill state)"
+    },
+    "contextstack.load_skill_per_skill_x3": {
+      "surface": "ContextStack.tsx",
+      "name": "Load skill (per skill, x3)",
+      "file": "app/src/surfaces/ContextStack.tsx:115",
+      "wired_to": "none/dead",
+      "depth": "mock",
+      "backend_capability_available": "no host capability for skill-state load; state/load NotImplemented",
+      "current_clicks_estimate": 0,
+      "notes": "SKILLS is a hardcoded const (L21: refactor-mode, test-writing, this-repo style); rendered x3, no backend"
+    },
+    "contextstack.switch_model_profile": {
+      "surface": "ContextStack.tsx",
+      "name": "Switch model profile",
+      "file": "app/src/surfaces/ContextStack.tsx:135",
+      "wired_to": "custom:switch_profile",
+      "depth": "real-shallow",
+      "backend_capability_available": "custom switch_profile is LOG-ONLY host-side",
+      "current_clicks_estimate": 1,
+      "notes": "re-sends the CURRENT profile as the target, no picker/menu of alternatives; surfaces model id/arch/profile/sampling"
+    },
+    "contextstack.open_retrieved_file": {
+      "surface": "ContextStack.tsx",
+      "name": "Open retrieved file",
+      "file": "app/src/surfaces/ContextStack.tsx:167",
+      "wired_to": "open_file",
+      "depth": "real-deep",
+      "backend_capability_available": "open_file intent LOG-ONLY host-side; retrieval projection has no backend emitter (wire.ts:134)",
+      "current_clicks_estimate": 1,
+      "notes": "row shows path:range and relevance score"
+    },
+    "contextstack.pin_retrieved_span_toggle": {
+      "surface": "ContextStack.tsx",
+      "name": "Pin retrieved span (toggle)",
+      "file": "app/src/surfaces/ContextStack.tsx:174",
+      "wired_to": "custom:pin_span",
+      "depth": "real-deep",
+      "backend_capability_available": "custom pin_span/unpin_span is LOG-ONLY host-side; memory_* host domain (add/context/supersede) is backend-only with no route",
+      "current_clicks_estimate": 1,
+      "notes": "aria-pressed toggle; overlay reconciles when next manifest arrives (state.ts)"
+    },
+    "contextstack.mute_tool_output_toggle": {
+      "surface": "ContextStack.tsx",
+      "name": "Mute tool output (toggle)",
+      "file": "app/src/surfaces/ContextStack.tsx:204",
+      "wired_to": "custom:pin_span",
+      "depth": "real-shallow",
+      "backend_capability_available": "custom pin_span LOG-ONLY; no dedicated mute host capability (toggle_confidence declared-but-unused)",
+      "current_clicks_estimate": 1,
+      "notes": "overloads pin_span/unpin_span for muting; no dedicated mute custom name; only payload key mute_tool disambiguates"
+    },
+    "contextstack.evict_memory_toggle": {
+      "surface": "ContextStack.tsx",
+      "name": "Evict memory (toggle)",
+      "file": "app/src/surfaces/ContextStack.tsx:231",
+      "wired_to": "custom:unpin_span",
+      "depth": "real-shallow",
+      "backend_capability_available": "custom unpin_span LOG-ONLY; memory_supersede/memory_record_outcome host caps exist backend-only with no route",
+      "current_clicks_estimate": 1,
+      "notes": "overloads pin_span/unpin_span for eviction; no dedicated evict custom name; shows confidence score"
+    },
+    "contextstack.inject_memory_note": {
+      "surface": "ContextStack.tsx",
+      "name": "Inject memory note",
+      "file": "app/src/surfaces/ContextStack.tsx:245",
+      "wired_to": "custom:pin_span",
+      "depth": "real-deep",
+      "backend_capability_available": "custom pin_span LOG-ONLY; memory_add host cap exists backend-only with no route",
+      "current_clicks_estimate": 1,
+      "notes": "NoteField primitive lives in contextstack/parts.tsx L188"
+    },
+    "contextstack.pin_dropped_span_toggle": {
+      "surface": "ContextStack.tsx",
+      "name": "Pin dropped span (toggle)",
+      "file": "app/src/surfaces/ContextStack.tsx:268",
+      "wired_to": "custom:pin_span",
+      "depth": "real-deep",
+      "backend_capability_available": "custom pin_span LOG-ONLY host-side",
+      "current_clicks_estimate": 1,
+      "notes": "shows would_be_tokens and drop reason"
+    },
+    "parts.context_stratum_expand_collapse_section": {
+      "surface": "parts.tsx",
+      "name": "Context Stratum: expand/collapse section",
+      "file": "app/src/surfaces/contextstack/parts.tsx:106",
+      "wired_to": "local-only",
+      "depth": "appropriate-as-is",
+      "backend_capability_available": "none (display primitive)",
+      "current_clicks_estimate": 1,
+      "notes": "reusable primitive instantiated ~8x in ContextStack (Skills, Model, Retrieved, Tools, Memory, Dropped, Tests & state, Current action); counted once"
+    }
+  }
+}

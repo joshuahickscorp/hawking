@@ -1,0 +1,39 @@
+{
+  "schema": "hawking.consolidate.fit_kernel_v3_review.v1",
+  "at": "2026-07-26T06:05:00Z",
+  "subject": "Fused Rust fit kernel (v3_fused_rust) -- the encode half of the Gravity PQ codec",
+  "status": "VERIFIED BY CLAUDE. Benchmarked and tested independently. Not merged; opt-in only.",
+  "measured_speedup": {
+    "paired": "6.86x",
+    "method": "Rust bench 0.2002 s against a Python v1 baseline of 1.373 s RE-MEASURED MOMENTS LATER UNDER THE SAME LOAD. Both arms contended by the live PASS3 pack.",
+    "unpaired_number_not_used": "7.99x, against the 1.6 s baseline measured hours earlier under different load. Reported here only to name it and set it aside -- the paired number is the honest one.",
+    "throughput": "321.8 GFLOP/s on 64.42 GFLOP of N*K*2D assignment work, against roughly 44 GFLOP/s for the torch path",
+    "within_predicted_band": "Yes. The survey predicted 5-8x with a 12x stretch and explicitly refused 10-30x. 6.86x lands inside it."
+  },
+  "the_predicted_floor_was_fused_away": {
+    "prediction": "Both Claude and the reclamation survey expected index_add_ -- the centroid update, a full pass over v every iteration -- to become the Amdahl floor once assignment got cheap.",
+    "measured_profile": "accumulate (fused assign + sum) 99.9 percent, pure centroid mean 0.0 percent, init 0.1 percent.",
+    "why": "The implementation fuses assignment and accumulation into one pass: the running argmin and the centroid sum are computed together, so there is no separate centroid pass to be bounded by.",
+    "consequence": "The remaining cost is irreducible assignment arithmetic -- N*K dots plus a running min -- not a distinct update phase. Further gains need a tighter microkernel or Metal, not more Lloyd fusion. This is a better outcome than the analysis predicted, and it supersedes that part of the reasoning."
+  },
+  "safety_of_the_running_pack": {
+    "requirement": "PASS3 was live throughout, importing tools/condense/gravity_forge.py, with spawned workers re-importing from disk.",
+    "outcome": "Untouched. The work stayed in its own worktree; the live working tree shows gravity_forge.py and glm52_pack.py clean; the pack advanced from 152 to 158 shards during the lane with 0 PACK_ERROR rows.",
+    "surface_in_gravity_forge": "24 lines -- the dispatch branch only. The kernel itself is a new crate (tools/fit_kernel_v3, 772 lines) plus a 181-line Python binding."
+  },
+  "correctness": {
+    "opt_in": "FIT_KERNEL still defaults to v1_full_distance; v3_fused_rust is registered in FIT_KERNELS and never selected implicitly.",
+    "deterministic": "Same input and seed produce an identical codebook.",
+    "reference_checked": "The fused lean argmin matches a naive reference on small tie-free inputs.",
+    "byte_identity_with_v1": "Ruled out by design, same class as the documented v1-to-v2 ULP tie divergence. v3 additionally uses a different init RNG (splitmix64 partial Fisher-Yates) rather than torch randperm, so trajectories differ deliberately.",
+    "oracle_discipline": "v1 remains the quality oracle. The correctness question is whether reconstruction error is statistically indistinguishable, NOT whether bytes match.",
+    "tests_run_by_claude": "cargo test -p fit_kernel_v3 --release: 7 passed. pytest test_fit_kernel_v3.py + test_glm52_pack_atomic.py: 10 passed."
+  },
+  "what_is_not_done": [
+    "Metal path -- CPU NEON only, deferred",
+    "A statistical recon-error comparison against v1 across many real tensors. Determinism and small-input reference agreement are proven; distributional quality equivalence is not yet.",
+    "Any use in a real pack. This is for Math-Frozen, which starts clean; it must never be flipped on under the sealed Math-Preserve run."
+  ],
+  "evidence_level": "MEASURED_PAIRED_PLUS_TESTS_RE_RUN",
+  "not_evidence_of": "quality equivalence with v1 across the real tensor distribution, or any end-to-end pack speedup"
+}

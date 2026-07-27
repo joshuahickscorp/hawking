@@ -1,0 +1,133 @@
+{
+  "schema": "hawking.numeric_parity.v2_1.harness_receipt",
+  "at": "2026-07-26T23:50:00Z",
+  "canonical_contract": "NUMERIC_PARITY_V2_1.md",
+  "reclassification": "NUMERIC_GATE_INSUFFICIENTLY_CONDITIONED",
+  "status": {
+    "harness": "BUILT",
+    "metric_unit_tests": "PASS (11/11, no Metal)",
+    "device_lm_head_verdict": "AWAITING_CONTROLLER_DEVICE_RUN",
+    "sync_cost_ledger_rerun": "AWAITING_CONTROLLER_DEVICE_RUN",
+    "note": "Executor sandbox has no Metal device. No parity verdict and no per-token timing were measured in this lane."
+  },
+  "module": {
+    "path": "crates/hawking-core/src/numeric_parity.rs",
+    "public_api": [
+      "SCHEMA / RECLASSIFICATION",
+      "Bounds::{default, logits, continuous_only}",
+      "absolute_error_cutoff(reference) — data-derived; rule stated on every score",
+      "matvec_bf16_f64_authority(weight_le, cols, x) — FP64 ground truth",
+      "score_against_f64(candidate, reference, bounds, backend)",
+      "score_pair(host, device, reference, bounds)",
+      "format_score_line / ulp_distribution / relative_l2 / cosine / kl_softmax_logits",
+      "greedy_argmax_* / top_k_indices_* — exact discrete decisions"
+    ]
+  },
+  "metrics": [
+    {
+      "name": "absolute_error_near_zero",
+      "gate": true,
+      "justification": "Relative error is undefined in practice when |ref| is denormal-scale relative to the bulk of the vector. That pathology produced the 3.23e-3 V2 false reject."
+    },
+    {
+      "name": "relative_l2_full_vector",
+      "gate": true,
+      "headline": true,
+      "justification": "Immune to a single tiny element dominating a max-relative scan; measures overall agreement of the complete logit vector."
+    },
+    {
+      "name": "meaningful_scale_max_relative",
+      "gate": true,
+      "justification": "Same 1e-5 intent as V2, applied only where |ref| ≥ abs_cutoff so the number is a measurement."
+    },
+    {
+      "name": "ulp_distribution_median_p95_p99_max",
+      "gate": false,
+      "justification": "Reported as a distribution, never as a lone max. A large tail on a pass is information about reduction order, not a silent reject."
+    },
+    {
+      "name": "cosine_similarity",
+      "gate": true,
+      "justification": "Direction of the logit vector; catches global scale/shape drift that relative L2 also sees from another angle."
+    },
+    {
+      "name": "kl_softmax",
+      "gate": true,
+      "when": "Bounds.require_kl (default for logits)",
+      "justification": "Logits are a pre-softmax distribution; KL measures decision-relevant mass, not just Euclidean distance."
+    },
+    {
+      "name": "exact_topk_and_greedy_argmax",
+      "gate": true,
+      "tolerance": "NONE",
+      "justification": "Discrete decisions are the real contract. Continuous arithmetic may drift within bounds; a different token or top-k set is a different model."
+    },
+    {
+      "name": "diagnostic_max_scalar_rel_all",
+      "gate": false,
+      "justification": "Retains the V2 scalar so a re-run can show why V2 misfired; never used to reject under V2.1."
+    }
+  ],
+  "absolute_error_cutoff_rule": "max(1e-30, 1e-6 * median(|reference| over finite elements)); stated on every BackendScore",
+  "fp64_authority": {
+    "function": "matvec_bf16_f64_authority",
+    "rule": "Widen little-endian bf16 → f64 via f32 bit-widen then promote; left-to-right f64 Σ per row. Host f32 and device f32 are both candidates, never the oracle."
+  },
+  "default_bounds_logits": {
+    "max_abs_near_zero": 1e-4,
+    "max_relative_l2": 1e-5,
+    "max_meaningful_rel": 1e-5,
+    "min_cosine": 0.9999999,
+    "max_kl": 1e-6,
+    "require_kl": true,
+    "top_k": 5
+  },
+  "fixtures": {
+    "device_suite": "crates/hawking-core/tests/gravity_glm_lm_head_device_parity.rs",
+    "activation_regime": "Post-RMSNorm-like O(1) activations (ramp, mod17, ones, zeros, block3, sin, half, mod31, gaussish). Not a 50-order synthetic span.",
+    "weight_regime": "Unit-scale bf16 exponents (exp in [120,134]); replaces the prior bits%0x7F00 generator that freely produced the ill-conditioned span.",
+    "sealed_reference_for_scale": {
+      "path": "crates/hawking-core/tests/fixtures/gravity_glm/ref_logits.f32",
+      "n": 4096,
+      "abs_median_approx": 0.54,
+      "range_approx": [-2.60, 2.60],
+      "note": "Tiny GLM fixture logits confirm O(1) is the realistic regime. Full-vocab sealed flagship activations are not loaded in the unit suite (no artifact residency in the sandbox); shapes are reduced (64×32, 257×17, 16×64) for kernel correctness."
+    }
+  },
+  "commands": {
+    "metric_unit_tests_no_metal": "cargo test -p hawking-core --lib numeric_parity -- --nocapture",
+    "device_lm_head_v21": "cargo test -p hawking-core --test gravity_glm_lm_head_device_parity -- --nocapture",
+    "sync_cost_ledger_current_path": "HAWKING_COST_LEDGER=1 cargo run --release -p hawking-core --example gravity_glm_cost_ledger -- --context 4 --warmup 8 --ledger-tokens 16 --out reports/base_runtime/tg_cost_ledger_v21_postmemo.json",
+    "sync_derivation_after_ledger": "From the ledger JSON: syncs_per_token = aggregate.counters_mean.synchronization_points; wall_ms = aggregate.wall_us.mean / 1000; ms_per_sync = wall_ms / syncs_per_token. Do NOT use 6446 ms or any figure derived from it."
+  },
+  "timing_hygiene": {
+    "void": {
+      "figure": "~5.5 ms per synchronization",
+      "derived_from": "6446 ms pre-memoization wall / static sync count",
+      "status": "VOID — must not be carried forward"
+    },
+    "current_path_contract_ms": 2518,
+    "current_path_note": "NUMERIC_PARITY_V2_1.md states the post-memoization path is 2,518 ms. This lane did not re-measure. Any per-synchronization cost must be re-derived from a fresh cost-ledger run against that path.",
+    "prior_ledger_observation_not_current_derivation": {
+      "source": "HAWKING_TG_COST_LEDGER.json",
+      "wall_ms_mean": 2404.8,
+      "synchronization_points_mean": 624,
+      "note": "Historical post-memoization-ish ledger. Not re-asserted as the current cost-per-sync; controller must re-run."
+    }
+  },
+  "static_reasoning_about_lm_head": {
+    "label": "AWAITING_DEVICE_RUN — not a measured verdict",
+    "expectation": [
+      "With unit-scale weights and O(1) activations, the denormal-scale relative blow-up that sank V2 should not dominate.",
+      "Host f32 left-to-right accumulate and device sequential-row gemv_native_bf16_seq should both sit within ~1e-5 relative L2 of the f64 authority for small K, and within reduction-order ULP tails.",
+      "Greedy argmax and exact top-5 must match the f64 reference exactly; any mismatch is a real reject.",
+      "If the device only fails the V2 diagnostic_max_scalar_rel_all while passing relative_l2 + meaningful_rel + discrete, that confirms the reclassification."
+    ]
+  },
+  "isolation": {
+    "default_resident_path": "untouched",
+    "tools_prometheus": "untouched",
+    "mop": "untouched",
+    "sealed_math_preserve": "untouched"
+  }
+}

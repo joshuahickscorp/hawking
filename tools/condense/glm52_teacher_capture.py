@@ -90,6 +90,10 @@ CALIBRATION_SPLITS = ("teacher_fit", "teacher_router", "teacher_doctor", "teache
                       "teacher_score", "teacher_holdout", "teacher_replication",
                       "teacher_protected", "teacher_longctx")
 DEFAULT_SPLIT = "teacher_fit"
+# Pooled mathematics-domain records across `glm52_corpus.TRAIN_PARTITIONS` -- see
+# `glm52_capture_program.math_calibration_batch`. Not in `CALIBRATION_SPLITS` because it
+# is not one partition; `calibration_ids` special-cases this exact name.
+MATH_CALIBRATION_SPLIT = "teacher_math"
 # Every tensor this forward needs fits well under this; o_proj at ~201 MB is the
 # largest.  The cap is what keeps "capture" from becoming "load the checkpoint".
 MAX_TENSOR_BYTES = 320 * 1024 * 1024
@@ -289,17 +293,18 @@ def calibration_ids(split: str, *, vocab_size: int, tokens: int = CALIBRATION_TO
     """
     import glm52_capture_program as program
 
-    if split not in program.SPLIT_PARTITIONS:
+    is_math = split == MATH_CALIBRATION_SPLIT
+    if not is_math and split not in program.SPLIT_PARTITIONS:
         raise TeacherCaptureError(
             f"unknown calibration split: {split!r}; "
-            f"expected one of {sorted(program.SPLIT_PARTITIONS)}")
+            f"expected one of {sorted(program.SPLIT_PARTITIONS)} or {MATH_CALIBRATION_SPLIT!r}")
     if vocab_size < program.corpus.TOKENIZER_VOCAB_SIZE:
         # A miniature fixture model cannot represent real token ids, and folding them into
         # its vocabulary would produce text that is no longer text.  Fixtures get a clearly
         # labelled deterministic probe instead, and calibration_source records which path
         # ran so a fixture capsule can never be mistaken for evidence.
         return _fixture_probe(split, vocab_size=vocab_size, tokens=min(tokens, 8))
-    batch, _ = program.batch_for(split)
+    batch, _ = program.math_calibration_batch() if is_math else program.batch_for(split)
     if int(batch.max()) >= vocab_size:
         raise TeacherCaptureError("corpus produced a token id outside the official vocab")
     return np.asarray(batch[:, :tokens], dtype=np.int64)
@@ -388,6 +393,17 @@ def _layer_metrics(arrays: dict[str, np.ndarray]) -> dict[str, float]:
                 np.sqrt(np.sum(_finite(arrays["routed_expert_output"]) ** 2, dtype=np.float64))
             ),
         })
+    if "expert_contribution_l2" in arrays:
+        contribution = _finite(arrays["expert_contribution_l2"])
+        hit = np.asarray(arrays["expert_hit_count"])
+        hit_experts = hit > 0
+        metrics.update({
+            "experts_hit_this_batch": float(np.count_nonzero(hit_experts)),
+            "expert_contribution_l2_max": float(np.max(contribution)) if hit_experts.any() else 0.0,
+            "expert_contribution_l2_mean_over_hit": (
+                float(np.mean(contribution[hit_experts])) if hit_experts.any() else 0.0
+            ),
+        })
     return {key: value for key, value in sorted(metrics.items())}
 
 
@@ -404,6 +420,47 @@ def _router_margin(
     return (ordered[..., top_k - 1] - ordered[..., top_k]).astype(np.float32)
 
 
+def _expert_cartography_arrays(
+    per_expert: dict[int, dict[str, np.ndarray]], n_routed_experts: int
+) -> dict[str, np.ndarray]:
+    """Per-expert local sensitivity + co-selection, from what `routed_moe` already
+    computed before summing -- no second forward pass.
+
+    `contribution_l2[e]` is the L2 norm of exactly what would be subtracted from
+    this layer's routed output if expert `e` were zeroed, holding the router's
+    top-k choice fixed (LOCAL, fixed-routing -- not a re-routed causal ablation,
+    and not the aggregate output's norm delta, which is nonlinear in the summed
+    terms). `hit_count[e]` is how many of this batch's token-positions selected
+    it -- the same quantity as an activation-frequency proxy, and separately the
+    diagonal of `coselection_count`. `coselection_count[e1,e2]` is how many
+    token-positions selected both -- the "support halo": which other experts an
+    expert's function is typically exercised alongside, at this calibration's
+    (thin) statistical power.
+    """
+    contribution_l2 = np.zeros(n_routed_experts, dtype=np.float32)
+    hit_count = np.zeros(n_routed_experts, dtype=np.int32)
+    coselection_count = np.zeros((n_routed_experts, n_routed_experts), dtype=np.int32)
+    token_experts: dict[int, list[int]] = {}
+    for expert, data in per_expert.items():
+        weighted = np.asarray(data["weighted_output"], dtype=np.float32)
+        contribution_l2[expert] = float(
+            np.sqrt(np.sum(weighted.astype(np.float64) ** 2))
+        )
+        tokens = np.asarray(data["tokens"]).ravel().tolist()
+        hit_count[expert] = len(tokens)
+        for token in tokens:
+            token_experts.setdefault(int(token), []).append(expert)
+    for experts in token_experts.values():
+        for e1 in experts:
+            for e2 in experts:
+                coselection_count[e1, e2] += 1
+    return {
+        "expert_contribution_l2": contribution_l2,
+        "expert_hit_count": hit_count,
+        "expert_coselection_count": coselection_count,
+    }
+
+
 def capture_layer(
     hidden: np.ndarray,
     source: Any,
@@ -411,8 +468,16 @@ def capture_layer(
     config: dict[str, Any],
     previous_topk: np.ndarray | None,
     cache: reference.ReferenceCache,
+    *,
+    retain_per_expert: bool = False,
 ) -> tuple[np.ndarray, np.ndarray, dict[str, np.ndarray]]:
-    """Run one real block and keep exactly the bounded evidence it produced."""
+    """Run one real block and keep exactly the bounded evidence it produced.
+
+    `retain_per_expert` adds three fixed-size per-expert arrays on a sparse
+    layer (see `_expert_cartography_arrays`); every other array and the
+    arithmetic that produces them is unchanged, so a caller that never asks
+    for it gets byte-identical capsules to before this existed.
+    """
     # [B,S], not [1,S]: the RoPE trig table is built per batch row and the reference
     # rejects a batch-1 position table against a batch-N query, which is what a real
     # multi-record calibration batch produces.
@@ -430,6 +495,7 @@ def capture_layer(
         mlp_type=mlp_type,
         indexer_type=indexer_type,
         previous_topk=previous_topk,
+        retain_per_expert=retain_per_expert,
     )
     attention = trace["attention"]
     arrays: dict[str, np.ndarray] = {
@@ -456,6 +522,10 @@ def capture_layer(
             "shared_expert_output": np.asarray(mlp["shared_output"], dtype=np.float32),
             "routed_expert_output": np.asarray(mlp["routed_output"], dtype=np.float32),
         })
+        if retain_per_expert and "per_expert" in mlp:
+            arrays.update(_expert_cartography_arrays(
+                mlp["per_expert"], int(config["n_routed_experts"])
+            ))
     return output, topk, arrays
 
 
@@ -519,6 +589,7 @@ def capture_layers(
     schedule: dict[str, Any] | None = None,
     config: dict[str, Any] | None = None,
     capsule_dir: Path | None = None,
+    retain_per_expert: bool = False,
 ) -> dict[str, Any]:
     """Capture, seal and ledger one contiguous layer run as a teacher capsule.
 
@@ -594,7 +665,8 @@ def capture_layers(
     metrics: dict[str, dict[str, float]] = {}
     for layer in layers:
         hidden, previous_topk, layer_arrays = capture_layer(
-            hidden, source, layer, config, previous_topk, cache
+            hidden, source, layer, config, previous_topk, cache,
+            retain_per_expert=retain_per_expert,
         )
         metrics[f"layer_{layer:02d}"] = _layer_metrics(layer_arrays)
         for key, value in layer_arrays.items():

@@ -1,0 +1,22 @@
+{
+  "schema": "hawking.gravity.tg_ledger_postmemo.v1",
+  "at": "2026-07-27T02:10:00Z",
+  "purpose": "Rerun the synchronization ledger against the CURRENT post-memoization path, per user directive. No figure derived from the 6,446 ms pre-memoization wall may carry forward.",
+  "wall_ms_per_token": 2339,
+  "attributed_fraction": 0.9999,
+  "buckets_ms": {"routed_experts": 695.9, "final_head_and_sampling": 634.5, "metal_synchronize_cpu_wait": 520.3, "attention_and_indexshare": 189.0, "packed_index_decode": 83.6, "routing": 80.0},
+  "counters": {"command_buffers_submitted": 624, "synchronization_points": 624, "active_bytes_read_gb": 10.46, "geometry_gb": 2.58, "overread_ratio": 4.05},
+  "corrected_per_synchronization_cost": {
+    "value_ms": 0.83,
+    "derivation": "metal_synchronize_cpu_wait 520.3 ms / 624 synchronizations",
+    "withdrawn_figures": [
+      {"value": "5.50 ms", "why_wrong": "divided a 6,446 ms PRE-memoization wall by the sync count -- wrong wall AND wrong numerator"},
+      {"value": "3.75 ms", "why_wrong": "printed by my own monitor as wall/syncs. Dividing TOTAL wall by sync count attributes every bucket to synchronization. Same error class as the first, caught before it was published."}
+    ],
+    "note": "Per-synchronization cost must come from the synchronization BUCKET, not from wall time. Twice now the convenient division produced a figure 4-7x too large."
+  },
+  "what_the_rerun_settles": "The earlier ledger at 2,404.8 ms was already post-memoization; only the 6,446 ms warm-run figure predated it. Bucket SHARES are stable across both runs -- experts ~29.7/29.8 percent, head ~26.2/27.1, sync ~22.9/22.2 -- so the attribution was never in doubt. What was wrong was my arithmetic on top of it.",
+  "revised_reading_of_the_synchronization_bucket": "At 0.83 ms per synchronization and 520.3 ms total, eliminating ALL 624 synchronizations saves 22.2 percent of the token. That is worth having and it is not the ladder. The head at 27.1 percent and the experts at 29.8 percent are each larger, and the 4.05x overread is a bandwidth floor underneath all three.",
+  "next_by_measured_share": ["final_head_and_sampling 27.1 percent -- clearest mechanism, BF16 resident + GPU blockwise logits/top-k/sampling, read back only the token", "the 10.46 GB overread -- gates every milestone below TG20", "routed_experts 29.8 percent -- largest, but real compute; attack via overread then fused waves", "metal_synchronize 22.2 percent -- the collapse, now correctly sized"],
+  "evidence_level": "MEASURED_GPU_TIMESTAMPS_99.99_PERCENT_ATTRIBUTED"
+}

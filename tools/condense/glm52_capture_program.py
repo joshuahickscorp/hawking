@@ -133,6 +133,60 @@ def membership_sha256(split: str) -> str:
     ).hexdigest()
 
 
+# The pinned corpus stratifies exactly one record per domain per partition (171 records /
+# 9 partitions / 15 domains), so a single split has exactly one "mathematics" record --
+# too thin to calibrate anything against. Math-Preserve pools every mathematics record
+# across `corpus.TRAIN_PARTITIONS` instead of widening the domain (blending "reasoning" or
+# "science" in would be *this module* redefining what the Math profile means, not a
+# measurement). That pool is 3 records, not 16 -- an honest constraint of the pinned
+# corpus, reported as such rather than padded with invented text.
+MATH_DOMAIN = "mathematics"
+
+
+def math_calibration_records() -> list:
+    _, records = _corpus()
+    chosen = [
+        record for record in records
+        if record.domain == MATH_DOMAIN and record.partition in corpus.TRAIN_PARTITIONS
+    ]
+    chosen.sort(key=lambda record: record.record_id)
+    return chosen
+
+
+def math_calibration_batch() -> tuple[np.ndarray, list[dict]]:
+    """Same shape/provenance contract as `batch_for`, pooled instead of single-partition."""
+    bundle, _ = _corpus()
+    rows, meta = [], []
+    for record in math_calibration_records():
+        text = record.context_window if record.context_rung_tokens else record.prompt
+        ids = list(corpus._encode(bundle, text))[:MAX_SEQUENCE]
+        meta.append({
+            "record_id": record.record_id, "domain": record.domain,
+            "partition": record.partition, "kind": record.kind,
+            "source": "context_window" if record.context_rung_tokens else "prompt",
+            "tokens": len(ids),
+            "context_rung_tokens": record.context_rung_tokens,
+            "token_ids_sha256": hashlib.sha256(
+                json.dumps(ids, separators=(",", ":")).encode()).hexdigest(),
+        })
+        rows.append(ids)
+    if not rows:
+        raise ValueError("no mathematics records in TRAIN_PARTITIONS")
+    width = max(len(row) for row in rows)
+    batch = np.full((len(rows), width), PAD_ID, dtype=np.int64)
+    for index, row in enumerate(rows):
+        batch[index, : len(row)] = row
+    return batch, meta
+
+
+def math_calibration_membership_sha256() -> str:
+    batch, _ = math_calibration_batch()
+    return hashlib.sha256(json.dumps(
+        {"split": "math_calibration_v1", "token_ids": batch.tolist()},
+        separators=(",", ":")).encode()
+    ).hexdigest()
+
+
 def build() -> int:
     _, records = _corpus()
     splits = {}

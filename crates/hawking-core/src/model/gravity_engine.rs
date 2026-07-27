@@ -17,14 +17,40 @@ use crate::engine::{
     Engine, EngineConfig, GenStats, GenerateRequest, StopReason, StreamEvent,
 };
 use crate::gravity::GravityShard;
+use crate::gravity_glm::gpu::GravityGlmGpu;
 use crate::gravity_llama::gpu::GravityLlamaGpu;
 use crate::metal::MetalContext;
 use crate::sample::Sampler;
 use crate::tokenizer::Tokenizer;
 use crate::{Error, Result};
 
+/// Either resident-GPU backend this registry serves. A caller only ever
+/// wants the logits, so this drops each backend's own trace/stats type
+/// (`ForwardStats`, `GlmTrace`) rather than inventing a third type wide
+/// enough to describe both.
+enum GravityModel {
+    Llama(GravityLlamaGpu),
+    Glm(GravityGlmGpu),
+}
+
+impl GravityModel {
+    fn forward(&self, tokens: &[u32]) -> Result<Vec<f32>> {
+        match self {
+            GravityModel::Llama(m) => m.forward(tokens).map(|(logits, _)| logits),
+            GravityModel::Glm(m) => m.forward(tokens).map(|(logits, _)| logits),
+        }
+    }
+
+    fn forward_at(&self, tokens: &[u32], pos: usize) -> Result<Vec<f32>> {
+        match self {
+            GravityModel::Llama(m) => m.forward_at(tokens, pos).map(|(logits, _)| logits),
+            GravityModel::Glm(m) => m.forward_at(tokens, pos).map(|(logits, _)| logits),
+        }
+    }
+}
+
 pub struct GravityEngine {
-    model: GravityLlamaGpu,
+    model: GravityModel,
     tokenizer: Tokenizer,
     model_id: String,
     arch: String,
@@ -47,15 +73,32 @@ impl GravityEngine {
 impl Engine for GravityEngine {
     fn load(weights: &Path, config: EngineConfig) -> Result<Self> {
         let shard = GravityShard::open(weights)?;
-        let arch = shard
-            .extra
+
+        // A multi-shard model's own per-shard header carries only a
+        // minimal, differently-keyed architecture summary (`type`, not
+        // `model_type`) -- it describes that one shard's tensors, not the
+        // model. The full, canonically-keyed block the adapters need lives
+        // in the assembler's `model.gravity.index.json` beside the shards.
+        // Prefer it when present; a single-shard artifact (Llama) has none
+        // and falls back to its own header, which already carries both
+        // fields directly.
+        let index_path = weights.parent().map(|d| d.join("model.gravity.index.json"));
+        let index: Option<serde_json::Value> = index_path
+            .filter(|p| p.is_file())
+            .map(|p| -> Result<serde_json::Value> {
+                let bytes = std::fs::read(&p).map_err(|e| Error::Gravity(format!("{p:?}: {e}")))?;
+                serde_json::from_slice(&bytes).map_err(|e| Error::Gravity(format!("{p:?}: {e}")))
+            })
+            .transpose()?;
+        let arch_source = index.as_ref().unwrap_or(&shard.extra);
+
+        let arch = arch_source
             .get("architecture")
             .and_then(|a| a.get("model_type"))
             .and_then(serde_json::Value::as_str)
             .unwrap_or("unknown")
             .to_string();
-        let model_id = shard
-            .extra
+        let model_id = arch_source
             .get("model")
             .and_then(|m| m.get("repo"))
             .and_then(serde_json::Value::as_str)
@@ -65,15 +108,31 @@ impl Engine for GravityEngine {
             .extra
             .get("tokenizer")
             .ok_or_else(|| Error::Gravity("artifact declares no tokenizer".into()))?;
-        let dir = tok
-            .get("dir")
-            .and_then(serde_json::Value::as_str)
-            .ok_or_else(|| Error::Gravity("artifact tokenizer has no directory".into()))?;
-        let file = tok
-            .get("source")
-            .and_then(serde_json::Value::as_str)
-            .unwrap_or("tokenizer.json");
-        let tok_path = Path::new(dir).join(file);
+        // Some packers (GLM's) record only a remote reference (`{"kind":
+        // "reference", "source": "org/Model"}`) rather than a local path --
+        // the tokenizer was never the thing being packed, so nothing
+        // resolved it to a directory at pack time. Fall back to the
+        // convention every packer that DOES stage one locally uses:
+        // `tokenizer/` beside the shard(s) themselves.
+        let tok_path = match tok.get("dir").and_then(serde_json::Value::as_str) {
+            Some(dir) => {
+                let file = tok
+                    .get("source")
+                    .and_then(serde_json::Value::as_str)
+                    .unwrap_or("tokenizer.json");
+                Path::new(dir).join(file)
+            }
+            None => weights
+                .parent()
+                .ok_or_else(|| {
+                    Error::Gravity(format!(
+                        "{weights:?}: artifact tokenizer names no directory and the shard has \
+                         no parent to fall back to"
+                    ))
+                })?
+                .join("tokenizer")
+                .join("tokenizer.json"),
+        };
         if !tok_path.is_file() {
             return Err(Error::Gravity(format!(
                 "artifact names tokenizer {tok_path:?}, which is not present; refusing to \
@@ -82,16 +141,29 @@ impl Engine for GravityEngine {
         }
         drop(shard);
 
-        if arch != "llama" {
-            return Err(Error::Gravity(format!(
-                "no .gravity engine for architecture {arch:?} yet; the llama adapter is \
-                 wired and the glm_moe_dsa adapter exists but is not yet served"
-            )));
-        }
-
         let ctx = MetalContext::new_with_trace(config.trace_dispatch)?;
+        let model = match arch.as_str() {
+            "llama" => GravityModel::Llama(GravityLlamaGpu::open_with(ctx, weights, true)?),
+            "glm_moe_dsa" => {
+                // GLM is multi-shard: `weights` names one shard file (enough
+                // to read the header above), and the model lives in its
+                // parent directory alongside every other `model-*.gravity`.
+                let dir = weights.parent().ok_or_else(|| {
+                    Error::Gravity(format!(
+                        "{weights:?}: a glm_moe_dsa shard must live inside its model directory"
+                    ))
+                })?;
+                GravityModel::Glm(GravityGlmGpu::open_dir_with(ctx, dir, true)?)
+            }
+            other => {
+                return Err(Error::Gravity(format!(
+                    "no .gravity engine for architecture {other:?} yet; llama and glm_moe_dsa \
+                     are wired"
+                )))
+            }
+        };
         Ok(GravityEngine {
-            model: GravityLlamaGpu::open_with(ctx, weights, true)?,
+            model,
             tokenizer: Tokenizer::from_file(&tok_path)?,
             model_id,
             arch,
@@ -107,7 +179,7 @@ impl Engine for GravityEngine {
         let prompt_tokens = ids.len();
 
         let t_prefill = Instant::now();
-        let mut logits = self.model.forward(&ids)?.0;
+        let mut logits = self.model.forward(&ids)?;
         let prefill_ms = t_prefill.elapsed().as_secs_f64() * 1e3;
 
         let mut sampler = Sampler::new(req.sampling.seed.unwrap_or(0));
@@ -148,7 +220,7 @@ impl Engine for GravityEngine {
             }
 
             let step = Instant::now();
-            logits = self.model.forward_at(&[next], pos)?.0;
+            logits = self.model.forward_at(&[next], pos)?;
             pos += 1;
             if req.max_stall_ms > 0
                 && step.elapsed().as_millis() as u64 > req.max_stall_ms
@@ -214,7 +286,7 @@ impl Engine for GravityEngine {
         let start = positions.first().copied().unwrap_or(0);
         let mut out = Vec::with_capacity(tokens.len());
         for (i, &t) in tokens.iter().enumerate() {
-            out.push(self.model.forward_at(&[t], start + i)?.0);
+            out.push(self.model.forward_at(&[t], start + i)?);
         }
         Ok(out)
     }

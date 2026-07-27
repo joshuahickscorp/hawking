@@ -1,0 +1,149 @@
+{
+  "schema": "hawking.odyssey.support_halo.scoring_rules.v0",
+  "status": "FROZEN_PRE_ODYSSEY",
+  "frozen_at": "2026-07-26",
+  "gate": "G5",
+  "purpose": "Judge T7 checkpoint winners on the support halo that Odyssey must preserve. Written and frozen before any Odyssey checkpoint exists so the tournament cannot be rigged by post-hoc scoring drift.",
+  "invariants": [
+    "Rules and corpus are content-addressed; a run whose rules_sha256 or corpus_sha256 differs from the sealed baseline is DISQUALIFIED as SCORING_RULES_DRIFT or CORPUS_MUTATION.",
+    "No metric computed on a selection/hidden set is reported as a public result (ODYSSEY_EVALUATION_CONTRACT invariants still bind).",
+    "Do not invent scores. If a dimension cannot be measured on the local path, emit NOT_MEASURABLE with a reason string. A fabricated baseline is worse than a missing one.",
+    "Same artifact, rules, corpus, seed, and completions must yield a byte-identical score receipt after key sort.",
+    "Greedy decode only (temperature 0). Non-greedy paths are forbidden for tournament scoring."
+  ],
+  "dimensions": [
+    {
+      "id": "technical_language",
+      "weight": 1.0,
+      "meaning": "Domain vocabulary, precise technical phrasing, unit/notation literacy needed to talk about math and systems without collapsing into nonsense."
+    },
+    {
+      "id": "general_reasoning",
+      "weight": 1.0,
+      "meaning": "Multi-step non-specialized reasoning that is not pure formal math (logic, counting, constraint satisfaction)."
+    },
+    {
+      "id": "coding",
+      "weight": 1.0,
+      "meaning": "Write small programs that pass execution-grounded asserts. Substring self-judgment is not a pass."
+    },
+    {
+      "id": "retrieval",
+      "weight": 1.0,
+      "meaning": "Locate and use facts from material supplied in the prompt (in-context document lookup). Live network retrieval is out of scope for this harness."
+    },
+    {
+      "id": "tools",
+      "weight": 1.0,
+      "meaning": "Emit well-formed tool-call JSON with required fields. Live tool-effect execution through hide-tools is a separate path and may be NOT_MEASURABLE here."
+    },
+    {
+      "id": "long_context",
+      "weight": 1.0,
+      "meaning": "Recover a planted needle from a fixed-length synthetic haystack. Cheap mode caps haystack length so every checkpoint can afford the suite."
+    },
+    {
+      "id": "self_correction",
+      "weight": 1.0,
+      "meaning": "Given a failed attempt and a concrete error signal, produce a corrected answer that satisfies the oracle."
+    }
+  ],
+  "scoring": {
+    "per_task": "binary pass/fail by the task's oracle (expect_all | exact | execution | tool_json | needle)",
+    "per_dimension": {
+      "pass_rate": "passes / total for tasks in that dimension with a measured outcome",
+      "wilson95": "Wilson score interval at z=1.96 on that pass rate",
+      "if_no_tasks_measured": "NOT_MEASURABLE"
+    },
+    "aggregate_support_halo_score": {
+      "formula": "unweighted mean of measurable dimension pass_rates",
+      "minimum_measurable_dimensions": 4,
+      "if_below_minimum": "overall score is NOT_MEASURABLE (insufficient coverage for an honest tournament)"
+    },
+    "coding_oracle": "execution-grounded: extract first fenced code block, run against asserts in a subprocess; pass iff exit 0 within timeout"
+  },
+  "disqualification": [
+    {
+      "code": "DEGENERATE_REPETITION",
+      "rule": "Any screening greedy completion contains 8 or more identical consecutive tokens (whitespace-split).",
+      "effect": "checkpoint is out of the tournament; no aggregate score is reported"
+    },
+    {
+      "code": "EMPTY_GENERATION",
+      "rule": "More than 50 percent of measured tasks produce an empty completion.",
+      "effect": "disqualified"
+    },
+    {
+      "code": "HIDDEN_FALLBACK",
+      "rule": "The run receipt does not assert no_hidden_fallback=true, or the declared model/artifact id differs from the artifact under test.",
+      "effect": "disqualified"
+    },
+    {
+      "code": "ARTIFACT_MISMATCH",
+      "rule": "Receipt artifact_sha256 does not match the evaluated .gravity content hash (or index sha when that is the declared address).",
+      "effect": "disqualified"
+    },
+    {
+      "code": "SCORING_RULES_DRIFT",
+      "rule": "rules_sha256 of the run differs from the rules_sha256 sealed with the pre-Odyssey baseline.",
+      "effect": "disqualified"
+    },
+    {
+      "code": "CORPUS_MUTATION",
+      "rule": "corpus_sha256 of the run differs from the corpus_sha256 sealed with the pre-Odyssey baseline.",
+      "effect": "disqualified"
+    }
+  ],
+  "tie_break": [
+    {
+      "rank": 1,
+      "rule": "Higher aggregate_support_halo_score wins"
+    },
+    {
+      "rank": 2,
+      "rule": "Higher minimum measurable dimension pass_rate wins (worst-dimension protection)"
+    },
+    {
+      "rank": 3,
+      "rule": "Higher coding dimension pass_rate wins"
+    },
+    {
+      "rank": 4,
+      "rule": "If both receipts carry total_completion_chars, the lower total wins (prefer concise correct answers)"
+    },
+    {
+      "rank": 5,
+      "rule": "Lexicographically smaller artifact_sha256 wins (deterministic; no human discretion)"
+    }
+  ],
+  "regression_vs_baseline": {
+    "aggregate": "A checkpoint is a support-halo REGRESSION if its aggregate score is strictly less than baseline_aggregate - 0.05 (absolute).",
+    "per_dimension": "A checkpoint is a per-dimension REGRESSION if a dimension measurable in both runs drops by more than 0.15 absolute AND the two Wilson 95% intervals do not overlap.",
+    "tournament_use": "Any REGRESSION against the sealed pre-Odyssey baseline disqualifies a checkpoint from being declared T7 winner, even if it ranks first among trained peers."
+  },
+  "determinism": {
+    "temperature": 0.0,
+    "seed": 0,
+    "note": "Seed is recorded for audit; greedy decode makes sampling noise zero. Completions mode scores pre-recorded text and is purely deterministic."
+  },
+  "cost_budget": {
+    "target": "cheap enough to run on every checkpoint",
+    "max_tasks": 40,
+    "default_max_new_tokens": 128,
+    "long_context_haystack_chars_cap": 4000,
+    "coding_subprocess_timeout_s": 5
+  },
+  "baseline": {
+    "required_before": "T0",
+    "substrate": "GLM-5.2-H0.98-Math-Preserve.gravity",
+    "substrate_address_kind": "model_index_sha256",
+    "substrate_sha256": "33d40c254eb982d4a495f5f0792a116e9d9810d937f5f3969f4f84742b2364d9",
+    "status_field": "odyssey/evaluation/SUPPORT_HALO_BASELINE.json",
+    "note": "Without a sealed baseline on this substrate, T7 cannot honestly pick a winner. Baseline generation needs a live serve path and is deferred while the GPU is occupied by runtime measurement; rules and corpus freeze here regardless."
+  },
+  "not_measurable_policy": {
+    "emit": "NOT_MEASURABLE",
+    "require_reason": true,
+    "forbidden": "Substituting a proxy score, parent score, or hand-waved pass rate for a missing measurement"
+  }
+}

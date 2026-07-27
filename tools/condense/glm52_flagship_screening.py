@@ -27,6 +27,7 @@ HERE = Path(__file__).resolve().parent
 if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
 
+import jinja2
 import numpy as np
 from tokenizers import Tokenizer
 
@@ -38,10 +39,30 @@ DEFAULT_MODEL_DIR = (
     "/b4734de4facf877f85769a911abafc5283eab3d9/General-R0")
 
 
+def render_prompt(chat_template_path: Path, user_text: str, *, enable_thinking: bool) -> str:
+    """GLM-5.2 is chat/instruction-tuned, not a base completion model: its own
+    template opens every input with `[gMASK]<sop>` and role markers, and a raw
+    text completion is out of distribution for it regardless of compression
+    rate. Rendering through the model's own pinned template is what makes a
+    screening-gate failure attributable to the ARTIFACT rather than to having
+    fed it an input shape it was never trained to see.
+    """
+    template = jinja2.Template(chat_template_path.read_text())
+    return template.render(
+        messages=[{"role": "user", "content": user_text}],
+        add_generation_prompt=True,
+        enable_thinking=enable_thinking,
+        tools=None,
+    )
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--dir", type=Path, default=DEFAULT_MODEL_DIR)
     ap.add_argument("--prompt", default="The capital of France is")
+    ap.add_argument("--raw-prompt", action="store_true",
+                    help="skip chat-template rendering; encode --prompt verbatim")
+    ap.add_argument("--enable-thinking", action="store_true")
     ap.add_argument("--tokens", type=int, default=8)
     ap.add_argument("--out", type=Path)
     args = ap.parse_args()
@@ -53,7 +74,13 @@ def main() -> int:
     print("opening...", file=sys.stderr)
     source = GravityGlmSource(args.dir, index_json=index_json, verify_hash=False)
 
-    ids = tok.encode(args.prompt).ids
+    if args.raw_prompt:
+        rendered = args.prompt
+    else:
+        rendered = render_prompt(args.dir / "tokenizer/chat_template.jinja",
+                                 args.prompt, enable_thinking=args.enable_thinking)
+    print(f"rendered prompt: {rendered!r}", file=sys.stderr)
+    ids = tok.encode(rendered).ids
     print(f"prompt tokens: {ids}", file=sys.stderr)
     generated: list[int] = []
     step_seconds: list[float] = []

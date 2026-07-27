@@ -1,0 +1,44 @@
+{
+  "schema": "hawking.gravity.base_true_tps.v2",
+  "at": "2026-07-26T15:35:00Z",
+  "artifact": "GLM-5.2-H0.98-Math-Preserve.gravity (sealed, unchanged)",
+  "workload": "context 4, 80 decode tokens, per-token curve, 32 GiB cache budget, verify_hash=true",
+  "BASE_TRUE_TPS": {
+    "cold_t0_t11": 0.2942,
+    "warm_t40_t79": 0.3961
+  },
+  "previous": {
+    "cold": 0.1417,
+    "warm": 0.1547
+  },
+  "no_hash_ceiling": {
+    "cold": 0.3711,
+    "warm": 0.4074
+  },
+  "speedup_warm": 2.56,
+  "fraction_of_no_hash_ceiling": 0.972,
+  "change": "Memoize decoded native tensors so each is read, widened and SHA-256 verified once per process instead of on every access.",
+  "integrity_held": {
+    "claim": "Verification still happens, exactly once per tensor.",
+    "pinned_by_tests": [
+      "first dense must verify -> verifications == 1",
+      "repeated dense on the same tensor -> verifications stays 1",
+      "verified_tensors == 1 after one tensor",
+      "a second distinct tensor -> verifications == 2"
+    ],
+    "why_this_mattered": "A fix that simply stopped verifying would have produced the same number and failed the gate. The defect was the same bytes re-hashed thousands of times per run, not that hashing is wrong."
+  },
+  "residency_unchanged": {
+    "resident_bytes": 21029025180,
+    "entries": 7915,
+    "evictions": 0,
+    "note": "Identical to the pre-fix run, confirming this is a CPU-side verification change and not a residency change."
+  },
+  "gate_standing": {
+    "remaining_gap_to_50_tps": "126x",
+    "remaining_gap_to_roofline": "783x",
+    "root_cause_of_the_remainder": "~1,171 CPU-to-GPU synchronizations per token; see HAWKING_BASE_RUNTIME_ROOT_CAUSE.json"
+  },
+  "evidence_level": "MEASURED_PAIRED_ON_THE_SEALED_ARTIFACT",
+  "not_evidence_of": "any acceleration; this is unaccelerated batch-1 decode"
+}
