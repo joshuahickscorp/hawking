@@ -113,6 +113,7 @@ fn app() -> Router {
         requests_admitted: Arc::new(AtomicU64::new(0)),
         tokens_generated: Arc::new(AtomicU64::new(0)),
         requests_queued: Arc::new(AtomicU64::new(0)),
+        gravity: None,
     };
     router(state)
 }
@@ -129,6 +130,7 @@ fn failing_app() -> Router {
         requests_admitted: Arc::new(AtomicU64::new(0)),
         tokens_generated: Arc::new(AtomicU64::new(0)),
         requests_queued: Arc::new(AtomicU64::new(0)),
+        gravity: None,
     };
     router(state)
 }
@@ -415,4 +417,62 @@ async fn healthz_and_models_ok() {
     let body = body_bytes(resp).await;
     let v: serde_json::Value = serde_json::from_slice(&body).unwrap();
     assert_eq!(v["data"][0]["id"], "stub-model");
+}
+
+// ----------------------------------------------------------------------------
+// Bridge surface honesty: capability table + explicit 501s (never canned 200)
+// ----------------------------------------------------------------------------
+
+#[tokio::test]
+async fn hawking_surface_lists_endpoints() {
+    let resp = app()
+        .oneshot(
+            Request::builder()
+                .uri("/v1/hawking/surface")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(resp.status(), StatusCode::OK);
+    let body = body_bytes(resp).await;
+    let v: serde_json::Value = serde_json::from_slice(&body).unwrap();
+    assert_eq!(v["schema"], "hawking.bridge.surface.v1");
+    let endpoints = v["endpoints"].as_array().expect("endpoints array");
+    assert!(endpoints.len() >= 10);
+    // OpenAI chat is live; Responses/Anthropic are not_implemented.
+    let statuses: Vec<&str> = endpoints
+        .iter()
+        .filter_map(|e| e["endpoint"].as_str().zip(e["status"].as_str()))
+        .map(|(_, s)| s)
+        .collect();
+    assert!(statuses.contains(&"live"));
+    assert!(statuses.contains(&"not_implemented"));
+}
+
+#[tokio::test]
+async fn responses_api_is_501_not_implemented() {
+    let req = json_post(
+        "/v1/responses",
+        serde_json::json!({ "model": "stub", "input": "hi" }),
+    );
+    let resp = app().oneshot(req).await.unwrap();
+    assert_eq!(resp.status(), StatusCode::NOT_IMPLEMENTED);
+    let body = body_bytes(resp).await;
+    let v: serde_json::Value = serde_json::from_slice(&body).unwrap();
+    assert_eq!(v["error"]["code"], "not_implemented");
+    assert_eq!(v["error"]["capability"], "not_implemented");
+}
+
+#[tokio::test]
+async fn anthropic_messages_is_501_not_implemented() {
+    let req = json_post(
+        "/v1/messages",
+        serde_json::json!({ "model": "stub", "messages": [] }),
+    );
+    let resp = app().oneshot(req).await.unwrap();
+    assert_eq!(resp.status(), StatusCode::NOT_IMPLEMENTED);
+    let body = body_bytes(resp).await;
+    let v: serde_json::Value = serde_json::from_slice(&body).unwrap();
+    assert_eq!(v["error"]["code"], "not_implemented");
 }

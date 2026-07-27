@@ -1,0 +1,142 @@
+{
+  "event_categories": [
+    {
+      "category": "model_lifecycle",
+      "kind": "model.lifecycle"
+    },
+    {
+      "category": "text",
+      "kind": "model.token"
+    },
+    {
+      "category": "reasoning",
+      "kind": "model.reasoning"
+    },
+    {
+      "category": "plans",
+      "kind": "plan.created"
+    },
+    {
+      "category": "tools",
+      "kind": "tool.call"
+    },
+    {
+      "category": "permissions",
+      "kind": "security.gate"
+    },
+    {
+      "category": "edits",
+      "kind": "edit.diff"
+    },
+    {
+      "category": "tests",
+      "kind": "test.result"
+    },
+    {
+      "category": "verification",
+      "kind": "verify.receipt"
+    },
+    {
+      "category": "agents",
+      "kind": "agent.phase"
+    },
+    {
+      "category": "acceleration",
+      "kind": "accel.status"
+    },
+    {
+      "category": "fabric_placement",
+      "kind": "fabric.placement"
+    },
+    {
+      "category": "fabric_node_state",
+      "kind": "fabric.node_state"
+    },
+    {
+      "category": "warnings",
+      "kind": "system.warning"
+    },
+    {
+      "category": "errors",
+      "kind": "error"
+    },
+    {
+      "category": "usage",
+      "kind": "model.usage"
+    }
+  ],
+  "family_placement": [
+    {
+      "fabric_partition": null,
+      "fabric_partition_null_reason": "no Fabric partition declaration for deepseek2",
+      "family": "deepseek",
+      "placement": "local_serve_eligible",
+      "serve_registered": true
+    },
+    {
+      "fabric_partition": null,
+      "fabric_partition_null_reason": "not serve-registered",
+      "family": "gemma",
+      "placement": "not_serve_registered",
+      "serve_registered": false
+    },
+    {
+      "fabric_partition": "gravity shard boundaries are the partition unit; Fabric multi-node placement not declared",
+      "fabric_partition_null_reason": null,
+      "family": "glm",
+      "placement": "local_serve_eligible",
+      "serve_registered": true
+    },
+    {
+      "fabric_partition": null,
+      "fabric_partition_null_reason": "not serve-registered; no Fabric placement",
+      "family": "kimi",
+      "placement": "not_serve_registered",
+      "serve_registered": false
+    },
+    {
+      "fabric_partition": null,
+      "fabric_partition_null_reason": "Fabric partition placement not declared for llama; serve is single-process today",
+      "family": "llama",
+      "placement": "local_serve_eligible",
+      "serve_registered": true
+    },
+    {
+      "fabric_partition": null,
+      "fabric_partition_null_reason": "not serve-registered",
+      "family": "minimax",
+      "placement": "not_serve_registered",
+      "serve_registered": false
+    },
+    {
+      "fabric_partition": null,
+      "fabric_partition_null_reason": "no Fabric partition declaration for mistral/mixtral",
+      "family": "mistral_mixtral",
+      "placement": "local_serve_eligible",
+      "serve_registered": true
+    },
+    {
+      "fabric_partition": null,
+      "fabric_partition_null_reason": "not serve-registered",
+      "family": "phi",
+      "placement": "not_serve_registered",
+      "serve_registered": false
+    },
+    {
+      "fabric_partition": null,
+      "fabric_partition_null_reason": "no Fabric multi-node partition declaration for qwen family",
+      "family": "qwen",
+      "placement": "local_serve_eligible",
+      "serve_registered": true
+    },
+    {
+      "fabric_partition": null,
+      "fabric_partition_null_reason": "no Fabric partition for state-space family",
+      "family": "state_space",
+      "placement": "local_serve_eligible",
+      "serve_registered": true
+    }
+  ],
+  "note": "Declarations only — Fabric implementation is a parallel lane.",
+  "schema": "hawking.fabric.declarations.v1"
+}

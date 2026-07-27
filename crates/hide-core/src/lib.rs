@@ -5,6 +5,7 @@
 //! headless kernel tests, and future CLI can all share the same architecture.
 
 pub mod api;
+pub mod automation;
 pub mod config;
 pub mod error;
 pub mod event;

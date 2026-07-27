@@ -3,34 +3,44 @@
 Generated from live evidence by `tools/campaign/parallel_status.py`. Do not hand-edit.
 Ownership and the DAG are hand-authored architecture and are read, never written, by this tool.
 
-    at:       2026-07-27T01:42:43Z
+    at:       2026-07-27T03:07:26Z
     endpoint: RAMANUJAN_SANDBOX_READY (not reached)
-    width:    6/6 lanes running
+    width:    0/6 lanes running
     fences:   ODYSSEY_LAUNCH_AUTHORIZED=False RAMANUJAN_RESEARCH_AUTHORIZED=False HIDE_KERNEL_TURN=False
 
 ## Running
 
-- `L01` hide-archaeology-v2 (grok) -- outputs missing: HIDE_ARCHAEOLOGY_V2.md, HIDE_ARCHAEOLOGY_V2.json
-- `L02` hide-memory-six (grok) -- outputs missing: HIDE_MEMORY_CLASSES.json
-- `L03` odyssey-t0 (grok) -- outputs missing: ODYSSEY_T0_RECEIPT.json, ODYSSEY_CONTRACT_CLOSURE.json, ODYSSEY_FEASIBILITY.json
-- `L04` fabric-software (grok) -- outputs missing: FABRIC_SOFTWARE_STATUS.json, FABRIC_QUALIFICATION_LADDER.json
-- `L05` bridge-events-adapters (grok) -- outputs missing: HAWKING_CANONICAL_EVENTS.json, HAWKING_ADAPTER_REGISTRY.json, HAWKING_BRIDGE_SURFACE.json
-- `L06` consolidation-inventory (grok) -- outputs missing: HAWKING_CONSOLIDATION_INVENTORY.md, HAWKING_CONSOLIDATION_INVENTORY.json
+- none
 
 ## Finished, awaiting controller review
 
 - none
 
+## Integrated by the controller
+
+- `L01` hide-archaeology-v2 (grok)
+- `L02` hide-memory-six (grok)
+- `L03` odyssey-t0 (grok)
+- `L04` fabric-software (grok)
+- `L05` bridge-events-adapters (grok)
+- `L06` consolidation-inventory (grok)
+- `L18` gravity-serve (grok)
+- `L07` speculation-safety (grok)
+- `L09` ramanujan-migration-prep (claude)
+- `L19` odyssey-data (grok)
+- `L20` memory-writers (grok)
+- `L21` gravity-degenerate-attribution (claude (controller, run inline -- Grok slots held by a concurrent campaign; user authorized))
+- `L22` odyssey-readiness-supersession (claude)
+- `L23` representation-escalation-preregistration (claude)
+- `L24` ramanujan-governance-and-cognition (claude)
+- `L25` ramanujan-environment-lock (claude)
+
 ## Queued
 
-- `L07` speculation-safety (grok) -- outputs missing: HIDE_SPECULATION_SAFETY.json
-- `L09` ramanujan-migration-prep (claude)
+- `L08` hide-os-wiring (grok)
 
 ## Blocked (real data dependencies, see the DAG)
 
-- `L08` hide-os-wiring (grok)
-- `L10` odyssey-t1-t7 (unassigned)
-- `L11` math-frozen (unassigned)
 - `L12` consolidation-execute (unassigned)
 - `L13` ramanujan-migrate (unassigned)
 - `L14` ramanujan-cognition (unassigned)
@@ -46,8 +56,8 @@ Ownership and the DAG are hand-authored architecture and are read, never written
 
 ## Next action
 
-    6 lanes running at width 6/6; do not poll, wait on a milestone
+    launch L08 (hide-os-wiring) -- a slot is free
 
 ```bash
-~/.claude-grok/bin/grok-run wait
+# see HAWKING_PARALLEL_LANE_OWNERSHIP.json for the lane's contract
 ```

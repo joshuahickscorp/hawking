@@ -1,0 +1,159 @@
+{
+  "contract": "HIDE_YOU_AUTOMATION",
+  "version": "1",
+  "task": "Y7",
+  "status": "implemented",
+  "resource_mode": "LIGHT_ONLY",
+  "purpose": "Durable, inspectable YOU automations whose background jobs cannot inherit broader authority than the automation grants.",
+  "module": {
+    "crate": "hide-core",
+    "path": "crates/hide-core/src/automation.rs",
+    "public_mod": "hide_core::automation",
+    "rationale": "Session/tool registry (ToolRegistry) and permission primitives live in hide-core; automations sit beside them as shared domain contracts, model-free."
+  },
+  "declaration_fields": [
+    "trigger/schedule",
+    "goal",
+    "connectors/tools",
+    "permissions",
+    "resource_budget",
+    "notification_policy",
+    "stop_condition",
+    "last_result",
+    "next_run"
+  ],
+  "automation_kinds": [
+    "reminder",
+    "recurring_brief",
+    "connector_summary",
+    "calendar_preparation",
+    "email_triage",
+    "project_status_check",
+    "watch_condition",
+    "research_monitor",
+    "file_ingestion_pipeline",
+    "agent_job"
+  ],
+  "authority_containment": {
+    "property": "A background agent cannot inherit broader authority than the automation grants.",
+    "mechanism": {
+      "permission_set": "Automation.permissions (PermissionSet) is the closed set of tools and connectors the automation grants.",
+      "capability_derivation": "AutomationJob.capability is obtained only via PermissionSet::derive_capability or PermissionSet::derive_capability_subset.",
+      "non_widening": "JobCapability fields are private; there is no public grant/add/widen API. Subset derivation rejects any tool/connector not in the parent set (CapabilityMissing).",
+      "dispatch_gate": "AutomationJob::use_tool calls JobCapability::require_tool before the fixture registry; unauthorized tools fail closed.",
+      "recording": "Unauthorized attempts are appended to RunResult.tool_attempts with authorized=false and stop_reason=AuthorityDenied{tool}."
+    },
+    "test": "authority_containment_fail_closed_and_recorded"
+  },
+  "durability": {
+    "store": "AutomationStore over KeyValueStore namespace you_automations",
+    "recovery": "AutomationEngine::recover rebuilds the live map from durable records after process drop",
+    "survives": ["automation declaration", "next_run_ms", "fired_slots", "usage", "results history"],
+    "test": "durable_across_restart_next_run_survives"
+  },
+  "stop_enforcement": {
+    "conditions": [
+      "StopCondition::AfterRuns",
+      "StopCondition::ConditionMet",
+      "StopCondition::MaxFailures",
+      "ResourceBudget exhaustion (max_runs / max_tool_calls / max_wall_ms / max_tokens)"
+    ],
+    "effect": "status=Stopped, stop_reason recorded, next_run_ms cleared; further manual runs refuse (InvalidState)",
+    "tests": [
+      "stop_condition_after_runs_is_enforced",
+      "budget_exhaustion_halts_and_records_why",
+      "condition_met_stop_is_enforced"
+    ]
+  },
+  "idempotent_triggers": {
+    "mechanism": "TriggerSpec::slot_if_due produces a stable slot key; Automation.fired_slots records fired slots; tick/fire_slot/run_slot no-op when the slot was already fired",
+    "slot_forms": [
+      "once:{at_ms}",
+      "interval:{every_ms}:{index}",
+      "cron:{slot_key}",
+      "watch:{condition}",
+      "manual:{now_ms}"
+    ],
+    "tests": [
+      "schedule_slot_is_idempotent",
+      "interval_slots_advance_and_do_not_double_fire"
+    ]
+  },
+  "inspectability": {
+    "declaration": "Automation::declaration / AutomationEngine::inspect",
+    "results": "Automation::last_n_results and inspect(id, last_n)",
+    "test": "inspect_exposes_full_declaration_and_history"
+  },
+  "clock": {
+    "trait": "Clock",
+    "injected": "InjectedClock (deterministic, in-process)",
+    "system": "SystemClock available but wall-clock daemon wiring is deferred",
+    "non_goal": "No launchd, cron installation, or scheduling daemon"
+  },
+  "fixture_tools": {
+    "type": "FixtureToolRegistry",
+    "note": "No real connector or tool execution. standard_fixture_registry provides canned responses for email/calendar/fs/web/shell/notify stubs.",
+    "non_goal": "Real connector or model execution"
+  },
+  "non_goals": [
+    "real scheduling daemon / launchd / cron installation",
+    "real connector or tool execution",
+    "fleets",
+    "Fabric",
+    "Metal / model loads"
+  ],
+  "api_surface": {
+    "types": [
+      "Automation",
+      "AutomationId",
+      "AutomationJob",
+      "AutomationJobId",
+      "AutomationKind",
+      "AutomationStatus",
+      "AutomationStore",
+      "AutomationEngine",
+      "PermissionSet",
+      "JobCapability",
+      "TriggerSpec",
+      "ResourceBudget",
+      "BudgetUsage",
+      "StopCondition",
+      "StopReason",
+      "NotificationPolicy",
+      "RunResult",
+      "ToolAttempt",
+      "JobPlan",
+      "FixtureTool",
+      "FixtureToolRegistry",
+      "Clock",
+      "InjectedClock",
+      "SystemClock"
+    ],
+    "entry_points": [
+      "Automation::declare",
+      "PermissionSet::derive_capability",
+      "PermissionSet::derive_capability_subset",
+      "JobCapability::require_tool",
+      "AutomationJob::use_tool",
+      "AutomationEngine::create",
+      "AutomationEngine::recover",
+      "AutomationEngine::tick",
+      "AutomationEngine::fire_slot",
+      "AutomationEngine::run_manual",
+      "AutomationEngine::signal_condition",
+      "AutomationEngine::inspect",
+      "AutomationStore::put|get|list_all"
+    ]
+  },
+  "tests": {
+    "package": "hide-core",
+    "module": "automation::tests",
+    "required_properties": [
+      "authority_containment_fail_closed_and_recorded",
+      "durable_across_restart_next_run_survives",
+      "stop_condition_after_runs_is_enforced",
+      "budget_exhaustion_halts_and_records_why",
+      "schedule_slot_is_idempotent"
+    ]
+  }
+}

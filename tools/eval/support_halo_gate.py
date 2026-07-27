@@ -763,9 +763,15 @@ def cmd_print_baseline_command(_args):
         f"  --artifact-sha256 {sha} \\\n"
         "  --out odyssey/evaluation/SUPPORT_HALO_BASELINE.json\n"
         "\n"
-        "# Prerequisite (example; do not run while GPU is measuring G2):\n"
-        "#   cargo run -p hawking -- serve --gravity <Math-Preserve.gravity> --port 8899\n"
-        "# Exact serve flags are those of the live hawking serve path once G2 frees the device.\n"
+        "# Prerequisite (live serve path; Math-Preserve base runtime, default-off flag):\n"
+        "#   cargo run --release -p hawking -- serve \\\n"
+        "#     --gravity \"$HOME/Library/Application Support/Hawking/Models/GLM-5.2/"
+        "b4734de4facf877f85769a911abafc5283eab3d9/GLM-5.2-H0.98-Math-Preserve.gravity\" \\\n"
+        "#     --addr 127.0.0.1:8899\n"
+        "# Equivalent env form: HAWKING_GRAVITY=<dir> cargo run --release -p hawking -- serve "
+        "--addr 127.0.0.1:8899\n"
+        "# Base runtime is ~0.4 tok/s warm; request timeout defaults to 3600s "
+        "(HAWKING_GRAVITY_REQUEST_TIMEOUT_SECS).\n"
     )
     print(cmd)
     return 0

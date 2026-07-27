@@ -7,6 +7,9 @@
 use crate::compiler::{CompileInput, ContextCandidate, ContextSource};
 use crate::manifest::{ContextSourceKind, PinState};
 use crate::memory::{MemoryKind, MemoryStore};
+use crate::memory_classes::{
+    ClassBudgets, ClassedMemorySystem, MemoryClass, WriteAuthority,
+};
 use futures::future::BoxFuture;
 use hawking_index::{CodeIndex, SearchQuery, SearchResultSource};
 use hide_core::error::Result;
@@ -178,6 +181,9 @@ impl ContextSource for CodeIndexContextSource {
 /// Memory source: retrieves relevant memories and offers them as candidates
 /// (bible §4.7.2 "progressive disclosure" — memory competes, not always-on).
 /// Memory-sourced facts carry their stored provenance/confidence (F12).
+///
+/// This is the **legacy** single-store source (one table, kind labels). Prefer
+/// [`ClassedMemoryContextSource`] for the six real memory systems.
 pub struct MemoryContextSource {
     pub store: Arc<dyn MemoryStore>,
     pub kinds: Vec<MemoryKind>,
@@ -230,6 +236,122 @@ impl ContextSource for MemoryContextSource {
                     c
                 })
                 .collect())
+        })
+    }
+}
+
+/// Context source over the six real memory classes.
+///
+/// Each class is asked its own retrieval question and filled under an independent
+/// token budget — not a single `SELECT * WHERE kind = ?` over one table.
+pub struct ClassedMemoryContextSource {
+    pub system: Arc<ClassedMemorySystem>,
+    pub budgets: ClassBudgets,
+    pub turn_id: Option<String>,
+    pub session_id: Option<String>,
+}
+
+impl ClassedMemoryContextSource {
+    pub fn new(system: Arc<ClassedMemorySystem>, budgets: ClassBudgets) -> Self {
+        Self {
+            system,
+            budgets,
+            turn_id: None,
+            session_id: None,
+        }
+    }
+
+    pub fn with_turn(mut self, turn_id: impl Into<String>) -> Self {
+        self.turn_id = Some(turn_id.into());
+        self
+    }
+
+    pub fn with_session(mut self, session_id: impl Into<String>) -> Self {
+        self.session_id = Some(session_id.into());
+        self
+    }
+}
+
+impl ContextSource for ClassedMemoryContextSource {
+    fn name(&self) -> &str {
+        "classed_memory"
+    }
+
+    fn gather<'a>(
+        &'a self,
+        input: &'a CompileInput,
+    ) -> BoxFuture<'a, Result<Vec<ContextCandidate>>> {
+        Box::pin(async move {
+            let retrieval = self.system.retrieve_for_compile(
+                &input.task,
+                self.turn_id.as_deref(),
+                self.session_id.as_deref(),
+                &self.budgets,
+            )?;
+            let mut out = Vec::new();
+            for slice in &retrieval.slices {
+                for hit in &slice.hits {
+                    let trust = match hit.provenance.authority {
+                        WriteAuthority::Verifier => TrustLevel::Trusted,
+                        WriteAuthority::UserExplicit => TrustLevel::Trusted,
+                        WriteAuthority::ProjectDistill | WriteAuthority::ToolReceipt => {
+                            TrustLevel::Workspace
+                        }
+                        WriteAuthority::EventStream | WriteAuthority::Turn => TrustLevel::Workspace,
+                    };
+                    let confidence = match hit.class {
+                        MemoryClass::Verification => 0.95,
+                        MemoryClass::User => 0.9,
+                        MemoryClass::SemanticProject | MemoryClass::Procedural => 0.85,
+                        MemoryClass::Episodic => 0.75,
+                        MemoryClass::Working => 0.7,
+                    };
+                    let mut labels = vec![
+                        format!("memory_class:{}", hit.class.as_str()),
+                        format!("authority:{:?}", hit.provenance.authority),
+                    ];
+                    if let Some(tier) = &hit.evidence_tier {
+                        labels.push(format!("evidence_tier:{tier}"));
+                    }
+                    let mut derived = hit.provenance.evidence.clone();
+                    if let Some(t) = &hit.provenance.turn_id {
+                        derived.push(format!("turn:{t}"));
+                    }
+                    if let Some(r) = &hit.provenance.run_id {
+                        derived.push(format!("run:{r}"));
+                    }
+                    let provenance = Provenance {
+                        source: format!(
+                            "memory_class:{}:{}",
+                            hit.class.as_str(),
+                            hit.provenance.writer
+                        ),
+                        trust,
+                        confidence,
+                        labels,
+                        derived_from: derived,
+                    };
+                    let mut c = ContextCandidate::new(
+                        format!("memclass:{}:{}", hit.class.as_str(), hit.id),
+                        ContextSourceKind::Memory,
+                        format!("memory:{}", hit.class.as_str()),
+                        hit.text.clone(),
+                        hit.importance.clamp(0.0, 1.0),
+                        provenance,
+                    );
+                    c.importance = Some(hit.importance);
+                    c.recency_ms = Some(hit.provenance.written_at_ms);
+                    // User prefs + verification claims float above ambient code.
+                    if matches!(
+                        hit.class,
+                        MemoryClass::User | MemoryClass::Verification
+                    ) {
+                        c.pin = PinState::UserPinned;
+                    }
+                    out.push(c);
+                }
+            }
+            Ok(out)
         })
     }
 }
@@ -442,5 +564,99 @@ mod tests {
         // Confidence flowed through (not overwritten to 1.0).
         assert!((mem_span.provenance.confidence - 0.7).abs() < 1e-6);
         assert_eq!(mem_span.provenance.trust, TrustLevel::ToolOutput);
+    }
+
+    #[tokio::test]
+    async fn classed_memory_compiler_retrieves_multiple_classes_independent_budgets() {
+        use crate::memory_classes::{
+            ClassMemoryDraft, MemoryClass, ProjectWriteCap, UserWriteCap, VerifierWriteCap,
+        };
+
+        let sys = Arc::new(ClassedMemorySystem::open_in_memory("ws-compile").unwrap());
+        sys.write_semantic_project(
+            &ProjectWriteCap::mint(),
+            "distill",
+            ClassMemoryDraft::new(
+                "semantic_project: the context compiler lives in crates/hawking-context",
+            )
+            .with_importance(0.95)
+            .with_evidence(vec!["path:crates/hawking-context".into()]),
+        )
+        .unwrap();
+        sys.write_user(
+            &UserWriteCap::mint(),
+            "user_intent",
+            ClassMemoryDraft::new("user: prefer small focused diffs").with_importance(0.9),
+        )
+        .unwrap();
+        sys.write_verification(
+            &VerifierWriteCap::mint(),
+            "verifier",
+            ClassMemoryDraft::new("verification: six memory classes are REAL_WIRED")
+                .with_evidence_tier("proven")
+                .with_importance(1.0)
+                .with_run("run-compile-test"),
+        )
+        .unwrap();
+
+        let budgets = ClassBudgets {
+            working: 32,
+            episodic: 32,
+            semantic_project: 256,
+            procedural: 32,
+            user: 128,
+            verification: 128,
+        };
+        let mut compiler = ContextCompiler::new();
+        compiler.add_source(ClassedMemoryContextSource::new(sys.clone(), budgets));
+        let compiled = compiler
+            .compile(CompileInput {
+                profile: ContextProfile::coding_default(2048),
+                model: model(),
+                task: "context compiler memory classes".to_string(),
+            })
+            .await
+            .unwrap();
+
+        let mem_spans: Vec<_> = compiled
+            .manifest
+            .retained
+            .iter()
+            .filter(|s| matches!(s.source, ContextSourceKind::Memory))
+            .collect();
+        assert!(
+            mem_spans.len() >= 2,
+            "compile must retain spans from more than one class; got {:?}",
+            mem_spans
+                .iter()
+                .map(|s| s.title.as_str())
+                .collect::<Vec<_>>()
+        );
+        let titles: Vec<&str> = mem_spans.iter().map(|s| s.title.as_str()).collect();
+        assert!(
+            titles.iter().any(|t| t.contains("semantic_project")),
+            "semantic_project missing: {titles:?}"
+        );
+        assert!(
+            titles
+                .iter()
+                .any(|t| t.contains("user") || t.contains("verification")),
+            "expected user or verification class: {titles:?}"
+        );
+
+        // Independent budgets recorded on the system after retrieve.
+        let ret = sys.last_retrieval().expect("retrieval recorded");
+        assert_eq!(ret.slices.len(), 6);
+        let sem = ret.slice(MemoryClass::SemanticProject).unwrap();
+        let ver = ret.slice(MemoryClass::Verification).unwrap();
+        assert_eq!(sem.budget_tokens, 256);
+        assert_eq!(ver.budget_tokens, 128);
+        assert!(sem.budget_tokens != ver.budget_tokens);
+        assert!(sem.used_tokens <= sem.budget_tokens);
+        assert!(ver.used_tokens <= ver.budget_tokens);
+        // Meter-ready explanations exist for each class.
+        let lines = ret.budget_explanations();
+        assert!(lines.iter().any(|l| l.contains("memory_class.semantic_project")));
+        assert!(lines.iter().any(|l| l.contains("memory_class.verification")));
     }
 }

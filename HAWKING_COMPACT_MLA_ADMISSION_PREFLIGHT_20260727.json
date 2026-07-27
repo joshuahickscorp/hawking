@@ -1,0 +1,126 @@
+{
+  "schema": "hawking.gravity.compact_mla.admission_preflight.v1",
+  "at_utc": "2026-07-27T04:32:16Z",
+  "observed_base_sha": "e4b083bbbb9daf3022c56f009e1e68beeff5956a",
+  "status": "QUALIFIED_DEFAULT_OFF_PREALLOCATION_ADMISSION",
+  "scope": {
+    "default_runtime_change": false,
+    "environment_flag": "HAWKING_GLM_GPU_COMPACT_MLA",
+    "flag_default": false,
+    "sealed_artifact_change": false,
+    "sealed_payload_read": false,
+    "flagship_live_run": false,
+    "mop_change": false,
+    "files": [
+      "crates/hawking-core/src/gravity.rs",
+      "crates/hawking-core/src/gravity_glm.rs",
+      "crates/hawking-core/src/gravity_glm_resident.rs",
+      "crates/hawking-core/tests/gravity_glm_compact_mla_live_parity.rs",
+      "HAWKING_COMPACT_MLA_ADMISSION_PREFLIGHT_20260727.json"
+    ]
+  },
+  "ordering_contract": {
+    "model_open_order": [
+      "open shard index and architecture header",
+      "capture resident-plus-compact decision once",
+      "preflight every layer's kv_b_proj and o_proj PQ header",
+      "construct host session",
+      "allocate selected resident attention, DSA, and activation state"
+    ],
+    "failure_point": "Any missing tensor, non-PQ codec, malformed header, descriptor/header disagreement, rotation, or unsupported geometry returns before resident-state construction.",
+    "environment_race_closed": "The compact decision is captured once and passed into ResidentRuntime::new_with_compact_mla; resident construction cannot re-read a changed process environment and select an unadmitted layout."
+  },
+  "header_only_io": {
+    "pq_payload_prefix_bytes_per_tensor": 64,
+    "tensors_per_layer": 2,
+    "payload_prefix_bytes_per_layer": 128,
+    "flagship_layers_source_modelled": 78,
+    "flagship_payload_prefix_bytes_source_modelled": 9984,
+    "full_payload_read_during_preflight": false,
+    "sha256_claimed_during_preflight": false,
+    "integrity_contract": "A prefix cannot authenticate a complete tensor. The ordinary first live load still reads the complete payload and applies configured SHA-256 verification before upload or dispatch."
+  },
+  "exact_admission": {
+    "kv_b_proj": {
+      "codec": "gravity-pq",
+      "rotate": 0,
+      "descriptor_shape_equals_header": true,
+      "dim": 32,
+      "subspaces": 1,
+      "sub": 32,
+      "cardinality": 256,
+      "bits": 8,
+      "rows": "n_heads * (qk_nope_head_dim + v_head_dim)",
+      "cols": "kv_lora_rank",
+      "represented_latent": "nchunk * dim == kv_lora_rank"
+    },
+    "o_proj": {
+      "codec": "gravity-pq",
+      "rotate": 0,
+      "descriptor_shape_equals_header": true,
+      "rows": "hidden",
+      "cols": "n_heads * v_head_dim"
+    },
+    "live_recheck": "The loaded GpuTensor parameters pass the same validate_compact_mla_layer_params predicate before the five-dispatch compact DAG is encoded."
+  },
+  "negative_witness": {
+    "fixture": "A copy of the bounded direct-u8 live fixture with layer-0 kv_b header changed to structurally valid D16/S1/sub16/nchunk2 while leaving the descriptor SHA stale.",
+    "verify_hash": true,
+    "expected_error": "unsupported compact MLA geometry containing dim=16",
+    "observed": "PASS",
+    "meaning": "The geometry error occurs before ordinary complete-payload SHA verification; no compact resident session/state is constructed."
+  },
+  "validation": {
+    "full_core_library": {
+      "command": "cargo test -p hawking-core --lib -- --nocapture",
+      "passed": 216,
+      "failed": 0,
+      "ignored": 2
+    },
+    "independent_cpu_architecture_proof": {
+      "command": "cargo test -p hawking-core --test gravity_glm_compact_mla_parity -- --nocapture",
+      "passed": 1,
+      "failed": 0
+    },
+    "default_resident_parity": {
+      "command": "env -u HAWKING_GLM_GPU_COMPACT_MLA cargo test -p hawking-core --test gravity_glm_resident_parity -- --nocapture",
+      "passed": 3,
+      "failed": 0
+    },
+    "default_gpu_forward": {
+      "command": "env -u HAWKING_GLM_GPU_COMPACT_MLA cargo test -p hawking-core --test gravity_glm_gpu_forward -- --nocapture",
+      "passed": 3,
+      "failed": 0
+    },
+    "compact_live_and_negative_admission": {
+      "command": "HAWKING_GLM_COMPACT_FIXTURE_DIR=$FIXTURE cargo test -p hawking-core --test gravity_glm_compact_mla_live_parity -- --nocapture",
+      "passed": 1,
+      "failed": 0,
+      "complete_token_prompts": 4,
+      "negative_open_attempts": 1,
+      "greedy_exact_all_prompts": true,
+      "top5_exact_all_prompts": true,
+      "dsa_selection_exact_all_prompts": true,
+      "expert_selection_exact_all_prompts": true
+    }
+  },
+  "mop_observation": {
+    "supervisor_pid": 33542,
+    "principal_receipts": 8,
+    "completed_family": "harth_stream",
+    "workers_observed_active": 16,
+    "active_families": [
+      "har_stream",
+      "speech_stream"
+    ],
+    "expected_workers_after_receipts": 16,
+    "state": "NORMAL_PARTIAL_COMPLETION_NOT_CONTENTION_CLEAR",
+    "action": "none"
+  },
+  "promotion_gate": {
+    "parity_qualified": true,
+    "admission_qualified": true,
+    "performance_promoted": false,
+    "reason": "The active MOP still forbids the contention-sensitive sealed-model A/B and sustained context gates."
+  }
+}

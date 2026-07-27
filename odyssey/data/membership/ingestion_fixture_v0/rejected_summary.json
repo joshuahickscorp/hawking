@@ -1,0 +1,54 @@
+{
+  "admitted_path": "odyssey/data/membership/ingestion_fixture_v0/admitted.jsonl",
+  "contamination_rejections": [
+    {
+      "hits": [
+        {
+          "eval_hash": "d8a0ddb16d622c8477d3070f4097ed043738094ee440db89a65b6c39d9290ba2",
+          "eval_id": "tl02_bpw",
+          "eval_source": "odyssey/evaluation/support_halo_corpus_v0.jsonl",
+          "jaccard": 1.0,
+          "reason": "exact_match",
+          "train_hash": "d8a0ddb16d622c8477d3070f4097ed043738094ee440db89a65b6c39d9290ba2"
+        }
+      ],
+      "rejected": true,
+      "source_id": "fix_leak_exact_halo_tl02"
+    },
+    {
+      "hits": [
+        {
+          "eval_hash": "2d5eae5f912b8364625ae15fd20001547eaeedc7739b1277fef66c8021821746",
+          "eval_id": "tl01_idempotent",
+          "eval_source": "odyssey/evaluation/support_halo_corpus_v0.jsonl",
+          "jaccard": 0.9753086419753086,
+          "reason": "near_duplicate",
+          "train_hash": "f0019c9e57e623c164c7ee35be4cc188859a0baaf23fcb493c8640e1a0b08e21"
+        }
+      ],
+      "rejected": true,
+      "source_id": "fix_leak_near_halo_tl01"
+    },
+    {
+      "hits": [
+        {
+          "eval_hash": "70341a88922238e6f7c461b1370d9f143dc4b7f47b909ade162c419d69fc7b65",
+          "eval_id": "hid_reason_01",
+          "eval_source": "odyssey/evaluation/hidden/hidden_items.jsonl",
+          "jaccard": 0.47058823529411764,
+          "reason": "near_duplicate",
+          "train_hash": "e5b080d509a6ab0eae0d7cf878a807f3e67589026188a27ae970ff7bf33b7a00"
+        }
+      ],
+      "rejected": true,
+      "source_id": "fix_leak_near_hidden_batball"
+    }
+  ],
+  "membership_path": "odyssey/data/membership/ingestion_fixture_v0/MEMBERSHIP.json",
+  "membership_sha256": "65299684cc67ca6bcd0df3b3894f482d1c5b032582fc56fdde609b59eb19cb25",
+  "n_admitted": 3,
+  "n_input": 8,
+  "n_rejected_contamination": 3,
+  "n_rejected_exact_dup": 1,
+  "n_rejected_near_dup": 1
+}

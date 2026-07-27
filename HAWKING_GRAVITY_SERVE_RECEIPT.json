@@ -1,0 +1,49 @@
+{
+  "schema": "hawking.serve.gravity.v1",
+  "status": "PARTIAL",
+  "artifact_index_sha256": "33d40c254eb982d4a495f5f0792a116e9d9810d937f5f3969f4f84742b2364d9",
+  "artifact_index_sha256_source": "sha256 of model.gravity.index.json beside the Math-Preserve shards; computed on disk independently of the server process",
+  "entry_path": [
+    "crates/hawking/src/main.rs:140 — --gravity CLI flag (default unset) + HAWKING_GRAVITY env read at serve dispatch",
+    "crates/hawking/src/main.rs:750 — GravityEngine::resolve_entry maps dir|shard → first model-*.gravity shard",
+    "crates/hawking/src/main.rs:895 — hawking_serve::run(ServeOptions { weights: resolved_shard, request_timeout_secs, .. })",
+    "crates/hawking-serve/src/lib.rs:545 — hawking_core::model::load_engine(&opts.weights, cfg)",
+    "crates/hawking-core/src/model/mod.rs:67-68 — GravityEngine::is_gravity → GravityEngine::load",
+    "crates/hawking-core/src/model/gravity_engine.rs:315 — GravityGlmGpu::open_dir_with(ctx, parent_dir, verify_hash=true)",
+    "crates/hawking-serve/src/lib.rs:555-672 — GravityServeMeta (index sha256, chat template, base_runtime, explicit 3600s timeout)",
+    "crates/hawking-serve/src/http.rs:183 — POST /v1/chat/completions",
+    "crates/hawking-serve/src/http.rs:521 — render_chat_for_state → glm_chat::render_glm_chat (artifact chat_template.jinja markers)",
+    "crates/hawking-serve/src/http.rs:710 — sse_response / json_full_response → BatchDriver::admit (encode_prompt_for_batch)",
+    "crates/hawking-serve/src/lib.rs:900-917 — prefill_slot Unimplemented → Engine::generate fallback (streams tokens)",
+    "crates/hawking-core/src/model/gravity_engine.rs:335-385 — generate: tokenizer.encode → model.forward → loop model.forward_at"
+  ],
+  "flag_or_env": "--gravity <PATH> | HAWKING_GRAVITY=<PATH> (also --gravity-request-timeout-secs | HAWKING_GRAVITY_REQUEST_TIMEOUT_SECS)",
+  "default_off": true,
+  "default_off_evidence": "./target/release/hawking serve --addr 127.0.0.1:1 → exit error '--weights is required when --gravity / HAWKING_GRAVITY is unset'",
+  "real_completion": null,
+  "real_completion_blocked": {
+    "reason": "MTLCopyAllDevices()/MTLCreateSystemDefaultDevice() returned zero devices in this agent session; gravity_glm_tps and hawking serve both fail at MetalContext::new with 'no Metal-capable GPU'. ioreg still shows AGXAcceleratorG15X (recoveryCount=42). Not a code-path gap — host Metal userspace is unavailable to this process. Re-run tools/eval/gravity_serve_verify.py from a console session with Metal.",
+    "attempted_commands": [
+      "./target/release/hawking serve --gravity <Math-Preserve.gravity> --addr 127.0.0.1:8899",
+      "cargo run --release -p hawking-core --example gravity_glm_tps -- --dir <Math-Preserve.gravity> --context 1 --decode 0 --no-verify-hash",
+      "swift MTLCopyAllDevices probe → count 0"
+    ]
+  },
+  "template_source": "tokenizer/chat_template.jinja beside the artifact tokenizer (loaded by GravityEngine::load; rendered by crates/hawking-serve/src/glm_chat.rs after marker validation; glm_moe_dsa refuses to load if the file is missing)",
+  "fallback_present": false,
+  "fallback_present_evidence": "no alternate model path; generation uses only GravityGlmGpu via GravityEngine; healthz reports fallback_present=false",
+  "existing_tests_pass": true,
+  "existing_tests": {
+    "cargo test -p hawking-serve": "exit 0 (all non-ignored tests pass, including http_integration healthz_and_models_ok)",
+    "cargo test -p hawking-core --lib resolve_tests": "exit 0 (2 passed)",
+    "cargo test -p hawking-serve --lib glm_chat": "exit 0 (4 passed)"
+  },
+  "support_halo_gate_print_baseline_command": "tools/eval/support_halo_gate.py print-baseline-command now names `cargo run --release -p hawking -- serve --gravity … --addr 127.0.0.1:8899` (was a non-existent --port form)",
+  "interface_changes_required_in_forbidden_files": [],
+  "notes": [
+    "GravityEngine already existed and implemented generate; the gap was CLI + admit encode + GLM chat template + capability reporting + timeouts.",
+    "Batch path still does not implement prefill_slot; serve falls back to single-stream generate (correct for reachability; no empty 200).",
+    "No decode/Metal/kernel/cost_ledger/numeric_parity changes. No fallback model. HIDE_KERNEL_TURN untouched.",
+    "Verify script: tools/eval/gravity_serve_verify.py"
+  ]
+}

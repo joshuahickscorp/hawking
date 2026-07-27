@@ -1,0 +1,143 @@
+{
+  "schema": "hawking.temporal_gravity.mechanism_receipt.v1",
+  "created_at_utc": "2026-07-27T06:29:54Z",
+  "status": "BOUNDED_INDIRECT_PROJECTION_PROOF_QUALIFIED_DEFAULT_UNUSED",
+  "mechanism": "Build an immutable, generation-tagged routed-expert descriptor snapshot from currently resident LRU entries and execute one selected direct-u8 PQ projection through device-owned expert IDs and execution slots.",
+  "base_commit": "cbd95435f608320dada4a11bae6a7267a5f2f4ce",
+  "scope": {
+    "runtime_default_changed": false,
+    "production_forward_wired": false,
+    "sealed_math_preserve_touched": false,
+    "mop_touched": false,
+    "synthetic_data_only": true,
+    "performance_claim": false
+  },
+  "descriptor_abi": {
+    "DeviceExpertTensorRef_bytes": 56,
+    "DeviceExpertTensorRef_alignment": 8,
+    "DeviceExpertTriplet_bytes": 176,
+    "DeviceExpertTriplet_alignment": 8,
+    "flagship_routed_experts_per_layer": 256,
+    "flagship_layer_table_bytes": 45056,
+    "tagged_kinds": {
+      "gravity_pq": 1,
+      "native_bf16": 2
+    },
+    "rust_compile_time_size_checks": true,
+    "metal_compile_time_size_checks": true
+  },
+  "snapshot_contract": {
+    "source": "Currently resident entries in the existing name-keyed BoundedLru while the caller owns its cache guard.",
+    "ready_rule": "An expert entry is ready only when gate, up, and down are all device-resident and all backing Metal handles are cloned into the immutable lease.",
+    "patch_in_place": false,
+    "lease": "Cloned Buffer handles outlive logical LRU eviction and are retained through command completion.",
+    "indirect_resource_declaration": "Every leased backing Buffer is passed to MTLComputeCommandEncoder.useResources with read usage before raw-address dereference.",
+    "generation_zero_reserved": true,
+    "maximum_routed_entries": 256
+  },
+  "device_validation": {
+    "inputs_owned_by_device": [
+      "score-ranked expert IDs",
+      "ascending expert-ID execution-slot permutation"
+    ],
+    "checks_before_dereference": [
+      "execution slot range",
+      "expert ID range",
+      "triplet ready mask",
+      "triplet generation",
+      "all projection generations",
+      "required tensor kind",
+      "non-null addresses",
+      "direct-u8 PQ geometry",
+      "gate/up/down hidden and intermediate dimensions"
+    ],
+    "miss_output": "One u32 mask indexed by execution position.",
+    "selected_id_download_before_projection_bytes": 0,
+    "selected_weight_download_before_projection_bytes": 0
+  },
+  "proof_fixture": {
+    "routed_experts": 4,
+    "resident_ready_experts": [
+      0,
+      2
+    ],
+    "selected_score_order": [
+      2,
+      0
+    ],
+    "device_execution_slots": [
+      1,
+      0
+    ],
+    "indirect_execution_position_zero_expert": 0,
+    "projection": "gate",
+    "geometry": [
+      32,
+      32
+    ],
+    "forced_logical_lru_eviction_after_snapshot": true,
+    "leased_resource_survived_eviction": true,
+    "cache_high_water_within_budget": true,
+    "hit_dispatches": 2,
+    "hit_command_buffers": 1,
+    "hit_waits": 1,
+    "hit_miss_mask": 0,
+    "miss_selected_expert": 1,
+    "miss_mask": 1,
+    "miss_destination_byte_identical": true
+  },
+  "numeric_parity_v2_1": {
+    "authority": "Complete 32-value FP64 dense matvec over the exact f16 codebook values addressed by the direct-u8 descriptor.",
+    "relative_l2": 9.505e-08,
+    "max_meaningful_relative": 2.252e-07,
+    "meaningful_relative_bound": 1e-05,
+    "greedy_exact": true,
+    "top5_exact": true,
+    "result": "PASS"
+  },
+  "regression_validation": {
+    "full_core_library": {
+      "passed": 223,
+      "failed": 0,
+      "ignored": 3
+    },
+    "default_resident_parity": {
+      "passed": 3,
+      "failed": 0
+    },
+    "default_gpu_forward": {
+      "passed": 3,
+      "failed": 0
+    },
+    "sparse_complete_token": {
+      "passed": 1,
+      "failed": 0,
+      "prompts": 4,
+      "metrics_restored_bit_for_bit_after_shader_pragma_isolation": true
+    },
+    "native_bf16_accurate_candidate": {
+      "passed_cases": 27,
+      "total_cases": 27,
+      "known_sequential_failure_still_reported": true
+    },
+    "clippy_lib_no_deps_deny_warnings": "PASS",
+    "rustfmt": "PASS",
+    "diff_check": "PASS"
+  },
+  "qualification": {
+    "qualified": [
+      "The cache-indexed raw-address ABI is accepted by Rust and Metal.",
+      "A resident direct-u8 projection can be chosen entirely from device IDs and execution slots.",
+      "The resource lease remains valid after the corresponding logical cache entry is evicted.",
+      "A missing selected triplet is detected before dereference and the projection destination is not mutated."
+    ],
+    "not_qualified": [
+      "This proof is not wired into production forward.",
+      "Only one PQ projection is executed indirectly; gate/up/SiLU/down/combine/shared-last/residual are not yet a table-driven wave.",
+      "Native-bf16 indirect execution is tagged but not executed by this PQ kernel.",
+      "The miss proof covers the projection destination, not yet the complete pre-layer residual and trace contract.",
+      "No latency improvement is claimed."
+    ],
+    "next_boundary": "Extend the same validated hit predicate across gate, up, SiLU, down, routed weighted combine, shared-last, and guarded residual mutation in one command buffer; preserve an exact typed miss before any output is consumed."
+  }
+}

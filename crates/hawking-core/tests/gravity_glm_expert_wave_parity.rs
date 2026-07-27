@@ -191,8 +191,8 @@ fn device_silu_mul_v21_against_f64_over_several_vectors() {
     );
 }
 
-/// Static drain contract: 234 → 78 from batched_mlp alone; default resident
-/// estimator stays frozen at 583.
+/// Static drain contract: 234 → 78 from batched_mlp alone; the default
+/// resident estimator remains the source-derived 586 logical boundaries.
 #[test]
 fn expert_wave_static_drains_flagship() {
     let raw = std::fs::read(
@@ -206,7 +206,7 @@ fn expert_wave_static_drains_flagship() {
     // Layer: default 3 drains (gate, up, down); wave 1 drain.
     assert_eq!(estimate_batched_mlp_drains_per_token(&arch, false), 234);
     assert_eq!(estimate_batched_mlp_drains_per_token(&arch, true), 78);
-    assert_eq!(estimate_resident_waits_per_token(&arch), 583);
+    assert_eq!(estimate_resident_waits_per_token(&arch), 586);
     assert_eq!(estimate_resident_expert_wave_waits_per_token(&arch), 430);
 
     // Flag defaults off — isolation contract.

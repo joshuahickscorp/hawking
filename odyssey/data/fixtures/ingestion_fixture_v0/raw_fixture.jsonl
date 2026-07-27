@@ -1,0 +1,8 @@
+{"id": "fix_clean_01", "role": "fixture", "label": "FIXTURE_NOT_TRAINING_DATA", "text": "FIXTURE: The streaming adapter budget on this host is approximately two gibibytes for a smoke step."}
+{"id": "fix_clean_02", "role": "fixture", "label": "FIXTURE_NOT_TRAINING_DATA", "text": "FIXTURE: Membership records store a content sha256 per admitted item before any training step may read it."}
+{"id": "fix_exact_dup_of_clean_01", "role": "fixture", "label": "FIXTURE_NOT_TRAINING_DATA", "text": "FIXTURE: The streaming adapter budget on this host is approximately two gibibytes for a smoke step."}
+{"id": "fix_near_dup_within", "role": "fixture", "label": "FIXTURE_NOT_TRAINING_DATA", "text": "FIXTURE: Membership records store a content sha256 per admitted item before any training step can read it."}
+{"id": "fix_leak_exact_halo_tl02", "role": "fixture", "label": "FIXTURE_DELIBERATE_LEAK", "text": "What does BPW stand for in model compression / quantization? Answer briefly and include the exact phrase \"bits per weight\"."}
+{"id": "fix_leak_near_halo_tl01", "role": "fixture", "label": "FIXTURE_DELIBERATE_LEAK", "text": "In one or two sentences, define what an idempotent HTTP method means. Include the word \"idempotent\" and the idea that repeating the request does not change resource state further."}
+{"id": "fix_leak_near_hidden_batball", "role": "fixture", "label": "FIXTURE_DELIBERATE_LEAK", "text": "A bat and a ball cost $1.10 in total. The bat costs one dollar more than the ball. How much does the ball cost?"}
+{"id": "fix_clean_03", "role": "fixture", "label": "FIXTURE_NOT_TRAINING_DATA", "text": "FIXTURE: Near-duplicate detection uses character shingles and Jaccard thresholds stricter for train-versus-eval than within-corpus collapse."}

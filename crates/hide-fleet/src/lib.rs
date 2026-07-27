@@ -3,8 +3,13 @@
 //! This crate implements the headless fabric described in HIDE bible chapter
 //! 09: job queues, machine-wide resource admission, isolation leases, merge
 //! selection, batch reports, and remote protocol contracts.
+//!
+//! The [`fabric`] module is the distributed *placement/coordination* software
+//! plane (agents, discovery, placement simulator, KV ownership, pipeline,
+//! failure/replay). It does not execute inference.
 
 pub mod batch;
+pub mod fabric;
 pub mod fleetview;
 pub mod isolate;
 pub mod manager;

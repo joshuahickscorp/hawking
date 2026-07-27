@@ -1,0 +1,79 @@
+{
+  "schema": "hawking.model_vault.v1",
+  "at": "2026-07-27T06:40:00Z",
+  "owner": "controller",
+  "status": "CONTRACT_SEALED_NOT_EXECUTED",
+
+  "two_registries_never_one": {
+    "Source_Vault": {
+      "holds": "immutable upstream weights and their metadata",
+      "identity": "upstream repo + revision + per-file sha256",
+      "rule": "do NOT duplicate public source weights unless reproducibility or upstream-availability risk genuinely requires it. Mirroring a public model because it is convenient wastes storage that the Gravity Catalogue needs."
+    },
+    "Gravity_Catalogue": {
+      "holds": "Hawking-produced distributable artifacts",
+      "identity": "artifact index sha256 + allocation manifest sha256",
+      "rule": "an artifact enters only with a capability verdict, not merely an integrity seal. Math-Preserve is the standing lesson: 282/282 shards, byte-perfect, and it cannot complete '2 + 2 ='."
+    }
+  },
+
+  "personal_cold_storage": {
+    "law": "cloud drives are a cold vault and a personal backup. They are NOT active random-access model storage during inference, and NOT the canonical public distribution layer.",
+    "google_drive": {
+      "supported_mode": "Drive for desktop, My Drive set to Stream files; the vault lives primarily in the cloud and files are fetched only when accessed",
+      "explicitly_unsupported": "using a streamed Drive path as the model directory for a live inference run. Random access over a streaming filesystem during decode is a performance and correctness hazard, not a storage strategy."
+    },
+    "icloud_drive": {
+      "supported_mode": "upload and sync sharded files, verify cloud status, then Control-click -> Remove Download to evict the local copy",
+      "constraint": "keep individual files below the platform's current per-file eligibility limit; shard accordingly rather than assuming"
+    },
+    "staging_pipeline": {
+      "law": "one shard in flight at a time. The pipeline's purpose is to process a vault larger than local disk without ever requiring the whole thing locally.",
+      "ordered_steps": [
+        "download ONE source shard",
+        "verify its hash against the manifest",
+        "process it",
+        "upload the generated shard or artifact",
+        "verify the REMOTE hash -- re-read what landed, do not trust the upload's success code",
+        "evict the local download and any cache for that shard",
+        "continue to the next shard"
+      ],
+      "why_remote_hash_verification_is_not_optional": "an upload that reports success and silently truncated is indistinguishable from one that worked, until the artifact is needed. Verifying the remote copy is the only step that catches it, and it is the step most likely to be dropped for speed.",
+      "resumability": "the pipeline records which shards are staged, verified, uploaded and evicted, so an interrupted run resumes rather than restarting",
+      "status": "CONTRACT ONLY. Not executed: this campaign is LIGHT_ONLY and staging a vault is neither light nor useful while no artifact qualifies."
+    }
+  },
+
+  "public_release_storage": {
+    "requirement": "a content-addressed model registry or object store",
+    "must_carry": ["manifest", "checksums", "license", "source lineage", "hardware envelope", "BPW and bytes", "quality receipts", "runtime compatibility", "resume and range downloads"],
+    "explicitly_not": "Google Drive or iCloud. Those are personal staging and backup. A public distribution layer needs range requests, stable URLs and content addressing, and consumer drives provide none of them reliably."
+  },
+
+  "release_catalogue_gate": {
+    "law": "a model enters the release catalogue only after ALL of: weights and license exist; source identity is sealed; adapter support is honest; the artifact generates correctly; quality gates pass; a runtime receipt exists.",
+    "current_qualifying_count": 0,
+    "why_zero": "no Hawking artifact currently generates correctly. The one packed flagship is semantically collapsed. Adapter grades are honest but none is PRODUCTION: 2 REAL_TENSOR_DECODE-backed, 3 SMALL_REAL_CHECKPOINT, 1 SYNTHETIC_PARITY, 1 SOURCE_HEADER_VALIDATED, 4 DECLARED."
+  },
+
+  "top_six_selector": {
+    "law": "do NOT hard-code six names now. Select at release time against measured criteria, because a list frozen today would be frozen against today's evidence, and today's evidence has zero qualifying artifacts.",
+    "criteria": [
+      {"name": "frontier quality", "measured_by": "support-halo and math profile against a capable artifact"},
+      {"name": "open-weight and license clarity", "measured_by": "the license exists, is readable, and permits redistribution of derived artifacts"},
+      {"name": "architecture diversity", "measured_by": "the six should not be six variations of one topology; dense, MoE and state-space should each appear if any qualifies"},
+      {"name": "hardware accessibility", "measured_by": "at least one must run on a machine far smaller than an M3 Ultra"},
+      {"name": "verified Hawking capability", "measured_by": "the artifact generates correctly -- the gate Math-Preserve fails"},
+      {"name": "artifact size", "measured_by": "bytes and complete BPW, exactly accounted"},
+      {"name": "demand", "measured_by": "stated user need, not inferred popularity"}
+    ],
+    "candidate_families_watch_list_only": ["GLM", "Kimi", "DeepSeek", "Qwen", "MiniMax", "one smaller broadly-runnable Llama or Mistral class model"],
+    "kimi_k3": {
+      "status": "WATCH_ONLY",
+      "rule": "remains watch-only until official weights, model card, license and source hashes exist. It is not a candidate, it is a thing to check for.",
+      "do_not": "do not pre-build adapter support against a speculative architecture, and do not list it as forthcoming"
+    }
+  },
+
+  "relationship_to_hide_you": "YOU's model routing consumes this catalogue. Until it has an entry, YOU routes to whatever General model is configured, and must remain fully usable with exactly one."
+}

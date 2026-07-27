@@ -1,0 +1,81 @@
+{
+  "schema": "hawking.gravity.resident_attention_layout_variant.v1",
+  "at_utc": "2026-07-27T04:08:00Z",
+  "observed_base_sha": "1ad6f7f581fa0e7d73811326255bbfe02f185ac2",
+  "status": "DEFAULT_INERT_LAYOUT_PREREQUISITE_NOT_PROMOTED",
+  "scope": {
+    "runtime_or_default_change": false,
+    "environment_flag_change": false,
+    "sealed_artifact_change": false,
+    "mop_change": false,
+    "live_model_run": false,
+    "files": [
+      "crates/hawking-core/src/gravity_glm_resident.rs",
+      "HAWKING_RESIDENT_ATTENTION_LAYOUT_VARIANT_20260727.json"
+    ]
+  },
+  "layout": {
+    "owner": "ResidentAttentionState",
+    "variants": [
+      "Expanded(Vec<LayerGpuCache>)",
+      "Compact(CompactResidentCache)"
+    ],
+    "mutual_exclusion": "Rust enum ownership makes simultaneous compact and expanded K/V state unrepresentable in one ResidentSession.",
+    "default_constructor": "ResidentSession::new selects Expanded.",
+    "compact_constructor": "ResidentSession::new_compact is private, unused by ResidentRuntime, and runtime-unreachable.",
+    "shared_outside_variant": [
+      "one DSA index-key buffer per layer",
+      "sequence selection scratch",
+      "logical sequence length",
+      "shared stable top-k state",
+      "wait accounting"
+    ],
+    "expanded_forward_fail_closed": "Attempting to access expanded K/V from a compact session returns an error before attention execution."
+  },
+  "growth": {
+    "expanded_state": "Existing 8K to 16K to 32K preservation test remains green.",
+    "compact_state": "Compact latent/RoPE state, DSA index history, and sequence scratch co-grow from 8 to 16 tokens in the integrated session fixture.",
+    "sentinels_preserved": true,
+    "selected_layout_preserved": true,
+    "invalid_expanded_seq_len_fails_closed": true
+  },
+  "flagship_static_implication": {
+    "qualification": "Structural/static implication only; no flagship-sized allocation or live model run was performed.",
+    "capacity_tokens": 32768,
+    "expanded_kv_core_gib": 312.0,
+    "compact_mla_core_gib": 5.484375,
+    "side_by_side_allocation_admitted": false,
+    "authority": "HAWKING_COMPACT_MLA_CACHE_OWNER_20260727.json"
+  },
+  "validation": {
+    "compact_variant_test": {
+      "command": "cargo test -p hawking-core resident_compact_layout_excludes_expanded_kv_and_grows_with_index_state --lib -- --nocapture",
+      "passed": 1,
+      "failed": 0
+    },
+    "expanded_growth_test": {
+      "command": "cargo test -p hawking-core resident_growth_preserves_kv_index_keys_and_scores_through_32k_reserve --lib -- --nocapture",
+      "passed": 1,
+      "failed": 0
+    },
+    "full_core_library": {
+      "command": "cargo test -p hawking-core --lib -- --nocapture",
+      "passed": 211,
+      "failed": 0,
+      "ignored": 2
+    },
+    "diff_check": "PASS"
+  },
+  "promotion_gate": {
+    "promoted": false,
+    "reason": "The ownership layout is integrated but the compact constructor is deliberately unreachable from ResidentRuntime, and forward_resident still accepts only expanded K/V.",
+    "next_required_mechanisms": [
+      "explicit default-off runtime selection",
+      "compact forward branch binding live kv_b_proj and o_proj tensors",
+      "stable DSA-ranked position upload",
+      "complete-token Numeric Parity V2.1",
+      "contention-authorized live A/B",
+      "sustained 2K/8K/32K validation"
+    ]
+  }
+}

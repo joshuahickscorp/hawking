@@ -43,7 +43,10 @@ pub trait WeightAccess {
     /// dominated by: each is independent of the others, so nothing about
     /// correctness requires paying for eight of them one at a time.
     fn matvec_batch(&self, calls: &[(&str, &[f32])]) -> Result<Vec<Vec<f32>>> {
-        calls.iter().map(|&(name, x)| self.matvec(name, x)).collect()
+        calls
+            .iter()
+            .map(|&(name, x)| self.matvec(name, x))
+            .collect()
     }
 }
 
@@ -161,7 +164,8 @@ impl GlmArch {
             indexer_types: cfg_strings(a, "indexer_types")?,
             mlp_layer_types: cfg_strings(a, "mlp_layer_types")?,
         };
-        if arch.indexer_types.len() != arch.n_layers || arch.mlp_layer_types.len() != arch.n_layers {
+        if arch.indexer_types.len() != arch.n_layers || arch.mlp_layer_types.len() != arch.n_layers
+        {
             return Err(Error::Gravity(format!(
                 "layer schedules are {} / {} long but the model has {} layers",
                 arch.indexer_types.len(),
@@ -189,6 +193,10 @@ impl GlmArch {
 }
 
 fn rmsnorm(x: &[f32], weight: &[f32], eps: f32) -> Vec<f32> {
+    let _norm = crate::cost_ledger::Scope::new(crate::cost_ledger::Bucket::Norm);
+    // sum(v²): n mul + n add; scale/output: n mul + n add for eps path,
+    // plus one sqrt. Source-modelled, not a hardware counter.
+    crate::cost_ledger::record_source_modelled_operations((4 * x.len()) as u64, 0, 0, 1, 0);
     let mean_sq = x.iter().map(|v| v * v).sum::<f32>() / x.len() as f32;
     let inv = 1.0 / (mean_sq + eps).sqrt();
     x.iter().zip(weight).map(|(v, w)| v * inv * w).collect()
@@ -196,6 +204,8 @@ fn rmsnorm(x: &[f32], weight: &[f32], eps: f32) -> Vec<f32> {
 
 /// Affine LayerNorm, used only by the DSA indexer's key projection.
 fn layernorm(x: &[f32], weight: &[f32], bias: &[f32], eps: f32) -> Vec<f32> {
+    let _norm = crate::cost_ledger::Scope::new(crate::cost_ledger::Bucket::Norm);
+    crate::cost_ledger::record_source_modelled_operations((8 * x.len() + 4) as u64, 0, 0, 1, 0);
     let n = x.len() as f32;
     let mean = x.iter().sum::<f32>() / n;
     let var = x.iter().map(|v| (v - mean) * (v - mean)).sum::<f32>() / n;
@@ -206,6 +216,8 @@ fn layernorm(x: &[f32], weight: &[f32], bias: &[f32], eps: f32) -> Vec<f32> {
 }
 
 fn silu_mul(gate: &[f32], up: &[f32]) -> Vec<f32> {
+    let n = gate.len().min(up.len()) as u64;
+    crate::cost_ledger::record_source_modelled_operations(n.saturating_mul(4), 0, 0, n, 0);
     gate.iter()
         .zip(up)
         .map(|(g, u)| (g / (1.0 + (-g).exp())) * u)
@@ -500,16 +512,33 @@ fn dense_mlp(weights: &dyn WeightAccess, prefix: &str, x: &[f32]) -> Result<Vec<
 /// output -- so nothing about correctness requires visiting them one at a
 /// time; only `down_proj`'s input differs per expert, and even that batches,
 /// since `matvec_batch` takes its own `x` per call.
-fn batched_mlp(weights: &dyn WeightAccess, prefixes: &[String], x: &[f32]) -> Result<Vec<Vec<f32>>> {
-    let gate_names: Vec<String> = prefixes.iter().map(|p| format!("{p}.gate_proj.weight")).collect();
-    let up_names: Vec<String> = prefixes.iter().map(|p| format!("{p}.up_proj.weight")).collect();
+fn batched_mlp(
+    weights: &dyn WeightAccess,
+    prefixes: &[String],
+    x: &[f32],
+) -> Result<Vec<Vec<f32>>> {
+    let gate_names: Vec<String> = prefixes
+        .iter()
+        .map(|p| format!("{p}.gate_proj.weight"))
+        .collect();
+    let up_names: Vec<String> = prefixes
+        .iter()
+        .map(|p| format!("{p}.up_proj.weight"))
+        .collect();
     let gate_calls: Vec<(&str, &[f32])> = gate_names.iter().map(|n| (n.as_str(), x)).collect();
     let up_calls: Vec<(&str, &[f32])> = up_names.iter().map(|n| (n.as_str(), x)).collect();
     let gates = weights.matvec_batch(&gate_calls)?;
     let ups = weights.matvec_batch(&up_calls)?;
 
-    let hidden: Vec<Vec<f32>> = gates.iter().zip(&ups).map(|(g, u)| silu_mul(g, u)).collect();
-    let down_names: Vec<String> = prefixes.iter().map(|p| format!("{p}.down_proj.weight")).collect();
+    let hidden: Vec<Vec<f32>> = gates
+        .iter()
+        .zip(&ups)
+        .map(|(g, u)| silu_mul(g, u))
+        .collect();
+    let down_names: Vec<String> = prefixes
+        .iter()
+        .map(|p| format!("{p}.down_proj.weight"))
+        .collect();
     let down_calls: Vec<(&str, &[f32])> = down_names
         .iter()
         .zip(&hidden)
@@ -596,14 +625,6 @@ fn forward_impl(
     let mut logits = Vec::new();
     let mut trace = GlmTrace::default();
 
-    // Gate geometry for active routed-expert bytes (projection byte size is
-    // filled in live by the GPU cache when known; default is the sealed figure).
-    cost_ledger::set_geometry_active_bytes(cost_ledger::geometry_active_bytes(
-        a.n_layers,
-        a.num_experts_per_tok,
-        None,
-    ));
-
     for (i, &token) in tokens.iter().enumerate() {
         let pos = start_pos + i;
         if token as usize >= a.vocab_size {
@@ -613,11 +634,11 @@ fn forward_impl(
             )));
         }
         let mut x = {
-            let _orch = cost_ledger::Scope::new(Bucket::CpuOrchestration);
+            let _embedding = cost_ledger::Scope::new(Bucket::EmbeddingAndPosition);
             weights.row("model.embed_tokens.weight", token as usize, a.hidden)?
         };
         let (cos, sin) = {
-            let _orch = cost_ledger::Scope::new(Bucket::CpuOrchestration);
+            let _position = cost_ledger::Scope::new(Bucket::EmbeddingAndPosition);
             rope_cos_sin(arch, pos)
         };
         let mut shared_topk: Option<Vec<usize>> = None;
@@ -678,15 +699,25 @@ fn forward_impl(
                     let src = &q[head * qk_dim..(head + 1) * qk_dim];
                     let dst = &mut queries[head * qk_dim..(head + 1) * qk_dim];
                     dst[..a.qk_nope_head_dim].copy_from_slice(&src[..a.qk_nope_head_dim]);
-                    dst[a.qk_nope_head_dim..]
-                        .copy_from_slice(&rope_interleaved(&src[a.qk_nope_head_dim..], &cos, &sin));
+                    dst[a.qk_nope_head_dim..].copy_from_slice(&rope_interleaved(
+                        &src[a.qk_nope_head_dim..],
+                        &cos,
+                        &sin,
+                    ));
                 }
 
                 let topk = match a.indexer_types[layer].as_str() {
                     "full" => {
                         let t = indexer_topk(
-                            weights, arch, &attn_p, &h, &q_resid, &mut session.caches[layer], pos,
-                            &cos, &sin,
+                            weights,
+                            arch,
+                            &attn_p,
+                            &h,
+                            &q_resid,
+                            &mut session.caches[layer],
+                            pos,
+                            &cos,
+                            &sin,
                         )?;
                         shared_topk = Some(t.clone());
                         t
@@ -750,10 +781,7 @@ fn forward_impl(
                         }
                         let w = prob / total;
                         let off = (t * a.n_heads + head) * a.v_head_dim;
-                        for (o, v) in out
-                            .iter_mut()
-                            .zip(&cache.values[off..off + a.v_head_dim])
-                        {
+                        for (o, v) in out.iter_mut().zip(&cache.values[off..off + a.v_head_dim]) {
                             *o += w * v;
                         }
                     }
@@ -767,7 +795,7 @@ fn forward_impl(
             };
 
             let h2 = {
-                let _orch = cost_ledger::Scope::new(Bucket::CpuOrchestration);
+                let _norm = cost_ledger::Scope::new(Bucket::Norm);
                 rmsnorm(
                     &x,
                     &weights.dense(&format!("{p}.post_attention_layernorm.weight"))?,
@@ -776,7 +804,7 @@ fn forward_impl(
             };
             let mlp_out = match a.mlp_layer_types[layer].as_str() {
                 "dense" => {
-                    let _orch = cost_ledger::Scope::new(Bucket::CpuOrchestration);
+                    let _dense = cost_ledger::Scope::new(Bucket::DenseExperts);
                     dense_mlp(weights, &format!("{p}.mlp"), &h2)?
                 }
                 "sparse" => {
@@ -791,7 +819,7 @@ fn forward_impl(
                 }
             };
             {
-                let _orch = cost_ledger::Scope::new(Bucket::CpuOrchestration);
+                let _residual = cost_ledger::Scope::new(Bucket::ResidualAndState);
                 for (xv, m) in x.iter_mut().zip(&mlp_out) {
                     *xv += m;
                 }
@@ -803,7 +831,7 @@ fn forward_impl(
         }
 
         {
-            let _head = cost_ledger::Scope::new(Bucket::FinalHeadAndSampling);
+            let _head = cost_ledger::Scope::new(Bucket::FinalHead);
             let final_hidden = rmsnorm(&x, &weights.dense("model.norm.weight")?, a.rms_norm_eps);
             logits = weights.matvec("lm_head.weight", &final_hidden)?;
         }
@@ -821,6 +849,41 @@ pub fn gpu_resident_state_enabled() -> bool {
     crate::env_on(GPU_RESIDENT_STATE_ENV)
 }
 
+/// Opt-in compact MLA attention state and absorbed device attention path.
+///
+/// Default off. This is only consulted while constructing an already-enabled
+/// resident runtime. The ordinary resident layout and forward path remain the
+/// expanded K/V parity oracle when the flag is absent.
+pub const GPU_COMPACT_MLA_ENV: &str = "HAWKING_GLM_GPU_COMPACT_MLA";
+
+/// Whether [`GPU_COMPACT_MLA_ENV`] requests compact resident MLA attention.
+pub fn gpu_compact_mla_enabled() -> bool {
+    crate::env_on(GPU_COMPACT_MLA_ENV)
+}
+
+/// Opt-in device DSA scoring and stable top-k feeding compact MLA directly.
+///
+/// Default off and admitted only together with resident compact MLA. The
+/// ordinary host DSA selection remains the parity oracle when absent.
+pub const GPU_DEVICE_DSA_ENV: &str = "HAWKING_GLM_GPU_DEVICE_DSA";
+
+/// Whether [`GPU_DEVICE_DSA_ENV`] requests device-resident DSA selection.
+pub fn gpu_device_dsa_enabled() -> bool {
+    crate::env_on(GPU_DEVICE_DSA_ENV)
+}
+
+/// Opt-in device noaux_tc router selection for the resident GLM path.
+///
+/// Default off. The router gate, sigmoid/correction, exact stable group/expert
+/// selection, and selected weights remain on device; only the selected IDs and
+/// weights are read back for the current host-named expert cache.
+pub const GPU_DEVICE_ROUTER_ENV: &str = "HAWKING_GLM_GPU_DEVICE_ROUTER";
+
+/// Whether [`GPU_DEVICE_ROUTER_ENV`] requests device noaux_tc selection.
+pub fn gpu_device_router_enabled() -> bool {
+    crate::env_on(GPU_DEVICE_ROUTER_ENV)
+}
+
 /// Opt-in device-resident native.bf16 matvec + GPU head sampling for GLM.
 ///
 /// Default off — host dense matvec remains the parity oracle. When set:
@@ -829,9 +892,13 @@ pub fn gpu_resident_state_enabled() -> bool {
 ///   (no host widen), kept under the GPU weight-cache budget, and projected
 ///   with `gemv_native_bf16_seq` (bf16 input, sequential f32 accumulate);
 /// - on the resident path the head runs blockwise logits + argmax + top-k on
-///   device and **reads back only the token plus top-k diagnostics** (not the
-///   154,880-element logit vector). Full logits require
+///   device; final RMSNorm is prepended to the same command buffer, so the
+///   shared residual stream is not touched by the CPU at the head boundary. The default
+///   readback is **only the token plus top-k diagnostics** (not the 154,880-
+///   element logit vector). Full logits require
 ///   [`GPU_LM_HEAD_FULL_LOGITS_ENV`]=1 (parity / debug only).
+/// - a PQ head follows the same final device graph only when this flag is set,
+///   which gives bounded direct-u8 fixtures a complete-token authority lane.
 ///
 /// Integrates with the existing `GpuWeightCache` / resident-state path; does
 /// not invent a second cache. Default resident path with this flag unset is
@@ -878,6 +945,19 @@ pub fn gpu_expert_wave_enabled() -> bool {
     crate::env_on(GPU_EXPERT_WAVE_ENV)
 }
 
+/// Opt-in concurrent projection groups inside [`GPU_EXPERT_WAVE_ENV`].
+///
+/// Gate/up dispatches write disjoint expert scratch and may overlap. After the
+/// dependent SiLU stage, down projections likewise write disjoint buffers and
+/// may overlap. Weighted combine remains ordered. This flag has no effect
+/// unless the parent expert-wave flag is also on.
+pub const GPU_EXPERT_WAVE_CONCURRENT_ENV: &str = "HAWKING_GLM_GPU_EXPERT_WAVE_CONCURRENT";
+
+/// Whether the collapsed expert wave should use concurrent projection groups.
+pub fn gpu_expert_wave_concurrent_enabled() -> bool {
+    gpu_expert_wave_enabled() && crate::env_on(GPU_EXPERT_WAVE_CONCURRENT_ENV)
+}
+
 /// Static `commit_and_wait` count on the host-state GPU path (default).
 /// Matches the measured ~1,171 figure on the flagship schedule.
 pub fn estimate_host_state_waits_per_token(arch: &GlmArch) -> u64 {
@@ -896,35 +976,229 @@ pub fn estimate_host_state_waits_per_token(arch: &GlmArch) -> u64 {
     waits + 1 // lm_head
 }
 
-/// Static `commit_and_wait` count on the resident-state path.
+/// Initial per-layer KV/index capacity used by `ResidentRuntime::new`.
+pub const RESIDENT_RUNTIME_INITIAL_KV_CAPACITY_TOKENS: usize = 64;
+
+/// Static resident KV/state allocation projection for one sequence.
+///
+/// `expanded_*` mirrors the current resident-runtime layout:
+/// every layer stores a fully expanded key and value for every attention head,
+/// plus one DSA index key. `compact_*` projects the storage floor after an MLA
+/// attention rewrite: one normalized KV latent and one shared RoPE tail per
+/// layer/token, plus the unchanged DSA index key. The maximally compact total
+/// additionally removes the index-key buffers that the 57 shared-indexer
+/// layers never read or write.
+///
+/// These values are source-modelled allocation bytes, not live allocator or
+/// process-residency measurements. They exclude weights, activation scratch,
+/// allocator metadata, and the transient old+new buffers held during growth.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct ResidentKvStateStaticProjection {
+    pub requested_tokens: u64,
+    /// Mirrors the live resident runtime: initial capacity 64; subsequent
+    /// growth rounds to a power of two.
+    pub allocation_capacity_tokens: u64,
+    pub expanded_keys_bytes: u64,
+    pub expanded_values_bytes: u64,
+    pub index_keys_bytes: u64,
+    pub current_expanded_total_bytes: u64,
+    pub compact_mla_latent_bytes: u64,
+    pub compact_rope_tail_bytes: u64,
+    /// DSA index keys allocated only for `"full"` indexer layers.
+    pub index_keys_full_layers_only_bytes: u64,
+    /// Compact MLA while retaining the current all-layer index-key allocation.
+    pub compact_mla_total_bytes: u64,
+    /// Compact MLA plus full-indexer-only index-key ownership.
+    pub maximally_compact_mla_total_bytes: u64,
+}
+
+fn checked_static_bytes(factors: &[u64], label: &str) -> Result<u64> {
+    factors.iter().try_fold(1u64, |acc, &factor| {
+        acc.checked_mul(factor).ok_or_else(|| {
+            Error::Gravity(format!(
+                "resident KV/state static projection overflow in {label}"
+            ))
+        })
+    })
+}
+
+/// Project steady-state resident KV/state bytes from architecture and context.
+///
+/// Arithmetic and capacity rounding are checked so an impossible static query
+/// returns an error rather than wrapping into a plausible-looking byte count.
+pub fn estimate_resident_kv_state_static_bytes(
+    arch: &GlmArch,
+    required_tokens: usize,
+) -> Result<ResidentKvStateStaticProjection> {
+    let requested_tokens = u64::try_from(required_tokens)
+        .map_err(|_| Error::Gravity("resident KV/state token count does not fit u64".into()))?;
+    let allocation_capacity = if required_tokens <= RESIDENT_RUNTIME_INITIAL_KV_CAPACITY_TOKENS {
+        RESIDENT_RUNTIME_INITIAL_KV_CAPACITY_TOKENS
+    } else {
+        required_tokens
+            .checked_next_power_of_two()
+            .ok_or_else(|| Error::Gravity("resident KV/state capacity overflow".into()))?
+            .max(RESIDENT_RUNTIME_INITIAL_KV_CAPACITY_TOKENS)
+    };
+    let capacity = u64::try_from(allocation_capacity)
+        .map_err(|_| Error::Gravity("resident KV/state capacity does not fit u64".into()))?;
+    let layers = u64::try_from(arch.n_layers)
+        .map_err(|_| Error::Gravity("resident KV/state layer count does not fit u64".into()))?;
+    let heads = u64::try_from(arch.n_heads)
+        .map_err(|_| Error::Gravity("resident KV/state head count does not fit u64".into()))?;
+    let qk_dim = u64::try_from(arch.qk_dim())
+        .map_err(|_| Error::Gravity("resident KV/state qk dimension does not fit u64".into()))?;
+    let v_dim = u64::try_from(arch.v_head_dim)
+        .map_err(|_| Error::Gravity("resident KV/state value dimension does not fit u64".into()))?;
+    let index_dim = u64::try_from(arch.index_head_dim)
+        .map_err(|_| Error::Gravity("resident KV/state index dimension does not fit u64".into()))?;
+    let latent_dim = u64::try_from(arch.kv_lora_rank).map_err(|_| {
+        Error::Gravity("resident KV/state latent dimension does not fit u64".into())
+    })?;
+    let rope_dim = u64::try_from(arch.qk_rope_head_dim)
+        .map_err(|_| Error::Gravity("resident KV/state RoPE dimension does not fit u64".into()))?;
+    let full_indexer_layers = u64::try_from(
+        arch.indexer_types
+            .iter()
+            .filter(|kind| kind.as_str() == "full")
+            .count(),
+    )
+    .map_err(|_| Error::Gravity("resident full-indexer count does not fit u64".into()))?;
+
+    let expanded_keys_bytes =
+        checked_static_bytes(&[capacity, layers, heads, qk_dim, 4], "expanded keys")?;
+    let expanded_values_bytes =
+        checked_static_bytes(&[capacity, layers, heads, v_dim, 4], "expanded values")?;
+    let index_keys_bytes = checked_static_bytes(&[capacity, layers, index_dim, 4], "index keys")?;
+    let compact_mla_latent_bytes =
+        checked_static_bytes(&[capacity, layers, latent_dim, 4], "compact MLA latent")?;
+    let compact_rope_tail_bytes =
+        checked_static_bytes(&[capacity, layers, rope_dim, 4], "compact RoPE tail")?;
+    let index_keys_full_layers_only_bytes = checked_static_bytes(
+        &[capacity, full_indexer_layers, index_dim, 4],
+        "full-indexer-only index keys",
+    )?;
+    let current_expanded_total_bytes = expanded_keys_bytes
+        .checked_add(expanded_values_bytes)
+        .and_then(|bytes| bytes.checked_add(index_keys_bytes))
+        .ok_or_else(|| Error::Gravity("resident expanded KV/state total overflow".into()))?;
+    let compact_mla_total_bytes = compact_mla_latent_bytes
+        .checked_add(compact_rope_tail_bytes)
+        .and_then(|bytes| bytes.checked_add(index_keys_bytes))
+        .ok_or_else(|| Error::Gravity("resident compact MLA/state total overflow".into()))?;
+    let maximally_compact_mla_total_bytes = compact_mla_latent_bytes
+        .checked_add(compact_rope_tail_bytes)
+        .and_then(|bytes| bytes.checked_add(index_keys_full_layers_only_bytes))
+        .ok_or_else(|| {
+            Error::Gravity("resident maximally compact MLA/state total overflow".into())
+        })?;
+
+    Ok(ResidentKvStateStaticProjection {
+        requested_tokens,
+        allocation_capacity_tokens: capacity,
+        expanded_keys_bytes,
+        expanded_values_bytes,
+        index_keys_bytes,
+        current_expanded_total_bytes,
+        compact_mla_latent_bytes,
+        compact_rope_tail_bytes,
+        index_keys_full_layers_only_bytes,
+        compact_mla_total_bytes,
+        maximally_compact_mla_total_bytes,
+    })
+}
+
+/// Source-derived logical synchronization boundaries on the default
+/// resident-state schedule.
+///
+/// This is deliberately not a physical Metal command-buffer count. A
+/// projection boundary creates a command buffer only when at least one tensor
+/// at that rank is PQ or device-bf16. Conversely, one logical `matvec_batch`
+/// boundary may submit multiple physical command buffers when it mixes
+/// device-bf16 calls with a PQ batch. Physical command counts therefore have
+/// to be measured with [`crate::metal::PhysicalTraceCounts::command_count`].
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct ResidentLogicalWaitBreakdown {
+    /// q_a+kv_a, q_b+kv_b, and o_proj: three ranks per layer.
+    pub attention_projection_boundaries: u64,
+    /// wq_b+wk and weights_proj: two ranks for each full-indexer layer.
+    pub indexer_projection_boundaries: u64,
+    /// One host-visible router projection boundary per sparse layer.
+    pub router_projection_boundaries: u64,
+    /// Gate, up, and down `matvec_batch` calls: three per MLP layer.
+    pub mlp_batch_boundaries: u64,
+    /// The final lm_head boundary.
+    pub head_boundary: u64,
+}
+
+impl ResidentLogicalWaitBreakdown {
+    /// Total logical/source-conditional wait accounting for the schedule.
+    pub fn total(self) -> u64 {
+        self.attention_projection_boundaries
+            .saturating_add(self.indexer_projection_boundaries)
+            .saturating_add(self.router_projection_boundaries)
+            .saturating_add(self.mlp_batch_boundaries)
+            .saturating_add(self.head_boundary)
+    }
+}
+
+/// Exact source-schedule breakdown used by
+/// [`estimate_resident_waits_per_token`].
+pub fn estimate_resident_logical_wait_breakdown(arch: &GlmArch) -> ResidentLogicalWaitBreakdown {
+    let full_indexer_layers = arch
+        .indexer_types
+        .iter()
+        .filter(|kind| kind.as_str() == "full")
+        .count() as u64;
+    let sparse_layers = arch
+        .mlp_layer_types
+        .iter()
+        .filter(|kind| kind.as_str() == "sparse")
+        .count() as u64;
+    let layers = arch.n_layers as u64;
+    ResidentLogicalWaitBreakdown {
+        attention_projection_boundaries: layers.saturating_mul(3),
+        indexer_projection_boundaries: full_indexer_layers.saturating_mul(2),
+        router_projection_boundaries: sparse_layers,
+        mlp_batch_boundaries: layers.saturating_mul(3),
+        head_boundary: 1,
+    }
+}
+
+/// Static logical/source-conditional wait accounting on the resident path.
 ///
 /// Attention projections that share a dependency rank are co-issued (q_a with
-/// kv_a, q_b with kv_b); expert gate/up/down stay three batched waits like the
-/// host path, with the residual / KV living on device between them. Live counts
-/// come from the resident forward's wait counter when a device is available.
+/// kv_a, q_b with kv_b); every dense and sparse MLP invokes gate, up, and down
+/// as three `matvec_batch` boundaries. This function describes that source
+/// schedule, not the number of physical Metal command buffers submitted for a
+/// particular tensor-format mix. Use
+/// [`crate::metal::PhysicalTraceCounts::command_count`] for the latter.
 ///
 /// **Default path only.** When [`gpu_expert_wave_enabled`] the MLP portion
-/// collapses — see [`estimate_resident_expert_wave_waits_per_token`]. This
-/// function's numbers must stay fixed (Parity V2.1 item 6).
+/// collapses — see [`estimate_resident_expert_wave_waits_per_token`].
 pub fn estimate_resident_waits_per_token(arch: &GlmArch) -> u64 {
-    let mut waits = 0u64;
-    for layer in 0..arch.n_layers {
-        // Co-issued q_a+kv_a, then q_b+kv_b, then o_proj.
-        waits += 3;
-        if arch.indexer_types[layer] == "full" {
-            // wq_b+wk together, then weights_proj
-            waits += 2;
-        }
-        match arch.mlp_layer_types[layer].as_str() {
-            "dense" => waits += 2, // gate+up, then down
-            "sparse" => {
-                // router + three expert batches (gate/up/down, routed+shared)
-                waits += 1 + 3;
-            }
-            _ => {}
-        }
-    }
-    waits + 1 // lm_head boundary
+    estimate_resident_logical_wait_breakdown(arch).total()
+}
+
+/// Static resident boundary count for compact MLA with device DSA selection.
+///
+/// Device-encodable compact layers fold input/q/kv normalization,
+/// `q_a + kv_a + q_b`, compact query/key RoPE, DSA, and compact attention into
+/// the o-projection command buffer, then append the elementwise residual add
+/// before its existing commit. This removes two attention-prelude drains per
+/// layer plus both indexer drains per `"full"` layer; the residual append
+/// removes host activation traffic without claiming another drain. Host-native
+/// projection tensors fall back to the ordinary schedule at runtime. This is
+/// source-derived; actual physical commands still depend on tensor codecs and
+/// must be measured before promotion.
+pub fn estimate_resident_device_dsa_waits_per_token(arch: &GlmArch) -> u64 {
+    let breakdown = estimate_resident_logical_wait_breakdown(arch);
+    let attention_prelude_boundaries =
+        (breakdown.attention_projection_boundaries / 3).saturating_mul(2);
+    breakdown
+        .total()
+        .saturating_sub(breakdown.indexer_projection_boundaries)
+        .saturating_sub(attention_prelude_boundaries)
 }
 
 /// Static drains from `batched_mlp` alone (gate / up / down commits).
@@ -950,7 +1224,7 @@ pub fn estimate_resident_expert_wave_waits_per_token(arch: &GlmArch) -> u64 {
             waits += 2;
         }
         match arch.mlp_layer_types[layer].as_str() {
-            "dense" => waits += 1, // fused gate+up+silu+down
+            "dense" => waits += 1,      // fused gate+up+silu+down
             "sparse" => waits += 1 + 1, // router + fused expert wave
             _ => {}
         }
@@ -1034,9 +1308,7 @@ impl<T> BoundedLru<T> {
     /// rejected: a zero budget can never admit a tensor and would only thrash.
     pub fn new(budget_bytes: u64) -> Result<Self> {
         if budget_bytes == 0 {
-            return Err(Error::Gravity(
-                "GPU weight cache budget must be > 0".into(),
-            ));
+            return Err(Error::Gravity("GPU weight cache budget must be > 0".into()));
         }
         Ok(Self {
             map: std::collections::HashMap::new(),
@@ -1244,6 +1516,146 @@ pub mod gpu {
         }
     }
 
+    fn validate_pq_descriptor_shape(name: &str, header: &PqHeader, shape: &[u64]) -> Result<()> {
+        let expected = [header.rows as u64, header.cols as u64];
+        if shape != expected {
+            return Err(Error::Gravity(format!(
+                "compact MLA admission {name}: descriptor shape {shape:?} != PQ header shape {expected:?}"
+            )));
+        }
+        if header.rotate != 0 {
+            return Err(Error::Gravity(format!(
+                "compact MLA admission {name}: rotated gravity-pq (rotate={}) is unsupported",
+                header.rotate
+            )));
+        }
+        Ok(())
+    }
+
+    /// Exact common gate used both by header-only open-time admission and by
+    /// the live loaded-weight path. Keeping one predicate prevents the
+    /// preflight from admitting a geometry the kernels later reinterpret.
+    pub(crate) fn validate_compact_mla_layer_params(
+        arch: &GlmArch,
+        layer: usize,
+        kv_params: PqParams,
+        o_params: PqParams,
+    ) -> Result<()> {
+        let attn_p = format!("model.layers.{layer}.self_attn");
+        let kv_name = format!("{attn_p}.kv_b_proj.weight");
+        let o_name = format!("{attn_p}.o_proj.weight");
+        let row_stride = arch
+            .qk_nope_head_dim
+            .checked_add(arch.v_head_dim)
+            .ok_or_else(|| Error::Gravity("compact MLA KV row stride overflow".into()))?;
+        let expected_kv_rows = arch
+            .n_heads
+            .checked_mul(row_stride)
+            .ok_or_else(|| Error::Gravity("compact MLA KV row count overflow".into()))?;
+        let represented_latent = (kv_params.nchunk as usize)
+            .checked_mul(kv_params.dim as usize)
+            .ok_or_else(|| Error::Gravity("compact MLA represented latent overflow".into()))?;
+        if kv_params.rows as usize != expected_kv_rows
+            || kv_params.cols as usize != arch.kv_lora_rank
+            || kv_params.subspaces != 1
+            || kv_params.dim != 32
+            || kv_params.sub != 32
+            || kv_params.card != 256
+            || kv_params.bits != 8
+            || represented_latent != arch.kv_lora_rank
+        {
+            return Err(Error::Gravity(format!(
+                "compact MLA unsupported {kv_name} geometry: rows={}, cols={}, dim={}, subspaces={}, sub={}, card={}, nchunk={}, bits={}",
+                kv_params.rows,
+                kv_params.cols,
+                kv_params.dim,
+                kv_params.subspaces,
+                kv_params.sub,
+                kv_params.card,
+                kv_params.nchunk,
+                kv_params.bits
+            )));
+        }
+        let context_width = arch
+            .n_heads
+            .checked_mul(arch.v_head_dim)
+            .ok_or_else(|| Error::Gravity("compact MLA context width overflow".into()))?;
+        if o_params.rows as usize != arch.hidden || o_params.cols as usize != context_width {
+            return Err(Error::Gravity(format!(
+                "compact MLA unsupported {o_name} geometry: rows={}, cols={}, expected rows={}, cols={context_width}",
+                o_params.rows, o_params.cols, arch.hidden
+            )));
+        }
+        Ok(())
+    }
+
+    /// Reject an incompatible compact artifact before any resident session,
+    /// attention cache, DSA buffer, or activation pool is allocated.
+    ///
+    /// Exactly two 64-byte PQ payload prefixes are copied per layer. This is
+    /// admission, not integrity verification: the first live weight load
+    /// still reads and verifies the complete payload before dispatch.
+    fn preflight_compact_mla_weights(weights: &GravityWeights, arch: &GlmArch) -> Result<()> {
+        if arch.index_topk == 0 || arch.index_topk > 2048 {
+            return Err(Error::Gravity(format!(
+                "compact MLA admission requires 1 <= index_topk <= 2048, got {}",
+                arch.index_topk
+            )));
+        }
+        for layer in 0..arch.n_layers {
+            let attn_p = format!("model.layers.{layer}.self_attn");
+            let kv_name = format!("{attn_p}.kv_b_proj.weight");
+            let o_name = format!("{attn_p}.o_proj.weight");
+            let (kv_header, kv_shape) = weights.pq_header_prefix_unverified_with_shape(&kv_name)?;
+            let (o_header, o_shape) = weights.pq_header_prefix_unverified_with_shape(&o_name)?;
+            validate_pq_descriptor_shape(&kv_name, &kv_header, &kv_shape)?;
+            validate_pq_descriptor_shape(&o_name, &o_header, &o_shape)?;
+            validate_compact_mla_layer_params(
+                arch,
+                layer,
+                PqParams::from_header(&kv_header),
+                PqParams::from_header(&o_header),
+            )?;
+        }
+        Ok(())
+    }
+
+    fn record_dense_matvec_ops(rows: u64, cols: u64) {
+        let fp = rows.saturating_mul(cols).saturating_mul(2);
+        crate::cost_ledger::record_source_modelled_operations(fp, 0, 0, 0, fp);
+    }
+
+    fn record_pq_matvec_ops(params: PqParams) {
+        let rows = params.rows as u64;
+        let dense_fp = rows.saturating_mul(params.cols as u64).saturating_mul(2);
+        let fp = dense_fp.saturating_add(rows.saturating_mul(31));
+        let lookups = rows
+            .saturating_mul(params.nchunk as u64)
+            .saturating_mul(params.subspaces as u64);
+        crate::cost_ledger::record_source_modelled_operations(
+            fp,
+            lookups.saturating_mul(15),
+            0,
+            0,
+            dense_fp,
+        );
+    }
+
+    pub(crate) fn semantic_bucket_for_weight(name: &str) -> crate::cost_ledger::Bucket {
+        use crate::cost_ledger::{classify_weight_name, ActiveByteCategory, Bucket};
+        match classify_weight_name(name) {
+            ActiveByteCategory::Attention | ActiveByteCategory::Indexer => {
+                Bucket::AttentionAndIndexShare
+            }
+            ActiveByteCategory::Router => Bucket::Routing,
+            ActiveByteCategory::DenseMlp => Bucket::DenseExperts,
+            ActiveByteCategory::SharedExperts => Bucket::SharedExperts,
+            ActiveByteCategory::RoutedExperts => Bucket::RoutedExperts,
+            ActiveByteCategory::LmHead => Bucket::FinalHead,
+            ActiveByteCategory::Other => Bucket::ResidualAndState,
+        }
+    }
+
     /// One tensor resident for matvec.
     ///
     /// - `Pq`: gravity-pq codebooks+codes on device.
@@ -1267,6 +1679,183 @@ pub mod gpu {
             rows: u32,
             cols: u32,
         },
+    }
+
+    fn routed_pq_representation(
+        params: &PqParams,
+    ) -> crate::cost_ledger::RoutedWeightRepresentation {
+        use crate::cost_ledger::RoutedWeightRepresentation;
+        if params.dim == 32
+            && params.subspaces == 1
+            && params.sub == 32
+            && params.card == 256
+            && params.bits == 8
+        {
+            RoutedWeightRepresentation::R4
+        } else if params.dim == 8
+            && params.subspaces == 1
+            && params.sub == 8
+            && params.card == 128
+            && params.bits == 7
+        {
+            RoutedWeightRepresentation::R0
+        } else {
+            RoutedWeightRepresentation::Other
+        }
+    }
+
+    /// Add exact routed representation evidence to the active-byte ledger.
+    /// Non-routed names are ignored by the ledger helper.
+    pub(crate) fn record_routed_tensor_representation(name: &str, tensor: &GpuTensor) {
+        use crate::cost_ledger::{record_routed_weight_representation, RoutedWeightRepresentation};
+        let (representation, bytes) = match tensor {
+            GpuTensor::Pq {
+                codebooks,
+                codes,
+                params,
+            } => (
+                routed_pq_representation(params),
+                codebooks.length() + codes.length(),
+            ),
+            GpuTensor::NativeGpuBf16 { buf, .. } => {
+                (RoutedWeightRepresentation::NativeBf16, buf.length())
+            }
+            GpuTensor::NativeCpu(values) => (
+                RoutedWeightRepresentation::Other,
+                (values.len() as u64).saturating_mul(4),
+            ),
+        };
+        record_routed_weight_representation(name, representation, bytes);
+    }
+
+    #[cfg(test)]
+    mod routed_representation_tests {
+        use super::*;
+        use crate::cost_ledger::RoutedWeightRepresentation;
+
+        fn params(dim: u32, sub: u32, card: u32, bits: u32) -> PqParams {
+            PqParams {
+                dim,
+                subspaces: 1,
+                sub,
+                card,
+                rows: 2048,
+                cols: 6144,
+                nchunk: 6144 / dim,
+                bits,
+            }
+        }
+
+        #[test]
+        fn math_preserve_routed_codec_classifier_is_fail_closed() {
+            assert_eq!(
+                routed_pq_representation(&params(32, 32, 256, 8)),
+                RoutedWeightRepresentation::R4
+            );
+            assert_eq!(
+                routed_pq_representation(&params(8, 8, 128, 7)),
+                RoutedWeightRepresentation::R0
+            );
+            assert_eq!(
+                routed_pq_representation(&params(16, 16, 256, 8)),
+                RoutedWeightRepresentation::Other
+            );
+            let mut multi = params(32, 32, 256, 8);
+            multi.subspaces = 2;
+            assert_eq!(
+                routed_pq_representation(&multi),
+                RoutedWeightRepresentation::Other
+            );
+        }
+
+        fn compact_arch() -> GlmArch {
+            GlmArch {
+                n_layers: 1,
+                hidden: 64,
+                n_heads: 2,
+                q_lora_rank: 32,
+                kv_lora_rank: 64,
+                qk_nope_head_dim: 16,
+                qk_rope_head_dim: 8,
+                v_head_dim: 16,
+                index_n_heads: 1,
+                index_head_dim: 8,
+                index_topk: 4,
+                n_routed_experts: 8,
+                n_group: 2,
+                topk_group: 1,
+                num_experts_per_tok: 2,
+                norm_topk_prob: true,
+                routed_scaling_factor: 1.0,
+                vocab_size: 32,
+                rms_norm_eps: 1e-5,
+                rope_theta: 10_000.0,
+                indexer_types: vec!["full".into()],
+                mlp_layer_types: vec!["dense".into()],
+            }
+        }
+
+        fn compact_kv_params() -> PqParams {
+            PqParams {
+                dim: 32,
+                subspaces: 1,
+                sub: 32,
+                card: 256,
+                rows: 64,
+                cols: 64,
+                nchunk: 2,
+                bits: 8,
+            }
+        }
+
+        fn compact_o_params() -> PqParams {
+            PqParams {
+                dim: 32,
+                subspaces: 1,
+                sub: 32,
+                card: 256,
+                rows: 64,
+                cols: 32,
+                nchunk: 1,
+                bits: 8,
+            }
+        }
+
+        #[test]
+        fn compact_mla_admission_is_exact_and_fail_closed() {
+            let arch = compact_arch();
+            validate_compact_mla_layer_params(&arch, 0, compact_kv_params(), compact_o_params())
+                .expect("exact direct-u8 compact geometry");
+
+            let mut wrong_dim = compact_kv_params();
+            wrong_dim.dim = 16;
+            wrong_dim.sub = 16;
+            wrong_dim.nchunk = 4;
+            assert!(
+                validate_compact_mla_layer_params(&arch, 0, wrong_dim, compact_o_params())
+                    .unwrap_err()
+                    .to_string()
+                    .contains("unsupported")
+            );
+
+            let mut wrong_bits = compact_kv_params();
+            wrong_bits.bits = 7;
+            assert!(
+                validate_compact_mla_layer_params(&arch, 0, wrong_bits, compact_o_params())
+                    .unwrap_err()
+                    .to_string()
+                    .contains("bits=7")
+            );
+
+            let mut wrong_o = compact_o_params();
+            wrong_o.rows -= 1;
+            assert!(
+                validate_compact_mla_layer_params(&arch, 0, compact_kv_params(), wrong_o)
+                    .unwrap_err()
+                    .to_string()
+                    .contains("o_proj")
+            );
+        }
     }
 
     /// A [`WeightAccess`] backend that uploads each `gravity-pq` tensor to
@@ -1350,13 +1939,17 @@ pub mod gpu {
                 // widen). Flagship lm_head is 1.90 GB; indexer + router add
                 // the rest of the native f32 widen tax (~2.53 GB of the
                 // surplus). Rank-2 only — norms/biases stay host dense().
-                // Gated by HAWKING_GLM_GPU_LM_HEAD; default path untouched.
-                if super::gpu_lm_head_enabled() && codec == "native.bf16" && shape.len() == 2 {
+                // Gated by HAWKING_GLM_GPU_LM_HEAD or the stricter compact
+                // device-DSA graph; both are default off.
+                if (super::gpu_lm_head_enabled()
+                    || super::gpu_device_dsa_enabled()
+                    || super::gpu_device_router_enabled())
+                    && codec == "native.bf16"
+                    && shape.len() == 2
+                {
                     let rows = shape[0] as u32;
                     let cols = shape[1] as u32;
-                    let expect = (rows as u64)
-                        .saturating_mul(cols as u64)
-                        .saturating_mul(2);
+                    let expect = (rows as u64).saturating_mul(cols as u64).saturating_mul(2);
                     if blob.len() as u64 != expect {
                         return Err(Error::Gravity(format!(
                             "tensor {name}: bf16 payload {} B != rows*cols*2 ({expect})",
@@ -1422,10 +2015,7 @@ pub mod gpu {
         }
 
         pub fn stats(&self) -> GpuWeightCacheStats {
-            self.cache
-                .lock()
-                .expect("gpu weight cache mutex")
-                .stats()
+            self.cache.lock().expect("gpu weight cache mutex").stats()
         }
     }
 
@@ -1451,17 +2041,21 @@ pub mod gpu {
             cost_ledger::record_matvec_call();
             let mut cache = self.cache.lock().expect("gpu weight cache mutex");
             self.ensure_many_locked(&mut cache, &[name])?;
-            match cache.get(name).expect("ensure just inserted it") {
+            let tensor = cache.get(name).expect("ensure just inserted it");
+            record_routed_tensor_representation(name, tensor);
+            match tensor {
                 GpuTensor::NativeCpu(w) => {
                     // Widened f32 residency (native.bf16 artifacts pay a 2×
                     // traffic tax vs stored bytes). Category partition is what
                     // makes the 4×-vs-geometry figure explainable.
                     cost_ledger::record_active_bytes_for(name, (w.len() * 4) as u64);
+                    record_dense_matvec_ops((w.len() / x.len()) as u64, x.len() as u64);
                     matvec_dense(w, x, name)
                 }
                 GpuTensor::NativeGpuBf16 { buf, rows, cols } => {
                     // Bill stored bf16 size, not the 2× f32 widen tax.
                     cost_ledger::record_active_bytes_for(name, buf.length());
+                    record_dense_matvec_ops(*rows as u64, *cols as u64);
                     dispatch_gemv_native_bf16_seq(&self.ctx, buf, *rows, *cols, x)
                 }
                 GpuTensor::Pq {
@@ -1473,6 +2067,7 @@ pub mod gpu {
                     // codes at upload). Not the mmap slice, not page size.
                     let bytes = codebooks.length() + codes.length();
                     cost_ledger::record_active_bytes_for(name, bytes);
+                    record_pq_matvec_ops(*params);
                     dispatch_pq_matvec(&self.ctx, codebooks, codes, *params, x)
                 }
             }
@@ -1495,19 +2090,24 @@ pub mod gpu {
             self.ensure_many_locked(&mut cache, &names)?;
 
             let mut results: Vec<Option<Vec<f32>>> = vec![None; calls.len()];
-            let mut gpu_calls: Vec<(usize, &Buffer, &Buffer, PqParams, &[f32])> = Vec::new();
+            let mut gpu_calls: Vec<(usize, &str, &Buffer, &Buffer, PqParams, &[f32])> = Vec::new();
             for (i, &(name, x)) in calls.iter().enumerate() {
-                match cache.get(name).expect("ensure just inserted it") {
+                let tensor = cache.get(name).expect("ensure just inserted it");
+                record_routed_tensor_representation(name, tensor);
+                match tensor {
                     GpuTensor::NativeCpu(w) => {
                         cost_ledger::record_active_bytes_for(name, (w.len() * 4) as u64);
+                        record_dense_matvec_ops((w.len() / x.len()) as u64, x.len() as u64);
                         results[i] = Some(matvec_dense(w, x, name)?);
                     }
                     GpuTensor::NativeGpuBf16 { buf, rows, cols } => {
                         // Device bf16: once-per-token for lm_head; indexer /
                         // router also land here under the same flag.
                         cost_ledger::record_active_bytes_for(name, buf.length());
-                        results[i] =
-                            Some(dispatch_gemv_native_bf16_seq(&self.ctx, buf, *rows, *cols, x)?);
+                        record_dense_matvec_ops(*rows as u64, *cols as u64);
+                        results[i] = Some(dispatch_gemv_native_bf16_seq(
+                            &self.ctx, buf, *rows, *cols, x,
+                        )?);
                     }
                     GpuTensor::Pq {
                         codebooks,
@@ -1518,15 +2118,16 @@ pub mod gpu {
                             name,
                             codebooks.length() + codes.length(),
                         );
-                        gpu_calls.push((i, codebooks, codes, *params, x));
+                        record_pq_matvec_ops(*params);
+                        gpu_calls.push((i, name, codebooks, codes, *params, x));
                     }
                 }
             }
 
             if !gpu_calls.is_empty() {
-                let pq_calls: Vec<(&Buffer, &Buffer, PqParams, &[f32])> = gpu_calls
+                let pq_calls: Vec<(&str, &Buffer, &Buffer, PqParams, &[f32])> = gpu_calls
                     .iter()
-                    .map(|&(_, cb, co, params, x)| (cb, co, params, x))
+                    .map(|&(_, name, cb, co, params, x)| (name, cb, co, params, x))
                     .collect();
                 let outs = dispatch_pq_matvec_batch(&self.ctx, &pq_calls)?;
                 for (&(i, ..), y) in gpu_calls.iter().zip(outs) {
@@ -1556,7 +2157,6 @@ pub mod gpu {
         x: &[f32],
     ) -> Result<Vec<f32>> {
         use crate::cost_ledger::{self, Bucket};
-        use std::time::Instant;
 
         if x.len() != cols as usize {
             return Err(Error::Gravity(format!(
@@ -1590,7 +2190,7 @@ pub mod gpu {
         let tg = (TG, 1, 1);
 
         if cost_ledger::is_recording() {
-            let t_encode = Instant::now();
+            // Encode / submit / sync + dispatches fold at TCB commit (no double-count).
             let mut tcb = TokenCommandBuffer::new(ctx);
             tcb.dispatch_threads("gemv_native_bf16_seq", grid, tg, |enc| {
                 enc.set_buffer(0, Some(weight), 0);
@@ -1599,8 +2199,6 @@ pub mod gpu {
                 enc.set_bytes(3, 4, &rows_u as *const u32 as *const _);
                 enc.set_bytes(4, 4, &cols_u as *const u32 as *const _);
             })?;
-            cost_ledger::add_duration(Bucket::MetalEncode, t_encode.elapsed());
-            cost_ledger::record_dispatches(tcb.dispatch_count() as u64);
             tcb.commit_and_wait_split()?;
         } else {
             ctx.dispatch_threads("gemv_native_bf16_seq", grid, tg, |enc| {
@@ -1621,6 +2219,53 @@ pub mod gpu {
             y
         };
         Ok(y)
+    }
+
+    /// Explicit additive accuracy candidate for device-resident native-BF16
+    /// GEMV. `Sequential` delegates to the established path; the other modes
+    /// select separate Metal symbols and are not consulted by runtime policy.
+    /// Public only for parity gates and bounded microbenchmarks.
+    pub fn dispatch_gemv_native_bf16_accumulation(
+        ctx: &MetalContext,
+        weight: &Buffer,
+        rows: u32,
+        cols: u32,
+        x: &[f32],
+        accumulation: crate::gravity::NativeBf16Accumulation,
+    ) -> Result<Vec<f32>> {
+        if accumulation == crate::gravity::NativeBf16Accumulation::Sequential {
+            return dispatch_gemv_native_bf16_seq(ctx, weight, rows, cols, x);
+        }
+        if x.len() != cols as usize {
+            return Err(Error::Gravity(format!(
+                "gemv_native_bf16_accumulation: x.len() {} != cols {cols}",
+                x.len()
+            )));
+        }
+        let expect = (rows as u64).saturating_mul(cols as u64).saturating_mul(2);
+        if weight.length() < expect {
+            return Err(Error::Gravity(format!(
+                "gemv_native_bf16_accumulation: weight buffer {} B < rows*cols*2 ({expect})",
+                weight.length()
+            )));
+        }
+
+        let x_buf = ctx.new_buffer_with_bytes_checked(bytemuck::cast_slice::<f32, u8>(x))?;
+        let y_buf = ctx.new_buffer_checked(rows as usize * std::mem::size_of::<f32>())?;
+        let rows_u = rows;
+        let cols_u = cols;
+        const TG: u32 = 256;
+        let grid = (rows.div_ceil(TG) * TG, 1, 1);
+        ctx.dispatch_threads(accumulation.metal_kernel(), grid, (TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(weight), 0);
+            enc.set_buffer(1, Some(&x_buf), 0);
+            enc.set_buffer(2, Some(&y_buf), 0);
+            enc.set_bytes(3, 4, &rows_u as *const u32 as *const _);
+            enc.set_bytes(4, 4, &cols_u as *const u32 as *const _);
+        })?;
+
+        let y_ptr = y_buf.contents() as *const f32;
+        Ok(unsafe { std::slice::from_raw_parts(y_ptr, rows as usize) }.to_vec())
     }
 
     /// Encode bf16 GEMV into an existing command buffer (device x → device y).
@@ -1718,7 +2363,6 @@ pub mod gpu {
         x: &[f32],
     ) -> Result<Vec<f32>> {
         use crate::cost_ledger::{self, Bucket};
-        use std::time::Instant;
 
         if x.len() != params.cols as usize {
             return Err(Error::Gravity(format!(
@@ -1743,11 +2387,10 @@ pub mod gpu {
         // boundary threadgroup.
         const TG: u32 = 256;
         let n_tg = params.rows.div_ceil(8);
-        // When the cost ledger is recording, encode into a TCB and split
-        // submit vs synchronize so the three Metal buckets are distinct.
-        // When off, the existing single-dispatch path is unchanged.
+        // When the cost ledger is recording, encode into a TCB so encode /
+        // submit / synchronize land in distinct buckets at commit. When off,
+        // the existing single-dispatch path is unchanged.
         if cost_ledger::is_recording() {
-            let t_encode = Instant::now();
             let mut tcb = TokenCommandBuffer::new(ctx);
             tcb.dispatch_threads("gravity_pq_matvec", (n_tg * TG, 1, 1), (TG, 1, 1), |enc| {
                 enc.set_buffer(0, Some(codebooks), 0);
@@ -1760,8 +2403,6 @@ pub mod gpu {
                     &params as *const PqParams as *const _,
                 );
             })?;
-            cost_ledger::add_duration(Bucket::MetalEncode, t_encode.elapsed());
-            cost_ledger::record_dispatches(tcb.dispatch_count() as u64);
             tcb.commit_and_wait_split()?;
         } else {
             ctx.dispatch_threads("gravity_pq_matvec", (n_tg * TG, 1, 1), (TG, 1, 1), |enc| {
@@ -1795,10 +2436,9 @@ pub mod gpu {
     /// would be wrong, not just less general.
     fn dispatch_pq_matvec_batch(
         ctx: &MetalContext,
-        calls: &[(&Buffer, &Buffer, PqParams, &[f32])],
+        calls: &[(&str, &Buffer, &Buffer, PqParams, &[f32])],
     ) -> Result<Vec<Vec<f32>>> {
         use crate::cost_ledger::{self, Bucket};
-        use std::time::Instant;
 
         if calls.is_empty() {
             return Ok(Vec::new());
@@ -1808,7 +2448,7 @@ pub mod gpu {
         let mut y_lens = Vec::with_capacity(calls.len());
         {
             let _xfer = cost_ledger::Scope::new(Bucket::HostDeviceTransfer);
-            for &(_, _, params, x) in calls {
+            for &(_, _, _, params, x) in calls {
                 if x.len() != params.cols as usize {
                     return Err(Error::Gravity(format!(
                         "gpu matvec_batch: x.len() {} != cols {}",
@@ -1826,59 +2466,25 @@ pub mod gpu {
             }
         }
 
-        if cost_ledger::is_recording() {
-            // Manual TCB so encode / submit / synchronize are separate lines.
-            const TG: u32 = 256;
-            let t_encode = Instant::now();
-            let mut tcb = TokenCommandBuffer::new(ctx);
-            for (i, &(codebooks, codes, params, _)) in calls.iter().enumerate() {
-                let n_tg = params.rows.div_ceil(8);
-                tcb.dispatch_threads(
-                    "gravity_pq_matvec",
-                    (n_tg * TG, 1, 1),
-                    (TG, 1, 1),
-                    |enc| {
-                        enc.set_buffer(0, Some(codebooks), 0);
-                        enc.set_buffer(1, Some(codes), 0);
-                        enc.set_buffer(2, Some(&x_bufs[i]), 0);
-                        enc.set_buffer(3, Some(&y_bufs[i]), 0);
-                        enc.set_bytes(
-                            4,
-                            std::mem::size_of::<PqParams>() as u64,
-                            &params as *const PqParams as *const _,
-                        );
-                    },
-                )?;
-            }
-            let n_disp = tcb.dispatch_count() as u64;
-            cost_ledger::add_duration(Bucket::MetalEncode, t_encode.elapsed());
-            cost_ledger::record_dispatches(n_disp);
-
-            // commit_and_wait is one submit + one sync for the whole batch.
-            // Split by timing commit vs wait via the TCB's internal path when
-            // possible; here we re-implement the commit/wait pair.
-            tcb.commit_and_wait_split()?;
-        } else {
+        // TCB commit folds encode / submit / synchronize when the ledger is
+        // recording; the off path is byte-identical encode+commit_and_wait.
+        {
             let mut tcb = TokenCommandBuffer::new(ctx);
             const TG: u32 = 256;
-            for (i, &(codebooks, codes, params, _)) in calls.iter().enumerate() {
+            for (i, &(name, codebooks, codes, params, _)) in calls.iter().enumerate() {
+                let _stage = cost_ledger::Scope::new(semantic_bucket_for_weight(name));
                 let n_tg = params.rows.div_ceil(8);
-                tcb.dispatch_threads(
-                    "gravity_pq_matvec",
-                    (n_tg * TG, 1, 1),
-                    (TG, 1, 1),
-                    |enc| {
-                        enc.set_buffer(0, Some(codebooks), 0);
-                        enc.set_buffer(1, Some(codes), 0);
-                        enc.set_buffer(2, Some(&x_bufs[i]), 0);
-                        enc.set_buffer(3, Some(&y_bufs[i]), 0);
-                        enc.set_bytes(
-                            4,
-                            std::mem::size_of::<PqParams>() as u64,
-                            &params as *const PqParams as *const _,
-                        );
-                    },
-                )?;
+                tcb.dispatch_threads("gravity_pq_matvec", (n_tg * TG, 1, 1), (TG, 1, 1), |enc| {
+                    enc.set_buffer(0, Some(codebooks), 0);
+                    enc.set_buffer(1, Some(codes), 0);
+                    enc.set_buffer(2, Some(&x_bufs[i]), 0);
+                    enc.set_buffer(3, Some(&y_bufs[i]), 0);
+                    enc.set_bytes(
+                        4,
+                        std::mem::size_of::<PqParams>() as u64,
+                        &params as *const PqParams as *const _,
+                    );
+                })?;
             }
             tcb.commit_and_wait()?;
         }
@@ -1888,7 +2494,7 @@ pub mod gpu {
             .iter()
             .zip(&y_bufs)
             .zip(&y_lens)
-            .map(|((&(_, _, params, _), y_buf), &rows)| {
+            .map(|((&(_, _, _, params, _), y_buf), &rows)| {
                 let y_ptr = y_buf.contents() as *const f32;
                 let y = unsafe { std::slice::from_raw_parts(y_ptr, rows) }.to_vec();
                 cost_ledger::record_transfer(
@@ -1965,9 +2571,35 @@ pub mod gpu {
         ) -> Result<GravityGlmGpu> {
             let weights = GravityWeights::open_dir(dir, verify_hash)?;
             let arch = GlmArch::from_header(&weights.header)?;
+            let compact_mla = resident_enabled && super::gpu_compact_mla_enabled();
+            let device_dsa = super::gpu_device_dsa_enabled();
+            let device_router = super::gpu_device_router_enabled();
+            if device_dsa && (!resident_enabled || !compact_mla) {
+                return Err(Error::Gravity(format!(
+                    "{} requires resident state and {}=1",
+                    super::GPU_DEVICE_DSA_ENV,
+                    super::GPU_COMPACT_MLA_ENV
+                )));
+            }
+            if device_router && !resident_enabled {
+                return Err(Error::Gravity(format!(
+                    "{} requires resident state",
+                    super::GPU_DEVICE_ROUTER_ENV
+                )));
+            }
+            if compact_mla {
+                preflight_compact_mla_weights(&weights, &arch)?;
+            }
             let session = Mutex::new(GlmSession::new(&arch));
             let resident = if resident_enabled {
-                Some(crate::gravity_glm_resident::ResidentRuntime::new(&ctx, &arch)?)
+                Some(
+                    crate::gravity_glm_resident::ResidentRuntime::new_with_compact_mla(
+                        &ctx,
+                        &arch,
+                        compact_mla,
+                        device_dsa,
+                    )?,
+                )
             } else {
                 None
             };
@@ -2025,11 +2657,7 @@ pub mod gpu {
         /// Continue the current request's cache from `start_pos`: decode,
         /// one new token against whatever `forward` or a previous
         /// `forward_at` already built.
-        pub fn forward_at(
-            &self,
-            tokens: &[u32],
-            start_pos: usize,
-        ) -> Result<(Vec<f32>, GlmTrace)> {
+        pub fn forward_at(&self, tokens: &[u32], start_pos: usize) -> Result<(Vec<f32>, GlmTrace)> {
             if let Some(rt) = &self.resident {
                 let mut session = rt.session.lock().expect("resident session");
                 let (logits, trace, _waits) = crate::gravity_glm_resident::forward_resident(
@@ -2077,7 +2705,11 @@ pub mod gpu {
             &self,
             tokens: &[u32],
             start_pos: usize,
-        ) -> Result<(Vec<f32>, GlmTrace, Option<crate::cost_ledger::TokenCostReport>)> {
+        ) -> Result<(
+            Vec<f32>,
+            GlmTrace,
+            Option<crate::cost_ledger::TokenCostReport>,
+        )> {
             crate::cost_ledger::begin_token();
             let result = self.forward_at(tokens, start_pos);
             let report = crate::cost_ledger::end_token();
@@ -2127,6 +2759,43 @@ mod tests {
         }
     }
 
+    /// Compact MLA cannot change the ordinary expanded resident path by default.
+    #[test]
+    fn compact_mla_flag_defaults_off() {
+        let prev = std::env::var_os(GPU_COMPACT_MLA_ENV);
+        std::env::remove_var(GPU_COMPACT_MLA_ENV);
+        assert!(!gpu_compact_mla_enabled());
+        match prev {
+            Some(v) => std::env::set_var(GPU_COMPACT_MLA_ENV, v),
+            None => std::env::remove_var(GPU_COMPACT_MLA_ENV),
+        }
+    }
+
+    /// Device DSA is separately opt-in so compact MLA's host-selection parity
+    /// candidate stays unchanged unless both flags are explicit.
+    #[test]
+    fn gpu_device_dsa_flag_defaults_off() {
+        let prev = std::env::var_os(GPU_DEVICE_DSA_ENV);
+        std::env::remove_var(GPU_DEVICE_DSA_ENV);
+        assert!(!gpu_device_dsa_enabled());
+        match prev {
+            Some(v) => std::env::set_var(GPU_DEVICE_DSA_ENV, v),
+            None => std::env::remove_var(GPU_DEVICE_DSA_ENV),
+        }
+    }
+
+    /// Device router selection is independently opt-in.
+    #[test]
+    fn gpu_device_router_flag_defaults_off() {
+        let prev = std::env::var_os(GPU_DEVICE_ROUTER_ENV);
+        std::env::remove_var(GPU_DEVICE_ROUTER_ENV);
+        assert!(!gpu_device_router_enabled());
+        match prev {
+            Some(v) => std::env::set_var(GPU_DEVICE_ROUTER_ENV, v),
+            None => std::env::remove_var(GPU_DEVICE_ROUTER_ENV),
+        }
+    }
+
     /// Device lm_head flag defaults off so host dense matvec stays the oracle.
     #[test]
     fn gpu_lm_head_flag_defaults_off() {
@@ -2160,6 +2829,32 @@ mod tests {
         match prev {
             Some(v) => std::env::set_var(GPU_EXPERT_WAVE_ENV, v),
             None => std::env::remove_var(GPU_EXPERT_WAVE_ENV),
+        }
+    }
+
+    /// Concurrent projection groups are independently opt-in and cannot
+    /// escape the parent expert-wave gate.
+    #[test]
+    fn gpu_expert_wave_concurrent_flag_defaults_off_and_requires_wave() {
+        let prev_wave = std::env::var_os(GPU_EXPERT_WAVE_ENV);
+        let prev_concurrent = std::env::var_os(GPU_EXPERT_WAVE_CONCURRENT_ENV);
+        std::env::remove_var(GPU_EXPERT_WAVE_ENV);
+        std::env::remove_var(GPU_EXPERT_WAVE_CONCURRENT_ENV);
+        assert!(!gpu_expert_wave_concurrent_enabled());
+        std::env::set_var(GPU_EXPERT_WAVE_CONCURRENT_ENV, "1");
+        assert!(
+            !gpu_expert_wave_concurrent_enabled(),
+            "concurrency cannot enable the expert-wave runtime by itself"
+        );
+        std::env::set_var(GPU_EXPERT_WAVE_ENV, "1");
+        assert!(gpu_expert_wave_concurrent_enabled());
+        match prev_wave {
+            Some(v) => std::env::set_var(GPU_EXPERT_WAVE_ENV, v),
+            None => std::env::remove_var(GPU_EXPERT_WAVE_ENV),
+        }
+        match prev_concurrent {
+            Some(v) => std::env::set_var(GPU_EXPERT_WAVE_CONCURRENT_ENV, v),
+            None => std::env::remove_var(GPU_EXPERT_WAVE_CONCURRENT_ENV),
         }
     }
 
@@ -2222,14 +2917,138 @@ mod tests {
         }
     }
 
+    /// Source-derived, steady-state resident allocation floors at the campaign
+    /// context gates. These are exact bytes for the fixture dimensions and the
+    /// allocator's capacity rule, not device/process measurements.
+    #[test]
+    fn flagship_resident_kv_state_static_floors_are_exact() {
+        let raw = std::fs::read(
+            Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("tests/fixtures/gravity_glm/flagship_arch.json"),
+        )
+        .expect("flagship_arch.json");
+        let header: serde_json::Value = serde_json::from_slice(&raw).unwrap();
+        let arch = GlmArch::from_header(&header).unwrap();
+
+        assert_eq!(arch.n_layers, 78);
+        assert_eq!(arch.n_heads, 64);
+        assert_eq!(arch.qk_dim(), 256);
+        assert_eq!(arch.v_head_dim, 256);
+        assert_eq!(arch.kv_lora_rank, 512);
+        assert_eq!(arch.qk_rope_head_dim, 64);
+        assert_eq!(arch.index_head_dim, 128);
+
+        let expected = [
+            (
+                2_048usize,
+                10_468_982_784u64,
+                10_468_982_784u64,
+                81_788_928u64,
+                21_019_754_496u64,
+                327_155_712u64,
+                40_894_464u64,
+                449_839_104u64,
+                22_020_096u64,
+                390_070_272u64,
+            ),
+            (
+                8_192usize,
+                41_875_931_136u64,
+                41_875_931_136u64,
+                327_155_712u64,
+                84_079_017_984u64,
+                1_308_622_848u64,
+                163_577_856u64,
+                1_799_356_416u64,
+                88_080_384u64,
+                1_560_281_088u64,
+            ),
+            (
+                32_768usize,
+                167_503_724_544u64,
+                167_503_724_544u64,
+                1_308_622_848u64,
+                336_316_071_936u64,
+                5_234_491_392u64,
+                654_311_424u64,
+                7_197_425_664u64,
+                352_321_536u64,
+                6_241_124_352u64,
+            ),
+        ];
+        for (
+            tokens,
+            expanded_keys,
+            expanded_values,
+            index_keys,
+            expanded_total,
+            compact_latent,
+            compact_rope,
+            compact_total,
+            full_index_keys,
+            maximally_compact_total,
+        ) in expected
+        {
+            let got = estimate_resident_kv_state_static_bytes(&arch, tokens)
+                .expect("static KV/state projection");
+            assert_eq!(got.requested_tokens, tokens as u64);
+            assert_eq!(got.allocation_capacity_tokens, tokens as u64);
+            assert_eq!(got.expanded_keys_bytes, expanded_keys);
+            assert_eq!(got.expanded_values_bytes, expanded_values);
+            assert_eq!(got.index_keys_bytes, index_keys);
+            assert_eq!(got.current_expanded_total_bytes, expanded_total);
+            assert_eq!(got.compact_mla_latent_bytes, compact_latent);
+            assert_eq!(got.compact_rope_tail_bytes, compact_rope);
+            assert_eq!(got.compact_mla_total_bytes, compact_total);
+            assert_eq!(got.index_keys_full_layers_only_bytes, full_index_keys);
+            assert_eq!(
+                got.maximally_compact_mla_total_bytes,
+                maximally_compact_total
+            );
+            assert!(got.maximally_compact_mla_total_bytes < got.compact_mla_total_bytes);
+            assert!(got.compact_mla_total_bytes < got.current_expanded_total_bytes);
+        }
+    }
+
+    #[test]
+    fn resident_kv_state_static_projection_checks_capacity_arithmetic() {
+        let raw = std::fs::read(
+            Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("tests/fixtures/gravity_glm/flagship_arch.json"),
+        )
+        .expect("flagship_arch.json");
+        let header: serde_json::Value = serde_json::from_slice(&raw).unwrap();
+        let arch = GlmArch::from_header(&header).unwrap();
+
+        for requested in [0usize, 1, 63, 64] {
+            let initial = estimate_resident_kv_state_static_bytes(&arch, requested)
+                .expect("initial-capacity projection");
+            assert_eq!(initial.requested_tokens, requested as u64);
+            assert_eq!(initial.allocation_capacity_tokens, 64);
+            assert_eq!(initial.current_expanded_total_bytes, 656_867_328);
+            assert_eq!(initial.compact_mla_total_bytes, 14_057_472);
+            assert_eq!(initial.maximally_compact_mla_total_bytes, 12_189_696);
+        }
+
+        let rounded =
+            estimate_resident_kv_state_static_bytes(&arch, 2_049).expect("rounded projection");
+        assert_eq!(rounded.requested_tokens, 2_049);
+        assert_eq!(rounded.allocation_capacity_tokens, 4_096);
+
+        let err = estimate_resident_kv_state_static_bytes(&arch, usize::MAX)
+            .expect_err("capacity overflow must fail closed");
+        assert!(err.to_string().contains("capacity overflow"), "{err}");
+    }
+
     /// Static wait arithmetic for the flagship schedule. The campaign's
     /// ~1,171 figure used a uniform 15 waits/layer; the precise schedule
     /// (3 dense, 21 full-indexer, co-batched MoE) is lower. Resident co-issues
     /// independent projections and is strictly below host-state. Neither is
     /// command-buffer collapse (<=78).
     ///
-    /// Default resident estimate is **frozen** at 583 (Parity V2.1 item 6).
-    /// Expert-wave is a separate estimator and must not move that number.
+    /// The exact source-derived resident schedule is 586 logical boundaries.
+    /// Expert-wave is a separate estimator and must not rewrite the default
+    /// path's source schedule.
     #[test]
     fn flagship_wait_estimates_match_the_ordering_constraint() {
         let raw = std::fs::read(
@@ -2243,7 +3062,22 @@ mod tests {
         let resident = estimate_resident_waits_per_token(&arch);
         // Precise static count from the per-layer schedule (not 15×78).
         assert_eq!(host, 763, "host-state static waits");
-        assert_eq!(resident, 583, "resident static waits (default path frozen)");
+        assert_eq!(resident, 586, "resident logical/source boundaries");
+        assert_eq!(
+            estimate_resident_device_dsa_waits_per_token(&arch),
+            388,
+            "device graph removes two prelude boundaries per layer and both boundaries for each full indexer"
+        );
+        assert_eq!(
+            estimate_resident_logical_wait_breakdown(&arch),
+            ResidentLogicalWaitBreakdown {
+                attention_projection_boundaries: 234,
+                indexer_projection_boundaries: 42,
+                router_projection_boundaries: 75,
+                mlp_batch_boundaries: 234,
+                head_boundary: 1,
+            }
+        );
         assert!(resident < host);
         // Collapse target is <=78; residency alone is not collapse.
         assert!(resident > 78);
@@ -2256,12 +3090,35 @@ mod tests {
         let wave = estimate_resident_expert_wave_waits_per_token(&arch);
         assert_eq!(wave, 430, "resident + expert-wave static waits");
         assert!(wave < resident);
-        // Default estimator must stay 583 even though wave exists.
+        // The default estimator remains source-derived even though wave exists.
         assert_eq!(
             estimate_resident_waits_per_token(&arch),
-            583,
+            586,
             "default resident estimate must not be rewritten by expert-wave"
         );
+    }
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn sparse_batch_names_map_to_eight_routed_and_one_shared_stage() {
+        let mut names: Vec<String> = (0..8)
+            .map(|expert| format!("model.layers.7.mlp.experts.{expert}.gate_proj.weight"))
+            .collect();
+        names.push("model.layers.7.mlp.shared_experts.gate_proj.weight".into());
+
+        let routed = names
+            .iter()
+            .filter(|name| {
+                gpu::semantic_bucket_for_weight(name) == crate::cost_ledger::Bucket::RoutedExperts
+            })
+            .count();
+        let shared = names
+            .iter()
+            .filter(|name| {
+                gpu::semantic_bucket_for_weight(name) == crate::cost_ledger::Bucket::SharedExperts
+            })
+            .count();
+        assert_eq!((routed, shared), (8, 1));
     }
 
     #[test]
@@ -2274,15 +3131,8 @@ mod tests {
         names.iter().map(|s| (*s).to_string()).collect()
     }
 
-    fn admit(
-        cache: &mut BoundedLru<()>,
-        items: &[(&str, u64)],
-        pin_names: &[&str],
-    ) -> Result<()> {
-        let prepared = items
-            .iter()
-            .map(|(n, b)| (n.to_string(), (), *b))
-            .collect();
+    fn admit(cache: &mut BoundedLru<()>, items: &[(&str, u64)], pin_names: &[&str]) -> Result<()> {
+        let prepared = items.iter().map(|(n, b)| (n.to_string(), (), *b)).collect();
         cache.admit_pinned(prepared, &pin(pin_names))
     }
 
@@ -2331,9 +3181,11 @@ mod tests {
         // all three; any earlier residents must yield, and no pin member
         // may disappear.
         let mut c = BoundedLru::<()>::new(90).unwrap();
-        admit(&mut c, &[("old1", 30), ("old2", 30), ("old3", 30)], &[
-            "old1", "old2", "old3",
-        ])
+        admit(
+            &mut c,
+            &[("old1", 30), ("old2", 30), ("old3", 30)],
+            &["old1", "old2", "old3"],
+        )
         .unwrap();
         assert_eq!(c.len(), 3);
 
@@ -2353,7 +3205,11 @@ mod tests {
             );
         }
         assert_eq!(c.resident_bytes(), 90);
-        assert_eq!(c.stats().evictions, 3, "all three old entries yield to the pin set");
+        assert_eq!(
+            c.stats().evictions,
+            3,
+            "all three old entries yield to the pin set"
+        );
         assert!(!c.contains("old1") && !c.contains("old2") && !c.contains("old3"));
     }
 
@@ -2376,7 +3232,10 @@ mod tests {
             msg.contains("pinned") || msg.contains("exceeds"),
             "expected pinned-set over-budget error, got: {msg}"
         );
-        assert!(c.is_empty(), "failed admission must not leave partial state");
+        assert!(
+            c.is_empty(),
+            "failed admission must not leave partial state"
+        );
         assert_eq!(c.resident_bytes(), 0);
     }
 

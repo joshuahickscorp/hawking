@@ -43,6 +43,11 @@ pub enum EventSource {
 /// The single immutable record (ch.01 §4.6 — the cross-cutting contract every
 /// other chapter binds to).
 ///
+/// **Canonical product-event authority** for Hawking/HIDE (crate
+/// `hawking-events`). Other event-shaped types (`UiEvent`, protocol `Item`,
+/// `StreamEvent`, seed-c FSM events) are projections or domain FSMs and adapt
+/// *into* this model — they are not parallel durable logs.
+///
 /// The payload is an **open** `serde_json::Value`, not a closed Rust enum: the
 /// bible explicitly rejected the giant-enum approach because it makes the core a
 /// bottleneck for every new event kind and breaks WASM-plugin emission. Kinds

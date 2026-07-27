@@ -1,0 +1,86 @@
+{
+  "schema": "hawking.serve.gravity.prompt_path_audit.v1",
+  "at_utc": "2026-07-27T02:23:30Z",
+  "status": "PROMPT_DROP_HYPOTHESIS_EXCLUDED",
+  "trigger": "HAWKING_GRAVITY_SERVE_FIRST_GENERATION.json reported two prompt-independent eight-token completions and left artifact collapse versus an unconditioned serve path unresolved.",
+  "source_trace": [
+    "chat_completions renders the user messages into GenerateRequest.prompt with the artifact GLM template",
+    "BatchDriver::admit tokenizes req.prompt and Scheduler::admit stores the original GenerateRequest plus its prompt ids",
+    "when prefill_slot is unimplemented, the fallback clones that stored request and calls Engine::generate(req)",
+    "GravityEngine::generate tokenizes req.prompt, calls model.forward on the complete prompt ids, then continues with forward_at"
+  ],
+  "tokenizer_probe": {
+    "execution": "CPU_ONLY_NO_METAL",
+    "binary": "target/release/hawking tokenize",
+    "tokenizer": "sealed Math-Preserve artifact tokenizer/tokenizer.json",
+    "add_special_tokens": true,
+    "render_prefix": "[gMASK]<sop><|system|>Reasoning Effort: Max<|user|>",
+    "render_suffix": "<|assistant|><think>",
+    "trials": [
+      {
+        "user_text": "The capital of France is",
+        "count": 17,
+        "ids": [
+          154822,
+          154824,
+          154826,
+          25062,
+          287,
+          29905,
+          371,
+          25,
+          7487,
+          154827,
+          785,
+          6722,
+          315,
+          9621,
+          374,
+          154828,
+          154841
+        ]
+      },
+      {
+        "user_text": "Write a Python function that reverses a string.",
+        "count": 22,
+        "ids": [
+          154822,
+          154824,
+          154826,
+          25062,
+          287,
+          29905,
+          371,
+          25,
+          7487,
+          154827,
+          7984,
+          264,
+          13020,
+          729,
+          429,
+          17408,
+          288,
+          264,
+          914,
+          13,
+          154828,
+          154841
+        ]
+      }
+    ],
+    "verdict": "The two rendered prompts produce distinct lengths and distinct content-token sequences before model execution."
+  },
+  "conclusion": {
+    "excluded": "The serving fallback does not replace the prompt with an empty or constant context.",
+    "not_excluded": [
+      "artifact capability collapse",
+      "a runtime arithmetic, weight-resolution, or model-layout defect after prompt tokenization",
+      "a template semantic mismatch despite byte-preserving user content"
+    ],
+    "required_discriminator": "Compare complete real-artifact first-token logits and exact top-k/argmax against an independent FP64/container oracle for both distinct prompt token sequences; then validate incremental replay. Do not infer artifact collapse from repeated output alone."
+  },
+  "live_model_or_gpu_run": false,
+  "mop_touched": false,
+  "sealed_artifact_touched": false
+}

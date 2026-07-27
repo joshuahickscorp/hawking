@@ -1,0 +1,2 @@
+{"domain":"math","expect_contains":["4"],"id":"sel_math_01","prompt":"What is 2+2?","set":"selection"}
+{"domain":"technical_language","expect_contains":["bits per weight"],"id":"sel_halo_tech_01","prompt":"What does BPW mean in compression?","set":"selection"}

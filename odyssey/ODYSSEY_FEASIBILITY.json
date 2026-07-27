@@ -1,0 +1,117 @@
+{
+ "at": "2026-07-27T01:42:24Z",
+ "bounds": {
+  "assumptions": {
+   "adapter_rank_params": 983040,
+   "hidden": 6144,
+   "microbatch": 1,
+   "seq_len": 512,
+   "stream_gbps_assumed": 1.0
+  },
+  "min_full_resident_step_bytes": 92299738800,
+  "min_meaningful_training_step_bytes_streaming_adapter": 2265420800
+ },
+ "controller_correction": {
+  "at": "2026-07-27T01:47:02Z",
+  "breakdown_gib": {
+   "free": 1.0,
+   "inactive_reclaimable": 36.37,
+   "speculative_reclaimable": 1.11
+  },
+  "by": "controller (claude), re-derived independently from vm_stat",
+  "corrected_available_memory_bytes": 41312960512,
+  "corrected_available_memory_gib": 38.48,
+  "the_actual_binding_constraints_for_T1": [
+   "training corpora are DECLARED_NOT_PRESENT -- four declared corpora, none on disk. This is the real blocker and it is addressed by lane odyssey-data.",
+   "teacher traces are layer-scoped and 122 lines; the lane assessed this as insufficient for T3 trajectory work",
+   "wall clock ~414 s per step, contaminated by load ~29 of 28 cores, so it is an order of magnitude and not a measurement",
+   "BASE_TRUE_TPS is 0.3961 warm on the base runtime"
+  ],
+  "what_survives_the_correction": {
+   "fits": false,
+   "full_resident_step_gib": 85.96,
+   "note": "~86 GiB required against ~37.9 GiB available. The lane's conclusion holds for the full-resident path, for the right reason."
+  },
+  "what_the_correction_overturns": {
+   "fits": true,
+   "note": "~2.11 GiB required against ~37.9 GiB available. This path is NOT memory-blocked. The lane's headline said T1-T5 is infeasible on memory grounds; on the streaming-adapter path that reason is wrong.",
+   "streaming_adapter_step_gib": 2.11
+  },
+  "what_the_lane_got_wrong": "It reported observed_free_gib 0.104 and reasoned from it. On macOS, 'Pages free' is not available memory: inactive and speculative pages are reclaimable on demand.",
+  "why_this_correction_matters": "'Not enough memory' is not actionable and would have retired the lane. 'No data' is actionable. The corrected picture moves T1's blocker from a hardware wall to an acquisition decision that belongs to the user."
+ },
+ "machine": {
+  "load_note": "machine observed at load ~29\u201331 of 28 cores during this assessment; timings contaminated",
+  "machine_ram_bytes": 103079215104,
+  "machine_ram_gib": 96.0,
+  "ncpu": 28,
+  "observed_free_gib": 0.1043701171875
+ },
+ "schema": "hawking.odyssey.feasibility.v1",
+ "stages": {
+  "T0": {
+   "feasible_here": true,
+   "intent": "baseline reproduction",
+   "reason": "integrity, data classification, single-layer authority, known-failure registry \u2014 implemented"
+  },
+  "T1": {
+   "estimated_wall_clock_note": "contaminated by load ~29/28; order-of-magnitude only",
+   "estimated_wall_clock_per_step_seconds": 414.17212572,
+   "feasible_here": false,
+   "intent": "capability-conditioned continued training",
+   "memory_required_bytes_full_resident": 92299738800,
+   "memory_required_bytes_min_step": 2265420800,
+   "reason": "smallest meaningful streaming-adapter step needs ~2.3 GB working set; full-resident needs ~92.3 GB; observed free ~0.10 GiB on a 96 GiB machine already holding other campaigns. Training corpora are DECLARED_NOT_PRESENT.",
+   "what_must_be_offloaded": [
+    "all non-active layer weights (SSD stream)",
+    "optimizer state for any non-adapter full-model path (impossible in RAM)",
+    "KV/activation checkpointing to disk if seq grows"
+   ]
+  },
+  "T2": {
+   "estimated_wall_clock_per_step_seconds": 621.25818858,
+   "feasible_here": false,
+   "intent": "QAT headroom at frozen rate",
+   "memory_required_bytes_min_step": 2945047040,
+   "reason": "QAT requires forward+fake-quant+backward through the same 92 GB substrate. Operator simulation on small tensors is runnable; full QAT is not."
+  },
+  "T3": {
+   "feasible_here": false,
+   "intent": "trajectory stabilization",
+   "memory_required_bytes_min_step": 4530841600,
+   "reason": "Needs parent trajectory traces (teacher manifest PARTIAL \u2014 layer capsules only) plus multi-token forward of the student; same memory wall as T1 plus sequence length."
+  },
+  "T4": {
+   "feasible_here": false,
+   "intent": "forge profile expression",
+   "reason": "F1\u2013F4 require a served model and evaluated prompt set; serve path is memory-bound and another lane."
+  },
+  "T5": {
+   "feasible_here": false,
+   "intent": "hidden replication + sovereignty",
+   "reason": "Depends on T1\u2013T4 checkpoints and a live evaluation path against held-out items."
+  },
+  "T6": {
+   "feasible_here": false,
+   "intent": "not declared in training plan stages list (plan ends T5); support-halo/tournament gates sit on T7 in evaluation docs",
+   "reason": "No T6 stage object in ODYSSEY_TRAINING_PLAN.json"
+  },
+  "T7": {
+   "feasible_here": "partial",
+   "intent": "checkpoint tournament on math profile + support halo (G5)",
+   "reason": "Tournament comparison logic is RUNNABLE on scorecards. Live support-halo baseline on Math-Preserve is NOT_RUN (needs serve/completions). Offline score-completions path exists in tools/eval/support_halo_gate.py."
+  }
+ },
+ "substrate": {
+  "artifact": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/GLM-5.2-H0.98-Math-Preserve.gravity",
+  "bpw": 0.9774017488417455,
+  "bytes": 92038250160,
+  "read_only": true
+ },
+ "verdict": {
+  "controller_amended_headline": "Full-resident T1-T5 training does not fit: ~86 GiB required against ~37.9 GiB available. The streaming-adapter path does fit on memory and is blocked instead by missing training corpora and insufficient teacher traces. T0 reproductions and contract machinery are runnable now.",
+  "headline": "T1\u2013T5 training against the 92 GB Math-Preserve artifact is not feasible on this 96 GB machine at current load and free memory. T0 reproductions and contract machinery are. This is a finding, not a task to silently shrink.",
+  "t0_runnable": true,
+  "t1_t5_full_training_feasible_on_this_hardware_now": false
+ }
+}

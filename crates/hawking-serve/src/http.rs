@@ -113,6 +113,22 @@ fn parse_json<T: serde::de::DeserializeOwned>(body: &Bytes) -> Result<T, ApiErro
         .map_err(|e| ApiError::invalid_json(format!("invalid request body: {e}")))
 }
 
+/// Honest capability fields for a base-runtime `.gravity` serve. Absent when
+/// serving a non-gravity engine (default path unchanged).
+#[derive(Clone, Debug, Default)]
+pub struct GravityServeMeta {
+    pub index_sha256: Option<String>,
+    pub architecture: String,
+    pub model_id: String,
+    pub chat_template: Option<String>,
+    pub chat_template_path: Option<String>,
+    pub base_runtime: bool,
+    /// Explicit per-request wall-clock budget (seconds). Always set for gravity.
+    pub request_timeout_secs: u64,
+    /// SSE keep-alive interval (seconds). Always set for gravity.
+    pub sse_keep_alive_secs: u64,
+}
+
 #[derive(Clone)]
 pub struct AppState {
     pub engine: Arc<Mutex<Box<dyn Engine>>>,
@@ -138,6 +154,9 @@ pub struct AppState {
     /// `copy_kv_prefix_to_slot` + `prefill_slot_from_pos` path, so a stale
     /// slot simply fails the copy and falls back to a cold prefill.
     pub system_kv_bank: Arc<Mutex<SystemPromptKvBank>>,
+    /// Populated only when serving a `.gravity` base runtime. Default `None`
+    /// so every existing non-gravity serve path is byte-identical in behaviour.
+    pub gravity: Option<GravityServeMeta>,
 }
 
 /// Track 5.2 — the agreed banked-prefix length the serve-loop admit path uses
@@ -167,12 +186,58 @@ pub fn router(state: AppState) -> Router {
         .route("/v1/hawking/tokens", post(hawking_tokens))
         .route("/v1/hawking/generate", post(hawking_generate))
         .route("/v1/hawking/context", get(hawking_context))
+        // Honest capability surface — live declaration, never a facade.
+        .route("/v1/hawking/surface", get(hawking_surface))
+        // Explicit 501s: a canned success body would be strictly worse.
+        .route("/v1/responses", post(not_implemented_responses))
+        .route("/v1/messages", post(not_implemented_anthropic_messages))
         .route("/metrics", get(metrics))
         .with_state(state)
 }
 
-async fn healthz() -> &'static str {
-    "ok"
+/// Honest Bridge capability table (see [`crate::surface`]).
+async fn hawking_surface() -> Json<serde_json::Value> {
+    Json(crate::surface::bridge_surface_document())
+}
+
+/// OpenAI Responses API — not implemented. Returns 501, never a fake body.
+async fn not_implemented_responses() -> Response {
+    (
+        StatusCode::NOT_IMPLEMENTED,
+        Json(crate::surface::not_implemented_body("POST /v1/responses")),
+    )
+        .into_response()
+}
+
+/// Anthropic Messages API — not implemented. Returns 501, never a fake body.
+async fn not_implemented_anthropic_messages() -> Response {
+    (
+        StatusCode::NOT_IMPLEMENTED,
+        Json(crate::surface::not_implemented_body("POST /v1/messages")),
+    )
+        .into_response()
+}
+
+async fn healthz(State(s): State<AppState>) -> Response {
+    // Non-gravity: keep the historic plain-text "ok" so existing probes stay
+    // green. Gravity: return structured JSON with the sealed index hash and
+    // the fact that this is the base runtime (no silent fallback model).
+    if let Some(g) = &s.gravity {
+        let body = serde_json::json!({
+            "status": "ok",
+            "runtime": "base",
+            "base_runtime": true,
+            "fallback_present": false,
+            "architecture": g.architecture,
+            "model_id": g.model_id,
+            "artifact_index_sha256": g.index_sha256,
+            "chat_template_path": g.chat_template_path,
+            "request_timeout_secs": g.request_timeout_secs,
+            "sse_keep_alive_secs": g.sse_keep_alive_secs,
+        });
+        return (StatusCode::OK, Json(body)).into_response();
+    }
+    (StatusCode::OK, "ok").into_response()
 }
 
 async fn metrics(State(s): State<AppState>) -> String {
@@ -272,6 +337,20 @@ async fn hawking_context(State(s): State<AppState>) -> Json<ContextStatus> {
 struct ModelInfo {
     id: String,
     object: &'static str,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    architecture: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    artifact_index_sha256: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    base_runtime: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    runtime: Option<&'static str>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    fallback_present: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    chat_template_path: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    request_timeout_secs: Option<u64>,
 }
 
 #[derive(Serialize)]
@@ -282,12 +361,34 @@ struct ListModels {
 
 async fn list_models(State(s): State<AppState>) -> Json<ListModels> {
     let id = s.engine.lock().model_id().to_string();
-    Json(ListModels {
-        object: "list",
-        data: vec![ModelInfo {
+    let info = if let Some(g) = &s.gravity {
+        ModelInfo {
             id,
             object: "model",
-        }],
+            architecture: Some(g.architecture.clone()),
+            artifact_index_sha256: g.index_sha256.clone(),
+            base_runtime: Some(true),
+            runtime: Some("base"),
+            fallback_present: Some(false),
+            chat_template_path: g.chat_template_path.clone(),
+            request_timeout_secs: Some(g.request_timeout_secs),
+        }
+    } else {
+        ModelInfo {
+            id,
+            object: "model",
+            architecture: None,
+            artifact_index_sha256: None,
+            base_runtime: None,
+            runtime: None,
+            fallback_present: None,
+            chat_template_path: None,
+            request_timeout_secs: None,
+        }
+    };
+    Json(ListModels {
+        object: "list",
+        data: vec![info],
     })
 }
 
@@ -435,19 +536,19 @@ async fn chat_completions(State(s): State<AppState>, body: Bytes) -> Response {
     let tools: Vec<serde_json::Value> = req.tools.clone().unwrap_or_default();
     let want_tools = !tools.is_empty();
     let tool_names = crate::tool_calls::tool_names(&tools);
-    let prompt = if want_tools {
-        let preamble = crate::tool_calls::render_tools_preamble(&tools);
-        let mut msgs = req.messages.clone();
-        match msgs.first_mut() {
-            Some(first) if first.role == "system" => {
-                let existing = first.content.clone().unwrap_or_default();
-                first.content = Some(format!("{preamble}\n{existing}"));
-            }
-            _ => msgs.insert(0, ChatMessage::new("system", preamble)),
-        }
-        render_chat(&msgs, &s.model_arch)
-    } else {
-        render_chat(&req.messages, &s.model_arch)
+    // Gravity GLM: tools are not rendered by our faithful non-tools template
+    // path — refuse rather than silently fall through to a wrong template.
+    if want_tools && s.gravity.as_ref().map(|g| g.architecture == "glm_moe_dsa").unwrap_or(false)
+    {
+        return ApiError::invalid_json(
+            "gravity glm_moe_dsa serve does not render tool schemas yet; omit `tools` \
+             rather than accept a guessed tool prompt",
+        )
+        .into_response();
+    }
+    let prompt = match render_chat_for_state(&req.messages, &s, want_tools, &tools) {
+        Ok(p) => p,
+        Err(e) => return e.into_response(),
     };
     let sampling = SamplingParams {
         temperature: req.temperature.unwrap_or(0.7),
@@ -512,12 +613,73 @@ async fn completions(State(s): State<AppState>, body: Bytes) -> Response {
     }
 }
 
+fn render_chat_for_state(
+    msgs: &[ChatMessage],
+    state: &AppState,
+    want_tools: bool,
+    tools: &[serde_json::Value],
+) -> Result<String, ApiError> {
+    // Prefer the artifact's own chat template when serving gravity GLM.
+    if let Some(g) = &state.gravity {
+        if g.architecture == "glm_moe_dsa" {
+            let template = g.chat_template.as_deref().ok_or_else(|| {
+                ApiError::internal(
+                    "glm_moe_dsa gravity serve is missing the artifact chat template; \
+                     refusing to guess one",
+                )
+            })?;
+            let glm_msgs: Vec<crate::glm_chat::GlmMessage<'_>> = msgs
+                .iter()
+                .map(|m| crate::glm_chat::GlmMessage {
+                    role: m.role.as_str(),
+                    content: m.content.as_deref().unwrap_or(""),
+                })
+                .collect();
+            // enable_thinking=true matches the Jinja default (thinking on unless
+            // the caller sets enable_thinking false — we have no such knob yet).
+            return crate::glm_chat::render_glm_chat(template, &glm_msgs, true)
+                .map_err(ApiError::internal);
+        }
+    }
+
+    if want_tools {
+        let preamble = crate::tool_calls::render_tools_preamble(tools);
+        let mut owned = msgs.to_vec();
+        match owned.first_mut() {
+            Some(first) if first.role == "system" => {
+                let existing = first.content.clone().unwrap_or_default();
+                first.content = Some(format!("{preamble}\n{existing}"));
+            }
+            _ => owned.insert(0, ChatMessage::new("system", preamble)),
+        }
+        return Ok(render_chat(&owned, &state.model_arch));
+    }
+    Ok(render_chat(msgs, &state.model_arch))
+}
+
 fn render_chat(msgs: &[ChatMessage], model_arch: &str) -> String {
     match model_arch {
         "deepseek2" => render_chat_deepseek(msgs),
         a if a.starts_with("qwen2") => render_chat_qwen2(msgs),
+        // glm_moe_dsa must never reach the generic template — that path is only
+        // valid when gravity meta failed to load, which is a server bug.
+        "glm_moe_dsa" => {
+            // Still produce something so unit tests that only set model_arch do
+            // not panic; the live path always goes through render_chat_for_state.
+            render_chat_generic(msgs)
+        }
         _ => render_chat_generic(msgs),
     }
+}
+
+fn sse_keep_alive(state: &AppState) -> KeepAlive {
+    let secs = state
+        .gravity
+        .as_ref()
+        .map(|g| g.sse_keep_alive_secs)
+        .filter(|&s| s > 0)
+        .unwrap_or(15);
+    KeepAlive::new().interval(std::time::Duration::from_secs(secs))
 }
 
 fn render_chat_deepseek(msgs: &[ChatMessage]) -> String {
@@ -610,7 +772,7 @@ fn sse_response(
                     .send(Ok(Event::default().data(body.to_string())))
                     .await;
             });
-            return Sse::new(ReceiverStream::new(sse_rx)).keep_alive(KeepAlive::default());
+            return Sse::new(ReceiverStream::new(sse_rx)).keep_alive(sse_keep_alive(&state));
         }
     };
 
@@ -633,7 +795,7 @@ fn sse_response(
                     .send(Ok(Event::default().data(body.to_string())))
                     .await;
             });
-            return Sse::new(ReceiverStream::new(sse_rx)).keep_alive(KeepAlive::default());
+            return Sse::new(ReceiverStream::new(sse_rx)).keep_alive(sse_keep_alive(&state));
         }
         state.requests_queued.fetch_add(1, Ordering::Relaxed);
         state.wait_queue.lock().push_back((req, tok_tx, chat));
@@ -717,7 +879,7 @@ fn sse_response(
         let _ = sse_tx.send(Ok(Event::default().data("[DONE]"))).await;
     });
 
-    Sse::new(ReceiverStream::new(sse_rx)).keep_alive(KeepAlive::default())
+    Sse::new(ReceiverStream::new(sse_rx)).keep_alive(sse_keep_alive(&state))
 }
 
 /// Lean request body for the native `/v1/hawking/generate` endpoint.
@@ -911,7 +1073,7 @@ fn token_id_sse_response(
                     .send(Ok(Event::default().data(body.to_string())))
                     .await;
             });
-            return Sse::new(ReceiverStream::new(sse_rx)).keep_alive(KeepAlive::default());
+            return Sse::new(ReceiverStream::new(sse_rx)).keep_alive(sse_keep_alive(&state));
         }
         state.requests_queued.fetch_add(1, Ordering::Relaxed);
         state.wait_queue.lock().push_back((req, tok_tx, false));
@@ -943,7 +1105,7 @@ fn token_id_sse_response(
         let _ = sse_tx.send(Ok(Event::default().data("[DONE]"))).await;
     });
 
-    Sse::new(ReceiverStream::new(sse_rx)).keep_alive(KeepAlive::default())
+    Sse::new(ReceiverStream::new(sse_rx)).keep_alive(sse_keep_alive(&state))
 }
 
 async fn hawking_generate(State(s): State<AppState>, body: Bytes) -> Response {
@@ -1003,7 +1165,7 @@ fn hawking_generate_sse(
                     .send(Ok(Event::default().data(body.to_string())))
                     .await;
             });
-            return Sse::new(ReceiverStream::new(sse_rx)).keep_alive(KeepAlive::default());
+            return Sse::new(ReceiverStream::new(sse_rx)).keep_alive(sse_keep_alive(&state));
         }
         state.requests_queued.fetch_add(1, Ordering::Relaxed);
         state.wait_queue.lock().push_back((req, tok_tx, false));
@@ -1053,7 +1215,7 @@ fn hawking_generate_sse(
         let _ = sse_tx.send(Ok(Event::default().data("[DONE]"))).await;
     });
 
-    Sse::new(ReceiverStream::new(sse_rx)).keep_alive(KeepAlive::default())
+    Sse::new(ReceiverStream::new(sse_rx)).keep_alive(sse_keep_alive(&state))
 }
 
 async fn json_full_response(

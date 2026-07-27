@@ -1,0 +1,1083 @@
+{
+  "schema": "hawking.representation.rate_sweep.v1",
+  "at": "2026-07-27T11:57:42Z",
+  "source": "rehydrated GLM-5.2 BF16, verified against the sealed per-file sha256",
+  "question": "at a given complete BPW, how much of a real GLM organ's FUNCTION survives?",
+  "scoring": "functional cosine against the organ's own constant-mean null. Reconstruction error is INADMISSIBLE for promotion and is reported as a diagnostic only.",
+  "results": [
+    {
+      "organ": "attn_o",
+      "tensor": "model.layers.0.self_attn.o_proj.weight",
+      "shape": [
+        2048,
+        16384
+      ],
+      "constant_mean_cosine_null": 0.11964,
+      "points": [
+        {
+          "arm": "A1",
+          "config": {
+            "rank": 4
+          },
+          "complete_bpw": 0.03516,
+          "sub_bit": true,
+          "mean_row_cosine": 0.26157,
+          "beats_null": true,
+          "relative_output_error": 0.95931,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A1",
+          "config": {
+            "rank": 16
+          },
+          "complete_bpw": 0.14064,
+          "sub_bit": true,
+          "mean_row_cosine": 0.4557,
+          "beats_null": true,
+          "relative_output_error": 0.88484,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A1",
+          "config": {
+            "rank": 64
+          },
+          "complete_bpw": 0.56253,
+          "sub_bit": true,
+          "mean_row_cosine": 0.69197,
+          "beats_null": true,
+          "relative_output_error": 0.7179,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A1",
+          "config": {
+            "rank": 256
+          },
+          "complete_bpw": 2.25013,
+          "sub_bit": false,
+          "mean_row_cosine": 0.87834,
+          "beats_null": true,
+          "relative_output_error": 0.47577,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A1",
+          "config": {
+            "rank": 512
+          },
+          "complete_bpw": 4.50025,
+          "sub_bit": false,
+          "mean_row_cosine": 0.93265,
+          "beats_null": true,
+          "relative_output_error": 0.35915,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A2",
+          "config": {
+            "nsub": 8,
+            "ncent": 16,
+            "resid_bits": 0
+          },
+          "complete_bpw": 0.12891,
+          "sub_bit": true,
+          "mean_row_cosine": 0.23787,
+          "beats_null": true,
+          "relative_output_error": 1.17161,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A2",
+          "config": {
+            "nsub": 8,
+            "ncent": 16,
+            "resid_bits": 1
+          },
+          "complete_bpw": 1.12891,
+          "sub_bit": false,
+          "mean_row_cosine": 0.47213,
+          "beats_null": true,
+          "relative_output_error": 27.21412,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A2",
+          "config": {
+            "nsub": 16,
+            "ncent": 64,
+            "resid_bits": 1
+          },
+          "complete_bpw": 1.50782,
+          "sub_bit": false,
+          "mean_row_cosine": 0.44586,
+          "beats_null": true,
+          "relative_output_error": 23.65289,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A2",
+          "config": {
+            "nsub": 16,
+            "ncent": 64,
+            "resid_bits": 2
+          },
+          "complete_bpw": 2.50782,
+          "sub_bit": false,
+          "mean_row_cosine": 0.48395,
+          "beats_null": true,
+          "relative_output_error": 7.41937,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A2",
+          "config": {
+            "nsub": 32,
+            "ncent": 256,
+            "resid_bits": 2
+          },
+          "complete_bpw": 4.01563,
+          "sub_bit": false,
+          "mean_row_cosine": 0.42226,
+          "beats_null": true,
+          "relative_output_error": 7.93378,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A3",
+          "config": {
+            "stages": 3,
+            "ncent": 16
+          },
+          "complete_bpw": 0.37647,
+          "sub_bit": true,
+          "mean_row_cosine": 0.12444,
+          "beats_null": true,
+          "relative_output_error": 1.25933,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A3",
+          "config": {
+            "stages": 8,
+            "ncent": 64
+          },
+          "complete_bpw": 4.00391,
+          "sub_bit": false,
+          "mean_row_cosine": 0.34872,
+          "beats_null": true,
+          "relative_output_error": 1.10459,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A3",
+          "config": {
+            "stages": 16,
+            "ncent": 128
+          },
+          "complete_bpw": 16.00782,
+          "sub_bit": false,
+          "mean_row_cosine": 0.71475,
+          "beats_null": true,
+          "relative_output_error": 0.74373,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A3",
+          "config": {
+            "stages": 32,
+            "ncent": 256
+          },
+          "complete_bpw": 64.01563,
+          "sub_bit": false,
+          "mean_row_cosine": 0.98734,
+          "beats_null": true,
+          "relative_output_error": 0.15868,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A4",
+          "config": {
+            "basis": 1
+          },
+          "complete_bpw": 2.00001,
+          "sub_bit": false,
+          "mean_row_cosine": 0.36808,
+          "beats_null": true,
+          "relative_output_error": 0.92935,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A4",
+          "config": {
+            "basis": 2
+          },
+          "complete_bpw": 4.00001,
+          "sub_bit": false,
+          "mean_row_cosine": 0.51545,
+          "beats_null": true,
+          "relative_output_error": 0.8565,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A4",
+          "config": {
+            "basis": 4
+          },
+          "complete_bpw": 8.00002,
+          "sub_bit": false,
+          "mean_row_cosine": 0.7167,
+          "beats_null": true,
+          "relative_output_error": 0.69705,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A4",
+          "config": {
+            "basis": 6
+          },
+          "complete_bpw": 12.00003,
+          "sub_bit": false,
+          "mean_row_cosine": 0.87124,
+          "beats_null": true,
+          "relative_output_error": 0.49078,
+          "accounting_reconciles": true
+        }
+      ],
+      "best_sub_bit": {
+        "arm": "A1",
+        "config": {
+          "rank": 64
+        },
+        "complete_bpw": 0.56253,
+        "sub_bit": true,
+        "mean_row_cosine": 0.69197,
+        "beats_null": true,
+        "relative_output_error": 0.7179,
+        "accounting_reconciles": true
+      },
+      "best_any_rate": {
+        "arm": "A3",
+        "config": {
+          "stages": 32,
+          "ncent": 256
+        },
+        "complete_bpw": 64.01563,
+        "sub_bit": false,
+        "mean_row_cosine": 0.98734,
+        "beats_null": true,
+        "relative_output_error": 0.15868,
+        "accounting_reconciles": true
+      },
+      "sub_bit_points_beating_null": 5,
+      "sub_bit_points_total": 5
+    },
+    {
+      "organ": "dense_mlp",
+      "tensor": "model.layers.0.mlp.down_proj.weight",
+      "shape": [
+        2048,
+        12288
+      ],
+      "constant_mean_cosine_null": 0.12371,
+      "points": [
+        {
+          "arm": "A1",
+          "config": {
+            "rank": 4
+          },
+          "complete_bpw": 0.03647,
+          "sub_bit": true,
+          "mean_row_cosine": 0.07531,
+          "beats_null": false,
+          "relative_output_error": 0.99689,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A1",
+          "config": {
+            "rank": 16
+          },
+          "complete_bpw": 0.14585,
+          "sub_bit": true,
+          "mean_row_cosine": 0.14412,
+          "beats_null": true,
+          "relative_output_error": 0.98932,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A1",
+          "config": {
+            "rank": 64
+          },
+          "complete_bpw": 0.58338,
+          "sub_bit": true,
+          "mean_row_cosine": 0.28343,
+          "beats_null": true,
+          "relative_output_error": 0.95871,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A1",
+          "config": {
+            "rank": 256
+          },
+          "complete_bpw": 2.3335,
+          "sub_bit": false,
+          "mean_row_cosine": 0.51896,
+          "beats_null": true,
+          "relative_output_error": 0.85453,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A1",
+          "config": {
+            "rank": 512
+          },
+          "complete_bpw": 4.667,
+          "sub_bit": false,
+          "mean_row_cosine": 0.68684,
+          "beats_null": true,
+          "relative_output_error": 0.72658,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A2",
+          "config": {
+            "nsub": 8,
+            "ncent": 16,
+            "resid_bits": 0
+          },
+          "complete_bpw": 0.13021,
+          "sub_bit": true,
+          "mean_row_cosine": 0.03562,
+          "beats_null": false,
+          "relative_output_error": 1.35483,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A2",
+          "config": {
+            "nsub": 8,
+            "ncent": 16,
+            "resid_bits": 1
+          },
+          "complete_bpw": 1.13021,
+          "sub_bit": false,
+          "mean_row_cosine": 0.59171,
+          "beats_null": true,
+          "relative_output_error": 15.73154,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A2",
+          "config": {
+            "nsub": 16,
+            "ncent": 64,
+            "resid_bits": 1
+          },
+          "complete_bpw": 1.51042,
+          "sub_bit": false,
+          "mean_row_cosine": 0.57508,
+          "beats_null": true,
+          "relative_output_error": 16.55548,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A2",
+          "config": {
+            "nsub": 16,
+            "ncent": 64,
+            "resid_bits": 2
+          },
+          "complete_bpw": 2.51042,
+          "sub_bit": false,
+          "mean_row_cosine": 0.61014,
+          "beats_null": true,
+          "relative_output_error": 4.90747,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A2",
+          "config": {
+            "nsub": 32,
+            "ncent": 256,
+            "resid_bits": 2
+          },
+          "complete_bpw": 4.02084,
+          "sub_bit": false,
+          "mean_row_cosine": 0.57209,
+          "beats_null": true,
+          "relative_output_error": 4.2463,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A3",
+          "config": {
+            "stages": 3,
+            "ncent": 16
+          },
+          "complete_bpw": 0.37696,
+          "sub_bit": true,
+          "mean_row_cosine": 0.04567,
+          "beats_null": false,
+          "relative_output_error": 1.33744,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A3",
+          "config": {
+            "stages": 8,
+            "ncent": 64
+          },
+          "complete_bpw": 4.00521,
+          "sub_bit": false,
+          "mean_row_cosine": 0.25917,
+          "beats_null": true,
+          "relative_output_error": 1.17508,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A3",
+          "config": {
+            "stages": 16,
+            "ncent": 128
+          },
+          "complete_bpw": 16.01042,
+          "sub_bit": false,
+          "mean_row_cosine": 0.67379,
+          "beats_null": true,
+          "relative_output_error": 0.80728,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A3",
+          "config": {
+            "stages": 32,
+            "ncent": 256
+          },
+          "complete_bpw": 64.02084,
+          "sub_bit": false,
+          "mean_row_cosine": 0.98597,
+          "beats_null": true,
+          "relative_output_error": 0.1676,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A4",
+          "config": {
+            "basis": 1
+          },
+          "complete_bpw": 2.00001,
+          "sub_bit": false,
+          "mean_row_cosine": 0.35494,
+          "beats_null": true,
+          "relative_output_error": 0.93482,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A4",
+          "config": {
+            "basis": 2
+          },
+          "complete_bpw": 4.00002,
+          "sub_bit": false,
+          "mean_row_cosine": 0.50214,
+          "beats_null": true,
+          "relative_output_error": 0.86472,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A4",
+          "config": {
+            "basis": 4
+          },
+          "complete_bpw": 8.00003,
+          "sub_bit": false,
+          "mean_row_cosine": 0.70949,
+          "beats_null": true,
+          "relative_output_error": 0.70464,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A4",
+          "config": {
+            "basis": 6
+          },
+          "complete_bpw": 12.00004,
+          "sub_bit": false,
+          "mean_row_cosine": 0.86897,
+          "beats_null": true,
+          "relative_output_error": 0.49488,
+          "accounting_reconciles": true
+        }
+      ],
+      "best_sub_bit": {
+        "arm": "A1",
+        "config": {
+          "rank": 64
+        },
+        "complete_bpw": 0.58338,
+        "sub_bit": true,
+        "mean_row_cosine": 0.28343,
+        "beats_null": true,
+        "relative_output_error": 0.95871,
+        "accounting_reconciles": true
+      },
+      "best_any_rate": {
+        "arm": "A3",
+        "config": {
+          "stages": 32,
+          "ncent": 256
+        },
+        "complete_bpw": 64.02084,
+        "sub_bit": false,
+        "mean_row_cosine": 0.98597,
+        "beats_null": true,
+        "relative_output_error": 0.1676,
+        "accounting_reconciles": true
+      },
+      "sub_bit_points_beating_null": 2,
+      "sub_bit_points_total": 5
+    },
+    {
+      "organ": "embed",
+      "tensor": "model.embed_tokens.weight",
+      "shape": [
+        2048,
+        6144
+      ],
+      "constant_mean_cosine_null": 0.11922,
+      "points": [
+        {
+          "arm": "A1",
+          "config": {
+            "rank": 4
+          },
+          "complete_bpw": 0.04168,
+          "sub_bit": true,
+          "mean_row_cosine": 0.35624,
+          "beats_null": true,
+          "relative_output_error": 0.91148,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A1",
+          "config": {
+            "rank": 16
+          },
+          "complete_bpw": 0.1667,
+          "sub_bit": true,
+          "mean_row_cosine": 0.47379,
+          "beats_null": true,
+          "relative_output_error": 0.86443,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A1",
+          "config": {
+            "rank": 64
+          },
+          "complete_bpw": 0.66676,
+          "sub_bit": true,
+          "mean_row_cosine": 0.61727,
+          "beats_null": true,
+          "relative_output_error": 0.77452,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A1",
+          "config": {
+            "rank": 256
+          },
+          "complete_bpw": 2.667,
+          "sub_bit": false,
+          "mean_row_cosine": 0.78201,
+          "beats_null": true,
+          "relative_output_error": 0.61486,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A1",
+          "config": {
+            "rank": 512
+          },
+          "complete_bpw": 5.33399,
+          "sub_bit": false,
+          "mean_row_cosine": 0.87314,
+          "beats_null": true,
+          "relative_output_error": 0.48101,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A2",
+          "config": {
+            "nsub": 8,
+            "ncent": 16,
+            "resid_bits": 0
+          },
+          "complete_bpw": 0.13543,
+          "sub_bit": true,
+          "mean_row_cosine": 0.18351,
+          "beats_null": true,
+          "relative_output_error": 1.09253,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A2",
+          "config": {
+            "nsub": 8,
+            "ncent": 16,
+            "resid_bits": 1
+          },
+          "complete_bpw": 1.13543,
+          "sub_bit": false,
+          "mean_row_cosine": 0.6307,
+          "beats_null": true,
+          "relative_output_error": 8.91992,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A2",
+          "config": {
+            "nsub": 16,
+            "ncent": 64,
+            "resid_bits": 1
+          },
+          "complete_bpw": 1.52084,
+          "sub_bit": false,
+          "mean_row_cosine": 0.6566,
+          "beats_null": true,
+          "relative_output_error": 7.7033,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A2",
+          "config": {
+            "nsub": 16,
+            "ncent": 64,
+            "resid_bits": 2
+          },
+          "complete_bpw": 2.52084,
+          "sub_bit": false,
+          "mean_row_cosine": 0.70761,
+          "beats_null": true,
+          "relative_output_error": 2.11954,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A2",
+          "config": {
+            "nsub": 32,
+            "ncent": 256,
+            "resid_bits": 2
+          },
+          "complete_bpw": 4.04168,
+          "sub_bit": false,
+          "mean_row_cosine": 0.6869,
+          "beats_null": true,
+          "relative_output_error": 1.82962,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A3",
+          "config": {
+            "stages": 3,
+            "ncent": 16
+          },
+          "complete_bpw": 0.37892,
+          "sub_bit": true,
+          "mean_row_cosine": 0.21155,
+          "beats_null": true,
+          "relative_output_error": 1.09965,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A3",
+          "config": {
+            "stages": 8,
+            "ncent": 64
+          },
+          "complete_bpw": 4.01043,
+          "sub_bit": false,
+          "mean_row_cosine": 0.521,
+          "beats_null": true,
+          "relative_output_error": 0.85929,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A3",
+          "config": {
+            "stages": 16,
+            "ncent": 128
+          },
+          "complete_bpw": 16.02084,
+          "sub_bit": false,
+          "mean_row_cosine": 0.80854,
+          "beats_null": true,
+          "relative_output_error": 0.58751,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A3",
+          "config": {
+            "stages": 32,
+            "ncent": 256
+          },
+          "complete_bpw": 64.04168,
+          "sub_bit": false,
+          "mean_row_cosine": 0.99301,
+          "beats_null": true,
+          "relative_output_error": 0.11717,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A4",
+          "config": {
+            "basis": 1
+          },
+          "complete_bpw": 2.00002,
+          "sub_bit": false,
+          "mean_row_cosine": 0.43023,
+          "beats_null": true,
+          "relative_output_error": 0.88955,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A4",
+          "config": {
+            "basis": 2
+          },
+          "complete_bpw": 4.00003,
+          "sub_bit": false,
+          "mean_row_cosine": 0.57153,
+          "beats_null": true,
+          "relative_output_error": 0.81074,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A4",
+          "config": {
+            "basis": 4
+          },
+          "complete_bpw": 8.00005,
+          "sub_bit": false,
+          "mean_row_cosine": 0.77101,
+          "beats_null": true,
+          "relative_output_error": 0.63097,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A4",
+          "config": {
+            "basis": 6
+          },
+          "complete_bpw": 12.00007,
+          "sub_bit": false,
+          "mean_row_cosine": 0.91085,
+          "beats_null": true,
+          "relative_output_error": 0.40973,
+          "accounting_reconciles": true
+        }
+      ],
+      "best_sub_bit": {
+        "arm": "A1",
+        "config": {
+          "rank": 64
+        },
+        "complete_bpw": 0.66676,
+        "sub_bit": true,
+        "mean_row_cosine": 0.61727,
+        "beats_null": true,
+        "relative_output_error": 0.77452,
+        "accounting_reconciles": true
+      },
+      "best_any_rate": {
+        "arm": "A3",
+        "config": {
+          "stages": 32,
+          "ncent": 256
+        },
+        "complete_bpw": 64.04168,
+        "sub_bit": false,
+        "mean_row_cosine": 0.99301,
+        "beats_null": true,
+        "relative_output_error": 0.11717,
+        "accounting_reconciles": true
+      },
+      "sub_bit_points_beating_null": 5,
+      "sub_bit_points_total": 5
+    },
+    {
+      "organ": "lm_head",
+      "tensor": "lm_head.weight",
+      "shape": [
+        2048,
+        6144
+      ],
+      "constant_mean_cosine_null": 0.12062,
+      "points": [
+        {
+          "arm": "A1",
+          "config": {
+            "rank": 4
+          },
+          "complete_bpw": 0.04168,
+          "sub_bit": true,
+          "mean_row_cosine": 0.3011,
+          "beats_null": true,
+          "relative_output_error": 0.94194,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A1",
+          "config": {
+            "rank": 16
+          },
+          "complete_bpw": 0.1667,
+          "sub_bit": true,
+          "mean_row_cosine": 0.38228,
+          "beats_null": true,
+          "relative_output_error": 0.91541,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A1",
+          "config": {
+            "rank": 64
+          },
+          "complete_bpw": 0.66676,
+          "sub_bit": true,
+          "mean_row_cosine": 0.48838,
+          "beats_null": true,
+          "relative_output_error": 0.86579,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A1",
+          "config": {
+            "rank": 256
+          },
+          "complete_bpw": 2.667,
+          "sub_bit": false,
+          "mean_row_cosine": 0.66955,
+          "beats_null": true,
+          "relative_output_error": 0.73801,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A1",
+          "config": {
+            "rank": 512
+          },
+          "complete_bpw": 5.33399,
+          "sub_bit": false,
+          "mean_row_cosine": 0.79128,
+          "beats_null": true,
+          "relative_output_error": 0.6077,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A2",
+          "config": {
+            "nsub": 8,
+            "ncent": 16,
+            "resid_bits": 0
+          },
+          "complete_bpw": 0.13543,
+          "sub_bit": true,
+          "mean_row_cosine": 0.09764,
+          "beats_null": false,
+          "relative_output_error": 1.17983,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A2",
+          "config": {
+            "nsub": 8,
+            "ncent": 16,
+            "resid_bits": 1
+          },
+          "complete_bpw": 1.13543,
+          "sub_bit": false,
+          "mean_row_cosine": 0.64014,
+          "beats_null": true,
+          "relative_output_error": 8.34731,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A2",
+          "config": {
+            "nsub": 16,
+            "ncent": 64,
+            "resid_bits": 1
+          },
+          "complete_bpw": 1.52084,
+          "sub_bit": false,
+          "mean_row_cosine": 0.66281,
+          "beats_null": true,
+          "relative_output_error": 8.85177,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A2",
+          "config": {
+            "nsub": 16,
+            "ncent": 64,
+            "resid_bits": 2
+          },
+          "complete_bpw": 2.52084,
+          "sub_bit": false,
+          "mean_row_cosine": 0.70209,
+          "beats_null": true,
+          "relative_output_error": 2.48049,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A2",
+          "config": {
+            "nsub": 32,
+            "ncent": 256,
+            "resid_bits": 2
+          },
+          "complete_bpw": 4.04168,
+          "sub_bit": false,
+          "mean_row_cosine": 0.67363,
+          "beats_null": true,
+          "relative_output_error": 2.68139,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A3",
+          "config": {
+            "stages": 3,
+            "ncent": 16
+          },
+          "complete_bpw": 0.37892,
+          "sub_bit": true,
+          "mean_row_cosine": 0.10957,
+          "beats_null": false,
+          "relative_output_error": 1.21312,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A3",
+          "config": {
+            "stages": 8,
+            "ncent": 64
+          },
+          "complete_bpw": 4.01043,
+          "sub_bit": false,
+          "mean_row_cosine": 0.50262,
+          "beats_null": true,
+          "relative_output_error": 0.87773,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A3",
+          "config": {
+            "stages": 16,
+            "ncent": 128
+          },
+          "complete_bpw": 16.02084,
+          "sub_bit": false,
+          "mean_row_cosine": 0.80721,
+          "beats_null": true,
+          "relative_output_error": 0.5931,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A3",
+          "config": {
+            "stages": 32,
+            "ncent": 256
+          },
+          "complete_bpw": 64.04168,
+          "sub_bit": false,
+          "mean_row_cosine": 0.99378,
+          "beats_null": true,
+          "relative_output_error": 0.11124,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A4",
+          "config": {
+            "basis": 1
+          },
+          "complete_bpw": 2.00002,
+          "sub_bit": false,
+          "mean_row_cosine": 0.37933,
+          "beats_null": true,
+          "relative_output_error": 0.92364,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A4",
+          "config": {
+            "basis": 2
+          },
+          "complete_bpw": 4.00003,
+          "sub_bit": false,
+          "mean_row_cosine": 0.52328,
+          "beats_null": true,
+          "relative_output_error": 0.84795,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A4",
+          "config": {
+            "basis": 4
+          },
+          "complete_bpw": 8.00005,
+          "sub_bit": false,
+          "mean_row_cosine": 0.72244,
+          "beats_null": true,
+          "relative_output_error": 0.68874,
+          "accounting_reconciles": true
+        },
+        {
+          "arm": "A4",
+          "config": {
+            "basis": 6
+          },
+          "complete_bpw": 12.00007,
+          "sub_bit": false,
+          "mean_row_cosine": 0.87327,
+          "beats_null": true,
+          "relative_output_error": 0.48539,
+          "accounting_reconciles": true
+        }
+      ],
+      "best_sub_bit": {
+        "arm": "A1",
+        "config": {
+          "rank": 64
+        },
+        "complete_bpw": 0.66676,
+        "sub_bit": true,
+        "mean_row_cosine": 0.48838,
+        "beats_null": true,
+        "relative_output_error": 0.86579,
+        "accounting_reconciles": true
+      },
+      "best_any_rate": {
+        "arm": "A3",
+        "config": {
+          "stages": 32,
+          "ncent": 256
+        },
+        "complete_bpw": 64.04168,
+        "sub_bit": false,
+        "mean_row_cosine": 0.99378,
+        "beats_null": true,
+        "relative_output_error": 0.11124,
+        "accounting_reconciles": true
+      },
+      "sub_bit_points_beating_null": 3,
+      "sub_bit_points_total": 5
+    }
+  ],
+  "seconds": 645.5,
+  "scope_caveat": "one organ at a time, 2048 rows, on a 4-of-78-layer window. This can support 'no swept sub-bit configuration of these families preserves this organ's function', which is a real and useful negative. It cannot on its own establish whole-model behaviour, and no whole-model gate is measurable here."
+}

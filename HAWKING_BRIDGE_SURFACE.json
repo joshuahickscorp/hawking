@@ -1,0 +1,115 @@
+{
+  "endpoints": [
+    {
+      "endpoint": "POST /v1/chat/completions",
+      "entry_path": "crates/hawking-serve/src/http.rs:router -> chat_completions",
+      "status": "live",
+      "tests": [
+        "crates/hawking-serve/tests/http_integration.rs"
+      ]
+    },
+    {
+      "endpoint": "POST /v1/completions",
+      "entry_path": "crates/hawking-serve/src/http.rs:router -> completions",
+      "status": "live",
+      "tests": [
+        "crates/hawking-serve/tests/http_integration.rs"
+      ]
+    },
+    {
+      "endpoint": "GET /v1/models",
+      "entry_path": "crates/hawking-serve/src/http.rs:router -> list_models",
+      "status": "live",
+      "tests": [
+        "crates/hawking-serve/tests/http_integration.rs"
+      ]
+    },
+    {
+      "endpoint": "GET /healthz",
+      "entry_path": "crates/hawking-serve/src/http.rs:router -> healthz",
+      "status": "live",
+      "tests": [
+        "crates/hawking-serve/tests/http_integration.rs"
+      ]
+    },
+    {
+      "endpoint": "GET /metrics",
+      "entry_path": "crates/hawking-serve/src/http.rs:router -> metrics",
+      "status": "live",
+      "tests": []
+    },
+    {
+      "endpoint": "POST /v1/embeddings",
+      "entry_path": "crates/hawking-serve/src/http.rs:router -> embeddings",
+      "status": "partial",
+      "tests": []
+    },
+    {
+      "endpoint": "POST /v1/hawking/tokens",
+      "entry_path": "crates/hawking-serve/src/http.rs:router -> hawking_tokens",
+      "status": "live",
+      "tests": [
+        "crates/hawking-serve/tests/hawking_native_endpoint.rs"
+      ]
+    },
+    {
+      "endpoint": "POST /v1/hawking/generate",
+      "entry_path": "crates/hawking-serve/src/http.rs:router -> hawking_generate",
+      "status": "live",
+      "tests": [
+        "crates/hawking-serve/tests/hawking_native_endpoint.rs"
+      ]
+    },
+    {
+      "endpoint": "GET /v1/hawking/context",
+      "entry_path": "crates/hawking-serve/src/http.rs:router -> hawking_context",
+      "status": "live",
+      "tests": []
+    },
+    {
+      "endpoint": "GET /v1/hawking/surface",
+      "entry_path": "crates/hawking-serve/src/http.rs:router -> hawking_surface",
+      "status": "live",
+      "tests": [
+        "crates/hawking-serve/tests/http_integration.rs"
+      ]
+    },
+    {
+      "endpoint": "POST /v1/responses",
+      "entry_path": "crates/hawking-serve/src/http.rs:router -> not_implemented_responses",
+      "status": "not_implemented",
+      "tests": [
+        "crates/hawking-serve/tests/http_integration.rs"
+      ]
+    },
+    {
+      "endpoint": "POST /v1/messages",
+      "entry_path": "crates/hawking-serve/src/http.rs:router -> not_implemented_anthropic_messages",
+      "status": "not_implemented",
+      "tests": [
+        "crates/hawking-serve/tests/http_integration.rs"
+      ]
+    },
+    {
+      "endpoint": "MCP",
+      "entry_path": "crates/hide-backend (register_mcp_servers_at_boot on hide tree)",
+      "status": "partial",
+      "tests": []
+    },
+    {
+      "endpoint": "ACP",
+      "entry_path": "crates/hide-acp (DeferredTurnHandler / capability negotiate)",
+      "status": "partial",
+      "tests": []
+    },
+    {
+      "endpoint": "SDK Transport -> hide-serve",
+      "entry_path": "crates/hide-sdk/src/client.rs (MockTransport only; real transport deferred)",
+      "status": "not_implemented",
+      "tests": [
+        "crates/hide-sdk/tests/client.rs"
+      ]
+    }
+  ],
+  "schema": "hawking.bridge.surface.v1"
+}

@@ -1,0 +1,136 @@
+{
+  "at": "2026-07-27T01:42:24Z",
+  "contracts": {
+    "checkpoint_controller": {
+      "implementation": "tools/odyssey/contracts.py:create_checkpoint",
+      "json_contract": "odyssey/training/ODYSSEY_CHECKPOINT_CONTRACT.json",
+      "schema": "hawking.odyssey.checkpoint.runtime.v1",
+      "status": "RUNNABLE",
+      "test": "tools/odyssey/test_odyssey_t0.py::test_checkpoint_controller"
+    },
+    "checkpoint_tournament": {
+      "evidence_winner_on_tie": "inc",
+      "implementation": "tools/odyssey/tournament.py:compare",
+      "json_contract": "odyssey/evaluation/SUPPORT_HALO_SCORING_RULES.json",
+      "schema": "hawking.odyssey.checkpoint_tournament.v1",
+      "status": "RUNNABLE",
+      "test": "tools/odyssey/test_odyssey_t0.py::test_tournament"
+    },
+    "data_corpora": {
+      "implementation": "tools/odyssey/data_verify.py",
+      "json_contract": "odyssey/data/ODYSSEY_DATA_MANIFEST.json",
+      "reason": "corpora DECLARED_NOT_COLLECTED; verifier is RUNNABLE and reports DECLARED_NOT_PRESENT",
+      "schema": "hawking.odyssey.data.v1",
+      "status": "DECLARED",
+      "test": "tools/odyssey/test_odyssey_t0.py::test_data_verify_classifies_missing"
+    },
+    "doctrine": {
+      "implementation": null,
+      "json_contract": "odyssey/doctrine/DOCTRINE.json",
+      "reason": "doctrine text; not an executable training contract",
+      "schema": "hawking.odyssey.doctrine.v1",
+      "status": "DECLARED",
+      "test": null
+    },
+    "evaluation_hidden_memberships": {
+      "implementation": "tools/odyssey/hidden_memberships.py",
+      "json_contract": "odyssey/evaluation/hidden/HIDDEN_MEMBERSHIP_COMMITMENT.json",
+      "schema": "hawking.odyssey.hidden_memberships.v1",
+      "status": "RUNNABLE",
+      "test": "tools/odyssey/test_odyssey_t0.py::test_hidden_memberships"
+    },
+    "forge_and_sovereignty_gates": {
+      "implementation": "tools/odyssey/contracts.py:forge_gate,sovereignty_gate",
+      "json_contract": "odyssey/forge/FORGE.json + odyssey/sovereignty/*",
+      "partial": "F1\u2013F4 and false-refusal metrics NOT_IMPLEMENTABLE_HERE without served model",
+      "schema": "hawking.odyssey.forge.runtime.v1 + sovereignty.runtime.v1",
+      "status": "RUNNABLE",
+      "test": "tools/odyssey/test_odyssey_t0.py::test_forge_sovereignty"
+    },
+    "objective": {
+      "implementation": "tools/odyssey/contracts.py:objective_weights",
+      "json_contract": "odyssey/training/ODYSSEY_OBJECTIVE_CONTRACT.json",
+      "note": "Weight derivation runnable; full CE training step not feasible here",
+      "schema": "hawking.odyssey.objective.runtime.v1",
+      "status": "RUNNABLE",
+      "test": "tools/odyssey/test_odyssey_t0.py::test_objective_weights"
+    },
+    "profile_support_halo": {
+      "implementation": "tools/odyssey/contracts.py:profile_support_halo_contract",
+      "json_contract": "odyssey/profiles/ODYSSEY_PROFILE_MANIFEST.json + evaluation/SUPPORT_HALO_*",
+      "schema": "hawking.odyssey.profile_support_halo.runtime.v1",
+      "status": "RUNNABLE",
+      "test": "tools/odyssey/test_odyssey_t0.py::test_profile_support_halo"
+    },
+    "qat_simulation": {
+      "implementation": "tools/odyssey/contracts.py:qat_simulate_step",
+      "json_contract": "odyssey/training/ODYSSEY_OBJECTIVE_CONTRACT.json (T2)",
+      "not_implementable_here": "full QAT recovery on 92 GB Math-Preserve substrate",
+      "schema": "hawking.odyssey.qat_sim.v1",
+      "status": "RUNNABLE",
+      "test": "tools/odyssey/test_odyssey_t0.py::test_qat_sim"
+    },
+    "resource_scheduler": {
+      "evidence_admit": true,
+      "implementation": "tools/odyssey/contracts.py:resource_scheduler_admit",
+      "json_contract": "odyssey/sandbox/POLICY.json",
+      "schema": "hawking.odyssey.resource_scheduler.v1",
+      "status": "RUNNABLE",
+      "test": "tools/odyssey/test_odyssey_t0.py::test_resource_scheduler"
+    },
+    "resume": {
+      "evidence": {
+        "checkpoint_id": "7b7f0ef6d4f242449a8ee0e3348ede1757864e3ac4ecb31b9a4a224d15b88be4",
+        "next_step": 1,
+        "note": "Resume loads controller state only; does not start training.",
+        "stage": "T0",
+        "status": "READY",
+        "step": 0
+      },
+      "implementation": "tools/odyssey/contracts.py:resume_from_current",
+      "json_contract": "odyssey/training/ODYSSEY_CHECKPOINT_CONTRACT.json",
+      "schema": "hawking.odyssey.resume.v1",
+      "status": "RUNNABLE",
+      "test": "tools/odyssey/test_odyssey_t0.py::test_resume"
+    },
+    "rollback": {
+      "evidence": "RUNNABLE",
+      "implementation": "tools/odyssey/contracts.py:rollback_to",
+      "json_contract": "odyssey/rollback/ROLLBACK.json",
+      "schema": "hawking.odyssey.rollback.runtime.v1",
+      "status": "RUNNABLE",
+      "test": "tools/odyssey/test_odyssey_t0.py::test_rollback"
+    },
+    "trajectory_metrics": {
+      "implementation": "tools/odyssey/contracts.py:trajectory_divergence",
+      "json_contract": "odyssey/training/ODYSSEY_OBJECTIVE_CONTRACT.json (T3)",
+      "note": "Metric runnable; full parent trajectory traces still PARTIAL in teacher manifest",
+      "schema": "hawking.odyssey.trajectory_metrics.v1",
+      "status": "RUNNABLE",
+      "test": "tools/odyssey/test_odyssey_t0.py::test_trajectory_metrics"
+    },
+    "tribunal": {
+      "implementation": null,
+      "json_contract": "odyssey/tribunal/TRIBUNAL.json",
+      "reason": "requires human expert gate; not implementable as autonomous code",
+      "schema": "hawking.odyssey.tribunal.v1",
+      "status": "DECLARED",
+      "test": null
+    },
+    "verification_lattice": {
+      "implementation": null,
+      "json_contract": "odyssey/verifiers/VERIFICATION_LATTICE.json",
+      "reason": "Tier 2/3 need Lean/Mathlib clean-container path not present here",
+      "schema": "hawking.odyssey.verification.v1",
+      "status": "DECLARED",
+      "test": null
+    }
+  },
+  "schema": "hawking.odyssey.contract_closure.v1",
+  "summary": {
+    "DECLARED": 4,
+    "FAIL": 0,
+    "NOT_IMPLEMENTABLE_HERE": 0,
+    "RUNNABLE": 11
+  }
+}

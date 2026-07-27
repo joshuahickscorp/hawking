@@ -1,0 +1,92 @@
+{
+  "schema": "hawking.gravity.expert_wave_persistent_scratch_candidate.v1",
+  "at_utc": "2026-07-27T03:00:00Z",
+  "base_commit": "90593c10c05efd7ac980714ce9a5a7957c7d79c5",
+  "scope": {
+    "path": "HAWKING_GLM_GPU_EXPERT_WAVE=1 only",
+    "default_path_changed": false,
+    "flag_default_changed": false,
+    "dispatch_graph_changed": false,
+    "weight_or_artifact_changed": false,
+    "mop_touched": false,
+    "heavy_or_sealed_model_benchmark_run": false
+  },
+  "motivation": {
+    "prior_measured_result": "HAWKING_EXPERT_WAVE_NEGATIVE.json",
+    "prior_flagged_ms_per_token": 1413,
+    "promoted_default_ms_per_token": 828,
+    "prior_ratio": 0.59,
+    "finding": "The rejected implementation allocated fresh gate, up, activation, down, and combined Metal buffers inside every MLP layer. That confounds any conclusion about the one-command-buffer expert schedule or its kernels."
+  },
+  "flagship_static_allocation_census": {
+    "dense_layers": 3,
+    "sparse_layers": 75,
+    "dense_prefixes_per_wave": 1,
+    "sparse_prefixes_per_wave": 9,
+    "old_metal_buffers_allocated_per_dense_wave": 5,
+    "old_metal_buffers_allocated_per_sparse_wave": 37,
+    "old_metal_buffer_allocations_per_token": 2790,
+    "old_temporary_host_zero_vectors_per_token": 78,
+    "new_steady_state_metal_buffer_allocations_per_token_after_warmup": 0,
+    "new_temporary_host_zero_vectors_per_token": 0,
+    "new_flagged_path_steady_scratch_buffers": 37,
+    "new_flagged_path_steady_scratch_bytes": 1572864,
+    "new_flagged_path_first_growth_peak_bytes": 1769472,
+    "growth_policy": "monotonic maximum of expert count, intermediate width, and hidden width; first dense and sparse calls establish the final flagship capacity, then resources retain stable GPU addresses"
+  },
+  "implementation_contract": {
+    "lazy": "ActPool owns no expert-wave scratch until the existing default-off flag path actually requests it",
+    "reuse": "adequate scratch preserves the same Metal Buffer resources and GPU addresses",
+    "growth": "undersized scratch is replaced before encoding and dimensions/byte arithmetic fail closed",
+    "accumulator": "the existing host-zero semantics and dispatch graph are preserved, but the temporary zero Vec allocation is replaced by a checked zero write into the reused shared buffer",
+    "order": "gate/up, SiLU, down, and ascending-expert-then-shared AXPY order are unchanged"
+  },
+  "verification": [
+    {
+      "command": "cargo test -p hawking-core --lib gravity_glm_resident::tests::expert_wave_ -- --nocapture",
+      "result": "PASS",
+      "passed": 2
+    },
+    {
+      "command": "cargo test -p hawking-core --test gravity_glm_expert_wave_parity -- --nocapture",
+      "result": "PASS",
+      "passed": 3,
+      "numeric_authority": "FP64 / Numeric Parity V2.1"
+    },
+    {
+      "command": "cargo test -p hawking-core --test gravity_glm_resident_parity -- --nocapture",
+      "environment": "expert-wave flag OFF",
+      "result": "PASS",
+      "passed": 3
+    },
+    {
+      "command": "cargo test -p hawking-core --test gravity_glm_gpu_forward -- --nocapture",
+      "environment": "expert-wave flag OFF",
+      "result": "PASS",
+      "passed": 3,
+      "max_abs_logit_diff": 0.000002592802,
+      "incremental_replay_max_abs_logit_diff": 0.0
+    },
+    {
+      "command": "cargo check -p hawking-core --lib",
+      "result": "PASS"
+    },
+    {
+      "command": "rustfmt --edition 2021 --check crates/hawking-core/src/gravity_glm_resident.rs",
+      "result": "PASS"
+    }
+  ],
+  "known_preexisting_flagged_path_gate": {
+    "test": "HAWKING_GLM_GPU_RESIDENT_STATE=1 HAWKING_GLM_GPU_LM_HEAD=1 HAWKING_GLM_GPU_EXPERT_WAVE=1 HAWKING_GLM_GPU_LM_HEAD_FULL_LOGITS=1 cargo test -p hawking-core --test gravity_glm_resident_parity -- --nocapture",
+    "parent_commit_result": "FAIL: the native-heavy fixture requires bit-identical full logits, while the existing Metal SiLU path is V2.1-continuous rather than bit-identical",
+    "candidate_result": "FAIL at the same pre-existing full-logit equality gate",
+    "consequence": "Persistent scratch is not a correctness promotion. A complete-token V2.1 scorer with exact router/index/token/top-k decisions is still required before any flagged path can be admitted."
+  },
+  "promotion": "UNMEASURED_DEFAULT_OFF_NOT_PROMOTED",
+  "required_next_evidence": [
+    "authorized low-contention sealed-model A/B against the prior flagged implementation and the promoted default path",
+    "per-token Metal allocation count proving zero steady-state expert scratch allocations",
+    "complete-token Numeric Parity V2.1 with exact DSA selections, expert ids/order, greedy token, and diagnostic top-k",
+    "replicated warm latency, p50/p95/p99, bytes, commands, GPU stage time, memory, swap, and thermals"
+  ]
+}

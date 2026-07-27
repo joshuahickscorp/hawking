@@ -128,8 +128,23 @@ fn apply_qwen_tq_flags(
 enum Cmd {
     /// Start the OpenAI-compatible HTTP server.
     Serve {
+        /// Path to a GGUF (or a single `.gravity` shard file). Required unless
+        /// `--gravity` or env `HAWKING_GRAVITY` selects a `.gravity` artifact
+        /// (validated after parse so the env form works without clap's env feature).
         #[arg(long)]
-        weights: PathBuf,
+        weights: Option<PathBuf>,
+        /// Serve a sealed `.gravity` artifact (directory or shard file). Default
+        /// off: when unset, `hawking serve` behaves exactly as today. Also
+        /// accepted via env `HAWKING_GRAVITY` (see serve handler). Resolves a
+        /// multi-shard directory to its first `model-*.gravity` shard.
+        #[arg(long, value_name = "PATH")]
+        gravity: Option<PathBuf>,
+        /// Explicit wall-clock budget (seconds) for a single completion when
+        /// serving `.gravity`. Defaults to 3600 for the gravity path (base
+        /// runtime is ~0.4 tok/s warm). Also via env
+        /// `HAWKING_GRAVITY_REQUEST_TIMEOUT_SECS`.
+        #[arg(long, value_name = "SECS")]
+        gravity_request_timeout_secs: Option<u64>,
         #[arg(long, default_value = "0.0.0.0:8080")]
         addr: std::net::SocketAddr,
         #[arg(long, default_value_t = 1)]
@@ -693,6 +708,8 @@ fn main() -> Result<()> {
     match cli.cmd {
         Cmd::Serve {
             weights,
+            gravity,
+            gravity_request_timeout_secs,
             addr,
             max_batch_size,
             speculate,
@@ -716,6 +733,43 @@ fn main() -> Result<()> {
             tq_require_all_linear,
             tq_require_gpu,
         } => {
+            // Resolve --gravity / HAWKING_GRAVITY to a loadable shard. Default
+            // off: when neither flag nor env is set, require --weights as before.
+            let gravity = gravity.or_else(|| {
+                std::env::var_os("HAWKING_GRAVITY").map(PathBuf::from)
+            });
+            let gravity_request_timeout_secs = gravity_request_timeout_secs.or_else(|| {
+                std::env::var("HAWKING_GRAVITY_REQUEST_TIMEOUT_SECS")
+                    .ok()
+                    .and_then(|v| v.parse().ok())
+            });
+            let weights = if let Some(gpath) = gravity {
+                #[cfg(target_os = "macos")]
+                {
+                    use hawking_core::model::gravity_engine::GravityEngine;
+                    let resolved = GravityEngine::resolve_entry(&gpath).map_err(|e| {
+                        anyhow::anyhow!("--gravity {gpath:?}: {e}")
+                    })?;
+                    eprintln!(
+                        "[serve --gravity] resolved {} -> {}",
+                        gpath.display(),
+                        resolved.display()
+                    );
+                    resolved
+                }
+                #[cfg(not(target_os = "macos"))]
+                {
+                    let _ = gpath;
+                    return Err(anyhow::anyhow!(
+                        "--gravity requires macOS (Metal .gravity runtime)"
+                    ));
+                }
+            } else {
+                weights.ok_or_else(|| {
+                    anyhow::anyhow!("--weights is required when --gravity / HAWKING_GRAVITY is unset")
+                })?
+            };
+
             // --hardware-profile is the preferred alias for --kernel-profile.
             let resolved_kernel_profile = hardware_profile.or(kernel_profile);
 
@@ -854,6 +908,7 @@ fn main() -> Result<()> {
                 f16_kv: resolved_f16_kv,
                 batch_policy: resolved_batch_policy,
                 workload: resolved_workload,
+                request_timeout_secs: gravity_request_timeout_secs,
                 ..Default::default()
             }))
         }

@@ -33,8 +33,8 @@ use hide_core::tool::{ToolCall, ToolDispatcher, ToolRegistry, ToolResult, ToolSp
 use hide_core::Result;
 use hide_fleet::manager::KernelRunLauncher;
 use hide_fleet::{
-    AgentJob, ConcurrencyClass, FixedResourceProbe, FleetConfig, FleetGovernor, FleetManager,
-    PriorityClass, ResourceSnapshot,
+    AgentJob, ConcurrencyClass, FleetConfig, FleetGovernor, FleetManager, OsResourceProbe,
+    PriorityClass,
 };
 use hide_kernel::govern::{Autonomy, Interrupt};
 use hide_kernel::machine::state::{AgentState, ApprovalRequest, Phase};
@@ -2461,6 +2461,7 @@ impl BackendHost {
                 let key_value_store = self.services.key_value_store.clone();
                 let code_index = self.services.code_index.clone();
                 let memory = self.services.memory_store.clone();
+                let classed_memory = self.services.classed_memory.clone();
                 let interrupts = self.interrupts.clone();
                 let approvals = self.approvals.clone();
                 let run = run_id.clone();
@@ -2480,6 +2481,7 @@ impl BackendHost {
                             role_registry,
                             code_index,
                             memory,
+                            classed_memory,
                             ui_bus.clone(),
                             interrupts,
                             approvals,
@@ -2511,6 +2513,7 @@ impl BackendHost {
                             role_registry,
                             code_index,
                             memory,
+                            classed_memory,
                             ui_bus.clone(),
                             interrupts,
                             run,
@@ -2845,15 +2848,11 @@ impl BackendHost {
         session_id: SessionId,
         objective: impl Into<String>,
     ) -> Result<String> {
-        // A deterministic fixed probe with ample headroom (no thermal/RAM
-        // pressure) so the run admits in the test/headless path; production swaps
-        // in `OsResourceProbe`.
-        let probe = Arc::new(FixedResourceProbe {
-            snapshot: ResourceSnapshot {
-                free_memory_mb: 32_768,
-                ..ResourceSnapshot::idle()
-            },
-        });
+        // Real OS probe (free RAM + thermal proxy). Replaces the prior canned
+        // FixedResourceProbe { free_memory_mb: 32_768 } so discovery reports
+        // this machine, not a fake 32 GiB. Tests that need a fixed envelope
+        // still inject FixedResourceProbe at the FleetManager constructor.
+        let probe = Arc::new(OsResourceProbe::default());
         let kernel = Arc::new(AgentKernel::new(self.services.event_log.clone()));
         let launcher = Arc::new(KernelRunLauncher::new(kernel).with_max_steps(64));
         let manager = FleetManager::new(
@@ -2911,6 +2910,7 @@ impl BackendHost {
             self.services.role_registry.clone(),
             self.services.code_index.clone(),
             self.services.memory_store.clone(),
+            self.services.classed_memory.clone(),
             self.ui_bus.clone(),
             session_id,
             prompt.into(),
@@ -6141,6 +6141,7 @@ async fn generate_submit_turn(
     role_registry: Arc<hawking_orch::RoleRegistry>,
     code_index: Arc<dyn hawking_index::CodeIndex>,
     memory: crate::services::DynMemoryStore,
+    classed_memory: hawking_context::DynClassedMemory,
     ui_bus: Arc<UiEventBus>,
     interrupts: Arc<InterruptHub>,
     run_id: RunId,
@@ -6197,6 +6198,7 @@ async fn generate_submit_turn(
         role_registry,
         code_index,
         memory,
+        classed_memory,
         ui_bus.clone(),
         session_id.clone(),
         prompt,
@@ -6342,6 +6344,7 @@ async fn run_turn_kernel(
     role_registry: Arc<hawking_orch::RoleRegistry>,
     code_index: Arc<dyn hawking_index::CodeIndex>,
     memory: crate::services::DynMemoryStore,
+    classed_memory: hawking_context::DynClassedMemory,
     ui_bus: Arc<UiEventBus>,
     interrupts: Arc<InterruptHub>,
     approvals: Arc<ApprovalHub>,
@@ -6356,8 +6359,10 @@ async fn run_turn_kernel(
     use crate::model_provider::HttpModelProvider;
     use hawking_context::compiler::CompileInput;
     use hawking_context::profiles::ContextProfile;
-    use hawking_context::sources::CodeIndexContextSource;
-    use hawking_context::{ContextCompiler, InMemoryMemoryStore, MemoryKind};
+    use hawking_context::sources::{ClassedMemoryContextSource, CodeIndexContextSource};
+    use hawking_context::{
+        ClassBudgets, ContextCompiler, InMemoryMemoryStore, MemoryKind,
+    };
     use hide_core::types::Provenance;
 
     // (Spine A) Snapshot the live ceiling ONCE (best-effort; `None` when the serve
@@ -6391,6 +6396,12 @@ async fn run_turn_kernel(
     model.context_tokens = max_input;
     let mut compiler = ContextCompiler::new();
     compiler.add_source(CodeIndexContextSource::new(code_index, 16));
+    // Six memory classes: independent per-class budgets (not one kind filter).
+    let class_budgets = ClassBudgets::from_total((max_input / 8).max(64));
+    compiler.add_source(
+        ClassedMemoryContextSource::new(classed_memory.clone(), class_budgets)
+            .with_session(session_id.as_str()),
+    );
     // Bible sec 20 / sec 78.1 #11: fold the repo's resolved Claude Code migration
     // instructions into the compiled context as a pinned instruction source
     // (read-last-wins precedence). No-op for an un-migrated repo (resolves empty).
@@ -6408,6 +6419,13 @@ async fn run_turn_kernel(
         build_live_manifest(state_bytes, native, ceiling, compiled.manifest.used_tokens)
     });
     seal_compiled_manifest(&mut compiled.manifest, capability, pre_live.as_ref());
+    // Surface per-class memory budgets on the context meter.
+    if let (Some(meter), Some(ret)) = (
+        compiled.manifest.meter.as_mut(),
+        classed_memory.last_retrieval(),
+    ) {
+        meter.explanations.extend(ret.budget_explanations());
+    }
     // Spine B (best-effort): accrue the Project Brain; a brain write never fails a turn.
     let brain = InMemoryMemoryStore::record(
         MemoryKind::Project,
@@ -6876,6 +6894,7 @@ async fn run_turn_core(
     role_registry: Arc<hawking_orch::RoleRegistry>,
     code_index: Arc<dyn hawking_index::CodeIndex>,
     memory: crate::services::DynMemoryStore,
+    classed_memory: hawking_context::DynClassedMemory,
     ui_bus: Arc<UiEventBus>,
     session_id: SessionId,
     prompt: String,
@@ -6886,8 +6905,10 @@ async fn run_turn_core(
     use crate::connectors::choose_context_role;
     use hawking_context::compiler::CompileInput;
     use hawking_context::profiles::ContextProfile;
-    use hawking_context::sources::CodeIndexContextSource;
-    use hawking_context::{ContextCompiler, InMemoryMemoryStore, MemoryKind};
+    use hawking_context::sources::{ClassedMemoryContextSource, CodeIndexContextSource};
+    use hawking_context::{
+        ClassBudgets, ContextCompiler, InMemoryMemoryStore, MemoryKind,
+    };
     use hawking_orch::router::SimpleRouter;
     use hide_core::runtime::{InferenceMessage, InferenceRequest, StreamChunk};
     use hide_core::types::Provenance;
@@ -6895,7 +6916,7 @@ async fn run_turn_core(
 
     // --- (S3) Compile a REAL ContextPack (bible §4.2). Mirrors the `context`
     // connector so both share one recipe: pick the coding role, size the window
-    // to its model, and let the code-index source compete for the budget. ---
+    // to its model, and let the code-index + classed memory compete for budget. ---
     // §7.3 honesty: prefer live-measured native over the role/config default;
     // never pack against an inflated effective ceiling *as if* it were native.
     let role = choose_context_role(&role_registry, None)?;
@@ -6918,6 +6939,12 @@ async fn run_turn_core(
     model.context_tokens = max_input;
     let mut compiler = ContextCompiler::new();
     compiler.add_source(CodeIndexContextSource::new(code_index, 16));
+    // Six memory classes: independent per-class budgets (not one kind filter).
+    let class_budgets = ClassBudgets::from_total((max_input / 8).max(64));
+    compiler.add_source(
+        ClassedMemoryContextSource::new(classed_memory.clone(), class_budgets)
+            .with_session(session_id.as_str()),
+    );
     // Bible sec 20 / sec 78.1 #11: fold the repo's resolved Claude Code migration
     // instructions (CLAUDE.md tree + un-scoped rules) into the compiled context as
     // a pinned instruction/system source, honoring precedence (read-last-wins).
@@ -6943,6 +6970,13 @@ async fn run_turn_core(
         capability,
         pre_live.as_ref(),
     );
+    // Surface per-class memory budgets on the context meter.
+    if let (Some(meter), Some(ret)) = (
+        compiled.manifest.meter.as_mut(),
+        classed_memory.last_retrieval(),
+    ) {
+        meter.explanations.extend(ret.budget_explanations());
+    }
     // Spine B (best-effort): accrue the Project Brain with this compile. A brain
     // write must never fail a turn.
     let brain = InMemoryMemoryStore::record(
@@ -8314,6 +8348,7 @@ for line in sys.stdin:
             services.role_registry.clone(),
             index.clone(),
             services.memory_store.clone(),
+            services.classed_memory.clone(),
             ui_bus,
             session.clone(),
             "zzcontextmarker".to_string(),
@@ -8430,6 +8465,7 @@ for line in sys.stdin:
             services.role_registry.clone(),
             index,
             services.memory_store.clone(),
+            services.classed_memory.clone(),
             ui_bus,
             session.clone(),
             "zzcapmarker".to_string(),
@@ -8612,6 +8648,7 @@ for line in sys.stdin:
             services.role_registry.clone(),
             index,
             services.memory_store.clone(),
+            services.classed_memory.clone(),
             ui_bus,
             session.clone(),
             big_prompt,
@@ -8710,6 +8747,7 @@ for line in sys.stdin:
             services.role_registry.clone(),
             index.clone(),
             services.memory_store.clone(),
+            services.classed_memory.clone(),
             Arc::new(UiEventBus::default()),
             session.clone(),
             "some unrelated task".to_string(),
@@ -8870,6 +8908,7 @@ for line in sys.stdin:
             services.role_registry.clone(),
             services.code_index.clone(),
             services.memory_store.clone(),
+            services.classed_memory.clone(),
             ui_bus,
             interrupts,
             approvals,
@@ -9028,6 +9067,7 @@ for line in sys.stdin:
             services.role_registry.clone(),
             services.code_index.clone(),
             services.memory_store.clone(),
+            services.classed_memory.clone(),
             ui_bus.clone(),
             interrupts,
             approvals,
@@ -10368,6 +10408,7 @@ for line in sys.stdin:
             services.role_registry.clone(),
             services.code_index.clone(),
             services.memory_store.clone(),
+            services.classed_memory.clone(),
             ui_bus,
             interrupts,
             approvals,
@@ -10632,6 +10673,7 @@ for line in sys.stdin:
         let role_registry = services.role_registry.clone();
         let code_index = services.code_index.clone();
         let memory = services.memory_store.clone();
+        let classed_memory = services.classed_memory.clone();
         let repo_instructions = services.repo_instructions.clone();
         let session_for_turn = session.clone();
         let run_for_turn = run_id.clone();
@@ -10646,6 +10688,7 @@ for line in sys.stdin:
                 role_registry,
                 code_index,
                 memory,
+                classed_memory,
                 ui_bus,
                 interrupts,
                 approvals,
@@ -10863,6 +10906,7 @@ for line in sys.stdin:
         let role_registry = services.role_registry.clone();
         let code_index = services.code_index.clone();
         let memory = services.memory_store.clone();
+        let classed_memory = services.classed_memory.clone();
         let repo_instructions = services.repo_instructions.clone();
         let session_for_turn = session.clone();
         let run_for_turn = run_id.clone();
@@ -10875,6 +10919,7 @@ for line in sys.stdin:
                 role_registry,
                 code_index,
                 memory,
+                classed_memory,
                 ui_bus,
                 interrupts,
                 approvals,

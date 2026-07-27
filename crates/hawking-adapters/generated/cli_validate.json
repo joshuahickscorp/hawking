@@ -1,0 +1,419 @@
+{
+  "global": {
+    "forbid_production": true,
+    "note": "A level asserted without backing evidence of the grade-named kind must fail validation. Every ABI field must be present or null with a reason."
+  },
+  "rules": [
+    {
+      "abi_fields_required": [
+        "family_id",
+        "aliases",
+        "source_config_classes",
+        "tensor_namespace_rules",
+        "tokenizer",
+        "chat_template",
+        "attention_or_state",
+        "topology",
+        "normalization",
+        "positional_encoding",
+        "kv_or_state_format",
+        "context_limits",
+        "artifact_codecs",
+        "providers",
+        "fabric_partition_boundaries",
+        "capability_limitations",
+        "source_precision_classes",
+        "parity_evidence",
+        "support_level"
+      ],
+      "aliases": [
+        "deepseek",
+        "deepseek2",
+        "deepseek_v2"
+      ],
+      "evidence_paths": [
+        "crates/hawking-core/src/model/deepseek_v2.rs",
+        "crates/hawking-core/tests/cpu_backend_parity_deepseek.rs",
+        "crates/hawking-core/src/model/mod.rs",
+        "adapters/receipts/ADAPTER_DEEPSEEK_RECEIPT.json"
+      ],
+      "executes": true,
+      "family": "deepseek",
+      "forbid_production": true,
+      "max_level": "SOURCE_HEADER_VALIDATED",
+      "require_evidence_kind": "source_header",
+      "require_evidence_when_above": "DECLARED",
+      "serve_registered": true
+    },
+    {
+      "abi_fields_required": [
+        "family_id",
+        "aliases",
+        "source_config_classes",
+        "tensor_namespace_rules",
+        "tokenizer",
+        "chat_template",
+        "attention_or_state",
+        "topology",
+        "normalization",
+        "positional_encoding",
+        "kv_or_state_format",
+        "context_limits",
+        "artifact_codecs",
+        "providers",
+        "fabric_partition_boundaries",
+        "capability_limitations",
+        "source_precision_classes",
+        "parity_evidence",
+        "support_level"
+      ],
+      "aliases": [
+        "gemma",
+        "gemma2"
+      ],
+      "evidence_paths": [
+        "packs/hawking-adapters-extra.json",
+        "crates/hawking-core/tests/gemma2_smoke.rs",
+        "crates/hawking-seed-c/src/providers/adapters.rs"
+      ],
+      "executes": false,
+      "family": "gemma",
+      "forbid_production": true,
+      "max_level": "DECLARED",
+      "require_evidence_kind": null,
+      "require_evidence_when_above": "DECLARED",
+      "serve_registered": false
+    },
+    {
+      "abi_fields_required": [
+        "family_id",
+        "aliases",
+        "source_config_classes",
+        "tensor_namespace_rules",
+        "tokenizer",
+        "chat_template",
+        "attention_or_state",
+        "topology",
+        "normalization",
+        "positional_encoding",
+        "kv_or_state_format",
+        "context_limits",
+        "artifact_codecs",
+        "providers",
+        "fabric_partition_boundaries",
+        "capability_limitations",
+        "source_precision_classes",
+        "parity_evidence",
+        "support_level"
+      ],
+      "aliases": [
+        "glm",
+        "glm52",
+        "glm_moe_dsa",
+        "glm-5.2"
+      ],
+      "evidence_paths": [
+        "GLM52_FLAGSHIP_ADAPTER_PARITY.json",
+        "crates/hawking-core/src/model/gravity_engine.rs",
+        "crates/hawking-core/tests/gravity_engine_registry.rs",
+        "crates/hawking-core/tests/gravity_glm_forward.rs"
+      ],
+      "executes": true,
+      "family": "glm",
+      "forbid_production": true,
+      "max_level": "SMALL_REAL_CHECKPOINT",
+      "require_evidence_kind": "small_checkpoint_run",
+      "require_evidence_when_above": "DECLARED",
+      "serve_registered": true
+    },
+    {
+      "abi_fields_required": [
+        "family_id",
+        "aliases",
+        "source_config_classes",
+        "tensor_namespace_rules",
+        "tokenizer",
+        "chat_template",
+        "attention_or_state",
+        "topology",
+        "normalization",
+        "positional_encoding",
+        "kv_or_state_format",
+        "context_limits",
+        "artifact_codecs",
+        "providers",
+        "fabric_partition_boundaries",
+        "capability_limitations",
+        "source_precision_classes",
+        "parity_evidence",
+        "support_level"
+      ],
+      "aliases": [
+        "kimi",
+        "kimi_k2",
+        "kimi_k26",
+        "moonshot"
+      ],
+      "evidence_paths": [
+        "KIMI_K26_ADAPTER_TWIN.json",
+        "crates/hawking-core/src/model/mod.rs"
+      ],
+      "executes": false,
+      "family": "kimi",
+      "forbid_production": true,
+      "max_level": "SYNTHETIC_PARITY",
+      "require_evidence_kind": "synthetic_parity",
+      "require_evidence_when_above": "DECLARED",
+      "serve_registered": false
+    },
+    {
+      "abi_fields_required": [
+        "family_id",
+        "aliases",
+        "source_config_classes",
+        "tensor_namespace_rules",
+        "tokenizer",
+        "chat_template",
+        "attention_or_state",
+        "topology",
+        "normalization",
+        "positional_encoding",
+        "kv_or_state_format",
+        "context_limits",
+        "artifact_codecs",
+        "providers",
+        "fabric_partition_boundaries",
+        "capability_limitations",
+        "source_precision_classes",
+        "parity_evidence",
+        "support_level"
+      ],
+      "aliases": [
+        "llama",
+        "llama2",
+        "llama3",
+        "llama3.2"
+      ],
+      "evidence_paths": [
+        "crates/hawking-core/src/model/llama.rs",
+        "crates/hawking-core/tests/llama32_smoke.rs",
+        "crates/hawking-core/tests/gravity_llama_forward.rs",
+        "crates/hawking-core/src/model/mod.rs",
+        "crates/hawking-core/tests/gravity_llama_forward.rs"
+      ],
+      "executes": true,
+      "family": "llama",
+      "forbid_production": true,
+      "max_level": "SMALL_REAL_CHECKPOINT",
+      "require_evidence_kind": "small_checkpoint_run",
+      "require_evidence_when_above": "DECLARED",
+      "serve_registered": true
+    },
+    {
+      "abi_fields_required": [
+        "family_id",
+        "aliases",
+        "source_config_classes",
+        "tensor_namespace_rules",
+        "tokenizer",
+        "chat_template",
+        "attention_or_state",
+        "topology",
+        "normalization",
+        "positional_encoding",
+        "kv_or_state_format",
+        "context_limits",
+        "artifact_codecs",
+        "providers",
+        "fabric_partition_boundaries",
+        "capability_limitations",
+        "source_precision_classes",
+        "parity_evidence",
+        "support_level"
+      ],
+      "aliases": [
+        "minimax",
+        "minimax_m3",
+        "minimax-m3"
+      ],
+      "evidence_paths": [
+        "FABRIC_BRIDGE_ARCHAEOLOGY.md"
+      ],
+      "executes": false,
+      "family": "minimax",
+      "forbid_production": true,
+      "max_level": "DECLARED",
+      "require_evidence_kind": null,
+      "require_evidence_when_above": "DECLARED",
+      "serve_registered": false
+    },
+    {
+      "abi_fields_required": [
+        "family_id",
+        "aliases",
+        "source_config_classes",
+        "tensor_namespace_rules",
+        "tokenizer",
+        "chat_template",
+        "attention_or_state",
+        "topology",
+        "normalization",
+        "positional_encoding",
+        "kv_or_state_format",
+        "context_limits",
+        "artifact_codecs",
+        "providers",
+        "fabric_partition_boundaries",
+        "capability_limitations",
+        "source_precision_classes",
+        "parity_evidence",
+        "support_level"
+      ],
+      "aliases": [
+        "mistral",
+        "mixtral",
+        "mistral_mixtral"
+      ],
+      "evidence_paths": [
+        "crates/hawking-core/src/model/mod.rs",
+        "crates/hawking-core/tests/llama32_smoke.rs",
+        "packs/hawking-adapters-extra.json",
+        "crates/hawking-seed-c/src/providers/adapters.rs"
+      ],
+      "executes": true,
+      "family": "mistral_mixtral",
+      "forbid_production": true,
+      "max_level": "SMALL_REAL_CHECKPOINT",
+      "require_evidence_kind": "small_checkpoint_run",
+      "require_evidence_when_above": "DECLARED",
+      "serve_registered": true
+    },
+    {
+      "abi_fields_required": [
+        "family_id",
+        "aliases",
+        "source_config_classes",
+        "tensor_namespace_rules",
+        "tokenizer",
+        "chat_template",
+        "attention_or_state",
+        "topology",
+        "normalization",
+        "positional_encoding",
+        "kv_or_state_format",
+        "context_limits",
+        "artifact_codecs",
+        "providers",
+        "fabric_partition_boundaries",
+        "capability_limitations",
+        "source_precision_classes",
+        "parity_evidence",
+        "support_level"
+      ],
+      "aliases": [
+        "phi",
+        "phi3"
+      ],
+      "evidence_paths": [
+        "packs/hawking-adapters-extra.json",
+        "crates/hawking-core/tests/phi3_smoke.rs",
+        "crates/hawking-seed-c/src/providers/adapters.rs"
+      ],
+      "executes": false,
+      "family": "phi",
+      "forbid_production": true,
+      "max_level": "DECLARED",
+      "require_evidence_kind": null,
+      "require_evidence_when_above": "DECLARED",
+      "serve_registered": false
+    },
+    {
+      "abi_fields_required": [
+        "family_id",
+        "aliases",
+        "source_config_classes",
+        "tensor_namespace_rules",
+        "tokenizer",
+        "chat_template",
+        "attention_or_state",
+        "topology",
+        "normalization",
+        "positional_encoding",
+        "kv_or_state_format",
+        "context_limits",
+        "artifact_codecs",
+        "providers",
+        "fabric_partition_boundaries",
+        "capability_limitations",
+        "source_precision_classes",
+        "parity_evidence",
+        "support_level"
+      ],
+      "aliases": [
+        "qwen",
+        "qwen2",
+        "qwen2moe",
+        "qwen-moe",
+        "qwen3"
+      ],
+      "evidence_paths": [
+        "crates/hawking-core/src/model/qwen_dense.rs",
+        "crates/hawking-core/src/model/qwen_moe.rs",
+        "crates/hawking-core/tests/integration_greedy_64.rs",
+        "crates/hawking-core/tests/cpu_backend_parity.rs",
+        "crates/hawking-core/tests/qwen_tq_serve_parity.rs",
+        "crates/hawking-core/src/model/mod.rs"
+      ],
+      "executes": true,
+      "family": "qwen",
+      "forbid_production": true,
+      "max_level": "SMALL_REAL_CHECKPOINT",
+      "require_evidence_kind": "small_checkpoint_run",
+      "require_evidence_when_above": "DECLARED",
+      "serve_registered": true
+    },
+    {
+      "abi_fields_required": [
+        "family_id",
+        "aliases",
+        "source_config_classes",
+        "tensor_namespace_rules",
+        "tokenizer",
+        "chat_template",
+        "attention_or_state",
+        "topology",
+        "normalization",
+        "positional_encoding",
+        "kv_or_state_format",
+        "context_limits",
+        "artifact_codecs",
+        "providers",
+        "fabric_partition_boundaries",
+        "capability_limitations",
+        "source_precision_classes",
+        "parity_evidence",
+        "support_level"
+      ],
+      "aliases": [
+        "state_space",
+        "rwkv7",
+        "rwkv",
+        "mamba2",
+        "mamba"
+      ],
+      "evidence_paths": [
+        "crates/hawking-core/src/model/rwkv7.rs",
+        "crates/hawking-core/tests/rwkv7_parity.rs",
+        "packs/hawking-adapters-extra.json"
+      ],
+      "executes": true,
+      "family": "state_space",
+      "forbid_production": true,
+      "max_level": "DECLARED",
+      "require_evidence_kind": null,
+      "require_evidence_when_above": "DECLARED",
+      "serve_registered": true
+    }
+  ],
+  "schema": "hawking.adapters.cli_validate.v1"
+}

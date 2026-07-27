@@ -1,0 +1,60 @@
+{
+  "schema": "hawking.heavy_continuation.status.v1",
+  "at": "2026-07-27T08:30:00Z",
+  "endpoint": "RAMANUJAN_SANDBOX_READY",
+  "endpoint_reached": false,
+  "honest_position": "The critical path's first real question has been answered, negatively and with measurement. Everything downstream of it -- Odyssey, Math-Frozen, the Ramanujan migration, the local forge, Q0-Q6 -- remains gated behind a capable artifact that does not yet exist.",
+
+  "machine": {
+    "MOP": "STOPPED. Load 4.26 is desktop applications; zero Python workers. The heavy window is genuinely open.",
+    "heavy_window": "OPEN, and used for the GLM rebuild pilot",
+    "governor_note": "the load-average veto reads a desktop idle of ~4 as busy. Correct for MOP detection, conservative here. Not changed: a governor that under-claims idleness is the safe direction."
+  },
+
+  "rebuild_glm": {
+    "step_1_rehydrate": {
+      "status": "DONE for the pilot window",
+      "shards_verified": 5,
+      "of": 282,
+      "bytes": 26773797888,
+      "throughput_measured_mbit_s": 2020,
+      "full_parent_estimate_hours": 1.7,
+      "prior_estimate_hours": 8,
+      "why_bounded": "pilot before freezing a program is the campaign's own ordering"
+    },
+    "step_2_pilot": {
+      "status": "MEASURED on dense_mlp; sweep across remaining organs still running",
+      "headline": "at sub-bit rates every swept configuration of four materially different families destroys the organ's function on the real parent",
+      "best_sub_bit": "A1 rank-64, 0.583 BPW, cosine 0.283 against a null of 0.124, with 96 percent relative output error",
+      "shape": "function degrades catastrophically below ~1 BPW and roughly doubles crossing just above it",
+      "A5_answered": "protected islands are NOT the missing ingredient. Every sub-bit A5 configuration falls below the null; placement only begins to matter above 1 BPW and is no better than random by 40 percent protection.",
+      "A6": "DATA_BLOCKED on trajectory traces; the teacher ledger holds zero"
+    },
+    "step_3_gates": "the whole-model gates -- 2+2, live generation, cascade, halo, long context -- are NOT measurable on a four-layer window and none was claimed",
+    "step_4_freeze_program": "NOT DONE. No sub-bit family has earned it, and the law requires representation escalation to be exhausted first.",
+    "step_5_escape_receipt": "NOT PREPARED. Exhaustion is not yet demonstrated: A1 fitted to captured activations has not been tried, and the routed experts carrying ~97.5 percent of model mass have not been swept.",
+    "step_6_math_preserve_v2": "NOT REACHED"
+  },
+
+  "odyssey": {"status": "CORRECTLY BLOCKED", "why": "gated on Math-Preserve-v2, which does not exist. The fence is false and the capability register refuses the current artifact by hash."},
+  "math_frozen": {"status": "UNREACHABLE", "why": "downstream of Odyssey"},
+  "ramanujan_migration": {"status": "NOT STARTED", "why": "gated on HAWKING_EVOLUTION_COMPLETE"},
+
+  "parallel_lanes_landed_this_session": [
+    "HIDE YOU swarms, projects, typed handoffs -- capsule carries the claim never the capability, verified by fail-closed extraction",
+    "six-class memory controls, eight personal scopes, privacy modes enforced at construction, personal tools",
+    "A5 decoder, which answered the island question negatively",
+    "bounded GLM rehydration tool with seal verification and quarantine-on-mismatch",
+    "pilot harness and rate sweep on real BF16 tensors"
+  ],
+  "lane_still_running": "bridge-cli (Bridge events, adapter registry, CLI, schemas, SDK types)",
+
+  "fences": {
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "substrate_capability_gate": "REFUSING the current Math-Preserve by hash",
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false
+  },
+
+  "next_command": "bash HAWKING_LIGHT_ONLY_NEXT_COMMAND.sh",
+  "next_scientific_action": "sweep the routed-expert tensors, which carry ~97.5 percent of the model's mass and have not been measured. If they behave as dense_mlp did, sub-bit exhaustion is close to demonstrated and the Escape Receipt becomes the honest next step."
+}

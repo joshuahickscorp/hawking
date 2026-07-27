@@ -1,0 +1,24 @@
+[package]
+name = "hide-objects"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "HIDE YOU object + attachment store: content-addressed objects, incremental pipeline, derivative-only model boundary, queued ingestion (model-free; Fake* OCR/ASR only)"
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+blake3 = { workspace = true }
+ulid = { workspace = true }
+parking_lot = { workspace = true }
+
+[dev-dependencies]
+tempfile = "3"
+serde_json = { workspace = true }
+
+[features]
+default = []

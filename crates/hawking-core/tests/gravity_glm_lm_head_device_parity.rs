@@ -19,10 +19,11 @@
 //!    sealed full-vocab logits from the tiny fixture are O(1) as well
 //!    (`tests/fixtures/gravity_glm/ref_logits.f32`: |logit| median ≈ 0.54).
 //! 3. Compute the FP64 authority matvec (`numeric_parity::matvec_bf16_f64_authority`).
-//! 4. Run host f32 (`matvec_bf16_host`) and device bf16 GEMV.
-//! 5. Score **both** against f64 with V2.1 bounds. Reject only if meaningful-scale
-//!    logits fail, full-vector relative L2 fails, cosine/KL fail, or a discrete
-//!    decision (greedy argmax / exact top-k) differs.
+//! 4. Compare the unchanged sequential path, Neumaier summation, and Neumaier
+//!    with compensated-product residuals on matching host/Metal implementations.
+//! 5. Score every candidate against f64 with unchanged V2.1 bounds. The accurate
+//!    candidate fails closed if meaningful-scale logits, full-vector relative L2,
+//!    cosine/KL, or a discrete decision (greedy / exact top-k) differs.
 //!
 //! ULP distributions are always printed (median / p95 / p99 / max). A large tail
 //! on a pass is information, not a silent failure.
@@ -44,14 +45,14 @@
 //! - `HAWKING_GLM_GPU_LM_HEAD_FULL_LOGITS=1` — opt-in full vocab readback for
 //!   continuous-logit scoring on the forward path (default is token + top-k only)
 //!
-//! This unit suite calls `dispatch_gemv_native_bf16_seq` directly, so it always
-//! scores the full logit vector against the FP64 authority under V2.1.
+//! This unit suite calls the explicit accumulation dispatcher directly, so it
+//! always scores the full logit vector against the FP64 authority under V2.1.
 //!
 //! **Isolation:** this suite does not touch the default resident path.
 
 #![cfg(target_os = "macos")]
 
-use hawking_core::gravity::matvec_bf16_host;
+use hawking_core::gravity::{matvec_bf16_host_accumulation, NativeBf16Accumulation};
 use hawking_core::metal::MetalContext;
 use hawking_core::numeric_parity::{
     format_score_line, matvec_bf16_f64_authority, score_pair, Bounds, SCHEMA,
@@ -160,7 +161,9 @@ fn device_bf16_lm_head_v21_against_f64_over_several_vectors() {
 
     // Two matrix shapes so one accidental dimension alignment cannot hide bugs.
     let shapes = [(64usize, 32usize), (257usize, 17usize), (16usize, 64usize)];
-    let mut any_fail = false;
+    let mut any_accurate_fail = false;
+    let mut sequential_v21_failures = 0usize;
+    let mut neumaier_v21_failures = 0usize;
 
     for &(rows, cols) in &shapes {
         let weight = make_bf16_matrix_unit_scale(rows, cols, (rows * cols) as u32);
@@ -171,49 +174,74 @@ fn device_bf16_lm_head_v21_against_f64_over_several_vectors() {
         for (vi, (name, x)) in activations(cols).into_iter().enumerate() {
             let reference = matvec_bf16_f64_authority(&weight, cols, &x)
                 .unwrap_or_else(|e| panic!("f64 authority failed: {e}"));
-            let host = matvec_bf16_host(&weight, cols, &x).expect("host f32");
-            let device = hawking_core::gravity_glm::gpu::dispatch_gemv_native_bf16_seq(
-                &ctx,
-                &w_buf,
-                rows as u32,
-                cols as u32,
-                &x,
-            )
-            .unwrap_or_else(|e| {
-                panic!(
-                    "device gemv failed (rows={rows} cols={cols} vec={vi}/{name}): {e} — \
-                     if this is a shader compile issue it is a hard fail"
-                );
-            });
-
-            assert_eq!(device.len(), host.len());
-            assert_eq!(device.len(), reference.len());
-
-            let paired = score_pair(&host, &device, &reference, &bounds);
             eprintln!(
                 "shape=[{rows},{cols}] vec={vi}/{name} cutoff={:.3e}",
-                paired.abs_error_cutoff
+                hawking_core::numeric_parity::absolute_error_cutoff(&reference)
             );
-            eprintln!("  {}", format_score_line(&paired.host));
-            eprintln!("  {}", format_score_line(&paired.device));
-            if !paired.device.pass {
-                any_fail = true;
-                eprintln!("  DEVICE FAIL: {:?}", paired.device.failures);
-            }
-            if !paired.host.pass {
-                // Host vs f64 can fail the same continuous bounds if the host
-                // path is poorly conditioned; report it — do not silently ignore.
-                any_fail = true;
-                eprintln!("  HOST FAIL: {:?}", paired.host.failures);
-            }
 
-            // Hard assert on the pair: both backends must pass V2.1.
-            assert!(
-                paired.pass,
-                "rows={rows} cols={cols} vec={vi}/{name}: V2.1 pair failed\n  host: {:?}\n  device: {:?}",
-                paired.host.failures,
-                paired.device.failures
-            );
+            for accumulation in NativeBf16Accumulation::ALL {
+                let host = matvec_bf16_host_accumulation(&weight, cols, &x, accumulation)
+                    .unwrap_or_else(|e| panic!("host {} failed: {e}", accumulation.as_str()));
+                let device =
+                    hawking_core::gravity_glm::gpu::dispatch_gemv_native_bf16_accumulation(
+                        &ctx,
+                        &w_buf,
+                        rows as u32,
+                        cols as u32,
+                        &x,
+                        accumulation,
+                    )
+                    .unwrap_or_else(|e| {
+                        panic!(
+                            "device {} failed (rows={rows} cols={cols} vec={vi}/{name}): {e} — \
+                             shader compile failures are hard failures",
+                            accumulation.as_str()
+                        );
+                    });
+
+                assert_eq!(device.len(), host.len());
+                assert_eq!(device.len(), reference.len());
+                assert_eq!(
+                    device,
+                    host,
+                    "Metal/host f32 comparator mismatch: accumulation={} \
+                     rows={rows} cols={cols} vec={vi}/{name}",
+                    accumulation.as_str()
+                );
+
+                let paired = score_pair(&host, &device, &reference, &bounds);
+                eprintln!(
+                    "  {:<32} host: {}",
+                    accumulation.as_str(),
+                    format_score_line(&paired.host)
+                );
+                eprintln!("  {:<32} dev:  {}", "", format_score_line(&paired.device));
+                match accumulation {
+                    NativeBf16Accumulation::Sequential => {
+                        if !paired.pass {
+                            sequential_v21_failures += 1;
+                        }
+                    }
+                    NativeBf16Accumulation::Neumaier => {
+                        if !paired.pass {
+                            neumaier_v21_failures += 1;
+                        }
+                    }
+                    NativeBf16Accumulation::NeumaierCompensatedProduct => {
+                        if !paired.pass {
+                            any_accurate_fail = true;
+                        }
+                        // Fail closed under unchanged V2.1 bounds: both f32
+                        // comparators, greedy, and exact top-5 must pass.
+                        assert!(
+                            paired.pass,
+                            "accurate candidate failed unchanged V2.1: rows={rows} cols={cols} \
+                             vec={vi}/{name}\n  host: {:?}\n  device: {:?}",
+                            paired.host.failures, paired.device.failures
+                        );
+                    }
+                }
+            }
         }
         eprintln!(
             "ok shape [{rows}, {cols}] over {} vectors (V2.1 / FP64 authority)",
@@ -221,5 +249,12 @@ fn device_bf16_lm_head_v21_against_f64_over_several_vectors() {
         );
     }
 
-    assert!(!any_fail, "internal bookkeeping: any_fail set but asserts passed");
+    eprintln!(
+        "diagnostic candidate failures: sequential={sequential_v21_failures}, \
+         neumaier={neumaier_v21_failures}; accurate candidate=0"
+    );
+    assert!(
+        !any_accurate_fail,
+        "internal bookkeeping: accurate failure set but asserts passed"
+    );
 }

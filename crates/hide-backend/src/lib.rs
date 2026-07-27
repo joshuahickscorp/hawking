@@ -47,6 +47,8 @@ pub mod rewind;
 pub mod rpc;
 pub mod security;
 pub mod services;
+/// Speculation safety: host durable sinks accept only target-verified tokens.
+pub mod speculation_safety;
 pub mod supervisor;
 pub mod tools;
 pub mod tq_metadata;
@@ -64,6 +66,7 @@ pub use host::{
 };
 pub use services::DynCodeIndex;
 pub use initialize::{ClientCapabilities, ClientInfo, ConnectionRegistry, InitializeResponse};
+pub use speculation_safety::{HostDurableRecord, HostDurableSinks};
 pub use interrupt::InterruptHub;
 pub use live_thread::{LiveThread, LiveThreadInitGuard, THREAD_PERSISTED_KIND};
 pub use memory::{

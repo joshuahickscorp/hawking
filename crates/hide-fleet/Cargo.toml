@@ -8,6 +8,10 @@ repository.workspace = true
 authors.workspace = true
 description = "Parallel agent fleet, workstation mode, and batch orchestration scaffold for HIDE"
 
+[[bin]]
+name = "fabric-agent"
+path = "src/bin/fabric_agent.rs"
+
 [dependencies]
 hide-core = { path = "../hide-core" }
 hide-kernel = { path = "../hide-kernel" }

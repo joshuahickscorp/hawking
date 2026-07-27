@@ -1,0 +1,87 @@
+{
+  "schema": "hawking.light_only.resource_policy.v1",
+  "at": "2026-07-27T04:05:00Z",
+  "mode": "LIGHT_ONLY",
+  "authority": "tools/campaign/light_governor.py -- measured, not asserted",
+
+  "non_interference_contract": {
+    "law": "MOP owns this machine. Never signal, kill, renice, or inspect MOP's internals. Observe only.",
+    "measured_baseline_at_campaign_start": {
+      "at": "2026-07-27T03:55:00Z",
+      "foreign_processes": 24,
+      "foreign_cpu_cores_held": 21.1,
+      "foreign_rss_estimate_gib": 40,
+      "foreign_uptime": "1 day 5 hours, nice 0",
+      "load1": 36.73,
+      "load_per_core": 1.655,
+      "ncpu": 28,
+      "mem_total_gib": 96.0,
+      "mem_available_gib": 38.53,
+      "mem_available_frac": 0.401,
+      "swap_used_mb": 270.31,
+      "disk_free_gib": 193,
+      "thermal": "green, no warning level recorded"
+    },
+    "identification_method": "by cost, not by name -- any python-family process above 20 percent CPU that this campaign did not start. Deliberately over-inclusive: overcounting causes more backoff, which is the safe direction."
+  },
+
+  "classes": {
+    "LIGHT_ONLY": {
+      "active": true,
+      "forbidden": [
+        "Metal / MPS / CUDA",
+        "giant model load or full-model generation",
+        "training",
+        "parent-scale quantization",
+        "large embedding or index build",
+        "destructive refactor",
+        "cargo build/test --workspace"
+      ],
+      "required": ["nice 20", "bounded process count", "small RSS", "deterministic fixtures", "header and range reads", "short unit tests", "cargo -p <crate> -j 4"]
+    },
+    "RELIEF_WINDOW": {
+      "active": false,
+      "why_not": "load/core measured 1.655 against a relief ceiling of 0.70. MOP holds ~21 of 28 cores. No relief window has opened at any point in this campaign.",
+      "entry_condition": "load/core <= 0.70 sustained across at least 3 samples, plus memory, swap, thermal and disk all green",
+      "on_entry": "ONE bounded micro-job, which must declare max wall time, max RSS, max threads, max source bytes, rollback and stop trigger BEFORE launch"
+    },
+    "HEAVY_FORBIDDEN": {
+      "never_auto_launch": [
+        "full GLM/DeepSeek/Kimi/Qwen parent load",
+        "Odyssey T1-T7",
+        "large QAT",
+        "Temporal Gravity benchmark",
+        "Metal kernel benchmark",
+        "the full representation tournament",
+        "real Fabric throughput"
+      ],
+      "if_mop_stops": "mark HEAVY_WINDOW_AVAILABLE and stop. A human decides what runs. The governor marks it; it never acts on it."
+    }
+  },
+
+  "backoff_triggers": {
+    "armed": [
+      "thermal pressure recorded",
+      "available memory below 10 percent of RAM",
+      "swap used above 512 MB",
+      "disk free below 40 GiB"
+    ],
+    "deliberately_not_armed": {
+      "trigger": "high load average",
+      "why": "MOP's normal working state is load/core ~1.66. Backing off on load alone would mean never running at all, which is paralysis rather than caution. Backoff fires on the conditions a light job can genuinely make worse."
+    },
+    "action": "pause or kill HAWKING light jobs only. Never MOP."
+  },
+
+  "concurrency_decision": {
+    "grok_slots_available": 6,
+    "slots_used": 3,
+    "why_not_six": "delegated lanes run cargo builds, which are real CPU. Six concurrent lanes beside a machine already at 21 of 28 cores would be a measurable regression to MOP. Three is the bounded process count the resource law asks for."
+  },
+
+  "verified_this_session": {
+    "substrate_fence_readversarial": "fence flipped to true, odyssey/training/run.py T1 still refused with SUBSTRATE_REFUSED; fence restored to false immediately",
+    "artifact_untouched": "model.gravity.index.json sha256 = 33d40c254eb982d4a495f5f0792a116e9d9810d937f5f3969f4f84742b2364d9, matches the sealed receipt",
+    "mop_untouched": "no signal, kill, renice or internal inspection was issued at any point"
+  }
+}

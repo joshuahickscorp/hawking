@@ -5,6 +5,7 @@
 //! KV bookkeeping stays with the caller (returns the position math via next_seq_len).
 
 use crate::shared::{verify_draft_ids_until_mismatch, VerifyResult};
+use crate::token_boundary::{draft_ids, TargetVerification, VerifiedTokenId};
 use crate::Result;
 
 /// The only thing the verifier needs from a model. QwenDense is the Phase-0
@@ -35,10 +36,22 @@ pub trait ExactTarget {
 
 /// Result of one exact verify pass. accepted ids are argmax-confirmed;
 /// correction is the target's argmax at the first divergence (None ⇒ full accept).
+///
+/// # Speculation safety
+///
+/// [`Self::accepted_verified`] / [`Self::correction_verified`] are the only
+/// forms durable sinks may consume. [`Self::accepted`] remains a raw `u32`
+/// mirror for existing engine loops (qwen_dense / tree) and is **not** a
+/// durable-sink input — use the verified wrappers.
 #[derive(Debug, Clone, Default)]
 pub struct VerifyOutcome {
+    /// Raw accepted draft ids (engine mirror of [`Self::accepted_verified`]).
     pub accepted: Vec<u32>,
     pub correction: Option<u32>,
+    /// Target-verified accepted prefix. Only these may enter durable sinks.
+    pub accepted_verified: Vec<VerifiedTokenId>,
+    /// Target's own token at the first divergence, already verified.
+    pub correction_verified: Option<VerifiedTokenId>,
     /// KV length the caller sets seq_len to before the next cycle:
     /// reject  ⇒ bonus_pos + accepted.len() + 1 (correction slot)
     /// accept  ⇒ bonus_pos + draft.len()
@@ -74,6 +87,9 @@ impl Verifier {
     /// THE single home for the accept rule (retires the inline copy at
     /// qwen_dense.rs:2632). Bit-identical to the inline loop by construction:
     /// same vtoks = [bonus, draft[0..k-1]], same preds[i]==draft[i] test.
+    ///
+    /// Accepted tokens are promoted through [`TargetVerification`] so only
+    /// target-confirmed ids appear in [`VerifyOutcome::accepted_verified`].
     pub fn verify_line<T: ExactTarget>(
         &self,
         target: &mut T,
@@ -81,14 +97,18 @@ impl Verifier {
         bonus_pos: usize,
         draft: &[u32],
     ) -> Result<VerifyOutcome> {
+        let gate = TargetVerification::gate();
         // Degenerate: empty draft → one plain greedy bonus step (still lossless).
         if draft.is_empty() {
             let corr = target
                 .forward_token_greedy(bonus, bonus_pos)
                 .map_err(|e| crate::Error::Model(e.to_string()))?;
+            let corr_v = gate.emit_target(corr);
             return Ok(VerifyOutcome {
                 accepted: Vec::new(),
                 correction: Some(corr),
+                accepted_verified: Vec::new(),
+                correction_verified: Some(corr_v),
                 next_seq_len: bonus_pos + 1,
                 residuals: Vec::new(),
             });
@@ -115,6 +135,19 @@ impl Verifier {
         } = verify_draft_ids_until_mismatch(draft, |i| Ok(preds[i]))?;
 
         let accepted = draft[..accepted_count].to_vec();
+        // Type-level promotion: draft ids become Verified only via the gate, and
+        // only for the longest prefix where draft[i] == preds[i].
+        let drafts = draft_ids(draft);
+        let promote = gate.promote_matching_prefix(&drafts, &preds);
+        debug_assert_eq!(
+            promote.accepted.len(),
+            accepted_count,
+            "promote prefix must match verify_draft_ids_until_mismatch"
+        );
+        let accepted_verified = promote.accepted;
+        let correction_verified = first_divergent_token
+            .map(|c| gate.emit_target(c))
+            .or(promote.correction);
         let next_seq_len = if first_divergent_token.is_some() {
             bonus_pos + accepted_count + 1
         } else {
@@ -123,6 +156,8 @@ impl Verifier {
         Ok(VerifyOutcome {
             accepted,
             correction: first_divergent_token,
+            accepted_verified,
+            correction_verified,
             next_seq_len,
             residuals: if self.want_residuals {
                 residuals
@@ -166,7 +201,15 @@ mod tests {
         let v = Verifier::default();
         let o = v.verify_line(&mut t, 1, 5, &[10, 20, 30]).unwrap();
         assert_eq!(o.accepted, vec![10, 20, 30]);
+        assert_eq!(
+            o.accepted_verified
+                .iter()
+                .map(|x| x.get())
+                .collect::<Vec<_>>(),
+            vec![10, 20, 30]
+        );
         assert_eq!(o.correction, None);
+        assert!(o.correction_verified.is_none());
         assert_eq!(o.next_seq_len, 5 + 3);
         // Real losslessness is the engine bit-identity gate (P0.6); this pins the contract.
     }
@@ -179,7 +222,10 @@ mod tests {
         let v = Verifier::default();
         let o = v.verify_line(&mut t, 1, 5, &[10, 20, 30]).unwrap();
         assert_eq!(o.accepted, vec![10]);
+        assert_eq!(o.accepted_verified.len(), 1);
+        assert_eq!(o.accepted_verified[0].get(), 10);
         assert_eq!(o.correction, Some(99));
+        assert_eq!(o.correction_verified.map(|c| c.get()), Some(99));
         assert_eq!(o.next_seq_len, 5 + 1 + 1);
     }
 
@@ -189,7 +235,27 @@ mod tests {
         let v = Verifier::default();
         let o = v.verify_line(&mut t, 7, 5, &[]).unwrap();
         assert!(o.accepted.is_empty());
+        assert!(o.accepted_verified.is_empty());
         assert_eq!(o.correction, Some(42));
+        assert_eq!(o.correction_verified.map(|c| c.get()), Some(42));
         assert_eq!(o.next_seq_len, 6);
+    }
+
+    #[test]
+    fn verified_accepted_may_enter_durable_sink_drafts_may_not() {
+        use crate::durable::{DurableTokenSink, InMemoryDurableSink};
+        let mut t = MockTarget {
+            preds: vec![10, 99],
+        };
+        let v = Verifier::default();
+        let o = v.verify_line(&mut t, 1, 0, &[10, 20]).unwrap();
+        let mut sink = InMemoryDurableSink::default();
+        for tok in &o.accepted_verified {
+            sink.emit_canonical_event(*tok).unwrap();
+        }
+        if let Some(c) = o.correction_verified {
+            sink.emit_canonical_event(c).unwrap();
+        }
+        assert_eq!(sink.token_ids(), vec![10, 99]);
     }
 }

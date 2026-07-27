@@ -180,6 +180,14 @@ pub struct PhysicalTraceGuard {
     _signpost: physical_signpost::Interval,
 }
 
+/// Exact number of physical Metal command buffers and encoders created while
+/// a [`PhysicalTraceGuard`] was active.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize)]
+pub struct PhysicalTraceCounts {
+    pub command_count: u64,
+    pub encoder_count: u64,
+}
+
 impl PhysicalTraceGuard {
     pub fn begin(identity: PhysicalTraceIdentity) -> Result<Self> {
         let state = Arc::new(PhysicalTraceState {
@@ -209,6 +217,15 @@ impl PhysicalTraceGuard {
             _signpost: signpost,
         })
     }
+
+    /// Read the exact physical command/encoder counters without ending the
+    /// trace interval. Call after the measured GPU work has completed.
+    pub fn counts(&self) -> PhysicalTraceCounts {
+        PhysicalTraceCounts {
+            command_count: self.state.next_command.load(AtomicOrdering::Relaxed),
+            encoder_count: self.state.next_encoder.load(AtomicOrdering::Relaxed),
+        }
+    }
 }
 
 impl Drop for PhysicalTraceGuard {
@@ -222,6 +239,35 @@ impl Drop for PhysicalTraceGuard {
             }
         }
         // `_signpost` drops after this method and emits the exact matching end.
+    }
+}
+
+#[cfg(test)]
+mod physical_trace_tests {
+    use super::*;
+
+    #[test]
+    fn guard_counts_exact_physical_commands_and_encoders() {
+        let identity = PhysicalTraceIdentity::new(
+            "a".repeat(64),
+            "b".repeat(64),
+            "unit".into(),
+            "counts".into(),
+            None,
+            0,
+        )
+        .unwrap();
+        let guard = PhysicalTraceGuard::begin(identity).unwrap();
+        let (command, _) = physical_command_label("command_buffer").unwrap();
+        let _ = physical_encoder_label(&command, "compute_encoder", "kernel_a");
+        let _ = physical_encoder_label(&command, "compute_encoder", "kernel_b");
+        assert_eq!(
+            guard.counts(),
+            PhysicalTraceCounts {
+                command_count: 1,
+                encoder_count: 2,
+            }
+        );
     }
 }
 
@@ -396,18 +442,20 @@ mod imp {
         host_commit_us: u64,
         host_wait_us: u64,
         dispatches: u64,
+        stage_dispatches: &[(crate::cost_ledger::GpuStage, u64)],
     ) {
         use crate::cost_ledger;
         if !cost_ledger::is_recording() {
             return;
         }
         let (start, end) = unsafe { cb_gpu_start_end_s(cb) };
-        cost_ledger::record_gpu_command_buffer(
+        cost_ledger::record_gpu_command_buffer_staged(
             host_commit_us,
             host_wait_us,
             start,
             end,
             dispatches,
+            stage_dispatches,
         );
     }
 
@@ -837,11 +885,50 @@ mod imp {
             "gemv_simdgroup_f32" => "gemv_simdgroup_f32",
             // GLM native.bf16 lm_head (sequential accumulate, host parity)
             "gemv_native_bf16_seq" => "gemv_native_bf16_seq",
+            // Additive/default-off native.bf16 accuracy candidates.
+            "gemv_native_bf16_neumaier" => "gemv_native_bf16_neumaier",
+            "gemv_native_bf16_neumaier_compensated_product" => {
+                "gemv_native_bf16_neumaier_compensated_product"
+            }
             // Gravity .gravity elementwise / PQ (expert-wave, resident)
             "gravity_silu_mul_f32" => "gravity_silu_mul_f32",
             "gravity_axpy_f32" => "gravity_axpy_f32",
             "gravity_add_inplace_f32" => "gravity_add_inplace_f32",
+            "gravity_rmsnorm_f32" => "gravity_rmsnorm_f32",
+            "gravity_rope_interleaved_f32" => "gravity_rope_interleaved_f32",
+            "gravity_rope_prefix_tail_f32" => "gravity_rope_prefix_tail_f32",
+            "gravity_glm_mla_append_kv" => "gravity_glm_mla_append_kv",
+            "gravity_glm_mla_append_compact" => "gravity_glm_mla_append_compact",
+            "gravity_pq_k_transpose_heads" => "gravity_pq_k_transpose_heads",
+            "gravity_glm_compact_ranked_attn" => "gravity_glm_compact_ranked_attn",
+            "gravity_pq_v_rows_heads" => "gravity_pq_v_rows_heads",
+            "gravity_glm_build_queries" => "gravity_glm_build_queries",
+            "gravity_copy_head_prefix_f32" => "gravity_copy_head_prefix_f32",
+            "gravity_layernorm_affine_f32" => "gravity_layernorm_affine_f32",
+            "gravity_glm_append_index_key" => "gravity_glm_append_index_key",
+            "gravity_copy_tail_f32" => "gravity_copy_tail_f32",
+            "gravity_glm_dsa_scores" => "gravity_glm_dsa_scores",
+            "gravity_glm_stable_topk_f32" => "gravity_glm_stable_topk_f32",
+            "gravity_glm_radix_topk_f32" => "gravity_glm_radix_topk_f32",
+            "gravity_glm_sort_u32_ascending" => "gravity_glm_sort_u32_ascending",
+            "gravity_glm_sparse_attn" => "gravity_glm_sparse_attn",
+            "gravity_glm_router_correct" => "gravity_glm_router_correct",
+            "gravity_glm_router_select_noaux_f32" => "gravity_glm_router_select_noaux_f32",
+            "gravity_glm_expert_table_validate" => "gravity_glm_expert_table_validate",
+            "gravity_glm_expert_table_pq_matvec" => "gravity_glm_expert_table_pq_matvec",
+            "gravity_glm_expert_table_zero_f32" => "gravity_glm_expert_table_zero_f32",
+            "gravity_glm_expert_table_silu_mul_f32" => "gravity_glm_expert_table_silu_mul_f32",
+            "gravity_glm_expert_table_axpy_f32" => "gravity_glm_expert_table_axpy_f32",
+            "gravity_glm_expert_table_residual_add_f32" => {
+                "gravity_glm_expert_table_residual_add_f32"
+            }
+            "gravity_zero_f32" => "gravity_zero_f32",
             "gravity_pq_matvec" => "gravity_pq_matvec",
+            "gravity_pq_matvec_bits8_direct" => "gravity_pq_matvec_bits8_direct",
+            "gravity_pq_matvec_bits8_vec4" => "gravity_pq_matvec_bits8_vec4",
+            "gravity_pq_matvec_bits8_double_single" => "gravity_pq_matvec_bits8_double_single",
+            "gravity_pq_matvec_bits8_2d" => "gravity_pq_matvec_bits8_2d",
+            "gravity_pq_reduce_2d" => "gravity_pq_reduce_2d",
             // v0.5.10 fp16 Q-format kernels
             "gemm_q4_k_m_fused_f16" => "gemm_q4_k_m_fused_f16",
             "moe_grouped_gemm_q4_f16" => "moe_grouped_gemm_q4_f16",
@@ -993,6 +1080,57 @@ mod imp {
             "rwkv7_value_residual_mix_multiseq" => "rwkv7_value_residual_mix_multiseq",
             "rwkv7_add_into_flat" => "rwkv7_add_into_flat",
             _ => "other",
+        }
+    }
+
+    #[cfg(test)]
+    mod static_kernel_name_tests {
+        use super::static_kernel_name;
+        use crate::metal::SHADER_GRAVITY_PQ;
+
+        #[test]
+        fn compiled_dormant_resident_kernels_have_static_trace_names() {
+            const DORMANT_RESIDENT_KERNELS: &[&str] = &[
+                "gravity_rmsnorm_f32",
+                "gravity_rope_interleaved_f32",
+                "gravity_rope_prefix_tail_f32",
+                "gravity_glm_mla_append_kv",
+                "gravity_glm_mla_append_compact",
+                "gravity_pq_k_transpose_heads",
+                "gravity_glm_compact_ranked_attn",
+                "gravity_pq_v_rows_heads",
+                "gravity_glm_build_queries",
+                "gravity_copy_head_prefix_f32",
+                "gravity_layernorm_affine_f32",
+                "gravity_glm_append_index_key",
+                "gravity_copy_tail_f32",
+                "gravity_glm_dsa_scores",
+                "gravity_glm_stable_topk_f32",
+                "gravity_glm_radix_topk_f32",
+                "gravity_glm_sparse_attn",
+                "gravity_glm_router_correct",
+                "gravity_glm_router_select_noaux_f32",
+                "gravity_glm_expert_table_validate",
+                "gravity_glm_expert_table_pq_matvec",
+                "gravity_glm_expert_table_zero_f32",
+                "gravity_glm_expert_table_silu_mul_f32",
+                "gravity_glm_expert_table_axpy_f32",
+                "gravity_glm_expert_table_residual_add_f32",
+                "gravity_zero_f32",
+            ];
+
+            for &name in DORMANT_RESIDENT_KERNELS {
+                assert_eq!(
+                    static_kernel_name(name),
+                    name,
+                    "{name} would be attributed to the generic trace bucket"
+                );
+                assert!(
+                    SHADER_GRAVITY_PQ.contains(&format!("kernel void {name}(")),
+                    "{name} is registered but not compiled from gravity_pq.metal"
+                );
+            }
+            assert_eq!(static_kernel_name("not_a_hawking_kernel"), "other");
         }
     }
 
@@ -1229,6 +1367,11 @@ mod imp {
 
             let trace_enabled = self.trace_dispatch;
             let ledger = cost_ledger::is_recording();
+            let gpu_stage = if ledger {
+                Some(cost_ledger::current_gpu_stage().unwrap_or(cost_ledger::GpuStage::Untagged))
+            } else {
+                None
+            };
             let t0 = if trace_enabled {
                 Some(Instant::now())
             } else {
@@ -1286,7 +1429,17 @@ mod imp {
                 .unwrap_or(0);
             if ledger {
                 // GPU timestamps — never invent when the driver returns zeros.
-                ledger_record_cb_gpu(&cmd, commit_us, wait_us, 1);
+                let stage_dispatches = gpu_stage.map(|stage| [(stage, 1)]);
+                ledger_record_cb_gpu(
+                    &cmd,
+                    commit_us,
+                    wait_us,
+                    1,
+                    stage_dispatches
+                        .as_ref()
+                        .map(|s| s.as_slice())
+                        .unwrap_or(&[]),
+                );
                 ledger_probe_counter_capability(&self.inner.device);
             }
 
@@ -1464,6 +1617,13 @@ mod imp {
         /// compared to the GPU work being encoded. Read back via
         /// `dispatch_count()` after encoding, before `commit_and_wait`.
         pub dispatch_count: usize,
+        /// Host nanos spent encoding dispatches while a cost-ledger token is
+        /// active. Folded into [`crate::cost_ledger::Bucket::MetalEncode`] at
+        /// commit. Zero when the ledger is off (no `Instant` on the hot path).
+        ledger_encode_ns: u128,
+        /// Exact semantic dispatch composition for whole-CB GPU timestamp
+        /// attribution. Indexed by [`crate::cost_ledger::GpuStage`].
+        ledger_stage_dispatches: [u64; crate::cost_ledger::GpuStage::ALL.len()],
     }
 
     impl<'ctx> TokenCommandBuffer<'ctx> {
@@ -1488,6 +1648,8 @@ mod imp {
                 physical_trace: physical_trace.map(|(identity, _)| identity),
                 concurrent_encoder: None,
                 dispatch_count: 0,
+                ledger_encode_ns: 0,
+                ledger_stage_dispatches: [0; crate::cost_ledger::GpuStage::ALL.len()],
             }
         }
 
@@ -1577,6 +1739,36 @@ mod imp {
         ) -> Result<()> {
             // Track 3.1 / 5.1: count every kernel dispatch unconditionally.
             self.dispatch_count += 1;
+            // Cost-ledger encode wall: Instant only while a token is active.
+            // Folded into MetalEncode at commit_and_wait_split. Default-off
+            // path pays one atomic load via is_recording().
+            let ledger_t0 = if crate::cost_ledger::is_recording() {
+                Some(Instant::now())
+            } else {
+                None
+            };
+            if ledger_t0.is_some() {
+                let stage = crate::cost_ledger::current_gpu_stage()
+                    .unwrap_or(crate::cost_ledger::GpuStage::Untagged);
+                let slot = &mut self.ledger_stage_dispatches[stage.index()];
+                *slot = slot.saturating_add(1);
+            }
+            let result = self.dispatch_threads_inner(fn_name, grid, tg, encode);
+            if let Some(t0) = ledger_t0 {
+                self.ledger_encode_ns = self
+                    .ledger_encode_ns
+                    .saturating_add(t0.elapsed().as_nanos());
+            }
+            result
+        }
+
+        fn dispatch_threads_inner(
+            &mut self,
+            fn_name: &str,
+            grid: (u32, u32, u32),
+            tg: (u32, u32, u32),
+            encode: impl FnOnce(&metal::ComputeCommandEncoderRef),
+        ) -> Result<()> {
             // P0.1: if a concurrent group is active, record into its shared
             // encoder. Only set under Off/CpuEncode modes by
             // `begin_concurrent_group`, so the Split/Prod branches below
@@ -1829,18 +2021,21 @@ mod imp {
 
         /// Commit the command buffer and block until the GPU finishes.
         /// Consumes self; subsequent dispatch calls would fail.
-        pub fn commit_and_wait(mut self) -> Result<()> {
-            if let Some(cmd) = self.cmd.take() {
-                self.flush_and_commit(cmd);
-            }
-            Ok(())
+        ///
+        /// When the per-token cost ledger is **recording**, this is identical
+        /// to [`commit_and_wait_split`] (metal submit / synchronize + GPU
+        /// timestamps). When the ledger is off, behaviour is unchanged —
+        /// a single atomic load then the historical flush path.
+        pub fn commit_and_wait(self) -> Result<()> {
+            self.commit_and_wait_split()
         }
 
         /// Like [`commit_and_wait`], but when the per-token cost ledger is
         /// recording, attributes CPU wall time of `commit` and
         /// `wait_until_completed` to separate buckets and counts one
         /// command buffer + one sync point. Behaviour on the GPU is
-        /// identical; decode output is unchanged.
+        /// identical; decode output is unchanged. When the ledger is not
+        /// recording this is the same as the historical uninstrumented commit.
         pub fn commit_and_wait_split(mut self) -> Result<()> {
             use crate::cost_ledger::{self, Bucket};
             use std::time::Instant;
@@ -1851,6 +2046,17 @@ mod imp {
                     enc.end_encoding();
                 }
                 if cost_ledger::is_recording() {
+                    // Charge encode wall that was accumulated while
+                    // `dispatch_threads` ran under an active token (default-off).
+                    if self.ledger_encode_ns > 0 {
+                        cost_ledger::add_duration(
+                            Bucket::MetalEncode,
+                            std::time::Duration::from_nanos(self.ledger_encode_ns as u64),
+                        );
+                        self.ledger_encode_ns = 0;
+                    }
+                    cost_ledger::record_dispatches(self.dispatch_count as u64);
+
                     let t_submit = Instant::now();
                     cmd.commit();
                     let commit_d = t_submit.elapsed();
@@ -1867,11 +2073,20 @@ mod imp {
                     // Counter-sample markers are not encoded on this path
                     // (would change the CB); capability is probed only.
                     let n_disp = self.dispatch_count() as u64;
+                    let stage_dispatches: Vec<_> = crate::cost_ledger::GpuStage::ALL
+                        .iter()
+                        .copied()
+                        .filter_map(|stage| {
+                            let n = self.ledger_stage_dispatches[stage.index()];
+                            (n > 0).then_some((stage, n))
+                        })
+                        .collect();
                     ledger_record_cb_gpu(
                         &cmd,
                         commit_d.as_micros() as u64,
                         wait_d.as_micros() as u64,
                         n_disp,
+                        &stage_dispatches,
                     );
                     ledger_probe_counter_capability(&self.ctx.inner.device);
 
@@ -1882,7 +2097,9 @@ mod imp {
                         TcbTraceMode::CpuEncode => {
                             let layer = super::current_layer();
                             for s in self.tcb_samples.drain(..) {
-                                self.ctx.trace.record(s.kernel_name, s.wall_us, s.layer_hint);
+                                self.ctx
+                                    .trace
+                                    .record(s.kernel_name, s.wall_us, s.layer_hint);
                             }
                             self.ctx.trace.record("tcb_commit", 0, layer);
                         }

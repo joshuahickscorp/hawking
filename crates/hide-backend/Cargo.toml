@@ -39,6 +39,9 @@ hide-compat = { path = "../hide-compat" }
 hide-verify = { path = "../hide-verify" }
 hawking-context = { path = "../hawking-context" }
 hawking-index = { path = "../hawking-index" }
+# Speculation safety: Draft/Verified type boundary + durable sinks that accept
+# only target-verified tokens. Default-off; no speculate path enabled here.
+hawking-speculate = { path = "../hawking-speculate" }
 # Spine A: read the .tq (strand v2) artifact to derive a measured effective-context multiplier.
 strand-quant = { path = "../../vendor/strand-quant" }
 hawking-orch = { path = "../hawking-orch" }

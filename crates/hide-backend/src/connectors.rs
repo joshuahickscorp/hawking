@@ -3,8 +3,10 @@ use crate::services::{BackendServices, DynMemoryStore};
 use futures::future::BoxFuture;
 use hawking_context::compiler::CompileInput;
 use hawking_context::profiles::ContextProfile;
-use hawking_context::sources::CodeIndexContextSource;
-use hawking_context::{ContextCompiler, InMemoryMemoryStore, MemoryKind};
+use hawking_context::sources::{ClassedMemoryContextSource, CodeIndexContextSource};
+use hawking_context::{
+    ClassBudgets, ContextCompiler, DynClassedMemory, InMemoryMemoryStore, MemoryKind,
+};
 use hawking_index::{InMemoryCodeIndex, SearchQuery};
 use crate::services::DynCodeIndex;
 use hawking_orch::{RoleRegistry, Router, SimpleRouter};
@@ -478,6 +480,8 @@ pub struct ContextConnector {
     /// Spine B: the persistent Project Brain — each compile upserts a record so
     /// the agent's working memory of this project accrues across turns/sessions.
     memory: DynMemoryStore,
+    /// Six real memory classes consulted on every compile.
+    classed_memory: DynClassedMemory,
 }
 
 impl ContextConnector {
@@ -485,11 +489,13 @@ impl ContextConnector {
         index: DynCodeIndex,
         roles: Arc<RoleRegistry>,
         memory: DynMemoryStore,
+        classed_memory: DynClassedMemory,
     ) -> Self {
         Self {
             index,
             roles,
             memory,
+            classed_memory,
         }
     }
 }
@@ -539,13 +545,33 @@ impl Connector for ContextConnector {
                         self.index.clone(),
                         search_limit,
                     ));
-                    let compiled = compiler
+                    let class_budgets =
+                        ClassBudgets::from_total((max_input_tokens / 8).max(64));
+                    compiler.add_source(ClassedMemoryContextSource::new(
+                        self.classed_memory.clone(),
+                        class_budgets,
+                    ));
+                    let mut compiled = compiler
                         .compile(CompileInput {
                             profile: ContextProfile::coding_default(max_input_tokens),
                             model: role.model,
                             task: task.to_string(),
                         })
                         .await?;
+                    // Per-class budget lines on the meter (when sealed later, or here).
+                    if let Some(ret) = self.classed_memory.last_retrieval() {
+                        let lines = ret.budget_explanations();
+                        if compiled.manifest.meter.is_none() {
+                            compiled.manifest.meter =
+                                Some(hawking_context::ContextMeter {
+                                    used_tokens: compiled.manifest.used_tokens,
+                                    explanations: lines,
+                                    ..Default::default()
+                                });
+                        } else if let Some(meter) = compiled.manifest.meter.as_mut() {
+                            meter.explanations.extend(lines);
+                        }
+                    }
                     // Spine B: accrue the Project Brain — record this compile (task +
                     // what the window retained) as a Project memory. Best-effort: a
                     // brain write must never fail the compile.
@@ -820,6 +846,7 @@ pub fn register_backend_connectors(registry: &ConnectorRegistry, services: &Back
         services.code_index.clone(),
         services.role_registry.clone(),
         services.memory_store.clone(),
+        services.classed_memory.clone(),
     ));
     registry.register(HomeConnector::new(
         services.event_log.clone(),
@@ -1087,6 +1114,10 @@ mod tests {
             index,
             Arc::new(RoleRegistry::with_default_local_roles()),
             Arc::new(InMemoryMemoryStore::default()),
+            Arc::new(
+                hawking_context::ClassedMemorySystem::open_in_memory("test-ws")
+                    .expect("classed memory"),
+            ),
         ));
 
         let compiled = registry

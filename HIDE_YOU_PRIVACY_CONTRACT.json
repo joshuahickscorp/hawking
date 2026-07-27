@@ -1,0 +1,185 @@
+{
+  "schema": "hide.you.privacy_contract.v1",
+  "at": "2026-07-27T12:00:00Z",
+  "status": "IMPLEMENTED",
+  "resource_mode": "LIGHT_ONLY",
+  "purpose": "Privacy modes enforced at the capability boundary, plus a personal tool registry with typed effects, receipts, and honest implemented/declared split.",
+  "modules": {
+    "privacy": {
+      "crate": "hawking-context",
+      "path": "crates/hawking-context/src/privacy.rs",
+      "public": "hawking_context::privacy"
+    },
+    "personal_tools": {
+      "crate": "hawking-context",
+      "path": "crates/hawking-context/src/personal_tools.rs",
+      "public": "hawking_context::personal_tools"
+    },
+    "memory_controls": {
+      "crate": "hawking-context",
+      "path": "crates/hawking-context/src/memory_classes.rs",
+      "related_contract": "HIDE_YOU_MEMORY_CONTROLS.json"
+    }
+  },
+  "privacy_modes": {
+    "law": "Modes are enforced at the capability boundary, not by asking a subsystem to behave. A network-disabled session must not be able to construct a network-capable connector handle at all.",
+    "modes": {
+      "local_offline": {
+        "wire": "local_offline",
+        "effect": "NetworkCapableHandle and ConnectorCapableHandle construction fail"
+      },
+      "network_disabled": {
+        "wire": "network_disabled",
+        "effect": "NetworkCapableHandle::try_construct fails; local tools continue"
+      },
+      "connector_disabled": {
+        "wire": "connector_disabled",
+        "effect": "ConnectorCapableHandle::try_construct fails; network may still construct"
+      },
+      "ephemeral_no_memory": {
+        "wire": "ephemeral_no_memory",
+        "effect": "PrivacySession allows working only; durable class writes refuse; end() purges session refs so durable_refs_after == 0"
+      },
+      "encrypted_vault": {
+        "wire": "encrypted_vault",
+        "effect": "private_vault scope writes require EncryptedVaultHandle; ordinary write_* with PrivateVault scope fails closed"
+      }
+    },
+    "types": {
+      "PrivacyPolicy": "BTreeSet of PrivacyMode; composes",
+      "NetworkCapableHandle": "try_construct(policy) — fails under local_offline | network_disabled",
+      "ConnectorCapableHandle": "try_construct(policy) — fails under local_offline | connector_disabled",
+      "EncryptedVaultHandle": "try_construct only when encrypted_vault is active",
+      "PrivacySession": "session_id + policy; durable writes gated; end() produces EphemeralEndReport"
+    },
+    "construction_not_call_refusal": {
+      "property": "Tests assert try_construct returns Err, not that a method on an existing handle refuses",
+      "tests": [
+        "property_network_disabled_cannot_construct_network_handle",
+        "property_connector_disabled_cannot_construct_connector_handle"
+      ]
+    }
+  },
+  "ephemeral_property": {
+    "name": "property_ephemeral_means_ephemeral_no_durable_trace",
+    "path": "crates/hawking-context/src/privacy.rs",
+    "proves": [
+      "working writes succeed under ephemeral_no_memory",
+      "episodic / user / verification writes refuse",
+      "after session.end(), durable_refs_to_session == 0",
+      "accidental session-linked durable rows are purged on end"
+    ],
+    "companion": "property_ephemeral_end_purges_accidental_session_refs"
+  },
+  "personal_tools": {
+    "registry": "PersonalToolRegistry::builtin()",
+    "implemented_constructible": ["calculator", "task_lists"],
+    "declared_non_constructible": [
+      "file_conversion",
+      "document_generation",
+      "spreadsheet_analysis",
+      "calendar_planning",
+      "email_drafting",
+      "contact_lookup",
+      "reminders",
+      "web_search",
+      "image_analysis",
+      "transcription",
+      "code_execution",
+      "local_shell",
+      "mcp_tools"
+    ],
+    "effect_classes": [
+      "pure_compute",
+      "local_read",
+      "local_write",
+      "local_generate",
+      "filesystem",
+      "network",
+      "external_comm",
+      "code_exec",
+      "mcp_bridge"
+    ],
+    "effect_path": {
+      "law": "High-risk external actions are never silently executed — they need the effect system.",
+      "steps": [
+        "tool.prepare(args) → ToolProposal",
+        "ToolPermissionGate::issue_receipt(proposal) (deny-by-default)",
+        "execute_with_receipt(tool, proposal, &mut receipt)",
+        "optional tool.rollback(token)"
+      ],
+      "silent_path": "execute_without_receipt always fails when requires_receipt is true"
+    },
+    "fixtures": {
+      "calculator": "pure arithmetic left-to-right; no receipt required",
+      "task_lists": "in-memory tasks; add/list/complete/remove; requires receipt; rollback restores snapshot"
+    }
+  },
+  "tests": [
+    {
+      "name": "property_network_disabled_cannot_construct_network_handle",
+      "path": "crates/hawking-context/src/privacy.rs",
+      "proves": "construction fails under network_disabled and local_offline"
+    },
+    {
+      "name": "property_connector_disabled_cannot_construct_connector_handle",
+      "path": "crates/hawking-context/src/privacy.rs",
+      "proves": "connector construct fails; network still constructs under connector_disabled alone"
+    },
+    {
+      "name": "property_ephemeral_means_ephemeral_no_durable_trace",
+      "path": "crates/hawking-context/src/privacy.rs",
+      "proves": "ephemeral session leaves no durable episodic/user/verification trace"
+    },
+    {
+      "name": "property_ephemeral_end_purges_accidental_session_refs",
+      "path": "crates/hawking-context/src/privacy.rs",
+      "proves": "end() purges durable session_id refs even if written outside the wrapper"
+    },
+    {
+      "name": "property_encrypted_vault_requires_handle",
+      "path": "crates/hawking-context/src/privacy.rs",
+      "proves": "private_vault under encrypted_vault needs EncryptedVaultHandle"
+    },
+    {
+      "name": "property_high_risk_external_actions_never_silent",
+      "path": "crates/hawking-context/src/personal_tools.rs",
+      "proves": "task_lists refuses silent execute; deny-by-default; single-use receipt; second use fails"
+    },
+    {
+      "name": "property_calculator_fixture_pure_compute",
+      "path": "crates/hawking-context/src/personal_tools.rs",
+      "proves": "calculator runs without receipt against fixture expression"
+    },
+    {
+      "name": "property_task_lists_rollback",
+      "path": "crates/hawking-context/src/personal_tools.rs",
+      "proves": "rollback token restores prior task map"
+    },
+    {
+      "name": "property_declared_tools_non_constructible",
+      "path": "crates/hawking-context/src/personal_tools.rs",
+      "proves": "13 declared tools refuse construct; each declares non-empty typed effects"
+    },
+    {
+      "name": "property_no_hidden_permanent_memory_inspect_and_forget",
+      "path": "crates/hawking-context/src/memory_classes.rs",
+      "proves": "cross-cutting: inspect + real forget + portable export"
+    }
+  ],
+  "non_goals": [
+    "No real network, credentials, or model",
+    "No real MCP bridge, shell, or email send",
+    "Vault encryption is handle-level only; OS crypto deferred"
+  ],
+  "hard_constraint_inherited": {
+    "grade_ceiling": "READY_FOR_INTEGRATION",
+    "no_production_claim": "Fixtures and mocks never earn PRODUCTION"
+  },
+  "related_contracts": [
+    "HIDE_YOU_SURFACE_AUTHORITY.json",
+    "HIDE_MEMORY_CLASSES.json",
+    "HIDE_YOU_MEMORY_CONTROLS.json",
+    "HIDE_YOU_CONNECTOR_REGISTRY.json"
+  ]
+}

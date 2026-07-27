@@ -195,3 +195,83 @@ kernel void gemv_native_bf16_seq(
     }
     out_logits[row_idx] = acc;
 }
+
+// Additive/default-off accuracy candidate. This keeps the same one-thread-per-
+// row mapping and BF16 traffic as `gemv_native_bf16_seq`, but compensates f32
+// addition error with Neumaier summation. It is intentionally a separate
+// symbol so the established sequential runtime path remains byte-for-byte
+// selectable and unchanged.
+#pragma clang fp reassociate(off)
+kernel void gemv_native_bf16_neumaier(
+    device const ushort* weight_bits [[buffer(0)]],
+    device const float*  act         [[buffer(1)]],
+    device       float*  out_logits  [[buffer(2)]],
+    constant     uint&   n_rows      [[buffer(3)]],
+    constant     uint&   n_cols      [[buffer(4)]],
+    uint                 row_idx     [[thread_position_in_grid]])
+{
+    if (row_idx >= n_rows) return;
+    device const ushort* row_bits =
+        weight_bits + (ulong)row_idx * (ulong)n_cols;
+    float acc = 0.0f;
+    float correction = 0.0f;
+    for (uint col = 0u; col < n_cols; ++col) {
+        uint wide_bits = ((uint)row_bits[col]) << 16;
+        float w_val = as_type<float>(wide_bits);
+        float product = w_val * act[col];
+        float next = acc + product;
+        float addition_residual;
+        if (fabs(acc) >= fabs(product)) {
+            float delta = acc - next;
+            addition_residual = delta + product;
+        } else {
+            float delta = product - next;
+            addition_residual = delta + acc;
+        }
+        correction = correction + addition_residual;
+        acc = next;
+    }
+    out_logits[row_idx] = acc + correction;
+}
+
+// Stronger compensated-dot candidate. Neumaier recovers addition residuals;
+// explicit `fma(w, x, -product)` also recovers the residual discarded when the
+// BF16×F32 product rounds to f32. The final result remains f32.
+kernel void gemv_native_bf16_neumaier_compensated_product(
+    device const ushort* weight_bits [[buffer(0)]],
+    device const float*  act         [[buffer(1)]],
+    device       float*  out_logits  [[buffer(2)]],
+    constant     uint&   n_rows      [[buffer(3)]],
+    constant     uint&   n_cols      [[buffer(4)]],
+    uint                 row_idx     [[thread_position_in_grid]])
+{
+    if (row_idx >= n_rows) return;
+    device const ushort* row_bits =
+        weight_bits + (ulong)row_idx * (ulong)n_cols;
+    float acc = 0.0f;
+    float correction = 0.0f;
+    for (uint col = 0u; col < n_cols; ++col) {
+        uint wide_bits = ((uint)row_bits[col]) << 16;
+        float w_val = as_type<float>(wide_bits);
+        float product = w_val * act[col];
+        float product_residual = fma(w_val, act[col], -product);
+        float next = acc + product;
+        float addition_residual;
+        if (fabs(acc) >= fabs(product)) {
+            float delta = acc - next;
+            addition_residual = delta + product;
+        } else {
+            float delta = product - next;
+            addition_residual = delta + acc;
+        }
+        correction = correction + addition_residual;
+        correction = correction + product_residual;
+        acc = next;
+    }
+    out_logits[row_idx] = acc + correction;
+}
+
+// `MetalContext` compiles every checked-in shader source as one translation
+// unit. Restore the pre-candidate default so this additive accuracy lane cannot
+// silently change reassociation in gravity-pq or any later source file.
+#pragma clang fp reassociate(on)

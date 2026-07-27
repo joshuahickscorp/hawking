@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
 import sys
 import time
@@ -113,28 +114,49 @@ def probe(pids: list[int], artifact_dir: Path | None) -> CampaignProbe:
                          artifact_bytes=artifact_bytes, artifact_count=artifact_count)
 
 
-def live_pids() -> list[int]:
-    """Discover the live campaign's processes by command line rather than a stored pid.
+DEFAULT_CAMPAIGN_COMMAND_SUBSTRINGS = ("glm52_source_fetch.py", "glm52_worker.py")
+
+
+def discover_pids(command_substrings: tuple[str, ...] | list[str],
+                  *, ps_output: str | None = None,
+                  exclude_pids: set[int] | None = None) -> list[int]:
+    """Discover live campaign processes by command line rather than stored pids.
 
     A pid file would go stale across a launchd restart; the command line will not.
+    The caller and its parent are excluded by the CLI because their argument strings can
+    contain the same selector.
     """
-    try:
-        out = subprocess.run(["/bin/ps", "-axo", "pid=,command="],
-                             capture_output=True, text=True, timeout=15).stdout
-    except (OSError, subprocess.SubprocessError):
-        return []
+    if ps_output is None:
+        try:
+            ps_output = subprocess.run(
+                ["/bin/ps", "-axo", "pid=,command="],
+                capture_output=True,
+                text=True,
+                timeout=15,
+            ).stdout
+        except (OSError, subprocess.SubprocessError):
+            return []
+    selectors = tuple(value for value in command_substrings if value)
+    excluded = exclude_pids or set()
     found = []
-    for line in out.splitlines():
+    for line in ps_output.splitlines():
         raw = line.strip()
         if not raw:
             continue
         pid, _, command = raw.partition(" ")
-        if "glm52_source_fetch.py" in command or "glm52_worker.py" in command:
+        if selectors and any(selector in command for selector in selectors):
             try:
-                found.append(int(pid))
+                parsed = int(pid)
             except ValueError:
                 continue
+            if parsed not in excluded:
+                found.append(parsed)
     return found
+
+
+def live_pids() -> list[int]:
+    """Backward-compatible discovery for the source-fetch campaign."""
+    return discover_pids(DEFAULT_CAMPAIGN_COMMAND_SUBSTRINGS)
 
 
 @dataclass
@@ -270,6 +292,15 @@ def selftest() -> int:
 
     # ps time parsing, including the day form
     assert _cpu_seconds([]) is None
+    fake_ps = """
+      11 /usr/bin/python glm52_source_fetch.py safe-to-leave
+      12 /usr/bin/python -m mop.temporal.runs.e2 principal har_stream 0
+      13 /bin/zsh --track-command-substring mop.temporal.runs.e2
+    """
+    assert discover_pids(["glm52_source_fetch.py"], ps_output=fake_ps) == [11]
+    assert discover_pids(
+        ["-m mop.temporal.runs.e2"], ps_output=fake_ps, exclude_pids={13}
+    ) == [12]
 
     print(json.dumps({"selftest": "PASS", "schema": LEASE_SCHEMA,
                       "fails_closed_when_blind": True,
@@ -286,37 +317,91 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--cycles", type=int, default=DEFAULT_CYCLES)
     parser.add_argument("--tolerance", type=float, default=DEFAULT_TOLERANCE)
     parser.add_argument("--report", default=None, help="write the verdict here as JSON")
+    parser.add_argument(
+        "--track-command-substring",
+        action="append",
+        default=[],
+        help=(
+            "repeatable live-process selector; defaults to the source-fetch campaign. "
+            "For MOP use 'mop.temporal.runs.e2'"
+        ),
+    )
+    parser.add_argument(
+        "--load-command-json",
+        default=None,
+        help=(
+            "JSON argv array for one short unit of the real candidate load. "
+            "Runs without a shell and must exit zero. Defaults to the Python Metal probe."
+        ),
+    )
     args = parser.parse_args(argv)
 
     if args.selftest:
         return selftest()
 
-    # The default load is the real thing the lab wants to run: a compact matvec on the GPU.
-    def _gpu_load() -> None:
-        import numpy as np
-        here = str(Path(__file__).resolve().parent)
-        if here not in sys.path:
-            sys.path.insert(0, here)
-        import gravity_forge as forge
-        import gravity_metal
-        state = _gpu_load.__dict__
-        if "codes" not in state:
-            rng = np.random.default_rng(0)
-            weights = rng.standard_normal((2048, 6144)).astype(np.float32)
-            artifact = forge.pack_product_quant(weights, dim=8, subspaces=1, k=128,
-                                                seed=0, iters=4)
-            state["codes"] = artifact.config["pq_codes"]
-            state["x"] = rng.standard_normal(6144).astype(np.float32)
-            state["gpu"] = gravity_metal.decoder()
-            # content-addressed rather than a literal: a fixed string would pin this probe's
-            # upload under a name any other caller could reuse for a different tensor
-            state["key"] = gravity_metal.content_key(state["codes"])
-        state["gpu"].matvec(state["codes"], state["x"], key=state["key"])
+    load_command = None
+    if args.load_command_json is not None:
+        try:
+            decoded = json.loads(args.load_command_json)
+        except json.JSONDecodeError as exc:
+            parser.error(f"--load-command-json is not valid JSON: {exc}")
+        if not isinstance(decoded, list) or not decoded or not all(
+            isinstance(value, str) and value for value in decoded
+        ):
+            parser.error("--load-command-json must be a non-empty JSON array of strings")
+        load_command = decoded
+
+    if load_command is not None:
+        def _gpu_load() -> None:
+            subprocess.run(
+                load_command,
+                stdin=subprocess.DEVNULL,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                check=True,
+                timeout=max(30.0, args.window_seconds),
+            )
+    else:
+        # The default load is a compact matvec on the GPU. Sites without the
+        # optional Python Metal bridge can supply a compiled Rust load above.
+        def _gpu_load() -> None:
+            import numpy as np
+            here = str(Path(__file__).resolve().parent)
+            if here not in sys.path:
+                sys.path.insert(0, here)
+            import gravity_forge as forge
+            import gravity_metal
+            state = _gpu_load.__dict__
+            if "codes" not in state:
+                rng = np.random.default_rng(0)
+                weights = rng.standard_normal((2048, 6144)).astype(np.float32)
+                artifact = forge.pack_product_quant(weights, dim=8, subspaces=1, k=128,
+                                                    seed=0, iters=4)
+                state["codes"] = artifact.config["pq_codes"]
+                state["x"] = rng.standard_normal(6144).astype(np.float32)
+                state["gpu"] = gravity_metal.decoder()
+                # Content-addressed rather than a literal: a fixed string would pin this
+                # probe's upload under a name another caller could reuse for other bytes.
+                state["key"] = gravity_metal.content_key(state["codes"])
+            state["gpu"].matvec(state["codes"], state["x"], key=state["key"])
+
+    selectors = (
+        tuple(args.track_command_substring)
+        if args.track_command_substring
+        else DEFAULT_CAMPAIGN_COMMAND_SUBSTRINGS
+    )
+    pids = discover_pids(
+        selectors,
+        exclude_pids={os.getpid(), os.getppid()},
+    )
 
     verdict = evaluate(_gpu_load,
+                       pids=pids,
                        artifact_dir=Path(args.artifact_dir) if args.artifact_dir else None,
                        window_seconds=args.window_seconds, cycles=args.cycles,
                        tolerance=args.tolerance)
+    verdict["tracked_command_substrings"] = list(selectors)
+    verdict["load_command"] = load_command
     text = json.dumps(verdict, indent=2)
     print(text)
     if args.report:

@@ -1,0 +1,175 @@
+{
+ "classes": [
+  {
+   "budget_source": "ClassBudgets.working via ClassBudgets::from_total(memory_region)",
+   "entry_path": "ClassedMemorySystem::write_working \u2192 ClassedMemoryContextSource::gather \u2192 ContextCompiler::compile \u2192 run_turn_core/run_turn_kernel on SubmitTurn",
+   "eviction": "end_turn() drops all working records for that turn_id",
+   "name": "working",
+   "provenance_fields": [
+    "writer",
+    "written_at_ms",
+    "turn_id",
+    "run_id",
+    "evidence",
+    "authority=Turn"
+   ],
+   "retention": "turn_local: cleared by end_turn(turn_id); never persisted",
+   "retrieval_question": "what is the live scratch for this turn?",
+   "status": "REAL_WIRED",
+   "store": "RAM BTreeMap inside ClassedMemorySystem (never SQLite)",
+   "test": "crates/hawking-context/src/memory_classes.rs::retention_working_dies_at_turn_end",
+   "write_authority": "TurnWriteCap \u2014 kernel/executor only"
+  },
+  {
+   "budget_source": "ClassBudgets.episodic",
+   "entry_path": "ClassedMemorySystem::write_episodic \u2192 retrieve_for_compile(session filter) \u2192 ClassedMemoryContextSource \u2192 SubmitTurn compile",
+   "eviction": "evict_session(session_id) deletes that session's episodes",
+   "name": "episodic",
+   "provenance_fields": [
+    "writer",
+    "written_at_ms",
+    "turn_id",
+    "run_id",
+    "evidence",
+    "authority=EventStream",
+    "session_id"
+   ],
+   "retention": "session: retained while session_id is live",
+   "retrieval_question": "what did we try this session (turns, tools, edits, verdicts)?",
+   "status": "REAL_WIRED",
+   "store": "SQLite table mem_episodic in .hide/memory/classes.db",
+   "test": "crates/hawking-context/src/memory_classes.rs::retention_episodic_evicted_with_session",
+   "write_authority": "EpisodicWriteCap \u2014 event stream"
+  },
+  {
+   "budget_source": "ClassBudgets.semantic_project",
+   "entry_path": "ClassedMemorySystem::write_semantic_project \u2192 retrieve_for_compile \u2192 ClassedMemoryContextSource \u2192 SubmitTurn compile",
+   "eviction": "supersede/retire explicit; no session TTL",
+   "name": "semantic_project",
+   "provenance_fields": [
+    "writer",
+    "written_at_ms",
+    "turn_id",
+    "run_id",
+    "evidence",
+    "authority=ProjectDistill",
+    "workspace_id"
+   ],
+   "retention": "durable across sessions; workspace-scoped",
+   "retrieval_question": "what durable facts about this repository are relevant (layout, conventions, invariants)?",
+   "status": "REAL_WIRED",
+   "store": "SQLite table mem_semantic_project in .hide/memory/classes.db",
+   "test": "crates/hawking-context/src/memory_classes.rs::retention_semantic_project_survives_session_restart",
+   "write_authority": "ProjectWriteCap \u2014 explicit writes + distillation from episodic"
+  },
+  {
+   "budget_source": "ClassBudgets.procedural",
+   "entry_path": "ClassedMemorySystem::write_procedural \u2192 retrieve_for_compile \u2192 ClassedMemoryContextSource \u2192 SubmitTurn compile",
+   "eviction": "supersede on newer successful recipe; no session TTL",
+   "name": "procedural",
+   "provenance_fields": [
+    "writer",
+    "written_at_ms",
+    "turn_id",
+    "run_id",
+    "evidence",
+    "authority=ToolReceipt",
+    "workspace_id"
+   ],
+   "retention": "durable across sessions; workspace-scoped",
+   "retrieval_question": "what recipes, build/test commands, skills, or hooks worked here?",
+   "status": "REAL_WIRED",
+   "store": "SQLite table mem_procedural in .hide/memory/classes.db",
+   "test": "crates/hawking-context/src/memory_classes.rs::retention_procedural_survives_session_restart",
+   "write_authority": "ProceduralWriteCap \u2014 successful tool receipts"
+  },
+  {
+   "budget_source": "ClassBudgets.user",
+   "entry_path": "ClassedMemorySystem::write_user(UserWriteCap) \u2192 retrieve_for_compile \u2192 ClassedMemoryContextSource \u2192 SubmitTurn compile",
+   "eviction": "explicit user delete only; never workspace teardown",
+   "name": "user",
+   "provenance_fields": [
+    "writer",
+    "written_at_ms",
+    "turn_id",
+    "run_id",
+    "evidence",
+    "authority=UserExplicit"
+   ],
+   "retention": "durable; cross-workspace (workspace_id always None)",
+   "retrieval_question": "what standing preferences and instructions apply for this person?",
+   "status": "REAL_WIRED",
+   "store": "SQLite table mem_user in {user_root}/memory/user.db (NOT under workspace)",
+   "test": "crates/hawking-context/src/memory_classes.rs::retention_user_is_not_workspace_scoped + write_authority_verification_and_user_require_caps",
+   "write_authority": "UserWriteCap \u2014 explicit user-scoped intent only; never distillation"
+  },
+  {
+   "budget_source": "ClassBudgets.verification",
+   "entry_path": "ClassedMemorySystem::write_verification(VerifierWriteCap) \u2192 retrieve_for_compile \u2192 ClassedMemoryContextSource \u2192 SubmitTurn compile; meter.explanations get per-class budgets",
+   "eviction": "verifier supersede only; model path cannot evict",
+   "name": "verification",
+   "provenance_fields": [
+    "writer",
+    "written_at_ms",
+    "turn_id",
+    "run_id",
+    "evidence",
+    "authority=Verifier",
+    "evidence_tier"
+   ],
+   "retention": "durable across sessions; never model-overwritten",
+   "retrieval_question": "what claims are asserted vs proven, at which evidence tier, by which run?",
+   "status": "REAL_WIRED",
+   "store": "SQLite table mem_verification in .hide/memory/classes.db",
+   "test": "crates/hawking-context/src/memory_classes.rs::retention_verification_survives_session_restart + write_authority_verification_and_user_require_caps + provenance_authority_not_forgeable_from_turn_path",
+   "write_authority": "VerifierWriteCap \u2014 verifier path only; model turn cannot call write_verification without holding the cap type"
+  }
+ ],
+ "compatibility": {
+  "legacy_project_brain": "crates/hawking-context/src/memory.rs MemoryKind labels (working/episodic/semantic/procedural/project) remain as the Spine B Project Brain single-table store; they are PARTIAL kind labels, not the six systems",
+  "odyssey_memory_stores": "odyssey/memory/MEMORY_STORES.json vocabulary maps loosely: verification\u2194claims+evidence (M1/M2), episodic\u2194trajectories (M3); HIDE classes are the agent Context OS substrate, Odyssey stores are the campaign investigation substrate"
+ },
+ "controller_review": {
+  "at": "2026-07-27T01:52:59Z",
+  "by": "controller (claude), re-derived from the source",
+  "claim_corrected": {
+   "actually": "VerifierWriteCap::mint() and UserWriteCap::mint() are public and unrestricted. Any caller in any crate can mint one; the restriction is a doc comment ('Mint only at the verifier entry point'), which is a convention.",
+   "disposition": "accepted as delivered; the receipt is corrected rather than the code re-engineered. Sealing the mint to the verifier's own construction path is the upgrade if this is ever load-bearing for a trust boundary.",
+   "the_lane_claimed": "write authority is 'not forgeable' from the turn path",
+   "what_does_hold": "the contract's actual bar was that a turn-to-verification write be impossible WITHOUT BEING OBVIOUS IN A DIFF. A mint() call appearing in the turn path is obvious in a diff, so the delivered bar is met. The stronger 'non-forgeable' wording is not."
+  },
+  "the_real_remaining_gap": {
+   "consequence": "six stores that nothing populates. Retrieval is live but will retrieve nothing until writers exist, so the Context OS gains structure without gaining content.",
+   "disposition": "queued as a follow-up lane; this is wiring, not construction, and the substrate is sound.",
+   "what": "the production WRITERS are not wired. The lane says so plainly: the event stream does not write episodic, and the verifier does not write verification."
+  },
+  "verdict": "PARTIAL, not COMPLETE as the lane reported",
+  "what_is_genuinely_real": [
+   "six distinct stores, verified: five separate SQLite tables (mem_episodic, mem_semantic_project, mem_procedural, mem_verification, mem_user) plus working in RAM. This is six systems, not six labels on one table -- which was the failure mode the task existed to prevent, and the honest prior state was five kind-labels on one table.",
+   "per-class retention, eviction, retrieval question and independent budgets",
+   "retrieval wired into the live SubmitTurn compile path",
+   "55 hawking-context tests re-run by the controller, all green"
+  ]
+ },
+ "cross_cutting_tests": [
+  {
+   "name": "multi_class_compile_independent_budgets",
+   "path": "crates/hawking-context/src/sources.rs::classed_memory_compiler_retrieves_multiple_classes_independent_budgets",
+   "proves": "ContextCompiler retrieves from more than one class in a single compile; ClassBudgets are independent"
+  },
+  {
+   "name": "retrieve_independent_budgets",
+   "path": "crates/hawking-context/src/memory_classes.rs::retrieve_for_compile_uses_independent_class_budgets",
+   "proves": "semantic flood does not starve verification/user under separate budgets"
+  }
+ ],
+ "honest_prior_state": {
+  "memory.rs_kinds": "Working, Episodic, Semantic, Procedural, Project existed as kind labels on ONE SQLite table with half-life defaults \u2014 PARTIAL, not six systems",
+  "retrieval": "was store.retrieve(query, k, kinds) \u2014 single SELECT filtered by kind",
+  "user": "MISSING before this change",
+  "verification": "MISSING before this change",
+  "write_authority": "was free put() for any kind \u2014 not a type boundary"
+ },
+ "law": "six distinct systems \u2014 not six labels on one blob store",
+ "schema": "hawking.hide.memory_classes.v1"
+}

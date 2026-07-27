@@ -1,0 +1,350 @@
+{
+  "schema": "hawking.glm52.rebuild_pilot.v1",
+  "at": "2026-07-27T08:05:00Z",
+  "owner": "controller",
+  "status": "PILOT_MEASURED_PROGRAM_NOT_YET_FROZEN",
+  "what_was_done": {
+    "step_1_rehydration": {
+      "status": "COMPLETE for the pilot window",
+      "shards": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "of_total": 282,
+      "bytes": 26773797888,
+      "verified_against": "per-file sha256 sealed in GLM52_REHYDRATION_RECEIPT.json",
+      "all_verified": true,
+      "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+      "measured_throughput_megabits_per_second": 2020,
+      "note_on_the_full_parent": "the prior traversal recorded 420 Mbit/s aggregate, implying ~8 hours for 1.507 TB. Measured now at ~2.0 Gbit/s, a full rehydration is roughly 1.7 hours. That materially changes what a heavy window buys.",
+      "why_a_window_and_not_the_parent": "the campaign's own ordering is pilot on representative windows, freeze one global program, then traverse and pack. Fetching 1.507 TB and packing for ~13 hours under a program that has not passed a gate is the expensive mistake available here.",
+      "representativeness": "shards 1-5 carry every organ class the flagship has: embedding, lm_head, attention, dense MLP, routed experts, shared expert."
+    }
+  },
+  "scope_of_a_window_pilot": {
+    "measurable": [
+      "exact complete-byte accounting",
+      "sub-bit legality at pilot scope",
+      "functional preservation of an organ under a proxy input distribution",
+      "next-layer propagation where layers permit"
+    ],
+    "not_measurable": {
+      "G_math": "four layers of seventy-eight cannot complete '2 + 2 ='",
+      "G_live": "same",
+      "G_halo": "needs the whole model and a served endpoint",
+      "long_context": "needs the whole model",
+      "G_cascade": "needs many more layers than this window carries"
+    },
+    "why_this_is_stated_prominently": "a window result is not a capability result. Treating one as the other is precisely how a byte-perfect Math-Preserve came to be called ready."
+  },
+  "the_correction_that_made_the_pilot_meaningful": {
+    "first_run": "every arm ran at the hyperparameters chosen for a 64x64 synthetic fixture. On real 2048x12288 GLM organs those are meaningless -- A1 at rank 4 landed at 0.036 BPW and destroyed the organ, A2 stored an unpriced float16 residual and landed at 16 BPW while reproducing it perfectly.",
+    "why_it_mattered": "neither number is a result about the arm; both are results about defaults. Reporting them as arm outcomes would have been a false negative for A1 and a false positive for A2.",
+    "fix": "every arm was given an explicit rate knob and swept, producing a rate-distortion curve in FUNCTIONAL space."
+  },
+  "measured_rate_distortion_dense_mlp": {
+    "organ": "model.layers.0.mlp.down_proj.weight",
+    "shape": [
+      2048,
+      12288
+    ],
+    "constant_mean_cosine_null": 0.12371,
+    "null_meaning": "a predictor emitting the mean row scores this well while carrying no information. A cosine at or below it is worse than useless.",
+    "curve": [
+      {
+        "arm": "A1",
+        "config": "rank 4",
+        "bpw": 0.03647,
+        "sub_bit": true,
+        "cosine": 0.07531,
+        "beats_null": false
+      },
+      {
+        "arm": "A1",
+        "config": "rank 16",
+        "bpw": 0.14585,
+        "sub_bit": true,
+        "cosine": 0.14412,
+        "beats_null": true
+      },
+      {
+        "arm": "A1",
+        "config": "rank 64",
+        "bpw": 0.58338,
+        "sub_bit": true,
+        "cosine": 0.28343,
+        "beats_null": true
+      },
+      {
+        "arm": "A1",
+        "config": "rank 256",
+        "bpw": 2.3335,
+        "sub_bit": false,
+        "cosine": 0.51896,
+        "beats_null": true
+      },
+      {
+        "arm": "A1",
+        "config": "rank 512",
+        "bpw": 4.667,
+        "sub_bit": false,
+        "cosine": 0.68684,
+        "beats_null": true
+      },
+      {
+        "arm": "A2",
+        "config": "pq8x16, residual 0 bits",
+        "bpw": 0.13021,
+        "sub_bit": true,
+        "cosine": 0.03562,
+        "beats_null": false
+      },
+      {
+        "arm": "A2",
+        "config": "pq8x16, residual 1 bit",
+        "bpw": 1.13021,
+        "sub_bit": false,
+        "cosine": 0.59171,
+        "beats_null": true
+      },
+      {
+        "arm": "A2",
+        "config": "pq16x64, residual 2 bits",
+        "bpw": 2.51042,
+        "sub_bit": false,
+        "cosine": 0.61014,
+        "beats_null": true
+      },
+      {
+        "arm": "A3",
+        "config": "3 stages, 16 centroids",
+        "bpw": 0.37696,
+        "sub_bit": true,
+        "cosine": 0.04567,
+        "beats_null": false
+      },
+      {
+        "arm": "A3",
+        "config": "16 stages, 128 centroids",
+        "bpw": 16.01042,
+        "sub_bit": false,
+        "cosine": 0.67379,
+        "beats_null": true
+      },
+      {
+        "arm": "A4",
+        "config": "shared basis 1",
+        "bpw": 2.00001,
+        "sub_bit": false,
+        "cosine": 0.35494,
+        "beats_null": true
+      },
+      {
+        "arm": "A4",
+        "config": "shared basis 6",
+        "bpw": 12.00004,
+        "sub_bit": false,
+        "cosine": 0.86897,
+        "beats_null": true
+      }
+    ],
+    "best_sub_bit_point": {
+      "arm": "A1",
+      "config": "rank 64",
+      "bpw": 0.58338,
+      "cosine": 0.28343,
+      "relative_output_error": 0.95871,
+      "reading": "it beats the null by roughly 2.3x and still gets the organ's output 96 percent wrong. That is an organ that no longer does its job."
+    },
+    "sub_bit_points_beating_null": "2 of 5",
+    "the_shape": "function degrades catastrophically below about 1 BPW, and improves markedly just above it. Crossing from 0.58 BPW to 1.13 BPW roughly doubles the cosine, from 0.283 to 0.592."
+  },
+  "what_this_supports": [
+    "Organ sensitivity varies enormously under sub-bit compression: attn_o retains cosine 0.692 at 0.563 BPW while dense_mlp retains 0.283 at 0.583 BPW, against nulls near 0.12.",
+    "A uniform sub-bit rate is therefore the wrong program for this parent, and per-organ functional allocation is an untried and cheaper direction than a BPW escape.",
+    "Protected islands are not the missing ingredient: every sub-bit A5 configuration falls below the null, and placement only begins to matter above 1 BPW.",
+    "This is measured, functional, on the real flagship parent, swept across rate -- not weight-space reconstruction error, which both the frozen tournament and the sub-bit law rule inadmissible."
+  ],
+  "what_this_does_NOT_support": [
+    "that sub-bit is impossible for this parent. These are straightforward implementations of four families. A materially better A1 -- fitted to captured activations rather than SVD of raw weights, or with per-row scaling -- has not been tried, and the sub-bit law requires representation escalation to be genuinely exhausted before an escape is considered.",
+    "any whole-model claim. No whole-model gate is measurable on a four-layer window.",
+    "promotion of any arm. Promotion needs the whole-model gates.",
+    "that A6 fails. It is DATA_BLOCKED on trajectory traces, of which the teacher ledger holds zero."
+  ],
+  "next_actions_in_order": [
+    "A4 across a REAL expert bank: 256 routed experts per layer share structure that a shared latent basis could exploit, and the pilot only ever ran A4 across 8 synthetic blocks of one tensor. This is the single most promising untried representation and it is specifically suited to a MoE parent.",
+    "expert fitted against captured activations rather than SVD of raw weights",
+    "only if both fail is representation escalation genuinely exhausted, and only then does an Escape Receipt for a separately versioned parity artifact become honest"
+  ],
+  "fences_unchanged": {
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "substrate_capability_gate": "REFUSING the current Math-Preserve by hash",
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false
+  },
+  "reproduce": [
+    ".venv/glm52/bin/python tools/condense/glm52_rehydrate_window.py --shards 1 2 3 4 5",
+    ".venv/glm52/bin/python tools/repr_arms/rate_sweep.py --organ dense_mlp"
+  ],
+  "A5_decoder_implemented_and_measured": {
+    "why_it_mattered": "A5 could be priced but not judged, and pricing without judging is the trap: Math-Preserve spends 67,526,197,248 bytes on protected islands and still cannot complete '2 + 2 ='. Whether islands help is a functional question no byte count answers.",
+    "organ": "model.layers.0.mlp.down_proj.weight, 2048 x 12288",
+    "constant_mean_cosine_null": 0.12371,
+    "curve": [
+      {
+        "protect_frac": 0.01,
+        "bpw": 0.2864,
+        "sub_bit": true,
+        "cosine": 0.05172,
+        "beats_null": false
+      },
+      {
+        "protect_frac": 0.05,
+        "bpw": 0.9269,
+        "sub_bit": true,
+        "cosine": 0.10549,
+        "beats_null": false
+      },
+      {
+        "protect_frac": 0.1,
+        "bpw": 1.7236,
+        "sub_bit": false,
+        "cosine": 0.17484,
+        "beats_null": true
+      },
+      {
+        "protect_frac": 0.25,
+        "bpw": 4.1292,
+        "sub_bit": false,
+        "cosine": 0.33621,
+        "beats_null": true
+      }
+    ],
+    "finding": "EVERY sub-bit A5 configuration is BELOW the constant-mean null. Protected islands do not preserve this organ's function at sub-bit rates, at any protection fraction that stays sub-bit.",
+    "island_placement_control": {
+      "design": "identical byte cost, importance-chosen rows versus random rows",
+      "results": [
+        {
+          "protect_frac": 0.05,
+          "bpw": 0.9269,
+          "importance": 0.10549,
+          "random": 0.09971,
+          "verdict": "BOTH BELOW NULL"
+        },
+        {
+          "protect_frac": 0.1,
+          "bpw": 1.7236,
+          "importance": 0.17484,
+          "random": 0.14625,
+          "verdict": "importance helps, 1.20x"
+        },
+        {
+          "protect_frac": 0.2,
+          "bpw": 3.3247,
+          "importance": 0.28043,
+          "random": 0.26014,
+          "verdict": "importance helps, 1.08x"
+        },
+        {
+          "protect_frac": 0.4,
+          "bpw": 6.5271,
+          "importance": 0.4722,
+          "random": 0.45483,
+          "verdict": "no better than random"
+        }
+      ],
+      "correction_to_my_own_first_reading": "My first control printed 'placement MATTERS' from a 1.058x ratio at 5 percent protection. That label was wrong: at 5 percent BOTH configurations sit below the null, so the difference is between two useless configurations. A ratio test without a null check will call noise a result, which is the exact error the null exists to prevent.",
+      "corrected_answer_to_the_live_question": "Placement is NOT the binding issue at sub-bit rates. Islands only begin to help once the artifact is already above 1 BPW (10 to 20 percent protection), and by 40 percent importance is no better than random. So the hypothesis that Math-Preserve's 67.5 GB of islands were merely in the wrong PLACES is not supported: at sub-bit rates, what is destroyed is everything OUTSIDE the islands, and no placement of a 5 percent island rescues it."
+    }
+  },
+  "CORRECTION_all_four_organs": {
+    "at": "2026-07-27T08:45:00Z",
+    "what_i_previously_wrote": "'At sub-bit rates every swept configuration of four materially different families destroys the organ's function on the real parent.'",
+    "why_that_was_wrong": "It generalised from dense_mlp alone, which the completed sweep shows is the OUTLIER rather than the rule. Reporting one organ's curve as the parent's behaviour is the same shape of error as reporting a window result as a capability result.",
+    "measured_across_four_organs_at_A1_rank_64": [
+      {
+        "organ": "attn_o",
+        "bpw": 0.56253,
+        "cosine": 0.69197,
+        "null": 0.1196,
+        "relative_output_error": 0.7179,
+        "sub_bit_points_beating_null": "5/5"
+      },
+      {
+        "organ": "embed",
+        "bpw": 0.66676,
+        "cosine": 0.61727,
+        "null": 0.1192,
+        "relative_output_error": 0.77452,
+        "sub_bit_points_beating_null": "5/5"
+      },
+      {
+        "organ": "lm_head",
+        "bpw": 0.66676,
+        "cosine": 0.48838,
+        "null": 0.1206,
+        "relative_output_error": 0.86579,
+        "sub_bit_points_beating_null": "3/5"
+      },
+      {
+        "organ": "dense_mlp",
+        "bpw": 0.58338,
+        "cosine": 0.28343,
+        "null": 0.1237,
+        "relative_output_error": 0.95871,
+        "sub_bit_points_beating_null": "2/5"
+      }
+    ],
+    "the_actual_finding": "Organ sensitivity to sub-bit compression varies by roughly 2.4x in preserved function at essentially the same rate. attn_o holds cosine 0.692 at 0.563 BPW; dense_mlp holds 0.283 at 0.583 BPW. Attention-out and embedding survive sub-bit substantially; dense MLP does not.",
+    "what_this_changes": "The recommendation reverses. A UNIFORM sub-bit rate is the wrong program, and the headroom that has not been explored is ALLOCATION, not escape. Spending more bits on dense MLP and fewer on attention and embedding is exactly the 'measurement shardwise -> allocation global -> packing shardwise' step, and it has never been driven by measured per-organ FUNCTIONAL sensitivity.",
+    "what_it_says_about_math_preserve": "Math-Preserve allocated by profile and by tensor role. It did not allocate by measured functional sensitivity per organ. That is a live, untried direction and it is cheaper than any escape.",
+    "escape_receipt_status": "NOT the next step, and further from justified than before this sweep. The sub-bit law demands representation escalation be exhausted first, and a measured allocation program is precisely an unexhausted avenue."
+  },
+  "DECISIVE_routed_expert_sweep": {
+    "at": "2026-07-27T09:00:00Z",
+    "why_this_was_the_deciding_measurement": "Routed experts carry ~97.5 percent of GLM-5.2's mass. Whether per-organ allocation can rescue a sub-bit pack depends entirely on whether the MASSIVE organs are the sensitive ones.",
+    "measured_A1_rank_64_or_best_sub_bit": [
+      {
+        "organ": "expert_down",
+        "bpw": 0.25009,
+        "cosine": 0.1788,
+        "null": 0.1254,
+        "relative_output_error": 0.98333
+      },
+      {
+        "organ": "expert_gate",
+        "bpw": 0.66676,
+        "cosine": 0.29913,
+        "null": 0.1259,
+        "relative_output_error": 0.95391
+      },
+      {
+        "organ": "expert_up",
+        "bpw": 0.66676,
+        "cosine": 0.29795,
+        "null": 0.1262,
+        "relative_output_error": 0.95414
+      }
+    ],
+    "the_answer": "Routed experts behave like dense_mlp, not like attention. At ~0.67 BPW they retain cosine ~0.30 with 95 percent relative output error. The organs that SURVIVE sub-bit -- attn_o at 0.692, embed at 0.617 -- sit inside the ~2.5 percent of mass that is not experts.",
+    "the_arithmetic_that_settles_allocation": {
+      "premise": "experts ~97.5 percent of mass; everything that survives sub-bit is in the remaining ~2.5 percent",
+      "whole_model_bpw_if_experts_need_0.6": 0.5925,
+      "whole_model_bpw_if_experts_need_1.0": 0.9825,
+      "whole_model_bpw_if_experts_need_1.5": 1.47,
+      "reading": "Allocation can save at most about 2.5 percent of the budget, because the cheap organs are the small ones. Whole-model BPW is pinned to whatever the experts need, and at 0.667 BPW the experts are 95 percent wrong."
+    },
+    "correction_to_my_own_previous_correction": {
+      "what_i_wrote_an_hour_ago": "'A uniform sub-bit rate is the wrong program and the unexplored headroom is ALLOCATION rather than escape. The Escape Receipt is further from justified than before.'",
+      "why_that_was_premature": "It was written from four organs, none of which was a routed expert. Allocation headroom is real but tiny, because the sensitive organs ARE the massive ones. I generalised twice from partial organ coverage -- first from dense_mlp alone, then from four non-expert organs -- and both times the next measurement moved the conclusion.",
+      "the_lesson_worth_keeping": "On a MoE parent, no organ-level claim means anything until the routed experts are measured, because they are effectively the whole model by mass."
+    },
+    "what_this_now_supports": "Sub-bit compression of THIS parent is bounded by its experts, and at measured sub-bit rates the experts do not function. Math-Preserve shipped at 0.9774 BPW -- almost exactly the 0.9825 that experts-at-1.0-BPW would imply -- and is semantically collapsed. That is consistent with the experts having been the binding constraint all along.",
+    "what_it_still_does_not_establish": [
+      "that no representation can compress a GLM expert sub-bit. A1 is SVD of raw weights; an expert fitted against captured activations, or exploiting inter-expert redundancy at scale (A4 across the real 256-expert bank rather than 8 synthetic blocks), remains untried and is exactly the escalation the law demands before an escape.",
+      "any whole-model result. Still a four-layer window, still a proxy input distribution."
+    ]
+  }
+}

@@ -1,0 +1,580 @@
+{
+  "schema": "hawking.gravity.compact_mla.production_feasibility_audit.v1",
+  "at_utc": "2026-07-27T02:46:44Z",
+  "branch": "grok/physical-accounting-20260727",
+  "base_sha": "3c79f2bb1dd99a02ba79824cb7e3ffb4a5cf2496",
+  "scope": {
+    "kind": "bounded_read_only_source_and_sealed_header_audit",
+    "artifact_payload_scan": false,
+    "model_load": false,
+    "gpu_or_model_benchmark": false,
+    "runtime_or_default_change": false,
+    "artifact_change": false,
+    "mop_change": false,
+    "files_added": [
+      "HAWKING_COMPACT_MLA_PRODUCTION_FEASIBILITY_AUDIT_20260727.json"
+    ]
+  },
+  "authorities": {
+    "artifact_root": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/GLM-5.2-H0.98-Math-Preserve.gravity",
+    "artifact_state": "sealed and read-only",
+    "model_index": {
+      "path": "model.gravity.index.json",
+      "schema": "hawking.gravity.model_index.v1",
+      "sha256": "33d40c254eb982d4a495f5f0792a116e9d9810d937f5f3969f4f84742b2364d9",
+      "assembled_at": "2026-07-26T09:09:36Z",
+      "shards": 282,
+      "tensors": 59585,
+      "coverage_verdict": "COMPLETE"
+    },
+    "allocation_manifest": {
+      "path": "PROMETHEUS_MATH_ALLOCATION_MANIFEST.json",
+      "sha256": "b34596f5d4df0b09903845302648736ee2345d7662688176c851a4d749211a83"
+    },
+    "coverage_manifest": {
+      "path": "COVERAGE.json",
+      "sha256": "35bc032d598fb035205006d8f2c1c189250c7cb627424cc6417610469e57b90f"
+    },
+    "header_read_method": "For each named tensor, read the owning shard's 20-byte GRAVITY prefix, declared JSON header, and exactly the tensor's fixed 64-byte GLM52CPK codec header. No tensor body beyond those fixed codec headers was read and no descriptor payload hash was recomputed.",
+    "runtime_sources": [
+      "crates/hawking-core/src/gravity.rs",
+      "crates/hawking-core/src/gravity_glm.rs",
+      "crates/hawking-core/src/gravity_glm_resident.rs",
+      "crates/hawking-core/shaders/gravity_pq.metal"
+    ],
+    "numeric_order_receipt": "HAWKING_COMPACT_MLA_PARITY_PROOF_20260727.json"
+  },
+  "runtime_architecture": {
+    "hidden_layers": 78,
+    "runtime_layer_range": "0..78 (layers 0 through 77)",
+    "hidden_size": 6144,
+    "attention_heads": 64,
+    "kv_lora_rank": 512,
+    "qk_nope_head_dim": 192,
+    "qk_rope_head_dim": 64,
+    "qk_dim": 256,
+    "v_head_dim": 256,
+    "kv_b_rows_per_head": 448,
+    "kv_b_total_rows": 28672,
+    "o_proj_input_width": 16384,
+    "index_head_dim": 128,
+    "index_topk": 2048,
+    "full_indexer_layers": 21,
+    "shared_indexer_layers": 57
+  },
+  "sealed_tensor_inventory": {
+    "runtime_reachable_layer_count": 78,
+    "kv_b_proj": {
+      "tensor_count": 78,
+      "all_descriptors_and_codec_headers_identical": true,
+      "codec": "gravity-pq",
+      "logical_shape_row_major": [
+        28672,
+        512
+      ],
+      "elements": 14680064,
+      "artifact_payload_bytes_each": 475200,
+      "pq_header": {
+        "magic": "GLM52CPK",
+        "fixed_header_bytes": 64,
+        "d": 32,
+        "subspaces": 1,
+        "sub": 32,
+        "cardinality": 256,
+        "rows": 28672,
+        "cols": 512,
+        "chunks_per_row": 16,
+        "seed": 0,
+        "index_bits": 8,
+        "rotate": 0,
+        "codebooks": 1
+      },
+      "payload_sections": {
+        "f16_codebook_bytes": 16384,
+        "packed_index_bytes": 458752,
+        "descriptor_padding_bytes": 0,
+        "semantic_bytes_including_fixed_header": 475200,
+        "runtime_gpu_bytes_codebook_plus_codes_plus_four_byte_tail": 475140
+      },
+      "logical_row_layout": {
+        "per_head": "[192 content-key rows | 256 value rows]",
+        "content_key_row": "row = head * 448 + key_dim, head in 0..64, key_dim in 0..192",
+        "value_row": "row = head * 448 + 192 + value_dim, head in 0..64, value_dim in 0..256",
+        "pq_code_index": "flat = row * 16 + column / 32",
+        "value_within_codebook_entry": "column % 32",
+        "codebook_layout": "one shared [256,32] f16 codebook",
+        "codes_layout": "one direct u8 code per logical row/chunk because bits=8 and subspaces=1"
+      }
+    },
+    "o_proj": {
+      "tensor_count": 78,
+      "all_descriptors_and_codec_headers_identical": true,
+      "codec": "gravity-pq",
+      "logical_shape_row_major": [
+        6144,
+        16384
+      ],
+      "elements": 100663296,
+      "artifact_payload_bytes_each": 3162176,
+      "pq_header": {
+        "magic": "GLM52CPK",
+        "fixed_header_bytes": 64,
+        "d": 32,
+        "subspaces": 1,
+        "sub": 32,
+        "cardinality": 256,
+        "rows": 6144,
+        "cols": 16384,
+        "chunks_per_row": 512,
+        "seed": 0,
+        "index_bits": 8,
+        "rotate": 0,
+        "codebooks": 1
+      },
+      "payload_sections": {
+        "f16_codebook_bytes": 16384,
+        "packed_index_bytes": 3145728,
+        "descriptor_padding_bytes": 0,
+        "semantic_bytes_including_fixed_header": 3162176,
+        "runtime_gpu_bytes_codebook_plus_codes_plus_four_byte_tail": 3162116
+      },
+      "logical_layout": {
+        "input_context": "[head][value_dim], 64 * 256 = 16384 f32 values",
+        "output": "6144 hidden-state rows",
+        "pq_code_index": "flat = output_row * 512 + input_column / 32",
+        "value_within_codebook_entry": "input_column % 32"
+      }
+    },
+    "artifact_bytes": {
+      "kv_b_proj_per_layer": 475200,
+      "o_proj_per_layer": 3162176,
+      "combined_per_layer": 3637376,
+      "kv_b_proj_all_78": 37065600,
+      "o_proj_all_78": 246649728,
+      "combined_all_78": 283715328
+    },
+    "runtime_gpu_weight_resource_bytes": {
+      "definition": "f16 codebook + packed code stream + current four-byte tail padding; excludes the fixed 64-byte on-disk codec header",
+      "kv_b_proj_per_layer": 475140,
+      "o_proj_per_layer": 3162116,
+      "combined_per_layer": 3637256,
+      "combined_all_78": 283705968
+    },
+    "extra_unreachable_sealed_pair": {
+      "finding": "The sealed weight map also carries model.layers.78 self-attention tensors, but architecture.num_hidden_layers is 78 and current runtime loops 0..78, so this pair is not one of the 78 runtime-reachable layers.",
+      "kv_b_proj": {
+        "shard": "model-00274-of-00282.gravity",
+        "codec_shape_and_pq_header": "identical to the 78 runtime-reachable kv_b_proj tensors"
+      },
+      "o_proj": {
+        "shard": "model-00274-of-00282.gravity",
+        "codec_shape_and_pq_header": "identical to the 78 runtime-reachable o_proj tensors"
+      }
+    },
+    "layer_to_shards": [
+      "0:model-00001-of-00282.gravity:model-00001-of-00282.gravity",
+      "1:model-00001-of-00282.gravity:model-00001-of-00282.gravity",
+      "2:model-00038-of-00282.gravity:model-00038-of-00282.gravity",
+      "3:model-00079-of-00282.gravity:model-00079-of-00282.gravity",
+      "4:model-00119-of-00282.gravity:model-00119-of-00282.gravity",
+      "5:model-00160-of-00282.gravity:model-00160-of-00282.gravity",
+      "6:model-00200-of-00282.gravity:model-00200-of-00282.gravity",
+      "7:model-00241-of-00282.gravity:model-00241-of-00282.gravity",
+      "8:model-00278-of-00282.gravity:model-00278-of-00282.gravity",
+      "9:model-00281-of-00282.gravity:model-00282-of-00282.gravity",
+      "10:model-00005-of-00282.gravity:model-00005-of-00282.gravity",
+      "11:model-00009-of-00282.gravity:model-00009-of-00282.gravity",
+      "12:model-00013-of-00282.gravity:model-00013-of-00282.gravity",
+      "13:model-00016-of-00282.gravity:model-00016-of-00282.gravity",
+      "14:model-00020-of-00282.gravity:model-00020-of-00282.gravity",
+      "15:model-00024-of-00282.gravity:model-00024-of-00282.gravity",
+      "16:model-00027-of-00282.gravity:model-00027-of-00282.gravity",
+      "17:model-00031-of-00282.gravity:model-00031-of-00282.gravity",
+      "18:model-00035-of-00282.gravity:model-00035-of-00282.gravity",
+      "19:model-00038-of-00282.gravity:model-00038-of-00282.gravity",
+      "20:model-00042-of-00282.gravity:model-00042-of-00282.gravity",
+      "21:model-00046-of-00282.gravity:model-00046-of-00282.gravity",
+      "22:model-00049-of-00282.gravity:model-00050-of-00282.gravity",
+      "23:model-00053-of-00282.gravity:model-00053-of-00282.gravity",
+      "24:model-00057-of-00282.gravity:model-00057-of-00282.gravity",
+      "25:model-00061-of-00282.gravity:model-00061-of-00282.gravity",
+      "26:model-00064-of-00282.gravity:model-00064-of-00282.gravity",
+      "27:model-00068-of-00282.gravity:model-00068-of-00282.gravity",
+      "28:model-00072-of-00282.gravity:model-00072-of-00282.gravity",
+      "29:model-00075-of-00282.gravity:model-00075-of-00282.gravity",
+      "30:model-00083-of-00282.gravity:model-00083-of-00282.gravity",
+      "31:model-00086-of-00282.gravity:model-00086-of-00282.gravity",
+      "32:model-00090-of-00282.gravity:model-00090-of-00282.gravity",
+      "33:model-00094-of-00282.gravity:model-00094-of-00282.gravity",
+      "34:model-00097-of-00282.gravity:model-00097-of-00282.gravity",
+      "35:model-00101-of-00282.gravity:model-00101-of-00282.gravity",
+      "36:model-00105-of-00282.gravity:model-00105-of-00282.gravity",
+      "37:model-00108-of-00282.gravity:model-00108-of-00282.gravity",
+      "38:model-00112-of-00282.gravity:model-00112-of-00282.gravity",
+      "39:model-00116-of-00282.gravity:model-00116-of-00282.gravity",
+      "40:model-00123-of-00282.gravity:model-00123-of-00282.gravity",
+      "41:model-00127-of-00282.gravity:model-00127-of-00282.gravity",
+      "42:model-00131-of-00282.gravity:model-00131-of-00282.gravity",
+      "43:model-00134-of-00282.gravity:model-00134-of-00282.gravity",
+      "44:model-00138-of-00282.gravity:model-00138-of-00282.gravity",
+      "45:model-00142-of-00282.gravity:model-00142-of-00282.gravity",
+      "46:model-00145-of-00282.gravity:model-00145-of-00282.gravity",
+      "47:model-00149-of-00282.gravity:model-00149-of-00282.gravity",
+      "48:model-00153-of-00282.gravity:model-00153-of-00282.gravity",
+      "49:model-00156-of-00282.gravity:model-00156-of-00282.gravity",
+      "50:model-00164-of-00282.gravity:model-00164-of-00282.gravity",
+      "51:model-00167-of-00282.gravity:model-00167-of-00282.gravity",
+      "52:model-00171-of-00282.gravity:model-00171-of-00282.gravity",
+      "53:model-00175-of-00282.gravity:model-00175-of-00282.gravity",
+      "54:model-00178-of-00282.gravity:model-00178-of-00282.gravity",
+      "55:model-00182-of-00282.gravity:model-00182-of-00282.gravity",
+      "56:model-00186-of-00282.gravity:model-00186-of-00282.gravity",
+      "57:model-00189-of-00282.gravity:model-00189-of-00282.gravity",
+      "58:model-00193-of-00282.gravity:model-00193-of-00282.gravity",
+      "59:model-00197-of-00282.gravity:model-00197-of-00282.gravity",
+      "60:model-00204-of-00282.gravity:model-00204-of-00282.gravity",
+      "61:model-00208-of-00282.gravity:model-00208-of-00282.gravity",
+      "62:model-00212-of-00282.gravity:model-00212-of-00282.gravity",
+      "63:model-00215-of-00282.gravity:model-00215-of-00282.gravity",
+      "64:model-00219-of-00282.gravity:model-00219-of-00282.gravity",
+      "65:model-00223-of-00282.gravity:model-00223-of-00282.gravity",
+      "66:model-00226-of-00282.gravity:model-00226-of-00282.gravity",
+      "67:model-00230-of-00282.gravity:model-00230-of-00282.gravity",
+      "68:model-00234-of-00282.gravity:model-00234-of-00282.gravity",
+      "69:model-00237-of-00282.gravity:model-00237-of-00282.gravity",
+      "70:model-00245-of-00282.gravity:model-00245-of-00282.gravity",
+      "71:model-00248-of-00282.gravity:model-00248-of-00282.gravity",
+      "72:model-00252-of-00282.gravity:model-00252-of-00282.gravity",
+      "73:model-00256-of-00282.gravity:model-00256-of-00282.gravity",
+      "74:model-00259-of-00282.gravity:model-00259-of-00282.gravity",
+      "75:model-00263-of-00282.gravity:model-00263-of-00282.gravity",
+      "76:model-00267-of-00282.gravity:model-00267-of-00282.gravity",
+      "77:model-00270-of-00282.gravity:model-00270-of-00282.gravity"
+    ],
+    "layer_to_shards_format": "layer:kv_b_proj_shard:o_proj_shard"
+  },
+  "direct_pq_feasibility": {
+    "current_kernel_abi": {
+      "kernel": "gravity_pq_matvec",
+      "buffers": [
+        "f16 codebook",
+        "u8 packed codes with four-byte tail",
+        "one contiguous f32 input vector",
+        "one contiguous f32 output vector"
+      ],
+      "params": "eight u32 values: dim, subspaces, sub, card, rows, cols, nchunk, bits",
+      "operation": "one logical row-major W @ x over every row",
+      "missing": [
+        "transpose/gather mode",
+        "logical row base or row map",
+        "per-head input stride",
+        "selected-position batch dimension",
+        "input/output buffer offsets in the resident encoder helper"
+      ]
+    },
+    "absorbed_k_transpose_query": {
+      "operation": "For each head and latent column: q_latent[head,col] = sum_key_dim W[head*448+key_dim,col] * q_nope[head,key_dim].",
+      "direct_from_current_pq_representation_without_dense_reconstruction": true,
+      "works_with_current_shader_and_encoder_unchanged": false,
+      "reason": "Every required W element is directly addressable as codebook[codes[(row*16)+(col/32)]][col%32], but the current kernel only computes W @ x and has no transpose gather.",
+      "minimal_shader_change": "One transpose-gather PQ kernel whose output grid is [64,512] and whose inner reduction visits key_dim 0..192 in ascending order.",
+      "dense_k_submatrix_bytes_avoided_per_layer": 25165824
+    },
+    "per_head_v_weighted_latent": {
+      "operation": "context[head,value] = sum_latent W[head*448+192+value,latent] * weighted_latent[head,latent].",
+      "direct_from_current_pq_representation_without_dense_reconstruction": true,
+      "works_with_current_shader_and_encoder_unchanged": false,
+      "reason": "The row-wise dot is the existing PQ primitive, but the 64 heads require 64 different 512-wide inputs and 64 discontiguous 256-row windows within the interleaved K/V matrix.",
+      "absolute_minimum_reuse_path": "Expose codes-buffer and output-buffer offsets and encode 64 existing gravity_pq_matvec dispatches, each with rows=256 and codes starting at (head*448+192)*16 bytes.",
+      "preferred_minimal_production_kernel": "One head-batched row-window PQ kernel with input stride 512, output stride 256, per-head row stride 448, and value-row offset 192.",
+      "dense_weight_bytes_avoided_per_layer": 33554432
+    },
+    "o_proj": {
+      "direct_from_current_pq_representation_without_dense_reconstruction": true,
+      "works_with_current_shader_and_encoder_unchanged": true,
+      "reason": "Compact and reconstruction paths both produce the existing head-major 16384-wide context, exactly the W @ x shape already accepted by gravity_pq_matvec."
+    },
+    "selected_position_full_kv_reconstruction": {
+      "operation": "For each selected position, run the existing [28672,512] kv_b_proj W @ latent and materialize all heads' [192 K | 256 V] rows.",
+      "direct_from_current_pq_representation_without_dense_reconstruction": true,
+      "works_with_current_shader_math_unchanged": true,
+      "current_encoder_gap": "The resident helper binds x and y at offset zero. Materializing many selected positions into one scratch buffer requires buffer-offset support or separate output buffers.",
+      "one_command_buffer_options": [
+        "Encode 2048 existing matvec dispatches with selected latent input offsets and expanded-output offsets after adding offset arguments to the host encoder.",
+        "Add one selected-batch PQ kernel that reads the ranked/ascending position buffer and writes [selected,28672] directly."
+      ]
+    }
+  },
+  "compact_state_layout": {
+    "shared_by_both_attention_strategies": true,
+    "per_layer_per_token": {
+      "normalized_kv_latent_f32_values": 512,
+      "normalized_kv_latent_bytes": 2048,
+      "shared_rotated_rope_tail_f32_values": 64,
+      "shared_rotated_rope_tail_bytes": 256,
+      "compact_mla_core_bytes": 2304,
+      "current_all_layer_index_key_f32_values": 128,
+      "current_all_layer_index_key_bytes": 512,
+      "literal_current_ownership_total_bytes": 2816
+    },
+    "all_layers_per_token": {
+      "compact_mla_core_bytes": 179712,
+      "current_all_78_index_keys_bytes": 39936,
+      "literal_current_ownership_total_bytes": 219648,
+      "full_indexer_only_index_keys_bytes": 10752,
+      "maximally_compact_total_bytes": 190464
+    },
+    "state_floors": [
+      {
+        "tokens": 2048,
+        "allocation_capacity_tokens": 2048,
+        "compact_mla_core_bytes": 368050176,
+        "literal_all_78_index_keys_bytes": 81788928,
+        "literal_total_bytes": 449839104,
+        "literal_total_decimal_GB": 0.449839104,
+        "literal_total_GiB": 0.4189453125,
+        "full_indexer_only_index_keys_bytes": 22020096,
+        "maximally_compact_total_bytes": 390070272,
+        "maximally_compact_total_decimal_GB": 0.390070272,
+        "maximally_compact_total_GiB": 0.36328125
+      },
+      {
+        "tokens": 8192,
+        "allocation_capacity_tokens": 8192,
+        "compact_mla_core_bytes": 1472200704,
+        "literal_all_78_index_keys_bytes": 327155712,
+        "literal_total_bytes": 1799356416,
+        "literal_total_decimal_GB": 1.799356416,
+        "literal_total_GiB": 1.67578125,
+        "full_indexer_only_index_keys_bytes": 88080384,
+        "maximally_compact_total_bytes": 1560281088,
+        "maximally_compact_total_decimal_GB": 1.560281088,
+        "maximally_compact_total_GiB": 1.453125
+      },
+      {
+        "tokens": 32768,
+        "allocation_capacity_tokens": 32768,
+        "compact_mla_core_bytes": 5888802816,
+        "literal_all_78_index_keys_bytes": 1308622848,
+        "literal_total_bytes": 7197425664,
+        "literal_total_decimal_GB": 7.197425664,
+        "literal_total_GiB": 6.703125,
+        "full_indexer_only_index_keys_bytes": 352321536,
+        "maximally_compact_total_bytes": 6241124352,
+        "maximally_compact_total_decimal_GB": 6.241124352,
+        "maximally_compact_total_GiB": 5.8125
+      }
+    ],
+    "ownership_note": "The literal floor preserves current source's allocation of an index-key buffer for every layer. The maximal floor assigns index-key storage only to the 21 full-indexer layers; changing that ownership is separate production work."
+  },
+  "strategy_a_absorbed_compact_attention": {
+    "selected_positions_at_2k_8k_32k": 2048,
+    "macs_per_layer_per_token": {
+      "absorbed_k_transpose_query_64x512x192": 6291456,
+      "content_scores_64x2048x512": 67108864,
+      "rope_scores_64x2048x64": 8388608,
+      "rank_order_weighted_latent_64x2048x512": 67108864,
+      "per_head_v_projection_64x256x512": 8388608,
+      "compact_attention_excluding_o_proj": 157286400,
+      "unchanged_o_proj_6144x16384": 100663296,
+      "including_o_proj": 257949696
+    },
+    "macs_per_token_all_78_layers": {
+      "compact_attention_excluding_o_proj": 12268339200,
+      "including_o_proj": 20120076288
+    },
+    "scratch_for_concrete_ranked_kernel": {
+      "existing_query_buffer_64x256_f32_bytes": 65536,
+      "ranked_selected_positions_2048xu32_bytes": 8192,
+      "q_latent_then_in_place_weighted_latent_64x512_f32_bytes": 131072,
+      "existing_context_64x256_f32_bytes": 65536,
+      "existing_o_proj_output_6144xf32_bytes": 24576,
+      "global_working_set_bytes_including_existing_common_buffers": 294912,
+      "new_global_scratch_beyond_existing_query_context_o": 139264,
+      "dynamic_threadgroup_scores_per_head_2048xf32_bytes": 8192,
+      "reuse": "The compact attention kernel completes every score read for one head, barriers, then overwrites that head's q_latent region with its weighted latent."
+    },
+    "minimum_dispatch_dag_after_inputs_exist": [
+      "compact-cache append: normalized latent[512] and rotated shared RoPE tail[64] -> cache at current position",
+      "PQ K-transpose kernel: q_nope plus kv_b codebooks/codes -> q_latent[64,512]",
+      "compact ranked attention kernel waits on K-transpose, compact-cache append, rotated q_rope, and the DSA ranked selected-position buffer; it writes weighted_latent[64,512]",
+      "head-batched PQ V-row kernel waits on weighted_latent and writes context[64,256]",
+      "existing gravity_pq_matvec o_proj waits on context and writes hidden[6144]"
+    ],
+    "dispatches_in_that_dag": 5,
+    "ordering_and_v21_contract": {
+      "selected_position_producer": "current topk_desc is stable descending with lower global position winning ties",
+      "required_attention_input": "the stable DSA rank list itself, not an ascending allow bitmap",
+      "score_order_from_cpu_proof": "latent dimensions ascending, then shared RoPE dimensions ascending, scale after the complete dot",
+      "softmax_normalization_order": "stable DSA rank order",
+      "weighted_latent_order": "the same stable DSA rank order",
+      "v_projection_order_from_cpu_proof": "latent dimensions ascending per value row",
+      "proof_result": "On the deterministic CPU fixture, ranked accumulation passes V2.1; copying current sparse_attend's ascending-position scan fails only max meaningful relative error at 1.1059935866029965e-5 > 1e-5.",
+      "gpu_caveat": "The proof does not authorize explicit Metal fma or parallel score reductions. A production kernel must retain ranked selected-position traversal and separately pass FP64 V2.1 plus exact DSA top-k, attention top-k, and final token decisions."
+    }
+  },
+  "strategy_b_selected_position_reconstruction": {
+    "selected_positions_at_2k_8k_32k": 2048,
+    "full_kv_projection_macs_per_selected_position": 14680064,
+    "macs_per_layer_per_token": {
+      "reconstruct_2048_full_kv_vectors": 30064771072,
+      "expanded_content_plus_rope_scores_64x2048x256": 33554432,
+      "expanded_weighted_values_64x2048x256": 33554432,
+      "reconstruction_attention_excluding_o_proj": 30131879936,
+      "unchanged_o_proj_6144x16384": 100663296,
+      "including_o_proj": 30232543232
+    },
+    "macs_per_token_all_78_layers": {
+      "reconstruction_attention_excluding_o_proj": 2350286635008,
+      "including_o_proj": 2358138372096
+    },
+    "relative_to_absorbed": {
+      "excluding_o_proj_mac_ratio": 191.57333333333332,
+      "including_o_proj_mac_ratio": 117.20325203252033
+    },
+    "one_pass_materialized_scratch": {
+      "expanded_selected_content_k_and_v_2048x64x448xf32_bytes": 234881024,
+      "existing_query_buffer_64x256_f32_bytes": 65536,
+      "selected_positions_2048xu32_bytes": 8192,
+      "existing_context_64x256_f32_bytes": 65536,
+      "existing_o_proj_output_6144xf32_bytes": 24576,
+      "global_working_set_bytes_including_existing_common_buffers": 235044864,
+      "new_global_scratch_beyond_existing_query_context_o": 234889216,
+      "dynamic_threadgroup_scores_per_head_2048xf32_bytes": 8192,
+      "rope_note": "No 32-MiB per-head RoPE duplication is included; the reconstructed-attention kernel reads the selected token's shared 64-wide RoPE cache directly."
+    },
+    "current_kernel_dispatch_dag_after_selection": [
+      "compact-cache append writes latent and shared RoPE for the current token",
+      "encode 2048 existing gravity_pq_matvec dispatches, each reading one selected 512-wide latent and writing one 28672-wide expanded K/V slice",
+      "a reconstructed sparse-attention kernel waits on all reconstruction writes, reads content K/V plus shared RoPE, and produces context",
+      "existing gravity_pq_matvec o_proj waits on context"
+    ],
+    "current_kernel_dispatches_in_that_dag": 2051,
+    "selected_batch_kernel_dispatches_in_that_dag": 4,
+    "low_scratch_two_full_pass_variant": {
+      "description": "Reuse one 28672-f32 reconstruction buffer, first storing all head logits, then rerun every full kv_b projection after softmax to accumulate values.",
+      "global_working_set_bytes_including_existing_query_context_o": 802816,
+      "kv_b_projection_macs_per_layer": 60129542144,
+      "verdict": "Feasible but strictly worse in compute; retained only as the exact memory/compute tradeoff."
+    },
+    "ordering_and_v21_contract": {
+      "source_equivalent_order": "To reproduce the current expanded formulation, accumulate softmax and values in ascending global-position order. The deterministic fixture's expanded path passes V2.1 in that order.",
+      "selection_decision": "The exact stable DSA ranked top-k list must still be retained and compared before deriving the ascending attention traversal.",
+      "distinction_from_absorbed": "The ranked-order requirement proven for compact absorption must not be blindly applied to source-equivalent expanded reconstruction; reassociation differs by formulation.",
+      "gpu_caveat": "Any batch reconstruction and reconstructed-attention kernels still require FP64 V2.1 and exact decision gates."
+    }
+  },
+  "scheduled_weight_resource_bytes": {
+    "definition": "Static source-style resource accounting, not measured DRAM traffic or a benchmark. Current runtime counts resident codebook+codes+four-byte-tail per PQ matvec call; caches may serve repeated accesses.",
+    "absorbed": {
+      "kv_b_resource_resident_once_per_layer": 475140,
+      "o_proj_resource_resident_once_per_layer": 3162116,
+      "combined_unique_resource_bytes_per_layer": 3637256,
+      "note": "K-transpose and V-row kernels share one kv_b resource. Actual active-byte accounting should count only the row-code windows each kernel addresses and disclose codebook rereads."
+    },
+    "selected_reconstruction_current_kernel": {
+      "kv_b_resource_bytes_scheduled_2048_times_per_layer": 973086720,
+      "o_proj_resource_bytes_scheduled_once_per_layer": 3162116,
+      "combined_scheduled_resource_bytes_per_layer": 976248836,
+      "note": "This is the current ledger convention for 2048 full-matrix PQ calls, not a claim that 976 MB reaches DRAM."
+    }
+  },
+  "minimal_production_resource_and_kernel_abi": {
+    "persistent_cache_resources_per_layer": [
+      "latent_cache f32 [capacity,512]",
+      "shared_rope_cache f32 [capacity,64]",
+      "index_key_cache f32 [capacity,128] only for full indexer owners in the maximal layout"
+    ],
+    "common_sequence_resources": [
+      "stable ranked selected_position u32 [min(index_topk,n_keys)] and selected_count",
+      "sequence-sized DSA scores and selection scratch grown with session capacity",
+      "query f32 [64,256]",
+      "context f32 [64,256]"
+    ],
+    "pq_weight_view": {
+      "resources": [
+        "kv_b codebooks half [256,32]",
+        "kv_b codes u8 [28672,16] plus four-byte safety tail",
+        "existing eight-u32 PQ geometry"
+      ],
+      "lifetime": "Clone/pin both Metal buffers until the command buffer completes; an LRU entry must not be evicted while encoded commands reference it."
+    },
+    "new_or_extended_kernels": [
+      {
+        "name": "gravity_glm_append_compact_mla",
+        "inputs": "normalized latent[512], rotated shared RoPE tail[64], position",
+        "outputs": "latent_cache[position], rope_cache[position]"
+      },
+      {
+        "name": "gravity_pq_k_transpose_heads",
+        "inputs": "kv_b PQ view, q[64,256]",
+        "outputs": "q_latent[64,512]",
+        "params": "heads=64, q_stride=256, per_head_rows=448, k_rows=192, latent=512",
+        "required_order": "key rows ascending for each output latent column"
+      },
+      {
+        "name": "gravity_glm_compact_mla_attend",
+        "inputs": "q_latent, q_rope, latent_cache, rope_cache, stable-ranked selected positions",
+        "outputs": "weighted_latent[64,512], allowed to alias q_latent after a barrier",
+        "params": "heads=64, latent=512, rope=64, n_keys, n_selected<=2048, scale=1/sqrt(256)",
+        "threadgroup_memory": "n_selected * 4 bytes, 8192 bytes at top-k 2048",
+        "required_order": "softmax total and probability-weighted latent traverse selected slots in rank order"
+      },
+      {
+        "name": "gravity_pq_v_heads",
+        "inputs": "kv_b PQ view, weighted_latent[64,512]",
+        "outputs": "context[64,256]",
+        "params": "heads=64, input_stride=512, output_stride=256, per_head_rows=448, row_offset=192, value_rows=256"
+      }
+    ],
+    "unchanged_kernel": "gravity_pq_matvec for o_proj [6144,16384]",
+    "selected_reconstruction_optional_abi": {
+      "minimum_host_extension": "Expose input/output/code buffer offsets in the resident PQ encoder and encode one current matvec per selected position.",
+      "single_dispatch_extension": "A selected-batch PQ kernel taking selected positions, compact latent cache, output stride 28672, and selected count."
+    },
+    "command_dependency_boundary": {
+      "compact_cache_append_depends_on": "kv_a projection, KV latent RMSNorm, and shared K RoPE",
+      "k_transpose_depends_on": "q_b output and kv_b PQ residency",
+      "compact_attention_depends_on": "cache append, K transpose, rotated query RoPE, and exact DSA selected rank",
+      "v_projection_depends_on": "weighted latent",
+      "o_proj_depends_on": "context",
+      "current_cpu_boundary": "Current DSA scoring/topk returns a host Vec<usize>. A first correctness implementation may upload 2048 ranked u32 values after that wait; removing the boundary requires the dormant or replacement stable top-2048 device selector, not sample_topk, whose ABI caps k at 64."
+    }
+  },
+  "source_feasibility_conflicts": [
+    {
+      "conflict": "This isolated branch still allocates ActPool.idx_scores for only 8192 floats while full-indexer scoring writes pos+1 values.",
+      "impact": "Position 8192 requires 8193 scores; this branch alone is not a safe 32K runtime even though the compact state floor fits.",
+      "integration_context": "A sequence-scratch repair was integrated separately on live main as 27fe89b5 with receipt 3f8a4e04. This audit does not duplicate or modify it."
+    },
+    {
+      "conflict": "The current resident path expands kv_b for the new token and caches per-head K/V before DSA; it has no compact cache type or PQ weight-view ABI for attention kernels.",
+      "impact": "The state floor is architectural, not reachable by a flag or allocation-only change."
+    },
+    {
+      "conflict": "Dormant gravity_glm_sparse_attn consumes expanded K/V. Its rank-list/threadgroup-score structure is reusable, but its buffers and arithmetic are not the compact formulation.",
+      "impact": "A new compact kernel and sealed-tensor V2.1 gate are mandatory."
+    }
+  ],
+  "verdict": {
+    "absorbed_compact_attention": "PRODUCTION-FEASIBLE FROM THE CURRENT SEALED PQ REPRESENTATION, BUT NOT WITH THE CURRENT KERNEL ABI. It needs a direct PQ transpose-gather K kernel, ranked compact attention, and head-batched V row-window kernel. No dense kv_b reconstruction or artifact rewrite is required.",
+    "selected_position_reconstruction": "EXECUTABLE WITH CURRENT PQ MATVEC MATH AND NO DENSE WEIGHT RECONSTRUCTION, BUT NOT A VIABLE PRIMARY 2048-TOPK DESIGN: about 30.13 billion MACs and 224 MiB of expanded K/V scratch per layer, or twice the PQ work for a low-scratch two-pass form.",
+    "preferred_lane": "Implement and parity-gate the absorbed compact ABI first. Retain selected-position reconstruction only as a source-equivalent correctness oracle/fallback for bounded fixtures.",
+    "state": "Both strategies share the same 6.703125-GiB literal or 5.8125-GiB full-indexer-only 32K state floor; reconstruction's 224-MiB scratch is reusable across serialized layers and is not persistent per-token state.",
+    "promotion": "No promotion is authorized by this read-only audit. Required next evidence is tiny real-header/kernel parity, then sealed-model complete-token V2.1 with exact DSA selections and emitted tokens, followed by measured 2K/8K/32K memory and latency."
+  },
+  "verification": [
+    {
+      "command": "Read model.gravity.index.json, PROMETHEUS_MATH_ALLOCATION_MANIFEST.json, COVERAGE.json, 79 owning shard JSON headers, and 158 fixed 64-byte GLM52CPK tensor codec headers",
+      "result": "PASS; 78/78 runtime kv_b_proj and 78/78 runtime o_proj descriptors/codec headers are uniform; the extra sealed layer-78 pair was recorded separately"
+    },
+    {
+      "command": "jq -e . HAWKING_COMPACT_MLA_PRODUCTION_FEASIBILITY_AUDIT_20260727.json",
+      "result": "PASS"
+    },
+    {
+      "command": "git diff --check",
+      "result": "PASS"
+    }
+  ]
+}

@@ -1,0 +1,118 @@
+{
+  "schema": "hawking.temporal_gravity.mechanism_receipt.v1",
+  "created_at_utc": "2026-07-27T06:09:57Z",
+  "status": "BOUNDED_COMPLETE_TOKEN_QUALIFIED_DEFAULT_OFF",
+  "mechanism": "Append exact expert-output residual add to the existing device expert-wave command buffer and remove the combined-activation host round trip.",
+  "base_commit": "a570bb427d7e424a73e03a665e1b2ff8d68d1f1d",
+  "scope": {
+    "parent_flag": "HAWKING_GLM_GPU_EXPERT_WAVE",
+    "default_enabled": false,
+    "host_native_fallback_changed": false,
+    "ordinary_three_batch_path_changed": false,
+    "sealed_math_preserve_touched": false,
+    "mop_touched": false
+  },
+  "graph_contract": {
+    "prior_device_wave_tail": [
+      "ordered weighted combine into device scratch",
+      "commit and wait",
+      "copy combined output into host Vec",
+      "copy host Vec into device-shared pool.o",
+      "CPU residual add into pool.x"
+    ],
+    "candidate_device_wave_tail": [
+      "ordered weighted combine into device scratch",
+      "exact elementwise residual add into pool.x",
+      "same commit and wait"
+    ],
+    "new_command_buffers_per_layer": 0,
+    "new_waits_per_layer": 0,
+    "new_dispatches_per_layer": 1,
+    "device_wave_return": "DeviceResidualApplied",
+    "host_fallback_return": "Host(Vec<f32>)"
+  },
+  "source_modelled_flagship_physical_effect": {
+    "hidden": 6144,
+    "mlp_layers": 78,
+    "explicit_ledger_download_removed_bytes_per_layer": 24576,
+    "cpu_visible_shared_memory_passes_removed_per_layer": 5,
+    "cpu_visible_shared_memory_bytes_removed_per_layer": 122880,
+    "cpu_visible_shared_memory_bytes_removed_per_token": 9584640,
+    "qualification": "These are source-modelled shared-memory CPU touches, not a claimed discrete PCIe transfer on unified memory."
+  },
+  "numeric_parity_v2_1": {
+    "authority": "Complete-token FP64 accumulation from the 586,019-byte direct-u8 sparse fixture",
+    "prompts": 4,
+    "sequential_wave_relative_l2": [
+      4.141e-07,
+      2.995e-07,
+      3.691e-07,
+      4.316e-07
+    ],
+    "concurrent_wave_relative_l2": [
+      4.141e-07,
+      2.995e-07,
+      3.691e-07,
+      4.316e-07
+    ],
+    "concurrent_wave_max_meaningful_relative": [
+      2.279e-06,
+      9.921e-07,
+      2.179e-06,
+      4.465e-06
+    ],
+    "meaningful_relative_bound": 1e-05,
+    "metrics_unchanged_from_host_round_trip_wave": true,
+    "sequential_vs_concurrent_bit_identical_all_prompts": true,
+    "greedy_exact_all_prompts": true,
+    "top5_exact_all_prompts": true,
+    "dsa_selection_exact_all_prompts": true,
+    "expert_selection_exact_all_prompts": true,
+    "waits_before": [
+      8,
+      4,
+      8,
+      8
+    ],
+    "waits_after": [
+      8,
+      4,
+      8,
+      8
+    ],
+    "result": "PASS"
+  },
+  "validation": {
+    "sparse_complete_token": {
+      "passed": 1,
+      "failed": 0,
+      "prompts": 4
+    },
+    "expert_wave_accumulator_unit": {
+      "passed": 1,
+      "failed": 0
+    },
+    "full_core_library": {
+      "passed": 222,
+      "failed": 0,
+      "ignored": 3
+    },
+    "default_resident_parity": {
+      "passed": 3,
+      "failed": 0
+    },
+    "default_gpu_forward": {
+      "passed": 3,
+      "failed": 0
+    },
+    "rustfmt": "PASS",
+    "diff_check": "PASS"
+  },
+  "promotion_gate": {
+    "bounded_parity_qualified": true,
+    "default_path_regression_free": true,
+    "sealed_flagship_performance_promoted": false,
+    "reason": "Active MOP forbids sealed-model measurement. This closes a proven activation boundary behind the already-default-off expert-wave parent.",
+    "next_boundary": "Selected expert IDs still cross to the host to name and admit weights. The cache-indexed address-table hit proof is the next exact expert graph slice."
+  }
+}

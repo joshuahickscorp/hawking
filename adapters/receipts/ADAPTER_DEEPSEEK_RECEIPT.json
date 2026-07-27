@@ -1,0 +1,990 @@
+{
+  "schema": "hawking.adapter.family_receipt.stage_a.v1",
+  "family_id": "deepseek",
+  "family_display": "DeepSeek",
+  "stage": "A",
+  "grade": "SOURCE_HEADER_VALIDATED",
+  "grade_ceiling_this_lane": "SOURCE_HEADER_VALIDATED",
+  "generated_at": "2026-07-27T04:04:36Z",
+  "representative_checkpoints": {
+    "deepseek_v4_flash": {
+      "repo": "deepseek-ai/DeepSeek-V4-Flash",
+      "revision": "60d8d70770c6776ff598c94bb586a859a38244f1",
+      "admission": "DEEPSEEK_V4_FLASH_SOURCE_ADMISSION.json"
+    },
+    "deepseek_v4_flash_dspark_local_mirror": {
+      "path": "models/deepseek-v4-flash-dspark/",
+      "note": "local metadata mirror including index"
+    },
+    "deepseek_v32_local_config": {
+      "path": "/Users/scammermike/.cache/huggingface/hub/models--deepseek-ai--DeepSeek-V3.2/snapshots/a7e62ac04ecb2c0a54d736dc46601c5606cf10a6/config.json",
+      "parsed": {
+        "architectures": [
+          "DeepseekV32ForCausalLM"
+        ],
+        "model_type": "deepseek_v32",
+        "hidden_size": 7168,
+        "intermediate_size": 18432,
+        "num_hidden_layers": 61,
+        "num_attention_heads": 128,
+        "num_key_value_heads": 128,
+        "vocab_size": 129280,
+        "max_position_embeddings": 163840,
+        "rope_theta": 10000,
+        "rms_norm_eps": 1e-06,
+        "tie_word_embeddings": false,
+        "hidden_act": "silu",
+        "attention_bias": false,
+        "use_cache": true,
+        "torch_dtype": "bfloat16",
+        "bos_token_id": 0,
+        "eos_token_id": 1,
+        "n_routed_experts": 256,
+        "num_experts_per_tok": 8,
+        "n_shared_experts": 1,
+        "moe_intermediate_size": 2048,
+        "first_k_dense_replace": 3,
+        "qk_nope_head_dim": 128,
+        "qk_rope_head_dim": 64,
+        "kv_lora_rank": 512,
+        "q_lora_rank": 1536,
+        "v_head_dim": 128,
+        "index_topk": 2048,
+        "index_n_heads": 64,
+        "index_head_dim": 128,
+        "scoring_func": "sigmoid",
+        "topk_method": "noaux_tc",
+        "norm_topk_prob": true,
+        "routed_scaling_factor": 2.5,
+        "num_nextn_predict_layers": 1,
+        "rope_scaling": {
+          "beta_fast": 32,
+          "beta_slow": 1,
+          "factor": 40,
+          "mscale": 1.0,
+          "mscale_all_dim": 1.0,
+          "original_max_position_embeddings": 4096,
+          "type": "yarn"
+        },
+        "attention_dropout": 0.0,
+        "initializer_range": 0.02,
+        "transformers_version": "4.44.2",
+        "quantization_config": {
+          "activation_scheme": "dynamic",
+          "fmt": "e4m3",
+          "quant_method": "fp8",
+          "scale_fmt": "ue8m0",
+          "weight_block_size": [
+            128,
+            128
+          ]
+        },
+        "moe_layer_freq": 1,
+        "ep_size": 1,
+        "n_group": 8,
+        "topk_group": 4
+      }
+    }
+  },
+  "evidence": {
+    "config_remote": {
+      "url": "https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash/resolve/60d8d70770c6776ff598c94bb586a859a38244f1/config.json",
+      "ok": true,
+      "parsed_fields": {
+        "architectures": [
+          "DeepseekV4ForCausalLM"
+        ],
+        "model_type": "deepseek_v4",
+        "hidden_size": 4096,
+        "num_hidden_layers": 43,
+        "num_attention_heads": 64,
+        "num_key_value_heads": 1,
+        "head_dim": 512,
+        "vocab_size": 129280,
+        "max_position_embeddings": 1048576,
+        "rope_theta": 10000,
+        "rms_norm_eps": 1e-06,
+        "tie_word_embeddings": false,
+        "hidden_act": "silu",
+        "attention_bias": false,
+        "sliding_window": 128,
+        "use_cache": true,
+        "torch_dtype": "bfloat16",
+        "bos_token_id": 0,
+        "eos_token_id": 1,
+        "n_routed_experts": 256,
+        "num_experts_per_tok": 6,
+        "n_shared_experts": 1,
+        "moe_intermediate_size": 2048,
+        "qk_rope_head_dim": 64,
+        "q_lora_rank": 1024,
+        "o_lora_rank": 1024,
+        "index_topk": 512,
+        "index_n_heads": 64,
+        "index_head_dim": 128,
+        "scoring_func": "sqrtsoftplus",
+        "topk_method": "noaux_tc",
+        "norm_topk_prob": true,
+        "routed_scaling_factor": 1.5,
+        "num_nextn_predict_layers": 1,
+        "rope_scaling": {
+          "beta_fast": 32,
+          "beta_slow": 1,
+          "factor": 16,
+          "original_max_position_embeddings": 65536,
+          "type": "yarn"
+        },
+        "attention_dropout": 0.0,
+        "initializer_range": 0.02,
+        "transformers_version": "4.57.1",
+        "quantization_config": {
+          "activation_scheme": "dynamic",
+          "fmt": "e4m3",
+          "quant_method": "fp8",
+          "scale_fmt": "ue8m0",
+          "weight_block_size": [
+            128,
+            128
+          ]
+        },
+        "expert_dtype": "fp4",
+        "o_groups": 8,
+        "num_hash_layers": 3,
+        "swiglu_limit": 10.0,
+        "hc_eps": 1e-06,
+        "hc_mult": 4,
+        "hc_sinkhorn_iters": 20,
+        "compress_rope_theta": 160000,
+        "compress_ratios": [
+          0,
+          0,
+          4,
+          128,
+          4,
+          128,
+          4,
+          128,
+          4,
+          128,
+          4,
+          128,
+          4,
+          128,
+          4,
+          128,
+          4,
+          128,
+          4,
+          128,
+          4,
+          128,
+          4,
+          128,
+          4,
+          128,
+          4,
+          128,
+          4,
+          128,
+          4,
+          128,
+          4,
+          128,
+          4,
+          128,
+          4,
+          128,
+          4,
+          128,
+          4,
+          128,
+          4,
+          0
+        ]
+      }
+    },
+    "config_local_dspark": {
+      "path": "models/deepseek-v4-flash-dspark/config.json",
+      "parsed_fields": {
+        "architectures": [
+          "DeepseekV4ForCausalLM"
+        ],
+        "model_type": "deepseek_v4",
+        "hidden_size": 4096,
+        "num_hidden_layers": 43,
+        "num_attention_heads": 64,
+        "num_key_value_heads": 1,
+        "head_dim": 512,
+        "vocab_size": 129280,
+        "max_position_embeddings": 1048576,
+        "rope_theta": 10000,
+        "rms_norm_eps": 1e-06,
+        "tie_word_embeddings": false,
+        "hidden_act": "silu",
+        "attention_bias": false,
+        "sliding_window": 128,
+        "use_cache": true,
+        "torch_dtype": "bfloat16",
+        "bos_token_id": 0,
+        "eos_token_id": 1,
+        "n_routed_experts": 256,
+        "num_experts_per_tok": 6,
+        "n_shared_experts": 1,
+        "moe_intermediate_size": 2048,
+        "qk_rope_head_dim": 64,
+        "q_lora_rank": 1024,
+        "o_lora_rank": 1024,
+        "index_topk": 512,
+        "index_n_heads": 64,
+        "index_head_dim": 128,
+        "scoring_func": "sqrtsoftplus",
+        "topk_method": "noaux_tc",
+        "norm_topk_prob": true,
+        "routed_scaling_factor": 1.5,
+        "num_nextn_predict_layers": 1,
+        "rope_scaling": {
+          "beta_fast": 32,
+          "beta_slow": 1,
+          "factor": 16,
+          "original_max_position_embeddings": 65536,
+          "type": "yarn"
+        },
+        "attention_dropout": 0.0,
+        "initializer_range": 0.02,
+        "transformers_version": "4.57.1",
+        "quantization_config": {
+          "activation_scheme": "dynamic",
+          "fmt": "e4m3",
+          "quant_method": "fp8",
+          "scale_fmt": "ue8m0",
+          "weight_block_size": [
+            128,
+            128
+          ]
+        },
+        "expert_dtype": "fp4",
+        "o_groups": 8,
+        "num_hash_layers": 3,
+        "swiglu_limit": 10.0,
+        "hc_eps": 1e-06,
+        "hc_mult": 4,
+        "hc_sinkhorn_iters": 20,
+        "compress_rope_theta": 160000,
+        "compress_ratios": [
+          0,
+          0,
+          4,
+          128,
+          4,
+          128,
+          4,
+          128,
+          4,
+          128,
+          4,
+          128,
+          4,
+          128,
+          4,
+          128,
+          4,
+          128,
+          4,
+          128,
+          4,
+          128,
+          4,
+          128,
+          4,
+          128,
+          4,
+          128,
+          4,
+          128,
+          4,
+          128,
+          4,
+          128,
+          4,
+          128,
+          4,
+          128,
+          4,
+          128,
+          4,
+          128,
+          4,
+          0,
+          0,
+          0
+        ],
+        "dspark_block_size": 5,
+        "dspark_noise_token_id": 128799,
+        "dspark_target_layer_ids": [
+          40,
+          41,
+          42
+        ],
+        "dspark_markov_rank": 256
+      }
+    },
+    "tokenizer": {
+      "url": "https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash/resolve/60d8d70770c6776ff598c94bb586a859a38244f1/tokenizer_config.json",
+      "ok": true,
+      "local_path": "models/deepseek-v4-flash-dspark/tokenizer_config.json"
+    },
+    "safetensors_index": {
+      "remote_url": "https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash/resolve/60d8d70770c6776ff598c94bb586a859a38244f1/model.safetensors.index.json",
+      "remote_ok": true,
+      "local_path": "models/deepseek-v4-flash-dspark/model.safetensors.index.json",
+      "local_tensor_count": 72317,
+      "named_tensors_used": 69187
+    },
+    "safetensors_header": {
+      "url": "https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash/resolve/60d8d70770c6776ff598c94bb586a859a38244f1/model-00001-of-00046.safetensors",
+      "method": "HTTP Range",
+      "shard": "model-00001-of-00046.safetensors",
+      "first_status": 206,
+      "first_bytes": 65536,
+      "response_headers": {
+        "content-type": "application/octet-stream",
+        "accept-ranges": "bytes",
+        "etag": "\"c669deb062b962f299b49b332849ca81eb315012961e47b8173592d752196a40\"",
+        "content-length": "65536",
+        "content-range": "bytes 0-65535/1059061856"
+      },
+      "header_len": 88,
+      "ok": true,
+      "data_start": 96,
+      "tensor_count": 1,
+      "metadata": null,
+      "dtype_counts": {
+        "BF16": 1
+      },
+      "sample_names": [
+        "embed.weight"
+      ],
+      "sample_tensor_entries": {
+        "embed.weight": {
+          "dtype": "BF16",
+          "shape": [
+            129280,
+            4096
+          ],
+          "data_offsets": [
+            0,
+            1059061760
+          ]
+        }
+      }
+    },
+    "repo_receipts": [
+      "DEEPSEEK_V4_FLASH_SOURCE_ADMISSION.json",
+      "DEEPSEEK_V4_FLASH_FETCH_RECEIPT.json",
+      "DEEPSEEK_V4_FLASH_REHYDRATION_RECEIPT.json",
+      "DEEPSEEK_V4_RUNTIME_ACCOUNTING.json",
+      "DEEPSEEK_V4_BYTE_AUCTION.json"
+    ],
+    "admission_precision_note": {
+      "dtype_parameter_counts": {
+        "BF16": 1415259264,
+        "F32": 36168018,
+        "F8_E4M3": 6023020544,
+        "F8_E8M0": 8858737664,
+        "I64": 2327040,
+        "I8": 141733920768
+      },
+      "note": "native fp4-in-I8 packed experts with F8_E8M0 (ue8m0) scales; NOT BF16. Sub-bit here is a ~4x reduction, not ~16x."
+    }
+  },
+  "logical_architecture": {
+    "class": [
+      "DeepseekV4ForCausalLM"
+    ],
+    "model_type": "deepseek_v4",
+    "topology": "MoE decoder with MLA-style compressed attention + sparse indexer (DSA) + routed/shared experts + optional MTP/hash layers",
+    "graph": [
+      "embed_tokens",
+      "layers 0..L-1: norms -> MLA/q-lora + kv-lora attention (with optional sliding window / compress ratios) -> MoE (router + routed experts + shared expert) [dense replace first_k if present]",
+      "indexer path for sparse attention (index_topk)",
+      "optional next-n predict / MTP layers",
+      "final norm -> lm_head"
+    ],
+    "routing": {
+      "n_routed_experts": 256,
+      "n_shared_experts": 1,
+      "num_experts_per_tok": 6,
+      "scoring_func": "sqrtsoftplus",
+      "topk_method": "noaux_tc"
+    },
+    "v32_mla_geometry_from_local_config": {
+      "kv_lora_rank": 512,
+      "q_lora_rank": 1536,
+      "qk_nope_head_dim": 128,
+      "qk_rope_head_dim": 64,
+      "v_head_dim": 128
+    }
+  },
+  "tensor_map": {
+    "total_named_tensors": 69187,
+    "organ_counts": {
+      "moe_experts": 67584,
+      "hyper_connection": 270,
+      "moe_shared_expert": 264,
+      "attn_o_lora": 176,
+      "attn_q_lora": 176,
+      "attn_compressor": 164,
+      "indexer": 147,
+      "attn_kv_lora": 88,
+      "norm_lora": 88,
+      "router": 88,
+      "attn_sink": 44,
+      "norm_input": 44,
+      "norm_post_attn": 44,
+      "mtp": 5,
+      "quant_scale": 2,
+      "embedding": 1,
+      "head": 1,
+      "norm_final": 1
+    },
+    "organs": {
+      "moe_experts": {
+        "count": 67584,
+        "template_count": 12,
+        "templates": [
+          "layers.N.ffn.experts.N.w1.scale",
+          "layers.N.ffn.experts.N.w1.weight",
+          "layers.N.ffn.experts.N.w2.scale",
+          "layers.N.ffn.experts.N.w2.weight",
+          "layers.N.ffn.experts.N.w3.scale",
+          "layers.N.ffn.experts.N.w3.weight",
+          "mtp.N.ffn.experts.N.w1.scale",
+          "mtp.N.ffn.experts.N.w1.weight",
+          "mtp.N.ffn.experts.N.w2.scale",
+          "mtp.N.ffn.experts.N.w2.weight",
+          "mtp.N.ffn.experts.N.w3.scale",
+          "mtp.N.ffn.experts.N.w3.weight"
+        ],
+        "samples": [
+          "layers.0.ffn.experts.0.w1.weight",
+          "layers.0.ffn.experts.0.w1.scale",
+          "layers.0.ffn.experts.0.w3.weight",
+          "layers.0.ffn.experts.0.w3.scale",
+          "layers.0.ffn.experts.1.w1.weight",
+          "layers.0.ffn.experts.1.w1.scale"
+        ]
+      },
+      "hyper_connection": {
+        "count": 270,
+        "template_count": 18,
+        "templates": [
+          "hc_head_base",
+          "hc_head_fn",
+          "hc_head_scale",
+          "layers.N.hc_attn_base",
+          "layers.N.hc_attn_fn",
+          "layers.N.hc_attn_scale",
+          "layers.N.hc_ffn_base",
+          "layers.N.hc_ffn_fn",
+          "layers.N.hc_ffn_scale",
+          "mtp.N.hc_attn_base",
+          "mtp.N.hc_attn_fn",
+          "mtp.N.hc_attn_scale",
+          "mtp.N.hc_ffn_base",
+          "mtp.N.hc_ffn_fn",
+          "mtp.N.hc_ffn_scale",
+          "mtp.N.hc_head_base",
+          "mtp.N.hc_head_fn",
+          "mtp.N.hc_head_scale"
+        ],
+        "samples": [
+          "layers.0.hc_attn_base",
+          "layers.0.hc_ffn_base",
+          "layers.0.hc_attn_fn",
+          "layers.0.hc_attn_scale",
+          "layers.0.hc_ffn_fn",
+          "layers.0.hc_ffn_scale"
+        ]
+      },
+      "moe_shared_expert": {
+        "count": 264,
+        "template_count": 12,
+        "templates": [
+          "layers.N.ffn.shared_experts.w1.scale",
+          "layers.N.ffn.shared_experts.w1.weight",
+          "layers.N.ffn.shared_experts.w2.scale",
+          "layers.N.ffn.shared_experts.w2.weight",
+          "layers.N.ffn.shared_experts.w3.scale",
+          "layers.N.ffn.shared_experts.w3.weight",
+          "mtp.N.ffn.shared_experts.w1.scale",
+          "mtp.N.ffn.shared_experts.w1.weight",
+          "mtp.N.ffn.shared_experts.w2.scale",
+          "mtp.N.ffn.shared_experts.w2.weight",
+          "mtp.N.ffn.shared_experts.w3.scale",
+          "mtp.N.ffn.shared_experts.w3.weight"
+        ],
+        "samples": [
+          "layers.0.ffn.shared_experts.w1.weight",
+          "layers.0.ffn.shared_experts.w1.scale",
+          "layers.0.ffn.shared_experts.w3.weight",
+          "layers.0.ffn.shared_experts.w3.scale",
+          "layers.0.ffn.shared_experts.w2.weight",
+          "layers.0.ffn.shared_experts.w2.scale"
+        ]
+      },
+      "attn_o_lora": {
+        "count": 176,
+        "template_count": 8,
+        "templates": [
+          "layers.N.attn.wo_a.scale",
+          "layers.N.attn.wo_a.weight",
+          "layers.N.attn.wo_b.scale",
+          "layers.N.attn.wo_b.weight",
+          "mtp.N.attn.wo_a.scale",
+          "mtp.N.attn.wo_a.weight",
+          "mtp.N.attn.wo_b.scale",
+          "mtp.N.attn.wo_b.weight"
+        ],
+        "samples": [
+          "layers.0.attn.wo_a.weight",
+          "layers.0.attn.wo_a.scale",
+          "layers.0.attn.wo_b.weight",
+          "layers.0.attn.wo_b.scale",
+          "layers.1.attn.wo_a.weight",
+          "layers.1.attn.wo_a.scale"
+        ]
+      },
+      "attn_q_lora": {
+        "count": 176,
+        "template_count": 8,
+        "templates": [
+          "layers.N.attn.wq_a.scale",
+          "layers.N.attn.wq_a.weight",
+          "layers.N.attn.wq_b.scale",
+          "layers.N.attn.wq_b.weight",
+          "mtp.N.attn.wq_a.scale",
+          "mtp.N.attn.wq_a.weight",
+          "mtp.N.attn.wq_b.scale",
+          "mtp.N.attn.wq_b.weight"
+        ],
+        "samples": [
+          "layers.0.attn.wq_a.weight",
+          "layers.0.attn.wq_a.scale",
+          "layers.0.attn.wq_b.weight",
+          "layers.0.attn.wq_b.scale",
+          "layers.1.attn.wq_a.weight",
+          "layers.1.attn.wq_a.scale"
+        ]
+      },
+      "attn_compressor": {
+        "count": 164,
+        "template_count": 4,
+        "templates": [
+          "layers.N.attn.compressor.ape",
+          "layers.N.attn.compressor.norm.weight",
+          "layers.N.attn.compressor.wgate.weight",
+          "layers.N.attn.compressor.wkv.weight"
+        ],
+        "samples": [
+          "layers.2.attn.compressor.ape",
+          "layers.2.attn.compressor.wkv.weight",
+          "layers.2.attn.compressor.wgate.weight",
+          "layers.2.attn.compressor.norm.weight",
+          "layers.3.attn.compressor.ape",
+          "layers.3.attn.compressor.wkv.weight"
+        ]
+      },
+      "indexer": {
+        "count": 147,
+        "template_count": 7,
+        "templates": [
+          "layers.N.attn.indexer.compressor.ape",
+          "layers.N.attn.indexer.compressor.norm.weight",
+          "layers.N.attn.indexer.compressor.wgate.weight",
+          "layers.N.attn.indexer.compressor.wkv.weight",
+          "layers.N.attn.indexer.weights_proj.weight",
+          "layers.N.attn.indexer.wq_b.scale",
+          "layers.N.attn.indexer.wq_b.weight"
+        ],
+        "samples": [
+          "layers.2.attn.indexer.wq_b.weight",
+          "layers.2.attn.indexer.wq_b.scale",
+          "layers.2.attn.indexer.compressor.ape",
+          "layers.2.attn.indexer.compressor.wkv.weight",
+          "layers.2.attn.indexer.compressor.wgate.weight",
+          "layers.2.attn.indexer.compressor.norm.weight"
+        ]
+      },
+      "attn_kv_lora": {
+        "count": 88,
+        "template_count": 4,
+        "templates": [
+          "layers.N.attn.wkv.scale",
+          "layers.N.attn.wkv.weight",
+          "mtp.N.attn.wkv.scale",
+          "mtp.N.attn.wkv.weight"
+        ],
+        "samples": [
+          "layers.0.attn.wkv.weight",
+          "layers.0.attn.wkv.scale",
+          "layers.1.attn.wkv.weight",
+          "layers.1.attn.wkv.scale",
+          "layers.2.attn.wkv.weight",
+          "layers.2.attn.wkv.scale"
+        ]
+      },
+      "norm_lora": {
+        "count": 88,
+        "template_count": 4,
+        "templates": [
+          "layers.N.attn.kv_norm.weight",
+          "layers.N.attn.q_norm.weight",
+          "mtp.N.attn.kv_norm.weight",
+          "mtp.N.attn.q_norm.weight"
+        ],
+        "samples": [
+          "layers.0.attn.q_norm.weight",
+          "layers.0.attn.kv_norm.weight",
+          "layers.1.attn.q_norm.weight",
+          "layers.1.attn.kv_norm.weight",
+          "layers.2.attn.q_norm.weight",
+          "layers.2.attn.kv_norm.weight"
+        ]
+      },
+      "router": {
+        "count": 88,
+        "template_count": 5,
+        "templates": [
+          "layers.N.ffn.gate.bias",
+          "layers.N.ffn.gate.tid2eid",
+          "layers.N.ffn.gate.weight",
+          "mtp.N.ffn.gate.bias",
+          "mtp.N.ffn.gate.weight"
+        ],
+        "samples": [
+          "layers.0.ffn.gate.tid2eid",
+          "layers.0.ffn.gate.weight",
+          "layers.1.ffn.gate.tid2eid",
+          "layers.1.ffn.gate.weight",
+          "layers.2.ffn.gate.tid2eid",
+          "layers.2.ffn.gate.weight"
+        ]
+      },
+      "attn_sink": {
+        "count": 44,
+        "template_count": 2,
+        "templates": [
+          "layers.N.attn.attn_sink",
+          "mtp.N.attn.attn_sink"
+        ],
+        "samples": [
+          "layers.0.attn.attn_sink",
+          "layers.1.attn.attn_sink",
+          "layers.2.attn.attn_sink",
+          "layers.3.attn.attn_sink",
+          "layers.4.attn.attn_sink",
+          "layers.5.attn.attn_sink"
+        ]
+      },
+      "norm_input": {
+        "count": 44,
+        "template_count": 2,
+        "templates": [
+          "layers.N.attn_norm.weight",
+          "mtp.N.attn_norm.weight"
+        ],
+        "samples": [
+          "layers.0.attn_norm.weight",
+          "layers.1.attn_norm.weight",
+          "layers.2.attn_norm.weight",
+          "layers.3.attn_norm.weight",
+          "layers.4.attn_norm.weight",
+          "layers.5.attn_norm.weight"
+        ]
+      },
+      "norm_post_attn": {
+        "count": 44,
+        "template_count": 2,
+        "templates": [
+          "layers.N.ffn_norm.weight",
+          "mtp.N.ffn_norm.weight"
+        ],
+        "samples": [
+          "layers.0.ffn_norm.weight",
+          "layers.1.ffn_norm.weight",
+          "layers.2.ffn_norm.weight",
+          "layers.3.ffn_norm.weight",
+          "layers.4.ffn_norm.weight",
+          "layers.5.ffn_norm.weight"
+        ]
+      },
+      "mtp": {
+        "count": 5,
+        "template_count": 5,
+        "templates": [
+          "mtp.N.e_proj.weight",
+          "mtp.N.enorm.weight",
+          "mtp.N.h_proj.weight",
+          "mtp.N.hnorm.weight",
+          "mtp.N.norm.weight"
+        ],
+        "samples": [
+          "mtp.0.e_proj.weight",
+          "mtp.0.h_proj.weight",
+          "mtp.0.enorm.weight",
+          "mtp.0.hnorm.weight",
+          "mtp.0.norm.weight"
+        ]
+      },
+      "quant_scale": {
+        "count": 2,
+        "template_count": 2,
+        "templates": [
+          "mtp.N.e_proj.scale",
+          "mtp.N.h_proj.scale"
+        ],
+        "samples": [
+          "mtp.0.e_proj.scale",
+          "mtp.0.h_proj.scale"
+        ]
+      },
+      "embedding": {
+        "count": 1,
+        "template_count": 1,
+        "templates": [
+          "embed.weight"
+        ],
+        "samples": [
+          "embed.weight"
+        ]
+      },
+      "head": {
+        "count": 1,
+        "template_count": 1,
+        "templates": [
+          "head.weight"
+        ],
+        "samples": [
+          "head.weight"
+        ]
+      },
+      "norm_final": {
+        "count": 1,
+        "template_count": 1,
+        "templates": [
+          "norm.weight"
+        ],
+        "samples": [
+          "norm.weight"
+        ]
+      }
+    },
+    "unknown_count": 0,
+    "mapping_authority": "regex_over_official_tensor_names_from_index_or_header",
+    "namespace_note": "DeepSeek-V4-Flash official weight_map uses compact names (embed.weight, layers.N.attn.wq_a.weight, layers.N.ffn.experts.E.w1.weight, *.scale) rather than HuggingFace transformers model.* paths."
+  },
+  "kv_or_state_format": {
+    "kind": "mla_compressed_kv_plus_indexer",
+    "v4_flash_from_config": {
+      "num_attention_heads": 64,
+      "num_key_value_heads": 1,
+      "head_dim": 512,
+      "q_lora_rank": 1024,
+      "o_lora_rank": 1024,
+      "qk_rope_head_dim": 64,
+      "sliding_window": 128,
+      "index_topk": 512,
+      "index_n_heads": 64,
+      "index_head_dim": 128,
+      "compress_ratios": [
+        0,
+        0,
+        4,
+        128,
+        4,
+        128,
+        4,
+        128,
+        4,
+        128,
+        4,
+        128,
+        4,
+        128,
+        4,
+        128,
+        4,
+        128,
+        4,
+        128,
+        4,
+        128,
+        4,
+        128,
+        4,
+        128,
+        4,
+        128,
+        4,
+        128,
+        4,
+        128,
+        4,
+        128,
+        4,
+        128,
+        4,
+        128,
+        4,
+        128,
+        4,
+        128,
+        4,
+        0
+      ]
+    },
+    "note": "Not standard MHA KV; MLA stores compressed latent KV (lora ranks) plus RoPE dims; indexer maintains separate top-k sparse retrieval state",
+    "source": "official DeepSeek-V4-Flash config.json + DEEPSEEK_V4_FLASH_SOURCE_ADMISSION.json"
+  },
+  "partition_boundaries": {
+    "axes": [
+      "layer",
+      "routed expert id 0..n_routed_experts-1",
+      "shared expert",
+      "attention lora projections vs dense o/q",
+      "indexer tensors vs main attn",
+      "MTP / nextn layers if present",
+      "quantization scale tensors (ue8m0 / fp8 / fp4-in-I8) must travel with parent weight"
+    ],
+    "illegal": [
+      "decode expert payload without matching scale tensor",
+      "treat MLA latent as full head-dim K/V without expand projections"
+    ],
+    "source": "index weight_map names + admission quantization_config",
+    "tensor_namespace": "compact deepseek_v4 (not model.layers.* HF style)"
+  },
+  "context_limits": {
+    "max_position_embeddings": 1048576,
+    "rope_scaling": {
+      "beta_fast": 32,
+      "beta_slow": 1,
+      "factor": 16,
+      "original_max_position_embeddings": 65536,
+      "type": "yarn"
+    },
+    "rope_theta": 10000,
+    "sliding_window": 128,
+    "validation": "official config.json fields; not runtime measured in Stage A",
+    "v32_max_position_embeddings": 163840
+  },
+  "tokenizer": {
+    "status": "parsed",
+    "source": "https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash/resolve/60d8d70770c6776ff598c94bb586a859a38244f1/tokenizer_config.json",
+    "tokenizer_class": "PreTrainedTokenizerFast",
+    "model_max_length": 1048576,
+    "bos_token": {
+      "__type": "AddedToken",
+      "content": "<｜begin▁of▁sentence｜>",
+      "lstrip": false,
+      "normalized": true,
+      "rstrip": false,
+      "single_word": false
+    },
+    "eos_token": {
+      "__type": "AddedToken",
+      "content": "<｜end▁of▁sentence｜>",
+      "lstrip": false,
+      "normalized": true,
+      "rstrip": false,
+      "single_word": false
+    },
+    "pad_token": {
+      "__type": "AddedToken",
+      "content": "<｜end▁of▁sentence｜>",
+      "lstrip": false,
+      "normalized": true,
+      "rstrip": false,
+      "single_word": false
+    },
+    "unk_token": null,
+    "add_bos_token": false,
+    "add_eos_token": false,
+    "legacy": true,
+    "clean_up_tokenization_spaces": false,
+    "chat_template": {
+      "present": false
+    }
+  },
+  "chat_template": {
+    "present": false
+  },
+  "source_format_ledger": {
+    "format": "safetensors",
+    "quantization": {
+      "activation_scheme": "dynamic",
+      "fmt": "e4m3",
+      "quant_method": "fp8",
+      "scale_fmt": "ue8m0",
+      "weight_block_size": [
+        128,
+        128
+      ]
+    },
+    "expert_dtype": "fp4",
+    "admission_dtype_parameter_counts": {
+      "BF16": 1415259264,
+      "F32": 36168018,
+      "F8_E4M3": 6023020544,
+      "F8_E8M0": 8858737664,
+      "I64": 2327040,
+      "I8": 141733920768
+    },
+    "header_ok": true,
+    "header_len": 88,
+    "header_dtype_counts": {
+      "BF16": 1
+    },
+    "header_url": "https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash/resolve/60d8d70770c6776ff598c94bb586a859a38244f1/model-00001-of-00046.safetensors",
+    "index_total_size_from_admission": 159609485896,
+    "safetensors_files_admission": 46,
+    "named_tensors": 69187
+  },
+  "logical_weight_ledger": {
+    "named_tensors": 69187,
+    "organ_counts": {
+      "moe_experts": 67584,
+      "hyper_connection": 270,
+      "moe_shared_expert": 264,
+      "attn_o_lora": 176,
+      "attn_q_lora": 176,
+      "attn_compressor": 164,
+      "indexer": 147,
+      "attn_kv_lora": 88,
+      "norm_lora": 88,
+      "router": 88,
+      "attn_sink": 44,
+      "norm_input": 44,
+      "norm_post_attn": 44,
+      "mtp": 5,
+      "quant_scale": 2,
+      "embedding": 1,
+      "head": 1,
+      "norm_final": 1
+    },
+    "admission_source_bytes": 159617149040,
+    "note": "Native FP4-in-I8 experts with ue8m0 scales per DEEPSEEK_V4_FLASH_SOURCE_ADMISSION; not BF16 headline",
+    "unknown_count": 0
+  },
+  "known_gaps": [
+    "No body decode / generate in Stage A",
+    "DSpark vs base Flash revision differences noted (local dspark mirror)",
+    "DeepSeek-V4-Pro config present locally but header not fully revalidated in this pass",
+    "V3.2 config only (no V3.2 header range in this pass)"
+  ],
+  "next_promotion_action": "REAL_TENSOR_DECODE one BF16 attention tensor and one packed expert+scale pair; verify extents against header data_offsets",
+  "resource_cost": {
+    "weight_body_bytes_downloaded": 0,
+    "reused_local_index_and_admission": true,
+    "range_header_fetched": 1
+  }
+}

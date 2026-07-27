@@ -1,0 +1,70 @@
+{
+  "schema": "hawking.odyssey.substrate_capability.v1",
+  "at": "2026-07-27T03:20:00Z",
+  "what_this_is": "A capability verdict per artifact, keyed by content hash. It is a SECOND gate, independent of ODYSSEY_LAUNCH_AUTHORIZED. The fence answers 'has a human authorized a run'. This answers 'is this substrate fit to train on at all'. Both must pass.",
+  "why_it_exists": "The fence was the only gate. Any agent that flipped it to true would have started T0-T7 against an artifact that cannot complete '2 + 2 ='. Integrity sealing (282/282 shards, 59,585 frozen decisions, 0 mismatches) was never evidence of capability, and a six-green-gate receipt sitting in the repo root reads like it was. This file makes that distinction machine-checkable rather than a thing a later reader has to notice.",
+  "law": [
+    "A substrate with verdict REFUSED may not be trained on, whatever the fence says.",
+    "Absence of an entry is NOT permission. An unknown artifact is UNVERIFIED and is refused by default.",
+    "Only the controller may add or change a verdict, and only with a receipt naming live evidence.",
+    "A verdict is bound to a content hash. Repacking the parent produces a different hash and therefore a different, unanswered question."
+  ],
+  "substrates": [
+    {
+      "name": "GLM-5.2-H0.98-Math-Preserve",
+      "path": "~/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/GLM-5.2-H0.98-Math-Preserve.gravity",
+      "artifact_index_sha256": "33d40c254eb982d4a495f5f0792a116e9d9810d937f5f3969f4f84742b2364d9",
+      "allocation_manifest_sha256": "b34596f5d4df0b09903845302648736ee2345d7662688176c851a4d749211a83",
+      "complete_bpw": 0.9774017488417455,
+      "integrity_verdict": "SEALED_AND_COMPLETE",
+      "integrity_evidence": "282/282 shards, 59,585/59,585 frozen decisions, 0 mismatches, byte-identical allocation manifest, 244,667,548 bytes headroom under H0.98",
+      "capability_verdict": "REFUSED",
+      "capability_reason": "H1_ARTIFACT / SEMANTIC_COLLAPSE. Generation is confidently wrong. The runtime, tokenizer, chat template and serve path are all exonerated.",
+      "capability_evidence": {
+        "receipt": "GRAVITY_DEGENERATE_ATTRIBUTION.json",
+        "probes": [
+          {
+            "prompt": "The capital of France is",
+            "token_ids": [785, 6722, 315, 9621, 374],
+            "argmax": 43196,
+            "decodes_to": " combust",
+            "expected": " Paris",
+            "oracle_runtime_top5_exact_order_match": true
+          },
+          {
+            "prompt": "2 + 2 =",
+            "token_ids": [17, 488, 220, 17, 284],
+            "argmax": 20300,
+            "decodes_to": "rus",
+            "expected": " 4",
+            "oracle_runtime_top5_exact_order_match": true,
+            "note": "a math probe failing on a math-preserving artifact; not dismissible as out-of-profile"
+          }
+        ],
+        "served_output": "99999999 for two unrelated prompts, reproduced exactly by the model's own top-5 on the templated prompt ([24]='9')",
+        "oracle_command": "python3 tools/condense/glm52_flagship_oracle.py --dir <artifact> --tokens 785 6722 315 9621 374 --no-verify-hash",
+        "runtime_command": "cargo run --release -p hawking-core --example gravity_glm_attribution"
+      },
+      "what_would_change_this": "Nothing. This artifact's hash is bound to this verdict permanently. A repack of the parent is a different artifact with a different hash and must be probed on its own.",
+      "required_before_any_successor_is_trained_on": [
+        "the same two probes, run against the successor's own hash",
+        "oracle/runtime exact top-5 agreement, to keep the runtime exonerated",
+        "representation escalation attempted first, per crates/hawking-seed-c/src/gravity.rs: 'representation-before-BPW: try a stronger family first'"
+      ]
+    },
+    {
+      "name": "GLM-5.2-General-R0",
+      "path": "~/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/General-R0",
+      "complete_bpw": 0.882888,
+      "integrity_verdict": "SEALED_AND_COMPLETE",
+      "capability_verdict": "REFUSED",
+      "capability_reason": "failed screening twice; still failed at 0.9211 BPW after lm_head and embed_tokens native protection. Standing verdict R0_IS_THE_PRACTICAL_CEILING.",
+      "capability_evidence": {"receipt": "HAWKING_MODEL_FEEL_PARITY_RESULTS.json"}
+    }
+  ],
+  "default_for_unlisted": {
+    "capability_verdict": "UNVERIFIED",
+    "treated_as": "REFUSED",
+    "why": "an artifact nobody has probed is not an artifact known to work. Silence is not a pass."
+  }
+}

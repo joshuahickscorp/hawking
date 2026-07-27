@@ -27,10 +27,16 @@ pub fn argmax_f32(xs: &[f32]) -> u32 {
 // then runs routed experts as verification. Agreed tokens accepted; mismatches roll back.
 
 pub mod cross_tokenizer;
+/// Durable sinks that accept only target-verified tokens (speculation safety).
+pub mod durable;
 pub mod eagle5;
 pub mod eagle5_forward;
 pub mod eagle_proposer;
 pub mod governor;
+/// Dual committed/provisional KV with rollback + rebase (speculation safety).
+pub mod kv_dual;
+/// Separated BASE_TRUE_TPS / ACCELERATED_ACCEPTED_TPS scoreboards.
+pub mod metrics_sep;
 pub mod parallel_draft;
 pub mod policy;
 pub mod proposal;
@@ -39,8 +45,26 @@ pub mod retrieval;
 pub mod router;
 pub mod safetensors_io;
 pub mod shared;
+/// Enumerable speculation suspension policy (one list, one place).
+pub mod suspension;
 pub mod suffix_array;
 pub mod suffix_automaton;
+/// Type-level Draft / Verified boundary (speculation safety).
+pub mod token_boundary;
 pub mod tree;
 pub mod user_ngram;
 pub mod verifier;
+
+// Re-export the safety surface so host/engine code can depend on a short path.
+pub use durable::{DurableRecord, DurableTokenSink, InMemoryDurableSink};
+pub use kv_dual::{CommittedKv, DualKv, KvFingerprint, ProvisionalKv};
+pub use metrics_sep::{
+    AccelCostLedger, AcceleratedAcceptedTps, BaseTrueTps, SeparatedTpsScoreboard,
+};
+pub use suspension::{
+    action_for, evaluate, policy_for, SpeculationPermit, SuspensionAction, SuspensionBoundary,
+    SuspensionPoint, SUSPENSION_POLICY,
+};
+pub use token_boundary::{
+    draft_ids, Draft, DraftTokenId, PromoteResult, TargetVerification, Verified, VerifiedTokenId,
+};

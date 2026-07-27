@@ -20,9 +20,9 @@
 //!
 //! An unattributed remainder is reported as its own line
 //! ([`TokenCostReport::unattributed_us`]) with its own magnitude. It is
-//! **never** folded into a neighbour. [`Bucket::CpuOrchestration`] exists only
-//! for callers that *explicitly* scope residual glue between named stages
-//! (legacy name kept for existing hooks); it is not the wall remainder.
+//! **never** folded into a neighbour. There is deliberately no generic
+//! "orchestration" bucket: embedding/position work, dense experts, residual
+//! state, head, and sampling each have a named line.
 //!
 //! ## Hook points (do not invent silent proxies)
 //!
@@ -37,12 +37,14 @@
 //! | packed index / PQ host decode | `Scope::new(Bucket::PackedIndexDecode)` |
 //! | host↔device copy | `Scope::new(Bucket::HostDeviceTransfer)` + `record_transfer` |
 //! | Metal encode / submit / wait | `add_duration(Metal*)` + `record_gpu_command_buffer` after wait |
+//! | embedding lookup glue + position construction | `Scope::new(Bucket::EmbeddingAndPosition)` |
 //! | attention + IndexShare (host loops today) | `Scope::new(Bucket::AttentionAndIndexShare)` |
 //! | router top-k | `Scope::new(Bucket::Routing)` |
-//! | shared / routed experts | `Scope::new(Bucket::SharedExperts)` / `RoutedExperts` |
+//! | dense / shared / routed experts | `Scope::new(Bucket::DenseExperts)` / `SharedExperts` / `RoutedExperts` |
 //! | KV append / state | `Scope::new(Bucket::KvUpdate)` |
+//! | residual additions and activation state glue | `Scope::new(Bucket::ResidualAndState)` |
 //! | RMSNorm / LayerNorm | `Scope::new(Bucket::Norm)` |
-//! | final head + sampling | `Scope::new(Bucket::FinalHeadAndSampling)` |
+//! | final head / sampling | `Scope::new(Bucket::FinalHead)` / `Scope::new(Bucket::Sampling)` |
 //! | residency snapshot | `record_residency` |
 //! | page-fault delta | sampled automatically at begin/end when OS supports it |
 //! | active weight bytes / ops | `record_active_bytes` / `record_operations` |
@@ -95,10 +97,7 @@ pub enum Bucket {
     ArtifactVerificationAndSha = 0,
     ContainerLookup = 1,
     PackedIndexDecode = 2,
-    /// Explicitly scoped residual CPU glue between named stages.
-    /// **Not** the unattributed wall remainder — that is
-    /// [`TokenCostReport::unattributed_us`].
-    CpuOrchestration = 3,
+    EmbeddingAndPosition = 3,
     HostDeviceTransfer = 4,
     MetalEncode = 5,
     MetalSubmit = 6,
@@ -108,30 +107,36 @@ pub enum Bucket {
     MetalSynchronize = 7,
     AttentionAndIndexShare = 8,
     Routing = 9,
-    SharedExperts = 10,
-    RoutedExperts = 11,
-    KvUpdate = 12,
-    FinalHeadAndSampling = 13,
+    DenseExperts = 10,
+    SharedExperts = 11,
+    RoutedExperts = 12,
+    KvUpdate = 13,
+    ResidualAndState = 14,
+    FinalHead = 15,
+    Sampling = 16,
     /// RMSNorm / LayerNorm exclusive CPU (or device-side when hooked).
-    Norm = 14,
+    Norm = 17,
 }
 
 impl Bucket {
-    pub const ALL: [Bucket; 15] = [
+    pub const ALL: [Bucket; 18] = [
         Bucket::ArtifactVerificationAndSha,
         Bucket::ContainerLookup,
         Bucket::PackedIndexDecode,
-        Bucket::CpuOrchestration,
+        Bucket::EmbeddingAndPosition,
         Bucket::HostDeviceTransfer,
         Bucket::MetalEncode,
         Bucket::MetalSubmit,
         Bucket::MetalSynchronize,
         Bucket::AttentionAndIndexShare,
         Bucket::Routing,
+        Bucket::DenseExperts,
         Bucket::SharedExperts,
         Bucket::RoutedExperts,
         Bucket::KvUpdate,
-        Bucket::FinalHeadAndSampling,
+        Bucket::ResidualAndState,
+        Bucket::FinalHead,
+        Bucket::Sampling,
         Bucket::Norm,
     ];
 
@@ -140,18 +145,20 @@ impl Bucket {
             Bucket::ArtifactVerificationAndSha => "artifact_verification_and_sha",
             Bucket::ContainerLookup => "container_lookup",
             Bucket::PackedIndexDecode => "packed_index_decode",
-            // Honest name: this is only what callers explicitly scoped.
-            Bucket::CpuOrchestration => "cpu_residual_scoped",
+            Bucket::EmbeddingAndPosition => "embedding_and_position",
             Bucket::HostDeviceTransfer => "host_device_transfer",
             Bucket::MetalEncode => "metal_encode",
             Bucket::MetalSubmit => "metal_submit",
             Bucket::MetalSynchronize => "metal_synchronize_cpu_wait",
             Bucket::AttentionAndIndexShare => "attention_and_indexshare",
             Bucket::Routing => "routing",
+            Bucket::DenseExperts => "dense_experts",
             Bucket::SharedExperts => "shared_experts",
             Bucket::RoutedExperts => "routed_experts",
             Bucket::KvUpdate => "kv_update",
-            Bucket::FinalHeadAndSampling => "final_head_and_sampling",
+            Bucket::ResidualAndState => "residual_and_state",
+            Bucket::FinalHead => "final_head",
+            Bucket::Sampling => "sampling",
             Bucket::Norm => "norm",
         }
     }
@@ -167,9 +174,6 @@ impl Bucket {
             Bucket::MetalSynchronize => {
                 "host Instant around wait_until_completed; not GPU occupancy"
             }
-            Bucket::CpuOrchestration => {
-                "explicit Scope only; never auto-absorbs unattributed remainder"
-            }
             Bucket::MetalEncode => "host Instant around Metal encode path",
             Bucket::MetalSubmit => "host Instant around command buffer commit",
             _ => "host Instant exclusive stack",
@@ -179,6 +183,71 @@ impl Bucket {
     fn index(self) -> usize {
         self as u8 as usize
     }
+}
+
+/// Semantic owner of GPU work encoded into a command buffer.
+///
+/// Metal exposes trustworthy start/end timestamps for a completed command
+/// buffer. It does not expose per-dispatch time on the production path unless
+/// intrusive counter-sample encoders are enabled. We therefore tag every
+/// dispatch, attribute a homogeneous CB to its one stage, and keep mixed CBs
+/// under an explicit `mixed:*` key with exact dispatch composition. No
+/// proportional split is invented.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize)]
+#[serde(rename_all = "snake_case")]
+#[repr(u8)]
+pub enum GpuStage {
+    AttentionAndIndexShare = 0,
+    Routing = 1,
+    DenseExperts = 2,
+    RoutedExperts = 3,
+    SharedExperts = 4,
+    KvAndNorm = 5,
+    FinalHead = 6,
+    Sampling = 7,
+    Other = 8,
+    Untagged = 9,
+}
+
+impl GpuStage {
+    pub const ALL: [GpuStage; 10] = [
+        GpuStage::AttentionAndIndexShare,
+        GpuStage::Routing,
+        GpuStage::DenseExperts,
+        GpuStage::RoutedExperts,
+        GpuStage::SharedExperts,
+        GpuStage::KvAndNorm,
+        GpuStage::FinalHead,
+        GpuStage::Sampling,
+        GpuStage::Other,
+        GpuStage::Untagged,
+    ];
+
+    pub fn as_str(self) -> &'static str {
+        match self {
+            GpuStage::AttentionAndIndexShare => "attention_and_indexshare",
+            GpuStage::Routing => "routing",
+            GpuStage::DenseExperts => "dense_experts",
+            GpuStage::RoutedExperts => "routed_experts",
+            GpuStage::SharedExperts => "shared_experts",
+            GpuStage::KvAndNorm => "kv_and_norm",
+            GpuStage::FinalHead => "final_head",
+            GpuStage::Sampling => "sampling",
+            GpuStage::Other => "other",
+            GpuStage::Untagged => "untagged",
+        }
+    }
+
+    pub fn index(self) -> usize {
+        self as u8 as usize
+    }
+}
+
+/// Exact dispatch composition of a timestamped command buffer.
+#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+pub struct GpuStageDispatchCount {
+    pub stage: &'static str,
+    pub dispatches: u64,
 }
 
 /// One host↔device transfer observed while the ledger is recording a token.
@@ -208,6 +277,16 @@ pub struct GpuCommandBufferSample {
     /// Raw `GPUEndTime` (CFTimeInterval seconds) when available.
     pub gpu_end_s: Option<f64>,
     pub dispatches_in_buffer: u64,
+    /// Homogeneous stage name, or `mixed:<stage>+<stage>` when the CB spans
+    /// stages. `untagged` is an explicit instrumentation gap.
+    pub stage_key: String,
+    /// Exact number of tagged dispatches for each stage in this CB.
+    pub stage_composition: Vec<GpuStageDispatchCount>,
+    /// Sum of [`GpuCommandBufferSample::stage_composition`] dispatches.
+    pub stage_dispatches_total: u64,
+    /// True only when semantic dispatch accounting exactly covers the
+    /// physical dispatch count for this command buffer.
+    pub stage_dispatches_match_buffer: bool,
 }
 
 /// Device-side timeline for one token. Independent of the exclusive CPU stack:
@@ -221,6 +300,11 @@ pub struct DeviceTimeline {
     pub gpu_queue_wait_us: Option<u64>,
     pub gpu_timestamps_observed: u64,
     pub gpu_timestamps_missing: u64,
+    /// CB timestamp deltas grouped by homogeneous stage or exact mixed key.
+    /// Mixed CB time is never proportionally divided between its components.
+    pub gpu_execution_by_stage_us: serde_json::Map<String, serde_json::Value>,
+    /// Derived host-wait minus GPU-execution, grouped by the same stage key.
+    pub gpu_queue_wait_by_stage_us: serde_json::Map<String, serde_json::Value>,
     /// Whether the process has probed a Metal timestamp counter set.
     pub counter_sample_probed: bool,
     /// Whether the device exposes the `timestamp` common counter set.
@@ -239,6 +323,8 @@ impl Default for DeviceTimeline {
             gpu_queue_wait_us: None,
             gpu_timestamps_observed: 0,
             gpu_timestamps_missing: 0,
+            gpu_execution_by_stage_us: serde_json::Map::new(),
+            gpu_queue_wait_by_stage_us: serde_json::Map::new(),
             counter_sample_probed: false,
             counter_sample_supported: None,
             counter_samples_recorded: 0,
@@ -249,13 +335,8 @@ impl Default for DeviceTimeline {
 }
 
 /// Where a matvec's active weight bytes came from. Partitions
-/// [`TokenCounters::active_bytes_read`] so a 4× "overread vs geometry"
-/// figure can be attributed instead of argued.
-///
-/// Geometry ([`SEALED_ARTIFACT_ACTIVE_ROUTED_BYTES`]) only covers
-/// [`ActiveByteCategory::RoutedExperts`] under an 8×3×78 idealisation.
-/// Everything else is **required non-geometry traffic**, not necessarily
-/// waste — until a category is shown to re-read or widen beyond need.
+/// [`TokenCounters::active_bytes_read`] so the exact Math-Preserve fixed set
+/// and route-conditioned expert set can be reconciled without a residual.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum ActiveByteCategory {
@@ -341,6 +422,32 @@ pub fn classify_weight_name(name: &str) -> ActiveByteCategory {
     ActiveByteCategory::Other
 }
 
+/// Runtime representation of one routed-expert projection.
+///
+/// These labels intentionally match the sealed Math-Preserve header census.
+/// `Other` is fail-closed evidence: the recovered profiler must reject a
+/// promoted run if any routed projection lands there.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RoutedWeightRepresentation {
+    R4,
+    R0,
+    NativeBf16,
+    Other,
+}
+
+/// Per-token routed representation evidence.
+#[derive(Debug, Clone, Default, Serialize, PartialEq, Eq)]
+pub struct RoutedRepresentationCounters {
+    pub r4_projection_touches: u64,
+    pub r4_active_bytes: u64,
+    pub r0_projection_touches: u64,
+    pub r0_active_bytes: u64,
+    pub native_bf16_projection_touches: u64,
+    pub native_bf16_active_bytes: u64,
+    pub other_projection_touches: u64,
+    pub other_active_bytes: u64,
+}
+
 /// Counters that usually explain a bandwidth-starved MoE, independent of time.
 #[derive(Debug, Clone, Default, Serialize, PartialEq, Eq)]
 pub struct TokenCounters {
@@ -363,6 +470,9 @@ pub struct TokenCounters {
     /// snake_case names from [`ActiveByteCategory::as_str`].
     #[serde(default)]
     pub active_bytes_by_category: serde_json::Map<String, serde_json::Value>,
+    /// Exact representation and active extent of every routed projection.
+    #[serde(default)]
+    pub routed_representations: RoutedRepresentationCounters,
     /// First-touch loads (decode + upload) this token — zero on a warm cache hit.
     pub first_touch_load_bytes: u64,
     pub matvec_calls: u64,
@@ -372,8 +482,23 @@ pub struct TokenCounters {
     pub dense_calls: u64,
     pub row_calls: u64,
     pub sha_verifications: u64,
-    /// Abstract operation count (caller-defined units, e.g. FMA or matvec rows).
+    /// Compatibility total of source-modelled executed operations below.
+    /// This is not a hardware performance counter.
     pub operations: u64,
+    /// Floating-point operations counted from the executed Rust/Metal source.
+    /// FMA is two operations. Includes explicit reduction adds.
+    pub source_modelled_fp_operations: u64,
+    /// Lower bound on packed-code index integer/bitwise operations. Address
+    /// arithmetic and compiler transformations are deliberately excluded.
+    pub source_modelled_integer_bitwise_ops_lower_bound: u64,
+    /// Comparisons/selects in attention, routing, and sampling source loops.
+    pub source_modelled_comparisons: u64,
+    /// Calls to source-level exp/sqrt/pow-style transcendental operations.
+    pub source_modelled_transcendentals: u64,
+    /// Dense mathematical contraction work (`2 * rows * cols`) for matvecs.
+    /// Kept separate because it is not a claim about every instruction the
+    /// packed lookup kernel executes.
+    pub dense_equivalent_fp_operations: u64,
     /// Minor page faults this token (delta of `ru_minflt`), when OS supports.
     pub page_faults_minor: Option<u64>,
     /// Major page faults / page-ins this token (delta of `ru_majflt`).
@@ -396,7 +521,7 @@ pub struct TokenCostReport {
     /// Provenance map: bucket name → source note.
     pub bucket_sources: serde_json::Map<String, serde_json::Value>,
     /// `wall_us - sum(buckets_us)`. An unattributed remainder is a finding —
-    /// never absorbed into `cpu_residual_scoped` or any other bucket.
+    /// never absorbed into a semantic bucket.
     pub unattributed_us: u64,
     /// Stable name for the unattributed line (hard rule: own name + magnitude).
     pub unattributed_name: &'static str,
@@ -407,7 +532,8 @@ pub struct TokenCostReport {
     pub counters: TokenCounters,
     /// Device-side GPU execution / queue wait (not exclusive-stack).
     pub device: DeviceTimeline,
-    /// Geometry the gate quotes: 8 × 3 × 1_378_368 × 78 when known.
+    /// Expected active extent for this exact Math-Preserve route: fixed set
+    /// plus the live R4/R0/native-bf16 routed representation mix.
     pub geometry_active_bytes: Option<u64>,
     pub active_bytes_vs_geometry_fraction: Option<f64>,
     /// Host+device bytes moved this token vs geometry (informational).
@@ -462,7 +588,9 @@ impl Percentiles {
         let mean = sum / n as f64;
         let rank = |p: f64| -> f64 {
             // nearest-rank: ceil(p * n) - 1, clamped
-            let idx = ((p * n as f64).ceil() as usize).saturating_sub(1).min(n - 1);
+            let idx = ((p * n as f64).ceil() as usize)
+                .saturating_sub(1)
+                .min(n - 1);
             v[idx]
         };
         Self {
@@ -496,6 +624,10 @@ pub struct AggregateLedger {
     pub buckets_us: serde_json::Map<String, serde_json::Value>,
     pub device_gpu_execution_us: Percentiles,
     pub device_gpu_queue_wait_us: Percentiles,
+    /// Per-stage CB timestamp distributions. Keys may include exact
+    /// `mixed:*` compositions; those times are not split between stages.
+    pub device_gpu_execution_by_stage_us: serde_json::Map<String, serde_json::Value>,
+    pub device_gpu_queue_wait_by_stage_us: serde_json::Map<String, serde_json::Value>,
     /// Tokens that had zero GPU timestamps (all CBs missing).
     pub tokens_missing_gpu_timestamps: usize,
     pub counters_mean: serde_json::Map<String, serde_json::Value>,
@@ -524,7 +656,9 @@ pub fn aggregate_reports(reports: &[TokenCostReport]) -> AggregateLedger {
     let moved: Vec<u64> = reports.iter().map(|r| r.bytes_moved_total).collect();
     let missing_gpu = reports
         .iter()
-        .filter(|r| r.device.gpu_timestamps_observed == 0 && r.counters.command_buffers_submitted > 0)
+        .filter(|r| {
+            r.device.gpu_timestamps_observed == 0 && r.counters.command_buffers_submitted > 0
+        })
         .count();
 
     let mut buckets_us = serde_json::Map::new();
@@ -550,6 +684,49 @@ pub fn aggregate_reports(reports: &[TokenCostReport]) -> AggregateLedger {
         serde_json::to_value(&Percentiles::from_u64_slice(&unattr))
             .unwrap_or(serde_json::Value::Null),
     );
+
+    let mut gpu_stage_keys = std::collections::BTreeSet::new();
+    for stage in GpuStage::ALL {
+        gpu_stage_keys.insert(stage.as_str().to_string());
+    }
+    for report in reports {
+        gpu_stage_keys.extend(report.device.gpu_execution_by_stage_us.keys().cloned());
+        gpu_stage_keys.extend(report.device.gpu_queue_wait_by_stage_us.keys().cloned());
+    }
+    let mut gpu_execution_by_stage_us = serde_json::Map::new();
+    let mut gpu_queue_wait_by_stage_us = serde_json::Map::new();
+    for key in gpu_stage_keys {
+        let exec: Vec<u64> = reports
+            .iter()
+            .map(|r| {
+                r.device
+                    .gpu_execution_by_stage_us
+                    .get(&key)
+                    .and_then(|v| v.as_u64())
+                    .unwrap_or(0)
+            })
+            .collect();
+        let queue: Vec<u64> = reports
+            .iter()
+            .map(|r| {
+                r.device
+                    .gpu_queue_wait_by_stage_us
+                    .get(&key)
+                    .and_then(|v| v.as_u64())
+                    .unwrap_or(0)
+            })
+            .collect();
+        gpu_execution_by_stage_us.insert(
+            key.clone(),
+            serde_json::to_value(Percentiles::from_u64_slice(&exec))
+                .unwrap_or(serde_json::Value::Null),
+        );
+        gpu_queue_wait_by_stage_us.insert(
+            key,
+            serde_json::to_value(Percentiles::from_u64_slice(&queue))
+                .unwrap_or(serde_json::Value::Null),
+        );
+    }
 
     let mut counters_mean = serde_json::Map::new();
     if token_count > 0 {
@@ -578,6 +755,28 @@ pub fn aggregate_reports(reports: &[TokenCostReport]) -> AggregateLedger {
             serde_json::json!(mean_u64(|c| c.operations)),
         );
         counters_mean.insert(
+            "source_modelled_fp_operations".into(),
+            serde_json::json!(mean_u64(|c| c.source_modelled_fp_operations)),
+        );
+        counters_mean.insert(
+            "source_modelled_integer_bitwise_ops_lower_bound".into(),
+            serde_json::json!(mean_u64(|c| {
+                c.source_modelled_integer_bitwise_ops_lower_bound
+            })),
+        );
+        counters_mean.insert(
+            "source_modelled_comparisons".into(),
+            serde_json::json!(mean_u64(|c| c.source_modelled_comparisons)),
+        );
+        counters_mean.insert(
+            "source_modelled_transcendentals".into(),
+            serde_json::json!(mean_u64(|c| c.source_modelled_transcendentals)),
+        );
+        counters_mean.insert(
+            "dense_equivalent_fp_operations".into(),
+            serde_json::json!(mean_u64(|c| c.dense_equivalent_fp_operations)),
+        );
+        counters_mean.insert(
             "matvec_calls".into(),
             serde_json::json!(mean_u64(|c| c.matvec_calls)),
         );
@@ -603,6 +802,8 @@ pub fn aggregate_reports(reports: &[TokenCostReport]) -> AggregateLedger {
         buckets_us,
         device_gpu_execution_us: Percentiles::from_u64_slice(&gpu_exec),
         device_gpu_queue_wait_us: Percentiles::from_slice(&gpu_q),
+        device_gpu_execution_by_stage_us: gpu_execution_by_stage_us,
+        device_gpu_queue_wait_by_stage_us: gpu_queue_wait_by_stage_us,
         tokens_missing_gpu_timestamps: missing_gpu,
         counters_mean,
         geometry_active_bytes: geometry,
@@ -610,10 +811,12 @@ pub fn aggregate_reports(reports: &[TokenCostReport]) -> AggregateLedger {
         bytes_moved_total: Percentiles::from_u64_slice(&moved),
         notes: vec![
             "p50/p95/p99 are nearest-rank over complete decode tokens.",
-            "unattributed is never folded into cpu_residual_scoped.",
+            "unattributed is never folded into a semantic bucket; there is no catch-all orchestration line.",
             "device_gpu_* are independent of exclusive CPU buckets (overlap metal_synchronize_cpu_wait).",
+            "GPU stage time is a real CB timestamp grouped by dispatch tags; mixed CBs retain exact composition and are never proportionally split.",
             "gpu_queue_wait is derived only when GPU timestamps exist; otherwise unavailable, not proxied.",
             "profiler_overhead_us is ledger bookkeeping cost disclosed for every token.",
+            "operation counters are source-modelled, not hardware counters: FP includes FMA as two ops; packed integer/bitwise is a documented lower bound; dense-equivalent FP is separate.",
         ],
     }
 }
@@ -649,6 +852,18 @@ pub fn bucket_source_catalogue() -> Vec<serde_json::Value> {
         "timeline": "device",
     }));
     rows.push(serde_json::json!({
+        "name": "gpu_execution_by_stage_us",
+        "source": MetricSource::GpuTimestamp,
+        "note": "whole-CB GPU timestamp grouped by exact dispatch-stage composition; mixed CBs are not proportionally split",
+        "timeline": "device",
+    }));
+    rows.push(serde_json::json!({
+        "name": "gpu_queue_wait_by_stage_us",
+        "source": MetricSource::Derived,
+        "note": "whole-CB derived queue wait grouped by the same exact stage composition",
+        "timeline": "device",
+    }));
+    rows.push(serde_json::json!({
         "name": "counter_sample_gpu_ns",
         "source": MetricSource::CounterSample,
         "note": "only when timestamp counter set exists AND markers are encoded; otherwise unavailable",
@@ -681,7 +896,7 @@ struct Frame {
 
 struct TokenState {
     wall_start: Instant,
-    nanos: [u128; 15],
+    nanos: [u128; 18],
     stack: Vec<Frame>,
     counters: TokenCounters,
     /// Parallel to [`ActiveByteCategory::ALL`]; folded into
@@ -696,16 +911,24 @@ struct TokenState {
     fault_baseline: Option<(u64, u64)>,
 }
 
+fn add_json_u64(map: &mut serde_json::Map<String, serde_json::Value>, key: &str, value: u64) {
+    let prior = map.get(key).and_then(|v| v.as_u64()).unwrap_or(0);
+    map.insert(
+        key.to_string(),
+        serde_json::json!(prior.saturating_add(value)),
+    );
+}
+
 impl TokenState {
     fn new() -> Self {
         Self {
             wall_start: Instant::now(),
-            nanos: [0; 15],
+            nanos: [0; 18],
             stack: Vec::new(),
             counters: TokenCounters::default(),
             active_by_cat: [0; 8],
             transfers: Vec::new(),
-            geometry_active_bytes: None,
+            geometry_active_bytes: expected_fixed_active_bytes(),
             device: DeviceTimeline::default(),
             profiler_overhead_ns: 0,
             fault_baseline: sample_page_faults(),
@@ -797,13 +1020,22 @@ impl TokenState {
         let oh = Instant::now();
         match sample.gpu_execution_us {
             Some(exec) => {
-                self.device.gpu_execution_us =
-                    self.device.gpu_execution_us.saturating_add(exec);
+                self.device.gpu_execution_us = self.device.gpu_execution_us.saturating_add(exec);
+                add_json_u64(
+                    &mut self.device.gpu_execution_by_stage_us,
+                    &sample.stage_key,
+                    exec,
+                );
                 self.device.gpu_timestamps_observed =
                     self.device.gpu_timestamps_observed.saturating_add(1);
                 if let Some(q) = sample.gpu_queue_wait_us {
                     let acc = self.device.gpu_queue_wait_us.get_or_insert(0);
                     *acc = acc.saturating_add(q);
+                    add_json_u64(
+                        &mut self.device.gpu_queue_wait_by_stage_us,
+                        &sample.stage_key,
+                        q,
+                    );
                 }
             }
             None => {
@@ -895,14 +1127,11 @@ impl TokenState {
         if cat_sum < self.counters.active_bytes_read {
             let gap = self.counters.active_bytes_read - cat_sum;
             let other_idx = ActiveByteCategory::Other.index();
-            self.active_by_cat[other_idx] =
-                self.active_by_cat[other_idx].saturating_add(gap);
-            self.counters
-                .active_bytes_by_category
-                .insert(
-                    ActiveByteCategory::Other.as_str().to_string(),
-                    serde_json::json!(self.active_by_cat[other_idx]),
-                );
+            self.active_by_cat[other_idx] = self.active_by_cat[other_idx].saturating_add(gap);
+            self.counters.active_bytes_by_category.insert(
+                ActiveByteCategory::Other.as_str().to_string(),
+                serde_json::json!(self.active_by_cat[other_idx]),
+            );
         }
 
         let bytes_moved_total = self
@@ -917,13 +1146,11 @@ impl TokenState {
 
         // Device notes when timestamps were sparse.
         if self.device.gpu_timestamps_missing > 0 && self.device.notes.is_empty() {
-            self.device.notes.push(
-                "one or more command buffers lacked readable GPUStartTime/GPUEndTime",
-            );
+            self.device
+                .notes
+                .push("one or more command buffers lacked readable GPUStartTime/GPUEndTime");
         }
-        if self.device.gpu_timestamps_observed == 0
-            && self.counters.command_buffers_submitted > 0
-        {
+        if self.device.gpu_timestamps_observed == 0 && self.counters.command_buffers_submitted > 0 {
             self.device.notes.push(
                 "GPU timestamps unavailable this token; gpu_queue_wait_us left unset (no CPU proxy)",
             );
@@ -933,12 +1160,41 @@ impl TokenState {
                 "Metal timestamp counter set not probed this token; counter_samples_recorded=0",
             );
         } else if self.device.counter_sample_supported == Some(false) {
-            self.device.notes.push(
-                "device has no 'timestamp' common counter set; counter samples unavailable",
-            );
+            self.device
+                .notes
+                .push("device has no 'timestamp' common counter set; counter samples unavailable");
         } else if self.device.counter_samples_recorded == 0 {
+            self.device
+                .notes
+                .push("timestamp counter set present but no sample markers encoded this token");
+        }
+        if self
+            .device
+            .command_buffers
+            .iter()
+            .any(|cb| cb.stage_composition.len() > 1)
+        {
             self.device.notes.push(
-                "timestamp counter set present but no sample markers encoded this token",
+                "mixed-stage command buffers retain one whole-CB GPU timestamp plus exact dispatch composition; no proportional stage split",
+            );
+        }
+        if self.device.command_buffers.iter().any(|cb| {
+            cb.stage_composition
+                .iter()
+                .any(|s| s.stage == GpuStage::Untagged.as_str() && s.dispatches > 0)
+        }) {
+            self.device
+                .notes
+                .push("one or more GPU dispatches were untagged; this is an explicit profiler coverage gap");
+        }
+        if self
+            .device
+            .command_buffers
+            .iter()
+            .any(|cb| !cb.stage_dispatches_match_buffer)
+        {
+            self.device.notes.push(
+                "one or more command buffers have semantic stage dispatch totals that do not match their physical dispatch count",
             );
         }
 
@@ -1060,6 +1316,21 @@ thread_local! {
     /// `PROCESS_ENABLED` (env / process-wide `set_enabled`). Lets unit
     /// tests enable on one thread without racing siblings.
     static THREAD_ENABLED: std::cell::Cell<Option<bool>> = const { std::cell::Cell::new(None) };
+    /// Optional artifact-specific fixed active-byte expectation. The
+    /// Math-Preserve profiler sets this explicitly; ordinary runtime paths do
+    /// not inherit a flagship-only geometry.
+    static EXPECTED_FIXED_ACTIVE_BYTES: std::cell::Cell<Option<u64>> =
+        const { std::cell::Cell::new(None) };
+}
+
+fn expected_fixed_active_bytes() -> Option<u64> {
+    EXPECTED_FIXED_ACTIVE_BYTES.with(std::cell::Cell::get)
+}
+
+/// Configure the fixed portion of an artifact-specific active-byte contract
+/// for subsequently started tokens on this thread.
+pub fn set_expected_fixed_active_bytes(bytes: Option<u64>) {
+    EXPECTED_FIXED_ACTIVE_BYTES.with(|slot| slot.set(bytes));
 }
 
 /// Resolve `HAWKING_COST_LEDGER` once. Safe to call repeatedly.
@@ -1102,6 +1373,47 @@ pub fn is_recording() -> bool {
         return false;
     }
     TOKEN.with(|t| t.borrow().is_some())
+}
+
+fn gpu_stage_for_bucket(bucket: Bucket) -> Option<GpuStage> {
+    match bucket {
+        Bucket::AttentionAndIndexShare => Some(GpuStage::AttentionAndIndexShare),
+        Bucket::Routing => Some(GpuStage::Routing),
+        Bucket::DenseExperts => Some(GpuStage::DenseExperts),
+        Bucket::RoutedExperts => Some(GpuStage::RoutedExperts),
+        Bucket::SharedExperts => Some(GpuStage::SharedExperts),
+        Bucket::KvUpdate | Bucket::Norm => Some(GpuStage::KvAndNorm),
+        Bucket::FinalHead => Some(GpuStage::FinalHead),
+        Bucket::Sampling => Some(GpuStage::Sampling),
+        Bucket::EmbeddingAndPosition | Bucket::ResidualAndState => Some(GpuStage::Other),
+        Bucket::ArtifactVerificationAndSha
+        | Bucket::ContainerLookup
+        | Bucket::PackedIndexDecode
+        | Bucket::HostDeviceTransfer
+        | Bucket::MetalEncode
+        | Bucket::MetalSubmit
+        | Bucket::MetalSynchronize => None,
+    }
+}
+
+/// Semantic GPU stage of the nearest open scope on this thread.
+///
+/// Metal dispatch code calls this while encoding. It walks past nested lookup,
+/// decode, transfer, and Metal bookkeeping scopes to the owning semantic
+/// stage. `None` becomes an explicit `untagged` dispatch in the CB receipt.
+pub fn current_gpu_stage() -> Option<GpuStage> {
+    if !is_recording() {
+        return None;
+    }
+    TOKEN.with(|t| {
+        t.borrow().as_ref().and_then(|state| {
+            state
+                .stack
+                .iter()
+                .rev()
+                .find_map(|frame| gpu_stage_for_bucket(frame.bucket))
+        })
+    })
 }
 
 /// Start exclusive attribution for one decode token on this thread.
@@ -1196,8 +1508,7 @@ pub fn record_dispatches(n: u64) {
     }
     TOKEN.with(|t| {
         if let Some(state) = t.borrow_mut().as_mut() {
-            state.counters.dispatches_encoded =
-                state.counters.dispatches_encoded.saturating_add(n);
+            state.counters.dispatches_encoded = state.counters.dispatches_encoded.saturating_add(n);
         }
     });
 }
@@ -1226,6 +1537,28 @@ pub fn record_gpu_command_buffer(
     gpu_end_s: Option<f64>,
     dispatches_in_buffer: u64,
 ) {
+    record_gpu_command_buffer_staged(
+        host_commit_us,
+        host_wait_us,
+        gpu_start_s,
+        gpu_end_s,
+        dispatches_in_buffer,
+        &[],
+    );
+}
+
+/// Staged form of [`record_gpu_command_buffer`].
+///
+/// `stage_dispatches` is the exact count of dispatches tagged with each
+/// semantic stage. A multi-stage CB remains one mixed timestamp sample.
+pub fn record_gpu_command_buffer_staged(
+    host_commit_us: u64,
+    host_wait_us: u64,
+    gpu_start_s: Option<f64>,
+    gpu_end_s: Option<f64>,
+    dispatches_in_buffer: u64,
+    stage_dispatches: &[(GpuStage, u64)],
+) {
     if !is_recording() {
         return;
     }
@@ -1237,6 +1570,46 @@ pub fn record_gpu_command_buffer(
         }
         _ => (None, None),
     };
+    let mut stage_composition: Vec<GpuStageDispatchCount> = stage_dispatches
+        .iter()
+        .filter(|(_, n)| *n > 0)
+        .map(|(stage, dispatches)| GpuStageDispatchCount {
+            stage: stage.as_str(),
+            dispatches: *dispatches,
+        })
+        .collect();
+    let tagged_total = stage_composition
+        .iter()
+        .map(|stage| stage.dispatches)
+        .sum::<u64>();
+    if stage_composition.is_empty() {
+        stage_composition.push(GpuStageDispatchCount {
+            stage: GpuStage::Untagged.as_str(),
+            dispatches: dispatches_in_buffer,
+        });
+    } else if tagged_total < dispatches_in_buffer {
+        stage_composition.push(GpuStageDispatchCount {
+            stage: GpuStage::Untagged.as_str(),
+            dispatches: dispatches_in_buffer - tagged_total,
+        });
+    }
+    let stage_dispatches_total = stage_composition
+        .iter()
+        .map(|stage| stage.dispatches)
+        .sum::<u64>();
+    let stage_dispatches_match_buffer = stage_dispatches_total == dispatches_in_buffer;
+    let stage_key = if stage_composition.len() == 1 {
+        stage_composition[0].stage.to_string()
+    } else {
+        format!(
+            "mixed:{}",
+            stage_composition
+                .iter()
+                .map(|s| s.stage)
+                .collect::<Vec<_>>()
+                .join("+")
+        )
+    };
     let sample = GpuCommandBufferSample {
         host_commit_us,
         host_wait_us,
@@ -1245,6 +1618,10 @@ pub fn record_gpu_command_buffer(
         gpu_start_s,
         gpu_end_s,
         dispatches_in_buffer,
+        stage_key,
+        stage_composition,
+        stage_dispatches_total,
+        stage_dispatches_match_buffer,
     };
     TOKEN.with(|t| {
         if let Some(state) = t.borrow_mut().as_mut() {
@@ -1317,8 +1694,7 @@ pub fn record_allocation(bytes: u64) {
     TOKEN.with(|t| {
         if let Some(state) = t.borrow_mut().as_mut() {
             state.counters.allocations = state.counters.allocations.saturating_add(1);
-            state.counters.allocation_bytes =
-                state.counters.allocation_bytes.saturating_add(bytes);
+            state.counters.allocation_bytes = state.counters.allocation_bytes.saturating_add(bytes);
         }
     });
 }
@@ -1350,6 +1726,58 @@ pub fn record_active_bytes_for(name: &str, bytes: u64) {
     record_active_bytes_in(classify_weight_name(name), bytes);
 }
 
+/// Record one routed projection's representation and extent.
+///
+/// The live representation label supplies the route-conditioned expected
+/// geometry; `actual_bytes` remains separately auditable. Unknown codecs or
+/// widened natives land in `Other` and do not extend expected geometry, so a
+/// recovered-profiler acceptance check fails instead of normalizing them.
+pub fn record_routed_weight_representation(
+    name: &str,
+    representation: RoutedWeightRepresentation,
+    actual_bytes: u64,
+) {
+    if !is_recording() || classify_weight_name(name) != ActiveByteCategory::RoutedExperts {
+        return;
+    }
+    TOKEN.with(|t| {
+        if let Some(state) = t.borrow_mut().as_mut() {
+            let routed = &mut state.counters.routed_representations;
+            let expected_bytes = match representation {
+                RoutedWeightRepresentation::R4 => {
+                    routed.r4_projection_touches = routed.r4_projection_touches.saturating_add(1);
+                    routed.r4_active_bytes = routed.r4_active_bytes.saturating_add(actual_bytes);
+                    Some(MATH_PRESERVE_R4_PROJECTION_BYTES)
+                }
+                RoutedWeightRepresentation::R0 => {
+                    routed.r0_projection_touches = routed.r0_projection_touches.saturating_add(1);
+                    routed.r0_active_bytes = routed.r0_active_bytes.saturating_add(actual_bytes);
+                    Some(MATH_PRESERVE_R0_PROJECTION_BYTES)
+                }
+                RoutedWeightRepresentation::NativeBf16 => {
+                    routed.native_bf16_projection_touches =
+                        routed.native_bf16_projection_touches.saturating_add(1);
+                    routed.native_bf16_active_bytes =
+                        routed.native_bf16_active_bytes.saturating_add(actual_bytes);
+                    Some(MATH_PRESERVE_NATIVE_BF16_PROJECTION_BYTES)
+                }
+                RoutedWeightRepresentation::Other => {
+                    routed.other_projection_touches =
+                        routed.other_projection_touches.saturating_add(1);
+                    routed.other_active_bytes =
+                        routed.other_active_bytes.saturating_add(actual_bytes);
+                    None
+                }
+            };
+            if let (Some(geometry), Some(expected)) =
+                (state.geometry_active_bytes.as_mut(), expected_bytes)
+            {
+                *geometry = geometry.saturating_add(expected);
+            }
+        }
+    });
+}
+
 pub fn record_first_touch_load_bytes(bytes: u64) {
     if !is_recording() {
         return;
@@ -1379,8 +1807,7 @@ pub fn record_matvec_batch(items: u64) {
     }
     TOKEN.with(|t| {
         if let Some(state) = t.borrow_mut().as_mut() {
-            state.counters.matvec_batch_calls =
-                state.counters.matvec_batch_calls.saturating_add(1);
+            state.counters.matvec_batch_calls = state.counters.matvec_batch_calls.saturating_add(1);
             state.counters.matvec_batch_items =
                 state.counters.matvec_batch_items.saturating_add(items);
         }
@@ -1415,21 +1842,63 @@ pub fn record_sha_verification() {
     }
     TOKEN.with(|t| {
         if let Some(state) = t.borrow_mut().as_mut() {
-            state.counters.sha_verifications =
-                state.counters.sha_verifications.saturating_add(1);
+            state.counters.sha_verifications = state.counters.sha_verifications.saturating_add(1);
         }
     });
 }
 
-/// Record abstract operation count (e.g. estimated FMAs or scored attention
-/// cells). Units are caller-defined; the report surfaces the sum only.
+/// Compatibility helper for callers that only have one source-modelled
+/// floating-point operation count. Prefer
+/// [`record_source_modelled_operations`] for new profiler hooks.
 pub fn record_operations(n: u64) {
-    if n == 0 || !is_recording() {
+    record_source_modelled_operations(n, 0, 0, 0, 0);
+}
+
+/// Record source-modelled arithmetic for the executed path.
+///
+/// These counts come from loop bounds and kernel source, not hardware
+/// counters. `integer_bitwise_lower_bound` intentionally excludes address
+/// arithmetic/compiler transformations. `dense_equivalent_fp` is a separate
+/// mathematical contraction comparator, never substituted for executed work.
+pub fn record_source_modelled_operations(
+    fp: u64,
+    integer_bitwise_lower_bound: u64,
+    comparisons: u64,
+    transcendentals: u64,
+    dense_equivalent_fp: u64,
+) {
+    let total = fp
+        .saturating_add(integer_bitwise_lower_bound)
+        .saturating_add(comparisons)
+        .saturating_add(transcendentals);
+    if (total == 0 && dense_equivalent_fp == 0) || !is_recording() {
         return;
     }
     TOKEN.with(|t| {
         if let Some(state) = t.borrow_mut().as_mut() {
-            state.counters.operations = state.counters.operations.saturating_add(n);
+            state.counters.operations = state.counters.operations.saturating_add(total);
+            state.counters.source_modelled_fp_operations = state
+                .counters
+                .source_modelled_fp_operations
+                .saturating_add(fp);
+            state
+                .counters
+                .source_modelled_integer_bitwise_ops_lower_bound = state
+                .counters
+                .source_modelled_integer_bitwise_ops_lower_bound
+                .saturating_add(integer_bitwise_lower_bound);
+            state.counters.source_modelled_comparisons = state
+                .counters
+                .source_modelled_comparisons
+                .saturating_add(comparisons);
+            state.counters.source_modelled_transcendentals = state
+                .counters
+                .source_modelled_transcendentals
+                .saturating_add(transcendentals);
+            state.counters.dense_equivalent_fp_operations = state
+                .counters
+                .dense_equivalent_fp_operations
+                .saturating_add(dense_equivalent_fp);
         }
     });
 }
@@ -1461,17 +1930,64 @@ pub fn set_geometry_active_bytes(bytes: u64) {
     });
 }
 
-/// Default geometry quoted by BASE_RUNTIME_MAXIMIZED_GATE for the sealed
-/// Math-Preserve artifact (8 × 3 × 1_378_368 × 78).
+/// Exact fixed Math-Preserve resident-source extent per promoted decode token:
+/// attention, dense MLP, shared experts, full indexers, routers, and the
+/// native-bf16 head. Routed experts are added from live representation
+/// evidence by [`record_routed_weight_representation`].
+pub const MATH_PRESERVE_FIXED_ACTIVE_BYTES: u64 = 3_054_873_024;
+pub const MATH_PRESERVE_EXPECTED_ROUTED_EXPERTS: u64 = 75 * 8;
+pub const MATH_PRESERVE_EXPECTED_ROUTED_PROJECTIONS: u64 =
+    MATH_PRESERVE_EXPECTED_ROUTED_EXPERTS * 3;
+pub const MATH_PRESERVE_R4_PROJECTION_BYTES: u64 = 409_604;
+pub const MATH_PRESERVE_R0_PROJECTION_BYTES: u64 = 1_378_308;
+pub const MATH_PRESERVE_NATIVE_BF16_PROJECTION_BYTES: u64 = 25_165_824;
+pub const MATH_PRESERVE_WHOLE_TOKEN_MIN_ACTIVE_BYTES: u64 = 3_792_160_224;
+pub const MATH_PRESERVE_WHOLE_TOKEN_MAX_ACTIVE_BYTES: u64 = 45_570_216_852;
+
+/// Header-only current-artifact contract. `active_bytes_read` is a
+/// resident-source extent/touch metric, not a physical-DRAM counter.
+#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+pub struct MathPreserveActiveByteContract {
+    pub authority: &'static str,
+    pub metric: &'static str,
+    pub fixed_active_bytes: u64,
+    pub expected_routed_experts: u64,
+    pub expected_routed_projections: u64,
+    pub r4_projection_bytes: u64,
+    pub r0_projection_bytes: u64,
+    pub native_bf16_projection_bytes: u64,
+    pub whole_token_min_bytes: u64,
+    pub whole_token_layer_constrained_max_bytes: u64,
+    pub physical_dram_claim: &'static str,
+}
+
+pub fn math_preserve_active_byte_contract() -> MathPreserveActiveByteContract {
+    MathPreserveActiveByteContract {
+        authority: "reports/base_runtime/GLM52_MATH_PRESERVE_RESIDENT_BF16_BYTE_CENSUS.json",
+        metric: "resident source extent touched once per scheduled matvec",
+        fixed_active_bytes: MATH_PRESERVE_FIXED_ACTIVE_BYTES,
+        expected_routed_experts: MATH_PRESERVE_EXPECTED_ROUTED_EXPERTS,
+        expected_routed_projections: MATH_PRESERVE_EXPECTED_ROUTED_PROJECTIONS,
+        r4_projection_bytes: MATH_PRESERVE_R4_PROJECTION_BYTES,
+        r0_projection_bytes: MATH_PRESERVE_R0_PROJECTION_BYTES,
+        native_bf16_projection_bytes: MATH_PRESERVE_NATIVE_BF16_PROJECTION_BYTES,
+        whole_token_min_bytes: MATH_PRESERVE_WHOLE_TOKEN_MIN_ACTIVE_BYTES,
+        whole_token_layer_constrained_max_bytes: MATH_PRESERVE_WHOLE_TOKEN_MAX_ACTIVE_BYTES,
+        physical_dram_claim: "none; hardware cache/DRAM counters remain required",
+    }
+}
+
+/// Historical General-R0 gate geometry (8 × 3 × 1_378_368 × 78).
 ///
 /// **This is not the full per-token weight traffic.** It only counts routed
 /// expert projections under an idealised 78-sparse-layer schedule. The sealed
 /// General-R0 artifact has 3 dense MLP layers + 75 sparse, plus attention,
 /// indexer, router, shared expert, and a native `lm_head` every token. See
-/// [`sealed_glm_active_byte_schedule`].
+/// [`sealed_glm_active_byte_schedule`]. It is not current Math-Preserve
+/// evidence and is retained only for interpreting historical receipts.
 pub const SEALED_ARTIFACT_ACTIVE_ROUTED_BYTES: u64 = 8 * 3 * 1_378_368 * 78;
 
-/// Sealed General-R0 / Math-Preserve sizes used by the static active-byte
+/// Historical General-R0 sizes used by the legacy static active-byte
 /// schedule. **Derived from shard headers on disk** (descriptor `bytes` for
 /// `gravity-pq`; f32-widened element count for `native.bf16`). Not live GPU
 /// measurements. GPU path active bytes for PQ are `codebooks.length() +
@@ -1491,8 +2007,7 @@ pub mod sealed_glm_sizes {
         1_378_368 + 3_672_128 + 389_184 + 1_607_744 + 11_012_160;
     /// Full-indexer natives, **f32-widened** (stored bf16 × 2).
     /// wq_b 16_777_216 + wk 1_572_864 + weights_proj 393_216, each ×2.
-    pub const INDEXER_PER_FULL_LAYER_F32_BYTES: u64 =
-        (16_777_216 + 1_572_864 + 393_216) * 2;
+    pub const INDEXER_PER_FULL_LAYER_F32_BYTES: u64 = (16_777_216 + 1_572_864 + 393_216) * 2;
     /// Router `mlp.gate.weight` f32-widened (stored bf16 3_145_728).
     pub const ROUTER_F32_BYTES: u64 = 3_145_728 * 2;
     /// `lm_head.weight` f32-widened: 154_880 × 6_144 × 4.
@@ -1501,7 +2016,7 @@ pub mod sealed_glm_sizes {
     pub const LM_HEAD_BF16_BYTES: u64 = 154_880 * 6_144 * 2;
 }
 
-/// Static per-token active-byte schedule for the sealed GLM MoE forward.
+/// Historical General-R0 per-token active-byte schedule.
 ///
 /// Built from architecture counts × sealed tensor sizes. This is what
 /// `active_bytes_read` **should** be on the GPU path if every matvec records
@@ -1530,7 +2045,7 @@ pub struct SealedGlmActiveByteSchedule {
     pub native_f32_widen_tax_bytes: u64,
 }
 
-/// Static schedule for the sealed Math-Preserve forward (no device needed).
+/// Historical General-R0 schedule (no device needed).
 pub fn sealed_glm_active_byte_schedule() -> SealedGlmActiveByteSchedule {
     use sealed_glm_sizes::*;
     let n_layers = 78u64;
@@ -1552,7 +2067,7 @@ pub fn sealed_glm_active_byte_schedule() -> SealedGlmActiveByteSchedule {
         + (INDEXER_PER_FULL_LAYER_F32_BYTES / 2) * n_full_idx // half of f32 is the tax
         + (ROUTER_F32_BYTES / 2) * n_sparse;
     SealedGlmActiveByteSchedule {
-        method: "static_from_sealed_artifact_headers_and_forward_schedule",
+        method: "historical_general_r0_static_from_headers_and_forward_schedule",
         n_layers,
         n_sparse_layers: n_sparse,
         n_dense_mlp_layers: n_dense,
@@ -1572,9 +2087,9 @@ pub fn sealed_glm_active_byte_schedule() -> SealedGlmActiveByteSchedule {
     }
 }
 
-/// Compute geometry from arch fields when the per-projection byte size is
-/// known (from a live PQ header). Falls back to the sealed constant when
-/// `bytes_per_projection` is `None`.
+/// Historical routed-only geometry helper. Current Math-Preserve profiling
+/// seeds [`MATH_PRESERVE_FIXED_ACTIVE_BYTES`] and extends it from live routed
+/// representation evidence instead.
 pub fn geometry_active_bytes(
     n_layers: usize,
     experts_per_tok: usize,
@@ -1713,11 +2228,7 @@ mod tests {
             assert!(enc >= 3_000, "encode us={enc}");
             assert!(attn >= 6_000, "attn exclusive us={attn}");
             assert!(route >= 3_000, "route us={route}");
-            let sum: u64 = report
-                .buckets_us
-                .values()
-                .filter_map(|v| v.as_u64())
-                .sum();
+            let sum: u64 = report.buckets_us.values().filter_map(|v| v.as_u64()).sum();
             assert_eq!(sum, report.attributed_us);
             // Exclusive identity: attributed + unattributed ≈ wall (within 1ms slack).
             let covered = report.attributed_us + report.unattributed_us;
@@ -1752,9 +2263,7 @@ mod tests {
             assert!(report.unattributed_us >= 2_000);
             assert!(report.unattributed_signed_us > 0);
             assert_eq!(report.unattributed_name, "unattributed");
-            // Hard rule: remainder is NOT in cpu_residual_scoped.
-            let residual = report.buckets_us["cpu_residual_scoped"].as_u64().unwrap();
-            assert_eq!(residual, 0);
+            assert!(!report.buckets_us.contains_key("cpu_residual_scoped"));
         });
     }
 
@@ -1792,6 +2301,7 @@ mod tests {
             assert_eq!(report.counters.allocations, 1);
             assert_eq!(report.counters.active_bytes_read, 1_378_368);
             assert_eq!(report.counters.operations, 1_000_000);
+            assert_eq!(report.counters.source_modelled_fp_operations, 1_000_000);
             assert_eq!(report.counters.residency_bytes, Some(32 << 30));
             assert_eq!(
                 report.geometry_active_bytes,
@@ -1831,7 +2341,7 @@ mod tests {
     }
 
     #[test]
-    fn geometry_helper_matches_gate_number() {
+    fn historical_general_r0_geometry_helper_matches_old_gate_number() {
         // 8 experts × 3 projections × 1_378_368 × 78 layers ≈ 2.58 GB.
         let g = geometry_active_bytes(78, 8, Some(1_378_368));
         assert_eq!(g, SEALED_ARTIFACT_ACTIVE_ROUTED_BYTES);
@@ -1881,14 +2391,8 @@ mod tests {
         with_clean_ledger(|| {
             assert!(begin_token());
             record_active_bytes_for("lm_head.weight", 100);
-            record_active_bytes_for(
-                "model.layers.3.mlp.experts.0.gate_proj.weight",
-                200,
-            );
-            record_active_bytes_for(
-                "model.layers.3.mlp.shared_experts.up_proj.weight",
-                50,
-            );
+            record_active_bytes_for("model.layers.3.mlp.experts.0.gate_proj.weight", 200);
+            record_active_bytes_for("model.layers.3.mlp.shared_experts.up_proj.weight", 50);
             record_active_bytes_for("model.layers.0.self_attn.q_a_proj.weight", 30);
             record_active_bytes(7); // uncategorized → other
             let report = end_token().expect("report");
@@ -1908,7 +2412,7 @@ mod tests {
     }
 
     #[test]
-    fn sealed_static_schedule_matches_header_derived_constants() {
+    fn historical_general_r0_static_schedule_matches_header_derived_constants() {
         // STATIC (not live-measured): sizes taken from General-R0 shard
         // headers on 2026-07-26. See OVERREAD_BYTE_LEDGER.json.
         let s = sealed_glm_active_byte_schedule();
@@ -1934,20 +2438,85 @@ mod tests {
     }
 
     #[test]
+    fn math_preserve_contract_and_live_route_conditioning_are_exact() {
+        let contract = math_preserve_active_byte_contract();
+        assert_eq!(contract.fixed_active_bytes, 3_054_873_024);
+        assert_eq!(contract.expected_routed_experts, 600);
+        assert_eq!(contract.expected_routed_projections, 1_800);
+        assert_eq!(contract.r4_projection_bytes, 409_604);
+        assert_eq!(contract.r0_projection_bytes, 1_378_308);
+        assert_eq!(contract.native_bf16_projection_bytes, 25_165_824);
+        assert_eq!(contract.whole_token_min_bytes, 3_792_160_224);
+        assert_eq!(
+            contract.whole_token_layer_constrained_max_bytes,
+            45_570_216_852
+        );
+
+        with_clean_ledger(|| {
+            set_expected_fixed_active_bytes(Some(MATH_PRESERVE_FIXED_ACTIVE_BYTES));
+            assert!(begin_token());
+            let name = "model.layers.3.mlp.experts.7.gate_proj.weight";
+            record_routed_weight_representation(
+                name,
+                RoutedWeightRepresentation::R4,
+                MATH_PRESERVE_R4_PROJECTION_BYTES,
+            );
+            record_routed_weight_representation(
+                name,
+                RoutedWeightRepresentation::R0,
+                MATH_PRESERVE_R0_PROJECTION_BYTES,
+            );
+            record_routed_weight_representation(
+                name,
+                RoutedWeightRepresentation::NativeBf16,
+                MATH_PRESERVE_NATIVE_BF16_PROJECTION_BYTES,
+            );
+            record_routed_weight_representation(
+                "model.layers.3.mlp.shared_experts.gate_proj.weight",
+                RoutedWeightRepresentation::Other,
+                99,
+            );
+            let report = end_token().expect("route-conditioned report");
+            let routed = &report.counters.routed_representations;
+            assert_eq!(routed.r4_projection_touches, 1);
+            assert_eq!(routed.r0_projection_touches, 1);
+            assert_eq!(routed.native_bf16_projection_touches, 1);
+            assert_eq!(routed.other_projection_touches, 0);
+            assert_eq!(
+                report.geometry_active_bytes,
+                Some(
+                    MATH_PRESERVE_FIXED_ACTIVE_BYTES
+                        + MATH_PRESERVE_R4_PROJECTION_BYTES
+                        + MATH_PRESERVE_R0_PROJECTION_BYTES
+                        + MATH_PRESERVE_NATIVE_BF16_PROJECTION_BYTES
+                )
+            );
+            set_expected_fixed_active_bytes(None);
+        });
+    }
+
+    #[test]
     fn bucket_names_are_gate_stable() {
         let names: Vec<_> = Bucket::ALL.iter().map(|b| b.as_str()).collect();
         assert!(names.contains(&"artifact_verification_and_sha"));
         assert!(names.contains(&"metal_encode"));
         assert!(names.contains(&"metal_submit"));
         assert!(names.contains(&"metal_synchronize_cpu_wait"));
+        assert!(names.contains(&"embedding_and_position"));
         assert!(names.contains(&"attention_and_indexshare"));
+        assert!(names.contains(&"routing"));
+        assert!(names.contains(&"dense_experts"));
+        assert!(names.contains(&"shared_experts"));
         assert!(names.contains(&"routed_experts"));
+        assert!(names.contains(&"kv_update"));
+        assert!(names.contains(&"residual_and_state"));
+        assert!(names.contains(&"final_head"));
+        assert!(names.contains(&"sampling"));
         assert!(names.contains(&"norm"));
-        assert!(names.contains(&"cpu_residual_scoped"));
-        // Hard rule: no bucket literally named "orchestration" that absorbs remainder.
-        assert!(!names.iter().any(|n| *n == "cpu_orchestration"));
-        assert!(!names.iter().any(|n| *n == "orchestration"));
-        assert_eq!(names.len(), 15);
+        // Hard rule: no generic line that can absorb unexplained wall.
+        assert!(!names.iter().any(|n| n.contains("orchestration")));
+        assert!(!names.iter().any(|n| n.contains("residual_scoped")));
+        assert_eq!(names.len(), 18);
     }
 
     #[test]
@@ -2001,11 +2570,7 @@ mod tests {
             ));
             assert_eq!(reports[i].attributed_us, attributed);
             assert_eq!(reports[i].unattributed_us, wall - attributed);
-            // Never absorb into residual scoped bucket.
-            assert_eq!(
-                reports[i].buckets_us["cpu_residual_scoped"].as_u64().unwrap(),
-                0
-            );
+            assert!(!reports[i].buckets_us.contains_key("cpu_residual_scoped"));
         }
 
         let agg = aggregate_reports(&reports);
@@ -2027,7 +2592,9 @@ mod tests {
             Some(SEALED_ARTIFACT_ACTIVE_ROUTED_BYTES)
         );
         // Active bytes ≈ geometry.
-        assert!((agg.active_bytes_read.mean - SEALED_ARTIFACT_ACTIVE_ROUTED_BYTES as f64).abs() < 1.0);
+        assert!(
+            (agg.active_bytes_read.mean - SEALED_ARTIFACT_ACTIVE_ROUTED_BYTES as f64).abs() < 1.0
+        );
     }
 
     #[test]
@@ -2044,6 +2611,7 @@ mod tests {
             counter_samples_recorded: 0,
             command_buffers: Vec::new(),
             notes: vec!["device has no timestamp counter set"],
+            ..DeviceTimeline::default()
         };
         let r = synthetic_report(
             100_000,
@@ -2082,6 +2650,122 @@ mod tests {
             assert_eq!(report.device.gpu_timestamps_missing, 1);
             assert_eq!(report.device.gpu_execution_us, 0);
             assert!(report.device.gpu_queue_wait_us.is_none());
+        });
+    }
+
+    #[test]
+    fn staged_gpu_timestamps_keep_mixed_command_buffers_whole() {
+        with_clean_ledger(|| {
+            assert!(begin_token());
+            record_gpu_command_buffer_staged(
+                5,
+                5_000,
+                Some(10.0),
+                Some(10.003),
+                3,
+                &[(GpuStage::FinalHead, 1), (GpuStage::Sampling, 2)],
+            );
+            let report = end_token().expect("report");
+            let key = "mixed:final_head+sampling";
+            assert_eq!(
+                report.device.gpu_execution_by_stage_us[key]
+                    .as_u64()
+                    .unwrap(),
+                3_000
+            );
+            assert_eq!(
+                report.device.gpu_queue_wait_by_stage_us[key]
+                    .as_u64()
+                    .unwrap(),
+                2_000
+            );
+            let cb = &report.device.command_buffers[0];
+            assert_eq!(cb.stage_key, key);
+            assert_eq!(cb.stage_composition.len(), 2);
+            assert_eq!(cb.stage_composition[0].dispatches, 1);
+            assert_eq!(cb.stage_composition[1].dispatches, 2);
+            assert_eq!(cb.stage_dispatches_total, 3);
+            assert!(cb.stage_dispatches_match_buffer);
+            assert!(!report
+                .device
+                .gpu_execution_by_stage_us
+                .contains_key("final_head"));
+        });
+    }
+
+    #[test]
+    fn semantic_scope_walk_and_sparse_mixed_composition_are_exact() {
+        with_clean_ledger(|| {
+            assert!(begin_token());
+            assert_eq!(current_gpu_stage(), None);
+            {
+                let _head = Scope::new(Bucket::FinalHead);
+                assert_eq!(current_gpu_stage(), Some(GpuStage::FinalHead));
+                {
+                    let _sampling = Scope::new(Bucket::Sampling);
+                    assert_eq!(current_gpu_stage(), Some(GpuStage::Sampling));
+                }
+                assert_eq!(current_gpu_stage(), Some(GpuStage::FinalHead));
+            }
+
+            record_gpu_command_buffer_staged(
+                5,
+                4_000,
+                Some(20.0),
+                Some(20.002),
+                9,
+                &[(GpuStage::RoutedExperts, 8), (GpuStage::SharedExperts, 1)],
+            );
+            let report = end_token().expect("report");
+            let cb = &report.device.command_buffers[0];
+            assert_eq!(cb.stage_key, "mixed:routed_experts+shared_experts");
+            assert_eq!(
+                cb.stage_composition,
+                vec![
+                    GpuStageDispatchCount {
+                        stage: "routed_experts",
+                        dispatches: 8,
+                    },
+                    GpuStageDispatchCount {
+                        stage: "shared_experts",
+                        dispatches: 1,
+                    },
+                ]
+            );
+            assert_eq!(cb.stage_dispatches_total, 9);
+            assert!(cb.stage_dispatches_match_buffer);
+            let exec = report.device.gpu_execution_by_stage_us[&cb.stage_key]
+                .as_u64()
+                .unwrap();
+            assert!((1_999..=2_000).contains(&exec), "gpu timestamp us={exec}");
+        });
+    }
+
+    #[test]
+    fn staged_recorder_turns_missing_tags_into_explicit_untagged_dispatches() {
+        with_clean_ledger(|| {
+            assert!(begin_token());
+            record_gpu_command_buffer_staged(
+                1,
+                1,
+                Some(30.0),
+                Some(30.001),
+                3,
+                &[(GpuStage::Routing, 1)],
+            );
+            let report = end_token().expect("report");
+            let cb = &report.device.command_buffers[0];
+            assert_eq!(cb.stage_dispatches_total, 3);
+            assert!(cb.stage_dispatches_match_buffer);
+            assert_eq!(cb.stage_composition[0].stage, "routing");
+            assert_eq!(cb.stage_composition[0].dispatches, 1);
+            assert_eq!(cb.stage_composition[1].stage, "untagged");
+            assert_eq!(cb.stage_composition[1].dispatches, 2);
+            assert!(report
+                .device
+                .notes
+                .iter()
+                .any(|note| note.contains("untagged")));
         });
     }
 }

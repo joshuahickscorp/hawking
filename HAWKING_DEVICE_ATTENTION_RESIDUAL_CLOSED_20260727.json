@@ -1,0 +1,110 @@
+{
+  "schema": "hawking.temporal_gravity.mechanism_receipt.v1",
+  "created_at_utc": "2026-07-27T05:34:00Z",
+  "status": "PARITY_QUALIFIED_DEFAULT_OFF_DEVICE_GRAPH",
+  "mechanism": "Append the post-attention elementwise residual add to the qualified compact-attention command buffer before its existing commit.",
+  "base_commit": "7ef26690a53c8cb786249457fb8b91a1c62d85fd",
+  "scope": {
+    "admission": "existing default-off compact MLA plus device DSA closed-prelude path",
+    "default_path_changed": false,
+    "post_attention_rmsnorm_changed": false,
+    "router_changed": false,
+    "sealed_math_preserve_touched": false,
+    "mop_touched": false
+  },
+  "graph_change": {
+    "new_command_buffers_per_layer": 0,
+    "new_waits_per_layer": 0,
+    "new_dispatches_per_admitted_layer": 1,
+    "host_operations_removed_per_admitted_layer": [
+      "read hidden-wide residual state",
+      "read hidden-wide attention output",
+      "write hidden-wide residual state"
+    ],
+    "source_modelled_host_bytes_removed_formula": "3 * hidden_size * sizeof(f32) per admitted layer",
+    "flagship_hidden_size": 6144,
+    "flagship_layers": 78,
+    "flagship_source_modelled_host_bytes_removed_per_token": 5750784,
+    "flagship_static_wait_estimate_before": 388,
+    "flagship_static_wait_estimate_after": 388
+  },
+  "numeric_parity_v2_1": {
+    "authority": "explicit FP64 complete-token logits",
+    "prompts": 4,
+    "device_relative_l2": [
+      5.852e-07,
+      4.742e-07,
+      5.614e-07,
+      8.067e-07
+    ],
+    "device_max_meaningful_relative": [
+      9.726e-06,
+      9.773e-06,
+      3.016e-06,
+      7.717e-06
+    ],
+    "greedy_exact_all_prompts": true,
+    "top5_exact_all_prompts": true,
+    "dsa_selection_exact_all_prompts": true,
+    "expert_selection_exact_all_prompts": true,
+    "metrics_identical_to_qualified_base": true,
+    "result": "PASS"
+  },
+  "physical_fixture": {
+    "kind": "deterministic one-layer, 16-vocabulary complete-token direct-u8 PQ fixture",
+    "host_rank_waits": [
+      27,
+      9,
+      18,
+      27
+    ],
+    "device_rank_waits": [
+      15,
+      5,
+      10,
+      15
+    ],
+    "waits_identical_to_qualified_base": true,
+    "result": "PASS"
+  },
+  "validation": {
+    "full_core_library": {
+      "command": "cargo test -p hawking-core --lib -- --nocapture",
+      "passed": 220,
+      "failed": 0,
+      "ignored": 3
+    },
+    "default_resident_parity": {
+      "command": "env -u HAWKING_GLM_GPU_COMPACT_MLA -u HAWKING_GLM_GPU_DEVICE_DSA cargo test -p hawking-core --test gravity_glm_resident_parity -- --nocapture",
+      "passed": 3,
+      "failed": 0
+    },
+    "default_gpu_forward": {
+      "command": "env -u HAWKING_GLM_GPU_COMPACT_MLA -u HAWKING_GLM_GPU_DEVICE_DSA cargo test -p hawking-core --test gravity_glm_gpu_forward -- --nocapture",
+      "passed": 3,
+      "failed": 0
+    },
+    "compact_complete_token": {
+      "command": "HAWKING_GLM_COMPACT_FIXTURE_DIR=$FIXTURE cargo test -p hawking-core --test gravity_glm_compact_mla_live_parity -- --nocapture",
+      "passed": 1,
+      "failed": 0,
+      "complete_token_prompts": 4
+    },
+    "changed_rust_file_rustfmt": "PASS",
+    "diff_check": "PASS"
+  },
+  "mop_observation": {
+    "principal_receipts": 8,
+    "workers_observed_active": 16,
+    "expected_workers_after_receipts": 16,
+    "state": "NORMAL_PARTIAL_COMPLETION_NOT_CONTENTION_CLEAR",
+    "action": "none"
+  },
+  "promotion_gate": {
+    "parity_qualified": true,
+    "device_state_qualified": true,
+    "flagship_performance_promoted": false,
+    "reason": "Active MOP forbids sealed-model A/B; the bounded fixture proves correctness and unchanged waits, not throughput.",
+    "next_boundary": "Post-attention RMSNorm remains host-visible; the combined residual-plus-normalization experiment is separately rejected under the unchanged V2.1 bound."
+  }
+}

@@ -1,0 +1,140 @@
+{
+  "schema": "hawking.gravity.compact_mla.three_dispatch_chain.v1",
+  "at_utc": "2026-07-27T03:40:09Z",
+  "observed_base_sha": "727bbf40ac089dbb723ce9613b535f1f50f1942b",
+  "status": "SYNTHETIC_CHAIN_PROOF_NOT_PROMOTED",
+  "scope": {
+    "runtime_or_default_change": false,
+    "flag_change": false,
+    "sealed_artifact_change": false,
+    "sealed_payload_read": false,
+    "mop_change": false,
+    "live_model_run": false,
+    "production_reachable": false,
+    "code_change": "one test-only chain composition in crates/hawking-core/src/gravity_glm_resident.rs"
+  },
+  "authorities": {
+    "cpu_algebra_and_order_proof": "HAWKING_COMPACT_MLA_PARITY_PROOF_20260727.json",
+    "production_feasibility_audit": "HAWKING_COMPACT_MLA_PRODUCTION_FEASIBILITY_AUDIT_20260727.json",
+    "k_transpose_candidate": "HAWKING_PQ_K_TRANSPOSE_CANDIDATE_20260727.json",
+    "ranked_attention_candidate": "HAWKING_COMPACT_RANKED_ATTENTION_CANDIDATE_20260727.json",
+    "v_rows_candidate": "HAWKING_PQ_V_ROWS_CANDIDATE_20260727.json",
+    "numeric_contract": "hawking.numeric_parity.v2.1"
+  },
+  "chain": {
+    "dispatches": [
+      "gravity_pq_k_transpose_heads",
+      "gravity_glm_compact_ranked_attn with query_latent and weighted_latent aliased",
+      "gravity_pq_v_rows_heads"
+    ],
+    "dispatch_count": 3,
+    "one_command_buffer": true,
+    "cross_dispatch_readback": false,
+    "dense_kv_reconstruction": false,
+    "input_state": [
+      "prefilled compact latent cache",
+      "prefilled shared RoPE cache",
+      "rotated query RoPE",
+      "stable DSA-ranked selected-position list"
+    ],
+    "output": "head-major context after the value projection",
+    "excluded_from_this_chain": [
+      "compact cache append, already proven exact separately",
+      "DSA score/top-k production wiring, already proven as isolated primitives",
+      "o_proj, algebraically unchanged and already accepted by the existing PQ matvec",
+      "runtime cache allocation and default-off production wiring"
+    ]
+  },
+  "fixture": {
+    "source": "same deterministic seeds, dimensions, and stable rank list as crates/hawking-core/tests/gravity_glm_compact_mla_parity.rs",
+    "dimensions": {
+      "tokens": 11,
+      "heads": 3,
+      "latent": 17,
+      "content_key_rows": 13,
+      "rope": 4,
+      "value_rows": 9,
+      "selected": 7
+    },
+    "ranked_positions": [
+      6,
+      2,
+      5,
+      9,
+      8,
+      0,
+      3
+    ],
+    "ascending_positions": [
+      0,
+      2,
+      3,
+      5,
+      6,
+      8,
+      9
+    ],
+    "pq_representation": {
+      "kind": "synthetic direct-u8 single-subspace",
+      "d": 17,
+      "sub": 17,
+      "cardinality": 256,
+      "bits": 8,
+      "chunks_per_row": 1,
+      "construction": "Each logical K/V row receives one unique code and one f16 codebook entry, preserving the audited direct-addressing semantics without reading sealed payload."
+    },
+    "reference_backends": [
+      "expanded f32 K/V formulation with ascending source traversal",
+      "expanded f64 formulation as the shared authority"
+    ]
+  },
+  "results": {
+    "ranked_chain": {
+      "numeric_parity_v2_1": "PASS",
+      "final_context_greedy_exact": true,
+      "final_context_top5_exact": true
+    },
+    "ascending_chain_diagnostic": {
+      "numeric_parity_v2_1": "PASS on the f16-codebook/FMA chain",
+      "bit_identical_to_ranked_chain": false,
+      "interpretation": "Traversal order remains numerically observable, but f16 codebook rounding plus Metal FMA moved this quantized chain inside V2.1 for both orders. This does not invalidate or erase the unquantized CPU negative witness."
+    },
+    "authoritative_unquantized_cpu_order_test": {
+      "command": "cargo test -p hawking-core --test gravity_glm_compact_mla_parity -- --nocapture",
+      "ranked": "PASS",
+      "ascending": "FAIL meaningful_rel 1.1059935866029965e-5 > 1e-5 as the expected negative",
+      "result": "PASS (the test asserts both outcomes)"
+    },
+    "intermediate_cancellation_limit": "HAWKING_COMPACT_RANKED_ATTENTION_CANDIDATE_20260727.json retains the separate cancellation-heavy weighted-latent negative preflight."
+  },
+  "validation": {
+    "chain_test": {
+      "command": "cargo test -p hawking-core compact_absorbed_three_dispatch_chain_preserves_ranked_v21_contract --lib -- --nocapture",
+      "passed": 1,
+      "failed": 0
+    },
+    "route_segment_suite": {
+      "command": "cargo test -p hawking-core route_segment --lib -- --nocapture",
+      "passed": 11,
+      "failed": 0
+    },
+    "full_core_library": {
+      "command": "cargo test -p hawking-core --lib -- --nocapture",
+      "passed": 208,
+      "failed": 0,
+      "ignored": 2
+    },
+    "diff_check": "PASS"
+  },
+  "promotion_gate": {
+    "promoted": false,
+    "reason": "This is a synthetic final-context chain proof, not complete-token or flagship model evidence. The default path and resident cache layout remain unchanged.",
+    "remaining_required_mechanisms": [
+      "default-off compact resident cache allocation and growth",
+      "default-off complete five-dispatch attention DAG wiring",
+      "complete-token Numeric Parity V2.1",
+      "contention-authorized live A/B",
+      "sustained 2K/8K/32K TTFT, TPS, bytes, commands, memory, swap, and thermal validation"
+    ]
+  }
+}

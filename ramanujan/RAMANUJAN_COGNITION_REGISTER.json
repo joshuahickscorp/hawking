@@ -1,0 +1,199 @@
+{
+  "schema": "hawking.ramanujan.cognition_register.v1",
+  "at": "2026-07-27T04:10:00Z",
+  "status": "SPECIFIED_NOT_IMPLEMENTED",
+  "law": "A new generator mechanism must arrive with a way to falsify, narrow, quarantine, or kill it. A mechanism without a kill condition is a mechanism that will be defended rather than tested.",
+
+  "why_each_field_is_mandatory": {
+    "input_output_schema": "an unspecified interface is one that gets reinterpreted to fit whatever result appeared",
+    "authority_boundary": "what the mechanism may WRITE. Generators must never write evidence; that separation is the whole defence against self-grading.",
+    "kill_condition": "written before the mechanism runs, so it is not renegotiated once someone is attached to the mechanism",
+    "ablation": "the comparison that shows the mechanism is doing work rather than riding along with the rest of the system",
+    "self_deception_test": "the specific way this particular mechanism would fool us, and the check that catches it. Every mechanism has a different one; a generic 'we will be careful' is not an answer."
+  },
+
+  "mechanisms": [
+    {
+      "name": "Retina",
+      "purpose": "decide what in a mathematical object is worth attending to at all",
+      "inputs": {"object": "formal or informal mathematical object", "context": "current problem frame"},
+      "outputs": {"salient_features": "ranked list with reasons"},
+      "authority_boundary": "may write Strategy only. May not write Claim, Evidence or Proof-State.",
+      "evidence_tier_it_can_produce": 0,
+      "resource_cost": "low; runs per object",
+      "kill_condition": "if salience ranking is not better than a frequency baseline at predicting which features appear in successful proofs, over a held-out set of solved problems",
+      "ablation": "replace with uniform attention over features; measure solve rate",
+      "self_deception_test": "salience is scored AFTER seeing which proofs succeeded, making any ranking look prescient. Guard: the held-out set's outcomes are hash-committed before the Retina runs.",
+      "failure_mode": "attends to surface syntax rather than structure, and looks insightful because surface syntax correlates with domain"
+    },
+    {
+      "name": "Significance",
+      "purpose": "estimate whether a candidate result would matter if true",
+      "inputs": {"claim": "statement", "prior_art": "retrieved neighbourhood"},
+      "outputs": {"significance_estimate": "score plus an explicit comparison class"},
+      "authority_boundary": "may write Strategy and budget requests. May not promote any claim.",
+      "evidence_tier_it_can_produce": 0,
+      "resource_cost": "low",
+      "kill_condition": "if its ranking of already-published results does not correlate with their actual citation-independent importance as judged by the human gate, it is measuring novelty-of-phrasing and is killed",
+      "ablation": "uniform significance; measure whether the branch economics change outcomes at all",
+      "self_deception_test": "a system rewarded for significance will inflate it. Guard: significance is scored against a comparison class the mechanism must name BEFORE scoring, and the class is recorded in the Ledger.",
+      "failure_mode": "confuses 'no one has stated this' with 'this matters'"
+    },
+    {
+      "name": "Definitional Library",
+      "purpose": "hold definitions as first-class objects that can be varied, not as fixed text",
+      "inputs": {"concept": "name plus formal definition"},
+      "outputs": {"variants": "definitional neighbours with what each changes"},
+      "authority_boundary": "may write Prior-Art and Strategy. May not write Claim.",
+      "evidence_tier_it_can_produce": 0,
+      "resource_cost": "low",
+      "kill_condition": "if varying a definition never changes which theorems are reachable in the search, the library is decoration",
+      "ablation": "fixed definitions only",
+      "self_deception_test": "generating many variants looks productive regardless of value. Guard: count variants that CHANGED a search outcome, not variants produced.",
+      "failure_mode": "produces trivial renamings and counts them as variation"
+    },
+    {
+      "name": "Obstruction Objects",
+      "purpose": "represent WHY an approach fails as a manipulable object rather than as a failure flag",
+      "inputs": {"failed_attempt": "proof state plus the point of failure"},
+      "outputs": {"obstruction": "structured description of what blocks progress"},
+      "authority_boundary": "may write Proof-State and Graveyard entries. May not write Claim or Evidence.",
+      "evidence_tier_it_can_produce": 1,
+      "resource_cost": "medium",
+      "kill_condition": "if obstructions do not transfer -- an obstruction found in one problem never helps prune another -- the representation is not capturing structure",
+      "ablation": "record failures as opaque flags; measure redundant re-exploration",
+      "self_deception_test": "a post-hoc description of any failure sounds explanatory. Guard: an obstruction must PREDICT failure of an unseen attempt before that attempt runs.",
+      "failure_mode": "restates the error message in mathematical vocabulary"
+    },
+    {
+      "name": "Dual-Channel Fusion",
+      "purpose": "hold informal intuition and formal state simultaneously without letting either overwrite the other",
+      "inputs": {"informal": "natural-language reasoning", "formal": "proof state"},
+      "outputs": {"fused_step": "next action plus which channel proposed it"},
+      "authority_boundary": "may write Proof-State. May not write Evidence; only the verifier does.",
+      "evidence_tier_it_can_produce": 0,
+      "resource_cost": "medium",
+      "kill_condition": "if the informal channel's proposals are accepted by the formal checker at no better than the formal channel's own rate, fusion adds nothing",
+      "ablation": "formal-only search; compare solve rate at equal compute",
+      "self_deception_test": "the informal channel narrates a justification for whatever the formal channel already did, producing false agreement. Guard: channel attribution is recorded per step, and agreement is measured only on steps where the channels were consulted independently.",
+      "failure_mode": "informal channel becomes a commentary track"
+    },
+    {
+      "name": "Analogy as Partial Morphisms",
+      "purpose": "transfer structure between domains with an explicit statement of what does NOT carry",
+      "inputs": {"source_domain": "structure", "target_domain": "structure"},
+      "outputs": {"morphism": "partial map plus explicit failure set"},
+      "authority_boundary": "may write Strategy and Claim at Tier 0 only.",
+      "evidence_tier_it_can_produce": 0,
+      "resource_cost": "medium",
+      "kill_condition": "if the declared failure set is empty or unused -- an analogy that never says what breaks is a metaphor",
+      "ablation": "no cross-domain transfer",
+      "self_deception_test": "analogies are most persuasive exactly where they are loosest. Guard: every transferred claim must be checked in the target domain independently, and the check result is recorded whether or not it confirms.",
+      "failure_mode": "transfers a true statement whose proof does not transfer, and inherits unearned confidence"
+    },
+    {
+      "name": "Competence Cartography",
+      "purpose": "maintain a map of what this system is and is not currently able to do",
+      "inputs": {"attempt_history": "outcomes with problem features"},
+      "outputs": {"competence_map": "regions with calibrated success probabilities"},
+      "authority_boundary": "may write Strategy and budget requests. May not write Claim or Evidence.",
+      "evidence_tier_it_can_produce": 1,
+      "resource_cost": "low",
+      "kill_condition": "if predicted success probability is not calibrated -- Brier score no better than a constant base rate -- the map is decoration",
+      "ablation": "uniform competence assumption",
+      "self_deception_test": "a system maps its competence using its own judgements of success. Guard: the map is scored only against verifier events, never against self-assessed success.",
+      "failure_mode": "grows confident in regions it has merely visited often"
+    },
+    {
+      "name": "Cheapest Falsifier",
+      "purpose": "for any claim, find the least expensive check that could refute it",
+      "inputs": {"claim": "statement"},
+      "outputs": {"falsifier": "executable check plus its cost"},
+      "authority_boundary": "may write Strategy. Its RESULTS enter as verifier events produced by the verifier, not by this mechanism.",
+      "evidence_tier_it_can_produce": 0,
+      "resource_cost": "low; this is the point of it",
+      "kill_condition": "if the proposed falsifier is more expensive than the proof attempt it precedes, the mechanism is inverted and is killed",
+      "ablation": "attempt proofs directly without pre-falsification; compare wasted compute",
+      "self_deception_test": "proposing falsifiers that cannot fail makes the mechanism look efficient. Guard: track refutation RATE. A falsifier suite that never refutes anything is not cheap, it is empty.",
+      "failure_mode": "proposes checks that are cheap because they are vacuous",
+      "note": "This is the mechanism that would have caught Math-Preserve in minutes. '2 + 2 =' costs one forward pass and refutes the entire substrate."
+    },
+    {
+      "name": "Representation / Invariant Forge",
+      "purpose": "search for a representation in which the problem's invariants become visible",
+      "inputs": {"problem": "statement", "known_invariants": "list"},
+      "outputs": {"candidate_representations": "with the invariants each exposes"},
+      "authority_boundary": "may write Strategy and Proof-State. May not write Evidence.",
+      "evidence_tier_it_can_produce": 0,
+      "resource_cost": "high",
+      "kill_condition": "if no forged representation ever changes a search outcome, kill it",
+      "ablation": "native representation only",
+      "self_deception_test": "a representation that makes a problem look simpler may have dropped the hard part. Guard: every representation change must state what it preserves, and that preservation claim is itself verified.",
+      "failure_mode": "solves a different, easier problem and reports success"
+    },
+    {
+      "name": "Epistemic Firewall and Diversity League",
+      "purpose": "keep independent lines of attack from contaminating each other into false consensus",
+      "inputs": {"parallel_investigations": "list"},
+      "outputs": {"isolation_verdicts": "which lines shared information and when"},
+      "authority_boundary": "may write Ledger events only. May not write Claim, Evidence or Strategy.",
+      "evidence_tier_it_can_produce": 0,
+      "resource_cost": "low",
+      "kill_condition": "if isolated lines agree at the same rate as contaminated ones, the firewall is not isolating anything",
+      "ablation": "shared context across all lines",
+      "self_deception_test": "agreement between lines is read as confirmation when it may be shared provenance. Guard: agreement counts as evidence ONLY between lines the firewall certifies as isolated.",
+      "failure_mode": "a single upstream error is mistaken for independent corroboration"
+    },
+    {
+      "name": "Self-Model and Calibration",
+      "purpose": "maintain and score the system's confidence against outcomes",
+      "inputs": {"predictions": "with stated confidence", "outcomes": "verifier events"},
+      "outputs": {"calibration_report": "reliability curve plus Brier score"},
+      "authority_boundary": "may write Ledger events and Strategy. May not promote claims.",
+      "evidence_tier_it_can_produce": 1,
+      "resource_cost": "low",
+      "kill_condition": "if calibration does not improve over time, or the model is systematically overconfident after correction, the self-model is not modelling",
+      "ablation": "no confidence tracking",
+      "self_deception_test": "calibration measured on self-scored outcomes is circular. Guard: outcomes come only from verifier events with container hashes.",
+      "failure_mode": "well-calibrated on easy problems and wildly overconfident on the frontier, with the aggregate looking fine"
+    },
+    {
+      "name": "Research Capsule Compiler",
+      "purpose": "package an investigation so it can be reproduced, audited and resumed",
+      "inputs": {"investigation": "ledger range plus artifacts"},
+      "outputs": {"capsule": "self-contained reproducible bundle"},
+      "authority_boundary": "read-only over every store; writes capsules and Ledger events.",
+      "evidence_tier_it_can_produce": 0,
+      "resource_cost": "low",
+      "kill_condition": "if a capsule does not reproduce its recorded result in a clean container, capsules are theatre",
+      "ablation": "no capsules; measure how much of an investigation survives a session boundary",
+      "self_deception_test": "a capsule that reproduces because it cached its answer proves nothing. Guard: reproduction runs in a clean container with the cache removed.",
+      "failure_mode": "captures outputs but not the environment that produced them"
+    },
+    {
+      "name": "Isolated Ephemeral Test-Time Adaptation",
+      "purpose": "let the system adapt within a problem without that adaptation leaking into its permanent state",
+      "inputs": {"problem": "statement", "budget": "adaptation budget"},
+      "outputs": {"adapted_state": "discarded at problem end"},
+      "authority_boundary": "may write nothing durable. Its adaptations are destroyed at problem boundary by construction.",
+      "evidence_tier_it_can_produce": 0,
+      "resource_cost": "medium",
+      "kill_condition": "if adaptation does not improve solve rate within a problem, or if any adaptation is found to have persisted, kill it immediately -- persistence is a containment failure, not a performance question",
+      "ablation": "no test-time adaptation",
+      "self_deception_test": "adaptation on a problem's own test signal is training on the answer. Guard: adaptation may only consume verifier events from the problem's OWN checks, never from the evaluation outcome.",
+      "failure_mode": "silently persists and becomes untracked training"
+    }
+  ],
+
+  "cross_cutting": {
+    "generators_never_write_evidence": "Every mechanism above has an authority boundary that excludes Evidence. Only verifier events, produced by the verifier path, move a claim's tier. This is enforced in ramanujan/stores.py and ramanujan/evidence.py, not merely stated here.",
+    "mop_method_layer_transferred": ["SESOI", "stop rules", "claim ceilings", "wording_check", "adjudicate", "reproduced-defect-over-panel-vote"],
+    "mop_substrate_not_transferred": "MOP itself is hard-protected and untouched. Only the method layer moves."
+  },
+
+  "implementation_status": {
+    "implemented_and_tested": ["Ledger", "evidence lattice", "seven stores", "Tribunal separation of powers", "Graveyard as non-deletion"],
+    "specified_only": "every mechanism in this register",
+    "why_specified_first": "each needs its kill condition and self-deception test written before it exists, so the test is not shaped by the mechanism's early results. Implementation is light work and can proceed against tiny fixtures; the specification is what had to come first."
+  }
+}

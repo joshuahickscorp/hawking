@@ -1,0 +1,104 @@
+{
+  "schema": "hawking.ramanujan.toolchain_selftest.v1",
+  "at": "2026-07-27T03:05:43Z",
+  "host": {
+    "platform": "darwin",
+    "python": "3.12.6"
+  },
+  "resource_mode_when_run": "LIGHT_ONLY",
+  "binaries": {
+    "elan": {
+      "status": "NOT_INSTALLED",
+      "path": null,
+      "version": null,
+      "needed_for": "Lean toolchain manager; pins the Lean version"
+    },
+    "lean": {
+      "status": "NOT_INSTALLED",
+      "path": null,
+      "version": null,
+      "needed_for": "the proof assistant; Tier 3 machine checks run here"
+    },
+    "lake": {
+      "status": "NOT_INSTALLED",
+      "path": null,
+      "version": null,
+      "needed_for": "Lean build tool; fetches and builds Mathlib"
+    },
+    "z3": {
+      "status": "NOT_INSTALLED",
+      "path": null,
+      "version": null,
+      "needed_for": "SMT solver; counterexample and constraint search"
+    },
+    "cvc5": {
+      "status": "NOT_INSTALLED",
+      "path": null,
+      "version": null,
+      "needed_for": "second SMT solver; disagreement between solvers is a signal"
+    },
+    "gp": {
+      "status": "NOT_INSTALLED",
+      "path": null,
+      "version": null,
+      "needed_for": "PARI/GP; number-theoretic computation"
+    },
+    "gap": {
+      "status": "NOT_INSTALLED",
+      "path": null,
+      "version": null,
+      "needed_for": "group theory and combinatorics"
+    },
+    "cadical": {
+      "status": "NOT_INSTALLED",
+      "path": null,
+      "version": null,
+      "needed_for": "SAT solver"
+    }
+  },
+  "python_modules": {
+    "sympy": {
+      "status": "INSTALLED",
+      "version": "1.13.1",
+      "needed_for": "symbolic algebra; the informal-to-formal bridge"
+    },
+    "numpy": {
+      "status": "INSTALLED",
+      "version": "2.2.6",
+      "needed_for": "numeric computation; already present for the Hawking oracle"
+    },
+    "scipy": {
+      "status": "INSTALLED",
+      "version": "1.14.1",
+      "needed_for": "numeric computation"
+    },
+    "z3": {
+      "status": "NOT_INSTALLED",
+      "version": null,
+      "needed_for": "Z3 Python bindings"
+    },
+    "pysat": {
+      "status": "NOT_INSTALLED",
+      "version": null,
+      "needed_for": "SAT interfaces"
+    }
+  },
+  "missing": [
+    "elan",
+    "lean",
+    "lake",
+    "z3",
+    "cvc5",
+    "gp",
+    "gap",
+    "cadical",
+    "z3",
+    "pysat"
+  ],
+  "verdict": "TOOLCHAIN_INCOMPLETE",
+  "q0_reproducibility": {
+    "status": "BLOCKED",
+    "why": "Q0 requires a clean-container reproduction against a pinned Mathlib. Nothing can be pinned that is not installed."
+  },
+  "honest_note": "This probes; it does not install. Installing Lean plus Mathlib is a multi-gigabyte download and a long CPU-heavy build, which is precisely what HAWKING_RESOURCE_MODE=LIGHT_ONLY forbids while MOP owns the machine."
+}

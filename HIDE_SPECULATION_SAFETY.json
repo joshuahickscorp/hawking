@@ -1,0 +1,172 @@
+{
+  "schema": "hawking.hide.speculation_safety.v1",
+  "at": "2026-07-26T21:51:00Z",
+  "status": "COMPLETE",
+  "invariant": "Draft tokens may never reach durable state. Only target-verified tokens may enter the canonical event stream, durable context/memory, tool dispatch, file edit, or final user-visible output. Enforced by construction via distinct Draft<T>/Verified<T> types; promotion only through TargetVerification; durable sinks accept Verified only.",
+  "draft_type": "hawking_speculate::Draft<T> (alias DraftTokenId = Draft<u32>) — crates/hawking-speculate/src/token_boundary.rs:33",
+  "verified_type": "hawking_speculate::Verified<T> (alias VerifiedTokenId = Verified<u32>) — crates/hawking-speculate/src/token_boundary.rs:38",
+  "promotion": {
+    "gate": "TargetVerification — crates/hawking-speculate/src/token_boundary.rs:119",
+    "try_promote": "crates/hawking-speculate/src/token_boundary.rs:144",
+    "promote_matching_prefix": "crates/hawking-speculate/src/token_boundary.rs:161",
+    "verifier_integration": "Verifier::verify_line fills accepted_verified / correction_verified — crates/hawking-speculate/src/verifier.rs:46-49,93"
+  },
+  "durable_sinks": [
+    {
+      "name": "canonical_event_stream",
+      "accepts": "VerifiedTokenId",
+      "trait": "crates/hawking-speculate/src/durable.rs:42",
+      "fixture_impl": "crates/hawking-speculate/src/durable.rs:87",
+      "host_async": "crates/hide-backend/src/speculation_safety.rs:94",
+      "host_sync_trait": "crates/hide-backend/src/speculation_safety.rs:167"
+    },
+    {
+      "name": "memory_write",
+      "accepts": "VerifiedTokenId",
+      "trait": "crates/hawking-speculate/src/durable.rs:45",
+      "fixture_impl": "crates/hawking-speculate/src/durable.rs:94",
+      "host": "crates/hide-backend/src/speculation_safety.rs:116"
+    },
+    {
+      "name": "tool_dispatch",
+      "accepts": "VerifiedTokenId",
+      "trait": "crates/hawking-speculate/src/durable.rs:48",
+      "fixture_impl": "crates/hawking-speculate/src/durable.rs:101",
+      "host": "crates/hide-backend/src/speculation_safety.rs:124"
+    },
+    {
+      "name": "file_edit",
+      "accepts": "VerifiedTokenId",
+      "trait": "crates/hawking-speculate/src/durable.rs:51",
+      "fixture_impl": "crates/hawking-speculate/src/durable.rs:108",
+      "host": "crates/hide-backend/src/speculation_safety.rs:132"
+    },
+    {
+      "name": "final_output",
+      "accepts": "VerifiedTokenId",
+      "trait": "crates/hawking-speculate/src/durable.rs:54",
+      "fixture_impl": "crates/hawking-speculate/src/durable.rs:115",
+      "host": "crates/hide-backend/src/speculation_safety.rs:140"
+    }
+  ],
+  "suspension_points": [
+    {
+      "boundary": "tool_call_start",
+      "action": "suspend",
+      "rationale": "A draft tool-call start can invoke real tools; only target-verified tokens may open a call.",
+      "file:line": "crates/hawking-speculate/src/suspension.rs:62",
+      "test": "suspension::tests::suspension_tool_call_start"
+    },
+    {
+      "boundary": "json_schema",
+      "action": "constrain",
+      "rationale": "A draft must not open structured emission the target later rejects; constrain to free text until verified.",
+      "file:line": "crates/hawking-speculate/src/suspension.rs:68",
+      "test": "suspension::tests::suspension_json_schema"
+    },
+    {
+      "boundary": "permission",
+      "action": "suspend",
+      "rationale": "Permission decisions are durable security state; drafts must not approve or deny.",
+      "file:line": "crates/hawking-speculate/src/suspension.rs:74",
+      "test": "suspension::tests::suspension_permission"
+    },
+    {
+      "boundary": "edit_diff",
+      "action": "suspend",
+      "rationale": "File edits are durable workspace mutations; only verified tokens may drive diffs.",
+      "file:line": "crates/hawking-speculate/src/suspension.rs:80",
+      "test": "suspension::tests::suspension_edit_diff"
+    },
+    {
+      "boundary": "citation_evidence",
+      "action": "suspend",
+      "rationale": "Citations become user-visible provenance; unverified draft claims must not be cited.",
+      "file:line": "crates/hawking-speculate/src/suspension.rs:86",
+      "test": "suspension::tests::suspension_citation_evidence"
+    },
+    {
+      "boundary": "user_interrupt",
+      "action": "flush-then-continue",
+      "rationale": "Flush accepted prefix so the interrupt sees a consistent committed state, then stop drafting.",
+      "file:line": "crates/hawking-speculate/src/suspension.rs:92",
+      "test": "suspension::tests::suspension_user_interrupt"
+    },
+    {
+      "boundary": "context_compaction",
+      "action": "flush-then-continue",
+      "rationale": "Compaction rewrites durable context; provisional draft KV must not be compacted in.",
+      "file:line": "crates/hawking-speculate/src/suspension.rs:98",
+      "test": "suspension::tests::suspension_context_compaction"
+    },
+    {
+      "boundary": "model_profile_switch",
+      "action": "suspend",
+      "rationale": "A new model/profile invalidates draft proposers and KV; suspend until re-anchored.",
+      "file:line": "crates/hawking-speculate/src/suspension.rs:104",
+      "test": "suspension::tests::suspension_model_profile_switch"
+    },
+    {
+      "boundary": "fabric_migration",
+      "action": "suspend",
+      "rationale": "Fabric migration changes the substrate; all provisional draft state is invalid.",
+      "file:line": "crates/hawking-speculate/src/suspension.rs:110",
+      "test": "suspension::tests::suspension_fabric_migration"
+    }
+  ],
+  "suspension_policy_table": "crates/hawking-speculate/src/suspension.rs:60 (SUSPENSION_POLICY — one list, one place)",
+  "kv_states": {
+    "invariant_name": "COMMITTED_IS_SOURCE_OF_TRUTH",
+    "invariant": "provisional.base fingerprint/seq_len/token_ids == committed; provisional.seq_len == committed.seq_len + draft_len. Rollback restores committed bit-identically; rebase advances committed by verified prefix only.",
+    "committed": "CommittedKv — crates/hawking-speculate/src/kv_dual.rs:53",
+    "provisional": "ProvisionalKv — crates/hawking-speculate/src/kv_dual.rs:92",
+    "dual": "DualKv — crates/hawking-speculate/src/kv_dual.rs:134",
+    "rollback": "crates/hawking-speculate/src/kv_dual.rs:199",
+    "rebase": "crates/hawking-speculate/src/kv_dual.rs:218",
+    "rollback_test": "kv_dual::tests::rollback_restores_committed_bit_identical — crates/hawking-speculate/src/kv_dual.rs:241"
+  },
+  "metric_separation": {
+    "base_true_tps": {
+      "type": "BaseTrueTps",
+      "scoreboard": "BASE_TRUE_TPS",
+      "file:line": "crates/hawking-speculate/src/metrics_sep.rs:17"
+    },
+    "accelerated_accepted_tps": {
+      "type": "AcceleratedAcceptedTps",
+      "scoreboard": "ACCELERATED_ACCEPTED_TPS",
+      "file:line": "crates/hawking-speculate/src/metrics_sep.rs:22",
+      "accounting": "AccelCostLedger::accelerated_accepted_tps = accepted_tokens / (draft_ns + verify_ns + rollback_ns) — crates/hawking-speculate/src/metrics_sep.rs:104",
+      "includes_rollback": true
+    },
+    "no_shared_average": "SeparatedTpsScoreboard holds both newtypes; no average/blend method exists. speedup_ratio is a ratio of the two scoreboards only.",
+    "accepted_tps_includes_rollback_test": "metrics_sep::tests::accepted_tps_includes_rollback_cost — crates/hawking-speculate/src/metrics_sep.rs:161"
+  },
+  "compile_time_enforced": {
+    "bool": true,
+    "how": "Draft<T> and Verified<T> are distinct newtypes with no From/Into between them. DurableTokenSink methods and HostDurableSinks methods accept only VerifiedTokenId. Promotion is only via TargetVerification::{try_promote, promote_matching_prefix, emit_target}. Workspace has no trybuild harness; enforcement is the type signatures themselves, locked by API tests (token_boundary::tests::draft_cannot_reach_durable_sink_without_verification, durable::tests::all_five_sinks_accept_only_verified, host host_sinks_accept_verified_only_path) plus a documented compile-fail snippet in token_boundary.rs."
+  },
+  "default_off": true,
+  "speculation_not_enabled_by_default": true,
+  "non_goals_honored": [
+    "no draft-model / acceptance tuning / kernel work",
+    "speculation not enabled by default",
+    "no Metal/gravity_glm/cost_ledger/numeric_parity touch",
+    "no benchmarks"
+  ],
+  "tests_run": {
+    "hawking-speculate": {
+      "command": "cargo test -p hawking-speculate --lib",
+      "exit": 0,
+      "passed": 104,
+      "failed": 0
+    },
+    "hide-backend": {
+      "command": "cargo test -p hide-backend speculation_safety",
+      "exit": 0,
+      "passed": 3,
+      "failed": 0
+    }
+  },
+  "evidence_level": "UNIT_TEST_PASSING_THROUGH_TYPED_API",
+  "not_evidence_of": "end-to-end speculative decode on a live model with host sinks wired into run_turn_core; that wiring is present as HostDurableSinks but not yet the default turn path (speculation remains default-off)."
+}

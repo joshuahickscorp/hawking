@@ -1,0 +1,528 @@
+{
+  "schema": "hawking.adapter.family_receipt.stage_a.v1",
+  "family_id": "llama",
+  "family_display": "Llama",
+  "stage": "A",
+  "grade": "SOURCE_HEADER_VALIDATED",
+  "grade_ceiling_this_lane": "SOURCE_HEADER_VALIDATED",
+  "generated_at": "2026-07-27T04:04:36Z",
+  "representative_checkpoint": {
+    "repo": "unsloth/Llama-3.2-1B-Instruct",
+    "revision": "main",
+    "note": "Meta meta-llama/* is gated (HTTP failed). Used unsloth redistributor of Llama-3.2-1B-Instruct official architecture weights; architecture class is LlamaForCausalLM.",
+    "meta_official_gated_probe": "https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct/resolve/main/config.json -> unreachable without auth"
+  },
+  "evidence": {
+    "config": {
+      "url": "https://huggingface.co/unsloth/Llama-3.2-1B-Instruct/resolve/main/config.json",
+      "bytes": 894,
+      "status": 200,
+      "parsed_fields": {
+        "architectures": [
+          "LlamaForCausalLM"
+        ],
+        "model_type": "llama",
+        "hidden_size": 2048,
+        "intermediate_size": 8192,
+        "num_hidden_layers": 16,
+        "num_attention_heads": 32,
+        "num_key_value_heads": 8,
+        "head_dim": 64,
+        "vocab_size": 128256,
+        "max_position_embeddings": 131072,
+        "rope_theta": 500000.0,
+        "rms_norm_eps": 1e-05,
+        "tie_word_embeddings": true,
+        "hidden_act": "silu",
+        "attention_bias": false,
+        "use_cache": true,
+        "torch_dtype": "bfloat16",
+        "bos_token_id": 128000,
+        "eos_token_id": 128009,
+        "pad_token_id": 128004,
+        "rope_scaling": {
+          "factor": 32.0,
+          "high_freq_factor": 4.0,
+          "low_freq_factor": 1.0,
+          "original_max_position_embeddings": 8192,
+          "rope_type": "llama3"
+        },
+        "attention_dropout": 0.0,
+        "initializer_range": 0.02,
+        "transformers_version": "4.52.0.dev0",
+        "mlp_bias": false,
+        "pretraining_tp": 1,
+        "unsloth_fixed": true
+      }
+    },
+    "tokenizer_config": {
+      "url": "https://huggingface.co/unsloth/Llama-3.2-1B-Instruct/resolve/main/tokenizer_config.json",
+      "bytes": 54669,
+      "ok": true
+    },
+    "safetensors_index": {
+      "status": "absent_single_file_model",
+      "url": "https://huggingface.co/unsloth/Llama-3.2-1B-Instruct/resolve/main/model.safetensors.index.json",
+      "error": "HTTP Error 404: Not Found"
+    },
+    "safetensors_header": {
+      "url": "https://huggingface.co/unsloth/Llama-3.2-1B-Instruct/resolve/main/model.safetensors",
+      "method": "HTTP Range",
+      "shard": "model.safetensors",
+      "first_status": 206,
+      "first_bytes": 65536,
+      "response_headers": {
+        "content-type": "application/octet-stream",
+        "accept-ranges": "bytes",
+        "etag": "\"8d7246c590024cbf331fbcb416522d7ff82657e299c542650aab0d5e6b9b0c90\"",
+        "content-length": "65536",
+        "content-range": "bytes 0-65535/2471645608"
+      },
+      "header_len": 16800,
+      "ok": true,
+      "data_start": 16808,
+      "tensor_count": 146,
+      "metadata": {
+        "format": "pt"
+      },
+      "dtype_counts": {
+        "BF16": 146
+      },
+      "sample_names": [
+        "model.embed_tokens.weight",
+        "model.layers.0.input_layernorm.weight",
+        "model.layers.0.mlp.down_proj.weight",
+        "model.layers.0.mlp.gate_proj.weight",
+        "model.layers.0.mlp.up_proj.weight",
+        "model.layers.0.post_attention_layernorm.weight",
+        "model.layers.0.self_attn.k_proj.weight",
+        "model.layers.0.self_attn.o_proj.weight",
+        "model.layers.0.self_attn.q_proj.weight",
+        "model.layers.0.self_attn.v_proj.weight",
+        "model.layers.1.input_layernorm.weight",
+        "model.layers.1.mlp.down_proj.weight",
+        "model.layers.1.mlp.gate_proj.weight",
+        "model.layers.1.mlp.up_proj.weight",
+        "model.layers.1.post_attention_layernorm.weight",
+        "model.layers.1.self_attn.k_proj.weight",
+        "model.layers.1.self_attn.o_proj.weight",
+        "model.layers.1.self_attn.q_proj.weight",
+        "model.layers.1.self_attn.v_proj.weight",
+        "model.layers.10.input_layernorm.weight",
+        "model.layers.10.mlp.down_proj.weight",
+        "model.layers.10.mlp.gate_proj.weight",
+        "model.layers.10.mlp.up_proj.weight",
+        "model.layers.10.post_attention_layernorm.weight",
+        "model.layers.10.self_attn.k_proj.weight",
+        "model.layers.10.self_attn.o_proj.weight",
+        "model.layers.10.self_attn.q_proj.weight",
+        "model.layers.10.self_attn.v_proj.weight",
+        "model.layers.11.input_layernorm.weight",
+        "model.layers.11.mlp.down_proj.weight",
+        "model.layers.11.mlp.gate_proj.weight",
+        "model.layers.11.mlp.up_proj.weight",
+        "model.layers.11.post_attention_layernorm.weight",
+        "model.layers.11.self_attn.k_proj.weight",
+        "model.layers.11.self_attn.o_proj.weight",
+        "model.layers.11.self_attn.q_proj.weight",
+        "model.layers.11.self_attn.v_proj.weight",
+        "model.layers.12.input_layernorm.weight",
+        "model.layers.12.mlp.down_proj.weight",
+        "model.layers.12.mlp.gate_proj.weight"
+      ],
+      "sample_tensor_entries": {
+        "model.embed_tokens.weight": {
+          "dtype": "BF16",
+          "shape": [
+            128256,
+            2048
+          ],
+          "data_offsets": [
+            0,
+            525336576
+          ]
+        },
+        "model.layers.0.input_layernorm.weight": {
+          "dtype": "BF16",
+          "shape": [
+            2048
+          ],
+          "data_offsets": [
+            525336576,
+            525340672
+          ]
+        },
+        "model.layers.0.mlp.down_proj.weight": {
+          "dtype": "BF16",
+          "shape": [
+            2048,
+            8192
+          ],
+          "data_offsets": [
+            525340672,
+            558895104
+          ]
+        },
+        "model.layers.0.mlp.gate_proj.weight": {
+          "dtype": "BF16",
+          "shape": [
+            8192,
+            2048
+          ],
+          "data_offsets": [
+            558895104,
+            592449536
+          ]
+        },
+        "model.layers.0.mlp.up_proj.weight": {
+          "dtype": "BF16",
+          "shape": [
+            8192,
+            2048
+          ],
+          "data_offsets": [
+            592449536,
+            626003968
+          ]
+        },
+        "model.layers.0.post_attention_layernorm.weight": {
+          "dtype": "BF16",
+          "shape": [
+            2048
+          ],
+          "data_offsets": [
+            626003968,
+            626008064
+          ]
+        },
+        "model.layers.0.self_attn.k_proj.weight": {
+          "dtype": "BF16",
+          "shape": [
+            512,
+            2048
+          ],
+          "data_offsets": [
+            626008064,
+            628105216
+          ]
+        },
+        "model.layers.0.self_attn.o_proj.weight": {
+          "dtype": "BF16",
+          "shape": [
+            2048,
+            2048
+          ],
+          "data_offsets": [
+            628105216,
+            636493824
+          ]
+        },
+        "model.layers.0.self_attn.q_proj.weight": {
+          "dtype": "BF16",
+          "shape": [
+            2048,
+            2048
+          ],
+          "data_offsets": [
+            636493824,
+            644882432
+          ]
+        },
+        "model.layers.0.self_attn.v_proj.weight": {
+          "dtype": "BF16",
+          "shape": [
+            512,
+            2048
+          ],
+          "data_offsets": [
+            644882432,
+            646979584
+          ]
+        },
+        "model.layers.1.input_layernorm.weight": {
+          "dtype": "BF16",
+          "shape": [
+            2048
+          ],
+          "data_offsets": [
+            646979584,
+            646983680
+          ]
+        },
+        "model.layers.1.mlp.down_proj.weight": {
+          "dtype": "BF16",
+          "shape": [
+            2048,
+            8192
+          ],
+          "data_offsets": [
+            646983680,
+            680538112
+          ]
+        }
+      }
+    },
+    "local_cache_tokenizer_json": "/Users/scammermike/.cache/huggingface/hub/models--unsloth--Llama-3.2-1B-Instruct/snapshots/5a8abab4a5d6f164389b1079fb721cfab8d7126c/tokenizer.json",
+    "repo_models_md": "MODELS.md (Llama 3.x architecture detected; no gate run)"
+  },
+  "logical_architecture": {
+    "class": [
+      "LlamaForCausalLM"
+    ],
+    "model_type": "llama",
+    "topology": "dense_transformer_decoder",
+    "graph": [
+      "embed_tokens",
+      "for layer in 0..num_hidden_layers-1: input_layernorm -> self_attn(q,k,v,o GQA) -> residual -> post_attention_layernorm -> mlp(gate,up,down SiLU) -> residual",
+      "final_norm -> lm_head (untied if tie_word_embeddings=false)"
+    ],
+    "attention": "GQA multi-head causal attention with RoPE",
+    "mlp": "SwiGLU (gate_proj, up_proj, down_proj)",
+    "norm": "RMSNorm",
+    "positional": "RoPE"
+  },
+  "tensor_map": {
+    "total_named_tensors": 146,
+    "organ_counts": {
+      "mlp_dense": 48,
+      "attn_k": 16,
+      "attn_o": 16,
+      "attn_q": 16,
+      "attn_v": 16,
+      "norm_input": 16,
+      "norm_post_attn": 16,
+      "embedding": 1,
+      "norm_final": 1
+    },
+    "organs": {
+      "mlp_dense": {
+        "count": 48,
+        "template_count": 3,
+        "templates": [
+          "model.layers.N.mlp.down_proj.weight",
+          "model.layers.N.mlp.gate_proj.weight",
+          "model.layers.N.mlp.up_proj.weight"
+        ],
+        "samples": [
+          "model.layers.0.mlp.down_proj.weight",
+          "model.layers.0.mlp.gate_proj.weight",
+          "model.layers.0.mlp.up_proj.weight",
+          "model.layers.1.mlp.down_proj.weight",
+          "model.layers.1.mlp.gate_proj.weight",
+          "model.layers.1.mlp.up_proj.weight"
+        ]
+      },
+      "attn_k": {
+        "count": 16,
+        "template_count": 1,
+        "templates": [
+          "model.layers.N.self_attn.k_proj.weight"
+        ],
+        "samples": [
+          "model.layers.0.self_attn.k_proj.weight",
+          "model.layers.1.self_attn.k_proj.weight",
+          "model.layers.10.self_attn.k_proj.weight",
+          "model.layers.11.self_attn.k_proj.weight",
+          "model.layers.12.self_attn.k_proj.weight",
+          "model.layers.13.self_attn.k_proj.weight"
+        ]
+      },
+      "attn_o": {
+        "count": 16,
+        "template_count": 1,
+        "templates": [
+          "model.layers.N.self_attn.o_proj.weight"
+        ],
+        "samples": [
+          "model.layers.0.self_attn.o_proj.weight",
+          "model.layers.1.self_attn.o_proj.weight",
+          "model.layers.10.self_attn.o_proj.weight",
+          "model.layers.11.self_attn.o_proj.weight",
+          "model.layers.12.self_attn.o_proj.weight",
+          "model.layers.13.self_attn.o_proj.weight"
+        ]
+      },
+      "attn_q": {
+        "count": 16,
+        "template_count": 1,
+        "templates": [
+          "model.layers.N.self_attn.q_proj.weight"
+        ],
+        "samples": [
+          "model.layers.0.self_attn.q_proj.weight",
+          "model.layers.1.self_attn.q_proj.weight",
+          "model.layers.10.self_attn.q_proj.weight",
+          "model.layers.11.self_attn.q_proj.weight",
+          "model.layers.12.self_attn.q_proj.weight",
+          "model.layers.13.self_attn.q_proj.weight"
+        ]
+      },
+      "attn_v": {
+        "count": 16,
+        "template_count": 1,
+        "templates": [
+          "model.layers.N.self_attn.v_proj.weight"
+        ],
+        "samples": [
+          "model.layers.0.self_attn.v_proj.weight",
+          "model.layers.1.self_attn.v_proj.weight",
+          "model.layers.10.self_attn.v_proj.weight",
+          "model.layers.11.self_attn.v_proj.weight",
+          "model.layers.12.self_attn.v_proj.weight",
+          "model.layers.13.self_attn.v_proj.weight"
+        ]
+      },
+      "norm_input": {
+        "count": 16,
+        "template_count": 1,
+        "templates": [
+          "model.layers.N.input_layernorm.weight"
+        ],
+        "samples": [
+          "model.layers.0.input_layernorm.weight",
+          "model.layers.1.input_layernorm.weight",
+          "model.layers.10.input_layernorm.weight",
+          "model.layers.11.input_layernorm.weight",
+          "model.layers.12.input_layernorm.weight",
+          "model.layers.13.input_layernorm.weight"
+        ]
+      },
+      "norm_post_attn": {
+        "count": 16,
+        "template_count": 1,
+        "templates": [
+          "model.layers.N.post_attention_layernorm.weight"
+        ],
+        "samples": [
+          "model.layers.0.post_attention_layernorm.weight",
+          "model.layers.1.post_attention_layernorm.weight",
+          "model.layers.10.post_attention_layernorm.weight",
+          "model.layers.11.post_attention_layernorm.weight",
+          "model.layers.12.post_attention_layernorm.weight",
+          "model.layers.13.post_attention_layernorm.weight"
+        ]
+      },
+      "embedding": {
+        "count": 1,
+        "template_count": 1,
+        "templates": [
+          "model.embed_tokens.weight"
+        ],
+        "samples": [
+          "model.embed_tokens.weight"
+        ]
+      },
+      "norm_final": {
+        "count": 1,
+        "template_count": 1,
+        "templates": [
+          "model.norm.weight"
+        ],
+        "samples": [
+          "model.norm.weight"
+        ]
+      }
+    },
+    "unknown_count": 0,
+    "mapping_authority": "regex_over_official_tensor_names_from_index_or_header"
+  },
+  "kv_or_state_format": {
+    "kind": "standard_kv_cache",
+    "layout": "per_layer K and V caches",
+    "num_attention_heads": 32,
+    "num_key_value_heads": 8,
+    "head_dim": 64,
+    "gqa_group_size": 4,
+    "dtype_runtime_typical": "bfloat16",
+    "cache_shape_per_layer": {
+      "K": "[batch, num_kv_heads=8, seq, head_dim=64]",
+      "V": "[batch, num_kv_heads=8, seq, head_dim=64]"
+    },
+    "source": "derived from official config.json fields num_attention_heads/num_key_value_heads/hidden_size"
+  },
+  "partition_boundaries": {
+    "legal_tensor_partitions": [
+      "embedding (embed_tokens)",
+      "per-layer attention projections (q,k,v,o)",
+      "per-layer MLP (gate,up,down)",
+      "per-layer norms",
+      "final norm",
+      "lm_head"
+    ],
+    "layer_range": "0..15",
+    "no_moe_router": true,
+    "fabric_notes": "Dense family: TP can split heads/hidden; PP by layer; no expert axis.",
+    "source": "tensor namespace from safetensors header tensor names"
+  },
+  "context_limits": {
+    "max_position_embeddings": 131072,
+    "rope_theta": 500000.0,
+    "tokenizer_model_max_length": 131072,
+    "validation": "config.json max_position_embeddings field parsed from official (redistributed) checkpoint metadata; not runtime-measured"
+  },
+  "tokenizer": {
+    "status": "parsed",
+    "source": "https://huggingface.co/unsloth/Llama-3.2-1B-Instruct/resolve/main/tokenizer_config.json",
+    "tokenizer_class": "PreTrainedTokenizer",
+    "model_max_length": 131072,
+    "bos_token": "<|begin_of_text|>",
+    "eos_token": "<|eot_id|>",
+    "pad_token": "<|finetune_right_pad_id|>",
+    "unk_token": null,
+    "add_bos_token": true,
+    "add_eos_token": null,
+    "legacy": null,
+    "clean_up_tokenization_spaces": true,
+    "chat_template": {
+      "present": true,
+      "bytes": 3827,
+      "sha256": "5816fce10444e03c2e9ee1ef8a4a1ea61ae7e69e438613f3b17b69d0426223a4",
+      "preview": "{{- bos_token }}\n{%- if custom_tools is defined %}\n    {%- set tools = custom_tools %}\n{%- endif %}\n{%- if not tools_in_user_message is defined %}\n    {%- set tools_in_user_message = true %}\n{%- endif %}\n{%- if not date_string is defined %}\n    {%- if strftime_now is defined %}\n        {%- set date_..."
+    }
+  },
+  "chat_template": {
+    "present": true,
+    "bytes": 3827,
+    "sha256": "5816fce10444e03c2e9ee1ef8a4a1ea61ae7e69e438613f3b17b69d0426223a4",
+    "preview": "{{- bos_token }}\n{%- if custom_tools is defined %}\n    {%- set tools = custom_tools %}\n{%- endif %}\n{%- if not tools_in_user_message is defined %}\n    {%- set tools_in_user_message = true %}\n{%- endif %}\n{%- if not date_string is defined %}\n    {%- if strftime_now is defined %}\n        {%- set date_..."
+  },
+  "source_format_ledger": {
+    "format": "safetensors",
+    "header_validation": "SOURCE_HEADER_VALIDATED",
+    "header_len": 16800,
+    "tensor_count_in_file": 146,
+    "dtype_counts": {
+      "BF16": 146
+    },
+    "byte_range": "bytes=0..(8+header_len-1) via HTTP Range",
+    "source_url": "https://huggingface.co/unsloth/Llama-3.2-1B-Instruct/resolve/main/model.safetensors"
+  },
+  "logical_weight_ledger": {
+    "status": "partial_from_header",
+    "note": "Single-file 1B model; full element counts derivable from header shapes but not summed in Stage A beyond organ map.",
+    "tensor_count": 146,
+    "organ_counts": {
+      "mlp_dense": 48,
+      "attn_k": 16,
+      "attn_o": 16,
+      "attn_q": 16,
+      "attn_v": 16,
+      "norm_input": 16,
+      "norm_post_attn": 16,
+      "embedding": 1,
+      "norm_final": 1
+    }
+  },
+  "known_gaps": [
+    "Meta official hub repo gated; redistributor used for headers",
+    "No REAL_TENSOR_DECODE of weight payloads",
+    "No generate/parity execution (Stage A)",
+    "Family spans Llama 2/3/3.1/3.2/3.3 and derivatives; receipt uses Llama-3.2-1B as architecture exemplar"
+  ],
+  "next_promotion_action": "REAL_TENSOR_DECODE: decode embed_tokens or a single layer proj from the safetensors body via bounded range and match dtype/shape/hash against header extents",
+  "resource_cost": {
+    "weight_body_bytes_downloaded": 0,
+    "metadata_bytes_approx": 121099,
+    "method": "HTTP full GET for config/tokenizer_config; HTTP Range for safetensors header only"
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "schema": "hawking.ramanujan.environment_lock.v1",
+  "at": "2026-07-27T04:25:00Z",
+  "status": "POLICY_PINNED_VERSIONS_UNPINNED",
+
+  "why_versions_are_not_filled_in": "Every tool below is NOT_INSTALLED on this machine, verified by ramanujan/toolchain_selftest.py. Writing a Mathlib commit hash or a Lean version I have not installed and cannot verify would be fabricating the exact field this lock exists to make trustworthy. The pinning POLICY is fixed here now; the concrete values are written by the installer at install time, from what it actually installed.",
+
+  "pinning_policy": {
+    "law": "every component is pinned to an exact immutable identifier, never to a range, a tag that can move, or 'latest'",
+    "lean": "exact toolchain version via elan, recorded in lean-toolchain",
+    "mathlib": "exact git commit SHA, never a branch name. Mathlib moves daily; a branch pin is not a pin.",
+    "solvers": "exact release version plus the sha256 of the downloaded binary",
+    "python": "exact interpreter version plus a fully-resolved lockfile with hashes for every transitive dependency",
+    "recorded_at_install": ["version", "sha256", "source_url", "install_date", "platform"]
+  },
+
+  "components": [
+    {"name": "elan", "role": "Lean toolchain manager", "status": "NOT_INSTALLED", "pin": null},
+    {"name": "lean", "role": "proof assistant; Tier 3 machine checks run here", "status": "NOT_INSTALLED", "pin": null},
+    {"name": "mathlib", "role": "the mathematical library Tier 3 checks are reproduced against", "status": "NOT_INSTALLED", "pin": null, "note": "pin by commit SHA. The verification lattice requires 'a clean-container reproduction against the pinned Mathlib', which is meaningless against a moving target."},
+    {"name": "z3", "role": "SMT; counterexample and constraint search", "status": "NOT_INSTALLED", "pin": null},
+    {"name": "cvc5", "role": "second SMT solver", "status": "NOT_INSTALLED", "pin": null, "why_two": "disagreement between independent solvers is a signal. One solver's answer is one implementation's answer."},
+    {"name": "sympy", "role": "symbolic algebra; informal-to-formal bridge", "status": "NOT_INSTALLED", "pin": null},
+    {"name": "pari_gp", "role": "number theory", "status": "NOT_INSTALLED", "pin": null},
+    {"name": "gap", "role": "group theory and combinatorics", "status": "NOT_INSTALLED", "pin": null},
+    {"name": "cadical", "role": "SAT", "status": "NOT_INSTALLED", "pin": null},
+    {"name": "numpy", "role": "numeric; already present", "status": "INSTALLED", "pin": "2.4.6"},
+    {"name": "scipy", "role": "numeric; already present", "status": "INSTALLED", "pin": "1.18.0"},
+    {"name": "python", "role": "interpreter", "status": "INSTALLED", "pin": "3.14.6", "note": "the repository's own tooling targets python3.12; reconcile before locking"}
+  ],
+
+  "clean_proof_replay_contract": {
+    "requirement": "a Tier 3 claim must be re-provable from its capsule in a container built only from this lock, with no network and no host state",
+    "why": "a proof that only checks on the machine that produced it is a local fact, not a mathematical one",
+    "status": "NOT_ACHIEVABLE_YET",
+    "blocked_by": "no Lean, no Mathlib, no container recipe"
+  },
+
+  "offline_mode": {
+    "target": "RAMANUJAN_OFFLINE_MODE=true after the initial licensed acquisition is mirrored",
+    "current": false,
+    "rule": "no paid APIs and no cloud training, ever. Acquisition is a one-time mirroring step, after which the system runs disconnected."
+  },
+
+  "install_plan": {
+    "when": "the next window in which HAWKING_RESOURCE_MODE is not LIGHT_ONLY, or a window where MOP is idle",
+    "why_not_tonight": "Lean plus a Mathlib build is a multi-gigabyte download and a long CPU-heavy compile. That is the definition of what must not run beside MOP.",
+    "disk_required_estimate": "roughly 10-20 GB for Lean, Mathlib source and its build cache; 195 GB free, so disk is not the constraint",
+    "ordered_steps": [
+      "install elan, pin the Lean toolchain, record version and sha256",
+      "clone Mathlib at an exact commit, record the SHA",
+      "lake exe cache get, then verify the cache rather than trusting it",
+      "install solvers, record version and binary sha256 for each",
+      "resolve the Python environment to a hashed lockfile",
+      "re-run ramanujan/toolchain_selftest.py and require TOOLCHAIN_READY",
+      "build the clean container and prove one trivial theorem end to end in it",
+      "only then write the concrete pins into this file and set offline mode"
+    ]
+  },
+
+  "q0_status": {
+    "gate": "Q0 reproducibility",
+    "status": "BLOCKED",
+    "blocking": "the entire formal toolchain is absent",
+    "note": "this is a straightforward, bounded install rather than a research problem. It is blocked on a resource window, not on a question."
+  }
+}

@@ -1,0 +1,132 @@
+{
+  "contract": "HIDE_YOU_PROJECTS_HANDOFF",
+  "version": "1",
+  "task": "YOU projects + typed surface handoffs",
+  "status": "implemented",
+  "resource_mode": "LIGHT_ONLY",
+  "purpose": "Projects unify conversations, documents, objects, connectors, plans, tasks, memory, automations, agents, and artifacts. Typed handoffs (YOU→CHAT, CHAT→IDE, IDE→YOU) carry claim capsules with provenance, never capabilities.",
+  "crate": {
+    "name": "hide-you",
+    "path": "crates/hide-you",
+    "modules": ["project", "capsule", "surface", "capability"],
+    "rationale": "Same crate as swarms: projects and handoffs are YOU-surface product contracts that share Surface / SurfaceCapability / claim-only capsule types."
+  },
+  "authority": "HIDE_YOU_SURFACE_AUTHORITY.json",
+  "surfaces": {
+    "YOU": {
+      "purpose": "private, general-purpose, multimodal personal AI",
+      "default_connectors": ["gmail", "calendar", "personal_vault", "rss"],
+      "default_tools": ["connector.read", "memory.read", "research.read", "object.read"]
+    },
+    "CHAT": {
+      "purpose": "repository-aware coding-agent workspace",
+      "default_connectors": ["repo_index"],
+      "default_tools": ["repo.read", "repo.write_effect", "shell.under_policy", "object.read"],
+      "does_not_hold_by_default": ["gmail", "calendar", "personal_vault"]
+    },
+    "IDE": {
+      "purpose": "visual code and software-development environment",
+      "default_connectors": ["repo_index", "source_control"],
+      "default_tools": ["repo.read", "repo.write_effect", "shell.under_policy", "diff.present", "object.read"]
+    }
+  },
+  "projects": {
+    "states": ["explore", "plan", "execute", "review", "archive"],
+    "member_kinds": [
+      "conversation",
+      "document",
+      "object",
+      "connector",
+      "plan",
+      "task",
+      "memory",
+      "automation",
+      "agent",
+      "artifact"
+    ],
+    "api": [
+      "Project::create",
+      "Project::attach",
+      "Project::transition",
+      "Project::link_swarm",
+      "Project::declaration"
+    ],
+    "transitions": {
+      "legal": [
+        "explore→plan",
+        "plan→explore",
+        "plan→execute",
+        "execute→plan",
+        "execute→review",
+        "review→execute",
+        "review→archive",
+        "explore→execute",
+        "any non-archive→archive"
+      ],
+      "illegal_example": "archive→explore"
+    },
+    "test": "crates/hide-you/tests/properties.rs::project_unifies_members_and_states"
+  },
+  "handoff_capsules": {
+    "law": "Every transfer between surfaces creates a TYPED capsule, never a flattened transcript. A capsule never widens permission.",
+    "invariant": "a capsule never widens permission. Receiving a capsule in CHAT does not grant CHAT the connector access YOU held when it was created. The capsule carries the CLAIM, never the CAPABILITY.",
+    "kinds": [
+      {
+        "from": "YOU",
+        "to": "CHAT",
+        "kind": "you_to_chat",
+        "carries": "implementation campaign: goal, constraints, prior research with evidence tiers, decisions and why, explicitly out-of-scope items"
+      },
+      {
+        "from": "CHAT",
+        "to": "IDE",
+        "kind": "chat_to_ide",
+        "carries": "repository/worktree and verification plan: branch, files in play, tests that must pass, what reviewers should look at"
+      },
+      {
+        "from": "IDE",
+        "to": "YOU",
+        "kind": "ide_to_you",
+        "carries": "release summary: what changed, what was verified, what remains, and a personal/project update"
+      }
+    ],
+    "every_capsule_carries": [
+      "origin surface and session",
+      "provenance chain",
+      "evidence tiers of any claim it asserts",
+      "permissions it was created under (PermissionSnapshot — audit only)",
+      "what it deliberately excludes and why",
+      "content hash (blake3)"
+    ],
+    "type_boundary": {
+      "live_capability_type": "SurfaceCapability",
+      "capsule_type": "HandoffCapsule",
+      "extract_api": "HandoffCapsule::try_extract_capability → always PolicyDenied",
+      "receive_api": "SurfaceSession::receive(&self) → ReceivedHandoff; capability field not mutated",
+      "creator_connector_probe": "HandoffCapsule::try_use_creator_connector → always fails"
+    },
+    "tests": [
+      "crates/hide-you/tests/properties.rs::capsule_carries_claim_never_capability",
+      "crates/hide-you/tests/properties.rs::capsule_carries_provenance_evidence_permissions_exclusions"
+    ]
+  },
+  "capability_derivation": {
+    "permission_set": "SurfacePermissionSet",
+    "capability": "SurfaceCapability",
+    "construction": [
+      "SurfacePermissionSet::derive_capability",
+      "SurfacePermissionSet::derive_capability_subset"
+    ],
+    "non_widening": "SurfaceCapability fields are private; no public grant/add/widen API",
+    "pattern_source": "hide_core::automation::{PermissionSet, JobCapability}"
+  },
+  "non_goals": [
+    "visual design of any surface",
+    "which model serves YOU",
+    "connector credentials",
+    "real model inference",
+    "Metal / gravity_glm / Odyssey",
+    "adapter grade changes"
+  ],
+  "grade_ceiling": "READY_FOR_INTEGRATION — fixtures and mocks never earn PRODUCTION"
+}

@@ -1,0 +1,96 @@
+{
+  "schema": "hawking.gravity.compact_mla.five_dispatch_dag.v1",
+  "at_utc": "2026-07-27T03:48:04Z",
+  "observed_base_sha": "1015e74b7d8dd1b20fef52f92f40e41d54d68351",
+  "status": "SYNTHETIC_COMPLETE_ATTENTION_DAG_NOT_PROMOTED",
+  "scope": {
+    "runtime_or_default_change": false,
+    "flag_change": false,
+    "sealed_artifact_change": false,
+    "sealed_payload_read": false,
+    "mop_change": false,
+    "live_model_run": false,
+    "production_reachable": false,
+    "code_change": "one test-only five-dispatch composition in crates/hawking-core/src/gravity_glm_resident.rs"
+  },
+  "dag": {
+    "one_command_buffer": true,
+    "dispatch_count": 5,
+    "dispatches": [
+      "gravity_glm_mla_append_compact",
+      "gravity_pq_k_transpose_heads",
+      "gravity_glm_compact_ranked_attn",
+      "gravity_pq_v_rows_heads",
+      "gravity_pq_matvec for unchanged o_proj"
+    ],
+    "cross_dispatch_readback": false,
+    "query_latent_weighted_latent_alias": true,
+    "dense_kv_reconstruction": false,
+    "dependencies_exercised": [
+      "the current selected token is appended by dispatch 1 and read by dispatch 3",
+      "dispatch 3 consumes dispatch 2 in place",
+      "dispatch 4 consumes dispatch 3",
+      "dispatch 5 consumes dispatch 4"
+    ]
+  },
+  "fixture": {
+    "dimensions": {
+      "tokens": 5,
+      "heads": 2,
+      "latent": 8,
+      "content_key_rows": 3,
+      "rope": 2,
+      "value_rows": 4,
+      "context_and_o_proj_width": 8,
+      "selected": 3
+    },
+    "ranked_positions": [
+      4,
+      1,
+      3
+    ],
+    "current_position_selected": true,
+    "kv_representation": "direct-u8, D8/S1/sub8/card256/bits8, one code per logical K/V row",
+    "o_proj_representation": "direct-u8 identity matrix through the existing generic gravity_pq_matvec",
+    "authority": "compact absorbed FP64 formulation using the exact f16 codebook values",
+    "host_control": "same compact formulation in ordered f32 FMA arithmetic"
+  },
+  "results": {
+    "numeric_parity_v2_1": "PASS",
+    "final_greedy_exact": true,
+    "final_top5_exact": true,
+    "compact_append_exact": true,
+    "physical_dispatch_count_exact": true,
+    "intermediate_host_readbacks": 0
+  },
+  "architectural_boundary": {
+    "math_or_kernel_gap_remaining": false,
+    "runtime_gap": "ResidentSession still owns expanded K/V, while CompactResidentCache is deliberately production-unreachable. A runtime layout variant must select compact ownership instead of expanded ownership and bind the live kv_b/o_proj tensors plus stable DSA rank buffer to this proven DAG.",
+    "why_not_allocate_both": "At 32K the expanded K/V core is 312 GiB while compact core is 5.484375 GiB. Side-by-side allocation cannot reach the target and is not admitted."
+  },
+  "validation": {
+    "dag_test": {
+      "command": "cargo test -p hawking-core compact_absorbed_five_dispatch_dag_passes_v21_without_readback --lib -- --nocapture",
+      "passed": 1,
+      "failed": 0
+    },
+    "full_core_library": {
+      "command": "cargo test -p hawking-core --lib -- --nocapture",
+      "passed": 210,
+      "failed": 0,
+      "ignored": 2
+    },
+    "diff_check": "PASS"
+  },
+  "promotion_gate": {
+    "promoted": false,
+    "reason": "The complete attention DAG is proven only on a bounded synthetic fixture. Runtime ownership selection, complete-token parity, and contention-free live evidence are still absent.",
+    "remaining_required_mechanisms": [
+      "default-off resident session layout variant selecting compact rather than expanded cache ownership",
+      "live tensor binding and stable DSA-ranked index upload",
+      "complete-token Numeric Parity V2.1",
+      "contention-authorized live A/B",
+      "sustained 2K/8K/32K TTFT, TPS, bytes, commands, memory, swap, and thermal validation"
+    ]
+  }
+}

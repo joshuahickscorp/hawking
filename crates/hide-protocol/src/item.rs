@@ -282,6 +282,12 @@ pub struct Blocker {
 /// and inter-agent messaging). Both map to the single [`ItemKind::AgentMessage`]
 /// variant; the surrounding `agent_spawn`/`agent_result` items disambiguate the
 /// coordination context.
+///
+/// # Authority note
+///
+/// Items remain the **turn wire schema** authority. They are not the durable
+/// product-event log — that is `hide_core::event::Event` (crate `hawking-events`).
+/// Project items into the durable log via `hawking_events::adapters::item`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(tag = "kind", content = "payload", rename_all = "snake_case")]
 pub enum ItemKind {

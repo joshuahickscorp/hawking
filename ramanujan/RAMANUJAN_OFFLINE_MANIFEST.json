@@ -1,0 +1,116 @@
+{
+  "schema": "hawking.ramanujan.offline_manifest.v1",
+  "at": "2026-07-27T04:30:00Z",
+  "status": "SPECIFIED_NOTHING_ACQUIRED",
+  "offline_mode": false,
+
+  "doctrine": "Freeze the giant, train the small, verify everything, search aggressively, escalate model size only after data, retrieval and search saturate. No paid APIs, no cloud training. Acquisition is a one-time mirroring step; after it, the system runs disconnected.",
+
+  "nothing_acquired_yet": "This is a specification of what must be mirrored and under what terms, not a record of what has been. Every entry is status PENDING. Acquisition is a licensing decision that belongs to the user, and several of these sources have terms that must be read rather than assumed.",
+
+  "hard_rule_on_teacher_traces": {
+    "rule": "Do NOT generate teacher traces from the Math-Preserve artifact.",
+    "why": "It is semantically collapsed -- it predicts ' combust' for the capital of France and 'rus' for 2 + 2, confirmed by numpy oracle against the runtime. Traces distilled from it would teach a student to reproduce the collapse, and would look like data.",
+    "enforced_by": "odyssey/launch/SUBSTRATE_CAPABILITY.json marks the artifact REFUSED; any trace-generation path must consult it.",
+    "what_to_use_instead": "an artifact with capability_verdict APPROVED. None currently exists, so teacher-trace generation is blocked, and that is the correct state rather than a gap to route around."
+  },
+
+  "required_per_source": [
+    "license, read and quoted, not assumed",
+    "sha256 of every acquired file",
+    "upstream version or commit",
+    "split assignment: train, eval, hidden, or fixture",
+    "deduplication method and its parameters",
+    "contamination boundary against the evaluation sets",
+    "evidence status: what the data supports and what it does not"
+  ],
+
+  "sources": [
+    {
+      "id": "D1",
+      "name": "Lean/Mathlib proof traces",
+      "purpose": "supervised formalizer and prover training",
+      "status": "PENDING",
+      "acquisition": "derived locally from the pinned Mathlib once installed, not downloaded as a dataset",
+      "license_question": "Mathlib is Apache-2.0; derived traces inherit that and must carry attribution",
+      "blocked_by": "Mathlib not installed"
+    },
+    {
+      "id": "D2",
+      "name": "proof-state transitions",
+      "purpose": "best-first search policy and value training",
+      "status": "PENDING",
+      "acquisition": "instrument the local Lean search; each transition is generated, never scraped",
+      "blocked_by": "Lean not installed"
+    },
+    {
+      "id": "D3",
+      "name": "premise-selection pairs",
+      "purpose": "retrieval training: which lemmas matter for which goals",
+      "status": "PENDING",
+      "acquisition": "derived from Mathlib dependency structure locally",
+      "blocked_by": "Mathlib not installed"
+    },
+    {
+      "id": "D4",
+      "name": "compiler-error repair pairs",
+      "purpose": "repair training: broken proof plus the error plus the fix",
+      "status": "PENDING",
+      "acquisition": "generated locally by perturbing valid proofs and recording real compiler output",
+      "note": "this one needs no external data at all, only a working Lean. It is the cheapest real training signal available.",
+      "blocked_by": "Lean not installed"
+    },
+    {
+      "id": "D5",
+      "name": "informal/formal pairs",
+      "purpose": "the autoformalization bridge",
+      "status": "PENDING",
+      "license_question": "OPEN. The obvious public corpora vary in terms and some are research-only. This needs a decision before anything is fetched.",
+      "requires_user_decision": true
+    },
+    {
+      "id": "D6",
+      "name": "counterexample negatives",
+      "purpose": "teach refutation, not only proof",
+      "status": "PENDING",
+      "acquisition": "generated locally via SMT and enumeration",
+      "note": "a system trained only on true statements learns to agree"
+    },
+    {
+      "id": "D7",
+      "name": "tool-use traces",
+      "purpose": "when to call which instrument",
+      "status": "PENDING",
+      "acquisition": "generated locally from the search harness"
+    },
+    {
+      "id": "D8",
+      "name": "hidden rediscovery set",
+      "purpose": "Q2: can the system rediscover results it has never seen",
+      "status": "PENDING",
+      "critical_constraint": "must be selected and hash-committed BEFORE any training, and held out mechanically rather than by convention. The contamination barrier already built in tools/odyssey/ is the mechanism.",
+      "requires_user_decision": true
+    },
+    {
+      "id": "D9",
+      "name": "frontier-variant set",
+      "purpose": "Q3: variants of open problems, to measure reach rather than recall",
+      "status": "PENDING",
+      "requires_user_decision": true
+    }
+  ],
+
+  "reusable_machinery_already_built": {
+    "contamination_barrier": "tools/odyssey/ -- indexes evaluation items from the sealed corpus, hidden items under commitment, and the public selection, then mechanically rejects overlapping training items, exact and near-duplicate. Verified by planting leaks it caught.",
+    "membership_checking": "declared-vs-present, reporting DECLARED_NOT_PRESENT rather than treating a manifest entry as data",
+    "note": "the Odyssey data lane's machinery applies unchanged here. It was built generically for exactly this reason."
+  },
+
+  "acquisition_decisions_for_the_user": [
+    "D5 informal/formal pairs: which corpus, under which licence",
+    "D8 hidden rediscovery set: which results to hold out, committed before training",
+    "D9 frontier-variant set: which open problems, and how variants are generated without leaking their answers"
+  ],
+
+  "sequencing_note": "D1, D2, D3, D4, D6 and D7 are all generated LOCALLY from a working Lean and Mathlib. They need no licensing decision and no external download. So the single highest-leverage unblock for Ramanujan data is installing the toolchain -- one bounded install unblocks six of nine sources."
+}

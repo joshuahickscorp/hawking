@@ -1,0 +1,1645 @@
+{
+  "schema": "hawking.consolidation.inventory.v1",
+  "at": "2026-07-26",
+  "commit": "d9bca273e86ca189a7b550f80734db7bf9ca94ad",
+  "branch": "campaign/glm52-generation-b",
+  "mode": "read-only audit; map only; no deletions",
+  "method": "STATIC_SOURCE_READING + archaeology cross-check",
+  "write_note": "repo root OS write-blocked; copies under /tmp/hawking_consolidation_inventory/, session scratchpad, ~/.grok/hawking_consolidation_inventory/",
+  "roles": {
+    "public_cli": {
+      "candidates": [
+        {
+          "path": "crates/hawking/src/main.rs:11-675",
+          "claim": "shipping hawking CLI"
+        },
+        {
+          "path": "crates/hide-serve/src/main.rs:17-28",
+          "claim": "HIDE HTTP serve"
+        },
+        {
+          "path": "crates/hide-acp/src/bin/hide-acp-server.rs",
+          "claim": "ACP stdio"
+        },
+        {
+          "path": "crates/hawking-seed-c/src/main.rs:36-52",
+          "claim": "seed/campaign CLI"
+        }
+      ],
+      "live": "hawking Cmd dispatch main.rs:693+ \u2192 load_engine / hawking_serve::run; hide-serve BackendHost",
+      "shadowed": [
+        "BakeSidecar plan-only main.rs:557-558",
+        "Press dry-run only main.rs:597-601",
+        "seed-c not OpenAI serve"
+      ],
+      "cost": "low for docs; medium for bin merge",
+      "risk": "high if seed-c merged without golden migration"
+    },
+    "model_registry": {
+      "candidates": [
+        {
+          "path": "crates/hawking-core/src/model/mod.rs:26-110",
+          "claim": "load_engine"
+        },
+        {
+          "path": "crates/hawking-core/src/model/gravity_engine.rs:59-150",
+          "claim": "gravity sub-dispatch"
+        },
+        {
+          "path": "crates/hawking-orch/src/registry.rs:13-104",
+          "claim": "RoleRegistry"
+        },
+        {
+          "path": "crates/hawking-seed-c/src/providers/registry.rs:72",
+          "claim": "seed pack registry"
+        },
+        {
+          "path": "tools/condense/glm52_worker.py:111-114",
+          "claim": "PRODUCTION_EXECUTION_ADAPTER_REGISTRY"
+        }
+      ],
+      "live": "hawking-serve/src/lib.rs:523 \u2192 load_engine; RoleRegistry on services",
+      "shadowed": [
+        "empty Python PRODUCTION registry",
+        "seed-c campaign-only"
+      ],
+      "cost": "medium docs; high wrong-domain unify",
+      "risk": "serve or HIDE role breakage"
+    },
+    "adapter_abi": {
+      "candidates": [
+        {
+          "path": "crates/hawking-core/src/model/mod.rs:26",
+          "claim": "execute ABI"
+        },
+        {
+          "path": "crates/hawking-seed-c/src/providers/adapters.rs:96-299",
+          "claim": "ArchAdapter declarative"
+        },
+        {
+          "path": "crates/hawking-seed-c/src/adapter.rs:72-99",
+          "claim": "seed IR plan"
+        },
+        {
+          "path": "tools/condense/gravity_execution_adapter.py",
+          "claim": "unregistered physical adapter"
+        },
+        {
+          "path": "tools/condense/*_adapter.py",
+          "claim": "campaign family adapters"
+        }
+      ],
+      "live": "Engine trait via load_engine / GravityEngine",
+      "shadowed": [
+        "ArchAdapter does not execute",
+        "PRODUCTION registry empty"
+      ],
+      "cost": "high early force-unify",
+      "risk": "Bridge/adapter lane; facade risk"
+    },
+    "context_compiler": {
+      "candidates": [
+        {
+          "path": "crates/hawking-context/src/compiler.rs:272",
+          "claim": "ContextCompiler"
+        },
+        {
+          "path": "crates/hide-backend/src/memory.rs",
+          "claim": "MemoryLedger"
+        },
+        {
+          "path": "crates/hawking-context/src/memory.rs",
+          "claim": "Project Brain"
+        }
+      ],
+      "live": "SubmitTurn \u2192 run_turn_core/kernel \u2192 ContextCompiler",
+      "shadowed": [],
+      "cost": "high product merge cost",
+      "risk": "semantic collision of memory planes"
+    },
+    "tool_effect_registry": {
+      "candidates": [
+        {
+          "path": "crates/hide-backend/src/tools.rs:11",
+          "claim": "build_default_tool_registry"
+        },
+        {
+          "path": "crates/hide-tools/src/mcp.rs:515",
+          "claim": "register_mcp_servers"
+        },
+        {
+          "path": "crates/hide-backend/src/host.rs:614-667",
+          "claim": "MCP at boot"
+        },
+        {
+          "path": "crates/hide-extension-registry/src/registry.rs:119",
+          "claim": "capability Registry"
+        }
+      ],
+      "live": "ToolRegistry + builtins + MCP boot; kernel parse if HIDE_KERNEL_TURN=1",
+      "shadowed": [
+        "extension-registry not execute dispatcher"
+      ],
+      "cost": "medium docs; high ABI merge",
+      "risk": "permission model drift"
+    },
+    "session_event_authority": {
+      "candidates": [
+        {
+          "path": "crates/hide-backend/src/services.rs:152",
+          "claim": "SessionRegistry"
+        },
+        {
+          "path": "crates/hide-core/src/event.rs:52",
+          "claim": "Event log"
+        },
+        {
+          "path": "crates/hide-core/src/api.rs:78",
+          "claim": "UiEvent"
+        },
+        {
+          "path": "crates/hide-protocol/src/lib.rs:1",
+          "claim": "schema authority"
+        },
+        {
+          "path": "crates/hawking-core/src/engine.rs:188",
+          "claim": "StreamEvent"
+        },
+        {
+          "path": "crates/hawking-seed-c/src/state.rs:52",
+          "claim": "seed Event"
+        }
+      ],
+      "live": "SessionRegistry + Event log + UiEvent; StreamEvent on generate",
+      "shadowed": [
+        "hide-protocol not sole transport",
+        "seed Event campaign",
+        "JSONL archive"
+      ],
+      "cost": "very high before Bridge",
+      "risk": "replay/audit breakage \u2014 Bridge lane"
+    },
+    "acceleration_registry": {
+      "candidates": [
+        {
+          "path": "crates/hawking-core/src/engine.rs",
+          "claim": "SpeculateMode"
+        },
+        {
+          "path": "crates/hawking-speculate/src/",
+          "claim": "18 modules"
+        },
+        {
+          "path": "crates/hawking-core/src/model/qwen_dense.rs",
+          "claim": "user-draft/EH/eagle loops"
+        }
+      ],
+      "live": "opt-in SpeculateMode + env-gated paths; default Off",
+      "shadowed": [
+        "retrieval SAM parallel_draft eagle_proposer tree cross_tokenizer unwired/stub"
+      ],
+      "cost": "n/a delete; archive after re-receipt only",
+      "risk": "speculation safety + sealed negatives"
+    },
+    "fabric_planner": {
+      "candidates": [
+        {
+          "path": "crates/hide-fleet/src/manager.rs:151",
+          "claim": "FleetManager"
+        },
+        {
+          "path": "crates/hide-backend/src/host.rs:2843-2880",
+          "claim": "fleet_run"
+        },
+        {
+          "path": "crates/hide-fleet/src/patterns.rs:87",
+          "claim": "choose_pattern"
+        },
+        {
+          "path": "crates/hide-backend/src/host.rs:2383",
+          "claim": "build_turn_kernel RuntimePlanner"
+        }
+      ],
+      "live": "fleet_run intent reaches FleetManager with FixedResourceProbe + fake worktrees + StubPlanner",
+      "shadowed": [
+        "choose_pattern unit-only",
+        "merge tournament unwired",
+        "RuntimePlanner not on fleet path"
+      ],
+      "cost": "Fabric lane work not delete",
+      "risk": "deleting scaffold loses paid wire"
+    },
+    "artifact_loader": {
+      "candidates": [
+        {
+          "path": "crates/hawking-core GgufFile::open",
+          "claim": "GGUF"
+        },
+        {
+          "path": "crates/hawking-core GravityShard::open",
+          "claim": "gravity"
+        },
+        {
+          "path": "crates/hawking-core/src/model/mod.rs:63-77",
+          "claim": "container dispatch"
+        },
+        {
+          "path": "crates/hawking-seed-c/src/gguf.rs",
+          "claim": "seed GGUF copy"
+        }
+      ],
+      "live": "load_engine gravity magic then GGUF; TQ opt-in",
+      "shadowed": [
+        "seed-c isolated copy intentional"
+      ],
+      "cost": "high merge seed-c loaders",
+      "risk": "API drift vs sealed packs"
+    },
+    "provenance_authority": {
+      "candidates": [
+        {
+          "path": "crates/hide-core/src/types.rs:58",
+          "claim": "hide_core Provenance"
+        },
+        {
+          "path": "crates/hide-extension-registry/src/manifest.rs:227",
+          "claim": "capability Provenance"
+        },
+        {
+          "path": "seed-c evidence receipts",
+          "claim": "campaign admission"
+        },
+        {
+          "path": "root seal_sha256",
+          "claim": "scientific seals"
+        }
+      ],
+      "live": "hide_core Provenance on context/events; extension pins",
+      "shadowed": [
+        "no single store"
+      ],
+      "cost": "low priority type unify",
+      "risk": "low"
+    }
+  },
+  "duplicates": [
+    {
+      "pair": [
+        "load_engine",
+        "RoleRegistry"
+      ],
+      "verdict": "keep both",
+      "reason": "execute factory vs orchestration roles"
+    },
+    {
+      "pair": [
+        "ToolRegistry",
+        "hide-extension-registry::Registry"
+      ],
+      "verdict": "keep both",
+      "reason": "execute vs capability disclosure"
+    },
+    {
+      "pair": [
+        "SessionRegistry",
+        "hide-state capsules"
+      ],
+      "verdict": "keep SessionRegistry; hide-state schema orphan",
+      "reason": "RPC state/* NotImplemented"
+    },
+    {
+      "pair": [
+        "Event",
+        "UiEvent",
+        "StreamEvent"
+      ],
+      "verdict": "keep until Bridge",
+      "reason": "durable vs push vs inference"
+    },
+    {
+      "pair": [
+        "ArchAdapter",
+        "Engine"
+      ],
+      "verdict": "document dual ABI",
+      "reason": "metadata vs tokens"
+    },
+    {
+      "pair": [
+        "InMemoryCodeIndex",
+        "SqliteCodeIndex"
+      ],
+      "verdict": "keep code; Sqlite unwired",
+      "reason": "services always InMemory"
+    },
+    {
+      "pair": [
+        "MemoryLedger",
+        "ProjectBrain"
+      ],
+      "verdict": "keep both",
+      "reason": "distinct products"
+    },
+    {
+      "pair": [
+        "seed-c GgufFile",
+        "core GgufFile"
+      ],
+      "verdict": "keep isolated",
+      "reason": "API drift isolation"
+    }
+  ],
+  "dead_adapters": [
+    {
+      "item": "gemma2/phi3/olmoe/mamba2/mixtral in-tree",
+      "verdict": "extracted_to_pack",
+      "evidence": "model/mod.rs:15-17"
+    },
+    {
+      "item": "ArchAdapter extracted-arch builtins",
+      "verdict": "declarative_only",
+      "evidence": "adapters.rs:297-299"
+    },
+    {
+      "item": "PRODUCTION_EXECUTION_ADAPTER_REGISTRY",
+      "verdict": "empty_by_contract",
+      "evidence": "glm52_worker.py:111-114"
+    },
+    {
+      "item": "gravity_execution_adapter",
+      "verdict": "unregistered",
+      "evidence": "gravity_execution_adapter.py"
+    }
+  ],
+  "stale_names": [
+    {
+      "name": "Eagle5 v1 routing-mask",
+      "status": "killed",
+      "superseded_by": "Eagle5 v2; trained head still NO-GO"
+    },
+    {
+      "name": "FUNCTIONAL full admit",
+      "status": "FUNCTIONAL_PARTIAL_ONLY",
+      "superseded_by": "Math-Preserve / ascension closed"
+    },
+    {
+      "name": "Claim A sealable as filed",
+      "status": "BLOCKED_BY_DESIGN_COLLISION",
+      "superseded_by": "GLM52_CLAIM_A_STATUS"
+    },
+    {
+      "name": "Generation B raw cosine",
+      "status": "superseded",
+      "superseded_by": "GLM52_CORRECTED_SCIENTIFIC_LAW"
+    },
+    {
+      "name": "HIDE_ARCHAEOLOGY MCP REAL_UNWIRED",
+      "status": "stale_archaeology",
+      "superseded_by": "host.rs MCP boot"
+    },
+    {
+      "name": "HIDE_ARCHAEOLOGY fleet REAL_UNWIRED",
+      "status": "partially_stale",
+      "superseded_by": "fleet_run wired; fabric still fake"
+    }
+  ],
+  "benchmark_forks": [
+    {
+      "path": "crates/hawking-bench/src/competitors/",
+      "role": "external oracle harnesses"
+    },
+    {
+      "path": "crates/hawking-core/src/kernel_bench.rs",
+      "role": "microbench"
+    },
+    {
+      "path": "crates/hawking-core/examples/gravity_glm_*.rs",
+      "role": "measurement harness"
+    },
+    {
+      "path": "hawking spec-oracle",
+      "role": "CPU accept-rate tooling"
+    },
+    {
+      "path": "crates/hawking-core/tests/*",
+      "role": "test load_engine doubles"
+    }
+  ],
+  "copied_architecture": [
+    {
+      "arch": "llama_dense_gguf",
+      "a": "model/llama.rs LlamaDense",
+      "b": "seed-c adapter + ArchAdapter llama()",
+      "relation": "execute vs plan metadata"
+    },
+    {
+      "arch": "llama_gravity",
+      "a": "gravity_llama.rs",
+      "b": "GravityEngine",
+      "relation": "compressed artifact path"
+    },
+    {
+      "arch": "glm_moe_dsa",
+      "a": "gravity_glm.rs TG-owned",
+      "b": "tools/condense glm52 pack",
+      "relation": "decode Rust / encode Python"
+    },
+    {
+      "arch": "qwen_dense",
+      "a": "qwen_dense.rs",
+      "b": null,
+      "relation": "single ship path"
+    }
+  ],
+  "orphan_schemas": [
+    {
+      "item": "hide-state capsules",
+      "wired": false,
+      "evidence": "RPC state/* NotImplemented"
+    },
+    {
+      "item": "hide-protocol",
+      "wired": "schema_authority_partial_transport",
+      "evidence": "compat bridge Intent/UiEvent"
+    },
+    {
+      "item": "hide-sdk protocol.schema.json",
+      "wired": "codegen",
+      "evidence": "hide-sdk goldens"
+    },
+    {
+      "item": "Tauri dual platform schemas",
+      "wired": "generated_pair",
+      "evidence": "CONDENSE_AUDIT deferred"
+    }
+  ],
+  "flags": [
+    {
+      "name": "HAWKING_ATTN_CAPTURE_MIN_CTX",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_ATTN_CAPTURE_OUT",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_BACKEND_SEAM",
+      "class": "default-off-and-live",
+      "evidence": "qwen_dense.rs:5226"
+    },
+    {
+      "name": "HAWKING_BENCH_PROMPT_FILE",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_COST_LEDGER",
+      "class": "default-off-and-live",
+      "evidence": "cost_ledger"
+    },
+    {
+      "name": "HAWKING_DECODE_TIMING",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_EH_PARALLEL_DRAFT",
+      "class": "dead-or-refuse-scaffold",
+      "evidence": "parallel_draft stub"
+    },
+    {
+      "name": "HAWKING_EH_SAM",
+      "class": "dead-or-refuse-scaffold",
+      "evidence": "suffix_automaton self-gate"
+    },
+    {
+      "name": "HAWKING_ENERGY_EFFICIENT",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_FORCE_CPU",
+      "class": "default-off-and-live",
+      "evidence": "engine.rs"
+    },
+    {
+      "name": "HAWKING_FORCE_CPU_OP",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_FUSED_ADD_RMSNORM",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_GLM_GPU_EXPERT_WAVE",
+      "class": "default-off-and-live",
+      "evidence": "EXPERT_WAVE_NEGATIVE"
+    },
+    {
+      "name": "HAWKING_GLM_GPU_LM_HEAD",
+      "class": "default-off-and-live",
+      "evidence": "TG lane-owned"
+    },
+    {
+      "name": "HAWKING_GLM_GPU_LM_HEAD_FULL_LOGITS",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_GLM_GPU_RESIDENT_STATE",
+      "class": "default-off-and-live",
+      "evidence": "RESIDENT_STATE_NEGATIVE"
+    },
+    {
+      "name": "HAWKING_GRAVITY_GLM_ARTIFACT",
+      "class": "test-only",
+      "evidence": "tests/fixtures"
+    },
+    {
+      "name": "HAWKING_GRAVITY_GPU_CACHE_BUDGET_BYTES",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_GRAVITY_LLAMA_ARTIFACT",
+      "class": "test-only",
+      "evidence": "tests/fixtures"
+    },
+    {
+      "name": "HAWKING_HOME",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_LLAMA_CLI",
+      "class": "test-only",
+      "evidence": "bench"
+    },
+    {
+      "name": "HAWKING_MLX_GENERATE",
+      "class": "test-only",
+      "evidence": "bench"
+    },
+    {
+      "name": "HAWKING_MLX_MODEL_ID",
+      "class": "test-only",
+      "evidence": "bench"
+    },
+    {
+      "name": "HAWKING_PREFIX_CACHE_BUDGET_MB",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_PREFIX_CACHE_DIR",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_Q1P5_HEAD",
+      "class": "test-only",
+      "evidence": "tests/fixtures"
+    },
+    {
+      "name": "HAWKING_Q3B_HEAD",
+      "class": "test-only",
+      "evidence": "tests/fixtures"
+    },
+    {
+      "name": "HAWKING_Q8_DOWN_W2",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_Q8_DOWN_W4",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_ATTN_CAPTURE",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_AWQ",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_BATCH_PREFILL",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_CAPTURE_CORPUS_PATH",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_CAPTURE_FFN_PATH",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_CONCURRENT_QKV",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_E5DIAG",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_EAGLE5",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_EAGLE5_ACCEPT_TRACE",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_EAGLE5_BATCHED",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_EAGLE5_CAPTURE",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_EAGLE5_CAPTURE_DEBUG",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_EAGLE5_CAPTURE_LAYER",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_EAGLE5_CAPTURE_XNORM",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_EAGLE5_FEED_DUMP",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_EAGLE5_K",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_EAGLE5_LENS_PROBE",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_EAGLE5_PROPOSE_FIRST",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_EMBED_RMSNORM_FUSE",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_EVENT_HORIZON",
+      "class": "default-off-and-live",
+      "evidence": "EH path"
+    },
+    {
+      "name": "HAWKING_QWEN_F16_KV",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_FFN_DOWN_PREDEC",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_FFN_DOWN_Q4K",
+      "class": "default-on-or-profile",
+      "evidence": "fast profile; exact force-off"
+    },
+    {
+      "name": "HAWKING_QWEN_FFN_GATEUP_FUSE",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_FLASH_ATTN",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_FLASH_F16KV",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_GGUF",
+      "class": "test-only",
+      "evidence": "tests/fixtures"
+    },
+    {
+      "name": "HAWKING_QWEN_INT4_KV",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_INT4_KV_EXPERIMENTAL",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_KV_FUSE",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_LMHEAD_PREDEC",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_LOAD_TIMING",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_MULTISEQ_V4R_HIGHB",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_OPROJ_4R",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_OPROJ_ADD_RMSNORM_FUSE",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_PAIR_1R",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_PAIR_2R_INLINE",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_PAIR_2R_INLINE_F16S",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_PAIR_2R_INLINE_NOX",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_PAIR_3R",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_PAIR_4R",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_PAIR_8R",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_PAIR_F16S_HALFREG",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_PAIR_F16S_NOX",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_PREDEC_2R",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_PREDEC_4R",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_PREDEC_F16SCALES",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_PREFIX_CACHE",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_Q4K_FAST",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_Q4K_LMHEAD",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_Q4K_MMA",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_Q4K_PREDEC",
+      "class": "default-on-or-profile",
+      "evidence": "RuntimeProfile"
+    },
+    {
+      "name": "HAWKING_QWEN_Q6K_SWIGLU_2R",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_Q6K_SWIGLU_4R",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_QKV_ROPE_APPEND",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_QKV_ROPE_APPEND_4R",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_RESIDENCY",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_ROPE_KV_FUSE",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_SPEC_GOVERNOR",
+      "class": "default-off-and-live",
+      "evidence": "qwen_dense.rs:1786"
+    },
+    {
+      "name": "HAWKING_QWEN_SPEC_GOVERNOR_FORCE_DISABLE",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_SPEC_GOVERNOR_MIN_RATE",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_SPEC_GOVERNOR_WINDOW",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_SWIGLU_4R",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_TCB",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_TQ",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_TQ_CPU",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_TQ_MULTIPLIER",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_TQ_PATH",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_TQ_REQUIRE_ALL_LINEAR",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_TQ_REQUIRE_GPU",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_TQ_RES_PATH",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_TQ_STRICT",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_USAGE_CAPTURE",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_USER_DRAFT",
+      "class": "default-off-and-live",
+      "evidence": "qwen_dense + CLI"
+    },
+    {
+      "name": "HAWKING_QWEN_USER_DRAFT_K",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_USER_DRAFT_PROPOSE_FIRST",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_VERIFY_TIMING",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_VOCAB_PRUNE",
+      "class": "default-on-or-profile",
+      "evidence": "fast profile; exact force-off"
+    },
+    {
+      "name": "HAWKING_QWEN_VOCAB_PRUNE_CORPUS",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_W4A8",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_QWEN_W4A8_PER_CHANNEL",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_RWKV7_191M_GGUF",
+      "class": "test-only",
+      "evidence": "tests/fixtures"
+    },
+    {
+      "name": "HAWKING_RWKV7_F32_GGUF",
+      "class": "test-only",
+      "evidence": "tests/fixtures"
+    },
+    {
+      "name": "HAWKING_RWKV7_GGUF",
+      "class": "test-only",
+      "evidence": "tests/fixtures"
+    },
+    {
+      "name": "HAWKING_RWKV7_MAX_DEPTH",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_RWKV7_TQ",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_RWKV7_TQ_PATH",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_RWKV7_TQ_RES_PATH",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_RWKV7_TQ_STRICT",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_SPEC_DECODE",
+      "class": "default-off-and-live",
+      "evidence": "engine SpeculateMode"
+    },
+    {
+      "name": "HAWKING_SPEC_LOG",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_TCB_TRACE",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_TEST_WEIGHTS",
+      "class": "test-only",
+      "evidence": "tests"
+    },
+    {
+      "name": "HAWKING_TEST_WEIGHTS_QWEN",
+      "class": "test-only",
+      "evidence": "tests"
+    },
+    {
+      "name": "HAWKING_TQ_RESIDUAL",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_TQ_RUNTIME_PATH",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_TQ_ST",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_TRACE_DISPATCH",
+      "class": "default-off-and-live",
+      "evidence": "metal + CLI"
+    },
+    {
+      "name": "HAWKING_USAGE_CAPTURE_OUT",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_USAGE_CAPTURE_TOPK",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HAWKING_USAGE_CAPTURE_TOP_CTX",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HIDE_ALLOW_ORIGIN",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HIDE_DB_NAME",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HIDE_DB_SCHEMA",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HIDE_DEBUG_SBPL",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HIDE_HAWKING_BIN",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HIDE_KERNEL_AUTONOMY",
+      "class": "default-off-and-live",
+      "evidence": "host.rs:6308-6313"
+    },
+    {
+      "name": "HIDE_KERNEL_TURN",
+      "class": "default-off-and-live",
+      "evidence": "host.rs:6298-6301"
+    },
+    {
+      "name": "HIDE_LIVE_MODEL_TURN",
+      "class": "test-only",
+      "evidence": "tests/fixtures"
+    },
+    {
+      "name": "HIDE_MAX_OUTPUT_TOKENS",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HIDE_MODEL_ADDR",
+      "class": "default-off-and-live",
+      "evidence": "supervisor"
+    },
+    {
+      "name": "HIDE_MODEL_BOOT_TIMEOUT_SECS",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HIDE_MODEL_WEIGHTS",
+      "class": "default-off-and-live",
+      "evidence": "supervisor boot"
+    },
+    {
+      "name": "HIDE_RUN_CACHE",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HIDE_RUN_ID",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HIDE_SERVE_ADDR",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    },
+    {
+      "name": "HIDE_WORKSPACE",
+      "class": "default-off-and-live",
+      "evidence": "crate string ref; conservative keep"
+    }
+  ],
+  "flags_note": "146 unique HAWKING_/HIDE_ string refs. Low file-ref count is not proof of dead. Conservative default class default-off-and-live.",
+  "unwired_scaffolds": [
+    {
+      "item": "fleet_run",
+      "this_audit": "WIRED_scaffold_fake",
+      "hide_archaeology": "REAL_UNWIRED",
+      "fabric_bridge": "reachable_fake",
+      "agree": "disagree_HIDE_reachability_agree_FABRIC_quality",
+      "evidence": "host.rs:497,1308,2843-2866"
+    },
+    {
+      "item": "fleet_merge_tournament",
+      "this_audit": "UNWIRED",
+      "hide_archaeology": "REAL_UNWIRED",
+      "fabric_bridge": null,
+      "agree": true,
+      "evidence": "merge.rs no prod callers"
+    },
+    {
+      "item": "choose_pattern",
+      "this_audit": "UNWIRED",
+      "hide_archaeology": null,
+      "fabric_bridge": "unit-only",
+      "agree": true,
+      "evidence": "patterns.rs:87"
+    },
+    {
+      "item": "MCP_boot",
+      "this_audit": "WIRED",
+      "hide_archaeology": "REAL_UNWIRED",
+      "fabric_bridge": "REAL_WIRED",
+      "agree": "disagree_HIDE_agree_FABRIC",
+      "evidence": "host.rs:614-667"
+    },
+    {
+      "item": "ACP_TurnHandler",
+      "this_audit": "DEFERRED",
+      "hide_archaeology": "PARTIAL",
+      "fabric_bridge": "PARTIAL",
+      "agree": true,
+      "evidence": "DeferredTurnHandler"
+    },
+    {
+      "item": "hide_state_capsules",
+      "this_audit": "UNWIRED",
+      "hide_archaeology": "REAL_UNWIRED",
+      "fabric_bridge": null,
+      "agree": true,
+      "evidence": "rpc state/* NotImplemented"
+    },
+    {
+      "item": "SqliteCodeIndex_open",
+      "this_audit": "UNWIRED",
+      "hide_archaeology": "PARTIAL",
+      "fabric_bridge": null,
+      "agree": true,
+      "evidence": "services InMemory only"
+    },
+    {
+      "item": "Initialize_route",
+      "this_audit": "MISSING",
+      "hide_archaeology": "noted",
+      "fabric_bridge": null,
+      "agree": true,
+      "evidence": "HIDE_ARCHAEOLOGY \u00a71"
+    },
+    {
+      "item": "SDK_Transport",
+      "this_audit": "DEFERRED",
+      "hide_archaeology": null,
+      "fabric_bridge": "PARTIAL",
+      "agree": true,
+      "evidence": "FABRIC_BRIDGE"
+    },
+    {
+      "item": "Anthropic_messages",
+      "this_audit": "MISSING",
+      "hide_archaeology": null,
+      "fabric_bridge": "MISSING",
+      "agree": true,
+      "evidence": "FABRIC_BRIDGE"
+    },
+    {
+      "item": "spec_unwired_modules",
+      "this_audit": "UNWIRED_or_STUB",
+      "hide_archaeology": null,
+      "fabric_bridge": null,
+      "agree": "agree_ACCELERATION_ARCHAEOLOGY",
+      "evidence": "ACCELERATION_ARCHAEOLOGY modules table"
+    },
+    {
+      "item": "BakeSidecar_write",
+      "this_audit": "UNIMPLEMENTED",
+      "hide_archaeology": null,
+      "fabric_bridge": null,
+      "agree": null,
+      "evidence": "main.rs:557-558"
+    },
+    {
+      "item": "Press_bake",
+      "this_audit": "UNIMPLEMENTED",
+      "hide_archaeology": null,
+      "fabric_bridge": null,
+      "agree": null,
+      "evidence": "main.rs:597-601"
+    }
+  ],
+  "scientific_history_clusters": [
+    {
+      "cluster": "KIMI_K26",
+      "n": 79,
+      "date": "2026-07-21..2026-07-22",
+      "status": "CLOSED / BOUNDARY_ESTABLISHED",
+      "superseded_by": "parent transfer; GLM52",
+      "reproduction_command": "tools/condense long-run/gravity finals + KIMI_K26_*_FINAL.json",
+      "scientific_relevance": "scientific law + long-run + gravity finals",
+      "must_survive": true
+    },
+    {
+      "cluster": "GLM52",
+      "n": 44,
+      "date": "2026-07-21..2026-07-26",
+      "status": "FUNCTIONAL_PARTIAL_ONLY; Claim A blocked; Math-Preserve sealed",
+      "superseded_by": "GLM52_CORRECTED_SCIENTIFIC_LAW",
+      "reproduction_command": "glm52 pack/stream; Math-Preserve out-of-tree",
+      "scientific_relevance": "flagship continuum parent",
+      "must_survive": true
+    },
+    {
+      "cluster": "HAWKING_continuum_ascension_motherload",
+      "n": 59,
+      "date": "2026-07-23..2026-07-26",
+      "status": "ASCENSION_CLOSED; ODYSSEY_READY; continuum SEAL_CLAIM_A posture",
+      "superseded_by": "refactor/HIDE/Odyssey next",
+      "reproduction_command": "ledgers + gate JSONs",
+      "scientific_relevance": "campaign control plane",
+      "must_survive": true
+    },
+    {
+      "cluster": "DEEPSEEK_V4",
+      "n": 11,
+      "date": "2026-07-23",
+      "status": "FAVOURABLE_NOT_UNIFORMLY_CONTRACTIVE",
+      "superseded_by": "cascade decisions",
+      "reproduction_command": "Flash contraction pilot tools",
+      "scientific_relevance": "functional escape reopened vs GLM",
+      "must_survive": true
+    },
+    {
+      "cluster": "HIDE_archaeology_reviews",
+      "n": 9,
+      "date": "2026-07-25..2026-07-26",
+      "status": "wiring recon",
+      "superseded_by": "future wiring receipts",
+      "reproduction_command": "static recon",
+      "scientific_relevance": "product archaeology",
+      "must_survive": true
+    },
+    {
+      "cluster": "Acceleration",
+      "n": 3,
+      "date": "2026-07-26",
+      "status": "losslessness bug fixed; ledger stale",
+      "superseded_by": "TQ re-receipt open",
+      "reproduction_command": "parity/EH gate",
+      "scientific_relevance": "spec-decode science",
+      "must_survive": true
+    },
+    {
+      "cluster": "resident_expert_wave_negatives",
+      "n": 2,
+      "date": "2026-07-26",
+      "status": "NEGATIVE sealed",
+      "superseded_by": null,
+      "reproduction_command": "HAWKING_GLM_GPU_* flags",
+      "scientific_relevance": "falsified GPU collapses",
+      "must_survive": true
+    },
+    {
+      "cluster": "DOCTOR_SUBBIT_GRAVITY",
+      "n": 14,
+      "date": "2026-07-21..2026-07-23",
+      "status": "prechecks/atlases",
+      "superseded_by": "doctor gen3",
+      "reproduction_command": "doctor CLIs",
+      "scientific_relevance": "negative transfer atlas",
+      "must_survive": true
+    },
+    {
+      "cluster": "PROMETHEUS_PASS3",
+      "n": 2,
+      "date": "2026-07-24..2026-07-25",
+      "status": "architecture/allocation",
+      "superseded_by": "continuum pass3",
+      "reproduction_command": "prometheus workers",
+      "scientific_relevance": "math allocation",
+      "must_survive": true
+    },
+    {
+      "cluster": "NUCLEAR_PASTA",
+      "n": 2,
+      "date": "2026-07-17..2026-07-18",
+      "status": "historical",
+      "superseded_by": "extracted crates",
+      "reproduction_command": null,
+      "scientific_relevance": "LOC extraction ledger",
+      "must_survive": true
+    },
+    {
+      "cluster": "CONDENSE_AUDIT",
+      "n": 3,
+      "date": "2026-07-03",
+      "status": "completed",
+      "superseded_by": null,
+      "reproduction_command": "go-plan oracle",
+      "scientific_relevance": "almost nothing removable",
+      "must_survive": true
+    },
+    {
+      "cluster": "NUMERIC_PARITY",
+      "n": 3,
+      "date": "2026-07-26",
+      "status": "V2.1 contract",
+      "superseded_by": null,
+      "reproduction_command": "harness JSON",
+      "scientific_relevance": "math authority",
+      "must_survive": true
+    },
+    {
+      "cluster": "RAMANUJAN_MOP",
+      "n": 6,
+      "date": "2026-07-26",
+      "status": "assessment only",
+      "superseded_by": "Continuum step 14",
+      "reproduction_command": "assessment tools",
+      "scientific_relevance": "training governance",
+      "must_survive": true
+    },
+    {
+      "cluster": "ODYSSEY",
+      "n": 2,
+      "date": "gate docs",
+      "status": "promotion gate CANONICAL",
+      "superseded_by": "controller-only flip",
+      "reproduction_command": null,
+      "scientific_relevance": "training fence",
+      "must_survive": true
+    },
+    {
+      "cluster": "provider_ladder_prechecks",
+      "n": 10,
+      "date": "2026-07-19..2026-07-23",
+      "status": "prechecks",
+      "superseded_by": "Ladder V3",
+      "reproduction_command": null,
+      "scientific_relevance": "admission prechecks",
+      "must_survive": true
+    },
+    {
+      "cluster": "standing_docs",
+      "n": 20,
+      "date": "ongoing",
+      "status": "canonical",
+      "superseded_by": null,
+      "reproduction_command": null,
+      "scientific_relevance": "operating law",
+      "must_survive": true
+    }
+  ],
+  "ranked_actions": [
+    {
+      "action": "Document dual ABI: load_engine=execute; ArchAdapter=metadata; PRODUCTION empty by law",
+      "blast_radius": "docs",
+      "blocked_by": [],
+      "evidence": "model/mod.rs:26; adapters.rs; glm52_worker.py:111",
+      "recommendation": "do_now_docs"
+    },
+    {
+      "action": "Refresh HIDE_ARCHAEOLOGY for fleet_run + MCP boot",
+      "blast_radius": "docs",
+      "blocked_by": [],
+      "evidence": "host.rs:497,614,1308,2843",
+      "recommendation": "do_now_docs"
+    },
+    {
+      "action": "Fix MODELS.md / ARCHITECTURE.md extracted-arch claims",
+      "blast_radius": "docs",
+      "blocked_by": [],
+      "evidence": "FABRIC_BRIDGE + model/mod.rs:15-17",
+      "recommendation": "do_now_docs"
+    },
+    {
+      "action": "Fabric OsResourceProbe + real worktrees + RuntimePlanner on fleet_run",
+      "blast_radius": "hide-backend, hide-fleet",
+      "blocked_by": [
+        "fabric_lane"
+      ],
+      "evidence": "host.rs:2848-2866",
+      "recommendation": "lane_owned_defer"
+    },
+    {
+      "action": "Wire merge tournament into FleetManager",
+      "blast_radius": "hide-fleet",
+      "blocked_by": [
+        "fabric_lane",
+        "fleet_run_real"
+      ],
+      "evidence": "merge.rs no prod callers",
+      "recommendation": "lane_owned_defer"
+    },
+    {
+      "action": "Event projection Event log to UiEvent; freeze StreamEvent in core",
+      "blast_radius": "hide-*, serve",
+      "blocked_by": [
+        "bridge_lane"
+      ],
+      "evidence": "six event competitors",
+      "recommendation": "lane_owned_defer"
+    },
+    {
+      "action": "ACP TurnHandler to BackendHost",
+      "blast_radius": "hide-acp",
+      "blocked_by": [
+        "hide_wiring_lane"
+      ],
+      "evidence": "DeferredTurnHandler",
+      "recommendation": "lane_owned_defer"
+    },
+    {
+      "action": "SqliteCodeIndex + daemon at open_workspace",
+      "blast_radius": "hide-backend, hawking-index",
+      "blocked_by": [
+        "product_decision"
+      ],
+      "evidence": "services InMemory only",
+      "recommendation": "optional_later"
+    },
+    {
+      "action": "hide-state RPC or demote claims",
+      "blast_radius": "hide-state, rpc",
+      "blocked_by": [
+        "product_decision"
+      ],
+      "evidence": "NotImplemented RPC",
+      "recommendation": "document_or_wire_do_not_delete"
+    },
+    {
+      "action": "Spec modules register or ARCHIVE with dead_levers links",
+      "blast_radius": "hawking-speculate",
+      "blocked_by": [
+        "speculation_safety",
+        "losslessness_re_receipt"
+      ],
+      "evidence": "ACCELERATION_ARCHAEOLOGY",
+      "recommendation": "keep_stubs"
+    },
+    {
+      "action": "Archive idle campaign Python packs after gates real",
+      "blast_radius": "tools/ large",
+      "blocked_by": [
+        "math_frozen",
+        "hide",
+        "fabric",
+        "bridge"
+      ],
+      "evidence": "RECLAMATION_SURVEY",
+      "recommendation": "archive_only_after_gates"
+    },
+    {
+      "action": "True orphans after human rg gate",
+      "blast_radius": "tiny",
+      "blocked_by": [
+        "human_review"
+      ],
+      "evidence": "CONDENSE_AUDIT",
+      "recommendation": "prefer_archive_default_keep"
+    },
+    {
+      "action": "Consolidate Provenance types",
+      "blast_radius": "hide-core + extension-registry",
+      "blocked_by": [
+        "low_priority"
+      ],
+      "evidence": "two Provenance structs",
+      "recommendation": "defer_indefinitely"
+    },
+    {
+      "action": "Merge seed-c gguf into core",
+      "blast_radius": "seed-c, core",
+      "blocked_by": [
+        "api_drift_policy"
+      ],
+      "evidence": "Cargo.toml isolation",
+      "recommendation": "do_not"
+    },
+    {
+      "action": "Flip HIDE_KERNEL_TURN default on",
+      "blast_radius": "host",
+      "blocked_by": [
+        "approval_round_trip",
+        "standing_law"
+      ],
+      "evidence": "host.rs:6290-6301",
+      "recommendation": "forbidden_until_gate"
+    }
+  ],
+  "must_not_delete": [
+    "_COMMON.md forbidden paths",
+    "KIMI_K26 scientific law + long-run + gravity finals",
+    "GLM52 FUNCTIONAL_PARTIAL_ONLY + corrected law + Math-Preserve chain",
+    "HAWKING_RESIDENT_STATE_NEGATIVE + HAWKING_EXPERT_WAVE_NEGATIVE",
+    "Eagle5/EAGLE-3 NO-GO (docs/dead_levers.md)",
+    "ACCELERATION_LOSSLESSNESS_VERDICT + ACCELERATION_ARCHAEOLOGY",
+    "HAWKING_ASCENSION_CLOSED + ODYSSEY gate + ODYSSEY_READY chain",
+    "DEEPSEEK_V4 contraction pilot",
+    "Doctor negative-transfer atlas",
+    "empty PRODUCTION_EXECUTION_ADAPTER_REGISTRY contract + tests",
+    "docs/dead_levers.md Type-1 kill set",
+    "HIDE/Fabric/Bridge/Odyssey/speculation scaffolds",
+    "dual event types until Bridge",
+    "extracted-adapter pack references and load_engine error strings"
+  ],
+  "active_lane_overlap": [
+    "HIDE wiring",
+    "Fabric",
+    "Bridge/adapters/events",
+    "Odyssey",
+    "speculation safety",
+    "Temporal Gravity forbidden paths"
+  ],
+  "evidence_level": "STATIC_SOURCE_READING",
+  "not_evidence_of": [
+    "live tps",
+    "CI green",
+    "weight presence",
+    "e2e hide-serve with real model this session"
+  ]
+}

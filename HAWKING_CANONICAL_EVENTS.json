@@ -1,0 +1,225 @@
+{
+  "canonical_schema": "hawking.events.canonical.v1",
+  "categories": [
+    {
+      "category": "model_lifecycle",
+      "covered": true,
+      "primary_kind": "model.lifecycle"
+    },
+    {
+      "category": "text",
+      "covered": true,
+      "primary_kind": "model.token"
+    },
+    {
+      "category": "reasoning",
+      "covered": true,
+      "primary_kind": "model.reasoning"
+    },
+    {
+      "category": "plans",
+      "covered": true,
+      "primary_kind": "plan.created"
+    },
+    {
+      "category": "tools",
+      "covered": true,
+      "primary_kind": "tool.call"
+    },
+    {
+      "category": "permissions",
+      "covered": true,
+      "primary_kind": "security.gate"
+    },
+    {
+      "category": "edits",
+      "covered": true,
+      "primary_kind": "edit.diff"
+    },
+    {
+      "category": "tests",
+      "covered": true,
+      "primary_kind": "test.result"
+    },
+    {
+      "category": "verification",
+      "covered": true,
+      "primary_kind": "verify.receipt"
+    },
+    {
+      "category": "agents",
+      "covered": true,
+      "primary_kind": "agent.phase"
+    },
+    {
+      "category": "acceleration",
+      "covered": true,
+      "primary_kind": "accel.status"
+    },
+    {
+      "category": "fabric_placement",
+      "covered": true,
+      "primary_kind": "fabric.placement"
+    },
+    {
+      "category": "fabric_node_state",
+      "covered": true,
+      "primary_kind": "fabric.node_state"
+    },
+    {
+      "category": "warnings",
+      "covered": true,
+      "primary_kind": "system.warning"
+    },
+    {
+      "category": "errors",
+      "covered": true,
+      "primary_kind": "error"
+    },
+    {
+      "category": "usage",
+      "covered": true,
+      "primary_kind": "model.usage"
+    }
+  ],
+  "category_count": 16,
+  "chosen_model": {
+    "envelope_fields": [
+      "id",
+      "seq",
+      "session_id",
+      "subsystem",
+      "verification"
+    ],
+    "file": "crates/hide-core/src/event.rs",
+    "justification": "Among models that can express the full category surface (model lifecycle, text, reasoning, plans, tools, permissions, edits, tests, verification, agents, acceleration, Fabric placement/node state, warnings, errors, usage), hide-core Event already carries the durable product-event traffic: hide-backend appends it to JsonlEventLog and replays it into UiEvent. StreamEvent has higher token volume but only Token|Done and cannot be the product authority. Chosen for live durable traffic, not aesthetics.",
+    "line": 52,
+    "name": "hide_core::event::Event"
+  },
+  "migration_status": {
+    "campaign_jsonl_ledgers": "campaign_ledger_no_adapter",
+    "hide_core_event": "canonical",
+    "protocol_item": "live_projection_with_adapter",
+    "seed_c_event": "deprecated_adapted",
+    "stream_event": "live_projection_with_adapter",
+    "ui_event": "live_projection_with_adapter"
+  },
+  "primary_kinds": [
+    {
+      "category": "model_lifecycle",
+      "kind": "model.lifecycle"
+    },
+    {
+      "category": "text",
+      "kind": "model.token"
+    },
+    {
+      "category": "reasoning",
+      "kind": "model.reasoning"
+    },
+    {
+      "category": "plans",
+      "kind": "plan.created"
+    },
+    {
+      "category": "tools",
+      "kind": "tool.call"
+    },
+    {
+      "category": "permissions",
+      "kind": "security.gate"
+    },
+    {
+      "category": "edits",
+      "kind": "edit.diff"
+    },
+    {
+      "category": "tests",
+      "kind": "test.result"
+    },
+    {
+      "category": "verification",
+      "kind": "verify.receipt"
+    },
+    {
+      "category": "agents",
+      "kind": "agent.phase"
+    },
+    {
+      "category": "acceleration",
+      "kind": "accel.status"
+    },
+    {
+      "category": "fabric_placement",
+      "kind": "fabric.placement"
+    },
+    {
+      "category": "fabric_node_state",
+      "kind": "fabric.node_state"
+    },
+    {
+      "category": "warnings",
+      "kind": "system.warning"
+    },
+    {
+      "category": "errors",
+      "kind": "error"
+    },
+    {
+      "category": "usage",
+      "kind": "model.usage"
+    }
+  ],
+  "schema": "hawking.events.canonical.v1",
+  "superseded_models": [
+    {
+      "adapter_module": "hawking_events::adapters::ui",
+      "file": "crates/hide-core/src/api.rs",
+      "line": 78,
+      "name": "hide_core::api::UiEvent",
+      "notes": "Still live transport; hide-backend maps Event -> UiEvent. Not a second durable log.",
+      "role": "Wire-B UI bus (seq + session + UiEventKind)",
+      "status": "live_projection"
+    },
+    {
+      "adapter_module": "hawking_events::adapters::item",
+      "file": "crates/hide-protocol/src/item.rs",
+      "line": 287,
+      "name": "hide_protocol::item::Item / ItemKind",
+      "notes": "Schema authority for turn items remains; adapts into canonical kinds for the durable log.",
+      "role": "Turn wire schema authority (Items inside Turns)",
+      "status": "live_projection"
+    },
+    {
+      "adapter_module": "hawking_events::adapters::stream",
+      "file": "crates/hawking-core/src/engine.rs",
+      "line": 188,
+      "name": "hawking_core::engine::StreamEvent",
+      "notes": "Highest *token* traffic; too narrow for full categories. Projects to model.token/model.usage.",
+      "role": "Inference hot-path token stream (Token | Done only)",
+      "status": "live_projection"
+    },
+    {
+      "adapter_module": "hawking_events::adapters::seed",
+      "file": "crates/hawking-seed-c/src/state.rs",
+      "line": 52,
+      "name": "hawking_seed_c::state::Event",
+      "notes": "Domain-specific FSM; do not expand as a product event bus. Adapter emits seed.transition.",
+      "role": "Campaign state-machine transitions (Prepare/Admit/Run/...)",
+      "status": "deprecated_adapted"
+    },
+    {
+      "adapter_module": null,
+      "file": "HAWKING_CAMPAIGN_LEDGER.jsonl",
+      "line": 1,
+      "name": "campaign JSONL ledgers",
+      "notes": "Not product events; stay as campaign receipts. No adapter required.",
+      "role": "Scientific/receipt campaign ledgers at repo root",
+      "status": "campaign_ledger"
+    }
+  ],
+  "two_live_projections_loudly": [
+    "StreamEvent remains the inference hot path (crates/hawking-core/src/engine.rs:188); project via hawking_events::adapters::stream.",
+    "UiEvent remains Wire-B UI transport (crates/hide-core/src/api.rs:78); durable authority is still Event."
+  ]
+}

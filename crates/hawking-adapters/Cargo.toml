@@ -1,0 +1,22 @@
+[package]
+name = "hawking-adapters"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "One model-family adapter ABI + honest support-level registry. Generates ABI schema, full registry, capability/test/migration matrices, family docs, CLI validation, SDK types, HIDE capabilities, and Fabric declarations from the sole FamilyRegistry. No family is PRODUCTION today."
+
+[[bin]]
+name = "hawking-adapters-codegen"
+path = "src/bin/hawking-adapters-codegen.rs"
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+hawking-events = { path = "../hawking-events" }
+
+[dev-dependencies]

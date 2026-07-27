@@ -1,0 +1,100 @@
+{
+  "schema": "hawking.ramanujan.acquisition_queue.v1",
+  "at": "2026-07-27T04:06:07Z",
+  "generated_from": "ramanujan/RAMANUJAN_OFFLINE_MANIFEST.json",
+  "resource_mode": "LIGHT_ONLY",
+  "queue": [
+    {
+      "id": "D1",
+      "name": "Lean/Mathlib proof traces",
+      "action": "generate locally once Mathlib not installed",
+      "blocked_by": "Mathlib not installed",
+      "unblocked_by_toolchain_install": false,
+      "network_required": false,
+      "safe_under_light_only": true
+    },
+    {
+      "id": "D2",
+      "name": "proof-state transitions",
+      "action": "generate locally once Lean not installed",
+      "blocked_by": "Lean not installed",
+      "unblocked_by_toolchain_install": false,
+      "network_required": false,
+      "safe_under_light_only": true
+    },
+    {
+      "id": "D3",
+      "name": "premise-selection pairs",
+      "action": "generate locally once Mathlib not installed",
+      "blocked_by": "Mathlib not installed",
+      "unblocked_by_toolchain_install": false,
+      "network_required": false,
+      "safe_under_light_only": true
+    },
+    {
+      "id": "D4",
+      "name": "compiler-error repair pairs",
+      "action": "generate locally once Lean not installed",
+      "blocked_by": "Lean not installed",
+      "unblocked_by_toolchain_install": false,
+      "network_required": false,
+      "safe_under_light_only": true
+    },
+    {
+      "id": "D5",
+      "name": "informal/formal pairs",
+      "action": "await a licensing decision from the user",
+      "blocked_by": "user licensing decision",
+      "unblocked_by_toolchain_install": false,
+      "network_required": true,
+      "safe_under_light_only": false
+    },
+    {
+      "id": "D6",
+      "name": "counterexample negatives",
+      "action": "generate locally",
+      "blocked_by": null,
+      "unblocked_by_toolchain_install": false,
+      "network_required": false,
+      "safe_under_light_only": true
+    },
+    {
+      "id": "D7",
+      "name": "tool-use traces",
+      "action": "generate locally",
+      "blocked_by": null,
+      "unblocked_by_toolchain_install": false,
+      "network_required": false,
+      "safe_under_light_only": true
+    },
+    {
+      "id": "D8",
+      "name": "hidden rediscovery set",
+      "action": "await a licensing decision from the user",
+      "blocked_by": "user licensing decision",
+      "unblocked_by_toolchain_install": false,
+      "network_required": true,
+      "safe_under_light_only": false
+    },
+    {
+      "id": "D9",
+      "name": "frontier-variant set",
+      "action": "await a licensing decision from the user",
+      "blocked_by": "user licensing decision",
+      "unblocked_by_toolchain_install": false,
+      "network_required": true,
+      "safe_under_light_only": false
+    }
+  ],
+  "runnable_under_light_only_right_now": [
+    "D6",
+    "D7"
+  ],
+  "awaiting_user_decision": [
+    "D5",
+    "D8",
+    "D9"
+  ],
+  "awaiting_toolchain": [],
+  "note": "nothing here downloads a model parent. Acquisition of external corpora is a licensing decision and is not performed by this campaign."
+}

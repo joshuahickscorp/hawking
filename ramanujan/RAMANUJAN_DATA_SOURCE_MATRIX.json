@@ -1,0 +1,216 @@
+{
+  "schema": "hawking.ramanujan.data_source_matrix.v1",
+  "at": "2026-07-27T04:06:07Z",
+  "generated_from": "ramanujan/RAMANUJAN_OFFLINE_MANIFEST.json",
+  "do_not_hand_edit": "regenerate with python3.12 -m ramanujan.gen_data_matrix",
+  "required_bindings": [
+    "license",
+    "version",
+    "hash",
+    "split",
+    "deduplication",
+    "contamination_boundary",
+    "evidence_status",
+    "local_offline_location"
+  ],
+  "sources": [
+    {
+      "id": "D1",
+      "name": "Lean/Mathlib proof traces",
+      "purpose": "supervised formalizer and prover training",
+      "status": "PENDING",
+      "acquisition_mode": "LOCALLY_GENERATED",
+      "requires_user_decision": false,
+      "blocked_by": "Mathlib not installed",
+      "bindings": {
+        "license": "INHERITED_FROM_MATHLIB_APACHE_2_0",
+        "version": "PENDING",
+        "hash": "PENDING",
+        "split": "PENDING",
+        "deduplication": "PENDING",
+        "contamination_boundary": "ENFORCED_BY_EXISTING_BARRIER",
+        "evidence_status": "PENDING",
+        "local_offline_location": "PENDING"
+      },
+      "bindings_satisfied": 2,
+      "bindings_required": 8
+    },
+    {
+      "id": "D2",
+      "name": "proof-state transitions",
+      "purpose": "best-first search policy and value training",
+      "status": "PENDING",
+      "acquisition_mode": "LOCALLY_GENERATED",
+      "requires_user_decision": false,
+      "blocked_by": "Lean not installed",
+      "bindings": {
+        "license": "LOCALLY_GENERATED",
+        "version": "PENDING",
+        "hash": "PENDING",
+        "split": "PENDING",
+        "deduplication": "PENDING",
+        "contamination_boundary": "ENFORCED_BY_EXISTING_BARRIER",
+        "evidence_status": "PENDING",
+        "local_offline_location": "PENDING"
+      },
+      "bindings_satisfied": 2,
+      "bindings_required": 8
+    },
+    {
+      "id": "D3",
+      "name": "premise-selection pairs",
+      "purpose": "retrieval training: which lemmas matter for which goals",
+      "status": "PENDING",
+      "acquisition_mode": "LOCALLY_GENERATED",
+      "requires_user_decision": false,
+      "blocked_by": "Mathlib not installed",
+      "bindings": {
+        "license": "INHERITED_FROM_MATHLIB_APACHE_2_0",
+        "version": "PENDING",
+        "hash": "PENDING",
+        "split": "PENDING",
+        "deduplication": "PENDING",
+        "contamination_boundary": "ENFORCED_BY_EXISTING_BARRIER",
+        "evidence_status": "PENDING",
+        "local_offline_location": "PENDING"
+      },
+      "bindings_satisfied": 2,
+      "bindings_required": 8
+    },
+    {
+      "id": "D4",
+      "name": "compiler-error repair pairs",
+      "purpose": "repair training: broken proof plus the error plus the fix",
+      "status": "PENDING",
+      "acquisition_mode": "LOCALLY_GENERATED",
+      "requires_user_decision": false,
+      "blocked_by": "Lean not installed",
+      "bindings": {
+        "license": "LOCALLY_GENERATED",
+        "version": "PENDING",
+        "hash": "PENDING",
+        "split": "PENDING",
+        "deduplication": "PENDING",
+        "contamination_boundary": "ENFORCED_BY_EXISTING_BARRIER",
+        "evidence_status": "PENDING",
+        "local_offline_location": "PENDING"
+      },
+      "bindings_satisfied": 2,
+      "bindings_required": 8
+    },
+    {
+      "id": "D5",
+      "name": "informal/formal pairs",
+      "purpose": "the autoformalization bridge",
+      "status": "PENDING",
+      "acquisition_mode": "EXTERNAL",
+      "requires_user_decision": true,
+      "blocked_by": null,
+      "bindings": {
+        "license": "PENDING",
+        "version": "PENDING",
+        "hash": "PENDING",
+        "split": "PENDING",
+        "deduplication": "PENDING",
+        "contamination_boundary": "PENDING",
+        "evidence_status": "PENDING",
+        "local_offline_location": "PENDING"
+      },
+      "bindings_satisfied": 0,
+      "bindings_required": 8
+    },
+    {
+      "id": "D6",
+      "name": "counterexample negatives",
+      "purpose": "teach refutation, not only proof",
+      "status": "PENDING",
+      "acquisition_mode": "LOCALLY_GENERATED",
+      "requires_user_decision": false,
+      "blocked_by": null,
+      "bindings": {
+        "license": "LOCALLY_GENERATED",
+        "version": "PENDING",
+        "hash": "PENDING",
+        "split": "PENDING",
+        "deduplication": "PENDING",
+        "contamination_boundary": "ENFORCED_BY_EXISTING_BARRIER",
+        "evidence_status": "PENDING",
+        "local_offline_location": "PENDING"
+      },
+      "bindings_satisfied": 2,
+      "bindings_required": 8
+    },
+    {
+      "id": "D7",
+      "name": "tool-use traces",
+      "purpose": "when to call which instrument",
+      "status": "PENDING",
+      "acquisition_mode": "LOCALLY_GENERATED",
+      "requires_user_decision": false,
+      "blocked_by": null,
+      "bindings": {
+        "license": "LOCALLY_GENERATED",
+        "version": "PENDING",
+        "hash": "PENDING",
+        "split": "PENDING",
+        "deduplication": "PENDING",
+        "contamination_boundary": "ENFORCED_BY_EXISTING_BARRIER",
+        "evidence_status": "PENDING",
+        "local_offline_location": "PENDING"
+      },
+      "bindings_satisfied": 2,
+      "bindings_required": 8
+    },
+    {
+      "id": "D8",
+      "name": "hidden rediscovery set",
+      "purpose": "Q2: can the system rediscover results it has never seen",
+      "status": "PENDING",
+      "acquisition_mode": "EXTERNAL",
+      "requires_user_decision": true,
+      "blocked_by": null,
+      "bindings": {
+        "license": "PENDING",
+        "version": "PENDING",
+        "hash": "PENDING",
+        "split": "PENDING",
+        "deduplication": "PENDING",
+        "contamination_boundary": "PENDING",
+        "evidence_status": "PENDING",
+        "local_offline_location": "PENDING"
+      },
+      "bindings_satisfied": 0,
+      "bindings_required": 8
+    },
+    {
+      "id": "D9",
+      "name": "frontier-variant set",
+      "purpose": "Q3: variants of open problems, to measure reach rather than recall",
+      "status": "PENDING",
+      "acquisition_mode": "EXTERNAL",
+      "requires_user_decision": true,
+      "blocked_by": null,
+      "bindings": {
+        "license": "PENDING",
+        "version": "PENDING",
+        "hash": "PENDING",
+        "split": "PENDING",
+        "deduplication": "PENDING",
+        "contamination_boundary": "PENDING",
+        "evidence_status": "PENDING",
+        "local_offline_location": "PENDING"
+      },
+      "bindings_satisfied": 0,
+      "bindings_required": 8
+    }
+  ],
+  "summary": {
+    "total": 9,
+    "locally_generated": 6,
+    "external_needing_a_licensing_decision": 3,
+    "present_on_disk": 0,
+    "bindings_fully_satisfied": 0
+  },
+  "the_load_bearing_fact": "6 of 9 sources are generated locally from a working Lean and Mathlib and need no licensing decision and no download. One bounded toolchain install therefore unblocks the majority of Ramanujan's data.",
+  "hard_rule": "Do NOT generate teacher traces from the Math-Preserve artifact."
+}

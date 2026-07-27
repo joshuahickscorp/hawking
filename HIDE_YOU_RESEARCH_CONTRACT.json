@@ -1,0 +1,120 @@
+{
+  "schema": "hawking.hide.you.research_contract.v1",
+  "lane": "Y5",
+  "title": "HIDE YOU cited web / deep-research controller",
+  "at": "2026-07-27T00:00:00Z",
+  "status": "COMPLETE",
+  "language": "Python",
+  "language_justification": "Matches the existing offline retrieval and cognition side (ramanujan/search.py, ramanujan/cognition.py, ramanujan/evidence.py); LIGHT_ONLY fixture tests with no Cargo/network weight.",
+  "light_only": true,
+  "network": "forbidden — every test uses committed fixture documents under ramanujan/fixtures/you_research_corpus.json",
+  "module": "ramanujan/you_research.py",
+  "tests": "ramanujan/test_you_research.py",
+  "fixture_corpus": "ramanujan/fixtures/you_research_corpus.json",
+  "authority": "NON_PRODUCTION_AUTHORITY",
+  "modes": [
+    "quick_search",
+    "cited_answer",
+    "deep_research",
+    "watch_monitor",
+    "literature_review",
+    "comparison",
+    "fact_audit"
+  ],
+  "capabilities": {
+    "query_decomposition": "ramanujan.you_research.decompose_query",
+    "multi_source_retrieval": "Retriever protocol + FakeRetriever (token-overlap over fixtures; not an embedding model, not a reranker)",
+    "document_capture": "CapturedDocument + ClaimEvidenceGraph.add_document_node",
+    "citation_extraction": "extract_citations_for_seed / Citation records",
+    "source_quality_grading": "SourceQuality + grade_source (authority/recency/independence/reproducibility)",
+    "contradiction_detection": "detect_contradictions — records unresolved_both_surfaced, preferred_claim_id always null",
+    "freshness_checks": "freshness_for_claim — source captured_at + age/stale at answer_at",
+    "claim_evidence_graph": "ClaimEvidenceGraph",
+    "research_checkpoints": "ResearchCheckpoint journal on ResearchController"
+  },
+  "properties": [
+    {
+      "id": 1,
+      "name": "four_way_separation",
+      "law": "RetrievedFact | ModelInference | UserProvided | UncertainHypothesis are distinct ClaimCategory values. Claim is a frozen dataclass; category mutation is a type error. The only graph path that changes category is transition_category(), which records a CategoryTransition (reason + actor + from/to).",
+      "tests": [
+        "TestFourWaySeparation.test_four_categories_exist",
+        "TestFourWaySeparation.test_claim_is_frozen_category_cannot_be_assigned",
+        "TestFourWaySeparation.test_transition_requires_reason_and_is_recorded",
+        "TestFourWaySeparation.test_inference_cannot_silently_become_fact",
+        "TestNoSilentFactFromInferenceViaReplace.test_graph_does_not_auto_accept_forged_category"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "evidence_binding_binary",
+      "law": "Every factual claim (RetrievedFact, UserProvided) is either EvidenceBinding.LINKED (with citation_ids) or EvidenceBinding.UNSUPPORTED (with empty citation_ids). There is no third state. Claim.assert_evidence_law() / graph.add_claim() enforce this.",
+      "tests": [
+        "TestEvidenceLaw.test_linked_requires_citations",
+        "TestEvidenceLaw.test_unsupported_forbids_citations",
+        "TestEvidenceLaw.test_only_two_evidence_states",
+        "TestEvidenceLaw.test_run_claims_obey_evidence_law"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "web_not_auto_durable",
+      "law": "DurableMemory is a separate store. ResearchController.run never writes it. Promotion is only via promote_to_memory / DurableMemory.promote with non-empty actor and reason, and is recorded as MemoryPromotion.",
+      "tests": [
+        "TestDurableMemoryUntouched.test_run_does_not_write_durable_memory",
+        "TestDurableMemoryUntouched.test_promotion_is_explicit_and_recorded"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "contradiction_surfaces_both",
+      "law": "Two sources disagreeing on the same subject+value produces a Contradiction with resolution=unresolved_both_surfaced and preferred_claim_id=null. Higher grade and newer source are never auto-selected. record_contradiction refuses a preferred side.",
+      "tests": [
+        "TestContradictionSurfacesBoth.test_coherence_contradiction_not_auto_resolved",
+        "TestContradictionSurfacesBoth.test_higher_grade_source_is_not_preferred",
+        "TestContradictionSurfacesBoth.test_newer_source_is_not_preferred",
+        "TestContradictionSurfacesBoth.test_record_contradiction_refuses_preference"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "freshness",
+      "law": "Every CapturedDocument carries captured_at. Every RetrievedFact carries source_captured_at. At answer time, freshness_for_claim reports age_seconds and stale against a threshold.",
+      "tests": [
+        "TestFreshness.test_every_retrieved_fact_carries_captured_at",
+        "TestFreshness.test_staleness_computed_at_answer_time",
+        "TestFreshness.test_run_freshness_reports_match_claims"
+      ]
+    }
+  ],
+  "claim_evidence_graph_relation": {
+    "summary": "ClaimEvidenceGraph composes ramanujan.cognition.ResearchObjectGraph rather than inventing a second dependency/refutation lattice.",
+    "how": [
+      "ClaimEvidenceGraph.rog is a ResearchObjectGraph instance.",
+      "Sources, documents, citations, and claims are nodes in that graph (kinds: source, document, citation, claim).",
+      "Dependencies: claim → citation → document → source (via ResearchObjectGraph.depend).",
+      "Refutation: ClaimEvidenceGraph.refute_source / refute_claim call ResearchObjectGraph.refute, which propagates transitively — the same mechanism locked by ramanujan/test_cognition.py.",
+      "Claim metadata (category, evidence binding, transitions, contradictions) lives beside the graph in ClaimEvidenceGraph fields; it does not duplicate depends_on or propagation."
+    ],
+    "evidence_tier_lattice": "ramanujan.evidence.Tier is attached on ROG nodes at registration (ASSERTED for claims/sources; EMPIRICALLY_SUPPORTED for citations). Promotion across tiers remains the verifier-gated path in evidence.py; the YOU controller does not invent a parallel promotion rule.",
+    "test": "TestClaimEvidenceGraphRelation.test_refuting_source_undermines_claims"
+  },
+  "non_goals_honored": [
+    "no live web access",
+    "no browser automation",
+    "no search API",
+    "no embedding model",
+    "no real reranker — FakeRetriever is token-overlap and named honestly"
+  ],
+  "reuse": {
+    "ResearchObjectGraph": "ramanujan/cognition.py",
+    "Tier": "ramanujan/evidence.py",
+    "fixture_style": "same offline NON_PRODUCTION_AUTHORITY pattern as ramanujan/search.py PremiseRetrieval"
+  },
+  "run": "python3.12 -m ramanujan.test_you_research",
+  "light_md": {
+    "path_expected": "_LIGHT.md",
+    "status": "ABSENT_IN_WORKTREE",
+    "note": "Task required reading _LIGHT.md; file was not present. LIGHT_ONLY / no-network rules from the task prompt and HAWKING_LIGHT_ONLY_* status were followed."
+  }
+}

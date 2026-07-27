@@ -1,0 +1,311 @@
+{
+  "at": "2026-07-27T01:42:24Z",
+  "contract_closure_path": "odyssey/ODYSSEY_CONTRACT_CLOSURE.json",
+  "feasibility_path": "odyssey/ODYSSEY_FEASIBILITY.json",
+  "fence": "ODYSSEY_LAUNCH_AUTHORIZED remains false",
+  "launch_authorized": false,
+  "reproductions": {
+    "data": {
+      "detail": {
+        "data": {
+          "items": [
+            {
+              "id": "math-core",
+              "kind": "corpus",
+              "manifest_present_flag": false,
+              "on_disk": false,
+              "path": null,
+              "purpose": "T1 primary",
+              "status": "DECLARED_NOT_PRESENT"
+            },
+            {
+              "id": "support-language",
+              "kind": "corpus",
+              "manifest_present_flag": false,
+              "on_disk": false,
+              "path": null,
+              "purpose": "T1 support: technical language, coding, tools",
+              "status": "DECLARED_NOT_PRESENT"
+            },
+            {
+              "id": "long-horizon",
+              "kind": "corpus",
+              "manifest_present_flag": false,
+              "on_disk": false,
+              "path": null,
+              "purpose": "T3 trajectory stabilization",
+              "status": "DECLARED_NOT_PRESENT"
+            },
+            {
+              "id": "sovereignty-corpus",
+              "kind": "corpus",
+              "manifest_present_flag": false,
+              "on_disk": false,
+              "path": null,
+              "purpose": "T4 permitted/boundary/paraphrase pairs",
+              "status": "DECLARED_NOT_PRESENT"
+            }
+          ],
+          "manifest": "odyssey/data/ODYSSEY_DATA_MANIFEST.json",
+          "manifest_status": "DECLARED_NOT_COLLECTED",
+          "n_declared": 4,
+          "n_declared_not_present": 4,
+          "n_present": 0
+        },
+        "note": "DECLARED_NOT_PRESENT is a successful classification when the corpus has not been collected. Treating a declaration as data would be the bug.",
+        "schema": "hawking.odyssey.t0.data_verify.v1",
+        "status": "PASS",
+        "teacher_traces": {
+          "items": [
+            {
+              "id": "glm52_teacher_capsules",
+              "kind": "teacher_trace",
+              "note": "captured during the flagship traversal; layer-scoped, not trajectory-scoped. Usable for T2, not sufficient for T3.",
+              "on_disk": true,
+              "path": "/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/source_fetch/teacher/GLM52_TEACHER_EVIDENCE_LEDGER.jsonl",
+              "status": "PRESENT"
+            },
+            {
+              "id": "required_for.T2",
+              "kind": "requirement",
+              "note": "layer-scoped teacher capsules",
+              "on_disk": null,
+              "path": null,
+              "status": "DECLARED"
+            },
+            {
+              "id": "required_for.T3",
+              "kind": "requirement",
+              "note": "full trajectory traces from the parent",
+              "on_disk": null,
+              "path": null,
+              "status": "DECLARED"
+            }
+          ],
+          "manifest": "odyssey/teacher_traces/ODYSSEY_TEACHER_TRACE_MANIFEST.json",
+          "manifest_status": "PARTIAL",
+          "n_declared": 3,
+          "n_declared_not_present": 0,
+          "n_present": 1
+        },
+        "what_was_checked": [
+          "every corpus in ODYSSEY_DATA_MANIFEST.json for on-disk membership",
+          "every existing teacher-trace path in ODYSSEY_TEACHER_TRACE_MANIFEST.json"
+        ],
+        "what_was_skipped": []
+      },
+      "status": "PASS"
+    },
+    "known_failures": {
+      "detail": {
+        "entries": [
+          {
+            "id": "expert_wave_negative",
+            "source": "HAWKING_EXPERT_WAVE_NEGATIVE.json",
+            "status": "PASS"
+          },
+          {
+            "id": "expert_wave_rejected",
+            "source": "HAWKING_EXPERT_WAVE_REJECTED.json",
+            "status": "PASS"
+          },
+          {
+            "id": "resident_state_negative",
+            "source": "HAWKING_RESIDENT_STATE_NEGATIVE.json",
+            "status": "PASS"
+          },
+          {
+            "id": "r0_geometry_ceiling",
+            "source": "GLM52_R1_GEOMETRY_INVALID_FINDING.json",
+            "status": "PASS"
+          },
+          {
+            "id": "functional_student_cascade",
+            "source": "GLM52_FUNCTIONAL_DECISION.json + GLM52_FUNCTIONAL_STUDENT_CONTRACT.json",
+            "status": "PASS"
+          }
+        ],
+        "n_entries": 5,
+        "what_was_checked": [
+          "expert_wave_negative",
+          "expert_wave_rejected",
+          "resident_state_negative",
+          "r0_geometry_ceiling",
+          "functional_student_cascade"
+        ],
+        "what_was_skipped": [
+          "full re-benchmark of expert-wave and resident-state wall-clock (GPU lane; heavy)",
+          "full functional cascade recompute (sealed measured results stand)"
+        ]
+      },
+      "status": "PASS"
+    },
+    "runtime": {
+      "detail": {
+        "artifact_single_layer": {
+          "bit_identical_after_reread": true,
+          "bit_identical_two_runs": true,
+          "checked": [
+            "read model.norm.weight from model-00282-of-00282.gravity (real Math-Preserve shard)",
+            "tensor payload sha256 matches shard header",
+            "RMSNorm(fixed_prompt_vector, norm.weight) @ fixed_projection twice",
+            "bit-identical float32 logits across two runs and after re-read"
+          ],
+          "logit_sha256_run1": "14aba55cc55de26cc9fc044fcc75b0b3efd53983aa3f190047e20b537a6b95ac",
+          "logit_sha256_run2": "14aba55cc55de26cc9fc044fcc75b0b3efd53983aa3f190047e20b537a6b95ac",
+          "logit_shape": [
+            64
+          ],
+          "path": "artifact_native_tensor + rmsnorm + fixed_projection",
+          "prompt": "Odyssey T0 baseline reproduction prompt: 1+1=",
+          "shard": "model-00282-of-00282.gravity",
+          "skipped": [
+            "full multi-layer GLM-5.2 forward (92 GB weights; free RAM ~0.16 GB observed)",
+            "full vocab lm_head logits (lm_head on model-00001, ~3.87 GB shard)",
+            "Metal / GPU paths (forbidden for this lane)"
+          ],
+          "status": "PASS",
+          "tensor": "model.norm.weight",
+          "tensor_sha256": "c987216b5c5c7f9791796ef9e45cbe9c491810b79a1943ae581d24f7b4b834e1"
+        },
+        "functional_codec_cpu_authority": {
+          "bit_identical_two_runs": true,
+          "checked": [
+            "CPU authority execute() twice on identical inputs",
+            "bit-identical outputs required"
+          ],
+          "module": "tools/condense/gravity_functional_codec.py",
+          "output_sha256_run1": "b6328b868777c67731997291a692750f6ceb98dfa5a6c2e57b1e1c48cc187f8d",
+          "output_sha256_run2": "b6328b868777c67731997291a692750f6ceb98dfa5a6c2e57b1e1c48cc187f8d",
+          "output_shape": [
+            2,
+            4
+          ],
+          "path": "gravity_functional_codec.execute (feature-map + silu)",
+          "skipped": [
+            "full teacher MoE organ against live capsules (not required for T0 smoke)"
+          ],
+          "status": "PASS"
+        },
+        "memory_note": "Full-model CPU forward of Math-Preserve requires holding ~92 GB weights plus activations/KV on a 96 GB machine currently near capacity; not attempted.",
+        "schema": "hawking.odyssey.t0.runtime_authority.v1",
+        "status": "PASS",
+        "what_was_checked": [
+          "read model.norm.weight from model-00282-of-00282.gravity (real Math-Preserve shard)",
+          "tensor payload sha256 matches shard header",
+          "RMSNorm(fixed_prompt_vector, norm.weight) @ fixed_projection twice",
+          "bit-identical float32 logits across two runs and after re-read",
+          "CPU authority execute() twice on identical inputs",
+          "bit-identical outputs required"
+        ],
+        "what_was_skipped": [
+          "full multi-layer GLM-5.2 forward (92 GB weights; free RAM ~0.16 GB observed)",
+          "full vocab lm_head logits (lm_head on model-00001, ~3.87 GB shard)",
+          "Metal / GPU paths (forbidden for this lane)",
+          "full teacher MoE organ against live capsules (not required for T0 smoke)"
+        ]
+      },
+      "status": "PASS"
+    },
+    "substrate": {
+      "detail": {
+        "schema": "hawking.odyssey.t0.substrate_verify.v1",
+        "shard_verification": {
+          "bytes_this_run": 1081538189,
+          "bytes_verified_total": 4949102876,
+          "eta_seconds_remaining": 59.31542499887313,
+          "failed": {},
+          "note": "Each verified shard body was re-hashed from disk and compared to model.gravity.index.json's shard_body_sha256 entry. Index and manifest files were re-hashed and compared to sealed campaign facts.",
+          "progress_path": "/Users/scammermike/.claude-grok/worktrees/odyssey-t0-20260726-213445/odyssey/t0/state/substrate_verify_progress.json",
+          "seconds_this_run": 0.7368722920073196,
+          "shards_failed": 0,
+          "shards_remaining": 276,
+          "shards_verified": 6,
+          "throughput_bytes_per_s": 1467741697.8914669
+        },
+        "static": {
+          "artifact": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/GLM-5.2-H0.98-Math-Preserve.gravity",
+          "checks": [
+            {
+              "check": "artifact_present",
+              "detail": "/Users/scammermike/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/GLM-5.2-H0.98-Math-Preserve.gravity",
+              "ok": true
+            },
+            {
+              "check": "index_present",
+              "detail": "",
+              "ok": true
+            },
+            {
+              "check": "index_sha256",
+              "detail": "observed=33d40c254eb982d4a495f5f0792a116e9d9810d937f5f3969f4f84742b2364d9 expected=33d40c254eb982d4a495f5f0792a116e9d9810d937f5f3969f4f84742b2364d9",
+              "ok": true
+            },
+            {
+              "check": "manifest_present",
+              "detail": "",
+              "ok": true
+            },
+            {
+              "check": "manifest_sha256",
+              "detail": "observed=b34596f5d4df0b09903845302648736ee2345d7662688176c851a4d749211a83 expected=b34596f5d4df0b09903845302648736ee2345d7662688176c851a4d749211a83",
+              "ok": true
+            },
+            {
+              "check": "shard_count",
+              "detail": "observed=282 expected=282",
+              "ok": true
+            },
+            {
+              "check": "decision_count",
+              "detail": "observed=59585 expected=59585",
+              "ok": true
+            },
+            {
+              "check": "shard_body_map_complete",
+              "detail": "map_entries=282",
+              "ok": true
+            },
+            {
+              "check": "shards_present_on_disk",
+              "detail": "present=282/282",
+              "ok": true
+            },
+            {
+              "check": "shard_bytes_sum_recorded",
+              "detail": "shard_file_bytes=92008825475 sealed_artifact_bytes=92038250160",
+              "ok": true
+            }
+          ],
+          "decision_count": 59585,
+          "index_sha256": "33d40c254eb982d4a495f5f0792a116e9d9810d937f5f3969f4f84742b2364d9",
+          "ok": true
+        },
+        "status": "PARTIAL",
+        "what_was_checked": [
+          "index file sha256 vs sealed EXPECTED_INDEX_SHA256",
+          "allocation manifest sha256 vs sealed EXPECTED_MANIFEST_SHA256",
+          "shard_count == 282",
+          "tensor_count/decision_count == 59585",
+          "6 shard bodies re-hashed vs index map"
+        ],
+        "what_was_skipped": [
+          "276 shard bodies not yet hashed (~87059722599 bytes remaining; resumable via progress file)"
+        ]
+      },
+      "status": "PARTIAL"
+    }
+  },
+  "schema": "hawking.odyssey.t0.v1",
+  "status": "PASS",
+  "status_note": "substrate verification is PARTIAL (resumable); static hash/count checks must PASS",
+  "summary": {
+    "contracts_declared": 4,
+    "contracts_runnable": 11,
+    "data": "PASS",
+    "known_failures": "PASS",
+    "runtime": "PASS",
+    "substrate": "PARTIAL",
+    "t1_t5_feasible": false
+  }
+}

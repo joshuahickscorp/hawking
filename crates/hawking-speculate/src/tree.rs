@@ -201,7 +201,7 @@ pub fn tree_draft_k(budget: Budget, width: usize) -> usize {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::Result;
+    use crate::verifier::TargetResult;
 
     // ------------------------------------------------------------------
     // Minimal mock target for tests — no Metal, no model.

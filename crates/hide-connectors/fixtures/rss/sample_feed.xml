@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>HIDE YOU Fixture Feed</title>
+    <link>https://example.test/hide-you-fixture</link>
+    <description>Committed fixture for hide-connectors rss tests. No network.</description>
+    <language>en-us</language>
+    <item>
+      <title>First fixture item</title>
+      <link>https://example.test/hide-you-fixture/1</link>
+      <guid isPermaLink="false">fixture-item-1</guid>
+      <description><![CDATA[Body of the first fixture item.]]></description>
+      <pubDate>Mon, 01 Jan 2024 12:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Second fixture item</title>
+      <link>https://example.test/hide-you-fixture/2</link>
+      <guid isPermaLink="false">fixture-item-2</guid>
+      <description>Body of the second fixture item.</description>
+      <pubDate>Tue, 02 Jan 2024 12:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Third fixture item</title>
+      <link>https://example.test/hide-you-fixture/3</link>
+      <guid isPermaLink="false">fixture-item-3</guid>
+      <description>Body of the third fixture item with &amp; entities.</description>
+      <pubDate>Wed, 03 Jan 2024 12:00:00 GMT</pubDate>
+    </item>
+  </channel>
+</rss>

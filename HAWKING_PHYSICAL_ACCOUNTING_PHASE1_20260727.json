@@ -1,0 +1,75 @@
+{
+  "schema": "hawking.gravity.physical_accounting.phase1.v1",
+  "at_utc": "2026-07-27T02:00:38Z",
+  "branch": "grok/physical-accounting-20260727",
+  "base_sha": "e68fd32fa32c97f4cbd2d3e26f8425d0db99d41b",
+  "source_audit": "HAWKING_COMMAND_GRAPH_AUDIT_20260726.json",
+  "scope": "Correct source-derived resident wait accounting and make dormant resident-kernel traces attributable; no command-graph collapse.",
+  "accounting": {
+    "previous_flagship_estimate": 583,
+    "corrected_flagship_logical_boundaries": 586,
+    "breakdown": {
+      "attention_projection_boundaries": 234,
+      "indexer_projection_boundaries": 42,
+      "router_projection_boundaries": 75,
+      "mlp_batch_boundaries": 234,
+      "head_boundary": 1
+    },
+    "formula": "78*3 + 21*2 + 75 + 78*3 + 1 = 586",
+    "root_cause": "The estimator charged each of the three dense layers for two MLP waits even though dense mlp_one calls batched_mlp, which invokes gate, up, and down matvec_batch boundaries.",
+    "semantics": "The 586 value is a logical/source-schedule count, not a physical Metal command-buffer count. Projection boundaries materialize only for PQ/device-bf16 tensors, while a mixed matvec_batch can submit more than one physical command buffer. Physical commands are measured by PhysicalTraceCounts.command_count."
+  },
+  "trace_registration": {
+    "additive_only": true,
+    "kernels": [
+      "gravity_rmsnorm_f32",
+      "gravity_rope_interleaved_f32",
+      "gravity_glm_mla_append_kv",
+      "gravity_glm_build_queries",
+      "gravity_layernorm_affine_f32",
+      "gravity_glm_append_index_key",
+      "gravity_copy_tail_f32",
+      "gravity_glm_dsa_scores",
+      "gravity_glm_stable_topk_f32",
+      "gravity_glm_sparse_attn",
+      "gravity_glm_router_correct",
+      "gravity_zero_f32"
+    ],
+    "proof": "A CPU-only unit test requires every registered name to appear as a kernel declaration in the embedded gravity_pq.metal source and to map to itself rather than other."
+  },
+  "verification": [
+    {
+      "command": "cargo test -p hawking-core --lib flagship_wait_estimates_match_the_ordering_constraint -- --nocapture",
+      "result": "PASS (1 passed)"
+    },
+    {
+      "command": "cargo test -p hawking-core --lib compiled_dormant_resident_kernels_have_static_trace_names -- --nocapture",
+      "result": "PASS (1 passed)"
+    },
+    {
+      "command": "cargo test -p hawking-core --test gravity_glm_expert_wave_parity expert_wave_static_drains_flagship -- --nocapture",
+      "result": "PASS (1 passed)"
+    },
+    {
+      "command": "cargo test -p hawking-core --lib physical_trace_tests -- --nocapture",
+      "result": "PASS (1 passed)"
+    },
+    {
+      "command": "cargo test -p hawking-core --lib gravity_glm::tests -- --nocapture",
+      "result": "PASS (19 passed)"
+    },
+    {
+      "command": "git diff --check",
+      "result": "PASS"
+    }
+  ],
+  "not_changed": [
+    "Runtime arithmetic",
+    "Default feature or environment flags",
+    "Numeric Parity V2.1 policy",
+    "The 76-command-buffer graph design",
+    "MOP or Prometheus",
+    "Sealed Math-Preserve artifacts"
+  ],
+  "heavy_device_benchmarks_run": false
+}

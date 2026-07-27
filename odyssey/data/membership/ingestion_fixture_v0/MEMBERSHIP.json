@@ -1,0 +1,131 @@
+{
+  "corpus_id": "ingestion_fixture_v0",
+  "created_at": "2026-07-27T02:16:49Z",
+  "invariants": [
+    "every admitted item is content-addressed before a step may read it",
+    "no admitted item overlaps any evaluation set (exact or near-dup)",
+    "licence is recorded per corpus, not per collection run"
+  ],
+  "items": [
+    {
+      "contamination": [],
+      "content_sha256": "2c4dbc307962a9d89cede9f1cbd9e5c4deac20dc00525c8d9b1fc9874f8b5bb6",
+      "exact_text_sha256": "59bcf9da40ce6bae58a4eabaa2fde0fee0a07e7909abca9a36ee6894539180ec",
+      "normalized_preview": "fixture: the streaming adapter budget on this host is approximately two gibibytes for a smoke step.",
+      "reasons": [],
+      "source_id": "fix_clean_01",
+      "status": "admitted"
+    },
+    {
+      "contamination": [],
+      "content_sha256": "5c0e0a573d60d8da6988cacb81729504aa1bb15d245518497fcbec034f78294d",
+      "exact_text_sha256": "a6f3d03eea7421b85aeee024739b81f745962d97a98d8db72ad4d85a6e39be02",
+      "normalized_preview": "fixture: membership records store a content sha256 per admitted item before any training step may read it.",
+      "reasons": [],
+      "source_id": "fix_clean_02",
+      "status": "admitted"
+    },
+    {
+      "contamination": [],
+      "content_sha256": "46b7a3f6fca976a42018017f15c013b7e0f058f9ed5b05aeeb2ef1648324e7e3",
+      "exact_text_sha256": "59bcf9da40ce6bae58a4eabaa2fde0fee0a07e7909abca9a36ee6894539180ec",
+      "normalized_preview": "fixture: the streaming adapter budget on this host is approximately two gibibytes for a smoke step.",
+      "reasons": [
+        "exact duplicate of earlier item index 0"
+      ],
+      "source_id": "fix_exact_dup_of_clean_01",
+      "status": "rejected_exact_dup"
+    },
+    {
+      "contamination": [],
+      "content_sha256": "e53f97b390902cf3f22f8cda708964e4e6b4f14e29bbdbad0a557f9a7780154f",
+      "exact_text_sha256": "736269546bfec6dd15c0d29ec1a3ef0c880cd89811d332c420872aae85c1a652",
+      "normalized_preview": "fixture: membership records store a content sha256 per admitted item before any training step can read it.",
+      "reasons": [
+        "near-duplicate within corpus (Jaccard \u2265 0.8)"
+      ],
+      "source_id": "fix_near_dup_within",
+      "status": "rejected_near_dup"
+    },
+    {
+      "contamination": [
+        {
+          "eval_hash": "d8a0ddb16d622c8477d3070f4097ed043738094ee440db89a65b6c39d9290ba2",
+          "eval_id": "tl02_bpw",
+          "eval_source": "odyssey/evaluation/support_halo_corpus_v0.jsonl",
+          "jaccard": 1.0,
+          "reason": "exact_match",
+          "train_hash": "d8a0ddb16d622c8477d3070f4097ed043738094ee440db89a65b6c39d9290ba2"
+        }
+      ],
+      "content_sha256": "ce1d67c950d55fb67d5bccedf1aac190e6efc41d497782bb54d60d5ceebd18cb",
+      "exact_text_sha256": "d8a0ddb16d622c8477d3070f4097ed043738094ee440db89a65b6c39d9290ba2",
+      "normalized_preview": "what does bpw stand for in model compression / quantization? answer briefly and include the exact phrase \"bits per weigh",
+      "reasons": [
+        "train/eval contamination barrier"
+      ],
+      "source_id": "fix_leak_exact_halo_tl02",
+      "status": "rejected_contamination"
+    },
+    {
+      "contamination": [
+        {
+          "eval_hash": "2d5eae5f912b8364625ae15fd20001547eaeedc7739b1277fef66c8021821746",
+          "eval_id": "tl01_idempotent",
+          "eval_source": "odyssey/evaluation/support_halo_corpus_v0.jsonl",
+          "jaccard": 0.9753086419753086,
+          "reason": "near_duplicate",
+          "train_hash": "f0019c9e57e623c164c7ee35be4cc188859a0baaf23fcb493c8640e1a0b08e21"
+        }
+      ],
+      "content_sha256": "b00e61d8810c1abe1a503f57e74edc9c6b526e3b691372e49f3cd6c5b40bf507",
+      "exact_text_sha256": "f0019c9e57e623c164c7ee35be4cc188859a0baaf23fcb493c8640e1a0b08e21",
+      "normalized_preview": "in one or two sentences, define what an idempotent http method means. include the word \"idempotent\" and the idea that re",
+      "reasons": [
+        "train/eval contamination barrier"
+      ],
+      "source_id": "fix_leak_near_halo_tl01",
+      "status": "rejected_contamination"
+    },
+    {
+      "contamination": [
+        {
+          "eval_hash": "70341a88922238e6f7c461b1370d9f143dc4b7f47b909ade162c419d69fc7b65",
+          "eval_id": "hid_reason_01",
+          "eval_source": "odyssey/evaluation/hidden/hidden_items.jsonl",
+          "jaccard": 0.47058823529411764,
+          "reason": "near_duplicate",
+          "train_hash": "e5b080d509a6ab0eae0d7cf878a807f3e67589026188a27ae970ff7bf33b7a00"
+        }
+      ],
+      "content_sha256": "21ce3fd3cc42986709d2d89bac9ac0f2ffe412107159e218af18fa86abf8c55e",
+      "exact_text_sha256": "e5b080d509a6ab0eae0d7cf878a807f3e67589026188a27ae970ff7bf33b7a00",
+      "normalized_preview": "a bat and a ball cost $1.10 in total. the bat costs one dollar more than the ball. how much does the ball cost?",
+      "reasons": [
+        "train/eval contamination barrier"
+      ],
+      "source_id": "fix_leak_near_hidden_batball",
+      "status": "rejected_contamination"
+    },
+    {
+      "contamination": [],
+      "content_sha256": "f0c7d5cf790df7b00cf81056587fb767f84e8485bcebf10f2e6930f9bae6fb80",
+      "exact_text_sha256": "7e76e34b1ccdc027379155f463b75b3328b4aba7d88cbe74d5bd4d0bb1bdefd8",
+      "normalized_preview": "fixture: near-duplicate detection uses character shingles and jaccard thresholds stricter for train-versus-eval than wit",
+      "reasons": [],
+      "source_id": "fix_clean_03",
+      "status": "admitted"
+    }
+  ],
+  "licence": "synthetic-fixture-not-for-training",
+  "membership_sha256": "65299684cc67ca6bcd0df3b3894f482d1c5b032582fc56fdde609b59eb19cb25",
+  "n_admitted": 3,
+  "n_input": 8,
+  "n_rejected_contamination": 3,
+  "n_rejected_exact_dup": 1,
+  "n_rejected_near_dup": 1,
+  "note": "FIXTURE end-to-end barrier proof",
+  "role": "fixture",
+  "schema": "hawking.odyssey.membership_record.v1",
+  "source_path": "odyssey/data/fixtures/ingestion_fixture_v0/raw_fixture.jsonl"
+}

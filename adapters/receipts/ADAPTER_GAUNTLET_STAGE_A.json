@@ -1,0 +1,107 @@
+{
+  "schema": "hawking.adapter.gauntlet.stage_a.v1",
+  "stage": "A",
+  "lane": "gauntlet-a-20260726-235820",
+  "title": "Family gauntlet Stage A — static architecture truth (five families)",
+  "families_in_lane": [
+    "llama",
+    "mistral_mixtral",
+    "qwen",
+    "glm",
+    "deepseek"
+  ],
+  "families_excluded_other_lane": [
+    "kimi",
+    "minimax",
+    "state_space",
+    "gemma",
+    "phi"
+  ],
+  "grade_ceiling": "SOURCE_HEADER_VALIDATED",
+  "generated_at": "2026-07-27T04:05:44Z",
+  "light_md": {
+    "path_expected": "_LIGHT.md",
+    "status": "ABSENT_IN_WORKTREE",
+    "note": "Task required reading _LIGHT.md; file was not present in the isolated worktree or parent repo at execution time. Stage A honesty/grade rules from the task prompt were followed instead."
+  },
+  "method": {
+    "config": "official config.json (local HF cache preferred, else HTTP GET of small metadata)",
+    "tokenizer": "tokenizer_config.json + chat_template when present",
+    "weights": "safetensors index weight_map and/or HTTP Range of shard header only; never full weight body",
+    "reuse": "GLM52_* , DEEPSEEK_V4_* , QWEN35_* repo receipts preferred over re-derivation"
+  },
+  "results": [
+    {
+      "family_id": "llama",
+      "family_display": "Llama",
+      "grade": "SOURCE_HEADER_VALIDATED",
+      "receipt": "adapters/receipts/ADAPTER_LLAMA_RECEIPT.json",
+      "header_validated": true,
+      "tensor_names_mapped": 146,
+      "unknown_organ_tensors": 0,
+      "next_promotion_action": "REAL_TENSOR_DECODE: decode embed_tokens or a single layer proj from the safetensors body via bounded range and match dtype/shape/hash against header extents",
+      "known_gap_count": 4
+    },
+    {
+      "family_id": "mistral_mixtral",
+      "family_display": "Mistral / Mixtral",
+      "grade": "SOURCE_HEADER_VALIDATED",
+      "receipt": "adapters/receipts/ADAPTER_MISTRAL_MIXTRAL_RECEIPT.json",
+      "header_validated": true,
+      "tensor_names_mapped": 1286,
+      "unknown_organ_tensors": 0,
+      "next_promotion_action": "REAL_TENSOR_DECODE on one Mixtral expert w1 matrix and dense q_proj; then SMALL_REAL_CHECKPOINT on a tiny Mistral GGUF already noted in MODELS.md path",
+      "known_gap_count": 3
+    },
+    {
+      "family_id": "qwen",
+      "family_display": "Qwen",
+      "grade": "SOURCE_HEADER_VALIDATED",
+      "receipt": "adapters/receipts/ADAPTER_QWEN_RECEIPT.json",
+      "header_validated": true,
+      "tensor_names_mapped": 3358,
+      "unknown_organ_tensors": 0,
+      "next_promotion_action": "REAL_TENSOR_DECODE on Qwen2.5-3B (already MODELS.md verified path) embed/q_proj; separate MoE expert decode for Qwen3-Coder",
+      "known_gap_count": 3
+    },
+    {
+      "family_id": "glm",
+      "family_display": "GLM",
+      "grade": "SOURCE_HEADER_VALIDATED",
+      "receipt": "adapters/receipts/ADAPTER_GLM_RECEIPT.json",
+      "header_validated": true,
+      "tensor_names_mapped": 59585,
+      "unknown_organ_tensors": 0,
+      "next_promotion_action": "Already has higher campaign evidence elsewhere; for adapter ladder promotion path: REAL_TENSOR_DECODE is satisfied by prior gravity parity work — wire that evidence into registry without re-claiming PRODUCTION here",
+      "known_gap_count": 3
+    },
+    {
+      "family_id": "deepseek",
+      "family_display": "DeepSeek",
+      "grade": "SOURCE_HEADER_VALIDATED",
+      "receipt": "adapters/receipts/ADAPTER_DEEPSEEK_RECEIPT.json",
+      "header_validated": true,
+      "tensor_names_mapped": 69187,
+      "unknown_organ_tensors": 0,
+      "next_promotion_action": "REAL_TENSOR_DECODE one BF16 attention tensor and one packed expert+scale pair; verify extents against header data_offsets",
+      "known_gap_count": 4
+    }
+  ],
+  "grade_histogram": {
+    "SOURCE_HEADER_VALIDATED": 5
+  },
+  "honesty": {
+    "no_weight_bodies_downloaded": true,
+    "no_execution": true,
+    "no_grade_above_source_header_validated": true,
+    "llama_meta_gated_used_unsloth_redistributor": true,
+    "glm_prior_campaign_evidence_cited_not_rederived": true,
+    "deepseek_v4_compact_tensor_namespace_mapped": true
+  },
+  "resource_cost_summary": {
+    "weight_body_bytes_downloaded_total": 0,
+    "families_with_range_header": 5,
+    "scratch_dir": "adapters/receipts/_scratch/",
+    "scratch_note": "raw fetch logs and full tensor name lists for audit; not required at runtime"
+  }
+}

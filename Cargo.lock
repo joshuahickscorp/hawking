@@ -1034,6 +1034,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "hawking-adapters"
+version = "0.2.2"
+dependencies = [
+ "anyhow",
+ "hawking-events",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+]
+
+[[package]]
 name = "hawking-bench"
 version = "0.2.2"
 dependencies = [
@@ -1098,6 +1109,18 @@ version = "0.2.2"
 dependencies = [
  "async-trait",
  "reqwest",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+ "tokio",
+]
+
+[[package]]
+name = "hawking-events"
+version = "0.2.2"
+dependencies = [
+ "hide-core",
+ "hide-protocol",
  "serde",
  "serde_json",
  "thiserror 2.0.18",
@@ -1247,6 +1270,7 @@ dependencies = [
  "hawking-index",
  "hawking-orch",
  "hawking-research",
+ "hawking-speculate",
  "hide-compat",
  "hide-core",
  "hide-extension-registry",
@@ -1291,6 +1315,17 @@ dependencies = [
  "tempfile",
  "thiserror 2.0.18",
  "walkdir",
+]
+
+[[package]]
+name = "hide-connectors"
+version = "0.2.2"
+dependencies = [
+ "blake3",
+ "serde",
+ "serde_json",
+ "tempfile",
+ "thiserror 2.0.18",
 ]
 
 [[package]]
@@ -1360,6 +1395,19 @@ dependencies = [
  "thiserror 2.0.18",
  "tokio",
  "tracing",
+]
+
+[[package]]
+name = "hide-objects"
+version = "0.2.2"
+dependencies = [
+ "blake3",
+ "parking_lot",
+ "serde",
+ "serde_json",
+ "tempfile",
+ "thiserror 2.0.18",
+ "ulid",
 ]
 
 [[package]]
@@ -1496,6 +1544,17 @@ dependencies = [
  "tempfile",
  "thiserror 2.0.18",
  "walkdir",
+]
+
+[[package]]
+name = "hide-you"
+version = "0.2.2"
+dependencies = [
+ "blake3",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+ "ulid",
 ]
 
 [[package]]

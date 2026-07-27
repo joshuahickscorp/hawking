@@ -1,0 +1,100 @@
+{
+  "$id": "hawking.adapters.registry.v2",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "properties": {
+    "abi_schema": {
+      "const": "hawking.adapters.abi.v1"
+    },
+    "families": {
+      "items": {
+        "properties": {
+          "abi": {
+            "description": "Full family ABI; every field value or null+reason",
+            "type": "object"
+          },
+          "aliases": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "evidence": {
+            "items": {
+              "properties": {
+                "claim": {
+                  "type": "string"
+                },
+                "kind": {
+                  "type": "string"
+                },
+                "path": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "path",
+                "claim",
+                "kind"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "id": {
+            "type": "string"
+          },
+          "level": {
+            "enum": [
+              "DECLARED",
+              "SOURCE_HEADER_VALIDATED",
+              "SYNTHETIC_PARITY",
+              "REAL_TENSOR_DECODE",
+              "SMALL_REAL_CHECKPOINT",
+              "FULL_PARENT_VALIDATED",
+              "PRODUCTION"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "aliases",
+          "level",
+          "evidence",
+          "module",
+          "executes",
+          "serve_registered",
+          "gaps",
+          "abi"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "schema": {
+      "const": "hawking.adapters.registry.v2"
+    },
+    "support_levels": {
+      "items": {
+        "enum": [
+          "DECLARED",
+          "SOURCE_HEADER_VALIDATED",
+          "SYNTHETIC_PARITY",
+          "REAL_TENSOR_DECODE",
+          "SMALL_REAL_CHECKPOINT",
+          "FULL_PARENT_VALIDATED",
+          "PRODUCTION"
+        ],
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema",
+    "families",
+    "support_levels"
+  ],
+  "title": "HawkingAdapterRegistry",
+  "type": "object"
+}

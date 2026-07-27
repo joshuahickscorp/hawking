@@ -1,0 +1,83 @@
+{
+  "entries": [
+    {
+      "claim": "Expert-wave is correct/gated but slower (ratio<1); not promoted; flag stays off.",
+      "expected_failing_outcome": "ratio < 1.0 and NEGATIVE / not promoted",
+      "id": "expert_wave_negative",
+      "observed": {
+        "ratio": 0.59,
+        "verdict_prefix": "NEGATIVE. Correct, gated, and slower. NOT promoted; flag remains off by default."
+      },
+      "reproduction": "parse sealed receipt; assert measured.ratio < 1 and not-promoted language",
+      "source": "HAWKING_EXPERT_WAVE_NEGATIVE.json",
+      "status": "PASS"
+    },
+    {
+      "claim": "Expert-wave merge was REJECTED AND REVERTED after parity-gate failures.",
+      "expected_failing_outcome": "verdict contains REJECTED; at least one rejection reason",
+      "id": "expert_wave_rejected",
+      "observed": {
+        "n_rejection_reasons": 2,
+        "verdict": "REJECTED AND REVERTED. The parity gate did its job."
+      },
+      "reproduction": "parse sealed rejection receipt",
+      "source": "HAWKING_EXPERT_WAVE_REJECTED.json",
+      "status": "PASS"
+    },
+    {
+      "claim": "GPU-resident state: no measurable speedup (parity holds, performance does not).",
+      "expected_failing_outcome": "result is NEGATIVE / no measurable speedup",
+      "id": "resident_state_negative",
+      "observed": {
+        "result_prefix": "NEGATIVE -- no measurable speedup. 2,573 ms/token resident against 2,525 ms/token host-state, 1.9 percent SLOWER, within"
+      },
+      "reproduction": "parse sealed resident-state receipt",
+      "source": "HAWKING_RESIDENT_STATE_NEGATIVE.json",
+      "status": "PASS"
+    },
+    {
+      "claim": "R0 is the practical PQ ceiling; no admissible rate strictly between 0.875 and 1.0.",
+      "expected_failing_outcome": "R0 admissible; no mid-rate candidate admissible",
+      "id": "r0_geometry_ceiling",
+      "observed": {
+        "illegal_mid_rate_admitted": [],
+        "r0_present_admissible": true,
+        "summary_prefix": "R0 (dim=8, k=128, 0.875 nominal BPW) is at or extremely near the practical ceiling gravity-pq (S=1, power-of-2 dim) can "
+      },
+      "reproduction": "re-evaluate candidates_tested table for mid-rate false admissions",
+      "source": "GLM52_R1_GEOMETRY_INVALID_FINDING.json",
+      "status": "PASS"
+    },
+    {
+      "claim": "Functional student cascade is expansive at every magnitude; held under FUNCTIONAL_PARTIAL_ONLY \u2014 not a full MoE replacement success.",
+      "expected_failing_outcome": "all_expansive true; student contract FUNCTIONAL_PARTIAL_ONLY",
+      "id": "functional_student_cascade",
+      "observed": {
+        "all_expansive_at_every_magnitude": true,
+        "cascade_final_skill": {
+          "L38": 0.6831,
+          "L74": 0.0977
+        },
+        "student_contract_status": "IMPLEMENTED_AND_MEASURED, held under FUNCTIONAL_PARTIAL_ONLY"
+      },
+      "reproduction": "parse sealed functional decision + student contract",
+      "source": "GLM52_FUNCTIONAL_DECISION.json + GLM52_FUNCTIONAL_STUDENT_CONTRACT.json",
+      "status": "PASS"
+    }
+  ],
+  "n_entries": 5,
+  "note": "Reproductions assert the sealed claim still reads as a negative. They do not re-run multi-hour GPU experiments. A silent rewrite of a sealed negative fails.",
+  "schema": "hawking.odyssey.t0.known_failures.v1",
+  "status": "PASS",
+  "what_was_checked": [
+    "expert_wave_negative",
+    "expert_wave_rejected",
+    "resident_state_negative",
+    "r0_geometry_ceiling",
+    "functional_student_cascade"
+  ],
+  "what_was_skipped": [
+    "full re-benchmark of expert-wave and resident-state wall-clock (GPU lane; heavy)",
+    "full functional cascade recompute (sealed measured results stand)"
+  ]
+}

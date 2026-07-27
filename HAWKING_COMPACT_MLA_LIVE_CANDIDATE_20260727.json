@@ -1,0 +1,166 @@
+{
+  "schema": "hawking.gravity.compact_mla.live_candidate.v1",
+  "at_utc": "2026-07-27T04:20:41Z",
+  "observed_base_sha": "b4c25701f9d97ab8486d2d2ccd9e48268b2a0e2e",
+  "status": "PARITY_QUALIFIED_DEFAULT_OFF_NOT_PERFORMANCE_PROMOTED",
+  "scope": {
+    "default_runtime_change": false,
+    "new_environment_flag": "HAWKING_GLM_GPU_COMPACT_MLA",
+    "flag_default": false,
+    "requires_resident_runtime": true,
+    "sealed_artifact_change": false,
+    "sealed_payload_read": false,
+    "mop_change": false,
+    "flagship_live_run": false,
+    "files": [
+      "crates/hawking-core/src/gravity_glm.rs",
+      "crates/hawking-core/src/gravity_glm_resident.rs",
+      "crates/hawking-core/shaders/gravity_pq.metal",
+      "crates/hawking-core/tests/gravity_glm_compact_mla_live_parity.rs",
+      "tools/condense/glm52_compact_mla_fixture.py",
+      "HAWKING_COMPACT_MLA_LIVE_CANDIDATE_20260727.json"
+    ]
+  },
+  "runtime_path": {
+    "session_layout": "ResidentAttentionState::Compact owns compact latent/RoPE state instead of expanded K/V; simultaneous persistent ownership is unrepresentable.",
+    "unchanged_shared_state": "DSA index-key history and sequence selection scratch remain independently owned.",
+    "compact_only_state": [
+      "ranked DSA u32 upload buffer",
+      "packed query-nope scratch",
+      "packed rotated-query RoPE scratch",
+      "current rotated-key RoPE scratch",
+      "in-place query/weighted latent scratch"
+    ],
+    "default_allocation_change": "No Metal buffers. Ranked indices and compact attention scratch allocate only after the compact session layout is selected.",
+    "skipped_work": "The compact path does not execute the full kv_b_proj matvec and never materializes persistent expanded per-head K/V.",
+    "live_weight_binding": "kv_b_proj and o_proj are admitted together and cloned from the existing bounded GPU weight cache. Both must be PQ; compact kv_b must be D32/S1/sub32/card256/bits8 with exact row/column geometry.",
+    "unsupported_geometry": "Fails closed. A bounded R0 fixture physically encoded card128/bits7 and was rejected before a compact attention dispatch.",
+    "per_layer_dag": [
+      "gravity_glm_mla_append_compact",
+      "gravity_pq_k_transpose_heads",
+      "gravity_glm_compact_ranked_attn",
+      "gravity_pq_v_rows_heads",
+      "gravity_pq_matvec for o_proj"
+    ],
+    "physical_dispatches": 5,
+    "command_buffers_after_host_dsa_rank": 1,
+    "inter_dispatch_readbacks": 0,
+    "remaining_host_barrier": "DSA scoring/top-k remains host-visible. A full-indexer layer cannot be a single replayable token graph until DSA selection and rank upload move device-side."
+  },
+  "arithmetic": {
+    "k_transpose": "Compensated f32 accumulation in ascending key-row order.",
+    "ranked_attention": "Compensated content/RoPE dots, softmax total, and weighted-latent accumulation in stable DSA rank order; precise exp/divide.",
+    "v_projection": "One SIMD group per output using the same lane/chunk FMA and simd_sum order as generic gravity_pq_matvec.",
+    "v_projection_supersedes": "HAWKING_PQ_V_ROWS_CANDIDATE_20260727.json described the earlier one-thread ascending reduction. That receipt remains historical; the live candidate uses the aligned SIMD reduction recorded here.",
+    "reason": "The one-token complete-token fixture isolates V reconstruction. SIMD alignment made compact and expanded one-token logits identical and brought every canonical V2.1 gate inside bounds."
+  },
+  "ownership_recovery": {
+    "expanded_owner": "Allocates every next-layer K/V buffer before swapping the vector.",
+    "compact_owner": "Allocates every next-layer latent/RoPE buffer before swapping the vector.",
+    "dsa_owner": "Grows independently and transactionally from attention state.",
+    "retry_invariant": "If attention growth succeeds and DSA growth fails, a retry rechecks DSA capacity and repairs it instead of returning early from attention capacity.",
+    "authoritative_seq_len": "ResidentSession::seq_len; compact state no longer carries a second logical length."
+  },
+  "numeric_parity_v2_1": {
+    "fixture_generator": "tools/condense/glm52_compact_mla_fixture.py",
+    "fixture_scope": "one-layer, 16-vocabulary bounded complete-token fixture; direct-u8 D32/S1/sub32/card256/bits8 attention; not a production artifact",
+    "authority": "Explicit sequential FP64 matmul and f64 intermediates over decoded artifact weights.",
+    "determinism": {
+      "fit_device": "CPU",
+      "torch_threads": 1,
+      "artifact_sha256_repeat_a": "8c7fffdf01522341b897a7d108523b4cb52720ebaf02222540a239a32e687088",
+      "artifact_sha256_repeat_b": "8c7fffdf01522341b897a7d108523b4cb52720ebaf02222540a239a32e687088",
+      "authority_sha256_repeat_a": "915ec11b99567bd02c7da2d4a6c56c6cf37a3a53cd3da371ebdf9242c8e3083b",
+      "authority_sha256_repeat_b": "915ec11b99567bd02c7da2d4a6c56c6cf37a3a53cd3da371ebdf9242c8e3083b"
+    },
+    "prompts": 4,
+    "device_relative_l2_range": [
+      4.52e-07,
+      7.862e-07
+    ],
+    "device_max_meaningful_relative_range": [
+      3.224e-06,
+      9.87e-06
+    ],
+    "greedy_exact_all_prompts": true,
+    "top5_exact_all_prompts": true,
+    "dsa_selection_exact_all_prompts": true,
+    "expert_selection_exact_all_prompts": true,
+    "result": "PASS"
+  },
+  "default_path": {
+    "compact_flag_absent": true,
+    "ordinary_session_layout": "Expanded",
+    "rank_upload_buffer_allocated": false,
+    "resident_parity": {
+      "passed": 3,
+      "failed": 0
+    },
+    "gpu_forward": {
+      "passed": 3,
+      "failed": 0
+    }
+  },
+  "flagship_static_memory": {
+    "qualification": "Source-modelled 32K persistent state only; no flagship allocation or DRAM measurement.",
+    "expanded_plus_all_layer_index_bytes": 336316071936,
+    "expanded_plus_all_layer_index_gib": 313.21875,
+    "compact_plus_all_layer_index_bytes": 7197425664,
+    "compact_plus_all_layer_index_gib": 6.703125,
+    "persistent_bytes_avoided": 329118646272,
+    "persistent_gib_avoided": 306.515625,
+    "authority": "HAWKING_COMPACT_MLA_CACHE_OWNER_20260727.json"
+  },
+  "validation": {
+    "full_core_library": {
+      "command": "cargo test -p hawking-core --lib -- --nocapture",
+      "passed": 214,
+      "failed": 0,
+      "ignored": 2
+    },
+    "default_resident_parity": {
+      "command": "env -u HAWKING_GLM_GPU_COMPACT_MLA cargo test -p hawking-core --test gravity_glm_resident_parity -- --nocapture",
+      "passed": 3,
+      "failed": 0
+    },
+    "default_gpu_forward": {
+      "command": "env -u HAWKING_GLM_GPU_COMPACT_MLA cargo test -p hawking-core --test gravity_glm_gpu_forward -- --nocapture",
+      "passed": 3,
+      "failed": 0
+    },
+    "compact_complete_token": {
+      "generator": "python3.12 tools/condense/glm52_compact_mla_fixture.py $TMPDIR",
+      "command": "HAWKING_GLM_COMPACT_FIXTURE_DIR=$TMPDIR cargo test -p hawking-core --test gravity_glm_compact_mla_live_parity -- --nocapture",
+      "passed": 1,
+      "failed": 0,
+      "complete_prompts_inside_test": 4
+    },
+    "independent_cpu_architecture_proof": {
+      "command": "cargo test -p hawking-core --test gravity_glm_compact_mla_parity -- --nocapture",
+      "passed": 1,
+      "failed": 0
+    },
+    "diff_check": "PASS"
+  },
+  "mop_observation": {
+    "supervisor_pid": 33542,
+    "workers_expected": 24,
+    "workers_observed_active": 24,
+    "worker_cpu_percent_each": "approximately 99-103",
+    "elapsed": "more than 1 day 5 hours",
+    "action": "none"
+  },
+  "promotion_gate": {
+    "parity_qualified": true,
+    "performance_promoted": false,
+    "reason": "No contention-authorized flagship live A/B exists. MOP remains active, and the prior full-contention gate forbids a sealed-model run.",
+    "next_required_evidence": [
+      "MOP clearance followed by the full 60-second x4 contention A/B gate",
+      "flagship compact-vs-expanded complete-token profiler with exact command/encoder and byte attribution",
+      "flagship complete-token Numeric Parity V2.1 and exact decisions",
+      "measured TPS/TTFT/prefill/memory/swap/thermal improvement",
+      "sustained 2K/8K/32K validation",
+      "device-side DSA selection to remove the remaining full-indexer host barrier"
+    ]
+  }
+}

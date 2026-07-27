@@ -12,6 +12,9 @@ members = [
     # independent of the core's API drift. hide-fleet/personalize=REDESIGN, research=ARCHIVE
     # (kept for now to compile hide-backend; trimmed in Phase 1b).
     "crates/hide-core",
+    "crates/hide-you",
+    "crates/hide-objects",
+    "crates/hide-connectors",
     "crates/hide-serve",
     "crates/hide-backend",
     "crates/hide-kernel",
@@ -70,6 +73,9 @@ members = [
     # Deterministic and model-free; probabilistic review execution is
     # DEFERRED_MODEL_REQUIRED (profiles + selector only, no model call).
     "crates/hide-verify",
+    # Bridge-events lane: one canonical event model + one family-adapter registry.
+    "crates/hawking-events",
+    "crates/hawking-adapters",
     "tools/q4k_fast",
     "tools/awq_bake",
     "tools/tq_bake",

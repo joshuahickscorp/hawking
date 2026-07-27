@@ -185,6 +185,51 @@ impl GravityShard {
         cost_ledger::record_allocation(payload.len() as u64);
         Ok(payload.to_vec())
     }
+
+    /// Copy only the first `prefix_len` bytes of one tensor payload.
+    ///
+    /// This deliberately does **not** claim SHA-256 verification: a digest
+    /// covers the complete payload, so a prefix cannot authenticate it.
+    /// Header-only admission may use this to reject unsupported codecs before
+    /// allocating runtime state; execution must still reach [`read_tensor`]
+    /// and its ordinary full-payload verification before using the weight.
+    fn read_tensor_prefix_unverified(&self, name: &str, prefix_len: usize) -> Result<Vec<u8>> {
+        use crate::cost_ledger::{self, Bucket};
+
+        let d = {
+            let _lookup = cost_ledger::Scope::new(Bucket::ContainerLookup);
+            self.descriptor(name)
+                .ok_or_else(|| Error::Gravity(format!("no such tensor {name:?}")))?
+        };
+        if prefix_len as u64 > d.bytes {
+            return Err(Error::Gravity(format!(
+                "tensor {name}: payload {} bytes is shorter than requested {prefix_len}-byte prefix",
+                d.bytes
+            )));
+        }
+        let start = self
+            .body_offset
+            .checked_add(d.offset)
+            .ok_or_else(|| Error::Gravity(format!("tensor {name}: offset overflow")))?;
+        let tensor_end = start
+            .checked_add(d.bytes)
+            .ok_or_else(|| Error::Gravity(format!("tensor {name}: end overflow")))?;
+        if tensor_end > self.mmap.len() as u64 {
+            return Err(Error::Gravity(format!(
+                "tensor {name}: end {tensor_end} past file length {}",
+                self.mmap.len()
+            )));
+        }
+        let prefix_end = start
+            .checked_add(prefix_len as u64)
+            .ok_or_else(|| Error::Gravity(format!("tensor {name}: prefix end overflow")))?;
+        let prefix = {
+            let _lookup = cost_ledger::Scope::new(Bucket::ContainerLookup);
+            &self.mmap[start as usize..prefix_end as usize]
+        };
+        cost_ledger::record_allocation(prefix.len() as u64);
+        Ok(prefix.to_vec())
+    }
 }
 
 // ---------------------------------------------------------------------
@@ -532,6 +577,48 @@ impl PqTensor {
         Ok(y)
     }
 
+    /// Numeric Parity V2.1 authority for this compact matrix.
+    ///
+    /// Codebook values are stored as f16 and therefore widen exactly to
+    /// f32/f64. Activations are f32 and promote exactly to f64. The products
+    /// and the left-to-right sum are then evaluated in f64, so neither the
+    /// host f32 reduction nor any Metal reduction order is treated as the
+    /// oracle.
+    pub fn matvec_f64_authority(&self, x: &[f32]) -> Result<Vec<f64>> {
+        let h = &self.header;
+        if x.len() != h.cols as usize {
+            return Err(Error::Gravity(format!(
+                "pq f64 authority: x.len() {} != cols {}",
+                x.len(),
+                h.cols
+            )));
+        }
+        let d = h.d as usize;
+        let s = h.s as usize;
+        let sub = h.sub as usize;
+        let card = h.card as usize;
+        let rows = h.rows as usize;
+        let nchunk = h.nchunk as usize;
+        let mut y = vec![0.0f64; rows];
+        for sub_idx in 0..s {
+            let cb_base = sub_idx * card * sub;
+            let x_off = sub_idx * sub;
+            for r in 0..rows {
+                for c in 0..nchunk {
+                    let flat = (r * nchunk + c) * s + sub_idx;
+                    let code = self.indices[flat] as usize;
+                    let cb_row = cb_base + code * sub;
+                    let x_base = c * d + x_off;
+                    for j in 0..sub {
+                        y[r] += (self.codebooks[cb_row + j] as f64)
+                            * (x[x_base + j] as f64);
+                    }
+                }
+            }
+        }
+        Ok(y)
+    }
+
     /// Decode a single row of the encoded matrix — `cols` values. Used for
     /// embedding lookup, where materializing the whole `[vocab, hidden]`
     /// matrix to read one row would be absurd. Mirrors
@@ -570,6 +657,12 @@ impl PqTensor {
 /// accumulating in f32.
 pub fn pq_matvec(payload: &[u8], x: &[f32]) -> Result<Vec<f32>> {
     PqTensor::from_payload(payload)?.matvec(x)
+}
+
+/// FP64 authority for a compact `gravity-pq` matvec under Numeric Parity
+/// V2.1. See [`PqTensor::matvec_f64_authority`].
+pub fn pq_matvec_f64_authority(payload: &[u8], x: &[f32]) -> Result<Vec<f64>> {
+    PqTensor::from_payload(payload)?.matvec_f64_authority(x)
 }
 
 // ---------------------------------------------------------------------
@@ -649,6 +742,104 @@ pub fn matvec_bf16_host(weight_le: &[u8], cols: usize, x: &[f32]) -> Result<Vec<
     }
     let w = widen_native("native.bf16", weight_le)?;
     matvec_dense(&w, x, "lm_head.weight")
+}
+
+/// Additive, default-off accumulation candidates for native-BF16 GEMV.
+///
+/// `Sequential` is the existing left-to-right f32 contract. The other
+/// variants are exposed only to parity tests and explicit microbenchmarks;
+/// no runtime selection consults this enum.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum NativeBf16Accumulation {
+    Sequential,
+    Neumaier,
+    /// Neumaier summation plus the residual of every rounded f32 product,
+    /// recovered with an explicit fused multiply-add.
+    NeumaierCompensatedProduct,
+}
+
+impl NativeBf16Accumulation {
+    pub const ALL: [Self; 3] = [
+        Self::Sequential,
+        Self::Neumaier,
+        Self::NeumaierCompensatedProduct,
+    ];
+
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Sequential => "sequential",
+            Self::Neumaier => "neumaier",
+            Self::NeumaierCompensatedProduct => "neumaier_compensated_product",
+        }
+    }
+
+    #[cfg(target_os = "macos")]
+    pub const fn metal_kernel(self) -> &'static str {
+        match self {
+            Self::Sequential => "gemv_native_bf16_seq",
+            Self::Neumaier => "gemv_native_bf16_neumaier",
+            Self::NeumaierCompensatedProduct => {
+                "gemv_native_bf16_neumaier_compensated_product"
+            }
+        }
+    }
+}
+
+/// Matching f32 host comparator for the additive native-BF16 accumulation
+/// candidates. Bounds and authority remain external: this function changes
+/// arithmetic only, never parity policy.
+pub fn matvec_bf16_host_accumulation(
+    weight_le: &[u8],
+    cols: usize,
+    x: &[f32],
+    accumulation: NativeBf16Accumulation,
+) -> Result<Vec<f32>> {
+    if accumulation == NativeBf16Accumulation::Sequential {
+        return matvec_bf16_host(weight_le, cols, x);
+    }
+    if x.len() != cols {
+        return Err(Error::Gravity(format!(
+            "matvec_bf16_host_accumulation: x.len() {} != cols {cols}",
+            x.len()
+        )));
+    }
+    if cols == 0 || weight_le.len() % (cols * 2) != 0 {
+        return Err(Error::Gravity(format!(
+            "matvec_bf16_host_accumulation: payload {} B is not a whole number of \
+             {cols}-wide bf16 rows",
+            weight_le.len()
+        )));
+    }
+
+    let weights = widen_native("native.bf16", weight_le)?;
+    Ok(weights
+        .chunks_exact(cols)
+        .map(|row| {
+            let mut sum = 0.0f32;
+            let mut correction = 0.0f32;
+            for (&weight, &activation) in row.iter().zip(x) {
+                let product = weight * activation;
+                let product_residual =
+                    if accumulation == NativeBf16Accumulation::NeumaierCompensatedProduct {
+                        weight.mul_add(activation, -product)
+                    } else {
+                        0.0
+                    };
+                let next = sum + product;
+                let addition_residual = if sum.abs() >= product.abs() {
+                    let delta = sum - next;
+                    delta + product
+                } else {
+                    let delta = product - next;
+                    delta + sum
+                };
+                correction += addition_residual;
+                correction += product_residual;
+                sum = next;
+            }
+            sum + correction
+        })
+        .collect())
 }
 
 fn row_dense(w: &[f32], index: usize, cols: usize, name: &str) -> Result<Vec<f32>> {
@@ -1089,6 +1280,50 @@ impl GravityWeights {
         }
     }
 
+    /// Read just a `gravity-pq` tensor's fixed header plus descriptor shape.
+    ///
+    /// Lazy mode copies 64 payload bytes and does not hash the remaining
+    /// payload. This is an admission-only view: callers can reject an
+    /// incompatible artifact before allocating device/session state, while
+    /// the later ordinary payload load still performs the configured full
+    /// SHA-256 verification before execution. Eager mode returns the header
+    /// already decoded during [`open`](Self::open).
+    pub fn pq_header_prefix_unverified_with_shape(
+        &self,
+        name: &str,
+    ) -> Result<(PqHeader, Vec<u64>)> {
+        match &self.source {
+            Source::Eager(tensors) => match tensors.get(name) {
+                Some(Tensor::Pq(tensor)) => Ok((
+                    tensor.header,
+                    vec![tensor.header.rows as u64, tensor.header.cols as u64],
+                )),
+                Some(Tensor::Dense(_)) => Err(Error::Gravity(format!(
+                    "tensor {name}: compact admission requires gravity-pq, found native tensor"
+                ))),
+                None => Err(Error::Gravity(format!("artifact has no tensor {name:?}"))),
+            },
+            Source::Lazy {
+                shard_dir,
+                tensor_shard,
+                open_shards,
+                ..
+            } => Self::with_lazy_shard(shard_dir, tensor_shard, open_shards, name, |shard| {
+                let d = shard
+                    .descriptor(name)
+                    .expect("name came from this shard's own index");
+                if d.codec != "gravity-pq" {
+                    return Err(Error::Gravity(format!(
+                        "tensor {name}: compact admission requires gravity-pq, found {:?}",
+                        d.codec
+                    )));
+                }
+                let prefix = shard.read_tensor_prefix_unverified(name, PQ_HEADER_LEN)?;
+                Ok((parse_pq_header(&prefix)?, d.shape.clone()))
+            }),
+        }
+    }
+
     /// Open `name`'s owning shard if it is not already open, then run `f`
     /// against it. The shard is inserted into `open_shards` before `f` runs
     /// and stays there — a shard opened for one tensor is likely to be asked
@@ -1339,6 +1574,157 @@ impl GravityWeights {
     }
 }
 
+/// Explicit Metal kernel candidates for `gravity-pq`.
+///
+/// [`Generic`](Self::Generic) is the existing production kernel and remains
+/// the default used by [`pq_matvec_metal`]. The other variants are additive
+/// and must be named by a benchmark or caller; no environment variable or
+/// model path silently opts into them.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum PqMetalKernelVariant {
+    /// Existing packed-bit extractor and one SIMD group per row.
+    Generic,
+    /// `bits=8` direct `codes[flat]` lookup; scalar FMA order within a lane.
+    Bits8Direct,
+    /// Direct byte lookup plus four independent `float4` accumulators.
+    Bits8Vec4,
+    /// Direct byte lookup plus an f32 double-single accumulator/reduction.
+    ///
+    /// This is an unpromoted numeric candidate. It has no throughput claim
+    /// and is selected only through the explicit variant/autotune APIs.
+    Bits8DoubleSingle,
+    /// 2D row × four chunk slices, then ordered slice reduction.
+    Bits8Vec4Split4,
+    /// 2D row × eight chunk slices, then ordered slice reduction.
+    Bits8Vec4Split8,
+}
+
+impl PqMetalKernelVariant {
+    pub const ALL: [Self; 6] = [
+        Self::Generic,
+        Self::Bits8Direct,
+        Self::Bits8Vec4,
+        Self::Bits8DoubleSingle,
+        Self::Bits8Vec4Split4,
+        Self::Bits8Vec4Split8,
+    ];
+
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Generic => "generic",
+            Self::Bits8Direct => "bits8-direct",
+            Self::Bits8Vec4 => "bits8-vec4",
+            Self::Bits8DoubleSingle => "bits8-double-single",
+            Self::Bits8Vec4Split4 => "bits8-2d-split4",
+            Self::Bits8Vec4Split8 => "bits8-2d-split8",
+        }
+    }
+
+    pub const fn kernel_name(self) -> &'static str {
+        match self {
+            Self::Generic => "gravity_pq_matvec",
+            Self::Bits8Direct => "gravity_pq_matvec_bits8_direct",
+            Self::Bits8Vec4 => "gravity_pq_matvec_bits8_vec4",
+            Self::Bits8DoubleSingle => "gravity_pq_matvec_bits8_double_single",
+            Self::Bits8Vec4Split4 | Self::Bits8Vec4Split8 => "gravity_pq_matvec_bits8_2d",
+        }
+    }
+
+    pub const fn split_count(self) -> Option<u32> {
+        match self {
+            Self::Bits8Vec4Split4 => Some(4),
+            Self::Bits8Vec4Split8 => Some(8),
+            _ => None,
+        }
+    }
+
+    pub const fn dispatches_per_matvec(self) -> usize {
+        if self.split_count().is_some() {
+            2
+        } else {
+            1
+        }
+    }
+
+    /// Whether this candidate can interpret the tensor without changing
+    /// artifact semantics. Vector candidates require aligned 4-wide sections;
+    /// direct-byte candidates require exactly one byte per index.
+    pub fn supports(self, h: &PqHeader) -> bool {
+        match self {
+            Self::Generic => true,
+            Self::Bits8Direct | Self::Bits8DoubleSingle => h.bits == 8,
+            Self::Bits8Vec4 | Self::Bits8Vec4Split4 | Self::Bits8Vec4Split8 => {
+                h.bits == 8 && h.d % 4 == 0 && h.sub % 4 == 0
+            }
+        }
+    }
+
+    pub fn validate(self, h: &PqHeader) -> Result<()> {
+        if self.supports(h) {
+            return Ok(());
+        }
+        Err(Error::Gravity(format!(
+            "PQ kernel {} does not support D={}, S={}, sub={}, card={}, bits={}; \
+             byte variants require bits=8 and vector variants also require D/sub multiples of 4",
+            self.as_str(),
+            h.d,
+            h.s,
+            h.sub,
+            h.card,
+            h.bits
+        )))
+    }
+}
+
+impl std::fmt::Display for PqMetalKernelVariant {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
+impl std::str::FromStr for PqMetalKernelVariant {
+    type Err = String;
+
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+        let normalized = s.trim().to_ascii_lowercase();
+        Self::ALL
+            .into_iter()
+            .find(|v| v.as_str() == normalized)
+            .ok_or_else(|| {
+                format!(
+                    "unknown PQ kernel variant {s:?}; expected {}",
+                    Self::ALL
+                        .iter()
+                        .map(|v| v.as_str())
+                        .collect::<Vec<_>>()
+                        .join(",")
+                )
+            })
+    }
+}
+
+/// Summary of repeated synchronized matvec timings.
+#[cfg(target_os = "macos")]
+#[derive(Debug, Clone, Copy)]
+pub struct PqMetalTimingSummary {
+    pub min_us: f64,
+    pub median_us: f64,
+    pub p95_us: f64,
+    pub mean_us: f64,
+}
+
+/// One bounded candidate measurement. `gpu` is populated when the process
+/// starts with `HAWKING_TCB_TRACE=gpu_prod` on a counter-capable device.
+#[cfg(target_os = "macos")]
+#[derive(Debug, Clone)]
+pub struct PqMetalBenchmark {
+    pub variant: PqMetalKernelVariant,
+    pub warmup: usize,
+    pub iterations: usize,
+    pub wall: PqMetalTimingSummary,
+    pub gpu: Option<PqMetalTimingSummary>,
+}
+
 /// Metal `GravityPQParams` mirror (`shaders/gravity_pq.metal`): eight
 /// `uint`s in declaration order, 32 bytes total, `#[repr(C)]` so a raw
 /// pointer cast is a valid `set_bytes` payload.
@@ -1356,105 +1742,277 @@ struct GravityPqParams {
     bits: u32,
 }
 
-/// GPU counterpart of [`pq_matvec`]: dispatches `gravity_pq_matvec`
-/// (`shaders/gravity_pq.metal`), one SIMD group per output row, 8 SIMD
-/// groups (256 threads) per threadgroup. Same shape/rotate contract as
-/// the CPU path; results differ only in the last bit or two because the
-/// kernel's per-row reduction (`fma` chain + `simd_sum`) reassociates
-/// sums the CPU path performs strictly left-to-right.
+#[cfg(target_os = "macos")]
+impl From<PqHeader> for GravityPqParams {
+    fn from(h: PqHeader) -> Self {
+        Self {
+            dim: h.d as u32,
+            subspaces: h.s as u32,
+            sub: h.sub as u32,
+            card: h.card as u32,
+            rows: h.rows,
+            cols: h.cols,
+            nchunk: h.nchunk,
+            bits: h.bits as u32,
+        }
+    }
+}
+
+/// A compact PQ matrix uploaded once for parity and kernel-autotune runs.
+/// Weight/code buffers stay resident across candidates and iterations, so
+/// timings cover dispatch + execution rather than artifact upload.
+#[cfg(target_os = "macos")]
+pub struct PqMetalMatrix {
+    header: PqHeader,
+    params: GravityPqParams,
+    codebooks: metal::Buffer,
+    codes: metal::Buffer,
+}
+
+#[cfg(target_os = "macos")]
+impl PqMetalMatrix {
+    pub fn from_payload(ctx: &crate::metal::MetalContext, payload: &[u8]) -> Result<Self> {
+        let header = parse_pq_header(payload)?;
+        if header.rotate != 0 {
+            return Err(Error::Gravity(
+                "rotated gravity-pq artifacts (rotate=1) are not yet supported".into(),
+            ));
+        }
+        let (cb, packed_codes) = pq_sections(payload)?;
+        // The generic kernel reads a four-byte MSB window. Keep its established
+        // tail-padding contract even though direct-byte variants do not need it.
+        let mut codes_padded = Vec::with_capacity(packed_codes.len() + 4);
+        codes_padded.extend_from_slice(packed_codes);
+        codes_padded.extend_from_slice(&[0u8; 4]);
+        Ok(Self {
+            header,
+            params: header.into(),
+            codebooks: ctx.new_buffer_with_bytes_checked(cb)?,
+            codes: ctx.new_buffer_with_bytes_checked(&codes_padded)?,
+        })
+    }
+
+    pub const fn header(&self) -> PqHeader {
+        self.header
+    }
+
+    fn prepare(
+        &self,
+        ctx: &crate::metal::MetalContext,
+        variant: PqMetalKernelVariant,
+    ) -> Result<()> {
+        variant.validate(&self.header)?;
+        let _ = ctx.pipeline(variant.kernel_name())?;
+        if variant.split_count().is_some() {
+            let _ = ctx.pipeline("gravity_pq_reduce_2d")?;
+        }
+        Ok(())
+    }
+
+    fn encode(
+        &self,
+        tcb: &mut crate::metal::TokenCommandBuffer<'_>,
+        variant: PqMetalKernelVariant,
+        x: &metal::Buffer,
+        y: &metal::Buffer,
+        partials: Option<&metal::Buffer>,
+    ) -> Result<()> {
+        const ROW_TG: u32 = 256;
+        let params = self.params;
+        if let Some(splits) = variant.split_count() {
+            let scratch = partials.ok_or_else(|| {
+                Error::Gravity(format!("PQ kernel {variant} requires a partials buffer"))
+            })?;
+            // One 32-thread SIMD group per (row, chunk-slice) pair.
+            tcb.dispatch_threads(
+                variant.kernel_name(),
+                (params.rows * 32, splits, 1),
+                (32, 1, 1),
+                |enc| {
+                    enc.set_buffer(0, Some(&self.codebooks), 0);
+                    enc.set_buffer(1, Some(&self.codes), 0);
+                    enc.set_buffer(2, Some(x), 0);
+                    enc.set_buffer(3, Some(scratch), 0);
+                    enc.set_bytes(
+                        4,
+                        std::mem::size_of::<GravityPqParams>() as u64,
+                        &params as *const GravityPqParams as *const _,
+                    );
+                    enc.set_bytes(5, 4, &splits as *const u32 as *const _);
+                },
+            )?;
+            tcb.dispatch_threads(
+                "gravity_pq_reduce_2d",
+                (params.rows.div_ceil(ROW_TG) * ROW_TG, 1, 1),
+                (ROW_TG, 1, 1),
+                |enc| {
+                    enc.set_buffer(0, Some(scratch), 0);
+                    enc.set_buffer(1, Some(y), 0);
+                    enc.set_bytes(
+                        2,
+                        std::mem::size_of::<GravityPqParams>() as u64,
+                        &params as *const GravityPqParams as *const _,
+                    );
+                    enc.set_bytes(3, 4, &splits as *const u32 as *const _);
+                },
+            )
+        } else {
+            // Existing mapping: one SIMD group per row, 8 groups/TG.
+            let n_tg = params.rows.div_ceil(8);
+            tcb.dispatch_threads(
+                variant.kernel_name(),
+                (n_tg * ROW_TG, 1, 1),
+                (ROW_TG, 1, 1),
+                |enc| {
+                    enc.set_buffer(0, Some(&self.codebooks), 0);
+                    enc.set_buffer(1, Some(&self.codes), 0);
+                    enc.set_buffer(2, Some(x), 0);
+                    enc.set_buffer(3, Some(y), 0);
+                    enc.set_bytes(
+                        4,
+                        std::mem::size_of::<GravityPqParams>() as u64,
+                        &params as *const GravityPqParams as *const _,
+                    );
+                },
+            )
+        }
+    }
+
+    fn activation_buffers(
+        &self,
+        ctx: &crate::metal::MetalContext,
+        variant: PqMetalKernelVariant,
+        x: &[f32],
+    ) -> Result<(metal::Buffer, metal::Buffer, Option<metal::Buffer>)> {
+        if x.len() != self.header.cols as usize {
+            return Err(Error::Gravity(format!(
+                "PQ Metal matvec: x.len() {} != cols {}",
+                x.len(),
+                self.header.cols
+            )));
+        }
+        self.prepare(ctx, variant)?;
+        let x_buf = ctx.new_buffer_with_bytes_checked(bytemuck::cast_slice::<f32, u8>(x))?;
+        let y_buf =
+            ctx.new_buffer_checked(self.header.rows as usize * std::mem::size_of::<f32>())?;
+        let partials = variant
+            .split_count()
+            .map(|splits| {
+                ctx.new_buffer_checked(
+                    self.header.rows as usize
+                        * splits as usize
+                        * std::mem::size_of::<f32>(),
+                )
+            })
+            .transpose()?;
+        Ok((x_buf, y_buf, partials))
+    }
+
+    /// Run one explicit candidate and read back its result.
+    pub fn matvec(
+        &self,
+        ctx: &crate::metal::MetalContext,
+        variant: PqMetalKernelVariant,
+        x: &[f32],
+    ) -> Result<Vec<f32>> {
+        let (x_buf, y_buf, partials) = self.activation_buffers(ctx, variant, x)?;
+        let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
+        self.encode(&mut tcb, variant, &x_buf, &y_buf, partials.as_ref())?;
+        tcb.commit_and_wait()?;
+        let ptr = y_buf.contents() as *const f32;
+        Ok(unsafe { std::slice::from_raw_parts(ptr, self.header.rows as usize) }.to_vec())
+    }
+
+    /// Benchmark a candidate with resident weight, activation, output, and
+    /// scratch buffers. Every sample is one synchronized matvec command
+    /// buffer; a 2D candidate includes its ordered reduction dispatch.
+    pub fn benchmark(
+        &self,
+        ctx: &crate::metal::MetalContext,
+        variant: PqMetalKernelVariant,
+        x: &[f32],
+        warmup: usize,
+        iterations: usize,
+    ) -> Result<PqMetalBenchmark> {
+        use std::time::Instant;
+
+        if iterations == 0 {
+            return Err(Error::Gravity(
+                "PQ Metal benchmark requires at least one iteration".into(),
+            ));
+        }
+        let (x_buf, y_buf, partials) = self.activation_buffers(ctx, variant, x)?;
+        let run_once = || -> Result<()> {
+            let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
+            self.encode(&mut tcb, variant, &x_buf, &y_buf, partials.as_ref())?;
+            tcb.commit_and_wait()
+        };
+        let _ = ctx.drain_trace();
+        for _ in 0..warmup {
+            run_once()?;
+        }
+        let _ = ctx.drain_trace();
+
+        let mut wall_us = Vec::with_capacity(iterations);
+        let mut gpu_us = Vec::with_capacity(iterations);
+        for _ in 0..iterations {
+            let t0 = Instant::now();
+            run_once()?;
+            wall_us.push(t0.elapsed().as_secs_f64() * 1e6);
+            let samples = ctx.drain_trace();
+            let gpu: Vec<u64> = samples.iter().filter_map(|s| s.gpu_us).collect();
+            if gpu.len() == variant.dispatches_per_matvec() {
+                gpu_us.push(gpu.into_iter().sum::<u64>() as f64);
+            }
+        }
+        Ok(PqMetalBenchmark {
+            variant,
+            warmup,
+            iterations,
+            wall: summarize_timings(&wall_us),
+            gpu: (gpu_us.len() == iterations).then(|| summarize_timings(&gpu_us)),
+        })
+    }
+}
+
+#[cfg(target_os = "macos")]
+fn summarize_timings(samples: &[f64]) -> PqMetalTimingSummary {
+    let mut sorted = samples.to_vec();
+    sorted.sort_by(f64::total_cmp);
+    let percentile = |p: f64| {
+        let i = ((sorted.len() - 1) as f64 * p).round() as usize;
+        sorted[i.min(sorted.len() - 1)]
+    };
+    PqMetalTimingSummary {
+        min_us: sorted[0],
+        median_us: percentile(0.50),
+        p95_us: percentile(0.95),
+        mean_us: sorted.iter().sum::<f64>() / sorted.len() as f64,
+    }
+}
+
+/// GPU counterpart of [`pq_matvec`] using an explicit additive candidate.
+#[cfg(target_os = "macos")]
+pub fn pq_matvec_metal_with_variant(
+    ctx: &crate::metal::MetalContext,
+    payload: &[u8],
+    x: &[f32],
+    variant: PqMetalKernelVariant,
+) -> Result<Vec<f32>> {
+    PqMetalMatrix::from_payload(ctx, payload)?.matvec(ctx, variant, x)
+}
+
+/// GPU counterpart of [`pq_matvec`]. This remains pinned to
+/// [`PqMetalKernelVariant::Generic`], preserving the established production
+/// kernel and launch exactly; autotune results require an explicit later
+/// promotion before they can affect the default.
 #[cfg(target_os = "macos")]
 pub fn pq_matvec_metal(
     ctx: &crate::metal::MetalContext,
     payload: &[u8],
     x: &[f32],
 ) -> Result<Vec<f32>> {
-    let h = parse_pq_header(payload)?;
-    if x.len() != h.cols as usize {
-        return Err(Error::Gravity(format!(
-            "pq_matvec_metal: x.len() {} != cols {}",
-            x.len(),
-            h.cols
-        )));
-    }
-    if h.rotate != 0 {
-        return Err(Error::Gravity(
-            "rotated gravity-pq artifacts (rotate=1) are not yet supported".into(),
-        ));
-    }
-
-    let card = h.card as usize;
-    let sub = h.sub as usize;
-    let rows = h.rows as usize;
-    let nchunk = h.nchunk as usize;
-
-    // Codebooks: `n_codebooks` back to back, each `card * sub` f16 values,
-    // uploaded byte-for-byte -- the kernel reads `half` directly, no host
-    // widening.
-    let cb_values = h.n_codebooks as usize * card * sub;
-    let cb_bytes = cb_values
-        .checked_mul(2)
-        .ok_or_else(|| Error::Gravity("gravity-pq codebook size overflow".into()))?;
-    let cb_start = PQ_HEADER_LEN;
-    let cb_end = cb_start
-        .checked_add(cb_bytes)
-        .ok_or_else(|| Error::Gravity("gravity-pq codebook size overflow".into()))?;
-    if payload.len() < cb_end {
-        return Err(Error::Gravity(format!(
-            "gravity-pq payload too short for codebooks: have {} bytes, need {cb_end}",
-            payload.len()
-        )));
-    }
-
-    // Index bitstream: same byte span `unpack_bits` would consume on the
-    // CPU path, plus 4 zero bytes of tail padding so the kernel's whole-word
-    // read at the last index's byte offset never runs past the buffer.
-    let idx_count = rows * nchunk * h.s as usize;
-    let need_bytes = (idx_count as u64 * h.bits as u64).div_ceil(8) as usize;
-    if payload.len() < cb_end + need_bytes {
-        return Err(Error::Gravity(format!(
-            "gravity-pq index bitstream too short: have {} bytes, need {need_bytes}",
-            payload.len() - cb_end
-        )));
-    }
-    let mut codes = payload[cb_end..cb_end + need_bytes].to_vec();
-    codes.extend_from_slice(&[0u8; 4]);
-
-    let codebooks_buf = ctx.new_buffer_with_bytes(&payload[cb_start..cb_end]);
-    let codes_buf = ctx.new_buffer_with_bytes(&codes);
-    let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(x));
-    let y_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
-
-    let params = GravityPqParams {
-        dim: h.d as u32,
-        subspaces: h.s as u32,
-        sub: h.sub as u32,
-        card: h.card as u32,
-        rows: h.rows,
-        cols: h.cols,
-        nchunk: h.nchunk,
-        bits: h.bits as u32,
-    };
-
-    // One SIMD group (32 lanes) per output row, 8 SIMD groups (256 threads)
-    // per threadgroup; the kernel guards `row >= rows` for the boundary
-    // threadgroup. `dispatch_threads` takes a total-thread grid, so scale
-    // the threadgroup count back up by the threadgroup size.
-    const TG: u32 = 256;
-    let n_tg = h.rows.div_ceil(8);
-    ctx.dispatch_threads("gravity_pq_matvec", (n_tg * TG, 1, 1), (TG, 1, 1), |enc| {
-        enc.set_buffer(0, Some(&codebooks_buf), 0);
-        enc.set_buffer(1, Some(&codes_buf), 0);
-        enc.set_buffer(2, Some(&x_buf), 0);
-        enc.set_buffer(3, Some(&y_buf), 0);
-        enc.set_bytes(
-            4,
-            std::mem::size_of::<GravityPqParams>() as u64,
-            &params as *const GravityPqParams as *const _,
-        );
-    })?;
-
-    let y_ptr = y_buf.contents() as *const f32;
-    Ok(unsafe { std::slice::from_raw_parts(y_ptr, rows) }.to_vec())
+    pq_matvec_metal_with_variant(ctx, payload, x, PqMetalKernelVariant::Generic)
 }
 
 #[cfg(test)]
@@ -1546,6 +2104,92 @@ mod tests {
         f.write_all(&header_bytes).unwrap();
         f.write_all(&body).unwrap();
         path
+    }
+
+    /// One header-only PQ tensor with a deliberately false payload digest.
+    /// Admission must be able to inspect the 64-byte header without claiming
+    /// integrity; the ordinary full-payload access must still reject it.
+    fn write_lazy_unverified_pq_header_fixture(dir: &Path, name: &str) {
+        let mut payload = Vec::with_capacity(PQ_HEADER_LEN);
+        payload.extend_from_slice(PQ_MAGIC);
+        payload.extend_from_slice(&32u16.to_le_bytes()); // D
+        payload.extend_from_slice(&1u16.to_le_bytes()); // S
+        payload.extend_from_slice(&32u16.to_le_bytes()); // sub
+        payload.extend_from_slice(&256u16.to_le_bytes()); // card
+        payload.extend_from_slice(&2u32.to_le_bytes()); // rows
+        payload.extend_from_slice(&32u32.to_le_bytes()); // cols
+        payload.extend_from_slice(&1u32.to_le_bytes()); // nchunk
+        payload.extend_from_slice(&7u32.to_le_bytes()); // seed
+        payload.extend_from_slice(&8u16.to_le_bytes()); // bits
+        payload.push(0); // rotate
+        payload.push(1); // n_codebooks
+        payload.resize(PQ_HEADER_LEN, 0);
+
+        let header = serde_json::json!({
+            "schema": "hawking.gravity.shard_header.v1",
+            "format_version": 1,
+            "model": {"name": "pq-header-prefix-fixture"},
+            "architecture": {},
+            "tokenizer": {},
+            "compression": {"codec": "gravity-pq"},
+            "shard": {"index": 1, "count": 1},
+            "integrity": {"tensor_count": 1},
+            "tensors": [{
+                "name": name,
+                "codec": "gravity-pq",
+                "offset": 0,
+                "bytes": payload.len() as u64,
+                "sha256": "00".repeat(32),
+                "shape": [2, 32],
+                "elements": 64,
+            }],
+        });
+        let header_bytes = serde_json::to_vec(&header).expect("header json");
+        let path = dir.join("model-00001-of-00001.gravity");
+        let mut f = File::create(path).expect("create PQ prefix shard");
+        f.write_all(MAGIC).unwrap();
+        f.write_all(&1u32.to_le_bytes()).unwrap();
+        f.write_all(&(header_bytes.len() as u64).to_le_bytes())
+            .unwrap();
+        f.write_all(&header_bytes).unwrap();
+        f.write_all(&payload).unwrap();
+    }
+
+    #[test]
+    fn pq_admission_header_prefix_does_not_claim_full_payload_verification() {
+        let dir = tempfile::tempdir().expect("tempdir");
+        let name = "model.layers.0.self_attn.kv_b_proj.weight";
+        write_lazy_unverified_pq_header_fixture(dir.path(), name);
+
+        let weights = GravityWeights::open_dir(dir.path(), true).expect("open_dir");
+        let (header, shape) = weights
+            .pq_header_prefix_unverified_with_shape(name)
+            .expect("header-only admission");
+        assert_eq!(
+            header,
+            PqHeader {
+                d: 32,
+                s: 1,
+                sub: 32,
+                card: 256,
+                rows: 2,
+                cols: 32,
+                nchunk: 1,
+                seed: 7,
+                bits: 8,
+                rotate: 0,
+                n_codebooks: 1,
+            }
+        );
+        assert_eq!(shape, vec![2, 32]);
+
+        let err = weights
+            .raw_payload_with_shape(name)
+            .expect_err("ordinary payload load must still enforce full SHA-256");
+        assert!(
+            err.to_string().contains("sha256 mismatch"),
+            "full load did not preserve verification: {err}"
+        );
     }
 
     #[test]

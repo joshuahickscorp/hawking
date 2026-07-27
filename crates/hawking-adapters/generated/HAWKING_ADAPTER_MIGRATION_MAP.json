@@ -1,0 +1,156 @@
+{
+  "canonical": {
+    "execution_gguf": {
+      "name": "load_engine",
+      "owns": [
+        "GGUF open",
+        "arch string dispatch",
+        "Engine construction"
+      ],
+      "path": "crates/hawking-core/src/model/mod.rs"
+    },
+    "execution_gravity": {
+      "name": "gravity_engine",
+      "owns": [
+        ".gravity open",
+        "llama + glm_moe_dsa forward"
+      ],
+      "path": "crates/hawking-core/src/model/gravity_engine.rs"
+    },
+    "metadata_abi": {
+      "name": "hawking-adapters FamilyRegistry",
+      "owns": [
+        "support_level",
+        "family ABI fields",
+        "capability matrix",
+        "test matrix",
+        "evidence honesty"
+      ],
+      "path": "crates/hawking-adapters/src/registry.rs"
+    }
+  },
+  "mappings": [
+    {
+      "call_sites": [
+        "crates/hawking-serve/src/lib.rs",
+        "crates/hawking-core/src/engine.rs",
+        "crates/hawking-core/tests/*"
+      ],
+      "canonical_for": [
+        "execution_gguf",
+        "execution_gravity_dispatch"
+      ],
+      "migration": "Keep load_engine as sole GGUF+gravity factory. Family support grades and ABI fields are read from hawking-adapters; do not re-derive them from arch-string match arms.",
+      "not_canonical_for": [
+        "support_level",
+        "full_abi_metadata"
+      ],
+      "old_authority": "load_engine",
+      "path": "crates/hawking-core/src/model/mod.rs",
+      "role_was": "implicit sole authority for what families exist + execute"
+    },
+    {
+      "call_sites": [
+        "crates/hawking-core/src/model/mod.rs",
+        "crates/hawking-core/tests/gravity_*"
+      ],
+      "canonical_for": [
+        "execution_gravity"
+      ],
+      "migration": "Remains execution path. GLM/llama gravity ABI + grade live under families/glm.rs and families/llama.rs.",
+      "not_canonical_for": [
+        "support_level",
+        "full_abi_metadata"
+      ],
+      "old_authority": "gravity_engine",
+      "path": "crates/hawking-core/src/model/gravity_engine.rs",
+      "role_was": "live .gravity execute for llama + glm_moe_dsa"
+    },
+    {
+      "call_sites": [
+        "crates/hawking-seed-c/src/providers/adapters.rs::builtins",
+        "PROVIDER_FOUNDRY / ladder consumers"
+      ],
+      "canonical_for": [
+        "plan_summary_metadata"
+      ],
+      "migration": "ArchAdapter stays plan-only. When a consumer needs family grade or full ABI, use hawking-adapters. Do not treat ArchAdapter presence as SOURCE_HEADER_VALIDATED or higher.",
+      "not_canonical_for": [
+        "support_level",
+        "execution",
+        "production_claims"
+      ],
+      "old_authority": "seed-c ArchAdapter",
+      "path": "crates/hawking-seed-c/src/providers/adapters.rs",
+      "role_was": "declarative plan-summary descriptor (does not execute)"
+    },
+    {
+      "call_sites": [
+        "tools/condense/glm52_worker.py"
+      ],
+      "canonical_for": [
+        "fail_closed_production_gate"
+      ],
+      "migration": "Keep empty until a family earns PRODUCTION in hawking-adapters with a standing parity receipt. Never populate from shape familiarity.",
+      "not_canonical_for": [
+        "family_declaration"
+      ],
+      "old_authority": "PRODUCTION_EXECUTION_ADAPTER_REGISTRY",
+      "path": "tools/condense/glm52_worker.py",
+      "role_was": "empty-by-contract production registry (fail-closed)"
+    },
+    {
+      "call_sites": [
+        "crates/hawking-core/src/model/mod.rs (error strings / pack references)",
+        "crates/hawking-core/tests/gemma2_smoke.rs",
+        "crates/hawking-core/tests/phi3_smoke.rs",
+        "crates/hawking-core/tests/mamba2_smoke.rs"
+      ],
+      "canonical_for": [
+        "off_tree_engine_pack"
+      ],
+      "migration": "Pack remains code home for gemma2/phi3/mixtral/mamba2/olmoe. Families are DECLARED under hawking-adapters with pack paths as evidence.",
+      "not_canonical_for": [
+        "support_level_index"
+      ],
+      "old_authority": "hawking-adapters-extra",
+      "path": "packs/hawking-adapters-extra.json",
+      "role_was": "off-tree extracted engines"
+    },
+    {
+      "call_sites": [
+        "crates/hawking-orch (LoRA selection)"
+      ],
+      "canonical_for": [
+        "lora_selection"
+      ],
+      "migration": "No migration — different concept. Do not merge LoRA adapters into FamilyRegistry.",
+      "not_canonical_for": [
+        "architecture_family_abi"
+      ],
+      "old_authority": "hawking-orch adapters",
+      "path": "crates/hawking-orch/src/adapters.rs",
+      "role_was": "language/task LoRA selection policy"
+    },
+    {
+      "call_sites": [
+        "tools/condense/glm52_adapter.py",
+        "tools/condense/qwen3_moe_adapter.py",
+        "tools/condense/deepseek_v4_adapter.py",
+        "tools/condense/gravity_execution_adapter.py"
+      ],
+      "canonical_for": [
+        "campaign_condense_helpers"
+      ],
+      "migration": "Campaign tools may keep local helpers; shipping honesty for family grade is hawking-adapters only.",
+      "not_canonical_for": [
+        "shipping_support_level"
+      ],
+      "old_authority": "Python condense family adapters",
+      "path": "tools/condense/*_adapter.py",
+      "role_was": "campaign-side condense/forge helpers"
+    }
+  ],
+  "note": "Architecture-family metadata/ABI consolidates on hawking-adapters. Execution factories stay put. Do not invent a second runtime registry.",
+  "schema": "hawking.adapters.migration_map.v1"
+}

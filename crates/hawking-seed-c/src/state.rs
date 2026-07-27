@@ -48,6 +48,14 @@ impl State {
     }
 }
 
+/// Campaign state-machine transition events (Prepare/Admit/Run/…).
+///
+/// # Deprecation / authority note
+///
+/// This is a **domain-specific FSM** for seed-c campaigns, not the product
+/// event bus. Do not expand it for HIDE/Bridge features. Project transitions
+/// into the canonical model via `hawking_events::adapters::seed` when needed.
+/// Canonical durable events: `hide_core::event::Event` (`hawking-events`).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Event {
     Prepare,

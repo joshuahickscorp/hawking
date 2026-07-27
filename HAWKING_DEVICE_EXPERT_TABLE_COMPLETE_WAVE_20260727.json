@@ -1,0 +1,133 @@
+{
+  "schema": "hawking.temporal_gravity.mechanism_receipt.v1",
+  "created_at_utc": "2026-07-27T06:36:21Z",
+  "status": "BOUNDED_COMPLETE_WAVE_PROOF_QUALIFIED_DEFAULT_UNUSED",
+  "mechanism": "Extend the immutable cache-indexed expert table hit proof through routed gate/up, guarded SiLU, down, score-aligned ordered combine, shared expert last, and guarded residual mutation in one command buffer.",
+  "base_commit": "f67180e60430a3b463f38f09cbe2fd819dc22e0e",
+  "scope": {
+    "runtime_default_changed": false,
+    "production_forward_wired": false,
+    "sealed_math_preserve_touched": false,
+    "mop_touched": false,
+    "synthetic_data_only": true,
+    "performance_claim": false
+  },
+  "execution_graph": {
+    "routed_score_order": [
+      2,
+      0
+    ],
+    "device_execution_slots": [
+      1,
+      0
+    ],
+    "routed_execution_order": [
+      0,
+      2
+    ],
+    "score_aligned_weights": [
+      0.3,
+      0.7
+    ],
+    "effective_execution_weights": [
+      0.7,
+      0.3
+    ],
+    "shared_expert_position": "last",
+    "shared_expert_descriptor": "One-entry immutable triplet lease using the same indirect ABI.",
+    "stages": [
+      "validate every routed selected triplet",
+      "guarded zero of combined output",
+      "routed gate indirect matvec",
+      "routed up indirect matvec",
+      "guarded SiLU multiply",
+      "routed down indirect matvec",
+      "guarded score-aligned AXPY in ascending expert-ID order",
+      "shared gate/up/SiLU/down through its immutable triplet lease",
+      "guarded shared-last AXPY",
+      "guarded residual add"
+    ],
+    "dispatches": 18,
+    "command_buffers": 1,
+    "waits": 1,
+    "selected_id_download_bytes": 0,
+    "selected_weight_download_bytes": 0
+  },
+  "hit_proof": {
+    "routed_table_entries": 4,
+    "routed_ready_entries": 2,
+    "selected_ready_entries": [
+      0,
+      2
+    ],
+    "shared_ready_entries": 1,
+    "tensor_kind": "gravity-pq direct-u8",
+    "hidden": 32,
+    "intermediate": 32,
+    "miss_mask_after_command": 0,
+    "residual_mutated_only_after_complete_hit": true
+  },
+  "numeric_parity_v2_1": {
+    "authority": "Complete 32-value FP64 gate/up/SiLU/down/ordered-routed-combine/shared-last/residual graph over exact f16 codebook values.",
+    "relative_l2": 8.593e-08,
+    "max_meaningful_relative": 1.797e-07,
+    "meaningful_relative_bound": 1e-05,
+    "greedy_exact": true,
+    "top5_exact": true,
+    "result": "PASS"
+  },
+  "miss_proof": {
+    "missing_selected_expert": 1,
+    "device_miss_mask": 1,
+    "miss_bit_semantics": "bit indexed by ascending execution position",
+    "already_encoded_dispatches": 18,
+    "gate_buffers_byte_identical": true,
+    "up_buffers_byte_identical": true,
+    "activation_buffers_byte_identical": true,
+    "down_buffers_byte_identical": true,
+    "combined_buffer_byte_identical": true,
+    "residual_buffer_byte_identical": true,
+    "shared_buffers_byte_identical": true,
+    "result": "PASS_FAIL_CLOSED"
+  },
+  "regression_validation": {
+    "full_core_library": {
+      "passed": 224,
+      "failed": 0,
+      "ignored": 3
+    },
+    "default_resident_parity": {
+      "passed": 3,
+      "failed": 0
+    },
+    "default_gpu_forward": {
+      "passed": 3,
+      "failed": 0
+    },
+    "sparse_complete_token": {
+      "passed": 1,
+      "failed": 0,
+      "prompts": 4,
+      "metrics_unchanged": true
+    },
+    "clippy_lib_no_deps_deny_warnings": "PASS",
+    "rustfmt": "PASS",
+    "diff_check": "PASS"
+  },
+  "qualification": {
+    "qualified": [
+      "A complete direct-u8 expert wave can consume device-selected routed IDs and weights without a host selection readback.",
+      "Routed accumulation follows ascending expert ID while preserving score-aligned weights.",
+      "The shared expert is accumulated after all routed experts.",
+      "One readiness or generation miss suppresses every scratch write and the residual mutation across the already-encoded graph."
+    ],
+    "not_qualified": [
+      "The proof is not yet connected to production forward.",
+      "Cold misses return only a device mask; typed host admission and replay are not implemented.",
+      "Per-token expert trace remains host-owned in production.",
+      "Native-bf16 indirect expert execution is not implemented.",
+      "No flagship latency or memory promotion is claimed."
+    ],
+    "next_boundary": "Wire the complete wave behind a new default-off flag on the resident device-router path, pre-admit only the selected routed triplets plus shared expert, build the immutable snapshot under the cache guard, return a typed miss without residual mutation, and remove the selected-ID/weight download on table hits."
+  }
+}

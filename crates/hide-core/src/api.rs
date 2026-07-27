@@ -74,6 +74,14 @@ pub struct IntentAck {
     pub message: Option<String>,
 }
 
+/// Wire-B UI bus event (intent-in / events-out transport).
+///
+/// # Authority note
+///
+/// Live **projection** of the durable log — not a second durable authority.
+/// Canonical product events are [`crate::event::Event`]; elevate via
+/// `hawking_events::adapters::ui` when a durable record is required. hide-backend
+/// already maps Event → UiEvent in `replay::event_to_ui_event`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct UiEvent {
     pub seq: u64,

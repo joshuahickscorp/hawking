@@ -1,0 +1,84 @@
+{
+  "schema": "hawking.temporal_gravity.mechanism_receipt.v1",
+  "created_at_utc": "2026-07-27T05:24:46Z",
+  "status": "REJECTED_NUMERIC_PARITY_V2_1_NOT_PROMOTED",
+  "mechanism": "Append residual add, post-attention RMSNorm, and sparse-router projection to the qualified compact-attention command buffer.",
+  "base_commit": "f7d6c7233c7647e2979702bc1c8c31c47b021cb0",
+  "candidate_scope": {
+    "runtime_default_changed": false,
+    "sealed_math_preserve_touched": false,
+    "mop_touched": false,
+    "bounded_fixture_only": true,
+    "fixture": "deterministic one-layer, 16-vocabulary complete-token direct-u8 PQ fixture"
+  },
+  "fixed_gate": {
+    "schema": "hawking.numeric_parity.v2_1",
+    "authority": "explicit FP64 complete-token logits",
+    "max_meaningful_relative": 1e-05,
+    "relative_l2": 1e-05,
+    "exact_discrete_requirements": [
+      "greedy token",
+      "top-5 logits",
+      "DSA selection",
+      "expert selection"
+    ],
+    "gate_changed": false
+  },
+  "trials": [
+    {
+      "rmsnorm_formulation": "existing parallel gravity_rmsnorm_f32 with one Metal thread",
+      "case_0_device_relative_l2": 7.0417194484791e-07,
+      "case_0_device_max_meaningful_relative": 1.0027278207636054e-05,
+      "result": "FAIL"
+    },
+    {
+      "rmsnorm_formulation": "sequential explicit precise sqrt and divide",
+      "case_0_device_relative_l2": 6.358e-07,
+      "case_0_device_max_meaningful_relative": 1.0929733e-05,
+      "result": "FAIL"
+    },
+    {
+      "rmsnorm_formulation": "sequential compensated sum and rsqrt",
+      "case_0_device_relative_l2": 7.0417194484791e-07,
+      "case_0_device_max_meaningful_relative": 1.0027278207636054e-05,
+      "result": "FAIL"
+    },
+    {
+      "rmsnorm_formulation": "sequential double-single product and accumulation with rsqrt",
+      "case_0_device_relative_l2": 7.0417194484791e-07,
+      "case_0_device_max_meaningful_relative": 1.0027278207636054e-05,
+      "result": "FAIL"
+    }
+  ],
+  "discrete_correctness": {
+    "greedy_exact": true,
+    "top5_exact": true,
+    "observed_on_failing_case": true
+  },
+  "physical_observation": {
+    "fixture_mlp_type": "dense",
+    "host_rank_waits_for_three_token_prompt": 27,
+    "device_rank_waits_for_three_token_prompt": 15,
+    "wait_reduction_vs_qualified_device_attention_prelude": 0,
+    "reason": "The dense fixture has no sparse-router projection, so it cannot validate the proposed sparse-router boundary removal."
+  },
+  "decision": {
+    "promoted": false,
+    "runtime_candidate_restored_to_base": true,
+    "reason": "Four principled RMSNorm arithmetic formulations missed the unchanged meaningful-relative V2.1 bound. Exact discrete decisions alone are insufficient for promotion.",
+    "static_flagship_wait_estimate_not_promoted": 313,
+    "qualified_static_flagship_wait_estimate_retained": 388
+  },
+  "next_exact_architectural_change": [
+    "Build a complete-token sparse fixture so router graph closure is measured rather than inferred.",
+    "Isolate residual add from post-attention normalization and identify the first activation that diverges from the FP64 complete-token authority.",
+    "Promote a post-attention graph only after the unchanged V2.1 continuous and discrete gates both pass."
+  ],
+  "mop_observation": {
+    "principal_receipts": 8,
+    "workers_observed_active": 16,
+    "expected_workers_after_receipts": 16,
+    "state": "NORMAL_PARTIAL_COMPLETION_NOT_CONTENTION_CLEAR",
+    "action": "none"
+  }
+}

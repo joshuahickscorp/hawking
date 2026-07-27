@@ -54,6 +54,13 @@ pub struct GravityEngine {
     tokenizer: Tokenizer,
     model_id: String,
     arch: String,
+    /// SHA-256 of `model.gravity.index.json` beside the shards, when present.
+    /// Multi-shard GLM artifacts always carry one; single-shard Llama may not.
+    index_sha256: Option<String>,
+    /// Absolute path of the artifact's chat template file when present.
+    chat_template_path: Option<String>,
+    /// Raw chat-template text loaded from the artifact (not a guessed template).
+    chat_template: Option<String>,
 }
 
 impl GravityEngine {
@@ -67,6 +74,126 @@ impl GravityEngine {
             .and_then(|mut f| f.read_exact(&mut buf))
             .is_ok()
             && &buf == b"GRAVITY\0"
+    }
+
+    /// Resolve a CLI `--gravity` / `HAWKING_GRAVITY` path to a loadable shard
+    /// file. Accepts either a single `.gravity` shard file or a model directory
+    /// (including directories whose name ends in `.gravity`) that contains
+    /// `model-*.gravity` shards.
+    pub fn resolve_entry(path: &Path) -> Result<std::path::PathBuf> {
+        if path.is_file() {
+            if !Self::is_gravity(path) {
+                return Err(Error::Gravity(format!(
+                    "{path:?}: is a file but does not start with GRAVITY\\0 magic"
+                )));
+            }
+            return Ok(path.to_path_buf());
+        }
+        if !path.is_dir() {
+            return Err(Error::Gravity(format!(
+                "{path:?}: --gravity path is neither a .gravity shard file nor a model directory"
+            )));
+        }
+        // Prefer the first ordered shard so load is deterministic.
+        let mut shards: Vec<std::path::PathBuf> = std::fs::read_dir(path)
+            .map_err(|e| Error::Gravity(format!("read {path:?}: {e}")))?
+            .filter_map(|e| e.ok())
+            .map(|e| e.path())
+            .filter(|p| {
+                p.is_file()
+                    && p.file_name()
+                        .and_then(|n| n.to_str())
+                        .map(|n| n.starts_with("model-") && n.ends_with(".gravity"))
+                        .unwrap_or(false)
+            })
+            .collect();
+        shards.sort();
+        let Some(first) = shards.into_iter().next() else {
+            return Err(Error::Gravity(format!(
+                "{path:?}: model directory contains no model-*.gravity shards"
+            )));
+        };
+        if !Self::is_gravity(&first) {
+            return Err(Error::Gravity(format!(
+                "{first:?}: first shard does not start with GRAVITY\\0 magic"
+            )));
+        }
+        Ok(first)
+    }
+
+    pub fn index_sha256(&self) -> Option<&str> {
+        self.index_sha256.as_deref()
+    }
+
+    pub fn chat_template(&self) -> Option<&str> {
+        self.chat_template.as_deref()
+    }
+
+    pub fn chat_template_path(&self) -> Option<&str> {
+        self.chat_template_path.as_deref()
+    }
+}
+
+#[cfg(test)]
+mod resolve_tests {
+    use super::GravityEngine;
+    use std::path::PathBuf;
+
+    #[test]
+    fn resolve_entry_finds_ordered_shard_in_fixture_dir() {
+        // Pure filesystem resolve — no Metal, no load. The fixture directory
+        // is checked in under crates/hawking-core/tests/fixtures/gravity_glm.
+        let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("tests/fixtures/gravity_glm");
+        // The fixture ships a single named shard plus an index; resolve must
+        // pick a model-*.gravity or the single-shard glm52-tiny file if that
+        // is what is present.
+        let entries: Vec<_> = std::fs::read_dir(&dir)
+            .unwrap()
+            .filter_map(|e| e.ok())
+            .map(|e| e.path())
+            .filter(|p| {
+                p.extension().and_then(|e| e.to_str()) == Some("gravity") && p.is_file()
+            })
+            .collect();
+        assert!(
+            !entries.is_empty(),
+            "fixture dir must contain at least one .gravity file"
+        );
+        // Resolve against the parent that holds model-* shards when present;
+        // otherwise resolving the shard file itself must succeed.
+        let model_shards: Vec<_> = entries
+            .iter()
+            .filter(|p| {
+                p.file_name()
+                    .and_then(|n| n.to_str())
+                    .map(|n| n.starts_with("model-"))
+                    .unwrap_or(false)
+            })
+            .cloned()
+            .collect();
+        if !model_shards.is_empty() {
+            let resolved = GravityEngine::resolve_entry(&dir).expect("resolve dir");
+            assert!(GravityEngine::is_gravity(&resolved));
+        } else {
+            let shard = &entries[0];
+            let resolved = GravityEngine::resolve_entry(shard).expect("resolve shard file");
+            assert_eq!(resolved, *shard);
+            assert!(GravityEngine::is_gravity(&resolved));
+        }
+    }
+
+    #[test]
+    fn resolve_entry_rejects_missing_path() {
+        let err = GravityEngine::resolve_entry(std::path::Path::new(
+            "/tmp/definitely-not-a-gravity-artifact-xyz",
+        ))
+        .unwrap_err();
+        let msg = format!("{err}");
+        assert!(
+            msg.contains("neither") || msg.contains("no model"),
+            "unexpected error: {msg}"
+        );
     }
 }
 
@@ -83,11 +210,23 @@ impl Engine for GravityEngine {
         // and falls back to its own header, which already carries both
         // fields directly.
         let index_path = weights.parent().map(|d| d.join("model.gravity.index.json"));
-        let index: Option<serde_json::Value> = index_path
+        let index_bytes: Option<(std::path::PathBuf, Vec<u8>)> = index_path
             .filter(|p| p.is_file())
-            .map(|p| -> Result<serde_json::Value> {
+            .map(|p| -> Result<(std::path::PathBuf, Vec<u8>)> {
                 let bytes = std::fs::read(&p).map_err(|e| Error::Gravity(format!("{p:?}: {e}")))?;
-                serde_json::from_slice(&bytes).map_err(|e| Error::Gravity(format!("{p:?}: {e}")))
+                Ok((p, bytes))
+            })
+            .transpose()?;
+        let index_sha256 = index_bytes.as_ref().map(|(_, bytes)| {
+            use sha2::{Digest, Sha256};
+            let dig = Sha256::digest(bytes);
+            format!("{dig:x}")
+        });
+        let index: Option<serde_json::Value> = index_bytes
+            .as_ref()
+            .map(|(p, bytes)| {
+                serde_json::from_slice(bytes)
+                    .map_err(|e| Error::Gravity(format!("{p:?}: {e}")))
             })
             .transpose()?;
         let arch_source = index.as_ref().unwrap_or(&shard.extra);
@@ -139,6 +278,26 @@ impl Engine for GravityEngine {
                  serve token ids in its place"
             )));
         }
+        // Chat template lives next to tokenizer.json. GLM chat without the
+        // artifact's real template produces fluent garbage that looks like
+        // success — refuse to load rather than guess.
+        let template_path = tok_path
+            .parent()
+            .map(|d| d.join("chat_template.jinja"));
+        let (chat_template_path, chat_template) = match template_path {
+            Some(p) if p.is_file() => {
+                let text = std::fs::read_to_string(&p)
+                    .map_err(|e| Error::Gravity(format!("read chat template {p:?}: {e}")))?;
+                (Some(p.display().to_string()), Some(text))
+            }
+            Some(p) if arch == "glm_moe_dsa" => {
+                return Err(Error::Gravity(format!(
+                    "glm_moe_dsa artifact is missing chat template at {p:?}; refusing to \
+                     serve with a guessed template"
+                )));
+            }
+            _ => (None, None),
+        };
         drop(shard);
 
         let ctx = MetalContext::new_with_trace(config.trace_dispatch)?;
@@ -167,6 +326,9 @@ impl Engine for GravityEngine {
             tokenizer: Tokenizer::from_file(&tok_path)?,
             model_id,
             arch,
+            index_sha256,
+            chat_template_path,
+            chat_template,
         })
     }
 
@@ -251,13 +413,39 @@ impl Engine for GravityEngine {
         &self.arch
     }
 
-    // Deliberately NOT implementing encode_prompt_for_batch /
-    // decode_token_for_batch. The trait's contract is that an engine without
-    // server-side batching keeps those defaults and the server falls back to
-    // `generate`. Implementing them advertises a batching path this engine
-    // does not have -- the server then admits the request into a slot,
-    // prefill_slot is unimplemented, and the caller gets an empty completion
-    // with a 200. Claiming half a capability is worse than claiming none.
+    fn artifact_index_sha256(&self) -> Option<&str> {
+        self.index_sha256.as_deref()
+    }
+
+    fn chat_template(&self) -> Option<&str> {
+        self.chat_template.as_deref()
+    }
+
+    fn chat_template_path(&self) -> Option<&str> {
+        self.chat_template_path.as_deref()
+    }
+
+    fn is_base_runtime(&self) -> bool {
+        true
+    }
+
+    // Tokenize/decode for the serve admit path. We still do NOT implement
+    // prefill_slot / multiseq: the continuous-batch loop's prefill fails and
+    // hawking-serve falls back to single-stream `generate` (the same path
+    // gravity_glm_tps / gravity_generate exercise). Encoding alone is enough
+    // for admit; claiming a full batch path we do not have would be a facade.
+
+    fn encode_prompt_for_batch(&self, prompt: &str) -> Result<Vec<u32>> {
+        self.tokenizer.encode(prompt, true)
+    }
+
+    fn decode_token_for_batch(&self, token: u32) -> Result<String> {
+        self.tokenizer.decode_one(token)
+    }
+
+    fn eos_id_for_batch(&self) -> Option<u32> {
+        self.tokenizer.eos_id()
+    }
 
     /// Positions must be the contiguous run the cache actually holds. The
     /// runtime writes each position into its own slot, so an arbitrary

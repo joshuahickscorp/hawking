@@ -70,6 +70,264 @@ kernel void gravity_pq_matvec(
 }
 
 // ---------------------------------------------------------------------------
+// Additive bits=8/autotune lane.
+//
+// `gravity_pq_matvec` above is deliberately unchanged and remains the runtime
+// default.  The kernels below are selected only through the explicit
+// `PqMetalKernelVariant` API.  Production GLM gravity-pq tensors overwhelmingly
+// use D=32, S=1, sub=32, card=256, bits=8, so their indices are already bytes:
+// the generic four-byte MSB window is pure overhead for that geometry.
+// ---------------------------------------------------------------------------
+
+// Four independent vector accumulators shorten the dependency chain from 32
+// scalar FMAs per chunk to two vector FMAs per accumulator for sub=32.  The
+// host registry admits this helper only when `sub` and `dim` are multiples of
+// four, which guarantees aligned half4/float4 entry points.
+static inline float pq_bits8_vec4_lane(
+    const device half  *codebooks,
+    const device uchar *codes,
+    const device float *x,
+    constant GravityPQParams &p,
+    uint row,
+    uint first_chunk,
+    uint chunk_stride)
+{
+    float4 acc0 = 0.0f;
+    float4 acc1 = 0.0f;
+    float4 acc2 = 0.0f;
+    float4 acc3 = 0.0f;
+    for (uint s = 0; s < p.subspaces; ++s) {
+        const device half *cb = codebooks + s * p.card * p.sub;
+        const uint xbase = s * p.sub;
+        for (uint c = first_chunk; c < p.nchunk; c += chunk_stride) {
+            uint flat = (row * p.nchunk + c) * p.subspaces + s;
+            const device half *entry = cb + uint(codes[flat]) * p.sub;
+            const device float *xs = x + c * p.dim + xbase;
+            const device half4 *entry4 =
+                reinterpret_cast<const device half4 *>(entry);
+            const device float4 *xs4 =
+                reinterpret_cast<const device float4 *>(xs);
+            uint nvec = p.sub >> 2u;
+            for (uint q = 0u; q < nvec; q += 4u) {
+                if (q < nvec) {
+                    acc0 = fma(float4(entry4[q]), xs4[q], acc0);
+                }
+                if (q + 1u < nvec) {
+                    acc1 = fma(float4(entry4[q + 1u]), xs4[q + 1u], acc1);
+                }
+                if (q + 2u < nvec) {
+                    acc2 = fma(float4(entry4[q + 2u]), xs4[q + 2u], acc2);
+                }
+                if (q + 3u < nvec) {
+                    acc3 = fma(float4(entry4[q + 3u]), xs4[q + 3u], acc3);
+                }
+            }
+        }
+    }
+    float4 v = (acc0 + acc1) + (acc2 + acc3);
+    return (v.x + v.y) + (v.z + v.w);
+}
+
+// Two-float expansion used only by the unpromoted bits8-double-single
+// candidate. `hi` holds the rounded leading value and `lo` its residual.
+// This intentionally spends substantially more arithmetic/registers than the
+// ordinary FMA path; it carries no throughput claim until a manual bounded
+// exact-geometry sweep measures it.
+struct PqDoubleSingle {
+    float hi;
+    float lo;
+};
+
+static inline PqDoubleSingle pq_ds_product(float a, float b)
+{
+    PqDoubleSingle out;
+    volatile float hi = a * b;
+    out.hi = hi;
+    out.lo = metal::precise::fma(a, b, -hi);
+    return out;
+}
+
+// Error-free TwoSum on the leading terms followed by a hi/lo renormalization.
+// The operation order matches the CPU preflight model exactly.
+static inline PqDoubleSingle pq_ds_add(PqDoubleSingle lhs, PqDoubleSingle rhs)
+{
+    volatile float sum = lhs.hi + rhs.hi;
+    volatile float rhs_virtual = sum - lhs.hi;
+    volatile float sum_error =
+        (lhs.hi - (sum - rhs_virtual)) + (rhs.hi - rhs_virtual);
+    volatile float tail = (lhs.lo + rhs.lo) + sum_error;
+    PqDoubleSingle out;
+    out.hi = sum + tail;
+    volatile float hi_delta = out.hi - sum;
+    out.lo = tail - hi_delta;
+    return out;
+}
+
+// Fixed 32-lane tree: 0+16, 1+17, ...; then 0+8, ... down to 0+1.
+// Every lane executes each shuffle; only the lower half updates. This avoids
+// implementation-defined simd_sum reassociation and matches the CPU model's
+// explicit tree.
+static inline PqDoubleSingle pq_ds_simd_tree(
+    PqDoubleSingle acc,
+    uint lane)
+{
+    PqDoubleSingle rhs;
+    rhs.hi = simd_shuffle_down(acc.hi, ushort(16));
+    rhs.lo = simd_shuffle_down(acc.lo, ushort(16));
+    if (lane < 16u) { acc = pq_ds_add(acc, rhs); }
+
+    rhs.hi = simd_shuffle_down(acc.hi, ushort(8));
+    rhs.lo = simd_shuffle_down(acc.lo, ushort(8));
+    if (lane < 8u) { acc = pq_ds_add(acc, rhs); }
+
+    rhs.hi = simd_shuffle_down(acc.hi, ushort(4));
+    rhs.lo = simd_shuffle_down(acc.lo, ushort(4));
+    if (lane < 4u) { acc = pq_ds_add(acc, rhs); }
+
+    rhs.hi = simd_shuffle_down(acc.hi, ushort(2));
+    rhs.lo = simd_shuffle_down(acc.lo, ushort(2));
+    if (lane < 2u) { acc = pq_ds_add(acc, rhs); }
+
+    rhs.hi = simd_shuffle_down(acc.hi, ushort(1));
+    rhs.lo = simd_shuffle_down(acc.lo, ushort(1));
+    if (lane < 1u) { acc = pq_ds_add(acc, rhs); }
+    return acc;
+}
+
+// Direct byte lookup while retaining the default kernel's scalar FMA shape.
+// This isolates the cost of generic packed extraction from every other change.
+kernel void gravity_pq_matvec_bits8_direct(
+    const device half         *codebooks [[buffer(0)]],
+    const device uchar        *codes     [[buffer(1)]],
+    const device float        *x         [[buffer(2)]],
+    device float              *y         [[buffer(3)]],
+    constant GravityPQParams  &p         [[buffer(4)]],
+    uint  tgid                           [[threadgroup_position_in_grid]],
+    uint  sg_in_tg                       [[simdgroup_index_in_threadgroup]],
+    uint  sgs_per_tg                     [[simdgroups_per_threadgroup]],
+    uint  lane                           [[thread_index_in_simdgroup]])
+{
+    uint row = tgid * sgs_per_tg + sg_in_tg;
+    if (row >= p.rows) { return; }
+
+    float acc = 0.0f;
+    for (uint s = 0; s < p.subspaces; ++s) {
+        const device half *cb = codebooks + s * p.card * p.sub;
+        const uint xbase = s * p.sub;
+        for (uint c = lane; c < p.nchunk; c += 32u) {
+            uint flat = (row * p.nchunk + c) * p.subspaces + s;
+            const device half *entry = cb + uint(codes[flat]) * p.sub;
+            const device float *xs = x + c * p.dim + xbase;
+            for (uint j = 0; j < p.sub; ++j) {
+                acc = fma(float(entry[j]), xs[j], acc);
+            }
+        }
+    }
+    acc = simd_sum(acc);
+    if (lane == 0u) { y[row] = acc; }
+}
+
+// Numerically strengthened direct-byte candidate. Each product is represented
+// by its rounded value plus FMA residual, accumulated as a double-single
+// expansion, then reduced through the fixed compensated lane tree above.
+// This is explicit/autotune-only; the production default remains unchanged.
+kernel void gravity_pq_matvec_bits8_double_single(
+    const device half         *codebooks [[buffer(0)]],
+    const device uchar        *codes     [[buffer(1)]],
+    const device float        *x         [[buffer(2)]],
+    device float              *y         [[buffer(3)]],
+    constant GravityPQParams  &p         [[buffer(4)]],
+    uint  tgid                           [[threadgroup_position_in_grid]],
+    uint  sg_in_tg                       [[simdgroup_index_in_threadgroup]],
+    uint  sgs_per_tg                     [[simdgroups_per_threadgroup]],
+    uint  lane                           [[thread_index_in_simdgroup]])
+{
+    uint row = tgid * sgs_per_tg + sg_in_tg;
+    if (row >= p.rows) { return; }
+
+    PqDoubleSingle acc = { 0.0f, 0.0f };
+    for (uint s = 0; s < p.subspaces; ++s) {
+        const device half *cb = codebooks + s * p.card * p.sub;
+        const uint xbase = s * p.sub;
+        for (uint c = lane; c < p.nchunk; c += 32u) {
+            uint flat = (row * p.nchunk + c) * p.subspaces + s;
+            const device half *entry = cb + uint(codes[flat]) * p.sub;
+            const device float *xs = x + c * p.dim + xbase;
+            for (uint j = 0; j < p.sub; ++j) {
+                acc = pq_ds_add(
+                    acc, pq_ds_product(float(entry[j]), xs[j]));
+            }
+        }
+    }
+    acc = pq_ds_simd_tree(acc, lane);
+    if (lane == 0u) { y[row] = acc.hi + acc.lo; }
+}
+
+// Same row mapping as the default, but with vector loads and four independent
+// vector FMA chains.  This lets the sweep distinguish byte extraction from
+// arithmetic dependency depth.
+kernel void gravity_pq_matvec_bits8_vec4(
+    const device half         *codebooks [[buffer(0)]],
+    const device uchar        *codes     [[buffer(1)]],
+    const device float        *x         [[buffer(2)]],
+    device float              *y         [[buffer(3)]],
+    constant GravityPQParams  &p         [[buffer(4)]],
+    uint  tgid                           [[threadgroup_position_in_grid]],
+    uint  sg_in_tg                       [[simdgroup_index_in_threadgroup]],
+    uint  sgs_per_tg                     [[simdgroups_per_threadgroup]],
+    uint  lane                           [[thread_index_in_simdgroup]])
+{
+    uint row = tgid * sgs_per_tg + sg_in_tg;
+    if (row >= p.rows) { return; }
+    float acc = pq_bits8_vec4_lane(
+        codebooks, codes, x, p, row, lane, 32u);
+    acc = simd_sum(acc);
+    if (lane == 0u) { y[row] = acc; }
+}
+
+// True 2D row x chunk-slice decomposition.  One SIMD group computes one
+// deterministic slice and writes exactly one partial.  A separate kernel
+// reduces those partials in ascending slice order, so there is no atomic
+// accumulation and repeated runs are bit-stable.
+kernel void gravity_pq_matvec_bits8_2d(
+    const device half         *codebooks [[buffer(0)]],
+    const device uchar        *codes     [[buffer(1)]],
+    const device float        *x         [[buffer(2)]],
+    device float              *partials  [[buffer(3)]],
+    constant GravityPQParams  &p         [[buffer(4)]],
+    constant uint             &splits    [[buffer(5)]],
+    uint3 tgid                           [[threadgroup_position_in_grid]],
+    uint  lane                           [[thread_index_in_simdgroup]])
+{
+    uint row = tgid.x;
+    uint split = tgid.y;
+    if (row >= p.rows || split >= splits) { return; }
+    uint first_chunk = split * 32u + lane;
+    uint chunk_stride = splits * 32u;
+    float acc = pq_bits8_vec4_lane(
+        codebooks, codes, x, p, row, first_chunk, chunk_stride);
+    acc = simd_sum(acc);
+    if (lane == 0u) {
+        partials[row * splits + split] = acc;
+    }
+}
+
+kernel void gravity_pq_reduce_2d(
+    const device float        *partials [[buffer(0)]],
+    device float              *y        [[buffer(1)]],
+    constant GravityPQParams  &p        [[buffer(2)]],
+    constant uint             &splits   [[buffer(3)]],
+    uint id                              [[thread_position_in_grid]])
+{
+    if (id >= p.rows) { return; }
+    float acc = 0.0f;
+    for (uint split = 0u; split < splits; ++split) {
+        acc += partials[id * splits + split];
+    }
+    y[id] = acc;
+}
+
+// ---------------------------------------------------------------------------
 // The elementwise ops the .gravity token graph needs in f32.
 //
 // The shared kernels in common.metal are half-precision (silu_mul) or fold the
@@ -204,6 +462,38 @@ kernel void gravity_rope_interleaved_f32(
     out[out_base + half_dim + i] = second * c + first * s;
 }
 
+// Assemble an indexer vector in one pass: rotate the leading rotary_dim
+// interleaved components into concatenated halves and preserve every tail
+// component. Output may begin at a position offset in the persistent key
+// cache, but input and output must not alias.
+kernel void gravity_rope_prefix_tail_f32(
+    device const float *x     [[buffer(0)]],
+    device       float *out   [[buffer(1)]],
+    device const float *cos   [[buffer(2)]],
+    device const float *sin   [[buffer(3)]],
+    constant GravityGlmRopeParams &p [[buffer(4)]],
+    uint id [[thread_position_in_grid]])
+{
+    if (id >= p.n_heads * p.out_stride) { return; }
+    uint h = id / p.out_stride;
+    uint col = id - h * p.out_stride;
+    uint in_base = h * p.in_stride;
+    uint out_base = h * p.out_stride;
+    uint half_dim = p.rotary_dim / 2u;
+    if (col < half_dim) {
+        float first = x[in_base + 2u * col];
+        float second = x[in_base + 2u * col + 1u];
+        out[out_base + col] = first * cos[col] - second * sin[col];
+    } else if (col < p.rotary_dim) {
+        uint pair = col - half_dim;
+        float first = x[in_base + 2u * pair];
+        float second = x[in_base + 2u * pair + 1u];
+        out[out_base + col] = second * cos[pair] + first * sin[pair];
+    } else {
+        out[out_base + col] = x[in_base + col];
+    }
+}
+
 // Copy unrotated tail after a rope-interleaved prefix (indexer / query assemble).
 kernel void gravity_copy_tail_f32(
     device const float *src [[buffer(0)]],
@@ -328,6 +618,235 @@ kernel void gravity_glm_mla_append_kv(
     }
 }
 
+// Append one position's compact MLA state without expanding per-head K/V.
+// latent_cache layout: [pos][kv_lora_rank]
+// rope_cache layout:   [pos][qk_rope_head_dim] (shared across heads)
+struct GravityGlmMlaCompactAppendParams {
+    uint latent_dim;
+    uint rope_dim;
+    uint pos;
+};
+
+kernel void gravity_glm_mla_append_compact(
+    device const float *latent [[buffer(0)]],
+    device const float *k_rot [[buffer(1)]],
+    device       float *latent_cache [[buffer(2)]],
+    device       float *rope_cache [[buffer(3)]],
+    constant GravityGlmMlaCompactAppendParams &p [[buffer(4)]],
+    uint id [[thread_position_in_grid]])
+{
+    uint total = p.latent_dim + p.rope_dim;
+    if (id >= total) { return; }
+    if (id < p.latent_dim) {
+        latent_cache[p.pos * p.latent_dim + id] = latent[id];
+    } else {
+        uint rope = id - p.latent_dim;
+        rope_cache[p.pos * p.rope_dim + rope] = k_rot[rope];
+    }
+}
+
+// Absorb the content-key projection into each head's query directly from a
+// single-subspace, byte-indexed gravity-pq matrix. The logical source matrix
+// is kv_b_proj [head * row_stride + key_row, latent_col]. One thread owns one
+// output and visits key_row in ascending order, so there is no atomic or
+// cross-thread reduction.
+struct GravityPqKTransposeHeadsParams {
+    uint n_heads;
+    uint key_rows;
+    uint row_stride;
+    uint latent_dim;
+    uint pq_dim;
+    uint pq_sub;
+    uint pq_nchunk;
+};
+
+static inline void gravity_compensated_add(
+    float value,
+    thread float &sum,
+    thread float &compensation)
+{
+    float corrected = value - compensation;
+    float next = sum + corrected;
+    compensation = (next - sum) - corrected;
+    sum = next;
+}
+
+kernel void gravity_pq_k_transpose_heads(
+    device const half  *codebooks [[buffer(0)]],
+    device const uchar *codes [[buffer(1)]],
+    device const float *query_nope [[buffer(2)]],
+    device       float *query_latent [[buffer(3)]],
+    constant GravityPqKTransposeHeadsParams &p [[buffer(4)]],
+    uint id [[thread_position_in_grid]])
+{
+    uint total = p.n_heads * p.latent_dim;
+    if (id >= total) { return; }
+    uint head = id / p.latent_dim;
+    uint col = id - head * p.latent_dim;
+    uint chunk = col / p.pq_dim;
+    uint within = col - chunk * p.pq_dim;
+    float acc = 0.0f;
+    float compensation = 0.0f;
+    for (uint key_row = 0u; key_row < p.key_rows; ++key_row) {
+        uint row = head * p.row_stride + key_row;
+        uint code = uint(codes[row * p.pq_nchunk + chunk]);
+        float weight = float(codebooks[code * p.pq_sub + within]);
+        float product = fma(weight, query_nope[head * p.key_rows + key_row], 0.0f);
+        gravity_compensated_add(product, acc, compensation);
+    }
+    query_latent[id] = acc;
+}
+
+// Compact absorbed MLA attention over the stable DSA score-ranked positions.
+// One threadgroup owns one head. Scores, softmax normalization, and the final
+// weighted-latent reduction all preserve the supplied rank order. The query
+// latent and weighted-latent buffers may alias: every query read completes
+// before the post-score threadgroup barrier permits any output write.
+struct GravityGlmCompactRankedAttnParams {
+    uint n_heads;
+    uint latent_dim;
+    uint rope_dim;
+    uint n_keys;
+    uint n_allow;
+    float scale;
+};
+
+kernel void gravity_glm_compact_ranked_attn(
+    device const float *query_latent [[buffer(0)]],   // n_heads * latent_dim
+    device const float *query_rope [[buffer(1)]],     // n_heads * rope_dim
+    device const float *latent_cache [[buffer(2)]],   // n_keys * latent_dim
+    device const float *rope_cache [[buffer(3)]],     // n_keys * rope_dim
+    device const uint  *ranked_idx [[buffer(4)]],     // n_allow, DSA rank order
+    device       float *weighted_latent [[buffer(5)]],// n_heads * latent_dim
+    constant GravityGlmCompactRankedAttnParams &p [[buffer(6)]],
+    uint head [[threadgroup_position_in_grid]],
+    uint tid [[thread_position_in_threadgroup]],
+    uint tg [[threads_per_threadgroup]],
+    threadgroup float *scores [[threadgroup(0)]])
+{
+    if (head >= p.n_heads) { return; }
+    device const float *qh = query_latent + head * p.latent_dim;
+    device const float *qr = query_rope + head * p.rope_dim;
+
+    // Each score has one owner and visits latent dimensions first, then the
+    // shared RoPE dimensions, both in strictly ascending dimension order.
+    for (uint a = tid; a < p.n_allow; a += tg) {
+        uint token = ranked_idx[a];
+        float score = -INFINITY;
+        if (token < p.n_keys) {
+            device const float *latent = latent_cache + token * p.latent_dim;
+            device const float *rope = rope_cache + token * p.rope_dim;
+            float dot = 0.0f;
+            float compensation = 0.0f;
+            for (uint d = 0u; d < p.latent_dim; ++d) {
+                float product = fma(qh[d], latent[d], 0.0f);
+                gravity_compensated_add(product, dot, compensation);
+            }
+            for (uint d = 0u; d < p.rope_dim; ++d) {
+                float product = fma(qr[d], rope[d], 0.0f);
+                gravity_compensated_add(product, dot, compensation);
+            }
+            score = dot * p.scale;
+        }
+        scores[a] = score;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    // Serial stable softmax in the supplied DSA rank order.
+    if (tid == 0u) {
+        float best = -INFINITY;
+        for (uint a = 0u; a < p.n_allow; ++a) {
+            best = max(best, scores[a]);
+        }
+        float total = 0.0f;
+        float total_compensation = 0.0f;
+        for (uint a = 0u; a < p.n_allow; ++a) {
+            float score = scores[a];
+            float probability =
+                (score > -INFINITY / 2.0f)
+                    ? metal::precise::exp(score - best)
+                    : 0.0f;
+            scores[a] = probability;
+            gravity_compensated_add(probability, total, total_compensation);
+        }
+        if (total > 0.0f) {
+            for (uint a = 0u; a < p.n_allow; ++a) {
+                scores[a] = metal::precise::divide(scores[a], total);
+            }
+        } else {
+            for (uint a = 0u; a < p.n_allow; ++a) {
+                scores[a] = 0.0f;
+            }
+        }
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    // One owner per latent output, with probability-weighted accumulation in
+    // the same DSA rank order as the softmax normalization.
+    device float *out = weighted_latent + head * p.latent_dim;
+    for (uint d = tid; d < p.latent_dim; d += tg) {
+        float acc = 0.0f;
+        float compensation = 0.0f;
+        for (uint a = 0u; a < p.n_allow; ++a) {
+            uint token = ranked_idx[a];
+            if (token < p.n_keys) {
+                float product =
+                    fma(scores[a], latent_cache[token * p.latent_dim + d], 0.0f);
+                gravity_compensated_add(product, acc, compensation);
+            }
+        }
+        out[d] = acc;
+    }
+}
+
+// Apply the value-row window of an interleaved per-head K/V matrix directly
+// from a single-subspace, byte-indexed gravity-pq tensor. One SIMD group owns
+// one output row and uses the generic gravity_pq_matvec lane/chunk order and
+// simd_sum so value reconstruction is arithmetically aligned with expansion.
+struct GravityPqVRowsHeadsParams {
+    uint n_heads;
+    uint row_stride;
+    uint value_row_offset;
+    uint value_rows;
+    uint latent_dim;
+    uint pq_dim;
+    uint pq_sub;
+    uint pq_nchunk;
+};
+
+kernel void gravity_pq_v_rows_heads(
+    device const half  *codebooks [[buffer(0)]],
+    device const uchar *codes [[buffer(1)]],
+    device const float *weighted_latent [[buffer(2)]],
+    device       float *context [[buffer(3)]],
+    constant GravityPqVRowsHeadsParams &p [[buffer(4)]],
+    uint tgid [[threadgroup_position_in_grid]],
+    uint sg_in_tg [[simdgroup_index_in_threadgroup]],
+    uint sgs_per_tg [[simdgroups_per_threadgroup]],
+    uint lane [[thread_index_in_simdgroup]])
+{
+    uint total = p.n_heads * p.value_rows;
+    uint id = tgid * sgs_per_tg + sg_in_tg;
+    if (id >= total) { return; }
+    uint head = id / p.value_rows;
+    uint value_row = id - head * p.value_rows;
+    uint source_row = head * p.row_stride + p.value_row_offset + value_row;
+    device const float *x = weighted_latent + head * p.latent_dim;
+    float acc = 0.0f;
+    for (uint chunk = lane; chunk < p.pq_nchunk; chunk += 32u) {
+        uint code = uint(codes[source_row * p.pq_nchunk + chunk]);
+        device const half *entry = codebooks + code * p.pq_sub;
+        device const float *xs = x + chunk * p.pq_dim;
+        for (uint within = 0u; within < p.pq_sub; ++within) {
+            acc = fma(float(entry[within]), xs[within], acc);
+        }
+    }
+    acc = simd_sum(acc);
+    if (lane == 0u) {
+        context[id] = acc;
+    }
+}
+
 // Build queries: per head, copy nope half from q, rope-interleaved rope half.
 // `q_rope_rot` is already rope-interleaved per head (n_heads * qk_rope).
 struct GravityGlmBuildQParams {
@@ -354,6 +873,20 @@ kernel void gravity_glm_build_queries(
     }
 }
 
+// Copy the per-head non-RoPE prefix from raw q into the compact MLA layout.
+kernel void gravity_copy_head_prefix_f32(
+    device const float *q [[buffer(0)]],
+    device       float *prefix [[buffer(1)]],
+    constant GravityGlmBuildQParams &p [[buffer(2)]],
+    uint id [[thread_position_in_grid]])
+{
+    uint total = p.n_heads * p.qk_nope;
+    if (id >= total) { return; }
+    uint head = id / p.qk_nope;
+    uint d = id - head * p.qk_nope;
+    prefix[id] = q[head * (p.qk_nope + p.qk_rope) + d];
+}
+
 // DSA index scores: for each cached index key, sum_h w_h * relu(dot(q_h, k) * dim_scale).
 struct GravityGlmDsaParams {
     uint n_keys;
@@ -361,6 +894,7 @@ struct GravityGlmDsaParams {
     uint head_dim;
     uint pos;         // causal: mask t > pos
     float dim_scale;
+    float head_scale;
 };
 
 kernel void gravity_glm_dsa_scores(
@@ -385,7 +919,8 @@ kernel void gravity_glm_dsa_scores(
             dot = fma(qh[d], key[d], dot);
         }
         float relu = max(dot * p.dim_scale, 0.0f);
-        acc = fma(head_weights[h], relu, acc);
+        float weight = head_weights[h] * p.head_scale;
+        acc = fma(weight, relu, acc);
     }
     scores[t] = acc;
 }
@@ -423,6 +958,189 @@ kernel void gravity_glm_stable_topk_f32(
         }
         indices[slot] = best_i;
         if (best_i != 0xFFFFFFFFu) selected[best_i] = 1;
+    }
+}
+
+// Parallel exact stable top-k for the admitted n<=32K, k<=2048 DSA domain.
+//
+// A monotone IEEE-f32 key occupies the high 32 bits; inverted position
+// occupies the low 32 bits, so unsigned descending order is precisely
+// (score descending, lower position first). Sixteen 4-bit histogram passes
+// identify the unique kth composite key. Exactly k qualifying keys then fit
+// in 16 KiB of threadgroup memory and are bitonic-ranked in place.
+inline ulong gravity_glm_score_position_key(float value, uint position)
+{
+    // DSA scores are required finite. Mapping NaN to -inf keeps malformed
+    // arithmetic from outranking a valid score; complete-token parity gates
+    // separately reject any resulting decision drift.
+    if (isnan(value)) value = -INFINITY;
+    if (value == 0.0f) value = 0.0f; // canonicalize -0/+0 host equality
+    uint bits = as_type<uint>(value);
+    uint ordered = (bits & 0x80000000u) ? ~bits : (bits ^ 0x80000000u);
+    return ((ulong)ordered << 32) | (ulong)(0xFFFFFFFFu - position);
+}
+
+kernel void gravity_glm_radix_topk_f32(
+    device const float *values [[buffer(0)]],
+    device       uint  *indices [[buffer(1)]],
+    constant GravityGlmTopkParams &p [[buffer(2)]],
+    uint tid [[thread_position_in_threadgroup]],
+    uint tg [[threads_per_threadgroup]])
+{
+    threadgroup atomic_uint histogram[16];
+    threadgroup atomic_uint selected_count;
+    threadgroup ulong ranked[2048];
+    threadgroup ulong prefix;
+    threadgroup uint prefix_nibbles;
+    threadgroup uint target_rank;
+    threadgroup uint invalid;
+
+    uint out_k = min(p.k, p.n);
+    if (out_k == 0u) return;
+    if (tid == 0u) {
+        prefix = 0ul;
+        prefix_nibbles = 0u;
+        target_rank = out_k - 1u;
+        invalid = 0u;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    // MSD radix-select the kth-largest unique (score, inverted-position) key.
+    for (uint pass = 0u; pass < 16u; ++pass) {
+        if (tid < 16u) {
+            atomic_store_explicit(&histogram[tid], 0u, memory_order_relaxed);
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+
+        uint known = prefix_nibbles;
+        ulong mask = known == 0u ? 0ul : (~0ul << (64u - 4u * known));
+        ulong wanted = prefix;
+        uint shift = 60u - 4u * pass;
+        for (uint i = tid; i < p.n; i += tg) {
+            ulong key = gravity_glm_score_position_key(values[i], i);
+            if ((key & mask) == wanted) {
+                uint digit = (uint)((key >> shift) & 0xFul);
+                atomic_fetch_add_explicit(&histogram[digit], 1u, memory_order_relaxed);
+            }
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+
+        if (tid == 0u) {
+            uint rank = target_rank;
+            bool found = false;
+            for (int digit = 15; digit >= 0; --digit) {
+                uint count = atomic_load_explicit(
+                    &histogram[(uint)digit], memory_order_relaxed);
+                if (rank < count) {
+                    prefix |= ((ulong)(uint)digit << shift);
+                    prefix_nibbles = pass + 1u;
+                    target_rank = rank;
+                    found = true;
+                    break;
+                }
+                rank -= count;
+            }
+            if (!found) invalid = 1u;
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+
+    atomic_store_explicit(&selected_count, 0u, memory_order_relaxed);
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    ulong threshold = prefix;
+    for (uint i = tid; i < p.n; i += tg) {
+        ulong key = gravity_glm_score_position_key(values[i], i);
+        if (key >= threshold) {
+            uint slot = atomic_fetch_add_explicit(
+                &selected_count, 1u, memory_order_relaxed);
+            if (slot < out_k) ranked[slot] = key;
+        }
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    uint selected = atomic_load_explicit(&selected_count, memory_order_relaxed);
+    if (tid == 0u && selected != out_k) invalid = 1u;
+    uint width = 1u;
+    while (width < out_k) width <<= 1u;
+    for (uint i = out_k + tid; i < width; i += tg) ranked[i] = 0ul;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    // Ascending bitonic sort, then emit in reverse for descending score rank.
+    for (uint size = 2u; size <= width; size <<= 1u) {
+        for (uint stride = size >> 1u; stride > 0u; stride >>= 1u) {
+            for (uint i = tid; i < width; i += tg) {
+                uint peer = i ^ stride;
+                if (peer > i) {
+                    ulong a = ranked[i];
+                    ulong b = ranked[peer];
+                    bool ascending = (i & size) == 0u;
+                    if ((ascending && a > b) || (!ascending && a < b)) {
+                        ranked[i] = b;
+                        ranked[peer] = a;
+                    }
+                }
+            }
+            threadgroup_barrier(mem_flags::mem_threadgroup);
+        }
+    }
+
+    for (uint slot = tid; slot < out_k; slot += tg) {
+        if (invalid) {
+            indices[slot] = 0xFFFFFFFFu;
+        } else {
+            uint inverted_position = (uint)ranked[width - 1u - slot];
+            indices[slot] = 0xFFFFFFFFu - inverted_position;
+        }
+    }
+}
+
+// Reorder the unique score-ordered top-k IDs into ascending position order,
+// matching the host sparse-attention accumulation order. One 256-thread group
+// sorts at most 2048 u32 IDs in <=8 KiB of dynamic threadgroup memory.
+//
+// Bitonic padding uses UINT_MAX, which is outside the admitted context-position
+// domain. Input and output may alias: every live element is loaded into shared
+// memory before the first output write.
+struct GravityGlmSortU32Params {
+    uint n;
+};
+
+kernel void gravity_glm_sort_u32_ascending(
+    device const uint *input [[buffer(0)]],
+    device       uint *output [[buffer(1)]],
+    constant GravityGlmSortU32Params &p [[buffer(2)]],
+    threadgroup uint *items [[threadgroup(0)]],
+    uint tid [[thread_position_in_threadgroup]],
+    uint tg [[threads_per_threadgroup]])
+{
+    uint width = 1u;
+    while (width < p.n) { width <<= 1u; }
+
+    for (uint i = tid; i < width; i += tg) {
+        items[i] = i < p.n ? input[i] : 0xFFFFFFFFu;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    for (uint span = 2u; span <= width; span <<= 1u) {
+        for (uint stride = span >> 1u; stride > 0u; stride >>= 1u) {
+            for (uint i = tid; i < width; i += tg) {
+                uint peer = i ^ stride;
+                if (peer > i) {
+                    uint a = items[i];
+                    uint b = items[peer];
+                    bool ascending = (i & span) == 0u;
+                    if ((a > b) == ascending) {
+                        items[i] = b;
+                        items[peer] = a;
+                    }
+                }
+            }
+            threadgroup_barrier(mem_flags::mem_threadgroup);
+        }
+    }
+
+    for (uint i = tid; i < p.n; i += tg) {
+        output[i] = items[i];
     }
 }
 
@@ -513,6 +1231,398 @@ kernel void gravity_glm_router_correct(
     float s = 1.0f / (1.0f + exp(-logits[id]));
     scores[id] = s;
     corrected[id] = s + bias[id];
+}
+
+struct GravityRouterSelectParams {
+    uint n_experts;
+    uint n_group;
+    uint topk_group;
+    uint experts_per_token;
+    uint norm_topk_prob;
+    float routed_scaling_factor;
+};
+
+// Exact noaux_tc router selection with stable lower-index ties. One thread is
+// intentional: the flagship router has only 256 experts, while preserving the
+// host reduction/selection order is part of the model's discrete contract.
+kernel void gravity_glm_router_select_noaux_f32(
+    device const float *logits [[buffer(0)]],
+    device const float *bias [[buffer(1)]],
+    device       float *scores [[buffer(2)]],
+    device       float *corrected [[buffer(3)]],
+    device        uint *expert_indices [[buffer(4)]],
+    device       float *expert_weights [[buffer(5)]],
+    device        uint *expert_exec_slots [[buffer(6)]],
+    constant GravityRouterSelectParams &p [[buffer(7)]],
+    uint id [[thread_position_in_grid]])
+{
+    if (id != 0u) { return; }
+
+    float group_scores[64];
+    bool group_chosen[64];
+    uint per_group = p.n_experts / p.n_group;
+
+    for (uint expert = 0u; expert < p.n_experts; ++expert) {
+        float s = 1.0f / (1.0f + exp(-logits[expert]));
+        scores[expert] = s;
+        corrected[expert] = s + bias[expert];
+    }
+
+    for (uint group = 0u; group < p.n_group; ++group) {
+        float first = -INFINITY;
+        float second = -INFINITY;
+        uint begin = group * per_group;
+        for (uint local = 0u; local < per_group; ++local) {
+            float value = corrected[begin + local];
+            if (value > first) {
+                second = first;
+                first = value;
+            } else if (value > second) {
+                second = value;
+            }
+        }
+        group_scores[group] = first + ((per_group > 1u) ? second : 0.0f);
+        group_chosen[group] = false;
+    }
+
+    for (uint slot = 0u; slot < p.topk_group; ++slot) {
+        float best = -INFINITY;
+        uint best_group = 0xFFFFFFFFu;
+        for (uint group = 0u; group < p.n_group; ++group) {
+            if (!group_chosen[group]
+                && (best_group == 0xFFFFFFFFu || group_scores[group] > best)) {
+                best = group_scores[group];
+                best_group = group;
+            }
+        }
+        group_chosen[best_group] = true;
+    }
+
+    for (uint slot = 0u; slot < p.experts_per_token; ++slot) {
+        float best = -INFINITY;
+        uint best_expert = 0xFFFFFFFFu;
+        for (uint expert = 0u; expert < p.n_experts; ++expert) {
+            if (!group_chosen[expert / per_group]) { continue; }
+            bool already_chosen = false;
+            for (uint prior = 0u; prior < slot; ++prior) {
+                already_chosen = already_chosen || expert_indices[prior] == expert;
+            }
+            if (!already_chosen
+                && (best_expert == 0xFFFFFFFFu || corrected[expert] > best)) {
+                best = corrected[expert];
+                best_expert = expert;
+            }
+        }
+        expert_indices[slot] = best_expert;
+        expert_weights[slot] = scores[best_expert];
+    }
+
+    float total = 0.0f;
+    if (p.norm_topk_prob != 0u) {
+        for (uint slot = 0u; slot < p.experts_per_token; ++slot) {
+            total += expert_weights[slot];
+        }
+        total += 1.0e-20f;
+    } else {
+        total = 1.0f;
+    }
+    for (uint slot = 0u; slot < p.experts_per_token; ++slot) {
+        expert_weights[slot] =
+            (expert_weights[slot] / total) * p.routed_scaling_factor;
+        expert_exec_slots[slot] = slot;
+    }
+
+    // A second device-owned view gives execution order without disturbing
+    // the score-ranked diagnostic IDs or their aligned weights. Insertion
+    // sort is exact and bounded (flagship k=8); lower expert ID wins.
+    for (uint slot = 1u; slot < p.experts_per_token; ++slot) {
+        uint selected_slot = expert_exec_slots[slot];
+        uint selected_expert = expert_indices[selected_slot];
+        uint pos = slot;
+        while (pos > 0u) {
+            uint prior_slot = expert_exec_slots[pos - 1u];
+            if (expert_indices[prior_slot] <= selected_expert) { break; }
+            expert_exec_slots[pos] = prior_slot;
+            --pos;
+        }
+        expert_exec_slots[pos] = selected_slot;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Cache-indexed routed-expert address-table proof.
+//
+// These layouts are frozen against DeviceExpertTensorRef (56 B) and
+// DeviceExpertTriplet (176 B) in gravity_glm_resident.rs. Pointer fields are
+// host-populated Metal gpuAddress values. Every indirectly referenced resource
+// must also be declared through useResources before the dispatch.
+// ---------------------------------------------------------------------------
+
+struct GravityDeviceExpertTensorRef {
+    const device uchar *primary;
+    const device uchar *secondary;
+    uint dim;
+    uint subspaces;
+    uint sub;
+    uint card;
+    uint rows;
+    uint cols;
+    uint nchunk;
+    uint bits;
+    uint kind;
+    uint generation;
+};
+
+struct GravityDeviceExpertTriplet {
+    GravityDeviceExpertTensorRef gate;
+    GravityDeviceExpertTensorRef up;
+    GravityDeviceExpertTensorRef down;
+    uint ready_mask;
+    uint generation;
+};
+
+static_assert(sizeof(GravityDeviceExpertTensorRef) == 56,
+              "GravityDeviceExpertTensorRef ABI drift");
+static_assert(sizeof(GravityDeviceExpertTriplet) == 176,
+              "GravityDeviceExpertTriplet ABI drift");
+
+constant constexpr uint GRAVITY_EXPERT_KIND_PQ = 1u;
+constant constexpr uint GRAVITY_EXPERT_KIND_NATIVE_BF16 = 2u;
+constant constexpr uint GRAVITY_EXPERT_TRIPLET_READY = 7u;
+
+struct GravityDeviceExpertValidateParams {
+    uint n_experts;
+    uint experts_per_token;
+    uint generation;
+    uint required_kind;
+    uint hidden;
+    uint intermediate;
+};
+
+struct GravityDeviceExpertMatvecParams {
+    uint n_experts;
+    uint experts_per_token;
+    uint generation;
+    uint execution_position;
+    uint projection;
+    uint rows;
+    uint cols;
+};
+
+static inline bool gravity_device_expert_tensor_valid(
+    const device GravityDeviceExpertTensorRef &tensor,
+    uint generation,
+    uint required_kind)
+{
+    if (tensor.generation != generation ||
+        tensor.kind != required_kind ||
+        tensor.primary == nullptr ||
+        tensor.rows == 0u ||
+        tensor.cols == 0u) {
+        return false;
+    }
+    if (required_kind == GRAVITY_EXPERT_KIND_PQ) {
+        return tensor.secondary != nullptr &&
+               tensor.bits == 8u &&
+               tensor.subspaces == 1u &&
+               tensor.sub > 0u &&
+               tensor.dim == tensor.sub &&
+               tensor.card == 256u &&
+               tensor.nchunk > 0u &&
+               tensor.cols == tensor.nchunk * tensor.dim;
+    }
+    if (required_kind == GRAVITY_EXPERT_KIND_NATIVE_BF16) {
+        return tensor.secondary == nullptr;
+    }
+    return false;
+}
+
+kernel void gravity_glm_expert_table_validate(
+    const device uint *expert_indices [[buffer(0)]],
+    const device uint *expert_exec_slots [[buffer(1)]],
+    const device GravityDeviceExpertTriplet *table [[buffer(2)]],
+    device atomic_uint *miss_mask [[buffer(3)]],
+    constant GravityDeviceExpertValidateParams &p [[buffer(4)]],
+    uint id [[thread_position_in_grid]])
+{
+    if (id != 0u) { return; }
+    uint missing = 0u;
+    for (uint execution_position = 0u;
+         execution_position < p.experts_per_token;
+         ++execution_position) {
+        uint bit = 1u << execution_position;
+        uint slot = expert_exec_slots[execution_position];
+        if (slot >= p.experts_per_token) {
+            missing |= bit;
+            continue;
+        }
+        uint expert = expert_indices[slot];
+        if (expert >= p.n_experts) {
+            missing |= bit;
+            continue;
+        }
+        const device GravityDeviceExpertTriplet &entry = table[expert];
+        bool ready =
+            entry.ready_mask == GRAVITY_EXPERT_TRIPLET_READY &&
+            entry.generation == p.generation &&
+            gravity_device_expert_tensor_valid(
+                entry.gate, p.generation, p.required_kind) &&
+            gravity_device_expert_tensor_valid(
+                entry.up, p.generation, p.required_kind) &&
+            gravity_device_expert_tensor_valid(
+                entry.down, p.generation, p.required_kind) &&
+            entry.gate.rows == p.intermediate &&
+            entry.gate.cols == p.hidden &&
+            entry.up.rows == p.intermediate &&
+            entry.up.cols == p.hidden &&
+            entry.down.rows == p.hidden &&
+            entry.down.cols == p.intermediate;
+        if (!ready) {
+            missing |= bit;
+        }
+    }
+    atomic_store_explicit(miss_mask, missing, memory_order_relaxed);
+}
+
+kernel void gravity_glm_expert_table_pq_matvec(
+    const device uint *expert_indices [[buffer(0)]],
+    const device uint *expert_exec_slots [[buffer(1)]],
+    const device GravityDeviceExpertTriplet *table [[buffer(2)]],
+    device atomic_uint *miss_mask [[buffer(3)]],
+    const device float *x [[buffer(4)]],
+    device float *y [[buffer(5)]],
+    constant GravityDeviceExpertMatvecParams &p [[buffer(6)]],
+    uint tgid [[threadgroup_position_in_grid]],
+    uint sg_in_tg [[simdgroup_index_in_threadgroup]],
+    uint sgs_per_tg [[simdgroups_per_threadgroup]],
+    uint lane [[thread_index_in_simdgroup]])
+{
+    if (atomic_load_explicit(miss_mask, memory_order_relaxed) != 0u) {
+        return;
+    }
+    if (p.execution_position >= p.experts_per_token) {
+        return;
+    }
+    uint slot = expert_exec_slots[p.execution_position];
+    if (slot >= p.experts_per_token) {
+        return;
+    }
+    uint expert = expert_indices[slot];
+    if (expert >= p.n_experts) {
+        return;
+    }
+    const device GravityDeviceExpertTriplet &entry = table[expert];
+    const device GravityDeviceExpertTensorRef *tensor =
+        p.projection == 0u ? &entry.gate :
+        (p.projection == 1u ? &entry.up : &entry.down);
+    bool valid =
+        p.projection <= 2u &&
+        entry.ready_mask == GRAVITY_EXPERT_TRIPLET_READY &&
+        entry.generation == p.generation &&
+        gravity_device_expert_tensor_valid(
+            *tensor, p.generation, GRAVITY_EXPERT_KIND_PQ) &&
+        tensor->rows == p.rows &&
+        tensor->cols == p.cols;
+    if (!valid) {
+        if (tgid == 0u && sg_in_tg == 0u && lane == 0u) {
+            atomic_fetch_or_explicit(
+                miss_mask, 1u << p.execution_position, memory_order_relaxed);
+        }
+        return;
+    }
+
+    uint row = tgid * sgs_per_tg + sg_in_tg;
+    if (row >= tensor->rows) { return; }
+    const device half *codebooks =
+        reinterpret_cast<const device half *>(tensor->primary);
+    const device uchar *codes = tensor->secondary;
+    float acc = 0.0f;
+    for (uint chunk = lane; chunk < tensor->nchunk; chunk += 32u) {
+        uint flat = row * tensor->nchunk + chunk;
+        const device half *entry_values =
+            codebooks + uint(codes[flat]) * tensor->sub;
+        const device float *xs = x + chunk * tensor->dim;
+        for (uint j = 0u; j < tensor->sub; ++j) {
+            acc = fma(float(entry_values[j]), xs[j], acc);
+        }
+    }
+    acc = simd_sum(acc);
+    if (lane == 0u) {
+        y[row] = acc;
+    }
+}
+
+struct GravityDeviceExpertAxpyParams {
+    uint n;
+    uint experts_per_token;
+    uint execution_position;
+    uint use_router_weight;
+};
+
+kernel void gravity_glm_expert_table_zero_f32(
+    device float *x [[buffer(0)]],
+    device atomic_uint *miss_mask [[buffer(1)]],
+    constant uint &n [[buffer(2)]],
+    uint id [[thread_position_in_grid]])
+{
+    if (id >= n ||
+        atomic_load_explicit(miss_mask, memory_order_relaxed) != 0u) {
+        return;
+    }
+    x[id] = 0.0f;
+}
+
+kernel void gravity_glm_expert_table_silu_mul_f32(
+    const device float *gate [[buffer(0)]],
+    const device float *up [[buffer(1)]],
+    device float *out [[buffer(2)]],
+    device atomic_uint *miss_mask [[buffer(3)]],
+    constant uint &n [[buffer(4)]],
+    uint id [[thread_position_in_grid]])
+{
+    if (id >= n ||
+        atomic_load_explicit(miss_mask, memory_order_relaxed) != 0u) {
+        return;
+    }
+    float g = gate[id];
+    out[id] = (g / (1.0f + exp(-g))) * up[id];
+}
+
+kernel void gravity_glm_expert_table_axpy_f32(
+    device float *y [[buffer(0)]],
+    const device float *x [[buffer(1)]],
+    const device float *expert_weights [[buffer(2)]],
+    const device uint *expert_exec_slots [[buffer(3)]],
+    device atomic_uint *miss_mask [[buffer(4)]],
+    constant GravityDeviceExpertAxpyParams &p [[buffer(5)]],
+    uint id [[thread_position_in_grid]])
+{
+    if (id >= p.n ||
+        atomic_load_explicit(miss_mask, memory_order_relaxed) != 0u) {
+        return;
+    }
+    float scale = 1.0f;
+    if (p.use_router_weight != 0u) {
+        if (p.execution_position >= p.experts_per_token) { return; }
+        uint slot = expert_exec_slots[p.execution_position];
+        if (slot >= p.experts_per_token) { return; }
+        scale = expert_weights[slot];
+    }
+    y[id] += x[id] * scale;
+}
+
+kernel void gravity_glm_expert_table_residual_add_f32(
+    device float *residual [[buffer(0)]],
+    const device float *expert_output [[buffer(1)]],
+    device atomic_uint *miss_mask [[buffer(2)]],
+    constant uint &n [[buffer(3)]],
+    uint id [[thread_position_in_grid]])
+{
+    if (id >= n ||
+        atomic_load_explicit(miss_mask, memory_order_relaxed) != 0u) {
+        return;
+    }
+    residual[id] += expert_output[id];
 }
 
 // Zero a buffer (used when starting a residual accumulate).

@@ -1,0 +1,161 @@
+{
+  "schema": "hawking.gravity.device_dsa.live_candidate.v1",
+  "at_utc": "2026-07-27T04:44:14Z",
+  "observed_base_sha": "dc01a1e08ab0ac10433f76fea323bc80a47a958a",
+  "status": "PARITY_QUALIFIED_GRAPH_CLOSED_DEFAULT_OFF_NOT_PERFORMANCE_PROMOTED",
+  "scope": {
+    "default_runtime_change": false,
+    "new_environment_flag": "HAWKING_GLM_GPU_DEVICE_DSA",
+    "flag_default": false,
+    "required_modes": [
+      "resident state",
+      "HAWKING_GLM_GPU_COMPACT_MLA=1"
+    ],
+    "sealed_artifact_change": false,
+    "sealed_payload_read": false,
+    "flagship_live_run": false,
+    "mop_change": false,
+    "files": [
+      "crates/hawking-core/src/gravity_glm.rs",
+      "crates/hawking-core/src/gravity_glm_resident.rs",
+      "crates/hawking-core/shaders/gravity_pq.metal",
+      "crates/hawking-core/tests/gravity_glm_compact_mla_live_parity.rs",
+      "HAWKING_DEVICE_DSA_LIVE_CANDIDATE_20260727.json"
+    ]
+  },
+  "mode_admission": {
+    "device_dsa_without_compact": "fails model open before resident-state allocation",
+    "decision_capture": "Compact MLA and device DSA flags are captured once by the model opener and passed into resident construction.",
+    "default_expanded_selected_scratch": false,
+    "default_compact_host_dsa_selected_scratch": false,
+    "device_dsa_selected_scratch": "one u8 per sequence-capacity position, transactionally replaced during DSA growth",
+    "index_topk_admission": "1..=2048"
+  },
+  "full_indexer_graph_after_qk_boundary": {
+    "command_buffers": 1,
+    "inter_dispatch_readbacks": 0,
+    "device_dispatches_when_weights_proj_is_device_resident": [
+      "weights_proj matvec",
+      "gravity_glm_append_index_key",
+      "gravity_glm_dsa_scores",
+      "gravity_glm_stable_topk_f32",
+      "gravity_glm_mla_append_compact",
+      "gravity_pq_k_transpose_heads",
+      "gravity_glm_compact_ranked_attn",
+      "gravity_pq_v_rows_heads",
+      "o_proj gravity_pq_matvec"
+    ],
+    "dispatch_count_when_weights_proj_is_device_resident": 9,
+    "rank_flow": "Stable score-ordered u32 indices remain in the DSA rank buffer and are consumed directly by compact attention.",
+    "diagnostic_readback": "Only the final layer's rank is read after its attention command buffer completes, to preserve GlmTrace diagnostics; no rank read lies on an attention dependency."
+  },
+  "arithmetic_and_decisions": {
+    "scores": "Per-key device dot/relu/weighted-head accumulation; head scale is explicit in the DSA ABI and rounded before the weighted FMA.",
+    "topk": "Stable descending selection with lower position winning exact score ties.",
+    "shared_layers": "Reuse the most recent full-indexer device rank buffer without host cloning or upload.",
+    "compact_attention_order": "Stable DSA rank order, matching the qualified compact MLA arithmetic contract."
+  },
+  "synchronization_evidence": {
+    "bounded_fixture_full_indexer_layers_per_token": 1,
+    "case_waits": [
+      {
+        "prompt_tokens": 3,
+        "compact_host_rank": 27,
+        "compact_device_rank": 24
+      },
+      {
+        "prompt_tokens": 1,
+        "compact_host_rank": 9,
+        "compact_device_rank": 8
+      },
+      {
+        "prompt_tokens": 2,
+        "compact_host_rank": 18,
+        "compact_device_rank": 16
+      },
+      {
+        "prompt_tokens": 3,
+        "compact_host_rank": 27,
+        "compact_device_rank": 24
+      }
+    ],
+    "observed_rule": "exactly one dependency drain removed per full-indexer layer per token",
+    "flagship_static_full_indexer_layers": 21,
+    "flagship_default_resident_logical_boundaries": 586,
+    "flagship_device_dsa_logical_boundaries": 565,
+    "flagship_static_boundaries_removed": 21,
+    "qualification": "Source-derived and bounded-fixture synchronization evidence only, not a flagship throughput measurement."
+  },
+  "numeric_parity_v2_1": {
+    "fixture": "deterministic one-layer, 16-vocabulary complete-token direct-u8 PQ fixture",
+    "prompts": 4,
+    "device_relative_l2_range": [
+      4.52e-07,
+      7.862e-07
+    ],
+    "device_max_meaningful_relative_range": [
+      3.224e-06,
+      9.87e-06
+    ],
+    "greedy_exact_all_prompts": true,
+    "top5_exact_all_prompts": true,
+    "dsa_selection_exact_all_prompts": true,
+    "expert_selection_exact_all_prompts": true,
+    "device_dsa_logits_equal_qualified_compact_logits_on_fixture": true,
+    "result": "PASS"
+  },
+  "validation": {
+    "full_core_library": {
+      "command": "cargo test -p hawking-core --lib -- --nocapture",
+      "passed": 218,
+      "failed": 0,
+      "ignored": 2
+    },
+    "independent_cpu_architecture_proof": {
+      "command": "cargo test -p hawking-core --test gravity_glm_compact_mla_parity -- --nocapture",
+      "passed": 1,
+      "failed": 0
+    },
+    "default_resident_parity": {
+      "command": "env -u HAWKING_GLM_GPU_COMPACT_MLA -u HAWKING_GLM_GPU_DEVICE_DSA cargo test -p hawking-core --test gravity_glm_resident_parity -- --nocapture",
+      "passed": 3,
+      "failed": 0
+    },
+    "default_gpu_forward": {
+      "command": "env -u HAWKING_GLM_GPU_COMPACT_MLA -u HAWKING_GLM_GPU_DEVICE_DSA cargo test -p hawking-core --test gravity_glm_gpu_forward -- --nocapture",
+      "passed": 3,
+      "failed": 0
+    },
+    "compact_live_device_dsa": {
+      "command": "HAWKING_GLM_COMPACT_FIXTURE_DIR=$FIXTURE cargo test -p hawking-core --test gravity_glm_compact_mla_live_parity -- --nocapture",
+      "passed": 1,
+      "failed": 0,
+      "complete_token_prompts": 4,
+      "mode_coupling_negative_opens": 1,
+      "geometry_preflight_negative_opens": 1
+    }
+  },
+  "known_architectural_floor": {
+    "stable_topk_kernel": "Single-thread serial O(sequence_length * index_topk); exact but not admitted as a 32K performance mechanism.",
+    "earlier_full_indexer_boundary": "wq_b + wk still complete before host affine LayerNorm and q/k RoPE construction.",
+    "exact_next_changes": [
+      "Parallel exact stable top-k with deterministic score/index ordering and 32K bounded timing",
+      "Move index-key affine LayerNorm and q/k RoPE into the device graph",
+      "Measure the full constellation with device-native indexer projections after MOP clearance"
+    ]
+  },
+  "mop_observation": {
+    "supervisor_pid": 33542,
+    "principal_receipts": 8,
+    "workers_observed_active": 16,
+    "expected_workers_after_receipts": 16,
+    "state": "NORMAL_PARTIAL_COMPLETION_NOT_CONTENTION_CLEAR",
+    "action": "none"
+  },
+  "promotion_gate": {
+    "parity_qualified": true,
+    "graph_dependency_qualified": true,
+    "performance_promoted": false,
+    "reason": "The exact serial top-k has no 32K timing claim, and the active MOP forbids sealed-model A/B or sustained context validation."
+  }
+}

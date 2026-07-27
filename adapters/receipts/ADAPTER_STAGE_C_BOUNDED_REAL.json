@@ -1,0 +1,71 @@
+{
+  "schema": "hawking.adapters.stage_c_bounded_real.v1",
+  "at": "2026-07-27T06:10:00Z",
+  "by": "controller",
+  "resource_mode": "LIGHT_ONLY",
+  "stage": "C -- bounded real-source proof",
+
+  "why_this_exists": "The light-only campaign reported 'no bounded real proofs' because no GGUF weights are on disk and no relief window opened. That was incomplete. Real .gravity containers ARE on disk as test fixtures, and the tests over them run UNCONDITIONALLY -- unlike the weight-gated tests that skip. A real container decoded by the real codec and matched against a numpy oracle is a bounded real proof, and it costs seconds.",
+
+  "the_distinction_that_governs_the_grade": {
+    "REAL_TENSOR_DECODE": "a real .gravity container's tensors are decoded by the real codec and agree with an oracle reading the same container. The MODEL inside may be synthesized.",
+    "SMALL_REAL_CHECKPOINT": "a real small checkpoint OF THE FAMILY runs end to end. The weights must be the family's own.",
+    "why_it_matters_here": "glm52-tiny-R0.gravity is explicitly synthesized -- tools/condense/glm52_gravity_fixture.py builds a tiny model with the flagship's exact semantics. It is a real container holding a synthetic model. That earns REAL_TENSOR_DECODE and does not by itself earn SMALL_REAL_CHECKPOINT."
+  },
+
+  "proofs": [
+    {
+      "family": "glm",
+      "test": "crates/hawking-core/tests/gravity_glm_forward.rs",
+      "runs_unconditionally": true,
+      "no_weight_guard": "no is_file/env::var gate; the fixture is committed",
+      "artifact": "crates/hawking-core/tests/fixtures/gravity_glm/glm52-tiny-R0.gravity",
+      "artifact_bytes": 441937,
+      "complete_bpw": 4.645553165299619,
+      "tensors": 144,
+      "tensors_pq": 2,
+      "what_it_proves": [
+        "a real .gravity container is opened and its tensors decoded",
+        "a complete token is executed out of the artifact",
+        "the numpy oracle read the SAME artifact back through the SAME container and codec, so bf16 rounding is part of what is reproduced rather than an error term",
+        "argmax 986 and top5 [986, 1238, 2369, 2066, 2349] match",
+        "a runtime that ignores IndexShare, scatters interleaved RoPE, weights the router with corrected scores, or skips the expert-group gate cannot pass"
+      ],
+      "result": "3 passed, 0.04 s",
+      "grade_earned": "REAL_TENSOR_DECODE",
+      "model_is_synthesized": true
+    },
+    {
+      "family": "llama",
+      "test": "crates/hawking-core/tests/gravity_llama_forward.rs",
+      "runs_unconditionally": true,
+      "note_on_guards": "the file contains presence guards, but the run does real work -- 57.48 s -- so the guarded paths are additional coverage rather than the whole test. Verified by timing rather than by reading: a skipping test finishes in 0.00 s.",
+      "what_it_proves": [
+        "CPU forward matches a frozen oracle",
+        "GPU forward matches the same frozen oracle",
+        "incremental decode matches full replay -- the property that catches KV-cache defects"
+      ],
+      "result": "3 passed, 57.48 s",
+      "grade_earned": "REAL_TENSOR_DECODE"
+    },
+    {
+      "family": "state_space",
+      "test": "crates/hawking-core/tests/rwkv7_parity.rs",
+      "runs_unconditionally": false,
+      "result": "2 passed, 0.00 s -- SKIPPED",
+      "what_it_proves": "nothing. A test that completes in 0.00 s did not load a model.",
+      "grade_earned": "none",
+      "confirms": "the DECLARED grade assigned by the grade verifier was correct"
+    }
+  ],
+
+  "method_note": "Timing is the cheapest reliable discriminator between a test that ran and a test that skipped, and it needs no source reading: 0.00 s means no model was loaded. It caught rwkv7 and it confirmed llama, where a static read of the guards alone would have been ambiguous.",
+
+  "what_this_does_not_establish": [
+    "that any family works at parent scale",
+    "that a synthesized fixture's success transfers to real weights -- it does not; it proves the CONTAINER, CODEC and ADAPTER are correct, which is a different and still useful claim",
+    "any capability claim about a compressed artifact's semantics. Math-Preserve passes container and codec checks too, and cannot complete '2 + 2 ='."
+  ],
+
+  "condition_6_status": "CLOSED for what is admitted. Bounded real proofs exist for glm and llama on real containers. Stage D micro-Gravity runs remain unrun because no relief window opened at any point -- load/core stayed between 1.66 and 0.87 against a 0.70 ceiling."
+}

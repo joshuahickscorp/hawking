@@ -26,6 +26,72 @@ const DEFAULT_MODEL_DIR: &str = "Library/Application Support/Hawking/Models/GLM-
     b4734de4facf877f85769a911abafc5283eab3d9/General-R0";
 
 #[cfg(target_os = "macos")]
+fn decode_output(
+    logits: &[f32],
+    trace: &hawking_core::gravity_glm::GlmTrace,
+    vocab: usize,
+) -> Result<serde_json::Value, Box<dyn std::error::Error>> {
+    if logits.is_empty() {
+        let token = trace
+            .sample_token
+            .ok_or("token-only head returned neither logits nor trace.sample_token")?;
+        return Ok(serde_json::json!({
+            "mode": "token_plus_topk_diagnostics",
+            "token": token,
+            "full_logits_readback": false,
+            "topk_indices": trace.head_topk_idx,
+            "topk_values": trace.head_topk_val,
+        }));
+    }
+    if logits.len() != vocab {
+        return Err(format!(
+            "decode output has {} logits; expected 0 (token-only) or {vocab}",
+            logits.len()
+        )
+        .into());
+    }
+    let token = trace.sample_token.unwrap_or_else(|| {
+        logits
+            .iter()
+            .enumerate()
+            .max_by(|(ia, a), (ib, b)| a.total_cmp(b).then_with(|| ib.cmp(ia)))
+            .map(|(i, _)| i as u32)
+            .unwrap_or(0)
+    });
+    Ok(serde_json::json!({
+        "mode": "full_vocab_logits",
+        "token": token,
+        "full_logits_readback": true,
+        "logit_count": logits.len(),
+        "topk_indices": trace.head_topk_idx,
+        "topk_values": trace.head_topk_val,
+    }))
+}
+
+#[cfg(target_os = "macos")]
+fn env_snapshot() -> serde_json::Value {
+    const KEYS: [&str; 7] = [
+        "HAWKING_GLM_GPU_RESIDENT_STATE",
+        "HAWKING_GLM_GPU_LM_HEAD",
+        "HAWKING_GLM_GPU_LM_HEAD_FULL_LOGITS",
+        "HAWKING_GLM_GPU_EXPERT_WAVE",
+        "HAWKING_GRAVITY_GPU_CACHE_BUDGET_BYTES",
+        "HAWKING_TCB_TRACE",
+        "HAWKING_COST_LEDGER",
+    ];
+    let mut out = serde_json::Map::new();
+    for key in KEYS {
+        out.insert(
+            key.to_string(),
+            std::env::var_os(key)
+                .map(|v| serde_json::Value::String(v.to_string_lossy().into_owned()))
+                .unwrap_or(serde_json::Value::Null),
+        );
+    }
+    serde_json::Value::Object(out)
+}
+
+#[cfg(target_os = "macos")]
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     use hawking_core::gravity_glm::gpu::GravityGlmGpu;
 
@@ -83,10 +149,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let open_ms = t_open.elapsed().as_secs_f64() * 1e3;
     eprintln!(
         "opened in {open_ms:.0} ms | layers={} hidden={} experts={} vocab={}",
-        model.arch.n_layers,
-        model.arch.hidden,
-        model.arch.n_routed_experts,
-        model.arch.vocab_size
+        model.arch.n_layers, model.arch.hidden, model.arch.n_routed_experts, model.arch.vocab_size
     );
     {
         let c = model.cache_stats();
@@ -124,13 +187,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         let mut decode_ms_each = Vec::with_capacity(decode);
         let mut curve = Vec::with_capacity(decode);
-        let mut logits = Vec::new();
+        let mut output_modes = std::collections::BTreeSet::new();
         for (i, &t) in tokens[context..].iter().enumerate() {
             let t0 = Instant::now();
-            let (l, _) = model.forward_at(&[t], context + i)?;
+            let (logits, trace) = model.forward_at(&[t], context + i)?;
             let ms = t0.elapsed().as_secs_f64() * 1e3;
             decode_ms_each.push(ms);
-            logits = l;
+            let output = decode_output(&logits, &trace, model.arch.vocab_size)?;
+            output_modes.insert(output["mode"].as_str().unwrap_or("unknown").to_string());
 
             let cache = model.cache_stats();
             let tok_index = i + 1; // 1-based decode token index within this run
@@ -143,20 +207,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 "high_water_bytes": cache.high_water_bytes,
                 "entries": cache.entries,
                 "evictions": cache.evictions,
+                "output": output,
             });
             if token_curve {
                 curve.push(sample.clone());
             }
             if let Some(f) = progress_file.as_mut() {
                 let mut line = sample;
-                line.as_object_mut().unwrap().insert(
-                    "context_tokens".into(),
-                    serde_json::json!(context),
-                );
-                line.as_object_mut().unwrap().insert(
-                    "verify_hash".into(),
-                    serde_json::json!(verify_hash),
-                );
+                line.as_object_mut()
+                    .unwrap()
+                    .insert("context_tokens".into(), serde_json::json!(context));
+                line.as_object_mut()
+                    .unwrap()
+                    .insert("verify_hash".into(), serde_json::json!(verify_hash));
                 writeln!(f, "{}", serde_json::to_string(&line)?)?;
                 f.flush()?;
             }
@@ -168,8 +231,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 cache.evictions,
             );
         }
-        assert_eq!(logits.len(), model.arch.vocab_size);
-
         let decode_ms: f64 = decode_ms_each.iter().sum();
         let mut sorted = decode_ms_each.clone();
         sorted.sort_by(|a, b| a.partial_cmp(b).unwrap());
@@ -195,6 +256,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             "decode_ms_per_token_min": sorted.first().copied().unwrap_or(0.0),
             "decode_ms_per_token_max": sorted.last().copied().unwrap_or(0.0),
             "decode_ms_per_token_all": decode_ms_each,
+            "output_modes": output_modes,
         });
         if token_curve {
             row.as_object_mut()
@@ -218,6 +280,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         "scoreboard": "BASE_TRUE_TPS",
         "verify_hash": verify_hash,
         "token_curve": token_curve,
+        "run_configuration": {
+            "raw_environment": env_snapshot(),
+            "resolved": {
+                "resident_state": model.resident_state_enabled(),
+                "gpu_native_bf16_head": hawking_core::gravity_glm::gpu_lm_head_enabled(),
+                "full_logits_readback": hawking_core::gravity_glm::gpu_lm_head_full_logits_enabled(),
+                "expert_wave": hawking_core::gravity_glm::gpu_expert_wave_enabled(),
+                "cost_ledger": false,
+            },
+            "output_contract": "each token accepts either full vocab logits or promoted token + top-k diagnostics; actual mode is recorded per token",
+        },
         "note": "measured, not modelled; no acceleration of any kind is enabled on this path. \
                  GLM's routed MoE means device-resident bytes grow with the run rather than \
                  being fixed at load, and cost is mildly content-dependent, unlike the dense \

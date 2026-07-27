@@ -1,0 +1,145 @@
+{
+  "schema": "hawking.hide.you.research_fixture_corpus.v1",
+  "authority": "NON_PRODUCTION_AUTHORITY",
+  "note": "Committed offline documents only. No network retrieval. Used by ramanujan.you_research FakeRetriever.",
+  "documents": [
+    {
+      "id": "doc_alpha_2024",
+      "source_id": "src_alpha",
+      "title": "Alpha Lab Report on Qubit Coherence",
+      "uri": "fixture://alpha/coherence-2024",
+      "published_at": "2024-03-15T00:00:00Z",
+      "captured_at": "2024-06-01T12:00:00Z",
+      "source_type": "lab_report",
+      "quality": {
+        "authority": 0.85,
+        "recency": 0.7,
+        "independence": 0.9,
+        "reproducibility": 0.8
+      },
+      "body": "Alpha Lab measured qubit coherence time at 120 microseconds under dilution-refrigerator conditions. The capital of the synthetic test polity is Port Aster. Method: Ramsey interferometry on a superconducting transmon."
+    },
+    {
+      "id": "doc_beta_2023",
+      "source_id": "src_beta",
+      "title": "Beta Review of Qubit Coherence Claims",
+      "uri": "fixture://beta/coherence-review-2023",
+      "published_at": "2023-11-01T00:00:00Z",
+      "captured_at": "2024-06-01T12:05:00Z",
+      "source_type": "review_article",
+      "quality": {
+        "authority": 0.75,
+        "recency": 0.55,
+        "independence": 0.95,
+        "reproducibility": 0.7
+      },
+      "body": "Beta Review reports qubit coherence time at 80 microseconds for comparable superconducting devices. The capital of the synthetic test polity is not Port Aster but Harbor Gate. Method survey excludes non-reproduced press releases."
+    },
+    {
+      "id": "doc_gamma_news",
+      "source_id": "src_gamma",
+      "title": "Gamma Wire: Press Summary of Coherence",
+      "uri": "fixture://gamma/press-2024",
+      "published_at": "2024-05-20T00:00:00Z",
+      "captured_at": "2024-06-01T12:10:00Z",
+      "source_type": "press",
+      "quality": {
+        "authority": 0.35,
+        "recency": 0.9,
+        "independence": 0.4,
+        "reproducibility": 0.2
+      },
+      "body": "Gamma Wire summarizes industry talk: qubit coherence time around 120 microseconds is cited by Alpha Lab. Secondary claims about Harbor Gate as capital are unattributed. Press summary only."
+    },
+    {
+      "id": "doc_delta_methods",
+      "source_id": "src_delta",
+      "title": "Delta Methods Note: Ramsey Protocols",
+      "uri": "fixture://delta/ramsey-methods",
+      "published_at": "2022-08-01T00:00:00Z",
+      "captured_at": "2024-06-01T12:15:00Z",
+      "source_type": "methods",
+      "quality": {
+        "authority": 0.8,
+        "recency": 0.4,
+        "independence": 0.85,
+        "reproducibility": 0.9
+      },
+      "body": "Delta Methods Note describes Ramsey interferometry as the standard probe for superconducting transmon coherence. No numerical coherence time is asserted here. Protocol steps are listed for reproduction."
+    },
+    {
+      "id": "doc_epsilon_old",
+      "source_id": "src_epsilon",
+      "title": "Epsilon Archive: Early Coherence Estimate",
+      "uri": "fixture://epsilon/archive-2019",
+      "published_at": "2019-01-10T00:00:00Z",
+      "captured_at": "2024-06-01T12:20:00Z",
+      "source_type": "archive",
+      "quality": {
+        "authority": 0.5,
+        "recency": 0.15,
+        "independence": 0.7,
+        "reproducibility": 0.5
+      },
+      "body": "Epsilon Archive estimated qubit coherence time at 30 microseconds using earlier fabrication processes. Historical baseline only."
+    }
+  ],
+  "seed_claims": [
+    {
+      "doc_id": "doc_alpha_2024",
+      "claim_key": "coherence_us",
+      "text": "qubit coherence time is 120 microseconds",
+      "polarity": "assert",
+      "subject": "qubit_coherence_time_us",
+      "value": "120"
+    },
+    {
+      "doc_id": "doc_beta_2023",
+      "claim_key": "coherence_us",
+      "text": "qubit coherence time is 80 microseconds",
+      "polarity": "assert",
+      "subject": "qubit_coherence_time_us",
+      "value": "80"
+    },
+    {
+      "doc_id": "doc_gamma_news",
+      "claim_key": "coherence_us",
+      "text": "qubit coherence time is 120 microseconds",
+      "polarity": "assert",
+      "subject": "qubit_coherence_time_us",
+      "value": "120"
+    },
+    {
+      "doc_id": "doc_alpha_2024",
+      "claim_key": "capital",
+      "text": "capital of the synthetic test polity is Port Aster",
+      "polarity": "assert",
+      "subject": "synthetic_polity_capital",
+      "value": "Port Aster"
+    },
+    {
+      "doc_id": "doc_beta_2023",
+      "claim_key": "capital",
+      "text": "capital of the synthetic test polity is Harbor Gate",
+      "polarity": "assert",
+      "subject": "synthetic_polity_capital",
+      "value": "Harbor Gate"
+    },
+    {
+      "doc_id": "doc_delta_methods",
+      "claim_key": "method",
+      "text": "Ramsey interferometry is the standard probe for superconducting transmon coherence",
+      "polarity": "assert",
+      "subject": "coherence_measurement_method",
+      "value": "Ramsey interferometry"
+    },
+    {
+      "doc_id": "doc_epsilon_old",
+      "claim_key": "coherence_us",
+      "text": "qubit coherence time is 30 microseconds",
+      "polarity": "assert",
+      "subject": "qubit_coherence_time_us",
+      "value": "30"
+    }
+  ]
+}

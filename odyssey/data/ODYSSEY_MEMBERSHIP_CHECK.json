@@ -1,0 +1,56 @@
+{
+  "corpora": [
+    {
+      "bytes": null,
+      "evidence": "manifest declares corpus id='math-core' (present=False); checked ['odyssey/data/math-core', 'odyssey/data/math-core.jsonl', 'odyssey/data/math-core.json', 'odyssey/data/math-core/admitted.jsonl']; none exist on disk",
+      "format": null,
+      "id": "math-core",
+      "items": null,
+      "licence": "permissive",
+      "path": "odyssey/data/math-core",
+      "purpose": "T1 primary",
+      "role": "train",
+      "status": "DECLARED_NOT_PRESENT"
+    },
+    {
+      "bytes": null,
+      "evidence": "manifest declares corpus id='support-language' (present=False); checked ['odyssey/data/support-language', 'odyssey/data/support-language.jsonl', 'odyssey/data/support-language.json', 'odyssey/data/support-language/admitted.jsonl']; none exist on disk",
+      "format": null,
+      "id": "support-language",
+      "items": null,
+      "licence": "permissive",
+      "path": "odyssey/data/support-language",
+      "purpose": "T1 support: technical language, coding, tools",
+      "role": "train",
+      "status": "DECLARED_NOT_PRESENT"
+    },
+    {
+      "bytes": null,
+      "evidence": "manifest declares corpus id='long-horizon' (present=False); checked ['odyssey/data/long-horizon', 'odyssey/data/long-horizon.jsonl', 'odyssey/data/long-horizon.json', 'odyssey/data/long-horizon/admitted.jsonl']; none exist on disk",
+      "format": null,
+      "id": "long-horizon",
+      "items": null,
+      "licence": "permissive",
+      "path": "odyssey/data/long-horizon",
+      "purpose": "T3 trajectory stabilization",
+      "role": "train",
+      "status": "DECLARED_NOT_PRESENT"
+    },
+    {
+      "bytes": null,
+      "evidence": "manifest declares corpus id='sovereignty-corpus' (present=False); checked ['odyssey/data/sovereignty-corpus', 'odyssey/data/sovereignty-corpus.jsonl', 'odyssey/data/sovereignty-corpus.json', 'odyssey/data/sovereignty-corpus/admitted.jsonl']; none exist on disk",
+      "format": null,
+      "id": "sovereignty-corpus",
+      "items": null,
+      "licence": "self-authored",
+      "path": "odyssey/data/sovereignty-corpus",
+      "purpose": "T4 permitted/boundary/paraphrase pairs",
+      "role": "train",
+      "status": "DECLARED_NOT_PRESENT"
+    }
+  ],
+  "n_declared_not_present": 4,
+  "n_partial": 0,
+  "n_present": 0,
+  "schema": "hawking.odyssey.membership_check.v1"
+}

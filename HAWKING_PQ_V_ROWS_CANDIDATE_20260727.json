@@ -1,0 +1,126 @@
+{
+  "schema": "hawking.gravity.compact_mla.pq_v_rows_candidate.v1",
+  "at_utc": "2026-07-27T03:35:16Z",
+  "observed_base_sha": "0d12fbde7157b302a15325bf3d5a0e8740b960a4",
+  "status": "PREREQUISITE_ONLY_NOT_PROMOTED",
+  "scope": {
+    "runtime_or_default_change": false,
+    "flag_change": false,
+    "sealed_artifact_change": false,
+    "sealed_payload_read": false,
+    "mop_change": false,
+    "live_model_run": false,
+    "production_reachable": false,
+    "files": [
+      "crates/hawking-core/shaders/gravity_pq.metal",
+      "crates/hawking-core/src/gravity_glm_resident.rs",
+      "crates/hawking-core/src/metal/mod.rs"
+    ]
+  },
+  "authority": {
+    "sealed_header_audit": "HAWKING_COMPACT_MLA_PRODUCTION_FEASIBILITY_AUDIT_20260727.json",
+    "algebra_and_order_proof": "HAWKING_COMPACT_MLA_PARITY_PROOF_20260727.json",
+    "numeric_contract": "hawking.numeric_parity.v2.1",
+    "sealed_kv_b_header": {
+      "shape": [
+        28672,
+        512
+      ],
+      "d": 32,
+      "subspaces": 1,
+      "sub": 32,
+      "cardinality": 256,
+      "bits": 8,
+      "chunks_per_row": 16
+    }
+  },
+  "primitive": {
+    "kernel": "gravity_pq_v_rows_heads",
+    "host_encoder": "route_segment_primitives::encode_pq_v_rows_heads",
+    "operation": "For each head and value row, reduce kv_b_proj[head*448+192+value_row,latent_col] times weighted_latent[head,latent_col] with latent columns in strictly ascending order.",
+    "dispatches_per_layer_token": 1,
+    "cross_thread_reduction": false,
+    "atomic_accumulation": false,
+    "dense_weight_reconstruction": false,
+    "admitted_codec": {
+      "bits": 8,
+      "subspaces": 1,
+      "dim_equals_sub": true,
+      "cardinality": 256,
+      "all_conditions_fail_closed_before_dispatch": true
+    },
+    "flagship_geometry": {
+      "heads": 64,
+      "source_rows_per_head": 448,
+      "value_row_offset": 192,
+      "value_rows_per_head": 256,
+      "latent_columns": 512,
+      "outputs": 16384,
+      "ordered_macs": 8388608,
+      "dense_f32_value_submatrix_bytes_not_materialized": 33554432
+    },
+    "source_operand_requests_not_dram_claim": {
+      "unique_v_row_code_bytes": 262144,
+      "code_byte_requests": 262144,
+      "codebook_f16_requests": 8388608,
+      "codebook_request_bytes": 16777216,
+      "weighted_latent_f32_requests": 8388608,
+      "weighted_latent_request_bytes": 33554432,
+      "context_f32_writes": 16384,
+      "context_write_bytes": 65536,
+      "qualification": "These are shader-source operand requests and unique code extents. Codebook and weighted-latent cache reuse is substantial; no physical DRAM-byte claim is made without hardware counters."
+    }
+  },
+  "correctness": {
+    "abi_size_bytes": 32,
+    "abi_alignment_bytes": 4,
+    "reduction_order": "One thread owns each output and visits chunks then within-chunk latent columns in strictly ascending order.",
+    "tiny_fixture": {
+      "shape": "2 heads, row stride 5, value window [2,5), 8 latent columns",
+      "repeated_dispatches_bit_identical": true,
+      "fp64_backed_numeric_parity_v2_1": "PASS",
+      "fail_closed_cases": [
+        "bits != 8",
+        "value window exceeds per-head row stride",
+        "undersized code stream"
+      ]
+    },
+    "flagship_shape_fixture": {
+      "shape": "64 heads, row stride 448, value window [192,448), 512 latent columns, D32/S1/sub32/card256/bits8",
+      "synthetic_payload_only": true,
+      "sealed_payload_read": false,
+      "dispatches": 1,
+      "fp64_backed_numeric_parity_v2_1": "PASS"
+    },
+    "static_trace_name": "registered and compiled; cannot fall into the generic Metal trace bucket"
+  },
+  "validation": {
+    "route_segment_suite": {
+      "command": "cargo test -p hawking-core route_segment --lib -- --nocapture",
+      "passed": 11,
+      "failed": 0
+    },
+    "flagship_fixture": {
+      "command": "cargo test -p hawking-core route_segment_pq_v_rows_flagship_geometry_passes_v21 --lib -- --nocapture",
+      "passed": 1,
+      "failed": 0
+    },
+    "full_core_library": {
+      "command": "cargo test -p hawking-core --lib -- --nocapture",
+      "passed": 207,
+      "failed": 0,
+      "ignored": 2
+    },
+    "diff_check": "PASS"
+  },
+  "promotion_gate": {
+    "promoted": false,
+    "reason": "This proves only the V-side absorbed projection. The whole compact chain remains default-inert and has a recorded intermediate cancellation witness.",
+    "remaining_required_mechanisms": [
+      "whole compact-chain synthetic final-context V2.1 including the authoritative negative/order fixture",
+      "compact-cache production allocation and append wiring behind an explicit default-off path",
+      "complete-token Numeric Parity V2.1",
+      "contention-authorized live A/B and sustained 2K/8K/32K validation"
+    ]
+  }
+}

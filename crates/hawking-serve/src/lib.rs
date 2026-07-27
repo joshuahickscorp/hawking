@@ -4,12 +4,15 @@
 //! batching lives in [`batch`]; the HTTP surface in [`http`].
 
 pub mod batch;
+pub mod glm_chat;
 pub mod http;
 pub mod spec_gov;
+pub mod surface;
 pub mod system_kv_bank;
 pub mod tool_calls;
 
 pub use batch::scheduler::BatchPolicy;
+pub use surface::{bridge_surface_document, bridge_surface_json, EndpointStatus};
 pub use system_kv_bank::{BankConfig, BankEntry, SystemPromptKvBank};
 
 use anyhow::Result;
@@ -341,6 +344,17 @@ impl std::fmt::Display for WorkloadPack {
     }
 }
 
+/// Default wall-clock budget for a single completion when serving a `.gravity`
+/// base runtime. Measured BASE_TRUE_TPS is ~0.4 tok/s warm; a 200-token reply
+/// is ~8 minutes. Callers may override via `ServeOptions::request_timeout_secs`
+/// or the env `HAWKING_GRAVITY_REQUEST_TIMEOUT_SECS`.
+pub const GRAVITY_DEFAULT_REQUEST_TIMEOUT_SECS: u64 = 3600;
+
+/// SSE comment interval while a slow `.gravity` generation is in flight. Must
+/// be short enough that proxies do not close an idle socket during multi-second
+/// prefill, and explicit rather than a silent framework default.
+pub const GRAVITY_DEFAULT_SSE_KEEP_ALIVE_SECS: u64 = 15;
+
 #[derive(Debug, Clone)]
 pub struct ServeOptions {
     pub weights: PathBuf,
@@ -373,6 +387,14 @@ pub struct ServeOptions {
     pub batch_policy: BatchPolicy,
     /// Track 9.3: workload pack (sets profile/energy/policy defaults).
     pub workload: WorkloadPack,
+    /// Explicit per-request wall-clock budget in seconds. `None` leaves the
+    /// non-gravity default (no server-side cutoff). Gravity serve always sets
+    /// this to a large explicit value so a silent 30s cutoff cannot abort a
+    /// real base-runtime completion.
+    pub request_timeout_secs: Option<u64>,
+    /// SSE keep-alive interval in seconds. `None` uses axum's default for
+    /// non-gravity; gravity serve sets [`GRAVITY_DEFAULT_SSE_KEEP_ALIVE_SECS`].
+    pub sse_keep_alive_secs: Option<u64>,
 }
 
 impl Default for ServeOptions {
@@ -398,6 +420,8 @@ impl Default for ServeOptions {
             f16_kv: None,
             batch_policy: BatchPolicy::Default,
             workload: WorkloadPack::Default,
+            request_timeout_secs: None,
+            sse_keep_alive_secs: None,
         }
     }
 }
@@ -526,6 +550,65 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
     let model_arch = engine.model_arch().to_string();
     let max_batch = opts.max_batch_size;
 
+    // Gravity base-runtime capability surface. Detected from the loaded engine
+    // (index sha256 + chat template), never guessed. When present we raise the
+    // explicit request timeout / SSE keep-alive so a ~0.4 tok/s base path is
+    // not cut off by a silent 30s default.
+    let gravity_meta = if engine.is_base_runtime()
+        || engine.artifact_index_sha256().is_some()
+        || model_arch == "glm_moe_dsa"
+    {
+        // GLM without its real template is a hard fail (load already enforces
+        // this for glm_moe_dsa; re-check so a future loader regression surfaces
+        // at serve start rather than as fluent garbage).
+        if model_arch == "glm_moe_dsa" && engine.chat_template().is_none() {
+            return Err(anyhow::anyhow!(
+                "glm_moe_dsa gravity serve: artifact chat template is missing; \
+                 refusing to serve with a guessed template"
+            ));
+        }
+        let timeout = opts
+            .request_timeout_secs
+            .or_else(|| {
+                std::env::var("HAWKING_GRAVITY_REQUEST_TIMEOUT_SECS")
+                    .ok()
+                    .and_then(|v| v.parse().ok())
+            })
+            .unwrap_or(GRAVITY_DEFAULT_REQUEST_TIMEOUT_SECS);
+        let keep_alive = opts
+            .sse_keep_alive_secs
+            .unwrap_or(GRAVITY_DEFAULT_SSE_KEEP_ALIVE_SECS);
+        eprintln!(
+            "[gravity serve] model_id={model_id} arch={model_arch} base_runtime=true \
+             fallback_present=false"
+        );
+        if let Some(sha) = engine.artifact_index_sha256() {
+            eprintln!("[gravity serve] artifact_index_sha256={sha}");
+        } else {
+            eprintln!("[gravity serve] artifact_index_sha256=<none — single-shard or no index>");
+        }
+        if let Some(p) = engine.chat_template_path() {
+            eprintln!("[gravity serve] chat_template={p}");
+        }
+        eprintln!(
+            "[gravity serve] request_timeout_secs={timeout} (explicit; measured base decode is \
+             ~0.4 tok/s warm — do not treat a slow reply as a hang)"
+        );
+        eprintln!("[gravity serve] sse_keep_alive_secs={keep_alive}");
+        Some(http::GravityServeMeta {
+            index_sha256: engine.artifact_index_sha256().map(str::to_string),
+            architecture: model_arch.clone(),
+            model_id: model_id.clone(),
+            chat_template: engine.chat_template().map(str::to_string),
+            chat_template_path: engine.chat_template_path().map(str::to_string),
+            base_runtime: true,
+            request_timeout_secs: timeout,
+            sse_keep_alive_secs: keep_alive,
+        })
+    } else {
+        None
+    };
+
     // ── --explain-performance startup summary ─────────────────────────────
     if opts.explain_performance {
         let token_only_active = effective_profile == RuntimeProfile::Fast
@@ -588,6 +671,7 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
         system_kv_bank: Arc::new(parking_lot::Mutex::new(
             hawking_serve_system_kv_bank_default(),
         )),
+        gravity: gravity_meta,
     };
 
     // ── Background continuous-batching loop ───────────────────────────────

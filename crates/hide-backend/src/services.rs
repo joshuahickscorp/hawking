@@ -1,4 +1,6 @@
-use hawking_context::{InMemoryMemoryStore, MemoryStore, SqliteMemoryStore};
+use hawking_context::{
+    ClassedMemorySystem, DynClassedMemory, InMemoryMemoryStore, MemoryStore, SqliteMemoryStore,
+};
 use hawking_index::{CodeIndex, InMemoryCodeIndex, SqliteCodeIndex};
 use hawking_orch::RoleRegistry;
 use hawking_research::{DynResearchLedger, InMemoryResearchLedger, JsonlResearchLedger};
@@ -1579,6 +1581,10 @@ pub struct BackendServices {
     /// constraints, failed approaches) — the persistent Project Brain. Sqlite on
     /// disk via `open()`, RAM via `new()`/`with_stores()`.
     pub memory_store: DynMemoryStore,
+    /// The six real HIDE memory classes (working / episodic / semantic_project /
+    /// procedural / user / verification). Separate tables + write-capability
+    /// boundaries — not labels on the Project Brain table above.
+    pub classed_memory: DynClassedMemory,
     pub event_integrity: DynEventLogIntegrity,
     pub blob_store: DynBlobStore,
     pub projection_store: DynProjectionStore,
@@ -1614,10 +1620,15 @@ pub struct BackendServices {
 impl BackendServices {
     pub fn new(config: HideConfig, event_log: DynEventLog) -> Self {
         let memory = Arc::new(InMemoryCodeIndex::default());
+        let workspace_id = config.workspace_root.display().to_string();
         Self {
             config,
             event_log,
             memory_store: Arc::new(InMemoryMemoryStore::default()),
+            classed_memory: Arc::new(
+                ClassedMemorySystem::open_in_memory(workspace_id)
+                    .expect("in-memory classed memory"),
+            ),
             event_integrity: Arc::new(EventChainAuditor),
             blob_store: Arc::new(InMemoryBlobStore::default()),
             projection_store: Arc::new(InMemoryProjectionStore::default()),
@@ -1647,10 +1658,15 @@ impl BackendServices {
     ) -> Self {
         // Tests / in-memory constructors: empty InMemoryCodeIndex stays the default.
         let memory = Arc::new(InMemoryCodeIndex::default());
+        let workspace_id = config.workspace_root.display().to_string();
         Self {
             config,
             event_log,
             memory_store: Arc::new(InMemoryMemoryStore::default()),
+            classed_memory: Arc::new(
+                ClassedMemorySystem::open_in_memory(workspace_id)
+                    .expect("in-memory classed memory"),
+            ),
             event_integrity: Arc::new(EventChainAuditor),
             blob_store,
             projection_store,
@@ -1709,6 +1725,27 @@ impl BackendServices {
             layout.hide_dir.join("memory").join("memory.db"),
         )?);
 
+        // Six real memory classes: workspace tables under .hide/memory/, user
+        // preferences under the user_root (cross-workspace). Degrades to
+        // in-memory on open failure (same posture as the code index).
+        let workspace_id = config.workspace_root.display().to_string();
+        let classed_memory: DynClassedMemory = match ClassedMemorySystem::open(
+            workspace_id.clone(),
+            layout.hide_dir.join("memory").join("classes.db"),
+            config.user_root.join("memory").join("user.db"),
+        ) {
+            Ok(sys) => Arc::new(sys),
+            Err(e) => {
+                eprintln!(
+                    "warning: classed memory open failed ({e}); using in-memory six classes"
+                );
+                Arc::new(
+                    ClassedMemorySystem::open_in_memory(workspace_id)
+                        .expect("in-memory classed memory"),
+                )
+            }
+        };
+
         let mut services = Self::with_stores(
             config,
             event_log,
@@ -1719,6 +1756,7 @@ impl BackendServices {
             research_ledger,
         );
         services.memory_store = memory_store;
+        services.classed_memory = classed_memory;
         services.repo_instructions = Arc::new(repo_instructions);
 
         // W4: bind the real SqliteCodeIndex at workspace open. A failed open or

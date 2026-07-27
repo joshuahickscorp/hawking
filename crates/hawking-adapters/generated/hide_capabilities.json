@@ -1,0 +1,140 @@
+{
+  "capabilities": [
+    {
+      "aliases": [
+        "deepseek",
+        "deepseek2",
+        "deepseek_v2"
+      ],
+      "description": "DeepSeek V2 — SOURCE_HEADER_VALIDATED",
+      "executes": true,
+      "id": "model_family.deepseek",
+      "kind": "model_family",
+      "level": "SOURCE_HEADER_VALIDATED",
+      "serve_registered": true
+    },
+    {
+      "aliases": [
+        "gemma",
+        "gemma2"
+      ],
+      "description": "Gemma 2 — DECLARED",
+      "executes": false,
+      "id": "model_family.gemma",
+      "kind": "model_family",
+      "level": "DECLARED",
+      "serve_registered": false
+    },
+    {
+      "aliases": [
+        "glm",
+        "glm52",
+        "glm_moe_dsa",
+        "glm-5.2"
+      ],
+      "description": "GLM (gravity glm_moe_dsa) — SMALL_REAL_CHECKPOINT",
+      "executes": true,
+      "id": "model_family.glm",
+      "kind": "model_family",
+      "level": "SMALL_REAL_CHECKPOINT",
+      "serve_registered": true
+    },
+    {
+      "aliases": [
+        "kimi",
+        "kimi_k2",
+        "kimi_k26",
+        "moonshot"
+      ],
+      "description": "Kimi K2.x — SYNTHETIC_PARITY",
+      "executes": false,
+      "id": "model_family.kimi",
+      "kind": "model_family",
+      "level": "SYNTHETIC_PARITY",
+      "serve_registered": false
+    },
+    {
+      "aliases": [
+        "llama",
+        "llama2",
+        "llama3",
+        "llama3.2"
+      ],
+      "description": "Llama (dense GGUF + gravity) — SMALL_REAL_CHECKPOINT",
+      "executes": true,
+      "id": "model_family.llama",
+      "kind": "model_family",
+      "level": "SMALL_REAL_CHECKPOINT",
+      "serve_registered": true
+    },
+    {
+      "aliases": [
+        "minimax",
+        "minimax_m3",
+        "minimax-m3"
+      ],
+      "description": "MiniMax — DECLARED",
+      "executes": false,
+      "id": "model_family.minimax",
+      "kind": "model_family",
+      "level": "DECLARED",
+      "serve_registered": false
+    },
+    {
+      "aliases": [
+        "mistral",
+        "mixtral",
+        "mistral_mixtral"
+      ],
+      "description": "Mistral / Mixtral — SMALL_REAL_CHECKPOINT",
+      "executes": true,
+      "id": "model_family.mistral_mixtral",
+      "kind": "model_family",
+      "level": "SMALL_REAL_CHECKPOINT",
+      "serve_registered": true
+    },
+    {
+      "aliases": [
+        "phi",
+        "phi3"
+      ],
+      "description": "Phi-3 — DECLARED",
+      "executes": false,
+      "id": "model_family.phi",
+      "kind": "model_family",
+      "level": "DECLARED",
+      "serve_registered": false
+    },
+    {
+      "aliases": [
+        "qwen",
+        "qwen2",
+        "qwen2moe",
+        "qwen-moe",
+        "qwen3"
+      ],
+      "description": "Qwen (dense + MoE) — SMALL_REAL_CHECKPOINT",
+      "executes": true,
+      "id": "model_family.qwen",
+      "kind": "model_family",
+      "level": "SMALL_REAL_CHECKPOINT",
+      "serve_registered": true
+    },
+    {
+      "aliases": [
+        "state_space",
+        "rwkv7",
+        "rwkv",
+        "mamba2",
+        "mamba"
+      ],
+      "description": "State-space (RWKV7 + Mamba2) — DECLARED",
+      "executes": true,
+      "id": "model_family.state_space",
+      "kind": "model_family",
+      "level": "DECLARED",
+      "serve_registered": true
+    }
+  ],
+  "schema": "hawking.hide.model_family_capabilities.v1"
+}
