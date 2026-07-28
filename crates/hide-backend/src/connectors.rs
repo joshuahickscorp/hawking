@@ -540,7 +540,10 @@ impl Connector for ContextConnector {
                         .unwrap_or(16);
                     let role_name = params.get("role").and_then(|value| value.as_str());
                     let role = choose_context_role(&self.roles, role_name)?;
-                    let mut compiler = ContextCompiler::new();
+                    // Tokenizer-true when discoverable; else honest heuristic.
+                    let counter = hawking_context::TokenCounter::discover_from_env()
+                        .unwrap_or_else(hawking_context::TokenCounter::heuristic);
+                    let mut compiler = ContextCompiler::new().with_counter(counter);
                     compiler.add_source(CodeIndexContextSource::new(
                         self.index.clone(),
                         search_limit,

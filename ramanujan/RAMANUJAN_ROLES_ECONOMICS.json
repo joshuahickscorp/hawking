@@ -1,0 +1,112 @@
+{
+  "schema": "hawking.ramanujan.roles_economics.v1",
+  "at": "2026-07-27T18:00:00Z",
+  "status": "IMPLEMENTED_ON_FIXTURES",
+  "authority": "NON_PRODUCTION_AUTHORITY",
+  "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+  "law": [
+    "roles that generate may not promote; only verifier events and the Tribunal advance evidence status",
+    "a RoleCapability is derived from a fixed charter and cannot be widened",
+    "a branch that exhausts its budget halts and records why",
+    "the Limit Registry is consulted on the write/spend path; it is not decorative",
+    "RAMANUJAN_RESEARCH_AUTHORIZED stays false; there is no code path that flips it",
+    "never generate teacher traces from Math-Preserve (L-TEACHER-01 / SUBSTRATE_CAPABILITY hash-REFUSED)"
+  ],
+  "modules": {
+    "roles": "ramanujan/roles.py",
+    "economics": "ramanujan/economics.py",
+    "session_economics": "ramanujan/economics.py::SessionEconomics",
+    "limits": "ramanujan/limits.py",
+    "sovereignty": "ramanujan/sovereignty.py",
+    "stores": "ramanujan/stores.py",
+    "forge": "ramanujan/forge.py",
+    "premise_retrieval": "ramanujan/search.py::PremiseRetrieval",
+    "tests": [
+      "ramanujan/test_roles_economics.py",
+      "ramanujan/test_governance_invariants.py",
+      "ramanujan/test_ramanujan.py"
+    ],
+    "premise_fixture": "ramanujan/fixtures/premise_corpus.json",
+    "status_receipt": "ramanujan/RAMANUJAN_GOVERNANCE_STATUS.json"
+  },
+  "roles": {
+    "source_catalogue": "odyssey/roles/ROLES.json",
+    "generators": [
+      "director",
+      "conjecturer",
+      "skeptic",
+      "formalizer",
+      "prover",
+      "computationalist",
+      "cartographer",
+      "librarian",
+      "economist",
+      "adversary"
+    ],
+    "promoters": ["tribunal", "verifier"],
+    "structural_property": "every generator has may_promote=false; RoleCapability.derive is the only construction path; no grant/add API",
+    "store_wiring": "RoleSession gates every store write through require(capability); promotion goes through require_promote()"
+  },
+  "economics": {
+    "source": "odyssey/economics/ECONOMICS.json",
+    "allocator": "economist",
+    "currency": "verified evidence",
+    "reuses": "ramanujan.search.SearchEconomics",
+    "rewards": {
+      "clean_branch_exhaustion": 3,
+      "refutation": 5,
+      "tier0_to_tier1": 1,
+      "tier1_to_tier2": 3,
+      "tier2_to_tier3": 10,
+      "tribunal_admission": 25
+    },
+    "stop_rule": "BranchAccount.stop records reason+spent+value; further charge() raises BranchHalted"
+  },
+  "limit_registry": {
+    "source": "odyssey/sovereignty/LIMIT_REGISTRY.json plus Ramanujan fences",
+    "ids": [
+      "L-LAUNCH-01",
+      "L-RESEARCH-01",
+      "L-NET-01",
+      "L-HEAVY-01",
+      "L-TEACHER-01",
+      "L-TOOLCHAIN-01"
+    ],
+    "consult_path": "LimitRegistry.consult / RoleSession._consult_before_write / F1 train loop",
+    "no_flip_path_for": "L-RESEARCH-01 (RAMANUJAN_RESEARCH_AUTHORIZED)"
+  },
+  "forge_pipeline": {
+    "F0": {
+      "name": "diagnose",
+      "entry": "ramanujan.forge.f0_diagnose",
+      "status": "IMPLEMENTED",
+      "note": "deterministic inventory of roles, stores, economics, limits, premise fixture; refuses Math-Preserve teacher traces"
+    },
+    "F1": {
+      "name": "premise_retrieval_train",
+      "entry": "ramanujan.forge.f1_train_premise_retrieval",
+      "status": "IMPLEMENTED_ON_FIXTURES",
+      "retriever_labels": {
+        "before_train": "crude_token_overlap",
+        "after_train": "trainable_trained_on_fixtures"
+      },
+      "note": "pure-Python pairwise ranking on fixtures/premise_corpus.json; still NON_PRODUCTION_AUTHORITY"
+    },
+    "F2_plus": "GATED; not in this deliverable"
+  },
+  "explicit_non_goals": [
+    "no Lean / Mathlib install",
+    "no network retrieval",
+    "no teacher traces from Math-Preserve",
+    "no multi-hour training",
+    "no flip of RAMANUJAN_RESEARCH_AUTHORIZED",
+    "no claim that fixture-trained retrieval is production premise selection"
+  ],
+  "how_to_verify": [
+    "python3 -m ramanujan.test_roles_economics",
+    "python3 -m ramanujan.test_ramanujan",
+    "python3 -m ramanujan.test_governance_invariants",
+    "python3 -m ramanujan.test_search",
+    "python3 -m ramanujan.test_cognition"
+  ]
+}

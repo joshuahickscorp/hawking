@@ -422,6 +422,7 @@ impl PermissionSet {
         JobCapability {
             tools: self.tools.clone(),
             connectors: self.connectors.clone(),
+            live: true,
         }
     }
 
@@ -455,6 +456,7 @@ impl PermissionSet {
         Ok(JobCapability {
             tools: out_tools,
             connectors: out_connectors,
+            live: true,
         })
     }
 }
@@ -462,10 +464,16 @@ impl PermissionSet {
 /// Capability handed to a spawned job. **Structurally non-widening**: fields are
 /// private; the only construction paths are [`PermissionSet::derive_capability`]
 /// and [`PermissionSet::derive_capability_subset`]. No `grant_tool` / `add` API.
+///
+/// `live` is never serialized. A capability-shaped JSON object deserialized into
+/// this type has `live = false` and fails every gate — closing export / handoff
+/// smuggling paths.
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub struct JobCapability {
     tools: BTreeSet<String>,
     connectors: BTreeSet<String>,
+    #[serde(skip)]
+    live: bool,
 }
 
 impl JobCapability {
@@ -477,17 +485,26 @@ impl JobCapability {
         &self.connectors
     }
 
+    pub fn is_live(&self) -> bool {
+        self.live
+    }
+
     pub fn allows_tool(&self, name: &str) -> bool {
-        self.tools.contains(name)
+        self.live && self.tools.contains(name)
     }
 
     pub fn allows_connector(&self, name: &str) -> bool {
-        self.connectors.contains(name)
+        self.live && self.connectors.contains(name)
     }
 
     /// Fail-closed tool gate. Returns `Ok(())` only when the tool is granted.
     pub fn require_tool(&self, name: &str) -> Result<()> {
-        if self.allows_tool(name) {
+        if !self.live {
+            return Err(HideError::PolicyDenied(
+                "job capability is not live (forged or deserialized; derive only)".into(),
+            ));
+        }
+        if self.tools.contains(name) {
             Ok(())
         } else {
             Err(HideError::PolicyDenied(format!(
@@ -498,7 +515,9 @@ impl JobCapability {
 
     /// True iff every tool/connector in `self` is also in `parent` (subset or equal).
     pub fn is_within(&self, parent: &PermissionSet) -> bool {
-        self.tools.is_subset(parent.tools()) && self.connectors.is_subset(parent.connectors())
+        self.live
+            && self.tools.is_subset(parent.tools())
+            && self.connectors.is_subset(parent.connectors())
     }
 }
 
@@ -1672,7 +1691,26 @@ mod tests {
         // capability equal to a parent set cannot claim a tool outside it.
         let parent = PermissionSet::new(["fs.read"], None::<&str>);
         let cap = parent.derive_capability();
+        assert!(cap.is_live());
         assert!(!cap.allows_tool("fs.write"));
         assert!(cap.require_tool("fs.write").is_err());
+    }
+
+    /// Adversarial: a capability-shaped JSON object is not a live grant.
+    #[test]
+    fn adversarial_forged_job_capability_via_serde_is_dead() {
+        let forged: JobCapability = serde_json::from_value(json!({
+            "tools": ["email.send", "shell.exec"],
+            "connectors": ["gmail"],
+            "live": true
+        }))
+        .expect("shape deserializes");
+        assert!(
+            !forged.is_live(),
+            "serde must not mint a live JobCapability"
+        );
+        assert!(!forged.allows_tool("email.send"));
+        assert!(forged.require_tool("email.send").is_err());
+        assert!(!forged.allows_connector("gmail"));
     }
 }

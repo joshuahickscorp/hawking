@@ -1,0 +1,93 @@
+{
+  "schema": "hawking.temporal_gravity.mechanism_receipt.v1",
+  "created_at_utc": "2026-07-27T13:26:50Z",
+  "status": "REPLAYABLE_COMPUTE_GRAPH_SUBSTRATE_DEFAULT_OFF",
+  "mechanism": "Encode a validated sequence of Metal compute stages once into a compute indirect command buffer, retain ICB-capable pipelines and stable buffer addresses, declare indirect resources explicitly at replay, and execute the sequence through one direct compute encoder in the existing one-submit TokenCommandBuffer.",
+  "base_commit": "a1fed331b446d57ef8b78ead1bf1a6c5d00ee451",
+  "scope": {
+    "runtime_default_changed": false,
+    "production_forward_wired": false,
+    "sealed_math_preserve_touched": false,
+    "mop_touched": false,
+    "throughput_claim": false,
+    "purpose": "Replayability substrate required by the Temporal Gravity objective; not a revival of ICB as a throughput lever."
+  },
+  "construction_contract": {
+    "persistent_scalar_arguments": "All captured arguments are MTLBuffer bindings; set_bytes payloads are not admitted.",
+    "icb_pipeline_requirement": "Every captured pipeline is compiled with supportIndirectCommandBuffers=true and retained for the graph lifetime.",
+    "inherit_buffers": false,
+    "inherit_pipeline_state": false,
+    "command_type": "ConcurrentDispatchThreads",
+    "maximum_kernel_buffer_bindings": 31,
+    "resource_residency": "Each unique captured buffer is declared on the direct compute encoder with the union of its read/write usage.",
+    "dependency_ordering": "A stage may set barrier_before; dependent stages must use it.",
+    "context_binding": "Replay fails closed when the graph and TokenCommandBuffer do not share the same MetalContext.",
+    "trace_policy": "Off and aggregate CPU-encode modes are admitted; split/per-dispatch GPU trace modes fail closed because they cannot attribute commands inside the ICB."
+  },
+  "fail_closed_validation": {
+    "performed_before_icb_allocation": [
+      "nonempty graph",
+      "nonempty kernel names",
+      "nonzero grid dimensions",
+      "nonzero threadgroup dimensions",
+      "at least one persistent buffer binding per stage",
+      "buffer indices in Metal range and unique within each stage",
+      "binding offsets inside nonempty buffers",
+      "kernel resolution and ICB-capable pipeline creation",
+      "threadgroup size within the compiled pipeline maximum"
+    ],
+    "negative_fixture": "gravity_zero_f32 with a zero grid dimension",
+    "negative_fixture_result": "REJECTED_BEFORE_ICB_ALLOCATION"
+  },
+  "target_mac_replay_proof": {
+    "device": "Apple M3 Ultra",
+    "metal_support": "Metal 4",
+    "graph": [
+      "gravity_zero_f32(output, persistent_n)",
+      "barrier; gravity_add_inplace_f32(output, input, persistent_n)"
+    ],
+    "elements": 257,
+    "indirect_commands": 2,
+    "replays": 2,
+    "input_contents_changed_between_replays": true,
+    "output_exact_each_replay": true,
+    "output_gpu_address_unchanged": true,
+    "input_gpu_address_unchanged": true,
+    "scalar_gpu_address_unchanged": true,
+    "context_buffer_allocations_during_replays": 0,
+    "physical_command_buffers_first_replay": 1,
+    "physical_direct_encoders_first_replay": 1,
+    "logical_dispatch_count_each_replay": 2,
+    "command_buffer_waits_each_replay": 1,
+    "result": "PASS"
+  },
+  "regression_validation": {
+    "explicit_metal_icb_test": {
+      "command": "env -u HAWKING_TCB_TRACE cargo test -p hawking-core --lib replayable_icb_reuses_addresses_and_one_submit -- --ignored --nocapture",
+      "passed": 1,
+      "failed": 0
+    },
+    "full_core_library": {
+      "passed": 230,
+      "failed": 0,
+      "ignored": 4
+    },
+    "clippy_lib_no_deps_deny_warnings": "PASS",
+    "rustfmt_selected_file": "PASS",
+    "diff_check": "PASS"
+  },
+  "qualification": {
+    "qualified": [
+      "A bounded compute graph can be encoded once and replayed repeatedly through one physical command buffer and one direct encoder while retaining exact outputs and stable buffer addresses.",
+      "The graph integrates with TokenCommandBuffer dispatch accounting, cost-ledger stage accounting, physical labels, and aggregate CPU-encode tracing.",
+      "Invalid graph geometry, bindings, context ownership, and incompatible trace modes fail closed."
+    ],
+    "not_qualified": [
+      "No production decode path selects this graph.",
+      "No end-to-end latency or throughput improvement is claimed; existing repository evidence keeps ICB below the performance ship gate.",
+      "No sealed Math-Preserve token, sustained 2K/8K/32K run, memory-pressure run, swap observation, or thermal promotion was performed.",
+      "The full token forward graph has not yet been captured."
+    ],
+    "next_boundary": "Capture a bounded complete-token DAG only after its persistent scalar buffers, dependency barriers, and profiler attribution are enumerated; keep selection default-off and require parity before any production admission."
+  }
+}

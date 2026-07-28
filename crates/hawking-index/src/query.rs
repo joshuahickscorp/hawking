@@ -491,15 +491,39 @@ fn lexical_score(line: &str, needle: &str) -> f32 {
 // SqliteCodeIndex — durable, index-backed implementation.
 // ============================================================================
 
+/// Sized wrapper around `Arc<dyn EmbeddingClient>` so hybrid search can hold a
+/// trait object without requiring `HybridRetriever: ?Sized` (the Arc itself is
+/// Sized; methods forward to the inner client).
+struct ArcEmbedder(Arc<dyn crate::semantic::EmbeddingClient>);
+
+impl crate::semantic::EmbeddingClient for ArcEmbedder {
+    fn embed<'a>(
+        &'a self,
+        texts: Vec<String>,
+    ) -> futures::future::BoxFuture<'a, Result<Vec<Vec<f32>>>> {
+        self.0.embed(texts)
+    }
+    fn model_id(&self) -> String {
+        self.0.model_id()
+    }
+}
+
 /// A durable code index backed by SQLite/FTS5 + the unified graph + vectors.
 ///
 /// Implements the full `Index` trait. Indexing goes through `index_text` (the
 /// daemon and a one-shot bootstrap both call it). Search runs the real hybrid
-/// pipeline: symbol leg + FTS5 lexical leg + vector leg → RRF → rerank.
+/// pipeline: symbol leg + FTS5 lexical leg + (optional) vector leg → RRF →
+/// rerank. The vector leg runs only when an [`EmbeddingClient`] is installed via
+/// [`SqliteCodeIndex::with_embedder`]; without one, semantic is skipped honestly
+/// rather than ranking on silent fixture vectors.
 pub struct SqliteCodeIndex {
     store: Arc<SqliteStore>,
     graph: RwLock<CodeGraph>,
     generation: RwLock<u64>,
+    /// Live embedding client for the semantic leg. `None` ⇒ lexical⊕symbol only.
+    /// Interior-mutable so the host can install `HttpEmbeddingClient` once the
+    /// runtime becomes Ready without rebuilding the index.
+    embedder: RwLock<Option<Arc<dyn crate::semantic::EmbeddingClient>>>,
 }
 
 impl SqliteCodeIndex {
@@ -519,7 +543,27 @@ impl SqliteCodeIndex {
             store,
             graph: RwLock::new(CodeGraph::new()),
             generation: RwLock::new(gen),
+            embedder: RwLock::new(None),
         }
+    }
+
+    /// Install a real embedding client for the semantic leg of hybrid search.
+    /// Production wires [`crate::semantic::HttpEmbeddingClient`] when the
+    /// runtime is Ready; tests may install [`BagOfCharsEmbeddingClient`].
+    pub fn with_embedder(self, embedder: Arc<dyn crate::semantic::EmbeddingClient>) -> Self {
+        *self.embedder.write() = Some(embedder);
+        self
+    }
+
+    /// Replace the embedder after construction (e.g. host learns the runtime
+    /// base URL after boot). Passing `None` disables the semantic leg.
+    pub fn set_embedder(&self, embedder: Option<Arc<dyn crate::semantic::EmbeddingClient>>) {
+        *self.embedder.write() = embedder;
+    }
+
+    /// True when a live embedder is installed (semantic leg can run).
+    pub fn has_embedder(&self) -> bool {
+        self.embedder.read().is_some()
     }
 
     pub fn store(&self) -> Arc<SqliteStore> {
@@ -611,26 +655,40 @@ impl SqliteCodeIndex {
             .collect())
     }
 
-    /// Full hybrid search (symbol ⊕ lexical ⊕ vector → RRF → rerank). Uses a stub
-    /// embedder by default so it works offline; swap via `search_with_embedder`.
-    /// The vector (semantic) leg always runs here; use [`hybrid_search_opts`] to
-    /// disable it.
-    ///
-    /// [`hybrid_search_opts`]: SqliteCodeIndex::hybrid_search_opts
+    /// Full hybrid search (symbol ⊕ lexical ⊕ optional vector → RRF → rerank).
+    /// The vector leg runs only when an embedder is installed; otherwise this is
+    /// honest lexical⊕symbol fusion (never a silent fixture embedder).
     pub async fn hybrid_search(&self, query: &str, k_final: usize) -> Result<Vec<FusedHit>> {
         self.hybrid_search_opts(query, k_final, true).await
     }
 
     /// Hybrid search with an explicit `include_semantic` toggle. When `false` the
-    /// vector leg (and the embedder) is skipped entirely.
+    /// vector leg is skipped. When `true` but no embedder is installed, the
+    /// vector leg is also skipped (honest degradation) rather than ranking on
+    /// stub vectors. Use [`search_with_embedder`] to force a specific client.
     pub async fn hybrid_search_opts(
         &self,
         query: &str,
         k_final: usize,
         include_semantic: bool,
     ) -> Result<Vec<FusedHit>> {
-        let embedder = StubEmbeddingClient::default();
-        self.search_with_embedder(query, k_final, &embedder, include_semantic)
+        let want_semantic = include_semantic && self.has_embedder();
+        if want_semantic {
+            // Clone the Arc under the lock so we don't hold it across await.
+            // Wrap in ArcEmbedder (Sized) so HybridRetriever's type param is happy.
+            let embedder = self
+                .embedder
+                .read()
+                .clone()
+                .expect("has_embedder was true");
+            let wrapped = ArcEmbedder(embedder);
+            return self
+                .search_with_embedder(query, k_final, &wrapped, true)
+                .await;
+        }
+        // No semantic leg: pass a refusing stub that is never called (include_semantic=false).
+        let refuse = StubEmbeddingClient::default();
+        self.search_with_embedder(query, k_final, &refuse, false)
             .await
     }
 
@@ -995,5 +1053,36 @@ mod tests {
             .await
             .unwrap();
         assert!(rm.rendered.contains("popular_api"));
+    }
+
+    /// Property: hybrid search never installs StubEmbeddingClient fixture vectors.
+    /// Without a configured embedder, include_semantic is honored by skipping
+    /// the vector leg (lexical⊕symbol only), not by ranking on bag-of-chars.
+    #[tokio::test]
+    async fn hybrid_search_skips_semantic_without_embedder_rather_than_using_stub() {
+        let index = SqliteCodeIndex::open_in_memory().unwrap();
+        assert!(!index.has_embedder());
+        index
+            .index_text("src/a.rs", "pub fn alpha_target() {}\n", "h")
+            .unwrap();
+        // include_semantic=true but no embedder → must still succeed (lexical/symbol).
+        let hits = index
+            .hybrid_search_opts("alpha_target", 5, true)
+            .await
+            .expect("search without embedder must not error on stub refusal");
+        assert!(
+            hits.iter().any(|h| h.file.contains("a.rs") || h.snippet.contains("alpha")),
+            "lexical/symbol leg must still retrieve, got {hits:?}"
+        );
+        // Explicit refusing stub via search_with_embedder + include_semantic must error.
+        let refuse = crate::semantic::StubEmbeddingClient::default();
+        let err = index
+            .search_with_embedder("alpha_target", 5, &refuse, true)
+            .await
+            .expect_err("StubEmbeddingClient must refuse on the semantic path");
+        assert!(
+            err.to_string().contains("refuses") || err.to_string().contains("StubEmbedding"),
+            "got: {err}"
+        );
     }
 }

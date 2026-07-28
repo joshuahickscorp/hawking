@@ -63,6 +63,38 @@
     {
       "category": "usage",
       "kind": "model.usage"
+    },
+    {
+      "category": "you_objects",
+      "kind": "you.object.added"
+    },
+    {
+      "category": "you_memory",
+      "kind": "you.memory.proposed"
+    },
+    {
+      "category": "you_connectors",
+      "kind": "you.connector.read"
+    },
+    {
+      "category": "you_research",
+      "kind": "you.research.started"
+    },
+    {
+      "category": "you_automation",
+      "kind": "you.automation.created"
+    },
+    {
+      "category": "you_swarm",
+      "kind": "you.swarm.created"
+    },
+    {
+      "category": "you_projects",
+      "kind": "you.project.updated"
+    },
+    {
+      "category": "you_handoff",
+      "kind": "you.handoff.created"
     }
   ],
   "family_placement": [
@@ -77,7 +109,7 @@
       "fabric_partition": null,
       "fabric_partition_null_reason": "not serve-registered",
       "family": "gemma",
-      "placement": "not_serve_registered",
+      "placement": "declared_only",
       "serve_registered": false
     },
     {
@@ -91,7 +123,7 @@
       "fabric_partition": null,
       "fabric_partition_null_reason": "not serve-registered; no Fabric placement",
       "family": "kimi",
-      "placement": "not_serve_registered",
+      "placement": "declared_only",
       "serve_registered": false
     },
     {
@@ -105,7 +137,7 @@
       "fabric_partition": null,
       "fabric_partition_null_reason": "not serve-registered",
       "family": "minimax",
-      "placement": "not_serve_registered",
+      "placement": "declared_only",
       "serve_registered": false
     },
     {
@@ -119,7 +151,7 @@
       "fabric_partition": null,
       "fabric_partition_null_reason": "not serve-registered",
       "family": "phi",
-      "placement": "not_serve_registered",
+      "placement": "declared_only",
       "serve_registered": false
     },
     {

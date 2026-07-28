@@ -1,0 +1,13 @@
+{
+  "schema": "hawking.ramanujan.clean_proof_replay_receipt.v1",
+  "at": "2026-07-27T19:16:07Z",
+  "status": "REPLAY_FAILED",
+  "exit_code": 1,
+  "image": "ramanujan-clean-replay:2ec0166b",
+  "image_id": "sha256:319f63eb570145568bda6d73cc7f206a8be6d1097a48f188d8976ab1b0ede036",
+  "capsule": "/Users/scammermike/Downloads/hawking/ramanujan/container/capsules/FALSE_control.capsule.json",
+  "mathlib_commit": "2ec0166b31100827cd34bacca4d3b9ea3da9d618",
+  "network": "none",
+  "host_state": "none (capsule bind-mounted read-only; no host toolchain mounts)",
+  "contract": "a Tier 3 claim must be re-provable from its capsule in a container built only from the lock, with no network and no host state"
+}

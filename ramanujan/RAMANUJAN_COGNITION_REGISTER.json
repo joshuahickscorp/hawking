@@ -192,8 +192,23 @@
   },
 
   "implementation_status": {
-    "implemented_and_tested": ["Ledger", "evidence lattice", "seven stores", "Tribunal separation of powers", "Graveyard as non-deletion"],
-    "specified_only": "every mechanism in this register",
-    "why_specified_first": "each needs its kill condition and self-deception test written before it exists, so the test is not shaped by the mechanism's early results. Implementation is light work and can proceed against tiny fixtures; the specification is what had to come first."
+    "implemented_and_tested": [
+      "Ledger",
+      "evidence lattice",
+      "seven stores",
+      "Tribunal separation of powers",
+      "Graveyard as non-deletion (free resurrection refused)",
+      "roles and non-widening capabilities",
+      "branch and session economics stop rule",
+      "Limit Registry on the write/spend path",
+      "Sovereignty hooks and Forge F0/F1 gate",
+      "Research Object Graph",
+      "Cheapest Falsifier",
+      "Calibration",
+      "Research Capsule"
+    ],
+    "specified_only": "remaining mechanisms in this register (Retina, Significance, Definitional Library, Obstruction Objects, Dual-Channel Fusion, Analogy, Competence Cartography, Strategy Compiler, Epistemic Firewall, isolated ephemeral TTA)",
+    "why_specified_first": "each needs its kill condition and self-deception test written before it exists, so the test is not shaped by the mechanism's early results. Implementation is light work and can proceed against tiny fixtures; the specification is what had to come first.",
+    "governance_receipt": "ramanujan/RAMANUJAN_GOVERNANCE_STATUS.json"
   }
 }

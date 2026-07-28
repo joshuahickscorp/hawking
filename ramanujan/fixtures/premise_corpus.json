@@ -1,0 +1,44 @@
+{
+  "schema": "hawking.ramanujan.premise_fixture.v1",
+  "authority": "NON_PRODUCTION_AUTHORITY",
+  "note": "Tiny labelled premise corpus for F1 trainable retrieval. Not Mathlib. Not production. Never cite as evidence about mathematics.",
+  "premises": {
+    "add_comm": "addition is commutative: a + b equals b + a on naturals",
+    "add_assoc": "addition is associative: (a + b) + c equals a + (b + c)",
+    "mul_comm": "multiplication is commutative: a * b equals b * a",
+    "mul_assoc": "multiplication is associative: (a * b) * c equals a * (b * c)",
+    "nat_zero": "zero is the additive identity on natural numbers: a + 0 equals a",
+    "nat_one": "one is the multiplicative identity on natural numbers: a * 1 equals a",
+    "nat_lt_succ": "every natural is less than its successor",
+    "list_append_nil": "appending nil on the right leaves a list unchanged",
+    "list_length_append": "length of append is sum of lengths",
+    "eq_refl": "equality is reflexive: every term equals itself"
+  },
+  "queries": [
+    {
+      "goal": "prove a + b = b + a on naturals",
+      "relevant": ["add_comm"],
+      "irrelevant": ["mul_comm", "list_append_nil", "eq_refl"]
+    },
+    {
+      "goal": "show multiplication commutes",
+      "relevant": ["mul_comm"],
+      "irrelevant": ["add_comm", "nat_zero", "list_length_append"]
+    },
+    {
+      "goal": "a + 0 equals a identity",
+      "relevant": ["nat_zero"],
+      "irrelevant": ["nat_one", "mul_assoc", "nat_lt_succ"]
+    },
+    {
+      "goal": "length of appended lists",
+      "relevant": ["list_length_append"],
+      "irrelevant": ["add_assoc", "mul_comm", "eq_refl"]
+    },
+    {
+      "goal": "associativity of addition",
+      "relevant": ["add_assoc"],
+      "irrelevant": ["mul_assoc", "list_append_nil", "nat_one"]
+    }
+  ]
+}

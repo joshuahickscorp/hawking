@@ -17,32 +17,31 @@ const EVIDENCE: &[Evidence] = &[
         kind: EvidenceKind::Description,
     },
     Evidence {
+        path: "adapters/receipts/ADAPTER_LLAMA_RECEIPT.json",
+        claim: "Stage A: official config/tokenizer/safetensors header parsed and mapped",
+        kind: EvidenceKind::SourceHeader,
+    },
+    Evidence {
         path: "crates/hawking-core/tests/llama32_smoke.rs",
-        claim: "small-parent greedy smoke when GGUF present",
+        claim: "small-parent greedy smoke when GGUF present (skips when absent — not live grade evidence)",
         kind: EvidenceKind::SmallCheckpointRun,
     },
     Evidence {
         path: "crates/hawking-core/tests/gravity_llama_forward.rs",
-        claim: "gravity llama forward path",
-        kind: EvidenceKind::SmallCheckpointRun,
+        claim: "gravity llama forward vs frozen oracle when off-tree .gravity present (skips when absent)",
+        kind: EvidenceKind::RealTensorDecode,
     },
     Evidence {
         path: "crates/hawking-core/src/model/mod.rs",
         claim: "load_engine dispatches llama|mistral GGUF arch strings",
         kind: EvidenceKind::Description,
     },
-    // Stage C: this test runs UNCONDITIONALLY. Unlike the weight-gated tests, it does
-    // not skip -- the fixture is committed. Real container, real codec, real oracle.
-    Evidence {
-        path: "crates/hawking-core/tests/gravity_llama_forward.rs",
-        claim: "unconditional: CPU+GPU forward match frozen oracle, incremental decode matches full replay (3 passed, 57.48s of real work)",
-        kind: EvidenceKind::RealTensorDecode,
-    },
 ];
 
 const GAPS: &[&str] = &[
     "no standing PRODUCTION parity receipt",
-    "smoke tests skip when weights absent",
+    "smoke and gravity_llama_forward skip when weights/artifacts are absent",
+    "REAL_TENSOR_DECODE / SMALL_REAL_CHECKPOINT require committed fixtures or on-disk parents",
 ];
 
 const SOURCE_CLASSES: &[&str] = &["gguf.llama", "gguf.general.architecture=llama", "gravity.llama"];
@@ -50,22 +49,20 @@ const CODECS: &[&str] = &["gguf", "gravity"];
 const PRECISIONS: &[&str] = &["F16", "BF16", "Q4_K", "Q5_K", "Q6_K", "Q8_0"];
 const LIMITS: &[&str] = &[
     "no PRODUCTION standing receipt",
-    "context limit declared from GGUF metadata only; not stress-validated at family grade",
+    "gravity llama artifact is off-tree (CampaignS08 / HAWKING_GRAVITY_LLAMA_ARTIFACT)",
 ];
 
 const ABI: FamilyAbi = FamilyAbi {
     source_config_classes: AbiListField::some(SOURCE_CLASSES),
     tensor_namespace_rules: AbiField::some(
-        "GGUF llama-family: token_embd.weight, blk.{l}.attn_{q,k,v,output}.weight, \
-         blk.{l}.ffn_{gate,up,down}.weight, blk.{l}.attn_norm/ffn_norm.weight, \
-         output_norm.weight, output.weight",
+        "GGUF llama: token_embd, output_norm, output, blk.{l}.attn_*/ffn_*; gravity.llama codec for .gravity",
     ),
-    tokenizer: AbiField::some("gguf.tokenizer (embedded GGUF tokenizer model)"),
+    tokenizer: AbiField::some("gguf.tokenizer (vocab embedded in GGUF)"),
     chat_template: AbiField::null(
-        "chat template is prompt-side / serve-layer; not owned by the family engine module",
+        "chat template applied at serve/prompt layer; not declared inside LlamaDense",
     ),
-    attention_or_state: AbiField::some("GQA/MHA causal attention with KV cache"),
-    topology: AbiField::some("dense transformer (SwiGLU FFN)"),
+    attention_or_state: AbiField::some("GQA / MHA causal attention per GGUF metadata"),
+    topology: AbiField::some("dense transformer"),
     normalization: AbiField::some("RMSNorm"),
     positional_encoding: AbiField::some("RoPE (rope_base from GGUF metadata)"),
     kv_or_state_format: AbiField::some("per-layer K/V cache; layout owned by Engine/KV runtime"),
@@ -91,7 +88,9 @@ impl FamilyAdapter for LlamaFamily {
             id: "llama",
             aliases: ALIASES,
             display_name: "Llama (dense GGUF + gravity)",
-            level: SupportLevel::SmallRealCheckpoint,
+            // Demoted: llama32_smoke and gravity_llama_forward skip without on-disk
+            // weights/artifacts. Stage A source-header receipt is the live evidence.
+            level: SupportLevel::SourceHeaderValidated,
             evidence: EVIDENCE,
             module: "crates/hawking-core/src/model/llama.rs",
             executes: true,

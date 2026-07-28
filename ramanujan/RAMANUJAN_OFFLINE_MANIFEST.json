@@ -1,12 +1,12 @@
 {
   "schema": "hawking.ramanujan.offline_manifest.v1",
   "at": "2026-07-27T04:30:00Z",
-  "status": "SPECIFIED_NOTHING_ACQUIRED",
+  "status": "LOCAL_SOURCES_PARTIALLY_GENERATED",
   "offline_mode": false,
 
   "doctrine": "Freeze the giant, train the small, verify everything, search aggressively, escalate model size only after data, retrieval and search saturate. No paid APIs, no cloud training. Acquisition is a one-time mirroring step; after it, the system runs disconnected.",
 
-  "nothing_acquired_yet": "This is a specification of what must be mirrored and under what terms, not a record of what has been. Every entry is status PENDING. Acquisition is a licensing decision that belongs to the user, and several of these sources have terms that must be read rather than assumed.",
+  "nothing_acquired_yet": "SUPERSEDED for D1–D4, D6, D7: those are generated locally from the pinned Mathlib (see ramanujan/data/corpora/GENERATION_RECEIPT.json). D5, D8, D9 remain PENDING and need a user licensing/selection decision. Acquisition of external corpora is still a licensing decision.",
 
   "hard_rule_on_teacher_traces": {
     "rule": "Do NOT generate teacher traces from the Math-Preserve artifact.",
@@ -30,35 +30,43 @@
       "id": "D1",
       "name": "Lean/Mathlib proof traces",
       "purpose": "supervised formalizer and prover training",
-      "status": "PENDING",
+      "status": "PRESENT",
       "acquisition": "derived locally from the pinned Mathlib once installed, not downloaded as a dataset",
       "license_question": "Mathlib is Apache-2.0; derived traces inherit that and must carry attribution",
-      "blocked_by": "Mathlib not installed"
+      "blocked_by": null,
+      "local_corpus": "ramanujan/data/corpora/d1_proof_traces.jsonl",
+      "extractor": "python3.12 -m ramanujan.data.generate"
     },
     {
       "id": "D2",
       "name": "proof-state transitions",
       "purpose": "best-first search policy and value training",
-      "status": "PENDING",
-      "acquisition": "instrument the local Lean search; each transition is generated, never scraped",
-      "blocked_by": "Lean not installed"
+      "status": "PRESENT",
+      "acquisition": "generated locally from Mathlib by-blocks as source-level tactic sequences (structural transitions); scale-up can add info-tree instrumentation",
+      "blocked_by": null,
+      "local_corpus": "ramanujan/data/corpora/d2_state_transitions.jsonl",
+      "extractor": "python3.12 -m ramanujan.data.generate"
     },
     {
       "id": "D3",
       "name": "premise-selection pairs",
       "purpose": "retrieval training: which lemmas matter for which goals",
-      "status": "PENDING",
+      "status": "PRESENT",
       "acquisition": "derived from Mathlib dependency structure locally",
-      "blocked_by": "Mathlib not installed"
+      "blocked_by": null,
+      "local_corpus": "ramanujan/data/corpora/d3_premise_pairs.jsonl",
+      "extractor": "python3.12 -m ramanujan.data.generate"
     },
     {
       "id": "D4",
       "name": "compiler-error repair pairs",
       "purpose": "repair training: broken proof plus the error plus the fix",
-      "status": "PENDING",
+      "status": "PRESENT",
       "acquisition": "generated locally by perturbing valid proofs and recording real compiler output",
       "note": "this one needs no external data at all, only a working Lean. It is the cheapest real training signal available.",
-      "blocked_by": "Lean not installed"
+      "blocked_by": null,
+      "local_corpus": "ramanujan/data/corpora/d4_repair_pairs.jsonl",
+      "extractor": "python3.12 -m ramanujan.data.generate"
     },
     {
       "id": "D5",
@@ -72,16 +80,20 @@
       "id": "D6",
       "name": "counterexample negatives",
       "purpose": "teach refutation, not only proof",
-      "status": "PENDING",
-      "acquisition": "generated locally via SMT and enumeration",
-      "note": "a system trained only on true statements learns to agree"
+      "status": "PRESENT",
+      "acquisition": "generated locally via Mathlib Counterexamples/ plus enumerative witnesses",
+      "note": "a system trained only on true statements learns to agree",
+      "local_corpus": "ramanujan/data/corpora/d6_counterexamples.jsonl",
+      "extractor": "python3.12 -m ramanujan.data.generate"
     },
     {
       "id": "D7",
       "name": "tool-use traces",
       "purpose": "when to call which instrument",
-      "status": "PENDING",
-      "acquisition": "generated locally from the search harness"
+      "status": "PRESENT",
+      "acquisition": "generated locally from the search harness",
+      "local_corpus": "ramanujan/data/corpora/d7_tool_use_traces.jsonl",
+      "extractor": "python3.12 -m ramanujan.data.generate"
     },
     {
       "id": "D8",

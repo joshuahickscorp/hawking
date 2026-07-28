@@ -719,43 +719,44 @@ impl Engine for DeepSeekV2 {
         // training run completes — it lets the spec-decode runtime
         // ship behind HAWKING_SPEC_DECODE=eagle5 without blocking
         // on training completion.
-        let eagle5_head: Option<hawking_speculate::eagle5::Eagle5Head> =
-            if speculate_mode == SpeculateMode::Eagle5 {
-                let h = cfg.hidden;
-                let v = cfg.vocab_size;
-                let head = match config.eagle5_head_path.as_deref() {
-                    Some(p) => {
-                        match hawking_speculate::eagle5::Eagle5Head::load_from_safetensors(p, h, v) {
-                            Ok(loaded) => {
-                                eprintln!(
-                                    "[eagle5] loaded trained head from {} (hidden={h}, vocab={v})",
-                                    p.display()
-                                );
-                                loaded
-                            }
-                            Err(e) => {
-                                eprintln!(
-                                    "[eagle5] WARNING: trained-head loader failed ({e:?}); \
+        let eagle5_head: Option<hawking_speculate::eagle5::Eagle5Head> = if speculate_mode
+            == SpeculateMode::Eagle5
+        {
+            let h = cfg.hidden;
+            let v = cfg.vocab_size;
+            let head = match config.eagle5_head_path.as_deref() {
+                Some(p) => {
+                    match hawking_speculate::eagle5::Eagle5Head::load_from_safetensors(p, h, v) {
+                        Ok(loaded) => {
+                            eprintln!(
+                                "[eagle5] loaded trained head from {} (hidden={h}, vocab={v})",
+                                p.display()
+                            );
+                            loaded
+                        }
+                        Err(e) => {
+                            eprintln!(
+                                "[eagle5] WARNING: trained-head loader failed ({e:?}); \
                                  falling back to deterministic mock head — accept rate will \
                                  be near 1/vocab and is only useful for runtime validation."
-                                );
-                                hawking_speculate::eagle5::Eagle5Head::mock(0xea91e5_u64, h, v)
-                            }
+                            );
+                            hawking_speculate::eagle5::Eagle5Head::mock(0xea91e5_u64, h, v)
                         }
                     }
-                    None => {
-                        eprintln!(
-                            "[eagle5] no --eagle5-head path supplied; using deterministic mock \
+                }
+                None => {
+                    eprintln!(
+                        "[eagle5] no --eagle5-head path supplied; using deterministic mock \
                          head (hidden={h}, vocab={v}). Accept rate will be near 1/vocab — \
                          runtime-validation mode only."
-                        );
-                        hawking_speculate::eagle5::Eagle5Head::mock(0xea91e5_u64, h, v)
-                    }
-                };
-                Some(head)
-            } else {
-                None
+                    );
+                    hawking_speculate::eagle5::Eagle5Head::mock(0xea91e5_u64, h, v)
+                }
             };
+            Some(head)
+        } else {
+            None
+        };
 
         // WB weight-pinning: when Metal is alive, upload the LM-head
         // fp16 matrix to a single Buffer that lives for the model's

@@ -153,7 +153,18 @@ class TestStores(unittest.TestCase):
     def test_revival_is_a_ledger_event(self) -> None:
         before = len(self.s.ledger.rows())
         self.s.bury("c1", "refuted", actor="adversary")
-        self.s.revive("c1", "the refuting lemma was itself withdrawn", actor="librarian")
+        # Premises must change after burial: a literature result that withdraws the refutation.
+        lit = self.s.ledger.append(
+            "literature_query",
+            {"claim": "c1", "result": "refuting lemma withdrawn"},
+            actor="librarian",
+        )
+        self.s.revive(
+            "c1",
+            "the refuting lemma was itself withdrawn",
+            actor="librarian",
+            premise_change_seq=lit.seq,
+        )
         self.assertGreater(len(self.s.ledger.rows()), before + 1)
         self.assertFalse(self.s.claims["c1"].in_graveyard)
 

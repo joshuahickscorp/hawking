@@ -1,0 +1,48 @@
+{
+  "schema": "hawking.final_ascent.process_quiescence_receipt.v1",
+  "at": "2026-07-28T12:01:12Z",
+  "target": {
+    "launchd_label": "com.hawking.glm52.safe-to-leave",
+    "program": "tools/condense/glm52_source_fetch.py safe-to-leave",
+    "launch_plist": "/Users/scammermike/Library/LaunchAgents/com.hawking.glm52.safe-to-leave.plist",
+    "start_interval_seconds": 300,
+    "runs_observed_before_quiescence": 1161,
+    "pid_observed": 86288,
+    "resource_use_observed": {
+      "cpu_percent": 98.2,
+      "elapsed_seconds": 218,
+      "resident_bytes": 326025216
+    }
+  },
+  "diagnosis": {
+    "source_controller_running": false,
+    "source_state": "ALL_SHARDS_VERIFIED",
+    "source_resident_shards_before_bounded_pilot": 0,
+    "status_writer_behavior": "the read-only status command re-opened and hashed the retained 86.1 GB teacher-capsule set every five minutes",
+    "scientific_progress_per_run": "none",
+    "contention": "continuous disk reads and one saturated CPU core during the bounded basis pilot"
+  },
+  "action": {
+    "operation": "launchctl bootout gui/503/com.hawking.glm52.safe-to-leave",
+    "result": "UNLOADED",
+    "process_alive_after": false,
+    "plist_deleted_or_modified": false,
+    "status_artifacts_deleted_or_modified": false,
+    "recoverability": "launchctl bootstrap gui/503 /Users/scammermike/Library/LaunchAgents/com.hawking.glm52.safe-to-leave.plist"
+  },
+  "preserved": {
+    "status_json": "/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/source_fetch/GLM52_SAFE_TO_LEAVE_STATUS.json",
+    "status_markdown": "/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/source_fetch/GLM52_SAFE_TO_LEAVE_STATUS.md",
+    "status_artifacts_last_complete_update": "2026-07-28T11:52:12Z",
+    "teacher_capsules": true,
+    "source_ledgers": true,
+    "prior_artifacts": true
+  },
+  "safety": {
+    "healthy_scientific_job_killed": false,
+    "MOP_touched": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "HIDE_KERNEL_TURN": false
+  }
+}

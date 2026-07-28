@@ -1,0 +1,86 @@
+{
+  "label": "revision_0",
+  "sha256": "8928fad82967d2fc06e0ccad470f7e527b842faf766df20f4148e0db3f8ba357",
+  "bytes": 312226,
+  "at": "2026-07-28T12:16:25Z",
+  "schema": "hawking.glm52.basis_pilot.v1",
+  "seed": 738581,
+  "n_tensor_results": 19,
+  "distinguishing_story": "EXPLICIT_MEAN_HELPS: equal-byte explicit mean + residual beats centered residual on held-out real activations. Production centering is a real defect, but this is not whole-model capability proof.",
+  "floor_checks": [
+    {
+      "floor": "math_live_capability",
+      "mode": "centered",
+      "rank": 256,
+      "status": "FAILS",
+      "min": 0.18744078278541565,
+      "median": 0.8493698835372925,
+      "required_min": 0.7,
+      "required_median": 0.92
+    },
+    {
+      "floor": "math_live_capability",
+      "mode": "uncentered",
+      "rank": 256,
+      "status": "FAILS",
+      "min": 0.1919957995414734,
+      "median": 0.9552409052848816,
+      "required_min": 0.7,
+      "required_median": 0.92
+    },
+    {
+      "floor": "math_live_capability",
+      "mode": "explicit_mean",
+      "rank": 256,
+      "status": "FAILS",
+      "min": 0.1919957995414734,
+      "median": 0.9552409648895264,
+      "required_min": 0.7,
+      "required_median": 0.92
+    },
+    {
+      "floor": "strong_capability",
+      "mode": "centered",
+      "rank": 512,
+      "status": "FAILS",
+      "min": 0.18744078278541565,
+      "median": 0.8554850220680237,
+      "required_min": 0.74,
+      "required_median": 0.96
+    },
+    {
+      "floor": "strong_capability",
+      "mode": "uncentered",
+      "rank": 512,
+      "status": "FAILS",
+      "min": 0.1919957995414734,
+      "median": 0.9653840661048889,
+      "required_min": 0.74,
+      "required_median": 0.96
+    },
+    {
+      "floor": "strong_capability",
+      "mode": "explicit_mean",
+      "rank": 512,
+      "status": "FAILS",
+      "min": 0.1919957995414734,
+      "median": 0.9653841853141785,
+      "required_min": 0.74,
+      "required_median": 0.96
+    }
+  ],
+  "mean_median_lift_explicit_mean_over_centered": 0.11069713532924652,
+  "mean_median_lift_uncentered_over_centered": 0.11069712042808533,
+  "safety": {
+    "full_parent_traversal_started": false,
+    "teacher_capsules_modified": false,
+    "prior_artifacts_modified": false,
+    "MOP_touched": false,
+    "production_defaults_changed": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "HIDE_KERNEL_TURN": false,
+    "gaussian_proxy_used_for_selection": false
+  },
+  "note": "First measured pass preserved as evidence. Not promotion-valid: requested ranks conflated with capped ranks; down_proj measured only in production output space; floors mixed low-traffic diagnostics."
+}

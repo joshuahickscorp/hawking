@@ -1,4 +1,4 @@
-//! BASE_TRUE_TPS for the GLM-5.2 GPU-resident `.gravity` path.
+//! BASE_TRUE_TPS for the GLM-5.2 GPU-resident Gravity or activation-aware path.
 //!
 //! Companion to `gravity_tps.rs` (Llama). Two things do not carry over from
 //! the dense case: device-resident bytes grow with the run instead of being
@@ -22,8 +22,39 @@ use std::io::Write;
 use std::path::PathBuf;
 use std::time::Instant;
 
+#[cfg(target_os = "macos")]
+use sha2::{Digest, Sha256};
+
 const DEFAULT_MODEL_DIR: &str = "Library/Application Support/Hawking/Models/GLM-5.2/\
     b4734de4facf877f85769a911abafc5283eab3d9/General-R0";
+
+#[cfg(target_os = "macos")]
+fn artifact_index(
+    dir: &std::path::Path,
+) -> Result<(String, String, &'static str), Box<dyn std::error::Error>> {
+    const CANDIDATES: [(&str, &str); 2] = [
+        ("model.gravity.index.json", "gravity"),
+        ("model.activation_aware.index.json", "activation_aware"),
+    ];
+    let present: Vec<_> = CANDIDATES
+        .iter()
+        .filter_map(|&(name, representation)| {
+            let path = dir.join(name);
+            path.is_file().then_some((path, name, representation))
+        })
+        .collect();
+    if present.len() != 1 {
+        return Err(format!(
+            "{}: expected exactly one supported model index, found {}",
+            dir.display(),
+            present.len()
+        )
+        .into());
+    }
+    let (path, name, representation) = &present[0];
+    let digest = Sha256::digest(std::fs::read(path)?);
+    Ok(((*name).to_string(), format!("{digest:x}"), representation))
+}
 
 #[cfg(target_os = "macos")]
 fn decode_output(
@@ -70,11 +101,19 @@ fn decode_output(
 
 #[cfg(target_os = "macos")]
 fn env_snapshot() -> serde_json::Value {
-    const KEYS: [&str; 7] = [
+    const KEYS: [&str; 15] = [
         "HAWKING_GLM_GPU_RESIDENT_STATE",
+        "HAWKING_GLM_GPU_COMPACT_MLA",
+        "HAWKING_GLM_GPU_DEVICE_DSA",
+        "HAWKING_GLM_GPU_COMPACT_ATTENTION_ICB",
+        "HAWKING_GLM_GPU_DEVICE_ROUTER",
         "HAWKING_GLM_GPU_LM_HEAD",
+        "HAWKING_GLM_GPU_LM_HEAD_ICB",
         "HAWKING_GLM_GPU_LM_HEAD_FULL_LOGITS",
         "HAWKING_GLM_GPU_EXPERT_WAVE",
+        "HAWKING_GLM_GPU_EXPERT_WAVE_CONCURRENT",
+        "HAWKING_GLM_GPU_EXPERT_TABLE_HIT",
+        "HAWKING_GLM_GPU_EXPERT_TABLE_ICB",
         "HAWKING_GRAVITY_GPU_CACHE_BUDGET_BYTES",
         "HAWKING_TCB_TRACE",
         "HAWKING_COST_LEDGER",
@@ -129,6 +168,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if !dir.is_dir() {
         return Err(format!("no model directory at {dir:?}").into());
     }
+    let (artifact_index_name, artifact_index_sha256, representation) = artifact_index(&dir)?;
 
     let mut progress_file = match &progress {
         Some(p) => {
@@ -278,23 +318,36 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let receipt = serde_json::json!({
         "schema": "hawking.gravity.glm_base_tps.v1",
         "scoreboard": "BASE_TRUE_TPS",
+        "artifact": {
+            "representation": representation,
+            "index": artifact_index_name,
+            "index_sha256": artifact_index_sha256,
+        },
         "verify_hash": verify_hash,
         "token_curve": token_curve,
         "run_configuration": {
             "raw_environment": env_snapshot(),
             "resolved": {
                 "resident_state": model.resident_state_enabled(),
+                "compact_mla": hawking_core::gravity_glm::gpu_compact_mla_enabled(),
+                "device_dsa": hawking_core::gravity_glm::gpu_device_dsa_enabled(),
+                "compact_attention_icb": hawking_core::gravity_glm::gpu_compact_attention_icb_enabled(),
+                "device_router": hawking_core::gravity_glm::gpu_device_router_enabled(),
                 "gpu_native_bf16_head": hawking_core::gravity_glm::gpu_lm_head_enabled(),
+                "gpu_lm_head_icb": hawking_core::gravity_glm::gpu_lm_head_icb_enabled(),
                 "full_logits_readback": hawking_core::gravity_glm::gpu_lm_head_full_logits_enabled(),
                 "expert_wave": hawking_core::gravity_glm::gpu_expert_wave_enabled(),
+                "expert_wave_concurrent": hawking_core::gravity_glm::gpu_expert_wave_concurrent_enabled(),
+                "expert_table_hit": hawking_core::gravity_glm::gpu_expert_table_hit_enabled(),
+                "expert_table_icb": hawking_core::gravity_glm::gpu_expert_table_icb_enabled(),
                 "cost_ledger": false,
             },
             "output_contract": "each token accepts either full vocab logits or promoted token + top-k diagnostics; actual mode is recorded per token",
         },
-        "note": "measured, not modelled; no acceleration of any kind is enabled on this path. \
-                 GLM's routed MoE means device-resident bytes grow with the run rather than \
-                 being fixed at load, and cost is mildly content-dependent, unlike the dense \
-                 Llama instrument gravity_tps.rs measures. Resident set is byte-budgeted LRU \
+        "note": "measured, not modelled; true batch-1 and non-speculative. Every admitted \
+                 runtime flag is recorded above rather than assumed. GLM's routed MoE means \
+                 device-resident bytes grow with the run instead of being fixed at load, and \
+                 cost is mildly content-dependent. Resident set is byte-budgeted LRU \
                  (HAWKING_GRAVITY_GPU_CACHE_BUDGET_BYTES); high_water is the peak observed \
                  this process, not modelled capacity.",
         "model_dir": dir.to_string_lossy(),

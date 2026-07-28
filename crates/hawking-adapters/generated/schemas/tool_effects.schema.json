@@ -1,0 +1,63 @@
+{
+  "$id": "hawking.tool_effects.v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Tool effect request shape (hide-core EffectSet) exposed for SDK consumers.",
+  "properties": {
+    "effects": {
+      "items": {
+        "properties": {
+          "bytes_hash": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "kind": {
+            "enum": [
+              "read",
+              "write",
+              "delete",
+              "execute",
+              "network",
+              "model",
+              "plugin",
+              "unknown"
+            ],
+            "type": "string"
+          },
+          "metadata": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "risk": {
+            "enum": [
+              "trivial",
+              "low",
+              "medium",
+              "high",
+              "critical"
+            ],
+            "type": "string"
+          },
+          "target": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "target",
+          "risk"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "effects"
+  ],
+  "title": "ToolEffectSet",
+  "type": "object"
+}

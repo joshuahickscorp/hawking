@@ -1,0 +1,106 @@
+{
+  "schema": "hawking.ramanujan.governance_status.v1",
+  "at": "2026-07-27T20:00:00Z",
+  "authority": "NON_PRODUCTION_AUTHORITY",
+  "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+  "status": "GOVERNANCE_SURFACE_COMPLETE_ON_FIXTURES",
+  "law": [
+    "Ledger is append-only and hash-chained; no edit/delete API; verify_chain detects tampering",
+    "Tier promotion refuses rather than silently ignoring insufficient evidence",
+    "Tribunal admitter is never the author",
+    "No generator role holds promote_claim; enforced at RoleSpec construction",
+    "Burial is not deletion; free resurrection is refused; revival needs a post-burial premise change",
+    "RAMANUJAN_RESEARCH_AUTHORIZED stays false; no flip path"
+  ],
+  "implemented": {
+    "ledger": "ramanujan/ledger.py",
+    "evidence_lattice": "ramanujan/evidence.py",
+    "seven_stores": {
+      "module": "ramanujan/stores.py",
+      "names": [
+        "problem",
+        "claim",
+        "proof_state",
+        "counterexample",
+        "prior_art",
+        "strategy",
+        "graveyard"
+      ],
+      "notes": "All seven have ledger-backed write paths; no delete API; overwrite refused"
+    },
+    "tribunal": "Stores.tribunal_admit + RoleSession.tribunal_admit",
+    "graveyard": "Stores.bury / revive; GraveyardRefused on free resurrection",
+    "roles": "ramanujan/roles.py -- 10 generators, 2 promoters",
+    "economics": {
+      "search": "ramanujan.search.SearchEconomics",
+      "branch": "ramanujan.economics.BranchAccount",
+      "session": "ramanujan.economics.SessionEconomics"
+    },
+    "limit_registry": "ramanujan/limits.py",
+    "sovereignty_hooks": "ramanujan/sovereignty.py",
+    "forge_f0_f1": "ramanujan/forge.py",
+    "cognition_fixtures": "ramanujan/cognition.py",
+    "search_fixtures": "ramanujan/search.py"
+  },
+  "tests": {
+    "governance_base": "ramanujan/test_ramanujan.py",
+    "roles_economics": "ramanujan/test_roles_economics.py",
+    "adversarial_invariants": "ramanujan/test_governance_invariants.py",
+    "search": "ramanujan/test_search.py",
+    "cognition": "ramanujan/test_cognition.py"
+  },
+  "still_scaffold": [
+    {
+      "item": "dedicated topology store",
+      "status": "SCAFFOLD",
+      "note": "Cartographer topology rides in Strategy under topo: prefix; ledger-backed but not a peer store"
+    },
+    {
+      "item": "real Lean/Mathlib production authority path",
+      "status": "PARTIAL_HOST_DEPENDENT",
+      "note": "Container Q0 exists; this governance layer still labels fixture evaluators NON_PRODUCTION_AUTHORITY"
+    },
+    {
+      "item": "Forge F2-F9",
+      "status": "GATED",
+      "note": "SovereigntyHooks.forge_gate refuses F2+; needs served model + evaluated prompt set"
+    },
+    {
+      "item": "full Odyssey sovereignty metrics (false_refusal_rate, boundary_error_rate)",
+      "status": "GATED",
+      "note": "tools/sovereignty/sovereignty.py; not fabricated here"
+    },
+    {
+      "item": "cognition mechanisms beyond ROG/CheapestFalsifier/Calibration/Capsule",
+      "status": "SPECIFIED_ONLY",
+      "note": "RAMANUJAN_COGNITION_REGISTER.json; Retina, Significance, Obstruction Objects, etc."
+    },
+    {
+      "item": "MOP method layer (SESOI, claim ceilings, wording_check, adjudicate)",
+      "status": "DECLARED_NOT_PORTED",
+      "note": "Named in handoff contract; not implemented in ramanujan/"
+    },
+    {
+      "item": "live research session / Director against Math-Frozen",
+      "status": "BLOCKED",
+      "note": "Math-Frozen pending; RAMANUJAN_RESEARCH_AUTHORIZED false"
+    },
+    {
+      "item": "network retrieval / prior-art against real literature",
+      "status": "BLOCKED",
+      "note": "L-NET-01 deny; librarian write_literature is store-local only"
+    },
+    {
+      "item": "teacher traces from Math-Preserve",
+      "status": "REFUSED",
+      "note": "L-TEACHER-01; permanent for this lane"
+    }
+  ],
+  "how_to_verify": [
+    "python3 -m ramanujan.test_ramanujan",
+    "python3 -m ramanujan.test_roles_economics",
+    "python3 -m ramanujan.test_governance_invariants",
+    "python3 -m ramanujan.test_search",
+    "python3 -m ramanujan.test_cognition"
+  ]
+}

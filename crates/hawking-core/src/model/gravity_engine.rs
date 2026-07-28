@@ -13,9 +13,7 @@ use std::path::Path;
 use std::sync::atomic::Ordering;
 use std::time::Instant;
 
-use crate::engine::{
-    Engine, EngineConfig, GenStats, GenerateRequest, StopReason, StreamEvent,
-};
+use crate::engine::{Engine, EngineConfig, GenStats, GenerateRequest, StopReason, StreamEvent};
 use crate::gravity::GravityShard;
 use crate::gravity_glm::gpu::GravityGlmGpu;
 use crate::gravity_llama::gpu::GravityLlamaGpu;
@@ -76,15 +74,30 @@ impl GravityEngine {
             && &buf == b"GRAVITY\0"
     }
 
+    /// True for a shard selected from an assembled activation-aware model.
+    /// The full index/shard ABI and hash are validated by the loader.
+    pub fn is_activation_aware(path: &Path) -> bool {
+        path.is_file()
+            && path.extension().and_then(|value| value.to_str()) == Some("aap")
+            && path
+                .parent()
+                .map(|directory| {
+                    directory
+                        .join("model.activation_aware.index.json")
+                        .is_file()
+                })
+                .unwrap_or(false)
+    }
+
     /// Resolve a CLI `--gravity` / `HAWKING_GRAVITY` path to a loadable shard
-    /// file. Accepts either a single `.gravity` shard file or a model directory
-    /// (including directories whose name ends in `.gravity`) that contains
-    /// `model-*.gravity` shards.
+    /// file. Accepts a single `.gravity` shard or an assembled Gravity /
+    /// activation-aware model directory.
     pub fn resolve_entry(path: &Path) -> Result<std::path::PathBuf> {
         if path.is_file() {
-            if !Self::is_gravity(path) {
+            let is_aap_entry = Self::is_activation_aware(path);
+            if !Self::is_gravity(path) && !is_aap_entry {
                 return Err(Error::Gravity(format!(
-                    "{path:?}: is a file but does not start with GRAVITY\\0 magic"
+                    "{path:?}: is neither a GRAVITY\\0 shard nor an indexed .aap shard"
                 )));
             }
             return Ok(path.to_path_buf());
@@ -94,7 +107,15 @@ impl GravityEngine {
                 "{path:?}: --gravity path is neither a .gravity shard file nor a model directory"
             )));
         }
+        let gravity_index = path.join("model.gravity.index.json").is_file();
+        let activation_index = path.join("model.activation_aware.index.json").is_file();
+        if gravity_index && activation_index {
+            return Err(Error::Gravity(format!(
+                "{path:?}: both Gravity and activation-aware model indexes exist"
+            )));
+        }
         // Prefer the first ordered shard so load is deterministic.
+        let suffix = if activation_index { ".aap" } else { ".gravity" };
         let mut shards: Vec<std::path::PathBuf> = std::fs::read_dir(path)
             .map_err(|e| Error::Gravity(format!("read {path:?}: {e}")))?
             .filter_map(|e| e.ok())
@@ -103,17 +124,17 @@ impl GravityEngine {
                 p.is_file()
                     && p.file_name()
                         .and_then(|n| n.to_str())
-                        .map(|n| n.starts_with("model-") && n.ends_with(".gravity"))
+                        .map(|n| n.starts_with("model-") && n.ends_with(suffix))
                         .unwrap_or(false)
             })
             .collect();
         shards.sort();
         let Some(first) = shards.into_iter().next() else {
             return Err(Error::Gravity(format!(
-                "{path:?}: model directory contains no model-*.gravity shards"
+                "{path:?}: model directory contains no model-*{suffix} shards"
             )));
         };
-        if !Self::is_gravity(&first) {
+        if !activation_index && !Self::is_gravity(&first) {
             return Err(Error::Gravity(format!(
                 "{first:?}: first shard does not start with GRAVITY\\0 magic"
             )));
@@ -143,8 +164,7 @@ mod resolve_tests {
     fn resolve_entry_finds_ordered_shard_in_fixture_dir() {
         // Pure filesystem resolve — no Metal, no load. The fixture directory
         // is checked in under crates/hawking-core/tests/fixtures/gravity_glm.
-        let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join("tests/fixtures/gravity_glm");
+        let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/gravity_glm");
         // The fixture ships a single named shard plus an index; resolve must
         // pick a model-*.gravity or the single-shard glm52-tiny file if that
         // is what is present.
@@ -152,9 +172,7 @@ mod resolve_tests {
             .unwrap()
             .filter_map(|e| e.ok())
             .map(|e| e.path())
-            .filter(|p| {
-                p.extension().and_then(|e| e.to_str()) == Some("gravity") && p.is_file()
-            })
+            .filter(|p| p.extension().and_then(|e| e.to_str()) == Some("gravity") && p.is_file())
             .collect();
         assert!(
             !entries.is_empty(),
@@ -195,11 +213,29 @@ mod resolve_tests {
             "unexpected error: {msg}"
         );
     }
+
+    #[test]
+    fn resolve_entry_accepts_assembled_activation_aware_directory() {
+        let dir = tempfile::tempdir().expect("tempdir");
+        let shard = dir.path().join("model-00001-of-00001.aap");
+        std::fs::write(&shard, b"synthetic-aap").unwrap();
+        std::fs::write(dir.path().join("model.activation_aware.index.json"), b"{}").unwrap();
+        assert!(GravityEngine::is_activation_aware(&shard));
+        assert_eq!(
+            GravityEngine::resolve_entry(dir.path()).expect("resolve activation-aware dir"),
+            shard
+        );
+    }
 }
 
 impl Engine for GravityEngine {
     fn load(weights: &Path, config: EngineConfig) -> Result<Self> {
-        let shard = GravityShard::open(weights)?;
+        let gravity_container = Self::is_gravity(weights);
+        let shard = if gravity_container {
+            Some(GravityShard::open(weights)?)
+        } else {
+            None
+        };
 
         // A multi-shard model's own per-shard header carries only a
         // minimal, differently-keyed architecture summary (`type`, not
@@ -209,7 +245,17 @@ impl Engine for GravityEngine {
         // Prefer it when present; a single-shard artifact (Llama) has none
         // and falls back to its own header, which already carries both
         // fields directly.
-        let index_path = weights.parent().map(|d| d.join("model.gravity.index.json"));
+        let index_path = weights.parent().and_then(|directory| {
+            let gravity = directory.join("model.gravity.index.json");
+            let activation = directory.join("model.activation_aware.index.json");
+            if gravity.is_file() {
+                Some(gravity)
+            } else if activation.is_file() {
+                Some(activation)
+            } else {
+                None
+            }
+        });
         let index_bytes: Option<(std::path::PathBuf, Vec<u8>)> = index_path
             .filter(|p| p.is_file())
             .map(|p| -> Result<(std::path::PathBuf, Vec<u8>)> {
@@ -225,11 +271,17 @@ impl Engine for GravityEngine {
         let index: Option<serde_json::Value> = index_bytes
             .as_ref()
             .map(|(p, bytes)| {
-                serde_json::from_slice(bytes)
-                    .map_err(|e| Error::Gravity(format!("{p:?}: {e}")))
+                serde_json::from_slice(bytes).map_err(|e| Error::Gravity(format!("{p:?}: {e}")))
             })
             .transpose()?;
-        let arch_source = index.as_ref().unwrap_or(&shard.extra);
+        let arch_source = index
+            .as_ref()
+            .or_else(|| shard.as_ref().map(|value| &value.extra))
+            .ok_or_else(|| {
+                Error::Gravity(format!(
+                    "{weights:?}: no assembled model index and no Gravity shard header"
+                ))
+            })?;
 
         let arch = arch_source
             .get("architecture")
@@ -244,18 +296,21 @@ impl Engine for GravityEngine {
             .unwrap_or("gravity")
             .to_string();
         let tok = shard
-            .extra
-            .get("tokenizer")
-            .ok_or_else(|| Error::Gravity("artifact declares no tokenizer".into()))?;
+            .as_ref()
+            .and_then(|value| value.extra.get("tokenizer"));
         // Some packers (GLM's) record only a remote reference (`{"kind":
         // "reference", "source": "org/Model"}`) rather than a local path --
         // the tokenizer was never the thing being packed, so nothing
         // resolved it to a directory at pack time. Fall back to the
         // convention every packer that DOES stage one locally uses:
         // `tokenizer/` beside the shard(s) themselves.
-        let tok_path = match tok.get("dir").and_then(serde_json::Value::as_str) {
+        let tok_path = match tok
+            .and_then(|value| value.get("dir"))
+            .and_then(serde_json::Value::as_str)
+        {
             Some(dir) => {
                 let file = tok
+                    .expect("tok exists when its dir exists")
                     .get("source")
                     .and_then(serde_json::Value::as_str)
                     .unwrap_or("tokenizer.json");
@@ -281,9 +336,7 @@ impl Engine for GravityEngine {
         // Chat template lives next to tokenizer.json. GLM chat without the
         // artifact's real template produces fluent garbage that looks like
         // success — refuse to load rather than guess.
-        let template_path = tok_path
-            .parent()
-            .map(|d| d.join("chat_template.jinja"));
+        let template_path = tok_path.parent().map(|d| d.join("chat_template.jinja"));
         let (chat_template_path, chat_template) = match template_path {
             Some(p) if p.is_file() => {
                 let text = std::fs::read_to_string(&p)
@@ -384,9 +437,7 @@ impl Engine for GravityEngine {
             let step = Instant::now();
             logits = self.model.forward_at(&[next], pos)?;
             pos += 1;
-            if req.max_stall_ms > 0
-                && step.elapsed().as_millis() as u64 > req.max_stall_ms
-            {
+            if req.max_stall_ms > 0 && step.elapsed().as_millis() as u64 > req.max_stall_ms {
                 break StopReason::Aborted;
             }
         };
@@ -463,10 +514,7 @@ impl Engine for GravityEngine {
                 positions.len()
             )));
         }
-        if positions
-            .windows(2)
-            .any(|w| w[1] != w[0] + 1)
-        {
+        if positions.windows(2).any(|w| w[1] != w[0] + 1) {
             return Err(Error::Gravity(
                 "forward_tokens_for_test: positions must be contiguous and ascending".into(),
             ));

@@ -1,0 +1,135 @@
+{
+  "schema": "hawking.temporal_gravity.mechanism_receipt.v1",
+  "created_at_utc": "2026-07-27T14:04:35Z",
+  "status": "POSITION_SCALAR_INDEX_KEY_ROPE_ABI_INTEGRATED",
+  "mechanism": "Replace the device-DSA index-key RoPE stage's position-dependent Metal buffer binding offset with a full-buffer binding at offset zero and a frozen scalar ABI carrying input and output element offsets.",
+  "base_commit": "b03fb50ad24feb6711ffb869cea9451b145e6493",
+  "scope": {
+    "affected_runtime": "default-off compact device-DSA path",
+    "runtime_default_changed": false,
+    "dispatch_count_changed": false,
+    "command_buffer_count_changed": false,
+    "wait_count_changed": false,
+    "sealed_math_preserve_touched": false,
+    "mop_touched": false,
+    "throughput_claim": false
+  },
+  "abi": {
+    "rust_type": "GlmPositionedRopeParams",
+    "metal_type": "GravityGlmPositionedRopeParams",
+    "kernel": "gravity_rope_prefix_tail_positioned_f32",
+    "size_bytes": 24,
+    "alignment_bytes": 4,
+    "fields": [
+      {
+        "name": "n_heads",
+        "offset": 0,
+        "type": "u32"
+      },
+      {
+        "name": "rotary_dim",
+        "offset": 4,
+        "type": "u32"
+      },
+      {
+        "name": "in_stride",
+        "offset": 8,
+        "type": "u32"
+      },
+      {
+        "name": "out_stride",
+        "offset": 12,
+        "type": "u32"
+      },
+      {
+        "name": "input_element_offset",
+        "offset": 16,
+        "type": "u32"
+      },
+      {
+        "name": "output_element_offset",
+        "offset": 20,
+        "type": "u32"
+      }
+    ],
+    "bytemuck_pod": true,
+    "bytemuck_zeroable": true,
+    "persistent_buffer_compatible": true
+  },
+  "replay_contract": {
+    "input_buffer_binding_offset": 0,
+    "output_buffer_binding_offset": 0,
+    "position_changes_require_icb_rebuild": false,
+    "position_changes_require_scalar_content_update": true,
+    "grid": "index head dimension rounded to 256; architecture-fixed",
+    "dynamic_output_offset": "position * index_head_dim, stored in output_element_offset",
+    "buffer_address_change_requires_graph_rebuild": true,
+    "aliasing": "Input and output buffers must not alias; rejected before encoding."
+  },
+  "bounded_metal_proof": {
+    "heads": 2,
+    "rotary_dim": 4,
+    "input_stride": 6,
+    "output_stride": 6,
+    "nonzero_output_element_offset": 1,
+    "position_scalar_vs_binding_offset_bit_exact": true,
+    "host_and_fp64_v2_1": "PASS",
+    "undersized_or_aliasing_inputs_fail_before_dispatch": true,
+    "result": "PASS"
+  },
+  "production_complete_token_v2_1": {
+    "fixture": "/private/tmp/hawking-compact-sparse-final.ogyzB4",
+    "production_artifact": false,
+    "prompts": 4,
+    "device_dsa_exact_all_prompts": true,
+    "expert_choices_exact_all_prompts": true,
+    "greedy_exact_all_prompts": true,
+    "top5_exact_all_prompts": true,
+    "waits_unchanged": true,
+    "result": "PASS"
+  },
+  "regression_validation": {
+    "parameter_abi_freeze": {
+      "passed": 1,
+      "failed": 0
+    },
+    "positioned_rope_bit_exact": {
+      "passed": 1,
+      "failed": 0
+    },
+    "full_core_library": {
+      "passed": 233,
+      "failed": 0,
+      "ignored": 4
+    },
+    "bounded_sparse_complete_token": {
+      "passed": 1,
+      "failed": 0,
+      "prompts": 4
+    },
+    "default_resident_parity": {
+      "passed": 3,
+      "failed": 0
+    },
+    "default_gpu_forward": {
+      "passed": 3,
+      "failed": 0
+    },
+    "clippy_lib_no_deps_deny_warnings": "PASS",
+    "rustfmt_selected_files": "PASS",
+    "diff_check": "PASS"
+  },
+  "qualification": {
+    "qualified": [
+      "The index-key RoPE append no longer requires a token-position-specific Metal buffer binding offset.",
+      "The fixed-grid stage can bind persistent buffers once and consume a changed position through scalar buffer contents.",
+      "The new kernel is bit-exact to the prior offset-binding kernel on bounded Metal evidence and preserves complete-token device-DSA decisions."
+    ],
+    "not_qualified": [
+      "No attention ICB graph is integrated by this ABI tranche.",
+      "The exact-length DSA score grid remains sequence-dependent and must stay direct.",
+      "No latency, TPS, TTFT, energy, sealed-model, or sustained-context claim is made."
+    ],
+    "next_boundary": "Capture the fixed-grid pre-score and post-score attention subgraphs around the one direct exact-length DSA score dispatch."
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "$id": "hawking.fabric.placement.v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Fabric placement declaration derived from family ABI fabric_partition_boundaries.",
+  "properties": {
+    "event_kind": {
+      "const": "fabric.placement"
+    },
+    "fabric_partition": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "fabric_partition_null_reason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "family": {
+      "type": "string"
+    },
+    "placement": {
+      "enum": [
+        "local_serve_eligible",
+        "not_serve_registered",
+        "declared_only"
+      ],
+      "type": "string"
+    },
+    "serve_registered": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "family",
+    "placement",
+    "serve_registered"
+  ],
+  "title": "FabricPlacement",
+  "type": "object"
+}

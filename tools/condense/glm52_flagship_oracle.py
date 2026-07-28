@@ -1,10 +1,10 @@
 #!/usr/bin/env python3.12
-"""Run the numpy oracle on the real assembled GLM-5.2 flagship artifact.
+"""Run the numpy oracle on an assembled GLM-5.2 flagship artifact.
 
 The Rust adapter already agreed with this oracle to 3.8e-6 on a tiny fixture carrying the
-flagship's exact semantics. This is the other half: the SAME oracle, reading the SAME real
-77 GB artifact the Rust runtime read, on the SAME tokens, so the two can be diffed directly
-rather than trusted by extrapolation from a synthetic model.
+flagship's exact semantics. This is the other half: the SAME oracle, reading either the
+Gravity/PQ or activation-aware artifact on the SAME tokens, so runtime output can be
+diffed directly rather than trusted by extrapolation from a synthetic model.
 
     python3.12 tools/condense/glm52_flagship_oracle.py --tokens 7 1234 9 --dump logits.f32
 """
@@ -23,6 +23,10 @@ if str(HERE) not in sys.path:
 import numpy as np
 
 import glm52_reference as ref  # noqa: E402
+from glm52_activation_aware_source import (  # noqa: E402
+    INDEX_NAME as ACTIVATION_AWARE_INDEX_NAME,
+    ActivationAwareGlmSource,
+)
 from glm52_gravity_source import GravityGlmSource  # noqa: E402
 
 DEFAULT_MODEL_DIR = (
@@ -39,15 +43,38 @@ def main() -> int:
     ap.add_argument("--no-verify-hash", action="store_true")
     args = ap.parse_args()
 
-    index_json = args.dir / "model.gravity.index.json"
-    if not index_json.is_file():
-        raise SystemExit(f"no model.gravity.index.json in {args.dir}")
+    gravity_index = args.dir / "model.gravity.index.json"
+    activation_index = args.dir / ACTIVATION_AWARE_INDEX_NAME
+    if gravity_index.is_file() and activation_index.is_file():
+        raise SystemExit(
+            f"ambiguous artifact: both {gravity_index.name} and {activation_index.name} exist"
+        )
+    if gravity_index.is_file():
+        index_json = gravity_index
+        source_type = "gravity"
+    elif activation_index.is_file():
+        index_json = activation_index
+        source_type = "activation-aware"
+    else:
+        raise SystemExit(
+            f"no model.gravity.index.json or {ACTIVATION_AWARE_INDEX_NAME} in {args.dir}"
+        )
     arch = json.loads(index_json.read_text())["architecture"]
 
     print(f"opening (indexing via {index_json.name}, decoding nothing)...", file=sys.stderr)
     t0 = time.time()
-    source = GravityGlmSource(args.dir, index_json=index_json,
-                              verify_hash=not args.no_verify_hash)
+    if source_type == "gravity":
+        source = GravityGlmSource(
+            args.dir,
+            index_json=index_json,
+            verify_hash=not args.no_verify_hash,
+        )
+    else:
+        source = ActivationAwareGlmSource(
+            args.dir,
+            index_json=index_json,
+            verify_hash=not args.no_verify_hash,
+        )
     print(f"opened in {time.time()-t0:.1f}s | layers={arch['num_hidden_layers']} "
           f"hidden={arch['hidden_size']} experts={arch['n_routed_experts']} "
           f"vocab={arch['vocab_size']}", file=sys.stderr)

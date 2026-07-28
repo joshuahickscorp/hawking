@@ -1,0 +1,209 @@
+{
+  "schema": "hawking.temporal_gravity.performance_gate.v1",
+  "created_at_utc": "2026-07-27T14:57:31Z",
+  "status": "ICB_COMPLETE_TOKEN_DEFAULT_ON_REJECTED",
+  "mechanism_under_test": "Default-off replay of compact attention, persistent cache-indexed expert waves, and the fixed-shape final head through Metal compute indirect command buffers.",
+  "base_commit": "9f23377cc455439f5729e8cf65135c629f9cf45f",
+  "scope": {
+    "fixture": "/private/tmp/hawking-compact-sparse-final.ogyzB4",
+    "production_artifact": false,
+    "prompt_tokens": [
+      15
+    ],
+    "layers": 1,
+    "samples_per_mode_per_replication": 101,
+    "replications": 3,
+    "modes": [
+      "direct",
+      "attention_only",
+      "expert_only",
+      "head_only",
+      "all_replay"
+    ],
+    "mode_order": "Rotated and direction-alternated across samples.",
+    "warmups_per_mode": 3,
+    "cost_ledger_enabled": true,
+    "runtime_default_changed": false,
+    "sealed_math_preserve_touched": false,
+    "mop_touched": false
+  },
+  "parity_and_topology": {
+    "profiled_forwards_per_replication": 505,
+    "direct_vs_each_mode_logits_bit_exact": true,
+    "dsa_rank_exact": true,
+    "expert_choices_exact": true,
+    "sampled_token_exact": true,
+    "resident_waits_all_modes": 3,
+    "dispatches_all_modes_p50": 48,
+    "command_buffers_all_modes_p50": 3,
+    "synchronization_points_all_modes_p50": 3,
+    "allocations_all_modes_p50": 1
+  },
+  "replicated_p50_us": {
+    "direct": {
+      "wall": [
+        1227,
+        1265,
+        1242
+      ],
+      "metal_encode": [
+        105,
+        98,
+        103
+      ],
+      "gpu_execution": [
+        282,
+        271,
+        277
+      ]
+    },
+    "attention_only": {
+      "wall": [
+        1228,
+        1260,
+        1262
+      ],
+      "metal_encode": [
+        112,
+        109,
+        113
+      ],
+      "gpu_execution": [
+        291,
+        285,
+        288
+      ]
+    },
+    "expert_only": {
+      "wall": [
+        1297,
+        1245,
+        1199
+      ],
+      "metal_encode": [
+        98,
+        100,
+        103
+      ],
+      "gpu_execution": [
+        293,
+        286,
+        289
+      ]
+    },
+    "head_only": {
+      "wall": [
+        1308,
+        1229,
+        1251
+      ],
+      "metal_encode": [
+        108,
+        104,
+        105
+      ],
+      "gpu_execution": [
+        288,
+        280,
+        284
+      ]
+    },
+    "all_replay": {
+      "wall": [
+        1254,
+        1254,
+        1245
+      ],
+      "metal_encode": [
+        111,
+        106,
+        112
+      ],
+      "gpu_execution": [
+        310,
+        306,
+        308
+      ]
+    }
+  },
+  "replicated_p95_us": {
+    "direct": {
+      "wall": [
+        1757,
+        1672,
+        1739
+      ],
+      "metal_encode": [
+        146,
+        121,
+        130
+      ],
+      "gpu_execution": [
+        497,
+        507,
+        492
+      ]
+    },
+    "all_replay": {
+      "wall": [
+        1800,
+        1645,
+        1819
+      ],
+      "metal_encode": [
+        150,
+        127,
+        149
+      ],
+      "gpu_execution": [
+        556,
+        560,
+        548
+      ]
+    }
+  },
+  "replicated_all_replay_fraction_vs_direct_p50": {
+    "wall": [
+      0.02200489,
+      -0.008695652,
+      0.002415459
+    ],
+    "metal_encode": [
+      0.057142857,
+      0.081632653,
+      0.087378641
+    ],
+    "gpu_execution": [
+      0.09929078,
+      0.129151292,
+      0.111913357
+    ]
+  },
+  "verdict": {
+    "default_on": "REJECTED",
+    "flags_remain_default_off": [
+      "HAWKING_GLM_GPU_COMPACT_ATTENTION_ICB",
+      "HAWKING_GLM_GPU_EXPERT_TABLE_ICB",
+      "HAWKING_GLM_GPU_LM_HEAD_ICB"
+    ],
+    "reason": "All-replay Metal encoding regressed in all three replications and aggregate GPU execution regressed by approximately 10-13%. Complete-token wall p50 varied around direct by approximately -1% to +2%, which is neither a stable gain nor enough to offset the device regression.",
+    "attention_only": "REJECTED for default-on: Metal encoding and GPU execution regressed in all three replications.",
+    "expert_only": "INCONCLUSIVE and not promotable: wall time varied in sign and GPU execution regressed in all three replications.",
+    "head_only": "INCONCLUSIVE and not promotable: wall time varied in sign and GPU execution regressed in all three replications.",
+    "throughput_claim": false,
+    "sealed_model_claim": false
+  },
+  "qualification": {
+    "qualified": [
+      "The replay substrate preserves bounded complete-token math and discrete decisions across all measured modes.",
+      "The replay substrate is useful as a default-off command-graph mechanism and audit surface.",
+      "The current ICB execution strategy does not clear the complete-token performance ship gate on this bounded fixture."
+    ],
+    "not_qualified": [
+      "No default-on promotion is authorized.",
+      "No sealed-model, sustained-context, TPS, TTFT, energy, thermal, memory-pressure, or swap claim is made.",
+      "This tiny one-layer fixture cannot predict absolute flagship latency; it is sufficient only to reject an unreplicated default-on claim."
+    ],
+    "next_boundary": "Retain ICB replay as default-off validated substrate. Resume TG1 work at the valid MOP clearance gate or pursue a different mechanism with an end-to-end advantage, rather than further tuning the rejected ICB path."
+  }
+}

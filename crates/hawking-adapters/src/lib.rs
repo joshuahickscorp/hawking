@@ -23,10 +23,11 @@
 //! ## Layout
 //!
 //! One module per family under [`families`]; [`registry`] indexes them.
-//! [`generate`] emits docs, schemas, CLI validation, SDK types, HIDE
-//! capability declarations, Fabric declarations, and the five root JSON
-//! deliverables — same deterministic golden-file pattern as `hide-sdk-codegen`.
-//! Do not add a second codegen system.
+//! [`generate`] emits docs, JSON schemas (adapters/artifacts/profiles/runtime
+//! capabilities/events/Fabric/tool effects), CLI surface + shell completion,
+//! SDK types, HIDE capability declarations, Fabric declarations, schema
+//! migrations, and the root JSON deliverables — same deterministic golden-file
+//! pattern as `hide-sdk-codegen`. Do not add a second codegen system.
 
 pub mod abi;
 pub mod evidence;
@@ -44,7 +45,9 @@ pub use export::{
     adapter_abi_json, adapter_registry_document, adapter_registry_json, capability_matrix_json,
     migration_map_json, test_matrix_json,
 };
-pub use generate::{generate_all, repo_root_artifacts, GeneratedArtifact};
+pub use generate::{
+    bridge_surface_json, generate_all, repo_root_artifacts, write_all, GeneratedArtifact,
+};
 pub use registry::{builtin_registry, FamilyRegistry};
 pub use support_level::SupportLevel;
 

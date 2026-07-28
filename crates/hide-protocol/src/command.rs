@@ -41,6 +41,8 @@ use crate::plan::Effect;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum Surface {
+    /// Private general-purpose personal AI lens (YOU).
+    You,
     Chat,
     Ide,
     Home,
@@ -94,6 +96,10 @@ pub enum Category {
     Plan,
     /// Durable background job promotion and foreground resume.
     Background,
+    /// Cross-surface claim-only handoffs (YOU↔CHAT↔IDE).
+    Handoff,
+    /// Active surface lens switch on the shared session.
+    Surface,
 }
 
 /// A declared effect class for a command. This mirrors the protocol effect
@@ -290,6 +296,10 @@ pub const WIRE_CUSTOM_NAMES: &[&str] = &[
     "capture_process_artifact",
     // The sealed diff review receipt over a diff the app itself produced.
     "export_review_receipt",
+    // YOU / CHAT / IDE shared session graph (claim-only handoffs).
+    "switch_surface",
+    "handoff_create",
+    "handoff_receive",
 ];
 
 /// Census-confirmed host capabilities reachable over the elevated protocol that
@@ -1159,6 +1169,51 @@ pub fn command_catalog() -> Vec<CommandSpec> {
                 S::StatusBar,
                 vec![S::StatusBar, S::Palette],
                 B::Custom("revoke_write_lease".into()),
+            )
+        },
+        // -- YOU / CHAT / IDE shared session graph --------------------------------
+        // Three lenses on ONE session. switch_surface changes the active lens only.
+        // handoff_create / handoff_receive seal and open claim capsules; capability
+        // never rides the capsule (HIDE_YOU_PROJECTS_HANDOFF_CONTRACT).
+        CommandSpec {
+            effects: vec![Effect::State],
+            keyboard_shortcut: Some("Mod+Shift+U".into()),
+            toolbar_binding: Some("surface.you".into()),
+            telemetry: Some("surface.switch".into()),
+            ..base(
+                "switch_surface",
+                "Switch surface",
+                "Change the active lens (YOU, CHAT, or IDE) on the shared session. Does not mint a new session or move capability.",
+                C::Surface,
+                S::You,
+                vec![S::You, S::Chat, S::Ide, S::Home, S::Palette],
+                B::Custom("switch_surface".into()),
+            )
+        },
+        CommandSpec {
+            effects: vec![Effect::State],
+            telemetry: Some("handoff.create".into()),
+            ..base(
+                "handoff_create",
+                "Create handoff",
+                "Seal a typed claim-only capsule from the active surface to another. Never transports authority.",
+                C::Handoff,
+                S::You,
+                vec![S::You, S::Chat, S::Ide, S::Palette],
+                B::Custom("handoff_create".into()),
+            )
+        },
+        CommandSpec {
+            effects: vec![Effect::State],
+            telemetry: Some("handoff.receive".into()),
+            ..base(
+                "handoff_receive",
+                "Receive handoff",
+                "Open a sealed capsule into its target lens on the same session. Receiver capability is unchanged.",
+                C::Handoff,
+                S::Chat,
+                vec![S::You, S::Chat, S::Ide, S::Palette],
+                B::Custom("handoff_receive".into()),
             )
         },
     ]

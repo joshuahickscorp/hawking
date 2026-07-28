@@ -1,0 +1,14 @@
+{
+  "schema": "hawking.ramanujan.proof_capsule.v1",
+  "id": "two_plus_two",
+  "kind": "machine_check",
+  "statement": "two_plus_two : (2 : Nat) + 2 = 4",
+  "proof_lean": "import Mathlib.Tactic.NormNum\n\ntheorem two_plus_two : (2 : Nat) + 2 = 4 := by norm_num\n",
+  "pins": {
+    "mathlib_commit": "2ec0166b31100827cd34bacca4d3b9ea3da9d618",
+    "lean_toolchain": "leanprover/lean4:v4.33.0-rc1",
+    "lean_commit": "62eed1db4d67327ec8120be05f1a1b0847d74561"
+  },
+  "expected": "success",
+  "why": "The formal system proves 2 + 2 = 4 by machine check. The compressed artifact this campaign rebuilds cannot compute it. Two different senses of knowing; only one is verifiable."
+}

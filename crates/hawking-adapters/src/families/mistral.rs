@@ -20,8 +20,13 @@ const EVIDENCE: &[Evidence] = &[
         kind: EvidenceKind::Description,
     },
     Evidence {
+        path: "adapters/receipts/ADAPTER_MISTRAL_MIXTRAL_RECEIPT.json",
+        claim: "Stage A: official config/tokenizer/safetensors header parsed and mapped",
+        kind: EvidenceKind::SourceHeader,
+    },
+    Evidence {
         path: "crates/hawking-core/tests/llama32_smoke.rs",
-        claim: "dense llama-family small checkpoint path (mistral shares LlamaDense)",
+        claim: "dense llama-family small checkpoint path (mistral shares LlamaDense; skips without GGUF)",
         kind: EvidenceKind::SmallCheckpointRun,
     },
     Evidence {
@@ -40,6 +45,7 @@ const GAPS: &[&str] = &[
     "mixtral MoE not in shipping load_engine",
     "seed-c ArchAdapter does not execute",
     "no PRODUCTION receipt",
+    "SMALL_REAL_CHECKPOINT smoke skips when no GGUF is on disk",
 ];
 
 const SOURCE_CLASSES: &[&str] = &[
@@ -48,25 +54,23 @@ const SOURCE_CLASSES: &[&str] = &[
     "gguf.mixtral (pack only)",
     "seed-c.ArchAdapter.mixtral",
 ];
-const CODECS: &[&str] = &["gguf"];
-const PRECISIONS: &[&str] = &["F16", "Q4_K", "Q5_K", "Q6_K", "Q8_0"];
+const CODECS: &[&str] = &["gguf", "pack (mixtral extra)"];
+const PRECISIONS: &[&str] = &["F16", "BF16", "Q4_K", "Q5_K", "Q8_0"];
 const LIMITS: &[&str] = &[
-    "mixtral MoE requires pack hydrate — not shipping",
-    "dense mistral only is serve-registered",
+    "mixtral requires adapters-extra hydrate",
+    "dense path only for serve-registered execution",
+    "no PRODUCTION standing receipt",
 ];
 
 const ABI: FamilyAbi = FamilyAbi {
     source_config_classes: AbiListField::some(SOURCE_CLASSES),
     tensor_namespace_rules: AbiField::some(
-        "dense: same llama-family GGUF names; mixtral (pack): blk.{l}.ffn_gate_inp + \
-         per-expert ffn_down.{e} (split experts, not fused *_exps)",
+        "dense mistral: llama-family GGUF names via LlamaDense; mixtral: pack-defined MoE expert tensors",
     ),
-    tokenizer: AbiField::some("gguf.tokenizer"),
-    chat_template: AbiField::null("chat template not owned by family engine"),
-    attention_or_state: AbiField::some("GQA causal attention (dense mistral); mixtral same attention + MoE FFN"),
-    topology: AbiField::some(
-        "dense mistral (shipping); mixtral MoE 8 experts top-2 (pack only, declarative seed-c)",
-    ),
+    tokenizer: AbiField::some("gguf.tokenizer (dense); pack tokenizer for mixtral"),
+    chat_template: AbiField::null("chat template at serve/prompt layer"),
+    attention_or_state: AbiField::some("GQA causal attention (dense); mixtral MoE experts (pack)"),
+    topology: AbiField::some("dense transformer (shipping); Mixtral MoE (pack only)"),
     normalization: AbiField::some("RMSNorm"),
     positional_encoding: AbiField::some("RoPE"),
     kv_or_state_format: AbiField::some("per-layer K/V cache (dense path)"),
@@ -92,7 +96,9 @@ impl FamilyAdapter for MistralFamily {
             id: "mistral_mixtral",
             aliases: ALIASES,
             display_name: "Mistral / Mixtral",
-            level: SupportLevel::SmallRealCheckpoint,
+            // Demoted: only live evidence is Stage A source-header receipt.
+            // llama32_smoke skips without GGUF; mixtral is pack/extracted.
+            level: SupportLevel::SourceHeaderValidated,
             evidence: EVIDENCE,
             module: "crates/hawking-core/src/model/llama.rs (+ pack mixtral)",
             executes: true,

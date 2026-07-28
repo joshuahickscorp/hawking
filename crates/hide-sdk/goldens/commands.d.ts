@@ -18,7 +18,7 @@ export type BackendBinding = { kind: "intent"; target: string; } | { kind: "cust
 /**
  * The domain a command belongs to. The coverage test asserts the priority domains are all present, so this doubles as the campaign's progress ledger.
  */
-export type Category = "turn" | "diff" | "timeline" | "verify" | "side_chat" | "checkpoint" | "memory" | "goal" | "steer" | "workspace" | "environment" | "search" | "file" | "terminal" | "plan" | "background";
+export type Category = "turn" | "diff" | "timeline" | "verify" | "side_chat" | "checkpoint" | "memory" | "goal" | "steer" | "workspace" | "environment" | "search" | "file" | "terminal" | "plan" | "background" | "handoff" | "surface";
 
 /**
  * One command in the ONE registry: a capability mapped to the control(s) it appears under, with everything a surface needs to render, gate, invoke, and undo it.
@@ -99,7 +99,7 @@ export type RequiredSelection = "none" | "text" | "file" | "hunk" | "plan_step" 
 /**
  * A UI surface a command can appear on. The closed set of places the shipped shell renders controls (Bible surfaces, plus the palette as the universal fallback surface).
  */
-export type Surface = "chat" | "ide" | "home" | "context_stack" | "status_bar" | "state_timeline" | "terminal" | "diff_review" | "settings" | "fleet" | "palette" | "editor";
+export type Surface = "chat" | "ide" | "home" | "context_stack" | "status_bar" | "state_timeline" | "terminal" | "diff_review" | "settings" | "fleet" | "palette" | "editor" | "you";
 
 /**
  * How a command's effect is unwound.
@@ -1669,5 +1669,96 @@ export const COMMAND_CATALOG: CommandSpec[] = [
     "undo_strategy": "none",
     "receipt_kind": null,
     "telemetry": null
+  },
+  {
+    "id": "switch_surface",
+    "title": "Switch surface",
+    "description": "Change the active lens (YOU, CHAT, or IDE) on the shared session. Does not mint a new session or move capability.",
+    "category": "surface",
+    "primary_surface": "you",
+    "available_surfaces": [
+      "you",
+      "chat",
+      "ide",
+      "home",
+      "palette"
+    ],
+    "required_selection": "none",
+    "required_capabilities": [],
+    "effects": [
+      "state"
+    ],
+    "approval_policy": "auto",
+    "keyboard_shortcut": "Mod+Shift+U",
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": "surface.you",
+    "backend_binding": {
+      "kind": "custom",
+      "target": "switch_surface"
+    },
+    "undo_strategy": "none",
+    "receipt_kind": null,
+    "telemetry": "surface.switch"
+  },
+  {
+    "id": "handoff_create",
+    "title": "Create handoff",
+    "description": "Seal a typed claim-only capsule from the active surface to another. Never transports authority.",
+    "category": "handoff",
+    "primary_surface": "you",
+    "available_surfaces": [
+      "you",
+      "chat",
+      "ide",
+      "palette"
+    ],
+    "required_selection": "none",
+    "required_capabilities": [],
+    "effects": [
+      "state"
+    ],
+    "approval_policy": "auto",
+    "keyboard_shortcut": null,
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "custom",
+      "target": "handoff_create"
+    },
+    "undo_strategy": "none",
+    "receipt_kind": null,
+    "telemetry": "handoff.create"
+  },
+  {
+    "id": "handoff_receive",
+    "title": "Receive handoff",
+    "description": "Open a sealed capsule into its target lens on the same session. Receiver capability is unchanged.",
+    "category": "handoff",
+    "primary_surface": "chat",
+    "available_surfaces": [
+      "you",
+      "chat",
+      "ide",
+      "palette"
+    ],
+    "required_selection": "none",
+    "required_capabilities": [],
+    "effects": [
+      "state"
+    ],
+    "approval_policy": "auto",
+    "keyboard_shortcut": null,
+    "command_palette": true,
+    "context_menu": false,
+    "toolbar_binding": null,
+    "backend_binding": {
+      "kind": "custom",
+      "target": "handoff_receive"
+    },
+    "undo_strategy": "none",
+    "receipt_kind": null,
+    "telemetry": "handoff.receive"
   }
 ];

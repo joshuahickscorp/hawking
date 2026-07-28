@@ -70,19 +70,42 @@ def grok_task_state(task_id: str | None) -> dict:
     }
 
 
-def outputs_present(lane: dict) -> dict:
-    """Which of a lane's declared deliverables actually exist in the repo root."""
-    found, missing = [], []
+def tracked_in_git() -> set[str]:
+    """Repo-root files git knows about -- the test for 'the controller integrated it'."""
+    out = subprocess.run(
+        ["git", "-C", str(ROOT), "ls-files"], capture_output=True, text=True
+    ).stdout
+    return set(out.splitlines())
+
+
+def outputs_present(lane: dict, tracked: set[str]) -> dict:
+    """Which of a lane's declared deliverables exist, and which are committed.
+
+    Existing on disk only means the lane wrote it.  Being tracked by git means the
+    controller read it, verified it and committed it -- which is the difference between
+    work done and work accepted.
+    """
+    found, missing, integrated = [], [], []
     for out in lane.get("outputs", []) or []:
-        # Only repo-root artifacts are checkable this way; code-change entries are prose.
-        if out.endswith((".json", ".md", ".sh")) and "/" not in out:
-            (found if (ROOT / out).exists() else missing).append(out)
-    return {"found": found, "missing": missing}
+        # Only file artifacts are checkable this way; code-change entries are prose.
+        if out.endswith((".json", ".md", ".sh")):
+            if (ROOT / out).exists():
+                found.append(out)
+                if out in tracked:
+                    integrated.append(out)
+            else:
+                missing.append(out)
+    return {
+        "found": found,
+        "missing": missing,
+        "integrated": integrated,
+        "fully_integrated": bool(found) and not missing and len(integrated) == len(found),
+    }
 
 
-def derive(lane: dict) -> dict:
+def derive(lane: dict, tracked: set[str]) -> dict:
     task = grok_task_state(lane.get("task_id"))
-    outs = outputs_present(lane)
+    outs = outputs_present(lane, tracked)
     declared = lane.get("status", "UNKNOWN")
 
     if declared in {"BLOCKED", "QUEUED"}:
@@ -99,6 +122,8 @@ def derive(lane: dict) -> dict:
         evidence_status = "FAILED"
     elif outs["missing"]:
         evidence_status = "FINISHED_OUTPUTS_MISSING"
+    elif outs["fully_integrated"]:
+        evidence_status = "INTEGRATED"
     else:
         evidence_status = "FINISHED_AWAITING_REVIEW"
 
@@ -113,17 +138,19 @@ def derive(lane: dict) -> dict:
         "outputs": outs,
         "dependencies": lane.get("dependencies", []),
         "promotion_gate": lane.get("promotion_gate"),
-        "reviewed_by_controller": False,
+        "reviewed_by_controller": outs["fully_integrated"],
     }
 
 
 def main() -> int:
     own = json.loads(OWNERSHIP.read_text())
     dag = json.loads(DAG.read_text())
-    lanes = [derive(l) for l in own["lanes"]]
+    tracked = tracked_in_git()
+    lanes = [derive(l, tracked) for l in own["lanes"]]
 
     running = [l for l in lanes if l["evidence_status"] == "RUNNING"]
     ready = [l for l in lanes if l["evidence_status"].startswith("FINISHED")]
+    integrated = [l for l in lanes if l["evidence_status"] == "INTEGRATED"]
     blocked = [l for l in lanes if l["evidence_status"] == "BLOCKED"]
     queued = [l for l in lanes if l["evidence_status"] == "QUEUED"]
 
@@ -184,6 +211,7 @@ def main() -> int:
         f"HIDE_KERNEL_TURN={own['fences']['HIDE_KERNEL_TURN']}\n\n"
         "## Running\n\n" + rows(running) +
         "\n## Finished, awaiting controller review\n\n" + rows(ready) +
+        "\n## Integrated by the controller\n\n" + rows(integrated) +
         "\n## Queued\n\n" + rows(queued) +
         "\n## Blocked (real data dependencies, see the DAG)\n\n" + rows(blocked) +
         "\n## Hard walls on the critical path\n\n"
@@ -205,7 +233,7 @@ def main() -> int:
         with LEDGER.open("a") as fh:
             fh.write(json.dumps({"at": doc["at"], "shape": shape, "next": nxt}) + "\n")
 
-    print(f"{len(running)} running, {len(ready)} awaiting review, {len(queued)} queued, {len(blocked)} blocked")
+    print(f"{len(running)} running, {len(integrated)} integrated, {len(ready)} awaiting review, {len(queued)} queued, {len(blocked)} blocked")
     print(f"next: {nxt}")
     return 0
 

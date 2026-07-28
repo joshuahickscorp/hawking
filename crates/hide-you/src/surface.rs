@@ -6,7 +6,7 @@ use crate::capability::SurfacePermissionSet;
 
 /// YOU / CHAT / IDE — three lenses, one session. They differ in default
 /// context and default permissions, not in intelligence or truth.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Surface {
     /// Private general-purpose multimodal personal AI.

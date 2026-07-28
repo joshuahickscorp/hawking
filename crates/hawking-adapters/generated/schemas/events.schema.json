@@ -1,0 +1,110 @@
+{
+  "$id": "hawking.events.canonical.schema.v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Durable product event envelope. YOU events use the same schema on the same bus.",
+  "properties": {
+    "category": {
+      "enum": [
+        "model_lifecycle",
+        "text",
+        "reasoning",
+        "plans",
+        "tools",
+        "permissions",
+        "edits",
+        "tests",
+        "verification",
+        "agents",
+        "acceleration",
+        "fabric_placement",
+        "fabric_node_state",
+        "warnings",
+        "errors",
+        "usage",
+        "you_objects",
+        "you_memory",
+        "you_connectors",
+        "you_research",
+        "you_automation",
+        "you_swarm",
+        "you_projects",
+        "you_handoff"
+      ],
+      "type": "string"
+    },
+    "id": {
+      "description": "Stable event id",
+      "type": "string"
+    },
+    "kind": {
+      "type": "string"
+    },
+    "payload": {
+      "type": "object"
+    },
+    "seq": {
+      "description": "Monotone sequence within session",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "session_id": {
+      "type": "string"
+    },
+    "subsystem": {
+      "type": "string"
+    },
+    "surface": {
+      "enum": [
+        "you",
+        "chat",
+        "ide",
+        "bridge",
+        "terminal",
+        "mcp",
+        "sdk",
+        "serve",
+        "system"
+      ],
+      "type": "string"
+    },
+    "verification": {
+      "description": "Load-bearing Draft/Verified wall; provisional must not render as final",
+      "enum": [
+        "target_verified",
+        "provisional"
+      ],
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "seq",
+    "session_id",
+    "kind",
+    "surface",
+    "subsystem",
+    "verification",
+    "category"
+  ],
+  "title": "CanonicalEvent",
+  "type": "object",
+  "you_event_kinds": [
+    "you.object.added",
+    "you.object.processed",
+    "you.memory.proposed",
+    "you.memory.committed",
+    "you.memory.corrected",
+    "you.connector.read",
+    "you.connector.write_proposed",
+    "you.research.started",
+    "you.research.source_captured",
+    "you.research.claim_verified",
+    "you.automation.created",
+    "you.automation.ran",
+    "you.swarm.created",
+    "you.agent.delegated",
+    "you.agent.result",
+    "you.project.updated",
+    "you.handoff.created"
+  ]
+}

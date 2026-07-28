@@ -870,248 +870,248 @@
     {
       "capabilities": {
         "attention_or_state_declared": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/llama.rs",
+            "adapters/receipts/ADAPTER_LLAMA_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
             "crates/hawking-core/tests/gravity_llama_forward.rs",
-            "crates/hawking-core/src/model/mod.rs",
-            "crates/hawking-core/tests/gravity_llama_forward.rs"
+            "crates/hawking-core/src/model/mod.rs"
           ],
           "note": "abi.attention_or_state",
           "present": true
         },
         "chat_template_declared": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/llama.rs",
+            "adapters/receipts/ADAPTER_LLAMA_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
             "crates/hawking-core/tests/gravity_llama_forward.rs",
-            "crates/hawking-core/src/model/mod.rs",
-            "crates/hawking-core/tests/gravity_llama_forward.rs"
+            "crates/hawking-core/src/model/mod.rs"
           ],
           "note": "abi.chat_template",
           "present": false
         },
         "cpu_provider": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/llama.rs",
+            "adapters/receipts/ADAPTER_LLAMA_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
             "crates/hawking-core/tests/gravity_llama_forward.rs",
-            "crates/hawking-core/src/model/mod.rs",
-            "crates/hawking-core/tests/gravity_llama_forward.rs"
+            "crates/hawking-core/src/model/mod.rs"
           ],
           "note": "abi.providers.cpu",
           "present": true
         },
         "cuda_provider": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/llama.rs",
+            "adapters/receipts/ADAPTER_LLAMA_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
             "crates/hawking-core/tests/gravity_llama_forward.rs",
-            "crates/hawking-core/src/model/mod.rs",
-            "crates/hawking-core/tests/gravity_llama_forward.rs"
+            "crates/hawking-core/src/model/mod.rs"
           ],
           "note": "abi.providers.cuda",
           "present": false
         },
         "dense_topology": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/llama.rs",
+            "adapters/receipts/ADAPTER_LLAMA_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
             "crates/hawking-core/tests/gravity_llama_forward.rs",
-            "crates/hawking-core/src/model/mod.rs",
-            "crates/hawking-core/tests/gravity_llama_forward.rs"
+            "crates/hawking-core/src/model/mod.rs"
           ],
           "note": "abi.topology",
           "present": true
         },
         "execute_forward": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/llama.rs",
+            "adapters/receipts/ADAPTER_LLAMA_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
             "crates/hawking-core/tests/gravity_llama_forward.rs",
-            "crates/hawking-core/src/model/mod.rs",
-            "crates/hawking-core/tests/gravity_llama_forward.rs"
+            "crates/hawking-core/src/model/mod.rs"
           ],
           "note": "descriptor.executes",
           "present": true
         },
         "fabric_partition_declared": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/llama.rs",
+            "adapters/receipts/ADAPTER_LLAMA_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
             "crates/hawking-core/tests/gravity_llama_forward.rs",
-            "crates/hawking-core/src/model/mod.rs",
-            "crates/hawking-core/tests/gravity_llama_forward.rs"
+            "crates/hawking-core/src/model/mod.rs"
           ],
           "note": "abi.fabric_partition_boundaries",
           "present": false
         },
         "full_parent_validated": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/llama.rs",
+            "adapters/receipts/ADAPTER_LLAMA_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
             "crates/hawking-core/tests/gravity_llama_forward.rs",
-            "crates/hawking-core/src/model/mod.rs",
-            "crates/hawking-core/tests/gravity_llama_forward.rs"
+            "crates/hawking-core/src/model/mod.rs"
           ],
           "note": "support_level ladder",
           "present": false
         },
         "gguf_codec": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/llama.rs",
+            "adapters/receipts/ADAPTER_LLAMA_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
             "crates/hawking-core/tests/gravity_llama_forward.rs",
-            "crates/hawking-core/src/model/mod.rs",
-            "crates/hawking-core/tests/gravity_llama_forward.rs"
+            "crates/hawking-core/src/model/mod.rs"
           ],
           "note": "abi.artifact_codecs",
           "present": true
         },
         "gravity_codec": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/llama.rs",
+            "adapters/receipts/ADAPTER_LLAMA_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
             "crates/hawking-core/tests/gravity_llama_forward.rs",
-            "crates/hawking-core/src/model/mod.rs",
-            "crates/hawking-core/tests/gravity_llama_forward.rs"
+            "crates/hawking-core/src/model/mod.rs"
           ],
           "note": "abi.artifact_codecs",
           "present": true
         },
         "metal_provider": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/llama.rs",
+            "adapters/receipts/ADAPTER_LLAMA_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
             "crates/hawking-core/tests/gravity_llama_forward.rs",
-            "crates/hawking-core/src/model/mod.rs",
-            "crates/hawking-core/tests/gravity_llama_forward.rs"
+            "crates/hawking-core/src/model/mod.rs"
           ],
           "note": "abi.providers.metal",
           "present": true
         },
         "moe_topology": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/llama.rs",
+            "adapters/receipts/ADAPTER_LLAMA_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
             "crates/hawking-core/tests/gravity_llama_forward.rs",
-            "crates/hawking-core/src/model/mod.rs",
-            "crates/hawking-core/tests/gravity_llama_forward.rs"
+            "crates/hawking-core/src/model/mod.rs"
           ],
           "note": "abi.topology",
           "present": false
         },
         "production": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/llama.rs",
+            "adapters/receipts/ADAPTER_LLAMA_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
             "crates/hawking-core/tests/gravity_llama_forward.rs",
-            "crates/hawking-core/src/model/mod.rs",
-            "crates/hawking-core/tests/gravity_llama_forward.rs"
+            "crates/hawking-core/src/model/mod.rs"
           ],
           "note": "no family is PRODUCTION today",
           "present": false
         },
         "real_tensor_decode": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/llama.rs",
+            "adapters/receipts/ADAPTER_LLAMA_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
             "crates/hawking-core/tests/gravity_llama_forward.rs",
-            "crates/hawking-core/src/model/mod.rs",
-            "crates/hawking-core/tests/gravity_llama_forward.rs"
+            "crates/hawking-core/src/model/mod.rs"
           ],
           "note": "support_level ladder",
-          "present": true
+          "present": false
         },
         "safetensors_codec": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/llama.rs",
+            "adapters/receipts/ADAPTER_LLAMA_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
             "crates/hawking-core/tests/gravity_llama_forward.rs",
-            "crates/hawking-core/src/model/mod.rs",
-            "crates/hawking-core/tests/gravity_llama_forward.rs"
+            "crates/hawking-core/src/model/mod.rs"
           ],
           "note": "abi.artifact_codecs",
           "present": false
         },
         "serve_registered": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/llama.rs",
+            "adapters/receipts/ADAPTER_LLAMA_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
             "crates/hawking-core/tests/gravity_llama_forward.rs",
-            "crates/hawking-core/src/model/mod.rs",
-            "crates/hawking-core/tests/gravity_llama_forward.rs"
+            "crates/hawking-core/src/model/mod.rs"
           ],
           "note": "descriptor.serve_registered",
           "present": true
         },
         "small_real_checkpoint": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/llama.rs",
+            "adapters/receipts/ADAPTER_LLAMA_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
             "crates/hawking-core/tests/gravity_llama_forward.rs",
-            "crates/hawking-core/src/model/mod.rs",
-            "crates/hawking-core/tests/gravity_llama_forward.rs"
+            "crates/hawking-core/src/model/mod.rs"
           ],
           "note": "support_level ladder",
-          "present": true
+          "present": false
         },
         "source_header_validated": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/llama.rs",
+            "adapters/receipts/ADAPTER_LLAMA_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
             "crates/hawking-core/tests/gravity_llama_forward.rs",
-            "crates/hawking-core/src/model/mod.rs",
-            "crates/hawking-core/tests/gravity_llama_forward.rs"
+            "crates/hawking-core/src/model/mod.rs"
           ],
           "note": "support_level ladder",
           "present": true
         },
         "synthetic_parity": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/llama.rs",
+            "adapters/receipts/ADAPTER_LLAMA_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
             "crates/hawking-core/tests/gravity_llama_forward.rs",
-            "crates/hawking-core/src/model/mod.rs",
-            "crates/hawking-core/tests/gravity_llama_forward.rs"
+            "crates/hawking-core/src/model/mod.rs"
           ],
           "note": "support_level ladder",
-          "present": true
+          "present": false
         },
         "tokenizer_declared": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/llama.rs",
+            "adapters/receipts/ADAPTER_LLAMA_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
             "crates/hawking-core/tests/gravity_llama_forward.rs",
-            "crates/hawking-core/src/model/mod.rs",
-            "crates/hawking-core/tests/gravity_llama_forward.rs"
+            "crates/hawking-core/src/model/mod.rs"
           ],
           "note": "abi.tokenizer",
           "present": true
         }
       },
       "family": "llama",
-      "support_level": "SMALL_REAL_CHECKPOINT"
+      "support_level": "SOURCE_HEADER_VALIDATED"
     },
     {
       "capabilities": {
@@ -1282,9 +1282,10 @@
     {
       "capabilities": {
         "attention_or_state_declared": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/mod.rs",
+            "adapters/receipts/ADAPTER_MISTRAL_MIXTRAL_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
             "packs/hawking-adapters-extra.json",
             "crates/hawking-seed-c/src/providers/adapters.rs"
@@ -1293,9 +1294,10 @@
           "present": true
         },
         "chat_template_declared": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/mod.rs",
+            "adapters/receipts/ADAPTER_MISTRAL_MIXTRAL_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
             "packs/hawking-adapters-extra.json",
             "crates/hawking-seed-c/src/providers/adapters.rs"
@@ -1304,9 +1306,10 @@
           "present": false
         },
         "cpu_provider": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/mod.rs",
+            "adapters/receipts/ADAPTER_MISTRAL_MIXTRAL_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
             "packs/hawking-adapters-extra.json",
             "crates/hawking-seed-c/src/providers/adapters.rs"
@@ -1315,9 +1318,10 @@
           "present": true
         },
         "cuda_provider": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/mod.rs",
+            "adapters/receipts/ADAPTER_MISTRAL_MIXTRAL_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
             "packs/hawking-adapters-extra.json",
             "crates/hawking-seed-c/src/providers/adapters.rs"
@@ -1326,9 +1330,10 @@
           "present": false
         },
         "dense_topology": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/mod.rs",
+            "adapters/receipts/ADAPTER_MISTRAL_MIXTRAL_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
             "packs/hawking-adapters-extra.json",
             "crates/hawking-seed-c/src/providers/adapters.rs"
@@ -1337,9 +1342,10 @@
           "present": true
         },
         "execute_forward": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/mod.rs",
+            "adapters/receipts/ADAPTER_MISTRAL_MIXTRAL_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
             "packs/hawking-adapters-extra.json",
             "crates/hawking-seed-c/src/providers/adapters.rs"
@@ -1348,9 +1354,10 @@
           "present": true
         },
         "fabric_partition_declared": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/mod.rs",
+            "adapters/receipts/ADAPTER_MISTRAL_MIXTRAL_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
             "packs/hawking-adapters-extra.json",
             "crates/hawking-seed-c/src/providers/adapters.rs"
@@ -1359,9 +1366,10 @@
           "present": false
         },
         "full_parent_validated": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/mod.rs",
+            "adapters/receipts/ADAPTER_MISTRAL_MIXTRAL_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
             "packs/hawking-adapters-extra.json",
             "crates/hawking-seed-c/src/providers/adapters.rs"
@@ -1370,9 +1378,10 @@
           "present": false
         },
         "gguf_codec": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/mod.rs",
+            "adapters/receipts/ADAPTER_MISTRAL_MIXTRAL_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
             "packs/hawking-adapters-extra.json",
             "crates/hawking-seed-c/src/providers/adapters.rs"
@@ -1381,9 +1390,10 @@
           "present": true
         },
         "gravity_codec": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/mod.rs",
+            "adapters/receipts/ADAPTER_MISTRAL_MIXTRAL_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
             "packs/hawking-adapters-extra.json",
             "crates/hawking-seed-c/src/providers/adapters.rs"
@@ -1392,9 +1402,10 @@
           "present": false
         },
         "metal_provider": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/mod.rs",
+            "adapters/receipts/ADAPTER_MISTRAL_MIXTRAL_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
             "packs/hawking-adapters-extra.json",
             "crates/hawking-seed-c/src/providers/adapters.rs"
@@ -1403,9 +1414,10 @@
           "present": true
         },
         "moe_topology": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/mod.rs",
+            "adapters/receipts/ADAPTER_MISTRAL_MIXTRAL_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
             "packs/hawking-adapters-extra.json",
             "crates/hawking-seed-c/src/providers/adapters.rs"
@@ -1414,9 +1426,10 @@
           "present": true
         },
         "production": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/mod.rs",
+            "adapters/receipts/ADAPTER_MISTRAL_MIXTRAL_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
             "packs/hawking-adapters-extra.json",
             "crates/hawking-seed-c/src/providers/adapters.rs"
@@ -1425,20 +1438,22 @@
           "present": false
         },
         "real_tensor_decode": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/mod.rs",
+            "adapters/receipts/ADAPTER_MISTRAL_MIXTRAL_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
             "packs/hawking-adapters-extra.json",
             "crates/hawking-seed-c/src/providers/adapters.rs"
           ],
           "note": "support_level ladder",
-          "present": true
+          "present": false
         },
         "safetensors_codec": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/mod.rs",
+            "adapters/receipts/ADAPTER_MISTRAL_MIXTRAL_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
             "packs/hawking-adapters-extra.json",
             "crates/hawking-seed-c/src/providers/adapters.rs"
@@ -1447,9 +1462,10 @@
           "present": false
         },
         "serve_registered": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/mod.rs",
+            "adapters/receipts/ADAPTER_MISTRAL_MIXTRAL_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
             "packs/hawking-adapters-extra.json",
             "crates/hawking-seed-c/src/providers/adapters.rs"
@@ -1458,20 +1474,22 @@
           "present": true
         },
         "small_real_checkpoint": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/mod.rs",
+            "adapters/receipts/ADAPTER_MISTRAL_MIXTRAL_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
             "packs/hawking-adapters-extra.json",
             "crates/hawking-seed-c/src/providers/adapters.rs"
           ],
           "note": "support_level ladder",
-          "present": true
+          "present": false
         },
         "source_header_validated": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/mod.rs",
+            "adapters/receipts/ADAPTER_MISTRAL_MIXTRAL_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
             "packs/hawking-adapters-extra.json",
             "crates/hawking-seed-c/src/providers/adapters.rs"
@@ -1480,20 +1498,22 @@
           "present": true
         },
         "synthetic_parity": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/mod.rs",
+            "adapters/receipts/ADAPTER_MISTRAL_MIXTRAL_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
             "packs/hawking-adapters-extra.json",
             "crates/hawking-seed-c/src/providers/adapters.rs"
           ],
           "note": "support_level ladder",
-          "present": true
+          "present": false
         },
         "tokenizer_declared": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/mod.rs",
+            "adapters/receipts/ADAPTER_MISTRAL_MIXTRAL_RECEIPT.json",
             "crates/hawking-core/tests/llama32_smoke.rs",
             "packs/hawking-adapters-extra.json",
             "crates/hawking-seed-c/src/providers/adapters.rs"
@@ -1503,7 +1523,7 @@
         }
       },
       "family": "mistral_mixtral",
-      "support_level": "SMALL_REAL_CHECKPOINT"
+      "support_level": "SOURCE_HEADER_VALIDATED"
     },
     {
       "capabilities": {
@@ -1714,10 +1734,11 @@
     {
       "capabilities": {
         "attention_or_state_declared": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/qwen_dense.rs",
             "crates/hawking-core/src/model/qwen_moe.rs",
+            "adapters/receipts/ADAPTER_QWEN_RECEIPT.json",
             "crates/hawking-core/tests/integration_greedy_64.rs",
             "crates/hawking-core/tests/cpu_backend_parity.rs",
             "crates/hawking-core/tests/qwen_tq_serve_parity.rs",
@@ -1727,10 +1748,11 @@
           "present": true
         },
         "chat_template_declared": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/qwen_dense.rs",
             "crates/hawking-core/src/model/qwen_moe.rs",
+            "adapters/receipts/ADAPTER_QWEN_RECEIPT.json",
             "crates/hawking-core/tests/integration_greedy_64.rs",
             "crates/hawking-core/tests/cpu_backend_parity.rs",
             "crates/hawking-core/tests/qwen_tq_serve_parity.rs",
@@ -1740,10 +1762,11 @@
           "present": false
         },
         "cpu_provider": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/qwen_dense.rs",
             "crates/hawking-core/src/model/qwen_moe.rs",
+            "adapters/receipts/ADAPTER_QWEN_RECEIPT.json",
             "crates/hawking-core/tests/integration_greedy_64.rs",
             "crates/hawking-core/tests/cpu_backend_parity.rs",
             "crates/hawking-core/tests/qwen_tq_serve_parity.rs",
@@ -1753,10 +1776,11 @@
           "present": true
         },
         "cuda_provider": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/qwen_dense.rs",
             "crates/hawking-core/src/model/qwen_moe.rs",
+            "adapters/receipts/ADAPTER_QWEN_RECEIPT.json",
             "crates/hawking-core/tests/integration_greedy_64.rs",
             "crates/hawking-core/tests/cpu_backend_parity.rs",
             "crates/hawking-core/tests/qwen_tq_serve_parity.rs",
@@ -1766,10 +1790,11 @@
           "present": false
         },
         "dense_topology": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/qwen_dense.rs",
             "crates/hawking-core/src/model/qwen_moe.rs",
+            "adapters/receipts/ADAPTER_QWEN_RECEIPT.json",
             "crates/hawking-core/tests/integration_greedy_64.rs",
             "crates/hawking-core/tests/cpu_backend_parity.rs",
             "crates/hawking-core/tests/qwen_tq_serve_parity.rs",
@@ -1779,10 +1804,11 @@
           "present": true
         },
         "execute_forward": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/qwen_dense.rs",
             "crates/hawking-core/src/model/qwen_moe.rs",
+            "adapters/receipts/ADAPTER_QWEN_RECEIPT.json",
             "crates/hawking-core/tests/integration_greedy_64.rs",
             "crates/hawking-core/tests/cpu_backend_parity.rs",
             "crates/hawking-core/tests/qwen_tq_serve_parity.rs",
@@ -1792,10 +1818,11 @@
           "present": true
         },
         "fabric_partition_declared": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/qwen_dense.rs",
             "crates/hawking-core/src/model/qwen_moe.rs",
+            "adapters/receipts/ADAPTER_QWEN_RECEIPT.json",
             "crates/hawking-core/tests/integration_greedy_64.rs",
             "crates/hawking-core/tests/cpu_backend_parity.rs",
             "crates/hawking-core/tests/qwen_tq_serve_parity.rs",
@@ -1805,10 +1832,11 @@
           "present": false
         },
         "full_parent_validated": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/qwen_dense.rs",
             "crates/hawking-core/src/model/qwen_moe.rs",
+            "adapters/receipts/ADAPTER_QWEN_RECEIPT.json",
             "crates/hawking-core/tests/integration_greedy_64.rs",
             "crates/hawking-core/tests/cpu_backend_parity.rs",
             "crates/hawking-core/tests/qwen_tq_serve_parity.rs",
@@ -1818,10 +1846,11 @@
           "present": false
         },
         "gguf_codec": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/qwen_dense.rs",
             "crates/hawking-core/src/model/qwen_moe.rs",
+            "adapters/receipts/ADAPTER_QWEN_RECEIPT.json",
             "crates/hawking-core/tests/integration_greedy_64.rs",
             "crates/hawking-core/tests/cpu_backend_parity.rs",
             "crates/hawking-core/tests/qwen_tq_serve_parity.rs",
@@ -1831,10 +1860,11 @@
           "present": true
         },
         "gravity_codec": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/qwen_dense.rs",
             "crates/hawking-core/src/model/qwen_moe.rs",
+            "adapters/receipts/ADAPTER_QWEN_RECEIPT.json",
             "crates/hawking-core/tests/integration_greedy_64.rs",
             "crates/hawking-core/tests/cpu_backend_parity.rs",
             "crates/hawking-core/tests/qwen_tq_serve_parity.rs",
@@ -1844,10 +1874,11 @@
           "present": false
         },
         "metal_provider": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/qwen_dense.rs",
             "crates/hawking-core/src/model/qwen_moe.rs",
+            "adapters/receipts/ADAPTER_QWEN_RECEIPT.json",
             "crates/hawking-core/tests/integration_greedy_64.rs",
             "crates/hawking-core/tests/cpu_backend_parity.rs",
             "crates/hawking-core/tests/qwen_tq_serve_parity.rs",
@@ -1857,10 +1888,11 @@
           "present": true
         },
         "moe_topology": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/qwen_dense.rs",
             "crates/hawking-core/src/model/qwen_moe.rs",
+            "adapters/receipts/ADAPTER_QWEN_RECEIPT.json",
             "crates/hawking-core/tests/integration_greedy_64.rs",
             "crates/hawking-core/tests/cpu_backend_parity.rs",
             "crates/hawking-core/tests/qwen_tq_serve_parity.rs",
@@ -1870,10 +1902,11 @@
           "present": true
         },
         "production": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/qwen_dense.rs",
             "crates/hawking-core/src/model/qwen_moe.rs",
+            "adapters/receipts/ADAPTER_QWEN_RECEIPT.json",
             "crates/hawking-core/tests/integration_greedy_64.rs",
             "crates/hawking-core/tests/cpu_backend_parity.rs",
             "crates/hawking-core/tests/qwen_tq_serve_parity.rs",
@@ -1883,23 +1916,25 @@
           "present": false
         },
         "real_tensor_decode": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/qwen_dense.rs",
             "crates/hawking-core/src/model/qwen_moe.rs",
+            "adapters/receipts/ADAPTER_QWEN_RECEIPT.json",
             "crates/hawking-core/tests/integration_greedy_64.rs",
             "crates/hawking-core/tests/cpu_backend_parity.rs",
             "crates/hawking-core/tests/qwen_tq_serve_parity.rs",
             "crates/hawking-core/src/model/mod.rs"
           ],
           "note": "support_level ladder",
-          "present": true
+          "present": false
         },
         "safetensors_codec": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/qwen_dense.rs",
             "crates/hawking-core/src/model/qwen_moe.rs",
+            "adapters/receipts/ADAPTER_QWEN_RECEIPT.json",
             "crates/hawking-core/tests/integration_greedy_64.rs",
             "crates/hawking-core/tests/cpu_backend_parity.rs",
             "crates/hawking-core/tests/qwen_tq_serve_parity.rs",
@@ -1909,10 +1944,11 @@
           "present": false
         },
         "serve_registered": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/qwen_dense.rs",
             "crates/hawking-core/src/model/qwen_moe.rs",
+            "adapters/receipts/ADAPTER_QWEN_RECEIPT.json",
             "crates/hawking-core/tests/integration_greedy_64.rs",
             "crates/hawking-core/tests/cpu_backend_parity.rs",
             "crates/hawking-core/tests/qwen_tq_serve_parity.rs",
@@ -1922,23 +1958,25 @@
           "present": true
         },
         "small_real_checkpoint": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/qwen_dense.rs",
             "crates/hawking-core/src/model/qwen_moe.rs",
+            "adapters/receipts/ADAPTER_QWEN_RECEIPT.json",
             "crates/hawking-core/tests/integration_greedy_64.rs",
             "crates/hawking-core/tests/cpu_backend_parity.rs",
             "crates/hawking-core/tests/qwen_tq_serve_parity.rs",
             "crates/hawking-core/src/model/mod.rs"
           ],
           "note": "support_level ladder",
-          "present": true
+          "present": false
         },
         "source_header_validated": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/qwen_dense.rs",
             "crates/hawking-core/src/model/qwen_moe.rs",
+            "adapters/receipts/ADAPTER_QWEN_RECEIPT.json",
             "crates/hawking-core/tests/integration_greedy_64.rs",
             "crates/hawking-core/tests/cpu_backend_parity.rs",
             "crates/hawking-core/tests/qwen_tq_serve_parity.rs",
@@ -1948,23 +1986,25 @@
           "present": true
         },
         "synthetic_parity": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/qwen_dense.rs",
             "crates/hawking-core/src/model/qwen_moe.rs",
+            "adapters/receipts/ADAPTER_QWEN_RECEIPT.json",
             "crates/hawking-core/tests/integration_greedy_64.rs",
             "crates/hawking-core/tests/cpu_backend_parity.rs",
             "crates/hawking-core/tests/qwen_tq_serve_parity.rs",
             "crates/hawking-core/src/model/mod.rs"
           ],
           "note": "support_level ladder",
-          "present": true
+          "present": false
         },
         "tokenizer_declared": {
-          "backing_grade": "SMALL_REAL_CHECKPOINT",
+          "backing_grade": "SOURCE_HEADER_VALIDATED",
           "evidence_paths": [
             "crates/hawking-core/src/model/qwen_dense.rs",
             "crates/hawking-core/src/model/qwen_moe.rs",
+            "adapters/receipts/ADAPTER_QWEN_RECEIPT.json",
             "crates/hawking-core/tests/integration_greedy_64.rs",
             "crates/hawking-core/tests/cpu_backend_parity.rs",
             "crates/hawking-core/tests/qwen_tq_serve_parity.rs",
@@ -1975,7 +2015,7 @@
         }
       },
       "family": "qwen",
-      "support_level": "SMALL_REAL_CHECKPOINT"
+      "support_level": "SOURCE_HEADER_VALIDATED"
     },
     {
       "capabilities": {

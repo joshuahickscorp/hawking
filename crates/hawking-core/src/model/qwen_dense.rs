@@ -1337,9 +1337,11 @@ impl Engine for QwenDense {
             match config.eagle5_head_path.as_deref() {
                 Some(p) => {
                     eprintln!("[eagle5] loading trained head from {}", p.display());
-                    Some(hawking_speculate::eagle5::Eagle5Head::load_from_safetensors(
-                        p, hidden, vocab,
-                    )?)
+                    Some(
+                        hawking_speculate::eagle5::Eagle5Head::load_from_safetensors(
+                            p, hidden, vocab,
+                        )?,
+                    )
                 }
                 None => {
                     eprintln!(

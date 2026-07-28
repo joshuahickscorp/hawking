@@ -6,7 +6,7 @@ rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 authors.workspace = true
-description = "One model-family adapter ABI + honest support-level registry. Generates ABI schema, full registry, capability/test/migration matrices, family docs, CLI validation, SDK types, HIDE capabilities, and Fabric declarations from the sole FamilyRegistry. No family is PRODUCTION today."
+description = "One model-family adapter ABI + honest support-level registry. Generates ABI/schema/CLI surface/completion/SDK types/events/Fabric/tool-effect artifacts and versioned schema migrations from the sole FamilyRegistry. No family is PRODUCTION today."
 
 [[bin]]
 name = "hawking-adapters-codegen"

@@ -305,7 +305,7 @@
     },
     {
       "family": "llama",
-      "support_level": "SMALL_REAL_CHECKPOINT",
+      "support_level": "SOURCE_HEADER_VALIDATED",
       "tests": [
         {
           "claim": "in-tree LlamaDense engine module",
@@ -317,7 +317,16 @@
           "status": "present"
         },
         {
-          "claim": "small-parent greedy smoke when GGUF present",
+          "claim": "Stage A: official config/tokenizer/safetensors header parsed and mapped",
+          "exists": true,
+          "is_test": false,
+          "kind": "source_header",
+          "path": "adapters/receipts/ADAPTER_LLAMA_RECEIPT.json",
+          "role": "evidence",
+          "status": "present"
+        },
+        {
+          "claim": "small-parent greedy smoke when GGUF present (skips when absent — not live grade evidence)",
           "exists": true,
           "is_test": true,
           "kind": "small_checkpoint_run",
@@ -326,10 +335,10 @@
           "status": "present"
         },
         {
-          "claim": "gravity llama forward path",
+          "claim": "gravity llama forward vs frozen oracle when off-tree .gravity present (skips when absent)",
           "exists": true,
           "is_test": true,
-          "kind": "small_checkpoint_run",
+          "kind": "real_tensor_decode",
           "path": "crates/hawking-core/tests/gravity_llama_forward.rs",
           "role": "evidence",
           "status": "present"
@@ -344,13 +353,31 @@
           "status": "present"
         },
         {
-          "claim": "unconditional: CPU+GPU forward match frozen oracle, incremental decode matches full replay (3 passed, 57.48s of real work)",
-          "exists": true,
+          "claim": "no SYNTHETIC_PARITY test registered for this family",
+          "exists": false,
+          "is_test": true,
+          "kind": "synthetic_parity",
+          "path": "MISSING:synthetic_parity_test",
+          "role": "desired",
+          "status": "missing"
+        },
+        {
+          "claim": "no REAL_TENSOR_DECODE test registered for this family",
+          "exists": false,
           "is_test": true,
           "kind": "real_tensor_decode",
-          "path": "crates/hawking-core/tests/gravity_llama_forward.rs",
-          "role": "evidence",
-          "status": "present"
+          "path": "MISSING:real_tensor_decode_test",
+          "role": "desired",
+          "status": "missing"
+        },
+        {
+          "claim": "no SMALL_REAL_CHECKPOINT e2e test registered for this family",
+          "exists": false,
+          "is_test": true,
+          "kind": "small_checkpoint_run",
+          "path": "MISSING:small_real_checkpoint_test",
+          "role": "desired",
+          "status": "missing"
         },
         {
           "claim": "no FULL_PARENT_VALIDATED receipt/test registered for this family",
@@ -371,7 +398,7 @@
           "status": "missing"
         }
       ],
-      "tests_missing": 2,
+      "tests_missing": 5,
       "tests_present": 5
     },
     {
@@ -447,7 +474,7 @@
     },
     {
       "family": "mistral_mixtral",
-      "support_level": "SMALL_REAL_CHECKPOINT",
+      "support_level": "SOURCE_HEADER_VALIDATED",
       "tests": [
         {
           "claim": "dense mistral arch string routes to LlamaDense",
@@ -459,7 +486,16 @@
           "status": "present"
         },
         {
-          "claim": "dense llama-family small checkpoint path (mistral shares LlamaDense)",
+          "claim": "Stage A: official config/tokenizer/safetensors header parsed and mapped",
+          "exists": true,
+          "is_test": false,
+          "kind": "source_header",
+          "path": "adapters/receipts/ADAPTER_MISTRAL_MIXTRAL_RECEIPT.json",
+          "role": "evidence",
+          "status": "present"
+        },
+        {
+          "claim": "dense llama-family small checkpoint path (mistral shares LlamaDense; skips without GGUF)",
           "exists": true,
           "is_test": true,
           "kind": "small_checkpoint_run",
@@ -486,6 +522,33 @@
           "status": "present"
         },
         {
+          "claim": "no SYNTHETIC_PARITY test registered for this family",
+          "exists": false,
+          "is_test": true,
+          "kind": "synthetic_parity",
+          "path": "MISSING:synthetic_parity_test",
+          "role": "desired",
+          "status": "missing"
+        },
+        {
+          "claim": "no REAL_TENSOR_DECODE test registered for this family",
+          "exists": false,
+          "is_test": true,
+          "kind": "real_tensor_decode",
+          "path": "MISSING:real_tensor_decode_test",
+          "role": "desired",
+          "status": "missing"
+        },
+        {
+          "claim": "no SMALL_REAL_CHECKPOINT e2e test registered for this family",
+          "exists": false,
+          "is_test": true,
+          "kind": "small_checkpoint_run",
+          "path": "MISSING:small_real_checkpoint_test",
+          "role": "desired",
+          "status": "missing"
+        },
+        {
           "claim": "no FULL_PARENT_VALIDATED receipt/test registered for this family",
           "exists": false,
           "is_test": true,
@@ -504,8 +567,8 @@
           "status": "missing"
         }
       ],
-      "tests_missing": 2,
-      "tests_present": 4
+      "tests_missing": 5,
+      "tests_present": 5
     },
     {
       "family": "phi",
@@ -598,7 +661,7 @@
     },
     {
       "family": "qwen",
-      "support_level": "SMALL_REAL_CHECKPOINT",
+      "support_level": "SOURCE_HEADER_VALIDATED",
       "tests": [
         {
           "claim": "in-tree QwenDense engine",
@@ -619,7 +682,16 @@
           "status": "present"
         },
         {
-          "claim": "greedy integration path used as parent-validation gate",
+          "claim": "Stage A: official config/tokenizer/safetensors header parsed and mapped",
+          "exists": true,
+          "is_test": false,
+          "kind": "source_header",
+          "path": "adapters/receipts/ADAPTER_QWEN_RECEIPT.json",
+          "role": "evidence",
+          "status": "present"
+        },
+        {
+          "claim": "greedy integration path (skips when no model on disk — not live grade evidence)",
           "exists": true,
           "is_test": true,
           "kind": "full_parent_validation",
@@ -628,7 +700,7 @@
           "status": "present"
         },
         {
-          "claim": "CPU backend parity against live engine",
+          "claim": "CPU backend parity (skips when no qwen0.5b weights)",
           "exists": true,
           "is_test": true,
           "kind": "full_parent_validation",
@@ -637,7 +709,7 @@
           "status": "present"
         },
         {
-          "claim": "TQ serve parity test (feature-gated)",
+          "claim": "TQ serve parity (#[ignore] + skips without weights/sidecar)",
           "exists": true,
           "is_test": true,
           "kind": "small_checkpoint_run",
@@ -653,6 +725,33 @@
           "path": "crates/hawking-core/src/model/mod.rs",
           "role": "evidence",
           "status": "present"
+        },
+        {
+          "claim": "no SYNTHETIC_PARITY test registered for this family",
+          "exists": false,
+          "is_test": true,
+          "kind": "synthetic_parity",
+          "path": "MISSING:synthetic_parity_test",
+          "role": "desired",
+          "status": "missing"
+        },
+        {
+          "claim": "no REAL_TENSOR_DECODE test registered for this family",
+          "exists": false,
+          "is_test": true,
+          "kind": "real_tensor_decode",
+          "path": "MISSING:real_tensor_decode_test",
+          "role": "desired",
+          "status": "missing"
+        },
+        {
+          "claim": "no SMALL_REAL_CHECKPOINT e2e test registered for this family",
+          "exists": false,
+          "is_test": true,
+          "kind": "small_checkpoint_run",
+          "path": "MISSING:small_real_checkpoint_test",
+          "role": "desired",
+          "status": "missing"
         },
         {
           "claim": "no FULL_PARENT_VALIDATED receipt/test registered for this family",
@@ -673,8 +772,8 @@
           "status": "missing"
         }
       ],
-      "tests_missing": 2,
-      "tests_present": 6
+      "tests_missing": 5,
+      "tests_present": 7
     },
     {
       "family": "state_space",

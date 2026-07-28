@@ -161,22 +161,118 @@ class CounterexampleQueue:
         return heapq.heappop(self.items) if self.items else None
 
 
+def _tokens(text: str) -> list[str]:
+    """Lowercased whitespace tokens. No stemming, no network, no model."""
+    return [t for t in text.lower().replace(":", " ").replace(".", " ").split() if t]
+
+
 @dataclass
 class PremiseRetrieval:
-    """Premise selection over a tiny fixture corpus. Interface first, ranking later."""
+    """Premise selection over a tiny fixture corpus.
+
+    Starts as crude token-overlap and says so (`label="crude_token_overlap"`,
+    `trained=False`). After `train()` on labelled fixture pairs it becomes a weighted
+    bag-of-tokens scorer labelled `trainable_trained_on_fixtures` -- still
+    `NON_PRODUCTION_AUTHORITY`, still not a claim about mathematical retrieval quality.
+    Until trained, never report this as a trained retriever.
+    """
 
     corpus: dict[str, str] = field(default_factory=dict)
+    weights: dict[str, float] = field(default_factory=dict)
+    trained: bool = False
+    label: str = "crude_token_overlap"
+    authority: str = AUTHORITY
+    train_steps: int = 0
+
+    def score(self, goal: str, text: str) -> float:
+        gt = _tokens(goal)
+        tt = set(_tokens(text))
+        if not gt:
+            return 0.0
+        # Weights are used as soon as they exist so the training loop can move scores
+        # mid-run. `trained` is the honest public label, not the scoring switch.
+        if not self.weights:
+            return len(set(gt) & tt) / max(1, len(set(gt)))
+        shared = set(gt) & tt
+        if not shared:
+            return 0.0
+        return sum(self.weights.get(t, 1.0) for t in shared) / max(1, len(set(gt)))
 
     def retrieve(self, goal: str, k: int = 3) -> list[tuple[str, float]]:
-        """Token-overlap scoring. Deliberately crude and honestly labelled: this is a
-        placeholder for a trained retriever and must never be reported as one."""
-        gt = set(goal.lower().split())
-        scored = [
-            (name, len(gt & set(text.lower().split())) / max(1, len(gt)))
-            for name, text in self.corpus.items()
-        ]
+        scored = [(name, self.score(goal, text)) for name, text in self.corpus.items()]
         scored.sort(key=lambda x: (-x[1], x[0]))
         return scored[:k]
+
+    def train(
+        self,
+        queries: list[dict],
+        steps: int = 40,
+        lr: float = 0.15,
+        margin: float = 0.05,
+    ) -> dict:
+        """Pairwise ranking train on fixture labels. Pure Python, no network, no torch.
+
+        Each query is `{"goal": str, "relevant": [names], "irrelevant": [names]}`.
+        For every (relevant, irrelevant) pair whose scores violate the margin, boost
+        tokens in the relevant premise that appear in the goal and damp those in the
+        irrelevant one. Honestly relabels to `trainable_trained_on_fixtures`.
+
+        Returns a small receipt. Does not claim production quality.
+        """
+        if not queries:
+            raise ValueError("train requires at least one labelled query")
+        # Seed weights so training has something to move.
+        for text in self.corpus.values():
+            for t in _tokens(text):
+                self.weights.setdefault(t, 1.0)
+        for q in queries:
+            for t in _tokens(q["goal"]):
+                self.weights.setdefault(t, 1.0)
+
+        updates = 0
+        for _ in range(steps):
+            for q in queries:
+                goal = q["goal"]
+                for rname in q.get("relevant", []):
+                    if rname not in self.corpus:
+                        continue
+                    for iname in q.get("irrelevant", []):
+                        if iname not in self.corpus:
+                            continue
+                        sr = self.score(goal, self.corpus[rname])
+                        si = self.score(goal, self.corpus[iname])
+                        if sr > si + margin:
+                            continue
+                        gset = set(_tokens(goal))
+                        for t in set(_tokens(self.corpus[rname])) & gset:
+                            self.weights[t] = self.weights.get(t, 1.0) + lr
+                            updates += 1
+                        for t in set(_tokens(self.corpus[iname])) & gset:
+                            self.weights[t] = max(0.01, self.weights.get(t, 1.0) - lr)
+                            updates += 1
+
+        self.trained = True
+        self.train_steps = steps
+        self.label = "trainable_trained_on_fixtures"
+        return {
+            "label": self.label,
+            "trained": True,
+            "steps": steps,
+            "weight_updates": updates,
+            "n_weights": len(self.weights),
+            "authority": self.authority,
+            "note": "fixture-trained only; not production premise selection",
+        }
+
+    def status(self) -> dict:
+        return {
+            "label": self.label,
+            "trained": self.trained,
+            "train_steps": self.train_steps,
+            "n_corpus": len(self.corpus),
+            "n_weights": len(self.weights),
+            "authority": self.authority,
+        }
 
 
 def repair_from_error(proof: str, error: str) -> str | None:

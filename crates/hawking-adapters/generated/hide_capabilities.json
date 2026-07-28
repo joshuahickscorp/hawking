@@ -60,11 +60,11 @@
         "llama3",
         "llama3.2"
       ],
-      "description": "Llama (dense GGUF + gravity) — SMALL_REAL_CHECKPOINT",
+      "description": "Llama (dense GGUF + gravity) — SOURCE_HEADER_VALIDATED",
       "executes": true,
       "id": "model_family.llama",
       "kind": "model_family",
-      "level": "SMALL_REAL_CHECKPOINT",
+      "level": "SOURCE_HEADER_VALIDATED",
       "serve_registered": true
     },
     {
@@ -86,11 +86,11 @@
         "mixtral",
         "mistral_mixtral"
       ],
-      "description": "Mistral / Mixtral — SMALL_REAL_CHECKPOINT",
+      "description": "Mistral / Mixtral — SOURCE_HEADER_VALIDATED",
       "executes": true,
       "id": "model_family.mistral_mixtral",
       "kind": "model_family",
-      "level": "SMALL_REAL_CHECKPOINT",
+      "level": "SOURCE_HEADER_VALIDATED",
       "serve_registered": true
     },
     {
@@ -113,11 +113,11 @@
         "qwen-moe",
         "qwen3"
       ],
-      "description": "Qwen (dense + MoE) — SMALL_REAL_CHECKPOINT",
+      "description": "Qwen (dense + MoE) — SOURCE_HEADER_VALIDATED",
       "executes": true,
       "id": "model_family.qwen",
       "kind": "model_family",
-      "level": "SMALL_REAL_CHECKPOINT",
+      "level": "SOURCE_HEADER_VALIDATED",
       "serve_registered": true
     },
     {

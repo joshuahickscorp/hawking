@@ -24,7 +24,6 @@ from __future__ import annotations
 
 import json
 import re
-import subprocess
 import sys
 from pathlib import Path
 
@@ -43,9 +42,9 @@ GRADES = [
 ]
 
 # What kind of evidence each grade REQUIRES. A description never licenses anything above
-# DECLARED, because describing a thing is not running it.
+# DECLARED, because describing a thing is not running it and is not parsing a source header.
 REQUIRED_KIND = {
-    "SOURCE_HEADER_VALIDATED": {"header_parse", "source_receipt", "description"},
+    "SOURCE_HEADER_VALIDATED": {"header_parse", "source_header", "source_receipt"},
     "SYNTHETIC_PARITY": {"synthetic_parity", "synthetic_run"},
     "REAL_TENSOR_DECODE": {"real_tensor_decode", "small_checkpoint_run", "sealed_receipt"},
     "SMALL_REAL_CHECKPOINT": {"small_checkpoint_run", "sealed_receipt"},
@@ -53,7 +52,31 @@ REQUIRED_KIND = {
     "PRODUCTION": {"production_receipt"},
 }
 
-SKIP_MARKERS = re.compile(r"skipping|no model on disk|no models/|not present|return;\s*$", re.I)
+# Any of these in a Rust test body means the test can exit without doing real work.
+SKIP_MARKERS = re.compile(
+    r"skipping|"
+    r"\bskip\b|"
+    r"no model on disk|"
+    r"no models/|"
+    r"not present|"
+    r"weights (?:are |were )?absent|"
+    r"need .* on disk",
+    re.I,
+)
+
+# Presence checks for off-tree weights / env overrides. Not limited to is_file/exists:
+# llama32_smoke uses read_dir + Option early-return and was previously misread as
+# "unconditional".
+PRESENCE_GUARDS = re.compile(
+    r"(?:is_file\(\)|exists\(\)|env::var(?:_os)?|read_dir\(|"
+    r"HAWKING_[A-Z0-9_]+_ARTIFACT|models/\*|models/\.gguf|"
+    r"find_\w+_gguf|no models/)",
+    re.I,
+)
+
+# A whole-file #[ignore] (or every #[test] also #[ignore]) is not live evidence.
+IGNORE_ATTR = re.compile(r"#\[ignore(?:\s*=\s*[^\]]+)?\]")
+TEST_ATTR = re.compile(r"#\[test\]")
 
 
 def _rust_test_executes(path: Path) -> tuple[bool, str]:
@@ -62,16 +85,40 @@ def _rust_test_executes(path: Path) -> tuple[bool, str]:
     Static read rather than execution: running every cited test would be minutes of cargo
     under LIGHT_ONLY. A test whose source contains an early return guarded by a
     file-presence check is conditional evidence, and conditional evidence that is currently
-    false is not evidence.
+    false is not evidence. A 0.00 s pass is a red flag, not a green one.
     """
     if not path.exists():
         return False, "cited test file does not exist"
     src = path.read_text(errors="ignore")
-    guards = re.findall(r"(?:is_file\(\)|exists\(\)|env::var)[^\n]{0,120}", src)
+
+    tests = list(TEST_ATTR.finditer(src))
+    ignores = list(IGNORE_ATTR.finditer(src))
+    if tests and ignores and len(ignores) >= len(tests):
+        return False, f"all {len(tests)} test(s) are #[ignore]; not live evidence"
+    if not tests and ignores:
+        return False, "file is #[ignore] with no live #[test]"
+
+    guards = PRESENCE_GUARDS.findall(src)
     skips = SKIP_MARKERS.findall(src)
-    if guards and skips:
-        return False, f"skips when weights are absent ({len(guards)} presence guards, {len(skips)} skip markers)"
-    return True, "no weight-presence guard found; runs unconditionally"
+    # Bare `return;` after a presence check is the classic skip shape (llama32_smoke,
+    # integration_greedy_64, qwen_tq "skip (need ...)").
+    early_returns = re.findall(r"^\s*return(?:\s+Ok\(\(\)\))?;\s*$", src, re.M)
+
+    if guards and (skips or early_returns):
+        return (
+            False,
+            f"skips when weights are absent "
+            f"({len(guards)} presence guards, {len(skips)} skip markers, "
+            f"{len(early_returns)} early returns)",
+        )
+    if skips and early_returns:
+        # e.g. eprintln!("skipping..."); return; even if the guard form was unusual
+        return (
+            False,
+            f"skip + early-return pattern ({len(skips)} skip markers, "
+            f"{len(early_returns)} early returns)",
+        )
+    return True, "no weight-presence skip pattern found; runs unconditionally"
 
 
 def _models_on_disk() -> bool:
@@ -109,14 +156,14 @@ def check_family(fam: dict) -> dict:
             usable_kinds.add(kind)
 
     # Highest grade the surviving evidence licenses, by declared kind alone.
+    # Description alone never exceeds DECLARED: describing a thing is not parsing
+    # a header and is not running it.
+    substantive = usable_kinds - {"description", "unknown"}
     supported = "DECLARED"
-    for g in GRADES[1:]:
-        if REQUIRED_KIND.get(g, set()) & usable_kinds:
-            supported = g
-    # A description alone never exceeds SOURCE_HEADER_VALIDATED: describing a thing is not
-    # running it.
-    if usable_kinds <= {"description"} and GRADES.index(supported) > GRADES.index("SOURCE_HEADER_VALIDATED"):
-        supported = "SOURCE_HEADER_VALIDATED"
+    if substantive:
+        for g in GRADES[1:]:
+            if REQUIRED_KIND.get(g, set()) & usable_kinds:
+                supported = g
 
     inflated = GRADES.index(claimed) > GRADES.index(supported)
     return {

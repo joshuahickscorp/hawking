@@ -1,44 +1,48 @@
 {
   "schema": "hawking.ramanujan.acquisition_queue.v1",
-  "at": "2026-07-27T04:06:07Z",
+  "at": "2026-07-27T18:56:47Z",
   "generated_from": "ramanujan/RAMANUJAN_OFFLINE_MANIFEST.json",
   "resource_mode": "LIGHT_ONLY",
   "queue": [
     {
       "id": "D1",
       "name": "Lean/Mathlib proof traces",
-      "action": "generate locally once Mathlib not installed",
-      "blocked_by": "Mathlib not installed",
+      "action": "present on disk; regenerate with python3.12 -m ramanujan.data.generate",
+      "blocked_by": null,
       "unblocked_by_toolchain_install": false,
       "network_required": false,
-      "safe_under_light_only": true
+      "safe_under_light_only": true,
+      "n_items": 5000
     },
     {
       "id": "D2",
       "name": "proof-state transitions",
-      "action": "generate locally once Lean not installed",
-      "blocked_by": "Lean not installed",
+      "action": "present on disk; regenerate with python3.12 -m ramanujan.data.generate",
+      "blocked_by": null,
       "unblocked_by_toolchain_install": false,
       "network_required": false,
-      "safe_under_light_only": true
+      "safe_under_light_only": true,
+      "n_items": 5000
     },
     {
       "id": "D3",
       "name": "premise-selection pairs",
-      "action": "generate locally once Mathlib not installed",
-      "blocked_by": "Mathlib not installed",
+      "action": "present on disk; regenerate with python3.12 -m ramanujan.data.generate",
+      "blocked_by": null,
       "unblocked_by_toolchain_install": false,
       "network_required": false,
-      "safe_under_light_only": true
+      "safe_under_light_only": true,
+      "n_items": 5000
     },
     {
       "id": "D4",
       "name": "compiler-error repair pairs",
-      "action": "generate locally once Lean not installed",
-      "blocked_by": "Lean not installed",
+      "action": "present on disk; regenerate with python3.12 -m ramanujan.data.generate",
+      "blocked_by": null,
       "unblocked_by_toolchain_install": false,
       "network_required": false,
-      "safe_under_light_only": true
+      "safe_under_light_only": true,
+      "n_items": 800
     },
     {
       "id": "D5",
@@ -47,25 +51,28 @@
       "blocked_by": "user licensing decision",
       "unblocked_by_toolchain_install": false,
       "network_required": true,
-      "safe_under_light_only": false
+      "safe_under_light_only": false,
+      "n_items": null
     },
     {
       "id": "D6",
       "name": "counterexample negatives",
-      "action": "generate locally",
+      "action": "present on disk; regenerate with python3.12 -m ramanujan.data.generate",
       "blocked_by": null,
       "unblocked_by_toolchain_install": false,
       "network_required": false,
-      "safe_under_light_only": true
+      "safe_under_light_only": true,
+      "n_items": 302
     },
     {
       "id": "D7",
       "name": "tool-use traces",
-      "action": "generate locally",
+      "action": "present on disk; regenerate with python3.12 -m ramanujan.data.generate",
       "blocked_by": null,
       "unblocked_by_toolchain_install": false,
       "network_required": false,
-      "safe_under_light_only": true
+      "safe_under_light_only": true,
+      "n_items": 86
     },
     {
       "id": "D8",
@@ -74,7 +81,8 @@
       "blocked_by": "user licensing decision",
       "unblocked_by_toolchain_install": false,
       "network_required": true,
-      "safe_under_light_only": false
+      "safe_under_light_only": false,
+      "n_items": null
     },
     {
       "id": "D9",
@@ -83,10 +91,15 @@
       "blocked_by": "user licensing decision",
       "unblocked_by_toolchain_install": false,
       "network_required": true,
-      "safe_under_light_only": false
+      "safe_under_light_only": false,
+      "n_items": null
     }
   ],
   "runnable_under_light_only_right_now": [
+    "D1",
+    "D2",
+    "D3",
+    "D4",
     "D6",
     "D7"
   ],
@@ -96,5 +109,13 @@
     "D9"
   ],
   "awaiting_toolchain": [],
+  "present": [
+    "D1",
+    "D2",
+    "D3",
+    "D4",
+    "D6",
+    "D7"
+  ],
   "note": "nothing here downloads a model parent. Acquisition of external corpora is a licensing decision and is not performed by this campaign."
 }

@@ -1,0 +1,25 @@
+{
+  "schema": "hawking.representation.basis_transfer.v1",
+  "at": "2026-07-27T10:45:00Z",
+  "question": "does one layer's activation basis transfer to another? 33 retained capsules must cover 78 layers, or the activation-aware program is infeasible with what is on disk.",
+  "method": "score a layer-10 routed expert on layer-10 held-out activations, under bases fitted from DIFFERENT layers' captured activations",
+  "expert": "model.layers.10.mlp.experts.0.up_proj.weight",
+  "constant_mean_cosine_null": 0.65101,
+  "measured": [
+    {"basis_from_layer": 10, "own_layer": true,  "k16": 0.7551, "k64": 0.7925},
+    {"basis_from_layer": 11, "own_layer": false, "k16": 0.8040, "k64": 0.8865},
+    {"basis_from_layer": 12, "own_layer": false, "k16": 0.7574, "k64": 0.8449},
+    {"basis_from_layer": 13, "own_layer": false, "k16": 0.7262, "k64": 0.8060},
+    {"basis_from_layer": 14, "own_layer": false, "k16": 0.7029, "k64": 0.7798}
+  ],
+  "verdict": "Bases transfer, and a neighbour is not merely adequate but better: layer 11's basis scores the layer-10 expert at 0.887 against layer 10's own 0.793. Degradation with distance is gentle -- layer 14, four layers away, still returns 0.780, essentially matching own-layer.",
+  "why_a_neighbour_can_beat_own_layer": "the expert's output feeds forward, so the NEXT layer's activation subspace may better capture the directions its output must preserve. Not established here; recorded as the plausible reading rather than a finding.",
+  "consequence": "33 retained capsules can cover 78 layers. The activation-aware program is feasible with what is already on disk, and every tensor must record which donor basis it used -- that provenance is load-bearing for reproducing the artifact.",
+  "coverage_on_disk": {
+    "capsules": 33,
+    "layers_contiguous": "0 through 16",
+    "layers_sampled": [19, 22, 25, 28, 31, 35, 38, 42, 46, 50, 55, 60, 65, 70, 76],
+    "bytes": "80 GB of real captured activations"
+  },
+  "incomplete": "the run aborted at layer 16 on a missing capsule file, so layers beyond 14 were not measured for transfer. Gentle degradation across 10-14 is what supports the conclusion; distant transfer (e.g. layer 10 basis onto a layer-60 expert) remains untested and the program should prefer the nearest donor."
+}

@@ -38,6 +38,28 @@ LEDGER = DEST / "REHYDRATE_LEDGER.jsonl"
 
 # Never write into MOP's cache. Set before huggingface_hub is imported.
 os.environ.setdefault("HF_HOME", str(DEST / "hf_home"))
+
+# High-performance transfer. Also must be set before huggingface_hub is imported.
+#
+# The default downloader measured 296-725 Mbit/s on a 10Gbase-T link -- 3 to 7 percent of
+# the line. Every shard is 5.36 GB, so across 282 shards the fetch, not the arithmetic, is
+# the entire wall clock: the packer sat at 97% of one core out of 28 while waiting on it.
+#
+# Use Xet, not hf_transfer. huggingface_hub 1.24 warns that HF_HUB_ENABLE_HF_TRANSFER is
+# deprecated and hf_transfer "is not used anymore" -- setting it accelerates nothing and
+# only looks like a fix. hf_xet ships with the hub and its high-performance mode is off by
+# default.
+#
+# Guarded so an operator can force the plain path with HF_XET_HIGH_PERFORMANCE=0 if many
+# connections turn out worse than one on a flaky link.
+if os.environ.get("HF_XET_HIGH_PERFORMANCE") is None:
+    try:
+        import hf_xet  # noqa: F401
+        os.environ["HF_XET_HIGH_PERFORMANCE"] = "1"
+    except ImportError:
+        # Absent is fine and must stay silent-but-honest: the download still works, just
+        # slowly. Never claim an accelerator that is not installed.
+        pass
 os.environ.setdefault("HF_HUB_CACHE", str(DEST / "hf_cache"))
 os.environ.setdefault("HF_HUB_DISABLE_TELEMETRY", "1")
 

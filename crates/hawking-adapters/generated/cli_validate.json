@@ -196,16 +196,16 @@
       ],
       "evidence_paths": [
         "crates/hawking-core/src/model/llama.rs",
+        "adapters/receipts/ADAPTER_LLAMA_RECEIPT.json",
         "crates/hawking-core/tests/llama32_smoke.rs",
         "crates/hawking-core/tests/gravity_llama_forward.rs",
-        "crates/hawking-core/src/model/mod.rs",
-        "crates/hawking-core/tests/gravity_llama_forward.rs"
+        "crates/hawking-core/src/model/mod.rs"
       ],
       "executes": true,
       "family": "llama",
       "forbid_production": true,
-      "max_level": "SMALL_REAL_CHECKPOINT",
-      "require_evidence_kind": "small_checkpoint_run",
+      "max_level": "SOURCE_HEADER_VALIDATED",
+      "require_evidence_kind": "source_header",
       "require_evidence_when_above": "DECLARED",
       "serve_registered": true
     },
@@ -276,6 +276,7 @@
       ],
       "evidence_paths": [
         "crates/hawking-core/src/model/mod.rs",
+        "adapters/receipts/ADAPTER_MISTRAL_MIXTRAL_RECEIPT.json",
         "crates/hawking-core/tests/llama32_smoke.rs",
         "packs/hawking-adapters-extra.json",
         "crates/hawking-seed-c/src/providers/adapters.rs"
@@ -283,8 +284,8 @@
       "executes": true,
       "family": "mistral_mixtral",
       "forbid_production": true,
-      "max_level": "SMALL_REAL_CHECKPOINT",
-      "require_evidence_kind": "small_checkpoint_run",
+      "max_level": "SOURCE_HEADER_VALIDATED",
+      "require_evidence_kind": "source_header",
       "require_evidence_when_above": "DECLARED",
       "serve_registered": true
     },
@@ -359,6 +360,7 @@
       "evidence_paths": [
         "crates/hawking-core/src/model/qwen_dense.rs",
         "crates/hawking-core/src/model/qwen_moe.rs",
+        "adapters/receipts/ADAPTER_QWEN_RECEIPT.json",
         "crates/hawking-core/tests/integration_greedy_64.rs",
         "crates/hawking-core/tests/cpu_backend_parity.rs",
         "crates/hawking-core/tests/qwen_tq_serve_parity.rs",
@@ -367,8 +369,8 @@
       "executes": true,
       "family": "qwen",
       "forbid_production": true,
-      "max_level": "SMALL_REAL_CHECKPOINT",
-      "require_evidence_kind": "small_checkpoint_run",
+      "max_level": "SOURCE_HEADER_VALIDATED",
+      "require_evidence_kind": "source_header",
       "require_evidence_when_above": "DECLARED",
       "serve_registered": true
     },

@@ -1,7 +1,8 @@
-//! Drift test: regenerating schemas/types produces no diff against goldens.
+//! Drift test: regenerating schemas/types/CLI/events produces no diff against goldens.
 //!
 //! Also checks repo-root deliverables when present, so hand-edits to
-//! `HAWKING_ADAPTER_*.json` fail until `hawking-adapters-codegen` is re-run.
+//! `HAWKING_ADAPTER_*.json` / `HAWKING_CANONICAL_EVENTS.json` /
+//! `HAWKING_CLI_SURFACE.json` fail until `hawking-adapters-codegen` is re-run.
 
 use std::path::PathBuf;
 
@@ -53,10 +54,6 @@ fn repo_root_deliverables_match_registry() {
     let root = workspace_root();
     let mut failures = Vec::new();
     for (name, contents) in repo_root_artifacts() {
-        // Bridge surface is optional lockstep; events + adapter deliverables required.
-        if name == "HAWKING_CANONICAL_EVENTS.json" {
-            // Still check if present; codegen writes it.
-        }
         let path = root.join(name);
         if !path.exists() {
             failures.push(format!(
@@ -85,4 +82,174 @@ fn regenerating_produces_no_diff() {
     // Semantic alias of the two checks above: one assertion site for the contract.
     generated_artifacts_match_checked_in();
     repo_root_deliverables_match_registry();
+}
+
+#[test]
+fn you_events_present_in_canonical_export() {
+    let doc: serde_json::Value =
+        serde_json::from_str(&hawking_events::canonical_events_json()).unwrap();
+    let you = doc
+        .get("you_events")
+        .expect("you_events block in HAWKING_CANONICAL_EVENTS");
+    assert_eq!(you["count"], 17);
+    let events = you["events"].as_array().expect("events array");
+    assert_eq!(events.len(), 17);
+    let names: Vec<&str> = events
+        .iter()
+        .map(|e| e["event"].as_str().unwrap())
+        .collect();
+    for expected in [
+        "ObjectAdded",
+        "ObjectProcessed",
+        "MemoryProposed",
+        "MemoryCommitted",
+        "MemoryCorrected",
+        "ConnectorRead",
+        "ConnectorWriteProposed",
+        "ResearchStarted",
+        "SourceCaptured",
+        "ClaimVerified",
+        "AutomationCreated",
+        "AutomationRan",
+        "SwarmCreated",
+        "AgentDelegated",
+        "AgentResult",
+        "ProjectUpdated",
+        "HandoffCreated",
+    ] {
+        assert!(
+            names.contains(&expected),
+            "missing YOU event {expected} in export"
+        );
+    }
+    let envelope = doc["chosen_model"]["envelope_fields"]
+        .as_array()
+        .expect("envelope_fields");
+    for field in [
+        "id",
+        "seq",
+        "session_id",
+        "surface",
+        "subsystem",
+        "verification",
+    ] {
+        assert!(
+            envelope.iter().any(|v| v.as_str() == Some(field)),
+            "envelope missing {field}"
+        );
+    }
+    assert_eq!(doc["category_count"], 24);
+}
+
+#[test]
+fn cli_surface_lists_registry_families() {
+    let surface = generate_all()
+        .into_iter()
+        .find(|a| a.relative_path == "generated/cli_surface.json")
+        .expect("cli_surface generated");
+    let doc: serde_json::Value = serde_json::from_str(&surface.contents).unwrap();
+    let families = doc["adapter_families"].as_array().unwrap();
+    let r = hawking_adapters::builtin_registry();
+    assert_eq!(families.len(), r.families().count());
+    for d in r.families() {
+        assert!(
+            families.iter().any(|f| f["id"] == d.id && f["level"] == d.level.as_str()),
+            "CLI surface missing or grade-drifted family {}",
+            d.id
+        );
+    }
+    // /v1/responses and /v1/messages stay honestly not_implemented
+    let honesty = &doc["honesty"]["bridge_endpoints"];
+    for ep in ["POST /v1/responses", "POST /v1/messages"] {
+        let row = honesty
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|e| e["endpoint"] == ep)
+            .unwrap_or_else(|| panic!("missing {ep}"));
+        assert_eq!(row["status"], "not_implemented");
+    }
+}
+
+#[test]
+fn schema_migrations_cover_new_surfaces() {
+    let mig = generate_all()
+        .into_iter()
+        .find(|a| a.relative_path == "generated/HAWKING_SCHEMA_MIGRATIONS.json")
+        .expect("schema migrations generated");
+    let doc: serde_json::Value = serde_json::from_str(&mig.contents).unwrap();
+    let ids: Vec<&str> = doc["schemas"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|s| s["id"].as_str().unwrap())
+        .collect();
+    for need in [
+        "hawking.adapters.registry",
+        "hawking.events.canonical",
+        "hawking.cli.surface",
+        "hawking.artifacts",
+        "hawking.profiles",
+        "hawking.runtime_capabilities",
+        "hawking.fabric.placement",
+        "hawking.tool_effects",
+    ] {
+        assert!(ids.contains(&need), "migrations missing {need}");
+    }
+}
+
+#[test]
+fn sdk_types_cover_required_domains() {
+    let ts = generate_all()
+        .into_iter()
+        .find(|a| a.relative_path == "generated/sdk_types.d.ts")
+        .expect("sdk_types")
+        .contents;
+    for needle in [
+        "export type FamilyId",
+        "export interface ArtifactRef",
+        "export type RuntimeProfile",
+        "export interface RuntimeCapabilities",
+        "export interface CanonicalEventEnvelope",
+        "export type YouEventName",
+        "export interface FabricPlacement",
+        "export interface ToolEffectSet",
+        "export type ContentVerification",
+    ] {
+        assert!(
+            ts.contains(needle),
+            "sdk_types.d.ts missing {needle}"
+        );
+    }
+    assert!(ts.contains("ObjectAdded"));
+    assert!(ts.contains("HandoffCreated"));
+    assert_eq!(ts.matches("export type YouEventName").count(), 1);
+}
+
+#[test]
+fn honest_family_grades_match_evidence_ladder() {
+    // Guardrail: grades are claims about evidence. Inflated SMALL_REAL_CHECKPOINT
+    // claims that rested on skip/ignore-gated tests were demoted to Stage A
+    // SOURCE_HEADER_VALIDATED. Raising a grade requires evidence verify_grades accepts.
+    let expected = [
+        ("deepseek", "SOURCE_HEADER_VALIDATED"),
+        ("gemma", "DECLARED"),
+        ("glm", "SMALL_REAL_CHECKPOINT"),
+        ("kimi", "SYNTHETIC_PARITY"),
+        ("llama", "SOURCE_HEADER_VALIDATED"),
+        ("minimax", "DECLARED"),
+        ("mistral_mixtral", "SOURCE_HEADER_VALIDATED"),
+        ("phi", "DECLARED"),
+        ("qwen", "SOURCE_HEADER_VALIDATED"),
+        ("state_space", "DECLARED"),
+    ];
+    let r = hawking_adapters::builtin_registry();
+    for (id, level) in expected {
+        let d = r.get(id).unwrap_or_else(|| panic!("missing family {id}"));
+        assert_eq!(
+            d.level.as_str(),
+            level,
+            "family {id} grade drifted from the honest evidence ladder"
+        );
+    }
 }

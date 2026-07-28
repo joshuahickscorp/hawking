@@ -1,0 +1,293 @@
+{
+  "$id": "hawking.runtime_capabilities.v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "examples": [
+    {
+      "bridge_endpoints": [
+        {
+          "endpoint": "POST /v1/chat/completions",
+          "entry_path": "crates/hawking-serve/src/http.rs:router -> chat_completions",
+          "status": "live",
+          "tests": [
+            "crates/hawking-serve/tests/http_integration.rs"
+          ]
+        },
+        {
+          "endpoint": "POST /v1/completions",
+          "entry_path": "crates/hawking-serve/src/http.rs:router -> completions",
+          "status": "live",
+          "tests": [
+            "crates/hawking-serve/tests/http_integration.rs"
+          ]
+        },
+        {
+          "endpoint": "GET /v1/models",
+          "entry_path": "crates/hawking-serve/src/http.rs:router -> list_models",
+          "status": "live",
+          "tests": [
+            "crates/hawking-serve/tests/http_integration.rs"
+          ]
+        },
+        {
+          "endpoint": "GET /healthz",
+          "entry_path": "crates/hawking-serve/src/http.rs:router -> healthz",
+          "status": "live",
+          "tests": [
+            "crates/hawking-serve/tests/http_integration.rs"
+          ]
+        },
+        {
+          "endpoint": "GET /metrics",
+          "entry_path": "crates/hawking-serve/src/http.rs:router -> metrics",
+          "status": "live",
+          "tests": []
+        },
+        {
+          "endpoint": "POST /v1/embeddings",
+          "entry_path": "crates/hawking-serve/src/http.rs:router -> embeddings",
+          "status": "partial",
+          "tests": []
+        },
+        {
+          "endpoint": "POST /v1/hawking/tokens",
+          "entry_path": "crates/hawking-serve/src/http.rs:router -> hawking_tokens",
+          "status": "live",
+          "tests": [
+            "crates/hawking-serve/tests/hawking_native_endpoint.rs"
+          ]
+        },
+        {
+          "endpoint": "POST /v1/hawking/generate",
+          "entry_path": "crates/hawking-serve/src/http.rs:router -> hawking_generate",
+          "status": "live",
+          "tests": [
+            "crates/hawking-serve/tests/hawking_native_endpoint.rs"
+          ]
+        },
+        {
+          "endpoint": "GET /v1/hawking/context",
+          "entry_path": "crates/hawking-serve/src/http.rs:router -> hawking_context",
+          "status": "live",
+          "tests": []
+        },
+        {
+          "endpoint": "GET /v1/hawking/surface",
+          "entry_path": "crates/hawking-serve/src/http.rs:router -> hawking_surface",
+          "status": "live",
+          "tests": [
+            "crates/hawking-serve/tests/http_integration.rs"
+          ]
+        },
+        {
+          "endpoint": "POST /v1/responses",
+          "entry_path": "crates/hawking-serve/src/http.rs:router -> not_implemented_responses",
+          "status": "not_implemented",
+          "tests": [
+            "crates/hawking-serve/tests/http_integration.rs"
+          ]
+        },
+        {
+          "endpoint": "POST /v1/messages",
+          "entry_path": "crates/hawking-serve/src/http.rs:router -> not_implemented_anthropic_messages",
+          "status": "not_implemented",
+          "tests": [
+            "crates/hawking-serve/tests/http_integration.rs"
+          ]
+        },
+        {
+          "endpoint": "MCP",
+          "entry_path": "crates/hide-backend (register_mcp_servers_at_boot on hide tree)",
+          "status": "partial",
+          "tests": []
+        },
+        {
+          "endpoint": "ACP",
+          "entry_path": "crates/hide-acp (DeferredTurnHandler / capability negotiate)",
+          "status": "partial",
+          "tests": []
+        },
+        {
+          "endpoint": "SDK Transport -> hide-serve",
+          "entry_path": "crates/hide-sdk/src/client.rs (MockTransport only; real transport deferred)",
+          "status": "not_implemented",
+          "tests": [
+            "crates/hide-sdk/tests/client.rs"
+          ]
+        }
+      ],
+      "families": [
+        {
+          "executes": true,
+          "family": "deepseek",
+          "level": "SOURCE_HEADER_VALIDATED",
+          "providers": {
+            "cpu": "available — cpu_backend_parity_deepseek",
+            "cuda": null,
+            "metal": "partial — shared metal path when configured"
+          },
+          "serve_registered": true
+        },
+        {
+          "executes": false,
+          "family": "gemma",
+          "level": "DECLARED",
+          "providers": {
+            "cpu": null,
+            "cuda": null,
+            "metal": null
+          },
+          "serve_registered": false
+        },
+        {
+          "executes": true,
+          "family": "glm",
+          "level": "SMALL_REAL_CHECKPOINT",
+          "providers": {
+            "cpu": "partial — CPU oracle/parity paths exist for gravity shards",
+            "cuda": null,
+            "metal": "partial — Metal gravity kernels used in sealed parity lanes"
+          },
+          "serve_registered": true
+        },
+        {
+          "executes": false,
+          "family": "kimi",
+          "level": "SYNTHETIC_PARITY",
+          "providers": {
+            "cpu": "synthetic CPU reference only",
+            "cuda": null,
+            "metal": "partial — bound real-source metal K1 twin, not full serve"
+          },
+          "serve_registered": false
+        },
+        {
+          "executes": true,
+          "family": "llama",
+          "level": "SOURCE_HEADER_VALIDATED",
+          "providers": {
+            "cpu": "available — CPU backend path exercises LlamaDense",
+            "cuda": null,
+            "metal": "partial — Metal kernels used when configured; not family-grade sealed"
+          },
+          "serve_registered": true
+        },
+        {
+          "executes": false,
+          "family": "minimax",
+          "level": "DECLARED",
+          "providers": {
+            "cpu": null,
+            "cuda": null,
+            "metal": null
+          },
+          "serve_registered": false
+        },
+        {
+          "executes": true,
+          "family": "mistral_mixtral",
+          "level": "SOURCE_HEADER_VALIDATED",
+          "providers": {
+            "cpu": "available for dense mistral via LlamaDense",
+            "cuda": null,
+            "metal": "partial — shared llama metal path"
+          },
+          "serve_registered": true
+        },
+        {
+          "executes": false,
+          "family": "phi",
+          "level": "DECLARED",
+          "providers": {
+            "cpu": null,
+            "cuda": null,
+            "metal": null
+          },
+          "serve_registered": false
+        },
+        {
+          "executes": true,
+          "family": "qwen",
+          "level": "SOURCE_HEADER_VALIDATED",
+          "providers": {
+            "cpu": "available — CPU backend parity tests",
+            "cuda": null,
+            "metal": "partial — Metal path used in serve when configured"
+          },
+          "serve_registered": true
+        },
+        {
+          "executes": true,
+          "family": "state_space",
+          "level": "DECLARED",
+          "providers": {
+            "cpu": "available for rwkv7",
+            "cuda": null,
+            "metal": "partial — when configured for rwkv7"
+          },
+          "serve_registered": true
+        }
+      ],
+      "runtime_profiles": [
+        "default",
+        "fast",
+        "race",
+        "efficient",
+        "exact"
+      ],
+      "schema": "hawking.runtime_capabilities.v1"
+    }
+  ],
+  "properties": {
+    "bridge_endpoints": {
+      "items": {
+        "properties": {
+          "endpoint": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "live",
+              "partial",
+              "not_implemented"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "endpoint",
+          "status"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "families": {
+      "description": "Per-family execute/serve/provider capability snapshot from the registry.",
+      "type": "array"
+    },
+    "runtime_profiles": {
+      "items": {
+        "enum": [
+          "default",
+          "fast",
+          "race",
+          "efficient",
+          "exact"
+        ],
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "schema": {
+      "const": "hawking.runtime_capabilities.v1"
+    }
+  },
+  "required": [
+    "schema",
+    "families",
+    "runtime_profiles",
+    "bridge_endpoints"
+  ],
+  "title": "HawkingRuntimeCapabilities",
+  "type": "object"
+}

@@ -1,0 +1,38 @@
+{
+  "schema": "hawking.glm52.aa_pack_allocator_fix.v1",
+  "at": "2026-07-27T13:30:00Z",
+  "owner": "controller",
+  "what_the_first_dry_run_would_have_shipped": {
+    "finding": "The allocator optimised bytes under a BPW budget and did NOT treat beating the constant-mean null as a constraint. 18 of 859 activation-aware tensors fell BELOW their null -- carrying 17 percent of the activation-aware weight mass.",
+    "the_disqualifying_two": [
+      {"tensor": "lm_head.weight", "n_weights": 951582720, "cosine": 0.683, "null": 0.852, "surplus": -0.169},
+      {"tensor": "model.embed_tokens.weight", "n_weights": 951582720, "cosine": 0.869, "null": 0.925, "surplus": -0.056}
+    ],
+    "why_it_would_have_been_another_collapse": "A tensor below its constant-mean null carries no information -- it is worse than emitting the mean row. An lm_head below its null produces logits worse than the mean, which is exactly Math-Preserve's failure mode. The campaign already learned this the expensive way: General-R0 needed lm_head and embed_tokens natively protected, and this allocation was compressing them below null again.",
+    "caught_by": "reading the dry-run's own per-tensor beats_null field rather than its headline BPW"
+  },
+  "the_fix": {
+    "change": "beating the null is now a HARD CONSTRAINT in the allocator, not a scoring term. The lowest rank chosen is the lowest rank that BEATS its null; a tensor that cannot beat its null at any available rank falls through to native pass-through.",
+    "billing": "native is billed at source width, derived from n_weights, because an activation-aware measurement carries no pass_through_bytes field. Getting that wrong would have under-billed the very tensors being protected.",
+    "location": "tools/condense/glm52_activation_aware_pack.py, allocate()",
+    "tests": "7/7 pass"
+  },
+  "measured_cost_of_the_constraint": {
+    "on_the_pilot_window": {"before_bpw": 0.36766, "after_bpw": 2.92827, "delta": "+696 percent"},
+    "why_that_figure_is_misleading": "The pilot window is 4 of 78 layers and happens to contain BOTH global tensors. lm_head and embed_tokens are 14.2 percent of the WINDOW but only 0.253 percent of the MODEL, and they do not recur -- every other layer is experts and attention.",
+    "whole_model_projection": {
+      "activation_aware_bpw_on_recurring_tensors": 0.0507,
+      "global_tensors_native_at": "16 BPW (BF16 source width)",
+      "projected_complete_bpw": 0.091,
+      "projected_artifact_gb": 8.6,
+      "for_comparison": "Math-Preserve, semantically collapsed, shipped 92.0 GB at 0.9774 BPW"
+    },
+    "reading": "Protecting the two global tensors natively costs about 0.04 BPW whole-model. It is close to free at model scale and it removes the single most likely cause of another collapse."
+  },
+  "what_is_still_unproven": [
+    "that a pack built this way generates. Per-tensor beats-null is necessary, not sufficient, and no whole-model gate is measurable on a 4-of-78-layer window.",
+    "the 0.091 BPW projection assumes recurring layers behave like the pilot's. It is a projection from 1.78 percent of the model's weights.",
+    "down_proj is scored against a Gaussian intermediate probe because the capsules hold no intermediate activations. up and gate use real pre_router_hidden."
+  ],
+  "next": "run the full program -- measurement shardwise streaming, allocation global, packing shardwise -- then run tools/condense/glm52_capability_gate.py against the result BEFORE anything trains on it. Projected ~4.9 hours by the packer's own timing model."
+}

@@ -1,0 +1,155 @@
+{
+  "schema": "hawking.temporal_gravity.mechanism_receipt.v1",
+  "created_at_utc": "2026-07-27T14:38:30Z",
+  "status": "DEVICE_DSA_POST_SCORE_ICB_REPLAY_INTEGRATED_DEFAULT_OFF",
+  "mechanism": "Extend compact MLA's persistent post-score Metal compute ICB to replay fixed-grid radix top-k before compact attention and the residual add after o_proj. Full-indexer layers replay seven commands; shared-indexer layers replay six commands and consume the rank already produced by the shared path.",
+  "base_commit": "5fc395c01b14c277529f3d7af6217776f2820885",
+  "scope": {
+    "flag": "HAWKING_GLM_GPU_COMPACT_ATTENTION_ICB=1",
+    "required_parent_flags": [
+      "HAWKING_GLM_GPU_COMPACT_MLA=1",
+      "HAWKING_GLM_GPU_DEVICE_DSA=1"
+    ],
+    "runtime_default_changed": false,
+    "production_forward_wired": true,
+    "full_indexer_graph_commands": 7,
+    "shared_indexer_graph_commands": 6,
+    "ordinary_direct_attention_changed": false,
+    "sealed_math_preserve_touched": false,
+    "mop_touched": false,
+    "throughput_claim": false,
+    "wait_count_claim": "UNCHANGED: radix, compact attention, o_proj, and residual replay remain inside the existing token command buffer and commit boundary."
+  },
+  "graph_contract": {
+    "full_indexer_dispatch_order": [
+      "gravity_glm_radix_topk_f32",
+      "gravity_glm_mla_append_compact",
+      "absorbed key projection: gravity_pq_matvec",
+      "gravity_glm_mla_ranked_attention_f32",
+      "absorbed value projection: gravity_pq_matvec",
+      "o_proj: gravity_pq_matvec or gemv_native_bf16_seq",
+      "gravity_add_inplace_f32"
+    ],
+    "shared_indexer_dispatch_order": [
+      "gravity_glm_mla_append_compact",
+      "absorbed key projection: gravity_pq_matvec",
+      "gravity_glm_mla_ranked_attention_f32",
+      "absorbed value projection: gravity_pq_matvec",
+      "o_proj: gravity_pq_matvec or gemv_native_bf16_seq",
+      "gravity_add_inplace_f32"
+    ],
+    "fixed_grid_commands_full_indexer": 7,
+    "fixed_grid_commands_shared_indexer": 6,
+    "scalar_parameter_buffers_per_layer_graph": 1,
+    "dynamic_scalar_bytes_per_full_indexer_replay": 44,
+    "dynamic_scalar_bytes_per_shared_indexer_replay": 36,
+    "dynamic_scalars": [
+      "radix active score count and selected count on full-indexer layers",
+      "compact KV append position",
+      "ranked-attention active key count and selected count"
+    ],
+    "sole_uncaptured_attention_command": "gravity_glm_dsa_scores at the exact active n_keys grid on full-indexer layers",
+    "ledger_partition": {
+      "radix_through_o_proj": "AttentionAndIndexShare",
+      "residual_add": "Other"
+    }
+  },
+  "persistent_replay_contract": {
+    "cache_extent": "one lazy post-score graph slot per transformer layer",
+    "capture_key": "layer, attention and hidden geometry, exact scale bits, projection metadata, radix and residual inclusion, and all bound cache, score, rank, query, weight, output, and residual GPU addresses",
+    "active_length_updates_rebuild_graph": false,
+    "address_or_geometry_changes": "rebuild only the affected layer graph",
+    "score_capacity_growth": "reject reuse when active n_keys exceeds the captured score buffer capacity; an address change rebuilds the affected graph",
+    "residual_extent_validation": "hidden float elements must fit the bound residual buffer",
+    "o_proj_validation": "o_proj row count must equal hidden width",
+    "barriers": [
+      "radix rank output before ranked attention",
+      "compact append before absorbed key/value consumers",
+      "absorbed K before ranked attention",
+      "ranked attention before absorbed V",
+      "absorbed V before o_proj",
+      "o_proj before residual add"
+    ]
+  },
+  "bounded_replay_proof": {
+    "test": "compact_absorbed_post_score_dag_passes_v21_without_readback",
+    "graph_commands": 7,
+    "warm_replays": 2,
+    "radix_input_scores": [
+      0.0,
+      4.0,
+      1.0,
+      3.0,
+      5.0
+    ],
+    "selected_rank_order_exact": true,
+    "direct_vs_icb_o_proj_bit_exact": true,
+    "zero_initialized_residual_equals_o_proj_bit_exact": true,
+    "buffers_allocated_across_warm_replays": 0,
+    "result": "PASS"
+  },
+  "bounded_complete_token_v2_1": {
+    "fixture": "/private/tmp/hawking-compact-sparse-final.ogyzB4",
+    "production_artifact": false,
+    "projection_representation": "direct-u8 PQ",
+    "prompts": 4,
+    "direct_vs_icb_logits_bit_exact_all_prompts": true,
+    "dsa_selection_exact_all_prompts": true,
+    "expert_choices_exact_all_prompts": true,
+    "waits_direct": [
+      12,
+      6,
+      12,
+      12
+    ],
+    "waits_icb": [
+      12,
+      6,
+      12,
+      12
+    ],
+    "result": "PASS"
+  },
+  "regression_validation": {
+    "explicit_post_score_replay": {
+      "passed": 1,
+      "failed": 0
+    },
+    "full_core_library": {
+      "passed": 236,
+      "failed": 0,
+      "ignored": 4
+    },
+    "bounded_sparse_complete_token": {
+      "passed": 1,
+      "failed": 0,
+      "prompts": 4
+    },
+    "default_resident_parity": {
+      "passed": 3,
+      "failed": 0
+    },
+    "default_gpu_forward": {
+      "passed": 3,
+      "failed": 0
+    },
+    "clippy_lib_no_deps_deny_warnings": "PASS",
+    "rustfmt_selected_files": "PASS",
+    "diff_check": "PASS"
+  },
+  "qualification": {
+    "qualified": [
+      "Full-indexer post-score work from radix rank through the attention residual now replays as one persistent seven-command real Metal ICB per layer.",
+      "Shared-indexer layers replay the corresponding six-command compact-attention-through-residual graph without duplicating rank selection.",
+      "Dynamic n_keys, n_allow, and position updates reuse the captured graph without per-token buffer allocation.",
+      "Low-level native-BF16 evidence and direct-u8 PQ complete-token evidence are bit-exact to direct encoding."
+    ],
+    "not_qualified": [
+      "One exact active-length DSA score dispatch remains direct on every full-indexer layer.",
+      "The attention prelude, indexer transforms, post-score work, expert waves, and final head are separate cached replay graphs; this tranche does not claim that host replay sequencing overhead is eliminated.",
+      "No latency, TPS, TTFT, bytes-per-token, command-buffer reduction, sealed-model, sustained-context, memory-pressure, swap, or thermal claim is made.",
+      "No sealed Math-Preserve execution occurred because valid MOP clearance is still absent."
+    ],
+    "next_boundary": "Measure bounded direct-versus-replay encode and execution costs, then collapse replay-subgraph launch sequencing only where the evidence shows a net gain while preserving the exact-length direct DSA score boundary."
+  }
+}

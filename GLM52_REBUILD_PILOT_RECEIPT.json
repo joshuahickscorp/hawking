@@ -175,9 +175,10 @@
     "that A6 fails. It is DATA_BLOCKED on trajectory traces, of which the teacher ledger holds zero."
   ],
   "next_actions_in_order": [
-    "A4 across a REAL expert bank: 256 routed experts per layer share structure that a shared latent basis could exploit, and the pilot only ever ran A4 across 8 synthetic blocks of one tensor. This is the single most promising untried representation and it is specifically suited to a MoE parent.",
-    "expert fitted against captured activations rather than SVD of raw weights",
-    "only if both fail is representation escalation genuinely exhausted, and only then does an Escape Receipt for a separately versioned parity artifact become honest"
+    "replicate the activation-aware result across many experts and several layers using the 66 retained teacher capsules",
+    "if it holds, freeze an activation-fitted allocation program and run measurement shardwise -> allocation global -> packing shardwise",
+    "re-probe the resulting artifact with 2 + 2 and prompt-dependent generation before anything trains on it",
+    "the Escape Receipt is OFF the table until data-aware fitting has been genuinely exhausted, which it has not even been started at scale"
   ],
   "fences_unchanged": {
     "ODYSSEY_LAUNCH_AUTHORIZED": false,
@@ -345,6 +346,205 @@
     "what_it_still_does_not_establish": [
       "that no representation can compress a GLM expert sub-bit. A1 is SVD of raw weights; an expert fitted against captured activations, or exploiting inter-expert redundancy at scale (A4 across the real 256-expert bank rather than 8 synthetic blocks), remains untried and is exactly the escalation the law demands before an escape.",
       "any whole-model result. Still a four-layer window, still a proxy input distribution."
+    ]
+  },
+  "A4_across_a_REAL_expert_bank": {
+    "at": "2026-07-27T09:20:00Z",
+    "why_this_was_the_most_promising_untried_representation": "On a MoE parent, 256 routed experts serve the same layer. If they share structure, a shared latent basis exploits redundancy that per-expert compression cannot see at all -- and it is the only arm whose cost per expert FALLS as the bank grows. The pilot had only ever run A4 across 8 synthetic blocks of a single tensor.",
+    "bank": {
+      "experts": 70,
+      "expert_shape": [
+        2048,
+        6144
+      ],
+      "tensor_kind": "up_proj",
+      "layer": 10,
+      "constant_mean_cosine_null": 0.12457
+    },
+    "measured": [
+      {
+        "basis": 1,
+        "bpw": 0.22857,
+        "sub_bit": true,
+        "cosine": 0.12501,
+        "relative_output_error": 0.99215
+      },
+      {
+        "basis": 2,
+        "bpw": 0.45715,
+        "sub_bit": true,
+        "cosine": 0.1755,
+        "relative_output_error": 0.98448
+      },
+      {
+        "basis": 4,
+        "bpw": 0.91429,
+        "sub_bit": true,
+        "cosine": 0.24704,
+        "relative_output_error": 0.969
+      },
+      {
+        "basis": 8,
+        "bpw": 1.82858,
+        "sub_bit": false,
+        "cosine": 0.34729,
+        "relative_output_error": 0.93775
+      },
+      {
+        "basis": 16,
+        "bpw": 3.65716,
+        "sub_bit": false,
+        "cosine": 0.48817,
+        "relative_output_error": 0.87274
+      },
+      {
+        "basis": 32,
+        "bpw": 7.31433,
+        "sub_bit": false,
+        "cosine": 0.68523,
+        "relative_output_error": 0.7283
+      }
+    ],
+    "per_expert_baseline": {
+      "arm": "A1",
+      "rank": 64,
+      "bpw": 0.66676,
+      "cosine": 0.29795
+    },
+    "verdict": "NEGATIVE, and cleanly so. A4 at 0.914 BPW returns cosine 0.247; per-expert A1 at 0.667 BPW returns 0.299. The shared basis costs 37 percent MORE and delivers 17 percent LESS.",
+    "what_it_means": "The 70 routed experts sampled here do not share structure a shared linear basis can exploit. Inter-expert redundancy is not the win on this parent -- at least not the linear redundancy an SVD over the expert bank captures. At basis 1, where the shared basis is most aggressive, it sits exactly AT the null.",
+    "significance_for_the_law": "This closes the representation specifically suited to a MoE architecture, which was the strongest remaining sub-bit candidate. Linear representation escalation over routed experts is now measured and exhausted: low-rank per expert, PQ plus residual, additive multi-codebook, protected islands, and shared basis across a real bank have all been swept and none functions sub-bit on the organs that carry the mass."
+  },
+  "what_remains_untried_before_an_escape_is_honest": [
+    "DATA-AWARE fitting: every arm swept so far fits RAW WEIGHTS. Fitting an expert against captured activations optimises what the organ DOES rather than what it stores, and the campaign's own functional-codec work (glm52.functional.moe.v1, GLM52_FUNCTIONAL_CPU_PARITY.json) is exactly that machinery, already frozen and deterministic. It has not been swept as a rate ladder.",
+    "A6 trajectory-stabilized, which stays DATA_BLOCKED on parent trajectory traces the teacher ledger does not hold"
+  ],
+  "controller_position_now": "The rebuild has a direction, measured and replicated. Activation-aware projection preserves routed-expert function at 0.167 BPW across 12/12 experts while raw-weight low-rank fails 0/12 at four times the rate. Sub-bit is not exhausted; it was never properly attempted against the right objective. The Escape Receipt stays off the table. The next step is a program: measurement shardwise using the retained teacher capsules, allocation global, packing shardwise -- and then the whole-model gates decide.",
+  "FUNCTIONAL_codec_rate_sweep": {
+    "at": "2026-07-27T09:35:00Z",
+    "why_it_was_the_last_untried_family": "Every other arm fits RAW WEIGHTS, and the sub-bit law explicitly refuses weight-space reasoning. glm52.functional.moe.v1 stores a FUNCTION -- a feature map reproduced from a seed at zero storage cost, plus a fitted readout -- so it answers what the organ DOES rather than what it holds.",
+    "organ": "model.layers.10.mlp.experts.0.up_proj.weight, a real routed expert",
+    "constant_mean_cosine_null": 0.12622,
+    "held_out": "fitted on 4096 sampled rows, scored on 512 unseen",
+    "measured": [
+      {
+        "hidden": 256,
+        "bpw": 0.66667,
+        "sub_bit": true,
+        "cosine": 0.1043,
+        "beats_null": false
+      },
+      {
+        "hidden": 512,
+        "bpw": 1.33333,
+        "sub_bit": false,
+        "cosine": 0.14857
+      },
+      {
+        "hidden": 1024,
+        "bpw": 2.66667,
+        "sub_bit": false,
+        "cosine": 0.20167
+      },
+      {
+        "hidden": 2048,
+        "bpw": 5.33333,
+        "sub_bit": false,
+        "cosine": 0.26244
+      },
+      {
+        "hidden": 4096,
+        "bpw": 10.66667,
+        "sub_bit": false,
+        "cosine": 0.32004
+      }
+    ],
+    "verdict": "NEGATIVE, and by a wide margin. At an identical 0.667 BPW the functional codec returns cosine 0.104 -- BELOW the null -- against low-rank's 0.298 on the same organ. At 10.67 BPW, sixteen times the rate, it reaches 0.320, barely matching what low-rank achieved at 0.667.",
+    "reading": "For this organ a seed-reproduced random feature map is a far worse basis than the organ's own principal directions. The feature map costs nothing to store, which is its appeal, and it also carries no information about this particular expert -- which is why it loses.",
+    "honest_caveat_that_keeps_this_from_being_final": "The fit used sampled Gaussian activations as a proxy, not the campaign's 47 retained teacher capsules. Fitting against REAL captured activations is a materially different experiment and remains untested. It is the last thing standing between this result and a defensible claim of exhaustion."
+  },
+  "exhaustion_status": {
+    "swept_and_negative_sub_bit_on_mass_carrying_organs": [
+      "A1 low-rank per expert",
+      "A2 PQ plus quantised residual",
+      "A3 additive multi-codebook",
+      "A5 protected islands (decoder implemented this session)",
+      "A4 shared latent basis across a REAL 70-expert bank",
+      "functional codec with seed-reproduced feature map"
+    ],
+    "remaining_before_exhaustion_is_defensible": [
+      "functional fitting against REAL captured activations from the 47 retained teacher capsules, rather than Gaussian proxies",
+      "A6 trajectory-stabilized, still DATA_BLOCKED on parent trajectory traces the ledger does not hold"
+    ],
+    "controller_position": "Six families are now measured negative at sub-bit rates on the organs carrying 97.5 percent of the mass, including the MoE-specific one and the function-fitting one. That is most of the way to the exhaustion the sub-bit law demands. It is not all the way, and the gap is specific and cheap: one experiment against real captured activations. Preparing an Escape Receipt before running it would rest the campaign's largest architectural decision on a Gaussian proxy."
+  },
+  "DECISIVE_REVERSAL_real_captured_activations": {
+    "at": "2026-07-27T09:55:00Z",
+    "status": "THIS OVERTURNS EVERY SUB-BIT NEGATIVE IN THIS RECEIPT",
+    "what_changed": "Every earlier sweep fitted and scored against sampled GAUSSIAN activations. These use the campaign's own retained teacher capsule L10_L10.npz -- 4096 real token activations captured from the real parent at layer 10, which is exactly the input distribution these experts see.",
+    "the_first_thing_that_changed": {
+      "constant_mean_cosine_null_gaussian": 0.126,
+      "constant_mean_cosine_null_REAL": 0.65101,
+      "why": "real token activations are strongly anisotropic -- they live near a low-dimensional subspace -- so the mean row is a far better predictor than it is under isotropic noise. Every cosine in the Gaussian sweeps was being read against a null five times too small."
+    },
+    "measured_at_identical_0.667_BPW_same_expert": [
+      {
+        "arm": "A1_raw_weights",
+        "cosine": 0.3839,
+        "verdict": "BELOW the null -- raw-weight low-rank is worse than useless on real data"
+      },
+      {
+        "arm": "FUNCTIONAL_real_activations",
+        "cosine": 0.68694,
+        "verdict": "above the null"
+      },
+      {
+        "arm": "A1_activation_aware",
+        "cosine": 0.7925,
+        "verdict": "well above the null"
+      }
+    ],
+    "the_headline": "A data-aware projection reaches cosine 0.755 at 0.167 BPW and 0.793 at 0.667 BPW, both sub-bit, both clearly above the 0.651 null. At the same rate raw-weight low-rank returns 0.384 and sits BELOW the null. Knowing where the activations live is worth roughly a doubling of preserved function per bit.",
+    "why_the_gaussian_proxy_misled_in_the_direction_that_mattered": [
+      "it shrank the null five-fold, so weak arms looked like they were clearing a bar",
+      "it flattered raw-weight methods, which have nothing to lose when the input is isotropic",
+      "it penalised data-aware methods specifically, because an isotropic input has no structure for them to exploit -- the exact property they exist to use"
+    ],
+    "what_this_does_to_the_campaign": {
+      "sub_bit_is_NOT_exhausted": "A working sub-bit representation of a real routed expert now exists and is measured. The five negatives in this receipt were negatives about fitting raw weights under a proxy, not about sub-bit.",
+      "escape_receipt": "DEFINITIVELY NOT the next step. It would have been prepared on the strength of measurements that a better input distribution reverses.",
+      "the_direction": "data-aware allocation -- fit every organ against captured activations, not against its own weights. The campaign has 66 teacher capsules retained and has never used them as the fitting target for a packing program.",
+      "what_it_suggests_about_math_preserve": "if the PASS3 program fitted raw weights rather than activations, it optimised the wrong objective at every one of 59,585 frozen decisions. That is a hypothesis this result makes worth testing, not yet a finding."
+    },
+    "honest_limits": [
+      "one expert, one layer, one tensor kind. It must replicate across experts and layers before a program is frozen on it.",
+      "cosine 0.793 against a 0.651 null is a real margin, not an overwhelming one. Whether it is enough to generate is a whole-model question this window cannot answer.",
+      "the activation-aware arm here is a simple eigenbasis projection of W onto the top activation directions. It is a demonstration that the DIRECTION works, not a finished codec."
+    ]
+  },
+  "REPLICATION_across_twelve_experts": {
+    "at": "2026-07-27T10:15:00Z",
+    "why": "Replication is the gate between a promising measurement and a program worth freezing. One expert is an anecdote.",
+    "activations": "layer_10/pre_router_hidden, real captured teacher capsule, 4096 tokens, 80/20 held out",
+    "key_structural_fact": "the top 16 activation directions carry 88.9 percent of the variance. Real token activations at this layer live in a subspace far smaller than the 6144-dimensional space the weights are stored in, which is exactly why a representation that knows where they live wins.",
+    "result": {
+      "experts_tested": 12,
+      "activation_aware_k16_at_0.167_BPW_beat_null": "12/12",
+      "activation_aware_k64_at_0.667_BPW_beat_null": "12/12",
+      "raw_weight_rank64_at_0.667_BPW_beat_null": "0/12"
+    },
+    "typical_values": {
+      "null": "0.637 to 0.666",
+      "activation_aware_k16": "0.742 to 0.765",
+      "activation_aware_k64": "0.781 to 0.804",
+      "raw_weight_rank64": "0.342 to 0.433"
+    },
+    "verdict": "Unanimous and consistent. Activation-aware projection preserves routed-expert function at 0.167 BPW on every expert tested, and raw-weight low-rank fails on every expert tested at four times that rate. The effect is not an artifact of one expert.",
+    "what_is_now_established": "A sub-bit representation of GLM-5.2's routed experts that preserves function above the real-activation null exists, replicates, and costs 0.167 BPW on the organs carrying ~97.5 percent of the model's mass.",
+    "what_is_still_NOT_established": [
+      "that a whole artifact packed this way generates. That needs the full program and the whole-model gates -- 2 + 2, prompt-dependent generation, cascade, halo, long context.",
+      "that one layer's activation basis transfers to other layers. These twelve experts all serve layer 10 and were scored against layer 10's activations. Per-layer bases are the obvious design, and the cost of storing them is already counted in the BPW above.",
+      "any claim about attention, embedding or lm_head under real activations -- only routed experts were replicated."
     ]
   }
 }

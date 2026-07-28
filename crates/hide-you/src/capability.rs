@@ -57,6 +57,7 @@ impl SurfacePermissionSet {
         SurfaceCapability {
             tools: self.tools.clone(),
             connectors: self.connectors.clone(),
+            live: true,
         }
     }
 
@@ -89,6 +90,7 @@ impl SurfacePermissionSet {
         Ok(SurfaceCapability {
             tools: out_tools,
             connectors: out_connectors,
+            live: true,
         })
     }
 
@@ -113,10 +115,19 @@ impl SurfacePermissionSet {
 /// non-widening**: fields private; only construction path is
 /// [`SurfacePermissionSet::derive_capability`] /
 /// [`SurfacePermissionSet::derive_capability_subset`].
+///
+/// `live` is never serialized. A capability forged via `serde` (or any other
+/// path that does not go through derive) deserializes with `live = false` and
+/// fails closed on every gate. That closes the export / handoff payload attack
+/// of smuggling a capability-shaped JSON object.
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub struct SurfaceCapability {
     tools: BTreeSet<String>,
     connectors: BTreeSet<String>,
+    /// True only when constructed by [`SurfacePermissionSet::derive_capability`]
+    /// or [`SurfacePermissionSet::derive_capability_subset`].
+    #[serde(skip)]
+    live: bool,
 }
 
 impl SurfaceCapability {
@@ -128,16 +139,26 @@ impl SurfaceCapability {
         &self.connectors
     }
 
+    /// Whether this handle was minted by derive (not forged via serde/export).
+    pub fn is_live(&self) -> bool {
+        self.live
+    }
+
     pub fn allows_tool(&self, name: &str) -> bool {
-        self.tools.contains(name)
+        self.live && self.tools.contains(name)
     }
 
     pub fn allows_connector(&self, name: &str) -> bool {
-        self.connectors.contains(name)
+        self.live && self.connectors.contains(name)
     }
 
     pub fn require_tool(&self, name: &str) -> Result<()> {
-        if self.allows_tool(name) {
+        if !self.live {
+            return Err(YouError::PolicyDenied(
+                "surface capability is not live (forged or deserialized; derive only)".into(),
+            ));
+        }
+        if self.tools.contains(name) {
             Ok(())
         } else {
             Err(YouError::PolicyDenied(format!(
@@ -147,7 +168,12 @@ impl SurfaceCapability {
     }
 
     pub fn require_connector(&self, name: &str) -> Result<()> {
-        if self.allows_connector(name) {
+        if !self.live {
+            return Err(YouError::PolicyDenied(
+                "surface capability is not live (forged or deserialized; derive only)".into(),
+            ));
+        }
+        if self.connectors.contains(name) {
             Ok(())
         } else {
             Err(YouError::PolicyDenied(format!(
@@ -158,7 +184,8 @@ impl SurfaceCapability {
 
     /// True iff every tool/connector in `self` is also in `parent`.
     pub fn is_within(&self, parent: &SurfacePermissionSet) -> bool {
-        self.tools.is_subset(parent.tools())
+        self.live
+            && self.tools.is_subset(parent.tools())
             && self.connectors.is_subset(parent.connectors())
     }
 
@@ -189,5 +216,52 @@ impl CapabilitySnapshot {
 
     pub fn from_capability(cap: &SurfaceCapability) -> Self {
         cap.snapshot()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    #[test]
+    fn derive_is_live_default_is_not() {
+        let empty = SurfaceCapability::default();
+        assert!(!empty.is_live());
+        assert!(!empty.allows_tool("x"));
+
+        let set = SurfacePermissionSet::new(["t1"], ["c1"]);
+        let cap = set.derive_capability();
+        assert!(cap.is_live());
+        assert!(cap.allows_tool("t1"));
+        assert!(cap.allows_connector("c1"));
+    }
+
+    #[test]
+    fn adversarial_serde_forge_is_not_live() {
+        let forged: SurfaceCapability = serde_json::from_value(json!({
+            "tools": ["shell.exec"],
+            "connectors": ["gmail"],
+            "live": true
+        }))
+        .unwrap();
+        assert!(!forged.is_live());
+        assert!(!forged.allows_tool("shell.exec"));
+        assert!(forged.require_tool("shell.exec").is_err());
+        assert!(forged.require_connector("gmail").is_err());
+    }
+
+    #[test]
+    fn subset_cannot_widen() {
+        let set = SurfacePermissionSet::new(["a"], ["x"]);
+        assert!(set
+            .derive_capability_subset(["a", "b"], None::<&str>)
+            .is_err());
+        assert!(set
+            .derive_capability_subset(["a"], ["y"])
+            .is_err());
+        let ok = set.derive_capability_subset(["a"], ["x"]).unwrap();
+        assert!(ok.is_live());
+        assert!(ok.allows_tool("a"));
     }
 }

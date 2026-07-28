@@ -872,6 +872,20 @@ pub fn gpu_device_dsa_enabled() -> bool {
     crate::env_on(GPU_DEVICE_DSA_ENV)
 }
 
+/// Opt-in replay of compact MLA's fixed-grid attention subgraphs.
+///
+/// Requires compact MLA plus device DSA. The full-indexer pre-score transforms
+/// and fixed-grid post-score DAG are captured per layer. Exact active-length
+/// DSA scoring remains direct. Default off.
+pub const GPU_COMPACT_ATTENTION_ICB_ENV: &str = "HAWKING_GLM_GPU_COMPACT_ATTENTION_ICB";
+
+/// Whether compact MLA's fixed-grid attention subgraphs should use Metal ICB replay.
+pub fn gpu_compact_attention_icb_enabled() -> bool {
+    crate::env_on(GPU_COMPACT_ATTENTION_ICB_ENV)
+        && gpu_compact_mla_enabled()
+        && gpu_device_dsa_enabled()
+}
+
 /// Opt-in device noaux_tc router selection for the resident GLM path.
 ///
 /// Default off. The router gate, sigmoid/correction, exact stable group/expert
@@ -905,6 +919,13 @@ pub fn gpu_device_router_enabled() -> bool {
 /// unchanged (Parity V2.1 item 6).
 pub const GPU_LM_HEAD_ENV: &str = "HAWKING_GLM_GPU_LM_HEAD";
 
+/// Opt-in replay of the fixed-shape device final-normalization, lm-head, and
+/// sampling graph through one pre-encoded Metal indirect command buffer.
+///
+/// Default off. The ordinary direct-encode device head remains the parity
+/// oracle. This is a replayability/capture substrate, not a throughput claim.
+pub const GPU_LM_HEAD_ICB_ENV: &str = "HAWKING_GLM_GPU_LM_HEAD_ICB";
+
 /// Opt-in full vocab logit readback on the device lm_head path.
 ///
 /// Default off. When unset under [`GPU_LM_HEAD_ENV`], the resident head returns
@@ -919,6 +940,11 @@ pub const GPU_LM_HEAD_DIAG_TOPK: u32 = 5;
 /// Whether [`GPU_LM_HEAD_ENV`] requests the device native-bf16 path.
 pub fn gpu_lm_head_enabled() -> bool {
     crate::env_on(GPU_LM_HEAD_ENV)
+}
+
+/// Whether the fixed-shape device final-head graph should use Metal ICB replay.
+pub fn gpu_lm_head_icb_enabled() -> bool {
+    crate::env_on(GPU_LM_HEAD_ICB_ENV)
 }
 
 /// Whether the device head should also pull the full logit vector to the host.
@@ -956,6 +982,32 @@ pub const GPU_EXPERT_WAVE_CONCURRENT_ENV: &str = "HAWKING_GLM_GPU_EXPERT_WAVE_CO
 /// Whether the collapsed expert wave should use concurrent projection groups.
 pub fn gpu_expert_wave_concurrent_enabled() -> bool {
     gpu_expert_wave_enabled() && crate::env_on(GPU_EXPERT_WAVE_CONCURRENT_ENV)
+}
+
+/// Opt-in cache-indexed routed-expert hit path.
+///
+/// This requires the qualified device router and expert-wave parents. A
+/// resident descriptor-table hit consumes device-owned IDs and weights without
+/// downloading them before expert dispatch. Cold/unsupported selections must
+/// fail closed and use the existing host-known fallback.
+pub const GPU_EXPERT_TABLE_HIT_ENV: &str = "HAWKING_GLM_GPU_EXPERT_TABLE_HIT";
+
+pub fn gpu_expert_table_hit_enabled() -> bool {
+    gpu_device_router_enabled()
+        && gpu_expert_wave_enabled()
+        && crate::env_on(GPU_EXPERT_TABLE_HIT_ENV)
+}
+
+/// Opt-in replay of a warm cache-indexed expert wave through one pre-encoded
+/// Metal compute indirect command buffer.
+///
+/// This is a child of [`GPU_EXPERT_TABLE_HIT_ENV`]. It changes neither the
+/// cold/miss fallback nor the default path and makes no throughput claim:
+/// Hawking's existing measurements keep ICB below the performance ship gate.
+pub const GPU_EXPERT_TABLE_ICB_ENV: &str = "HAWKING_GLM_GPU_EXPERT_TABLE_ICB";
+
+pub fn gpu_expert_table_icb_enabled() -> bool {
+    gpu_expert_table_hit_enabled() && crate::env_on(GPU_EXPERT_TABLE_ICB_ENV)
 }
 
 /// Static `commit_and_wait` count on the host-state GPU path (default).
@@ -1476,10 +1528,14 @@ impl<T> BoundedLru<T> {
 #[cfg(target_os = "macos")]
 pub mod gpu {
     use super::*;
-    use crate::gravity::{matvec_dense, parse_pq_header, pq_sections, widen_native, PqHeader};
+    use crate::gravity::{
+        activation_aware_sections, matvec_dense, parse_pq_header, pq_sections, widen_native,
+        ActivationAwareSide, PqHeader,
+    };
     use crate::metal::{MetalContext, TokenCommandBuffer};
     use metal::Buffer;
-    use std::collections::HashSet;
+    use sha2::{Digest, Sha256};
+    use std::collections::{HashMap, HashSet};
     use std::sync::Mutex;
 
     /// Mirror of `GravityPQParams` in `shaders/gravity_pq.metal`: eight
@@ -1489,7 +1545,7 @@ pub mod gpu {
     /// as a second small struct rather than a shared one neither
     /// architecture module privately owns.
     #[repr(C)]
-    #[derive(Debug, Clone, Copy)]
+    #[derive(Debug, Clone, Copy, PartialEq, Eq, bytemuck::Pod, bytemuck::Zeroable)]
     pub(crate) struct PqParams {
         pub(crate) dim: u32,
         pub(crate) subspaces: u32,
@@ -1514,6 +1570,16 @@ pub mod gpu {
                 bits: h.bits as u32,
             }
         }
+    }
+
+    /// Mirror of `ActivationAwareParams` in `shaders/matmul.metal`.
+    #[repr(C)]
+    #[derive(Debug, Clone, Copy, PartialEq, Eq, bytemuck::Pod, bytemuck::Zeroable)]
+    pub(crate) struct ActivationAwareParams {
+        pub(crate) rows: u32,
+        pub(crate) cols: u32,
+        pub(crate) rank: u32,
+        pub(crate) side: u32,
     }
 
     fn validate_pq_descriptor_shape(name: &str, header: &PqHeader, shape: &[u64]) -> Result<()> {
@@ -1673,6 +1739,11 @@ pub mod gpu {
             codes: Buffer,
             params: PqParams,
         },
+        ActivationAware {
+            coefficients: Buffer,
+            basis: Buffer,
+            params: ActivationAwareParams,
+        },
         NativeCpu(Vec<f32>),
         NativeGpuBf16 {
             buf: Buffer,
@@ -1681,7 +1752,7 @@ pub mod gpu {
         },
     }
 
-    fn routed_pq_representation(
+    pub(crate) fn routed_pq_representation(
         params: &PqParams,
     ) -> crate::cost_ledger::RoutedWeightRepresentation {
         use crate::cost_ledger::RoutedWeightRepresentation;
@@ -1720,6 +1791,14 @@ pub mod gpu {
             GpuTensor::NativeGpuBf16 { buf, .. } => {
                 (RoutedWeightRepresentation::NativeBf16, buf.length())
             }
+            GpuTensor::ActivationAware {
+                coefficients,
+                basis,
+                ..
+            } => (
+                RoutedWeightRepresentation::Other,
+                coefficients.length() + basis.length(),
+            ),
             GpuTensor::NativeCpu(values) => (
                 RoutedWeightRepresentation::Other,
                 (values.len() as u64).saturating_mul(4),
@@ -1858,6 +1937,198 @@ pub mod gpu {
         }
     }
 
+    #[cfg(test)]
+    mod activation_aware_gpu_tests {
+        use super::*;
+        use crate::gravity::{activation_aware_sections, ActivationAwareTensor};
+        use half::f16;
+
+        fn payload(
+            rows: u32,
+            cols: u32,
+            rank: u32,
+            side: u16,
+            coefficients: &[f32],
+            basis: &[f32],
+        ) -> Vec<u8> {
+            let mut bytes = Vec::new();
+            bytes.extend_from_slice(b"GLM52AAP");
+            bytes.extend_from_slice(&rows.to_le_bytes());
+            bytes.extend_from_slice(&cols.to_le_bytes());
+            bytes.extend_from_slice(&rank.to_le_bytes());
+            bytes.extend_from_slice(&7u16.to_le_bytes());
+            bytes.extend_from_slice(&side.to_le_bytes());
+            bytes.push(1);
+            bytes.resize(64, 0);
+            for &value in coefficients.iter().chain(basis) {
+                bytes.extend_from_slice(&f16::from_f32(value).to_bits().to_le_bytes());
+            }
+            bytes
+        }
+
+        fn assert_close(actual: &[f32], expected: &[f32]) {
+            assert_eq!(actual.len(), expected.len());
+            for (index, (&actual, &expected)) in actual.iter().zip(expected).enumerate() {
+                assert!(
+                    (actual - expected).abs() <= 1e-5,
+                    "value {index}: actual={actual}, expected={expected}"
+                );
+            }
+        }
+
+        fn write_shared_basis_aap_fixture(directory: &Path) -> (&'static str, &'static str) {
+            let first = "model.layers.0.first.weight";
+            let second = "model.layers.0.second.weight";
+            let shard_name = "model-00001-of-00001.aap";
+            let basis = [1.0, 0.0, 0.0, 1.0, 0.5, -0.25];
+            let mut basis_payload = Vec::new();
+            basis_payload.extend_from_slice(b"GLM52BAS");
+            basis_payload.extend_from_slice(&3u32.to_le_bytes());
+            basis_payload.extend_from_slice(&2u32.to_le_bytes());
+            basis_payload.resize(64, 0);
+            for value in basis {
+                basis_payload.extend_from_slice(&f16::from_f32(value).to_bits().to_le_bytes());
+            }
+            let coefficient_payload = |coefficients: &[f32]| {
+                let mut bytes = payload(2, 3, 2, 1, coefficients, &basis);
+                bytes.truncate(64 + coefficients.len() * 2);
+                bytes[24] = 0;
+                bytes
+            };
+            let first_payload = coefficient_payload(&[2.0, -1.0, 0.5, 3.0]);
+            let second_payload = coefficient_payload(&[1.0, 1.0, -1.0, 0.5]);
+            let first_offset = basis_payload.len() as u64;
+            let second_offset = first_offset + first_payload.len() as u64;
+            let index = serde_json::json!({
+                "schema": "hawking.glm52.activation_aware_pack.v1",
+                "shared_bases": true,
+                "bases": [{
+                    "basis_layer": 7,
+                    "rank": 2,
+                    "offset": 0,
+                    "bytes": basis_payload.len(),
+                }],
+                "tensors": [{
+                    "name": first,
+                    "disposition": "activation_aware",
+                    "offset": first_offset,
+                    "bytes": first_payload.len(),
+                    "shape": [2, 3],
+                }, {
+                    "name": second,
+                    "disposition": "activation_aware",
+                    "offset": second_offset,
+                    "bytes": second_payload.len(),
+                    "shape": [2, 3],
+                }],
+            });
+            let index_bytes = serde_json::to_vec(&index).unwrap();
+            let mut shard = Vec::new();
+            shard.extend_from_slice(&(index_bytes.len() as u64).to_le_bytes());
+            shard.extend_from_slice(&index_bytes);
+            shard.extend_from_slice(&basis_payload);
+            shard.extend_from_slice(&first_payload);
+            shard.extend_from_slice(&second_payload);
+            std::fs::write(directory.join(shard_name), &shard).unwrap();
+            let shard_hash: [u8; 32] = Sha256::digest(&shard).into();
+            let shard_hash: String = shard_hash
+                .iter()
+                .map(|byte| format!("{byte:02x}"))
+                .collect();
+            let manifest = serde_json::json!({
+                "schema": "hawking.activation_aware.model_index.v1",
+                "architecture": {"hidden_size": 3},
+                "weight_map": {
+                    (first): shard_name,
+                    (second): shard_name,
+                },
+                "tensor_dtypes": {
+                    (first): "BF16",
+                    (second): "BF16",
+                },
+                "shard_sha256": {(shard_name): shard_hash},
+            });
+            std::fs::write(
+                directory.join("model.activation_aware.index.json"),
+                serde_json::to_vec(&manifest).unwrap(),
+            )
+            .unwrap();
+            (first, second)
+        }
+
+        #[test]
+        fn metal_activation_aware_two_stage_matvec_matches_host_both_sides() {
+            let Ok(ctx) = MetalContext::new() else {
+                return;
+            };
+            let basis = [1.0, 0.0, 0.0, 1.0, 0.5, -0.25];
+            for (side, coefficients, x) in [
+                (1u16, vec![2.0, -1.0, 0.5, 3.0], vec![0.25, 2.0, -1.0]),
+                (2u16, vec![1.0, 2.0, -0.5, 4.0], vec![1.5, -0.75]),
+            ] {
+                let (rows, cols) = if side == 1 { (2, 3) } else { (3, 2) };
+                let payload = payload(rows, cols, 2, side, &coefficients, &basis);
+                let host = ActivationAwareTensor::from_payload(&payload)
+                    .unwrap()
+                    .matvec(&x)
+                    .unwrap();
+                let (header, coefficient_bytes, basis_bytes) =
+                    activation_aware_sections(&payload).unwrap();
+                let coefficient_buffer = ctx
+                    .new_buffer_with_bytes_checked(coefficient_bytes)
+                    .unwrap();
+                let basis_buffer = ctx.new_buffer_with_bytes_checked(basis_bytes).unwrap();
+                let params = ActivationAwareParams {
+                    rows: header.rows,
+                    cols: header.cols,
+                    rank: header.rank,
+                    side: side as u32,
+                };
+                let device = dispatch_activation_aware_matvec(
+                    &ctx,
+                    &coefficient_buffer,
+                    &basis_buffer,
+                    params,
+                    &x,
+                )
+                .unwrap();
+                assert_close(&device, &host);
+            }
+        }
+
+        #[test]
+        fn gpu_weight_cache_loads_aap_and_deduplicates_shared_basis_upload() {
+            let Ok(ctx) = MetalContext::new() else {
+                return;
+            };
+            let directory = tempfile::tempdir().unwrap();
+            let (first, second) = write_shared_basis_aap_fixture(directory.path());
+            let weights = GravityWeights::open_dir(directory.path(), true).unwrap();
+            let cache = GpuWeightCache {
+                ctx,
+                weights,
+                cache: Mutex::new(BoundedLru::new(1 << 20).unwrap()),
+                activation_bases: Mutex::new(ActivationBasisCache {
+                    buffers: HashMap::new(),
+                    resident_bytes: 0,
+                }),
+            };
+            let x = [0.25, 2.0, -1.0];
+            assert_close(&cache.matvec(first, &x).unwrap(), &[-2.75, 6.625]);
+            assert_close(&cache.matvec(second, &x).unwrap(), &[2.0, 1.375]);
+            assert_eq!(
+                cache
+                    .activation_bases
+                    .lock()
+                    .expect("basis cache")
+                    .buffers
+                    .len(),
+                1,
+                "identical shared basis uploaded more than once"
+            );
+        }
+    }
+
     /// A [`WeightAccess`] backend that uploads each `gravity-pq` tensor to
     /// the device on first use and keeps it under a **byte-budgeted LRU**.
     ///
@@ -1873,10 +2144,18 @@ pub mod gpu {
     /// synchronous (encode, commit, wait). Dropping an evicted `Buffer`
     /// after that wait is safe: Metal command buffers retain the resources
     /// they use for the lifetime of the encode.
+    const ACTIVATION_BASIS_CACHE_BUDGET_BYTES: u64 = 1024 * 1024 * 1024;
+
+    struct ActivationBasisCache {
+        buffers: HashMap<[u8; 32], Buffer>,
+        resident_bytes: u64,
+    }
+
     pub struct GpuWeightCache {
         pub(crate) ctx: MetalContext,
         pub(crate) weights: GravityWeights,
         pub(crate) cache: Mutex<BoundedLru<GpuTensor>>,
+        activation_bases: Mutex<ActivationBasisCache>,
     }
 
     impl GpuWeightCache {
@@ -1890,6 +2169,11 @@ pub mod gpu {
                 } => codebooks.length() + codes.length(),
                 GpuTensor::NativeCpu(v) => (v.len() as u64).saturating_mul(4),
                 GpuTensor::NativeGpuBf16 { buf, .. } => buf.length(),
+                GpuTensor::ActivationAware {
+                    coefficients,
+                    basis,
+                    ..
+                } => coefficients.length() + basis.length(),
             }
         }
 
@@ -1933,6 +2217,69 @@ pub mod gpu {
                     codebooks,
                     codes,
                     params: PqParams::from_header(&h),
+                }
+            } else if codec == "activation-aware.f16" {
+                let (header, coefficient_bytes, basis_bytes) = {
+                    let _decode = cost_ledger::Scope::new(Bucket::PackedIndexDecode);
+                    activation_aware_sections(&blob)?
+                };
+                let (coefficients, basis) = {
+                    let _xfer = cost_ledger::Scope::new(Bucket::HostDeviceTransfer);
+                    let coefficients = self.ctx.new_buffer_with_bytes_checked(coefficient_bytes)?;
+                    cost_ledger::record_transfer(
+                        coefficient_bytes.len() as u64,
+                        true,
+                        "activation_aware_coefficients_upload",
+                    );
+                    cost_ledger::record_allocation(coefficient_bytes.len() as u64);
+                    let basis_key: [u8; 32] = Sha256::digest(basis_bytes).into();
+                    let mut bases = self
+                        .activation_bases
+                        .lock()
+                        .expect("activation-aware basis cache");
+                    let basis = if let Some(existing) = bases.buffers.get(&basis_key) {
+                        existing.clone()
+                    } else {
+                        let next_bytes = bases
+                            .resident_bytes
+                            .checked_add(basis_bytes.len() as u64)
+                            .ok_or_else(|| {
+                                Error::Gravity(
+                                    "activation-aware basis cache byte count overflow".into(),
+                                )
+                            })?;
+                        if next_bytes > ACTIVATION_BASIS_CACHE_BUDGET_BYTES {
+                            return Err(Error::Gravity(format!(
+                                "activation-aware distinct bases require {next_bytes} bytes, \
+                                 exceeding the {}-byte deduplicated basis-cache budget",
+                                ACTIVATION_BASIS_CACHE_BUDGET_BYTES
+                            )));
+                        }
+                        let uploaded = self.ctx.new_buffer_with_bytes_checked(basis_bytes)?;
+                        cost_ledger::record_transfer(
+                            basis_bytes.len() as u64,
+                            true,
+                            "activation_aware_basis_upload",
+                        );
+                        cost_ledger::record_allocation(basis_bytes.len() as u64);
+                        bases.buffers.insert(basis_key, uploaded.clone());
+                        bases.resident_bytes = next_bytes;
+                        uploaded
+                    };
+                    (coefficients, basis)
+                };
+                GpuTensor::ActivationAware {
+                    coefficients,
+                    basis,
+                    params: ActivationAwareParams {
+                        rows: header.rows,
+                        cols: header.cols,
+                        rank: header.rank,
+                        side: match header.side {
+                            ActivationAwareSide::Input => 1,
+                            ActivationAwareSide::Output => 2,
+                        },
+                    },
                 }
             } else if codec.starts_with("native.") {
                 // Device-resident native.bf16: upload raw bytes once (no host
@@ -2019,6 +2366,134 @@ pub mod gpu {
         }
     }
 
+    pub(crate) fn record_activation_aware_matvec_ops(params: ActivationAwareParams) {
+        let rank = params.rank as u64;
+        let factor_fp = rank
+            .saturating_mul(params.cols as u64)
+            .saturating_add((params.rows as u64).saturating_mul(rank))
+            .saturating_mul(2);
+        let dense_fp = (params.rows as u64)
+            .saturating_mul(params.cols as u64)
+            .saturating_mul(2);
+        crate::cost_ledger::record_source_modelled_operations(factor_fp, 0, 0, 0, dense_fp);
+    }
+
+    pub(crate) fn encode_activation_aware_matvec(
+        tcb: &mut TokenCommandBuffer<'_>,
+        coefficients: &Buffer,
+        basis: &Buffer,
+        params: ActivationAwareParams,
+        x: &Buffer,
+        latent: &Buffer,
+        y: &Buffer,
+    ) -> Result<()> {
+        const TG: u32 = 256;
+        let coefficient_buf = coefficients.clone();
+        let basis_buf = basis.clone();
+        let x_buf = x.clone();
+        let latent_out = latent.clone();
+        tcb.dispatch_threads(
+            "activation_aware_project_f16",
+            (params.rank.div_ceil(TG) * TG, 1, 1),
+            (TG, 1, 1),
+            move |enc| {
+                enc.set_buffer(0, Some(&coefficient_buf), 0);
+                enc.set_buffer(1, Some(&basis_buf), 0);
+                enc.set_buffer(2, Some(&x_buf), 0);
+                enc.set_buffer(3, Some(&latent_out), 0);
+                enc.set_bytes(
+                    4,
+                    std::mem::size_of::<ActivationAwareParams>() as u64,
+                    &params as *const ActivationAwareParams as *const _,
+                );
+            },
+        )?;
+        let coefficient_buf = coefficients.clone();
+        let basis_buf = basis.clone();
+        let latent_in = latent.clone();
+        let y_buf = y.clone();
+        tcb.dispatch_threads(
+            "activation_aware_expand_f16",
+            (params.rows.div_ceil(TG) * TG, 1, 1),
+            (TG, 1, 1),
+            move |enc| {
+                enc.set_buffer(0, Some(&coefficient_buf), 0);
+                enc.set_buffer(1, Some(&basis_buf), 0);
+                enc.set_buffer(2, Some(&latent_in), 0);
+                enc.set_buffer(3, Some(&y_buf), 0);
+                enc.set_bytes(
+                    4,
+                    std::mem::size_of::<ActivationAwareParams>() as u64,
+                    &params as *const ActivationAwareParams as *const _,
+                );
+            },
+        )
+    }
+
+    fn dispatch_activation_aware_matvec(
+        ctx: &MetalContext,
+        coefficients: &Buffer,
+        basis: &Buffer,
+        params: ActivationAwareParams,
+        x: &[f32],
+    ) -> Result<Vec<f32>> {
+        if x.len() != params.cols as usize {
+            return Err(Error::Gravity(format!(
+                "activation-aware Metal matvec input {} != cols {}",
+                x.len(),
+                params.cols
+            )));
+        }
+        let x_buf = ctx.new_buffer_with_bytes_checked(bytemuck::cast_slice::<f32, u8>(x))?;
+        let latent = ctx.new_buffer_checked(params.rank as usize * std::mem::size_of::<f32>())?;
+        let y = ctx.new_buffer_checked(params.rows as usize * std::mem::size_of::<f32>())?;
+        let mut tcb = TokenCommandBuffer::new(ctx);
+        encode_activation_aware_matvec(&mut tcb, coefficients, basis, params, &x_buf, &latent, &y)?;
+        tcb.commit_and_wait_split()?;
+        let values =
+            unsafe { std::slice::from_raw_parts(y.contents() as *const f32, params.rows as usize) }
+                .to_vec();
+        Ok(values)
+    }
+
+    fn dispatch_activation_aware_matvec_batch(
+        ctx: &MetalContext,
+        calls: &[(&Buffer, &Buffer, ActivationAwareParams, &[f32])],
+    ) -> Result<Vec<Vec<f32>>> {
+        let mut buffers = Vec::with_capacity(calls.len());
+        let mut tcb = TokenCommandBuffer::new(ctx);
+        for &(coefficients, basis, params, x) in calls {
+            if x.len() != params.cols as usize {
+                return Err(Error::Gravity(format!(
+                    "activation-aware Metal batch input {} != cols {}",
+                    x.len(),
+                    params.cols
+                )));
+            }
+            let x_buf = ctx.new_buffer_with_bytes_checked(bytemuck::cast_slice::<f32, u8>(x))?;
+            let latent =
+                ctx.new_buffer_checked(params.rank as usize * std::mem::size_of::<f32>())?;
+            let y = ctx.new_buffer_checked(params.rows as usize * std::mem::size_of::<f32>())?;
+            encode_activation_aware_matvec(
+                &mut tcb,
+                coefficients,
+                basis,
+                params,
+                &x_buf,
+                &latent,
+                &y,
+            )?;
+            buffers.push((x_buf, latent, y, params.rows as usize));
+        }
+        tcb.commit_and_wait_split()?;
+        Ok(buffers
+            .into_iter()
+            .map(|(_, _, y, rows)| {
+                unsafe { std::slice::from_raw_parts(y.contents() as *const f32, rows) }.to_vec()
+            })
+            .collect())
+    }
+
     impl WeightAccess for GpuWeightCache {
         // Norm weights and biases: small, natively carried, touched every
         // layer -- decoding them on the CPU each call is cheaper than the
@@ -2070,6 +2545,18 @@ pub mod gpu {
                     record_pq_matvec_ops(*params);
                     dispatch_pq_matvec(&self.ctx, codebooks, codes, *params, x)
                 }
+                GpuTensor::ActivationAware {
+                    coefficients,
+                    basis,
+                    params,
+                } => {
+                    cost_ledger::record_active_bytes_for(
+                        name,
+                        coefficients.length() + basis.length(),
+                    );
+                    record_activation_aware_matvec_ops(*params);
+                    dispatch_activation_aware_matvec(&self.ctx, coefficients, basis, *params, x)
+                }
             }
         }
 
@@ -2091,6 +2578,13 @@ pub mod gpu {
 
             let mut results: Vec<Option<Vec<f32>>> = vec![None; calls.len()];
             let mut gpu_calls: Vec<(usize, &str, &Buffer, &Buffer, PqParams, &[f32])> = Vec::new();
+            let mut activation_calls: Vec<(
+                usize,
+                &Buffer,
+                &Buffer,
+                ActivationAwareParams,
+                &[f32],
+            )> = Vec::new();
             for (i, &(name, x)) in calls.iter().enumerate() {
                 let tensor = cache.get(name).expect("ensure just inserted it");
                 record_routed_tensor_representation(name, tensor);
@@ -2121,6 +2615,32 @@ pub mod gpu {
                         record_pq_matvec_ops(*params);
                         gpu_calls.push((i, name, codebooks, codes, *params, x));
                     }
+                    GpuTensor::ActivationAware {
+                        coefficients,
+                        basis,
+                        params,
+                    } => {
+                        cost_ledger::record_active_bytes_for(
+                            name,
+                            coefficients.length() + basis.length(),
+                        );
+                        record_activation_aware_matvec_ops(*params);
+                        activation_calls.push((i, coefficients, basis, *params, x));
+                    }
+                }
+            }
+
+            if !activation_calls.is_empty() {
+                let device_calls: Vec<(&Buffer, &Buffer, ActivationAwareParams, &[f32])> =
+                    activation_calls
+                        .iter()
+                        .map(|&(_, coefficients, basis, params, x)| {
+                            (coefficients, basis, params, x)
+                        })
+                        .collect();
+                let outs = dispatch_activation_aware_matvec_batch(&self.ctx, &device_calls)?;
+                for (&(index, ..), output) in activation_calls.iter().zip(outs) {
+                    results[index] = Some(output);
                 }
             }
 
@@ -2608,6 +3128,10 @@ pub mod gpu {
                     ctx,
                     weights,
                     cache: Mutex::new(BoundedLru::new(budget_bytes)?),
+                    activation_bases: Mutex::new(ActivationBasisCache {
+                        buffers: HashMap::new(),
+                        resident_bytes: 0,
+                    }),
                 },
                 arch,
                 session,
@@ -2784,6 +3308,34 @@ mod tests {
         }
     }
 
+    /// Compact-attention replay is opt-in and requires both layout parents.
+    #[test]
+    fn gpu_compact_attention_icb_flag_defaults_off_and_requires_parents() {
+        let prior_compact = std::env::var_os(GPU_COMPACT_MLA_ENV);
+        let prior_dsa = std::env::var_os(GPU_DEVICE_DSA_ENV);
+        let prior_icb = std::env::var_os(GPU_COMPACT_ATTENTION_ICB_ENV);
+        std::env::remove_var(GPU_COMPACT_MLA_ENV);
+        std::env::remove_var(GPU_DEVICE_DSA_ENV);
+        std::env::remove_var(GPU_COMPACT_ATTENTION_ICB_ENV);
+        assert!(!gpu_compact_attention_icb_enabled());
+        std::env::set_var(GPU_COMPACT_ATTENTION_ICB_ENV, "1");
+        assert!(!gpu_compact_attention_icb_enabled());
+        std::env::set_var(GPU_COMPACT_MLA_ENV, "1");
+        assert!(!gpu_compact_attention_icb_enabled());
+        std::env::set_var(GPU_DEVICE_DSA_ENV, "1");
+        assert!(gpu_compact_attention_icb_enabled());
+        for (name, prior) in [
+            (GPU_COMPACT_MLA_ENV, prior_compact),
+            (GPU_DEVICE_DSA_ENV, prior_dsa),
+            (GPU_COMPACT_ATTENTION_ICB_ENV, prior_icb),
+        ] {
+            match prior {
+                Some(value) => std::env::set_var(name, value),
+                None => std::env::remove_var(name),
+            }
+        }
+    }
+
     /// Device router selection is independently opt-in.
     #[test]
     fn gpu_device_router_flag_defaults_off() {
@@ -2805,6 +3357,18 @@ mod tests {
         match prev {
             Some(v) => std::env::set_var(GPU_LM_HEAD_ENV, v),
             None => std::env::remove_var(GPU_LM_HEAD_ENV),
+        }
+    }
+
+    /// Final-head graph replay is opt-in; direct encoding stays the oracle.
+    #[test]
+    fn gpu_lm_head_icb_flag_defaults_off() {
+        let prev = std::env::var_os(GPU_LM_HEAD_ICB_ENV);
+        std::env::remove_var(GPU_LM_HEAD_ICB_ENV);
+        assert!(!gpu_lm_head_icb_enabled());
+        match prev {
+            Some(v) => std::env::set_var(GPU_LM_HEAD_ICB_ENV, v),
+            None => std::env::remove_var(GPU_LM_HEAD_ICB_ENV),
         }
     }
 
@@ -2855,6 +3419,85 @@ mod tests {
         match prev_concurrent {
             Some(v) => std::env::set_var(GPU_EXPERT_WAVE_CONCURRENT_ENV, v),
             None => std::env::remove_var(GPU_EXPERT_WAVE_CONCURRENT_ENV),
+        }
+    }
+
+    /// The cache-indexed hit path is independently opt-in and cannot bypass
+    /// either the qualified device router or the parent expert-wave gate.
+    #[test]
+    fn gpu_expert_table_hit_flag_defaults_off_and_requires_parents() {
+        let prev_router = std::env::var_os(GPU_DEVICE_ROUTER_ENV);
+        let prev_wave = std::env::var_os(GPU_EXPERT_WAVE_ENV);
+        let prev_table = std::env::var_os(GPU_EXPERT_TABLE_HIT_ENV);
+        std::env::remove_var(GPU_DEVICE_ROUTER_ENV);
+        std::env::remove_var(GPU_EXPERT_WAVE_ENV);
+        std::env::remove_var(GPU_EXPERT_TABLE_HIT_ENV);
+        assert!(!gpu_expert_table_hit_enabled());
+        std::env::set_var(GPU_EXPERT_TABLE_HIT_ENV, "1");
+        assert!(
+            !gpu_expert_table_hit_enabled(),
+            "table hit cannot enable its parent runtime paths"
+        );
+        std::env::set_var(GPU_DEVICE_ROUTER_ENV, "1");
+        assert!(
+            !gpu_expert_table_hit_enabled(),
+            "table hit requires the expert-wave parent"
+        );
+        std::env::set_var(GPU_EXPERT_WAVE_ENV, "1");
+        assert!(gpu_expert_table_hit_enabled());
+        match prev_router {
+            Some(v) => std::env::set_var(GPU_DEVICE_ROUTER_ENV, v),
+            None => std::env::remove_var(GPU_DEVICE_ROUTER_ENV),
+        }
+        match prev_wave {
+            Some(v) => std::env::set_var(GPU_EXPERT_WAVE_ENV, v),
+            None => std::env::remove_var(GPU_EXPERT_WAVE_ENV),
+        }
+        match prev_table {
+            Some(v) => std::env::set_var(GPU_EXPERT_TABLE_HIT_ENV, v),
+            None => std::env::remove_var(GPU_EXPERT_TABLE_HIT_ENV),
+        }
+    }
+
+    #[test]
+    fn gpu_expert_table_icb_flag_defaults_off_and_requires_table_hit() {
+        let prev_router = std::env::var_os(GPU_DEVICE_ROUTER_ENV);
+        let prev_wave = std::env::var_os(GPU_EXPERT_WAVE_ENV);
+        let prev_table = std::env::var_os(GPU_EXPERT_TABLE_HIT_ENV);
+        let prev_icb = std::env::var_os(GPU_EXPERT_TABLE_ICB_ENV);
+        std::env::remove_var(GPU_DEVICE_ROUTER_ENV);
+        std::env::remove_var(GPU_EXPERT_WAVE_ENV);
+        std::env::remove_var(GPU_EXPERT_TABLE_HIT_ENV);
+        std::env::remove_var(GPU_EXPERT_TABLE_ICB_ENV);
+        assert!(!gpu_expert_table_icb_enabled());
+        std::env::set_var(GPU_EXPERT_TABLE_ICB_ENV, "1");
+        assert!(
+            !gpu_expert_table_icb_enabled(),
+            "ICB replay cannot enable its parent table-hit path"
+        );
+        std::env::set_var(GPU_DEVICE_ROUTER_ENV, "1");
+        std::env::set_var(GPU_EXPERT_WAVE_ENV, "1");
+        assert!(
+            !gpu_expert_table_icb_enabled(),
+            "ICB replay requires the cache-indexed table-hit parent"
+        );
+        std::env::set_var(GPU_EXPERT_TABLE_HIT_ENV, "1");
+        assert!(gpu_expert_table_icb_enabled());
+        match prev_router {
+            Some(v) => std::env::set_var(GPU_DEVICE_ROUTER_ENV, v),
+            None => std::env::remove_var(GPU_DEVICE_ROUTER_ENV),
+        }
+        match prev_wave {
+            Some(v) => std::env::set_var(GPU_EXPERT_WAVE_ENV, v),
+            None => std::env::remove_var(GPU_EXPERT_WAVE_ENV),
+        }
+        match prev_table {
+            Some(v) => std::env::set_var(GPU_EXPERT_TABLE_HIT_ENV, v),
+            None => std::env::remove_var(GPU_EXPERT_TABLE_HIT_ENV),
+        }
+        match prev_icb {
+            Some(v) => std::env::set_var(GPU_EXPERT_TABLE_ICB_ENV, v),
+            None => std::env::remove_var(GPU_EXPERT_TABLE_ICB_ENV),
         }
     }
 

@@ -73,6 +73,12 @@
       "name": "capsule_carries_provenance_evidence_permissions_exclusions",
       "law": "Every capsule carries provenance chain, evidence tier of each claim, PermissionSnapshot of authority at creation (audit only), deliberate exclusions with reasons, and a blake3 content hash.",
       "test": "crates/hide-you/tests/properties.rs::capsule_carries_provenance_evidence_permissions_exclusions"
+    },
+    {
+      "id": 5,
+      "name": "adversarial_forged_capability_via_serde_and_handoff_is_dead",
+      "law": "A capability-shaped JSON object (export body, handoff claim payload, or direct serde) never mints a live SurfaceCapability. Only SurfacePermissionSet::derive_capability sets live=true; live is #[serde(skip)].",
+      "test": "crates/hide-you/tests/properties.rs::adversarial_forged_capability_via_serde_and_handoff_is_dead"
     }
   ],
   "budget_axes": ["cpu_ms", "ram_mb", "tokens", "steps", "wall_ms", "agent_count"],

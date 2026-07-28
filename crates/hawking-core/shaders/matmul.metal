@@ -196,6 +196,61 @@ kernel void gemv_native_bf16_seq(
     out_logits[row_idx] = acc;
 }
 
+// Activation-aware low-rank GEMV. The physical payload stores two f16
+// factors and executes W@x without reconstructing W:
+//   side=1 (input):  latent = B.T@x; y = L@latent
+//   side=2 (output): latent = L@x;   y = B@latent
+struct ActivationAwareParams {
+    uint rows;
+    uint cols;
+    uint rank;
+    uint side;
+};
+
+kernel void activation_aware_project_f16(
+    device const half* coefficients [[buffer(0)]],
+    device const half* basis [[buffer(1)]],
+    device const float* x [[buffer(2)]],
+    device float* latent [[buffer(3)]],
+    constant ActivationAwareParams& p [[buffer(4)]],
+    uint k [[thread_position_in_grid]])
+{
+    if (k >= p.rank) return;
+    float sum = 0.0f;
+    if (p.side == 1u) {
+        for (uint col = 0; col < p.cols; ++col) {
+            sum += float(basis[col * p.rank + k]) * x[col];
+        }
+    } else {
+        for (uint col = 0; col < p.cols; ++col) {
+            sum += float(coefficients[k * p.cols + col]) * x[col];
+        }
+    }
+    latent[k] = sum;
+}
+
+kernel void activation_aware_expand_f16(
+    device const half* coefficients [[buffer(0)]],
+    device const half* basis [[buffer(1)]],
+    device const float* latent [[buffer(2)]],
+    device float* y [[buffer(3)]],
+    constant ActivationAwareParams& p [[buffer(4)]],
+    uint row [[thread_position_in_grid]])
+{
+    if (row >= p.rows) return;
+    float sum = 0.0f;
+    if (p.side == 1u) {
+        for (uint k = 0; k < p.rank; ++k) {
+            sum += float(coefficients[row * p.rank + k]) * latent[k];
+        }
+    } else {
+        for (uint k = 0; k < p.rank; ++k) {
+            sum += float(basis[row * p.rank + k]) * latent[k];
+        }
+    }
+    y[row] = sum;
+}
+
 // Additive/default-off accuracy candidate. This keeps the same one-thread-per-
 // row mapping and BF16 traffic as `gemv_native_bf16_seq`, but compensates f32
 // addition error with Neumaier summation. It is intentionally a separate

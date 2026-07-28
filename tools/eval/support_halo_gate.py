@@ -28,6 +28,11 @@ Usage:
       --model math-preserve \\
       --artifact-sha256 33d40c254eb982d4a495f5f0792a116e9d9810d937f5f3969f4f84742b2364d9 \\
       --out odyssey/evaluation/SUPPORT_HALO_BASELINE.json
+
+  # Candidate artifact, bound to the server's exact index hash (also deferred):
+  python3 tools/eval/support_halo_gate.py run-artifact \\
+      --force --artifact /path/to/assembled-artifact \\
+      --endpoint http://127.0.0.1:8899 --out /path/to/HALO.json
 """
 from __future__ import annotations
 
@@ -62,6 +67,10 @@ REGRESSION_AGGREGATE_EPS = 0.05
 REGRESSION_DIMENSION_DROP = 0.15
 Z_95 = 1.96
 CODE_FENCE = re.compile(r"`{2,}[ \t]*[a-zA-Z0-9_+-]*[ \t]*\n(.*?)`{2,}", re.DOTALL)
+INDEX_NAMES = (
+    "model.gravity.index.json",
+    "model.activation_aware.index.json",
+)
 
 
 def sha256_bytes(data: bytes) -> str:
@@ -70,6 +79,65 @@ def sha256_bytes(data: bytes) -> str:
 
 def sha256_file(path: Path) -> str:
     return sha256_bytes(path.read_bytes())
+
+
+def artifact_index(artifact: Path) -> Path:
+    artifact = Path(artifact).expanduser().resolve()
+    present = [artifact / name for name in INDEX_NAMES if (artifact / name).is_file()]
+    if len(present) != 1:
+        raise ValueError(
+            f"{artifact}: expected exactly one of {INDEX_NAMES}, found "
+            f"{[path.name for path in present]}"
+        )
+    return present[0]
+
+
+def validate_runtime_attestation(
+    payload: dict,
+    *,
+    expected_index_sha256: str,
+    requested_model: str | None = None,
+) -> dict:
+    """Refuse an endpoint that cannot prove the exact base artifact and no fallback."""
+    if payload.get("status") != "ok":
+        raise ValueError("serve health attestation is not healthy")
+    if payload.get("runtime") != "base" or payload.get("base_runtime") is not True:
+        raise ValueError("serve health attestation is not the base runtime")
+    if payload.get("fallback_present") is not False:
+        raise ValueError("serve health attestation does not prove fallback_present=false")
+    if payload.get("artifact_index_sha256") != expected_index_sha256:
+        raise ValueError("serve health artifact index SHA-256 does not match the candidate")
+    model_id = payload.get("model_id")
+    if not isinstance(model_id, str) or not model_id:
+        raise ValueError("serve health attestation has no model_id")
+    if requested_model is not None and requested_model != model_id:
+        raise ValueError(
+            f"requested model {requested_model!r} differs from served model {model_id!r}"
+        )
+    return {
+        "runtime": "base",
+        "base_runtime": True,
+        "fallback_present": False,
+        "artifact_index_sha256": expected_index_sha256,
+        "model_id": model_id,
+        "architecture": payload.get("architecture"),
+    }
+
+
+def fetch_runtime_attestation(
+    endpoint: str,
+    *,
+    expected_index_sha256: str,
+    requested_model: str | None = None,
+    timeout: float = 30.0,
+) -> dict:
+    with urllib.request.urlopen(endpoint.rstrip("/") + "/healthz", timeout=timeout) as resp:
+        payload = json.loads(resp.read().decode())
+    return validate_runtime_attestation(
+        payload,
+        expected_index_sha256=expected_index_sha256,
+        requested_model=requested_model,
+    )
 
 
 def wilson(passes: int, n: int, z: float = Z_95):
@@ -752,6 +820,109 @@ def cmd_run_baseline(args):
     return 0 if not report["disqualifications"] else 2
 
 
+def cmd_run_artifact(args):
+    """Live candidate score with exact pre/post runtime identity attestations."""
+    if not args.force:
+        print(
+            "REFUSED: run-artifact executes 26 whole-model generation tasks. "
+            "Re-run with --force only in a valid heavy window.",
+            file=sys.stderr,
+        )
+        return 3
+
+    index = artifact_index(Path(args.artifact))
+    index_sha = sha256_file(index)
+    before = fetch_runtime_attestation(
+        args.endpoint,
+        expected_index_sha256=index_sha,
+        requested_model=args.model,
+    )
+    model = before["model_id"]
+    tasks = load_corpus()
+    rules_sha = sha256_file(RULES_PATH)
+    corpus_sha = sha256_file(CORPUS_PATH)
+    seal_path = ROOT / "odyssey/evaluation/SUPPORT_HALO_SEAL.json"
+    seal = json.loads(seal_path.read_text())
+
+    completions = {}
+    for task in tasks:
+        content, _elapsed = call_endpoint(
+            args.endpoint,
+            model,
+            task_prompt(task),
+            int(task.get("max_new_tokens", 128)),
+            args.timeout,
+        )
+        completions[task["id"]] = content
+
+    after = fetch_runtime_attestation(
+        args.endpoint,
+        expected_index_sha256=index_sha,
+        requested_model=model,
+    )
+    report = build_report(
+        tasks,
+        completions,
+        artifact_sha256=index_sha,
+        rules_sha=rules_sha,
+        corpus_sha=corpus_sha,
+        seed=args.seed,
+        no_hidden_fallback=(
+            before["fallback_present"] is False
+            and after["fallback_present"] is False
+        ),
+        baseline_rules_sha=seal.get("rules_sha256"),
+        baseline_corpus_sha=seal.get("corpus_sha256"),
+    )
+    report["generation"] = {
+        "mode": "live_artifact",
+        "model": model,
+        "temperature": 0,
+        "pre_attestation": before,
+        "post_attestation": after,
+    }
+    report["substrate"] = {
+        "label": model,
+        "address_kind": "model_index_sha256",
+        "artifact_index": index.name,
+        "artifact_sha256": index_sha,
+    }
+
+    out_path = Path(args.out)
+    completions_path = out_path.with_name(
+        f"{out_path.stem}.completions.jsonl"
+    )
+    completions_text = "".join(
+        json.dumps(
+            {"id": task["id"], "completion": completions[task["id"]]},
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+        + "\n"
+        for task in tasks
+    )
+    completions_path.parent.mkdir(parents=True, exist_ok=True)
+    completions_path.write_text(completions_text)
+    report["completion_evidence"] = {
+        "sha256": sha256_bytes(completions_text.encode()),
+        "tasks": len(tasks),
+    }
+    write_json(out_path, report)
+    print(
+        json.dumps(
+            {
+                "wrote": str(out_path),
+                "completions": str(completions_path),
+                "aggregate": report["aggregate"],
+                "disqualifications": report["disqualifications"],
+            },
+            indent=2,
+            sort_keys=True,
+        )
+    )
+    return 0 if not report["disqualifications"] else 2
+
+
 def cmd_print_baseline_command(_args):
     """Print the deferred baseline command without running it."""
     sha = "33d40c254eb982d4a495f5f0792a116e9d9810d937f5f3969f4f84742b2364d9"
@@ -809,6 +980,19 @@ def main(argv=None):
     s.add_argument("--timeout", type=float, default=120.0)
     s.add_argument("--out")
     s.set_defaults(func=cmd_run_baseline)
+
+    s = sub.add_parser(
+        "run-artifact",
+        help="Live candidate gate with exact server/artifact attestation (refused without --force)",
+    )
+    s.add_argument("--force", action="store_true")
+    s.add_argument("--artifact", required=True)
+    s.add_argument("--endpoint", default="http://127.0.0.1:8899")
+    s.add_argument("--model", help="optional expected model id; defaults to attested model_id")
+    s.add_argument("--seed", type=int, default=0)
+    s.add_argument("--timeout", type=float, default=3600.0)
+    s.add_argument("--out", required=True)
+    s.set_defaults(func=cmd_run_artifact)
 
     s = sub.add_parser(
         "print-baseline-command",

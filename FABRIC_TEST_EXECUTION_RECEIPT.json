@@ -1,0 +1,312 @@
+{
+  "schema": "hawking.fabric.test_execution.v1",
+  "at": "2026-07-27T18:46:00Z",
+  "lane": {
+    "id": "L04",
+    "name": "fabric-software",
+    "source": "HAWKING_PARALLEL_LANE_OWNERSHIP.json"
+  },
+  "worktree": "/Users/scammermike/.claude-grok/worktrees/fabric-tests-20260727-144153",
+  "constraints_observed": {
+    "HEAVY_md": "absent in this worktree; followed HAWKING_PARALLEL_LANE_OWNERSHIP invariants instead",
+    "nice_n_15": "requested; setpriority returned Operation not permitted in this sandbox — tests still ran at default priority",
+    "MOP": "left alone; glm52_activation_aware_pack.py was live (pid observed earlier); no model shard fetch",
+    "forbidden_paths": "not touched (gravity_glm*, metal/, MOP dirs, sealed receipts)"
+  },
+  "host": {
+    "total_memory_bytes": 103079215104,
+    "total_memory_gib": 96.0,
+    "physical_cores": 28,
+    "logical_cores": 28,
+    "fixed_fake_32gib_bytes": 34359738368,
+    "not_equal_to_fixed_fake_32gib": true,
+    "free_memory_mb_approx_from_vm_stat": 56133,
+    "load_averages_at_start": "9.38 10.07 9.25",
+    "second_physical_node": false
+  },
+  "commands_run": [
+    {
+      "cmd": "cargo test -p hide-fleet --test fabric_software",
+      "exit": 0,
+      "passed": 7,
+      "failed": 0,
+      "ignored": 0,
+      "suite_seconds": 0.18
+    },
+    {
+      "cmd": "cargo test -p hide-fleet --lib fabric",
+      "exit": 0,
+      "passed": 17,
+      "failed": 0,
+      "ignored": 0,
+      "suite_seconds": 0.05
+    },
+    {
+      "cmd": "cargo test -p hide-fleet --test kernel_integration",
+      "exit": 0,
+      "passed": 3,
+      "failed": 0,
+      "ignored": 0,
+      "suite_seconds": 0.01
+    },
+    {
+      "cmd": "cargo test -p hide-fleet (full crate)",
+      "exit": 0,
+      "lib_passed": 69,
+      "fabric_software_passed": 7,
+      "kernel_integration_passed": 3,
+      "ignored": 0
+    },
+    {
+      "cmd": "cargo test -p hide-backend fleet_run",
+      "exit": 0,
+      "matched_host_tests_passed": 3,
+      "suite_seconds": 1.05,
+      "note": "OsResourceProbe live path through BackendHost::fleet_run"
+    }
+  ],
+  "per_test_execution": {
+    "fabric_software": [
+      {
+        "name": "placement_determinism_same_seed_same_plan",
+        "result": "ok",
+        "wall_seconds": 0.007,
+        "cargo_finished_in": "0.00s",
+        "executed": true,
+        "kind": "simulator_pure_logic",
+        "skip_markers": "none",
+        "note": "Sub-ms is expected for pure PlacementSimulator; not a silent skip (asserts plan equality + simulated labels)."
+      },
+      {
+        "name": "kv_ownership_invariant_across_placement_and_failure_replan",
+        "result": "ok",
+        "cargo_finished_in": "0.00s",
+        "executed": true,
+        "kind": "simulator_pure_logic",
+        "skip_markers": "none"
+      },
+      {
+        "name": "real_resource_probe_not_fake_32gib",
+        "result": "ok",
+        "wall_seconds": 0.031,
+        "cargo_finished_in": "0.01s-0.02s",
+        "executed": true,
+        "kind": "real_os_probe_this_host",
+        "skip_markers": "none",
+        "observed": {
+          "total_memory_bytes_must_not_equal": 34359738368,
+          "host_total_memory_bytes": 103079215104
+        }
+      },
+      {
+        "name": "schema_rejects_unlabelled_simulated_result",
+        "result": "ok",
+        "cargo_finished_in": "0.00s",
+        "executed": true,
+        "kind": "schema_gate",
+        "skip_markers": "none"
+      },
+      {
+        "name": "simulated_heterogeneous_placement_labelled",
+        "result": "ok",
+        "cargo_finished_in": "0.00s",
+        "executed": true,
+        "kind": "simulator",
+        "skip_markers": "none"
+      },
+      {
+        "name": "inprocess_software_fixture_end_to_end",
+        "result": "ok",
+        "wall_seconds": 0.062,
+        "cargo_finished_in": "0.03s-0.05s",
+        "executed": true,
+        "kind": "software_fixture_inprocess",
+        "skip_markers": "none"
+      },
+      {
+        "name": "two_process_fixture_end_to_end_with_failure_replay",
+        "result": "ok",
+        "wall_seconds": 0.23,
+        "cargo_finished_in": "0.20s-0.29s",
+        "executed": true,
+        "kind": "software_fixture_two_os_processes_localhost",
+        "skip_markers": "none",
+        "fallback_to_inprocess": false,
+        "independent_live_proof": {
+          "fabric_agent_binary": "target/debug/fabric-agent",
+          "processes_listening": [
+            "127.0.0.1:19811 (PID observed)",
+            "127.0.0.1:19812 (PID observed)"
+          ],
+          "rpc": [
+            "heartbeat -> heartbeat_ack",
+            "get_status -> alive=true"
+          ],
+          "note": "Same machine, two OS processes. Not a second physical node."
+        }
+      }
+    ],
+    "fabric_lib_unit": {
+      "passed": 17,
+      "failed": 0,
+      "ignored": 0,
+      "names_include": [
+        "agent_registers_real_capabilities",
+        "agent_accepts_assignment_and_proves_hashes",
+        "os_probe_returns_real_memory_not_fake_32gib",
+        "simulated_set_is_labelled_simulated",
+        "placement_determinism_same_seed_same_plan",
+        "kv_ownership_invariant_holds",
+        "kv_invariant_after_failure_replan",
+        "heartbeat_marks_dead_after_threshold",
+        "receipt_names_lost_and_replayed",
+        "pipeline_drains_all_microbatches",
+        "inprocess_fixture_produces_labelled_receipt"
+      ]
+    },
+    "kernel_integration": [
+      {
+        "name": "fleet_drives_a_real_kernel_run_to_done",
+        "result": "ok",
+        "wall_seconds": 0.01,
+        "cargo_finished_in": "0.00s",
+        "executed": true,
+        "kind": "real_kernel_fsm_stub_inference_no_live_model",
+        "red_flag": "sub-ms duration",
+        "why_not_silent_skip": "No #[ignore]; asserts JobStatus::Done, run_id present, events user.intent+agent.phase+job.completed. StubInferenceClient by design — not a live model.",
+        "not_evidence_of": "physical multi-node fabric or live model inference"
+      },
+      {
+        "name": "fleet_runs_a_fanout_of_real_kernel_runs",
+        "result": "ok",
+        "wall_seconds": 0.009,
+        "executed": true,
+        "kind": "real_kernel_fsm_stub_inference_no_live_model"
+      },
+      {
+        "name": "fleet_drives_a_stub_runtime_backed_kernel_to_terminal",
+        "result": "ok",
+        "wall_seconds": 0.01,
+        "executed": true,
+        "kind": "real_kernel_fsm_stub_inference_no_live_model"
+      }
+    ],
+    "hide_backend_fleet_run": [
+      {
+        "name": "host_fleet_run_schedules_and_completes",
+        "result": "ok",
+        "suite_seconds": 1.05,
+        "executed": true,
+        "kind": "live_host_path_os_resource_probe"
+      },
+      {
+        "name": "fleet_run_uses_real_worktrees_and_runtime_planner",
+        "result": "ok",
+        "executed": true
+      },
+      {
+        "name": "fleet_run_intent_reaches_fleet_manager",
+        "result": "ok",
+        "executed": true
+      }
+    ]
+  },
+  "silent_skip_audit": {
+    "hash_ignore_attrs_in_hide_fleet": 0,
+    "no_model_on_disk_skips_in_fabric_tests": 0,
+    "two_process_fallback_message_observed": false,
+    "zero_second_pure_logic_tests": "placement/kv/schema/sim pure-CPU tests report 0.00s; treated as EXECUTED_FAST not SKIP after asserting non-empty assertion bodies and no ignore/early-return skip paths",
+    "red_flag_status": "no silent-skip of the integration_greedy_64 class found in this lane"
+  },
+  "qualification_ladder_reverified": [
+    {
+      "rung": "local two-process fixture",
+      "status": "PASSED_SOFTWARE",
+      "not_physical_qualification": true,
+      "evidence": "two_process_fixture_end_to_end_with_failure_replay ok in 0.20-0.29s; independent fabric-agent TCP proof"
+    },
+    {
+      "rung": "simulated heterogeneous placement",
+      "status": "PASSED_SIMULATED",
+      "not_physical_qualification": true,
+      "evidence": "simulated_heterogeneous_placement_labelled + placement_determinism + schema_rejects_unlabelled"
+    },
+    {
+      "rung": "two-node homogeneous",
+      "status": "PENDING_HARDWARE",
+      "not_physical_qualification": true,
+      "evidence": "no second physical node on this host"
+    },
+    {
+      "rung": "two-node heterogeneous",
+      "status": "PENDING_HARDWARE",
+      "not_physical_qualification": true,
+      "evidence": "no second physical node; sim only"
+    },
+    {
+      "rung": "failure / resume",
+      "status": "PASSED_SOFTWARE",
+      "not_physical_qualification": true,
+      "evidence": "two_process InjectFailure + kv replan + receipt_names_lost_and_replayed"
+    },
+    {
+      "rung": "memory accounting",
+      "status": "PASSED_SOFTWARE",
+      "not_physical_qualification": true,
+      "evidence": "real_resource_probe_not_fake_32gib + os_probe 96 GiB != 32 GiB fake"
+    }
+  ],
+  "grades": {
+    "software_plane": {
+      "grade": "READY_FOR_INTEGRATION",
+      "not": "PRODUCTION",
+      "rests_on": [
+        "7/7 fabric_software executed (0 ignored)",
+        "17/17 fabric unit tests ok",
+        "two real OS processes on localhost with failure inject + replay",
+        "OsNodeProbe/OsResourceProbe read real 96 GiB host memory",
+        "all results labelled not_physical_qualification / HARDWARE_QUALIFICATION_PENDING"
+      ]
+    },
+    "simulator_plane": {
+      "grade": "READY_FOR_INTEGRATION",
+      "label_required": "SIMULATED",
+      "not": "PRODUCTION",
+      "rests_on": [
+        "heterogeneous SimulatedNodeSet placement determinism",
+        "schema rejects unlabelled simulated artifacts",
+        "profile names must contain 'sim'"
+      ]
+    },
+    "physical_multi_node": {
+      "grade": "FABRIC_HARDWARE_QUALIFICATION_PENDING",
+      "not": ["READY_FOR_INTEGRATION", "PRODUCTION"],
+      "rests_on": [
+        "hardware_reality: one machine M3 Ultra 96GB 28 cores",
+        "two-process fixture is co-located localhost, not multi-host"
+      ]
+    },
+    "kernel_fleet_integration": {
+      "grade": "READY_FOR_INTEGRATION",
+      "caveat": "stub inference / no live model; sub-ms timings",
+      "not": "PRODUCTION",
+      "rests_on": [
+        "3/3 kernel_integration ok with real AgentKernel FSM events",
+        "3/3 hide-backend fleet_run host path ok in 1.05s"
+      ]
+    },
+    "lane_overall": {
+      "grade": "READY_FOR_INTEGRATION",
+      "terminal_hardware_state": "FABRIC_HARDWARE_QUALIFICATION_PENDING",
+      "not": "PRODUCTION",
+      "reason": "Software and simulator planes execute for real and are labelled simulated/fixture. Fixtures and simulators may earn READY_FOR_INTEGRATION, never PRODUCTION. No second physical node exists."
+    }
+  },
+  "logs": [
+    "/tmp/fabric-tests-20260727/fabric_software.out",
+    "/tmp/fabric-tests-20260727/fabric_lib.out",
+    "/tmp/fabric-tests-20260727/kernel_integration.out",
+    "/tmp/fabric-tests-20260727/hide_fleet_full.out",
+    "/tmp/fabric-tests-20260727/hide_backend_fleet.out"
+  ]
+}

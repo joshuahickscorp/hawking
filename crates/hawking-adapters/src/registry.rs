@@ -141,23 +141,27 @@ mod tests {
         }
     }
 
-    /// Qwen is SMALL_REAL_CHECKPOINT, not FULL_PARENT_VALIDATED.
+    /// Qwen is SOURCE_HEADER_VALIDATED, not SMALL_REAL_CHECKPOINT / FULL_PARENT.
     ///
-    /// The earlier grade rested on `integration_greedy_64.rs` and `cpu_backend_parity.rs`,
-    /// both of which skip when no GGUF is on disk -- and none is, so they finish in 0.00 s
-    /// having asserted nothing. A conditional test whose condition is false is not
-    /// evidence. Separately, the runs that did happen were on small parents, and a small
-    /// parent is not a full parent whatever the test is named.
+    /// Earlier grades rested on `integration_greedy_64.rs`, `cpu_backend_parity.rs`, and
+    /// `qwen_tq_serve_parity.rs`. The first two skip when no GGUF is on disk (0.00 s, no
+    /// assertion). The TQ test is `#[ignore]` and also skips without weights. A
+    /// conditional test whose condition is false is not evidence. Stage A source-header
+    /// receipt is the live proof.
     ///
-    /// Promote again only when a real full-size Qwen parent has been validated and the
-    /// receipt is registered as evidence of kind `full_parent_validation`.
+    /// Promote only when a small real checkpoint runs unconditionally (or a sealed
+    /// receipt is registered) and verify_grades accepts the kind.
     #[test]
-    fn qwen_is_small_real_checkpoint_not_full_parent() {
+    fn qwen_is_source_header_not_higher_without_live_checkpoint() {
         let r = builtin_registry();
         let q = r.get("qwen").unwrap();
-        assert_eq!(q.level, SupportLevel::SmallRealCheckpoint);
+        assert_eq!(q.level, SupportLevel::SourceHeaderValidated);
         assert!(q.executes);
         assert!(q.serve_registered);
+        assert!(q
+            .evidence
+            .iter()
+            .any(|e| e.path.contains("ADAPTER_QWEN_RECEIPT")));
     }
 
     #[test]

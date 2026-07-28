@@ -663,5 +663,12 @@
     "file": "HAWKING_RESOURCE_MODE.json",
     "why": "MOP owns the heavy machine overnight",
     "set_by": "user"
+  },
+  "codex_active_in_this_checkout": {
+    "observed_at": "2026-07-27T10:45:00Z",
+    "what": "crates/hawking-core/src/gravity_glm.rs, gravity_glm_resident.rs, metal/mod.rs and shaders/gravity_pq.metal carry UNCOMMITTED modifications in this working tree. The Temporal Gravity lane is live here, not only on its own branch.",
+    "handling": "left entirely alone. Not staged, not committed, not read for content. Every commit this session stages explicit paths and none of them is a Codex-owned file.",
+    "why_it_matters": "this is a shared working tree, not merely a shared branch. `git add -A` would sweep another agent's in-flight kernel work into a packing-program commit. The standing rule against it is now load-bearing rather than precautionary.",
+    "verification": "git status on those four paths before and after each commit; all 58 session commits audited against the forbidden-path list"
   }
 }

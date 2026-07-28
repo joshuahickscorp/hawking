@@ -1,5 +1,6 @@
 use hawking_context::{
-    ClassedMemorySystem, DynClassedMemory, InMemoryMemoryStore, MemoryStore, SqliteMemoryStore,
+    ClassedMemorySystem, ContextCompiler, DynClassedMemory, InMemoryMemoryStore, MemoryStore,
+    SqliteMemoryStore, TokenCounter,
 };
 use hawking_index::{CodeIndex, InMemoryCodeIndex, SqliteCodeIndex};
 use hawking_orch::RoleRegistry;
@@ -1615,20 +1616,36 @@ pub struct BackendServices {
     /// (`new`/`with_stores`); populated by `open` from the workspace root.
     /// Cache-invalidation on a live config edit is DEFERRED (reopen to refresh).
     pub repo_instructions: Arc<crate::compat_instructions::ResolvedInstructions>,
+    /// Tokenizer-true token counter for context packing. Loaded once from
+    /// `HIDE_TOKENIZER` / beside `HIDE_MODEL_WEIGHTS` when available; otherwise
+    /// the `chars/4` heuristic (and compile reports `tokens_estimated`).
+    pub token_counter: TokenCounter,
+}
+
+/// Resolve the live packing counter once at service construction.
+fn discover_token_counter() -> TokenCounter {
+    match TokenCounter::discover_from_env() {
+        Some(c) => c,
+        None => TokenCounter::heuristic(),
+    }
 }
 
 impl BackendServices {
     pub fn new(config: HideConfig, event_log: DynEventLog) -> Self {
         let memory = Arc::new(InMemoryCodeIndex::default());
         let workspace_id = config.workspace_root.display().to_string();
+        let classed_memory: DynClassedMemory = Arc::new(
+            ClassedMemorySystem::open_in_memory(workspace_id).expect("in-memory classed memory"),
+        );
+        // Mirror episodic memory off the durable event stream so any event a
+        // client can read also lands in the classed store.
+        let event_log =
+            crate::classed_writers::EpisodicEventMirror::wrap(event_log, classed_memory.clone());
         Self {
             config,
             event_log,
             memory_store: Arc::new(InMemoryMemoryStore::default()),
-            classed_memory: Arc::new(
-                ClassedMemorySystem::open_in_memory(workspace_id)
-                    .expect("in-memory classed memory"),
-            ),
+            classed_memory,
             event_integrity: Arc::new(EventChainAuditor),
             blob_store: Arc::new(InMemoryBlobStore::default()),
             projection_store: Arc::new(InMemoryProjectionStore::default()),
@@ -1644,6 +1661,7 @@ impl BackendServices {
             repo_instructions: Arc::new(
                 crate::compat_instructions::ResolvedInstructions::empty(),
             ),
+            token_counter: discover_token_counter(),
         }
     }
 
@@ -1659,14 +1677,16 @@ impl BackendServices {
         // Tests / in-memory constructors: empty InMemoryCodeIndex stays the default.
         let memory = Arc::new(InMemoryCodeIndex::default());
         let workspace_id = config.workspace_root.display().to_string();
+        let classed_memory: DynClassedMemory = Arc::new(
+            ClassedMemorySystem::open_in_memory(workspace_id).expect("in-memory classed memory"),
+        );
+        let event_log =
+            crate::classed_writers::EpisodicEventMirror::wrap(event_log, classed_memory.clone());
         Self {
             config,
             event_log,
             memory_store: Arc::new(InMemoryMemoryStore::default()),
-            classed_memory: Arc::new(
-                ClassedMemorySystem::open_in_memory(workspace_id)
-                    .expect("in-memory classed memory"),
-            ),
+            classed_memory,
             event_integrity: Arc::new(EventChainAuditor),
             blob_store,
             projection_store,
@@ -1682,7 +1702,14 @@ impl BackendServices {
             repo_instructions: Arc::new(
                 crate::compat_instructions::ResolvedInstructions::empty(),
             ),
+            token_counter: discover_token_counter(),
         }
+    }
+
+    /// A [`ContextCompiler`] pre-loaded with the workspace token counter so
+    /// packing is tokenizer-true whenever a real tokenizer was discovered.
+    pub fn context_compiler(&self) -> ContextCompiler {
+        ContextCompiler::new().with_counter(self.token_counter.clone())
     }
 
     pub fn open_workspace(workspace_root: impl Into<PathBuf>) -> Result<Self> {
@@ -1703,7 +1730,9 @@ impl BackendServices {
         std::fs::create_dir_all(&layout.sandbox)?;
         std::fs::create_dir_all(&layout.tmp)?;
 
-        let event_log: DynEventLog =
+        // Raw durable log; mirrored onto classed_memory once below (not via
+        // with_stores' temporary in-memory classed store).
+        let raw_event_log: DynEventLog =
             Arc::new(JsonlEventLog::open(layout.event_log.join("events.jsonl"))?);
         let blob_store: DynBlobStore = Arc::new(FileBlobStore::open(&layout.blobs)?);
         let projection_store: DynProjectionStore =
@@ -1746,9 +1775,12 @@ impl BackendServices {
             }
         };
 
+        // with_stores will wrap raw_event_log onto a throwaway classed store; we
+        // immediately rebind both fields to the durable pair so writers and
+        // retrieval share one ClassedMemorySystem (single mirror layer).
         let mut services = Self::with_stores(
             config,
-            event_log,
+            raw_event_log.clone(),
             blob_store,
             projection_store,
             key_value_store,
@@ -1756,7 +1788,9 @@ impl BackendServices {
             research_ledger,
         );
         services.memory_store = memory_store;
-        services.classed_memory = classed_memory;
+        services.classed_memory = classed_memory.clone();
+        services.event_log =
+            crate::classed_writers::EpisodicEventMirror::wrap(raw_event_log, classed_memory);
         services.repo_instructions = Arc::new(repo_instructions);
 
         // W4: bind the real SqliteCodeIndex at workspace open. A failed open or

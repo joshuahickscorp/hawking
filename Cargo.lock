@@ -1282,6 +1282,7 @@ dependencies = [
  "hide-security",
  "hide-tools",
  "hide-verify",
+ "hide-you",
  "libc",
  "parking_lot",
  "reqwest",

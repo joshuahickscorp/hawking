@@ -156,21 +156,23 @@
     },
     {
       "name": "tokenizer-true budgeting",
-      "verdict": "PARTIAL",
+      "verdict": "REAL_WIRED",
       "crates": [
-        "hawking-context"
+        "hawking-context",
+        "hide-backend"
       ],
       "entry_path": [
-        "budget.rs TokenCounter",
-        "compiler defaults heuristic",
-        "host ContextCompiler::new without with_counter"
+        "TokenCounter::discover_from_env (HIDE_TOKENIZER | beside HIDE_MODEL_WEIGHTS)",
+        "BackendServices.token_counter + context_compiler()",
+        "run_turn_core / run_turn_kernel / context connector: ContextCompiler::with_counter",
+        "seal_compiled_manifest(tokens_estimated) from CompiledContext.tokens_estimated"
       ],
-      "evidence": "Tokenizer path exists (from_file) but live host never installs it; packing uses chars/4.",
-      "missing_link": "Load model tokenizer.json at boot and ContextCompiler.with_counter",
+      "evidence": "Live compile path installs tokenizer when discoverable; meter reports used_estimated honestly when only chars/4 is available. Process-cached discovery avoids re-parse every turn.",
+      "missing_link": "Operational: set HIDE_TOKENIZER or ship tokenizer.json next to weights",
       "fixtures_in_place": [
-        "heuristic counter on live path"
+        "heuristic only when no tokenizer file exists (honest estimated flag)"
       ],
-      "tests": "budget unit tests",
+      "tests": "discover_from_env_loads_hide_tokenizer_when_set; services_token_counter_is_tokenizer_true_when_hide_tokenizer_set",
       "confidence": "high"
     },
     {
@@ -213,18 +215,20 @@
       "name": "semantic retrieval",
       "verdict": "PARTIAL",
       "crates": [
-        "hawking-index"
+        "hawking-index",
+        "hide-backend"
       ],
       "entry_path": [
-        "query.rs:632 hybrid_search_opts always StubEmbeddingClient::default()",
-        "CodeIndex::search may set include_semantic for NL queries"
+        "SqliteCodeIndex.hybrid_search_opts: semantic only with installed embedder",
+        "host.runtime_base_url -> install_runtime_embedder(HttpEmbeddingClient)",
+        "StubEmbeddingClient.embed refuses (no silent fixture vectors)"
       ],
-      "evidence": "HttpEmbeddingClient exists for /v1/embeddings but production search never uses it.",
-      "missing_link": "Wire HttpEmbeddingClient when runtime Ready",
+      "evidence": "Production path no longer ranks on bag-of-chars fixtures. When runtime Ready, HttpEmbeddingClient is installed on the sqlite index. Without embedder, hybrid search is honest lexical⊕symbol only.",
+      "missing_link": "Semantic leg only active when runtime Ready (operational); offline remains lexical⊕symbol by design",
       "fixtures_in_place": [
-        "StubEmbeddingClient"
+        "BagOfCharsEmbeddingClient for unit tests only (explicit)"
       ],
-      "tests": "semantic unit tests with stub",
+      "tests": "stub_embedding_client_refuses_rather_than_fixture_results; hybrid_search_skips_semantic_without_embedder_rather_than_using_stub",
       "confidence": "high"
     },
     {
@@ -507,60 +511,59 @@
     },
     {
       "name": "fleet dispatch",
-      "verdict": "PARTIAL",
+      "verdict": "REAL_WIRED",
       "crates": [
         "hide-fleet",
         "hide-backend"
       ],
       "entry_path": [
-        "Custom intent fleet_run host.rs:1308-1334",
-        "host.rs:2843 fleet_run FleetManager enqueue + run_to_quiescence"
+        "Custom intent fleet_run -> BackendHost::fleet_run",
+        "build_fleet_kernel: RuntimePlanner via AgentKernel::builder.runtime",
+        "OsResourceProbe + real FleetConfig.repo_root + KernelRunLauncher"
       ],
-      "evidence": "Live intent exists. Uses FixedResourceProbe, with_fake_worktrees(), AgentKernel::new (StubPlanner).",
-      "missing_link": "Real WorktreeManager + OsResourceProbe + build_turn_kernel-class launcher",
-      "fixtures_in_place": [
-        "FixedResourceProbe",
-        "with_fake_worktrees()",
-        "AgentKernel::new StubPlanner"
-      ],
-      "tests": "fleet_run_intent_reaches_fleet_manager; hide-fleet 55",
+      "evidence": "Live intent reaches FleetManager. Kernel is RuntimePlanner (default_dag offline, live model when Ready), not StubPlanner. OsResourceProbe already closed (b4f8a701).",
+      "missing_link": "None load-bearing for dispatch entry; merge footprints still synthetic (separate subsystem)",
+      "fixtures_in_place": [],
+      "tests": "fleet_run_uses_real_worktrees_and_runtime_planner; fleet_run_intent_reaches_fleet_manager; host_fleet_run_schedules_and_completes",
       "confidence": "high"
     },
     {
       "name": "fleet governor",
-      "verdict": "PARTIAL",
+      "verdict": "REAL_WIRED",
       "crates": [
-        "hide-fleet"
+        "hide-fleet",
+        "hide-backend"
       ],
       "entry_path": [
-        "FleetManager::new(..., FleetGovernor::default(), FixedResourceProbe, ...) on fleet_run"
+        "fleet_run: FleetManager::new(..., OsResourceProbe::default(), ...)"
       ],
-      "evidence": "Governor admits under probe; probe is fixed fixture not OS.",
-      "missing_link": "OsResourceProbe on production fleet_run",
+      "evidence": "OsResourceProbe on production fleet_run (already closed at b4f8a701; reconfirmed). Governor admits under real free-RAM/thermal snapshot.",
+      "missing_link": "None",
       "fixtures_in_place": [
-        "FixedResourceProbe"
+        "FixedResourceProbe only in unit tests that inject it"
       ],
-      "tests": "hide-fleet scheduler tests",
+      "tests": "hide-fleet scheduler tests; host fleet_run path",
       "confidence": "high"
     },
     {
       "name": "worktree fleets",
-      "verdict": "PARTIAL",
+      "verdict": "REAL_WIRED",
       "crates": [
         "hide-fleet",
         "hide-backend",
         "hide-tools"
       ],
       "entry_path": [
-        "fleet_run with_fake_worktrees",
-        "create_worktree intent is plain git (not FleetManager)"
+        "fleet_run: FleetConfig.repo_root = workspace; NO with_fake_worktrees",
+        "WorktreeManager::isolate_run real git worktree add under .hide/wt/<job>",
+        "release_run cleans up per agent; never shared between agents"
       ],
-      "evidence": "Fleet path fake-git; create_worktree real but not fleet.",
-      "missing_link": "Drop with_fake_worktrees when repo is git checkout",
+      "evidence": "Production fleet path uses system git. Isolation fails honestly when workspace is not a git checkout. Tests seed git+cargo fixtures.",
+      "missing_link": "None load-bearing",
       "fixtures_in_place": [
-        "with_fake_worktrees/with_fake_git"
+        "with_fake_worktrees only on hide-fleet unit tests, not host fleet_run"
       ],
-      "tests": "hide-fleet worktree fakes; git.worktree tools",
+      "tests": "fleet_run_uses_real_worktrees_and_runtime_planner",
       "confidence": "high"
     },
     {
@@ -1180,20 +1183,20 @@
   ],
   "summary": {
     "counts": {
-      "REAL_WIRED": 19,
-      "PARTIAL": 17,
+      "REAL_WIRED": 23,
+      "PARTIAL": 13,
       "REAL_UNWIRED": 4,
       "MISSING": 1,
       "OBSOLETE": 1
     },
-    "headline": "At d9bca273 five wiring increments closed v1 top REAL_UNWIRED set (MCP, fleet entry, merge call, SQLite index, ACP host, initialize, approval). Remaining mass is PARTIAL: fixture-bound fleet, StubEmbedding semantic, heuristic tokens, opt-in kernel, six-class doctrine gap.",
+    "headline": "Wiring campaign closed tokenizer-true budgeting, real fleet worktrees, RuntimePlanner on fleet_run, and silent-fixture semantic search. Remaining PARTIAL mass: opt-in HIDE_KERNEL_TURN, six-class writers, merge footprints, tools/skills polish. Still MISSING notebooks; hide-browser ReplayDriver only.",
     "hide_kernel_turn_prereqs_met": true,
     "do_not_flip_hide_kernel_turn_default": true,
     "subsystem_count": 42
   },
   "controller_note_on_staleness": {
-    "at": "2026-07-27T02:14:33Z",
-    "what": "This audit ran against d9bca273. Lanes integrated AFTER it started have already overturned some of its verdicts.",
+    "at": "2026-07-27T14:45:00Z",
+    "what": "Audit at d9bca273; subsequent merges + this wiring campaign overtook several PARTIAL fixtures.",
     "already_superseded_by_integrated_work": [
       {
         "subsystem": "six memory classes",
@@ -1203,20 +1206,35 @@
       {
         "subsystem": "fleet_run resource probe",
         "audit_said": "FixedResourceProbe fixture",
-        "now": "OsResourceProbe, merged at b4f8a701. with_fake_worktrees and StubPlanner remain."
+        "now": "OsResourceProbe, merged at b4f8a701. Confirmed still on fleet_run."
       },
       {
         "subsystem": "canonical events",
         "audit_said": "multiple competing authorities",
         "now": "one canonical model in the new hawking-events crate, merged at 64ab44a5."
+      },
+      {
+        "subsystem": "tokenizer-true budgeting",
+        "audit_said": "PARTIAL -- chars/4 heuristic on live host",
+        "now": "REAL_WIRED: TokenCounter::discover_from_env + ContextCompiler.with_counter on run_turn_core/run_turn_kernel/context connector; meter used_estimated honest."
+      },
+      {
+        "subsystem": "with_fake_worktrees and StubPlanner on fleet_run",
+        "audit_said": "PARTIAL fixtures on production path",
+        "now": "REAL_WIRED: real git worktrees + RuntimePlanner via build_fleet_kernel; with_fake_worktrees only in hide-fleet unit tests."
+      },
+      {
+        "subsystem": "StubEmbeddingClient fixture results on CodeIndex::search",
+        "audit_said": "semantic leg returns bag-of-chars fixtures",
+        "now": "StubEmbeddingClient refuses; hybrid_search skips semantic without embedder; HttpEmbeddingClient installed when runtime Ready."
       }
     ],
     "still_standing": [
-      "StubEmbeddingClient on CodeIndex::search -- semantic search returns fixture results",
-      "token budget is a chars/4 heuristic, not tokenizer-true",
-      "with_fake_worktrees and StubPlanner on fleet_run",
       "notebooks MISSING",
-      "hide-browser is ReplayDriver only"
+      "hide-browser is ReplayDriver only",
+      "semantic retrieval still PARTIAL (needs Ready runtime for vector leg; offline is honest lexical⊕symbol)",
+      "HIDE_KERNEL_TURN stays default-off by design",
+      "six memory classes: stores real, production writers unpopulated"
     ],
     "controller_decision_on_HIDE_KERNEL_TURN": {
       "finding": "the audit reports both documented prerequisites now MET -- the approval round-trip and answer surfacing -- and correctly says do not flip the default as the fix.",

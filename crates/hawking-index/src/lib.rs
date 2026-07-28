@@ -15,7 +15,9 @@
 //!
 //! Live model calls (embeddings) target `hawking-serve`'s real HTTP endpoint
 //! (`POST /v1/embeddings`) behind the swappable [`semantic::EmbeddingClient`]
-//! trait; tests use [`semantic::StubEmbeddingClient`] so they run offline.
+//! trait. Offline tests use [`semantic::BagOfCharsEmbeddingClient`];
+//! [`semantic::StubEmbeddingClient`] refuses so production never silently
+//! ranks on fixture vectors.
 
 pub mod daemon;
 pub mod graph;
@@ -34,7 +36,7 @@ pub use graph::{CodeGraph, EdgeKind, Occurrence, RepoMap, RepoMapRequest, Symbol
 pub use merkle::{Blake3MerkleScanner, ChangeSet, MerkleKind, MerkleNode, MerkleScanner};
 pub use parse::{parse_source, scip_symbol_id, LangId, ParseOutput, SymKind};
 pub use semantic::{
-    cosine, fuse_legs, reciprocal_rank_fusion, EmbeddingClient, HttpEmbeddingClient,
-    HybridRetrievalWeights, HybridRetriever, StubEmbeddingClient,
+    cosine, fuse_legs, reciprocal_rank_fusion, BagOfCharsEmbeddingClient, EmbeddingClient,
+    HttpEmbeddingClient, HybridRetrievalWeights, HybridRetriever, StubEmbeddingClient,
 };
 pub use store::SqliteStore;

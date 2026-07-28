@@ -1,0 +1,73 @@
+{
+  "schema": "hawking.representation.functional_sweep.v1",
+  "at": "2026-07-27T12:23:09Z",
+  "question": "does fitting what the organ DOES beat fitting what it STORES, at sub-bit rates?",
+  "codec": "glm52.functional.moe.v1 (frozen, deterministic, seed-reproduced feature map)",
+  "organ": "model.layers.10.mlp.experts.0.up_proj.weight",
+  "shape": [
+    2048,
+    6144
+  ],
+  "constant_mean_cosine_null": 0.12622,
+  "held_out": true,
+  "fit_rows": 4096,
+  "test_rows": 512,
+  "points": [
+    {
+      "arm": "FUNCTIONAL_glm52.functional.moe.v1",
+      "hidden": 256,
+      "stored_params": 524288,
+      "bpw": 0.66667,
+      "sub_bit": true,
+      "cosine": 0.1043,
+      "relative_output_error": 1.01401,
+      "beats_null": false
+    },
+    {
+      "arm": "FUNCTIONAL_glm52.functional.moe.v1",
+      "hidden": 512,
+      "stored_params": 1048576,
+      "bpw": 1.33333,
+      "sub_bit": false,
+      "cosine": 0.14857,
+      "relative_output_error": 1.02789,
+      "beats_null": true
+    },
+    {
+      "arm": "FUNCTIONAL_glm52.functional.moe.v1",
+      "hidden": 1024,
+      "stored_params": 2097152,
+      "bpw": 2.66667,
+      "sub_bit": false,
+      "cosine": 0.20167,
+      "relative_output_error": 1.06324,
+      "beats_null": true
+    },
+    {
+      "arm": "FUNCTIONAL_glm52.functional.moe.v1",
+      "hidden": 2048,
+      "stored_params": 4194304,
+      "bpw": 5.33333,
+      "sub_bit": false,
+      "cosine": 0.26244,
+      "relative_output_error": 1.15302,
+      "beats_null": true
+    },
+    {
+      "arm": "FUNCTIONAL_glm52.functional.moe.v1",
+      "hidden": 4096,
+      "stored_params": 8388608,
+      "bpw": 10.66667,
+      "sub_bit": false,
+      "cosine": 0.32004,
+      "relative_output_error": 1.29005,
+      "beats_null": true
+    }
+  ],
+  "comparison_raw_weight_arms": {
+    "A1_rank64_bpw": 0.66676,
+    "A1_rank64_cosine": 0.29795,
+    "A4_bank_basis4_bpw": 0.91429,
+    "A4_bank_basis4_cosine": 0.24704
+  }
+}

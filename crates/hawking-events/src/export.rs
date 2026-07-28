@@ -5,6 +5,7 @@ use serde_json::{json, Value};
 use crate::categories::{kind_for_category, Category, CATEGORY_KINDS};
 use crate::envelope::CANONICAL_SCHEMA;
 use crate::models::{MigrationStatus, COMPETING_MODELS};
+use crate::you_events::you_events_export;
 use crate::DOCUMENT_SCHEMA;
 
 /// Build the deliverable document as a JSON Value.
@@ -53,12 +54,20 @@ pub fn canonical_events_document() -> Value {
             "name": chosen.name,
             "file": chosen.file,
             "line": chosen.line,
-            "justification": "Among models that can express the full category surface (model lifecycle, text, reasoning, plans, tools, permissions, edits, tests, verification, agents, acceleration, Fabric placement/node state, warnings, errors, usage), hide-core Event already carries the durable product-event traffic: hide-backend appends it to JsonlEventLog and replays it into UiEvent. StreamEvent has higher token volume but only Token|Done and cannot be the product authority. Chosen for live durable traffic, not aesthetics.",
-            "envelope_fields": ["id", "seq", "session_id", "subsystem", "verification"],
+            "justification": "Among models that can express the full category surface (model lifecycle, text, reasoning, plans, tools, permissions, edits, tests, verification, agents, acceleration, Fabric placement/node state, warnings, errors, usage, and the seventeen YOU events), hide-core Event already carries the durable product-event traffic: hide-backend appends it to JsonlEventLog and replays it into UiEvent. StreamEvent has higher token volume but only Token|Done and cannot be the product authority. Chosen for live durable traffic, not aesthetics.",
+            "envelope_fields": [
+                "id",
+                "seq",
+                "session_id",
+                "surface",
+                "subsystem",
+                "verification"
+            ],
         },
         "superseded_models": superseded,
         "categories": categories,
         "category_count": Category::all().len(),
+        "you_events": you_events_export(),
         "migration_status": {
             "hide_core_event": "canonical",
             "ui_event": "live_projection_with_adapter",
@@ -66,6 +75,7 @@ pub fn canonical_events_document() -> Value {
             "stream_event": "live_projection_with_adapter",
             "seed_c_event": "deprecated_adapted",
             "campaign_jsonl_ledgers": "campaign_ledger_no_adapter",
+            "you_events": "canonical_kinds_on_same_bus",
         },
         "two_live_projections_loudly": [
             "StreamEvent remains the inference hot path (crates/hawking-core/src/engine.rs:188); project via hawking_events::adapters::stream.",

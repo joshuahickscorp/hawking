@@ -191,8 +191,20 @@ fn cmd_run() -> i32 {
     }
 
     // 11. Gravity
+    // The law now turns on capability, not on a number: the second clause asserts that a
+    // deeply sub-bit rate with no capability proof is REFUSED. That is the Math-Preserve
+    // case, and the old law admitted it.
     let g_ok = gravity::decide(Rate::new(4, 5), &Ask::RepresentationEscalation, &Evidence::default()).allow
-        && !gravity::decide(Rate::new(4, 5), &Ask::EscapeAboveSubbit { to: Rate::new(5, 4), sealed_receipt: false }, &Evidence::default()).allow;
+        && !gravity::decide(
+            Rate::new(4, 5),
+            &Ask::AdmitRate {
+                to: Rate::new(4, 5),
+                artifact_index_sha256: String::new(),
+                sealed_receipt: false,
+            },
+            &Evidence { representation_families_tried: 2, ..Default::default() },
+        )
+        .allow;
     println!("[11] Gravity: {}", if g_ok { "law intact" } else { "VIOLATION" });
 
     // 12. evidence + drain/resume/verify

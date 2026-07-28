@@ -2,7 +2,7 @@
   "schema": "hide.you.surface_authority.v1",
   "at": "2026-07-27T06:30:00Z",
   "owner": "controller",
-  "status": "CONTRACT_SEALED_IMPLEMENTATION_IN_PROGRESS",
+  "status": "READY_FOR_INTEGRATION",
 
   "doctrine": "YOU, CHAT and IDE are three LENSES over one HIDE session. They differ in default context and default permissions. They do not differ in intelligence, memory, or truth. The failure this contract exists to prevent is a fourth intelligence silo wearing a third tab.",
 

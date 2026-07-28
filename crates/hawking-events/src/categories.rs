@@ -6,7 +6,7 @@
 
 use serde::{Deserialize, Serialize};
 
-/// Required product-event categories from the bridge-events contract.
+/// Required product-event categories from the bridge-events + YOU contracts.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Category {
@@ -26,6 +26,22 @@ pub enum Category {
     Warnings,
     Errors,
     Usage,
+    /// YOU object gallery / processing pipeline.
+    YouObjects,
+    /// YOU memory propose / commit / correct.
+    YouMemory,
+    /// YOU connector center.
+    YouConnectors,
+    /// YOU research / claims / sources.
+    YouResearch,
+    /// YOU automations.
+    YouAutomation,
+    /// YOU swarm board + agent delegation.
+    YouSwarm,
+    /// YOU project graph.
+    YouProjects,
+    /// YOU typed handoffs between surfaces.
+    YouHandoff,
 }
 
 impl Category {
@@ -47,6 +63,14 @@ impl Category {
             Category::Warnings => "warnings",
             Category::Errors => "errors",
             Category::Usage => "usage",
+            Category::YouObjects => "you_objects",
+            Category::YouMemory => "you_memory",
+            Category::YouConnectors => "you_connectors",
+            Category::YouResearch => "you_research",
+            Category::YouAutomation => "you_automation",
+            Category::YouSwarm => "you_swarm",
+            Category::YouProjects => "you_projects",
+            Category::YouHandoff => "you_handoff",
         }
     }
 
@@ -55,7 +79,7 @@ impl Category {
     }
 }
 
-const ALL_CATEGORIES: [Category; 16] = [
+const ALL_CATEGORIES: [Category; 24] = [
     Category::ModelLifecycle,
     Category::Text,
     Category::Reasoning,
@@ -72,10 +96,18 @@ const ALL_CATEGORIES: [Category; 16] = [
     Category::Warnings,
     Category::Errors,
     Category::Usage,
+    Category::YouObjects,
+    Category::YouMemory,
+    Category::YouConnectors,
+    Category::YouResearch,
+    Category::YouAutomation,
+    Category::YouSwarm,
+    Category::YouProjects,
+    Category::YouHandoff,
 ];
 
 /// Primary open-kind string for each category (one representative kind).
-/// Additional legacy kinds may map into the same category via [`category_for_kind`].
+/// Additional legacy / YOU kinds may map into the same category via [`category_for_kind`].
 pub const CATEGORY_KINDS: &[(Category, &str)] = &[
     (Category::ModelLifecycle, "model.lifecycle"),
     (Category::Text, "model.token"),
@@ -93,6 +125,14 @@ pub const CATEGORY_KINDS: &[(Category, &str)] = &[
     (Category::Warnings, "system.warning"),
     (Category::Errors, "error"),
     (Category::Usage, "model.usage"),
+    (Category::YouObjects, "you.object.added"),
+    (Category::YouMemory, "you.memory.proposed"),
+    (Category::YouConnectors, "you.connector.read"),
+    (Category::YouResearch, "you.research.started"),
+    (Category::YouAutomation, "you.automation.created"),
+    (Category::YouSwarm, "you.swarm.created"),
+    (Category::YouProjects, "you.project.updated"),
+    (Category::YouHandoff, "you.handoff.created"),
 ];
 
 pub fn all_categories() -> &'static [Category] {
@@ -115,7 +155,7 @@ pub fn category_for_kind(kind: &str) -> Option<Category> {
             return Some(*cat);
         }
     }
-    // Legacy / alternate kinds that adapters emit.
+    // Legacy / alternate kinds that adapters emit, plus non-primary YOU kinds.
     Some(match kind {
         "tool.result" => Category::Tools,
         "user.intent" => Category::ModelLifecycle,
@@ -134,6 +174,12 @@ pub fn category_for_kind(kind: &str) -> Option<Category> {
         "error" | "system.error" => Category::Errors,
         "model.usage" | "usage.stats" => Category::Usage,
         "seed.transition" => Category::ModelLifecycle,
+        "you.object.processed" => Category::YouObjects,
+        "you.memory.committed" | "you.memory.corrected" => Category::YouMemory,
+        "you.connector.write_proposed" => Category::YouConnectors,
+        "you.research.source_captured" | "you.research.claim_verified" => Category::YouResearch,
+        "you.automation.ran" => Category::YouAutomation,
+        "you.agent.delegated" | "you.agent.result" => Category::YouSwarm,
         _ => return None,
     })
 }

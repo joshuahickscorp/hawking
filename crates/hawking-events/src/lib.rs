@@ -29,8 +29,14 @@
 //! - stable id (`Event.id`)
 //! - monotone sequence (`Event.seq`)
 //! - session identity (`Event.session_id`)
-//! - producing subsystem (`CanonicalEnvelope.subsystem` / `Event.actor`)
-//! - verification status (`CanonicalEnvelope.verification`)
+//! - producing surface (`CanonicalEvent.surface`)
+//! - producing subsystem (`CanonicalEvent.subsystem` / `Event.actor`)
+//! - verification status (`CanonicalEvent.verification`) — target-verified or provisional
+//!
+//! ## YOU events
+//!
+//! Seventeen YOU surface events ([`you_events`]) join **this same bus** as
+//! open kinds (`you.object.added`, …). They are not a second event bus.
 //!
 //! ## Two live projections (loudly documented)
 //!
@@ -46,15 +52,18 @@ pub mod categories;
 pub mod envelope;
 pub mod export;
 pub mod models;
+pub mod you_events;
 
 pub use categories::{
     all_categories, category_for_kind, kind_for_category, Category, CATEGORY_KINDS,
 };
 pub use envelope::{
-    CanonicalEvent, ContentVerification, NewCanonical, Subsystem, CANONICAL_SCHEMA,
+    stamp_legacy, stamp_legacy_with_surface, CanonicalEvent, ContentVerification, NewCanonical,
+    ProducingSurface, Subsystem, CANONICAL_SCHEMA,
 };
 pub use export::{canonical_events_document, canonical_events_json};
 pub use models::{CompetingModel, MigrationStatus, COMPETING_MODELS};
+pub use you_events::{you_events_export, YouEvent, YouEventSpec, YOU_EVENTS};
 
 /// Schema id for the checked-in `HAWKING_CANONICAL_EVENTS.json` deliverable.
 pub const DOCUMENT_SCHEMA: &str = "hawking.events.canonical.v1";

@@ -1,0 +1,52 @@
+{
+  "$id": "hawking.artifacts.v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Loadable model artifact descriptors derived from the adapter registry codecs.",
+  "properties": {
+    "codec": {
+      "description": "Artifact codec. Free-text values from family ABI are allowed; known canonical ids are listed.",
+      "examples": [
+        "gguf",
+        "gguf (pack only)",
+        "gravity",
+        "pack (mixtral extra)",
+        "safetensors",
+        "safetensors (source)",
+        "synthetic twin",
+        "synthetic_twin",
+        "tq",
+        "tq (feature-gated)"
+      ],
+      "type": "string"
+    },
+    "digest": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "family_id": {
+      "type": "string"
+    },
+    "path": {
+      "type": "string"
+    },
+    "serve_registered": {
+      "type": "boolean"
+    },
+    "shard_index": {
+      "minimum": 0,
+      "type": [
+        "integer",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "codec",
+    "path",
+    "family_id"
+  ],
+  "title": "HawkingArtifact",
+  "type": "object"
+}

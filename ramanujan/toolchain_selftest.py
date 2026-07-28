@@ -43,10 +43,33 @@ MODULES = [
 ]
 
 
+# Tools install to their own prefixes and are not necessarily on this process's PATH.
+# elan puts lean/lake/elan in ~/.elan/bin, and probing PATH alone reported all three
+# missing minutes after installing and machine-checking a theorem with them. Same class of
+# false negative as the venv modules: a probe-path artifact reported as a toolchain gap.
+EXTRA_BIN_DIRS = [
+    Path.home() / ".elan/bin",
+    Path("/opt/homebrew/bin"),
+    Path("/usr/local/bin"),
+]
+
+
+def _which(name: str) -> str | None:
+    found = shutil.which(name)
+    if found:
+        return found
+    for d in EXTRA_BIN_DIRS:
+        cand = d / name
+        if cand.is_file():
+            return str(cand)
+    return None
+
+
 def probe_binary(name: str, argv: list[str]) -> dict:
-    path = shutil.which(name)
+    path = _which(name)
     if not path:
         return {"status": "NOT_INSTALLED", "path": None, "version": None}
+    argv = [path, *argv[1:]]
     try:
         r = subprocess.run(argv, capture_output=True, text=True, timeout=30)
         version = (r.stdout or r.stderr).strip().splitlines()[0] if (r.stdout or r.stderr) else None
@@ -55,12 +78,33 @@ def probe_binary(name: str, argv: list[str]) -> dict:
     return {"status": "INSTALLED", "path": path, "version": version}
 
 
+# The formal-tool Python packages live in the project venv, not in whatever interpreter
+# happens to run this script. Probing only the current interpreter reported sympy, z3 and
+# pysat missing while all three were installed -- a probe-path artifact reported as a
+# toolchain gap, which is exactly the kind of false negative this file exists to avoid.
+VENVS = [
+    Path(__file__).resolve().parents[1] / ".venv/glm52/bin/python",
+]
+
+
 def probe_module(name: str) -> dict:
     try:
         mod = __import__(name)
+        return {"status": "INSTALLED", "version": getattr(mod, "__version__", "unknown"),
+                "where": "current interpreter"}
     except ImportError:
-        return {"status": "NOT_INSTALLED", "version": None}
-    return {"status": "INSTALLED", "version": getattr(mod, "__version__", "unknown")}
+        pass
+    for py in VENVS:
+        if not py.is_file():
+            continue
+        r = subprocess.run(
+            [str(py), "-c",
+             f"import {name} as m; print(getattr(m, '__version__', 'ok'))"],
+            capture_output=True, text=True, timeout=60,
+        )
+        if r.returncode == 0:
+            return {"status": "INSTALLED", "version": r.stdout.strip(), "where": str(py)}
+    return {"status": "NOT_INSTALLED", "version": None}
 
 
 def main() -> int:

@@ -2,7 +2,10 @@
 //! rerank (bible §4.7).
 //!
 //! - `EmbeddingClient` is a swappable trait; `HttpEmbeddingClient` talks to
-//!   `hawking-serve` `POST /v1/embeddings`; tests use `StubEmbeddingClient`.
+//!   `hawking-serve` `POST /v1/embeddings`. Offline tests use
+//!   [`BagOfCharsEmbeddingClient`] (explicit, named fixture). Production must
+//!   never silently fall back to a fixture that returns plausible vectors —
+//!   [`StubEmbeddingClient`] refuses so a mis-wire fails loud.
 //! - Vectors are stored as f32 in SQLite (see `store`); recall is **cosine over
 //!   stored vectors** (no heavy ANN dep), which is exact and fits an IDE shard.
 //! - `reciprocal_rank_fusion` + a rerank actually run in `HybridRetriever::search`
@@ -131,25 +134,58 @@ impl EmbeddingClient for HttpEmbeddingClient {
     }
 }
 
-/// A deterministic stub embedding client for tests (no live runtime).
+/// A production-safety stub: **refuses** to embed.
 ///
-/// Produces a small bag-of-chars vector so cosine similarity is meaningful for
-/// tests without any network.
+/// A client that returns plausible fixture vectors on the live path is worse
+/// than one that errors — retrieval would look real while ranking on bag-of-chars
+/// noise. Callers that need offline cosine behaviour must use
+/// [`BagOfCharsEmbeddingClient`] explicitly (tests only).
 pub struct StubEmbeddingClient {
     pub model_id: String,
-    pub dim: usize,
 }
 
 impl Default for StubEmbeddingClient {
     fn default() -> Self {
         Self {
-            model_id: "stub-embed:test".to_string(),
-            dim: 32,
+            model_id: "stub-embed:refuses".to_string(),
         }
     }
 }
 
 impl EmbeddingClient for StubEmbeddingClient {
+    fn embed<'a>(&'a self, _texts: Vec<String>) -> BoxFuture<'a, Result<Vec<Vec<f32>>>> {
+        Box::pin(async move {
+            Err(HideError::RuntimeUnavailable(
+                "StubEmbeddingClient refuses to embed: wire HttpEmbeddingClient \
+                 (or BagOfCharsEmbeddingClient in tests) — silent fixture vectors \
+                 are not allowed on the search path"
+                    .into(),
+            ))
+        })
+    }
+    fn model_id(&self) -> String {
+        self.model_id.clone()
+    }
+}
+
+/// Explicit offline embedder for unit tests. Produces a small bag-of-chars
+/// vector so cosine similarity is meaningful without a network. Never installed
+/// on the production `CodeIndex::search` path.
+pub struct BagOfCharsEmbeddingClient {
+    pub model_id: String,
+    pub dim: usize,
+}
+
+impl Default for BagOfCharsEmbeddingClient {
+    fn default() -> Self {
+        Self {
+            model_id: "bag-of-chars:test".to_string(),
+            dim: 32,
+        }
+    }
+}
+
+impl EmbeddingClient for BagOfCharsEmbeddingClient {
     fn embed<'a>(&'a self, texts: Vec<String>) -> BoxFuture<'a, Result<Vec<Vec<f32>>>> {
         let dim = self.dim;
         Box::pin(async move { Ok(texts.iter().map(|t| bag_of_chars(t, dim)).collect()) })
@@ -418,7 +454,7 @@ mod tests {
                 1,
             )
             .unwrap();
-        let embedder = StubEmbeddingClient::default();
+        let embedder = BagOfCharsEmbeddingClient::default();
         // embed and store the chunk vector
         let pending = store.pending_chunks(10).unwrap();
         let txt = "pub fn alpha() { compute(); }";
@@ -430,6 +466,21 @@ mod tests {
         let retriever = HybridRetriever::new(&store, &embedder);
         let leg = retriever.vector_leg("compute alpha", 5).await.unwrap();
         assert!(!leg.ranked_keys.is_empty(), "vector leg must return hits");
+    }
+
+    /// Property: StubEmbeddingClient refuses rather than returning fixture vectors.
+    #[tokio::test]
+    async fn stub_embedding_client_refuses_rather_than_fixture_results() {
+        let stub = StubEmbeddingClient::default();
+        let err = stub
+            .embed(vec!["looks like a real query".into()])
+            .await
+            .expect_err("stub must refuse");
+        let msg = err.to_string();
+        assert!(
+            msg.contains("refuses") || msg.contains("StubEmbeddingClient"),
+            "error must name the refusal, got: {msg}"
+        );
     }
 
     /// An embedder that records how many times `embed()` was invoked, so a test
@@ -512,7 +563,7 @@ mod tests {
     #[tokio::test]
     async fn full_search_fuses_and_reranks() {
         let store = SqliteStore::open_in_memory().unwrap();
-        let embedder = StubEmbeddingClient::default();
+        let embedder = BagOfCharsEmbeddingClient::default();
         let retriever = HybridRetriever::new(&store, &embedder);
 
         let mut snippets = HashMap::new();

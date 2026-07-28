@@ -440,6 +440,17 @@ struct GravityGlmRopeParams {
     uint out_stride; // elements between heads in `out`
 };
 
+// Replay-safe form: both base offsets are scalar contents so an ICB can bind
+// the full persistent buffers at offset zero while sequence position changes.
+struct GravityGlmPositionedRopeParams {
+    uint n_heads;
+    uint rotary_dim;
+    uint in_stride;
+    uint out_stride;
+    uint input_element_offset;
+    uint output_element_offset;
+};
+
 kernel void gravity_rope_interleaved_f32(
     device const float *x     [[buffer(0)]],
     device       float *out   [[buffer(1)]],
@@ -479,6 +490,34 @@ kernel void gravity_rope_prefix_tail_f32(
     uint col = id - h * p.out_stride;
     uint in_base = h * p.in_stride;
     uint out_base = h * p.out_stride;
+    uint half_dim = p.rotary_dim / 2u;
+    if (col < half_dim) {
+        float first = x[in_base + 2u * col];
+        float second = x[in_base + 2u * col + 1u];
+        out[out_base + col] = first * cos[col] - second * sin[col];
+    } else if (col < p.rotary_dim) {
+        uint pair = col - half_dim;
+        float first = x[in_base + 2u * pair];
+        float second = x[in_base + 2u * pair + 1u];
+        out[out_base + col] = second * cos[pair] + first * sin[pair];
+    } else {
+        out[out_base + col] = x[in_base + col];
+    }
+}
+
+kernel void gravity_rope_prefix_tail_positioned_f32(
+    device const float *x     [[buffer(0)]],
+    device       float *out   [[buffer(1)]],
+    device const float *cos   [[buffer(2)]],
+    device const float *sin   [[buffer(3)]],
+    constant GravityGlmPositionedRopeParams &p [[buffer(4)]],
+    uint id [[thread_position_in_grid]])
+{
+    if (id >= p.n_heads * p.out_stride) { return; }
+    uint h = id / p.out_stride;
+    uint col = id - h * p.out_stride;
+    uint in_base = p.input_element_offset + h * p.in_stride;
+    uint out_base = p.output_element_offset + h * p.out_stride;
     uint half_dim = p.rotary_dim / 2u;
     if (col < half_dim) {
         float first = x[in_base + 2u * col];
@@ -1242,6 +1281,21 @@ struct GravityRouterSelectParams {
     float routed_scaling_factor;
 };
 
+struct GravityExpertTraceCopyParams {
+    uint count;
+    uint destination_offset;
+};
+
+kernel void gravity_glm_expert_trace_copy(
+    const device uint *expert_indices [[buffer(0)]],
+    device uint *expert_trace [[buffer(1)]],
+    constant GravityExpertTraceCopyParams &p [[buffer(2)]],
+    uint id [[thread_position_in_grid]])
+{
+    if (id >= p.count) { return; }
+    expert_trace[p.destination_offset + id] = expert_indices[id];
+}
+
 // Exact noaux_tc router selection with stable lower-index ties. One thread is
 // intentional: the flagship router has only 256 experts, while preserving the
 // host reduction/selection order is part of the model's discrete contract.
@@ -1388,6 +1442,7 @@ static_assert(sizeof(GravityDeviceExpertTriplet) == 176,
 
 constant constexpr uint GRAVITY_EXPERT_KIND_PQ = 1u;
 constant constexpr uint GRAVITY_EXPERT_KIND_NATIVE_BF16 = 2u;
+constant constexpr uint GRAVITY_EXPERT_KIND_ANY_SUPPORTED = 0u;
 constant constexpr uint GRAVITY_EXPERT_TRIPLET_READY = 7u;
 
 struct GravityDeviceExpertValidateParams {
@@ -1407,31 +1462,42 @@ struct GravityDeviceExpertMatvecParams {
     uint projection;
     uint rows;
     uint cols;
+    uint allow_other_kind;
 };
+
+static_assert(sizeof(GravityDeviceExpertValidateParams) == 24,
+              "GravityDeviceExpertValidateParams ABI drift");
+static_assert(sizeof(GravityDeviceExpertMatvecParams) == 32,
+              "GravityDeviceExpertMatvecParams ABI drift");
 
 static inline bool gravity_device_expert_tensor_valid(
     const device GravityDeviceExpertTensorRef &tensor,
     uint generation,
     uint required_kind)
 {
+    uint admitted_kind =
+        required_kind == GRAVITY_EXPERT_KIND_ANY_SUPPORTED
+        ? tensor.kind
+        : required_kind;
     if (tensor.generation != generation ||
-        tensor.kind != required_kind ||
+        tensor.kind != admitted_kind ||
         tensor.primary == nullptr ||
         tensor.rows == 0u ||
         tensor.cols == 0u) {
         return false;
     }
-    if (required_kind == GRAVITY_EXPERT_KIND_PQ) {
+    if (admitted_kind == GRAVITY_EXPERT_KIND_PQ) {
         return tensor.secondary != nullptr &&
-               tensor.bits == 8u &&
-               tensor.subspaces == 1u &&
+               tensor.bits > 0u &&
+               tensor.bits <= 8u &&
+               tensor.subspaces > 0u &&
                tensor.sub > 0u &&
-               tensor.dim == tensor.sub &&
-               tensor.card == 256u &&
+               tensor.dim == tensor.subspaces * tensor.sub &&
+               tensor.card == (1u << tensor.bits) &&
                tensor.nchunk > 0u &&
                tensor.cols == tensor.nchunk * tensor.dim;
     }
-    if (required_kind == GRAVITY_EXPERT_KIND_NATIVE_BF16) {
+    if (admitted_kind == GRAVITY_EXPERT_KIND_NATIVE_BF16) {
         return tensor.secondary == nullptr;
     }
     return false;
@@ -1515,6 +1581,10 @@ kernel void gravity_glm_expert_table_pq_matvec(
     const device GravityDeviceExpertTensorRef *tensor =
         p.projection == 0u ? &entry.gate :
         (p.projection == 1u ? &entry.up : &entry.down);
+    if (p.allow_other_kind != 0u &&
+        tensor->kind == GRAVITY_EXPERT_KIND_NATIVE_BF16) {
+        return;
+    }
     bool valid =
         p.projection <= 2u &&
         entry.ready_mask == GRAVITY_EXPERT_TRIPLET_READY &&
@@ -1537,19 +1607,111 @@ kernel void gravity_glm_expert_table_pq_matvec(
         reinterpret_cast<const device half *>(tensor->primary);
     const device uchar *codes = tensor->secondary;
     float acc = 0.0f;
-    for (uint chunk = lane; chunk < tensor->nchunk; chunk += 32u) {
-        uint flat = row * tensor->nchunk + chunk;
-        const device half *entry_values =
-            codebooks + uint(codes[flat]) * tensor->sub;
-        const device float *xs = x + chunk * tensor->dim;
-        for (uint j = 0u; j < tensor->sub; ++j) {
-            acc = fma(float(entry_values[j]), xs[j], acc);
+    if (tensor->bits == 8u && tensor->subspaces == 1u) {
+        // Preserve the qualified R4 direct-byte path exactly.
+        for (uint chunk = lane; chunk < tensor->nchunk; chunk += 32u) {
+            uint flat = row * tensor->nchunk + chunk;
+            const device half *entry_values =
+                codebooks + uint(codes[flat]) * tensor->sub;
+            const device float *xs = x + chunk * tensor->dim;
+            for (uint j = 0u; j < tensor->sub; ++j) {
+                acc = fma(float(entry_values[j]), xs[j], acc);
+            }
+        }
+    } else {
+        // Packed-PQ path used by R0 (D8/S1/sub8/card128/bits7) and any
+        // descriptor satisfying the same immutable tensor invariants.
+        for (uint s = 0u; s < tensor->subspaces; ++s) {
+            const device half *codebook =
+                codebooks + s * tensor->card * tensor->sub;
+            const uint xbase = s * tensor->sub;
+            for (uint chunk = lane; chunk < tensor->nchunk; chunk += 32u) {
+                uint flat =
+                    (row * tensor->nchunk + chunk) * tensor->subspaces + s;
+                const device half *entry_values =
+                    codebook + pq_index(codes, flat, tensor->bits) * tensor->sub;
+                const device float *xs =
+                    x + chunk * tensor->dim + xbase;
+                for (uint j = 0u; j < tensor->sub; ++j) {
+                    acc = fma(float(entry_values[j]), xs[j], acc);
+                }
+            }
         }
     }
     acc = simd_sum(acc);
     if (lane == 0u) {
         y[row] = acc;
     }
+}
+
+// Native-BF16 indirect counterpart. `matmul.metal` precedes this source in the
+// single Metal translation unit and establishes contract(off) for the
+// qualified sequential path. Reassert it here so the multiply and add remain
+// separate even if source ordering changes.
+#pragma clang fp contract(off)
+kernel void gravity_glm_expert_table_native_bf16_matvec(
+    const device uint *expert_indices [[buffer(0)]],
+    const device uint *expert_exec_slots [[buffer(1)]],
+    const device GravityDeviceExpertTriplet *table [[buffer(2)]],
+    device atomic_uint *miss_mask [[buffer(3)]],
+    const device float *x [[buffer(4)]],
+    device float *y [[buffer(5)]],
+    constant GravityDeviceExpertMatvecParams &p [[buffer(6)]],
+    uint row [[thread_position_in_grid]])
+{
+    if (atomic_load_explicit(miss_mask, memory_order_relaxed) != 0u) {
+        return;
+    }
+    if (p.execution_position >= p.experts_per_token) {
+        return;
+    }
+    uint slot = expert_exec_slots[p.execution_position];
+    if (slot >= p.experts_per_token) {
+        return;
+    }
+    uint expert = expert_indices[slot];
+    if (expert >= p.n_experts) {
+        return;
+    }
+    const device GravityDeviceExpertTriplet &entry = table[expert];
+    const device GravityDeviceExpertTensorRef *tensor =
+        p.projection == 0u ? &entry.gate :
+        (p.projection == 1u ? &entry.up : &entry.down);
+    if (p.allow_other_kind != 0u &&
+        tensor->kind == GRAVITY_EXPERT_KIND_PQ) {
+        return;
+    }
+    bool valid =
+        p.projection <= 2u &&
+        entry.ready_mask == GRAVITY_EXPERT_TRIPLET_READY &&
+        entry.generation == p.generation &&
+        gravity_device_expert_tensor_valid(
+            *tensor, p.generation, GRAVITY_EXPERT_KIND_NATIVE_BF16) &&
+        tensor->rows == p.rows &&
+        tensor->cols == p.cols;
+    if (!valid) {
+        if (row == 0u) {
+            atomic_fetch_or_explicit(
+                miss_mask, 1u << p.execution_position, memory_order_relaxed);
+        }
+        return;
+    }
+    if (row >= tensor->rows) {
+        return;
+    }
+
+    const device ushort *weight_bits =
+        reinterpret_cast<const device ushort *>(tensor->primary);
+    const device ushort *row_bits =
+        weight_bits + ulong(row) * ulong(tensor->cols);
+    float acc = 0.0f;
+    for (uint col = 0u; col < tensor->cols; ++col) {
+        uint wide_bits = uint(row_bits[col]) << 16;
+        float weight = as_type<float>(wide_bits);
+        float product = weight * x[col];
+        acc = acc + product;
+    }
+    y[row] = acc;
 }
 
 struct GravityDeviceExpertAxpyParams {

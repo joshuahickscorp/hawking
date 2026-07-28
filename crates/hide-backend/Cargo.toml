@@ -10,6 +10,9 @@ description = "Backend composition and connector facade for HIDE"
 
 [dependencies]
 hide-core = { path = "../hide-core" }
+# YOU / CHAT / IDE surface graph: claim-only handoffs, one session three lenses.
+# Model-free fixture path; grade ceiling READY_FOR_INTEGRATION.
+hide-you = { path = "../hide-you" }
 hide-kernel = { path = "../hide-kernel" }
 hide-fleet = { path = "../hide-fleet" }
 hide-personalize = { path = "../hide-personalize" }

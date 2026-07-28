@@ -17,7 +17,7 @@
 
 use std::collections::{HashMap, HashSet};
 use std::fs::File;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use half::f16;
 use memmap2::Mmap;
@@ -232,6 +232,426 @@ impl GravityShard {
     }
 }
 
+const AAP_SCHEMA: &str = "hawking.glm52.activation_aware_pack.v1";
+const AAP_MAX_INDEX_BYTES: u64 = 256 * 1024 * 1024;
+const AAP_PASS_MAGIC: &[u8; 8] = b"GLM52PT0";
+const AAP_BASIS_MAGIC: &[u8; 8] = b"GLM52BAS";
+
+#[derive(Debug, Clone, Deserialize)]
+struct AapBasisDescriptor {
+    basis_layer: u16,
+    rank: u32,
+    offset: u64,
+    bytes: u64,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+struct AapTensorDescriptor {
+    name: String,
+    disposition: String,
+    #[serde(default)]
+    dtype: Option<String>,
+    offset: u64,
+    bytes: u64,
+    shape: Vec<u64>,
+}
+
+#[derive(Deserialize)]
+struct AapIndex {
+    schema: String,
+    bases: Vec<AapBasisDescriptor>,
+    tensors: Vec<AapTensorDescriptor>,
+}
+
+/// Read-only mmap of one activation-aware pack shard.
+///
+/// Shared basis bytes stay singular on disk. `read_tensor` attaches only the
+/// requested rank's basis columns to the requested coefficient payload,
+/// yielding the self-contained `activation-aware.f16` ABI consumed by CPU or
+/// Metal execution.
+struct ActivationAwareShard {
+    mmap: Mmap,
+    body_offset: u64,
+    tensors: HashMap<String, AapTensorDescriptor>,
+    bases: HashMap<u16, AapBasisDescriptor>,
+    source_dtypes: HashMap<String, String>,
+}
+
+impl ActivationAwareShard {
+    fn open(
+        path: &Path,
+        source_dtypes: &HashMap<String, String>,
+        expected_sha256: Option<&str>,
+        verify_hash: bool,
+    ) -> Result<Self> {
+        let file = File::open(path)?;
+        // Safety: same read-only/no-truncation contract as GravityShard.
+        let mmap = unsafe { Mmap::map(&file)? };
+        if verify_hash {
+            let expected = expected_sha256.ok_or_else(|| {
+                Error::Gravity(format!(
+                    "{}: activation-aware model index has no shard SHA-256",
+                    path.display()
+                ))
+            })?;
+            let mut digest = Sha256::new();
+            digest.update(&mmap[..]);
+            let observed: String = digest
+                .finalize()
+                .iter()
+                .map(|byte| format!("{byte:02x}"))
+                .collect();
+            if observed != expected {
+                return Err(Error::Gravity(format!(
+                    "{}: activation-aware shard SHA-256 mismatch: expected {expected}, got {observed}",
+                    path.display()
+                )));
+            }
+        }
+        Self::from_mmap(mmap, source_dtypes.clone())
+    }
+
+    fn from_mmap(mmap: Mmap, source_dtypes: HashMap<String, String>) -> Result<Self> {
+        if mmap.len() < 8 {
+            return Err(Error::Gravity(
+                "activation-aware shard is shorter than its index-length prefix".into(),
+            ));
+        }
+        let index_len = u64::from_le_bytes(mmap[..8].try_into().unwrap());
+        if index_len == 0 || index_len > AAP_MAX_INDEX_BYTES {
+            return Err(Error::Gravity(format!(
+                "activation-aware shard has invalid index length {index_len}"
+            )));
+        }
+        let body_offset = 8u64
+            .checked_add(index_len)
+            .ok_or_else(|| Error::Gravity("activation-aware index length overflow".into()))?;
+        if body_offset > mmap.len() as u64 {
+            return Err(Error::Gravity(format!(
+                "activation-aware index ends at {body_offset}, past file length {}",
+                mmap.len()
+            )));
+        }
+        let index: AapIndex =
+            serde_json::from_slice(&mmap[8..body_offset as usize]).map_err(|error| {
+                Error::Gravity(format!("activation-aware index JSON parse: {error}"))
+            })?;
+        if index.schema != AAP_SCHEMA {
+            return Err(Error::Gravity(format!(
+                "activation-aware schema {:?}, expected {AAP_SCHEMA:?}",
+                index.schema
+            )));
+        }
+        let body_bytes = mmap.len() as u64 - body_offset;
+        let mut spans: Vec<(u64, u64, String)> = Vec::new();
+        let mut bases = HashMap::with_capacity(index.bases.len());
+        for basis in index.bases {
+            let end = basis
+                .offset
+                .checked_add(basis.bytes)
+                .ok_or_else(|| Error::Gravity("activation-aware basis span overflow".into()))?;
+            if basis.bytes < ACTIVATION_AWARE_HEADER_LEN as u64 || end > body_bytes {
+                return Err(Error::Gravity(format!(
+                    "activation-aware basis {} span [{}, {end}) outside {body_bytes}-byte body",
+                    basis.basis_layer, basis.offset
+                )));
+            }
+            if bases.insert(basis.basis_layer, basis.clone()).is_some() {
+                return Err(Error::Gravity(format!(
+                    "duplicate activation-aware basis layer {}",
+                    basis.basis_layer
+                )));
+            }
+            spans.push((basis.offset, end, format!("basis:{}", basis.basis_layer)));
+        }
+        let mut tensors = HashMap::with_capacity(index.tensors.len());
+        for tensor in index.tensors {
+            let end = tensor
+                .offset
+                .checked_add(tensor.bytes)
+                .ok_or_else(|| Error::Gravity("activation-aware tensor span overflow".into()))?;
+            if tensor.bytes < ACTIVATION_AWARE_HEADER_LEN as u64 || end > body_bytes {
+                return Err(Error::Gravity(format!(
+                    "activation-aware tensor {:?} span [{}, {end}) outside {body_bytes}-byte body",
+                    tensor.name, tensor.offset
+                )));
+            }
+            if tensor.shape.is_empty() || tensor.shape.len() > 2 {
+                return Err(Error::Gravity(format!(
+                    "activation-aware tensor {:?} has unsupported shape {:?}",
+                    tensor.name, tensor.shape
+                )));
+            }
+            if tensors
+                .insert(tensor.name.clone(), tensor.clone())
+                .is_some()
+            {
+                return Err(Error::Gravity(format!(
+                    "duplicate activation-aware tensor {:?}",
+                    tensor.name
+                )));
+            }
+            spans.push((tensor.offset, end, format!("tensor:{}", tensor.name)));
+        }
+        spans.sort_by_key(|span| span.0);
+        if spans.first().map(|span| span.0) != Some(0) {
+            return Err(Error::Gravity(
+                "activation-aware first payload does not begin at body offset zero".into(),
+            ));
+        }
+        for pair in spans.windows(2) {
+            if pair[0].1 != pair[1].0 {
+                return Err(Error::Gravity(format!(
+                    "activation-aware payloads {:?} and {:?} are not contiguous ({} != {})",
+                    pair[0].2, pair[1].2, pair[0].1, pair[1].0
+                )));
+            }
+        }
+        if spans.last().map(|span| span.1) != Some(body_bytes) {
+            return Err(Error::Gravity(format!(
+                "activation-aware indexed body ends at {}, physical body ends at {body_bytes}",
+                spans.last().map(|span| span.1).unwrap_or(0)
+            )));
+        }
+        Ok(Self {
+            mmap,
+            body_offset,
+            tensors,
+            bases,
+            source_dtypes,
+        })
+    }
+
+    fn descriptor(&self, name: &str) -> Result<&AapTensorDescriptor> {
+        self.tensors
+            .get(name)
+            .ok_or_else(|| Error::Gravity(format!("no such activation-aware tensor {name:?}")))
+    }
+
+    fn span(&self, offset: u64, bytes: u64, label: &str) -> Result<&[u8]> {
+        let start = self
+            .body_offset
+            .checked_add(offset)
+            .ok_or_else(|| Error::Gravity(format!("{label}: offset overflow")))?;
+        let end = start
+            .checked_add(bytes)
+            .ok_or_else(|| Error::Gravity(format!("{label}: end overflow")))?;
+        if end > self.mmap.len() as u64 {
+            return Err(Error::Gravity(format!(
+                "{label}: end {end} past shard length {}",
+                self.mmap.len()
+            )));
+        }
+        Ok(&self.mmap[start as usize..end as usize])
+    }
+
+    fn codec_and_shape(&self, name: &str) -> Result<(String, Vec<u64>)> {
+        let descriptor = self.descriptor(name)?;
+        let codec = match descriptor.disposition.as_str() {
+            "activation_aware" => "activation-aware.f16".to_string(),
+            "pass_through" => {
+                let source_dtype = descriptor
+                    .dtype
+                    .as_deref()
+                    .or_else(|| self.source_dtypes.get(name).map(String::as_str))
+                    .ok_or_else(|| {
+                        Error::Gravity(format!(
+                            "activation-aware pass-through tensor {name:?} has no source dtype"
+                        ))
+                    })?;
+                match source_dtype {
+                    "BF16" | "BFLOAT16" => "native.bf16".to_string(),
+                    "F16" | "FLOAT16" => "native.f16".to_string(),
+                    "F32" | "FLOAT32" => "native.f32".to_string(),
+                    other => {
+                        return Err(Error::Gravity(format!(
+                        "activation-aware tensor {name:?} has unsupported source dtype {other:?}"
+                    )))
+                    }
+                }
+            }
+            other => {
+                return Err(Error::Gravity(format!(
+                    "activation-aware tensor {name:?} has unsupported disposition {other:?}"
+                )))
+            }
+        };
+        Ok((codec, descriptor.shape.clone()))
+    }
+
+    fn read_tensor(&self, name: &str) -> Result<Vec<u8>> {
+        let descriptor = self.descriptor(name)?;
+        let payload = self.span(descriptor.offset, descriptor.bytes, name)?;
+        match descriptor.disposition.as_str() {
+            "pass_through" => {
+                if &payload[..8] != AAP_PASS_MAGIC {
+                    return Err(Error::Gravity(format!(
+                        "activation-aware pass-through tensor {name:?} has bad magic {:?}",
+                        &payload[..8]
+                    )));
+                }
+                let ndim = u32::from_le_bytes(payload[8..12].try_into().unwrap()) as usize;
+                let rows = u32::from_le_bytes(payload[12..16].try_into().unwrap()) as u64;
+                let cols = u32::from_le_bytes(payload[16..20].try_into().unwrap()) as u64;
+                if ndim != descriptor.shape.len()
+                    || descriptor.shape.first().copied().unwrap_or(0) != rows
+                    || (ndim > 1 && descriptor.shape.get(1).copied().unwrap_or(0) != cols)
+                {
+                    return Err(Error::Gravity(format!(
+                        "activation-aware pass-through tensor {name:?} header shape disagrees with index {:?}",
+                        descriptor.shape
+                    )));
+                }
+                let (codec, _) = self.codec_and_shape(name)?;
+                let unit = if codec == "native.f32" { 4 } else { 2 };
+                let elements = descriptor.shape.iter().try_fold(1u64, |acc, &value| {
+                    acc.checked_mul(value)
+                        .ok_or_else(|| Error::Gravity(format!("{name}: element count overflow")))
+                })?;
+                let expected = elements
+                    .checked_mul(unit)
+                    .ok_or_else(|| Error::Gravity(format!("{name}: byte count overflow")))?;
+                let raw = &payload[ACTIVATION_AWARE_HEADER_LEN..];
+                if raw.len() as u64 != expected {
+                    return Err(Error::Gravity(format!(
+                        "activation-aware pass-through tensor {name:?} has {} raw bytes, expected {expected}",
+                        raw.len()
+                    )));
+                }
+                Ok(raw.to_vec())
+            }
+            "activation_aware" => {
+                let header = parse_activation_aware_header(payload)?;
+                if descriptor.shape != vec![header.rows as u64, header.cols as u64] {
+                    return Err(Error::Gravity(format!(
+                        "activation-aware tensor {name:?} payload shape [{}, {}] != index {:?}",
+                        header.rows, header.cols, descriptor.shape
+                    )));
+                }
+                if header.has_basis {
+                    return Ok(payload.to_vec());
+                }
+                let coefficient_values = match header.side {
+                    ActivationAwareSide::Input => {
+                        (header.rows as usize).checked_mul(header.rank as usize)
+                    }
+                    ActivationAwareSide::Output => {
+                        (header.rank as usize).checked_mul(header.cols as usize)
+                    }
+                }
+                .ok_or_else(|| Error::Gravity(format!("{name}: coefficient size overflow")))?;
+                let expected_coeff_bytes = ACTIVATION_AWARE_HEADER_LEN
+                    .checked_add(coefficient_values.saturating_mul(2))
+                    .ok_or_else(|| Error::Gravity(format!("{name}: payload size overflow")))?;
+                if payload.len() != expected_coeff_bytes {
+                    return Err(Error::Gravity(format!(
+                        "activation-aware tensor {name:?} coefficient payload {} bytes != {expected_coeff_bytes}",
+                        payload.len()
+                    )));
+                }
+                let basis_descriptor = self.bases.get(&header.basis_layer).ok_or_else(|| {
+                    Error::Gravity(format!(
+                        "activation-aware tensor {name:?} references absent basis layer {}",
+                        header.basis_layer
+                    ))
+                })?;
+                let basis_payload = self.span(
+                    basis_descriptor.offset,
+                    basis_descriptor.bytes,
+                    &format!("basis:{}", header.basis_layer),
+                )?;
+                if &basis_payload[..8] != AAP_BASIS_MAGIC {
+                    return Err(Error::Gravity(format!(
+                        "activation-aware basis layer {} has bad magic {:?}",
+                        header.basis_layer,
+                        &basis_payload[..8]
+                    )));
+                }
+                let hidden = u32::from_le_bytes(basis_payload[8..12].try_into().unwrap()) as usize;
+                let basis_rank =
+                    u32::from_le_bytes(basis_payload[12..16].try_into().unwrap()) as usize;
+                let expected_hidden = match header.side {
+                    ActivationAwareSide::Input => header.cols as usize,
+                    ActivationAwareSide::Output => header.rows as usize,
+                };
+                if hidden != expected_hidden
+                    || basis_rank != basis_descriptor.rank as usize
+                    || basis_rank < header.rank as usize
+                {
+                    return Err(Error::Gravity(format!(
+                        "activation-aware tensor {name:?} basis geometry hidden={hidden}, rank={basis_rank}; expected hidden={expected_hidden}, rank>={}",
+                        header.rank
+                    )));
+                }
+                let expected_basis_bytes = ACTIVATION_AWARE_HEADER_LEN
+                    .checked_add(hidden.saturating_mul(basis_rank).saturating_mul(2))
+                    .ok_or_else(|| Error::Gravity(format!("{name}: basis size overflow")))?;
+                if basis_payload.len() != expected_basis_bytes {
+                    return Err(Error::Gravity(format!(
+                        "activation-aware basis layer {} has {} bytes, expected {expected_basis_bytes}",
+                        header.basis_layer,
+                        basis_payload.len()
+                    )));
+                }
+                let rank = header.rank as usize;
+                let mut runtime_payload = Vec::with_capacity(
+                    payload.len() + hidden.saturating_mul(rank).saturating_mul(2),
+                );
+                runtime_payload.extend_from_slice(payload);
+                runtime_payload[24] = 1;
+                let basis_values = &basis_payload[ACTIVATION_AWARE_HEADER_LEN..];
+                if rank == basis_rank {
+                    runtime_payload.extend_from_slice(basis_values);
+                } else {
+                    for row in 0..hidden {
+                        let start = row * basis_rank * 2;
+                        runtime_payload.extend_from_slice(&basis_values[start..start + rank * 2]);
+                    }
+                }
+                Ok(runtime_payload)
+            }
+            other => Err(Error::Gravity(format!(
+                "activation-aware tensor {name:?} has unsupported disposition {other:?}"
+            ))),
+        }
+    }
+}
+
+enum LazyShard {
+    Gravity(GravityShard),
+    ActivationAware(ActivationAwareShard),
+}
+
+impl LazyShard {
+    fn codec_and_shape(&self, name: &str) -> Result<(String, Vec<u64>)> {
+        match self {
+            LazyShard::Gravity(shard) => {
+                let descriptor = shard
+                    .descriptor(name)
+                    .ok_or_else(|| Error::Gravity(format!("no such tensor {name:?}")))?;
+                Ok((descriptor.codec.clone(), descriptor.shape.clone()))
+            }
+            LazyShard::ActivationAware(shard) => shard.codec_and_shape(name),
+        }
+    }
+
+    fn read_tensor(&self, name: &str, verify_hash: bool) -> Result<Vec<u8>> {
+        match self {
+            LazyShard::Gravity(shard) => shard.read_tensor(name, verify_hash),
+            LazyShard::ActivationAware(shard) => shard.read_tensor(name),
+        }
+    }
+
+    fn read_tensor_prefix_unverified(&self, name: &str, bytes: usize) -> Result<Vec<u8>> {
+        match self {
+            LazyShard::Gravity(shard) => shard.read_tensor_prefix_unverified(name, bytes),
+            LazyShard::ActivationAware(_) => Err(Error::Gravity(format!(
+                "tensor {name}: gravity-pq prefix requested from activation-aware shard"
+            ))),
+        }
+    }
+}
+
 // ---------------------------------------------------------------------
 // `gravity-pq` tensor payload codec.
 // ---------------------------------------------------------------------
@@ -345,7 +765,11 @@ fn unpack_bits(stream: &[u8], count: usize, bits: u32) -> Result<Vec<u32>> {
     // off the top of the `nbits` live ones. `nbits` never exceeds
     // `bits + 7 <= 39`, so shifting `acc` left by 8 cannot lose a live bit,
     // and the mask discards the consumed ones still sitting above them.
-    let mask: u64 = if bits >= 32 { u32::MAX as u64 } else { (1u64 << bits) - 1 };
+    let mask: u64 = if bits >= 32 {
+        u32::MAX as u64
+    } else {
+        (1u64 << bits) - 1
+    };
     let mut out = Vec::with_capacity(count);
     let mut acc: u64 = 0;
     let mut nbits: u32 = 0;
@@ -405,7 +829,11 @@ fn index_at(stream: &[u8], i: usize, bits: u32) -> u32 {
         taken += 8;
         byte += 1;
     }
-    let mask: u64 = if bits >= 32 { u32::MAX as u64 } else { (1u64 << bits) - 1 };
+    let mask: u64 = if bits >= 32 {
+        u32::MAX as u64
+    } else {
+        (1u64 << bits) - 1
+    };
     ((acc >> (taken - skip - bits)) & mask) as u32
 }
 
@@ -610,8 +1038,7 @@ impl PqTensor {
                     let cb_row = cb_base + code * sub;
                     let x_base = c * d + x_off;
                     for j in 0..sub {
-                        y[r] += (self.codebooks[cb_row + j] as f64)
-                            * (x[x_base + j] as f64);
+                        y[r] += (self.codebooks[cb_row + j] as f64) * (x[x_base + j] as f64);
                     }
                 }
             }
@@ -666,12 +1093,239 @@ pub fn pq_matvec_f64_authority(payload: &[u8], x: &[f32]) -> Result<Vec<f64>> {
 }
 
 // ---------------------------------------------------------------------
+// `activation-aware.f16` tensor payload codec.
+// ---------------------------------------------------------------------
+
+const ACTIVATION_AWARE_MAGIC: &[u8; 8] = b"GLM52AAP";
+const ACTIVATION_AWARE_HEADER_LEN: usize = 64;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ActivationAwareSide {
+    Input,
+    Output,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct ActivationAwareHeader {
+    pub rows: u32,
+    pub cols: u32,
+    pub rank: u32,
+    pub basis_layer: u16,
+    pub side: ActivationAwareSide,
+    pub has_basis: bool,
+}
+
+pub fn parse_activation_aware_header(payload: &[u8]) -> Result<ActivationAwareHeader> {
+    if payload.len() < ACTIVATION_AWARE_HEADER_LEN {
+        return Err(Error::Gravity(format!(
+            "activation-aware payload too short: {} bytes, need {ACTIVATION_AWARE_HEADER_LEN}",
+            payload.len()
+        )));
+    }
+    if &payload[..8] != ACTIVATION_AWARE_MAGIC {
+        return Err(Error::Gravity(format!(
+            "bad activation-aware magic {:?}, expected {ACTIVATION_AWARE_MAGIC:?}",
+            &payload[..8]
+        )));
+    }
+    let rows = u32::from_le_bytes(payload[8..12].try_into().unwrap());
+    let cols = u32::from_le_bytes(payload[12..16].try_into().unwrap());
+    let rank = u32::from_le_bytes(payload[16..20].try_into().unwrap());
+    let basis_layer = u16::from_le_bytes(payload[20..22].try_into().unwrap());
+    let side_code = u16::from_le_bytes(payload[22..24].try_into().unwrap());
+    let side = match side_code {
+        1 => ActivationAwareSide::Input,
+        2 => ActivationAwareSide::Output,
+        other => {
+            return Err(Error::Gravity(format!(
+                "activation-aware payload has unsupported side code {other}"
+            )))
+        }
+    };
+    let has_basis = match payload[24] {
+        0 => false,
+        1 => true,
+        other => {
+            return Err(Error::Gravity(format!(
+                "activation-aware has_basis byte {other} is not 0/1"
+            )))
+        }
+    };
+    if rows == 0 || cols == 0 || rank == 0 {
+        return Err(Error::Gravity(format!(
+            "activation-aware geometry must be nonzero, got rows={rows}, cols={cols}, rank={rank}"
+        )));
+    }
+    let side_width = match side {
+        ActivationAwareSide::Input => cols,
+        ActivationAwareSide::Output => rows,
+    };
+    if rank > side_width {
+        return Err(Error::Gravity(format!(
+            "activation-aware rank {rank} exceeds basis width {side_width}"
+        )));
+    }
+    Ok(ActivationAwareHeader {
+        rows,
+        cols,
+        rank,
+        basis_layer,
+        side,
+        has_basis,
+    })
+}
+
+pub fn activation_aware_sections(payload: &[u8]) -> Result<(ActivationAwareHeader, &[u8], &[u8])> {
+    let header = parse_activation_aware_header(payload)?;
+    if !header.has_basis {
+        return Err(Error::Gravity(
+            "activation-aware runtime payload has no attached basis".into(),
+        ));
+    }
+    let rows = header.rows as usize;
+    let cols = header.cols as usize;
+    let rank = header.rank as usize;
+    let coefficient_values = match header.side {
+        ActivationAwareSide::Input => rows.checked_mul(rank),
+        ActivationAwareSide::Output => rank.checked_mul(cols),
+    }
+    .ok_or_else(|| Error::Gravity("activation-aware coefficient size overflow".into()))?;
+    let basis_values = match header.side {
+        ActivationAwareSide::Input => cols.checked_mul(rank),
+        ActivationAwareSide::Output => rows.checked_mul(rank),
+    }
+    .ok_or_else(|| Error::Gravity("activation-aware basis size overflow".into()))?;
+    let coefficient_end = ACTIVATION_AWARE_HEADER_LEN
+        .checked_add(coefficient_values.saturating_mul(2))
+        .ok_or_else(|| Error::Gravity("activation-aware payload size overflow".into()))?;
+    let expected = coefficient_end
+        .checked_add(basis_values.saturating_mul(2))
+        .ok_or_else(|| Error::Gravity("activation-aware payload size overflow".into()))?;
+    if payload.len() != expected {
+        return Err(Error::Gravity(format!(
+            "activation-aware payload {} bytes != exact expected {expected}",
+            payload.len()
+        )));
+    }
+    Ok((
+        header,
+        &payload[ACTIVATION_AWARE_HEADER_LEN..coefficient_end],
+        &payload[coefficient_end..],
+    ))
+}
+
+/// One activation-aware tensor decoded into f32 factors. The runtime executes
+/// the two factors directly and never materializes the dense matrix.
+pub struct ActivationAwareTensor {
+    pub header: ActivationAwareHeader,
+    coefficients: Vec<f32>,
+    basis: Vec<f32>,
+}
+
+impl ActivationAwareTensor {
+    pub fn from_payload(payload: &[u8]) -> Result<Self> {
+        let (header, coefficient_bytes, basis_bytes) = activation_aware_sections(payload)?;
+        let coefficients = coefficient_bytes
+            .chunks_exact(2)
+            .map(|c| f16::from_bits(u16::from_le_bytes([c[0], c[1]])).to_f32())
+            .collect();
+        let basis = basis_bytes
+            .chunks_exact(2)
+            .map(|c| f16::from_bits(u16::from_le_bytes([c[0], c[1]])).to_f32())
+            .collect();
+        Ok(Self {
+            header,
+            coefficients,
+            basis,
+        })
+    }
+
+    pub fn matvec(&self, x: &[f32]) -> Result<Vec<f32>> {
+        let rows = self.header.rows as usize;
+        let cols = self.header.cols as usize;
+        let rank = self.header.rank as usize;
+        if x.len() != cols {
+            return Err(Error::Gravity(format!(
+                "activation-aware matvec input {} != cols {cols}",
+                x.len()
+            )));
+        }
+        let mut latent = vec![0.0f32; rank];
+        let mut out = vec![0.0f32; rows];
+        match self.header.side {
+            ActivationAwareSide::Input => {
+                for (col, &value) in x.iter().enumerate() {
+                    let basis_row = &self.basis[col * rank..(col + 1) * rank];
+                    for k in 0..rank {
+                        latent[k] += basis_row[k] * value;
+                    }
+                }
+                for (row, target) in out.iter_mut().enumerate() {
+                    let coefficient_row = &self.coefficients[row * rank..(row + 1) * rank];
+                    *target = coefficient_row
+                        .iter()
+                        .zip(&latent)
+                        .map(|(a, b)| a * b)
+                        .sum();
+                }
+            }
+            ActivationAwareSide::Output => {
+                for (k, target) in latent.iter_mut().enumerate() {
+                    let coefficient_row = &self.coefficients[k * cols..(k + 1) * cols];
+                    *target = coefficient_row.iter().zip(x).map(|(a, b)| a * b).sum();
+                }
+                for (row, target) in out.iter_mut().enumerate() {
+                    let basis_row = &self.basis[row * rank..(row + 1) * rank];
+                    *target = basis_row.iter().zip(&latent).map(|(a, b)| a * b).sum();
+                }
+            }
+        }
+        Ok(out)
+    }
+
+    pub fn row(&self, index: usize) -> Result<Vec<f32>> {
+        let rows = self.header.rows as usize;
+        let cols = self.header.cols as usize;
+        let rank = self.header.rank as usize;
+        if index >= rows {
+            return Err(Error::Gravity(format!(
+                "activation-aware row {index} out of range {rows}"
+            )));
+        }
+        let mut out = vec![0.0f32; cols];
+        match self.header.side {
+            ActivationAwareSide::Input => {
+                let coefficient_row = &self.coefficients[index * rank..(index + 1) * rank];
+                for (col, target) in out.iter_mut().enumerate() {
+                    let basis_row = &self.basis[col * rank..(col + 1) * rank];
+                    *target = coefficient_row
+                        .iter()
+                        .zip(basis_row)
+                        .map(|(a, b)| a * b)
+                        .sum();
+                }
+            }
+            ActivationAwareSide::Output => {
+                let basis_row = &self.basis[index * rank..(index + 1) * rank];
+                for col in 0..cols {
+                    for (k, &basis_value) in basis_row.iter().enumerate() {
+                        out[col] += basis_value * self.coefficients[k * cols + col];
+                    }
+                }
+            }
+        }
+        Ok(out)
+    }
+}
+
+// ---------------------------------------------------------------------
 // Architecture-independent weight access.
 // ---------------------------------------------------------------------
 
 /// One tensor as a forward pass consumes it.
 pub enum Tensor {
     Pq(PqTensor),
+    ActivationAware(ActivationAwareTensor),
     Dense(Vec<f32>),
 }
 
@@ -778,9 +1432,7 @@ impl NativeBf16Accumulation {
         match self {
             Self::Sequential => "gemv_native_bf16_seq",
             Self::Neumaier => "gemv_native_bf16_neumaier",
-            Self::NeumaierCompensatedProduct => {
-                "gemv_native_bf16_neumaier_compensated_product"
-            }
+            Self::NeumaierCompensatedProduct => "gemv_native_bf16_neumaier_compensated_product",
         }
     }
 }
@@ -1063,12 +1715,21 @@ enum Source {
     /// `dense`/`row` delegation), and an uncontended lock on a
     /// single-threaded CPU forward costs nothing worth avoiding.
     Lazy {
-        shard_dir: std::path::PathBuf,
+        shard_dir: PathBuf,
         tensor_shard: HashMap<String, String>,
-        open_shards: std::sync::Mutex<HashMap<String, GravityShard>>,
+        open_shards: std::sync::Mutex<HashMap<String, LazyShard>>,
         verify_hash: bool,
+        format: LazyFormat,
+        source_dtypes: HashMap<String, String>,
+        shard_sha256: HashMap<String, String>,
         dense_memo: std::sync::Mutex<NativeDenseMemo>,
     },
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum LazyFormat {
+    Gravity,
+    ActivationAware,
 }
 
 /// Every tensor of a `.gravity` model, addressed by name.
@@ -1098,6 +1759,8 @@ impl GravityWeights {
             let blob = shard.read_tensor(name, verify_hash)?;
             let t = if codec == "gravity-pq" {
                 Tensor::Pq(PqTensor::from_payload(&blob)?)
+            } else if codec == "activation-aware.f16" {
+                Tensor::ActivationAware(ActivationAwareTensor::from_payload(&blob)?)
             } else if codec.starts_with("native.") {
                 Tensor::Dense(widen_native(&codec, &blob)?)
             } else {
@@ -1117,7 +1780,8 @@ impl GravityWeights {
     /// tensor without opening any shard or decoding any payload yet. See
     /// [`Source::Lazy`] for why this stays lazy.
     ///
-    /// Prefers `dir/model.gravity.index.json` — the assembler's own manifest,
+    /// Prefers exactly one assembled model index: `model.gravity.index.json`
+    /// or `model.activation_aware.index.json`.
     /// written once when it graded this exact directory's coverage complete
     /// against the official tensor count. That manifest carries the
     /// synthesized full architecture (twenty fields) rather than the five a
@@ -1126,8 +1790,30 @@ impl GravityWeights {
     /// scanning shard headers directly for a `model-*.gravity` directory that
     /// was never assembled — self-sufficient, just slower to open.
     pub fn open_dir(dir: &Path, verify_hash: bool) -> Result<GravityWeights> {
-        let index_path = dir.join("model.gravity.index.json");
-        if index_path.is_file() {
+        let gravity_index_path = dir.join("model.gravity.index.json");
+        let activation_index_path = dir.join("model.activation_aware.index.json");
+        if gravity_index_path.is_file() && activation_index_path.is_file() {
+            return Err(Error::Gravity(format!(
+                "{}: both {} and {} exist; artifact type is ambiguous",
+                dir.display(),
+                gravity_index_path
+                    .file_name()
+                    .unwrap_or_default()
+                    .to_string_lossy(),
+                activation_index_path
+                    .file_name()
+                    .unwrap_or_default()
+                    .to_string_lossy()
+            )));
+        }
+        let index_choice = if gravity_index_path.is_file() {
+            Some((gravity_index_path, LazyFormat::Gravity))
+        } else if activation_index_path.is_file() {
+            Some((activation_index_path, LazyFormat::ActivationAware))
+        } else {
+            None
+        };
+        if let Some((index_path, format)) = index_choice {
             let manifest: serde_json::Value = serde_json::from_slice(
                 &std::fs::read(&index_path)
                     .map_err(|e| Error::Gravity(format!("{}: {e}", index_path.display())))?,
@@ -1136,12 +1822,66 @@ impl GravityWeights {
             let tensor_shard: HashMap<String, String> = manifest
                 .get("weight_map")
                 .and_then(|v| v.as_object())
-                .ok_or_else(|| {
-                    Error::Gravity(format!("{}: no weight_map", index_path.display()))
-                })?
+                .ok_or_else(|| Error::Gravity(format!("{}: no weight_map", index_path.display())))?
                 .iter()
                 .filter_map(|(k, v)| Some((k.clone(), v.as_str()?.to_string())))
                 .collect();
+            if tensor_shard.is_empty() {
+                return Err(Error::Gravity(format!(
+                    "{}: weight_map is empty",
+                    index_path.display()
+                )));
+            }
+            let source_dtypes: HashMap<String, String> = manifest
+                .get("tensor_dtypes")
+                .and_then(|value| value.as_object())
+                .map(|object| {
+                    object
+                        .iter()
+                        .filter_map(|(name, value)| {
+                            Some((name.clone(), value.as_str()?.to_string()))
+                        })
+                        .collect()
+                })
+                .unwrap_or_default();
+            let shard_sha256: HashMap<String, String> = manifest
+                .get("shard_sha256")
+                .and_then(|value| value.as_object())
+                .map(|object| {
+                    object
+                        .iter()
+                        .filter_map(|(name, value)| {
+                            Some((name.clone(), value.as_str()?.to_string()))
+                        })
+                        .collect()
+                })
+                .unwrap_or_default();
+            if format == LazyFormat::ActivationAware {
+                let schema = manifest
+                    .get("schema")
+                    .and_then(|value| value.as_str())
+                    .unwrap_or("");
+                if schema != "hawking.activation_aware.model_index.v1" {
+                    return Err(Error::Gravity(format!(
+                        "{}: activation-aware model index schema {schema:?} is unsupported",
+                        index_path.display()
+                    )));
+                }
+                if source_dtypes.len() != tensor_shard.len() {
+                    return Err(Error::Gravity(format!(
+                        "{}: tensor_dtypes has {} entries for {} weights",
+                        index_path.display(),
+                        source_dtypes.len(),
+                        tensor_shard.len()
+                    )));
+                }
+                if verify_hash && shard_sha256.is_empty() {
+                    return Err(Error::Gravity(format!(
+                        "{}: verified activation-aware open requires shard_sha256",
+                        index_path.display()
+                    )));
+                }
+            }
             let header = manifest
                 .get("architecture")
                 .map(|a| serde_json::json!({"architecture": a}))
@@ -1154,6 +1894,9 @@ impl GravityWeights {
                     tensor_shard,
                     open_shards: std::sync::Mutex::new(HashMap::new()),
                     verify_hash,
+                    format,
+                    source_dtypes,
+                    shard_sha256,
                     dense_memo: std::sync::Mutex::new(NativeDenseMemo::new(
                         DEFAULT_NATIVE_DENSE_MEMO_BUDGET_BYTES,
                     )),
@@ -1196,6 +1939,9 @@ impl GravityWeights {
                 tensor_shard,
                 open_shards: std::sync::Mutex::new(HashMap::new()),
                 verify_hash,
+                format: LazyFormat::Gravity,
+                source_dtypes: HashMap::new(),
+                shard_sha256: HashMap::new(),
                 dense_memo: std::sync::Mutex::new(NativeDenseMemo::new(
                     DEFAULT_NATIVE_DENSE_MEMO_BUDGET_BYTES,
                 )),
@@ -1236,10 +1982,9 @@ impl GravityWeights {
                 verified_tensors: 0,
                 evictions: 0,
             },
-            Source::Lazy { dense_memo, .. } => dense_memo
-                .lock()
-                .expect("gravity dense-memo mutex")
-                .stats(),
+            Source::Lazy { dense_memo, .. } => {
+                dense_memo.lock().expect("gravity dense-memo mutex").stats()
+            }
         }
     }
 
@@ -1267,16 +2012,25 @@ impl GravityWeights {
                 tensor_shard,
                 open_shards,
                 verify_hash,
+                format,
+                source_dtypes,
+                shard_sha256,
                 ..
-            } => Self::with_lazy_shard(shard_dir, tensor_shard, open_shards, name, |shard| {
-                let d = shard
-                    .descriptor(name)
-                    .expect("name came from this shard's own index");
-                let codec = d.codec.clone();
-                let shape = d.shape.clone();
-                let blob = shard.read_tensor(name, *verify_hash)?;
-                Ok((codec, blob, shape))
-            }),
+            } => Self::with_lazy_shard(
+                shard_dir,
+                tensor_shard,
+                open_shards,
+                *format,
+                source_dtypes,
+                shard_sha256,
+                *verify_hash,
+                name,
+                |shard| {
+                    let (codec, shape) = shard.codec_and_shape(name)?;
+                    let blob = shard.read_tensor(name, *verify_hash)?;
+                    Ok((codec, blob, shape))
+                },
+            ),
         }
     }
 
@@ -1298,6 +2052,9 @@ impl GravityWeights {
                     tensor.header,
                     vec![tensor.header.rows as u64, tensor.header.cols as u64],
                 )),
+                Some(Tensor::ActivationAware(_)) => Err(Error::Gravity(format!(
+                    "tensor {name}: compact admission requires gravity-pq, found activation-aware tensor"
+                ))),
                 Some(Tensor::Dense(_)) => Err(Error::Gravity(format!(
                     "tensor {name}: compact admission requires gravity-pq, found native tensor"
                 ))),
@@ -1307,19 +2064,30 @@ impl GravityWeights {
                 shard_dir,
                 tensor_shard,
                 open_shards,
+                format,
+                source_dtypes,
+                shard_sha256,
+                verify_hash,
                 ..
-            } => Self::with_lazy_shard(shard_dir, tensor_shard, open_shards, name, |shard| {
-                let d = shard
-                    .descriptor(name)
-                    .expect("name came from this shard's own index");
-                if d.codec != "gravity-pq" {
+            } => Self::with_lazy_shard(
+                shard_dir,
+                tensor_shard,
+                open_shards,
+                *format,
+                source_dtypes,
+                shard_sha256,
+                *verify_hash,
+                name,
+                |shard| {
+                let (codec, shape) = shard.codec_and_shape(name)?;
+                if codec != "gravity-pq" {
                     return Err(Error::Gravity(format!(
                         "tensor {name}: compact admission requires gravity-pq, found {:?}",
-                        d.codec
+                        codec
                     )));
                 }
                 let prefix = shard.read_tensor_prefix_unverified(name, PQ_HEADER_LEN)?;
-                Ok((parse_pq_header(&prefix)?, d.shape.clone()))
+                Ok((parse_pq_header(&prefix)?, shape))
             }),
         }
     }
@@ -1335,9 +2103,13 @@ impl GravityWeights {
     fn with_lazy_shard<T>(
         shard_dir: &Path,
         tensor_shard: &HashMap<String, String>,
-        open_shards: &std::sync::Mutex<HashMap<String, GravityShard>>,
+        open_shards: &std::sync::Mutex<HashMap<String, LazyShard>>,
+        format: LazyFormat,
+        source_dtypes: &HashMap<String, String>,
+        shard_sha256: &HashMap<String, String>,
+        verify_hash: bool,
         name: &str,
-        f: impl FnOnce(&GravityShard) -> Result<T>,
+        f: impl FnOnce(&LazyShard) -> Result<T>,
     ) -> Result<T> {
         let filename = tensor_shard
             .get(name)
@@ -1347,7 +2119,18 @@ impl GravityWeights {
             .expect("gravity lazy-shard mutex")
             .contains_key(filename)
         {
-            let shard = GravityShard::open(&shard_dir.join(filename))?;
+            let path = shard_dir.join(filename);
+            let shard = match format {
+                LazyFormat::Gravity => LazyShard::Gravity(GravityShard::open(&path)?),
+                LazyFormat::ActivationAware => {
+                    LazyShard::ActivationAware(ActivationAwareShard::open(
+                        &path,
+                        source_dtypes,
+                        shard_sha256.get(filename).map(String::as_str),
+                        verify_hash,
+                    )?)
+                }
+            };
             open_shards
                 .lock()
                 .expect("gravity lazy-shard mutex")
@@ -1381,6 +2164,9 @@ impl GravityWeights {
                 Some(Tensor::Pq(_)) => Err(Error::Gravity(format!(
                     "tensor {name:?} is packed; expected a natively-carried dense tensor"
                 ))),
+                Some(Tensor::ActivationAware(_)) => Err(Error::Gravity(format!(
+                    "tensor {name:?} is activation-aware; expected a natively-carried dense tensor"
+                ))),
                 None => Err(Error::Gravity(format!("artifact has no tensor {name:?}"))),
             },
             Source::Lazy {
@@ -1389,6 +2175,9 @@ impl GravityWeights {
                 open_shards,
                 verify_hash,
                 dense_memo,
+                format,
+                source_dtypes,
+                shard_sha256,
             } => {
                 {
                     let mut memo = dense_memo.lock().expect("gravity dense-memo mutex");
@@ -1401,13 +2190,17 @@ impl GravityWeights {
                     let memo = dense_memo.lock().expect("gravity dense-memo mutex");
                     *verify_hash && !memo.is_verified(name)
                 };
-                let (codec, blob) =
-                    Self::with_lazy_shard(shard_dir, tensor_shard, open_shards, name, |shard| {
-                        let codec = shard
-                            .descriptor(name)
-                            .expect("name came from this shard's own index")
-                            .codec
-                            .clone();
+                let (codec, blob) = Self::with_lazy_shard(
+                    shard_dir,
+                    tensor_shard,
+                    open_shards,
+                    *format,
+                    source_dtypes,
+                    shard_sha256,
+                    *verify_hash,
+                    name,
+                    |shard| {
+                        let (codec, _) = shard.codec_and_shape(name)?;
                         if !codec.starts_with("native.") {
                             return Err(Error::Gravity(format!(
                                 "tensor {name:?} is packed; expected a natively-carried dense tensor"
@@ -1415,7 +2208,8 @@ impl GravityWeights {
                         }
                         let blob = shard.read_tensor(name, need_verify)?;
                         Ok((codec, blob))
-                    })?;
+                    },
+                )?;
                 let v = {
                     let _decode = cost_ledger::Scope::new(Bucket::PackedIndexDecode);
                     widen_native(&codec, &blob)?
@@ -1445,6 +2239,7 @@ impl GravityWeights {
         match &self.source {
             Source::Eager(tensors) => match tensors.get(name) {
                 Some(Tensor::Pq(t)) => t.matvec(x),
+                Some(Tensor::ActivationAware(t)) => t.matvec(x),
                 Some(Tensor::Dense(w)) => matvec_dense(w, x, name),
                 None => Err(Error::Gravity(format!("artifact has no tensor {name:?}"))),
             },
@@ -1453,37 +2248,53 @@ impl GravityWeights {
                 tensor_shard,
                 open_shards,
                 verify_hash,
+                format,
+                source_dtypes,
+                shard_sha256,
                 ..
-            } => Self::with_lazy_shard(shard_dir, tensor_shard, open_shards, name, |shard| {
-                let codec = shard
-                    .descriptor(name)
-                    .expect("name came from this shard's own index")
-                    .codec
-                    .clone();
-                let blob = shard.read_tensor(name, *verify_hash)?;
-                if codec == "gravity-pq" {
-                    let t = {
-                        let _decode = cost_ledger::Scope::new(Bucket::PackedIndexDecode);
-                        PqTensor::from_payload(&blob)?
-                    };
-                    // Exact payload extent (descriptor.bytes); not a page, not
-                    // a whole shard. mmap may still fault full pages into RSS
-                    // — that shows up in page_faults_*, not here.
-                    cost_ledger::record_active_bytes_for(name, blob.len() as u64);
-                    t.matvec(x)
-                } else if codec.starts_with("native.") {
-                    let w = {
-                        let _decode = cost_ledger::Scope::new(Bucket::PackedIndexDecode);
-                        widen_native(&codec, &blob)?
-                    };
-                    cost_ledger::record_active_bytes_for(name, (w.len() * 4) as u64);
-                    matvec_dense(&w, x, name)
-                } else {
-                    Err(Error::Gravity(format!(
-                        "tensor {name}: unsupported codec {codec:?}"
-                    )))
-                }
-            }),
+            } => Self::with_lazy_shard(
+                shard_dir,
+                tensor_shard,
+                open_shards,
+                *format,
+                source_dtypes,
+                shard_sha256,
+                *verify_hash,
+                name,
+                |shard| {
+                    let (codec, _) = shard.codec_and_shape(name)?;
+                    let blob = shard.read_tensor(name, *verify_hash)?;
+                    if codec == "gravity-pq" {
+                        let t = {
+                            let _decode = cost_ledger::Scope::new(Bucket::PackedIndexDecode);
+                            PqTensor::from_payload(&blob)?
+                        };
+                        // Exact payload extent (descriptor.bytes); not a page, not
+                        // a whole shard. mmap may still fault full pages into RSS
+                        // — that shows up in page_faults_*, not here.
+                        cost_ledger::record_active_bytes_for(name, blob.len() as u64);
+                        t.matvec(x)
+                    } else if codec == "activation-aware.f16" {
+                        let tensor = {
+                            let _decode = cost_ledger::Scope::new(Bucket::PackedIndexDecode);
+                            ActivationAwareTensor::from_payload(&blob)?
+                        };
+                        cost_ledger::record_active_bytes_for(name, blob.len() as u64);
+                        tensor.matvec(x)
+                    } else if codec.starts_with("native.") {
+                        let w = {
+                            let _decode = cost_ledger::Scope::new(Bucket::PackedIndexDecode);
+                            widen_native(&codec, &blob)?
+                        };
+                        cost_ledger::record_active_bytes_for(name, (w.len() * 4) as u64);
+                        matvec_dense(&w, x, name)
+                    } else {
+                        Err(Error::Gravity(format!(
+                            "tensor {name}: unsupported codec {codec:?}"
+                        )))
+                    }
+                },
+            ),
         }
     }
 
@@ -1503,6 +2314,7 @@ impl GravityWeights {
         match &self.source {
             Source::Eager(tensors) => match tensors.get(name) {
                 Some(Tensor::Pq(t)) => t.row(index_),
+                Some(Tensor::ActivationAware(t)) => t.row(index_),
                 Some(Tensor::Dense(w)) => row_dense(w, index_, cols, name),
                 None => Err(Error::Gravity(format!("artifact has no tensor {name:?}"))),
             },
@@ -1512,6 +2324,9 @@ impl GravityWeights {
                 open_shards,
                 verify_hash,
                 dense_memo,
+                format,
+                source_dtypes,
+                shard_sha256,
             } => {
                 {
                     let mut memo = dense_memo.lock().expect("gravity dense-memo mutex");
@@ -1523,16 +2338,21 @@ impl GravityWeights {
                     let memo = dense_memo.lock().expect("gravity dense-memo mutex");
                     *verify_hash && !memo.is_verified(name)
                 };
-                let (codec, blob) =
-                    Self::with_lazy_shard(shard_dir, tensor_shard, open_shards, name, |shard| {
-                        let codec = shard
-                            .descriptor(name)
-                            .expect("name came from this shard's own index")
-                            .codec
-                            .clone();
+                let (codec, blob) = Self::with_lazy_shard(
+                    shard_dir,
+                    tensor_shard,
+                    open_shards,
+                    *format,
+                    source_dtypes,
+                    shard_sha256,
+                    *verify_hash,
+                    name,
+                    |shard| {
+                        let (codec, _) = shard.codec_and_shape(name)?;
                         let blob = shard.read_tensor(name, need_verify)?;
                         Ok((codec, blob))
-                    })?;
+                    },
+                )?;
                 {
                     let mut memo = dense_memo.lock().expect("gravity dense-memo mutex");
                     if need_verify {
@@ -1547,6 +2367,9 @@ impl GravityWeights {
                     // the whole decoded matrix is worse.
                     let _decode = cost_ledger::Scope::new(Bucket::PackedIndexDecode);
                     pq_row(&blob, index_)
+                } else if codec == "activation-aware.f16" {
+                    let _decode = cost_ledger::Scope::new(Bucket::PackedIndexDecode);
+                    ActivationAwareTensor::from_payload(&blob)?.row(index_)
                 } else if codec.starts_with("native.") {
                     let w = {
                         let _decode = cost_ledger::Scope::new(Bucket::PackedIndexDecode);
@@ -1899,9 +2722,7 @@ impl PqMetalMatrix {
             .split_count()
             .map(|splits| {
                 ctx.new_buffer_checked(
-                    self.header.rows as usize
-                        * splits as usize
-                        * std::mem::size_of::<f32>(),
+                    self.header.rows as usize * splits as usize * std::mem::size_of::<f32>(),
                 )
             })
             .transpose()?;
@@ -2055,13 +2876,185 @@ mod tests {
         assert!(unpack_bits(&packed, 8, 7).is_err());
     }
 
+    fn activation_payload(
+        rows: u32,
+        cols: u32,
+        rank: u32,
+        side_code: u16,
+        coefficients: &[f32],
+        basis: Option<&[f32]>,
+    ) -> Vec<u8> {
+        let mut payload = Vec::new();
+        payload.extend_from_slice(ACTIVATION_AWARE_MAGIC);
+        payload.extend_from_slice(&rows.to_le_bytes());
+        payload.extend_from_slice(&cols.to_le_bytes());
+        payload.extend_from_slice(&rank.to_le_bytes());
+        payload.extend_from_slice(&7u16.to_le_bytes());
+        payload.extend_from_slice(&side_code.to_le_bytes());
+        payload.push(u8::from(basis.is_some()));
+        payload.resize(ACTIVATION_AWARE_HEADER_LEN, 0);
+        for &value in coefficients {
+            payload.extend_from_slice(&f16::from_f32(value).to_bits().to_le_bytes());
+        }
+        if let Some(values) = basis {
+            for &value in values {
+                payload.extend_from_slice(&f16::from_f32(value).to_bits().to_le_bytes());
+            }
+        }
+        payload
+    }
+
+    #[test]
+    fn activation_aware_factorized_input_and_output_match_dense_authority() {
+        let basis = [1.0, 0.0, 0.0, 1.0, 0.5, -0.25]; // 3x2 row-major
+        let input_left = [2.0, -1.0, 0.5, 3.0]; // 2x2
+        let input = ActivationAwareTensor::from_payload(&activation_payload(
+            2,
+            3,
+            2,
+            1,
+            &input_left,
+            Some(&basis),
+        ))
+        .expect("input-side payload");
+        let x_input = [0.25, 2.0, -1.0];
+        let got_input = input.matvec(&x_input).expect("input matvec");
+        // Dense W = L @ B.T = [[2,-1,1.25],[.5,3,-.5]].
+        let want_input = [2.0 * 0.25 + -2.0 + -1.25, 0.5 * 0.25 + 6.0 + 0.5];
+        assert_eq!(got_input, want_input);
+        assert_eq!(input.row(1).unwrap(), vec![0.5, 3.0, -0.5]);
+
+        let output_left = [1.0, 2.0, -0.5, 4.0]; // 2x2
+        let output = ActivationAwareTensor::from_payload(&activation_payload(
+            3,
+            2,
+            2,
+            2,
+            &output_left,
+            Some(&basis),
+        ))
+        .expect("output-side payload");
+        let x_output = [1.5, -0.75];
+        let got_output = output.matvec(&x_output).expect("output matvec");
+        // Dense W = B @ L = [[1,2],[-.5,4],[.625,0]].
+        let want_output = [0.0, -3.75, 0.9375];
+        assert_eq!(got_output, want_output);
+        assert_eq!(output.row(2).unwrap(), vec![0.625, 0.0]);
+    }
+
+    fn write_activation_aware_lazy_fixture(dir: &Path) -> (&'static str, &'static str) {
+        let weight_name = "model.layers.0.input.weight";
+        let norm_name = "model.layers.0.norm.weight";
+        let shard_name = "model-00001-of-00001.aap";
+        let basis = [1.0, 0.0, 0.0, 1.0, 0.5, -0.25];
+        let mut basis_payload = Vec::new();
+        basis_payload.extend_from_slice(AAP_BASIS_MAGIC);
+        basis_payload.extend_from_slice(&3u32.to_le_bytes());
+        basis_payload.extend_from_slice(&2u32.to_le_bytes());
+        basis_payload.resize(ACTIVATION_AWARE_HEADER_LEN, 0);
+        for &value in &basis {
+            basis_payload.extend_from_slice(&f16::from_f32(value).to_bits().to_le_bytes());
+        }
+        let weight_payload = activation_payload(2, 3, 2, 1, &[2.0, -1.0, 0.5, 3.0], None);
+        let mut norm_payload = Vec::new();
+        norm_payload.extend_from_slice(AAP_PASS_MAGIC);
+        norm_payload.extend_from_slice(&1u32.to_le_bytes());
+        norm_payload.extend_from_slice(&3u32.to_le_bytes());
+        norm_payload.extend_from_slice(&0u32.to_le_bytes());
+        norm_payload.resize(ACTIVATION_AWARE_HEADER_LEN, 0);
+        for value in [1.5f32, -2.0, 0.25] {
+            let bf16 = (value.to_bits() >> 16) as u16;
+            norm_payload.extend_from_slice(&bf16.to_le_bytes());
+        }
+        let weight_offset = basis_payload.len() as u64;
+        let norm_offset = weight_offset + weight_payload.len() as u64;
+        let index = serde_json::json!({
+            "schema": AAP_SCHEMA,
+            "shard": "model-00001-of-00001.safetensors",
+            "shared_bases": true,
+            "bases": [{
+                "basis_layer": 7,
+                "rank": 2,
+                "offset": 0,
+                "bytes": basis_payload.len(),
+            }],
+            "tensors": [{
+                "name": weight_name,
+                "disposition": "activation_aware",
+                "offset": weight_offset,
+                "bytes": weight_payload.len(),
+                "shape": [2, 3],
+            }, {
+                "name": norm_name,
+                "disposition": "pass_through",
+                "offset": norm_offset,
+                "bytes": norm_payload.len(),
+                "shape": [3],
+            }],
+        });
+        let index_bytes = serde_json::to_vec(&index).unwrap();
+        let mut shard_bytes = Vec::new();
+        shard_bytes.extend_from_slice(&(index_bytes.len() as u64).to_le_bytes());
+        shard_bytes.extend_from_slice(&index_bytes);
+        shard_bytes.extend_from_slice(&basis_payload);
+        shard_bytes.extend_from_slice(&weight_payload);
+        shard_bytes.extend_from_slice(&norm_payload);
+        std::fs::write(dir.join(shard_name), &shard_bytes).unwrap();
+        let mut digest = Sha256::new();
+        digest.update(&shard_bytes);
+        let shard_hash: String = digest
+            .finalize()
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect();
+        let manifest = serde_json::json!({
+            "schema": "hawking.activation_aware.model_index.v1",
+            "architecture": {"hidden_size": 3},
+            "weight_map": {
+                (weight_name): shard_name,
+                (norm_name): shard_name,
+            },
+            "tensor_dtypes": {
+                (weight_name): "BF16",
+                (norm_name): "BF16",
+            },
+            "shard_sha256": {(shard_name): shard_hash},
+        });
+        std::fs::write(
+            dir.join("model.activation_aware.index.json"),
+            serde_json::to_vec(&manifest).unwrap(),
+        )
+        .unwrap();
+        (weight_name, norm_name)
+    }
+
+    #[test]
+    fn activation_aware_open_dir_attaches_shared_basis_and_decodes_pass_through() {
+        let dir = tempfile::tempdir().expect("tempdir");
+        let (weight_name, norm_name) = write_activation_aware_lazy_fixture(dir.path());
+        let weights = GravityWeights::open_dir(dir.path(), true).expect("verified open_dir");
+        assert_eq!(
+            weights.matvec(weight_name, &[0.25, 2.0, -1.0]).unwrap(),
+            vec![-2.75, 6.625]
+        );
+        assert_eq!(
+            weights.row(weight_name, 1, 3).unwrap(),
+            vec![0.5, 3.0, -0.5]
+        );
+        assert_eq!(weights.dense(norm_name).unwrap(), vec![1.5, -2.0, 0.25]);
+        let (codec, payload, shape) = weights
+            .raw_payload_with_shape(weight_name)
+            .expect("raw activation-aware payload");
+        assert_eq!(codec, "activation-aware.f16");
+        assert_eq!(shape, vec![2, 3]);
+        let header = parse_activation_aware_header(&payload).unwrap();
+        assert!(header.has_basis, "shared basis was not attached");
+    }
+
     /// Minimal multi-shard Lazy fixture: one `model-*.gravity` with native.f32
     /// tensors so `open_dir` takes the Lazy path (Eager `open` would decode
     /// once at load and never exercise the memo).
-    fn write_lazy_native_fixture(
-        dir: &Path,
-        tensors: &[(&str, &[f32])],
-    ) -> std::path::PathBuf {
+    fn write_lazy_native_fixture(dir: &Path, tensors: &[(&str, &[f32])]) -> std::path::PathBuf {
         let mut body = Vec::new();
         let mut descs = Vec::new();
         for &(name, vals) in tensors {
@@ -2243,10 +3236,7 @@ mod tests {
         ];
         write_lazy_native_fixture(
             dir.path(),
-            &[
-                ("a.weight", &vals),
-                ("b.bias", &[0.5, -0.25, 2.0]),
-            ],
+            &[("a.weight", &vals), ("b.bias", &[0.5, -0.25, 2.0])],
         );
 
         let weights = GravityWeights::open_dir(dir.path(), true).expect("open_dir");
@@ -2316,10 +3306,7 @@ mod tests {
 
         let weights = GravityWeights::open_dir(dir.path(), true).expect("open_dir");
         for _ in 0..5 {
-            assert_eq!(
-                weights.dense("big.weight").expect("dense"),
-                vals
-            );
+            assert_eq!(weights.dense("big.weight").expect("dense"), vals);
         }
         let stats = weights.dense_memo_stats();
         assert_eq!(stats.verifications, 1);

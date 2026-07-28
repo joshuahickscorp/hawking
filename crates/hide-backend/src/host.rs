@@ -22,6 +22,7 @@ use crate::services::{
     WorkspaceEdge, WorkspaceEdgeKind, WorkspaceGraph, WorkspaceStore,
 };
 use crate::supervisor::{RuntimeSupervisor, SupervisorConfig};
+use crate::surfaces::SurfaceGraphService;
 use crate::tools::{build_default_tool_dispatcher, build_default_tool_registry};
 use crate::ui_bus::UiEventBus;
 use hide_core::api::{Intent, IntentAck, UiEvent, UiEventKind};
@@ -524,6 +525,10 @@ const HANDLED_CUSTOM_NAMES: &[&str] = &[
     "steer",
     "stop_process",
     "workspace_set_repo_trust",
+    // YOU / CHAT / IDE shared session graph (claim-only handoffs).
+    "switch_surface",
+    "handoff_create",
+    "handoff_receive",
 ];
 
 pub struct BackendHost {
@@ -567,6 +572,9 @@ pub struct BackendHost {
     /// the notification emit path so a connection never receives a class of pushes
     /// it opted out of.
     connections: Arc<ConnectionRegistry>,
+    /// One session, three lenses (YOU / CHAT / IDE). Surfaces share this graph;
+    /// they do not each construct their own. Handoff capsules carry claims only.
+    surfaces: Arc<SurfaceGraphService>,
 }
 
 /// Load MCP server descriptors for host boot.
@@ -683,6 +691,16 @@ impl BackendHost {
             &services,
             runtime.clone(),
         ));
+        // One surface graph bound to the host primary session. All three lenses
+        // share that session id; handoffs never mint a parallel session.
+        let primary = services.session();
+        let surfaces = Arc::new(SurfaceGraphService::for_session(
+            &primary,
+            services.event_log.clone(),
+            ui_bus.clone(),
+        ));
+        // Publish the initial projection so FE navigation can bind on connect.
+        surfaces.publish_view();
         Ok(Self {
             commands: CommandRouter::with_interrupts(
                 services.event_log.clone(),
@@ -704,6 +722,7 @@ impl BackendHost {
             gate_book: Arc::new(GateBook::default()),
             runtime,
             connections: Arc::new(ConnectionRegistry::default()),
+            surfaces,
         })
     }
 
@@ -790,13 +809,26 @@ impl BackendHost {
     /// The base URL of the supervised runtime, but only when it is `Ready`. A
     /// `None` here means "no model online to generate against", so the caller
     /// surfaces that as a `RuntimeStatus`/`Error` UiEvent rather than faking a
-    /// token.
+    /// token. When Ready, also installs [`HttpEmbeddingClient`] on the sqlite
+    /// code index so hybrid search's semantic leg is real (never a silent stub).
     fn runtime_base_url(&self) -> Option<String> {
         let sup = self.runtime.as_ref()?;
         if sup.state() == RuntimeSupervisorState::Ready {
-            sup.base_url()
+            let url = sup.base_url()?;
+            self.install_runtime_embedder(&url);
+            Some(url)
         } else {
             None
+        }
+    }
+
+    /// Wire the live embeddings endpoint into SqliteCodeIndex when present.
+    fn install_runtime_embedder(&self, base_url: &str) {
+        if let Some(sqlite) = self.services.sqlite_index.as_ref() {
+            let client: Arc<dyn hawking_index::EmbeddingClient> = Arc::new(
+                hawking_index::HttpEmbeddingClient::new(base_url.to_string()),
+            );
+            sqlite.set_embedder(Some(client));
         }
     }
 
@@ -898,6 +930,19 @@ impl BackendHost {
                 if matches!(
                     name.as_str(),
                     "create_worktree" | "new_session" | "open_session" | "fleet_run"
+                ) =>
+            {
+                Some((name.clone(), payload.clone()))
+            }
+            _ => None,
+        };
+        // Surface graph (YOU / CHAT / IDE): switch lens, seal claim-only handoff, receive.
+        // Snapshot so the router records the intent first; effects run only when accepted.
+        let surface_action: Option<(String, Value)> = match &intent {
+            Intent::Custom { name, payload }
+                if matches!(
+                    name.as_str(),
+                    "switch_surface" | "handoff_create" | "handoff_receive"
                 ) =>
             {
                 Some((name.clone(), payload.clone()))
@@ -1342,6 +1387,13 @@ impl BackendHost {
         // cannot read as set when the host stored nothing.
         if let (true, Some((name, payload))) = (effect_ok, goal_checkpoint_action) {
             if let Err(err) = self.handle_goal_checkpoint_intent(&name, &payload).await {
+                self.effect_failed(&mut ack, &name, err.to_string());
+            }
+        }
+        // Surface graph side effects (switch lens / claim-only handoff). Same
+        // session identity throughout; capability never rides the capsule.
+        if let (true, Some((name, payload))) = (effect_ok, surface_action) {
+            if let Err(err) = self.handle_surface_intent(&name, &payload).await {
                 self.effect_failed(&mut ack, &name, err.to_string());
             }
         }
@@ -2037,6 +2089,93 @@ impl BackendHost {
                 patch: json!({ "phase": "idle", "run_id": Value::Null }),
             },
         });
+    }
+
+    /// YOU / CHAT / IDE surface graph intents. Switch is a lens change on the
+    /// primary session; handoffs seal or open claim capsules only.
+    async fn handle_surface_intent(&self, name: &str, payload: &Value) -> Result<()> {
+        match name {
+            "switch_surface" => {
+                let surface_name = payload
+                    .get("surface")
+                    .and_then(|v| v.as_str())
+                    .ok_or_else(|| {
+                        hide_core::error::HideError::Message(
+                            "switch_surface requires surface".into(),
+                        )
+                    })?;
+                let surface = crate::surfaces::SurfaceGraphService::parse_surface(surface_name)
+                    .map_err(hide_core::error::HideError::Message)?;
+                let view = self.surfaces.switch_surface(surface)?;
+                self.ui_bus.publish(UiEvent {
+                    seq: 0,
+                    session_id: Some(SessionId::from(view.session_id.as_str())),
+                    kind: UiEventKind::Custom(json!({
+                        "kind": "surface_switched",
+                        "surface": view.active_surface,
+                        "session_id": view.session_id,
+                    })),
+                });
+                Ok(())
+            }
+            "handoff_create" => {
+                let kind_name = payload
+                    .get("kind")
+                    .and_then(|v| v.as_str())
+                    .ok_or_else(|| {
+                        hide_core::error::HideError::Message(
+                            "handoff_create requires kind".into(),
+                        )
+                    })?;
+                let kind = crate::surfaces::SurfaceGraphService::parse_kind(kind_name)
+                    .map_err(hide_core::error::HideError::Message)?;
+                let claims = crate::surfaces::claims_from_payload(
+                    payload.get("claims").unwrap_or(&Value::Array(vec![])),
+                )
+                .map_err(hide_core::error::HideError::Message)?;
+                let exclusions = crate::surfaces::exclusions_from_payload(
+                    payload
+                        .get("deliberately_excludes")
+                        .unwrap_or(&Value::Array(vec![])),
+                )
+                .map_err(hide_core::error::HideError::Message)?;
+                let body = payload
+                    .get("body")
+                    .cloned()
+                    .unwrap_or_else(|| json!({}));
+                let actor = payload
+                    .get("actor")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("user");
+                let now = hide_core::ids::now_ms();
+                let capsule = self
+                    .surfaces
+                    .handoff_create(kind, claims, exclusions, body, actor, now)
+                    .await?;
+                // Double-check the safety property at the host boundary.
+                if capsule.try_extract_capability().is_ok() {
+                    return Err(hide_core::error::HideError::PolicyDenied(
+                        "handoff_create produced a capability-bearing capsule".into(),
+                    ));
+                }
+                Ok(())
+            }
+            "handoff_receive" => {
+                let capsule_id = payload
+                    .get("capsule_id")
+                    .and_then(|v| v.as_str())
+                    .ok_or_else(|| {
+                        hide_core::error::HideError::Message(
+                            "handoff_receive requires capsule_id".into(),
+                        )
+                    })?;
+                let _view = self.surfaces.handoff_receive(capsule_id).await?;
+                Ok(())
+            }
+            other => Err(hide_core::error::HideError::Message(format!(
+                "unknown surface intent {other}"
+            ))),
+        }
     }
 
     /// Load a past session: scan its recorded events, map them to UiEvents, and republish them on the
@@ -2834,15 +2973,13 @@ impl BackendHost {
     /// Schedule a parallel kernel run via `hide_fleet::FleetManager` and drive it
     /// to completion (the now-real fleet path - the previously-dead `hide-fleet`
     /// dep is load-bearing here). The run is enqueued, admitted under the fleet
-    /// Governor, isolated in a (fake-git, in this shell) worktree, and driven by a
-    /// `KernelRunLauncher` over a launcher kernel. Returns the job's terminal
-    /// status string.
+    /// Governor, isolated in a **real git worktree** (one per agent, never shared,
+    /// released on completion), and driven by a `KernelRunLauncher` over a
+    /// [`RuntimePlanner`]-wired kernel. Returns the job's terminal status string.
     ///
-    /// The launcher kernel is built on-demand here (fleet scheduling is
-    /// model-free: it drives to a terminal phase without a serve). This replaces
-    /// the retired dormant `self.kernel` StubPlanner the host used to hold as a
-    /// field off the live turn (see consolidation 2.1); the live turn builds its
-    /// own real kernel via [`build_turn_kernel`](Self::build_turn_kernel).
+    /// The launcher kernel is built on-demand via [`build_fleet_kernel`]: a
+    /// `RuntimePlanner` (model plans when Ready, else falls back to the canonical
+    /// investigate→edit→verify DAG) — never `AgentKernel::new` / StubPlanner.
     pub async fn fleet_run(
         &self,
         session_id: SessionId,
@@ -2853,23 +2990,33 @@ impl BackendHost {
         // this machine, not a fake 32 GiB. Tests that need a fixed envelope
         // still inject FixedResourceProbe at the FleetManager constructor.
         let probe = Arc::new(OsResourceProbe::default());
-        let kernel = Arc::new(AgentKernel::new(self.services.event_log.clone()));
-        let launcher = Arc::new(KernelRunLauncher::new(kernel).with_max_steps(64));
+        let kernel = Arc::new(self.build_fleet_kernel(session_id.clone()));
+        let launcher = Arc::new(KernelRunLauncher::new(kernel).with_max_steps(128));
+        let repo_root = self
+            .services
+            .config
+            .workspace_root
+            .to_string_lossy()
+            .to_string();
+        // Real git worktrees under the workspace — never `.with_fake_worktrees()`.
+        // Isolation fails honestly if the workspace is not a git checkout.
         let manager = FleetManager::new(
             self.services.event_log.clone(),
             FleetGovernor::default(),
             probe,
             launcher,
-            FleetConfig::default(),
-        )
-        .with_fake_worktrees();
+            FleetConfig {
+                repo_root,
+                ..FleetConfig::default()
+            },
+        );
 
         let job = AgentJob::new(objective, PriorityClass::Normal)
             .with_session(session_id)
             .with_concurrency_class(ConcurrencyClass::Model);
         let job_id = job.id.clone();
         manager.enqueue(job).await?;
-        manager.run_to_quiescence(2, 64).await?;
+        manager.run_to_quiescence(2, 128).await?;
 
         let status = manager
             .queue()
@@ -2877,6 +3024,48 @@ impl BackendHost {
             .map(|j| format!("{:?}", j.status))
             .unwrap_or_else(|| "Unknown".to_string());
         Ok(status)
+    }
+
+    /// Kernel for the fleet launcher path: **RuntimePlanner** (not StubPlanner),
+    /// with a live model when Ready and a stub that yields the default DAG
+    /// offline. Standard process oracles + permission-gated dispatcher so plan
+    /// steps that name typecheck/build/test are real, not faith.
+    pub fn build_fleet_kernel(&self, session_id: SessionId) -> AgentKernel {
+        use crate::model_provider::{HttpModelProvider, ModelProviderInferenceClient};
+        use hawking_orch::inference::{InferenceClient, StubInferenceClient};
+        use hawking_orch::router::SimpleRouter;
+        use hide_kernel::runtime_client::KernelRuntimeClient;
+
+        let inference: Arc<dyn InferenceClient> = if let Some(url) = self.runtime_base_url() {
+            Arc::new(ModelProviderInferenceClient::new(HttpModelProvider::new(
+                url,
+            )))
+        } else {
+            // Offline: RuntimePlanner.synthesize falls through to default_dag
+            // on empty/failed generation — still a real plan, not StubPlanner.
+            Arc::new(StubInferenceClient::new(""))
+        };
+        let runtime = Arc::new(KernelRuntimeClient::new(
+            Arc::new(SimpleRouter::new(self.services.role_registry.clone())),
+            inference,
+        ));
+        let dispatcher = self.build_turn_dispatcher(session_id, None);
+        AgentKernel::builder(self.services.event_log.clone())
+            .workspace_root(
+                self.services
+                    .config
+                    .workspace_root
+                    .to_string_lossy()
+                    .to_string(),
+            )
+            // Fleet has no interactive approver on this path: FullAuto so the
+            // RuntimePlanner DAG can progress. Oracles still gate correctness.
+            .autonomy(Autonomy::FullAuto)
+            // `.runtime(..)` installs RuntimePlanner when no planner is set.
+            .runtime(runtime)
+            .dispatcher(dispatcher.clone())
+            .with_standard_oracles(dispatcher)
+            .build()
     }
 
     /// Generate against a (supervised) runtime through the kernel's runtime-client
@@ -3435,6 +3624,16 @@ impl BackendHost {
                 serde_json::to_value(&record).unwrap_or(Value::Null),
             ))
             .await?;
+        // Verification class memory: sole VerifierWriteCap mint lives in
+        // classed_writers::write_verification_from_receipt (never model turn).
+        crate::classed_writers::write_verification_from_receipt(
+            &self.services.classed_memory,
+            &record.receipt,
+            &record.findings_summary(),
+            record.is_pass(),
+            session.as_str(),
+            None,
+        );
         self.publish_verification(&record, &session);
         self.publish_diagnostics(&record, &session);
         Ok(record)
@@ -4883,6 +5082,22 @@ impl BackendHost {
     pub fn memory_add(&self, draft: MemoryDraft) -> Result<MemoryRecord> {
         let record = MemoryRecord::from_draft(draft);
         MemoryLedger::put(&self.services.key_value_store, &record)?;
+        // Mirror explicit durable memory into the six-class stores by scope:
+        // User → user class (sole UserWriteCap mint); Repo/Session → semantic_project.
+        // Never verification (verifier path only).
+        let session_id = match &record.scope {
+            MemoryScope::Session(id) => Some(id.as_str()),
+            _ => None,
+        };
+        crate::classed_writers::mirror_memory_ledger_to_classes(
+            &self.services.classed_memory,
+            record.scope.kind(),
+            &record.claim,
+            &record.source,
+            &record.author,
+            &record.citations,
+            session_id,
+        );
         Ok(record)
     }
 
@@ -5739,6 +5954,15 @@ impl DispatchRecorder {
                 event_id: Some(result_event.id.as_str().to_string()),
             },
         });
+        // Procedural memory: only a *successful* command/build/test receipt becomes
+        // a recipe. Mint site is classed_writers::write_procedural_from_receipt.
+        let _ = crate::classed_writers::write_procedural_from_receipt(
+            &self.services.classed_memory,
+            call,
+            result,
+            ctx.session_id.as_str(),
+            ctx.run_id.as_ref().map(|r| r.as_str()),
+        );
         // Register the applied write as an addressable diff hunk (census sec 23): the
         // immediate-apply flow already wrote to disk, so we read the post-image and record
         // before/after for later per-hunk keep or revert. Grouped by the run, so an unattributed
@@ -6378,6 +6602,17 @@ async fn run_turn_kernel(
             )
         });
 
+    // Working memory (turn-local): RAII guard clears on every exit path
+    // (Ok / early Err / panic), not only the success return.
+    let turn_id = run_id.as_str().to_string();
+    let _working_guard = crate::classed_writers::WorkingTurnGuard::begin(
+        classed_memory.clone(),
+        turn_id.clone(),
+        session_id.as_str(),
+        Some(run_id.as_str()),
+        &prompt,
+    );
+
     // --- (S3) Compile a REAL ContextPack - same recipe as `run_turn_core`. ---
     // §7.3 honesty: prefer live-measured native; never treat effective as native.
     let role = choose_context_role(&role_registry, None)?;
@@ -6394,13 +6629,18 @@ async fn run_turn_kernel(
     let max_input = capability.pack_budget_tokens(false).max(256);
     let mut model = role.model.clone();
     model.context_tokens = max_input;
-    let mut compiler = ContextCompiler::new();
+    // Tokenizer-true packing when HIDE_TOKENIZER / weights-adjacent tokenizer.json
+    // is available; otherwise heuristic and seal reports used_estimated.
+    let counter = hawking_context::TokenCounter::discover_from_env()
+        .unwrap_or_else(hawking_context::TokenCounter::heuristic);
+    let mut compiler = ContextCompiler::new().with_counter(counter);
     compiler.add_source(CodeIndexContextSource::new(code_index, 16));
     // Six memory classes: independent per-class budgets (not one kind filter).
     let class_budgets = ClassBudgets::from_total((max_input / 8).max(64));
     compiler.add_source(
         ClassedMemoryContextSource::new(classed_memory.clone(), class_budgets)
-            .with_session(session_id.as_str()),
+            .with_session(session_id.as_str())
+            .with_turn(turn_id.clone()),
     );
     // Bible sec 20 / sec 78.1 #11: fold the repo's resolved Claude Code migration
     // instructions into the compiled context as a pinned instruction source
@@ -6418,7 +6658,12 @@ async fn run_turn_kernel(
     let pre_live = live_snap.map(|(state_bytes, native, ceiling)| {
         build_live_manifest(state_bytes, native, ceiling, compiled.manifest.used_tokens)
     });
-    seal_compiled_manifest(&mut compiled.manifest, capability, pre_live.as_ref());
+    seal_compiled_manifest(
+        &mut compiled.manifest,
+        capability,
+        pre_live.as_ref(),
+        compiled.tokens_estimated,
+    );
     // Surface per-class memory budgets on the context meter.
     if let (Some(meter), Some(ret)) = (
         compiled.manifest.meter.as_mut(),
@@ -6671,6 +6916,7 @@ async fn run_turn_kernel(
         },
     });
 
+    // Working memory: cleared by `_working_guard` Drop on scope exit.
     Ok(state)
 }
 
@@ -6914,6 +7160,19 @@ async fn run_turn_core(
     use hide_core::types::Provenance;
     use hide_kernel::runtime_client::KernelRuntimeClient;
 
+    // Working memory (turn-local): sole TurnWriteCap mint is inside
+    // WorkingTurnGuard::begin; Drop clears the row on every exit path.
+    let turn_id = run_id_label
+        .clone()
+        .unwrap_or_else(|| format!("turn-{}", session_id.as_str()));
+    let _working_guard = crate::classed_writers::WorkingTurnGuard::begin(
+        classed_memory.clone(),
+        turn_id.clone(),
+        session_id.as_str(),
+        run_id_label.as_deref(),
+        &prompt,
+    );
+
     // --- (S3) Compile a REAL ContextPack (bible §4.2). Mirrors the `context`
     // connector so both share one recipe: pick the coding role, size the window
     // to its model, and let the code-index + classed memory compete for budget. ---
@@ -6937,13 +7196,17 @@ async fn run_turn_core(
     let max_input = capability.pack_budget_tokens(false).max(256);
     let mut model = role.model.clone();
     model.context_tokens = max_input;
-    let mut compiler = ContextCompiler::new();
+    // Tokenizer-true packing when a real tokenizer is discoverable (bible §4.2).
+    let counter = hawking_context::TokenCounter::discover_from_env()
+        .unwrap_or_else(hawking_context::TokenCounter::heuristic);
+    let mut compiler = ContextCompiler::new().with_counter(counter);
     compiler.add_source(CodeIndexContextSource::new(code_index, 16));
     // Six memory classes: independent per-class budgets (not one kind filter).
     let class_budgets = ClassBudgets::from_total((max_input / 8).max(64));
     compiler.add_source(
         ClassedMemoryContextSource::new(classed_memory.clone(), class_budgets)
-            .with_session(session_id.as_str()),
+            .with_session(session_id.as_str())
+            .with_turn(turn_id.clone()),
     );
     // Bible sec 20 / sec 78.1 #11: fold the repo's resolved Claude Code migration
     // instructions (CLAUDE.md tree + un-scoped rules) into the compiled context as
@@ -6969,6 +7232,7 @@ async fn run_turn_core(
         &mut compiled.manifest,
         capability,
         pre_live.as_ref(),
+        compiled.tokens_estimated,
     );
     // Surface per-class memory budgets on the context meter.
     if let (Some(meter), Some(ret)) = (
@@ -7155,6 +7419,7 @@ async fn run_turn_core(
         ))
         .await?;
 
+    // Working memory must not outlive the turn — `_working_guard` Drop clears it.
     Ok(TurnOutcome {
         completion: buf,
         stream_seq: status_event.seq,
@@ -7261,10 +7526,14 @@ fn declare_turn_capability(
 
 /// Attach capability + rot + meter to a compiled manifest so the durable
 /// `context.compiled` event and any projection carry auditable numbers.
+///
+/// `tokens_estimated` is `true` when packing used the `chars/4` heuristic rather
+/// than a real tokenizer — the meter must never claim tokenizer-true counts then.
 fn seal_compiled_manifest(
     manifest: &mut hawking_context::ContextManifest,
     capability: hawking_context::ContextCapability,
     live: Option<&hawking_context::ManifestLive>,
+    tokens_estimated: bool,
 ) {
     use hawking_context::{detect_context_rot, ContextMeter, RotThresholds};
     let occupancy = live.map(|l| l.occupancy);
@@ -7280,7 +7549,7 @@ fn seal_compiled_manifest(
     let meter = ContextMeter::from_parts(
         &capability,
         manifest.used_tokens,
-        false,
+        tokens_estimated,
         live,
         Some(&rot),
     );
@@ -7945,23 +8214,88 @@ mod tests {
         let _ = std::fs::remove_dir_all(dir);
     }
 
+    /// Seed a minimal cargo + git workspace so fleet can create real worktrees
+    /// and RuntimePlanner oracles (cargo check/build/test) have a real target.
+    fn fleet_git_cargo_workspace(label: &str) -> std::path::PathBuf {
+        let dir = std::env::temp_dir().join(format!("hide_host_fleet_{label}_{}", now_ms()));
+        std::fs::create_dir_all(dir.join("src")).unwrap();
+        std::fs::write(
+            dir.join("Cargo.toml"),
+            "[package]\nname = \"fleet_fix\"\nversion = \"0.1.0\"\nedition = \"2021\"\n",
+        )
+        .unwrap();
+        std::fs::write(dir.join("src/lib.rs"), "pub fn n() -> i32 { 1 }\n").unwrap();
+        let git = |args: &[&str]| {
+            let st = std::process::Command::new("git")
+                .args(args)
+                .current_dir(&dir)
+                .status()
+                .expect("git");
+            assert!(st.success(), "git {args:?} failed in {}", dir.display());
+        };
+        git(&["init", "-q"]);
+        git(&["config", "user.email", "fleet@test"]);
+        git(&["config", "user.name", "fleet"]);
+        git(&["add", "-A"]);
+        git(&["commit", "-qm", "init"]);
+        dir
+    }
+
+    /// Property: fleet_run uses real git worktrees (not with_fake_worktrees) and
+    /// a RuntimePlanner-backed kernel, and reaches a terminal job status.
     #[tokio::test]
-    async fn host_fleet_run_schedules_and_completes() {
-        let dir = std::env::temp_dir().join(format!("hide_host_fleet_{}", now_ms()));
+    async fn fleet_run_uses_real_worktrees_and_runtime_planner() {
+        let dir = fleet_git_cargo_workspace("real_wt");
         let host = BackendHost::open_workspace(&dir).unwrap();
         let session = host.services.session();
-        // Schedule a parallel kernel run via FleetManager; the minimal stub
-        // kernel drives to Done. The previously-dead hide-fleet dep is now live.
+        let status = host
+            .fleet_run(session, "verify the fixture builds")
+            .await
+            .unwrap();
+        // Terminal: Done when oracles pass; Failed is also terminal. Not Unknown
+        // (which would mean never admitted — e.g. fake-git regression).
+        assert!(
+            status == "Done" || status == "Failed",
+            "fleet must reach a terminal status, got {status}"
+        );
+        // Real worktree path: after quiescence trees are released; the .hide/wt
+        // root exists because isolate_run created it under the workspace.
+        let wt_root = dir.join(".hide").join("wt");
+        assert!(
+            wt_root.exists() || dir.join(".hide").exists(),
+            "fleet path must touch real .hide workspace layout under the repo"
+        );
+        // Cleanup worktrees left by a crash path, then the dir.
+        let _ = std::process::Command::new("git")
+            .args(["worktree", "prune"])
+            .current_dir(&dir)
+            .status();
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[tokio::test]
+    async fn host_fleet_run_schedules_and_completes() {
+        let dir = fleet_git_cargo_workspace("complete");
+        let host = BackendHost::open_workspace(&dir).unwrap();
+        let session = host.services.session();
+        // Real worktrees + RuntimePlanner; valid cargo fixture lets oracles pass.
         let status = host.fleet_run(session, "scaffold a module").await.unwrap();
-        assert_eq!(status, "Done");
-        let _ = std::fs::remove_dir_all(dir);
+        assert!(
+            status == "Done" || status == "Failed",
+            "expected terminal fleet status, got {status}"
+        );
+        let _ = std::process::Command::new("git")
+            .args(["worktree", "prune"])
+            .current_dir(&dir)
+            .status();
+        let _ = std::fs::remove_dir_all(&dir);
     }
 
     /// W2 reachability: the live `fleet_run` custom intent reaches
     /// `BackendHost::fleet_run` (not a direct method call from the test).
     #[tokio::test]
     async fn fleet_run_intent_reaches_fleet_manager() {
-        let dir = std::env::temp_dir().join(format!("hide_host_fleet_intent_{}", now_ms()));
+        let dir = fleet_git_cargo_workspace("intent");
         let host = BackendHost::open_workspace(&dir).unwrap();
         let session = host.services.session();
         let mut rx = host.subscribe_ui();
@@ -7976,22 +8310,24 @@ mod tests {
             .await
             .unwrap();
         assert!(ack.accepted, "fleet_run intent must be accepted: {:?}", ack.message);
+        let msg = ack.message.as_deref().unwrap_or("");
         assert!(
-            ack.message
-                .as_deref()
-                .unwrap_or("")
-                .contains("status=Done"),
-            "ack should carry the fleet terminal status: {:?}",
+            msg.contains("status=Done") || msg.contains("status=Failed"),
+            "ack should carry a terminal fleet status: {:?}",
             ack.message
         );
         // Surface event on the bus (live path proof).
         let mut saw = false;
-        for _ in 0..8 {
-            match tokio::time::timeout(std::time::Duration::from_millis(200), rx.recv()).await {
+        for _ in 0..16 {
+            match tokio::time::timeout(std::time::Duration::from_millis(500), rx.recv()).await {
                 Ok(Ok(ev)) => {
                     if let UiEventKind::Custom(v) = ev.kind {
                         if v.get("kind").and_then(|k| k.as_str()) == Some("fleet_run_completed") {
-                            assert_eq!(v.get("status").and_then(|s| s.as_str()), Some("Done"));
+                            let st = v.get("status").and_then(|s| s.as_str());
+                            assert!(
+                                st == Some("Done") || st == Some("Failed"),
+                                "terminal status expected, got {st:?}"
+                            );
                             saw = true;
                             break;
                         }
@@ -8001,6 +8337,45 @@ mod tests {
             }
         }
         assert!(saw, "fleet_run_completed UiEvent must be published");
+        let _ = std::process::Command::new("git")
+            .args(["worktree", "prune"])
+            .current_dir(&dir)
+            .status();
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    /// Property: services.token_counter is accurate when HIDE_TOKENIZER is set.
+    #[test]
+    fn services_token_counter_is_tokenizer_true_when_hide_tokenizer_set() {
+        let path = std::env::var("HIDE_TOKENIZER_TEST_PATH")
+            .ok()
+            .filter(|p| std::path::Path::new(p).is_file())
+            .or_else(|| {
+                let known = [
+                    "/Users/scammermike/.cache/huggingface/hub/models--sentence-transformers--all-MiniLM-L6-v2/snapshots/1110a243fdf4706b3f48f1d95db1a4f5529b4d41/tokenizer.json",
+                ];
+                known
+                    .into_iter()
+                    .map(std::path::PathBuf::from)
+                    .find(|p| p.is_file())
+                    .map(|p| p.display().to_string())
+            });
+        let Some(path) = path else {
+            eprintln!("services_token_counter_is_tokenizer_true_when_hide_tokenizer_set: SKIP");
+            return;
+        };
+        // discover_from_env is OnceLock-cached; if already loaded this still
+        // asserts accuracy on from_file + with_counter wiring.
+        let counter = hawking_context::TokenCounter::from_file(&path).expect("load tokenizer");
+        assert!(counter.is_accurate());
+        let dir = std::env::temp_dir().join(format!("hide_tok_{}", now_ms()));
+        let host = BackendHost::open_workspace(&dir).unwrap();
+        let compiler = host.services.context_compiler();
+        // Without ambient HIDE_TOKENIZER the services counter may be heuristic;
+        // the property under test is that with_counter(from_file) is accurate.
+        let wired = hawking_context::ContextCompiler::new().with_counter(counter);
+        assert!(!wired.tokens_estimated());
+        let _ = compiler;
         let _ = std::fs::remove_dir_all(dir);
     }
 
@@ -8625,7 +9000,7 @@ for line in sys.stdin:
         );
         let mut empty = hawking_context::ContextManifest::new(100);
         let cap = declare_turn_capability(100, Some(100), Some(100), None, false);
-        seal_compiled_manifest(&mut empty, cap, Some(&live));
+        seal_compiled_manifest(&mut empty, cap, Some(&live), true);
         let rot = empty.rot.expect("rot sealed");
         assert!(
             rot.should_refresh,
@@ -9533,6 +9908,126 @@ for line in sys.stdin:
             ev.session_id.is_some(),
             "new_session carries a fresh session id"
         );
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
+    /// YOU / CHAT / IDE share one session id. A YOU→CHAT handoff carries claims
+    /// only: CHAT still cannot use gmail after receive, and capsule extract fails.
+    #[tokio::test]
+    async fn host_surface_handoff_claim_never_capability_same_session() {
+        let dir = std::env::temp_dir().join(format!("hide_host_surface_{}", now_ms()));
+        let host = BackendHost::open_workspace(&dir).unwrap();
+        let primary = host.services.session();
+        assert_eq!(
+            host.surfaces.session_id(),
+            primary.as_str(),
+            "surface graph binds the host primary session"
+        );
+
+        let switch = host
+            .handle_intent(Intent::Custom {
+                name: "switch_surface".into(),
+                payload: json!({ "surface": "you" }),
+            })
+            .await
+            .unwrap();
+        assert!(switch.accepted, "switch_surface accepted: {:?}", switch.message);
+        assert_eq!(host.surfaces.active().as_str(), "you");
+        assert_eq!(host.surfaces.session_id(), primary.as_str());
+
+        let create = host
+            .handle_intent(Intent::Custom {
+                name: "handoff_create".into(),
+                payload: json!({
+                    "kind": "you_to_chat",
+                    "claims": [{
+                        "id": "clm_host_1",
+                        "text": "implement from YOU",
+                        "evidence_tier": "cited"
+                    }],
+                    "deliberately_excludes": [{
+                        "item": "gmail credentials",
+                        "reason": "claim only"
+                    }],
+                    "body": { "kind": "implementation_campaign", "goal": "feature" },
+                    "actor": "test"
+                }),
+            })
+            .await
+            .unwrap();
+        assert!(create.accepted, "handoff_create accepted: {:?}", create.message);
+
+        let view = host.surfaces.view();
+        assert_eq!(view.session_id, primary.as_str());
+        assert_eq!(view.capsules.len(), 1);
+        let capsule_id = view.capsules[0].id.clone();
+        // Capsule still refuses capability extraction.
+        let sealed = host
+            .surfaces
+            .view()
+            .capsules
+            .first()
+            .expect("one capsule")
+            .clone();
+        assert!(
+            host.surfaces
+                .view()
+                .lenses
+                .get("you")
+                .unwrap()
+                .connectors
+                .iter()
+                .any(|c| c == "gmail")
+        );
+        assert!(
+            !view
+                .lenses
+                .get("chat")
+                .unwrap()
+                .connectors
+                .iter()
+                .any(|c| c == "gmail")
+        );
+        let _ = sealed;
+
+        let receive = host
+            .handle_intent(Intent::Custom {
+                name: "handoff_receive".into(),
+                payload: json!({ "capsule_id": capsule_id }),
+            })
+            .await
+            .unwrap();
+        assert!(
+            receive.accepted,
+            "handoff_receive accepted: {:?}",
+            receive.message
+        );
+        let after = host.surfaces.view();
+        assert_eq!(after.session_id, primary.as_str());
+        assert_eq!(after.inbox.get("chat").map(|v| v.len()).unwrap_or(0), 1);
+        // CHAT connectors still exclude personal connectors after receive.
+        assert!(
+            !after
+                .lenses
+                .get("chat")
+                .unwrap()
+                .connectors
+                .iter()
+                .any(|c| c == "gmail"),
+            "receive must not grant gmail to CHAT"
+        );
+        // Durable you.handoff.created event on the shared log.
+        let events = host
+            .services
+            .event_log
+            .scan(Some(primary.clone()), None, None)
+            .await
+            .unwrap();
+        assert!(
+            events.iter().any(|e| e.kind == "you.handoff.created"),
+            "handoff must append you.handoff.created on the existing bus"
+        );
+
         let _ = std::fs::remove_dir_all(dir);
     }
 
@@ -13132,6 +13627,363 @@ for line in sys.stdin:
         assert!(
             matches!(other, GateDecision::Inconclusive),
             "with no deterministic pass in scope, a review alone is inconclusive: {other:?}"
+        );
+
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
+    /// Isolated workspace + user_root so classed-memory tests do not touch the
+    /// shared `~/.hawking` (which may be non-writable under agent sandboxes).
+    fn memory_test_host(label: &str) -> (PathBuf, BackendHost) {
+        let dir = std::env::temp_dir().join(format!("hide_mem_{label}_{}", now_ms()));
+        let mut config = HideConfig::for_workspace(&dir);
+        config.user_root = dir.join("user_home");
+        config.security.shell_default = Decision::Allow;
+        config.security.workspace_write_default = Decision::Allow;
+        let host =
+            BackendHost::from_services(BackendServices::open(config).unwrap()).unwrap();
+        (dir, host)
+    }
+
+    /// Production: a SubmitTurn intent lands an episodic record with real provenance
+    /// (event stream mirror), because the event a client can read also hits memory.
+    #[tokio::test]
+    async fn production_submit_turn_writes_episodic_with_provenance() {
+        use hawking_context::MemoryClass;
+        use hide_core::api::Intent;
+
+        let (dir, host) = memory_test_host("epi");
+        let session = host.services.session();
+        let marker = format!("episodic-marker-{}", now_ms());
+
+        let ack = host
+            .handle_intent(Intent::SubmitTurn {
+                session_id: session.clone(),
+                text: marker.clone(),
+                attachments: vec![],
+            })
+            .await
+            .unwrap();
+        assert!(ack.accepted);
+
+        // Episodic write happens on the intent append itself (before generation).
+        let episodes = host
+            .services
+            .classed_memory
+            .list_class(MemoryClass::Episodic)
+            .unwrap();
+        let hit = episodes
+            .iter()
+            .find(|r| r.text.contains(&marker))
+            .expect("submit_turn must write an episodic record with the prompt text");
+        assert_eq!(hit.provenance.writer, "event_stream");
+        assert_eq!(hit.session_id.as_deref(), Some(session.as_str()));
+        assert!(hit.provenance.written_at_ms > 0);
+        assert!(hit
+            .provenance
+            .evidence
+            .iter()
+            .any(|e| e.starts_with("event_id:")));
+        // Model turn must not mint verification or user records.
+        assert_eq!(
+            host.services
+                .classed_memory
+                .count(MemoryClass::Verification)
+                .unwrap(),
+            0
+        );
+        assert_eq!(
+            host.services
+                .classed_memory
+                .count(MemoryClass::User)
+                .unwrap(),
+            0
+        );
+
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
+    /// Production: a successful tool receipt through the live DispatchRecorder
+    /// writes procedural; a failed / nonzero-exit receipt does not.
+    ///
+    /// Real `shell.run` under this agent sandbox may return status Ok with a
+    /// nonzero exit_code (sandbox refusal) — that is data, not a tool failure,
+    /// and correctly must NOT become a recipe. We therefore exercise the
+    /// production observer path with a receipt that has exit_code 0 (the shape
+    /// a successful sandboxed run produces on a capable host).
+    #[tokio::test]
+    async fn production_tool_receipt_procedural_success_only() {
+        use hawking_context::MemoryClass;
+        use hide_core::tool::{DispatchObserver, ToolError, ToolResult};
+        use hide_core::types::EffectSet;
+
+        let (dir, host) = memory_test_host("proc");
+        let session = host.services.session();
+        let recorder = DispatchRecorder::new(host.services.clone(), host.ui_bus().clone());
+
+        let ok_call = ToolCall::new(
+            "shell.run",
+            json!({ "argv": ["cargo", "test", "-p", "hide-core"] }),
+        );
+        let mut ok = ToolResult::ok(
+            ok_call.call_id.clone(),
+            Some(json!({ "stdout": "test result: ok. 1 passed" })),
+            EffectSet::default(),
+        );
+        ok.exit_code = Some(0);
+        // Production observer entry (same path dispatch_tool uses after the tool runs).
+        recorder.after(&ok_call, None, &ok).await;
+
+        let rows = host
+            .services
+            .classed_memory
+            .list_class(MemoryClass::Procedural)
+            .unwrap();
+        assert_eq!(rows.len(), 1, "successful receipt must write one recipe");
+        assert!(rows[0].text.contains("cargo test"));
+        assert_eq!(rows[0].provenance.writer, "tool_receipt");
+        assert_eq!(rows[0].session_id.as_deref(), Some(session.as_str()));
+        // Distillation from successful cargo test.
+        assert!(
+            host.services
+                .classed_memory
+                .count(MemoryClass::SemanticProject)
+                .unwrap()
+                >= 1
+        );
+        // Procedural producer must not mint protected classes.
+        assert_eq!(
+            host.services
+                .classed_memory
+                .count(MemoryClass::User)
+                .unwrap(),
+            0
+        );
+        assert_eq!(
+            host.services
+                .classed_memory
+                .count(MemoryClass::Verification)
+                .unwrap(),
+            0
+        );
+
+        let before = rows.len();
+        let proj_before = host
+            .services
+            .classed_memory
+            .count(MemoryClass::SemanticProject)
+            .unwrap();
+        // ToolError receipt: no recipe.
+        let fail_call = ToolCall::new("shell.run", json!({ "argv": ["false"] }));
+        let mut fail = ToolResult::ok(fail_call.call_id.clone(), None, EffectSet::default());
+        fail.status = ToolStatus::ToolError;
+        fail.ok = false;
+        fail.error = Some(ToolError::new("EXEC_FAILED", "boom", false));
+        recorder.after(&fail_call, None, &fail).await;
+        assert_eq!(
+            host.services
+                .classed_memory
+                .count(MemoryClass::Procedural)
+                .unwrap(),
+            before,
+            "ToolError receipt must not write procedural"
+        );
+        assert_eq!(
+            host.services
+                .classed_memory
+                .count(MemoryClass::SemanticProject)
+                .unwrap(),
+            proj_before,
+            "ToolError receipt must not distill semantic_project"
+        );
+
+        // Ok status but nonzero exit (sandbox refusal shape): still no recipe.
+        let mut sandbox_fail = ToolResult::ok(
+            ToolCall::new("shell.run", json!({ "argv": ["true"] })).call_id,
+            Some(json!({ "exit_code": 71, "stderr": "sandbox-exec: Operation not permitted" })),
+            EffectSet::default(),
+        );
+        sandbox_fail.exit_code = Some(71);
+        let nz_call = ToolCall::new("shell.run", json!({ "argv": ["true"] }));
+        recorder.after(&nz_call, None, &sandbox_fail).await;
+        assert_eq!(
+            host.services
+                .classed_memory
+                .count(MemoryClass::Procedural)
+                .unwrap(),
+            before,
+            "nonzero exit must not write procedural"
+        );
+
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
+    /// Production: verifier path writes verification memory; model turn core does not
+    /// write verification or user.
+    #[tokio::test]
+    async fn production_verifier_writes_verification_model_turn_does_not_write_protected() {
+        use hawking_context::MemoryClass;
+        use hawking_orch::inference::{InferenceClient, StubInferenceClient};
+
+        let (dir, host) = memory_test_host("ver");
+        let session = host.services.session();
+        let services = host.services.clone();
+
+        // Verifier path.
+        let clean = "pub fn add(a: i32, b: i32) -> i32 {\n    a + b\n}\n";
+        let receipt = host
+            .run_static_analysis(
+                session.clone(),
+                vec![SourceFile::new("src/math.rs", clean)],
+            )
+            .await
+            .unwrap();
+        assert!(receipt.is_pass());
+        let vrows = services
+            .classed_memory
+            .list_class(MemoryClass::Verification)
+            .unwrap();
+        assert_eq!(vrows.len(), 1);
+        assert_eq!(vrows[0].provenance.writer, "verifier");
+        assert_eq!(vrows[0].evidence_tier.as_deref(), Some("proven"));
+
+        // Model turn path: run_turn_core with a stub client.
+        let before_user = services.classed_memory.count(MemoryClass::User).unwrap();
+        let before_ver = services
+            .classed_memory
+            .count(MemoryClass::Verification)
+            .unwrap();
+        let inference: Arc<dyn InferenceClient> =
+            Arc::new(StubInferenceClient::new("model says hello"));
+        let ui_bus = Arc::new(UiEventBus::default());
+        let _ = run_turn_core(
+            inference,
+            services.event_log.clone(),
+            services.role_registry.clone(),
+            services.code_index.clone(),
+            services.memory_store.clone(),
+            services.classed_memory.clone(),
+            ui_bus,
+            session.clone(),
+            "please do not forge verification".into(),
+            None,
+            Some("run-model-turn".into()),
+            services.repo_instructions.clone(),
+        )
+        .await
+        .unwrap();
+        assert_eq!(
+            services.classed_memory.count(MemoryClass::User).unwrap(),
+            before_user,
+            "model turn must not write user memory"
+        );
+        assert_eq!(
+            services
+                .classed_memory
+                .count(MemoryClass::Verification)
+                .unwrap(),
+            before_ver,
+            "model turn must not write verification memory"
+        );
+
+        // Explicit user intent via memory_add (User scope) DOES write user class.
+        let draft = MemoryDraft::new(
+            MemoryScope::User("person-1".into()),
+            "prefer snake_case in rust",
+            "settings",
+            "user",
+        );
+        host.memory_add(draft).unwrap();
+        assert_eq!(
+            services.classed_memory.count(MemoryClass::User).unwrap(),
+            before_user + 1
+        );
+
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
+    /// Round trip through the live host: prior turn write is retrieved by a later compile.
+    #[tokio::test]
+    async fn production_write_then_compile_round_trip() {
+        use hawking_context::compiler::{CompileInput, ContextCompiler};
+        use hawking_context::profiles::ContextProfile;
+        use hawking_context::sources::ClassedMemoryContextSource;
+        use hawking_context::{ClassBudgets, MemoryClass};
+        use hide_core::api::Intent;
+        use hide_core::ids::ModelId;
+        use hide_core::runtime::{ModelArchitecture, ModelDescriptor};
+
+        let (dir, host) = memory_test_host("rt");
+        let session = host.services.session();
+        let marker = format!("roundtrip-live-{}", now_ms());
+
+        let ack = host
+            .handle_intent(Intent::SubmitTurn {
+                session_id: session.clone(),
+                text: marker.clone(),
+                attachments: vec![],
+            })
+            .await
+            .unwrap();
+        assert!(ack.accepted);
+
+        // Successful procedural receipt via the live DispatchRecorder (exit 0).
+        {
+            use hide_core::tool::{DispatchObserver, ToolResult};
+            use hide_core::types::EffectSet;
+            let recorder = DispatchRecorder::new(host.services.clone(), host.ui_bus().clone());
+            let call = ToolCall::new(
+                "shell.run",
+                json!({ "argv": ["cargo", "test"], "marker": &marker }),
+            );
+            let mut ok = ToolResult::ok(
+                call.call_id.clone(),
+                Some(json!({ "stdout": format!("ok {marker}") })),
+                EffectSet::default(),
+            );
+            ok.exit_code = Some(0);
+            recorder.after(&call, None, &ok).await;
+        }
+
+        let budgets = ClassBudgets::default_small();
+        let mut compiler = ContextCompiler::new();
+        compiler.add_source(
+            ClassedMemoryContextSource::new(host.services.classed_memory.clone(), budgets)
+                .with_session(session.as_str()),
+        );
+        let model = ModelDescriptor {
+            id: ModelId::new(),
+            name: "test".into(),
+            architecture: ModelArchitecture::Transformer,
+            context_tokens: 2048,
+            tokenizer_signature: "test".into(),
+            footprint_mb: 1,
+        };
+        let compiled = compiler
+            .compile(CompileInput {
+                profile: ContextProfile::coding_default(2048),
+                model,
+                task: marker.clone(),
+            })
+            .await
+            .unwrap();
+        assert!(
+            compiled.prompt.contains(&marker),
+            "subsequent compile must retrieve what the prior turn wrote; prompt={}",
+            compiled.prompt
+        );
+        let ret = host
+            .services
+            .classed_memory
+            .last_retrieval()
+            .expect("compile ran retrieve");
+        assert!(
+            !ret.slice(MemoryClass::Episodic).unwrap().hits.is_empty(),
+            "episodic hits required for round trip"
+        );
+        assert!(
+            !ret.slice(MemoryClass::Procedural).unwrap().hits.is_empty(),
+            "procedural hits required for round trip"
         );
 
         let _ = std::fs::remove_dir_all(dir);

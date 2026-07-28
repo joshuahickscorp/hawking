@@ -609,14 +609,14 @@
         },
         "attention_or_state": {
           "null_reason": null,
-          "value": "GQA/MHA causal attention with KV cache"
+          "value": "GQA / MHA causal attention per GGUF metadata"
         },
         "capability_limitations": [
           "no PRODUCTION standing receipt",
-          "context limit declared from GGUF metadata only; not stress-validated at family grade"
+          "gravity llama artifact is off-tree (CampaignS08 / HAWKING_GRAVITY_LLAMA_ARTIFACT)"
         ],
         "chat_template": {
-          "null_reason": "chat template is prompt-side / serve-layer; not owned by the family engine module",
+          "null_reason": "chat template applied at serve/prompt layer; not declared inside LlamaDense",
           "value": null
         },
         "context_limits": {
@@ -643,24 +643,24 @@
             "path": "crates/hawking-core/src/model/llama.rs"
           },
           {
-            "claim": "small-parent greedy smoke when GGUF present",
+            "claim": "Stage A: official config/tokenizer/safetensors header parsed and mapped",
+            "kind": "source_header",
+            "path": "adapters/receipts/ADAPTER_LLAMA_RECEIPT.json"
+          },
+          {
+            "claim": "small-parent greedy smoke when GGUF present (skips when absent — not live grade evidence)",
             "kind": "small_checkpoint_run",
             "path": "crates/hawking-core/tests/llama32_smoke.rs"
           },
           {
-            "claim": "gravity llama forward path",
-            "kind": "small_checkpoint_run",
+            "claim": "gravity llama forward vs frozen oracle when off-tree .gravity present (skips when absent)",
+            "kind": "real_tensor_decode",
             "path": "crates/hawking-core/tests/gravity_llama_forward.rs"
           },
           {
             "claim": "load_engine dispatches llama|mistral GGUF arch strings",
             "kind": "description",
             "path": "crates/hawking-core/src/model/mod.rs"
-          },
-          {
-            "claim": "unconditional: CPU+GPU forward match frozen oracle, incremental decode matches full replay (3 passed, 57.48s of real work)",
-            "kind": "real_tensor_decode",
-            "path": "crates/hawking-core/tests/gravity_llama_forward.rs"
           }
         ],
         "positional_encoding": {
@@ -702,15 +702,15 @@
         },
         "tensor_namespace_rules": {
           "null_reason": null,
-          "value": "GGUF llama-family: token_embd.weight, blk.{l}.attn_{q,k,v,output}.weight, blk.{l}.ffn_{gate,up,down}.weight, blk.{l}.attn_norm/ffn_norm.weight, output_norm.weight, output.weight"
+          "value": "GGUF llama: token_embd, output_norm, output, blk.{l}.attn_*/ffn_*; gravity.llama codec for .gravity"
         },
         "tokenizer": {
           "null_reason": null,
-          "value": "gguf.tokenizer (embedded GGUF tokenizer model)"
+          "value": "gguf.tokenizer (vocab embedded in GGUF)"
         },
         "topology": {
           "null_reason": null,
-          "value": "dense transformer (SwiGLU FFN)"
+          "value": "dense transformer"
         }
       },
       "aliases": [
@@ -727,33 +727,34 @@
           "path": "crates/hawking-core/src/model/llama.rs"
         },
         {
-          "claim": "small-parent greedy smoke when GGUF present",
+          "claim": "Stage A: official config/tokenizer/safetensors header parsed and mapped",
+          "kind": "source_header",
+          "path": "adapters/receipts/ADAPTER_LLAMA_RECEIPT.json"
+        },
+        {
+          "claim": "small-parent greedy smoke when GGUF present (skips when absent — not live grade evidence)",
           "kind": "small_checkpoint_run",
           "path": "crates/hawking-core/tests/llama32_smoke.rs"
         },
         {
-          "claim": "gravity llama forward path",
-          "kind": "small_checkpoint_run",
+          "claim": "gravity llama forward vs frozen oracle when off-tree .gravity present (skips when absent)",
+          "kind": "real_tensor_decode",
           "path": "crates/hawking-core/tests/gravity_llama_forward.rs"
         },
         {
           "claim": "load_engine dispatches llama|mistral GGUF arch strings",
           "kind": "description",
           "path": "crates/hawking-core/src/model/mod.rs"
-        },
-        {
-          "claim": "unconditional: CPU+GPU forward match frozen oracle, incremental decode matches full replay (3 passed, 57.48s of real work)",
-          "kind": "real_tensor_decode",
-          "path": "crates/hawking-core/tests/gravity_llama_forward.rs"
         }
       ],
       "executes": true,
       "gaps": [
         "no standing PRODUCTION parity receipt",
-        "smoke tests skip when weights absent"
+        "smoke and gravity_llama_forward skip when weights/artifacts are absent",
+        "REAL_TENSOR_DECODE / SMALL_REAL_CHECKPOINT require committed fixtures or on-disk parents"
       ],
       "id": "llama",
-      "level": "SMALL_REAL_CHECKPOINT",
+      "level": "SOURCE_HEADER_VALIDATED",
       "module": "crates/hawking-core/src/model/llama.rs",
       "serve_registered": true
     },
@@ -872,19 +873,21 @@
         "artifact_codecs": {
           "null_reason": null,
           "value": [
-            "gguf"
+            "gguf",
+            "pack (mixtral extra)"
           ]
         },
         "attention_or_state": {
           "null_reason": null,
-          "value": "GQA causal attention (dense mistral); mixtral same attention + MoE FFN"
+          "value": "GQA causal attention (dense); mixtral MoE experts (pack)"
         },
         "capability_limitations": [
-          "mixtral MoE requires pack hydrate — not shipping",
-          "dense mistral only is serve-registered"
+          "mixtral requires adapters-extra hydrate",
+          "dense path only for serve-registered execution",
+          "no PRODUCTION standing receipt"
         ],
         "chat_template": {
-          "null_reason": "chat template not owned by family engine",
+          "null_reason": "chat template at serve/prompt layer",
           "value": null
         },
         "context_limits": {
@@ -911,7 +914,12 @@
             "path": "crates/hawking-core/src/model/mod.rs"
           },
           {
-            "claim": "dense llama-family small checkpoint path (mistral shares LlamaDense)",
+            "claim": "Stage A: official config/tokenizer/safetensors header parsed and mapped",
+            "kind": "source_header",
+            "path": "adapters/receipts/ADAPTER_MISTRAL_MIXTRAL_RECEIPT.json"
+          },
+          {
+            "claim": "dense llama-family small checkpoint path (mistral shares LlamaDense; skips without GGUF)",
             "kind": "small_checkpoint_run",
             "path": "crates/hawking-core/tests/llama32_smoke.rs"
           },
@@ -957,23 +965,23 @@
           "null_reason": null,
           "value": [
             "F16",
+            "BF16",
             "Q4_K",
             "Q5_K",
-            "Q6_K",
             "Q8_0"
           ]
         },
         "tensor_namespace_rules": {
           "null_reason": null,
-          "value": "dense: same llama-family GGUF names; mixtral (pack): blk.{l}.ffn_gate_inp + per-expert ffn_down.{e} (split experts, not fused *_exps)"
+          "value": "dense mistral: llama-family GGUF names via LlamaDense; mixtral: pack-defined MoE expert tensors"
         },
         "tokenizer": {
           "null_reason": null,
-          "value": "gguf.tokenizer"
+          "value": "gguf.tokenizer (dense); pack tokenizer for mixtral"
         },
         "topology": {
           "null_reason": null,
-          "value": "dense mistral (shipping); mixtral MoE 8 experts top-2 (pack only, declarative seed-c)"
+          "value": "dense transformer (shipping); Mixtral MoE (pack only)"
         }
       },
       "aliases": [
@@ -989,7 +997,12 @@
           "path": "crates/hawking-core/src/model/mod.rs"
         },
         {
-          "claim": "dense llama-family small checkpoint path (mistral shares LlamaDense)",
+          "claim": "Stage A: official config/tokenizer/safetensors header parsed and mapped",
+          "kind": "source_header",
+          "path": "adapters/receipts/ADAPTER_MISTRAL_MIXTRAL_RECEIPT.json"
+        },
+        {
+          "claim": "dense llama-family small checkpoint path (mistral shares LlamaDense; skips without GGUF)",
           "kind": "small_checkpoint_run",
           "path": "crates/hawking-core/tests/llama32_smoke.rs"
         },
@@ -1008,10 +1021,11 @@
       "gaps": [
         "mixtral MoE not in shipping load_engine",
         "seed-c ArchAdapter does not execute",
-        "no PRODUCTION receipt"
+        "no PRODUCTION receipt",
+        "SMALL_REAL_CHECKPOINT smoke skips when no GGUF is on disk"
       ],
       "id": "mistral_mixtral",
-      "level": "SMALL_REAL_CHECKPOINT",
+      "level": "SOURCE_HEADER_VALIDATED",
       "module": "crates/hawking-core/src/model/llama.rs (+ pack mixtral)",
       "serve_registered": true
     },
@@ -1199,17 +1213,22 @@
             "path": "crates/hawking-core/src/model/qwen_moe.rs"
           },
           {
-            "claim": "greedy integration path used as parent-validation gate",
+            "claim": "Stage A: official config/tokenizer/safetensors header parsed and mapped",
+            "kind": "source_header",
+            "path": "adapters/receipts/ADAPTER_QWEN_RECEIPT.json"
+          },
+          {
+            "claim": "greedy integration path (skips when no model on disk — not live grade evidence)",
             "kind": "full_parent_validation",
             "path": "crates/hawking-core/tests/integration_greedy_64.rs"
           },
           {
-            "claim": "CPU backend parity against live engine",
+            "claim": "CPU backend parity (skips when no qwen0.5b weights)",
             "kind": "full_parent_validation",
             "path": "crates/hawking-core/tests/cpu_backend_parity.rs"
           },
           {
-            "claim": "TQ serve parity test (feature-gated)",
+            "claim": "TQ serve parity (#[ignore] + skips without weights/sidecar)",
             "kind": "small_checkpoint_run",
             "path": "crates/hawking-core/tests/qwen_tq_serve_parity.rs"
           },
@@ -1290,17 +1309,22 @@
           "path": "crates/hawking-core/src/model/qwen_moe.rs"
         },
         {
-          "claim": "greedy integration path used as parent-validation gate",
+          "claim": "Stage A: official config/tokenizer/safetensors header parsed and mapped",
+          "kind": "source_header",
+          "path": "adapters/receipts/ADAPTER_QWEN_RECEIPT.json"
+        },
+        {
+          "claim": "greedy integration path (skips when no model on disk — not live grade evidence)",
           "kind": "full_parent_validation",
           "path": "crates/hawking-core/tests/integration_greedy_64.rs"
         },
         {
-          "claim": "CPU backend parity against live engine",
+          "claim": "CPU backend parity (skips when no qwen0.5b weights)",
           "kind": "full_parent_validation",
           "path": "crates/hawking-core/tests/cpu_backend_parity.rs"
         },
         {
-          "claim": "TQ serve parity test (feature-gated)",
+          "claim": "TQ serve parity (#[ignore] + skips without weights/sidecar)",
           "kind": "small_checkpoint_run",
           "path": "crates/hawking-core/tests/qwen_tq_serve_parity.rs"
         },
@@ -1313,10 +1337,11 @@
       "executes": true,
       "gaps": [
         "not PRODUCTION: no standing production parity receipt under continuous serve",
-        "large MoE parents (235B/397B) are campaign-side, not this registry's PRODUCTION claim"
+        "large MoE parents (235B/397B) are campaign-side, not this registry's PRODUCTION claim",
+        "integration/parity tests skip or are #[ignore] without on-disk parents"
       ],
       "id": "qwen",
-      "level": "SMALL_REAL_CHECKPOINT",
+      "level": "SOURCE_HEADER_VALIDATED",
       "module": "crates/hawking-core/src/model/qwen_dense.rs",
       "serve_registered": true
     },

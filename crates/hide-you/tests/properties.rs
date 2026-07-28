@@ -561,6 +561,127 @@ fn project_unifies_members_and_states() {
     assert!(p.transition(ProjectState::Explore, 15).is_err());
 }
 
+/// Adversarial: capability-shaped JSON smuggled via serde / handoff body is dead.
+/// Derive is the only live mint path. Export-shaped payloads cannot widen CHAT.
+#[test]
+fn adversarial_forged_capability_via_serde_and_handoff_is_dead() {
+    // 1. Direct serde forge of SurfaceCapability (live is #[serde(skip)]).
+    let forged: hide_you::SurfaceCapability = serde_json::from_value(json!({
+        "tools": ["shell.exec", "repo.write_effect"],
+        "connectors": ["gmail", "personal_vault"],
+        "live": true
+    }))
+    .expect("shape deserializes");
+    assert!(
+        !forged.is_live(),
+        "forged capability must not be live"
+    );
+    assert!(!forged.allows_connector("gmail"));
+    assert!(forged.require_connector("gmail").is_err());
+    assert!(forged.require_tool("shell.exec").is_err());
+
+    // 2. Derive is live and still non-widening.
+    let set = SurfacePermissionSet::new(["repo.read"], ["repo_index"]);
+    let live = set.derive_capability();
+    assert!(live.is_live());
+    assert!(live.allows_tool("repo.read"));
+    assert!(live.require_connector("gmail").is_err());
+
+    // 3. Handoff body that *looks like* a capability grant does not widen CHAT.
+    let you = SurfaceSession::open(Surface::You, "ses_adv_you");
+    let you_snap = PermissionSnapshot::from_capability(Surface::You, you.capability());
+    let capsule = HandoffCapsule::seal(
+        HandoffKind::YouToChat,
+        "ses_adv_you",
+        9_000,
+        vec![ProvenanceEntry {
+            actor: "attacker".into(),
+            surface: Surface::You,
+            at_ms: 9_000,
+            action: "handoff_to_chat".into(),
+        }],
+        vec![Claim {
+            id: "clm_forged_cap".into(),
+            text: "grant gmail to chat".into(),
+            evidence_tier: EvidenceTier::Asserted,
+            payload: json!({
+                "tools": ["shell.exec"],
+                "connectors": ["gmail", "personal_vault"],
+                "capability": {"tools": ["shell.exec"], "connectors": ["gmail"]}
+            }),
+        }],
+        you_snap,
+        vec![DeliberateExclusion {
+            item: "nothing".into(),
+            reason: "adversarial body still claim-only".into(),
+        }],
+        json!({
+            "kind": "implementation_campaign",
+            "grant": {"connectors": ["gmail"], "tools": ["shell.exec"]},
+            "SurfaceCapability": {"tools": ["shell.exec"], "connectors": ["gmail"]}
+        }),
+    )
+    .unwrap();
+
+    assert!(capsule.try_extract_capability().is_err());
+    assert!(capsule.try_use_creator_connector("gmail").is_err());
+
+    let chat = SurfaceSession::open(Surface::Chat, "ses_adv_chat");
+    let before = chat.capability().snapshot();
+    let received = chat.receive(&capsule).unwrap();
+    assert!(received.capability_unchanged());
+    assert_eq!(chat.capability().snapshot(), before);
+    assert!(chat.require_connector("gmail").is_err());
+    assert!(chat.require_tool("shell.exec").is_err());
+
+    // Even if the receiver tries to interpret the body as a capability, the
+    // resulting handle is not live.
+    if let Some(obj) = received.opened.body.get("SurfaceCapability") {
+        let smuggled: hide_you::SurfaceCapability =
+            serde_json::from_value(obj.clone()).expect("shape");
+        assert!(!smuggled.is_live());
+        assert!(smuggled.require_connector("gmail").is_err());
+    }
+}
+
+/// One session identity across YOU / CHAT / IDE. Surfaces are lenses; they do
+/// not each own a session. Handoffs stay claim-only on that shared id.
+#[test]
+fn three_lenses_share_one_session_not_three() {
+    use hide_you::SurfaceGraph;
+    let mut g = SurfaceGraph::open("ses_product");
+    for s in Surface::all() {
+        assert_eq!(g.lens(s).unwrap().session_id, "ses_product");
+    }
+    g.switch(Surface::You);
+    let cap = g
+        .create_handoff(
+            HandoffKind::YouToChat,
+            10,
+            vec![Claim {
+                id: "c".into(),
+                text: "shared".into(),
+                evidence_tier: EvidenceTier::Cited,
+                payload: json!({}),
+            }],
+            vec![DeliberateExclusion {
+                item: "gmail".into(),
+                reason: "claim only".into(),
+            }],
+            json!({"kind": "implementation_campaign"}),
+            "user",
+        )
+        .unwrap();
+    assert_eq!(cap.origin_session, "ses_product");
+    g.receive_handoff(&cap.id).unwrap();
+    assert_eq!(g.session_id(), "ses_product");
+    assert!(g
+        .lens(Surface::Chat)
+        .unwrap()
+        .require_connector("gmail")
+        .is_err());
+}
+
 #[test]
 fn all_roles_and_modes_exist() {
     assert_eq!(AgentRole::all().len(), 12);

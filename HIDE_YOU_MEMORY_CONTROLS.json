@@ -112,6 +112,21 @@
       "name": "property_eight_scopes_closed_vocabulary",
       "path": "crates/hawking-context/src/memory_classes.rs",
       "proves": "exactly eight scopes; parse is closed"
+    },
+    {
+      "name": "property_user_db_legacy_schema_migrates_idempotently",
+      "path": "crates/hawking-context/src/memory_classes.rs",
+      "proves": "PRAGMA table_info + ALTER migrates an existing user.db that lacks control columns; CREATE TABLE IF NOT EXISTS alone is insufficient"
+    },
+    {
+      "name": "property_forget_clears_dangling_edges_and_export",
+      "path": "crates/hawking-context/src/memory_classes.rs",
+      "proves": "forget deletes the row, supersedes pointers, and scope-promotion rows; subsequent export retains no residual of the forgotten id"
+    },
+    {
+      "name": "property_export_carries_no_capability_and_no_reimport_path",
+      "path": "crates/hawking-context/src/memory_classes.rs",
+      "proves": "export JSON has no tools/connectors grant vocabulary; deserializing a stale export does not rehydrate the store"
     }
   ],
   "non_goals": [

@@ -10,11 +10,11 @@ Generated from `hawking-adapters` — do not hand-edit.
 | Gemma 2 | DECLARED | false | false | `packs/hawking-adapters-extra (gemma2)` |
 | GLM (gravity glm_moe_dsa) | SMALL_REAL_CHECKPOINT | true | true | `crates/hawking-core/src/model/gravity_engine.rs` |
 | Kimi K2.x | SYNTHETIC_PARITY | false | false | `KIMI_K26_ADAPTER_TWIN.json (reference twin; no in-tree serve module)` |
-| Llama (dense GGUF + gravity) | SMALL_REAL_CHECKPOINT | true | true | `crates/hawking-core/src/model/llama.rs` |
+| Llama (dense GGUF + gravity) | SOURCE_HEADER_VALIDATED | true | true | `crates/hawking-core/src/model/llama.rs` |
 | MiniMax | DECLARED | false | false | `(none — declared only)` |
-| Mistral / Mixtral | SMALL_REAL_CHECKPOINT | true | true | `crates/hawking-core/src/model/llama.rs (+ pack mixtral)` |
+| Mistral / Mixtral | SOURCE_HEADER_VALIDATED | true | true | `crates/hawking-core/src/model/llama.rs (+ pack mixtral)` |
 | Phi-3 | DECLARED | false | false | `packs/hawking-adapters-extra (phi3)` |
-| Qwen (dense + MoE) | SMALL_REAL_CHECKPOINT | true | true | `crates/hawking-core/src/model/qwen_dense.rs` |
+| Qwen (dense + MoE) | SOURCE_HEADER_VALIDATED | true | true | `crates/hawking-core/src/model/qwen_dense.rs` |
 | State-space (RWKV7 + Mamba2) | DECLARED | true | true | `crates/hawking-core/src/model/rwkv7.rs` |
 
 ## Gaps
@@ -46,7 +46,8 @@ Generated from `hawking-adapters` — do not hand-edit.
 ### llama
 
 - no standing PRODUCTION parity receipt
-- smoke tests skip when weights absent
+- smoke and gravity_llama_forward skip when weights/artifacts are absent
+- REAL_TENSOR_DECODE / SMALL_REAL_CHECKPOINT require committed fixtures or on-disk parents
 
 ### minimax
 
@@ -59,6 +60,7 @@ Generated from `hawking-adapters` — do not hand-edit.
 - mixtral MoE not in shipping load_engine
 - seed-c ArchAdapter does not execute
 - no PRODUCTION receipt
+- SMALL_REAL_CHECKPOINT smoke skips when no GGUF is on disk
 
 ### phi
 
@@ -70,6 +72,7 @@ Generated from `hawking-adapters` — do not hand-edit.
 
 - not PRODUCTION: no standing production parity receipt under continuous serve
 - large MoE parents (235B/397B) are campaign-side, not this registry's PRODUCTION claim
+- integration/parity tests skip or are #[ignore] without on-disk parents
 
 ### state_space
 

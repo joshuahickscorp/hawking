@@ -1,7 +1,7 @@
 //! Qwen dense / MoE family.
 //!
-//! FULL_PARENT_VALIDATED on small parents via integration/parity tests.
-//! serve-registered via load_engine. Not PRODUCTION.
+//! Stage A source-header validated. Higher grades (small checkpoint / full parent)
+//! require on-disk parents; the cited integration tests skip without them.
 
 use crate::abi::{
     AbiField, AbiListField, ContextLimits, Evidence, EvidenceKind, FamilyAbi, FamilyAdapter,
@@ -25,18 +25,23 @@ const EVIDENCE: &[Evidence] = &[
         kind: EvidenceKind::Description,
     },
     Evidence {
+        path: "adapters/receipts/ADAPTER_QWEN_RECEIPT.json",
+        claim: "Stage A: official config/tokenizer/safetensors header parsed and mapped",
+        kind: EvidenceKind::SourceHeader,
+    },
+    Evidence {
         path: "crates/hawking-core/tests/integration_greedy_64.rs",
-        claim: "greedy integration path used as parent-validation gate",
+        claim: "greedy integration path (skips when no model on disk — not live grade evidence)",
         kind: EvidenceKind::FullParentValidation,
     },
     Evidence {
         path: "crates/hawking-core/tests/cpu_backend_parity.rs",
-        claim: "CPU backend parity against live engine",
+        claim: "CPU backend parity (skips when no qwen0.5b weights)",
         kind: EvidenceKind::FullParentValidation,
     },
     Evidence {
         path: "crates/hawking-core/tests/qwen_tq_serve_parity.rs",
-        claim: "TQ serve parity test (feature-gated)",
+        claim: "TQ serve parity (#[ignore] + skips without weights/sidecar)",
         kind: EvidenceKind::SmallCheckpointRun,
     },
     Evidence {
@@ -49,6 +54,7 @@ const EVIDENCE: &[Evidence] = &[
 const GAPS: &[&str] = &[
     "not PRODUCTION: no standing production parity receipt under continuous serve",
     "large MoE parents (235B/397B) are campaign-side, not this registry's PRODUCTION claim",
+    "integration/parity tests skip or are #[ignore] without on-disk parents",
 ];
 
 const SOURCE_CLASSES: &[&str] = &[
@@ -100,10 +106,9 @@ impl FamilyAdapter for QwenFamily {
             id: "qwen",
             aliases: ALIASES,
             display_name: "Qwen (dense + MoE)",
-            // Demoted from FullParentValidated by tools/adapters/verify_grades.py: the cited
-            // evidence (integration_greedy_64.rs, cpu_backend_parity.rs) skips when no GGUF is
-            // on disk, and none is. A small parent is also not a full parent.
-            level: SupportLevel::SmallRealCheckpoint,
+            // Demoted from FullParentValidated then SmallRealCheckpoint: cited tests skip
+            // or are #[ignore] without on-disk parents. Stage A source-header receipt is live.
+            level: SupportLevel::SourceHeaderValidated,
             evidence: EVIDENCE,
             module: "crates/hawking-core/src/model/qwen_dense.rs",
             executes: true,

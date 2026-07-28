@@ -45,7 +45,41 @@ fn round_trip_every_category() {
             assert_eq!(again.verification, ContentVerification::TargetVerified);
             assert_eq!(again.event.payload["probe"], cat.as_str());
         }
-        assert_eq!(all_categories().len(), 16);
+        assert_eq!(all_categories().len(), 24);
+    });
+}
+
+#[test]
+fn seventeen_you_events_round_trip_on_same_bus() {
+    use hawking_events::{ProducingSurface, YOU_EVENTS};
+    with_deterministic_ids(400, || {
+        let ses = SessionId::from("ses_you");
+        assert_eq!(YOU_EVENTS.len(), 17);
+        for (i, spec) in YOU_EVENTS.iter().enumerate() {
+            let c = spec.sequence(
+                (i as u64) + 1,
+                ses.clone(),
+                json!({ "probe": spec.event.as_pascal() }),
+                None,
+            );
+            assert_eq!(c.kind(), spec.kind);
+            assert_eq!(c.category, spec.category);
+            assert_eq!(c.surface, ProducingSurface::You);
+            assert_eq!(c.subsystem, Subsystem::HideYou);
+            assert_eq!(c.verification, spec.default_verification);
+            assert!(!c.id().as_str().is_empty());
+            assert_eq!(c.seq(), (i as u64) + 1);
+            assert_eq!(c.session_id(), &ses);
+
+            let again = c.round_trip_json().expect("serde round-trip");
+            assert_eq!(again.kind(), spec.kind);
+            assert_eq!(again.surface, ProducingSurface::You);
+            assert_eq!(again.verification, spec.default_verification);
+            // Provisional events must remain visibly provisional after round-trip.
+            if spec.default_verification == ContentVerification::Provisional {
+                assert_eq!(again.verification, ContentVerification::Provisional);
+            }
+        }
     });
 }
 

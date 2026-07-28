@@ -41,6 +41,10 @@ pub struct CompileInput {
 pub struct CompiledContext {
     pub prompt: String,
     pub manifest: ContextManifest,
+    /// `true` when packing used the `chars/4` heuristic rather than a real
+    /// tokenizer. Callers sealing a context meter must surface this so a UI
+    /// never treats estimated occupancy as tokenizer-true.
+    pub tokens_estimated: bool,
 }
 
 /// A candidate span from a source. Bodies may be present (`text`) or deferred:
@@ -298,6 +302,16 @@ impl ContextCompiler {
     pub fn with_counter(mut self, counter: TokenCounter) -> Self {
         self.counter = counter;
         self
+    }
+
+    /// True when packing will use the `chars/4` heuristic (no real tokenizer).
+    pub fn tokens_estimated(&self) -> bool {
+        !self.counter.is_accurate()
+    }
+
+    /// The counter this compiler will pack against (for host sealing / tests).
+    pub fn counter(&self) -> &TokenCounter {
+        &self.counter
     }
 
     /// Install an embedding client for relevance/redundancy scoring. Without
@@ -574,6 +588,7 @@ impl ContextCompiler {
         Ok(CompiledContext {
             prompt: prompt_parts.join("\n\n"),
             manifest,
+            tokens_estimated: !self.counter.is_accurate(),
         })
     }
 

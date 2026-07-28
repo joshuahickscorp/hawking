@@ -778,6 +778,39 @@ impl ClassedMemorySystem {
         Ok(n)
     }
 
+    /// Cap unbounded session growth: drop the oldest episodic rows for
+    /// `session_id` until at most `keep` remain. Ids are ULIDs (time-ordered),
+    /// so ascending order is oldest-first. Returns the number of rows deleted.
+    pub fn prune_episodic_session(&self, session_id: &str, keep: usize) -> Result<usize> {
+        let conn = self.workspace_db.lock();
+        let count: i64 = conn
+            .query_row(
+                "SELECT COUNT(*) FROM mem_episodic WHERE session_id = ?1",
+                [session_id],
+                |r| r.get(0),
+            )
+            .map_err(sql_err)?;
+        let excess = (count as usize).saturating_sub(keep);
+        if excess == 0 {
+            return Ok(0);
+        }
+        // Same-table DELETE needs a nested subquery in SQLite.
+        let n = conn
+            .execute(
+                "DELETE FROM mem_episodic WHERE id IN (
+                    SELECT id FROM (
+                        SELECT id FROM mem_episodic
+                        WHERE session_id = ?1
+                        ORDER BY id ASC
+                        LIMIT ?2
+                    )
+                )",
+                rusqlite::params![session_id, excess as i64],
+            )
+            .map_err(sql_err)?;
+        Ok(n)
+    }
+
     /// Write semantic_project. Requires [`ProjectWriteCap`].
     pub fn write_semantic_project(
         &self,
@@ -1258,16 +1291,26 @@ impl ClassedMemorySystem {
     /// **forget** — real deletion for user-owned data. Not a tombstone.
     ///
     /// Returns true if a record was removed. Works for every class, including
-    /// working (RAM) and durable tables.
+    /// working (RAM) and durable tables. Also clears dangling edges: scope
+    /// promotions for the id, and any `supersedes` pointers that named it.
+    /// Export after forget must not reintroduce the forgotten row via residual
+    /// audit edges.
     pub fn forget(&self, id: &str) -> Result<bool> {
+        let mut removed = false;
         // Working (RAM)
         {
             let mut map = self.working.lock();
-            for (_turn, rows) in map.iter_mut() {
+            for rows in map.values_mut() {
                 let before = rows.len();
                 rows.retain(|r| r.id != id);
                 if rows.len() < before {
-                    return Ok(true);
+                    removed = true;
+                }
+                // Clear supersedes edges in RAM that pointed at the forgotten id.
+                for r in rows.iter_mut() {
+                    if r.supersedes.as_deref() == Some(id) {
+                        r.supersedes = None;
+                    }
                 }
             }
         }
@@ -1284,9 +1327,21 @@ impl ClassedMemorySystem {
                     .execute(&format!("DELETE FROM {table} WHERE id = ?1"), [id])
                     .map_err(sql_err)?;
                 if n > 0 {
-                    return Ok(true);
+                    removed = true;
                 }
+                // Null supersedes edges that named the forgotten record.
+                conn.execute(
+                    &format!("UPDATE {table} SET supersedes = NULL WHERE supersedes = ?1"),
+                    [id],
+                )
+                .map_err(sql_err)?;
             }
+            // Scope-promotion audit rows for a forgotten record are dangling edges.
+            conn.execute(
+                "DELETE FROM mem_scope_promotions WHERE record_id = ?1",
+                [id],
+            )
+            .map_err(sql_err)?;
         }
         // User db
         {
@@ -1295,10 +1350,15 @@ impl ClassedMemorySystem {
                 .execute("DELETE FROM mem_user WHERE id = ?1", [id])
                 .map_err(sql_err)?;
             if n > 0 {
-                return Ok(true);
+                removed = true;
             }
+            conn.execute(
+                "UPDATE mem_user SET supersedes = NULL WHERE supersedes = ?1",
+                [id],
+            )
+            .map_err(sql_err)?;
         }
-        Ok(false)
+        Ok(removed)
     }
 
     /// Forget every record in a personal scope (real deletion).
@@ -1675,6 +1735,36 @@ fn init_workspace_schema(conn: &Connection) -> Result<()> {
         "#,
     )
     .map_err(sql_err)?;
+    // Same class of bug as user.db: CREATE TABLE IF NOT EXISTS never alters an
+    // existing workspace file that pre-dates the control columns.
+    migrate_add_missing_columns(
+        conn,
+        "mem_episodic",
+        &[
+            ("scope", "TEXT NOT NULL DEFAULT 'conversation'"),
+            ("pinned", "INTEGER NOT NULL DEFAULT 0"),
+            ("expired", "INTEGER NOT NULL DEFAULT 0"),
+            ("expire_at_ms", "INTEGER"),
+            ("supersedes", "TEXT"),
+        ],
+    )?;
+    for table in [
+        "mem_semantic_project",
+        "mem_procedural",
+        "mem_verification",
+    ] {
+        migrate_add_missing_columns(
+            conn,
+            table,
+            &[
+                ("scope", "TEXT NOT NULL DEFAULT 'workspace'"),
+                ("pinned", "INTEGER NOT NULL DEFAULT 0"),
+                ("expired", "INTEGER NOT NULL DEFAULT 0"),
+                ("expire_at_ms", "INTEGER"),
+                ("supersedes", "TEXT"),
+            ],
+        )?;
+    }
     Ok(())
 }
 
@@ -1698,6 +1788,54 @@ fn init_user_schema(conn: &Connection) -> Result<()> {
         "#,
     )
     .map_err(sql_err)?;
+    migrate_add_missing_columns(
+        conn,
+        "mem_user",
+        &[
+            ("scope", "TEXT NOT NULL DEFAULT 'global'"),
+            ("pinned", "INTEGER NOT NULL DEFAULT 0"),
+            ("expired", "INTEGER NOT NULL DEFAULT 0"),
+            ("expire_at_ms", "INTEGER"),
+            ("supersedes", "TEXT"),
+        ],
+    )?;
+    Ok(())
+}
+
+/// Add columns an older database is missing.
+///
+/// `CREATE TABLE IF NOT EXISTS` does nothing to a table that already exists, and the user
+/// class is deliberately cross-workspace -- its database lives under the user root and
+/// survives every workspace, every test run and every schema change. So a `user.db` written
+/// before the scope/retention columns existed stays exactly as it was while the SELECT that
+/// reads it grows new columns, and every read fails with "no such column: scope".
+///
+/// That is what happened here: the file was created by the first six-class lane, the second
+/// lane added the columns to CREATE TABLE and to the query, and nothing migrated the file in
+/// between. Idempotent, and cheap enough to run on every open.
+fn migrate_add_missing_columns(
+    conn: &Connection,
+    table: &str,
+    columns: &[(&str, &str)],
+) -> Result<()> {
+    let mut have: Vec<String> = Vec::new();
+    {
+        let mut stmt = conn
+            .prepare(&format!("PRAGMA table_info({table})"))
+            .map_err(sql_err)?;
+        let rows = stmt
+            .query_map([], |r| r.get::<_, String>(1))
+            .map_err(sql_err)?;
+        for r in rows {
+            have.push(r.map_err(sql_err)?);
+        }
+    }
+    for (name, decl) in columns {
+        if !have.iter().any(|h| h == name) {
+            conn.execute_batch(&format!("ALTER TABLE {table} ADD COLUMN {name} {decl};"))
+                .map_err(sql_err)?;
+        }
+    }
     Ok(())
 }
 
@@ -2356,6 +2494,171 @@ mod tests {
             assert_eq!(PersonalScope::parse(s.as_str()), Some(s));
         }
         assert!(PersonalScope::parse("ambient_global").is_none());
+    }
+
+    /// The exact bug class that shipped once: user.db already exists without the
+    /// control columns, CREATE TABLE IF NOT EXISTS is a no-op, and reads fail
+    /// with "no such column". Migration must be PRAGMA table_info + ALTER.
+    #[test]
+    fn property_user_db_legacy_schema_migrates_idempotently() {
+        let dir = tempfile::tempdir().unwrap();
+        let wdb = dir.path().join("ws.db");
+        let udb = dir.path().join("user_legacy.db");
+
+        // Simulate a user.db written by the first six-class lane (no scope/pin).
+        {
+            let conn = rusqlite::Connection::open(&udb).unwrap();
+            conn.execute_batch(
+                r#"
+                CREATE TABLE mem_user (
+                    id TEXT PRIMARY KEY,
+                    text TEXT NOT NULL,
+                    importance REAL NOT NULL,
+                    workspace_id TEXT,
+                    session_id TEXT,
+                    provenance_json TEXT NOT NULL,
+                    evidence_tier TEXT
+                );
+                INSERT INTO mem_user
+                  (id, text, importance, workspace_id, session_id, provenance_json, evidence_tier)
+                VALUES
+                  ('user_legacy_1', 'prefer terse', 0.9, NULL, NULL,
+                   '{"writer":"user","written_at_ms":1,"turn_id":null,"run_id":null,"evidence":[],"authority":"user_explicit"}',
+                   NULL);
+                "#,
+            )
+            .unwrap();
+            // Confirm pre-migration shape.
+            let mut stmt = conn.prepare("PRAGMA table_info(mem_user)").unwrap();
+            let cols: Vec<String> = stmt
+                .query_map([], |r| r.get::<_, String>(1))
+                .unwrap()
+                .map(|r| r.unwrap())
+                .collect();
+            assert!(!cols.iter().any(|c| c == "scope"));
+            assert!(!cols.iter().any(|c| c == "pinned"));
+        }
+
+        // Open must migrate, not fail on SELECT scope.
+        let sys = ClassedMemorySystem::open("ws-mig", &wdb, &udb).unwrap();
+        let listed = sys.list_class(MemoryClass::User).unwrap();
+        assert_eq!(listed.len(), 1);
+        assert_eq!(listed[0].id, "user_legacy_1");
+        assert_eq!(listed[0].text, "prefer terse");
+        assert_eq!(listed[0].scope, PersonalScope::Global); // default after migrate
+        assert!(!listed[0].pinned);
+
+        // Pin / forget work on the migrated row.
+        sys.pin("user_legacy_1", true).unwrap();
+        assert!(sys.get("user_legacy_1").unwrap().unwrap().pinned);
+
+        // Idempotent: reopen does not fail or duplicate columns.
+        let sys2 = ClassedMemorySystem::open("ws-mig", &wdb, &udb).unwrap();
+        assert_eq!(sys2.count(MemoryClass::User).unwrap(), 1);
+        assert!(sys2.get("user_legacy_1").unwrap().unwrap().pinned);
+    }
+
+    /// Forget is real deletion of the record AND of dangling edges (promotions,
+    /// supersedes pointers). Export must not retain residual audit of forgotten ids.
+    #[test]
+    fn property_forget_clears_dangling_edges_and_export() {
+        let sys = system();
+        let old = sys
+            .write_user(
+                &UserWriteCap::mint(),
+                "user",
+                ClassMemoryDraft::new("old preference"),
+            )
+            .unwrap();
+        let corrected = sys
+            .correct_user(
+                &UserWriteCap::mint(),
+                &old.id,
+                "user",
+                "new preference",
+            )
+            .unwrap();
+        assert_eq!(corrected.supersedes.as_deref(), Some(old.id.as_str()));
+
+        // Promote a workspace episodic so a promotion row exists for the id.
+        let epi = sys
+            .write_episodic(
+                &EpisodicWriteCap::mint(),
+                "event",
+                ClassMemoryDraft::new("connector blob")
+                    .with_scope(PersonalScope::Connector)
+                    .with_session("s-edge"),
+            )
+            .unwrap();
+        sys.set_scope(&epi.id, PersonalScope::Global, "user")
+            .unwrap();
+        assert_eq!(sys.list_promotions().unwrap().len(), 1);
+
+        // Forget the superseded old user record: supersedes edge on corrected clears.
+        assert!(sys.forget(&old.id).unwrap());
+        let still = sys.get(&corrected.id).unwrap().unwrap();
+        assert!(
+            still.supersedes.is_none(),
+            "supersedes edge must not dangle after forget"
+        );
+
+        // Forget the promoted episodic: promotion row must go too.
+        assert!(sys.forget(&epi.id).unwrap());
+        assert!(
+            sys.list_promotions().unwrap().is_empty(),
+            "promotion rows for forgotten ids are dangling edges"
+        );
+
+        let exp = sys.export().unwrap();
+        assert!(!exp.records.iter().any(|r| r.id == old.id));
+        assert!(!exp.records.iter().any(|r| r.id == epi.id));
+        assert!(!exp.promotions.iter().any(|p| p.record_id == epi.id));
+        // Surviving corrected row remains, without a pointer at the forgotten id.
+        assert!(exp.records.iter().any(|r| r.id == corrected.id));
+        let json = serde_json::to_string(&exp).unwrap();
+        assert!(!json.contains(&old.id));
+        assert!(!json.contains("connector blob"));
+    }
+
+    /// Export is portable record data, not a capability grant. There is no
+    /// import path that rehydrates forgotten records or mints live authority.
+    #[test]
+    fn property_export_carries_no_capability_and_no_reimport_path() {
+        let sys = system();
+        let id = sys
+            .write_user(
+                &UserWriteCap::mint(),
+                "user",
+                ClassMemoryDraft::new("secret preference xyz"),
+            )
+            .unwrap()
+            .id;
+        let exp = sys.export().unwrap();
+        let json = serde_json::to_string(&exp).unwrap();
+        // No tool/connector grant vocabulary in the export schema.
+        assert!(!json.contains("\"tools\""));
+        assert!(!json.contains("\"connectors\""));
+        assert!(!json.contains("JobCapability"));
+        assert!(!json.contains("SurfaceCapability"));
+        assert_eq!(exp.schema, "hide.you.memory_export.v1");
+
+        // Forget removes content from subsequent export (no outliving copy).
+        assert!(sys.forget(&id).unwrap());
+        let after = sys.export().unwrap();
+        let after_json = serde_json::to_string(&after).unwrap();
+        assert!(!after_json.contains("secret preference xyz"));
+        assert!(!after.records.iter().any(|r| r.id == id));
+
+        // ClassedMemorySystem has no import_export / apply_export API that would
+        // reintroduce the forgotten row. Round-tripping the pre-forget JSON into
+        // MemoryExport is data only — it does not write itself back.
+        let stale: MemoryExport = serde_json::from_str(&json).unwrap();
+        assert!(stale.records.iter().any(|r| r.id == id));
+        assert!(
+            sys.get(&id).unwrap().is_none(),
+            "deserializing an old export must not rehydrate the store"
+        );
+        assert_eq!(sys.count(MemoryClass::User).unwrap(), 0);
     }
 }
 

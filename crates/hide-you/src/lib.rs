@@ -46,6 +46,7 @@ pub mod modes;
 pub mod project;
 pub mod promotion;
 pub mod roles;
+pub mod session_graph;
 pub mod surface;
 pub mod swarm;
 
@@ -67,5 +68,8 @@ pub use promotion::{
     Conclusion, ConclusionRisk, PromotionBoard, PromotionDecision, PromotionEvidence, VoteTally,
 };
 pub use roles::AgentRole;
+pub use session_graph::{
+    CapsuleView, LensView, OpenedCapsuleView, SurfaceGraph, SurfaceGraphView,
+};
 pub use surface::{Surface, SurfaceDefaults};
 pub use swarm::{Swarm, SwarmId, SwarmStatus};

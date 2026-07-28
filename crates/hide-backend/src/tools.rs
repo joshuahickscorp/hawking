@@ -205,19 +205,51 @@ fn normalize(path: &Path) -> PathBuf {
 /// ponytail: one lease at a time. Two concurrent approved tasks in one process would need a map
 /// keyed by session; the permission request carries no session id, so that upgrade needs a task
 /// context on the request first.
+///
+/// Production (`cfg(not(test))`): process-global — one slot for the whole process. That is the
+/// product rule: a single standing write grant, fail-closed on restart.
+///
+/// Under `cfg(test)` the slot is **thread-local**. libtest runs each unit test on its own worker
+/// thread, and every lease-touching free function (`install` / `revoke*` / `active`) is reached
+/// from that thread (the default `#[tokio::test]` runtime is current-thread). Parallel tests
+/// therefore cannot clobber each other's grant via a shared static, which is what made
+/// `every_write_lease_revocation_trigger_revokes` order-dependent when another test's
+/// `CancelRun` / `new_session` / etc. revoked the one process-wide slot mid-assertion.
+/// Downstream crates that depend on this one still see the process-global production shape,
+/// because they compile this crate without `cfg(test)`.
+#[cfg(not(test))]
 static LEASE: std::sync::RwLock<Option<WriteLease>> = std::sync::RwLock::new(None);
+
+#[cfg(test)]
+std::thread_local! {
+    static LEASE: std::sync::RwLock<Option<WriteLease>> = const { std::sync::RwLock::new(None) };
+}
+
+/// Run `f` against the lease slot for this process (production) or this test thread (`cfg(test)`).
+fn with_lease_slot<R>(f: impl FnOnce(&std::sync::RwLock<Option<WriteLease>>) -> R) -> R {
+    #[cfg(not(test))]
+    {
+        f(&LEASE)
+    }
+    #[cfg(test)]
+    {
+        LEASE.with(|slot| f(slot))
+    }
+}
 
 /// The lease currently in force, if any.
 pub fn active_write_lease() -> Option<WriteLease> {
-    LEASE.read().ok().and_then(|l| l.clone())
+    with_lease_slot(|slot| slot.read().ok().and_then(|l| l.clone()))
 }
 
 /// Install a lease, replacing any lease already held (a scope change is a new grant, and the old
 /// scope stops being permitted the moment the new one lands).
 pub fn install_write_lease(lease: WriteLease) -> WriteLease {
-    if let Ok(mut slot) = LEASE.write() {
-        *slot = Some(lease.clone());
-    }
+    with_lease_slot(|slot| {
+        if let Ok(mut guard) = slot.write() {
+            *guard = Some(lease.clone());
+        }
+    });
     lease
 }
 
@@ -244,11 +276,13 @@ pub fn revoke_write_lease_for_repo(repo_id: &str) -> Option<WriteLease> {
 }
 
 fn revoke_write_lease_if(pred: impl Fn(&WriteLease) -> bool) -> Option<WriteLease> {
-    let mut slot = LEASE.write().ok()?;
-    match slot.as_ref().filter(|l| pred(l)) {
-        Some(_) => slot.take(),
-        None => None,
-    }
+    with_lease_slot(|slot| {
+        let mut guard = slot.write().ok()?;
+        match guard.as_ref().filter(|l| pred(l)) {
+            Some(_) => guard.take(),
+            None => None,
+        }
+    })
 }
 
 /// The ONE lease check, read by the ONE permission wrapper below.
@@ -316,14 +350,28 @@ impl<E: PermissionEngine> PermissionEngine for GateReleaseAware<E> {
     }
 }
 
-/// Serializes every test that touches the process-global [`LEASE`]. One lease per process is the
-/// design, so two tests installing one concurrently would read each other's grant.
+/// Clears this test thread's lease slot on entry (and on drop). Isolation between parallel tests
+/// comes from the thread-local slot itself — see [`LEASE`] — not from a process-wide mutex. A
+/// mutex cannot fix the class: any test that fires `CancelRun` / `new_session` / etc. revokes
+/// through the free functions without opting into a guard, so serialization only ever covered
+/// the tests that remembered to take it. The guard remains as hygiene for sequential reuse of
+/// a libtest worker thread that may still hold a leftover grant from a prior case.
 #[cfg(test)]
-pub(crate) fn lease_test_guard() -> std::sync::MutexGuard<'static, ()> {
-    static LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
-    let guard = LOCK.lock().unwrap_or_else(|p| p.into_inner());
+pub(crate) fn lease_test_guard() -> LeaseTestGuard {
     revoke_write_lease("test setup");
-    guard
+    LeaseTestGuard
+}
+
+/// Held for the duration of a lease-touching test so teardown always clears the thread slot.
+#[cfg(test)]
+#[must_use]
+pub(crate) struct LeaseTestGuard;
+
+#[cfg(test)]
+impl Drop for LeaseTestGuard {
+    fn drop(&mut self) {
+        revoke_write_lease("test teardown");
+    }
 }
 
 pub fn build_default_tool_dispatcher(

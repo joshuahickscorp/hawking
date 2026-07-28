@@ -64,12 +64,16 @@ pub fn load_engine(weights: &Path, mut config: EngineConfig) -> Result<Box<dyn E
     // opened as a GGUF fails with a magic-number error that says nothing
     // useful about what actually happened.
     #[cfg(target_os = "macos")]
-    if gravity_engine::GravityEngine::is_gravity(weights) {
+    if gravity_engine::GravityEngine::is_gravity(weights)
+        || gravity_engine::GravityEngine::is_activation_aware(weights)
+    {
         let e = gravity_engine::GravityEngine::load(weights, config)?;
         return Ok(Box::new(e));
     }
     #[cfg(not(target_os = "macos"))]
-    if gravity_engine::GravityEngine::is_gravity(weights) {
+    if gravity_engine::GravityEngine::is_gravity(weights)
+        || gravity_engine::GravityEngine::is_activation_aware(weights)
+    {
         return Err(Error::Model(
             "this is a .gravity artifact; its runtime is Metal-only and this is not macOS"
                 .into(),

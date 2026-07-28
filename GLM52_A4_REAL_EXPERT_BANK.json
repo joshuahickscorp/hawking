@@ -1,0 +1,73 @@
+{
+  "schema": "hawking.representation.a4_real_bank.v1",
+  "at": "2026-07-27T12:19:16Z",
+  "question": "do 256 routed experts serving one layer share structure a shared latent basis can exploit?",
+  "bank_size": 70,
+  "expert_shape": [
+    2048,
+    6144
+  ],
+  "constant_mean_cosine_null": 0.12457,
+  "points": [
+    {
+      "arm": "A4_real_bank",
+      "basis": 1,
+      "bpw": 0.22857,
+      "sub_bit": true,
+      "cosine": 0.12501,
+      "relerr": 0.99215,
+      "beats_null": true
+    },
+    {
+      "arm": "A4_real_bank",
+      "basis": 2,
+      "bpw": 0.45715,
+      "sub_bit": true,
+      "cosine": 0.1755,
+      "relerr": 0.98448,
+      "beats_null": true
+    },
+    {
+      "arm": "A4_real_bank",
+      "basis": 4,
+      "bpw": 0.91429,
+      "sub_bit": true,
+      "cosine": 0.24704,
+      "relerr": 0.969,
+      "beats_null": true
+    },
+    {
+      "arm": "A4_real_bank",
+      "basis": 8,
+      "bpw": 1.82858,
+      "sub_bit": false,
+      "cosine": 0.34729,
+      "relerr": 0.93775,
+      "beats_null": true
+    },
+    {
+      "arm": "A4_real_bank",
+      "basis": 16,
+      "bpw": 3.65716,
+      "sub_bit": false,
+      "cosine": 0.48817,
+      "relerr": 0.87274,
+      "beats_null": true
+    },
+    {
+      "arm": "A4_real_bank",
+      "basis": 32,
+      "bpw": 7.31433,
+      "sub_bit": false,
+      "cosine": 0.68523,
+      "relerr": 0.7283,
+      "beats_null": true
+    }
+  ],
+  "per_expert_baseline": {
+    "arm": "A1_per_expert",
+    "rank": 64,
+    "bpw": 0.66676,
+    "cosine": 0.29795
+  }
+}

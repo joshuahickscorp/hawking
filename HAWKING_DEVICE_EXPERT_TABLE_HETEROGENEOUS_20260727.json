@@ -1,0 +1,132 @@
+{
+  "schema": "hawking.temporal_gravity.mechanism_receipt.v1",
+  "created_at_utc": "2026-07-27T13:14:44Z",
+  "status": "HETEROGENEOUS_SELECTED_ROUTE_INTEGRATED_DEFAULT_OFF",
+  "mechanism": "Admit exact R4, packed R0, and device-native BF16 expert projections into the persistent selected-route lease; validate supported kinds on device; dispatch per lease; and bind exact representation/extent metadata to the immutable route for hit accounting without an ID or metrics readback.",
+  "base_commit": "6fccd26034589076dffd5c951e8a87eac09adef3",
+  "scope": {
+    "runtime_default_changed": false,
+    "production_forward_wired": true,
+    "persistent_route_policy": "one selected route plus one shared triplet per sparse layer",
+    "sealed_math_preserve_touched": false,
+    "mop_touched": false,
+    "flagship_latency_claim": false
+  },
+  "admission": {
+    "r4": "D32/S1/sub32/card256/bits8 with exact rows, columns, packed extent, and four-byte tail padding",
+    "r0": "D8/S1/sub8/card128/bits7 with exact rows, columns, packed extent, and four-byte tail padding",
+    "native_bf16": "row-major device buffer at least rows*cols*2 bytes with no secondary pointer",
+    "native_cpu": "REJECT_FALLBACK",
+    "other_pq": "REJECT_FALLBACK",
+    "zero_or_inconsistent_geometry": "REJECT_FALLBACK"
+  },
+  "dispatch": {
+    "pq_only_lease": "One established indirect PQ dispatch per projection.",
+    "native_only_lease": "One sequential native-BF16 indirect dispatch per projection.",
+    "heterogeneous_lease": "Paired PQ/native dispatches; exactly one handles the descriptor kind and the other returns without writing.",
+    "routed_and_shared_modes_selected_separately": true,
+    "r4_only_dispatch_count_changed": false,
+    "validation_required_kind": "PQ, native-BF16, or any-supported according to the routed lease mode"
+  },
+  "route_bound_accounting": {
+    "principle": "A hit can only select ready entries in the last immutable selected-route snapshot. The exact per-projection kind, bytes, rows, columns, and PQ parameters captured after the prior guarded miss are therefore exact hit metadata.",
+    "additional_device_readback_bytes": 0,
+    "additional_host_expert_id_readback": false,
+    "existing_hit_readback": "four-byte miss mask only",
+    "r4_projection_touches_fixture": 2,
+    "r0_projection_touches_fixture": 2,
+    "native_bf16_projection_touches_fixture": 2,
+    "other_projection_touches_fixture": 0,
+    "routed_active_bytes_fixture": 8492,
+    "shared_active_bytes_fixture": 4246,
+    "total_active_bytes_fixture": 12738,
+    "result": "PASS_EXACT_ROUTE_PARTITION"
+  },
+  "heterogeneous_numeric_parity_v2_1": {
+    "triplet": {
+      "gate": "R0 packed bits7",
+      "up": "native.bf16 sequential",
+      "down": "R4 direct-u8"
+    },
+    "hidden": 32,
+    "intermediate": 32,
+    "relative_l2": 1.015e-7,
+    "max_meaningful_relative": 2.233e-7,
+    "greedy_exact": true,
+    "top5_exact": true,
+    "dispatches": 8,
+    "command_buffer_waits": 1,
+    "result": "PASS"
+  },
+  "fail_closed_evidence": {
+    "mutation": "up projection kind changed to unsupported 99",
+    "any_supported_validation_miss_mask": 1,
+    "paired_projection_destination_preserved_bit_exact": true,
+    "result": "PASS"
+  },
+  "r4_complete_token_regression": {
+    "fixture": "/private/tmp/hawking-compact-sparse-final.ogyzB4",
+    "production_artifact": false,
+    "prompts": 4,
+    "sequential_waits": [
+      8,
+      4,
+      8,
+      8
+    ],
+    "persistent_table_waits": [
+      6,
+      3,
+      6,
+      8
+    ],
+    "greedy_exact_all_prompts": true,
+    "top5_exact_all_prompts": true,
+    "dsa_selection_exact_all_prompts": true,
+    "expert_choices_exact_all_prompts": true,
+    "result": "PASS_UNCHANGED"
+  },
+  "regression_validation": {
+    "device_expert_table_tests": {
+      "passed": 7,
+      "failed": 0
+    },
+    "full_core_library": {
+      "passed": 230,
+      "failed": 0,
+      "ignored": 3
+    },
+    "default_resident_parity": {
+      "passed": 3,
+      "failed": 0
+    },
+    "default_gpu_forward": {
+      "passed": 3,
+      "failed": 0
+    },
+    "sparse_complete_token": {
+      "passed": 1,
+      "failed": 0,
+      "prompts": 4
+    },
+    "clippy_lib_no_deps_deny_warnings": "PASS",
+    "rustfmt_selected_files": "PASS",
+    "diff_check": "PASS"
+  },
+  "qualification": {
+    "qualified": [
+      "Persistent selected-route hits may contain any exact mixture of R4, R0, and native-BF16 projections.",
+      "Routed and shared leases select dispatch modes independently.",
+      "R4-only hits preserve their prior dispatch graph, waits, and complete-token parity.",
+      "Mixed hits retain device-only expert selection and exact route-conditioned byte/operation accounting.",
+      "Unsupported representations and inconsistent buffer extents remain fail-closed and use the qualified fallback."
+    ],
+    "not_qualified": [
+      "A mixed-representation sealed Math-Preserve complete token has not run because the MOP clearance gate remains closed.",
+      "Route reuse on the sealed artifact has not been measured.",
+      "A multi-route associative lease is not admitted.",
+      "No sustained 2K/8K/32K, latency, TPS, memory-pressure, swap, or thermal promotion is claimed."
+    ],
+    "next_boundary": "After MOP clearance, profile the sealed mixed route and its reuse distribution; preserve the one-route policy unless measured misses justify a bounded associative lease."
+  }
+}
