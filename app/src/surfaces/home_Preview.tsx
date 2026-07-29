@@ -1,5 +1,5 @@
 /*
-  Preview.tsx — the live preview panel (Claude Code's localhost view, recast). A minimal browser: a URL
+  Preview.tsx — the live preview panel, a localhost view recast for this shell. A minimal browser: a URL
   bar, reload, and an iframe onto a local dev server the agent is running. Local only by intent; there is
   no chrome beyond what you need to see the work. Empty until you point it at a server.
 */

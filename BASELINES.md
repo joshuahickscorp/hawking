@@ -10,7 +10,7 @@
 
 Named machine: M3 Ultra Studio, 96 GB UMA, 819 GB/s advertised BW, 1 TB SSD. Same machine + frozen suite for all baselines. Record cold/warm, output length, TTFT, inter-token, p50/p95 wall, useful/SLO goodput, J/accepted-token, bytes moved/resident, capability per joule/byte/resident/active-param/wall-s, peak UMA, pressure, swap delta, free disk, thermal. Capability = completion clearing frozen quality gate; rejected speculative tokens are not useful work.
 
-GPT/Codex is a protected interactive tenant → use **78 GiB** process admission budget, not full 96 GB. Storage decisions use **current free space** with **150 GB hard floor + 64 GB scratch + 32 GB HF/Xet cache**. Detached supervisors own pressure/swap/thermal/RSS/disk; attached chat is not the monitor.
+The coding-agent app is a protected interactive tenant → use **78 GiB** process admission budget, not full 96 GB. Storage decisions use **current free space** with **150 GB hard floor + 64 GB scratch + 32 GB HF/Xet cache**. Detached supervisors own pressure/swap/thermal/RSS/disk; attached chat is not the monitor.
 
 ## External baselines (same box)
 

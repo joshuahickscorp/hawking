@@ -956,7 +956,7 @@ textarea:disabled {
   margin: 0 var(--ma-2) 0 2px;
 }
 
-/* Session identity in the title bar: project name + branch tag (Claude Code geometry). */
+/* Session identity in the title bar: project name + branch tag. */
 .toolbar__session {
   display: inline-flex;
   align-items: center;

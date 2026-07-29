@@ -25,6 +25,12 @@ const RMS_EPS: f32 = 1e-6;
 const ROPE_THETA: f32 = 1_000_000.0;
 const RTOL: f32 = 2e-3;
 const RTOL_MULTILAYER: f32 = 2e-2;
+/// Multi-layer absolute tolerance — looser than single-stage to absorb
+/// fp16 cancellation noise on values that pass through additive paths
+/// (residual streams routinely contain near-zero entries where small
+/// f16 rounding errors dominate the magnitude). Tracks published
+/// guidance on comparing networks up to ~1% relative without flagging
+/// model-correctness regressions.
 const ATOL_MULTILAYER: f32 = 5e-3;
 fn weights_path() -> PathBuf {
     if let Ok(p) = std::env::var("HAWKING_QWEN_GGUF") {

@@ -49,9 +49,9 @@ export function Toolbar({
           </button>
         ) : null}
         <span className="toolbar__brand" title="HIDE"><LogoH size={13} /></span>
-        {/* Chat/Code lives in the sidebar in chat mode (Claude Code geometry); the toolbar keeps it in
-            the Code chamber (which has no rail), and re-shows it as a fallback in chat mode only when
-            the rail is hidden at narrow widths, so chamber switching is never unreachable. */}
+        {/* In chat mode the chamber switch rides the top of the sidebar rail, so the toolbar keeps its
+            own copy for the Code chamber (which has no rail), and re-shows it as a fallback in chat mode
+            only when the rail is hidden at narrow widths, so chamber switching is never unreachable. */}
         <div
           className={"toolbar__switch" + (inCode ? "" : " toolbar__switch--rail-fallback")}
           role="tablist"
@@ -79,7 +79,7 @@ export function Toolbar({
             <Icon name="stop" size={12} />
           </button>
         ) : null}
-        {/* Session identity in the title bar (Claude Code geometry): project name + branch tag. */}
+        {/* Session identity in the title bar: project name + branch tag. */}
         {!inCode ? (
           <span className="toolbar__session" title={ws?.root}>
             <span className="toolbar__session-name">{ws?.repo ?? "workspace"}</span>
