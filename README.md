@@ -28,6 +28,10 @@ point is an inference stack you can read, test, and change end to end.
   times kernel variants on your own machine to pick the fastest (`autotune`).
 - Has a pure-Rust CPU path, used to check the Metal kernels produce the same tokens and to
   build off macOS.
+- Ships a desktop front-end, HIDE, under `app/`: a React/TypeScript chat and code interface
+  that talks to the same engine, plus a Tauri v2 shell that supervises the local server. The
+  web front-end is the developed part; the native shell is a build-ready scaffold that has not
+  been compiled yet.
 
 ## Build
 
