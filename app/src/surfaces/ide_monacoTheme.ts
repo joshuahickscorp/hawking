@@ -1,8 +1,8 @@
 /*
   monacoTheme.ts: the DOCTRINE Monaco theme (v3, Tadao Ando grayscale concrete + light).
-  This is the load-bearing re-skin (Self-check: "Monaco looks like VS Code"). Every Monaco color is
+  This is the load-bearing re-skin (Self-check: "Monaco looks native to the shell"). Every Monaco color is
   pinned to a v3 theme.css token value so the editor reads as a HIDE concrete chamber where the only
-  accent is LIGHT entering the dark, NOT VS Code blue and NOT the retired v2 gold.
+  accent is LIGHT entering the dark, NOT a default editor blue and NOT the retired v2 gold.
 
   Monaco's theme API takes literal hex, not CSS variables, so the v3 token values are mirrored here as
   constants. This file is the ONLY place those values are duplicated, and they trace 1:1 to theme.css.
@@ -62,7 +62,7 @@ export function hideMonacoTheme(): Monaco.editor.IStandaloneThemeData {
     colors: {
       "editor.background": "#" + T.void,
       "editor.foreground": "#" + T.text1,
-      // Gutter / chrome from the concrete ramp, never the VS Code blue-grey.
+      // Gutter / chrome from the concrete ramp, never a default blue-grey.
       "editorGutter.background": "#" + T.void,
       "editorLineNumber.foreground": "#" + T.mute,
       "editorLineNumber.activeForeground": "#" + T.light,
@@ -119,7 +119,7 @@ export function registerHideTheme(monaco: typeof Monaco): void {
 }
 
 // Editor options shared by the plain editor and the diff editor: Geist Mono, calm chrome,
-// no minimap clutter, accessible. NO VS Code default look survives this.
+// no minimap clutter, accessible. NO default editor look survives this.
 export const HIDE_EDITOR_OPTIONS: Monaco.editor.IStandaloneEditorConstructionOptions = {
   fontFamily: MONO_FONT,
   fontSize: 13,

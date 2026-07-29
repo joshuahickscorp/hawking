@@ -1,5 +1,5 @@
 /*
-  EditorArea.tsx — the center column: a VS Code tab strip over the Monaco editor group, plus a
+  EditorArea.tsx — the center column: a tab strip over the Monaco editor group, plus a
   collapsible bottom panel hosting the integrated terminal. State (open tabs, active path, diff) is
   owned by App and threaded through.
 */

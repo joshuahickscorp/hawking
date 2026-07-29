@@ -4,7 +4,7 @@
 @import "@fontsource/geist-sans/600.css";
 
 /*
-  theme.css — HIDE hybrid: the VS Code / Cursor STRUCTURE re-skinned in the Tadao Ando concrete
+  theme.css — HIDE hybrid: a conventional editor STRUCTURE re-skinned in the Tadao Ando concrete
   MATERIAL system. Surfaces are grayscale board-formed concrete resting in a --void chamber; the
   ONLY accent is LIGHT entering the dark (warm near-white #F4F2EE + bloom + inner-glow), never a
   color. One font: Geist Mono. The token NAMES mirror the shell so the structure keeps working;
@@ -2058,7 +2058,7 @@ textarea:disabled {
 }
 
 /* ===================================================================
-   VS CODE SHELL (Phase 1)
+   EDITOR SHELL (Phase 1)
    =================================================================== */
 .vsc-shell {
   display: flex;

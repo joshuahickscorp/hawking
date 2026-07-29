@@ -1,8 +1,8 @@
 /* panels.css — folded sidebar panels: Runs (SCM) + Context tree (Phase 4). Owned by the panels restyle.
-   Imported after theme.css, so these rules win on equal specificity. Target look: VS Code Explorer /
+   Imported after theme.css, so these rules win on equal specificity. Target look: a conventional file Explorer /
    Source Control sidebar — flat, dark, system font, ~22px rows, no glows or breathing. */
 
-/* ---- Context tree (VS Code Explorer-style collapsible sections) ---- */
+/* ---- Context tree (collapsible Explorer-style sections) ---- */
 .ctx-stack {
   display: flex;
   flex-direction: column;

@@ -28,7 +28,7 @@ import { Home } from "./surfaces/home_Home";
 import type { ChatPanelKind } from "./surfaces/home_ChatPanel";
 import type { PermMode } from "./surfaces/home_HomeComposer";
 
-// The two chambers: Chat (conversation-first, the front door) and Code (the IDE, Cursor style).
+// The two chambers: Chat (conversation-first, the front door) and Code (the full editor workspace).
 type Mode = "chat" | "code";
 
 // The boot tab is a MOCK fixture path (it exists only in surfaces/ide_types.ts). On a live host
@@ -301,7 +301,7 @@ export function App() {
           onMode={setMode}
           onPopToCode={() => {
             // Picture in picture out: open the SAME conversation in the Code chamber to watch code
-            // (Cursor style). Dock beside the editor when wide; float when narrow (the docked pane sheds
+            // Dock beside the editor when wide; float when narrow (the docked pane sheds
             // below 1100px, so floating guarantees the chat stays visible).
             setMode("code");
             const wide = typeof window !== "undefined" && window.innerWidth >= 1180;

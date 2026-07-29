@@ -41,7 +41,7 @@ export interface DiffChipPatch {
 
 // ---- shared style atoms (kept here so every chat helper reads from one place) ----
 
-// A chip: a small flat pill (VS Code style), surface-2 fill with a thin border, muted label.
+// A chip: a small flat pill, surface-2 fill with a thin border, muted label.
 export const chip: CSSProperties = {
   display: "inline-flex",
   alignItems: "center",
