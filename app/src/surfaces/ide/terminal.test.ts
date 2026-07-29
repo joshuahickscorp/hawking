@@ -1,27 +1,11 @@
-/*
-  terminal.test.ts: the terminal as a session-aware process surface.
-
-  What a user can be lied to about here, and what these assert instead: that a typed line really
-  reaches the host's SANDBOXED run path through the one command spine (not a private exec), that
-  streamed output is appended incrementally row by row rather than echoed once, that a process the
-  user navigated away from keeps streaming and re-attaches on the way back, that the interrupt is a
-  real host call, and that the state row states sandbox, process, and exit state in words. Also that
-  this surface dispatches ONLY catalog commands, so it cannot grow a control the host cannot serve.
-
-  No jsdom in this project, so the component assertions render through react-dom/server and the
-  wiring assertions read the source.
-*/
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-// The transport seam, stubbed so each test reads exactly what went on the wire.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const { sent } = vi.hoisted(() => ({ sent: [] as any[] }));
 vi.mock("../../ipc", () => ({
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sendIntent: async (i: any) => {
     sent.push(i);
     return { accepted: true, event_seq: 1, message: null };
@@ -44,9 +28,7 @@ import {
 
 const SRC = readFileSync(join(__dirname, "Terminal.tsx"), "utf8");
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const apply = (kind: any, seq = 1) =>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (useStore.getState().apply as any)({ seq, session_id: "ses_term", kind });
 
 const line = (call_id: string, message: string, seq = 1) =>
@@ -70,13 +52,11 @@ describe("running a command", () => {
     expect(sent).toEqual([
       { type: "run_command", data: { argv: ["cargo", "test", "--lib"], cwd: "/w/hawking" } },
     ]);
-    // The confinement lives in the host RunCommand path; this surface must not build its own.
     expect(SRC).not.toMatch(/sendIntent\(/);
     expect(SRC).toMatch(/runCommand\("run_command"/);
   });
 
   it("surfaces a refusal instead of claiming the command ran", async () => {
-    // An unknown command id is the one refusal the spine raises synchronously.
     const ack = await runTerminalLine("");
     expect(ack.ok).toBe(false);
     expect(sent).toEqual([]);
@@ -101,7 +81,6 @@ describe("streamed output", () => {
     line("proc:1", "test result: ok", 3);
     const next = newSince(tools(), cursor);
     expect(next.map((e) => e.message)).toEqual(["test result: ok"]);
-    // Nothing new means nothing repainted (no duplicated tail).
     expect(newSince(tools(), next[next.length - 1])).toEqual([]);
   });
 
@@ -128,11 +107,9 @@ describe("navigating away and back", () => {
     const cursor = tools()[tools().length - 1];
     expect(newSince(tools(), cursor)).toEqual([]);
 
-    // Navigate away: the panel unmounts, the store keeps folding the host stream.
     line("proc:3", "GET /v1/hide/events 200", 2);
     line("proc:3", "GET /healthz 200", 3);
 
-    // Navigate back: a fresh terminal has no cursor, so it re-attaches to the whole buffer.
     const replay = newSince(tools(), null);
     expect(replay.map((e) => e.message)).toEqual([
       "server listening on 7717",
@@ -141,7 +118,6 @@ describe("navigating away and back", () => {
     ]);
     const proc = latestProc(tools());
     expect(proc).toMatchObject({ id: "proc:3", lines: 3, state: "streaming" });
-    // The mount path is the replay path (no separate attach route to drift from).
     expect(SRC).toMatch(/for \(const ev of seeded\) writeRow\(term, ev\)/);
   });
 });
@@ -155,7 +131,6 @@ describe("interrupting", () => {
     expect(sent[0].type).toBe("custom");
     expect(sent[0].data.name).toBe("pty_input");
     expect(sent[0].data.payload).toMatchObject({ process: "proc:4", data: ETX });
-    // Honest about its ceiling: no host stop trigger exists yet.
     expect(ack.message).toMatch(/no host stop trigger/);
   });
 
@@ -198,14 +173,10 @@ describe("the state row", () => {
       expect(html).toContain(word);
     }
     expect(html).toMatch(/role="status"/);
-    // the region is NAMED, and its six fields are content: the name no longer concatenates them, so
-    // a change to one field does not re-announce the whole bar
     expect(html).toMatch(/aria-label="Terminal process state"/);
   });
 
   it("carries no control that the catalog cannot serve", () => {
-    // stop / attach / capture-artifact have host methods but no wire trigger, so they must not be
-    // rendered as buttons that would only log. No <button> lives in this surface at all.
     expect(SRC).not.toMatch(/<button/);
   });
 });

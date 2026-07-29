@@ -1,0 +1,21 @@
+{
+  "schema": "hawking.lab.experiment.v1",
+  "id": "clean_room_small_tps",
+  "title": "bench:clean_room_small_tps.sh",
+  "artifact_dir": "artifacts/runs/clean_room_small_tps",
+  "pause_flag": "artifacts/runs/PAUSE",
+  "resume_flag": "artifacts/runs/RESUME",
+  "meta": {
+    "source_entrypoint": "tools/bench/clean_room_small_tps.sh",
+    "framework_retired": "bench_shell_harness",
+    "condensed": "g1-declarative-body-v1"
+  },
+  "stages": [
+    {
+      "id": "body",
+      "shell": "export LAB_REPO_ROOT=\"$(pwd)\"\n#!/usr/bin/env bash\n# harness-invoked: cwd is repo root\n# Clean-room single-stream dec_tps: dismantle vs llama.cpp on the smallest-coherent\n# models. RUN WITH THE AGENT QUIT (a live agent session inflates/perturbs absolute tps).\n# Usage: bash tools/bench/clean_room_small_tps.sh [llama_bench_path]\nset -euo pipefail\ncd \"${LAB_REPO_ROOT:-$(pwd)}\"\nDM=./target/release/hawking\nLB=\"${1:-/tmp/llamacpp/build/bin/llama-bench}\"\nPROMPT=\"Write a haiku about the ocean, then list 3 prime numbers.\"\nN=128\necho \"model,engine,dec_tps\"\nfor m in Qwen2.5-0.5B-Instruct-Q4_K_M Qwen2.5-3B-Instruct-Q4_K_M Llama-3.2-1B-Instruct-Q4_K_M; do\n  g=\"models/$m.gguf\"; [ -f \"$g\" ] || { echo \"$m,MISSING,-\"; continue; }\n  # dismantle (median of 3)\n  for i in 1 2 3; do\n    \"$DM\" generate --weights \"$g\" --prompt \"$PROMPT\" --max-new-tokens $N --temperature 0 2>&1 \\\n      | sed -n 's/.*dec_tps=\\([0-9.]*\\).*/'\"$m\"',dismantle,\\1/p'\n  done\n  # llama.cpp (tg128, median of 3) if available\n  if [ -x \"$LB\" ]; then\n    \"$LB\" -m \"$g\" -p 0 -n $N -ngl 99 -r 3 2>/dev/null \\\n      | sed -n 's/.*tg'\"$N\"' *| *\\([0-9.]*\\).*/'\"$m\"',llamacpp,\\1/p'\n  fi\ndone\necho \"# Compare dismantle vs llamacpp per model; the dismantle/llamacpp ratio = the real small-model gap.\"\n",
+      "on_fail": "abort",
+      "skip_if_done": false
+    }
+  ]
+}

@@ -35,10 +35,8 @@ describe("digest formatting", () => {
 
 describe("heatmap layout", () => {
   it("quantizes into 0..4 levels relative to the busiest cell", () => {
-    // max=4: 1/4=0.25 -> 2, 2/4=0.5 -> 3, 4/4=1 -> 4; a zero cell stays dark.
     const cells = heatLevels([0, 1, 2, 4]);
     expect(cells.map((c) => c.level)).toEqual([0, 2, 3, 4]);
-    // a lone busiest cell reads level 4; small fractions read level 1.
     expect(heatLevels([1, 100]).map((c) => c.level)).toEqual([1, 4]);
   });
 
@@ -52,7 +50,6 @@ describe("heatmap layout", () => {
     const cols = heatColumns(counts, 2);
     expect(cols.length).toBe(2);
     expect(cols.every((c) => c.length === 7)).toBe(true);
-    // index 13 is missing from a 10-length series -> padded to level 0
     expect(cols[1][6].level).toBe(0);
   });
 });

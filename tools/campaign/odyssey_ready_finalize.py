@@ -23,8 +23,13 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[2]
+_CONDENSE = ROOT / "tools" / "condense"
+if str(_CONDENSE) not in sys.path:
+    sys.path.insert(0, str(_CONDENSE))
+from glm52_common import resolve_artifact  # noqa: E402
+
 RECEIPT = ROOT / "GLM52_H0_98_MATH_PRESERVE_RECEIPT.json"
-ALLOCATION = ROOT / "PROMETHEUS_MATH_ALLOCATION_MANIFEST.json"
+ALLOCATION = resolve_artifact("PROMETHEUS_MATH_ALLOCATION_MANIFEST.json")
 ARTIFACT = (
     Path.home()
     / "Library/Application Support/Hawking/Models/GLM-5.2"

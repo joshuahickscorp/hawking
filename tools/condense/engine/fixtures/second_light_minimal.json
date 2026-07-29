@@ -1,0 +1,6 @@
+{
+  "schema": "hawking.condense.campaign_fixture.v1",
+  "campaign_id": "second_light",
+  "description": "Minimal PQ fixture metadata.",
+  "artifacts": []
+}

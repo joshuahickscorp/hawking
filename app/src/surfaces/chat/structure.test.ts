@@ -1,29 +1,11 @@
-/*
-  structure.test.tsx: the PlanCard bound to the REAL host plan projection, and the two retirements
-  that go with it.
-
-  Asserts the things a user can be lied to about here: that the card shows the host's declared
-  contract (acceptance, dependencies, effects, files, owner) and live state (status, verification,
-  blocker) rather than a frontend invention; that every plan verb lands on its catalog command with
-  the payload crates/hide-backend host.rs handle_plan_intent parses; that a write-blocked step is
-  visibly gated and refuses every effectful verb; that the DiffChipRow exposes exactly one control
-  per chip (the dead in-chat Accept/Reject pair is gone); and that the inline gate uses the ONE store
-  handler pair instead of a second inline copy.
-
-  No jsdom in this project, so component assertions render through react-dom/server and interaction
-  assertions go through the exported pure functions the components call.
-*/
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-// The transport seam, stubbed so each test reads exactly what went on the wire.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const { sent } = vi.hoisted(() => ({ sent: [] as any[] }));
 vi.mock("../../ipc", () => ({
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sendIntent: async (i: any) => {
     sent.push(i);
     return { accepted: true, event_seq: 1, message: null };
@@ -51,8 +33,6 @@ import { commandById } from "../../store";
 
 const SESSION = "ses_plan_test";
 
-// A two-step record exactly as crates/hide-backend plan_domain.rs emits it under suggest_only:
-// a read-only investigate step that completed, and an effectful edit step that is write-blocked.
 const PLAN: PlanProjection = {
   plan_id: "plan_1",
   title: "Tighten the turn loop",
@@ -161,7 +141,6 @@ describe("expanded step detail", () => {
     const html = renderToStaticMarkup(createElement(StepDetail, { step: step("s2") }));
     expect(html).toContain("write blocked");
     expect(html).toContain("gated by the run autonomy");
-    // The gated marker differs from the blocked and failed markers by glyph AND by words.
     expect(html).not.toContain("⊗");
   });
 });
@@ -289,7 +268,6 @@ describe("the inline gate uses the ONE store handler pair", () => {
     const s = src("Conversation.tsx");
     expect(s).toContain("useStore((s) => s.approveGate)");
     expect(s).toContain("useStore((s) => s.denyGate)");
-    // No inline re-implementation: the gate intents are built in the store and nowhere else.
     expect(s).not.toContain("approve_gate");
     expect(s).not.toContain("deny_gate");
   });
@@ -299,8 +277,6 @@ describe("the per-step menu keeps its focus contract", () => {
   const s = src("structure.tsx");
 
   it("moves focus into the menu on open, so its Escape handler can fire", () => {
-    // It opens from the keyboard (Shift+F10) and its Escape lived on the container, so a menu opened
-    // that way could never be closed with Escape and could be stranded open.
     expect(s).toContain('querySelector<HTMLButtonElement>(".hc__addmenu__item:not([disabled])")?.focus()');
     expect(s).toContain('if (e.key === "ContextMenu" || (e.shiftKey && e.key === "F10"))');
   });

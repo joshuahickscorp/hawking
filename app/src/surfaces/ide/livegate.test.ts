@@ -1,15 +1,3 @@
-/*
-  livegate.test.ts: the gate that keeps demo fixtures off a real workspace.
-
-  The defect this locks down: Explorer seeded its tree from MOCK_TREE and Editor fell back to
-  MOCK_FILE_BODY on ANY fs failure, on every transport. On a live host that put invented paths
-  (crates/pool/src/guard.rs and friends, which exist only in ide/types.ts) and invented Rust bodies
-  on screen as if they were the workspace, and Cmd+S then wrote that fabrication to disk through the
-  fs connector.
-
-  This file runs with TRANSPORT_KIND pinned to "live", which is exactly the case that used to lie.
-  The mock-transport behaviour is covered by the rest of the suite.
-*/
 import { readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it, vi } from "vitest";
@@ -27,7 +15,6 @@ import { MOCK_DIFF, MOCK_FILE_BODY, MOCK_TREE, mockOnly } from "./types";
 const here = fileURLToPath(new URL(".", import.meta.url));
 const read = (p: string) => readFileSync(here + p, "utf8");
 
-/** Every .ts/.tsx source under src, minus the tests themselves. */
 function sources(dir: string): string[] {
   const out: string[] = [];
   for (const e of readdirSync(dir, { withFileTypes: true })) {
@@ -43,7 +30,6 @@ describe("mock fixtures on a live transport", () => {
     expect(mockOnly(MOCK_TREE)).toBeNull();
     expect(mockOnly(MOCK_FILE_BODY)).toBeNull();
     expect(mockOnly(MOCK_DIFF)).toBeNull();
-    // and the callers' own fallbacks collapse to empty, not to an invention.
     expect(mockOnly(MOCK_TREE) ?? []).toEqual([]);
     expect(mockOnly(MOCK_FILE_BODY)?.["crates/pool/src/guard.rs"] ?? null).toBeNull();
   });
@@ -69,23 +55,16 @@ describe("mock fixtures on a live transport", () => {
 
   it("never mounts an editable buffer over a body that did not load", () => {
     const src = read("Editor.tsx");
-    // The invented placeholder buffer is gone: no body, no editor, so no save over a real file.
     expect(src).not.toContain("host streams this buffer as projection_patch");
     expect(src).toContain("if (loadError || !body)");
   });
 });
 
 describe("retired custom names", () => {
-  // Retired by the contract-cleanup and reachability stages: no CommandSpec, no wire entry, no host
-  // arm. `save_file` is NOT here: it came back with a real host arm and is the one save path.
   const RETIRED = ["create_pr", "switch_profile", "focus_run", "edit_hunk", "open_folder", "compact_context"];
-  // The form a surface actually dispatches in. The previous guard scanned for `intent.custom("x"`,
-  // which no surface has written since the consolidation routed every dispatch through runCommand,
-  // so the test could not fail: a surface calling runCommand("create_pr") passed it unchanged.
   const dispatched = (src: string, name: string) => src.includes(`runCommand("${name}"`);
 
   it("scans the form the app really dispatches in, so this test can fail", () => {
-    // Canary: a LIVE name is found by the same scan, which is what proves the scan matches reality.
     const anyLive = sources(here + "../../").some((f) => dispatched(readFileSync(f, "utf8"), "submit_turn"));
     expect(anyLive).toBe(true);
   });
@@ -112,7 +91,6 @@ describe("the home diff panel", () => {
 
   it("binds the hunk-addressed callback, so one hunk decided is one hunk decided", () => {
     expect(read("../home/ChatPanel.tsx")).toContain("onStatus={onDiffStatus}");
-    // and the second, hunk_id-less route through HunkReview is gone entirely.
     expect(read("HunkReview.tsx")).not.toContain("legacyOnAct");
   });
 });

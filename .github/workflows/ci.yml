@@ -42,8 +42,11 @@ jobs:
         # carries pre-existing nits in those groups (derivable_impls, result_large_err,
         # collapsible_match, unnecessary_sort_by, ...) that are cosmetic, not bugs. This keeps
         # the meaningful gate strict without an open-ended cosmetic-lint cleanup.
+        # No `--workspace`: these use the workspace `default-members`, the hawking
+        # inference stack and its bake tools. HIDE is covered by the `hide` job below,
+        # so nothing loses a gate -- it just stops blocking inference changes.
         run: |
-          cargo clippy --workspace -- \
+          cargo clippy -- \
             -D warnings \
             -A unexpected_cfgs \
             -A unused_assignments \
@@ -52,16 +55,46 @@ jobs:
             -A clippy::perf
 
       - name: Build
-        run: cargo build --workspace
+        run: cargo build
 
       # Compile every test target, including the GPU/model parity gates, so a
       # broken test can't hide behind a skip.
       - name: Compile all tests
-        run: cargo test --workspace --no-run
+        run: cargo test --no-run
 
       # Run the deterministic unit tests (no model weights or GPU required).
       # Model-dependent parity gates skip cleanly when weights are absent; the
       # independent-oracle (llama.cpp) gate runs once a small fixture is wired.
+      - name: Unit tests
+        run: cargo test --lib --bins
+
+  hide:
+    name: build · test (hide)
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      # The 20 hide-* crates are workspace members but not default-members, so they
+      # get their own job instead of taxing every inference change. Same gates as the
+      # main job, scoped to the HIDE product surface.
+      - name: Clippy
+        run: |
+          cargo clippy -p hide-serve -p hide-backend -p hide-acp -p hide-fleet -- \
+            -D warnings \
+            -A unexpected_cfgs \
+            -A unused_assignments \
+            -A clippy::style \
+            -A clippy::complexity \
+            -A clippy::perf
+
+      - name: Build
+        run: cargo build -p hide-serve -p hide-acp -p hide-fleet
+
+      # `--workspace` here is deliberate: this job is where the full member set,
+      # hawking and hide alike, still gets compiled and unit-tested.
+      - name: Compile all tests
+        run: cargo test --workspace --no-run
+
       - name: Unit tests
         run: cargo test --workspace --lib --bins
 

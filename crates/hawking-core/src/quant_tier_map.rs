@@ -206,13 +206,11 @@ impl TierMap {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     fn parse(json: &str) -> Result<TierMap> {
         let raw: TierFile =
             serde_json::from_str(json).map_err(|e| Error::Model(format!("test parse: {e}")))?;
         TierMap::from_parts(raw)
     }
-
     #[test]
     fn loads_simple_map() {
         let m = parse(
@@ -225,8 +223,7 @@ mod tests {
                     { "layer": 2, "gate_up": "q8_0" }
                 ]
             }"#,
-        )
-        .unwrap();
+        ).unwrap();
         assert_eq!(m.tier_for(0, GroupKind::GateUp), Some(GgmlType::Q4_K));
         assert_eq!(m.tier_for(0, GroupKind::Down), Some(GgmlType::Q4_K));
         assert_eq!(m.tier_for(1, GroupKind::GateUp), None);
@@ -234,7 +231,6 @@ mod tests {
         assert_eq!(m.tier_for(2, GroupKind::Down), None);
         assert!(m.any_overrides());
     }
-
     #[test]
     fn rejects_unknown_dtype() {
         let r = parse(
@@ -243,7 +239,6 @@ mod tests {
         );
         assert!(r.is_err());
     }
-
     #[test]
     fn rejects_out_of_range_layer() {
         let r = parse(
@@ -252,7 +247,6 @@ mod tests {
         );
         assert!(r.is_err());
     }
-
     #[test]
     fn rejects_duplicate_layer() {
         let r = parse(
@@ -264,7 +258,6 @@ mod tests {
         );
         assert!(r.is_err());
     }
-
     #[test]
     fn rejects_wrong_schema_version() {
         let r = parse(
@@ -272,22 +265,18 @@ mod tests {
         );
         assert!(r.is_err());
     }
-
     #[test]
     fn empty_layers_is_legal() {
         let m = parse(
             r#"{ "schema_version": 1, "model_arch": "deepseek2", "n_layers": 1, "layers": [] }"#,
-        )
-        .unwrap();
+        ).unwrap();
         assert!(!m.any_overrides());
     }
-
     #[test]
     fn validate_arch_and_layer_count() {
         let m = parse(
             r#"{ "schema_version": 1, "model_arch": "deepseek2", "n_layers": 27, "layers": [] }"#,
-        )
-        .unwrap();
+        ).unwrap();
         assert!(m.validate("deepseek2", 27).is_ok());
         assert!(m.validate("llama", 27).is_err());
         assert!(m.validate("deepseek2", 26).is_err());

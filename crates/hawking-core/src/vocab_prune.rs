@@ -259,11 +259,9 @@ impl PrunedVocab {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     fn whitelist(orig: usize, keep: &[u32]) -> PrunedVocab {
         PrunedVocab::from_parts(orig, keep.len(), 0.995, keep.to_vec()).unwrap()
     }
-
     #[test]
     fn round_trip_identity_for_kept_tokens() {
         let p = whitelist(100, &[0, 7, 11, 42, 99]);
@@ -276,7 +274,6 @@ mod tests {
         assert_eq!(p.original_to_pruned(15), None);
         assert_eq!(p.pruned_len(), 5);
     }
-
     #[test]
     fn rejects_duplicates() {
         let r = PrunedVocab::from_parts(100, 3, 0.99, vec![1, 2, 2]);
@@ -284,64 +281,52 @@ mod tests {
         let msg = format!("{:?}", r.unwrap_err());
         assert!(msg.contains("duplicate"), "{msg}");
     }
-
     #[test]
     fn rejects_out_of_range_id() {
         let r = PrunedVocab::from_parts(10, 2, 0.99, vec![5, 10]);
         assert!(r.is_err());
     }
-
     #[test]
     fn rejects_length_mismatch() {
         let r = PrunedVocab::from_parts(100, 5, 0.99, vec![1, 2]);
         assert!(r.is_err());
     }
-
     #[test]
     fn rejects_empty_pruned() {
         let r = PrunedVocab::from_parts(100, 0, 0.0, vec![]);
         assert!(r.is_err());
     }
-
     #[test]
     fn rejects_pruned_larger_than_original() {
         let r = PrunedVocab::from_parts(3, 5, 0.99, vec![0, 1, 2, 3, 4]);
         assert!(r.is_err());
     }
-
     #[test]
     fn sorts_unsorted_input() {
         let p = whitelist(10, &[5, 1, 7, 0, 3]);
         assert_eq!(p.keep_ids(), &[0, 1, 3, 5, 7]);
     }
-
     #[test]
     fn validate_matches_tokenizer() {
         let p = whitelist(100, &[0, 1, 2]);
         assert!(p.validate(100).is_ok());
         assert!(p.validate(50).is_err());
     }
-
     #[test]
     fn slice_lm_head_f16_gathers_correct_rows() {
-        // 4-vocab × 3-hidden weight where row i has values [i*10, i*10+1, i*10+2]
-        let hidden = 3;
-        let orig_vocab = 4;
+        let hidden = 3; let orig_vocab = 4;
         let mut w = Vec::with_capacity(orig_vocab * hidden);
         for r in 0..orig_vocab {
             for c in 0..hidden {
                 w.push(f16::from_f32((r * 10 + c) as f32));
             }
         }
-        let p = whitelist(orig_vocab, &[0, 2, 3]); // skip row 1
-        let sliced = p.slice_lm_head_f16(&w, hidden).unwrap();
+        let p = whitelist(orig_vocab, &[0, 2, 3]); let sliced = p.slice_lm_head_f16(&w, hidden).unwrap();
         assert_eq!(sliced.len(), 3 * 3);
-        // pruned row 0 ← orig row 0: [0, 1, 2]
         assert_eq!(
             sliced[0..3],
             [f16::from_f32(0.0), f16::from_f32(1.0), f16::from_f32(2.0)]
         );
-        // pruned row 1 ← orig row 2: [20, 21, 22]
         assert_eq!(
             sliced[3..6],
             [
@@ -350,7 +335,6 @@ mod tests {
                 f16::from_f32(22.0)
             ]
         );
-        // pruned row 2 ← orig row 3: [30, 31, 32]
         assert_eq!(
             sliced[6..9],
             [
@@ -360,30 +344,20 @@ mod tests {
             ]
         );
     }
-
     #[test]
     fn slice_lm_head_rejects_wrong_length() {
-        let p = whitelist(4, &[0, 2, 3]);
-        let bad = vec![f16::from_f32(0.0); 4 * 3 - 1];
+        let p = whitelist(4, &[0, 2, 3]); let bad = vec![f16::from_f32(0.0); 4 * 3 - 1];
         assert!(p.slice_lm_head_f16(&bad, 3).is_err());
     }
-
     #[test]
     fn argmax_round_trip_via_pruned_space() {
-        // Simulate the live path: full-vocab argmax vs pruned argmax should
-        // pick the same token (after pruned→original mapping) when the
-        // top-1 token is in the whitelist.
-        let p = whitelist(8, &[0, 1, 3, 5, 7]);
-        // Hypothetical full-vocab logits where token 5 wins.
-        let mut full = vec![0.0f32; 8];
+        let p = whitelist(8, &[0, 1, 3, 5, 7]); let mut full = vec![0.0f32; 8];
         full[5] = 10.0;
-        // Pruned logits picks pruned_id 3 (which maps back to 5).
         let pruned_logits: Vec<f32> = p.keep_ids().iter().map(|&i| full[i as usize]).collect();
         let pruned_winner = pruned_logits
             .iter()
             .enumerate()
-            .max_by(|a, b| a.1.partial_cmp(b.1).unwrap())
-            .unwrap()
+            .max_by(|a, b| a.1.partial_cmp(b.1).unwrap()).unwrap()
             .0 as u32;
         assert_eq!(p.pruned_to_original(pruned_winner), 5);
     }

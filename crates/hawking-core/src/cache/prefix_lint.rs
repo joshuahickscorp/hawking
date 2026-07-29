@@ -46,7 +46,6 @@ pub fn check_prefix_discipline(segments: &[PromptSegment]) -> Result<(), usize> 
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[test]
     fn disciplined_prefix_passes() {
         let segs = vec![
@@ -56,17 +55,15 @@ mod tests {
         ];
         assert_eq!(check_prefix_discipline(&segs), Ok(()));
     }
-
     #[test]
     fn static_after_dynamic_trips_the_lint() {
         let segs = vec![
             PromptSegment::stat("system"),
             PromptSegment::dynamic("turn"),
-            PromptSegment::stat("pinned"), // violation at index 2
+            PromptSegment::stat("pinned"),
         ];
         assert_eq!(check_prefix_discipline(&segs), Err(2));
     }
-
     #[test]
     fn empty_and_all_dynamic_are_fine() {
         assert_eq!(check_prefix_discipline(&[]), Ok(()));

@@ -245,20 +245,10 @@ impl Drop for PhysicalTraceGuard {
 #[cfg(test)]
 mod physical_trace_tests {
     use super::*;
-
     #[test]
     fn guard_counts_exact_physical_commands_and_encoders() {
-        let identity = PhysicalTraceIdentity::new(
-            "a".repeat(64),
-            "b".repeat(64),
-            "unit".into(),
-            "counts".into(),
-            None,
-            0,
-        )
-        .unwrap();
-        let guard = PhysicalTraceGuard::begin(identity).unwrap();
-        let (command, _) = physical_command_label("command_buffer").unwrap();
+        let identity = PhysicalTraceIdentity::new("a".repeat(64), "b".repeat(64), "unit".into(), "counts".into(), None, 0).unwrap();
+        let guard = PhysicalTraceGuard::begin(identity).unwrap(); let (command, _) = physical_command_label("command_buffer").unwrap();
         let _ = physical_encoder_label(&command, "compute_encoder", "kernel_a");
         let _ = physical_encoder_label(&command, "compute_encoder", "kernel_b");
         assert_eq!(
@@ -1099,7 +1089,6 @@ mod imp {
     mod static_kernel_name_tests {
         use super::static_kernel_name;
         use crate::metal::SHADER_GRAVITY_PQ;
-
         #[test]
         fn compiled_dormant_resident_kernels_have_static_trace_names() {
             const DORMANT_RESIDENT_KERNELS: &[&str] = &[
@@ -1133,17 +1122,9 @@ mod imp {
                 "gravity_glm_expert_table_residual_add_f32",
                 "gravity_zero_f32",
             ];
-
             for &name in DORMANT_RESIDENT_KERNELS {
-                assert_eq!(
-                    static_kernel_name(name),
-                    name,
-                    "{name} would be attributed to the generic trace bucket"
-                );
-                assert!(
-                    SHADER_GRAVITY_PQ.contains(&format!("kernel void {name}(")),
-                    "{name} is registered but not compiled from gravity_pq.metal"
-                );
+                assert_eq!(static_kernel_name(name), name, "{name} would be attributed to the generic trace bucket");
+                assert!(SHADER_GRAVITY_PQ.contains(&format!("kernel void {name}(")), "{name} is registered but not compiled from gravity_pq.metal");
             }
             assert_eq!(static_kernel_name("not_a_hawking_kernel"), "other");
         }
@@ -1958,7 +1939,6 @@ mod imp {
     #[cfg(test)]
     mod replayable_compute_graph_tests {
         use super::*;
-
         fn write_f32(buffer: &Buffer, values: &[f32]) {
             assert!(buffer.length() >= std::mem::size_of_val(values) as u64);
             unsafe {
@@ -1966,20 +1946,12 @@ mod imp {
                     .copy_from_nonoverlapping(values.as_ptr(), values.len());
             }
         }
-
         fn read_f32(buffer: &Buffer, count: usize) -> Vec<f32> {
             assert!(buffer.length() >= (count * std::mem::size_of::<f32>()) as u64);
             unsafe { std::slice::from_raw_parts(buffer.contents() as *const f32, count).to_vec() }
         }
-
-        fn zero_replay_stages(
-            output: &Buffer,
-            n_buffer: &Buffer,
-            n: u32,
-            count: usize,
-        ) -> Vec<ReplayComputeStage> {
-            (0..count)
-                .map(|index| {
+        fn zero_replay_stages(output: &Buffer, n_buffer: &Buffer, n: u32, count: usize) -> Vec<ReplayComputeStage> {
+            (0..count).map(|index| {
                     let stage = ReplayComputeStage::new(
                         "gravity_zero_f32",
                         (n, 1, 1),
@@ -1997,31 +1969,19 @@ mod imp {
                 })
                 .collect()
         }
-
         fn percentile_ns(samples: &[u128], percentile: usize) -> u128 {
-            let mut sorted = samples.to_vec();
-            sorted.sort_unstable();
+            let mut sorted = samples.to_vec(); sorted.sort_unstable();
             let rank = percentile
                 .saturating_mul(sorted.len().saturating_sub(1))
-                .saturating_add(99)
-                / 100;
+                .saturating_add(99) / 100;
             sorted[rank.min(sorted.len().saturating_sub(1))]
         }
-
-        /// This is ignored in the ordinary suite because it requires a Metal
-        /// device with compute-ICB support. Run explicitly on the target Mac:
-        ///
-        /// `cargo test -p hawking-core replayable_icb_reuses_addresses_and_one_submit -- --ignored`
         #[test]
         #[ignore = "requires a Metal device with compute indirect-command-buffer support"]
         fn replayable_icb_reuses_addresses_and_one_submit() {
-            let ctx = MetalContext::new_with_trace(true).unwrap();
-            let n = 257u32;
-            let bytes = n as usize * std::mem::size_of::<f32>();
-            let output = ctx.new_buffer(bytes);
-            let input = ctx.new_buffer(bytes);
-            let n_buffer = ctx.new_buffer_with_bytes(&n.to_ne_bytes());
-
+            let ctx = MetalContext::new_with_trace(true).unwrap(); let n = 257u32;
+            let bytes = n as usize * std::mem::size_of::<f32>(); let output = ctx.new_buffer(bytes);
+            let input = ctx.new_buffer(bytes); let n_buffer = ctx.new_buffer_with_bytes(&n.to_ne_bytes());
             let invalid = ReplayableComputeGraph::new(
                 &ctx,
                 vec![ReplayComputeStage::new(
@@ -2039,10 +1999,7 @@ mod imp {
                 Err(error) => error,
             };
             assert!(invalid_error.to_string().contains("zero grid dimension"));
-
-            let output_address = output.gpu_address();
-            let input_address = input.gpu_address();
-            let n_address = n_buffer.gpu_address();
+            let output_address = output.gpu_address(); let input_address = input.gpu_address(); let n_address = n_buffer.gpu_address();
             let graph = ReplayableComputeGraph::new(
                 &ctx,
                 vec![
@@ -2069,65 +2026,37 @@ mod imp {
                     .with_ledger_stage(crate::cost_ledger::GpuStage::FinalHead)
                     .with_barrier_before(),
                 ],
-            )
-            .unwrap();
+            ).unwrap();
             assert_eq!(graph.command_count(), 2);
             assert!(graph.explicit_ledger_stages);
-            assert_eq!(
-                graph.ledger_stage_dispatches[crate::cost_ledger::GpuStage::KvAndNorm.index()],
-                1
-            );
-            assert_eq!(
-                graph.ledger_stage_dispatches[crate::cost_ledger::GpuStage::FinalHead.index()],
-                1
-            );
+            assert_eq!(graph.ledger_stage_dispatches[crate::cost_ledger::GpuStage::KvAndNorm.index()], 1);
+            assert_eq!(graph.ledger_stage_dispatches[crate::cost_ledger::GpuStage::FinalHead.index()], 1);
             assert_eq!(output.gpu_address(), output_address);
             assert_eq!(input.gpu_address(), input_address);
             assert_eq!(n_buffer.gpu_address(), n_address);
-            let _ = ctx.drain_stats();
-
-            let first: Vec<f32> = (0..n).map(|i| i as f32 * 0.25 - 17.0).collect();
-            write_f32(&input, &first);
+            let _ = ctx.drain_stats(); let first: Vec<f32> = (0..n).map(|i| i as f32 * 0.25 - 17.0).collect(); write_f32(&input, &first);
             write_f32(&output, &vec![f32::NAN; n as usize]);
-
-            let identity = PhysicalTraceIdentity::new(
-                "a".repeat(64),
-                "b".repeat(64),
-                "icb".into(),
-                "replay".into(),
-                None,
-                0,
-            )
-            .unwrap();
-            let guard = PhysicalTraceGuard::begin(identity).unwrap();
-            let mut tcb = TokenCommandBuffer::new(&ctx);
+            let identity = PhysicalTraceIdentity::new("a".repeat(64), "b".repeat(64), "icb".into(), "replay".into(), None, 0).unwrap();
+            let guard = PhysicalTraceGuard::begin(identity).unwrap(); let mut tcb = TokenCommandBuffer::new(&ctx);
             tcb.execute_replayable_graph(&graph).unwrap();
-            assert_eq!(tcb.dispatch_count(), 2);
-            tcb.commit_and_wait().unwrap();
+            assert_eq!(tcb.dispatch_count(), 2); tcb.commit_and_wait().unwrap();
             assert_eq!(
                 guard.counts(),
                 PhysicalTraceCounts {
                     command_count: 1,
                     encoder_count: 1,
                 }
-            );
-            drop(guard);
-            assert_eq!(read_f32(&output, n as usize), first);
-
-            let second: Vec<f32> = (0..n).map(|i| 100.0 - i as f32 * 0.5).collect();
-            write_f32(&input, &second);
-            write_f32(&output, &vec![-1234.0; n as usize]);
-            let mut tcb = TokenCommandBuffer::new(&ctx);
+            ); drop(guard);
+            assert_eq!(read_f32(&output, n as usize), first); let second: Vec<f32> = (0..n).map(|i| 100.0 - i as f32 * 0.5).collect();
+            write_f32(&input, &second); write_f32(&output, &vec![-1234.0; n as usize]); let mut tcb = TokenCommandBuffer::new(&ctx);
             tcb.execute_replayable_graph(&graph).unwrap();
-            assert_eq!(tcb.dispatch_count(), 2);
-            tcb.commit_and_wait().unwrap();
+            assert_eq!(tcb.dispatch_count(), 2); tcb.commit_and_wait().unwrap();
             assert_eq!(read_f32(&output, n as usize), second);
             assert_eq!(ctx.drain_stats(), (0, 0, 0));
             assert_eq!(output.gpu_address(), output_address);
             assert_eq!(input.gpu_address(), input_address);
             assert_eq!(n_buffer.gpu_address(), n_address);
         }
-
         #[test]
         fn replayable_icb_group_orders_cross_graph_dependencies() {
             const N: u32 = 257;
@@ -2139,8 +2068,7 @@ mod imp {
             let input_buffer = ctx.new_buffer_with_bytes(bytemuck::cast_slice(&input));
             let n_buffer = ctx.new_buffer_with_bytes(&N.to_ne_bytes());
             let zero_graph =
-                ReplayableComputeGraph::new(&ctx, zero_replay_stages(&output, &n_buffer, N, 1))
-                    .unwrap();
+                ReplayableComputeGraph::new(&ctx, zero_replay_stages(&output, &n_buffer, N, 1)).unwrap();
             let add_graph = ReplayableComputeGraph::new(
                 &ctx,
                 vec![ReplayComputeStage::new(
@@ -2153,91 +2081,50 @@ mod imp {
                         ReplayBufferBinding::read(2, &n_buffer, 0),
                     ],
                 )],
-            )
-            .unwrap();
-
-            write_f32(&output, &vec![f32::NAN; N as usize]);
-            let mut tcb = TokenCommandBuffer::new(&ctx);
-            tcb.execute_replayable_graphs(&[&zero_graph, &add_graph])
-                .unwrap();
-            assert_eq!(tcb.dispatch_count(), 2);
-            tcb.commit_and_wait().unwrap();
+            ).unwrap(); write_f32(&output, &vec![f32::NAN; N as usize]); let mut tcb = TokenCommandBuffer::new(&ctx);
+            tcb.execute_replayable_graphs(&[&zero_graph, &add_graph]).unwrap();
+            assert_eq!(tcb.dispatch_count(), 2); tcb.commit_and_wait().unwrap();
             assert_eq!(read_f32(&output, N as usize), input);
         }
-
-        /// Bounded host-encoding comparison for the full-indexer pre-score
-        /// partition: two replay calls containing 9 + 6 commands versus one
-        /// replay call containing the same 15 commands. GPU execution and
-        /// command-buffer creation/commit are deliberately outside the timed
-        /// region; this answers only whether one fewer direct encoder reduces
-        /// host replay sequencing overhead on the target Mac.
-        ///
-        /// `cargo test -p hawking-core replayable_icb_fifteen_command_fusion_encode_benchmark -- --ignored --nocapture`
         #[test]
         #[ignore = "explicit bounded Metal ICB host-encoding benchmark"]
         fn replayable_icb_fifteen_command_fusion_encode_benchmark() {
             use std::time::Instant;
-
-            const N: u32 = 257;
-            const SAMPLES: usize = 257;
-            let ctx = MetalContext::new_with_trace(true).unwrap();
-            let output = ctx.new_buffer(N as usize * std::mem::size_of::<f32>());
+            const N: u32 = 257; const SAMPLES: usize = 257;
+            let ctx = MetalContext::new_with_trace(true).unwrap(); let output = ctx.new_buffer(N as usize * std::mem::size_of::<f32>());
             let n_buffer = ctx.new_buffer_with_bytes(&N.to_ne_bytes());
             let split_9 =
-                ReplayableComputeGraph::new(&ctx, zero_replay_stages(&output, &n_buffer, N, 9))
-                    .unwrap();
+                ReplayableComputeGraph::new(&ctx, zero_replay_stages(&output, &n_buffer, N, 9)).unwrap();
             let split_6 =
-                ReplayableComputeGraph::new(&ctx, zero_replay_stages(&output, &n_buffer, N, 6))
-                    .unwrap();
+                ReplayableComputeGraph::new(&ctx, zero_replay_stages(&output, &n_buffer, N, 6)).unwrap();
             let fused_15 =
-                ReplayableComputeGraph::new(&ctx, zero_replay_stages(&output, &n_buffer, N, 15))
-                    .unwrap();
-
+                ReplayableComputeGraph::new(&ctx, zero_replay_stages(&output, &n_buffer, N, 15)).unwrap();
             let identity = |run: &str| {
-                PhysicalTraceIdentity::new(
-                    "a".repeat(64),
-                    "b".repeat(64),
-                    "icb".into(),
-                    run.into(),
-                    None,
-                    0,
-                )
-                .unwrap()
+                PhysicalTraceIdentity::new("a".repeat(64), "b".repeat(64), "icb".into(), run.into(), None, 0).unwrap()
             };
-            let split_guard = PhysicalTraceGuard::begin(identity("split")).unwrap();
-            let mut split_tcb = TokenCommandBuffer::new(&ctx);
-            split_tcb.execute_replayable_graph(&split_9).unwrap();
-            split_tcb.execute_replayable_graph(&split_6).unwrap();
-            assert_eq!(split_tcb.dispatch_count(), 15);
-            split_tcb.commit_and_wait().unwrap();
+            let split_guard = PhysicalTraceGuard::begin(identity("split")).unwrap(); let mut split_tcb = TokenCommandBuffer::new(&ctx);
+            split_tcb.execute_replayable_graph(&split_9).unwrap(); split_tcb.execute_replayable_graph(&split_6).unwrap();
+            assert_eq!(split_tcb.dispatch_count(), 15); split_tcb.commit_and_wait().unwrap();
             assert_eq!(
                 split_guard.counts(),
                 PhysicalTraceCounts {
                     command_count: 1,
                     encoder_count: 2,
                 }
-            );
-            drop(split_guard);
-
-            let fused_guard = PhysicalTraceGuard::begin(identity("fused")).unwrap();
-            let mut fused_tcb = TokenCommandBuffer::new(&ctx);
+            ); drop(split_guard);
+            let fused_guard = PhysicalTraceGuard::begin(identity("fused")).unwrap(); let mut fused_tcb = TokenCommandBuffer::new(&ctx);
             fused_tcb.execute_replayable_graph(&fused_15).unwrap();
-            assert_eq!(fused_tcb.dispatch_count(), 15);
-            fused_tcb.commit_and_wait().unwrap();
+            assert_eq!(fused_tcb.dispatch_count(), 15); fused_tcb.commit_and_wait().unwrap();
             assert_eq!(
                 fused_guard.counts(),
                 PhysicalTraceCounts {
                     command_count: 1,
                     encoder_count: 1,
                 }
-            );
-            drop(fused_guard);
-
-            let input: Vec<f32> = (0..N).map(|index| index as f32 * 0.25 - 9.0).collect();
+            ); drop(fused_guard); let input: Vec<f32> = (0..N).map(|index| index as f32 * 0.25 - 9.0).collect();
             let input_buffer = ctx.new_buffer_with_bytes(bytemuck::cast_slice(&input));
             let zero_graph =
-                ReplayableComputeGraph::new(&ctx, zero_replay_stages(&output, &n_buffer, N, 1))
-                    .unwrap();
+                ReplayableComputeGraph::new(&ctx, zero_replay_stages(&output, &n_buffer, N, 1)).unwrap();
             let add_graph = ReplayableComputeGraph::new(
                 &ctx,
                 vec![ReplayComputeStage::new(
@@ -2250,14 +2137,11 @@ mod imp {
                         ReplayBufferBinding::read(2, &n_buffer, 0),
                     ],
                 )],
-            )
-            .unwrap();
-            write_f32(&output, &vec![f32::NAN; N as usize]);
+            ).unwrap(); write_f32(&output, &vec![f32::NAN; N as usize]);
             let dependency_guard = PhysicalTraceGuard::begin(identity("dependency")).unwrap();
             let mut dependency_tcb = TokenCommandBuffer::new(&ctx);
             dependency_tcb
-                .execute_replayable_graphs(&[&zero_graph, &add_graph])
-                .unwrap();
+                .execute_replayable_graphs(&[&zero_graph, &add_graph]).unwrap();
             dependency_tcb.commit_and_wait().unwrap();
             assert_eq!(
                 dependency_guard.counts(),
@@ -2265,18 +2149,13 @@ mod imp {
                     command_count: 1,
                     encoder_count: 1,
                 }
-            );
-            drop(dependency_guard);
+            ); drop(dependency_guard);
             assert_eq!(read_f32(&output, N as usize), input);
-
-            let mut direct_ns = Vec::with_capacity(SAMPLES);
-            let mut split_ns = Vec::with_capacity(SAMPLES);
-            let mut grouped_ns = Vec::with_capacity(SAMPLES);
-            let mut fused_ns = Vec::with_capacity(SAMPLES);
+            let mut direct_ns = Vec::with_capacity(SAMPLES); let mut split_ns = Vec::with_capacity(SAMPLES);
+            let mut grouped_ns = Vec::with_capacity(SAMPLES); let mut fused_ns = Vec::with_capacity(SAMPLES);
             for iteration in 0..SAMPLES {
                 let measure_direct = || {
-                    let mut tcb = TokenCommandBuffer::new(&ctx);
-                    let started = Instant::now();
+                    let mut tcb = TokenCommandBuffer::new(&ctx); let started = Instant::now();
                     for _ in 0..15 {
                         let output = output.clone();
                         tcb.dispatch_threads(
@@ -2284,55 +2163,39 @@ mod imp {
                             (N, 1, 1),
                             (64, 1, 1),
                             move |encoder| {
-                                encoder.set_buffer(0, Some(&output), 0);
-                                encoder.set_bytes(1, 4, &N as *const u32 as *const _);
+                                encoder.set_buffer(0, Some(&output), 0); encoder.set_bytes(1, 4, &N as *const u32 as *const _);
                             },
-                        )
-                        .unwrap();
+                        ).unwrap();
                     }
-                    let elapsed = started.elapsed().as_nanos();
-                    tcb.commit_and_wait().unwrap();
+                    let elapsed = started.elapsed().as_nanos(); tcb.commit_and_wait().unwrap();
                     elapsed
                 };
                 let measure_split = || {
-                    let mut tcb = TokenCommandBuffer::new(&ctx);
-                    let started = Instant::now();
-                    tcb.execute_replayable_graph(&split_9).unwrap();
-                    tcb.execute_replayable_graph(&split_6).unwrap();
-                    let elapsed = started.elapsed().as_nanos();
-                    tcb.commit_and_wait().unwrap();
+                    let mut tcb = TokenCommandBuffer::new(&ctx); let started = Instant::now();
+                    tcb.execute_replayable_graph(&split_9).unwrap(); tcb.execute_replayable_graph(&split_6).unwrap();
+                    let elapsed = started.elapsed().as_nanos(); tcb.commit_and_wait().unwrap();
                     elapsed
                 };
                 let measure_grouped = || {
-                    let mut tcb = TokenCommandBuffer::new(&ctx);
-                    let started = Instant::now();
-                    tcb.execute_replayable_graphs(&[&split_9, &split_6])
-                        .unwrap();
-                    let elapsed = started.elapsed().as_nanos();
+                    let mut tcb = TokenCommandBuffer::new(&ctx); let started = Instant::now();
+                    tcb.execute_replayable_graphs(&[&split_9, &split_6]).unwrap(); let elapsed = started.elapsed().as_nanos();
                     tcb.commit_and_wait().unwrap();
                     elapsed
                 };
                 let measure_fused = || {
-                    let mut tcb = TokenCommandBuffer::new(&ctx);
-                    let started = Instant::now();
-                    tcb.execute_replayable_graph(&fused_15).unwrap();
-                    let elapsed = started.elapsed().as_nanos();
+                    let mut tcb = TokenCommandBuffer::new(&ctx); let started = Instant::now();
+                    tcb.execute_replayable_graph(&fused_15).unwrap(); let elapsed = started.elapsed().as_nanos();
                     tcb.commit_and_wait().unwrap();
                     elapsed
                 };
                 if iteration % 2 == 0 {
-                    direct_ns.push(measure_direct());
-                    split_ns.push(measure_split());
-                    grouped_ns.push(measure_grouped());
+                    direct_ns.push(measure_direct()); split_ns.push(measure_split()); grouped_ns.push(measure_grouped());
                     fused_ns.push(measure_fused());
                 } else {
-                    fused_ns.push(measure_fused());
-                    grouped_ns.push(measure_grouped());
-                    split_ns.push(measure_split());
+                    fused_ns.push(measure_fused()); grouped_ns.push(measure_grouped()); split_ns.push(measure_split());
                     direct_ns.push(measure_direct());
                 }
             }
-
             assert_eq!(read_f32(&output, N as usize), vec![0.0; N as usize]);
             eprintln!(
                 "ICB_FUSION_ENCODE_BENCHMARK samples={SAMPLES} \
@@ -2453,6 +2316,10 @@ mod imp {
         /// compared to the GPU work being encoded. Read back via
         /// `dispatch_count()` after encoding, before `commit_and_wait`.
         pub dispatch_count: usize,
+        /// True once any encoder work (compute dispatch, blit, replay) has
+        /// been recorded into `cmd`. Drop auto-commits only when set — an
+        /// empty temporary TCB must not pay submit/wait.
+        has_encoded_work: bool,
         /// Host nanos spent encoding dispatches while a cost-ledger token is
         /// active. Folded into [`crate::cost_ledger::Bucket::MetalEncode`] at
         /// commit. Zero when the ledger is off (no `Instant` on the hot path).
@@ -2484,6 +2351,7 @@ mod imp {
                 physical_trace: physical_trace.map(|(identity, _)| identity),
                 concurrent_encoder: None,
                 dispatch_count: 0,
+                has_encoded_work: false,
                 ledger_encode_ns: 0,
                 ledger_stage_dispatches: [0; crate::cost_ledger::GpuStage::ALL.len()],
             }
@@ -2688,6 +2556,7 @@ mod imp {
             enc.end_encoding();
 
             self.dispatch_count = self.dispatch_count.saturating_add(command_count);
+            self.has_encoded_work = true;
             if let Some(t0) = ledger_t0 {
                 self.ledger_encode_ns = self
                     .ledger_encode_ns
@@ -2727,6 +2596,7 @@ mod imp {
         ) -> Result<()> {
             // Track 3.1 / 5.1: count every kernel dispatch unconditionally.
             self.dispatch_count += 1;
+            self.has_encoded_work = true;
             // Cost-ledger encode wall: Instant only while a token is active.
             // Folded into MetalEncode at commit_and_wait_split. Default-off
             // path pays one atomic load via is_recording().
@@ -3004,6 +2874,7 @@ mod imp {
             }
             blit.copy_from_buffer(src, src_offset, dst, dst_offset, size);
             blit.end_encoding();
+            self.has_encoded_work = true;
             Ok(())
         }
 
@@ -3172,6 +3043,18 @@ mod imp {
 
     impl Drop for TokenCommandBuffer<'_> {
         fn drop(&mut self) {
+            // Only auto-commit when work was encoded. An empty Drop used to
+            // `commit` + `wait_until_completed` on a fresh CB (full submit
+            // latency, no useful GPU work). That topology bug made
+            // per-encode temporary TCBs look free in the ledger while still
+            // burning wall clock — the C1/C2 / device-SiLU failure shape.
+            // Explicit `commit_and_wait` still flushes empty buffers if a
+            // caller wants a fence with no dispatches.
+            if !self.has_encoded_work {
+                let _ = self.cmd.take();
+                let _ = self.concurrent_encoder.take();
+                return;
+            }
             if let Some(cmd) = self.cmd.take() {
                 self.flush_and_commit(cmd);
             }

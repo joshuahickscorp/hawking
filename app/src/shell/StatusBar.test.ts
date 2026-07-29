@@ -1,15 +1,3 @@
-/*
-  StatusBar.test.ts: the status bar as an honest read of host state.
-
-  Two things a user can be lied to about here, and both were being lied about before this stage: the
-  problem counts (a hardcoded 0 / 0) and the branch (a hardcoded "main" on a button that did nothing).
-  So this asserts the counter reflects a REAL `diagnostics` projection patch (including a clean patch,
-  which must read as a real zero and not as "not run"), that the branch is bound to the host `home`
-  projection, that the dead Branch button chrome is gone from the source, and that status is carried in
-  words rather than by colour alone.
-
-  No jsdom in this project, so component assertions render through react-dom/server.
-*/
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { createElement } from "react";
@@ -41,9 +29,6 @@ import {
 
 const SRC = readFileSync(join(__dirname, "StatusBar.tsx"), "utf8");
 
-// zustand v5 answers useSyncExternalStore's SERVER snapshot with getInitialState, so a
-// react-dom/server render always sees the initial store. Store-fed assertions therefore go through
-// the exported readers and the prop-driven detail panel; the binding itself is asserted on the source.
 const detail = (d: unknown) => renderToStaticMarkup(createElement(DiagnosticsDetail, { d: readDiagnostics(d) }));
 
 const DIRTY = {
@@ -173,18 +158,12 @@ describe("bindings and retirements", () => {
 
   it("no hardcoded problem counts survive", () => {
     expect(SRC).not.toMatch(/<span>0<\/span>/);
-    // With the initial (empty) store the bar shows the honest unknown state, not a fabricated zero.
     const html = renderToStaticMarkup(createElement(StatusBar));
     expect(html).toContain("not run");
     expect(html).not.toContain("<span>0</span>");
   });
 });
 
-/*
-  The counter is also the PRODUCER now: run_static_analysis binds Custom, so this is the one place in
-  the app that can write the diagnostics projection the bar reads. It must never send a payload the
-  host would refuse, so the file list is derived and the control is disabled when it is empty.
-*/
 describe("the Problems counter can fill itself", () => {
   it("derives the file list from the diff, the last receipt, and the open tabs, deduped", () => {
     expect(analysisPaths({ path: "src/net.rs" }, readDiagnostics(DIRTY), ["src/net.rs", "src/main.rs"])).toEqual([
@@ -208,8 +187,6 @@ describe("the Problems counter can fill itself", () => {
     expect(withNone).toContain("no file is open and no change has been proposed");
   });
 
-  // The write lease. The bar may only claim a lease the HOST says is in force: an unleased session
-  // and a revoked one look identical here, which is what stops a revoked lease reading as active.
   it("shows a write lease only while the host reports one active", () => {
     expect(readWriteLease(undefined)).toBeNull();
     expect(readWriteLease({})).toBeNull();
@@ -232,7 +209,6 @@ describe("the Problems counter can fill itself", () => {
     expect(markup).toContain("/w/hide/app");
     expect(markup).toContain("Revoke write lease");
     expect(markup).toContain("still asks");
-    // The bar itself carries one short line and opens the rest in place: no new permanent control.
     expect(SRC).toContain('aria-controls="statusbar-write-lease"');
     expect(SRC).toContain("{lease ? (");
   });

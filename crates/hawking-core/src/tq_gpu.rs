@@ -1393,7 +1393,6 @@ impl TqPreparedGpu {
 mod tests {
     use super::*;
     use strand_quant::encode::{encode_tensor, encode_tensor_with, EncodeOpts};
-
     #[test]
     fn every_runtime_path_has_decode_and_fused_kernel_sources() {
         let shader = include_str!("../shaders/strand_bitslice.metal");
@@ -1419,10 +1418,7 @@ mod tests {
                 "strand_bitslice_gemv_partials_computed(",
             ),
         ] {
-            assert!(
-                shader.contains(decode),
-                "missing Metal decode oracle {decode}"
-            );
+            assert!(shader.contains(decode), "missing Metal decode oracle {decode}");
             assert!(shader.contains(fused), "missing Metal fused kernel {fused}");
             assert!(
                 shader.contains(path.small_batch_kernel_name()),
@@ -1436,80 +1432,35 @@ mod tests {
             "strand_bitslice_reduce_rows_small_batch(",
             "strand_bitslice_reduce_rows_small_batch_accum(",
         ] {
-            assert!(
-                shader.contains(kernel),
-                "missing Metal batch support {kernel}"
-            );
+            assert!(shader.contains(kernel), "missing Metal batch support {kernel}");
         }
     }
-
-    /// CPU replay of the exact `strand_bitslice_decode` inner loop, driven from a
-    /// baked [`BitsliceEntry`] table. Reproduces the kernel's bit-for-bit
-    /// arithmetic on the host: per block, seed `state` from `init_state`, then for
-    /// each of `n` weights pop a k-bit symbol from the payload at `bit_offset`,
-    /// advance `state = ((state<<k)|sym)&mask`, gather `q = lut[state]`, and emit
-    /// `w = (eff[j>>5]*q)>>16 + off[j>>5]` (the i64 `reconstruct_q` product) at
-    /// `out_off + j`. `lut` must be `cfg.codebook()` (== `codebook_lut(l_bits)` for
-    /// the default `StoredLut` mode the GPU binds).
-    fn host_walk_decode(
-        payload: &[u8],
-        tbl: &[BitsliceEntry],
-        lut: &[i32],
-        total: usize,
-        k_bits: u32,
-        l_bits: u32,
-    ) -> Vec<i32> {
-        let state_mask = (1usize << l_bits) - 1;
-        let input_mask = (1usize << k_bits) - 1;
-        let k = k_bits as usize;
-        let mut out = vec![0i32; total];
+    fn host_walk_decode(payload: &[u8], tbl: &[BitsliceEntry], lut: &[i32], total: usize, k_bits: u32, l_bits: u32) -> Vec<i32> {
+        let state_mask = (1usize << l_bits) - 1; let input_mask = (1usize << k_bits) - 1;
+        let k = k_bits as usize; let mut out = vec![0i32; total];
         for e in tbl {
-            // d == 1 only; the scalar bake is what the production path uses.
             assert_eq!(e.d, 1, "host_walk_decode is the scalar (d==1) replay");
-            let mut state = e.init_state as usize & state_mask;
-            let mut bitpos = e.bit_offset as usize;
-            let n = e.n as usize;
-            let obase = e.out_off as usize;
+            let mut state = e.init_state as usize & state_mask; let mut bitpos = e.bit_offset as usize;
+            let n = e.n as usize; let obase = e.out_off as usize;
             for j in 0..n {
-                let sym = read_bits(payload, bitpos, k_bits) & input_mask;
-                bitpos += k;
-                state = ((state << k) | sym) & state_mask;
-                let q = lut[state];
-                let sb = j >> 5;
-                let es = e.eff[sb];
-                // i64 reconstruct: (scale_q * quantile_q) >> 16, matching
-                // strand_quant::decode::reconstruct_q exactly.
-                let w = ((((es as i64) * (q as i64)) >> 16) as i32) + e.off[sb];
+                let sym = read_bits(payload, bitpos, k_bits) & input_mask; bitpos += k; state = ((state << k) | sym) & state_mask;
+                let q = lut[state]; let sb = j >> 5; let es = e.eff[sb]; let w = ((((es as i64) * (q as i64)) >> 16) as i32) + e.off[sb];
                 out[obase + j] = w;
             }
         }
         out
     }
-
     fn compact_code(words: [u32; 2], sb: usize) -> u8 {
         ((words[sb >> 2] >> ((sb & 3) * 8)) & 0x3f) as u8
     }
-
-    fn host_walk_decode_compact(
-        payload: &[u8],
-        tbl: &[CompactBitsliceEntry],
-        lut: &[i32],
-        total: usize,
-        k_bits: u32,
-        l_bits: u32,
-    ) -> Vec<i32> {
-        let state_mask = (1usize << l_bits) - 1;
-        let input_mask = (1usize << k_bits) - 1;
-        let mut out = vec![0i32; total];
+    fn host_walk_decode_compact(payload: &[u8], tbl: &[CompactBitsliceEntry], lut: &[i32], total: usize, k_bits: u32, l_bits: u32) -> Vec<i32> {
+        let state_mask = (1usize << l_bits) - 1; let input_mask = (1usize << k_bits) - 1; let mut out = vec![0i32; total];
         for e in tbl {
-            let mut state = e.init_state as usize & state_mask;
-            let mut bitpos = e.bit_offset as usize;
+            let mut state = e.init_state as usize & state_mask; let mut bitpos = e.bit_offset as usize;
             for j in 0..e.n as usize {
-                let sym = read_bits(payload, bitpos, k_bits) & input_mask;
-                bitpos += k_bits as usize;
+                let sym = read_bits(payload, bitpos, k_bits) & input_mask; bitpos += k_bits as usize;
                 state = ((state << k_bits) | sym) & state_mask;
-                let sb = j >> 5;
-                let es = eff_scale_q(e.scale_q, compact_code(e.mult_codes, sb));
+                let sb = j >> 5; let es = eff_scale_q(e.scale_q, compact_code(e.mult_codes, sb));
                 let off = eff_min_q(e.min_base_q, compact_code(e.min_codes, sb));
                 out[e.out_off as usize + j] =
                     ((((es as i64) * (lut[state] as i64)) >> 16) as i32) + off;
@@ -1517,17 +1468,10 @@ mod tests {
         }
         out
     }
-
     fn synth_w(n: usize, seed: u64) -> Vec<f32> {
-        (0..n)
-            .map(|i| ((i as f32 + seed as f32) * 0.0137).sin() * 0.5)
+        (0..n).map(|i| ((i as f32 + seed as f32) * 0.0137).sin() * 0.5)
             .collect()
     }
-
-    /// The structural invariants of the baked table: `eff[s]` is exactly the
-    /// strand-quant fold of `scale_q` + the s-th sub-scale code, slots past
-    /// `n_sub` are zero, and `n`/`out_off`/`bit_offset` match an independent
-    /// prefix recompute. Run across the encode-lever matrix.
     #[test]
     fn bake_table_fields_match_recompute() {
         let configs = [
@@ -1538,16 +1482,10 @@ mod tests {
         ];
         for cfg in configs {
             for seed in 0..6u64 {
-                let n = 1 + (seed as usize * 173) % 2050;
-                let w = synth_w(n, seed);
-                let enc = encode_tensor(&w, &cfg);
-                let tbl = bake_bitslice_entries(&enc, &cfg).expect("bake");
-                assert_eq!(tbl.len(), enc.blocks.len());
-
-                let k = cfg.k_bits as usize;
-                let mut prefix_n = 0usize;
+                let n = 1 + (seed as usize * 173) % 2050; let w = synth_w(n, seed);
+                let enc = encode_tensor(&w, &cfg); let tbl = bake_bitslice_entries(&enc, &cfg).expect("bake");
+                assert_eq!(tbl.len(), enc.blocks.len()); let k = cfg.k_bits as usize; let mut prefix_n = 0usize;
                 for (b, (blk, e)) in enc.blocks.iter().zip(tbl.iter()).enumerate() {
-                    // out_off / bit_offset / n match a fresh prefix sum.
                     assert_eq!(e.n, blk.n, "cfg k{} L{} blk{b}: n", cfg.k_bits, cfg.l_bits);
                     assert_eq!(
                         e.out_off as usize, prefix_n,
@@ -1562,10 +1500,7 @@ mod tests {
                         cfg.l_bits
                     );
                     assert_eq!(e.d, 1, "scalar bake d==1");
-
-                    // eff[s] == eff_scale_q(scale_q, code[s]); tail slots zero.
-                    let n_sub = n_sub_blocks(blk.n as usize);
-                    let codes = unpack_sub_scales(&blk.sub_scales, n_sub);
+                    let n_sub = n_sub_blocks(blk.n as usize); let codes = unpack_sub_scales(&blk.sub_scales, n_sub);
                     for s in 0..n_sub {
                         assert_eq!(
                             e.eff[s],
@@ -1582,49 +1517,32 @@ mod tests {
                             cfg.k_bits, cfg.l_bits
                         );
                     }
-                    // 3-bit (and the other non-affine deploy configs) => off all zero.
-                    assert!(
-                        !enc.has_affine_min,
-                        "for_bpw configs must have affine-min off"
-                    );
+                    assert!(!enc.has_affine_min, "for_bpw configs must have affine-min off");
                     assert_eq!(
                         e.off, [0i32; 8],
                         "cfg k{} L{} blk{b}: off",
                         cfg.k_bits, cfg.l_bits
-                    );
-
-                    prefix_n += blk.n as usize;
+                    ); prefix_n += blk.n as usize;
                 }
                 assert_eq!(prefix_n, n, "prefix sum != total");
             }
         }
     }
-
-    /// The load-bearing identity: a host replay of the bitstream straight from the
-    /// baked table equals `decode_tensor_fixed` bit-for-bit. This is the exact
-    /// arithmetic the Metal kernel runs, so a green test here predicts a
-    /// bit-identical GPU dispatch. Swept over the encode-lever matrix
-    /// (k∈{2,3,4}, L∈{7,12}, tail-biting × affine-min) and edge lengths.
     #[test]
     fn host_walk_matches_decode_tensor_fixed() {
         use strand_quant::decode::decode_tensor_fixed;
-
         let configs = [
-            TrellisConfig::for_bpw(3.0),       // k3 L7 (3-bit deploy)
-            TrellisConfig::for_bpw(2.0),       // k2 L6
-            TrellisConfig::for_bpw(4.0),       // k4 L8
-            TrellisConfig::for_bpw_l(2.0, 12), // k2 L12 (2-bit reopen)
-            TrellisConfig::for_bpw_l(2.0, 5),  // k2 L5 (fold)
-            TrellisConfig::for_bpw_l(4.0, 4),  // k4 L4 (fold)
+            TrellisConfig::for_bpw(3.0),
+            TrellisConfig::for_bpw(2.0),
+            TrellisConfig::for_bpw(4.0),
+            TrellisConfig::for_bpw_l(2.0, 12),
+            TrellisConfig::for_bpw_l(2.0, 5),
+            TrellisConfig::for_bpw_l(4.0, 4),
         ];
         for cfg in configs {
-            // codebook the CPU oracle uses; == codebook_lut(l_bits) for StoredLut,
-            // which is exactly the buffer the GPU dispatch binds.
             let lut = cfg.codebook();
             for seed in 0..8u64 {
-                // edge lengths: short final block, sub-block tails, 1-weight tensors.
-                let n = 1 + (seed as usize * 211) % 2048;
-                let w = synth_w(n, seed);
+                let n = 1 + (seed as usize * 211) % 2048; let w = synth_w(n, seed);
                 let variants = [
                     ("plain", encode_tensor(&w, &cfg)),
                     (
@@ -1669,8 +1587,7 @@ mod tests {
                     let compact = bake_compact_bitslice_entries(enc, &cfg).expect("compact bake");
                     let got_compact = host_walk_decode_compact(
                         &enc.bits, &compact, &lut, enc.total, cfg.k_bits, cfg.l_bits,
-                    );
-                    let want = decode_tensor_fixed(enc, &cfg);
+                    ); let want = decode_tensor_fixed(enc, &cfg);
                     assert_eq!(
                         got, want,
                         "host-walk diverged: variant={label} k={} L={} n={n} seed={seed} \
@@ -1686,19 +1603,10 @@ mod tests {
             }
         }
     }
-
-    /// Affine-min coverage in isolation: encode a tensor WITH affine-min, assert
-    /// the bake populates a non-zero `off[]` somewhere (so the off-fold is
-    /// exercised, not just the all-zero 3-bit branch) and the host-walk still
-    /// matches the oracle bit-for-bit.
     #[test]
     fn affine_min_off_fold_is_exercised_and_matches() {
         use strand_quant::decode::decode_tensor_fixed;
-        // 4-bit config is where affine-min meaningfully engages.
-        let cfg = TrellisConfig::for_bpw(4.0);
-        let lut = cfg.codebook();
-        let n = 1024usize;
-        let w = synth_w(n, 99);
+        let cfg = TrellisConfig::for_bpw(4.0); let lut = cfg.codebook(); let n = 1024usize; let w = synth_w(n, 99);
         let enc = encode_tensor_with(
             &w,
             &cfg,
@@ -1708,37 +1616,16 @@ mod tests {
             },
         );
         assert!(enc.has_affine_min, "expected affine-min encode");
-        let tbl = bake_bitslice_entries(&enc, &cfg).expect("bake");
-        let any_off = tbl.iter().any(|e| e.off.iter().any(|&o| o != 0));
-        assert!(
-            any_off,
-            "affine-min encode produced an all-zero off[] table — off-fold not exercised"
-        );
-        let got = host_walk_decode(&enc.bits, &tbl, &lut, enc.total, cfg.k_bits, cfg.l_bits);
-        let want = decode_tensor_fixed(&enc, &cfg);
+        let tbl = bake_bitslice_entries(&enc, &cfg).expect("bake"); let any_off = tbl.iter().any(|e| e.off.iter().any(|&o| o != 0));
+        assert!(any_off, "affine-min encode produced an all-zero off[] table — off-fold not exercised"); let got = host_walk_decode(&enc.bits, &tbl, &lut, enc.total, cfg.k_bits, cfg.l_bits); let want = decode_tensor_fixed(&enc, &cfg);
         assert_eq!(got, want, "affine-min host-walk diverged from oracle");
     }
-
-    /// The vector-trellis (`d > 1`) bake produces a structurally correct table:
-    /// `bit_offset` accumulates `n_steps*k` (NOT `n*k`), `out_off` accumulates the
-    /// true output count `n`, and `d` is carried. (A full vec decode-identity check
-    /// needs a `2^L*d` interleaved vector codebook, which the frozen Gaussian
-    /// codebook does not provide — the model path is scalar-only and asserts
-    /// `d == 1`, so the vec bake is carried for completeness, validated here at the
-    /// table-geometry level.)
     #[test]
     fn vec_bake_geometry_is_step_based() {
         let cfg = TrellisConfig::for_bpw(3.0).with_vec_dim(2);
-        assert_eq!(cfg.vec_dim(), 2);
-        let d = cfg.vec_dim();
-        let k = cfg.k_bits as usize;
-        let n = 1000usize;
-        let w = synth_w(n, 7);
-        let enc = encode_tensor(&w, &cfg);
-        let tbl = bake_bitslice_entries_vec(&enc, &cfg).expect("vec bake");
-
-        let mut exp_start_bit = 0usize;
-        let mut exp_out_off = 0usize;
+        assert_eq!(cfg.vec_dim(), 2); let d = cfg.vec_dim(); let k = cfg.k_bits as usize; let n = 1000usize; let w = synth_w(n, 7);
+        let enc = encode_tensor(&w, &cfg); let tbl = bake_bitslice_entries_vec(&enc, &cfg).expect("vec bake");
+        let mut exp_start_bit = 0usize; let mut exp_out_off = 0usize;
         for (b, (blk, e)) in enc.blocks.iter().zip(tbl.iter()).enumerate() {
             assert_eq!(e.d, d as u32, "blk{b}: d");
             assert_eq!(e.n, blk.n, "blk{b}: n");
@@ -1749,17 +1636,10 @@ mod tests {
             assert_eq!(
                 e.bit_offset as usize, exp_start_bit,
                 "blk{b}: bit_offset (n_steps*k)"
-            );
-            let n_steps = (blk.n as usize).div_ceil(d);
-            exp_start_bit += n_steps * k;
-            exp_out_off += blk.n as usize;
+            ); let n_steps = (blk.n as usize).div_ceil(d); exp_start_bit += n_steps * k; exp_out_off += blk.n as usize;
         }
         assert_eq!(exp_out_off, n, "vec out_off prefix != total");
     }
-
-    /// Guard the record layout: 84 bytes, 4-byte aligned, all fields 4-wide so the
-    /// Rust `#[repr(C)]` and the MSL `sizeof(BitsliceEntry)` agree (the GPU probe
-    /// asserts this at dispatch — here we pin the host side).
     #[test]
     fn bitslice_entry_layout() {
         assert_eq!(std::mem::size_of::<BitsliceEntry>(), 84);
@@ -1767,34 +1647,20 @@ mod tests {
         assert_eq!(std::mem::size_of::<CompactBitsliceEntry>(), 40);
         assert_eq!(std::mem::align_of::<CompactBitsliceEntry>(), 4);
     }
-
     #[test]
     fn runtime_path_parser_is_strict_and_default_safe() {
-        assert_eq!(
-            TqRuntimePath::parse("stored").unwrap(),
-            TqRuntimePath::Stored
-        );
-        assert_eq!(
-            TqRuntimePath::parse("compact").unwrap(),
-            TqRuntimePath::CompactMetadata
-        );
-        assert_eq!(
-            TqRuntimePath::parse("hashed").unwrap(),
-            TqRuntimePath::HashedQuantile
-        );
-        assert_eq!(
-            TqRuntimePath::parse("computed").unwrap(),
-            TqRuntimePath::ComputedAcklam
-        );
+        assert_eq!(TqRuntimePath::parse("stored").unwrap(), TqRuntimePath::Stored);
+        assert_eq!(TqRuntimePath::parse("compact").unwrap(), TqRuntimePath::CompactMetadata);
+        assert_eq!(TqRuntimePath::parse("hashed").unwrap(), TqRuntimePath::HashedQuantile);
+        assert_eq!(TqRuntimePath::parse("computed").unwrap(), TqRuntimePath::ComputedAcklam);
         assert!(TqRuntimePath::parse("magic").is_err());
     }
-
     #[test]
     fn runtime_traffic_exposes_hidden_table_bpw() {
         let traffic = TqRuntimeTraffic {
             weights: 256,
             blocks: 1,
-            payload_bytes: 96, // 3 bpw
+            payload_bytes: 96,
             expanded_table_bytes: 84,
             compact_table_bytes: 40,
             stored_codebook_bytes: 0,
@@ -1804,12 +1670,8 @@ mod tests {
             partial_roundtrip_bytes: 8,
         };
         assert_eq!(traffic.weight_path_bpw(TqRuntimePath::Stored), 5.625);
-        assert_eq!(
-            traffic.weight_path_bpw(TqRuntimePath::CompactMetadata),
-            4.25
-        );
+        assert_eq!(traffic.weight_path_bpw(TqRuntimePath::CompactMetadata), 4.25);
     }
-
     #[test]
     fn runtime_recipe_axes_compose_without_claiming_executable_kernels() {
         let traffic = TqRuntimeTraffic {
@@ -1826,29 +1688,18 @@ mod tests {
         };
         assert_eq!(TqRuntimeRecipe::RESEARCH_MATRIX.len(), 6);
         assert_eq!(TqRuntimePath::Stored.recipe(), TqRuntimeRecipe::STORED);
-        assert_eq!(
-            TqRuntimePath::CompactMetadata.recipe(),
-            TqRuntimeRecipe::COMPACT
-        );
-        assert_eq!(
-            traffic.compressed_runtime_bytes_for(TqRuntimeRecipe::COMPACT_HASHED),
-            96 + 40 + 32 + 8
-        );
-        assert_eq!(
-            traffic.compressed_runtime_bytes_for(TqRuntimeRecipe::COMPACT_COMPUTED),
-            96 + 40 + 4 + 8
-        );
+        assert_eq!(TqRuntimePath::CompactMetadata.recipe(), TqRuntimeRecipe::COMPACT);
+        assert_eq!(traffic.compressed_runtime_bytes_for(TqRuntimeRecipe::COMPACT_HASHED), 96 + 40 + 32 + 8);
+        assert_eq!(traffic.compressed_runtime_bytes_for(TqRuntimeRecipe::COMPACT_COMPUTED), 96 + 40 + 4 + 8);
         assert!(
             traffic.compressed_runtime_bpw_for(TqRuntimeRecipe::COMPACT_COMPUTED)
                 < traffic.compressed_runtime_bpw_for(TqRuntimeRecipe::STORED)
         );
     }
-
     #[test]
     fn runtime_recipe_byte_frontier_is_monotone_for_every_frozen_l() {
         for l_bits in TrellisConfig::MIN_L..=TrellisConfig::MAX_L {
-            let states = 1usize << l_bits;
-            let tail = strand_quant::codebook::tail_left_prefix_q12(l_bits).len();
+            let states = 1usize << l_bits; let tail = strand_quant::codebook::tail_left_prefix_q12(l_bits).len();
             let traffic = TqRuntimeTraffic {
                 weights: 256 * 513,
                 blocks: 513,
@@ -1862,18 +1713,9 @@ mod tests {
                 partial_roundtrip_bytes: 8 * 513,
             };
             let stored = traffic.compressed_runtime_bytes_for(TqRuntimeRecipe::STORED);
-            assert!(
-                traffic.compressed_runtime_bytes_for(TqRuntimeRecipe::COMPACT) < stored,
-                "compact metadata failed to save bytes at L={l_bits}"
-            );
-            assert!(
-                traffic.compressed_runtime_bytes_for(TqRuntimeRecipe::HASHED) < stored,
-                "hashed quantiles failed to save bytes at L={l_bits}"
-            );
-            assert!(
-                traffic.compressed_runtime_bytes_for(TqRuntimeRecipe::COMPUTED) < stored,
-                "computed tails failed to save bytes at L={l_bits}"
-            );
+            assert!(traffic.compressed_runtime_bytes_for(TqRuntimeRecipe::COMPACT) < stored, "compact metadata failed to save bytes at L={l_bits}");
+            assert!(traffic.compressed_runtime_bytes_for(TqRuntimeRecipe::HASHED) < stored, "hashed quantiles failed to save bytes at L={l_bits}");
+            assert!(traffic.compressed_runtime_bytes_for(TqRuntimeRecipe::COMPUTED) < stored, "computed tails failed to save bytes at L={l_bits}");
             assert!(
                 traffic.compressed_runtime_bytes_for(TqRuntimeRecipe::COMPACT_HASHED)
                     < traffic.compressed_runtime_bytes_for(TqRuntimeRecipe::HASHED)
@@ -1884,7 +1726,6 @@ mod tests {
             );
         }
     }
-
     #[test]
     fn gpu_admission_explains_ragged_and_corrupt_geometry() {
         let entry = BitsliceEntry {
@@ -1898,29 +1739,23 @@ mod tests {
         };
         let accepted = assess_gpu_gemv_geometry(&[entry], 1, 1, 256, 3);
         assert!(accepted.eligible);
-        assert_eq!(accepted.expected_blocks, 1);
-
-        let ragged = assess_gpu_gemv_geometry(&[entry], 1, 1, 896, 3);
+        assert_eq!(accepted.expected_blocks, 1); let ragged = assess_gpu_gemv_geometry(&[entry], 1, 1, 896, 3);
         assert!(!ragged.eligible);
         assert_eq!(
             ragged.reason,
             Some(TqGpuIneligibility::ColumnsNotMultipleOf256)
         );
         assert_eq!(ragged.expected_blocks, 4);
-
-        let short = BitsliceEntry { n: 255, ..entry };
-        let malformed = assess_gpu_gemv_geometry(&[short], 1, 1, 256, 3);
+        let short = BitsliceEntry { n: 255, ..entry }; let malformed = assess_gpu_gemv_geometry(&[short], 1, 1, 256, 3);
         assert_eq!(
             malformed.reason,
             Some(TqGpuIneligibility::BlockLengthNot256 { block: 0 })
-        );
-        let compact_missing = assess_gpu_gemv_geometry(&[entry], 0, 1, 256, 3);
+        ); let compact_missing = assess_gpu_gemv_geometry(&[entry], 0, 1, 256, 3);
         assert_eq!(
             compact_missing.reason,
             Some(TqGpuIneligibility::CompactBlockCountMismatch)
         );
     }
-
     #[test]
     fn gpu_bakes_treat_absent_sub_scale_stream_as_unity() {
         let cfg = TrellisConfig::new(7, 3, 256);
@@ -1940,8 +1775,7 @@ mod tests {
             has_rht_seed: false,
         };
         let expanded = bake_bitslice_entries(&enc, &cfg).expect("expanded bake");
-        assert_eq!(expanded[0].eff, [1 << 16; 8]);
-        let compact = bake_compact_bitslice_entries(&enc, &cfg).expect("compact bake");
+        assert_eq!(expanded[0].eff, [1 << 16; 8]); let compact = bake_compact_bitslice_entries(&enc, &cfg).expect("compact bake");
         assert_eq!(compact[0].mult_codes, [0x3f3f_3f3f; 2]);
     }
 }

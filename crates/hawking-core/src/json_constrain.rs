@@ -352,35 +352,30 @@ impl GrammarConstraint {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[test]
     fn empty_object() {
         let mut c = JsonConstraint::new();
         c.advance("{}");
         assert!(c.is_done());
     }
-
     #[test]
     fn simple_kv() {
         let mut c = JsonConstraint::new();
         c.advance(r#"{"key": "value"}"#);
         assert!(c.is_done());
     }
-
     #[test]
     fn nested() {
         let mut c = JsonConstraint::new();
         c.advance(r#"{"a": {"b": 1}}"#);
         assert!(c.is_done());
     }
-
     #[test]
     fn array() {
         let mut c = JsonConstraint::new();
         c.advance("[1, 2, 3]");
         assert!(c.is_done());
     }
-
     #[test]
     fn not_done_mid_string() {
         let mut c = JsonConstraint::new();
@@ -388,7 +383,6 @@ mod tests {
         assert!(!c.is_done());
         assert_eq!(c.state, JsonState::ObjectValue);
     }
-
     #[test]
     fn grammar_constraint_validates_json_object_required_keys() {
         let c = GrammarConstraint::JsonObject {
@@ -403,7 +397,6 @@ mod tests {
         };
         assert!(any.validate(r#"{"x":1}"#));
     }
-
     #[test]
     fn grammar_constraint_validates_choices() {
         let c = GrammarConstraint::Choices(vec!["yes".into(), "no".into()]);

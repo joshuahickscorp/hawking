@@ -56,6 +56,7 @@ import sys
 import numpy as np
 from gguf import GGUFReader, GGML_QUANT_SIZES, GGMLQuantizationType
 from gguf.quants import dequantize
+from oracle_common import rss_gb
 
 
 # GGUF tensor short-name -> bible/HF projection name.
@@ -76,9 +77,6 @@ ENERGY_TARGET = 0.99  # fraction of delta Frobenius energy a low-rank store must
 QUANT_RANGE_K = 6.0
 
 
-def rss_gb():
-    # macOS ru_maxrss is in bytes.
-    return resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / (1024 ** 3)
 
 
 def bits_per_weight(qtype):

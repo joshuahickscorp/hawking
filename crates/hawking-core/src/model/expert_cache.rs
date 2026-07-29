@@ -195,24 +195,20 @@ fn platform_posix_madvise(_addr: usize, _len: usize, _advice: Advice) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[test]
     fn note_access_updates_counts_and_positions() {
         let cache = ExpertCache::new(2, 4, 8);
         cache.note_access(1, 3, 42);
         cache.note_access(1, 3, 43);
-
         let stats = &cache.stats[1].experts[3];
         assert_eq!(stats.active_count(), 2);
         assert_eq!(stats.last_active_pos(), 43);
     }
-
     #[test]
     fn evict_without_model_base_is_noop() {
         let cache = ExpertCache::new(1, 2, 1);
         cache.note_access(0, 1, 1);
         cache.note_access(0, 0, 8);
-
         let ranges = [
             ExpertRange {
                 layer: 0,

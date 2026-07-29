@@ -1,19 +1,9 @@
-/*
-  actions.test.ts: the chat composer's semantics as a gate.
-
-  Asserts the three things a user can be lied to about: what Enter does right now, which catalog
-  command each menu entry actually dispatches, and that the retired controls (dead Attach, mock voice
-  mic, the "Queue turn" relabel, the two dead New-chat buttons) are really gone from the source.
-*/
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-// The transport seam, stubbed so each test reads exactly what went on the wire.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const { sent } = vi.hoisted(() => ({ sent: [] as any[] }));
 vi.mock("../../ipc", () => ({
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sendIntent: async (i: any) => {
     sent.push(i);
     return { accepted: true, event_seq: 1, message: null };
@@ -79,8 +69,6 @@ describe("submit dispatch", () => {
 
   it("steers the running turn instead of starting an unrelated one", async () => {
     await runChatAction("steer", CTX);
-    // The catalog binds `steer` to Rpc(turn/steer); the reachable route to the same host capability
-    // is the redirect_run custom intent (hide-backend matches both names, raises InterruptHub Steer).
     expect(last().type).toBe("custom");
     expect(last().data.name).toBe("redirect_run");
     expect(last().data.payload).toMatchObject({ run_id: "run_1", text: "tighten the loop" });
@@ -144,7 +132,6 @@ describe("the catalog is the authority", () => {
   it("offers no entry whose capability does not exist", () => {
     const ids = [...COMPOSER_MENU, ...NEW_CHAT_MENU];
     for (const id of ids) expect(actionSpec(id), id).toBeTruthy();
-    // queue_turn, plan-only, verify, attach and fork_session are deliberately absent.
     expect(CHAT_ACTIONS.map((a) => a.id)).not.toContain("queue");
     expect(CHAT_ACTIONS.map((a) => a.command)).not.toContain("queue_turn");
     expect(CHAT_ACTIONS.map((a) => a.command)).not.toContain("fork_session");
@@ -183,9 +170,6 @@ describe("availability", () => {
   it("the merge folds the side chat the store recorded back onto the session it branched from", async () => {
     useStore.setState({ lastSideChat: null, lastSideChatParent: null });
     await expect(runChatAction("merge_side_chat", CTX)).rejects.toThrow(/needs a side chat/);
-    // `side_chat_created` arrives under the NEW session id and the store adopts it, so the active
-    // session is the side chat. The parent from the record is what the summary lands on; naming the
-    // active session sent the merge to the branch itself.
     useStore.setState({ lastSideChat: "ses_side", lastSideChatParent: "ses_parent" });
     await runChatAction("merge_side_chat", { ...CTX, sessionId: "ses_side", text: "the child found the leak" });
     expect(last().data).toMatchObject({

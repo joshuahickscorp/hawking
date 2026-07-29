@@ -1,12 +1,17 @@
 # BASELINES.md — baseline neutrality spec
 
-> Active spec sources: `docs/plans/STUDIO_GO.md`,
-> `docs/plans/quintessential_engine_2026_06_29.md`, and
-> `docs/plans/computational_efficiency_paradigms_2026_07_11.md`.
-> The honest baseline set, each with its **exact command** and a **best-effort note**.
-> Rule: a baseline marked **best-effort** can support a *contingent* or *negative* claim
-> but **never a public win** (§20.3 invalidation rule 8). No rhetorical sandbagging — if a
-> baseline beats Hawking, its receipt ships unchanged.
+> Active living docs: `GO.md`, `docs/dead_levers.md`, `docs/serve.md`, `docs/BENCHMARKS.md`.
+> Historical Studio plan docs were archived at tag `pre-floor-prune-20260728` (see
+> `docs/ARCHIVE_INDEX_2.md`). The honest baseline set, each with its **exact command** and a
+> **best-effort note**. Rule: a baseline marked **best-effort** can support a *contingent* or
+> *negative* claim but **never a public win** (§20.3 invalidation rule 8). No rhetorical
+> sandbagging — if a baseline beats Hawking, its receipt ships unchanged.
+>
+> **Entrypoint note (2026-07-28):** `[SEALED] tools/condense/studio_run.py` and the `hawking studio`
+> subcommand are **not** in the active tree (sealed into the legacy/hawking-lab packs). Commands
+> below that name those entrypoints are historical; they do not run until the sealed modules are
+> deliberately hydrated. Frontier model labels still live in
+> `tools/condense/studio_manifest.py` (library only).
 
 ## The baseline set (run all on the SAME named machine, same frozen suite)
 
@@ -98,7 +103,7 @@ request, safety budget, and atomic checkpoints; none may delete a source merely 
 | MoE (T1.4) | `Qwen/Qwen3-30B-A3B` | MoE | no | STUDIO |
 | KD teacher (T2.5) | `mistralai/Mixtral-8x7B-v0.1` | ~94 GB | no | STUDIO / serve-only |
 
-### FRONTIER — the 100B+ research prize (`studio_run.py --frontier <label>`, exact ids pinned in `tools/condense/studio_manifest.py`)
+### FRONTIER — the 100B+ research prize (ids pinned in `tools/condense/studio_manifest.py`; `[SEALED] studio_run.py --frontier` removed from active tree)
 
 Serve-oriented (do NOT fit the doctor's f16-resident budget). `.tq` sizes at the recipe's serve bpw.
 
@@ -130,95 +135,95 @@ Each real `procure.py <label>` run appends observed MB/s, live progress samples,
 window, stall termination status, cache delta, route/HF/DNS/network diagnostics for bad attempts,
 retry/verify status, return code, and output tail to
 `reports/condense/frontier_downloads.jsonl`, and
-`hawking studio status --storage-budget-gb "$STORAGE_BUDGET_GB" --scratch-gb 64 --cache-reserve-gb 32`
+`[SEALED — not active]` ~~hawking studio status --storage-budget-gb "$STORAGE_BUDGET_GB" --scratch-gb 64 --cache-reserve-gb 32~~
 surfaces the latest event per model.
-`hawking studio lifecycle` distinguishes stalled downloads from generic failures so the next run can
+`[SEALED — not active]` ~~hawking studio lifecycle~~ distinguishes stalled downloads from generic failures so the next run can
 retry with explicit evidence. `frontier_ops.py ledger --refresh-hf`
 writes model/revision/license/storage provenance; `frontier_ops.py launch-gate --phase procure`
 enforces the model-aware procurement gate, including storage-wave/cache headroom; and
-`hawking studio lifecycle --storage-budget-gb "$STORAGE_BUDGET_GB" --scratch-gb 64 --cache-reserve-gb 32`
+`[SEALED — not active]` ~~hawking studio lifecycle --storage-budget-gb "$STORAGE_BUDGET_GB" --scratch-gb 64 --cache-reserve-gb 32~~
 prints the per-model DAG state and next safe
 command. `frontier_ops.py record-event <label> --stage bake|serve|eval --status pass --duration-s N`
 feeds compute wall-clock evidence back into the ledger. `frontier_ops.py artifact-inventory <label>` hashes
 durable `.tq` outputs; `frontier_ops.py release-source <label> --dry-run` refuses source deletion until
 that inventory plus receipt/record evidence exists. `frontier_ops.py refresh` marks plausible unknown
-frontier candidates as `REVIEW`; record `hawking studio review-candidate <hf_id> --decision accept|reject|watch`
-before a real launch so surprise new releases are explicit, not accidental. `hawking studio review-plan
---refresh <refresh-ledger> --out <review-plan.json>` writes the candidate-decision queue as a durable
+frontier candidates as `REVIEW`; record `[SEALED — not active]` ~~hawking studio review-candidate <hf_id> --decision accept|reject|watch~~
+before a real launch so surprise new releases are explicit, not accidental. `[SEALED — not active]` ~~hawking studio review-plan
+--refresh <refresh-ledger> --out <review-plan.json>~~ writes the candidate-decision queue as a durable
 artifact.
-`hawking studio proof-pack --force --out reports/condense/frontier_proof_pack.local.json` writes the
+`[SEALED — not active]` ~~hawking studio proof-pack --force --out reports/condense/frontier_proof_pack.local.json~~ writes the
 non-compute claim wall for the full frontier manifest: a signed proof-pack manifest, signed draft
 source-provenance, parity, baseline/eval, native serve/RAM-cliff, and experiment envelopes, plus `.local`
 claim bundles that hash those drafts and remain inadmissible. The manifest reports `local_signed_count`
 separately from final claim-bundle admissibility. It preserves final receipts unless `--force-final` is
 explicitly passed.
-`hawking studio density-receipt-build --out reports/condense/studio_density_receipt.local.json` and
-`hawking studio density-receipt-verify --path reports/condense/studio_density_receipt.local.json` keep a
+`[SEALED — not active]` ~~hawking studio density-receipt-build --out reports/condense/studio_density_receipt.local.json~~ and
+`[SEALED — not active]` ~~hawking studio density-receipt-verify --path reports/condense/studio_density_receipt.local.json~~ keep a
 signed local stabilization snapshot of repo size, largest files, tracked LOC, disk headroom, and generated
 artifact/model mass. The receipt records cleanup recommendations only; it does not delete evidence and it
 does not unlock baseline, native-serve, RAM-cliff, or public-claim gates.
-`hawking studio coverage-plan` prints the claim-phase coverage contract. For each frontier label,
+`[SEALED — not active]` ~~hawking studio coverage-plan~~ prints the claim-phase coverage contract. For each frontier label,
 `reports/condense/<LABEL>_baselines.json` must cover llama.cpp Q4_K_M, llama.cpp IQ2_S, llama.cpp
 mmap OOC, MLX 4-bit, Unsloth Dyn 2.0, and EXL3/PonyExl3 with either same-box measured rows or explicit
 N/A rows with reasons. `reports/condense/<LABEL>_eval.json` must cover ppl multiwindow, capability QA,
 math, coding, tool-use, long-context recall, RAM-cliff, and native-serve domains with pass or reasoned
-N/A rows. Use `hawking studio coverage-receipt draft <label> --kind both --sign-draft` to create signed
+N/A rows. Use `[SEALED — not active]` ~~hawking studio coverage-receipt draft <label> --kind both --sign-draft~~ to create signed
 but blocked envelopes, then after real same-box runs fill final rows and run
-`hawking studio coverage-receipt sign <label> --kind both` and
-`hawking studio coverage-receipt verify <label> --kind both`. Signing refuses missing coverage,
+`[SEALED — not active]` ~~hawking studio coverage-receipt sign <label> --kind both~~ and
+`[SEALED — not active]` ~~hawking studio coverage-receipt verify <label> --kind both~~. Signing refuses missing coverage,
 placeholder commands, missing machine fingerprint/environment receipt, missing same-box group, missing
 frozen suite or score-set hashes, best-effort baseline rows, and measured/pass rows without a
 receipt/artifact/log trace.
 `frontier_ops.py launch-gate --phase claim` refuses public claims until those coverage rows,
 frontier parity, and the relevant serve/parity receipts are present. Use
-`hawking studio parity-receipt draft <label> --sign-draft` to create signed but blocked architecture
+`[SEALED — not active]` ~~hawking studio parity-receipt draft <label> --sign-draft~~ to create signed but blocked architecture
 parity envelopes, then after real reference-backend and Hawking/native runs fill final rows and run
-`hawking studio parity-receipt sign <label>` and `hawking studio parity-receipt verify <label>`.
+`[SEALED — not active]` ~~hawking studio parity-receipt sign <label>~~ and `[SEALED — not active]` ~~hawking studio parity-receipt verify <label>~~.
 Signing refuses draft state, placeholder commands, missing config/tokenizer hashes, missing adapter or
 tensor-map proof, missing tokenizer/context contracts, missing reference or native trace hashes, loose
 logit parity, short greedy-match windows, unsupported custom-code paths without exit receipts, and
-unverified family-specific native features. `hawking studio receipt-plan`
+unverified family-specific native features. `[SEALED — not active]` ~~hawking studio receipt-plan~~
 prints the strict receipt contract for `reports/condense/<LABEL>_serve.json` and
 `reports/condense/<LABEL>_ramcliff.json`; synthetic or modeled RAM-cliff rows are probes only and cannot
-unlock a claim. Use `hawking studio receipt-record draft <label> --kind both --sign-draft` to create
+unlock a claim. Use `[SEALED — not active]` ~~hawking studio receipt-record draft <label> --kind both --sign-draft~~ to create
 signed but blocked native serve/RAM-cliff envelopes, then after real native serve and RAM-cliff runs fill
-final measured rows and run `hawking studio receipt-record sign <label> --kind both` and
-`hawking studio receipt-record verify <label> --kind both`. Signing refuses draft state, placeholder
+final measured rows and run `[SEALED — not active]` ~~hawking studio receipt-record sign <label> --kind both~~ and
+`[SEALED — not active]` ~~hawking studio receipt-record verify <label> --kind both~~. Signing refuses draft state, placeholder
 commands, missing artifact hashes, non-native or f16-rehydrate serve rows, modeled RAM-cliff rows, and
 trace-free evidence; serve needs load, memory, served-forward, and parity traces, and RAM-cliff needs
-powermetrics/energy plus baseline traces. `hawking studio serve-capture <label> --artifact <artifact.tq> --bench-json
+powermetrics/energy plus baseline traces. `[SEALED — not active]` ~~hawking studio serve-capture <label> --artifact <artifact.tq> --bench-json
 <serve_report.json> --command '<exact hawking serve bench command>' --load-receipt <trace>
 --served-forward-receipt <trace>
---parity-receipt <trace> --force` is the product-facing strict bridge from Hawking's native serve-bench
+--parity-receipt <trace> --force~~ is the product-facing strict bridge from Hawking's native serve-bench
 JSON to a signed `<LABEL>_serve.json`; it refuses f16 rehydrate/fallback reports, missing all-linear/GPU ownership,
 missing load/memory proof, missing served-forward/parity pass, nonpositive tok/s, or artifact-hash drift. `frontier_ops.py
-serve-capture` is the lower-level equivalent. `hawking studio experiment-plan` prints the expensive-mode
+serve-capture` is the lower-level equivalent. `[SEALED — not active]` ~~hawking studio experiment-plan~~ prints the expensive-mode
 matrix contract for
 `reports/condense/<LABEL>_experiment_matrix.json`: seeds, calibration ablations, bpw rungs, expert
 allocation, cold/warm cliff repeats, baseline variants, null certifications, and rebake/hash verification.
-Use `hawking studio experiment-receipt draft <label> --sign-draft` to create signed but blocked
-experiment envelopes, then after real rows are complete run `hawking studio experiment-receipt sign <label>`
-and `hawking studio experiment-receipt verify <label>`. Signing refuses draft state, missing depth,
+Use `[SEALED — not active]` ~~hawking studio experiment-receipt draft <label> --sign-draft~~ to create signed but blocked
+experiment envelopes, then after real rows are complete run `[SEALED — not active]` ~~hawking studio experiment-receipt sign <label>~~
+and `[SEALED — not active]` ~~hawking studio experiment-receipt verify <label>~~. Signing refuses draft state, missing depth,
 placeholder commands/traces, synthetic rows, missing same-run contract, missing machine fingerprint,
 missing environment/artifact/source-provenance receipts, missing artifact/plan hashes, and
 pass/measured/certified rows without a concrete row receipt/artifact/log/report reference plus trace
 SHA-256.
-`hawking studio source-provenance-plan` prints the required source checkpoint provenance path for every
+`[SEALED — not active]` ~~hawking studio source-provenance-plan~~ prints the required source checkpoint provenance path for every
 frontier model. Before a public claim, `reports/condense/<LABEL>_source_provenance.json` must be final
 and signed with the exact HF revision, source kind, source format, procurement command, download/cache
 verification receipt, and file-manifest hash/counts. Compressed or FP4/FP8 sources must explicitly record
 `source_is_prequantized=true` plus a source-format receipt; bf16 parents must record
 `source_is_prequantized=false` and `source_format=bf16`. Use
-`hawking studio source-provenance-receipt draft <label> --sign-draft` before procurement, then after
-verified downloads fill the final row and run `hawking studio source-provenance-receipt sign <label>` and
-`hawking studio source-provenance-receipt verify <label>`.
-`hawking studio claim-bundle-build <label>` signs the final public-claim evidence by SHA-256, and
-`hawking studio claim-bundle-verify reports/condense/<LABEL>_claim_bundle.json` rejects missing, stale,
+`[SEALED — not active]` ~~hawking studio source-provenance-receipt draft <label> --sign-draft~~ before procurement, then after
+verified downloads fill the final row and run `[SEALED — not active]` ~~hawking studio source-provenance-receipt sign <label>~~ and
+`[SEALED — not active]` ~~hawking studio source-provenance-receipt verify <label>~~.
+`[SEALED — not active]` ~~hawking studio claim-bundle-build <label>~~ signs the final public-claim evidence by SHA-256, and
+`[SEALED — not active]` ~~hawking studio claim-bundle-verify reports/condense/<LABEL>_claim_bundle.json~~ rejects missing, stale,
 or claim-inadmissible bundles while still reporting `signature_ok` for signed local walls.
 `frontier_ops.py launch-gate --phase claim` refuses public claims until
 the signed bundle verifies.
-`hawking studio license-plan` prints the accepted-terms command for each model. `reviewed` is not
-procurement-safe; `hawking studio record-license` must store `status=accepted`, signer, license id,
+`[SEALED — not active]` ~~hawking studio license-plan~~ prints the accepted-terms command for each model. `reviewed` is not
+procurement-safe; `[SEALED — not active]` ~~hawking studio record-license~~ must store `status=accepted`, signer, license id,
 terms URL, allowed use, redistribution policy, source-retention policy, and note before downloads.
 The nine-target default frontier manifest is ~7.42 TB of source downloads plus ~0.73 TB of `.tq`
 outputs. At a sustained 300 MB/s it is ~6.9 h download-only serial; at 70% realized throughput from the

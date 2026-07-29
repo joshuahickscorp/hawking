@@ -1,11 +1,9 @@
 //! Shared GGUF weight-loader helpers for the dense/MoE model loaders.
 //!
 //! Consolidates the byte-identical `TensorRef` + dequant helpers that were
-//! copy-pasted across qwen_dense / deepseek_v2 / phi3 / llama / gemma2. The
-//! mixtral loader keeps its own chunked `TensorRef` (it carries extra
-//! rows/cols/chunk fields) but still shares the byte-only `dequant_f32` /
-//! `dequant_f16` here. The per-model `dequant_ref_into` stays local because it
-//! reads through each loader's own mmap handle.
+//! copy-pasted across qwen_dense / deepseek_v2 / llama. Architecturally
+//! distinct forward paths stay in their modules; only identical byte helpers
+//! live here.
 
 use crate::gguf::{GgmlType, GgufFile};
 use crate::{quant, Error, Result};
@@ -60,4 +58,15 @@ pub(crate) fn dequant_f16(g: &GgufFile, name: &str) -> Result<Vec<f16>> {
         .ok_or_else(|| Error::Model(format!("missing tensor `{name}`")))?;
     let bytes = g.tensor_bytes(name).unwrap();
     quant::dequant_to_f16(info, bytes)
+}
+
+/// Dequant a `TensorRef` from a GGUF mmap into `buf`, resizing in place.
+/// Identical across llama / qwen_dense / deepseek_v2; each engine passes its
+/// own mmap slice.
+pub(crate) fn dequant_ref_into(mmap: &[u8], t: &TensorRef, buf: &mut Vec<f32>) -> Result<()> {
+    if buf.len() != t.n_elems {
+        buf.resize(t.n_elems, 0.0);
+    }
+    let bytes = &mmap[t.offset..t.offset + t.byte_size];
+    quant::dequant_into(t.dtype, bytes, buf)
 }

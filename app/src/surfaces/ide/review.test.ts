@@ -1,23 +1,11 @@
-/*
-  review.test.ts: the two review gestures as a gate.
-
-  Asserts the things a reviewer can be lied to about: that accepting ONE hunk targets that hunk and
-  not the whole diff, that the whole-diff path really is the whole diff, that a hunk shows where it
-  came from and what it was based on, that rejecting a hunk states the verification it invalidated
-  and offers the rerun, that the receipt export carries provenance, and that a selection resolves to
-  a source ref that goes stale when the buffer moves under it.
-*/
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-// The transport seam, stubbed so each test reads exactly what went on the wire.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const { sent } = vi.hoisted(() => ({ sent: [] as any[] }));
 vi.mock("../../ipc", () => ({
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sendIntent: async (i: any) => {
     sent.push(i);
     return { accepted: true, event_seq: 1, message: null };
@@ -72,7 +60,6 @@ const HUNK: Hunk = {
   ],
 };
 
-// A hunk as the HOST records it: addressable, hashed, and carrying where it came from.
 const RICH = {
   ...HUNK,
   hunk_id: "hunk_7f3a",
@@ -130,9 +117,6 @@ describe("hunk addressing", () => {
     expect(last().type).toBe("accept_diff");
     expect(last().data.hunk_id).toBeNull();
 
-    // There is ONE whole-diff revert, and it is the approval-gated `revert_diff` command. The
-    // second button (reject_diff with the hunk_id omitted) was the same host effect under an
-    // ungated name, so pressing it walked around the gate.
     await runDiffAction("revert_all", { diffId: "diff_abc", runId: "run_1" });
     expect(last().type).toBe("custom");
     expect(last().data.name).toBe("revert_diff");
@@ -152,7 +136,6 @@ describe("hunk actions", () => {
     expect(hunkActionsFor("pending")).not.toContain("revert");
     expect(hunkActionsFor("accepted")).toContain("revert");
     expect(hunkActionsFor("accepted")).not.toContain("accept");
-    // The rerun offer belongs to the hunk whose verification the host just invalidated.
     expect(hunkActionsFor("rejected")).toContain("reverify");
     expect(hunkActionsFor("pending")).not.toContain("reverify");
   });
@@ -250,7 +233,6 @@ describe("review receipt", () => {
     const parsed = JSON.parse(written[0]);
     expect(parsed.diff_id).toBe("diff_abc");
     expect(parsed.hunks[0].provenance.agent).toBe("edit.search_replace");
-    // It never poses as the host's sealed receipt.
     expect(parsed.note).toMatch(/host seals/);
   });
 });
@@ -304,7 +286,6 @@ describe("selection source ref", () => {
       "--max-count=20",
     ]);
 
-    // Attach steers a live run, and opens a turn when nothing is running.
     await runSelectionAction("attach", REF, { sessionId: "ses_test", runId: "run_1" });
     expect(last().data.name).toBe("redirect_run");
     await runSelectionAction("attach", REF, SEL);
@@ -338,15 +319,11 @@ describe("retired controls stay retired", () => {
     const src = read("CodeActions.tsx");
     expect(src).not.toContain('intent.custom("inline_edit"');
     expect(src).not.toContain('intent.custom("fleet_run"');
-    // Both names survive only in the header retirement note, never in the code below it.
     const body = src.slice(src.indexOf("\nimport "));
     expect(body).not.toMatch(/inline_edit|fleet_run/);
   });
 
   it("lets the keyboard walk the references list, not just the action buttons", () => {
-    // The list's selection was written by onHover and by nothing else, and the arrow handler cycled
-    // only .codeactions__btn, so an open references list bounced focus back to the actions: it could
-    // be read with a keyboard but never walked or chosen from.
     const src = read("CodeActions.tsx");
     expect(src).toContain('querySelectorAll<HTMLButtonElement>(".codeactions__btn, .search-hit")');
     expect(src).toContain("if (next >= SEL_ACTIONS.length) setHitSel(next - SEL_ACTIONS.length)");
@@ -362,7 +339,6 @@ describe("the review keys are scoped, and Escape is never destructive", () => {
   const read = (p: string) => readFileSync(join(__dirname, p), "utf8");
 
   it("acts only while the diff surface holds focus", () => {
-    // the defect: bare "r" rejected the selected hunk with focus on any button in the app
     expect(reviewKeysActive(false, "BUTTON")).toBe(false);
     expect(reviewKeysActive(false, undefined)).toBe(false);
     expect(reviewKeysActive(true, "BUTTON")).toBe(true);
@@ -391,32 +367,22 @@ describe("the review keys are scoped, and Escape is never destructive", () => {
 
   it("binds NO bare key to a whole-diff verb, and traps focus with none of them", () => {
     const src = read("Editor.tsx");
-    // Escape meant BOTH "close the overlay" (App.tsx) and "revert every changed file" (here).
     expect(src).not.toMatch(/"Escape"[\s\S]{0,120}revert_all/);
     expect(src).not.toContain('runWhole("revert_all")\n');
-    // Tab meant "write every hunk to disk" from any focused control in the region, and its
-    // preventDefault meant focus could never leave the region: destructive key AND keyboard trap.
     expect(src).not.toMatch(/"Tab"/);
     expect(src).not.toContain("<kbd>Tab</kbd>");
     expect(src).not.toContain("<kbd>Esc</kbd>");
-    // the region carries no key handler at all now, so Tab does what Tab does
     expect(src).not.toContain("onKeyDown");
-    // both whole-diff verbs survive as the explicit controls they always were
     expect(src).toContain('onClick={() => runWhole("revert_all")}');
     expect(src).toContain('onClick={() => runWhole("accept_all")}');
   });
 
   it("leaves Tab to the browser everywhere in the region, so focus can get out", () => {
-    // preventDefault on Tab made the diff region a keyboard trap: focus entered on every new diff
-    // (the region is focused programmatically) and could not leave by the one key that moves it.
     expect(read("Editor.tsx")).not.toContain("preventDefault()");
     expect(read("HunkReview.tsx")).not.toMatch(/case "Tab"/);
   });
 
   it("re-audit: every bare key still bound in the region acts on ONE hunk, or on nothing", () => {
-    // a/r decide the SELECTED hunk (one file, one hunk, reversible per hunk), j/k move the
-    // selection, m and d open a disclosure, Escape closes one. None of them is a whole-diff verb,
-    // and all of them sit behind reviewKeysActive.
     const src = read("HunkReview.tsx");
     for (const [key, call] of [
       ["a", "act(sel, \"accept\")"],
@@ -424,16 +390,10 @@ describe("the review keys are scoped, and Escape is never destructive", () => {
     ] as const) {
       expect(src).toMatch(new RegExp(`case "${key}":[\\s\\S]{0,80}${call.replace(/[(),"]/g, "\\$&")}`));
     }
-    // and no bare key reaches a whole-diff verb: those live in Editor.tsx's two buttons only
     expect(src).not.toMatch(/case "[a-z]":[\s\S]{0,120}(runWhole|accept_all|reject_all)/);
   });
 });
 
-/*
-  THE SAVE. Cmd+S wrote through the fs connector directly: no catalog row, no keyboard table entry,
-  no base_hash, and the permission refusal (the shipped default policy refuses every workspace
-  write) swallowed into a generic "save failed".
-*/
 describe("the editor save is a command, not a private write", () => {
   const read = (p: string) => readFileSync(join(__dirname, p), "utf8");
 
@@ -441,7 +401,6 @@ describe("the editor save is a command, not a private write", () => {
     const src = read("Editor.tsx");
     expect(src).toContain('runCommand("save_file"');
     expect(src).toContain("base_hash: body.hash ?? null");
-    // and no longer writes straight down the connector
     expect(src).not.toContain('callConnector("fs", "write_file"');
     expect(commandById("save_file")?.backend_binding).toMatchObject({ kind: "custom", target: "save_file" });
     expect(commandById("save_file")?.keyboard_shortcut).toBe("Mod+S");
@@ -450,7 +409,6 @@ describe("the editor save is a command, not a private write", () => {
   it("surfaces the host's own reason for a refused or held save", () => {
     const src = read("Editor.tsx");
     expect(src).toContain("ack.message ?? `save refused ${openPath}`");
-    // the old text asserted the file system had failed, which was never what happened
     expect(src).not.toContain("`save failed ${openPath}`");
   });
 });

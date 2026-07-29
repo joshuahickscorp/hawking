@@ -470,107 +470,61 @@ pub fn read_strand(buf: &[u8]) -> Result<Vec<StrandTensor>, String> {
 mod tests {
     use super::*;
     use strand_quant::encode::encode_tensor;
-
     fn synth_w(n: usize) -> Vec<f32> {
         (0..n).map(|k| ((k as f32) * 0.013).sin() * 0.1).collect()
     }
     fn synth_x(n: usize) -> Vec<f32> {
         (0..n).map(|i| ((i as f32) * 0.07).cos()).collect()
     }
-
     #[test]
     fn decode_is_deterministic_and_matches_float_decode() {
-        let (out_f, in_f) = (4usize, 256usize);
-        let w = synth_w(out_f * in_f);
-        let cfg = TrellisConfig::for_bpw(3.0);
-        let enc = encode_tensor(&w, &cfg);
-
-        // Integer decode is deterministic (the moat).
-        let q12a = decode_q12(&enc, &cfg);
-        let q12b = decode_q12(&enc, &cfg);
+        let (out_f, in_f) = (4usize, 256usize); let w = synth_w(out_f * in_f);
+        let cfg = TrellisConfig::for_bpw(3.0); let enc = encode_tensor(&w, &cfg);
+        let q12a = decode_q12(&enc, &cfg); let q12b = decode_q12(&enc, &cfg);
         assert_eq!(q12a, q12b, "Q12 decode must be deterministic");
-        assert_eq!(q12a.len(), out_f * in_f);
-
-        // matvec_rht(None) must equal serving strand-quant's own float decode.
-        let x = synth_x(in_f);
-        let y = matvec_rht(&q12a, &x, out_f, in_f, RhtMode::None, 0);
+        assert_eq!(q12a.len(), out_f * in_f); let x = synth_x(in_f); let y = matvec_rht(&q12a, &x, out_f, in_f, RhtMode::None, 0);
         let wf = strand_quant::decode::decode_tensor(&enc, &cfg);
         for o in 0..out_f {
             let mut acc = 0.0f32;
             for i in 0..in_f {
                 acc += wf[o * in_f + i] * x[i];
             }
-            assert!(
-                (y[o] - acc).abs() <= 1e-4 * (1.0 + acc.abs()),
-                "row {o}: q12 matvec {} vs float-decode matvec {}",
-                y[o],
-                acc
-            );
+            assert!((y[o] - acc).abs() <= 1e-4 * (1.0 + acc.abs()), "row {o}: q12 matvec {} vs float-decode matvec {}", y[o], acc);
         }
     }
-
     #[test]
     fn col_rht_one_transform_serves_all_rows() {
-        // The §4 serving contract hawking's kernel must honour:
-        //   <W_row, rht_forward_cols(x)> == <rht_inverse_cols(W_row), x>
-        // i.e. serving column-rotated weights with ONE activation transform equals
-        // the un-rotated matvec. Proven here on strand-quant's own RHT primitives,
-        // inside hawking's tree (mirrors outlier_mac's col_rht test).
         let (out_f, in_f) = (5usize, 128usize);
-        let q12: Vec<i32> = (0..out_f * in_f)
-            .map(|k| ((k.wrapping_mul(1103515245).wrapping_add(12345)) % 2048) as i32 - 1024)
+        let q12: Vec<i32> = (0..out_f * in_f).map(|k| ((k.wrapping_mul(1103515245).wrapping_add(12345)) % 2048) as i32 - 1024)
             .collect();
-        let x = synth_x(in_f);
-        let seed = strand_quant::gate_utils::rht_seed_for("blk.0.ffn_down.weight");
-
-        let y_serve = matvec_rht(&q12, &x, out_f, in_f, RhtMode::Cols, seed);
-
-        let inv = q12_to_f32();
-        let rcfg = RhtConfig::from_seed(seed);
-        let mut y_ref = vec![0.0f32; out_f];
+        let x = synth_x(in_f); let seed = strand_quant::gate_utils::rht_seed_for("blk.0.ffn_down.weight");
+        let y_serve = matvec_rht(&q12, &x, out_f, in_f, RhtMode::Cols, seed); let inv = q12_to_f32();
+        let rcfg = RhtConfig::from_seed(seed); let mut y_ref = vec![0.0f32; out_f];
         for o in 0..out_f {
             let mut wr: Vec<f32> = q12[o * in_f..(o + 1) * in_f]
-                .iter()
-                .map(|&q| q as f32 * inv)
-                .collect();
-            rht_inverse_cols_inplace(&mut wr, &rcfg, in_f);
-            let mut acc = 0.0f32;
+                .iter().map(|&q| q as f32 * inv) .collect();
+            rht_inverse_cols_inplace(&mut wr, &rcfg, in_f); let mut acc = 0.0f32;
             for i in 0..in_f {
                 acc += wr[i] * x[i];
             }
             y_ref[o] = acc;
         }
         for o in 0..out_f {
-            assert!(
-                (y_serve[o] - y_ref[o]).abs() <= 1e-3 * (1.0 + y_ref[o].abs()),
-                "row {o}: col-RHT serve {} vs un-rotated ref {}",
-                y_serve[o],
-                y_ref[o]
-            );
+            assert!((y_serve[o] - y_ref[o]).abs() <= 1e-3 * (1.0 + y_ref[o].abs()), "row {o}: col-RHT serve {} vs un-rotated ref {}", y_serve[o], y_ref[o]);
         }
     }
-
     #[test]
     fn outlier_overwrites_replace_not_add() {
-        let mut q12 = vec![10i32; 8];
-        apply_outlier_overwrites(&mut q12, &[(2, -500), (5, 999)]);
+        let mut q12 = vec![10i32; 8]; apply_outlier_overwrites(&mut q12, &[(2, -500), (5, 999)]);
         assert_eq!(q12[2], -500, "outlier must overwrite, not add");
         assert_eq!(q12[5], 999);
         assert_eq!(q12[0], 10, "non-outlier untouched");
     }
-
-    /// F7: a tensor whose declared shape needs more weights than the payload holds
-    /// must fail in `read_strand` (named, as an Err), not panic later in matvec_rht.
-    /// We forge the mismatch by editing the on-disk shape `shape[1]` to be one larger
-    /// than the baked tensor actually encodes.
     #[test]
     fn reader_fails_fast_on_shape_total_mismatch() {
         use strand_quant::format::{write_strand_v2, PackedTensor, PackedTensorV2};
-        let (out_f, in_f) = (4usize, 256usize);
-        let w = synth_w(out_f * in_f);
-        let cfg = TrellisConfig::for_bpw(3.0);
-        let enc = encode_tensor(&w, &cfg);
-        let shape = [out_f as u64, in_f as u64];
+        let (out_f, in_f) = (4usize, 256usize); let w = synth_w(out_f * in_f);
+        let cfg = TrellisConfig::for_bpw(3.0); let enc = encode_tensor(&w, &cfg); let shape = [out_f as u64, in_f as u64];
         let packed = PackedTensorV2 {
             base: PackedTensor {
                 name: "blk.0.ffn_down.weight",
@@ -584,38 +538,18 @@ mod tests {
             block_len: cfg.block_len as u32,
         };
         let mut bytes = write_strand_v2(&[packed], [0u8; 32], true).expect("write_strand_v2");
-        // A clean archive must parse.
         assert!(read_strand(&bytes).is_ok(), "baseline archive should read");
-
-        // Corrupt shape[1]: in_features 256 -> 257 so out*in no longer equals total.
-        // Layout per write_strand_v2: [magic4|ver4|hdr_bytes4|n4|flags4|sha32|reserved4]
-        // = 56 bytes, then per tensor [name_len4|name|ndim4|dims(8 each)|...]. dims
-        // start at 56 + 4 + name_len + 4.
-        let name_len = "blk.0.ffn_down.weight".len();
-        let dims_at = 56 + 4 + name_len + 4;
-        let shape1_at = dims_at + 8; // shape[0] is dims_at..+8, shape[1] is next.
-        let bad = 257u64.to_le_bytes();
-        bytes[shape1_at..shape1_at + 8].copy_from_slice(&bad);
-
+        let name_len = "blk.0.ffn_down.weight".len(); let dims_at = 56 + 4 + name_len + 4;
+        let shape1_at = dims_at + 8; let bad = 257u64.to_le_bytes(); bytes[shape1_at..shape1_at + 8].copy_from_slice(&bad);
         let err = read_strand(&bytes).expect_err("shape/total mismatch must Err");
-        assert!(
-            err.contains("blk.0.ffn_down.weight") && err.contains("malformed"),
-            "F7 error must name the tensor and flag malformed: {err}"
-        );
+        assert!(err.contains("blk.0.ffn_down.weight") && err.contains("malformed"), "F7 error must name the tensor and flag malformed: {err}");
     }
-
     #[test]
     fn strand_file_round_trip_preserves_q12() {
         use strand_quant::format::{write_strand_v2, PackedTensor, PackedTensorV2};
-        let (out_f, in_f) = (6usize, 256usize);
-        let w = synth_w(out_f * in_f);
-        let cfg = TrellisConfig::for_bpw(3.0);
-        let enc = encode_tensor(&w, &cfg);
-        // Reference: decode straight from the in-memory EncodedTensor.
-        let q12_direct = decode_q12(&enc, &cfg);
-
-        // Write a real `.strand` v2 archive, then read it back through the reader.
-        let shape = [out_f as u64, in_f as u64];
+        let (out_f, in_f) = (6usize, 256usize); let w = synth_w(out_f * in_f);
+        let cfg = TrellisConfig::for_bpw(3.0); let enc = encode_tensor(&w, &cfg);
+        let q12_direct = decode_q12(&enc, &cfg); let shape = [out_f as u64, in_f as u64];
         let packed = PackedTensorV2 {
             base: PackedTensor {
                 name: "blk.0.ffn_down.weight",
@@ -629,52 +563,24 @@ mod tests {
             block_len: cfg.block_len as u32,
         };
         let bytes = write_strand_v2(&[packed], [0u8; 32], true).expect("write_strand_v2");
-
         let tensors = read_strand(&bytes).expect("read_strand");
-        assert_eq!(tensors.len(), 1);
-        let t = &tensors[0];
+        assert_eq!(tensors.len(), 1); let t = &tensors[0];
         assert_eq!(t.name, "blk.0.ffn_down.weight");
         assert_eq!((t.out_features, t.in_features), (out_f, in_f));
         assert_eq!(t.rht_mode, RhtMode::None);
-
-        // The integer decode read back from the wire is BIT-IDENTICAL to the
-        // direct decode — the determinism moat survives the file round-trip.
-        assert_eq!(t.decode_q12(), q12_direct, "file decode != direct decode");
-
-        // And serving through the reader matches the module-level matvec.
-        let x = synth_x(in_f);
+        assert_eq!(t.decode_q12(), q12_direct, "file decode != direct decode"); let x = synth_x(in_f);
         assert_eq!(
             t.matvec(&x),
             matvec_rht(&q12_direct, &x, out_f, in_f, RhtMode::None, 0)
         );
     }
-
-    /// Task 4 — the FIRST end-to-end exercise of `RhtMode::Cols` through a real
-    /// archive: bake column-rotated weights, write them with
-    /// `write_strand_v2_rht(.., rht_cols=&[true])`, read them back, assert the reader
-    /// derives `RhtMode::Cols`, and assert serving (`.matvec`) equals the un-rotated
-    /// spatial reference (decode → `rht_inverse_cols` per row → dot x).
-    ///
-    /// `has_rht_seed` (flag bit0) is what promotes the tensor from `None` to a
-    /// rotated mode; the writer sources it from `enc.has_rht_seed`, NOT from the
-    /// `rht_cols` slice (which only sets bit3). So the encoder must stamp
-    /// `enc.has_rht_seed = true` for the col mode to be reachable — mirrors how the
-    /// strand-decode-kernel `bake_fixture` sets it.
     #[test]
     fn col_rht_file_round_trip_serves_unrotated() {
         use strand_quant::format::{write_strand_v2_rht, PackedTensor, PackedTensorV2};
-        let name = "blk.0.ffn_down.weight";
-        let (out_f, in_f) = (5usize, 256usize); // in_features 256-aligned (deploy-strict).
-        let seed = strand_quant::gate_utils::rht_seed_for(name);
-
-        // Bulk (un-rotated) ground-truth weights, then column-rotate before encoding.
-        let bulk = synth_w(out_f * in_f);
-        let work = strand_quant::rht::rht_forward_cols(&bulk, &RhtConfig::from_seed(seed), in_f);
-        let cfg = TrellisConfig::for_bpw(3.0);
-        let mut enc = encode_tensor(&work, &cfg);
-        enc.has_rht_seed = true; // promote: flag bit0 (without it the mode is None).
-
-        let shape = [out_f as u64, in_f as u64];
+        let name = "blk.0.ffn_down.weight"; let (out_f, in_f) = (5usize, 256usize);
+        let seed = strand_quant::gate_utils::rht_seed_for(name); let bulk = synth_w(out_f * in_f);
+        let work = strand_quant::rht::rht_forward_cols(&bulk, &RhtConfig::from_seed(seed), in_f); let cfg = TrellisConfig::for_bpw(3.0);
+        let mut enc = encode_tensor(&work, &cfg); enc.has_rht_seed = true; let shape = [out_f as u64, in_f as u64];
         let packed = PackedTensorV2 {
             base: PackedTensor {
                 name,
@@ -687,97 +593,44 @@ mod tests {
             },
             block_len: cfg.block_len as u32,
         };
-        // rht_cols=&[true] sets bit3; enc.has_rht_seed set bit0 → reader sees Cols.
-        let bytes = write_strand_v2_rht(&[packed], [0u8; 32], true, false, &[true])
-            .expect("write_strand_v2_rht");
-
+        let bytes = write_strand_v2_rht(&[packed], [0u8; 32], true, false, &[true]).expect("write_strand_v2_rht");
         let tensors = read_strand(&bytes).expect("read_strand");
-        assert_eq!(tensors.len(), 1);
-        let t = &tensors[0];
-        assert_eq!(
-            t.rht_mode,
-            RhtMode::Cols,
-            "col archive must read back as RhtMode::Cols"
-        );
+        assert_eq!(tensors.len(), 1); let t = &tensors[0];
+        assert_eq!(t.rht_mode, RhtMode::Cols, "col archive must read back as RhtMode::Cols");
         assert_eq!(t.rht_seed, seed, "seed must survive the round trip");
-        assert!(t.outliers.is_empty(), "no OUTL section was written");
-
-        // Spatial reference: decode the rotated q12, un-rotate per row with
-        // rht_inverse_cols, then dot the raw activation — the contract Cols serving
-        // must reproduce with ONE shared rht_forward_cols(x).
-        let x = synth_x(in_f);
-        let q12 = t.decode_q12();
-        let inv = q12_to_f32();
-        let rcfg = RhtConfig::from_seed(seed);
-        let mut y_ref = vec![0.0f32; out_f];
+        assert!(t.outliers.is_empty(), "no OUTL section was written"); let x = synth_x(in_f); let q12 = t.decode_q12();
+        let inv = q12_to_f32(); let rcfg = RhtConfig::from_seed(seed); let mut y_ref = vec![0.0f32; out_f];
         for o in 0..out_f {
             let mut wr: Vec<f32> = q12[o * in_f..(o + 1) * in_f]
-                .iter()
-                .map(|&q| q as f32 * inv)
-                .collect();
-            rht_inverse_cols_inplace(&mut wr, &rcfg, in_f);
-            y_ref[o] = wr.iter().zip(&x).map(|(w, xv)| w * xv).sum();
+                .iter().map(|&q| q as f32 * inv) .collect();
+            rht_inverse_cols_inplace(&mut wr, &rcfg, in_f); y_ref[o] = wr.iter().zip(&x).map(|(w, xv)| w * xv).sum();
         }
-
         let y_serve = t.matvec(&x);
         for o in 0..out_f {
-            assert!(
-                (y_serve[o] - y_ref[o]).abs() <= 1e-3 * (1.0 + y_ref[o].abs()),
-                "row {o}: Cols file-serve {} vs un-rotated ref {}",
-                y_serve[o],
-                y_ref[o]
-            );
+            assert!((y_serve[o] - y_ref[o]).abs() <= 1e-3 * (1.0 + y_ref[o].abs()), "row {o}: Cols file-serve {} vs un-rotated ref {}", y_serve[o], y_ref[o]);
         }
     }
-
-    /// Task 2 (F2) — OUTL wired end-to-end through a real archive on the only mode
-    /// that is baked today (`RhtMode::None`): bake bulk weights with the top-|w|
-    /// entries zeroed, append a real OUTL section restoring them, read the archive,
-    /// and assert (a) `read_strand` surfaces the outliers and (b) `.matvec` applies
-    /// them. The reference is the un-rotated GEMV over the OUTL-patched weights, with
-    /// outlier values on the Q12 grid (`StrandTensor::outliers` re-quantises floats to
-    /// Q12, so equality is asserted to within that grid, not bit-exact).
     #[test]
     fn outl_file_round_trip_serves_patched_none() {
         use std::io::Write as _;
         use strand_quant::format::{write_strand_v2, PackedTensor, PackedTensorV2};
         use strand_quant::outlier_wire::{append_outl, idx_bits_for, OutlierWire};
-
-        let name = "blk.0.ffn_down.weight";
-        let (out_f, in_f) = (4usize, 256usize);
-        let n = out_f * in_f;
-        let gt = synth_w(n);
-
-        // Pick the top-|w| 1% as outliers; quantise them to `ob` bits like the baker.
-        let k = ((1.0f64 / 100.0) * n as f64).round().max(1.0) as usize;
-        let mut order: Vec<usize> = (0..n).collect();
+        let name = "blk.0.ffn_down.weight"; let (out_f, in_f) = (4usize, 256usize); let n = out_f * in_f; let gt = synth_w(n);
+        let k = ((1.0f64 / 100.0) * n as f64).round().max(1.0) as usize; let mut order: Vec<usize> = (0..n).collect();
         order.sort_unstable_by(|&a, &b| {
             gt[b]
                 .abs()
-                .partial_cmp(&gt[a].abs())
-                .unwrap_or(std::cmp::Ordering::Equal)
+                .partial_cmp(&gt[a].abs()).unwrap_or(std::cmp::Ordering::Equal)
         });
-        let idx: Vec<usize> = order[..k].to_vec();
-        let ob = 8u32;
-        let omax = idx.iter().fold(0f32, |m, &i| m.max(gt[i].abs())).max(1e-12);
-        let levels = ((1i64 << (ob - 1)) - 1) as f32;
+        let idx: Vec<usize> = order[..k].to_vec(); let ob = 8u32;
+        let omax = idx.iter().fold(0f32, |m, &i| m.max(gt[i].abs())).max(1e-12); let levels = ((1i64 << (ob - 1)) - 1) as f32;
         let codes: Vec<i32> = idx
-            .iter()
-            .map(|&i| (gt[i] / omax * levels).round() as i32)
-            .collect();
-        // Restored float values exactly as OUTL `dequant_vals` will reproduce them.
-        let restored: Vec<f32> = codes.iter().map(|&c| (c as f32) / levels * omax).collect();
-
-        // Bulk weights = ground truth with the outlier positions zeroed (None mode:
-        // no rotation, so the bulk IS the encoded tensor).
-        let mut bulk = gt.clone();
+            .iter().map(|&i| (gt[i] / omax * levels).round() as i32) .collect();
+        let restored: Vec<f32> = codes.iter().map(|&c| (c as f32) / levels * omax).collect(); let mut bulk = gt.clone();
         for &i in &idx {
             bulk[i] = 0.0;
         }
-        let cfg = TrellisConfig::for_bpw(3.0);
-        let enc = encode_tensor(&bulk, &cfg);
-
-        let shape = [out_f as u64, in_f as u64];
+        let cfg = TrellisConfig::for_bpw(3.0); let enc = encode_tensor(&bulk, &cfg); let shape = [out_f as u64, in_f as u64];
         let packed = PackedTensorV2 {
             base: PackedTensor {
                 name,
@@ -790,136 +643,76 @@ mod tests {
             },
             block_len: cfg.block_len as u32,
         };
-        let buf = write_strand_v2(&[packed], [0u8; 32], true).expect("write_strand_v2");
-
-        // OUTL is appended to a file (no in-memory append API), so round-trip on disk.
-        let mut path = std::env::temp_dir();
+        let buf = write_strand_v2(&[packed], [0u8; 32], true).expect("write_strand_v2"); let mut path = std::env::temp_dir();
         path.push(format!(
             "tq_outl_{}_{}.tq",
             std::process::id(),
             std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .map(|d| d.as_nanos())
-                .unwrap_or(0)
+                .duration_since(std::time::UNIX_EPOCH).map(|d| d.as_nanos()).unwrap_or(0)
         ));
         {
-            let mut f = std::fs::File::create(&path).expect("create temp .tq");
-            f.write_all(&buf).expect("write temp .tq");
+            let mut f = std::fs::File::create(&path).expect("create temp .tq"); f.write_all(&buf).expect("write temp .tq");
             f.sync_all().ok();
         }
         let wire = OutlierWire::from_selection(n, idx.clone(), codes.clone(), omax, ob);
-        assert_eq!(wire.idx_bits, idx_bits_for(n));
-        append_outl(&path, &[Some(wire)]).expect("append outl");
-        let bytes = std::fs::read(&path).expect("re-read .tq");
-        let _ = std::fs::remove_file(&path);
-
-        // The reader must surface the outliers, on the Q12 grid. OutlierWire sorts
-        // entries by index, so build a sorted (index, restored-float) reference to
-        // compare against rather than the |w|-sorted selection order.
-        let tensors = read_strand(&bytes).expect("read_strand with OUTL");
-        let t = &tensors[0];
+        assert_eq!(wire.idx_bits, idx_bits_for(n)); append_outl(&path, &[Some(wire)]).expect("append outl");
+        let bytes = std::fs::read(&path).expect("re-read .tq"); let _ = std::fs::remove_file(&path);
+        let tensors = read_strand(&bytes).expect("read_strand with OUTL"); let t = &tensors[0];
         assert_eq!(t.rht_mode, RhtMode::None);
-        assert_eq!(t.outliers.len(), k, "OUTL must be parsed into `outliers`");
-        let scale = (1u32 << strand_quant::QUANTILE_SHIFT) as f32;
+        assert_eq!(t.outliers.len(), k, "OUTL must be parsed into `outliers`"); let scale = (1u32 << strand_quant::QUANTILE_SHIFT) as f32;
         let mut want: Vec<(usize, f32)> =
             idx.iter().copied().zip(restored.iter().copied()).collect();
         want.sort_unstable_by_key(|&(i, _)| i);
         for (&(oi, ov), &(gi, gv)) in t.outliers.iter().zip(want.iter()) {
             assert_eq!(oi, gi, "outlier index mismatch");
-            assert_eq!(
-                ov,
-                (gv * scale).round() as i32,
-                "outlier q12 value mismatch"
-            );
+            assert_eq!(ov, (gv * scale).round() as i32, "outlier q12 value mismatch");
         }
-
-        // decode_q12() must show the patched values at the outlier positions, and the
-        // bulk decode value (NOT the patched one) everywhere else.
-        let patched = t.decode_q12();
-        let raw = t.decode_q12_raw();
+        let patched = t.decode_q12(); let raw = t.decode_q12_raw();
         for &(oi, ov) in &t.outliers {
             assert_eq!(
                 patched[oi], ov,
                 "decode_q12 must overwrite the outlier position"
             );
         }
-        // A position that is NOT an outlier must be untouched vs the raw decode.
         let non_outlier = (0..n).find(|i| !idx.contains(i)).unwrap();
         assert_eq!(
             patched[non_outlier], raw[non_outlier],
             "bulk weight must be unchanged"
-        );
-
-        // Serving reference: un-rotated GEMV over the Q12-grid patched weights.
-        let x = synth_x(in_f);
-        let y_serve = t.matvec(&x);
-        let y_ref = matvec_rht(&patched, &x, out_f, in_f, RhtMode::None, 0);
+        ); let x = synth_x(in_f); let y_serve = t.matvec(&x); let y_ref = matvec_rht(&patched, &x, out_f, in_f, RhtMode::None, 0);
         for o in 0..out_f {
             assert_eq!(
                 y_serve[o], y_ref[o],
                 "row {o}: OUTL serve must equal patched-q12 GEMV"
             );
         }
-
-        // And the patched serve must differ from the un-patched (bulk-only) serve —
-        // proves the OUTL term is actually live, not a no-op.
         let y_bulk = matvec_rht(&raw, &x, out_f, in_f, RhtMode::None, 0);
-        let max_delta = (0..out_f)
-            .map(|o| (y_serve[o] - y_bulk[o]).abs())
+        let max_delta = (0..out_f).map(|o| (y_serve[o] - y_bulk[o]).abs())
             .fold(0.0f32, f32::max);
-        assert!(
-            max_delta > 1e-6,
-            "OUTL overwrite must change the output (was {max_delta})"
-        );
+        assert!(max_delta > 1e-6, "OUTL overwrite must change the output (was {max_delta})");
     }
-
-    /// OUTL on a `Cols` archive: outliers live in the un-rotated domain, so the
-    /// `Cols` serve must inverse-rotate, overwrite there, and dot — matching a
-    /// reference that reconstructs un-rotated patched weights independently. This
-    /// guards the `decode_q12`/`matvec` Cols+OUTL domain handling even though no such
-    /// artifact is baked today.
     #[test]
     fn outl_cols_serves_in_unrotated_domain() {
         use std::io::Write as _;
         use strand_quant::format::{write_strand_v2_rht, PackedTensor, PackedTensorV2};
         use strand_quant::outlier_wire::{append_outl, OutlierWire};
-
-        let name = "blk.0.ffn_down.weight";
-        let (out_f, in_f) = (4usize, 256usize);
-        let n = out_f * in_f;
-        let seed = strand_quant::gate_utils::rht_seed_for(name);
-        let gt = synth_w(n);
-
-        // Outlier selection (top-|w| 1%), quantised like the baker.
-        let k = ((1.0f64 / 100.0) * n as f64).round().max(1.0) as usize;
-        let mut order: Vec<usize> = (0..n).collect();
+        let name = "blk.0.ffn_down.weight"; let (out_f, in_f) = (4usize, 256usize);
+        let n = out_f * in_f; let seed = strand_quant::gate_utils::rht_seed_for(name);
+        let gt = synth_w(n); let k = ((1.0f64 / 100.0) * n as f64).round().max(1.0) as usize; let mut order: Vec<usize> = (0..n).collect();
         order.sort_unstable_by(|&a, &b| {
             gt[b]
                 .abs()
-                .partial_cmp(&gt[a].abs())
-                .unwrap_or(std::cmp::Ordering::Equal)
+                .partial_cmp(&gt[a].abs()).unwrap_or(std::cmp::Ordering::Equal)
         });
-        let idx: Vec<usize> = order[..k].to_vec();
-        let ob = 8u32;
-        let omax = idx.iter().fold(0f32, |m, &i| m.max(gt[i].abs())).max(1e-12);
-        let levels = ((1i64 << (ob - 1)) - 1) as f32;
+        let idx: Vec<usize> = order[..k].to_vec(); let ob = 8u32;
+        let omax = idx.iter().fold(0f32, |m, &i| m.max(gt[i].abs())).max(1e-12); let levels = ((1i64 << (ob - 1)) - 1) as f32;
         let codes: Vec<i32> = idx
-            .iter()
-            .map(|&i| (gt[i] / omax * levels).round() as i32)
-            .collect();
-        let inv = q12_to_f32();
-
-        // Un-rotated bulk (outliers zeroed), column-rotated for encoding.
-        let mut bulk = gt.clone();
+            .iter().map(|&i| (gt[i] / omax * levels).round() as i32) .collect();
+        let inv = q12_to_f32(); let mut bulk = gt.clone();
         for &i in &idx {
             bulk[i] = 0.0;
         }
-        let rcfg = RhtConfig::from_seed(seed);
-        let work = strand_quant::rht::rht_forward_cols(&bulk, &rcfg, in_f);
-        let cfg = TrellisConfig::for_bpw(3.0);
-        let mut enc = encode_tensor(&work, &cfg);
-        enc.has_rht_seed = true;
-
+        let rcfg = RhtConfig::from_seed(seed); let work = strand_quant::rht::rht_forward_cols(&bulk, &rcfg, in_f);
+        let cfg = TrellisConfig::for_bpw(3.0); let mut enc = encode_tensor(&work, &cfg); enc.has_rht_seed = true;
         let shape = [out_f as u64, in_f as u64];
         let packed = PackedTensorV2 {
             base: PackedTensor {
@@ -933,59 +726,36 @@ mod tests {
             },
             block_len: cfg.block_len as u32,
         };
-        let buf = write_strand_v2_rht(&[packed], [0u8; 32], true, false, &[true])
-            .expect("write_strand_v2_rht");
-
+        let buf = write_strand_v2_rht(&[packed], [0u8; 32], true, false, &[true]).expect("write_strand_v2_rht");
         let mut path = std::env::temp_dir();
         path.push(format!(
             "tq_outl_cols_{}_{}.tq",
             std::process::id(),
             std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .map(|d| d.as_nanos())
-                .unwrap_or(0)
+                .duration_since(std::time::UNIX_EPOCH).map(|d| d.as_nanos()).unwrap_or(0)
         ));
         {
-            let mut f = std::fs::File::create(&path).expect("create temp .tq");
-            f.write_all(&buf).expect("write temp .tq");
+            let mut f = std::fs::File::create(&path).expect("create temp .tq"); f.write_all(&buf).expect("write temp .tq");
             f.sync_all().ok();
         }
-        let wire = OutlierWire::from_selection(n, idx.clone(), codes, omax, ob);
-        append_outl(&path, &[Some(wire)]).expect("append outl");
-        let bytes = std::fs::read(&path).expect("re-read .tq");
-        let _ = std::fs::remove_file(&path);
-
-        let tensors = read_strand(&bytes).expect("read_strand cols+OUTL");
-        let t = &tensors[0];
+        let wire = OutlierWire::from_selection(n, idx.clone(), codes, omax, ob); append_outl(&path, &[Some(wire)]).expect("append outl");
+        let bytes = std::fs::read(&path).expect("re-read .tq"); let _ = std::fs::remove_file(&path);
+        let tensors = read_strand(&bytes).expect("read_strand cols+OUTL"); let t = &tensors[0];
         assert_eq!(t.rht_mode, RhtMode::Cols);
-        assert_eq!(t.outliers.len(), k);
-
-        // Independent reference: rebuild un-rotated patched weights from the rotated
-        // raw decode, overwrite outliers on the Q12 grid, then plain GEMV.
-        let raw = t.decode_q12_raw();
-        let mut w: Vec<f32> = raw.iter().map(|&q| q as f32 * inv).collect();
+        assert_eq!(t.outliers.len(), k); let raw = t.decode_q12_raw(); let mut w: Vec<f32> = raw.iter().map(|&q| q as f32 * inv).collect();
         rht_inverse_cols_inplace(&mut w, &rcfg, in_f);
         for &(oi, ov) in &t.outliers {
             w[oi] = ov as f32 * inv;
         }
-        let x = synth_x(in_f);
-        let mut y_ref = vec![0.0f32; out_f];
+        let x = synth_x(in_f); let mut y_ref = vec![0.0f32; out_f];
         for o in 0..out_f {
             y_ref[o] = w[o * in_f..(o + 1) * in_f]
                 .iter()
-                .zip(&x)
-                .map(|(wv, xv)| wv * xv)
-                .sum();
+                .zip(&x).map(|(wv, xv)| wv * xv) .sum();
         }
-
         let y_serve = t.matvec(&x);
         for o in 0..out_f {
-            assert!(
-                (y_serve[o] - y_ref[o]).abs() <= 1e-3 * (1.0 + y_ref[o].abs()),
-                "row {o}: Cols+OUTL serve {} vs un-rotated patched ref {}",
-                y_serve[o],
-                y_ref[o]
-            );
+            assert!((y_serve[o] - y_ref[o]).abs() <= 1e-3 * (1.0 + y_ref[o].abs()), "row {o}: Cols+OUTL serve {} vs un-rotated patched ref {}", y_serve[o], y_ref[o]);
         }
     }
 }

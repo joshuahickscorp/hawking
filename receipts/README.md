@@ -21,7 +21,7 @@ tools/condense/
   receipt_verify.py                          # schema + 8 invalidation rules (§20.3)
   emit_receipt.py                            # emit a receipt from on-disk ladder data
 BASELINES.md  WATCHLIST.md  FAILURES.md       # the §20.11 stubs
-scaffolding/
+docs/scaffolding/
   requirements.freeze.txt                    # pinned Python env (pip freeze)
   toolchain.versions.txt                     # cargo / rustc / python / uname
   git_commit.txt                             # HEAD at scaffolding time
@@ -61,13 +61,13 @@ reason is published. `receipt_verify.py` enforces all eight in code plus the §2
 same-machine-class repro (**min bar for a public win**) · `R4` third-party Mac (**trust moat**) ·
 `R5` the format itself cited externally.
 
-## Pinned environment (scaffolding/)
+## Pinned environment (docs/scaffolding/)
 
 Captured 2026-06-27 on the M3 Pro 18 GB (read-only; nothing installed):
 
 - `cargo 1.94.1 (Homebrew)`, `rustc 1.94.1`
 - `Python 3.12.6` with `jsonschema 4.24.0`, `torch 2.6.0`, `transformers 5.6.2`,
-  `safetensors 0.7.0`, `mlx 0.31.2`, `numpy 2.2.6` (full set in `scaffolding/requirements.freeze.txt`).
-- HEAD: see `scaffolding/git_commit.txt`.
+  `safetensors 0.7.0`, `mlx 0.31.2`, `numpy 2.2.6` (full set in `docs/scaffolding/requirements.freeze.txt`).
+- HEAD: see `docs/scaffolding/git_commit.txt`.
 
-The Studio installs the byte-identical set from `scaffolding/requirements.freeze.txt`.
+The Studio installs the byte-identical set from `docs/scaffolding/requirements.freeze.txt`.

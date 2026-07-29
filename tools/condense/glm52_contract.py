@@ -46,6 +46,7 @@ from glm52_common import (  # noqa: E402
     canonical,
     git_blob_sha1,
     read_sealed_json,
+    resolve_artifact,
     seal,
     sha256_file,
     utc_now,
@@ -1548,7 +1549,7 @@ def refresh_source_admission_offline() -> dict[str, Any]:
         "architecture": read_sealed_json(REPO_ROOT / "GLM52_ARCHITECTURE_CONTRACT.json"),
         "logical": read_sealed_json(REPO_ROOT / "GLM52_LOGICAL_WEIGHT_LEDGER.json"),
         "source_format": read_sealed_json(REPO_ROOT / "GLM52_SOURCE_FORMAT_LEDGER.json"),
-        "graph": read_sealed_json(REPO_ROOT / "GLM52_SHARD_DEPENDENCY_GRAPH.json"),
+        "graph": read_sealed_json(resolve_artifact("GLM52_SHARD_DEPENDENCY_GRAPH.json")),
         "schedule": read_sealed_json(
             REPO_ROOT / "GLM52_STREAMING_SCHEDULE_PRE_AUTOTUNE.json"
         ),

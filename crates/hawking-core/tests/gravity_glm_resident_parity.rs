@@ -1,59 +1,25 @@
-//! Multi-prompt parity: GPU-resident decode state vs the host-state path.
-//!
-//! A single-prompt match can pass by luck of phase — a documented failure
-//! mode in this codebase. This test runs several prompts (and an incremental
-//! decode split) and requires bit-identical tokens (argmax) against the
-//! host-state oracle on the same artifact.
-//!
-//! Requires Metal. The executor sandbox often has none; the controller runs
-//! this on a machine with a device:
-//!
-//! ```text
-//! cargo test -p hawking-core --test gravity_glm_resident_parity -- --nocapture
-//! ```
-
 #![cfg(target_os = "macos")]
-
-use std::path::PathBuf;
-
 use hawking_core::gravity_glm::gpu::GravityGlmGpu;
-use hawking_core::gravity_glm::{
-    estimate_host_state_waits_per_token, estimate_resident_waits_per_token, GravityGlm,
-};
+use hawking_core::gravity_glm::{estimate_host_state_waits_per_token, estimate_resident_waits_per_token, GravityGlm};
 use hawking_core::metal::MetalContext;
-
+use std::path::PathBuf;
 fn fixtures_dir() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/gravity_glm")
 }
-
 fn top1(logits: &[f32]) -> u32 {
     logits
         .iter()
         .enumerate()
-        .min_by(|(i, a), (j, b)| {
-            // Highest logit wins; lower index wins ties (stable).
-            b.partial_cmp(a)
-                .unwrap_or(std::cmp::Ordering::Equal)
-                .then(i.cmp(j))
-        })
+        .min_by(|(i, a), (j, b)| b.partial_cmp(a).unwrap_or(std::cmp::Ordering::Equal).then(i.cmp(j)))
         .map(|(i, _)| i as u32)
         .expect("non-empty logits")
 }
-
 fn top_k(logits: &[f32], k: usize) -> Vec<u32> {
     let mut idx: Vec<u32> = (0..logits.len() as u32).collect();
-    idx.sort_by(|&a, &b| {
-        logits[b as usize]
-            .partial_cmp(&logits[a as usize])
-            .expect("no NaN")
-            .then(a.cmp(&b))
-    });
+    idx.sort_by(|&a, &b| logits[b as usize].partial_cmp(&logits[a as usize]).expect("no NaN").then(a.cmp(&b)));
     idx.truncate(k);
     idx
 }
-
-/// Several prompts — not one. Fixture tokens plus permutations and short
-/// alternatives so a phase-aligned single sequence cannot paper over a bug.
 fn prompts(base: &[u32]) -> Vec<Vec<u32>> {
     let mut out = Vec::new();
     out.push(base.to_vec());
@@ -64,24 +30,18 @@ fn prompts(base: &[u32]) -> Vec<Vec<u32>> {
         rev.reverse();
         out.push(rev);
     }
-    // Distinct short prompts inside the fixture vocab.
     out.push(vec![0]);
     out.push(vec![1, 2, 3]);
     out.push(vec![7, 7, 7, 7]);
     out.push(vec![100, 200, 300, 400, 500]);
     out
 }
-
 #[test]
 fn resident_matches_host_state_over_several_prompts() {
     let dir = fixtures_dir();
     let ctx = match MetalContext::new() {
         Ok(c) => c,
         Err(e) => {
-            // A shader COMPILE failure is not an absent device, and treating it as
-            // one makes this suite report green while proving nothing. That is
-            // exactly how a broken kernel ships. Only a genuinely missing device
-            // may skip; anything else fails loudly.
             let msg = e.to_string();
             assert!(
                 !msg.contains("shader") && !msg.contains("compile"),
@@ -92,7 +52,6 @@ fn resident_matches_host_state_over_several_prompts() {
             return;
         }
     };
-
     let host = GravityGlm::open(&dir.join("glm52-tiny-R0.gravity"), true).expect("host open");
     let host_gpu = GravityGlmGpu::open_dir_with_budget_resident(
         MetalContext::new().expect("second ctx"),
@@ -112,92 +71,43 @@ fn resident_matches_host_state_over_several_prompts() {
     .expect("resident open");
     assert!(resident.resident_state_enabled());
     assert!(!host_gpu.resident_state_enabled());
-
     let base: Vec<u32> = {
         #[derive(serde::Deserialize)]
         struct Ref {
             tokens: Vec<u32>,
         }
-        let r: Ref = serde_json::from_slice(
-            &std::fs::read(dir.join("ref_glm.json")).expect("ref_glm"),
-        )
-        .expect("parse");
+        let r: Ref = serde_json::from_slice(&std::fs::read(dir.join("ref_glm.json")).expect("ref_glm")).expect("parse");
         r.tokens
     };
-
     let mut any_waits = None;
     for (pi, prompt) in prompts(&base).into_iter().enumerate() {
         if prompt.is_empty() {
             continue;
         }
-        // Skip tokens outside vocab (should not happen with our prompts).
         if prompt.iter().any(|&t| t as usize >= host.arch.vocab_size) {
             continue;
         }
-
         let (cpu_logits, cpu_trace) = host.forward(&prompt).expect("cpu forward");
-        let (host_gpu_logits, host_gpu_trace) =
-            host_gpu.forward(&prompt).expect("host-state gpu forward");
-        let (res_logits, res_trace, waits) = resident
-            .forward_resident_counted(&prompt)
-            .expect("resident forward");
+        let (host_gpu_logits, host_gpu_trace) = host_gpu.forward(&prompt).expect("host-state gpu forward");
+        let (res_logits, res_trace, waits) = resident.forward_resident_counted(&prompt).expect("resident forward");
         any_waits = Some(waits);
-
-        // Token identity against the host-state GPU path (same weights, same
-        // PQ kernels). CPU may differ slightly on the two PQ tensors
-        // (embed/lm_head) due to simd_sum reassociation on the GPU path.
         let host_tok = top1(&host_gpu_logits);
         let res_tok = top1(&res_logits);
-        assert_eq!(
-            res_tok, host_tok,
-            "prompt {pi} {prompt:?}: resident argmax {res_tok} != host-state gpu {host_tok}"
-        );
-        assert_eq!(
-            top_k(&res_logits, 5),
-            top_k(&host_gpu_logits, 5),
-            "prompt {pi}: top-5 tokens diverge"
-        );
-
-        // Discrete DSA / expert decisions must match the host-state path.
-        assert_eq!(
-            res_trace.final_topk, host_gpu_trace.final_topk,
-            "prompt {pi}: final DSA top-k"
-        );
-        assert_eq!(
-            res_trace.expert_choices, host_gpu_trace.expert_choices,
-            "prompt {pi}: expert choices"
-        );
-
-        // Logits: same arithmetic order on the same native projections —
-        // expect bit-identity for the tiny fixture (all layer weights native).
-        assert_eq!(
-            res_logits, host_gpu_logits,
-            "prompt {pi}: logits must be bit-identical on the native-heavy fixture"
-        );
-
-        // Sanity: CPU oracle still reaches a fluent argmax (not required bit-identical
-        // to GPU on PQ embed/head, but top-1 should usually agree on this fixture).
+        assert_eq!(res_tok, host_tok, "prompt {pi} {prompt:?}: resident argmax {res_tok} != host-state gpu {host_tok}");
+        assert_eq!(top_k(&res_logits, 5), top_k(&host_gpu_logits, 5), "prompt {pi}: top-5 tokens diverge");
+        assert_eq!(res_trace.final_topk, host_gpu_trace.final_topk, "prompt {pi}: final DSA top-k");
+        assert_eq!(res_trace.expert_choices, host_gpu_trace.expert_choices, "prompt {pi}: expert choices");
+        assert_eq!(res_logits, host_gpu_logits, "prompt {pi}: logits must be bit-identical on the native-heavy fixture");
         let _ = (cpu_logits, cpu_trace);
     }
-
     let waits = any_waits.expect("ran at least one prompt");
-    eprintln!(
-        "resident waits (live, last prompt path): {waits}; static host={} resident={}",
-        estimate_host_state_waits_per_token(&host.arch),
-        estimate_resident_waits_per_token(&host.arch)
-    );
 }
-
 #[test]
 fn resident_incremental_decode_matches_full_replay() {
     let dir = fixtures_dir();
     let ctx = match MetalContext::new() {
         Ok(c) => c,
         Err(e) => {
-            // A shader COMPILE failure is not an absent device, and treating it as
-            // one makes this suite report green while proving nothing. That is
-            // exactly how a broken kernel ships. Only a genuinely missing device
-            // may skip; anything else fails loudly.
             let msg = e.to_string();
             assert!(
                 !msg.contains("shader") && !msg.contains("compile"),
@@ -208,24 +118,14 @@ fn resident_incremental_decode_matches_full_replay() {
             return;
         }
     };
-    let model = GravityGlmGpu::open_dir_with_budget_resident(
-        ctx,
-        &dir,
-        true,
-        256 * 1024 * 1024,
-        true,
-    )
-    .expect("open");
-
+    let model = GravityGlmGpu::open_dir_with_budget_resident(ctx, &dir, true, 256 * 1024 * 1024, true).expect("open");
     #[derive(serde::Deserialize)]
     struct Ref {
         tokens: Vec<u32>,
     }
-    let reference: Ref =
-        serde_json::from_slice(&std::fs::read(dir.join("ref_glm.json")).unwrap()).unwrap();
+    let reference: Ref = serde_json::from_slice(&std::fs::read(dir.join("ref_glm.json")).unwrap()).unwrap();
     let tokens = &reference.tokens;
     assert!(tokens.len() >= 3);
-
     let (want, _) = model.forward(tokens).expect("full");
     let split = tokens.len() - 2;
     let (mut got, _) = model.forward(&tokens[..split]).expect("prefill");
@@ -234,7 +134,6 @@ fn resident_incremental_decode_matches_full_replay() {
     }
     assert_eq!(got, want, "incremental resident decode must match full replay");
 }
-
 #[test]
 fn static_wait_estimates_are_exported_for_the_controller() {
     let dir = fixtures_dir();
@@ -242,8 +141,5 @@ fn static_wait_estimates_are_exported_for_the_controller() {
     let h = estimate_host_state_waits_per_token(&host.arch);
     let r = estimate_resident_waits_per_token(&host.arch);
     assert!(h > r);
-    // Tiny fixture: 1 dense + 3 sparse, 3 full indexers + 1 shared.
-    // host: dense (5+3+3) + sparse full (5+3+4)*2 + sparse shared (5+4) = 11 + 2*12 + 9 = 44?
     assert!(h >= 30 && h <= 80, "tiny host waits {h}");
-    eprintln!("tiny fixture static waits: host={h} resident={r}");
 }

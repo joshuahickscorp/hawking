@@ -130,11 +130,9 @@ pub fn add_shared_experts(
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[test]
     fn topk_picks_largest() {
-        let mut logits = vec![0.1, 5.0, 2.0, 0.5];
-        let chosen = topk_gate(&mut logits, 2, true);
+        let mut logits = vec![0.1, 5.0, 2.0, 0.5]; let chosen = topk_gate(&mut logits, 2, true);
         assert_eq!(chosen.len(), 2);
         assert_eq!(chosen[0].0, 1);
         assert_eq!(chosen[1].0, 2);

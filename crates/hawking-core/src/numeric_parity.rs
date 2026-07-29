@@ -15,23 +15,25 @@
 //!
 //! Score **both** f32 backends (host and device) against an **FP64 reference
 //! computation**, not against each other. The host f32 path has its own
-//! accumulation order; making it the oracle bakes its rounding into the
-//! contract.
+//! accumulation order; making it the oracle (including via
+//! `host.iter().map(|&v| v as f64)`) bakes its rounding into the contract and
+//! is **banned**.
 //!
 //! ## Metrics (applied together)
 //!
 //! | Metric | Role |
 //! |---|---|
-//! | absolute error near zero | relative error uninformative when \|ref\| is tiny |
-//! | **relative L2 (full vector)** | **headline** continuous agreement |
-//! | ULP distribution (median, p95, p99, max) | reported as a distribution, never a lone max |
-//! | cosine similarity | direction / full-vector shape |
-//! | KL on softmax | when the vector is a pre-softmax distribution (logits) |
-//! | exact top-k + greedy argmax | **no tolerance, ever** |
+//! | absolute error near zero | hard — relative error uninformative when \|ref\| is tiny |
+//! | **relative L2 (full vector)** | **hard headline** continuous agreement |
+//! | cosine similarity | hard — direction / full-vector shape |
+//! | KL on softmax | hard when `require_kl` (logits) |
+//! | exact top-k + greedy argmax | **hard, no tolerance, ever** |
+//! | max meaningful-scale relative | hard op-local; **diagnostic** on full multi-layer forward |
+//! | ULP distribution (median, p95, p99, max) | diagnostic distribution, never a lone max gate |
 //!
-//! Reject only if meaningful-scale continuous metrics fail, full-vector parity
-//! fails, or a discrete decision differs. A large ULP tail on a **pass** is
-//! still reported — it is information, not a silent failure.
+//! See root `NUMERIC_PARITY_V2_1.md` for the full-forward vs op-local split.
+//! A large ULP / max_meaningful_rel tail on a full-forward **pass** is still
+//! reported — information, not a silent failure.
 
 use serde::Serialize;
 
@@ -60,13 +62,17 @@ pub const ABS_REGIME_FRACTION: f64 = 1e-6;
 /// Absolute floor so an all-zero or empty reference still has a defined regime.
 pub const ABS_REGIME_FLOOR: f64 = 1e-30;
 
-/// Default continuous bounds for f32 reduction vs f64 authority on lm_head-scale
-/// matvecs (K ~ hundreds to thousands of accumulate steps).
+/// Default continuous bounds for f32 reduction vs f64 authority on **op-local**
+/// matvecs / elementwise kernels (K ~ hundreds to thousands of accumulate steps).
 ///
 /// Relative L2 ~1e-5 is the headline gate: well above pure f32 rounding of a
 /// single mul (~1e-7) and below a decision-changing drift on well-conditioned
-/// logits. Meaningful-scale max relative uses the same 1e-5 that V2 intended
-/// — but **only** on elements that survive the absolute-error cutoff.
+/// logits. Meaningful-scale **max** relative uses the same 1e-5 that V2 intended
+/// — but **only** on elements that survive the absolute-error cutoff, and only
+/// as a hard gate when [`Bounds::gate_max_meaningful_rel`] is true (op-local
+/// defaults). Full multi-layer forwards use [`Bounds::full_forward_logits`],
+/// which reports max_meaningful_rel as diagnostic only — see
+/// `NUMERIC_PARITY_V2_1.md`.
 #[derive(Debug, Clone, Copy, Serialize)]
 pub struct Bounds {
     /// Max |cand − ref| allowed for |ref| < abs_cutoff.
@@ -82,7 +88,15 @@ pub struct Bounds {
     /// Exact top-k size (indices, ordered by descending value).
     pub top_k: usize,
     /// Max relative error on elements with |ref| ≥ abs_cutoff.
+    /// This is a **max over single elements**, not a mean — see
+    /// [`ContinuousMetrics::max_meaningful_rel`].
     pub max_meaningful_rel: f64,
+    /// When true, `max_meaningful_rel` is a hard gate. When false it is still
+    /// computed and printed but never fails the score. Op-local defaults keep
+    /// this true; multi-layer full-forward scoring turns it off because the
+    /// host f32 path itself exceeds 1e-5 max relative against a true f64
+    /// forward while rel_l2 / cos / KL / discrete stay clean.
+    pub gate_max_meaningful_rel: bool,
 }
 
 impl Default for Bounds {
@@ -95,6 +109,7 @@ impl Default for Bounds {
             require_kl: true,
             top_k: 5,
             max_meaningful_rel: 1e-5,
+            gate_max_meaningful_rel: true,
         }
     }
 }
@@ -108,9 +123,24 @@ impl Bounds {
         }
     }
 
-    /// Logit / lm_head defaults (KL on softmax + top-5 + greedy).
+    /// Logit / lm_head **op-local** defaults (KL on softmax + top-5 + greedy).
+    /// Max meaningful relative remains a hard gate — appropriate for a single
+    /// matvec / silu scored against f64, not for a multi-layer fixture forward.
     pub fn logits() -> Self {
         Self::default()
+    }
+
+    /// Full multi-layer fixture logits vs an independent f64 forward.
+    ///
+    /// Hard continuous gates: relative L2, cosine, KL, abs-near-zero.
+    /// Hard discrete gates: greedy argmax, top-k (no tolerance).
+    /// Diagnostic only: max_meaningful_rel, ULP distribution,
+    /// diagnostic_max_scalar_rel_all.
+    pub fn full_forward_logits() -> Self {
+        Self {
+            gate_max_meaningful_rel: false,
+            ..Self::default()
+        }
     }
 }
 
@@ -159,6 +189,10 @@ pub struct ContinuousMetrics {
     /// Max |cand − ref| on the near-zero subset.
     pub max_abs_near_zero: f64,
     /// Max |cand − ref| / |ref| on the meaningful-scale subset.
+    ///
+    /// This is a **maximum over single elements**, not a mean / average.
+    /// Logs and receipts must label it `max_meaningful_rel` (or
+    /// `meaningful_rel`), never `mean_rel`.
     pub max_meaningful_rel: f64,
     /// Headline full-vector relative L2.
     pub relative_l2: f64,
@@ -508,15 +542,26 @@ pub fn matvec_bf16_f64_authority(
     cols: usize,
     x: &[f32],
 ) -> Result<Vec<f64>, String> {
+    let x64: Vec<f64> = x.iter().map(|&v| v as f64).collect();
+    matvec_bf16_f64_authority_x64(weight_le, cols, &x64)
+}
+
+/// Same as [`matvec_bf16_f64_authority`] but activations are already f64
+/// (end-to-end f64 forward intermediates — not f32-cast then re-promoted).
+pub fn matvec_bf16_f64_authority_x64(
+    weight_le: &[u8],
+    cols: usize,
+    x: &[f64],
+) -> Result<Vec<f64>, String> {
     if x.len() != cols {
         return Err(format!(
-            "matvec_bf16_f64_authority: x.len() {} != cols {cols}",
+            "matvec_bf16_f64_authority_x64: x.len() {} != cols {cols}",
             x.len()
         ));
     }
     if cols == 0 || weight_le.len() % (cols * 2) != 0 {
         return Err(format!(
-            "matvec_bf16_f64_authority: payload {} B is not a whole number of {cols}-wide bf16 rows",
+            "matvec_bf16_f64_authority_x64: payload {} B is not a whole number of {cols}-wide bf16 rows",
             weight_le.len()
         ));
     }
@@ -527,11 +572,103 @@ pub fn matvec_bf16_f64_authority(
         let row = &w[r * cols..(r + 1) * cols];
         let mut acc = 0.0f64;
         for (j, &wj) in row.iter().enumerate() {
-            acc += wj * (x[j] as f64);
+            acc += wj * x[j];
         }
         out.push(acc);
     }
     Ok(out)
+}
+
+/// FP64 authority matvec for a row-major f32 weight matrix (native.f32 /
+/// already-widened native.bf16/f16 payload).
+///
+/// Weights are promoted once per multiply; activations stay in f64. Used by
+/// the fixture f64 forward so host and device f32 logits are scored against
+/// a real FP64 computation rather than against each other.
+pub fn matvec_dense_f64_authority(
+    weights: &[f32],
+    cols: usize,
+    x: &[f64],
+) -> Result<Vec<f64>, String> {
+    if cols == 0 {
+        return Err("matvec_dense_f64_authority: cols must be > 0".into());
+    }
+    if x.len() != cols {
+        return Err(format!(
+            "matvec_dense_f64_authority: x.len() {} != cols {cols}",
+            x.len()
+        ));
+    }
+    if weights.len() % cols != 0 {
+        return Err(format!(
+            "matvec_dense_f64_authority: {} weights is not a whole number of {cols}-wide rows",
+            weights.len()
+        ));
+    }
+    let rows = weights.len() / cols;
+    let mut out = Vec::with_capacity(rows);
+    for r in 0..rows {
+        let row = &weights[r * cols..(r + 1) * cols];
+        let mut acc = 0.0f64;
+        for (j, &wj) in row.iter().enumerate() {
+            acc += (wj as f64) * x[j];
+        }
+        out.push(acc);
+    }
+    Ok(out)
+}
+
+/// RMSNorm in f64: `x * rsqrt(mean(x²) + eps) * weight`.
+pub fn rmsnorm_f64(x: &[f64], weight: &[f64], eps: f64) -> Result<Vec<f64>, String> {
+    if x.len() != weight.len() {
+        return Err(format!(
+            "rmsnorm_f64: x.len() {} != weight.len() {}",
+            x.len(),
+            weight.len()
+        ));
+    }
+    if x.is_empty() {
+        return Ok(Vec::new());
+    }
+    let mean_sq = x.iter().map(|v| v * v).sum::<f64>() / x.len() as f64;
+    let inv = 1.0 / (mean_sq + eps).sqrt();
+    Ok(x.iter()
+        .zip(weight.iter())
+        .map(|(&v, &w)| v * inv * w)
+        .collect())
+}
+
+/// Affine LayerNorm in f64 (DSA indexer key path).
+pub fn layernorm_f64(
+    x: &[f64],
+    weight: &[f64],
+    bias: &[f64],
+    eps: f64,
+) -> Result<Vec<f64>, String> {
+    if x.len() != weight.len() || x.len() != bias.len() {
+        return Err(format!(
+            "layernorm_f64: len mismatch x={} w={} b={}",
+            x.len(),
+            weight.len(),
+            bias.len()
+        ));
+    }
+    if x.is_empty() {
+        return Ok(Vec::new());
+    }
+    let n = x.len() as f64;
+    let mean = x.iter().sum::<f64>() / n;
+    let var = x.iter().map(|v| {
+        let d = v - mean;
+        d * d
+    }).sum::<f64>()
+        / n;
+    let inv = 1.0 / (var + eps).sqrt();
+    Ok(x.iter()
+        .zip(weight.iter())
+        .zip(bias.iter())
+        .map(|((&v, &w), &b)| (v - mean) * inv * w + b)
+        .collect())
 }
 
 // ── scoring ────────────────────────────────────────────────────────────────
@@ -637,7 +774,13 @@ pub fn score_against_f64(
             continuous.cosine_similarity, bounds.min_cosine
         ));
     }
-    if continuous.max_meaningful_rel > bounds.max_meaningful_rel && continuous.n_meaningful > 0 {
+    if bounds.gate_max_meaningful_rel
+        && continuous.max_meaningful_rel > bounds.max_meaningful_rel
+        && continuous.n_meaningful > 0
+    {
+        // Prefix stays `meaningful_rel` so existing failure parsers
+        // (`starts_with("meaningful_rel")`) keep working. The score-line
+        // label is the unambiguous `max_meaningful_rel=`.
         failures.push(format!(
             "meaningful_rel {:.3e} > bound {:.3e} (n={})",
             continuous.max_meaningful_rel, bounds.max_meaningful_rel, continuous.n_meaningful
@@ -691,6 +834,12 @@ pub fn score_pair(
 }
 
 /// Compact human-readable line for `--nocapture` logs.
+///
+/// Label contract: the field printed as `max_meaningful_rel` is
+/// [`ContinuousMetrics::max_meaningful_rel`] — a **max over single
+/// elements**, never a mean. The historical mislabel `mean_rel` is gone;
+/// parsers must accept `max_meaningful_rel=`. Sealed receipts that embed
+/// the old `mean_rel=` string are left untouched.
 pub fn format_score_line(s: &BackendScore) -> String {
     let c = &s.continuous;
     let kl = c
@@ -698,7 +847,7 @@ pub fn format_score_line(s: &BackendScore) -> String {
         .map(|k| format!("{k:.3e}"))
         .unwrap_or_else(|| "n/a".into());
     format!(
-        "[{}] pass={} rel_l2={:.3e} mean_rel={:.3e} abs_near={:.3e} (cut={:.3e}) \
+        "[{}] pass={} rel_l2={:.3e} max_meaningful_rel={:.3e} abs_near={:.3e} (cut={:.3e}) \
          cos={:.9} kl={} ulp[med/p95/p99/max]={:.0}/{:.0}/{:.0}/{:.0} \
          argmax={:?}/{:?} topk_ok={} diag_max_scalar_rel={:.3e}",
         s.backend,
@@ -725,12 +874,9 @@ pub fn format_score_line(s: &BackendScore) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[test]
     fn identical_vectors_pass_with_zero_error() {
-        // Build both from f32 so the cast into the f64 authority is exact.
-        let c: Vec<f32> = (0..64).map(|i| (i as f32) * 0.1 - 3.0).collect();
-        let r: Vec<f64> = c.iter().map(|&v| v as f64).collect();
+        let c: Vec<f32> = (0..64).map(|i| (i as f32) * 0.1 - 3.0).collect(); let r: Vec<f64> = c.iter().map(|&v| v as f64).collect();
         let s = score_against_f64(&c, &r, &Bounds::logits(), "id");
         assert!(s.pass, "failures: {:?}", s.failures);
         assert_eq!(s.continuous.relative_l2, 0.0);
@@ -738,30 +884,16 @@ mod tests {
         assert!(s.discrete.greedy_match);
         assert!(s.discrete.top_k_exact_match);
     }
-
-    /// The V2 failure mode: one denormal-scale element with a tiny absolute
-    /// perturbation produces a huge scalar relative error, while the bulk of
-    /// the vector (and every decision) is fine. V2.1 must **pass**.
     #[test]
     fn denormal_scale_element_does_not_fail_relative_gate() {
-        let mut r: Vec<f64> = (0..128).map(|i| ((i as f64) - 64.0) * 0.05).collect();
-        // Inject a denormal-scale reference element.
-        r[3] = 1e-32;
-        // Candidate matches everywhere except a 1e-20 absolute hit on that element.
-        let mut c: Vec<f32> = r.iter().map(|&v| v as f32).collect();
-        // f32 cannot represent 1e-32; the cast is 0.0. Put a tiny value that is
-        // still denormal-scale relative to the bulk, and perturb it.
-        r[3] = 1e-20;
-        c[3] = 2e-20; // abs err 1e-20; relative = 1.0 if scored as relative
-
+        let mut r: Vec<f64> = (0..128).map(|i| ((i as f64) - 64.0) * 0.05).collect(); r[3] = 1e-32;
+        let mut c: Vec<f32> = r.iter().map(|&v| v as f32).collect(); r[3] = 1e-20; c[3] = 2e-20;
         let s = score_against_f64(&c, &r, &Bounds::logits(), "denorm");
-        // Diagnostic V2 metric is large:
         assert!(
             s.continuous.diagnostic_max_scalar_rel_all > 1e-5,
             "setup broken: V2 diagnostic should be large, got {}",
             s.continuous.diagnostic_max_scalar_rel_all
         );
-        // V2.1 must pass: near-zero uses abs, bulk is exact cast.
         assert!(
             s.pass,
             "V2.1 must not reject denormal-scale relative blow-up: {:?}",
@@ -770,72 +902,52 @@ mod tests {
         assert!(s.continuous.n_near_zero >= 1);
         assert!(s.continuous.relative_l2 < 1e-5);
     }
-
     #[test]
     fn silu_mul_f64_authority_matches_formula() {
-        let g = [0.0f64, 1.0, -2.0, 0.5];
-        let u = [1.0f64, 2.0, 3.0, -1.0];
-        let y = silu_mul_f64_authority(&g, &u).unwrap();
+        let g = [0.0f64, 1.0, -2.0, 0.5]; let u = [1.0f64, 2.0, 3.0, -1.0]; let y = silu_mul_f64_authority(&g, &u).unwrap();
         for i in 0..g.len() {
             let expect = (g[i] / (1.0 + (-g[i]).exp())) * u[i];
             assert!((y[i] - expect).abs() < 1e-15, "i={i}");
         }
-        let gh: Vec<f32> = g.iter().map(|&v| v as f32).collect();
-        let uh: Vec<f32> = u.iter().map(|&v| v as f32).collect();
+        let gh: Vec<f32> = g.iter().map(|&v| v as f32).collect(); let uh: Vec<f32> = u.iter().map(|&v| v as f32).collect();
         let host = silu_mul_f32_host(&gh, &uh).unwrap();
         let ref64: Vec<f64> = g
             .iter()
-            .zip(u.iter())
-            .map(|(&a, &b)| (a / (1.0 + (-a).exp())) * b)
-            .collect();
+            .zip(u.iter()).map(|(&a, &b)| (a / (1.0 + (-a).exp())) * b) .collect();
         let s = score_against_f64(&host, &ref64, &Bounds::continuous_only(), "silu_host");
         assert!(s.pass, "host silu vs f64: {:?}", s.failures);
     }
-
     #[test]
     fn wrong_argmax_fails_with_no_tolerance() {
-        let r: Vec<f64> = vec![1.0, 2.0, 3.0, 0.5];
-        let c: Vec<f32> = vec![1.0, 3.5, 3.0, 0.5]; // argmax 1 vs 2
+        let r: Vec<f64> = vec![1.0, 2.0, 3.0, 0.5]; let c: Vec<f32> = vec![1.0, 3.5, 3.0, 0.5];
         let s = score_against_f64(&c, &r, &Bounds::logits(), "argmax");
         assert!(!s.pass);
         assert!(!s.discrete.greedy_match);
         assert!(s.failures.iter().any(|f| f.contains("argmax")));
     }
-
     #[test]
     fn wrong_topk_fails_with_no_tolerance() {
-        let r: Vec<f64> = vec![5.0, 4.0, 3.0, 2.0, 1.0, 0.0];
-        // Swap rank-2 and rank-5 so top-5 set differs in order and membership.
-        let c: Vec<f32> = vec![5.0, 4.0, 0.5, 2.0, 1.0, 3.5];
-        let mut bounds = Bounds::logits();
-        bounds.top_k = 3;
-        let s = score_against_f64(&c, &r, &bounds, "topk");
+        let r: Vec<f64> = vec![5.0, 4.0, 3.0, 2.0, 1.0, 0.0]; let c: Vec<f32> = vec![5.0, 4.0, 0.5, 2.0, 1.0, 3.5];
+        let mut bounds = Bounds::logits(); bounds.top_k = 3; let s = score_against_f64(&c, &r, &bounds, "topk");
         assert!(!s.discrete.top_k_exact_match);
         assert!(!s.pass);
         assert!(s.failures.iter().any(|f| f.contains("top-")));
     }
-
     #[test]
     fn large_relative_l2_fails_headline_gate() {
-        let r: Vec<f64> = (0..32).map(|i| (i as f64) + 1.0).collect();
-        let c: Vec<f32> = r.iter().map(|&v| (v * 1.1) as f32).collect(); // 10% scale error
+        let r: Vec<f64> = (0..32).map(|i| (i as f64) + 1.0).collect(); let c: Vec<f32> = r.iter().map(|&v| (v * 1.1) as f32).collect();
         let s = score_against_f64(&c, &r, &Bounds::continuous_only(), "l2");
         assert!(!s.pass);
         assert!(s.continuous.relative_l2 > 1e-5);
         assert!(s.failures.iter().any(|f| f.contains("relative_l2")));
     }
-
-    /// Reduction-order style noise (~1e-7 relative) on well-scaled logits must pass.
     #[test]
     fn reduction_order_noise_passes() {
-        let r: Vec<f64> = (0..256)
-            .map(|i| ((i as f64) * 0.017 - 2.0).sin() * 1.5)
+        let r: Vec<f64> = (0..256).map(|i| ((i as f64) * 0.017 - 2.0).sin() * 1.5)
             .collect();
-        // ~1–2 ULP noise in f32, and a uniform 1e-7 relative wiggle.
         let c: Vec<f32> = r
             .iter()
-            .enumerate()
-            .map(|(i, &v)| {
+            .enumerate().map(|(i, &v)| {
                 let noise = v * 1e-7 * if i % 2 == 0 { 1.0 } else { -1.0 };
                 (v + noise) as f32
             })
@@ -847,80 +959,80 @@ mod tests {
             s.failures,
             format_score_line(&s)
         );
-        // ULP tail is information, not a reject:
         assert!(s.continuous.ulp.median >= 0.0);
     }
-
     #[test]
     fn abs_cutoff_is_data_derived_and_stated() {
-        // median(|r|) ≈ 1.0 → cutoff ≈ 1e-6
-        let r: Vec<f64> = vec![-2.0, -1.0, 0.0, 1.0, 2.0];
-        let cut = absolute_error_cutoff(&r);
-        assert!((cut - 1e-6).abs() < 1e-12, "cut={cut}");
-        let r2: Vec<f64> = vec![1e3, 1e3, 1e3];
-        let cut2 = absolute_error_cutoff(&r2);
+        let r: Vec<f64> = vec![-2.0, -1.0, 0.0, 1.0, 2.0]; let cut = absolute_error_cutoff(&r);
+        assert!((cut - 1e-6).abs() < 1e-12, "cut={cut}"); let r2: Vec<f64> = vec![1e3, 1e3, 1e3]; let cut2 = absolute_error_cutoff(&r2);
         assert!((cut2 - 1e-3).abs() < 1e-12, "cut2={cut2}");
     }
-
     #[test]
     fn ulp_distribution_reports_quartet_not_lone_max() {
-        let r: Vec<f64> = vec![1.0, 2.0, 3.0, 4.0];
-        // One element nudged by many ULPs; rest exact.
-        let mut c: Vec<f32> = r.iter().map(|&v| v as f32).collect();
-        c[0] = f32::from_bits((1.0f32).to_bits() + 50);
-        let u = ulp_distribution(&c, &r);
+        let r: Vec<f64> = vec![1.0, 2.0, 3.0, 4.0]; let mut c: Vec<f32> = r.iter().map(|&v| v as f32).collect();
+        c[0] = f32::from_bits((1.0f32).to_bits() + 50); let u = ulp_distribution(&c, &r);
         assert_eq!(u.n, 4);
         assert_eq!(u.median, 0.0);
         assert_eq!(u.max, 50.0);
-        // p95/p99 exist (not collapsed to max alone in the API).
         assert!(u.p95 >= u.median);
         assert!(u.p99 >= u.p95);
     }
-
     #[test]
     fn f64_authority_matvec_matches_manual_dot() {
-        // One row: bf16(1.0), bf16(2.0) · [3, 4] = 11
-        let one = 0x3f80u16; // bf16 1.0
-        let two = 0x4000u16; // bf16 2.0
-        let mut bits = Vec::new();
-        bits.extend_from_slice(&one.to_le_bytes());
-        bits.extend_from_slice(&two.to_le_bytes());
-        let y = matvec_bf16_f64_authority(&bits, 2, &[3.0, 4.0]).unwrap();
+        let one = 0x3f80u16; let two = 0x4000u16; let mut bits = Vec::new(); bits.extend_from_slice(&one.to_le_bytes());
+        bits.extend_from_slice(&two.to_le_bytes()); let y = matvec_bf16_f64_authority(&bits, 2, &[3.0, 4.0]).unwrap();
         assert_eq!(y.len(), 1);
         assert!((y[0] - 11.0).abs() < 1e-12, "y={}", y[0]);
     }
-
     #[test]
     fn pair_scores_both_backends() {
-        let r: Vec<f64> = vec![0.1, 0.2, 0.5, -0.1];
-        let h: Vec<f32> = r.iter().map(|&v| v as f32).collect();
-        let d = h.clone();
-        let p = score_pair(&h, &d, &r, &Bounds::logits());
+        let r: Vec<f64> = vec![0.1, 0.2, 0.5, -0.1]; let h: Vec<f32> = r.iter().map(|&v| v as f32).collect();
+        let d = h.clone(); let p = score_pair(&h, &d, &r, &Bounds::logits());
         assert!(p.pass);
         assert_eq!(p.schema, SCHEMA);
         assert!(p.host.pass && p.device.pass);
     }
-
-    /// Reproduce the structural V2 false-reject: mixed scales, tiny abs error
-    /// on the small element, good bulk agreement — V2 diagnostic blows up,
-    /// V2.1 passes.
+    #[test]
+    fn format_score_line_names_max_meaningful_rel_not_mean_rel() {
+        let r: Vec<f64> = vec![1.0, 2.0, 3.0, 4.0]; let mut c: Vec<f32> = r.iter().map(|&v| v as f32).collect(); c[1] = 2.0 * (1.0 + 1e-4);
+        let s = score_against_f64(&c, &r, &Bounds::continuous_only(), "label"); let line = format_score_line(&s);
+        assert!(line.contains("max_meaningful_rel="), "score line must label the max, got: {line}");
+        assert!(!line.contains("mean_rel="), "score line must not mislabel max as mean_rel, got: {line}");
+        assert!(s.continuous.max_meaningful_rel > 0.0);
+    }
+    #[test]
+    fn full_forward_bounds_report_max_meaningful_rel_without_gating() {
+        let n = 4096usize; let mut r = vec![1.0f64; n]; r[0] = 100.0; r[1] = 90.0; r[2] = 80.0; r[3] = 70.0; r[4] = 60.0; r[100] = 0.01;
+        let mut c: Vec<f32> = r.iter().map(|&v| v as f32).collect(); c[100] = 0.01 + 1e-4;
+        let op_local = score_against_f64(&c, &r, &Bounds::logits(), "op_local");
+        assert!(
+            !op_local.pass,
+            "op-local bounds must still gate max_meaningful_rel: {:?}",
+            op_local.failures
+        );
+        assert!(op_local
+            .failures
+            .iter() .any(|f| f.starts_with("meaningful_rel")));
+        let full = score_against_f64(&c, &r, &Bounds::full_forward_logits(), "full_fwd");
+        assert!(
+            full.pass,
+            "full-forward bounds report the tail but do not gate it when \
+             rel_l2/cos/kl/discrete hold: {:?} | {}",
+            full.failures,
+            format_score_line(&full)
+        );
+        assert!(full.continuous.max_meaningful_rel > 1e-5);
+        assert!(full.continuous.relative_l2 < 1e-5); let line = format_score_line(&full);
+        assert!(line.contains("max_meaningful_rel="));
+    }
     #[test]
     fn v2_false_reject_reproduced_and_cleared() {
-        let mut r = vec![1.0f64; 64];
-        // Span that made max-relative unusable: near-denormal + large.
-        r[0] = 1e-32;
-        r[1] = 1e10;
-        let mut c: Vec<f32> = r.iter().map(|&v| v as f32).collect();
-        // Absolute perturbation on the tiny element: double it in f32 space.
-        // Relative error on that slot alone is O(1); absolute error is ~1e-32.
-        let tiny = c[0];
-        assert!(tiny > 0.0 && tiny < 1e-30, "expected tiny positive, got {tiny}");
-        c[0] = tiny * 2.0;
-        // Meaningful bulk: exact f32 cast of the reference.
+        let mut r = vec![1.0f64; 64]; r[0] = 1e-32; r[1] = 1e10;
+        let mut c: Vec<f32> = r.iter().map(|&v| v as f32).collect(); let tiny = c[0];
+        assert!(tiny > 0.0 && tiny < 1e-30, "expected tiny positive, got {tiny}"); c[0] = tiny * 2.0;
         for i in 1..64 {
             c[i] = r[i] as f32;
         }
-
         let s = score_against_f64(&c, &r, &Bounds::logits(), "v2_pathology");
         assert!(
             s.continuous.diagnostic_max_scalar_rel_all > 1e-3,

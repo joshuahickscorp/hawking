@@ -95,7 +95,8 @@ import time
 
 import numpy as np
 
-from oracle_qtip_quality import rel_rmse, rss_gb
+from oracle_common import rel_rmse, rss_gb
+from oracle_common import check_rss
 
 # ----------------------------------------------------------------------------
 MODEL = os.environ.get(
@@ -130,12 +131,6 @@ BITS = {"Q4_K": 4.5, "Q3_K": 3.4375, "Q2_K": 2.625}
 BLOCK_BYTES = {"Q4_K": 144.0, "Q3_K": 110.0, "Q2_K": 84.0}
 
 
-def check_rss(where):
-    g = rss_gb()
-    if g > RSS_CEIL_GB:
-        sys.stderr.write(f"[FATAL] RSS {g:.2f} GB > {RSS_CEIL_GB} GB at {where}\n")
-        sys.exit(2)
-    return g
 
 
 # ============================================================================

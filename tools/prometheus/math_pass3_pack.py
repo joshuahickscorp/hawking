@@ -32,8 +32,10 @@ for _p in (HERE, CONDENSE):
     if str(_p) not in sys.path:
         sys.path.insert(0, str(_p))
 
-MANIFEST = REPO / "PROMETHEUS_MATH_ALLOCATION_MANIFEST.json"
-GRAPH = REPO / "GLM52_SHARD_DEPENDENCY_GRAPH.json"
+from glm52_common import resolve_artifact  # noqa: E402
+
+MANIFEST = resolve_artifact("PROMETHEUS_MATH_ALLOCATION_MANIFEST.json")
+GRAPH = resolve_artifact("GLM52_SHARD_DEPENDENCY_GRAPH.json")
 OFFICIAL_MANIFEST = REPO / "GLM52_OFFICIAL_MANIFEST.json"
 
 STATE_DIR = Path(

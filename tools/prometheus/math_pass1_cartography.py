@@ -46,6 +46,8 @@ for _p in (HERE, CONDENSE):
     if str(_p) not in sys.path:
         sys.path.insert(0, str(_p))
 
+from glm52_common import resolve_artifact  # noqa: E402
+
 STATE_DIR = Path(
     "/Users/scammermike/Library/Application Support/Hawking/GLM52MathPrometheus"
 )
@@ -57,7 +59,7 @@ LOCK = STATE_DIR / "pass1.lock"
 
 MANIFEST = REPO / "GLM52_OFFICIAL_MANIFEST.json"
 SCHEDULE = REPO / "GLM52_STREAMING_SCHEDULE.json"
-GRAPH = REPO / "GLM52_SHARD_DEPENDENCY_GRAPH.json"
+GRAPH = resolve_artifact("GLM52_SHARD_DEPENDENCY_GRAPH.json")
 
 # hf_xet cache/scratch stays inside this state root, same reasoning as the original
 # fetcher: MOP owns ~/.cache/huggingface and it is hard-protected.

@@ -21,12 +21,22 @@ Honesty / validity boundary:
 """
 from __future__ import annotations
 
+
+# --- archive path fixup (lane A1): resolve roots as if still in tools/condense/ ---
+import sys as _sys_a1
+from pathlib import Path as _Path_a1
+_A1_HERE = _Path_a1(__file__).resolve().parent
+_A1_CONDENSE = _A1_HERE.parent if _A1_HERE.name == "archive" else _A1_HERE
+_A1_REPO = _A1_CONDENSE.parents[1]  # repo root (condense -> tools -> repo)
+if str(_A1_CONDENSE) not in _sys_a1.path:
+    _sys_a1.path.insert(0, str(_A1_CONDENSE))
+# --- end archive path fixup ---
 import os
 import sys
 
 import numpy as np
 
-_HERE = os.path.dirname(os.path.abspath(__file__))
+_HERE = str(_A1_CONDENSE)
 if _HERE not in sys.path:
     sys.path.insert(0, _HERE)
 

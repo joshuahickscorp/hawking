@@ -1,39 +1,16 @@
-/*
-  ui.test.ts: THE one search experience.
-
-  Asserts the things a user can be lied to about here: that the default scope follows the surface the
-  search was opened from; that a transcript search really dials the host `run_search` custom name with
-  the query, the structured filters and the limit hide-backend host.rs handle_search_intent parses,
-  and reads the hits back off the `search_results` UiEvent; that the code-index leg sends the shape
-  the connector can actually deserialize (the old `{ q, limit }` call could not) and normalizes the
-  `{ results: [{ span }] }` answer; that a result resolves back to its real source (path and line, or
-  session and event id); that arrows plus Enter are enough to select and act with no mouse; that
-  attach and side chat land on real host capabilities; and that the palette still lists the DERIVED
-  catalog entries rather than a second command list.
-
-  No jsdom in this project, so component assertions render through react-dom/server and interaction
-  assertions go through the exported pure functions the components call.
-*/
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-// The transport seam, stubbed so each test reads exactly what went on the wire. `run_search` is
-// answered the way hide-backend does: an accepted ack, then a `search_results` Custom UiEvent.
 const { sent, calls, host } = vi.hoisted(() => ({
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sent: [] as any[],
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   calls: [] as any[],
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   host: { hits: [] as any[], connector: null as any, fail: false },
 }));
 
 vi.mock("./ipc", () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const listeners = new Set<(ev: any) => void>();
   return {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     sendIntent: async (i: any) => {
       sent.push(i);
       if (i.type === "custom" && i.data.name === "run_search") {
@@ -49,12 +26,10 @@ vi.mock("./ipc", () => {
       }
       return { accepted: true, event_seq: 1, message: null };
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     subscribeUi: (on: any) => {
       listeners.add(on);
       return () => listeners.delete(on);
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     callConnector: async (id: string, method: string, params: any) => {
       calls.push({ id, method, params });
       if (host.fail) throw new Error("index offline");
@@ -90,7 +65,6 @@ import { Explorer } from "./surfaces/ide/Explorer";
 
 const CTX = { sessionId: "ses_test", runId: "" };
 
-// A code-index answer in the connector's real shape (hawking-index SearchResult).
 const INDEX_ANSWER = {
   results: [
     {
@@ -103,7 +77,6 @@ const INDEX_ANSWER = {
   ],
 };
 
-// A hide-backend TranscriptHit, exactly as publish_search_results serializes it.
 const TRANSCRIPT_ANSWER = [
   {
     session_id: "ses_other",
@@ -151,7 +124,6 @@ describe("default scope by origin", () => {
     expect(defaultScopes("terminal")).toEqual(["tools"]);
     expect(defaultScopes("plan")).toEqual(["transcript", "tools"]);
     expect(defaultScopes("editor")).not.toEqual(defaultScopes("chat"));
-    // global spans the whole object model.
     expect(defaultScopes("global")).toEqual(SCOPES.map((s) => s.id));
     for (const origin of ["editor", "chat", "diff", "terminal", "plan", "global"] as const)
       for (const id of defaultScopes(origin)) expect(SCOPES.some((s) => s.id === id)).toBe(true);
@@ -167,7 +139,6 @@ describe("default scope by origin", () => {
 describe("run_search dispatch", () => {
   it("carries the query, the structured filters and the limit", () => {
     expect(searchPayload("port", "transcript", "ses_1", 5)).toEqual({ query: "port", limit: 5, session_id: "ses_1" });
-    // threads deliberately omits session_id so the host searches every session.
     expect(searchPayload("port", "threads", "ses_1", 5)).toEqual({ query: "port", limit: 5 });
     expect(searchPayload("port", "tools", "ses_1", 5)).toEqual({ query: "port", limit: 5, kind: "tool.result" });
   });
@@ -226,7 +197,6 @@ describe("wire normalizers", () => {
     expect(hits).toHaveLength(1);
     expect(hits[0]).toMatchObject({ path: "crates/pool/src/guard.rs", line: 42, scope: "files" });
     expect(hits[0].preview).toBe("pub struct Guard {");
-    // A bare array (the mock transport) and a flat row still normalize.
     expect(indexHits([{ path: "a.rs", line: 3, preview: "x" }], "files", 10)[0]).toMatchObject({ path: "a.rs", line: 3 });
     expect(indexHits(null, "files", 10)).toEqual([]);
   });
@@ -241,7 +211,6 @@ describe("provenance", () => {
   it("resolves a hit back to its source", () => {
     expect(hitProvenance(FILE_HIT)).toBe("a.rs:42");
     expect(hitProvenance(LOG_HIT)).toBe("ev_7 in ses_other");
-    // The accessible name never depends on color or position.
     expect(hitLabel(FILE_HIT)).toContain("a.rs:42");
     expect(hitLabel(LOG_HIT)).toContain("session log");
     expect(citeHit(FILE_HIT)).toBe("a.rs:42\nfn main");
@@ -277,7 +246,6 @@ describe("acting on a result", () => {
     await runHitAction("open", FILE_HIT, CTX);
     expect(sent[0]).toEqual({ type: "open_file", data: { path: "a.rs", line: 42 } });
     await runHitAction("open", LOG_HIT, CTX);
-    // NOT scrub_to_event: the host recorded that intent and acted on it nowhere.
     expect(sent[1].data).toMatchObject({ name: "open_session", payload: { session_id: "ses_other" } });
   });
 
@@ -325,7 +293,6 @@ describe("the navigator field (the second entry to the SAME engine)", () => {
     expect(html).toContain('aria-label="Filter or search files, symbols and references"');
     expect(html).toContain('role="combobox"');
     expect(html).toContain('role="tree"');
-    // No search runs until the user types, so the navigator costs nothing at rest.
     expect(calls.filter((c) => c.id === "code_index")).toEqual([]);
   });
 });
@@ -350,7 +317,6 @@ describe("the palette", () => {
 
   it("still lists the DERIVED catalog entries, not a second command list", () => {
     const html = render(true);
-    // one local shell command and several catalog commands, by their catalog titles
     expect(html).toContain("Command Palette");
     expect(html).toContain("Cancel run");
     expect(html).toContain("New side chat");
@@ -360,8 +326,6 @@ describe("the palette", () => {
   });
 
   it("retires the catalog's own empty-query Search row (the input is that command)", () => {
-    // The retirement lives in the derivation now: run_search declares command_palette:true, and the
-    // required-argument rule keeps it out because a bare gesture carries no query.
     expect(COMMANDS.find((c) => c.id === "run_search")?.command_palette).toBe(true);
     expect(paletteCommands().some((c) => c.id === "run_search")).toBe(false);
     const html = render(true);
@@ -370,10 +334,8 @@ describe("the palette", () => {
 
   it("shows the binding on the rows that have one, since the palette aggregates every command", () => {
     const html = render(true);
-    // Mod+P is the shell chord for the palette itself and Mod+. is the catalog chord for cancel_run.
     expect(html).toContain(keyLabel("Mod+P"));
     expect(html).toContain(keyLabel("Mod+."));
-    // and it can only show a chord that is really bound: nothing invents one per row
     for (const b of boundShortcuts()) expect(html).toContain(keyLabel(b.shortcut));
   });
 

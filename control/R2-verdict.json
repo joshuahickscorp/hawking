@@ -1,0 +1,22 @@
+{
+  "schema": "hawking.300k.lane_verdict.v1",
+  "lane": "R2",
+  "title": "Resolve the runtime flags once per process",
+  "verdict": "REJECTED",
+  "measured": {
+    "env_var_calls_per_token": {"before": 36, "after": 0},
+    "loc_before": 92, "loc_after": 462, "loc_delta": 370,
+    "wall_us_per_token": {"before_p50": 568, "after_p50": 575, "before_p95": 598, "after_p95": 623},
+    "delta_pct": {"p50": 1.23, "p95": 4.18},
+    "waits_per_token": {"before": 45, "after": 45},
+    "gates_all_green": true
+  },
+  "why_rejected": [
+    "p95 regressed 4.18%, above the campaign's 2% rejection threshold.",
+    "The change ADDS 370 LOC to a campaign whose purpose is removing them.",
+    "The measurement cannot support the claim either way: the cache is gated behind !debug_assertions, and the numbers were taken from a debug test build where the cached path is compiled out. What was measured is the added indirection, not the optimization."
+  ],
+  "what_was_real": "Eliminating 36 std::env::var lookups per token is a genuine defect fix; the mechanism chosen to do it costs more than the defect did.",
+  "correct_conclusion": "R1's only ACCELERANT candidate does not pay at this implementation. Rust's 1.02% no-product-decision reclaimable surface yields no measured speedup. The Rust tree is dense in both senses: little to remove, and little to gain by removing it.",
+  "not_concluded": "Whether a cheaper mechanism (compile-time feature resolution, or hoisting the flag read out of the token loop into the session struct) would pay. That was not measured and is not claimed."
+}

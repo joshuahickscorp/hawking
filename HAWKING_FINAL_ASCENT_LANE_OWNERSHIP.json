@@ -1,5 +1,5 @@
 {
-  "at": "2026-07-28T12:12:47Z",
+  "at": "2026-07-28T14:04:55Z",
   "campaign": "HAWKING_FINAL_ASCENT",
   "controller": {
     "may_not_delegate": [
@@ -103,12 +103,12 @@
         "capability gate receipt with G_math and G_live PASS"
       ],
       "owner": "controller+grok",
-      "pid": 91245,
+      "pid": null,
       "promotion_gate": "artifact_index_sha256 bound APPROVED in odyssey/launch/SUBSTRATE_CAPABILITY.json after G_math and G_live PASS; reconstruction metrics never substitute",
       "resource_class": "HEAVY-EXCLUSIVE",
-      "status": "RUNNING_OR_OBSERVED",
+      "status": "CAPABILITY_REFUSED",
       "tests": ".venv/glm52/bin/python tools/condense/glm52_capability_gate.py --artifact <dir> --run --out CAPABILITY.json",
-      "why": "live process pid=91245; no APPROVED substrate yet",
+      "why": "Generation B REFUSED; Math-Preserve family REFUSED; no Math-Preserve-v2 APPROVED",
       "worktree": "UNKNOWN"
     },
     {

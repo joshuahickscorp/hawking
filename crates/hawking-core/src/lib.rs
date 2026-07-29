@@ -26,7 +26,10 @@ pub mod quant;
 pub mod quant_tier_map;
 pub mod sample;
 pub mod sidecar;
-// speculate extracted to the hawking-speculate crate (NUCLEAR PASTA)
+// speculate extracted to the hawking-speculate crate (NUCLEAR PASTA).
+// Re-export so integration tests (and any in-tree callers) that still path
+// through `hawking_core::speculate::…` keep compiling.
+pub use hawking_speculate as speculate;
 pub mod stateful;
 pub mod tokenizer;
 /// TQ (Trellis-Quant): `.tq` decode + activation-RHT CPU serving reference, built

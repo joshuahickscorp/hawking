@@ -45,10 +45,12 @@ for _p in (HERE, CONDENSE):
     if str(_p) not in sys.path:
         sys.path.insert(0, str(_p))
 
+from glm52_common import resolve_artifact  # noqa: E402
+
 CAPSULE_DIR = Path(
     "/Users/scammermike/Library/Application Support/Hawking/GLM52MathPrometheus/capsules"
 )
-GRAPH = REPO / "GLM52_SHARD_DEPENDENCY_GRAPH.json"
+GRAPH = resolve_artifact("GLM52_SHARD_DEPENDENCY_GRAPH.json")
 LEDGER = REPO / "GLM52_LOGICAL_WEIGHT_LEDGER.json"
 
 # Same convention `architecture.py`'s equal-budget solver already uses for the

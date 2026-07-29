@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-# Aggregate-tps for continuous-batching multi-seq decode (B=1/4/8).
-# The SPEEDUP RATIO is contamination-robust (valid with the agent open); the
-# ABSOLUTE tps needs a clean room. Auto-detected by clean_bench_queue.sh.
-set -uo pipefail
-cd "$(dirname "$0")/../.."
-exec cargo test --release -p hawking-core --test multiseq_aggregate_bench -- --ignored --nocapture
+# Thin laboratory-harness front-end. Spec: tools/bench/specs/batch_aggregate_bench.json
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+export LAB_HARNESS_ARGS="${LAB_HARNESS_ARGS-$*}"
+export PYTHONPATH="$ROOT/tools/foundry${PYTHONPATH:+:$PYTHONPATH}"
+mkdir -p "$ROOT/artifacts/runs"
+exec python3.12 -m lab_harness run "$ROOT/tools/bench/specs/batch_aggregate_bench.json"

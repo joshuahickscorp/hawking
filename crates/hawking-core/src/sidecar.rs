@@ -442,7 +442,6 @@ pub fn read_sidecar_header(path: &std::path::Path) -> crate::Result<SidecarHeade
 mod tier_map_tests {
     use super::*;
     use crate::gguf::GgmlType;
-
     fn header_with_tier_map(tm: SidecarTierMap) -> SidecarHeader {
         SidecarHeader {
             version: SIDECAR_VERSION,
@@ -460,11 +459,6 @@ mod tier_map_tests {
             tier_map: Some(tm),
         }
     }
-
-    /// A tier map round-trips through the sidecar file (SidecarWriter::write ->
-    /// read_sidecar_header) and the loader hook (dtype_for) reports the
-    /// per-tensor dtype, returns None for absent tensors, and fails on a bad
-    /// dtype string.
     #[test]
     fn tier_map_round_trips_through_sidecar_and_loader_reports_dtype() {
         let tm = SidecarTierMap {
@@ -483,7 +477,6 @@ mod tier_map_tests {
                 },
             ],
         };
-        // Pre-write resolver sanity + validation.
         assert!(tm.validate().is_ok());
         assert_eq!(
             tm.dtype_for("blk.0.ffn_down.weight").unwrap(),
@@ -497,12 +490,8 @@ mod tier_map_tests {
             tm.dtype_for("blk.5.attn_k.weight").unwrap(),
             Some(GgmlType::Q4_K)
         );
-        // Absent tensor falls through.
         assert_eq!(tm.dtype_for("blk.9.ffn_up.weight").unwrap(), None);
-
-        // Write a sidecar carrying the tier map (predec_entries empty is fine).
-        let dir = tempfile::tempdir().expect("tempdir");
-        let path = dir.path().join("model.hawking");
+        let dir = tempfile::tempdir().expect("tempdir"); let path = dir.path().join("model.hawking");
         let writer = SidecarWriter {
             path: path.clone(),
             predec_entries: Vec::new(),
@@ -510,14 +499,10 @@ mod tier_map_tests {
         };
         let n = writer.write().expect("write sidecar");
         assert!(n > 0);
-
-        // Read the header back and confirm the tier map survived the JSON
-        // round-trip, then re-run the loader hook on the LOADED copy.
         let read_header = read_sidecar_header(&path).expect("read header");
         assert!(read_header.contents.mixed_quant_tier_map);
         let loaded = read_header
-            .tier_map
-            .expect("tier_map present after round-trip");
+            .tier_map.expect("tier_map present after round-trip");
         assert_eq!(loaded, tm, "tier map not byte-identical after round-trip");
         assert!(loaded.validate().is_ok());
         assert_eq!(
@@ -534,8 +519,6 @@ mod tier_map_tests {
         );
         assert_eq!(loaded.dtype_for("nope.weight").unwrap(), None);
     }
-
-    /// Bad dtype string fails fast in the resolver and in validate().
     #[test]
     fn bad_dtype_string_is_rejected() {
         let tm = SidecarTierMap {
@@ -547,12 +530,6 @@ mod tier_map_tests {
         assert!(tm.dtype_for("blk.0.ffn_down.weight").is_err());
         assert!(tm.validate().is_err());
     }
-
-    /// A sidecar with NO tier map (predec-only bake) deserializes with
-    /// tier_map == None — backward compat for older/predec-only sidecars.
-    /// NOTE: SidecarContents/SidecarQuality have no container `#[serde(default)]`,
-    /// so this JSON specifies every field EXCEPT `tier_map` (the field under
-    /// test) — proving an ABSENT `tier_map` key (not just `null`) → None.
     #[test]
     fn absent_tier_map_defaults_to_none() {
         let json = r#"{
@@ -583,8 +560,6 @@ mod tier_map_tests {
         assert!(h.tier_map.is_none());
         assert!(!h.contents.mixed_quant_tier_map);
     }
-
-    /// Duplicate tensor entries are rejected by validate().
     #[test]
     fn duplicate_tensor_entry_rejected() {
         let tm = SidecarTierMap {

@@ -470,7 +470,6 @@ fn quantize_into(dtype: GgmlType, src: &[f32], dst: &mut [u8]) -> Result<()> {
 mod tests {
     use super::*;
     use crate::quant_tier_map::TierMap;
-
     fn make_tier_map(layer: usize, tier: &str) -> TierMap {
         let json = format!(
             r#"{{ "schema_version": 1, "model_arch": "deepseek2", "n_layers": {},
@@ -478,62 +477,30 @@ mod tests {
             (layer + 1).max(1),
             layer,
             tier,
-        );
-        // Parse via TierMap test path. We re-serialize through std fs only;
-        // here we exercise the from_parts via from_str+from_parts trick.
-        // Easiest: write to a temp file. But our tests aren't fs-dependent;
-        // use a serde indirection mirroring TierMap::load.
-        let p = tempfile::NamedTempFile::new().unwrap();
-        std::fs::write(p.path(), json).unwrap();
+        ); let p = tempfile::NamedTempFile::new().unwrap(); std::fs::write(p.path(), json).unwrap();
         TierMap::load(p.path()).unwrap()
     }
-
     #[test]
     fn requantize_q5_0_to_q8_0_round_trip_bounded() {
-        // Synthesize a single-block Q5_0 tensor (32 elems, 22 bytes) and
-        // re-quantize via the store's `quantize_into`.
         use half::f16;
-        let n_elems = 32;
-        // Q5_0 block: 22 bytes = f16 d (2) + qh (4) + qs (16). Encode
-        // d=1.0, qh=0, qs alternating low-nibble values.
-        let mut src_bytes = vec![0u8; 22];
-        src_bytes[0..2].copy_from_slice(&f16::from_f32(0.05).to_bits().to_le_bytes());
+        let n_elems = 32; let mut src_bytes = vec![0u8; 22]; src_bytes[0..2].copy_from_slice(&f16::from_f32(0.05).to_bits().to_le_bytes());
         for i in 0..16 {
             src_bytes[6 + i] = (i as u8 & 0x7) | (((i as u8 + 1) & 0x7) << 4);
         }
-        let mut deq = vec![0.0f32; n_elems];
-        quant::dequant_into(GgmlType::Q5_0, &src_bytes, &mut deq).unwrap();
-
-        // Re-quantize to Q8_0 and dequantize back.
-        let mut q8_blob = vec![0u8; 34];
-        quantize_into(GgmlType::Q8_0, &deq, &mut q8_blob).unwrap();
-        let mut requant = vec![0.0f32; n_elems];
-        quant::dequant_into(GgmlType::Q8_0, &q8_blob, &mut requant).unwrap();
+        let mut deq = vec![0.0f32; n_elems]; quant::dequant_into(GgmlType::Q5_0, &src_bytes, &mut deq).unwrap();
+        let mut q8_blob = vec![0u8; 34]; quantize_into(GgmlType::Q8_0, &deq, &mut q8_blob).unwrap();
+        let mut requant = vec![0.0f32; n_elems]; quant::dequant_into(GgmlType::Q8_0, &q8_blob, &mut requant).unwrap();
         let err = deq
             .iter()
-            .zip(requant.iter())
-            .map(|(a, b)| (a - b).abs())
-            .fold(0.0f32, f32::max);
-        // Q8 has finer steps than Q5 ⇒ the rounding error should be
-        // dominated by Q8's own scale step (~deq_amax/127). Should be tiny.
+            .zip(requant.iter()).map(|(a, b)| (a - b).abs()) .fold(0.0f32, f32::max);
         assert!(err < 0.05, "Q5_0→Q8_0 round-trip err = {err}");
     }
-
     #[test]
     fn key_routed_vs_shared_disjoint() {
-        let a = StoreKey::routed(3, GroupKind::Down, 5);
-        let b = StoreKey::shared(3, GroupKind::Down);
-        assert_ne!(a, b);
+        let a = StoreKey::routed(3, GroupKind::Down, 5); let b = StoreKey::shared(3, GroupKind::Down); assert_ne!(a, b);
     }
-
     #[test]
     fn rejects_gate_up_tier_in_v1() {
-        // Build a minimal GGUF-less harness: we can't easily build a real
-        // GgufFile in unit tests, so this just tests the tier_map → error
-        // path indirectly. (Full integration test runs against the V2-Lite
-        // weights in mixed_precision_parity.rs.)
-        let m = make_tier_map(0, "q4_K");
-        let _ = m; // verify it loads without panicking; full integration
-                   // tests cover the actual build flow.
+        let m = make_tier_map(0, "q4_K"); let _ = m;
     }
 }

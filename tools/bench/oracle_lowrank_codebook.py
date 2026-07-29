@@ -33,6 +33,7 @@ import sys
 import time
 
 import numpy as np
+from oracle_common import check_rss
 
 try:
     import resource
@@ -74,12 +75,6 @@ RANKS = [16, 32, 64]
 RESIDUAL_BITS = [2, 3]  # residual stored at 2-3 bits/weight (+ small per-row scale)
 
 
-def check_rss(where):
-    g = rss_gb()
-    if g > RSS_CEIL_GB:
-        sys.stderr.write(f"[FATAL] RSS {g:.2f} GB > {RSS_CEIL_GB} GB ceiling at {where}\n")
-        sys.exit(2)
-    return g
 
 
 def f16_bytes(n):

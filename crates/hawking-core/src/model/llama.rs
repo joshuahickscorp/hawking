@@ -20,18 +20,18 @@
 //! GGUF in hand to bench against.
 
 use super::arch_config::{token_embd_vocab_size, ArchReader};
-use super::weights::{dequant_f16, dequant_f32, tensor_ref, TensorRef};
+use super::weights::{dequant_f16, dequant_f32, dequant_ref_into, tensor_ref, TensorRef};
+use super::dispatch::{gemv_f16_dispatch, rmsnorm_dispatch};
 use crate::attn::mha_decode_step;
 use crate::cache::KvCache;
 use crate::engine::{Engine, EngineConfig, GenStats, GenerateRequest, StopReason, StreamEvent};
 use crate::gguf::{GgmlType, GgufFile};
 use crate::kernels::{
-    add_inplace, embed_lookup, gemv_f16, gemv_f32, rmsnorm, rope_inplace_scaled, silu_mul,
+    add_inplace, embed_lookup, gemv_f32, rope_inplace_scaled, silu_mul,
     Llama3RopeScaling,
 };
 use crate::metal::MetalContext;
 use crate::profile::KernelProfile;
-use crate::quant;
 use crate::sample::Sampler;
 use crate::tokenizer::Tokenizer;
 use crate::{Error, Result};
@@ -200,20 +200,11 @@ pub struct LlamaDense {
 
 impl LlamaDense {
     fn dequant_ref_into(&self, t: &TensorRef, buf: &mut Vec<f32>) -> Result<()> {
-        if buf.len() != t.n_elems {
-            buf.resize(t.n_elems, 0.0);
-        }
-        let bytes = &self.gguf.mmap[t.offset..t.offset + t.byte_size];
-        quant::dequant_into(t.dtype, bytes, buf)
+        dequant_ref_into(&self.gguf.mmap, t, buf)
     }
 
     fn rmsnorm_dispatch(&self, x: &[f32], weight: &[f32], eps: f32, out: &mut [f32]) -> Result<()> {
-        #[cfg(target_os = "macos")]
-        if let Some(ctx) = &self.metal_ctx {
-            return crate::kernels::rmsnorm_metal(ctx, x, weight, eps, out);
-        }
-        rmsnorm(x, weight, eps, out);
-        Ok(())
+        rmsnorm_dispatch(self.metal_ctx.as_ref(), x, weight, eps, out)
     }
 
     /// Per-layer matmul dispatcher. On macOS with Metal alive and a Q4_K
@@ -251,13 +242,7 @@ impl LlamaDense {
         x: &[f32],
         out: &mut [f32],
     ) -> Result<()> {
-        #[cfg(target_os = "macos")]
-        if let Some(ctx) = &self.metal_ctx {
-            let w_bytes = bytemuck::cast_slice::<f16, u8>(w_f16);
-            return crate::kernels::gemv_f16_metal(ctx, w_bytes, rows, cols, x, out);
-        }
-        gemv_f16(w_f16, rows, cols, x, out);
-        Ok(())
+        gemv_f16_dispatch(self.metal_ctx.as_ref(), w_f16, rows, cols, x, out)
     }
 
     /// Forward one token at position `pos`. Appends K/V at the current
@@ -649,9 +634,6 @@ impl Engine for LlamaDense {
 #[cfg(test)]
 mod tests {
     use crate::kernels::Llama3RopeScaling;
-
-    /// Llama-3.2 reference RoPE-scaling values that should round-trip
-    /// through `LlamaConfig`. Validates the metadata key strings.
     #[test]
     fn rope_scaling_params_round_trip_into_struct() {
         let s = Llama3RopeScaling {
@@ -660,10 +642,6 @@ mod tests {
             high_freq_factor: 4.0,
             original_max_position_embeddings: 8192,
         };
-        // The struct is plain data; the GGUF-side path is exercised by
-        // the smoke tests in step 8 when a real Llama-3.2 GGUF is
-        // present. Here we just confirm the type the runtime stores is
-        // the same shape the kernel consumes.
         assert_eq!(s.factor, 32.0);
         assert_eq!(s.original_max_position_embeddings, 8192);
     }

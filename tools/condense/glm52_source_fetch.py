@@ -51,6 +51,11 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
+_CONDENSE = Path(__file__).resolve().parent
+if str(_CONDENSE) not in sys.path:
+    sys.path.insert(0, str(_CONDENSE))
+from glm52_common import resolve_artifact  # noqa: E402
+
 STATE_DIR = Path(
     "/Users/scammermike/Library/Application Support/Hawking/GLM52Gravity/source_fetch"
 )
@@ -63,7 +68,7 @@ LOCK = STATE_DIR / "fetch.lock"
 DEFERRED = STATE_DIR / "deferred_evictions.json"
 PROBES = STATE_DIR / "probes"
 ROLLUP = STATE_DIR / "GLM52_SOURCE_WEIGHT_ATLAS.json"
-GRAPH = ROOT / "GLM52_SHARD_DEPENDENCY_GRAPH.json"
+GRAPH = resolve_artifact("GLM52_SHARD_DEPENDENCY_GRAPH.json")
 # The compact artifact itself: this is the deliverable that outlives every BF16 window.
 # On the Desktop by request: this is the first full quantized model worth keeping, and it
 # must be somewhere the user can see and move it, not buried in Application Support.
@@ -645,10 +650,14 @@ def _host_health() -> dict:
     swap_text = _run(["/usr/sbin/sysctl", "-n", "vm.swapusage"])
     thermal = _run(["/usr/bin/pmset", "-g", "therm"])
     try:
-        sys.path.insert(0, str(Path(__file__).resolve().parent))
-        from emergency_detached_campaign import parse_swap_used
+        from decimal import ROUND_CEILING, Decimal, InvalidOperation
 
-        swap_used = parse_swap_used(swap_text)
+        match = re.search(r"used\s*=\s*([0-9]+(?:\.[0-9]+)?)\s*([BKMGTPE])", swap_text, re.I)
+        if match is None:
+            raise ValueError("vm.swapusage omitted used bytes")
+        mult = {"B": 1, "K": 1024, "M": 1024**2, "G": 1024**3, "T": 1024**4, "P": 1024**5, "E": 1024**6}
+        value = Decimal(match.group(1)) * mult[match.group(2).upper()]
+        swap_used = int(value.to_integral_value(rounding=ROUND_CEILING))
     except Exception:  # noqa: BLE001 - a status writer never fails on a parse
         swap_used = None
     usage = shutil.disk_usage(str(SOURCE_ROOT if SOURCE_ROOT.exists() else ROOT))

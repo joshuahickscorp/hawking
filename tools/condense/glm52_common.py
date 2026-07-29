@@ -18,9 +18,54 @@ from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
+# External blob root for large campaign matrices once they leave the working tree.
+# Repo root is always searched first so in-tree behaviour is unchanged today.
+HAWKING_ARTIFACT_ROOT_ENV = "HAWKING_ARTIFACT_ROOT"
+DEFAULT_HAWKING_ARTIFACT_ROOT = Path.home() / "Downloads" / "hawking-evidence"
+
 
 class Glm52Error(RuntimeError):
     """Raised when a campaign invariant fails."""
+
+
+def hawking_artifact_root() -> Path:
+    """Return `$HAWKING_ARTIFACT_ROOT`, defaulting to `~/Downloads/hawking-evidence`."""
+    raw = os.environ.get(HAWKING_ARTIFACT_ROOT_ENV)
+    if raw is None or raw == "":
+        return DEFAULT_HAWKING_ARTIFACT_ROOT
+    return Path(raw).expanduser()
+
+
+def resolve_artifact(name: str) -> Path:
+    """Locate a campaign artifact by basename.
+
+    Search order:
+
+    1. Repository root (preserves today's in-tree behaviour)
+    2. ``$HAWKING_ARTIFACT_ROOT`` (default ``~/Downloads/hawking-evidence``)
+
+    Raises ``Glm52Error`` naming the artifact and the exact ``git checkout``
+    command that restores it when neither location has a regular file.
+    """
+    if not isinstance(name, str) or not name or name != Path(name).name:
+        raise Glm52Error(
+            f"resolve_artifact expects a basename, got {name!r}"
+        )
+    external = hawking_artifact_root()
+    candidates = (REPO_ROOT / name, external / name)
+    for candidate in candidates:
+        try:
+            if candidate.is_file():
+                return candidate
+        except OSError:
+            continue
+    restore = f"git checkout HEAD -- {name}"
+    searched = ", ".join(str(path) for path in candidates)
+    raise Glm52Error(
+        f"campaign artifact not found: {name}\n"
+        f"searched: {searched}\n"
+        f"restore with: {restore}"
+    )
 
 
 def utc_now() -> str:

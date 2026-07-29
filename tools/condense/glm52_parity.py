@@ -30,6 +30,7 @@ from glm52_common import (
     atomic_json,
     atomic_text,
     read_sealed_json,
+    resolve_artifact,
     seal,
     sha256_file,
 )
@@ -107,7 +108,7 @@ def _passes(metrics: dict[str, Any], limits: dict[str, float]) -> bool:
 
 
 def _official_schema_sweep() -> dict[str, Any]:
-    graph = read_sealed_json(REPO_ROOT / "GLM52_SHARD_DEPENDENCY_GRAPH.json")
+    graph = read_sealed_json(resolve_artifact("GLM52_SHARD_DEPENDENCY_GRAPH.json"))
     manifest = read_sealed_json(REPO_ROOT / "GLM52_OFFICIAL_MANIFEST.json")
     config_path = Path(manifest["one_copy"]["snapshot_view"]) / "config.json"
     config = json.loads(config_path.read_text(encoding="utf-8"))

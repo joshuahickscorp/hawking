@@ -1,0 +1,6 @@
+{
+  "schema": "hawking.condense.campaign_fixture.v1",
+  "campaign_id": "qwen",
+  "description": "Minimal Qwen campaign fixture.",
+  "artifacts": []
+}

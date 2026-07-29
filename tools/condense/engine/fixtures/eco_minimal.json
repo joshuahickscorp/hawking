@@ -1,0 +1,6 @@
+{
+  "schema": "hawking.condense.campaign_fixture.v1",
+  "campaign_id": "eco",
+  "description": "Minimal fixture for retired eco controllers (lane H1).",
+  "artifacts": []
+}

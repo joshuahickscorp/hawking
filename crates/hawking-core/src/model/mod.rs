@@ -5,6 +5,7 @@
 
 pub mod arch_config;
 pub mod deepseek_v2;
+pub mod dispatch;
 pub mod expert_cache;
 pub mod gravity_engine;
 pub mod llama;
@@ -225,19 +226,16 @@ fn system_ram_mb() -> usize {
 mod tier_map_hook_tests {
     use super::tier_map_overrides_for_names;
     use crate::sidecar::{SidecarTierEntry, SidecarTierMap};
-
     fn tm(pairs: &[(&str, &str)]) -> SidecarTierMap {
         SidecarTierMap {
             entries: pairs
-                .iter()
-                .map(|(t, d)| SidecarTierEntry {
+                .iter().map(|(t, d)| SidecarTierEntry {
                     tensor: (*t).to_string(),
                     dtype: (*d).to_string(),
                 })
                 .collect(),
         }
     }
-
     #[test]
     fn empty_map_matches_nothing() {
         let m = tm(&[]);
@@ -245,38 +243,32 @@ mod tier_map_hook_tests {
         let names = ["blk.0.ffn_down.weight", "output.weight"];
         assert_eq!(tier_map_overrides_for_names(&m, names), 0);
     }
-
     #[test]
     fn counts_only_present_overrides_with_real_tensor_names() {
-        // Real GGUF-shaped names; only two of them are in the tier map.
         let m = tm(&[
             ("blk.0.ffn_down.weight", "q6_K"),
             ("blk.12.ffn_down.weight", "q8_0"),
-            ("blk.99.attn_q.weight", "q4_K"), // present in map, absent from GGUF below
+            ("blk.99.attn_q.weight", "q4_K"),
         ]);
         let gguf_names = [
             "token_embd.weight",
-            "blk.0.ffn_down.weight",  // override -> counts
-            "blk.0.attn_q.weight",    // no entry
-            "blk.12.ffn_down.weight", // override -> counts
+            "blk.0.ffn_down.weight",
+            "blk.0.attn_q.weight",
+            "blk.12.ffn_down.weight",
             "output.weight",
         ];
-        // Two of the three map entries match the live name set.
         assert_eq!(tier_map_overrides_for_names(&m, gguf_names), 2);
     }
-
     #[test]
     fn iteration_order_independent() {
         let m = tm(&[
             ("blk.5.ffn_up.weight", "q8_0"),
             ("blk.5.ffn_down.weight", "q6_K"),
         ]);
-        let a = ["blk.5.ffn_up.weight", "blk.5.ffn_down.weight", "x"];
-        let b = ["x", "blk.5.ffn_down.weight", "blk.5.ffn_up.weight"];
+        let a = ["blk.5.ffn_up.weight", "blk.5.ffn_down.weight", "x"]; let b = ["x", "blk.5.ffn_down.weight", "blk.5.ffn_up.weight"];
         assert_eq!(tier_map_overrides_for_names(&m, a), 2);
         assert_eq!(tier_map_overrides_for_names(&m, b), 2);
     }
-
     #[test]
     fn dtype_for_resolves_and_validate_passes() {
         use crate::gguf::GgmlType;
@@ -289,11 +281,8 @@ mod tier_map_hook_tests {
         assert_eq!(m.dtype_for("output.weight").unwrap(), Some(GgmlType::Q8_0));
         assert_eq!(m.dtype_for("blk.0.attn_q.weight").unwrap(), None);
     }
-
     #[test]
     fn unknown_dtype_is_not_counted() {
-        // validate() would reject this, but the helper must defensively treat a
-        // dtype_for Err as "no override" (not counted) per the caller contract.
         let m = tm(&[("blk.0.ffn_down.weight", "f16_bogus")]);
         assert!(m.validate().is_err());
         assert_eq!(

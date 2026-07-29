@@ -687,25 +687,18 @@ pub fn fresh_test_profile(weights_path: &std::path::Path) -> crate::Result<Kerne
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[test]
     fn candidate_order_is_stable() {
         let ids: Vec<_> = deterministic_candidates()
-            .into_iter()
-            .map(|v| v.id)
-            .collect();
+            .into_iter().map(|v| v.id) .collect();
         assert_eq!(ids, vec!["metal-default"]);
     }
-
     #[test]
     fn candidate_scoring_is_deterministic() {
-        let candidates = deterministic_candidates();
-        let a = score_candidates(&candidates);
-        let b = score_candidates(&candidates);
+        let candidates = deterministic_candidates(); let a = score_candidates(&candidates); let b = score_candidates(&candidates);
         assert_eq!(a, b);
         assert_eq!(select_variant(&candidates, &a).unwrap().id, "metal-default");
     }
-
     #[test]
     fn arch_family_groups_point_releases() {
         assert_eq!(arch_family("qwen2"), "qwen2");
@@ -719,13 +712,10 @@ mod tests {
         assert_eq!(arch_family("mistral"), "llama");
         assert_eq!(arch_family("gemma2"), "gemma2");
         assert_eq!(arch_family("phi3"), "phi3");
-        assert_eq!(arch_family("phi3.5"), "phi3");
-        assert_ne!(arch_family("qwen2"), arch_family("llama"));
-        assert_ne!(arch_family("deepseek2"), arch_family("llama"));
-        assert_ne!(arch_family("gemma2"), arch_family("llama"));
+        assert_eq!(arch_family("phi3.5"), "phi3"); assert_ne!(arch_family("qwen2"), arch_family("llama"));
+        assert_ne!(arch_family("deepseek2"), arch_family("llama")); assert_ne!(arch_family("gemma2"), arch_family("llama"));
         assert_ne!(arch_family("phi3"), arch_family("gemma2"));
     }
-
     #[test]
     fn runtime_levers_round_trip() {
         let lv = RuntimeLevers {
@@ -736,15 +726,11 @@ mod tests {
             scale_dtype: "f16".into(),
             kv_dtype: "f16".into(),
         };
-        let json = serde_json::to_string(&lv).unwrap();
-        let back: RuntimeLevers = serde_json::from_str(&json).unwrap();
+        let json = serde_json::to_string(&lv).unwrap(); let back: RuntimeLevers = serde_json::from_str(&json).unwrap();
         assert_eq!(lv, back);
     }
-
     #[test]
     fn runtime_levers_default_back_compat() {
-        // A profile JSON written before runtime_levers existed has no such key;
-        // it must still deserialize with an all-default RuntimeLevers (no bump).
         let legacy = r#"{
             "schema_version": 1,
             "profile_id": "kp-test",
@@ -778,31 +764,17 @@ mod tests {
         assert_eq!(p.runtime_levers, RuntimeLevers::default());
         assert_eq!(p.runtime_levers.scale_dtype, "f32");
         assert_eq!(p.runtime_levers.kv_dtype, "f32");
-        // And re-serializing then loading the result preserves it.
-        let round = serde_json::to_string(&p).unwrap();
-        let p2: KernelProfile = serde_json::from_str(&round).unwrap();
+        let round = serde_json::to_string(&p).unwrap(); let p2: KernelProfile = serde_json::from_str(&round).unwrap();
         assert_eq!(p.runtime_levers, p2.runtime_levers);
     }
-
     #[test]
     fn build_deterministic_profile_populates_runtime_levers() {
-        // build_deterministic_profile must call RuntimeLevers::from_env and
-        // carry the profile name. We can't open a GGUF in a pure unit test,
-        // so assert from_env directly with a controlled env, mirroring what
-        // build_deterministic_profile does (runtime_levers: from_env(&opts.profile)).
-        // NOTE: serial within this process — set then clear the vars we touch.
-        std::env::set_var("HAWKING_QWEN_VOCAB_PRUNE", "32000");
-        std::env::set_var("HAWKING_QWEN_FFN_DOWN_Q4K", "1");
-        std::env::set_var("HAWKING_QWEN_PREDEC_F16SCALES", "1");
-        std::env::set_var("HAWKING_QWEN_Q4K_LMHEAD", "1");
-        std::env::set_var("HAWKING_QWEN_F16_KV", "1");
-        std::env::remove_var("HAWKING_QWEN_INT4_KV");
-        std::env::remove_var("HAWKING_QWEN_Q4K_PREDEC"); // default-on
-        let lv = RuntimeLevers::from_env("fast");
-        std::env::remove_var("HAWKING_QWEN_VOCAB_PRUNE");
-        std::env::remove_var("HAWKING_QWEN_FFN_DOWN_Q4K");
-        std::env::remove_var("HAWKING_QWEN_PREDEC_F16SCALES");
-        std::env::remove_var("HAWKING_QWEN_Q4K_LMHEAD");
+        std::env::set_var("HAWKING_QWEN_VOCAB_PRUNE", "32000"); std::env::set_var("HAWKING_QWEN_FFN_DOWN_Q4K", "1");
+        std::env::set_var("HAWKING_QWEN_PREDEC_F16SCALES", "1"); std::env::set_var("HAWKING_QWEN_Q4K_LMHEAD", "1");
+        std::env::set_var("HAWKING_QWEN_F16_KV", "1"); std::env::remove_var("HAWKING_QWEN_INT4_KV");
+        std::env::remove_var("HAWKING_QWEN_Q4K_PREDEC"); let lv = RuntimeLevers::from_env("fast");
+        std::env::remove_var("HAWKING_QWEN_VOCAB_PRUNE"); std::env::remove_var("HAWKING_QWEN_FFN_DOWN_Q4K");
+        std::env::remove_var("HAWKING_QWEN_PREDEC_F16SCALES"); std::env::remove_var("HAWKING_QWEN_Q4K_LMHEAD");
         std::env::remove_var("HAWKING_QWEN_F16_KV");
         assert_eq!(lv.profile_name, "fast");
         assert_eq!(lv.vocab_prune, Some(32000));
@@ -811,11 +783,9 @@ mod tests {
         assert_eq!(lv.kv_dtype, "f16");
         assert_eq!(lv.lm_head_path, "q4k-predec-f16s");
     }
-
     fn mk(variant: &str, rank: u32, tps: f64, quality: f64) -> AutotuneMeasurement {
         AutotuneMeasurement::measured(variant, rank, tps, quality, RuntimeLevers::default())
     }
-
     fn ev(measurements: Vec<AutotuneMeasurement>) -> AutotuneEvidence {
         AutotuneEvidence {
             profile: "test".into(),
@@ -828,12 +798,8 @@ mod tests {
             notes: vec![],
         }
     }
-
     #[test]
     fn select_best_picks_highest_tps_above_quality_floor() {
-        // Highest tps overall is `fast`, but it FAILS the floor (q=0.80 < 0.90).
-        // `mid` (q=0.95, 40 tps) must win over `slow` (q=1.0, 30 tps) and over
-        // the higher-tps-but-failing `fast`.
         let evidence = ev(vec![
             mk("fast", 3, 55.0, 0.80),
             mk("mid", 2, 40.0, 0.95),
@@ -842,7 +808,6 @@ mod tests {
         let chosen =
             select_best(&evidence, DEFAULT_QUALITY_FLOOR).expect("a candidate clears floor");
         assert_eq!(chosen.variant_id, "mid");
-        // score_measurement rejects sub-floor candidates with NEG_INFINITY.
         assert_eq!(
             score_measurement(&evidence.measurements[0], DEFAULT_QUALITY_FLOOR),
             f64::NEG_INFINITY
@@ -852,64 +817,39 @@ mod tests {
             40.0
         );
     }
-
     #[test]
     fn select_best_ties_break_deterministically() {
-        // Equal tps (42.0) and all above floor. Tie-break order:
-        // 1) higher quality wins -> `hi_q` (0.99) beats `lo_q` (0.91).
         let by_quality = ev(vec![mk("lo_q", 1, 42.0, 0.91), mk("hi_q", 2, 42.0, 0.99)]);
         assert_eq!(select_best_default(&by_quality).unwrap().variant_id, "hi_q");
-
-        // 2) equal tps AND equal quality -> lower deterministic_rank wins.
         let by_rank = ev(vec![mk("r5", 5, 42.0, 0.95), mk("r2", 2, 42.0, 0.95)]);
         assert_eq!(select_best_default(&by_rank).unwrap().variant_id, "r2");
-
-        // 3) equal tps, quality, AND rank -> variant_id lexicographic (smaller wins).
         let by_id = ev(vec![mk("bbb", 1, 42.0, 0.95), mk("aaa", 1, 42.0, 0.95)]);
         assert_eq!(select_best_default(&by_id).unwrap().variant_id, "aaa");
-
-        // Fully deterministic across calls (no NaN, total order): same input -> same pick.
         assert_eq!(
             select_best_default(&by_id).unwrap().variant_id,
             select_best_default(&by_id).unwrap().variant_id
         );
     }
-
     #[test]
     fn select_best_returns_none_when_all_below_floor_or_empty() {
-        assert!(select_best_default(&ev(vec![])).is_none());
-        let all_bad = ev(vec![mk("a", 1, 99.0, 0.10), mk("b", 2, 80.0, 0.50)]);
+        assert!(select_best_default(&ev(vec![])).is_none()); let all_bad = ev(vec![mk("a", 1, 99.0, 0.10), mk("b", 2, 80.0, 0.50)]);
         assert!(select_best_default(&all_bad).is_none());
     }
-
     #[test]
     fn measured_constructor_round_trips_new_fields() {
-        // New optional fields must serialize/deserialize and survive the
-        // PartialEq derive (f64 PartialEq, no NaN produced here).
         let m =
             AutotuneMeasurement::measured("metal-default", 1, 47.96, 1.0, RuntimeLevers::default());
-        let json = serde_json::to_string(&m).unwrap();
-        let back: AutotuneMeasurement = serde_json::from_str(&json).unwrap();
+        let json = serde_json::to_string(&m).unwrap(); let back: AutotuneMeasurement = serde_json::from_str(&json).unwrap();
         assert_eq!(m, back);
         assert_eq!(back.tps, 47.96);
         assert_eq!(back.quality, 1.0);
         assert_eq!(back.status, "measured");
     }
-
-    /// Track 0/9 lock-in: the 4 PINNED on-disk device profiles must keep
-    /// loading via `KernelProfile::load` AFTER the `runtime_levers` (struct) and
-    /// `AutotuneMeasurement::{tps,quality,runtime_levers}` field additions. These
-    /// JSONs were written BEFORE those fields and carry no `runtime_levers` key,
-    /// so this proves the `#[serde(default)]` back-compat holds on the REAL files
-    /// (not just the synthetic legacy string in `runtime_levers_default_back_compat`).
-    /// Pure CPU: only fs::read + serde_json — no GGUF, no Metal, no validate_for_gguf.
-    /// Path is `CARGO_MANIFEST_DIR/../../profiles` so it is CWD-independent.
     #[test]
     fn pinned_profiles_still_load_after_field_additions() {
         let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("..")
-            .join("..")
-            .join("profiles");
+            .join("..") .join("profiles");
         let files = [
             "qwen3b-instruct-q4k.m3pro18.json",
             "qwen15b-instruct-q4k.m3pro18.json",
@@ -918,30 +858,19 @@ mod tests {
         ];
         for f in files {
             let path = root.join(f);
-            let p = KernelProfile::load(&path)
-                .unwrap_or_else(|e| panic!("{f}: KernelProfile::load failed: {e}"));
+            let p = KernelProfile::load(&path).unwrap_or_else(|e| panic!("{f}: KernelProfile::load failed: {e}"));
             assert_eq!(
                 p.schema_version, PROFILE_SCHEMA_VERSION,
                 "{f}: schema_version must match current"
             );
-            // The pinned JSONs predate runtime_levers => serde(default) fills it.
-            assert_eq!(
-                p.runtime_levers,
-                RuntimeLevers::default(),
-                "{f}: absent runtime_levers must deserialize to all-default"
-            );
-            // The added AutotuneMeasurement fields default cleanly too (no `tps`
-            // / `quality` keys in these JSONs => 0.0 / 1.0).
+            assert_eq!(p.runtime_levers, RuntimeLevers::default(), "{f}: absent runtime_levers must deserialize to all-default");
             for m in &p.evidence.measurements {
                 assert_eq!(m.tps, 0.0, "{f}: legacy measurement tps defaults to 0.0");
                 assert_eq!(
                     m.quality, 1.0,
                     "{f}: legacy measurement quality defaults to 1.0"
                 );
-                assert!(
-                    m.runtime_levers.is_none(),
-                    "{f}: legacy measurement has no runtime_levers"
-                );
+                assert!(m.runtime_levers.is_none(), "{f}: legacy measurement has no runtime_levers");
             }
         }
     }

@@ -1,0 +1,7 @@
+{
+  "schema": "hawking.condense.campaign_fixture.v1",
+  "campaign_id": "gptoss",
+  "description": "Minimal GPT-OSS G4 fixture; no real weights.",
+  "holdout_ids": ["gen_paris", "gen_science", "code_py", "math_add", "reason_syllogism", "instr_list"],
+  "rate_ladder_bpw": [1.0]
+}

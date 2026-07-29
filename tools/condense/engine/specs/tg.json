@@ -1,0 +1,84 @@
+{
+  "schema": "hawking.condense.experiment_spec.v1",
+  "campaign_id": "tg",
+  "title": "TG K11 budget / reconcile shell",
+  "family": "tg",
+  "status": "retired",
+  "resource_class": "light",
+  "phases": [
+    "precheck",
+    "measure",
+    "allocate",
+    "pack",
+    "seal",
+    "monitor",
+    "report"
+  ],
+  "steps": [
+    {
+      "id": "precheck.fences",
+      "phase": "precheck",
+      "handler": "precheck.fences",
+      "description": "Authorization fences stay closed"
+    },
+    {
+      "id": "measure.record",
+      "phase": "measure",
+      "handler": "record",
+      "description": "Record historical measure surface"
+    },
+    {
+      "id": "allocate.record",
+      "phase": "allocate",
+      "handler": "record",
+      "description": "Record allocation policy"
+    },
+    {
+      "id": "pack.record",
+      "phase": "pack",
+      "handler": "record",
+      "description": "Pack step (optional)",
+      "optional": true
+    },
+    {
+      "id": "seal.receipt",
+      "phase": "seal",
+      "handler": "seal.receipt",
+      "description": "Seal campaign receipt"
+    },
+    {
+      "id": "monitor.heartbeat",
+      "phase": "monitor",
+      "handler": "record",
+      "description": "Lease / heartbeat",
+      "optional": true
+    },
+    {
+      "id": "report.summary",
+      "phase": "report",
+      "handler": "report.summary",
+      "description": "Campaign summary"
+    }
+  ],
+  "receipt": "",
+  "fixture": "engine/fixtures/tg_minimal.json",
+  "reproduction": "python3.12 -m tools.condense.engine.runtime tools/condense/engine/specs/tg.json --work-dir reports/condense/engine/tg",
+  "authorization_fences": [],
+  "reopen": [
+    {
+      "id": "new_evidence",
+      "description": "Reopen only when sealed science law for this family is superseded",
+      "predicate": "tg_law_superseded",
+      "evidence": []
+    }
+  ],
+  "notes": "tg_* shells retired into engine lifecycle.",
+  "metadata": {
+    "retired_controllers_deleted": [
+      "tg_active_byte_budget",
+      "tg_k11_reconcile",
+      "tg_k11_synthetic_schedule"
+    ],
+    "lane": "H1"
+  }
+}

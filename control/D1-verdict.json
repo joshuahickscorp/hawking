@@ -1,0 +1,45 @@
+{
+  "schema": "hawking.300k.lane_verdict.v1",
+  "lane": "D1",
+  "title": "Deep re-audit for another 100,000 eliminable lines",
+  "verdict": "100K_NOT_PRESENT",
+  "asked_for": 100000,
+  "found_eliminable": 14200,
+  "found_range": [10000, 18000],
+  "evidence_quality": "1 of 7 programs PROVEN; the remaining 6 INFERRED. The eliminable pool is small enough that the inferred/proven split does not change the conclusion.",
+  "hypotheses_refuted": [
+    {
+      "hypothesis": "crates/hawking-core carries four model families each duplicating the same forward pass, so one generic architecture plus per-family constants would free tens of thousands of lines.",
+      "result": "REFUTED",
+      "evidence": "Pairwise family similarity measured at jaccard < 0.11. qwen_dense, deepseek_v2, rwkv7 and llama are architecturally distinct, not copies. Only ~800 lines of thin shared helpers are extractable.",
+      "note": "This was the single largest remaining reduction hypothesis in the campaign. Its refutation is what closes the arc's descent."
+    },
+    {
+      "hypothesis": "Twenty hide-* crates for one product implies cross-crate duplication.",
+      "result": "REFUTED",
+      "evidence": "hide-backend production code is load-bearing and the duplication is not between the crates. The crate count is product surface area, not repeated architecture."
+    },
+    {
+      "hypothesis": "15,897 lines of shaders are hand-written permutations one parameterised kernel would replace.",
+      "result": "PARTIALLY REFUTED",
+      "evidence": "Hand permutation exists but safe reclamation is under 1,000 lines without taking decode risk."
+    }
+  ],
+  "irreducible_subsystem_budget": {
+    "hide_product": {"current": 115473, "floor": 115473},
+    "hawking_core_runtime_src": {"current": 81967, "floor": 76000},
+    "hawking_core_shaders": {"current": 15897, "floor": 15000},
+    "hawking_core_integration_tests": {"current": 31465, "floor": 18000},
+    "hawking_other_crates": {"current": 60253, "floor": 56000},
+    "laboratory_condense": {"current": 168167, "floor": 120000},
+    "laboratory_other": {"current": 53801, "floor": 48000},
+    "typescript_app": {"current": 18327, "floor": 17000},
+    "markdown": {"current": 21493, "floor": 21493},
+    "shell_lean_shared": {"current": 4564, "floor": 4500},
+    "_sum": {"current": 571407, "floor": 491466, "reduction": 79941},
+    "_floor_excluding_hide": 375993
+  },
+  "floor_estimate": 480000,
+  "honest_verdict": "100,000 additional eliminable active LOC beyond the in-flight lanes is not present. The measured pool is ~14,200. After the campaign-engine repair (~45k) and the Rust test compression (~13.5k) land, the honest floor sits near 480,000 with HIDE in the tree and near 376,000 with HIDE relocated -- and the campaign gives relocation zero credit. The 300,000 target is not reachable by condensation.",
+  "note_for_floor_declaration": "This supplies the irreducible subsystem budget the campaign requires before any rung may be declared structurally impossible. Combined with the Track B arithmetic rejection, two materially different architectures have now failed to reach 300k."
+}

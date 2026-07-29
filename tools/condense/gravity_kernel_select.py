@@ -32,6 +32,16 @@ The router is absent from every shard, so expert selection is a FIXED LIST, not 
 
 from __future__ import annotations
 
+
+# --- archive path fixup (lane A1): resolve roots as if still in tools/condense/ ---
+import sys as _sys_a1
+from pathlib import Path as _Path_a1
+_A1_HERE = _Path_a1(__file__).resolve().parent
+_A1_CONDENSE = _A1_HERE.parent if _A1_HERE.name == "archive" else _A1_HERE
+_A1_REPO = _A1_CONDENSE.parents[1]  # repo root (condense -> tools -> repo)
+if str(_A1_CONDENSE) not in _sys_a1.path:
+    _sys_a1.path.insert(0, str(_A1_CONDENSE))
+# --- end archive path fixup ---
 import argparse
 import json
 import sys
@@ -42,7 +52,7 @@ from typing import Any, Callable, Iterable
 
 import numpy as np
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(_A1_CONDENSE))
 
 import gravity_bench_lab as lab            # noqa: E402
 import gravity_flop_ledger as fl           # noqa: E402
@@ -51,7 +61,7 @@ import gravity_metal                       # noqa: E402
 import gravity_metal_lab_b as lb           # noqa: E402
 import gravity_real_fixtures as grf        # noqa: E402
 
-REPORT_DIR = Path(__file__).resolve().parents[2] / "reports" / "condense" / "breakthrough"
+REPORT_DIR = _A1_REPO / "reports" / "condense" / "breakthrough"
 REPORT_PATH = REPORT_DIR / "GLM52_KERNEL_SELECTION_MATRIX.json"
 
 BASELINE_REPORT = "reports/condense/breakthrough/GLM52_BREAKTHROUGH_BASELINE.json"

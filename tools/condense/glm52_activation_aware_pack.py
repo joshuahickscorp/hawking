@@ -39,6 +39,16 @@ Self-test (no parent bodies required):
 """
 from __future__ import annotations
 
+
+# --- archive path fixup (lane A1): resolve roots as if still in tools/condense/ ---
+import sys as _sys_a1
+from pathlib import Path as _Path_a1
+_A1_HERE = _Path_a1(__file__).resolve().parent
+_A1_CONDENSE = _A1_HERE.parent if _A1_HERE.name == "archive" else _A1_HERE
+_A1_REPO = _A1_CONDENSE.parents[1]  # repo root (condense -> tools -> repo)
+if str(_A1_CONDENSE) not in _sys_a1.path:
+    _sys_a1.path.insert(0, str(_A1_CONDENSE))
+# --- end archive path fixup ---
 import argparse
 import hashlib
 import json
@@ -57,7 +67,7 @@ from typing import Any, Callable, Sequence
 
 import numpy as np
 
-HERE = Path(__file__).resolve().parent
+HERE = _A1_CONDENSE
 REPO = HERE.parents[1]
 if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
@@ -1434,7 +1444,12 @@ def ensure_shard(
         # an explicit --disk-floor-gib, which is backwards: a flag the operator typed should win
         # over a variable they cannot see.
         os.environ["GLM52_PILOT_DISK_FLOOR_BYTES"] = str(floor)
-        from glm52_rehydrate_window import rehydrate  # local import, after the env is set
+        try:
+            from glm52_rehydrate_window import rehydrate  # optional; retired into engine specs
+        except ImportError as exc:
+            raise PackError(
+                'glm52_rehydrate_window was retired; pass resident shards or restore from git history'
+            ) from exc
         rc = rehydrate([n])
         if rc != 0 or not path.exists():
             raise PackError(f"rehydrate of shard {n} failed with rc={rc}")

@@ -28,7 +28,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-REGISTRY = ROOT / "HAWKING_ADAPTER_REGISTRY.json"
+REGISTRY = ROOT / "crates/hawking-adapters/generated/HAWKING_ADAPTER_REGISTRY.json"
 
 # Ordered weakest to strongest. Demotion moves down this list.
 GRADES = [

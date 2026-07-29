@@ -1,28 +1,20 @@
-//! v1.1.0 Phase 1A — Q3_K Metal GEMV parity against scalar dequant.
-
 #![cfg(target_os = "macos")]
-
 use hawking_core::gguf::GgmlType;
 use hawking_core::kernels;
 use hawking_core::metal::{MetalContext, PinnedBuffer};
 use hawking_core::quant::dequant_into;
 use rand::Rng;
 use rand_pcg::Pcg64Mcg;
-
 mod common;
 use common::*;
-
 const ATOL: f32 = 1e-2;
-
 fn fixed_input(n: usize, seed: u64) -> Vec<f32> {
     let mut rng = Pcg64Mcg::new(seed as u128);
     (0..n).map(|_| rng.gen_range(-1.0_f32..1.0_f32)).collect()
 }
-
 fn pin(ctx: &MetalContext, bytes: &[u8]) -> PinnedBuffer {
     ctx.new_buffer_with_bytes(bytes)
 }
-
 fn pack_q3_scale(block: &mut [u8], scale_idx: usize, signed_scale: i8) {
     let l = (signed_scale + 32) as u8;
     if scale_idx < 8 {
@@ -32,7 +24,6 @@ fn pack_q3_scale(block: &mut [u8], scale_idx: usize, signed_scale: i8) {
     }
     block[104 + scale_idx % 4] |= (l >> 4) << (2 * (scale_idx / 4));
 }
-
 fn synthetic_q3_k_bytes(n_blocks: usize, seed: u64) -> Vec<u8> {
     use half::f16;
     let mut rng = Pcg64Mcg::new(seed as u128);
@@ -47,11 +38,9 @@ fn synthetic_q3_k_bytes(n_blocks: usize, seed: u64) -> Vec<u8> {
     }
     bytes
 }
-
 fn zero_q3_k_bytes(n_blocks: usize) -> Vec<u8> {
     vec![0u8; n_blocks * 110]
 }
-
 fn ones_q3_k_bytes(n_blocks: usize) -> Vec<u8> {
     use half::f16;
     let mut bytes = vec![0xffu8; n_blocks * 110];
@@ -61,7 +50,6 @@ fn ones_q3_k_bytes(n_blocks: usize) -> Vec<u8> {
     }
     bytes
 }
-
 fn known_q3_k_bytes(n_blocks: usize) -> Vec<u8> {
     use half::f16;
     let mut bytes = vec![0u8; n_blocks * 110];
@@ -86,35 +74,19 @@ fn known_q3_k_bytes(n_blocks: usize) -> Vec<u8> {
     }
     bytes
 }
-
 fn assert_q3_gemv_matches_scalar(rows: usize, cols: usize, w_bytes: &[u8], seed: u64, label: &str) {
     let x = fixed_input(cols, seed);
-
     let mut w_f32 = vec![0.0_f32; rows * cols];
     dequant_into(GgmlType::Q3_K, w_bytes, &mut w_f32).expect("Q3_K scalar dequant");
     let mut scalar_out = vec![0.0_f32; rows];
     kernels::gemv_f32(&w_f32, rows, cols, &x, &mut scalar_out);
-
     let ctx = ctx();
     let model_buf = pin(ctx, w_bytes);
     let mut metal_out = vec![0.0_f32; rows];
-    kernels::gemv_q3_k_pinned(
-        ctx,
-        &model_buf,
-        0,
-        w_bytes.len(),
-        rows,
-        cols,
-        &x,
-        &mut metal_out,
-    )
-    .expect("Q3_K Metal GEMV");
-
+    kernels::gemv_q3_k_pinned(ctx, &model_buf, 0, w_bytes.len(), rows, cols, &x, &mut metal_out).expect("Q3_K Metal GEMV");
     let diff = max_abs_diff(&scalar_out, &metal_out);
-    println!("[v1.1.0] Q3_K {label} rows={rows} cols={cols} max abs diff = {diff:.6e}");
     assert!(diff < ATOL, "Q3_K {label} diff {diff:.6e} >= atol {ATOL}");
 }
-
 #[test]
 fn q3_k_metal_matches_scalar_known_patterns() {
     let rows = 16;
@@ -124,7 +96,6 @@ fn q3_k_metal_matches_scalar_known_patterns() {
     assert_q3_gemv_matches_scalar(rows, cols, &ones_q3_k_bytes(n_blocks), 0xB, "ones");
     assert_q3_gemv_matches_scalar(rows, cols, &known_q3_k_bytes(n_blocks), 0xC, "known");
 }
-
 #[test]
 fn q3_k_metal_matches_scalar_random_small() {
     let rows = 64;
@@ -133,7 +104,6 @@ fn q3_k_metal_matches_scalar_random_small() {
     let w_bytes = synthetic_q3_k_bytes(n_blocks, 42);
     assert_q3_gemv_matches_scalar(rows, cols, &w_bytes, 0xDEAD_BEEF, "random-small");
 }
-
 #[test]
 fn q3_k_metal_matches_scalar_random_realistic() {
     let rows = 256;

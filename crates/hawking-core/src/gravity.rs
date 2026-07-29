@@ -2840,59 +2840,28 @@ pub fn pq_matvec_metal(
 mod tests {
     use super::*;
     use std::io::Write;
-
-    /// `[0,1,126,127,64,3,2,1]` at 7 bits each, MSB-first, packed
-    /// numpy-`packbits`-style (56 bits = exactly 7 bytes, no trailing
-    /// padding needed):
-    ///
-    /// ```text
-    /// 0000000 0000001 1111110 1111111 1000000 0000011 0000010 0000001
-    /// -> 00000000 00000111 11110111 11111000 00000000 11000001 00000001
-    /// -> 0x00     0x07     0xF7     0xF8     0x00     0xC1     0x01
-    /// ```
     #[test]
     fn unpack_bits_matches_hand_packed_7bit_values() {
-        let packed: [u8; 7] = [0x00, 0x07, 0xF7, 0xF8, 0x00, 0xC1, 0x01];
-        let got = unpack_bits(&packed, 8, 7).expect("unpack");
+        let packed: [u8; 7] = [0x00, 0x07, 0xF7, 0xF8, 0x00, 0xC1, 0x01]; let got = unpack_bits(&packed, 8, 7).expect("unpack");
         assert_eq!(got, vec![0, 1, 126, 127, 64, 3, 2, 1]);
     }
-
-    /// `index_at` must agree with the sequential walk for every position,
-    /// including the ones straddling a byte boundary — it is the only
-    /// reader on the embedding path, where nothing else would catch a
-    /// one-bit skew.
     #[test]
     fn index_at_matches_sequential_unpack() {
-        let packed: [u8; 7] = [0x00, 0x07, 0xF7, 0xF8, 0x00, 0xC1, 0x01];
-        let seq = unpack_bits(&packed, 8, 7).expect("unpack");
+        let packed: [u8; 7] = [0x00, 0x07, 0xF7, 0xF8, 0x00, 0xC1, 0x01]; let seq = unpack_bits(&packed, 8, 7).expect("unpack");
         for (i, &want) in seq.iter().enumerate() {
             assert_eq!(index_at(&packed, i, 7), want, "index {i}");
         }
     }
-
     #[test]
     fn unpack_bits_rejects_short_stream() {
         let packed: [u8; 6] = [0x00, 0x07, 0xF7, 0xF8, 0x00, 0xC1];
         assert!(unpack_bits(&packed, 8, 7).is_err());
     }
-
-    fn activation_payload(
-        rows: u32,
-        cols: u32,
-        rank: u32,
-        side_code: u16,
-        coefficients: &[f32],
-        basis: Option<&[f32]>,
-    ) -> Vec<u8> {
-        let mut payload = Vec::new();
-        payload.extend_from_slice(ACTIVATION_AWARE_MAGIC);
-        payload.extend_from_slice(&rows.to_le_bytes());
-        payload.extend_from_slice(&cols.to_le_bytes());
-        payload.extend_from_slice(&rank.to_le_bytes());
-        payload.extend_from_slice(&7u16.to_le_bytes());
-        payload.extend_from_slice(&side_code.to_le_bytes());
-        payload.push(u8::from(basis.is_some()));
-        payload.resize(ACTIVATION_AWARE_HEADER_LEN, 0);
+    fn activation_payload(rows: u32, cols: u32, rank: u32, side_code: u16, coefficients: &[f32], basis: Option<&[f32]>) -> Vec<u8> {
+        let mut payload = Vec::new(); payload.extend_from_slice(ACTIVATION_AWARE_MAGIC); payload.extend_from_slice(&rows.to_le_bytes());
+        payload.extend_from_slice(&cols.to_le_bytes()); payload.extend_from_slice(&rank.to_le_bytes());
+        payload.extend_from_slice(&7u16.to_le_bytes()); payload.extend_from_slice(&side_code.to_le_bytes());
+        payload.push(u8::from(basis.is_some())); payload.resize(ACTIVATION_AWARE_HEADER_LEN, 0);
         for &value in coefficients {
             payload.extend_from_slice(&f16::from_f32(value).to_bits().to_le_bytes());
         }
@@ -2903,71 +2872,36 @@ mod tests {
         }
         payload
     }
-
     #[test]
     fn activation_aware_factorized_input_and_output_match_dense_authority() {
-        let basis = [1.0, 0.0, 0.0, 1.0, 0.5, -0.25]; // 3x2 row-major
-        let input_left = [2.0, -1.0, 0.5, 3.0]; // 2x2
-        let input = ActivationAwareTensor::from_payload(&activation_payload(
-            2,
-            3,
-            2,
-            1,
-            &input_left,
-            Some(&basis),
-        ))
-        .expect("input-side payload");
-        let x_input = [0.25, 2.0, -1.0];
-        let got_input = input.matvec(&x_input).expect("input matvec");
-        // Dense W = L @ B.T = [[2,-1,1.25],[.5,3,-.5]].
+        let basis = [1.0, 0.0, 0.0, 1.0, 0.5, -0.25]; let input_left = [2.0, -1.0, 0.5, 3.0];
+        let input = ActivationAwareTensor::from_payload(&activation_payload(2, 3, 2, 1, &input_left, Some(&basis))).expect("input-side payload");
+        let x_input = [0.25, 2.0, -1.0]; let got_input = input.matvec(&x_input).expect("input matvec");
         let want_input = [2.0 * 0.25 + -2.0 + -1.25, 0.5 * 0.25 + 6.0 + 0.5];
         assert_eq!(got_input, want_input);
-        assert_eq!(input.row(1).unwrap(), vec![0.5, 3.0, -0.5]);
-
-        let output_left = [1.0, 2.0, -0.5, 4.0]; // 2x2
-        let output = ActivationAwareTensor::from_payload(&activation_payload(
-            3,
-            2,
-            2,
-            2,
-            &output_left,
-            Some(&basis),
-        ))
-        .expect("output-side payload");
-        let x_output = [1.5, -0.75];
-        let got_output = output.matvec(&x_output).expect("output matvec");
-        // Dense W = B @ L = [[1,2],[-.5,4],[.625,0]].
+        assert_eq!(input.row(1).unwrap(), vec![0.5, 3.0, -0.5]); let output_left = [1.0, 2.0, -0.5, 4.0];
+        let output = ActivationAwareTensor::from_payload(&activation_payload(3, 2, 2, 2, &output_left, Some(&basis))).expect("output-side payload");
+        let x_output = [1.5, -0.75]; let got_output = output.matvec(&x_output).expect("output matvec");
         let want_output = [0.0, -3.75, 0.9375];
         assert_eq!(got_output, want_output);
         assert_eq!(output.row(2).unwrap(), vec![0.625, 0.0]);
     }
-
     fn write_activation_aware_lazy_fixture(dir: &Path) -> (&'static str, &'static str) {
-        let weight_name = "model.layers.0.input.weight";
-        let norm_name = "model.layers.0.norm.weight";
-        let shard_name = "model-00001-of-00001.aap";
-        let basis = [1.0, 0.0, 0.0, 1.0, 0.5, -0.25];
-        let mut basis_payload = Vec::new();
-        basis_payload.extend_from_slice(AAP_BASIS_MAGIC);
-        basis_payload.extend_from_slice(&3u32.to_le_bytes());
-        basis_payload.extend_from_slice(&2u32.to_le_bytes());
-        basis_payload.resize(ACTIVATION_AWARE_HEADER_LEN, 0);
+        let weight_name = "model.layers.0.input.weight"; let norm_name = "model.layers.0.norm.weight";
+        let shard_name = "model-00001-of-00001.aap"; let basis = [1.0, 0.0, 0.0, 1.0, 0.5, -0.25]; let mut basis_payload = Vec::new();
+        basis_payload.extend_from_slice(AAP_BASIS_MAGIC); basis_payload.extend_from_slice(&3u32.to_le_bytes());
+        basis_payload.extend_from_slice(&2u32.to_le_bytes()); basis_payload.resize(ACTIVATION_AWARE_HEADER_LEN, 0);
         for &value in &basis {
             basis_payload.extend_from_slice(&f16::from_f32(value).to_bits().to_le_bytes());
         }
-        let weight_payload = activation_payload(2, 3, 2, 1, &[2.0, -1.0, 0.5, 3.0], None);
-        let mut norm_payload = Vec::new();
-        norm_payload.extend_from_slice(AAP_PASS_MAGIC);
-        norm_payload.extend_from_slice(&1u32.to_le_bytes());
-        norm_payload.extend_from_slice(&3u32.to_le_bytes());
-        norm_payload.extend_from_slice(&0u32.to_le_bytes());
+        let weight_payload = activation_payload(2, 3, 2, 1, &[2.0, -1.0, 0.5, 3.0], None); let mut norm_payload = Vec::new();
+        norm_payload.extend_from_slice(AAP_PASS_MAGIC); norm_payload.extend_from_slice(&1u32.to_le_bytes());
+        norm_payload.extend_from_slice(&3u32.to_le_bytes()); norm_payload.extend_from_slice(&0u32.to_le_bytes());
         norm_payload.resize(ACTIVATION_AWARE_HEADER_LEN, 0);
         for value in [1.5f32, -2.0, 0.25] {
-            let bf16 = (value.to_bits() >> 16) as u16;
-            norm_payload.extend_from_slice(&bf16.to_le_bytes());
+            let bf16 = (value.to_bits() >> 16) as u16; norm_payload.extend_from_slice(&bf16.to_le_bytes());
         }
-        let weight_offset = basis_payload.len() as u64;
-        let norm_offset = weight_offset + weight_payload.len() as u64;
+        let weight_offset = basis_payload.len() as u64; let norm_offset = weight_offset + weight_payload.len() as u64;
         let index = serde_json::json!({
             "schema": AAP_SCHEMA,
             "shard": "model-00001-of-00001.safetensors",
@@ -2992,21 +2926,14 @@ mod tests {
                 "shape": [3],
             }],
         });
-        let index_bytes = serde_json::to_vec(&index).unwrap();
-        let mut shard_bytes = Vec::new();
-        shard_bytes.extend_from_slice(&(index_bytes.len() as u64).to_le_bytes());
-        shard_bytes.extend_from_slice(&index_bytes);
-        shard_bytes.extend_from_slice(&basis_payload);
-        shard_bytes.extend_from_slice(&weight_payload);
-        shard_bytes.extend_from_slice(&norm_payload);
-        std::fs::write(dir.join(shard_name), &shard_bytes).unwrap();
-        let mut digest = Sha256::new();
-        digest.update(&shard_bytes);
+        let index_bytes = serde_json::to_vec(&index).unwrap(); let mut shard_bytes = Vec::new();
+        shard_bytes.extend_from_slice(&(index_bytes.len() as u64).to_le_bytes()); shard_bytes.extend_from_slice(&index_bytes);
+        shard_bytes.extend_from_slice(&basis_payload); shard_bytes.extend_from_slice(&weight_payload);
+        shard_bytes.extend_from_slice(&norm_payload); std::fs::write(dir.join(shard_name), &shard_bytes).unwrap();
+        let mut digest = Sha256::new(); digest.update(&shard_bytes);
         let shard_hash: String = digest
             .finalize()
-            .iter()
-            .map(|byte| format!("{byte:02x}"))
-            .collect();
+            .iter().map(|byte| format!("{byte:02x}")) .collect();
         let manifest = serde_json::json!({
             "schema": "hawking.activation_aware.model_index.v1",
             "architecture": {"hidden_size": 3},
@@ -3020,18 +2947,12 @@ mod tests {
             },
             "shard_sha256": {(shard_name): shard_hash},
         });
-        std::fs::write(
-            dir.join("model.activation_aware.index.json"),
-            serde_json::to_vec(&manifest).unwrap(),
-        )
-        .unwrap();
+        std::fs::write(dir.join("model.activation_aware.index.json"), serde_json::to_vec(&manifest).unwrap()).unwrap();
         (weight_name, norm_name)
     }
-
     #[test]
     fn activation_aware_open_dir_attaches_shared_basis_and_decodes_pass_through() {
-        let dir = tempfile::tempdir().expect("tempdir");
-        let (weight_name, norm_name) = write_activation_aware_lazy_fixture(dir.path());
+        let dir = tempfile::tempdir().expect("tempdir"); let (weight_name, norm_name) = write_activation_aware_lazy_fixture(dir.path());
         let weights = GravityWeights::open_dir(dir.path(), true).expect("verified open_dir");
         assert_eq!(
             weights.matvec(weight_name, &[0.25, 2.0, -1.0]).unwrap(),
@@ -3043,27 +2964,19 @@ mod tests {
         );
         assert_eq!(weights.dense(norm_name).unwrap(), vec![1.5, -2.0, 0.25]);
         let (codec, payload, shape) = weights
-            .raw_payload_with_shape(weight_name)
-            .expect("raw activation-aware payload");
+            .raw_payload_with_shape(weight_name).expect("raw activation-aware payload");
         assert_eq!(codec, "activation-aware.f16");
-        assert_eq!(shape, vec![2, 3]);
-        let header = parse_activation_aware_header(&payload).unwrap();
+        assert_eq!(shape, vec![2, 3]); let header = parse_activation_aware_header(&payload).unwrap();
         assert!(header.has_basis, "shared basis was not attached");
     }
-
-    /// Minimal multi-shard Lazy fixture: one `model-*.gravity` with native.f32
-    /// tensors so `open_dir` takes the Lazy path (Eager `open` would decode
-    /// once at load and never exercise the memo).
     fn write_lazy_native_fixture(dir: &Path, tensors: &[(&str, &[f32])]) -> std::path::PathBuf {
-        let mut body = Vec::new();
-        let mut descs = Vec::new();
+        let mut body = Vec::new(); let mut descs = Vec::new();
         for &(name, vals) in tensors {
             let mut blob = Vec::with_capacity(vals.len() * 4);
             for &v in vals {
                 blob.extend_from_slice(&v.to_le_bytes());
             }
-            let mut h = Sha256::new();
-            h.update(&blob);
+            let mut h = Sha256::new(); h.update(&blob);
             let hex: String = h.finalize().iter().map(|b| format!("{b:02x}")).collect();
             descs.push(serde_json::json!({
                 "name": name,
@@ -3087,37 +3000,18 @@ mod tests {
             "integrity": {"tensor_count": descs.len()},
             "tensors": descs,
         });
-        let header_bytes = serde_json::to_vec(&header).expect("header json");
-        let path = dir.join("model-00001-of-00001.gravity");
-        let mut f = File::create(&path).expect("create shard");
-        f.write_all(MAGIC).unwrap();
-        f.write_all(&1u32.to_le_bytes()).unwrap();
-        f.write_all(&(header_bytes.len() as u64).to_le_bytes())
-            .unwrap();
-        f.write_all(&header_bytes).unwrap();
-        f.write_all(&body).unwrap();
+        let header_bytes = serde_json::to_vec(&header).expect("header json"); let path = dir.join("model-00001-of-00001.gravity");
+        let mut f = File::create(&path).expect("create shard"); f.write_all(MAGIC).unwrap(); f.write_all(&1u32.to_le_bytes()).unwrap();
+        f.write_all(&(header_bytes.len() as u64).to_le_bytes()).unwrap(); f.write_all(&header_bytes).unwrap(); f.write_all(&body).unwrap();
         path
     }
-
-    /// One header-only PQ tensor with a deliberately false payload digest.
-    /// Admission must be able to inspect the 64-byte header without claiming
-    /// integrity; the ordinary full-payload access must still reject it.
     fn write_lazy_unverified_pq_header_fixture(dir: &Path, name: &str) {
-        let mut payload = Vec::with_capacity(PQ_HEADER_LEN);
-        payload.extend_from_slice(PQ_MAGIC);
-        payload.extend_from_slice(&32u16.to_le_bytes()); // D
-        payload.extend_from_slice(&1u16.to_le_bytes()); // S
-        payload.extend_from_slice(&32u16.to_le_bytes()); // sub
-        payload.extend_from_slice(&256u16.to_le_bytes()); // card
-        payload.extend_from_slice(&2u32.to_le_bytes()); // rows
-        payload.extend_from_slice(&32u32.to_le_bytes()); // cols
-        payload.extend_from_slice(&1u32.to_le_bytes()); // nchunk
-        payload.extend_from_slice(&7u32.to_le_bytes()); // seed
-        payload.extend_from_slice(&8u16.to_le_bytes()); // bits
-        payload.push(0); // rotate
-        payload.push(1); // n_codebooks
-        payload.resize(PQ_HEADER_LEN, 0);
-
+        let mut payload = Vec::with_capacity(PQ_HEADER_LEN); payload.extend_from_slice(PQ_MAGIC);
+        payload.extend_from_slice(&32u16.to_le_bytes()); payload.extend_from_slice(&1u16.to_le_bytes());
+        payload.extend_from_slice(&32u16.to_le_bytes()); payload.extend_from_slice(&256u16.to_le_bytes());
+        payload.extend_from_slice(&2u32.to_le_bytes()); payload.extend_from_slice(&32u32.to_le_bytes());
+        payload.extend_from_slice(&1u32.to_le_bytes()); payload.extend_from_slice(&7u32.to_le_bytes());
+        payload.extend_from_slice(&8u16.to_le_bytes()); payload.push(0); payload.push(1); payload.resize(PQ_HEADER_LEN, 0);
         let header = serde_json::json!({
             "schema": "hawking.gravity.shard_header.v1",
             "format_version": 1,
@@ -3137,27 +3031,18 @@ mod tests {
                 "elements": 64,
             }],
         });
-        let header_bytes = serde_json::to_vec(&header).expect("header json");
-        let path = dir.join("model-00001-of-00001.gravity");
-        let mut f = File::create(path).expect("create PQ prefix shard");
-        f.write_all(MAGIC).unwrap();
-        f.write_all(&1u32.to_le_bytes()).unwrap();
-        f.write_all(&(header_bytes.len() as u64).to_le_bytes())
-            .unwrap();
-        f.write_all(&header_bytes).unwrap();
-        f.write_all(&payload).unwrap();
+        let header_bytes = serde_json::to_vec(&header).expect("header json"); let path = dir.join("model-00001-of-00001.gravity");
+        let mut f = File::create(path).expect("create PQ prefix shard"); f.write_all(MAGIC).unwrap();
+        f.write_all(&1u32.to_le_bytes()).unwrap(); f.write_all(&(header_bytes.len() as u64).to_le_bytes()).unwrap();
+        f.write_all(&header_bytes).unwrap(); f.write_all(&payload).unwrap();
     }
-
     #[test]
     fn pq_admission_header_prefix_does_not_claim_full_payload_verification() {
-        let dir = tempfile::tempdir().expect("tempdir");
-        let name = "model.layers.0.self_attn.kv_b_proj.weight";
+        let dir = tempfile::tempdir().expect("tempdir"); let name = "model.layers.0.self_attn.kv_b_proj.weight";
         write_lazy_unverified_pq_header_fixture(dir.path(), name);
-
         let weights = GravityWeights::open_dir(dir.path(), true).expect("open_dir");
         let (header, shape) = weights
-            .pq_header_prefix_unverified_with_shape(name)
-            .expect("header-only admission");
+            .pq_header_prefix_unverified_with_shape(name).expect("header-only admission");
         assert_eq!(
             header,
             PqHeader {
@@ -3175,39 +3060,27 @@ mod tests {
             }
         );
         assert_eq!(shape, vec![2, 32]);
-
         let err = weights
-            .raw_payload_with_shape(name)
-            .expect_err("ordinary payload load must still enforce full SHA-256");
-        assert!(
-            err.to_string().contains("sha256 mismatch"),
-            "full load did not preserve verification: {err}"
-        );
+            .raw_payload_with_shape(name) .expect_err("ordinary payload load must still enforce full SHA-256");
+        assert!(err.to_string().contains("sha256 mismatch"), "full load did not preserve verification: {err}");
     }
-
     #[test]
     fn dense_memo_verifies_once_across_many_calls() {
-        let dir = tempfile::tempdir().expect("tempdir");
-        let vals: Vec<f32> = (0..64).map(|i| (i as f32) * 0.125 - 1.0).collect();
+        let dir = tempfile::tempdir().expect("tempdir"); let vals: Vec<f32> = (0..64).map(|i| (i as f32) * 0.125 - 1.0).collect();
         write_lazy_native_fixture(dir.path(), &[("norm.weight", &vals)]);
-
         let weights = GravityWeights::open_dir(dir.path(), true).expect("open_dir");
         let first = weights.dense("norm.weight").expect("dense #1");
-        assert_eq!(first, vals);
-
-        let after_first = weights.dense_memo_stats();
+        assert_eq!(first, vals); let after_first = weights.dense_memo_stats();
         assert_eq!(after_first.verifications, 1, "first dense must verify");
         assert_eq!(after_first.misses, 1);
         assert_eq!(after_first.hits, 0);
         assert_eq!(after_first.entries, 1);
         assert_eq!(after_first.resident_bytes, 64 * 4);
         assert!(after_first.budget_bytes >= after_first.resident_bytes);
-
         for _ in 0..50 {
             let again = weights.dense("norm.weight").expect("dense repeat");
             assert_eq!(again, vals);
         }
-
         let stats = weights.dense_memo_stats();
         assert_eq!(
             stats.verifications, 1,
@@ -3218,93 +3091,59 @@ mod tests {
         assert_eq!(stats.entries, 1);
         assert_eq!(stats.verified_tensors, 1);
     }
-
     #[test]
     fn dense_memo_returns_bit_identical_values() {
         let dir = tempfile::tempdir().expect("tempdir");
-        // Include subnormals / signed zeros / extremes so widen+cache cannot
-        // quietly re-quantize.
         let vals = vec![
             0.0f32,
             -0.0,
             1.0,
             -1.0,
-            f32::from_bits(0x0000_0001), // smallest positive subnormal
+            f32::from_bits(0x0000_0001),
             f32::MIN,
             f32::MAX,
             std::f32::consts::PI,
         ];
-        write_lazy_native_fixture(
-            dir.path(),
-            &[("a.weight", &vals), ("b.bias", &[0.5, -0.25, 2.0])],
-        );
-
-        let weights = GravityWeights::open_dir(dir.path(), true).expect("open_dir");
-        let a0 = weights.dense("a.weight").expect("a cold");
-        let b0 = weights.dense("b.bias").expect("b cold");
-        let a1 = weights.dense("a.weight").expect("a warm");
+        write_lazy_native_fixture(dir.path(), &[("a.weight", &vals), ("b.bias", &[0.5, -0.25, 2.0])]);
+        let weights = GravityWeights::open_dir(dir.path(), true).expect("open_dir"); let a0 = weights.dense("a.weight").expect("a cold");
+        let b0 = weights.dense("b.bias").expect("b cold"); let a1 = weights.dense("a.weight").expect("a warm");
         let b1 = weights.dense("b.bias").expect("b warm");
-
         assert_eq!(a0, vals);
         assert_eq!(a1, a0);
         assert_eq!(b0, vec![0.5, -0.25, 2.0]);
         assert_eq!(b1, b0);
-        // Bit-identical, not merely approximate.
         for (i, (&x, &y)) in a0.iter().zip(a1.iter()).enumerate() {
             assert_eq!(x.to_bits(), y.to_bits(), "a.weight[{i}] bits");
         }
-
         let stats = weights.dense_memo_stats();
         assert_eq!(stats.verifications, 2);
         assert_eq!(stats.hits, 2);
         assert_eq!(stats.misses, 2);
         assert_eq!(stats.entries, 2);
     }
-
     #[test]
     fn dense_memo_row_hits_same_decoded_entry() {
-        let dir = tempfile::tempdir().expect("tempdir");
-        // 3×4 matrix laid out row-major as native.f32.
-        let matrix: Vec<f32> = (0..12).map(|i| i as f32).collect();
+        let dir = tempfile::tempdir().expect("tempdir"); let matrix: Vec<f32> = (0..12).map(|i| i as f32).collect();
         write_lazy_native_fixture(dir.path(), &[("embed.weight", &matrix)]);
-
         let weights = GravityWeights::open_dir(dir.path(), true).expect("open_dir");
         let row1 = weights.row("embed.weight", 1, 4).expect("row cold");
-        assert_eq!(row1, vec![4.0, 5.0, 6.0, 7.0]);
-
-        let stats_after_row = weights.dense_memo_stats();
+        assert_eq!(row1, vec![4.0, 5.0, 6.0, 7.0]); let stats_after_row = weights.dense_memo_stats();
         assert_eq!(stats_after_row.verifications, 1);
-        assert_eq!(stats_after_row.entries, 1);
-
-        // dense of the same name must hit the memo, not re-verify.
-        let full = weights.dense("embed.weight").expect("dense after row");
-        assert_eq!(full, matrix);
-        let stats = weights.dense_memo_stats();
+        assert_eq!(stats_after_row.entries, 1); let full = weights.dense("embed.weight").expect("dense after row");
+        assert_eq!(full, matrix); let stats = weights.dense_memo_stats();
         assert_eq!(stats.verifications, 1, "row already verified");
         assert_eq!(stats.hits, 1);
     }
-
     #[test]
     fn dense_memo_oversized_tensor_skips_residency_but_verifies_once() {
-        let dir = tempfile::tempdir().expect("tempdir");
-        // 8 f32s = 32 bytes; budget of 16 bytes cannot hold the decoded vec.
-        let vals: Vec<f32> = (0..8).map(|i| i as f32).collect();
-        write_lazy_native_fixture(dir.path(), &[("big.weight", &vals)]);
-
-        // Build Lazy source with a tiny budget by opening normally then
-        // swapping is not possible; instead exercise NativeDenseMemo directly
-        // for the oversize rule, and the public path for verify-once via a
-        // normal open (full budget). Direct unit for admit:
-        let mut memo = NativeDenseMemo::new(16);
-        memo.record_verification("big.weight");
-        memo.admit_decoded("big.weight", vals.clone());
+        let dir = tempfile::tempdir().expect("tempdir"); let vals: Vec<f32> = (0..8).map(|i| i as f32).collect();
+        write_lazy_native_fixture(dir.path(), &[("big.weight", &vals)]); let mut memo = NativeDenseMemo::new(16);
+        memo.record_verification("big.weight"); memo.admit_decoded("big.weight", vals.clone());
         assert!(!memo.has_decoded("big.weight"));
         assert!(memo.is_verified("big.weight"));
         assert_eq!(memo.stats().entries, 0);
         assert_eq!(memo.stats().verifications, 1);
-        assert_eq!(memo.stats().verified_tensors, 1);
-
-        let weights = GravityWeights::open_dir(dir.path(), true).expect("open_dir");
+        assert_eq!(memo.stats().verified_tensors, 1); let weights = GravityWeights::open_dir(dir.path(), true).expect("open_dir");
         for _ in 0..5 {
             assert_eq!(weights.dense("big.weight").expect("dense"), vals);
         }

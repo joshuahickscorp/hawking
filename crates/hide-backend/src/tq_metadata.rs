@@ -45,25 +45,36 @@ pub fn bpw_to_multiplier(bpw: f32) -> f32 {
 /// measured compression. Returns `None` (make no claim) when the file is
 /// missing, not a strand v2 artifact, or unparseable — the caller then treats
 /// the multiplier as 1.0.
+///
+/// When the `tq` feature is off, always returns `None` (no strand-quant dep,
+/// no claim). Callers already handle absence via `if let Some(...)`.
 pub fn read_tq_context(path: &Path) -> Option<TqContextInfo> {
-    let buf = std::fs::read(path).ok()?;
-    let header = strand_quant::format::read_strand_v2_header(&buf).ok()?;
-    let mut weights: u128 = 0;
-    let mut payload_bytes: u128 = 0;
-    for t in &header.tensors {
-        weights += t.total as u128;
-        payload_bytes += t.payload_bytes as u128;
+    #[cfg(feature = "tq")]
+    {
+        let buf = std::fs::read(path).ok()?;
+        let header = strand_quant::format::read_strand_v2_header(&buf).ok()?;
+        let mut weights: u128 = 0;
+        let mut payload_bytes: u128 = 0;
+        for t in &header.tensors {
+            weights += t.total as u128;
+            payload_bytes += t.payload_bytes as u128;
+        }
+        if weights == 0 {
+            return None;
+        }
+        let bpw = (payload_bytes as f64 * 8.0 / weights as f64) as f32;
+        Some(TqContextInfo {
+            bpw,
+            compression_ratio: REFERENCE_BPW / bpw.max(f32::MIN_POSITIVE),
+            multiplier: bpw_to_multiplier(bpw),
+            estimated: true,
+        })
     }
-    if weights == 0 {
-        return None;
+    #[cfg(not(feature = "tq"))]
+    {
+        let _ = path;
+        None
     }
-    let bpw = (payload_bytes as f64 * 8.0 / weights as f64) as f32;
-    Some(TqContextInfo {
-        bpw,
-        compression_ratio: REFERENCE_BPW / bpw.max(f32::MIN_POSITIVE),
-        multiplier: bpw_to_multiplier(bpw),
-        estimated: true,
-    })
 }
 
 #[cfg(test)]

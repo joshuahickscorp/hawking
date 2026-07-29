@@ -1,27 +1,7 @@
-// Eagle5 spec-decode greedy parity test.
-//
-// The spec-decode correctness invariant is that greedy generation at
-// temperature=0 produces the same token sequence whether or not
-// speculative decoding is enabled, regardless of the draft head's
-// accept rate. The draft only proposes; the verifier (the full
-// V2-Lite model) takes the final argmax at every position.
-//
-// This test exercises that invariant against the deterministic mock
-// Eagle5 head — its accept rate is near 1/vocab, so most steps will
-// emit only the verifier's bonus token, but the emitted sequence
-// must match exactly the no-spec greedy run. If this test ever fails
-// it means the spec-decode runtime is changing greedy output, which
-// is a correctness bug (not a perf regression).
-//
-// Mac-only because the engine constructor needs the Metal context.
-
 #![cfg(target_os = "macos")]
-
 use std::path::PathBuf;
-
 const PROMPT: &str = "Once upon a time";
 const MAX_NEW_TOKENS: usize = 16;
-
 fn run_greedy(weights: &PathBuf, cfg: hawking_core::EngineConfig) -> Vec<u32> {
     let mut engine = hawking_core::model::load_engine(weights, cfg).expect("load engine");
     let req = hawking_core::GenerateRequest {
@@ -50,15 +30,8 @@ fn run_greedy(weights: &PathBuf, cfg: hawking_core::EngineConfig) -> Vec<u32> {
     assert!(!ids.is_empty(), "must produce at least one token");
     ids
 }
-
 fn find_weights() -> Option<PathBuf> {
-    // Test cwd is the crate root. The worktree may not have a models/
-    // tree; the main checkout usually does. Probe both relative roots
-    // and an env-var override (used by CI).
-    for candidate in [
-        "../../models/deepseek-v2-lite-q4.gguf",
-        "models/deepseek-v2-lite-q4.gguf",
-    ] {
+    for candidate in ["../../models/deepseek-v2-lite-q4.gguf", "models/deepseek-v2-lite-q4.gguf"] {
         let p = PathBuf::from(candidate);
         if p.exists() {
             return Some(p);
@@ -72,14 +45,9 @@ fn find_weights() -> Option<PathBuf> {
     }
     None
 }
-
 fn find_profile(weights: &PathBuf) -> Option<hawking_core::profile::KernelProfile> {
-    // Prefer a freshly-built deterministic profile so this test
-    // doesn't fail when shader sources change between sessions and
-    // the on-disk profile snapshot lags behind.
     hawking_core::profile::fresh_test_profile(weights).ok()
 }
-
 #[test]
 fn eagle5_greedy_parity_k4() {
     let Some(weights) = find_weights() else {
@@ -87,15 +55,8 @@ fn eagle5_greedy_parity_k4() {
         return;
     };
     let profile = find_profile(&weights);
-
-    // Baseline: no-spec greedy.
-    let cfg_baseline = hawking_core::EngineConfig {
-        kernel_profile: profile.clone(),
-        ..Default::default()
-    };
+    let cfg_baseline = hawking_core::EngineConfig { kernel_profile: profile.clone(), ..Default::default() };
     let baseline_ids = run_greedy(&weights, cfg_baseline);
-
-    // Eagle5 spec-decode greedy with mock head + K=4.
     let cfg_eagle5 = hawking_core::EngineConfig {
         kernel_profile: profile,
         speculate: true,
@@ -105,7 +66,6 @@ fn eagle5_greedy_parity_k4() {
         ..Default::default()
     };
     let eagle5_ids = run_greedy(&weights, cfg_eagle5);
-
     assert_eq!(
         baseline_ids, eagle5_ids,
         "eagle5 spec-decode at temp=0 must emit the same tokens as no-spec greedy\n  \
@@ -113,24 +73,15 @@ fn eagle5_greedy_parity_k4() {
         baseline_ids, eagle5_ids,
     );
 }
-
 #[test]
 fn eagle5_greedy_parity_k2_and_k8() {
-    // Same invariant at the other supported window sizes — sanity check
-    // that the verify path's accept-prefix accounting is correct across
-    // K∈{2,8} too.
     let Some(weights) = find_weights() else {
         eprintln!("skipping eagle5_greedy_parity_k2_and_k8: no weights");
         return;
     };
     let profile = find_profile(&weights);
-
-    let cfg_baseline = hawking_core::EngineConfig {
-        kernel_profile: profile.clone(),
-        ..Default::default()
-    };
+    let cfg_baseline = hawking_core::EngineConfig { kernel_profile: profile.clone(), ..Default::default() };
     let baseline_ids = run_greedy(&weights, cfg_baseline);
-
     for &k in &[2usize, 8] {
         let cfg = hawking_core::EngineConfig {
             kernel_profile: profile.clone(),

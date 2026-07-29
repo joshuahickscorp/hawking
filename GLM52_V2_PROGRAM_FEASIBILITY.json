@@ -1,0 +1,659 @@
+{
+  "all_routed_rank128_uncertainty_bound_ledger": {
+    "all_basis_ranks_present": [
+      128,
+      256
+    ],
+    "authorizing": true,
+    "basis_by_kind": {
+      "real_swiglu_input": {
+        "bytes": 10285239296,
+        "n_unique": 19532,
+        "refcount_sum": 19532
+      },
+      "uncentered_attention_input": {
+        "bytes": 124276480,
+        "n_unique": 79,
+        "refcount_sum": 79
+      },
+      "uncentered_hidden": {
+        "bytes": 30845717504,
+        "n_unique": 19532,
+        "refcount_sum": 39064
+      },
+      "uncentered_router_input": {
+        "bytes": 119557120,
+        "n_unique": 76,
+        "refcount_sum": 76
+      }
+    },
+    "basis_identities_sorted_sha256": "b801095e8564d6970a54ddae43e3ed3d723bac83a8c566286bc77f1072d4c737",
+    "basis_identity_examples": [
+      "target_local|real_swiglu_input|L10|E0|r128",
+      "target_local|real_swiglu_input|L10|E100|r128",
+      "target_local|real_swiglu_input|L10|E101|r128",
+      "target_local|real_swiglu_input|L10|E102|r128",
+      "target_local|real_swiglu_input|L10|E103|r128",
+      "target_local|real_swiglu_input|L10|E104|r128",
+      "target_local|real_swiglu_input|L10|E105|r128",
+      "target_local|real_swiglu_input|L10|E106|r128",
+      "target_local|real_swiglu_input|L10|E107|r128",
+      "target_local|real_swiglu_input|L10|E108|r128",
+      "target_local|real_swiglu_input|L10|E109|r128",
+      "target_local|real_swiglu_input|L10|E10|r128"
+    ],
+    "basis_refcount_sum": 58751,
+    "complete_bpw_exact": "479115418/367836885",
+    "complete_bpw_float": 1.3025214097275752,
+    "component_totals": {
+      "float16_basis_matrices": 41374790400,
+      "float16_coefficient_matrices": 51447595008,
+      "native_source_payload": 29816121344,
+      "packaging_alignment": 0,
+      "tensor_headers_metadata": 15040256
+    },
+    "description": "Target-local basis identities with all routed experts at rank 128 while shared MLP, router, and q_a retain preregistered ranks. This is the only ledger that may decide top-level within_target_bpw. It is a byte-feasibility uncertainty bound, not proof that rank 128 is quality-sufficient for every routed expert. Ranks are never reduced to force this total under budget.",
+    "is_conservative": false,
+    "is_uncertainty_bound": true,
+    "itemization_reconciles": true,
+    "n_encoded_tensors": 58751,
+    "n_native_tensors": 834,
+    "n_unique_bases": 39219,
+    "note": "Each physical basis is billed exactly once. Full identity strings are hashed (basis_identities_sorted_sha256); examples and by-kind counts are listed. Set include_all_identities for the full list.",
+    "routed_rank": 128,
+    "routed_ranks_present": [
+      128
+    ],
+    "scope": "target_local",
+    "total_bytes": 122653547008,
+    "within_target_bpw": false
+  },
+  "all_routed_rank64_lower_bound_ledger": {
+    "authorizing": false,
+    "basis_by_kind": {
+      "real_swiglu_input": {
+        "bytes": 5184965632,
+        "n_unique": 19532,
+        "refcount_sum": 19532
+      },
+      "uncentered_attention_input": {
+        "bytes": 124276480,
+        "n_unique": 79,
+        "refcount_sum": 79
+      },
+      "uncentered_hidden": {
+        "bytes": 15544896512,
+        "n_unique": 19532,
+        "refcount_sum": 39064
+      },
+      "uncentered_router_input": {
+        "bytes": 119557120,
+        "n_unique": 76,
+        "refcount_sum": 76
+      }
+    },
+    "basis_identities_sorted_sha256": "1519b4c2c10d72e21e2cc7f86ed1130ce08a92a637070b78c5ccb5aaf4ceb8a5",
+    "basis_identity_examples": [
+      "target_local|real_swiglu_input|L10|E0|r64",
+      "target_local|real_swiglu_input|L10|E100|r64",
+      "target_local|real_swiglu_input|L10|E101|r64",
+      "target_local|real_swiglu_input|L10|E102|r64",
+      "target_local|real_swiglu_input|L10|E103|r64",
+      "target_local|real_swiglu_input|L10|E104|r64",
+      "target_local|real_swiglu_input|L10|E105|r64",
+      "target_local|real_swiglu_input|L10|E106|r64",
+      "target_local|real_swiglu_input|L10|E107|r64",
+      "target_local|real_swiglu_input|L10|E108|r64",
+      "target_local|real_swiglu_input|L10|E109|r64",
+      "target_local|real_swiglu_input|L10|E10|r64"
+    ],
+    "basis_refcount_sum": 58751,
+    "complete_bpw_exact": "299808922/367836885",
+    "complete_bpw_float": 0.8150594304864234,
+    "component_totals": {
+      "float16_basis_matrices": 20973695744,
+      "float16_coefficient_matrices": 25946226688,
+      "native_source_payload": 29816121344,
+      "packaging_alignment": 0,
+      "tensor_headers_metadata": 15040256
+    },
+    "description": "Target-local basis identities with all routed experts at rank 64. Optimistic/lower-bound byte scenario only \u2014 not conservative and not authorization-deciding. No full-model traffic map exists; the sealed low-traffic diagnostic needed rank 128 to clear its 0.91 floor.",
+    "is_conservative": false,
+    "is_lower_bound_only": true,
+    "itemization_reconciles": true,
+    "n_encoded_tensors": 58751,
+    "n_native_tensors": 834,
+    "n_unique_bases": 39219,
+    "note": "Each physical basis is billed exactly once. Full identity strings are hashed (basis_identities_sorted_sha256); examples and by-kind counts are listed. Set include_all_identities for the full list.",
+    "routed_rank": 64,
+    "scope": "target_local",
+    "total_bytes": 76751084032,
+    "within_target_bpw": true
+  },
+  "census": {
+    "n_routed_experts": 19456,
+    "n_tensors": 59585,
+    "organ_bytes": {
+      "attention_o_proj": 15904800768,
+      "attention_other": 8592561664,
+      "attention_q_a_proj": 1988100096,
+      "dense_mlp": 1358954496,
+      "global_embed_tokens": 1903165440,
+      "global_lm_head": 1903165440,
+      "norm": 2400768,
+      "other": 150994944,
+      "routed_down": 489626271744,
+      "routed_gate": 489626271744,
+      "routed_up": 489626271744,
+      "router_bias": 77824,
+      "router_control": 239075328,
+      "shared_mlp_down": 1912602624,
+      "shared_mlp_gate": 1912602624,
+      "shared_mlp_up": 1912602624
+    },
+    "organ_counts": {
+      "attention_o_proj": 79,
+      "attention_other": 325,
+      "attention_q_a_proj": 79,
+      "dense_mlp": 9,
+      "global_embed_tokens": 1,
+      "global_lm_head": 1,
+      "norm": 342,
+      "other": 1,
+      "routed_down": 19456,
+      "routed_gate": 19456,
+      "routed_up": 19456,
+      "router_bias": 76,
+      "router_control": 76,
+      "shared_mlp_down": 76,
+      "shared_mlp_gate": 76,
+      "shared_mlp_up": 76
+    },
+    "organ_weights": {
+      "attention_o_proj": 7952400384,
+      "attention_other": 4296280832,
+      "attention_q_a_proj": 994050048,
+      "dense_mlp": 679477248,
+      "global_embed_tokens": 951582720,
+      "global_lm_head": 951582720,
+      "norm": 1200384,
+      "other": 75497472,
+      "routed_down": 244813135872,
+      "routed_gate": 244813135872,
+      "routed_up": 244813135872,
+      "router_bias": 19456,
+      "router_control": 119537664,
+      "shared_mlp_down": 956301312,
+      "shared_mlp_gate": 956301312,
+      "shared_mlp_up": 956301312
+    },
+    "reconcile": {
+      "expected_original_weights": 753329940480,
+      "expected_source_payload_bytes": 1506659919872,
+      "expected_unique_tensor_names": 59585,
+      "original_weights": 753329940480,
+      "original_weights_ok": true,
+      "source_payload_bytes": 1506659919872,
+      "source_payload_bytes_ok": true,
+      "unique_tensor_names": 59585,
+      "unique_tensor_names_ok": true
+    },
+    "static_routed_classification": "routed_gate/up/down",
+    "traffic_labels_from_headers": false
+  },
+  "code_hashes": {
+    "glm52_activation_aware_pack_py_sha256": "321cbd1f071683702bfc61c293785eb44cfbf6bb6098bde0f039134c4b3f4832",
+    "glm52_activation_aware_pack_v2_py_sha256": "47f7ec1a4b6381ee9510703f12c6db8a64265d723e153705a7e7aa6c18f40bde",
+    "test_glm52_activation_aware_pack_v2_py_sha256": "f18a6385e8d348a205ce75de9fe0ba3c7d58544c8fd2f4a09b1f91101924c35f"
+  },
+  "fake_codec_proof": {
+    "basis_identities": {
+      "down_a": "target_local|real_swiglu_input|L5|E11|r16",
+      "down_b": "target_local|real_swiglu_input|L5|E165|r16",
+      "gate_b": "target_local|uncentered_hidden|L5|E165|r16",
+      "gate_up_a": "target_local|uncentered_hidden|L5|E11|r16"
+    },
+    "down_basis_from_real_swiglu": true,
+    "down_separate_swiglu_basis": true,
+    "experts_non_aliasing": true,
+    "fixture_handles": {
+      "B_h_a_sha256": "2f18f298c63f29309888906547aaa1b6f89a385a8aeb8312900e139942cb3c9f",
+      "B_z_a_sha256": "09f83a1aaf895764d1bd5d6cdff87af23996515c99fa0db9840ccdbaa4cc30d4",
+      "B_z_b_sha256": "25e34c313abc78b176f9848c579a3974291df50634c707e9d361c6e49214dcf8",
+      "X_route_a_sha256": "e673c6257036d7976f9accb5cf1a79ae09d661b0ce17dc5d1fdfff816917178d",
+      "expert_a": 11,
+      "expert_b": 165,
+      "hidden": 64,
+      "intermediate": 32,
+      "layer": 5,
+      "rank": 16
+    },
+    "format_version": 2,
+    "gate_up_share": true,
+    "hidden_basis_from_route_rows": true,
+    "ok": true,
+    "route_counts": {
+      "expert_a": 128,
+      "expert_b": 128,
+      "min_route_rows": 48,
+      "n_tokens": 256
+    },
+    "seed": 169322466,
+    "witnesses": {
+      "expert_a": {
+        "B_z_sha256": "09f83a1aaf895764d1bd5d6cdff87af23996515c99fa0db9840ccdbaa4cc30d4",
+        "X_route_sha256": "e673c6257036d7976f9accb5cf1a79ae09d661b0ce17dc5d1fdfff816917178d",
+        "Z_sha256": "7a2e254a07f82f19a00dcb53cc3ea5d26c22a066b55a85b5baebb61f7b75bafa",
+        "route_row_count": 128
+      },
+      "expert_b": {
+        "B_z_sha256": "25e34c313abc78b176f9848c579a3974291df50634c707e9d361c6e49214dcf8",
+        "X_route_sha256": "cc7e908d1d0526950d4fc635423b1a5a2e37a98d89ca3b5a0785bac1f95d0820",
+        "Z_sha256": "53e1937ae6b2fbed272f2f940ec52d652730358a3f25013ce892d64bf44a8260",
+        "route_row_count": 128
+      },
+      "positive_verify_ok": true,
+      "unrelated_B_z_sha256": "71148a2eaede913633625542aed0a91e0ba79236d00536b1c103e199759a0040",
+      "unrelated_basis_fails_witness": true
+    }
+  },
+  "format_version": 2,
+  "full_route_population_classified": false,
+  "full_traversal_authorized": false,
+  "next_safe_action": "Route-population measurement is required before any full traversal. A passing rank-mixture budget alone would still not prove representation capability. Keep v2 opt-in; never lower absolute floors or ranks to force the uncertainty bound under target BPW. Do not start a full traversal from this receipt alone.",
+  "non_claims": [
+    "Does not prove representation quality on uncovered layers, unmeasured route traffic, globals, or attention output projections.",
+    "Does not authorize full parent traversal, capability gate, HIDE kernel turn, Odyssey launch, Math-Frozen, or Ramanujan research.",
+    "Does not claim a capable artifact.",
+    "Does not treat a passing rank-mixture budget as proof of representation capability.",
+    "Does not call the rank-64 whole-population total conservative."
+  ],
+  "pilot_checks": {
+    "all_candidate_checks_clear": true,
+    "basis_mode_chosen": "uncentered",
+    "centered_only_forbidden": true,
+    "checks": [
+      {
+        "clears": true,
+        "floor_median": 0.96,
+        "floor_min": 0.85,
+        "measured_median": 0.9695300459861755,
+        "measured_min": 0.8594450950622559,
+        "panel": "promotion_grade_high_traffic_routed",
+        "program": "high_traffic_routed_gate_up_down",
+        "rank": 64
+      },
+      {
+        "clears": true,
+        "measured_median": 0.9323745369911194,
+        "measured_min": 0.9154013395309448,
+        "panel": "low_traffic_diagnostics",
+        "per_tensor_floor": 0.91,
+        "program": "low_traffic_routed_diagnostics",
+        "rank": 128
+      },
+      {
+        "clears": true,
+        "measured_median": 0.9361572265625,
+        "measured_min": 0.9182274341583252,
+        "panel": "shared_mlp",
+        "panel_median_floor": 0.93,
+        "per_tensor_floor": 0.91,
+        "program": "shared_mlp_gate_up_down",
+        "rank": 256
+      },
+      {
+        "clears": true,
+        "measured_cosine": 0.9142497181892395,
+        "name": "model.layers.38.self_attn.q_a_proj.weight",
+        "per_tensor_floor": 0.91,
+        "program": "attention_input_q_a_proj",
+        "rank": 128
+      },
+      {
+        "clears": true,
+        "measured_cosine": 0.9945491552352905,
+        "name": "model.layers.38.mlp.gate.weight",
+        "per_tensor_floor": 0.99,
+        "program": "router_control",
+        "rank": 128
+      }
+    ],
+    "gaussian_proxy_used_for_selection": false,
+    "numerical_equivalence_tolerance": 0.0001,
+    "pilot_revision": 1,
+    "pilot_schema": "hawking.glm52.basis_pilot.v1",
+    "uncentered_explicit_mean_numerically_tied": true
+  },
+  "preregistered_program": {
+    "attention_input_q_a_proj": {
+      "basis_mode": "uncentered",
+      "note": "Only supported attention input projection under current capsules.",
+      "organ_classes": [
+        "attention_q_a_proj"
+      ],
+      "panel_floor_median_cosine": null,
+      "panel_floor_min_cosine": null,
+      "per_tensor_floor_cosine": 0.91,
+      "rank": 128,
+      "route_conditioned": false
+    },
+    "high_traffic_routed_gate_up_down": {
+      "basis_mode": "uncentered",
+      "note": "Pilot evidence only (sealed five-shard high-traffic panel). Not used as a whole-model traffic classification in the static census.",
+      "organ_classes": [
+        "high_traffic_routed_gate",
+        "high_traffic_routed_up",
+        "high_traffic_routed_down"
+      ],
+      "panel_floor_median_cosine": 0.96,
+      "panel_floor_min_cosine": 0.85,
+      "per_tensor_floor_cosine": null,
+      "rank": 64,
+      "route_conditioned": true
+    },
+    "low_traffic_routed_diagnostics": {
+      "basis_mode": "uncentered",
+      "note": "Pilot diagnostic only; sealed low-traffic panel needed rank 128 to clear the 0.91 per-tensor floor. Not a population traffic map.",
+      "organ_classes": [
+        "low_traffic_routed_gate",
+        "low_traffic_routed_up",
+        "low_traffic_routed_down"
+      ],
+      "panel_floor_median_cosine": null,
+      "panel_floor_min_cosine": null,
+      "per_tensor_floor_cosine": 0.91,
+      "rank": 128,
+      "route_conditioned": true
+    },
+    "routed_experts": {
+      "basis_mode": "uncentered",
+      "note": "Neutral static census class for all routed experts. Rank is assigned by ledger scenario (64 lower-bound vs 128 uncertainty-bound), not by traffic. Traffic is not present in sealed source headers.",
+      "organ_classes": [
+        "routed_gate",
+        "routed_up",
+        "routed_down"
+      ],
+      "panel_floor_median_cosine": 0.96,
+      "panel_floor_min_cosine": 0.85,
+      "per_tensor_floor_cosine": null,
+      "rank": 64,
+      "rank_uncertainty_bound": 128,
+      "route_conditioned": true
+    },
+    "router_control": {
+      "basis_mode": "uncentered",
+      "note": "Router weight control; absolute floor 0.99.",
+      "organ_classes": [
+        "router_control"
+      ],
+      "panel_floor_median_cosine": null,
+      "panel_floor_min_cosine": null,
+      "per_tensor_floor_cosine": 0.99,
+      "rank": 128,
+      "route_conditioned": false
+    },
+    "shared_mlp_gate_up_down": {
+      "basis_mode": "uncentered",
+      "note": "Shared expert uses all real capsule rows + actual gate/up for down.",
+      "organ_classes": [
+        "shared_mlp_gate",
+        "shared_mlp_up",
+        "shared_mlp_down"
+      ],
+      "panel_floor_median_cosine": 0.93,
+      "panel_floor_min_cosine": null,
+      "per_tensor_floor_cosine": 0.91,
+      "rank": 256,
+      "route_conditioned": false
+    }
+  },
+  "purpose": "Opt-in feasibility + fake-data ABI for the next GLM-5.2 representation program. Corrects Generation B scientific defects without traversal or capability claims. Revision 1: route-population uncertainty + truthful fake SwiGLU down basis.",
+  "rank64_population_fit_is_lower_bound_only": true,
+  "receipt_sha256": "c4c93bfab2bd24a886699decb740f58468ef8b1a57cab6c5a920bf8bcaf2db1d",
+  "remaining_uncertainties": [
+    "Teacher capsules cover only a subset of layers; uncovered layers unvalidated.",
+    "No full-model traffic map: route population is not classified; rank assignment for the whole population is unproven.",
+    "Rank-64 whole-population fit is a lower bound only; sealed low-traffic diagnostics required rank 128 to clear the 0.91 per-tensor floor.",
+    "All-rank-128 uncertainty bound is a byte-feasibility envelope, not quality proof for every routed expert.",
+    "attention.o_proj lacks real intermediate in current capsules.",
+    "global embed_tokens and lm_head have no bounded real-input pilot.",
+    "Dense MLP layers 0-2 unvalidated under the MoE program.",
+    "Cross-layer basis transfer is unvalidated and non-authorizing.",
+    "Feasibility is not whole-model capability; Generation B proved relative admission fails."
+  ],
+  "revision": 1,
+  "route_population_evidence_sufficient_for_rank_assignment": false,
+  "route_population_sensitivity": {
+    "expert_count_unit": "one expert = gate/up/down triplet with shared hidden basis and separate real-SwiGLU-input basis",
+    "kind": "arithmetic_sensitivity",
+    "max_rank128_experts_under_target_bpw": 6583,
+    "max_rank128_fraction_under_target_bpw_exact": "6583/19456",
+    "max_rank128_fraction_under_target_bpw_float": 0.3383532072368421,
+    "max_rank128_total_bytes": 92282329600,
+    "monotonic_total_bytes": true,
+    "n_routed_experts": 19456,
+    "not_traffic_classification": true,
+    "note": "Deterministic arithmetic sensitivity only. Does not classify experts by traffic and does not prove representation quality at either rank.",
+    "rank128": 128,
+    "rank64": 64,
+    "selection_rule": "sorted_(layer, expert)_prefix",
+    "sweep": [
+      {
+        "complete_bpw_exact": "299808922/367836885",
+        "complete_bpw_float": 0.8150594304864234,
+        "fraction_rank128": "0/1",
+        "fraction_rank128_float": 0.0,
+        "itemization_reconciles": true,
+        "n_rank128_experts": 0,
+        "n_rank64_experts": 19456,
+        "total_bytes": 76751084032,
+        "within_target_bpw": true
+      },
+      {
+        "complete_bpw_exact": "344635546/367836885",
+        "complete_bpw_float": 0.9369249252967113,
+        "fraction_rank128": "1/4",
+        "fraction_rank128_float": 0.25,
+        "itemization_reconciles": true,
+        "n_rank128_experts": 4864,
+        "n_rank64_experts": 14592,
+        "total_bytes": 88226699776,
+        "within_target_bpw": true
+      },
+      {
+        "complete_bpw_exact": "77892434/73567377",
+        "complete_bpw_float": 1.0587904201069993,
+        "fraction_rank128": "1/2",
+        "fraction_rank128_float": 0.5,
+        "itemization_reconciles": true,
+        "n_rank128_experts": 9728,
+        "n_rank64_experts": 9728,
+        "total_bytes": 99702315520,
+        "within_target_bpw": false
+      },
+      {
+        "complete_bpw_exact": "434288794/367836885",
+        "complete_bpw_float": 1.1806559149172873,
+        "fraction_rank128": "3/4",
+        "fraction_rank128_float": 0.75,
+        "itemization_reconciles": true,
+        "n_rank128_experts": 14592,
+        "n_rank64_experts": 4864,
+        "total_bytes": 111177931264,
+        "within_target_bpw": false
+      },
+      {
+        "complete_bpw_exact": "479115418/367836885",
+        "complete_bpw_float": 1.3025214097275752,
+        "fraction_rank128": "1/1",
+        "fraction_rank128_float": 1.0,
+        "itemization_reconciles": true,
+        "n_rank128_experts": 19456,
+        "n_rank64_experts": 0,
+        "total_bytes": 122653547008,
+        "within_target_bpw": false
+      }
+    ],
+    "target_bpw": "49/50"
+  },
+  "safety": {
+    "HIDE_KERNEL_TURN": false,
+    "MOP_touched": false,
+    "ODYSSEY_LAUNCH_AUTHORIZED": false,
+    "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+    "capable_artifact_claimed": false,
+    "full_parent_traversal_started": false,
+    "full_traversal_authorized": false
+  },
+  "schema": "hawking.glm52.activation_aware_pack.v2",
+  "scientific_laws": {
+    "absolute_floors_required": true,
+    "basis_mode": "uncentered",
+    "beats_null_diagnostic_only": true,
+    "budget_failure_never_reduces_floor": true,
+    "centered_only_fitting_forbidden": true,
+    "empty_route_fails_closed": true,
+    "gaussian_proxy_forbidden_for_promotion": true,
+    "native_fallback_at_source_payload_width_only": true,
+    "rank64_population_fit_is_lower_bound_only": true,
+    "real_swiglu_inputs_for_down": true,
+    "route_conditioned_routed_experts": true,
+    "transfer_sharing_non_authorizing": true,
+    "within_target_bpw_decided_by_rank128_uncertainty_bound_only": true
+  },
+  "seed": 169322466,
+  "source_hashes": {
+    "GLM52_BASIS_PILOT_CONTROLLER_RESEAL_sha256": "73580c79e98dc3422b593cc7ea480b0ebb80db60ad9cdc2a2c697798adfbb615",
+    "GLM52_BASIS_PILOT_RECEIPT_sha256": "36c1302636d903c06c3cf6c95fd437a7c30098a27a859f119c5cfed0c1a63cd0",
+    "GLM52_GENERATION_B_CAPABILITY_VERDICT_sha256": "7494366f6d438c6a6b5e57b92bb225bd1d0b843237dbb6f1acfa634fff95e46e",
+    "GLM52_SOURCE_SHARD_HEADERS_sha256": "72f17e8cd59211cd842c6ad18f4a62ca419971c9be24382cdf6c261eb6aa4a35"
+  },
+  "target_bpw": "49/50",
+  "transfer_sharing_scenario_ledger": {
+    "authorizing": false,
+    "basis_by_kind": {
+      "real_swiglu_input": {
+        "bytes": 99653632,
+        "n_unique": 152,
+        "refcount_sum": 19532
+      },
+      "uncentered_attention_input": {
+        "bytes": 124276480,
+        "n_unique": 79,
+        "refcount_sum": 79
+      },
+      "uncentered_hidden": {
+        "bytes": 298883072,
+        "n_unique": 152,
+        "refcount_sum": 39064
+      },
+      "uncentered_router_input": {
+        "bytes": 119557120,
+        "n_unique": 76,
+        "refcount_sum": 76
+      }
+    },
+    "basis_identities_sorted_sha256": "f334a4d9abcd5f813519f7eabefd47e73711e2c7ca41ecd0ad1c8fd406216ccd",
+    "basis_identity_examples": [
+      "target_local|real_swiglu_input|shared|L10|r256",
+      "target_local|real_swiglu_input|shared|L11|r256",
+      "target_local|real_swiglu_input|shared|L12|r256",
+      "target_local|real_swiglu_input|shared|L13|r256",
+      "target_local|real_swiglu_input|shared|L14|r256",
+      "target_local|real_swiglu_input|shared|L15|r256",
+      "target_local|real_swiglu_input|shared|L16|r256",
+      "target_local|real_swiglu_input|shared|L17|r256",
+      "target_local|real_swiglu_input|shared|L18|r256",
+      "target_local|real_swiglu_input|shared|L19|r256",
+      "target_local|real_swiglu_input|shared|L20|r256",
+      "target_local|real_swiglu_input|shared|L21|r256"
+    ],
+    "basis_refcount_sum": 58751,
+    "complete_bpw_exact": "220389682/367836885",
+    "complete_bpw_float": 0.5991505773000443,
+    "component_totals": {
+      "float16_basis_matrices": 642370304,
+      "float16_coefficient_matrices": 25946226688,
+      "native_source_payload": 29816121344,
+      "packaging_alignment": 0,
+      "tensor_headers_metadata": 15040256
+    },
+    "description": "Non-authorizing scenario: one hidden basis and one SwiGLU basis per layer shared across experts. Cross-layer transfer remains unvalidated. Must not affect any top-level decision.",
+    "itemization_reconciles": true,
+    "n_encoded_tensors": 58751,
+    "n_native_tensors": 834,
+    "n_unique_bases": 459,
+    "note": "Do not use this total to authorize a traversal or claim capability.",
+    "scope": "transfer_layer",
+    "total_bytes": 56419758592,
+    "within_target_bpw_not_applicable": true
+  },
+  "unsupported_classes": [
+    {
+      "billing": "native_source_payload_width",
+      "n_tensors": 79,
+      "n_weights": 7952400384,
+      "organ_class": "attention_o_proj",
+      "source_payload_bytes": 15904800768,
+      "why": "Capsules lack the 16384-wide attention intermediate; Gaussian input forbidden."
+    },
+    {
+      "billing": "native_source_payload_width",
+      "n_tensors": 325,
+      "n_weights": 4296280832,
+      "organ_class": "attention_other",
+      "source_payload_bytes": 8592561664,
+      "why": "No bounded real-input pilot for this attention projection."
+    },
+    {
+      "billing": "native_source_payload_width",
+      "n_tensors": 1,
+      "n_weights": 951582720,
+      "organ_class": "global_embed_tokens",
+      "source_payload_bytes": 1903165440,
+      "why": "embed_tokens not in five-shard pilot; remains native."
+    },
+    {
+      "billing": "native_source_payload_width",
+      "n_tensors": 1,
+      "n_weights": 951582720,
+      "organ_class": "global_lm_head",
+      "source_payload_bytes": 1903165440,
+      "why": "lm_head not in five-shard pilot; remains native."
+    },
+    {
+      "billing": "native_source_payload_width",
+      "n_tensors": 342,
+      "n_weights": 1200384,
+      "organ_class": "norm",
+      "source_payload_bytes": 2400768,
+      "why": "Norms stay native (vector pass-through)."
+    },
+    {
+      "billing": "native_source_payload_width",
+      "n_tensors": 76,
+      "n_weights": 19456,
+      "organ_class": "router_bias",
+      "source_payload_bytes": 77824,
+      "why": "Router bias/e_score stay native."
+    },
+    {
+      "billing": "native_source_payload_width",
+      "n_tensors": 9,
+      "n_weights": 679477248,
+      "organ_class": "dense_mlp",
+      "source_payload_bytes": 1358954496,
+      "why": "Dense early layers (0-2) unvalidated under MoE pilot program."
+    },
+    {
+      "billing": "native_source_payload_width",
+      "n_tensors": 1,
+      "n_weights": 75497472,
+      "organ_class": "other",
+      "source_payload_bytes": 150994944,
+      "why": "No real-input pilot; billed native at source payload width."
+    }
+  ],
+  "within_target_bpw": false
+}

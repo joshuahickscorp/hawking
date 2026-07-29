@@ -105,6 +105,7 @@ import time
 from pathlib import Path
 
 import numpy as np
+from oracle_common import check_rss
 
 try:
     import resource
@@ -141,13 +142,6 @@ TRAIN_FRAC = 0.70
 FUNC_ERR_GATE = 0.02
 
 
-def check_rss(where):
-    """Soft RSS warning — never exits. Returns current RSS in GB."""
-    g = rss_gb()
-    if g > RSS_WARN_GB:
-        sys.stderr.write(f"[WARN] RSS {g:.2f} GB > {RSS_WARN_GB} at {where} "
-                         f"(soft ceiling; continuing)\n")
-    return g
 
 
 # --------------------------------------------------------------------------

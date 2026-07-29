@@ -905,7 +905,6 @@ fn build_tokenizer(
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[test]
     fn llama_scores_build_sentencepiece_unigram() {
         let tokens = vec![
@@ -920,25 +919,12 @@ mod tests {
             "<0x21>".to_string(),
         ];
         let scores = vec![-100.0, 0.0, 0.0, -10.0, -10.0, 0.0, -10.0, 0.0, -1.0];
-        let (tokenizer, mode, _spm, _rwkv) = build_tokenizer(
-            "llama",
-            &tokens,
-            &[],
-            &scores,
-            Some(1),
-            Some(2),
-            Some(0),
-            false,
-            false,
-        )
-        .unwrap();
-
+        let (tokenizer, mode, _spm, _rwkv) = build_tokenizer("llama", &tokens, &[], &scores, Some(1), Some(2), Some(0), false, false).unwrap();
         assert_eq!(mode, DecodeOneMode::SentencePiece);
         let enc = tokenizer.encode("Once upon", false).unwrap();
         assert_eq!(enc.get_ids(), &[5, 7]);
         assert_eq!(tokenizer.decode(&[5, 7], false).unwrap(), "Once upon");
     }
-
     #[test]
     fn sentencepiece_decode_one_preserves_leading_space() {
         let tokens = vec![
@@ -949,18 +935,7 @@ mod tests {
             "▁upon".to_string(),
         ];
         let scores = vec![-100.0, 0.0, 0.0, 0.0, 0.0];
-        let (inner, decode_one_mode, llama_spm, rwkv_world) = build_tokenizer(
-            "llama",
-            &tokens,
-            &[],
-            &scores,
-            Some(1),
-            Some(2),
-            Some(0),
-            false,
-            false,
-        )
-        .unwrap();
+        let (inner, decode_one_mode, llama_spm, rwkv_world) = build_tokenizer("llama", &tokens, &[], &scores, Some(1), Some(2), Some(0), false, false).unwrap();
         let tokenizer = Tokenizer {
             inner,
             bos_id: Some(1),
@@ -972,14 +947,10 @@ mod tests {
             special_ids: HashSet::new(),
             eog_ids: HashSet::new(),
         };
-
         assert_eq!(tokenizer.decode_one(4).unwrap(), " upon");
     }
-
     #[test]
     fn rwkv_unescape_handles_all_escape_forms() {
-        // `\t \n \r`, `\x##` (lowercase hex), escaped backslash, and a literal
-        // byte all round-trip exactly like llama.cpp's llama_unescape_rwkv_token.
         assert_eq!(unescape_rwkv_token(b"\\t"), vec![b'\t']);
         assert_eq!(unescape_rwkv_token(b"\\n\\n"), vec![b'\n', b'\n']);
         assert_eq!(unescape_rwkv_token(b"\\r"), vec![b'\r']);
@@ -990,17 +961,14 @@ mod tests {
         assert_eq!(unescape_rwkv_token(b" "), vec![b' ']);
         assert_eq!(unescape_rwkv_token(b"abc"), b"abc".to_vec());
     }
-
     #[test]
     fn rwkv_world_greedy_longest_match() {
-        // Minimal vocab: single bytes plus a multi-byte entry. Greedy
-        // longest-match must prefer the 2-byte "ab" (id 3) over "a"+"b".
         let tokens = vec![
-            "<s>".to_string(), // 0
-            "a".to_string(),   // 1
-            "b".to_string(),   // 2
-            "ab".to_string(),  // 3
-            "c".to_string(),   // 4
+            "<s>".to_string(),
+            "a".to_string(),
+            "b".to_string(),
+            "ab".to_string(),
+            "c".to_string(),
         ];
         let tok = RwkvWorldTokenizer::new(&tokens, Some(0), None);
         assert_eq!(tok.encode("abc", false), vec![3, 4]);
@@ -1008,7 +976,6 @@ mod tests {
         assert_eq!(tok.decode(&[3, 4], false), "abc");
         assert_eq!(tok.decode_one(3), "ab");
         assert_eq!(tok.vocab_size(), 5);
-        // skip_special drops the eos id (0 here).
         assert_eq!(tok.decode(&[0, 1], true), "a");
     }
 }

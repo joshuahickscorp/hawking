@@ -1,27 +1,11 @@
-/*
-  StateTimeline.test.ts: the ONE history surface.
-
-  What a user can be lied to about here is what a time-travel verb actually does, so this asserts that
-  every menu entry resolves a REAL catalog command with the payload crates/hide-backend
-  handle_goal_checkpoint_intent parses, that each rewind names its target explicitly and refuses to
-  send until it is confirmed a second time, that entries with no addressable checkpoint are blocked
-  with a stated reason rather than sending something the host cannot resolve, and that the separate
-  permanent "fork from here" button is gone in favour of the one menu.
-
-  No jsdom in this project, so component assertions render through react-dom/server and interaction
-  assertions go through the exported pure functions the component calls.
-*/
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-// The transport seam, stubbed so each test reads exactly what went on the wire.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const { sent } = vi.hoisted(() => ({ sent: [] as any[] }));
 vi.mock("../ipc", () => ({
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sendIntent: async (i: any) => {
     sent.push(i);
     return { accepted: true, event_seq: 1, message: null };
@@ -143,7 +127,6 @@ describe("rewind is explicit and confirmed", () => {
   });
 
   it("a first click only arms; nothing is sent until the second click", async () => {
-    // The component's guard, exercised directly: an unarmed destructive action returns before dispatch.
     const a = actionById("rewind_both");
     let armed: TimelineActionId | null = null;
     const fire = async () => {
@@ -183,8 +166,6 @@ describe("blocked entries state a reason", () => {
 });
 
 describe("the boundary id is the kind the host resolves", () => {
-  // replay.rs seq_of_event resolves an EventId and refuses anything else, so a boundary addressed
-  // with the tool call_id always failed. The store now carries the recorded event id.
   it("the timeline carries the recorded event id, never the tool call id", () => {
     useStore.getState().apply({
       seq: 12,
@@ -244,9 +225,6 @@ describe("the checkpoint id comes from a real host record", () => {
 });
 
 describe("the row keeps its shape", () => {
-  // zustand v5 answers useSyncExternalStore's SERVER snapshot with getInitialState, so a
-  // react-dom/server render always sees the initial store. The row's store-fed parts are asserted on
-  // the source; the empty case renders for real.
   it("renders nothing before the first recorded step", () => {
     expect(renderToStaticMarkup(createElement(StateTimeline))).toBe("");
   });
@@ -257,16 +235,12 @@ describe("the row keeps its shape", () => {
     expect(SRC).toContain("Return to the latest state");
   });
 
-  // scrub_to_event was recorded by the host and acted on by nothing, so the dots select locally and
-  // the surface no longer dispatches it (nor does the catalog carry it).
   it("does not dispatch the retired scrub command", () => {
     expect(SRC).not.toContain('runCommand("scrub_to_event"');
     expect(COMMANDS.map((c) => c.id)).not.toContain("scrub_to_event");
   });
 
   it("adds exactly one control: the history menu trigger", () => {
-    // Two statetl__btn in the row: the pre-existing conditional "live" return, and the ONE menu
-    // trigger that replaced the standalone fork button.
     expect(SRC.match(/className="statetl__btn"/g)).toHaveLength(2);
     expect(SRC).not.toContain("statetl__fork");
     expect(SRC).not.toMatch(/>\s*fork from here/);

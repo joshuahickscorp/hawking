@@ -478,6 +478,21 @@ pub struct TokenCounters {
     pub matvec_calls: u64,
     pub matvec_batch_calls: u64,
     pub matvec_batch_items: u64,
+    /// Host materialization of gate/up intermediates before SiLU on the ordinary
+    /// three-batch MLP path (`batched_mlp`). Zero on the device-only SiLU path.
+    #[serde(default)]
+    pub mlp_gate_up_download_bytes: u64,
+    #[serde(default)]
+    pub mlp_gate_up_download_transfers: u64,
+    /// Host activation upload into the down-projection batch on the ordinary
+    /// three-batch MLP path. Zero when SiLU+mul stays device-resident.
+    #[serde(default)]
+    pub mlp_activation_upload_bytes: u64,
+    #[serde(default)]
+    pub mlp_activation_upload_transfers: u64,
+    /// Times the ordinary three-batch path took the device-only SiLU hit.
+    #[serde(default)]
+    pub device_only_mlp_hits: u64,
     /// Times `dense()` / `row()` re-entered the artifact (SHA path when verify on).
     pub dense_calls: u64,
     pub row_calls: u64,
@@ -1814,6 +1829,73 @@ pub fn record_matvec_batch(items: u64) {
     });
 }
 
+/// Record host materialization of gate/up vectors before SiLU on the ordinary
+/// three-batch MLP. The device-only SiLU path must not call this.
+pub fn record_mlp_gate_up_download(bytes: u64) {
+    if !is_recording() || bytes == 0 {
+        return;
+    }
+    TOKEN.with(|t| {
+        if let Some(state) = t.borrow_mut().as_mut() {
+            state.counters.mlp_gate_up_download_bytes = state
+                .counters
+                .mlp_gate_up_download_bytes
+                .saturating_add(bytes);
+            state.counters.mlp_gate_up_download_transfers = state
+                .counters
+                .mlp_gate_up_download_transfers
+                .saturating_add(1);
+            if state.transfers.len() < 4096 {
+                state.transfers.push(TransferRecord {
+                    bytes,
+                    host_to_device: false,
+                    kind: "mlp_gate_up_download",
+                });
+            }
+        }
+    });
+}
+
+/// Record host activation upload into down_proj on the ordinary three-batch MLP.
+/// The device-only SiLU path must not call this.
+pub fn record_mlp_activation_upload(bytes: u64) {
+    if !is_recording() || bytes == 0 {
+        return;
+    }
+    TOKEN.with(|t| {
+        if let Some(state) = t.borrow_mut().as_mut() {
+            state.counters.mlp_activation_upload_bytes = state
+                .counters
+                .mlp_activation_upload_bytes
+                .saturating_add(bytes);
+            state.counters.mlp_activation_upload_transfers = state
+                .counters
+                .mlp_activation_upload_transfers
+                .saturating_add(1);
+            if state.transfers.len() < 4096 {
+                state.transfers.push(TransferRecord {
+                    bytes,
+                    host_to_device: true,
+                    kind: "mlp_activation_upload",
+                });
+            }
+        }
+    });
+}
+
+/// Count one ordinary three-batch MLP that executed device-only SiLU.
+pub fn record_device_only_mlp_hit() {
+    if !is_recording() {
+        return;
+    }
+    TOKEN.with(|t| {
+        if let Some(state) = t.borrow_mut().as_mut() {
+            state.counters.device_only_mlp_hits =
+                state.counters.device_only_mlp_hits.saturating_add(1);
+        }
+    });
+}
+
 pub fn record_dense_call() {
     if !is_recording() {
         return;
@@ -2180,85 +2262,54 @@ pub fn synthetic_report(
 mod tests {
     use super::*;
     use std::time::Duration;
-
     fn with_clean_ledger<R>(f: impl FnOnce() -> R) -> R {
-        set_enabled(true);
-        // Ensure no leftover token.
-        let _ = end_token();
-        let out = f();
-        let _ = end_token();
-        set_enabled(false);
+        set_enabled(true); let _ = end_token(); let out = f(); let _ = end_token(); set_enabled(false);
         out
     }
-
     #[test]
     fn disabled_is_noop() {
         set_enabled(false);
         assert!(!begin_token());
-        assert!(end_token().is_none());
-        let _s = Scope::new(Bucket::Routing);
-        record_dispatches(99);
+        assert!(end_token().is_none()); let _s = Scope::new(Bucket::Routing); record_dispatches(99);
         assert!(!is_recording());
     }
-
     #[test]
     fn exclusive_stack_partitions_time() {
         with_clean_ledger(|| {
             assert!(begin_token());
             {
-                let _a = Scope::new(Bucket::AttentionAndIndexShare);
-                std::thread::sleep(Duration::from_millis(5));
+                let _a = Scope::new(Bucket::AttentionAndIndexShare); std::thread::sleep(Duration::from_millis(5));
                 {
-                    let _m = Scope::new(Bucket::MetalEncode);
-                    std::thread::sleep(Duration::from_millis(5));
+                    let _m = Scope::new(Bucket::MetalEncode); std::thread::sleep(Duration::from_millis(5));
                 }
                 std::thread::sleep(Duration::from_millis(5));
             }
             {
-                let _r = Scope::new(Bucket::Routing);
-                std::thread::sleep(Duration::from_millis(5));
+                let _r = Scope::new(Bucket::Routing); std::thread::sleep(Duration::from_millis(5));
             }
             let report = end_token().expect("report");
             let attn = report.buckets_us["attention_and_indexshare"]
-                .as_u64()
-                .unwrap();
-            let enc = report.buckets_us["metal_encode"].as_u64().unwrap();
-            let route = report.buckets_us["routing"].as_u64().unwrap();
-            // Each sleep is ~5ms; allow wide slack for CI scheduling.
+                .as_u64().unwrap();
+            let enc = report.buckets_us["metal_encode"].as_u64().unwrap(); let route = report.buckets_us["routing"].as_u64().unwrap();
             assert!(enc >= 3_000, "encode us={enc}");
             assert!(attn >= 6_000, "attn exclusive us={attn}");
-            assert!(route >= 3_000, "route us={route}");
-            let sum: u64 = report.buckets_us.values().filter_map(|v| v.as_u64()).sum();
+            assert!(route >= 3_000, "route us={route}"); let sum: u64 = report.buckets_us.values().filter_map(|v| v.as_u64()).sum();
             assert_eq!(sum, report.attributed_us);
-            // Exclusive identity: attributed + unattributed ≈ wall (within 1ms slack).
-            let covered = report.attributed_us + report.unattributed_us;
-            let delta = (covered as i64 - report.wall_us as i64).unsigned_abs();
+            let covered = report.attributed_us + report.unattributed_us; let delta = (covered as i64 - report.wall_us as i64).unsigned_abs();
             assert!(
                 delta < 1_000,
                 "covered={covered} wall={} delta={delta}",
                 report.wall_us
             );
-            // Nested encode must not be inside attn's exclusive total in a
-            // way that makes attn ≈ encode+2*5ms; attn should be ~10ms not ~15ms.
-            assert!(
-                attn < enc + 12_000,
-                "attn should exclude nested encode: attn={attn} enc={enc}"
-            );
-            // Profiler overhead must be disclosed and non-zero after work.
-            assert!(
-                report.profiler_overhead_us > 0 || report.profiler_overhead_fraction >= 0.0,
-                "overhead fields present"
-            );
+            assert!(attn < enc + 12_000, "attn should exclude nested encode: attn={attn} enc={enc}");
+            assert!(report.profiler_overhead_us > 0 || report.profiler_overhead_fraction >= 0.0, "overhead fields present");
             assert_eq!(report.unattributed_name, "unattributed");
         });
     }
-
     #[test]
     fn unattributed_is_explicit_when_no_scopes() {
         with_clean_ledger(|| {
-            assert!(begin_token());
-            std::thread::sleep(Duration::from_millis(3));
-            let report = end_token().expect("report");
+            assert!(begin_token()); std::thread::sleep(Duration::from_millis(3)); let report = end_token().expect("report");
             assert_eq!(report.attributed_us, 0);
             assert!(report.unattributed_us >= 2_000);
             assert!(report.unattributed_signed_us > 0);
@@ -2266,33 +2317,20 @@ mod tests {
             assert!(!report.buckets_us.contains_key("cpu_residual_scoped"));
         });
     }
-
     #[test]
     fn counters_accumulate() {
         with_clean_ledger(|| {
-            assert!(begin_token());
-            set_geometry_active_bytes(SEALED_ARTIFACT_ACTIVE_ROUTED_BYTES);
-            record_command_buffer();
-            record_dispatches(8);
-            record_sync_point();
-            record_transfer(1024, true, "x_upload");
-            record_transfer(2048, false, "y_download");
-            record_allocation(4096);
-            record_active_bytes(1_378_368);
-            record_matvec_batch(8);
-            record_sha_verification();
-            record_operations(1_000_000);
-            record_residency(32 << 30, 64, 2);
+            assert!(begin_token()); set_geometry_active_bytes(SEALED_ARTIFACT_ACTIVE_ROUTED_BYTES); record_command_buffer();
+            record_dispatches(8); record_sync_point(); record_transfer(1024, true, "x_upload"); record_transfer(2048, false, "y_download");
+            record_allocation(4096); record_active_bytes(1_378_368); record_matvec_batch(8); record_sha_verification();
+            record_operations(1_000_000); record_residency(32 << 30, 64, 2);
             record_gpu_command_buffer(
-                10,   // commit
-                5000, // wait
+                10,
+                5000,
                 Some(100.0),
-                Some(100.003), // 3000 µs GPU
+                Some(100.003),
                 8,
-            );
-            record_counter_sample_capability(true, Some(true));
-            // markers not encoded
-            let report = end_token().expect("report");
+            ); record_counter_sample_capability(true, Some(true)); let report = end_token().expect("report");
             assert_eq!(report.counters.command_buffers_submitted, 1);
             assert_eq!(report.counters.dispatches_encoded, 8);
             assert_eq!(report.counters.synchronization_points, 1);
@@ -2310,24 +2348,20 @@ mod tests {
             assert!(report.active_bytes_vs_geometry_fraction.unwrap() < 0.01);
             assert_eq!(report.transfers.len(), 2);
             assert_eq!(report.device.gpu_execution_us, 3000);
-            assert_eq!(report.device.gpu_queue_wait_us, Some(2000)); // 5000-3000
+            assert_eq!(report.device.gpu_queue_wait_us, Some(2000));
             assert_eq!(report.device.gpu_timestamps_observed, 1);
             assert_eq!(report.device.counter_sample_supported, Some(true));
             assert_eq!(report.device.counter_samples_recorded, 0);
             assert!(report
                 .device
                 .notes
-                .iter()
-                .any(|n| n.contains("no sample markers")));
+                .iter() .any(|n| n.contains("no sample markers")));
         });
     }
-
     #[test]
     fn gpu_timestamps_missing_leaves_queue_wait_unset() {
         with_clean_ledger(|| {
-            assert!(begin_token());
-            record_command_buffer();
-            record_gpu_command_buffer(5, 1000, None, None, 1);
+            assert!(begin_token()); record_command_buffer(); record_gpu_command_buffer(5, 1000, None, None, 1);
             let report = end_token().expect("report");
             assert_eq!(report.device.gpu_execution_us, 0);
             assert_eq!(report.device.gpu_queue_wait_us, None);
@@ -2335,108 +2369,63 @@ mod tests {
             assert!(report
                 .device
                 .notes
-                .iter()
-                .any(|n| n.contains("no CPU proxy") || n.contains("lacked readable")));
+                .iter() .any(|n| n.contains("no CPU proxy") || n.contains("lacked readable")));
         });
     }
-
     #[test]
     fn historical_general_r0_geometry_helper_matches_old_gate_number() {
-        // 8 experts × 3 projections × 1_378_368 × 78 layers ≈ 2.58 GB.
         let g = geometry_active_bytes(78, 8, Some(1_378_368));
         assert_eq!(g, SEALED_ARTIFACT_ACTIVE_ROUTED_BYTES);
         assert_eq!(g, 8u64 * 3 * 1_378_368 * 78);
-        // Sanity: ~2.58e9 bytes as the gate states.
         assert!((g as f64 - 2.58e9).abs() < 5e6, "g={g}");
     }
-
     #[test]
     fn classify_weight_name_partitions_glm_schedule() {
-        assert_eq!(
-            classify_weight_name("lm_head.weight"),
-            ActiveByteCategory::LmHead
-        );
-        assert_eq!(
-            classify_weight_name("model.layers.3.mlp.experts.7.gate_proj.weight"),
-            ActiveByteCategory::RoutedExperts
-        );
-        assert_eq!(
-            classify_weight_name("model.layers.3.mlp.shared_experts.down_proj.weight"),
-            ActiveByteCategory::SharedExperts
-        );
-        assert_eq!(
-            classify_weight_name("model.layers.0.mlp.gate_proj.weight"),
-            ActiveByteCategory::DenseMlp
-        );
-        assert_eq!(
-            classify_weight_name("model.layers.3.mlp.gate.weight"),
-            ActiveByteCategory::Router
-        );
-        assert_eq!(
-            classify_weight_name("model.layers.0.self_attn.o_proj.weight"),
-            ActiveByteCategory::Attention
-        );
-        assert_eq!(
-            classify_weight_name("model.layers.0.self_attn.indexer.wq_b.weight"),
-            ActiveByteCategory::Indexer
-        );
-        assert_eq!(
-            classify_weight_name("model.norm.weight"),
-            ActiveByteCategory::Other
-        );
+        assert_eq!(classify_weight_name("lm_head.weight"), ActiveByteCategory::LmHead);
+        assert_eq!(classify_weight_name("model.layers.3.mlp.experts.7.gate_proj.weight"), ActiveByteCategory::RoutedExperts);
+        assert_eq!(classify_weight_name("model.layers.3.mlp.shared_experts.down_proj.weight"), ActiveByteCategory::SharedExperts);
+        assert_eq!(classify_weight_name("model.layers.0.mlp.gate_proj.weight"), ActiveByteCategory::DenseMlp);
+        assert_eq!(classify_weight_name("model.layers.3.mlp.gate.weight"), ActiveByteCategory::Router);
+        assert_eq!(classify_weight_name("model.layers.0.self_attn.o_proj.weight"), ActiveByteCategory::Attention);
+        assert_eq!(classify_weight_name("model.layers.0.self_attn.indexer.wq_b.weight"), ActiveByteCategory::Indexer);
+        assert_eq!(classify_weight_name("model.norm.weight"), ActiveByteCategory::Other);
     }
-
     #[test]
     fn active_bytes_categories_sum_to_total() {
         with_clean_ledger(|| {
-            assert!(begin_token());
-            record_active_bytes_for("lm_head.weight", 100);
+            assert!(begin_token()); record_active_bytes_for("lm_head.weight", 100);
             record_active_bytes_for("model.layers.3.mlp.experts.0.gate_proj.weight", 200);
             record_active_bytes_for("model.layers.3.mlp.shared_experts.up_proj.weight", 50);
-            record_active_bytes_for("model.layers.0.self_attn.q_a_proj.weight", 30);
-            record_active_bytes(7); // uncategorized → other
+            record_active_bytes_for("model.layers.0.self_attn.q_a_proj.weight", 30); record_active_bytes(7);
             let report = end_token().expect("report");
-            assert_eq!(report.counters.active_bytes_read, 387);
-            let cat = &report.counters.active_bytes_by_category;
+            assert_eq!(report.counters.active_bytes_read, 387); let cat = &report.counters.active_bytes_by_category;
             assert_eq!(cat["lm_head"].as_u64(), Some(100));
             assert_eq!(cat["routed_experts"].as_u64(), Some(200));
             assert_eq!(cat["shared_experts"].as_u64(), Some(50));
             assert_eq!(cat["attention"].as_u64(), Some(30));
             assert_eq!(cat["other"].as_u64(), Some(7));
             let sum: u64 = ActiveByteCategory::ALL
-                .iter()
-                .map(|c| cat[c.as_str()].as_u64().unwrap_or(0))
-                .sum();
+                .iter().map(|c| cat[c.as_str()].as_u64().unwrap_or(0)) .sum();
             assert_eq!(sum, report.counters.active_bytes_read);
         });
     }
-
     #[test]
     fn historical_general_r0_static_schedule_matches_header_derived_constants() {
-        // STATIC (not live-measured): sizes taken from General-R0 shard
-        // headers on 2026-07-26. See OVERREAD_BYTE_LEDGER.json.
         let s = sealed_glm_active_byte_schedule();
         assert_eq!(s.geometry_routed_bytes, SEALED_ARTIFACT_ACTIVE_ROUTED_BYTES);
-        // Categories must sum to the static total.
         let sum = s.routed_experts_bytes
             + s.shared_experts_bytes
             + s.dense_mlp_bytes
             + s.attention_bytes
             + s.indexer_bytes
-            + s.router_bytes
-            + s.lm_head_bytes;
+            + s.router_bytes + s.lm_head_bytes;
         assert_eq!(sum, s.total_active_bytes);
-        // lm_head alone is the dominant non-geometry term (~3.8 GB f32).
         assert_eq!(s.lm_head_bytes, 154_880u64 * 6_144 * 4);
-        // Sparse layers are 75, not 78 — geometry over-counts 3 dense layers.
         assert_eq!(s.n_sparse_layers, 75);
         assert_eq!(s.n_dense_mlp_layers, 3);
         assert_eq!(s.n_full_indexer_layers, 21);
-        // Static total is ~9.34 GB; the live mean was 10.46 GB — gap is
-        // disclosed, not papered over.
         assert!((s.total_active_bytes as f64 - 9.34e9).abs() < 2e7);
     }
-
     #[test]
     fn math_preserve_contract_and_live_route_conditioning_are_exact() {
         let contract = math_preserve_active_byte_contract();
@@ -2447,37 +2436,15 @@ mod tests {
         assert_eq!(contract.r0_projection_bytes, 1_378_308);
         assert_eq!(contract.native_bf16_projection_bytes, 25_165_824);
         assert_eq!(contract.whole_token_min_bytes, 3_792_160_224);
-        assert_eq!(
-            contract.whole_token_layer_constrained_max_bytes,
-            45_570_216_852
-        );
-
+        assert_eq!(contract.whole_token_layer_constrained_max_bytes, 45_570_216_852);
         with_clean_ledger(|| {
             set_expected_fixed_active_bytes(Some(MATH_PRESERVE_FIXED_ACTIVE_BYTES));
-            assert!(begin_token());
-            let name = "model.layers.3.mlp.experts.7.gate_proj.weight";
-            record_routed_weight_representation(
-                name,
-                RoutedWeightRepresentation::R4,
-                MATH_PRESERVE_R4_PROJECTION_BYTES,
-            );
-            record_routed_weight_representation(
-                name,
-                RoutedWeightRepresentation::R0,
-                MATH_PRESERVE_R0_PROJECTION_BYTES,
-            );
-            record_routed_weight_representation(
-                name,
-                RoutedWeightRepresentation::NativeBf16,
-                MATH_PRESERVE_NATIVE_BF16_PROJECTION_BYTES,
-            );
-            record_routed_weight_representation(
-                "model.layers.3.mlp.shared_experts.gate_proj.weight",
-                RoutedWeightRepresentation::Other,
-                99,
-            );
-            let report = end_token().expect("route-conditioned report");
-            let routed = &report.counters.routed_representations;
+            assert!(begin_token()); let name = "model.layers.3.mlp.experts.7.gate_proj.weight";
+            record_routed_weight_representation(name, RoutedWeightRepresentation::R4, MATH_PRESERVE_R4_PROJECTION_BYTES);
+            record_routed_weight_representation(name, RoutedWeightRepresentation::R0, MATH_PRESERVE_R0_PROJECTION_BYTES);
+            record_routed_weight_representation(name, RoutedWeightRepresentation::NativeBf16, MATH_PRESERVE_NATIVE_BF16_PROJECTION_BYTES);
+            record_routed_weight_representation("model.layers.3.mlp.shared_experts.gate_proj.weight", RoutedWeightRepresentation::Other, 99);
+            let report = end_token().expect("route-conditioned report"); let routed = &report.counters.routed_representations;
             assert_eq!(routed.r4_projection_touches, 1);
             assert_eq!(routed.r0_projection_touches, 1);
             assert_eq!(routed.native_bf16_projection_touches, 1);
@@ -2490,11 +2457,9 @@ mod tests {
                         + MATH_PRESERVE_R0_PROJECTION_BYTES
                         + MATH_PRESERVE_NATIVE_BF16_PROJECTION_BYTES
                 )
-            );
-            set_expected_fixed_active_bytes(None);
+            ); set_expected_fixed_active_bytes(None);
         });
     }
-
     #[test]
     fn bucket_names_are_gate_stable() {
         let names: Vec<_> = Bucket::ALL.iter().map(|b| b.as_str()).collect();
@@ -2513,16 +2478,13 @@ mod tests {
         assert!(names.contains(&"final_head"));
         assert!(names.contains(&"sampling"));
         assert!(names.contains(&"norm"));
-        // Hard rule: no generic line that can absorb unexplained wall.
         assert!(!names.iter().any(|n| n.contains("orchestration")));
         assert!(!names.iter().any(|n| n.contains("residual_scoped")));
         assert_eq!(names.len(), 18);
     }
-
     #[test]
     fn percentiles_nearest_rank() {
-        let samples: Vec<f64> = (1..=100).map(|x| x as f64).collect();
-        let p = Percentiles::from_slice(&samples);
+        let samples: Vec<f64> = (1..=100).map(|x| x as f64).collect(); let p = Percentiles::from_slice(&samples);
         assert_eq!(p.n, 100);
         assert_eq!(p.min, 1.0);
         assert_eq!(p.max, 100.0);
@@ -2531,30 +2493,17 @@ mod tests {
         assert_eq!(p.p99, 99.0);
         assert!((p.mean - 50.5).abs() < 1e-9);
     }
-
     #[test]
     fn aggregate_synthetic_tokens_reports_tails_and_unattributed() {
-        // Five synthetic tokens with increasing wall and a large unattributed
-        // hole on the last one — must stay visible in p99, not absorbed.
         let mut reports = Vec::new();
         for i in 0usize..5 {
-            let wall = 1_000_000 + (i as u64) * 200_000; // 1.0s .. 1.8s
-            let metal_sync = 400_000u64;
-            let encode = 50_000u64;
-            let attn = 100_000u64;
-            let attributed = metal_sync + encode + attn;
-            let mut counters = TokenCounters::default();
-            counters.command_buffers_submitted = 100 + i as u64;
-            counters.synchronization_points = 100 + i as u64;
-            counters.dispatches_encoded = 200;
-            counters.active_bytes_read = SEALED_ARTIFACT_ACTIVE_ROUTED_BYTES;
-            counters.operations = 10_000 + i as u64;
-            let mut device = DeviceTimeline::default();
-            device.gpu_execution_us = 20_000 + i as u64 * 1_000;
-            device.gpu_queue_wait_us = Some(380_000);
-            device.gpu_timestamps_observed = 100;
-            device.counter_sample_probed = true;
-            device.counter_sample_supported = Some(true);
+            let wall = 1_000_000 + (i as u64) * 200_000; let metal_sync = 400_000u64; let encode = 50_000u64; let attn = 100_000u64;
+            let attributed = metal_sync + encode + attn; let mut counters = TokenCounters::default();
+            counters.command_buffers_submitted = 100 + i as u64; counters.synchronization_points = 100 + i as u64;
+            counters.dispatches_encoded = 200; counters.active_bytes_read = SEALED_ARTIFACT_ACTIVE_ROUTED_BYTES;
+            counters.operations = 10_000 + i as u64; let mut device = DeviceTimeline::default();
+            device.gpu_execution_us = 20_000 + i as u64 * 1_000; device.gpu_queue_wait_us = Some(380_000);
+            device.gpu_timestamps_observed = 100; device.counter_sample_probed = true; device.counter_sample_supported = Some(true);
             device.counter_samples_recorded = 0;
             reports.push(synthetic_report(
                 wall,
@@ -2566,23 +2515,20 @@ mod tests {
                 counters,
                 device,
                 Some(SEALED_ARTIFACT_ACTIVE_ROUTED_BYTES),
-                500 + i as u64 * 10, // disclosed profiler overhead
+                500 + i as u64 * 10,
             ));
             assert_eq!(reports[i].attributed_us, attributed);
             assert_eq!(reports[i].unattributed_us, wall - attributed);
             assert!(!reports[i].buckets_us.contains_key("cpu_residual_scoped"));
         }
-
         let agg = aggregate_reports(&reports);
         assert_eq!(agg.token_count, 5);
-        assert_eq!(agg.wall_us.p50, 1_400_000.0); // token index 2
+        assert_eq!(agg.wall_us.p50, 1_400_000.0);
         assert_eq!(agg.wall_us.p95, 1_800_000.0);
         assert_eq!(agg.wall_us.p99, 1_800_000.0);
         assert!(agg.unattributed_us.p50 > 400_000.0);
         assert!(agg.unattributed_us.max > agg.unattributed_us.p50);
-        // Unattributed present as its own distribution line.
-        assert!(agg.buckets_us.contains_key("unattributed"));
-        let un_line = &agg.buckets_us["unattributed"];
+        assert!(agg.buckets_us.contains_key("unattributed")); let un_line = &agg.buckets_us["unattributed"];
         assert!(un_line.get("p99").and_then(|v| v.as_f64()).unwrap() > 1_000_000.0);
         assert_eq!(agg.device_gpu_execution_us.n, 5);
         assert_eq!(agg.tokens_missing_gpu_timestamps, 0);
@@ -2591,16 +2537,13 @@ mod tests {
             agg.geometry_active_bytes,
             Some(SEALED_ARTIFACT_ACTIVE_ROUTED_BYTES)
         );
-        // Active bytes ≈ geometry.
         assert!(
             (agg.active_bytes_read.mean - SEALED_ARTIFACT_ACTIVE_ROUTED_BYTES as f64).abs() < 1.0
         );
     }
-
     #[test]
     fn aggregate_marks_missing_gpu_timestamps() {
-        let mut counters = TokenCounters::default();
-        counters.command_buffers_submitted = 10;
+        let mut counters = TokenCounters::default(); counters.command_buffers_submitted = 10;
         let device = DeviceTimeline {
             gpu_execution_us: 0,
             gpu_queue_wait_us: None,
@@ -2613,73 +2556,48 @@ mod tests {
             notes: vec!["device has no timestamp counter set"],
             ..DeviceTimeline::default()
         };
-        let r = synthetic_report(
-            100_000,
-            &[(Bucket::MetalSynchronize, 80_000)],
-            counters,
-            device,
-            None,
-            100,
-        );
+        let r = synthetic_report(100_000, &[(Bucket::MetalSynchronize, 80_000)], counters, device, None, 100);
         let agg = aggregate_reports(&[r]);
         assert_eq!(agg.tokens_missing_gpu_timestamps, 1);
         assert_eq!(agg.device_gpu_queue_wait_us.n, 0);
     }
-
     #[test]
     fn catalogue_lists_unattributed_and_device_lines() {
         let cat = bucket_source_catalogue();
         let names: Vec<String> = cat
             .iter()
-            .filter_map(|v| v.get("name").and_then(|n| n.as_str()).map(str::to_string))
-            .collect();
+            .filter_map(|v| v.get("name").and_then(|n| n.as_str()).map(str::to_string)) .collect();
         assert!(names.iter().any(|n| n == "unattributed"));
         assert!(names.iter().any(|n| n == "gpu_execution_us"));
         assert!(names.iter().any(|n| n == "gpu_queue_wait_us"));
         assert!(names.iter().any(|n| n == "profiler_overhead_us"));
         assert!(!names.iter().any(|n| n == "orchestration"));
     }
-
     #[test]
     fn record_gpu_command_buffer_zero_delta_is_missing() {
         with_clean_ledger(|| {
-            assert!(begin_token());
-            // end == start → treat as unavailable
-            record_gpu_command_buffer(1, 100, Some(1.0), Some(1.0), 1);
-            let report = end_token().expect("report");
+            assert!(begin_token()); record_gpu_command_buffer(1, 100, Some(1.0), Some(1.0), 1); let report = end_token().expect("report");
             assert_eq!(report.device.gpu_timestamps_missing, 1);
             assert_eq!(report.device.gpu_execution_us, 0);
             assert!(report.device.gpu_queue_wait_us.is_none());
         });
     }
-
     #[test]
     fn staged_gpu_timestamps_keep_mixed_command_buffers_whole() {
         with_clean_ledger(|| {
             assert!(begin_token());
-            record_gpu_command_buffer_staged(
-                5,
-                5_000,
-                Some(10.0),
-                Some(10.003),
-                3,
-                &[(GpuStage::FinalHead, 1), (GpuStage::Sampling, 2)],
-            );
-            let report = end_token().expect("report");
-            let key = "mixed:final_head+sampling";
+            record_gpu_command_buffer_staged(5, 5_000, Some(10.0), Some(10.003), 3, &[(GpuStage::FinalHead, 1), (GpuStage::Sampling, 2)]);
+            let report = end_token().expect("report"); let key = "mixed:final_head+sampling";
             assert_eq!(
                 report.device.gpu_execution_by_stage_us[key]
-                    .as_u64()
-                    .unwrap(),
+                    .as_u64().unwrap(),
                 3_000
             );
             assert_eq!(
                 report.device.gpu_queue_wait_by_stage_us[key]
-                    .as_u64()
-                    .unwrap(),
+                    .as_u64().unwrap(),
                 2_000
-            );
-            let cb = &report.device.command_buffers[0];
+            ); let cb = &report.device.command_buffers[0];
             assert_eq!(cb.stage_key, key);
             assert_eq!(cb.stage_composition.len(), 2);
             assert_eq!(cb.stage_composition[0].dispatches, 1);
@@ -2688,11 +2606,9 @@ mod tests {
             assert!(cb.stage_dispatches_match_buffer);
             assert!(!report
                 .device
-                .gpu_execution_by_stage_us
-                .contains_key("final_head"));
+                .gpu_execution_by_stage_us .contains_key("final_head"));
         });
     }
-
     #[test]
     fn semantic_scope_walk_and_sparse_mixed_composition_are_exact() {
         with_clean_ledger(|| {
@@ -2707,17 +2623,8 @@ mod tests {
                 }
                 assert_eq!(current_gpu_stage(), Some(GpuStage::FinalHead));
             }
-
-            record_gpu_command_buffer_staged(
-                5,
-                4_000,
-                Some(20.0),
-                Some(20.002),
-                9,
-                &[(GpuStage::RoutedExperts, 8), (GpuStage::SharedExperts, 1)],
-            );
-            let report = end_token().expect("report");
-            let cb = &report.device.command_buffers[0];
+            record_gpu_command_buffer_staged(5, 4_000, Some(20.0), Some(20.002), 9, &[(GpuStage::RoutedExperts, 8), (GpuStage::SharedExperts, 1)]);
+            let report = end_token().expect("report"); let cb = &report.device.command_buffers[0];
             assert_eq!(cb.stage_key, "mixed:routed_experts+shared_experts");
             assert_eq!(
                 cb.stage_composition,
@@ -2735,26 +2642,15 @@ mod tests {
             assert_eq!(cb.stage_dispatches_total, 9);
             assert!(cb.stage_dispatches_match_buffer);
             let exec = report.device.gpu_execution_by_stage_us[&cb.stage_key]
-                .as_u64()
-                .unwrap();
+                .as_u64().unwrap();
             assert!((1_999..=2_000).contains(&exec), "gpu timestamp us={exec}");
         });
     }
-
     #[test]
     fn staged_recorder_turns_missing_tags_into_explicit_untagged_dispatches() {
         with_clean_ledger(|| {
-            assert!(begin_token());
-            record_gpu_command_buffer_staged(
-                1,
-                1,
-                Some(30.0),
-                Some(30.001),
-                3,
-                &[(GpuStage::Routing, 1)],
-            );
-            let report = end_token().expect("report");
-            let cb = &report.device.command_buffers[0];
+            assert!(begin_token()); record_gpu_command_buffer_staged(1, 1, Some(30.0), Some(30.001), 3, &[(GpuStage::Routing, 1)]);
+            let report = end_token().expect("report"); let cb = &report.device.command_buffers[0];
             assert_eq!(cb.stage_dispatches_total, 3);
             assert!(cb.stage_dispatches_match_buffer);
             assert_eq!(cb.stage_composition[0].stage, "routing");
@@ -2764,8 +2660,7 @@ mod tests {
             assert!(report
                 .device
                 .notes
-                .iter()
-                .any(|note| note.contains("untagged")));
+                .iter() .any(|note| note.contains("untagged")));
         });
     }
 }

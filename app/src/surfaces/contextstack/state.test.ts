@@ -1,21 +1,9 @@
-/*
-  state.test.ts: the Context Stack as a receipt and as a set of real commands.
-
-  Two things a user can be lied to about here: what the panel says went into the context, and what
-  its controls actually do. So this asserts the receipt is read from the REAL manifest the host
-  serializes (crates/hawking-context ContextManifest), that every control names a catalog command id
-  (snapshot -> checkpoint_create, fork -> fork_session, the memory controls -> the memory domain),
-  and that the mock skill controls and the no-op pin_span path are gone from the surface.
-*/
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-// The transport seam, stubbed so each test reads exactly what went on the wire.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const { sent } = vi.hoisted(() => ({ sent: [] as any[] }));
 vi.mock("../../ipc", () => ({
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sendIntent: async (i: any) => {
     sent.push(i);
     return { accepted: true, event_seq: 1, message: null };
@@ -43,9 +31,6 @@ import {
   type Receipt,
 } from "./state";
 
-/* A manifest in the shape hide-backend really serializes: retained spans with blake3 ids, a
-   compat-instructions span carrying its CLAUDE.md derivation, drops with typed reasons, an open
-   conflict, and the live ceiling block. */
 const REAL: Receipt = {
   model: {
     id: "qwen3-coder",
@@ -113,7 +98,6 @@ const REAL: Receipt = {
   live: { effective_ceiling_tokens: 131072, occupancy: 0.1, watermark: "normal" },
 };
 
-/* The older flat shape (the mock transport and the retrieval patch) must keep rendering. */
 const FLAT: Receipt = {
   retrieved: [{ path: "crates/pool/src/lib.rs", range: "12-30", relevance: 0.74 }],
   dropped: [{ title: "cargo build log", would_be_tokens: 4200, reason: "low relevance" }],
@@ -191,13 +175,11 @@ describe("the receipt reads the real manifest", () => {
     const rows = memoryRows(REAL);
     expect(rows[0]).toMatchObject({ id: "mem_1", claim: "the pool guard drops in reverse order", score: 0.8, status: "active" });
     expect(rows[1].claim).toBe("the pool is created once per process");
-    // A window span carries a content hash, not a durable record id, so no outcome can be recorded.
     expect(rows[1].id).toBeUndefined();
   });
 
   it("reads the model from either shape the host publishes", () => {
     expect(modelSummary(REAL)).toMatchObject({ id: "qwen3-coder", arch: "qwen", native: 32768, effective: 131072 });
-    // the live projection patch reports the model flat
     expect(modelSummary({ model_id: "rwkv7-2b9", arch: "rwkv7", ctx_len_effective: 262144 })).toMatchObject({
       id: "rwkv7-2b9",
       arch: "rwkv7",
@@ -293,7 +275,6 @@ describe("every control names a real command", () => {
     ];
     for (const p of plans) {
       expect(COMMANDS.find((c) => c.id === p.id), p.id).toBeTruthy();
-      // and never the no-op names this panel used to fire
       expect(p.id).not.toBe("pin_span");
       expect(p.id).not.toBe("unpin_span");
       expect(p.id).not.toBe("fleet_run");
@@ -328,24 +309,17 @@ describe("dispatch goes through the one spine", () => {
   });
 
   it("reaches memory over the intent channel now that memory_* binds Custom, not Rpc", async () => {
-    // host.rs handle_intent dispatches memory_revalidate over Intent::Custom, so the control is
-    // live instead of throwing "needs the elevated rpc channel".
     await runPlan(plan.revalidate(sessionScope("ses_test")));
     expect(last().type).toBe("custom");
     expect(last().data.name).toBe("memory_revalidate");
   });
 
   it("still refuses honestly when the spine cannot carry a command's payload", async () => {
-    // run_static_analysis is Custom-bound now, but the host arm refuses an empty payload, so the
-    // spine refuses it first with the reason. The control surfaces that as a failed state, never a
-    // fake success.
     await expect(runPlan({ id: "run_static_analysis", args: {} })).rejects.toThrow(/needs paths/);
   });
 });
 
 describe("the panel is MOUNTED", () => {
-  // It was imported by no module at all, so every control on it rendered nowhere and the whole
-  // surface was dead code wearing a receipt.
   const panel = readFileSync(join(__dirname, "../home/ChatPanel.tsx"), "utf8");
 
   it("renders as a face of the conversation side panel", () => {
@@ -360,8 +334,6 @@ describe("the panel is MOUNTED", () => {
   });
 
   it("reads the host's published manifest, never the connector write route", () => {
-    // `context.compile` upserts the durable memory store, so it is refused on the read-only
-    // connector route (connectors.rs CONNECTOR_READ_METHODS).
     const src = readFileSync(join(__dirname, "../ContextStack.tsx"), "utf8");
     expect(src).not.toContain("callConnector");
   });

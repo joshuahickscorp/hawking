@@ -39,7 +39,9 @@ def main() -> int:
         ["python3.12", "tools/campaign/light_governor.py", "--json"],
         capture_output=True, text=True, cwd=ROOT).stdout)
 
-    reg = json.loads((ROOT / "HAWKING_ADAPTER_REGISTRY.json").read_text())
+    reg = json.loads(
+        (ROOT / "crates/hawking-adapters/generated/HAWKING_ADAPTER_REGISTRY.json").read_text()
+    )
     fams = reg["families"]
     fams = fams if isinstance(fams, list) else list(fams.values())
     grades = {str(f.get("family", f.get("id"))): f.get("level") for f in fams}

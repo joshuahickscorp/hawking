@@ -655,13 +655,11 @@ pub trait Engine: Send + Sync {
 #[cfg(test)]
 mod gen_stats_observability_tests {
     use super::GenStats;
-
     #[test]
     fn dec_tps_zero_when_no_decode() {
         let s = GenStats::default();
         assert_eq!(s.dec_tps(), 0.0);
     }
-
     #[test]
     fn dec_tps_formula() {
         let s = GenStats {
@@ -669,10 +667,8 @@ mod gen_stats_observability_tests {
             decode_ms: 2000.0,
             ..Default::default()
         };
-        // 64 tokens / 2.0 s = 32 tok/s
         assert!((s.dec_tps() - 32.0).abs() < 1e-9);
     }
-
     #[test]
     fn stats_json_carries_observability_fields() {
         let s = GenStats {
@@ -694,7 +690,6 @@ mod gen_stats_observability_tests {
         assert_eq!(j["token_only_path_used"], true);
         assert_eq!(j["lm_head_path"], "q4k-predec-f16s");
         assert_eq!(j["logits_materialized_vocab"], 32000);
-        // serializes to a compact, parseable object (no heavy dispatch_samples vec)
         let s = serde_json::to_string(&j).unwrap();
         assert!(!s.contains("dispatch_samples"));
         assert!(serde_json::from_str::<serde_json::Value>(&s).is_ok());

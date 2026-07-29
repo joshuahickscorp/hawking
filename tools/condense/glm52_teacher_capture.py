@@ -59,6 +59,7 @@ from glm52_common import (  # noqa: E402
     atomic_json,
     canonical,
     read_sealed_json,
+    resolve_artifact,
     seal,
     utc_now,
     verify_sealed,
@@ -78,7 +79,7 @@ TEACHER_DIR = SUPPORT / "source_fetch" / "teacher"
 CAPSULES = TEACHER_DIR / "capsules"
 LEDGER = TEACHER_DIR / "GLM52_TEACHER_EVIDENCE_LEDGER.jsonl"
 POLICY_PATH = ROOT / "GLM52_TEACHER_EVIDENCE_POLICY.json"
-GRAPH_PATH = ROOT / "GLM52_SHARD_DEPENDENCY_GRAPH.json"
+GRAPH_PATH = resolve_artifact("GLM52_SHARD_DEPENDENCY_GRAPH.json")
 SCHEDULE_PATH = ROOT / "GLM52_STREAMING_SCHEDULE.json"
 MANIFEST_PATH = ROOT / "GLM52_OFFICIAL_MANIFEST.json"
 

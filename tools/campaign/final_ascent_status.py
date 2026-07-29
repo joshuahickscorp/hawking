@@ -979,7 +979,7 @@ def derive_lane_status(
         return "BLOCKED_ON_ODYSSEY_WINNER", "needs Odyssey winning checkpoint"
     if lane_id == "FA07":
         fabric = file_present(root, "FABRIC_SOFTWARE_STATUS.json")
-        bridge = file_present(root, "HAWKING_BRIDGE_SURFACE.json")
+        bridge = file_present(root, "crates/hawking-adapters/generated/HAWKING_BRIDGE_SURFACE.json")
         if fabric or bridge:
             return "PREP_IN_TREE", "fabric/bridge receipts present; not on critical capability path"
         return "QUEUED_PREP", "bounded preparatory surface work"

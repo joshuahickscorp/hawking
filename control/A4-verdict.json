@@ -1,0 +1,29 @@
+{
+  "schema": "hawking.300k.lane_verdict.v1",
+  "lane": "A4",
+  "title": "One supervisor and one canonical document per subsystem",
+  "verdict": "PARTIAL_ACCEPT_ZERO_CREDIT",
+  "measured": {
+    "shell": {"before": 25314, "after": 25281, "eliminated": 33, "relocated": 0,
+              "jobs_before": 14, "jobs_after": 14, "all_jobs_resolve": true},
+    "markdown": {"before": 22533, "after": 6604, "eliminated": 0, "relocated": 16073,
+                 "canonical_docs": 40, "archived_docs": 103},
+    "gates_run": 10, "gates_failed": 0
+  },
+  "controller_error": {
+    "what": "The lane was forbidden tools/bench, tools/training, tools/strand and tools/foundry to avoid colliding with lane A3, but 86.6% of all shell LOC lives in exactly those trees.",
+    "verified": "tools/bench 12,644 (49.9%) + tools/training 5,643 (22.3%) + tools/strand 3,635 (14.4%) + tools/condense 631 = 22,553 of 25,314. A4's owned surface was 2,761 lines, already thin.",
+    "consequence": "The <8,000 shell target was unreachable by construction. The lane refused it with the correct reason rather than deleting something it should not have. Shell condensation now belongs to A3, which owns those trees."
+  },
+  "credit_analysis": {
+    "eliminated_loc": 33,
+    "relocated_loc": 16073,
+    "campaign_credit": 33,
+    "why": "The campaign gives relocation zero credit toward the target. Archiving 103 historical documents under an indexed archive path improves clone, index and search size, and is worth keeping, but it does not reduce active LOC. Markdown reduction is relocation by nature: a sealed negative or science receipt cannot be eliminated, only moved with an index row."
+  },
+  "structural_finding": {
+    "statement": "Markdown is not a lever for this campaign.",
+    "detail": "All 22,533 markdown lines are either canonical current documentation that must stay, or historical science that may only be archived. Zero lines were eliminable. Any future plan that counts markdown toward the 300k target is counting relocation."
+  },
+  "integration": "Not merged. The lane could not write to the worktree git object DB (sandbox), and its output earns 33 lines of credit. The archive structure is worth re-running under A3's ownership once the shell trees are free."
+}

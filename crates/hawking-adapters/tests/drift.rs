@@ -1,8 +1,8 @@
 //! Drift test: regenerating schemas/types/CLI/events produces no diff against goldens.
 //!
-//! Also checks repo-root deliverables when present, so hand-edits to
-//! `HAWKING_ADAPTER_*.json` / `HAWKING_CANONICAL_EVENTS.json` /
-//! `HAWKING_CLI_SURFACE.json` fail until `hawking-adapters-codegen` is re-run.
+//! Adapter deliverables live only under `crates/hawking-adapters/generated/`.
+//! Hand-edits there fail until `hawking-adapters-codegen` is re-run. Repo-root
+//! duplicates of the nine published JSON names must not reappear.
 
 use std::path::PathBuf;
 
@@ -50,21 +50,28 @@ fn generated_artifacts_match_checked_in() {
 }
 
 #[test]
-fn repo_root_deliverables_match_registry() {
-    let root = workspace_root();
+fn adapter_deliverables_live_under_generated_only() {
+    let workspace = workspace_root();
+    let crate_dir = crate_root();
     let mut failures = Vec::new();
     for (name, contents) in repo_root_artifacts() {
-        let path = root.join(name);
-        if !path.exists() {
+        let root_path = workspace.join(name);
+        if root_path.exists() {
             failures.push(format!(
-                "missing repo-root deliverable {name} — run hawking-adapters-codegen"
+                "repo-root duplicate must not exist: {name} (canonical path is crates/hawking-adapters/generated/{name})"
+            ));
+        }
+        let gen_path = crate_dir.join("generated").join(name);
+        if !gen_path.exists() {
+            failures.push(format!(
+                "missing generated deliverable generated/{name} — run hawking-adapters-codegen"
             ));
             continue;
         }
-        let on_disk = std::fs::read_to_string(&path).expect("read root deliverable");
+        let on_disk = std::fs::read_to_string(&gen_path).expect("read generated deliverable");
         if on_disk != contents {
             failures.push(format!(
-                "drift in repo-root {name} ({} bytes on disk vs {} generated)",
+                "drift in generated/{name} ({} bytes on disk vs {} generated)",
                 on_disk.len(),
                 contents.len()
             ));
@@ -72,7 +79,7 @@ fn repo_root_deliverables_match_registry() {
     }
     assert!(
         failures.is_empty(),
-        "repo-root deliverable drift:\n{}",
+        "adapter deliverable placement/drift:\n{}",
         failures.join("\n")
     );
 }
@@ -81,7 +88,7 @@ fn repo_root_deliverables_match_registry() {
 fn regenerating_produces_no_diff() {
     // Semantic alias of the two checks above: one assertion site for the contract.
     generated_artifacts_match_checked_in();
-    repo_root_deliverables_match_registry();
+    adapter_deliverables_live_under_generated_only();
 }
 
 #[test]

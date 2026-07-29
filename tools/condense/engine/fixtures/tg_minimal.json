@@ -1,0 +1,6 @@
+{
+  "schema": "hawking.condense.campaign_fixture.v1",
+  "campaign_id": "tg",
+  "description": "Minimal fixture for retired tg controllers (lane H1).",
+  "artifacts": []
+}

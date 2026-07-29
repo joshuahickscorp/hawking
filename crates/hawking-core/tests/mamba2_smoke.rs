@@ -1,19 +1,7 @@
-//! Mamba2 loader + deterministic greedy smoke.
-//!
-//! Auto-activates when `models/mamba2-370m-Q4_K_M.gguf` or
-//! `models/mamba2-370m-f16.gguf` is present. The current engine is a
-//! correctness-first CPU/Metal hybrid reference path; this test is intentionally
-//! short so it can sit in the post-G1a chain as an architecture-breadth gate.
-
-use std::path::PathBuf;
-
 use hawking_core::{EngineConfig, GenerateRequest, SamplingParams, StreamEvent};
-
+use std::path::PathBuf;
 fn locate() -> Option<PathBuf> {
-    for rel in [
-        "models/mamba2-370m-Q4_K_M.gguf",
-        "models/mamba2-370m-f16.gguf",
-    ] {
+    for rel in ["models/mamba2-370m-Q4_K_M.gguf", "models/mamba2-370m-f16.gguf"] {
         let mut dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
         loop {
             let cand = dir.join(rel);
@@ -27,19 +15,13 @@ fn locate() -> Option<PathBuf> {
     }
     None
 }
-
 fn greedy_ids(weights: &PathBuf) -> Vec<u32> {
-    let mut engine =
-        hawking_core::model::load_engine(weights, EngineConfig::default()).expect("load mamba2");
+    let mut engine = hawking_core::model::load_engine(weights, EngineConfig::default()).expect("load mamba2");
     assert_eq!(engine.model_arch(), "mamba2");
     let req = GenerateRequest {
         prompt: "The capital of France is".into(),
         max_new_tokens: 4,
-        sampling: SamplingParams {
-            temperature: 0.0,
-            seed: Some(0),
-            ..Default::default()
-        },
+        sampling: SamplingParams { temperature: 0.0, seed: Some(0), ..Default::default() },
         stop: Vec::new(),
         abort: None,
         max_stall_ms: 0,
@@ -55,7 +37,6 @@ fn greedy_ids(weights: &PathBuf) -> Vec<u32> {
         .expect("mamba2 generate");
     ids
 }
-
 #[test]
 fn mamba2_loads_and_greedy_is_deterministic() {
     let Some(weights) = locate() else {

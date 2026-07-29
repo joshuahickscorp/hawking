@@ -94,27 +94,21 @@ pub fn token_embd_vocab_size_opt(g: &GgufFile) -> Option<usize> {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     fn meta(pairs: &[(&str, MetaValue)]) -> HashMap<String, MetaValue> {
         pairs
-            .iter()
-            .map(|(k, v)| (k.to_string(), v.clone()))
+            .iter().map(|(k, v)| (k.to_string(), v.clone()))
             .collect()
     }
-
     #[test]
     fn req_usize_reads_and_errors_with_prefixed_message() {
-        let m = meta(&[("qwen2.block_count", MetaValue::U32(36))]);
-        let r = ArchReader::from_metadata(&m, "qwen2");
+        let m = meta(&[("qwen2.block_count", MetaValue::U32(36))]); let r = ArchReader::from_metadata(&m, "qwen2");
         assert_eq!(r.req_usize("block_count").unwrap(), 36);
-        // Missing required key → exact "missing <prefix>.<field>" message.
         let err = r.req_usize("embedding_length").unwrap_err();
         match err {
             Error::Model(s) => assert_eq!(s, "missing qwen2.embedding_length"),
             other => panic!("expected Error::Model, got {other:?}"),
         }
     }
-
     #[test]
     fn opt_usize_and_f32_defaults() {
         let m = meta(&[
@@ -122,19 +116,15 @@ mod tests {
             ("gemma2.rope.freq_base", MetaValue::F32(10_000.0)),
         ]);
         let rl = ArchReader::from_metadata(&m, "llama");
-        // present → read value; absent → fallback.
         assert_eq!(rl.opt_usize("attention.head_count_kv", 32), 8);
         assert_eq!(rl.opt_usize("attention.key_length", 64), 64);
         let rg = ArchReader::from_metadata(&m, "gemma2");
         assert_eq!(rg.opt_f32("rope.freq_base", 1.0), 10_000.0);
         assert_eq!(rg.opt_f32("attention.layer_norm_rms_epsilon", 1e-6), 1e-6);
     }
-
     #[test]
     fn prefix_isolation() {
-        // A key under a different prefix must not be visible.
-        let m = meta(&[("llama.block_count", MetaValue::U32(40))]);
-        let r = ArchReader::from_metadata(&m, "qwen2");
+        let m = meta(&[("llama.block_count", MetaValue::U32(40))]); let r = ArchReader::from_metadata(&m, "qwen2");
         assert!(r.req_usize("block_count").is_err());
     }
 }

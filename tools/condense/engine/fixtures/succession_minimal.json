@@ -1,0 +1,6 @@
+{
+  "schema": "hawking.condense.campaign_fixture.v1",
+  "campaign_id": "succession",
+  "description": "Minimal fixture for retired succession controllers (lane H1).",
+  "artifacts": []
+}

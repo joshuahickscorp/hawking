@@ -1,0 +1,30 @@
+{
+  "schema": "hawking.300k.subsystem_floor.v1",
+  "subsystem": "HIDE",
+  "measured_at": "2026-07-29",
+  "verdict": "AT_FLOOR",
+  "attempt": {
+    "lane": "J1-R",
+    "scope": "crates/hide-* (20 crates), app/src, crates/hawking-context, Cargo.toml",
+    "start_loc": 125440,
+    "target_loc": 95000,
+    "achieved_loc": 122904,
+    "eliminated": 2536,
+    "relocated": 0,
+    "fraction_of_target": 0.083
+  },
+  "merged": false,
+  "why_not_merged": "2,536 lines is 0.55% of the tree, and the controller's logical-case detector reported a single unexplained case delta (3,925 -> 3,924) that could not be traced to a removed #[test] in either version of the file it named. A marginal saving is not worth merging an unexplained assertion delta. The measurement is kept; the diff is not.",
+  "refusals_with_reasons": [
+    "Remaining ~27,936 LOC to target not available without removing live product: fleet fabric, YOU, personalize, compat, program-runtime, and the backend host integration surface.",
+    "Orphan crates (hide-browser, hide-connectors, hide-objects, hide-sdk, hide-state) are self-tested product schemas and workspace members, not dead code.",
+    "hide-core::automation (~1,716 LOC, zero external callers) is the designed YOU automation engine with a non-widening PermissionSet.",
+    "Dual event models (hide-core::event vs hide-protocol) are must_not_delete until the Bridge lane; the inventory and sealed negatives forbid collapsing them here.",
+    "Crate merges that would not delete compiled code were deferred rather than paper-merged, because merge-without-delete earns zero credit."
+  ],
+  "controller_error_corrected": "The first attempt returned zero eliminated because the contract forbade Cargo.toml -- making crate merges impossible -- and forbade hawking-context, where ClassedMemorySystem actually lives. Both were reopened for the second attempt, which is why this refusal is a measurement rather than a scoping artifact.",
+  "floor": {
+    "hide_active_loc": 115089,
+    "note": "HIDE is 25% of the 458,272 tree and does not condense materially without removing live product. Relocating it out of the monorepo earns zero credit under this campaign."
+  }
+}

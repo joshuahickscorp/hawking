@@ -1,0 +1,102 @@
+{
+  "schema": "hawking.condense.experiment_spec.v1",
+  "campaign_id": "succession",
+  "title": "Succession (succ_*) campaign shell",
+  "family": "succession",
+  "status": "retired",
+  "resource_class": "light",
+  "phases": [
+    "precheck",
+    "measure",
+    "allocate",
+    "pack",
+    "seal",
+    "monitor",
+    "report"
+  ],
+  "steps": [
+    {
+      "id": "precheck.fences",
+      "phase": "precheck",
+      "handler": "precheck.fences",
+      "description": "Authorization fences stay closed"
+    },
+    {
+      "id": "measure.record",
+      "phase": "measure",
+      "handler": "record",
+      "description": "Record historical measure surface"
+    },
+    {
+      "id": "allocate.record",
+      "phase": "allocate",
+      "handler": "record",
+      "description": "Record allocation policy"
+    },
+    {
+      "id": "pack.record",
+      "phase": "pack",
+      "handler": "record",
+      "description": "Pack step (optional)",
+      "optional": true
+    },
+    {
+      "id": "seal.receipt",
+      "phase": "seal",
+      "handler": "seal.receipt",
+      "description": "Seal campaign receipt"
+    },
+    {
+      "id": "monitor.heartbeat",
+      "phase": "monitor",
+      "handler": "record",
+      "description": "Lease / heartbeat",
+      "optional": true
+    },
+    {
+      "id": "report.summary",
+      "phase": "report",
+      "handler": "report.summary",
+      "description": "Campaign summary"
+    }
+  ],
+  "receipt": "",
+  "fixture": "engine/fixtures/succession_minimal.json",
+  "reproduction": "python3.12 -m tools.condense.engine.runtime tools/condense/engine/specs/succession.json --work-dir reports/condense/engine/succession",
+  "authorization_fences": [],
+  "reopen": [
+    {
+      "id": "new_evidence",
+      "description": "Reopen only when sealed science law for this family is superseded",
+      "predicate": "succession_law_superseded",
+      "evidence": []
+    }
+  ],
+  "notes": "succ_* controllers retired into engine lifecycle. Keep receipts in reports/ and git history.",
+  "metadata": {
+    "retired_controllers_deleted": [
+      "succ_admission",
+      "succ_audit",
+      "succ_calibrate",
+      "succ_cli",
+      "succ_engine",
+      "succ_events",
+      "succ_frontier",
+      "succ_gc",
+      "succ_gravity",
+      "succ_gravity_policy",
+      "succ_gravity_receipts",
+      "succ_harvest",
+      "succ_press",
+      "succ_queue",
+      "succ_retire",
+      "succ_state",
+      "succ_telegram",
+      "succ_transition",
+      "succ_twin",
+      "succ_watch",
+      "succ_watchdog"
+    ],
+    "lane": "H1"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "specs_written": 137,
+  "py_archived": 24,
+  "shells": 115,
+  "relocated_loc": 7879,
+  "frameworks": [
+    "bench_oracle_parallel",
+    "bench_shell_harness",
+    "strand_conductor_parallel",
+    "strand_eval_dup",
+    "strand_shell_harness",
+    "training_chain_parallel",
+    "training_shell_harness"
+  ]
+}

@@ -80,15 +80,38 @@ members = [
     "tools/awq_bake",
     "tools/tq_bake",
 ]
-# Absorbed STRAND quant track (from ~/Downloads/strand, tag `quant-handoff`). These are
-# self-contained packages (concrete deps, no workspace inheritance) consumed by path
-# dependency where wired - kept OUT of the default workspace build so `cargo build
-# --workspace` and all golden hashes are unchanged. Build/test them standalone with
-# `cargo test --manifest-path vendor/strand-quant/Cargo.toml`. strand-decode-kernel is
-# strand's reference runtime + gate harness (not a hawking build dep; mirror source).
+# Default build surface: the hawking inference stack and its bake tools. The 20 hide-*
+# crates stay workspace members, so `cargo build -p hide-serve` and the HIDE CI job work
+# exactly as before -- but a bare `cargo build`, `cargo test` or `cargo clippy` no longer
+# drags 96,858 lines of HIDE through every change to the decode path. The hawking binary's
+# dependency closure contains no hide crate, so nothing here is load-bearing for it.
+default-members = [
+    "crates/hawking",
+    "crates/hawking-core",
+    "crates/hawking-serve",
+    "crates/hawking-bench",
+    "crates/hawking-speculate",
+    "crates/hawking-seed-c",
+    "crates/hawking-context",
+    "crates/hawking-index",
+    "crates/hawking-orch",
+    "crates/hawking-research",
+    "crates/hawking-eval",
+    "crates/hawking-events",
+    "crates/hawking-adapters",
+    "tools/q4k_fast",
+    "tools/awq_bake",
+    "tools/tq_bake",
+]
+# Absorbed STRAND quant track (from ~/Downloads/strand, tag `quant-handoff`). Self-contained
+# package (concrete deps, no workspace inheritance) consumed by path dependency where wired -
+# kept OUT of the workspace build so `cargo build --workspace` and all golden hashes are
+# unchanged. Build/test it standalone with
+# `cargo test --manifest-path vendor/strand-quant/Cargo.toml`.
+# strand-decode-kernel was archived 2026-07-28 (see docs/ARCHIVE_INDEX_2.md): zero reverse
+# dependencies, and its shader had diverged from the hawking-core port it once seeded.
 exclude = [
     "vendor/strand-quant",
-    "vendor/strand-decode-kernel",
 ]
 
 [workspace.package]

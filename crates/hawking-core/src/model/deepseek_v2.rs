@@ -1,14 +1,14 @@
-use super::weights::{dequant_f16, tensor_ref, TensorRef};
+use super::weights::{dequant_f16, dequant_f32, dequant_f32_opt, dequant_ref_into, tensor_ref, TensorRef};
+use super::dispatch::rmsnorm_dispatch;
 use crate::cache::KvCache;
 use crate::engine::{
     Engine, EngineConfig, GenStats, GenerateRequest, SpeculateMode, StopReason, StreamEvent,
 };
 use crate::gguf::{GgmlType, GgufFile, TensorInfo};
-use crate::kernels::{add_inplace, embed_lookup, gemv_f32, rmsnorm, rope_inplace, silu_mul};
+use crate::kernels::{add_inplace, embed_lookup, gemv_f32, rope_inplace, silu_mul};
 use crate::metal::{DecodeArena, MetalContext, PinnedBuffer};
 use crate::moe::topk_gate;
 use crate::profile::KernelProfile;
-use crate::quant;
 use crate::sample::Sampler;
 use crate::tokenizer::Tokenizer;
 use crate::{Error, Result};
@@ -390,21 +390,6 @@ impl DeepSeekV2 {
         profile.selected.gemm_q4_k_schedule.as_str()
     }
 
-    fn dequant(g: &GgufFile, name: &str) -> Result<Vec<f32>> {
-        let info = g
-            .tensor(name)
-            .ok_or_else(|| Error::Model(format!("missing tensor `{name}`")))?;
-        let bytes = g.tensor_bytes(name).unwrap();
-        quant::dequant_to_f32(info, bytes)
-    }
-
-    fn dequant_opt(g: &GgufFile, name: &str) -> Result<Option<Vec<f32>>> {
-        if g.tensor(name).is_some() {
-            Ok(Some(Self::dequant(g, name)?))
-        } else {
-            Ok(None)
-        }
-    }
 
     /// Build a `TensorRef` for a single (non-fused) tensor -- the
     /// returned ref points into the GGUF mmap.
@@ -449,15 +434,8 @@ impl DeepSeekV2 {
             .collect())
     }
 
-    /// Dequant a `TensorRef`'s bytes from the engine's mmap into
-    /// `buf`, resizing the buffer in place. Reused across calls with
-    /// the same shape.
     fn dequant_ref_into(&self, t: &TensorRef, buf: &mut Vec<f32>) -> Result<()> {
-        if buf.len() != t.n_elems {
-            buf.resize(t.n_elems, 0.0);
-        }
-        let bytes = &self.gguf.mmap[t.offset..t.offset + t.byte_size];
-        quant::dequant_into(t.dtype, bytes, buf)
+        dequant_ref_into(&self.gguf.mmap, t, buf)
     }
 }
 
@@ -491,7 +469,7 @@ impl Engine for DeepSeekV2 {
         };
 
         let embed = dequant_f16(&gguf, "token_embd.weight")?;
-        let final_norm = Self::dequant(&gguf, "output_norm.weight")?;
+        let final_norm = dequant_f32(&gguf, "output_norm.weight")?;
         let lm_head = if gguf.tensor("output.weight").is_some() {
             let mut head = dequant_f16(&gguf, "output.weight")?;
             // path-to-50 lever 1: gather the kept rows so the GEMV + argmax
@@ -519,25 +497,25 @@ impl Engine for DeepSeekV2 {
         for li in 0..cfg.n_layers {
             let lp = |suf: &str| format!("blk.{li}.{suf}");
 
-            let attn_norm = Self::dequant(&gguf, &lp("attn_norm.weight"))?;
-            let ffn_norm = Self::dequant(&gguf, &lp("ffn_norm.weight"))?;
+            let attn_norm = dequant_f32(&gguf, &lp("attn_norm.weight"))?;
+            let ffn_norm = dequant_f32(&gguf, &lp("ffn_norm.weight"))?;
 
             // MLA layout: kv_a_proj_with_mqa, kv_a_norm, kv_b_proj, q
             // (or q_a_proj/q_a_norm/q_b_proj if q-lora is used), o.
-            let q_proj = Self::dequant_opt(&gguf, &lp("attn_q.weight"))?.unwrap_or_default();
-            let q_a_proj = Self::dequant_opt(&gguf, &lp("attn_q_a.weight"))?;
-            let q_a_norm = Self::dequant_opt(&gguf, &lp("attn_q_a_norm.weight"))?;
-            let q_b_proj = Self::dequant_opt(&gguf, &lp("attn_q_b.weight"))?;
-            let kv_a_proj_with_mqa = Self::dequant(&gguf, &lp("attn_kv_a_mqa.weight"))?;
-            let kv_a_norm = Self::dequant(&gguf, &lp("attn_kv_a_norm.weight"))?;
-            let kv_b_proj = Self::dequant(&gguf, &lp("attn_kv_b.weight"))?;
-            let o_proj = Self::dequant(&gguf, &lp("attn_output.weight"))?;
+            let q_proj = dequant_f32_opt(&gguf, &lp("attn_q.weight"))?.unwrap_or_default();
+            let q_a_proj = dequant_f32_opt(&gguf, &lp("attn_q_a.weight"))?;
+            let q_a_norm = dequant_f32_opt(&gguf, &lp("attn_q_a_norm.weight"))?;
+            let q_b_proj = dequant_f32_opt(&gguf, &lp("attn_q_b.weight"))?;
+            let kv_a_proj_with_mqa = dequant_f32(&gguf, &lp("attn_kv_a_mqa.weight"))?;
+            let kv_a_norm = dequant_f32(&gguf, &lp("attn_kv_a_norm.weight"))?;
+            let kv_b_proj = dequant_f32(&gguf, &lp("attn_kv_b.weight"))?;
+            let o_proj = dequant_f32(&gguf, &lp("attn_output.weight"))?;
 
             let mode = if li < cfg.first_k_dense_layers {
                 LayerMode::Dense {
-                    gate_w: Self::dequant(&gguf, &lp("ffn_gate.weight"))?,
-                    up_w: Self::dequant(&gguf, &lp("ffn_up.weight"))?,
-                    down_w: Self::dequant(&gguf, &lp("ffn_down.weight"))?,
+                    gate_w: dequant_f32(&gguf, &lp("ffn_gate.weight"))?,
+                    up_w: dequant_f32(&gguf, &lp("ffn_up.weight"))?,
+                    down_w: dequant_f32(&gguf, &lp("ffn_down.weight"))?,
                 }
             } else {
                 // Modern GGUF MoE layout (llama.cpp post-2024-Q3):
@@ -553,7 +531,7 @@ impl Engine for DeepSeekV2 {
                 //
                 // Older exports stored one tensor per expert; we no longer
                 // try those -- if a model needs them, it predates hawking.
-                let gate_logits_w = Self::dequant(&gguf, &lp("ffn_gate_inp.weight"))?;
+                let gate_logits_w = dequant_f32(&gguf, &lp("ffn_gate_inp.weight"))?;
 
                 let routed_fused = MoEFusedTensors {
                     gate_w: tensor_ref(&gguf, &lp("ffn_gate_exps.weight"))?,
@@ -1984,12 +1962,7 @@ impl DeepSeekV2 {
     /// otherwise. Mirrors `kernels::rmsnorm`'s signature so call
     /// sites read the same.
     fn rmsnorm_dispatch(&self, x: &[f32], weight: &[f32], eps: f32, out: &mut [f32]) -> Result<()> {
-        #[cfg(target_os = "macos")]
-        if let Some(ctx) = &self.metal_ctx {
-            return crate::kernels::rmsnorm_metal(ctx, x, weight, eps, out);
-        }
-        rmsnorm(x, weight, eps, out);
-        Ok(())
+        rmsnorm_dispatch(self.metal_ctx.as_ref(), x, weight, eps, out)
     }
 
     /// LM-head / embedding-tied GEMV dispatcher. `w_f16` is the

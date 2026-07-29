@@ -8,6 +8,13 @@ repository.workspace = true
 authors.workspace = true
 description = "Backend composition and connector facade for HIDE"
 
+[features]
+# TQ: read a `.tq` (strand v2) artifact for a measured effective-context multiplier.
+# OFF by default so the product build stays free of the 37k-LOC strand-quant codec.
+# Enable with: cargo build -p hide-backend --features tq
+default = []
+tq = ["dep:strand-quant"]
+
 [dependencies]
 hide-core = { path = "../hide-core" }
 # YOU / CHAT / IDE surface graph: claim-only handoffs, one session three lenses.
@@ -46,7 +53,8 @@ hawking-index = { path = "../hawking-index" }
 # only target-verified tokens. Default-off; no speculate path enabled here.
 hawking-speculate = { path = "../hawking-speculate" }
 # Spine A: read the .tq (strand v2) artifact to derive a measured effective-context multiplier.
-strand-quant = { path = "../../vendor/strand-quant" }
+# Optional; behind the `tq` feature (default off).
+strand-quant = { path = "../../vendor/strand-quant", optional = true }
 hawking-orch = { path = "../hawking-orch" }
 hawking-research = { path = "../hawking-research" }
 futures = { workspace = true }

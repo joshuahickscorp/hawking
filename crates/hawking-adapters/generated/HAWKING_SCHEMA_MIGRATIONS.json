@@ -18,13 +18,13 @@
           "to": "v2"
         }
       ],
-      "path": "HAWKING_ADAPTER_REGISTRY.json"
+      "path": "crates/hawking-adapters/generated/HAWKING_ADAPTER_REGISTRY.json"
     },
     {
       "current": "v1",
       "id": "hawking.adapters.abi",
       "migrations": [],
-      "path": "HAWKING_ADAPTER_ABI.json"
+      "path": "crates/hawking-adapters/generated/HAWKING_ADAPTER_ABI.json"
     },
     {
       "current": "v1",
@@ -43,13 +43,13 @@
           "to": "v1"
         }
       ],
-      "path": "HAWKING_CANONICAL_EVENTS.json"
+      "path": "crates/hawking-adapters/generated/HAWKING_CANONICAL_EVENTS.json"
     },
     {
       "current": "v1",
       "id": "hawking.bridge.surface",
       "migrations": [],
-      "path": "HAWKING_BRIDGE_SURFACE.json"
+      "path": "crates/hawking-adapters/generated/HAWKING_BRIDGE_SURFACE.json"
     },
     {
       "current": "v1",
@@ -66,7 +66,7 @@
           "to": "v1"
         }
       ],
-      "path": "HAWKING_CLI_SURFACE.json"
+      "path": "crates/hawking-adapters/generated/HAWKING_CLI_SURFACE.json"
     },
     {
       "current": "v1",

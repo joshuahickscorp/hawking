@@ -1,0 +1,6 @@
+{
+  "schema": "hawking.condense.campaign_fixture.v1",
+  "campaign_id": "gravity_frontier",
+  "description": "Minimal frontier/doctor fixture.",
+  "artifacts": []
+}

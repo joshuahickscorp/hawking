@@ -67,6 +67,7 @@ import sys
 import time
 
 import numpy as np
+from oracle_common import check_rss, rel_rmse
 
 # ----------------------------------------------------------------------------
 MODEL = os.environ.get(
@@ -105,12 +106,6 @@ except Exception:  # pragma: no cover
         return float("nan")
 
 
-def check_rss(where):
-    g = rss_gb()
-    if g > RSS_CEIL_GB:
-        sys.stderr.write(f"[FATAL] RSS {g:.2f} GB > {RSS_CEIL_GB} GB at {where}\n")
-        sys.exit(2)
-    return g
 
 
 # ============================================================================
@@ -167,11 +162,6 @@ def max_over_mean(x):
     return float(x.max() / m) if m > 0 else float("inf")
 
 
-def rel_rmse(recon, ref):
-    recon = recon.ravel().astype(np.float64)
-    ref = ref.ravel().astype(np.float64)
-    denom = np.linalg.norm(ref)
-    return float(np.linalg.norm(recon - ref) / denom) if denom > 0 else float("nan")
 
 
 # ============================================================================

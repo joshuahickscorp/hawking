@@ -1,0 +1,7 @@
+{
+  "schema": "hawking.condense.campaign_fixture.v1",
+  "campaign_id": "glm52",
+  "description": "Minimal fixture for engine dry-run; no weights, no network.",
+  "artifacts": [],
+  "notes": "Live readers use resolve_artifact for real seals."
+}

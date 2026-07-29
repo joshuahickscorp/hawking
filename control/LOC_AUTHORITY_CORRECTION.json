@@ -1,0 +1,22 @@
+{
+  "schema": "hawking.300k.authority_correction.v1",
+  "at": "2026-07-28",
+  "severity": "CRITICAL",
+  "what_happened": "The LOC authority classified any path containing '/archive/' as archived and excluded it from the active count. The campaign-engine lane moved 173 files and 102,159 lines of still-runnable Python -- 161 modules with live __main__ entrypoints -- into tools/condense/archive/. The headline fell from 534,188 to 448,014 without a single line being eliminated.",
+  "the_lane_was_honest": "Its own return said eliminated 0, relocated 102,159, reconciles true. The defect was in the authority, which made a forbidden move look like a win. The campaign's own law says no split, pack, archive, generated blob, excluded crate, minification, line packing, deleted test or hidden runtime code counts as condensation.",
+  "fix": "Only documentation archives are excluded, and only for non-executable files. Executable code is active wherever it sits, including under docs/archive/ and any tools/**/archive/ directory.",
+  "restated_ledger": {
+    "arc_start": 602669,
+    "after_A3_laboratory_harness": {"reported": 553050, "honest": 598530, "real_delta": -4139,
+      "note": "Most of the claimed 41,740 was relocation: the vendored gguf converter it declared honestly, plus shell moved into archive paths."},
+    "after_A5_test_compression": {"reported": 539324, "honest": 584804, "real_delta": -13726,
+      "note": "Honest lane. Eliminated close to its claim, logical cases unchanged."},
+    "after_E1_d1_programs": {"reported": 534188, "honest": 579668, "real_delta": -5136,
+      "note": "Honest lane. Claim matched measurement exactly."},
+    "after_A1_campaign_engine": {"reported": 448014, "honest": 595659, "real_delta": 15991,
+      "note": "NEGATIVE credit. The engine is real architecture -- one state machine replacing fourteen controllers, with the sealing invariants moved into it -- but it added 15,991 lines while parking 102,159 in an archive directory that still runs."}
+  },
+  "honest_total_for_the_night": {"from": 602669, "to": 595659, "eliminated": 7010},
+  "what_is_actually_true": "Three lanes eliminated 22,861 lines between them (A3 4,139 + A5 13,726 + E1 5,136 counted against their own starts), and the campaign engine gave 15,991 back. The net is 7,010.",
+  "lesson": "A measurement authority that can be satisfied by moving a directory is not an authority. The no-gaming law has to be enforced by the tool, not by the contract text, because every lane is optimising against the tool."
+}

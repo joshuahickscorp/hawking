@@ -1,10 +1,7 @@
 #![cfg(target_os = "macos")]
-
 use std::path::PathBuf;
-
 const PROMPT: &str = "Once upon a time";
 const MAX_NEW_TOKENS: usize = 8;
-
 fn run_ids(max_routed_expert_ram_mb: Option<usize>) -> Vec<u32> {
     let weights = PathBuf::from("../../models/deepseek-v2-lite-q4.gguf");
     let profile_path = PathBuf::from("../../profiles/deepseek-v2-lite-q4.m3pro18.json");
@@ -18,11 +15,7 @@ fn run_ids(max_routed_expert_ram_mb: Option<usize>) -> Vec<u32> {
     let req = hawking_core::GenerateRequest {
         prompt: PROMPT.into(),
         max_new_tokens: MAX_NEW_TOKENS,
-        sampling: hawking_core::SamplingParams {
-            temperature: 0.0,
-            seed: Some(42),
-            ..Default::default()
-        },
+        sampling: hawking_core::SamplingParams { temperature: 0.0, seed: Some(42), ..Default::default() },
         stop: Vec::new(),
         abort: None,
         max_stall_ms: 60_000,
@@ -38,7 +31,6 @@ fn run_ids(max_routed_expert_ram_mb: Option<usize>) -> Vec<u32> {
         .expect("generate");
     ids
 }
-
 #[test]
 fn v2lite_memory_limit_noop_is_bit_identical() {
     let weights = PathBuf::from("../../models/deepseek-v2-lite-q4.gguf");

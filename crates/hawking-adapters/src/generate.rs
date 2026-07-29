@@ -129,7 +129,9 @@ pub fn generate_all() -> Vec<GeneratedArtifact> {
     ]
 }
 
-/// Repo-root deliverables written by the codegen binary.
+/// Published adapter deliverable basenames (canonical location:
+/// `crates/hawking-adapters/generated/<name>`). Used by drift tests to ensure
+/// these names are not re-published at the repo root.
 pub fn repo_root_artifacts() -> Vec<(&'static str, String)> {
     vec![
         ("HAWKING_ADAPTER_ABI.json", adapter_abi_json()),
@@ -1102,7 +1104,7 @@ fn schema_migrations_json() -> String {
             {
                 "id": "hawking.adapters.registry",
                 "current": "v2",
-                "path": "HAWKING_ADAPTER_REGISTRY.json",
+                "path": "crates/hawking-adapters/generated/HAWKING_ADAPTER_REGISTRY.json",
                 "migrations": [
                     {
                         "from": "v1",
@@ -1120,13 +1122,13 @@ fn schema_migrations_json() -> String {
             {
                 "id": "hawking.adapters.abi",
                 "current": "v1",
-                "path": "HAWKING_ADAPTER_ABI.json",
+                "path": "crates/hawking-adapters/generated/HAWKING_ADAPTER_ABI.json",
                 "migrations": []
             },
             {
                 "id": "hawking.events.canonical",
                 "current": "v1",
-                "path": "HAWKING_CANONICAL_EVENTS.json",
+                "path": "crates/hawking-adapters/generated/HAWKING_CANONICAL_EVENTS.json",
                 "migrations": [
                     {
                         "from": "v1-pre-you",
@@ -1145,13 +1147,13 @@ fn schema_migrations_json() -> String {
             {
                 "id": "hawking.bridge.surface",
                 "current": "v1",
-                "path": "HAWKING_BRIDGE_SURFACE.json",
+                "path": "crates/hawking-adapters/generated/HAWKING_BRIDGE_SURFACE.json",
                 "migrations": []
             },
             {
                 "id": "hawking.cli.surface",
                 "current": "v1",
-                "path": "HAWKING_CLI_SURFACE.json",
+                "path": "crates/hawking-adapters/generated/HAWKING_CLI_SURFACE.json",
                 "migrations": [
                     {
                         "from": "none",

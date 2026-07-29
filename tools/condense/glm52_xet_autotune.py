@@ -42,6 +42,7 @@ from glm52_common import (  # noqa: E402
     atomic_text,
     canonical,
     read_sealed_json,
+    resolve_artifact,
     seal,
     sha256_file,
     verify_sealed,
@@ -405,8 +406,14 @@ def resource_policy_binding(policy: Mapping[str, Any]) -> dict[str, Any]:
 def load_and_validate_inputs(root: Path = REPO_ROOT) -> dict[str, dict[str, Any]]:
     """Load the eight sealed prerequisites and reject any identity drift."""
     result: dict[str, dict[str, Any]] = {}
+    root_path = Path(root)
+    use_resolver = root_path.resolve() == REPO_ROOT.resolve()
     for name, expected_schema, status_prefixes in INPUT_CONTRACTS:
-        value = read_sealed_json(root / name)
+        if use_resolver and name == "GLM52_SHARD_DEPENDENCY_GRAPH.json":
+            path = resolve_artifact(name)
+        else:
+            path = root_path / name
+        value = read_sealed_json(path)
         if value.get("schema") != expected_schema:
             raise Glm52Error(f"{name} schema mismatch")
         if not _status_has_prefix(value.get("status"), status_prefixes):

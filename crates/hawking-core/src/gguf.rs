@@ -476,7 +476,6 @@ impl<'a> Cursor<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[test]
     fn align_up_works() {
         assert_eq!(align_up(0, 32), 0);
@@ -484,7 +483,6 @@ mod tests {
         assert_eq!(align_up(32, 32), 32);
         assert_eq!(align_up(33, 32), 64);
     }
-
     #[test]
     fn block_layout_q4k_is_144() {
         let (bs, bb) = GgmlType::Q4_K.block_layout();
