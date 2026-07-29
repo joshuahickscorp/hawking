@@ -14,7 +14,7 @@
 //! | `UiEvent` | `hide-core/src/api.rs` | Wire-B UI bus (projection of Event) |
 //! | hide-protocol `Item` | `hide-protocol/src/item.rs` | Turn wire schema (schema authority for items) |
 //! | `StreamEvent` | `hawking-core/src/engine.rs` | Hot-path token stream (Token/Done only) |
-//! | seed-c `state::Event` | `hawking-seed-c/src/state.rs` | Campaign state-machine transitions |
+//! | seed-c `state::Event` (historical) | released under BC-BRIDGE-012; hermetic mirror in `adapters::seed` | Former campaign FSM only |
 //! | Campaign JSONL ledgers | repo-root `*_LEDGER.jsonl` | Scientific/receipt logs, not product events |
 //!
 //! `StreamEvent` carries the most *token* traffic but is too narrow to cover

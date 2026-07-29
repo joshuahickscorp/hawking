@@ -98,7 +98,7 @@
       "id": "BC-ACCEL-002",
       "domain": "ACCEL",
       "title": "user-draft is lossless vs plain greedy when enabled",
-      "statement": "With --user-draft (HAWKING_QWEN_USER_DRAFT=1), the per-user n-gram speculative draft uses propose→batched-verify→accept; output is bit-identical to plain greedy (temp=0 + TCB). Without the flag the draft path is never entered.",
+      "statement": "With --user-draft (HAWKING_QWEN_USER_DRAFT=1), the per-user n-gram speculative draft uses propose\u2192batched-verify\u2192accept; output is bit-identical to plain greedy (temp=0 + TCB). Without the flag the draft path is never entered.",
       "inputs": "--user-draft; greedy",
       "observable_outputs": "bit-identical text to non-draft greedy",
       "side_effects": [
@@ -149,7 +149,7 @@
       "side_effects": [
         "none durable"
       ],
-      "failure_behaviour": "invalid mode → error",
+      "failure_behaviour": "invalid mode \u2192 error",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -174,7 +174,7 @@
       ],
       "failure_behaviour": "n/a",
       "security_boundary": null,
-      "performance_budget": "fast ~+3–7% warm noisy on Qwen2.5-3B campaign numbers; identity 83–90%",
+      "performance_budget": "fast ~+3\u20137% warm noisy on Qwen2.5-3B campaign numbers; identity 83\u201390%",
       "persistence_migration": null,
       "reproduction": "docs/env_flags.md profile table",
       "evidence": "docs/env_flags.md; crates/hawking/src/main.rs",
@@ -221,7 +221,7 @@
       "security_boundary": "must not silently enable broken per-row int4 KV as default",
       "performance_budget": null,
       "persistence_migration": null,
-      "reproduction": "set HAWKING_QWEN_INT4_KV=1 without experimental → fail-loud",
+      "reproduction": "set HAWKING_QWEN_INT4_KV=1 without experimental \u2192 fail-loud",
       "evidence": "docs/env_flags.md",
       "verification_status": "documented_only",
       "criticality": "core",
@@ -241,7 +241,7 @@
       ],
       "failure_behaviour": "n/a",
       "security_boundary": null,
-      "performance_budget": "−50% KV footprint; ~88% identity documented",
+      "performance_budget": "\u221250% KV footprint; ~88% identity documented",
       "persistence_migration": null,
       "reproduction": "hawking serve --weights <g> --f16-kv",
       "evidence": "docs/env_flags.md; crates/hawking/src/main.rs",
@@ -257,9 +257,9 @@
       "title": "Event Horizon / EAGLE5 runtime product-released (absent)",
       "statement": "Event Horizon proposal market and EAGLE5 trained-head runtime/CLI paths are product-released under B-RT3 as a peripheral net-negative research surface: they have no invocable inputs, no observable outputs, no side effects, and no mock or fallback head. The live product no longer provides this capability; this record is retained only for historical traceability of the product decision and rollback evidence.",
       "inputs": "none (HAWKING_QWEN_EVENT_HORIZON / HAWKING_QWEN_EAGLE5* env flags and CLI --eagle5-head / speculate eagle5 are not live controls)",
-      "observable_outputs": "none — surface absent from live product",
+      "observable_outputs": "none \u2014 surface absent from live product",
       "side_effects": [],
-      "failure_behaviour": "n/a — path not invocable; no deterministic mock head fallback",
+      "failure_behaviour": "n/a \u2014 path not invocable; no deterministic mock head fallback",
       "security_boundary": null,
       "performance_budget": "released as net-negative research; no live speed claim",
       "persistence_migration": null,
@@ -430,13 +430,13 @@
       "id": "BC-AGENTS-001",
       "domain": "AGENTS",
       "title": "automations cannot widen authority beyond grant",
-      "statement": "YOU automations are durable and inspectable; background jobs cannot inherit broader authority than the automation grants (PermissionSet → JobCapability non-widening pattern).",
+      "statement": "YOU automations are durable and inspectable; background jobs cannot inherit broader authority than the automation grants (PermissionSet \u2192 JobCapability non-widening pattern).",
       "inputs": "automation declaration with permissions",
       "observable_outputs": "jobs run within capability; stop enforceable",
       "side_effects": [
         "automation store"
       ],
-      "failure_behaviour": "widening attempt → refuse",
+      "failure_behaviour": "widening attempt \u2192 refuse",
       "security_boundary": "authority containment",
       "performance_budget": null,
       "persistence_migration": null,
@@ -459,7 +459,7 @@
       "side_effects": [
         "durable automation store"
       ],
-      "failure_behaviour": "invalid declaration → reject",
+      "failure_behaviour": "invalid declaration \u2192 reject",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -497,13 +497,13 @@
       "id": "BC-AGENTS-004",
       "domain": "AGENTS",
       "title": "swarm roles and modes on fleet substrate concept",
-      "statement": "YOU swarms define roles (researcher, planner, critic, fact_checker, ...) and modes (parallel_research, debate, independent_replication, plan_tournament, ...) with per-agent briefs and resource economics — not mere prompt multiplication.",
+      "statement": "YOU swarms define roles (researcher, planner, critic, fact_checker, ...) and modes (parallel_research, debate, independent_replication, plan_tournament, ...) with per-agent briefs and resource economics \u2014 not mere prompt multiplication.",
       "inputs": "swarm declaration",
       "observable_outputs": "governed multi-agent run under fixtures",
       "side_effects": [
         "fixture provider only in LIGHT_ONLY"
       ],
-      "failure_behaviour": "invalid role → reject",
+      "failure_behaviour": "invalid role \u2192 reject",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -525,7 +525,7 @@
       "side_effects": [
         "none without promotion"
       ],
-      "failure_behaviour": "high-risk promote on consensus-only → refuse",
+      "failure_behaviour": "high-risk promote on consensus-only \u2192 refuse",
       "security_boundary": "high-risk promotion gated by evidence grade",
       "performance_budget": null,
       "persistence_migration": null,
@@ -547,7 +547,7 @@
       "side_effects": [
         "project store"
       ],
-      "failure_behaviour": "widening handoff → refuse",
+      "failure_behaviour": "widening handoff \u2192 refuse",
       "security_boundary": "non-widening capability derivation",
       "performance_budget": null,
       "persistence_migration": null,
@@ -724,7 +724,7 @@
       "side_effects": [
         "mmap of weights file"
       ],
-      "failure_behaviour": "corrupt/missing GGUF → load error",
+      "failure_behaviour": "corrupt/missing GGUF \u2192 load error",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -790,7 +790,7 @@
       "side_effects": [
         "env flags set for process"
       ],
-      "failure_behaviour": "strict + missing/incomplete tq → non-zero",
+      "failure_behaviour": "strict + missing/incomplete tq \u2192 non-zero",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -812,7 +812,7 @@
       "side_effects": [
         "none beyond process"
       ],
-      "failure_behaviour": "missing file → error or ignore per path",
+      "failure_behaviour": "missing file \u2192 error or ignore per path",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -879,7 +879,7 @@
       "side_effects": [
         "none"
       ],
-      "failure_behaviour": "bad target parse → error",
+      "failure_behaviour": "bad target parse \u2192 error",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -923,7 +923,7 @@
       "side_effects": [
         "writes artifacts"
       ],
-      "failure_behaviour": "missing inputs → non-zero",
+      "failure_behaviour": "missing inputs \u2192 non-zero",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -946,7 +946,7 @@
       "side_effects": [
         "reads/writes cache files under dir"
       ],
-      "failure_behaviour": "unwritable dir → error or disabled path",
+      "failure_behaviour": "unwritable dir \u2192 error or disabled path",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -1102,7 +1102,7 @@
       "side_effects": [
         "writes generated code"
       ],
-      "failure_behaviour": "bad args → non-zero",
+      "failure_behaviour": "bad args \u2192 non-zero",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -1124,7 +1124,7 @@
       "side_effects": [
         "none"
       ],
-      "failure_behaviour": "missing family → architecture detect fail",
+      "failure_behaviour": "missing family \u2192 architecture detect fail",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -1169,7 +1169,7 @@
       "side_effects": [
         "writes quantized models"
       ],
-      "failure_behaviour": "bad args → non-zero",
+      "failure_behaviour": "bad args \u2192 non-zero",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -1184,23 +1184,22 @@
     {
       "id": "BC-BRIDGE-012",
       "domain": "BRIDGE",
-      "title": "hawking-seed-c isolation binary",
-      "statement": "hawking-seed-c isolation binary remains an optional isolated seed path.",
-      "inputs": "see statement",
-      "observable_outputs": "see statement",
-      "side_effects": [
-        "none"
-      ],
-      "failure_behaviour": "error non-zero or structured refuse",
+      "title": "hawking-seed-c isolation binary product-released (absent)",
+      "statement": "hawking-seed-c isolation binary is product-released under B-RT5 as a peripheral parallel seed runtime: it has no invocable inputs, no observable outputs, no side effects, and no facade, shim, empty crate, disabled feature, or history-derived replacement. The live product no longer ships this binary; this record is retained only for historical traceability of the product decision and rollback evidence. All hawking-core Engine, GGUF, Gravity, TQ, acceleration, security, and generation capabilities remain on the primary runtime.",
+      "inputs": "none (cargo package hawking-seed-c / binary hawking-seed-c is not a live workspace member or product entrypoint)",
+      "observable_outputs": "none \u2014 surface absent from live product",
+      "side_effects": [],
+      "failure_behaviour": "n/a \u2014 path not invocable; no mock or fallback seed binary",
       "security_boundary": null,
-      "performance_budget": null,
+      "performance_budget": "released as parallel non-hot-path runtime; no live speed claim; paired product TPS N/A",
       "persistence_migration": null,
-      "reproduction": "blocked: needs cargo build -p hawking-seed-c and a smoke invocation; binary may be default-members but check is build-gated",
-      "evidence": "HAWKING_CAPABILITY_INVENTORY.json",
-      "verification_status": "blocked_missing_fixture",
+      "reproduction": "python3.12 -c \"import json; from pathlib import Path; c=json.load(open('REBUILD_BEHAVIOUR_CONSTITUTION.json')); b=next(x for x in c['behaviours'] if x['id']=='BC-BRIDGE-012'); assert b['criticality']=='peripheral'; assert 'product-released' in b['statement'] or 'no longer ships' in b['statement']; assert b['inputs'].startswith('none'); assert b['observable_outputs'].startswith('none'); assert b['side_effects']==[]; assert not Path('crates/hawking-seed-c').exists(); t=Path('Cargo.toml').read_text(); assert 'hawking-seed-c' not in t; inv=json.load(open('HAWKING_CAPABILITY_INVENTORY.json')); names=[x.get('name') if isinstance(x,dict) else x for x in inv.get('rust_binaries',[])]; assert 'hawking-seed-c' not in names; m=json.load(open('control/CAPABILITY_MANIFEST.json')); e=next(x for x in m['entries'] if x.get('retired_entrypoint') in ('hawking-seed-c','runtime:hawking-seed-c','crates/hawking-seed-c')); assert e.get('disposition')=='released'\"",
+      "evidence": "control/BRT5-report.md; control/BRT5-ledger.json; control/BRT5-f1-identity-receipt.json; control/CAPABILITY_MANIFEST.json (BC-BRIDGE-012 released row); HAWKING_CAPABILITY_INVENTORY.json (binary absent); rollback = restore crates/hawking-seed-c from base eada2080e0110a60a28292907490252246bee009 and re-add workspace member",
+      "verification_status": "verified_by_run",
       "criticality": "peripheral",
       "current_code": [
-        "crates/hawking-seed-c/"
+        "control/BRT5-report.md",
+        "control/CAPABILITY_MANIFEST.json"
       ]
     },
     {
@@ -1213,7 +1212,7 @@
       "side_effects": [
         "none"
       ],
-      "failure_behaviour": "unknown flag → clap error, non-zero exit",
+      "failure_behaviour": "unknown flag \u2192 clap error, non-zero exit",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -1258,7 +1257,7 @@
       "side_effects": [
         "none"
       ],
-      "failure_behaviour": "missing weights file when provided → non-zero with error",
+      "failure_behaviour": "missing weights file when provided \u2192 non-zero with error",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -1303,7 +1302,7 @@
       "side_effects": [
         "none durable"
       ],
-      "failure_behaviour": "missing/unreadable weights → non-zero",
+      "failure_behaviour": "missing/unreadable weights \u2192 non-zero",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -1325,7 +1324,7 @@
       "side_effects": [
         "none"
       ],
-      "failure_behaviour": "non-GGUF or missing file → error",
+      "failure_behaviour": "non-GGUF or missing file \u2192 error",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -1347,7 +1346,7 @@
       "side_effects": [
         "none"
       ],
-      "failure_behaviour": "missing dry-run when bake gated; bad budget parse → error",
+      "failure_behaviour": "missing dry-run when bake gated; bad budget parse \u2192 error",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -1369,7 +1368,7 @@
       "side_effects": [
         "none"
       ],
-      "failure_behaviour": "missing file → error; hash mismatch → FAIL",
+      "failure_behaviour": "missing file \u2192 error; hash mismatch \u2192 FAIL",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -1392,7 +1391,7 @@
         "writes --out JSON",
         "may write --log"
       ],
-      "failure_behaviour": "missing weights → non-zero",
+      "failure_behaviour": "missing weights \u2192 non-zero",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -1415,7 +1414,7 @@
       "side_effects": [
         "none"
       ],
-      "failure_behaviour": "invalid JSON → non-zero",
+      "failure_behaviour": "invalid JSON \u2192 non-zero",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -1438,7 +1437,7 @@
       "side_effects": [
         "may write --json/--trace-json"
       ],
-      "failure_behaviour": "missing weights → non-zero; competitor backend missing may skip or fail per suite",
+      "failure_behaviour": "missing weights \u2192 non-zero; competitor backend missing may skip or fail per suite",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -1483,7 +1482,7 @@
       "side_effects": [
         "none"
       ],
-      "failure_behaviour": "missing weights → non-zero",
+      "failure_behaviour": "missing weights \u2192 non-zero",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -1505,7 +1504,7 @@
       "side_effects": [
         "none durable"
       ],
-      "failure_behaviour": "missing weights → non-zero",
+      "failure_behaviour": "missing weights \u2192 non-zero",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -1527,7 +1526,7 @@
       "side_effects": [
         "optional --out file"
       ],
-      "failure_behaviour": "missing weights/prompts → non-zero; stall watchdog may abort",
+      "failure_behaviour": "missing weights/prompts \u2192 non-zero; stall watchdog may abort",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -1549,7 +1548,7 @@
       "side_effects": [
         "none files written (current behaviour)"
       ],
-      "failure_behaviour": "missing weights → non-zero",
+      "failure_behaviour": "missing weights \u2192 non-zero",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -1571,7 +1570,7 @@
       "side_effects": [
         "none"
       ],
-      "failure_behaviour": "missing files → non-zero",
+      "failure_behaviour": "missing files \u2192 non-zero",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -1588,7 +1587,7 @@
       "id": "BC-CLI-018",
       "domain": "CLI",
       "title": "capability inventory enumerates rust binaries and python entrypoints",
-      "statement": "HAWKING_CAPABILITY_INVENTORY.json enumerates the rust binary surface and python entrypoint surface of the product tree (counts + path lists). Rebuild coverage uses this inventory as a discovery aid; individual entrypoints remain protected only if a constitution behaviour requires them — absolute counts are not frozen.",
+      "statement": "HAWKING_CAPABILITY_INVENTORY.json enumerates the rust binary surface and python entrypoint surface of the product tree (counts + path lists). Rebuild coverage uses this inventory as a discovery aid; individual entrypoints remain protected only if a constitution behaviour requires them \u2014 absolute counts are not frozen.",
       "inputs": "inventory JSON at repo root",
       "observable_outputs": "counts and path lists",
       "side_effects": [
@@ -1618,7 +1617,7 @@
         "binds TCP port",
         "opens workspace state"
       ],
-      "failure_behaviour": "bind failure → non-zero",
+      "failure_behaviour": "bind failure \u2192 non-zero",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -1640,7 +1639,7 @@
       "side_effects": [
         "network/process as configured"
       ],
-      "failure_behaviour": "misconfig → non-zero",
+      "failure_behaviour": "misconfig \u2192 non-zero",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -1728,7 +1727,7 @@
       "side_effects": [
         "mutates memory store"
       ],
-      "failure_behaviour": "operations without caps → refuse",
+      "failure_behaviour": "operations without caps \u2192 refuse",
       "security_boundary": "no hidden permanent memory",
       "performance_budget": null,
       "persistence_migration": null,
@@ -1751,7 +1750,7 @@
       "side_effects": [
         "memory store"
       ],
-      "failure_behaviour": "promotion without approver → refuse",
+      "failure_behaviour": "promotion without approver \u2192 refuse",
       "security_boundary": "connector data not silent global memory",
       "performance_budget": null,
       "persistence_migration": null,
@@ -1817,7 +1816,7 @@
       "side_effects": [
         "object store files"
       ],
-      "failure_behaviour": "over budget → refuse/evict per policy",
+      "failure_behaviour": "over budget \u2192 refuse/evict per policy",
       "security_boundary": "permissions and retention enforced",
       "performance_budget": null,
       "persistence_migration": null,
@@ -1839,7 +1838,7 @@
       "side_effects": [
         "store writes"
       ],
-      "failure_behaviour": "illegal mutation → refuse",
+      "failure_behaviour": "illegal mutation \u2192 refuse",
       "security_boundary": "derivative-only boundary",
       "performance_budget": null,
       "persistence_migration": null,
@@ -1877,13 +1876,13 @@
       "id": "BC-CONTEXT_OS-008",
       "domain": "CONTEXT_OS",
       "title": "research modes offline with fixture corpus",
-      "statement": "YOU research controller (Python) supports modes quick_search, cited_answer, deep_research, watch_monitor, etc. using committed fixture corpus only — network forbidden in LIGHT_ONLY tests. Four-way separation of RetrievedFact|ModelInference|UserProvided|UncertainHypothesis; evidence binding binary; web not auto-durable.",
+      "statement": "YOU research controller (Python) supports modes quick_search, cited_answer, deep_research, watch_monitor, etc. using committed fixture corpus only \u2014 network forbidden in LIGHT_ONLY tests. Four-way separation of RetrievedFact|ModelInference|UserProvided|UncertainHypothesis; evidence binding binary; web not auto-durable.",
       "inputs": "fixture corpus ramanujan/fixtures/you_research_corpus.json",
       "observable_outputs": "research results with citations/contradictions",
       "side_effects": [
         "none durable by default"
       ],
-      "failure_behaviour": "missing fixture → test fail",
+      "failure_behaviour": "missing fixture \u2192 test fail",
       "security_boundary": "network forbidden in tests",
       "performance_budget": null,
       "persistence_migration": null,
@@ -1972,7 +1971,7 @@
       "side_effects": [
         "per tool"
       ],
-      "failure_behaviour": "declared non-constructible → refuse",
+      "failure_behaviour": "declared non-constructible \u2192 refuse",
       "security_boundary": "typed effects; no real credentials",
       "performance_budget": null,
       "persistence_migration": null,
@@ -2304,7 +2303,7 @@
       "side_effects": [
         "none durable unless capture flags set"
       ],
-      "failure_behaviour": "missing weights → non-zero; kv cache full → error message kv cache full at N",
+      "failure_behaviour": "missing weights \u2192 non-zero; kv cache full \u2192 error message kv cache full at N",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -2343,7 +2342,7 @@
       "id": "BC-GENERATION-003",
       "domain": "GENERATION",
       "title": "CPU force path supports Metal parity for small dense",
-      "statement": "With HAWKING_FORCE_CPU=1, the engine can run without Metal. Documented parity: Qwen2.5-0.5B-Q4_K_M CPU↔Metal 12/12 leading greedy token IDs identical. Dense models only for this claim.",
+      "statement": "With HAWKING_FORCE_CPU=1, the engine can run without Metal. Documented parity: Qwen2.5-0.5B-Q4_K_M CPU\u2194Metal 12/12 leading greedy token IDs identical. Dense models only for this claim.",
       "inputs": "HAWKING_FORCE_CPU=1; small dense GGUF",
       "observable_outputs": "greedy token ids matching Metal path",
       "side_effects": [
@@ -2371,7 +2370,7 @@
       "side_effects": [
         "none"
       ],
-      "failure_behaviour": "exceeds limit → non-zero at load",
+      "failure_behaviour": "exceeds limit \u2192 non-zero at load",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -2415,7 +2414,7 @@
       "side_effects": [
         "writes capture shards"
       ],
-      "failure_behaviour": "engine without multiseq seam → clear error",
+      "failure_behaviour": "engine without multiseq seam \u2192 clear error",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -2437,7 +2436,7 @@
       "side_effects": [
         "none"
       ],
-      "failure_behaviour": "missing weights → tests skip",
+      "failure_behaviour": "missing weights \u2192 tests skip",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -2482,7 +2481,7 @@
       "side_effects": [
         "writes report JSON"
       ],
-      "failure_behaviour": "missing tq with strict → fail closed",
+      "failure_behaviour": "missing tq with strict \u2192 fail closed",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -2526,7 +2525,7 @@
       "side_effects": [
         "none"
       ],
-      "failure_behaviour": "stall timeout → non-zero",
+      "failure_behaviour": "stall timeout \u2192 non-zero",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -2548,7 +2547,7 @@
       "side_effects": [
         "none"
       ],
-      "failure_behaviour": "missing MoE GGUF → tests skip",
+      "failure_behaviour": "missing MoE GGUF \u2192 tests skip",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -2719,7 +2718,7 @@
       "id": "BC-GENERATION-020",
       "domain": "GENERATION",
       "title": "seeded fixed-logits sampler golden is bit-exact",
-      "statement": "A model-free generation path — greedy argmax over a committed fixed logit matrix — produces a frozen token-id sequence that must match tests/fixtures/generation_golden_v1/seeded_sampler_greedy.json exactly.",
+      "statement": "A model-free generation path \u2014 greedy argmax over a committed fixed logit matrix \u2014 produces a frozen token-id sequence that must match tests/fixtures/generation_golden_v1/seeded_sampler_greedy.json exactly.",
       "inputs": "tests/fixtures/generation_golden_v1/logits.json + golden token sequence",
       "observable_outputs": "token_ids list bit-identical to golden",
       "side_effects": [
@@ -2747,7 +2746,7 @@
       "side_effects": [
         "none"
       ],
-      "failure_behaviour": "wrong magic → reject open",
+      "failure_behaviour": "wrong magic \u2192 reject open",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": "v1 files forever readable",
@@ -2770,7 +2769,7 @@
       "side_effects": [
         "none"
       ],
-      "failure_behaviour": "invalid JSON/length → reject",
+      "failure_behaviour": "invalid JSON/length \u2192 reject",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": "v1 header fields named in schema",
@@ -2793,7 +2792,7 @@
       "side_effects": [
         "none"
       ],
-      "failure_behaviour": "digest mismatch → integrity failure",
+      "failure_behaviour": "digest mismatch \u2192 integrity failure",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": "tensor digests stable for replay",
@@ -2815,7 +2814,7 @@
       "side_effects": [
         "none"
       ],
-      "failure_behaviour": "byte mismatch → fail integrity/parity",
+      "failure_behaviour": "byte mismatch \u2192 fail integrity/parity",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -2837,7 +2836,7 @@
       "side_effects": [
         "none"
       ],
-      "failure_behaviour": "unknown representation → explicit reject or fallback policy as implemented",
+      "failure_behaviour": "unknown representation \u2192 explicit reject or fallback policy as implemented",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -2859,7 +2858,7 @@
       "side_effects": [
         "loads gravity shards into GPU cache"
       ],
-      "failure_behaviour": "unresolvable path → error; without gravity weights still required",
+      "failure_behaviour": "unresolvable path \u2192 error; without gravity weights still required",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -2882,7 +2881,7 @@
       "side_effects": [
         "none"
       ],
-      "failure_behaviour": "missing template → refuse load",
+      "failure_behaviour": "missing template \u2192 refuse load",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -2926,7 +2925,7 @@
       "side_effects": [
         "CPU memoization state"
       ],
-      "failure_behaviour": "digest mismatch → fail",
+      "failure_behaviour": "digest mismatch \u2192 fail",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -3146,7 +3145,7 @@
       "side_effects": [
         "session/host state mutation per intent"
       ],
-      "failure_behaviour": "bad intent → 4xx structured error",
+      "failure_behaviour": "bad intent \u2192 4xx structured error",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -3169,7 +3168,7 @@
       "side_effects": [
         "subscription state"
       ],
-      "failure_behaviour": "bad upgrade → non-WS response",
+      "failure_behaviour": "bad upgrade \u2192 non-WS response",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -3191,7 +3190,7 @@
       "side_effects": [
         "none durable on write attempts"
       ],
-      "failure_behaviour": "write methods → refusal error",
+      "failure_behaviour": "write methods \u2192 refusal error",
       "security_boundary": "connector route must not perform durable writes",
       "performance_budget": null,
       "persistence_migration": null,
@@ -3213,7 +3212,7 @@
       "side_effects": [
         "per method"
       ],
-      "failure_behaviour": "unknown method → error",
+      "failure_behaviour": "unknown method \u2192 error",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -3235,7 +3234,7 @@
       "side_effects": [
         "host capability state"
       ],
-      "failure_behaviour": "bad body → 4xx",
+      "failure_behaviour": "bad body \u2192 4xx",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -3412,7 +3411,7 @@
       "side_effects": [
         "binds as configured"
       ],
-      "failure_behaviour": "bad config → non-zero",
+      "failure_behaviour": "bad config \u2192 non-zero",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -3788,7 +3787,7 @@
       "id": "BC-SECURITY-005",
       "domain": "SECURITY",
       "title": "privacy construction fails closed for network/connector",
-      "statement": "Under network_disabled/local_offline, network handles cannot be constructed; under connector_disabled, connector handles cannot be constructed — not merely calls refused later.",
+      "statement": "Under network_disabled/local_offline, network handles cannot be constructed; under connector_disabled, connector handles cannot be constructed \u2014 not merely calls refused later.",
       "inputs": "privacy mode",
       "observable_outputs": "construct Err",
       "side_effects": [
@@ -3816,7 +3815,7 @@
       "side_effects": [
         "job run"
       ],
-      "failure_behaviour": "widening → refuse",
+      "failure_behaviour": "widening \u2192 refuse",
       "security_boundary": "non-widening",
       "performance_budget": null,
       "persistence_migration": null,
@@ -3882,7 +3881,7 @@
       "side_effects": [
         "effect + receipt"
       ],
-      "failure_behaviour": "write without receipt path → invalid",
+      "failure_behaviour": "write without receipt path \u2192 invalid",
       "security_boundary": "auditable writes",
       "performance_budget": null,
       "persistence_migration": null,
@@ -4052,7 +4051,7 @@
       "id": "BC-SECURITY-017",
       "domain": "SECURITY",
       "title": "promotion only via try_promote gates",
-      "statement": "Draft→Verified promotion only through documented promotion gates (try_promote / promote_matching_prefix) with verifier integration.",
+      "statement": "Draft\u2192Verified promotion only through documented promotion gates (try_promote / promote_matching_prefix) with verifier integration.",
       "inputs": "see statement",
       "observable_outputs": "see statement",
       "side_effects": [
@@ -4282,7 +4281,7 @@
       "side_effects": [
         "generation compute"
       ],
-      "failure_behaviour": "bad body → machine-readable error shape; empty messages → 4xx",
+      "failure_behaviour": "bad body \u2192 machine-readable error shape; empty messages \u2192 4xx",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -4304,7 +4303,7 @@
       "side_effects": [
         "generation compute"
       ],
-      "failure_behaviour": "bad body → error response",
+      "failure_behaviour": "bad body \u2192 error response",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -4326,7 +4325,7 @@
       "side_effects": [
         "generation"
       ],
-      "failure_behaviour": "bad body → error",
+      "failure_behaviour": "bad body \u2192 error",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -4348,7 +4347,7 @@
       "side_effects": [
         "compute"
       ],
-      "failure_behaviour": "unsupported config → error",
+      "failure_behaviour": "unsupported config \u2192 error",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -4370,7 +4369,7 @@
       "side_effects": [
         "generation"
       ],
-      "failure_behaviour": "bad body → error",
+      "failure_behaviour": "bad body \u2192 error",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -4392,7 +4391,7 @@
       "side_effects": [
         "generation"
       ],
-      "failure_behaviour": "bad body → error",
+      "failure_behaviour": "bad body \u2192 error",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -4504,7 +4503,7 @@
       "side_effects": [
         "binds TCP"
       ],
-      "failure_behaviour": "address in use → non-zero",
+      "failure_behaviour": "address in use \u2192 non-zero",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -4527,7 +4526,7 @@
       "side_effects": [
         "scheduling of concurrent slots"
       ],
-      "failure_behaviour": "invalid policy string → clap/runtime error",
+      "failure_behaviour": "invalid policy string \u2192 clap/runtime error",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -4549,7 +4548,7 @@
       "side_effects": [
         "binds server"
       ],
-      "failure_behaviour": "model load failure → non-zero",
+      "failure_behaviour": "model load failure \u2192 non-zero",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -4725,7 +4724,7 @@
       "side_effects": [
         "none for verify"
       ],
-      "failure_behaviour": "sha mismatch → not rehydratable",
+      "failure_behaviour": "sha mismatch \u2192 not rehydratable",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": "rehydration receipt schema forever for this seal",
@@ -4747,7 +4746,7 @@
       "side_effects": [
         "deletes source tree when executed for real"
       ],
-      "failure_behaviour": "release without readiness → refuse in tooling",
+      "failure_behaviour": "release without readiness \u2192 refuse in tooling",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -4808,13 +4807,13 @@
       "id": "BC-SOURCE-005",
       "domain": "SOURCE",
       "title": "procure and download_queue are orchestration entrypoints",
-      "statement": "Python tools tools/condense/procure.py and download_queue.py (and related frontier_ops) are the documented orchestration surfaces for fetching frontier sources with storage gates — not necessarily present as all files if sealed, but BASELINES names them.",
+      "statement": "Python tools tools/condense/procure.py and download_queue.py (and related frontier_ops) are the documented orchestration surfaces for fetching frontier sources with storage gates \u2014 not necessarily present as all files if sealed, but BASELINES names them.",
       "inputs": "label + storage budget",
       "observable_outputs": "download progress events / status",
       "side_effects": [
         "HF cache growth when run"
       ],
-      "failure_behaviour": "storage gate fail → refuse",
+      "failure_behaviour": "storage gate fail \u2192 refuse",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -4830,13 +4829,13 @@
       "id": "BC-SOURCE-006",
       "domain": "SOURCE",
       "title": "storage budget uses free space minus 150GB floor",
-      "statement": "Storage planning uses current free space minus 150 GB hard floor plus 64 GB scratch and 32 GB HF/Xet cache reserves — never nominal SSD capacity alone.",
+      "statement": "Storage planning uses current free space minus 150 GB hard floor plus 64 GB scratch and 32 GB HF/Xet cache reserves \u2014 never nominal SSD capacity alone.",
       "inputs": "disk free measurement",
       "observable_outputs": "STORAGE_BUDGET_GB and gate decisions",
       "side_effects": [
         "none for planning"
       ],
-      "failure_behaviour": "insufficient free → download refused",
+      "failure_behaviour": "insufficient free \u2192 download refused",
       "security_boundary": "must not delete source solely to advance queue without receipts",
       "performance_budget": null,
       "persistence_migration": null,
@@ -4859,7 +4858,7 @@
       "side_effects": [
         "locks"
       ],
-      "failure_behaviour": "processing without admission → refuse",
+      "failure_behaviour": "processing without admission \u2192 refuse",
       "security_boundary": null,
       "performance_budget": null,
       "persistence_migration": null,
@@ -4919,7 +4918,7 @@
       "id": "BC-SOURCE-010",
       "domain": "SOURCE",
       "title": "frontier parent HF ids pinned in BASELINES",
-      "statement": "BASELINES.md pins exact HF ids for parents (Qwen2.5 0.5B–72B, gpt-oss-120b, DeepSeek-V4-Flash, GLM-5.2, Kimi-K2.6, etc.) with sizes and local-now notes. Rebuild procurement should honor pinned ids for scientific continuity.",
+      "statement": "BASELINES.md pins exact HF ids for parents (Qwen2.5 0.5B\u201372B, gpt-oss-120b, DeepSeek-V4-Flash, GLM-5.2, Kimi-K2.6, etc.) with sizes and local-now notes. Rebuild procurement should honor pinned ids for scientific continuity.",
       "inputs": "BASELINES table",
       "observable_outputs": "id strings",
       "side_effects": [
@@ -4962,7 +4961,7 @@
   ],
   "notes": [
     "Only externally observable behaviours. Internal module layout is not frozen.",
-    "verification_status skipped_without_model means evidence is a test/path that skips without weights — not a pass.",
+    "verification_status skipped_without_model means evidence is a test/path that skips without weights \u2014 not a pass.",
     "Known partial/degenerate states (e.g. gravity serve PARTIAL, bake-sidecar no write) are recorded as observed.",
     "C2 adversarial repair: removed prior-arc/control-verdict statements and pure tree-existence behaviours; see-evidence reproductions filled, blocked with named fixtures, or deleted; HIDE workspace + generation golden fixtures added under tests/fixtures/."
   ]

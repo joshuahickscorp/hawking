@@ -1044,8 +1044,8 @@
         "receipt": "control/C-HIST-R1-ledger.json",
         "f1_identity_receipt": "control/C-HIST-R1-f1-identity-receipt.json",
         "future_merge_by_id": {
-          "BRT3": "BC-ACCEL-009 — training EAGLE/EH entrypoints released here; merge BRT3 release semantics by ID without re-importing BRT3 candidate tree",
-          "BRT5": "BC-BRIDGE-012 — no seed-c subject deleted here; preserve merge-by-ID prescription for BRT5"
+          "BRT3": "BC-ACCEL-009 \u2014 training EAGLE/EH entrypoints released here; merge BRT3 release semantics by ID without re-importing BRT3 candidate tree",
+          "BRT5": "BC-BRIDGE-012 \u2014 no seed-c subject deleted here; preserve merge-by-ID prescription for BRT5"
         }
       },
       "also_invocable_as": []
@@ -1090,8 +1090,8 @@
         "receipt": "control/C-HIST-R1-ledger.json",
         "f1_identity_receipt": "control/C-HIST-R1-f1-identity-receipt.json",
         "future_merge_by_id": {
-          "BRT3": "BC-ACCEL-009 — training EAGLE/EH entrypoints released here; merge BRT3 release semantics by ID without re-importing BRT3 candidate tree",
-          "BRT5": "BC-BRIDGE-012 — no seed-c subject deleted here; preserve merge-by-ID prescription for BRT5"
+          "BRT3": "BC-ACCEL-009 \u2014 training EAGLE/EH entrypoints released here; merge BRT3 release semantics by ID without re-importing BRT3 candidate tree",
+          "BRT5": "BC-BRIDGE-012 \u2014 no seed-c subject deleted here; preserve merge-by-ID prescription for BRT5"
         }
       },
       "also_invocable_as": []
@@ -1124,8 +1124,8 @@
         "receipt": "control/C-HIST-R1-ledger.json",
         "f1_identity_receipt": "control/C-HIST-R1-f1-identity-receipt.json",
         "future_merge_by_id": {
-          "BRT3": "BC-ACCEL-009 — training EAGLE/EH entrypoints released here; merge BRT3 release semantics by ID without re-importing BRT3 candidate tree",
-          "BRT5": "BC-BRIDGE-012 — no seed-c subject deleted here; preserve merge-by-ID prescription for BRT5"
+          "BRT3": "BC-ACCEL-009 \u2014 training EAGLE/EH entrypoints released here; merge BRT3 release semantics by ID without re-importing BRT3 candidate tree",
+          "BRT5": "BC-BRIDGE-012 \u2014 no seed-c subject deleted here; preserve merge-by-ID prescription for BRT5"
         }
       },
       "also_invocable_as": []
@@ -1155,6 +1155,17 @@
         "crates/hawking/tests/spec_oracle_cli.rs"
       ],
       "evidence": "B-RT3 product release under BC-ACCEL-009: EAGLE5/Event Horizon runtime and CLI surface deleted with no invocable inputs, outputs, side effects, or mock fallback. Receipts: control/BRT3-report.md, control/BRT3-ledger.json, REBUILD_BEHAVIOUR_CONSTITUTION.json::BC-ACCEL-009. Live docs (docs/env_flags.md Spec-decode) retain user-draft/ExactShared only; former EH/EAGLE env names are historical archaeology. Rollback: restore the released_paths modules/tests/fixtures and reverse consumer edits in qwen_dense.rs, deepseek_v2.rs, engine.rs, main.rs, hawking-speculate lib/proposal/router/user_ngram from base eada2080e0110a60a28292907490252246bee009. Training entrypoints under tools/training/** are not claimed released here (pending Core C / C-HIST-R1)."
+    },
+    {
+      "retired_entrypoint": "hawking-seed-c",
+      "disposition": "released",
+      "product_decision": "BC-BRIDGE-012",
+      "invocation": null,
+      "surface": "hawking-seed-c isolation binary / parallel Metal-native seed engine (workspace member + default-member)",
+      "released_paths": [
+        "crates/hawking-seed-c/**"
+      ],
+      "evidence": "B-RT5 product release under BC-BRIDGE-012: entire crates/hawking-seed-c parallel seed runtime deleted with no invocable inputs, outputs, side effects, facade, shim, empty crate, disabled feature, or history-derived replacement. Workspace member and default-members entries removed from Cargo.toml; Cargo.lock package dropped. Receipts: control/BRT5-report.md, control/BRT5-ledger.json, control/BRT5-f1-identity-receipt.json, REBUILD_BEHAVIOUR_CONSTITUTION.json::BC-BRIDGE-012. Primary product path remains hawking-core Engine (GGUF/Gravity/TQ/accel/security/generation). Rollback: restore crates/hawking-seed-c from base 43456bc8701c5bec083b70321c7a19d7689cf5a9 and re-add workspace/default-members."
     }
   ]
 }

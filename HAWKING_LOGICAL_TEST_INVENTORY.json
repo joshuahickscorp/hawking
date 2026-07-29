@@ -1,49 +1,61 @@
 {
   "by_file": [
     {
-      "cases": 276,
-      "file": "tools/condense/tests/test_retired_glm52.py",
+      "cases": 76,
+      "file": "tools/condense/tests/test_gravity_selection_tables.py",
       "lang": "python",
       "parametrised_cases": 0,
       "skipped_markers": 0
     },
     {
-      "cases": 100,
-      "file": "tools/condense/tests/test_retired_kimi_k26.py",
-      "lang": "python",
-      "parametrised_cases": 0,
-      "skipped_markers": 0
-    },
-    {
-      "cases": 89,
-      "file": "crates/hide-backend/src/host.rs",
+      "cases": 73,
+      "file": "crates/hide-backend/tests/wave3_reachability.rs",
       "ignored": 0,
       "lang": "rust"
     },
     {
-      "cases": 83,
-      "file": "tools/condense/tests/test_retired_gravity_frontier.py",
+      "cases": 62,
+      "file": "tools/foundry/tests/test_foundry_tables_lifecycle.py",
+      "lang": "python",
+      "parametrised_cases": 50,
+      "skipped_markers": 0
+    },
+    {
+      "cases": 56,
+      "file": "tools/condense/tests/test_gravity_lab_tables.py",
+      "lang": "python",
+      "parametrised_cases": 42,
+      "skipped_markers": 0
+    },
+    {
+      "cases": 55,
+      "file": "crates/hide-backend/tests/wire_write_path.rs",
+      "ignored": 0,
+      "lang": "rust"
+    },
+    {
+      "cases": 55,
+      "file": "tools/condense/tests/test_gravity_metal_tables.py",
       "lang": "python",
       "parametrised_cases": 0,
       "skipped_markers": 0
     },
     {
-      "cases": 64,
-      "file": "tools/condense/tests/test_retired_eco.py",
+      "cases": 54,
+      "file": "crates/hide-backend/tests/steer_and_dispatch.rs",
+      "ignored": 0,
+      "lang": "rust"
+    },
+    {
+      "cases": 45,
+      "file": "tools/foundry/tests/test_foundry_tables_ceiling.py",
       "lang": "python",
-      "parametrised_cases": 0,
+      "parametrised_cases": 4,
       "skipped_markers": 0
     },
     {
-      "cases": 64,
-      "file": "tools/condense/tests/test_retired_succession.py",
-      "lang": "python",
-      "parametrised_cases": 0,
-      "skipped_markers": 0
-    },
-    {
-      "cases": 42,
-      "file": "tools/condense/tests/test_retired_qwen.py",
+      "cases": 43,
+      "file": "tools/condense/tests/test_campaign_engine.py",
       "lang": "python",
       "parametrised_cases": 0,
       "skipped_markers": 0
@@ -59,14 +71,7 @@
       "cases": 40,
       "file": "tools/condense/tests/test_glm52_telegram.py",
       "lang": "python",
-      "parametrised_cases": 64,
-      "skipped_markers": 0
-    },
-    {
-      "cases": 39,
-      "file": "tools/condense/tests/test_retired_gptoss.py",
-      "lang": "python",
-      "parametrised_cases": 0,
+      "parametrised_cases": 62,
       "skipped_markers": 0
     },
     {
@@ -74,20 +79,6 @@
       "file": "crates/hawking-core/src/gravity_glm_resident.rs",
       "ignored": 1,
       "lang": "rust"
-    },
-    {
-      "cases": 38,
-      "file": "tools/condense/tests/test_gravity_kernel_select.py",
-      "lang": "python",
-      "parametrised_cases": 0,
-      "skipped_markers": 0
-    },
-    {
-      "cases": 38,
-      "file": "tools/condense/tests/test_gravity_moe_layer.py",
-      "lang": "python",
-      "parametrised_cases": 0,
-      "skipped_markers": 0
     },
     {
       "cases": 37,
@@ -104,23 +95,23 @@
       "skipped_markers": 0
     },
     {
+      "cases": 35,
+      "file": "tools/foundry/tests/test_foundry_tables_potency.py",
+      "lang": "python",
+      "parametrised_cases": 0,
+      "skipped_markers": 0
+    },
+    {
       "cases": 34,
       "file": "crates/hawking-core/src/gravity_glm.rs",
       "ignored": 0,
       "lang": "rust"
     },
     {
-      "cases": 29,
-      "file": "ramanujan/test_governance_invariants.py",
+      "cases": 32,
+      "file": "tools/condense/tests/test_glm52_grounding_suite.py",
       "lang": "python",
-      "parametrised_cases": 0,
-      "skipped_markers": 0
-    },
-    {
-      "cases": 29,
-      "file": "tools/condense/tests/test_campaign_engine.py",
-      "lang": "python",
-      "parametrised_cases": 0,
+      "parametrised_cases": 25,
       "skipped_markers": 0
     },
     {
@@ -131,53 +122,10 @@
       "skipped_markers": 1
     },
     {
-      "cases": 28,
-      "file": "tools/condense/tests/test_gravity_metal_lab_b.py",
-      "lang": "python",
-      "parametrised_cases": 0,
-      "skipped_markers": 0
-    },
-    {
-      "cases": 28,
-      "file": "tools/foundry/tests/test_foundry_lifecycle.py",
-      "lang": "python",
-      "parametrised_cases": 35,
-      "skipped_markers": 0
-    },
-    {
       "cases": 27,
-      "file": "tools/condense/tests/test_gravity_metal.py",
-      "lang": "python",
-      "parametrised_cases": 0,
-      "skipped_markers": 0
-    },
-    {
-      "cases": 26,
-      "file": "tools/condense/tests/test_retired_mechanics.py",
-      "lang": "python",
-      "parametrised_cases": 0,
-      "skipped_markers": 0
-    },
-    {
-      "cases": 25,
-      "file": "tools/condense/tests/test_gravity_bench_lab.py",
-      "lang": "python",
-      "parametrised_cases": 33,
-      "skipped_markers": 0
-    },
-    {
-      "cases": 25,
-      "file": "tools/foundry/tests/test_one_bit_ceiling_gates.py",
-      "lang": "python",
-      "parametrised_cases": 0,
-      "skipped_markers": 0
-    },
-    {
-      "cases": 25,
-      "file": "tools/foundry/tests/test_subbit_closure.py",
-      "lang": "python",
-      "parametrised_cases": 5,
-      "skipped_markers": 0
+      "file": "crates/hide-kernel/src/tools.rs",
+      "ignored": 0,
+      "lang": "rust"
     },
     {
       "cases": 24,
@@ -194,22 +142,8 @@
       "skipped_markers": 1
     },
     {
-      "cases": 23,
-      "file": "tools/condense/tests/test_glm52_grounding.py",
-      "lang": "python",
-      "parametrised_cases": 205,
-      "skipped_markers": 0
-    },
-    {
-      "cases": 23,
-      "file": "tools/foundry/tests/test_gravity_potency.py",
-      "lang": "python",
-      "parametrised_cases": 0,
-      "skipped_markers": 0
-    },
-    {
       "cases": 22,
-      "file": "ramanujan/test_roles_economics.py",
+      "file": "tools/condense/tests/test_glm52_terminal_proofs.py",
       "lang": "python",
       "parametrised_cases": 0,
       "skipped_markers": 0
@@ -237,23 +171,9 @@
     },
     {
       "cases": 20,
-      "file": "tools/condense/tests/test_glm52_terminal_proofs.py",
-      "lang": "python",
-      "parametrised_cases": 0,
-      "skipped_markers": 0
-    },
-    {
-      "cases": 20,
       "file": "tools/condense/tests/test_glm52_xet_live.py",
       "lang": "python",
       "parametrised_cases": 0,
-      "skipped_markers": 0
-    },
-    {
-      "cases": 20,
-      "file": "tools/foundry/tests/test_one_bit_ceiling.py",
-      "lang": "python",
-      "parametrised_cases": 4,
       "skipped_markers": 0
     },
     {
@@ -263,14 +183,15 @@
       "lang": "rust"
     },
     {
-      "cases": 18,
-      "file": "crates/hawking-context/src/memory_classes.rs",
-      "ignored": 0,
-      "lang": "rust"
+      "cases": 19,
+      "file": "tools/verify/test_case_extract.py",
+      "lang": "python",
+      "parametrised_cases": 16,
+      "skipped_markers": 0
     },
     {
       "cases": 18,
-      "file": "crates/hawking-seed-c/src/providers/source_formats.rs",
+      "file": "crates/hawking-context/src/memory_classes.rs",
       "ignored": 0,
       "lang": "rust"
     },
@@ -297,13 +218,19 @@
     },
     {
       "cases": 17,
-      "file": "crates/hide-program-runtime/tests/program.rs",
+      "file": "crates/hide-kernel/src/extension_registry.rs",
       "ignored": 0,
       "lang": "rust"
     },
     {
       "cases": 17,
-      "file": "crates/hide-verify/tests/verify.rs",
+      "file": "crates/hide-kernel/tests/program_runtime_program.rs",
+      "ignored": 0,
+      "lang": "rust"
+    },
+    {
+      "cases": 17,
+      "file": "crates/hide-kernel/tests/verify_plane_verify.rs",
       "ignored": 0,
       "lang": "rust"
     },
@@ -315,31 +242,10 @@
       "skipped_markers": 0
     },
     {
-      "cases": 17,
-      "file": "tools/condense/tests/test_retired_tg.py",
+      "cases": 16,
+      "file": "tools/condense/tests/test_glm52_contract_evidence.py",
       "lang": "python",
       "parametrised_cases": 0,
-      "skipped_markers": 0
-    },
-    {
-      "cases": 16,
-      "file": "ramanujan/test_ramanujan.py",
-      "lang": "python",
-      "parametrised_cases": 0,
-      "skipped_markers": 0
-    },
-    {
-      "cases": 16,
-      "file": "tools/campaign/test_final_ascent_status.py",
-      "lang": "python",
-      "parametrised_cases": 0,
-      "skipped_markers": 0
-    },
-    {
-      "cases": 16,
-      "file": "tools/condense/tests/test_second_light_pq.py",
-      "lang": "python",
-      "parametrised_cases": 2,
       "skipped_markers": 0
     },
     {
@@ -370,7 +276,7 @@
     },
     {
       "cases": 15,
-      "file": "crates/hide-extension-registry/tests/registry.rs",
+      "file": "crates/hide-kernel/tests/extension_registry_registry.rs",
       "ignored": 0,
       "lang": "rust"
     },
@@ -394,19 +300,13 @@
     },
     {
       "cases": 14,
-      "file": "crates/hawking/src/main.rs",
+      "file": "crates/hide-kernel/src/security_redaction.rs",
       "ignored": 0,
       "lang": "rust"
     },
     {
       "cases": 14,
-      "file": "crates/hide-kernel/src/tools/parse.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 14,
-      "file": "crates/hide-security/src/redaction.rs",
+      "file": "crates/hide-kernel/src/verify.rs",
       "ignored": 0,
       "lang": "rust"
     },
@@ -415,20 +315,6 @@
       "file": "crates/hawking-orch/src/tool_spec_decode.rs",
       "ignored": 0,
       "lang": "rust"
-    },
-    {
-      "cases": 13,
-      "file": "ramanujan/test_search.py",
-      "lang": "python",
-      "parametrised_cases": 0,
-      "skipped_markers": 0
-    },
-    {
-      "cases": 13,
-      "file": "tools/campaign/test_light_governor.py",
-      "lang": "python",
-      "parametrised_cases": 0,
-      "skipped_markers": 0
     },
     {
       "cases": 13,
@@ -452,6 +338,12 @@
     },
     {
       "cases": 12,
+      "file": "crates/hawking/src/main.rs",
+      "ignored": 0,
+      "lang": "rust"
+    },
+    {
+      "cases": 12,
       "file": "crates/hide-backend/src/rpc.rs",
       "ignored": 0,
       "lang": "rust"
@@ -470,13 +362,7 @@
     },
     {
       "cases": 12,
-      "file": "crates/hide-extension-registry/src/builtin_tools.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 12,
-      "file": "crates/hide-tools/src/edit.rs",
+      "file": "crates/hide-kernel/src/tooling_edit.rs",
       "ignored": 0,
       "lang": "rust"
     },
@@ -490,13 +376,6 @@
     {
       "cases": 12,
       "file": "tools/condense/tests/test_glm52_reference.py",
-      "lang": "python",
-      "parametrised_cases": 0,
-      "skipped_markers": 0
-    },
-    {
-      "cases": 12,
-      "file": "tools/foundry/tests/test_post_parent_review.py",
       "lang": "python",
       "parametrised_cases": 0,
       "skipped_markers": 0
@@ -533,12 +412,6 @@
     },
     {
       "cases": 11,
-      "file": "crates/hawking-seed-c/src/providers/ir.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 11,
       "file": "crates/hawking-speculate/src/suspension.rs",
       "ignored": 0,
       "lang": "rust"
@@ -551,37 +424,31 @@
     },
     {
       "cases": 11,
+      "file": "crates/hide-backend/tests/compat_compat.rs",
+      "ignored": 0,
+      "lang": "rust"
+    },
+    {
+      "cases": 11,
+      "file": "crates/hide-backend/tests/connector_abi_safety_and_impls.rs",
+      "ignored": 0,
+      "lang": "rust"
+    },
+    {
+      "cases": 11,
       "file": "crates/hide-backend/tests/diff_review_trace_c.rs",
       "ignored": 0,
       "lang": "rust"
     },
     {
       "cases": 11,
-      "file": "crates/hide-browser/src/lib.rs",
+      "file": "crates/hide-backend/tests/os_core_blackbox.rs",
       "ignored": 0,
       "lang": "rust"
     },
     {
       "cases": 11,
-      "file": "crates/hide-compat/tests/compat.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 11,
-      "file": "crates/hide-connectors/tests/safety_and_impls.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 11,
-      "file": "crates/hide-kernel/src/tools/runner.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 11,
-      "file": "crates/hide-objects/tests/object_system.rs",
+      "file": "crates/hide-core/tests/objects_object_system.rs",
       "ignored": 0,
       "lang": "rust"
     },
@@ -596,13 +463,6 @@
       "file": "crates/hide-serve/src/lib.rs",
       "ignored": 0,
       "lang": "rust"
-    },
-    {
-      "cases": 11,
-      "file": "tools/condense/tests/test_gravity_forge.py",
-      "lang": "python",
-      "parametrised_cases": 0,
-      "skipped_markers": 0
     },
     {
       "cases": 10,
@@ -624,47 +484,27 @@
     },
     {
       "cases": 10,
-      "file": "crates/hawking-seed-c/src/providers/tokenizer_protocols.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 10,
       "file": "crates/hide-backend/src/replay.rs",
       "ignored": 0,
       "lang": "rust"
     },
     {
       "cases": 10,
-      "file": "crates/hide-sdk/tests/golden.rs",
+      "file": "crates/hide-kernel/src/tooling_shell.rs",
       "ignored": 0,
       "lang": "rust"
     },
     {
       "cases": 10,
-      "file": "crates/hide-state/src/capsule.rs",
+      "file": "crates/hide-protocol/src/command.rs",
       "ignored": 0,
       "lang": "rust"
     },
     {
       "cases": 10,
-      "file": "crates/hide-tools/src/shell.rs",
+      "file": "crates/hide-protocol/tests/sdk_golden.rs",
       "ignored": 0,
       "lang": "rust"
-    },
-    {
-      "cases": 10,
-      "file": "ramanujan/data/test_data.py",
-      "lang": "python",
-      "parametrised_cases": 0,
-      "skipped_markers": 0
-    },
-    {
-      "cases": 10,
-      "file": "tools/condense/tests/test_glm52_contract.py",
-      "lang": "python",
-      "parametrised_cases": 0,
-      "skipped_markers": 0
     },
     {
       "cases": 9,
@@ -687,12 +527,6 @@
     {
       "cases": 9,
       "file": "crates/hawking-index/src/query.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 9,
-      "file": "crates/hawking-seed-c/src/gravity.rs",
       "ignored": 0,
       "lang": "rust"
     },
@@ -734,44 +568,44 @@
     },
     {
       "cases": 9,
-      "file": "crates/hide-program-runtime/src/interp.rs",
+      "file": "crates/hide-kernel/src/machine.rs",
       "ignored": 0,
       "lang": "rust"
     },
     {
       "cases": 9,
-      "file": "crates/hide-protocol/src/command.rs",
+      "file": "crates/hide-kernel/src/program_runtime_interp.rs",
       "ignored": 0,
       "lang": "rust"
     },
     {
       "cases": 9,
-      "file": "crates/hide-security/src/sandbox.rs",
+      "file": "crates/hide-kernel/src/security_sandbox.rs",
       "ignored": 0,
       "lang": "rust"
     },
     {
       "cases": 9,
-      "file": "crates/hide-security/src/storage.rs",
+      "file": "crates/hide-kernel/src/security_storage.rs",
       "ignored": 0,
       "lang": "rust"
     },
     {
       "cases": 9,
-      "file": "crates/hide-tools/src/mcp.rs",
+      "file": "crates/hide-kernel/src/tooling_mcp.rs",
       "ignored": 0,
       "lang": "rust"
-    },
-    {
-      "cases": 9,
-      "file": "tools/foundry/tests/test_lab_harness.py",
-      "lang": "python",
-      "parametrised_cases": 46,
-      "skipped_markers": 0
     },
     {
       "cases": 9,
       "file": "tools/prometheus/test_prometheus.py",
+      "lang": "python",
+      "parametrised_cases": 0,
+      "skipped_markers": 0
+    },
+    {
+      "cases": 9,
+      "file": "tools/verify/test_test_case_manifest.py",
       "lang": "python",
       "parametrised_cases": 0,
       "skipped_markers": 0
@@ -802,31 +636,13 @@
     },
     {
       "cases": 8,
-      "file": "crates/hawking-core/tests/user_draft_parity_e2e.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 8,
       "file": "crates/hawking-core/tests/v030_gemm_q4_k_simd_parity.rs",
       "ignored": 0,
       "lang": "rust"
     },
     {
       "cases": 8,
-      "file": "crates/hawking-speculate/src/eagle5.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 8,
       "file": "crates/hawking-speculate/src/governor.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 8,
-      "file": "crates/hawking-speculate/src/tree.rs",
       "ignored": 0,
       "lang": "rust"
     },
@@ -844,31 +660,31 @@
     },
     {
       "cases": 8,
+      "file": "crates/hide-backend/tests/lenses_properties.rs",
+      "ignored": 0,
+      "lang": "rust"
+    },
+    {
+      "cases": 8,
       "file": "crates/hide-fleet/src/merge.rs",
       "ignored": 0,
       "lang": "rust"
     },
     {
       "cases": 8,
+      "file": "crates/hide-kernel/src/security_audit.rs",
+      "ignored": 0,
+      "lang": "rust"
+    },
+    {
+      "cases": 8,
+      "file": "crates/hide-kernel/src/tooling_memory.rs",
+      "ignored": 0,
+      "lang": "rust"
+    },
+    {
+      "cases": 8,
       "file": "crates/hide-kernel/tests/full_run.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 8,
-      "file": "crates/hide-security/src/audit.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 8,
-      "file": "crates/hide-tools/src/memory.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 8,
-      "file": "crates/hide-you/tests/properties.rs",
       "ignored": 0,
       "lang": "rust"
     },
@@ -971,6 +787,12 @@
     },
     {
       "cases": 7,
+      "file": "crates/hide-backend/src/personalize.rs",
+      "ignored": 0,
+      "lang": "rust"
+    },
+    {
+      "cases": 7,
       "file": "crates/hide-backend/src/rewind.rs",
       "ignored": 0,
       "lang": "rust"
@@ -983,19 +805,14 @@
     },
     {
       "cases": 7,
-      "file": "crates/hide-personalize/src/eval.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 7,
-      "file": "crates/hide-personalize/src/world.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 7,
       "file": "tools/condense/tests/test_glm52_pack_rate_override.py",
+      "lang": "python",
+      "parametrised_cases": 0,
+      "skipped_markers": 0
+    },
+    {
+      "cases": 7,
+      "file": "tools/graph/test_graph_instrument.py",
       "lang": "python",
       "parametrised_cases": 0,
       "skipped_markers": 0
@@ -1033,6 +850,12 @@
     },
     {
       "cases": 6,
+      "file": "crates/hawking-core/tests/user_draft_parity_e2e.rs",
+      "ignored": 0,
+      "lang": "rust"
+    },
+    {
+      "cases": 6,
       "file": "crates/hawking-index/src/store.rs",
       "ignored": 0,
       "lang": "rust"
@@ -1045,13 +868,7 @@
     },
     {
       "cases": 6,
-      "file": "crates/hawking-seed-c/tests/parity.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 6,
-      "file": "crates/hawking-speculate/src/retrieval.rs",
+      "file": "crates/hide-backend/src/compat_frontmatter.rs",
       "ignored": 0,
       "lang": "rust"
     },
@@ -1069,19 +886,7 @@
     },
     {
       "cases": 6,
-      "file": "crates/hide-backend/tests/wire_write_path.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 6,
-      "file": "crates/hide-compat/src/frontmatter.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 6,
-      "file": "crates/hide-fleet/src/fabric/placement.rs",
+      "file": "crates/hide-fleet/src/fabric_placement.rs",
       "ignored": 0,
       "lang": "rust"
     },
@@ -1099,28 +904,15 @@
     },
     {
       "cases": 6,
-      "file": "crates/hide-kernel/src/machine/driver.rs",
+      "file": "crates/hide-kernel/src/tooling_fs.rs",
       "ignored": 0,
       "lang": "rust"
     },
     {
       "cases": 6,
-      "file": "crates/hide-tools/src/fs.rs",
+      "file": "crates/hide-kernel/src/tooling_git.rs",
       "ignored": 0,
       "lang": "rust"
-    },
-    {
-      "cases": 6,
-      "file": "crates/hide-tools/src/git.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 6,
-      "file": "tools/condense/tests/test_glm52_evidence_auth.py",
-      "lang": "python",
-      "parametrised_cases": 0,
-      "skipped_markers": 0
     },
     {
       "cases": 6,
@@ -1203,12 +995,6 @@
     },
     {
       "cases": 5,
-      "file": "crates/hawking-seed-c/src/pack.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 5,
       "file": "crates/hawking-serve/tests/energy_gather_window.rs",
       "ignored": 0,
       "lang": "rust"
@@ -1221,25 +1007,7 @@
     },
     {
       "cases": 5,
-      "file": "crates/hawking-speculate/src/parallel_draft.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 5,
-      "file": "crates/hawking-speculate/src/replay_oracle.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 5,
       "file": "crates/hawking-speculate/src/router.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 5,
-      "file": "crates/hawking-speculate/src/suffix_automaton.rs",
       "ignored": 0,
       "lang": "rust"
     },
@@ -1257,6 +1025,12 @@
     },
     {
       "cases": 5,
+      "file": "crates/hide-backend/src/compat_claude_md.rs",
+      "ignored": 0,
+      "lang": "rust"
+    },
+    {
+      "cases": 5,
       "file": "crates/hide-backend/src/program.rs",
       "ignored": 0,
       "lang": "rust"
@@ -1269,25 +1043,7 @@
     },
     {
       "cases": 5,
-      "file": "crates/hide-backend/tests/steer_and_dispatch.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 5,
-      "file": "crates/hide-compat/src/claude_md.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 5,
       "file": "crates/hide-core/src/event.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 5,
-      "file": "crates/hide-extension-registry/src/manifest.rs",
       "ignored": 0,
       "lang": "rust"
     },
@@ -1305,40 +1061,15 @@
     },
     {
       "cases": 5,
-      "file": "crates/hide-kernel/src/verify/gate.rs",
+      "file": "crates/hide-kernel/src/verify_plane.rs",
       "ignored": 0,
       "lang": "rust"
     },
     {
       "cases": 5,
-      "file": "crates/hide-personalize/src/curate.rs",
+      "file": "crates/hide-protocol/tests/sdk_client.rs",
       "ignored": 0,
       "lang": "rust"
-    },
-    {
-      "cases": 5,
-      "file": "crates/hide-personalize/src/rlef.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 5,
-      "file": "crates/hide-sdk/tests/client.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 5,
-      "file": "crates/hide-state/tests/store_roundtrip.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 5,
-      "file": "tools/condense/tests/test_glm52_grounding_swap.py",
-      "lang": "python",
-      "parametrised_cases": 26,
-      "skipped_markers": 0
     },
     {
       "cases": 5,
@@ -1441,12 +1172,6 @@
     },
     {
       "cases": 4,
-      "file": "crates/hawking-core/tests/qwen_eagle5_speculate.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 4,
       "file": "crates/hawking-core/tests/sidecar_roundtrip.rs",
       "ignored": 0,
       "lang": "rust"
@@ -1519,18 +1244,6 @@
     },
     {
       "cases": 4,
-      "file": "crates/hawking-seed-c/src/providers/adapters.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 4,
-      "file": "crates/hawking-seed-c/src/quant.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 4,
       "file": "crates/hawking-serve/src/glm_chat.rs",
       "ignored": 0,
       "lang": "rust"
@@ -1561,18 +1274,6 @@
     },
     {
       "cases": 4,
-      "file": "crates/hawking-speculate/src/eagle_proposer.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 4,
-      "file": "crates/hawking-speculate/src/suffix_array.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 4,
       "file": "crates/hawking-speculate/src/verifier.rs",
       "ignored": 0,
       "lang": "rust"
@@ -1585,7 +1286,19 @@
     },
     {
       "cases": 4,
+      "file": "crates/hide-backend/src/compat_agents.rs",
+      "ignored": 0,
+      "lang": "rust"
+    },
+    {
+      "cases": 4,
       "file": "crates/hide-backend/src/compat_instructions.rs",
+      "ignored": 0,
+      "lang": "rust"
+    },
+    {
+      "cases": 4,
+      "file": "crates/hide-backend/src/compat_settings.rs",
       "ignored": 0,
       "lang": "rust"
     },
@@ -1598,6 +1311,12 @@
     {
       "cases": 4,
       "file": "crates/hide-backend/src/interrupt.rs",
+      "ignored": 0,
+      "lang": "rust"
+    },
+    {
+      "cases": 4,
+      "file": "crates/hide-backend/src/lenses_session_graph.rs",
       "ignored": 0,
       "lang": "rust"
     },
@@ -1621,24 +1340,6 @@
     },
     {
       "cases": 4,
-      "file": "crates/hide-backend/tests/wave3_reachability.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 4,
-      "file": "crates/hide-compat/src/agents.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 4,
-      "file": "crates/hide-compat/src/settings.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 4,
       "file": "crates/hide-fleet/src/batch.rs",
       "ignored": 0,
       "lang": "rust"
@@ -1657,31 +1358,13 @@
     },
     {
       "cases": 4,
-      "file": "crates/hide-kernel/src/verify/mod.rs",
+      "file": "crates/hide-kernel/src/program_runtime_value.rs",
       "ignored": 0,
       "lang": "rust"
     },
     {
       "cases": 4,
-      "file": "crates/hide-personalize/src/kv_handoff.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 4,
-      "file": "crates/hide-personalize/src/records.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 4,
-      "file": "crates/hide-personalize/src/retrieval.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 4,
-      "file": "crates/hide-program-runtime/src/value.rs",
+      "file": "crates/hide-kernel/src/tooling_common.rs",
       "ignored": 0,
       "lang": "rust"
     },
@@ -1690,51 +1373,6 @@
       "file": "crates/hide-protocol/src/compat.rs",
       "ignored": 0,
       "lang": "rust"
-    },
-    {
-      "cases": 4,
-      "file": "crates/hide-state/src/integrity.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 4,
-      "file": "crates/hide-tools/src/common.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 4,
-      "file": "crates/hide-verify/src/static_analysis.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 4,
-      "file": "crates/hide-you/src/session_graph.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 4,
-      "file": "ramanujan/data/test_freeze.py",
-      "lang": "python",
-      "parametrised_cases": 0,
-      "skipped_markers": 0
-    },
-    {
-      "cases": 4,
-      "file": "tools/condense/tests/test_glm52_grounding_auth.py",
-      "lang": "python",
-      "parametrised_cases": 0,
-      "skipped_markers": 0
-    },
-    {
-      "cases": 4,
-      "file": "tools/condense/tests/test_gravity_largest_tensor.py",
-      "lang": "python",
-      "parametrised_cases": 9,
-      "skipped_markers": 0
     },
     {
       "cases": 3,
@@ -1824,12 +1462,6 @@
       "cases": 3,
       "file": "crates/hawking-core/tests/add_rmsnorm_fused_q8_scaled_parity.rs",
       "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 3,
-      "file": "crates/hawking-core/tests/eagle5_trained_head_load.rs",
-      "ignored": 3,
       "lang": "rust"
     },
     {
@@ -2056,30 +1688,6 @@
     },
     {
       "cases": 3,
-      "file": "crates/hawking-seed-c/src/providers/registry.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 3,
-      "file": "crates/hawking-seed-c/src/providers/verify.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 3,
-      "file": "crates/hawking-seed-c/src/state.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 3,
-      "file": "crates/hawking-seed-c/tests/providers_harness.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 3,
       "file": "crates/hawking-serve/src/batch/driver.rs",
       "ignored": 0,
       "lang": "rust"
@@ -2093,12 +1701,6 @@
     {
       "cases": 3,
       "file": "crates/hawking-serve/tests/system_kv_bank_wiring.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 3,
-      "file": "crates/hawking-speculate/src/eagle5_forward.rs",
       "ignored": 0,
       "lang": "rust"
     },
@@ -2122,7 +1724,19 @@
     },
     {
       "cases": 3,
+      "file": "crates/hide-backend/src/compat_layout.rs",
+      "ignored": 0,
+      "lang": "rust"
+    },
+    {
+      "cases": 3,
       "file": "crates/hide-backend/src/digest.rs",
+      "ignored": 0,
+      "lang": "rust"
+    },
+    {
+      "cases": 3,
+      "file": "crates/hide-backend/src/lenses_capability.rs",
       "ignored": 0,
       "lang": "rust"
     },
@@ -2146,13 +1760,19 @@
     },
     {
       "cases": 3,
-      "file": "crates/hide-browser/src/dom.rs",
+      "file": "crates/hide-backend/tests/host_slice_core.rs",
       "ignored": 0,
       "lang": "rust"
     },
     {
       "cases": 3,
-      "file": "crates/hide-compat/src/layout.rs",
+      "file": "crates/hide-core/src/objects_hash.rs",
+      "ignored": 0,
+      "lang": "rust"
+    },
+    {
+      "cases": 3,
+      "file": "crates/hide-core/src/objects_permissions.rs",
       "ignored": 0,
       "lang": "rust"
     },
@@ -2164,7 +1784,7 @@
     },
     {
       "cases": 3,
-      "file": "crates/hide-fleet/src/fabric/node.rs",
+      "file": "crates/hide-fleet/src/fabric_node.rs",
       "ignored": 0,
       "lang": "rust"
     },
@@ -2182,73 +1802,37 @@
     },
     {
       "cases": 3,
-      "file": "crates/hide-kernel/src/machine/state.rs",
+      "file": "crates/hide-kernel/src/plan.rs",
       "ignored": 0,
       "lang": "rust"
     },
     {
       "cases": 3,
-      "file": "crates/hide-kernel/src/search/strategy.rs",
+      "file": "crates/hide-kernel/src/program_runtime_handles.rs",
       "ignored": 0,
       "lang": "rust"
     },
     {
       "cases": 3,
-      "file": "crates/hide-kernel/src/verify/probabilistic.rs",
+      "file": "crates/hide-kernel/src/search.rs",
       "ignored": 0,
       "lang": "rust"
     },
     {
       "cases": 3,
-      "file": "crates/hide-objects/src/hash.rs",
+      "file": "crates/hide-kernel/src/tooling_proc.rs",
       "ignored": 0,
       "lang": "rust"
     },
     {
       "cases": 3,
-      "file": "crates/hide-objects/src/permissions.rs",
+      "file": "crates/hide-kernel/src/tooling_search.rs",
       "ignored": 0,
       "lang": "rust"
     },
     {
       "cases": 3,
-      "file": "crates/hide-personalize/src/store.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 3,
-      "file": "crates/hide-program-runtime/src/handles.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 3,
-      "file": "crates/hide-sdk/tests/fixtures.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 3,
-      "file": "crates/hide-state/src/identity.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 3,
-      "file": "crates/hide-tools/src/proc.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 3,
-      "file": "crates/hide-tools/src/search.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 3,
-      "file": "crates/hide-you/src/capability.rs",
+      "file": "crates/hide-protocol/tests/sdk_fixtures.rs",
       "ignored": 0,
       "lang": "rust"
     },
@@ -2268,13 +1852,6 @@
     {
       "cases": 3,
       "file": "tools/eval/test_support_halo_gate.py",
-      "lang": "python",
-      "parametrised_cases": 0,
-      "skipped_markers": 0
-    },
-    {
-      "cases": 3,
-      "file": "tools/training/test_rwkv7_chunked.py",
       "lang": "python",
       "parametrised_cases": 0,
       "skipped_markers": 0
@@ -2330,18 +1907,6 @@
     {
       "cases": 2,
       "file": "crates/hawking-core/tests/e3_user_draft_gate_rule.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 2,
-      "file": "crates/hawking-core/tests/eagle5_forward_parity.rs",
-      "ignored": 2,
-      "lang": "rust"
-    },
-    {
-      "cases": 2,
-      "file": "crates/hawking-core/tests/eagle5_spec_parity.rs",
       "ignored": 0,
       "lang": "rust"
     },
@@ -2539,30 +2104,6 @@
     },
     {
       "cases": 2,
-      "file": "crates/hawking-seed-c/src/mxfp4.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 2,
-      "file": "crates/hawking-seed-c/src/providers/validation.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 2,
-      "file": "crates/hawking-seed-c/src/record.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 2,
-      "file": "crates/hawking-seed-c/src/subbit.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 2,
       "file": "crates/hawking-speculate/src/durable.rs",
       "ignored": 0,
       "lang": "rust"
@@ -2581,13 +2122,31 @@
     },
     {
       "cases": 2,
-      "file": "crates/hawking/tests/spec_oracle_cli.rs",
+      "file": "crates/hide-acp/src/backend_host.rs",
       "ignored": 0,
       "lang": "rust"
     },
     {
       "cases": 2,
-      "file": "crates/hide-acp/src/backend_host.rs",
+      "file": "crates/hide-backend/src/compat_mcp.rs",
+      "ignored": 0,
+      "lang": "rust"
+    },
+    {
+      "cases": 2,
+      "file": "crates/hide-backend/src/compat_rules.rs",
+      "ignored": 0,
+      "lang": "rust"
+    },
+    {
+      "cases": 2,
+      "file": "crates/hide-backend/src/compat_skills.rs",
+      "ignored": 0,
+      "lang": "rust"
+    },
+    {
+      "cases": 2,
+      "file": "crates/hide-backend/src/host_live_manifest_tests.rs",
       "ignored": 0,
       "lang": "rust"
     },
@@ -2605,55 +2164,37 @@
     },
     {
       "cases": 2,
-      "file": "crates/hide-browser/src/a11y.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 2,
-      "file": "crates/hide-browser/src/ids.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 2,
-      "file": "crates/hide-compat/src/mcp.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 2,
-      "file": "crates/hide-compat/src/rules.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 2,
-      "file": "crates/hide-compat/src/skills.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 2,
       "file": "crates/hide-core/src/ids.rs",
       "ignored": 0,
       "lang": "rust"
     },
     {
       "cases": 2,
-      "file": "crates/hide-fleet/src/fabric/agent.rs",
+      "file": "crates/hide-core/src/objects_queue.rs",
       "ignored": 0,
       "lang": "rust"
     },
     {
       "cases": 2,
-      "file": "crates/hide-fleet/src/fabric/failure.rs",
+      "file": "crates/hide-core/src/objects_retention.rs",
       "ignored": 0,
       "lang": "rust"
     },
     {
       "cases": 2,
-      "file": "crates/hide-fleet/src/fabric/pipeline.rs",
+      "file": "crates/hide-fleet/src/fabric_agent.rs",
+      "ignored": 0,
+      "lang": "rust"
+    },
+    {
+      "cases": 2,
+      "file": "crates/hide-fleet/src/fabric_failure.rs",
+      "ignored": 0,
+      "lang": "rust"
+    },
+    {
+      "cases": 2,
+      "file": "crates/hide-fleet/src/fabric_pipeline.rs",
       "ignored": 0,
       "lang": "rust"
     },
@@ -2671,49 +2212,13 @@
     },
     {
       "cases": 2,
-      "file": "crates/hide-kernel/src/plan/planner.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 2,
-      "file": "crates/hide-kernel/src/skills/mod.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 2,
-      "file": "crates/hide-kernel/src/tools/mod.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 2,
-      "file": "crates/hide-kernel/src/verify/deterministic.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 2,
-      "file": "crates/hide-objects/src/queue.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 2,
-      "file": "crates/hide-objects/src/retention.rs",
+      "file": "crates/hide-kernel/src/skills.rs",
       "ignored": 0,
       "lang": "rust"
     },
     {
       "cases": 2,
       "file": "crates/hide-protocol/src/ids.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 2,
-      "file": "crates/hide-state/src/header.rs",
       "ignored": 0,
       "lang": "rust"
     },
@@ -2774,12 +2279,6 @@
     {
       "cases": 1,
       "file": "crates/hawking-core/tests/embed_rmsnorm_fused_parity.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 1,
-      "file": "crates/hawking-core/tests/event_horizon_parity_prop.rs",
       "ignored": 0,
       "lang": "rust"
     },
@@ -3127,67 +2626,7 @@
     },
     {
       "cases": 1,
-      "file": "crates/hawking-seed-c/src/cpu.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 1,
-      "file": "crates/hawking-seed-c/src/evidence.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 1,
-      "file": "crates/hawking-seed-c/src/f2.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 1,
-      "file": "crates/hawking-seed-c/src/providers/doctor.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 1,
-      "file": "crates/hawking-seed-c/src/providers/experiment.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 1,
-      "file": "crates/hawking-seed-c/src/providers/forge.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 1,
-      "file": "crates/hawking-seed-c/src/providers/metal.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 1,
-      "file": "crates/hawking-seed-c/src/providers/profiles.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 1,
-      "file": "crates/hawking-seed-c/src/providers/provider.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 1,
-      "file": "crates/hawking-seed-c/src/providers/source_decl.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 1,
-      "file": "crates/hawking-seed-c/src/providers/speculation.rs",
+      "file": "crates/hide-backend/src/connector_abi_impls_rss.rs",
       "ignored": 0,
       "lang": "rust"
     },
@@ -3199,13 +2638,19 @@
     },
     {
       "cases": 1,
-      "file": "crates/hide-connectors/src/impls/rss.rs",
+      "file": "crates/hide-core/src/config.rs",
       "ignored": 0,
       "lang": "rust"
     },
     {
       "cases": 1,
-      "file": "crates/hide-core/src/config.rs",
+      "file": "crates/hide-core/src/objects_derivatives.rs",
+      "ignored": 0,
+      "lang": "rust"
+    },
+    {
+      "cases": 1,
+      "file": "crates/hide-core/src/objects_kinds.rs",
       "ignored": 0,
       "lang": "rust"
     },
@@ -3217,13 +2662,13 @@
     },
     {
       "cases": 1,
-      "file": "crates/hide-fleet/src/fabric/fixture.rs",
+      "file": "crates/hide-fleet/src/fabric_fixture.rs",
       "ignored": 0,
       "lang": "rust"
     },
     {
       "cases": 1,
-      "file": "crates/hide-fleet/src/fabric/qualification.rs",
+      "file": "crates/hide-fleet/src/fabric_qualification.rs",
       "ignored": 0,
       "lang": "rust"
     },
@@ -3235,45 +2680,22 @@
     },
     {
       "cases": 1,
-      "file": "crates/hide-kernel/src/plan/replan.rs",
+      "file": "crates/hide-kernel/src/subagent.rs",
       "ignored": 0,
       "lang": "rust"
     },
     {
       "cases": 1,
-      "file": "crates/hide-kernel/src/subagent/mod.rs",
+      "file": "crates/hide-kernel/src/tooling_registry.rs",
       "ignored": 0,
       "lang": "rust"
     },
     {
       "cases": 1,
-      "file": "crates/hide-objects/src/derivatives.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 1,
-      "file": "crates/hide-objects/src/kinds.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 1,
-      "file": "crates/hide-state/tests/no_claims.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 1,
-      "file": "crates/hide-tools/src/registry.rs",
-      "ignored": 0,
-      "lang": "rust"
-    },
-    {
-      "cases": 1,
-      "file": "crates/hide-verify/src/finding.rs",
-      "ignored": 0,
-      "lang": "rust"
+      "file": "tools/condense/tests/test_retired_engine.py",
+      "lang": "python",
+      "parametrised_cases": 0,
+      "skipped_markers": 0
     },
     {
       "cases": 1,
@@ -3283,11 +2705,11 @@
       "skipped_markers": 0
     }
   ],
-  "commit": "aa7fa85c78d31794587358071ba948f42732c5e4",
-  "files": 535,
-  "ignored_rust": 52,
-  "logical_cases": 3925,
-  "parametrised_expansion": 471,
+  "commit": "43456bc8701c5bec083b70321c7a19d7689cf5a9",
+  "files": 443,
+  "ignored_rust": 47,
+  "logical_cases": 2996,
+  "parametrised_expansion": 241,
   "schema": "hawking.logical_test_inventory.v1",
   "skipped_python_markers": 4
 }

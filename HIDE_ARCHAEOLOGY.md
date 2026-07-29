@@ -13,7 +13,7 @@
 | Tauri desktop | `app/src-tauri/src/main.rs` | Spawns `hide-serve` sidecar only (no direct host IPC) |
 | `hide-acp-server` bin | `crates/hide-acp/src/bin/hide-acp-server.rs:19-30` | ACP stdio server with **`DeferredTurnHandler`** (no model, no backend host) |
 | `hide-sdk-codegen` | `crates/hide-sdk/src/bin/hide-sdk-codegen.rs` | Codegen only (not a runtime host) |
-| Hawking CLI / serve | `crates/hawking`, `hawking-serve`, `hawking-seed-c` | Inference runtime; HIDE talks HTTP to it when supervised |
+| Hawking CLI / serve | `crates/hawking`, `hawking-serve` | Inference runtime; HIDE talks HTTP to it when supervised. (`hawking-seed-c` product-released under BC-BRIDGE-012 / B-RT5 — historical only) |
 
 **Non-entry public APIs that tests call directly** (not a live FE/CLI/RPC path unless noted):
 

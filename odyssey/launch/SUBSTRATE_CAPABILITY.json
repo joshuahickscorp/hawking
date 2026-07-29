@@ -49,7 +49,7 @@
       "required_before_any_successor_is_trained_on": [
         "the same two probes, run against the successor's own hash",
         "oracle/runtime exact top-5 agreement, to keep the runtime exonerated",
-        "representation escalation attempted first, per crates/hawking-seed-c/src/gravity.rs: 'representation-before-BPW: try a stronger family first'"
+        "representation escalation attempted first (historical seed-c gravity law, product-released under BC-BRIDGE-012 / B-RT5): 'representation-before-BPW: try a stronger family first'"
       ]
     },
     {

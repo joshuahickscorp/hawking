@@ -37,7 +37,7 @@
   "A0": "CANDIDATE_NAMED: the rung is named in the campaign, nothing verified",
   "A1": "REPO_RESOLVED: official repo id, license, and immutable revision sha verified live",
   "A2": "CONFIG_BOUND: official config.json fetched; architecture, routing, and dtype fields read from it",
-  "A3": "ADAPTER_DECLARED: an ArchAdapter table entry exists in crates/hawking-seed-c/src/providers/adapters.rs for this family",
+  "A3": "ADAPTER_DECLARED: an ArchAdapter table entry exists for this family (historical seed-c providers path product-released under BC-BRIDGE-012 / B-RT5; live declaration authority is the remaining product adapter surface, not crates/hawking-seed-c)",
   "A4": "TENSOR_MAP_VERIFIED: adapter TensorNames cross-checked against the repo model.safetensors.index.json",
   "A5": "SOURCE_SEALED: a SourceRecord with revision plus per shard sha256 sealed via providers/source_decl.rs",
   "A6": "SHARD_STREAM_PROVEN: at least one real shard read and dequantized locally",

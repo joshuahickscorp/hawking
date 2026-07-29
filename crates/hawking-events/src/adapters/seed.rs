@@ -1,26 +1,22 @@
-//! Adapter: seed-c campaign state-machine `Event` → canonical Event.
+//! Adapter: historical seed-c campaign state-machine `Event` → canonical Event.
 //!
-//! # Deprecation note
+//! # Historical note (BC-BRIDGE-012 / B-RT5 product release)
 //!
-//! `hawking_seed_c::state::Event` (`Prepare`/`Admit`/`Run`/…) is a campaign
-//! FSM, **not** a product event bus. It stays in place for seed-c; do not grow
-//! new product features on it. This adapter projects transitions into
-//! `seed.transition` under the model-lifecycle category.
-//!
-//! This crate does not depend on hawking-seed-c; the enum is mirrored here so
-//! the mapping is hermetic. Keep it in lockstep with
-//! `crates/hawking-seed-c/src/state.rs:52`.
+//! The former `hawking_seed_c::state::Event` (`Prepare`/`Admit`/`Run`/…) was a
+//! campaign FSM, **not** a product event bus. The `hawking-seed-c` binary and
+//! crate were product-released under BC-BRIDGE-012 (B-RT5) and are absent from
+//! the live workspace. This adapter retains a hermetic mirror enum only so
+//! historical transition projections can still map into `seed.transition`
+//! under the model-lifecycle category. Do not grow new product features on it.
 
 use hide_core::event::EventClass;
 use hide_core::ids::SessionId;
 use serde_json::json;
 
 use crate::categories::Category;
-use crate::envelope::{
-    CanonicalEvent, ContentVerification, NewCanonical, Subsystem,
-};
+use crate::envelope::{CanonicalEvent, ContentVerification, NewCanonical, Subsystem};
 
-/// Mirror of `hawking_seed_c::state::Event` (file:line anchor in models.rs).
+/// Hermetic historical mirror of released `hawking_seed_c::state::Event`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum SeedFsmEvent {
     Prepare,
@@ -50,7 +46,7 @@ impl SeedFsmEvent {
     }
 }
 
-/// Project a seed-c FSM transition into a provisional canonical event.
+/// Project a historical seed-c FSM transition into a provisional canonical event.
 pub fn seed_event_to_canonical(
     session_id: SessionId,
     seq: u64,
