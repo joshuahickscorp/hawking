@@ -267,7 +267,8 @@ mod tests {
     use super::*;
     fn rng_vec(n: usize, seed: u32) -> Vec<f32> {
         let mut s = seed;
-        (0..n).map(|_| {
+        (0..n)
+            .map(|_| {
                 s = s.wrapping_mul(1664525).wrapping_add(1013904223);
                 ((s >> 8) as f32 / (1u32 << 24) as f32) * 2.0 - 1.0
             })
@@ -275,12 +276,37 @@ mod tests {
     }
     #[test]
     fn gemma_attn_cap_off_matches_mha() {
-        let (n_heads, n_kv_heads, head_dim, seq_len) = (4, 2, 8, 5); let q = rng_vec(n_heads * head_dim, 1);
-        let k = rng_vec(seq_len * n_kv_heads * head_dim, 2); let v = rng_vec(seq_len * n_kv_heads * head_dim, 3);
+        let (n_heads, n_kv_heads, head_dim, seq_len) = (4, 2, 8, 5);
+        let q = rng_vec(n_heads * head_dim, 1);
+        let k = rng_vec(seq_len * n_kv_heads * head_dim, 2);
+        let v = rng_vec(seq_len * n_kv_heads * head_dim, 3);
         let mut out_ref = vec![0.0f32; n_heads * head_dim];
-        mha_decode_step(&q, &k, &v, n_heads, n_kv_heads, head_dim, seq_len, &mut out_ref).unwrap();
-        let mut out_gemma = vec![0.0f32; n_heads * head_dim]; let scale = 1.0 / (head_dim as f32).sqrt();
-        mha_decode_step_gemma(&q, &k, &v, n_heads, n_kv_heads, head_dim, seq_len, scale, 0.0, &mut out_gemma).unwrap();
+        mha_decode_step(
+            &q,
+            &k,
+            &v,
+            n_heads,
+            n_kv_heads,
+            head_dim,
+            seq_len,
+            &mut out_ref,
+        )
+        .unwrap();
+        let mut out_gemma = vec![0.0f32; n_heads * head_dim];
+        let scale = 1.0 / (head_dim as f32).sqrt();
+        mha_decode_step_gemma(
+            &q,
+            &k,
+            &v,
+            n_heads,
+            n_kv_heads,
+            head_dim,
+            seq_len,
+            scale,
+            0.0,
+            &mut out_gemma,
+        )
+        .unwrap();
         for i in 0..out_ref.len() {
             assert_eq!(
                 out_ref[i].to_bits(),
@@ -293,14 +319,19 @@ mod tests {
     }
     #[test]
     fn gemma_attn_softcap_is_convex() {
-        let (n_heads, n_kv_heads, head_dim, seq_len) = (2, 1, 4, 6); let q = rng_vec(n_heads * head_dim, 7);
-        let k = rng_vec(seq_len * n_kv_heads * head_dim, 8); let v = rng_vec(seq_len * n_kv_heads * head_dim, 9);
-        let mut out = vec![0.0f32; n_heads * head_dim]; let scale = 1.0 / (head_dim as f32).sqrt();
+        let (n_heads, n_kv_heads, head_dim, seq_len) = (2, 1, 4, 6);
+        let q = rng_vec(n_heads * head_dim, 7);
+        let k = rng_vec(seq_len * n_kv_heads * head_dim, 8);
+        let v = rng_vec(seq_len * n_kv_heads * head_dim, 9);
+        let mut out = vec![0.0f32; n_heads * head_dim];
+        let scale = 1.0 / (head_dim as f32).sqrt();
         mha_decode_step_gemma(
             &q, &k, &v, n_heads, n_kv_heads, head_dim, seq_len, scale, 50.0, &mut out,
-        ).unwrap();
+        )
+        .unwrap();
         for d in 0..head_dim {
-            let mut lo = f32::INFINITY; let mut hi = f32::NEG_INFINITY;
+            let mut lo = f32::INFINITY;
+            let mut hi = f32::NEG_INFINITY;
             for t in 0..seq_len {
                 let val = v[t * head_dim + d];
                 lo = lo.min(val);
@@ -308,26 +339,44 @@ mod tests {
             }
             for h in 0..n_heads {
                 let o = out[h * head_dim + d];
-                assert!(o >= lo - 1e-4 && o <= hi + 1e-4, "out {o} not in [{lo},{hi}]");
+                assert!(
+                    o >= lo - 1e-4 && o <= hi + 1e-4,
+                    "out {o} not in [{lo},{hi}]"
+                );
             }
         }
     }
     #[test]
     fn weights_reconstruct_mha_output() {
-        let (n_heads, n_kv_heads, head_dim, seq_len) = (4, 2, 8, 7); let q = rng_vec(n_heads * head_dim, 11);
-        let k = rng_vec(seq_len * n_kv_heads * head_dim, 12); let v = rng_vec(seq_len * n_kv_heads * head_dim, 13);
+        let (n_heads, n_kv_heads, head_dim, seq_len) = (4, 2, 8, 7);
+        let q = rng_vec(n_heads * head_dim, 11);
+        let k = rng_vec(seq_len * n_kv_heads * head_dim, 12);
+        let v = rng_vec(seq_len * n_kv_heads * head_dim, 13);
         let mut out_ref = vec![0.0f32; n_heads * head_dim];
-        mha_decode_step(&q, &k, &v, n_heads, n_kv_heads, head_dim, seq_len, &mut out_ref).unwrap();
+        mha_decode_step(
+            &q,
+            &k,
+            &v,
+            n_heads,
+            n_kv_heads,
+            head_dim,
+            seq_len,
+            &mut out_ref,
+        )
+        .unwrap();
         let w = mha_decode_step_weights(&q, &k, n_heads, n_kv_heads, head_dim, seq_len);
         assert_eq!(w.len(), n_heads);
-        let group_size = n_heads / n_kv_heads; let mut out_w = vec![0.0f32; n_heads * head_dim];
+        let group_size = n_heads / n_kv_heads;
+        let mut out_w = vec![0.0f32; n_heads * head_dim];
         for h in 0..n_heads {
             assert_eq!(w[h].len(), seq_len);
             let sum: f32 = w[h].iter().sum();
             assert!((sum - 1.0).abs() < 1e-5, "head {h} weights sum {sum}");
-            let kv_h = h / group_size; let out_head = &mut out_w[h * head_dim..(h + 1) * head_dim];
+            let kv_h = h / group_size;
+            let out_head = &mut out_w[h * head_dim..(h + 1) * head_dim];
             for t in 0..seq_len {
-                let off = t * (n_kv_heads * head_dim) + kv_h * head_dim; let val = &v[off..off + head_dim];
+                let off = t * (n_kv_heads * head_dim) + kv_h * head_dim;
+                let val = &v[off..off + head_dim];
                 let ww = w[h][t];
                 for i in 0..head_dim {
                     out_head[i] += ww * val[i];

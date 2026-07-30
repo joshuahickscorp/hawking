@@ -4,23 +4,59 @@ use hawking_core::metal::{MetalContext, TokenCommandBuffer};
 use hawking_core::quant;
 mod common;
 use common::*;
-fn run_1r(ctx: &MetalContext, w_q6: &[u8], gate: &[f32], up: &[f32], rows: usize, cols: usize) -> Vec<f32> {
+fn run_1r(
+    ctx: &MetalContext,
+    w_q6: &[u8],
+    gate: &[f32],
+    up: &[f32],
+    rows: usize,
+    cols: usize,
+) -> Vec<f32> {
     let model_buf = ctx.new_buffer_with_bytes(w_q6);
     let gate_buf = new_f32_buf(ctx, gate);
     let up_buf = new_f32_buf(ctx, up);
     let out_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
     let mut tcb = TokenCommandBuffer::new(ctx);
-    kernels::gemv_q6_k_swiglu_1r_direct_tcb(&mut tcb, &model_buf, 0, w_q6.len(), rows, cols, &gate_buf, &up_buf, &out_buf).unwrap();
+    kernels::gemv_q6_k_swiglu_1r_direct_tcb(
+        &mut tcb,
+        &model_buf,
+        0,
+        w_q6.len(),
+        rows,
+        cols,
+        &gate_buf,
+        &up_buf,
+        &out_buf,
+    )
+    .unwrap();
     tcb.commit_and_wait().unwrap();
     read_f32_buf(&out_buf, rows)
 }
-fn run_2r(ctx: &MetalContext, w_q6: &[u8], gate: &[f32], up: &[f32], rows: usize, cols: usize) -> Vec<f32> {
+fn run_2r(
+    ctx: &MetalContext,
+    w_q6: &[u8],
+    gate: &[f32],
+    up: &[f32],
+    rows: usize,
+    cols: usize,
+) -> Vec<f32> {
     let model_buf = ctx.new_buffer_with_bytes(w_q6);
     let gate_buf = new_f32_buf(ctx, gate);
     let up_buf = new_f32_buf(ctx, up);
     let out_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
     let mut tcb = TokenCommandBuffer::new(ctx);
-    kernels::gemv_q6_k_swiglu_2r_direct_tcb(&mut tcb, &model_buf, 0, w_q6.len(), rows, cols, &gate_buf, &up_buf, &out_buf).unwrap();
+    kernels::gemv_q6_k_swiglu_2r_direct_tcb(
+        &mut tcb,
+        &model_buf,
+        0,
+        w_q6.len(),
+        rows,
+        cols,
+        &gate_buf,
+        &up_buf,
+        &out_buf,
+    )
+    .unwrap();
     tcb.commit_and_wait().unwrap();
     read_f32_buf(&out_buf, rows)
 }
@@ -53,6 +89,9 @@ fn d7_q6k_swiglu_2r_bit_identical_to_1r() {
         let got_out = run_2r(ctx, &w_q6, &gate, &up, rows, cols);
         let diff = max_abs_diff(&ref_out, &got_out);
         const MAX_DIFF: f32 = 1e-4;
-        assert!(diff <= MAX_DIFF, "D7 rows={rows} cols={cols}: 2r vs 1r diff={diff:.2e} > {MAX_DIFF:.2e}");
+        assert!(
+            diff <= MAX_DIFF,
+            "D7 rows={rows} cols={cols}: 2r vs 1r diff={diff:.2e} > {MAX_DIFF:.2e}"
+        );
     }
 }

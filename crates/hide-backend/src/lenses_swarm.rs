@@ -149,9 +149,10 @@ impl Swarm {
     ) -> Result<usize> {
         let tools: Vec<String> = tools.into_iter().map(Into::into).collect();
         let connectors: Vec<String> = connectors.into_iter().map(Into::into).collect();
-        let cap = self
-            .permissions
-            .derive_capability_subset(tools.iter().map(String::as_str), connectors.iter().map(String::as_str))?;
+        let cap = self.permissions.derive_capability_subset(
+            tools.iter().map(String::as_str),
+            connectors.iter().map(String::as_str),
+        )?;
         let spec = AgentSpec::builder(role, agent_goal)
             .tools(tools)
             .connectors(connectors)
@@ -174,7 +175,11 @@ impl Swarm {
 
     /// Run all pending agents once via the fixture provider. Enforces budget
     /// after each agent; on exhaustion, halts and records why.
-    pub fn run_round(&mut self, provider: &FixtureProvider, now_ms: u64) -> Result<Vec<AgentReceipt>> {
+    pub fn run_round(
+        &mut self,
+        provider: &FixtureProvider,
+        now_ms: u64,
+    ) -> Result<Vec<AgentReceipt>> {
         if !self.may_run() {
             return Err(YouError::InvalidState(format!(
                 "swarm {} is {:?}: {:?}",

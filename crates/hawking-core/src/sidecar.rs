@@ -491,7 +491,8 @@ mod tier_map_tests {
             Some(GgmlType::Q4_K)
         );
         assert_eq!(tm.dtype_for("blk.9.ffn_up.weight").unwrap(), None);
-        let dir = tempfile::tempdir().expect("tempdir"); let path = dir.path().join("model.hawking");
+        let dir = tempfile::tempdir().expect("tempdir");
+        let path = dir.path().join("model.hawking");
         let writer = SidecarWriter {
             path: path.clone(),
             predec_entries: Vec::new(),
@@ -502,7 +503,8 @@ mod tier_map_tests {
         let read_header = read_sidecar_header(&path).expect("read header");
         assert!(read_header.contents.mixed_quant_tier_map);
         let loaded = read_header
-            .tier_map.expect("tier_map present after round-trip");
+            .tier_map
+            .expect("tier_map present after round-trip");
         assert_eq!(loaded, tm, "tier map not byte-identical after round-trip");
         assert!(loaded.validate().is_ok());
         assert_eq!(

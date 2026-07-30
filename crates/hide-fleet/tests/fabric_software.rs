@@ -1,16 +1,12 @@
 use hide_fleet::fabric::fixture::{run_inprocess_software_fixture, run_two_process_fixture};
-use hide_fleet::fabric::node::{
-    OsNodeProbe, SimulatedNodeSet, FIXED_FAKE_MEMORY_BYTES,
-};
+use hide_fleet::fabric::node::{OsNodeProbe, SimulatedNodeSet, FIXED_FAKE_MEMORY_BYTES};
+use hide_fleet::fabric::pipeline::PipelineScheduler;
 use hide_fleet::fabric::placement::{
     reject_unlabelled_simulated, validate_placement_plan_schema, KvOwnershipInvariant,
     ModelSection, PlacementPlan, PlacementRequest, PlacementSimulator, PredictedCost,
     WorkloadClass, PLACEMENT_SCHEMA,
 };
-use hide_fleet::fabric::qualification::{
-    QualificationKind, HARDWARE_QUALIFICATION_PENDING,
-};
-use hide_fleet::fabric::pipeline::PipelineScheduler;
+use hide_fleet::fabric::qualification::{QualificationKind, HARDWARE_QUALIFICATION_PENDING};
 use hide_fleet::resources::OsResourceProbe;
 use hide_fleet::ResourceProbe;
 const GIB: u64 = 1024 * 1024 * 1024;
@@ -66,7 +62,10 @@ fn kv_ownership_invariant_across_placement_and_failure_replan() {
     let lost = KvOwnershipInvariant::ranges_lost_on_failure(&plan.kv_ownership, &failed);
     assert!(!lost.is_empty());
     let replan = sim.replan_after_failure(&req, &failed).unwrap();
- assert!(replan .section_placements .iter() .all(|sp| sp.node_id != failed));
+    assert!(replan
+        .section_placements
+        .iter()
+        .all(|sp| sp.node_id != failed));
     KvOwnershipInvariant::assert_holds(&replan.kv_ownership, req.workload.seq_len).unwrap();
 }
 #[tokio::test]
@@ -134,7 +133,10 @@ fn inprocess_software_fixture_end_to_end() {
     let result = run_inprocess_software_fixture().expect("inprocess fixture");
     assert!(result.not_physical_qualification);
     assert_eq!(result.qualification, QualificationKind::SoftwareFixture);
-    assert!(!result.receipt.lost_work.stages.is_empty() || !result.receipt.lost_work.kv_ranges.is_empty());
+    assert!(
+        !result.receipt.lost_work.stages.is_empty()
+            || !result.receipt.lost_work.kv_ranges.is_empty()
+    );
     assert_eq!(result.hardware_status, HARDWARE_QUALIFICATION_PENDING);
 }
 #[test]
@@ -144,8 +146,14 @@ fn two_process_fixture_end_to_end_with_failure_replay() {
             assert!(result.not_physical_qualification);
             assert_eq!(result.qualification, QualificationKind::SoftwareFixture);
             assert!(result.receipt.not_physical_qualification);
-            assert!(!result.receipt.lost_work.stages.is_empty() || !result.receipt.lost_work.kv_ranges.is_empty());
-            assert_eq!(result.receipt.replayed_from_checkpoint.0, format!("ckpt-before-fail-{}", result.request_id));
+            assert!(
+                !result.receipt.lost_work.stages.is_empty()
+                    || !result.receipt.lost_work.kv_ranges.is_empty()
+            );
+            assert_eq!(
+                result.receipt.replayed_from_checkpoint.0,
+                format!("ckpt-before-fail-{}", result.request_id)
+            );
             assert_eq!(result.hardware_status, HARDWARE_QUALIFICATION_PENDING);
             assert_ne!(result.plan_id, result.replan_plan_id);
         }
@@ -153,7 +161,7 @@ fn two_process_fixture_end_to_end_with_failure_replay() {
             eprintln!("two-process fixture unavailable ({e}); verifying in-process path");
             let result = run_inprocess_software_fixture().expect("fallback inprocess");
             assert!(result.not_physical_qualification);
- assert!( result .artifact_label .contains("software_qualification") );
+            assert!(result.artifact_label.contains("software_qualification"));
         }
     }
 }

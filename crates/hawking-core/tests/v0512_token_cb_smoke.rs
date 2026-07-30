@@ -10,7 +10,10 @@ fn f32_to_f16_bytes(v: &[f32]) -> Vec<u8> {
     bytemuck::cast_slice::<f16, u8>(&f16v).to_vec()
 }
 fn f16_buf_to_f32(ptr: *const f16, n: usize) -> Vec<f32> {
-    unsafe { std::slice::from_raw_parts(ptr, n) }.iter().map(|v| v.to_f32()).collect()
+    unsafe { std::slice::from_raw_parts(ptr, n) }
+        .iter()
+        .map(|v| v.to_f32())
+        .collect()
 }
 fn f32_bytes(v: &[f32]) -> Vec<u8> {
     bytemuck::cast_slice::<f32, u8>(v).to_vec()
@@ -49,11 +52,16 @@ fn token_command_buffer_matches_sequential() {
     let b_buf_s = ctx.new_buffer_with_bytes(&b_bytes);
     let n_u32 = n as u32;
     let n_tg = (n_u32 + TG_SIZE - 1) / TG_SIZE;
-    ctx.dispatch_threads("add_inplace", (n_tg * TG_SIZE, 1, 1), (TG_SIZE, 1, 1), |enc| {
-        enc.set_buffer(0, Some(&a_buf_s), 0);
-        enc.set_buffer(1, Some(&b_buf_s), 0);
-        enc.set_bytes(2, 4, &n_u32 as *const u32 as *const _);
-    })
+    ctx.dispatch_threads(
+        "add_inplace",
+        (n_tg * TG_SIZE, 1, 1),
+        (TG_SIZE, 1, 1),
+        |enc| {
+            enc.set_buffer(0, Some(&a_buf_s), 0);
+            enc.set_buffer(1, Some(&b_buf_s), 0);
+            enc.set_bytes(2, 4, &n_u32 as *const u32 as *const _);
+        },
+    )
     .expect("seq add_inplace");
     let rn_seq = f16_buf_to_f32(rn_out_seq.contents() as *const f16, n);
     let ai_seq = f32_buf_read(a_buf_s.contents() as *const f32, n);
@@ -73,11 +81,16 @@ fn token_command_buffer_matches_sequential() {
             enc.set_threadgroup_memory_length(0, shmem);
         })
         .expect("tcb rmsnorm");
-        tcb.dispatch_threads("add_inplace", (n_tg * TG_SIZE, 1, 1), (TG_SIZE, 1, 1), |enc| {
-            enc.set_buffer(0, Some(&a_buf_t), 0);
-            enc.set_buffer(1, Some(&b_buf_t), 0);
-            enc.set_bytes(2, 4, &n_u32 as *const u32 as *const _);
-        })
+        tcb.dispatch_threads(
+            "add_inplace",
+            (n_tg * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(&a_buf_t), 0);
+                enc.set_buffer(1, Some(&b_buf_t), 0);
+                enc.set_bytes(2, 4, &n_u32 as *const u32 as *const _);
+            },
+        )
         .expect("tcb add_inplace");
         tcb.commit_and_wait().expect("tcb commit");
     }
@@ -87,7 +100,11 @@ fn token_command_buffer_matches_sequential() {
     for (i, (&s, &t)) in rn_seq.iter().zip(rn_tcb.iter()).enumerate() {
         assert_eq!(s, t, "rmsnorm[{i}]: seq={s} tcb={t}");
     }
-    assert_eq!(ai_seq.len(), ai_tcb.len(), "add_inplace output length mismatch");
+    assert_eq!(
+        ai_seq.len(),
+        ai_tcb.len(),
+        "add_inplace output length mismatch"
+    );
     for (i, (&s, &t)) in ai_seq.iter().zip(ai_tcb.iter()).enumerate() {
         assert_eq!(s, t, "add_inplace[{i}]: seq={s} tcb={t}");
     }
@@ -104,16 +121,25 @@ fn token_command_buffer_drop_commits() {
     let n_tg = (n_u32 + TG_SIZE - 1) / TG_SIZE;
     {
         let mut tcb = TokenCommandBuffer::new(&ctx);
-        tcb.dispatch_threads("add_inplace", (n_tg * TG_SIZE, 1, 1), (TG_SIZE, 1, 1), |enc| {
-            enc.set_buffer(0, Some(&a_buf), 0);
-            enc.set_buffer(1, Some(&b_buf), 0);
-            enc.set_bytes(2, 4, &n_u32 as *const u32 as *const _);
-        })
+        tcb.dispatch_threads(
+            "add_inplace",
+            (n_tg * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(&a_buf), 0);
+                enc.set_buffer(1, Some(&b_buf), 0);
+                enc.set_bytes(2, 4, &n_u32 as *const u32 as *const _);
+            },
+        )
         .expect("tcb add_inplace");
     }
     let result = unsafe { std::slice::from_raw_parts(a_buf.contents() as *const f32, n) };
     for i in 0..n {
         let expected = i as f32 + 1.0;
-        assert!((result[i] - expected).abs() < 1e-6, "drop[{i}]: got={} expected={expected}", result[i]);
+        assert!(
+            (result[i] - expected).abs() < 1e-6,
+            "drop[{i}]: got={} expected={expected}",
+            result[i]
+        );
     }
 }

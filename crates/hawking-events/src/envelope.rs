@@ -159,9 +159,10 @@ impl Subsystem {
 
     fn to_event_source(&self) -> EventSource {
         match self {
-            Subsystem::Serve | Subsystem::CoreEngine | Subsystem::Gravity | Subsystem::Speculate => {
-                EventSource::Runtime
-            }
+            Subsystem::Serve
+            | Subsystem::CoreEngine
+            | Subsystem::Gravity
+            | Subsystem::Speculate => EventSource::Runtime,
             Subsystem::HideBackend
             | Subsystem::HideKernel
             | Subsystem::HideFleet
@@ -436,10 +437,9 @@ pub fn stamp_legacy_with_surface(
         "verification".into(),
         Value::String(verification.as_str().into()),
     );
-    event.ext.insert(
-        "surface".into(),
-        Value::String(surface_s.clone()),
-    );
+    event
+        .ext
+        .insert("surface".into(), Value::String(surface_s.clone()));
     event.ext.insert(
         "canonical_schema".into(),
         Value::String(CANONICAL_SCHEMA.into()),

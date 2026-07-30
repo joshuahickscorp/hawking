@@ -162,15 +162,23 @@ mod resolve_tests {
     #[test]
     fn resolve_entry_finds_ordered_shard_in_fixture_dir() {
         let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/gravity_glm");
-        let entries: Vec<_> = std::fs::read_dir(&dir).unwrap()
-            .filter_map(|e| e.ok()).map(|e| e.path())
+        let entries: Vec<_> = std::fs::read_dir(&dir)
+            .unwrap()
+            .filter_map(|e| e.ok())
+            .map(|e| e.path())
             .filter(|p| p.extension().and_then(|e| e.to_str()) == Some("gravity") && p.is_file())
             .collect();
-        assert!(!entries.is_empty(), "fixture dir must contain at least one .gravity file");
+        assert!(
+            !entries.is_empty(),
+            "fixture dir must contain at least one .gravity file"
+        );
         let model_shards: Vec<_> = entries
             .iter()
             .filter(|p| {
-                p.file_name().and_then(|n| n.to_str()).map(|n| n.starts_with("model-")).unwrap_or(false)
+                p.file_name()
+                    .and_then(|n| n.to_str())
+                    .map(|n| n.starts_with("model-"))
+                    .unwrap_or(false)
             })
             .cloned()
             .collect();
@@ -178,7 +186,8 @@ mod resolve_tests {
             let resolved = GravityEngine::resolve_entry(&dir).expect("resolve dir");
             assert!(GravityEngine::is_gravity(&resolved));
         } else {
-            let shard = &entries[0]; let resolved = GravityEngine::resolve_entry(shard).expect("resolve shard file");
+            let shard = &entries[0];
+            let resolved = GravityEngine::resolve_entry(shard).expect("resolve shard file");
             assert_eq!(resolved, *shard);
             assert!(GravityEngine::is_gravity(&resolved));
         }
@@ -190,15 +199,22 @@ mod resolve_tests {
         ))
         .unwrap_err();
         let msg = format!("{err}");
-        assert!(msg.contains("neither") || msg.contains("no model"), "unexpected error: {msg}");
+        assert!(
+            msg.contains("neither") || msg.contains("no model"),
+            "unexpected error: {msg}"
+        );
     }
     #[test]
     fn resolve_entry_accepts_assembled_activation_aware_directory() {
-        let dir = tempfile::tempdir().expect("tempdir"); let shard = dir.path().join("model-00001-of-00001.aap");
+        let dir = tempfile::tempdir().expect("tempdir");
+        let shard = dir.path().join("model-00001-of-00001.aap");
         std::fs::write(&shard, b"synthetic-aap").unwrap();
         std::fs::write(dir.path().join("model.activation_aware.index.json"), b"{}").unwrap();
         assert!(GravityEngine::is_activation_aware(&shard));
-        assert_eq!(GravityEngine::resolve_entry(dir.path()).expect("resolve activation-aware dir"), shard);
+        assert_eq!(
+            GravityEngine::resolve_entry(dir.path()).expect("resolve activation-aware dir"),
+            shard
+        );
     }
 }
 

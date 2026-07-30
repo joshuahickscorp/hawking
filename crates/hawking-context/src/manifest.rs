@@ -125,9 +125,10 @@ impl ContextMeter {
         let (occupancy, watermark) = match live {
             Some(l) => (Some(l.occupancy), Some(l.watermark)),
             None => {
-                let occ = effective.or(native).filter(|c| *c > 0).map(|c| {
-                    (used_tokens as f32 / c as f32).clamp(0.0, 1.0)
-                });
+                let occ = effective
+                    .or(native)
+                    .filter(|c| *c > 0)
+                    .map(|c| (used_tokens as f32 / c as f32).clamp(0.0, 1.0));
                 let wm = occ.map(WatermarkLevel::for_occupancy);
                 (occ, wm)
             }
@@ -155,9 +156,7 @@ impl ContextMeter {
             explanations.extend(r.explanations.iter().cloned());
         }
         // Hard rule, restated on every meter so UI never conflates the two.
-        explanations.push(
-            "usable context (retrieval+compaction) is not native_maximum".into(),
-        );
+        explanations.push("usable context (retrieval+compaction) is not native_maximum".into());
 
         Self {
             native_tokens: native,

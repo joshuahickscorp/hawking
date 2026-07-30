@@ -35,10 +35,28 @@ fn wedge_c_pair_gemv_norm_matches_cpu() {
     let normed_b_buf = ctx.new_buffer(kv_lora * std::mem::size_of::<f32>());
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
-        kernels::gemv_f32_attn_pair_arena_tcb(&mut tcb, &w_a_buf, rows_a, &w_b_buf, rows_b, hidden, &x_buf, &out_a_buf, &out_b_buf)
-            .expect("pair_gemv_tcb");
-        kernels::rmsnorm_metal_buf_tcb(&mut tcb, &out_a_buf, &norm_a_buf, eps, rows_a, &normed_a_buf).expect("rmsnorm_a_tcb");
-        kernels::rmsnorm_metal_buf_tcb(&mut tcb, &out_b_buf, &norm_b_buf, eps, kv_lora, &normed_b_buf).expect("rmsnorm_b_tcb");
+        kernels::gemv_f32_attn_pair_arena_tcb(
+            &mut tcb, &w_a_buf, rows_a, &w_b_buf, rows_b, hidden, &x_buf, &out_a_buf, &out_b_buf,
+        )
+        .expect("pair_gemv_tcb");
+        kernels::rmsnorm_metal_buf_tcb(
+            &mut tcb,
+            &out_a_buf,
+            &norm_a_buf,
+            eps,
+            rows_a,
+            &normed_a_buf,
+        )
+        .expect("rmsnorm_a_tcb");
+        kernels::rmsnorm_metal_buf_tcb(
+            &mut tcb,
+            &out_b_buf,
+            &norm_b_buf,
+            eps,
+            kv_lora,
+            &normed_b_buf,
+        )
+        .expect("rmsnorm_b_tcb");
         tcb.commit_and_wait().expect("commit");
     }
     let gpu_out_a = read_f32_buf(&out_a_buf, rows_a);
@@ -68,7 +86,8 @@ fn wedge_c_moe_gate_gemv_matches_cpu() {
     let out_buf = ctx.new_buffer(n_experts * std::mem::size_of::<f32>());
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
-        kernels::gemv_f32_moe_pinned_buf_tcb(&mut tcb, &w_buf, n_experts, hidden, &x_buf, &out_buf).expect("gemv_f32_moe_pinned_buf_tcb");
+        kernels::gemv_f32_moe_pinned_buf_tcb(&mut tcb, &w_buf, n_experts, hidden, &x_buf, &out_buf)
+            .expect("gemv_f32_moe_pinned_buf_tcb");
         tcb.commit_and_wait().expect("commit");
     }
     let gpu_out = read_f32_buf(&out_buf, n_experts);
@@ -82,10 +101,18 @@ fn wedge_c_full_layer_loop_matches_cpu() {
     let eps = 1e-6_f32;
     let ctx = ctx();
     let x_init = fixed_f32(h, 0xF00D_1111);
-    let attn_outs: Vec<Vec<f32>> = (0..N_LAYERS).map(|i| fixed_f32(h, 0xAA00_0000 + i as u64)).collect();
-    let ffn_outs: Vec<Vec<f32>> = (0..N_LAYERS).map(|i| fixed_f32(h, 0xBB00_0000 + i as u64)).collect();
-    let attn_norms: Vec<Vec<f32>> = (0..N_LAYERS).map(|i| fixed_f32(h, 0xCC00_0000 + i as u64)).collect();
-    let ffn_norms: Vec<Vec<f32>> = (0..N_LAYERS).map(|i| fixed_f32(h, 0xDD00_0000 + i as u64)).collect();
+    let attn_outs: Vec<Vec<f32>> = (0..N_LAYERS)
+        .map(|i| fixed_f32(h, 0xAA00_0000 + i as u64))
+        .collect();
+    let ffn_outs: Vec<Vec<f32>> = (0..N_LAYERS)
+        .map(|i| fixed_f32(h, 0xBB00_0000 + i as u64))
+        .collect();
+    let attn_norms: Vec<Vec<f32>> = (0..N_LAYERS)
+        .map(|i| fixed_f32(h, 0xCC00_0000 + i as u64))
+        .collect();
+    let ffn_norms: Vec<Vec<f32>> = (0..N_LAYERS)
+        .map(|i| fixed_f32(h, 0xDD00_0000 + i as u64))
+        .collect();
     let mut x_cpu = x_init.clone();
     let mut x_norm_attn_cpu = vec![vec![0.0f32; h]; N_LAYERS];
     let mut x_norm_ffn_cpu = vec![vec![0.0f32; h]; N_LAYERS];
@@ -103,7 +130,8 @@ fn wedge_c_full_layer_loop_matches_cpu() {
     let ffn_out_buf = ctx.new_buffer(h * std::mem::size_of::<f32>());
     let attn_out_buf = ctx.new_buffer(h * std::mem::size_of::<f32>());
     let x_norm_buf = ctx.new_buffer(h * std::mem::size_of::<f32>());
-    let attn_norm_bufs: Vec<PinnedBuffer> = attn_norms.iter().map(|n| new_f32_buf(ctx, n)).collect();
+    let attn_norm_bufs: Vec<PinnedBuffer> =
+        attn_norms.iter().map(|n| new_f32_buf(ctx, n)).collect();
     let ffn_norm_bufs: Vec<PinnedBuffer> = ffn_norms.iter().map(|n| new_f32_buf(ctx, n)).collect();
     let mut x_norm_attn_gpu = vec![vec![0.0f32; h]; N_LAYERS];
     let mut x_norm_ffn_gpu = vec![vec![0.0f32; h]; N_LAYERS];
@@ -115,16 +143,34 @@ fn wedge_c_full_layer_loop_matches_cpu() {
         {
             let mut tcb = TokenCommandBuffer::new(ctx);
             if li > 0 {
-                kernels::add_inplace_metal_tcb(&mut tcb, &x_buf, &ffn_out_buf, h).expect("add_inplace α");
+                kernels::add_inplace_metal_tcb(&mut tcb, &x_buf, &ffn_out_buf, h)
+                    .expect("add_inplace α");
             }
-            kernels::rmsnorm_metal_buf_tcb(&mut tcb, &x_buf, &attn_norm_bufs[li], eps, h, &x_norm_buf).expect("rmsnorm_attn_tcb");
+            kernels::rmsnorm_metal_buf_tcb(
+                &mut tcb,
+                &x_buf,
+                &attn_norm_bufs[li],
+                eps,
+                h,
+                &x_norm_buf,
+            )
+            .expect("rmsnorm_attn_tcb");
             tcb.commit_and_wait().expect("commit α");
         }
         x_norm_attn_gpu[li] = read_f32_buf(&x_norm_buf, h);
         {
             let mut tcb = TokenCommandBuffer::new(ctx);
-            kernels::add_inplace_metal_tcb(&mut tcb, &x_buf, &attn_out_buf, h).expect("add_inplace β");
-            kernels::rmsnorm_metal_buf_tcb(&mut tcb, &x_buf, &ffn_norm_bufs[li], eps, h, &x_norm_buf).expect("rmsnorm_ffn_tcb");
+            kernels::add_inplace_metal_tcb(&mut tcb, &x_buf, &attn_out_buf, h)
+                .expect("add_inplace β");
+            kernels::rmsnorm_metal_buf_tcb(
+                &mut tcb,
+                &x_buf,
+                &ffn_norm_bufs[li],
+                eps,
+                h,
+                &x_norm_buf,
+            )
+            .expect("rmsnorm_ffn_tcb");
             tcb.commit_and_wait().expect("commit β");
         }
         x_norm_ffn_gpu[li] = read_f32_buf(&x_norm_buf, h);
@@ -135,7 +181,8 @@ fn wedge_c_full_layer_loop_matches_cpu() {
     }
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
-        kernels::add_inplace_metal_tcb(&mut tcb, &x_buf, &ffn_out_buf, h).expect("add_inplace final");
+        kernels::add_inplace_metal_tcb(&mut tcb, &x_buf, &ffn_out_buf, h)
+            .expect("add_inplace final");
         tcb.commit_and_wait().expect("commit final");
     }
     let x_final_gpu = read_f32_buf(&x_buf, h);
@@ -144,7 +191,13 @@ fn wedge_c_full_layer_loop_matches_cpu() {
     for li in 0..N_LAYERS {
         let d_attn = max_abs_diff(&x_norm_attn_cpu[li], &x_norm_attn_gpu[li]);
         let d_ffn = max_abs_diff(&x_norm_ffn_cpu[li], &x_norm_ffn_gpu[li]);
-        assert!(d_attn < 1e-5, "layer {li} x_norm_attn diff {d_attn:.2e} >= 1e-5");
-        assert!(d_ffn < 1e-5, "layer {li} x_norm_ffn diff {d_ffn:.2e} >= 1e-5");
+        assert!(
+            d_attn < 1e-5,
+            "layer {li} x_norm_attn diff {d_attn:.2e} >= 1e-5"
+        );
+        assert!(
+            d_ffn < 1e-5,
+            "layer {li} x_norm_ffn diff {d_ffn:.2e} >= 1e-5"
+        );
     }
 }

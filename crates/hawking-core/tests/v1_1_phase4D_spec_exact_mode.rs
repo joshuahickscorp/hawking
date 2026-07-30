@@ -5,7 +5,10 @@ use common::weights_path_deepseek as weights_path;
 fn load_engine(speculate_mode: SpeculateMode) -> Option<Box<dyn hawking_core::Engine>> {
     let p = weights_path();
     if !p.exists() {
-        eprintln!("v1_1_phase4D_spec_exact_mode: no weights at {:?}, skipping", p);
+        eprintln!(
+            "v1_1_phase4D_spec_exact_mode: no weights at {:?}, skipping",
+            p
+        );
         return None;
     }
     let mut cfg = EngineConfig::default();
@@ -25,7 +28,11 @@ fn load_engine(speculate_mode: SpeculateMode) -> Option<Box<dyn hawking_core::En
         }
     }
 }
-fn collect_tokens(engine: &mut Box<dyn hawking_core::Engine>, prompt: &str, max_new_tokens: usize) -> Vec<u32> {
+fn collect_tokens(
+    engine: &mut Box<dyn hawking_core::Engine>,
+    prompt: &str,
+    max_new_tokens: usize,
+) -> Vec<u32> {
     let req = GenerateRequest {
         prompt: prompt.to_string(),
         max_new_tokens,
@@ -59,10 +66,14 @@ fn repetitive_prompt_spec_matches_greedy() {
     let Some(mut spec_engine) = load_engine(SpeculateMode::ExactShared) else {
         return;
     };
-    let prompt = "The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog.";
+    let prompt =
+        "The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog.";
     let ref_ids = collect_tokens(&mut ref_engine, prompt, 20);
     let spec_ids = collect_tokens(&mut spec_engine, prompt, 20);
-    assert_eq!(ref_ids, spec_ids, "repetitive prompt: spec output differs from greedy\nref={ref_ids:?}\nspec={spec_ids:?}");
+    assert_eq!(
+        ref_ids, spec_ids,
+        "repetitive prompt: spec output differs from greedy\nref={ref_ids:?}\nspec={spec_ids:?}"
+    );
 }
 #[test]
 fn natural_prompt_spec_matches_greedy() {
@@ -75,5 +86,8 @@ fn natural_prompt_spec_matches_greedy() {
     let prompt = "Explain how speculative decoding works in language models:";
     let ref_ids = collect_tokens(&mut ref_engine, prompt, 15);
     let spec_ids = collect_tokens(&mut spec_engine, prompt, 15);
-    assert_eq!(ref_ids, spec_ids, "natural prompt: spec output differs from greedy\nref={ref_ids:?}\nspec={spec_ids:?}");
+    assert_eq!(
+        ref_ids, spec_ids,
+        "natural prompt: spec output differs from greedy\nref={ref_ids:?}\nspec={spec_ids:?}"
+    );
 }

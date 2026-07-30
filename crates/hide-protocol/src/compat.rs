@@ -147,7 +147,9 @@ pub fn uievent_to_notification(event: &UiEvent) -> Notification {
             status: status.clone(),
             detail: detail.clone(),
         },
-        UiEventKind::ToolProgress { call_id, message, .. } => Notification::ToolProgress {
+        UiEventKind::ToolProgress {
+            call_id, message, ..
+        } => Notification::ToolProgress {
             call_id: ToolCallId::from(call_id.as_str()),
             message: message.clone(),
         },

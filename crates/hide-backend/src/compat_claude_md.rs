@@ -86,7 +86,10 @@ impl MemoryTree {
 
     /// Paths of the launch-injected entries, in order. Handy for order assertions.
     pub fn launch_order(&self) -> Vec<PathBuf> {
-        self.launch_entries().iter().map(|e| e.path.clone()).collect()
+        self.launch_entries()
+            .iter()
+            .map(|e| e.path.clone())
+            .collect()
     }
 
     /// Lazy subtree entries (injected on demand when their subtree is read).
@@ -114,9 +117,7 @@ pub fn discover(layout: &Layout, excludes: Option<&GlobSet>) -> MemoryTree {
             Some(set) => {
                 // Match on both the absolute path and the path relative to the
                 // repo root so simple globs like `packages/**/CLAUDE.md` work.
-                let rel = p
-                    .strip_prefix(&layout.repo_root)
-                    .unwrap_or(p);
+                let rel = p.strip_prefix(&layout.repo_root).unwrap_or(p);
                 set.is_match(p) || set.is_match(rel)
             }
             None => false,
@@ -124,10 +125,10 @@ pub fn discover(layout: &Layout, excludes: Option<&GlobSet>) -> MemoryTree {
     };
 
     let push = |entries: &mut Vec<MemoryEntry>,
-                    approval_used: &mut bool,
-                    path: PathBuf,
-                    kind: MemoryKind,
-                    lazy: bool| {
+                approval_used: &mut bool,
+                path: PathBuf,
+                kind: MemoryKind,
+                lazy: bool| {
         if excluded(&path) {
             return;
         }

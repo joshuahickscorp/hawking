@@ -431,7 +431,10 @@ const SNIPPET_CONTEXT: usize = 64;
 /// `match_len == 0`, the empty-query path) yields the item's leading window.
 fn snippet_around(text: &str, at: usize, match_len: usize) -> String {
     let start = floor_boundary(text, at.saturating_sub(SNIPPET_CONTEXT));
-    let end = ceil_boundary(text, at.saturating_add(match_len).saturating_add(SNIPPET_CONTEXT));
+    let end = ceil_boundary(
+        text,
+        at.saturating_add(match_len).saturating_add(SNIPPET_CONTEXT),
+    );
     let mut out = String::new();
     if start > 0 {
         out.push_str("...");
@@ -670,7 +673,10 @@ mod tests {
             .unwrap();
         let replay = BackendReplayService::new(events, projections.clone());
         let projection = replay.rebuild_session(session.clone()).await.unwrap();
- assert!(projection .transcript .iter() .any(|line| line.contains("building plan")));
+        assert!(projection
+            .transcript
+            .iter()
+            .any(|line| line.contains("building plan")));
         assert!(
             projections.latest_projection(&session).unwrap().unwrap().1["transcript"]
                 .as_array()
@@ -734,8 +740,16 @@ mod tests {
         let UiEventKind::ToolProgress { event_id, .. } = &ui[0].kind else {
             panic!("expected tool progress");
         };
-        let event_id = event_id.as_deref().expect("a recorded step carries its event id");
-        assert_eq!(replay .seq_of_event(session.clone(), &hide_core::ids::EventId::from(event_id)) .await .unwrap(), ui[0].seq);
+        let event_id = event_id
+            .as_deref()
+            .expect("a recorded step carries its event id");
+        assert_eq!(
+            replay
+                .seq_of_event(session.clone(), &hide_core::ids::EventId::from(event_id))
+                .await
+                .unwrap(),
+            ui[0].seq
+        );
         assert!(replay
             .seq_of_event(session, &hide_core::ids::EventId::from(call_id.as_str()))
             .await
@@ -898,13 +912,23 @@ mod tests {
             .await
             .unwrap();
         assert_eq!(hits.len(), 3, "only the ZZALPHA items match");
- assert!( hits.iter().all(|h| h.session_id == a), "every hit is in session A" );
- assert!( hits.windows(2).all(|w| w[0].seq < w[1].seq), "hits ranked by ascending seq" );
+        assert!(
+            hits.iter().all(|h| h.session_id == a),
+            "every hit is in session A"
+        );
+        assert!(
+            hits.windows(2).all(|w| w[0].seq < w[1].seq),
+            "hits ranked by ascending seq"
+        );
         let seeded_a: Vec<&Event> = seeded.iter().filter(|e| e.session_id == a).collect();
         for (hit, ev) in hits.iter().zip(seeded_a.iter()) {
             assert_eq!(hit.event_id, ev.id, "hit carries the source event id");
             assert_eq!(hit.kind, ev.kind);
- assert!( hit.snippet.contains("ZZALPHA"), "snippet quotes the match: {}", hit.snippet );
+            assert!(
+                hit.snippet.contains("ZZALPHA"),
+                "snippet quotes the match: {}",
+                hit.snippet
+            );
         }
         let roles: Vec<Option<&str>> = hits.iter().map(|h| h.role.as_deref()).collect();
         assert_eq!(roles, vec![Some("user"), Some("assistant"), Some("tool")]);
@@ -992,8 +1016,14 @@ mod tests {
         let UiEventKind::Custom(v) = ui.kind else {
             panic!("an approval request replays as a Custom UiEvent");
         };
-        assert_eq!(v["kind"], "approval_requested", "undotted, the router switches on this");
-        assert_eq!(v["run_id"], "run-1", "run_id is top level, not nested in payload");
+        assert_eq!(
+            v["kind"], "approval_requested",
+            "undotted, the router switches on this"
+        );
+        assert_eq!(
+            v["run_id"], "run-1",
+            "run_id is top level, not nested in payload"
+        );
         assert_eq!(v["step_id"], "step-1");
         assert_eq!(v["summary"], "write a file");
     }

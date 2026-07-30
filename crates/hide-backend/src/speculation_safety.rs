@@ -248,10 +248,16 @@ mod tests {
             let permit = HostDurableSinks::on_boundary(point.boundary);
             match point.action {
                 SuspensionAction::Suspend | SuspensionAction::FlushThenContinue => {
- assert!( !permit.may_propose(), "{:?} must suspend proposal", point.boundary );
+                    assert!(
+                        !permit.may_propose(),
+                        "{:?} must suspend proposal",
+                        point.boundary
+                    );
                 }
                 SuspensionAction::Constrain => {
-                    assert!(matches!( permit, SpeculationPermit::Constrained { boundary } if boundary == point.boundary ));
+                    assert!(
+                        matches!( permit, SpeculationPermit::Constrained { boundary } if boundary == point.boundary )
+                    );
                 }
             }
         }

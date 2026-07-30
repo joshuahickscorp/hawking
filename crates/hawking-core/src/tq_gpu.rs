@@ -1418,7 +1418,10 @@ mod tests {
                 "strand_bitslice_gemv_partials_computed(",
             ),
         ] {
-            assert!(shader.contains(decode), "missing Metal decode oracle {decode}");
+            assert!(
+                shader.contains(decode),
+                "missing Metal decode oracle {decode}"
+            );
             assert!(shader.contains(fused), "missing Metal fused kernel {fused}");
             assert!(
                 shader.contains(path.small_batch_kernel_name()),
@@ -1432,19 +1435,38 @@ mod tests {
             "strand_bitslice_reduce_rows_small_batch(",
             "strand_bitslice_reduce_rows_small_batch_accum(",
         ] {
-            assert!(shader.contains(kernel), "missing Metal batch support {kernel}");
+            assert!(
+                shader.contains(kernel),
+                "missing Metal batch support {kernel}"
+            );
         }
     }
-    fn host_walk_decode(payload: &[u8], tbl: &[BitsliceEntry], lut: &[i32], total: usize, k_bits: u32, l_bits: u32) -> Vec<i32> {
-        let state_mask = (1usize << l_bits) - 1; let input_mask = (1usize << k_bits) - 1;
-        let k = k_bits as usize; let mut out = vec![0i32; total];
+    fn host_walk_decode(
+        payload: &[u8],
+        tbl: &[BitsliceEntry],
+        lut: &[i32],
+        total: usize,
+        k_bits: u32,
+        l_bits: u32,
+    ) -> Vec<i32> {
+        let state_mask = (1usize << l_bits) - 1;
+        let input_mask = (1usize << k_bits) - 1;
+        let k = k_bits as usize;
+        let mut out = vec![0i32; total];
         for e in tbl {
             assert_eq!(e.d, 1, "host_walk_decode is the scalar (d==1) replay");
-            let mut state = e.init_state as usize & state_mask; let mut bitpos = e.bit_offset as usize;
-            let n = e.n as usize; let obase = e.out_off as usize;
+            let mut state = e.init_state as usize & state_mask;
+            let mut bitpos = e.bit_offset as usize;
+            let n = e.n as usize;
+            let obase = e.out_off as usize;
             for j in 0..n {
-                let sym = read_bits(payload, bitpos, k_bits) & input_mask; bitpos += k; state = ((state << k) | sym) & state_mask;
-                let q = lut[state]; let sb = j >> 5; let es = e.eff[sb]; let w = ((((es as i64) * (q as i64)) >> 16) as i32) + e.off[sb];
+                let sym = read_bits(payload, bitpos, k_bits) & input_mask;
+                bitpos += k;
+                state = ((state << k) | sym) & state_mask;
+                let q = lut[state];
+                let sb = j >> 5;
+                let es = e.eff[sb];
+                let w = ((((es as i64) * (q as i64)) >> 16) as i32) + e.off[sb];
                 out[obase + j] = w;
             }
         }
@@ -1453,14 +1475,26 @@ mod tests {
     fn compact_code(words: [u32; 2], sb: usize) -> u8 {
         ((words[sb >> 2] >> ((sb & 3) * 8)) & 0x3f) as u8
     }
-    fn host_walk_decode_compact(payload: &[u8], tbl: &[CompactBitsliceEntry], lut: &[i32], total: usize, k_bits: u32, l_bits: u32) -> Vec<i32> {
-        let state_mask = (1usize << l_bits) - 1; let input_mask = (1usize << k_bits) - 1; let mut out = vec![0i32; total];
+    fn host_walk_decode_compact(
+        payload: &[u8],
+        tbl: &[CompactBitsliceEntry],
+        lut: &[i32],
+        total: usize,
+        k_bits: u32,
+        l_bits: u32,
+    ) -> Vec<i32> {
+        let state_mask = (1usize << l_bits) - 1;
+        let input_mask = (1usize << k_bits) - 1;
+        let mut out = vec![0i32; total];
         for e in tbl {
-            let mut state = e.init_state as usize & state_mask; let mut bitpos = e.bit_offset as usize;
+            let mut state = e.init_state as usize & state_mask;
+            let mut bitpos = e.bit_offset as usize;
             for j in 0..e.n as usize {
-                let sym = read_bits(payload, bitpos, k_bits) & input_mask; bitpos += k_bits as usize;
+                let sym = read_bits(payload, bitpos, k_bits) & input_mask;
+                bitpos += k_bits as usize;
                 state = ((state << k_bits) | sym) & state_mask;
-                let sb = j >> 5; let es = eff_scale_q(e.scale_q, compact_code(e.mult_codes, sb));
+                let sb = j >> 5;
+                let es = eff_scale_q(e.scale_q, compact_code(e.mult_codes, sb));
                 let off = eff_min_q(e.min_base_q, compact_code(e.min_codes, sb));
                 out[e.out_off as usize + j] =
                     ((((es as i64) * (lut[state] as i64)) >> 16) as i32) + off;
@@ -1469,7 +1503,8 @@ mod tests {
         out
     }
     fn synth_w(n: usize, seed: u64) -> Vec<f32> {
-        (0..n).map(|i| ((i as f32 + seed as f32) * 0.0137).sin() * 0.5)
+        (0..n)
+            .map(|i| ((i as f32 + seed as f32) * 0.0137).sin() * 0.5)
             .collect()
     }
     #[test]
@@ -1482,9 +1517,13 @@ mod tests {
         ];
         for cfg in configs {
             for seed in 0..6u64 {
-                let n = 1 + (seed as usize * 173) % 2050; let w = synth_w(n, seed);
-                let enc = encode_tensor(&w, &cfg); let tbl = bake_bitslice_entries(&enc, &cfg).expect("bake");
-                assert_eq!(tbl.len(), enc.blocks.len()); let k = cfg.k_bits as usize; let mut prefix_n = 0usize;
+                let n = 1 + (seed as usize * 173) % 2050;
+                let w = synth_w(n, seed);
+                let enc = encode_tensor(&w, &cfg);
+                let tbl = bake_bitslice_entries(&enc, &cfg).expect("bake");
+                assert_eq!(tbl.len(), enc.blocks.len());
+                let k = cfg.k_bits as usize;
+                let mut prefix_n = 0usize;
                 for (b, (blk, e)) in enc.blocks.iter().zip(tbl.iter()).enumerate() {
                     assert_eq!(e.n, blk.n, "cfg k{} L{} blk{b}: n", cfg.k_bits, cfg.l_bits);
                     assert_eq!(
@@ -1500,7 +1539,8 @@ mod tests {
                         cfg.l_bits
                     );
                     assert_eq!(e.d, 1, "scalar bake d==1");
-                    let n_sub = n_sub_blocks(blk.n as usize); let codes = unpack_sub_scales(&blk.sub_scales, n_sub);
+                    let n_sub = n_sub_blocks(blk.n as usize);
+                    let codes = unpack_sub_scales(&blk.sub_scales, n_sub);
                     for s in 0..n_sub {
                         assert_eq!(
                             e.eff[s],
@@ -1517,12 +1557,16 @@ mod tests {
                             cfg.k_bits, cfg.l_bits
                         );
                     }
-                    assert!(!enc.has_affine_min, "for_bpw configs must have affine-min off");
+                    assert!(
+                        !enc.has_affine_min,
+                        "for_bpw configs must have affine-min off"
+                    );
                     assert_eq!(
                         e.off, [0i32; 8],
                         "cfg k{} L{} blk{b}: off",
                         cfg.k_bits, cfg.l_bits
-                    ); prefix_n += blk.n as usize;
+                    );
+                    prefix_n += blk.n as usize;
                 }
                 assert_eq!(prefix_n, n, "prefix sum != total");
             }
@@ -1542,7 +1586,8 @@ mod tests {
         for cfg in configs {
             let lut = cfg.codebook();
             for seed in 0..8u64 {
-                let n = 1 + (seed as usize * 211) % 2048; let w = synth_w(n, seed);
+                let n = 1 + (seed as usize * 211) % 2048;
+                let w = synth_w(n, seed);
                 let variants = [
                     ("plain", encode_tensor(&w, &cfg)),
                     (
@@ -1587,7 +1632,8 @@ mod tests {
                     let compact = bake_compact_bitslice_entries(enc, &cfg).expect("compact bake");
                     let got_compact = host_walk_decode_compact(
                         &enc.bits, &compact, &lut, enc.total, cfg.k_bits, cfg.l_bits,
-                    ); let want = decode_tensor_fixed(enc, &cfg);
+                    );
+                    let want = decode_tensor_fixed(enc, &cfg);
                     assert_eq!(
                         got, want,
                         "host-walk diverged: variant={label} k={} L={} n={n} seed={seed} \
@@ -1606,7 +1652,10 @@ mod tests {
     #[test]
     fn affine_min_off_fold_is_exercised_and_matches() {
         use strand_quant::decode::decode_tensor_fixed;
-        let cfg = TrellisConfig::for_bpw(4.0); let lut = cfg.codebook(); let n = 1024usize; let w = synth_w(n, 99);
+        let cfg = TrellisConfig::for_bpw(4.0);
+        let lut = cfg.codebook();
+        let n = 1024usize;
+        let w = synth_w(n, 99);
         let enc = encode_tensor_with(
             &w,
             &cfg,
@@ -1616,16 +1665,28 @@ mod tests {
             },
         );
         assert!(enc.has_affine_min, "expected affine-min encode");
-        let tbl = bake_bitslice_entries(&enc, &cfg).expect("bake"); let any_off = tbl.iter().any(|e| e.off.iter().any(|&o| o != 0));
-        assert!(any_off, "affine-min encode produced an all-zero off[] table — off-fold not exercised"); let got = host_walk_decode(&enc.bits, &tbl, &lut, enc.total, cfg.k_bits, cfg.l_bits); let want = decode_tensor_fixed(&enc, &cfg);
+        let tbl = bake_bitslice_entries(&enc, &cfg).expect("bake");
+        let any_off = tbl.iter().any(|e| e.off.iter().any(|&o| o != 0));
+        assert!(
+            any_off,
+            "affine-min encode produced an all-zero off[] table — off-fold not exercised"
+        );
+        let got = host_walk_decode(&enc.bits, &tbl, &lut, enc.total, cfg.k_bits, cfg.l_bits);
+        let want = decode_tensor_fixed(&enc, &cfg);
         assert_eq!(got, want, "affine-min host-walk diverged from oracle");
     }
     #[test]
     fn vec_bake_geometry_is_step_based() {
         let cfg = TrellisConfig::for_bpw(3.0).with_vec_dim(2);
-        assert_eq!(cfg.vec_dim(), 2); let d = cfg.vec_dim(); let k = cfg.k_bits as usize; let n = 1000usize; let w = synth_w(n, 7);
-        let enc = encode_tensor(&w, &cfg); let tbl = bake_bitslice_entries_vec(&enc, &cfg).expect("vec bake");
-        let mut exp_start_bit = 0usize; let mut exp_out_off = 0usize;
+        assert_eq!(cfg.vec_dim(), 2);
+        let d = cfg.vec_dim();
+        let k = cfg.k_bits as usize;
+        let n = 1000usize;
+        let w = synth_w(n, 7);
+        let enc = encode_tensor(&w, &cfg);
+        let tbl = bake_bitslice_entries_vec(&enc, &cfg).expect("vec bake");
+        let mut exp_start_bit = 0usize;
+        let mut exp_out_off = 0usize;
         for (b, (blk, e)) in enc.blocks.iter().zip(tbl.iter()).enumerate() {
             assert_eq!(e.d, d as u32, "blk{b}: d");
             assert_eq!(e.n, blk.n, "blk{b}: n");
@@ -1636,7 +1697,10 @@ mod tests {
             assert_eq!(
                 e.bit_offset as usize, exp_start_bit,
                 "blk{b}: bit_offset (n_steps*k)"
-            ); let n_steps = (blk.n as usize).div_ceil(d); exp_start_bit += n_steps * k; exp_out_off += blk.n as usize;
+            );
+            let n_steps = (blk.n as usize).div_ceil(d);
+            exp_start_bit += n_steps * k;
+            exp_out_off += blk.n as usize;
         }
         assert_eq!(exp_out_off, n, "vec out_off prefix != total");
     }
@@ -1649,10 +1713,22 @@ mod tests {
     }
     #[test]
     fn runtime_path_parser_is_strict_and_default_safe() {
-        assert_eq!(TqRuntimePath::parse("stored").unwrap(), TqRuntimePath::Stored);
-        assert_eq!(TqRuntimePath::parse("compact").unwrap(), TqRuntimePath::CompactMetadata);
-        assert_eq!(TqRuntimePath::parse("hashed").unwrap(), TqRuntimePath::HashedQuantile);
-        assert_eq!(TqRuntimePath::parse("computed").unwrap(), TqRuntimePath::ComputedAcklam);
+        assert_eq!(
+            TqRuntimePath::parse("stored").unwrap(),
+            TqRuntimePath::Stored
+        );
+        assert_eq!(
+            TqRuntimePath::parse("compact").unwrap(),
+            TqRuntimePath::CompactMetadata
+        );
+        assert_eq!(
+            TqRuntimePath::parse("hashed").unwrap(),
+            TqRuntimePath::HashedQuantile
+        );
+        assert_eq!(
+            TqRuntimePath::parse("computed").unwrap(),
+            TqRuntimePath::ComputedAcklam
+        );
         assert!(TqRuntimePath::parse("magic").is_err());
     }
     #[test]
@@ -1670,7 +1746,10 @@ mod tests {
             partial_roundtrip_bytes: 8,
         };
         assert_eq!(traffic.weight_path_bpw(TqRuntimePath::Stored), 5.625);
-        assert_eq!(traffic.weight_path_bpw(TqRuntimePath::CompactMetadata), 4.25);
+        assert_eq!(
+            traffic.weight_path_bpw(TqRuntimePath::CompactMetadata),
+            4.25
+        );
     }
     #[test]
     fn runtime_recipe_axes_compose_without_claiming_executable_kernels() {
@@ -1688,9 +1767,18 @@ mod tests {
         };
         assert_eq!(TqRuntimeRecipe::RESEARCH_MATRIX.len(), 6);
         assert_eq!(TqRuntimePath::Stored.recipe(), TqRuntimeRecipe::STORED);
-        assert_eq!(TqRuntimePath::CompactMetadata.recipe(), TqRuntimeRecipe::COMPACT);
-        assert_eq!(traffic.compressed_runtime_bytes_for(TqRuntimeRecipe::COMPACT_HASHED), 96 + 40 + 32 + 8);
-        assert_eq!(traffic.compressed_runtime_bytes_for(TqRuntimeRecipe::COMPACT_COMPUTED), 96 + 40 + 4 + 8);
+        assert_eq!(
+            TqRuntimePath::CompactMetadata.recipe(),
+            TqRuntimeRecipe::COMPACT
+        );
+        assert_eq!(
+            traffic.compressed_runtime_bytes_for(TqRuntimeRecipe::COMPACT_HASHED),
+            96 + 40 + 32 + 8
+        );
+        assert_eq!(
+            traffic.compressed_runtime_bytes_for(TqRuntimeRecipe::COMPACT_COMPUTED),
+            96 + 40 + 4 + 8
+        );
         assert!(
             traffic.compressed_runtime_bpw_for(TqRuntimeRecipe::COMPACT_COMPUTED)
                 < traffic.compressed_runtime_bpw_for(TqRuntimeRecipe::STORED)
@@ -1699,7 +1787,8 @@ mod tests {
     #[test]
     fn runtime_recipe_byte_frontier_is_monotone_for_every_frozen_l() {
         for l_bits in TrellisConfig::MIN_L..=TrellisConfig::MAX_L {
-            let states = 1usize << l_bits; let tail = strand_quant::codebook::tail_left_prefix_q12(l_bits).len();
+            let states = 1usize << l_bits;
+            let tail = strand_quant::codebook::tail_left_prefix_q12(l_bits).len();
             let traffic = TqRuntimeTraffic {
                 weights: 256 * 513,
                 blocks: 513,
@@ -1713,9 +1802,18 @@ mod tests {
                 partial_roundtrip_bytes: 8 * 513,
             };
             let stored = traffic.compressed_runtime_bytes_for(TqRuntimeRecipe::STORED);
-            assert!(traffic.compressed_runtime_bytes_for(TqRuntimeRecipe::COMPACT) < stored, "compact metadata failed to save bytes at L={l_bits}");
-            assert!(traffic.compressed_runtime_bytes_for(TqRuntimeRecipe::HASHED) < stored, "hashed quantiles failed to save bytes at L={l_bits}");
-            assert!(traffic.compressed_runtime_bytes_for(TqRuntimeRecipe::COMPUTED) < stored, "computed tails failed to save bytes at L={l_bits}");
+            assert!(
+                traffic.compressed_runtime_bytes_for(TqRuntimeRecipe::COMPACT) < stored,
+                "compact metadata failed to save bytes at L={l_bits}"
+            );
+            assert!(
+                traffic.compressed_runtime_bytes_for(TqRuntimeRecipe::HASHED) < stored,
+                "hashed quantiles failed to save bytes at L={l_bits}"
+            );
+            assert!(
+                traffic.compressed_runtime_bytes_for(TqRuntimeRecipe::COMPUTED) < stored,
+                "computed tails failed to save bytes at L={l_bits}"
+            );
             assert!(
                 traffic.compressed_runtime_bytes_for(TqRuntimeRecipe::COMPACT_HASHED)
                     < traffic.compressed_runtime_bytes_for(TqRuntimeRecipe::HASHED)
@@ -1739,18 +1837,21 @@ mod tests {
         };
         let accepted = assess_gpu_gemv_geometry(&[entry], 1, 1, 256, 3);
         assert!(accepted.eligible);
-        assert_eq!(accepted.expected_blocks, 1); let ragged = assess_gpu_gemv_geometry(&[entry], 1, 1, 896, 3);
+        assert_eq!(accepted.expected_blocks, 1);
+        let ragged = assess_gpu_gemv_geometry(&[entry], 1, 1, 896, 3);
         assert!(!ragged.eligible);
         assert_eq!(
             ragged.reason,
             Some(TqGpuIneligibility::ColumnsNotMultipleOf256)
         );
         assert_eq!(ragged.expected_blocks, 4);
-        let short = BitsliceEntry { n: 255, ..entry }; let malformed = assess_gpu_gemv_geometry(&[short], 1, 1, 256, 3);
+        let short = BitsliceEntry { n: 255, ..entry };
+        let malformed = assess_gpu_gemv_geometry(&[short], 1, 1, 256, 3);
         assert_eq!(
             malformed.reason,
             Some(TqGpuIneligibility::BlockLengthNot256 { block: 0 })
-        ); let compact_missing = assess_gpu_gemv_geometry(&[entry], 0, 1, 256, 3);
+        );
+        let compact_missing = assess_gpu_gemv_geometry(&[entry], 0, 1, 256, 3);
         assert_eq!(
             compact_missing.reason,
             Some(TqGpuIneligibility::CompactBlockCountMismatch)
@@ -1775,7 +1876,8 @@ mod tests {
             has_rht_seed: false,
         };
         let expanded = bake_bitslice_entries(&enc, &cfg).expect("expanded bake");
-        assert_eq!(expanded[0].eff, [1 << 16; 8]); let compact = bake_compact_bitslice_entries(&enc, &cfg).expect("compact bake");
+        assert_eq!(expanded[0].eff, [1 << 16; 8]);
+        let compact = bake_compact_bitslice_entries(&enc, &cfg).expect("compact bake");
         assert_eq!(compact[0].mult_codes, [0x3f3f_3f3f; 2]);
     }
 }

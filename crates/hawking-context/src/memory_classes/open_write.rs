@@ -183,11 +183,7 @@ impl ClassedMemorySystem {
             .map_err(sql_err)?;
         // Also drop any durable records that still reference this session id
         // in non-episodic tables (should be rare; keeps ephemeral cleanup honest).
-        for table in [
-            "mem_semantic_project",
-            "mem_procedural",
-            "mem_verification",
-        ] {
+        for table in ["mem_semantic_project", "mem_procedural", "mem_verification"] {
             let _ = conn
                 .execute(
                     &format!("DELETE FROM {table} WHERE session_id = ?1"),
@@ -460,5 +456,4 @@ impl ClassedMemorySystem {
     pub fn last_retrieval(&self) -> Option<ClassCompileRetrieval> {
         self.last_retrieval.lock().clone()
     }
-
 }

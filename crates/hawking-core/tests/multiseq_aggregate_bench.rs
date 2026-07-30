@@ -1,12 +1,17 @@
 #![cfg(target_os = "macos")]
-use hawking_core::{model::qwen_dense::QwenDense, profile::fresh_test_profile, Engine, EngineConfig};
+use hawking_core::{
+    model::qwen_dense::QwenDense, profile::fresh_test_profile, Engine, EngineConfig,
+};
 use std::time::Instant;
 mod common;
 use common::weights_path_qwen as weights_path;
 fn time_configs(label: &str) -> [f64; 3] {
     let w = weights_path();
     let profile = fresh_test_profile(&w).expect("fresh test profile");
-    let cfg = EngineConfig { kernel_profile: Some(profile), ..Default::default() };
+    let cfg = EngineConfig {
+        kernel_profile: Some(profile),
+        ..Default::default()
+    };
     let mut engine = QwenDense::load(&w, cfg).expect("load qwen-3b");
     let max_seq = 64usize;
     let n_steps = 24usize;
@@ -18,12 +23,16 @@ fn time_configs(label: &str) -> [f64; 3] {
         let mut cur: Vec<u32> = (0..bsz).map(|i| 100 + i as u32 * 50).collect();
         for pos in 0..warmup {
             let positions = vec![pos; bsz];
-            cur = engine.forward_tokens_multiseq(&cur, &positions, max_seq).expect("warmup step");
+            cur = engine
+                .forward_tokens_multiseq(&cur, &positions, max_seq)
+                .expect("warmup step");
         }
         let t0 = Instant::now();
         for step in 0..n_steps {
             let positions = vec![warmup + step; bsz];
-            cur = engine.forward_tokens_multiseq(&cur, &positions, max_seq).expect("timed step");
+            cur = engine
+                .forward_tokens_multiseq(&cur, &positions, max_seq)
+                .expect("timed step");
         }
         let dt = t0.elapsed().as_secs_f64();
         let per_step_ms = dt / n_steps as f64 * 1000.0;
@@ -52,6 +61,10 @@ fn multiseq_aggregate_speedup() {
     std::env::set_var("HAWKING_QWEN_Q4K_LMHEAD", "1");
     let on = time_configs("R1 ON (HAWKING_QWEN_Q4K_LMHEAD=1: GPU-batched Q4_K LM head)");
     for (idx, b) in [1usize, 4, 8].iter().enumerate() {
-        let r = if off[idx] > 0.0 { on[idx] / off[idx] } else { 0.0 };
+        let r = if off[idx] > 0.0 {
+            on[idx] / off[idx]
+        } else {
+            0.0
+        };
     }
 }

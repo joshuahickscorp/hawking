@@ -10,7 +10,7 @@ use hide_acp::tool_call::{ToolCallContent, ToolCallStatus, ToolKind};
 use hide_acp::{negotiate, AcpError, HideExposure};
 use hide_protocol::ids::{ApprovalId, ItemId, SessionId, ThreadId, ToolCallId, ToolId};
 use hide_protocol::item::{
-    AgentMessage, ApprovalRequest, Item, ItemKind, Patch, ShellStream, ShellChannel,
+    AgentMessage, ApprovalRequest, Item, ItemKind, Patch, ShellChannel, ShellStream,
     ToolCall as HideToolCall,
 };
 use hide_protocol::model::Risk;
@@ -31,7 +31,9 @@ fn full_effective() -> hide_acp::EffectiveCapabilities {
             terminal: true,
         },
     };
-    negotiate(&req, &HideExposure::full_local()).unwrap().effective
+    negotiate(&req, &HideExposure::full_local())
+        .unwrap()
+        .effective
 }
 #[test]
 fn initialize_handshake_negotiates_capabilities() {
@@ -48,7 +50,12 @@ fn initialize_handshake_negotiates_capabilities() {
     let out = negotiate(&req, &HideExposure::full_local()).unwrap();
     assert_eq!(out.response.protocol_version, 1);
     assert!(out.response.agent_capabilities.load_session);
-    assert!(out.response.agent_capabilities.prompt_capabilities.embedded_context);
+    assert!(
+        out.response
+            .agent_capabilities
+            .prompt_capabilities
+            .embedded_context
+    );
     assert!(out.effective.terminal);
     assert!(out.effective.edit_apply);
     assert!(out.effective.edit_review);
@@ -64,7 +71,10 @@ fn version_negotiation_follows_the_acp_rule() {
         client_capabilities: AcpClientCapabilities::default(),
     };
     let err = negotiate(&req, &HideExposure::full_local()).unwrap_err();
-    assert!(matches!(err, AcpError::UnsupportedVersion { offered: 0, .. }));
+    assert!(matches!(
+        err,
+        AcpError::UnsupportedVersion { offered: 0, .. }
+    ));
 }
 #[test]
 fn acp_prompt_maps_to_hide_turn_intent() {
@@ -163,7 +173,15 @@ fn item_stream_projects_to_ordered_acp_updates() {
     let proj = ProjectHideToAcp::new("sess_1".into(), full_effective());
     let out = proj.project_items(&items);
     let methods: Vec<&str> = out.iter().map(|o| o.method()).collect();
-    assert_eq!(methods, vec![ "session/update", "session/update", "session/update", "session/request_permission", ]);
+    assert_eq!(
+        methods,
+        vec![
+            "session/update",
+            "session/update",
+            "session/update",
+            "session/request_permission",
+        ]
+    );
     match &out[0] {
         AcpOutbound::Update(n) => {
             assert_eq!(n.update.tag(), "agent_message_chunk");
@@ -202,7 +220,10 @@ fn item_stream_projects_to_ordered_acp_updates() {
                         new_text,
                     } => {
                         assert_eq!(path, "src/retry.rs");
-                        assert_eq!(old_text.as_deref(), Some("fn retry() {\n    let n = 1;\n}\n"));
+                        assert_eq!(
+                            old_text.as_deref(),
+                            Some("fn retry() {\n    let n = 1;\n}\n")
+                        );
                         assert_eq!(new_text, "fn retry() {\n    let n = 3;\n}\n");
                     }
                     other => panic!("expected diff content, got {other:?}"),
@@ -256,7 +277,10 @@ fn unsupported_capability_degrades_honestly() {
     match &d_out[0] {
         AcpOutbound::Update(n) => match &n.update {
             SessionUpdate::ToolCallUpdate(u) => {
-                assert!(u.content .iter() .all(|c| !matches!(c, ToolCallContent::Terminal { .. })));
+                assert!(u
+                    .content
+                    .iter()
+                    .all(|c| !matches!(c, ToolCallContent::Terminal { .. })));
                 assert!(matches!(u.content[0], ToolCallContent::Content { .. }));
             }
             other => panic!("expected tool_call_update, got {other:?}"),

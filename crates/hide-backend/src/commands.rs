@@ -316,6 +316,9 @@ mod tests {
             })
             .await
             .unwrap();
- assert!(matches!( router.interrupts().take(&run), Some(Interrupt::Abort) ));
+        assert!(matches!(
+            router.interrupts().take(&run),
+            Some(Interrupt::Abort)
+        ));
     }
 }

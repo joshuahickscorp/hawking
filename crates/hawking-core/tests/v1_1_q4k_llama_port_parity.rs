@@ -30,11 +30,33 @@ fn assert_llama_port_matches_v2(rows: usize, cols: usize, label: &str) {
     let x = synthetic_input(cols);
     let mut v2_out = vec![0.0f32; rows];
     let mut llama_out = vec![0.0f32; rows];
-    kernels::gemv_q4_k_m_v2_pinned(ctx, &model_buf, 0, w_bytes.len(), rows, cols, &x, &mut v2_out).expect("v2 Q4_K GEMV");
-    kernels::gemv_q4_k_m_llama_port_pinned(ctx, &model_buf, 0, w_bytes.len(), rows, cols, &x, &mut llama_out)
-        .expect("llama_port Q4_K GEMV");
+    kernels::gemv_q4_k_m_v2_pinned(
+        ctx,
+        &model_buf,
+        0,
+        w_bytes.len(),
+        rows,
+        cols,
+        &x,
+        &mut v2_out,
+    )
+    .expect("v2 Q4_K GEMV");
+    kernels::gemv_q4_k_m_llama_port_pinned(
+        ctx,
+        &model_buf,
+        0,
+        w_bytes.len(),
+        rows,
+        cols,
+        &x,
+        &mut llama_out,
+    )
+    .expect("llama_port Q4_K GEMV");
     let diff = max_abs_diff(&v2_out, &llama_out);
-    assert!(diff < ATOL, "llama_port {label} diff {diff:.6e} >= atol {ATOL}");
+    assert!(
+        diff < ATOL,
+        "llama_port {label} diff {diff:.6e} >= atol {ATOL}"
+    );
 }
 #[test]
 fn llama_port_gate_up_shape_matches_v2() {

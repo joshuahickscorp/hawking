@@ -48,7 +48,6 @@ pub fn gelu_mul(gate: &[f32], up: &[f32], out: &mut [f32]) {
     }
 }
 
-
 /// Logit soft-capping: `xs[i] = cap · tanh(xs[i] / cap)` in place.
 ///
 /// Gemma-2 caps both the attention scores (cap≈50) and the final logits
@@ -209,7 +208,6 @@ pub fn rope_inplace_longrope(x: &mut [f32], pos: u32, base: f32, ext_factors: &[
         x[i + half] = x0 * sin + x1 * cos;
     }
 }
-
 
 /// Look up a token embedding row. `embed` is laid out (vocab, hidden).
 pub fn embed_lookup(embed: &[f16], hidden: usize, token_id: u32, out: &mut [f32]) {
@@ -698,7 +696,6 @@ mod metal_dispatch {
         )
     }
 
-
     /// Batched Q4_K GEMM with PRE-DECODED sub-block scales — same as
     /// `gemm_q4_k_m_batched_v3w_pinned_tcb` but reads `ds/dm` from a predec
     /// scale table (built via `predecode_q4_k_scale_table`) instead of decoding
@@ -946,7 +943,6 @@ mod metal_dispatch {
             y_batch_buf,
         )
     }
-
 
     /// Track 3.5 — SwiGLU-fused ffn_down via v3w_predec (B=5..8).
     /// Replaces the (ffn_gate GEMM + ffn_up GEMM + silu_mul + ffn_down GEMM)
@@ -1260,7 +1256,6 @@ mod metal_dispatch {
         )
     }
 
-
     /// P3 — Batched Q4_K_M GEMM: one weight applied to B activation
     /// vectors in parallel. Reads the weight matrix once and produces B
     /// output rows worth of dot products per row. Bandwidth amortized
@@ -1294,7 +1289,6 @@ mod metal_dispatch {
             y_batch_buf,
         )
     }
-
 
     /// P2 — Wedge K-pattern Q4_K GEMV in v3 8-rows-per-TG geometry.
     /// Same scale/activation preload + paired-nibble reads as simdmat
@@ -2478,7 +2472,6 @@ mod metal_dispatch {
             enc.set_u32(8, cols_u32);
         })
     }
-
 
     macro_rules! q4_predec_pair_kernel {
         ($(#[$meta:meta])* $fn_name:ident, $kernel:literal, $rows_per_tg:expr, $scale_ty:ty) => {
@@ -3880,7 +3873,6 @@ mod metal_dispatch {
         )
     }
 
-
     /// Track C28 — 4r variant of gemv_q4k_predec_qkv_rope_append_pinned_tcb.
     /// Q and K use 4 rows/simdgroup (2 RoPE pairs); V uses 2 rows/simdgroup.
     /// Total TGs for Qwen-3B: 160 vs 320 — same 1 dispatch, half scheduling overhead.
@@ -3947,7 +3939,6 @@ mod metal_dispatch {
             v_cache,
         )
     }
-
 
     /// Track D3 — f16-scales 2r variant of gemv_q4k_predec_qkv_rope_append_pinned_tcb.
     /// q_scales/k_scales/v_scales hold half-precision (f16) predecoded tables —
@@ -4016,7 +4007,6 @@ mod metal_dispatch {
         )
     }
 
-
     /// Track D3 — f16-scales 4r variant of gemv_q4k_predec_qkv_rope_append_4r_pinned_tcb.
     /// Combines C28 (4r = 160 TGs for Qwen-3B) with D3 (f16 scale bandwidth).
     /// Requires q_rows % 4 == 0 and kv_rows % 4 == 0.
@@ -4082,7 +4072,6 @@ mod metal_dispatch {
             v_cache,
         )
     }
-
 
     /// Track 3.12/3.13 mixed variant: Q/K are Q4_K predec, V is Q6_K.
     #[allow(clippy::too_many_arguments)]
@@ -4374,7 +4363,19 @@ mod metal_dispatch {
         x: &[f32],
         out: &mut [f32],
     ) -> Result<()> {
-        dispatch_q4_k_m_pinned_geometry(ctx, "gemm_q4_k_m_simdmat", 128, 4, model_buf, w_offset, w_byte_size, rows, cols, x, out)
+        dispatch_q4_k_m_pinned_geometry(
+            ctx,
+            "gemm_q4_k_m_simdmat",
+            128,
+            4,
+            model_buf,
+            w_offset,
+            w_byte_size,
+            rows,
+            cols,
+            x,
+            out,
+        )
     }
 
     /// Approach 1 Iter 1 -- 256 threads, 8 rows/TG, 8 simdgroups.
@@ -4389,7 +4390,19 @@ mod metal_dispatch {
         x: &[f32],
         out: &mut [f32],
     ) -> Result<()> {
-        dispatch_q4_k_m_pinned_geometry(ctx, "gemm_q4_k_m_v3_8r", 256, 8, model_buf, w_offset, w_byte_size, rows, cols, x, out)
+        dispatch_q4_k_m_pinned_geometry(
+            ctx,
+            "gemm_q4_k_m_v3_8r",
+            256,
+            8,
+            model_buf,
+            w_offset,
+            w_byte_size,
+            rows,
+            cols,
+            x,
+            out,
+        )
     }
 
     /// Approach 3 -- 64 threads, 4 rows/simdgroup (N_R0=4), sumy trick.
@@ -4404,7 +4417,19 @@ mod metal_dispatch {
         x: &[f32],
         out: &mut [f32],
     ) -> Result<()> {
-        dispatch_q4_k_m_pinned_geometry(ctx, "gemm_q4_k_m_v3_llama", 64, 8, model_buf, w_offset, w_byte_size, rows, cols, x, out)
+        dispatch_q4_k_m_pinned_geometry(
+            ctx,
+            "gemm_q4_k_m_v3_llama",
+            64,
+            8,
+            model_buf,
+            w_offset,
+            w_byte_size,
+            rows,
+            cols,
+            x,
+            out,
+        )
     }
 
     /// v1.1.0 opt-in schedule name for the faithful llama.cpp-style Q4_K port.
@@ -4434,7 +4459,19 @@ mod metal_dispatch {
         x: &[f32],
         out: &mut [f32],
     ) -> Result<()> {
-        dispatch_q4_k_m_pinned_geometry(ctx, "gemm_q4_k_m_v3_dual", 128, 8, model_buf, w_offset, w_byte_size, rows, cols, x, out)
+        dispatch_q4_k_m_pinned_geometry(
+            ctx,
+            "gemm_q4_k_m_v3_dual",
+            128,
+            8,
+            model_buf,
+            w_offset,
+            w_byte_size,
+            rows,
+            cols,
+            x,
+            out,
+        )
     }
 
     /// v0.3.1 -- low-level batched encoder for `gemm_q4_k_m_fused_simd`.
@@ -5528,7 +5565,6 @@ mod metal_dispatch {
         )
     }
 
-
     /// Q8 KV variant of `mla_decode_metal`.
     ///
     /// Same semantics, same I/O — except `c_kv_q8` is the Q8_0-packed
@@ -5573,7 +5609,6 @@ mod metal_dispatch {
             out,
         )
     }
-
 
     /// One-token GPU-side Q8_0 quantize-and-append for the latent KV cache.
     ///
@@ -5715,7 +5750,6 @@ mod metal_dispatch {
             out,
         )
     }
-
 
     /// Wedge 3 -- Layer-CB: batch mla_decode_kernel + gemv_f32_attn (o_proj)
     /// into one command buffer. Saves one commit+wait per attention layer
@@ -6693,7 +6727,6 @@ mod metal_dispatch {
         out.copy_from_slice(out_slice);
         Ok(())
     }
-
 
     // WB shared pinned dispatch for the f32 GEMV kernels. Same kernel
     // signature as the byte-slice path; only the weight upload changes
@@ -10613,7 +10646,10 @@ mod tests {
     use half::f16;
     #[test]
     fn rmsnorm_unit_weight() {
-        let x = [1.0, 2.0, 3.0, 4.0]; let w = [1.0, 1.0, 1.0, 1.0]; let mut out = [0.0; 4]; rmsnorm(&x, &w, 1e-6, &mut out);
+        let x = [1.0, 2.0, 3.0, 4.0];
+        let w = [1.0, 1.0, 1.0, 1.0];
+        let mut out = [0.0; 4];
+        rmsnorm(&x, &w, 1e-6, &mut out);
         let rms = (7.5f32).sqrt();
         for i in 0..4 {
             assert!((out[i] - x[i] / rms).abs() < 1e-4);
@@ -10621,41 +10657,68 @@ mod tests {
     }
     #[test]
     fn softmax_sums_to_one() {
-        let mut xs = [1.0, 2.0, 3.0, 4.0]; softmax_inplace(&mut xs); let sum: f32 = xs.iter().sum();
+        let mut xs = [1.0, 2.0, 3.0, 4.0];
+        softmax_inplace(&mut xs);
+        let sum: f32 = xs.iter().sum();
         assert!((sum - 1.0).abs() < 1e-5);
     }
     #[test]
     fn gemv_round_trip() {
-        let w_f32 = [1.0, 0.0, 0.0, 1.0]; let w: Vec<f16> = w_f32.iter().map(|&v| f16::from_f32(v)).collect();
-        let x = [3.0, 5.0]; let mut out = [0.0; 2]; gemv_f16(&w, 2, 2, &x, &mut out);
+        let w_f32 = [1.0, 0.0, 0.0, 1.0];
+        let w: Vec<f16> = w_f32.iter().map(|&v| f16::from_f32(v)).collect();
+        let x = [3.0, 5.0];
+        let mut out = [0.0; 2];
+        gemv_f16(&w, 2, 2, &x, &mut out);
         assert!((out[0] - 3.0).abs() < 1e-5);
         assert!((out[1] - 5.0).abs() < 1e-5);
     }
     #[test]
     fn longrope_neox_unit_factors_is_plain_neox() {
-        let head_dim = 8usize; let half = head_dim / 2; let base = 10_000.0f32; let pos = 5u32;
-        let factors = vec![1.0f32; half]; let mut x: Vec<f32> = (0..head_dim).map(|i| (i as f32 + 1.0) * 0.1).collect();
-        let orig = x.clone(); rope_inplace_longrope(&mut x, pos, base, &factors, 1.0);
+        let head_dim = 8usize;
+        let half = head_dim / 2;
+        let base = 10_000.0f32;
+        let pos = 5u32;
+        let factors = vec![1.0f32; half];
+        let mut x: Vec<f32> = (0..head_dim).map(|i| (i as f32 + 1.0) * 0.1).collect();
+        let orig = x.clone();
+        rope_inplace_longrope(&mut x, pos, base, &factors, 1.0);
         for i in 0..half {
-            let inv_freq = 1.0 / base.powf(2.0 * i as f32 / head_dim as f32); let theta = pos as f32 * inv_freq;
-            let (s, c) = theta.sin_cos(); let x0 = orig[i]; let x1 = orig[i + half];
+            let inv_freq = 1.0 / base.powf(2.0 * i as f32 / head_dim as f32);
+            let theta = pos as f32 * inv_freq;
+            let (s, c) = theta.sin_cos();
+            let x0 = orig[i];
+            let x1 = orig[i + half];
             assert!((x[i] - (x0 * c - x1 * s)).abs() < 1e-6);
             assert!((x[i + half] - (x0 * s + x1 * c)).abs() < 1e-6);
         }
     }
     #[test]
     fn longrope_factor_lowers_frequency() {
-        let head_dim = 8usize; let half = head_dim / 2; let base = 10_000.0f32; let i = 1usize;
-        let inv_freq = 1.0 / base.powf(2.0 * i as f32 / head_dim as f32); let mut a = vec![0.0f32; head_dim]; a[i] = 1.0;
-        let mut b = a.clone(); let mut f1 = vec![1.0f32; half]; let mut f2 = vec![1.0f32; half]; f1[i] = 1.0; f2[i] = 2.0;
-        rope_inplace_longrope(&mut a, 1, base, &f1, 1.0); rope_inplace_longrope(&mut b, 1, base, &f2, 1.0);
-        let angle_a = a[i + half].atan2(a[i]); let angle_b = b[i + half].atan2(b[i]);
+        let head_dim = 8usize;
+        let half = head_dim / 2;
+        let base = 10_000.0f32;
+        let i = 1usize;
+        let inv_freq = 1.0 / base.powf(2.0 * i as f32 / head_dim as f32);
+        let mut a = vec![0.0f32; head_dim];
+        a[i] = 1.0;
+        let mut b = a.clone();
+        let mut f1 = vec![1.0f32; half];
+        let mut f2 = vec![1.0f32; half];
+        f1[i] = 1.0;
+        f2[i] = 2.0;
+        rope_inplace_longrope(&mut a, 1, base, &f1, 1.0);
+        rope_inplace_longrope(&mut b, 1, base, &f2, 1.0);
+        let angle_a = a[i + half].atan2(a[i]);
+        let angle_b = b[i + half].atan2(b[i]);
         assert!((angle_a - inv_freq).abs() < 1e-6);
         assert!((angle_b - inv_freq / 2.0).abs() < 1e-6);
     }
     #[test]
     fn gelu_mul_matches_reference() {
-        let gate = [0.0f32, 1.0, -1.0, 2.5]; let up = [1.0f32, 2.0, 3.0, 0.5]; let mut out = [0.0f32; 4]; gelu_mul(&gate, &up, &mut out);
+        let gate = [0.0f32, 1.0, -1.0, 2.5];
+        let up = [1.0f32, 2.0, 3.0, 0.5];
+        let mut out = [0.0f32; 4];
+        gelu_mul(&gate, &up, &mut out);
         let gelu = |x: f32| {
             let inner = (2.0f32 / std::f32::consts::PI).sqrt() * (x + 0.044715 * x * x * x);
             0.5 * x * (1.0 + inner.tanh())
@@ -10672,8 +10735,11 @@ mod tests {
     }
     #[test]
     fn logit_softcap_bounds_and_noop() {
-        let mut a = [5.0f32, -3.0, 100.0]; logit_softcap_inplace(&mut a, 0.0);
-        assert_eq!(a, [5.0, -3.0, 100.0]); let cap = 30.0f32; let mut b = [0.0f32, 30.0, 1000.0, -1000.0];
+        let mut a = [5.0f32, -3.0, 100.0];
+        logit_softcap_inplace(&mut a, 0.0);
+        assert_eq!(a, [5.0, -3.0, 100.0]);
+        let cap = 30.0f32;
+        let mut b = [0.0f32, 30.0, 1000.0, -1000.0];
         logit_softcap_inplace(&mut b, cap);
         assert!((b[0] - 0.0).abs() < 1e-6);
         assert!((b[1] - cap * (1.0f32).tanh()).abs() < 1e-5);
@@ -10687,49 +10753,81 @@ mod tests {
             rng_state = rng_state.wrapping_mul(1664525).wrapping_add(1013904223);
             ((rng_state >> 8) as f32 / (1u32 << 24) as f32) * 2.0 - 1.0
         };
-        let head_dim = 128; let a: Vec<f32> = (0..head_dim).map(|_| next()).collect();
+        let head_dim = 128;
+        let a: Vec<f32> = (0..head_dim).map(|_| next()).collect();
         for &(pos, base) in &[(0u32, 1_000_000.0f32), (37, 500_000.0), (4096, 1_000_000.0)] {
-            let mut a_unscaled = a.clone(); let mut a_scaled = a.clone(); rope_inplace(&mut a_unscaled, pos, base);
+            let mut a_unscaled = a.clone();
+            let mut a_scaled = a.clone();
+            rope_inplace(&mut a_unscaled, pos, base);
             rope_inplace_scaled(&mut a_scaled, pos, base, None);
             for i in 0..head_dim {
-                assert_eq!(a_unscaled[i].to_bits(), a_scaled[i].to_bits(), "rope_scaled(None) diverged from rope_inplace at pos={pos} base={base} i={i}");
+                assert_eq!(
+                    a_unscaled[i].to_bits(),
+                    a_scaled[i].to_bits(),
+                    "rope_scaled(None) diverged from rope_inplace at pos={pos} base={base} i={i}"
+                );
             }
         }
     }
     #[test]
     fn rope_scaled_llama3_regimes() {
-        let head_dim = 64usize; let base = 500_000.0f32; let pos = 1u32;
+        let head_dim = 64usize;
+        let base = 500_000.0f32;
+        let pos = 1u32;
         let scaling = Llama3RopeScaling {
             factor: 8.0,
             low_freq_factor: 1.0,
             high_freq_factor: 4.0,
             original_max_position_embeddings: 8192,
         };
-        let mut x = vec![0.0f32; head_dim]; let half = head_dim / 2;
+        let mut x = vec![0.0f32; head_dim];
+        let half = head_dim / 2;
         for i in 0..head_dim / 2 {
-            x[i] = 1.0; x[i + half] = 0.0;
+            x[i] = 1.0;
+            x[i + half] = 0.0;
         }
         rope_inplace_scaled(&mut x, pos, base, Some(scaling));
-        let two_pi = std::f32::consts::TAU; let low_wavelen = scaling.original_max_position_embeddings as f32 / scaling.low_freq_factor;
+        let two_pi = std::f32::consts::TAU;
+        let low_wavelen = scaling.original_max_position_embeddings as f32 / scaling.low_freq_factor;
         let high_wavelen =
             scaling.original_max_position_embeddings as f32 / scaling.high_freq_factor;
-        let mut saw_unscaled = false; let mut saw_scaled = false; let mut saw_smooth = false;
+        let mut saw_unscaled = false;
+        let mut saw_scaled = false;
+        let mut saw_smooth = false;
         for i in 0..head_dim / 2 {
-            let inv_freq = base.powf(2.0 * i as f32 / head_dim as f32); let freq = 1.0 / inv_freq;
-            let wavelen = two_pi / freq; let recovered_freq_eff = x[i + half].atan2(x[i]);
+            let inv_freq = base.powf(2.0 * i as f32 / head_dim as f32);
+            let freq = 1.0 / inv_freq;
+            let wavelen = two_pi / freq;
+            let recovered_freq_eff = x[i + half].atan2(x[i]);
             if wavelen < high_wavelen {
-                assert!((recovered_freq_eff - freq).abs() < 1e-5, "i={i}: expected unscaled freq={freq}, got {recovered_freq_eff}"); saw_unscaled = true;
+                assert!(
+                    (recovered_freq_eff - freq).abs() < 1e-5,
+                    "i={i}: expected unscaled freq={freq}, got {recovered_freq_eff}"
+                );
+                saw_unscaled = true;
             } else if wavelen > low_wavelen {
                 let expected = freq / scaling.factor;
-                assert!((recovered_freq_eff - expected).abs() < 1e-5, "i={i}: expected freq/factor={expected}, got {recovered_freq_eff}"); saw_scaled = true;
+                assert!(
+                    (recovered_freq_eff - expected).abs() < 1e-5,
+                    "i={i}: expected freq/factor={expected}, got {recovered_freq_eff}"
+                );
+                saw_scaled = true;
             } else {
                 let smooth = (scaling.original_max_position_embeddings as f32 / wavelen
-                    - scaling.low_freq_factor) / (scaling.high_freq_factor - scaling.low_freq_factor);
+                    - scaling.low_freq_factor)
+                    / (scaling.high_freq_factor - scaling.low_freq_factor);
                 let expected = (1.0 - smooth) * (freq / scaling.factor) + smooth * freq;
-                assert!((recovered_freq_eff - expected).abs() < 1e-5, "i={i}: expected smooth={expected}, got {recovered_freq_eff}"); saw_smooth = true;
+                assert!(
+                    (recovered_freq_eff - expected).abs() < 1e-5,
+                    "i={i}: expected smooth={expected}, got {recovered_freq_eff}"
+                );
+                saw_smooth = true;
             }
         }
-        assert!(saw_unscaled && saw_scaled && saw_smooth, "test did not cover all three regimes");
+        assert!(
+            saw_unscaled && saw_scaled && saw_smooth,
+            "test did not cover all three regimes"
+        );
     }
 }
 

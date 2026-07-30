@@ -1,7 +1,9 @@
 use crate::approval::{ApprovalDecision, ApprovalHub};
 use crate::commands::CommandRouter;
 use crate::connectors::{register_backend_connectors, ConnectorRegistry, ConnectorStatus};
+use crate::initialize::{ClientCapabilities, ClientInfo, ConnectionRegistry, InitializeResponse};
 use crate::interrupt::InterruptHub;
+use crate::live_thread::LiveThread;
 use crate::memory::{
     MemoryDraft, MemoryLedger, MemoryRecord, MemoryRevalidation, MemoryScope, MemoryStatus,
     PrivacyClass, RevalidateTarget,
@@ -13,13 +15,11 @@ use crate::process::{ProcessState, ProcessSupervisor, StartSpec};
 use crate::replay::BackendReplayService;
 use crate::rewind::{self, CheckpointCoverage, FileChange, ForkPoint, RewindTarget, StateRef};
 use crate::security::SecurityServices;
-use crate::initialize::{ClientCapabilities, ClientInfo, ConnectionRegistry, InitializeResponse};
-use crate::live_thread::LiveThread;
 use crate::services::{
     BackendCapabilities, BackendServices, Budget, CheckpointRecord, CheckpointStore,
-    EnvironmentNode, EnvironmentSwitch, GoalOutcome, GoalRecord, GoalStatus, GoalStore, GoalVerdict,
-    JobRecord, JobStatus, JobStore, RepoNode, SharedBackend, Trigger, TriggerEvent, TrustState,
-    WorkspaceEdge, WorkspaceEdgeKind, WorkspaceGraph, WorkspaceStore,
+    EnvironmentNode, EnvironmentSwitch, GoalOutcome, GoalRecord, GoalStatus, GoalStore,
+    GoalVerdict, JobRecord, JobStatus, JobStore, RepoNode, SharedBackend, Trigger, TriggerEvent,
+    TrustState, WorkspaceEdge, WorkspaceEdgeKind, WorkspaceGraph, WorkspaceStore,
 };
 use crate::supervisor::{RuntimeSupervisor, SupervisorConfig};
 use crate::surfaces::SurfaceGraphService;
@@ -46,6 +46,7 @@ use hide_kernel::{AgentKernel, Grounding};
 // as `hide_kernel::verify_plane::*` at their (few) use sites so the function-local
 // `hide_kernel::verify::oracle::*` imports in the goal path and the tests keep
 // their meaning; only the non-colliding types are imported here.
+use super::*;
 use hide_kernel::verify_plane::{
     Finding, GateDecision, ReviewRole, ReviewRoleProfile, SourceFile, StaticAnalysisOracle,
     TieredVerdict, VerificationReceipt, VerificationTier,
@@ -54,10 +55,8 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
-use super::*;
 
 impl BackendHost {
-
     pub(crate) async fn handle_static_analysis_intent(&self, payload: &Value) -> Result<()> {
         let session = payload
             .get("session_id")
@@ -126,7 +125,11 @@ impl BackendHost {
                 let order: Vec<String> = payload
                     .get("order")
                     .and_then(|v| v.as_array())
-                    .map(|a| a.iter().filter_map(|v| v.as_str().map(str::to_string)).collect())
+                    .map(|a| {
+                        a.iter()
+                            .filter_map(|v| v.as_str().map(str::to_string))
+                            .collect()
+                    })
                     .ok_or_else(|| missing("order"))?;
                 record.reorder(&order)
             }
@@ -173,7 +176,11 @@ impl BackendHost {
     ///
     /// A malformed payload (e.g. a missing session_id) errors; the caller surfaces
     /// it as an Error UiEvent. The methods themselves emit the success UiEvents.
-    pub(crate) async fn handle_goal_checkpoint_intent(&self, name: &str, payload: &Value) -> Result<()> {
+    pub(crate) async fn handle_goal_checkpoint_intent(
+        &self,
+        name: &str,
+        payload: &Value,
+    ) -> Result<()> {
         let missing = |field: &str| {
             hide_core::error::HideError::Message(format!("{name}: missing '{field}'"))
         };
@@ -306,7 +313,11 @@ impl BackendHost {
     /// The session defaults to the control session when the caller does not name
     /// one (the FE gesture carries only `{ run_id, text }`); a caller that knows
     /// the run's session passes it so the steer event lands on that thread.
-    pub(crate) async fn handle_memory_workspace_env_intent(&self, name: &str, payload: &Value) -> Result<()> {
+    pub(crate) async fn handle_memory_workspace_env_intent(
+        &self,
+        name: &str,
+        payload: &Value,
+    ) -> Result<()> {
         let missing = |field: &str| {
             hide_core::error::HideError::Message(format!("{name}: missing '{field}'"))
         };
@@ -324,7 +335,8 @@ impl BackendHost {
                 let replacement = payload
                     .get("replacement")
                     .ok_or_else(|| missing("replacement"))?;
-                let (_old, new) = self.memory_supersede(old_id, parse_memory_draft(replacement)?)?;
+                let (_old, new) =
+                    self.memory_supersede(old_id, parse_memory_draft(replacement)?)?;
                 self.publish_memory("memory_superseded", &new);
             }
             "memory_record_outcome" => {
@@ -490,14 +502,15 @@ impl BackendHost {
     pub(crate) async fn handle_surface_intent(&self, name: &str, payload: &Value) -> Result<()> {
         match name {
             "switch_surface" => {
-                let surface_name = payload
-                    .get("surface")
-                    .and_then(|v| v.as_str())
-                    .ok_or_else(|| {
-                        hide_core::error::HideError::Message(
-                            "switch_surface requires surface".into(),
-                        )
-                    })?;
+                let surface_name =
+                    payload
+                        .get("surface")
+                        .and_then(|v| v.as_str())
+                        .ok_or_else(|| {
+                            hide_core::error::HideError::Message(
+                                "switch_surface requires surface".into(),
+                            )
+                        })?;
                 let surface = crate::surfaces::SurfaceGraphService::parse_surface(surface_name)
                     .map_err(hide_core::error::HideError::Message)?;
                 let view = self.surfaces.switch_surface(surface)?;
@@ -517,9 +530,7 @@ impl BackendHost {
                     .get("kind")
                     .and_then(|v| v.as_str())
                     .ok_or_else(|| {
-                        hide_core::error::HideError::Message(
-                            "handoff_create requires kind".into(),
-                        )
+                        hide_core::error::HideError::Message("handoff_create requires kind".into())
                     })?;
                 let kind = crate::surfaces::SurfaceGraphService::parse_kind(kind_name)
                     .map_err(hide_core::error::HideError::Message)?;
@@ -533,10 +544,7 @@ impl BackendHost {
                         .unwrap_or(&Value::Array(vec![])),
                 )
                 .map_err(hide_core::error::HideError::Message)?;
-                let body = payload
-                    .get("body")
-                    .cloned()
-                    .unwrap_or_else(|| json!({}));
+                let body = payload.get("body").cloned().unwrap_or_else(|| json!({}));
                 let actor = payload
                     .get("actor")
                     .and_then(|v| v.as_str())
@@ -606,7 +614,11 @@ impl BackendHost {
     /// Returns the gate id when the command was PARKED instead of started, so the caller can mark
     /// the ack `held`. Without that return the ack read `accepted` for a command the host refused
     /// to run and the terminal printed "started ... (sandbox confined)" for it.
-    pub(crate) fn spawn_command_run(&self, argv: Vec<String>, cwd: Option<String>) -> Result<Option<String>> {
+    pub(crate) fn spawn_command_run(
+        &self,
+        argv: Vec<String>,
+        cwd: Option<String>,
+    ) -> Result<Option<String>> {
         if argv.is_empty() {
             return Ok(None);
         }
@@ -951,7 +963,9 @@ impl BackendHost {
             }
             "capture_process_artifact" => {
                 let id = named()?;
-                let blob = self.capture_process_artifact(id).map_err(|e| e.to_string())?;
+                let blob = self
+                    .capture_process_artifact(id)
+                    .map_err(|e| e.to_string())?;
                 self.publish_custom(
                     None,
                     json!({
@@ -1063,7 +1077,9 @@ impl BackendHost {
                     "grant_write_lease: missing 'repo_id'".to_string(),
                 )
             })?;
-        let repo = self.workspace_repo(repo_id).ok_or_else(|| unknown_repo(repo_id))?;
+        let repo = self
+            .workspace_repo(repo_id)
+            .ok_or_else(|| unknown_repo(repo_id))?;
         if repo.trust != TrustState::Trusted {
             return Err(hide_core::error::HideError::PolicyDenied(format!(
                 "{repo_id} is not trusted; trust the repository before granting it a write lease"
@@ -1183,7 +1199,9 @@ impl BackendHost {
                     "export_review_receipt: missing 'diff_id'".to_string(),
                 )
             })?;
-        let proposal = self.diff_get(diff_id).ok_or_else(|| unknown_diff(diff_id))?;
+        let proposal = self
+            .diff_get(diff_id)
+            .ok_or_else(|| unknown_diff(diff_id))?;
         let session = payload
             .get("session_id")
             .and_then(|v| v.as_str())
@@ -1308,7 +1326,12 @@ impl BackendHost {
     /// Perform a `merge_side_chat` custom intent: append the merge summary onto
     /// the parent (spawned; the ack returns immediately). Surfacing is done by
     /// [`Self::merge_side_chat_summary`]; a failure surfaces as an Error UiEvent.
-    pub(crate) fn spawn_merge_side_chat(&self, side_chat: SessionId, parent: SessionId, summary: String) {
+    pub(crate) fn spawn_merge_side_chat(
+        &self,
+        side_chat: SessionId,
+        parent: SessionId,
+        summary: String,
+    ) {
         let event_log = self.services.event_log.clone();
         let bus = Arc::clone(&self.ui_bus);
         let result = SideChatResult::summary_only(summary);
@@ -1374,5 +1397,5 @@ impl BackendHost {
                 }
             }
         });
-}
+    }
 }

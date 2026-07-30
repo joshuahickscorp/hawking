@@ -59,7 +59,9 @@ fn make_synthetic_q4k_tensor(rows: usize, cols: usize, seed: u64) -> Vec<u8> {
 }
 fn make_x(cols: usize, seed: u64) -> Vec<f32> {
     let mut rng = Pcg64Mcg::new(seed as u128);
-    (0..cols).map(|_| rng.gen_range(-1.0_f32..1.0_f32)).collect()
+    (0..cols)
+        .map(|_| rng.gen_range(-1.0_f32..1.0_f32))
+        .collect()
 }
 #[test]
 fn q4k_fast_v1_bit_identical_to_v3_8r_at_qproj_decode_shape() {
@@ -81,14 +83,32 @@ fn q4k_fast_v1_bit_identical_to_v3_8r_at_qproj_decode_shape() {
     let out_fast_buf: PinnedBuffer = ctx.new_buffer(rows * std::mem::size_of::<f32>());
     {
         let mut tcb = TokenCommandBuffer::new(&ctx);
-        kernels::gemv_q4_k_m_v3_8r_pinned_tcb(&mut tcb, &q4k_buf, 0, q4k_byte_size, rows, cols, &x_buf, &out_v3_buf)
-            .expect("v3_8r dispatch");
+        kernels::gemv_q4_k_m_v3_8r_pinned_tcb(
+            &mut tcb,
+            &q4k_buf,
+            0,
+            q4k_byte_size,
+            rows,
+            cols,
+            &x_buf,
+            &out_v3_buf,
+        )
+        .expect("v3_8r dispatch");
         tcb.commit_and_wait().expect("v3_8r commit");
     }
     {
         let mut tcb = TokenCommandBuffer::new(&ctx);
-        kernels::gemv_q4k_fast_v1_pinned_tcb(&mut tcb, &fast_buf, 0, fast_byte_size, rows, cols, &x_buf, &out_fast_buf)
-            .expect("q4k_fast_v1 dispatch");
+        kernels::gemv_q4k_fast_v1_pinned_tcb(
+            &mut tcb,
+            &fast_buf,
+            0,
+            fast_byte_size,
+            rows,
+            cols,
+            &x_buf,
+            &out_fast_buf,
+        )
+        .expect("q4k_fast_v1 dispatch");
         tcb.commit_and_wait().expect("q4k_fast_v1 commit");
     }
     let out_v3_ptr = out_v3_buf.contents() as *const f32;

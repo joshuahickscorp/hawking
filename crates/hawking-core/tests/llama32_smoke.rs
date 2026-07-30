@@ -23,11 +23,19 @@ fn find_llama_gguf(size_tag: &str) -> Option<PathBuf> {
 fn run_greedy(weights: &PathBuf, expect_arch: &str) -> Vec<u32> {
     let cfg = hawking_core::EngineConfig::default();
     let mut engine = hawking_core::model::load_engine(weights, cfg).expect("load llama engine");
-    assert_eq!(engine.model_arch(), expect_arch, "dispatcher routed to the wrong engine");
+    assert_eq!(
+        engine.model_arch(),
+        expect_arch,
+        "dispatcher routed to the wrong engine"
+    );
     let req = hawking_core::GenerateRequest {
         prompt: PROMPT.into(),
         max_new_tokens: MAX_NEW_TOKENS,
-        sampling: hawking_core::SamplingParams { temperature: 0.0, seed: Some(42), ..Default::default() },
+        sampling: hawking_core::SamplingParams {
+            temperature: 0.0,
+            seed: Some(42),
+            ..Default::default()
+        },
         stop: vec![],
         abort: None,
         max_stall_ms: 0,
@@ -52,7 +60,11 @@ fn smoke_for(size_tag: &str, label: &str, expect_arch: &str) {
     let ids = run_greedy(&weights, expect_arch);
     let ids2 = run_greedy(&weights, expect_arch);
     assert_eq!(ids, ids2, "{label}: greedy temp=0 output not deterministic");
-    check_or_pin_hash(Path::new("tests/golden/_llama32_token_baseline.hashes"), label, &hash16_tokens(&ids));
+    check_or_pin_hash(
+        Path::new("tests/golden/_llama32_token_baseline.hashes"),
+        label,
+        &hash16_tokens(&ids),
+    );
 }
 #[test]
 fn llama32_1b_greedy_smoke() {

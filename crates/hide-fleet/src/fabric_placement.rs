@@ -200,11 +200,12 @@ impl PlacementSimulator {
         let mut transfer_bytes = 0u64;
 
         for (stage_idx, section) in sections.iter().enumerate() {
-            let owner = pick_owner(&nodes, &remaining, section.bytes, req.seed, stage_idx)
-                .ok_or(PlacementError::InsufficientCapacity {
+            let owner = pick_owner(&nodes, &remaining, section.bytes, req.seed, stage_idx).ok_or(
+                PlacementError::InsufficientCapacity {
                     section: section.name.clone(),
                     bytes: section.bytes,
-                })?;
+                },
+            )?;
             let rem = remaining.get_mut(&owner).expect("owner in map");
             *rem = rem.saturating_sub(section.bytes);
 
@@ -424,10 +425,7 @@ impl KvOwnershipInvariant {
             }
             if r.token_end > seq_len {
                 return Err(PlacementError::KvInvariant {
-                    detail: format!(
-                        "token_end {} exceeds seq_len {}",
-                        r.token_end, seq_len
-                    ),
+                    detail: format!("token_end {} exceeds seq_len {}", r.token_end, seq_len),
                 });
             }
             if r.token_start >= r.token_end || r.layer_start >= r.layer_end {
@@ -664,7 +662,10 @@ mod tests {
         let lost = KvOwnershipInvariant::ranges_lost_on_failure(&plan.kv_ownership, &failed);
         assert!(!lost.is_empty(), "expected some KV lost on node failure");
         let replan = sim.replan_after_failure(&req, &failed).unwrap();
-        assert!(replan .section_placements .iter() .all(|sp| sp.node_id != failed));
+        assert!(replan
+            .section_placements
+            .iter()
+            .all(|sp| sp.node_id != failed));
         KvOwnershipInvariant::assert_holds(&replan.kv_ownership, req.workload.seq_len).unwrap();
     }
     #[test]

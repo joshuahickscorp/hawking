@@ -34,7 +34,9 @@ fn run_parity(routes: usize, rows: usize, cols: usize, seed_base: u64) {
     let up_offset = pad + n_experts * bytes_per_expert;
     w_all[gate_offset..gate_offset + gate_bytes.len()].copy_from_slice(&gate_bytes);
     w_all[up_offset..up_offset + up_bytes.len()].copy_from_slice(&up_bytes);
-    let route_ids: Vec<u32> = (0..routes).map(|i| ((i * 3 + 1) % n_experts) as u32).collect();
+    let route_ids: Vec<u32> = (0..routes)
+        .map(|i| ((i * 3 + 1) % n_experts) as u32)
+        .collect();
     let x = fixed_f32(cols, seed_base ^ 0xDEAD_BEEF);
     let mut ref_out = vec![0.0_f32; routes * rows];
     kernels::moe_batched_gemm_q4_indexed_v2t_gu_raw(

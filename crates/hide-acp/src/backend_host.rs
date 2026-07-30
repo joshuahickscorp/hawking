@@ -260,12 +260,19 @@ mod tests {
             )),
             "handler projects the user message: {events:?}"
         );
-        assert!(events.iter().any(|e| matches!( e, TurnEvent::Item(Item { kind: ItemKind::Completion(_), .. }) )));
+        assert!(events.iter().any(|e| matches!(
+            e,
+            TurnEvent::Item(Item {
+                kind: ItemKind::Completion(_),
+                ..
+            })
+        )));
         let log = host.services.event_log.clone();
-        let events_on_host = block_on(async move {
-            log.scan(Some(session), None, None).await.unwrap()
-        });
-        assert!(events_on_host.iter().any(|e| { e.kind.contains("submit") || e.payload .to_string() .contains("hello from acp") }));
+        let events_on_host =
+            block_on(async move { log.scan(Some(session), None, None).await.unwrap() });
+        assert!(events_on_host.iter().any(|e| {
+            e.kind.contains("submit") || e.payload.to_string().contains("hello from acp")
+        }));
     }
     #[test]
     fn host_session_binder_mints_stable_host_sessions() {

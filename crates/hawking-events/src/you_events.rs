@@ -114,7 +114,12 @@ pub const YOU_EVENTS: &[YouEventSpec] = &[
         event: YouEvent::ConnectorRead,
         kind: "you.connector.read",
         category: Category::YouConnectors,
-        carries: &["connector_id", "account_handle", "scope_read", "object_count"],
+        carries: &[
+            "connector_id",
+            "account_handle",
+            "scope_read",
+            "object_count",
+        ],
         note: "",
         default_verification: ContentVerification::TargetVerified,
         default_class: EventClass::Observation,
@@ -141,7 +146,12 @@ pub const YOU_EVENTS: &[YouEventSpec] = &[
         event: YouEvent::SourceCaptured,
         kind: "you.research.source_captured",
         category: Category::YouResearch,
-        carries: &["url_or_fixture_id", "captured_at", "quality_grade", "content_hash"],
+        carries: &[
+            "url_or_fixture_id",
+            "captured_at",
+            "quality_grade",
+            "content_hash",
+        ],
         note: "",
         default_verification: ContentVerification::TargetVerified,
         default_class: EventClass::Observation,
@@ -159,7 +169,13 @@ pub const YOU_EVENTS: &[YouEventSpec] = &[
         event: YouEvent::AutomationCreated,
         kind: "you.automation.created",
         category: Category::YouAutomation,
-        carries: &["trigger", "goal", "permission_set", "budget", "stop_condition"],
+        carries: &[
+            "trigger",
+            "goal",
+            "permission_set",
+            "budget",
+            "stop_condition",
+        ],
         note: "",
         default_verification: ContentVerification::TargetVerified,
         default_class: EventClass::Action,
@@ -225,7 +241,12 @@ pub const YOU_EVENTS: &[YouEventSpec] = &[
         event: YouEvent::HandoffCreated,
         kind: "you.handoff.created",
         category: Category::YouHandoff,
-        carries: &["from_surface", "to_surface", "capsule_hash", "what_it_excludes"],
+        carries: &[
+            "from_surface",
+            "to_surface",
+            "capsule_hash",
+            "what_it_excludes",
+        ],
         note: "",
         default_verification: ContentVerification::TargetVerified,
         default_class: EventClass::Action,
@@ -306,7 +327,10 @@ impl YouEventSpec {
         payload: Value,
         verification: Option<ContentVerification>,
     ) -> CanonicalEvent {
-        CanonicalEvent::sequence(seq, self.to_new_canonical(session_id, payload, verification))
+        CanonicalEvent::sequence(
+            seq,
+            self.to_new_canonical(session_id, payload, verification),
+        )
     }
 }
 
@@ -361,10 +385,22 @@ mod tests {
     }
     #[test]
     fn proposed_defaults_provisional_committed_verified() {
-        assert_eq!(YouEvent::MemoryProposed.spec().default_verification, ContentVerification::Provisional);
-        assert_eq!(YouEvent::MemoryCommitted.spec().default_verification, ContentVerification::TargetVerified);
-        assert_eq!(YouEvent::ConnectorWriteProposed.spec().default_verification, ContentVerification::Provisional);
- assert_eq!( YouEvent::AgentResult.spec().default_verification, ContentVerification::Provisional );
+        assert_eq!(
+            YouEvent::MemoryProposed.spec().default_verification,
+            ContentVerification::Provisional
+        );
+        assert_eq!(
+            YouEvent::MemoryCommitted.spec().default_verification,
+            ContentVerification::TargetVerified
+        );
+        assert_eq!(
+            YouEvent::ConnectorWriteProposed.spec().default_verification,
+            ContentVerification::Provisional
+        );
+        assert_eq!(
+            YouEvent::AgentResult.spec().default_verification,
+            ContentVerification::Provisional
+        );
     }
     #[test]
     fn envelope_carries_surface_and_verification() {

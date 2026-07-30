@@ -317,9 +317,16 @@ mod tests {
         let (home, sessions) = compute_home_and_sessions(&log, &store, Path::new("/tmp/hawking"))
             .await
             .unwrap();
- assert_eq!( home["digest"]["sessions"], json!(2), "two distinct sessions" );
+        assert_eq!(
+            home["digest"]["sessions"],
+            json!(2),
+            "two distinct sessions"
+        );
         assert_eq!(home["digest"]["messages"], json!(3), "three submit_turns");
- assert!( home["digest"].get("tokens").is_none(), "tokens omitted, not faked" );
+        assert!(
+            home["digest"].get("tokens").is_none(),
+            "tokens omitted, not faked"
+        );
         assert_eq!(home["digest"]["heatmap_cols"], json!(HEATMAP_WEEKS));
         assert_eq!(home["workspace"]["repo"], json!("hawking"));
         let items = sessions["items"].as_array().unwrap();

@@ -1,3 +1,6 @@
+use crate::personalize::{
+    DynPersonalizationStore, InMemoryPersonalizationStore, JsonlPersonalizationStore,
+};
 use hawking_context::{
     ClassedMemorySystem, ContextCompiler, DynClassedMemory, InMemoryMemoryStore, MemoryStore,
     SqliteMemoryStore, TokenCounter,
@@ -15,9 +18,6 @@ use hide_core::persistence::{
 };
 use hide_core::project::WorkspaceLayout;
 use hide_core::Result;
-use crate::personalize::{
-    DynPersonalizationStore, InMemoryPersonalizationStore, JsonlPersonalizationStore,
-};
 use hide_kernel::security::audit::EventChainAuditor;
 use parking_lot::Mutex;
 use serde::{Deserialize, Serialize};
@@ -208,7 +208,12 @@ impl CheckpointRecord {
     /// are intact (untampered).
     pub fn verify_integrity(&self) -> bool {
         self.integrity
-            == sealed_integrity(&self.session_id, self.at_seq, self.at_event.as_ref(), &self.coverage)
+            == sealed_integrity(
+                &self.session_id,
+                self.at_seq,
+                self.at_event.as_ref(),
+                &self.coverage,
+            )
     }
 }
 
@@ -270,7 +275,11 @@ impl CheckpointStore {
 /// session, the inclusive boundary `seq`, and the optional boundary event id.
 /// This is what a restore recomputes and compares to prove the stored boundary
 /// was not tampered (same blake3 family as the event-log chain).
-pub fn checkpoint_integrity(session_id: &SessionId, at_seq: u64, at_event: Option<&EventId>) -> String {
+pub fn checkpoint_integrity(
+    session_id: &SessionId,
+    at_seq: u64,
+    at_event: Option<&EventId>,
+) -> String {
     let material = format!(
         "{}|{}|{}",
         session_id.as_str(),
@@ -305,4 +314,3 @@ pub(crate) fn subbit_id(prefix: &str, session: &SessionId, seed: u128) -> String
     let hex = blake3::hash(material.as_bytes()).to_hex();
     format!("{prefix}_{}", &hex.as_str()[..24])
 }
-

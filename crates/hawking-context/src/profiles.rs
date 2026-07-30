@@ -411,21 +411,64 @@ mod tests {
         let tight = ContextProfile::tight(8192);
         let unbounded = ContextProfile::unbounded(8192);
         assert_eq!(tight.eviction, EvictionChoice::Lossless);
- assert!(matches!( unbounded.eviction, EvictionChoice::StreamingLlm { sinks: 4, .. } ));
+        assert!(matches!(
+            unbounded.eviction,
+            EvictionChoice::StreamingLlm { sinks: 4, .. }
+        ));
         assert!(ContextProfile::preset("long", 8192).is_some());
         assert!(ContextProfile::preset("nope", 8192).is_none());
     }
     #[test]
     fn debug_and_refactor_profiles_populate_band_by_kind() {
         let debug = ContextProfile::debug(8192);
- assert!( debug .source_weights .band_by_kind .get("Diagnostics") .copied() .unwrap() > 1.0 );
- assert!( debug .source_weights .band_by_kind .get("ToolOutput") .copied() .unwrap() > 1.0 );
+        assert!(
+            debug
+                .source_weights
+                .band_by_kind
+                .get("Diagnostics")
+                .copied()
+                .unwrap()
+                > 1.0
+        );
+        assert!(
+            debug
+                .source_weights
+                .band_by_kind
+                .get("ToolOutput")
+                .copied()
+                .unwrap()
+                > 1.0
+        );
         assert!(debug.source_weights.w_recency >= 1.0);
         assert!(!debug.source_weights.band_by_kind.contains_key("Code"));
         let refactor = ContextProfile::refactor(8192);
- assert!( refactor .source_weights .band_by_kind .get("Symbol") .copied() .unwrap() > 1.0 );
- assert!( refactor .source_weights .band_by_kind .get("Code") .copied() .unwrap() > 1.0 );
- assert!( refactor .source_weights .band_by_kind .get("ToolOutput") .copied() .unwrap() < 1.0 );
+        assert!(
+            refactor
+                .source_weights
+                .band_by_kind
+                .get("Symbol")
+                .copied()
+                .unwrap()
+                > 1.0
+        );
+        assert!(
+            refactor
+                .source_weights
+                .band_by_kind
+                .get("Code")
+                .copied()
+                .unwrap()
+                > 1.0
+        );
+        assert!(
+            refactor
+                .source_weights
+                .band_by_kind
+                .get("ToolOutput")
+                .copied()
+                .unwrap()
+                < 1.0
+        );
         assert!(refactor.source_weights.w_relevance > 1.0);
         assert!(ContextProfile::preset("debug", 8192).is_some());
         assert!(ContextProfile::preset("refactor", 8192).is_some());

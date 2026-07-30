@@ -1,5 +1,7 @@
 #![cfg(target_os = "macos")]
-use hawking_core::{model::qwen_dense::QwenDense, profile::fresh_test_profile, Engine, EngineConfig};
+use hawking_core::{
+    model::qwen_dense::QwenDense, profile::fresh_test_profile, Engine, EngineConfig,
+};
 use std::fs;
 use std::path::PathBuf;
 mod common;
@@ -31,7 +33,10 @@ fn w4a8_per_channel_calibrate_lmhead() {
         return;
     }
     let profile = fresh_test_profile(&weights).expect("fresh test profile");
-    let cfg = EngineConfig { kernel_profile: Some(profile), ..Default::default() };
+    let cfg = EngineConfig {
+        kernel_profile: Some(profile),
+        ..Default::default()
+    };
     let mut engine = QwenDense::load(&weights, cfg).expect("load engine");
     let hidden = engine.config.hidden;
     let mut max_abs = vec![0.0f32; hidden];
@@ -40,7 +45,9 @@ fn w4a8_per_channel_calibrate_lmhead() {
         engine.kv.reset();
         let tokens = engine.tokenizer.encode(prompt, true).expect("encode");
         for (i, &tok) in tokens.iter().enumerate() {
-            let x_norm = engine.dump_x_norm_after_forward(tok, i).expect("forward prefill");
+            let x_norm = engine
+                .dump_x_norm_after_forward(tok, i)
+                .expect("forward prefill");
             for (c, &v) in x_norm.iter().enumerate() {
                 let a = v.abs();
                 if a > max_abs[c] {
@@ -53,7 +60,9 @@ fn w4a8_per_channel_calibrate_lmhead() {
         let pos_start = tokens.len();
         for step in 0..STEPS_PER_PROMPT {
             let pos = pos_start + step;
-            let x_norm = engine.dump_x_norm_after_forward(last_tok, pos).expect("forward decode");
+            let x_norm = engine
+                .dump_x_norm_after_forward(last_tok, pos)
+                .expect("forward decode");
             let mut argmax_idx = 0u32;
             let mut argmax_val = 0.0f32;
             for (i, &v) in x_norm.iter().enumerate() {
@@ -88,7 +97,11 @@ fn w4a8_per_channel_calibrate_lmhead() {
         }
     }
     let mut idx: Vec<usize> = (0..hidden).collect();
-    idx.sort_by(|&a, &b| max_abs[b].partial_cmp(&max_abs[a]).unwrap_or(std::cmp::Ordering::Equal));
+    idx.sort_by(|&a, &b| {
+        max_abs[b]
+            .partial_cmp(&max_abs[a])
+            .unwrap_or(std::cmp::Ordering::Equal)
+    });
     for &c in idx.iter().take(10) {}
     let mut json = String::new();
     json.push_str("{\n");
@@ -119,5 +132,8 @@ fn w4a8_per_channel_calibrate_lmhead() {
         let _ = fs::create_dir_all(parent);
     }
     fs::write(&out, json).expect("write calibration JSON");
-    assert!(max_seen > 5.0, "calibration max_abs too low ({max_seen:.2}) — expected outlier channel >5 magnitude");
+    assert!(
+        max_seen > 5.0,
+        "calibration max_abs too low ({max_seen:.2}) — expected outlier channel >5 magnitude"
+    );
 }

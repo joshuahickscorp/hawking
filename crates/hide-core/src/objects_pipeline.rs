@@ -13,8 +13,8 @@ use crate::objects::hash::{ContentHash, CHUNK_SIZE};
 use crate::objects::kinds::ObjectKind;
 use crate::objects::processors::ProcessorSet;
 use crate::objects::schema::{
-    Derivative, DerivativeKind, ObjectLocation, ObjectRecord, ObjectStatus, StageName,
-    StageRecord, StageStatus,
+    Derivative, DerivativeKind, ObjectLocation, ObjectRecord, ObjectStatus, StageName, StageRecord,
+    StageStatus,
 };
 
 /// Outcome of running stages for one object.
@@ -150,9 +150,8 @@ pub fn run_next_stage(
     now_ms: u64,
     persist_dst: Option<&Path>,
 ) -> Result<StageOutcome> {
-    let stage = next_incomplete_stage(record).ok_or_else(|| {
-        ObjectError::Invalid("no incomplete stage".into())
-    })?;
+    let stage = next_incomplete_stage(record)
+        .ok_or_else(|| ObjectError::Invalid("no incomplete stage".into()))?;
 
     match stage {
         StageName::Receive => run_receive(record, body_path, now_ms),
@@ -195,8 +194,8 @@ fn run_receive(record: &mut ObjectRecord, body_path: &Path, now: u64) -> Result<
     mark_running(record, StageName::Receive, now);
 
     let (hash, size, peak) = hash_file(body_path)?;
-    let pending = record.content_hash.as_str().is_empty()
-        || record.content_hash.as_str() == "blake3:pending";
+    let pending =
+        record.content_hash.as_str().is_empty() || record.content_hash.as_str() == "blake3:pending";
     if pending {
         record.content_hash = hash.clone();
     } else if record.content_hash != hash {
@@ -323,7 +322,14 @@ fn run_extract_text(
             produced_by: out.produced_by,
             produced_at_ms: now,
         });
-        mark_complete(record, StageName::ExtractText, now, total, Some(total), peak);
+        mark_complete(
+            record,
+            StageName::ExtractText,
+            now,
+            total,
+            Some(total),
+            peak,
+        );
     } else {
         mark_skipped(record, StageName::ExtractText, now, peak);
     }

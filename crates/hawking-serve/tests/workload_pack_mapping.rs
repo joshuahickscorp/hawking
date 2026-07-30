@@ -14,7 +14,10 @@ fn workload_from_str_roundtrips_all_known() {
         "batch-summarization",
         "local-agent-loop",
     ] {
-        assert_eq!(WorkloadPack::from_str(s).expect("known workload").as_str(), s);
+        assert_eq!(
+            WorkloadPack::from_str(s).expect("known workload").as_str(),
+            s
+        );
     }
     assert!(WorkloadPack::from_str("nonsense-pack").is_none());
     assert!(WorkloadPack::from_str("fast").is_none());
@@ -71,9 +74,15 @@ fn workload_expands_to_expected_profile_and_knobs() {
             "HAWKING_QWEN_VOCAB_PRUNE",
             "HAWKING_QWEN_FFN_DOWN_Q4K",
         ] {
- assert!( has(&plan.set_if_unset, k), "code-completion(race) must set {k}" );
+            assert!(
+                has(&plan.set_if_unset, k),
+                "code-completion(race) must set {k}"
+            );
         }
- assert_eq!( val(&plan.set_if_unset, "HAWKING_QWEN_VOCAB_PRUNE"), Some("32000") );
+        assert_eq!(
+            val(&plan.set_if_unset, "HAWKING_QWEN_VOCAB_PRUNE"),
+            Some("32000")
+        );
         assert_eq!(plan.f16_kv, Some(true), "race enables f16-KV");
         assert!(plan.concurrent_qkv);
         assert!(plan.force_off.is_empty());
@@ -121,8 +130,26 @@ fn workload_expands_to_expected_profile_and_knobs() {
 #[test]
 fn workload_energy_maps_to_gather_window_ms() {
     assert_eq!(WorkloadPack::Default.defaults().1.gather_window_ms(), 0);
- assert_eq!( WorkloadPack::CodeCompletion.defaults().1.gather_window_ms(), 0 );
- assert_eq!( WorkloadPack::ChatSharedPrompt .defaults() .1 .gather_window_ms(), 3 );
- assert_eq!( WorkloadPack::BatchSummarization .defaults() .1 .gather_window_ms(), 8 );
- assert_eq!( WorkloadPack::LocalAgentLoop.defaults().1.gather_window_ms(), 0 );
+    assert_eq!(
+        WorkloadPack::CodeCompletion.defaults().1.gather_window_ms(),
+        0
+    );
+    assert_eq!(
+        WorkloadPack::ChatSharedPrompt
+            .defaults()
+            .1
+            .gather_window_ms(),
+        3
+    );
+    assert_eq!(
+        WorkloadPack::BatchSummarization
+            .defaults()
+            .1
+            .gather_window_ms(),
+        8
+    );
+    assert_eq!(
+        WorkloadPack::LocalAgentLoop.defaults().1.gather_window_ms(),
+        0
+    );
 }

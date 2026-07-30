@@ -8,10 +8,15 @@ mod common;
 use common::*;
 fn make_x(cols: usize, seed: u64) -> Vec<f32> {
     let mut rng = Pcg64Mcg::new(seed as u128);
-    (0..cols).map(|_| rng.gen_range(-3.0_f32..3.0_f32)).collect()
+    (0..cols)
+        .map(|_| rng.gen_range(-3.0_f32..3.0_f32))
+        .collect()
 }
 fn new_f16_buf(ctx: &MetalContext, data: &[f16]) -> PinnedBuffer {
-    let bytes: Vec<u8> = data.iter().flat_map(|h| h.to_bits().to_le_bytes()).collect();
+    let bytes: Vec<u8> = data
+        .iter()
+        .flat_map(|h| h.to_bits().to_le_bytes())
+        .collect();
     ctx.new_buffer_with_bytes(&bytes)
 }
 #[test]
@@ -28,13 +33,28 @@ fn q4k_v4_predec_f16s_relative_parity() {
     let y_ref_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
-        kernels::gemv_q4_k_v4_predec_pinned_tcb(&mut tcb, &model_buf, 0, w_bytes.len(), &scales_f32_buf, 0, rows, cols, &x_buf, &y_ref_buf)
-            .expect("f32 predec encode");
+        kernels::gemv_q4_k_v4_predec_pinned_tcb(
+            &mut tcb,
+            &model_buf,
+            0,
+            w_bytes.len(),
+            &scales_f32_buf,
+            0,
+            rows,
+            cols,
+            &x_buf,
+            &y_ref_buf,
+        )
+        .expect("f32 predec encode");
         tcb.commit_and_wait().expect("f32 predec commit");
     }
     let y_ref = read_f32_buf(&y_ref_buf, rows);
     let scales_f16 = predecode_q4_k_scale_table_f16(&w_bytes);
-    assert_eq!(scales_f16.len(), rows * (cols / 256) * 16, "predecode_q4_k_scale_table_f16 length mismatch");
+    assert_eq!(
+        scales_f16.len(),
+        rows * (cols / 256) * 16,
+        "predecode_q4_k_scale_table_f16 length mismatch"
+    );
     let scales_f16_buf = new_f16_buf(ctx, &scales_f16);
     let y_f16_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
     {
@@ -65,5 +85,8 @@ fn q4k_v4_predec_f16s_relative_parity() {
         max_abs = max_abs.max((y_ref[i] - y_f16[i]).abs());
     }
     let rel_l2 = (num / den.max(1e-30)).sqrt();
-    assert!(rel_l2 < 1e-2, "f16-scales predec rel_L2 {rel_l2:.3e} exceeds the 1e-2 f16 precision budget");
+    assert!(
+        rel_l2 < 1e-2,
+        "f16-scales predec rel_L2 {rel_l2:.3e} exceeds the 1e-2 f16 precision budget"
+    );
 }

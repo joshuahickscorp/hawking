@@ -30,7 +30,9 @@ fn make_q4k_bytes(rows: usize, cols: usize, seed: u64) -> Vec<u8> {
 }
 fn make_x(cols: usize, seed: u64) -> Vec<f32> {
     let mut rng = Pcg64Mcg::new(seed as u128);
-    (0..cols).map(|_| rng.gen_range(-3.0_f32..3.0_f32)).collect()
+    (0..cols)
+        .map(|_| rng.gen_range(-3.0_f32..3.0_f32))
+        .collect()
 }
 fn new_buf_bytes(ctx: &MetalContext, bytes: &[u8]) -> PinnedBuffer {
     ctx.new_buffer_with_bytes(bytes)
@@ -47,8 +49,17 @@ fn w4a8_parity_and_bw_saving() {
     let y_baseline_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
-        kernels::gemv_q4_k_m_v3_8r_pinned_tcb(&mut tcb, &model_buf, 0, w_bytes.len(), rows, cols, &x_f32_buf, &y_baseline_buf)
-            .expect("baseline encode");
+        kernels::gemv_q4_k_m_v3_8r_pinned_tcb(
+            &mut tcb,
+            &model_buf,
+            0,
+            w_bytes.len(),
+            rows,
+            cols,
+            &x_f32_buf,
+            &y_baseline_buf,
+        )
+        .expect("baseline encode");
         tcb.commit_and_wait().expect("baseline commit");
     }
     let y_baseline = read_f32_buf(&y_baseline_buf, rows);
@@ -60,8 +71,18 @@ fn w4a8_parity_and_bw_saving() {
     let y_w4a8_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
-        kernels::gemm_q4_k_a8_v3_8r_pinned_tcb(&mut tcb, &model_buf, 0, w_bytes.len(), rows, cols, &x_int8_buf, &x_scales_buf, &y_w4a8_buf)
-            .expect("W4A8 encode");
+        kernels::gemm_q4_k_a8_v3_8r_pinned_tcb(
+            &mut tcb,
+            &model_buf,
+            0,
+            w_bytes.len(),
+            rows,
+            cols,
+            &x_int8_buf,
+            &x_scales_buf,
+            &y_w4a8_buf,
+        )
+        .expect("W4A8 encode");
         tcb.commit_and_wait().expect("W4A8 commit");
     }
     let y_w4a8 = read_f32_buf(&y_w4a8_buf, rows);
@@ -69,8 +90,15 @@ fn w4a8_parity_and_bw_saving() {
     let norm_a: f32 = y_baseline.iter().map(|&a| a * a).sum::<f32>().sqrt();
     let norm_b: f32 = y_w4a8.iter().map(|&a| a * a).sum::<f32>().sqrt();
     let cosine = dot_ab / (norm_a * norm_b);
-    let rmse: f32 = (y_baseline.iter().zip(&y_w4a8).map(|(&a, &b)| (a - b).powi(2)).sum::<f32>() / y_baseline.len() as f32).sqrt();
-    let mean_abs_baseline = y_baseline.iter().map(|x| x.abs()).sum::<f32>() / y_baseline.len() as f32;
+    let rmse: f32 = (y_baseline
+        .iter()
+        .zip(&y_w4a8)
+        .map(|(&a, &b)| (a - b).powi(2))
+        .sum::<f32>()
+        / y_baseline.len() as f32)
+        .sqrt();
+    let mean_abs_baseline =
+        y_baseline.iter().map(|x| x.abs()).sum::<f32>() / y_baseline.len() as f32;
     let nrmse = rmse / mean_abs_baseline;
     let mut max_recover_err = 0.0f32;
     for i in 0..cols {
@@ -81,13 +109,26 @@ fn w4a8_parity_and_bw_saving() {
             max_recover_err = err;
         }
     }
-    assert!(cosine > 0.999 && nrmse < 0.05, "W4A8 output out of tolerance: cosine={cosine:.6} nrmse={nrmse:.4e}");
+    assert!(
+        cosine > 0.999 && nrmse < 0.05,
+        "W4A8 output out of tolerance: cosine={cosine:.6} nrmse={nrmse:.4e}"
+    );
     let warmup = 40;
     let calls = 200;
     {
         let mut run = || {
             let mut tcb = TokenCommandBuffer::new(ctx);
-            kernels::gemv_q4_k_m_v3_8r_pinned_tcb(&mut tcb, &model_buf, 0, w_bytes.len(), rows, cols, &x_f32_buf, &y_baseline_buf).unwrap();
+            kernels::gemv_q4_k_m_v3_8r_pinned_tcb(
+                &mut tcb,
+                &model_buf,
+                0,
+                w_bytes.len(),
+                rows,
+                cols,
+                &x_f32_buf,
+                &y_baseline_buf,
+            )
+            .unwrap();
             tcb.commit_and_wait().unwrap();
         };
         for _ in 0..warmup {
@@ -131,8 +172,18 @@ fn w4a8_parity_and_bw_saving() {
             let xq_buf = new_buf_bytes(ctx, bytemuck::cast_slice(&x_q));
             let xs_buf = new_f32_buf(ctx, &x_s);
             let mut tcb = TokenCommandBuffer::new(ctx);
-            kernels::gemm_q4_k_a8_v3_8r_pinned_tcb(&mut tcb, &model_buf, 0, w_bytes.len(), rows, cols, &xq_buf, &xs_buf, &y_w4a8_buf)
-                .unwrap();
+            kernels::gemm_q4_k_a8_v3_8r_pinned_tcb(
+                &mut tcb,
+                &model_buf,
+                0,
+                w_bytes.len(),
+                rows,
+                cols,
+                &xq_buf,
+                &xs_buf,
+                &y_w4a8_buf,
+            )
+            .unwrap();
             tcb.commit_and_wait().unwrap();
         };
         for _ in 0..warmup {

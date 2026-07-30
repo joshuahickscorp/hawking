@@ -800,8 +800,10 @@ mod tests {
     use super::*;
     #[test]
     fn q8_0_zeros_round_trip() {
-        let mut bytes = vec![0u8; 34]; bytes[0..2].copy_from_slice(&f16::from_f32(1.0).to_bits().to_le_bytes());
-        let mut out = vec![1.0f32; 32]; dequant_q8_0(&bytes, &mut out).unwrap();
+        let mut bytes = vec![0u8; 34];
+        bytes[0..2].copy_from_slice(&f16::from_f32(1.0).to_bits().to_le_bytes());
+        let mut out = vec![1.0f32; 32];
+        dequant_q8_0(&bytes, &mut out).unwrap();
         assert!(out.iter().all(|&v| v == 0.0));
     }
     #[test]
@@ -816,16 +818,23 @@ mod tests {
             }
             bytes[96 + 8 + j % 4] |= (l >> 4) << (2 * (j / 4));
         }
-        bytes[108..110].copy_from_slice(&f16::from_f32(2.0).to_bits().to_le_bytes()); bytes[0] = 0x01; bytes[32] = 0x03; bytes[33] = 0x02;
-        let mut out = vec![0.0f32; 256]; dequant_q3_k_into(&bytes, &mut out).unwrap();
+        bytes[108..110].copy_from_slice(&f16::from_f32(2.0).to_bits().to_le_bytes());
+        bytes[0] = 0x01;
+        bytes[32] = 0x03;
+        bytes[33] = 0x02;
+        let mut out = vec![0.0f32; 256];
+        dequant_q3_k_into(&bytes, &mut out).unwrap();
         assert_eq!(out[0], 6.0);
         assert_eq!(out[1], -4.0);
     }
     #[test]
     fn copy_f16_round_trip() {
         let src: Vec<f16> = [1.0, -1.5, 2.25]
-            .iter().map(|&v| f16::from_f32(v)) .collect();
-        let bytes: Vec<u8> = src.iter().flat_map(|h| h.to_bits().to_le_bytes()).collect(); let mut out = vec![0.0f32; 3];
+            .iter()
+            .map(|&v| f16::from_f32(v))
+            .collect();
+        let bytes: Vec<u8> = src.iter().flat_map(|h| h.to_bits().to_le_bytes()).collect();
+        let mut out = vec![0.0f32; 3];
         copy_f16(&bytes, &mut out).unwrap();
         assert!((out[0] - 1.0).abs() < 1e-3);
         assert!((out[1] + 1.5).abs() < 1e-3);
@@ -838,15 +847,23 @@ mod tests {
             *b = ((i * 37 + 11) & 0xFF) as u8;
         }
         bytes[108..110].copy_from_slice(&f16::from_f32(0.5).to_bits().to_le_bytes());
-        bytes[218..220].copy_from_slice(&f16::from_f32(-0.25).to_bits().to_le_bytes()); let table = predecode_q3_k_scale_table(&bytes);
+        bytes[218..220].copy_from_slice(&f16::from_f32(-0.25).to_bits().to_le_bytes());
+        let table = predecode_q3_k_scale_table(&bytes);
         assert_eq!(table.len(), 32);
         for blk in 0..2 {
             let off = blk * 110;
             let d = f16::from_bits(u16::from_le_bytes(
                 bytes[off + 108..off + 110].try_into().unwrap(),
-            )) .to_f32(); let mut scales = [0i8; 16]; decode_q3_k_scales(&bytes[off + 96..off + 108], &mut scales);
+            ))
+            .to_f32();
+            let mut scales = [0i8; 16];
+            decode_q3_k_scales(&bytes[off + 96..off + 108], &mut scales);
             for i in 0..16 {
-                assert_eq!(table[blk * 16 + i], d * scales[i] as f32, "block {blk} sub {i}");
+                assert_eq!(
+                    table[blk * 16 + i],
+                    d * scales[i] as f32,
+                    "block {blk} sub {i}"
+                );
             }
         }
     }

@@ -250,7 +250,9 @@ mod tests {
         assert!(thread.is_closed(), "discard closes the writer");
         let k = kinds(&log, &session).await;
         assert!(k.is_empty(), "a discarded thread writes NOTHING to the log");
- assert!(thread .append_item(NewEvent::system(session.clone(), "item.b", json!({}))) .is_err());
+        assert!(thread
+            .append_item(NewEvent::system(session.clone(), "item.b", json!({})))
+            .is_err());
     }
     #[tokio::test]
     async fn persist_writes_a_marker_that_flush_does_not() {
@@ -285,7 +287,8 @@ mod tests {
     async fn init_guard_discards_on_early_drop() {
         let (log, session) = log_and_session();
         {
-            let mut guard = LiveThreadInitGuard::new(LiveThread::open(session.clone(), log.clone()));
+            let mut guard =
+                LiveThreadInitGuard::new(LiveThread::open(session.clone(), log.clone()));
             guard
                 .thread_mut()
                 .unwrap()
@@ -293,13 +296,17 @@ mod tests {
                 .unwrap();
         }
         let k = kinds(&log, &session).await;
- assert!( k.is_empty(), "a failed init discards the partial event stream (nothing durable)" );
+        assert!(
+            k.is_empty(),
+            "a failed init discards the partial event stream (nothing durable)"
+        );
     }
     #[tokio::test]
     async fn init_guard_commit_hands_off_ownership_and_neutralizes_drop() {
         let (log, session) = log_and_session();
         let mut thread = {
-            let mut guard = LiveThreadInitGuard::new(LiveThread::open(session.clone(), log.clone()));
+            let mut guard =
+                LiveThreadInitGuard::new(LiveThread::open(session.clone(), log.clone()));
             guard
                 .thread_mut()
                 .unwrap()

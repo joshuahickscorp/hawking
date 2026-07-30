@@ -1836,8 +1836,13 @@ pub mod gpu {
             assert_eq!(
                 routed_pq_representation(&params(16, 16, 256, 8)),
                 RoutedWeightRepresentation::Other
-            ); let mut multi = params(32, 32, 256, 8); multi.subspaces = 2;
-            assert_eq!(routed_pq_representation(&multi), RoutedWeightRepresentation::Other);
+            );
+            let mut multi = params(32, 32, 256, 8);
+            multi.subspaces = 2;
+            assert_eq!(
+                routed_pq_representation(&multi),
+                RoutedWeightRepresentation::Other
+            );
         }
         fn compact_arch() -> GlmArch {
             GlmArch {
@@ -1892,20 +1897,28 @@ pub mod gpu {
         #[test]
         fn compact_mla_admission_is_exact_and_fail_closed() {
             let arch = compact_arch();
-            validate_compact_mla_layer_params(&arch, 0, compact_kv_params(), compact_o_params()).expect("exact direct-u8 compact geometry");
-            let mut wrong_dim = compact_kv_params(); wrong_dim.dim = 16; wrong_dim.sub = 16; wrong_dim.nchunk = 4;
+            validate_compact_mla_layer_params(&arch, 0, compact_kv_params(), compact_o_params())
+                .expect("exact direct-u8 compact geometry");
+            let mut wrong_dim = compact_kv_params();
+            wrong_dim.dim = 16;
+            wrong_dim.sub = 16;
+            wrong_dim.nchunk = 4;
             assert!(
                 validate_compact_mla_layer_params(&arch, 0, wrong_dim, compact_o_params())
                     .unwrap_err()
                     .to_string()
                     .contains("unsupported")
-            ); let mut wrong_bits = compact_kv_params(); wrong_bits.bits = 7;
+            );
+            let mut wrong_bits = compact_kv_params();
+            wrong_bits.bits = 7;
             assert!(
                 validate_compact_mla_layer_params(&arch, 0, wrong_bits, compact_o_params())
                     .unwrap_err()
                     .to_string()
                     .contains("bits=7")
-            ); let mut wrong_o = compact_o_params(); wrong_o.rows -= 1;
+            );
+            let mut wrong_o = compact_o_params();
+            wrong_o.rows -= 1;
             assert!(
                 validate_compact_mla_layer_params(&arch, 0, compact_kv_params(), wrong_o)
                     .unwrap_err()
@@ -1920,10 +1933,23 @@ pub mod gpu {
         use super::*;
         use crate::gravity::{activation_aware_sections, ActivationAwareTensor};
         use half::f16;
-        fn payload(rows: u32, cols: u32, rank: u32, side: u16, coefficients: &[f32], basis: &[f32]) -> Vec<u8> {
-            let mut bytes = Vec::new(); bytes.extend_from_slice(b"GLM52AAP"); bytes.extend_from_slice(&rows.to_le_bytes());
-            bytes.extend_from_slice(&cols.to_le_bytes()); bytes.extend_from_slice(&rank.to_le_bytes());
-            bytes.extend_from_slice(&7u16.to_le_bytes()); bytes.extend_from_slice(&side.to_le_bytes()); bytes.push(1); bytes.resize(64, 0);
+        fn payload(
+            rows: u32,
+            cols: u32,
+            rank: u32,
+            side: u16,
+            coefficients: &[f32],
+            basis: &[f32],
+        ) -> Vec<u8> {
+            let mut bytes = Vec::new();
+            bytes.extend_from_slice(b"GLM52AAP");
+            bytes.extend_from_slice(&rows.to_le_bytes());
+            bytes.extend_from_slice(&cols.to_le_bytes());
+            bytes.extend_from_slice(&rank.to_le_bytes());
+            bytes.extend_from_slice(&7u16.to_le_bytes());
+            bytes.extend_from_slice(&side.to_le_bytes());
+            bytes.push(1);
+            bytes.resize(64, 0);
             for &value in coefficients.iter().chain(basis) {
                 bytes.extend_from_slice(&f16::from_f32(value).to_bits().to_le_bytes());
             }
@@ -1932,23 +1958,35 @@ pub mod gpu {
         fn assert_close(actual: &[f32], expected: &[f32]) {
             assert_eq!(actual.len(), expected.len());
             for (index, (&actual, &expected)) in actual.iter().zip(expected).enumerate() {
-                assert!((actual - expected).abs() <= 1e-5, "value {index}: actual={actual}, expected={expected}");
+                assert!(
+                    (actual - expected).abs() <= 1e-5,
+                    "value {index}: actual={actual}, expected={expected}"
+                );
             }
         }
         fn write_shared_basis_aap_fixture(directory: &Path) -> (&'static str, &'static str) {
-            let first = "model.layers.0.first.weight"; let second = "model.layers.0.second.weight";
-            let shard_name = "model-00001-of-00001.aap"; let basis = [1.0, 0.0, 0.0, 1.0, 0.5, -0.25]; let mut basis_payload = Vec::new();
-            basis_payload.extend_from_slice(b"GLM52BAS"); basis_payload.extend_from_slice(&3u32.to_le_bytes());
-            basis_payload.extend_from_slice(&2u32.to_le_bytes()); basis_payload.resize(64, 0);
+            let first = "model.layers.0.first.weight";
+            let second = "model.layers.0.second.weight";
+            let shard_name = "model-00001-of-00001.aap";
+            let basis = [1.0, 0.0, 0.0, 1.0, 0.5, -0.25];
+            let mut basis_payload = Vec::new();
+            basis_payload.extend_from_slice(b"GLM52BAS");
+            basis_payload.extend_from_slice(&3u32.to_le_bytes());
+            basis_payload.extend_from_slice(&2u32.to_le_bytes());
+            basis_payload.resize(64, 0);
             for value in basis {
                 basis_payload.extend_from_slice(&f16::from_f32(value).to_bits().to_le_bytes());
             }
             let coefficient_payload = |coefficients: &[f32]| {
-                let mut bytes = payload(2, 3, 2, 1, coefficients, &basis); bytes.truncate(64 + coefficients.len() * 2); bytes[24] = 0;
+                let mut bytes = payload(2, 3, 2, 1, coefficients, &basis);
+                bytes.truncate(64 + coefficients.len() * 2);
+                bytes[24] = 0;
                 bytes
             };
-            let first_payload = coefficient_payload(&[2.0, -1.0, 0.5, 3.0]); let second_payload = coefficient_payload(&[1.0, 1.0, -1.0, 0.5]);
-            let first_offset = basis_payload.len() as u64; let second_offset = first_offset + first_payload.len() as u64;
+            let first_payload = coefficient_payload(&[2.0, -1.0, 0.5, 3.0]);
+            let second_payload = coefficient_payload(&[1.0, 1.0, -1.0, 0.5]);
+            let first_offset = basis_payload.len() as u64;
+            let second_offset = first_offset + first_payload.len() as u64;
             let index = serde_json::json!({
                 "schema": "hawking.glm52.activation_aware_pack.v1",
                 "shared_bases": true,
@@ -1972,12 +2010,19 @@ pub mod gpu {
                     "shape": [2, 3],
                 }],
             });
-            let index_bytes = serde_json::to_vec(&index).unwrap(); let mut shard = Vec::new();
-            shard.extend_from_slice(&(index_bytes.len() as u64).to_le_bytes()); shard.extend_from_slice(&index_bytes);
-            shard.extend_from_slice(&basis_payload); shard.extend_from_slice(&first_payload); shard.extend_from_slice(&second_payload);
-            std::fs::write(directory.join(shard_name), &shard).unwrap(); let shard_hash: [u8; 32] = Sha256::digest(&shard).into();
+            let index_bytes = serde_json::to_vec(&index).unwrap();
+            let mut shard = Vec::new();
+            shard.extend_from_slice(&(index_bytes.len() as u64).to_le_bytes());
+            shard.extend_from_slice(&index_bytes);
+            shard.extend_from_slice(&basis_payload);
+            shard.extend_from_slice(&first_payload);
+            shard.extend_from_slice(&second_payload);
+            std::fs::write(directory.join(shard_name), &shard).unwrap();
+            let shard_hash: [u8; 32] = Sha256::digest(&shard).into();
             let shard_hash: String = shard_hash
-                .iter().map(|byte| format!("{byte:02x}")) .collect();
+                .iter()
+                .map(|byte| format!("{byte:02x}"))
+                .collect();
             let manifest = serde_json::json!({
                 "schema": "hawking.activation_aware.model_index.v1",
                 "architecture": {"hidden_size": 3},
@@ -1991,7 +2036,11 @@ pub mod gpu {
                 },
                 "shard_sha256": {(shard_name): shard_hash},
             });
-            std::fs::write(directory.join("model.activation_aware.index.json"), serde_json::to_vec(&manifest).unwrap()).unwrap();
+            std::fs::write(
+                directory.join("model.activation_aware.index.json"),
+                serde_json::to_vec(&manifest).unwrap(),
+            )
+            .unwrap();
             (first, second)
         }
         #[test]
@@ -2006,12 +2055,15 @@ pub mod gpu {
             ] {
                 let (rows, cols) = if side == 1 { (2, 3) } else { (3, 2) };
                 let payload = payload(rows, cols, 2, side, &coefficients, &basis);
-                let host = ActivationAwareTensor::from_payload(&payload).unwrap()
-                    .matvec(&x).unwrap();
+                let host = ActivationAwareTensor::from_payload(&payload)
+                    .unwrap()
+                    .matvec(&x)
+                    .unwrap();
                 let (header, coefficient_bytes, basis_bytes) =
                     activation_aware_sections(&payload).unwrap();
                 let coefficient_buffer = ctx
-                    .new_buffer_with_bytes_checked(coefficient_bytes).unwrap();
+                    .new_buffer_with_bytes_checked(coefficient_bytes)
+                    .unwrap();
                 let basis_buffer = ctx.new_buffer_with_bytes_checked(basis_bytes).unwrap();
                 let params = ActivationAwareParams {
                     rows: header.rows,
@@ -2019,7 +2071,14 @@ pub mod gpu {
                     rank: header.rank,
                     side: side as u32,
                 };
-                let device = dispatch_activation_aware_matvec(&ctx, &coefficient_buffer, &basis_buffer, params, &x).unwrap();
+                let device = dispatch_activation_aware_matvec(
+                    &ctx,
+                    &coefficient_buffer,
+                    &basis_buffer,
+                    params,
+                    &x,
+                )
+                .unwrap();
                 assert_close(&device, &host);
             }
         }
@@ -2028,7 +2087,8 @@ pub mod gpu {
             let Ok(ctx) = MetalContext::new() else {
                 return;
             };
-            let directory = tempfile::tempdir().unwrap(); let (first, second) = write_shared_basis_aap_fixture(directory.path());
+            let directory = tempfile::tempdir().unwrap();
+            let (first, second) = write_shared_basis_aap_fixture(directory.path());
             let weights = GravityWeights::open_dir(directory.path(), true).unwrap();
             let cache = GpuWeightCache {
                 ctx,
@@ -2039,12 +2099,14 @@ pub mod gpu {
                     resident_bytes: 0,
                 }),
             };
-            let x = [0.25, 2.0, -1.0]; assert_close(&cache.matvec(first, &x).unwrap(), &[-2.75, 6.625]);
+            let x = [0.25, 2.0, -1.0];
+            assert_close(&cache.matvec(first, &x).unwrap(), &[-2.75, 6.625]);
             assert_close(&cache.matvec(second, &x).unwrap(), &[2.0, 1.375]);
             assert_eq!(
                 cache
                     .activation_bases
-                    .lock().expect("basis cache")
+                    .lock()
+                    .expect("basis cache")
                     .buffers
                     .len(),
                 1,
@@ -3189,7 +3251,8 @@ mod tests {
         let _env_guard = ENV_LOCK
             .lock()
             .unwrap_or_else(|poisoned| poisoned.into_inner());
-        let prev = std::env::var_os(env); std::env::remove_var(env);
+        let prev = std::env::var_os(env);
+        std::env::remove_var(env);
         assert!(!enabled());
         match prev {
             Some(v) => std::env::set_var(env, v),
@@ -3198,7 +3261,8 @@ mod tests {
     }
     #[test]
     fn interleaved_rope_position_zero_is_the_concatenated_layout() {
-        let v = [0f32, 1.0, 2.0, 3.0]; let got = rope_interleaved(&v, &[1.0, 1.0], &[0.0, 0.0]);
+        let v = [0f32, 1.0, 2.0, 3.0];
+        let got = rope_interleaved(&v, &[1.0, 1.0], &[0.0, 0.0]);
         assert_eq!(got, vec![0.0, 2.0, 1.0, 3.0]);
     }
     #[test]
@@ -3218,12 +3282,18 @@ mod tests {
         let _env_guard = ENV_LOCK
             .lock()
             .unwrap_or_else(|poisoned| poisoned.into_inner());
-        let prior_compact = std::env::var_os(GPU_COMPACT_MLA_ENV); let prior_dsa = std::env::var_os(GPU_DEVICE_DSA_ENV);
-        let prior_icb = std::env::var_os(GPU_COMPACT_ATTENTION_ICB_ENV); std::env::remove_var(GPU_COMPACT_MLA_ENV);
-        std::env::remove_var(GPU_DEVICE_DSA_ENV); std::env::remove_var(GPU_COMPACT_ATTENTION_ICB_ENV);
-        assert!(!gpu_compact_attention_icb_enabled()); std::env::set_var(GPU_COMPACT_ATTENTION_ICB_ENV, "1");
-        assert!(!gpu_compact_attention_icb_enabled()); std::env::set_var(GPU_COMPACT_MLA_ENV, "1");
-        assert!(!gpu_compact_attention_icb_enabled()); std::env::set_var(GPU_DEVICE_DSA_ENV, "1");
+        let prior_compact = std::env::var_os(GPU_COMPACT_MLA_ENV);
+        let prior_dsa = std::env::var_os(GPU_DEVICE_DSA_ENV);
+        let prior_icb = std::env::var_os(GPU_COMPACT_ATTENTION_ICB_ENV);
+        std::env::remove_var(GPU_COMPACT_MLA_ENV);
+        std::env::remove_var(GPU_DEVICE_DSA_ENV);
+        std::env::remove_var(GPU_COMPACT_ATTENTION_ICB_ENV);
+        assert!(!gpu_compact_attention_icb_enabled());
+        std::env::set_var(GPU_COMPACT_ATTENTION_ICB_ENV, "1");
+        assert!(!gpu_compact_attention_icb_enabled());
+        std::env::set_var(GPU_COMPACT_MLA_ENV, "1");
+        assert!(!gpu_compact_attention_icb_enabled());
+        std::env::set_var(GPU_DEVICE_DSA_ENV, "1");
         assert!(gpu_compact_attention_icb_enabled());
         for (name, prior) in [
             (GPU_COMPACT_MLA_ENV, prior_compact),
@@ -3261,10 +3331,17 @@ mod tests {
         let _env_guard = ENV_LOCK
             .lock()
             .unwrap_or_else(|poisoned| poisoned.into_inner());
-        let prev_wave = std::env::var_os(GPU_EXPERT_WAVE_ENV); let prev_concurrent = std::env::var_os(GPU_EXPERT_WAVE_CONCURRENT_ENV);
-        std::env::remove_var(GPU_EXPERT_WAVE_ENV); std::env::remove_var(GPU_EXPERT_WAVE_CONCURRENT_ENV);
-        assert!(!gpu_expert_wave_concurrent_enabled()); std::env::set_var(GPU_EXPERT_WAVE_CONCURRENT_ENV, "1");
-        assert!(!gpu_expert_wave_concurrent_enabled(), "concurrency cannot enable the expert-wave runtime by itself"); std::env::set_var(GPU_EXPERT_WAVE_ENV, "1");
+        let prev_wave = std::env::var_os(GPU_EXPERT_WAVE_ENV);
+        let prev_concurrent = std::env::var_os(GPU_EXPERT_WAVE_CONCURRENT_ENV);
+        std::env::remove_var(GPU_EXPERT_WAVE_ENV);
+        std::env::remove_var(GPU_EXPERT_WAVE_CONCURRENT_ENV);
+        assert!(!gpu_expert_wave_concurrent_enabled());
+        std::env::set_var(GPU_EXPERT_WAVE_CONCURRENT_ENV, "1");
+        assert!(
+            !gpu_expert_wave_concurrent_enabled(),
+            "concurrency cannot enable the expert-wave runtime by itself"
+        );
+        std::env::set_var(GPU_EXPERT_WAVE_ENV, "1");
         assert!(gpu_expert_wave_concurrent_enabled());
         match prev_wave {
             Some(v) => std::env::set_var(GPU_EXPERT_WAVE_ENV, v),
@@ -3280,12 +3357,24 @@ mod tests {
         let _env_guard = ENV_LOCK
             .lock()
             .unwrap_or_else(|poisoned| poisoned.into_inner());
-        let prev_router = std::env::var_os(GPU_DEVICE_ROUTER_ENV); let prev_wave = std::env::var_os(GPU_EXPERT_WAVE_ENV);
-        let prev_table = std::env::var_os(GPU_EXPERT_TABLE_HIT_ENV); std::env::remove_var(GPU_DEVICE_ROUTER_ENV);
-        std::env::remove_var(GPU_EXPERT_WAVE_ENV); std::env::remove_var(GPU_EXPERT_TABLE_HIT_ENV);
-        assert!(!gpu_expert_table_hit_enabled()); std::env::set_var(GPU_EXPERT_TABLE_HIT_ENV, "1");
-        assert!(!gpu_expert_table_hit_enabled(), "table hit cannot enable its parent runtime paths"); std::env::set_var(GPU_DEVICE_ROUTER_ENV, "1");
-        assert!(!gpu_expert_table_hit_enabled(), "table hit requires the expert-wave parent"); std::env::set_var(GPU_EXPERT_WAVE_ENV, "1");
+        let prev_router = std::env::var_os(GPU_DEVICE_ROUTER_ENV);
+        let prev_wave = std::env::var_os(GPU_EXPERT_WAVE_ENV);
+        let prev_table = std::env::var_os(GPU_EXPERT_TABLE_HIT_ENV);
+        std::env::remove_var(GPU_DEVICE_ROUTER_ENV);
+        std::env::remove_var(GPU_EXPERT_WAVE_ENV);
+        std::env::remove_var(GPU_EXPERT_TABLE_HIT_ENV);
+        assert!(!gpu_expert_table_hit_enabled());
+        std::env::set_var(GPU_EXPERT_TABLE_HIT_ENV, "1");
+        assert!(
+            !gpu_expert_table_hit_enabled(),
+            "table hit cannot enable its parent runtime paths"
+        );
+        std::env::set_var(GPU_DEVICE_ROUTER_ENV, "1");
+        assert!(
+            !gpu_expert_table_hit_enabled(),
+            "table hit requires the expert-wave parent"
+        );
+        std::env::set_var(GPU_EXPERT_WAVE_ENV, "1");
         assert!(gpu_expert_table_hit_enabled());
         match prev_router {
             Some(v) => std::env::set_var(GPU_DEVICE_ROUTER_ENV, v),
@@ -3305,13 +3394,27 @@ mod tests {
         let _env_guard = ENV_LOCK
             .lock()
             .unwrap_or_else(|poisoned| poisoned.into_inner());
-        let prev_router = std::env::var_os(GPU_DEVICE_ROUTER_ENV); let prev_wave = std::env::var_os(GPU_EXPERT_WAVE_ENV);
-        let prev_table = std::env::var_os(GPU_EXPERT_TABLE_HIT_ENV); let prev_icb = std::env::var_os(GPU_EXPERT_TABLE_ICB_ENV);
-        std::env::remove_var(GPU_DEVICE_ROUTER_ENV); std::env::remove_var(GPU_EXPERT_WAVE_ENV);
-        std::env::remove_var(GPU_EXPERT_TABLE_HIT_ENV); std::env::remove_var(GPU_EXPERT_TABLE_ICB_ENV);
-        assert!(!gpu_expert_table_icb_enabled()); std::env::set_var(GPU_EXPERT_TABLE_ICB_ENV, "1");
-        assert!(!gpu_expert_table_icb_enabled(), "ICB replay cannot enable its parent table-hit path"); std::env::set_var(GPU_DEVICE_ROUTER_ENV, "1"); std::env::set_var(GPU_EXPERT_WAVE_ENV, "1");
-        assert!(!gpu_expert_table_icb_enabled(), "ICB replay requires the cache-indexed table-hit parent"); std::env::set_var(GPU_EXPERT_TABLE_HIT_ENV, "1");
+        let prev_router = std::env::var_os(GPU_DEVICE_ROUTER_ENV);
+        let prev_wave = std::env::var_os(GPU_EXPERT_WAVE_ENV);
+        let prev_table = std::env::var_os(GPU_EXPERT_TABLE_HIT_ENV);
+        let prev_icb = std::env::var_os(GPU_EXPERT_TABLE_ICB_ENV);
+        std::env::remove_var(GPU_DEVICE_ROUTER_ENV);
+        std::env::remove_var(GPU_EXPERT_WAVE_ENV);
+        std::env::remove_var(GPU_EXPERT_TABLE_HIT_ENV);
+        std::env::remove_var(GPU_EXPERT_TABLE_ICB_ENV);
+        assert!(!gpu_expert_table_icb_enabled());
+        std::env::set_var(GPU_EXPERT_TABLE_ICB_ENV, "1");
+        assert!(
+            !gpu_expert_table_icb_enabled(),
+            "ICB replay cannot enable its parent table-hit path"
+        );
+        std::env::set_var(GPU_DEVICE_ROUTER_ENV, "1");
+        std::env::set_var(GPU_EXPERT_WAVE_ENV, "1");
+        assert!(
+            !gpu_expert_table_icb_enabled(),
+            "ICB replay requires the cache-indexed table-hit parent"
+        );
+        std::env::set_var(GPU_EXPERT_TABLE_HIT_ENV, "1");
         assert!(gpu_expert_table_icb_enabled());
         match prev_router {
             Some(v) => std::env::set_var(GPU_DEVICE_ROUTER_ENV, v),
@@ -3332,7 +3435,9 @@ mod tests {
     }
     #[test]
     fn token_only_readback_bytes_are_orders_smaller_than_full_logits() {
-        let vocab = 154_880usize; let full = vocab * std::mem::size_of::<f32>(); let token = std::mem::size_of::<u32>();
+        let vocab = 154_880usize;
+        let full = vocab * std::mem::size_of::<f32>();
+        let token = std::mem::size_of::<u32>();
         let diag = (GPU_LM_HEAD_DIAG_TOPK as usize)
             * (std::mem::size_of::<u32>() + std::mem::size_of::<f32>());
         let token_only = token + diag;
@@ -3342,7 +3447,10 @@ mod tests {
     }
     #[test]
     fn native_bf16_active_bytes_half_of_f32_widen() {
-        let rows = 154_880u64; let cols = 6_144u64; let bf16 = rows * cols * 2; let f32_widen = rows * cols * 4;
+        let rows = 154_880u64;
+        let cols = 6_144u64;
+        let bf16 = rows * cols * 2;
+        let f32_widen = rows * cols * 4;
         assert_eq!(bf16, 1_903_165_440);
         assert_eq!(f32_widen, 3_806_330_880);
         assert_eq!(f32_widen, bf16 * 2);
@@ -3350,9 +3458,12 @@ mod tests {
     #[test]
     fn matvec_bf16_host_matches_widen_then_dense() {
         use crate::gravity::{matvec_bf16_host, matvec_dense, widen_native};
-        let rows = 7usize; let cols = 11usize; let mut bits = Vec::with_capacity(rows * cols * 2);
+        let rows = 7usize;
+        let cols = 11usize;
+        let mut bits = Vec::with_capacity(rows * cols * 2);
         for i in 0..(rows * cols) {
-            let u = ((i * 37 + 11) % 0x7F80) as u16; bits.extend_from_slice(&u.to_le_bytes());
+            let u = ((i * 37 + 11) % 0x7F80) as u16;
+            bits.extend_from_slice(&u.to_le_bytes());
         }
         let w = widen_native("native.bf16", &bits).expect("widen");
         let xs: Vec<Vec<f32>> = vec![
@@ -3360,7 +3471,8 @@ mod tests {
             (0..cols).map(|c| ((c * 3) % 7) as f32 - 3.0).collect(),
             vec![1.0; cols],
             vec![0.0; cols],
-            (0..cols).map(|c| if c % 2 == 0 { 0.25 } else { -0.125 })
+            (0..cols)
+                .map(|c| if c % 2 == 0 { 0.25 } else { -0.125 })
                 .collect(),
         ];
         for (pi, x) in xs.iter().enumerate() {
@@ -3374,8 +3486,10 @@ mod tests {
         let raw = std::fs::read(
             Path::new(env!("CARGO_MANIFEST_DIR"))
                 .join("tests/fixtures/gravity_glm/flagship_arch.json"),
-        ).expect("flagship_arch.json");
-        let header: serde_json::Value = serde_json::from_slice(&raw).unwrap(); let arch = GlmArch::from_header(&header).unwrap();
+        )
+        .expect("flagship_arch.json");
+        let header: serde_json::Value = serde_json::from_slice(&raw).unwrap();
+        let arch = GlmArch::from_header(&header).unwrap();
         assert_eq!(arch.n_layers, 78);
         assert_eq!(arch.n_heads, 64);
         assert_eq!(arch.qk_dim(), 256);
@@ -3434,7 +3548,8 @@ mod tests {
             maximally_compact_total,
         ) in expected
         {
-            let got = estimate_resident_kv_state_static_bytes(&arch, tokens).expect("static KV/state projection");
+            let got = estimate_resident_kv_state_static_bytes(&arch, tokens)
+                .expect("static KV/state projection");
             assert_eq!(got.requested_tokens, tokens as u64);
             assert_eq!(got.allocation_capacity_tokens, tokens as u64);
             assert_eq!(got.expanded_keys_bytes, expanded_keys);
@@ -3445,7 +3560,10 @@ mod tests {
             assert_eq!(got.compact_rope_tail_bytes, compact_rope);
             assert_eq!(got.compact_mla_total_bytes, compact_total);
             assert_eq!(got.index_keys_full_layers_only_bytes, full_index_keys);
-            assert_eq!(got.maximally_compact_mla_total_bytes, maximally_compact_total);
+            assert_eq!(
+                got.maximally_compact_mla_total_bytes,
+                maximally_compact_total
+            );
             assert!(got.maximally_compact_mla_total_bytes < got.compact_mla_total_bytes);
             assert!(got.compact_mla_total_bytes < got.current_expanded_total_bytes);
         }
@@ -3455,10 +3573,13 @@ mod tests {
         let raw = std::fs::read(
             Path::new(env!("CARGO_MANIFEST_DIR"))
                 .join("tests/fixtures/gravity_glm/flagship_arch.json"),
-        ).expect("flagship_arch.json");
-        let header: serde_json::Value = serde_json::from_slice(&raw).unwrap(); let arch = GlmArch::from_header(&header).unwrap();
+        )
+        .expect("flagship_arch.json");
+        let header: serde_json::Value = serde_json::from_slice(&raw).unwrap();
+        let arch = GlmArch::from_header(&header).unwrap();
         for requested in [0usize, 1, 63, 64] {
-            let initial = estimate_resident_kv_state_static_bytes(&arch, requested).expect("initial-capacity projection");
+            let initial = estimate_resident_kv_state_static_bytes(&arch, requested)
+                .expect("initial-capacity projection");
             assert_eq!(initial.requested_tokens, requested as u64);
             assert_eq!(initial.allocation_capacity_tokens, 64);
             assert_eq!(initial.current_expanded_total_bytes, 656_867_328);
@@ -3478,9 +3599,12 @@ mod tests {
         let raw = std::fs::read(
             Path::new(env!("CARGO_MANIFEST_DIR"))
                 .join("tests/fixtures/gravity_glm/flagship_arch.json"),
-        ).expect("flagship_arch.json");
-        let header: serde_json::Value = serde_json::from_slice(&raw).unwrap(); let arch = GlmArch::from_header(&header).unwrap();
-        let host = estimate_host_state_waits_per_token(&arch); let resident = estimate_resident_waits_per_token(&arch);
+        )
+        .expect("flagship_arch.json");
+        let header: serde_json::Value = serde_json::from_slice(&raw).unwrap();
+        let arch = GlmArch::from_header(&header).unwrap();
+        let host = estimate_host_state_waits_per_token(&arch);
+        let resident = estimate_resident_waits_per_token(&arch);
         assert_eq!(host, 763, "host-state static waits");
         assert_eq!(resident, 586, "resident logical/source boundaries");
         assert_eq!(estimate_resident_device_dsa_waits_per_token(&arch), 388, "device graph removes two prelude boundaries per layer and both boundaries for each full indexer");
@@ -3498,15 +3622,21 @@ mod tests {
         assert!(resident > 78);
         assert_eq!(15 * arch.n_layers + 1, 1171);
         assert_eq!(estimate_batched_mlp_drains_per_token(&arch, false), 234);
-        assert_eq!(estimate_batched_mlp_drains_per_token(&arch, true), 78); let wave = estimate_resident_expert_wave_waits_per_token(&arch);
+        assert_eq!(estimate_batched_mlp_drains_per_token(&arch, true), 78);
+        let wave = estimate_resident_expert_wave_waits_per_token(&arch);
         assert_eq!(wave, 430, "resident + expert-wave static waits");
         assert!(wave < resident);
-        assert_eq!(estimate_resident_waits_per_token(&arch), 586, "default resident estimate must not be rewritten by expert-wave");
+        assert_eq!(
+            estimate_resident_waits_per_token(&arch),
+            586,
+            "default resident estimate must not be rewritten by expert-wave"
+        );
     }
     #[cfg(target_os = "macos")]
     #[test]
     fn sparse_batch_names_map_to_eight_routed_and_one_shared_stage() {
-        let mut names: Vec<String> = (0..8).map(|expert| format!("model.layers.7.mlp.experts.{expert}.gate_proj.weight"))
+        let mut names: Vec<String> = (0..8)
+            .map(|expert| format!("model.layers.7.mlp.experts.{expert}.gate_proj.weight"))
             .collect();
         names.push("model.layers.7.mlp.shared_experts.gate_proj.weight".into());
         let routed = names
@@ -3541,10 +3671,12 @@ mod tests {
     }
     #[test]
     fn bounded_lru_tracks_resident_bytes_and_high_water() {
-        let mut c = BoundedLru::<()>::new(100).unwrap(); admit(&mut c, &[("a", 40), ("b", 30)], &["a", "b"]).unwrap();
+        let mut c = BoundedLru::<()>::new(100).unwrap();
+        admit(&mut c, &[("a", 40), ("b", 30)], &["a", "b"]).unwrap();
         assert_eq!(c.resident_bytes(), 70);
         assert_eq!(c.high_water_bytes(), 70);
-        assert_eq!(c.len(), 2); admit(&mut c, &[("c", 50)], &["c"]).unwrap();
+        assert_eq!(c.len(), 2);
+        admit(&mut c, &[("c", 50)], &["c"]).unwrap();
         assert!(c.contains("c"));
         assert!(!c.contains("a"), "oldest unpinned entry should be evicted");
         assert_eq!(c.resident_bytes(), 80);
@@ -3553,8 +3685,11 @@ mod tests {
     }
     #[test]
     fn bounded_lru_evicts_least_recently_used_unpinned() {
-        let mut c = BoundedLru::<()>::new(90).unwrap(); admit(&mut c, &[("a", 30), ("b", 30), ("c", 30)], &["a", "b", "c"]).unwrap();
-        c.touch("a"); c.touch("b"); admit(&mut c, &[("d", 30)], &["d"]).unwrap();
+        let mut c = BoundedLru::<()>::new(90).unwrap();
+        admit(&mut c, &[("a", 30), ("b", 30), ("c", 30)], &["a", "b", "c"]).unwrap();
+        c.touch("a");
+        c.touch("b");
+        admit(&mut c, &[("d", 30)], &["d"]).unwrap();
         assert!(!c.contains("c"), "untouched c must be the victim");
         assert!(c.contains("a") && c.contains("b") && c.contains("d"));
         assert_eq!(c.resident_bytes(), 90);
@@ -3562,40 +3697,77 @@ mod tests {
     #[test]
     fn bounded_lru_pinned_batch_is_never_evicted_mid_batch() {
         let mut c = BoundedLru::<()>::new(90).unwrap();
-        admit(&mut c, &[("old1", 30), ("old2", 30), ("old3", 30)], &["old1", "old2", "old3"]).unwrap();
-        assert_eq!(c.len(), 3); let batch = ["e0_gate", "e0_up", "e0_down"];
-        admit(&mut c, &[("e0_gate", 30), ("e0_up", 30), ("e0_down", 30)], &batch).unwrap();
+        admit(
+            &mut c,
+            &[("old1", 30), ("old2", 30), ("old3", 30)],
+            &["old1", "old2", "old3"],
+        )
+        .unwrap();
+        assert_eq!(c.len(), 3);
+        let batch = ["e0_gate", "e0_up", "e0_down"];
+        admit(
+            &mut c,
+            &[("e0_gate", 30), ("e0_up", 30), ("e0_down", 30)],
+            &batch,
+        )
+        .unwrap();
         for name in batch {
-            assert!(c.contains(name), "pinned batch member {name} must survive admission");
+            assert!(
+                c.contains(name),
+                "pinned batch member {name} must survive admission"
+            );
         }
         assert_eq!(c.resident_bytes(), 90);
-        assert_eq!(c.stats().evictions, 3, "all three old entries yield to the pin set");
+        assert_eq!(
+            c.stats().evictions,
+            3,
+            "all three old entries yield to the pin set"
+        );
         assert!(!c.contains("old1") && !c.contains("old2") && !c.contains("old3"));
     }
     #[test]
     fn bounded_lru_pin_protects_entries_inserted_earlier_in_same_admit() {
         let mut c = BoundedLru::<()>::new(60).unwrap();
-        let err = admit(&mut c, &[("p0", 30), ("p1", 30), ("p2", 30)], &["p0", "p1", "p2"]) .unwrap_err(); let msg = err.to_string();
-        assert!(msg.contains("pinned") || msg.contains("exceeds"), "expected pinned-set over-budget error, got: {msg}");
-        assert!(c.is_empty(), "failed admission must not leave partial state");
+        let err = admit(
+            &mut c,
+            &[("p0", 30), ("p1", 30), ("p2", 30)],
+            &["p0", "p1", "p2"],
+        )
+        .unwrap_err();
+        let msg = err.to_string();
+        assert!(
+            msg.contains("pinned") || msg.contains("exceeds"),
+            "expected pinned-set over-budget error, got: {msg}"
+        );
+        assert!(
+            c.is_empty(),
+            "failed admission must not leave partial state"
+        );
         assert_eq!(c.resident_bytes(), 0);
     }
     #[test]
     fn bounded_lru_single_tensor_over_budget_fails_loudly() {
-        let mut c = BoundedLru::<()>::new(50).unwrap(); let err = admit(&mut c, &[("huge", 51)], &["huge"]).unwrap_err();
+        let mut c = BoundedLru::<()>::new(50).unwrap();
+        let err = admit(&mut c, &[("huge", 51)], &["huge"]).unwrap_err();
         assert!(err.to_string().contains("alone exceeds"));
         assert!(c.is_empty());
     }
     #[test]
     fn bounded_lru_partial_pin_can_evict_unpinned_to_make_room() {
-        let mut c = BoundedLru::<()>::new(100).unwrap(); admit(&mut c, &[("a", 30), ("b", 30), ("c", 30)], &["a", "b", "c"]).unwrap();
-        c.touch("a"); c.touch("b"); admit(&mut c, &[("d", 40)], &["a", "b", "d"]).unwrap();
+        let mut c = BoundedLru::<()>::new(100).unwrap();
+        admit(&mut c, &[("a", 30), ("b", 30), ("c", 30)], &["a", "b", "c"]).unwrap();
+        c.touch("a");
+        c.touch("b");
+        admit(&mut c, &[("d", 40)], &["a", "b", "d"]).unwrap();
         assert!(c.contains("a") && c.contains("b") && c.contains("d"));
         assert!(!c.contains("c"));
         assert_eq!(c.resident_bytes(), 100);
     }
     #[test]
     fn default_budget_is_thirty_two_gib() {
-        assert_eq!(DEFAULT_GPU_WEIGHT_CACHE_BUDGET_BYTES, 32 * 1024 * 1024 * 1024);
+        assert_eq!(
+            DEFAULT_GPU_WEIGHT_CACHE_BUDGET_BYTES,
+            32 * 1024 * 1024 * 1024
+        );
     }
 }

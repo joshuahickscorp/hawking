@@ -734,7 +734,10 @@ mod tests {
         );
         let h2 = compute_chain_hash(&h1, &second).unwrap();
         let recomputed = compute_chain_hash(&[0u8; 32], &first).unwrap();
- assert_eq!( first.chain_hash.as_deref(), Some(hex_lower(&recomputed).as_str()) );
+        assert_eq!(
+            first.chain_hash.as_deref(),
+            Some(hex_lower(&recomputed).as_str())
+        );
         let mut tampered = first.clone();
         tampered.payload = serde_json::json!({ "n": 999 });
         let after = compute_chain_hash(&[0u8; 32], &tampered).unwrap();
@@ -773,7 +776,10 @@ mod tests {
         let mut as_json = serde_json::to_value(&event).unwrap();
         as_json["unknown_future_field"] = serde_json::json!({ "nested": true });
         let restored: Event = serde_json::from_value(as_json).unwrap();
-        assert_eq!(restored.ext.get("unknown_future_field"), Some(&serde_json::json!({ "nested": true })));
+        assert_eq!(
+            restored.ext.get("unknown_future_field"),
+            Some(&serde_json::json!({ "nested": true }))
+        );
         let reserialized = serde_json::to_value(&restored).unwrap();
         assert_eq!(reserialized["unknown_future_field"]["nested"], true);
         assert_eq!(reserialized["payload"]["a"], 1);

@@ -150,7 +150,11 @@ impl PlanRecord {
                 id: s.id.as_str().to_string(),
                 text: s.title.clone(),
                 status: snake(s.status),
-                dependencies: s.dependencies.iter().map(|d| d.as_str().to_string()).collect(),
+                dependencies: s
+                    .dependencies
+                    .iter()
+                    .map(|d| d.as_str().to_string())
+                    .collect(),
                 acceptance: s.acceptance.predicate.clone(),
                 effects: effects_for_kind(s.kind),
                 related_files: related_files(s),
@@ -176,7 +180,8 @@ impl PlanRecord {
     }
 
     fn autonomy_enum(&self) -> Autonomy {
-        serde_json::from_value(Value::String(self.autonomy.clone())).unwrap_or(Autonomy::SuggestOnly)
+        serde_json::from_value(Value::String(self.autonomy.clone()))
+            .unwrap_or(Autonomy::SuggestOnly)
     }
 
     /// The Wire-B patch body (the record itself).
@@ -302,7 +307,11 @@ impl PlanRecordStore {
     pub const NAMESPACE: &'static str = "plans";
 
     pub fn put(kv: &DynKeyValueStore, session: &SessionId, record: &PlanRecord) -> Result<()> {
-        kv.put(Self::NAMESPACE, session.as_str(), serde_json::to_value(record)?)
+        kv.put(
+            Self::NAMESPACE,
+            session.as_str(),
+            serde_json::to_value(record)?,
+        )
     }
 
     pub fn get(kv: &DynKeyValueStore, session: &SessionId) -> Option<PlanRecord> {
@@ -339,7 +348,7 @@ pub fn store_and_publish(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use hide_kernel::plan::schema::{Acceptance, Plan, PlanStep, PlanStatus, StepKind};
+    use hide_kernel::plan::schema::{Acceptance, Plan, PlanStatus, PlanStep, StepKind};
     fn sample_plan() -> Plan {
         let mut investigate = PlanStep::new(
             "look at the failing test",
@@ -386,7 +395,10 @@ mod tests {
             assert_eq!(record.write_blocked_steps().len(), 1);
         }
         let full = PlanRecord::from_kernel(&plan, Autonomy::FullAuto);
- assert!( full.write_blocked_steps().is_empty(), "full-auto gates nothing" );
+        assert!(
+            full.write_blocked_steps().is_empty(),
+            "full-auto gates nothing"
+        );
     }
     #[test]
     fn approve_does_not_clear_the_write_block() {
@@ -397,7 +409,10 @@ mod tests {
         assert!(record.approved);
         assert!(record.steps.iter().all(|s| s.approved));
         let edit = record.steps.iter().find(|s| s.id == edit_id).unwrap();
-        assert!(edit.write_blocked, "approve_plan must not clear the effect gate");
+        assert!(
+            edit.write_blocked,
+            "approve_plan must not clear the effect gate"
+        );
     }
     #[test]
     fn edit_and_reorder_mutate_the_record() {
@@ -432,11 +447,16 @@ mod tests {
         let edit_id = record.steps[1].id.clone();
         assert!(record.repair_failed_step(&edit_id).is_none());
         record.steps[1].verification = "failed".to_string();
-        let repair_id = record.repair_failed_step(&edit_id).expect("repair step created");
+        let repair_id = record
+            .repair_failed_step(&edit_id)
+            .expect("repair step created");
         let repair = record.steps.iter().find(|s| s.id == repair_id).unwrap();
         assert_eq!(repair.dependencies, vec![edit_id.clone()]);
         assert_eq!(repair.acceptance, "build passes");
-        assert!(repair.write_blocked, "the repair step writes, so it is gated too");
+        assert!(
+            repair.write_blocked,
+            "the repair step writes, so it is gated too"
+        );
         let again = record.repair_failed_step(&edit_id).unwrap();
         assert_eq!(again, repair_id);
         assert_eq!(record.steps.iter().filter(|s| s.id == repair_id).count(), 1);

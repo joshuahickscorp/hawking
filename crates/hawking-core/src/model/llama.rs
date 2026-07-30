@@ -20,15 +20,14 @@
 //! GGUF in hand to bench against.
 
 use super::arch_config::{token_embd_vocab_size, ArchReader};
-use super::weights::{dequant_f16, dequant_f32, dequant_ref_into, tensor_ref, TensorRef};
 use super::dispatch::{gemv_f16_dispatch, rmsnorm_dispatch};
+use super::weights::{dequant_f16, dequant_f32, dequant_ref_into, tensor_ref, TensorRef};
 use crate::attn::mha_decode_step;
 use crate::cache::KvCache;
 use crate::engine::{Engine, EngineConfig, GenStats, GenerateRequest, StopReason, StreamEvent};
 use crate::gguf::{GgmlType, GgufFile};
 use crate::kernels::{
-    add_inplace, embed_lookup, gemv_f32, rope_inplace_scaled, silu_mul,
-    Llama3RopeScaling,
+    add_inplace, embed_lookup, gemv_f32, rope_inplace_scaled, silu_mul, Llama3RopeScaling,
 };
 use crate::metal::MetalContext;
 use crate::profile::KernelProfile;

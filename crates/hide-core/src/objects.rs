@@ -53,9 +53,7 @@
 //! ```
 
 pub use budget::{StorageBudget, BOUND_STATEMENT};
-pub use derivatives::{
-    CompileObjectView, DerivativeSelection, ModelFacingDerivative, RawBytesCap,
-};
+pub use derivatives::{CompileObjectView, DerivativeSelection, ModelFacingDerivative, RawBytesCap};
 pub use error::{ObjectError, Result};
 pub use hash::{ContentHash, CHUNK_SIZE};
 pub use kinds::{mime_from_filename, ObjectKind};

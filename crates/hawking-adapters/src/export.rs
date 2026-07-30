@@ -9,7 +9,9 @@
 
 use serde_json::{json, Value};
 
-use crate::abi::{required_evidence_kind, AbiField, AbiListField, FamilyDescriptor, ABI_FIELD_NAMES};
+use crate::abi::{
+    required_evidence_kind, AbiField, AbiListField, FamilyDescriptor, ABI_FIELD_NAMES,
+};
 use crate::registry::builtin_registry;
 use crate::support_level::SupportLevel;
 use crate::{ABI_SCHEMA, REGISTRY_SCHEMA};
@@ -142,9 +144,7 @@ fn grade_meaning(g: SupportLevel) -> &'static str {
             "real official config/tokenizer/safetensors header parsed and mapped"
         }
         SupportLevel::SyntheticParity => "matches a deterministic reference on a synthetic twin",
-        SupportLevel::RealTensorDecode => {
-            "at least one real tensor decoded from a real checkpoint"
-        }
+        SupportLevel::RealTensorDecode => "at least one real tensor decoded from a real checkpoint",
         SupportLevel::SmallRealCheckpoint => {
             "a real small checkpoint of the family runs end to end"
         }
@@ -339,7 +339,10 @@ fn capability_cell(d: &FamilyDescriptor, cap: &str) -> Value {
             Some(field_mentions(&d.abi.topology, "dense")),
             "abi.topology",
         ),
-        "moe_topology" => (Some(field_mentions(&d.abi.topology, "MoE") || field_mentions(&d.abi.topology, "moe")), "abi.topology"),
+        "moe_topology" => (
+            Some(field_mentions(&d.abi.topology, "MoE") || field_mentions(&d.abi.topology, "moe")),
+            "abi.topology",
+        ),
         "attention_or_state_declared" => (
             Some(d.abi.attention_or_state.value.is_some()),
             "abi.attention_or_state",
@@ -383,15 +386,20 @@ fn capability_cell(d: &FamilyDescriptor, cap: &str) -> Value {
 fn list_contains(f: &AbiListField, needle: &str) -> bool {
     f.values
         .map(|vs| {
-            vs.iter()
-                .any(|v| v.to_ascii_lowercase().contains(&needle.to_ascii_lowercase()))
+            vs.iter().any(|v| {
+                v.to_ascii_lowercase()
+                    .contains(&needle.to_ascii_lowercase())
+            })
         })
         .unwrap_or(false)
 }
 
 fn field_mentions(f: &AbiField, needle: &str) -> bool {
     f.value
-        .map(|v| v.to_ascii_lowercase().contains(&needle.to_ascii_lowercase()))
+        .map(|v| {
+            v.to_ascii_lowercase()
+                .contains(&needle.to_ascii_lowercase())
+        })
         .unwrap_or(false)
 }
 
@@ -457,14 +465,8 @@ pub fn test_matrix_document() -> Value {
                 "status": if exists { "present" } else { "missing" },
             }));
         }
-        let present = tests
-            .iter()
-            .filter(|t| t["status"] == "present")
-            .count();
-        let missing = tests
-            .iter()
-            .filter(|t| t["status"] == "missing")
-            .count();
+        let present = tests.iter().filter(|t| t["status"] == "present").count();
+        let missing = tests.iter().filter(|t| t["status"] == "missing").count();
         rows.push(json!({
             "family": d.id,
             "support_level": d.level.as_str(),

@@ -20,29 +20,60 @@ fn make_weight(n: usize, seed: u32) -> Vec<f32> {
         })
         .collect()
 }
-fn run_ref(ctx: &MetalContext, embed_f16: &[u16], weight: &[f32], token: u32, hidden: usize, eps: f32) -> (Vec<f32>, Vec<f32>) {
+fn run_ref(
+    ctx: &MetalContext,
+    embed_f16: &[u16],
+    weight: &[f32],
+    token: u32,
+    hidden: usize,
+    eps: f32,
+) -> (Vec<f32>, Vec<f32>) {
     let embed_bytes: Vec<u8> = embed_f16.iter().flat_map(|&v| v.to_le_bytes()).collect();
     let embed_buf = ctx.new_buffer_with_bytes(&embed_bytes);
     let weight_buf = new_f32_buf(ctx, weight);
     let x_buf = ctx.new_buffer(hidden * 4);
     let x_norm_buf = ctx.new_buffer(hidden * 4);
     let mut tcb = TokenCommandBuffer::new(ctx);
-    kernels::embed_lookup_metal_f32_tcb(&mut tcb, &embed_buf, token, hidden, &x_buf).expect("embed_lookup");
-    kernels::rmsnorm_metal_buf_tcb(&mut tcb, &x_buf, &weight_buf, eps, hidden, &x_norm_buf).expect("rmsnorm");
+    kernels::embed_lookup_metal_f32_tcb(&mut tcb, &embed_buf, token, hidden, &x_buf)
+        .expect("embed_lookup");
+    kernels::rmsnorm_metal_buf_tcb(&mut tcb, &x_buf, &weight_buf, eps, hidden, &x_norm_buf)
+        .expect("rmsnorm");
     tcb.commit_and_wait().expect("ref commit");
-    (read_f32_buf(&x_buf, hidden), read_f32_buf(&x_norm_buf, hidden))
+    (
+        read_f32_buf(&x_buf, hidden),
+        read_f32_buf(&x_norm_buf, hidden),
+    )
 }
-fn run_fused(ctx: &MetalContext, embed_f16: &[u16], weight: &[f32], token: u32, hidden: usize, eps: f32) -> (Vec<f32>, Vec<f32>) {
+fn run_fused(
+    ctx: &MetalContext,
+    embed_f16: &[u16],
+    weight: &[f32],
+    token: u32,
+    hidden: usize,
+    eps: f32,
+) -> (Vec<f32>, Vec<f32>) {
     let embed_bytes: Vec<u8> = embed_f16.iter().flat_map(|&v| v.to_le_bytes()).collect();
     let embed_buf = ctx.new_buffer_with_bytes(&embed_bytes);
     let weight_buf = new_f32_buf(ctx, weight);
     let x_buf = ctx.new_buffer(hidden * 4);
     let x_norm_buf = ctx.new_buffer(hidden * 4);
     let mut tcb = TokenCommandBuffer::new(ctx);
-    kernels::embed_lookup_rmsnorm_f32_tcb(&mut tcb, &embed_buf, &weight_buf, token, hidden, eps, &x_buf, &x_norm_buf)
-        .expect("fused dispatch");
+    kernels::embed_lookup_rmsnorm_f32_tcb(
+        &mut tcb,
+        &embed_buf,
+        &weight_buf,
+        token,
+        hidden,
+        eps,
+        &x_buf,
+        &x_norm_buf,
+    )
+    .expect("fused dispatch");
     tcb.commit_and_wait().expect("fused commit");
-    (read_f32_buf(&x_buf, hidden), read_f32_buf(&x_norm_buf, hidden))
+    (
+        read_f32_buf(&x_buf, hidden),
+        read_f32_buf(&x_norm_buf, hidden),
+    )
 }
 #[test]
 fn embed_lookup_rmsnorm_fused_matches_two_dispatch() {
@@ -64,7 +95,13 @@ fn embed_lookup_rmsnorm_fused_matches_two_dispatch() {
         let (got_x, got_norm) = run_fused(ctx, &embed, &weight, token, hidden, eps);
         let dx = max_abs_diff(&ref_x, &got_x);
         let dn = max_abs_diff(&ref_norm, &got_norm);
-        assert_eq!(dx, 0.0, "hidden={hidden} token={token}: x max_diff={dx:.2e}");
-        assert_eq!(dn, 0.0, "hidden={hidden} token={token}: x_norm max_diff={dn:.2e}");
+        assert_eq!(
+            dx, 0.0,
+            "hidden={hidden} token={token}: x max_diff={dx:.2e}"
+        );
+        assert_eq!(
+            dn, 0.0,
+            "hidden={hidden} token={token}: x_norm max_diff={dn:.2e}"
+        );
     }
 }

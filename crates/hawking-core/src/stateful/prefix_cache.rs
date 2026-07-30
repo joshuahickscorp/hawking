@@ -706,13 +706,17 @@ mod tests {
     use super::*;
     use crate::cache::KvCache;
     fn fake_forward(kv: &mut KvCache, token: u32, pos: usize) {
-        assert_eq!(kv.seq_len, pos); let stride = kv.n_kv_heads * kv.head_dim;
+        assert_eq!(kv.seq_len, pos);
+        let stride = kv.n_kv_heads * kv.head_dim;
         for li in 0..kv.n_layers {
             for d in 0..stride {
                 let mix = ((li as u32).wrapping_mul(2654435761))
                     ^ token.wrapping_mul(40503)
-                    ^ ((pos as u32).wrapping_mul(0x9E37_79B9)) ^ ((d as u32).wrapping_mul(0xDEAD_BEEF));
-                let off = pos * stride + d; kv.keys[li][off] = (mix as f32) * 1e-9; kv.values[li][off] = -(mix as f32) * 1e-9;
+                    ^ ((pos as u32).wrapping_mul(0x9E37_79B9))
+                    ^ ((d as u32).wrapping_mul(0xDEAD_BEEF));
+                let off = pos * stride + d;
+                kv.keys[li][off] = (mix as f32) * 1e-9;
+                kv.values[li][off] = -(mix as f32) * 1e-9;
             }
         }
         kv.seq_len += 1;
@@ -728,12 +732,17 @@ mod tests {
         assert_eq!(a.seq_len, b.seq_len, "seq_len mismatch");
         for li in 0..a.n_layers {
             assert_eq!(a.keys_for(li), b.keys_for(li), "keys mismatch layer {li}");
-            assert_eq!(a.values_for(li), b.values_for(li), "values mismatch layer {li}");
+            assert_eq!(
+                a.values_for(li),
+                b.values_for(li),
+                "values mismatch layer {li}"
+            );
         }
     }
     #[test]
     fn key_is_byte_compatible_with_disk_tier() {
-        let toks = [1u32, 2, 3, 4]; let ram = PrefixKey::from_model_and_prompt("m", b"sig", &toks);
+        let toks = [1u32, 2, 3, 4];
+        let ram = PrefixKey::from_model_and_prompt("m", b"sig", &toks);
         let disk = PrefillKey::from_model_and_prompt("m", b"sig", &toks);
         assert_eq!(ram.model_hash, disk.model_hash);
         assert_eq!(ram.tokenizer_hash, disk.tokenizer_hash);
@@ -741,42 +750,69 @@ mod tests {
             ram.prefix_hash, disk.prefix_hash,
             "rolling hash must match disk tier"
         );
-        assert_eq!(ram.n_tokens, 4); let back = ram.to_prefill_key(&toks);
+        assert_eq!(ram.n_tokens, 4);
+        let back = ram.to_prefill_key(&toks);
         assert_eq!(back.prefix_hash, disk.prefix_hash);
     }
     #[test]
     fn lookup_returns_longest_strict_prefix() {
-        let mut c = InMemoryPrefixCache::new(); let (nl, nkv, hd) = (4, 2, 16);
-        let p2: Vec<u32> = vec![10, 11]; let p4: Vec<u32> = vec![10, 11, 12, 13];
-        c.insert_from_kv(PrefixKey::from_model_and_prompt("m", b"t", &p2), &cold_prefill(&p2, nl, nkv, hd));
-        c.insert_from_kv(PrefixKey::from_model_and_prompt("m", b"t", &p4), &cold_prefill(&p4, nl, nkv, hd));
-        let query: Vec<u32> = vec![10, 11, 12, 13, 14]; let key = PrefixKey::from_model_and_prompt("m", b"t", &query);
+        let mut c = InMemoryPrefixCache::new();
+        let (nl, nkv, hd) = (4, 2, 16);
+        let p2: Vec<u32> = vec![10, 11];
+        let p4: Vec<u32> = vec![10, 11, 12, 13];
+        c.insert_from_kv(
+            PrefixKey::from_model_and_prompt("m", b"t", &p2),
+            &cold_prefill(&p2, nl, nkv, hd),
+        );
+        c.insert_from_kv(
+            PrefixKey::from_model_and_prompt("m", b"t", &p4),
+            &cold_prefill(&p4, nl, nkv, hd),
+        );
+        let query: Vec<u32> = vec![10, 11, 12, 13, 14];
+        let key = PrefixKey::from_model_and_prompt("m", b"t", &query);
         let m = c.lookup(&key, &query).expect("hit");
         assert_eq!(m.matched_len, 4);
     }
     #[test]
     fn lookup_never_returns_full_prompt() {
-        let mut c = InMemoryPrefixCache::new(); let p: Vec<u32> = vec![1, 2, 3];
-        c.insert_from_kv(PrefixKey::from_model_and_prompt("m", b"t", &p), &cold_prefill(&p, 1, 1, 4));
+        let mut c = InMemoryPrefixCache::new();
+        let p: Vec<u32> = vec![1, 2, 3];
+        c.insert_from_kv(
+            PrefixKey::from_model_and_prompt("m", b"t", &p),
+            &cold_prefill(&p, 1, 1, 4),
+        );
         let key = PrefixKey::from_model_and_prompt("m", b"t", &p);
         assert!(
             c.lookup(&key, &p).is_none(),
             "must not match the whole prompt"
-        ); let mut longer = p.clone(); longer.push(99);
-        let key2 = PrefixKey::from_model_and_prompt("m", b"t", &longer); let m = c.lookup(&key2, &longer).expect("hit");
+        );
+        let mut longer = p.clone();
+        longer.push(99);
+        let key2 = PrefixKey::from_model_and_prompt("m", b"t", &longer);
+        let m = c.lookup(&key2, &longer).expect("hit");
         assert_eq!(m.matched_len, 3);
     }
     #[test]
     fn cold_vs_warm_prefill_byte_identical() {
-        let (nl, nkv, hd) = (4, 2, 16); let mut c = InMemoryPrefixCache::new();
-        let system: Vec<u32> = (0..50u32).map(|i| 100 + i).collect(); let kv_t1 = cold_prefill(&system, nl, nkv, hd);
-        c.insert_from_kv(PrefixKey::from_model_and_prompt("m", b"v1", &system), &kv_t1); let mut turn2 = system.clone();
-        turn2.extend((0..10u32).map(|i| 1000 + i)); turn2.extend((0..20u32).map(|i| 2000 + i));
-        let kv_cold = cold_prefill(&turn2, nl, nkv, hd); let key2 = PrefixKey::from_model_and_prompt("m", b"v1", &turn2);
+        let (nl, nkv, hd) = (4, 2, 16);
+        let mut c = InMemoryPrefixCache::new();
+        let system: Vec<u32> = (0..50u32).map(|i| 100 + i).collect();
+        let kv_t1 = cold_prefill(&system, nl, nkv, hd);
+        c.insert_from_kv(
+            PrefixKey::from_model_and_prompt("m", b"v1", &system),
+            &kv_t1,
+        );
+        let mut turn2 = system.clone();
+        turn2.extend((0..10u32).map(|i| 1000 + i));
+        turn2.extend((0..20u32).map(|i| 2000 + i));
+        let kv_cold = cold_prefill(&turn2, nl, nkv, hd);
+        let key2 = PrefixKey::from_model_and_prompt("m", b"v1", &turn2);
         let m = c.lookup(&key2, &turn2).expect("prefix hit on turn 2");
-        assert_eq!(m.matched_len, 50); let mut kv_warm = KvCache::new(nl, turn2.len() + 8, nkv, hd);
+        assert_eq!(m.matched_len, 50);
+        let mut kv_warm = KvCache::new(nl, turn2.len() + 8, nkv, hd);
         let restored = c
-            .restore_into(&key2, &turn2, m.matched_len, &mut kv_warm).unwrap();
+            .restore_into(&key2, &turn2, m.matched_len, &mut kv_warm)
+            .unwrap();
         assert_eq!(restored, 50);
         assert_eq!(kv_warm.seq_len, 50);
         for (i, &t) in turn2.iter().enumerate().skip(50) {
@@ -786,9 +822,14 @@ mod tests {
     }
     #[test]
     fn tokenizer_change_invalidates() {
-        let mut c = InMemoryPrefixCache::new(); let p: Vec<u32> = vec![5, 6];
-        c.insert_from_kv(PrefixKey::from_model_and_prompt("m", b"tok-v1", &p), &cold_prefill(&p, 1, 1, 4));
-        let q: Vec<u32> = vec![5, 6, 7]; let key_v2 = PrefixKey::from_model_and_prompt("m", b"tok-v2", &q);
+        let mut c = InMemoryPrefixCache::new();
+        let p: Vec<u32> = vec![5, 6];
+        c.insert_from_kv(
+            PrefixKey::from_model_and_prompt("m", b"tok-v1", &p),
+            &cold_prefill(&p, 1, 1, 4),
+        );
+        let q: Vec<u32> = vec![5, 6, 7];
+        let key_v2 = PrefixKey::from_model_and_prompt("m", b"tok-v2", &q);
         assert!(
             c.lookup(&key_v2, &q).is_none(),
             "tokenizer change must invalidate"
@@ -802,7 +843,10 @@ mod tests {
         });
         for i in 0..5u32 {
             let p: Vec<u32> = vec![i, i + 1, i + 2];
-            c.insert_from_kv(PrefixKey::from_model_and_prompt("m", b"t", &p), &cold_prefill(&p, 1, 1, 4));
+            c.insert_from_kv(
+                PrefixKey::from_model_and_prompt("m", b"t", &p),
+                &cold_prefill(&p, 1, 1, 4),
+            );
         }
         assert!(c.stats().retained_entries <= 2, "entry budget enforced");
         assert!(c.stats().evictions >= 3);
@@ -815,15 +859,26 @@ mod tests {
         });
         for i in 0..6u32 {
             let p: Vec<u32> = vec![i, i + 1, i + 2];
-            c.insert_from_kv(PrefixKey::from_model_and_prompt("m", b"t", &p), &cold_prefill(&p, 1, 1, 4));
+            c.insert_from_kv(
+                PrefixKey::from_model_and_prompt("m", b"t", &p),
+                &cold_prefill(&p, 1, 1, 4),
+            );
         }
         assert!(c.stats().retained_bytes <= 200, "byte budget enforced");
         assert!(c.stats().retained_bytes > 0);
     }
     #[test]
     fn default_budget_is_bounded() {
-        assert_eq!(InMemoryPrefixCache::new().budget().max_bytes, Some(DEFAULT_MAX_BYTES), "new() must be byte-bounded by default");
-        assert_eq!(PrefixCacheBudget::default().max_bytes, Some(DEFAULT_MAX_BYTES), "PrefixCacheBudget::default() must carry the byte cap");
+        assert_eq!(
+            InMemoryPrefixCache::new().budget().max_bytes,
+            Some(DEFAULT_MAX_BYTES),
+            "new() must be byte-bounded by default"
+        );
+        assert_eq!(
+            PrefixCacheBudget::default().max_bytes,
+            Some(DEFAULT_MAX_BYTES),
+            "PrefixCacheBudget::default() must carry the byte cap"
+        );
         assert!(DEFAULT_MAX_BYTES > 0);
     }
     #[test]
@@ -833,33 +888,49 @@ mod tests {
             max_bytes: Some(cap),
             max_entries: None,
         });
-        let p0: Vec<u32> = vec![0, 1, 2]; let p1: Vec<u32> = vec![10, 11, 12];
-        let p2: Vec<u32> = vec![20, 21, 22]; let k0 = PrefixKey::from_model_and_prompt("m", b"t", &p0);
-        let k1 = PrefixKey::from_model_and_prompt("m", b"t", &p1); let k2 = PrefixKey::from_model_and_prompt("m", b"t", &p2);
-        c.insert_from_kv(k0.clone(), &cold_prefill(&p0, 1, 1, 4)); c.insert_from_kv(k1.clone(), &cold_prefill(&p1, 1, 1, 4));
+        let p0: Vec<u32> = vec![0, 1, 2];
+        let p1: Vec<u32> = vec![10, 11, 12];
+        let p2: Vec<u32> = vec![20, 21, 22];
+        let k0 = PrefixKey::from_model_and_prompt("m", b"t", &p0);
+        let k1 = PrefixKey::from_model_and_prompt("m", b"t", &p1);
+        let k2 = PrefixKey::from_model_and_prompt("m", b"t", &p2);
+        c.insert_from_kv(k0.clone(), &cold_prefill(&p0, 1, 1, 4));
+        c.insert_from_kv(k1.clone(), &cold_prefill(&p1, 1, 1, 4));
         c.insert_from_kv(k2.clone(), &cold_prefill(&p2, 1, 1, 4));
         assert!(
             c.stats().retained_bytes <= cap,
             "retained bytes {} must stay ≤ cap {cap}",
             c.stats().retained_bytes
         );
-        assert!(c.stats().evictions >= 1, "the oldest entry must be evicted"); let mut q0 = p0.clone(); q0.push(99);
+        assert!(c.stats().evictions >= 1, "the oldest entry must be evicted");
+        let mut q0 = p0.clone();
+        q0.push(99);
         assert!(
             c.lookup(&PrefixKey::from_model_and_prompt("m", b"t", &q0), &q0)
                 .is_none(),
             "oldest entry must have been evicted"
-        ); let mut q2 = p2.clone(); q2.push(99);
+        );
+        let mut q2 = p2.clone();
+        q2.push(99);
         let m2 = c
-            .lookup(&PrefixKey::from_model_and_prompt("m", b"t", &q2), &q2).expect("newest entry must survive");
+            .lookup(&PrefixKey::from_model_and_prompt("m", b"t", &q2), &q2)
+            .expect("newest entry must survive");
         assert_eq!(m2.matched_len, 3, "newest entry's full prefix survives");
     }
     #[test]
     fn stats_track_hits_and_misses() {
-        let mut c = InMemoryPrefixCache::new(); let p: Vec<u32> = vec![1, 2, 3, 4];
-        c.insert_from_kv(PrefixKey::from_model_and_prompt("m", b"t", &p), &cold_prefill(&p, 1, 1, 4));
-        let q: Vec<u32> = vec![1, 2, 3, 4, 5]; let miss_key = PrefixKey::from_model_and_prompt("other", b"t", &q);
-        assert!(c.lookup_counting(&miss_key, &q).is_none()); let hit_key = PrefixKey::from_model_and_prompt("m", b"t", &q);
-        assert!(c.lookup_counting(&hit_key, &q).is_some()); let s = c.stats();
+        let mut c = InMemoryPrefixCache::new();
+        let p: Vec<u32> = vec![1, 2, 3, 4];
+        c.insert_from_kv(
+            PrefixKey::from_model_and_prompt("m", b"t", &p),
+            &cold_prefill(&p, 1, 1, 4),
+        );
+        let q: Vec<u32> = vec![1, 2, 3, 4, 5];
+        let miss_key = PrefixKey::from_model_and_prompt("other", b"t", &q);
+        assert!(c.lookup_counting(&miss_key, &q).is_none());
+        let hit_key = PrefixKey::from_model_and_prompt("m", b"t", &q);
+        assert!(c.lookup_counting(&hit_key, &q).is_some());
+        let s = c.stats();
         assert_eq!(s.lookups, 2);
         assert_eq!(s.hits, 1);
         assert_eq!(s.matched_tokens_total, 4);

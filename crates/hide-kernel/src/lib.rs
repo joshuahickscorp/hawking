@@ -352,9 +352,8 @@ mod tests {
     }
 }
 
-pub mod tooling;
-pub mod security;
-pub mod program_runtime;
 pub mod extension_registry;
+pub mod program_runtime;
+pub mod security;
+pub mod tooling;
 pub mod verify_plane;
-

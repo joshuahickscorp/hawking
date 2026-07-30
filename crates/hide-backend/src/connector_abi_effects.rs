@@ -157,7 +157,10 @@ impl PermissionGate {
             ));
         }
         let allowed = if self.policy.deny_by_default {
-            self.policy.allow_targets.iter().any(|t| t == &proposal.target)
+            self.policy
+                .allow_targets
+                .iter()
+                .any(|t| t == &proposal.target)
         } else {
             true
         };
@@ -193,7 +196,9 @@ impl PermissionGate {
             return Err(ConnectorError::InvalidWriteReceipt(receipt_id.into()));
         }
         if r.decision != PermissionDecision::Allow {
-            return Err(ConnectorError::WritePermissionDenied(r.proposal.summary.clone()));
+            return Err(ConnectorError::WritePermissionDenied(
+                r.proposal.summary.clone(),
+            ));
         }
         // Re-check digest integrity.
         let expected = proposal_digest(&r.proposal);

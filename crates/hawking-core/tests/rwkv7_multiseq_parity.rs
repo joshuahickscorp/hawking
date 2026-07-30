@@ -11,7 +11,9 @@ fn read_ids(path: &Path) -> Vec<u32> {
         .collect()
 }
 fn fixture(name: &str) -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/rwkv7").join(name)
+    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("tests/fixtures/rwkv7")
+        .join(name)
 }
 fn locate_q4k() -> Option<PathBuf> {
     const REL: &str = "models/rwkv7-04/rwkv7-0.4B-world.Q4_K_M.gguf";
@@ -48,8 +50,15 @@ fn locate_model() -> Option<PathBuf> {
 fn make_streams(b: usize, steps: usize) -> Vec<Vec<u32>> {
     let mut base = read_ids(&fixture("capital_france_q4k.prompt_ids"));
     base.extend(read_ids(&fixture("capital_france_q4k.gen_ids")));
-    assert!(base.len() >= steps + b, "fixture too short: {} < {}", base.len(), steps + b);
-    (0..b).map(|s| base[s..s + steps].to_vec()).collect::<Vec<_>>()
+    assert!(
+        base.len() >= steps + b,
+        "fixture too short: {} < {}",
+        base.len(),
+        steps + b
+    );
+    (0..b)
+        .map(|s| base[s..s + steps].to_vec())
+        .collect::<Vec<_>>()
 }
 #[test]
 fn rwkv7_multiseq_cpu_matches_serial_forward_token() {
@@ -73,7 +82,9 @@ fn rwkv7_multiseq_cpu_matches_serial_forward_token() {
     let mut multi = RwkvMultiState::new(&engine.config, B);
     for t in 0..STEPS {
         let col: Vec<u32> = (0..B).map(|s| streams[s][t]).collect();
-        let rows = engine.forward_tokens_multiseq_cpu(&col, &mut multi).expect("multiseq cpu forward");
+        let rows = engine
+            .forward_tokens_multiseq_cpu(&col, &mut multi)
+            .expect("multiseq cpu forward");
         assert_eq!(rows.len(), B, "multiseq returned {} rows != B", rows.len());
         for s in 0..B {
             assert_eq!(
@@ -97,7 +108,9 @@ fn rwkv7_multiseq_cpu_slot_reset_is_isolated() {
     let mut multi = RwkvMultiState::new(&engine.config, B);
     for t in 0..4 {
         let col: Vec<u32> = (0..B).map(|s| streams[s][t]).collect();
-        engine.forward_tokens_multiseq_cpu(&col, &mut multi).expect("warm multiseq");
+        engine
+            .forward_tokens_multiseq_cpu(&col, &mut multi)
+            .expect("warm multiseq");
     }
     multi.reset_slot(0);
     let post: Vec<u32> = (4..STEPS).map(|t| streams[0][t]).collect();
@@ -108,8 +121,13 @@ fn rwkv7_multiseq_cpu_slot_reset_is_isolated() {
     }
     for (i, t) in (4..STEPS).enumerate() {
         let col: Vec<u32> = (0..B).map(|s| streams[s][t]).collect();
-        let rows = engine.forward_tokens_multiseq_cpu(&col, &mut multi).expect("post-reset multiseq");
-        assert_eq!(rows[0], slot0_ref[i], "slot 0 after reset_slot must match a fresh sequence at step {t}");
+        let rows = engine
+            .forward_tokens_multiseq_cpu(&col, &mut multi)
+            .expect("post-reset multiseq");
+        assert_eq!(
+            rows[0], slot0_ref[i],
+            "slot 0 after reset_slot must match a fresh sequence at step {t}"
+        );
     }
 }
 #[cfg(target_os = "macos")]
@@ -134,20 +152,37 @@ fn rwkv7_multiseq_gpu_matches_cpu_oracle() {
     let mut cpu: Vec<Vec<Vec<f32>>> = Vec::with_capacity(STEPS); // [t][s]
     for t in 0..STEPS {
         let col: Vec<u32> = (0..B).map(|s| streams[s][t]).collect();
-        cpu.push(engine.forward_tokens_multiseq_cpu(&col, &mut multi).expect("cpu oracle"));
+        cpu.push(
+            engine
+                .forward_tokens_multiseq_cpu(&col, &mut multi)
+                .expect("cpu oracle"),
+        );
     }
-    engine.ensure_gpu_batch(B).expect("size gpu bundle for B streams");
+    engine
+        .ensure_gpu_batch(B)
+        .expect("size gpu bundle for B streams");
     engine.reset_gpu_multiseq();
     let mut worst = 0.0f32;
     let mut worst_at = (0usize, 0usize);
     let mut argmax_mismatches = 0usize;
     for t in 0..STEPS {
         let col: Vec<u32> = (0..B).map(|s| streams[s][t]).collect();
-        let rows = engine.forward_token_gpu_multiseq(&col).expect("gpu multiseq forward");
-        assert_eq!(rows.len(), B, "gpu multiseq returned {} rows != B", rows.len());
+        let rows = engine
+            .forward_token_gpu_multiseq(&col)
+            .expect("gpu multiseq forward");
+        assert_eq!(
+            rows.len(),
+            B,
+            "gpu multiseq returned {} rows != B",
+            rows.len()
+        );
         for s in 0..B {
             let (gl, cl) = (&rows[s], &cpu[t][s]);
-            assert_eq!(gl.len(), cl.len(), "logit width mismatch stream {s} step {t}");
+            assert_eq!(
+                gl.len(),
+                cl.len(),
+                "logit width mismatch stream {s} step {t}"
+            );
             let d = max_abs_diff(gl, cl);
             if d > worst {
                 worst = d;
@@ -158,8 +193,14 @@ fn rwkv7_multiseq_gpu_matches_cpu_oracle() {
             }
         }
     }
-    assert_eq!(argmax_mismatches, 0, "GPU multiseq argmax must match the CPU oracle every (stream, step)");
-    assert!(worst < LOGIT_TOL, "GPU↔CPU multiseq max-abs logit diff {worst:.5} exceeds tol {LOGIT_TOL}");
+    assert_eq!(
+        argmax_mismatches, 0,
+        "GPU multiseq argmax must match the CPU oracle every (stream, step)"
+    );
+    assert!(
+        worst < LOGIT_TOL,
+        "GPU↔CPU multiseq max-abs logit diff {worst:.5} exceeds tol {LOGIT_TOL}"
+    );
 }
 #[cfg(target_os = "macos")]
 #[test]
@@ -183,7 +224,11 @@ fn rwkv7_multiseq_gpu_matches_serial_gpu() {
         engine.reset_gpu_multiseq();
         let mut per_step = Vec::with_capacity(STEPS);
         for t in 0..STEPS {
-            per_step.push(engine.forward_token_gpu(streams[s][t]).expect("serial gpu forward"));
+            per_step.push(
+                engine
+                    .forward_token_gpu(streams[s][t])
+                    .expect("serial gpu forward"),
+            );
         }
         serial.push(per_step);
     }
@@ -192,14 +237,23 @@ fn rwkv7_multiseq_gpu_matches_serial_gpu() {
     let mut worst = 0.0f32;
     for t in 0..STEPS {
         let col: Vec<u32> = (0..B).map(|s| streams[s][t]).collect();
-        let rows = engine.forward_token_gpu_multiseq(&col).expect("gpu multiseq forward");
+        let rows = engine
+            .forward_token_gpu_multiseq(&col)
+            .expect("gpu multiseq forward");
         for s in 0..B {
             let d = max_abs_diff(&rows[s], &serial[s][t]);
             worst = worst.max(d);
-            assert_eq!(argmax(&rows[s]), argmax(&serial[s][t]), "GPU multiseq stream {s} step {t} argmax differs from serial GPU decode");
+            assert_eq!(
+                argmax(&rows[s]),
+                argmax(&serial[s][t]),
+                "GPU multiseq stream {s} step {t} argmax differs from serial GPU decode"
+            );
         }
     }
-    assert!(worst < LOGIT_TOL, "GPU multiseq vs serial-GPU max-abs logit diff {worst:.5} exceeds tol {LOGIT_TOL}");
+    assert!(
+        worst < LOGIT_TOL,
+        "GPU multiseq vs serial-GPU max-abs logit diff {worst:.5} exceeds tol {LOGIT_TOL}"
+    );
 }
 #[cfg(target_os = "macos")]
 #[test]
@@ -217,7 +271,9 @@ fn rwkv7_multiseq_gpu_b2_buffer_inspect() {
     let tok0 = streams[0][0];
     engine.ensure_gpu_batch(2).expect("B=2");
     engine.reset_gpu_multiseq();
-    engine.forward_token_gpu_multiseq(&[tok0, streams[1][0]]).expect("b2 multiseq");
+    engine
+        .forward_token_gpu_multiseq(&[tok0, streams[1][0]])
+        .expect("b2 multiseq");
     let b2_x_norm: Vec<f32> = {
         let g = engine.gpu.as_ref().unwrap();
         let n = g.arena.n_embd;
@@ -234,7 +290,10 @@ fn rwkv7_multiseq_gpu_b2_buffer_inspect() {
         unsafe { std::slice::from_raw_parts(ptr, n) }.to_vec()
     };
     let d = max_abs_diff(&b2_x_norm, &b1_x_norm);
-    assert!(d < 0.05, "x_norm diverges at B=2: max|Δ|={d:.5} — bug is before final LayerNorm");
+    assert!(
+        d < 0.05,
+        "x_norm diverges at B=2: max|Δ|={d:.5} — bug is before final LayerNorm"
+    );
 }
 #[cfg(target_os = "macos")]
 #[test]
@@ -252,13 +311,21 @@ fn rwkv7_multiseq_gpu_b2_per_layer_shift_inspect() {
     let tok0 = streams[0][0];
     engine.ensure_gpu_batch(2).expect("B=2");
     engine.reset_gpu_multiseq();
-    engine.forward_token_gpu_multiseq(&[tok0, streams[1][0]]).expect("b2 multiseq");
+    engine
+        .forward_token_gpu_multiseq(&[tok0, streams[1][0]])
+        .expect("b2 multiseq");
     let (b2_att, b2_ffn, n_layer, n_embd) = {
         let g = engine.gpu.as_ref().unwrap();
         let nl = g.arena.n_layer;
         let n = g.arena.n_embd;
-        let att = unsafe { std::slice::from_raw_parts(g.arena.att_shift.contents() as *const f32, nl * n) }.to_vec();
-        let ffn = unsafe { std::slice::from_raw_parts(g.arena.ffn_shift.contents() as *const f32, nl * n) }.to_vec();
+        let att = unsafe {
+            std::slice::from_raw_parts(g.arena.att_shift.contents() as *const f32, nl * n)
+        }
+        .to_vec();
+        let ffn = unsafe {
+            std::slice::from_raw_parts(g.arena.ffn_shift.contents() as *const f32, nl * n)
+        }
+        .to_vec();
         (att, ffn, nl, n)
     };
     engine.ensure_gpu_batch(1).expect("B=1");
@@ -268,8 +335,14 @@ fn rwkv7_multiseq_gpu_b2_per_layer_shift_inspect() {
         let g = engine.gpu.as_ref().unwrap();
         let nl = g.arena.n_layer;
         let n = g.arena.n_embd;
-        let att = unsafe { std::slice::from_raw_parts(g.arena.att_shift.contents() as *const f32, nl * n) }.to_vec();
-        let ffn = unsafe { std::slice::from_raw_parts(g.arena.ffn_shift.contents() as *const f32, nl * n) }.to_vec();
+        let att = unsafe {
+            std::slice::from_raw_parts(g.arena.att_shift.contents() as *const f32, nl * n)
+        }
+        .to_vec();
+        let ffn = unsafe {
+            std::slice::from_raw_parts(g.arena.ffn_shift.contents() as *const f32, nl * n)
+        }
+        .to_vec();
         (att, ffn)
     };
     let mut first_divergent: Option<usize> = None;
@@ -302,7 +375,9 @@ fn rwkv7_multiseq_gpu_b2_wkv_state_inspect() {
     let tok0 = streams[0][0];
     engine.ensure_gpu_batch(2).expect("B=2");
     engine.reset_gpu_multiseq();
-    engine.forward_token_gpu_multiseq(&[tok0, streams[1][0]]).expect("b2 multiseq");
+    engine
+        .forward_token_gpu_multiseq(&[tok0, streams[1][0]])
+        .expect("b2 multiseq");
     let (b2_wkv, s_per_layer, n_layer) = {
         let g = engine.gpu.as_ref().unwrap();
         let hc = g.arena.head_count;
@@ -335,7 +410,9 @@ fn rwkv7_multiseq_gpu_b2_wkv_state_inspect() {
         }
     }
     if let Some(li) = first_wkv_divergent {
-        panic!("wkv_state first divergent layer {li} — bug in WKV recurrence or its r/w/k/v inputs");
+        panic!(
+            "wkv_state first divergent layer {li} — bug in WKV recurrence or its r/w/k/v inputs"
+        );
     }
 }
 #[cfg(target_os = "macos")]
@@ -354,7 +431,9 @@ fn rwkv7_multiseq_gpu_b2_vfirst_inspect() {
     let tok0 = streams[0][0];
     engine.ensure_gpu_batch(2).expect("B=2");
     engine.reset_gpu_multiseq();
-    engine.forward_token_gpu_multiseq(&[tok0, streams[1][0]]).expect("b2 multiseq");
+    engine
+        .forward_token_gpu_multiseq(&[tok0, streams[1][0]])
+        .expect("b2 multiseq");
     let b2_vfirst: Vec<f32> = {
         let g = engine.gpu.as_ref().unwrap();
         let n = g.arena.n_embd;
@@ -388,14 +467,20 @@ fn rwkv7_multiseq_gpu_b2_k_inspect() {
     let tok0 = streams[0][0];
     engine.ensure_gpu_batch(2).expect("B=2");
     engine.reset_gpu_multiseq();
-    engine.forward_token_gpu_multiseq(&[tok0, streams[1][0]]).expect("b2 multiseq");
+    engine
+        .forward_token_gpu_multiseq(&[tok0, streams[1][0]])
+        .expect("b2 multiseq");
     let (b2_r, b2_k, b2_a, b2_a_op) = {
         let g = engine.gpu.as_ref().unwrap();
         let n = g.arena.n_embd;
-        let r = unsafe { std::slice::from_raw_parts(g.arena.r.contents() as *const f32, n) }.to_vec();
-        let k = unsafe { std::slice::from_raw_parts(g.arena.k.contents() as *const f32, n) }.to_vec();
-        let a = unsafe { std::slice::from_raw_parts(g.arena.a.contents() as *const f32, n) }.to_vec();
-        let a_op = unsafe { std::slice::from_raw_parts(g.arena.a_op.contents() as *const f32, n) }.to_vec();
+        let r =
+            unsafe { std::slice::from_raw_parts(g.arena.r.contents() as *const f32, n) }.to_vec();
+        let k =
+            unsafe { std::slice::from_raw_parts(g.arena.k.contents() as *const f32, n) }.to_vec();
+        let a =
+            unsafe { std::slice::from_raw_parts(g.arena.a.contents() as *const f32, n) }.to_vec();
+        let a_op = unsafe { std::slice::from_raw_parts(g.arena.a_op.contents() as *const f32, n) }
+            .to_vec();
         (r, k, a, a_op)
     };
     engine.ensure_gpu_batch(1).expect("B=1");
@@ -404,10 +489,14 @@ fn rwkv7_multiseq_gpu_b2_k_inspect() {
     let (b1_r, b1_k, b1_a, b1_a_op) = {
         let g = engine.gpu.as_ref().unwrap();
         let n = g.arena.n_embd;
-        let r = unsafe { std::slice::from_raw_parts(g.arena.r.contents() as *const f32, n) }.to_vec();
-        let k = unsafe { std::slice::from_raw_parts(g.arena.k.contents() as *const f32, n) }.to_vec();
-        let a = unsafe { std::slice::from_raw_parts(g.arena.a.contents() as *const f32, n) }.to_vec();
-        let a_op = unsafe { std::slice::from_raw_parts(g.arena.a_op.contents() as *const f32, n) }.to_vec();
+        let r =
+            unsafe { std::slice::from_raw_parts(g.arena.r.contents() as *const f32, n) }.to_vec();
+        let k =
+            unsafe { std::slice::from_raw_parts(g.arena.k.contents() as *const f32, n) }.to_vec();
+        let a =
+            unsafe { std::slice::from_raw_parts(g.arena.a.contents() as *const f32, n) }.to_vec();
+        let a_op = unsafe { std::slice::from_raw_parts(g.arena.a_op.contents() as *const f32, n) }
+            .to_vec();
         (r, k, a, a_op)
     };
     let d_r = max_abs_diff(&b2_r, &b1_r);
@@ -432,15 +521,23 @@ fn rwkv7_multiseq_gpu_b2_stream0_matches_serial_gpu() {
     let streams = make_streams(2, STEPS);
     engine.ensure_gpu_batch(1).expect("B=1");
     engine.reset_gpu_multiseq();
-    let serial: Vec<Vec<f32>> = streams[0].iter().map(|&t| engine.forward_token_gpu(t).expect("serial gpu")).collect();
+    let serial: Vec<Vec<f32>> = streams[0]
+        .iter()
+        .map(|&t| engine.forward_token_gpu(t).expect("serial gpu"))
+        .collect();
     engine.ensure_gpu_batch(2).expect("B=2");
     engine.reset_gpu_multiseq();
     for (t, _) in streams[0].iter().enumerate() {
         let col: Vec<u32> = (0..2).map(|s| streams[s][t]).collect();
-        let rows = engine.forward_token_gpu_multiseq(&col).expect("b2 multiseq gpu");
+        let rows = engine
+            .forward_token_gpu_multiseq(&col)
+            .expect("b2 multiseq gpu");
         let d = max_abs_diff(&rows[0], &serial[t]);
         let (ag, ac) = (argmax(&rows[0]), argmax(&serial[t]));
-        assert!(d < LOGIT_TOL, "B=2 multiseq stream 0 step {t}: max|Δlogit|={d:.5} exceeds tol");
+        assert!(
+            d < LOGIT_TOL,
+            "B=2 multiseq stream 0 step {t}: max|Δlogit|={d:.5} exceeds tol"
+        );
     }
 }
 #[cfg(target_os = "macos")]
@@ -461,14 +558,19 @@ fn rwkv7_multiseq_gpu_b1_matches_serial_gpu() {
     let tok = &streams[0];
     engine.ensure_gpu_batch(1).expect("init B=1 arena");
     engine.reset_gpu_multiseq();
-    let serial: Vec<Vec<f32>> = tok.iter().map(|&t| engine.forward_token_gpu(t).expect("serial gpu")).collect();
+    let serial: Vec<Vec<f32>> = tok
+        .iter()
+        .map(|&t| engine.forward_token_gpu(t).expect("serial gpu"))
+        .collect();
     engine.ensure_gpu_batch(2).expect("force B=2 rebuild");
     engine.ensure_gpu_batch(1).expect("rebuild B=1");
     engine.reset_gpu_multiseq();
     let mut worst = 0.0f32;
     let mut argmax_mismatches = 0;
     for (t, &tok_id) in tok.iter().enumerate() {
-        let rows = engine.forward_token_gpu_multiseq(&[tok_id]).expect("b1 multiseq gpu");
+        let rows = engine
+            .forward_token_gpu_multiseq(&[tok_id])
+            .expect("b1 multiseq gpu");
         let d = max_abs_diff(&rows[0], &serial[t]);
         worst = worst.max(d);
         let (ag, ac) = (argmax(&rows[0]), argmax(&serial[t]));
@@ -476,6 +578,12 @@ fn rwkv7_multiseq_gpu_b1_matches_serial_gpu() {
             argmax_mismatches += 1;
         }
     }
-    assert_eq!(argmax_mismatches, 0, "B=1 GPU multiseq argmax must match serial GPU every step");
-    assert!(worst < LOGIT_TOL, "B=1 GPU multiseq vs serial-GPU max-abs logit diff {worst:.5} exceeds tol {LOGIT_TOL}");
+    assert_eq!(
+        argmax_mismatches, 0,
+        "B=1 GPU multiseq argmax must match serial GPU every step"
+    );
+    assert!(
+        worst < LOGIT_TOL,
+        "B=1 GPU multiseq vs serial-GPU max-abs logit diff {worst:.5} exceeds tol {LOGIT_TOL}"
+    );
 }

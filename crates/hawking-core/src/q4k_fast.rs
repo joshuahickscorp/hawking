@@ -385,7 +385,8 @@ mod tests {
     use super::*;
     #[test]
     fn round_trip_header() {
-        let payload_a = vec![0xAAu8; 160 * 4]; let payload_b = vec![0xBBu8; 160 * 8];
+        let payload_a = vec![0xAAu8; 160 * 4];
+        let payload_b = vec![0xBBu8; 160 * 8];
         let tensors = vec![
             WrittenTensor {
                 name: "blk.0.attn_q.weight".to_string(),
@@ -402,7 +403,8 @@ mod tests {
                 bytes: payload_b.clone(),
             },
         ];
-        let file = serialize_sidecar(0xDEAD_BEEF_CAFE_BABEu64, tensors); let hdr = parse_header(&file).unwrap();
+        let file = serialize_sidecar(0xDEAD_BEEF_CAFE_BABEu64, tensors);
+        let hdr = parse_header(&file).unwrap();
         assert_eq!(hdr.version, Q4K_FAST_VERSION);
         assert_eq!(hdr.src_hash, 0xDEAD_BEEF_CAFE_BABEu64);
         assert_eq!(hdr.tensors.len(), 2);
@@ -410,14 +412,17 @@ mod tests {
         assert_eq!(hdr.tensors[0].rows, 4);
         assert_eq!(hdr.tensors[0].cols, 256);
         assert_eq!(hdr.tensors[0].byte_len, payload_a.len() as u64);
-        let off_a = hdr.tensors[0].byte_off as usize; let len_a = hdr.tensors[0].byte_len as usize;
+        let off_a = hdr.tensors[0].byte_off as usize;
+        let len_a = hdr.tensors[0].byte_len as usize;
         assert_eq!(&file[off_a..off_a + len_a], payload_a.as_slice());
-        let off_b = hdr.tensors[1].byte_off as usize; let len_b = hdr.tensors[1].byte_len as usize;
+        let off_b = hdr.tensors[1].byte_off as usize;
+        let len_b = hdr.tensors[1].byte_len as usize;
         assert_eq!(&file[off_b..off_b + len_b], payload_b.as_slice());
     }
     #[test]
     fn convert_block_matches_kernel_dequant() {
-        let mut block = [0u8; Q4K_BLOCK_BYTES]; let d = f16::from_f32(0.0123f32);
+        let mut block = [0u8; Q4K_BLOCK_BYTES];
+        let d = f16::from_f32(0.0123f32);
         let dmin = f16::from_f32(-0.005f32);
         block[0..2].copy_from_slice(&d.to_bits().to_le_bytes());
         block[2..4].copy_from_slice(&dmin.to_bits().to_le_bytes());
@@ -437,16 +442,21 @@ mod tests {
         convert_q4k_block_to_fast(&block, &mut fast);
         let (sb_idx, mb_idx) = decode_q4k_sb_mb(&block);
         for k in 0..8 {
-            let off = k * 20; let scale_bits = u16::from_le_bytes([fast[off], fast[off + 1]]);
-            let min_bits = u16::from_le_bytes([fast[off + 2], fast[off + 3]]); let scale = f16::from_bits(scale_bits).to_f32();
-            let min = f16::from_bits(min_bits).to_f32(); let expected_scale = f16::from_f32(d.to_f32() * sb_idx[k] as f32).to_f32();
+            let off = k * 20;
+            let scale_bits = u16::from_le_bytes([fast[off], fast[off + 1]]);
+            let min_bits = u16::from_le_bytes([fast[off + 2], fast[off + 3]]);
+            let scale = f16::from_bits(scale_bits).to_f32();
+            let min = f16::from_bits(min_bits).to_f32();
+            let expected_scale = f16::from_f32(d.to_f32() * sb_idx[k] as f32).to_f32();
             let expected_min = f16::from_f32(dmin.to_f32() * mb_idx[k] as f32).to_f32();
             assert_eq!(scale, expected_scale, "k={k}");
             assert_eq!(min, expected_min, "k={k}");
-            let pi = k / 2; let is_high = (k & 1) == 1;
+            let pi = k / 2;
+            let is_high = (k & 1) == 1;
             let src_run = &block[16 + pi * 32..16 + pi * 32 + 32];
             for i in 0..16 {
-                let s0 = src_run[2 * i]; let s1 = src_run[2 * i + 1];
+                let s0 = src_run[2 * i];
+                let s1 = src_run[2 * i + 1];
                 let v0 = if is_high { s0 >> 4 } else { s0 & 0x0F };
                 let v1 = if is_high { s1 >> 4 } else { s1 & 0x0F };
                 assert_eq!(fast[off + 4 + i], v0 | (v1 << 4), "nibble k={k} i={i}");

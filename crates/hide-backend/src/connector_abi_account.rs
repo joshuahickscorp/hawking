@@ -214,11 +214,7 @@ pub struct InFlightGuard {
 }
 
 impl InFlightGuard {
-    pub fn begin(
-        store: &AccountStore,
-        handle: &AccountHandle,
-        family: &FamilyId,
-    ) -> Result<Self> {
+    pub fn begin(store: &AccountStore, handle: &AccountHandle, family: &FamilyId) -> Result<Self> {
         store.validate(handle, family)?;
         Ok(Self {
             handle: handle.clone(),

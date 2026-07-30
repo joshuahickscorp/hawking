@@ -36,17 +36,31 @@ fn run_ref(
     let mut tcb = TokenCommandBuffer::new(ctx);
     kernels::silu_mul_tcb(&mut tcb, &gate_buf, &up_buf, &act_buf, b * cols).unwrap();
     if b == 1 {
-        kernels::gemv_q4_k_v4_predec_pinned_tcb(&mut tcb, &w_buf, 0, w_bytes, &sc_buf, 0, rows, cols, &act_buf, &down_buf).unwrap();
+        kernels::gemv_q4_k_v4_predec_pinned_tcb(
+            &mut tcb, &w_buf, 0, w_bytes, &sc_buf, 0, rows, cols, &act_buf, &down_buf,
+        )
+        .unwrap();
     } else if b <= 4 {
-        kernels::gemm_q4_k_m_batched_v4r_predec_pinned_tcb(&mut tcb, &w_buf, 0, w_bytes, &sc_buf, 0, rows, cols, b, &act_buf, &down_buf)
-            .unwrap();
+        kernels::gemm_q4_k_m_batched_v4r_predec_pinned_tcb(
+            &mut tcb, &w_buf, 0, w_bytes, &sc_buf, 0, rows, cols, b, &act_buf, &down_buf,
+        )
+        .unwrap();
     } else {
-        kernels::gemm_q4_k_m_batched_v3w_predec_pinned_tcb(&mut tcb, &w_buf, 0, w_bytes, &sc_buf, 0, rows, cols, b, &act_buf, &down_buf)
-            .unwrap();
+        kernels::gemm_q4_k_m_batched_v3w_predec_pinned_tcb(
+            &mut tcb, &w_buf, 0, w_bytes, &sc_buf, 0, rows, cols, b, &act_buf, &down_buf,
+        )
+        .unwrap();
     }
-    kernels::add_rmsnorm_fused_batched_tcb(&mut tcb, &x_buf, &down_buf, &norm_buf, &xnorm_buf, 1e-6, rows, b).unwrap();
+    kernels::add_rmsnorm_fused_batched_tcb(
+        &mut tcb, &x_buf, &down_buf, &norm_buf, &xnorm_buf, 1e-6, rows, b,
+    )
+    .unwrap();
     tcb.commit_and_wait().unwrap();
-    (read_f32_buf(&down_buf, b * rows), read_f32_buf(&x_buf, b * rows), read_f32_buf(&xnorm_buf, b * rows))
+    (
+        read_f32_buf(&down_buf, b * rows),
+        read_f32_buf(&x_buf, b * rows),
+        read_f32_buf(&xnorm_buf, b * rows),
+    )
 }
 fn run_fused(
     ctx: &MetalContext,
@@ -71,11 +85,16 @@ fn run_fused(
     let w_bytes = rows * (cols / 256) * 144;
     let mut tcb = TokenCommandBuffer::new(ctx);
     kernels::ffn_down_swiglu_add_rmsnorm_ffn_q4k_predec_batched_tcb(
-        &mut tcb, &w_buf, 0, w_bytes, &sc_buf, 0, rows, cols, b, &gate_buf, &up_buf, &x_buf, &norm_buf, &xnorm_buf, 1e-6, &down_buf,
+        &mut tcb, &w_buf, 0, w_bytes, &sc_buf, 0, rows, cols, b, &gate_buf, &up_buf, &x_buf,
+        &norm_buf, &xnorm_buf, 1e-6, &down_buf,
     )
     .unwrap();
     tcb.commit_and_wait().unwrap();
-    (read_f32_buf(&down_buf, b * rows), read_f32_buf(&x_buf, b * rows), read_f32_buf(&xnorm_buf, b * rows))
+    (
+        read_f32_buf(&down_buf, b * rows),
+        read_f32_buf(&x_buf, b * rows),
+        read_f32_buf(&xnorm_buf, b * rows),
+    )
 }
 #[test]
 fn q4k_predec_swiglu_add_rmsnorm_tail_matches_ref() {
@@ -87,9 +106,34 @@ fn q4k_predec_swiglu_add_rmsnorm_tail_matches_ref() {
         let gate = rand_vec(b * cols, 0x5151 + b as u32);
         let up = rand_vec(b * cols, 0x6161 + b as u32);
         let x = rand_vec(b * rows, 0x7171 + b as u32);
-        let norm_weight: Vec<f32> = rand_vec(rows, 0x8181 + b as u32).into_iter().map(|v| v.abs() + 0.5).collect();
-        let (ref_down, ref_x, ref_xnorm) = run_ref(ctx, &w, &scales, &gate, &up, &x, &norm_weight, rows, cols, b);
-        let (fused_down, fused_x, fused_xnorm) = run_fused(ctx, &w, &scales, &gate, &up, &x, &norm_weight, rows, cols, b);
+        let norm_weight: Vec<f32> = rand_vec(rows, 0x8181 + b as u32)
+            .into_iter()
+            .map(|v| v.abs() + 0.5)
+            .collect();
+        let (ref_down, ref_x, ref_xnorm) = run_ref(
+            ctx,
+            &w,
+            &scales,
+            &gate,
+            &up,
+            &x,
+            &norm_weight,
+            rows,
+            cols,
+            b,
+        );
+        let (fused_down, fused_x, fused_xnorm) = run_fused(
+            ctx,
+            &w,
+            &scales,
+            &gate,
+            &up,
+            &x,
+            &norm_weight,
+            rows,
+            cols,
+            b,
+        );
         let down_diff = max_abs_diff(&ref_down, &fused_down);
         let x_diff = max_abs_diff(&ref_x, &fused_x);
         let xnorm_diff = max_abs_diff(&ref_xnorm, &fused_xnorm);

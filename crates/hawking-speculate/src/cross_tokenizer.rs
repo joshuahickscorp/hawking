@@ -175,6 +175,9 @@ mod tests {
             true,  // requires_text_bridge
             "NO-GO",
         );
- assert!( result.is_err(), "text-bridge slot must be refused when oracle verdict is not GO" );
+        assert!(
+            result.is_err(),
+            "text-bridge slot must be refused when oracle verdict is not GO"
+        );
     }
 }

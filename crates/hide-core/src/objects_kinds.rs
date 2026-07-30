@@ -139,20 +139,13 @@ impl ObjectKind {
 
     /// Whether OCR or ASR is typically required before usable text is available.
     pub fn requires_ocr_or_transcript(self) -> bool {
-        matches!(
-            self,
-            Self::Image | Self::Pdf | Self::Audio | Self::Video
-        )
+        matches!(self, Self::Image | Self::Pdf | Self::Audio | Self::Video)
     }
 }
 
 /// Best-effort MIME guess from filename extension (not authoritative).
 pub fn mime_from_filename(name: &str) -> String {
-    let ext = name
-        .rsplit('.')
-        .next()
-        .unwrap_or("")
-        .to_ascii_lowercase();
+    let ext = name.rsplit('.').next().unwrap_or("").to_ascii_lowercase();
     match ext.as_str() {
         "png" => "image/png",
         "jpg" | "jpeg" => "image/jpeg",

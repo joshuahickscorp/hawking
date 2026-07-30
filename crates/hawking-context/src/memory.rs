@@ -728,7 +728,10 @@ mod tests {
             .retrieve("database sqlx", 2, &[MemoryKind::Semantic])
             .await
             .unwrap();
- assert_eq!( hits[0].record.id, "a", "relevance should rank the db note first" );
+        assert_eq!(
+            hits[0].record.id, "a",
+            "relevance should rank the db note first"
+        );
         assert_eq!(store.len().unwrap(), 2);
     }
     #[tokio::test]
@@ -760,7 +763,10 @@ mod tests {
             .iter()
             .find(|h| h.record.id == "hit")
             .expect("token row present");
- assert!( hit.relevance > 0.0, "FTS5 MATCH must give the token row keyword relevance" );
+        assert!(
+            hit.relevance > 0.0,
+            "FTS5 MATCH must give the token row keyword relevance"
+        );
         let sub = hits
             .iter()
             .find(|h| h.record.id == "substring_only")
@@ -782,8 +788,18 @@ mod tests {
         let hits = store.retrieve("fact", 10, &[]).await.unwrap();
         let ids: Vec<_> = hits.iter().map(|h| h.record.id.as_str()).collect();
         assert!(ids.contains(&"v2"));
- assert!( !ids.contains(&"v1"), "retired version hidden from retrieval" );
-        assert_eq!(hits.iter() .find(|h| h.record.id == "v2") .unwrap() .meta .supersedes, Some("v1".to_string()));
+        assert!(
+            !ids.contains(&"v1"),
+            "retired version hidden from retrieval"
+        );
+        assert_eq!(
+            hits.iter()
+                .find(|h| h.record.id == "v2")
+                .unwrap()
+                .meta
+                .supersedes,
+            Some("v1".to_string())
+        );
     }
     #[tokio::test]
     async fn pin_keeps_recency_high() {

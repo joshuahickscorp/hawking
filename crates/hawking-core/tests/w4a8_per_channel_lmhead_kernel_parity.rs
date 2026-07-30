@@ -29,7 +29,9 @@ fn make_q4k_bytes(rows: usize, cols: usize, seed: u64) -> Vec<u8> {
 }
 fn make_x(cols: usize, seed: u64) -> Vec<f32> {
     let mut rng = Pcg64Mcg::new(seed as u128);
-    (0..cols).map(|_| rng.gen_range(-3.0_f32..3.0_f32)).collect()
+    (0..cols)
+        .map(|_| rng.gen_range(-3.0_f32..3.0_f32))
+        .collect()
 }
 fn read_i8_buf(buf: &PinnedBuffer, n: usize) -> Vec<i8> {
     let ptr = buf.contents() as *const i8;
@@ -47,11 +49,24 @@ fn gpu_quantize_matches_cpu_per_channel() {
     let out_buf = ctx.new_buffer(cols);
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
-        kernels::quantize_f32_to_int8_per_channel_tcb(&mut tcb, &x_buf, &scales_buf, &out_buf, cols).expect("GPU quantize encode");
+        kernels::quantize_f32_to_int8_per_channel_tcb(
+            &mut tcb,
+            &x_buf,
+            &scales_buf,
+            &out_buf,
+            cols,
+        )
+        .expect("GPU quantize encode");
         tcb.commit_and_wait().expect("GPU quantize commit");
     }
     let gpu_i8 = read_i8_buf(&out_buf, cols);
-    assert_eq!(cpu_i8.len(), gpu_i8.len(), "lengths differ: cpu={} gpu={}", cpu_i8.len(), gpu_i8.len());
+    assert_eq!(
+        cpu_i8.len(),
+        gpu_i8.len(),
+        "lengths differ: cpu={} gpu={}",
+        cpu_i8.len(),
+        gpu_i8.len()
+    );
     let mismatches: Vec<usize> = (0..cols).filter(|&i| cpu_i8[i] != gpu_i8[i]).collect();
     if !mismatches.is_empty() {
         let first = mismatches[0];
@@ -78,8 +93,17 @@ fn end_to_end_per_channel_lmhead_pipeline() {
     let y_baseline_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
-        kernels::gemv_q4_k_m_v3_8r_pinned_tcb(&mut tcb, &model_buf, 0, w_bytes.len(), rows, cols, &x_f32_buf, &y_baseline_buf)
-            .expect("baseline encode");
+        kernels::gemv_q4_k_m_v3_8r_pinned_tcb(
+            &mut tcb,
+            &model_buf,
+            0,
+            w_bytes.len(),
+            rows,
+            cols,
+            &x_f32_buf,
+            &y_baseline_buf,
+        )
+        .expect("baseline encode");
         tcb.commit_and_wait().expect("baseline commit");
     }
     let y_baseline = read_f32_buf(&y_baseline_buf, rows);
@@ -89,7 +113,14 @@ fn end_to_end_per_channel_lmhead_pipeline() {
     let y_pc_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
-        kernels::quantize_f32_to_int8_per_channel_tcb(&mut tcb, &x_f32_buf, &scales_buf, &x_int8_buf, cols).expect("E4 quantize encode");
+        kernels::quantize_f32_to_int8_per_channel_tcb(
+            &mut tcb,
+            &x_f32_buf,
+            &scales_buf,
+            &x_int8_buf,
+            cols,
+        )
+        .expect("E4 quantize encode");
         kernels::gemm_q4_k_a8_v3_8r_per_channel_pinned_tcb(
             &mut tcb,
             &model_buf,
@@ -109,8 +140,17 @@ fn end_to_end_per_channel_lmhead_pipeline() {
     let na: f32 = y_baseline.iter().map(|&v| v * v).sum::<f32>().sqrt();
     let nb: f32 = y_pc.iter().map(|&v| v * v).sum::<f32>().sqrt();
     let cosine = dot / (na * nb);
-    let rmse: f32 = (y_baseline.iter().zip(&y_pc).map(|(&a, &b)| (a - b).powi(2)).sum::<f32>() / rows as f32).sqrt();
+    let rmse: f32 = (y_baseline
+        .iter()
+        .zip(&y_pc)
+        .map(|(&a, &b)| (a - b).powi(2))
+        .sum::<f32>()
+        / rows as f32)
+        .sqrt();
     let mean_abs = y_baseline.iter().map(|x| x.abs()).sum::<f32>() / rows as f32;
     let nrmse = rmse / mean_abs;
-    assert!(cosine > 0.9999 && nrmse < 0.02, "per-channel LM_HEAD pipeline out of tolerance: cosine={cosine:.6} nrmse={nrmse:.4e}");
+    assert!(
+        cosine > 0.9999 && nrmse < 0.02,
+        "per-channel LM_HEAD pipeline out of tolerance: cosine={cosine:.6} nrmse={nrmse:.4e}"
+    );
 }

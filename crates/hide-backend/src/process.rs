@@ -32,7 +32,7 @@ use hide_core::api::{UiEvent, UiEventKind};
 use hide_core::ids::SessionId;
 use hide_core::persistence::DynBlobStore;
 use hide_core::types::BlobRef;
-use hide_kernel::tooling::shell::{runnable_sbpl, sandbox_render_options, sandbox_profile};
+use hide_kernel::tooling::shell::{runnable_sbpl, sandbox_profile, sandbox_render_options};
 use hide_kernel::tooling::ShellConfig;
 use parking_lot::Mutex;
 use serde::Serialize;
@@ -270,7 +270,11 @@ impl ProcessSupervisor {
             }
         };
 
-        if let Some(dir) = spec.cwd.clone().or_else(|| shell_config.workspace_root.clone()) {
+        if let Some(dir) = spec
+            .cwd
+            .clone()
+            .or_else(|| shell_config.workspace_root.clone())
+        {
             command.current_dir(dir);
         }
         for (k, v) in &spec.env {
@@ -293,7 +297,11 @@ impl ProcessSupervisor {
         let mut child = match command.spawn() {
             Ok(child) => child,
             Err(err) => {
-                let msg = format!("{}: {}", spec.argv.first().map(String::as_str).unwrap_or(""), err);
+                let msg = format!(
+                    "{}: {}",
+                    spec.argv.first().map(String::as_str).unwrap_or(""),
+                    err
+                );
                 let proc = Arc::new(Proc {
                     id: id.clone(),
                     argv: spec.argv.clone(),
@@ -354,7 +362,9 @@ impl ProcessSupervisor {
                 let _ = r.await;
             }
             match status {
-                Ok(s) => waited.set_terminal_if_running(ProcessStatus::Exited(s.code().unwrap_or(-1))),
+                Ok(s) => {
+                    waited.set_terminal_if_running(ProcessStatus::Exited(s.code().unwrap_or(-1)))
+                }
                 Err(e) => waited.set_terminal_if_running(ProcessStatus::Failed(e.to_string())),
             }
         });
@@ -462,7 +472,11 @@ impl ProcessSupervisor {
 
     /// Preserve the process's buffered output as a durable artifact in the blob
     /// store, returning its `BlobRef`.
-    pub fn capture_artifact(&self, id: &str, blobs: &DynBlobStore) -> Option<hide_core::Result<BlobRef>> {
+    pub fn capture_artifact(
+        &self,
+        id: &str,
+        blobs: &DynBlobStore,
+    ) -> Option<hide_core::Result<BlobRef>> {
         let proc = self.get(id)?;
         let body = proc.lines.lock().join("\n");
         Some(blobs.put(body.into_bytes(), Some("text/plain".to_string())))
@@ -472,8 +486,12 @@ impl ProcessSupervisor {
     /// most recently started live process.
     pub async fn write_stdin(&self, id: Option<&str>, data: &str) -> Result<(), String> {
         let proc = match id {
-            Some(id) => self.get(id).ok_or_else(|| format!("unknown process {id}"))?,
-            None => self.latest_live().ok_or_else(|| "no live process".to_string())?,
+            Some(id) => self
+                .get(id)
+                .ok_or_else(|| format!("unknown process {id}"))?,
+            None => self
+                .latest_live()
+                .ok_or_else(|| "no live process".to_string())?,
         };
         let mut guard = proc.stdin.lock().await;
         let stdin = guard
@@ -491,8 +509,12 @@ impl ProcessSupervisor {
     /// live process.
     pub fn resize(&self, id: Option<&str>, cols: u16, rows: u16) -> Result<(), String> {
         let proc = match id {
-            Some(id) => self.get(id).ok_or_else(|| format!("unknown process {id}"))?,
-            None => self.latest_live().ok_or_else(|| "no live process".to_string())?,
+            Some(id) => self
+                .get(id)
+                .ok_or_else(|| format!("unknown process {id}"))?,
+            None => self
+                .latest_live()
+                .ok_or_else(|| "no live process".to_string())?,
         };
         *proc.geom.lock() = (Some(cols), Some(rows));
         Ok(())
@@ -525,7 +547,8 @@ fn confine(argv: &[String], config: &ShellConfig) -> Result<Confined, String> {
         if std::path::Path::new("/usr/bin/sandbox-exec").exists() {
             let profile = sandbox_profile(config, argv);
             let opts = sandbox_render_options(config);
-            let rendered = hide_kernel::security::sandbox::render_macos_seatbelt_with(&profile, &opts);
+            let rendered =
+                hide_kernel::security::sandbox::render_macos_seatbelt_with(&profile, &opts);
             let sbpl = runnable_sbpl(&rendered.profile_text);
             let mut c = Command::new("/usr/bin/sandbox-exec");
             c.arg("-p").arg(sbpl).arg("--").args(argv);
@@ -553,8 +576,10 @@ fn confine(argv: &[String], config: &ShellConfig) -> Result<Confined, String> {
         });
     }
 
-    Err("SANDBOX_UNAVAILABLE: refusing to run unconfined (no macOS sandbox-exec / Linux bwrap)"
-        .to_string())
+    Err(
+        "SANDBOX_UNAVAILABLE: refusing to run unconfined (no macOS sandbox-exec / Linux bwrap)"
+            .to_string(),
+    )
 }
 
 fn bare(argv: &[String]) -> Command {
@@ -617,7 +642,10 @@ mod tests {
             return; // this host has a sandbox; the refusal path is not reachable
         }
         let sup = ProcessSupervisor::new(Arc::new(UiEventBus::default()));
-        let id = sup.start(StartSpec::command(vec!["true".to_string()], None), &config());
+        let id = sup.start(
+            StartSpec::command(vec!["true".to_string()], None),
+            &config(),
+        );
         let state = sup.state(&id).unwrap();
         assert_eq!(state.status, "failed");
         assert!(!state.sandboxed);

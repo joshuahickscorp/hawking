@@ -21,7 +21,8 @@ fn tcb_rmsnorm_matches_cpu() {
     let out_buf = ctx.new_buffer(h * std::mem::size_of::<f32>());
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
-        kernels::rmsnorm_metal_buf_tcb(&mut tcb, &x_buf, &w_buf, eps, h, &out_buf).expect("rmsnorm_metal_buf_tcb");
+        kernels::rmsnorm_metal_buf_tcb(&mut tcb, &x_buf, &w_buf, eps, h, &out_buf)
+            .expect("rmsnorm_metal_buf_tcb");
         tcb.commit_and_wait().expect("commit");
     }
     let gpu_out = read_f32_buf(&out_buf, h);
@@ -44,7 +45,10 @@ fn tcb_add_inplace_matches_cpu() {
     }
     let gpu_a = read_f32_buf(&a_buf, h);
     let diff = max_abs_diff(&a_cpu, &gpu_a);
-    assert!(diff < 1e-6, "add_inplace TCB vs CPU diff {diff:.2e} >= 1e-6");
+    assert!(
+        diff < 1e-6,
+        "add_inplace TCB vs CPU diff {diff:.2e} >= 1e-6"
+    );
 }
 #[test]
 fn tcb_staggered_loop_matches_cpu() {
@@ -53,8 +57,12 @@ fn tcb_staggered_loop_matches_cpu() {
     let eps = 1e-6_f32;
     let ctx = ctx();
     let x_init = fixed_f32(h, 0x1111_2222);
-    let deltas: Vec<Vec<f32>> = (0..N_LAYERS).map(|i| fixed_f32(h, 0xAAAA_0000 + i as u64)).collect();
-    let norms: Vec<Vec<f32>> = (0..N_LAYERS).map(|i| fixed_f32(h, 0xBBBB_0000 + i as u64)).collect();
+    let deltas: Vec<Vec<f32>> = (0..N_LAYERS)
+        .map(|i| fixed_f32(h, 0xAAAA_0000 + i as u64))
+        .collect();
+    let norms: Vec<Vec<f32>> = (0..N_LAYERS)
+        .map(|i| fixed_f32(h, 0xBBBB_0000 + i as u64))
+        .collect();
     let mut x_cpu = x_init.clone();
     let mut norm_outs_cpu = vec![vec![0.0f32; h]; N_LAYERS];
     for li in 0..N_LAYERS {
@@ -71,8 +79,10 @@ fn tcb_staggered_loop_matches_cpu() {
         write_f32_buf(&delta_buf, &deltas[li]);
         {
             let mut tcb = TokenCommandBuffer::new(ctx);
-            kernels::add_inplace_metal_tcb(&mut tcb, &x_buf, &delta_buf, h).expect("add_inplace_metal_tcb");
-            kernels::rmsnorm_metal_buf_tcb(&mut tcb, &x_buf, &norm_bufs[li], eps, h, &out_buf).expect("rmsnorm_metal_buf_tcb");
+            kernels::add_inplace_metal_tcb(&mut tcb, &x_buf, &delta_buf, h)
+                .expect("add_inplace_metal_tcb");
+            kernels::rmsnorm_metal_buf_tcb(&mut tcb, &x_buf, &norm_bufs[li], eps, h, &out_buf)
+                .expect("rmsnorm_metal_buf_tcb");
             tcb.commit_and_wait().expect("commit");
         }
         norm_outs_gpu[li] = read_f32_buf(&out_buf, h);

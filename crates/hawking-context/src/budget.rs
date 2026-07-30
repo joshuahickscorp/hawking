@@ -252,7 +252,10 @@ mod tests {
             None => std::env::remove_var("HIDE_MODEL_WEIGHTS"),
         }
         let counter = counter.expect("HIDE_TOKENIZER must load a real counter");
- assert!( counter.is_accurate(), "discovered counter must be tokenizer-true" );
+        assert!(
+            counter.is_accurate(),
+            "discovered counter must be tokenizer-true"
+        );
         let sample = "fn main() { println!(\"hello tokenizer-true budgeting\"); }";
         let true_n = counter.count(sample);
         let heuristic_n = estimate_tokens(sample);

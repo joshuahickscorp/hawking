@@ -36,7 +36,14 @@ fn cosine(a: &[f32], b: &[f32]) -> f64 {
     }
     dot / (na.sqrt() * nb.sqrt()).max(1e-30)
 }
-fn build_int4_cache(ctx: &MetalContext, k: &[f32], v: &[f32], seq_len: usize, n_kv_heads: usize, head_dim: usize) -> (Vec<u8>, Vec<f32>) {
+fn build_int4_cache(
+    ctx: &MetalContext,
+    k: &[f32],
+    v: &[f32],
+    seq_len: usize,
+    n_kv_heads: usize,
+    head_dim: usize,
+) -> (Vec<u8>, Vec<f32>) {
     let kv_dim = n_kv_heads * head_dim;
     let rows = seq_len * n_kv_heads;
     let packed_bytes = rows * (head_dim / 2);
@@ -73,12 +80,22 @@ fn build_int4_cache(ctx: &MetalContext, k: &[f32], v: &[f32], seq_len: usize, n_
     scales.extend_from_slice(&vs);
     (packed, scales)
 }
-fn dequant_cache(packed: &[u8], scales: &[f32], seq_len: usize, n_kv_heads: usize, head_dim: usize) -> Vec<f32> {
+fn dequant_cache(
+    packed: &[u8],
+    scales: &[f32],
+    seq_len: usize,
+    n_kv_heads: usize,
+    head_dim: usize,
+) -> Vec<f32> {
     let rows = seq_len * n_kv_heads;
     let row_bytes = head_dim / 2;
     let mut out = vec![0f32; rows * head_dim];
     for r in 0..rows {
-        let row = dequant_row(&packed[r * row_bytes..(r + 1) * row_bytes], scales[r], head_dim);
+        let row = dequant_row(
+            &packed[r * row_bytes..(r + 1) * row_bytes],
+            scales[r],
+            head_dim,
+        );
         out[r * head_dim..(r + 1) * head_dim].copy_from_slice(&row);
     }
     out
@@ -102,11 +119,27 @@ fn check_geometry(n_heads: usize, n_kv_heads: usize, head_dim: usize, seq_len: u
         let cos_kv = cosine(&k_rt, &k);
     }
     let mut cpu_int4 = vec![0f32; q_dim];
-    mha_decode_step(&q, &k_rt, &v_rt, n_heads, n_kv_heads, head_dim, seq_len, &mut cpu_int4).expect("cpu mha_decode_step (int4-rt)");
+    mha_decode_step(
+        &q,
+        &k_rt,
+        &v_rt,
+        n_heads,
+        n_kv_heads,
+        head_dim,
+        seq_len,
+        &mut cpu_int4,
+    )
+    .expect("cpu mha_decode_step (int4-rt)");
     let k_packed_buf = ctx.new_buffer_with_bytes(k_packed);
     let v_packed_buf = ctx.new_buffer_with_bytes(v_packed);
-    let k_scales_bytes: Vec<u8> = k_scales.iter().flat_map(|&s| f16::from_f32(s).to_bits().to_le_bytes()).collect();
-    let v_scales_bytes: Vec<u8> = v_scales.iter().flat_map(|&s| f16::from_f32(s).to_bits().to_le_bytes()).collect();
+    let k_scales_bytes: Vec<u8> = k_scales
+        .iter()
+        .flat_map(|&s| f16::from_f32(s).to_bits().to_le_bytes())
+        .collect();
+    let v_scales_bytes: Vec<u8> = v_scales
+        .iter()
+        .flat_map(|&s| f16::from_f32(s).to_bits().to_le_bytes())
+        .collect();
     let k_scales_buf = ctx.new_buffer_with_bytes(&k_scales_bytes);
     let v_scales_buf = ctx.new_buffer_with_bytes(&v_scales_bytes);
     let q_buf = new_f32_buf(ctx, &q);
@@ -145,7 +178,17 @@ fn check_geometry(n_heads: usize, n_kv_heads: usize, head_dim: usize, seq_len: u
     );
     // GATE 2 — int4 QUALITY: cosine vs the f32 reference on the ORIGINAL K/V.
     let mut cpu_f32 = vec![0f32; q_dim];
-    mha_decode_step(&q, &k, &v, n_heads, n_kv_heads, head_dim, seq_len, &mut cpu_f32).expect("cpu mha_decode_step (f32)");
+    mha_decode_step(
+        &q,
+        &k,
+        &v,
+        n_heads,
+        n_kv_heads,
+        head_dim,
+        seq_len,
+        &mut cpu_f32,
+    )
+    .expect("cpu mha_decode_step (f32)");
     let cos = cosine(&gpu_int4, &cpu_f32);
     // per-row step = max/7 ≈ 0.143, rel-RMS ≈ 0.07 ⇒ 1 − err²/2). This GATE 2 only
     // grid-size bug did). The TIGHT correctness gate is GATE 1 (decode == CPU on

@@ -1,7 +1,9 @@
 use crate::approval::{ApprovalDecision, ApprovalHub};
 use crate::commands::CommandRouter;
 use crate::connectors::{register_backend_connectors, ConnectorRegistry, ConnectorStatus};
+use crate::initialize::{ClientCapabilities, ClientInfo, ConnectionRegistry, InitializeResponse};
 use crate::interrupt::InterruptHub;
+use crate::live_thread::LiveThread;
 use crate::memory::{
     MemoryDraft, MemoryLedger, MemoryRecord, MemoryRevalidation, MemoryScope, MemoryStatus,
     PrivacyClass, RevalidateTarget,
@@ -13,13 +15,11 @@ use crate::process::{ProcessState, ProcessSupervisor, StartSpec};
 use crate::replay::BackendReplayService;
 use crate::rewind::{self, CheckpointCoverage, FileChange, ForkPoint, RewindTarget, StateRef};
 use crate::security::SecurityServices;
-use crate::initialize::{ClientCapabilities, ClientInfo, ConnectionRegistry, InitializeResponse};
-use crate::live_thread::LiveThread;
 use crate::services::{
     BackendCapabilities, BackendServices, Budget, CheckpointRecord, CheckpointStore,
-    EnvironmentNode, EnvironmentSwitch, GoalOutcome, GoalRecord, GoalStatus, GoalStore, GoalVerdict,
-    JobRecord, JobStatus, JobStore, RepoNode, SharedBackend, Trigger, TriggerEvent, TrustState,
-    WorkspaceEdge, WorkspaceEdgeKind, WorkspaceGraph, WorkspaceStore,
+    EnvironmentNode, EnvironmentSwitch, GoalOutcome, GoalRecord, GoalStatus, GoalStore,
+    GoalVerdict, JobRecord, JobStatus, JobStore, RepoNode, SharedBackend, Trigger, TriggerEvent,
+    TrustState, WorkspaceEdge, WorkspaceEdgeKind, WorkspaceGraph, WorkspaceStore,
 };
 use crate::supervisor::{RuntimeSupervisor, SupervisorConfig};
 use crate::surfaces::SurfaceGraphService;
@@ -46,6 +46,7 @@ use hide_kernel::{AgentKernel, Grounding};
 // as `hide_kernel::verify_plane::*` at their (few) use sites so the function-local
 // `hide_kernel::verify::oracle::*` imports in the goal path and the tests keep
 // their meaning; only the non-colliding types are imported here.
+use super::*;
 use hide_kernel::verify_plane::{
     Finding, GateDecision, ReviewRole, ReviewRoleProfile, SourceFile, StaticAnalysisOracle,
     TieredVerdict, VerificationReceipt, VerificationTier,
@@ -54,7 +55,6 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
-use super::*;
 
 impl BackendHost {
     pub async fn steer_run(
@@ -139,7 +139,13 @@ impl BackendHost {
         let grounding = Arc::new(Grounding::new(self.services.code_index.clone()));
 
         AgentKernel::builder(self.services.event_log.clone())
-            .workspace_root(self.services.config.workspace_root.to_string_lossy().to_string())
+            .workspace_root(
+                self.services
+                    .config
+                    .workspace_root
+                    .to_string_lossy()
+                    .to_string(),
+            )
             .autonomy(turn_kernel_autonomy())
             .grounding(grounding)
             // `.runtime(..)` installs a `RuntimePlanner` since no planner is set.
@@ -161,10 +167,7 @@ impl BackendHost {
         session_id: SessionId,
         run_id: Option<RunId>,
     ) -> Arc<ToolDispatcher> {
-        let bound = crate::tools::DispatchContext {
-            session_id,
-            run_id,
-        };
+        let bound = crate::tools::DispatchContext { session_id, run_id };
         Arc::new(
             crate::tools::build_task_tool_dispatcher(
                 &self.services.config,
@@ -228,7 +231,7 @@ impl BackendHost {
     ///
     /// This is the host's end-to-end generation path: a `KernelRuntimeClient`
     /// (router + the host's HTTP `ModelProvider`, adapted to the orch
-    /// `InferenceClient` seam) produces tokens; each token batch is published - 
+    /// `InferenceClient` seam) produces tokens; each token batch is published -
     /// with coalescing - onto the broadcast bus, then flushed at stream end. The
     /// returned string is the full completion (for callers that also want it
     /// inline). `base_url` is the supervised serve's base (from the

@@ -12,9 +12,7 @@ use hide_core::config::HideConfig;
 use hide_core::event::{Event, NewEvent};
 use hide_core::ids::{now_ms, PlanId, RunId, SessionId};
 use hide_core::persistence::DynEventLog;
-use hide_core::runtime::{
-    GenerationStats, InferenceRequest, RolePurpose, StreamChunk, TokenSink,
-};
+use hide_core::runtime::{GenerationStats, InferenceRequest, RolePurpose, StreamChunk, TokenSink};
 use hide_core::tool::{ToolCall, ToolDispatcher, ToolRegistry};
 use hide_core::types::Decision;
 use hide_core::Result;
@@ -119,7 +117,8 @@ impl ScriptedInferenceClient {
 }
 fn investigate_turn(lib_path: &str, root: &str) -> String {
     let read = json!({ "name": "fs.read", "arguments": { "path": lib_path } });
-    let search = json!({ "name": "search.text", "arguments": { "pattern": "largest", "root": root } });
+    let search =
+        json!({ "name": "search.text", "arguments": { "pattern": "largest", "root": root } });
     format!(
         "Investigating the defect.\n<tool_call>{read}</tool_call>\n<tool_call>{search}</tool_call>"
     )
@@ -316,7 +315,9 @@ async fn run_scripted_flow(
     } else {
         format!("{}\n\n{}", compiled.prompt, base_objective)
     };
-    let inference = Arc::new(ScriptedInferenceClient::new(vec![investigate_turn(&lib, &root)]));
+    let inference = Arc::new(ScriptedInferenceClient::new(vec![investigate_turn(
+        &lib, &root,
+    )]));
     let planner = Arc::new(ScriptedPlanner::new(lib.clone(), math.clone()));
     let runtime = Arc::new(KernelRuntimeClient::new(
         Arc::new(SimpleRouter::new(role_registry.clone())),
@@ -400,10 +401,7 @@ async fn run_once_in_memory() -> Vec<String> {
     let event_log: DynEventLog = Arc::new(hide_core::event::InMemoryEventLog::new());
     let role_registry = Arc::new(RoleRegistry::with_default_local_roles());
     let code_index = Arc::new(InMemoryCodeIndex::default());
-    seed_index_with(
-        |p, c| code_index.add_text_file(p, c, None),
-        &repo,
-    );
+    seed_index_with(|p, c| code_index.add_text_file(p, c, None), &repo);
     let dispatcher = build_ws_dispatcher(&config, &repo.to_string_lossy());
     let session = SessionId::new();
     let outcome = run_scripted_flow(
@@ -416,7 +414,11 @@ async fn run_once_in_memory() -> Vec<String> {
         None,
     )
     .await;
- assert_eq!( outcome.state.phase, Phase::Done, "the in-memory scripted flow must reach Done" );
+    assert_eq!(
+        outcome.state.phase,
+        Phase::Done,
+        "the in-memory scripted flow must reach Done"
+    );
     let sig = event_signature(&event_log, &session).await;
     let _ = std::fs::remove_dir_all(&repo);
     sig
@@ -555,7 +557,10 @@ async fn first_model_free_implementation_receipt() {
         .await
         .unwrap();
     let before_exit = before.exit_code.unwrap_or(-1);
- assert!( before.ok, "test.run must be ok:true even when tests fail (EXEC_NONZERO is data)" );
+    assert!(
+        before.ok,
+        "test.run must be ok:true even when tests fail (EXEC_NONZERO is data)"
+    );
     assert_ne!(before_exit, 0, "the fixture test must start RED");
     let outcome = run_scripted_flow(
         host.services.event_log.clone(),
@@ -578,7 +583,10 @@ async fn first_model_free_implementation_receipt() {
         .unwrap();
     let plan_created = events
         .iter()
-        .find(|e| e.kind == "plan.created" && e.payload.get("action").and_then(|a| a.as_str()) == Some("created"))
+        .find(|e| {
+            e.kind == "plan.created"
+                && e.payload.get("action").and_then(|a| a.as_str()) == Some("created")
+        })
         .expect("a plan.created event must be persisted");
     let oracles = plan_created
         .payload
@@ -595,7 +603,9 @@ async fn first_model_free_implementation_receipt() {
         })
         .unwrap_or_default();
     assert!(oracles.iter().any(|o| o == "test"));
-    assert!(outcome.folded_objective.contains("largest should return the maximum"));
+    assert!(outcome
+        .folded_objective
+        .contains("largest should return the maximum"));
     let planned_objective = plan_created
         .payload
         .pointer("/plan/objective")
@@ -616,7 +626,10 @@ async fn first_model_free_implementation_receipt() {
                 })
                 .unwrap_or(false)
     });
-    assert!(dispatched_read, "the model step must dispatch a real fs.read");
+    assert!(
+        dispatched_read,
+        "the model step must dispatch a real fs.read"
+    );
     let saw_fail = events.iter().any(|e| {
         e.kind == "verify.result"
             && e.payload.get("oracle").and_then(|v| v.as_str()) == Some("test")
@@ -627,11 +640,20 @@ async fn first_model_free_implementation_receipt() {
             && e.payload.get("oracle").and_then(|v| v.as_str()) == Some("test")
             && e.payload.get("status").and_then(|v| v.as_str()) == Some("pass")
     });
-    assert!(saw_fail, "the real cargo-test oracle must have FAILED the wrong patch");
-    assert!(saw_pass, "the real cargo-test oracle must have PASSED the corrected patch");
+    assert!(
+        saw_fail,
+        "the real cargo-test oracle must have FAILED the wrong patch"
+    );
+    assert!(
+        saw_pass,
+        "the real cargo-test oracle must have PASSED the corrected patch"
+    );
     assert!(events.iter().any(|e| e.kind == "plan.replanned"));
     let final_lib = std::fs::read_to_string(repo.join("src/lib.rs")).unwrap();
- assert!( final_lib.contains("if x > m"), "the corrected max-scan fix must be on disk" );
+    assert!(
+        final_lib.contains("if x > m"),
+        "the corrected max-scan fix must be on disk"
+    );
     let after = dispatcher
         .dispatch(ToolCall::new(
             "test.run",
@@ -643,14 +665,21 @@ async fn first_model_free_implementation_receipt() {
     assert_eq!(after_exit, 0, "the fixture test must end GREEN");
     drop(host);
     let host2 = BackendHost::from_services(BackendServices::open(config.clone()).unwrap()).unwrap();
- assert_eq!( host2.services.session(), session, "the durable session id must survive a restart" );
+    assert_eq!(
+        host2.services.session(),
+        session,
+        "the durable session id must survive a restart"
+    );
     let replayed = host2
         .services
         .event_log
         .scan(Some(session.clone()), None, None)
         .await
         .unwrap();
- assert!( replayed.iter().any(|e| e.kind == "plan.created"), "the plan must survive the restart" );
+    assert!(
+        replayed.iter().any(|e| e.kind == "plan.created"),
+        "the plan must survive the restart"
+    );
     assert!(
         replayed.iter().any(|e| {
             e.kind == "verify.result"
@@ -659,8 +688,14 @@ async fn first_model_free_implementation_receipt() {
         }),
         "the green verdict must survive the restart"
     );
-    let projection = host2.rebuild_session_projection(session.clone()).await.unwrap();
- assert_eq!( projection.session_id, session, "the resumed projection must be for the same thread" );
+    let projection = host2
+        .rebuild_session_projection(session.clone())
+        .await
+        .unwrap();
+    assert_eq!(
+        projection.session_id, session,
+        "the resumed projection must be for the same thread"
+    );
     let tools = tool_names(&config, &root);
     let receipt = build_receipt(
         &repo,
@@ -691,8 +726,14 @@ async fn first_model_free_implementation_receipt() {
     assert_eq!(reloaded["tests"]["before"], "red");
     assert_eq!(reloaded["tests"]["after"], "green");
     assert_eq!(reloaded["accepted"], true);
-    assert_eq!(reloaded["model"], "scripted-driver (DEFERRED_MODEL_REQUIRED)");
-    assert!(reloaded["actions"].as_array().map(|a| !a.is_empty()).unwrap_or(false));
+    assert_eq!(
+        reloaded["model"],
+        "scripted-driver (DEFERRED_MODEL_REQUIRED)"
+    );
+    assert!(reloaded["actions"]
+        .as_array()
+        .map(|a| !a.is_empty())
+        .unwrap_or(false));
     eprintln!(
         "hide.receipt.v1 exported to {}",
         receipt_path.to_string_lossy()
@@ -707,5 +748,8 @@ async fn scripted_flow_is_deterministic_replay_equivalent() {
     assert!(sig1.iter().any(|s| s == "verify:test:fail"));
     assert!(sig1.iter().any(|s| s == "verify:test:pass"));
     assert!(sig1.iter().any(|s| s.starts_with("plan.replanned")));
- assert!( sig1.iter().any(|s| s == "phase:done"), "must reach a terminal Done; sig: {sig1:?}" );
+    assert!(
+        sig1.iter().any(|s| s == "phase:done"),
+        "must reach a terminal Done; sig: {sig1:?}"
+    );
 }

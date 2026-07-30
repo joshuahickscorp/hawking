@@ -251,8 +251,14 @@ mod tests {
     #[test]
     fn nll_rewards_confident_correct_and_punishes_wrong() {
         let logits = vec![100.0, 0.0, 0.0];
- assert!( nll_from_logits(&logits, 0) < 1e-3, "confident correct -> ~0 NLL" );
- assert!( nll_from_logits(&logits, 1) > 50.0, "confident wrong -> high NLL" );
+        assert!(
+            nll_from_logits(&logits, 0) < 1e-3,
+            "confident correct -> ~0 NLL"
+        );
+        assert!(
+            nll_from_logits(&logits, 1) > 50.0,
+            "confident wrong -> high NLL"
+        );
     }
     #[test]
     fn nll_uniform_is_log_n_and_guards_bounds() {
@@ -288,6 +294,9 @@ mod tests {
         assert_eq!(r1.passes, 1);
         assert_eq!(r1.total, 2);
         assert!((r1.pass_at_1 - 0.5).abs() < 1e-9);
-        assert_eq!(serde_json::to_string(&r1).unwrap(), serde_json::to_string(&r2).unwrap());
+        assert_eq!(
+            serde_json::to_string(&r1).unwrap(),
+            serde_json::to_string(&r2).unwrap()
+        );
     }
 }

@@ -41,9 +41,7 @@ pub use abi::{
     ImplementationStatus, ObjectType, OfflineCache, RateLimit, ReadCapability, RevocationPolicy,
     SyncMode, WriteCapability,
 };
-pub use account::{
-    AccountHandle, AccountId, AccountStore, CredentialMaterial, InFlightGuard,
-};
+pub use account::{AccountHandle, AccountId, AccountStore, CredentialMaterial, InFlightGuard};
 pub use connector::{
     BTreeMapStr, Connector, ConnectorObject, ConnectorRead, ConnectorWrite, DeclaredConnector,
     ListRequest, ReadRequest,

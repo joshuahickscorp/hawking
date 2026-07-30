@@ -18,8 +18,12 @@ fn run_parity(
     let q = fixed_f32(n_heads * q_head_dim, 0xDEAD_BEEF);
     let c_kv = fixed_f32(seq_len * kv_lora_rank, 0xCAFE_BABE);
     let k_pe = fixed_f32(seq_len * qk_rope_head_dim, 0x1234_5678);
-    let kv_b_raw = fixed_f32(n_heads * (qk_nope_head_dim + v_head_dim) * kv_lora_rank, 0xABCD_EF01);
-    let kv_b_buf: PinnedBuffer = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(&kv_b_raw));
+    let kv_b_raw = fixed_f32(
+        n_heads * (qk_nope_head_dim + v_head_dim) * kv_lora_rank,
+        0xABCD_EF01,
+    );
+    let kv_b_buf: PinnedBuffer =
+        ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(&kv_b_raw));
     let mut mla_out = vec![0.0f32; n_heads * v_head_dim];
     kernels::mla_decode_metal(
         ctx,
@@ -59,17 +63,49 @@ fn run_parity(
 }
 #[test]
 fn v1l_flash_vs_mla_small() {
-    run_parity("small(heads=4,nope=16,rope=8,v=16,lora=32,seq=64)", 4, 16, 8, 16, 32, 64);
+    run_parity(
+        "small(heads=4,nope=16,rope=8,v=16,lora=32,seq=64)",
+        4,
+        16,
+        8,
+        16,
+        32,
+        64,
+    );
 }
 #[test]
 fn v1l_flash_vs_mla_realistic() {
-    run_parity("realistic(heads=16,nope=64,rope=32,v=64,lora=64,seq=256)", 16, 64, 32, 64, 64, 256);
+    run_parity(
+        "realistic(heads=16,nope=64,rope=32,v=64,lora=64,seq=256)",
+        16,
+        64,
+        32,
+        64,
+        64,
+        256,
+    );
 }
 #[test]
 fn v1l_flash_vs_mla_seq_one() {
-    run_parity("seq1(heads=4,nope=16,rope=8,v=16,lora=32,seq=1)", 4, 16, 8, 16, 32, 1);
+    run_parity(
+        "seq1(heads=4,nope=16,rope=8,v=16,lora=32,seq=1)",
+        4,
+        16,
+        8,
+        16,
+        32,
+        1,
+    );
 }
 #[test]
 fn v1l_flash_vs_mla_multi_tile() {
-    run_parity("multi_tile(heads=8,nope=32,rope=16,v=32,lora=32,seq=384)", 8, 32, 16, 32, 32, 384);
+    run_parity(
+        "multi_tile(heads=8,nope=32,rope=16,v=32,lora=32,seq=384)",
+        8,
+        32,
+        16,
+        32,
+        32,
+        384,
+    );
 }

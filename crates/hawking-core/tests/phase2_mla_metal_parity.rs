@@ -15,7 +15,8 @@ fn parity_check(name: &'static str, rows: usize, cols: usize, seed_x: u64, seed_
     kernels::gemv_f32(&w, rows, cols, &x, &mut cpu_out);
     let ctx = ctx().clone();
     let mut metal_out = vec![0.0_f32; rows];
-    kernels::gemv_f32_attn_metal(&ctx, &w, rows, cols, &x, &mut metal_out).expect("gemv_f32_attn_metal should succeed");
+    kernels::gemv_f32_attn_metal(&ctx, &w, rows, cols, &x, &mut metal_out)
+        .expect("gemv_f32_attn_metal should succeed");
     let diff = max_abs_diff(&cpu_out, &metal_out);
     assert!(diff < ATOL, "{name} CPU/Metal diff {diff} >= atol {ATOL}");
 }
@@ -81,7 +82,10 @@ fn mla_decode_cpu_reference(
             }
             scores[t] = s * scale;
         }
-        let mx = scores[..seq_len].iter().cloned().fold(f32::NEG_INFINITY, f32::max);
+        let mx = scores[..seq_len]
+            .iter()
+            .cloned()
+            .fold(f32::NEG_INFINITY, f32::max);
         let mut sum = 0.0f32;
         for t in 0..seq_len {
             scores[t] = (scores[t] - mx).exp();

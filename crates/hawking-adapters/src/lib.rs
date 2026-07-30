@@ -29,8 +29,8 @@
 //! migrations, and the root JSON deliverables — same deterministic golden-file
 //! pattern as `hide-sdk-codegen`. Do not add a second codegen system.
 
-pub mod bridge_surface;
 pub mod abi;
+pub mod bridge_surface;
 pub mod evidence;
 pub mod export;
 pub mod families;

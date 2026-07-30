@@ -690,12 +690,16 @@ mod tests {
     #[test]
     fn candidate_order_is_stable() {
         let ids: Vec<_> = deterministic_candidates()
-            .into_iter().map(|v| v.id) .collect();
+            .into_iter()
+            .map(|v| v.id)
+            .collect();
         assert_eq!(ids, vec!["metal-default"]);
     }
     #[test]
     fn candidate_scoring_is_deterministic() {
-        let candidates = deterministic_candidates(); let a = score_candidates(&candidates); let b = score_candidates(&candidates);
+        let candidates = deterministic_candidates();
+        let a = score_candidates(&candidates);
+        let b = score_candidates(&candidates);
         assert_eq!(a, b);
         assert_eq!(select_variant(&candidates, &a).unwrap().id, "metal-default");
     }
@@ -712,8 +716,10 @@ mod tests {
         assert_eq!(arch_family("mistral"), "llama");
         assert_eq!(arch_family("gemma2"), "gemma2");
         assert_eq!(arch_family("phi3"), "phi3");
-        assert_eq!(arch_family("phi3.5"), "phi3"); assert_ne!(arch_family("qwen2"), arch_family("llama"));
-        assert_ne!(arch_family("deepseek2"), arch_family("llama")); assert_ne!(arch_family("gemma2"), arch_family("llama"));
+        assert_eq!(arch_family("phi3.5"), "phi3");
+        assert_ne!(arch_family("qwen2"), arch_family("llama"));
+        assert_ne!(arch_family("deepseek2"), arch_family("llama"));
+        assert_ne!(arch_family("gemma2"), arch_family("llama"));
         assert_ne!(arch_family("phi3"), arch_family("gemma2"));
     }
     #[test]
@@ -726,7 +732,8 @@ mod tests {
             scale_dtype: "f16".into(),
             kv_dtype: "f16".into(),
         };
-        let json = serde_json::to_string(&lv).unwrap(); let back: RuntimeLevers = serde_json::from_str(&json).unwrap();
+        let json = serde_json::to_string(&lv).unwrap();
+        let back: RuntimeLevers = serde_json::from_str(&json).unwrap();
         assert_eq!(lv, back);
     }
     #[test]
@@ -764,17 +771,24 @@ mod tests {
         assert_eq!(p.runtime_levers, RuntimeLevers::default());
         assert_eq!(p.runtime_levers.scale_dtype, "f32");
         assert_eq!(p.runtime_levers.kv_dtype, "f32");
-        let round = serde_json::to_string(&p).unwrap(); let p2: KernelProfile = serde_json::from_str(&round).unwrap();
+        let round = serde_json::to_string(&p).unwrap();
+        let p2: KernelProfile = serde_json::from_str(&round).unwrap();
         assert_eq!(p.runtime_levers, p2.runtime_levers);
     }
     #[test]
     fn build_deterministic_profile_populates_runtime_levers() {
-        std::env::set_var("HAWKING_QWEN_VOCAB_PRUNE", "32000"); std::env::set_var("HAWKING_QWEN_FFN_DOWN_Q4K", "1");
-        std::env::set_var("HAWKING_QWEN_PREDEC_F16SCALES", "1"); std::env::set_var("HAWKING_QWEN_Q4K_LMHEAD", "1");
-        std::env::set_var("HAWKING_QWEN_F16_KV", "1"); std::env::remove_var("HAWKING_QWEN_INT4_KV");
-        std::env::remove_var("HAWKING_QWEN_Q4K_PREDEC"); let lv = RuntimeLevers::from_env("fast");
-        std::env::remove_var("HAWKING_QWEN_VOCAB_PRUNE"); std::env::remove_var("HAWKING_QWEN_FFN_DOWN_Q4K");
-        std::env::remove_var("HAWKING_QWEN_PREDEC_F16SCALES"); std::env::remove_var("HAWKING_QWEN_Q4K_LMHEAD");
+        std::env::set_var("HAWKING_QWEN_VOCAB_PRUNE", "32000");
+        std::env::set_var("HAWKING_QWEN_FFN_DOWN_Q4K", "1");
+        std::env::set_var("HAWKING_QWEN_PREDEC_F16SCALES", "1");
+        std::env::set_var("HAWKING_QWEN_Q4K_LMHEAD", "1");
+        std::env::set_var("HAWKING_QWEN_F16_KV", "1");
+        std::env::remove_var("HAWKING_QWEN_INT4_KV");
+        std::env::remove_var("HAWKING_QWEN_Q4K_PREDEC");
+        let lv = RuntimeLevers::from_env("fast");
+        std::env::remove_var("HAWKING_QWEN_VOCAB_PRUNE");
+        std::env::remove_var("HAWKING_QWEN_FFN_DOWN_Q4K");
+        std::env::remove_var("HAWKING_QWEN_PREDEC_F16SCALES");
+        std::env::remove_var("HAWKING_QWEN_Q4K_LMHEAD");
         std::env::remove_var("HAWKING_QWEN_F16_KV");
         assert_eq!(lv.profile_name, "fast");
         assert_eq!(lv.vocab_prune, Some(32000));
@@ -832,14 +846,16 @@ mod tests {
     }
     #[test]
     fn select_best_returns_none_when_all_below_floor_or_empty() {
-        assert!(select_best_default(&ev(vec![])).is_none()); let all_bad = ev(vec![mk("a", 1, 99.0, 0.10), mk("b", 2, 80.0, 0.50)]);
+        assert!(select_best_default(&ev(vec![])).is_none());
+        let all_bad = ev(vec![mk("a", 1, 99.0, 0.10), mk("b", 2, 80.0, 0.50)]);
         assert!(select_best_default(&all_bad).is_none());
     }
     #[test]
     fn measured_constructor_round_trips_new_fields() {
         let m =
             AutotuneMeasurement::measured("metal-default", 1, 47.96, 1.0, RuntimeLevers::default());
-        let json = serde_json::to_string(&m).unwrap(); let back: AutotuneMeasurement = serde_json::from_str(&json).unwrap();
+        let json = serde_json::to_string(&m).unwrap();
+        let back: AutotuneMeasurement = serde_json::from_str(&json).unwrap();
         assert_eq!(m, back);
         assert_eq!(back.tps, 47.96);
         assert_eq!(back.quality, 1.0);
@@ -849,7 +865,8 @@ mod tests {
     fn pinned_profiles_still_load_after_field_additions() {
         let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("..")
-            .join("..") .join("profiles");
+            .join("..")
+            .join("profiles");
         let files = [
             "qwen3b-instruct-q4k.m3pro18.json",
             "qwen15b-instruct-q4k.m3pro18.json",
@@ -858,19 +875,27 @@ mod tests {
         ];
         for f in files {
             let path = root.join(f);
-            let p = KernelProfile::load(&path).unwrap_or_else(|e| panic!("{f}: KernelProfile::load failed: {e}"));
+            let p = KernelProfile::load(&path)
+                .unwrap_or_else(|e| panic!("{f}: KernelProfile::load failed: {e}"));
             assert_eq!(
                 p.schema_version, PROFILE_SCHEMA_VERSION,
                 "{f}: schema_version must match current"
             );
-            assert_eq!(p.runtime_levers, RuntimeLevers::default(), "{f}: absent runtime_levers must deserialize to all-default");
+            assert_eq!(
+                p.runtime_levers,
+                RuntimeLevers::default(),
+                "{f}: absent runtime_levers must deserialize to all-default"
+            );
             for m in &p.evidence.measurements {
                 assert_eq!(m.tps, 0.0, "{f}: legacy measurement tps defaults to 0.0");
                 assert_eq!(
                     m.quality, 1.0,
                     "{f}: legacy measurement quality defaults to 1.0"
                 );
-                assert!(m.runtime_levers.is_none(), "{f}: legacy measurement has no runtime_levers");
+                assert!(
+                    m.runtime_levers.is_none(),
+                    "{f}: legacy measurement has no runtime_levers"
+                );
             }
         }
     }

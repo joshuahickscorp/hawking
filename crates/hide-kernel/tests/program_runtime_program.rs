@@ -1,9 +1,9 @@
-use std::collections::BTreeMap;
 use hide_kernel::program_runtime::{
     map_of, run, BinOp, Citation, DenyAllHost, Expr, HandleError, HandleGrants, HandleName,
     HostHandles, JoinKind, Lambda, LimitKind, Limits, Operator, Order, Program, RetryPolicy,
     RuntimeError, Value, WriteKind,
 };
+use std::collections::BTreeMap;
 struct FixtureHost;
 impl FixtureHost {
     fn hit(path: &str, score: i64, owner: &str) -> Value {
@@ -64,7 +64,11 @@ fn analysis_program() -> Expr {
         input: Box::new(projected),
         pred: Lambda::new(
             "r",
-            Expr::bin(BinOp::Ge, Expr::field(Expr::var("r"), ["score"]), Expr::lit(5i64)),
+            Expr::bin(
+                BinOp::Ge,
+                Expr::field(Expr::var("r"), ["score"]),
+                Expr::lit(5i64),
+            ),
         ),
     });
     let ranked = Expr::op(Operator::Rank {
@@ -90,17 +94,38 @@ fn map_filter_rank_join_preserves_citations() {
     let results = field(&out.value, "results").unwrap().as_list().unwrap();
     assert_eq!(results.len(), 2);
     let first = &results[0];
-    assert_eq!(field(field(first, "left").unwrap(), "path"), Some(&Value::from("core/b.rs")));
-    assert_eq!(field(field(first, "left").unwrap(), "score"), Some(&Value::from(9i64)));
-    assert_eq!(field(field(first, "right").unwrap(), "commits"), Some(&Value::from(4i64)));
+    assert_eq!(
+        field(field(first, "left").unwrap(), "path"),
+        Some(&Value::from("core/b.rs"))
+    );
+    assert_eq!(
+        field(field(first, "left").unwrap(), "score"),
+        Some(&Value::from(9i64))
+    );
+    assert_eq!(
+        field(field(first, "right").unwrap(), "commits"),
+        Some(&Value::from(4i64))
+    );
     for row in results {
         let sources: Vec<String> = row.citations().into_iter().map(|c| c.source).collect();
-        assert!(sources.contains(&"search.text".to_string()), "missing search cite: {sources:?}");
-        assert!(sources.contains(&"git.log".to_string()), "missing git cite: {sources:?}");
+        assert!(
+            sources.contains(&"search.text".to_string()),
+            "missing search cite: {sources:?}"
+        );
+        assert!(
+            sources.contains(&"git.log".to_string()),
+            "missing git cite: {sources:?}"
+        );
     }
     let second = &results[1];
-    assert_eq!(field(field(second, "left").unwrap(), "path"), Some(&Value::from("core/c.rs")));
-    assert_eq!(field(field(second, "right").unwrap(), "commits"), Some(&Value::from(12i64)));
+    assert_eq!(
+        field(field(second, "left").unwrap(), "path"),
+        Some(&Value::from("core/c.rs"))
+    );
+    assert_eq!(
+        field(field(second, "right").unwrap(), "commits"),
+        Some(&Value::from(12i64))
+    );
 }
 #[test]
 fn same_program_same_input_is_byte_identical() {
@@ -131,7 +156,10 @@ fn program_that_wants_to_edit_returns_a_proposal_and_writes_nothing() {
         ),
         (
             "citations",
-            Expr::lit(Value::List(vec![map_of([("source", Value::from("file.read"))])])),
+            Expr::lit(Value::List(vec![map_of([(
+                "source",
+                Value::from("file.read"),
+            )])])),
         ),
     ]);
     let root = Expr::map_lit([("staged", Expr::propose_write(spec))]);
@@ -162,7 +190,10 @@ fn there_is_no_fs_network_or_subprocess_handle_to_name() {
         "secret.read",
         "credentials.get",
     ] {
-        assert!(HandleName::from_str(forbidden).is_none(), "{forbidden} must not exist");
+        assert!(
+            HandleName::from_str(forbidden).is_none(),
+            "{forbidden} must not exist"
+        );
     }
     assert!(HandleName::ALL.iter().all(HandleName::is_read_oriented));
     assert_eq!(HandleName::ALL.len(), 10);
@@ -191,8 +222,13 @@ fn instruction_limit_trips() {
         Expr::bin(BinOp::Add, Expr::lit(1i64), Expr::lit(2i64)),
         Expr::lit(3i64),
     );
-    let err = run(&Program::new(e), &DenyAllHost, &HandleGrants::none(), only(|l| l.instructions = 3))
-        .unwrap_err();
+    let err = run(
+        &Program::new(e),
+        &DenyAllHost,
+        &HandleGrants::none(),
+        only(|l| l.instructions = 3),
+    )
+    .unwrap_err();
     assert_eq!(err.limit_kind(), Some(LimitKind::Instruction));
 }
 #[test]
@@ -209,8 +245,13 @@ fn wall_time_limit_trips() {
 fn output_bytes_limit_trips() {
     let big: Vec<Value> = (0..200).map(Value::Int).collect();
     let e = Expr::lit(Value::List(big));
-    let err = run(&Program::new(e), &DenyAllHost, &HandleGrants::none(), only(|l| l.output_bytes = 16))
-        .unwrap_err();
+    let err = run(
+        &Program::new(e),
+        &DenyAllHost,
+        &HandleGrants::none(),
+        only(|l| l.output_bytes = 16),
+    )
+    .unwrap_err();
     assert_eq!(err.limit_kind(), Some(LimitKind::OutputBytes));
 }
 #[test]
@@ -219,13 +260,25 @@ fn tool_call_limit_trips() {
         Expr::handle(HandleName::SearchText, Expr::lit("a")),
         Expr::handle(HandleName::SearchText, Expr::lit("b")),
     ]);
-    let err = run(&Program::new(e), &FixtureHost, &grants(), only(|l| l.tool_calls = 1)).unwrap_err();
+    let err = run(
+        &Program::new(e),
+        &FixtureHost,
+        &grants(),
+        only(|l| l.tool_calls = 1),
+    )
+    .unwrap_err();
     assert_eq!(err.limit_kind(), Some(LimitKind::ToolCall));
 }
 #[test]
 fn memory_limit_trips() {
     let e = Expr::handle(HandleName::SearchText, Expr::lit("q"));
-    let err = run(&Program::new(e), &FixtureHost, &grants(), only(|l| l.memory_bytes = 16)).unwrap_err();
+    let err = run(
+        &Program::new(e),
+        &FixtureHost,
+        &grants(),
+        only(|l| l.memory_bytes = 16),
+    )
+    .unwrap_err();
     assert_eq!(err.limit_kind(), Some(LimitKind::Memory));
 }
 #[test]
@@ -235,8 +288,13 @@ fn concurrency_limit_trips() {
         func: Lambda::new("x", Expr::var("x")),
         concurrency: Some(8),
     });
-    let err = run(&Program::new(e), &DenyAllHost, &HandleGrants::none(), only(|l| l.concurrency = 4))
-        .unwrap_err();
+    let err = run(
+        &Program::new(e),
+        &DenyAllHost,
+        &HandleGrants::none(),
+        only(|l| l.concurrency = 4),
+    )
+    .unwrap_err();
     assert_eq!(err.limit_kind(), Some(LimitKind::Concurrency));
 }
 #[test]
@@ -246,8 +304,13 @@ fn artifact_byte_limit_trips() {
         input: Box::new(Expr::lit(Value::List(big))),
         name: "scratch".into(),
     });
-    let err = run(&Program::new(e), &DenyAllHost, &HandleGrants::none(), only(|l| l.artifact_bytes = 8))
-        .unwrap_err();
+    let err = run(
+        &Program::new(e),
+        &DenyAllHost,
+        &HandleGrants::none(),
+        only(|l| l.artifact_bytes = 8),
+    )
+    .unwrap_err();
     assert_eq!(err.limit_kind(), Some(LimitKind::ArtifactByte));
 }
 #[test]
@@ -256,8 +319,13 @@ fn recursion_limit_trips() {
     for _ in 0..40 {
         e = Expr::not(e);
     }
-    let err = run(&Program::new(e), &DenyAllHost, &HandleGrants::none(), only(|l| l.recursion_depth = 5))
-        .unwrap_err();
+    let err = run(
+        &Program::new(e),
+        &DenyAllHost,
+        &HandleGrants::none(),
+        only(|l| l.recursion_depth = 5),
+    )
+    .unwrap_err();
     assert_eq!(err.limit_kind(), Some(LimitKind::Recursion));
 }
 #[test]
@@ -267,12 +335,21 @@ fn spill_to_artifact_records_content_out_of_band() {
         input: Box::new(Expr::lit(data.clone())),
         name: "rows".into(),
     });
-    let out = run(&Program::new(e), &DenyAllHost, &HandleGrants::none(), Limits::strict()).unwrap();
+    let out = run(
+        &Program::new(e),
+        &DenyAllHost,
+        &HandleGrants::none(),
+        Limits::strict(),
+    )
+    .unwrap();
     assert_eq!(out.artifacts.len(), 1);
     let art = &out.artifacts[0];
     assert_eq!(art.name, "rows");
     assert_eq!(art.content, data);
-    assert_eq!(field(&out.value, "@artifact"), Some(&Value::from("artifact-0")));
+    assert_eq!(
+        field(&out.value, "@artifact"),
+        Some(&Value::from("artifact-0"))
+    );
     assert_eq!(field(&out.value, "name"), Some(&Value::from("rows")));
 }
 #[test]

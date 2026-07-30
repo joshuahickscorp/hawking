@@ -18,13 +18,22 @@ fn make_engine(weights: &PathBuf) -> Box<dyn hawking_core::Engine> {
     std::env::set_var("HAWKING_QWEN_TCB", "1");
     std::env::set_var("HAWKING_QWEN_PREFIX_CACHE", "0");
     std::env::set_var("HAWKING_QWEN_PAIR_2R_INLINE", "0");
-    hawking_core::model::load_engine(weights, hawking_core::EngineConfig::default()).expect("load engine")
+    hawking_core::model::load_engine(weights, hawking_core::EngineConfig::default())
+        .expect("load engine")
 }
-fn gen_on_n(engine: &mut dyn hawking_core::Engine, prompt: &str, max_new_tokens: usize) -> (Vec<u32>, usize) {
+fn gen_on_n(
+    engine: &mut dyn hawking_core::Engine,
+    prompt: &str,
+    max_new_tokens: usize,
+) -> (Vec<u32>, usize) {
     let req = hawking_core::GenerateRequest {
         prompt: prompt.into(),
         max_new_tokens,
-        sampling: hawking_core::SamplingParams { temperature: 0.0, seed: Some(42), ..Default::default() },
+        sampling: hawking_core::SamplingParams {
+            temperature: 0.0,
+            seed: Some(42),
+            ..Default::default()
+        },
         stop: vec![],
         abort: None,
         max_stall_ms: 0,
@@ -47,7 +56,13 @@ fn gen_on(engine: &mut dyn hawking_core::Engine, prompt: &str) -> (Vec<u32>, usi
 fn lock_gate() -> std::sync::MutexGuard<'static, ()> {
     SERIAL_GATE.get_or_init(|| Mutex::new(())).lock().unwrap()
 }
-fn draft_on_vs_off(weights: &PathBuf, label: &str, setup: impl FnOnce(), teardown: impl FnOnce(), require_accept: bool) {
+fn draft_on_vs_off(
+    weights: &PathBuf,
+    label: &str,
+    setup: impl FnOnce(),
+    teardown: impl FnOnce(),
+    require_accept: bool,
+) {
     setup();
     std::env::set_var("HAWKING_QWEN_USER_DRAFT", "0");
     let (ref_ids, _) = {
@@ -61,9 +76,21 @@ fn draft_on_vs_off(weights: &PathBuf, label: &str, setup: impl FnOnce(), teardow
     };
     std::env::set_var("HAWKING_QWEN_USER_DRAFT", "0");
     teardown();
-    assert_eq!(draft_ids.len(), MAX_NEW_TOKENS, "{label}: draft-ON wrong token count");
-    assert_eq!(ref_ids.len(), MAX_NEW_TOKENS, "{label}: draft-OFF wrong token count");
-    assert_eq!(&ref_ids[..3], &draft_ids[..3], "GATE FAILED (first 3, {label})");
+    assert_eq!(
+        draft_ids.len(),
+        MAX_NEW_TOKENS,
+        "{label}: draft-ON wrong token count"
+    );
+    assert_eq!(
+        ref_ids.len(),
+        MAX_NEW_TOKENS,
+        "{label}: draft-OFF wrong token count"
+    );
+    assert_eq!(
+        &ref_ids[..3],
+        &draft_ids[..3],
+        "GATE FAILED (first 3, {label})"
+    );
     assert_eq!(ref_ids, draft_ids, "GATE FAILED (16 tokens, {label})");
     if require_accept {
         assert!(accepted > 0, "{label}: draft_accepted=0 — vacuous gate");
@@ -89,23 +116,45 @@ fn clear_full_fast_env() {
 }
 #[test]
 fn user_draft_is_bit_identical() {
-    let Some(weights) = weights_path() else { return };
+    let Some(weights) = weights_path() else {
+        return;
+    };
     let _g = lock_gate();
     draft_on_vs_off(&weights, "default", || {}, || {}, false);
 }
 #[test]
 fn user_draft_bit_identical_fast_pruned_q4k() {
-    let Some(weights) = weights_path() else { return };
+    let Some(weights) = weights_path() else {
+        return;
+    };
     let _g = lock_gate();
-    draft_on_vs_off(&weights, "fast pruned-Q4K", set_pruned_q4k, clear_pruned_q4k, true);
+    draft_on_vs_off(
+        &weights,
+        "fast pruned-Q4K",
+        set_pruned_q4k,
+        clear_pruned_q4k,
+        true,
+    );
 }
 #[test]
 fn user_draft_bit_identical_full_fast_env() {
-    let Some(weights) = weights_path() else { return };
+    let Some(weights) = weights_path() else {
+        return;
+    };
     let _g = lock_gate();
-    draft_on_vs_off(&weights, "full fast env", set_full_fast_env, clear_full_fast_env, false);
+    draft_on_vs_off(
+        &weights,
+        "full fast env",
+        set_full_fast_env,
+        clear_full_fast_env,
+        false,
+    );
 }
-fn propose_first_matches_bonus_first(weights: &PathBuf, pruned: bool, n: usize) -> (Vec<u32>, Vec<u32>, usize, usize) {
+fn propose_first_matches_bonus_first(
+    weights: &PathBuf,
+    pruned: bool,
+    n: usize,
+) -> (Vec<u32>, Vec<u32>, usize, usize) {
     if pruned {
         set_pruned_q4k();
     }
@@ -127,24 +176,33 @@ fn propose_first_matches_bonus_first(weights: &PathBuf, pruned: bool, n: usize) 
     }
     assert_eq!(bonus_ids.len(), n, "bonus-first wrong token count");
     assert_eq!(pf_ids.len(), n, "propose-first wrong token count");
-    assert_eq!(bonus_ids, pf_ids, "GATE FAILED propose-first vs bonus-first pruned={pruned} n={n}");
+    assert_eq!(
+        bonus_ids, pf_ids,
+        "GATE FAILED propose-first vs bonus-first pruned={pruned} n={n}"
+    );
     (bonus_ids, pf_ids, bonus_acc, pf_acc)
 }
 #[test]
 fn user_draft_propose_first_bit_identical_default() {
-    let Some(weights) = weights_path() else { return };
+    let Some(weights) = weights_path() else {
+        return;
+    };
     let _g = lock_gate();
     let _ = propose_first_matches_bonus_first(&weights, false, MAX_NEW_TOKENS);
 }
 #[test]
 fn user_draft_propose_first_bit_identical_pruned_q4k() {
-    let Some(weights) = weights_path() else { return };
+    let Some(weights) = weights_path() else {
+        return;
+    };
     let _g = lock_gate();
     let _ = propose_first_matches_bonus_first(&weights, true, MAX_NEW_TOKENS);
 }
 #[test]
 fn user_draft_propose_first_lossless_long() {
-    let Some(weights) = weights_path() else { return };
+    let Some(weights) = weights_path() else {
+        return;
+    };
     let _g = lock_gate();
     let _ = propose_first_matches_bonus_first(&weights, true, 64);
 }

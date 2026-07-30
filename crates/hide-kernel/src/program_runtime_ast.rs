@@ -101,9 +101,13 @@ pub enum SchemaSpec {
     Number,
     Str,
     /// A homogeneous list.
-    List { items: Box<SchemaSpec> },
+    List {
+        items: Box<SchemaSpec>,
+    },
     /// An object with typed, optionally-required fields.
-    Map { fields: Vec<SchemaField> },
+    Map {
+        fields: Vec<SchemaField>,
+    },
 }
 
 /// One field in a [`SchemaSpec::Map`].
@@ -190,16 +194,10 @@ pub enum Operator {
     Sample { input: Box<Expr>, k: usize },
     /// Spill a large value to an artifact and return a reference. Enforces the
     /// per-artifact byte budget.
-    SpillToArtifact {
-        input: Box<Expr>,
-        name: String,
-    },
+    SpillToArtifact { input: Box<Expr>, name: String },
     /// Map `func` over records while preserving each source record's citations
     /// onto the corresponding output record (merged, deduplicated).
-    CitationPreservation {
-        input: Box<Expr>,
-        func: Lambda,
-    },
+    CitationPreservation { input: Box<Expr>, func: Lambda },
 }
 
 /// An expression node.

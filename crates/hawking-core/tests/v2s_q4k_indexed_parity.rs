@@ -33,17 +33,50 @@ fn run_parity(routes: usize, rows: usize, cols: usize, seed_base: u64) {
     let mut model_bytes = vec![0xA5u8; 64];
     let base_offset = model_bytes.len();
     model_bytes.extend_from_slice(&fused);
-    let route_ids: Vec<u32> = (0..routes).map(|i| ((i * 2 + 1) % n_experts) as u32).collect();
+    let route_ids: Vec<u32> = (0..routes)
+        .map(|i| ((i * 2 + 1) % n_experts) as u32)
+        .collect();
     let x = fixed_input(cols, seed_base ^ 0xDEAD_BEEF);
     let mut v2_out = vec![0.0_f32; routes * rows];
-    kernels::moe_batched_gemm_q4_indexed_raw(ctx(), true, &model_bytes, base_offset, &route_ids, &x, routes, rows, cols, &mut v2_out)
-        .expect("v2 dispatch");
+    kernels::moe_batched_gemm_q4_indexed_raw(
+        ctx(),
+        true,
+        &model_bytes,
+        base_offset,
+        &route_ids,
+        &x,
+        routes,
+        rows,
+        cols,
+        &mut v2_out,
+    )
+    .expect("v2 dispatch");
     let mut v2s_out = vec![0.0_f32; routes * rows];
-    kernels::moe_batched_gemm_q4_indexed_v2s_raw(ctx(), &model_bytes, base_offset, &route_ids, &x, routes, rows, cols, &mut v2s_out)
-        .expect("v2s dispatch");
+    kernels::moe_batched_gemm_q4_indexed_v2s_raw(
+        ctx(),
+        &model_bytes,
+        base_offset,
+        &route_ids,
+        &x,
+        routes,
+        rows,
+        cols,
+        &mut v2s_out,
+    )
+    .expect("v2s dispatch");
     let mut v2t_out = vec![0.0_f32; routes * rows];
-    kernels::moe_batched_gemm_q4_indexed_v2t_raw(ctx(), &model_bytes, base_offset, &route_ids, &x, routes, rows, cols, &mut v2t_out)
-        .expect("v2t dispatch");
+    kernels::moe_batched_gemm_q4_indexed_v2t_raw(
+        ctx(),
+        &model_bytes,
+        base_offset,
+        &route_ids,
+        &x,
+        routes,
+        rows,
+        cols,
+        &mut v2t_out,
+    )
+    .expect("v2t dispatch");
     let diff_s = max_abs_diff(&v2_out, &v2s_out);
     let diff_t = max_abs_diff(&v2_out, &v2t_out);
     assert!(diff_s < ATOL, "v2s vs v2 diff {diff_s:.6e} >= atol {ATOL}");
@@ -77,15 +110,41 @@ fn run_gu_parity(routes: usize, rows: usize, cols: usize, seed_base: u64) {
     model_bytes.extend_from_slice(&gate_bytes);
     let up_offset = model_bytes.len();
     model_bytes.extend_from_slice(&up_bytes);
-    let route_ids: Vec<u32> = (0..routes).map(|i| ((i * 2 + 1) % n_experts) as u32).collect();
+    let route_ids: Vec<u32> = (0..routes)
+        .map(|i| ((i * 2 + 1) % n_experts) as u32)
+        .collect();
     let x = fixed_input(cols, seed_base ^ 0xDEAD_BEEF);
     let mut gate_out = vec![0.0_f32; routes * rows];
-    kernels::moe_batched_gemm_q4_indexed_v2t_raw(ctx(), &model_bytes, gate_offset, &route_ids, &x, routes, rows, cols, &mut gate_out)
-        .expect("v2t gate");
+    kernels::moe_batched_gemm_q4_indexed_v2t_raw(
+        ctx(),
+        &model_bytes,
+        gate_offset,
+        &route_ids,
+        &x,
+        routes,
+        rows,
+        cols,
+        &mut gate_out,
+    )
+    .expect("v2t gate");
     let mut up_out = vec![0.0_f32; routes * rows];
-    kernels::moe_batched_gemm_q4_indexed_v2t_raw(ctx(), &model_bytes, up_offset, &route_ids, &x, routes, rows, cols, &mut up_out)
-        .expect("v2t up");
-    let ref_act: Vec<f32> = gate_out.iter().zip(up_out.iter()).map(|(&g, &u)| silu_f32(g) * u).collect();
+    kernels::moe_batched_gemm_q4_indexed_v2t_raw(
+        ctx(),
+        &model_bytes,
+        up_offset,
+        &route_ids,
+        &x,
+        routes,
+        rows,
+        cols,
+        &mut up_out,
+    )
+    .expect("v2t up");
+    let ref_act: Vec<f32> = gate_out
+        .iter()
+        .zip(up_out.iter())
+        .map(|(&g, &u)| silu_f32(g) * u)
+        .collect();
     let mut gu_act = vec![0.0_f32; routes * rows];
     kernels::moe_batched_gemm_q4_indexed_v2t_gu_raw(
         ctx(),
@@ -129,12 +188,21 @@ fn synthetic_q8_0_bytes(n_blocks: usize, seed: u64) -> Vec<u8> {
     }
     bytes
 }
-fn cpu_q8_0_matvec(w_bytes: &[u8], base_offset: usize, route_ids: &[u32], x: &[f32], rows: usize, cols: usize, out: &mut [f32]) {
+fn cpu_q8_0_matvec(
+    w_bytes: &[u8],
+    base_offset: usize,
+    route_ids: &[u32],
+    x: &[f32],
+    rows: usize,
+    cols: usize,
+    out: &mut [f32],
+) {
     let blocks_per_row = cols / 32;
     let per_matrix_bytes = rows * blocks_per_row * 34;
     for (ri, &expert) in route_ids.iter().enumerate() {
         for row in 0..rows {
-            let row_off = base_offset + expert as usize * per_matrix_bytes + row * blocks_per_row * 34;
+            let row_off =
+                base_offset + expert as usize * per_matrix_bytes + row * blocks_per_row * 34;
             let mut acc = 0.0f32;
             for b in 0..blocks_per_row {
                 let bo = row_off + b * 34;
@@ -158,13 +226,33 @@ fn run_q8_parity(routes: usize, rows: usize, cols: usize, seed_base: u64) {
     let mut model_bytes = vec![0xA5u8; 64];
     let base_offset = model_bytes.len();
     model_bytes.extend_from_slice(&w_bytes);
-    let route_ids: Vec<u32> = (0..routes).map(|i| ((i * 2 + 1) % n_experts) as u32).collect();
+    let route_ids: Vec<u32> = (0..routes)
+        .map(|i| ((i * 2 + 1) % n_experts) as u32)
+        .collect();
     let x = fixed_input(routes * cols, seed_base ^ 0xDEAD_BEEF);
     let mut ref_out = vec![0.0_f32; routes * rows];
-    cpu_q8_0_matvec(&model_bytes, base_offset, &route_ids, &x, rows, cols, &mut ref_out);
+    cpu_q8_0_matvec(
+        &model_bytes,
+        base_offset,
+        &route_ids,
+        &x,
+        rows,
+        cols,
+        &mut ref_out,
+    );
     let mut gpu_out = vec![0.0_f32; routes * rows];
-    kernels::moe_batched_gemm_q8_0_indexed_v2t_raw(ctx(), &model_bytes, base_offset, &route_ids, &x, routes, rows, cols, &mut gpu_out)
-        .expect("q8_0 v2t dispatch");
+    kernels::moe_batched_gemm_q8_0_indexed_v2t_raw(
+        ctx(),
+        &model_bytes,
+        base_offset,
+        &route_ids,
+        &x,
+        routes,
+        rows,
+        cols,
+        &mut gpu_out,
+    )
+    .expect("q8_0 v2t dispatch");
     let diff = max_abs_diff(&ref_out, &gpu_out);
     assert!(diff < ATOL_Q8, "q8_0 v2t diff {diff:.6e} >= atol {ATOL_Q8}");
 }

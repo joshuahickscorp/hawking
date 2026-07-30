@@ -9,15 +9,25 @@ fn new_buffer_checked_errs_gracefully_on_oversize() {
     let ctx = ctx();
     let huge = 1usize << 48;
     let r = ctx.new_buffer_checked(huge);
-    assert!(r.is_err(), "oversize new_buffer_checked should be Err, got Ok");
-    let ok = ctx.new_buffer_checked(4096).expect("normal alloc should succeed");
+    assert!(
+        r.is_err(),
+        "oversize new_buffer_checked should be Err, got Ok"
+    );
+    let ok = ctx
+        .new_buffer_checked(4096)
+        .expect("normal alloc should succeed");
     assert!(ok.length() >= 4096, "buffer length {} < 4096", ok.length());
-    let okb = ctx.new_buffer_with_bytes_checked(&[0u8; 256]).expect("small bytes alloc should succeed");
+    let okb = ctx
+        .new_buffer_with_bytes_checked(&[0u8; 256])
+        .expect("small bytes alloc should succeed");
     assert!(okb.length() >= 256);
 }
 fn write_tmp(name: &str, bytes: &[u8]) -> PathBuf {
     let mut p = std::env::temp_dir();
-    p.push(format!("hawking_gguf_corrupt_{name}_{}.gguf", std::process::id()));
+    p.push(format!(
+        "hawking_gguf_corrupt_{name}_{}.gguf",
+        std::process::id()
+    ));
     let mut f = std::fs::File::create(&p).expect("create tmp");
     f.write_all(bytes).expect("write tmp");
     p
@@ -74,5 +84,8 @@ fn open_errs_on_truncated_real_gguf() {
     let p = write_tmp("realtrunc", truncated);
     let r = GgufFile::open(&p);
     let _ = std::fs::remove_file(&p);
-    assert!(r.is_err(), "truncated real GGUF should be Err (tensor data past EOF)");
+    assert!(
+        r.is_err(),
+        "truncated real GGUF should be Err (tensor data past EOF)"
+    );
 }

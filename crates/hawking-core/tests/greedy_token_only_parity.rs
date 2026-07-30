@@ -1,5 +1,7 @@
 #![cfg(target_os = "macos")]
-use hawking_core::{model::qwen_dense::QwenDense, profile::fresh_test_profile, Engine, EngineConfig};
+use hawking_core::{
+    model::qwen_dense::QwenDense, profile::fresh_test_profile, Engine, EngineConfig,
+};
 mod common;
 use common::weights_path_qwen as weights_path;
 fn load() -> Option<QwenDense> {
@@ -9,11 +11,18 @@ fn load() -> Option<QwenDense> {
         return None;
     }
     std::env::set_var("HAWKING_QWEN_Q4K_LMHEAD", "1");
-    for v in ["HAWKING_QWEN_VOCAB_PRUNE", "HAWKING_QWEN_F16_KV", "HAWKING_QWEN_W4A8"] {
+    for v in [
+        "HAWKING_QWEN_VOCAB_PRUNE",
+        "HAWKING_QWEN_F16_KV",
+        "HAWKING_QWEN_W4A8",
+    ] {
         std::env::remove_var(v);
     }
     let profile = fresh_test_profile(&w).expect("fresh test profile");
-    let cfg = EngineConfig { kernel_profile: Some(profile), ..Default::default() };
+    let cfg = EngineConfig {
+        kernel_profile: Some(profile),
+        ..Default::default()
+    };
     Some(QwenDense::load(&w, cfg).expect("load"))
 }
 fn logits_path(engine: &mut QwenDense, seeds: &[u32], n: usize, max_seq: usize) -> Vec<Vec<u32>> {
@@ -24,7 +33,9 @@ fn logits_path(engine: &mut QwenDense, seeds: &[u32], n: usize, max_seq: usize) 
     engine.multiseq_arena = None;
     for step in 0..n {
         let positions: Vec<usize> = vec![step; b];
-        let logits = engine.forward_tokens_multiseq_logits(&cur, &positions, &regions, max_seq).expect("logits path");
+        let logits = engine
+            .forward_tokens_multiseq_logits(&cur, &positions, &regions, max_seq)
+            .expect("logits path");
         let tokens: Vec<u32> = logits
             .into_iter()
             .map(|l| {
@@ -51,7 +62,9 @@ fn greedy_path(engine: &mut QwenDense, seeds: &[u32], n: usize, max_seq: usize) 
     engine.multiseq_arena = None;
     for step in 0..n {
         let positions: Vec<usize> = vec![step; b];
-        let tokens = engine.forward_tokens_multiseq_greedy(&cur, &positions, &regions, max_seq).expect("greedy path");
+        let tokens = engine
+            .forward_tokens_multiseq_greedy(&cur, &positions, &regions, max_seq)
+            .expect("greedy path");
         for (i, &t) in tokens.iter().enumerate() {
             seqs[i].push(t);
         }
@@ -99,8 +112,12 @@ fn engine_trait_dispatch_matches_direct() {
     let regions: Vec<usize> = (0..b).collect();
     let positions = vec![0usize; b];
     engine.multiseq_arena = None;
-    let direct = engine.forward_tokens_multiseq_greedy(seeds, &positions, &regions, max_seq).expect("direct");
+    let direct = engine
+        .forward_tokens_multiseq_greedy(seeds, &positions, &regions, max_seq)
+        .expect("direct");
     engine.multiseq_arena = None;
-    let via_trait = engine.forward_multiseq_greedy_tokens(seeds, &positions, &regions).expect("via trait");
+    let via_trait = engine
+        .forward_multiseq_greedy_tokens(seeds, &positions, &regions)
+        .expect("via trait");
     assert_eq!(direct, via_trait, "trait dispatch mismatch");
 }

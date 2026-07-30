@@ -1,3 +1,6 @@
+use crate::personalize::{
+    DynPersonalizationStore, InMemoryPersonalizationStore, JsonlPersonalizationStore,
+};
 use hawking_context::{
     ClassedMemorySystem, ContextCompiler, DynClassedMemory, InMemoryMemoryStore, MemoryStore,
     SqliteMemoryStore, TokenCounter,
@@ -15,9 +18,6 @@ use hide_core::persistence::{
 };
 use hide_core::project::WorkspaceLayout;
 use hide_core::Result;
-use crate::personalize::{
-    DynPersonalizationStore, InMemoryPersonalizationStore, JsonlPersonalizationStore,
-};
 use hide_kernel::security::audit::EventChainAuditor;
 use parking_lot::Mutex;
 use serde::{Deserialize, Serialize};
@@ -428,4 +428,3 @@ impl SessionRegistry {
         }
     }
 }
-

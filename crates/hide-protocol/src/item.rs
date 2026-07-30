@@ -14,9 +14,7 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use crate::ids::{
-    ApprovalId, ItemId, PlanId, StepId, ToolCallId, ToolId, TurnId, VerificationId,
-};
+use crate::ids::{ApprovalId, ItemId, PlanId, StepId, ToolCallId, ToolId, TurnId, VerificationId};
 use crate::model::{Artifact, Checkpoint, CompletionStatus, Risk, StateCapsuleRef};
 use crate::plan::{Effect, Plan};
 

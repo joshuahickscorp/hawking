@@ -919,7 +919,18 @@ mod tests {
             "<0x21>".to_string(),
         ];
         let scores = vec![-100.0, 0.0, 0.0, -10.0, -10.0, 0.0, -10.0, 0.0, -1.0];
-        let (tokenizer, mode, _spm, _rwkv) = build_tokenizer("llama", &tokens, &[], &scores, Some(1), Some(2), Some(0), false, false).unwrap();
+        let (tokenizer, mode, _spm, _rwkv) = build_tokenizer(
+            "llama",
+            &tokens,
+            &[],
+            &scores,
+            Some(1),
+            Some(2),
+            Some(0),
+            false,
+            false,
+        )
+        .unwrap();
         assert_eq!(mode, DecodeOneMode::SentencePiece);
         let enc = tokenizer.encode("Once upon", false).unwrap();
         assert_eq!(enc.get_ids(), &[5, 7]);
@@ -935,7 +946,18 @@ mod tests {
             "▁upon".to_string(),
         ];
         let scores = vec![-100.0, 0.0, 0.0, 0.0, 0.0];
-        let (inner, decode_one_mode, llama_spm, rwkv_world) = build_tokenizer("llama", &tokens, &[], &scores, Some(1), Some(2), Some(0), false, false).unwrap();
+        let (inner, decode_one_mode, llama_spm, rwkv_world) = build_tokenizer(
+            "llama",
+            &tokens,
+            &[],
+            &scores,
+            Some(1),
+            Some(2),
+            Some(0),
+            false,
+            false,
+        )
+        .unwrap();
         let tokenizer = Tokenizer {
             inner,
             bos_id: Some(1),

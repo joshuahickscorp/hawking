@@ -248,9 +248,16 @@ mod tests {
         let verified = gate.try_promote(draft, 42).expect("target agrees");
         sink.emit_canonical_event(verified)
             .expect("verified may enter the event stream");
-        assert_eq!(sink.events(), &[DurableRecord::CanonicalEvent { token_id: 42 }]);
+        assert_eq!(
+            sink.events(),
+            &[DurableRecord::CanonicalEvent { token_id: 42 }]
+        );
         let rejected = DraftTokenId::id(7);
         assert!(gate.try_promote(rejected, 8).is_err());
-        assert_eq!(sink.events().len(), 1, "rejected draft must leave no durable trace");
+        assert_eq!(
+            sink.events().len(),
+            1,
+            "rejected draft must leave no durable trace"
+        );
     }
 }

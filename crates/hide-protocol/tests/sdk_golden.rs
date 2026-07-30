@@ -26,10 +26,22 @@ fn command_typescript_golden_is_stable() {
 }
 #[test]
 fn generation_is_deterministic_across_runs() {
-    assert_eq!(hide_protocol::sdk::schema::protocol_schema_json(), hide_protocol::sdk::schema::protocol_schema_json());
-    assert_eq!(hide_protocol::sdk::ts::protocol_typescript(), hide_protocol::sdk::ts::protocol_typescript());
-    assert_eq!(hide_protocol::sdk::command::command_catalog_json(), hide_protocol::sdk::command::command_catalog_json());
-    assert_eq!(hide_protocol::sdk::command::command_typescript(), hide_protocol::sdk::command::command_typescript());
+    assert_eq!(
+        hide_protocol::sdk::schema::protocol_schema_json(),
+        hide_protocol::sdk::schema::protocol_schema_json()
+    );
+    assert_eq!(
+        hide_protocol::sdk::ts::protocol_typescript(),
+        hide_protocol::sdk::ts::protocol_typescript()
+    );
+    assert_eq!(
+        hide_protocol::sdk::command::command_catalog_json(),
+        hide_protocol::sdk::command::command_catalog_json()
+    );
+    assert_eq!(
+        hide_protocol::sdk::command::command_typescript(),
+        hide_protocol::sdk::command::command_typescript()
+    );
 }
 #[test]
 fn generated_artifacts_carry_no_en_or_em_dashes() {
@@ -77,8 +89,14 @@ fn typescript_covers_a_tagged_union() {
 #[test]
 fn typescript_covers_optionals_refs_maps_and_value() {
     let ts = hide_protocol::sdk::ts::protocol_typescript();
- assert!( ts.contains("capsule?: StateCapsuleRef | null;"), "nullable ref field is wrong" );
-    assert!(ts.contains("output: unknown;"), "Value should map to unknown");
+    assert!(
+        ts.contains("capsule?: StateCapsuleRef | null;"),
+        "nullable ref field is wrong"
+    );
+    assert!(
+        ts.contains("output: unknown;"),
+        "Value should map to unknown"
+    );
     assert!(ts.contains("experimental?: Record<string, unknown>;"));
     assert!(ts.contains("methods?: Method[];"), "ref array is wrong");
 }

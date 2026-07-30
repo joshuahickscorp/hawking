@@ -17,7 +17,7 @@ use super::agent::fixture_receipt;
 use super::failure::FailureReplayReceipt;
 use super::node::{BandwidthClass, DiscoverySource, NodeCapabilities, NodeId, OsNodeProbe};
 use super::placement::{
-    ModelSection, PlacementRequest, PlacementSimulator, WorkloadClass, KvOwnershipInvariant,
+    KvOwnershipInvariant, ModelSection, PlacementRequest, PlacementSimulator, WorkloadClass,
 };
 use super::protocol::{AgentRequest, AgentResponse, PlacementAssignment};
 use super::qualification::QualificationKind;
@@ -168,10 +168,8 @@ pub fn run_two_process_fixture() -> Result<TwoProcessFixtureResult, String> {
     let addr_a = "127.0.0.1:19701";
     let addr_b = "127.0.0.1:19702";
 
-    let mut agent_a =
-        spawn_agent(&bin, "fixture-node-a", addr_a).map_err(|e| e.to_string())?;
-    let mut agent_b =
-        spawn_agent(&bin, "fixture-node-b", addr_b).map_err(|e| e.to_string())?;
+    let mut agent_a = spawn_agent(&bin, "fixture-node-a", addr_a).map_err(|e| e.to_string())?;
+    let mut agent_b = spawn_agent(&bin, "fixture-node-b", addr_b).map_err(|e| e.to_string())?;
 
     let (mut cap_a, mut cap_b) = probe_two_local_agents(&agent_a, &agent_b)?;
     // Label as software fixture node set (real probes, one machine, two processes).
@@ -401,10 +399,7 @@ pub fn run_inprocess_software_fixture() -> Result<TwoProcessFixtureResult, Strin
     let sim = PlacementSimulator::new();
     let plan = sim.place(&req).map_err(|e| e.to_string())?;
 
-    for (agent, nid) in [
-        (&agent_a, "fixture-node-a"),
-        (&agent_b, "fixture-node-b"),
-    ] {
+    for (agent, nid) in [(&agent_a, "fixture-node-a"), (&agent_b, "fixture-node-b")] {
         agent.handle(AgentRequest::Assign {
             assignment: PlacementAssignment {
                 plan_id: plan.plan_id.clone(),
@@ -467,7 +462,13 @@ mod tests {
         assert!(result.not_physical_qualification);
         assert_eq!(result.qualification, QualificationKind::SoftwareFixture);
         assert!(result.receipt.not_physical_qualification);
-        assert!(!result.receipt.lost_work.kv_ranges.is_empty() || !result.receipt.lost_work.stages.is_empty());
- assert_eq!( result.hardware_status, super::super::qualification::HARDWARE_QUALIFICATION_PENDING );
+        assert!(
+            !result.receipt.lost_work.kv_ranges.is_empty()
+                || !result.receipt.lost_work.stages.is_empty()
+        );
+        assert_eq!(
+            result.hardware_status,
+            super::super::qualification::HARDWARE_QUALIFICATION_PENDING
+        );
     }
 }

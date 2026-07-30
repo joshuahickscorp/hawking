@@ -235,7 +235,10 @@ mod tests {
             })
             .unwrap();
         assert_eq!(ledger.events_for("run_a").unwrap().len(), 3);
- assert_eq!( ledger.last_state("run_a").unwrap().as_deref(), Some("Fetch") );
+        assert_eq!(
+            ledger.last_state("run_a").unwrap().as_deref(),
+            Some("Fetch")
+        );
         assert!(ledger.fetched_hashes("run_a").unwrap().contains("h1"));
         let _ = std::fs::remove_dir_all(dir);
     }

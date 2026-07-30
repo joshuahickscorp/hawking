@@ -24,4 +24,3 @@ pub mod types;
 pub use error::{HideError, Result};
 
 pub mod objects;
-

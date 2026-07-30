@@ -62,7 +62,12 @@ impl SurfaceDefaults {
             network_policy: "explicit per session type".into(),
             // YOU may hold personal connectors (mail, calendar, vault) — read.
             permissions: SurfacePermissionSet::new(
-                ["connector.read", "memory.read", "research.read", "object.read"],
+                [
+                    "connector.read",
+                    "memory.read",
+                    "research.read",
+                    "object.read",
+                ],
                 ["gmail", "calendar", "personal_vault", "rss"],
             ),
         }

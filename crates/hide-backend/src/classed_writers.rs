@@ -492,12 +492,7 @@ fn maybe_distill_project_from_procedural(
 ///
 /// **Sole production mint site for [`UserWriteCap`].** Never call from the model
 /// turn or distillation path.
-pub fn write_user_explicit(
-    classed: &ClassedMemorySystem,
-    claim: &str,
-    source: &str,
-    author: &str,
-) {
+pub fn write_user_explicit(classed: &ClassedMemorySystem, claim: &str, source: &str, author: &str) {
     let cap = UserWriteCap::mint();
     let draft = ClassMemoryDraft::new(claim)
         .with_importance(0.9)
@@ -616,7 +611,13 @@ mod tests {
             Some(json!({ "stdout": "test result: ok" })),
             EffectSet::default(),
         );
- assert!(write_procedural_from_receipt( &sys, &call, &ok, "sess-1", Some("run-1"), ));
+        assert!(write_procedural_from_receipt(
+            &sys,
+            &call,
+            &ok,
+            "sess-1",
+            Some("run-1"),
+        ));
         let rows = sys.list_class(MemoryClass::Procedural).unwrap();
         assert_eq!(rows.len(), 1);
         assert!(rows[0].text.contains("cargo test"));
@@ -632,9 +633,18 @@ mod tests {
         fail.ok = false;
         fail.error = Some(ToolError::new("EXEC_FAILED", "exit 1", false));
         let proj_before = sys.count(MemoryClass::SemanticProject).unwrap();
- assert!(!write_procedural_from_receipt( &sys, &fail_call, &fail, "sess-1", Some("run-2"), ));
+        assert!(!write_procedural_from_receipt(
+            &sys,
+            &fail_call,
+            &fail,
+            "sess-1",
+            Some("run-2"),
+        ));
         assert_eq!(sys.list_class(MemoryClass::Procedural).unwrap().len(), 1);
-        assert_eq!(sys.count(MemoryClass::SemanticProject).unwrap(), proj_before);
+        assert_eq!(
+            sys.count(MemoryClass::SemanticProject).unwrap(),
+            proj_before
+        );
     }
     #[test]
     fn nonzero_exit_does_not_write_procedural() {
@@ -642,7 +652,9 @@ mod tests {
         let call = ToolCall::new("shell.run", json!({ "argv": ["cargo", "test"] }));
         let mut result = ToolResult::ok(call.call_id.clone(), None, EffectSet::default());
         result.exit_code = Some(1);
- assert!(!write_procedural_from_receipt( &sys, &call, &result, "s", None ));
+        assert!(!write_procedural_from_receipt(
+            &sys, &call, &result, "s", None
+        ));
         assert_eq!(sys.count(MemoryClass::Procedural).unwrap(), 0);
         assert_eq!(sys.count(MemoryClass::SemanticProject).unwrap(), 0);
     }
@@ -784,7 +796,9 @@ mod tests {
         .unwrap();
         assert_eq!(sys.count(MemoryClass::Episodic).unwrap(), before);
         let episodes = sys.list_class(MemoryClass::Episodic).unwrap();
-        assert!(episodes .iter() .any(|r| r.text.contains("unique-episode-marker-xyz")));
+        assert!(episodes
+            .iter()
+            .any(|r| r.text.contains("unique-episode-marker-xyz")));
         assert!(episodes.iter().any(|r| r.text.contains("tool.call")));
         assert!(episodes.iter().any(|r| r.text.contains("tool.result")));
         assert!(episodes.iter().any(|r| r.text.contains("verify.result")));
@@ -871,7 +885,13 @@ mod tests {
             Some(json!({ "stdout": "ok" })),
             EffectSet::default(),
         );
- assert!(write_procedural_from_receipt( &sys, &call, &ok, session.as_str(), None, ));
+        assert!(write_procedural_from_receipt(
+            &sys,
+            &call,
+            &ok,
+            session.as_str(),
+            None,
+        ));
         let budgets = ClassBudgets::default_small();
         let mut compiler = ContextCompiler::new();
         compiler.add_source(
@@ -899,7 +919,13 @@ mod tests {
         assert!(!epi.hits.is_empty(), "episodic slice must have hits");
         let proc = ret.slice(MemoryClass::Procedural).unwrap();
         assert!(!proc.hits.is_empty(), "procedural slice must have hits");
- assert!(epi .hits .iter() .any(|h| h.provenance.writer == "event_stream"));
- assert!(proc .hits .iter() .any(|h| h.provenance.writer == "tool_receipt"));
+        assert!(epi
+            .hits
+            .iter()
+            .any(|h| h.provenance.writer == "event_stream"));
+        assert!(proc
+            .hits
+            .iter()
+            .any(|h| h.provenance.writer == "tool_receipt"));
     }
 }

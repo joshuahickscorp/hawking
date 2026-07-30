@@ -15,7 +15,9 @@
 //! Everything here is model-free. The runtime evaluates data-shaped programs
 //! over host-provided read handles; it never runs a model.
 
-use crate::program_runtime::ast::{BinOp, Expr, JoinKind, Lambda, Operator, Order, Program, SchemaField, SchemaSpec};
+use crate::program_runtime::ast::{
+    BinOp, Expr, JoinKind, Lambda, Operator, Order, Program, SchemaField, SchemaSpec,
+};
 use crate::program_runtime::error::{Result, RuntimeError};
 use crate::program_runtime::handles::{HandleGrants, HandleName, HostHandles};
 use crate::program_runtime::limits::{Limits, Meter, Usage};
@@ -265,15 +267,19 @@ impl<'h> Exec<'h> {
             .get("kind")
             .and_then(Value::as_str)
             .ok_or_else(|| RuntimeError::Type("propose_write: missing 'kind' string".into()))?;
-        let kind = WriteKind::from_str(kind_str)
-            .ok_or_else(|| RuntimeError::Type(format!("propose_write: unknown kind {kind_str:?}")))?;
+        let kind = WriteKind::from_str(kind_str).ok_or_else(|| {
+            RuntimeError::Type(format!("propose_write: unknown kind {kind_str:?}"))
+        })?;
         let summary = m
             .get("summary")
             .and_then(Value::as_str)
             .unwrap_or("")
             .to_string();
         let payload = m.get("payload").cloned().unwrap_or(Value::Null);
-        let citations = m.get("citations").map(Citation::list_from).unwrap_or_default();
+        let citations = m
+            .get("citations")
+            .map(Citation::list_from)
+            .unwrap_or_default();
 
         let id = format!("wp-{}", self.proposal_seq);
         self.proposal_seq += 1;
@@ -389,7 +395,10 @@ impl<'h> Exec<'h> {
                 let out: Vec<Value> = groups
                     .into_iter()
                     .map(|(_, (k, items))| {
-                        crate::program_runtime::value::map_of([("key", k), ("items", Value::List(items))])
+                        crate::program_runtime::value::map_of([
+                            ("key", k),
+                            ("items", Value::List(items)),
+                        ])
                     })
                     .collect();
                 self.finish_list(out)
@@ -435,11 +444,7 @@ impl<'h> Exec<'h> {
             } => {
                 let items = self.eval_list(input, scope, depth)?;
                 let start = page.saturating_mul(*page_size);
-                let out: Vec<Value> = items
-                    .into_iter()
-                    .skip(start)
-                    .take(*page_size)
-                    .collect();
+                let out: Vec<Value> = items.into_iter().skip(start).take(*page_size).collect();
                 self.finish_list(out)
             }
             Operator::RetryWithPolicy { body, policy } => {
@@ -457,9 +462,7 @@ impl<'h> Exec<'h> {
                             self.attempt = saved;
                             return Ok(v);
                         }
-                        Err(RuntimeError::Handle(h))
-                            if h.retryable && attempt + 1 < attempts =>
-                        {
+                        Err(RuntimeError::Handle(h)) if h.retryable && attempt + 1 < attempts => {
                             last = Some(RuntimeError::Handle(h));
                         }
                         Err(e) => {
@@ -660,10 +663,7 @@ fn contains(haystack: &Value, needle: &Value) -> bool {
     match haystack {
         Value::Str(s) => needle.as_str().map(|n| s.contains(n)).unwrap_or(false),
         Value::List(items) => items.iter().any(|it| it == needle),
-        Value::Map(m) => needle
-            .as_str()
-            .map(|k| m.contains_key(k))
-            .unwrap_or(false),
+        Value::Map(m) => needle.as_str().map(|k| m.contains_key(k)).unwrap_or(false),
         _ => false,
     }
 }
@@ -674,7 +674,10 @@ fn validate(v: &Value, schema: &SchemaSpec, path: &str) -> std::result::Result<(
     let mismatch = |want: &str| Err(format!("{path}: expected {want}, got {}", type_name(v)));
     match schema {
         SchemaSpec::Any => Ok(()),
-        SchemaSpec::Null => matches!(v, Value::Null).then_some(()).ok_or(()).or(mismatch("null")),
+        SchemaSpec::Null => matches!(v, Value::Null)
+            .then_some(())
+            .ok_or(())
+            .or(mismatch("null")),
         SchemaSpec::Bool => matches!(v, Value::Bool(_))
             .then_some(())
             .ok_or(())
@@ -890,8 +893,20 @@ mod tests {
             k: 5,
         });
         let prog = Program::new(mk).with_seed(42);
-        let a = run(&prog, &DenyAllHost, &HandleGrants::none(), Limits::unbounded()).unwrap();
-        let b = run(&prog, &DenyAllHost, &HandleGrants::none(), Limits::unbounded()).unwrap();
+        let a = run(
+            &prog,
+            &DenyAllHost,
+            &HandleGrants::none(),
+            Limits::unbounded(),
+        )
+        .unwrap();
+        let b = run(
+            &prog,
+            &DenyAllHost,
+            &HandleGrants::none(),
+            Limits::unbounded(),
+        )
+        .unwrap();
         assert_eq!(a.value, b.value);
         assert_eq!(a.value.as_list().unwrap().len(), 5);
     }
@@ -899,7 +914,10 @@ mod tests {
     fn retry_recovers_from_flaky_handle() {
         let host = FnHost::new(|_h, _a, attempt| {
             if attempt < 2 {
-                Err(crate::program_runtime::error::HandleError::retryable("git.log", "transient"))
+                Err(crate::program_runtime::error::HandleError::retryable(
+                    "git.log",
+                    "transient",
+                ))
             } else {
                 Ok(Value::Str("ok".into()))
             }

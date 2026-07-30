@@ -5,7 +5,10 @@ use hawking_core::metal::{MetalContext, PinnedBuffer, TokenCommandBuffer};
 mod common;
 use common::*;
 fn fixed_f16(n: usize, seed: u64) -> Vec<f16> {
-    fixed_f32(n, seed).iter().map(|&v| f16::from_f32(v)).collect()
+    fixed_f32(n, seed)
+        .iter()
+        .map(|&v| f16::from_f32(v))
+        .collect()
 }
 fn new_f16_buf(ctx: &MetalContext, data: &[f16]) -> PinnedBuffer {
     ctx.new_buffer_with_bytes(bytemuck::cast_slice(data))
@@ -32,7 +35,8 @@ fn wedge_e_argmax_tcb_matches_cpu() {
         let logits_buf = new_f32_buf(ctx, &logits);
         let token_buf = ctx.new_buffer(std::mem::size_of::<u32>());
         let mut tcb = TokenCommandBuffer::new(ctx);
-        kernels::sample_argmax_f32_tcb(&mut tcb, &logits_buf, &token_buf, vocab).expect("sample_argmax_f32_tcb");
+        kernels::sample_argmax_f32_tcb(&mut tcb, &logits_buf, &token_buf, vocab)
+            .expect("sample_argmax_f32_tcb");
         tcb.commit_and_wait().expect("commit");
         let gpu = unsafe { *(token_buf.contents() as *const u32) };
         assert_eq!(gpu, cpu, "vocab={vocab}: gpu={gpu} cpu={cpu}");
@@ -43,7 +47,8 @@ fn wedge_e_argmax_tcb_matches_cpu() {
         let logits_buf = new_f32_buf(ctx, &logits);
         let token_buf = ctx.new_buffer(std::mem::size_of::<u32>());
         let mut tcb = TokenCommandBuffer::new(ctx);
-        kernels::sample_argmax_f32_tcb(&mut tcb, &logits_buf, &token_buf, vocab).expect("tied argmax");
+        kernels::sample_argmax_f32_tcb(&mut tcb, &logits_buf, &token_buf, vocab)
+            .expect("tied argmax");
         tcb.commit_and_wait().expect("commit");
         let gpu = unsafe { *(token_buf.contents() as *const u32) };
         assert_eq!(gpu, 0u32, "tied: lowest index should win, got {gpu}");
@@ -62,11 +67,15 @@ fn wedge_e_gemv_f16_buf_tcb_matches_cpu() {
     let x_buf = new_f32_buf(ctx, &x_f32);
     let y_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
     let mut tcb = TokenCommandBuffer::new(ctx);
-    kernels::gemv_f16_metal_buf_tcb(&mut tcb, &w_buf, rows, cols, &x_buf, &y_buf).expect("gemv_f16_metal_buf_tcb");
+    kernels::gemv_f16_metal_buf_tcb(&mut tcb, &w_buf, rows, cols, &x_buf, &y_buf)
+        .expect("gemv_f16_metal_buf_tcb");
     tcb.commit_and_wait().expect("commit");
     let gpu_out = read_f32_buf(&y_buf, rows);
     let diff = max_abs_diff(&cpu_out, &gpu_out);
-    assert!(diff < 1e-3, "gemv_f16 rows={rows} cols={cols}: max_abs_diff={diff:.2e} > 1e-3");
+    assert!(
+        diff < 1e-3,
+        "gemv_f16 rows={rows} cols={cols}: max_abs_diff={diff:.2e} > 1e-3"
+    );
 }
 #[test]
 fn wedge_e_lmhead_plus_argmax_tcb_matches_cpu() {
@@ -83,11 +92,23 @@ fn wedge_e_lmhead_plus_argmax_tcb_matches_cpu() {
     let logits_buf = ctx.new_buffer(vocab * std::mem::size_of::<f32>());
     let token_buf = ctx.new_buffer(std::mem::size_of::<u32>());
     let mut tcb = TokenCommandBuffer::new(ctx);
-    kernels::gemv_f16_metal_buf_tcb(&mut tcb, &lm_head_buf, vocab, hidden, &x_norm_buf, &logits_buf).expect("gemv_f16_metal_buf_tcb");
-    kernels::sample_argmax_f32_tcb(&mut tcb, &logits_buf, &token_buf, vocab).expect("sample_argmax_f32_tcb");
+    kernels::gemv_f16_metal_buf_tcb(
+        &mut tcb,
+        &lm_head_buf,
+        vocab,
+        hidden,
+        &x_norm_buf,
+        &logits_buf,
+    )
+    .expect("gemv_f16_metal_buf_tcb");
+    kernels::sample_argmax_f32_tcb(&mut tcb, &logits_buf, &token_buf, vocab)
+        .expect("sample_argmax_f32_tcb");
     tcb.commit_and_wait().expect("commit");
     let gpu_token = unsafe { *(token_buf.contents() as *const u32) };
-    assert_eq!(gpu_token, cpu_token, "lmhead+argmax: gpu={gpu_token} cpu={cpu_token}");
+    assert_eq!(
+        gpu_token, cpu_token,
+        "lmhead+argmax: gpu={gpu_token} cpu={cpu_token}"
+    );
     let gpu_logits = read_f32_buf(&logits_buf, vocab);
     let diff = max_abs_diff(&cpu_logits, &gpu_logits);
     assert!(diff < 1e-3, "logits max_abs_diff={diff:.2e} > 1e-3");

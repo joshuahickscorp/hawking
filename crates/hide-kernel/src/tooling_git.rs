@@ -584,7 +584,10 @@ mod tests {
             ))
             .await
             .unwrap();
- assert!(log.structured_content.unwrap()["stdout"] .as_str() .unwrap() .contains("init"));
+        assert!(log.structured_content.unwrap()["stdout"]
+            .as_str()
+            .unwrap()
+            .contains("init"));
         let _ = std::fs::remove_dir_all(dir);
     }
     #[tokio::test]
@@ -605,7 +608,10 @@ mod tests {
             ))
             .await
             .unwrap();
- assert!( !evil.exists(), "git.diff ref must not inject --output and write a file" );
+        assert!(
+            !evil.exists(),
+            "git.diff ref must not inject --output and write a file"
+        );
         let _ = std::fs::remove_dir_all(dir);
     }
     #[tokio::test]
@@ -662,7 +668,11 @@ mod tests {
             ))
             .await
             .unwrap();
- assert!( add.ok && add.exit_code == Some(0), "{:?}", add.structured_content );
+        assert!(
+            add.ok && add.exit_code == Some(0),
+            "{:?}",
+            add.structured_content
+        );
         let list = d
             .dispatch(ToolCall::new(
                 "git.worktree.list",
@@ -670,7 +680,10 @@ mod tests {
             ))
             .await
             .unwrap();
- assert!(list.structured_content.unwrap()["stdout"] .as_str() .unwrap() .contains("feat"));
+        assert!(list.structured_content.unwrap()["stdout"]
+            .as_str()
+            .unwrap()
+            .contains("feat"));
         let remove = d
             .dispatch(ToolCall::new(
                 "git.worktree.remove",

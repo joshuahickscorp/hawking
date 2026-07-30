@@ -23,13 +23,12 @@
 //!
 //! Model-free throughout. Deterministic under an injected [`Clock`].
 
+use super::*;
 use crate::error::Result;
 use crate::persistence::DynKeyValueStore;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::collections::BTreeSet;
-use super::*;
-
 
 // ---------------------------------------------------------------------------
 // Results and the automation declaration

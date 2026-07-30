@@ -16,13 +16,22 @@ fn gemv_f16_pinned_check(rows: usize, cols: usize, seed_x: u64, seed_w: u64) {
     let w_bytes: &[u8] = bytemuck::cast_slice(&w_f16);
     let ctx = ctx().clone();
     let mut out_byte_slice = vec![0.0_f32; rows];
-    kernels::gemv_f16_metal(&ctx, w_bytes, rows, cols, &x, &mut out_byte_slice).expect("gemv_f16_metal byte-slice path");
+    kernels::gemv_f16_metal(&ctx, w_bytes, rows, cols, &x, &mut out_byte_slice)
+        .expect("gemv_f16_metal byte-slice path");
     let w_buf = ctx.new_buffer_with_bytes(w_bytes);
     let mut out_pinned = vec![0.0_f32; rows];
-    kernels::gemv_f16_metal_pinned(&ctx, &w_buf, rows, cols, &x, &mut out_pinned).expect("gemv_f16_metal_pinned");
-    let max_diff = out_byte_slice.iter().zip(out_pinned.iter()).map(|(&a, &b)| (a - b).abs()).fold(0.0_f32, f32::max);
+    kernels::gemv_f16_metal_pinned(&ctx, &w_buf, rows, cols, &x, &mut out_pinned)
+        .expect("gemv_f16_metal_pinned");
+    let max_diff = out_byte_slice
+        .iter()
+        .zip(out_pinned.iter())
+        .map(|(&a, &b)| (a - b).abs())
+        .fold(0.0_f32, f32::max);
     println!("[WB] gemv_f16 ({rows}x{cols}) byte-slice vs pinned max abs diff = {max_diff:.6}");
-    assert!(max_diff < ATOL, "gemv_f16 pinned/byte-slice diverged: {max_diff} >= atol {ATOL}");
+    assert!(
+        max_diff < ATOL,
+        "gemv_f16 pinned/byte-slice diverged: {max_diff} >= atol {ATOL}"
+    );
 }
 #[test]
 fn test_gemv_f16_pinned_matches_byte_slice_small() {
@@ -38,13 +47,24 @@ fn gemv_f32_attn_pinned_check(rows: usize, cols: usize, seed_x: u64, seed_w: u64
     let w_bytes: &[u8] = bytemuck::cast_slice(&w);
     let ctx = ctx().clone();
     let mut out_byte_slice = vec![0.0_f32; rows];
-    kernels::gemv_f32_attn_metal(&ctx, &w, rows, cols, &x, &mut out_byte_slice).expect("gemv_f32_attn_metal byte-slice path");
+    kernels::gemv_f32_attn_metal(&ctx, &w, rows, cols, &x, &mut out_byte_slice)
+        .expect("gemv_f32_attn_metal byte-slice path");
     let w_buf = ctx.new_buffer_with_bytes(w_bytes);
     let mut out_pinned = vec![0.0_f32; rows];
-    kernels::gemv_f32_attn_metal_pinned(&ctx, &w_buf, rows, cols, &x, &mut out_pinned).expect("gemv_f32_attn_metal_pinned");
-    let max_diff = out_byte_slice.iter().zip(out_pinned.iter()).map(|(&a, &b)| (a - b).abs()).fold(0.0_f32, f32::max);
-    println!("[WB] gemv_f32_attn ({rows}x{cols}) byte-slice vs pinned max abs diff = {max_diff:.6}");
-    assert!(max_diff < ATOL, "gemv_f32_attn pinned/byte-slice diverged: {max_diff} >= atol {ATOL}");
+    kernels::gemv_f32_attn_metal_pinned(&ctx, &w_buf, rows, cols, &x, &mut out_pinned)
+        .expect("gemv_f32_attn_metal_pinned");
+    let max_diff = out_byte_slice
+        .iter()
+        .zip(out_pinned.iter())
+        .map(|(&a, &b)| (a - b).abs())
+        .fold(0.0_f32, f32::max);
+    println!(
+        "[WB] gemv_f32_attn ({rows}x{cols}) byte-slice vs pinned max abs diff = {max_diff:.6}"
+    );
+    assert!(
+        max_diff < ATOL,
+        "gemv_f32_attn pinned/byte-slice diverged: {max_diff} >= atol {ATOL}"
+    );
 }
 #[test]
 fn test_gemv_f32_attn_pinned_q_a_proj() {

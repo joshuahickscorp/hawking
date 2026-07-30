@@ -60,14 +60,20 @@ fn permission_outcome_is_tagged_on_outcome() {
     let cancelled = RequestPermissionResponse {
         outcome: PermissionOutcome::Cancelled,
     };
-    assert_eq!(to_value(&cancelled)["outcome"]["outcome"], json!("cancelled"));
+    assert_eq!(
+        to_value(&cancelled)["outcome"]["outcome"],
+        json!("cancelled")
+    );
     let back: RequestPermissionResponse = serde_json::from_value(v).unwrap();
     assert_eq!(back, selected);
 }
 #[test]
 fn stop_reason_serializes_snake_case() {
     assert_eq!(to_value(&StopReason::EndTurn), json!("end_turn"));
-    assert_eq!(to_value(&StopReason::MaxTurnRequests), json!("max_turn_requests"));
+    assert_eq!(
+        to_value(&StopReason::MaxTurnRequests),
+        json!("max_turn_requests")
+    );
 }
 #[test]
 fn unified_diff_reconstructs_single_hunk_exactly() {

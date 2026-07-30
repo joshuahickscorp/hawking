@@ -538,7 +538,11 @@ async fn chat_completions(State(s): State<AppState>, body: Bytes) -> Response {
     let tool_names = crate::tool_calls::tool_names(&tools);
     // Gravity GLM: tools are not rendered by our faithful non-tools template
     // path — refuse rather than silently fall through to a wrong template.
-    if want_tools && s.gravity.as_ref().map(|g| g.architecture == "glm_moe_dsa").unwrap_or(false)
+    if want_tools
+        && s.gravity
+            .as_ref()
+            .map(|g| g.architecture == "glm_moe_dsa")
+            .unwrap_or(false)
     {
         return ApiError::invalid_json(
             "gravity glm_moe_dsa serve does not render tool schemas yet; omit `tools` \
@@ -1429,10 +1433,25 @@ mod b1_roundtrip_tests {
             },
         ];
         let prompt = render_chat_qwen2(&msgs);
- assert!( prompt.contains("<tool_call>"), "assistant tool_call must render: {prompt}" );
- assert!( prompt.contains("fs.read"), "tool name must render: {prompt}" );
- assert!( prompt.contains("<tool_response>"), "tool result must render: {prompt}" );
- assert!( prompt.contains("fn foo() {}"), "tool output must render: {prompt}" );
- assert!( !prompt.contains("<|im_start|>tool"), "tool role tag should map to user" );
+        assert!(
+            prompt.contains("<tool_call>"),
+            "assistant tool_call must render: {prompt}"
+        );
+        assert!(
+            prompt.contains("fs.read"),
+            "tool name must render: {prompt}"
+        );
+        assert!(
+            prompt.contains("<tool_response>"),
+            "tool result must render: {prompt}"
+        );
+        assert!(
+            prompt.contains("fn foo() {}"),
+            "tool output must render: {prompt}"
+        );
+        assert!(
+            !prompt.contains("<|im_start|>tool"),
+            "tool role tag should map to user"
+        );
     }
 }

@@ -4,10 +4,11 @@
 //! architecture replacement. They call public APIs only. A failure means a
 //! user-facing capability was lost quietly.
 
+use hide_backend::lenses::{Claim, EvidenceTier, HandoffKind, Surface, SurfaceGraph};
+use hide_backend::surfaces::SurfaceGraphService;
 use hide_backend::{
     BackendHost, BackendServices, ClientCapabilities, ClientInfo, ConnectorRegistry,
 };
-use hide_backend::surfaces::SurfaceGraphService;
 use hide_core::api::{Intent, UiEvent, UiEventKind};
 use hide_core::automation::{
     standard_fixture_registry, Automation, AutomationEngine, AutomationKind, Clock, InjectedClock,
@@ -23,7 +24,6 @@ use hide_core::permission::{
 use hide_core::tool::ToolRegistry;
 use hide_core::types::{Decision, RiskLevel};
 use hide_protocol::{command_catalog, Method, PROTOCOL_VERSION};
-use hide_backend::lenses::{Claim, EvidenceTier, HandoffKind, Surface, SurfaceGraph};
 use serde_json::json;
 use std::sync::Arc;
 
@@ -36,7 +36,11 @@ async fn blackbox_dual_event_models_both_exist_and_round_trip() {
     let log = InMemoryEventLog::default();
     let session = SessionId::from("s-bb");
     let stored = log
-        .append(NewEvent::system(session.clone(), "test.ping", json!({"n": 1})))
+        .append(NewEvent::system(
+            session.clone(),
+            "test.ping",
+            json!({"n": 1}),
+        ))
         .await
         .expect("append");
     assert_eq!(stored.payload["n"], 1);
@@ -111,7 +115,10 @@ fn blackbox_job_capability_cannot_widen_via_serde() {
         "live": true
     }))
     .expect("shape deserializes");
-    assert!(!forged.is_live(), "serde must not mint a live JobCapability");
+    assert!(
+        !forged.is_live(),
+        "serde must not mint a live JobCapability"
+    );
     assert!(!forged.allows_tool("email.send"));
     assert!(forged.require_tool("email.send").is_err());
 

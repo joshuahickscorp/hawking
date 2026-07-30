@@ -86,7 +86,11 @@ impl CompileObjectView {
     ) -> Self {
         let derivatives = select
             .iter()
-            .filter_map(|k| record.derivative(*k).map(ModelFacingDerivative::from_derivative))
+            .filter_map(|k| {
+                record
+                    .derivative(*k)
+                    .map(ModelFacingDerivative::from_derivative)
+            })
             .collect();
         Self {
             content_hash: record.content_hash.clone(),
@@ -142,9 +146,7 @@ mod tests {
             mime: "text/plain".into(),
             kind: ObjectKind::Document,
             size_bytes: 4,
-            source: ObjectSource::Synthetic {
-                label: "t".into(),
-            },
+            source: ObjectSource::Synthetic { label: "t".into() },
             location: ObjectLocation::Pending,
             status: ObjectStatus::Ready,
             stages: vec![],
@@ -174,6 +176,9 @@ mod tests {
         assert_eq!(view.derivatives.len(), 1);
         assert_eq!(view.derivatives[0].text.as_deref(), Some("body"));
         assert!(!CompileObjectView::exposes_raw_bytes());
- assert!(matches!( view.try_raw_bytes(), Err(ObjectError::RawBytesForbidden) ));
+        assert!(matches!(
+            view.try_raw_bytes(),
+            Err(ObjectError::RawBytesForbidden)
+        ));
     }
 }

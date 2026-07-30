@@ -692,6 +692,8 @@ mod tests {
         bad.dependencies = vec![bad.id.clone()];
         assert!(g.enqueue_logged(&log, bad).await.is_err());
         let events = log.scan(None, None, None).await.unwrap();
- assert!(events .iter() .any(|e| e.kind == "job.enqueued" && e.payload["job_id"] == a_id.as_str()));
+        assert!(events
+            .iter()
+            .any(|e| e.kind == "job.enqueued" && e.payload["job_id"] == a_id.as_str()));
     }
 }

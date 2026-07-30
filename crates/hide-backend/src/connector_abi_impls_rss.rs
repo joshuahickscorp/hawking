@@ -36,9 +36,8 @@ struct Feed {
 /// deliberately small and network-free.
 fn parse_rss_2(xml: &str) -> Result<Feed> {
     // Require channel.
-    let channel = between(xml, "<channel>", "</channel>").ok_or_else(|| {
-        ConnectorError::Parse("missing <channel> in RSS fixture".into())
-    })?;
+    let channel = between(xml, "<channel>", "</channel>")
+        .ok_or_else(|| ConnectorError::Parse("missing <channel> in RSS fixture".into()))?;
     let title = text_tag(channel, "title").unwrap_or_default();
     let link = text_tag(channel, "link").unwrap_or_default();
     let description = text_tag(channel, "description").unwrap_or_default();
@@ -144,9 +143,8 @@ impl RssConnector {
                 "rss account feed path is empty".into(),
             ));
         }
-        let xml = fs::read_to_string(&path).map_err(|e| {
-            ConnectorError::Io(format!("read feed {}: {e}", path.display()))
-        })?;
+        let xml = fs::read_to_string(&path)
+            .map_err(|e| ConnectorError::Io(format!("read feed {}: {e}", path.display())))?;
         parse_rss_2(&xml)
     }
 }

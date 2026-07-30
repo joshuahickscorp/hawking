@@ -48,6 +48,7 @@ use std::collections::BTreeSet;
 use std::future::Future;
 use std::path::PathBuf;
 
+use crate::services::DynCodeIndex;
 use hide_core::api::{UiEvent, UiEventKind};
 use hide_core::event::NewEvent;
 use hide_core::ids::SessionId;
@@ -59,7 +60,6 @@ use hide_kernel::program_runtime::{
 use hide_kernel::tooling::fs::FsReadTool;
 use hide_kernel::tooling::git::{GitDiffTool, GitLogTool};
 use hide_kernel::tooling::search::SearchTextTool;
-use crate::services::DynCodeIndex;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
@@ -130,11 +130,7 @@ impl HostProgramHandles {
     /// Build the bridge for a workspace. `output_cap_bytes` bounds a single
     /// `file.read` (and the head kept when a read spills), so a program cannot
     /// pull an unbounded blob through one handle.
-    pub fn new(
-        workspace_root: PathBuf,
-        code_index: DynCodeIndex,
-        output_cap_bytes: u64,
-    ) -> Self {
+    pub fn new(workspace_root: PathBuf, code_index: DynCodeIndex, output_cap_bytes: u64) -> Self {
         Self {
             workspace_root,
             output_cap_bytes,
@@ -205,8 +201,14 @@ impl HostProgramHandles {
         let path = sc.get("path").and_then(|v| v.as_str()).unwrap_or("");
         let content = sc.get("content").and_then(|v| v.as_str()).unwrap_or("");
         let bytes = sc.get("bytes").and_then(|v| v.as_u64()).unwrap_or(0);
-        let truncated = sc.get("truncated").and_then(|v| v.as_bool()).unwrap_or(false);
-        let encoding = sc.get("encoding").and_then(|v| v.as_str()).unwrap_or("utf8");
+        let truncated = sc
+            .get("truncated")
+            .and_then(|v| v.as_bool())
+            .unwrap_or(false);
+        let encoding = sc
+            .get("encoding")
+            .and_then(|v| v.as_str())
+            .unwrap_or("utf8");
         let rec = map_of([
             ("path", Value::from(path)),
             ("content", Value::from(content)),
@@ -301,12 +303,7 @@ impl HostProgramHandles {
 }
 
 impl HostHandles for HostProgramHandles {
-    fn call(
-        &self,
-        handle: HandleName,
-        args: &Value,
-        _attempt: u32,
-    ) -> Result<Value, HandleError> {
+    fn call(&self, handle: HandleName, args: &Value, _attempt: u32) -> Result<Value, HandleError> {
         match handle {
             HandleName::SearchText => self.call_search_text(args),
             HandleName::FileRead => self.call_file_read(args),
@@ -672,8 +669,14 @@ mod tests {
             .get_path(&["path".into()])
             .and_then(Value::as_str)
             .unwrap();
-        assert!(first_path.ends_with("alpha.rs"), "ranked by path: {first_path}");
-        assert!(second_path.ends_with("beta.rs"), "ranked by path: {second_path}");
+        assert!(
+            first_path.ends_with("alpha.rs"),
+            "ranked by path: {first_path}"
+        );
+        assert!(
+            second_path.ends_with("beta.rs"),
+            "ranked by path: {second_path}"
+        );
         for row in matches {
             let cites = row.citations();
             assert_eq!(cites.len(), 1, "each ranked row keeps its search citation");
@@ -685,7 +688,11 @@ mod tests {
             .and_then(Value::as_str)
             .expect("alpha content is a string");
         assert_eq!(alpha, "pub fn compute_needle() -> i32 { 1 }\n");
-        assert_eq!(first.citations.len(), 2, "two distinct search.text citations");
+        assert_eq!(
+            first.citations.len(),
+            2,
+            "two distinct search.text citations"
+        );
         assert!(first.citations.iter().all(|c| c.source == "search.text"));
         assert!(first.write_proposals.is_empty());
         let events = host
@@ -723,7 +730,10 @@ mod tests {
             .run_program(session.clone(), &source_of(&ungranted), json!(null))
             .await
             .expect_err("an ungranted read handle must be denied");
-        assert!(matches!(err, ProgramRunError::Runtime(RuntimeError::HandleNotGranted(_))));
+        assert!(matches!(
+            err,
+            ProgramRunError::Runtime(RuntimeError::HandleNotGranted(_))
+        ));
     }
     #[tokio::test]
     async fn write_proposal_is_returned_but_never_executed() {
@@ -733,7 +743,10 @@ mod tests {
         let target_str = target.to_string_lossy().to_string();
         let proposal = Expr::propose_write(Expr::map_lit([
             ("kind", Expr::lit("edit")),
-            ("summary", Expr::lit("rename compute_needle across the crate")),
+            (
+                "summary",
+                Expr::lit("rename compute_needle across the crate"),
+            ),
             (
                 "payload",
                 Expr::map_lit([
@@ -751,7 +764,12 @@ mod tests {
         let wp = &result.write_proposals[0];
         assert_eq!(wp.kind, hide_kernel::program_runtime::WriteKind::Edit);
         assert_eq!(wp.summary, "rename compute_needle across the crate");
-        assert_eq!(wp.payload.get_path(&["path".into()]).and_then(Value::as_str), Some(target_str.as_str()));
+        assert_eq!(
+            wp.payload
+                .get_path(&["path".into()])
+                .and_then(Value::as_str),
+            Some(target_str.as_str())
+        );
         assert!(!target.exists(), "the proposed write must not touch disk");
     }
     #[tokio::test]
@@ -771,7 +789,13 @@ mod tests {
             .run_program_with_limits(session.clone(), &source_of(&read), json!(null), limits)
             .await
             .expect_err("tool-call budget exhausted");
-        assert!(matches!( err, ProgramRunError::Runtime(RuntimeError::LimitExceeded { kind: LimitKind::ToolCall, .. }) ));
+        assert!(matches!(
+            err,
+            ProgramRunError::Runtime(RuntimeError::LimitExceeded {
+                kind: LimitKind::ToolCall,
+                ..
+            })
+        ));
         let trivial = Program::new(Expr::map_lit([
             ("a", Expr::lit(1i64)),
             ("b", Expr::lit(2i64)),
@@ -784,7 +808,13 @@ mod tests {
             .run_program_with_limits(session.clone(), &source_of(&trivial), json!(null), limits)
             .await
             .expect_err("instruction budget exhausted");
-        assert!(matches!( err, ProgramRunError::Runtime(RuntimeError::LimitExceeded { kind: LimitKind::Instruction, .. }) ));
+        assert!(matches!(
+            err,
+            ProgramRunError::Runtime(RuntimeError::LimitExceeded {
+                kind: LimitKind::Instruction,
+                ..
+            })
+        ));
         let big = Program::new(Expr::lit("a result larger than one byte"));
         let limits = Limits {
             output_bytes: 1,
@@ -794,7 +824,13 @@ mod tests {
             .run_program_with_limits(session, &source_of(&big), json!(null), limits)
             .await
             .expect_err("output budget exhausted");
-        assert!(matches!( err, ProgramRunError::Runtime(RuntimeError::LimitExceeded { kind: LimitKind::OutputBytes, .. }) ));
+        assert!(matches!(
+            err,
+            ProgramRunError::Runtime(RuntimeError::LimitExceeded {
+                kind: LimitKind::OutputBytes,
+                ..
+            })
+        ));
     }
     #[tokio::test]
     async fn git_log_handle_bridges_a_real_async_process_tool() {

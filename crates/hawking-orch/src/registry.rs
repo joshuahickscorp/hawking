@@ -337,7 +337,10 @@ mod tests {
         assert!(!registry.by_purpose(RolePurpose::FastDraft).is_empty());
         assert!(!registry.by_purpose(RolePurpose::HeroCoder).is_empty());
         assert!(!registry.by_purpose(RolePurpose::Embedder).is_empty());
- assert!(registry .by_purpose(RolePurpose::ToolPlanner) .iter() .any(|role| role.caps.grammar));
+        assert!(registry
+            .by_purpose(RolePurpose::ToolPlanner)
+            .iter()
+            .any(|role| role.caps.grammar));
     }
     #[test]
     fn roles_toml_loads_and_resolves_escalation() {

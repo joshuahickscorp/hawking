@@ -178,7 +178,10 @@ pub fn code_state(events: &[Event], up_to_seq: Option<u64>) -> BTreeMap<String, 
         }
         if let Some(diff) = e.payload_as::<DiffView>() {
             for h in diff.hunks {
-                state.insert(h.file, blake3::hash(h.after.as_bytes()).to_hex().to_string());
+                state.insert(
+                    h.file,
+                    blake3::hash(h.after.as_bytes()).to_hex().to_string(),
+                );
             }
         }
     }
@@ -294,9 +297,11 @@ pub fn invalidated_receipts(reverted_files: &[String], receipts: &[ReceiptScope]
     receipts
         .iter()
         .filter(|r| {
-            r.scope
-                .iter()
-                .any(|s| reverted_files.iter().any(|f| hide_kernel::verify_plane::paths_intersect(s, f)))
+            r.scope.iter().any(|s| {
+                reverted_files
+                    .iter()
+                    .any(|f| hide_kernel::verify_plane::paths_intersect(s, f))
+            })
         })
         .map(|r| r.event_id.clone())
         .collect()
@@ -336,7 +341,9 @@ impl ForkPoint {
 /// and its own records, by reading the leading [`FORK_POINT_KIND`] marker and
 /// counting ordinals over the non-marker events. Without a marker there is no
 /// inherited context: every event is the session's own.
-pub fn split_inherited_own(child_events: &[Event]) -> (Option<ForkPoint>, Vec<&Event>, Vec<&Event>) {
+pub fn split_inherited_own(
+    child_events: &[Event],
+) -> (Option<ForkPoint>, Vec<&Event>, Vec<&Event>) {
     let fork_point = child_events
         .first()
         .filter(|e| e.kind == FORK_POINT_KIND)
@@ -476,16 +483,29 @@ mod tests {
             let hunks: Vec<_> = (0..=n)
                 .map(|i| json!({ "hunk_id": format!("d1-h{i}"), "file": "a.rs", "after": "x" }))
                 .collect();
-            ev(seq, "diff.proposed", json!({ "diff_id": "d1", "hunks": hunks }))
+            ev(
+                seq,
+                "diff.proposed",
+                json!({ "diff_id": "d1", "hunks": hunks }),
+            )
         };
         let events = vec![cumulative(1, 0), cumulative(2, 1), cumulative(3, 2)];
-        assert_eq!(post_boundary_hunks(&events, 1), vec![ ("d1".to_string(), "d1-h1".to_string()), ("d1".to_string(), "d1-h2".to_string()) ]);
+        assert_eq!(
+            post_boundary_hunks(&events, 1),
+            vec![
+                ("d1".to_string(), "d1-h1".to_string()),
+                ("d1".to_string(), "d1-h2".to_string())
+            ]
+        );
         assert!(post_boundary_hunks(&[diff_ev(2, "a.rs", "v")], 1).is_empty());
     }
     #[test]
     fn classify_maps_kinds_to_domains() {
         assert_eq!(classify("agent.message"), EventDomain::Conversation);
-        assert_eq!(classify("user.intent.submit_turn"), EventDomain::Conversation);
+        assert_eq!(
+            classify("user.intent.submit_turn"),
+            EventDomain::Conversation
+        );
         assert_eq!(classify("diff.proposed"), EventDomain::Code);
         assert_eq!(classify("tool.result"), EventDomain::Code);
         assert_eq!(classify("edit.write_file"), EventDomain::Code);
@@ -503,10 +523,18 @@ mod tests {
         let boundary = 2;
         let code = rewind_child_events(&events, boundary, RewindTarget::Code);
         let code_seqs: Vec<u64> = code.iter().map(|e| e.seq).collect();
-        assert_eq!(code_seqs, vec![1, 2, 3], "post-boundary code (4) is reverted");
+        assert_eq!(
+            code_seqs,
+            vec![1, 2, 3],
+            "post-boundary code (4) is reverted"
+        );
         let conv = rewind_child_events(&events, boundary, RewindTarget::Conversation);
         let conv_seqs: Vec<u64> = conv.iter().map(|e| e.seq).collect();
-        assert_eq!(conv_seqs, vec![1, 2, 4], "post-boundary conversation (3) is reverted");
+        assert_eq!(
+            conv_seqs,
+            vec![1, 2, 4],
+            "post-boundary conversation (3) is reverted"
+        );
         let both = rewind_child_events(&events, boundary, RewindTarget::Both);
         let both_seqs: Vec<u64> = both.iter().map(|e| e.seq).collect();
         assert_eq!(both_seqs, vec![1, 2]);
@@ -522,11 +550,18 @@ mod tests {
         let at_tail = code_state(&events, None);
         assert_eq!(at_boundary.len(), 1, "only a.rs exists at seq 1");
         assert_eq!(at_tail.len(), 2, "a.rs + b.rs at the tail");
-        assert_ne!(at_boundary["a.rs"], at_tail["a.rs"], "a.rs changed (v1 -> v2)");
+        assert_ne!(
+            at_boundary["a.rs"], at_tail["a.rs"],
+            "a.rs changed (v1 -> v2)"
+        );
         let changes = diff_code_states(&at_boundary, &at_tail);
         assert_eq!(changes.len(), 2);
- assert!(changes .iter() .any(|c| c.file == "b.rs" && c.status == ChangeStatus::Added));
- assert!(changes .iter() .any(|c| c.file == "a.rs" && c.status == ChangeStatus::Modified));
+        assert!(changes
+            .iter()
+            .any(|c| c.file == "b.rs" && c.status == ChangeStatus::Added));
+        assert!(changes
+            .iter()
+            .any(|c| c.file == "a.rs" && c.status == ChangeStatus::Modified));
         assert_eq!(changed_files(&at_boundary, &at_tail), vec!["a.rs", "b.rs"]);
     }
     #[test]
@@ -548,14 +583,23 @@ mod tests {
         ];
         let out = invalidated_receipts(&reverted, &receipts);
         assert!(out.contains(&EventId::from("r-a")));
-        assert!(out.contains(&EventId::from("r-dir")), "dir scope contains the file");
-        assert!(!out.contains(&EventId::from("r-b")), "unrelated file is untouched");
+        assert!(
+            out.contains(&EventId::from("r-dir")),
+            "dir scope contains the file"
+        );
+        assert!(
+            !out.contains(&EventId::from("r-b")),
+            "unrelated file is untouched"
+        );
     }
     #[test]
     fn fork_point_ordinal_boundary_splits_inherited_from_own() {
         let parent = SessionId::from("parent");
         let fp = ForkPoint::new(parent.clone(), 2, 5);
-        assert_eq!(fp.start_ordinal, 3, "own history starts after the 2 inherited");
+        assert_eq!(
+            fp.start_ordinal, 3,
+            "own history starts after the 2 inherited"
+        );
         let child = vec![
             ev(1, FORK_POINT_KIND, serde_json::to_value(&fp).unwrap()),
             ev(2, "agent.message", json!({ "text": "inherited-1" })),
@@ -566,7 +610,10 @@ mod tests {
         assert_eq!(got, Some(fp));
         assert_eq!(inherited.len(), 2);
         assert_eq!(own.len(), 1);
- assert_eq!( own[0].payload.get("text").and_then(|t| t.as_str()), Some("own-1") );
+        assert_eq!(
+            own[0].payload.get("text").and_then(|t| t.as_str()),
+            Some("own-1")
+        );
         let no_marker = vec![ev(1, "agent.message", json!({ "text": "x" }))];
         let (none, inh, all_own) = split_inherited_own(&no_marker);
         assert!(none.is_none());
@@ -583,9 +630,17 @@ mod tests {
             artifacts: StateRef::default(),
             live_state_capsule: None,
         };
-        assert_eq!(cov.digest(), cov.clone().digest(), "same coverage -> same digest");
+        assert_eq!(
+            cov.digest(),
+            cov.clone().digest(),
+            "same coverage -> same digest"
+        );
         let mut tampered = cov.clone();
         tampered.repo_state = StateRef::of(&["a.rs:OTHER".to_string()]);
-        assert_ne!(cov.digest(), tampered.digest(), "a changed reference changes the digest");
+        assert_ne!(
+            cov.digest(),
+            tampered.digest(),
+            "a changed reference changes the digest"
+        );
     }
 }

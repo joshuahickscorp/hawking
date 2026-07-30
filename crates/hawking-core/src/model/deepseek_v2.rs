@@ -1,5 +1,7 @@
-use super::weights::{dequant_f16, dequant_f32, dequant_f32_opt, dequant_ref_into, tensor_ref, TensorRef};
 use super::dispatch::rmsnorm_dispatch;
+use super::weights::{
+    dequant_f16, dequant_f32, dequant_f32_opt, dequant_ref_into, tensor_ref, TensorRef,
+};
 use crate::cache::KvCache;
 use crate::engine::{
     Engine, EngineConfig, GenStats, GenerateRequest, SpeculateMode, StopReason, StreamEvent,
@@ -381,7 +383,6 @@ impl DeepSeekV2 {
         }
         profile.selected.gemm_q4_k_schedule.as_str()
     }
-
 
     /// Build a `TensorRef` for a single (non-fused) tensor -- the
     /// returned ref points into the GGUF mmap.

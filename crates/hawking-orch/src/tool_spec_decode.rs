@@ -380,8 +380,14 @@ mod tests {
                 "additionalProperties": false
             }),
         )]);
-        assert_eq!(g.scaffold_for("x.single", true).unwrap(), "{\"name\": \"x.single\", \"arguments\": {\"path\": ");
-        assert_eq!(g.scaffold_for("x.single", false).unwrap(), "{\"name\": \"x.single\", \"arguments\": {");
+        assert_eq!(
+            g.scaffold_for("x.single", true).unwrap(),
+            "{\"name\": \"x.single\", \"arguments\": {\"path\": "
+        );
+        assert_eq!(
+            g.scaffold_for("x.single", false).unwrap(),
+            "{\"name\": \"x.single\", \"arguments\": {"
+        );
         assert_eq!(g.scaffold_for("made.up", true), None);
     }
     #[test]
@@ -399,7 +405,10 @@ mod tests {
                 "additionalProperties": false
             }),
         )]);
- assert_eq!( g.scaffold_for("fs.read", true).unwrap(), "{\"name\": \"fs.read\", \"arguments\": {" );
+        assert_eq!(
+            g.scaffold_for("fs.read", true).unwrap(),
+            "{\"name\": \"fs.read\", \"arguments\": {"
+        );
     }
     #[test]
     fn scaffold_does_not_force_key_when_multiple_required() {
@@ -407,7 +416,10 @@ mod tests {
             "x.multi",
             vec!["a".into(), "b".into()],
         )]);
- assert_eq!( g.scaffold_for("x.multi", true).unwrap(), "{\"name\": \"x.multi\", \"arguments\": {" );
+        assert_eq!(
+            g.scaffold_for("x.multi", true).unwrap(),
+            "{\"name\": \"x.multi\", \"arguments\": {"
+        );
     }
     #[test]
     fn validity_gate_checks_name_and_required_keys() {

@@ -27,7 +27,6 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::collections::BTreeMap;
 
-
 // ---------------------------------------------------------------------------
 // Fixture tool registry (no real execution)
 // ---------------------------------------------------------------------------
@@ -131,8 +130,5 @@ pub fn standard_fixture_registry() -> FixtureToolRegistry {
             "shell.run",
             json!({"exit": 0, "stdout": "ok"}),
         ))
-        .with(FixtureTool::new(
-            "notify.send",
-            json!({"delivered": true}),
-        ))
+        .with(FixtureTool::new("notify.send", json!({"delivered": true})))
 }

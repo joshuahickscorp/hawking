@@ -108,7 +108,10 @@ impl AccelCostLedger {
     /// Deliberately *not* the scoreboard: draft-side throughput excluding verify
     /// and rollback. Exposed only so tests can prove it differs from accepted TPS.
     pub fn draft_side_throughput_not_scoreboard(self) -> f64 {
-        tps(self.draft_tokens, Duration::from_nanos(self.draft_ns.max(1)))
+        tps(
+            self.draft_tokens,
+            Duration::from_nanos(self.draft_ns.max(1)),
+        )
     }
 
     pub fn record_draft(&mut self, ns: u64, drafted: u64) {
@@ -173,7 +176,10 @@ mod tests {
         );
         assert!(without_rollback > accepted.value());
         assert_eq!(ledger.total_ns(), 30_000_000);
-        assert_eq!(AcceleratedAcceptedTps::SCOREBOARD, "ACCELERATED_ACCEPTED_TPS");
+        assert_eq!(
+            AcceleratedAcceptedTps::SCOREBOARD,
+            "ACCELERATED_ACCEPTED_TPS"
+        );
         assert_eq!(BaseTrueTps::SCOREBOARD, "BASE_TRUE_TPS");
     }
     #[test]

@@ -62,8 +62,14 @@ fn bench_model(label: &str, rel: &str, env_key: &str) {
     let gpu_tps = time_gpu_decode(&mut engine, tok, 8, 64);
     engine.reset_kv_for_test();
     let cpu_tps = time_cpu_decode(&mut engine, tok, 2, 32);
-    let max_depth: usize = std::env::var("HAWKING_RWKV7_MAX_DEPTH").ok().and_then(|s| s.parse().ok()).unwrap_or(64_000);
-    let depths: Vec<usize> = [0usize, 4_000, 16_000, 64_000].into_iter().filter(|&d| d <= max_depth).collect();
+    let max_depth: usize = std::env::var("HAWKING_RWKV7_MAX_DEPTH")
+        .ok()
+        .and_then(|s| s.parse().ok())
+        .unwrap_or(64_000);
+    let depths: Vec<usize> = [0usize, 4_000, 16_000, 64_000]
+        .into_iter()
+        .filter(|&d| d <= max_depth)
+        .collect();
     let mut base = None;
     for &d in &depths {
         engine.reset_kv_for_test();
@@ -77,6 +83,14 @@ fn bench_model(label: &str, rel: &str, env_key: &str) {
 #[test]
 #[ignore = "manual throughput/flatness measurement; run with --ignored"]
 fn rwkv7_gpu_decode_tps_and_flatness() {
-    bench_model("rwkv7-0.4B", "models/rwkv7-04/rwkv7-0.4B-world.Q4_K_M.gguf", "HAWKING_RWKV7_GGUF");
-    bench_model("rwkv7-191M", "models/rwkv7-191m/rwkv7-191M-world.Q4_K_M.gguf", "HAWKING_RWKV7_191M_GGUF");
+    bench_model(
+        "rwkv7-0.4B",
+        "models/rwkv7-04/rwkv7-0.4B-world.Q4_K_M.gguf",
+        "HAWKING_RWKV7_GGUF",
+    );
+    bench_model(
+        "rwkv7-191M",
+        "models/rwkv7-191m/rwkv7-191M-world.Q4_K_M.gguf",
+        "HAWKING_RWKV7_191M_GGUF",
+    );
 }

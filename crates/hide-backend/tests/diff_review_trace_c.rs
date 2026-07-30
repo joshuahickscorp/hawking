@@ -15,12 +15,21 @@ fn write_host(tag: &str) -> (BackendHost, std::path::PathBuf) {
     let host = BackendHost::from_services(BackendServices::open(config).unwrap()).unwrap();
     (host, dir)
 }
-async fn scripted_edit(host: &BackendHost, session: &hide_core::ids::SessionId, run: &RunId, path: &str, content: &str) {
+async fn scripted_edit(
+    host: &BackendHost,
+    session: &hide_core::ids::SessionId,
+    run: &RunId,
+    path: &str,
+    content: &str,
+) {
     let result = host
         .dispatch_tool(
             session.clone(),
             Some(run.clone()),
-            ToolCall::new("edit.write_file", json!({ "path": path, "content": content })),
+            ToolCall::new(
+                "edit.write_file",
+                json!({ "path": path, "content": content }),
+            ),
         )
         .await
         .unwrap();
@@ -52,7 +61,10 @@ async fn trace_c_hunk_addressable_diff_review() {
     assert_eq!(proposal.hunks.len(), 2, "two edits = two addressable hunks");
     for h in &proposal.hunks {
         assert!(!h.base_hash.is_empty(), "hunk carries a base hash");
-        assert_eq!(h.provenance.agent, "edit.write_file", "provenance names the agent");
+        assert_eq!(
+            h.provenance.agent, "edit.write_file",
+            "provenance names the agent"
+        );
         assert_eq!(h.status, HunkStatus::Pending);
     }
     let hunk_a = proposal
@@ -63,14 +75,14 @@ async fn trace_c_hunk_addressable_diff_review() {
         .clone();
     assert_eq!(hunk_a.before, orig_a);
     assert_eq!(hunk_a.after, new_a);
- assert_eq!( hunk_a.base_hash, blake3::hash(orig_a.as_bytes()).to_hex().to_string() );
+    assert_eq!(
+        hunk_a.base_hash,
+        blake3::hash(orig_a.as_bytes()).to_hex().to_string()
+    );
     let before = host
         .run_static_analysis(
             session.clone(),
-            vec![
-                SourceFile::new(rel_a, new_a),
-                SourceFile::new(rel_b, new_b),
-            ],
+            vec![SourceFile::new(rel_a, new_a), SourceFile::new(rel_b, new_b)],
         )
         .await
         .unwrap();
@@ -85,31 +97,42 @@ async fn trace_c_hunk_addressable_diff_review() {
         .await
         .unwrap();
     assert!(ack.accepted);
-    assert_eq!(std::fs::read_to_string(&path_a).unwrap(), orig_a, "file a reverted");
-    assert_eq!(std::fs::read_to_string(&path_b).unwrap(), new_b, "file b kept");
+    assert_eq!(
+        std::fs::read_to_string(&path_a).unwrap(),
+        orig_a,
+        "file a reverted"
+    );
+    assert_eq!(
+        std::fs::read_to_string(&path_b).unwrap(),
+        new_b,
+        "file b kept"
+    );
     let after_reject = host.diff_get(&diff_id).unwrap();
     let ha = after_reject.hunks.iter().find(|h| h.file == rel_a).unwrap();
     let hb = after_reject.hunks.iter().find(|h| h.file == rel_b).unwrap();
     assert_eq!(ha.status, HunkStatus::Rejected);
     assert_eq!(hb.status, HunkStatus::Pending);
     let invalidated = host.invalidated_verification_ids(&session).await.unwrap();
-    assert!(invalidated.contains(&before_id), "rejected file invalidates its receipt");
+    assert!(
+        invalidated.contains(&before_id),
+        "rejected file invalidates its receipt"
+    );
     let cur_a = std::fs::read_to_string(&path_a).unwrap();
     let cur_b = std::fs::read_to_string(&path_b).unwrap();
     let after = host
         .run_static_analysis(
             session.clone(),
-            vec![
-                SourceFile::new(rel_a, cur_a),
-                SourceFile::new(rel_b, cur_b),
-            ],
+            vec![SourceFile::new(rel_a, cur_a), SourceFile::new(rel_b, cur_b)],
         )
         .await
         .unwrap();
     let after_id = after.receipt.verification_id.clone();
     assert_ne!(after_id, before_id, "reverify mints a fresh receipt");
     let invalidated2 = host.invalidated_verification_ids(&session).await.unwrap();
-    assert!(!invalidated2.contains(&after_id), "the fresh receipt is not invalidated");
+    assert!(
+        !invalidated2.contains(&after_id),
+        "the fresh receipt is not invalidated"
+    );
     let exported = host
         .export_diff_review_receipt(
             &diff_id,
@@ -128,20 +151,36 @@ async fn trace_c_hunk_addressable_diff_review() {
     assert_eq!(rb.verification_after.len(), 1);
     assert_eq!(rb.verification_before[0].verification_id, before_id);
     assert_eq!(rb.verification_after[0].verification_id, after_id);
- assert_eq!( rb.hunks.iter().filter(|h| h.status == HunkStatus::Rejected).count(), 1 );
+    assert_eq!(
+        rb.hunks
+            .iter()
+            .filter(|h| h.status == HunkStatus::Rejected)
+            .count(),
+        1
+    );
     let events = host
         .services
         .event_log
         .scan(Some(session.clone()), None, None)
         .await
         .unwrap();
-    assert_eq!(count_kind(&events, "diff.proposed"), 2, "one per captured edit");
+    assert_eq!(
+        count_kind(&events, "diff.proposed"),
+        2,
+        "one per captured edit"
+    );
     assert_eq!(count_kind(&events, "diff.hunk.rejected"), 1);
     assert_eq!(count_kind(&events, "verify.result"), 2, "before + after");
     assert_eq!(count_kind(&events, "verify.invalidated"), 1);
     assert_eq!(count_kind(&events, "diff.receipt"), 1);
-    let rejected_evt = events.iter().find(|e| e.kind == "diff.hunk.rejected").unwrap();
-    assert_eq!(rejected_evt.payload.get("hunk_id").and_then(|v| v.as_str()), Some(hunk_a.hunk_id.as_str()));
+    let rejected_evt = events
+        .iter()
+        .find(|e| e.kind == "diff.hunk.rejected")
+        .unwrap();
+    assert_eq!(
+        rejected_evt.payload.get("hunk_id").and_then(|v| v.as_str()),
+        Some(hunk_a.hunk_id.as_str())
+    );
     let _ = std::fs::remove_dir_all(dir);
 }
 #[tokio::test]
@@ -156,7 +195,10 @@ async fn apply_hunk_and_apply_diff_keep_without_writing() {
     let hunk = host.diff_get(&diff_id).unwrap().hunks[0].hunk_id.clone();
     let p = host.apply_hunk(&diff_id, &hunk).await.unwrap();
     assert_eq!(p.hunks[0].status, HunkStatus::Accepted);
-    assert_eq!(std::fs::read_to_string(&path).unwrap(), "pub fn k() -> u8 { 0 }\n");
+    assert_eq!(
+        std::fs::read_to_string(&path).unwrap(),
+        "pub fn k() -> u8 { 0 }\n"
+    );
     let p2 = host.apply_diff(&diff_id).await.unwrap();
     assert_eq!(p2.hunks[0].status, HunkStatus::Accepted);
     assert!(host.apply_hunk(&diff_id, "nope").await.is_err());
@@ -202,7 +244,9 @@ fn optional_hunk_id_parses_backward_compatible() {
     }))
     .unwrap();
     match legacy {
-        Intent::AcceptDiff { hunk_id, diff_id, .. } => {
+        Intent::AcceptDiff {
+            hunk_id, diff_id, ..
+        } => {
             assert_eq!(hunk_id, None);
             assert_eq!(diff_id, "d1");
         }
@@ -236,9 +280,17 @@ async fn whole_diff_revert_is_gated_whichever_payload_shape_asks_for_it() {
         .await
         .unwrap();
     assert!(ack.accepted, "the request is recorded");
- assert!( ack.held, "a whole-diff revert asked for as reject_diff must be held, not run" );
+    assert!(
+        ack.held,
+        "a whole-diff revert asked for as reject_diff must be held, not run"
+    );
     assert_eq!(std::fs::read_to_string(&path_a).unwrap(), "A1\n");
-    assert!(host.diff_get(&diff_id) .unwrap() .hunks .iter() .all(|h| h.status != HunkStatus::Rejected));
+    assert!(host
+        .diff_get(&diff_id)
+        .unwrap()
+        .hunks
+        .iter()
+        .all(|h| h.status != HunkStatus::Rejected));
     let _ = std::fs::remove_dir_all(dir);
 }
 #[tokio::test]
@@ -298,9 +350,18 @@ async fn a_save_with_a_stale_base_hash_conflicts() {
         .await
         .unwrap();
     assert!(!ack.held, "writes are allowed here, so nothing is gated");
- assert!( !ack.accepted, "a refused write must not ack as accepted: {ack:?}" );
- assert!( ack.message.is_some(), "the refusal carries the applier's reason" );
-    assert_eq!(std::fs::read_to_string(dir.join("c.txt")).unwrap(), "current\n");
+    assert!(
+        !ack.accepted,
+        "a refused write must not ack as accepted: {ack:?}"
+    );
+    assert!(
+        ack.message.is_some(),
+        "the refusal carries the applier's reason"
+    );
+    assert_eq!(
+        std::fs::read_to_string(dir.join("c.txt")).unwrap(),
+        "current\n"
+    );
     let _ = std::fs::remove_dir_all(dir);
 }
 #[tokio::test]
@@ -316,7 +377,11 @@ async fn an_agent_edit_publishes_the_diff_projection_and_a_status_change_republi
     let patch = next_diff_patch(&mut rx).await;
     assert_eq!(patch["diff_id"], json!(diff_id));
     assert_eq!(patch["run_id"], json!(run.as_str()));
- assert_eq!( patch["path"], json!("p.rs"), "the Monaco model names the file, workspace-relative" );
+    assert_eq!(
+        patch["path"],
+        json!("p.rs"),
+        "the Monaco model names the file, workspace-relative"
+    );
     assert_eq!(patch["lang"], json!("rust"));
     assert_eq!(patch["before"], json!("fn p() -> u32 { 1 }\n"));
     let hunks = patch["hunks"].as_array().expect("hunks is an array");
@@ -325,7 +390,10 @@ async fn an_agent_edit_publishes_the_diff_projection_and_a_status_change_republi
     assert_eq!(h["id"], h["hunk_id"]);
     assert_eq!(h["status"], json!("pending"));
     assert_eq!(h["file"], json!("p.rs"));
- assert_eq!( h["base_hash"], json!(blake3::hash(b"fn p() -> u32 { 1 }\n").to_hex().to_string()) );
+    assert_eq!(
+        h["base_hash"],
+        json!(blake3::hash(b"fn p() -> u32 { 1 }\n").to_hex().to_string())
+    );
     assert_eq!(h["provenance"]["agent"], json!("edit.write_file"));
     assert!(h["header"].as_str().unwrap().starts_with("@@ "));
     let kinds: Vec<&str> = h["lines"]
@@ -334,7 +402,10 @@ async fn an_agent_edit_publishes_the_diff_projection_and_a_status_change_republi
         .iter()
         .map(|l| l["kind"].as_str().unwrap())
         .collect();
-    assert!(kinds.contains(&"del") && kinds.contains(&"add"), "{kinds:?}");
+    assert!(
+        kinds.contains(&"del") && kinds.contains(&"add"),
+        "{kinds:?}"
+    );
     host.apply_hunk(&diff_id, h["hunk_id"].as_str().unwrap())
         .await
         .unwrap();
@@ -373,26 +444,56 @@ async fn a_kernel_dispatch_records_tool_events_and_a_revertible_hunk() {
         .await
         .unwrap();
     assert_eq!(result.status, hide_core::tool::ToolStatus::Ok);
-    let events = host.services.event_log.scan(Some(session.clone()), None, None).await.unwrap();
-    assert_eq!(count_kind(&events, "tool.call"), 1, "the agent's call is recorded");
+    let events = host
+        .services
+        .event_log
+        .scan(Some(session.clone()), None, None)
+        .await
+        .unwrap();
+    assert_eq!(
+        count_kind(&events, "tool.call"),
+        1,
+        "the agent's call is recorded"
+    );
     assert_eq!(count_kind(&events, "tool.result"), 1);
-    assert_eq!(count_kind(&events, "diff.proposed"), 1, "and it produced a diff");
-    assert!(events .iter() .filter(|e| e.kind == "tool.call" || e.kind == "tool.result") .all(|e| e.run_id.as_ref() == Some(&run)));
-    let proposal = host.diff_get(&format!("diff-{}", run.as_str())).expect("diff registered");
+    assert_eq!(
+        count_kind(&events, "diff.proposed"),
+        1,
+        "and it produced a diff"
+    );
+    assert!(events
+        .iter()
+        .filter(|e| e.kind == "tool.call" || e.kind == "tool.result")
+        .all(|e| e.run_id.as_ref() == Some(&run)));
+    let proposal = host
+        .diff_get(&format!("diff-{}", run.as_str()))
+        .expect("diff registered");
     assert_eq!(proposal.hunks.len(), 1);
     let hunk = proposal.hunks[0].clone();
-    assert_eq!(hunk.file, "k.rs", "workspace-relative, the spelling receipts use");
+    assert_eq!(
+        hunk.file, "k.rs",
+        "workspace-relative, the spelling receipts use"
+    );
     assert_eq!(hunk.before, "fn k() -> u32 { 1 }\n");
     assert_eq!(hunk.status, HunkStatus::Pending);
-    host.reject_hunk(&proposal.diff_id, &hunk.hunk_id).await.unwrap();
-    assert_eq!(std::fs::read_to_string(&path).unwrap(), "fn k() -> u32 { 1 }\n");
+    host.reject_hunk(&proposal.diff_id, &hunk.hunk_id)
+        .await
+        .unwrap();
+    assert_eq!(
+        std::fs::read_to_string(&path).unwrap(),
+        "fn k() -> u32 { 1 }\n"
+    );
     let _ = std::fs::remove_dir_all(dir);
 }
 #[tokio::test]
 async fn a_wire_driven_rewind_invalidates_the_receipts_it_reverted() {
     let (host, dir) = write_host("wire_rewind");
     let session = host.services.session();
-    std::fs::write(dir.join("w.rs").to_string_lossy().to_string(), "fn w() { }\n").unwrap();
+    std::fs::write(
+        dir.join("w.rs").to_string_lossy().to_string(),
+        "fn w() { }\n",
+    )
+    .unwrap();
     let intent = |name: &str, payload: serde_json::Value| Intent::Custom {
         name: name.to_string(),
         payload,
@@ -418,7 +519,10 @@ async fn a_wire_driven_rewind_invalidates_the_receipts_it_reverted() {
         .receipt
         .verification_id
         .clone();
-    let checkpoint = host.checkpoint_create(session.clone(), None, "before").await.unwrap();
+    let checkpoint = host
+        .checkpoint_create(session.clone(), None, "before")
+        .await
+        .unwrap();
     let ack = host
         .handle_intent(intent(
             "save_file",
@@ -435,7 +539,10 @@ async fn a_wire_driven_rewind_invalidates_the_receipts_it_reverted() {
         ))
         .await
         .unwrap();
-    assert!(ack.held, "an Ask command is held, never run on arrival: {ack:?}");
+    assert!(
+        ack.held,
+        "an Ask command is held, never run on arrival: {ack:?}"
+    );
     let gate = loop {
         let ev = tokio::time::timeout(std::time::Duration::from_secs(2), rx.recv())
             .await
@@ -450,7 +557,10 @@ async fn a_wire_driven_rewind_invalidates_the_receipts_it_reverted() {
         .await
         .unwrap();
     assert!(ack.accepted, "the released rewind ran: {ack:?}");
-    assert_eq!(std::fs::read_to_string(dir.join("w.rs")).unwrap(), "fn w() { let _ = x.unwrap(); }\n");
+    assert_eq!(
+        std::fs::read_to_string(dir.join("w.rs")).unwrap(),
+        "fn w() { let _ = x.unwrap(); }\n"
+    );
     let invalidated = host.invalidated_verification_ids(&session).await.unwrap();
     assert!(invalidated.contains(&receipt_id));
     let _ = std::fs::remove_dir_all(dir);
@@ -463,7 +573,9 @@ async fn a_per_hunk_reject_is_held_for_approval_on_the_shipped_default() {
     let session = host.services.session();
     std::fs::write(dir.join("u.txt"), "old\n").unwrap();
     let mut rx = host.subscribe_ui();
-    async fn next_gate(rx: &mut tokio::sync::broadcast::Receiver<hide_core::api::UiEvent>) -> String {
+    async fn next_gate(
+        rx: &mut tokio::sync::broadcast::Receiver<hide_core::api::UiEvent>,
+    ) -> String {
         loop {
             let ev = tokio::time::timeout(std::time::Duration::from_secs(2), rx.recv())
                 .await
@@ -501,11 +613,17 @@ async fn a_per_hunk_reject_is_held_for_approval_on_the_shipped_default() {
         })
         .await
         .unwrap();
- assert!( ack.held, "a policy-refused undo is offered for approval, not thrown away: {ack:?}" );
+    assert!(
+        ack.held,
+        "a policy-refused undo is offered for approval, not thrown away: {ack:?}"
+    );
     assert_eq!(std::fs::read_to_string(dir.join("u.txt")).unwrap(), "new\n");
     let gate = next_gate(&mut rx).await;
     assert!(approve(gate).await.unwrap().accepted);
     assert_eq!(std::fs::read_to_string(dir.join("u.txt")).unwrap(), "old\n");
- assert_eq!( host.diff_get(&proposal.diff_id).unwrap().hunks[0].status, HunkStatus::Rejected );
+    assert_eq!(
+        host.diff_get(&proposal.diff_id).unwrap().hunks[0].status,
+        HunkStatus::Rejected
+    );
     let _ = std::fs::remove_dir_all(dir);
 }

@@ -540,7 +540,10 @@ mod tests {
     }
     #[test]
     fn parse_native_sse_lines_cover_token_stats_error_done() {
-        assert_eq!(parse_native_sse_line("data: {\"tok_index\": 0, \"text\": \" Paris\"}"), SseChunk::Token(" Paris".to_string()));
+        assert_eq!(
+            parse_native_sse_line("data: {\"tok_index\": 0, \"text\": \" Paris\"}"),
+            SseChunk::Token(" Paris".to_string())
+        );
         match parse_native_sse_line(
             "data: {\"stats\": {\"prompt_tokens\": 3, \"completion_tokens\": 5, \"dec_tps\": 40.0}}",
         ) {
@@ -550,8 +553,14 @@ mod tests {
             }
             other => panic!("expected Done, got {other:?}"),
         }
-        assert_eq!(parse_native_sse_line("data: {\"error\": {\"message\": \"server busy\"}}"), SseChunk::Error("server busy".to_string()));
- assert!(matches!( parse_native_sse_line("data: [DONE]"), SseChunk::Done(_) ));
+        assert_eq!(
+            parse_native_sse_line("data: {\"error\": {\"message\": \"server busy\"}}"),
+            SseChunk::Error("server busy".to_string())
+        );
+        assert!(matches!(
+            parse_native_sse_line("data: [DONE]"),
+            SseChunk::Done(_)
+        ));
         assert_eq!(parse_native_sse_line(": keep-alive"), SseChunk::Ignore);
         assert_eq!(parse_native_sse_line(""), SseChunk::Ignore);
     }

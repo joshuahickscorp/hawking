@@ -1,5 +1,7 @@
 #![cfg(target_os = "macos")]
-use hawking_core::{model::qwen_dense::QwenDense, profile::fresh_test_profile, Engine, EngineConfig};
+use hawking_core::{
+    model::qwen_dense::QwenDense, profile::fresh_test_profile, Engine, EngineConfig,
+};
 use std::path::PathBuf;
 mod common;
 use common::weights_path_qwen as weights_path;
@@ -21,21 +23,28 @@ fn w4a8_activation_distribution() {
         return;
     }
     let profile = fresh_test_profile(&weights).expect("fresh test profile");
-    let cfg = EngineConfig { kernel_profile: Some(profile), ..Default::default() };
+    let cfg = EngineConfig {
+        kernel_profile: Some(profile),
+        ..Default::default()
+    };
     let mut engine = QwenDense::load(&weights, cfg).expect("load engine");
     let mut samples: Vec<Vec<f32>> = Vec::with_capacity(PROMPTS.len() * STEPS_PER_PROMPT);
     for (pi, prompt) in PROMPTS.iter().enumerate() {
         engine.kv.reset();
         let tokens = engine.tokenizer.encode(prompt, true).expect("encode");
         for (i, &tok) in tokens.iter().enumerate() {
-            let x_norm = engine.dump_x_norm_after_forward(tok, i).expect("forward prefill");
+            let x_norm = engine
+                .dump_x_norm_after_forward(tok, i)
+                .expect("forward prefill");
             samples.push(x_norm);
         }
         let mut last_tok = *tokens.last().unwrap();
         let pos_start = tokens.len();
         for step in 0..STEPS_PER_PROMPT {
             let pos = pos_start + step;
-            let x_norm = engine.dump_x_norm_after_forward(last_tok, pos).expect("forward decode");
+            let x_norm = engine
+                .dump_x_norm_after_forward(last_tok, pos)
+                .expect("forward decode");
             let mut argmax_idx = 0u32;
             let mut argmax_val = 0.0f32;
             for (i, &v) in x_norm.iter().enumerate() {
@@ -68,7 +77,8 @@ fn w4a8_activation_distribution() {
     let mean_of_max: f32 = total_max_abs / hidden as f32;
     let max_of_max: f32 = max_abs.iter().cloned().fold(0.0f32, f32::max);
     let min_of_max: f32 = max_abs.iter().cloned().fold(f32::INFINITY, f32::min);
-    let mut sorted_max: Vec<(usize, f32)> = max_abs.iter().enumerate().map(|(i, &v)| (i, v)).collect();
+    let mut sorted_max: Vec<(usize, f32)> =
+        max_abs.iter().enumerate().map(|(i, &v)| (i, v)).collect();
     sorted_max.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
     let percentile_thresholds = [1, 5, 10, 25, 50];
     for &p in &percentile_thresholds {
@@ -91,14 +101,20 @@ fn w4a8_activation_distribution() {
     for c in 0..hidden {
         let mean_a = sum_abs[c] / n_samples as f64;
         let rms = (sum_sq[c] / n_samples as f64).sqrt();
-        report.push_str(&format!("{},{:.6},{:.6},{:.6}\n", c, max_abs[c], mean_a, rms));
+        report.push_str(&format!(
+            "{},{:.6},{:.6},{:.6}\n",
+            c, max_abs[c], mean_a, rms
+        ));
     }
     let out_path = PathBuf::from("reports/w4a8_activation_dist.csv");
     if let Some(parent) = out_path.parent() {
         let _ = std::fs::create_dir_all(parent);
     }
     let _ = std::fs::write(&out_path, &report);
-    let per_channel_scale: Vec<f32> = max_abs.iter().map(|&m| if m > 0.0 { m / 127.0 } else { 1.0 }).collect();
+    let per_channel_scale: Vec<f32> = max_abs
+        .iter()
+        .map(|&m| if m > 0.0 { m / 127.0 } else { 1.0 })
+        .collect();
     let block_size = 256usize;
     let mut sum_sq_err_block = 0.0f64;
     let mut sum_sq_err_channel = 0.0f64;
@@ -108,7 +124,9 @@ fn w4a8_activation_distribution() {
     let mut outlier_block_elem_count = 0usize;
     let outlier_blocks: Vec<usize> = {
         let nb = hidden / block_size;
-        (0..nb).filter(|&b| (b * block_size..(b + 1) * block_size).any(|c| max_abs[c] > 30.0)).collect()
+        (0..nb)
+            .filter(|&b| (b * block_size..(b + 1) * block_size).any(|c| max_abs[c] > 30.0))
+            .collect()
     };
     for sample in &samples {
         let nb = hidden / block_size;
@@ -148,7 +166,8 @@ fn w4a8_activation_distribution() {
         for &b in &outlier_blocks {
             for c in b * block_size..(b + 1) * block_size {
                 sum_abs_err_block_per_outlier_block += (recon_block[c] - sample[c]).abs() as f64;
-                sum_abs_err_channel_per_outlier_block += (recon_channel[c] - sample[c]).abs() as f64;
+                sum_abs_err_channel_per_outlier_block +=
+                    (recon_channel[c] - sample[c]).abs() as f64;
                 outlier_block_elem_count += 1;
             }
         }
@@ -158,7 +177,8 @@ fn w4a8_activation_distribution() {
     let rmse_channel = (sum_sq_err_channel / total_elems).sqrt();
     let signal_rms = (sum_sq_signal / total_elems).sqrt();
     let mae_block_outlier = sum_abs_err_block_per_outlier_block / outlier_block_elem_count as f64;
-    let mae_channel_outlier = sum_abs_err_channel_per_outlier_block / outlier_block_elem_count as f64;
+    let mae_channel_outlier =
+        sum_abs_err_channel_per_outlier_block / outlier_block_elem_count as f64;
     let global_ratio = rmse_block / rmse_channel;
     if global_ratio > 3.0 {
     } else if global_ratio > 1.5 {

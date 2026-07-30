@@ -10,12 +10,7 @@ fn reader(owner: &str) -> Reader {
         surface: Surface::You,
     }
 }
-fn ingest_and_finish(
-    store: &ObjectStore,
-    bytes: &[u8],
-    mime: &str,
-    label: &str,
-) -> ContentHash {
+fn ingest_and_finish(store: &ObjectStore, bytes: &[u8], mime: &str, label: &str) -> ContentHash {
     let job = store
         .enqueue_bytes(
             bytes,
@@ -110,7 +105,9 @@ fn large_synthetic_fixture_streams_without_full_ram() {
         assert!(s.peak_buffer_bytes <= CHUNK_SIZE);
         assert_eq!(s.status, StageStatus::Complete);
     }
-    let tr = rec.derivative(DerivativeKind::Transcript).expect("transcript");
+    let tr = rec
+        .derivative(DerivativeKind::Transcript)
+        .expect("transcript");
     assert!(tr.produced_by.contains("FakeAsrEngine"));
     assert!(tr.inline_text.as_ref().unwrap().contains("FakeAsrEngine"));
     let view = store
@@ -125,7 +122,10 @@ fn large_synthetic_fixture_streams_without_full_ram() {
         .unwrap();
     assert!(!CompileObjectView::exposes_raw_bytes());
     assert!(view.try_raw_bytes().is_err());
- assert!(view .derivatives .iter() .any(|d| d.kind == DerivativeKind::Transcript));
+    assert!(view
+        .derivatives
+        .iter()
+        .any(|d| d.kind == DerivativeKind::Transcript));
 }
 #[test]
 fn compile_path_cannot_reach_raw_bytes() {
@@ -141,7 +141,10 @@ fn compile_path_cannot_reach_raw_bytes() {
         )
         .unwrap();
     assert!(!CompileObjectView::exposes_raw_bytes());
- assert!(matches!( view.try_raw_bytes(), Err(ObjectError::RawBytesForbidden) ));
+    assert!(matches!(
+        view.try_raw_bytes(),
+        Err(ObjectError::RawBytesForbidden)
+    ));
     assert!(view.derivatives.iter().any(|d| d.text.is_some()));
     let json = serde_json::to_string(&view).unwrap();
     assert!(json.contains("text_extract") || json.contains("summary"));
@@ -156,9 +159,7 @@ fn raw_bytes_require_cap_and_allow_export() {
         .enqueue_bytes(
             b"exportable",
             "text/plain",
-            ObjectSource::Synthetic {
-                label: "e".into(),
-            },
+            ObjectSource::Synthetic { label: "e".into() },
             p,
             RetentionPolicy::durable(),
             None,
@@ -169,9 +170,7 @@ fn raw_bytes_require_cap_and_allow_export() {
     store.process_one().unwrap();
     let hash = store.hash_for_job(&job).unwrap();
     let cap = RawBytesCap::mint();
-    let bytes = store
-        .raw_bytes(&hash, &reader("alice"), &cap)
-        .unwrap();
+    let bytes = store.raw_bytes(&hash, &reader("alice"), &cap).unwrap();
     assert_eq!(bytes, b"exportable");
 }
 #[test]
@@ -259,20 +258,19 @@ fn failed_stage_retries_then_dead_letters_visibly() {
     assert!(saw_failed, "must fail visibly");
     assert_eq!(store.dead_letter().len(), 1);
     assert_eq!(store.dead_letter()[0].id, job);
-    assert!(store.dead_letter()[0]
-        .last_error
-        .as_ref()
-        .unwrap()
-        .contains("budget")
-        || store.dead_letter()[0]
+    assert!(
+        store.dead_letter()[0]
             .last_error
             .as_ref()
             .unwrap()
-            .contains("Budget")
-        || store.dead_letter()[0]
-            .last_error
-            .as_ref()
-            .is_some());
+            .contains("budget")
+            || store.dead_letter()[0]
+                .last_error
+                .as_ref()
+                .unwrap()
+                .contains("Budget")
+            || store.dead_letter()[0].last_error.as_ref().is_some()
+    );
 }
 #[test]
 fn permissions_honoured_at_read() {
@@ -283,7 +281,10 @@ fn permissions_honoured_at_read() {
         principal: "bob".into(),
         surface: Surface::You,
     };
- assert!(matches!( store.get_record(&hash, &bob), Err(ObjectError::PermissionDenied { .. }) ));
+    assert!(matches!(
+        store.get_record(&hash, &bob),
+        Err(ObjectError::PermissionDenied { .. })
+    ));
     let alice_chat = Reader {
         principal: "alice".into(),
         surface: Surface::Chat,
@@ -341,7 +342,9 @@ fn image_gets_fake_ocr_and_thumbnail() {
 #[test]
 fn budget_statement_is_honest() {
     assert!(BOUND_STATEMENT.contains("finite") || BOUND_STATEMENT.contains("bounded"));
-    assert!(!BOUND_STATEMENT.to_lowercase().contains("unlimited storage without"));
+    assert!(!BOUND_STATEMENT
+        .to_lowercase()
+        .contains("unlimited storage without"));
     let b = StorageBudget::default();
     assert!(b.max_local_bytes > 0);
     assert!(b.policy_note.contains("not unlimited"));

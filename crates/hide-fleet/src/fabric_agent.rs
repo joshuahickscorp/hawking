@@ -109,9 +109,7 @@ impl FabricAgent {
         match req {
             AgentRequest::Register { .. } => {
                 let caps = self.capabilities();
-                AgentResponse::Registered {
-                    capabilities: caps,
-                }
+                AgentResponse::Registered { capabilities: caps }
             }
             AgentRequest::Heartbeat { node_id, seq } => {
                 let mut st = self.state.lock();
@@ -341,7 +339,10 @@ mod tests {
         let caps = agent.capabilities();
         assert_eq!(caps.node_id.as_str(), "agent-a");
         assert!(caps.total_memory_bytes > 0);
- assert_ne!( caps.total_memory_bytes, crate::fabric::node::FIXED_FAKE_MEMORY_BYTES );
+        assert_ne!(
+            caps.total_memory_bytes,
+            crate::fabric::node::FIXED_FAKE_MEMORY_BYTES
+        );
     }
     #[test]
     fn agent_accepts_assignment_and_proves_hashes() {

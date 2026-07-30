@@ -531,4 +531,3 @@ impl ClassCompileRetrieval {
         self.slices.iter().find(|s| s.class == class)
     }
 }
-

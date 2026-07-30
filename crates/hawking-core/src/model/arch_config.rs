@@ -96,12 +96,14 @@ mod tests {
     use super::*;
     fn meta(pairs: &[(&str, MetaValue)]) -> HashMap<String, MetaValue> {
         pairs
-            .iter().map(|(k, v)| (k.to_string(), v.clone()))
+            .iter()
+            .map(|(k, v)| (k.to_string(), v.clone()))
             .collect()
     }
     #[test]
     fn req_usize_reads_and_errors_with_prefixed_message() {
-        let m = meta(&[("qwen2.block_count", MetaValue::U32(36))]); let r = ArchReader::from_metadata(&m, "qwen2");
+        let m = meta(&[("qwen2.block_count", MetaValue::U32(36))]);
+        let r = ArchReader::from_metadata(&m, "qwen2");
         assert_eq!(r.req_usize("block_count").unwrap(), 36);
         let err = r.req_usize("embedding_length").unwrap_err();
         match err {
@@ -124,7 +126,8 @@ mod tests {
     }
     #[test]
     fn prefix_isolation() {
-        let m = meta(&[("llama.block_count", MetaValue::U32(40))]); let r = ArchReader::from_metadata(&m, "qwen2");
+        let m = meta(&[("llama.block_count", MetaValue::U32(40))]);
+        let r = ArchReader::from_metadata(&m, "qwen2");
         assert!(r.req_usize("block_count").is_err());
     }
 }

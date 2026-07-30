@@ -24,7 +24,9 @@ fn make_q3k_bytes(rows: usize, cols: usize, seed: u64) -> Vec<u8> {
 }
 fn make_x(cols: usize, seed: u64) -> Vec<f32> {
     let mut rng = Pcg64Mcg::new(seed as u128);
-    (0..cols).map(|_| rng.gen_range(-3.0_f32..3.0_f32)).collect()
+    (0..cols)
+        .map(|_| rng.gen_range(-3.0_f32..3.0_f32))
+        .collect()
 }
 const WARMUP: usize = 30;
 const ITERS: usize = 200;
@@ -68,18 +70,44 @@ fn bench_shape(rows: usize, cols: usize, tag: &str) {
     let q3_wlen = q3_w.len();
     let q4_wlen = q4_w.len();
     let us_q3_fused = time_dispatch("Q3_K fused", |tcb| {
-        kernels::gemv_q3_k_pinned_tcb(tcb, &q3_buf, 0, q3_wlen, rows, cols, &x_buf, &y_buf).expect("q3_k fused encode");
+        kernels::gemv_q3_k_pinned_tcb(tcb, &q3_buf, 0, q3_wlen, rows, cols, &x_buf, &y_buf)
+            .expect("q3_k fused encode");
     });
     let us_q3_fused_2r = time_dispatch("Q3_K fused 2r", |tcb| {
-        kernels::gemv_q3_k_fused_2r_pinned_tcb(tcb, &q3_buf, 0, q3_wlen, rows, cols, &x_buf, &y_buf).expect("q3_k fused 2r encode");
+        kernels::gemv_q3_k_fused_2r_pinned_tcb(
+            tcb, &q3_buf, 0, q3_wlen, rows, cols, &x_buf, &y_buf,
+        )
+        .expect("q3_k fused 2r encode");
     });
     let us_q3_predec = time_dispatch("Q3_K predec", |tcb| {
-        kernels::gemv_q3_k_v4_predec_pinned_tcb(tcb, &q3_buf, 0, q3_wlen, &q3_scales_buf, 0, rows, cols, &x_buf, &y_buf)
-            .expect("q3_k predec encode");
+        kernels::gemv_q3_k_v4_predec_pinned_tcb(
+            tcb,
+            &q3_buf,
+            0,
+            q3_wlen,
+            &q3_scales_buf,
+            0,
+            rows,
+            cols,
+            &x_buf,
+            &y_buf,
+        )
+        .expect("q3_k predec encode");
     });
     let us_q4_predec = time_dispatch("Q4_K predec", |tcb| {
-        kernels::gemv_q4_k_v4_predec_pinned_tcb(tcb, &q4_buf, 0, q4_wlen, &q4_scales_buf, 0, rows, cols, &x_buf, &y_buf)
-            .expect("q4_k predec encode");
+        kernels::gemv_q4_k_v4_predec_pinned_tcb(
+            tcb,
+            &q4_buf,
+            0,
+            q4_wlen,
+            &q4_scales_buf,
+            0,
+            rows,
+            cols,
+            &x_buf,
+            &y_buf,
+        )
+        .expect("q4_k predec encode");
     });
     let x_bytes = (cols * 4) as f64;
     let y_bytes = (rows * 4) as f64;

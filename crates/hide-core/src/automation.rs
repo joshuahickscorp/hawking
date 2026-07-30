@@ -23,7 +23,6 @@
 //!
 //! Model-free throughout. Deterministic under an injected [`Clock`].
 
-
 #[path = "automation_types.rs"]
 mod automation_types;
 pub use automation_types::*;
@@ -44,11 +43,11 @@ pub use automation_engine::*;
 mod tests {
     use super::*;
     // Scoped to the tests: a lib-only `cargo fix` cannot see these uses.
-    use crate::persistence::DynKeyValueStore;
     use crate::error::HideError;
+    use crate::persistence::DynKeyValueStore;
+    use crate::persistence::InMemoryKeyValueStore;
     use serde_json::json;
     use std::sync::Arc;
-    use crate::persistence::InMemoryKeyValueStore;
     fn engine_at(ms: u64) -> (Arc<InjectedClock>, AutomationEngine) {
         let clock = Arc::new(InjectedClock::new(ms));
         let kv: DynKeyValueStore = Arc::new(InMemoryKeyValueStore::default());
@@ -107,8 +106,13 @@ mod tests {
         };
         let result = engine.run_manual(&id, plan).unwrap();
         assert!(!result.ok, "job must fail closed on ungranted tool");
-        assert!(result.tool_attempts.iter().any(|t| { t.tool == "shell.run" && !t.authorized && !t.ok }));
-        assert!(matches!( result.stop_reason, Some(StopReason::AuthorityDenied { ref tool }) if tool == "shell.run" ));
+        assert!(result
+            .tool_attempts
+            .iter()
+            .any(|t| { t.tool == "shell.run" && !t.authorized && !t.ok }));
+        assert!(
+            matches!( result.stop_reason, Some(StopReason::AuthorityDenied { ref tool }) if tool == "shell.run" )
+        );
         let a = engine.get(&id).unwrap();
         assert_eq!(a.status, AutomationStatus::Active);
         assert!(a.last_result.as_ref().is_some_and(|r| !r.ok));
@@ -180,10 +184,16 @@ mod tests {
         assert!(engine.get(&id).unwrap().status.may_run());
         let r2 = engine.run_manual(&id, plan).unwrap();
         assert!(r2.ok);
-        assert!(matches!( r2.stop_reason, Some(StopReason::AfterRuns { count: 2 }) ));
+        assert!(matches!(
+            r2.stop_reason,
+            Some(StopReason::AfterRuns { count: 2 })
+        ));
         let a = engine.get(&id).unwrap();
         assert_eq!(a.status, AutomationStatus::Stopped);
- assert!(matches!( a.stop_reason, Some(StopReason::AfterRuns { count: 2 }) ));
+        assert!(matches!(
+            a.stop_reason,
+            Some(StopReason::AfterRuns { count: 2 })
+        ));
         let err = engine
             .run_manual(
                 &id,
@@ -224,7 +234,9 @@ mod tests {
             )
             .unwrap();
         assert!(r.ok);
-        assert!(matches!( r.stop_reason, Some(StopReason::BudgetExhausted { ref axis }) if axis == "max_runs" ));
+        assert!(
+            matches!( r.stop_reason, Some(StopReason::BudgetExhausted { ref axis }) if axis == "max_runs" )
+        );
         let a = engine.get(&id).unwrap();
         assert_eq!(a.status, AutomationStatus::Stopped);
         assert!(!a.results[0].notifications.is_empty());
@@ -287,7 +299,11 @@ mod tests {
         assert_eq!(r1.len(), 1, "first tick should run once");
         assert!(r1[0].ok);
         let r2 = engine.tick(&plan).unwrap();
- assert!( r2.is_empty(), "idempotent: same slot must not run twice, got {:?}", r2 );
+        assert!(
+            r2.is_empty(),
+            "idempotent: same slot must not run twice, got {:?}",
+            r2
+        );
         let slot = "cron:2026-07-27T09:00";
         let r3 = engine.fire_slot(&id, slot, plan).unwrap();
         assert!(r3.is_none());
@@ -370,7 +386,10 @@ mod tests {
             "live": true
         }))
         .expect("shape deserializes");
- assert!( !forged.is_live(), "serde must not mint a live JobCapability" );
+        assert!(
+            !forged.is_live(),
+            "serde must not mint a live JobCapability"
+        );
         assert!(!forged.allows_tool("email.send"));
         assert!(forged.require_tool("email.send").is_err());
         assert!(!forged.allows_connector("gmail"));

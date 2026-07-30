@@ -103,7 +103,9 @@ impl ConnectorRegistry {
             ImplementationStatus::Declared => {
                 // Explicit: declared connectors are not constructible.
                 let _ = DeclaredConnector::try_construct(abi.family_id.clone());
-                Err(ConnectorError::DeclaredNotConstructible(abi.family_id.clone()))
+                Err(ConnectorError::DeclaredNotConstructible(
+                    abi.family_id.clone(),
+                ))
             }
             ImplementationStatus::Implemented => match family_id {
                 "local_folder" => Ok(LiveConnector::LocalFolder(LocalFolderConnector::new())),
@@ -154,8 +156,8 @@ impl ConnectorRegistry {
     /// Write the registry JSON to a path (deterministic pretty JSON).
     pub fn write_json(&self, path: impl AsRef<Path>) -> Result<()> {
         let doc = self.export_document();
-        let text = serde_json::to_string_pretty(&doc)
-            .map_err(|e| ConnectorError::Parse(e.to_string()))?;
+        let text =
+            serde_json::to_string_pretty(&doc).map_err(|e| ConnectorError::Parse(e.to_string()))?;
         std::fs::write(path, text + "\n").map_err(ConnectorError::from)
     }
 }

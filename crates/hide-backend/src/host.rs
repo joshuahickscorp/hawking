@@ -1,7 +1,9 @@
 use crate::approval::{ApprovalDecision, ApprovalHub};
 use crate::commands::CommandRouter;
 use crate::connectors::{register_backend_connectors, ConnectorRegistry, ConnectorStatus};
+use crate::initialize::{ClientCapabilities, ClientInfo, ConnectionRegistry, InitializeResponse};
 use crate::interrupt::InterruptHub;
+use crate::live_thread::LiveThread;
 use crate::memory::{
     MemoryDraft, MemoryLedger, MemoryRecord, MemoryRevalidation, MemoryScope, MemoryStatus,
     PrivacyClass, RevalidateTarget,
@@ -13,13 +15,11 @@ use crate::process::{ProcessState, ProcessSupervisor, StartSpec};
 use crate::replay::BackendReplayService;
 use crate::rewind::{self, CheckpointCoverage, FileChange, ForkPoint, RewindTarget, StateRef};
 use crate::security::SecurityServices;
-use crate::initialize::{ClientCapabilities, ClientInfo, ConnectionRegistry, InitializeResponse};
-use crate::live_thread::LiveThread;
 use crate::services::{
     BackendCapabilities, BackendServices, Budget, CheckpointRecord, CheckpointStore,
-    EnvironmentNode, EnvironmentSwitch, GoalOutcome, GoalRecord, GoalStatus, GoalStore, GoalVerdict,
-    JobRecord, JobStatus, JobStore, RepoNode, SharedBackend, Trigger, TriggerEvent, TrustState,
-    WorkspaceEdge, WorkspaceEdgeKind, WorkspaceGraph, WorkspaceStore,
+    EnvironmentNode, EnvironmentSwitch, GoalOutcome, GoalRecord, GoalStatus, GoalStore,
+    GoalVerdict, JobRecord, JobStatus, JobStore, RepoNode, SharedBackend, Trigger, TriggerEvent,
+    TrustState, WorkspaceEdge, WorkspaceEdgeKind, WorkspaceGraph, WorkspaceStore,
 };
 use crate::supervisor::{RuntimeSupervisor, SupervisorConfig};
 use crate::surfaces::SurfaceGraphService;
@@ -81,22 +81,22 @@ pub use host_support_3::BackendStatus;
 pub(crate) use host_support_3::*;
 
 // Host command surface — semantic modules (replaces mechanical host_ops_N splits).
-#[path = "host_cmds/lifecycle.rs"]
-mod host_lifecycle;
+#[path = "host_cmds/intent_effects.rs"]
+mod host_intent_effects;
 #[path = "host_cmds/intent_entry.rs"]
 mod host_intent_entry;
 #[path = "host_cmds/intent_handlers.rs"]
 mod host_intent_handlers;
-#[path = "host_cmds/intent_effects.rs"]
-mod host_intent_effects;
-#[path = "host_cmds/turn.rs"]
-mod host_turn;
-#[path = "host_cmds/tools_workspace.rs"]
-mod host_tools_workspace;
-#[path = "host_cmds/verify_checkpoint.rs"]
-mod host_verify_checkpoint;
 #[path = "host_cmds/jobs_memory.rs"]
 mod host_jobs_memory;
+#[path = "host_cmds/lifecycle.rs"]
+mod host_lifecycle;
+#[path = "host_cmds/tools_workspace.rs"]
+mod host_tools_workspace;
+#[path = "host_cmds/turn.rs"]
+mod host_turn;
+#[path = "host_cmds/verify_checkpoint.rs"]
+mod host_verify_checkpoint;
 
 pub struct BackendHost {
     pub services: SharedBackend,
@@ -151,7 +151,9 @@ pub struct BackendHost {
 /// layout (every durable host artifact already lives under `.hide/`) and reuses
 /// the descriptor type's own serde, so there is no parallel config schema.
 /// Absent / unreadable / invalid files yield an empty list (no MCP, no error).
-pub(super) fn load_mcp_descriptors(workspace_root: &Path) -> Vec<hide_kernel::tooling::mcp::McpServerDescriptor> {
+pub(super) fn load_mcp_descriptors(
+    workspace_root: &Path,
+) -> Vec<hide_kernel::tooling::mcp::McpServerDescriptor> {
     let path = workspace_root.join(".hide").join("mcp.json");
     let bytes = match std::fs::read(&path) {
         Ok(b) => b,
@@ -228,4 +230,3 @@ pub(super) fn register_mcp_servers_at_boot(services: &BackendServices, tools: &T
 #[cfg(test)]
 #[path = "host_live_manifest_tests.rs"]
 mod live_manifest_tests;
-

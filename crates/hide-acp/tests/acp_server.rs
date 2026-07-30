@@ -1,7 +1,4 @@
-use std::io::{BufReader, Cursor};
-use hide_acp::handshake::{
-    AcpClientCapabilities, AcpInitializeRequest, FsCapabilities,
-};
+use hide_acp::handshake::{AcpClientCapabilities, AcpInitializeRequest, FsCapabilities};
 use hide_acp::server::{AcpServer, CountingBinder, ScriptedTurnHandler};
 use hide_acp::session::{AcpNewSessionRequest, AcpPromptRequest, StopReason};
 use hide_acp::tool_call::{ToolCallStatus, ToolKind};
@@ -16,6 +13,7 @@ use hide_protocol::item::{
 use hide_protocol::model::{CompletionStatus, Risk};
 use hide_protocol::plan::Effect;
 use serde_json::json;
+use std::io::{BufReader, Cursor};
 fn item(seq: u64, kind: ItemKind) -> Item {
     Item::new(ItemId::new(format!("itm_{seq}")), seq, kind)
 }
@@ -143,7 +141,10 @@ fn initialize_with_limited_client_degrades_honestly() {
     let caps: Vec<&str> = server.degradations().iter().map(|d| d.capability).collect();
     assert!(caps.contains(&"terminal"));
     assert!(caps.contains(&"edit_apply"));
- assert!(server .degradations() .iter() .all(|d| !d.reason.is_empty() && !d.fallback.is_empty()));
+    assert!(server
+        .degradations()
+        .iter()
+        .all(|d| !d.reason.is_empty() && !d.fallback.is_empty()));
     let out = client.drain();
     assert!(matches!(out[0], AcpServerMessage::InitializeResult(_)));
 }
@@ -171,13 +172,13 @@ fn prompt_projects_ordered_updates_then_turn_complete() {
     assert_eq!(
         methods,
         vec![
-            "initialize",                  // initialize result
-            "session/new",                 // new-session result
-            "session/update",              // agent_message
-            "session/update",              // tool_call
-            "session/update",              // patch
-            "session/request_permission",  // approval_request
-            "session/prompt",              // turn-complete
+            "initialize",                 // initialize result
+            "session/new",                // new-session result
+            "session/update",             // agent_message
+            "session/update",             // tool_call
+            "session/update",             // patch
+            "session/request_permission", // approval_request
+            "session/prompt",             // turn-complete
         ],
         "the prompt yields ordered updates then a turn-complete"
     );
@@ -295,7 +296,9 @@ fn prompt_for_unknown_session_is_rejected_without_stopping_the_loop() {
         AcpServerMessage::Error(e) => assert_eq!(e.code, "prompt_rejected"),
         other => panic!("expected error, got {other:?}"),
     }
-    assert!(!out.iter().any(|m| matches!(m, AcpServerMessage::PromptResult(_))));
+    assert!(!out
+        .iter()
+        .any(|m| matches!(m, AcpServerMessage::PromptResult(_))));
 }
 #[test]
 fn shutdown_message_exits_loop_and_leaves_remaining_inbound() {
@@ -313,7 +316,10 @@ fn shutdown_message_exits_loop_and_leaves_remaining_inbound() {
     );
     server.run().unwrap();
     let pending_before_drain = client.pending_inbound();
-    assert_eq!(pending_before_drain, 1, "the post-shutdown message is untouched");
+    assert_eq!(
+        pending_before_drain, 1,
+        "the post-shutdown message is untouched"
+    );
     let out = client.drain();
     assert_eq!(out.len(), 1);
     assert!(matches!(out[0], AcpServerMessage::InitializeResult(_)));
@@ -343,7 +349,9 @@ fn cancel_is_handled_and_loop_continues() {
     assert_eq!(server.cancelled().len(), 1);
     assert_eq!(server.cancelled()[0].as_str(), "sess_1");
     let out = client.drain();
-    assert!(out.iter().any(|m| matches!(m, AcpServerMessage::PromptResult(_))));
+    assert!(out
+        .iter()
+        .any(|m| matches!(m, AcpServerMessage::PromptResult(_))));
 }
 #[test]
 fn line_transport_frames_and_parses_a_full_session() {
@@ -360,13 +368,11 @@ fn line_transport_frames_and_parses_a_full_session() {
         HideExposure::full_local(),
     );
     server.run().unwrap();
-    let msg = AcpServerMessage::InitializeResult(
-        hide_acp::handshake::AcpInitializeResponse {
-            protocol_version: 1,
-            agent_capabilities: HideExposure::full_local().agent_capabilities(),
-            auth_methods: vec![],
-        },
-    );
+    let msg = AcpServerMessage::InitializeResult(hide_acp::handshake::AcpInitializeResponse {
+        protocol_version: 1,
+        agent_capabilities: HideExposure::full_local().agent_capabilities(),
+        auth_methods: vec![],
+    });
     let mut buf: Vec<u8> = Vec::new();
     {
         let reader = BufReader::new(Cursor::new(Vec::new()));

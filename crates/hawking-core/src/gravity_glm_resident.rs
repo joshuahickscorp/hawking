@@ -4542,7 +4542,7 @@ fn batched_mlp<'a>(
     // Physical proof counters: host path materializes gate/up for SiLU.
     let gate_up_bytes = (gate_outs.iter().map(Vec::len).sum::<usize>()
         + up_outs.iter().map(Vec::len).sum::<usize>())
-        .saturating_mul(std::mem::size_of::<f32>()) as u64;
+    .saturating_mul(std::mem::size_of::<f32>()) as u64;
     crate::cost_ledger::record_mlp_gate_up_download(gate_up_bytes);
     let acts: Vec<Vec<f32>> = gate_outs
         .iter()
@@ -4744,11 +4744,8 @@ fn batched_mlp_device_only<'a>(
     // One fence for this MLP's device encodes (and any co-issued prior work
     // when gate/up stayed on device). Required before host-native downs,
     // poison, or reading device downs back for the weighted combine.
-    let needs_fence = tcb
-        .as_ref()
-        .is_some_and(|w| w.dispatch_count() > 0)
-        || any_host_down
-        || poison;
+    let needs_fence =
+        tcb.as_ref().is_some_and(|w| w.dispatch_count() > 0) || any_host_down || poison;
     if needs_fence {
         commit(tcb.take(), waits)?;
     }
@@ -8448,7 +8445,8 @@ impl DeviceExpertLayerMetrics {
                 .flatten()
                 .chain(self.shared.iter())
                 .copied(),
-        ).expect("shared expert triplet is nonempty")
+        )
+        .expect("shared expert triplet is nonempty")
     }
 
     fn routed_dispatch_mode(&self) -> DeviceExpertDispatchMode {
@@ -10042,11 +10040,35 @@ mod tests {
     use super::*;
     use crate::numeric_parity::{score_pair, Bounds};
     fn tiny_arch() -> GlmArch {
-        GlmArch { n_layers: 1, hidden: 4, n_heads: 1, q_lora_rank: 2, kv_lora_rank: 2, qk_nope_head_dim: 1, qk_rope_head_dim: 1, v_head_dim: 1, index_n_heads: 1, index_head_dim: 1, index_topk: 2, n_routed_experts: 2, n_group: 1, topk_group: 1, num_experts_per_tok: 1, norm_topk_prob: true, routed_scaling_factor: 1.0, vocab_size: 8, rms_norm_eps: 1e-6, rope_theta: 10_000.0, indexer_types: vec!["full".into()], mlp_layer_types: vec!["dense".into()] }
+        GlmArch {
+            n_layers: 1,
+            hidden: 4,
+            n_heads: 1,
+            q_lora_rank: 2,
+            kv_lora_rank: 2,
+            qk_nope_head_dim: 1,
+            qk_rope_head_dim: 1,
+            v_head_dim: 1,
+            index_n_heads: 1,
+            index_head_dim: 1,
+            index_topk: 2,
+            n_routed_experts: 2,
+            n_group: 1,
+            topk_group: 1,
+            num_experts_per_tok: 1,
+            norm_topk_prob: true,
+            routed_scaling_factor: 1.0,
+            vocab_size: 8,
+            rms_norm_eps: 1e-6,
+            rope_theta: 10_000.0,
+            indexer_types: vec!["full".into()],
+            mlp_layer_types: vec!["dense".into()],
+        }
     }
     fn f32_buffer(ctx: &MetalContext, values: &[f32]) -> Buffer {
         let buffer = ctx
-            .new_buffer_checked(values.len() * std::mem::size_of::<f32>()).expect("f32 test buffer");
+            .new_buffer_checked(values.len() * std::mem::size_of::<f32>())
+            .expect("f32 test buffer");
         write_f32(&buffer, values);
         buffer
     }
@@ -10055,9 +10077,14 @@ mod tests {
     }
     fn u32_buffer(ctx: &MetalContext, values: &[u32]) -> Buffer {
         let buffer = ctx
-            .new_buffer_checked(values.len() * std::mem::size_of::<u32>()).expect("u32 test buffer");
+            .new_buffer_checked(values.len() * std::mem::size_of::<u32>())
+            .expect("u32 test buffer");
         unsafe {
-            std::ptr::copy_nonoverlapping(values.as_ptr(), buffer.contents() as *mut u32, values.len());
+            std::ptr::copy_nonoverlapping(
+                values.as_ptr(),
+                buffer.contents() as *mut u32,
+                values.len(),
+            );
         }
         buffer
     }
@@ -10065,28 +10092,51 @@ mod tests {
         ctx.new_buffer_checked(len).expect("u8 test buffer")
     }
     fn f16_buffer(ctx: &MetalContext, values: &[half::f16]) -> Buffer {
-        ctx.new_buffer_with_bytes_checked(bytemuck::cast_slice(values)).expect("f16 test buffer")
+        ctx.new_buffer_with_bytes_checked(bytemuck::cast_slice(values))
+            .expect("f16 test buffer")
     }
     fn assert_v21_pair(label: &str, host: &[f32], device: &[f32], reference: &[f64]) {
         let score = score_pair(host, device, reference, &Bounds::continuous_only());
-        assert!(score.pass, "{label}: Numeric Parity V2.1 failure against FP64 authority; host={:?}, device={:?}", score.host.failures, score.device.failures);
+        assert!(
+            score.pass,
+            "{label}: Numeric Parity V2.1 failure against FP64 authority; host={:?}, device={:?}",
+            score.host.failures, score.device.failures
+        );
     }
     fn f64_authority_matvec(weights: &[f32], cols: usize, x: &[f32]) -> Vec<f64> {
-        weights.chunks_exact(cols).map(|row| row.iter().zip(x).map(|(&w, &a)| w as f64 * a as f64).sum()).collect()
+        weights
+            .chunks_exact(cols)
+            .map(|row| row.iter().zip(x).map(|(&w, &a)| w as f64 * a as f64).sum())
+            .collect()
     }
     fn assert_v21_gate(label: &str, host: &[f32], device: &[f32], authority: &[f64]) {
         let score = score_pair(host, device, authority, &Bounds::continuous_only());
-        eprintln!("{label}: rel_l2={:.3e} meaningful={:.3e} greedy={} top5={}", score.device.continuous.relative_l2, score.device.continuous.max_meaningful_rel, score.device.discrete.greedy_match, score.device.discrete.top_k_exact_match);
-        assert!(score.pass, "{label} failed V2.1: host={:?}, device={:?}", score.host.failures, score.device.failures);
+        eprintln!(
+            "{label}: rel_l2={:.3e} meaningful={:.3e} greedy={} top5={}",
+            score.device.continuous.relative_l2,
+            score.device.continuous.max_meaningful_rel,
+            score.device.discrete.greedy_match,
+            score.device.discrete.top_k_exact_match
+        );
+        assert!(
+            score.pass,
+            "{label} failed V2.1: host={:?}, device={:?}",
+            score.host.failures, score.device.failures
+        );
     }
     fn single_route_bufs(ctx: &MetalContext) -> (Buffer, Buffer, Buffer) {
-        (u32_buffer(ctx, &[0]), u32_buffer(ctx, &[0]), u32_buffer(ctx, &[u32::MAX]))
+        (
+            u32_buffer(ctx, &[0]),
+            u32_buffer(ctx, &[0]),
+            u32_buffer(ctx, &[u32::MAX]),
+        )
     }
     fn topk_desc_f64(values: &[f64], k: usize) -> Vec<usize> {
         let mut indices: Vec<usize> = (0..values.len()).collect();
         indices.sort_by(|&a, &b| {
             values[b]
-                .partial_cmp(&values[a]).unwrap_or(std::cmp::Ordering::Equal)
+                .partial_cmp(&values[a])
+                .unwrap_or(std::cmp::Ordering::Equal)
                 .then(a.cmp(&b))
         });
         indices.truncate(k);
@@ -10095,23 +10145,36 @@ mod tests {
     fn deterministic_fixture_f32(mut state: u32, len: usize, scale: f32) -> Vec<f32> {
         let mut out = Vec::with_capacity(len);
         for _ in 0..len {
-            state = state.wrapping_mul(1_664_525).wrapping_add(1_013_904_223); let unit = ((state >> 8) as f32) * (1.0 / 8_388_608.0) - 1.0;
+            state = state.wrapping_mul(1_664_525).wrapping_add(1_013_904_223);
+            let unit = ((state >> 8) as f32) * (1.0 / 8_388_608.0) - 1.0;
             out.push(unit * scale);
         }
         out
     }
-    fn direct_u8_pq_tensor(ctx: &MetalContext, rows: usize, cols: usize, salt: usize) -> (GpuTensor, Vec<f32>) {
-        const DIM: usize = 32; const CARD: usize = 256;
-        assert_eq!(cols % DIM, 0); let nchunk = cols / DIM;
-        let codebooks: Vec<half::f16> = (0..CARD * DIM).map(|flat| {
-                let code = flat / DIM; let element = flat % DIM; let positive = ((code * 17 + element * 13 + salt * 19) % 47) + 1;
+    fn direct_u8_pq_tensor(
+        ctx: &MetalContext,
+        rows: usize,
+        cols: usize,
+        salt: usize,
+    ) -> (GpuTensor, Vec<f32>) {
+        const DIM: usize = 32;
+        const CARD: usize = 256;
+        assert_eq!(cols % DIM, 0);
+        let nchunk = cols / DIM;
+        let codebooks: Vec<half::f16> = (0..CARD * DIM)
+            .map(|flat| {
+                let code = flat / DIM;
+                let element = flat % DIM;
+                let positive = ((code * 17 + element * 13 + salt * 19) % 47) + 1;
                 half::f16::from_f32(positive as f32 * (1.0 / 256.0))
             })
             .collect();
-        let mut codes = vec![0u8; rows * nchunk + 4]; let mut dense = vec![0.0f32; rows * cols];
+        let mut codes = vec![0u8; rows * nchunk + 4];
+        let mut dense = vec![0.0f32; rows * cols];
         for row in 0..rows {
             for chunk in 0..nchunk {
-                let code = (row * nchunk + chunk + salt * 7) % CARD; codes[row * nchunk + chunk] = code as u8;
+                let code = (row * nchunk + chunk + salt * 7) % CARD;
+                codes[row * nchunk + chunk] = code as u8;
                 for element in 0..DIM {
                     dense[row * cols + chunk * DIM + element] =
                         codebooks[code * DIM + element].to_f32();
@@ -10120,40 +10183,66 @@ mod tests {
         }
         let codebooks = f16_buffer(ctx, &codebooks);
         let codes = ctx
-            .new_buffer_with_bytes_checked(&codes).expect("direct-u8 codes");
+            .new_buffer_with_bytes_checked(&codes)
+            .expect("direct-u8 codes");
         (
             GpuTensor::Pq {
                 codebooks,
                 codes,
-                params: crate::gravity_glm::gpu::PqParams { dim: DIM as u32, subspaces: 1, sub: DIM as u32, card: CARD as u32, rows: rows as u32, cols: cols as u32, nchunk: nchunk as u32, bits: 8 },
+                params: crate::gravity_glm::gpu::PqParams {
+                    dim: DIM as u32,
+                    subspaces: 1,
+                    sub: DIM as u32,
+                    card: CARD as u32,
+                    rows: rows as u32,
+                    cols: cols as u32,
+                    nchunk: nchunk as u32,
+                    bits: 8,
+                },
             },
             dense,
         )
     }
     fn pack_msb_indices(indices: &[usize], bits: usize) -> Vec<u8> {
-        assert!((1..=8).contains(&bits)); let mut packed = vec![0u8; (indices.len() * bits).div_ceil(8) + 4];
+        assert!((1..=8).contains(&bits));
+        let mut packed = vec![0u8; (indices.len() * bits).div_ceil(8) + 4];
         for (index, &value) in indices.iter().enumerate() {
-            assert!(value < (1usize << bits)); let bit_offset = index * bits;
+            assert!(value < (1usize << bits));
+            let bit_offset = index * bits;
             for bit in 0..bits {
                 let source = (value >> (bits - 1 - bit)) & 1;
                 if source != 0 {
-                    let destination = bit_offset + bit; packed[destination / 8] |= 1u8 << (7 - destination % 8);
+                    let destination = bit_offset + bit;
+                    packed[destination / 8] |= 1u8 << (7 - destination % 8);
                 }
             }
         }
         packed
     }
-    fn packed_r0_pq_tensor(ctx: &MetalContext, rows: usize, cols: usize, salt: usize) -> (GpuTensor, Vec<f32>) {
-        const DIM: usize = 8; const CARD: usize = 128; const BITS: usize = 7;
-        assert_eq!(cols % DIM, 0); let nchunk = cols / DIM;
-        let codebooks: Vec<half::f16> = (0..CARD * DIM).map(|flat| {
-                let code = flat / DIM; let element = flat % DIM; let positive = ((code * 11 + element * 7 + salt * 13) % 61) + 1;
+    fn packed_r0_pq_tensor(
+        ctx: &MetalContext,
+        rows: usize,
+        cols: usize,
+        salt: usize,
+    ) -> (GpuTensor, Vec<f32>) {
+        const DIM: usize = 8;
+        const CARD: usize = 128;
+        const BITS: usize = 7;
+        assert_eq!(cols % DIM, 0);
+        let nchunk = cols / DIM;
+        let codebooks: Vec<half::f16> = (0..CARD * DIM)
+            .map(|flat| {
+                let code = flat / DIM;
+                let element = flat % DIM;
+                let positive = ((code * 11 + element * 7 + salt * 13) % 61) + 1;
                 half::f16::from_f32(positive as f32 * (1.0 / 192.0))
             })
             .collect();
-        let indices: Vec<usize> = (0..rows * nchunk).map(|flat| (flat * 29 + salt * 17 + flat / nchunk * 3) % CARD)
+        let indices: Vec<usize> = (0..rows * nchunk)
+            .map(|flat| (flat * 29 + salt * 17 + flat / nchunk * 3) % CARD)
             .collect();
-        let codes = pack_msb_indices(&indices, BITS); let mut dense = vec![0.0f32; rows * cols];
+        let codes = pack_msb_indices(&indices, BITS);
+        let mut dense = vec![0.0f32; rows * cols];
         for row in 0..rows {
             for chunk in 0..nchunk {
                 let code = indices[row * nchunk + chunk];
@@ -10165,26 +10254,46 @@ mod tests {
         }
         let codebooks = f16_buffer(ctx, &codebooks);
         let codes = ctx
-            .new_buffer_with_bytes_checked(&codes).expect("packed-r0 codes");
+            .new_buffer_with_bytes_checked(&codes)
+            .expect("packed-r0 codes");
         (
             GpuTensor::Pq {
                 codebooks,
                 codes,
-                params: crate::gravity_glm::gpu::PqParams { dim: DIM as u32, subspaces: 1, sub: DIM as u32, card: CARD as u32, rows: rows as u32, cols: cols as u32, nchunk: nchunk as u32, bits: BITS as u32 },
+                params: crate::gravity_glm::gpu::PqParams {
+                    dim: DIM as u32,
+                    subspaces: 1,
+                    sub: DIM as u32,
+                    card: CARD as u32,
+                    rows: rows as u32,
+                    cols: cols as u32,
+                    nchunk: nchunk as u32,
+                    bits: BITS as u32,
+                },
             },
             dense,
         )
     }
-    fn native_bf16_tensor(ctx: &MetalContext, rows: usize, cols: usize, salt: usize) -> (GpuTensor, Vec<f32>) {
-        let bits: Vec<u16> = (0..rows * cols).map(|flat| {
-                let positive = ((flat * 13 + salt * 17 + flat / cols * 5) % 63) + 1; let value = positive as f32 * (1.0 / 64.0);
+    fn native_bf16_tensor(
+        ctx: &MetalContext,
+        rows: usize,
+        cols: usize,
+        salt: usize,
+    ) -> (GpuTensor, Vec<f32>) {
+        let bits: Vec<u16> = (0..rows * cols)
+            .map(|flat| {
+                let positive = ((flat * 13 + salt * 17 + flat / cols * 5) % 63) + 1;
+                let value = positive as f32 * (1.0 / 64.0);
                 (value.to_bits() >> 16) as u16
             })
             .collect();
         let dense: Vec<f32> = bits
-            .iter().map(|&value| f32::from_bits((value as u32) << 16)) .collect();
+            .iter()
+            .map(|&value| f32::from_bits((value as u32) << 16))
+            .collect();
         let buf = ctx
-            .new_buffer_with_bytes_checked(bytemuck::cast_slice(&bits)).expect("native-bf16 weights");
+            .new_buffer_with_bytes_checked(bytemuck::cast_slice(&bits))
+            .expect("native-bf16 weights");
         (
             GpuTensor::NativeGpuBf16 {
                 buf,
@@ -10208,31 +10317,52 @@ mod tests {
             GpuTensor::NativeCpu(values) => (values.len() * std::mem::size_of::<f32>()) as u64,
         }
     }
-    fn fixture_mlp_f32(gate_weights: &[f32], up_weights: &[f32], down_weights: &[f32], hidden: usize, intermediate: usize, x: &[f32]) -> Vec<f32> {
+    fn fixture_mlp_f32(
+        gate_weights: &[f32],
+        up_weights: &[f32],
+        down_weights: &[f32],
+        hidden: usize,
+        intermediate: usize,
+        x: &[f32],
+    ) -> Vec<f32> {
         let gate = matvec_dense(gate_weights, x, "fixture gate").expect("fixture gate");
         let up = matvec_dense(up_weights, x, "fixture up").expect("fixture up");
         let act: Vec<f32> = gate
             .iter()
-            .zip(&up).map(|(&gate, &up)| (gate / (1.0 + (-gate).exp())) * up) .collect();
+            .zip(&up)
+            .map(|(&gate, &up)| (gate / (1.0 + (-gate).exp())) * up)
+            .collect();
         assert_eq!(act.len(), intermediate);
         assert_eq!(down_weights.len(), hidden * intermediate);
         matvec_dense(down_weights, &act, "fixture down").expect("fixture down")
     }
-    fn fixture_mlp_f64(gate_weights: &[f32], up_weights: &[f32], down_weights: &[f32], hidden: usize, intermediate: usize, x: &[f32]) -> Vec<f64> {
+    fn fixture_mlp_f64(
+        gate_weights: &[f32],
+        up_weights: &[f32],
+        down_weights: &[f32],
+        hidden: usize,
+        intermediate: usize,
+        x: &[f32],
+    ) -> Vec<f64> {
         let matvec = |weights: &[f32], cols: usize, input: &[f64]| {
             weights
-                .chunks_exact(cols).map(|row| {
+                .chunks_exact(cols)
+                .map(|row| {
                     row.iter()
-                        .zip(input).map(|(&weight, &activation)| weight as f64 * activation)
+                        .zip(input)
+                        .map(|(&weight, &activation)| weight as f64 * activation)
                         .sum::<f64>()
                 })
                 .collect::<Vec<_>>()
         };
-        let x64: Vec<f64> = x.iter().map(|&value| value as f64).collect(); let gate = matvec(gate_weights, hidden, &x64);
+        let x64: Vec<f64> = x.iter().map(|&value| value as f64).collect();
+        let gate = matvec(gate_weights, hidden, &x64);
         let up = matvec(up_weights, hidden, &x64);
         let act: Vec<f64> = gate
             .iter()
-            .zip(&up).map(|(&gate, &up)| (gate / (1.0 + (-gate).exp())) * up) .collect();
+            .zip(&up)
+            .map(|(&gate, &up)| (gate / (1.0 + (-gate).exp())) * up)
+            .collect();
         assert_eq!(act.len(), intermediate);
         matvec(down_weights, intermediate, &act)
     }
@@ -10241,8 +10371,12 @@ mod tests {
         let Ok(ctx) = MetalContext::new() else {
             return;
         };
-        const HIDDEN: usize = 32; const INTERMEDIATE: usize = 32; const GENERATION: u32 = 7; const PREFIX: &str = "model.layers.0.mlp";
-        let mut cache = BoundedLru::new(110_000).expect("bounded cache"); let mut items = Vec::new();
+        const HIDDEN: usize = 32;
+        const INTERMEDIATE: usize = 32;
+        const GENERATION: u32 = 7;
+        const PREFIX: &str = "model.layers.0.mlp";
+        let mut cache = BoundedLru::new(110_000).expect("bounded cache");
+        let mut items = Vec::new();
         let mut gate_authorities = std::collections::HashMap::new();
         for &expert in &[0usize, 2usize] {
             for (projection, rows, cols, projection_salt) in [
@@ -10264,26 +10398,38 @@ mod tests {
             }
         }
         cache
-            .admit_pinned(items, &std::collections::HashSet::new()).expect("admit selected triplets");
-        let lease = build_device_expert_table_snapshot(&ctx, &cache, PREFIX, 4, GENERATION).expect("immutable expert table");
+            .admit_pinned(items, &std::collections::HashSet::new())
+            .expect("admit selected triplets");
+        let lease = build_device_expert_table_snapshot(&ctx, &cache, PREFIX, 4, GENERATION)
+            .expect("immutable expert table");
         assert_eq!(std::mem::size_of::<DeviceExpertTensorRef>(), 56);
         assert_eq!(std::mem::size_of::<DeviceExpertTriplet>(), 176);
-        assert_eq!(DEVICE_EXPERT_TABLE_MAX_EXPERTS * std::mem::size_of::<DeviceExpertTriplet>(), 45_056);
+        assert_eq!(
+            DEVICE_EXPERT_TABLE_MAX_EXPERTS * std::mem::size_of::<DeviceExpertTriplet>(),
+            45_056
+        );
         assert_eq!(lease.table.length(), (4 * 176) as u64);
         assert_eq!(lease.ready_entries, 2);
         assert_eq!(lease.resources.len(), 12);
         let table_entries = unsafe {
-            std::slice::from_raw_parts(lease.table.contents() as *const DeviceExpertTriplet, lease.n_experts)
+            std::slice::from_raw_parts(
+                lease.table.contents() as *const DeviceExpertTriplet,
+                lease.n_experts,
+            )
         };
         assert_eq!(table_entries[0].ready_mask, DEVICE_EXPERT_TRIPLET_READY);
         assert_eq!(table_entries[1], DeviceExpertTriplet::default());
         assert_eq!(table_entries[2].generation, GENERATION);
         let selected_only =
-            build_selected_device_expert_table_snapshot(&ctx, &cache, PREFIX, 4, GENERATION, &[2]).expect("selected-only immutable expert table");
+            build_selected_device_expert_table_snapshot(&ctx, &cache, PREFIX, 4, GENERATION, &[2])
+                .expect("selected-only immutable expert table");
         assert_eq!(selected_only.ready_entries, 1);
         assert_eq!(selected_only.resources.len(), 6);
         let selected_entries = unsafe {
-            std::slice::from_raw_parts(selected_only.table.contents() as *const DeviceExpertTriplet, selected_only.n_experts)
+            std::slice::from_raw_parts(
+                selected_only.table.contents() as *const DeviceExpertTriplet,
+                selected_only.n_experts,
+            )
         };
         assert_eq!(selected_entries[0], DeviceExpertTriplet::default());
         assert_eq!(selected_entries[2].ready_mask, DEVICE_EXPERT_TRIPLET_READY);
@@ -10294,34 +10440,111 @@ mod tests {
         };
         let evicting_bytes = gpu_tensor_bytes(&evicting);
         cache
-            .admit_pinned(vec![("unrelated.native.weight".into(), evicting, evicting_bytes)], &std::collections::HashSet::new()).expect("bounded eviction");
-        assert!(!cache.contains(&format!("{PREFIX}.experts.0.gate_proj.weight")), "oldest logical entry should have been evicted");
+            .admit_pinned(
+                vec![("unrelated.native.weight".into(), evicting, evicting_bytes)],
+                &std::collections::HashSet::new(),
+            )
+            .expect("bounded eviction");
+        assert!(
+            !cache.contains(&format!("{PREFIX}.experts.0.gate_proj.weight")),
+            "oldest logical entry should have been evicted"
+        );
         assert!(cache.high_water_bytes() <= cache.budget_bytes());
-        let expert_indices = u32_buffer(&ctx, &[2, 0]); let execution_slots = u32_buffer(&ctx, &[1, 0]);
+        let expert_indices = u32_buffer(&ctx, &[2, 0]);
+        let execution_slots = u32_buffer(&ctx, &[1, 0]);
         let miss_mask = u32_buffer(&ctx, &[u32::MAX]);
         let x_values: Vec<f32> = deterministic_fixture_f32(0x51A7_2026, HIDDEN, 0.25)
-            .into_iter().map(|value| value.abs() + 0.125) .collect();
-        let x = f32_buffer(&ctx, &x_values); let y = filled_f32_buffer(&ctx, INTERMEDIATE, -9_999.0);
-        let mut hit = TokenCommandBuffer::new(&ctx);
-        encode_device_expert_table_validate(&mut hit, &lease, &expert_indices, &execution_slots, &miss_mask, 2, HIDDEN, INTERMEDIATE, DEVICE_EXPERT_TENSOR_KIND_PQ).expect("validate resident hit");
-        encode_device_expert_table_pq_matvec(&mut hit, &lease, &expert_indices, &execution_slots, &miss_mask, 2, 0, 0, &x, INTERMEDIATE, HIDDEN, &y, false).expect("indirect gate projection");
-        assert_eq!(hit.dispatch_count(), 2); hit.commit_and_wait().expect("resident-hit command");
-        assert_eq!(read_u32(&miss_mask, 1), vec![0]); let weights = &gate_authorities[&0];
-        let host = matvec_dense(weights, &x_values, "expert-0 gate authority").expect("host gate comparator");
-        let authority = f64_authority_matvec(&weights, HIDDEN, &x_values); let device = read_f32(&y, INTERMEDIATE);
-        assert_v21_gate("device expert table indirect gate", &host, &device, &authority);
-        let missing_indices = u32_buffer(&ctx, &[2, 1]); let missing_slots = u32_buffer(&ctx, &[1, 0]);
-        let missing_mask = u32_buffer(&ctx, &[u32::MAX]);
-        let sentinel: Vec<f32> = (0..INTERMEDIATE).map(|index| 1_000.0 + index as f32)
+            .into_iter()
+            .map(|value| value.abs() + 0.125)
             .collect();
-        let missing_y = f32_buffer(&ctx, &sentinel); let before_bits: Vec<u32> = sentinel.iter().map(|value| value.to_bits()).collect();
+        let x = f32_buffer(&ctx, &x_values);
+        let y = filled_f32_buffer(&ctx, INTERMEDIATE, -9_999.0);
+        let mut hit = TokenCommandBuffer::new(&ctx);
+        encode_device_expert_table_validate(
+            &mut hit,
+            &lease,
+            &expert_indices,
+            &execution_slots,
+            &miss_mask,
+            2,
+            HIDDEN,
+            INTERMEDIATE,
+            DEVICE_EXPERT_TENSOR_KIND_PQ,
+        )
+        .expect("validate resident hit");
+        encode_device_expert_table_pq_matvec(
+            &mut hit,
+            &lease,
+            &expert_indices,
+            &execution_slots,
+            &miss_mask,
+            2,
+            0,
+            0,
+            &x,
+            INTERMEDIATE,
+            HIDDEN,
+            &y,
+            false,
+        )
+        .expect("indirect gate projection");
+        assert_eq!(hit.dispatch_count(), 2);
+        hit.commit_and_wait().expect("resident-hit command");
+        assert_eq!(read_u32(&miss_mask, 1), vec![0]);
+        let weights = &gate_authorities[&0];
+        let host = matvec_dense(weights, &x_values, "expert-0 gate authority")
+            .expect("host gate comparator");
+        let authority = f64_authority_matvec(&weights, HIDDEN, &x_values);
+        let device = read_f32(&y, INTERMEDIATE);
+        assert_v21_gate(
+            "device expert table indirect gate",
+            &host,
+            &device,
+            &authority,
+        );
+        let missing_indices = u32_buffer(&ctx, &[2, 1]);
+        let missing_slots = u32_buffer(&ctx, &[1, 0]);
+        let missing_mask = u32_buffer(&ctx, &[u32::MAX]);
+        let sentinel: Vec<f32> = (0..INTERMEDIATE)
+            .map(|index| 1_000.0 + index as f32)
+            .collect();
+        let missing_y = f32_buffer(&ctx, &sentinel);
+        let before_bits: Vec<u32> = sentinel.iter().map(|value| value.to_bits()).collect();
         let mut miss = TokenCommandBuffer::new(&ctx);
-        encode_device_expert_table_validate(&mut miss, &lease, &missing_indices, &missing_slots, &missing_mask, 2, HIDDEN, INTERMEDIATE, DEVICE_EXPERT_TENSOR_KIND_PQ).expect("validate resident miss");
-        encode_device_expert_table_pq_matvec(&mut miss, &lease, &missing_indices, &missing_slots, &missing_mask, 2, 0, 0, &x, INTERMEDIATE, HIDDEN, &missing_y, false).expect("suppressed missing projection");
+        encode_device_expert_table_validate(
+            &mut miss,
+            &lease,
+            &missing_indices,
+            &missing_slots,
+            &missing_mask,
+            2,
+            HIDDEN,
+            INTERMEDIATE,
+            DEVICE_EXPERT_TENSOR_KIND_PQ,
+        )
+        .expect("validate resident miss");
+        encode_device_expert_table_pq_matvec(
+            &mut miss,
+            &lease,
+            &missing_indices,
+            &missing_slots,
+            &missing_mask,
+            2,
+            0,
+            0,
+            &x,
+            INTERMEDIATE,
+            HIDDEN,
+            &missing_y,
+            false,
+        )
+        .expect("suppressed missing projection");
         miss.commit_and_wait().expect("resident-miss command");
         assert_eq!(read_u32(&missing_mask, 1), vec![1]);
         let after_bits: Vec<u32> = read_f32(&missing_y, INTERMEDIATE)
-            .iter().map(|value| value.to_bits()) .collect();
+            .iter()
+            .map(|value| value.to_bits())
+            .collect();
         assert_eq!(
             after_bits, before_bits,
             "a table miss must not mutate the projection destination"
@@ -10332,23 +10555,58 @@ mod tests {
         let Ok(ctx) = MetalContext::new() else {
             return;
         };
-        const HIDDEN: usize = 32; const INTERMEDIATE: usize = 24;
-        const GENERATION: u32 = 13; let (gate, gate_dense) = packed_r0_pq_tensor(&ctx, INTERMEDIATE, HIDDEN, 1);
+        const HIDDEN: usize = 32;
+        const INTERMEDIATE: usize = 24;
+        const GENERATION: u32 = 13;
+        let (gate, gate_dense) = packed_r0_pq_tensor(&ctx, INTERMEDIATE, HIDDEN, 1);
         let (up, _) = packed_r0_pq_tensor(&ctx, INTERMEDIATE, HIDDEN, 2);
         let (down, _) = packed_r0_pq_tensor(&ctx, HIDDEN, INTERMEDIATE, 3);
-        let lease = build_single_device_expert_snapshot(&ctx, &gate, &up, &down, GENERATION).expect("packed-r0 immutable expert table");
+        let lease = build_single_device_expert_snapshot(&ctx, &gate, &up, &down, GENERATION)
+            .expect("packed-r0 immutable expert table");
         assert_eq!(lease.ready_entries, 1);
-        assert_eq!(lease.resources.len(), 6); let (expert_indices, execution_slots, miss_mask) = single_route_bufs(&ctx);
+        assert_eq!(lease.resources.len(), 6);
+        let (expert_indices, execution_slots, miss_mask) = single_route_bufs(&ctx);
         let x_values: Vec<f32> = deterministic_fixture_f32(0x70_2026, HIDDEN, 0.5)
-            .into_iter().map(|value| value.abs() + 0.0625) .collect();
-        let x = f32_buffer(&ctx, &x_values); let y = filled_f32_buffer(&ctx, INTERMEDIATE, -4_096.0);
+            .into_iter()
+            .map(|value| value.abs() + 0.0625)
+            .collect();
+        let x = f32_buffer(&ctx, &x_values);
+        let y = filled_f32_buffer(&ctx, INTERMEDIATE, -4_096.0);
         let mut hit = TokenCommandBuffer::new(&ctx);
-        encode_device_expert_table_validate(&mut hit, &lease, &expert_indices, &execution_slots, &miss_mask, 1, HIDDEN, INTERMEDIATE, DEVICE_EXPERT_TENSOR_KIND_PQ).expect("validate packed-r0 hit");
-        encode_device_expert_table_pq_matvec(&mut hit, &lease, &expert_indices, &execution_slots, &miss_mask, 1, 0, 0, &x, INTERMEDIATE, HIDDEN, &y, false).expect("packed-r0 indirect gate");
+        encode_device_expert_table_validate(
+            &mut hit,
+            &lease,
+            &expert_indices,
+            &execution_slots,
+            &miss_mask,
+            1,
+            HIDDEN,
+            INTERMEDIATE,
+            DEVICE_EXPERT_TENSOR_KIND_PQ,
+        )
+        .expect("validate packed-r0 hit");
+        encode_device_expert_table_pq_matvec(
+            &mut hit,
+            &lease,
+            &expert_indices,
+            &execution_slots,
+            &miss_mask,
+            1,
+            0,
+            0,
+            &x,
+            INTERMEDIATE,
+            HIDDEN,
+            &y,
+            false,
+        )
+        .expect("packed-r0 indirect gate");
         hit.commit_and_wait().expect("packed-r0 command");
         assert_eq!(read_u32(&miss_mask, 1), vec![0]);
-        let host = matvec_dense(&gate_dense, &x_values, "packed-r0 host").expect("packed-r0 host comparator");
-        let authority = f64_authority_matvec(&gate_dense, HIDDEN, &x_values); let device = read_f32(&y, INTERMEDIATE);
+        let host = matvec_dense(&gate_dense, &x_values, "packed-r0 host")
+            .expect("packed-r0 host comparator");
+        let authority = f64_authority_matvec(&gate_dense, HIDDEN, &x_values);
+        let device = read_f32(&y, INTERMEDIATE);
         assert_v21_gate("packed-r0 indirect gate", &host, &device, &authority);
         assert_eq!(
             topk_desc_f64(&authority, 5),
@@ -10359,22 +10617,56 @@ mod tests {
             "packed-r0 top-5 must remain exact"
         );
         let invalid_table = unsafe {
-            std::slice::from_raw_parts_mut(lease.table.contents() as *mut DeviceExpertTriplet, lease.n_experts)
+            std::slice::from_raw_parts_mut(
+                lease.table.contents() as *mut DeviceExpertTriplet,
+                lease.n_experts,
+            )
         };
-        invalid_table[0].gate.bits = 9; let invalid_mask = u32_buffer(&ctx, &[u32::MAX]);
-        let sentinel: Vec<f32> = (0..INTERMEDIATE).map(|index| -2_000.0 - index as f32)
+        invalid_table[0].gate.bits = 9;
+        let invalid_mask = u32_buffer(&ctx, &[u32::MAX]);
+        let sentinel: Vec<f32> = (0..INTERMEDIATE)
+            .map(|index| -2_000.0 - index as f32)
             .collect();
-        let invalid_y = f32_buffer(&ctx, &sentinel); let mut invalid = TokenCommandBuffer::new(&ctx);
-        encode_device_expert_table_validate(&mut invalid, &lease, &expert_indices, &execution_slots, &invalid_mask, 1, HIDDEN, INTERMEDIATE, DEVICE_EXPERT_TENSOR_KIND_PQ).expect("validate invalid packed descriptor");
-        encode_device_expert_table_pq_matvec(&mut invalid, &lease, &expert_indices, &execution_slots, &invalid_mask, 1, 0, 0, &x, INTERMEDIATE, HIDDEN, &invalid_y, false).expect("suppressed invalid packed projection");
+        let invalid_y = f32_buffer(&ctx, &sentinel);
+        let mut invalid = TokenCommandBuffer::new(&ctx);
+        encode_device_expert_table_validate(
+            &mut invalid,
+            &lease,
+            &expert_indices,
+            &execution_slots,
+            &invalid_mask,
+            1,
+            HIDDEN,
+            INTERMEDIATE,
+            DEVICE_EXPERT_TENSOR_KIND_PQ,
+        )
+        .expect("validate invalid packed descriptor");
+        encode_device_expert_table_pq_matvec(
+            &mut invalid,
+            &lease,
+            &expert_indices,
+            &execution_slots,
+            &invalid_mask,
+            1,
+            0,
+            0,
+            &x,
+            INTERMEDIATE,
+            HIDDEN,
+            &invalid_y,
+            false,
+        )
+        .expect("suppressed invalid packed projection");
         invalid.commit_and_wait().expect("invalid packed command");
         assert_eq!(read_u32(&invalid_mask, 1), vec![1]);
         assert_eq!(
             read_f32(&invalid_y, INTERMEDIATE)
-                .iter().map(|value| value.to_bits())
+                .iter()
+                .map(|value| value.to_bits())
                 .collect::<Vec<_>>(),
             sentinel
-                .iter().map(|value| value.to_bits())
+                .iter()
+                .map(|value| value.to_bits())
                 .collect::<Vec<_>>(),
             "an invalid packed descriptor must not mutate the destination"
         );
@@ -10384,46 +10676,118 @@ mod tests {
         let Ok(ctx) = MetalContext::new() else {
             return;
         };
-        const HIDDEN: usize = 31; const INTERMEDIATE: usize = 23;
-        const GENERATION: u32 = 17; let (gate, gate_dense) = native_bf16_tensor(&ctx, INTERMEDIATE, HIDDEN, 1);
-        let (up, _) = native_bf16_tensor(&ctx, INTERMEDIATE, HIDDEN, 2); let (down, _) = native_bf16_tensor(&ctx, HIDDEN, INTERMEDIATE, 3);
-        let lease = build_single_device_expert_snapshot(&ctx, &gate, &up, &down, GENERATION).expect("native-bf16 immutable expert table");
+        const HIDDEN: usize = 31;
+        const INTERMEDIATE: usize = 23;
+        const GENERATION: u32 = 17;
+        let (gate, gate_dense) = native_bf16_tensor(&ctx, INTERMEDIATE, HIDDEN, 1);
+        let (up, _) = native_bf16_tensor(&ctx, INTERMEDIATE, HIDDEN, 2);
+        let (down, _) = native_bf16_tensor(&ctx, HIDDEN, INTERMEDIATE, 3);
+        let lease = build_single_device_expert_snapshot(&ctx, &gate, &up, &down, GENERATION)
+            .expect("native-bf16 immutable expert table");
         assert_eq!(lease.ready_entries, 1);
-        assert_eq!(lease.resources.len(), 3); let (expert_indices, execution_slots, miss_mask) = single_route_bufs(&ctx);
+        assert_eq!(lease.resources.len(), 3);
+        let (expert_indices, execution_slots, miss_mask) = single_route_bufs(&ctx);
         let x_values: Vec<f32> = deterministic_fixture_f32(0xBF16_2026, HIDDEN, 0.25)
-            .into_iter().map(|value| value.abs() + 0.03125) .collect();
-        let x = f32_buffer(&ctx, &x_values); let y = filled_f32_buffer(&ctx, INTERMEDIATE, -8_192.0);
+            .into_iter()
+            .map(|value| value.abs() + 0.03125)
+            .collect();
+        let x = f32_buffer(&ctx, &x_values);
+        let y = filled_f32_buffer(&ctx, INTERMEDIATE, -8_192.0);
         let mut hit = TokenCommandBuffer::new(&ctx);
-        encode_device_expert_table_validate(&mut hit, &lease, &expert_indices, &execution_slots, &miss_mask, 1, HIDDEN, INTERMEDIATE, DEVICE_EXPERT_TENSOR_KIND_NATIVE_BF16).expect("validate native-bf16 hit");
-        encode_device_expert_table_native_bf16_matvec(&mut hit, &lease, &expert_indices, &execution_slots, &miss_mask, 1, 0, 0, &x, INTERMEDIATE, HIDDEN, &y, false).expect("native-bf16 indirect gate");
+        encode_device_expert_table_validate(
+            &mut hit,
+            &lease,
+            &expert_indices,
+            &execution_slots,
+            &miss_mask,
+            1,
+            HIDDEN,
+            INTERMEDIATE,
+            DEVICE_EXPERT_TENSOR_KIND_NATIVE_BF16,
+        )
+        .expect("validate native-bf16 hit");
+        encode_device_expert_table_native_bf16_matvec(
+            &mut hit,
+            &lease,
+            &expert_indices,
+            &execution_slots,
+            &miss_mask,
+            1,
+            0,
+            0,
+            &x,
+            INTERMEDIATE,
+            HIDDEN,
+            &y,
+            false,
+        )
+        .expect("native-bf16 indirect gate");
         hit.commit_and_wait().expect("native-bf16 command");
         assert_eq!(read_u32(&miss_mask, 1), vec![0]);
-        let host = matvec_dense(&gate_dense, &x_values, "native-bf16 host").expect("native-bf16 host comparator");
-        let authority = f64_authority_matvec(&gate_dense, HIDDEN, &x_values); let device = read_f32(&y, INTERMEDIATE);
+        let host = matvec_dense(&gate_dense, &x_values, "native-bf16 host")
+            .expect("native-bf16 host comparator");
+        let authority = f64_authority_matvec(&gate_dense, HIDDEN, &x_values);
+        let device = read_f32(&y, INTERMEDIATE);
         assert_eq!(
             device
-                .iter().map(|value| value.to_bits())
+                .iter()
+                .map(|value| value.to_bits())
                 .collect::<Vec<_>>(),
             host.iter().map(|value| value.to_bits()).collect::<Vec<_>>(),
             "native-bf16 indirect projection must match sequential host bits"
-        ); assert_v21_gate("native-bf16 indirect gate", &host, &device, &authority);
+        );
+        assert_v21_gate("native-bf16 indirect gate", &host, &device, &authority);
         let invalid_table = unsafe {
-            std::slice::from_raw_parts_mut(lease.table.contents() as *mut DeviceExpertTriplet, lease.n_experts)
+            std::slice::from_raw_parts_mut(
+                lease.table.contents() as *mut DeviceExpertTriplet,
+                lease.n_experts,
+            )
         };
-        invalid_table[0].gate.secondary_address = 1; let invalid_mask = u32_buffer(&ctx, &[u32::MAX]);
-        let sentinel: Vec<f32> = (0..INTERMEDIATE).map(|index| 4_000.0 + index as f32)
+        invalid_table[0].gate.secondary_address = 1;
+        let invalid_mask = u32_buffer(&ctx, &[u32::MAX]);
+        let sentinel: Vec<f32> = (0..INTERMEDIATE)
+            .map(|index| 4_000.0 + index as f32)
             .collect();
-        let invalid_y = f32_buffer(&ctx, &sentinel); let mut invalid = TokenCommandBuffer::new(&ctx);
-        encode_device_expert_table_validate(&mut invalid, &lease, &expert_indices, &execution_slots, &invalid_mask, 1, HIDDEN, INTERMEDIATE, DEVICE_EXPERT_TENSOR_KIND_NATIVE_BF16).expect("validate invalid native descriptor");
-        encode_device_expert_table_native_bf16_matvec(&mut invalid, &lease, &expert_indices, &execution_slots, &invalid_mask, 1, 0, 0, &x, INTERMEDIATE, HIDDEN, &invalid_y, false).expect("suppressed invalid native projection");
+        let invalid_y = f32_buffer(&ctx, &sentinel);
+        let mut invalid = TokenCommandBuffer::new(&ctx);
+        encode_device_expert_table_validate(
+            &mut invalid,
+            &lease,
+            &expert_indices,
+            &execution_slots,
+            &invalid_mask,
+            1,
+            HIDDEN,
+            INTERMEDIATE,
+            DEVICE_EXPERT_TENSOR_KIND_NATIVE_BF16,
+        )
+        .expect("validate invalid native descriptor");
+        encode_device_expert_table_native_bf16_matvec(
+            &mut invalid,
+            &lease,
+            &expert_indices,
+            &execution_slots,
+            &invalid_mask,
+            1,
+            0,
+            0,
+            &x,
+            INTERMEDIATE,
+            HIDDEN,
+            &invalid_y,
+            false,
+        )
+        .expect("suppressed invalid native projection");
         invalid.commit_and_wait().expect("invalid native command");
         assert_eq!(read_u32(&invalid_mask, 1), vec![1]);
         assert_eq!(
             read_f32(&invalid_y, INTERMEDIATE)
-                .iter().map(|value| value.to_bits())
+                .iter()
+                .map(|value| value.to_bits())
                 .collect::<Vec<_>>(),
             sentinel
-                .iter().map(|value| value.to_bits())
+                .iter()
+                .map(|value| value.to_bits())
                 .collect::<Vec<_>>(),
             "an invalid native descriptor must not mutate the destination"
         );
@@ -10433,11 +10797,14 @@ mod tests {
         let Ok(ctx) = MetalContext::new() else {
             return;
         };
-        const HIDDEN: usize = 32; const INTERMEDIATE: usize = 32;
-        const GENERATION: u32 = 19; let (gate, gate_dense) = packed_r0_pq_tensor(&ctx, INTERMEDIATE, HIDDEN, 4);
+        const HIDDEN: usize = 32;
+        const INTERMEDIATE: usize = 32;
+        const GENERATION: u32 = 19;
+        let (gate, gate_dense) = packed_r0_pq_tensor(&ctx, INTERMEDIATE, HIDDEN, 4);
         let (up, up_dense) = native_bf16_tensor(&ctx, INTERMEDIATE, HIDDEN, 5);
         let (down, down_dense) = direct_u8_pq_tensor(&ctx, HIDDEN, INTERMEDIATE, 6);
-        let lease = build_single_device_expert_snapshot(&ctx, &gate, &up, &down, GENERATION).expect("heterogeneous immutable expert table");
+        let lease = build_single_device_expert_snapshot(&ctx, &gate, &up, &down, GENERATION)
+            .expect("heterogeneous immutable expert table");
         assert_eq!(lease.ready_entries, 1);
         assert_eq!(lease.resources.len(), 5);
         let (_, triplet_metrics) =
@@ -10446,26 +10813,119 @@ mod tests {
             routed: vec![triplet_metrics],
             shared: triplet_metrics,
         };
-        assert_eq!(metrics.dispatch_mode(), DeviceExpertDispatchMode::Heterogeneous); let (expert_indices, execution_slots, miss_mask) = single_route_bufs(&ctx);
+        assert_eq!(
+            metrics.dispatch_mode(),
+            DeviceExpertDispatchMode::Heterogeneous
+        );
+        let (expert_indices, execution_slots, miss_mask) = single_route_bufs(&ctx);
         let x_values: Vec<f32> = deterministic_fixture_f32(0xA11C_E019, HIDDEN, 0.125)
-            .into_iter().map(|value| value.abs() + 0.03125) .collect();
-        let x = f32_buffer(&ctx, &x_values); let gate_out = filled_f32_buffer(&ctx, INTERMEDIATE, -1.0);
-        let up_out = filled_f32_buffer(&ctx, INTERMEDIATE, -2.0); let act = filled_f32_buffer(&ctx, INTERMEDIATE, -3.0);
-        let down_out = filled_f32_buffer(&ctx, HIDDEN, -4.0); let mut hit = TokenCommandBuffer::new(&ctx);
-        encode_device_expert_table_validate(&mut hit, &lease, &expert_indices, &execution_slots, &miss_mask, 1, HIDDEN, INTERMEDIATE, DEVICE_EXPERT_TENSOR_KIND_ANY_SUPPORTED).expect("validate heterogeneous hit");
-        encode_device_expert_table_matvec(&mut hit, DeviceExpertDispatchMode::Heterogeneous, &lease, &expert_indices, &execution_slots, &miss_mask, 1, 0, 0, &x, INTERMEDIATE, HIDDEN, &gate_out).expect("heterogeneous gate");
-        encode_device_expert_table_matvec(&mut hit, DeviceExpertDispatchMode::Heterogeneous, &lease, &expert_indices, &execution_slots, &miss_mask, 1, 0, 1, &x, INTERMEDIATE, HIDDEN, &up_out).expect("heterogeneous up");
-        encode_device_expert_table_silu_mul(&mut hit, &gate_out, &up_out, &act, &miss_mask, INTERMEDIATE).expect("heterogeneous silu");
-        encode_device_expert_table_matvec(&mut hit, DeviceExpertDispatchMode::Heterogeneous, &lease, &expert_indices, &execution_slots, &miss_mask, 1, 0, 2, &act, HIDDEN, INTERMEDIATE, &down_out).expect("heterogeneous down");
-        assert_eq!(hit.dispatch_count(), 8); hit.commit_and_wait().expect("heterogeneous command");
+            .into_iter()
+            .map(|value| value.abs() + 0.03125)
+            .collect();
+        let x = f32_buffer(&ctx, &x_values);
+        let gate_out = filled_f32_buffer(&ctx, INTERMEDIATE, -1.0);
+        let up_out = filled_f32_buffer(&ctx, INTERMEDIATE, -2.0);
+        let act = filled_f32_buffer(&ctx, INTERMEDIATE, -3.0);
+        let down_out = filled_f32_buffer(&ctx, HIDDEN, -4.0);
+        let mut hit = TokenCommandBuffer::new(&ctx);
+        encode_device_expert_table_validate(
+            &mut hit,
+            &lease,
+            &expert_indices,
+            &execution_slots,
+            &miss_mask,
+            1,
+            HIDDEN,
+            INTERMEDIATE,
+            DEVICE_EXPERT_TENSOR_KIND_ANY_SUPPORTED,
+        )
+        .expect("validate heterogeneous hit");
+        encode_device_expert_table_matvec(
+            &mut hit,
+            DeviceExpertDispatchMode::Heterogeneous,
+            &lease,
+            &expert_indices,
+            &execution_slots,
+            &miss_mask,
+            1,
+            0,
+            0,
+            &x,
+            INTERMEDIATE,
+            HIDDEN,
+            &gate_out,
+        )
+        .expect("heterogeneous gate");
+        encode_device_expert_table_matvec(
+            &mut hit,
+            DeviceExpertDispatchMode::Heterogeneous,
+            &lease,
+            &expert_indices,
+            &execution_slots,
+            &miss_mask,
+            1,
+            0,
+            1,
+            &x,
+            INTERMEDIATE,
+            HIDDEN,
+            &up_out,
+        )
+        .expect("heterogeneous up");
+        encode_device_expert_table_silu_mul(
+            &mut hit,
+            &gate_out,
+            &up_out,
+            &act,
+            &miss_mask,
+            INTERMEDIATE,
+        )
+        .expect("heterogeneous silu");
+        encode_device_expert_table_matvec(
+            &mut hit,
+            DeviceExpertDispatchMode::Heterogeneous,
+            &lease,
+            &expert_indices,
+            &execution_slots,
+            &miss_mask,
+            1,
+            0,
+            2,
+            &act,
+            HIDDEN,
+            INTERMEDIATE,
+            &down_out,
+        )
+        .expect("heterogeneous down");
+        assert_eq!(hit.dispatch_count(), 8);
+        hit.commit_and_wait().expect("heterogeneous command");
         assert_eq!(read_u32(&miss_mask, 1), vec![0]);
-        let host = fixture_mlp_f32(&gate_dense, &up_dense, &down_dense, HIDDEN, INTERMEDIATE, &x_values);
-        let authority = fixture_mlp_f64(&gate_dense, &up_dense, &down_dense, HIDDEN, INTERMEDIATE, &x_values);
-        let device = read_f32(&down_out, HIDDEN); assert_v21_gate("heterogeneous triplet", &host, &device, &authority);
-        let mut replay_arch = tiny_arch(); replay_arch.hidden = HIDDEN; replay_arch.n_routed_experts = 1;
-        replay_arch.num_experts_per_tok = 1; let replay_pool = ActPool::new(&ctx, &replay_arch).expect("heterogeneous replay pool");
+        let host = fixture_mlp_f32(
+            &gate_dense,
+            &up_dense,
+            &down_dense,
+            HIDDEN,
+            INTERMEDIATE,
+            &x_values,
+        );
+        let authority = fixture_mlp_f64(
+            &gate_dense,
+            &up_dense,
+            &down_dense,
+            HIDDEN,
+            INTERMEDIATE,
+            &x_values,
+        );
+        let device = read_f32(&down_out, HIDDEN);
+        assert_v21_gate("heterogeneous triplet", &host, &device, &authority);
+        let mut replay_arch = tiny_arch();
+        replay_arch.hidden = HIDDEN;
+        replay_arch.n_routed_experts = 1;
+        replay_arch.num_experts_per_tok = 1;
+        let replay_pool = ActPool::new(&ctx, &replay_arch).expect("heterogeneous replay pool");
         unsafe {
-            (replay_pool.expert_idx.contents() as *mut u32).write(0); (replay_pool.expert_exec_slots.contents() as *mut u32).write(0);
+            (replay_pool.expert_idx.contents() as *mut u32).write(0);
+            (replay_pool.expert_exec_slots.contents() as *mut u32).write(0);
             (replay_pool.expert_miss_mask.contents() as *mut u32).write(u32::MAX);
         }
         write_f32(&replay_pool.expert_w, &[0.25]);
@@ -10473,45 +10933,106 @@ mod tests {
             ExpertWaveScratch::new(&ctx, 2, INTERMEDIATE, HIDDEN).expect("heterogeneous scratch");
         let residual_values = deterministic_fixture_f32(0x1CB0_0019, HIDDEN, 0.05);
         let replay_residual = f32_buffer(&ctx, &residual_values);
-        let replay_graph = build_device_expert_replay_graph(&ctx, DeviceExpertDispatchMode::Heterogeneous, DeviceExpertDispatchMode::Heterogeneous, &lease, &lease, 1, HIDDEN, INTERMEDIATE, &x, &replay_residual, &replay_pool, &replay_scratch).expect("heterogeneous complete-wave replay graph");
-        assert_eq!(replay_graph.command_count(), 19); let mut replay = TokenCommandBuffer::new(&ctx);
+        let replay_graph = build_device_expert_replay_graph(
+            &ctx,
+            DeviceExpertDispatchMode::Heterogeneous,
+            DeviceExpertDispatchMode::Heterogeneous,
+            &lease,
+            &lease,
+            1,
+            HIDDEN,
+            INTERMEDIATE,
+            &x,
+            &replay_residual,
+            &replay_pool,
+            &replay_scratch,
+        )
+        .expect("heterogeneous complete-wave replay graph");
+        assert_eq!(replay_graph.command_count(), 19);
+        let mut replay = TokenCommandBuffer::new(&ctx);
         replay
-            .execute_replayable_graph(&replay_graph).expect("execute heterogeneous complete wave");
+            .execute_replayable_graph(&replay_graph)
+            .expect("execute heterogeneous complete wave");
         assert_eq!(replay.dispatch_count(), 19);
         replay
-            .commit_and_wait().expect("heterogeneous complete-wave command");
+            .commit_and_wait()
+            .expect("heterogeneous complete-wave command");
         assert_eq!(read_u32(&replay_pool.expert_miss_mask, 1), vec![0]);
         let replay_host: Vec<f32> = residual_values
             .iter()
-            .zip(&host).map(|(&residual, &expert)| residual + expert * 0.25 + expert) .collect();
+            .zip(&host)
+            .map(|(&residual, &expert)| residual + expert * 0.25 + expert)
+            .collect();
         let replay_authority: Vec<f64> = residual_values
             .iter()
-            .zip(&authority).map(|(&residual, &expert)| residual as f64 + expert * 0.25 + expert) .collect();
+            .zip(&authority)
+            .map(|(&residual, &expert)| residual as f64 + expert * 0.25 + expert)
+            .collect();
         let replay_device = read_f32(&replay_residual, HIDDEN);
-        let replay_score = score_pair(&replay_host, &replay_device, &replay_authority, &Bounds::continuous_only());
+        let replay_score = score_pair(
+            &replay_host,
+            &replay_device,
+            &replay_authority,
+            &Bounds::continuous_only(),
+        );
         assert!(
             replay_score.pass,
             "heterogeneous replay wave failed V2.1: host={:?}, device={:?}",
             replay_score.host.failures, replay_score.device.failures
         );
         let invalid_table = unsafe {
-            std::slice::from_raw_parts_mut(lease.table.contents() as *mut DeviceExpertTriplet, lease.n_experts)
+            std::slice::from_raw_parts_mut(
+                lease.table.contents() as *mut DeviceExpertTriplet,
+                lease.n_experts,
+            )
         };
-        invalid_table[0].up.kind = 99; let invalid_mask = u32_buffer(&ctx, &[u32::MAX]);
-        let sentinel: Vec<f32> = (0..INTERMEDIATE).map(|index| 8_000.0 + index as f32)
+        invalid_table[0].up.kind = 99;
+        let invalid_mask = u32_buffer(&ctx, &[u32::MAX]);
+        let sentinel: Vec<f32> = (0..INTERMEDIATE)
+            .map(|index| 8_000.0 + index as f32)
             .collect();
-        let invalid_gate = f32_buffer(&ctx, &sentinel); let mut invalid = TokenCommandBuffer::new(&ctx);
-        encode_device_expert_table_validate(&mut invalid, &lease, &expert_indices, &execution_slots, &invalid_mask, 1, HIDDEN, INTERMEDIATE, DEVICE_EXPERT_TENSOR_KIND_ANY_SUPPORTED).expect("validate unsupported mixed member");
-        encode_device_expert_table_matvec(&mut invalid, DeviceExpertDispatchMode::Heterogeneous, &lease, &expert_indices, &execution_slots, &invalid_mask, 1, 0, 0, &x, INTERMEDIATE, HIDDEN, &invalid_gate).expect("suppress mixed triplet after validation miss");
+        let invalid_gate = f32_buffer(&ctx, &sentinel);
+        let mut invalid = TokenCommandBuffer::new(&ctx);
+        encode_device_expert_table_validate(
+            &mut invalid,
+            &lease,
+            &expert_indices,
+            &execution_slots,
+            &invalid_mask,
+            1,
+            HIDDEN,
+            INTERMEDIATE,
+            DEVICE_EXPERT_TENSOR_KIND_ANY_SUPPORTED,
+        )
+        .expect("validate unsupported mixed member");
+        encode_device_expert_table_matvec(
+            &mut invalid,
+            DeviceExpertDispatchMode::Heterogeneous,
+            &lease,
+            &expert_indices,
+            &execution_slots,
+            &invalid_mask,
+            1,
+            0,
+            0,
+            &x,
+            INTERMEDIATE,
+            HIDDEN,
+            &invalid_gate,
+        )
+        .expect("suppress mixed triplet after validation miss");
         invalid
-            .commit_and_wait().expect("invalid heterogeneous command");
+            .commit_and_wait()
+            .expect("invalid heterogeneous command");
         assert_eq!(read_u32(&invalid_mask, 1), vec![1]);
         assert_eq!(
             read_f32(&invalid_gate, INTERMEDIATE)
-                .iter().map(|value| value.to_bits())
+                .iter()
+                .map(|value| value.to_bits())
                 .collect::<Vec<_>>(),
             sentinel
-                .iter().map(|value| value.to_bits())
+                .iter()
+                .map(|value| value.to_bits())
                 .collect::<Vec<_>>(),
             "an unsupported heterogeneous triplet must not mutate the destination"
         );
@@ -10521,8 +11042,12 @@ mod tests {
         let Ok(ctx) = MetalContext::new() else {
             return;
         };
-        const HIDDEN: usize = 32; const INTERMEDIATE: usize = 32; const GENERATION: u32 = 11; const PREFIX: &str = "model.layers.0.mlp";
-        let mut cache = BoundedLru::new(200_000).expect("bounded routed cache"); let mut items = Vec::new();
+        const HIDDEN: usize = 32;
+        const INTERMEDIATE: usize = 32;
+        const GENERATION: u32 = 11;
+        const PREFIX: &str = "model.layers.0.mlp";
+        let mut cache = BoundedLru::new(200_000).expect("bounded routed cache");
+        let mut items = Vec::new();
         let mut dense = std::collections::HashMap::<String, Vec<f32>>::new();
         for &expert in &[0usize, 2usize] {
             for (projection, rows, cols, projection_salt) in [
@@ -10533,7 +11058,8 @@ mod tests {
                 let key = format!("{expert}.{projection}");
                 let (tensor, authority) =
                     direct_u8_pq_tensor(&ctx, rows, cols, expert * 11 + projection_salt);
-                dense.insert(key, authority); let bytes = gpu_tensor_bytes(&tensor);
+                dense.insert(key, authority);
+                let bytes = gpu_tensor_bytes(&tensor);
                 items.push((
                     format!("{PREFIX}.experts.{expert}.{projection}.weight"),
                     tensor,
@@ -10542,97 +11068,348 @@ mod tests {
             }
         }
         cache
-            .admit_pinned(items, &std::collections::HashSet::new()).expect("admit routed triplets");
-        let routed_lease = build_device_expert_table_snapshot(&ctx, &cache, PREFIX, 4, GENERATION).expect("routed table snapshot");
+            .admit_pinned(items, &std::collections::HashSet::new())
+            .expect("admit routed triplets");
+        let routed_lease = build_device_expert_table_snapshot(&ctx, &cache, PREFIX, 4, GENERATION)
+            .expect("routed table snapshot");
         let (shared_gate, shared_gate_dense) = direct_u8_pq_tensor(&ctx, INTERMEDIATE, HIDDEN, 101);
         let (shared_up, shared_up_dense) = direct_u8_pq_tensor(&ctx, INTERMEDIATE, HIDDEN, 102);
         let (shared_down, shared_down_dense) = direct_u8_pq_tensor(&ctx, HIDDEN, INTERMEDIATE, 103);
-        let shared_lease = build_single_device_expert_snapshot(&ctx, &shared_gate, &shared_up, &shared_down, GENERATION).expect("shared expert snapshot");
-        let expert_indices = u32_buffer(&ctx, &[2, 0]); let execution_slots = u32_buffer(&ctx, &[1, 0]);
-        let expert_weights = f32_buffer(&ctx, &[0.3, 0.7]); let shared_indices = u32_buffer(&ctx, &[0]);
+        let shared_lease = build_single_device_expert_snapshot(
+            &ctx,
+            &shared_gate,
+            &shared_up,
+            &shared_down,
+            GENERATION,
+        )
+        .expect("shared expert snapshot");
+        let expert_indices = u32_buffer(&ctx, &[2, 0]);
+        let execution_slots = u32_buffer(&ctx, &[1, 0]);
+        let expert_weights = f32_buffer(&ctx, &[0.3, 0.7]);
+        let shared_indices = u32_buffer(&ctx, &[0]);
         let shared_slots = u32_buffer(&ctx, &[0]);
         let x_values: Vec<f32> = deterministic_fixture_f32(0xE771_2026, HIDDEN, 0.2)
-            .into_iter().map(|value| value.abs() + 0.125) .collect();
+            .into_iter()
+            .map(|value| value.abs() + 0.125)
+            .collect();
         let x = f32_buffer(&ctx, &x_values);
-        let routed_gate: Vec<Buffer> = (0..2).map(|_| filled_f32_buffer(&ctx, INTERMEDIATE, -7_000.0))
+        let routed_gate: Vec<Buffer> = (0..2)
+            .map(|_| filled_f32_buffer(&ctx, INTERMEDIATE, -7_000.0))
             .collect();
-        let routed_up: Vec<Buffer> = (0..2).map(|_| filled_f32_buffer(&ctx, INTERMEDIATE, -7_100.0))
+        let routed_up: Vec<Buffer> = (0..2)
+            .map(|_| filled_f32_buffer(&ctx, INTERMEDIATE, -7_100.0))
             .collect();
-        let routed_act: Vec<Buffer> = (0..2).map(|_| filled_f32_buffer(&ctx, INTERMEDIATE, -7_200.0))
+        let routed_act: Vec<Buffer> = (0..2)
+            .map(|_| filled_f32_buffer(&ctx, INTERMEDIATE, -7_200.0))
             .collect();
-        let routed_down: Vec<Buffer> = (0..2).map(|_| filled_f32_buffer(&ctx, HIDDEN, -7_300.0))
+        let routed_down: Vec<Buffer> = (0..2)
+            .map(|_| filled_f32_buffer(&ctx, HIDDEN, -7_300.0))
             .collect();
         let shared_gate_out = filled_f32_buffer(&ctx, INTERMEDIATE, -7_400.0);
         let shared_up_out = filled_f32_buffer(&ctx, INTERMEDIATE, -7_500.0);
-        let shared_act = filled_f32_buffer(&ctx, INTERMEDIATE, -7_600.0); let shared_down_out = filled_f32_buffer(&ctx, HIDDEN, -7_700.0);
+        let shared_act = filled_f32_buffer(&ctx, INTERMEDIATE, -7_600.0);
+        let shared_down_out = filled_f32_buffer(&ctx, HIDDEN, -7_700.0);
         let combined = filled_f32_buffer(&ctx, HIDDEN, -7_800.0);
-        let residual_values = deterministic_fixture_f32(0x5E51_DA1, HIDDEN, 0.1); let residual = f32_buffer(&ctx, &residual_values);
+        let residual_values = deterministic_fixture_f32(0x5E51_DA1, HIDDEN, 0.1);
+        let residual = f32_buffer(&ctx, &residual_values);
         let encode_wave = |wave: &mut TokenCommandBuffer<'_>,
                            selected_indices: &Buffer,
                            selected_slots: &Buffer,
                            miss_mask: &Buffer|
          -> Result<()> {
-            encode_device_expert_table_validate(wave, &routed_lease, selected_indices, selected_slots, miss_mask, 2, HIDDEN, INTERMEDIATE, DEVICE_EXPERT_TENSOR_KIND_PQ)?;
+            encode_device_expert_table_validate(
+                wave,
+                &routed_lease,
+                selected_indices,
+                selected_slots,
+                miss_mask,
+                2,
+                HIDDEN,
+                INTERMEDIATE,
+                DEVICE_EXPERT_TENSOR_KIND_PQ,
+            )?;
             encode_device_expert_table_zero(wave, &combined, miss_mask, HIDDEN)?;
             for execution_position in 0..2 {
-                encode_device_expert_table_pq_matvec(wave, &routed_lease, selected_indices, selected_slots, miss_mask, 2, execution_position, 0, &x, INTERMEDIATE, HIDDEN, &routed_gate[execution_position], false)?;
-                encode_device_expert_table_pq_matvec(wave, &routed_lease, selected_indices, selected_slots, miss_mask, 2, execution_position, 1, &x, INTERMEDIATE, HIDDEN, &routed_up[execution_position], false)?;
-                encode_device_expert_table_silu_mul(wave, &routed_gate[execution_position], &routed_up[execution_position], &routed_act[execution_position], miss_mask, INTERMEDIATE)?;
-                encode_device_expert_table_pq_matvec(wave, &routed_lease, selected_indices, selected_slots, miss_mask, 2, execution_position, 2, &routed_act[execution_position], HIDDEN, INTERMEDIATE, &routed_down[execution_position], false)?;
-                encode_device_expert_table_axpy(wave, &combined, &routed_down[execution_position], &expert_weights, selected_slots, miss_mask, HIDDEN, 2, execution_position, true)?;
+                encode_device_expert_table_pq_matvec(
+                    wave,
+                    &routed_lease,
+                    selected_indices,
+                    selected_slots,
+                    miss_mask,
+                    2,
+                    execution_position,
+                    0,
+                    &x,
+                    INTERMEDIATE,
+                    HIDDEN,
+                    &routed_gate[execution_position],
+                    false,
+                )?;
+                encode_device_expert_table_pq_matvec(
+                    wave,
+                    &routed_lease,
+                    selected_indices,
+                    selected_slots,
+                    miss_mask,
+                    2,
+                    execution_position,
+                    1,
+                    &x,
+                    INTERMEDIATE,
+                    HIDDEN,
+                    &routed_up[execution_position],
+                    false,
+                )?;
+                encode_device_expert_table_silu_mul(
+                    wave,
+                    &routed_gate[execution_position],
+                    &routed_up[execution_position],
+                    &routed_act[execution_position],
+                    miss_mask,
+                    INTERMEDIATE,
+                )?;
+                encode_device_expert_table_pq_matvec(
+                    wave,
+                    &routed_lease,
+                    selected_indices,
+                    selected_slots,
+                    miss_mask,
+                    2,
+                    execution_position,
+                    2,
+                    &routed_act[execution_position],
+                    HIDDEN,
+                    INTERMEDIATE,
+                    &routed_down[execution_position],
+                    false,
+                )?;
+                encode_device_expert_table_axpy(
+                    wave,
+                    &combined,
+                    &routed_down[execution_position],
+                    &expert_weights,
+                    selected_slots,
+                    miss_mask,
+                    HIDDEN,
+                    2,
+                    execution_position,
+                    true,
+                )?;
             }
-            encode_device_expert_table_pq_matvec(wave, &shared_lease, &shared_indices, &shared_slots, miss_mask, 1, 0, 0, &x, INTERMEDIATE, HIDDEN, &shared_gate_out, false)?;
-            encode_device_expert_table_pq_matvec(wave, &shared_lease, &shared_indices, &shared_slots, miss_mask, 1, 0, 1, &x, INTERMEDIATE, HIDDEN, &shared_up_out, false)?;
-            encode_device_expert_table_silu_mul(wave, &shared_gate_out, &shared_up_out, &shared_act, miss_mask, INTERMEDIATE)?;
-            encode_device_expert_table_pq_matvec(wave, &shared_lease, &shared_indices, &shared_slots, miss_mask, 1, 0, 2, &shared_act, HIDDEN, INTERMEDIATE, &shared_down_out, false)?;
-            encode_device_expert_table_axpy(wave, &combined, &shared_down_out, &expert_weights, &shared_slots, miss_mask, HIDDEN, 1, 0, false)?;
+            encode_device_expert_table_pq_matvec(
+                wave,
+                &shared_lease,
+                &shared_indices,
+                &shared_slots,
+                miss_mask,
+                1,
+                0,
+                0,
+                &x,
+                INTERMEDIATE,
+                HIDDEN,
+                &shared_gate_out,
+                false,
+            )?;
+            encode_device_expert_table_pq_matvec(
+                wave,
+                &shared_lease,
+                &shared_indices,
+                &shared_slots,
+                miss_mask,
+                1,
+                0,
+                1,
+                &x,
+                INTERMEDIATE,
+                HIDDEN,
+                &shared_up_out,
+                false,
+            )?;
+            encode_device_expert_table_silu_mul(
+                wave,
+                &shared_gate_out,
+                &shared_up_out,
+                &shared_act,
+                miss_mask,
+                INTERMEDIATE,
+            )?;
+            encode_device_expert_table_pq_matvec(
+                wave,
+                &shared_lease,
+                &shared_indices,
+                &shared_slots,
+                miss_mask,
+                1,
+                0,
+                2,
+                &shared_act,
+                HIDDEN,
+                INTERMEDIATE,
+                &shared_down_out,
+                false,
+            )?;
+            encode_device_expert_table_axpy(
+                wave,
+                &combined,
+                &shared_down_out,
+                &expert_weights,
+                &shared_slots,
+                miss_mask,
+                HIDDEN,
+                1,
+                0,
+                false,
+            )?;
             encode_device_expert_table_residual_add(wave, &residual, &combined, miss_mask, HIDDEN)
         };
-        let miss_mask = u32_buffer(&ctx, &[u32::MAX]); let mut hit = TokenCommandBuffer::new(&ctx);
-        encode_wave(&mut hit, &expert_indices, &execution_slots, &miss_mask).expect("encode complete table hit");
-        assert_eq!(hit.dispatch_count(), 18); hit.commit_and_wait().expect("complete table hit command");
+        let miss_mask = u32_buffer(&ctx, &[u32::MAX]);
+        let mut hit = TokenCommandBuffer::new(&ctx);
+        encode_wave(&mut hit, &expert_indices, &execution_slots, &miss_mask)
+            .expect("encode complete table hit");
+        assert_eq!(hit.dispatch_count(), 18);
+        hit.commit_and_wait().expect("complete table hit command");
         assert_eq!(read_u32(&miss_mask, 1), vec![0]);
-        let routed_0_f32 = fixture_mlp_f32(&dense["0.gate_proj"], &dense["0.up_proj"], &dense["0.down_proj"], HIDDEN, INTERMEDIATE, &x_values);
-        let routed_2_f32 = fixture_mlp_f32(&dense["2.gate_proj"], &dense["2.up_proj"], &dense["2.down_proj"], HIDDEN, INTERMEDIATE, &x_values);
-        let shared_f32 = fixture_mlp_f32(&shared_gate_dense, &shared_up_dense, &shared_down_dense, HIDDEN, INTERMEDIATE, &x_values);
+        let routed_0_f32 = fixture_mlp_f32(
+            &dense["0.gate_proj"],
+            &dense["0.up_proj"],
+            &dense["0.down_proj"],
+            HIDDEN,
+            INTERMEDIATE,
+            &x_values,
+        );
+        let routed_2_f32 = fixture_mlp_f32(
+            &dense["2.gate_proj"],
+            &dense["2.up_proj"],
+            &dense["2.down_proj"],
+            HIDDEN,
+            INTERMEDIATE,
+            &x_values,
+        );
+        let shared_f32 = fixture_mlp_f32(
+            &shared_gate_dense,
+            &shared_up_dense,
+            &shared_down_dense,
+            HIDDEN,
+            INTERMEDIATE,
+            &x_values,
+        );
         let mut host = residual_values.clone();
         for index in 0..HIDDEN {
-            let mut expert_output = 0.0f32; expert_output += routed_0_f32[index] * 0.7f32; expert_output += routed_2_f32[index] * 0.3f32;
-            expert_output += shared_f32[index]; host[index] += expert_output;
+            let mut expert_output = 0.0f32;
+            expert_output += routed_0_f32[index] * 0.7f32;
+            expert_output += routed_2_f32[index] * 0.3f32;
+            expert_output += shared_f32[index];
+            host[index] += expert_output;
         }
-        let routed_0_f64 = fixture_mlp_f64(&dense["0.gate_proj"], &dense["0.up_proj"], &dense["0.down_proj"], HIDDEN, INTERMEDIATE, &x_values);
-        let routed_2_f64 = fixture_mlp_f64(&dense["2.gate_proj"], &dense["2.up_proj"], &dense["2.down_proj"], HIDDEN, INTERMEDIATE, &x_values);
-        let shared_f64 = fixture_mlp_f64(&shared_gate_dense, &shared_up_dense, &shared_down_dense, HIDDEN, INTERMEDIATE, &x_values);
-        let authority: Vec<f64> = (0..HIDDEN).map(|index| {
+        let routed_0_f64 = fixture_mlp_f64(
+            &dense["0.gate_proj"],
+            &dense["0.up_proj"],
+            &dense["0.down_proj"],
+            HIDDEN,
+            INTERMEDIATE,
+            &x_values,
+        );
+        let routed_2_f64 = fixture_mlp_f64(
+            &dense["2.gate_proj"],
+            &dense["2.up_proj"],
+            &dense["2.down_proj"],
+            HIDDEN,
+            INTERMEDIATE,
+            &x_values,
+        );
+        let shared_f64 = fixture_mlp_f64(
+            &shared_gate_dense,
+            &shared_up_dense,
+            &shared_down_dense,
+            HIDDEN,
+            INTERMEDIATE,
+            &x_values,
+        );
+        let authority: Vec<f64> = (0..HIDDEN)
+            .map(|index| {
                 residual_values[index] as f64
                     + routed_0_f64[index] * 0.7f32 as f64
                     + routed_2_f64[index] * 0.3f32 as f64
                     + shared_f64[index]
             })
             .collect();
-        let device = read_f32(&residual, HIDDEN); assert_v21_gate("device expert table complete wave", &host, &device, &authority);
-        let mut replay_arch = tiny_arch(); replay_arch.hidden = HIDDEN; replay_arch.n_routed_experts = 4;
-        replay_arch.num_experts_per_tok = 2; let replay_pool = ActPool::new(&ctx, &replay_arch).expect("replay activation pool");
+        let device = read_f32(&residual, HIDDEN);
+        assert_v21_gate(
+            "device expert table complete wave",
+            &host,
+            &device,
+            &authority,
+        );
+        let mut replay_arch = tiny_arch();
+        replay_arch.hidden = HIDDEN;
+        replay_arch.n_routed_experts = 4;
+        replay_arch.num_experts_per_tok = 2;
+        let replay_pool = ActPool::new(&ctx, &replay_arch).expect("replay activation pool");
         unsafe {
-            std::ptr::copy_nonoverlapping([2u32, 0].as_ptr(), replay_pool.expert_idx.contents() as *mut u32, 2);
-            std::ptr::copy_nonoverlapping([1u32, 0].as_ptr(), replay_pool.expert_exec_slots.contents() as *mut u32, 2);
+            std::ptr::copy_nonoverlapping(
+                [2u32, 0].as_ptr(),
+                replay_pool.expert_idx.contents() as *mut u32,
+                2,
+            );
+            std::ptr::copy_nonoverlapping(
+                [1u32, 0].as_ptr(),
+                replay_pool.expert_exec_slots.contents() as *mut u32,
+                2,
+            );
             (replay_pool.expert_miss_mask.contents() as *mut u32).write(u32::MAX);
         }
         write_f32(&replay_pool.expert_w, &[0.3, 0.7]);
         let replay_scratch =
             ExpertWaveScratch::new(&ctx, 3, INTERMEDIATE, HIDDEN).expect("replay scratch");
         let replay_residual = f32_buffer(&ctx, &residual_values);
-        let replay_graph = build_device_expert_replay_graph(&ctx, DeviceExpertDispatchMode::PqOnly, DeviceExpertDispatchMode::PqOnly, &routed_lease, &shared_lease, 2, HIDDEN, INTERMEDIATE, &x, &replay_residual, &replay_pool, &replay_scratch).expect("complete-wave replay graph");
+        let replay_graph = build_device_expert_replay_graph(
+            &ctx,
+            DeviceExpertDispatchMode::PqOnly,
+            DeviceExpertDispatchMode::PqOnly,
+            &routed_lease,
+            &shared_lease,
+            2,
+            HIDDEN,
+            INTERMEDIATE,
+            &x,
+            &replay_residual,
+            &replay_pool,
+            &replay_scratch,
+        )
+        .expect("complete-wave replay graph");
         assert_eq!(replay_graph.command_count(), 18);
-        let replay_key_before = device_expert_replay_key(GENERATION, 2, HIDDEN, INTERMEDIATE, DeviceExpertDispatchMode::PqOnly, DeviceExpertDispatchMode::PqOnly, &routed_lease, &shared_lease, &x, &replay_residual, &replay_pool, &replay_scratch);
-        let _ = ctx.drain_stats(); let mut replay_hit = TokenCommandBuffer::new(&ctx);
+        let replay_key_before = device_expert_replay_key(
+            GENERATION,
+            2,
+            HIDDEN,
+            INTERMEDIATE,
+            DeviceExpertDispatchMode::PqOnly,
+            DeviceExpertDispatchMode::PqOnly,
+            &routed_lease,
+            &shared_lease,
+            &x,
+            &replay_residual,
+            &replay_pool,
+            &replay_scratch,
+        );
+        let _ = ctx.drain_stats();
+        let mut replay_hit = TokenCommandBuffer::new(&ctx);
         replay_hit
-            .execute_replayable_graph(&replay_graph).expect("execute complete-wave replay hit");
+            .execute_replayable_graph(&replay_graph)
+            .expect("execute complete-wave replay hit");
         assert_eq!(replay_hit.dispatch_count(), 18);
         replay_hit
-            .commit_and_wait().expect("complete-wave replay hit command");
-        assert_eq!(read_u32(&replay_pool.expert_miss_mask, 1), vec![0]); let replay_device = read_f32(&replay_residual, HIDDEN);
-        let replay_score = score_pair(&host, &replay_device, &authority, &Bounds::continuous_only());
+            .commit_and_wait()
+            .expect("complete-wave replay hit command");
+        assert_eq!(read_u32(&replay_pool.expert_miss_mask, 1), vec![0]);
+        let replay_device = read_f32(&replay_residual, HIDDEN);
+        let replay_score = score_pair(
+            &host,
+            &replay_device,
+            &authority,
+            &Bounds::continuous_only(),
+        );
         assert!(
             replay_score.pass,
             "replayed device expert complete wave failed V2.1: host={:?}, device={:?}",
@@ -10640,10 +11417,12 @@ mod tests {
         );
         assert_eq!(
             replay_device
-                .iter().map(|value| value.to_bits())
+                .iter()
+                .map(|value| value.to_bits())
                 .collect::<Vec<_>>(),
             device
-                .iter().map(|value| value.to_bits())
+                .iter()
+                .map(|value| value.to_bits())
                 .collect::<Vec<_>>(),
             "ICB and direct complete waves must be bit-identical"
         );
@@ -10653,39 +11432,51 @@ mod tests {
             .chain(&replay_scratch.up)
             .chain(&replay_scratch.act)
             .chain(&replay_scratch.down)
-            .chain([&replay_scratch.combined, &replay_residual]) .collect();
+            .chain([&replay_scratch.combined, &replay_residual])
+            .collect();
         for (buffer_index, buffer) in replay_outputs.iter().enumerate() {
             let elements = if buffer.length() >= (INTERMEDIATE * 4) as u64 {
                 INTERMEDIATE
             } else {
                 HIDDEN
             };
-            let sentinel: Vec<f32> = (0..elements).map(|index| 20_000.0 + (buffer_index * INTERMEDIATE + index) as f32)
+            let sentinel: Vec<f32> = (0..elements)
+                .map(|index| 20_000.0 + (buffer_index * INTERMEDIATE + index) as f32)
                 .collect();
             write_f32(buffer, &sentinel);
         }
         let replay_before: Vec<Vec<u32>> = replay_outputs
-            .iter().map(|buffer| {
+            .iter()
+            .map(|buffer| {
                 read_f32(buffer, HIDDEN)
-                    .iter().map(|value| value.to_bits())
+                    .iter()
+                    .map(|value| value.to_bits())
                     .collect()
             })
             .collect();
         unsafe {
-            std::ptr::copy_nonoverlapping([2u32, 1].as_ptr(), replay_pool.expert_idx.contents() as *mut u32, 2);
+            std::ptr::copy_nonoverlapping(
+                [2u32, 1].as_ptr(),
+                replay_pool.expert_idx.contents() as *mut u32,
+                2,
+            );
             (replay_pool.expert_miss_mask.contents() as *mut u32).write(u32::MAX);
         }
         let mut replay_miss = TokenCommandBuffer::new(&ctx);
         replay_miss
-            .execute_replayable_graph(&replay_graph).expect("execute complete-wave replay miss");
+            .execute_replayable_graph(&replay_graph)
+            .expect("execute complete-wave replay miss");
         assert_eq!(replay_miss.dispatch_count(), 18);
         replay_miss
-            .commit_and_wait().expect("complete-wave replay miss command");
+            .commit_and_wait()
+            .expect("complete-wave replay miss command");
         assert_eq!(read_u32(&replay_pool.expert_miss_mask, 1), vec![1]);
         let replay_after: Vec<Vec<u32>> = replay_outputs
-            .iter().map(|buffer| {
+            .iter()
+            .map(|buffer| {
                 read_f32(buffer, HIDDEN)
-                    .iter().map(|value| value.to_bits())
+                    .iter()
+                    .map(|value| value.to_bits())
                     .collect()
             })
             .collect();
@@ -10694,7 +11485,21 @@ mod tests {
             "a replayed table miss must suppress every scratch and residual write"
         );
         assert!(
-            device_expert_replay_key_matches(&replay_key_before, GENERATION, 2, HIDDEN, INTERMEDIATE, DeviceExpertDispatchMode::PqOnly, DeviceExpertDispatchMode::PqOnly, &routed_lease, &shared_lease, &x, &replay_residual, &replay_pool, &replay_scratch),
+            device_expert_replay_key_matches(
+                &replay_key_before,
+                GENERATION,
+                2,
+                HIDDEN,
+                INTERMEDIATE,
+                DeviceExpertDispatchMode::PqOnly,
+                DeviceExpertDispatchMode::PqOnly,
+                &routed_lease,
+                &shared_lease,
+                &x,
+                &replay_residual,
+                &replay_pool,
+                &replay_scratch
+            ),
             "selection content changes must not invalidate stable-address replay"
         );
         assert_eq!(
@@ -10717,26 +11522,35 @@ mod tests {
             ])
             .collect();
         for (buffer_index, buffer) in all_outputs.iter().enumerate() {
-            let sentinel: Vec<f32> = (0..HIDDEN).map(|index| 10_000.0 + (buffer_index * HIDDEN + index) as f32)
+            let sentinel: Vec<f32> = (0..HIDDEN)
+                .map(|index| 10_000.0 + (buffer_index * HIDDEN + index) as f32)
                 .collect();
             write_f32(buffer, &sentinel);
         }
         let before: Vec<Vec<u32>> = all_outputs
-            .iter().map(|buffer| {
+            .iter()
+            .map(|buffer| {
                 read_f32(buffer, HIDDEN)
-                    .iter().map(|value| value.to_bits())
+                    .iter()
+                    .map(|value| value.to_bits())
                     .collect()
             })
             .collect();
-        let missing_indices = u32_buffer(&ctx, &[2, 1]); let missing_slots = u32_buffer(&ctx, &[1, 0]);
-        let missing_mask = u32_buffer(&ctx, &[u32::MAX]); let mut miss = TokenCommandBuffer::new(&ctx);
-        encode_wave(&mut miss, &missing_indices, &missing_slots, &missing_mask).expect("encode complete table miss");
-        assert_eq!(miss.dispatch_count(), 18); miss.commit_and_wait().expect("complete table miss command");
+        let missing_indices = u32_buffer(&ctx, &[2, 1]);
+        let missing_slots = u32_buffer(&ctx, &[1, 0]);
+        let missing_mask = u32_buffer(&ctx, &[u32::MAX]);
+        let mut miss = TokenCommandBuffer::new(&ctx);
+        encode_wave(&mut miss, &missing_indices, &missing_slots, &missing_mask)
+            .expect("encode complete table miss");
+        assert_eq!(miss.dispatch_count(), 18);
+        miss.commit_and_wait().expect("complete table miss command");
         assert_eq!(read_u32(&missing_mask, 1), vec![1]);
         let after: Vec<Vec<u32>> = all_outputs
-            .iter().map(|buffer| {
+            .iter()
+            .map(|buffer| {
                 read_f32(buffer, HIDDEN)
-                    .iter().map(|value| value.to_bits())
+                    .iter()
+                    .map(|value| value.to_bits())
                     .collect()
             })
             .collect();
@@ -10749,7 +11563,8 @@ mod tests {
     fn device_expert_table_hit_costs_cover_routed_shared_and_elementwise_work() {
         use crate::cost_ledger::RoutedWeightRepresentation;
         use crate::gravity_glm::gpu::PqParams;
-        crate::cost_ledger::set_enabled(true); let _ = crate::cost_ledger::end_token();
+        crate::cost_ledger::set_enabled(true);
+        let _ = crate::cost_ledger::end_token();
         assert!(crate::cost_ledger::begin_token());
         let r4 = |rows, cols, bytes| DeviceExpertProjectionMetrics::Pq {
             params: PqParams {
@@ -10772,7 +11587,8 @@ mod tests {
         };
         assert_eq!(metrics.dispatch_mode(), DeviceExpertDispatchMode::PqOnly);
         record_device_expert_table_hit_costs("model.layers.0.mlp", 32, 64, &metrics);
-        let report = crate::cost_ledger::end_token().expect("table-hit cost report"); crate::cost_ledger::set_enabled(false);
+        let report = crate::cost_ledger::end_token().expect("table-hit cost report");
+        crate::cost_ledger::set_enabled(false);
         assert_eq!(report.counters.matvec_calls, 9);
         assert_eq!(report.counters.active_bytes_read, 900);
         assert_eq!(
@@ -10783,7 +11599,10 @@ mod tests {
             report.counters.active_bytes_by_category["shared_experts"].as_u64(),
             Some(300)
         );
-        assert_eq!(report.counters.routed_representations.r4_projection_touches, 6);
+        assert_eq!(
+            report.counters.routed_representations.r4_projection_touches,
+            6
+        );
         assert_eq!(report.counters.routed_representations.r4_active_bytes, 600);
         assert_eq!(report.counters.dense_equivalent_fp_operations, 36_864);
         assert_eq!(report.counters.source_modelled_fp_operations, 52_736);
@@ -10843,9 +11662,16 @@ mod tests {
             routed: vec![triplet, triplet],
             shared: triplet,
         };
-        assert_eq!(metrics.dispatch_mode(), DeviceExpertDispatchMode::Heterogeneous); crate::cost_ledger::set_enabled(true); let _ = crate::cost_ledger::end_token();
-        assert!(crate::cost_ledger::begin_token()); record_device_expert_table_hit_costs("model.layers.0.mlp", 32, 64, &metrics);
-        let report = crate::cost_ledger::end_token().expect("heterogeneous cost report"); crate::cost_ledger::set_enabled(false);
+        assert_eq!(
+            metrics.dispatch_mode(),
+            DeviceExpertDispatchMode::Heterogeneous
+        );
+        crate::cost_ledger::set_enabled(true);
+        let _ = crate::cost_ledger::end_token();
+        assert!(crate::cost_ledger::begin_token());
+        record_device_expert_table_hit_costs("model.layers.0.mlp", 32, 64, &metrics);
+        let report = crate::cost_ledger::end_token().expect("heterogeneous cost report");
+        crate::cost_ledger::set_enabled(false);
         assert_eq!(report.counters.matvec_calls, 9);
         assert_eq!(report.counters.active_bytes_read, 12_738);
         assert_eq!(
@@ -10855,7 +11681,8 @@ mod tests {
         assert_eq!(
             report.counters.active_bytes_by_category["shared_experts"].as_u64(),
             Some(4_246)
-        ); let routed = &report.counters.routed_representations;
+        );
+        let routed = &report.counters.routed_representations;
         assert_eq!(routed.r4_projection_touches, 2);
         assert_eq!(routed.r4_active_bytes, 200);
         assert_eq!(routed.r0_projection_touches, 2);
@@ -10924,7 +11751,8 @@ mod tests {
         let Ok(ctx) = MetalContext::new() else {
             return;
         };
-        let one = f32_buffer(&ctx, &[1.0]); let mut tcb = TokenCommandBuffer::new(&ctx);
+        let one = f32_buffer(&ctx, &[1.0]);
+        let mut tcb = TokenCommandBuffer::new(&ctx);
         let error = encode_rmsnorm(&mut tcb, &one, &one, &one, 2, 1e-6)
             .expect_err("undersized buffers must be rejected before encoding");
         assert!(error.to_string().contains("byte range"));
@@ -10933,7 +11761,8 @@ mod tests {
     #[test]
     fn route_segment_pq_k_transpose_is_deterministic_and_passes_v21() {
         let shader = include_str!("../shaders/gravity_pq.metal");
-        assert!(shader.contains("kernel void gravity_pq_k_transpose_heads(")); let registry = include_str!("metal/mod.rs");
+        assert!(shader.contains("kernel void gravity_pq_k_transpose_heads("));
+        let registry = include_str!("metal/mod.rs");
         assert!(registry
             .contains("\"gravity_pq_k_transpose_heads\" => \"gravity_pq_k_transpose_heads\""));
         let Ok(ctx) = MetalContext::new() else {
@@ -10951,45 +11780,113 @@ mod tests {
             *dst = half::f16::from_f32(value);
         }
         let rows_touched = (n_heads - 1) * row_stride + key_rows;
-        let codes: Vec<u8> = (0..rows_touched * pq_nchunk).map(|index| ((index * 3 + index / 2) % 4) as u8)
+        let codes: Vec<u8> = (0..rows_touched * pq_nchunk)
+            .map(|index| ((index * 3 + index / 2) % 4) as u8)
             .collect();
-        let query = vec![0.75, -1.25, 0.5, -0.625, 1.5, 0.25]; let codebookb = f16_buffer(&ctx, &codebook);
+        let query = vec![0.75, -1.25, 0.5, -0.625, 1.5, 0.25];
+        let codebookb = f16_buffer(&ctx, &codebook);
         let codesb = ctx
-            .new_buffer_with_bytes_checked(&codes).expect("PQ code test buffer");
-        let queryb = f32_buffer(&ctx, &query); let output_a = filled_f32_buffer(&ctx, n_heads * latent_dim, f32::NAN);
-        let output_b = filled_f32_buffer(&ctx, n_heads * latent_dim, f32::NAN); let mut tcb = TokenCommandBuffer::new(&ctx);
+            .new_buffer_with_bytes_checked(&codes)
+            .expect("PQ code test buffer");
+        let queryb = f32_buffer(&ctx, &query);
+        let output_a = filled_f32_buffer(&ctx, n_heads * latent_dim, f32::NAN);
+        let output_b = filled_f32_buffer(&ctx, n_heads * latent_dim, f32::NAN);
+        let mut tcb = TokenCommandBuffer::new(&ctx);
         for output in [&output_a, &output_b] {
-            encode_pq_k_transpose_heads(&mut tcb, &codebookb, &codesb, &queryb, output, n_heads, key_rows, row_stride, latent_dim, pq_dim, pq_sub, pq_card, 8, pq_nchunk).expect("encode direct PQ K transpose");
+            encode_pq_k_transpose_heads(
+                &mut tcb, &codebookb, &codesb, &queryb, output, n_heads, key_rows, row_stride,
+                latent_dim, pq_dim, pq_sub, pq_card, 8, pq_nchunk,
+            )
+            .expect("encode direct PQ K transpose");
         }
-        assert_eq!(tcb.dispatch_count(), 2); tcb.commit_and_wait().expect("PQ K transpose command buffer");
-        let mut host = vec![0.0f32; n_heads * latent_dim]; let mut authority = vec![0.0f64; n_heads * latent_dim];
+        assert_eq!(tcb.dispatch_count(), 2);
+        tcb.commit_and_wait()
+            .expect("PQ K transpose command buffer");
+        let mut host = vec![0.0f32; n_heads * latent_dim];
+        let mut authority = vec![0.0f64; n_heads * latent_dim];
         for head in 0..n_heads {
             for col in 0..latent_dim {
-                let chunk = col / pq_dim; let within = col % pq_dim; let mut host_acc = 0.0f32; let mut authority_acc = 0.0f64;
+                let chunk = col / pq_dim;
+                let within = col % pq_dim;
+                let mut host_acc = 0.0f32;
+                let mut authority_acc = 0.0f64;
                 for key_row in 0..key_rows {
-                    let row = head * row_stride + key_row; let code = codes[row * pq_nchunk + chunk] as usize;
-                    let weight = codebook[code * pq_sub + within].to_f32(); let q = query[head * key_rows + key_row];
-                    host_acc = weight.mul_add(q, host_acc); authority_acc += weight as f64 * q as f64;
+                    let row = head * row_stride + key_row;
+                    let code = codes[row * pq_nchunk + chunk] as usize;
+                    let weight = codebook[code * pq_sub + within].to_f32();
+                    let q = query[head * key_rows + key_row];
+                    host_acc = weight.mul_add(q, host_acc);
+                    authority_acc += weight as f64 * q as f64;
                 }
-                host[head * latent_dim + col] = host_acc; authority[head * latent_dim + col] = authority_acc;
+                host[head * latent_dim + col] = host_acc;
+                authority[head * latent_dim + col] = authority_acc;
             }
         }
-        let device_a = read_f32(&output_a, host.len()); let device_b = read_f32(&output_b, host.len());
+        let device_a = read_f32(&output_a, host.len());
+        let device_b = read_f32(&output_b, host.len());
         assert_eq!(
             device_a, device_b,
             "one-thread-per-output reduction must be bit-stable"
-        ); assert_v21_pair("direct PQ K transpose", &host, &device_a, &authority); let mut rejected = TokenCommandBuffer::new(&ctx);
-        let error = encode_pq_k_transpose_heads(&mut rejected, &codebookb, &codesb, &queryb, &output_a, n_heads, key_rows, row_stride, latent_dim, pq_dim, 2, pq_card, 8, pq_nchunk)
+        );
+        assert_v21_pair("direct PQ K transpose", &host, &device_a, &authority);
+        let mut rejected = TokenCommandBuffer::new(&ctx);
+        let error = encode_pq_k_transpose_heads(
+            &mut rejected,
+            &codebookb,
+            &codesb,
+            &queryb,
+            &output_a,
+            n_heads,
+            key_rows,
+            row_stride,
+            latent_dim,
+            pq_dim,
+            2,
+            pq_card,
+            8,
+            pq_nchunk,
+        )
         .expect_err("multi-subspace-like geometry must fail before dispatch");
         assert!(error.to_string().contains("dim == sub"));
         assert_eq!(rejected.dispatch_count(), 0);
-        let error = encode_pq_k_transpose_heads(&mut rejected, &codebookb, &codesb, &queryb, &output_a, n_heads, key_rows, row_stride, latent_dim, pq_dim, pq_sub, pq_card, 7, pq_nchunk)
+        let error = encode_pq_k_transpose_heads(
+            &mut rejected,
+            &codebookb,
+            &codesb,
+            &queryb,
+            &output_a,
+            n_heads,
+            key_rows,
+            row_stride,
+            latent_dim,
+            pq_dim,
+            pq_sub,
+            pq_card,
+            7,
+            pq_nchunk,
+        )
         .expect_err("packed non-byte codes must fail before dispatch");
         assert!(error.to_string().contains("bits=8"));
         assert_eq!(rejected.dispatch_count(), 0);
         let short_codes = ctx
-            .new_buffer_with_bytes_checked(&codes[..codes.len() - 1]).expect("short code test buffer");
-        let error = encode_pq_k_transpose_heads(&mut rejected, &codebookb, &short_codes, &queryb, &output_a, n_heads, key_rows, row_stride, latent_dim, pq_dim, pq_sub, pq_card, 8, pq_nchunk)
+            .new_buffer_with_bytes_checked(&codes[..codes.len() - 1])
+            .expect("short code test buffer");
+        let error = encode_pq_k_transpose_heads(
+            &mut rejected,
+            &codebookb,
+            &short_codes,
+            &queryb,
+            &output_a,
+            n_heads,
+            key_rows,
+            row_stride,
+            latent_dim,
+            pq_dim,
+            pq_sub,
+            pq_card,
+            8,
+            pq_nchunk,
+        )
         .expect_err("undersized PQ codes must fail before dispatch");
         assert!(error.to_string().contains("byte range"));
         assert_eq!(rejected.dispatch_count(), 0);
@@ -11002,131 +11899,246 @@ mod tests {
         let (n_heads, key_rows, row_stride) = (64usize, 192usize, 448usize);
         let (latent_dim, pq_dim, pq_sub, pq_card, pq_nchunk) =
             (512usize, 32usize, 32usize, 256usize, 16usize);
-        let codebook: Vec<half::f16> = (0..pq_card * pq_sub).map(|index| {
+        let codebook: Vec<half::f16> = (0..pq_card * pq_sub)
+            .map(|index| {
                 let signed = ((index * 17 + index / 31) % 257) as i32 - 128;
                 half::f16::from_f32(signed as f32 * (1.0 / 512.0))
             })
             .collect();
         let rows_touched = (n_heads - 1) * row_stride + key_rows;
         assert_eq!(rows_touched, 28_416);
-        let codes: Vec<u8> = (0..rows_touched * pq_nchunk).map(|index| {
-                let row = index / pq_nchunk; let chunk = index % pq_nchunk;
+        let codes: Vec<u8> = (0..rows_touched * pq_nchunk)
+            .map(|index| {
+                let row = index / pq_nchunk;
+                let chunk = index % pq_nchunk;
                 ((row * 11 + chunk * 17 + row / 7) & 255) as u8
             })
             .collect();
-        let query: Vec<f32> = (0..n_heads * key_rows).map(|index| {
+        let query: Vec<f32> = (0..n_heads * key_rows)
+            .map(|index| {
                 let signed = ((index * 13 + index / 29) % 127) as i32 - 63;
                 signed as f32 * (1.0 / 128.0)
             })
             .collect();
         let codebookb = f16_buffer(&ctx, &codebook);
         let codesb = ctx
-            .new_buffer_with_bytes_checked(&codes).expect("flagship PQ codes");
-        let queryb = f32_buffer(&ctx, &query); let output = filled_f32_buffer(&ctx, n_heads * latent_dim, f32::NAN);
+            .new_buffer_with_bytes_checked(&codes)
+            .expect("flagship PQ codes");
+        let queryb = f32_buffer(&ctx, &query);
+        let output = filled_f32_buffer(&ctx, n_heads * latent_dim, f32::NAN);
         let mut tcb = TokenCommandBuffer::new(&ctx);
-        encode_pq_k_transpose_heads(&mut tcb, &codebookb, &codesb, &queryb, &output, n_heads, key_rows, row_stride, latent_dim, pq_dim, pq_sub, pq_card, 8, pq_nchunk).expect("encode flagship direct PQ K transpose");
-        assert_eq!(tcb.dispatch_count(), 1); tcb.commit_and_wait().expect("flagship PQ K transpose command buffer");
-        let mut host = vec![0.0f32; n_heads * latent_dim]; let mut authority = vec![0.0f64; n_heads * latent_dim];
+        encode_pq_k_transpose_heads(
+            &mut tcb, &codebookb, &codesb, &queryb, &output, n_heads, key_rows, row_stride,
+            latent_dim, pq_dim, pq_sub, pq_card, 8, pq_nchunk,
+        )
+        .expect("encode flagship direct PQ K transpose");
+        assert_eq!(tcb.dispatch_count(), 1);
+        tcb.commit_and_wait()
+            .expect("flagship PQ K transpose command buffer");
+        let mut host = vec![0.0f32; n_heads * latent_dim];
+        let mut authority = vec![0.0f64; n_heads * latent_dim];
         for head in 0..n_heads {
             for col in 0..latent_dim {
-                let chunk = col / pq_dim; let within = col % pq_dim; let mut host_acc = 0.0f32; let mut authority_acc = 0.0f64;
+                let chunk = col / pq_dim;
+                let within = col % pq_dim;
+                let mut host_acc = 0.0f32;
+                let mut authority_acc = 0.0f64;
                 for key_row in 0..key_rows {
-                    let row = head * row_stride + key_row; let code = codes[row * pq_nchunk + chunk] as usize;
-                    let weight = codebook[code * pq_sub + within].to_f32(); let q = query[head * key_rows + key_row];
-                    host_acc = weight.mul_add(q, host_acc); authority_acc += weight as f64 * q as f64;
+                    let row = head * row_stride + key_row;
+                    let code = codes[row * pq_nchunk + chunk] as usize;
+                    let weight = codebook[code * pq_sub + within].to_f32();
+                    let q = query[head * key_rows + key_row];
+                    host_acc = weight.mul_add(q, host_acc);
+                    authority_acc += weight as f64 * q as f64;
                 }
-                host[head * latent_dim + col] = host_acc; authority[head * latent_dim + col] = authority_acc;
+                host[head * latent_dim + col] = host_acc;
+                authority[head * latent_dim + col] = authority_acc;
             }
         }
-        assert_v21_pair("flagship direct PQ K transpose", &host, &read_f32(&output, host.len()), &authority);
+        assert_v21_pair(
+            "flagship direct PQ K transpose",
+            &host,
+            &read_f32(&output, host.len()),
+            &authority,
+        );
     }
     #[test]
     fn route_segment_compact_ranked_attention_is_stable_alias_safe_and_v21() {
         let shader = include_str!("../shaders/gravity_pq.metal");
-        assert!(shader.contains("kernel void gravity_glm_compact_ranked_attn(")); let registry = include_str!("metal/mod.rs");
+        assert!(shader.contains("kernel void gravity_glm_compact_ranked_attn("));
+        let registry = include_str!("metal/mod.rs");
         assert!(registry.contains(
             "\"gravity_glm_compact_ranked_attn\" => \"gravity_glm_compact_ranked_attn\""
         ));
         let Ok(ctx) = MetalContext::new() else {
             return;
         };
-        let (n_heads, latent_dim, rope_dim, n_keys) = (2usize, 8usize, 4usize, 10usize); let ranked = [6u32, 2, 5, 9, 8, 0, 3];
+        let (n_heads, latent_dim, rope_dim, n_keys) = (2usize, 8usize, 4usize, 10usize);
+        let ranked = [6u32, 2, 5, 9, 8, 0, 3];
         let scale = 0.5f32;
-        let query_latent: Vec<f32> = (0..n_heads * latent_dim).map(|index| {
+        let query_latent: Vec<f32> = (0..n_heads * latent_dim)
+            .map(|index| {
                 let signed = ((index * 11 + index / 3) % 29) as i32 - 14;
                 signed as f32 * (1.0 / 32.0)
             })
             .collect();
-        let query_rope: Vec<f32> = (0..n_heads * rope_dim).map(|index| {
+        let query_rope: Vec<f32> = (0..n_heads * rope_dim)
+            .map(|index| {
                 let signed = ((index * 7 + 3) % 17) as i32 - 8;
                 signed as f32 * (1.0 / 16.0)
             })
             .collect();
-        let latent_cache: Vec<f32> = (0..n_keys * latent_dim).map(|index| {
+        let latent_cache: Vec<f32> = (0..n_keys * latent_dim)
+            .map(|index| {
                 let signed = ((index * 13 + index / 5) % 37) as i32 - 18;
                 0.75 + signed as f32 * (1.0 / 64.0)
             })
             .collect();
-        let rope_cache: Vec<f32> = (0..n_keys * rope_dim).map(|index| {
+        let rope_cache: Vec<f32> = (0..n_keys * rope_dim)
+            .map(|index| {
                 let signed = ((index * 5 + index / 4) % 23) as i32 - 11;
                 signed as f32 * (1.0 / 32.0)
             })
             .collect();
-        let mut host = vec![0.0f32; n_heads * latent_dim]; let mut authority = vec![0.0f64; n_heads * latent_dim];
+        let mut host = vec![0.0f32; n_heads * latent_dim];
+        let mut authority = vec![0.0f64; n_heads * latent_dim];
         for head in 0..n_heads {
-            let mut scores = vec![0.0f32; ranked.len()]; let mut authority_scores = vec![0.0f64; ranked.len()];
+            let mut scores = vec![0.0f32; ranked.len()];
+            let mut authority_scores = vec![0.0f64; ranked.len()];
             for (slot, &token) in ranked.iter().enumerate() {
-                let token = token as usize; let mut dot = 0.0f32; let mut authority_dot = 0.0f64;
+                let token = token as usize;
+                let mut dot = 0.0f32;
+                let mut authority_dot = 0.0f64;
                 for dim in 0..latent_dim {
-                    let q = query_latent[head * latent_dim + dim]; let k = latent_cache[token * latent_dim + dim]; dot = q.mul_add(k, dot);
+                    let q = query_latent[head * latent_dim + dim];
+                    let k = latent_cache[token * latent_dim + dim];
+                    dot = q.mul_add(k, dot);
                     authority_dot += q as f64 * k as f64;
                 }
                 for dim in 0..rope_dim {
-                    let q = query_rope[head * rope_dim + dim]; let k = rope_cache[token * rope_dim + dim]; dot = q.mul_add(k, dot);
+                    let q = query_rope[head * rope_dim + dim];
+                    let k = rope_cache[token * rope_dim + dim];
+                    dot = q.mul_add(k, dot);
                     authority_dot += q as f64 * k as f64;
                 }
-                scores[slot] = dot * scale; authority_scores[slot] = authority_dot * scale as f64;
+                scores[slot] = dot * scale;
+                authority_scores[slot] = authority_dot * scale as f64;
             }
             let best = scores.iter().copied().fold(f32::NEG_INFINITY, f32::max);
             let authority_best = authority_scores
                 .iter()
-                .copied() .fold(f64::NEG_INFINITY, f64::max);
+                .copied()
+                .fold(f64::NEG_INFINITY, f64::max);
             let exponentials: Vec<f32> = scores.iter().map(|&score| (score - best).exp()).collect();
             let authority_exponentials: Vec<f64> = authority_scores
-                .iter().map(|&score| (score - authority_best).exp()) .collect();
-            let total: f32 = exponentials.iter().sum(); let authority_total: f64 = authority_exponentials.iter().sum();
+                .iter()
+                .map(|&score| (score - authority_best).exp())
+                .collect();
+            let total: f32 = exponentials.iter().sum();
+            let authority_total: f64 = authority_exponentials.iter().sum();
             for dim in 0..latent_dim {
-                let mut acc = 0.0f32; let mut authority_acc = 0.0f64;
+                let mut acc = 0.0f32;
+                let mut authority_acc = 0.0f64;
                 for (slot, &token) in ranked.iter().enumerate() {
-                    let value = latent_cache[token as usize * latent_dim + dim]; acc = (exponentials[slot] / total).mul_add(value, acc);
+                    let value = latent_cache[token as usize * latent_dim + dim];
+                    acc = (exponentials[slot] / total).mul_add(value, acc);
                     authority_acc +=
                         (authority_exponentials[slot] / authority_total) * value as f64;
                 }
-                host[head * latent_dim + dim] = acc; authority[head * latent_dim + dim] = authority_acc;
+                host[head * latent_dim + dim] = acc;
+                authority[head * latent_dim + dim] = authority_acc;
             }
         }
-        let query_latent_a = f32_buffer(&ctx, &query_latent); let query_latent_alias = f32_buffer(&ctx, &query_latent);
-        let query_rope_buffer = f32_buffer(&ctx, &query_rope); let latent_cache_buffer = f32_buffer(&ctx, &latent_cache);
-        let rope_cache_buffer = f32_buffer(&ctx, &rope_cache); let ranked_buffer = u32_buffer(&ctx, &ranked);
+        let query_latent_a = f32_buffer(&ctx, &query_latent);
+        let query_latent_alias = f32_buffer(&ctx, &query_latent);
+        let query_rope_buffer = f32_buffer(&ctx, &query_rope);
+        let latent_cache_buffer = f32_buffer(&ctx, &latent_cache);
+        let rope_cache_buffer = f32_buffer(&ctx, &rope_cache);
+        let ranked_buffer = u32_buffer(&ctx, &ranked);
         let output_a = filled_f32_buffer(&ctx, host.len(), f32::NAN);
-        let output_b = filled_f32_buffer(&ctx, host.len(), f32::NAN); let mut tcb = TokenCommandBuffer::new(&ctx);
+        let output_b = filled_f32_buffer(&ctx, host.len(), f32::NAN);
+        let mut tcb = TokenCommandBuffer::new(&ctx);
         for output in [&output_a, &output_b] {
-            encode_compact_ranked_attention(&mut tcb, &query_latent_a, &query_rope_buffer, &latent_cache_buffer, &rope_cache_buffer, &ranked_buffer, output, n_heads, latent_dim, rope_dim, n_keys, ranked.len(), scale).expect("encode compact ranked attention");
+            encode_compact_ranked_attention(
+                &mut tcb,
+                &query_latent_a,
+                &query_rope_buffer,
+                &latent_cache_buffer,
+                &rope_cache_buffer,
+                &ranked_buffer,
+                output,
+                n_heads,
+                latent_dim,
+                rope_dim,
+                n_keys,
+                ranked.len(),
+                scale,
+            )
+            .expect("encode compact ranked attention");
         }
-        encode_compact_ranked_attention(&mut tcb, &query_latent_alias, &query_rope_buffer, &latent_cache_buffer, &rope_cache_buffer, &ranked_buffer, &query_latent_alias, n_heads, latent_dim, rope_dim, n_keys, ranked.len(), scale).expect("encode in-place compact ranked attention");
-        assert_eq!(tcb.dispatch_count(), 3); tcb.commit_and_wait().expect("compact ranked attention command buffer");
-        let device_a = read_f32(&output_a, host.len()); let device_b = read_f32(&output_b, host.len());
+        encode_compact_ranked_attention(
+            &mut tcb,
+            &query_latent_alias,
+            &query_rope_buffer,
+            &latent_cache_buffer,
+            &rope_cache_buffer,
+            &ranked_buffer,
+            &query_latent_alias,
+            n_heads,
+            latent_dim,
+            rope_dim,
+            n_keys,
+            ranked.len(),
+            scale,
+        )
+        .expect("encode in-place compact ranked attention");
+        assert_eq!(tcb.dispatch_count(), 3);
+        tcb.commit_and_wait()
+            .expect("compact ranked attention command buffer");
+        let device_a = read_f32(&output_a, host.len());
+        let device_b = read_f32(&output_b, host.len());
         let device_alias = read_f32(&query_latent_alias, host.len());
         assert_eq!(device_a, device_b, "repeated dispatch must be bit-stable");
         assert_eq!(
             device_a, device_alias,
             "query/weighted-latent alias must be exact"
-        ); assert_v21_pair("compact ranked attention", &host, &device_a, &authority); let mut rejected = TokenCommandBuffer::new(&ctx);
-        let error = encode_compact_ranked_attention(&mut rejected, &query_latent_a, &query_rope_buffer, &latent_cache_buffer, &rope_cache_buffer, &ranked_buffer, &output_a, n_heads, latent_dim, rope_dim, n_keys, 2049, scale)
+        );
+        assert_v21_pair("compact ranked attention", &host, &device_a, &authority);
+        let mut rejected = TokenCommandBuffer::new(&ctx);
+        let error = encode_compact_ranked_attention(
+            &mut rejected,
+            &query_latent_a,
+            &query_rope_buffer,
+            &latent_cache_buffer,
+            &rope_cache_buffer,
+            &ranked_buffer,
+            &output_a,
+            n_heads,
+            latent_dim,
+            rope_dim,
+            n_keys,
+            2049,
+            scale,
+        )
         .expect_err("oversized selection must fail before dispatch");
         assert!(error.to_string().contains("n_allow <= 2048"));
-        assert_eq!(rejected.dispatch_count(), 0); let short_ranked = u32_buffer(&ctx, &ranked[..ranked.len() - 1]);
-        let error = encode_compact_ranked_attention(&mut rejected, &query_latent_a, &query_rope_buffer, &latent_cache_buffer, &rope_cache_buffer, &short_ranked, &output_a, n_heads, latent_dim, rope_dim, n_keys, ranked.len(), scale)
+        assert_eq!(rejected.dispatch_count(), 0);
+        let short_ranked = u32_buffer(&ctx, &ranked[..ranked.len() - 1]);
+        let error = encode_compact_ranked_attention(
+            &mut rejected,
+            &query_latent_a,
+            &query_rope_buffer,
+            &latent_cache_buffer,
+            &rope_cache_buffer,
+            &short_ranked,
+            &output_a,
+            n_heads,
+            latent_dim,
+            rope_dim,
+            n_keys,
+            ranked.len(),
+            scale,
+        )
         .expect_err("undersized ranked-index buffer must fail before dispatch");
         assert!(error.to_string().contains("byte range"));
         assert_eq!(rejected.dispatch_count(), 0);
@@ -11134,7 +12146,8 @@ mod tests {
     #[test]
     fn route_segment_pq_v_rows_is_deterministic_fail_closed_and_v21() {
         let shader = include_str!("../shaders/gravity_pq.metal");
-        assert!(shader.contains("kernel void gravity_pq_v_rows_heads(")); let registry = include_str!("metal/mod.rs");
+        assert!(shader.contains("kernel void gravity_pq_v_rows_heads("));
+        let registry = include_str!("metal/mod.rs");
         assert!(registry.contains("\"gravity_pq_v_rows_heads\" => \"gravity_pq_v_rows_heads\""));
         let Ok(ctx) = MetalContext::new() else {
             return;
@@ -11151,7 +12164,8 @@ mod tests {
             *dst = half::f16::from_f32(value);
         }
         let rows_touched = (n_heads - 1) * row_stride + value_row_offset + value_rows;
-        let codes: Vec<u8> = (0..rows_touched * pq_nchunk).map(|index| ((index * 5 + index / 3) % 4) as u8)
+        let codes: Vec<u8> = (0..rows_touched * pq_nchunk)
+            .map(|index| ((index * 5 + index / 3) % 4) as u8)
             .collect();
         let weighted_latent = [
             0.75, -1.25, 0.5, -0.625, 1.5, 0.25, -0.375, 0.875, -0.5, 1.25, 0.625, -0.75, 0.375,
@@ -11159,41 +12173,121 @@ mod tests {
         ];
         let codebookb = f16_buffer(&ctx, &codebook);
         let codesb = ctx
-            .new_buffer_with_bytes_checked(&codes).expect("PQ V-row code test buffer");
-        let weightedb = f32_buffer(&ctx, &weighted_latent); let output_a = filled_f32_buffer(&ctx, n_heads * value_rows, f32::NAN);
-        let output_b = filled_f32_buffer(&ctx, n_heads * value_rows, f32::NAN); let mut tcb = TokenCommandBuffer::new(&ctx);
+            .new_buffer_with_bytes_checked(&codes)
+            .expect("PQ V-row code test buffer");
+        let weightedb = f32_buffer(&ctx, &weighted_latent);
+        let output_a = filled_f32_buffer(&ctx, n_heads * value_rows, f32::NAN);
+        let output_b = filled_f32_buffer(&ctx, n_heads * value_rows, f32::NAN);
+        let mut tcb = TokenCommandBuffer::new(&ctx);
         for output in [&output_a, &output_b] {
-            encode_pq_v_rows_heads(&mut tcb, &codebookb, &codesb, &weightedb, output, n_heads, row_stride, value_row_offset, value_rows, latent_dim, pq_dim, pq_sub, pq_card, 8, pq_nchunk).expect("encode direct PQ V rows");
+            encode_pq_v_rows_heads(
+                &mut tcb,
+                &codebookb,
+                &codesb,
+                &weightedb,
+                output,
+                n_heads,
+                row_stride,
+                value_row_offset,
+                value_rows,
+                latent_dim,
+                pq_dim,
+                pq_sub,
+                pq_card,
+                8,
+                pq_nchunk,
+            )
+            .expect("encode direct PQ V rows");
         }
-        assert_eq!(tcb.dispatch_count(), 2); tcb.commit_and_wait().expect("direct PQ V-row command buffer");
-        let mut host = vec![0.0f32; n_heads * value_rows]; let mut authority = vec![0.0f64; n_heads * value_rows];
+        assert_eq!(tcb.dispatch_count(), 2);
+        tcb.commit_and_wait()
+            .expect("direct PQ V-row command buffer");
+        let mut host = vec![0.0f32; n_heads * value_rows];
+        let mut authority = vec![0.0f64; n_heads * value_rows];
         for head in 0..n_heads {
             for value_row in 0..value_rows {
-                let source_row = head * row_stride + value_row_offset + value_row; let mut host_acc = 0.0f32; let mut authority_acc = 0.0f64;
+                let source_row = head * row_stride + value_row_offset + value_row;
+                let mut host_acc = 0.0f32;
+                let mut authority_acc = 0.0f64;
                 for chunk in 0..pq_nchunk {
                     let code = codes[source_row * pq_nchunk + chunk] as usize;
                     for within in 0..pq_sub {
-                        let weight = codebook[code * pq_sub + within].to_f32(); let x = weighted_latent[head * latent_dim + chunk * pq_dim + within];
-                        host_acc = weight.mul_add(x, host_acc); authority_acc += weight as f64 * x as f64;
+                        let weight = codebook[code * pq_sub + within].to_f32();
+                        let x = weighted_latent[head * latent_dim + chunk * pq_dim + within];
+                        host_acc = weight.mul_add(x, host_acc);
+                        authority_acc += weight as f64 * x as f64;
                     }
                 }
-                let output = head * value_rows + value_row; host[output] = host_acc; authority[output] = authority_acc;
+                let output = head * value_rows + value_row;
+                host[output] = host_acc;
+                authority[output] = authority_acc;
             }
         }
-        let device_a = read_f32(&output_a, host.len()); let device_b = read_f32(&output_b, host.len());
+        let device_a = read_f32(&output_a, host.len());
+        let device_b = read_f32(&output_b, host.len());
         assert_eq!(device_a, device_b, "repeated V-row dispatch must be exact");
-        assert_v21_pair("direct PQ V rows", &host, &device_a, &authority); let mut rejected = TokenCommandBuffer::new(&ctx);
-        let error = encode_pq_v_rows_heads(&mut rejected, &codebookb, &codesb, &weightedb, &output_a, n_heads, row_stride, value_row_offset, value_rows, latent_dim, pq_dim, pq_sub, pq_card, 7, pq_nchunk)
+        assert_v21_pair("direct PQ V rows", &host, &device_a, &authority);
+        let mut rejected = TokenCommandBuffer::new(&ctx);
+        let error = encode_pq_v_rows_heads(
+            &mut rejected,
+            &codebookb,
+            &codesb,
+            &weightedb,
+            &output_a,
+            n_heads,
+            row_stride,
+            value_row_offset,
+            value_rows,
+            latent_dim,
+            pq_dim,
+            pq_sub,
+            pq_card,
+            7,
+            pq_nchunk,
+        )
         .expect_err("packed non-byte codes must fail before dispatch");
         assert!(error.to_string().contains("bits=8"));
         assert_eq!(rejected.dispatch_count(), 0);
-        let error = encode_pq_v_rows_heads(&mut rejected, &codebookb, &codesb, &weightedb, &output_a, n_heads, row_stride, value_row_offset + 1, value_rows, latent_dim, pq_dim, pq_sub, pq_card, 8, pq_nchunk)
+        let error = encode_pq_v_rows_heads(
+            &mut rejected,
+            &codebookb,
+            &codesb,
+            &weightedb,
+            &output_a,
+            n_heads,
+            row_stride,
+            value_row_offset + 1,
+            value_rows,
+            latent_dim,
+            pq_dim,
+            pq_sub,
+            pq_card,
+            8,
+            pq_nchunk,
+        )
         .expect_err("out-of-stride value window must fail before dispatch");
         assert!(error.to_string().contains("exceeds row_stride"));
         assert_eq!(rejected.dispatch_count(), 0);
         let short_codes = ctx
-            .new_buffer_with_bytes_checked(&codes[..codes.len() - 1]).expect("short V-row codes");
-        let error = encode_pq_v_rows_heads(&mut rejected, &codebookb, &short_codes, &weightedb, &output_a, n_heads, row_stride, value_row_offset, value_rows, latent_dim, pq_dim, pq_sub, pq_card, 8, pq_nchunk)
+            .new_buffer_with_bytes_checked(&codes[..codes.len() - 1])
+            .expect("short V-row codes");
+        let error = encode_pq_v_rows_heads(
+            &mut rejected,
+            &codebookb,
+            &short_codes,
+            &weightedb,
+            &output_a,
+            n_heads,
+            row_stride,
+            value_row_offset,
+            value_rows,
+            latent_dim,
+            pq_dim,
+            pq_sub,
+            pq_card,
+            8,
+            pq_nchunk,
+        )
         .expect_err("undersized V-row codes must fail before dispatch");
         assert!(error.to_string().contains("byte range"));
         assert_eq!(rejected.dispatch_count(), 0);
@@ -11207,50 +12301,93 @@ mod tests {
             (64usize, 448usize, 192usize, 256usize);
         let (latent_dim, pq_dim, pq_sub, pq_card, pq_nchunk) =
             (512usize, 32usize, 32usize, 256usize, 16usize);
-        let codebook: Vec<half::f16> = (0..pq_card * pq_sub).map(|index| {
+        let codebook: Vec<half::f16> = (0..pq_card * pq_sub)
+            .map(|index| {
                 let signed = ((index * 19 + index / 23) % 257) as i32 - 128;
                 half::f16::from_f32(signed as f32 * (1.0 / 512.0))
             })
             .collect();
         let rows_touched = (n_heads - 1) * row_stride + value_row_offset + value_rows;
         assert_eq!(rows_touched, 28_672);
-        let codes: Vec<u8> = (0..rows_touched * pq_nchunk).map(|index| {
-                let row = index / pq_nchunk; let chunk = index % pq_nchunk;
+        let codes: Vec<u8> = (0..rows_touched * pq_nchunk)
+            .map(|index| {
+                let row = index / pq_nchunk;
+                let chunk = index % pq_nchunk;
                 ((row * 13 + chunk * 29 + row / 11) & 255) as u8
             })
             .collect();
-        let weighted_latent: Vec<f32> = (0..n_heads * latent_dim).map(|index| {
+        let weighted_latent: Vec<f32> = (0..n_heads * latent_dim)
+            .map(|index| {
                 let signed = ((index * 17 + index / 31) % 127) as i32 - 63;
                 signed as f32 * (1.0 / 128.0)
             })
             .collect();
         let codebookb = f16_buffer(&ctx, &codebook);
         let codesb = ctx
-            .new_buffer_with_bytes_checked(&codes).expect("flagship V-row codes");
+            .new_buffer_with_bytes_checked(&codes)
+            .expect("flagship V-row codes");
         let weightedb = f32_buffer(&ctx, &weighted_latent);
-        let output = filled_f32_buffer(&ctx, n_heads * value_rows, f32::NAN); let mut tcb = TokenCommandBuffer::new(&ctx);
-        encode_pq_v_rows_heads(&mut tcb, &codebookb, &codesb, &weightedb, &output, n_heads, row_stride, value_row_offset, value_rows, latent_dim, pq_dim, pq_sub, pq_card, 8, pq_nchunk).expect("encode flagship direct PQ V rows");
-        assert_eq!(tcb.dispatch_count(), 1); tcb.commit_and_wait().expect("flagship direct PQ V-row command buffer");
-        let mut host = vec![0.0f32; n_heads * value_rows]; let mut authority = vec![0.0f64; n_heads * value_rows];
+        let output = filled_f32_buffer(&ctx, n_heads * value_rows, f32::NAN);
+        let mut tcb = TokenCommandBuffer::new(&ctx);
+        encode_pq_v_rows_heads(
+            &mut tcb,
+            &codebookb,
+            &codesb,
+            &weightedb,
+            &output,
+            n_heads,
+            row_stride,
+            value_row_offset,
+            value_rows,
+            latent_dim,
+            pq_dim,
+            pq_sub,
+            pq_card,
+            8,
+            pq_nchunk,
+        )
+        .expect("encode flagship direct PQ V rows");
+        assert_eq!(tcb.dispatch_count(), 1);
+        tcb.commit_and_wait()
+            .expect("flagship direct PQ V-row command buffer");
+        let mut host = vec![0.0f32; n_heads * value_rows];
+        let mut authority = vec![0.0f64; n_heads * value_rows];
         for head in 0..n_heads {
             for value_row in 0..value_rows {
-                let source_row = head * row_stride + value_row_offset + value_row; let mut host_acc = 0.0f32; let mut authority_acc = 0.0f64;
+                let source_row = head * row_stride + value_row_offset + value_row;
+                let mut host_acc = 0.0f32;
+                let mut authority_acc = 0.0f64;
                 for chunk in 0..pq_nchunk {
                     let code = codes[source_row * pq_nchunk + chunk] as usize;
                     for within in 0..pq_sub {
-                        let weight = codebook[code * pq_sub + within].to_f32(); let x = weighted_latent[head * latent_dim + chunk * pq_dim + within];
-                        host_acc = weight.mul_add(x, host_acc); authority_acc += weight as f64 * x as f64;
+                        let weight = codebook[code * pq_sub + within].to_f32();
+                        let x = weighted_latent[head * latent_dim + chunk * pq_dim + within];
+                        host_acc = weight.mul_add(x, host_acc);
+                        authority_acc += weight as f64 * x as f64;
                     }
                 }
-                let output_index = head * value_rows + value_row; host[output_index] = host_acc; authority[output_index] = authority_acc;
+                let output_index = head * value_rows + value_row;
+                host[output_index] = host_acc;
+                authority[output_index] = authority_acc;
             }
         }
-        assert_v21_pair("flagship direct PQ V rows", &host, &read_f32(&output, host.len()), &authority);
+        assert_v21_pair(
+            "flagship direct PQ V rows",
+            &host,
+            &read_f32(&output, host.len()),
+            &authority,
+        );
     }
     #[test]
     fn compact_absorbed_three_dispatch_chain_preserves_ranked_v21_contract() {
-        const TOKENS: usize = 11; const HEADS: usize = 3; const LATENT: usize = 17; const NOPE: usize = 13;
-        const ROPE: usize = 4; const VALUE: usize = 9; const ROW_STRIDE: usize = NOPE + VALUE; const CARD: usize = 256;
+        const TOKENS: usize = 11;
+        const HEADS: usize = 3;
+        const LATENT: usize = 17;
+        const NOPE: usize = 13;
+        const ROPE: usize = 4;
+        const VALUE: usize = 9;
+        const ROW_STRIDE: usize = NOPE + VALUE;
+        const CARD: usize = 256;
         const SELECTED: usize = 7;
         let Ok(ctx) = MetalContext::new() else {
             return;
@@ -11261,23 +12398,32 @@ mod tests {
         let query_rope = deterministic_fixture_f32(0x3141_5926, HEADS * ROPE, 0.5);
         let key_weight: Vec<f32> =
             deterministic_fixture_f32(0x2718_2818, HEADS * NOPE * LATENT, 0.35)
-                .into_iter().map(|value| half::f16::from_f32(value).to_f32()) .collect();
+                .into_iter()
+                .map(|value| half::f16::from_f32(value).to_f32())
+                .collect();
         let value_weight: Vec<f32> =
             deterministic_fixture_f32(0xdead_beef, HEADS * VALUE * LATENT, 0.4)
-                .into_iter().map(|value| half::f16::from_f32(value).to_f32()) .collect();
-        let ranked = [6u32, 2, 5, 9, 8, 0, 3]; let mut ascending = ranked; ascending.sort_unstable();
+                .into_iter()
+                .map(|value| half::f16::from_f32(value).to_f32())
+                .collect();
+        let ranked = [6u32, 2, 5, 9, 8, 0, 3];
+        let mut ascending = ranked;
+        ascending.sort_unstable();
         assert_eq!(ascending, [0, 2, 3, 5, 6, 8, 9]);
-        let mut codebook = vec![half::f16::ZERO; CARD * LATENT]; let mut codes = vec![0u8; HEADS * ROW_STRIDE];
+        let mut codebook = vec![half::f16::ZERO; CARD * LATENT];
+        let mut codes = vec![0u8; HEADS * ROW_STRIDE];
         for head in 0..HEADS {
             for key_row in 0..NOPE {
-                let source_row = head * ROW_STRIDE + key_row; codes[source_row] = source_row as u8;
+                let source_row = head * ROW_STRIDE + key_row;
+                codes[source_row] = source_row as u8;
                 for latent in 0..LATENT {
                     codebook[source_row * LATENT + latent] =
                         half::f16::from_f32(key_weight[(head * NOPE + key_row) * LATENT + latent]);
                 }
             }
             for value_row in 0..VALUE {
-                let source_row = head * ROW_STRIDE + NOPE + value_row; codes[source_row] = source_row as u8;
+                let source_row = head * ROW_STRIDE + NOPE + value_row;
+                codes[source_row] = source_row as u8;
                 for latent in 0..LATENT {
                     codebook[source_row * LATENT + latent] = half::f16::from_f32(
                         value_weight[(head * VALUE + value_row) * LATENT + latent],
@@ -11286,47 +12432,69 @@ mod tests {
             }
         }
         let selected_ascending: Vec<usize> = ascending
-            .iter().map(|&position| position as usize) .collect();
-        let scale = ((NOPE + ROPE) as f32).powf(-0.5); let mut expanded = vec![0.0f32; HEADS * VALUE];
+            .iter()
+            .map(|&position| position as usize)
+            .collect();
+        let scale = ((NOPE + ROPE) as f32).powf(-0.5);
+        let mut expanded = vec![0.0f32; HEADS * VALUE];
         let mut authority = vec![0.0f64; HEADS * VALUE];
         for head in 0..HEADS {
-            let mut logits = vec![0.0f32; SELECTED]; let mut authority_logits = vec![0.0f64; SELECTED];
-            let mut expanded_values = vec![0.0f32; SELECTED * VALUE]; let mut authority_values = vec![0.0f64; SELECTED * VALUE];
+            let mut logits = vec![0.0f32; SELECTED];
+            let mut authority_logits = vec![0.0f64; SELECTED];
+            let mut expanded_values = vec![0.0f32; SELECTED * VALUE];
+            let mut authority_values = vec![0.0f64; SELECTED * VALUE];
             for (slot, &token) in selected_ascending.iter().enumerate() {
-                let mut dot = 0.0f32; let mut authority_dot = 0.0f64;
+                let mut dot = 0.0f32;
+                let mut authority_dot = 0.0f64;
                 for key_row in 0..NOPE {
-                    let mut key = 0.0f32; let mut authority_key = 0.0f64;
+                    let mut key = 0.0f32;
+                    let mut authority_key = 0.0f64;
                     for latent in 0..LATENT {
-                        let weight = key_weight[(head * NOPE + key_row) * LATENT + latent]; let value = latents[token * LATENT + latent];
-                        key = weight.mul_add(value, key); authority_key += weight as f64 * value as f64;
+                        let weight = key_weight[(head * NOPE + key_row) * LATENT + latent];
+                        let value = latents[token * LATENT + latent];
+                        key = weight.mul_add(value, key);
+                        authority_key += weight as f64 * value as f64;
                     }
-                    let query = query_nope[head * NOPE + key_row]; dot = query.mul_add(key, dot);
+                    let query = query_nope[head * NOPE + key_row];
+                    dot = query.mul_add(key, dot);
                     authority_dot += query as f64 * authority_key;
                 }
                 for rope in 0..ROPE {
-                    let query = query_rope[head * ROPE + rope]; let key = rope_keys[token * ROPE + rope]; dot = query.mul_add(key, dot);
+                    let query = query_rope[head * ROPE + rope];
+                    let key = rope_keys[token * ROPE + rope];
+                    dot = query.mul_add(key, dot);
                     authority_dot += query as f64 * key as f64;
                 }
-                logits[slot] = dot * scale; authority_logits[slot] = authority_dot * scale as f64;
+                logits[slot] = dot * scale;
+                authority_logits[slot] = authority_dot * scale as f64;
                 for value_row in 0..VALUE {
-                    let mut value = 0.0f32; let mut authority_value = 0.0f64;
+                    let mut value = 0.0f32;
+                    let mut authority_value = 0.0f64;
                     for latent in 0..LATENT {
-                        let weight = value_weight[(head * VALUE + value_row) * LATENT + latent]; let input = latents[token * LATENT + latent];
-                        value = weight.mul_add(input, value); authority_value += weight as f64 * input as f64;
+                        let weight = value_weight[(head * VALUE + value_row) * LATENT + latent];
+                        let input = latents[token * LATENT + latent];
+                        value = weight.mul_add(input, value);
+                        authority_value += weight as f64 * input as f64;
                     }
-                    expanded_values[slot * VALUE + value_row] = value; authority_values[slot * VALUE + value_row] = authority_value;
+                    expanded_values[slot * VALUE + value_row] = value;
+                    authority_values[slot * VALUE + value_row] = authority_value;
                 }
             }
             let best = logits.iter().copied().fold(f32::NEG_INFINITY, f32::max);
             let authority_best = authority_logits
                 .iter()
-                .copied() .fold(f64::NEG_INFINITY, f64::max);
+                .copied()
+                .fold(f64::NEG_INFINITY, f64::max);
             let exponentials: Vec<f32> = logits.iter().map(|&score| (score - best).exp()).collect();
             let authority_exponentials: Vec<f64> = authority_logits
-                .iter().map(|&score| (score - authority_best).exp()) .collect();
-            let total: f32 = exponentials.iter().sum(); let authority_total: f64 = authority_exponentials.iter().sum();
+                .iter()
+                .map(|&score| (score - authority_best).exp())
+                .collect();
+            let total: f32 = exponentials.iter().sum();
+            let authority_total: f64 = authority_exponentials.iter().sum();
             for slot in 0..SELECTED {
-                let probability = exponentials[slot] / total; let authority_probability = authority_exponentials[slot] / authority_total;
+                let probability = exponentials[slot] / total;
+                let authority_probability = authority_exponentials[slot] / authority_total;
                 for value_row in 0..VALUE {
                     let output = head * VALUE + value_row;
                     expanded[output] = probability
@@ -11338,32 +12506,93 @@ mod tests {
         }
         let codebookb = f16_buffer(&ctx, &codebook);
         let codesb = ctx
-            .new_buffer_with_bytes_checked(&codes).expect("chain direct-u8 codes");
-        let query_nopeb = f32_buffer(&ctx, &query_nope); let query_ropeb = f32_buffer(&ctx, &query_rope);
-        let latentsb = f32_buffer(&ctx, &latents); let rope_keysb = f32_buffer(&ctx, &rope_keys);
-        let rankedb = u32_buffer(&ctx, &ranked); let ascendingb = u32_buffer(&ctx, &ascending);
+            .new_buffer_with_bytes_checked(&codes)
+            .expect("chain direct-u8 codes");
+        let query_nopeb = f32_buffer(&ctx, &query_nope);
+        let query_ropeb = f32_buffer(&ctx, &query_rope);
+        let latentsb = f32_buffer(&ctx, &latents);
+        let rope_keysb = f32_buffer(&ctx, &rope_keys);
+        let rankedb = u32_buffer(&ctx, &ranked);
+        let ascendingb = u32_buffer(&ctx, &ascending);
         let query_latent_ranked = filled_f32_buffer(&ctx, HEADS * LATENT, f32::NAN);
         let query_latent_ascending = filled_f32_buffer(&ctx, HEADS * LATENT, f32::NAN);
         let context_ranked = filled_f32_buffer(&ctx, HEADS * VALUE, f32::NAN);
-        let context_ascending = filled_f32_buffer(&ctx, HEADS * VALUE, f32::NAN); let mut tcb = TokenCommandBuffer::new(&ctx);
+        let context_ascending = filled_f32_buffer(&ctx, HEADS * VALUE, f32::NAN);
+        let mut tcb = TokenCommandBuffer::new(&ctx);
         for (indices, query_latent, context) in [
             (&rankedb, &query_latent_ranked, &context_ranked),
             (&ascendingb, &query_latent_ascending, &context_ascending),
         ] {
-            encode_pq_k_transpose_heads(&mut tcb, &codebookb, &codesb, &query_nopeb, query_latent, HEADS, NOPE, ROW_STRIDE, LATENT, LATENT, LATENT, CARD, 8, 1).expect("encode chain K transpose");
-            encode_compact_ranked_attention(&mut tcb, query_latent, &query_ropeb, &latentsb, &rope_keysb, indices, query_latent, HEADS, LATENT, ROPE, TOKENS, SELECTED, scale).expect("encode chain compact ranked attention");
-            encode_pq_v_rows_heads(&mut tcb, &codebookb, &codesb, query_latent, context, HEADS, ROW_STRIDE, NOPE, VALUE, LATENT, LATENT, LATENT, CARD, 8, 1).expect("encode chain direct PQ V rows");
+            encode_pq_k_transpose_heads(
+                &mut tcb,
+                &codebookb,
+                &codesb,
+                &query_nopeb,
+                query_latent,
+                HEADS,
+                NOPE,
+                ROW_STRIDE,
+                LATENT,
+                LATENT,
+                LATENT,
+                CARD,
+                8,
+                1,
+            )
+            .expect("encode chain K transpose");
+            encode_compact_ranked_attention(
+                &mut tcb,
+                query_latent,
+                &query_ropeb,
+                &latentsb,
+                &rope_keysb,
+                indices,
+                query_latent,
+                HEADS,
+                LATENT,
+                ROPE,
+                TOKENS,
+                SELECTED,
+                scale,
+            )
+            .expect("encode chain compact ranked attention");
+            encode_pq_v_rows_heads(
+                &mut tcb,
+                &codebookb,
+                &codesb,
+                query_latent,
+                context,
+                HEADS,
+                ROW_STRIDE,
+                NOPE,
+                VALUE,
+                LATENT,
+                LATENT,
+                LATENT,
+                CARD,
+                8,
+                1,
+            )
+            .expect("encode chain direct PQ V rows");
         }
-        assert_eq!(tcb.dispatch_count(), 6); tcb.commit_and_wait().expect("compact absorbed three-dispatch chains");
+        assert_eq!(tcb.dispatch_count(), 6);
+        tcb.commit_and_wait()
+            .expect("compact absorbed three-dispatch chains");
         let ranked_context = read_f32(&context_ranked, expanded.len());
-        let ascending_context = read_f32(&context_ascending, expanded.len()); let mut bounds = Bounds::continuous_only(); bounds.top_k = 5;
+        let ascending_context = read_f32(&context_ascending, expanded.len());
+        let mut bounds = Bounds::continuous_only();
+        bounds.top_k = 5;
         let ranked_pair = score_pair(&expanded, &ranked_context, &authority, &bounds);
-        assert!(ranked_pair.pass, "ranked compact chain must pass V2.1: {ranked_pair:#?}");
+        assert!(
+            ranked_pair.pass,
+            "ranked compact chain must pass V2.1: {ranked_pair:#?}"
+        );
         assert!(
             ranked_pair.device.discrete.greedy_match
                 && ranked_pair.device.discrete.top_k_exact_match,
             "ranked chain final-context decisions must be exact"
-        ); let ascending_pair = score_pair(&expanded, &ascending_context, &authority, &bounds);
+        );
+        let ascending_pair = score_pair(&expanded, &ascending_context, &authority, &bounds);
         assert!(
             ascending_pair.pass,
             "the f16-codebook/FMA chain's ascending diagnostic must remain \
@@ -11376,8 +12605,14 @@ mod tests {
     }
     #[test]
     fn compact_absorbed_post_score_dag_passes_v21_without_readback() {
-        const TOKENS: usize = 5; const HEADS: usize = 2; const LATENT: usize = 8; const NOPE: usize = 3;
-        const ROPE: usize = 2; const VALUE: usize = 4; const CONTEXT: usize = HEADS * VALUE; const ROW_STRIDE: usize = NOPE + VALUE;
+        const TOKENS: usize = 5;
+        const HEADS: usize = 2;
+        const LATENT: usize = 8;
+        const NOPE: usize = 3;
+        const ROPE: usize = 2;
+        const VALUE: usize = 4;
+        const CONTEXT: usize = HEADS * VALUE;
+        const ROW_STRIDE: usize = NOPE + VALUE;
         const CARD: usize = 256;
         let Ok(ctx) = MetalContext::new() else {
             return;
@@ -11385,12 +12620,16 @@ mod tests {
         let latents = deterministic_fixture_f32(0x1357_2468, TOKENS * LATENT, 0.7);
         let rope_keys = deterministic_fixture_f32(0x2468_1357, TOKENS * ROPE, 0.5);
         let query_nope = deterministic_fixture_f32(0xabcd_0123, HEADS * NOPE, 0.6);
-        let query_rope = deterministic_fixture_f32(0x7654_3210, HEADS * ROPE, 0.4); let ranked = [4u32, 1, 3];
-        let scale = ((NOPE + ROPE) as f32).powf(-0.5); let mut kv_codebook = vec![half::f16::ZERO; CARD * LATENT];
+        let query_rope = deterministic_fixture_f32(0x7654_3210, HEADS * ROPE, 0.4);
+        let ranked = [4u32, 1, 3];
+        let scale = ((NOPE + ROPE) as f32).powf(-0.5);
+        let mut kv_codebook = vec![half::f16::ZERO; CARD * LATENT];
         let mut kv_codes = vec![0u8; HEADS * ROW_STRIDE];
         let kv_weights: Vec<f32> =
             deterministic_fixture_f32(0xcafe_babe, HEADS * ROW_STRIDE * LATENT, 0.3)
-                .into_iter().map(|value| half::f16::from_f32(value).to_f32()) .collect();
+                .into_iter()
+                .map(|value| half::f16::from_f32(value).to_f32())
+                .collect();
         for row in 0..HEADS * ROW_STRIDE {
             kv_codes[row] = row as u8;
             for latent in 0..LATENT {
@@ -11398,24 +12637,30 @@ mod tests {
                     half::f16::from_f32(kv_weights[row * LATENT + latent]);
             }
         }
-        let mut o_codebook = vec![half::f16::ZERO; CARD * CONTEXT]; let mut o_codes = vec![0u8; CONTEXT + 4];
+        let mut o_codebook = vec![half::f16::ZERO; CARD * CONTEXT];
+        let mut o_codes = vec![0u8; CONTEXT + 4];
         for row in 0..CONTEXT {
-            o_codes[row] = row as u8; o_codebook[row * CONTEXT + row] = half::f16::ONE;
+            o_codes[row] = row as u8;
+            o_codebook[row * CONTEXT + row] = half::f16::ONE;
         }
-        let mut host_query_latent = vec![0.0f32; HEADS * LATENT]; let mut authority_query_latent = vec![0.0f64; HEADS * LATENT];
+        let mut host_query_latent = vec![0.0f32; HEADS * LATENT];
+        let mut authority_query_latent = vec![0.0f64; HEADS * LATENT];
         for head in 0..HEADS {
             for latent in 0..LATENT {
                 for key_row in 0..NOPE {
                     let weight = kv_weights[(head * ROW_STRIDE + key_row) * LATENT + latent];
-                    let query = query_nope[head * NOPE + key_row]; let output = head * LATENT + latent;
+                    let query = query_nope[head * NOPE + key_row];
+                    let output = head * LATENT + latent;
                     host_query_latent[output] = weight.mul_add(query, host_query_latent[output]);
                     authority_query_latent[output] += weight as f64 * query as f64;
                 }
             }
         }
-        let mut host_weighted = vec![0.0f32; HEADS * LATENT]; let mut authority_weighted = vec![0.0f64; HEADS * LATENT];
+        let mut host_weighted = vec![0.0f32; HEADS * LATENT];
+        let mut authority_weighted = vec![0.0f64; HEADS * LATENT];
         for head in 0..HEADS {
-            let mut logits = vec![0.0f32; ranked.len()]; let mut authority_logits = vec![0.0f64; ranked.len()];
+            let mut logits = vec![0.0f32; ranked.len()];
+            let mut authority_logits = vec![0.0f64; ranked.len()];
             for (slot, &token) in ranked.iter().enumerate() {
                 let token = token as usize;
                 for latent in 0..LATENT {
@@ -11430,16 +12675,21 @@ mod tests {
                     authority_logits[slot] += query_rope[head * ROPE + rope] as f64
                         * rope_keys[token * ROPE + rope] as f64;
                 }
-                logits[slot] *= scale; authority_logits[slot] *= scale as f64;
+                logits[slot] *= scale;
+                authority_logits[slot] *= scale as f64;
             }
             let best = logits.iter().copied().fold(f32::NEG_INFINITY, f32::max);
             let authority_best = authority_logits
                 .iter()
-                .copied() .fold(f64::NEG_INFINITY, f64::max);
+                .copied()
+                .fold(f64::NEG_INFINITY, f64::max);
             let exponentials: Vec<f32> = logits.iter().map(|&score| (score - best).exp()).collect();
             let authority_exponentials: Vec<f64> = authority_logits
-                .iter().map(|&score| (score - authority_best).exp()) .collect();
-            let total: f32 = exponentials.iter().sum(); let authority_total: f64 = authority_exponentials.iter().sum();
+                .iter()
+                .map(|&score| (score - authority_best).exp())
+                .collect();
+            let total: f32 = exponentials.iter().sum();
+            let authority_total: f64 = authority_exponentials.iter().sum();
             for (slot, &token) in ranked.iter().enumerate() {
                 let token = token as usize;
                 for latent in 0..LATENT {
@@ -11451,10 +12701,12 @@ mod tests {
                 }
             }
         }
-        let mut host = vec![0.0f32; CONTEXT]; let mut authority = vec![0.0f64; CONTEXT];
+        let mut host = vec![0.0f32; CONTEXT];
+        let mut authority = vec![0.0f64; CONTEXT];
         for head in 0..HEADS {
             for value_row in 0..VALUE {
-                let source_row = head * ROW_STRIDE + NOPE + value_row; let output = head * VALUE + value_row;
+                let source_row = head * ROW_STRIDE + NOPE + value_row;
+                let output = head * VALUE + value_row;
                 for latent in 0..LATENT {
                     let weight = kv_weights[source_row * LATENT + latent];
                     host[output] =
@@ -11465,18 +12717,24 @@ mod tests {
         }
         let kv_codebookb = f16_buffer(&ctx, &kv_codebook);
         let kv_codesb = ctx
-            .new_buffer_with_bytes_checked(&kv_codes).expect("five-dispatch KV codes");
+            .new_buffer_with_bytes_checked(&kv_codes)
+            .expect("five-dispatch KV codes");
         let o_codebookb = f16_buffer(&ctx, &o_codebook);
         let o_codesb = ctx
-            .new_buffer_with_bytes_checked(&o_codes).expect("five-dispatch o_proj codes");
-        let query_nopeb = f32_buffer(&ctx, &query_nope); let query_ropeb = f32_buffer(&ctx, &query_rope);
+            .new_buffer_with_bytes_checked(&o_codes)
+            .expect("five-dispatch o_proj codes");
+        let query_nopeb = f32_buffer(&ctx, &query_nope);
+        let query_ropeb = f32_buffer(&ctx, &query_rope);
         let latent_cacheb = filled_f32_buffer(&ctx, TOKENS * LATENT, f32::NAN);
-        let rope_cacheb = filled_f32_buffer(&ctx, TOKENS * ROPE, f32::NAN); write_f32(&latent_cacheb, &latents[..(TOKENS - 1) * LATENT]);
+        let rope_cacheb = filled_f32_buffer(&ctx, TOKENS * ROPE, f32::NAN);
+        write_f32(&latent_cacheb, &latents[..(TOKENS - 1) * LATENT]);
         write_f32(&rope_cacheb, &rope_keys[..(TOKENS - 1) * ROPE]);
         let current_latentb = f32_buffer(&ctx, &latents[(TOKENS - 1) * LATENT..TOKENS * LATENT]);
         let current_ropeb = f32_buffer(&ctx, &rope_keys[(TOKENS - 1) * ROPE..TOKENS * ROPE]);
-        let rankedb = u32_buffer(&ctx, &ranked); let query_latentb = filled_f32_buffer(&ctx, HEADS * LATENT, f32::NAN);
-        let contextb = filled_f32_buffer(&ctx, CONTEXT, f32::NAN); let hiddenb = filled_f32_buffer(&ctx, CONTEXT, f32::NAN);
+        let rankedb = u32_buffer(&ctx, &ranked);
+        let query_latentb = filled_f32_buffer(&ctx, HEADS * LATENT, f32::NAN);
+        let contextb = filled_f32_buffer(&ctx, CONTEXT, f32::NAN);
+        let hiddenb = filled_f32_buffer(&ctx, CONTEXT, f32::NAN);
         let kv_params = crate::gravity_glm::gpu::PqParams {
             dim: LATENT as u32,
             subspaces: 1,
@@ -11498,25 +12756,101 @@ mod tests {
             bits: 8,
         };
         let mut tcb = TokenCommandBuffer::new(&ctx);
-        encode_mla_append_compact(&mut tcb, &current_latentb, &current_ropeb, &latent_cacheb, &rope_cacheb, LATENT, ROPE, TOKENS - 1).expect("encode compact append");
-        encode_pq_k_transpose_heads(&mut tcb, &kv_codebookb, &kv_codesb, &query_nopeb, &query_latentb, HEADS, NOPE, ROW_STRIDE, LATENT, LATENT, LATENT, CARD, 8, 1).expect("encode absorbed K");
-        encode_compact_ranked_attention(&mut tcb, &query_latentb, &query_ropeb, &latent_cacheb, &rope_cacheb, &rankedb, &query_latentb, HEADS, LATENT, ROPE, TOKENS, ranked.len(), scale).expect("encode ranked compact attention");
-        encode_pq_v_rows_heads(&mut tcb, &kv_codebookb, &kv_codesb, &query_latentb, &contextb, HEADS, ROW_STRIDE, NOPE, VALUE, LATENT, LATENT, LATENT, CARD, 8, 1).expect("encode absorbed V");
-        encode_pq_matvec_device(&mut tcb, &o_codebookb, &o_codesb, o_params, &contextb, &hiddenb).expect("encode unchanged o_proj");
-        assert_eq!(tcb.dispatch_count(), 5); tcb.commit_and_wait().expect("five-dispatch compact attention DAG");
+        encode_mla_append_compact(
+            &mut tcb,
+            &current_latentb,
+            &current_ropeb,
+            &latent_cacheb,
+            &rope_cacheb,
+            LATENT,
+            ROPE,
+            TOKENS - 1,
+        )
+        .expect("encode compact append");
+        encode_pq_k_transpose_heads(
+            &mut tcb,
+            &kv_codebookb,
+            &kv_codesb,
+            &query_nopeb,
+            &query_latentb,
+            HEADS,
+            NOPE,
+            ROW_STRIDE,
+            LATENT,
+            LATENT,
+            LATENT,
+            CARD,
+            8,
+            1,
+        )
+        .expect("encode absorbed K");
+        encode_compact_ranked_attention(
+            &mut tcb,
+            &query_latentb,
+            &query_ropeb,
+            &latent_cacheb,
+            &rope_cacheb,
+            &rankedb,
+            &query_latentb,
+            HEADS,
+            LATENT,
+            ROPE,
+            TOKENS,
+            ranked.len(),
+            scale,
+        )
+        .expect("encode ranked compact attention");
+        encode_pq_v_rows_heads(
+            &mut tcb,
+            &kv_codebookb,
+            &kv_codesb,
+            &query_latentb,
+            &contextb,
+            HEADS,
+            ROW_STRIDE,
+            NOPE,
+            VALUE,
+            LATENT,
+            LATENT,
+            LATENT,
+            CARD,
+            8,
+            1,
+        )
+        .expect("encode absorbed V");
+        encode_pq_matvec_device(
+            &mut tcb,
+            &o_codebookb,
+            &o_codesb,
+            o_params,
+            &contextb,
+            &hiddenb,
+        )
+        .expect("encode unchanged o_proj");
+        assert_eq!(tcb.dispatch_count(), 5);
+        tcb.commit_and_wait()
+            .expect("five-dispatch compact attention DAG");
         assert_eq!(read_f32(&latent_cacheb, latents.len()), latents);
         assert_eq!(read_f32(&rope_cacheb, rope_keys.len()), rope_keys);
-        let device = read_f32(&hiddenb, CONTEXT); let mut bounds = Bounds::continuous_only(); bounds.top_k = 5;
+        let device = read_f32(&hiddenb, CONTEXT);
+        let mut bounds = Bounds::continuous_only();
+        bounds.top_k = 5;
         let pair = score_pair(&host, &device, &authority, &bounds);
         assert!(pair.pass, "five-dispatch compact DAG V2.1: {pair:#?}");
-        assert!(pair.device.discrete.greedy_match && pair.device.discrete.top_k_exact_match, "five-dispatch final decisions must be exact"); let replay_latent_cache = filled_f32_buffer(&ctx, TOKENS * LATENT, f32::NAN);
+        assert!(
+            pair.device.discrete.greedy_match && pair.device.discrete.top_k_exact_match,
+            "five-dispatch final decisions must be exact"
+        );
+        let replay_latent_cache = filled_f32_buffer(&ctx, TOKENS * LATENT, f32::NAN);
         let replay_rope_cache = filled_f32_buffer(&ctx, TOKENS * ROPE, f32::NAN);
         write_f32(&replay_latent_cache, &latents[..(TOKENS - 1) * LATENT]);
         write_f32(&replay_rope_cache, &rope_keys[..(TOKENS - 1) * ROPE]);
         let replay_query_latent = filled_f32_buffer(&ctx, HEADS * LATENT, f32::NAN);
-        let replay_context = filled_f32_buffer(&ctx, CONTEXT, f32::NAN); let replay_hidden = filled_f32_buffer(&ctx, CONTEXT, f32::NAN);
+        let replay_context = filled_f32_buffer(&ctx, CONTEXT, f32::NAN);
+        let replay_hidden = filled_f32_buffer(&ctx, CONTEXT, f32::NAN);
         let replay_scores = f32_buffer(&ctx, &[0.0, 4.0, 1.0, 3.0, 5.0]);
-        let replay_ranked = u32_buffer(&ctx, &vec![u32::MAX; ranked.len()]); let replay_residual = filled_f32_buffer(&ctx, CONTEXT, 0.0);
+        let replay_ranked = u32_buffer(&ctx, &vec![u32::MAX; ranked.len()]);
+        let replay_residual = filled_f32_buffer(&ctx, CONTEXT, 0.0);
         let replay_inputs = CompactAttentionReplayInputs {
             layer: 0,
             hidden: CONTEXT,
@@ -11547,23 +12881,37 @@ mod tests {
             output: &replay_hidden,
             residual: Some(&replay_residual),
         };
-        let replay = build_compact_attention_replay_graph(&ctx, &replay_inputs, TOKENS - 1, TOKENS, ranked.len()).expect("capture seven-dispatch post-score graph");
+        let replay = build_compact_attention_replay_graph(
+            &ctx,
+            &replay_inputs,
+            TOKENS - 1,
+            TOKENS,
+            ranked.len(),
+        )
+        .expect("capture seven-dispatch post-score graph");
         assert_eq!(replay.graph.command_count(), 7);
-        let direct_hidden_bits: Vec<u32> = device.iter().map(|value| value.to_bits()).collect(); let _ = ctx.drain_stats();
+        let direct_hidden_bits: Vec<u32> = device.iter().map(|value| value.to_bits()).collect();
+        let _ = ctx.drain_stats();
         for iteration in 0..2 {
-            write_f32(&replay_query_latent, &vec![f32::NAN; HEADS * LATENT]); write_f32(&replay_context, &vec![f32::NAN; CONTEXT]);
-            write_f32(&replay_hidden, &vec![f32::NAN; CONTEXT]); write_f32(&replay_residual, &vec![0.0; CONTEXT]);
+            write_f32(&replay_query_latent, &vec![f32::NAN; HEADS * LATENT]);
+            write_f32(&replay_context, &vec![f32::NAN; CONTEXT]);
+            write_f32(&replay_hidden, &vec![f32::NAN; CONTEXT]);
+            write_f32(&replay_residual, &vec![0.0; CONTEXT]);
             replay
-                .update_dynamic_parameters(TOKENS - 1, TOKENS, ranked.len()).expect("update compact-attention replay scalars");
+                .update_dynamic_parameters(TOKENS - 1, TOKENS, ranked.len())
+                .expect("update compact-attention replay scalars");
             let mut replay_tcb = TokenCommandBuffer::new(&ctx);
             replay_tcb
-                .execute_replayable_graph(&replay.graph).expect("execute compact-attention replay");
+                .execute_replayable_graph(&replay.graph)
+                .expect("execute compact-attention replay");
             assert_eq!(replay_tcb.dispatch_count(), 7);
             replay_tcb
-                .commit_and_wait().expect("compact-attention replay command");
+                .commit_and_wait()
+                .expect("compact-attention replay command");
             assert_eq!(
                 read_f32(&replay_hidden, CONTEXT)
-                    .iter().map(|value| value.to_bits())
+                    .iter()
+                    .map(|value| value.to_bits())
                     .collect::<Vec<_>>(),
                 direct_hidden_bits,
                 "compact-attention ICB replay {iteration} must be bit-exact to direct encoding"
@@ -11575,7 +12923,8 @@ mod tests {
             );
             assert_eq!(
                 read_f32(&replay_residual, CONTEXT)
-                    .iter().map(|value| value.to_bits())
+                    .iter()
+                    .map(|value| value.to_bits())
                     .collect::<Vec<_>>(),
                 direct_hidden_bits,
                 "post-score replay {iteration} residual must consume the exact o_proj output"
@@ -11590,20 +12939,25 @@ mod tests {
     #[test]
     fn route_segment_reorder_is_exact_at_edges_and_after_tied_topk() {
         let shader = include_str!("../shaders/gravity_pq.metal");
-        assert!(shader.contains("kernel void gravity_glm_sort_u32_ascending(")); let registry = include_str!("metal/mod.rs");
+        assert!(shader.contains("kernel void gravity_glm_sort_u32_ascending("));
+        let registry = include_str!("metal/mod.rs");
         assert!(registry
             .contains("\"gravity_glm_sort_u32_ascending\" => \"gravity_glm_sort_u32_ascending\""));
         let Ok(ctx) = MetalContext::new() else {
             return;
         };
-        let edge_sizes = [1usize, 2, 3, 31, 32, 33, 255, 256, 257, 1023, 2047, 2048]; let mut fixtures = Vec::new();
-        let mut tcb = TokenCommandBuffer::new(&ctx); let dummy = u32_buffer(&ctx, &[0]);
-        encode_sort_positions_ascending(&mut tcb, &dummy, &dummy, 0).expect("k=0 is an encode no-op");
+        let edge_sizes = [1usize, 2, 3, 31, 32, 33, 255, 256, 257, 1023, 2047, 2048];
+        let mut fixtures = Vec::new();
+        let mut tcb = TokenCommandBuffer::new(&ctx);
+        let dummy = u32_buffer(&ctx, &[0]);
+        encode_sort_positions_ascending(&mut tcb, &dummy, &dummy, 0)
+            .expect("k=0 is an encode no-op");
         assert_eq!(tcb.dispatch_count(), 0);
         for &k in &edge_sizes {
             let mut input: Vec<u32> = (0..k as u32).collect();
             for index in 0..k {
-                let peer = (index.wrapping_mul(37).wrapping_add(11)) % k; input.swap(index, peer);
+                let peer = (index.wrapping_mul(37).wrapping_add(11)) % k;
+                input.swap(index, peer);
             }
             if k == 3 {
                 input = vec![32767, 0, 8192];
@@ -11614,10 +12968,14 @@ mod tests {
             } else {
                 u32_buffer(&ctx, &vec![u32::MAX; k])
             };
-            encode_sort_positions_ascending(&mut tcb, &input_buffer, &output_buffer, k).expect("encode bounded ascending reorder");
-            let mut expected = input.clone(); expected.sort_unstable(); fixtures.push((output_buffer, expected));
+            encode_sort_positions_ascending(&mut tcb, &input_buffer, &output_buffer, k)
+                .expect("encode bounded ascending reorder");
+            let mut expected = input.clone();
+            expected.sort_unstable();
+            fixtures.push((output_buffer, expected));
         }
-        assert_eq!(tcb.dispatch_count(), edge_sizes.len()); tcb.commit_and_wait().expect("edge reorder command buffer");
+        assert_eq!(tcb.dispatch_count(), edge_sizes.len());
+        tcb.commit_and_wait().expect("edge reorder command buffer");
         for (output, expected) in fixtures {
             assert_eq!(
                 read_u32(&output, expected.len()),
@@ -11625,63 +12983,100 @@ mod tests {
                 "GPU reorder must be exact"
             );
         }
-        let oversized_input = u32_buffer(&ctx, &vec![0; 2049]); let oversized_output = u32_buffer(&ctx, &vec![0; 2049]);
+        let oversized_input = u32_buffer(&ctx, &vec![0; 2049]);
+        let oversized_output = u32_buffer(&ctx, &vec![0; 2049]);
         let mut oversized_tcb = TokenCommandBuffer::new(&ctx);
-        let error = encode_sort_positions_ascending(&mut oversized_tcb, &oversized_input, &oversized_output, 2049)
+        let error = encode_sort_positions_ascending(
+            &mut oversized_tcb,
+            &oversized_input,
+            &oversized_output,
+            2049,
+        )
         .expect_err("k above the flagship bound must fail before encode");
         assert!(error.to_string().contains("k <= 2048"));
         assert_eq!(oversized_tcb.dispatch_count(), 0);
-        let tied_values = vec![3.0, 7.0, 7.0, -1.0, 7.0, 2.0, 9.0, 9.0, 0.0, 9.0]; let k = 7usize;
-        let values = f32_buffer(&ctx, &tied_values); let score_order = u32_buffer(&ctx, &vec![u32::MAX; k]);
-        let selected = empty_u8_buffer(&ctx, tied_values.len()); let ascending = u32_buffer(&ctx, &vec![u32::MAX; k]);
+        let tied_values = vec![3.0, 7.0, 7.0, -1.0, 7.0, 2.0, 9.0, 9.0, 0.0, 9.0];
+        let k = 7usize;
+        let values = f32_buffer(&ctx, &tied_values);
+        let score_order = u32_buffer(&ctx, &vec![u32::MAX; k]);
+        let selected = empty_u8_buffer(&ctx, tied_values.len());
+        let ascending = u32_buffer(&ctx, &vec![u32::MAX; k]);
         let mut chain = TokenCommandBuffer::new(&ctx);
-        encode_stable_topk(&mut chain, &values, &score_order, &selected, tied_values.len(), k).expect("encode tied stable top-k");
-        encode_sort_positions_ascending(&mut chain, &score_order, &ascending, k).expect("encode top-k reorder");
-        assert_eq!(chain.dispatch_count(), 2); chain.commit_and_wait().expect("top-k reorder chain");
+        encode_stable_topk(
+            &mut chain,
+            &values,
+            &score_order,
+            &selected,
+            tied_values.len(),
+            k,
+        )
+        .expect("encode tied stable top-k");
+        encode_sort_positions_ascending(&mut chain, &score_order, &ascending, k)
+            .expect("encode top-k reorder");
+        assert_eq!(chain.dispatch_count(), 2);
+        chain.commit_and_wait().expect("top-k reorder chain");
         let expected_score_order: Vec<u32> = topk_desc(&tied_values, k)
-            .into_iter().map(|index| index as u32) .collect();
-        assert_eq!(read_u32(&score_order, k), expected_score_order); let mut expected_ascending = expected_score_order;
+            .into_iter()
+            .map(|index| index as u32)
+            .collect();
+        assert_eq!(read_u32(&score_order, k), expected_score_order);
+        let mut expected_ascending = expected_score_order;
         expected_ascending.sort_unstable();
         assert_eq!(read_u32(&ascending, k), expected_ascending);
     }
     #[test]
     fn radix_topk_is_exact_at_32k_2048_with_ties_and_signed_zero() {
         let shader = include_str!("../shaders/gravity_pq.metal");
-        assert!(shader.contains("kernel void gravity_glm_radix_topk_f32(")); let registry = include_str!("metal/mod.rs");
+        assert!(shader.contains("kernel void gravity_glm_radix_topk_f32("));
+        let registry = include_str!("metal/mod.rs");
         assert!(
             registry.contains("\"gravity_glm_radix_topk_f32\" => \"gravity_glm_radix_topk_f32\"")
         );
         let Ok(ctx) = MetalContext::new() else {
             return;
         };
-        const N: usize = 32768; let mut state = 0x1bad_f00du32; let mut values = Vec::with_capacity(N);
+        const N: usize = 32768;
+        let mut state = 0x1bad_f00du32;
+        let mut values = Vec::with_capacity(N);
         for index in 0..N {
             state = state.wrapping_mul(1_664_525).wrapping_add(1_013_904_223);
-            let bucket = ((state >> 8) % 4096) as i32 - 2048; let mut score = bucket as f32 * (1.0 / 128.0);
+            let bucket = ((state >> 8) % 4096) as i32 - 2048;
+            let mut score = bucket as f32 * (1.0 / 128.0);
             if index % 127 == 0 {
                 score = 7.0;
             }
             values.push(score);
         }
-        values[3] = -0.0; values[4] = 0.0; values[17] = f32::INFINITY; values[18] = f32::NEG_INFINITY;
-        let values_buffer = f32_buffer(&ctx, &values); let ks = [1usize, 3, 33, 2048, 2048, 2048];
-        let mut outputs = Vec::new(); let mut tcb = TokenCommandBuffer::new(&ctx);
+        values[3] = -0.0;
+        values[4] = 0.0;
+        values[17] = f32::INFINITY;
+        values[18] = f32::NEG_INFINITY;
+        let values_buffer = f32_buffer(&ctx, &values);
+        let ks = [1usize, 3, 33, 2048, 2048, 2048];
+        let mut outputs = Vec::new();
+        let mut tcb = TokenCommandBuffer::new(&ctx);
         for &k in &ks {
             let output = u32_buffer(&ctx, &vec![u32::MAX; k]);
-            encode_radix_topk(&mut tcb, &values_buffer, &output, values.len(), k).expect("encode 32K radix top-k");
+            encode_radix_topk(&mut tcb, &values_buffer, &output, values.len(), k)
+                .expect("encode 32K radix top-k");
             outputs.push((k, output));
         }
-        assert_eq!(tcb.dispatch_count(), ks.len()); tcb.commit_and_wait().expect("32K radix top-k command buffer");
+        assert_eq!(tcb.dispatch_count(), ks.len());
+        tcb.commit_and_wait()
+            .expect("32K radix top-k command buffer");
         for (k, output) in outputs {
             let expected: Vec<u32> = topk_desc(&values, k)
-                .into_iter().map(|index| index as u32) .collect();
+                .into_iter()
+                .map(|index| index as u32)
+                .collect();
             assert_eq!(
                 read_u32(&output, k),
                 expected,
                 "radix rank mismatch at k={k}"
             );
         }
-        let oversized = u32_buffer(&ctx, &vec![0; 2049]); let mut rejected = TokenCommandBuffer::new(&ctx);
+        let oversized = u32_buffer(&ctx, &vec![0; 2049]);
+        let mut rejected = TokenCommandBuffer::new(&ctx);
         let error = encode_radix_topk(&mut rejected, &values_buffer, &oversized, N, 2049)
             .expect_err("radix k above compact bound must fail before encode");
         assert!(error.to_string().contains("k <= 2048"));
@@ -11690,9 +13085,13 @@ mod tests {
     #[test]
     #[ignore = "bounded Metal timing; run explicitly on a free-enough GPU"]
     fn benchmark_radix_topk_32k_2048_against_serial_oracle() {
-        let ctx = MetalContext::new().expect("Metal device for bounded top-k benchmark"); const N: usize = 32768;
-        const K: usize = 2048; const ITERS: usize = 5; let mut state = 0x5eed_1234u32;
-        let values: Vec<f32> = (0..N).map(|index| {
+        let ctx = MetalContext::new().expect("Metal device for bounded top-k benchmark");
+        const N: usize = 32768;
+        const K: usize = 2048;
+        const ITERS: usize = 5;
+        let mut state = 0x5eed_1234u32;
+        let values: Vec<f32> = (0..N)
+            .map(|index| {
                 state = state.wrapping_mul(1_664_525).wrapping_add(1_013_904_223);
                 if index % 113 == 0 {
                     3.5
@@ -11702,62 +13101,98 @@ mod tests {
             })
             .collect();
         let expected: Vec<u32> = topk_desc(&values, K)
-            .into_iter().map(|index| index as u32) .collect();
-        let values_buffer = f32_buffer(&ctx, &values); let serial_output = u32_buffer(&ctx, &vec![u32::MAX; K]);
-        let serial_selected = empty_u8_buffer(&ctx, N); let radix_output = u32_buffer(&ctx, &vec![u32::MAX; K]);
+            .into_iter()
+            .map(|index| index as u32)
+            .collect();
+        let values_buffer = f32_buffer(&ctx, &values);
+        let serial_output = u32_buffer(&ctx, &vec![u32::MAX; K]);
+        let serial_selected = empty_u8_buffer(&ctx, N);
+        let radix_output = u32_buffer(&ctx, &vec![u32::MAX; K]);
         let run_serial = || {
             let mut tcb = TokenCommandBuffer::new(&ctx);
-            encode_stable_topk(&mut tcb, &values_buffer, &serial_output, &serial_selected, N, K).expect("encode serial stable top-k");
+            encode_stable_topk(
+                &mut tcb,
+                &values_buffer,
+                &serial_output,
+                &serial_selected,
+                N,
+                K,
+            )
+            .expect("encode serial stable top-k");
             tcb.commit_and_wait().expect("serial stable top-k");
         };
         let run_radix = || {
             let mut tcb = TokenCommandBuffer::new(&ctx);
-            encode_radix_topk(&mut tcb, &values_buffer, &radix_output, N, K).expect("encode radix top-k");
+            encode_radix_topk(&mut tcb, &values_buffer, &radix_output, N, K)
+                .expect("encode radix top-k");
             tcb.commit_and_wait().expect("radix top-k");
         };
-        run_serial(); run_radix();
+        run_serial();
+        run_radix();
         assert_eq!(read_u32(&serial_output, K), expected);
         assert_eq!(read_u32(&radix_output, K), expected);
-        let mut serial_us = Vec::with_capacity(ITERS); let mut radix_us = Vec::with_capacity(ITERS);
+        let mut serial_us = Vec::with_capacity(ITERS);
+        let mut radix_us = Vec::with_capacity(ITERS);
         for _ in 0..ITERS {
-            let started = std::time::Instant::now(); run_serial(); serial_us.push(started.elapsed().as_secs_f64() * 1e6);
+            let started = std::time::Instant::now();
+            run_serial();
+            serial_us.push(started.elapsed().as_secs_f64() * 1e6);
         }
         for _ in 0..ITERS {
-            let started = std::time::Instant::now(); run_radix(); radix_us.push(started.elapsed().as_secs_f64() * 1e6);
+            let started = std::time::Instant::now();
+            run_radix();
+            radix_us.push(started.elapsed().as_secs_f64() * 1e6);
         }
-        serial_us.sort_by(f64::total_cmp); radix_us.sort_by(f64::total_cmp);
-        let serial_median = serial_us[ITERS / 2]; let radix_median = radix_us[ITERS / 2];
+        serial_us.sort_by(f64::total_cmp);
+        radix_us.sort_by(f64::total_cmp);
+        let serial_median = serial_us[ITERS / 2];
+        let radix_median = radix_us[ITERS / 2];
         eprintln!(
             "device DSA top-k N={N} K={K}: serial_us={serial_us:?} radix_us={radix_us:?} \
              median_speedup={:.3}x",
             serial_median / radix_median
         );
-        assert!(radix_median < serial_median, "parallel radix median {radix_median:.3} us did not beat serial {serial_median:.3} us");
+        assert!(
+            radix_median < serial_median,
+            "parallel radix median {radix_median:.3} us did not beat serial {serial_median:.3} us"
+        );
     }
     #[test]
     fn route_segment_residual_add_is_exact_alias_safe_and_fail_closed() {
         let shader = include_str!("../shaders/gravity_pq.metal");
-        assert!(shader.contains("kernel void gravity_add_inplace_f32(")); let registry = include_str!("metal/mod.rs");
+        assert!(shader.contains("kernel void gravity_add_inplace_f32("));
+        let registry = include_str!("metal/mod.rs");
         assert!(registry.contains("\"gravity_add_inplace_f32\" => \"gravity_add_inplace_f32\""));
         let Ok(ctx) = MetalContext::new() else {
             return;
         };
-        let x: Vec<f32> = (0..257).map(|index| ((index % 31) as i32 - 15) as f32 * 0.5)
+        let x: Vec<f32> = (0..257)
+            .map(|index| ((index % 31) as i32 - 15) as f32 * 0.5)
             .collect();
-        let y: Vec<f32> = (0..257).map(|index| (((index * 7) % 29) as i32 - 14) as f32 * 0.25)
+        let y: Vec<f32> = (0..257)
+            .map(|index| (((index * 7) % 29) as i32 - 14) as f32 * 0.25)
             .collect();
-        let expected: Vec<f32> = x.iter().zip(&y).map(|(x, y)| x + y).collect(); let xb = f32_buffer(&ctx, &x);
-        let yb = f32_buffer(&ctx, &y); let alias_values = vec![1.5, -2.0, 0.25, 4.0];
-        let alias = f32_buffer(&ctx, &alias_values); let mut tcb = TokenCommandBuffer::new(&ctx);
-        encode_residual_add_inplace(&mut tcb, &xb, &yb, x.len()).expect("encode residual add over a rounded grid");
-        encode_residual_add_inplace(&mut tcb, &alias, &alias, alias_values.len()).expect("encode explicitly supported full-buffer alias");
-        assert_eq!(tcb.dispatch_count(), 2); tcb.commit_and_wait().expect("residual add command buffer");
+        let expected: Vec<f32> = x.iter().zip(&y).map(|(x, y)| x + y).collect();
+        let xb = f32_buffer(&ctx, &x);
+        let yb = f32_buffer(&ctx, &y);
+        let alias_values = vec![1.5, -2.0, 0.25, 4.0];
+        let alias = f32_buffer(&ctx, &alias_values);
+        let mut tcb = TokenCommandBuffer::new(&ctx);
+        encode_residual_add_inplace(&mut tcb, &xb, &yb, x.len())
+            .expect("encode residual add over a rounded grid");
+        encode_residual_add_inplace(&mut tcb, &alias, &alias, alias_values.len())
+            .expect("encode explicitly supported full-buffer alias");
+        assert_eq!(tcb.dispatch_count(), 2);
+        tcb.commit_and_wait().expect("residual add command buffer");
         assert_eq!(read_f32(&xb, x.len()), expected);
         assert_eq!(
             read_f32(&alias, alias_values.len()),
             vec![3.0, -4.0, 0.5, 8.0]
-        ); let one = f32_buffer(&ctx, &[1.0]); let mut rejected = TokenCommandBuffer::new(&ctx);
-        encode_residual_add_inplace(&mut rejected, &one, &one, 0).expect("zero elements are an encode no-op");
+        );
+        let one = f32_buffer(&ctx, &[1.0]);
+        let mut rejected = TokenCommandBuffer::new(&ctx);
+        encode_residual_add_inplace(&mut rejected, &one, &one, 0)
+            .expect("zero elements are an encode no-op");
         assert_eq!(rejected.dispatch_count(), 0);
         let error = encode_residual_add_inplace(&mut rejected, &one, &one, 2)
             .expect_err("undersized buffers must fail before dispatch");
@@ -11766,10 +13201,12 @@ mod tests {
         let error = encode_residual_add_inplace(&mut rejected, &one, &one, u32::MAX as usize)
             .expect_err("rounded grid overflow must fail before dispatch");
         assert!(error
-            .to_string() .contains("rounded Metal grid width overflow"));
+            .to_string()
+            .contains("rounded Metal grid width overflow"));
         assert_eq!(rejected.dispatch_count(), 0);
         let oversized_n = (u32::MAX as usize)
-            .checked_add(1).expect("usize exceeds the Metal u32 ABI on supported hosts");
+            .checked_add(1)
+            .expect("usize exceeds the Metal u32 ABI on supported hosts");
         let error = encode_residual_add_inplace(&mut rejected, &one, &one, oversized_n)
             .expect_err("oversized geometry must fail before dispatch");
         assert!(error.to_string().contains("does not fit the Metal u32 ABI"));
@@ -11780,61 +13217,93 @@ mod tests {
         let Ok(ctx) = MetalContext::new() else {
             return;
         };
-        let x = vec![0.5, -1.25, 2.0, 0.75, -0.125, 3.5, -2.25]; let weight = vec![0.75, -0.5, 1.25, 0.875, -1.5, 0.25, 2.0];
-        let bias = vec![0.1, -0.2, 0.3, -0.4, 0.05, 0.125, -0.25]; let xb = f32_buffer(&ctx, &x);
-        let wb = f32_buffer(&ctx, &weight); let bb = f32_buffer(&ctx, &bias);
-        let rms_out = filled_f32_buffer(&ctx, x.len(), f32::NAN); let affine_out = filled_f32_buffer(&ctx, x.len(), f32::NAN);
+        let x = vec![0.5, -1.25, 2.0, 0.75, -0.125, 3.5, -2.25];
+        let weight = vec![0.75, -0.5, 1.25, 0.875, -1.5, 0.25, 2.0];
+        let bias = vec![0.1, -0.2, 0.3, -0.4, 0.05, 0.125, -0.25];
+        let xb = f32_buffer(&ctx, &x);
+        let wb = f32_buffer(&ctx, &weight);
+        let bb = f32_buffer(&ctx, &bias);
+        let rms_out = filled_f32_buffer(&ctx, x.len(), f32::NAN);
+        let affine_out = filled_f32_buffer(&ctx, x.len(), f32::NAN);
         let rope_input = vec![
-            91.0, 92.0, 1.0, 2.0, 3.0, 4.0,
-            81.0, 82.0, -1.5, 0.5, 2.5, -3.0,
+            91.0, 92.0, 1.0, 2.0, 3.0, 4.0, 81.0, 82.0, -1.5, 0.5, 2.5, -3.0,
         ];
-        let cos = vec![0.875, -0.25]; let sin = vec![0.125, 0.75];
-        let rope_in = f32_buffer(&ctx, &rope_input); let cosb = f32_buffer(&ctx, &cos);
-        let sinb = f32_buffer(&ctx, &sin); let rope_out = filled_f32_buffer(&ctx, 8, f32::NAN);
-        let copy_src = f32_buffer(&ctx, &[10.0, 11.0, 12.0, 13.0, 14.0]); let copy_dst = filled_f32_buffer(&ctx, 7, -9.0);
-        let zero_out = filled_f32_buffer(&ctx, 9, 7.0); let mut tcb = TokenCommandBuffer::new(&ctx);
+        let cos = vec![0.875, -0.25];
+        let sin = vec![0.125, 0.75];
+        let rope_in = f32_buffer(&ctx, &rope_input);
+        let cosb = f32_buffer(&ctx, &cos);
+        let sinb = f32_buffer(&ctx, &sin);
+        let rope_out = filled_f32_buffer(&ctx, 8, f32::NAN);
+        let copy_src = f32_buffer(&ctx, &[10.0, 11.0, 12.0, 13.0, 14.0]);
+        let copy_dst = filled_f32_buffer(&ctx, 7, -9.0);
+        let zero_out = filled_f32_buffer(&ctx, 9, 7.0);
+        let mut tcb = TokenCommandBuffer::new(&ctx);
         encode_rmsnorm(&mut tcb, &xb, &wb, &rms_out, x.len(), 1e-6).expect("encode rms");
-        encode_layernorm_affine(&mut tcb, &xb, &wb, &bb, &affine_out, x.len(), 1e-6).expect("encode affine layernorm");
+        encode_layernorm_affine(&mut tcb, &xb, &wb, &bb, &affine_out, x.len(), 1e-6)
+            .expect("encode affine layernorm");
         encode_rope_interleaved(
             &mut tcb, &rope_in, 2, &rope_out, 0, &cosb, &sinb, 2, 4, 6, 4,
-        ).expect("encode GLM RoPE"); encode_copy_tail(&mut tcb, &copy_src, &copy_dst, 1, 3, 3).expect("encode copy tail");
+        )
+        .expect("encode GLM RoPE");
+        encode_copy_tail(&mut tcb, &copy_src, &copy_dst, 1, 3, 3).expect("encode copy tail");
         encode_zero(&mut tcb, &zero_out, 9).expect("encode zero");
-        assert_eq!(tcb.dispatch_count(), 5); tcb.commit_and_wait().expect("primitive command buffer");
-        let mean_sq_f32 = x.iter().map(|v| v * v).sum::<f32>() / x.len() as f32; let inv_f32 = 1.0 / (mean_sq_f32 + 1e-6).sqrt();
+        assert_eq!(tcb.dispatch_count(), 5);
+        tcb.commit_and_wait().expect("primitive command buffer");
+        let mean_sq_f32 = x.iter().map(|v| v * v).sum::<f32>() / x.len() as f32;
+        let inv_f32 = 1.0 / (mean_sq_f32 + 1e-6).sqrt();
         let rms_host: Vec<f32> = x
             .iter()
-            .zip(&weight).map(|(v, w)| v * inv_f32 * w) .collect();
+            .zip(&weight)
+            .map(|(v, w)| v * inv_f32 * w)
+            .collect();
         let mean_sq_f64 = x.iter().map(|&v| (v as f64) * (v as f64)).sum::<f64>() / x.len() as f64;
         let inv_f64 = 1.0 / (mean_sq_f64 + 1e-6f64).sqrt();
         let rms_f64: Vec<f64> = x
             .iter()
-            .zip(&weight).map(|(&v, &w)| (v as f64) * inv_f64 * (w as f64)) .collect();
+            .zip(&weight)
+            .map(|(&v, &w)| (v as f64) * inv_f64 * (w as f64))
+            .collect();
         assert_v21_pair("rmsnorm", &rms_host, &read_f32(&rms_out, x.len()), &rms_f64);
         let mean_f32 = x.iter().sum::<f32>() / x.len() as f32;
         let var_f32 = x
-            .iter().map(|v| (v - mean_f32) * (v - mean_f32))
-            .sum::<f32>() / x.len() as f32;
+            .iter()
+            .map(|v| (v - mean_f32) * (v - mean_f32))
+            .sum::<f32>()
+            / x.len() as f32;
         let affine_inv_f32 = 1.0 / (var_f32 + 1e-6).sqrt();
         let affine_host: Vec<f32> = x
             .iter()
             .zip(&weight)
-            .zip(&bias).map(|((&v, &w), &b)| (v - mean_f32) * affine_inv_f32 * w + b) .collect();
+            .zip(&bias)
+            .map(|((&v, &w), &b)| (v - mean_f32) * affine_inv_f32 * w + b)
+            .collect();
         let mean_f64 = x.iter().map(|&v| v as f64).sum::<f64>() / x.len() as f64;
         let var_f64 = x
-            .iter().map(|&v| {
+            .iter()
+            .map(|&v| {
                 let d = v as f64 - mean_f64;
                 d * d
             })
-            .sum::<f64>() / x.len() as f64;
+            .sum::<f64>()
+            / x.len() as f64;
         let affine_inv_f64 = 1.0 / (var_f64 + 1e-6f64).sqrt();
         let affine_f64: Vec<f64> = x
             .iter()
             .zip(&weight)
-            .zip(&bias).map(|((&v, &w), &b)| (v as f64 - mean_f64) * affine_inv_f64 * w as f64 + b as f64) .collect();
-        assert_v21_pair("affine layernorm", &affine_host, &read_f32(&affine_out, x.len()), &affine_f64);
-        let mut rope_host = Vec::new(); let mut rope_f64 = Vec::new();
+            .zip(&bias)
+            .map(|((&v, &w), &b)| (v as f64 - mean_f64) * affine_inv_f64 * w as f64 + b as f64)
+            .collect();
+        assert_v21_pair(
+            "affine layernorm",
+            &affine_host,
+            &read_f32(&affine_out, x.len()),
+            &affine_f64,
+        );
+        let mut rope_host = Vec::new();
+        let mut rope_f64 = Vec::new();
         for head in 0..2 {
-            let base = head * 6 + 2; rope_host.extend(rope_interleaved(&rope_input[base..base + 4], &cos, &sin));
+            let base = head * 6 + 2;
+            rope_host.extend(rope_interleaved(&rope_input[base..base + 4], &cos, &sin));
             let src = &rope_input[base..base + 4];
             for i in 0..2 {
                 rope_f64.push(
@@ -11847,7 +13316,12 @@ mod tests {
                 );
             }
         }
-        assert_v21_pair("interleaved RoPE", &rope_host, &read_f32(&rope_out, 8), &rope_f64);
+        assert_v21_pair(
+            "interleaved RoPE",
+            &rope_host,
+            &read_f32(&rope_out, 8),
+            &rope_f64,
+        );
         assert_eq!(
             read_f32(&copy_dst, 7),
             vec![-9.0, -9.0, -9.0, 11.0, 12.0, 13.0, -9.0]
@@ -11858,7 +13332,8 @@ mod tests {
     fn route_segment_rope_prefix_tail_matches_host_and_fails_closed() {
         let shader = include_str!("../shaders/gravity_pq.metal");
         assert!(shader.contains("kernel void gravity_rope_prefix_tail_f32("));
-        assert!(shader.contains("kernel void gravity_rope_prefix_tail_positioned_f32(")); let registry = include_str!("metal/mod.rs");
+        assert!(shader.contains("kernel void gravity_rope_prefix_tail_positioned_f32("));
+        let registry = include_str!("metal/mod.rs");
         assert!(registry
             .contains("\"gravity_rope_prefix_tail_f32\" => \"gravity_rope_prefix_tail_f32\""));
         assert!(registry.contains("\"gravity_rope_prefix_tail_positioned_f32\""));
@@ -11866,19 +13341,51 @@ mod tests {
             return;
         };
         let input = vec![
-            1.0, 2.0, 3.0, 4.0, 91.0, 92.0,
-            -1.5, 0.5, 2.5, -3.0, 81.0, 82.0,
+            1.0, 2.0, 3.0, 4.0, 91.0, 92.0, -1.5, 0.5, 2.5, -3.0, 81.0, 82.0,
         ];
-        let cos = vec![0.875, -0.25]; let sin = vec![0.125, 0.75];
-        let input_buffer = f32_buffer(&ctx, &input); let cos_buffer = f32_buffer(&ctx, &cos);
-        let sin_buffer = f32_buffer(&ctx, &sin); let output = filled_f32_buffer(&ctx, 14, -99.0);
-        let positioned_output = filled_f32_buffer(&ctx, 14, -99.0); let mut tcb = TokenCommandBuffer::new(&ctx);
-        encode_rope_prefix_tail(&mut tcb, &input_buffer, 0, &output, 1, &cos_buffer, &sin_buffer, 2, 4, 6, 6).expect("encode RoPE prefix plus tail");
-        encode_rope_prefix_tail_positioned(&mut tcb, &input_buffer, 0, &positioned_output, 1, &cos_buffer, &sin_buffer, 2, 4, 6, 6).expect("encode replay-safe positioned RoPE prefix plus tail");
-        assert_eq!(tcb.dispatch_count(), 2); tcb.commit_and_wait().expect("RoPE prefix plus tail");
-        let mut expected = vec![-99.0]; let mut authority = Vec::new();
+        let cos = vec![0.875, -0.25];
+        let sin = vec![0.125, 0.75];
+        let input_buffer = f32_buffer(&ctx, &input);
+        let cos_buffer = f32_buffer(&ctx, &cos);
+        let sin_buffer = f32_buffer(&ctx, &sin);
+        let output = filled_f32_buffer(&ctx, 14, -99.0);
+        let positioned_output = filled_f32_buffer(&ctx, 14, -99.0);
+        let mut tcb = TokenCommandBuffer::new(&ctx);
+        encode_rope_prefix_tail(
+            &mut tcb,
+            &input_buffer,
+            0,
+            &output,
+            1,
+            &cos_buffer,
+            &sin_buffer,
+            2,
+            4,
+            6,
+            6,
+        )
+        .expect("encode RoPE prefix plus tail");
+        encode_rope_prefix_tail_positioned(
+            &mut tcb,
+            &input_buffer,
+            0,
+            &positioned_output,
+            1,
+            &cos_buffer,
+            &sin_buffer,
+            2,
+            4,
+            6,
+            6,
+        )
+        .expect("encode replay-safe positioned RoPE prefix plus tail");
+        assert_eq!(tcb.dispatch_count(), 2);
+        tcb.commit_and_wait().expect("RoPE prefix plus tail");
+        let mut expected = vec![-99.0];
+        let mut authority = Vec::new();
         for head in 0..2 {
-            let source = &input[head * 6..(head + 1) * 6]; expected.extend(rope_interleaved(&source[..4], &cos, &sin));
+            let source = &input[head * 6..(head + 1) * 6];
+            expected.extend(rope_interleaved(&source[..4], &cos, &sin));
             expected.extend_from_slice(&source[4..]);
             for i in 0..2 {
                 authority.push(
@@ -11893,21 +13400,41 @@ mod tests {
             authority.extend(source[4..].iter().map(|&value| value as f64));
         }
         expected.push(-99.0);
-        let actual = read_f32(&output, expected.len()); let positioned_actual = read_f32(&positioned_output, expected.len());
+        let actual = read_f32(&output, expected.len());
+        let positioned_actual = read_f32(&positioned_output, expected.len());
         assert_eq!(
             positioned_actual
-                .iter().map(|value| value.to_bits())
+                .iter()
+                .map(|value| value.to_bits())
                 .collect::<Vec<_>>(),
             actual
-                .iter().map(|value| value.to_bits())
+                .iter()
+                .map(|value| value.to_bits())
                 .collect::<Vec<_>>(),
             "position-scalar and binding-offset RoPE paths must be bit-identical"
         );
         assert_eq!(actual.first(), Some(&-99.0));
         assert_eq!(actual.last(), Some(&-99.0));
-        assert_v21_pair("RoPE prefix plus tail", &expected[1..expected.len() - 1], &actual[1..actual.len() - 1], &authority);
+        assert_v21_pair(
+            "RoPE prefix plus tail",
+            &expected[1..expected.len() - 1],
+            &actual[1..actual.len() - 1],
+            &authority,
+        );
         let mut rejected = TokenCommandBuffer::new(&ctx);
-        let error = encode_rope_prefix_tail(&mut rejected, &input_buffer, 0, &input_buffer, 0, &cos_buffer, &sin_buffer, 2, 4, 6, 6)
+        let error = encode_rope_prefix_tail(
+            &mut rejected,
+            &input_buffer,
+            0,
+            &input_buffer,
+            0,
+            &cos_buffer,
+            &sin_buffer,
+            2,
+            4,
+            6,
+            6,
+        )
         .expect_err("in-place prefix assembly is not alias safe");
         assert!(error.to_string().contains("non-aliasing"));
         assert_eq!(rejected.dispatch_count(), 0);
@@ -11917,8 +13444,13 @@ mod tests {
         let Ok(ctx) = MetalContext::new() else {
             return;
         };
-        const HEADS: usize = 2; const HEAD_DIM: usize = 4; const ROPE_DIM: usize = 2; const Q_LORA: usize = 3;
-        const HIDDEN: usize = 3; const CAPACITY: usize = 3; const POSITION: usize = 1;
+        const HEADS: usize = 2;
+        const HEAD_DIM: usize = 4;
+        const ROPE_DIM: usize = 2;
+        const Q_LORA: usize = 3;
+        const HIDDEN: usize = 3;
+        const CAPACITY: usize = 3;
+        const POSITION: usize = 1;
         let projection_from = |tensor: GpuTensor| match tensor {
             GpuTensor::NativeGpuBf16 { buf, rows, cols } => DeviceReplayProjection::NativeBf16 {
                 weight: buf,
@@ -11932,13 +13464,18 @@ mod tests {
             projection_from(native_bf16_tensor(&ctx, HEAD_DIM, HIDDEN, 17).0),
             projection_from(native_bf16_tensor(&ctx, HEADS, HIDDEN, 23).0),
         ];
-        let q_resid = f32_buffer(&ctx, &[0.5, -1.25, 2.0]); let h = f32_buffer(&ctx, &[1.5, 0.25, -0.75]);
+        let q_resid = f32_buffer(&ctx, &[0.5, -1.25, 2.0]);
+        let h = f32_buffer(&ctx, &[1.5, 0.25, -0.75]);
         let norm_weight = f32_buffer(&ctx, &[1.0, 0.75, 1.25, 0.5]);
-        let norm_bias = f32_buffer(&ctx, &[0.125, -0.25, 0.5, -0.75]); let cos = f32_buffer(&ctx, &[0.875]);
-        let sin = f32_buffer(&ctx, &[0.125]); let direct_q = filled_f32_buffer(&ctx, HEADS * HEAD_DIM, f32::NAN);
-        let direct_k = filled_f32_buffer(&ctx, HEAD_DIM, f32::NAN); let direct_head_w = filled_f32_buffer(&ctx, HEADS, f32::NAN);
+        let norm_bias = f32_buffer(&ctx, &[0.125, -0.25, 0.5, -0.75]);
+        let cos = f32_buffer(&ctx, &[0.875]);
+        let sin = f32_buffer(&ctx, &[0.125]);
+        let direct_q = filled_f32_buffer(&ctx, HEADS * HEAD_DIM, f32::NAN);
+        let direct_k = filled_f32_buffer(&ctx, HEAD_DIM, f32::NAN);
+        let direct_head_w = filled_f32_buffer(&ctx, HEADS, f32::NAN);
         let direct_query = filled_f32_buffer(&ctx, HEADS * HEAD_DIM, f32::NAN);
-        let direct_index_keys = filled_f32_buffer(&ctx, CAPACITY * HEAD_DIM, -99.0); let mut direct = TokenCommandBuffer::new(&ctx);
+        let direct_index_keys = filled_f32_buffer(&ctx, CAPACITY * HEAD_DIM, -99.0);
+        let mut direct = TokenCommandBuffer::new(&ctx);
         for (projection, input, output) in [
             (&projections[0], &q_resid, &direct_q),
             (&projections[1], &h, &direct_k),
@@ -11947,13 +13484,51 @@ mod tests {
             let DeviceReplayProjection::NativeBf16 { weight, rows, cols } = projection else {
                 unreachable!("native fixture");
             };
-            encode_gemv_native_bf16_seq(&mut direct, weight, *rows, *cols, input, output).expect("encode direct pre-score projection");
+            encode_gemv_native_bf16_seq(&mut direct, weight, *rows, *cols, input, output)
+                .expect("encode direct pre-score projection");
         }
-        encode_layernorm_affine(&mut direct, &direct_k, &norm_weight, &norm_bias, &direct_k, HEAD_DIM, 1e-6).expect("encode direct index-key norm");
-        encode_rope_prefix_tail_positioned(&mut direct, &direct_k, 0, &direct_index_keys, POSITION * HEAD_DIM, &cos, &sin, 1, ROPE_DIM, HEAD_DIM, HEAD_DIM).expect("encode direct positioned key RoPE");
-        encode_rope_prefix_tail(&mut direct, &direct_q, 0, &direct_query, 0, &cos, &sin, HEADS, ROPE_DIM, HEAD_DIM, HEAD_DIM).expect("encode direct query RoPE");
-        assert_eq!(direct.dispatch_count(), 6); direct.commit_and_wait().expect("direct pre-score graph");
-        let replay_q = filled_f32_buffer(&ctx, HEADS * HEAD_DIM, f32::NAN); let replay_k = filled_f32_buffer(&ctx, HEAD_DIM, f32::NAN);
+        encode_layernorm_affine(
+            &mut direct,
+            &direct_k,
+            &norm_weight,
+            &norm_bias,
+            &direct_k,
+            HEAD_DIM,
+            1e-6,
+        )
+        .expect("encode direct index-key norm");
+        encode_rope_prefix_tail_positioned(
+            &mut direct,
+            &direct_k,
+            0,
+            &direct_index_keys,
+            POSITION * HEAD_DIM,
+            &cos,
+            &sin,
+            1,
+            ROPE_DIM,
+            HEAD_DIM,
+            HEAD_DIM,
+        )
+        .expect("encode direct positioned key RoPE");
+        encode_rope_prefix_tail(
+            &mut direct,
+            &direct_q,
+            0,
+            &direct_query,
+            0,
+            &cos,
+            &sin,
+            HEADS,
+            ROPE_DIM,
+            HEAD_DIM,
+            HEAD_DIM,
+        )
+        .expect("encode direct query RoPE");
+        assert_eq!(direct.dispatch_count(), 6);
+        direct.commit_and_wait().expect("direct pre-score graph");
+        let replay_q = filled_f32_buffer(&ctx, HEADS * HEAD_DIM, f32::NAN);
+        let replay_k = filled_f32_buffer(&ctx, HEAD_DIM, f32::NAN);
         let replay_head_w = filled_f32_buffer(&ctx, HEADS, f32::NAN);
         let replay_query = filled_f32_buffer(&ctx, HEADS * HEAD_DIM, f32::NAN);
         let replay_index_keys = filled_f32_buffer(&ctx, CAPACITY * HEAD_DIM, -99.0);
@@ -11976,14 +13551,19 @@ mod tests {
             query: &replay_query,
             index_keys: &replay_index_keys,
         };
-        let replay = build_device_dsa_pre_score_replay_graph(&ctx, &replay_inputs, POSITION).expect("capture six-command pre-score graph");
-        assert_eq!(replay.graph.command_count(), 6); let _ = ctx.drain_stats();
+        let replay = build_device_dsa_pre_score_replay_graph(&ctx, &replay_inputs, POSITION)
+            .expect("capture six-command pre-score graph");
+        assert_eq!(replay.graph.command_count(), 6);
+        let _ = ctx.drain_stats();
         replay
-            .update_position(POSITION).expect("update first replay position");
+            .update_position(POSITION)
+            .expect("update first replay position");
         let mut replay_tcb = TokenCommandBuffer::new(&ctx);
         replay_tcb
-            .execute_replayable_graph(&replay.graph).expect("execute pre-score replay");
-        assert_eq!(replay_tcb.dispatch_count(), 6); replay_tcb.commit_and_wait().expect("pre-score replay");
+            .execute_replayable_graph(&replay.graph)
+            .expect("execute pre-score replay");
+        assert_eq!(replay_tcb.dispatch_count(), 6);
+        replay_tcb.commit_and_wait().expect("pre-score replay");
         for (label, expected, actual, len) in [
             ("index query", &direct_q, &replay_q, HEADS * HEAD_DIM),
             ("index key", &direct_k, &replay_k, HEAD_DIM),
@@ -12003,21 +13583,26 @@ mod tests {
         ] {
             assert_eq!(
                 read_f32(actual, len)
-                    .iter().map(|value| value.to_bits())
+                    .iter()
+                    .map(|value| value.to_bits())
                     .collect::<Vec<_>>(),
                 read_f32(expected, len)
-                    .iter().map(|value| value.to_bits())
+                    .iter()
+                    .map(|value| value.to_bits())
                     .collect::<Vec<_>>(),
                 "{label} must be bit-exact between direct and replay encoding"
             );
         }
         replay
-            .update_position(POSITION + 1).expect("update second replay position");
+            .update_position(POSITION + 1)
+            .expect("update second replay position");
         let mut second = TokenCommandBuffer::new(&ctx);
         second
-            .execute_replayable_graph(&replay.graph).expect("execute changed-position pre-score replay");
+            .execute_replayable_graph(&replay.graph)
+            .expect("execute changed-position pre-score replay");
         second
-            .commit_and_wait().expect("changed-position pre-score replay");
+            .commit_and_wait()
+            .expect("changed-position pre-score replay");
         assert_eq!(
             read_f32(&replay_index_keys, CAPACITY * HEAD_DIM)
                 [(POSITION + 1) * HEAD_DIM..(POSITION + 2) * HEAD_DIM],
@@ -12036,8 +13621,13 @@ mod tests {
         let Ok(ctx) = MetalContext::new() else {
             return;
         };
-        const HIDDEN: usize = 4; const Q_LORA: usize = 3; const KV_LORA: usize = 3; const HEADS: usize = 2;
-        const NOPE: usize = 2; const ROPE: usize = 2; const QK: usize = NOPE + ROPE;
+        const HIDDEN: usize = 4;
+        const Q_LORA: usize = 3;
+        const KV_LORA: usize = 3;
+        const HEADS: usize = 2;
+        const NOPE: usize = 2;
+        const ROPE: usize = 2;
+        const QK: usize = NOPE + ROPE;
         let projection_from = |tensor: GpuTensor| match tensor {
             GpuTensor::NativeGpuBf16 { buf, rows, cols } => DeviceReplayProjection::NativeBf16 {
                 weight: buf,
@@ -12051,20 +13641,29 @@ mod tests {
             projection_from(native_bf16_tensor(&ctx, KV_LORA + ROPE, HIDDEN, 37).0),
             projection_from(native_bf16_tensor(&ctx, HEADS * QK, Q_LORA, 41).0),
         ];
-        let input_norm_weight = f32_buffer(&ctx, &[1.0, 0.75, 1.25, 0.5]); let q_norm_weight = f32_buffer(&ctx, &[0.625, 1.375, 0.875]);
-        let kv_norm_weight = f32_buffer(&ctx, &[1.125, 0.5, 1.5]); let cos = f32_buffer(&ctx, &[0.875]);
-        let sin = f32_buffer(&ctx, &[0.125]); let direct_x = filled_f32_buffer(&ctx, HIDDEN, f32::NAN);
-        let direct_h = filled_f32_buffer(&ctx, HIDDEN, f32::NAN); let direct_q_a = filled_f32_buffer(&ctx, Q_LORA, f32::NAN);
+        let input_norm_weight = f32_buffer(&ctx, &[1.0, 0.75, 1.25, 0.5]);
+        let q_norm_weight = f32_buffer(&ctx, &[0.625, 1.375, 0.875]);
+        let kv_norm_weight = f32_buffer(&ctx, &[1.125, 0.5, 1.5]);
+        let cos = f32_buffer(&ctx, &[0.875]);
+        let sin = f32_buffer(&ctx, &[0.125]);
+        let direct_x = filled_f32_buffer(&ctx, HIDDEN, f32::NAN);
+        let direct_h = filled_f32_buffer(&ctx, HIDDEN, f32::NAN);
+        let direct_q_a = filled_f32_buffer(&ctx, Q_LORA, f32::NAN);
         let direct_compressed = filled_f32_buffer(&ctx, KV_LORA + ROPE, f32::NAN);
-        let direct_q_resid = filled_f32_buffer(&ctx, Q_LORA, f32::NAN); let direct_k_latent = filled_f32_buffer(&ctx, KV_LORA, f32::NAN);
-        let direct_q = filled_f32_buffer(&ctx, HEADS * QK, f32::NAN); let direct_key_rope = filled_f32_buffer(&ctx, ROPE, f32::NAN);
+        let direct_q_resid = filled_f32_buffer(&ctx, Q_LORA, f32::NAN);
+        let direct_k_latent = filled_f32_buffer(&ctx, KV_LORA, f32::NAN);
+        let direct_q = filled_f32_buffer(&ctx, HEADS * QK, f32::NAN);
+        let direct_key_rope = filled_f32_buffer(&ctx, ROPE, f32::NAN);
         let direct_query_nope = filled_f32_buffer(&ctx, HEADS * NOPE, f32::NAN);
         let direct_query_rope = filled_f32_buffer(&ctx, HEADS * ROPE, f32::NAN);
-        let replay_x = filled_f32_buffer(&ctx, HIDDEN, f32::NAN); let replay_h = filled_f32_buffer(&ctx, HIDDEN, f32::NAN);
+        let replay_x = filled_f32_buffer(&ctx, HIDDEN, f32::NAN);
+        let replay_h = filled_f32_buffer(&ctx, HIDDEN, f32::NAN);
         let replay_q_a = filled_f32_buffer(&ctx, Q_LORA, f32::NAN);
         let replay_compressed = filled_f32_buffer(&ctx, KV_LORA + ROPE, f32::NAN);
-        let replay_q_resid = filled_f32_buffer(&ctx, Q_LORA, f32::NAN); let replay_k_latent = filled_f32_buffer(&ctx, KV_LORA, f32::NAN);
-        let replay_q = filled_f32_buffer(&ctx, HEADS * QK, f32::NAN); let replay_key_rope = filled_f32_buffer(&ctx, ROPE, f32::NAN);
+        let replay_q_resid = filled_f32_buffer(&ctx, Q_LORA, f32::NAN);
+        let replay_k_latent = filled_f32_buffer(&ctx, KV_LORA, f32::NAN);
+        let replay_q = filled_f32_buffer(&ctx, HEADS * QK, f32::NAN);
+        let replay_key_rope = filled_f32_buffer(&ctx, ROPE, f32::NAN);
         let replay_query_nope = filled_f32_buffer(&ctx, HEADS * NOPE, f32::NAN);
         let replay_query_rope = filled_f32_buffer(&ctx, HEADS * ROPE, f32::NAN);
         let replay_inputs = AttentionPreludeReplayInputs {
@@ -12093,21 +13692,33 @@ mod tests {
             query_nope: &replay_query_nope,
             query_rope: &replay_query_rope,
         };
-        let replay = build_attention_prelude_replay_graph(&ctx, &replay_inputs).expect("capture nine-command attention prelude");
+        let replay = build_attention_prelude_replay_graph(&ctx, &replay_inputs)
+            .expect("capture nine-command attention prelude");
         assert_eq!(replay.graph.command_count(), 9);
         let snapshots = |buffers: [(&Buffer, usize); 9]| {
             buffers
-                .into_iter().map(|(buffer, len)| {
+                .into_iter()
+                .map(|(buffer, len)| {
                     read_f32(buffer, len)
-                        .into_iter().map(f32::to_bits)
+                        .into_iter()
+                        .map(f32::to_bits)
                         .collect::<Vec<_>>()
                 })
                 .collect::<Vec<_>>()
         };
         let _ = ctx.drain_stats();
         for x_values in [[0.5f32, -1.25, 2.0, 0.75], [1.5f32, 0.25, -0.75, 2.25]] {
-            write_f32(&direct_x, &x_values); let mut direct = TokenCommandBuffer::new(&ctx);
-            encode_rmsnorm(&mut direct, &direct_x, &input_norm_weight, &direct_h, HIDDEN, 1e-6).expect("encode direct input norm");
+            write_f32(&direct_x, &x_values);
+            let mut direct = TokenCommandBuffer::new(&ctx);
+            encode_rmsnorm(
+                &mut direct,
+                &direct_x,
+                &input_norm_weight,
+                &direct_h,
+                HIDDEN,
+                1e-6,
+            )
+            .expect("encode direct input norm");
             for (projection, input, output) in [
                 (&projections[0], &direct_h, &direct_q_a),
                 (&projections[1], &direct_h, &direct_compressed),
@@ -12115,18 +13726,78 @@ mod tests {
                 let DeviceReplayProjection::NativeBf16 { weight, rows, cols } = projection else {
                     unreachable!("native fixture");
                 };
-                encode_gemv_native_bf16_seq(&mut direct, weight, *rows, *cols, input, output).expect("encode direct prelude projection");
+                encode_gemv_native_bf16_seq(&mut direct, weight, *rows, *cols, input, output)
+                    .expect("encode direct prelude projection");
             }
-            encode_rmsnorm(&mut direct, &direct_q_a, &q_norm_weight, &direct_q_resid, Q_LORA, 1e-6).expect("encode direct q norm");
-            encode_rmsnorm(&mut direct, &direct_compressed, &kv_norm_weight, &direct_k_latent, KV_LORA, 1e-6).expect("encode direct kv norm");
-            encode_rope_interleaved(&mut direct, &direct_compressed, KV_LORA, &direct_key_rope, 0, &cos, &sin, 1, ROPE, ROPE, ROPE).expect("encode direct key RoPE");
+            encode_rmsnorm(
+                &mut direct,
+                &direct_q_a,
+                &q_norm_weight,
+                &direct_q_resid,
+                Q_LORA,
+                1e-6,
+            )
+            .expect("encode direct q norm");
+            encode_rmsnorm(
+                &mut direct,
+                &direct_compressed,
+                &kv_norm_weight,
+                &direct_k_latent,
+                KV_LORA,
+                1e-6,
+            )
+            .expect("encode direct kv norm");
+            encode_rope_interleaved(
+                &mut direct,
+                &direct_compressed,
+                KV_LORA,
+                &direct_key_rope,
+                0,
+                &cos,
+                &sin,
+                1,
+                ROPE,
+                ROPE,
+                ROPE,
+            )
+            .expect("encode direct key RoPE");
             let DeviceReplayProjection::NativeBf16 { weight, rows, cols } = &projections[2] else {
                 unreachable!("native fixture");
             };
-            encode_gemv_native_bf16_seq(&mut direct, weight, *rows, *cols, &direct_q_resid, &direct_q).expect("encode direct q_b");
-            encode_copy_head_prefix(&mut direct, &direct_q, &direct_query_nope, HEADS, NOPE, ROPE).expect("encode direct query prefix");
-            encode_rope_interleaved(&mut direct, &direct_q, NOPE, &direct_query_rope, 0, &cos, &sin, HEADS, ROPE, QK, ROPE).expect("encode direct query RoPE");
-            assert_eq!(direct.dispatch_count(), 9); direct.commit_and_wait().expect("direct attention prelude");
+            encode_gemv_native_bf16_seq(
+                &mut direct,
+                weight,
+                *rows,
+                *cols,
+                &direct_q_resid,
+                &direct_q,
+            )
+            .expect("encode direct q_b");
+            encode_copy_head_prefix(
+                &mut direct,
+                &direct_q,
+                &direct_query_nope,
+                HEADS,
+                NOPE,
+                ROPE,
+            )
+            .expect("encode direct query prefix");
+            encode_rope_interleaved(
+                &mut direct,
+                &direct_q,
+                NOPE,
+                &direct_query_rope,
+                0,
+                &cos,
+                &sin,
+                HEADS,
+                ROPE,
+                QK,
+                ROPE,
+            )
+            .expect("encode direct query RoPE");
+            assert_eq!(direct.dispatch_count(), 9);
+            direct.commit_and_wait().expect("direct attention prelude");
             let expected = snapshots([
                 (&direct_h, HIDDEN),
                 (&direct_q_a, Q_LORA),
@@ -12138,12 +13809,15 @@ mod tests {
                 (&direct_query_nope, HEADS * NOPE),
                 (&direct_query_rope, HEADS * ROPE),
             ]);
-            write_f32(&replay_x, &x_values); let mut replay_tcb = TokenCommandBuffer::new(&ctx);
+            write_f32(&replay_x, &x_values);
+            let mut replay_tcb = TokenCommandBuffer::new(&ctx);
             replay_tcb
-                .execute_replayable_graph(&replay.graph).expect("execute attention prelude replay");
+                .execute_replayable_graph(&replay.graph)
+                .expect("execute attention prelude replay");
             assert_eq!(replay_tcb.dispatch_count(), 9);
             replay_tcb
-                .commit_and_wait().expect("attention prelude replay");
+                .commit_and_wait()
+                .expect("attention prelude replay");
             let actual = snapshots([
                 (&replay_h, HIDDEN),
                 (&replay_q_a, Q_LORA),
@@ -12172,31 +13846,59 @@ mod tests {
             return;
         };
         let (n_heads, qk_nope, qk_rope, v_dim, position) = (2usize, 2usize, 2usize, 2usize, 1usize);
-        let qk = qk_nope + qk_rope; let kv = vec![1.0, 2.0, 11.0, 12.0, 3.0, 4.0, 13.0, 14.0];
-        let k_rot = vec![21.0, 22.0]; let kvb = f32_buffer(&ctx, &kv);
-        let krb = f32_buffer(&ctx, &k_rot); let keys = filled_f32_buffer(&ctx, 3 * n_heads * qk, -99.0);
-        let values = filled_f32_buffer(&ctx, 3 * n_heads * v_dim, -77.0); let latent = vec![0.25, -1.5, 3.75];
-        let latentb = f32_buffer(&ctx, &latent); let compact_latent = filled_f32_buffer(&ctx, 3 * latent.len(), -66.0);
+        let qk = qk_nope + qk_rope;
+        let kv = vec![1.0, 2.0, 11.0, 12.0, 3.0, 4.0, 13.0, 14.0];
+        let k_rot = vec![21.0, 22.0];
+        let kvb = f32_buffer(&ctx, &kv);
+        let krb = f32_buffer(&ctx, &k_rot);
+        let keys = filled_f32_buffer(&ctx, 3 * n_heads * qk, -99.0);
+        let values = filled_f32_buffer(&ctx, 3 * n_heads * v_dim, -77.0);
+        let latent = vec![0.25, -1.5, 3.75];
+        let latentb = f32_buffer(&ctx, &latent);
+        let compact_latent = filled_f32_buffer(&ctx, 3 * latent.len(), -66.0);
         let compact_rope = filled_f32_buffer(&ctx, 3 * k_rot.len(), -44.0);
-        let q = vec![1.0, 2.0, 90.0, 91.0, 3.0, 4.0, 92.0, 93.0]; let q_rot = vec![31.0, 32.0, 33.0, 34.0];
-        let qb = f32_buffer(&ctx, &q); let qrb = f32_buffer(&ctx, &q_rot); let queries = filled_f32_buffer(&ctx, n_heads * qk, f32::NAN);
-        let query_nope = filled_f32_buffer(&ctx, n_heads * qk_nope, f32::NAN); let k_full = vec![41.0, 42.0, 43.0, 44.0];
-        let kfb = f32_buffer(&ctx, &k_full); let index_keys = filled_f32_buffer(&ctx, 3 * k_full.len(), -55.0);
+        let q = vec![1.0, 2.0, 90.0, 91.0, 3.0, 4.0, 92.0, 93.0];
+        let q_rot = vec![31.0, 32.0, 33.0, 34.0];
+        let qb = f32_buffer(&ctx, &q);
+        let qrb = f32_buffer(&ctx, &q_rot);
+        let queries = filled_f32_buffer(&ctx, n_heads * qk, f32::NAN);
+        let query_nope = filled_f32_buffer(&ctx, n_heads * qk_nope, f32::NAN);
+        let k_full = vec![41.0, 42.0, 43.0, 44.0];
+        let kfb = f32_buffer(&ctx, &k_full);
+        let index_keys = filled_f32_buffer(&ctx, 3 * k_full.len(), -55.0);
         let mut tcb = TokenCommandBuffer::new(&ctx);
         encode_mla_append_kv_expanded(
             &mut tcb, &kvb, &krb, &keys, &values, n_heads, qk_nope, qk_rope, v_dim, position,
-        ).expect("encode expanded MLA append");
-        encode_mla_append_compact(&mut tcb, &latentb, &krb, &compact_latent, &compact_rope, latent.len(), k_rot.len(), position).expect("encode compact MLA append");
-        encode_build_queries(&mut tcb, &qb, &qrb, &queries, n_heads, qk_nope, qk_rope).expect("encode build queries");
-        encode_copy_head_prefix(&mut tcb, &qb, &query_nope, n_heads, qk_nope, qk_rope).expect("encode compact query prefix");
-        encode_append_index_key(&mut tcb, &kfb, &index_keys, 2, k_full.len()).expect("encode index-key append");
-        assert_eq!(tcb.dispatch_count(), 5); tcb.commit_and_wait().expect("MLA primitive command buffer");
-        let mut expected_keys = vec![-99.0; 3 * n_heads * qk]; let mut expected_values = vec![-77.0; 3 * n_heads * v_dim];
+        )
+        .expect("encode expanded MLA append");
+        encode_mla_append_compact(
+            &mut tcb,
+            &latentb,
+            &krb,
+            &compact_latent,
+            &compact_rope,
+            latent.len(),
+            k_rot.len(),
+            position,
+        )
+        .expect("encode compact MLA append");
+        encode_build_queries(&mut tcb, &qb, &qrb, &queries, n_heads, qk_nope, qk_rope)
+            .expect("encode build queries");
+        encode_copy_head_prefix(&mut tcb, &qb, &query_nope, n_heads, qk_nope, qk_rope)
+            .expect("encode compact query prefix");
+        encode_append_index_key(&mut tcb, &kfb, &index_keys, 2, k_full.len())
+            .expect("encode index-key append");
+        assert_eq!(tcb.dispatch_count(), 5);
+        tcb.commit_and_wait().expect("MLA primitive command buffer");
+        let mut expected_keys = vec![-99.0; 3 * n_heads * qk];
+        let mut expected_values = vec![-77.0; 3 * n_heads * v_dim];
         for head in 0..n_heads {
-            let kv_base = head * (qk_nope + v_dim); let key_base = (position * n_heads + head) * qk;
+            let kv_base = head * (qk_nope + v_dim);
+            let key_base = (position * n_heads + head) * qk;
             expected_keys[key_base..key_base + qk_nope]
                 .copy_from_slice(&kv[kv_base..kv_base + qk_nope]);
-            expected_keys[key_base + qk_nope..key_base + qk].copy_from_slice(&k_rot); let value_base = (position * n_heads + head) * v_dim;
+            expected_keys[key_base + qk_nope..key_base + qk].copy_from_slice(&k_rot);
+            let value_base = (position * n_heads + head) * v_dim;
             expected_values[value_base..value_base + v_dim]
                 .copy_from_slice(&kv[kv_base + qk_nope..kv_base + qk_nope + v_dim]);
         }
@@ -12209,7 +13911,8 @@ mod tests {
         assert_eq!(
             read_f32(&compact_rope, 3 * k_rot.len()),
             vec![-44.0, -44.0, 21.0, 22.0, -44.0, -44.0]
-        ); let expected_queries = vec![1.0, 2.0, 31.0, 32.0, 3.0, 4.0, 33.0, 34.0];
+        );
+        let expected_queries = vec![1.0, 2.0, 31.0, 32.0, 3.0, 4.0, 33.0, 34.0];
         assert_eq!(read_f32(&queries, expected_queries.len()), expected_queries);
         assert_eq!(
             read_f32(&query_nope, n_heads * qk_nope),
@@ -12218,13 +13921,35 @@ mod tests {
         assert_eq!(
             read_f32(&index_keys, 3 * k_full.len()),
             vec![-55.0, -55.0, -55.0, -55.0, -55.0, -55.0, -55.0, -55.0, 41.0, 42.0, 43.0, 44.0,]
-        ); let mut rejected = TokenCommandBuffer::new(&ctx);
-        encode_mla_append_compact(&mut rejected, &latentb, &krb, &compact_latent, &compact_rope, 0, 0, usize::MAX).expect("empty compact append is an encode no-op");
-        assert_eq!(rejected.dispatch_count(), 0); let too_small = filled_f32_buffer(&ctx, latent.len(), 0.0);
-        let error = encode_mla_append_compact(&mut rejected, &latentb, &krb, &too_small, &compact_rope, latent.len(), k_rot.len(), position)
+        );
+        let mut rejected = TokenCommandBuffer::new(&ctx);
+        encode_mla_append_compact(
+            &mut rejected,
+            &latentb,
+            &krb,
+            &compact_latent,
+            &compact_rope,
+            0,
+            0,
+            usize::MAX,
+        )
+        .expect("empty compact append is an encode no-op");
+        assert_eq!(rejected.dispatch_count(), 0);
+        let too_small = filled_f32_buffer(&ctx, latent.len(), 0.0);
+        let error = encode_mla_append_compact(
+            &mut rejected,
+            &latentb,
+            &krb,
+            &too_small,
+            &compact_rope,
+            latent.len(),
+            k_rot.len(),
+            position,
+        )
         .expect_err("undersized compact latent cache must fail before dispatch");
         assert!(error.to_string().contains("byte range"));
-        assert_eq!(rejected.dispatch_count(), 0); let short_prefix = filled_f32_buffer(&ctx, n_heads * qk_nope - 1, 0.0);
+        assert_eq!(rejected.dispatch_count(), 0);
+        let short_prefix = filled_f32_buffer(&ctx, n_heads * qk_nope - 1, 0.0);
         let error =
             encode_copy_head_prefix(&mut rejected, &qb, &short_prefix, n_heads, qk_nope, qk_rope)
                 .expect_err("undersized compact query prefix must fail before dispatch");
@@ -12236,84 +13961,178 @@ mod tests {
         let Ok(ctx) = MetalContext::new() else {
             return;
         };
-        let (n_keys, n_heads, head_dim) = (5usize, 2usize, 3usize); let q_full = vec![1.0, -0.5, 2.0, -1.5, 0.25, 0.75];
+        let (n_keys, n_heads, head_dim) = (5usize, 2usize, 3usize);
+        let q_full = vec![1.0, -0.5, 2.0, -1.5, 0.25, 0.75];
         let index_keys = vec![
             0.5, 1.0, -0.25, 2.0, -0.5, 1.0, 2.0, -0.5, 1.0, 0.125, 0.25, 0.5, -0.75, 1.5, -1.0,
         ];
-        let head_weights = vec![0.75, -0.25]; let head_scale = (n_heads as f32).powf(-0.5);
-        let dim_scale = (head_dim as f32).powf(-0.5); let dsa_position = n_keys - 2;
-        let qfb = f32_buffer(&ctx, &q_full); let ikb = f32_buffer(&ctx, &index_keys);
-        let hwb = f32_buffer(&ctx, &head_weights); let dsa_scores = filled_f32_buffer(&ctx, n_keys, f32::NAN);
-        let topk_indices = u32_buffer(&ctx, &[u32::MAX; 3]); let selected = empty_u8_buffer(&ctx, n_keys);
-        let qk_dim = 3usize; let v_dim = 2usize; let queries = vec![0.5, -1.0, 1.5, -0.75, 0.25, 2.0];
-        let sparse_keys: Vec<f32> = (0..n_keys * n_heads * qk_dim).map(|i| ((i as f32 * 0.173).sin() * 1.25) + 0.05)
+        let head_weights = vec![0.75, -0.25];
+        let head_scale = (n_heads as f32).powf(-0.5);
+        let dim_scale = (head_dim as f32).powf(-0.5);
+        let dsa_position = n_keys - 2;
+        let qfb = f32_buffer(&ctx, &q_full);
+        let ikb = f32_buffer(&ctx, &index_keys);
+        let hwb = f32_buffer(&ctx, &head_weights);
+        let dsa_scores = filled_f32_buffer(&ctx, n_keys, f32::NAN);
+        let topk_indices = u32_buffer(&ctx, &[u32::MAX; 3]);
+        let selected = empty_u8_buffer(&ctx, n_keys);
+        let qk_dim = 3usize;
+        let v_dim = 2usize;
+        let queries = vec![0.5, -1.0, 1.5, -0.75, 0.25, 2.0];
+        let sparse_keys: Vec<f32> = (0..n_keys * n_heads * qk_dim)
+            .map(|i| ((i as f32 * 0.173).sin() * 1.25) + 0.05)
             .collect();
-        let sparse_values: Vec<f32> = (0..n_keys * n_heads * v_dim).map(|i| ((i as f32 * 0.219).cos() * 0.75) - 0.1)
+        let sparse_values: Vec<f32> = (0..n_keys * n_heads * v_dim)
+            .map(|i| ((i as f32 * 0.219).cos() * 0.75) - 0.1)
             .collect();
-        let allow = vec![0u32, 2, 4]; let queryb = f32_buffer(&ctx, &queries);
-        let sparse_keyb = f32_buffer(&ctx, &sparse_keys); let sparse_valueb = f32_buffer(&ctx, &sparse_values);
-        let allowb = u32_buffer(&ctx, &allow); let context = filled_f32_buffer(&ctx, n_heads * v_dim, f32::NAN);
-        let sparse_scale = (qk_dim as f32).powf(-0.5); let logits = vec![-4.0, -0.25, 0.0, 1.25, 5.0, 0.75];
-        let bias = vec![0.125, -0.05, 0.2, -0.125, 0.01, 0.3]; let logitb = f32_buffer(&ctx, &logits);
-        let biasb = f32_buffer(&ctx, &bias); let router_scores = filled_f32_buffer(&ctx, logits.len(), f32::NAN);
-        let corrected = filled_f32_buffer(&ctx, logits.len(), f32::NAN); let router_indices = u32_buffer(&ctx, &[u32::MAX; 3]);
-        let router_weights = filled_f32_buffer(&ctx, 3, f32::NAN); let router_exec_slots = u32_buffer(&ctx, &[u32::MAX; 3]);
+        let allow = vec![0u32, 2, 4];
+        let queryb = f32_buffer(&ctx, &queries);
+        let sparse_keyb = f32_buffer(&ctx, &sparse_keys);
+        let sparse_valueb = f32_buffer(&ctx, &sparse_values);
+        let allowb = u32_buffer(&ctx, &allow);
+        let context = filled_f32_buffer(&ctx, n_heads * v_dim, f32::NAN);
+        let sparse_scale = (qk_dim as f32).powf(-0.5);
+        let logits = vec![-4.0, -0.25, 0.0, 1.25, 5.0, 0.75];
+        let bias = vec![0.125, -0.05, 0.2, -0.125, 0.01, 0.3];
+        let logitb = f32_buffer(&ctx, &logits);
+        let biasb = f32_buffer(&ctx, &bias);
+        let router_scores = filled_f32_buffer(&ctx, logits.len(), f32::NAN);
+        let corrected = filled_f32_buffer(&ctx, logits.len(), f32::NAN);
+        let router_indices = u32_buffer(&ctx, &[u32::MAX; 3]);
+        let router_weights = filled_f32_buffer(&ctx, 3, f32::NAN);
+        let router_exec_slots = u32_buffer(&ctx, &[u32::MAX; 3]);
         let mut tcb = TokenCommandBuffer::new(&ctx);
-        encode_dsa_scores(&mut tcb, &qfb, &ikb, &hwb, &dsa_scores, n_keys, n_heads, head_dim, dsa_position, dim_scale, head_scale).expect("encode DSA scores");
-        encode_stable_topk(&mut tcb, &dsa_scores, &topk_indices, &selected, n_keys, 3).expect("encode exact stable top-k");
-        encode_sparse_attention_expanded_ascending_allow(&mut tcb, &queryb, &sparse_keyb, &sparse_valueb, &allowb, &context, n_heads, qk_dim, v_dim, n_keys, allow.len(), sparse_scale).expect("encode expanded sparse attention");
-        encode_router_correction(&mut tcb, &logitb, &biasb, &router_scores, &corrected, logits.len()).expect("encode router correction");
-        encode_router_select_noaux(&mut tcb, &logitb, &biasb, &router_scores, &corrected, &router_indices, &router_weights, &router_exec_slots, logits.len(), 3, 2, 3, true, 1.25).expect("encode exact noaux router selection");
-        assert_eq!(tcb.dispatch_count(), 5); tcb.commit_and_wait().expect("decision primitive command buffer");
-        let mut dsa_host = vec![0.0f32; n_keys]; let mut dsa_f64 = vec![0.0f64; n_keys];
+        encode_dsa_scores(
+            &mut tcb,
+            &qfb,
+            &ikb,
+            &hwb,
+            &dsa_scores,
+            n_keys,
+            n_heads,
+            head_dim,
+            dsa_position,
+            dim_scale,
+            head_scale,
+        )
+        .expect("encode DSA scores");
+        encode_stable_topk(&mut tcb, &dsa_scores, &topk_indices, &selected, n_keys, 3)
+            .expect("encode exact stable top-k");
+        encode_sparse_attention_expanded_ascending_allow(
+            &mut tcb,
+            &queryb,
+            &sparse_keyb,
+            &sparse_valueb,
+            &allowb,
+            &context,
+            n_heads,
+            qk_dim,
+            v_dim,
+            n_keys,
+            allow.len(),
+            sparse_scale,
+        )
+        .expect("encode expanded sparse attention");
+        encode_router_correction(
+            &mut tcb,
+            &logitb,
+            &biasb,
+            &router_scores,
+            &corrected,
+            logits.len(),
+        )
+        .expect("encode router correction");
+        encode_router_select_noaux(
+            &mut tcb,
+            &logitb,
+            &biasb,
+            &router_scores,
+            &corrected,
+            &router_indices,
+            &router_weights,
+            &router_exec_slots,
+            logits.len(),
+            3,
+            2,
+            3,
+            true,
+            1.25,
+        )
+        .expect("encode exact noaux router selection");
+        assert_eq!(tcb.dispatch_count(), 5);
+        tcb.commit_and_wait()
+            .expect("decision primitive command buffer");
+        let mut dsa_host = vec![0.0f32; n_keys];
+        let mut dsa_f64 = vec![0.0f64; n_keys];
         for key_index in 0..n_keys {
             if key_index > dsa_position {
-                dsa_host[key_index] = f32::NEG_INFINITY; dsa_f64[key_index] = f64::NEG_INFINITY; continue;
+                dsa_host[key_index] = f32::NEG_INFINITY;
+                dsa_f64[key_index] = f64::NEG_INFINITY;
+                continue;
             }
-            let key = &index_keys[key_index * head_dim..(key_index + 1) * head_dim]; let mut host_acc = 0.0f32;
+            let key = &index_keys[key_index * head_dim..(key_index + 1) * head_dim];
+            let mut host_acc = 0.0f32;
             let mut authority_acc = 0.0f64;
             for head in 0..n_heads {
                 let query = &q_full[head * head_dim..(head + 1) * head_dim];
-                let host_dot = query.iter().zip(key).map(|(x, y)| x * y).sum::<f32>(); let scaled_weight = head_weights[head] * head_scale;
+                let host_dot = query.iter().zip(key).map(|(x, y)| x * y).sum::<f32>();
+                let scaled_weight = head_weights[head] * head_scale;
                 host_acc += scaled_weight * (host_dot * dim_scale).max(0.0);
                 let authority_dot = query
                     .iter()
-                    .zip(key).map(|(&x, &y)| x as f64 * y as f64) .sum::<f64>();
+                    .zip(key)
+                    .map(|(&x, &y)| x as f64 * y as f64)
+                    .sum::<f64>();
                 authority_acc += (head_weights[head] * head_scale) as f64
                     * (authority_dot * dim_scale as f64).max(0.0);
             }
-            dsa_host[key_index] = host_acc; dsa_f64[key_index] = authority_acc;
+            dsa_host[key_index] = host_acc;
+            dsa_f64[key_index] = authority_acc;
         }
         let dsa_device = read_f32(&dsa_scores, n_keys);
-        assert_v21_pair("DSA scores", &dsa_host[..=dsa_position], &dsa_device[..=dsa_position], &dsa_f64[..=dsa_position]);
+        assert_v21_pair(
+            "DSA scores",
+            &dsa_host[..=dsa_position],
+            &dsa_device[..=dsa_position],
+            &dsa_f64[..=dsa_position],
+        );
         assert_eq!(dsa_device[dsa_position + 1], f32::NEG_INFINITY);
         let topk_device: Vec<usize> = read_u32(&topk_indices, 3)
-            .into_iter().map(|v| v as usize) .collect();
+            .into_iter()
+            .map(|v| v as usize)
+            .collect();
         assert_eq!(topk_device, topk_desc(&dsa_host, 3));
         assert_eq!(topk_device, topk_desc_f64(&dsa_f64, 3));
         assert!(
             topk_device.iter().position(|&index| index == 1)
                 < topk_device.iter().position(|&index| index == 2),
             "the lower index must win the exact DSA score tie"
-        ); let mut sparse_host = vec![0.0f32; n_heads * v_dim]; let mut sparse_f64 = vec![0.0f64; n_heads * v_dim];
+        );
+        let mut sparse_host = vec![0.0f32; n_heads * v_dim];
+        let mut sparse_f64 = vec![0.0f64; n_heads * v_dim];
         for head in 0..n_heads {
-            let query = &queries[head * qk_dim..(head + 1) * qk_dim]; let mut host_logits = Vec::new(); let mut authority_logits = Vec::new();
+            let query = &queries[head * qk_dim..(head + 1) * qk_dim];
+            let mut host_logits = Vec::new();
+            let mut authority_logits = Vec::new();
             for &position in &allow {
-                let position = position as usize; let key_base = (position * n_heads + head) * qk_dim;
+                let position = position as usize;
+                let key_base = (position * n_heads + head) * qk_dim;
                 let key = &sparse_keys[key_base..key_base + qk_dim];
                 host_logits
                     .push(query.iter().zip(key).map(|(x, y)| x * y).sum::<f32>() * sparse_scale);
                 authority_logits.push(
                     query
                         .iter()
-                        .zip(key).map(|(&x, &y)| x as f64 * y as f64)
+                        .zip(key)
+                        .map(|(&x, &y)| x as f64 * y as f64)
                         .sum::<f64>()
                         * sparse_scale as f64,
                 );
             }
             let host_best = host_logits
                 .iter()
-                .copied() .fold(f32::NEG_INFINITY, f32::max);
+                .copied()
+                .fold(f32::NEG_INFINITY, f32::max);
             let mut host_probs: Vec<f32> =
                 host_logits.iter().map(|v| (v - host_best).exp()).collect();
             let host_total = host_probs.iter().sum::<f32>();
@@ -12322,9 +14141,12 @@ mod tests {
             }
             let authority_best = authority_logits
                 .iter()
-                .copied() .fold(f64::NEG_INFINITY, f64::max);
+                .copied()
+                .fold(f64::NEG_INFINITY, f64::max);
             let mut authority_probs: Vec<f64> = authority_logits
-                .iter().map(|v| (v - authority_best).exp()) .collect();
+                .iter()
+                .map(|v| (v - authority_best).exp())
+                .collect();
             let authority_total = authority_probs.iter().sum::<f64>();
             for value in &mut authority_probs {
                 *value /= authority_total;
@@ -12339,24 +14161,47 @@ mod tests {
                 }
             }
         }
-        assert_v21_pair("expanded sparse attention", &sparse_host, &read_f32(&context, sparse_host.len()), &sparse_f64);
+        assert_v21_pair(
+            "expanded sparse attention",
+            &sparse_host,
+            &read_f32(&context, sparse_host.len()),
+            &sparse_f64,
+        );
         let router_host: Vec<f32> = logits.iter().map(|l| 1.0 / (1.0 + (-l).exp())).collect();
         let router_f64: Vec<f64> = logits
-            .iter().map(|&l| 1.0 / (1.0 + (-(l as f64)).exp())) .collect();
-        assert_v21_pair("router sigmoid", &router_host, &read_f32(&router_scores, logits.len()), &router_f64);
+            .iter()
+            .map(|&l| 1.0 / (1.0 + (-(l as f64)).exp()))
+            .collect();
+        assert_v21_pair(
+            "router sigmoid",
+            &router_host,
+            &read_f32(&router_scores, logits.len()),
+            &router_f64,
+        );
         let corrected_host: Vec<f32> = router_host.iter().zip(&bias).map(|(s, b)| s + b).collect();
         let corrected_f64: Vec<f64> = router_f64
             .iter()
-            .zip(&bias).map(|(s, &b)| s + b as f64) .collect();
-        assert_v21_pair("router correction", &corrected_host, &read_f32(&corrected, logits.len()), &corrected_f64); let per_group = 2;
+            .zip(&bias)
+            .map(|(s, &b)| s + b as f64)
+            .collect();
+        assert_v21_pair(
+            "router correction",
+            &corrected_host,
+            &read_f32(&corrected, logits.len()),
+            &corrected_f64,
+        );
+        let per_group = 2;
         let group_scores: Vec<f32> = corrected_host
-            .chunks_exact(per_group).map(|group| {
+            .chunks_exact(per_group)
+            .map(|group| {
                 topk_desc(group, 2)
-                    .into_iter().map(|index| group[index])
+                    .into_iter()
+                    .map(|index| group[index])
                     .sum()
             })
             .collect();
-        let chosen_groups = topk_desc(&group_scores, 2); let mut expert_choice = vec![f32::NEG_INFINITY; logits.len()];
+        let chosen_groups = topk_desc(&group_scores, 2);
+        let mut expert_choice = vec![f32::NEG_INFINITY; logits.len()];
         for group in chosen_groups {
             expert_choice[group * per_group..(group + 1) * per_group]
                 .copy_from_slice(&corrected_host[group * per_group..(group + 1) * per_group]);
@@ -12364,11 +14209,13 @@ mod tests {
         let expected_indices = topk_desc(&expert_choice, 3);
         assert_eq!(
             read_u32(&router_indices, 3)
-                .into_iter().map(|index| index as usize)
+                .into_iter()
+                .map(|index| index as usize)
                 .collect::<Vec<_>>(),
             expected_indices,
             "device noaux selection must preserve stable lower-index ties"
-        ); let mut expected_exec_slots: Vec<u32> = (0..expected_indices.len() as u32).collect();
+        );
+        let mut expected_exec_slots: Vec<u32> = (0..expected_indices.len() as u32).collect();
         expected_exec_slots.sort_by_key(|&slot| expected_indices[slot as usize]);
         assert_eq!(
             read_u32(&router_exec_slots, 3),
@@ -12376,27 +14223,72 @@ mod tests {
             "device execution slots must sort selected experts by ascending ID"
         );
         let mut expected_weights: Vec<f32> = expected_indices
-            .iter().map(|&index| router_host[index]) .collect();
+            .iter()
+            .map(|&index| router_host[index])
+            .collect();
         let total = expected_weights.iter().sum::<f32>() + 1e-20;
         for weight in &mut expected_weights {
             *weight = (*weight / total) * 1.25;
         }
         let mut authority_weights: Vec<f64> = expected_indices
-            .iter().map(|&index| router_f64[index]) .collect();
+            .iter()
+            .map(|&index| router_f64[index])
+            .collect();
         let authority_total = authority_weights.iter().sum::<f64>() + 1e-20;
         for weight in &mut authority_weights {
             *weight = (*weight / authority_total) * 1.25;
         }
-        assert_v21_pair("router selected weights", &expected_weights, &read_f32(&router_weights, 3), &authority_weights);
+        assert_v21_pair(
+            "router selected weights",
+            &expected_weights,
+            &read_f32(&router_weights, 3),
+            &authority_weights,
+        );
         let mut rejected = TokenCommandBuffer::new(&ctx);
-        let error = encode_router_select_noaux(&mut rejected, &logitb, &biasb, &router_scores, &corrected, &router_indices, &router_weights, &router_exec_slots, logits.len(), 4, 2, 3, true, 1.25)
+        let error = encode_router_select_noaux(
+            &mut rejected,
+            &logitb,
+            &biasb,
+            &router_scores,
+            &corrected,
+            &router_indices,
+            &router_weights,
+            &router_exec_slots,
+            logits.len(),
+            4,
+            2,
+            3,
+            true,
+            1.25,
+        )
         .expect_err("non-divisible expert groups must fail before dispatch");
         assert!(error.to_string().contains("unsupported geometry"));
-        assert_eq!(rejected.dispatch_count(), 0); let tie_logits = f32_buffer(&ctx, &[0.0; 4]); let tie_bias = f32_buffer(&ctx, &[0.0; 4]);
-        let tie_scores = filled_f32_buffer(&ctx, 4, f32::NAN); let tie_corrected = filled_f32_buffer(&ctx, 4, f32::NAN);
-        let tie_indices = u32_buffer(&ctx, &[u32::MAX; 2]); let tie_weights = filled_f32_buffer(&ctx, 2, f32::NAN);
-        let tie_exec_slots = u32_buffer(&ctx, &[u32::MAX; 2]); let mut tie_tcb = TokenCommandBuffer::new(&ctx);
-        encode_router_select_noaux(&mut tie_tcb, &tie_logits, &tie_bias, &tie_scores, &tie_corrected, &tie_indices, &tie_weights, &tie_exec_slots, 4, 2, 1, 2, false, 1.0).expect("encode tied router");
+        assert_eq!(rejected.dispatch_count(), 0);
+        let tie_logits = f32_buffer(&ctx, &[0.0; 4]);
+        let tie_bias = f32_buffer(&ctx, &[0.0; 4]);
+        let tie_scores = filled_f32_buffer(&ctx, 4, f32::NAN);
+        let tie_corrected = filled_f32_buffer(&ctx, 4, f32::NAN);
+        let tie_indices = u32_buffer(&ctx, &[u32::MAX; 2]);
+        let tie_weights = filled_f32_buffer(&ctx, 2, f32::NAN);
+        let tie_exec_slots = u32_buffer(&ctx, &[u32::MAX; 2]);
+        let mut tie_tcb = TokenCommandBuffer::new(&ctx);
+        encode_router_select_noaux(
+            &mut tie_tcb,
+            &tie_logits,
+            &tie_bias,
+            &tie_scores,
+            &tie_corrected,
+            &tie_indices,
+            &tie_weights,
+            &tie_exec_slots,
+            4,
+            2,
+            1,
+            2,
+            false,
+            1.0,
+        )
+        .expect("encode tied router");
         tie_tcb.commit_and_wait().expect("tied router command");
         assert_eq!(
             read_u32(&tie_indices, 2),
@@ -12405,10 +14297,13 @@ mod tests {
         );
         assert_eq!(read_f32(&tie_weights, 2), vec![0.5, 0.5]);
         assert_eq!(read_u32(&tie_exec_slots, 2), vec![0, 1]);
-        let expert_trace = u32_buffer(&ctx, &[u32::MAX; 6]); let mut trace_tcb = TokenCommandBuffer::new(&ctx);
-        encode_device_expert_trace_copy(&mut trace_tcb, &tie_indices, &expert_trace, 2, 3).expect("encode deferred expert trace");
+        let expert_trace = u32_buffer(&ctx, &[u32::MAX; 6]);
+        let mut trace_tcb = TokenCommandBuffer::new(&ctx);
+        encode_device_expert_trace_copy(&mut trace_tcb, &tie_indices, &expert_trace, 2, 3)
+            .expect("encode deferred expert trace");
         trace_tcb
-            .commit_and_wait().expect("deferred expert trace command");
+            .commit_and_wait()
+            .expect("deferred expert trace command");
         assert_eq!(
             read_u32(&expert_trace, 6),
             vec![u32::MAX, u32::MAX, u32::MAX, 0, 1, u32::MAX]
@@ -12419,7 +14314,8 @@ mod tests {
         let Ok(ctx) = MetalContext::new() else {
             return;
         };
-        let arch = tiny_arch(); let pool = ActPool::new(&ctx, &arch).expect("activation pool");
+        let arch = tiny_arch();
+        let pool = ActPool::new(&ctx, &arch).expect("activation pool");
         assert_eq!(
             pool.final_norm_weight.length(),
             (arch.hidden * std::mem::size_of::<f32>()) as u64
@@ -12445,19 +14341,26 @@ mod tests {
         assert_eq!(read_u32(&pool.shared_expert_slot, 1), vec![0]);
         {
             let layers = pool
-                .persistent_expert_layers .lock().expect("persistent expert layers");
+                .persistent_expert_layers
+                .lock()
+                .expect("persistent expert layers");
             assert_eq!(layers.len(), arch.n_layers);
-            assert!(layers.iter().all(Option::is_none), "default path must not build or lease an expert descriptor table");
+            assert!(
+                layers.iter().all(Option::is_none),
+                "default path must not build or lease an expert descriptor table"
+            );
         }
         assert!(
             pool.expert_wave_scratch
-                .lock().expect("scratch lock")
+                .lock()
+                .expect("scratch lock")
                 .is_none(),
             "default path must not allocate expert-wave scratch"
         );
         let first_address = {
             let scratch = pool
-                .ensure_expert_wave_scratch(&ctx, 2, 7, 4).expect("initial scratch");
+                .ensure_expert_wave_scratch(&ctx, 2, 7, 4)
+                .expect("initial scratch");
             let scratch = scratch.as_ref().expect("scratch allocated");
             assert_eq!(scratch.expert_capacity, 2);
             assert_eq!(scratch.intermediate_capacity, 7);
@@ -12467,13 +14370,19 @@ mod tests {
         };
         {
             let scratch = pool
-                .ensure_expert_wave_scratch(&ctx, 1, 6, 4).expect("reuse adequate scratch");
+                .ensure_expert_wave_scratch(&ctx, 1, 6, 4)
+                .expect("reuse adequate scratch");
             let scratch = scratch.as_ref().expect("scratch retained");
-            assert_eq!(scratch.combined.gpu_address(), first_address, "adequate scratch must retain its Metal resources");
+            assert_eq!(
+                scratch.combined.gpu_address(),
+                first_address,
+                "adequate scratch must retain its Metal resources"
+            );
         }
         {
             let scratch = pool
-                .ensure_expert_wave_scratch(&ctx, 3, 9, 8).expect("grow scratch");
+                .ensure_expert_wave_scratch(&ctx, 3, 9, 8)
+                .expect("grow scratch");
             let scratch = scratch.as_ref().expect("scratch grown");
             assert_eq!(scratch.expert_capacity, 3);
             assert_eq!(scratch.intermediate_capacity, 9);
@@ -12496,51 +14405,89 @@ mod tests {
         let Ok(ctx) = MetalContext::new() else {
             return;
         };
-        let arch = tiny_arch(); let pool = ActPool::new(&ctx, &arch).expect("final-head activation pool");
-        let norm_weight = [1.0f32, 0.75, 1.25, 0.5]; write_f32(&pool.final_norm_weight, &norm_weight);
+        let arch = tiny_arch();
+        let pool = ActPool::new(&ctx, &arch).expect("final-head activation pool");
+        let norm_weight = [1.0f32, 0.75, 1.25, 0.5];
+        write_f32(&pool.final_norm_weight, &norm_weight);
         let weights: Vec<f32> = (0..arch.vocab_size)
             .flat_map(|row| {
-                (0..arch.hidden).map(move |col| ((row + 1) as f32 * 0.0625) - (col as f32 * 0.03125))
+                (0..arch.hidden)
+                    .map(move |col| ((row + 1) as f32 * 0.0625) - (col as f32 * 0.03125))
             })
             .collect();
         let bf16_bits: Vec<u16> = weights
-            .iter().map(|value| half::bf16::from_f32(*value).to_bits()) .collect();
+            .iter()
+            .map(|value| half::bf16::from_f32(*value).to_bits())
+            .collect();
         let weight = ctx
-            .new_buffer_with_bytes_checked(bytemuck::cast_slice(&bf16_bits)).expect("native bf16 final-head weight");
+            .new_buffer_with_bytes_checked(bytemuck::cast_slice(&bf16_bits))
+            .expect("native bf16 final-head weight");
         let head = DeviceHead::NativeBf16 {
             weight,
             rows: arch.vocab_size as u32,
             cols: arch.hidden as u32,
         };
         let run_direct = |x: &[f32]| {
-            write_f32(&pool.x, x); let mut tcb = TokenCommandBuffer::new(&ctx);
-            encode_rmsnorm(&mut tcb, &pool.x, &pool.final_norm_weight, &pool.final_hidden, arch.hidden, arch.rms_norm_eps).expect("encode direct final norm");
+            write_f32(&pool.x, x);
+            let mut tcb = TokenCommandBuffer::new(&ctx);
+            encode_rmsnorm(
+                &mut tcb,
+                &pool.x,
+                &pool.final_norm_weight,
+                &pool.final_hidden,
+                arch.hidden,
+                arch.rms_norm_eps,
+            )
+            .expect("encode direct final norm");
             let DeviceHead::NativeBf16 { weight, rows, cols } = &head else {
                 unreachable!("native fixture");
             };
-            encode_gemv_native_bf16_seq(&mut tcb, weight, *rows, *cols, &pool.final_hidden, &pool.logits).expect("encode direct native head");
-            encode_argmax_f32(&mut tcb, &pool.logits, *rows, &pool.sample_token).expect("encode direct argmax");
-            encode_sample_topk_f32(&mut tcb, &pool.logits, *rows, GPU_LM_HEAD_DIAG_TOPK, &pool.head_topk_idx, &pool.head_topk_val).expect("encode direct top-k");
+            encode_gemv_native_bf16_seq(
+                &mut tcb,
+                weight,
+                *rows,
+                *cols,
+                &pool.final_hidden,
+                &pool.logits,
+            )
+            .expect("encode direct native head");
+            encode_argmax_f32(&mut tcb, &pool.logits, *rows, &pool.sample_token)
+                .expect("encode direct argmax");
+            encode_sample_topk_f32(
+                &mut tcb,
+                &pool.logits,
+                *rows,
+                GPU_LM_HEAD_DIAG_TOPK,
+                &pool.head_topk_idx,
+                &pool.head_topk_val,
+            )
+            .expect("encode direct top-k");
             tcb.commit_and_wait().expect("direct final-head graph");
             (
                 read_f32(&pool.final_hidden, arch.hidden)
-                    .into_iter().map(f32::to_bits)
+                    .into_iter()
+                    .map(f32::to_bits)
                     .collect::<Vec<_>>(),
                 read_f32(&pool.logits, arch.vocab_size)
-                    .into_iter().map(f32::to_bits)
+                    .into_iter()
+                    .map(f32::to_bits)
                     .collect::<Vec<_>>(),
                 read_u32(&pool.sample_token, 1),
                 read_u32(&pool.head_topk_idx, GPU_LM_HEAD_DIAG_TOPK as usize),
                 read_f32(&pool.head_topk_val, GPU_LM_HEAD_DIAG_TOPK as usize)
-                    .into_iter().map(f32::to_bits)
+                    .into_iter()
+                    .map(f32::to_bits)
                     .collect::<Vec<_>>(),
             )
         };
-        let first_x = [0.5f32, -1.0, 1.5, 0.25]; let direct_first = run_direct(&first_x);
+        let first_x = [0.5f32, -1.0, 1.5, 0.25];
+        let direct_first = run_direct(&first_x);
         let graph =
-            build_final_head_replay_graph(&ctx, &head, &pool, arch.hidden, arch.rms_norm_eps).expect("capture native final-head graph");
+            build_final_head_replay_graph(&ctx, &head, &pool, arch.hidden, arch.rms_norm_eps)
+                .expect("capture native final-head graph");
         assert_eq!(graph.command_count(), 4);
-        let key_before = final_head_replay_key(&head, &pool, arch.hidden, arch.rms_norm_eps); let _ = ctx.drain_stats();
+        let key_before = final_head_replay_key(&head, &pool, arch.hidden, arch.rms_norm_eps);
+        let _ = ctx.drain_stats();
         for (x, direct) in [
             (first_x.as_slice(), direct_first),
             (
@@ -12548,24 +14495,31 @@ mod tests {
                 run_direct(&[1.25, -0.5, 0.125, 2.0]),
             ),
         ] {
-            write_f32(&pool.x, x); write_f32(&pool.final_hidden, &vec![f32::NAN; arch.hidden]);
-            write_f32(&pool.logits, &vec![f32::NAN; arch.vocab_size]); let mut replay = TokenCommandBuffer::new(&ctx);
+            write_f32(&pool.x, x);
+            write_f32(&pool.final_hidden, &vec![f32::NAN; arch.hidden]);
+            write_f32(&pool.logits, &vec![f32::NAN; arch.vocab_size]);
+            let mut replay = TokenCommandBuffer::new(&ctx);
             replay
-                .execute_replayable_graph(&graph).expect("execute native final-head replay");
+                .execute_replayable_graph(&graph)
+                .expect("execute native final-head replay");
             assert_eq!(replay.dispatch_count(), 4);
             replay
-                .commit_and_wait().expect("native final-head replay command");
+                .commit_and_wait()
+                .expect("native final-head replay command");
             let actual = (
                 read_f32(&pool.final_hidden, arch.hidden)
-                    .into_iter().map(f32::to_bits)
+                    .into_iter()
+                    .map(f32::to_bits)
                     .collect::<Vec<_>>(),
                 read_f32(&pool.logits, arch.vocab_size)
-                    .into_iter().map(f32::to_bits)
+                    .into_iter()
+                    .map(f32::to_bits)
                     .collect::<Vec<_>>(),
                 read_u32(&pool.sample_token, 1),
                 read_u32(&pool.head_topk_idx, GPU_LM_HEAD_DIAG_TOPK as usize),
                 read_f32(&pool.head_topk_val, GPU_LM_HEAD_DIAG_TOPK as usize)
-                    .into_iter().map(f32::to_bits)
+                    .into_iter()
+                    .map(f32::to_bits)
                     .collect::<Vec<_>>(),
             );
             assert_eq!(
@@ -12590,25 +14544,35 @@ mod tests {
             return;
         };
         let n = 257usize;
-        let first: Vec<f32> = (0..n).map(|i| ((i % 19) as i32 - 9) as f32 * 0.25)
+        let first: Vec<f32> = (0..n)
+            .map(|i| ((i % 19) as i32 - 9) as f32 * 0.25)
             .collect();
-        let second: Vec<f32> = (0..n).map(|i| (((i * 7) % 23) as i32 - 11) as f32 * 0.125)
+        let second: Vec<f32> = (0..n)
+            .map(|i| (((i * 7) % 23) as i32 - 11) as f32 * 0.125)
             .collect();
-        let first_scale = 0.75f32; let second_scale = -1.25f32;
+        let first_scale = 0.75f32;
+        let second_scale = -1.25f32;
         let expected: Vec<f32> = first
             .iter()
-            .zip(&second).map(|(&a, &b)| {
-                let mut value = 0.0f32; value += a * first_scale; value += b * second_scale;
+            .zip(&second)
+            .map(|(&a, &b)| {
+                let mut value = 0.0f32;
+                value += a * first_scale;
+                value += b * second_scale;
                 value
             })
             .collect();
-        let first_buffer = f32_buffer(&ctx, &first); let second_buffer = f32_buffer(&ctx, &second);
+        let first_buffer = f32_buffer(&ctx, &first);
+        let second_buffer = f32_buffer(&ctx, &second);
         let combined = f32_buffer(&ctx, &vec![91.0; n]);
         for stale in [91.0f32, -37.5f32] {
-            write_f32(&combined, &vec![stale; n]); zero_f32(&combined, n).expect("zero reused accumulator");
+            write_f32(&combined, &vec![stale; n]);
+            zero_f32(&combined, n).expect("zero reused accumulator");
             let mut wave = TokenCommandBuffer::new(&ctx);
-            encode_axpy_f32(&mut wave, &combined, &first_buffer, first_scale, n as u32).expect("encode first ordered combine");
-            encode_axpy_f32(&mut wave, &combined, &second_buffer, second_scale, n as u32).expect("encode second ordered combine");
+            encode_axpy_f32(&mut wave, &combined, &first_buffer, first_scale, n as u32)
+                .expect("encode first ordered combine");
+            encode_axpy_f32(&mut wave, &combined, &second_buffer, second_scale, n as u32)
+                .expect("encode second ordered combine");
             wave.commit_and_wait().expect("reused combine wave");
             assert_eq!(
                 read_f32(&combined, n),
@@ -12624,23 +14588,30 @@ mod tests {
             (8192usize, 16384usize),
             (32767usize, 32768usize),
         ];
-        let mut host = HostSequenceScratch::new(64); let mut capacity = 64usize;
+        let mut host = HostSequenceScratch::new(64);
+        let mut capacity = 64usize;
         for (position, expected_capacity) in cases {
             let need = position.checked_add(1).expect("fixture length");
             capacity = grown_sequence_capacity(capacity, need).expect("capacity growth");
-            assert_eq!(capacity, expected_capacity); host.grow_preserving(capacity);
+            assert_eq!(capacity, expected_capacity);
+            host.grow_preserving(capacity);
             let active =
                 active_sequence_len(position, capacity, "test scratch").expect("position fits");
             assert_eq!(active, need);
             assert!(
-                checked_sequence_bytes(active, std::mem::size_of::<f32>(), "test active").expect("active bytes")
+                checked_sequence_bytes(active, std::mem::size_of::<f32>(), "test active")
+                    .expect("active bytes")
                     <= checked_sequence_bytes(
                         capacity,
                         std::mem::size_of::<f32>(),
                         "test capacity"
-                    ).expect("capacity bytes")
-            ); host.index_scores[active - 1] = position as f32; host.selection_indices[active - 1] = position;
-            host.attention_allowed[active - 1] = 1; host.attention_scores[active - 1] = -(position as f32);
+                    )
+                    .expect("capacity bytes")
+            );
+            host.index_scores[active - 1] = position as f32;
+            host.selection_indices[active - 1] = position;
+            host.attention_allowed[active - 1] = 1;
+            host.attention_scores[active - 1] = -(position as f32);
         }
         assert!(
             active_sequence_len(8192, 8192, "old fixed ActPool score buffer").is_err(),
@@ -12649,14 +14620,20 @@ mod tests {
     }
     #[test]
     fn host_scratch_growth_preserves_state_and_adequate_reserve_is_allocation_free() {
-        let mut host = HostSequenceScratch::new(8192); host.index_scores[0] = 1.25; host.index_scores[8191] = -7.5;
-        host.selection_indices[8191] = 4096; host.attention_allowed[8191] = 1; host.attention_scores[8191] = 3.75;
+        let mut host = HostSequenceScratch::new(8192);
+        host.index_scores[0] = 1.25;
+        host.index_scores[8191] = -7.5;
+        host.selection_indices[8191] = 4096;
+        host.attention_allowed[8191] = 1;
+        host.attention_scores[8191] = 3.75;
         host.grow_preserving(16384);
         assert_eq!(host.index_scores[0], 1.25);
         assert_eq!(host.index_scores[8191], -7.5);
         assert_eq!(host.selection_indices[8191], 4096);
         assert_eq!(host.attention_allowed[8191], 1);
-        assert_eq!(host.attention_scores[8191], 3.75); host.index_scores[8192] = 9.5; host.grow_preserving(32768);
+        assert_eq!(host.attention_scores[8191], 3.75);
+        host.index_scores[8192] = 9.5;
+        host.grow_preserving(32768);
         assert_eq!(host.index_scores[8192], 9.5);
         let pointers = (
             host.index_scores.as_ptr(),
@@ -12669,7 +14646,8 @@ mod tests {
             host.selection_indices.capacity(),
             host.attention_allowed.capacity(),
             host.attention_scores.capacity(),
-        ); host.grow_preserving(32768);
+        );
+        host.grow_preserving(32768);
         assert_eq!(
             pointers,
             (
@@ -12693,9 +14671,16 @@ mod tests {
     }
     #[test]
     fn reused_sequence_topk_matches_numeric_parity_oracle() {
-        let mut values = vec![f32::NEG_INFINITY; 32768]; values[0] = 2.0; values[8191] = 8.0; values[8192] = 8.0; values[16384] = -1.0;
-        values[32767] = 7.0; let expected = topk_desc(&values, 4); let mut selection = vec![usize::MAX; values.len()];
-        let pointer = selection.as_ptr(); let capacity = selection.capacity();
+        let mut values = vec![f32::NEG_INFINITY; 32768];
+        values[0] = 2.0;
+        values[8191] = 8.0;
+        values[8192] = 8.0;
+        values[16384] = -1.0;
+        values[32767] = 7.0;
+        let expected = topk_desc(&values, 4);
+        let mut selection = vec![usize::MAX; values.len()];
+        let pointer = selection.as_ptr();
+        let capacity = selection.capacity();
         let actual = topk_desc_with_scratch(&values, 4, &mut selection).expect("scratch selection");
         assert_eq!(actual, expected);
         assert_eq!(actual[..2], [8191, 8192], "lower index wins a score tie");
@@ -12710,17 +14695,22 @@ mod tests {
         let Ok(ctx) = MetalContext::new() else {
             return;
         };
-        let mut scratch = SequenceScratch::new(&ctx, 8192).expect("initial scratch"); scratch.host.index_scores[0] = 0.25;
+        let mut scratch = SequenceScratch::new(&ctx, 8192).expect("initial scratch");
+        scratch.host.index_scores[0] = 0.25;
         scratch.host.index_scores[8191] = -3.5;
         scratch
-            .store_index_scores(8192).expect("store initial score state");
+            .store_index_scores(8192)
+            .expect("store initial score state");
         scratch.reserve(&ctx, 8193).expect("grow past 8K");
         assert_eq!(scratch.capacity, 16384);
-        assert_eq!(scratch.device_score_len, 8192); let copied = read_f32(&scratch.index_scores_device, 8192);
+        assert_eq!(scratch.device_score_len, 8192);
+        let copied = read_f32(&scratch.index_scores_device, 8192);
         assert_eq!(copied[0], 0.25);
-        assert_eq!(copied[8191], -3.5); let device_contents = scratch.index_scores_device.contents();
+        assert_eq!(copied[8191], -3.5);
+        let device_contents = scratch.index_scores_device.contents();
         scratch
-            .reserve(&ctx, 16384).expect("adequate reserve is a no-op");
+            .reserve(&ctx, 16384)
+            .expect("adequate reserve is a no-op");
         assert_eq!(scratch.index_scores_device.contents(), device_contents);
     }
     #[test]
@@ -12728,7 +14718,9 @@ mod tests {
         let Ok(ctx) = MetalContext::new() else {
             return;
         };
-        let arch = tiny_arch(); let qk = arch.qk_dim(); let mut session = ResidentSession::new(&ctx, &arch, 8192).expect("initial session");
+        let arch = tiny_arch();
+        let qk = arch.qk_dim();
+        let mut session = ResidentSession::new(&ctx, &arch, 8192).expect("initial session");
         let expanded_layers = match &session.attention {
             ResidentAttentionState::Expanded(cache) => &cache.layers,
             ResidentAttentionState::Compact(_) => panic!("default session must be expanded"),
@@ -12737,26 +14729,38 @@ mod tests {
         {
             let cache = session.attention.expanded_layer(0).expect("expanded layer");
             unsafe {
-                *(cache.keys.contents() as *mut f32) = 1.0; *(cache.keys.contents() as *mut f32).add(8191 * qk + (qk - 1)) = 2.0;
-                *(cache.values.contents() as *mut f32).add(8191) = 3.0; *(session.dsa.index_keys[0].contents() as *mut f32).add(8191) = 4.0;
+                *(cache.keys.contents() as *mut f32) = 1.0;
+                *(cache.keys.contents() as *mut f32).add(8191 * qk + (qk - 1)) = 2.0;
+                *(cache.values.contents() as *mut f32).add(8191) = 3.0;
+                *(session.dsa.index_keys[0].contents() as *mut f32).add(8191) = 4.0;
             }
         }
-        session.dsa.sequence_scratch.host.index_scores[0] = 5.0; session.dsa.sequence_scratch.host.index_scores[8191] = 6.0;
+        session.dsa.sequence_scratch.host.index_scores[0] = 5.0;
+        session.dsa.sequence_scratch.host.index_scores[8191] = 6.0;
         session
             .dsa
-            .sequence_scratch .store_index_scores(8192).expect("store 8K scores");
+            .sequence_scratch
+            .store_index_scores(8192)
+            .expect("store 8K scores");
         session.seq_len = 8192;
         session
-            .reserve(&ctx, &arch, 8193).expect("grow beyond the old 8K limit");
+            .reserve(&ctx, &arch, 8193)
+            .expect("grow beyond the old 8K limit");
         assert_eq!(session.attention.capacity(), 16384);
         assert_eq!(session.dsa.sequence_scratch.capacity, 16384);
         {
             let cache = session.attention.expanded_layer(0).expect("expanded layer");
             unsafe {
                 assert_eq!(*(cache.keys.contents() as *const f32), 1.0);
-                assert_eq!(*(cache.keys.contents() as *const f32).add(8191 * qk + (qk - 1)), 2.0);
+                assert_eq!(
+                    *(cache.keys.contents() as *const f32).add(8191 * qk + (qk - 1)),
+                    2.0
+                );
                 assert_eq!(*(cache.values.contents() as *const f32).add(8191), 3.0);
-                assert_eq!(*(session.dsa.index_keys[0].contents() as *const f32).add(8191), 4.0);
+                assert_eq!(
+                    *(session.dsa.index_keys[0].contents() as *const f32).add(8191),
+                    4.0
+                );
             }
         }
         let scores = read_f32(&session.dsa.sequence_scratch.index_scores_device, 8192);
@@ -12765,28 +14769,41 @@ mod tests {
         {
             let cache = session.attention.expanded_layer(0).expect("expanded layer");
             unsafe {
-                *(cache.keys.contents() as *mut f32).add(8192 * qk) = 7.0; *(cache.values.contents() as *mut f32).add(8192) = 8.0;
+                *(cache.keys.contents() as *mut f32).add(8192 * qk) = 7.0;
+                *(cache.values.contents() as *mut f32).add(8192) = 8.0;
                 *(session.dsa.index_keys[0].contents() as *mut f32).add(8192) = 9.0;
             }
         }
         session.dsa.sequence_scratch.host.index_scores[8192] = 10.0;
         session
             .dsa
-            .sequence_scratch .store_index_scores(8193).expect("store post-8K score");
+            .sequence_scratch
+            .store_index_scores(8193)
+            .expect("store post-8K score");
         session.seq_len = 8193;
         session
-            .reserve(&ctx, &arch, 32768).expect("reserve through position 32767");
+            .reserve(&ctx, &arch, 32768)
+            .expect("reserve through position 32767");
         assert_eq!(session.attention.capacity(), 32768);
         assert_eq!(session.dsa.sequence_scratch.capacity, 32768);
         {
             let cache = session.attention.expanded_layer(0).expect("expanded layer");
             unsafe {
                 assert_eq!(*(cache.keys.contents() as *const f32), 1.0);
-                assert_eq!(*(cache.keys.contents() as *const f32).add(8191 * qk + (qk - 1)), 2.0);
-                assert_eq!(*(session.dsa.index_keys[0].contents() as *const f32).add(8191), 4.0);
+                assert_eq!(
+                    *(cache.keys.contents() as *const f32).add(8191 * qk + (qk - 1)),
+                    2.0
+                );
+                assert_eq!(
+                    *(session.dsa.index_keys[0].contents() as *const f32).add(8191),
+                    4.0
+                );
                 assert_eq!(*(cache.keys.contents() as *const f32).add(8192 * qk), 7.0);
                 assert_eq!(*(cache.values.contents() as *const f32).add(8192), 8.0);
-                assert_eq!(*(session.dsa.index_keys[0].contents() as *const f32).add(8192), 9.0);
+                assert_eq!(
+                    *(session.dsa.index_keys[0].contents() as *const f32).add(8192),
+                    9.0
+                );
             }
         }
         let scores = read_f32(&session.dsa.sequence_scratch.index_scores_device, 8193);
@@ -12829,7 +14846,8 @@ mod tests {
                 (8 * arch.qk_rope_head_dim * 4) as u64
             );
             unsafe {
-                *(cache.layers[0].latents.contents() as *mut f32) = 11.0; *(cache.layers[0].rope_tails.contents() as *mut f32) = 12.0;
+                *(cache.layers[0].latents.contents() as *mut f32) = 11.0;
+                *(cache.layers[0].rope_tails.contents() as *mut f32) = 12.0;
             }
         }
         unsafe {
@@ -12837,7 +14855,8 @@ mod tests {
         }
         compact.seq_len = 8;
         compact
-            .reserve(&ctx, &arch, 9).expect("compact and index state grow together");
+            .reserve(&ctx, &arch, 9)
+            .expect("compact and index state grow together");
         let ResidentAttentionState::Compact(cache) = &compact.attention else {
             panic!("compact reserve must not replace the selected layout");
         };
@@ -12860,26 +14879,54 @@ mod tests {
         };
         let arch = tiny_arch();
         assert!(
-            ResidentSession::new_with_layout(&ctx, &arch, 8, ResidentAttentionLayout::Expanded, true)
+            ResidentSession::new_with_layout(
+                &ctx,
+                &arch,
+                8,
+                ResidentAttentionLayout::Expanded,
+                true
+            )
             .is_err(),
             "device DSA must not allocate under expanded attention"
         );
-        let mut device = ResidentSession::new_with_layout(&ctx, &arch, 8, ResidentAttentionLayout::Compact, true).expect("compact device DSA session");
+        let mut device = ResidentSession::new_with_layout(
+            &ctx,
+            &arch,
+            8,
+            ResidentAttentionLayout::Compact,
+            true,
+        )
+        .expect("compact device DSA session");
         assert!(device.dsa.device_selection_enabled());
-        assert_eq!(device.dsa.ranked_indices().unwrap().length(), (arch.index_topk.max(1) * 4) as u64, "device DSA reuses compact MLA's fixed ranked-index buffer"); let ranked_before = device.dsa.ranked_indices().unwrap().contents(); device.seq_len = 8;
+        assert_eq!(
+            device.dsa.ranked_indices().unwrap().length(),
+            (arch.index_topk.max(1) * 4) as u64,
+            "device DSA reuses compact MLA's fixed ranked-index buffer"
+        );
+        let ranked_before = device.dsa.ranked_indices().unwrap().contents();
+        device.seq_len = 8;
         device
-            .reserve(&ctx, &arch, 9).expect("device DSA state growth");
+            .reserve(&ctx, &arch, 9)
+            .expect("device DSA state growth");
         assert_eq!(device.dsa.capacity, 16);
-        assert_eq!(device.dsa.ranked_indices().unwrap().contents(), ranked_before, "ranked output is O(index_topk), not O(sequence), and does not grow");
+        assert_eq!(
+            device.dsa.ranked_indices().unwrap().contents(),
+            ranked_before,
+            "ranked output is O(index_topk), not O(sequence), and does not grow"
+        );
         assert!(device.dsa.device_selection_enabled());
         assert!(
             DeviceDsaTransformScratch::new(&ctx, &arch).is_err(),
             "zero/odd synthetic RoPE geometry must fail before allocation"
-        ); let mut transform_arch = arch.clone(); transform_arch.index_head_dim = 4; transform_arch.qk_rope_head_dim = 2;
+        );
+        let mut transform_arch = arch.clone();
+        transform_arch.index_head_dim = 4;
+        transform_arch.qk_rope_head_dim = 2;
         let pool = ActPool::new(&ctx, &transform_arch).expect("default activation pool");
         assert!(
             pool.device_dsa_transform_scratch
-                .lock().expect("device DSA transform scratch")
+                .lock()
+                .expect("device DSA transform scratch")
                 .is_none(),
             "ordinary activation-pool construction must allocate no device DSA transform buffers"
         );
@@ -12890,9 +14937,11 @@ mod tests {
             "ordinary activation-pool construction must allocate no device attention prelude buffers"
         );
         let mut transform_guard = pool
-            .ensure_device_dsa_transform_scratch(&ctx, &transform_arch).expect("lazy device DSA transform scratch");
+            .ensure_device_dsa_transform_scratch(&ctx, &transform_arch)
+            .expect("lazy device DSA transform scratch");
         let transform = transform_guard
-            .as_mut().expect("device DSA transform scratch initialized");
+            .as_mut()
+            .expect("device DSA transform scratch initialized");
         assert_eq!(
             transform.query.length(),
             (transform_arch.index_n_heads * transform_arch.index_head_dim * 4) as u64
@@ -12904,11 +14953,14 @@ mod tests {
         assert_eq!(
             transform.norm_weight.length(),
             (transform_arch.index_head_dim * 4) as u64
-        ); drop(transform_guard);
+        );
+        drop(transform_guard);
         let mut prelude_guard = pool
-            .ensure_device_attention_prelude_scratch(&ctx, &transform_arch).expect("lazy device attention prelude scratch");
+            .ensure_device_attention_prelude_scratch(&ctx, &transform_arch)
+            .expect("lazy device attention prelude scratch");
         let prelude = prelude_guard
-            .as_mut().expect("device attention prelude scratch initialized");
+            .as_mut()
+            .expect("device attention prelude scratch initialized");
         assert_eq!(
             prelude.input_norm_weight.length(),
             (transform_arch.hidden * 4) as u64
@@ -12939,11 +14991,14 @@ mod tests {
         }
         session.seq_len = 8;
         session
-            .attention .reserve(&ctx, &arch, 9, session.seq_len).expect("simulate attention owner completing before DSA");
+            .attention
+            .reserve(&ctx, &arch, 9, session.seq_len)
+            .expect("simulate attention owner completing before DSA");
         assert_eq!(session.attention.capacity(), 16);
         assert_eq!(session.dsa.capacity, 8);
         session
-            .reserve(&ctx, &arch, 9).expect("retry independently repairs DSA owner");
+            .reserve(&ctx, &arch, 9)
+            .expect("retry independently repairs DSA owner");
         assert_eq!(session.attention.capacity(), 16);
         assert_eq!(session.dsa.capacity, 16);
         assert_eq!(session.dsa.sequence_scratch.capacity, 16);
@@ -12956,18 +15011,23 @@ mod tests {
         let Ok(ctx) = MetalContext::new() else {
             return;
         };
-        let mut arch = tiny_arch(); arch.index_topk = 3; let dsa = DsaIndexState::new(&ctx, &arch, 8, true, false).expect("DSA state");
-        dsa.store_ranked_indices(&[4, 1, 3]).expect("stable ranked upload");
+        let mut arch = tiny_arch();
+        arch.index_topk = 3;
+        let dsa = DsaIndexState::new(&ctx, &arch, 8, true, false).expect("DSA state");
+        dsa.store_ranked_indices(&[4, 1, 3])
+            .expect("stable ranked upload");
         assert_eq!(
             read_u32(dsa.ranked_indices().expect("rank buffer"), 3),
             vec![4, 1, 3]
         );
         let too_many = dsa
-            .store_ranked_indices(&[0, 1, 2, 3]) .expect_err("rank upload beyond fixed capacity must fail");
+            .store_ranked_indices(&[0, 1, 2, 3])
+            .expect_err("rank upload beyond fixed capacity must fail");
         assert!(too_many.to_string().contains("capacity"));
         if usize::BITS > u32::BITS {
             let overflow = dsa
-                .store_ranked_indices(&[u32::MAX as usize + 1]) .expect_err("rank upload beyond u32 must fail");
+                .store_ranked_indices(&[u32::MAX as usize + 1])
+                .expect_err("rank upload beyond u32 must fail");
             assert!(overflow.to_string().contains("exceeds u32"));
         }
         let expanded_dsa =
@@ -12994,42 +15054,63 @@ mod tests {
             (8192 * arch.qk_rope_head_dim * 4) as u64
         );
         unsafe {
-            let latents = cache.layers[0].latents.contents() as *mut f32; *latents = 1.0;
+            let latents = cache.layers[0].latents.contents() as *mut f32;
+            *latents = 1.0;
             *latents.add(8191 * arch.kv_lora_rank + (arch.kv_lora_rank - 1)) = 2.0;
-            let rope = cache.layers[0].rope_tails.contents() as *mut f32; *rope = 3.0; *rope.add(8191 * arch.qk_rope_head_dim) = 4.0;
+            let rope = cache.layers[0].rope_tails.contents() as *mut f32;
+            *rope = 3.0;
+            *rope.add(8191 * arch.qk_rope_head_dim) = 4.0;
         }
-        let latent_pointer = cache.layers[0].latents.contents(); let rope_pointer = cache.layers[0].rope_tails.contents();
+        let latent_pointer = cache.layers[0].latents.contents();
+        let rope_pointer = cache.layers[0].rope_tails.contents();
         cache
-            .reserve(&ctx, &arch, 8192, 8192).expect("adequate compact reserve");
+            .reserve(&ctx, &arch, 8192, 8192)
+            .expect("adequate compact reserve");
         assert_eq!(cache.layers[0].latents.contents(), latent_pointer);
         assert_eq!(cache.layers[0].rope_tails.contents(), rope_pointer);
         cache
-            .reserve(&ctx, &arch, 8193, 8192).expect("grow compact cache beyond 8K");
+            .reserve(&ctx, &arch, 8193, 8192)
+            .expect("grow compact cache beyond 8K");
         assert_eq!(cache.capacity, 16384);
         unsafe {
             let latents = cache.layers[0].latents.contents() as *mut f32;
             assert_eq!(*latents, 1.0);
-            assert_eq!(*latents.add(8191 * arch.kv_lora_rank + (arch.kv_lora_rank - 1)), 2.0); let rope = cache.layers[0].rope_tails.contents() as *mut f32;
+            assert_eq!(
+                *latents.add(8191 * arch.kv_lora_rank + (arch.kv_lora_rank - 1)),
+                2.0
+            );
+            let rope = cache.layers[0].rope_tails.contents() as *mut f32;
             assert_eq!(*rope, 3.0);
-            assert_eq!(*rope.add(8191 * arch.qk_rope_head_dim), 4.0); *latents.add(8192 * arch.kv_lora_rank) = 5.0;
-            *latents.add(8192 * arch.kv_lora_rank + (arch.kv_lora_rank - 1)) = 6.0; *rope.add(8192 * arch.qk_rope_head_dim) = 7.0;
+            assert_eq!(*rope.add(8191 * arch.qk_rope_head_dim), 4.0);
+            *latents.add(8192 * arch.kv_lora_rank) = 5.0;
+            *latents.add(8192 * arch.kv_lora_rank + (arch.kv_lora_rank - 1)) = 6.0;
+            *rope.add(8192 * arch.qk_rope_head_dim) = 7.0;
         }
         cache
-            .reserve(&ctx, &arch, 32768, 8193).expect("grow compact cache through 32K");
+            .reserve(&ctx, &arch, 32768, 8193)
+            .expect("grow compact cache through 32K");
         assert_eq!(cache.capacity, 32768);
         unsafe {
             let latents = cache.layers[0].latents.contents() as *const f32;
             assert_eq!(*latents, 1.0);
-            assert_eq!(*latents.add(8191 * arch.kv_lora_rank + (arch.kv_lora_rank - 1)), 2.0);
+            assert_eq!(
+                *latents.add(8191 * arch.kv_lora_rank + (arch.kv_lora_rank - 1)),
+                2.0
+            );
             assert_eq!(*latents.add(8192 * arch.kv_lora_rank), 5.0);
-            assert_eq!(*latents.add(8192 * arch.kv_lora_rank + (arch.kv_lora_rank - 1)), 6.0); let rope = cache.layers[0].rope_tails.contents() as *const f32;
+            assert_eq!(
+                *latents.add(8192 * arch.kv_lora_rank + (arch.kv_lora_rank - 1)),
+                6.0
+            );
+            let rope = cache.layers[0].rope_tails.contents() as *const f32;
             assert_eq!(*rope, 3.0);
             assert_eq!(*rope.add(8191 * arch.qk_rope_head_dim), 4.0);
             assert_eq!(*rope.add(8192 * arch.qk_rope_head_dim), 7.0);
         }
         let invalid_seq_len = cache.capacity + 1;
         let error = cache
-            .reserve(&ctx, &arch, invalid_seq_len, invalid_seq_len) .expect_err("invalid compact cache ownership state must fail closed");
+            .reserve(&ctx, &arch, invalid_seq_len, invalid_seq_len)
+            .expect_err("invalid compact cache ownership state must fail closed");
         assert!(error.to_string().contains("seq_len"));
     }
 }

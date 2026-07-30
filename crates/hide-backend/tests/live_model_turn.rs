@@ -49,7 +49,11 @@ fn resolve_weights() -> Option<PathBuf> {
                 }
             }
             candidates.sort_by_key(|p| {
-                let n = p.file_name().and_then(|s| s.to_str()).unwrap_or("").to_lowercase();
+                let n = p
+                    .file_name()
+                    .and_then(|s| s.to_str())
+                    .unwrap_or("")
+                    .to_lowercase();
                 if n.contains("0.5b") || n.contains("05b") {
                     0
                 } else if n.contains("qwen") {
@@ -76,7 +80,11 @@ fn first_preferred_gguf(dir: &Path) -> Option<PathBuf> {
         return None;
     }
     ggufs.sort_by_key(|p| {
-        let n = p.file_name().and_then(|s| s.to_str()).unwrap_or("").to_lowercase();
+        let n = p
+            .file_name()
+            .and_then(|s| s.to_str())
+            .unwrap_or("")
+            .to_lowercase();
         if n.contains("qwen") && (n.contains("0.5b") || n.contains("05b")) {
             0
         } else if n.contains("qwen") {
@@ -178,7 +186,10 @@ async fn live_submit_turn_streams_tokens_persists_and_next_turn_sees_history() {
         bind
     );
     let host = BackendHost::open_workspace(&dir).expect("open_workspace");
- assert!( host.runtime_state().is_some(), "HIDE_MODEL_WEIGHTS must install a RuntimeSupervisor" );
+    assert!(
+        host.runtime_state().is_some(),
+        "HIDE_MODEL_WEIGHTS must install a RuntimeSupervisor"
+    );
     let ready_deadline = tokio::time::Instant::now() + Duration::from_secs(600);
     loop {
         match host.runtime_state() {
@@ -218,9 +229,7 @@ async fn live_submit_turn_streams_tokens_persists_and_next_turn_sees_history() {
     let gen_deadline = tokio::time::Instant::now() + Duration::from_secs(600);
     loop {
         if tokio::time::Instant::now() >= gen_deadline {
-            panic!(
-                "timed out waiting for streamed tokens / completion (got so far: {streamed:?})"
-            );
+            panic!("timed out waiting for streamed tokens / completion (got so far: {streamed:?})");
         }
         match tokio::time::timeout(Duration::from_secs(5), rx.recv()).await {
             Ok(Ok(ev)) => match ev.kind {
@@ -294,12 +303,15 @@ async fn live_submit_turn_streams_tokens_persists_and_next_turn_sees_history() {
             None
         }
     });
-    let assistant_1 = assistant_1.expect(
-        "turn 1 must persist a non-empty agent.message assistant turn on the event log",
-    );
+    let assistant_1 = assistant_1
+        .expect("turn 1 must persist a non-empty agent.message assistant turn on the event log");
     assert!(!assistant_1.trim().is_empty());
     if !streamed.trim().is_empty() {
-        assert!(streamed.contains(assistant_1.trim()) || assistant_1.contains(streamed.trim()) || streamed.chars().any(|c| !c.is_whitespace()));
+        assert!(
+            streamed.contains(assistant_1.trim())
+                || assistant_1.contains(streamed.trim())
+                || streamed.chars().any(|c| !c.is_whitespace())
+        );
     }
     let turn2_prompt = "What single word did you just say? Answer briefly.";
     let ack2 = host
@@ -369,9 +381,17 @@ async fn live_submit_turn_streams_tokens_persists_and_next_turn_sees_history() {
             _ => {}
         }
     }
-    assert!(history_roles .iter() .any(|(r, c)| r == "assistant" && c == &assistant_1));
-    assert!(history_roles .iter() .filter(|(r, _)| r == "user") .count() >= 2);
-    assert!(history_roles .iter() .filter(|(r, _)| r == "assistant") .count() >= 2);
+    assert!(history_roles
+        .iter()
+        .any(|(r, c)| r == "assistant" && c == &assistant_1));
+    assert!(history_roles.iter().filter(|(r, _)| r == "user").count() >= 2);
+    assert!(
+        history_roles
+            .iter()
+            .filter(|(r, _)| r == "assistant")
+            .count()
+            >= 2
+    );
     eprintln!(
         "live_model_turn: OK — streamed_len={} assistant_1_len={} history_msgs={}",
         streamed.len(),

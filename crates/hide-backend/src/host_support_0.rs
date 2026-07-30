@@ -1,7 +1,9 @@
 use crate::approval::{ApprovalDecision, ApprovalHub};
 use crate::commands::CommandRouter;
 use crate::connectors::{register_backend_connectors, ConnectorRegistry, ConnectorStatus};
+use crate::initialize::{ClientCapabilities, ClientInfo, ConnectionRegistry, InitializeResponse};
 use crate::interrupt::InterruptHub;
+use crate::live_thread::LiveThread;
 use crate::memory::{
     MemoryDraft, MemoryLedger, MemoryRecord, MemoryRevalidation, MemoryScope, MemoryStatus,
     PrivacyClass, RevalidateTarget,
@@ -13,13 +15,11 @@ use crate::process::{ProcessState, ProcessSupervisor, StartSpec};
 use crate::replay::BackendReplayService;
 use crate::rewind::{self, CheckpointCoverage, FileChange, ForkPoint, RewindTarget, StateRef};
 use crate::security::SecurityServices;
-use crate::initialize::{ClientCapabilities, ClientInfo, ConnectionRegistry, InitializeResponse};
-use crate::live_thread::LiveThread;
 use crate::services::{
     BackendCapabilities, BackendServices, Budget, CheckpointRecord, CheckpointStore,
-    EnvironmentNode, EnvironmentSwitch, GoalOutcome, GoalRecord, GoalStatus, GoalStore, GoalVerdict,
-    JobRecord, JobStatus, JobStore, RepoNode, SharedBackend, Trigger, TriggerEvent, TrustState,
-    WorkspaceEdge, WorkspaceEdgeKind, WorkspaceGraph, WorkspaceStore,
+    EnvironmentNode, EnvironmentSwitch, GoalOutcome, GoalRecord, GoalStatus, GoalStore,
+    GoalVerdict, JobRecord, JobStatus, JobStore, RepoNode, SharedBackend, Trigger, TriggerEvent,
+    TrustState, WorkspaceEdge, WorkspaceEdgeKind, WorkspaceGraph, WorkspaceStore,
 };
 use crate::supervisor::{RuntimeSupervisor, SupervisorConfig};
 use crate::surfaces::SurfaceGraphService;
@@ -46,6 +46,7 @@ use hide_kernel::{AgentKernel, Grounding};
 // as `hide_kernel::verify_plane::*` at their (few) use sites so the function-local
 // `hide_kernel::verify::oracle::*` imports in the goal path and the tests keep
 // their meaning; only the non-colliding types are imported here.
+use super::*;
 use hide_kernel::verify_plane::{
     Finding, GateDecision, ReviewRole, ReviewRoleProfile, SourceFile, StaticAnalysisOracle,
     TieredVerdict, VerificationReceipt, VerificationTier,
@@ -54,8 +55,6 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
-use super::*;
-
 
 /// Shared BRANCH-by-event core: resolve a boundary, mint a fresh INDEPENDENT
 /// lineage, and durably record ANCESTRY with an explicit relationship + read-only
@@ -156,7 +155,10 @@ pub(crate) fn parse_memory_draft(payload: &Value) -> Result<MemoryDraft> {
         hide_core::error::HideError::Message(format!("memory draft: missing '{name}'"))
     };
     let scope: MemoryScope = serde_json::from_value(
-        payload.get("scope").cloned().ok_or_else(|| field("scope"))?,
+        payload
+            .get("scope")
+            .cloned()
+            .ok_or_else(|| field("scope"))?,
     )
     .map_err(|e| hide_core::error::HideError::Message(format!("memory draft: bad scope: {e}")))?;
     let claim = payload
@@ -277,7 +279,10 @@ pub(crate) fn evaluate_goal(goal: &GoalRecord, events: &[Event]) -> GoalVerdict 
                 if verdict.status == VerdictStatus::Pass {
                     mk(
                         GoalOutcome::Met,
-                        format!("latest verification verdict passed (oracle '{}')", verdict.oracle),
+                        format!(
+                            "latest verification verdict passed (oracle '{}')",
+                            verdict.oracle
+                        ),
                         evidence,
                     )
                 } else {
@@ -468,7 +473,10 @@ impl DispatchRecorder {
             if result.status == ToolStatus::Ok {
                 let abs = pre.get("abs").and_then(|v| v.as_str()).unwrap_or_default();
                 let file = pre.get("file").and_then(|v| v.as_str()).unwrap_or_default();
-                let text = pre.get("before").and_then(|v| v.as_str()).unwrap_or_default();
+                let text = pre
+                    .get("before")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or_default();
                 let after = std::fs::read_to_string(abs).unwrap_or_default();
                 if after != text {
                     self.record_edit_diff(
@@ -604,8 +612,10 @@ pub(crate) fn publish_diff_to(ui_bus: &UiEventBus, proposal: &DiffProposal) {
 /// reconciliation in [`BackendHost::reconcile_review_for_scope`] so a review is
 /// only weighed against deterministic receipts for the SAME scope.
 pub(crate) fn scopes_intersect(a: &[String], b: &[String]) -> bool {
-    a.iter()
-        .any(|x| b.iter().any(|y| hide_kernel::verify_plane::paths_intersect(x, y)))
+    a.iter().any(|x| {
+        b.iter()
+            .any(|y| hide_kernel::verify_plane::paths_intersect(x, y))
+    })
 }
 
 pub(crate) fn unknown_diff(diff_id: &str) -> hide_core::error::HideError {
@@ -730,7 +740,11 @@ pub(crate) fn monaco_language(file: &str) -> &'static str {
 /// ponytail: prefix/suffix trim, not an LCS diff, so an edit that touches two far
 /// apart regions of one file reads as a single wide block. hide-backend does not
 /// depend on `similar`; wire it in if per-region hunks are wanted.
-pub(crate) fn hunk_line_view(file: &str, before: &str, after: &str) -> (Vec<Value>, String, usize, usize) {
+pub(crate) fn hunk_line_view(
+    file: &str,
+    before: &str,
+    after: &str,
+) -> (Vec<Value>, String, usize, usize) {
     let old: Vec<&str> = before.lines().collect();
     let new: Vec<&str> = after.lines().collect();
     let mut pre = 0;
@@ -746,9 +760,7 @@ pub(crate) fn hunk_line_view(file: &str, before: &str, after: &str) -> (Vec<Valu
     }
     let old_mid = &old[pre..old.len() - suf];
     let new_mid = &new[pre..new.len() - suf];
-    let ctx = |text: &str, o: usize, n: usize| {
-        json!({ "kind": "ctx", "text": text, "oldNo": o, "newNo": n })
-    };
+    let ctx = |text: &str, o: usize, n: usize| json!({ "kind": "ctx", "text": text, "oldNo": o, "newNo": n });
     let mut lines: Vec<Value> = Vec::new();
     for i in pre.saturating_sub(DIFF_CONTEXT_LINES)..pre {
         lines.push(ctx(old[i], i + 1, i + 1));
@@ -959,9 +971,8 @@ pub(crate) async fn generate_submit_turn(
                 info.tq_estimated,
             );
             // Post-turn rot from the live reading so the loop can notice degradation.
-            let empty = hawking_context::ContextManifest::new(
-                info.ctx_len_native.unwrap_or(ceiling),
-            );
+            let empty =
+                hawking_context::ContextManifest::new(info.ctx_len_native.unwrap_or(ceiling));
             let rot = hawking_context::detect_context_rot(
                 &empty,
                 Some(live.occupancy),

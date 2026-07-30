@@ -477,30 +477,42 @@ mod tests {
             (layer + 1).max(1),
             layer,
             tier,
-        ); let p = tempfile::NamedTempFile::new().unwrap(); std::fs::write(p.path(), json).unwrap();
+        );
+        let p = tempfile::NamedTempFile::new().unwrap();
+        std::fs::write(p.path(), json).unwrap();
         TierMap::load(p.path()).unwrap()
     }
     #[test]
     fn requantize_q5_0_to_q8_0_round_trip_bounded() {
         use half::f16;
-        let n_elems = 32; let mut src_bytes = vec![0u8; 22]; src_bytes[0..2].copy_from_slice(&f16::from_f32(0.05).to_bits().to_le_bytes());
+        let n_elems = 32;
+        let mut src_bytes = vec![0u8; 22];
+        src_bytes[0..2].copy_from_slice(&f16::from_f32(0.05).to_bits().to_le_bytes());
         for i in 0..16 {
             src_bytes[6 + i] = (i as u8 & 0x7) | (((i as u8 + 1) & 0x7) << 4);
         }
-        let mut deq = vec![0.0f32; n_elems]; quant::dequant_into(GgmlType::Q5_0, &src_bytes, &mut deq).unwrap();
-        let mut q8_blob = vec![0u8; 34]; quantize_into(GgmlType::Q8_0, &deq, &mut q8_blob).unwrap();
-        let mut requant = vec![0.0f32; n_elems]; quant::dequant_into(GgmlType::Q8_0, &q8_blob, &mut requant).unwrap();
+        let mut deq = vec![0.0f32; n_elems];
+        quant::dequant_into(GgmlType::Q5_0, &src_bytes, &mut deq).unwrap();
+        let mut q8_blob = vec![0u8; 34];
+        quantize_into(GgmlType::Q8_0, &deq, &mut q8_blob).unwrap();
+        let mut requant = vec![0.0f32; n_elems];
+        quant::dequant_into(GgmlType::Q8_0, &q8_blob, &mut requant).unwrap();
         let err = deq
             .iter()
-            .zip(requant.iter()).map(|(a, b)| (a - b).abs()) .fold(0.0f32, f32::max);
+            .zip(requant.iter())
+            .map(|(a, b)| (a - b).abs())
+            .fold(0.0f32, f32::max);
         assert!(err < 0.05, "Q5_0→Q8_0 round-trip err = {err}");
     }
     #[test]
     fn key_routed_vs_shared_disjoint() {
-        let a = StoreKey::routed(3, GroupKind::Down, 5); let b = StoreKey::shared(3, GroupKind::Down); assert_ne!(a, b);
+        let a = StoreKey::routed(3, GroupKind::Down, 5);
+        let b = StoreKey::shared(3, GroupKind::Down);
+        assert_ne!(a, b);
     }
     #[test]
     fn rejects_gate_up_tier_in_v1() {
-        let m = make_tier_map(0, "q4_K"); let _ = m;
+        let m = make_tier_map(0, "q4_K");
+        let _ = m;
     }
 }

@@ -27,10 +27,7 @@ pub enum AgentRequest {
     /// Coordinator → agent: accept a placement assignment.
     Assign { assignment: PlacementAssignment },
     /// Coordinator → agent: run a logical request id through local stages.
-    RunRequest {
-        request_id: String,
-        plan_id: String,
-    },
+    RunRequest { request_id: String, plan_id: String },
     /// Coordinator → agent: inject a synthetic failure (fixture only).
     InjectFailure { node_id: NodeId },
     /// Coordinator → agent: query status.

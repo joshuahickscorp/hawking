@@ -6,7 +6,15 @@ mod common;
 use common::*;
 const ATOL: f32 = 1e-3;
 const RTOL: f32 = 1e-4;
-fn run_flash(q: &[f32], k: &[f32], v: &[f32], n_heads: usize, n_kv_heads: usize, head_dim: usize, seq_len: usize) -> Vec<f32> {
+fn run_flash(
+    q: &[f32],
+    k: &[f32],
+    v: &[f32],
+    n_heads: usize,
+    n_kv_heads: usize,
+    head_dim: usize,
+    seq_len: usize,
+) -> Vec<f32> {
     let q_dim = n_heads * head_dim;
     let ctx = ctx();
     let q_buf = new_f32_buf(ctx, q);
@@ -15,13 +23,25 @@ fn run_flash(q: &[f32], k: &[f32], v: &[f32], n_heads: usize, n_kv_heads: usize,
     let out_buf = ctx.new_buffer(q_dim * std::mem::size_of::<f32>());
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
-        kernels::mha_decode_flash_f32_tcb(&mut tcb, &q_buf, &k_buf, 0, &v_buf, 0, &out_buf, seq_len, head_dim, n_heads, n_kv_heads)
-            .expect("mha_decode_flash_f32_tcb encode");
-        tcb.commit_and_wait().expect("mha_decode_flash_f32_tcb commit");
+        kernels::mha_decode_flash_f32_tcb(
+            &mut tcb, &q_buf, &k_buf, 0, &v_buf, 0, &out_buf, seq_len, head_dim, n_heads,
+            n_kv_heads,
+        )
+        .expect("mha_decode_flash_f32_tcb encode");
+        tcb.commit_and_wait()
+            .expect("mha_decode_flash_f32_tcb commit");
     }
     read_f32_buf(&out_buf, q_dim)
 }
-fn run_materialize(q: &[f32], k: &[f32], v: &[f32], n_heads: usize, n_kv_heads: usize, head_dim: usize, seq_len: usize) -> Vec<f32> {
+fn run_materialize(
+    q: &[f32],
+    k: &[f32],
+    v: &[f32],
+    n_heads: usize,
+    n_kv_heads: usize,
+    head_dim: usize,
+    seq_len: usize,
+) -> Vec<f32> {
     let q_dim = n_heads * head_dim;
     let ctx = ctx();
     let q_buf = new_f32_buf(ctx, q);
@@ -30,8 +50,11 @@ fn run_materialize(q: &[f32], k: &[f32], v: &[f32], n_heads: usize, n_kv_heads: 
     let out_buf = ctx.new_buffer(q_dim * std::mem::size_of::<f32>());
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
-        kernels::mha_decode_f32_tcb(&mut tcb, &q_buf, &k_buf, 0, &v_buf, 0, &out_buf, seq_len, head_dim, n_heads, n_kv_heads)
-            .expect("mha_decode_f32_tcb encode");
+        kernels::mha_decode_f32_tcb(
+            &mut tcb, &q_buf, &k_buf, 0, &v_buf, 0, &out_buf, seq_len, head_dim, n_heads,
+            n_kv_heads,
+        )
+        .expect("mha_decode_f32_tcb encode");
         tcb.commit_and_wait().expect("mha_decode_f32_tcb commit");
     }
     read_f32_buf(&out_buf, q_dim)
@@ -39,12 +62,15 @@ fn run_materialize(q: &[f32], k: &[f32], v: &[f32], n_heads: usize, n_kv_heads: 
 fn check_geometry(n_heads: usize, n_kv_heads: usize, head_dim: usize, seq_len: usize) {
     let q_dim = n_heads * head_dim;
     let kv_dim = n_kv_heads * head_dim;
-    let seed = (seq_len as u64).wrapping_mul(0x9E37_79B9_7F4A_7C15) ^ ((n_heads as u64) << 17) ^ ((head_dim as u64) << 33);
+    let seed = (seq_len as u64).wrapping_mul(0x9E37_79B9_7F4A_7C15)
+        ^ ((n_heads as u64) << 17)
+        ^ ((head_dim as u64) << 33);
     let q = fixed_f32(q_dim, seed ^ 0xA1);
     let k = fixed_f32(seq_len * kv_dim, seed ^ 0xB2);
     let v = fixed_f32(seq_len * kv_dim, seed ^ 0xC3);
     let mut cpu = vec![0.0f32; q_dim];
-    mha_decode_step(&q, &k, &v, n_heads, n_kv_heads, head_dim, seq_len, &mut cpu).expect("cpu mha_decode_step");
+    mha_decode_step(&q, &k, &v, n_heads, n_kv_heads, head_dim, seq_len, &mut cpu)
+        .expect("cpu mha_decode_step");
     let flash = run_flash(&q, &k, &v, n_heads, n_kv_heads, head_dim, seq_len);
     let materialize = run_materialize(&q, &k, &v, n_heads, n_kv_heads, head_dim, seq_len);
     let (vf_cpu, i_cpu) = worst_violation(&flash, &cpu, ATOL, RTOL);

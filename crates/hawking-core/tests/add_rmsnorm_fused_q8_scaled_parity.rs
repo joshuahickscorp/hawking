@@ -15,7 +15,15 @@ fn read_i8(buf: &PinnedBuffer, n: usize) -> Vec<i8> {
 }
 fn make_smoothing(n: usize, seed: u64) -> Vec<f32> {
     let mut rng = Pcg64Mcg::new(seed as u128 ^ 0xA5BAEu128);
-    (0..n).map(|i| if i % 20 == 0 { rng.gen_range(2.0..5.0) } else { rng.gen_range(0.3..1.6) }).collect()
+    (0..n)
+        .map(|i| {
+            if i % 20 == 0 {
+                rng.gen_range(2.0..5.0)
+            } else {
+                rng.gen_range(0.3..1.6)
+            }
+        })
+        .collect()
 }
 fn run_one(hidden: usize, seed: u64) {
     let ctx = ctx();
@@ -35,10 +43,25 @@ fn run_one(hidden: usize, seed: u64) {
     let ref_scales_buf = ctx.new_buffer(blocks * 4);
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
-        kernels::add_rmsnorm_fused_tcb(&mut tcb, &ref_x_buf, &ref_attn_buf, &weight_buf, &ref_xnorm_buf, eps, hidden)
-            .expect("ref add_rmsnorm_fused encode");
-        kernels::quantize_f32_to_int8_per_block_scaled_tcb(&mut tcb, &ref_xnorm_buf, &s_buf, &ref_int8_buf, &ref_scales_buf, hidden)
-            .expect("ref scaled quantize encode");
+        kernels::add_rmsnorm_fused_tcb(
+            &mut tcb,
+            &ref_x_buf,
+            &ref_attn_buf,
+            &weight_buf,
+            &ref_xnorm_buf,
+            eps,
+            hidden,
+        )
+        .expect("ref add_rmsnorm_fused encode");
+        kernels::quantize_f32_to_int8_per_block_scaled_tcb(
+            &mut tcb,
+            &ref_xnorm_buf,
+            &s_buf,
+            &ref_int8_buf,
+            &ref_scales_buf,
+            hidden,
+        )
+        .expect("ref scaled quantize encode");
         tcb.commit_and_wait().expect("ref commit");
     }
     let ref_x = read_f32(&ref_x_buf, hidden);
@@ -71,24 +94,41 @@ fn run_one(hidden: usize, seed: u64) {
     let f_xnorm = read_f32(&f_xnorm_buf, hidden);
     let f_int8 = read_i8(&f_int8_buf, hidden);
     let f_scales = read_f32(&f_scales_buf, blocks);
-    assert_eq!(ref_x, f_x, "x (post-add) mismatch at hidden={hidden} seed={seed}");
+    assert_eq!(
+        ref_x, f_x,
+        "x (post-add) mismatch at hidden={hidden} seed={seed}"
+    );
     assert_eq!(
         ref_xnorm, f_xnorm,
         "x_norm mismatch at hidden={hidden} seed={seed} \
          (Option B keeps x_norm unscaled — only the int8 sees s)"
     );
-    assert_eq!(ref_scales, f_scales, "x_norm_scales mismatch at hidden={hidden} seed={seed}");
+    assert_eq!(
+        ref_scales, f_scales,
+        "x_norm_scales mismatch at hidden={hidden} seed={seed}"
+    );
     let mut diffs = 0usize;
     let mut first_bad = None;
     for i in 0..hidden {
         if ref_int8[i] != f_int8[i] {
             diffs += 1;
             if first_bad.is_none() {
-                first_bad = Some((i, ref_int8[i], f_int8[i], f_xnorm[i], s[i], f_scales[i / 256]));
+                first_bad = Some((
+                    i,
+                    ref_int8[i],
+                    f_int8[i],
+                    f_xnorm[i],
+                    s[i],
+                    f_scales[i / 256],
+                ));
             }
         }
     }
-    assert_eq!(diffs, 0, "x_norm_int8 mismatch at hidden={hidden} seed={seed}: {diffs} elems; first {:?}", first_bad);
+    assert_eq!(
+        diffs, 0,
+        "x_norm_int8 mismatch at hidden={hidden} seed={seed}: {diffs} elems; first {:?}",
+        first_bad
+    );
 }
 #[test]
 fn add_rmsnorm_fused_q8_scaled_parity_hidden_256() {

@@ -6,14 +6,14 @@
 //! Write authority is a **type boundary**: verification writes require
 //! [`VerifierWriteCap`] that the turn path never holds.
 
-#[path = "memory_classes/types.rs"]
-mod types;
-#[path = "memory_classes/sql.rs"]
-mod sql;
-#[path = "memory_classes/open_write.rs"]
-mod open_write;
 #[path = "memory_classes/controls.rs"]
 mod controls;
+#[path = "memory_classes/open_write.rs"]
+mod open_write;
+#[path = "memory_classes/sql.rs"]
+mod sql;
+#[path = "memory_classes/types.rs"]
+mod types;
 
 pub use types::*;
 
@@ -67,7 +67,10 @@ mod tests {
         .unwrap();
         assert_eq!(sys.list_working("turn-1").len(), 1);
         sys.end_turn("turn-1");
- assert!( sys.list_working("turn-1").is_empty(), "working must die at turn end" );
+        assert!(
+            sys.list_working("turn-1").is_empty(),
+            "working must die at turn end"
+        );
     }
     #[test]
     fn retention_episodic_evicted_with_session() {
@@ -145,7 +148,10 @@ mod tests {
         )
         .unwrap();
         let rec = a.list_class(MemoryClass::User).unwrap();
-        assert!(rec[0].workspace_id.is_none(), "user must not be workspace-scoped");
+        assert!(
+            rec[0].workspace_id.is_none(),
+            "user must not be workspace-scoped"
+        );
         let b = ClassedMemorySystem::open("workspace-b", &w2, &udb).unwrap();
         let prefs = b.list_class(MemoryClass::User).unwrap();
         assert_eq!(prefs.len(), 1);
@@ -250,14 +256,24 @@ mod tests {
         let ver = ret.slice(MemoryClass::Verification).unwrap();
         let user = ret.slice(MemoryClass::User).unwrap();
         assert!(sem.used_tokens <= sem.budget_tokens);
- assert!( sem.hits.len() < 20, "semantic budget must cap hits, got {}", sem.hits.len() );
+        assert!(
+            sem.hits.len() < 20,
+            "semantic budget must cap hits, got {}",
+            sem.hits.len()
+        );
         assert_eq!(ver.hits.len(), 1, "verification must not be starved");
         assert_eq!(user.hits.len(), 1, "user must not be starved");
         assert!(ver.used_tokens <= ver.budget_tokens);
         assert!(user.used_tokens <= user.budget_tokens);
         assert_eq!(ret.slices.len(), 6);
- assert!(ret .slices .iter() .any(|s| s.question.contains("durable facts")));
- assert!(ret .slices .iter() .any(|s| s.question.contains("asserted vs proven")));
+        assert!(ret
+            .slices
+            .iter()
+            .any(|s| s.question.contains("durable facts")));
+        assert!(ret
+            .slices
+            .iter()
+            .any(|s| s.question.contains("asserted vs proven")));
     }
     #[test]
     fn provenance_authority_not_forgeable_from_turn_path() {
@@ -306,8 +322,7 @@ mod tests {
             .write_verification(
                 &VerifierWriteCap::mint(),
                 "verifier",
-                ClassMemoryDraft::new("claim proven")
-                    .with_evidence_tier("proven"),
+                ClassMemoryDraft::new("claim proven").with_evidence_tier("proven"),
             )
             .unwrap();
         let p = sys
@@ -324,11 +339,20 @@ mod tests {
             })
             .unwrap();
         let ids: Vec<_> = all.iter().map(|r| r.id.as_str()).collect();
-        assert!(ids.contains(&u.id.as_str()), "user record must be inspectable");
-        assert!(ids.contains(&v.id.as_str()), "verification must be inspectable");
+        assert!(
+            ids.contains(&u.id.as_str()),
+            "user record must be inspectable"
+        );
+        assert!(
+            ids.contains(&v.id.as_str()),
+            "verification must be inspectable"
+        );
         assert!(ids.contains(&p.id.as_str()), "semantic must be inspectable");
         assert!(sys.forget(&u.id).unwrap());
-        assert!(sys.get(&u.id).unwrap().is_none(), "forget must really delete");
+        assert!(
+            sys.get(&u.id).unwrap().is_none(),
+            "forget must really delete"
+        );
         assert_eq!(sys.count(MemoryClass::User).unwrap(), 0);
         let exp = sys.export().unwrap();
         assert_eq!(exp.schema, "hide.you.memory_export.v1");
@@ -392,7 +416,7 @@ mod tests {
         assert_eq!(after.scope, PersonalScope::Global);
         assert_eq!(after.class, MemoryClass::Episodic); // class unchanged
         assert_eq!(sys.list_promotions().unwrap().len(), 1);
- assert!(sys .set_scope(&rec.id, PersonalScope::Person, "") .is_err());
+        assert!(sys.set_scope(&rec.id, PersonalScope::Person, "").is_err());
     }
     #[test]
     fn property_pin_expire_disable_controls() {
@@ -524,12 +548,7 @@ mod tests {
             )
             .unwrap();
         let corrected = sys
-            .correct_user(
-                &UserWriteCap::mint(),
-                &old.id,
-                "user",
-                "new preference",
-            )
+            .correct_user(&UserWriteCap::mint(), &old.id, "user", "new preference")
             .unwrap();
         assert_eq!(corrected.supersedes.as_deref(), Some(old.id.as_str()));
         let epi = sys
@@ -546,7 +565,10 @@ mod tests {
         assert_eq!(sys.list_promotions().unwrap().len(), 1);
         assert!(sys.forget(&old.id).unwrap());
         let still = sys.get(&corrected.id).unwrap().unwrap();
- assert!( still.supersedes.is_none(), "supersedes edge must not dangle after forget" );
+        assert!(
+            still.supersedes.is_none(),
+            "supersedes edge must not dangle after forget"
+        );
         assert!(sys.forget(&epi.id).unwrap());
         assert!(sys.list_promotions().unwrap().is_empty());
         let exp = sys.export().unwrap();
@@ -586,5 +608,4 @@ mod tests {
         assert!(sys.get(&id).unwrap().is_none());
         assert_eq!(sys.count(MemoryClass::User).unwrap(), 0);
     }
-
 }

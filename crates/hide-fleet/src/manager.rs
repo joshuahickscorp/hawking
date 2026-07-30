@@ -609,11 +609,7 @@ impl FleetManager {
                 .await?;
             // Surface the tournament as an IntegrationResult so callers have one shape.
             let result = IntegrationResult {
-                adopted: decision
-                    .winner_job_id
-                    .clone()
-                    .into_iter()
-                    .collect(),
+                adopted: decision.winner_job_id.clone().into_iter().collect(),
                 dropped: decision.beaten.clone(),
                 conflicts: decision.conflicts.clone(),
                 suite_green: decision.winner_job_id.is_some(),
@@ -854,7 +850,10 @@ mod tests {
             "job.completed",
             "workspace.released",
         ] {
- assert!( kinds.iter().any(|k| k == expected), "missing event {expected}; got {kinds:?}" );
+            assert!(
+                kinds.iter().any(|k| k == expected),
+                "missing event {expected}; got {kinds:?}"
+            );
         }
         let _ = std::fs::remove_dir_all(&dir);
     }
@@ -879,8 +878,14 @@ mod tests {
         let id = job.id.clone();
         mgr.enqueue(job).await.unwrap();
         mgr.schedule_tick(2, 40.0, 40.0).await.unwrap();
-        assert_eq!(mgr.worktrees().ports_leased_count(), mgr.config.ports_per_run as usize);
- assert_eq!( mgr.occupancy().ports_leased, mgr.config.ports_per_run as u32 );
+        assert_eq!(
+            mgr.worktrees().ports_leased_count(),
+            mgr.config.ports_per_run as usize
+        );
+        assert_eq!(
+            mgr.occupancy().ports_leased,
+            mgr.config.ports_per_run as u32
+        );
         mgr.await_completions(1).await.unwrap();
         assert_eq!(mgr.queue().get(&id).unwrap().status, JobStatus::Done);
         assert_eq!(mgr.worktrees().ports_leased_count(), 0);
@@ -897,7 +902,11 @@ mod tests {
             mgr.schedule_tick(1, 40.0, 40.0).await.unwrap();
             mgr.await_completions(1).await.unwrap();
             assert_eq!(mgr.queue().get(&id).unwrap().status, JobStatus::Done);
- assert_eq!( mgr.worktrees().ports_leased_count(), 0, "cycle {i}: pool back to baseline" );
+            assert_eq!(
+                mgr.worktrees().ports_leased_count(),
+                0,
+                "cycle {i}: pool back to baseline"
+            );
         }
     }
     #[tokio::test]
@@ -911,7 +920,10 @@ mod tests {
         mgr.schedule_tick(2, 40.0, 40.0).await.unwrap();
         let occ = mgr.occupancy();
         assert_eq!(occ.ports_leased, 2 * mgr.config.ports_per_run as u32);
- assert_eq!( occ.ports_leased, mgr.worktrees().ports_leased_count() as u32 );
+        assert_eq!(
+            occ.ports_leased,
+            mgr.worktrees().ports_leased_count() as u32
+        );
         assert_eq!(occ.worktrees, 2);
         assert_eq!(occ.worktrees, mgr.worktrees().live_worktree_count() as u32);
         mgr.await_completions(2).await.unwrap();

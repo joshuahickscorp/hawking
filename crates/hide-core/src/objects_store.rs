@@ -249,8 +249,7 @@ impl ObjectStore {
                                 );
                                 return Ok((job_id, st));
                             }
-                            g.used_local_bytes =
-                                g.used_local_bytes.saturating_add(rec.size_bytes);
+                            g.used_local_bytes = g.used_local_bytes.saturating_add(rec.size_bytes);
                             g.objects.insert(hash_key.clone(), rec);
                         }
                         // Always create a new ref (dedup = same object, extra ref).
@@ -291,10 +290,8 @@ impl ObjectStore {
         loop {
             match self.process_one() {
                 Ok(pair) => {
-                    let terminal = matches!(
-                        pair.1,
-                        JobStatus::Succeeded | JobStatus::FailedVisible
-                    );
+                    let terminal =
+                        matches!(pair.1, JobStatus::Succeeded | JobStatus::FailedVisible);
                     out.push(pair);
                     if !terminal {
                         // RetryWait requeued — keep going if something is ready.
@@ -393,8 +390,7 @@ impl ObjectStore {
         let live = g.live_session.clone();
         drop(g);
         rec.permissions.check_read(reader)?;
-        rec.retention
-            .check_readable(now, live.as_deref())?;
+        rec.retention.check_readable(now, live.as_deref())?;
         Ok(())
     }
 
@@ -554,11 +550,7 @@ impl ObjectStore {
         g.queue
             .get(job_id)
             .and_then(|j| j.content_hash.clone())
-            .or_else(|| {
-                g.in_flight
-                    .get(job_id)
-                    .map(|r| r.content_hash.clone())
-            })
+            .or_else(|| g.in_flight.get(job_id).map(|r| r.content_hash.clone()))
     }
 }
 

@@ -9,7 +9,9 @@ fn silu_f32(x: f32) -> f32 {
 fn make_q6k(rows: usize, cols: usize, seed: u32) -> Vec<u8> {
     let bpr = cols / 256;
     let total = rows * bpr * 210;
-    (0..total).map(|i| ((i as u32).wrapping_mul(1664525u32).wrapping_add(seed)) as u8).collect()
+    (0..total)
+        .map(|i| ((i as u32).wrapping_mul(1664525u32).wrapping_add(seed)) as u8)
+        .collect()
 }
 fn rnd(n: usize, seed: u32) -> Vec<f32> {
     (0..n)
@@ -19,7 +21,14 @@ fn rnd(n: usize, seed: u32) -> Vec<f32> {
         })
         .collect()
 }
-fn run_q6k_ref(ctx: &MetalContext, w: &[u8], gate: &[f32], up: &[f32], rows: usize, cols: usize) -> Vec<f32> {
+fn run_q6k_ref(
+    ctx: &MetalContext,
+    w: &[u8],
+    gate: &[f32],
+    up: &[f32],
+    rows: usize,
+    cols: usize,
+) -> Vec<f32> {
     let w_buf = ctx.new_buffer_with_bytes(w);
     let g_buf = new_f32_buf(ctx, gate);
     let u_buf = new_f32_buf(ctx, up);
@@ -27,17 +36,36 @@ fn run_q6k_ref(ctx: &MetalContext, w: &[u8], gate: &[f32], up: &[f32], rows: usi
     let y_buf = ctx.new_buffer(rows * 4);
     let mut tcb = TokenCommandBuffer::new(ctx);
     kernels::silu_mul_tcb(&mut tcb, &g_buf, &u_buf, &act_buf, cols).unwrap();
-    kernels::gemv_q6_k_pinned_tcb(&mut tcb, &w_buf, 0, w.len(), rows, cols, &act_buf, &y_buf).unwrap();
+    kernels::gemv_q6_k_pinned_tcb(&mut tcb, &w_buf, 0, w.len(), rows, cols, &act_buf, &y_buf)
+        .unwrap();
     tcb.commit_and_wait().unwrap();
     read_f32_buf(&y_buf, rows)
 }
-fn run_q6k_fused(ctx: &MetalContext, w: &[u8], gate: &[f32], up: &[f32], rows: usize, cols: usize) -> Vec<f32> {
+fn run_q6k_fused(
+    ctx: &MetalContext,
+    w: &[u8],
+    gate: &[f32],
+    up: &[f32],
+    rows: usize,
+    cols: usize,
+) -> Vec<f32> {
     let w_buf = ctx.new_buffer_with_bytes(w);
     let g_buf = new_f32_buf(ctx, gate);
     let u_buf = new_f32_buf(ctx, up);
     let y_buf = ctx.new_buffer(rows * 4);
     let mut tcb = TokenCommandBuffer::new(ctx);
-    kernels::gemv_q6_k_swiglu_pinned_tcb(&mut tcb, &w_buf, 0, w.len(), rows, cols, &g_buf, &u_buf, &y_buf).unwrap();
+    kernels::gemv_q6_k_swiglu_pinned_tcb(
+        &mut tcb,
+        &w_buf,
+        0,
+        w.len(),
+        rows,
+        cols,
+        &g_buf,
+        &u_buf,
+        &y_buf,
+    )
+    .unwrap();
     tcb.commit_and_wait().unwrap();
     read_f32_buf(&y_buf, rows)
 }
@@ -61,7 +89,10 @@ fn q6k_swiglu_matches_ref() {
             abs_err / scale
         })
         .fold(0.0_f32, f32::max);
-    assert!(max_rel_err < 1e-4, "Q6_K swiglu parity FAILED: max_rel_err={max_rel_err:.2e} > 1e-4");
+    assert!(
+        max_rel_err < 1e-4,
+        "Q6_K swiglu parity FAILED: max_rel_err={max_rel_err:.2e} > 1e-4"
+    );
 }
 fn run_q4k_predec_ref_b1(
     ctx: &MetalContext,
@@ -93,7 +124,19 @@ fn run_q4k_predec_ref_b1(
         std::env::remove_var("HAWKING_QWEN_PREDEC_4R");
         std::env::remove_var("HAWKING_QWEN_PREDEC_2R");
     }
-    kernels::gemv_q4_k_v4_predec_pinned_tcb(&mut tcb, &w_buf, 0, rows * row_bytes, &sc_buf, 0, rows, cols, &act, &y_buf).unwrap();
+    kernels::gemv_q4_k_v4_predec_pinned_tcb(
+        &mut tcb,
+        &w_buf,
+        0,
+        rows * row_bytes,
+        &sc_buf,
+        0,
+        rows,
+        cols,
+        &act,
+        &y_buf,
+    )
+    .unwrap();
     tcb.commit_and_wait().unwrap();
     read_f32_buf(&y_buf, rows)
 }
@@ -113,8 +156,20 @@ fn run_q4k_predec_swiglu_b1(
     let y_buf = ctx.new_buffer(rows * 4);
     let mut tcb = TokenCommandBuffer::new(ctx);
     let row_bytes = (cols / 256) * 144;
-    kernels::gemv_q4_k_v4_predec_swiglu_pinned_tcb(&mut tcb, &w_buf, 0, rows * row_bytes, &sc_buf, 0, rows, cols, &g_buf, &u_buf, &y_buf)
-        .unwrap();
+    kernels::gemv_q4_k_v4_predec_swiglu_pinned_tcb(
+        &mut tcb,
+        &w_buf,
+        0,
+        rows * row_bytes,
+        &sc_buf,
+        0,
+        rows,
+        cols,
+        &g_buf,
+        &u_buf,
+        &y_buf,
+    )
+    .unwrap();
     tcb.commit_and_wait().unwrap();
     read_f32_buf(&y_buf, rows)
 }
@@ -131,8 +186,15 @@ fn q4k_predec_1r_swiglu_matches_ref() {
     let ref_out = run_q4k_predec_ref_b1(ctx, &w, &scales, &gate, &up, rows, cols, false, false);
     let fused_out = run_q4k_predec_swiglu_b1(ctx, &w, &scales, &gate, &up, rows, cols);
     std::env::remove_var("HAWKING_QWEN_PREDEC_2R");
-    let max_diff = ref_out.iter().zip(&fused_out).map(|(a, b)| (a - b).abs()).fold(0.0_f32, f32::max);
-    assert!(max_diff == 0.0, "Q4K predec 1r swiglu: max_diff={max_diff:.2e} (expected 0)");
+    let max_diff = ref_out
+        .iter()
+        .zip(&fused_out)
+        .map(|(a, b)| (a - b).abs())
+        .fold(0.0_f32, f32::max);
+    assert!(
+        max_diff == 0.0,
+        "Q4K predec 1r swiglu: max_diff={max_diff:.2e} (expected 0)"
+    );
 }
 #[test]
 fn q4k_predec_2r_swiglu_matches_ref() {
@@ -146,8 +208,15 @@ fn q4k_predec_2r_swiglu_matches_ref() {
     std::env::remove_var("HAWKING_QWEN_PREDEC_2R");
     let ref_out = run_q4k_predec_ref_b1(ctx, &w, &scales, &gate, &up, rows, cols, false, true);
     let fused_out = run_q4k_predec_swiglu_b1(ctx, &w, &scales, &gate, &up, rows, cols);
-    let max_diff = ref_out.iter().zip(&fused_out).map(|(a, b)| (a - b).abs()).fold(0.0_f32, f32::max);
-    assert!(max_diff == 0.0, "Q4K predec 2r swiglu: max_diff={max_diff:.2e} (expected 0)");
+    let max_diff = ref_out
+        .iter()
+        .zip(&fused_out)
+        .map(|(a, b)| (a - b).abs())
+        .fold(0.0_f32, f32::max);
+    assert!(
+        max_diff == 0.0,
+        "Q4K predec 2r swiglu: max_diff={max_diff:.2e} (expected 0)"
+    );
 }
 #[test]
 fn q4k_predec_4r_swiglu_matches_ref() {
@@ -161,6 +230,13 @@ fn q4k_predec_4r_swiglu_matches_ref() {
     let ref_out = run_q4k_predec_ref_b1(ctx, &w, &scales, &gate, &up, rows, cols, true, false);
     let fused_out = run_q4k_predec_swiglu_b1(ctx, &w, &scales, &gate, &up, rows, cols);
     std::env::remove_var("HAWKING_QWEN_PREDEC_4R");
-    let max_diff = ref_out.iter().zip(&fused_out).map(|(a, b)| (a - b).abs()).fold(0.0_f32, f32::max);
-    assert!(max_diff == 0.0, "Q4K predec 4r swiglu: max_diff={max_diff:.2e} (expected 0)");
+    let max_diff = ref_out
+        .iter()
+        .zip(&fused_out)
+        .map(|(a, b)| (a - b).abs())
+        .fold(0.0_f32, f32::max);
+    assert!(
+        max_diff == 0.0,
+        "Q4K predec 4r swiglu: max_diff={max_diff:.2e} (expected 0)"
+    );
 }

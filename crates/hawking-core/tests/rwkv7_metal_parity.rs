@@ -13,7 +13,9 @@ fn read_ids(path: &Path) -> Vec<u32> {
         .collect()
 }
 fn fixture(name: &str) -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/rwkv7").join(name)
+    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("tests/fixtures/rwkv7")
+        .join(name)
 }
 fn locate_q4k() -> Option<PathBuf> {
     const REL: &str = "models/rwkv7-04/rwkv7-0.4B-world.Q4_K_M.gguf";
@@ -88,8 +90,15 @@ fn rwkv7_gpu_matches_cpu_logits() {
             argmax_mismatches += 1;
         }
     }
-    assert_eq!(argmax_mismatches, 0, "GPU decode argmax must match CPU oracle every step ({} mismatches)", argmax_mismatches);
-    assert!(worst < LOGIT_TOL, "GPU↔CPU max-abs logit diff {worst:.5} exceeds tol {LOGIT_TOL} (worst @step {worst_step})");
+    assert_eq!(
+        argmax_mismatches, 0,
+        "GPU decode argmax must match CPU oracle every step ({} mismatches)",
+        argmax_mismatches
+    );
+    assert!(
+        worst < LOGIT_TOL,
+        "GPU↔CPU max-abs logit diff {worst:.5} exceeds tol {LOGIT_TOL} (worst @step {worst_step})"
+    );
 }
 #[test]
 fn rwkv7_gpu_greedy_trajectory_matches_cpu() {
@@ -124,7 +133,11 @@ fn rwkv7_gpu_greedy_trajectory_matches_cpu() {
         next = argmax(&lg);
         gpu_traj.push(next);
     }
-    let matched = cpu_traj.iter().zip(gpu_traj.iter()).take_while(|(a, b)| a == b).count();
+    let matched = cpu_traj
+        .iter()
+        .zip(gpu_traj.iter())
+        .take_while(|(a, b)| a == b)
+        .count();
     assert_eq!(
         gpu_traj, cpu_traj,
         "GPU greedy decode must reproduce the CPU oracle trajectory for {n_decode} tokens\n  \

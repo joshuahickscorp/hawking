@@ -97,11 +97,7 @@ impl SurfacePermissionSet {
     /// Intersection with another set (for session-scoped narrowing only).
     pub fn intersect(&self, other: &SurfacePermissionSet) -> SurfacePermissionSet {
         SurfacePermissionSet {
-            tools: self
-                .tools
-                .intersection(&other.tools)
-                .cloned()
-                .collect(),
+            tools: self.tools.intersection(&other.tools).cloned().collect(),
             connectors: self
                 .connectors
                 .intersection(&other.connectors)
@@ -250,8 +246,10 @@ mod tests {
     #[test]
     fn subset_cannot_widen() {
         let set = SurfacePermissionSet::new(["a"], ["x"]);
- assert!(set .derive_capability_subset(["a", "b"], None::<&str>) .is_err());
- assert!(set .derive_capability_subset(["a"], ["y"]) .is_err());
+        assert!(set
+            .derive_capability_subset(["a", "b"], None::<&str>)
+            .is_err());
+        assert!(set.derive_capability_subset(["a"], ["y"]).is_err());
         let ok = set.derive_capability_subset(["a"], ["x"]).unwrap();
         assert!(ok.is_live());
         assert!(ok.allows_tool("a"));

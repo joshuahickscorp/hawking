@@ -24,19 +24,44 @@ fn batched_predec_bit_identical_to_v3w() {
     let sbuf = newf(ctx, &scales);
     let mut rng = Pcg64Mcg::new(0x5EED_5EED);
     for batch in 1..=8usize {
-        let x: Vec<f32> = (0..batch * cols).map(|_| rng.gen_range(-3.0_f32..3.0)).collect();
+        let x: Vec<f32> = (0..batch * cols)
+            .map(|_| rng.gen_range(-3.0_f32..3.0))
+            .collect();
         let xbuf = newf(ctx, &x);
         let y_ref = ctx.new_buffer(batch * rows * std::mem::size_of::<f32>());
         {
             let mut tcb = TokenCommandBuffer::new(ctx);
-            kernels::gemm_q4_k_m_batched_v3w_pinned_tcb(&mut tcb, &wbuf, 0, w.len(), rows, cols, batch, &xbuf, &y_ref).expect("v3w encode");
+            kernels::gemm_q4_k_m_batched_v3w_pinned_tcb(
+                &mut tcb,
+                &wbuf,
+                0,
+                w.len(),
+                rows,
+                cols,
+                batch,
+                &xbuf,
+                &y_ref,
+            )
+            .expect("v3w encode");
             tcb.commit_and_wait().expect("v3w commit");
         }
         let y_predec = ctx.new_buffer(batch * rows * std::mem::size_of::<f32>());
         {
             let mut tcb = TokenCommandBuffer::new(ctx);
-            kernels::gemm_q4_k_m_batched_v3w_predec_pinned_tcb(&mut tcb, &wbuf, 0, w.len(), &sbuf, 0, rows, cols, batch, &xbuf, &y_predec)
-                .expect("predec encode");
+            kernels::gemm_q4_k_m_batched_v3w_predec_pinned_tcb(
+                &mut tcb,
+                &wbuf,
+                0,
+                w.len(),
+                &sbuf,
+                0,
+                rows,
+                cols,
+                batch,
+                &xbuf,
+                &y_predec,
+            )
+            .expect("predec encode");
             tcb.commit_and_wait().expect("predec commit");
         }
         let a = readf(&y_ref, batch * rows);
@@ -52,7 +77,10 @@ fn batched_predec_bit_identical_to_v3w() {
             }
         }
         if let Some((i, av, bv)) = first {
-            panic!("batch={batch}: {diffs}/{} differ; first @ {i} v3w={av:e} predec={bv:e}", a.len());
+            panic!(
+                "batch={batch}: {diffs}/{} differ; first @ {i} v3w={av:e} predec={bv:e}",
+                a.len()
+            );
         }
     }
 }
@@ -67,19 +95,44 @@ fn batched_predec_bit_identical_ffn_down_shape() {
     let sbuf = newf(ctx, &scales);
     let mut rng = Pcg64Mcg::new(0xC0FF_EE11);
     for batch in 1..=8usize {
-        let x: Vec<f32> = (0..batch * cols).map(|_| rng.gen_range(-3.0_f32..3.0)).collect();
+        let x: Vec<f32> = (0..batch * cols)
+            .map(|_| rng.gen_range(-3.0_f32..3.0))
+            .collect();
         let xbuf = newf(ctx, &x);
         let y_ref = ctx.new_buffer(batch * rows * std::mem::size_of::<f32>());
         {
             let mut tcb = TokenCommandBuffer::new(ctx);
-            kernels::gemm_q4_k_m_batched_v3w_pinned_tcb(&mut tcb, &wbuf, 0, w.len(), rows, cols, batch, &xbuf, &y_ref).expect("v3w encode");
+            kernels::gemm_q4_k_m_batched_v3w_pinned_tcb(
+                &mut tcb,
+                &wbuf,
+                0,
+                w.len(),
+                rows,
+                cols,
+                batch,
+                &xbuf,
+                &y_ref,
+            )
+            .expect("v3w encode");
             tcb.commit_and_wait().expect("v3w commit");
         }
         let y_predec = ctx.new_buffer(batch * rows * std::mem::size_of::<f32>());
         {
             let mut tcb = TokenCommandBuffer::new(ctx);
-            kernels::gemm_q4_k_m_batched_v3w_predec_pinned_tcb(&mut tcb, &wbuf, 0, w.len(), &sbuf, 0, rows, cols, batch, &xbuf, &y_predec)
-                .expect("predec encode");
+            kernels::gemm_q4_k_m_batched_v3w_predec_pinned_tcb(
+                &mut tcb,
+                &wbuf,
+                0,
+                w.len(),
+                &sbuf,
+                0,
+                rows,
+                cols,
+                batch,
+                &xbuf,
+                &y_predec,
+            )
+            .expect("predec encode");
             tcb.commit_and_wait().expect("predec commit");
         }
         let a = readf(&y_ref, batch * rows);

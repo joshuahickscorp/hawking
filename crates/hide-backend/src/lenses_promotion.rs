@@ -142,8 +142,7 @@ impl PromotionBoard {
         // Scan for forbidden self-promotion first.
         for e in evidence {
             if let PromotionEvidence::IndependentVerification {
-                verifier_agent_id,
-                ..
+                verifier_agent_id, ..
             } = e
             {
                 if verifier_agent_id == &conclusion.author_agent_id {

@@ -1,5 +1,8 @@
 use half::f16;
-use hawking_core::gravity::{parse_pq_header, pq_matvec, pq_matvec_f64_authority, pq_sections, PqHeader, PqMetalKernelVariant};
+use hawking_core::gravity::{
+    parse_pq_header, pq_matvec, pq_matvec_f64_authority, pq_sections, PqHeader,
+    PqMetalKernelVariant,
+};
 use hawking_core::metal::SHADER_GRAVITY_PQ;
 use hawking_core::numeric_parity::{score_against_f64, ulp_distance_f32, Bounds};
 fn primary_header(bits: u16) -> PqHeader {
@@ -50,7 +53,9 @@ fn tiny_bits8_payload() -> (Vec<u8>, Vec<f32>) {
             out.push(((row * 37 + chunk * 19 + row * chunk) & 255) as u8);
         }
     }
-    let x = (0..h.cols as usize).map(|i| ((i as f32 + 0.25) * 0.03125).sin() + (i % 11) as f32 * 0.0078125).collect();
+    let x = (0..h.cols as usize)
+        .map(|i| ((i as f32 + 0.25) * 0.03125).sin() + (i % 11) as f32 * 0.0078125)
+        .collect();
     (out, x)
 }
 fn autotune_payload(rows: u32, cols: u32) -> (Vec<u8>, Vec<f32>) {
@@ -78,7 +83,10 @@ fn autotune_payload(rows: u32, cols: u32) -> (Vec<u8>, Vec<f32>) {
     }
     for row in 0..rows as usize {
         for chunk in 0..nchunk as usize {
-            let code = row.wrapping_mul(73).wrapping_add(chunk.wrapping_mul(41)).wrapping_add(row.wrapping_mul(chunk).wrapping_mul(3));
+            let code = row
+                .wrapping_mul(73)
+                .wrapping_add(chunk.wrapping_mul(41))
+                .wrapping_add(row.wrapping_mul(chunk).wrapping_mul(3));
             out.push((code & 255) as u8);
         }
     }
@@ -102,7 +110,10 @@ fn simd_sum_tree(mut lanes: [f32; 32]) -> f32 {
 fn decode_codebooks(payload: &[u8]) -> (PqHeader, Vec<f32>, Vec<u8>) {
     let h = parse_pq_header(payload).expect("header");
     let (cb, codes) = pq_sections(payload).expect("sections");
-    let codebooks = cb.chunks_exact(2).map(|bytes| f16::from_bits(u16::from_le_bytes([bytes[0], bytes[1]])).to_f32()).collect();
+    let codebooks = cb
+        .chunks_exact(2)
+        .map(|bytes| f16::from_bits(u16::from_le_bytes([bytes[0], bytes[1]])).to_f32())
+        .collect();
     (h, codebooks, codes.to_vec())
 }
 fn emulate_bits8_generic(payload: &[u8], x: &[f32]) -> Vec<f32> {
@@ -141,13 +152,15 @@ fn emulate_bits8_vec4(payload: &[u8], x: &[f32]) -> Vec<f32> {
                     let which = q % 4;
                     for component in 0..4usize {
                         let j = q * 4 + component;
-                        acc[which][component] = cb[cb_base + j].mul_add(x[x_base + j], acc[which][component]);
+                        acc[which][component] =
+                            cb[cb_base + j].mul_add(x[x_base + j], acc[which][component]);
                     }
                 }
             }
             let mut v = [0.0f32; 4];
             for component in 0..4usize {
-                v[component] = (acc[0][component] + acc[1][component]) + (acc[2][component] + acc[3][component]);
+                v[component] = (acc[0][component] + acc[1][component])
+                    + (acc[2][component] + acc[3][component]);
             }
             lanes[lane] = (v[0] + v[1]) + (v[2] + v[3]);
         }
@@ -212,7 +225,8 @@ fn emulate_bits8_double_single(payload: &[u8], x: &[f32]) -> Vec<f32> {
             for chunk in (lane..h.nchunk as usize).step_by(32) {
                 let code = codes[row * h.nchunk as usize + chunk] as usize;
                 for j in 0..32usize {
-                    *lane_sum = lane_sum.add(DoubleSingle::product(cb[code * 32 + j], x[chunk * 32 + j]));
+                    *lane_sum =
+                        lane_sum.add(DoubleSingle::product(cb[code * 32 + j], x[chunk * 32 + j]));
                 }
             }
         }
@@ -252,14 +266,29 @@ fn row_condition(payload: &[u8], x: &[f32], row: usize, reference: f64) -> f64 {
 #[test]
 fn registry_is_explicit_unique_and_keeps_generic_first() {
     assert_eq!(PqMetalKernelVariant::ALL[0], PqMetalKernelVariant::Generic);
-    assert_eq!(PqMetalKernelVariant::Generic.kernel_name(), "gravity_pq_matvec");
-    assert_eq!(PqMetalKernelVariant::Bits8DoubleSingle.kernel_name(), "gravity_pq_matvec_bits8_double_single");
-    assert_eq!(PqMetalKernelVariant::Bits8DoubleSingle.dispatches_per_matvec(), 1);
+    assert_eq!(
+        PqMetalKernelVariant::Generic.kernel_name(),
+        "gravity_pq_matvec"
+    );
+    assert_eq!(
+        PqMetalKernelVariant::Bits8DoubleSingle.kernel_name(),
+        "gravity_pq_matvec_bits8_double_single"
+    );
+    assert_eq!(
+        PqMetalKernelVariant::Bits8DoubleSingle.dispatches_per_matvec(),
+        1
+    );
     assert_eq!(PqMetalKernelVariant::Bits8DoubleSingle.split_count(), None);
-    let names: std::collections::HashSet<_> = PqMetalKernelVariant::ALL.iter().map(|v| v.as_str()).collect();
+    let names: std::collections::HashSet<_> = PqMetalKernelVariant::ALL
+        .iter()
+        .map(|v| v.as_str())
+        .collect();
     assert_eq!(names.len(), PqMetalKernelVariant::ALL.len());
     for variant in PqMetalKernelVariant::ALL {
-        assert_eq!(variant.as_str().parse::<PqMetalKernelVariant>().unwrap(), variant);
+        assert_eq!(
+            variant.as_str().parse::<PqMetalKernelVariant>().unwrap(),
+            variant
+        );
     }
 }
 #[test]
@@ -268,7 +297,9 @@ fn primary_bits8_geometry_admits_all_candidates_but_packed_bits_do_not() {
     assert!(PqMetalKernelVariant::ALL.iter().all(|v| v.supports(&bits8)));
     let bits7 = primary_header(7);
     assert!(PqMetalKernelVariant::Generic.supports(&bits7));
-    assert!(PqMetalKernelVariant::ALL[1..].iter().all(|v| !v.supports(&bits7)));
+    assert!(PqMetalKernelVariant::ALL[1..]
+        .iter()
+        .all(|v| !v.supports(&bits7)));
 }
 #[test]
 fn shader_registers_direct_double_single_vector_and_deterministic_reductions() {
@@ -284,13 +315,23 @@ fn shader_registers_direct_double_single_vector_and_deterministic_reductions() {
     assert!(SHADER_GRAVITY_PQ.contains("uint(codes[flat])"));
     assert!(SHADER_GRAVITY_PQ.contains("out.lo = metal::precise::fma(a, b, -hi)"));
     assert!(SHADER_GRAVITY_PQ.contains("acc = pq_ds_simd_tree(acc, lane)"));
-    for sequenced in
-        ["volatile float hi", "volatile float sum", "volatile float sum_error", "volatile float tail", "volatile float hi_delta"]
-    {
-        assert!(SHADER_GRAVITY_PQ.contains(sequenced), "double-single error-free transform lost {sequenced}");
+    for sequenced in [
+        "volatile float hi",
+        "volatile float sum",
+        "volatile float sum_error",
+        "volatile float tail",
+        "volatile float hi_delta",
+    ] {
+        assert!(
+            SHADER_GRAVITY_PQ.contains(sequenced),
+            "double-single error-free transform lost {sequenced}"
+        );
     }
     for width in [16, 8, 4, 2, 1] {
-        assert!(SHADER_GRAVITY_PQ.contains(&format!("if (lane < {width}u)")), "double-single reduction is missing width {width}");
+        assert!(
+            SHADER_GRAVITY_PQ.contains(&format!("if (lane < {width}u)")),
+            "double-single reduction is missing width {width}"
+        );
     }
     let double_single_kernel = SHADER_GRAVITY_PQ
         .split("kernel void gravity_pq_matvec_bits8_double_single")
@@ -299,10 +340,16 @@ fn shader_registers_direct_double_single_vector_and_deterministic_reductions() {
         .split("kernel void gravity_pq_matvec_bits8_vec4")
         .next()
         .expect("double-single kernel terminator");
-    assert!(!double_single_kernel.contains("simd_sum("), "double-single candidate must use its explicit compensated tree");
+    assert!(
+        !double_single_kernel.contains("simd_sum("),
+        "double-single candidate must use its explicit compensated tree"
+    );
     assert!(SHADER_GRAVITY_PQ.contains("partials[row * splits + split] = acc"));
     assert!(SHADER_GRAVITY_PQ.contains("for (uint split = 0u; split < splits; ++split)"));
-    assert!(!SHADER_GRAVITY_PQ.contains("atomic_fetch_add"), "2D reduction must not use nondeterministic atomics");
+    assert!(
+        !SHADER_GRAVITY_PQ.contains("atomic_fetch_add"),
+        "2D reduction must not use nondeterministic atomics"
+    );
 }
 #[test]
 fn pq_fp64_authority_scores_host_candidate_under_v21() {
@@ -326,20 +373,48 @@ fn exact_geometry_autotune_payload_failure_preflight() {
         let mut candidates = Vec::new();
         for (name, candidate, expected_pass) in [
             ("host-left-to-right", host, false),
-            ("generic-emulated", emulate_bits8_generic(&payload, &x), false),
+            (
+                "generic-emulated",
+                emulate_bits8_generic(&payload, &x),
+                false,
+            ),
             ("vec4-emulated", emulate_bits8_vec4(&payload, &x), false),
-            ("kahan-lanes-emulated", emulate_bits8_kahan(&payload, &x), false),
-            ("double-single-emulated", emulate_bits8_double_single(&payload, &x), true),
+            (
+                "kahan-lanes-emulated",
+                emulate_bits8_kahan(&payload, &x),
+                false,
+            ),
+            (
+                "double-single-emulated",
+                emulate_bits8_double_single(&payload, &x),
+                true,
+            ),
         ] {
             let score = score_against_f64(&candidate, &authority, &bounds, name);
-            let (row, abs_error, meaningful_rel) = worst_meaningful_row(&candidate, &authority, score.continuous.abs_error_cutoff);
+            let (row, abs_error, meaningful_rel) =
+                worst_meaningful_row(&candidate, &authority, score.continuous.abs_error_cutoff);
             let condition = row_condition(&payload, &x, row, authority[row]);
-            assert!(score.continuous.relative_l2 < bounds.max_relative_l2, "headline L2 is not the failure mechanism");
-            assert_eq!(score.pass, expected_pass, "unexpected V2.1 result for {name}: {:?}", score.failures);
+            assert!(
+                score.continuous.relative_l2 < bounds.max_relative_l2,
+                "headline L2 is not the failure mechanism"
+            );
+            assert_eq!(
+                score.pass, expected_pass,
+                "unexpected V2.1 result for {name}: {:?}",
+                score.failures
+            );
             if !expected_pass {
-                assert_eq!(score.failures.len(), 1, "meaningful_rel must be the sole failed V2.1 bound: {:?}", score.failures);
+                assert_eq!(
+                    score.failures.len(),
+                    1,
+                    "meaningful_rel must be the sole failed V2.1 bound: {:?}",
+                    score.failures
+                );
                 assert!(
-                    score.failures.iter().any(|failure| failure.starts_with("meaningful_rel")),
+                    score
+                        .failures
+                        .iter()
+                        .any(|failure| failure.starts_with("meaningful_rel")),
                     "expected exact-geometry cancellation to trip meaningful_rel: {:?}",
                     score.failures
                 );

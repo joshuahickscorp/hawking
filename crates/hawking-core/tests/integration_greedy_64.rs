@@ -8,7 +8,11 @@ fn run_greedy_64(weights: &PathBuf, cfg: hawking_core::EngineConfig) -> Vec<u32>
     let req = hawking_core::GenerateRequest {
         prompt: PROMPT.into(),
         max_new_tokens: MAX_NEW_TOKENS,
-        sampling: hawking_core::SamplingParams { temperature: 0.0, seed: Some(42), ..Default::default() },
+        sampling: hawking_core::SamplingParams {
+            temperature: 0.0,
+            seed: Some(42),
+            ..Default::default()
+        },
         stop: vec![],
         abort: None,
         max_stall_ms: 0,
@@ -42,7 +46,11 @@ fn check_or_pin(pin_path: &PathBuf, label: &str, actual_hash: &str) {
         }
         None => {
             use std::io::Write;
-            let mut f = std::fs::OpenOptions::new().create(true).append(true).open(pin_path).expect("open pin for append");
+            let mut f = std::fs::OpenOptions::new()
+                .create(true)
+                .append(true)
+                .open(pin_path)
+                .expect("open pin for append");
             writeln!(f, "{actual_line}").expect("append pin");
             eprintln!("PINNED first hash for {label}: {actual_hash}");
         }
@@ -50,7 +58,11 @@ fn check_or_pin(pin_path: &PathBuf, label: &str, actual_hash: &str) {
 }
 fn first_available_model() -> Option<(PathBuf, PathBuf, &'static str)> {
     const CANDIDATES: &[(&str, &str, &str)] = &[
-        ("../../models/Qwen2.5-3B-Instruct-Q4_K_M.gguf", "../../profiles/qwen3b-instruct-q4k.m3pro18.json", "qwen3b-q4k-greedy64"),
+        (
+            "../../models/Qwen2.5-3B-Instruct-Q4_K_M.gguf",
+            "../../profiles/qwen3b-instruct-q4k.m3pro18.json",
+            "qwen3b-q4k-greedy64",
+        ),
         (
             "../../models/deepseek-v2-lite-q4.gguf",
             "../../profiles/deepseek-v2-lite-q4.m3pro18.json",
@@ -69,12 +81,21 @@ fn first_available_model() -> Option<(PathBuf, PathBuf, &'static str)> {
 #[test]
 fn greedy_64_regression() {
     let Some((weights, profile_path, label)) = first_available_model() else {
-        eprintln!("skipping greedy_64_regression: no model on disk (tried Qwen-3B, DeepSeek-V2-Lite)");
+        eprintln!(
+            "skipping greedy_64_regression: no model on disk (tried Qwen-3B, DeepSeek-V2-Lite)"
+        );
         return;
     };
     let profile = hawking_core::profile::KernelProfile::load(&profile_path).expect("load profile");
-    let cfg = hawking_core::EngineConfig { kernel_profile: Some(profile), ..Default::default() };
+    let cfg = hawking_core::EngineConfig {
+        kernel_profile: Some(profile),
+        ..Default::default()
+    };
     let ids = run_greedy_64(&weights, cfg);
     let hash = hash16(&ids);
-    check_or_pin(&PathBuf::from("tests/golden/_phase0_token_baseline_64.hashes"), label, &hash);
+    check_or_pin(
+        &PathBuf::from("tests/golden/_phase0_token_baseline_64.hashes"),
+        label,
+        &hash,
+    );
 }

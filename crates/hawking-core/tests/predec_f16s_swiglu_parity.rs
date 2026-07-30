@@ -7,18 +7,26 @@ use common::*;
 fn make_q4k_predec(rows: usize, cols: usize, seed: u32) -> (Vec<u8>, Vec<f32>) {
     let bpr = cols / 256;
     let total_w = rows * bpr * 144;
-    let w: Vec<u8> = (0..total_w).map(|i| ((i as u32).wrapping_mul(2246822519u32).wrapping_add(seed)) as u8).collect();
+    let w: Vec<u8> = (0..total_w)
+        .map(|i| ((i as u32).wrapping_mul(2246822519u32).wrapping_add(seed)) as u8)
+        .collect();
     let ns = rows * bpr * 16;
     let s: Vec<f32> = (0..ns)
         .map(|i| {
-            let v = ((i as u32).wrapping_mul(2654435761u32).wrapping_add(seed ^ 0xAB)) as f32 / u32::MAX as f32;
+            let v = ((i as u32)
+                .wrapping_mul(2654435761u32)
+                .wrapping_add(seed ^ 0xAB)) as f32
+                / u32::MAX as f32;
             0.1 + v * 1.9 // in [0.1, 2.0]
         })
         .collect();
     (w, s)
 }
 fn f32_to_f16_scales(scales: &[f32]) -> Vec<u8> {
-    scales.iter().flat_map(|&v| f16::from_f32(v).to_le_bytes()).collect()
+    scales
+        .iter()
+        .flat_map(|&v| f16::from_f32(v).to_le_bytes())
+        .collect()
 }
 fn rnd(n: usize, seed: u32) -> Vec<f32> {
     (0..n)
@@ -38,26 +46,67 @@ fn rel_l2(reference: &[f32], got: &[f32]) -> f64 {
     }
     (num / den.max(1e-30)).sqrt()
 }
-fn run_f32(ctx: &MetalContext, w: &[u8], scales: &[f32], gate: &[f32], up: &[f32], rows: usize, cols: usize) -> Vec<f32> {
+fn run_f32(
+    ctx: &MetalContext,
+    w: &[u8],
+    scales: &[f32],
+    gate: &[f32],
+    up: &[f32],
+    rows: usize,
+    cols: usize,
+) -> Vec<f32> {
     let w_buf = ctx.new_buffer_with_bytes(w);
     let s_buf = new_f32_buf(ctx, scales);
     let g_buf = new_f32_buf(ctx, gate);
     let u_buf = new_f32_buf(ctx, up);
     let y_buf = ctx.new_buffer(rows * 4);
     let mut tcb = TokenCommandBuffer::new(ctx);
-    kernels::gemv_q4_k_v4_predec_swiglu_pinned_tcb(&mut tcb, &w_buf, 0, w.len(), &s_buf, 0, rows, cols, &g_buf, &u_buf, &y_buf).unwrap();
+    kernels::gemv_q4_k_v4_predec_swiglu_pinned_tcb(
+        &mut tcb,
+        &w_buf,
+        0,
+        w.len(),
+        &s_buf,
+        0,
+        rows,
+        cols,
+        &g_buf,
+        &u_buf,
+        &y_buf,
+    )
+    .unwrap();
     tcb.commit_and_wait().unwrap();
     read_f32_buf(&y_buf, rows)
 }
-fn run_f16s(ctx: &MetalContext, w: &[u8], scales_f16: &[u8], gate: &[f32], up: &[f32], rows: usize, cols: usize) -> Vec<f32> {
+fn run_f16s(
+    ctx: &MetalContext,
+    w: &[u8],
+    scales_f16: &[u8],
+    gate: &[f32],
+    up: &[f32],
+    rows: usize,
+    cols: usize,
+) -> Vec<f32> {
     let w_buf = ctx.new_buffer_with_bytes(w);
     let s_buf = ctx.new_buffer_with_bytes(scales_f16);
     let g_buf = new_f32_buf(ctx, gate);
     let u_buf = new_f32_buf(ctx, up);
     let y_buf = ctx.new_buffer(rows * 4);
     let mut tcb = TokenCommandBuffer::new(ctx);
-    kernels::gemv_q4_k_v4_predec_f16s_swiglu_pinned_tcb(&mut tcb, &w_buf, 0, w.len(), &s_buf, 0, rows, cols, &g_buf, &u_buf, &y_buf)
-        .unwrap();
+    kernels::gemv_q4_k_v4_predec_f16s_swiglu_pinned_tcb(
+        &mut tcb,
+        &w_buf,
+        0,
+        w.len(),
+        &s_buf,
+        0,
+        rows,
+        cols,
+        &g_buf,
+        &u_buf,
+        &y_buf,
+    )
+    .unwrap();
     tcb.commit_and_wait().unwrap();
     read_f32_buf(&y_buf, rows)
 }
@@ -79,7 +128,10 @@ fn predec_f16s_4r_swiglu_rel_l2_quality_gate() {
         let ref_out = run_f32(&ctx, &w, &scales, &gate, &up, rows, cols);
         let got_out = run_f16s(&ctx, &w, &scales_f16, &gate, &up, rows, cols);
         let rel = rel_l2(&ref_out, &got_out);
-        assert!(rel < MAX_REL_L2, "rows={rows} cols={cols}: rel_L2={rel:.4e} >= {MAX_REL_L2:.4e}");
+        assert!(
+            rel < MAX_REL_L2,
+            "rows={rows} cols={cols}: rel_L2={rel:.4e} >= {MAX_REL_L2:.4e}"
+        );
     }
 }
 #[test]

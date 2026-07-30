@@ -48,13 +48,7 @@ pub async fn with_dispatch_context<T>(
     fut: impl std::future::Future<Output = T>,
 ) -> T {
     DISPATCH_CTX
-        .scope(
-            DispatchContext {
-                session_id,
-                run_id,
-            },
-            fut,
-        )
+        .scope(DispatchContext { session_id, run_id }, fut)
         .await
 }
 
@@ -476,11 +470,26 @@ mod tests {
     fn lease_covers_only_paths_inside_a_declared_scope() {
         let l = lease(vec![PathBuf::from("/repo/app")]);
         assert!(l.covers("/repo/app/src/main.rs"), "inside the scope");
-        assert!(l.covers("/repo/app/./new/file.rs"), "a file that does not exist yet");
-        assert!(!l.covers("/repo/other/x.rs"), "a sibling directory is outside");
-        assert!(!l.covers("/repo/application/x.rs"), "a name prefix is not containment");
-        assert!(!l.covers("/repo/app/../../etc/passwd"), "a parent walk cannot escape");
-        assert!(!l.covers("relative/path.rs"), "a relative target is not provably in scope");
+        assert!(
+            l.covers("/repo/app/./new/file.rs"),
+            "a file that does not exist yet"
+        );
+        assert!(
+            !l.covers("/repo/other/x.rs"),
+            "a sibling directory is outside"
+        );
+        assert!(
+            !l.covers("/repo/application/x.rs"),
+            "a name prefix is not containment"
+        );
+        assert!(
+            !l.covers("/repo/app/../../etc/passwd"),
+            "a parent walk cannot escape"
+        );
+        assert!(
+            !l.covers("relative/path.rs"),
+            "a relative target is not provably in scope"
+        );
     }
     async fn as_session<T>(session: &str, fut: impl std::future::Future<Output = T>) -> T {
         with_dispatch_context(hide_core::ids::SessionId::from(session), None, fut).await
@@ -502,7 +511,9 @@ mod tests {
             blind.effects.clear();
             assert!(lease_covering_here(&blind).is_none());
             let mut mixed = write_request("/repo/a.rs");
-            mixed.effects.push(write_request("/elsewhere/b.rs").effects.remove(0));
+            mixed
+                .effects
+                .push(write_request("/elsewhere/b.rs").effects.remove(0));
             assert!(lease_covering_here(&mixed).is_none());
         })
         .await;
@@ -518,14 +529,24 @@ mod tests {
             })
             .await
         );
-        assert!(as_session("another-session", async { lease_covering_here(&write_request("/repo/a.rs")).is_none() }) .await);
+        assert!(
+            as_session("another-session", async {
+                lease_covering_here(&write_request("/repo/a.rs")).is_none()
+            })
+            .await
+        );
         assert!(lease_covering_here(&write_request("/repo/a.rs")).is_none());
         let expired = WriteLease {
             granted_ms: hide_core::ids::now_ms() - LEASE_TTL_MS - 1,
             ..lease(vec![PathBuf::from("/repo")])
         };
         install_write_lease(expired);
-        assert!(as_session("sess", async { lease_covering_here(&write_request("/repo/a.rs")).is_none() }) .await);
+        assert!(
+            as_session("sess", async {
+                lease_covering_here(&write_request("/repo/a.rs")).is_none()
+            })
+            .await
+        );
         revoke_write_lease("end of test");
     }
     #[test]
@@ -541,7 +562,8 @@ mod tests {
     }
     #[test]
     fn a_symlink_inside_the_scope_does_not_escape_it() {
-        let dir = std::env::temp_dir().join(format!("hide_lease_link_{}", hide_core::ids::now_ms()));
+        let dir =
+            std::env::temp_dir().join(format!("hide_lease_link_{}", hide_core::ids::now_ms()));
         let scope = dir.join("repo");
         let outside = dir.join("outside");
         std::fs::create_dir_all(&scope).unwrap();
@@ -549,7 +571,10 @@ mod tests {
         #[cfg(unix)]
         std::os::unix::fs::symlink(&outside, scope.join("link")).unwrap();
         let l = lease(vec![scope.clone()]);
-        assert!(l.covers(&scope.join("in.rs").to_string_lossy()), "an ordinary path inside");
+        assert!(
+            l.covers(&scope.join("in.rs").to_string_lossy()),
+            "an ordinary path inside"
+        );
         #[cfg(unix)]
         assert!(!l.covers(&scope.join("link/escaped.rs").to_string_lossy()));
         let _ = std::fs::remove_dir_all(dir);
@@ -572,7 +597,10 @@ mod tests {
             inner: AlwaysDeny,
             bound: None,
         };
-        assert_eq!(engine.evaluate(&write_request("/repo/a.rs")).decision, Decision::Deny);
+        assert_eq!(
+            engine.evaluate(&write_request("/repo/a.rs")).decision,
+            Decision::Deny
+        );
         assert!(!gate_released(), "a lease is not a released gate");
         revoke_write_lease("end of test");
     }
@@ -583,7 +611,11 @@ mod tests {
         assert_eq!(active_write_lease().as_ref(), Some(&granted));
         assert!(!serde_json::to_string(&granted).unwrap().is_empty());
         revoke_write_lease("restart");
-        assert_eq!(active_write_lease(), None, "a restart leaves no lease behind");
+        assert_eq!(
+            active_write_lease(),
+            None,
+            "a restart leaves no lease behind"
+        );
     }
     #[test]
     fn scoped_revokes_only_fire_for_their_own_lease() {
@@ -591,7 +623,10 @@ mod tests {
         install_write_lease(lease(vec![PathBuf::from("/repo")]));
         assert!(revoke_write_lease_for_run("other-run", None).is_none());
         assert!(revoke_write_lease_for_repo("other-repo").is_none());
-        assert!(active_write_lease().is_some(), "another task's end is not this one's");
+        assert!(
+            active_write_lease().is_some(),
+            "another task's end is not this one's"
+        );
         assert!(revoke_write_lease_for_run("run", None).is_some());
         assert_eq!(active_write_lease(), None);
         install_write_lease(lease(vec![PathBuf::from("/repo")]));
@@ -618,13 +653,22 @@ mod tests {
                 )),
             )
         };
- assert!( write(scope.join("a.rs")).await.is_err(), "with no lease the write is refused" );
+        assert!(
+            write(scope.join("a.rs")).await.is_err(),
+            "with no lease the write is refused"
+        );
         install_write_lease(lease(vec![scope.clone()]));
-        assert_eq!(write(scope.join("a.rs")).await.unwrap().status, hide_core::tool::ToolStatus::Ok);
+        assert_eq!(
+            write(scope.join("a.rs")).await.unwrap().status,
+            hide_core::tool::ToolStatus::Ok
+        );
         assert_eq!(std::fs::read_to_string(scope.join("a.rs")).unwrap(), "x");
         assert!(write(dir.join("out.rs")).await.is_err());
         revoke_write_lease("end of test");
- assert!( write(scope.join("b.rs")).await.is_err(), "after revocation the write asks again" );
+        assert!(
+            write(scope.join("b.rs")).await.is_err(),
+            "after revocation the write asks again"
+        );
         let _ = std::fs::remove_dir_all(dir);
     }
 }

@@ -4,17 +4,12 @@
 //! All other families are fully declared (ABI filled) but not constructible.
 
 use crate::connector_abi::abi::{
-    AuditPolicy, AuthMethod, ChangeTransport, ConnectorAbi, EffectClass, FamilyId,
+    AuditPolicy, AuthMethod, ChangeTransport, ConnectorAbi, ConnectorScope, EffectClass, FamilyId,
     ImplementationStatus, ObjectType, OfflineCache, RateLimit, ReadCapability, RevocationPolicy,
-    SyncMode, WriteCapability, ConnectorScope,
+    SyncMode, WriteCapability,
 };
 
-fn base(
-    id: &str,
-    name: &str,
-    description: &str,
-    status: ImplementationStatus,
-) -> ConnectorAbi {
+fn base(id: &str, name: &str, description: &str, status: ImplementationStatus) -> ConnectorAbi {
     ConnectorAbi {
         family_id: FamilyId::new(id),
         display_name: name.into(),
@@ -94,8 +89,7 @@ pub fn rss() -> ConnectorAbi {
     a.revocation = RevocationPolicy::real_local();
     a.audit = AuditPolicy::writes_required();
     a.honesty_notes =
-        "IMPLEMENTED against committed fixture XML only. No network fetch in this crate."
-            .into();
+        "IMPLEMENTED against committed fixture XML only. No network fetch in this crate.".into();
     a
 }
 
@@ -161,10 +155,7 @@ pub fn google_drive() -> ConnectorAbi {
         token_url: "https://oauth2.googleapis.com/token".into(),
     };
     a.scopes = vec![
-        ConnectorScope::read(
-            "drive.readonly",
-            "Read Drive files",
-        ),
+        ConnectorScope::read("drive.readonly", "Read Drive files"),
         ConnectorScope::write("drive.file", "Create/update app-created files"),
     ];
     a.object_types = vec![
@@ -618,7 +609,11 @@ pub fn hawking_artifact_registry() -> ConnectorAbi {
     a.change_transport = ChangeTransport::LocalWatch;
     a.offline_cache = OfflineCache::metadata(64 * 1024 * 1024);
     a.rate_limit = RateLimit::local();
-    a.effect_classes = vec![EffectClass::Read, EffectClass::Write, EffectClass::SecretAccess];
+    a.effect_classes = vec![
+        EffectClass::Read,
+        EffectClass::Write,
+        EffectClass::SecretAccess,
+    ];
     a.revocation = RevocationPolicy::real_local();
     a.honesty_notes =
         "DECLARED only in this crate. Local artifact store wiring is a separate concern.".into();

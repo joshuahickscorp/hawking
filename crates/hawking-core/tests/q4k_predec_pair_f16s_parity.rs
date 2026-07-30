@@ -8,10 +8,15 @@ mod common;
 use common::*;
 fn make_x(cols: usize, seed: u64) -> Vec<f32> {
     let mut rng = Pcg64Mcg::new(seed as u128);
-    (0..cols).map(|_| rng.gen_range(-3.0_f32..3.0_f32)).collect()
+    (0..cols)
+        .map(|_| rng.gen_range(-3.0_f32..3.0_f32))
+        .collect()
 }
 fn new_f16_buf(ctx: &MetalContext, data: &[f16]) -> PinnedBuffer {
-    let bytes: Vec<u8> = data.iter().flat_map(|h| h.to_bits().to_le_bytes()).collect();
+    let bytes: Vec<u8> = data
+        .iter()
+        .flat_map(|h| h.to_bits().to_le_bytes())
+        .collect();
     ctx.new_buffer_with_bytes(&bytes)
 }
 fn rel_l2(reference: &[f32], test: &[f32]) -> (f64, f32, f64) {
@@ -71,7 +76,11 @@ fn q4k_v4_predec_pair_f16s_relative_parity() {
     let yu_ref = read_f32_buf(&yu_ref_buf, rows);
     let g_scales_f16 = predecode_q4_k_scale_table_f16(&wg_bytes);
     let u_scales_f16 = predecode_q4_k_scale_table_f16(&wu_bytes);
-    assert_eq!(g_scales_f16.len(), rows * (cols / 256) * 16, "predecode_q4_k_scale_table_f16 length mismatch (gate)");
+    assert_eq!(
+        g_scales_f16.len(),
+        rows * (cols / 256) * 16,
+        "predecode_q4_k_scale_table_f16 length mismatch (gate)"
+    );
     let g_scales_f16_buf = new_f16_buf(ctx, &g_scales_f16);
     let u_scales_f16_buf = new_f16_buf(ctx, &u_scales_f16);
     let yg_f16_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
@@ -186,12 +195,36 @@ fn q4k_v4_predec_pair_f16s_relative_parity() {
     let u_nox_max = max_abs_diff(&yu_f16, &yu_f16s_nox);
     let g_halfreg_max = max_abs_diff(&yg_f16, &yg_halfreg);
     let u_halfreg_max = max_abs_diff(&yu_f16, &yu_halfreg);
-    assert!(g_rel < 1e-2, "f16s pair GATE rel_L2 {g_rel:.3e} exceeds the 1e-2 f16 precision budget");
-    assert!(u_rel < 1e-2, "f16s pair UP rel_L2 {u_rel:.3e} exceeds the 1e-2 f16 precision budget");
-    assert_eq!(g_inline_max, 0.0, "2r-inline f16s GATE max_abs {g_inline_max:.3e} differs from pair_f16s");
-    assert_eq!(u_inline_max, 0.0, "2r-inline f16s UP max_abs {u_inline_max:.3e} differs from pair_f16s");
-    assert_eq!(g_nox_max, 0.0, "f16s_nox GATE max_abs {g_nox_max:.3e} differs from pair_f16s");
-    assert_eq!(u_nox_max, 0.0, "f16s_nox UP max_abs {u_nox_max:.3e} differs from pair_f16s");
-    assert_eq!(g_halfreg_max, 0.0, "f16s_halfreg GATE max_abs {g_halfreg_max:.3e} differs from pair_f16s");
-    assert_eq!(u_halfreg_max, 0.0, "f16s_halfreg UP max_abs {u_halfreg_max:.3e} differs from pair_f16s");
+    assert!(
+        g_rel < 1e-2,
+        "f16s pair GATE rel_L2 {g_rel:.3e} exceeds the 1e-2 f16 precision budget"
+    );
+    assert!(
+        u_rel < 1e-2,
+        "f16s pair UP rel_L2 {u_rel:.3e} exceeds the 1e-2 f16 precision budget"
+    );
+    assert_eq!(
+        g_inline_max, 0.0,
+        "2r-inline f16s GATE max_abs {g_inline_max:.3e} differs from pair_f16s"
+    );
+    assert_eq!(
+        u_inline_max, 0.0,
+        "2r-inline f16s UP max_abs {u_inline_max:.3e} differs from pair_f16s"
+    );
+    assert_eq!(
+        g_nox_max, 0.0,
+        "f16s_nox GATE max_abs {g_nox_max:.3e} differs from pair_f16s"
+    );
+    assert_eq!(
+        u_nox_max, 0.0,
+        "f16s_nox UP max_abs {u_nox_max:.3e} differs from pair_f16s"
+    );
+    assert_eq!(
+        g_halfreg_max, 0.0,
+        "f16s_halfreg GATE max_abs {g_halfreg_max:.3e} differs from pair_f16s"
+    );
+    assert_eq!(
+        u_halfreg_max, 0.0,
+        "f16s_halfreg UP max_abs {u_halfreg_max:.3e} differs from pair_f16s"
+    );
 }

@@ -9,10 +9,15 @@ mod common;
 use common::*;
 fn make_x(cols: usize, seed: u64) -> Vec<f32> {
     let mut rng = Pcg64Mcg::new(seed as u128);
-    (0..cols).map(|_| rng.gen_range(-3.0_f32..3.0_f32)).collect()
+    (0..cols)
+        .map(|_| rng.gen_range(-3.0_f32..3.0_f32))
+        .collect()
 }
 fn new_f16_buf(ctx: &MetalContext, data: &[f16]) -> PinnedBuffer {
-    let bytes: Vec<u8> = data.iter().flat_map(|h| h.to_bits().to_le_bytes()).collect();
+    let bytes: Vec<u8> = data
+        .iter()
+        .flat_map(|h| h.to_bits().to_le_bytes())
+        .collect();
     ctx.new_buffer_with_bytes(&bytes)
 }
 const WARMUP: usize = 30;
@@ -52,12 +57,34 @@ fn bench_shape(rows: usize, cols: usize, tag: &str) {
     let y_f16_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
     let wlen = w_bytes.len();
     let us_f32 = time_dispatch("f32 scales (2r)", |tcb| {
-        kernels::gemv_q4_k_v4_predec_pinned_tcb(tcb, &model_buf, 0, wlen, &scales_f32_buf, 0, rows, cols, &x_buf, &y_f32_buf)
-            .expect("f32 predec encode");
+        kernels::gemv_q4_k_v4_predec_pinned_tcb(
+            tcb,
+            &model_buf,
+            0,
+            wlen,
+            &scales_f32_buf,
+            0,
+            rows,
+            cols,
+            &x_buf,
+            &y_f32_buf,
+        )
+        .expect("f32 predec encode");
     });
     let us_f16 = time_dispatch("f16 scales (2r)", |tcb| {
-        kernels::gemv_q4_k_v4_predec_2r_f16s_pinned_tcb(tcb, &model_buf, 0, wlen, &scales_f16_buf, 0, rows, cols, &x_buf, &y_f16_buf)
-            .expect("f16s predec encode");
+        kernels::gemv_q4_k_v4_predec_2r_f16s_pinned_tcb(
+            tcb,
+            &model_buf,
+            0,
+            wlen,
+            &scales_f16_buf,
+            0,
+            rows,
+            cols,
+            &x_buf,
+            &y_f16_buf,
+        )
+        .expect("f16s predec encode");
     });
     let weights = (blocks * 144) as f64;
     let x_bytes = (cols * 4) as f64;

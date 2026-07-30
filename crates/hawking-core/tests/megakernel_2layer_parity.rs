@@ -1,8 +1,9 @@
 #![cfg(target_os = "macos")]
 use half::f16;
 use hawking_core::kernels::megakernel::{
-    megakernel_2layer_dispatch, megakernel_nlayer_dispatch, MegakernelRunner, MK_PROBE_ATTN_OUT, MK_PROBE_FFN_DOWN, MK_PROBE_O_PROJ,
-    MK_PROBE_Q_ROT, MK_PROBE_RESIDUAL, MK_PROBE_RESIDUAL_L0, MK_PROBE_XNORM_A, MK_PROBE_XNORM_FFN,
+    megakernel_2layer_dispatch, megakernel_nlayer_dispatch, MegakernelRunner, MK_PROBE_ATTN_OUT,
+    MK_PROBE_FFN_DOWN, MK_PROBE_O_PROJ, MK_PROBE_Q_ROT, MK_PROBE_RESIDUAL, MK_PROBE_RESIDUAL_L0,
+    MK_PROBE_XNORM_A, MK_PROBE_XNORM_FFN,
 };
 use hawking_core::metal::MetalContext;
 use hawking_core::model::qwen_dense::{MegakernelLayerWeightsF16, QwenDense};
@@ -55,19 +56,39 @@ fn megakernel_2layer_parity_qwen3b() {
     assert_eq!(h, HIDDEN);
     assert_eq!(q_dim, Q_DIM);
     assert_eq!(kv_dim, KV_DIM);
-    let ref_x = model.forward_layers_subset(TOKEN, POS, LAST_LAYER).expect("forward_layers_subset");
+    let ref_x = model
+        .forward_layers_subset(TOKEN, POS, LAST_LAYER)
+        .expect("forward_layers_subset");
     assert_eq!(ref_x.len(), h, "ref residual has wrong length");
-    assert!(ref_x.iter().all(|v: &f32| v.is_finite()), "ref residual contains NaN/Inf");
-    let layer0 = model.prep_megakernel_layer_f16(0).expect("prep_megakernel_layer_f16(0)");
-    let layer1 = model.prep_megakernel_layer_f16(1).expect("prep_megakernel_layer_f16(1)");
+    assert!(
+        ref_x.iter().all(|v: &f32| v.is_finite()),
+        "ref residual contains NaN/Inf"
+    );
+    let layer0 = model
+        .prep_megakernel_layer_f16(0)
+        .expect("prep_megakernel_layer_f16(0)");
+    let layer1 = model
+        .prep_megakernel_layer_f16(1)
+        .expect("prep_megakernel_layer_f16(1)");
     assert_layer_shapes(&layer0, h, q_dim, kv_dim, mid, "layer 0");
     assert_layer_shapes(&layer1, h, q_dim, kv_dim, mid, "layer 1");
-    let x_in: Vec<f16> = (0..h).map(|i| f16::from_f32((i as f32) * 0.001 - 1.0)).collect();
+    let x_in: Vec<f16> = (0..h)
+        .map(|i| f16::from_f32((i as f32) * 0.001 - 1.0))
+        .collect();
     let x_in_f32: Vec<f32> = x_in.iter().map(|v| v.to_f32()).collect();
     let ctx = MetalContext::new().expect("MetalContext::new");
     {
-        let x_out = megakernel_2layer_dispatch(&ctx, &layer0, &layer1, &x_in, POS as u32, (POS + 1) as u32, MAX_SEQ, MK_PROBE_XNORM_A)
-            .expect("megakernel dispatch (stage A)");
+        let x_out = megakernel_2layer_dispatch(
+            &ctx,
+            &layer0,
+            &layer1,
+            &x_in,
+            POS as u32,
+            (POS + 1) as u32,
+            MAX_SEQ,
+            MK_PROBE_XNORM_A,
+        )
+        .expect("megakernel dispatch (stage A)");
         assert_eq!(x_out.len(), h);
         let ref_xnorm = cpu_rmsnorm(&x_in_f32, &layer0.attn_norm, RMS_EPS);
         let (worst, idx, gv, wv) = max_violation_f16_vs_f32(&x_out, &ref_xnorm);
@@ -78,8 +99,17 @@ fn megakernel_2layer_parity_qwen3b() {
         );
     }
     {
-        let x_out = megakernel_2layer_dispatch(&ctx, &layer0, &layer1, &x_in, POS as u32, (POS + 1) as u32, MAX_SEQ, MK_PROBE_Q_ROT)
-            .expect("megakernel dispatch (stage D)");
+        let x_out = megakernel_2layer_dispatch(
+            &ctx,
+            &layer0,
+            &layer1,
+            &x_in,
+            POS as u32,
+            (POS + 1) as u32,
+            MAX_SEQ,
+            MK_PROBE_Q_ROT,
+        )
+        .expect("megakernel dispatch (stage D)");
         assert_eq!(x_out.len(), h);
         let x_norm = cpu_rmsnorm(&x_in_f32, &layer0.attn_norm, RMS_EPS);
         let mut q = cpu_gemv_f16(&layer0.q_proj, q_dim, h, &x_norm);
@@ -98,8 +128,17 @@ fn megakernel_2layer_parity_qwen3b() {
         );
     }
     {
-        let x_out = megakernel_2layer_dispatch(&ctx, &layer0, &layer1, &x_in, POS as u32, (POS + 1) as u32, MAX_SEQ, MK_PROBE_ATTN_OUT)
-            .expect("megakernel dispatch (stage F)");
+        let x_out = megakernel_2layer_dispatch(
+            &ctx,
+            &layer0,
+            &layer1,
+            &x_in,
+            POS as u32,
+            (POS + 1) as u32,
+            MAX_SEQ,
+            MK_PROBE_ATTN_OUT,
+        )
+        .expect("megakernel dispatch (stage F)");
         assert_eq!(x_out.len(), h);
         let attn_out_ref = cpu_layer0_attn_out_pos0(&x_in_f32, &layer0);
         let (worst, idx, gv, wv) = max_violation_f16_vs_f32(&x_out, &attn_out_ref);
@@ -110,8 +149,17 @@ fn megakernel_2layer_parity_qwen3b() {
         );
     }
     {
-        let x_out = megakernel_2layer_dispatch(&ctx, &layer0, &layer1, &x_in, POS as u32, (POS + 1) as u32, MAX_SEQ, MK_PROBE_O_PROJ)
-            .expect("megakernel dispatch (stage G)");
+        let x_out = megakernel_2layer_dispatch(
+            &ctx,
+            &layer0,
+            &layer1,
+            &x_in,
+            POS as u32,
+            (POS + 1) as u32,
+            MAX_SEQ,
+            MK_PROBE_O_PROJ,
+        )
+        .expect("megakernel dispatch (stage G)");
         assert_eq!(x_out.len(), h);
         let attn_out = cpu_layer0_attn_out_pos0(&x_in_f32, &layer0);
         let o = cpu_gemv_f16(&layer0.o_proj, HIDDEN, Q_DIM, &attn_out);
@@ -123,8 +171,17 @@ fn megakernel_2layer_parity_qwen3b() {
         );
     }
     {
-        let x_out = megakernel_2layer_dispatch(&ctx, &layer0, &layer1, &x_in, POS as u32, (POS + 1) as u32, MAX_SEQ, MK_PROBE_XNORM_FFN)
-            .expect("megakernel dispatch (stage H)");
+        let x_out = megakernel_2layer_dispatch(
+            &ctx,
+            &layer0,
+            &layer1,
+            &x_in,
+            POS as u32,
+            (POS + 1) as u32,
+            MAX_SEQ,
+            MK_PROBE_XNORM_FFN,
+        )
+        .expect("megakernel dispatch (stage H)");
         assert_eq!(x_out.len(), h);
         let attn_out = cpu_layer0_attn_out_pos0(&x_in_f32, &layer0);
         let o = cpu_gemv_f16(&layer0.o_proj, HIDDEN, Q_DIM, &attn_out);
@@ -141,8 +198,17 @@ fn megakernel_2layer_parity_qwen3b() {
         );
     }
     {
-        let x_out = megakernel_2layer_dispatch(&ctx, &layer0, &layer1, &x_in, POS as u32, (POS + 1) as u32, MAX_SEQ, MK_PROBE_FFN_DOWN)
-            .expect("megakernel dispatch (stage K)");
+        let x_out = megakernel_2layer_dispatch(
+            &ctx,
+            &layer0,
+            &layer1,
+            &x_in,
+            POS as u32,
+            (POS + 1) as u32,
+            MAX_SEQ,
+            MK_PROBE_FFN_DOWN,
+        )
+        .expect("megakernel dispatch (stage K)");
         assert_eq!(x_out.len(), h);
         let attn_out = cpu_layer0_attn_out_pos0(&x_in_f32, &layer0);
         let o = cpu_gemv_f16(&layer0.o_proj, HIDDEN, Q_DIM, &attn_out);
@@ -167,8 +233,17 @@ fn megakernel_2layer_parity_qwen3b() {
         );
     }
     {
-        let x_out = megakernel_2layer_dispatch(&ctx, &layer0, &layer1, &x_in, POS as u32, (POS + 1) as u32, MAX_SEQ, MK_PROBE_RESIDUAL_L0)
-            .expect("megakernel dispatch (stage L, post-l0)");
+        let x_out = megakernel_2layer_dispatch(
+            &ctx,
+            &layer0,
+            &layer1,
+            &x_in,
+            POS as u32,
+            (POS + 1) as u32,
+            MAX_SEQ,
+            MK_PROBE_RESIDUAL_L0,
+        )
+        .expect("megakernel dispatch (stage L, post-l0)");
         assert_eq!(x_out.len(), h);
         let residual = cpu_layer_forward(&x_in_f32, &layer0, POS as u32);
         let (worst, idx, gv, wv) = max_violation_f16_vs_f32(&x_out, &residual);
@@ -179,12 +254,22 @@ fn megakernel_2layer_parity_qwen3b() {
         );
     }
     {
-        let x_out = megakernel_2layer_dispatch(&ctx, &layer0, &layer1, &x_in, POS as u32, (POS + 1) as u32, MAX_SEQ, MK_PROBE_RESIDUAL)
-            .expect("megakernel dispatch (post-l1 final)");
+        let x_out = megakernel_2layer_dispatch(
+            &ctx,
+            &layer0,
+            &layer1,
+            &x_in,
+            POS as u32,
+            (POS + 1) as u32,
+            MAX_SEQ,
+            MK_PROBE_RESIDUAL,
+        )
+        .expect("megakernel dispatch (post-l1 final)");
         assert_eq!(x_out.len(), h);
         let residual_l0 = cpu_layer_forward(&x_in_f32, &layer0, POS as u32);
         let residual_l1 = cpu_layer_forward(&residual_l0, &layer1, POS as u32);
-        let (worst, idx, gv, wv) = max_violation_f16_vs_f32_tol(&x_out, &residual_l1, ATOL_MULTILAYER, RTOL_MULTILAYER);
+        let (worst, idx, gv, wv) =
+            max_violation_f16_vs_f32_tol(&x_out, &residual_l1, ATOL_MULTILAYER, RTOL_MULTILAYER);
         assert!(
             worst <= 0.0,
             "2-layer post-l1 residual parity FAIL: violation={worst:.3e} at i={idx} \
@@ -205,13 +290,28 @@ fn megakernel_nlayer_parity_qwen3b() {
     let h = model.config.hidden;
     assert_eq!(h, HIDDEN);
     let ctx = MetalContext::new().expect("MetalContext::new");
-    let x_in: Vec<f16> = (0..h).map(|i| f16::from_f32((i as f32) * 0.001 - 1.0)).collect();
+    let x_in: Vec<f16> = (0..h)
+        .map(|i| f16::from_f32((i as f32) * 0.001 - 1.0))
+        .collect();
     let x_in_f32: Vec<f32> = x_in.iter().map(|v| v.to_f32()).collect();
     {
-        let two: Vec<MegakernelLayerWeightsF16> = (0..2).map(|li| model.prep_megakernel_layer_f16(li).expect("prep")).collect();
-        let want = megakernel_2layer_dispatch(&ctx, &two[0], &two[1], &x_in, POS as u32, (POS + 1) as u32, MAX_SEQ, MK_PROBE_RESIDUAL)
-            .expect("2-layer dispatch");
-        let got = megakernel_nlayer_dispatch(&ctx, &two, &x_in, POS as u32, (POS + 1) as u32, MAX_SEQ).expect("n-layer dispatch (N=2)");
+        let two: Vec<MegakernelLayerWeightsF16> = (0..2)
+            .map(|li| model.prep_megakernel_layer_f16(li).expect("prep"))
+            .collect();
+        let want = megakernel_2layer_dispatch(
+            &ctx,
+            &two[0],
+            &two[1],
+            &x_in,
+            POS as u32,
+            (POS + 1) as u32,
+            MAX_SEQ,
+            MK_PROBE_RESIDUAL,
+        )
+        .expect("2-layer dispatch");
+        let got =
+            megakernel_nlayer_dispatch(&ctx, &two, &x_in, POS as u32, (POS + 1) as u32, MAX_SEQ)
+                .expect("n-layer dispatch (N=2)");
         assert_eq!(got.len(), h);
         let want_f32: Vec<f32> = want.iter().map(|v| v.to_f32()).collect();
         let (worst, idx, gv, wv) = max_violation_f16_vs_f32_tol(&got, &want_f32, ATOL, RTOL);
@@ -220,15 +320,30 @@ fn megakernel_nlayer_parity_qwen3b() {
             "N=2 megakernel vs 2-layer kernel FAIL: violation={worst:.3e} at i={idx} \
              (got {gv}, want {wv}, atol={ATOL:.0e}, rtol={RTOL:.0e})",
         );
-        let exact = got.iter().zip(want.iter()).filter(|(a, b)| a.to_bits() == b.to_bits()).count();
+        let exact = got
+            .iter()
+            .zip(want.iter())
+            .filter(|(a, b)| a.to_bits() == b.to_bits())
+            .count();
     }
     {
         const N8: usize = 8;
-        assert!(model.config.n_layers >= N8, "model has {} layers (< {N8})", model.config.n_layers);
-        let layers: Vec<MegakernelLayerWeightsF16> = (0..N8).map(|li| model.prep_megakernel_layer_f16(li).expect("prep")).collect();
-        let got = megakernel_nlayer_dispatch(&ctx, &layers, &x_in, POS as u32, (POS + 1) as u32, MAX_SEQ).expect("n-layer dispatch (N=8)");
+        assert!(
+            model.config.n_layers >= N8,
+            "model has {} layers (< {N8})",
+            model.config.n_layers
+        );
+        let layers: Vec<MegakernelLayerWeightsF16> = (0..N8)
+            .map(|li| model.prep_megakernel_layer_f16(li).expect("prep"))
+            .collect();
+        let got =
+            megakernel_nlayer_dispatch(&ctx, &layers, &x_in, POS as u32, (POS + 1) as u32, MAX_SEQ)
+                .expect("n-layer dispatch (N=8)");
         assert_eq!(got.len(), h);
-        assert!(got.iter().all(|v| v.to_f32().is_finite()), "N=8 megakernel output has NaN/Inf");
+        assert!(
+            got.iter().all(|v| v.to_f32().is_finite()),
+            "N=8 megakernel output has NaN/Inf"
+        );
         let mut ref_res = x_in_f32.clone();
         for layer in &layers {
             ref_res = cpu_layer_forward(&ref_res, layer, POS as u32);
@@ -259,9 +374,13 @@ fn megakernel_nlayer_bench_qwen3b() {
     const N: usize = 8;
     const ITERS: usize = 40;
     const WARMUP: usize = 5;
-    let layers: Vec<MegakernelLayerWeightsF16> = (0..N).map(|li| model.prep_megakernel_layer_f16(li).expect("prep")).collect();
+    let layers: Vec<MegakernelLayerWeightsF16> = (0..N)
+        .map(|li| model.prep_megakernel_layer_f16(li).expect("prep"))
+        .collect();
     let runner = MegakernelRunner::new(&ctx, &layers, MAX_SEQ).expect("runner");
-    let x_in: Vec<f16> = (0..h).map(|i| f16::from_f32((i as f32) * 0.001 - 1.0)).collect();
+    let x_in: Vec<f16> = (0..h)
+        .map(|i| f16::from_f32((i as f32) * 0.001 - 1.0))
+        .collect();
     for _ in 0..WARMUP {
         let _ = runner.step(&ctx, &x_in, 0, 1).expect("mk step");
     }
@@ -291,7 +410,11 @@ fn cpu_layer_forward(
     let x_norm_ffn = cpu_rmsnorm(&residual, &layer.ffn_norm, RMS_EPS);
     let g = cpu_gemv_f16(&layer.ffn_gate, INTERMEDIATE, HIDDEN, &x_norm_ffn);
     let u = cpu_gemv_f16(&layer.ffn_up, INTERMEDIATE, HIDDEN, &x_norm_ffn);
-    let act: Vec<f32> = g.iter().zip(u.iter()).map(|(gi, ui)| (gi / (1.0 + (-gi).exp())) * ui).collect();
+    let act: Vec<f32> = g
+        .iter()
+        .zip(u.iter())
+        .map(|(gi, ui)| (gi / (1.0 + (-gi).exp())) * ui)
+        .collect();
     let ffn_down = cpu_gemv_f16(&layer.ffn_down, HIDDEN, INTERMEDIATE, &act);
     for i in 0..HIDDEN {
         residual[i] += ffn_down[i];
@@ -349,8 +472,18 @@ fn cpu_rope_inplace(x: &mut [f32], pos: u32, base: f32) {
         x[2 * i + 1] = x0 * sin + x1 * cos;
     }
 }
-fn max_violation_f16_vs_f32_tol(got: &[f16], want: &[f32], atol: f32, rtol: f32) -> (f32, usize, f32, f32) {
-    assert!(got.len() >= want.len(), "shader probe output too short: got {} want {}", got.len(), want.len(),);
+fn max_violation_f16_vs_f32_tol(
+    got: &[f16],
+    want: &[f32],
+    atol: f32,
+    rtol: f32,
+) -> (f32, usize, f32, f32) {
+    assert!(
+        got.len() >= want.len(),
+        "shader probe output too short: got {} want {}",
+        got.len(),
+        want.len(),
+    );
     let mut worst = f32::NEG_INFINITY;
     let mut argmax = 0usize;
     let mut got_v = 0.0f32;
@@ -372,7 +505,14 @@ fn max_violation_f16_vs_f32_tol(got: &[f16], want: &[f32], atol: f32, rtol: f32)
 fn max_violation_f16_vs_f32(got: &[f16], want: &[f32]) -> (f32, usize, f32, f32) {
     max_violation_f16_vs_f32_tol(got, want, ATOL, RTOL)
 }
-fn assert_layer_shapes(w: &MegakernelLayerWeightsF16, h: usize, q_dim: usize, kv_dim: usize, mid: usize, tag: &str) {
+fn assert_layer_shapes(
+    w: &MegakernelLayerWeightsF16,
+    h: usize,
+    q_dim: usize,
+    kv_dim: usize,
+    mid: usize,
+    tag: &str,
+) {
     assert_eq!(w.q_proj.len(), q_dim * h, "{tag}: q_proj shape");
     assert_eq!(w.k_proj.len(), kv_dim * h, "{tag}: k_proj shape");
     assert_eq!(w.v_proj.len(), kv_dim * h, "{tag}: v_proj shape");

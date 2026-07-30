@@ -23,7 +23,9 @@ fn make_q3k_bytes(rows: usize, cols: usize, seed: u64) -> Vec<u8> {
 }
 fn make_x(cols: usize, seed: u64) -> Vec<f32> {
     let mut rng = Pcg64Mcg::new(seed as u128);
-    (0..cols).map(|_| rng.gen_range(-3.0_f32..3.0_f32)).collect()
+    (0..cols)
+        .map(|_| rng.gen_range(-3.0_f32..3.0_f32))
+        .collect()
 }
 #[test]
 fn q3k_v4_predec_matches_fused_v2_fp16() {
@@ -37,7 +39,17 @@ fn q3k_v4_predec_matches_fused_v2_fp16() {
     let y_fused_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
-        kernels::gemv_q3_k_pinned_tcb(&mut tcb, &model_buf, 0, w_bytes.len(), rows, cols, &x_buf, &y_fused_buf).expect("q3_k fused encode");
+        kernels::gemv_q3_k_pinned_tcb(
+            &mut tcb,
+            &model_buf,
+            0,
+            w_bytes.len(),
+            rows,
+            cols,
+            &x_buf,
+            &y_fused_buf,
+        )
+        .expect("q3_k fused encode");
         tcb.commit_and_wait().expect("q3_k fused commit");
     }
     let y_fused = read_f32_buf(&y_fused_buf, rows);
@@ -54,8 +66,19 @@ fn q3k_v4_predec_matches_fused_v2_fp16() {
     let y_predec_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
-        kernels::gemv_q3_k_v4_predec_pinned_tcb(&mut tcb, &model_buf, 0, w_bytes.len(), &scales_buf, 0, rows, cols, &x_buf, &y_predec_buf)
-            .expect("q3_k v4_predec encode");
+        kernels::gemv_q3_k_v4_predec_pinned_tcb(
+            &mut tcb,
+            &model_buf,
+            0,
+            w_bytes.len(),
+            &scales_buf,
+            0,
+            rows,
+            cols,
+            &x_buf,
+            &y_predec_buf,
+        )
+        .expect("q3_k v4_predec encode");
         tcb.commit_and_wait().expect("q3_k v4_predec commit");
     }
     let y_predec = read_f32_buf(&y_predec_buf, rows);

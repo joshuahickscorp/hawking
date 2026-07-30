@@ -19,6 +19,7 @@
 //! * **EXEC_NONZERO is data** — a non-zero exit is `ok:true` + `exit_code`, never a
 //!   tool error (§4.2.3); only a spawn failure is `ok:false`.
 
+use crate::security::sandbox::SandboxRenderOptions;
 use crate::tooling::common;
 use crate::tooling::spec_helpers::{exec_spec, plan_spec};
 use futures::future::BoxFuture;
@@ -26,7 +27,6 @@ use hide_core::persistence::BlobStore;
 use hide_core::security::{NetworkPolicy, SandboxProfile, SandboxTier};
 use hide_core::tool::{Purity, Tool, ToolContent, ToolCtx, ToolResult, ToolSpec};
 use hide_core::types::{Effect, EffectKind, EffectSet, RiskLevel};
-use crate::security::sandbox::SandboxRenderOptions;
 use serde_json::{json, Value};
 use std::collections::BTreeMap;
 use std::path::PathBuf;
@@ -703,7 +703,11 @@ mod tests {
         if sandbox_exec_available() || bubblewrap_path().is_some() {
             assert!(spawn.warning.is_none());
         } else {
-            assert!(spawn .warning .as_deref() .map(|w| w.contains("UNCONFINED")) .unwrap_or(false));
+            assert!(spawn
+                .warning
+                .as_deref()
+                .map(|w| w.contains("UNCONFINED"))
+                .unwrap_or(false));
         }
     }
     #[test]
@@ -731,8 +735,12 @@ mod tests {
         assert_eq!(opts.proxy_port, Some(8443));
         let profile = sandbox_profile(&config, &["cargo".to_string(), "test".to_string()]);
         let rendered = crate::security::sandbox::render_macos_seatbelt_with(&profile, &opts);
-        assert!(rendered .profile_text .contains("(deny file-write* (subpath \"/var/hide-test/.hide/log\"))"));
- assert!(rendered .profile_text .contains("(allow file-write* (subpath \"/tmp/wt\"))"));
+        assert!(rendered
+            .profile_text
+            .contains("(deny file-write* (subpath \"/var/hide-test/.hide/log\"))"));
+        assert!(rendered
+            .profile_text
+            .contains("(allow file-write* (subpath \"/tmp/wt\"))"));
         assert!(rendered.profile_text.contains("localhost:8443"));
     }
     #[test]
@@ -759,6 +767,9 @@ mod tests {
             .await;
         let sc = result.structured_content.unwrap();
         assert_eq!(sc["executed"], false);
- assert!(sc["sandbox_profile"] .as_str() .unwrap() .contains("(deny default)"));
+        assert!(sc["sandbox_profile"]
+            .as_str()
+            .unwrap()
+            .contains("(deny default)"));
     }
 }

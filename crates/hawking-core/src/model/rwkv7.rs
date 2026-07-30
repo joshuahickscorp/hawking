@@ -608,7 +608,9 @@ mod state_serde_tests {
     }
     #[test]
     fn to_from_bytes_roundtrips_bit_identical() {
-        let s = sample(); let bytes = s.to_bytes(); let back = RwkvState::from_bytes(&bytes).expect("decode");
+        let s = sample();
+        let bytes = s.to_bytes();
+        let back = RwkvState::from_bytes(&bytes).expect("decode");
         assert_eq!(s.wkv, back.wkv);
         assert_eq!(s.att_shift, back.att_shift);
         assert_eq!(s.ffn_shift, back.ffn_shift);
@@ -617,7 +619,9 @@ mod state_serde_tests {
     }
     #[test]
     fn clone_is_a_deep_copy() {
-        let s = sample(); let mut c = s.clone(); c.wkv[0][0] = 999.0;
+        let s = sample();
+        let mut c = s.clone();
+        c.wkv[0][0] = 999.0;
         assert_eq!(
             s.wkv[0][0], 0.5,
             "mutating the clone must not touch the original"
@@ -625,14 +629,18 @@ mod state_serde_tests {
     }
     #[test]
     fn fork_is_a_memcpy_not_a_reprefill() {
-        let s = sample(); let f = s.fork();
+        let s = sample();
+        let f = s.fork();
         assert_eq!(f.to_bytes(), s.to_bytes());
         assert_eq!(s.to_bytes().len(), super::STATE_HEADER_LEN + s.size_bytes());
     }
     #[test]
     fn fingerprint_changes_on_mutation() {
-        let s = sample(); let f0 = s.fingerprint();
-        assert_eq!(f0, s.fingerprint(), "stable for an identical state"); let mut t = s.clone(); t.wkv[0][0] = 42.0;
+        let s = sample();
+        let f0 = s.fingerprint();
+        assert_eq!(f0, s.fingerprint(), "stable for an identical state");
+        let mut t = s.clone();
+        t.wkv[0][0] = 42.0;
         assert_ne!(f0, t.fingerprint(), "any change alters the fingerprint");
     }
     #[test]
@@ -641,7 +649,8 @@ mod state_serde_tests {
         assert!(
             (super::wkv_cosine_similarity(&s, &s) - 1.0).abs() < 1e-5,
             "identical -> 1.0"
-        ); let mut t = s.clone();
+        );
+        let mut t = s.clone();
         for v in &mut t.wkv {
             for x in v {
                 *x = -*x;
@@ -654,12 +663,14 @@ mod state_serde_tests {
     }
     #[test]
     fn state_share_group_is_copy_only_and_independent() {
-        let base = sample(); let mut g = super::StateShareGroup::new(base.clone());
+        let base = sample();
+        let mut g = super::StateShareGroup::new(base.clone());
         assert!(g.fork_member("a"));
         assert!(g.fork_member("b"));
         assert!(!g.fork_member("a"), "duplicate key rejected");
         assert_eq!(g.len(), 2);
-        assert_eq!(g.member("a").unwrap().to_bytes(), base.to_bytes()); g.member_mut("a").unwrap().wkv[0][0] = 99.0;
+        assert_eq!(g.member("a").unwrap().to_bytes(), base.to_bytes());
+        g.member_mut("a").unwrap().wkv[0][0] = 99.0;
         assert_ne!(
             g.member("a").unwrap().to_bytes(),
             g.member("b").unwrap().to_bytes()
@@ -669,14 +680,23 @@ mod state_serde_tests {
     }
     #[test]
     fn reconverge_starts_fresh_from_base_no_state_merge() {
-        let base = sample(); let mut g = super::StateShareGroup::new(base.clone()); g.fork_member("a");
-        g.member_mut("a").unwrap().wkv[0][0] = 7.0; let seed = g.reconverge();
-        assert_eq!(seed.to_bytes(), base.to_bytes(), "reconverge seed == fresh base fork");
+        let base = sample();
+        let mut g = super::StateShareGroup::new(base.clone());
+        g.fork_member("a");
+        g.member_mut("a").unwrap().wkv[0][0] = 7.0;
+        let seed = g.reconverge();
+        assert_eq!(
+            seed.to_bytes(),
+            base.to_bytes(),
+            "reconverge seed == fresh base fork"
+        );
         assert!(g.is_empty(), "diverged members dropped");
     }
     #[test]
     fn int8_plane_codec_roundtrips_within_a_quant_step() {
-        let plane = vec![0.0, 1.0, -2.0, 3.5, -3.5, 0.7]; let err = super::int8_plane_roundtrip_error(&plane); let step = 3.5 / 127.0;
+        let plane = vec![0.0, 1.0, -2.0, 3.5, -3.5, 0.7];
+        let err = super::int8_plane_roundtrip_error(&plane);
+        let step = 3.5 / 127.0;
         assert!(err <= step, "err {err} should be <= one quant step {step}");
     }
     #[test]
@@ -685,17 +705,23 @@ mod state_serde_tests {
     }
     #[test]
     fn int8_state_roundtrip_keeps_shift_exact_and_shrinks() {
-        let s = sample(); let bytes = s.to_int8_bytes(); let back = RwkvState::from_int8_bytes(&bytes).expect("decode int8 state");
+        let s = sample();
+        let bytes = s.to_int8_bytes();
+        let back = RwkvState::from_int8_bytes(&bytes).expect("decode int8 state");
         assert_eq!(back.att_shift, s.att_shift);
         assert_eq!(back.ffn_shift, s.ffn_shift);
         assert_eq!(back.fresh, s.fresh);
         for (orig, deq) in s.wkv.iter().zip(&back.wkv) {
-            let absmax = orig.iter().fold(0.0f32, |m, &x| m.max(x.abs())); let step = absmax / 127.0;
+            let absmax = orig.iter().fold(0.0f32, |m, &x| m.max(x.abs()));
+            let step = absmax / 127.0;
             for (a, b) in orig.iter().zip(deq) {
                 assert!((a - b).abs() <= step + 1e-6, "wkv quant within a step");
             }
         }
-        assert!(bytes.len() < s.to_bytes().len(), "int8 state shrinks the footprint");
+        assert!(
+            bytes.len() < s.to_bytes().len(),
+            "int8 state shrinks the footprint"
+        );
     }
     #[test]
     fn int8_state_rejects_wrong_magic() {
@@ -718,13 +744,17 @@ mod state_serde_tests {
     }
     #[test]
     fn fresh_flag_survives_roundtrip() {
-        let mut s = sample(); s.fresh = true; let back = RwkvState::from_bytes(&s.to_bytes()).unwrap();
+        let mut s = sample();
+        s.fresh = true;
+        let back = RwkvState::from_bytes(&s.to_bytes()).unwrap();
         assert!(back.fresh);
     }
     #[test]
     fn rejects_truncation_and_bad_magic() {
-        let s = sample(); let mut bytes = s.to_bytes();
-        assert!(RwkvState::from_bytes(&bytes[..16]).is_err()); bytes[0] = b'X';
+        let s = sample();
+        let mut bytes = s.to_bytes();
+        assert!(RwkvState::from_bytes(&bytes[..16]).is_err());
+        bytes[0] = b'X';
         assert!(matches!(
             RwkvState::from_bytes(&bytes),
             Err(StateDecodeError::BadMagic)

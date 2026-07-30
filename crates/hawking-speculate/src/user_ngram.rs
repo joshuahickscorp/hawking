@@ -288,7 +288,10 @@ mod tests {
         d.warm_start(&[1, 2, 3, 2, 3, 4]);
         assert!(!d.is_empty());
         let p = d.propose(&[2, 3], 2);
- assert_eq!( p[0], 2, "warm-started (2,3) predicts the repeated successor" );
+        assert_eq!(
+            p[0], 2,
+            "warm-started (2,3) predicts the repeated successor"
+        );
         d.note_token(99);
         assert!(d.bigram.get(&(4, 99)).is_none());
     }
@@ -310,6 +313,10 @@ mod tests {
             d.note_token(8);
         }
         let p = d.propose(&[8], 16);
- assert!( p.len() <= 3, "self-loop successor must be capped, got {} tokens", p.len() );
+        assert!(
+            p.len() <= 3,
+            "self-loop successor must be capped, got {} tokens",
+            p.len()
+        );
     }
 }

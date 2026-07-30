@@ -76,8 +76,7 @@ pub fn load_engine(weights: &Path, mut config: EngineConfig) -> Result<Box<dyn E
         || gravity_engine::GravityEngine::is_activation_aware(weights)
     {
         return Err(Error::Model(
-            "this is a .gravity artifact; its runtime is Metal-only and this is not macOS"
-                .into(),
+            "this is a .gravity artifact; its runtime is Metal-only and this is not macOS".into(),
         ));
     }
 
@@ -229,7 +228,8 @@ mod tier_map_hook_tests {
     fn tm(pairs: &[(&str, &str)]) -> SidecarTierMap {
         SidecarTierMap {
             entries: pairs
-                .iter().map(|(t, d)| SidecarTierEntry {
+                .iter()
+                .map(|(t, d)| SidecarTierEntry {
                     tensor: (*t).to_string(),
                     dtype: (*d).to_string(),
                 })
@@ -265,7 +265,8 @@ mod tier_map_hook_tests {
             ("blk.5.ffn_up.weight", "q8_0"),
             ("blk.5.ffn_down.weight", "q6_K"),
         ]);
-        let a = ["blk.5.ffn_up.weight", "blk.5.ffn_down.weight", "x"]; let b = ["x", "blk.5.ffn_down.weight", "blk.5.ffn_up.weight"];
+        let a = ["blk.5.ffn_up.weight", "blk.5.ffn_down.weight", "x"];
+        let b = ["x", "blk.5.ffn_down.weight", "blk.5.ffn_up.weight"];
         assert_eq!(tier_map_overrides_for_names(&m, a), 2);
         assert_eq!(tier_map_overrides_for_names(&m, b), 2);
     }

@@ -71,9 +71,7 @@ pub fn parse(path: &Path) -> Option<Agent> {
 }
 
 fn from_frontmatter(path: &Path, fm: &Frontmatter, body: String) -> Agent {
-    let name = fm
-        .str("name")
-        .unwrap_or_else(|| stem(path).to_string());
+    let name = fm.str("name").unwrap_or_else(|| stem(path).to_string());
     Agent {
         path: path.to_path_buf(),
         name,
@@ -98,8 +96,7 @@ fn stem(path: &Path) -> &str {
 /// over user agents (`~/.claude/agents`) of the same name. Returns them sorted
 /// by name for determinism.
 pub fn discover(layout: &Layout) -> Vec<Agent> {
-    let mut by_name: std::collections::BTreeMap<String, Agent> =
-        std::collections::BTreeMap::new();
+    let mut by_name: std::collections::BTreeMap<String, Agent> = std::collections::BTreeMap::new();
 
     // User first, then project overrides by name.
     for dir in [

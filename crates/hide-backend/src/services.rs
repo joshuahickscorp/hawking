@@ -1,3 +1,6 @@
+use crate::personalize::{
+    DynPersonalizationStore, InMemoryPersonalizationStore, JsonlPersonalizationStore,
+};
 use hawking_context::{
     ClassedMemorySystem, ContextCompiler, DynClassedMemory, InMemoryMemoryStore, MemoryStore,
     SqliteMemoryStore, TokenCounter,
@@ -15,9 +18,6 @@ use hide_core::persistence::{
 };
 use hide_core::project::WorkspaceLayout;
 use hide_core::Result;
-use crate::personalize::{
-    DynPersonalizationStore, InMemoryPersonalizationStore, JsonlPersonalizationStore,
-};
 use hide_kernel::security::audit::EventChainAuditor;
 use parking_lot::Mutex;
 use serde::{Deserialize, Serialize};
@@ -144,7 +144,6 @@ pub(crate) fn walkdir_shallow(root: &Path) -> Vec<PathBuf> {
     out
 }
 
-
 #[path = "services_session.rs"]
 mod services_session;
 pub use services_session::*;
@@ -247,9 +246,7 @@ impl BackendServices {
             sqlite_index: None,
             capabilities: BackendCapabilities::wired(),
             sessions: Arc::new(SessionRegistry::default()),
-            repo_instructions: Arc::new(
-                crate::compat_instructions::ResolvedInstructions::empty(),
-            ),
+            repo_instructions: Arc::new(crate::compat_instructions::ResolvedInstructions::empty()),
             token_counter: discover_token_counter(),
         }
     }
@@ -288,9 +285,7 @@ impl BackendServices {
             sqlite_index: None,
             capabilities: BackendCapabilities::wired(),
             sessions: Arc::new(SessionRegistry::default()),
-            repo_instructions: Arc::new(
-                crate::compat_instructions::ResolvedInstructions::empty(),
-            ),
+            repo_instructions: Arc::new(crate::compat_instructions::ResolvedInstructions::empty()),
             token_counter: discover_token_counter(),
         }
     }
@@ -354,9 +349,7 @@ impl BackendServices {
         ) {
             Ok(sys) => Arc::new(sys),
             Err(e) => {
-                eprintln!(
-                    "warning: classed memory open failed ({e}); using in-memory six classes"
-                );
+                eprintln!("warning: classed memory open failed ({e}); using in-memory six classes");
                 Arc::new(
                     ClassedMemorySystem::open_in_memory(workspace_id)
                         .expect("in-memory classed memory"),
@@ -514,10 +507,10 @@ pub type SharedBackend = Arc<BackendServices>;
 
 mod tests {
     use super::*;
+    use crate::personalize::{PersonalizationRecord, TaskClass};
     use hawking_research::{ResearchRun, ResearchState};
     use hide_core::event::NewEvent;
     use hide_core::ids::now_ms;
-    use crate::personalize::{PersonalizationRecord, TaskClass};
     #[tokio::test]
     pub(crate) async fn open_workspace_wires_durable_stores() {
         let dir = std::env::temp_dir().join(format!("hide_backend_{}", now_ms()));
@@ -548,12 +541,23 @@ mod tests {
             .blob_store
             .put(b"backend blob".to_vec(), Some("text/plain".to_string()))
             .unwrap();
- assert_eq!( services.blob_store.get(&blob).unwrap().unwrap(), b"backend blob" );
+        assert_eq!(
+            services.blob_store.get(&blob).unwrap().unwrap(),
+            b"backend blob"
+        );
         services
             .projection_store
             .put_projection(&session, 1, serde_json::json!({ "view": "timeline" }))
             .unwrap();
-        assert_eq!(services .projection_store .latest_projection(&session) .unwrap() .unwrap() .1["view"], "timeline");
+        assert_eq!(
+            services
+                .projection_store
+                .latest_projection(&session)
+                .unwrap()
+                .unwrap()
+                .1["view"],
+            "timeline"
+        );
         services
             .key_value_store
             .put(
@@ -562,7 +566,14 @@ mod tests {
                 serde_json::json!({ "open": true }),
             )
             .unwrap();
-        assert_eq!(services .key_value_store .get("sessions", session.as_str()) .unwrap() .unwrap()["open"], true);
+        assert_eq!(
+            services
+                .key_value_store
+                .get("sessions", session.as_str())
+                .unwrap()
+                .unwrap()["open"],
+            true
+        );
         services
             .personalization_store
             .append(&PersonalizationRecord::accepted(

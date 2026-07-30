@@ -35,9 +35,14 @@ fn forward_tokens_shim_returns_n_vectors() {
     }
     let profile_path = PathBuf::from("../../profiles/deepseek-v2-lite-q4.m3pro18.json");
     let profile = hawking_core::profile::KernelProfile::load(&profile_path).expect("load profile");
-    let cfg = hawking_core::EngineConfig { kernel_profile: Some(profile), ..Default::default() };
+    let cfg = hawking_core::EngineConfig {
+        kernel_profile: Some(profile),
+        ..Default::default()
+    };
     let mut engine = hawking_core::model::load_engine(&weights, cfg).expect("load engine");
-    let logits = engine.forward_tokens_for_test(&[1, 2, 3], &[0, 1, 2]).expect("forward_tokens shim");
+    let logits = engine
+        .forward_tokens_for_test(&[1, 2, 3], &[0, 1, 2])
+        .expect("forward_tokens shim");
     assert_eq!(logits.len(), 3, "must return N logit vectors for N tokens");
     for (i, lvec) in logits.iter().enumerate() {
         assert!(!lvec.is_empty(), "logits[{i}] empty");

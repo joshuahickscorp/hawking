@@ -253,9 +253,7 @@ mod tests {
             pri,
             seq,
             "text/plain".into(),
-            ObjectSource::Synthetic {
-                label: "t".into(),
-            },
+            ObjectSource::Synthetic { label: "t".into() },
             ObjectPermissions::owner_only("u", vec![Surface::You]),
             RetentionPolicy::durable(),
             None,

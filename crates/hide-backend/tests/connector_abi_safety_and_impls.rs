@@ -1,5 +1,6 @@
-use std::path::{Path, PathBuf};
-use hide_backend::connector_abi::abi::{EffectClass, FamilyId, ImplementationStatus, WriteCapability};
+use hide_backend::connector_abi::abi::{
+    EffectClass, FamilyId, ImplementationStatus, WriteCapability,
+};
 use hide_backend::connector_abi::effects::{
     execute_with_receipt, execute_without_receipt, ConnectorWriteProposal, PermissionDecision,
     PermissionGate, PermissionPolicy, WriteKind,
@@ -9,9 +10,9 @@ use hide_backend::connector_abi::{
     ConnectorRead, ConnectorRegistry, CredentialMaterial, ListRequest, LocalFolderConnector,
     ReadRequest, UserMemoryPromotionCap,
 };
+use std::path::{Path, PathBuf};
 fn fixture_feed() -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("fixtures/rss/sample_feed.xml")
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("fixtures/rss/sample_feed.xml")
 }
 fn temp_folder() -> (tempfile::TempDir, PathBuf) {
     let dir = tempfile::tempdir().unwrap();
@@ -39,10 +40,16 @@ fn safety_default_read_only_type_boundary() {
         }
         _ => panic!("expected local_folder"),
     }
-    assert!(refuses_write_when_not_declared(&folder_abi.write, &folder_abi.family_id));
+    assert!(refuses_write_when_not_declared(
+        &folder_abi.write,
+        &folder_abi.family_id
+    ));
     let gh = reg.get("github").unwrap();
     assert!(gh.declares_write());
- assert!(matches!( reg.construct("github"), Err(ConnectorError::DeclaredNotConstructible(_)) ));
+    assert!(matches!(
+        reg.construct("github"),
+        Err(ConnectorError::DeclaredNotConstructible(_))
+    ));
 }
 fn refuses_write_when_not_declared(write: &WriteCapability, family: &FamilyId) -> bool {
     if write.is_writable() {
@@ -100,14 +107,19 @@ fn safety_every_write_is_effect_with_receipt() {
         target: "repo/main".into(),
         payload: "{\"title\":\"x\"}".into(),
     };
- assert!(matches!( execute_without_receipt(&proposal), Err(ConnectorError::WriteReceiptRequired) ));
+    assert!(matches!(
+        execute_without_receipt(&proposal),
+        Err(ConnectorError::WriteReceiptRequired)
+    ));
     let mut gate = PermissionGate::new(PermissionPolicy::deny_by_default());
     let denied = gate.authorize(proposal.clone()).unwrap();
     assert_eq!(denied.decision, PermissionDecision::Deny);
- assert!(matches!( gate.consume(&denied.id), Err(ConnectorError::WritePermissionDenied(_)) ));
-    let mut gate = PermissionGate::new(
-        PermissionPolicy::deny_by_default().allow_target("repo/main"),
-    );
+    assert!(matches!(
+        gate.consume(&denied.id),
+        Err(ConnectorError::WritePermissionDenied(_))
+    ));
+    let mut gate =
+        PermissionGate::new(PermissionPolicy::deny_by_default().allow_target("repo/main"));
     let allowed = gate.authorize(proposal.clone()).unwrap();
     assert_eq!(allowed.decision, PermissionDecision::Allow);
     assert!(!allowed.digest.is_empty());
@@ -135,7 +147,10 @@ fn safety_every_write_is_effect_with_receipt() {
     .unwrap();
     assert_eq!(result.receipt_id, allowed2.id);
     assert_eq!(result.target, "repo/main");
- assert!(matches!( gate.consume(&allowed2.id), Err(ConnectorError::InvalidWriteReceipt(_)) ));
+    assert!(matches!(
+        gate.consume(&allowed2.id),
+        Err(ConnectorError::InvalidWriteReceipt(_))
+    ));
     let stored = gate.get(&allowed2.id).unwrap();
     assert!(stored.consumed);
     assert_eq!(stored.decision, PermissionDecision::Allow);
@@ -151,7 +166,10 @@ fn safety_connector_read_cannot_write_user_memory() {
         "fixture-item-1",
         "First fixture item body",
     );
- assert!(matches!( rec.scope, hide_backend::connector_abi::MemoryScope::Connector { .. } ));
+    assert!(matches!(
+        rec.scope,
+        hide_backend::connector_abi::MemoryScope::Connector { .. }
+    ));
     assert!(mem.user_records().is_empty());
     let err = mem
         .ingest_as_user_from_connector(&ingest, "smuggle into user")
@@ -165,7 +183,10 @@ fn safety_connector_read_cannot_write_user_memory() {
     assert!(mem.user_records().is_empty());
     let cap = UserMemoryPromotionCap::mint();
     let user = mem.promote_to_user(&cap, &rec.id).unwrap();
-    assert!(matches!(user.scope, hide_backend::connector_abi::MemoryScope::User));
+    assert!(matches!(
+        user.scope,
+        hide_backend::connector_abi::MemoryScope::User
+    ));
     assert_eq!(mem.user_records().len(), 1);
     assert_eq!(user.content, "First fixture item body");
 }
@@ -182,13 +203,14 @@ fn safety_revocation_fail_closed() {
     );
     let handle = store.mint_handle(&id).unwrap();
     let conn = LocalFolderConnector::new();
-    let listed = conn
-        .list(&store, &handle, &ListRequest::default())
-        .unwrap();
+    let listed = conn.list(&store, &handle, &ListRequest::default()).unwrap();
     assert!(listed.iter().any(|o| o.title == "hello.txt"));
-    let guard =
-        hide_backend::connector_abi::InFlightGuard::begin(&store, &handle, &FamilyId::new("local_folder"))
-            .unwrap();
+    let guard = hide_backend::connector_abi::InFlightGuard::begin(
+        &store,
+        &handle,
+        &FamilyId::new("local_folder"),
+    )
+    .unwrap();
     store.revoke(&id).unwrap();
     assert!(store.is_revoked(&id));
     assert!(matches!(
@@ -209,7 +231,10 @@ fn safety_revocation_fail_closed() {
         ),
         Err(ConnectorError::AccountRevoked(_)) | Err(ConnectorError::StaleHandle)
     ));
- assert!(matches!( store.mint_handle(&id), Err(ConnectorError::AccountRevoked(_)) ));
+    assert!(matches!(
+        store.mint_handle(&id),
+        Err(ConnectorError::AccountRevoked(_))
+    ));
 }
 #[test]
 fn local_folder_lists_and_fetches() {
@@ -291,7 +316,11 @@ fn rss_parses_committed_fixture() {
         )
         .unwrap();
     assert_eq!(item.title, "First fixture item");
- assert!(item .content .as_deref() .unwrap_or("") .contains("first fixture item"));
+    assert!(item
+        .content
+        .as_deref()
+        .unwrap_or("")
+        .contains("first fixture item"));
     let item3 = conn
         .fetch(
             &store,
@@ -301,17 +330,19 @@ fn rss_parses_committed_fixture() {
             },
         )
         .unwrap();
-    assert!(item3
-        .content
-        .as_deref()
-        .unwrap_or("")
-        .contains("& entities")
-        || item3
+    assert!(
+        item3
             .content
             .as_deref()
             .unwrap_or("")
             .contains("& entities")
-        || item3.content.as_deref().unwrap_or("").contains("entities"));
+            || item3
+                .content
+                .as_deref()
+                .unwrap_or("")
+                .contains("& entities")
+            || item3.content.as_deref().unwrap_or("").contains("entities")
+    );
 }
 #[test]
 fn declared_connectors_not_constructible() {
@@ -320,7 +351,10 @@ fn declared_connectors_not_constructible() {
         let err = reg.construct(abi.family_id.as_str()).unwrap_err();
         assert!(matches!(err, ConnectorError::DeclaredNotConstructible(_)));
     }
- assert!(matches!( reg.construct("not_a_family"), Err(ConnectorError::UnknownFamily(_)) ));
+    assert!(matches!(
+        reg.construct("not_a_family"),
+        Err(ConnectorError::UnknownFamily(_))
+    ));
 }
 #[test]
 fn registry_covers_all_required_families_and_validates() {

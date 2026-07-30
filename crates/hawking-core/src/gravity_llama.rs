@@ -176,7 +176,9 @@ impl GravityLlama {
                     a.vocab_size
                 )));
             }
-            let mut x = self.weights.row("model.embed_tokens.weight", token as usize, a.hidden)?;
+            let mut x = self
+                .weights
+                .row("model.embed_tokens.weight", token as usize, a.hidden)?;
             if x.len() != a.hidden {
                 return Err(Error::Gravity(format!(
                     "embedding row is {} wide, expected hidden_size {}",
@@ -194,9 +196,15 @@ impl GravityLlama {
                     a.rms_norm_eps,
                     &mut scratch,
                 );
-                let mut q = self.weights.matvec(&format!("{p}self_attn.q_proj.weight"), &scratch)?;
-                let mut k = self.weights.matvec(&format!("{p}self_attn.k_proj.weight"), &scratch)?;
-                let v = self.weights.matvec(&format!("{p}self_attn.v_proj.weight"), &scratch)?;
+                let mut q = self
+                    .weights
+                    .matvec(&format!("{p}self_attn.q_proj.weight"), &scratch)?;
+                let mut k = self
+                    .weights
+                    .matvec(&format!("{p}self_attn.k_proj.weight"), &scratch)?;
+                let v = self
+                    .weights
+                    .matvec(&format!("{p}self_attn.v_proj.weight"), &scratch)?;
 
                 for h in 0..a.n_heads {
                     rope_inplace_scaled(
@@ -231,20 +239,30 @@ impl GravityLlama {
                     &mut attn,
                 )?;
 
-                let o = self.weights.matvec(&format!("{p}self_attn.o_proj.weight"), &attn)?;
+                let o = self
+                    .weights
+                    .matvec(&format!("{p}self_attn.o_proj.weight"), &attn)?;
                 add_inplace(&mut x, &o);
 
                 rmsnorm(
                     &x,
-                    &self.weights.dense(&format!("{p}post_attention_layernorm.weight"))?,
+                    &self
+                        .weights
+                        .dense(&format!("{p}post_attention_layernorm.weight"))?,
                     a.rms_norm_eps,
                     &mut scratch,
                 );
-                let gate = self.weights.matvec(&format!("{p}mlp.gate_proj.weight"), &scratch)?;
-                let up = self.weights.matvec(&format!("{p}mlp.up_proj.weight"), &scratch)?;
+                let gate = self
+                    .weights
+                    .matvec(&format!("{p}mlp.gate_proj.weight"), &scratch)?;
+                let up = self
+                    .weights
+                    .matvec(&format!("{p}mlp.up_proj.weight"), &scratch)?;
                 let mut act = vec![0f32; gate.len()];
                 silu_mul(&gate, &up, &mut act);
-                let down = self.weights.matvec(&format!("{p}mlp.down_proj.weight"), &act)?;
+                let down = self
+                    .weights
+                    .matvec(&format!("{p}mlp.down_proj.weight"), &act)?;
                 add_inplace(&mut x, &down);
             }
 
@@ -277,7 +295,7 @@ impl GravityLlama {
 #[cfg(target_os = "macos")]
 pub mod gpu {
     use super::*;
-    use crate::gravity::{pq_row, pq_sections, parse_pq_header, PqHeader};
+    use crate::gravity::{parse_pq_header, pq_row, pq_sections, PqHeader};
     use crate::metal::{MetalContext, TokenCommandBuffer};
     use metal::Buffer;
     use std::sync::Mutex;
@@ -533,15 +551,25 @@ pub mod gpu {
                     // old capacity in bytes, which the new buffers exceed.
                     unsafe {
                         std::ptr::copy_nonoverlapping(
-                            kv.k[layer].contents() as *const u8, nk.contents() as *mut u8, carry);
+                            kv.k[layer].contents() as *const u8,
+                            nk.contents() as *mut u8,
+                            carry,
+                        );
                         std::ptr::copy_nonoverlapping(
-                            kv.v[layer].contents() as *const u8, nv.contents() as *mut u8, carry);
+                            kv.v[layer].contents() as *const u8,
+                            nv.contents() as *mut u8,
+                            carry,
+                        );
                     }
                 }
                 k.push(nk);
                 v.push(nv);
             }
-            *kv = KvBuffers { k, v, capacity_tokens: tokens };
+            *kv = KvBuffers {
+                k,
+                v,
+                capacity_tokens: tokens,
+            };
             Ok(())
         }
 
@@ -740,7 +768,11 @@ pub mod gpu {
         /// position writes its own cache slot, so continuing a sequence is a
         /// matter of not resetting: replaying the prefix would recompute
         /// identical keys and values and reach identical logits, just slower.
-        pub fn forward_at(&self, tokens: &[u32], start_pos: usize) -> Result<(Vec<f32>, ForwardStats)> {
+        pub fn forward_at(
+            &self,
+            tokens: &[u32],
+            start_pos: usize,
+        ) -> Result<(Vec<f32>, ForwardStats)> {
             if tokens.is_empty() {
                 return Err(Error::Gravity("forward: no tokens".into()));
             }
@@ -806,12 +838,35 @@ pub mod gpu {
 
                     // K and V project straight into this layer's cache slot:
                     // no append kernel, no copy.
-                    self.encode_matvec(&mut tcb, &format!("{p}self_attn.q_proj.weight"), &x_norm_buf, &q_buf)?;
-                    self.encode_matvec_at(&mut tcb, &format!("{p}self_attn.k_proj.weight"), &x_norm_buf, &kv.k[layer], pos * kv_width)?;
-                    self.encode_matvec_at(&mut tcb, &format!("{p}self_attn.v_proj.weight"), &x_norm_buf, &kv.v[layer], pos * kv_width)?;
+                    self.encode_matvec(
+                        &mut tcb,
+                        &format!("{p}self_attn.q_proj.weight"),
+                        &x_norm_buf,
+                        &q_buf,
+                    )?;
+                    self.encode_matvec_at(
+                        &mut tcb,
+                        &format!("{p}self_attn.k_proj.weight"),
+                        &x_norm_buf,
+                        &kv.k[layer],
+                        pos * kv_width,
+                    )?;
+                    self.encode_matvec_at(
+                        &mut tcb,
+                        &format!("{p}self_attn.v_proj.weight"),
+                        &x_norm_buf,
+                        &kv.v[layer],
+                        pos * kv_width,
+                    )?;
 
                     self.encode_rope(&mut tcb, &q_buf, 0, a.n_heads, &rope_buf)?;
-                    self.encode_rope(&mut tcb, &kv.k[layer], pos * kv_width, a.n_kv_heads, &rope_buf)?;
+                    self.encode_rope(
+                        &mut tcb,
+                        &kv.k[layer],
+                        pos * kv_width,
+                        a.n_kv_heads,
+                        &rope_buf,
+                    )?;
 
                     crate::kernels::mha_decode_flash_f32_tcb(
                         &mut tcb,
@@ -826,7 +881,12 @@ pub mod gpu {
                         a.n_heads,
                         a.n_kv_heads,
                     )?;
-                    self.encode_matvec(&mut tcb, &format!("{p}self_attn.o_proj.weight"), &attn_buf, &o_buf)?;
+                    self.encode_matvec(
+                        &mut tcb,
+                        &format!("{p}self_attn.o_proj.weight"),
+                        &attn_buf,
+                        &o_buf,
+                    )?;
 
                     crate::kernels::add_rmsnorm_fused_tcb(
                         &mut tcb,
@@ -837,10 +897,25 @@ pub mod gpu {
                         a.rms_norm_eps,
                         a.hidden,
                     )?;
-                    self.encode_matvec(&mut tcb, &format!("{p}mlp.gate_proj.weight"), &x_norm_buf, &gate_buf)?;
-                    self.encode_matvec(&mut tcb, &format!("{p}mlp.up_proj.weight"), &x_norm_buf, &up_buf)?;
+                    self.encode_matvec(
+                        &mut tcb,
+                        &format!("{p}mlp.gate_proj.weight"),
+                        &x_norm_buf,
+                        &gate_buf,
+                    )?;
+                    self.encode_matvec(
+                        &mut tcb,
+                        &format!("{p}mlp.up_proj.weight"),
+                        &x_norm_buf,
+                        &up_buf,
+                    )?;
                     self.encode_silu_mul(&mut tcb, &gate_buf, &up_buf, &act_buf, inter)?;
-                    self.encode_matvec(&mut tcb, &format!("{p}mlp.down_proj.weight"), &act_buf, &o_buf)?;
+                    self.encode_matvec(
+                        &mut tcb,
+                        &format!("{p}mlp.down_proj.weight"),
+                        &act_buf,
+                        &o_buf,
+                    )?;
                 }
 
                 crate::kernels::add_rmsnorm_fused_tcb(

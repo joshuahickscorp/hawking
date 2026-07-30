@@ -19,7 +19,8 @@ fn test_rmsnorm_matches_cpu() {
     kernels::rmsnorm(&x, &w, eps, &mut cpu_out);
     let ctx = ctx().clone();
     let mut metal_out = vec![0.0_f32; hidden];
-    kernels::rmsnorm_metal(&ctx, &x, &w, eps, &mut metal_out).expect("rmsnorm_metal should succeed once G1.1 lands");
+    kernels::rmsnorm_metal(&ctx, &x, &w, eps, &mut metal_out)
+        .expect("rmsnorm_metal should succeed once G1.1 lands");
     let diff = max_abs_diff(&cpu_out, &metal_out);
     assert!(diff < ATOL, "rmsnorm CPU/Metal diff {diff} >= atol {ATOL}");
 }
@@ -36,7 +37,8 @@ fn test_gemv_f16_matches_cpu() {
     let ctx = ctx().clone();
     let w_bytes: &[u8] = bytemuck::cast_slice(&w_f16);
     let mut metal_out = vec![0.0_f32; rows];
-    kernels::gemv_f16_metal(&ctx, w_bytes, rows, cols, &x, &mut metal_out).expect("gemv_f16_metal should succeed once G1.2 lands");
+    kernels::gemv_f16_metal(&ctx, w_bytes, rows, cols, &x, &mut metal_out)
+        .expect("gemv_f16_metal should succeed once G1.2 lands");
     let diff = max_abs_diff(&cpu_out, &metal_out);
     assert!(diff < ATOL, "gemv_f16 CPU/Metal diff {diff} >= atol {ATOL}");
 }
@@ -53,8 +55,8 @@ fn test_gemv_f16_argmax_pinned_matches_cpu() {
     let cpu = kernels::argmax_f32(&cpu_logits);
     let ctx = ctx().clone();
     let w_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f16, u8>(&w_f16));
-    let metal =
-        kernels::gemv_f16_argmax_metal_pinned(&ctx, &w_buf, rows, cols, &x).expect("gemv_f16_argmax_metal_pinned should return token id");
+    let metal = kernels::gemv_f16_argmax_metal_pinned(&ctx, &w_buf, rows, cols, &x)
+        .expect("gemv_f16_argmax_metal_pinned should return token id");
     assert_eq!(cpu, metal);
 }
 #[test]
@@ -67,9 +69,13 @@ fn test_gemv_f32_attn_matches_cpu() {
     kernels::gemv_f32(&w, rows, cols, &x, &mut cpu_out);
     let ctx = ctx().clone();
     let mut metal_out = vec![0.0_f32; rows];
-    kernels::gemv_f32_attn_metal(&ctx, &w, rows, cols, &x, &mut metal_out).expect("gemv_f32_attn_metal should succeed once G1.3 lands");
+    kernels::gemv_f32_attn_metal(&ctx, &w, rows, cols, &x, &mut metal_out)
+        .expect("gemv_f32_attn_metal should succeed once G1.3 lands");
     let diff = max_abs_diff(&cpu_out, &metal_out);
-    assert!(diff < ATOL, "gemv_f32_attn CPU/Metal diff {diff} >= atol {ATOL}");
+    assert!(
+        diff < ATOL,
+        "gemv_f32_attn CPU/Metal diff {diff} >= atol {ATOL}"
+    );
 }
 #[test]
 fn test_gemv_f32_moe_matches_cpu() {
@@ -81,9 +87,13 @@ fn test_gemv_f32_moe_matches_cpu() {
     kernels::gemv_f32(&w, rows, cols, &x, &mut cpu_out);
     let ctx = ctx().clone();
     let mut metal_out = vec![0.0_f32; rows];
-    kernels::gemv_f32_moe_metal(&ctx, &w, rows, cols, &x, &mut metal_out).expect("gemv_f32_moe_metal should succeed once G1.4 lands");
+    kernels::gemv_f32_moe_metal(&ctx, &w, rows, cols, &x, &mut metal_out)
+        .expect("gemv_f32_moe_metal should succeed once G1.4 lands");
     let diff = max_abs_diff(&cpu_out, &metal_out);
-    assert!(diff < ATOL, "gemv_f32_moe CPU/Metal diff {diff} >= atol {ATOL}");
+    assert!(
+        diff < ATOL,
+        "gemv_f32_moe CPU/Metal diff {diff} >= atol {ATOL}"
+    );
 }
 fn synthetic_q4_k_bytes(n_blocks: usize, seed: u64) -> Vec<u8> {
     use half::f16;
@@ -113,12 +123,17 @@ fn test_gemm_q4_k_m_fused_matches_cpu() {
     let w_bytes = synthetic_q4_k_bytes(blocks, 0xE6E6E6E6);
     let x = fixed_input(cols, 0xF7F7F7F7);
     let mut w_f32 = vec![0.0_f32; rows * cols];
-    dequant_into(GgmlType::Q4_K, &w_bytes, &mut w_f32).expect("Q4_K dequant should succeed for valid synthetic bytes");
+    dequant_into(GgmlType::Q4_K, &w_bytes, &mut w_f32)
+        .expect("Q4_K dequant should succeed for valid synthetic bytes");
     let mut cpu_out = vec![0.0_f32; rows];
     kernels::gemv_f32(&w_f32, rows, cols, &x, &mut cpu_out);
     let ctx = ctx().clone();
     let mut metal_out = vec![0.0_f32; rows];
-    kernels::gemv_q4_k_m(&ctx, &w_bytes, rows, cols, &x, &mut metal_out).expect("gemv_q4_k_m should succeed once H2.4 lands");
+    kernels::gemv_q4_k_m(&ctx, &w_bytes, rows, cols, &x, &mut metal_out)
+        .expect("gemv_q4_k_m should succeed once H2.4 lands");
     let diff = max_abs_diff(&cpu_out, &metal_out);
-    assert!(diff < ATOL, "gemm_q4_k_m_fused CPU/Metal diff {diff} >= atol {ATOL}");
+    assert!(
+        diff < ATOL,
+        "gemm_q4_k_m_fused CPU/Metal diff {diff} >= atol {ATOL}"
+    );
 }

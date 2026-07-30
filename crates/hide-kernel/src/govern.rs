@@ -312,7 +312,10 @@ mod tests {
         let mut gov = Governor::default();
         gov.interrupt(Interrupt::Abort);
         let mut state = state_with_budget(Budget::default());
- assert!(matches!( gov.check(&mut state, 0), GovernDecision::Abort(AbortReason::Interrupted(_)) ));
+        assert!(matches!(
+            gov.check(&mut state, 0),
+            GovernDecision::Abort(AbortReason::Interrupted(_))
+        ));
     }
     #[test]
     fn suggest_only_needs_approval_for_effects() {

@@ -11,7 +11,8 @@ fn st_path() -> std::path::PathBuf {
     if let Ok(p) = std::env::var("HAWKING_TQ_ST") {
         return std::path::PathBuf::from(p);
     }
-    std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../models/rwkv7-g1-04-hf/model.safetensors")
+    std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../models/rwkv7-g1-04-hf/model.safetensors")
 }
 struct Rng(u64);
 impl Rng {
@@ -37,10 +38,13 @@ fn channel_scales(c: usize, outlier: bool, seed: u64) -> Vec<f32> {
         return vec![1.0; c];
     }
     let mut r = Rng(seed);
-    (0..c).map(|_| if r.unit() < 0.01 { 20.0 } else { 1.0 }).collect()
+    (0..c)
+        .map(|_| if r.unit() < 0.01 { 20.0 } else { 1.0 })
+        .collect()
 }
 fn real_w4a8_scales(c: usize, seed: u64) -> Vec<f32> {
-    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("reports/w4a8_activation_dist.csv");
+    let path =
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("reports/w4a8_activation_dist.csv");
     let txt = std::fs::read_to_string(&path).unwrap_or_default();
     let mut rms: Vec<f32> = Vec::new();
     for line in txt.lines() {
@@ -62,7 +66,9 @@ fn real_w4a8_scales(c: usize, seed: u64) -> Vec<f32> {
     let med = sorted[sorted.len() / 2].max(1e-9);
     let rel: Vec<f32> = rms.iter().map(|&x| (x / med).max(1e-6)).collect();
     let mut r = Rng(seed);
-    (0..c).map(|_| rel[((r.unit() * rel.len() as f64) as usize).min(rel.len() - 1)]).collect()
+    (0..c)
+        .map(|_| rel[((r.unit() * rel.len() as f64) as usize).min(rel.len() - 1)])
+        .collect()
 }
 fn make_acts(c: usize, b: usize, scales: &[f32], seed: u64) -> Vec<f32> {
     let mut r = Rng(seed);
@@ -97,8 +103,19 @@ fn recon_tq_rht(w: &[f32], in_f: usize, cfg: &TrellisConfig, name: &str) -> Vec<
     let dec = recon_tq(&wr, cfg);
     rht_inverse_cols(&dec, &rcfg, in_f)
 }
-fn recon_tq_awq_rht(w: &[f32], r: usize, c: usize, cfg: &TrellisConfig, name: &str, calib_scales: &[f32], alpha: f32) -> Vec<f32> {
-    let d: Vec<f32> = calib_scales.iter().map(|&s| s.powf(alpha).max(1e-6)).collect();
+fn recon_tq_awq_rht(
+    w: &[f32],
+    r: usize,
+    c: usize,
+    cfg: &TrellisConfig,
+    name: &str,
+    calib_scales: &[f32],
+    alpha: f32,
+) -> Vec<f32> {
+    let d: Vec<f32> = calib_scales
+        .iter()
+        .map(|&s| s.powf(alpha).max(1e-6))
+        .collect();
     let mut ws = vec![0f32; w.len()];
     for i in 0..r {
         for j in 0..c {
@@ -113,10 +130,22 @@ fn recon_tq_awq_rht(w: &[f32], r: usize, c: usize, cfg: &TrellisConfig, name: &s
     }
     wh
 }
-fn protect_outliers(wh: &mut [f32], w: &[f32], r: usize, c: usize, sigma: &[f32], pct: f64, base_bpw: f32) -> f32 {
+fn protect_outliers(
+    wh: &mut [f32],
+    w: &[f32],
+    r: usize,
+    c: usize,
+    sigma: &[f32],
+    pct: f64,
+    base_bpw: f32,
+) -> f32 {
     let k = (((c as f64) * pct).ceil() as usize).clamp(1, c);
     let mut idx: Vec<usize> = (0..c).collect();
-    idx.sort_by(|&a, &b| sigma[b].partial_cmp(&sigma[a]).unwrap_or(std::cmp::Ordering::Equal));
+    idx.sort_by(|&a, &b| {
+        sigma[b]
+            .partial_cmp(&sigma[a])
+            .unwrap_or(std::cmp::Ordering::Equal)
+    });
     for &j in idx.iter().take(k) {
         for i in 0..r {
             wh[i * c + j] = w[i * c + j]; // exact (f16) restore of the outlier column
@@ -134,9 +163,16 @@ fn recon_tq_awq_reg(
     alpha: f32,
     clip: f32,
 ) -> Vec<f32> {
-    let logmean: f64 = calib_sigma.iter().map(|&s| (s.max(1e-9) as f64).ln()).sum::<f64>() / c as f64;
+    let logmean: f64 = calib_sigma
+        .iter()
+        .map(|&s| (s.max(1e-9) as f64).ln())
+        .sum::<f64>()
+        / c as f64;
     let gmean = logmean.exp() as f32;
-    let d: Vec<f32> = calib_sigma.iter().map(|&s| ((s.max(1e-9) / gmean).powf(alpha)).clamp(1.0 / clip, clip)).collect();
+    let d: Vec<f32> = calib_sigma
+        .iter()
+        .map(|&s| ((s.max(1e-9) / gmean).powf(alpha)).clamp(1.0 / clip, clip))
+        .collect();
     let mut ws = vec![0f32; w.len()];
     for i in 0..r {
         for j in 0..c {
@@ -195,10 +231,22 @@ fn report() {
     }
     let st = SafeTensors::open(st_path.to_str().expect("utf8 path")).expect("open safetensors");
     let picks = [
-        TensorPick { name: "model.layers.0.ffn.key.weight", max_rows: 1024 },
-        TensorPick { name: "model.layers.0.ffn.value.weight", max_rows: 256 },
-        TensorPick { name: "model.layers.11.ffn.key.weight", max_rows: 1024 },
-        TensorPick { name: "lm_head.weight", max_rows: 1024 },
+        TensorPick {
+            name: "model.layers.0.ffn.key.weight",
+            max_rows: 1024,
+        },
+        TensorPick {
+            name: "model.layers.0.ffn.value.weight",
+            max_rows: 256,
+        },
+        TensorPick {
+            name: "model.layers.11.ffn.key.weight",
+            max_rows: 1024,
+        },
+        TensorPick {
+            name: "lm_head.weight",
+            max_rows: 1024,
+        },
     ];
     let b = 48usize; // activation samples (eval)
     let act_seed_eval = 0xA5A5_1234_DEAD_BEEF;
@@ -237,7 +285,9 @@ fn report() {
             let wr = rel_rmse(wh, w);
             let og = out_rel_err(wh, w, r, c, &xg, b);
             let oh = out_rel_err(wh, w, r, c, &xh, b);
-            let e = agg.entry(label.to_string()).or_insert((0.0, 0.0, 0.0, 0.0, 0));
+            let e = agg
+                .entry(label.to_string())
+                .or_insert((0.0, 0.0, 0.0, 0.0, 0));
             e.0 += bpw;
             e.1 += wr;
             e.2 += og;
@@ -249,24 +299,45 @@ fn report() {
         let cfg3q = TrellisConfig::for_bpw_quality(3.0);
         let cfg2 = TrellisConfig::for_bpw(2.0);
         let cfg2q = TrellisConfig::for_bpw_quality(2.0);
-        let (bpw4, bpw3, bpw3q, bpw2, bpw2q) = (bpw_of(w, &cfg4), bpw_of(w, &cfg3), bpw_of(w, &cfg3q), bpw_of(w, &cfg2), bpw_of(w, &cfg2q));
+        let (bpw4, bpw3, bpw3q, bpw2, bpw2q) = (
+            bpw_of(w, &cfg4),
+            bpw_of(w, &cfg3),
+            bpw_of(w, &cfg3q),
+            bpw_of(w, &cfg2),
+            bpw_of(w, &cfg2q),
+        );
         row("Q4_K", &recon_q4k(w), 4.5);
         row("TQ4", &recon_tq(w, &cfg4), bpw4);
         row("TQ3", &recon_tq(w, &cfg3), bpw3);
         row("TQ3+L", &recon_tq(w, &cfg3q), bpw3q);
         row("TQ3+rht", &recon_tq_rht(w, c, &cfg3, p.name), bpw3);
         row("TQ3+L+rht", &recon_tq_rht(w, c, &cfg3q, p.name), bpw3q);
-        row("TQ3+L+rht+awq", &recon_tq_awq_rht(w, r, c, &cfg3q, p.name, &calib_sigma, 0.5), bpw3q);
+        row(
+            "TQ3+L+rht+awq",
+            &recon_tq_awq_rht(w, r, c, &cfg3q, p.name, &calib_sigma, 0.5),
+            bpw3q,
+        );
         row("TQ2", &recon_tq(w, &cfg2), bpw2);
         row("TQ2+L+rht", &recon_tq_rht(w, c, &cfg2q, p.name), bpw2q);
-        row("TQ2+L+rht+awq", &recon_tq_awq_rht(w, r, c, &cfg2q, p.name, &calib_sigma, 0.5), bpw2q);
+        row(
+            "TQ2+L+rht+awq",
+            &recon_tq_awq_rht(w, r, c, &cfg2q, p.name, &calib_sigma, 0.5),
+            bpw2q,
+        );
     }
     let q4k = agg.get("Q4_K").cloned().unwrap_or_default();
-    let q4k_oh = if q4k.4 > 0 { q4k.3 / q4k.4 as f64 } else { f64::INFINITY };
+    let q4k_oh = if q4k.4 > 0 {
+        q4k.3 / q4k.4 as f64
+    } else {
+        f64::INFINITY
+    };
     for (label, (bpw, wr, og, oh, n)) in &agg {
         let n = *n as f64;
-        let beats =
-            if label != "Q4_K" && oh / n <= q4k_oh && bpw / n < q4k.0 / q4k.4 as f64 { "  <-- DENSER @ ≤Q4_K output-err" } else { "" };
+        let beats = if label != "Q4_K" && oh / n <= q4k_oh && bpw / n < q4k.0 / q4k.4 as f64 {
+            "  <-- DENSER @ ≤Q4_K output-err"
+        } else {
+            ""
+        };
     }
 }
 #[test]
@@ -277,7 +348,10 @@ fn awq_sweep() {
         return;
     }
     let st = SafeTensors::open(st_path.to_str().expect("utf8 path")).expect("open safetensors");
-    let picks = [("model.layers.0.ffn.key.weight", 1024usize), ("model.layers.0.ffn.value.weight", 256usize)];
+    let picks = [
+        ("model.layers.0.ffn.key.weight", 1024usize),
+        ("model.layers.0.ffn.value.weight", 256usize),
+    ];
     let structures: [(&str, bool, f64, f32); 4] = [
         ("gaussian(flat)", false, 0.0, 1.0),
         ("mild 0.5%x30", true, 0.005, 30.0),
@@ -303,7 +377,15 @@ fn awq_sweep() {
                 real_w4a8_scales(c, 0x9EA1_5EED)
             } else {
                 let mut rng = Rng(0xBEEF_0000 ^ (*mag as u64).wrapping_mul(2654435761));
-                (0..c).map(|_| if *outl && rng.unit() < *frac { *mag } else { 1.0 }).collect()
+                (0..c)
+                    .map(|_| {
+                        if *outl && rng.unit() < *frac {
+                            *mag
+                        } else {
+                            1.0
+                        }
+                    })
+                    .collect()
             };
             let x_eval = make_acts(c, b_eval, &scales, 0xE0E0_1111);
             let x_calib = make_acts(c, b_calib, &scales, 0xCA1B_2222);
@@ -412,7 +494,10 @@ fn recovery() {
         return;
     }
     let st = SafeTensors::open(st_path.to_str().expect("utf8")).expect("open st");
-    let picks = [("model.layers.0.ffn.key.weight", 1024usize), ("model.layers.0.ffn.value.weight", 256usize)];
+    let picks = [
+        ("model.layers.0.ffn.key.weight", 1024usize),
+        ("model.layers.0.ffn.value.weight", 256usize),
+    ];
     let clip = 8.0f32;
     let (b_eval, b_calib) = (64usize, 256usize);
     let tiers = [("TQ3", 3.0f32, 3.348f32), ("TQ2", 2.0f32, 2.344f32)];
@@ -448,9 +533,14 @@ fn recovery() {
             for &k in &ranks {
                 let healed = lowrank_heal(&awq, w, r, c, k, 0x5EED_0001 ^ k as u64);
                 let o = out_rel_err(&healed, w, r, c, &x_eval, b_eval);
-                let add_bpw = (k as f32 * (full_rows + c) as f32 * 16.0) / (full_rows as f32 * c as f32);
+                let add_bpw =
+                    (k as f32 * (full_rows + c) as f32 * 16.0) / (full_rows as f32 * c as f32);
                 let tot = base_bpw + add_bpw;
-                let win = if o <= o_q4 && tot < 4.5 { " ✓WIN" } else { "" };
+                let win = if o <= o_q4 && tot < 4.5 {
+                    " ✓WIN"
+                } else {
+                    ""
+                };
                 print!("  | r{:<3} o={:.5} @{:.2}bpw{}", k, o, tot, win);
             }
         }
@@ -458,7 +548,11 @@ fn recovery() {
 }
 fn alloc_avg_bpw(lvl: &[usize], params: &[f64], lv_bpw: &[f64]) -> f64 {
     let tot: f64 = params.iter().sum();
-    lvl.iter().zip(params).map(|(&l, &p)| lv_bpw[l] * p).sum::<f64>() / tot
+    lvl.iter()
+        .zip(params)
+        .map(|(&l, &p)| lv_bpw[l] * p)
+        .sum::<f64>()
+        / tot
 }
 #[test]
 fn allocate() {
@@ -471,7 +565,9 @@ fn allocate() {
     let mut names: Vec<String> = st
         .tensors
         .iter()
-        .filter(|(_, t)| t.shape.len() == 2 && t.shape[1] % 256 == 0 && t.shape[0] * t.shape[1] >= 256 * 256)
+        .filter(|(_, t)| {
+            t.shape.len() == 2 && t.shape[1] % 256 == 0 && t.shape[0] * t.shape[1] >= 256 * 256
+        })
         .map(|(n, _)| n.clone())
         .collect();
     names.sort();
@@ -493,7 +589,9 @@ fn allocate() {
         let r = full_rows.min(256);
         let full = st.to_f32(t);
         let w = &full[..r * c];
-        let tseed = n.bytes().fold(0xC0FFEE_u64, |a, b| a.wrapping_mul(1099511628211).wrapping_add(b as u64));
+        let tseed = n.bytes().fold(0xC0FFEE_u64, |a, b| {
+            a.wrapping_mul(1099511628211).wrapping_add(b as u64)
+        });
         let scales = real_w4a8_scales(c, tseed ^ 0x9EA1_5EED);
         let x = make_acts(c, b_eval, &scales, tseed ^ 0xE0E0_1111);
         let xc = make_acts(c, b_calib, &scales, tseed ^ 0xCA1B_2222);

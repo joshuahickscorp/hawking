@@ -314,14 +314,16 @@ mod tests {
     }
     #[test]
     fn slice_lm_head_f16_gathers_correct_rows() {
-        let hidden = 3; let orig_vocab = 4;
+        let hidden = 3;
+        let orig_vocab = 4;
         let mut w = Vec::with_capacity(orig_vocab * hidden);
         for r in 0..orig_vocab {
             for c in 0..hidden {
                 w.push(f16::from_f32((r * 10 + c) as f32));
             }
         }
-        let p = whitelist(orig_vocab, &[0, 2, 3]); let sliced = p.slice_lm_head_f16(&w, hidden).unwrap();
+        let p = whitelist(orig_vocab, &[0, 2, 3]);
+        let sliced = p.slice_lm_head_f16(&w, hidden).unwrap();
         assert_eq!(sliced.len(), 3 * 3);
         assert_eq!(
             sliced[0..3],
@@ -346,18 +348,21 @@ mod tests {
     }
     #[test]
     fn slice_lm_head_rejects_wrong_length() {
-        let p = whitelist(4, &[0, 2, 3]); let bad = vec![f16::from_f32(0.0); 4 * 3 - 1];
+        let p = whitelist(4, &[0, 2, 3]);
+        let bad = vec![f16::from_f32(0.0); 4 * 3 - 1];
         assert!(p.slice_lm_head_f16(&bad, 3).is_err());
     }
     #[test]
     fn argmax_round_trip_via_pruned_space() {
-        let p = whitelist(8, &[0, 1, 3, 5, 7]); let mut full = vec![0.0f32; 8];
+        let p = whitelist(8, &[0, 1, 3, 5, 7]);
+        let mut full = vec![0.0f32; 8];
         full[5] = 10.0;
         let pruned_logits: Vec<f32> = p.keep_ids().iter().map(|&i| full[i as usize]).collect();
         let pruned_winner = pruned_logits
             .iter()
             .enumerate()
-            .max_by(|a, b| a.1.partial_cmp(b.1).unwrap()).unwrap()
+            .max_by(|a, b| a.1.partial_cmp(b.1).unwrap())
+            .unwrap()
             .0 as u32;
         assert_eq!(p.pruned_to_original(pruned_winner), 5);
     }

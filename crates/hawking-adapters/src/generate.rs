@@ -144,20 +144,14 @@ pub fn repo_root_artifacts() -> Vec<(&'static str, String)> {
             capability_matrix_json(),
         ),
         ("HAWKING_ADAPTER_TEST_MATRIX.json", test_matrix_json()),
-        (
-            "HAWKING_ADAPTER_MIGRATION_MAP.json",
-            migration_map_json(),
-        ),
+        ("HAWKING_ADAPTER_MIGRATION_MAP.json", migration_map_json()),
         (
             "HAWKING_CANONICAL_EVENTS.json",
             hawking_events::canonical_events_json(),
         ),
         ("HAWKING_BRIDGE_SURFACE.json", bridge_surface_json()),
         ("HAWKING_CLI_SURFACE.json", cli_surface_json()),
-        (
-            "HAWKING_SCHEMA_MIGRATIONS.json",
-            schema_migrations_json(),
-        ),
+        ("HAWKING_SCHEMA_MIGRATIONS.json", schema_migrations_json()),
     ]
 }
 
@@ -662,9 +656,7 @@ fn cli_completion_bash() -> String {
     let r = builtin_registry();
     let families: Vec<&str> = r
         .families()
-        .flat_map(|d| {
-            std::iter::once(d.id).chain(d.aliases.iter().copied())
-        })
+        .flat_map(|d| std::iter::once(d.id).chain(d.aliases.iter().copied()))
         .collect();
     let family_list = families.join(" ");
     let profiles = "default fast race efficient exact";

@@ -566,5 +566,4 @@ impl ClassedMemorySystem {
             }
         }
     }
-
 }

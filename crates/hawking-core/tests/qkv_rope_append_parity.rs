@@ -101,8 +101,17 @@ fn run_q4_ref(
         10000.0,
     )
     .expect("rope ref");
-    kernels::kv_append_vbias_f32_tcb(&mut tcb, &k_tok, &v_tok, v_bias_buf.as_ref(), &k_cache, &v_cache, kv_rows, shape.kv_off)
-        .expect("kv append ref");
+    kernels::kv_append_vbias_f32_tcb(
+        &mut tcb,
+        &k_tok,
+        &v_tok,
+        v_bias_buf.as_ref(),
+        &k_cache,
+        &v_cache,
+        kv_rows,
+        shape.kv_off,
+    )
+    .expect("kv append ref");
     tcb.commit_and_wait().expect("ref commit");
     let q = read_f32_buf(&q_buf, q_rows);
     let k = read_f32_buf(&k_cache, cache_len)[shape.kv_off..shape.kv_off + kv_rows].to_vec();
@@ -176,19 +185,49 @@ fn run_q4_fused(
 #[test]
 fn q4k_qkv_rope_append_matches_ref() {
     let ctx = ctx();
-    let shape = Shape { n_q: 4, n_k: 2, hd: 64, cols: 256, pos: 127, kv_off: 19 };
+    let shape = Shape {
+        n_q: 4,
+        n_k: 2,
+        hd: 64,
+        cols: 256,
+        pos: 127,
+        kv_off: 19,
+    };
     let q_rows = shape.n_q * shape.hd;
     let kv_rows = shape.n_k * shape.hd;
     let (q, q_scales) = make_q4k_predec_pm1(q_rows, shape.cols, 0x1001);
     let (k, k_scales) = make_q4k_predec_pm1(kv_rows, shape.cols, 0x1002);
     let (v, v_scales) = make_q4k_predec_pm1(kv_rows, shape.cols, 0x1003);
-    let weights = Q4Weights { q, q_scales, k, k_scales, v, v_scales };
+    let weights = Q4Weights {
+        q,
+        q_scales,
+        k,
+        k_scales,
+        v,
+        v_scales,
+    };
     let x = fixed_f32(shape.cols, 0xBEEF);
     let q_bias = fixed_f32(q_rows, 0xCAFE);
     let k_bias = fixed_f32(kv_rows, 0xF00D);
     let v_bias = fixed_f32(kv_rows, 0xD00D);
-    let reference = run_q4_ref(ctx, &shape, &weights, &x, Some(&q_bias), Some(&k_bias), Some(&v_bias));
-    let fused = run_q4_fused(ctx, &shape, &weights, &x, Some(&q_bias), Some(&k_bias), Some(&v_bias));
+    let reference = run_q4_ref(
+        ctx,
+        &shape,
+        &weights,
+        &x,
+        Some(&q_bias),
+        Some(&k_bias),
+        Some(&v_bias),
+    );
+    let fused = run_q4_fused(
+        ctx,
+        &shape,
+        &weights,
+        &x,
+        Some(&q_bias),
+        Some(&k_bias),
+        Some(&v_bias),
+    );
     assert_close("q4 q", &reference.0, &fused.0);
     assert_close("q4 k_cache", &reference.1, &fused.1);
     assert_close("q4 v_cache", &reference.2, &fused.2);
@@ -196,7 +235,14 @@ fn q4k_qkv_rope_append_matches_ref() {
 #[test]
 fn mixed_q4k_q4k_q6k_rope_append_matches_ref() {
     let ctx = ctx();
-    let shape = Shape { n_q: 4, n_k: 2, hd: 64, cols: 256, pos: 511, kv_off: 37 };
+    let shape = Shape {
+        n_q: 4,
+        n_k: 2,
+        hd: 64,
+        cols: 256,
+        pos: 511,
+        kv_off: 37,
+    };
     let q_rows = shape.n_q * shape.hd;
     let kv_rows = shape.n_k * shape.hd;
     let (q, q_scales) = make_q4k_predec_pm1(q_rows, shape.cols, 0x2001);
@@ -258,8 +304,17 @@ fn mixed_q4k_q4k_q6k_rope_append_matches_ref() {
             10000.0,
         )
         .expect("mixed ref rope");
-        kernels::kv_append_vbias_f32_tcb(&mut tcb, &k_tok, &v_tok, Some(&v_bias_buf), &k_cache, &v_cache, kv_rows, shape.kv_off)
-            .expect("mixed ref append");
+        kernels::kv_append_vbias_f32_tcb(
+            &mut tcb,
+            &k_tok,
+            &v_tok,
+            Some(&v_bias_buf),
+            &k_cache,
+            &v_cache,
+            kv_rows,
+            shape.kv_off,
+        )
+        .expect("mixed ref append");
         tcb.commit_and_wait().expect("mixed ref commit");
         (
             read_f32_buf(&q_buf, q_rows),

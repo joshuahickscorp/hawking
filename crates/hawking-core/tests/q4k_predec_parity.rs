@@ -29,7 +29,9 @@ fn make_q4k_bytes(rows: usize, cols: usize, seed: u64) -> Vec<u8> {
 }
 fn make_x(cols: usize, seed: u64) -> Vec<f32> {
     let mut rng = Pcg64Mcg::new(seed as u128);
-    (0..cols).map(|_| rng.gen_range(-3.0_f32..3.0_f32)).collect()
+    (0..cols)
+        .map(|_| rng.gen_range(-3.0_f32..3.0_f32))
+        .collect()
 }
 #[test]
 fn q4k_v4_predec_bit_identical_to_v3_8r() {
@@ -43,7 +45,17 @@ fn q4k_v4_predec_bit_identical_to_v3_8r() {
     let y_v3_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
-        kernels::gemv_q4_k_m_v3_8r_pinned_tcb(&mut tcb, &model_buf, 0, w_bytes.len(), rows, cols, &x_buf, &y_v3_buf).expect("v3_8r encode");
+        kernels::gemv_q4_k_m_v3_8r_pinned_tcb(
+            &mut tcb,
+            &model_buf,
+            0,
+            w_bytes.len(),
+            rows,
+            cols,
+            &x_buf,
+            &y_v3_buf,
+        )
+        .expect("v3_8r encode");
         tcb.commit_and_wait().expect("v3_8r commit");
     }
     let y_v3 = read_f32_buf(&y_v3_buf, rows);
@@ -60,8 +72,19 @@ fn q4k_v4_predec_bit_identical_to_v3_8r() {
     let y_v4_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
-        kernels::gemv_q4_k_v4_predec_pinned_tcb(&mut tcb, &model_buf, 0, w_bytes.len(), &scales_buf, 0, rows, cols, &x_buf, &y_v4_buf)
-            .expect("v4_predec encode");
+        kernels::gemv_q4_k_v4_predec_pinned_tcb(
+            &mut tcb,
+            &model_buf,
+            0,
+            w_bytes.len(),
+            &scales_buf,
+            0,
+            rows,
+            cols,
+            &x_buf,
+            &y_v4_buf,
+        )
+        .expect("v4_predec encode");
         tcb.commit_and_wait().expect("v4_predec commit");
     }
     let y_v4 = read_f32_buf(&y_v4_buf, rows);

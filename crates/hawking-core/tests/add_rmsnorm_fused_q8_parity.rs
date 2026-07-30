@@ -29,10 +29,24 @@ fn run_one(hidden: usize, seed: u64) {
     let ref_scales_buf = ctx.new_buffer(blocks * 4);
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
-        kernels::add_rmsnorm_fused_tcb(&mut tcb, &ref_x_buf, &ref_attn_buf, &weight_buf, &ref_xnorm_buf, eps, hidden)
-            .expect("ref add_rmsnorm_fused encode");
-        kernels::quantize_f32_to_int8_per_block_tcb(&mut tcb, &ref_xnorm_buf, &ref_int8_buf, &ref_scales_buf, hidden)
-            .expect("ref quantize encode");
+        kernels::add_rmsnorm_fused_tcb(
+            &mut tcb,
+            &ref_x_buf,
+            &ref_attn_buf,
+            &weight_buf,
+            &ref_xnorm_buf,
+            eps,
+            hidden,
+        )
+        .expect("ref add_rmsnorm_fused encode");
+        kernels::quantize_f32_to_int8_per_block_tcb(
+            &mut tcb,
+            &ref_xnorm_buf,
+            &ref_int8_buf,
+            &ref_scales_buf,
+            hidden,
+        )
+        .expect("ref quantize encode");
         tcb.commit_and_wait().expect("ref commit");
     }
     let ref_x = read_f32(&ref_x_buf, hidden);
@@ -64,9 +78,18 @@ fn run_one(hidden: usize, seed: u64) {
     let f_xnorm = read_f32(&f_xnorm_buf, hidden);
     let f_int8 = read_i8(&f_int8_buf, hidden);
     let f_scales = read_f32(&f_scales_buf, blocks);
-    assert_eq!(ref_x, f_x, "x (post-add) mismatch at hidden={hidden} seed={seed}");
-    assert_eq!(ref_xnorm, f_xnorm, "x_norm mismatch at hidden={hidden} seed={seed}");
-    assert_eq!(ref_scales, f_scales, "x_norm_scales mismatch at hidden={hidden} seed={seed}");
+    assert_eq!(
+        ref_x, f_x,
+        "x (post-add) mismatch at hidden={hidden} seed={seed}"
+    );
+    assert_eq!(
+        ref_xnorm, f_xnorm,
+        "x_norm mismatch at hidden={hidden} seed={seed}"
+    );
+    assert_eq!(
+        ref_scales, f_scales,
+        "x_norm_scales mismatch at hidden={hidden} seed={seed}"
+    );
     let mut diffs = 0usize;
     let mut first_bad = None;
     for i in 0..hidden {
@@ -77,7 +100,11 @@ fn run_one(hidden: usize, seed: u64) {
             }
         }
     }
-    assert_eq!(diffs, 0, "x_norm_int8 mismatch at hidden={hidden} seed={seed}: {diffs} elems; first {:?}", first_bad);
+    assert_eq!(
+        diffs, 0,
+        "x_norm_int8 mismatch at hidden={hidden} seed={seed}: {diffs} elems; first {:?}",
+        first_bad
+    );
 }
 #[test]
 fn add_rmsnorm_fused_q8_parity_hidden_256() {

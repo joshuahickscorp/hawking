@@ -16,7 +16,12 @@ struct Reference {
 }
 fn top_k(logits: &[f32], k: usize) -> Vec<u32> {
     let mut idx: Vec<u32> = (0..logits.len() as u32).collect();
-    idx.sort_by(|&a, &b| logits[b as usize].partial_cmp(&logits[a as usize]).expect("no NaN in logits").then(a.cmp(&b)));
+    idx.sort_by(|&a, &b| {
+        logits[b as usize]
+            .partial_cmp(&logits[a as usize])
+            .expect("no NaN in logits")
+            .then(a.cmp(&b))
+    });
     idx.truncate(k);
     idx
 }
@@ -24,25 +29,45 @@ fn top_k(logits: &[f32], k: usize) -> Vec<u32> {
 fn gravity_glm_forward_matches_frozen_oracle() {
     let dir = fixtures_dir();
     let reference: Reference =
-        serde_json::from_slice(&std::fs::read(dir.join("ref_glm.json")).expect("read ref_glm")).expect("parse ref_glm");
+        serde_json::from_slice(&std::fs::read(dir.join("ref_glm.json")).expect("read ref_glm"))
+            .expect("parse ref_glm");
     let want: Vec<f32> = std::fs::read(dir.join("ref_logits.f32"))
         .expect("read ref logits")
         .chunks_exact(4)
         .map(|c| f32::from_le_bytes(c.try_into().unwrap()))
         .collect();
     let model = GravityGlm::open(&dir.join(&reference.artifact), true).expect("open GLM artifact");
-    assert_eq!(model.arch.vocab_size, want.len(), "vocab vs reference logits");
-    assert!(reference.tensors_pq > 0, "fixture exercises no packed tensor");
+    assert_eq!(
+        model.arch.vocab_size,
+        want.len(),
+        "vocab vs reference logits"
+    );
+    assert!(
+        reference.tensors_pq > 0,
+        "fixture exercises no packed tensor"
+    );
     assert!(reference.tensors > 100, "fixture is smaller than described");
     let (got, trace) = model.forward(&reference.tokens).expect("forward");
     assert_eq!(got.len(), want.len(), "logit count");
-    let max_abs = got.iter().zip(want.iter()).map(|(a, b)| (a - b).abs()).fold(0f32, f32::max);
+    let max_abs = got
+        .iter()
+        .zip(want.iter())
+        .map(|(a, b)| (a - b).abs())
+        .fold(0f32, f32::max);
     for (i, (&a, &b)) in got.iter().zip(want.iter()).enumerate() {
         let tol = 1e-3 + 1e-4 * b.abs();
-        assert!((a - b).abs() <= tol, "logit {i}: got {a}, want {b}, diff {} > tol {tol}", (a - b).abs());
+        assert!(
+            (a - b).abs() <= tol,
+            "logit {i}: got {a}, want {b}, diff {} > tol {tol}",
+            (a - b).abs()
+        );
     }
     for (i, &w) in reference.logits_head.iter().enumerate() {
-        assert!((got[i] - w).abs() <= 1e-3 + 1e-4 * w.abs(), "logits_head[{i}]: got {}, want {w}", got[i]);
+        assert!(
+            (got[i] - w).abs() <= 1e-3 + 1e-4 * w.abs(),
+            "logits_head[{i}]: got {}, want {w}",
+            got[i]
+        );
     }
     let got_top5 = top_k(&got, 5);
     assert_eq!(got_top5[0], reference.argmax, "argmax");
@@ -57,11 +82,20 @@ fn gravity_glm_forward_matches_frozen_oracle() {
 #[test]
 fn glm_arch_refuses_a_leading_indexshare_layer() {
     use hawking_core::gravity_glm::GlmArch;
-    let mut header: serde_json::Value =
-        serde_json::from_slice(&std::fs::read(fixtures_dir().join("ref_glm.json")).expect("read ref_glm")).expect("parse");
-    let model =
-        GravityGlm::open(&fixtures_dir().join(header.get("artifact").and_then(serde_json::Value::as_str).expect("artifact name")), false)
-            .expect("open");
+    let mut header: serde_json::Value = serde_json::from_slice(
+        &std::fs::read(fixtures_dir().join("ref_glm.json")).expect("read ref_glm"),
+    )
+    .expect("parse");
+    let model = GravityGlm::open(
+        &fixtures_dir().join(
+            header
+                .get("artifact")
+                .and_then(serde_json::Value::as_str)
+                .expect("artifact name"),
+        ),
+        false,
+    )
+    .expect("open");
     header = serde_json::json!({"architecture": {
         "model_type": "glm_moe_dsa",
         "num_hidden_layers": model.arch.n_layers,
@@ -88,12 +122,16 @@ fn glm_arch_refuses_a_leading_indexshare_layer() {
         "mlp_layer_types": model.arch.mlp_layer_types.clone(),
     }});
     let err = GlmArch::from_header(&header).expect_err("leading IndexShare must be refused");
-    assert!(format!("{err}").contains("no previous index"), "unexpected error: {err}");
+    assert!(
+        format!("{err}").contains("no previous index"),
+        "unexpected error: {err}"
+    );
 }
 #[test]
 fn adapter_accepts_the_synthesized_flagship_architecture() {
     use hawking_core::gravity_glm::GlmArch;
-    let raw = std::fs::read(fixtures_dir().join("flagship_arch.json")).expect("read flagship_arch.json");
+    let raw =
+        std::fs::read(fixtures_dir().join("flagship_arch.json")).expect("read flagship_arch.json");
     let header: serde_json::Value = serde_json::from_slice(&raw).expect("parse");
     let arch = GlmArch::from_header(&header).expect("adapter must accept the flagship header");
     assert_eq!(arch.n_layers, 78);
@@ -108,5 +146,12 @@ fn adapter_accepts_the_synthesized_flagship_architecture() {
     assert_eq!(full, 21, "full-indexer layers");
     assert_eq!(arch.indexer_types.len() - full, 57, "IndexShare layers");
     assert_eq!(arch.indexer_types[0], "full", "layer 0 cannot share");
-    assert_eq!(arch.mlp_layer_types.iter().filter(|t| *t == "dense").count(), 3, "first_k_dense_replace");
+    assert_eq!(
+        arch.mlp_layer_types
+            .iter()
+            .filter(|t| *t == "dense")
+            .count(),
+        3,
+        "first_k_dense_replace"
+    );
 }

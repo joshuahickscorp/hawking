@@ -17,7 +17,10 @@ pub fn argmax_f32(xs: &[f32]) -> u32 {
     let mut best = 0usize;
     let mut best_v = f32::NEG_INFINITY;
     for (i, &v) in xs.iter().enumerate() {
-        if v > best_v { best = i; best_v = v; }
+        if v > best_v {
+            best = i;
+            best_v = v;
+        }
     }
     best as u32
 }

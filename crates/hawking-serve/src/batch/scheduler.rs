@@ -524,7 +524,10 @@ mod tests {
         let scheduler = Scheduler::new(3);
         assert_eq!(scheduler.active_count(), 0);
         assert_eq!(scheduler.slots.len(), 3);
- assert!(scheduler .slots .iter() .all(|slot| slot.state == SlotState::Idle));
+        assert!(scheduler
+            .slots
+            .iter()
+            .all(|slot| slot.state == SlotState::Idle));
     }
     #[test]
     fn slot_assignment_tracks_decode_cursor() {
@@ -642,7 +645,10 @@ mod tests {
             .expect("admit long");
         let chosen = scheduler.prefill_slots_bucketed(8);
         assert_eq!(chosen.len(), 4, "should pick all 4 short-prompt slots");
- assert!( !chosen.contains(&4), "long slot must not be in the chosen batch" );
+        assert!(
+            !chosen.contains(&4),
+            "long slot must not be in the chosen batch"
+        );
     }
     #[test]
     fn bucketed_prefill_tie_break_favours_longer_bucket() {
@@ -659,7 +665,10 @@ mod tests {
         }
         let chosen = scheduler.prefill_slots_bucketed(8);
         assert_eq!(chosen.len(), 2);
- assert!( chosen.iter().all(|&id| id >= 2), "tie should choose long bucket" );
+        assert!(
+            chosen.iter().all(|&id| id >= 2),
+            "tie should choose long bucket"
+        );
     }
     #[test]
     fn bucketed_prefill_homogeneous_queue_matches_plain() {
@@ -669,7 +678,10 @@ mod tests {
                 .admit(req(4), (0..32u32).collect())
                 .expect("admit");
         }
- assert_eq!( scheduler.prefill_slots_bucketed(4), scheduler.prefill_slots(4), );
+        assert_eq!(
+            scheduler.prefill_slots_bucketed(4),
+            scheduler.prefill_slots(4),
+        );
     }
     fn prefilling(scheduler: &mut Scheduler, prompts: &[(u32, Vec<u32>)]) {
         for (id, ids) in prompts {
@@ -691,7 +703,10 @@ mod tests {
         prefilling(&mut scheduler, &[(0, a), (1, b), (2, c), (3, d)]);
         let chosen = group_by_prefix(&scheduler.slots, 4, 8);
         assert!(chosen.contains(&0) && chosen.contains(&1) && chosen.contains(&2));
- assert!( !chosen.contains(&3), "unrelated slot must not join, got {chosen:?}" );
+        assert!(
+            !chosen.contains(&3),
+            "unrelated slot must not join, got {chosen:?}"
+        );
     }
     #[test]
     fn group_by_prefix_lone_unique_request_still_admits() {
@@ -711,7 +726,11 @@ mod tests {
             ],
         );
         let chosen = group_by_prefix(&scheduler.slots, 4, 8);
- assert_eq!( chosen, vec![0, 1], "disjoint prompts should FIFO-admit both, got {chosen:?}" );
+        assert_eq!(
+            chosen,
+            vec![0, 1],
+            "disjoint prompts should FIFO-admit both, got {chosen:?}"
+        );
     }
     #[test]
     fn group_by_prefix_deterministic_tie_break_prefers_longer_then_lower_anchor() {
@@ -728,7 +747,11 @@ mod tests {
         let mut scheduler = Scheduler::new(4);
         prefilling(&mut scheduler, &[(0, x0), (1, x1), (2, y0), (3, y1)]);
         let chosen = group_by_prefix(&scheduler.slots, 2, 8);
- assert_eq!( chosen, vec![0, 1], "longer-shared-prefix group must win, got {chosen:?}" );
+        assert_eq!(
+            chosen,
+            vec![0, 1],
+            "longer-shared-prefix group must win, got {chosen:?}"
+        );
         assert_eq!(chosen, group_by_prefix(&scheduler.slots, 2, 8));
     }
     #[test]
@@ -739,6 +762,9 @@ mod tests {
                 .admit(req(4), (0..32u32).collect())
                 .expect("admit");
         }
- assert_eq!( scheduler.prefill_slots_prefix_grouped(4), scheduler.prefill_slots_bucketed(4), );
+        assert_eq!(
+            scheduler.prefill_slots_prefix_grouped(4),
+            scheduler.prefill_slots_bucketed(4),
+        );
     }
 }

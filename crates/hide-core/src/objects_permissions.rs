@@ -126,7 +126,10 @@ mod tests {
             principal: "bob".into(),
             surface: Surface::You,
         };
- assert!(matches!( p.check_read(&r), Err(ObjectError::PermissionDenied { .. }) ));
+        assert!(matches!(
+            p.check_read(&r),
+            Err(ObjectError::PermissionDenied { .. })
+        ));
     }
     #[test]
     fn wrong_surface_denied() {
@@ -135,6 +138,9 @@ mod tests {
             principal: "alice".into(),
             surface: Surface::Chat,
         };
- assert!(matches!( p.check_read(&r), Err(ObjectError::PermissionDenied { .. }) ));
+        assert!(matches!(
+            p.check_read(&r),
+            Err(ObjectError::PermissionDenied { .. })
+        ));
     }
 }

@@ -11,17 +11,15 @@ use crate::attn::mha_decode_step;
 // not perturb non-macOS builds. The concrete `MetalBackend`/`MetalRecorder`
 // are named by fully-qualified path at the call site (no extra `use`).
 use super::arch_config::{token_embd_vocab_size, ArchReader};
-use super::weights::{dequant_f16, dequant_f32, dequant_f32_opt, dequant_ref_into, tensor_ref, TensorRef};
 use super::dispatch::{gemv_f16_dispatch, rmsnorm_dispatch};
+use super::weights::{
+    dequant_f16, dequant_f32, dequant_f32_opt, dequant_ref_into, tensor_ref, TensorRef,
+};
 use crate::backend::BackendElementwise;
 use crate::cache::KvCache;
-use crate::engine::{
-    Engine, EngineConfig, GenStats, GenerateRequest, StopReason, StreamEvent,
-};
+use crate::engine::{Engine, EngineConfig, GenStats, GenerateRequest, StopReason, StreamEvent};
 use crate::gguf::{GgmlType, GgufFile};
-use crate::kernels::{
-    add_inplace, embed_lookup, gemv_f32, rope_inplace, silu_mul,
-};
+use crate::kernels::{add_inplace, embed_lookup, gemv_f32, rope_inplace, silu_mul};
 use crate::metal::MetalContext;
 use crate::profile::KernelProfile;
 use crate::quant;
@@ -1577,9 +1575,8 @@ impl Engine for QwenDense {
         // verify GEMM + greedy bonus forward. Per-user draft K is
         // HAWKING_QWEN_USER_DRAFT_K (default 4, capped at 8 — the batched
         // verify primitive's max batch).
-        let use_user_draft = use_tcb
-            && req.sampling.temperature == 0.0
-            && crate::env_on("HAWKING_QWEN_USER_DRAFT");
+        let use_user_draft =
+            use_tcb && req.sampling.temperature == 0.0 && crate::env_on("HAWKING_QWEN_USER_DRAFT");
         let user_draft_k: usize = std::env::var("HAWKING_QWEN_USER_DRAFT_K")
             .ok()
             .and_then(|v| v.parse::<usize>().ok())
@@ -8734,7 +8731,8 @@ mod bsize_verify_diag {
     #[cfg(feature = "tq")]
     #[test]
     fn tq_artifact_candidates_prefer_explicit_override() {
-        let weights = Path::new("/tmp/qwen.gguf"); let got = qwen_tq_artifact_candidates(weights, Some("/studio/artifacts/qwen.tq"));
+        let weights = Path::new("/tmp/qwen.gguf");
+        let got = qwen_tq_artifact_candidates(weights, Some("/studio/artifacts/qwen.tq"));
         assert_eq!(got[0], PathBuf::from("/studio/artifacts/qwen.tq"));
         assert!(got.contains(&PathBuf::from("/tmp/qwen.tq")));
         assert!(got.contains(&PathBuf::from("models/qwen.tq")));
@@ -8743,7 +8741,8 @@ mod bsize_verify_diag {
         let (mut t1, mut t2) = (f32::NEG_INFINITY, f32::NEG_INFINITY);
         for &x in logits {
             if x > t1 {
-                t2 = t1; t1 = x;
+                t2 = t1;
+                t1 = x;
             } else if x > t2 {
                 t2 = x;
             }
@@ -8755,30 +8754,45 @@ mod bsize_verify_diag {
     fn bsize_matrix() {
         let weights = Path::new("../../models/qwen2.5-3b-instruct-q4_k_m.gguf");
         if !weights.exists() {
-            eprintln!("bsize_matrix: skip — no weights at {weights:?}"); return;
+            eprintln!("bsize_matrix: skip — no weights at {weights:?}");
+            return;
         }
-        std::env::set_var("HAWKING_QWEN_TCB", "1"); std::env::set_var("HAWKING_QWEN_PREFIX_CACHE", "0");
-        std::env::set_var("HAWKING_QWEN_USER_DRAFT", "1"); std::env::set_var("HAWKING_QWEN_PAIR_2R_INLINE", "0");
-        let mut m = QwenDense::load(weights, EngineConfig::default()).expect("load"); let (a, b) = (30u32, 77u32); let n = 64usize;
-        let prompt: Vec<u32> = (0..n).map(|i| if i % 2 == 0 { a } else { b }).collect(); m.kv.seq_len = 0;
+        std::env::set_var("HAWKING_QWEN_TCB", "1");
+        std::env::set_var("HAWKING_QWEN_PREFIX_CACHE", "0");
+        std::env::set_var("HAWKING_QWEN_USER_DRAFT", "1");
+        std::env::set_var("HAWKING_QWEN_PAIR_2R_INLINE", "0");
+        let mut m = QwenDense::load(weights, EngineConfig::default()).expect("load");
+        let (a, b) = (30u32, 77u32);
+        let n = 64usize;
+        let prompt: Vec<u32> = (0..n).map(|i| if i % 2 == 0 { a } else { b }).collect();
+        m.kv.seq_len = 0;
         for cs in (0..n).step_by(8) {
-            let ce = (cs + 8).min(n); let pos: Vec<usize> = (cs..ce).collect();
-            m.forward_tokens_batch_tcb(&prompt[cs..ce], &pos).expect("prefill");
+            let ce = (cs + 8).min(n);
+            let pos: Vec<usize> = (cs..ce).collect();
+            m.forward_tokens_batch_tcb(&prompt[cs..ce], &pos)
+                .expect("prefill");
         }
         let (mut div_b1, mut div_bge2, mut checked) = (0usize, 0usize, 0usize);
         println!("=== B-SIZE VERIFY MATRIX: greedy vs forward_tokens_verify[0], B=1..8 ===");
         for p in (n - 28)..n {
-            let q = if p % 2 == 0 { a } else { b }; m.kv.seq_len = p; let greedy = m.forward_token_greedy_tcb(q, p).expect("greedy");
+            let q = if p % 2 == 0 { a } else { b };
+            m.kv.seq_len = p;
+            let greedy = m.forward_token_greedy_tcb(q, p).expect("greedy");
             m.kv.seq_len = p;
             let logits = m
-                .forward_tokens_batched_with_logits(&[q], &[p]).expect("logits");
-            let margin = top2_margin(&logits[0]); let (mut any_b1, mut any_bge2) = (false, false); let mut row = String::new();
+                .forward_tokens_batched_with_logits(&[q], &[p])
+                .expect("logits");
+            let margin = top2_margin(&logits[0]);
+            let (mut any_b1, mut any_bge2) = (false, false);
+            let mut row = String::new();
             for bsz in 1..=8usize {
                 m.kv.seq_len = p;
-                let vtoks: Vec<u32> = (0..bsz).map(|j| if (p + j) % 2 == 0 { a } else { b })
+                let vtoks: Vec<u32> = (0..bsz)
+                    .map(|j| if (p + j) % 2 == 0 { a } else { b })
                     .collect();
                 let vpos: Vec<usize> = (0..bsz).map(|j| p + j).collect();
-                let (preds, _) = m.forward_tokens_verify(&vtoks, &vpos).expect("verify"); let bad = preds[0] != greedy;
+                let (preds, _) = m.forward_tokens_verify(&vtoks, &vpos).expect("verify");
+                let bad = preds[0] != greedy;
                 if bad {
                     if bsz == 1 {
                         any_b1 = true;
@@ -8816,7 +8830,8 @@ mod bsize_verify_diag {
         );
     }
     fn median_ms(xs: &mut [f64]) -> f64 {
-        xs.sort_by(|a, b| a.partial_cmp(b).unwrap()); let mid = xs.len() / 2;
+        xs.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        let mid = xs.len() / 2;
         if xs.len() % 2 == 0 {
             (xs[mid - 1] + xs[mid]) * 0.5
         } else {
@@ -8828,26 +8843,44 @@ mod bsize_verify_diag {
     fn verify_cost_vs_k_curve() {
         let weights = Path::new("../../models/qwen2.5-3b-instruct-q4_k_m.gguf");
         if !weights.exists() {
-            eprintln!("verify_cost_vs_k_curve: skip — no weights at {weights:?}"); return;
+            eprintln!("verify_cost_vs_k_curve: skip — no weights at {weights:?}");
+            return;
         }
-        std::env::set_var("HAWKING_QWEN_TCB", "1"); std::env::set_var("HAWKING_QWEN_PREFIX_CACHE", "0");
-        std::env::set_var("HAWKING_QWEN_USER_DRAFT", "1"); std::env::set_var("HAWKING_QWEN_PAIR_2R_INLINE", "0");
-        std::env::set_var("HAWKING_QWEN_VOCAB_PRUNE", "32000"); std::env::set_var("HAWKING_QWEN_Q4K_LMHEAD", "1");
-        std::env::set_var("HAWKING_QWEN_FFN_DOWN_Q4K", "1"); std::env::set_var("HAWKING_QWEN_Q4K_PREDEC", "1");
+        std::env::set_var("HAWKING_QWEN_TCB", "1");
+        std::env::set_var("HAWKING_QWEN_PREFIX_CACHE", "0");
+        std::env::set_var("HAWKING_QWEN_USER_DRAFT", "1");
+        std::env::set_var("HAWKING_QWEN_PAIR_2R_INLINE", "0");
+        std::env::set_var("HAWKING_QWEN_VOCAB_PRUNE", "32000");
+        std::env::set_var("HAWKING_QWEN_Q4K_LMHEAD", "1");
+        std::env::set_var("HAWKING_QWEN_FFN_DOWN_Q4K", "1");
+        std::env::set_var("HAWKING_QWEN_Q4K_PREDEC", "1");
         std::env::remove_var("HAWKING_QWEN_VERIFY_TIMING");
-        let mut m = QwenDense::load(weights, EngineConfig::default()).expect("load"); let h = m.config.hidden;
+        let mut m = QwenDense::load(weights, EngineConfig::default()).expect("load");
+        let h = m.config.hidden;
         let fast = m.vocab_pruned_is_q4k
             && m.lm_head_pruned_buf.is_some()
-            && m.vocab_pruned.is_some() && h % 256 == 0;
-        assert!(fast, "verify_cost_vs_k_curve must exercise the production pruned-Q4K verify fast path"); let (a, b) = (30u32, 77u32); let prefill_len = 96usize; let measure_pos = 72usize;
-        let prompt: Vec<u32> = (0..prefill_len).map(|i| if i % 2 == 0 { a } else { b })
+            && m.vocab_pruned.is_some()
+            && h % 256 == 0;
+        assert!(
+            fast,
+            "verify_cost_vs_k_curve must exercise the production pruned-Q4K verify fast path"
+        );
+        let (a, b) = (30u32, 77u32);
+        let prefill_len = 96usize;
+        let measure_pos = 72usize;
+        let prompt: Vec<u32> = (0..prefill_len)
+            .map(|i| if i % 2 == 0 { a } else { b })
             .collect();
         m.kv.seq_len = 0;
         for cs in (0..prefill_len).step_by(8) {
-            let ce = (cs + 8).min(prefill_len); let pos: Vec<usize> = (cs..ce).collect();
-            m.forward_tokens_batch_tcb(&prompt[cs..ce], &pos).expect("prefill");
+            let ce = (cs + 8).min(prefill_len);
+            let pos: Vec<usize> = (cs..ce).collect();
+            m.forward_tokens_batch_tcb(&prompt[cs..ce], &pos)
+                .expect("prefill");
         }
-        const WARMUP: usize = 3; const ITERS: usize = 12; println!("=== VERIFY COST VS K CURVE ===");
+        const WARMUP: usize = 3;
+        const ITERS: usize = 12;
+        println!("=== VERIFY COST VS K CURVE ===");
         println!(
             "fast_path=pruned-q4k prefill_len={prefill_len} measure_pos={measure_pos} warmup={WARMUP} iters={ITERS}"
         );
@@ -8855,7 +8888,8 @@ mod bsize_verify_diag {
             "B,greedy_seq_ms,verify_ms,verify/greedy,ideal_speedup,greedy_ms_per_tok,verify_ms_per_tok"
         );
         for bsz in 1..=8usize {
-            let vtoks: Vec<u32> = (0..bsz).map(|j| if (measure_pos + j) % 2 == 0 { a } else { b })
+            let vtoks: Vec<u32> = (0..bsz)
+                .map(|j| if (measure_pos + j) % 2 == 0 { a } else { b })
                 .collect();
             let vpos: Vec<usize> = (0..bsz).map(|j| measure_pos + j).collect();
             for _ in 0..WARMUP {
@@ -8863,19 +8897,27 @@ mod bsize_verify_diag {
                 for (&tok, &pos) in vtoks.iter().zip(vpos.iter()) {
                     let _ = m.forward_token_greedy_tcb(tok, pos).expect("warm greedy");
                 }
-                m.kv.seq_len = measure_pos; let _ = m.forward_tokens_verify(&vtoks, &vpos).expect("warm verify");
+                m.kv.seq_len = measure_pos;
+                let _ = m.forward_tokens_verify(&vtoks, &vpos).expect("warm verify");
             }
-            let mut greedy_ms = Vec::with_capacity(ITERS); let mut verify_ms = Vec::with_capacity(ITERS);
+            let mut greedy_ms = Vec::with_capacity(ITERS);
+            let mut verify_ms = Vec::with_capacity(ITERS);
             for _ in 0..ITERS {
-                m.kv.seq_len = measure_pos; let t0 = std::time::Instant::now();
+                m.kv.seq_len = measure_pos;
+                let t0 = std::time::Instant::now();
                 for (&tok, &pos) in vtoks.iter().zip(vpos.iter()) {
                     let _ = m.forward_token_greedy_tcb(tok, pos).expect("greedy");
                 }
-                greedy_ms.push(t0.elapsed().as_secs_f64() * 1e3); m.kv.seq_len = measure_pos;
-                let t1 = std::time::Instant::now(); let _ = m.forward_tokens_verify(&vtoks, &vpos).expect("verify");
+                greedy_ms.push(t0.elapsed().as_secs_f64() * 1e3);
+                m.kv.seq_len = measure_pos;
+                let t1 = std::time::Instant::now();
+                let _ = m.forward_tokens_verify(&vtoks, &vpos).expect("verify");
                 verify_ms.push(t1.elapsed().as_secs_f64() * 1e3);
             }
-            let g = median_ms(&mut greedy_ms); let v = median_ms(&mut verify_ms); let ratio = v / g; let ideal_speedup = g / v;
+            let g = median_ms(&mut greedy_ms);
+            let v = median_ms(&mut verify_ms);
+            let ratio = v / g;
+            let ideal_speedup = g / v;
             println!(
                 "{bsz},{g:.3},{v:.3},{ratio:.3},{ideal_speedup:.3},{:.3},{:.3}",
                 g / bsz as f64,
@@ -8890,42 +8932,66 @@ mod bsize_verify_diag {
         let weights = Path::new("../../models/Qwen2.5-3B-Instruct-Q4_K_M.gguf");
         let tq = Path::new("../../models/Qwen2.5-3B-Instruct-Q4_K_M.tq");
         if !weights.exists() || !tq.exists() {
-            eprintln!("qwen_tq_serves_ffn_on_gpu: skip — need {weights:?} + {tq:?}"); return;
+            eprintln!("qwen_tq_serves_ffn_on_gpu: skip — need {weights:?} + {tq:?}");
+            return;
         }
-        std::env::set_var("HAWKING_QWEN_TQ", "1"); std::env::remove_var("HAWKING_TQ_RESIDUAL"); std::env::remove_var("HAWKING_QWEN_TQ_CPU");
+        std::env::set_var("HAWKING_QWEN_TQ", "1");
+        std::env::remove_var("HAWKING_TQ_RESIDUAL");
+        std::env::remove_var("HAWKING_QWEN_TQ_CPU");
         let mut m = QwenDense::load(weights, EngineConfig::default()).expect("load");
         if m.metal_ctx.is_none() {
-            eprintln!("qwen_tq_serves_ffn_on_gpu: skip — no Metal device"); return;
+            eprintln!("qwen_tq_serves_ffn_on_gpu: skip — no Metal device");
+            return;
         }
-        m.ensure_tq_cache().expect("ensure_tq_cache"); let map = m.tq_ffn.as_ref().expect("tq_ffn built (artifact present)");
-        assert!(!map.is_empty(), "TQ artifact carried no FFN/attn projections"); let n_gpu = map.values().filter(|s| s.gpu.is_some()).count();
-        assert!(n_gpu > 0, "no TQ projection uploaded to GPU — GAP 2 GPU serve not engaged (dims 256-aligned?)");
+        m.ensure_tq_cache().expect("ensure_tq_cache");
+        let map = m.tq_ffn.as_ref().expect("tq_ffn built (artifact present)");
+        assert!(
+            !map.is_empty(),
+            "TQ artifact carried no FFN/attn projections"
+        );
+        let n_gpu = map.values().filter(|s| s.gpu.is_some()).count();
+        assert!(
+            n_gpu > 0,
+            "no TQ projection uploaded to GPU — GAP 2 GPU serve not engaged (dims 256-aligned?)"
+        );
         println!(
             "[qwen_tq_gpu] {} TQ projections, {} GPU-resident",
             map.len(),
             n_gpu
-        ); let ctx = m.metal_ctx.as_ref().unwrap(); let (_, s) = map.iter().find(|(_, s)| s.gpu.is_some()).unwrap();
-        let cols = s.in_features; let rows = s.out_features;
-        let x: Vec<f32> = (0..cols).map(|i| ((i as f32) * 0.013).sin() * 0.3)
+        );
+        let ctx = m.metal_ctx.as_ref().unwrap();
+        let (_, s) = map.iter().find(|(_, s)| s.gpu.is_some()).unwrap();
+        let cols = s.in_features;
+        let rows = s.out_features;
+        let x: Vec<f32> = (0..cols)
+            .map(|i| ((i as f32) * 0.013).sin() * 0.3)
             .collect();
         use crate::metal::TokenCommandBuffer;
-        let gpu = s.gpu.as_ref().unwrap(); let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(&x));
-        let out_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>()); let mut tcb = TokenCommandBuffer::new(ctx);
-        crate::kernels::strand_bitslice_gemv_tcb(&mut tcb, gpu, &x_buf, 0, &out_buf, 0).expect("gpu tq gemv");
+        let gpu = s.gpu.as_ref().unwrap();
+        let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(&x));
+        let out_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
+        let mut tcb = TokenCommandBuffer::new(ctx);
+        crate::kernels::strand_bitslice_gemv_tcb(&mut tcb, gpu, &x_buf, 0, &out_buf, 0)
+            .expect("gpu tq gemv");
         tcb.commit_and_wait().expect("commit");
         let y_gpu = {
             let p = out_buf.contents() as *const f32;
             unsafe { std::slice::from_raw_parts(p, rows) }.to_vec()
         };
-        let y_cpu = crate::tq::matvec_rht(&s.q12, &x, rows, cols, s.rht_mode, s.rht_seed); let mut max_rel = 0.0f32;
+        let y_cpu = crate::tq::matvec_rht(&s.q12, &x, rows, cols, s.rht_mode, s.rht_seed);
+        let mut max_rel = 0.0f32;
         for o in 0..rows {
-            let abs = (y_gpu[o] - y_cpu[o]).abs(); max_rel = max_rel.max(abs / (1.0 + y_cpu[o].abs()));
+            let abs = (y_gpu[o] - y_cpu[o]).abs();
+            max_rel = max_rel.max(abs / (1.0 + y_cpu[o].abs()));
         }
         println!(
             "[qwen_tq_gpu] {rows}x{cols} rht_mode={:?}: GPU vs CPU max_rel={max_rel:.3e}",
             s.rht_mode
         );
-        assert!(max_rel <= 2e-3, "Qwen TQ GPU serve diverged from CPU matvec_rht: max_rel {max_rel:.3e} > 2e-3");
+        assert!(
+            max_rel <= 2e-3,
+            "Qwen TQ GPU serve diverged from CPU matvec_rht: max_rel {max_rel:.3e} > 2e-3"
+        );
     }
     #[cfg(all(feature = "tq", target_os = "macos"))]
     #[test]
@@ -8936,29 +9002,41 @@ mod bsize_verify_diag {
         let weights = Path::new("../../models/Qwen2.5-3B-Instruct-Q4_K_M.gguf");
         let tq = Path::new("../../models/Qwen2.5-3B-Instruct-Q4_K_M.tq");
         if !weights.exists() || !tq.exists() {
-            eprintln!("qwen_tq_residual: skip — need {weights:?} + {tq:?}"); return;
+            eprintln!("qwen_tq_residual: skip — need {weights:?} + {tq:?}");
+            return;
         }
-        std::env::set_var("HAWKING_QWEN_TQ", "1"); std::env::remove_var("HAWKING_TQ_RESIDUAL");
+        std::env::set_var("HAWKING_QWEN_TQ", "1");
+        std::env::remove_var("HAWKING_TQ_RESIDUAL");
         let mut m = QwenDense::load(weights, EngineConfig::default()).expect("load");
         if m.metal_ctx.is_none() {
-            eprintln!("qwen_tq_residual: skip — no Metal device"); return;
+            eprintln!("qwen_tq_residual: skip — no Metal device");
+            return;
         }
-        m.ensure_tq_cache().expect("ensure_tq_cache"); let map = m.tq_ffn.as_ref().expect("tq_ffn built");
+        m.ensure_tq_cache().expect("ensure_tq_cache");
+        let map = m.tq_ffn.as_ref().expect("tq_ffn built");
         let Some((_, s)) = map.iter().find(|(_, s)| s.gpu.is_some()) else {
-            eprintln!("qwen_tq_residual: skip — no GPU-resident TQ tensor"); return;
+            eprintln!("qwen_tq_residual: skip — no GPU-resident TQ tensor");
+            return;
         };
-        let ctx = m.metal_ctx.as_ref().unwrap(); let (rows, cols) = (s.out_features, s.in_features);
-        let inv = crate::tq::q12_to_f32(); let base_w: Vec<f32> = s.q12.iter().map(|&q| q as f32 * inv).collect();
+        let ctx = m.metal_ctx.as_ref().unwrap();
+        let (rows, cols) = (s.out_features, s.in_features);
+        let inv = crate::tq::q12_to_f32();
+        let base_w: Vec<f32> = s.q12.iter().map(|&q| q as f32 * inv).collect();
         let target: Vec<f32> = base_w
             .iter()
-            .enumerate().map(|(i, &w)| w + 0.02 * ((i as f32) * 0.0031).sin()) .collect();
-        let resid_in: Vec<f32> = target.iter().zip(&base_w).map(|(t, b)| t - b).collect(); let cfg_r = TrellisConfig::for_bpw(2.0);
-        let enc_r = encode_tensor(&resid_in, &cfg_r); let res_q12 = strand_quant::decode::decode_tensor_fixed(&enc_r, &cfg_r);
+            .enumerate()
+            .map(|(i, &w)| w + 0.02 * ((i as f32) * 0.0031).sin())
+            .collect();
+        let resid_in: Vec<f32> = target.iter().zip(&base_w).map(|(t, b)| t - b).collect();
+        let cfg_r = TrellisConfig::for_bpw(2.0);
+        let enc_r = encode_tensor(&resid_in, &cfg_r);
+        let res_q12 = strand_quant::decode::decode_tensor_fixed(&enc_r, &cfg_r);
         let res_w: Vec<f32> = res_q12.iter().map(|&q| q as f32 * inv).collect();
         let w_sum: Vec<f32> = base_w.iter().zip(&res_w).map(|(a, b)| a + b).collect();
         let res_prep = {
             let entries = crate::tq_gpu::bake_bitslice_entries(&enc_r, &cfg_r).expect("bake res");
-            let compact_entries = crate::tq_gpu::bake_compact_bitslice_entries(&enc_r, &cfg_r).expect("compact bake res");
+            let compact_entries = crate::tq_gpu::bake_compact_bitslice_entries(&enc_r, &cfg_r)
+                .expect("compact bake res");
             crate::tq_gpu::TqPreparedGpu {
                 payload: enc_r.bits.clone(),
                 entries,
@@ -8975,7 +9053,8 @@ mod bsize_verify_diag {
             }
         };
         let res_gpu = res_prep.upload_to_gpu(ctx).expect("upload res");
-        let x: Vec<f32> = (0..cols).map(|i| ((i as f32) * 0.017).cos() * 0.4)
+        let x: Vec<f32> = (0..cols)
+            .map(|i| ((i as f32) * 0.017).cos() * 0.4)
             .collect();
         let mut y_ref = vec![0.0f32; rows];
         for o in 0..rows {
@@ -8985,10 +9064,14 @@ mod bsize_verify_diag {
             }
             y_ref[o] = acc;
         }
-        let gpu = s.gpu.as_ref().unwrap(); let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(&x));
-        let out_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>()); let mut tcb = TokenCommandBuffer::new(ctx);
+        let gpu = s.gpu.as_ref().unwrap();
+        let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(&x));
+        let out_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
+        let mut tcb = TokenCommandBuffer::new(ctx);
         crate::kernels::strand_bitslice_gemv_tcb(&mut tcb, gpu, &x_buf, 0, &out_buf, 0).unwrap();
-        crate::kernels::strand_bitslice_gemv_tcb_accum(&mut tcb, &res_gpu, &x_buf, 0, &out_buf, 0).unwrap(); tcb.commit_and_wait().unwrap();
+        crate::kernels::strand_bitslice_gemv_tcb_accum(&mut tcb, &res_gpu, &x_buf, 0, &out_buf, 0)
+            .unwrap();
+        tcb.commit_and_wait().unwrap();
         let y_gpu = {
             let p = out_buf.contents() as *const f32;
             unsafe { std::slice::from_raw_parts(p, rows) }.to_vec()
@@ -9000,7 +9083,10 @@ mod bsize_verify_diag {
         println!(
             "[qwen_tq_residual] {rows}x{cols}: two-pass GPU vs decoded-sum max_rel={max_rel:.3e}"
         );
-        assert!(max_rel <= 2e-3, "Qwen residual two-pass GPU serve diverged from decoded-sum: max_rel {max_rel:.3e}");
+        assert!(
+            max_rel <= 2e-3,
+            "Qwen residual two-pass GPU serve diverged from decoded-sum: max_rel {max_rel:.3e}"
+        );
     }
     #[cfg(all(feature = "tq", target_os = "macos"))]
     #[test]
@@ -9009,47 +9095,67 @@ mod bsize_verify_diag {
         let weights = Path::new("../../models/Qwen2.5-3B-Instruct-Q4_K_M.gguf");
         let tq = Path::new("../../models/Qwen2.5-3B-Instruct-Q4_K_M.tq");
         if !weights.exists() || !tq.exists() {
-            eprintln!("qwen_tq_arena_dispatch: skip — need {weights:?} + {tq:?}"); return;
+            eprintln!("qwen_tq_arena_dispatch: skip — need {weights:?} + {tq:?}");
+            return;
         }
-        std::env::set_var("HAWKING_QWEN_TQ", "1"); std::env::remove_var("HAWKING_TQ_RESIDUAL"); std::env::remove_var("HAWKING_QWEN_TQ_CPU");
+        std::env::set_var("HAWKING_QWEN_TQ", "1");
+        std::env::remove_var("HAWKING_TQ_RESIDUAL");
+        std::env::remove_var("HAWKING_QWEN_TQ_CPU");
         let mut m = QwenDense::load(weights, EngineConfig::default()).expect("load");
         if m.metal_ctx.is_none() {
-            eprintln!("qwen_tq_arena_dispatch: skip — no Metal device"); return;
+            eprintln!("qwen_tq_arena_dispatch: skip — no Metal device");
+            return;
         }
-        m.ensure_tq_cache().expect("ensure_tq_cache"); let map = m.tq_ffn.as_ref().expect("tq_ffn built");
+        m.ensure_tq_cache().expect("ensure_tq_cache");
+        let map = m.tq_ffn.as_ref().expect("tq_ffn built");
         let Some((_, s)) = map.iter().find(|(_, s)| s.gpu.is_some()) else {
-            eprintln!("qwen_tq_arena_dispatch: skip — no GPU-resident TQ tensor"); return;
+            eprintln!("qwen_tq_arena_dispatch: skip — no GPU-resident TQ tensor");
+            return;
         };
-        let ctx = m.metal_ctx.as_ref().unwrap(); let gpu = s.gpu.as_ref().unwrap();
-        let (rows, cols) = (s.out_features, s.in_features); let f = std::mem::size_of::<f32>();
-        let x: Vec<f32> = (0..cols).map(|i| ((i as f32) * 0.011).cos() * 0.37)
+        let ctx = m.metal_ctx.as_ref().unwrap();
+        let gpu = s.gpu.as_ref().unwrap();
+        let (rows, cols) = (s.out_features, s.in_features);
+        let f = std::mem::size_of::<f32>();
+        let x: Vec<f32> = (0..cols)
+            .map(|i| ((i as f32) * 0.011).cos() * 0.37)
             .collect();
-        let x_buf1 = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(&x)); let out_buf1 = ctx.new_buffer(rows * f);
+        let x_buf1 = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(&x));
+        let out_buf1 = ctx.new_buffer(rows * f);
         let mut tcb1 = TokenCommandBuffer::new(ctx);
-        crate::kernels::strand_bitslice_gemv_tcb(&mut tcb1, gpu, &x_buf1, 0, &out_buf1, 0).expect("one-shot gemv");
+        crate::kernels::strand_bitslice_gemv_tcb(&mut tcb1, gpu, &x_buf1, 0, &out_buf1, 0)
+            .expect("one-shot gemv");
         tcb1.commit_and_wait().expect("commit one-shot");
         let y_oneshot = {
             let p = out_buf1.contents() as *const f32;
             unsafe { std::slice::from_raw_parts(p, rows) }.to_vec()
         };
-        let x_pad = 256usize; let out_pad = 512usize;
-        let x_buf2 = ctx.new_buffer((cols + x_pad) * f); let out_buf2 = ctx.new_buffer((rows + out_pad) * f);
+        let x_pad = 256usize;
+        let out_pad = 512usize;
+        let x_buf2 = ctx.new_buffer((cols + x_pad) * f);
+        let out_buf2 = ctx.new_buffer((rows + out_pad) * f);
         let junk_buf = ctx.new_buffer(rows * f);
         unsafe {
-            let dst = (x_buf2.contents() as *mut f32).add(x_pad); std::ptr::copy_nonoverlapping(x.as_ptr(), dst, cols);
+            let dst = (x_buf2.contents() as *mut f32).add(x_pad);
+            std::ptr::copy_nonoverlapping(x.as_ptr(), dst, cols);
         }
-        let x_off = x_pad * f; let out_off = out_pad * f; let mut tcb2 = TokenCommandBuffer::new(ctx);
-        crate::kernels::strand_bitslice_gemv_tcb(&mut tcb2, gpu, &x_buf2, x_off, &junk_buf, 0).expect("arena junk-pre gemv");
+        let x_off = x_pad * f;
+        let out_off = out_pad * f;
+        let mut tcb2 = TokenCommandBuffer::new(ctx);
+        crate::kernels::strand_bitslice_gemv_tcb(&mut tcb2, gpu, &x_buf2, x_off, &junk_buf, 0)
+            .expect("arena junk-pre gemv");
         crate::kernels::strand_bitslice_gemv_tcb(
             &mut tcb2, gpu, &x_buf2, x_off, &out_buf2, out_off,
-        ).expect("arena gemv");
-        crate::kernels::strand_bitslice_gemv_tcb(&mut tcb2, gpu, &x_buf2, x_off, &junk_buf, 0).expect("arena junk-post gemv");
+        )
+        .expect("arena gemv");
+        crate::kernels::strand_bitslice_gemv_tcb(&mut tcb2, gpu, &x_buf2, x_off, &junk_buf, 0)
+            .expect("arena junk-post gemv");
         tcb2.commit_and_wait().expect("commit arena");
         let y_arena = {
             let p = unsafe { (out_buf2.contents() as *const f32).add(out_pad) };
             unsafe { std::slice::from_raw_parts(p, rows) }.to_vec()
         };
-        let mut max_abs = 0.0f32; let mut n_diff = 0usize;
+        let mut max_abs = 0.0f32;
+        let mut n_diff = 0usize;
         for o in 0..rows {
             let d = (y_arena[o] - y_oneshot[o]).abs();
             if d != 0.0 {
@@ -9073,33 +9179,49 @@ mod bsize_verify_diag {
         let weights = Path::new("../../models/Qwen2.5-3B-Instruct-Q4_K_M.gguf");
         let tq = Path::new("../../models/Qwen2.5-3B-Instruct-Q4_K_M.tq");
         if !weights.exists() || !tq.exists() {
-            eprintln!("qwen_tq_arena_decode: skip — need {weights:?} + {tq:?}"); return;
+            eprintln!("qwen_tq_arena_decode: skip — need {weights:?} + {tq:?}");
+            return;
         }
-        std::env::remove_var("HAWKING_TQ_RESIDUAL"); std::env::remove_var("HAWKING_QWEN_TQ_CPU");
+        std::env::remove_var("HAWKING_TQ_RESIDUAL");
+        std::env::remove_var("HAWKING_QWEN_TQ_CPU");
         let run = |m: &mut QwenDense| -> Vec<f32> {
-            m.kv.seq_len = 0; let toks = [30u32, 77, 30, 77, 88, 12]; let mut last = vec![];
+            m.kv.seq_len = 0;
+            let toks = [30u32, 77, 30, 77, 88, 12];
+            let mut last = vec![];
             for (i, &t) in toks.iter().enumerate() {
                 last = m.dump_x_norm_after_forward(t, i).expect("forward");
             }
             last
         };
-        std::env::set_var("HAWKING_QWEN_TQ", "1"); let mut m_tq = QwenDense::load(weights, EngineConfig::default()).expect("load tq");
+        std::env::set_var("HAWKING_QWEN_TQ", "1");
+        let mut m_tq = QwenDense::load(weights, EngineConfig::default()).expect("load tq");
         if m_tq.metal_ctx.is_none() {
-            eprintln!("qwen_tq_arena_decode: skip — no Metal device"); return;
+            eprintln!("qwen_tq_arena_decode: skip — no Metal device");
+            return;
         }
         m_tq.ensure_tq_cache().expect("ensure_tq_cache");
         let n_gpu = m_tq
-            .tq_ffn .as_ref().map(|m| m.values().filter(|s| s.gpu.is_some()).count()).unwrap_or(0);
+            .tq_ffn
+            .as_ref()
+            .map(|m| m.values().filter(|s| s.gpu.is_some()).count())
+            .unwrap_or(0);
         if n_gpu == 0 {
-            eprintln!("qwen_tq_arena_decode: skip — no GPU-resident TQ tensor"); return;
+            eprintln!("qwen_tq_arena_decode: skip — no GPU-resident TQ tensor");
+            return;
         }
-        let h_tq_a = run(&mut m_tq); let h_tq_b = run(&mut m_tq); std::env::remove_var("HAWKING_QWEN_TQ");
-        let mut m_q4 = QwenDense::load(weights, EngineConfig::default()).expect("load q4"); let h_q4 = run(&mut m_q4);
-        assert_eq!(h_tq_a.len(), h_q4.len()); let det_diff = h_tq_a.iter().zip(&h_tq_b).filter(|(x, y)| x != y).count();
+        let h_tq_a = run(&mut m_tq);
+        let h_tq_b = run(&mut m_tq);
+        std::env::remove_var("HAWKING_QWEN_TQ");
+        let mut m_q4 = QwenDense::load(weights, EngineConfig::default()).expect("load q4");
+        let h_q4 = run(&mut m_q4);
+        assert_eq!(h_tq_a.len(), h_q4.len());
+        let det_diff = h_tq_a.iter().zip(&h_tq_b).filter(|(x, y)| x != y).count();
         assert_eq!(
             det_diff, 0,
             "TQ arena decode not deterministic: {det_diff} hidden elems differ run-to-run"
-        ); let mut max_abs = 0.0f32; let mut n_diff = 0usize;
+        );
+        let mut max_abs = 0.0f32;
+        let mut n_diff = 0usize;
         for (a, b) in h_tq_a.iter().zip(&h_q4) {
             let d = (a - b).abs();
             if d > 1e-6 {
@@ -9126,29 +9248,42 @@ mod bsize_verify_diag {
         let weights = Path::new("../../models/Qwen2.5-3B-Instruct-Q4_K_M.gguf");
         let tq = Path::new("../../models/Qwen2.5-3B-Instruct-Q4_K_M.tq");
         if !weights.exists() || !tq.exists() {
-            eprintln!("qwen_tq_arena_decode_tps: skip — need {weights:?} + {tq:?}"); return;
+            eprintln!("qwen_tq_arena_decode_tps: skip — need {weights:?} + {tq:?}");
+            return;
         }
-        std::env::set_var("HAWKING_QWEN_TQ", "1"); std::env::remove_var("HAWKING_TQ_RESIDUAL"); std::env::remove_var("HAWKING_QWEN_TQ_CPU");
+        std::env::set_var("HAWKING_QWEN_TQ", "1");
+        std::env::remove_var("HAWKING_TQ_RESIDUAL");
+        std::env::remove_var("HAWKING_QWEN_TQ_CPU");
         let mut m = QwenDense::load(weights, EngineConfig::default()).expect("load");
         if m.metal_ctx.is_none() {
-            eprintln!("qwen_tq_arena_decode_tps: skip — no Metal device"); return;
+            eprintln!("qwen_tq_arena_decode_tps: skip — no Metal device");
+            return;
         }
         m.ensure_tq_cache().expect("ensure_tq_cache");
         if m.tq_ffn
-            .as_ref().map(|m| m.values().filter(|s| s.gpu.is_some()).count()).unwrap_or(0)
+            .as_ref()
+            .map(|m| m.values().filter(|s| s.gpu.is_some()).count())
+            .unwrap_or(0)
             == 0
         {
-            eprintln!("qwen_tq_arena_decode_tps: skip — no GPU-resident TQ tensor"); return;
+            eprintln!("qwen_tq_arena_decode_tps: skip — no GPU-resident TQ tensor");
+            return;
         }
-        m.kv.seq_len = 0; let mut pos = 0usize;
+        m.kv.seq_len = 0;
+        let mut pos = 0usize;
         for &t in &[30u32, 77, 30, 77, 88, 12, 99, 7] {
-            let _ = m.forward_token_greedy_tcb(t, pos).expect("warm"); pos += 1;
+            let _ = m.forward_token_greedy_tcb(t, pos).expect("warm");
+            pos += 1;
         }
-        const N: usize = 64; let mut tok = 7u32; let t0 = std::time::Instant::now();
+        const N: usize = 64;
+        let mut tok = 7u32;
+        let t0 = std::time::Instant::now();
         for _ in 0..N {
-            tok = m.forward_token_greedy_tcb(tok, pos).expect("decode"); pos += 1;
+            tok = m.forward_token_greedy_tcb(tok, pos).expect("decode");
+            pos += 1;
         }
-        let dt = t0.elapsed().as_secs_f64(); let tps = N as f64 / dt;
+        let dt = t0.elapsed().as_secs_f64();
+        let tps = N as f64 / dt;
         println!(
             "[qwen_tq_arena_decode_tps] fused TQ decode: {tps:.1} tok/s ({N} toks in {dt:.3}s)"
         );

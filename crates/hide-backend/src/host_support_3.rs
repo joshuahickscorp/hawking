@@ -1,7 +1,9 @@
 use crate::approval::{ApprovalDecision, ApprovalHub};
 use crate::commands::CommandRouter;
 use crate::connectors::{register_backend_connectors, ConnectorRegistry, ConnectorStatus};
+use crate::initialize::{ClientCapabilities, ClientInfo, ConnectionRegistry, InitializeResponse};
 use crate::interrupt::InterruptHub;
+use crate::live_thread::LiveThread;
 use crate::memory::{
     MemoryDraft, MemoryLedger, MemoryRecord, MemoryRevalidation, MemoryScope, MemoryStatus,
     PrivacyClass, RevalidateTarget,
@@ -13,13 +15,11 @@ use crate::process::{ProcessState, ProcessSupervisor, StartSpec};
 use crate::replay::BackendReplayService;
 use crate::rewind::{self, CheckpointCoverage, FileChange, ForkPoint, RewindTarget, StateRef};
 use crate::security::SecurityServices;
-use crate::initialize::{ClientCapabilities, ClientInfo, ConnectionRegistry, InitializeResponse};
-use crate::live_thread::LiveThread;
 use crate::services::{
     BackendCapabilities, BackendServices, Budget, CheckpointRecord, CheckpointStore,
-    EnvironmentNode, EnvironmentSwitch, GoalOutcome, GoalRecord, GoalStatus, GoalStore, GoalVerdict,
-    JobRecord, JobStatus, JobStore, RepoNode, SharedBackend, Trigger, TriggerEvent, TrustState,
-    WorkspaceEdge, WorkspaceEdgeKind, WorkspaceGraph, WorkspaceStore,
+    EnvironmentNode, EnvironmentSwitch, GoalOutcome, GoalRecord, GoalStatus, GoalStore,
+    GoalVerdict, JobRecord, JobStatus, JobStore, RepoNode, SharedBackend, Trigger, TriggerEvent,
+    TrustState, WorkspaceEdge, WorkspaceEdgeKind, WorkspaceGraph, WorkspaceStore,
 };
 use crate::supervisor::{RuntimeSupervisor, SupervisorConfig};
 use crate::surfaces::SurfaceGraphService;
@@ -46,6 +46,7 @@ use hide_kernel::{AgentKernel, Grounding};
 // as `hide_kernel::verify_plane::*` at their (few) use sites so the function-local
 // `hide_kernel::verify::oracle::*` imports in the goal path and the tests keep
 // their meaning; only the non-colliding types are imported here.
+use super::*;
 use hide_kernel::verify_plane::{
     Finding, GateDecision, ReviewRole, ReviewRoleProfile, SourceFile, StaticAnalysisOracle,
     TieredVerdict, VerificationReceipt, VerificationTier,
@@ -54,8 +55,6 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
-use super::*;
-
 
 /// What is parked at the security gate awaiting an `approve_gate` / `deny_gate` decision.
 #[derive(Debug, Clone, PartialEq)]
@@ -327,4 +326,3 @@ pub(crate) fn count_check(name: &str, count: usize) -> HealthCheck {
         detail: count.to_string(),
     }
 }
-

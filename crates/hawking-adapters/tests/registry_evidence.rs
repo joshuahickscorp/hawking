@@ -56,7 +56,10 @@ fn level_without_evidence_fails() {
         abi: empty_abi(),
     };
     let err = validate_family_evidence(&root, &bogus).unwrap_err();
- assert!( err.contains("requires at least one named evidence"), "got: {err}" );
+    assert!(
+        err.contains("requires at least one named evidence"),
+        "got: {err}"
+    );
 }
 #[test]
 fn level_with_wrong_evidence_kind_fails() {
@@ -102,7 +105,7 @@ fn source_header_grade_requires_source_header_kind() {
         abi: empty_abi(),
     };
     let err = validate_family_evidence(&root, &d).unwrap_err();
- assert!( err.contains("source_header"), "got: {err}" );
+    assert!(err.contains("source_header"), "got: {err}");
 }
 #[test]
 fn real_tensor_decode_grade_requires_matching_kind() {
@@ -125,7 +128,7 @@ fn real_tensor_decode_grade_requires_matching_kind() {
         abi: empty_abi(),
     };
     let err = validate_family_evidence(&root, &d).unwrap_err();
- assert!( err.contains("real_tensor_decode"), "got: {err}" );
+    assert!(err.contains("real_tensor_decode"), "got: {err}");
 }
 #[test]
 fn production_always_fails() {
@@ -194,7 +197,10 @@ fn incomplete_abi_field_fails() {
         abi,
     };
     let err = validate_family_evidence(&root, &d).unwrap_err();
- assert!( err.contains("tokenizer") || err.contains("ABI field"), "got: {err}" );
+    assert!(
+        err.contains("tokenizer") || err.contains("ABI field"),
+        "got: {err}"
+    );
 }
 #[test]
 fn no_family_is_production_in_builtin() {

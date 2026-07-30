@@ -1,7 +1,7 @@
-use std::fs;
-use std::path::{Path, PathBuf};
 use hide_backend::compat::settings::{Decision, Scope};
 use hide_backend::compat::{claude_md, mcp, settings, CompatConfig, Layout};
+use std::fs;
+use std::path::{Path, PathBuf};
 fn write(path: &Path, contents: &str) {
     if let Some(parent) = path.parent() {
         fs::create_dir_all(parent).unwrap();
@@ -17,8 +17,7 @@ struct Fixture {
 }
 impl Fixture {
     fn layout(&self) -> Layout {
-        Layout::new(&self.root, &self.cwd, &self.home)
-            .with_managed_settings(&self.managed_settings)
+        Layout::new(&self.root, &self.cwd, &self.home).with_managed_settings(&self.managed_settings)
     }
 }
 fn build_fixture() -> Fixture {
@@ -43,11 +42,11 @@ fn build_fixture() -> Fixture {
         ),
     );
     write(&root.join("CLAUDE.local.md"), "Root local override.\n");
-    write(&root.join("service").join("CLAUDE.md"), "# Service memory\n");
     write(
-        &cwd.join("CLAUDE.md"),
-        "# API memory (most specific)\n",
+        &root.join("service").join("CLAUDE.md"),
+        "# Service memory\n",
     );
+    write(&cwd.join("CLAUDE.md"), "# API memory (most specific)\n");
     write(
         &cwd.join("v2").join("CLAUDE.md"),
         "# API v2 subtree memory\n",
@@ -117,7 +116,11 @@ fn build_fixture() -> Fixture {
         ),
     );
     write(
-        &root.join(".claude").join("skills").join("deploy").join("SKILL.md"),
+        &root
+            .join(".claude")
+            .join("skills")
+            .join("deploy")
+            .join("SKILL.md"),
         concat!(
             "---\n",
             "name: deploy\n",
@@ -168,11 +171,23 @@ fn resolved_instruction_order_is_root_first_more_specific_last() {
         fx.cwd.join("CLAUDE.md"),
     ];
     assert_eq!(launch, expected, "launch memory order");
-    let lazy: Vec<PathBuf> = cfg.memory.lazy_entries().iter().map(|e| e.path.clone()).collect();
+    let lazy: Vec<PathBuf> = cfg
+        .memory
+        .lazy_entries()
+        .iter()
+        .map(|e| e.path.clone())
+        .collect();
     assert_eq!(lazy, vec![fx.cwd.join("v2").join("CLAUDE.md")]);
-    assert!(!cfg.memory .entries .iter() .any(|e| e.path.ends_with("excluded/CLAUDE.md")));
+    assert!(!cfg
+        .memory
+        .entries
+        .iter()
+        .any(|e| e.path.ends_with("excluded/CLAUDE.md")));
     let full = cfg.launch_instruction_order();
-    assert_eq!(full.last().unwrap(), &fx.root.join(".claude").join("rules").join("general.md"));
+    assert_eq!(
+        full.last().unwrap(),
+        &fx.root.join(".claude").join("rules").join("general.md")
+    );
     assert!(!full.iter().any(|p| p.ends_with("rules/rust.md")));
 }
 #[test]
@@ -186,15 +201,30 @@ fn html_comment_stripped_and_imports_inlined_with_depth_cutoff_and_fence_skip() 
         .find(|e| e.path == fx.root.join("CLAUDE.md"))
         .expect("root memory entry");
     let injected = &root_entry.injected;
-    assert!(!injected.contains("must be stripped"), "html comment stripped");
+    assert!(
+        !injected.contains("must be stripped"),
+        "html comment stripped"
+    );
     assert!(injected.contains("Visible root line."));
-    assert!(root_entry .imports .iter() .all(|i| !i.spec.contains("should_not_import")));
-    assert!(root_entry .imports .iter() .all(|i| !i.spec.contains("inline_ignore")));
+    assert!(root_entry
+        .imports
+        .iter()
+        .all(|i| !i.spec.contains("should_not_import")));
+    assert!(root_entry
+        .imports
+        .iter()
+        .all(|i| !i.spec.contains("inline_ignore")));
     for marker in ["[[BASE]]", "[[A]]", "[[B]]", "[[C]]"] {
         assert!(injected.contains(marker), "{marker} should be inlined");
     }
- assert!( !injected.contains("[[D]]"), "depth-5 import must be past the cutoff" );
- assert!( !injected.contains("[[E]]"), "an import beyond the cutoff is never reached" );
+    assert!(
+        !injected.contains("[[D]]"),
+        "depth-5 import must be past the cutoff"
+    );
+    assert!(
+        !injected.contains("[[E]]"),
+        "an import beyond the cutoff is never reached"
+    );
     let d_import = root_entry
         .imports
         .iter()
@@ -215,7 +245,10 @@ fn external_import_is_flagged_for_approval() {
         &format!("Root.\n@{}\n", outside.display()),
     );
     let cfg = CompatConfig::load(&fx.layout(), None).unwrap();
- assert!( cfg.memory.approval_required(), "first external import must be flagged for approval" );
+    assert!(
+        cfg.memory.approval_required(),
+        "first external import must be flagged for approval"
+    );
     let root_entry = cfg
         .memory
         .launch_entries()
@@ -228,7 +261,10 @@ fn external_import_is_flagged_for_approval() {
         .find(|i| i.external)
         .expect("external import present");
     assert!(ext.approval_required);
-    assert!(ext.inlined, "external file still inlines once approved-flagged");
+    assert!(
+        ext.inlined,
+        "external file still inlines once approved-flagged"
+    );
 }
 #[test]
 fn permission_merge_deny_wins() {
@@ -243,15 +279,24 @@ fn permission_merge_deny_wins() {
 fn scalar_precedence_and_instruction_precedence_are_separate() {
     let fx = build_fixture();
     let cfg = CompatConfig::load(&fx.layout(), None).unwrap();
- assert_eq!( cfg.settings.values.get("model").and_then(|v| v.as_str()), Some("managed-model") );
+    assert_eq!(
+        cfg.settings.values.get("model").and_then(|v| v.as_str()),
+        Some("managed-model")
+    );
     let order: Vec<Scope> = cfg
         .settings
         .instruction_layers
         .iter()
         .map(|(s, _)| *s)
         .collect();
- assert_eq!( order, vec![Scope::Local, Scope::Project, Scope::User, Scope::Managed] );
-    assert_eq!(cfg.settings.effective_instructions(), Some("managed-instructions"));
+    assert_eq!(
+        order,
+        vec![Scope::Local, Scope::Project, Scope::User, Scope::Managed]
+    );
+    assert_eq!(
+        cfg.settings.effective_instructions(),
+        Some("managed-instructions")
+    );
 }
 #[test]
 fn rule_path_glob_gating() {
@@ -316,7 +361,12 @@ fn mcp_whole_entry_precedence() {
     assert!(shared.entry.get("args").is_none());
     assert!(cfg.mcp.server("user-only").is_some());
     assert!(cfg.mcp.server("project-only").is_some());
-    assert!(cfg.mcp.agents_md.as_deref().unwrap().contains("Cross-agent"));
+    assert!(cfg
+        .mcp
+        .agents_md
+        .as_deref()
+        .unwrap()
+        .contains("Cross-agent"));
     assert_eq!(cfg.mcp.cursor_rules.len(), 1);
     assert!(cfg.mcp.cursor_rules[0].body.contains("cursor style rule"));
 }
@@ -340,5 +390,8 @@ fn cli_scalar_scope_beats_local_but_not_managed() {
     let cli = settings::parse_value(serde_json::json!({ "model": "cli-model" }));
     let layout = Layout::new(&fx.root, &fx.cwd, &fx.home);
     let cfg = CompatConfig::load(&layout, Some(cli)).unwrap();
-    assert_eq!(cfg.settings.values.get("model").and_then(|v| v.as_str()), Some("cli-model"));
+    assert_eq!(
+        cfg.settings.values.get("model").and_then(|v| v.as_str()),
+        Some("cli-model")
+    );
 }

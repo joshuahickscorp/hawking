@@ -175,10 +175,17 @@ async fn full_run_passes_through_real_oracle_to_done() {
         .await
         .unwrap();
     let phases = drive(&kernel, &mut state, 60).await;
- assert_eq!( state.phase, Phase::Done, "run must finish (phases: {phases:?})" );
+    assert_eq!(
+        state.phase,
+        Phase::Done,
+        "run must finish (phases: {phases:?})"
+    );
     let names = phase_names(&log).await;
     for expected in ["plan", "select_step", "act", "observe", "verify", "done"] {
- assert!( names.iter().any(|n| n == expected), "missing phase '{expected}' in {names:?}" );
+        assert!(
+            names.iter().any(|n| n == expected),
+            "missing phase '{expected}' in {names:?}"
+        );
     }
     let v = state
         .last_verdict
@@ -205,7 +212,10 @@ async fn failing_real_oracle_triggers_repair() {
     assert!(names.iter().any(|n| n == "repair"));
     let v = state.last_verdict.expect("a verdict was produced");
     assert_eq!(v.status, hide_kernel::verify::oracle::VerdictStatus::Fail);
- assert!( !v.failures.is_empty(), "real diagnostics parsed into failures" );
+    assert!(
+        !v.failures.is_empty(),
+        "real diagnostics parsed into failures"
+    );
     let _ = std::fs::remove_dir_all(repo);
 }
 #[tokio::test]
@@ -236,14 +246,24 @@ async fn low_tool_call_budget_trips_governor_abort() {
         .unwrap();
     state.budget.max_tool_calls = 1; // cap reached after a single dispatch
     let _ = drive(&kernel, &mut state, 80).await;
- assert_eq!( state.phase, Phase::Aborted, "low tool-call budget must abort the run" );
- assert!( state.ledger.tool_calls >= 1, "a tool dispatch must be counted" );
+    assert_eq!(
+        state.phase,
+        Phase::Aborted,
+        "low tool-call budget must abort the run"
+    );
+    assert!(
+        state.ledger.tool_calls >= 1,
+        "a tool dispatch must be counted"
+    );
     let events = log.scan(None, None, None).await.unwrap();
     let abort = events
         .iter()
         .find(|e| e.kind == "run.aborted")
         .expect("a run.aborted event must be recorded");
-    assert_eq!(abort.payload.get("cap").and_then(|v| v.as_str()), Some("tool_calls"));
+    assert_eq!(
+        abort.payload.get("cap").and_then(|v| v.as_str()),
+        Some("tool_calls")
+    );
     let _ = std::fs::remove_dir_all(repo);
 }
 #[tokio::test]
@@ -265,7 +285,10 @@ async fn effectful_step_without_oracle_is_not_soft_accepted() {
                 Some("Edit") | Some("Command") | Some("Delegate")
             )
     });
- assert!( !effectful_soft_accept, "effectful step with no oracle must NOT be soft-accepted" );
+    assert!(
+        !effectful_soft_accept,
+        "effectful step with no oracle must NOT be soft-accepted"
+    );
     let phase_names = phase_names(&log).await;
     assert!(phase_names.iter().any(|n| n == "repair" || n == "replan"));
     let _ = std::fs::remove_dir_all(repo);
@@ -319,7 +342,10 @@ async fn model_step_does_not_auto_dispatch_a_mutating_tool() {
         .await
         .unwrap();
     let _ = drive(&kernel, &mut state, 60).await;
- assert!( !target.exists(), "a model step must not auto-execute a mutating tool" );
+    assert!(
+        !target.exists(),
+        "a model step must not auto-execute a mutating tool"
+    );
     let events = log.scan(None, None, None).await.unwrap();
     let proposed = events.iter().any(|e: &Event| {
         e.kind == "agent.observation"
@@ -334,7 +360,10 @@ async fn model_step_does_not_auto_dispatch_a_mutating_tool() {
                 })
                 .unwrap_or(false)
     });
- assert!( proposed, "the mutating call must be recorded as proposed, not dispatched" );
+    assert!(
+        proposed,
+        "the mutating call must be recorded as proposed, not dispatched"
+    );
     let _ = std::fs::remove_dir_all(repo);
 }
 #[tokio::test]
@@ -365,6 +394,9 @@ async fn model_step_does_not_auto_dispatch_subprocess_readonly_tool() {
                 })
                 .unwrap_or(false)
     });
- assert!( proposed, "a subprocess read-only tool must not auto-dispatch from a model step" );
+    assert!(
+        proposed,
+        "a subprocess read-only tool must not auto-dispatch from a model step"
+    );
     let _ = std::fs::remove_dir_all(repo);
 }

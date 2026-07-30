@@ -222,7 +222,10 @@ mod tests {
     fn declared_effects_come_from_the_registry() {
         assert_eq!(tool_declared_effects("fs.read"), vec![Effect::Read]);
         assert!(tool_declared_effects("shell.run").contains(&Effect::Process));
-        assert_eq!(tool_declared_effects("git.commit"), vec![Effect::GitMutation]);
+        assert_eq!(
+            tool_declared_effects("git.commit"),
+            vec![Effect::GitMutation]
+        );
         assert!(tool_declared_effects("does.not.exist").is_empty());
     }
     #[test]
@@ -233,15 +236,20 @@ mod tests {
     }
     #[test]
     fn execute_requires_sandbox() {
-        let (d, _) =
-            derive_policy_decision(&[Effect::Execute, Effect::Process], &verdict(Decision::Allow));
+        let (d, _) = derive_policy_decision(
+            &[Effect::Execute, Effect::Process],
+            &verdict(Decision::Allow),
+        );
         assert_eq!(d, PolicyDecision::RequireSandbox);
         assert!(d.requires_sandbox());
     }
     #[test]
     fn git_mutation_requires_reviewer() {
         let (d, _) = derive_policy_decision(&[Effect::GitMutation], &verdict(Decision::Allow));
- assert!(matches!( d, PolicyDecision::Ask | PolicyDecision::RequireReviewer ));
+        assert!(matches!(
+            d,
+            PolicyDecision::Ask | PolicyDecision::RequireReviewer
+        ));
         assert_eq!(d, PolicyDecision::RequireReviewer);
     }
     #[test]

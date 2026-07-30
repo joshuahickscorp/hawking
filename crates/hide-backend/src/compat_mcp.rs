@@ -164,10 +164,7 @@ fn discover_cursor_rules(layout: &Layout) -> Vec<CursorRule> {
     // Legacy single-file `.cursorrules`.
     let legacy = layout.repo_root.join(".cursorrules");
     if let Some(body) = read_optional(&legacy) {
-        rules.push(CursorRule {
-            path: legacy,
-            body,
-        });
+        rules.push(CursorRule { path: legacy, body });
     }
 
     // Modern `.cursor/rules/**` (typically `*.mdc`, but read any file).

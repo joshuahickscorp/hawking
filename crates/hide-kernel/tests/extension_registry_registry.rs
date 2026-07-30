@@ -1,8 +1,8 @@
-use std::io::Write;
 use hide_kernel::extension_registry::{
     CapabilityKind, CapabilityManifest, Effect, NetworkPolicy, PinSpec, Provenance, Registry,
-    ResolveQuery, SandboxReq, Scope, SchemaRef, SecretPolicy,
+    ResolveQuery, SandboxReq, SchemaRef, Scope, SecretPolicy,
 };
+use std::io::Write;
 fn tool(id: &str, desc: &str) -> CapabilityManifest {
     let mut m = CapabilityManifest::new(id, "1.0.0", CapabilityKind::Tool, "hide");
     m.description = desc.to_string();
@@ -14,10 +14,8 @@ fn tool_with_schema(id: &str, desc: &str) -> CapabilityManifest {
         format!("schema://{id}/input"),
         r#"{"type":"object","properties":{"path":{"type":"string"}}}"#,
     );
-    m.output_schema_ref = SchemaRef::with_raw(
-        format!("schema://{id}/output"),
-        r#"{"type":"string"}"#,
-    );
+    m.output_schema_ref =
+        SchemaRef::with_raw(format!("schema://{id}/output"), r#"{"type":"string"}"#);
     m.context_cost.schema_tokens = 120;
     m
 }
@@ -53,18 +51,26 @@ fn registers_across_all_kinds() {
 #[test]
 fn progressive_disclosure_schema_not_loaded_until_requested() {
     let mut reg = Registry::new();
-    reg.register(tool_with_schema("fs.read", "read a file")).unwrap();
+    reg.register(tool_with_schema("fs.read", "read a file"))
+        .unwrap();
     let idx = reg.index();
     assert_eq!(idx.len(), 1);
     assert_eq!(idx[0].id, "fs.read");
     let _ranked = reg.resolve_for(&ResolveQuery::new().task("read"));
- assert_eq!( reg.schema_load_count(), 0, "index and resolve must never load a schema" );
+    assert_eq!(
+        reg.schema_load_count(),
+        0,
+        "index and resolve must never load a schema"
+    );
     let full = reg.load_full_schema("fs.read").unwrap();
     assert_eq!(reg.schema_load_count(), 1);
     assert!(full.input.is_some());
     assert!(full.output.is_some());
     assert_eq!(full.input_uri, "schema://fs.read/input");
- assert_eq!( full.input.as_ref().unwrap()["properties"]["path"]["type"], "string" );
+    assert_eq!(
+        full.input.as_ref().unwrap()["properties"]["path"]["type"],
+        "string"
+    );
     reg.load_full_schema("fs.read").unwrap();
     assert_eq!(reg.schema_load_count(), 2);
 }
@@ -76,7 +82,10 @@ fn bad_schema_surfaces_on_load_only() {
     reg.register(m).unwrap();
     assert_eq!(reg.schema_load_count(), 0);
     let err = reg.load_full_schema("bad.schema").unwrap_err();
- assert!(matches!( err, hide_kernel::extension_registry::RegistryError::Schema { .. } ));
+    assert!(matches!(
+        err,
+        hide_kernel::extension_registry::RegistryError::Schema { .. }
+    ));
 }
 #[test]
 fn scope_filtering() {
@@ -92,9 +101,14 @@ fn scope_filtering() {
     let ids: Vec<&str> = ranked.iter().map(|c| c.entry.id.as_str()).collect();
     assert_eq!(ids, vec!["edit.src"]);
     assert!(reg
-        .scope_allows("edit.src", &Scope::Filesystem("src/deep/mod.rs".to_string()))
+        .scope_allows(
+            "edit.src",
+            &Scope::Filesystem("src/deep/mod.rs".to_string())
+        )
         .unwrap());
- assert!(!reg .scope_allows("edit.tests", &Scope::Filesystem("src/lib.rs".to_string())) .unwrap());
+    assert!(!reg
+        .scope_allows("edit.tests", &Scope::Filesystem("src/lib.rs".to_string()))
+        .unwrap());
 }
 #[test]
 fn role_filtering() {
@@ -150,13 +164,16 @@ fn duplicate_id_rejected() {
     let mut reg = Registry::new();
     reg.register(tool("dup", "first")).unwrap();
     let err = reg.register(tool("dup", "second")).unwrap_err();
- assert!(matches!( err, hide_kernel::extension_registry::RegistryError::DuplicateId(id) if id == "dup" ));
+    assert!(
+        matches!( err, hide_kernel::extension_registry::RegistryError::DuplicateId(id) if id == "dup" )
+    );
     assert_eq!(reg.active_len(), 1);
 }
 #[test]
 fn revocation_removes_from_index_resolution_and_load() {
     let mut reg = Registry::new();
-    reg.register(tool_with_schema("gone", "to be revoked")).unwrap();
+    reg.register(tool_with_schema("gone", "to be revoked"))
+        .unwrap();
     reg.register(tool("stay", "remains")).unwrap();
     reg.revoke("gone").unwrap();
     assert!(reg.is_revoked("gone"));
@@ -241,7 +258,11 @@ fn deterministic_ranking() {
             .map(|c| c.entry.id)
             .collect()
     };
-    let expected = vec!["read.a".to_string(), "read.c".to_string(), "exec.b".to_string()];
+    let expected = vec![
+        "read.a".to_string(),
+        "read.c".to_string(),
+        "exec.b".to_string(),
+    ];
     assert_eq!(build(&["read.a", "exec.b", "read.c"]), expected);
     assert_eq!(build(&["exec.b", "read.c", "read.a"]), expected);
     assert_eq!(build(&["read.c", "read.a", "exec.b"]), expected);
@@ -288,7 +309,10 @@ fn version_and_provenance_pinning() {
     };
     reg.register(right).unwrap();
     assert_eq!(reg.version("pinned.tool").unwrap(), "2.0.0");
- assert_eq!( reg.provenance("pinned.tool").unwrap().commit.as_deref(), Some("abc123") );
+    assert_eq!(
+        reg.provenance("pinned.tool").unwrap().commit.as_deref(),
+        Some("abc123")
+    );
     reg.register(tool("live", "already here")).unwrap();
     assert!(matches!(
         reg.pin(
@@ -344,8 +368,13 @@ fn manifests_load_from_tempdir_json_fixtures() {
         reg.register(m).unwrap();
     }
     assert_eq!(reg.active_len(), 2);
- assert!(reg .declared_effects("web.fetch") .unwrap() .contains(&Effect::Network));
- assert!(reg .scope_allows("web.fetch", &Scope::Network("example.com".to_string())) .unwrap());
+    assert!(reg
+        .declared_effects("web.fetch")
+        .unwrap()
+        .contains(&Effect::Network));
+    assert!(reg
+        .scope_allows("web.fetch", &Scope::Network("example.com".to_string()))
+        .unwrap());
     assert_eq!(reg.schema_load_count(), 0);
     let full = reg.load_full_schema("fs.read").unwrap();
     assert!(full.input.is_some());

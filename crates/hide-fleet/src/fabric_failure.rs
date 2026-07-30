@@ -8,8 +8,8 @@ use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
 use super::node::NodeId;
-use super::placement::{KvOwnershipInvariant, KvRangeOwnership, PlacementPlan};
 use super::pipeline::{PipelineScheduler, StageId};
+use super::placement::{KvOwnershipInvariant, KvRangeOwnership, PlacementPlan};
 use super::qualification::QualificationKind;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -233,7 +233,10 @@ mod tests {
         assert!(!receipt.lost_work.kv_ranges.is_empty());
         assert_eq!(receipt.replayed_from_checkpoint.0, "ckpt-after-stage0");
         assert!(receipt.not_physical_qualification);
-        assert!(receipt.artifact_label.contains("simulated") || receipt.artifact_label.contains("software"));
+        assert!(
+            receipt.artifact_label.contains("simulated")
+                || receipt.artifact_label.contains("software")
+        );
         assert_ne!(receipt.replan_plan_id, plan.plan_id);
     }
 }

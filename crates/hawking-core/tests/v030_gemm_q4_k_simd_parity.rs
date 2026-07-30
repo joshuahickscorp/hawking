@@ -37,14 +37,19 @@ fn test_gemm_q4_k_simd_matches_scalar() {
     let w_bytes = synthetic_q4_k_bytes(n_blocks, 42);
     let x = fixed_input(cols, 0xDEAD_BEEF);
     let mut w_f32 = vec![0.0_f32; rows * cols];
-    dequant_into(GgmlType::Q4_K, &w_bytes, &mut w_f32).expect("Q4_K dequant should succeed for synthetic bytes");
+    dequant_into(GgmlType::Q4_K, &w_bytes, &mut w_f32)
+        .expect("Q4_K dequant should succeed for synthetic bytes");
     let mut scalar_out = vec![0.0_f32; rows];
     kernels::gemv_f32(&w_f32, rows, cols, &x, &mut scalar_out);
     let ctx = ctx().clone();
     let mut simd_out = vec![0.0_f32; rows];
-    kernels::gemv_q4_k_m_simd(&ctx, &w_bytes, rows, cols, &x, &mut simd_out).expect("gemv_q4_k_m_simd should succeed");
+    kernels::gemv_q4_k_m_simd(&ctx, &w_bytes, rows, cols, &x, &mut simd_out)
+        .expect("gemv_q4_k_m_simd should succeed");
     let diff = max_abs_diff(&scalar_out, &simd_out);
-    assert!(diff < ATOL, "gemm_q4_k_m_fused_simd vs scalar diff {diff:.6e} >= atol {ATOL}");
+    assert!(
+        diff < ATOL,
+        "gemm_q4_k_m_fused_simd vs scalar diff {diff:.6e} >= atol {ATOL}"
+    );
 }
 #[test]
 fn test_gemm_q4_k_simd_larger_shape() {
@@ -59,9 +64,13 @@ fn test_gemm_q4_k_simd_larger_shape() {
     kernels::gemv_f32(&w_f32, rows, cols, &x, &mut scalar_out);
     let ctx = ctx().clone();
     let mut simd_out = vec![0.0_f32; rows];
-    kernels::gemv_q4_k_m_simd(&ctx, &w_bytes, rows, cols, &x, &mut simd_out).expect("gemv_q4_k_m_simd should succeed");
+    kernels::gemv_q4_k_m_simd(&ctx, &w_bytes, rows, cols, &x, &mut simd_out)
+        .expect("gemv_q4_k_m_simd should succeed");
     let diff = max_abs_diff(&scalar_out, &simd_out);
-    assert!(diff < ATOL, "gemm_q4_k_m_fused_simd vs scalar diff {diff:.6e} >= atol {ATOL}");
+    assert!(
+        diff < ATOL,
+        "gemm_q4_k_m_fused_simd vs scalar diff {diff:.6e} >= atol {ATOL}"
+    );
 }
 #[test]
 fn test_gemm_q4_k_simd_batched_matches_scalar() {
@@ -71,7 +80,8 @@ fn test_gemm_q4_k_simd_batched_matches_scalar() {
     let w_bytes = synthetic_q4_k_bytes(n_blocks, 42);
     let x = fixed_input(cols, 0xDEAD_BEEF);
     let mut w_f32 = vec![0.0_f32; rows * cols];
-    dequant_into(GgmlType::Q4_K, &w_bytes, &mut w_f32).expect("Q4_K dequant should succeed for synthetic bytes");
+    dequant_into(GgmlType::Q4_K, &w_bytes, &mut w_f32)
+        .expect("Q4_K dequant should succeed for synthetic bytes");
     let mut scalar_out = vec![0.0_f32; rows];
     kernels::gemv_f32(&w_f32, rows, cols, &x, &mut scalar_out);
     let ctx = ctx().clone();
@@ -79,7 +89,10 @@ fn test_gemm_q4_k_simd_batched_matches_scalar() {
     kernels::dispatch_gemv_q4_k_m_simd_batched(&ctx, &w_bytes, rows, cols, &x, &mut batched_out)
         .expect("dispatch_gemv_q4_k_m_simd_batched should succeed");
     let diff = max_abs_diff(&scalar_out, &batched_out);
-    assert!(diff < ATOL, "dispatch_gemv_q4_k_m_simd_batched vs scalar diff {diff:.6e} >= atol {ATOL}");
+    assert!(
+        diff < ATOL,
+        "dispatch_gemv_q4_k_m_simd_batched vs scalar diff {diff:.6e} >= atol {ATOL}"
+    );
 }
 #[test]
 fn test_gemm_q4_k_simd_batched_larger_shape() {
@@ -97,7 +110,10 @@ fn test_gemm_q4_k_simd_batched_larger_shape() {
     kernels::dispatch_gemv_q4_k_m_simd_batched(&ctx, &w_bytes, rows, cols, &x, &mut batched_out)
         .expect("dispatch_gemv_q4_k_m_simd_batched should succeed");
     let diff = max_abs_diff(&scalar_out, &batched_out);
-    assert!(diff < ATOL, "dispatch_gemv_q4_k_m_simd_batched vs scalar diff {diff:.6e} >= atol {ATOL}");
+    assert!(
+        diff < ATOL,
+        "dispatch_gemv_q4_k_m_simd_batched vs scalar diff {diff:.6e} >= atol {ATOL}"
+    );
 }
 #[test]
 fn test_gemm_q4_k_simd_pair_matches_scalar() {
@@ -118,12 +134,27 @@ fn test_gemm_q4_k_simd_pair_matches_scalar() {
     let ctx = ctx().clone();
     let mut pair_a = vec![0.0_f32; rows];
     let mut pair_b = vec![0.0_f32; rows];
-    kernels::dispatch_gemv_q4_k_m_simd_pair_batched(&ctx, &w_a_bytes, &w_b_bytes, rows, cols, &x, &mut pair_a, &mut pair_b)
-        .expect("dispatch_gemv_q4_k_m_simd_pair_batched should succeed");
+    kernels::dispatch_gemv_q4_k_m_simd_pair_batched(
+        &ctx,
+        &w_a_bytes,
+        &w_b_bytes,
+        rows,
+        cols,
+        &x,
+        &mut pair_a,
+        &mut pair_b,
+    )
+    .expect("dispatch_gemv_q4_k_m_simd_pair_batched should succeed");
     let diff_a = max_abs_diff(&scalar_a, &pair_a);
     let diff_b = max_abs_diff(&scalar_b, &pair_b);
-    assert!(diff_a < ATOL, "pair output A diff {diff_a:.6e} >= atol {ATOL}");
-    assert!(diff_b < ATOL, "pair output B diff {diff_b:.6e} >= atol {ATOL}");
+    assert!(
+        diff_a < ATOL,
+        "pair output A diff {diff_a:.6e} >= atol {ATOL}"
+    );
+    assert!(
+        diff_b < ATOL,
+        "pair output B diff {diff_b:.6e} >= atol {ATOL}"
+    );
 }
 #[test]
 fn test_gemm_q4_k_simd_pair_larger_shape() {
@@ -144,12 +175,27 @@ fn test_gemm_q4_k_simd_pair_larger_shape() {
     let ctx = ctx().clone();
     let mut pair_a = vec![0.0_f32; rows];
     let mut pair_b = vec![0.0_f32; rows];
-    kernels::dispatch_gemv_q4_k_m_simd_pair_batched(&ctx, &w_a_bytes, &w_b_bytes, rows, cols, &x, &mut pair_a, &mut pair_b)
-        .expect("dispatch_gemv_q4_k_m_simd_pair_batched larger shape should succeed");
+    kernels::dispatch_gemv_q4_k_m_simd_pair_batched(
+        &ctx,
+        &w_a_bytes,
+        &w_b_bytes,
+        rows,
+        cols,
+        &x,
+        &mut pair_a,
+        &mut pair_b,
+    )
+    .expect("dispatch_gemv_q4_k_m_simd_pair_batched larger shape should succeed");
     let diff_a = max_abs_diff(&scalar_a, &pair_a);
     let diff_b = max_abs_diff(&scalar_b, &pair_b);
-    assert!(diff_a < ATOL, "pair larger output A diff {diff_a:.6e} >= atol {ATOL}");
-    assert!(diff_b < ATOL, "pair larger output B diff {diff_b:.6e} >= atol {ATOL}");
+    assert!(
+        diff_a < ATOL,
+        "pair larger output A diff {diff_a:.6e} >= atol {ATOL}"
+    );
+    assert!(
+        diff_b < ATOL,
+        "pair larger output B diff {diff_b:.6e} >= atol {ATOL}"
+    );
 }
 const ATOL_SILU: f32 = 1e-2;
 #[test]
@@ -172,10 +218,21 @@ fn test_gemm_q4_k_simd_pair_silu_matches_scalar() {
     kernels::silu_mul(&g_ref, &u_ref, &mut ref_a);
     let ctx = ctx().clone();
     let mut gpu_a = vec![0.0_f32; rows];
-    kernels::dispatch_gemv_q4_k_m_simd_pair_silu_batched(&ctx, &w_gate_bytes, &w_up_bytes, rows, cols, &x, &mut gpu_a)
-        .expect("dispatch_gemv_q4_k_m_simd_pair_silu_batched should succeed");
+    kernels::dispatch_gemv_q4_k_m_simd_pair_silu_batched(
+        &ctx,
+        &w_gate_bytes,
+        &w_up_bytes,
+        rows,
+        cols,
+        &x,
+        &mut gpu_a,
+    )
+    .expect("dispatch_gemv_q4_k_m_simd_pair_silu_batched should succeed");
     let diff = max_abs_diff(&ref_a, &gpu_a);
-    assert!(diff < ATOL_SILU, "pair+silu diff {diff:.6e} >= atol_silu {ATOL_SILU}");
+    assert!(
+        diff < ATOL_SILU,
+        "pair+silu diff {diff:.6e} >= atol_silu {ATOL_SILU}"
+    );
 }
 #[test]
 fn test_gemm_q4_k_simd_pair_silu_larger_shape() {
@@ -197,8 +254,19 @@ fn test_gemm_q4_k_simd_pair_silu_larger_shape() {
     kernels::silu_mul(&g_ref, &u_ref, &mut ref_a);
     let ctx = ctx().clone();
     let mut gpu_a = vec![0.0_f32; rows];
-    kernels::dispatch_gemv_q4_k_m_simd_pair_silu_batched(&ctx, &w_gate_bytes, &w_up_bytes, rows, cols, &x, &mut gpu_a)
-        .expect("dispatch_gemv_q4_k_m_simd_pair_silu_batched larger shape should succeed");
+    kernels::dispatch_gemv_q4_k_m_simd_pair_silu_batched(
+        &ctx,
+        &w_gate_bytes,
+        &w_up_bytes,
+        rows,
+        cols,
+        &x,
+        &mut gpu_a,
+    )
+    .expect("dispatch_gemv_q4_k_m_simd_pair_silu_batched larger shape should succeed");
     let diff = max_abs_diff(&ref_a, &gpu_a);
-    assert!(diff < ATOL_SILU, "pair+silu larger shape diff {diff:.6e} >= atol_silu {ATOL_SILU}");
+    assert!(
+        diff < ATOL_SILU,
+        "pair+silu larger shape diff {diff:.6e} >= atol_silu {ATOL_SILU}"
+    );
 }

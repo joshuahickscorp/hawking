@@ -59,7 +59,10 @@ pub fn lcg_f32(n: usize, seed: u32, lo: f32, hi: f32) -> Vec<f32> {
         .collect()
 }
 pub fn max_abs_diff(a: &[f32], b: &[f32]) -> f32 {
-    a.iter().zip(b.iter()).map(|(&x, &y)| (x - y).abs()).fold(0.0_f32, f32::max)
+    a.iter()
+        .zip(b.iter())
+        .map(|(&x, &y)| (x - y).abs())
+        .fold(0.0_f32, f32::max)
 }
 pub fn worst_violation(actual: &[f32], reference: &[f32], atol: f32, rtol: f32) -> (f32, usize) {
     let mut worst = 0.0f32;
@@ -74,8 +77,16 @@ pub fn worst_violation(actual: &[f32], reference: &[f32], atol: f32, rtol: f32) 
     (worst, worst_i)
 }
 pub fn rel_l2(reference: &[f32], got: &[f32]) -> f64 {
-    let num: f64 = reference.iter().zip(got).map(|(&r, &g)| ((r - g) as f64).powi(2)).sum();
-    let den: f64 = reference.iter().map(|&r| (r as f64).powi(2)).sum::<f64>().max(1e-30);
+    let num: f64 = reference
+        .iter()
+        .zip(got)
+        .map(|(&r, &g)| ((r - g) as f64).powi(2))
+        .sum();
+    let den: f64 = reference
+        .iter()
+        .map(|&r| (r as f64).powi(2))
+        .sum::<f64>()
+        .max(1e-30);
     (num / den).sqrt()
 }
 pub const ATOL: f32 = 1e-3;
@@ -98,12 +109,21 @@ pub fn make_q4k_bytes_pcg(rows: usize, cols: usize, seed: u64) -> Vec<u8> {
     }
     bytes
 }
-pub fn make_q4k_predec(rows: usize, cols: usize, seed: u32, scale_mul: f32, scale_add: f32) -> (Vec<u8>, Vec<f32>) {
+pub fn make_q4k_predec(
+    rows: usize,
+    cols: usize,
+    seed: u32,
+    scale_mul: f32,
+    scale_add: f32,
+) -> (Vec<u8>, Vec<f32>) {
     let bpr = cols / 256;
-    let w: Vec<u8> = (0..rows * bpr * 144).map(|i| ((i as u32).wrapping_mul(2_246_822_519).wrapping_add(seed)) as u8).collect();
+    let w: Vec<u8> = (0..rows * bpr * 144)
+        .map(|i| ((i as u32).wrapping_mul(2_246_822_519).wrapping_add(seed)) as u8)
+        .collect();
     let s: Vec<f32> = (0..rows * bpr * 16)
         .map(|i| {
-            let v = ((i as u32).wrapping_mul(2_654_435_761).wrapping_add(seed)) as f32 / u32::MAX as f32;
+            let v = ((i as u32).wrapping_mul(2_654_435_761).wrapping_add(seed)) as f32
+                / u32::MAX as f32;
             v * scale_mul + scale_add
         })
         .collect();
@@ -129,14 +149,21 @@ pub fn hash16_tokens(ids: &[u32]) -> String {
 pub fn check_or_pin_hash(pin_path: &Path, label: &str, actual_hash: &str) {
     let actual_line = format!("{label}: {actual_hash}\n");
     let existing = std::fs::read_to_string(pin_path).unwrap_or_default();
-    match existing.lines().find(|l| l.starts_with(&format!("{label}:"))) {
+    match existing
+        .lines()
+        .find(|l| l.starts_with(&format!("{label}:")))
+    {
         None => {
             let mut all = existing;
             all.push_str(&actual_line);
             std::fs::write(pin_path, all).expect("write pin");
             eprintln!("PINNED first hash for {label}: {actual_hash}");
         }
-        Some(prior) => assert_eq!(prior.trim(), actual_line.trim(), "greedy hash drift for {label}"),
+        Some(prior) => assert_eq!(
+            prior.trim(),
+            actual_line.trim(),
+            "greedy hash drift for {label}"
+        ),
     }
 }
 #[cfg(target_os = "macos")]
@@ -145,7 +172,8 @@ use hawking_core::metal::{MetalContext, PinnedBuffer};
 use once_cell::sync::Lazy;
 #[cfg(target_os = "macos")]
 pub fn ctx() -> &'static MetalContext {
-    static CTX: Lazy<MetalContext> = Lazy::new(|| MetalContext::new().expect("Metal device required"));
+    static CTX: Lazy<MetalContext> =
+        Lazy::new(|| MetalContext::new().expect("Metal device required"));
     &CTX
 }
 #[cfg(target_os = "macos")]
@@ -160,12 +188,18 @@ pub fn read_f32_buf(buf: &PinnedBuffer, n: usize) -> Vec<f32> {
 #[cfg(target_os = "macos")]
 pub fn new_f16_buf_from_f32(ctx: &MetalContext, data: &[f32]) -> PinnedBuffer {
     use half::f16;
-    let bytes: Vec<u8> = data.iter().flat_map(|&x| f16::from_f32(x).to_bits().to_le_bytes()).collect();
+    let bytes: Vec<u8> = data
+        .iter()
+        .flat_map(|&x| f16::from_f32(x).to_bits().to_le_bytes())
+        .collect();
     ctx.new_buffer_with_bytes(&bytes)
 }
 #[cfg(target_os = "macos")]
 pub fn new_f16_buf(ctx: &MetalContext, data: &[half::f16]) -> PinnedBuffer {
-    let bytes: Vec<u8> = data.iter().flat_map(|x| x.to_bits().to_le_bytes()).collect();
+    let bytes: Vec<u8> = data
+        .iter()
+        .flat_map(|x| x.to_bits().to_le_bytes())
+        .collect();
     ctx.new_buffer_with_bytes(&bytes)
 }
 pub fn f16_round_trip(data: &[f32]) -> Vec<f32> {
@@ -174,7 +208,9 @@ pub fn f16_round_trip(data: &[f32]) -> Vec<f32> {
 }
 pub fn f32_to_f16_bytes(v: &[f32]) -> Vec<u8> {
     use half::f16;
-    v.iter().flat_map(|&x| f16::from_f32(x).to_le_bytes()).collect()
+    v.iter()
+        .flat_map(|&x| f16::from_f32(x).to_le_bytes())
+        .collect()
 }
 #[cfg(target_os = "macos")]
 pub fn run_predec_pair_combined(
@@ -210,13 +246,25 @@ pub fn run_predec_pair_combined(
     let yu_buf = ctx.new_buffer(rows * 4);
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
-        dispatch(&mut tcb, &combined_buf, w_bytes, &gs_buf, &us_buf, &x_buf, &yg_buf, &yu_buf);
+        dispatch(
+            &mut tcb,
+            &combined_buf,
+            w_bytes,
+            &gs_buf,
+            &us_buf,
+            &x_buf,
+            &yg_buf,
+            &yu_buf,
+        );
         tcb.commit_and_wait().expect("pair commit");
     }
     (read_f32_buf(&yg_buf, rows), read_f32_buf(&yu_buf, rows))
 }
 pub fn with_env_vars<R>(pairs: &[(&str, Option<&str>)], f: impl FnOnce() -> R) -> R {
-    let prior: Vec<(String, Option<std::ffi::OsString>)> = pairs.iter().map(|(k, _)| ((*k).to_string(), std::env::var_os(k))).collect();
+    let prior: Vec<(String, Option<std::ffi::OsString>)> = pairs
+        .iter()
+        .map(|(k, _)| ((*k).to_string(), std::env::var_os(k)))
+        .collect();
     for (k, v) in pairs {
         match v {
             Some(val) => std::env::set_var(k, val),

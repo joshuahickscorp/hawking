@@ -915,24 +915,20 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
                                         let gen_result = {
                                             let mut engine = state2.engine.lock();
                                             let mut send_err = false;
-                                            let r = engine.generate(
-                                                req,
-                                                &mut |ev| match ev {
-                                                    hawking_core::StreamEvent::Token {
-                                                        text,
-                                                        ..
-                                                    } => {
-                                                        if tx.blocking_send(Ok(text)).is_err() {
-                                                            send_err = true;
-                                                        } else {
-                                                            state2
-                                                                .tokens_generated
-                                                                .fetch_add(1, Ordering::Relaxed);
-                                                        }
+                                            let r = engine.generate(req, &mut |ev| match ev {
+                                                hawking_core::StreamEvent::Token {
+                                                    text, ..
+                                                } => {
+                                                    if tx.blocking_send(Ok(text)).is_err() {
+                                                        send_err = true;
+                                                    } else {
+                                                        state2
+                                                            .tokens_generated
+                                                            .fetch_add(1, Ordering::Relaxed);
                                                     }
-                                                    hawking_core::StreamEvent::Done { .. } => {}
-                                                },
-                                            );
+                                                }
+                                                hawking_core::StreamEvent::Done { .. } => {}
+                                            });
                                             (r, send_err)
                                         };
                                         if let Err(gen_err) = gen_result.0 {
@@ -1149,7 +1145,10 @@ mod profile_lever_tests {
     #[test]
     fn efficient_adds_energy_and_f16kv() {
         let p = RP::Efficient.lever_plan();
- assert!( has(&p.set_if_unset, "HAWKING_ENERGY_EFFICIENT"), "efficient sets energy mode" );
+        assert!(
+            has(&p.set_if_unset, "HAWKING_ENERGY_EFFICIENT"),
+            "efficient sets energy mode"
+        );
         assert_eq!(p.f16_kv, Some(true), "efficient enables f16-KV");
         assert!(has(&p.set_if_unset, "HAWKING_QWEN_Q4K_PREDEC"));
     }
@@ -1164,14 +1163,21 @@ mod profile_lever_tests {
             assert!(p.force_off.contains(&k), "exact must force-off {k}");
         }
         assert!(p.set_if_unset.is_empty(), "exact sets no quality-trade var");
- assert_eq!( p.f16_kv, Some(false), "exact leaves f16-KV off (bit-identity)" );
+        assert_eq!(
+            p.f16_kv,
+            Some(false),
+            "exact leaves f16-KV off (bit-identity)"
+        );
         assert!(!p.concurrent_qkv);
     }
     #[test]
     fn contracts_are_nonempty_and_self_label() {
         for rp in [RP::Default, RP::Fast, RP::Race, RP::Efficient, RP::Exact] {
             let c = rp.contract();
- assert!( c.contains(rp.as_str()), "contract for {rp} must name itself" );
+            assert!(
+                c.contains(rp.as_str()),
+                "contract for {rp} must name itself"
+            );
             assert!(c.len() > 20);
         }
     }
@@ -1180,7 +1186,10 @@ mod profile_lever_tests {
         for s in ["default", "fast", "race", "efficient", "exact"] {
             assert_eq!(RP::from_str(s).unwrap().as_str(), s);
         }
- assert!( RP::from_str("m3-pro-18gb").is_none(), "hardware string is not a runtime profile" );
+        assert!(
+            RP::from_str("m3-pro-18gb").is_none(),
+            "hardware string is not a runtime profile"
+        );
     }
     #[test]
     fn default_when_unset_is_fast() {
@@ -1197,7 +1206,10 @@ mod profile_lever_tests {
             "HAWKING_QWEN_VOCAB_PRUNE",
             "HAWKING_QWEN_FFN_DOWN_Q4K",
         ] {
- assert!( has(&bundle, k), "fast bundle must keep {k} (a kept lever under the unset default)" );
+            assert!(
+                has(&bundle, k),
+                "fast bundle must keep {k} (a kept lever under the unset default)"
+            );
         }
         assert!(has(&bundle, force_off[0]));
     }

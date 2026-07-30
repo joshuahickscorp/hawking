@@ -1,6 +1,9 @@
 #![cfg(target_os = "macos")]
 use half::f16;
-use hawking_core::gravity::{parse_pq_header, pq_matvec_f64_authority, pq_matvec_metal, pq_sections, PqMetalKernelVariant, PqMetalMatrix};
+use hawking_core::gravity::{
+    parse_pq_header, pq_matvec_f64_authority, pq_matvec_metal, pq_sections, PqMetalKernelVariant,
+    PqMetalMatrix,
+};
 use hawking_core::metal::MetalContext;
 use hawking_core::numeric_parity::{format_score_line, score_against_f64, Bounds};
 fn push_u16(out: &mut Vec<u8>, v: u16) {
@@ -14,7 +17,8 @@ fn make_bits8_payload(rows: u32, nchunk: u32) -> Vec<u8> {
     const SUB: u16 = 32;
     const CARD: u16 = 256;
     let cols = nchunk * D as u32;
-    let mut out = Vec::with_capacity(64 + CARD as usize * SUB as usize * 2 + rows as usize * nchunk as usize);
+    let mut out =
+        Vec::with_capacity(64 + CARD as usize * SUB as usize * 2 + rows as usize * nchunk as usize);
     out.extend_from_slice(b"GLM52CPK");
     push_u16(&mut out, D);
     push_u16(&mut out, 1);
@@ -37,7 +41,10 @@ fn make_bits8_payload(rows: u32, nchunk: u32) -> Vec<u8> {
     }
     for row in 0..rows as usize {
         for chunk in 0..nchunk as usize {
-            let code = row.wrapping_mul(73).wrapping_add(chunk.wrapping_mul(41)).wrapping_add(row.wrapping_mul(chunk).wrapping_mul(3));
+            let code = row
+                .wrapping_mul(73)
+                .wrapping_add(chunk.wrapping_mul(41))
+                .wrapping_add(row.wrapping_mul(chunk).wrapping_mul(3));
             out.push((code & 255) as u8);
         }
     }
@@ -76,8 +83,10 @@ impl DoubleSingle {
 fn emulate_bits8_double_single(payload: &[u8], x: &[f32]) -> Vec<f32> {
     let h = parse_pq_header(payload).expect("header");
     let (cb_bytes, codes) = pq_sections(payload).expect("sections");
-    let codebooks: Vec<f32> =
-        cb_bytes.chunks_exact(2).map(|bytes| f16::from_bits(u16::from_le_bytes([bytes[0], bytes[1]])).to_f32()).collect();
+    let codebooks: Vec<f32> = cb_bytes
+        .chunks_exact(2)
+        .map(|bytes| f16::from_bits(u16::from_le_bytes([bytes[0], bytes[1]])).to_f32())
+        .collect();
     let mut out = vec![0.0f32; h.rows as usize];
     for row in 0..h.rows as usize {
         let mut lanes = [DoubleSingle::default(); 32];
@@ -89,7 +98,8 @@ fn emulate_bits8_double_single(payload: &[u8], x: &[f32]) -> Vec<f32> {
                     let cb_base = (s * h.card as usize + code) * h.sub as usize;
                     let x_base = chunk * h.d as usize + s * h.sub as usize;
                     for j in 0..h.sub as usize {
-                        *lane_sum = lane_sum.add(DoubleSingle::product(codebooks[cb_base + j], x[x_base + j]));
+                        *lane_sum = lane_sum
+                            .add(DoubleSingle::product(codebooks[cb_base + j], x[x_base + j]));
                     }
                 }
             }
@@ -120,18 +130,32 @@ fn bits8_variants_are_deterministic_and_pass_v21_at_real_chunk_counts() {
         let matrix = PqMetalMatrix::from_payload(&ctx, &payload).expect("resident PQ matrix");
         let established_default = pq_matvec_metal(&ctx, &payload, &x).expect("default");
         for variant in PqMetalKernelVariant::ALL {
-            let first = matrix.matvec(&ctx, variant, &x).expect("candidate first run");
+            let first = matrix
+                .matvec(&ctx, variant, &x)
+                .expect("candidate first run");
             let second = matrix.matvec(&ctx, variant, &x).expect("candidate repeat");
-            assert!(first.iter().zip(&second).all(|(a, b)| a.to_bits() == b.to_bits()), "{variant} is not bit-stable for nchunk={nchunk}");
+            assert!(
+                first
+                    .iter()
+                    .zip(&second)
+                    .all(|(a, b)| a.to_bits() == b.to_bits()),
+                "{variant} is not bit-stable for nchunk={nchunk}"
+            );
             if variant == PqMetalKernelVariant::Generic {
                 assert!(
-                    first.iter().zip(&established_default).all(|(a, b)| a.to_bits() == b.to_bits()),
+                    first
+                        .iter()
+                        .zip(&established_default)
+                        .all(|(a, b)| a.to_bits() == b.to_bits()),
                     "explicit generic variant diverged from pq_matvec_metal default"
                 );
             }
             if variant == PqMetalKernelVariant::Bits8DoubleSingle {
-                if let Some((row, (&gpu, &cpu))) =
-                    first.iter().zip(&double_single_cpu).enumerate().find(|(_, (gpu, cpu))| gpu.to_bits() != cpu.to_bits())
+                if let Some((row, (&gpu, &cpu))) = first
+                    .iter()
+                    .zip(&double_single_cpu)
+                    .enumerate()
+                    .find(|(_, (gpu, cpu))| gpu.to_bits() != cpu.to_bits())
                 {
                     panic!(
                         "double-single Metal output diverged from the explicit CPU tree \
@@ -142,8 +166,17 @@ fn bits8_variants_are_deterministic_and_pass_v21_at_real_chunk_counts() {
                     );
                 }
             }
-            let score = score_against_f64(&first, &authority, &Bounds::continuous_only(), variant.as_str());
-            assert!(score.pass, "{variant} failed Numeric Parity V2.1 for nchunk={nchunk}: {:?}", score.failures);
+            let score = score_against_f64(
+                &first,
+                &authority,
+                &Bounds::continuous_only(),
+                variant.as_str(),
+            );
+            assert!(
+                score.pass,
+                "{variant} failed Numeric Parity V2.1 for nchunk={nchunk}: {:?}",
+                score.failures
+            );
         }
     }
 }

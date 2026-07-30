@@ -22,12 +22,16 @@ fn run_one(ctx: &MetalContext, n: usize, seed: u64, range: f32) {
     let scales_buf = ctx.new_buffer((n / 256) * std::mem::size_of::<f32>());
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
-        kernels::quantize_f32_to_int8_per_block_tcb(&mut tcb, &x_buf, &int8_buf, &scales_buf, n).expect("encode");
+        kernels::quantize_f32_to_int8_per_block_tcb(&mut tcb, &x_buf, &int8_buf, &scales_buf, n)
+            .expect("encode");
         tcb.commit_and_wait().expect("commit");
     }
     let gpu_int8 = read_i8(&int8_buf, n);
     let gpu_scales = read_f32(&scales_buf, n / 256);
-    assert_eq!(cpu_scales, gpu_scales, "scales mismatch at n={n} seed={seed}");
+    assert_eq!(
+        cpu_scales, gpu_scales,
+        "scales mismatch at n={n} seed={seed}"
+    );
     let mut diffs = 0usize;
     let mut first_bad = None;
     for i in 0..n {
@@ -38,7 +42,11 @@ fn run_one(ctx: &MetalContext, n: usize, seed: u64, range: f32) {
             }
         }
     }
-    assert_eq!(diffs, 0, "int8 mismatch at n={n} seed={seed}: {diffs} elems differ; first bad: {:?}", first_bad,);
+    assert_eq!(
+        diffs, 0,
+        "int8 mismatch at n={n} seed={seed}: {diffs} elems differ; first bad: {:?}",
+        first_bad,
+    );
 }
 #[test]
 fn quantize_int8_kernel_matches_cpu_small() {
@@ -65,7 +73,8 @@ fn quantize_int8_kernel_handles_all_zero_block() {
     let scales_buf = ctx.new_buffer(8 * std::mem::size_of::<f32>());
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
-        kernels::quantize_f32_to_int8_per_block_tcb(&mut tcb, &x_buf, &int8_buf, &scales_buf, 2048).expect("encode");
+        kernels::quantize_f32_to_int8_per_block_tcb(&mut tcb, &x_buf, &int8_buf, &scales_buf, 2048)
+            .expect("encode");
         tcb.commit_and_wait().expect("commit");
     }
     assert_eq!(cpu_scales, read_f32(&scales_buf, 8), "scales");

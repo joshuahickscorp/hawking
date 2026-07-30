@@ -293,8 +293,14 @@ mod tests {
             &mut gov,
             &[true, false, false, false, true, false, false, false],
         );
- assert!( gov.consecutive_rejections() < 5, "must not be a streak bail" );
- assert!( !gov.is_enabled(), "low rolling rate must disable via the floor" );
+        assert!(
+            gov.consecutive_rejections() < 5,
+            "must not be a streak bail"
+        );
+        assert!(
+            !gov.is_enabled(),
+            "low rolling rate must disable via the floor"
+        );
     }
     #[test]
     fn full_enable_disable_reenable_cycle() {
@@ -306,7 +312,10 @@ mod tests {
         feed(&mut gov, &[false, false, false, false, false]);
         assert!(!gov.is_enabled(), "miss streak disabled spec");
         assert!(matches!(gov.state(), GovState::Cooldown { .. }));
- assert!( !gov.step(true), "one lucky accept must not flap spec back on" );
+        assert!(
+            !gov.step(true),
+            "one lucky accept must not flap spec back on"
+        );
         assert!(matches!(gov.state(), GovState::Cooldown { .. }));
         feed(&mut gov, &[true, true, true, true]);
         assert!(gov.is_enabled());
@@ -321,7 +330,10 @@ mod tests {
             ],
         );
         assert!((gov.accept_rate() - 0.5).abs() < 1e-6);
- assert!( gov.is_enabled(), "dead-band rate must not disable from Enabled" );
+        assert!(
+            gov.is_enabled(),
+            "dead-band rate must not disable from Enabled"
+        );
         feed(&mut gov, &[false, false, false, false, false]);
         assert!(!gov.is_enabled());
         feed(

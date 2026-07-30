@@ -697,9 +697,8 @@ fn main() -> Result<()> {
         } => {
             // Resolve --gravity / HAWKING_GRAVITY to a loadable shard. Default
             // off: when neither flag nor env is set, require --weights as before.
-            let gravity = gravity.or_else(|| {
-                std::env::var_os("HAWKING_GRAVITY").map(PathBuf::from)
-            });
+            let gravity =
+                gravity.or_else(|| std::env::var_os("HAWKING_GRAVITY").map(PathBuf::from));
             let gravity_request_timeout_secs = gravity_request_timeout_secs.or_else(|| {
                 std::env::var("HAWKING_GRAVITY_REQUEST_TIMEOUT_SECS")
                     .ok()
@@ -709,9 +708,8 @@ fn main() -> Result<()> {
                 #[cfg(target_os = "macos")]
                 {
                     use hawking_core::model::gravity_engine::GravityEngine;
-                    let resolved = GravityEngine::resolve_entry(&gpath).map_err(|e| {
-                        anyhow::anyhow!("--gravity {gpath:?}: {e}")
-                    })?;
+                    let resolved = GravityEngine::resolve_entry(&gpath)
+                        .map_err(|e| anyhow::anyhow!("--gravity {gpath:?}: {e}"))?;
                     eprintln!(
                         "[serve --gravity] resolved {} -> {}",
                         gpath.display(),
@@ -728,7 +726,9 @@ fn main() -> Result<()> {
                 }
             } else {
                 weights.ok_or_else(|| {
-                    anyhow::anyhow!("--weights is required when --gravity / HAWKING_GRAVITY is unset")
+                    anyhow::anyhow!(
+                        "--weights is required when --gravity / HAWKING_GRAVITY is unset"
+                    )
                 })?
             };
 
@@ -3874,7 +3874,9 @@ mod fit_tests {
         assert!(sf.safety_downgrade.is_some());
         assert!(sf.context <= f.native_ctx);
         let bat = auto_serve_pick(&f, file, total18, "max-battery");
- assert!( bat.safety_downgrade.is_some() && bat.energy_efficient && bat.context <= f.native_ctx );
+        assert!(
+            bat.safety_downgrade.is_some() && bat.energy_efficient && bat.context <= f.native_ctx
+        );
         let mc = auto_serve_pick(&f, file, total18, "max-context");
         assert!(mc.kv_f16 && mc.safety_downgrade.is_none() && mc.context >= 32768);
         let total3 = 3u64 << 30;
@@ -3917,21 +3919,35 @@ mod serve_auto_tests {
         for gib in [8u64, 12, 18, 36, 64] {
             let mem = gib << 30;
             let cap = auto_serve_pick(&f, bytes, mem, "max-capability");
- assert!( cap.safety_downgrade.is_none(), "max-capability must never hide a throttle ({gib} GiB)" );
+            assert!(
+                cap.safety_downgrade.is_none(),
+                "max-capability must never hide a throttle ({gib} GiB)"
+            );
             for intent in ["safe-fit", "max-battery"] {
                 let p = auto_serve_pick(&f, bytes, mem, intent);
- assert!( p.context <= cap.context, "{intent} must not exceed capability ({gib} GiB)" );
+                assert!(
+                    p.context <= cap.context,
+                    "{intent} must not exceed capability ({gib} GiB)"
+                );
                 if p.context < cap.context {
                     assert!(p.safety_downgrade.is_some());
                 }
             }
             for intent in ["max-quality", "max-context", "max-speed"] {
-                assert!(auto_serve_pick(&f, bytes, mem, intent) .safety_downgrade .is_none());
+                assert!(auto_serve_pick(&f, bytes, mem, intent)
+                    .safety_downgrade
+                    .is_none());
             }
         }
         let cap18 = auto_serve_pick(&f, bytes, 18u64 << 30, "max-capability");
- assert_eq!( cap18.context, 32768, "native ctx should be served when it fits" );
- assert!( !cap18.kv_f16, "f32 KV fits at 18 GiB → must not drop to f16" );
+        assert_eq!(
+            cap18.context, 32768,
+            "native ctx should be served when it fits"
+        );
+        assert!(
+            !cap18.kv_f16,
+            "f32 KV fits at 18 GiB → must not drop to f16"
+        );
     }
     #[test]
     fn ssm_is_never_throttled() {
@@ -4010,7 +4026,10 @@ mod profile_rank_tests {
             mk("slow", 1, 30.0, 1.00),
         ]);
         let report = rank_profile_report(&p, DEFAULT_QUALITY_FLOOR);
- assert!( report.contains("selected: mid"), "expected `mid` selected, got:\n{report}" );
+        assert!(
+            report.contains("selected: mid"),
+            "expected `mid` selected, got:\n{report}"
+        );
         assert!(!report.contains("selected: fast"));
         let line_idx = |needle: &str| report.find(needle).expect(needle);
         assert!(line_idx("1\t40.000\tmid") < line_idx("2\t30.000\tslow"));

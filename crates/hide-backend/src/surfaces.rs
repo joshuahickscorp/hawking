@@ -8,15 +8,15 @@
 //! This module is the host-side holder of [`crate::lenses::SurfaceGraph`]. It is
 //! model-free: seal/receive/switch only. No connector credentials, no inference.
 
+use crate::lenses::{
+    Claim, DeliberateExclusion, EvidenceTier, HandoffCapsule, HandoffKind, Surface, SurfaceGraph,
+    SurfaceGraphView,
+};
 use hide_core::api::{UiEvent, UiEventKind};
 use hide_core::event::NewEvent;
 use hide_core::ids::SessionId;
 use hide_core::persistence::DynEventLog;
 use hide_core::Result;
-use crate::lenses::{
-    Claim, DeliberateExclusion, EvidenceTier, HandoffCapsule, HandoffKind, Surface, SurfaceGraph,
-    SurfaceGraphView,
-};
 use parking_lot::Mutex;
 use serde_json::{json, Value};
 use std::sync::Arc;
@@ -90,9 +90,7 @@ impl SurfaceGraphService {
             "you" => Ok(Surface::You),
             "chat" => Ok(Surface::Chat),
             "ide" | "code" => Ok(Surface::Ide),
-            other => Err(format!(
-                "unknown surface '{other}'; expected you|chat|ide"
-            )),
+            other => Err(format!("unknown surface '{other}'; expected you|chat|ide")),
         }
     }
 
@@ -196,12 +194,7 @@ impl SurfaceGraphService {
         }
         // Creator connectors described on the capsule must still be unusable
         // via the capsule itself (claim never capability).
-        if let Some(conn) = received
-            .opened
-            .permissions_described
-            .connectors
-            .first()
-        {
+        if let Some(conn) = received.opened.permissions_described.connectors.first() {
             let g = self.graph.lock();
             if let Some(cap) = g.capsule(capsule_id) {
                 let _ = cap.try_use_creator_connector(conn);
@@ -248,10 +241,7 @@ pub fn claims_from_payload(raw: &Value) -> std::result::Result<Vec<Claim>, Strin
             .map(parse_evidence_tier)
             .transpose()?
             .unwrap_or(EvidenceTier::Asserted);
-        let payload = item
-            .get("payload")
-            .cloned()
-            .unwrap_or_else(|| json!({}));
+        let payload = item.get("payload").cloned().unwrap_or_else(|| json!({}));
         out.push(Claim {
             id,
             text,
@@ -321,8 +311,8 @@ mod tests {
             assert!(v.lenses.contains_key("you"));
             assert!(v.lenses.contains_key("chat"));
             assert!(v.lenses.contains_key("ide"));
- assert!(v.lenses["you"] .connectors .iter() .any(|c| c == "gmail"));
- assert!(!v.lenses["chat"] .connectors .iter() .any(|c| c == "gmail"));
+            assert!(v.lenses["you"].connectors.iter().any(|c| c == "gmail"));
+            assert!(!v.lenses["chat"].connectors.iter().any(|c| c == "gmail"));
         });
     }
     #[tokio::test]
@@ -350,8 +340,8 @@ mod tests {
             .expect("create");
         assert!(capsule.try_extract_capability().is_err());
         let view = s.handoff_receive(&capsule.id).await.expect("receive");
- assert!(!view.lenses["chat"] .connectors .iter() .any(|c| c == "gmail"));
- assert!(view.lenses["you"] .connectors .iter() .any(|c| c == "gmail"));
+        assert!(!view.lenses["chat"].connectors.iter().any(|c| c == "gmail"));
+        assert!(view.lenses["you"].connectors.iter().any(|c| c == "gmail"));
         assert_eq!(view.inbox["chat"].len(), 1);
         assert_eq!(view.session_id, "ses_test");
     }

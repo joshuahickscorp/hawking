@@ -195,7 +195,13 @@ mod tests {
         let v = Verifier::default();
         let o = v.verify_line(&mut t, 1, 5, &[10, 20, 30]).unwrap();
         assert_eq!(o.accepted, vec![10, 20, 30]);
- assert_eq!( o.accepted_verified .iter() .map(|x| x.get()) .collect::<Vec<_>>(), vec![10, 20, 30] );
+        assert_eq!(
+            o.accepted_verified
+                .iter()
+                .map(|x| x.get())
+                .collect::<Vec<_>>(),
+            vec![10, 20, 30]
+        );
         assert_eq!(o.correction, None);
         assert!(o.correction_verified.is_none());
         assert_eq!(o.next_seq_len, 5 + 3);

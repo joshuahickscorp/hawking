@@ -450,7 +450,10 @@ mod tests {
         };
         let env = env_seed("run_x", Path::new("/tmp/wt/run_x"), &lease);
         assert_eq!(env.get("PORT").map(String::as_str), Some("5100"));
- assert_eq!( env.get("HIDE_DB_NAME").map(String::as_str), Some("hide_run_run_x") );
+        assert_eq!(
+            env.get("HIDE_DB_NAME").map(String::as_str),
+            Some("hide_run_run_x")
+        );
         assert!(env.get("DATABASE_URL").unwrap().contains(":5100/"));
         assert!(env.get("TMPDIR").unwrap().contains("run_x"));
     }

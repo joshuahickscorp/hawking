@@ -86,10 +86,7 @@ impl SurfaceGraph {
         let session_id = session_id.into();
         let mut lenses = BTreeMap::new();
         for surface in Surface::all() {
-            lenses.insert(
-                surface,
-                SurfaceSession::open(surface, session_id.clone()),
-            );
+            lenses.insert(surface, SurfaceSession::open(surface, session_id.clone()));
         }
         let mut inbox = BTreeMap::new();
         for surface in Surface::all() {
@@ -157,8 +154,7 @@ impl SurfaceGraph {
                 origin
             )));
         }
-        let permissions =
-            PermissionSnapshot::from_capability(origin, origin_lens.capability());
+        let permissions = PermissionSnapshot::from_capability(origin, origin_lens.capability());
         let provenance = vec![ProvenanceEntry {
             actor: actor.into(),
             surface: origin,
@@ -176,8 +172,7 @@ impl SurfaceGraph {
             deliberately_excludes,
             body,
         )?;
-        self.capsules
-            .insert(capsule.id.clone(), capsule.clone());
+        self.capsules.insert(capsule.id.clone(), capsule.clone());
         Ok(capsule)
     }
 
@@ -186,11 +181,8 @@ impl SurfaceGraph {
     /// Capability of the target lens is unchanged. Creator connectors remain
     /// unusable on the receiver. Claims land in the target inbox.
     pub fn receive_handoff(&mut self, capsule_id: &str) -> Result<ReceivedHandoff> {
-        let capsule = self
-            .capsules
-            .get(capsule_id)
-            .cloned()
-            .ok_or_else(|| {
+        let capsule =
+            self.capsules.get(capsule_id).cloned().ok_or_else(|| {
                 YouError::InvalidHandoff(format!("unknown capsule id {capsule_id}"))
             })?;
         // Capsules created elsewhere for a different session are refused: lenses
@@ -334,9 +326,21 @@ mod tests {
         for s in Surface::all() {
             assert_eq!(g.lens(s).unwrap().session_id, "ses_shared");
         }
- assert!(g .lens(Surface::You) .unwrap() .capability() .allows_connector("gmail"));
- assert!(!g .lens(Surface::Chat) .unwrap() .capability() .allows_connector("gmail"));
- assert!(!g .lens(Surface::Ide) .unwrap() .capability() .allows_connector("gmail"));
+        assert!(g
+            .lens(Surface::You)
+            .unwrap()
+            .capability()
+            .allows_connector("gmail"));
+        assert!(!g
+            .lens(Surface::Chat)
+            .unwrap()
+            .capability()
+            .allows_connector("gmail"));
+        assert!(!g
+            .lens(Surface::Ide)
+            .unwrap()
+            .capability()
+            .allows_connector("gmail"));
     }
     #[test]
     fn switch_does_not_change_session_or_capability() {
@@ -346,8 +350,14 @@ mod tests {
         g.switch(Surface::You);
         assert_eq!(g.active(), Surface::You);
         assert_eq!(g.session_id(), "ses_1");
- assert_eq!( g.lens(Surface::Chat).unwrap().capability().snapshot(), before_chat );
- assert_eq!( g.lens(Surface::You).unwrap().capability().snapshot(), before_you );
+        assert_eq!(
+            g.lens(Surface::Chat).unwrap().capability().snapshot(),
+            before_chat
+        );
+        assert_eq!(
+            g.lens(Surface::You).unwrap().capability().snapshot(),
+            before_you
+        );
     }
     #[test]
     fn handoff_claim_never_grants_creator_capability_on_shared_session() {
@@ -376,23 +386,27 @@ mod tests {
         let received = g.receive_handoff(&capsule.id).expect("receive");
         assert!(received.capability_unchanged());
         assert!(!received.opened.grants_capability());
- assert!(g .lens(Surface::Chat) .unwrap() .require_connector("gmail") .is_err());
- assert!(g .lens(Surface::You) .unwrap() .require_connector("gmail") .is_ok());
+        assert!(g
+            .lens(Surface::Chat)
+            .unwrap()
+            .require_connector("gmail")
+            .is_err());
+        assert!(g
+            .lens(Surface::You)
+            .unwrap()
+            .require_connector("gmail")
+            .is_ok());
         assert_eq!(g.inbox_for(Surface::Chat).len(), 1);
     }
     #[test]
     fn cannot_seal_handoff_from_wrong_active_surface() {
         let mut g = SurfaceGraph::open("ses_x");
         let err = g
-            .create_handoff(
-                HandoffKind::YouToChat,
-                1,
-                vec![],
-                vec![],
-                json!({}),
-                "user",
-            )
+            .create_handoff(HandoffKind::YouToChat, 1, vec![], vec![], json!({}), "user")
             .unwrap_err();
- assert!( err.to_string().contains("active surface"), "wrong origin refused: {err}" );
+        assert!(
+            err.to_string().contains("active surface"),
+            "wrong origin refused: {err}"
+        );
     }
 }
