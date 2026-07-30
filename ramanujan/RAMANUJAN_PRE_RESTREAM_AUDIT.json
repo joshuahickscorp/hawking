@@ -1,0 +1,68 @@
+{
+  "schema": "hawking.ramanujan.pre_restream_audit.v1",
+  "status": "AUDIT_IN_PROGRESS",
+  "hawking_commit": "492c7fb29a5a708fe923eb8f61d2eb73d6dff515",
+  "at_note": "first pass; covers the section 9 checklist items reachable without the parent",
+  "method": "probe the tree and the machine, then verify every claim a receipt makes rather than trusting it",
+  "items": {
+    "lean_mathlib_offline_lock": {
+      "receipt_claimed": "Q0 ACHIEVED, clean-container replay with --network=none, image ramanujan-clean-replay:2ec0166b",
+      "verified": false,
+      "what_was_actually_true": "the harness the receipt names was deleted from the tree. ramanujan/container did not exist. The docker image does not exist and the daemon is not running.",
+      "deleted_by": [
+        "8b0c5405 Install counted verification and retire historical recovery executables",
+        "aa7fa85c Condense the laboratory trees no lane had reached"
+      ],
+      "originally_closed_by": "f2bed147 Close Q0: a proof capsule now re-checks in a clean pinned container",
+      "action_taken": "restored all 12 files from f2bed147; scripts pass bash -n; capsule parses; pins are complete",
+      "pins_present": {
+        "mathlib_commit": "2ec0166b31100827cd34bacca4d3b9ea3da9d618",
+        "lean": "4.33.0-rc1 commit 62eed1db4d67327ec8120be05f1a1b0847d74561",
+        "elan": "4.2.3",
+        "z3": "4.16.0",
+        "cadical": "3.0.1",
+        "base_image_digest": "sha256:4fbb8e6a8395de5a..."
+      },
+      "still_unverified": "the replay itself. It needs a docker daemon; colima is not running, and starting a VM during the 24h substrate run is the contention section 10 forbids.",
+      "status": "HARNESS_RESTORED_REPLAY_UNVERIFIED"
+    },
+    "lean_toolchain_on_host": {
+      "verified": true,
+      "lean": "4.32.2 runnable at ~/.elan/bin/lean",
+      "lake": "5.0.0-src",
+      "toolchains": [
+        "v4.32.1",
+        "v4.32.2",
+        "v4.33.0-rc1"
+      ],
+      "note": "not on PATH, which is why a naive command -v probe reports it absent"
+    },
+    "solvers": {
+      "z3": "INSTALLED 4.16.0",
+      "cvc5": "ABSENT",
+      "gap": "ABSENT",
+      "vampire": "ABSENT",
+      "eprover": "ABSENT",
+      "note": "the lock records cvc5 and GAP as absent by authorisation choice, not by failure"
+    },
+    "cognition_ledger_tribunal_roles": {
+      "verified": true,
+      "evidence": "ramanujan/ has cognition.py, evidence.py, you_research.py and 36 tests that pass",
+      "status": "PRESENT_AND_TESTED"
+    },
+    "research_authorisation": {
+      "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+      "note": "unchanged; this audit does not and cannot alter it"
+    }
+  },
+  "systemic_finding": {
+    "pattern": "tools that JUDGE keep being deleted by LOC-reduction commits while the receipts asserting their success survive",
+    "instances": [
+      "the 11 GLM gate controllers, deleted, recoverable at 791ced2c^",
+      "the Q0 container harness, deleted, recovered here from f2bed147",
+      "the thesis gate runner, deleted, rebuilt earlier in this campaign"
+    ],
+    "consequence": "a receipt saying ACHIEVED is not evidence that the thing still reproduces. Every gate claim in this audit is re-verified or marked unverified.",
+    "recommendation": "gate runners belong behind a test that fails when the runner disappears, otherwise the next density pass removes them again"
+  }
+}

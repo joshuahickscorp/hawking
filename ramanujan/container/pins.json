@@ -1,0 +1,68 @@
+{
+  "schema": "hawking.ramanujan.clean_container_pins.v1",
+  "purpose": "Exact immutable identifiers for the Q0 clean-container replay image. Never a floating tag. Never 'latest'.",
+  "platform": {
+    "os": "linux",
+    "arch": "arm64",
+    "note": "Built and verified on aarch64 (Apple Silicon host via Colima). x86_64 would need different solver/elan artifact URLs and sha256s."
+  },
+  "base_image": {
+    "name": "ubuntu",
+    "tag_recorded": "24.04",
+    "digest": "sha256:4fbb8e6a8395de5a7550b33509421a2bafbc0aab6c06ba2cef9ebffbc7092d90",
+    "from_line": "ubuntu@sha256:4fbb8e6a8395de5a7550b33509421a2bafbc0aab6c06ba2cef9ebffbc7092d90"
+  },
+  "elan": {
+    "version": "4.2.3",
+    "artifact": "elan-aarch64-unknown-linux-gnu.tar.gz",
+    "url": "https://github.com/leanprover/elan/releases/download/v4.2.3/elan-aarch64-unknown-linux-gnu.tar.gz",
+    "sha256": "cb69af0803b04157bc30201c29c12fca882bb3ad8b43476b8d2d3064810bc3ac"
+  },
+  "lean_for_mathlib_checks": {
+    "role": "toolchain used to machine-check Mathlib-dependent capsules (matches Mathlib lean-toolchain at the pinned commit)",
+    "toolchain": "leanprover/lean4:v4.33.0-rc1",
+    "version": "4.33.0-rc1",
+    "commit": "62eed1db4d67327ec8120be05f1a1b0847d74561",
+    "why_not_4_32_1": "Mathlib at commit 2ec0166b31100827cd34bacca4d3b9ea3da9d618 declares leanprover/lean4:v4.33.0-rc1. A Mathlib pin is meaningless against a Lean that Mathlib will not load."
+  },
+  "lean_host_default_recorded_in_lock": {
+    "role": "host elan default recorded in RAMANUJAN_ENVIRONMENT_LOCK.json components.lean",
+    "version": "4.32.1",
+    "commit": "f054605aea4b840552cca2e725580bffd1e1b704",
+    "note": "Installed into the image for pin parity with the lock, but capsule replay against Mathlib uses lean_for_mathlib_checks."
+  },
+  "mathlib": {
+    "repo": "https://github.com/leanprover-community/mathlib4.git",
+    "commit": "2ec0166b31100827cd34bacca4d3b9ea3da9d618",
+    "lean_toolchain_file_contents": "leanprover/lean4:v4.33.0-rc1"
+  },
+  "solvers": {
+    "z3": {
+      "version": "4.16.0",
+      "artifact": "z3-4.16.0-arm64-glibc-2.38.zip",
+      "url": "https://github.com/Z3Prover/z3/releases/download/z3-4.16.0/z3-4.16.0-arm64-glibc-2.38.zip",
+      "sha256": "87fcd963d3eecb0f12cf1c3ef0ad74e84a3a7bd3caed5d94445645ef94ae6274"
+    },
+    "cadical": {
+      "version": "3.0.1",
+      "git_tag": "rel-3.0.1",
+      "git_commit": "c60730422e758ef1cebe7aeddf2dda31c996bf04",
+      "url": "https://github.com/arminbiere/cadical/archive/refs/tags/rel-3.0.1.tar.gz",
+      "sha256": "0a8ea563b5a25f5aa064634814edab45cc0e45111ea0f5d412a565f806fd7e11"
+    },
+    "pari_gp": {
+      "version": "2.17.4",
+      "artifact": "pari-2.17.4.tar.gz",
+      "url": "https://pari.math.u-bordeaux.fr/pub/pari/unix/pari-2.17.4.tar.gz",
+      "sha256": "02651d99c391007d384b3fadbc20abc6916b77036f9e496c99e9ce8688ca4b53"
+    }
+  },
+  "probe_theorem": {
+    "name": "two_plus_two",
+    "statement": "(2 : Nat) + 2 = 4",
+    "tactic": "norm_num",
+    "source": "lock proof_it_works; the formal system proves 2+2=4 by machine check"
+  },
+  "image_name": "ramanujan-clean-replay",
+  "image_tag_policy": "tag = mathlib short SHA (8 hex). Never 'latest'."
+}
