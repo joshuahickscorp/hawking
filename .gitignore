@@ -131,3 +131,7 @@ tools/sovereignty/__pycache__/
 # Semantic graph, viewer and topology analyses now live under /build (ignored
 # above): all deterministic, ~41s to regenerate with
 # tools/graph/hawking_graph.py --emit all
+
+# Instrument models for the TG gauntlet: fetched, transformed, sealed by
+# receipt, then evicted. Never committed; evidence/tg/ carries their hashes.
+/models/*.gguf

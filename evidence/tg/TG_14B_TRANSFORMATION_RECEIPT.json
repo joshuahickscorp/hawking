@@ -1,0 +1,76 @@
+{
+  "schema": "hawking.tg.transformation_receipt.v1",
+  "status": "PASS_MEASURED",
+  "hawking_commit": "9463d333e83d9b6b1654c9b9049fa66e94d54760",
+  "instrument": {
+    "family": "qwen2",
+    "model": "Qwen2.5-14B-Instruct",
+    "params_b": 14.77,
+    "source_repo": "bartowski/Qwen2.5-14B-Instruct-GGUF",
+    "engine_path": "qwen_dense"
+  },
+  "machine": {
+    "class": "m3ultra96",
+    "cores": 28,
+    "perf_cores": 20,
+    "ram_bytes": 103079215104
+  },
+  "contention": {
+    "clean_room": false,
+    "reason": "a 24h substrate run holds 2 perf cores; a Virtualization VM holds ~6 cores and ~29.7GB",
+    "note": "CPU transformation timings are nice(5) and thread-capped, so they are lower bounds, not clean-room"
+  },
+  "fetch": {
+    "bytes": 29547716448,
+    "seconds": 132.0,
+    "mbit_s": 1790.2,
+    "measured": true
+  },
+  "transformations": [
+    {
+      "target": "Q4_K_M",
+      "tool": "llama-quantize",
+      "threads": 20,
+      "nice": 5,
+      "wall_s": 51.81,
+      "user_s": 727.27,
+      "sys_s": 11.22,
+      "peak_rss_bytes": 7875133440,
+      "out_bytes": 8988110688,
+      "parallel_speedup": 14.04
+    },
+    {
+      "target": "Q6_K",
+      "tool": "llama-quantize",
+      "threads": 20,
+      "nice": 5,
+      "wall_s": 29.46,
+      "user_s": 373.47,
+      "sys_s": 8.58,
+      "peak_rss_bytes": 7883784192,
+      "out_bytes": 12124684128,
+      "parallel_speedup": 12.68
+    }
+  ],
+  "artifacts": {
+    "f16": {
+      "path": "models/Qwen2.5-14B-Instruct-f16.gguf",
+      "bytes": 29547716448,
+      "sha256": "0811262438ff013dd1421b7b4c6cbd526f0a392a5deec0f7ba7ba6722f49d83b"
+    },
+    "Q6_K": {
+      "path": "models/Qwen2.5-14B-Instruct-Q6_K.gguf",
+      "bytes": 12124684128,
+      "sha256": "e4e101b98e363e514ca5ecaf9c734394245c76f2b13b1ddf4961620d11ea9ab4"
+    },
+    "Q4_K_M": {
+      "path": "models/Qwen2.5-14B-Instruct-Q4_K_M.gguf",
+      "bytes": 8988110688,
+      "sha256": "0cf0487827c1c41207bbe65b65f609bd9e035e9a78b6a6586b66189b5d32fe6d"
+    }
+  },
+  "claims_not_made": [
+    "no decode or TG rung is claimed here; the GPU is contended",
+    "llama-quantize is the external baseline, not the Gravity/Condense foundry"
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "schema": "hawking.tg.model_scoreboard.v1",
+  "status": "OPEN_NO_RUNG_CLAIMABLE",
+  "rung_ladder_ms": {
+    "TG20": 20,
+    "TG10": 10,
+    "TG5": 5,
+    "TG4": 4,
+    "TG3": 3,
+    "TG2": 2,
+    "TG1": 1
+  },
+  "law": "TG is absolute per-token latency and is model-specific. A smaller model reaching a deeper rung is not a speedup. Kernel promotion requires a same-model before/after.",
+  "blocking": "No absolute rung may be recorded while the box is contended. Clean-room requires the 24h substrate run and the Virtualization VM to be down.",
+  "models": {
+    "Qwen2.5-14B-Instruct": {
+      "family": "qwen2",
+      "engine_path": "qwen_dense",
+      "admitted": true,
+      "curve_points": [
+        "f16",
+        "Q6_K",
+        "Q4_K_M"
+      ],
+      "deepest_stable_rung": null,
+      "first_failing_rung": null,
+      "baseline_ms_per_token": null,
+      "binding_roofline": null,
+      "reason": "decode not yet measured; GPU contended"
+    }
+  },
+  "hawking_commit": "9463d333e83d9b6b1654c9b9049fa66e94d54760"
+}

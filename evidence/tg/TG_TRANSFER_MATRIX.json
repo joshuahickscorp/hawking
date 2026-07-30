@@ -1,0 +1,11 @@
+{
+  "schema": "hawking.tg.transfer_matrix.v1",
+  "status": "EMPTY_AWAITING_FIRST_GRAMMAR",
+  "axes": {
+    "source_geometry": [],
+    "target_geometry": []
+  },
+  "law": "Transfer is judged by percent of model-specific roofline, bytes/token, operations/token and command buffers/token, never by absolute latency across models.",
+  "entries": [],
+  "hawking_commit": "9463d333e83d9b6b1654c9b9049fa66e94d54760"
+}
