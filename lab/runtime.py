@@ -123,13 +123,13 @@ class ExperimentRuntime:
         self.work_dir = Path(work_dir)
         self.work_dir.mkdir(parents=True, exist_ok=True)
         self.operators = operators or load_default_registry()
+        self.handlers: dict[str, Handler] = {**BUILTIN_HANDLERS, **dict(handlers or {})}
+        for key, handler in self.operators.handlers.items():
+            self.handlers.setdefault(key, handler)
         if not handlers:
             from lab.science_registry import build_operator_handlers
             for key, handler in build_operator_handlers().items():
                 self.handlers.setdefault(key, handler)
-        self.handlers: dict[str, Handler] = {**BUILTIN_HANDLERS, **dict(handlers or {})}
-        for key, handler in self.operators.handlers.items():
-            self.handlers.setdefault(key, handler)
         self.controller_epoch = controller_epoch
         self.acquire_lease = acquire_lease
         limits = ResourceLimits.from_mapping(spec.metadata.get('resource_limits'))
