@@ -1,0 +1,69 @@
+{
+  "schema": "hawking.tg.k0_truth.v1",
+  "status": "PASS_MEASURED",
+  "hawking_commit": "f2c9e57ff7d50fa9a4aa25030ee15c63df1feaea",
+  "model": "Qwen2.5-14B-Instruct",
+  "engine_path": "qwen_dense",
+  "profile_ab_ctx128": {
+    "method": "same model, same context, same seed, same prompt; profile is the only variable; 3 trials each",
+    "default": {
+      "ms_per_token": 36.98,
+      "dispatches_per_forward": 435,
+      "lm_head_path": "q4k-predec",
+      "spread_pct": 0.1
+    },
+    "exact": {
+      "ms_per_token": 39.48,
+      "dispatches_per_forward": 339,
+      "lm_head_path": "f16",
+      "spread_pct": 0.3
+    },
+    "fast": {
+      "ms_per_token": 36.77,
+      "dispatches_per_forward": 435,
+      "lm_head_path": "q4k-predec-f16s",
+      "spread_pct": 0.4
+    },
+    "findings": [
+      "the CLI banner is correct and the --profile help text is wrong: the default is NOT bit-identical, it runs the q4k-predec lm_head while exact runs f16",
+      "fast buys 0.6% over default, so the f16-scales lever is worth nothing here",
+      "exact issues 96 FEWER dispatches (339 vs 435) and is 6.8% SLOWER, which is direct same-model evidence that dispatch count is not the wall"
+    ]
+  },
+  "byte_scaling_ctx128": {
+    "q4_k_m": {
+      "bytes": 8988110944,
+      "ms_per_token": 36.98
+    },
+    "q6_k": {
+      "bytes": 12124684384,
+      "ms_per_token": 41.75
+    },
+    "bytes_delta_pct": 34.9,
+    "time_delta_pct": 12.9,
+    "implied_effective_bandwidth_gb_s": 658,
+    "pct_of_assumed_roof": 89,
+    "implied_fixed_cost_ms": 23.31,
+    "fixed_share_of_token_pct": 63
+  },
+  "byte_scaling_ctx512": {
+    "bytes_delta_pct": 34.9,
+    "time_delta_pct": 8.1,
+    "implied_effective_bandwidth_gb_s": 841,
+    "implied_fixed_cost_ms": 35.55,
+    "MODEL_BREAKS": "841 GB/s exceeds the assumed 736 GB/s roof, which is impossible",
+    "reading": "either the 736 constant is wrong (it is hard-coded at lab/operators/gravity_flop_ledger.py:24 with no sealed receipt) or the two-point linear fit is invalid because attention cost differs between the points. The ctx128 fit is physically plausible; this one is not, and is reported rather than dropped."
+  },
+  "headline": "the weight-bandwidth path is already near optimal at roughly 89% of the assumed roof; 63% of the token at ctx128 and 77% at ctx512 is fixed per-token cost that quantization cannot touch",
+  "consequences_for_the_kernel_plan": {
+    "K2_quantized_matvec_sweep": "LOW value here: bandwidth efficiency is already high, and Q6 vs Q4 shows bytes barely move the clock",
+    "K4_K5_K7_fusion_residency_tokengraph": "HIGH value: they attack the 23.3 ms fixed cost, which is the actual wall",
+    "K8_representation": "cannot reach TG20 for this model, because fixed cost alone is 23.3 ms and TG20 is 20 ms",
+    "TG20_verdict": "unreachable by quantization alone; requires removing fixed per-token cost first"
+  },
+  "contention": {
+    "clean_room": false,
+    "trial_spread_pct_max": 0.7,
+    "note": "all comparisons are same-model paired A/B under identical contention, which is the admissible form"
+  }
+}

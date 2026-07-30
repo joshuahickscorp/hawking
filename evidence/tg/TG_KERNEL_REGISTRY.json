@@ -1,6 +1,6 @@
 {
   "schema": "hawking.tg.kernel_registry.v1",
-  "status": "SEEDED_UNPROVEN",
+  "status": "PRIORITIES_REDIRECTED_BY_K0",
   "law": "Grammars are frozen by geometry, not by model name. A grammar is promoted only on a same-model before/after with parity held.",
   "candidates": [
     {
@@ -30,5 +30,19 @@
     }
   ],
   "promoted": [],
-  "hawking_commit": "9463d333e83d9b6b1654c9b9049fa66e94d54760"
+  "hawking_commit": "f2c9e57ff7d50fa9a4aa25030ee15c63df1feaea",
+  "k0_finding": "63-77% of the token is fixed cost, not weight bandwidth. Stages that move bytes are low value on this geometry; stages that remove per-token work are high value.",
+  "stage_priority": {
+    "high": [
+      "K4 fused operators",
+      "K5 device residency",
+      "K7 replayable token graph",
+      "K1 host and verification removal"
+    ],
+    "low": [
+      "K2 quantized matvec sweep",
+      "K8 representation reduction"
+    ],
+    "evidence": "evidence/tg/TG_14B_K0_TRUTH.json"
+  }
 }
