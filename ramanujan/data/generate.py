@@ -128,6 +128,13 @@ def generate(argv: list[str] | None = None) -> dict:
     else:
         print(f"D4 running Lean perturbations (workers={workers})...", flush=True)
         d4 = extract_d4(decls, limit=args.d4_limit, workers=workers)
+        # Sort before writing. D4 is the only source built by a worker pool,
+        # so records arrive in Lean-completion order and land in a different
+        # order every run even when the content is identical. content_digest
+        # is order-sensitive on purpose, so unsorted output makes D4 the one
+        # corpus whose freeze can never be re-derived. Measured 2026-07-30:
+        # the first record was a different theorem between two runs.
+        d4.sort(key=lambda r: r["id"])
         print(f"D4 repair pairs:           {len(d4)}", flush=True)
     corpora["D4"] = write_jsonl(SOURCE_FILES["D4"], d4)
     corpora["D4"]["extraction_method"] = METHOD_D4

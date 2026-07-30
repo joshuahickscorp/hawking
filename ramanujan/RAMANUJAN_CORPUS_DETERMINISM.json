@@ -1,0 +1,42 @@
+{
+ "schema": "hawking.ramanujan.corpus_determinism.v1",
+ "at": "2026-07-30",
+ "question": "can the frozen corpora be re-derived from the pinned Mathlib, or is the freeze only a record?",
+ "mathlib": "2ec0166b31100827cd34bacca4d3b9ea3da9d618, present on the host at the pinned commit",
+ "result": {
+  "D1": "REPRODUCES. 5000 content hashes, identical order.",
+  "D2": "REPRODUCES. 5000, identical order.",
+  "D3": "REPRODUCES. 5000, identical order.",
+  "D6": "REPRODUCES. 302, identical order.",
+  "D4": "content leak FIXED, ordering FIXED, end-to-end rerun still owed",
+  "D7": "FIXED and verified without a rerun"
+ },
+ "defects_found_and_fixed": [
+  {
+   "id": "file-hash freeze is unverifiable by construction",
+   "detail": "every record carries a wall-clock provenance.at, so the file sha256 differs on every run and always will, even when the data is byte-identical in content. The sealed GENERATION_RECEIPT hashes only the file.",
+   "fix": "write_jsonl now also seals content_digest, a sha256 over the ordered content_hash list",
+   "note": "adding this immediately exposed the two defects below. A freeze nobody can check hides whatever it is hiding."
+  },
+  {
+   "id": "D4 leaked the mkdtemp path into the hashed body",
+   "detail": "lean prints the absolute path of the file it is given, and that text was stored in the record's error field, which content_hash covers. Every one of the 800 records therefore changed hash on every run.",
+   "fix": "the temp path is rewritten to a stable placeholder before the error is recorded",
+   "verified": "grep for /var/folders/ in the regenerated D4 returns 0"
+  },
+  {
+   "id": "D4 record order followed Lean worker completion",
+   "detail": "D4 is the only source built by a worker pool, so records arrive in whatever order six parallel lean processes finish. content_digest is order-sensitive by design, so the ordering alone made D4 unfreezable. Measured: the first record was a different theorem between two runs.",
+   "fix": "d4.sort(key=id) before write_jsonl",
+   "verified": "not yet end to end; the content fix is verified and the sort is deterministic by construction, but a second full run under the fixed code is still owed. That run is about an hour of Lean."
+  },
+  {
+   "id": "D7 ids came from the salted builtin hash",
+   "detail": "ids were built with hash(tac) & 0xFFFF, and str.__hash__ is salted per interpreter unless PYTHONHASHSEED is pinned. 30 of 86 ids moved between two runs over identical inputs.",
+   "fix": "a sha256-derived _stable_tag",
+   "verified": "all 30 affected suffixes recompute exactly from _stable_tag applied to a record field. Verified by recomputation, so no rerun was needed."
+  }
+ ],
+ "method_note": "my first comparison used the pre-fix corpus as the baseline, which makes a difference the expected outcome rather than a failure. The correct baseline is fixed-code against fixed-code. D7 could be settled by recomputing the ids directly; D4's ordering cannot, and is recorded as owed rather than claimed.",
+ "why_this_matters": "D4 is the training corpus for the repair controller, and its records are real Lean compiler errors. A repair corpus that cannot be regenerated is one whose contamination boundary and split assignment cannot be re-checked either."
+}
