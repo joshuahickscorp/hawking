@@ -95,9 +95,16 @@ mod arena_imp {
             vocab_size: usize,
             max_seq: usize,
         ) -> Self {
-            // max_batch=8 — covers the v3w widened kernel (B in 1..=8).
-            // Cost vs B=4: doubles the B-wide scratch buffer footprint,
-            // still trivial vs weight memory.
+            // Sized from the same env var the batched-prefill loop reads, so
+            // the two cannot drift apart: raising one without the other only
+            // moves the error from "arena.max_batch" to the kernel.
+            //
+            // ponytail: the 8 is the kernel's ceiling, not the arena's.
+            // gemm_q4_k_m_batched_v3w_pinned_tcb carries two float4 partial
+            // accumulators, so B>8 is a structural refusal rather than a
+            // tuning limit, and the B-wide scratch here is trivial next to
+            // weight memory. Lifting it needs a tiled GEMM prefill kernel.
+            let max_batch = crate::env_usize("HAWKING_QWEN_PREFILL_BATCH", 8).clamp(1, 8);
             Self::new_with_batch(
                 ctx,
                 n_layers,
@@ -108,7 +115,7 @@ mod arena_imp {
                 intermediate,
                 vocab_size,
                 max_seq,
-                8,
+                max_batch,
             )
         }
 

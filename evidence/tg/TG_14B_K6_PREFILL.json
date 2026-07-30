@@ -1,0 +1,65 @@
+{
+  "schema": "hawking.tg.k6_prefill.v1",
+  "status": "BLOCKER_IDENTIFIED",
+  "hawking_commit": "817acc138a815f7f7525dde852656e9df252677d",
+  "model": "Qwen2.5-14B-Instruct",
+  "artifact": "Q4_K_M-imat",
+  "symptom": {
+    "hawking_prefill_ms_per_prompt_token": {
+      "ctx128": 43.06,
+      "ctx512": 37.73,
+      "ctx2048": 52.3
+    },
+    "hawking_decode_ms_per_token": 36.98,
+    "ratio_prefill_to_decode": {
+      "ctx128": 1.16,
+      "ctx512": 1.06,
+      "ctx2048": 1.41
+    },
+    "reading": "prefill runs at roughly decode speed per prompt token, which is what token-at-a-time looks like",
+    "llama_cpp_same_file": {
+      "prefill_ms_per_token": 2.07,
+      "ratio_to_own_decode": 0.112,
+      "reading": "a properly batched prefill is about 18x faster than its own decode"
+    }
+  },
+  "lever_measured": {
+    "env": "HAWKING_QWEN_BATCH_PREFILL=1",
+    "speedup": 1.15,
+    "prior_claim": "2.1-2.3x on record",
+    "reproduced": false,
+    "note": "the lever exists, is parity-tested and is default-off, but it buys 1.15x here, not the recorded 2.1-2.3x"
+  },
+  "why_the_lever_is_small": "it batches 8 prompt tokens per forward, so it amortizes one weight read across 8 tokens instead of 512",
+  "blocker_chain": [
+    {
+      "level": 1,
+      "site": "qwen_dense.rs batched-prefill loop",
+      "was": "const B_MAX = 8",
+      "now": "env HAWKING_QWEN_PREFILL_BATCH, clamped 1..8"
+    },
+    {
+      "level": 2,
+      "site": "DenseDecodeArena::new",
+      "was": "hardcoded max_batch 8",
+      "now": "same env var, clamped",
+      "error_when_exceeded": "forward_tokens_batch_tcb: B=32 > arena.max_batch=8"
+    },
+    {
+      "level": 3,
+      "site": "gemm_q4_k_m_batched_v3w_pinned_tcb",
+      "limit": "B in 1..=8",
+      "structural": true,
+      "reason": "two float4 partial accumulators; shmem tile is B*256 floats, 8 KB at B=8",
+      "error_when_exceeded": "kernel: gemm_q4_k_m_batched_v3w_pinned_tcb supports batch in 1..=8; got 32",
+      "verdict": "THE ACTUAL WALL. Not a constant, not the arena, and not memory: 75 GB was free throughout."
+    }
+  ],
+  "k6_target": "a tiled GEMM prefill kernel. Prefill is matrix-matrix work being run as a batch-8 GEMV, which is why it lands near decode speed while llama.cpp lands 18x below its own decode.",
+  "size_of_the_prize": {
+    "current_gap_vs_llama_cpp_x": 15.8,
+    "gap_before_the_lever_x": 20.8,
+    "note": "the 20.8x prefill gap is the single largest measured number in this campaign and the least worked on"
+  },
+  "what_changed_in_code": "the two constants became one env var, clamped to the kernel's real ceiling and commented with it, so the chain is discoverable instead of being rediscovered by a sweep that silently does nothing"
+}

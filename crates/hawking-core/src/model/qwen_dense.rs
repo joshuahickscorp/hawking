@@ -1450,7 +1450,15 @@ impl Engine for QwenDense {
         let batch_prefill = use_tcb_prefill && crate::env_on("HAWKING_QWEN_BATCH_PREFILL");
         #[cfg(target_os = "macos")]
         if batch_prefill {
-            const B_MAX: usize = 8;
+            // Prompt tokens per batched forward. Each weight is read once per
+            // chunk, so this is the amortization factor and 8 barely amortizes
+            // anything: measured prefill still runs near decode speed. Tunable
+            // because the useful value depends on activation memory, which
+            // depends on the model, not on us.
+            // ponytail: clamped to 8 because gemm_q4_k_m_batched_v3w_pinned_tcb
+            // rejects B>8 (two float4 accumulators). Raising this needs a tiled
+            // GEMM prefill kernel, not a bigger constant.
+            let b_max: usize = crate::env_usize("HAWKING_QWEN_PREFILL_BATCH", 8).clamp(1, 8);
             let positions: Vec<usize> = (0..prompt_len).collect();
             let mut i = prefill_skipped;
             while i < prompt_len {
@@ -1459,7 +1467,7 @@ impl Engine for QwenDense {
                     break;
                 }
                 let step_start = Instant::now();
-                let end = (i + B_MAX).min(prompt_len);
+                let end = (i + b_max).min(prompt_len);
                 self.forward_tokens_batch_tcb(&prompt_ids[i..end], &positions[i..end])?;
                 if stall_active && step_start.elapsed() > stall_limit {
                     prefill_aborted = true;
@@ -2520,11 +2528,17 @@ impl Engine for QwenDense {
             self.kv.seq_len = start_pos; // p0 > 0 seeds dense_arena on first chunk
             self.dense_arena = None;
 
-            const B_MAX: usize = 8;
+            // Same amortization factor as the other batched-prefill site; see
+            // the comment there. Kept on one env var so a sweep cannot tune
+            // one path and silently leave the other at 8.
+            // ponytail: clamped to 8 because gemm_q4_k_m_batched_v3w_pinned_tcb
+            // rejects B>8 (two float4 accumulators). Raising this needs a tiled
+            // GEMM prefill kernel, not a bigger constant.
+            let b_max: usize = crate::env_usize("HAWKING_QWEN_PREFILL_BATCH", 8).clamp(1, 8);
             let positions: Vec<usize> = (0..prompt_len).collect();
             let mut i = start_pos;
             let last_token = loop {
-                let end = (i + B_MAX).min(prompt_len);
+                let end = (i + b_max).min(prompt_len);
                 self.forward_tokens_batch_tcb(&prompt_ids[i..end], &positions[i..end])?;
                 if end == prompt_len {
                     break prompt_ids[prompt_len - 1];

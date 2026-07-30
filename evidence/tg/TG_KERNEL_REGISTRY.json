@@ -27,6 +27,16 @@
       "prior_measurement": null,
       "runtime_wired": false,
       "note": "HAWKING_GLM_GPU_LM_HEAD implemented and parity-tested, never throughput-measured"
+    },
+    {
+      "id": "tiled-gemm-prefill",
+      "stage": "K6",
+      "geometry": "dense-prefill",
+      "prior_measurement": null,
+      "runtime_wired": false,
+      "blocker": "gemm_q4_k_m_batched_v3w_pinned_tcb caps B at 8 (two float4 accumulators)",
+      "prize": "llama.cpp does the same prefill 15.8x faster on the identical file",
+      "evidence": "evidence/tg/TG_14B_K6_PREFILL.json"
     }
   ],
   "promoted": [],
@@ -34,6 +44,7 @@
   "k0_finding": "63-77% of the token is fixed cost, not weight bandwidth. Stages that move bytes are low value on this geometry; stages that remove per-token work are high value.",
   "stage_priority": {
     "high": [
+      "K6 prefill: largest measured gap, 15.8x",
       "K4 fused operators",
       "K5 device residency",
       "K7 replayable token graph",
