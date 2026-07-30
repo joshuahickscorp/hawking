@@ -95,6 +95,9 @@ fn unpack_bits(stream: &[u8], count: usize, bits: u32) -> Result<Vec<u32>> {
 }
 
 /// Random-access bit-packed index; must match sequential `unpack_bits`.
+///
+/// Only the test module reads it, and CI runs clippy without `--all-targets`.
+#[cfg_attr(not(test), allow(dead_code))]
 fn index_at(stream: &[u8], i: usize, bits: u32) -> u32 {
     let bitoff = i * bits as usize;
     let (mut acc, mut taken, mut byte, skip) = (0u64, 0u32, bitoff / 8, (bitoff % 8) as u32);

@@ -23,14 +23,6 @@
 //!
 //! Model-free throughout. Deterministic under an injected [`Clock`].
 
-use crate::error::{HideError, Result};
-use crate::ids::now_ms;
-use crate::persistence::DynKeyValueStore;
-use parking_lot::{Mutex, RwLock};
-use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
-use std::collections::{BTreeMap, BTreeSet};
-use std::sync::Arc;
 
 #[path = "automation_types.rs"]
 mod automation_types;
@@ -51,6 +43,11 @@ pub use automation_engine::*;
 #[cfg(test)]
 mod tests {
     use super::*;
+    // Scoped to the tests: a lib-only `cargo fix` cannot see these uses.
+    use crate::persistence::DynKeyValueStore;
+    use crate::error::HideError;
+    use serde_json::json;
+    use std::sync::Arc;
     use crate::persistence::InMemoryKeyValueStore;
     fn engine_at(ms: u64) -> (Arc<InjectedClock>, AutomationEngine) {
         let clock = Arc::new(InjectedClock::new(ms));

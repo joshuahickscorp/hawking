@@ -105,6 +105,8 @@ pub fn stream_persist(
         let mut f = std::fs::OpenOptions::new()
             .create(true)
             .write(true)
+            // Resume path: keep the bytes already fetched, then seek past them.
+            .truncate(false)
             .open(dst)?;
         f.set_len(bytes_done)?;
         f.seek(SeekFrom::Start(bytes_done))?;

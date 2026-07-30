@@ -800,7 +800,6 @@ pub use aap::{
     ActivationAwareSide, ActivationAwareTensor,
 };
 pub use container::{GravityShard, TensorDescriptor};
-use ffi::*;
 pub use pq::{
     parse_pq_header, pq_matvec, pq_matvec_f64_authority, pq_row, pq_sections, PqHeader, PqTensor,
 };
