@@ -1,7 +1,7 @@
 {
   "schema": "hawking.ramanujan.pre_restream_audit.v1",
-  "status": "AUDIT_IN_PROGRESS",
-  "hawking_commit": "492c7fb29a5a708fe923eb8f61d2eb73d6dff515",
+  "status": "AUDIT_COMPLETE_FIRST_PASS",
+  "hawking_commit": "43bab0e806492a89cd3a9bc272d71e5f8148dd4f",
   "at_note": "first pass; covers the section 9 checklist items reachable without the parent",
   "method": "probe the tree and the machine, then verify every claim a receipt makes rather than trusting it",
   "items": {
@@ -53,6 +53,79 @@
     "research_authorisation": {
       "RAMANUJAN_RESEARCH_AUTHORIZED": false,
       "note": "unchanged; this audit does not and cannot alter it"
+    },
+    "odyssey_t0_t7_apparatus": {
+      "verified": true,
+      "present": [
+        "T0"
+      ],
+      "absent": [
+        "T1",
+        "T2",
+        "T3",
+        "T4",
+        "T5",
+        "T6",
+        "T7"
+      ],
+      "evidence": "odyssey/t0/ exists with KNOWN_FAILURES_REGISTRY.json, public_eval/ and state/; no T1..T7 directory or file matches anywhere under odyssey/",
+      "status": "1_OF_8"
+    },
+    "controllers": {
+      "retriever": {
+        "status": "CONTRACT_ONLY",
+        "file": "odyssey/retrieval/RETRIEVAL.json",
+        "code": null
+      },
+      "formalizer": {
+        "status": "ABSENT"
+      },
+      "prover": {
+        "status": "ABSENT"
+      },
+      "repair": {
+        "status": "ABSENT"
+      },
+      "note": "section 9 asks for retriever/formalizer/prover/repair controllers; one contract exists and no controller code does"
+    },
+    "governance_surface": {
+      "finding": "every governance directory holds exactly one JSON contract and, mostly, no implementation",
+      "contracts_and_code_references": {
+        "FORGE": 2,
+        "SOVEREIGNTY": 1,
+        "TRIBUNAL": 1,
+        "VERIFICATION_LATTICE": 2,
+        "LEDGER_CONTRACT": 0,
+        "ROLES": 0,
+        "GRAVEYARD": 0,
+        "MEMORY_STORES": 0
+      },
+      "seven_stores": {
+        "declared": 7,
+        "ids": [
+          "M1 claims",
+          "M2 evidence",
+          "M3 trajectories",
+          "M4 structure",
+          "M5 literature",
+          "M6 economics",
+          "M7 graveyard"
+        ],
+        "implemented": false,
+        "evidence": "MEMORY_STORES.json declares all seven and no code file references it"
+      },
+      "status": "DECLARED_NOT_BUILT"
+    },
+    "q_gates": {
+      "q0": "6 files, and the harness is restored but the replay is unverified",
+      "q1": "0 files",
+      "q2": "0 files",
+      "q3": "1 file",
+      "q4": "4 files",
+      "q5": "2 files",
+      "q6": "1 file",
+      "status": "Q1_AND_Q2_HAVE_NO_CONTRACT_AT_ALL",
+      "method_note": "an earlier narrower grep reported 0 for every Q including q0, which was wrong; this is the case-insensitive re-probe"
     }
   },
   "systemic_finding": {
@@ -64,5 +137,29 @@
     ],
     "consequence": "a receipt saying ACHIEVED is not evidence that the thing still reproduces. Every gate claim in this audit is re-verified or marked unverified.",
     "recommendation": "gate runners belong behind a test that fails when the runner disappears, otherwise the next density pass removes them again"
+  },
+  "endpoint_distance": {
+    "section_9_items_ready": [
+      "cognition/evidence/you_research code with 36 passing tests",
+      "Lean toolchain on host, pinned, with a restored container harness"
+    ],
+    "section_9_items_declared_only": [
+      "Forge",
+      "sovereignty",
+      "Tribunal",
+      "Ledger",
+      "roles",
+      "seven stores",
+      "verification lattice",
+      "retriever"
+    ],
+    "section_9_items_absent": [
+      "Odyssey T1 through T7",
+      "formalizer",
+      "prover",
+      "repair controllers",
+      "Q1 and Q2 contracts"
+    ],
+    "honest_verdict": "the Ramanujan surface is contracts, not apparatus. Section 9 asks for a real T0-T7 apparatus and four controllers; one stage and zero controllers exist. RAMANUJAN_RESTREAM_READY is not reachable without building them, and no receipt in the tree should be read as saying otherwise."
   }
 }
