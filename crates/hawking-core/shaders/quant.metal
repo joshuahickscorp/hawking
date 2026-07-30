@@ -1892,6 +1892,132 @@ kernel void gemm_q4_k_m_batched_v3w_mma(
     }
 }
 
+// K6 — N-tiled twin of gemm_q4_k_m_batched_v3w_mma.
+//
+// The v3w_mma kernel computes exactly one 8(rows)x8(N) tile and zero-pads
+// columns N..8, which is why batched prefill is capped at B=8 and therefore
+// runs at roughly decode speed: one weight read is amortized across 8 prompt
+// tokens instead of the whole prompt.
+//
+// This tiles over N as well. The weight tile Ws does not depend on N, so it is
+// dequantized once per K step and multiplied against NT accumulators. That is
+// the entire point: NT times the amortization for one weight read.
+//
+// Geometry (rows identical to v3w_mma):
+//   Grid:        (ceil(rows/8)*32, 1, 1)
+//   Threadgroup: (32, 1, 1)              — one simdgroup
+//   N = batch (1..=32); columns B..32 are zero-padded.
+// Shmem layout (float, 1536 slots = 6 KB, against a 32 KB limit):
+//   Ws[   0 ..  256): weight tile W[8 rows][32 K]  (ld = 32)
+//   Xs[ 256 .. 1280): activation X[32 K][32 N]     (ld = 32)
+//   Os[1280 .. 1536): result tile C[8 rows][32 N]  (ld = 32)
+// Output layout matches v3w_mma: y_batch[n*rows + (row0+m)] = C[m][n].
+#define MMA_N_TILES 4u   // 4 tiles x 8 = N up to 32
+
+kernel void gemm_q4_k_m_batched_v3w_mma_n32(
+    device const uchar* w_q4   [[buffer(0)]],
+    device const float* x_batch[[buffer(1)]],
+    device       float* y_batch[[buffer(2)]],
+    constant ArgbufBatchedRowsCols& args [[buffer(3)]],
+    threadgroup float* shmem   [[threadgroup(0)]],
+    uint  tid       [[thread_position_in_threadgroup]],
+    uint  gid       [[threadgroup_position_in_grid]])
+{
+    uint row0 = gid * 8u;
+    if (row0 >= args.rows) return;
+
+    uint blocks_per_row = args.cols / 256u;
+    uint B  = min(args.batch, 8u * MMA_N_TILES);
+    uint NW = 8u * MMA_N_TILES;              // padded N width, = Xs/Os stride
+
+    threadgroup float* Ws = shmem;                    // [256]
+    threadgroup float* Xs = shmem + 256u;             // [32*NW]
+    threadgroup float* Os = shmem + 256u + 32u * NW;  // [8*NW]
+
+    // Zero the 8 x NW accumulator staging area: 32 threads x MMA_N_TILES each.
+    // Os is 8 x NW = 64 * MMA_N_TILES floats, so 32 lanes need 2*MMA_N_TILES passes.
+    for (uint e = 0u; e < 2u * MMA_N_TILES; ++e) { Os[tid + e * 32u] = 0.0f; }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    simdgroup_matrix<float, 8, 8> acc[MMA_N_TILES];
+    for (uint t = 0u; t < MMA_N_TILES; ++t) {
+        simdgroup_load(acc[t], Os + t * 8u, NW, ulong2(0, 0));
+    }
+
+    for (uint blk = 0; blk < blocks_per_row; ++blk) {
+        uint64_t row_blk_off = (uint64_t)blk * 144ul;
+        for (uint kt = 0; kt < 8u; ++kt) {
+            // ── Dequant weight tile Ws[8 rows][32 K] — identical to v3w_mma ──
+            uint kk_local = tid;
+            uint kk = kt * 32u + kk_local;
+            uint sub   = kk >> 5u;
+            uint pair  = sub >> 1u;
+            bool upper = (sub & 1u) != 0u;
+            uint i     = kk & 31u;
+            for (uint m = 0u; m < 8u; ++m) {
+                uint row = row0 + m;
+                if (row >= args.rows) { Ws[m * 32u + kk_local] = 0.0f; continue; }
+                uint64_t bo = ((uint64_t)row * (uint64_t)blocks_per_row) * 144ul
+                            + row_blk_off;
+                ushort d_bits    = (ushort)w_q4[bo]     | ((ushort)w_q4[bo + 1] << 8);
+                ushort dmin_bits = (ushort)w_q4[bo + 2] | ((ushort)w_q4[bo + 3] << 8);
+                float d    = (float)as_type<half>(d_bits);
+                float dmin = (float)as_type<half>(dmin_bits);
+                uchar s_byte, m_byte;
+                if (sub < 4u) {
+                    s_byte = w_q4[bo + 4u + sub]      & 0x3F;
+                    m_byte = w_q4[bo + 4u + 4u + sub] & 0x3F;
+                } else {
+                    uint j = sub - 4u;
+                    s_byte = (w_q4[bo + 4u + 8u + j] & 0x0F)
+                           | ((w_q4[bo + 4u + j]      >> 6) << 4);
+                    m_byte = (w_q4[bo + 4u + 8u + j] >> 4)
+                           | ((w_q4[bo + 4u + 4u + j] >> 6) << 4);
+                }
+                uchar q  = w_q4[bo + 16ul + (uint64_t)pair * 32ul + (uint64_t)i];
+                uint nib = upper ? ((uint)(q >> 4) & 0x0Fu) : ((uint)q & 0x0Fu);
+                Ws[m * 32u + kk_local] = d * (float)s_byte * (float)nib
+                                       - dmin * (float)m_byte;
+            }
+            // ── Stage activation tile Xs[32 K][NW] ────────────────────────
+            uint x_k = kt * 32u + tid;
+            for (uint n = 0u; n < NW; ++n) {
+                Xs[kk_local * NW + n] = (n < B)
+                    ? x_batch[(uint64_t)n * (uint64_t)args.cols
+                              + (uint64_t)blk * 256ul + (uint64_t)x_k]
+                    : 0.0f;
+            }
+            threadgroup_barrier(mem_flags::mem_threadgroup);
+
+            // ── One weight load, MMA_N_TILES accumulations ────────────────
+            for (uint d8 = 0u; d8 < 32u; d8 += 8u) {
+                simdgroup_matrix<float, 8, 8> wm;
+                simdgroup_load(wm, Ws + d8, 32, ulong2(0, 0));
+                for (uint t = 0u; t < MMA_N_TILES; ++t) {
+                    simdgroup_matrix<float, 8, 8> xm;
+                    simdgroup_load(xm, Xs + d8 * NW + t * 8u, NW, ulong2(0, 0));
+                    simdgroup_multiply_accumulate(acc[t], wm, xm, acc[t]);
+                }
+            }
+            threadgroup_barrier(mem_flags::mem_threadgroup);
+        }
+    }
+
+    // ── Write results: C[m][n] → y_batch[n*rows + row0+m] ─────────────────
+    for (uint t = 0u; t < MMA_N_TILES; ++t) {
+        simdgroup_store(acc[t], Os + t * 8u, NW, ulong2(0, 0));
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint e = 0u; e < 2u * MMA_N_TILES; ++e) {
+        uint slot = tid + e * 32u;    // covers all 64*MMA_N_TILES slots
+        uint m = slot / NW;           // row 0..7
+        uint n = slot % NW;           // N
+        uint row = row0 + m;
+        if (n < B && row < args.rows) {
+            y_batch[(uint64_t)n * (uint64_t)args.rows + (uint64_t)row] = Os[slot];
+        }
+    }
+}
+
 // P1 — predec twin of gemm_q4_k_m_batched_v3w_mma. Reads pre-decoded
 // (ds, dm) sub-block scale pairs (16 f32/block) instead of decoding the
 // Q4_K header per element, mirroring gemm_q4_k_m_batched_v3w_predec. Weight

@@ -579,6 +579,10 @@ mod metal_dispatch {
     enum BatchedQ4kGemmMode {
         V3w,
         V3wMma,
+        /// K6 — N-tiled MMA. Same 8-row tile, but four column tiles against one
+        /// resident weight tile, so a single weight read is amortized across up
+        /// to 32 prompt tokens instead of 8.
+        V3wMmaN32,
         V3,
         V2,
     }
@@ -600,6 +604,14 @@ mod metal_dispatch {
             BatchedQ4kGemmMode::V3wMma => {
                 ("gemm_q4_k_m_batched_v3w_mma", 8, 32, Some(576usize), false)
             }
+            // shmem: Ws 256 + Xs 32*32 + Os 8*32 = 1536 floats = 6 KB.
+            BatchedQ4kGemmMode::V3wMmaN32 => (
+                "gemm_q4_k_m_batched_v3w_mma_n32",
+                32,
+                32,
+                Some(1536usize),
+                false,
+            ),
             BatchedQ4kGemmMode::V3 => ("gemm_q4_k_m_batched_v3", 4, 256, None, false),
             BatchedQ4kGemmMode::V2 => ("gemm_q4_k_m_batched_v2", 4, 256, None, true),
         };
@@ -932,6 +944,41 @@ mod metal_dispatch {
     ) -> Result<()> {
         gemm_q4_k_m_batched_pinned_tcb(
             BatchedQ4kGemmMode::V3wMma,
+            tcb,
+            model_buf,
+            w_offset,
+            w_byte_size,
+            rows,
+            cols,
+            batch,
+            x_batch_buf,
+            y_batch_buf,
+        )
+    }
+
+    /// K6 — N-tiled MMA twin of `gemm_q4_k_m_batched_v3w_mma_pinned_tcb`.
+    ///
+    /// Identical dequant and output contract; the difference is that the
+    /// weight tile is multiplied against four column tiles instead of one, so
+    /// batch may reach 32. That matters for prefill: at B=8 a weight read is
+    /// amortized across 8 prompt tokens, which is why measured prefill runs at
+    /// roughly decode speed, and llama.cpp is 15.8x faster on the same file.
+    ///
+    /// Shmem is fixed at 1536 f32 (6 KB), independent of batch.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemm_q4_k_m_batched_v3w_mma_n32_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        batch: usize,
+        x_batch_buf: &PinnedBuffer,
+        y_batch_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        gemm_q4_k_m_batched_pinned_tcb(
+            BatchedQ4kGemmMode::V3wMmaN32,
             tcb,
             model_buf,
             w_offset,
