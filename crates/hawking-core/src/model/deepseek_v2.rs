@@ -3021,8 +3021,26 @@ impl DeepSeekV2 {
                 // an advancing seq_len points at the read length or the expert
                 // routing rather than at the KV write.
                 if crate::env_on("HAWKING_DS_TRACE") {
+                    // The routed experts are the remaining suspect: if the same
+                    // token repeats while the route IDs are also frozen, the
+                    // router stopped seeing a changing hidden state; if the
+                    // routes move and the token does not, the defect is
+                    // downstream of routing.
+                    // Read moe_route_ids_buf, not route_history_buf: the history
+                    // blit is gated on expert_cache being present, so it reads as
+                    // all-zero when the cache is off. moe_route_ids_buf is written
+                    // by every MoE layer, so it holds the last layer's routes.
+                    let routes: Vec<u32> = self
+                        .decode_arena
+                        .as_ref()
+                        .map(|a| {
+                            let ptr = a.moe_route_ids_buf.contents() as *const u32;
+                            unsafe { std::slice::from_raw_parts(ptr, self.config.top_k_routed) }
+                                .to_vec()
+                        })
+                        .unwrap_or_default();
                     eprintln!(
-                        "[ds-trace] pos={pos} seq_slot={seq_slot} seq_len_after={}",
+                        "[ds-trace] pos={pos} seq_slot={seq_slot} seq_len_after={} in={token} out={folded_greedy_token:?} routes={routes:?}",
                         self.kv.seq_len
                     );
                 }

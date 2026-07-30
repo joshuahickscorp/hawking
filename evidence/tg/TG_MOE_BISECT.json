@@ -1,0 +1,50 @@
+{
+  "schema": "hawking.tg.moe_bisect.v1",
+  "status": "OPEN_NO_REFERENCE",
+  "model": "DeepSeek-V2-Lite-Chat-Q4_K_M.gguf",
+  "prompt": "The capital of France is",
+  "prompt_ids": [100000, 549, 6077, 280, 7239, 317],
+  "observed": {
+    "first_decode_token": 244,
+    "text": " t t t t t t t t",
+    "note": "the collapse is present at the FIRST decode token, not at step four. The earlier 'three good tokens then repeats' reading came from a run whose first tokens happened to be plausible; with this prompt the very first emitted token is already wrong."
+  },
+  "eliminated": [
+    {
+      "hypothesis": "position, KV slot or sequence length stops advancing",
+      "method": "HAWKING_DS_TRACE prints pos, seq_slot and seq_len after every forward",
+      "result": "all three advance monotonically for every token, prefill and decode alike"
+    },
+    {
+      "hypothesis": "MoE routing is frozen (every token takes the same experts)",
+      "method": "read moe_route_ids_buf after each committed command buffer",
+      "result": "routes vary per token: [56,9,57,14,10,34] at pos 0 through [57,11,29,50,59,14] at pos 11",
+      "self_correction": "an earlier read of route_history_buf returned all zeros and I nearly recorded frozen routing. That buffer is only written when expert_cache is Some, so the zeros were a probe artifact. moe_route_ids_buf is written by every MoE layer unconditionally and is the correct place to look."
+    },
+    {
+      "hypothesis": "the autotuned Q4_K GEMM schedule is wrong for this layout",
+      "method": "replaced gemm_q4_k_schedule per_shape/v3_dual with scalar and reran",
+      "result": "byte-identical output. The schedule is not the cause."
+    },
+    {
+      "hypothesis": "the routed-expert path alone is at fault",
+      "method": "--speculate exact-shared, whose draft is a shared-expert-only forward",
+      "result": "accept 0/14. Shared-only and full disagree on every token and both are degenerate, so the defect is not confined to the routed path."
+    }
+  ],
+  "incidental_findings": [
+    {
+      "finding": "prefill runs one token per forward through the decode path",
+      "evidence": "one trace line per prompt token",
+      "consequence": "91.7 ms per prompt token against llama.cpp's 0.76 on the same file. This family has no batched prefill at all, which is a larger gap than the 14B's batch-8 ceiling and a different one."
+    },
+    {
+      "finding": "the last prompt token is fed twice",
+      "evidence": "in=317 at pos=5 (prefill) and again at pos=6 (first decode)",
+      "assessment": "NOT the defect. qwen_dense uses the same convention (prefill over every prompt token, then decode seeded with prompt_ids.last() at pos=prompt_len) and answers 'The capital of France is' with ' Paris'. It costs one extra forward and one duplicate KV entry per request; it does not collapse the output.",
+      "left_alone": "changing it would move a working adapter's output for no measured gain"
+    }
+  ],
+  "why_this_stops_here": "the next step is a numerics bisect, and there is nothing to bisect against. deepseek_v2 has no CPU forward: mla_decode hard-errors with 'Metal context unavailable on this platform', so there is no second implementation of MLA in the tree to diff layer by layer. The legacy non-Wedge-C path that could have served as one was retired, and the message that says so dates to the dismantle->hawking rename. Building a numpy or CPU reference for Q4_K dequant plus MLA plus MoE is the missing instrument, and it is a piece of work in its own right rather than a continuation of this bisect.",
+  "consequence_for_the_mission": "the admitted MoE proof is NOT obtained. DeepSeek-V2-Lite is admitted as far as loading, routing and decoding at 35.98 tok/s, and it is wrong. A speed number from a model that emits garbage does not establish a grammar win, so no MoE kernel is promoted on its evidence."
+}
