@@ -17,7 +17,7 @@ if _HERE not in sys.path:
     sys.path.insert(0, _HERE)
 
 import gravity_flop_ledger as fl  # noqa: E402
-import gravity_format  # noqa: E402
+import artifact_client as gravity_format  # noqa: E402
 
 SHARD = fl.DEFAULT_SHARD
 _needs_shard = pytest.mark.skipif(not SHARD.exists(),

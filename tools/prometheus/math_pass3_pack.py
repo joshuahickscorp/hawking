@@ -469,7 +469,7 @@ def _tree_bytes(root: Path) -> int:
 def _actual_byte_ledger(manifest: dict) -> tuple[dict, dict]:
     """Itemize every actual packaged byte into the binding one-bit ledger."""
     import glm52_pack as pack
-    import gravity_format as gravity
+    import artifact_client as gravity
 
     found: set[str] = set()
     decision_mismatches: list[dict] = []
@@ -611,7 +611,7 @@ def finalize(manifest: dict | None = None) -> dict:
     """Turn the packed shard set into the verified standalone Odyssey substrate."""
     import hashlib
     import glm52_assemble as assembler
-    import gravity_format as gravity
+    import artifact_client as gravity
 
     if manifest is None:
         ready, manifest, reason = manifest_ready()

@@ -21103,6 +21103,243 @@
       "replacement": null,
       "product_release": "B-RT5",
       "note": "subject binary product-released; one-to-one BC-BRIDGE-012"
+    },
+    {
+      "case_id": "CASE.rust_int.crates_hawking_core_tests_gravity_artifact_suite::gravity_container_real_artifact",
+      "disposition": "rewrite",
+      "executor": {
+        "command": "cargo test -p hawking-core --test gravity_artifact_suite --release -- --nocapture gravity_container_real_artifact"
+      },
+      "receipt_map": {
+        "CASE.rust_int.crates_hawking_core_tests_gravity_container::gravity_container_real_artifact": {
+          "executor": "cargo_test",
+          "new_case_id": "CASE.rust_int.crates_hawking_core_tests_gravity_artifact_suite::gravity_container_real_artifact",
+          "nodeid_prefix": "crates/hawking-core/tests/gravity_artifact_suite.rs::gravity_container_real_artifact"
+        }
+      },
+      "replaces": [
+        "CASE.rust_int.crates_hawking_core_tests_gravity_container::gravity_container_real_artifact"
+      ]
+    },
+    {
+      "case_id": "CASE.rust_int.crates_hawking_core_tests_gravity_artifact_suite::gravity_detection_reads_magic_not_the_extension",
+      "disposition": "rewrite",
+      "executor": {
+        "command": "cargo test -p hawking-core --test gravity_artifact_suite --release -- --nocapture gravity_detection_reads_magic_not_the_extension"
+      },
+      "receipt_map": {
+        "CASE.rust_int.crates_hawking_core_tests_gravity_engine_registry::gravity_detection_reads_magic_not_the_extension": {
+          "executor": "cargo_test",
+          "new_case_id": "CASE.rust_int.crates_hawking_core_tests_gravity_artifact_suite::gravity_detection_reads_magic_not_the_extension",
+          "nodeid_prefix": "crates/hawking-core/tests/gravity_artifact_suite.rs::gravity_detection_reads_magic_not_the_extension"
+        }
+      },
+      "replaces": [
+        "CASE.rust_int.crates_hawking_core_tests_gravity_engine_registry::gravity_detection_reads_magic_not_the_extension"
+      ]
+    },
+    {
+      "case_id": "CASE.rust_int.crates_hawking_core_tests_gravity_artifact_suite::registry_serves_a_gravity_artifact_end_to_end",
+      "disposition": "rewrite",
+      "executor": {
+        "command": "cargo test -p hawking-core --test gravity_artifact_suite --release -- --nocapture registry_serves_a_gravity_artifact_end_to_end"
+      },
+      "receipt_map": {
+        "CASE.rust_int.crates_hawking_core_tests_gravity_engine_registry::registry_serves_a_gravity_artifact_end_to_end": {
+          "executor": "cargo_test",
+          "new_case_id": "CASE.rust_int.crates_hawking_core_tests_gravity_artifact_suite::registry_serves_a_gravity_artifact_end_to_end",
+          "nodeid_prefix": "crates/hawking-core/tests/gravity_artifact_suite.rs::registry_serves_a_gravity_artifact_end_to_end"
+        }
+      },
+      "replaces": [
+        "CASE.rust_int.crates_hawking_core_tests_gravity_engine_registry::registry_serves_a_gravity_artifact_end_to_end"
+      ]
+    },
+    {
+      "case_id": "CASE.rust_int.crates_hawking_core_tests_gravity_artifact_suite::registry_serves_a_multi_shard_glm_artifact_end_to_end",
+      "disposition": "rewrite",
+      "executor": {
+        "command": "cargo test -p hawking-core --test gravity_artifact_suite --release -- --nocapture registry_serves_a_multi_shard_glm_artifact_end_to_end"
+      },
+      "receipt_map": {
+        "CASE.rust_int.crates_hawking_core_tests_gravity_engine_registry::registry_serves_a_multi_shard_glm_artifact_end_to_end": {
+          "executor": "cargo_test",
+          "new_case_id": "CASE.rust_int.crates_hawking_core_tests_gravity_artifact_suite::registry_serves_a_multi_shard_glm_artifact_end_to_end",
+          "nodeid_prefix": "crates/hawking-core/tests/gravity_artifact_suite.rs::registry_serves_a_multi_shard_glm_artifact_end_to_end"
+        }
+      },
+      "replaces": [
+        "CASE.rust_int.crates_hawking_core_tests_gravity_engine_registry::registry_serves_a_multi_shard_glm_artifact_end_to_end"
+      ]
+    },
+    {
+      "case_id": "CASE.rust_int.crates_hawking_core_tests_gravity_artifact_suite::pq_matvec_metal_matches_cpu_and_reference_for_all_fixtures",
+      "disposition": "rewrite",
+      "executor": {
+        "command": "cargo test -p hawking-core --test gravity_artifact_suite --release -- --nocapture pq_matvec_metal_matches_cpu_and_reference_for_all_fixtures"
+      },
+      "receipt_map": {
+        "CASE.rust_int.crates_hawking_core_tests_gravity_pq_metal_parity::pq_matvec_metal_matches_cpu_and_reference_for_all_fixtures": {
+          "executor": "cargo_test",
+          "new_case_id": "CASE.rust_int.crates_hawking_core_tests_gravity_artifact_suite::pq_matvec_metal_matches_cpu_and_reference_for_all_fixtures",
+          "nodeid_prefix": "crates/hawking-core/tests/gravity_artifact_suite.rs::pq_matvec_metal_matches_cpu_and_reference_for_all_fixtures"
+        }
+      },
+      "replaces": [
+        "CASE.rust_int.crates_hawking_core_tests_gravity_pq_metal_parity::pq_matvec_metal_matches_cpu_and_reference_for_all_fixtures"
+      ]
+    },
+    {
+      "case_id": "CASE.rust_int.crates_hawking_core_tests_gravity_artifact_suite::pq_matvec_matches_reference_for_all_fixtures",
+      "disposition": "rewrite",
+      "executor": {
+        "command": "cargo test -p hawking-core --test gravity_artifact_suite --release -- --nocapture pq_matvec_matches_reference_for_all_fixtures"
+      },
+      "receipt_map": {
+        "CASE.rust_int.crates_hawking_core_tests_gravity_pq_parity::pq_matvec_matches_reference_for_all_fixtures": {
+          "executor": "cargo_test",
+          "new_case_id": "CASE.rust_int.crates_hawking_core_tests_gravity_artifact_suite::pq_matvec_matches_reference_for_all_fixtures",
+          "nodeid_prefix": "crates/hawking-core/tests/gravity_artifact_suite.rs::pq_matvec_matches_reference_for_all_fixtures"
+        }
+      },
+      "replaces": [
+        "CASE.rust_int.crates_hawking_core_tests_gravity_pq_parity::pq_matvec_matches_reference_for_all_fixtures"
+      ]
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_core_src_gravity::dense_memo_verify_once_identity_row_and_oversized",
+      "disposition": "rewrite",
+      "executor": {
+        "command": "cargo test -p hawking-core --lib gravity::tests::dense_memo_verify_once_identity_row_and_oversized --release"
+      },
+      "receipt_map": {
+        "CASE.rust_unit.crates_hawking_core_src_gravity::dense_memo_verifies_once_across_many_calls": {
+          "executor": "cargo_test",
+          "new_case_id": "CASE.rust_unit.crates_hawking_core_src_gravity::dense_memo_verify_once_identity_row_and_oversized",
+          "nodeid_prefix": "crates/hawking-core/src/gravity.rs::dense_memo_verify_once_identity_row_and_oversized"
+        },
+        "CASE.rust_unit.crates_hawking_core_src_gravity::dense_memo_returns_bit_identical_values": {
+          "executor": "cargo_test",
+          "new_case_id": "CASE.rust_unit.crates_hawking_core_src_gravity::dense_memo_verify_once_identity_row_and_oversized",
+          "nodeid_prefix": "crates/hawking-core/src/gravity.rs::dense_memo_verify_once_identity_row_and_oversized"
+        },
+        "CASE.rust_unit.crates_hawking_core_src_gravity::dense_memo_row_hits_same_decoded_entry": {
+          "executor": "cargo_test",
+          "new_case_id": "CASE.rust_unit.crates_hawking_core_src_gravity::dense_memo_verify_once_identity_row_and_oversized",
+          "nodeid_prefix": "crates/hawking-core/src/gravity.rs::dense_memo_verify_once_identity_row_and_oversized"
+        },
+        "CASE.rust_unit.crates_hawking_core_src_gravity::dense_memo_oversized_tensor_skips_residency_but_verifies_once": {
+          "executor": "cargo_test",
+          "new_case_id": "CASE.rust_unit.crates_hawking_core_src_gravity::dense_memo_verify_once_identity_row_and_oversized",
+          "nodeid_prefix": "crates/hawking-core/src/gravity.rs::dense_memo_verify_once_identity_row_and_oversized"
+        }
+      },
+      "replaces": [
+        "CASE.rust_unit.crates_hawking_core_src_gravity::dense_memo_verifies_once_across_many_calls",
+        "CASE.rust_unit.crates_hawking_core_src_gravity::dense_memo_returns_bit_identical_values",
+        "CASE.rust_unit.crates_hawking_core_src_gravity::dense_memo_row_hits_same_decoded_entry",
+        "CASE.rust_unit.crates_hawking_core_src_gravity::dense_memo_oversized_tensor_skips_residency_but_verifies_once"
+      ]
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_core_src_artifact_pq::unpack_bits_matches_hand_packed_7bit_values",
+      "disposition": "rewrite",
+      "executor": {
+        "command": "cargo test -p hawking-core --lib artifact::pq::tests::unpack_bits_matches_hand_packed_7bit_values --release"
+      },
+      "receipt_map": {
+        "CASE.rust_unit.crates_hawking_core_src_gravity::unpack_bits_matches_hand_packed_7bit_values": {
+          "executor": "cargo_test",
+          "new_case_id": "CASE.rust_unit.crates_hawking_core_src_artifact_pq::unpack_bits_matches_hand_packed_7bit_values",
+          "nodeid_prefix": "crates/hawking-core/src/artifact_pq.rs::unpack_bits_matches_hand_packed_7bit_values"
+        }
+      },
+      "replaces": [
+        "CASE.rust_unit.crates_hawking_core_src_gravity::unpack_bits_matches_hand_packed_7bit_values"
+      ]
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_core_src_artifact_pq::index_at_matches_sequential_unpack",
+      "disposition": "rewrite",
+      "executor": {
+        "command": "cargo test -p hawking-core --lib artifact::pq::tests::index_at_matches_sequential_unpack --release"
+      },
+      "receipt_map": {
+        "CASE.rust_unit.crates_hawking_core_src_gravity::index_at_matches_sequential_unpack": {
+          "executor": "cargo_test",
+          "new_case_id": "CASE.rust_unit.crates_hawking_core_src_artifact_pq::index_at_matches_sequential_unpack",
+          "nodeid_prefix": "crates/hawking-core/src/artifact_pq.rs::index_at_matches_sequential_unpack"
+        }
+      },
+      "replaces": [
+        "CASE.rust_unit.crates_hawking_core_src_gravity::index_at_matches_sequential_unpack"
+      ]
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_core_src_artifact_pq::unpack_bits_rejects_short_stream",
+      "disposition": "rewrite",
+      "executor": {
+        "command": "cargo test -p hawking-core --lib artifact::pq::tests::unpack_bits_rejects_short_stream --release"
+      },
+      "receipt_map": {
+        "CASE.rust_unit.crates_hawking_core_src_gravity::unpack_bits_rejects_short_stream": {
+          "executor": "cargo_test",
+          "new_case_id": "CASE.rust_unit.crates_hawking_core_src_artifact_pq::unpack_bits_rejects_short_stream",
+          "nodeid_prefix": "crates/hawking-core/src/artifact_pq.rs::unpack_bits_rejects_short_stream"
+        }
+      },
+      "replaces": [
+        "CASE.rust_unit.crates_hawking_core_src_gravity::unpack_bits_rejects_short_stream"
+      ]
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_core_src_gravity::activation_aware_factorized_input_and_output_match_dense_authority",
+      "disposition": "execute",
+      "executor": {
+        "command": "S5-owned retained identity; cargo test -p hawking-core --lib / perfgate EXP-A1"
+      }
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_core_src_gravity::activation_aware_open_dir_attaches_shared_basis_and_decodes_pass_through",
+      "disposition": "execute",
+      "executor": {
+        "command": "S5-owned retained identity; cargo test -p hawking-core --lib / perfgate EXP-A1"
+      }
+    },
+    {
+      "case_id": "CASE.rust_unit.crates_hawking_core_src_gravity::pq_admission_header_prefix_does_not_claim_full_payload_verification",
+      "disposition": "execute",
+      "executor": {
+        "command": "S5-owned retained identity; cargo test -p hawking-core --lib / perfgate EXP-A1"
+      }
+    },
+    {
+      "case_id": "CASE.perf.transform.gravity_format_selftest_s",
+      "disposition": "execute",
+      "executor": {
+        "command": "S5-owned retained identity; cargo test -p hawking-core --lib / perfgate EXP-A1"
+      }
+    },
+    {
+      "case_id": "CASE.perf.numeric_parity.gravity_verify_roundtrip_s",
+      "disposition": "execute",
+      "executor": {
+        "command": "S5-owned retained identity; cargo test -p hawking-core --lib / perfgate EXP-A1"
+      }
+    },
+    {
+      "case_id": "CASE.perf.transform.pack_indices_bytes_per_s",
+      "disposition": "execute",
+      "executor": {
+        "command": "S5-owned retained identity; cargo test -p hawking-core --lib / perfgate EXP-A1"
+      }
+    },
+    {
+      "case_id": "CASE.perf.transform.shard_write_verify_bytes_per_s",
+      "disposition": "execute",
+      "executor": {
+        "command": "S5-owned retained identity; cargo test -p hawking-core --lib / perfgate EXP-A1"
+      }
     }
   ]
 }

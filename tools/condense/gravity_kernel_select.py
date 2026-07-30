@@ -1088,7 +1088,7 @@ def collect_fixtures(layer: int | None) -> list[tuple[str, grf.Fixture]]:
 
     # dense MLP lives only in layers < first_k_dense_replace; find it wherever it is safe
     for path in grf.safe_shards(root):
-        header = __import__("gravity_format").read_header(path)
+        header = __import__("artifact_client").read_header(path)
         for tensor in header["tensors"]:
             kind, _, _, _ = grf.classify(tensor["name"])
             if kind != "dense_mlp":

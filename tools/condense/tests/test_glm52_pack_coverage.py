@@ -14,7 +14,7 @@ if str(CONDENSE) not in sys.path:
     sys.path.insert(0, str(CONDENSE))
 
 import glm52_pack as pack  # noqa: E402
-import gravity_format  # noqa: E402
+import artifact_client as gravity_format  # noqa: E402
 
 def _bf16(values: np.ndarray) -> bytes:
     return (values.view(np.uint32) >> np.uint32(16)).astype(np.uint16).tobytes()
@@ -117,8 +117,7 @@ def test_complete_rate_reconciles_against_physical_bytes(tmp_path):
     assert report["complete_rate_self_consistent"], report
     assert report["packed_rate_self_consistent"], report
 
-    body = gravity.stat().st_size - gravity_format._body_offset(
-        gravity_format.read_header(gravity))
+    body = gravity.stat().st_size - gravity_format.open_shard(gravity)[1]
     declared_elements = sum(int(np.prod(row["shape"])) for row in rows)
     assert report["observed_complete_bpw"] == pytest.approx(
         body * 8 / declared_elements, rel=1e-9)

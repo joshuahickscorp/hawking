@@ -154,7 +154,7 @@ IRREDUCIBLE_MODULES: tuple[OperatorRecord, ...] = (
     _m("gravity_flop_ledger", NA, "ledger.flop",
        "FLOP-and-byte ledger separating compression from arithmetic savings.", sci=True),
     _m("gravity_forge", OP, "pack.gravity_forge", "Capability-preserving sub-bit representation foundry.", sci=True),
-    _m("gravity_format", OP, "format.gravity",
+    _m("artifact_client", OP, "format.gravity",
        "Native .gravity container format (header/shard read/write/verify).", sci=True),
     _m("gravity_functional_codec", OP, "codec.functional_moe",
        "glm52.functional.moe.v1 codec storing a function, not weights.", sci=True),

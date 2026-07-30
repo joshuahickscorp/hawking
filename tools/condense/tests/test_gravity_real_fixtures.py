@@ -16,7 +16,7 @@ if str(CONDENSE) not in sys.path:
 
 import glm52_pack  # noqa: E402
 import gravity_forge as forge  # noqa: E402
-import gravity_format  # noqa: E402
+import artifact_client as gravity_format  # noqa: E402
 import gravity_real_fixtures as fx  # noqa: E402
 
 OLD = 4 * 3600

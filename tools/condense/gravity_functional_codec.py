@@ -255,7 +255,7 @@ def write_shard(path: Path, entries: list[tuple[int, bytes]], *, model: dict) ->
     The descriptor says ``REPLACED_BY_FUNCTIONAL_CODEC`` and names the source tensors the
     organ stands in for, so no source tensor silently disappears from the manifest.
     """
-    import gravity_format
+    import artifact_client as gravity_format
     payloads, elements, total = [], 0, 0
     for layer, blob in entries:
         payload = deserialize(blob)
@@ -292,7 +292,7 @@ def write_shard(path: Path, entries: list[tuple[int, bytes]], *, model: dict) ->
 
 
 def verify(path: Path) -> dict:
-    import gravity_format
+    import artifact_client as gravity_format
     header = gravity_format.read_header(path)
     checked = []
     for descriptor in header["tensors"]:

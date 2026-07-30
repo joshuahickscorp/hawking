@@ -1,6 +1,6 @@
 {
   "schema": "hawking.capability_manifest.v1",
-  "note": "S2b process-engine cutover retained. C-HIST-R1 appends evidence-backed disposition=released rows for historical training/ramanujan-research/campaign product entrypoints (invocation null; no lab --help facade). lab_harness retained (F2 tables still import it). Prometheus excluded.",
+  "note": "S2b process-engine cutover retained. C-HIST-R1 appends evidence-backed disposition=released rows for historical training/ramanujan-research/campaign product entrypoints (invocation null; no lab --help facade). lab_harness retained (F2 tables still import it). Prometheus excluded. S5 replaces gravity_format with artifact_client (SharedBinaryCoreA).",
   "entries": [
     {
       "retired_entrypoint": "tools/condense/engine/runtime.py",
@@ -1166,6 +1166,12 @@
         "crates/hawking-seed-c/**"
       ],
       "evidence": "B-RT5 product release under BC-BRIDGE-012: entire crates/hawking-seed-c parallel seed runtime deleted with no invocable inputs, outputs, side effects, facade, shim, empty crate, disabled feature, or history-derived replacement. Workspace member and default-members entries removed from Cargo.toml; Cargo.lock package dropped. Receipts: control/BRT5-report.md, control/BRT5-ledger.json, control/BRT5-f1-identity-receipt.json, REBUILD_BEHAVIOUR_CONSTITUTION.json::BC-BRIDGE-012. Primary product path remains hawking-core Engine (GGUF/Gravity/TQ/accel/security/generation). Rollback: restore crates/hawking-seed-c from base 43456bc8701c5bec083b70321c7a19d7689cf5a9 and re-add workspace/default-members."
+    },
+    {
+      "retired_entrypoint": "tools/condense/gravity_format.py",
+      "disposition": "replaced",
+      "invocation": "python3.12 tools/condense/artifact_client.py selftest",
+      "evidence": "control/S5-ledger.json"
     }
   ]
 }

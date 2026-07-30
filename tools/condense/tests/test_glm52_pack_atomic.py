@@ -18,7 +18,7 @@ if str(CONDENSE) not in sys.path:
     sys.path.insert(0, str(CONDENSE))
 
 import glm52_pack as pack  # noqa: E402
-import gravity_format  # noqa: E402
+import artifact_client as gravity_format  # noqa: E402
 
 def _tiny_shard(tmp_path: pathlib.Path):
     """One BF16 tensor written raw: pack_shard reads by offset, not by header."""

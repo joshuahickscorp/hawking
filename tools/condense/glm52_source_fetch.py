@@ -871,7 +871,7 @@ def reconcile() -> int:
     rather than trusted because its filename looked right.
     """
     sys.path.insert(0, str(Path(__file__).resolve().parent))
-    import gravity_format
+    import artifact_client as gravity_format
 
     receipted = {row["shard"] for row in _ledger_rows() if row.get("status") == "PACKED"}
     receipted |= {row["shard"] for row in _ledger_rows()

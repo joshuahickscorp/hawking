@@ -38,7 +38,7 @@ if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
 
 import gravity_forge as forge  # noqa: E402
-import gravity_format  # noqa: E402
+import artifact_client as gravity_format  # noqa: E402
 
 PACK_SCHEMA = "hawking.glm52.compact_tensor.v1"
 
@@ -57,12 +57,11 @@ def index_bits(cardinality: int) -> int:
 
 
 def pack_indices(indices: np.ndarray, bits: int) -> bytes:
-    """Bit-pack indices at exactly the billed width, most-significant bit first."""
+    """Bit-pack indices via the Rust Core A authority (in-process ctypes)."""
     flat = np.ascontiguousarray(indices, dtype=np.uint64).ravel()
     if flat.size and int(flat.max()) >= (1 << bits):
         raise ValueError(f"index {int(flat.max())} does not fit in {bits} bits")
-    spread = (flat[:, None] >> np.arange(bits - 1, -1, -1, dtype=np.uint64)) & np.uint64(1)
-    return np.packbits(spread.ravel().astype(np.uint8)).tobytes()
+    return gravity_format.pack_indices(flat.astype(np.uint32, copy=False), int(bits))
 
 
 def unpack_indices(raw: bytes, count: int, bits: int) -> np.ndarray:

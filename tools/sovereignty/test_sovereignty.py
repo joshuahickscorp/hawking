@@ -16,7 +16,7 @@ import sovereignty as S  # noqa: E402
 
 REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO / "tools" / "condense"))
-import gravity_format as G  # noqa: E402
+import artifact_client as G  # noqa: E402
 
 ARTIFACT = Path("/Users/scammermike/Library/Application Support/Hawking/CampaignS08/"
                 "llama32-1b-R0.v2.gravity")

@@ -1,0 +1,226 @@
+{
+  "schema": "hawking.s5.exp_a1_receipt.v1",
+  "harness": "tools/verify/perfgate.py cap_transform+cap_numeric",
+  "n_requested": 8,
+  "warm_up_discarded": true,
+  "n_kept": 7,
+  "thresholds": {
+    "transform.gravity_format_selftest_s": {
+      "op": "<=",
+      "value": 0.067014
+    },
+    "transform.shard_write_verify_bytes_per_s": {
+      "op": ">=",
+      "value": 102410000
+    },
+    "transform.pack_indices_bytes_per_s": {
+      "op": ">=",
+      "value": 42992600
+    },
+    "numeric_parity.gravity_verify_roundtrip_s": {
+      "op": "<=",
+      "value": 0.068136
+    }
+  },
+  "boundary": "artifact_client.py performance-smoke (equal-work vs ea33 gravity_format selftest; full subprocess wall)",
+  "run_1": {
+    "transform.gravity_format_selftest_s": {
+      "median": 0.03342529200017452,
+      "n_kept": 7,
+      "warm_up_discarded": true,
+      "min": 0.03264429094269872,
+      "max": 0.03487149998545647,
+      "values": [
+        0.03342529200017452,
+        0.03435883403290063,
+        0.03385616699233651,
+        0.03487149998545647,
+        0.033222583937458694,
+        0.03264429094269872,
+        0.032767374999821186
+      ]
+    },
+    "transform.shard_write_verify_bytes_per_s": {
+      "median": 126357037.89906487,
+      "n_kept": 7,
+      "warm_up_discarded": true,
+      "min": 123128662.1455829,
+      "max": 130943243.88457103,
+      "values": [
+        123128662.1455829,
+        124325525.20155558,
+        130943243.88457103,
+        130253306.12570614,
+        126373283.32337137,
+        124556156.02065627,
+        126357037.89906487
+      ]
+    },
+    "transform.pack_indices_bytes_per_s": {
+      "median": 155111154.10658112,
+      "n_kept": 7,
+      "warm_up_discarded": true,
+      "min": 153120061.67273843,
+      "max": 161078014.5135537,
+      "values": [
+        156144532.23321554,
+        156944168.38841614,
+        153613273.20347223,
+        153120061.67273843,
+        155111154.10658112,
+        161078014.5135537,
+        153364556.96720636
+      ]
+    },
+    "numeric_parity.gravity_verify_roundtrip_s": {
+      "median": 0.03317720803897828,
+      "n_kept": 7,
+      "warm_up_discarded": true,
+      "min": 0.03224670805502683,
+      "max": 0.034060874953866005,
+      "values": [
+        0.03384808299597353,
+        0.033398458966985345,
+        0.03296562493778765,
+        0.034060874953866005,
+        0.03317720803897828,
+        0.032985333004035056,
+        0.03224670805502683
+      ]
+    }
+  },
+  "run_2": {
+    "transform.gravity_format_selftest_s": {
+      "median": 0.033226957893930376,
+      "n_kept": 7,
+      "warm_up_discarded": true,
+      "min": 0.03219279204495251,
+      "max": 0.03400033398065716,
+      "values": [
+        0.03400033398065716,
+        0.033226957893930376,
+        0.0325238750083372,
+        0.03348899993579835,
+        0.03219279204495251,
+        0.032398583949543536,
+        0.03343479090835899
+      ]
+    },
+    "transform.shard_write_verify_bytes_per_s": {
+      "median": 129366253.68019234,
+      "n_kept": 7,
+      "warm_up_discarded": true,
+      "min": 121422223.81716734,
+      "max": 130372610.00378034,
+      "values": [
+        130372610.00378034,
+        129024542.0470807,
+        129997086.79525115,
+        128574441.78930119,
+        121422223.81716734,
+        129366253.68019234,
+        129394191.0740726
+      ]
+    },
+    "transform.pack_indices_bytes_per_s": {
+      "median": 159457446.1221626,
+      "n_kept": 7,
+      "warm_up_discarded": true,
+      "min": 152009135.1815256,
+      "max": 165086165.76357496,
+      "values": [
+        156278362.23659444,
+        165086165.76357496,
+        160380904.5988326,
+        159457446.1221626,
+        160954864.8299091,
+        152009135.1815256,
+        158849399.58341613
+      ]
+    },
+    "numeric_parity.gravity_verify_roundtrip_s": {
+      "median": 0.03338575002271682,
+      "n_kept": 7,
+      "warm_up_discarded": true,
+      "min": 0.03187416703440249,
+      "max": 0.03441604203544557,
+      "values": [
+        0.032717415946535766,
+        0.03187416703440249,
+        0.033388499985449016,
+        0.03338575002271682,
+        0.03233883297070861,
+        0.03441604203544557,
+        0.03406054095830768
+      ]
+    }
+  },
+  "verdict": "PASS",
+  "repair": "client cold-start: drop pathlib/tempfile/top-level threading; os.path+env-first CDLL discovery; equal-work performance-smoke preserved",
+  "run_3": {
+    "transform.gravity_format_selftest_s": {
+      "median": 0.0329314999980852,
+      "n_kept": 7,
+      "warm_up_discarded": true,
+      "min": 0.03111654194071889,
+      "max": 0.03445875004399568,
+      "values": [
+        0.03111654194071889,
+        0.03327770798932761,
+        0.03226137498859316,
+        0.03355462499894202,
+        0.0329314999980852,
+        0.03245204209815711,
+        0.03445875004399568
+      ]
+    },
+    "transform.shard_write_verify_bytes_per_s": {
+      "median": 129954391.91922356,
+      "n_kept": 7,
+      "warm_up_discarded": true,
+      "min": 126371248.60495923,
+      "max": 133828021.22489817,
+      "values": [
+        129681707.78517677,
+        130917896.6049953,
+        129954391.91922356,
+        126788403.3457146,
+        133116732.62424053,
+        133828021.22489817,
+        126371248.60495923
+      ]
+    },
+    "transform.pack_indices_bytes_per_s": {
+      "median": 156436504.6698553,
+      "n_kept": 7,
+      "warm_up_discarded": true,
+      "min": 153178818.4535874,
+      "max": 159693787.37798718,
+      "values": [
+        153178818.4535874,
+        156436504.6698553,
+        155853009.9789664,
+        159693787.37798718,
+        157387756.5528715,
+        154791896.559086,
+        157869939.91803852
+      ]
+    },
+    "numeric_parity.gravity_verify_roundtrip_s": {
+      "median": 0.031913667102344334,
+      "n_kept": 7,
+      "warm_up_discarded": true,
+      "min": 0.03115250007249415,
+      "max": 0.033153041964396834,
+      "values": [
+        0.033153041964396834,
+        0.03152037493418902,
+        0.03136254195123911,
+        0.031913667102344334,
+        0.032819416956044734,
+        0.03312116605229676,
+        0.03115250007249415
+      ]
+    }
+  }
+}

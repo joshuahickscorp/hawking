@@ -60,7 +60,7 @@ if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
 
 import glm52_pack  # noqa: E402
-import gravity_format  # noqa: E402
+import artifact_client as gravity_format  # noqa: E402
 from bounded_cache import PressureAwareCache  # noqa: E402
 
 SCHEMA = "hawking.glm52.real_artifact_survey.v1"

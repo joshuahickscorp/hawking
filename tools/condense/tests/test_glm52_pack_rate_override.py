@@ -17,7 +17,7 @@ if str(CONDENSE) not in sys.path:
     sys.path.insert(0, str(CONDENSE))
 
 import glm52_pack as pack  # noqa: E402
-import gravity_format  # noqa: E402
+import artifact_client as gravity_format  # noqa: E402
 
 def _shard_with_experts(tmp_path: pathlib.Path, n: int = 4):
     """`n` identically-shaped routed-expert tensors, one per (layer 0, expert i)."""

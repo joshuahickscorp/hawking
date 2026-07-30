@@ -1,0 +1,15 @@
+{
+  "schema": "hawking.s5.ledger.v1",
+  "architecture": "SharedBinaryCoreA-one-shot-v1",
+  "revision": "post-s6-independent-audit-20260729",
+  "base_main": "6355bdcc466a7b271785286de086cd82d03cc463",
+  "design_base": "ea33af24ea34a4be43c3ed1ea28b1dd6171b5314",
+  "performance_smoke": "artifact_client.py performance-smoke equals old gravity_format selftest ops",
+  "perfgate_fixed_cost": [
+    "transform.gravity_format_selftest_s",
+    "numeric_parity.gravity_verify_roundtrip_s"
+  ],
+  "f1_identity_receipt": "control/S5-f1-identity-receipt.json",
+  "s5_own_delta_vs_ea33": -200,
+  "projection_delta_vs_main": -2405
+}

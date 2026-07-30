@@ -183,7 +183,7 @@ def inventory(n: int, include_cold: bool) -> list[dict[str, Any]]:
     mok, mwhy = metal_ok(bin_path) if bin_path else (False, "no binary")
     llama, glm = llama_gravity(), glm_math_preserve()
     gtps, gglm = find_example("gravity_tps"), find_example("gravity_glm_tps")
-    fmt, pack = REPO / "tools/condense/gravity_format.py", REPO / "tools/condense/glm52_pack.py"
+    fmt, pack = REPO / "tools/condense/artifact_client.py", REPO / "tools/condense/glm52_pack.py"
     rows: list[dict[str, Any]] = []
 
     def add(name: str, fam: str, st: str, reason: str, **kw: Any) -> None:
@@ -247,18 +247,19 @@ def inventory(n: int, include_cold: bool) -> list[dict[str, Any]]:
         "hawking bench-kernel not on CLI (extracted to hawking-bench pack); use bench-q4k-shapes")
     add("transform.gravity_format_selftest_s", "transform",
         "measurable" if fmt.is_file() else "unavailable",
-        "tools/condense/gravity_format.py selftest" if fmt.is_file() else f"missing {fmt}", unit="s")
+        "artifact_client performance-smoke (equal-work vs old gravity_format selftest)"
+        if fmt.is_file() else f"missing {fmt}", unit="s")
     add("transform.pack_indices_bytes_per_s", "transform",
         "measurable" if pack.is_file() else "unavailable",
         "fixture-scale glm52_pack pack/unpack indices (no 1.4TB source)" if pack.is_file()
         else f"missing {pack}", unit="bytes/s", higher_is_better=True)
     add("transform.shard_write_verify_bytes_per_s", "transform",
         "measurable" if fmt.is_file() else "unavailable",
-        "fixture-scale gravity_format write_shard+verify (32x4KiB tensors, no torch/MPS)"
+        "fixture-scale artifact write_shard+verify (32x4KiB tensors, no torch/MPS)"
         if fmt.is_file() else f"missing {fmt}", unit="bytes/s", higher_is_better=True)
     add("numeric_parity.gravity_verify_roundtrip_s", "numeric_parity",
         "measurable" if fmt.is_file() else "unavailable",
-        "gravity_format write/verify/tamper selftest (CPU container oracle)", unit="s")
+        "artifact performance-smoke write/verify/tamper (CPU container oracle)", unit="s")
     return rows
 
 def cap_build(n: int, include_cold: bool) -> list[dict[str, Any]]:
@@ -474,7 +475,7 @@ _SHARD_SCRIPT = r"""
 import json, sys, time, tempfile
 from pathlib import Path
 sys.path.insert(0, sys.argv[1])
-import gravity_format as gf
+import artifact_client as gf
 payloads = []
 for i in range(32):
     body = bytes((i * 17 + j) % 256 for j in range(4096))
@@ -497,15 +498,15 @@ print(json.dumps({"bytes_per_s": total / elapsed, "tensors_per_s": 32 * 20 / ela
 """
 
 def cap_transform(n: int) -> list[dict[str, Any]]:
-    py, fmt, pack = sys.executable, REPO / "tools/condense/gravity_format.py", REPO / "tools/condense/glm52_pack.py"
+    py, fmt, pack = sys.executable, REPO / "tools/condense/artifact_client.py", REPO / "tools/condense/glm52_pack.py"
     condense = str(REPO / "tools/condense")
     out: list[dict[str, Any]] = []
     if fmt.is_file():
         def fmt_once() -> tuple[float, dict[str, Any]]:
-            rc, o, e, wall = run([py, str(fmt), "selftest"], timeout=120)
+            rc, o, e, wall = run([py, str(fmt), "performance-smoke"], timeout=120)
             if rc:
-                raise RuntimeError(f"selftest rc={rc}: {(e or o)[:200]}")
-            return wall, {"tool": "gravity_format.py selftest"}
+                raise RuntimeError(f"performance-smoke rc={rc}: {(e or o)[:200]}")
+            return wall, {"tool": "artifact_client.py performance-smoke"}
         out.append(measure("transform.gravity_format_selftest_s", "transform", n, "s", False, fmt_once))
 
         def shard() -> tuple[float, dict[str, Any]]:
@@ -576,16 +577,16 @@ def cap_kernel(n: int) -> list[dict[str, Any]]:
     return out
 
 def cap_numeric(n: int) -> list[dict[str, Any]]:
-    fmt = REPO / "tools/condense/gravity_format.py"
+    fmt = REPO / "tools/condense/artifact_client.py"
     if not fmt.is_file():
         return [metric("numeric_parity.gravity_verify_roundtrip_s", "numeric_parity", "unavailable",
                        f"missing {fmt}")]
 
     def once() -> tuple[float, dict[str, Any]]:
-        rc, o, e, wall = run([sys.executable, str(fmt), "selftest"], timeout=120)
+        rc, o, e, wall = run([sys.executable, str(fmt), "performance-smoke"], timeout=120)
         if rc:
-            raise RuntimeError(f"selftest rc={rc}: {(e or o)[:200]}")
-        return wall, {"path": "gravity_format write/verify/tamper/rate-claim"}
+            raise RuntimeError(f"performance-smoke rc={rc}: {(e or o)[:200]}")
+        return wall, {"path": "artifact performance-smoke write/verify/tamper/rate-claim"}
     return [measure("numeric_parity.gravity_verify_roundtrip_s", "numeric_parity", n, "s", False, once)]
 
 def do_capture(n: int, include_cold: bool, include_glm: bool) -> dict[str, Any]:

@@ -43,7 +43,7 @@ REPO = HERE.parents[1]
 if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
 
-import gravity_format as gravity  # noqa: E402
+import artifact_client as gravity  # noqa: E402
 
 REVISION = "b4734de4facf877f85769a911abafc5283eab3d9"
 APPSUP = Path.home() / "Library/Application Support/Hawking"
