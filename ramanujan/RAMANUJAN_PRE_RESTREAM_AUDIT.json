@@ -1,7 +1,7 @@
 {
   "schema": "hawking.ramanujan.pre_restream_audit.v1",
   "status": "AUDIT_COMPLETE_FIRST_PASS",
-  "hawking_commit": "43bab0e806492a89cd3a9bc272d71e5f8148dd4f",
+  "hawking_commit": "c891ba393e134fa76b768a5c69d7541286f042de",
   "at_note": "first pass; covers the section 9 checklist items reachable without the parent",
   "method": "probe the tree and the machine, then verify every claim a receipt makes rather than trusting it",
   "items": {
@@ -55,21 +55,28 @@
       "note": "unchanged; this audit does not and cannot alter it"
     },
     "odyssey_t0_t7_apparatus": {
-      "verified": true,
-      "present": [
-        "T0"
-      ],
-      "absent": [
-        "T1",
-        "T2",
-        "T3",
-        "T4",
-        "T5",
-        "T6",
-        "T7"
-      ],
-      "evidence": "odyssey/t0/ exists with KNOWN_FAILURES_REGISTRY.json, public_eval/ and state/; no T1..T7 directory or file matches anywhere under odyssey/",
-      "status": "1_OF_8"
+      "CORRECTION": "the first pass recorded 'T1-T7 absent' from a directory-name search. That tested the wrong thing and the finding was wrong.",
+      "what_the_ladder_actually_is": "T0 through T5, not T0 through T7. Section 9 names T0-T7; odyssey/training/ODYSSEY_TRAINING_PLAN.json defines six stages.",
+      "stages": {
+        "T0": "baseline_reproduction",
+        "T1": "capability_conditioned_continued_training",
+        "T2": "qat_headroom",
+        "T3": "trajectory_stabilization",
+        "T4": "forge_profile_expression",
+        "T5": "hidden_replication_and_sovereignty"
+      },
+      "apparatus_exists": true,
+      "evidence": {
+        "dispatcher": "odyssey/training/run.py, 124 lines, dispatches by stage id",
+        "gate_1_fence": "VERIFIED LIVE: T1 and T3 both refuse with ODYSSEY_LAUNCH_AUTHORIZED=false",
+        "gate_2_substrate": "VERIFIED LIVE and independent of the fence: assert_trainable refuses the pinned artifact with capability_verdict=REFUSED, reason H1_ARTIFACT / SEMANTIC_COLLAPSE, and refuses an unlisted hash as UNVERIFIED by default",
+        "t0_executable": "tools/odyssey/t0_run.py, reachable from the dispatcher",
+        "checkpoints": "56 content-addressed checkpoint files plus odyssey/rollback/ROLLBACK.json",
+        "deliberate_exemption": "T0 is exempt from the capability gate on purpose, because reproducing a substrate is how you find out it is broken"
+      },
+      "why_T1_T5_are_not_a_gap": "every one of T1 through T5 is a training stage: continued training, QAT, trajectory stabilization, forge expression, hidden replication. All require the final parent artifact, which the mission explicitly places outside this campaign. They are not non-parent paths.",
+      "genuinely_absent_here": "nothing in the stage apparatus. The stages refuse correctly and are waiting on a parent.",
+      "status": "APPARATUS_PRESENT_AND_REFUSING_CORRECTLY"
     },
     "controllers": {
       "retriever": {
@@ -140,8 +147,9 @@
   },
   "endpoint_distance": {
     "section_9_items_ready": [
-      "cognition/evidence/you_research code with 36 passing tests",
-      "Lean toolchain on host, pinned, with a restored container harness"
+      "cognition/evidence/you_research with 36 passing tests",
+      "Lean toolchain pinned on host; container harness restored, replay unverified pending a docker daemon",
+      "Odyssey stage apparatus: dispatcher, two independently-verified gates, checkpoints, rollback"
     ],
     "section_9_items_declared_only": [
       "Forge",
@@ -154,12 +162,16 @@
       "retriever"
     ],
     "section_9_items_absent": [
-      "Odyssey T1 through T7",
-      "formalizer",
-      "prover",
-      "repair controllers",
-      "Q1 and Q2 contracts"
+      "formalizer controller",
+      "prover controller",
+      "repair controller",
+      "Q1 contract",
+      "Q2 contract"
     ],
-    "honest_verdict": "the Ramanujan surface is contracts, not apparatus. Section 9 asks for a real T0-T7 apparatus and four controllers; one stage and zero controllers exist. RAMANUJAN_RESTREAM_READY is not reachable without building them, and no receipt in the tree should be read as saying otherwise."
-  }
+    "parent_dependent_correctly_out_of_scope": [
+      "T1 through T5 execution"
+    ],
+    "honest_verdict": "less far than the first pass claimed. The Odyssey apparatus is built and provably refuses; what is missing is three controllers, two Q contracts, and implementations behind eight governance contracts. The seven stores and the Ledger remain declared with zero code referencing them."
+  },
+  "method_note_on_this_correction": "the first pass searched for T1..T7 as directory or file names. The apparatus is a dispatcher plus a plan file, so the names never appear as paths. Probing behaviour, by running the dispatcher and calling the gate directly, gave the opposite answer."
 }
