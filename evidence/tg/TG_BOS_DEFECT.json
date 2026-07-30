@@ -1,7 +1,7 @@
 {
   "schema": "hawking.tg.bos_defect.v1",
   "status": "ROOT_CAUSE_FOUND_AND_FIXED",
-  "hawking_commit": "6069ce8d95eeb9e11eacc8fce95954acbbeeebe5",
+  "hawking_commit": "1522199c589f3c9ea4591887e6a39b4ca3ae2815",
   "defect": "the BPE tokenizer path dropped the BOS token",
   "mechanism": "tokenizer.ggml.add_bos_token is parsed at tokenizer.rs:190 and passed only to LlamaSpmTokenizer. The BPE path delegates to the tokenizers crate, and a GGUF-converted BPE tokenizer carries no post-processor, so nothing prepended BOS.",
   "why_it_looked_like_three_problems": "Qwen2.5 declares add_bos_token false and was unaffected, so the one bug presented as 'two adapter families are broken and one works'",
@@ -75,6 +75,21 @@
       "frozen KV slot: seq_slot is self.kv.seq_len and deepseek_v2.rs:3016 advances it in the Wedge C path",
       "tokenizer: tokenization matches llama.cpp exactly after the BOS fix"
     ],
-    "still_open": "what changes at step 4. Candidates not yet excluded: the one-time mla_kv_gpu_synced handshake interacting with per-step writes, the KV length passed to mla_decode, and MoE expert selection after the first few positions."
+    "still_open": "what makes token 4 repeat token 3 when position, slot and sequence length are all correct. The remaining candidates are the KV length passed to mla_decode and MoE expert selection.",
+    "trace_result": {
+      "instrumentation": "HAWKING_DS_TRACE=1 prints pos, seq_slot and seq_len per step",
+      "measured": "prompt is 7 tokens; the trace runs pos=0..6 then decode continues pos=7,8,9",
+      "verdict": "position and KV slot bookkeeping are CORRECT throughout. seq_slot equals pos and seq_len advances by one every step.",
+      "my_false_start": "an earlier trace read pos=0..9 and I took it for decode starting at 0, i.e. decode overwriting the prompt's KV. It was prefill plus decode with the output truncated by head -10. Checking the prompt length against the trace took one command and refuted it.",
+      "eliminated_additionally": [
+        "decode does not overwrite prefill KV",
+        "positions are not stuck or reset"
+      ]
+    },
+    "prefill_finding": {
+      "observed": "prefill emits one trace line per prompt token, so it runs token-by-token through the same Wedge C decode path",
+      "consistent_with": "91.7 ms per prompt token, which is roughly this model's decode cost, against llama.cpp's 0.76 ms",
+      "implication": "DeepSeek has no batched prefill at all, which is a separate and larger gap than the 14B's batch-8 ceiling"
+    }
   }
 }

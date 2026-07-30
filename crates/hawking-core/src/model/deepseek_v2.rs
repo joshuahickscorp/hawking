@@ -3015,6 +3015,17 @@ impl DeepSeekV2 {
 
                 self.kv.seq_len += 1;
                 self.mla_kv_gpu_synced = true;
+                // HAWKING_DS_TRACE: the Wedge C decode path emits three correct
+                // tokens and then repeats the third forever. This prints the
+                // state that is supposed to advance, so a repeating token with
+                // an advancing seq_len points at the read length or the expert
+                // routing rather than at the KV write.
+                if crate::env_on("HAWKING_DS_TRACE") {
+                    eprintln!(
+                        "[ds-trace] pos={pos} seq_slot={seq_slot} seq_len_after={}",
+                        self.kv.seq_len
+                    );
+                }
                 crate::metal::set_current_layer(None);
 
                 if decode_timing {
