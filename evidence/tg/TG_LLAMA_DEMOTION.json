@@ -1,0 +1,27 @@
+{
+  "schema": "hawking.tg.adapter_demotion.v1",
+  "adapter": "llama",
+  "source": "crates/hawking-core/src/model/llama.rs",
+  "verdict": "FORMALLY DEMOTED — correctness reference, not a performance path",
+  "correctness": {
+    "k0": "PASS",
+    "prompt": "The capital of France is",
+    "output": " Paris, the largest city in which is",
+    "note": "passes since the BOS fix; the earlier degenerate output was the tokenizer, not this adapter"
+  },
+  "measured": {
+    "model": "Llama-3.2-1B-Instruct-1b-Q4_K_M.gguf",
+    "device": "Apple M3 Ultra",
+    "hawking": {"decode_tok_s": 3.64, "decode_ms_per_token": 274.7, "prefill_ms_per_token": 274.5},
+    "llama_cpp_same_file": {"tg16_tok_s": 330.97, "tg16_ms_per_token": 3.02, "pp422_tok_s": 6598.88, "pp422_ms_per_token": 0.152},
+    "gap": {"decode": "90.9x slower", "prefill": "1809x slower"}
+  },
+  "tg_rung": "none. 274.7 ms/token fails TG20 and every rung below it. A 1.24B model at 274 ms/token moves roughly 2.8 GB/s against a 736 GB/s roof, so this is not a tuning gap.",
+  "why_demoted_rather_than_fixed": {
+    "structural": "llama.rs is 647 lines against qwen_dense.rs's 9351. Metal appears in it eight times: rmsnorm, a Q4_K GEMV, and the f16 LM head. There is no TokenCommandBuffer, no decode arena, no batched prefill, no fused kernels and no GPU sampling. Non-Q4_K tensors go through a CPU dequant scratch buffer and CPU gemv_f32.",
+    "reading": "the 90x is not a defect in this adapter. It is the absence of the pipeline the qwen adapter has. Calling it a bug and chasing it would have meant re-deriving nine thousand lines of TCB work under a different family name.",
+    "consequence": "prefill and decode cost the same per token (274.5 vs 274.7), which is the signature of a path with no batching at all."
+  },
+  "what_it_is_good_for": "a small, readable, correct forward that any kernel or tokenizer change can be checked against without the arena machinery in the way. That is why it stays.",
+  "transfer_claim": "NONE. No kernel is promoted on llama evidence and no TG rung is claimed for this family."
+}

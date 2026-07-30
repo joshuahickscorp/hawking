@@ -1,159 +1,190 @@
 {
-  "schema": "hawking.tg.model_scoreboard.v1",
-  "status": "EXTERNAL_BASELINE_ESTABLISHED",
-  "rung_ladder_ms": {
-    "TG20": 20,
-    "TG10": 10,
-    "TG5": 5,
-    "TG4": 4,
-    "TG3": 3,
-    "TG2": 2,
-    "TG1": 1
-  },
-  "law": "TG is absolute per-token latency and is model-specific. A smaller model reaching a deeper rung is not a speedup. Kernel promotion requires a same-model before/after.",
-  "blocking": "No absolute rung may be recorded while the box is contended. Clean-room requires the 24h substrate run and the Virtualization VM to be down.",
-  "models": {
-    "Qwen2.5-14B-Instruct": {
-      "family": "qwen2",
-      "engine_path": "qwen_dense",
-      "admitted": true,
-      "curve_points": [
-        "f16",
-        "Q6_K",
-        "Q4_K_M"
-      ],
-      "deepest_stable_rung": null,
-      "first_failing_rung": "TG20",
-      "baseline_ms_per_token": null,
-      "binding_roofline": null,
-      "reason": "decode not yet measured; GPU contended",
-      "artifact_measured": "Q4_K_M-imat",
-      "artifact_bytes": 8988110944,
-      "roofline": {
-        "sustained_read_bytes_s": 736000000000.0,
-        "source": "lab/operators/gravity_flop_ledger.py:24 (hard-coded, no sealed receipt; see unknowns)",
-        "floor_ms_per_token": 12.21,
-        "floor_tok_s": 81.9
-      },
-      "decode": {
-        "Q4_K_M-imat": {
-          "128": {
-            "n": 3,
-            "dec_tps_p50": 26.282,
-            "dec_tps_min": 26.166,
-            "dec_tps_max": 26.365,
-            "ms_per_token": 38.049,
-            "spread_pct": 0.76,
-            "prefill_ms_p50": 5511.5,
-            "dispatches_per_forward": 435,
-            "pct_of_roofline": 32.1
-          },
-          "512": {
-            "n": 3,
-            "dec_tps_p50": 21.628,
-            "dec_tps_min": 21.543,
-            "dec_tps_max": 21.675,
-            "ms_per_token": 46.236,
-            "spread_pct": 0.61,
-            "prefill_ms_p50": 20146.4,
-            "dispatches_per_forward": 435,
-            "pct_of_roofline": 26.4
-          },
-          "2048": {
-            "n": 3,
-            "dec_tps_p50": 12.682,
-            "dec_tps_min": 12.671,
-            "dec_tps_max": 12.685,
-            "ms_per_token": 78.853,
-            "spread_pct": 0.1,
-            "prefill_ms_p50": 107114.8,
-            "dispatches_per_forward": 435,
-            "pct_of_roofline": 15.5
-          }
-        }
-      },
-      "rung_analysis": {
-        "TG20": {
-          "target_ms": 20,
-          "physically_reachable": true,
-          "cleared": false,
-          "software_gap_x": 1.9,
-          "note": "llama.cpp clears TG20 on the identical file and hardware, so the 1.9x gap is entirely software and the 23.31 ms fixed cost is implementation, not physics",
-          "externally_demonstrated": true
-        },
-        "TG10_and_below": {
-          "physically_reachable": false,
-          "required_bytes_per_token_gib": 6.85,
-          "actual_bytes_per_token_gib": 8.37,
-          "note": "Q4_K_M must read 8.37 GiB/token; TG10 allows 6.85. Unreachable by any kernel. K8 representation work only."
-        }
-      },
-      "context_scaling": {
-        "pct_of_roof_by_ctx": {
-          "128": 32.1,
-          "512": 26.4,
-          "2048": 15.5
-        },
-        "finding": "efficiency falls 32.1 -> 26.4 -> 15.5 percent from ctx128 to ctx2048, so the loss with context is attention and KV, not weight bandwidth"
-      },
-      "prefill": {
-        "finding": "107.1 s to prefill 2048 tokens is roughly 19 tok/s and is a separate K6 target",
-        "ms_by_ctx": {
-          "128": 5511.5,
-          "512": 20146.4,
-          "2048": 107114.8
-        }
-      },
-      "measurement_conditions": {
-        "clean_room": false,
-        "tenants": "24h substrate run (2 cores) + Virtualization VM (~6 cores, 29.7GB)",
-        "observed_spread_pct": [
-          0.76,
-          0.61,
-          0.1
-        ],
-        "note": "spread of 0.1 to 0.8 percent over 3 trials means these are reproducible under the stated contention; they are still not clean-room absolutes"
-      },
-      "external_baseline": {
-        "engine": "llama.cpp llama-bench",
-        "decode_ms": 18.46,
-        "clears_TG20": true,
-        "pct_of_roofline": 66.0,
-        "gap_vs_hawking_x": 2.0,
-        "receipt": "evidence/tg/TG_EXTERNAL_BASELINE.json"
-      }
-    },
-    "Llama-3.2-1B-Instruct": {
-      "family": "llama",
-      "engine_path": "llama.rs",
-      "admitted": true,
-      "k0_truth": "PASS (fixed: BOS was missing)",
-      "deepest_stable_rung": null,
-      "first_failing_rung": "TG20",
-      "hawking_decode_ms": 262.7,
-      "llama_cpp_decode_ms": 2.95,
-      "gap_x": 89.1,
-      "dispatches_per_forward": "not instrumented in this adapter; the 0 is a default",
-      "device_id": null,
-      "adapter_grade": "CORRECT BUT SLOW: output now matches expectations after the BOS fix; still 89.1x slower than llama.cpp on the same file, which is a separate defect in the llama forward path",
-      "transfer_verdict": "no kernel grammar can transfer to this path until it dispatches at all; section 4 forbids using it as a speed comparison"
-    },
-    "DeepSeek-V2-Lite-Chat": {
-      "family": "deepseek2 (MoE)",
-      "engine_path": "deepseek_v2",
-      "admitted": true,
-      "k0_truth": "FAIL: deterministic and input-conditioned, but locks into repetition after the first token",
-      "deepest_stable_rung": null,
-      "first_failing_rung": "TG20",
-      "hawking_decode_ms": 28.51,
-      "llama_cpp_decode_ms": 7.31,
-      "gap_x": 3.9,
-      "dispatches_per_forward": "not instrumented in this adapter; the 0 is a default",
-      "adapter_grade": "RUNS BUT WRONG: needs an autotuned kernel profile even to start, then returns degenerate tokens while llama.cpp reads the same file at 136.79 tok/s",
-      "receipt": "evidence/tg/TG_MOE_INSTRUMENT.json",
-      "second_defect": "state appears not to advance between decode steps; not an empty forward"
+ "schema": "hawking.tg.model_scoreboard.v1",
+ "status": "THREE_MODELS_GRADED_AGAINST_EXTERNAL_BASELINE",
+ "rung_ladder_ms": {
+  "TG20": 20,
+  "TG10": 10,
+  "TG5": 5,
+  "TG4": 4,
+  "TG3": 3,
+  "TG2": 2,
+  "TG1": 1
+ },
+ "law": "TG is absolute per-token latency and is model-specific. A smaller model reaching a deeper rung is not a speedup. Kernel promotion requires a same-model before/after.",
+ "blocking": "No absolute rung may be recorded while the box is contended. Clean-room requires the 24h substrate run and the Virtualization VM to be down.",
+ "models": {
+  "Qwen2.5-14B-Instruct": {
+   "family": "qwen2",
+   "engine_path": "qwen_dense",
+   "admitted": true,
+   "curve_points": [
+    "f16",
+    "Q6_K",
+    "Q4_K_M"
+   ],
+   "deepest_stable_rung": null,
+   "first_failing_rung": "TG20",
+   "baseline_ms_per_token": null,
+   "binding_roofline": null,
+   "reason": "decode not yet measured; GPU contended",
+   "artifact_measured": "Q4_K_M-imat",
+   "artifact_bytes": 8988110944,
+   "roofline": {
+    "sustained_read_bytes_s": 736000000000.0,
+    "source": "lab/operators/gravity_flop_ledger.py:24 (hard-coded, no sealed receipt; see unknowns)",
+    "floor_ms_per_token": 12.21,
+    "floor_tok_s": 81.9
+   },
+   "decode": {
+    "Q4_K_M-imat": {
+     "128": {
+      "n": 3,
+      "dec_tps_p50": 26.282,
+      "dec_tps_min": 26.166,
+      "dec_tps_max": 26.365,
+      "ms_per_token": 38.049,
+      "spread_pct": 0.76,
+      "prefill_ms_p50": 5511.5,
+      "dispatches_per_forward": 435,
+      "pct_of_roofline": 32.1
+     },
+     "512": {
+      "n": 3,
+      "dec_tps_p50": 21.628,
+      "dec_tps_min": 21.543,
+      "dec_tps_max": 21.675,
+      "ms_per_token": 46.236,
+      "spread_pct": 0.61,
+      "prefill_ms_p50": 20146.4,
+      "dispatches_per_forward": 435,
+      "pct_of_roofline": 26.4
+     },
+     "2048": {
+      "n": 3,
+      "dec_tps_p50": 12.682,
+      "dec_tps_min": 12.671,
+      "dec_tps_max": 12.685,
+      "ms_per_token": 78.853,
+      "spread_pct": 0.1,
+      "prefill_ms_p50": 107114.8,
+      "dispatches_per_forward": 435,
+      "pct_of_roofline": 15.5
+     }
     }
+   },
+   "rung_analysis": {
+    "TG20": {
+     "target_ms": 20,
+     "physically_reachable": true,
+     "cleared": false,
+     "software_gap_x": 1.9,
+     "note": "llama.cpp clears TG20 on the identical file and hardware, so the 1.9x gap is entirely software and the 23.31 ms fixed cost is implementation, not physics",
+     "externally_demonstrated": true
+    },
+    "TG10_and_below": {
+     "physically_reachable": false,
+     "required_bytes_per_token_gib": 6.85,
+     "actual_bytes_per_token_gib": 8.37,
+     "note": "Q4_K_M must read 8.37 GiB/token; TG10 allows 6.85. Unreachable by any kernel. K8 representation work only."
+    }
+   },
+   "context_scaling": {
+    "pct_of_roof_by_ctx": {
+     "128": 32.1,
+     "512": 26.4,
+     "2048": 15.5
+    },
+    "finding": "efficiency falls 32.1 -> 26.4 -> 15.5 percent from ctx128 to ctx2048, so the loss with context is attention and KV, not weight bandwidth"
+   },
+   "prefill": {
+    "finding": "107.1 s to prefill 2048 tokens is roughly 19 tok/s and is a separate K6 target",
+    "ms_by_ctx": {
+     "128": 5511.5,
+     "512": 20146.4,
+     "2048": 107114.8
+    }
+   },
+   "measurement_conditions": {
+    "clean_room": false,
+    "tenants": "24h substrate run (2 cores) + Virtualization VM (~6 cores, 29.7GB)",
+    "observed_spread_pct": [
+     0.76,
+     0.61,
+     0.1
+    ],
+    "note": "spread of 0.1 to 0.8 percent over 3 trials means these are reproducible under the stated contention; they are still not clean-room absolutes"
+   },
+   "external_baseline": {
+    "engine": "llama.cpp llama-bench",
+    "decode_ms": 18.46,
+    "clears_TG20": true,
+    "pct_of_roofline": 66.0,
+    "gap_vs_hawking_x": 2.0,
+    "receipt": "evidence/tg/TG_EXTERNAL_BASELINE.json"
+   },
+   "prefill_frontier": {
+    "receipt": "evidence/tg/TG_14B_PREFILL_FRONTIER.json",
+    "external_same_file": {
+     "tool": "llama-bench (ggml 0.13.1)",
+     "pp422_ms_per_token": 1.91,
+     "tg8_ms_per_token": 19.33
+    },
+    "hawking_best_prefill_ms_per_token": 36.2,
+    "prefill_gap_x": 19.0,
+    "decode_gap_x": 1.74,
+    "batch_ceiling": "B=16 and B=32 are refused by ffn_down_swiglu_add_rmsnorm_ffn_q4k_predec_batched_tcb. The projection GEMM already reaches 32 via gemm_q4_k_m_batched_v3w_mma_n32.",
+    "finding": "batched prefill's advantage falls from 1.54x at a 43-token prompt to 1.13x at 422 because attention grows quadratically while weight-read amortization is constant. Widening the fused FFN kernel from 8 to 32 is therefore not the binding constraint; matching llama.cpp needs a real tiled GEMM over the whole prompt, not a wider GEMV."
+   }
   },
-  "hawking_commit": "0999e1de1f5e4773d3a4fca2abacb0a507986986",
-  "cross_family_finding": "RETRACTED. dispatches_per_forward is instrumented only in qwen_dense, so a 0 elsewhere is an unset default rather than evidence that Metal was not reached. What stands is measured directly: llama and deepseek2 fail K0 with degenerate output and qwen_dense passes, while llama.cpp reads all three files correctly."
+  "Llama-3.2-1B-Instruct": {
+   "family": "llama",
+   "engine_path": "llama",
+   "admitted": true,
+   "k0_truth": "PASS (fixed: BOS was missing)",
+   "deepest_stable_rung": null,
+   "first_failing_rung": "TG20",
+   "hawking_decode_ms": 262.7,
+   "llama_cpp_decode_ms": 2.95,
+   "gap_x": 89.1,
+   "dispatches_per_forward": "not instrumented in this adapter; the 0 is a default",
+   "device_id": null,
+   "adapter_grade": "CORRECT BUT SLOW: output now matches expectations after the BOS fix; still 89.1x slower than llama.cpp on the same file, which is a separate defect in the llama forward path",
+   "transfer_verdict": "no kernel grammar can transfer to this path until it dispatches at all; section 4 forbids using it as a speed comparison",
+   "k0": "PASS since the BOS fix",
+   "measured_ms_per_token": 274.7,
+   "external_same_file": {
+    "tool": "llama-bench (ggml 0.13.1)",
+    "tg16_ms_per_token": 3.02,
+    "pp422_ms_per_token": 0.152
+   },
+   "gap": {
+    "decode": "90.9x",
+    "prefill": "1809x"
+   },
+   "verdict": "FORMALLY DEMOTED to a correctness reference. See evidence/tg/TG_LLAMA_DEMOTION.json. llama.rs is 647 lines with eight Metal touch points and no TCB, arena, batched prefill or fused kernels; the gap is an absent pipeline, not a defect.",
+   "transfer_claim": "none"
+  },
+  "DeepSeek-V2-Lite-Chat": {
+   "family": "deepseek2 (MoE)",
+   "engine_path": "deepseek_v2",
+   "admitted": true,
+   "k0_truth": "FAIL: deterministic and input-conditioned, but locks into repetition after the first token",
+   "deepest_stable_rung": null,
+   "first_failing_rung": "TG20",
+   "hawking_decode_ms": 28.51,
+   "llama_cpp_decode_ms": 7.31,
+   "gap_x": 3.9,
+   "dispatches_per_forward": "not instrumented in this adapter; the 0 is a default",
+   "adapter_grade": "RUNS BUT WRONG: needs an autotuned kernel profile even to start, then returns degenerate tokens while llama.cpp reads the same file at 136.79 tok/s",
+   "receipt": "evidence/tg/TG_MOE_INSTRUMENT.json",
+   "second_defect": "state appears not to advance between decode steps; not an empty forward",
+   "k0": "FAIL",
+   "measured_ms_per_token": 27.8,
+   "verdict": "NO RUNG RECORDED. The model decodes at 35.98 tok/s and emits garbage from the first decode token. A latency number from an incorrect forward promotes nothing. See evidence/tg/TG_MOE_BISECT.json for the four eliminated causes and why the bisect stops without a reference forward.",
+   "transfer_claim": "none \u2014 the admitted MoE grammar proof is NOT obtained"
+  }
+ },
+ "hawking_commit": "0999e1de1f5e4773d3a4fca2abacb0a507986986",
+ "cross_family_finding": "RETRACTED. dispatches_per_forward is instrumented only in qwen_dense, so a 0 elsewhere is an unset default rather than evidence that Metal was not reached. What stands is measured directly: llama and deepseek2 fail K0 with degenerate output and qwen_dense passes, while llama.cpp reads all three files correctly.",
+ "contention_note": "Every number added on 2026-07-30 was taken with the 24h substrate run live. They are recorded as contended and are therefore upper bounds on latency, which is the conservative direction for a rung claim: a contended run cannot make a failed rung look passed."
 }
