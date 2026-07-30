@@ -1,7 +1,7 @@
 {
   "schema": "hawking.ramanujan.pre_restream_audit.v1",
-  "status": "AUDIT_COMPLETE_FIRST_PASS",
-  "hawking_commit": "c891ba393e134fa76b768a5c69d7541286f042de",
+  "status": "AUDIT_COMPLETE_BEHAVIOUR_PROBED",
+  "hawking_commit": "f1c55a3028d0759e18ac8c85ff6c8aa89581cd2a",
   "at_note": "first pass; covers the section 9 checklist items reachable without the parent",
   "method": "probe the tree and the machine, then verify every claim a receipt makes rather than trusting it",
   "items": {
@@ -96,32 +96,30 @@
       "note": "section 9 asks for retriever/formalizer/prover/repair controllers; one contract exists and no controller code does"
     },
     "governance_surface": {
-      "finding": "every governance directory holds exactly one JSON contract and, mostly, no implementation",
-      "contracts_and_code_references": {
-        "FORGE": 2,
-        "SOVEREIGNTY": 1,
-        "TRIBUNAL": 1,
-        "VERIFICATION_LATTICE": 2,
-        "LEDGER_CONTRACT": 0,
-        "ROLES": 0,
-        "GRAVEYARD": 0,
-        "MEMORY_STORES": 0
+      "measured_in": "ramanujan/*.py, 1373 lines, 36 passing tests",
+      "implemented_and_tested": {
+        "verification_lattice": "ramanujan/evidence.py: Tier enum, promote(), promote_many(), PromotionRefused, and the three lattice invariants enforced rather than quoted",
+        "retriever": "ramanujan/you_research.py: 49 references plus test coverage",
+        "research_object_graph": "ramanujan/cognition.py: ResearchObjectGraph, Falsifier, CheapestFalsifier, Calibration, compile_capsule, verify_capsule",
+        "claims_and_citations": "you_research.py: Claim, Citation, EvidenceBinding, ClaimCategory, TransitionRefused, EvidenceRequired"
       },
       "seven_stores": {
-        "declared": 7,
-        "ids": [
-          "M1 claims",
-          "M2 evidence",
-          "M3 trajectories",
-          "M4 structure",
-          "M5 literature",
-          "M6 economics",
-          "M7 graveyard"
-        ],
-        "implemented": false,
-        "evidence": "MEMORY_STORES.json declares all seven and no code file references it"
+        "M1_claims": "IMPLEMENTED",
+        "M2_evidence": "IMPLEMENTED",
+        "M5_literature": "PARTIAL",
+        "M3_trajectories": "ABSENT",
+        "M4_structure": "ABSENT",
+        "M6_economics": "ABSENT",
+        "M7_graveyard": "ABSENT",
+        "score": "2 of 7 implemented, 1 partial"
       },
-      "status": "DECLARED_NOT_BUILT"
+      "absent_in_code": {
+        "Ledger": 0,
+        "roles": 0,
+        "prover": 0,
+        "repair": 0,
+        "note": "counts are references in ramanujan/*.py; Tribunal appears once, in a docstring, so it is contract-only"
+      }
     },
     "q_gates": {
       "q0": "6 files, and the harness is restored but the replay is unverified",
@@ -146,32 +144,40 @@
     "recommendation": "gate runners belong behind a test that fails when the runner disappears, otherwise the next density pass removes them again"
   },
   "endpoint_distance": {
-    "section_9_items_ready": [
-      "cognition/evidence/you_research with 36 passing tests",
-      "Lean toolchain pinned on host; container harness restored, replay unverified pending a docker daemon",
-      "Odyssey stage apparatus: dispatcher, two independently-verified gates, checkpoints, rollback"
+    "ready": [
+      "Odyssey stage apparatus with two independently-verified gates",
+      "verification lattice, enforced in code and tested",
+      "retriever, research object graph, claims and citations",
+      "Lean toolchain pinned; container harness restored, replay unverified pending a docker daemon",
+      "M1 claims and M2 evidence stores"
     ],
-    "section_9_items_declared_only": [
-      "Forge",
-      "sovereignty",
-      "Tribunal",
-      "Ledger",
-      "roles",
-      "seven stores",
-      "verification lattice",
-      "retriever"
+    "partial": [
+      "M5 literature",
+      "search",
+      "formalizer, in that tier-2 promotion rules exist but no formalizer controller does"
     ],
-    "section_9_items_absent": [
-      "formalizer controller",
+    "absent": [
       "prover controller",
       "repair controller",
+      "Ledger",
+      "roles",
+      "M3 trajectories",
+      "M4 structure",
+      "M6 economics",
+      "M7 graveyard",
       "Q1 contract",
       "Q2 contract"
     ],
-    "parent_dependent_correctly_out_of_scope": [
+    "parent_dependent_out_of_scope": [
       "T1 through T5 execution"
     ],
-    "honest_verdict": "less far than the first pass claimed. The Odyssey apparatus is built and provably refuses; what is missing is three controllers, two Q contracts, and implementations behind eight governance contracts. The seven stores and the Ledger remain declared with zero code referencing them."
+    "honest_verdict": "materially closer than either earlier pass said. The research apparatus is largely built and tested; what remains is two controllers, a Ledger and roles, five of seven stores, and two Q contracts. None of it is blocked by the parent, so all of it is in scope for this campaign, and none of it is measurement work."
   },
-  "method_note_on_this_correction": "the first pass searched for T1..T7 as directory or file names. The apparatus is a dispatcher plus a plan file, so the names never appear as paths. Probing behaviour, by running the dispatcher and calling the gate directly, gave the opposite answer."
+  "method_note_on_this_correction": "the first pass searched for T1..T7 as directory or file names. The apparatus is a dispatcher plus a plan file, so the names never appear as paths. Probing behaviour, by running the dispatcher and calling the gate directly, gave the opposite answer.",
+  "method_of_record": {
+    "probe": "does code implement it, and is it covered by a passing test",
+    "not": "does a directory or filename match",
+    "why": "the filename probe gave three wrong answers in this audit: the Odyssey stage apparatus, the verification lattice, and the retriever were each recorded absent or contract-only while being implemented and tested",
+    "corrections_made": 3
+  }
 }
