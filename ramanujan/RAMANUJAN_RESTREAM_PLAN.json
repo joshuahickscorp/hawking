@@ -1,0 +1,78 @@
+{
+  "schema": "hawking.ramanujan.restream_plan.v1",
+  "at": "2026-07-30",
+  "status": "COMPLETE_EXCEPT_ONE_GATE",
+  "what_this_is": "Everything the parent restream needs, spelled out to the command. It is not authorization and it does not run. One gate refuses it, and that gate is named at the bottom rather than routed around.",
+
+  "parent": {
+    "repo": "zai-org/GLM-5.2",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "license": "MIT",
+    "manifest": "evidence/glm52/GLM52_OFFICIAL_MANIFEST.json",
+    "manifest_seal_sha256_prefix": "ef4e3cbf6b4b6ddc",
+    "file_count": 295,
+    "weight_shards": 282,
+    "largest_shard": {"path": "model-00200-of-00282.safetensors", "bytes": 5368361544},
+    "median_shard_bytes": 5360347312,
+    "nonweight_logical_bytes": 25649538,
+    "why_this_revision": "it is the revision the 282/282 traversal actually ran against, and the one the frozen decisions and the adapter parity receipts are bound to. Any other revision invalidates the sealed evidence rather than extending it."
+  },
+
+  "shard_rotation": {
+    "invariant": "one active shard. N-1 seals and evicts, N processes, N+1 fetches.",
+    "measured_costs": {
+      "pack_seconds_per_shard": 3.5,
+      "fetch_seconds_per_shard": 21,
+      "binding_constraint": "network, not CPU. The pack path holds about one core of 28 and the GPU sits near 18 percent.",
+      "path_ceiling_gbit_s": 2.0,
+      "concurrency_knee": "4 concurrent files. Going to 8 buys under 1 percent."
+    },
+    "known_waste": "every shard is currently fetched twice, about 2 x 1.4 TiB, because global allocation needs all 282 headers before packing starts. A header-only first pass removes the second fetch and is the single largest speed lever on this path.",
+    "traps": [
+      "--disk-floor-gib is silently ignored on the pack path",
+      "nice fails inside the Grok sandbox",
+      "macOS 'used' RAM counts purgeable, so the memory headroom reads worse than it is"
+    ]
+  },
+
+  "representation": {
+    "preregistration": "evidence/hawking/HAWKING_REPRESENTATION_ESCALATION_TOURNAMENT.json",
+    "status": "PREREGISTERED_NOT_RUN",
+    "arms": ["A1 native functional expert replacement", "A2 PQ plus learned residual correction", "A3 additive multi-codebook", "A4 shared latent expert basis with causal gates", "A5 profile-conditioned protected islands", "A6 trajectory-stabilized hybrid"],
+    "nulls": ["N1 uniform-rate control", "N2 random-policy control", "N3 constant-mean null for any cosine metric"],
+    "ceiling": "1.0 complete BPW, strict, measured the same way GLM52_H0_98_MATH_PRESERVE_RECEIPT.json measured 0.9774 — no modeled-zero, no payload-only, no per-tensor exemption",
+    "inadmissible_evidence": "weight-space reconstruction error. Every arm is judged on generation. The governing law in crates/hawking-seed-c/src/gravity.rs names this as the mistake a compression tournament drifts toward.",
+    "new_input_since_preregistration": "the activation-aware result of 2026-07-27 — 0.755 cosine at 0.167 BPW fitted to real captured activations, replicated 12 of 12 experts, against 0 of 12 for raw-weight low-rank at four times the rate. That is evidence for A1 and against the fitted-to-weights framing of A2/A3, and it arrived after the arms were frozen. It does not change the arms; it changes which one to run first.",
+    "run_order": "A1 first, then A4, then A2/A3/A5/A6. A1 and A4 are the two arms whose expressiveness differs in the direction the activation-aware result points."
+  },
+
+  "auctions_and_gates": {
+    "eviction_gate": "a shard may be evicted only after its seal verifies; the calibration trap here is fixed by glm52_teacher_rechain.py --apply",
+    "six_gate_amendment": "supersedes the original 20 gates; A04 was the last open one and the odyssey-ready watcher seals it detached",
+    "escape_receipt": "required for any artifact above 1.0 complete BPW. It would cite this tournament's negatives plus GRAVITY_DEGENERATE_ATTRIBUTION.json, which is a live generation failure on a real flagship confirmed by oracle.",
+    "who_decides_escape": "the user. Recorded as a governance decision, not taken as a technical one."
+  },
+
+  "odyssey_sequence": {
+    "apparatus": "present and refusing correctly; proven on numpy fixtures including kill/resume bit-identity and executable rollback",
+    "prerequisites_missing": [
+      {"id": "approved_substrate", "status": "MISSING", "detail": "no artifact has capability_verdict APPROVED. Math-Preserve and General-R0 are both REFUSED."},
+      {"id": "training_corpora", "status": "DECLARED_NOT_PRESENT", "detail": "math-core, support-language, long-horizon and sovereignty-corpus are all present=false"},
+      {"id": "trajectory_traces", "status": "MISSING", "detail": "teacher ledger has 118 per-layer captures and 0 trajectory traces; T3 cannot run without them"},
+      {"id": "launch_authorization", "status": "FALSE", "detail": "deliberately false; the apparatus must not flip it"}
+    ],
+    "hard_rule": "do not distill teacher traces from Math-Preserve. It is semantically collapsed, confirmed by numpy oracle against the runtime, and traces from it would teach a student to reproduce the collapse while looking like data."
+  },
+
+  "executable_restream_command": {
+    "command": "python3.12 -m lab.operators.glm52_source_fetch --revision b4734de4facf877f85769a911abafc5283eab3d9 --manifest evidence/glm52/GLM52_OFFICIAL_MANIFEST.json --rotation n-1-seal-evict --concurrency 4",
+    "then": "python3.12 -m ramanujan.data.generate --all-mathlib   # unrelated to the parent; listed because it is the one restream-adjacent step that runs today",
+    "state": "NOT RUNNABLE",
+    "refused_by": "odyssey/launch/SUBSTRATE_CAPABILITY.json",
+    "why": "the capability gate is keyed by artifact content hash and refuses anything not listed. Every candidate artifact is either REFUSED by name or absent, and absence is UNVERIFIED, which is also refused. There is no artifact to name in the command because all .gravity artifacts were deleted on 2026-07-29 with no receipt.",
+    "what_unblocks_it": "one of: (a) rebuild a .gravity artifact and submit it to the capability gate with live generation evidence, or (b) run the representation tournament, which produces a candidate artifact as its output. (b) subsumes (a) and is the preregistered path.",
+    "what_does_not_unblock_it": "flipping ODYSSEY_LAUNCH_AUTHORIZED. The fence and the capability gate are independent, and the capability gate was added precisely so that flipping the fence cannot start a run against an unfit substrate. This was verified adversarially: fence true still exits 5."
+  },
+
+  "honest_state": "Eight of the nine things the endpoint asks for are written down here exactly. The ninth, an executable command that runs, cannot exist until an artifact passes the capability gate, and no artifact does. That is the correct state rather than a gap to route around."
+}
