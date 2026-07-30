@@ -1455,10 +1455,11 @@ impl Engine for QwenDense {
             // anything: measured prefill still runs near decode speed. Tunable
             // because the useful value depends on activation memory, which
             // depends on the model, not on us.
-            // ponytail: clamped to 8 because gemm_q4_k_m_batched_v3w_pinned_tcb
-            // rejects B>8 (two float4 accumulators). Raising this needs a tiled
-            // GEMM prefill kernel, not a bigger constant.
-            let b_max: usize = crate::env_usize("HAWKING_QWEN_PREFILL_BATCH", 8).clamp(1, 8);
+            // K6 landed the tiled GEMM this used to wait on:
+            // gemm_q4_k_m_batched_v3w_mma_n32 carries four accumulators, so the
+            // ceiling is 32. The default stays 8 so the shipped decode path is
+            // unchanged until the wider batch is measured, not merely correct.
+            let b_max: usize = crate::env_usize("HAWKING_QWEN_PREFILL_BATCH", 8).clamp(1, 32);
             let positions: Vec<usize> = (0..prompt_len).collect();
             let mut i = prefill_skipped;
             while i < prompt_len {
@@ -2531,10 +2532,11 @@ impl Engine for QwenDense {
             // Same amortization factor as the other batched-prefill site; see
             // the comment there. Kept on one env var so a sweep cannot tune
             // one path and silently leave the other at 8.
-            // ponytail: clamped to 8 because gemm_q4_k_m_batched_v3w_pinned_tcb
-            // rejects B>8 (two float4 accumulators). Raising this needs a tiled
-            // GEMM prefill kernel, not a bigger constant.
-            let b_max: usize = crate::env_usize("HAWKING_QWEN_PREFILL_BATCH", 8).clamp(1, 8);
+            // K6 landed the tiled GEMM this used to wait on:
+            // gemm_q4_k_m_batched_v3w_mma_n32 carries four accumulators, so the
+            // ceiling is 32. The default stays 8 so the shipped decode path is
+            // unchanged until the wider batch is measured, not merely correct.
+            let b_max: usize = crate::env_usize("HAWKING_QWEN_PREFILL_BATCH", 8).clamp(1, 32);
             let positions: Vec<usize> = (0..prompt_len).collect();
             let mut i = start_pos;
             let last_token = loop {
@@ -7018,7 +7020,25 @@ impl QwenDense {
                                 $rows * f32_bytes,
                                 "batched_proj: Q4_K requires contiguous out_stride"
                             );
-                            if let Some(scales) = predec_cache.and_then(|c| c.get(&$tref.offset)) {
+                            // K6: above B=8 the N-tiled MMA kernel is the only one
+                            // defined; predec, v3w and v3w_mma all refuse. Wider
+                            // batches are what make prefill cheaper per prompt
+                            // token, so this branch is checked first.
+                            if b > 8 {
+                                kernels::gemm_q4_k_m_batched_v3w_mma_n32_pinned_tcb(
+                                    &mut tcb,
+                                    mmap_buf,
+                                    $tref.offset,
+                                    $tref.byte_size,
+                                    $rows,
+                                    $cols,
+                                    b,
+                                    $x_batch,
+                                    $out_batch,
+                                )?;
+                            } else if let Some(scales) =
+                                predec_cache.and_then(|c| c.get(&$tref.offset))
+                            {
                                 // P1-A: rows>cols (ffn gate/up) → predec-MMA twin
                                 // (Option B, the shipped win). Other shapes keep the
                                 // tuned predec kernel (MMA loses on square/wide).

@@ -1,7 +1,7 @@
 {
   "schema": "hawking.tg.k6_prefill.v1",
   "status": "BLOCKER_IDENTIFIED",
-  "hawking_commit": "817acc138a815f7f7525dde852656e9df252677d",
+  "hawking_commit": "a56c2e2002af9118280c02312dc07f7324d43110",
   "model": "Qwen2.5-14B-Instruct",
   "artifact": "Q4_K_M-imat",
   "symptom": {
@@ -53,6 +53,15 @@
       "reason": "two float4 partial accumulators; shmem tile is B*256 floats, 8 KB at B=8",
       "error_when_exceeded": "kernel: gemm_q4_k_m_batched_v3w_pinned_tcb supports batch in 1..=8; got 32",
       "verdict": "THE ACTUAL WALL. Not a constant, not the arena, and not memory: 75 GB was free throughout."
+    },
+    {
+      "level": 4,
+      "site": "ffn_down_swiglu_add_rmsnorm_ffn_q4k_predec_batched_tcb",
+      "limit": "batch 1..=8",
+      "structural": true,
+      "reason": "a fused swiglu+add+rmsnorm+ffn kernel with its own shmem layout and accumulators",
+      "error_when_exceeded": "kernel: ffn_down_swiglu_add_rmsnorm_ffn_q4k_predec_batched_tcb supports batch in 1..=8; got 16",
+      "verdict": "the next wall, and it is a harder kernel than the GEMM because it fuses four operations"
     }
   ],
   "k6_target": "a tiled GEMM prefill kernel. Prefill is matrix-matrix work being run as a batch-8 GEMV, which is why it lands near decode speed while llama.cpp lands 18x below its own decode.",
@@ -61,5 +70,37 @@
     "gap_before_the_lever_x": 20.8,
     "note": "the 20.8x prefill gap is the single largest measured number in this campaign and the least worked on"
   },
-  "what_changed_in_code": "the two constants became one env var, clamped to the kernel's real ceiling and commented with it, so the chain is discoverable instead of being rediscovered by a sweep that silently does nothing"
+  "what_changed_in_code": "the two constants became one env var, clamped to the kernel's real ceiling and commented with it, so the chain is discoverable instead of being rediscovered by a sweep that silently does nothing",
+  "k6_implementation": {
+    "kernel": "gemm_q4_k_m_batched_v3w_mma_n32, four simdgroup_matrix accumulators against one resident weight tile",
+    "shmem": "1536 floats (6 KB), independent of batch, against a 32 KB limit",
+    "correctness": "agrees with v3w at B in {1,2,4,8} across three shapes; at B in {9,16,32} every column matches the single-token v3w result; B=33 refused",
+    "status": "BUILT_AND_VERIFIED"
+  },
+  "scope_correction": {
+    "what_i_expected": "one kernel capped the prefill batch",
+    "what_is_true": "the B=8 assumption is spread across the whole prefill path, not concentrated in one kernel",
+    "sites_found": {
+      "gemm_q4_k_m_batched_v3w": "lifted, by routing b>8 to the new n32 kernel",
+      "gemm_q4_k_m_batched_v3w_mma": "1..=8",
+      "gemm_q4_k_v4_predec_swiglu": "1..=8",
+      "ffn_down_swiglu_add_rmsnorm_ffn_q4k_predec_batched_tcb": "1..=8",
+      "four_further_1..=8_guards_in_kernels_mod": "lines 736, 808, 1017, 1229",
+      "v3w_call_sites_in_qwen_dense": "7090, 7102, 7456, 7786, 8076 in the prefill path, plus 8251, 8402, 8619 elsewhere"
+    },
+    "consequence": "K6 is a kernel family, not a kernel. The N-tiling is proven on the GEMM, which was the hard and uncertain part, but B>8 end to end additionally needs the fused FFN kernel widened and the remaining call sites routed."
+  },
+  "measured_this_pass": {
+    "b8_prefill_ms_per_prompt_token": 35.32,
+    "b16_and_b32": "REFUSED by the fused FFN kernel, so unmeasured",
+    "default_path_after_k6": {
+      "decode_ms": 37.13,
+      "pre_k6": 36.98,
+      "delta_pct": 0.4,
+      "dispatches_per_forward": 435,
+      "reading": "within trial spread; the shipped path is unchanged, which is the intent while the default stays 8"
+    },
+    "gap_to_llama_cpp_still": 17.1
+  },
+  "honest_status": "KERNEL_PROVEN_PATH_NOT_YET_WIDENED"
 }

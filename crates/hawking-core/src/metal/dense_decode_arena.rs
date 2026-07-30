@@ -99,12 +99,12 @@ mod arena_imp {
             // the two cannot drift apart: raising one without the other only
             // moves the error from "arena.max_batch" to the kernel.
             //
-            // ponytail: the 8 is the kernel's ceiling, not the arena's.
-            // gemm_q4_k_m_batched_v3w_pinned_tcb carries two float4 partial
-            // accumulators, so B>8 is a structural refusal rather than a
-            // tuning limit, and the B-wide scratch here is trivial next to
-            // weight memory. Lifting it needs a tiled GEMM prefill kernel.
-            let max_batch = crate::env_usize("HAWKING_QWEN_PREFILL_BATCH", 8).clamp(1, 8);
+            // The ceiling is the kernel's, not the arena's. It used to be 8,
+            // set by gemm_q4_k_m_batched_v3w's two float4 accumulators; K6
+            // added gemm_q4_k_m_batched_v3w_mma_n32, which carries four tiles,
+            // so it is now 32. The B-wide scratch here is trivial next to
+            // weight memory, so the arena was never the constraint.
+            let max_batch = crate::env_usize("HAWKING_QWEN_PREFILL_BATCH", 8).clamp(1, 32);
             Self::new_with_batch(
                 ctx,
                 n_layers,
