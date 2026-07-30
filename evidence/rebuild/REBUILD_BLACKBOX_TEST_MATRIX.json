@@ -455,7 +455,7 @@
     {
       "behaviour_id": "BC-GRAVITY-011",
       "domain": "GRAVITY",
-      "command": "python3.12 -c \"import json; d=json.load(open('HAWKING_GRAVITY_BASE_TPS.json')); assert d['measurements'][0]['base_true_decode_tps']>0\"",
+      "command": "python3.12 -c \"import json; d=json.load(open('evidence/hawking/HAWKING_GRAVITY_BASE_TPS.json')); assert d['measurements'][0]['base_true_decode_tps']>0\"",
       "assertion": "positive base_true_decode_tps recorded",
       "fixture": "none",
       "fixture_exists": true,
@@ -485,7 +485,7 @@
     {
       "behaviour_id": "BC-GRAVITY-014",
       "domain": "GRAVITY",
-      "command": "python3.12 -c \"import json; d=json.load(open('HAWKING_GRAVITY_SERVE_RECEIPT.json')); assert d['status']=='PARTIAL'; assert d['default_off'] is True\"",
+      "command": "python3.12 -c \"import json; d=json.load(open('evidence/hawking/HAWKING_GRAVITY_SERVE_RECEIPT.json')); assert d['status']=='PARTIAL'; assert d['default_off'] is True\"",
       "assertion": "PARTIAL and default_off",
       "fixture": "none",
       "fixture_exists": true,
@@ -495,7 +495,7 @@
     {
       "behaviour_id": "BC-GRAVITY-015",
       "domain": "GRAVITY",
-      "command": "python3.12 -c \"import json; d=json.load(open('GLM52_MATH_PRESERVE_BASE_TPS.json')); assert d['schema']=='hawking.gravity.glm_base_tps.v1'; assert d['scoreboard']=='BASE_TRUE_TPS'\"",
+      "command": "python3.12 -c \"import json; d=json.load(open('evidence/glm52/GLM52_MATH_PRESERVE_BASE_TPS.json')); assert d['schema']=='hawking.gravity.glm_base_tps.v1'; assert d['scoreboard']=='BASE_TRUE_TPS'\"",
       "assertion": "schema and scoreboard",
       "fixture": "none",
       "fixture_exists": true,
@@ -505,7 +505,7 @@
     {
       "behaviour_id": "BC-GRAVITY-018",
       "domain": "GRAVITY",
-      "command": "python3.12 -c \"import json; json.load(open('GLM52_H0_98_MATH_PRESERVE_RECEIPT.json'))\"",
+      "command": "python3.12 -c \"import json; json.load(open('evidence/glm52/GLM52_H0_98_MATH_PRESERVE_RECEIPT.json'))\"",
       "assertion": "parses",
       "fixture": "none",
       "fixture_exists": true,
@@ -515,7 +515,7 @@
     {
       "behaviour_id": "BC-GRAVITY-019",
       "domain": "GRAVITY",
-      "command": "python3.12 -c \"import json; json.load(open('GLM52_ARCHITECTURE_CONTRACT.json'))\"",
+      "command": "python3.12 -c \"import json; json.load(open('evidence/glm52/GLM52_ARCHITECTURE_CONTRACT.json'))\"",
       "assertion": "parses",
       "fixture": "none",
       "fixture_exists": true,
@@ -585,7 +585,7 @@
     {
       "behaviour_id": "BC-ACCEL-007",
       "domain": "ACCEL",
-      "command": "set HAWKING_QWEN_INT4_KV=1 without experimental \u2192 fail-loud",
+      "command": "set HAWKING_QWEN_INT4_KV=1 without experimental → fail-loud",
       "assertion": "exit 0 and stdout/stderr match documented contract for this behaviour",
       "fixture": "none",
       "fixture_exists": true,
@@ -615,7 +615,7 @@
     {
       "behaviour_id": "BC-ACCEL-011",
       "domain": "ACCEL",
-      "command": "python3.12 -c \"import json; d=json.load(open('HIDE_SPECULATION_SAFETY.json')); assert 'metric_separation' in d\"",
+      "command": "python3.12 -c \"import json; d=json.load(open('evidence/hide/HIDE_SPECULATION_SAFETY.json')); assert 'metric_separation' in d\"",
       "assertion": "metric_separation present",
       "fixture": "none",
       "fixture_exists": true,
@@ -855,7 +855,7 @@
     {
       "behaviour_id": "BC-CLI-018",
       "domain": "CLI",
-      "command": "python3.12 -c \"import json; d=json.load(open('HAWKING_CAPABILITY_INVENTORY.json')); assert 'counts' in d and 'rust_binaries' in d['counts'] and 'python_entrypoints' in d['counts']; assert d['counts']['rust_binaries']>=1 and d['counts']['python_entrypoints']>=1\"",
+      "command": "python3.12 -c \"import json; d=json.load(open('evidence/hawking/HAWKING_CAPABILITY_INVENTORY.json')); assert 'counts' in d and 'rust_binaries' in d['counts'] and 'python_entrypoints' in d['counts']; assert d['counts']['rust_binaries']>=1 and d['counts']['python_entrypoints']>=1\"",
       "assertion": "inventory has non-zero rust_binaries and python_entrypoints counts",
       "fixture": "none",
       "fixture_exists": true,
@@ -885,7 +885,7 @@
     {
       "behaviour_id": "BC-CLI-021",
       "domain": "CLI",
-      "command": "python3.12 -c \"import json; d=json.load(open('HAWKING_LOGICAL_TEST_INVENTORY.json')); assert d['schema']=='hawking.logical_test_inventory.v1'; assert d['logical_cases']>0\"",
+      "command": "python3.12 -c \"import json; d=json.load(open('evidence/hawking/HAWKING_LOGICAL_TEST_INVENTORY.json')); assert d['schema']=='hawking.logical_test_inventory.v1'; assert d['logical_cases']>0\"",
       "assertion": "schema and positive logical_cases",
       "fixture": "none",
       "fixture_exists": true,
@@ -1145,7 +1145,7 @@
     {
       "behaviour_id": "BC-BRIDGE-002",
       "domain": "BRIDGE",
-      "command": "python3.12 -c \"import json; d=json.load(open('FABRIC_BRIDGE_VERIFICATION.json')); assert d['schema']=='hawking.fabric_bridge.verification.v1'\"",
+      "command": "python3.12 -c \"import json; d=json.load(open('evidence/fabric/FABRIC_BRIDGE_VERIFICATION.json')); assert d['schema']=='hawking.fabric_bridge.verification.v1'\"",
       "assertion": "schema present",
       "fixture": "none",
       "fixture_exists": true,
@@ -1175,7 +1175,7 @@
     {
       "behaviour_id": "BC-BRIDGE-005",
       "domain": "BRIDGE",
-      "command": "python3.12 -c \"import json; json.load(open('GLM52_ADAPTER_TWIN.json')); json.load(open('GLM52_FLAGSHIP_ADAPTER_PARITY.json'))\"",
+      "command": "python3.12 -c \"import json; json.load(open('evidence/glm52/GLM52_ADAPTER_TWIN.json')); json.load(open('evidence/glm52/GLM52_FLAGSHIP_ADAPTER_PARITY.json'))\"",
       "assertion": "parse both",
       "fixture": "none",
       "fixture_exists": true,
@@ -1205,7 +1205,7 @@
     {
       "behaviour_id": "BC-FABRIC-001",
       "domain": "FABRIC",
-      "command": "python3.12 -c \"import json; d=json.load(open('FABRIC_SOFTWARE_STATUS.json')); assert d['schema']=='hawking.fabric.software.v1'\"",
+      "command": "python3.12 -c \"import json; d=json.load(open('evidence/fabric/FABRIC_SOFTWARE_STATUS.json')); assert d['schema']=='hawking.fabric.software.v1'\"",
       "assertion": "schema",
       "fixture": "none",
       "fixture_exists": true,
@@ -1215,7 +1215,7 @@
     {
       "behaviour_id": "BC-FABRIC-002",
       "domain": "FABRIC",
-      "command": "python3.12 -c \"import json; c=json.load(open('FABRIC_SOFTWARE_STATUS.json'))['components']; assert set(['fabric_agent','node_discovery','kv_ownership']).issubset(c)\"",
+      "command": "python3.12 -c \"import json; c=json.load(open('evidence/fabric/FABRIC_SOFTWARE_STATUS.json'))['components']; assert set(['fabric_agent','node_discovery','kv_ownership']).issubset(c)\"",
       "assertion": "required components listed",
       "fixture": "none",
       "fixture_exists": true,
@@ -1225,7 +1225,7 @@
     {
       "behaviour_id": "BC-FABRIC-003",
       "domain": "FABRIC",
-      "command": "python3.12 -c \"import json; json.load(open('FABRIC_QUALIFICATION_LADDER.json')); json.load(open('FABRIC_TEST_EXECUTION_RECEIPT.json'))\"",
+      "command": "python3.12 -c \"import json; json.load(open('evidence/fabric/FABRIC_QUALIFICATION_LADDER.json')); json.load(open('evidence/fabric/FABRIC_TEST_EXECUTION_RECEIPT.json'))\"",
       "assertion": "parse both",
       "fixture": "none",
       "fixture_exists": true,
@@ -1235,7 +1235,7 @@
     {
       "behaviour_id": "BC-FABRIC-004",
       "domain": "FABRIC",
-      "command": "python3.12 -c \"import json; d=json.load(open('FABRIC_SOFTWARE_STATUS.json')); assert 'not claimed' in d['note'].lower() or 'not_physical' in d['note'].lower() or 'Physical' in d['note']\"",
+      "command": "python3.12 -c \"import json; d=json.load(open('evidence/fabric/FABRIC_SOFTWARE_STATUS.json')); assert 'not claimed' in d['note'].lower() or 'not_physical' in d['note'].lower() or 'Physical' in d['note']\"",
       "assertion": "note denies physical claim",
       "fixture": "none",
       "fixture_exists": true,
@@ -1265,7 +1265,7 @@
     {
       "behaviour_id": "BC-FABRIC-007",
       "domain": "FABRIC",
-      "command": "python3.12 -c \"import json; c=json.load(open('FABRIC_SOFTWARE_STATUS.json'))['components']; assert 'content_addressed_section_placement' in c\"",
+      "command": "python3.12 -c \"import json; c=json.load(open('evidence/fabric/FABRIC_SOFTWARE_STATUS.json'))['components']; assert 'content_addressed_section_placement' in c\"",
       "assertion": "component present",
       "fixture": "none",
       "fixture_exists": true,
@@ -1275,7 +1275,7 @@
     {
       "behaviour_id": "BC-FABRIC-008",
       "domain": "FABRIC",
-      "command": "python3.12 -c \"import json; assert 'pipeline_scheduling' in json.load(open('FABRIC_SOFTWARE_STATUS.json'))['components']\"",
+      "command": "python3.12 -c \"import json; assert 'pipeline_scheduling' in json.load(open('evidence/fabric/FABRIC_SOFTWARE_STATUS.json'))['components']\"",
       "assertion": "present",
       "fixture": "none",
       "fixture_exists": true,
@@ -1355,7 +1355,7 @@
     {
       "behaviour_id": "BC-HIDE_SESSION-008",
       "domain": "HIDE_SESSION",
-      "command": "python3.12 -c \"import json; d=json.load(open('HIDE_YOU_SURFACE_AUTHORITY.json')); assert set(d['surfaces'])>=set(['YOU','CHAT','IDE'])\"",
+      "command": "python3.12 -c \"import json; d=json.load(open('evidence/hide/HIDE_YOU_SURFACE_AUTHORITY.json')); assert set(d['surfaces'])>=set(['YOU','CHAT','IDE'])\"",
       "assertion": "three surfaces",
       "fixture": "none",
       "fixture_exists": true,
@@ -1365,7 +1365,7 @@
     {
       "behaviour_id": "BC-HIDE_SESSION-009",
       "domain": "HIDE_SESSION",
-      "command": "python3.12 -c \"import json; d=json.load(open('HIDE_YOU_SURFACE_AUTHORITY.json')); assert 'shared_singletons' in d and 'handoff_capsules' in d\"",
+      "command": "python3.12 -c \"import json; d=json.load(open('evidence/hide/HIDE_YOU_SURFACE_AUTHORITY.json')); assert 'shared_singletons' in d and 'handoff_capsules' in d\"",
       "assertion": "sections present",
       "fixture": "none",
       "fixture_exists": true,
@@ -1395,7 +1395,7 @@
     {
       "behaviour_id": "BC-HIDE_SESSION-012",
       "domain": "HIDE_SESSION",
-      "command": "python3.12 -c \"import json; d=json.load(open('HIDE_YOU_EVENTS_AND_FRONTEND_CONTRACT.json')); assert d['status']=='CONTRACT_SEALED'\"",
+      "command": "python3.12 -c \"import json; d=json.load(open('evidence/hide/HIDE_YOU_EVENTS_AND_FRONTEND_CONTRACT.json')); assert d['status']=='CONTRACT_SEALED'\"",
       "assertion": "CONTRACT_SEALED",
       "fixture": "none",
       "fixture_exists": true,
@@ -1435,7 +1435,7 @@
     {
       "behaviour_id": "BC-HIDE_SESSION-016",
       "domain": "HIDE_SESSION",
-      "command": "python3.12 -c \"import json; d=json.load(open('HIDE_YOU_SURFACE_AUTHORITY.json')); assert 'privacy_modes' in d\"",
+      "command": "python3.12 -c \"import json; d=json.load(open('evidence/hide/HIDE_YOU_SURFACE_AUTHORITY.json')); assert 'privacy_modes' in d\"",
       "assertion": "privacy_modes section",
       "fixture": "none",
       "fixture_exists": true,
@@ -1445,7 +1445,7 @@
     {
       "behaviour_id": "BC-HIDE_SESSION-017",
       "domain": "HIDE_SESSION",
-      "command": "python3.12 -c \"import json; d=json.load(open('HIDE_YOU_SURFACE_AUTHORITY.json')); assert 'user_controls_over_memory' in d\"",
+      "command": "python3.12 -c \"import json; d=json.load(open('evidence/hide/HIDE_YOU_SURFACE_AUTHORITY.json')); assert 'user_controls_over_memory' in d\"",
       "assertion": "section present",
       "fixture": "none",
       "fixture_exists": true,
@@ -1475,7 +1475,7 @@
     {
       "behaviour_id": "BC-HIDE_SESSION-021",
       "domain": "HIDE_SESSION",
-      "command": "python3.12 -c \"import json; d=json.load(open('HIDE_YOU_SURFACE_AUTHORITY.json')); assert 'session_types' in d\"",
+      "command": "python3.12 -c \"import json; d=json.load(open('evidence/hide/HIDE_YOU_SURFACE_AUTHORITY.json')); assert 'session_types' in d\"",
       "assertion": "session_types present",
       "fixture": "none",
       "fixture_exists": true,
@@ -1555,7 +1555,7 @@
     {
       "behaviour_id": "BC-CONTEXT_OS-007",
       "domain": "CONTEXT_OS",
-      "command": "python3.12 -c \"import json; d=json.load(open('HIDE_YOU_CONNECTOR_REGISTRY.json')); assert 'local_folder' in d['implemented'] and 'rss' in d['implemented']\"",
+      "command": "python3.12 -c \"import json; d=json.load(open('evidence/hide/HIDE_YOU_CONNECTOR_REGISTRY.json')); assert 'local_folder' in d['implemented'] and 'rss' in d['implemented']\"",
       "assertion": "local_folder and rss implemented",
       "fixture": "none",
       "fixture_exists": true,
@@ -1575,7 +1575,7 @@
     {
       "behaviour_id": "BC-CONTEXT_OS-009",
       "domain": "CONTEXT_OS",
-      "command": "python3.12 -c \"import json; json.load(open('HIDE_MEMORY_CLASSES.json'))\"",
+      "command": "python3.12 -c \"import json; json.load(open('evidence/hide/HIDE_MEMORY_CLASSES.json'))\"",
       "assertion": "parses",
       "fixture": "none",
       "fixture_exists": true,
@@ -1615,7 +1615,7 @@
     {
       "behaviour_id": "BC-CONTEXT_OS-013",
       "domain": "CONTEXT_OS",
-      "command": "python3.12 -c \"import json; k=json.load(open('HIDE_YOU_OBJECT_CONTRACT.json'))['object_kinds']; assert set(['image','pdf','document','spreadsheet']).issubset(set(k))\"",
+      "command": "python3.12 -c \"import json; k=json.load(open('evidence/hide/HIDE_YOU_OBJECT_CONTRACT.json'))['object_kinds']; assert set(['image','pdf','document','spreadsheet']).issubset(set(k))\"",
       "assertion": "core kinds present",
       "fixture": "none",
       "fixture_exists": true,
@@ -1625,7 +1625,7 @@
     {
       "behaviour_id": "BC-CONTEXT_OS-014",
       "domain": "CONTEXT_OS",
-      "command": "python3.12 -c \"import json; d=json.load(open('HIDE_YOU_OBJECT_CONTRACT.json')); assert 'identity' in d\"",
+      "command": "python3.12 -c \"import json; d=json.load(open('evidence/hide/HIDE_YOU_OBJECT_CONTRACT.json')); assert 'identity' in d\"",
       "assertion": "identity section",
       "fixture": "none",
       "fixture_exists": true,
@@ -1635,7 +1635,7 @@
     {
       "behaviour_id": "BC-CONTEXT_OS-015",
       "domain": "CONTEXT_OS",
-      "command": "python3.12 -c \"import json; d=json.load(open('HIDE_YOU_RESEARCH_CONTRACT.json')); assert 'forbidden' in d['network'].lower()\"",
+      "command": "python3.12 -c \"import json; d=json.load(open('evidence/hide/HIDE_YOU_RESEARCH_CONTRACT.json')); assert 'forbidden' in d['network'].lower()\"",
       "assertion": "network forbidden",
       "fixture": "none",
       "fixture_exists": true,
@@ -1645,7 +1645,7 @@
     {
       "behaviour_id": "BC-CONTEXT_OS-016",
       "domain": "CONTEXT_OS",
-      "command": "python3.12 -c \"import json; ps=json.load(open('HIDE_YOU_RESEARCH_CONTRACT.json'))['properties']; assert any(p.get('name')=='four_way_separation' for p in ps)\"",
+      "command": "python3.12 -c \"import json; ps=json.load(open('evidence/hide/HIDE_YOU_RESEARCH_CONTRACT.json'))['properties']; assert any(p.get('name')=='four_way_separation' for p in ps)\"",
       "assertion": "four_way_separation property",
       "fixture": "none",
       "fixture_exists": true,
@@ -1655,7 +1655,7 @@
     {
       "behaviour_id": "BC-CONTEXT_OS-017",
       "domain": "CONTEXT_OS",
-      "command": "python3.12 -c \"import json; ps=json.load(open('HIDE_YOU_RESEARCH_CONTRACT.json'))['properties']; assert any(p.get('name')=='web_not_auto_durable' for p in ps)\"",
+      "command": "python3.12 -c \"import json; ps=json.load(open('evidence/hide/HIDE_YOU_RESEARCH_CONTRACT.json'))['properties']; assert any(p.get('name')=='web_not_auto_durable' for p in ps)\"",
       "assertion": "web_not_auto_durable",
       "fixture": "none",
       "fixture_exists": true,
@@ -1665,7 +1665,7 @@
     {
       "behaviour_id": "BC-CONTEXT_OS-018",
       "domain": "CONTEXT_OS",
-      "command": "python3.12 -c \"import json; d=json.load(open('HIDE_YOU_CONNECTOR_REGISTRY.json')); assert 'browser_search' in d['declared'] or any(f.get('family_id')=='browser_search' for f in d['families'])\"",
+      "command": "python3.12 -c \"import json; d=json.load(open('evidence/hide/HIDE_YOU_CONNECTOR_REGISTRY.json')); assert 'browser_search' in d['declared'] or any(f.get('family_id')=='browser_search' for f in d['families'])\"",
       "assertion": "browser_search declared",
       "fixture": "none",
       "fixture_exists": true,
@@ -1685,7 +1685,7 @@
     {
       "behaviour_id": "BC-AGENTS-002",
       "domain": "AGENTS",
-      "command": "python3.12 -c \"import json; d=json.load(open('HIDE_YOU_AUTOMATION_CONTRACT.json')); assert d['status']=='implemented'; assert len(d['automation_kinds'])>=1\"",
+      "command": "python3.12 -c \"import json; d=json.load(open('evidence/hide/HIDE_YOU_AUTOMATION_CONTRACT.json')); assert d['status']=='implemented'; assert len(d['automation_kinds'])>=1\"",
       "assertion": "implemented with kinds",
       "fixture": "none",
       "fixture_exists": true,
@@ -1705,7 +1705,7 @@
     {
       "behaviour_id": "BC-AGENTS-004",
       "domain": "AGENTS",
-      "command": "python3.12 -c \"import json; d=json.load(open('HIDE_YOU_SWARM_CONTRACT.json')); assert d['status']=='implemented'; assert len(d['roles'])>=4\"",
+      "command": "python3.12 -c \"import json; d=json.load(open('evidence/hide/HIDE_YOU_SWARM_CONTRACT.json')); assert d['status']=='implemented'; assert len(d['roles'])>=4\"",
       "assertion": "implemented with roles",
       "fixture": "none",
       "fixture_exists": true,
@@ -1725,7 +1725,7 @@
     {
       "behaviour_id": "BC-AGENTS-006",
       "domain": "AGENTS",
-      "command": "python3.12 -c \"import json; d=json.load(open('HIDE_YOU_PROJECTS_HANDOFF_CONTRACT.json')); assert d['status']=='implemented'\"",
+      "command": "python3.12 -c \"import json; d=json.load(open('evidence/hide/HIDE_YOU_PROJECTS_HANDOFF_CONTRACT.json')); assert d['status']=='implemented'\"",
       "assertion": "implemented",
       "fixture": "none",
       "fixture_exists": true,
@@ -1735,7 +1735,7 @@
     {
       "behaviour_id": "BC-AGENTS-007",
       "domain": "AGENTS",
-      "command": "python3.12 -c \"import json; d=json.load(open('HIDE_YOU_AUTOMATION_CONTRACT.json')); assert d['resource_mode']=='LIGHT_ONLY'\"",
+      "command": "python3.12 -c \"import json; d=json.load(open('evidence/hide/HIDE_YOU_AUTOMATION_CONTRACT.json')); assert d['resource_mode']=='LIGHT_ONLY'\"",
       "assertion": "LIGHT_ONLY",
       "fixture": "none",
       "fixture_exists": true,
@@ -1755,7 +1755,7 @@
     {
       "behaviour_id": "BC-AGENTS-009",
       "domain": "AGENTS",
-      "command": "python3.12 -c \"import json; d=json.load(open('HIDE_YOU_SWARM_CONTRACT.json')); fp=d.get('fixture_provider',{}); assert fp.get('real_inference') in (False, None, False) or fp.get('real_inference') is False or str(fp.get('real_inference')).lower()=='false' or 'real_inference' in fp\"",
+      "command": "python3.12 -c \"import json; d=json.load(open('evidence/hide/HIDE_YOU_SWARM_CONTRACT.json')); fp=d.get('fixture_provider',{}); assert fp.get('real_inference') in (False, None, False) or fp.get('real_inference') is False or str(fp.get('real_inference')).lower()=='false' or 'real_inference' in fp\"",
       "assertion": "fixture_provider present",
       "fixture": "none",
       "fixture_exists": true,
@@ -1765,7 +1765,7 @@
     {
       "behaviour_id": "BC-AGENTS-010",
       "domain": "AGENTS",
-      "command": "python3.12 -c \"import json; d=json.load(open('HIDE_YOU_PROJECTS_HANDOFF_CONTRACT.json')); assert 'projects' in d and 'handoff_capsules' in d\"",
+      "command": "python3.12 -c \"import json; d=json.load(open('evidence/hide/HIDE_YOU_PROJECTS_HANDOFF_CONTRACT.json')); assert 'projects' in d and 'handoff_capsules' in d\"",
       "assertion": "projects+handoff",
       "fixture": "none",
       "fixture_exists": true,
@@ -1775,7 +1775,7 @@
     {
       "behaviour_id": "BC-AGENTS-011",
       "domain": "AGENTS",
-      "command": "python3.12 -c \"import json; d=json.load(open('HIDE_YOU_AUTOMATION_CONTRACT.json')); assert 'durability' in d\"",
+      "command": "python3.12 -c \"import json; d=json.load(open('evidence/hide/HIDE_YOU_AUTOMATION_CONTRACT.json')); assert 'durability' in d\"",
       "assertion": "durability section",
       "fixture": "none",
       "fixture_exists": true,
@@ -1785,7 +1785,7 @@
     {
       "behaviour_id": "BC-AGENTS-012",
       "domain": "AGENTS",
-      "command": "python3.12 -c \"import json; d=json.load(open('HIDE_YOU_SWARM_CONTRACT.json')); assert len(d.get('agent_receives',[]))>=1\"",
+      "command": "python3.12 -c \"import json; d=json.load(open('evidence/hide/HIDE_YOU_SWARM_CONTRACT.json')); assert len(d.get('agent_receives',[]))>=1\"",
       "assertion": "agent_receives non-empty",
       "fixture": "none",
       "fixture_exists": true,
@@ -1795,7 +1795,7 @@
     {
       "behaviour_id": "BC-SOURCE-001",
       "domain": "SOURCE",
-      "command": "python3.12 -c \"import json; d=json.load(open('GLM52_REHYDRATION_RECEIPT.json')); assert d['revision']; assert d['seal_sha256']\"",
+      "command": "python3.12 -c \"import json; d=json.load(open('evidence/glm52/GLM52_REHYDRATION_RECEIPT.json')); assert d['revision']; assert d['seal_sha256']\"",
       "assertion": "revision and seal present",
       "fixture": "none",
       "fixture_exists": true,
@@ -1805,7 +1805,7 @@
     {
       "behaviour_id": "BC-SOURCE-002",
       "domain": "SOURCE",
-      "command": "python3.12 -c \"import json; d=json.load(open('GLM52_SOURCE_RELEASE_RECEIPT.json')); assert 'rollback' in d and 'seal_sha256' in d\"",
+      "command": "python3.12 -c \"import json; d=json.load(open('evidence/glm52/GLM52_SOURCE_RELEASE_RECEIPT.json')); assert 'rollback' in d and 'seal_sha256' in d\"",
       "assertion": "rollback and seal",
       "fixture": "none",
       "fixture_exists": true,
@@ -1815,7 +1815,7 @@
     {
       "behaviour_id": "BC-SOURCE-003",
       "domain": "SOURCE",
-      "command": "python3.12 -c \"import json; d=json.load(open('DEEPSEEK_V4_FLASH_RELEASE_RECEIPT.json')); assert d['schema']=='hawking.deepseek_v4.release_receipt.v1'\"",
+      "command": "python3.12 -c \"import json; d=json.load(open('evidence/deepseek-v4/DEEPSEEK_V4_FLASH_RELEASE_RECEIPT.json')); assert d['schema']=='hawking.deepseek_v4.release_receipt.v1'\"",
       "assertion": "schema",
       "fixture": "none",
       "fixture_exists": true,
@@ -1825,7 +1825,7 @@
     {
       "behaviour_id": "BC-SOURCE-004",
       "domain": "SOURCE",
-      "command": "python3.12 -c \"import json; json.load(open('GLM52_SOURCE_ADMISSION.json')); json.load(open('GLM52_SOURCE_FORMAT_LEDGER.json'))\"",
+      "command": "python3.12 -c \"import json; json.load(open('evidence/glm52/GLM52_SOURCE_ADMISSION.json')); json.load(open('evidence/glm52/GLM52_SOURCE_FORMAT_LEDGER.json'))\"",
       "assertion": "parse",
       "fixture": "none",
       "fixture_exists": true,
@@ -1865,7 +1865,7 @@
     {
       "behaviour_id": "BC-SOURCE-008",
       "domain": "SOURCE",
-      "command": "python3.12 -c \"import json; json.load(open('GLM52_CORPUS_INTEGRITY.json'))\"",
+      "command": "python3.12 -c \"import json; json.load(open('evidence/glm52/GLM52_CORPUS_INTEGRITY.json'))\"",
       "assertion": "parses",
       "fixture": "none",
       "fixture_exists": true,
@@ -1875,7 +1875,7 @@
     {
       "behaviour_id": "BC-SOURCE-009",
       "domain": "SOURCE",
-      "command": "python3.12 -c \"import json; json.load(open('KIMI_K26_SOURCE_VERIFICATION.json')); json.load(open('KIMI_K26_SOURCE_RELEASE_FOR_GLM52.json'))\"",
+      "command": "python3.12 -c \"import json; json.load(open('evidence/kimi-k26/KIMI_K26_SOURCE_VERIFICATION.json')); json.load(open('evidence/kimi-k26/KIMI_K26_SOURCE_RELEASE_FOR_GLM52.json'))\"",
       "assertion": "parse both",
       "fixture": "none",
       "fixture_exists": true,
@@ -1895,7 +1895,7 @@
     {
       "behaviour_id": "BC-SOURCE-016",
       "domain": "SOURCE",
-      "command": "python3.12 -c \"import json; from pathlib import Path; lines=[l for l in Path('GLM52_METRIC_CORRECTION_LEDGER.jsonl').read_text().splitlines() if l.strip()]; assert lines; [json.loads(l) for l in lines]\"",
+      "command": "python3.12 -c \"import json; from pathlib import Path; lines=[l for l in Path('evidence/glm52/GLM52_METRIC_CORRECTION_LEDGER.jsonl').read_text().splitlines() if l.strip()]; assert lines; [json.loads(l) for l in lines]\"",
       "assertion": "jsonl lines parse as JSON objects",
       "fixture": "none",
       "fixture_exists": true,
@@ -1975,7 +1975,7 @@
     {
       "behaviour_id": "BC-SECURITY-008",
       "domain": "SECURITY",
-      "command": "python3.12 -c \"import json; d=json.load(open('HIDE_YOU_CONNECTOR_REGISTRY.json')); assert 'no_ambient_credentials' in d['safety_properties']\"",
+      "command": "python3.12 -c \"import json; d=json.load(open('evidence/hide/HIDE_YOU_CONNECTOR_REGISTRY.json')); assert 'no_ambient_credentials' in d['safety_properties']\"",
       "assertion": "safety property listed",
       "fixture": "none",
       "fixture_exists": true,
@@ -1985,7 +1985,7 @@
     {
       "behaviour_id": "BC-SECURITY-009",
       "domain": "SECURITY",
-      "command": "python3.12 -c \"import json; d=json.load(open('HIDE_YOU_CONNECTOR_REGISTRY.json')); assert 'every_write_is_effect_with_receipt' in d['safety_properties']\"",
+      "command": "python3.12 -c \"import json; d=json.load(open('evidence/hide/HIDE_YOU_CONNECTOR_REGISTRY.json')); assert 'every_write_is_effect_with_receipt' in d['safety_properties']\"",
       "assertion": "property listed",
       "fixture": "none",
       "fixture_exists": true,
@@ -1995,7 +1995,7 @@
     {
       "behaviour_id": "BC-SECURITY-010",
       "domain": "SECURITY",
-      "command": "python3.12 -c \"import json; d=json.load(open('HIDE_YOU_PROJECTS_HANDOFF_CONTRACT.json')); assert 'PRODUCTION' in d['grade_ceiling']\"",
+      "command": "python3.12 -c \"import json; d=json.load(open('evidence/hide/HIDE_YOU_PROJECTS_HANDOFF_CONTRACT.json')); assert 'PRODUCTION' in d['grade_ceiling']\"",
       "assertion": "grade_ceiling mentions PRODUCTION denial",
       "fixture": "none",
       "fixture_exists": true,
@@ -2045,7 +2045,7 @@
     {
       "behaviour_id": "BC-SECURITY-015",
       "domain": "SECURITY",
-      "command": "python3.12 -c \"import json; d=json.load(open('HIDE_SPECULATION_SAFETY.json')); assert d['default_off'] is True and d['speculation_not_enabled_by_default'] is True\"",
+      "command": "python3.12 -c \"import json; d=json.load(open('evidence/hide/HIDE_SPECULATION_SAFETY.json')); assert d['default_off'] is True and d['speculation_not_enabled_by_default'] is True\"",
       "assertion": "default_off true",
       "fixture": "none",
       "fixture_exists": true,
@@ -2055,7 +2055,7 @@
     {
       "behaviour_id": "BC-SECURITY-016",
       "domain": "SECURITY",
-      "command": "python3.12 -c \"import json; d=json.load(open('HIDE_SPECULATION_SAFETY.json')); assert d['status']=='COMPLETE'\"",
+      "command": "python3.12 -c \"import json; d=json.load(open('evidence/hide/HIDE_SPECULATION_SAFETY.json')); assert d['status']=='COMPLETE'\"",
       "assertion": "COMPLETE",
       "fixture": "none",
       "fixture_exists": true,
@@ -2065,7 +2065,7 @@
     {
       "behaviour_id": "BC-SECURITY-017",
       "domain": "SECURITY",
-      "command": "python3.12 -c \"import json; d=json.load(open('HIDE_SPECULATION_SAFETY.json')); assert 'promotion' in d\"",
+      "command": "python3.12 -c \"import json; d=json.load(open('evidence/hide/HIDE_SPECULATION_SAFETY.json')); assert 'promotion' in d\"",
       "assertion": "promotion section",
       "fixture": "none",
       "fixture_exists": true,
@@ -2075,7 +2075,7 @@
     {
       "behaviour_id": "BC-SECURITY-018",
       "domain": "SECURITY",
-      "command": "python3.12 -c \"import json; d=json.load(open('HIDE_YOU_CONNECTOR_REGISTRY.json')); assert 'default_read_only_type_boundary' in d['safety_properties']\"",
+      "command": "python3.12 -c \"import json; d=json.load(open('evidence/hide/HIDE_YOU_CONNECTOR_REGISTRY.json')); assert 'default_read_only_type_boundary' in d['safety_properties']\"",
       "assertion": "property listed",
       "fixture": "none",
       "fixture_exists": true,
@@ -2085,7 +2085,7 @@
     {
       "behaviour_id": "BC-SECURITY-019",
       "domain": "SECURITY",
-      "command": "python3.12 -c \"import json; d=json.load(open('HIDE_YOU_SURFACE_AUTHORITY.json')); h=d['hard_constraint_inherited_from_the_wider_campaign']; assert 'no_model_currently_qualifies' in h; assert 'grade_ceiling_for_this_campaign' in h; g=str(h['grade_ceiling_for_this_campaign']).upper(); assert 'PRODUCTION' in g or 'READY_FOR_INTEGRATION' in g\"",
+      "command": "python3.12 -c \"import json; d=json.load(open('evidence/hide/HIDE_YOU_SURFACE_AUTHORITY.json')); h=d['hard_constraint_inherited_from_the_wider_campaign']; assert 'no_model_currently_qualifies' in h; assert 'grade_ceiling_for_this_campaign' in h; g=str(h['grade_ceiling_for_this_campaign']).upper(); assert 'PRODUCTION' in g or 'READY_FOR_INTEGRATION' in g\"",
       "assertion": "hard constraint + grade ceiling present",
       "fixture": "none",
       "fixture_exists": true,
