@@ -1,0 +1,68 @@
+{
+  "schema": "hawking.tg.quality_gate.v1",
+  "status": "PASS_BUT_INSTRUMENT_SATURATED",
+  "hawking_commit": "9106e364d1a29fd5bfae5854488e80a6fcdc4f0c",
+  "gate": "thesis_gate_v0_execution_grounded",
+  "corpus": "tools/eval/thesis_smoke_corpus_v0.jsonl",
+  "n": 15,
+  "profile": "exact",
+  "results": {
+    "Q4_K_M": {
+      "pass_at_1": 1.0,
+      "passes": 15,
+      "wilson95": [
+        0.7961,
+        1.0
+      ]
+    },
+    "Q4_K_M-imat": {
+      "pass_at_1": 1.0,
+      "passes": 15,
+      "wilson95": [
+        0.7961,
+        1.0
+      ]
+    },
+    "Q6_K": {
+      "pass_at_1": 1.0,
+      "passes": 15,
+      "wilson95": [
+        0.7961,
+        1.0
+      ]
+    },
+    "Q6_K-imat": {
+      "pass_at_1": 1.0,
+      "passes": 15,
+      "wilson95": [
+        0.7961,
+        1.0
+      ]
+    }
+  },
+  "baseline_7b": {
+    "pass_at_1": 0.9333,
+    "passes": 14,
+    "n": 15,
+    "wilson95": [
+      0.7018,
+      0.9881
+    ],
+    "receipt": "reports/eval/thesis_gate_qwen7b_q4km.json"
+  },
+  "gate_verdict": "PASS: every 14B variant clears the 7B baseline, which is what the gate exists to check",
+  "saturation": {
+    "observed": "all four quantizations scored 15/15, so the corpus cannot separate them",
+    "not_a_finding_of_equality": "this is a ceiling effect. The Wilson lower bound is 0.7961, so anything above roughly 80% is indistinguishable at n=15.",
+    "n_needed_to_resolve_1_00_vs_0_93": 52,
+    "n_needed_to_resolve_1_00_vs_0_97": 125
+  },
+  "imatrix_question": "UNRESOLVED. The pack-time and byte-level difference is measured and real (evidence/tg/TG_14B_TRANSFORMATION_RECEIPT.json), but this gate cannot see a quality difference because it is saturated.",
+  "do_not": "do not widen thesis_smoke_corpus_v0. Its value is comparability with the sealed 7B and future 32B receipts. A harder corpus belongs in a separate, additionally-reported gate.",
+  "generation_seconds": {
+    "Q4_K_M-imat": 386.2,
+    "Q4_K_M": 399.1,
+    "Q6_K-imat": 409.2,
+    "Q6_K": 412.8
+  }
+}
