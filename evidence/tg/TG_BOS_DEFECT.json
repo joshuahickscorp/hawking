@@ -1,7 +1,7 @@
 {
   "schema": "hawking.tg.bos_defect.v1",
   "status": "ROOT_CAUSE_FOUND_AND_FIXED",
-  "hawking_commit": "c6692c46b683befcb54fd712d6bcaf67132eb669",
+  "hawking_commit": "e61e2f7dba3bdd6773c3585db6cc949c23b69f30",
   "defect": "the BPE tokenizer path dropped the BOS token",
   "mechanism": "tokenizer.ggml.add_bos_token is parsed at tokenizer.rs:190 and passed only to LlamaSpmTokenizer. The BPE path delegates to the tokenizers crate, and a GGUF-converted BPE tokenizer carries no post-processor, so nothing prepended BOS.",
   "why_it_looked_like_three_problems": "Qwen2.5 declares add_bos_token false and was unaffected, so the one bug presented as 'two adapter families are broken and one works'",
@@ -43,5 +43,13 @@
     },
     "deepseek_correctness": "a second defect remains, now showing as repeated '!' rather than repeated ' is'"
   },
-  "guard": "the golden gate was updated deliberately, and it caught this change first: same input sha, output moved ee12bbd4 -> a000b6f0. That is the input-pinning fix working."
+  "guard": "the golden gate was updated deliberately, and it caught this change first: same input sha, output moved ee12bbd4 -> a000b6f0. That is the input-pinning fix working.",
+  "deepseek_second_defect": {
+    "signature": "'!!!!!!!!!!' for any prompt",
+    "diagnosis": "'!' is token id 0 in this vocab, confirmed against llama.cpp, so argmax is pinned to index 0 on every step",
+    "meaning": "the logits carry no signal: all-zero, constant, or NaN. The forward is not merely inaccurate, it is empty.",
+    "why_this_is_not_a_small_fix": "the MoE path already needs an autotuned kernel profile before it will start at all, and Wedge C demands a decode arena, pinned norms, an MLA cache and GPU-resident KV mirrors. A forward that returns constant logits points at the experts, the router, or the head never contributing, not at an off-by-one.",
+    "next_probe_for_whoever_continues": "dump the logit vector for one token and check whether it is all-zero or NaN; that separates an unwritten buffer from a numerical blowup, and the two have different causes",
+    "status": "OPEN"
+  }
 }
