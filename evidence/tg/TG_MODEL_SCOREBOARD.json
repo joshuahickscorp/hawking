@@ -1,6 +1,6 @@
 {
   "schema": "hawking.tg.model_scoreboard.v1",
-  "status": "OPEN_NO_RUNG_CLAIMABLE",
+  "status": "FIRST_RUNG_MEASURED",
   "rung_ladder_ms": {
     "TG20": 20,
     "TG10": 10,
@@ -23,11 +23,97 @@
         "Q4_K_M"
       ],
       "deepest_stable_rung": null,
-      "first_failing_rung": null,
+      "first_failing_rung": "TG20",
       "baseline_ms_per_token": null,
       "binding_roofline": null,
-      "reason": "decode not yet measured; GPU contended"
+      "reason": "decode not yet measured; GPU contended",
+      "artifact_measured": "Q4_K_M-imat",
+      "artifact_bytes": 8988110944,
+      "roofline": {
+        "sustained_read_bytes_s": 736000000000.0,
+        "source": "lab/operators/gravity_flop_ledger.py:24 (hard-coded, no sealed receipt; see unknowns)",
+        "floor_ms_per_token": 12.21,
+        "floor_tok_s": 81.9
+      },
+      "decode": {
+        "Q4_K_M-imat": {
+          "128": {
+            "n": 3,
+            "dec_tps_p50": 26.282,
+            "dec_tps_min": 26.166,
+            "dec_tps_max": 26.365,
+            "ms_per_token": 38.049,
+            "spread_pct": 0.76,
+            "prefill_ms_p50": 5511.5,
+            "dispatches_per_forward": 435,
+            "pct_of_roofline": 32.1
+          },
+          "512": {
+            "n": 3,
+            "dec_tps_p50": 21.628,
+            "dec_tps_min": 21.543,
+            "dec_tps_max": 21.675,
+            "ms_per_token": 46.236,
+            "spread_pct": 0.61,
+            "prefill_ms_p50": 20146.4,
+            "dispatches_per_forward": 435,
+            "pct_of_roofline": 26.4
+          },
+          "2048": {
+            "n": 3,
+            "dec_tps_p50": 12.682,
+            "dec_tps_min": 12.671,
+            "dec_tps_max": 12.685,
+            "ms_per_token": 78.853,
+            "spread_pct": 0.1,
+            "prefill_ms_p50": 107114.8,
+            "dispatches_per_forward": 435,
+            "pct_of_roofline": 15.5
+          }
+        }
+      },
+      "rung_analysis": {
+        "TG20": {
+          "target_ms": 20,
+          "physically_reachable": true,
+          "cleared": false,
+          "software_gap_x": 1.9,
+          "note": "the only rung this geometry can reach; needs 1.9x of runtime work, not representation work"
+        },
+        "TG10_and_below": {
+          "physically_reachable": false,
+          "required_bytes_per_token_gib": 6.85,
+          "actual_bytes_per_token_gib": 8.37,
+          "note": "Q4_K_M must read 8.37 GiB/token; TG10 allows 6.85. Unreachable by any kernel. K8 representation work only."
+        }
+      },
+      "context_scaling": {
+        "pct_of_roof_by_ctx": {
+          "128": 32.1,
+          "512": 26.4,
+          "2048": 15.5
+        },
+        "finding": "efficiency falls 32.1 -> 26.4 -> 15.5 percent from ctx128 to ctx2048, so the loss with context is attention and KV, not weight bandwidth"
+      },
+      "prefill": {
+        "finding": "107.1 s to prefill 2048 tokens is roughly 19 tok/s and is a separate K6 target",
+        "ms_by_ctx": {
+          "128": 5511.5,
+          "512": 20146.4,
+          "2048": 107114.8
+        }
+      },
+      "measurement_conditions": {
+        "clean_room": false,
+        "tenants": "24h substrate run (2 cores) + Virtualization VM (~6 cores, 29.7GB)",
+        "observed_spread_pct": [
+          0.76,
+          0.61,
+          0.1
+        ],
+        "note": "spread of 0.1 to 0.8 percent over 3 trials means these are reproducible under the stated contention; they are still not clean-room absolutes"
+      }
     }
   },
-  "hawking_commit": "9463d333e83d9b6b1654c9b9049fa66e94d54760"
+  "hawking_commit": "0999e1de1f5e4773d3a4fca2abacb0a507986986"
 }
