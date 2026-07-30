@@ -35,12 +35,40 @@
       "prior_measurement": null,
       "runtime_wired": false,
       "blocker": "gemm_q4_k_m_batched_v3w_pinned_tcb caps B at 8 (two float4 accumulators)",
-      "prize": "llama.cpp does the same prefill 15.8x faster on the identical file",
-      "evidence": "evidence/tg/TG_14B_K6_PREFILL.json"
+      "prize": "15.8x versus llama.cpp on the identical file, the largest measured gap in this campaign",
+      "evidence": "evidence/tg/TG_14B_K6_PREFILL.json",
+      "design_resolved": true,
+      "finding": "a true tiled GEMM already exists: gemm_q4_k_m_batched_v3w_mma uses simdgroup_matrix<float,8,8>. The ceiling is not the primitive, it is that the kernel computes exactly one 8x8 output tile with N zero-padded to 8.",
+      "shader": "crates/hawking-core/shaders/quant.metal:1795",
+      "current_geometry": {
+        "grid": "(ceil(rows/8)*32,1,1)",
+        "threadgroup": "(32,1,1) one simdgroup",
+        "rows_per_tg": 8,
+        "N": "batch 1..=8, columns N..8 zero-padded",
+        "shmem_floats": {
+          "Ws_weight_8x32K": 256,
+          "Xs_act_32Kx8N": 256,
+          "Os_out_8x8N": 64,
+          "total": 576
+        },
+        "shmem_kb": 2.25
+      },
+      "the_change": "tile over N as well as rows: accumulate ceil(N/8) column tiles against the same resident weight tile, instead of one",
+      "why_it_works": "Ws does not grow with N. One weight read is amortized across N activations rather than 8, which is the entire prefill deficit.",
+      "shmem_budget_by_N": {
+        "16": "3.50 KB",
+        "32": "6.00 KB",
+        "64": "11.00 KB",
+        "128": "21.00 KB"
+      },
+      "limit": "Apple threadgroup memory is 32 KB, so N=128 fits with headroom; N is bounded by shmem, not by the MMA primitive",
+      "why_rust_level_chunking_does_not_work": "looping the existing kernel over N-chunks of 8 re-reads the weight tile per chunk, which is exactly what B_MAX=8 already does, so it yields nothing",
+      "already_threaded": "HAWKING_QWEN_PREFILL_BATCH reaches both the prefill loop and the arena, clamped to 8; the clamp is the only thing to lift once the kernel accepts more",
+      "gate": "crates/hawking-core/tests/p3_batched_prefill_parity.rs must stay bit-identical"
     }
   ],
   "promoted": [],
-  "hawking_commit": "f2c9e57ff7d50fa9a4aa25030ee15c63df1feaea",
+  "hawking_commit": "ab4f8944c8f1eea1f87d7b9dc009b37a8e13c332",
   "k0_finding": "63-77% of the token is fixed cost, not weight bandwidth. Stages that move bytes are low value on this geometry; stages that remove per-token work are high value.",
   "stage_priority": {
     "high": [
