@@ -1,7 +1,7 @@
 {
   "schema": "hawking.tg.bos_defect.v1",
   "status": "ROOT_CAUSE_FOUND_AND_FIXED",
-  "hawking_commit": "bc14e2d490fc6cfa565d8e063f20f638c5bd3ea7",
+  "hawking_commit": "6069ce8d95eeb9e11eacc8fce95954acbbeeebe5",
   "defect": "the BPE tokenizer path dropped the BOS token",
   "mechanism": "tokenizer.ggml.add_bos_token is parsed at tokenizer.rs:190 and passed only to LlamaSpmTokenizer. The BPE path delegates to the tokenizers crate, and a GGUF-converted BPE tokenizer carries no post-processor, so nothing prepended BOS.",
   "why_it_looked_like_three_problems": "Qwen2.5 declares add_bos_token false and was unaffected, so the one bug presented as 'two adapter families are broken and one works'",
@@ -58,7 +58,23 @@
     "what_that_shows": "the forward carries real signal: ' if' after 'def fibonacci(n):' is contextually correct, so the experts, router and head are contributing something. The failure is that it locks into repetition immediately after the first token or two.",
     "corrected_diagnosis": "plausible-first-token followed by immediate repetition is the signature of state that is not advancing between decode steps, which points at the KV cache or position handling rather than at an empty forward",
     "why_the_earlier_reading_was_wrong": "'!' is token 0 and I treated one prompt's output as the general case. Three prompts and four repeats would have shown otherwise, and cost about a minute.",
-    "next_probe": "log the position index and KV sequence length per decode step and check they advance; if they do, compare the step-1 hidden state against a prefill of the same two tokens",
-    "status": "OPEN, narrowed from 'forward is empty' to 'state does not advance'"
+    "next_probe": "log seq_slot, seq_len and the argmax id per decode step for eight steps. If seq_len advances while the token repeats, the read length or the expert routing is wrong rather than the write.",
+    "status": "OPEN, narrowed to 'stops advancing at step 4' with five causes eliminated",
+    "bisect_by_token_count": {
+      "prompt": "def fibonacci(n):",
+      "token_1": "newline \u2014 correct",
+      "token_2": "four-space indent \u2014 correct",
+      "token_3": "' if' \u2014 correct, this is exactly right Python",
+      "token_4_onward": "' if' repeated forever",
+      "reading": "the forward is correct for three tokens and then reproduces token 3 indefinitely. This is not an empty forward and not a wrong forward; it is a forward that stops advancing."
+    },
+    "eliminated": [
+      "empty logits: output varies with the prompt and the first three tokens are right",
+      "non-determinism: four runs at temperature 0 are identical",
+      "BOS out of range: bos id 100000 against vocab_size 102400",
+      "frozen KV slot: seq_slot is self.kv.seq_len and deepseek_v2.rs:3016 advances it in the Wedge C path",
+      "tokenizer: tokenization matches llama.cpp exactly after the BOS fix"
+    ],
+    "still_open": "what changes at step 4. Candidates not yet excluded: the one-time mla_kv_gpu_synced handshake interacting with per-step writes, the KV length passed to mla_decode, and MoE expert selection after the first few positions."
   }
 }
