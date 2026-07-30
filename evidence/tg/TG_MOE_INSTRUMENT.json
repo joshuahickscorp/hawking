@@ -1,7 +1,7 @@
 {
   "schema": "hawking.tg.moe_instrument.v1",
   "status": "ADMITTED_K0_FAILED",
-  "hawking_commit": "fbe0e7a40deb8110d2f2da062589d34e1262213a",
+  "hawking_commit": "83ca89d9b0a83618464734b6c987bb8a345f5a73",
   "instrument": {
     "model": "DeepSeek-V2-Lite-Chat",
     "arch": "deepseek2",
@@ -83,8 +83,9 @@
       "k0": "FAIL",
       "decode_ms": 28.51
     },
-    "finding": "dispatches_per_forward == 0 predicts degenerate output in both failing families. Only qwen_dense reaches Metal and only qwen_dense is correct.",
-    "all_three_ggufs_are_sound": "llama.cpp reads every one of them correctly, so these are adapter defects and not model or file defects"
+    "finding": "RETRACTED, see CORRECTION. The K0 outcomes stand; the dispatch-count explanation does not.",
+    "all_three_ggufs_are_sound": "llama.cpp reads every one of them correctly, so these are adapter defects and not model or file defects",
+    "dispatch_counts_are_not_comparable": "only qwen_dense populates the counter"
   },
   "moe_grammar_proof": {
     "status": "NOT_OBTAINED",
@@ -94,5 +95,13 @@
   "envelope": {
     "moe_artifact_gb": 10.4,
     "note": "admitted within the envelope; evictable once the finding is sealed"
+  },
+  "CORRECTION": {
+    "retracted": "dispatches_per_forward == 0 predicts degenerate output; only qwen_dense reaches Metal",
+    "why_it_was_wrong": "stats.dispatches_per_forward is assigned in exactly one place, qwen_dense.rs:2207. llama, deepseek_v2 and qwen_moe never set it, so 0 is the default of an uninstrumented counter and says nothing about whether Metal was reached.",
+    "counter_evidence": "deepseek_v2.rs has 136 Metal call sites and llama.rs has 24, so both plainly do dispatch",
+    "what_survives": "the K0 verdicts and the wall-clock gaps, all measured directly: llama and deepseek2 return degenerate text, qwen_dense does not, and llama.cpp reads all three GGUFs correctly",
+    "what_does_not": "any claim about the mechanism. Why those two families produce wrong tokens is still unknown, and the dispatch counter cannot be used to investigate it until it is instrumented in more than one adapter.",
+    "lesson": "a metric that only one code path populates cannot support a cross-path inference. I read a default as a measurement."
   }
 }

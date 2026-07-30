@@ -133,7 +133,7 @@
       "hawking_decode_ms": 275.7,
       "llama_cpp_decode_ms": 2.95,
       "gap_x": 93.5,
-      "dispatches_per_forward": 0,
+      "dispatches_per_forward": "not instrumented in this adapter; the 0 is a default",
       "device_id": null,
       "adapter_grade": "BROKEN - not merely uninstrumented: zero Metal dispatches, null device, and degenerate output on both raw and templated prompts, while llama.cpp reads the same file at 338 tok/s",
       "transfer_verdict": "no kernel grammar can transfer to this path until it dispatches at all; section 4 forbids using it as a speed comparison"
@@ -148,11 +148,11 @@
       "hawking_decode_ms": 28.51,
       "llama_cpp_decode_ms": 7.31,
       "gap_x": 3.9,
-      "dispatches_per_forward": 0,
-      "adapter_grade": "RUNS BUT WRONG: needs an autotuned kernel profile even to start, then issues zero Metal dispatches and returns degenerate tokens while llama.cpp reads the same file at 136.79 tok/s",
+      "dispatches_per_forward": "not instrumented in this adapter; the 0 is a default",
+      "adapter_grade": "RUNS BUT WRONG: needs an autotuned kernel profile even to start, then returns degenerate tokens while llama.cpp reads the same file at 136.79 tok/s",
       "receipt": "evidence/tg/TG_MOE_INSTRUMENT.json"
     }
   },
   "hawking_commit": "0999e1de1f5e4773d3a4fca2abacb0a507986986",
-  "cross_family_finding": "dispatches_per_forward == 0 predicts degenerate output; qwen_dense is the only family that reaches Metal and the only one that is correct"
+  "cross_family_finding": "RETRACTED. dispatches_per_forward is instrumented only in qwen_dense, so a 0 elsewhere is an unset default rather than evidence that Metal was not reached. What stands is measured directly: llama and deepseek2 fail K0 with degenerate output and qwen_dense passes, while llama.cpp reads all three files correctly."
 }
