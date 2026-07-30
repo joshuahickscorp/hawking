@@ -1,15 +1,15 @@
-# HAWKING Evidence Index (A-EVID-R1)
+# HAWKING Evidence Index (A-EVID-R1 + AX-EVID-R1)
 
-Audit map for Core A narrative release. Not a history archive.
-Rollback base: `0250cdb2ba035303da723e2a2eb41edcaf1fc45e`. Recover: `git show 0250cdb2ba035303da723e2a2eb41edcaf1fc45e:<path>`.
+Audit map for Core A narrative release and residual AX control/report release. Not a history archive.
+A rollback: `0250cdb2ba035303da723e2a2eb41edcaf1fc45e`. AX rollback: `ad03a1bd18d249a6e2b833e2275800749fe2f24a`. Recover: `git show <base>:<path>`.
 
 ## Retained operative authorities
 
 - `KIMI_K26_GRAVITY_FINAL.md` (1100) — sealed gravity final. glm52_terminal_proofs FROZEN sha.
 - `KIMI_K26_NEXT_PARENT_TRANSFER.md` (60) — sealed parent transfer. same terminal-proof reader.
-- `docs/dead_levers.md` (492) — kill ledger. BB BC-ACCEL-012; BC-ACCEL-012.
-- `BASELINES.md` (296) — source pins. BB BC-SOURCE-010; BC-SOURCE-005..010.
-- `ACCELERATION_ARCHAEOLOGY.md` (214) — accel archaeology. BC-ACCEL-009.
+- `docs/dead_levers.md` (88) — kill ledger densified AX-EVID-R1. BB BC-ACCEL-012.
+- `BASELINES.md` (87) — source pins densified AX-EVID-R1. BB BC-SOURCE-010.
+- `ACCELERATION_ARCHAEOLOGY.md` (93) — accel archaeology densified AX-EVID-R1. BC-ACCEL-009.
 - `HAWKING_250K_GRAPH_FINDINGS.md` (191) — graph findings. graph mission authority.
 - `README.md` (185) — user entry. BC-CLI/ARTIFACT/GENERATION/SERVER evidence.
 - `docs/serve.md` (158) — server ops. BC-SERVER-001..004,013.
@@ -146,3 +146,106 @@ compatibility_facade      0
 added_apparatus         148
 ```
 
+## AX-EVID-R1 residual release (parent `ad03a1bd18d249a6e2b833e2275800749fe2f24a`)
+
+Pure delete of residual historical control/report narrative after A-EVID + C-AUX + C-SCI. No facade at old paths. Supersedes A-CTRL-R1 and X-EVID-R1-CONS as separate earning rungs. Rollback: `git show ad03a1bd18d249a6e2b833e2275800749fe2f24a:<path>`.
+
+### AX retained pins (not released)
+
+- `control/LANE_MAP.md` — lane ownership authority (keep)
+- `control/BRT3-report.md` — BRT3 evidence pin (keep)
+- `control/BRT5-report.md` — BRT5 evidence pin (keep)
+- Rewrite densify (same path): `docs/dead_levers.md` 492→88 (≥252 credit; BB BC-ACCEL-012); `BASELINES.md` 296→87 (≥116; BB BC-SOURCE-010 `zai-org/GLM-5.2` + `Qwen/Qwen2.5-0.5B-Instruct`); `ACCELERATION_ARCHAEOLOGY.md` 214→93 (≥84; BC-ACCEL-009 substance)
+- Sealed KIMI pair, CAP/TCM/F1, blackbox matrix, constitution, migrations, A/C-SCI/C-AUX ledgers: untouched
+
+### Band FA — final_ascent contracts (33 / 4402)
+
+Successor: git history + sealed final-ascent JSON receipts/ledgers. Reason: historical pilot contracts; no product/gate hard open.
+
+- `control/final_ascent/contracts/control-plane.md` — 108
+- `control/final_ascent/contracts/glm52-basis-diagnosis.md` — 64
+- `control/final_ascent/contracts/glm52-basis-pilot-revision-1.md` — 89
+- `control/final_ascent/contracts/glm52-basis-pilot.md` — 100
+- `control/final_ascent/contracts/glm52-pack-v2-feasibility-revision-1.md` — 118
+- `control/final_ascent/contracts/glm52-pack-v2-feasibility.md` — 196
+- `control/final_ascent/contracts/glm52-pilot-source-release.md` — 119
+- `control/final_ascent/contracts/glm52-rare-route-basis-pilot-revision-13-executable-closure.md` — 313
+- `control/final_ascent/contracts/glm52-rare-route-basis-pilot-revision-bundle.md` — 31
+- `control/final_ascent/contracts/glm52-rare-route-basis-pilot.md` — 354
+- `control/final_ascent/contracts/glm52-rare-route-representation-consult.md` — 148
+- `control/final_ascent/contracts/glm52-route-population-census-revision-1.md` — 61
+- `control/final_ascent/contracts/glm52-route-population-census.md` — 169
+- `control/final_ascent/contracts/hide-classed-writers-revision-1.md` — 60
+- `control/final_ascent/contracts/hide-classed-writers.md` — 78
+- `control/final_ascent/contracts/hide-integration-audit.md` — 50
+- `control/final_ascent/contracts/ramanujan-audit.md` — 47
+- `control/final_ascent/contracts/runtime-audit.md` — 47
+- `control/final_ascent/contracts/tg-cheap-hotpath-residual-router-scalars-revision-2.md` — 124
+- `control/final_ascent/contracts/tg-cheap-hotpath-residual-router-scalars.md` — 181
+- `control/final_ascent/contracts/tg-device-resident-three-batch-mlp-revision-4.md` — 124
+- `control/final_ascent/contracts/tg-device-resident-three-batch-mlp.md` — 188
+- `control/final_ascent/contracts/tg-hide-glm-live-token-path-revision-4.md` — 192
+- `control/final_ascent/contracts/tg-hide-glm-live-token-path.md` — 229
+- `control/final_ascent/contracts/tg-k11-active-byte-collapse.md` — 163
+- `control/final_ascent/contracts/tg-k4-descriptor-indexed-nonwave-three-batch.md` — 182
+- `control/final_ascent/contracts/tg-kernel-token-loop-frontier-consult.md` — 70
+- `control/final_ascent/contracts/tg-numeric-parity-near-tie-fallback-revision-4.md` — 140
+- `control/final_ascent/contracts/tg-numeric-parity-near-tie-fallback.md` — 135
+- `control/final_ascent/contracts/tg-router-bias-residency-bind-once-revision-2.md` — 155
+- `control/final_ascent/contracts/tg-router-bias-residency-bind-once.md` — 105
+- `control/final_ascent/contracts/tg-runtime-receipt-profiler-hardening-revision-4.md` — 134
+- `control/final_ascent/contracts/tg-runtime-receipt-profiler-hardening.md` — 128
+
+### Band NR — non-BRT control reports (6 / 646)
+
+Successor: control/*-ledger.json / CAP rows / S5 receipts. Reason: narrative reports; keep BRT3/BRT5/LANE_MAP.
+
+- `control/E0-report.md` — 5
+- `control/S2-report.md` — 111
+- `control/S3-report.md` — 169
+- `control/S4-report.md` — 146
+- `control/S6F1-report.md` — 41
+- `control/S6F2-report.md` — 174
+
+### Band RP — reports/**/*.md (19 / 1315)
+
+Successor: sibling JSON claim artifacts under reports/**. Reason: MD narrative only; non-MD reports kept.
+
+- `reports/condense/breakthrough/GLM52_BREAKTHROUGH_BASELINE.md` — 141
+- `reports/condense/breakthrough/GLM52_ENERGY_CONTRACT.md` — 224
+- `reports/condense/breakthrough/HAWKING_MULTI_THOUSAND_ROADMAP.md` — 156
+- `reports/condense/breakthrough/HAWKING_SCIENCE_HANDOFF_REQUEST.md` — 88
+- `reports/condense/glm52_generation_b/GLM52_NEXT_PARENT_TRANSFER.md` — 214
+- `reports/condense/gravity_forge/condensation/CODEBASE_CENSUS.md` — 43
+- `reports/condense/storage_stripdown/HAWKING_FULL_RESIDENT_FIRST_LADDER.md` — 45
+- `reports/condense/storage_stripdown/STORAGE_STRIPDOWN_FINAL.md` — 13
+- `reports/condense/storage_stripdown/STORAGE_STRIPDOWN_INVENTORY.md` — 46
+- `reports/mechanics_thermodynamics/B0_REPORT.md` — 30
+- `reports/mechanics_thermodynamics/B1_REPORT.md` — 29
+- `reports/mechanics_thermodynamics/HAWKING_MECHANICS_THERMODYNAMICS_REPORT.md` — 38
+- `reports/mechanics_thermodynamics/M1_REPORT.md` — 38
+- `reports/mechanics_thermodynamics/M2_REPORT.md` — 53
+- `reports/mechanics_thermodynamics/M3_REPORT.md` — 69
+- `reports/mechanics_thermodynamics/M4_REPORT.md` — 21
+- `reports/mechanics_thermodynamics/M5_REPORT.md` — 21
+- `reports/mechanics_thermodynamics/M6_REPORT.md` — 21
+- `reports/mechanics_thermodynamics/MECHANICS_THERMODYNAMICS_LEDGER.md` — 25
+
+### Band PR / SH / RC (6 / 309)
+
+Successor: prereg JSON twins; operator ledgers; receipts/schema. Reason: narrative/shell only.
+
+- `preregistrations/PROM-001-isomemory-randompolicy.md` — 121
+- `HAWKING_FINAL_ASCENT_NEXT_COMMAND.sh` — 89
+- `HAWKING_CONTINUUM_NEXT_COMMAND.sh` — 10
+- `HAWKING_LIGHT_ONLY_NEXT_COMMAND.sh` — 13
+- `HAWKING_PARALLEL_NEXT_COMMAND.sh` — 3
+- `receipts/README.md` — 73
+
+### AX totals and six-bucket intent
+
+- AX released: 64 paths / 6672 LOC (FA 4402/33 + NR 646/6 + RP 1315/19 + PR 121/1 + SH 115/4 + RC 73/1)
+- AX rewrite credit: dead_levers+BASELINES+ACCEL densify (honest rewritten bucket; no packing)
+- Apparatus: index extend (this section; ≤+150 net) + ledger `control/AX-EVID-R1-ledger.json` (JSON uncounted)
+- Credit fences: A_EVID=0 R3=0 CSCI=0 CAUX=0 A_CTRL_SEP=0 X_EVID_SEP=0
+- Six-bucket intent: eliminated=6672 rewritten=<measured> generated=0 relocated=0 facade=0 added_apparatus=<index Δ>
