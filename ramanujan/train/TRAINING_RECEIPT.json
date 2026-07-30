@@ -1,0 +1,456 @@
+{
+  "RAMANUJAN_RESEARCH_AUTHORIZED": false,
+  "at": "2026-07-27T19:35:09Z",
+  "authority": "NON_PRODUCTION_AUTHORITY",
+  "checkpoints_dir": "ramanujan/train/checkpoints",
+  "components": {
+    "formalizer": {
+      "checkpoint": "ramanujan/train/checkpoints/formalizer.pt",
+      "class_weighted_ce": true,
+      "component": "formalizer",
+      "converged": false,
+      "epochs": 10,
+      "held_out_dev": {
+        "coverage_gold_in_train_vocab": 0.7065868263473054,
+        "exact_match": 0.09580838323353294,
+        "majority_baseline_exact_match": 0.21756487025948104,
+        "majority_label": "exact ( rfl",
+        "n": 501,
+        "n_classes_train": 365,
+        "n_correct": 48,
+        "n_gold_in_train_vocab": 354
+      },
+      "held_out_test": {
+        "coverage_gold_in_train_vocab": 0.6807228915662651,
+        "exact_match": 0.10642570281124498,
+        "majority_baseline_exact_match": 0.178714859437751,
+        "majority_label": "exact ( rfl",
+        "n": 498,
+        "n_classes_train": 365,
+        "n_correct": 53,
+        "n_gold_in_train_vocab": 339
+      },
+      "history": [
+        {
+          "epoch": 1,
+          "loss": 5.907877688505212
+        },
+        {
+          "epoch": 2,
+          "loss": 5.895013731353137
+        },
+        {
+          "epoch": 3,
+          "loss": 5.87039024975835
+        },
+        {
+          "epoch": 4,
+          "loss": 5.703751729459179
+        },
+        {
+          "epoch": 5,
+          "loss": 5.230608531406948
+        },
+        {
+          "epoch": 6,
+          "loss": 4.511694071244221
+        },
+        {
+          "epoch": 7,
+          "loss": 3.7387295742424165
+        },
+        {
+          "epoch": 8,
+          "loss": 3.0271185758162518
+        },
+        {
+          "epoch": 9,
+          "loss": 2.484720059803554
+        },
+        {
+          "epoch": 10,
+          "loss": 2.1304547446114674
+        }
+      ],
+      "improved_vs_majority": false,
+      "metric_definition": "Held-out exact match of predicted first-tactic / first proof line against D1 gold, closed over train-vocab classes (min_count=2).",
+      "n_classes": 365,
+      "n_dev": 501,
+      "n_test": 498,
+      "n_train": 3085,
+      "source": "D1",
+      "status": "TRAINED_BUT_NO_BETTER_THAN_MAJORITY",
+      "task": "statement -> first_tactic",
+      "trained": true
+    },
+    "prover": {
+      "checkpoint": "ramanujan/train/checkpoints/prover.pt",
+      "class_weighted_ce": true,
+      "component": "prover",
+      "converged": false,
+      "epochs": 10,
+      "held_out_dev": {
+        "coverage_gold_in_train_vocab": 0.4262295081967213,
+        "exact_match": 0.03278688524590164,
+        "majority_baseline_exact_match": 0.05942622950819672,
+        "majority_label": "rw [ \u2190",
+        "n": 488,
+        "n_classes_train": 381,
+        "n_correct": 16,
+        "n_gold_in_train_vocab": 208
+      },
+      "held_out_test": {
+        "coverage_gold_in_train_vocab": 0.4,
+        "exact_match": 0.04036697247706422,
+        "majority_baseline_exact_match": 0.04954128440366973,
+        "majority_label": "rw [ \u2190",
+        "n": 545,
+        "n_classes_train": 381,
+        "n_correct": 22,
+        "n_gold_in_train_vocab": 218
+      },
+      "history": [
+        {
+          "epoch": 1,
+          "loss": 5.953153979393743
+        },
+        {
+          "epoch": 2,
+          "loss": 5.941405650108091
+        },
+        {
+          "epoch": 3,
+          "loss": 5.923186978986187
+        },
+        {
+          "epoch": 4,
+          "loss": 5.84945148037326
+        },
+        {
+          "epoch": 5,
+          "loss": 5.535190966821486
+        },
+        {
+          "epoch": 6,
+          "loss": 5.013802482235816
+        },
+        {
+          "epoch": 7,
+          "loss": 4.315906586185578
+        },
+        {
+          "epoch": 8,
+          "loss": 3.6613109419422765
+        },
+        {
+          "epoch": 9,
+          "loss": 3.1427297361435427
+        },
+        {
+          "epoch": 10,
+          "loss": 2.776602368200979
+        }
+      ],
+      "improved_vs_majority": false,
+      "metric_definition": "Held-out exact match of predicted next tactic against D2 gold.",
+      "n_classes": 381,
+      "n_dev": 488,
+      "n_test": 545,
+      "n_train": 1971,
+      "source": "D2",
+      "status": "TRAINED_BUT_NO_BETTER_THAN_MAJORITY",
+      "task": "state_before.goal -> tactic",
+      "trained": true
+    },
+    "repair": {
+      "checkpoint": "ramanujan/train/checkpoints/repair.pt",
+      "class_weighted_ce": true,
+      "component": "repair",
+      "converged": false,
+      "epochs": 12,
+      "held_out_dev": {
+        "coverage_gold_in_train_vocab": 0.9333333333333333,
+        "exact_match": 0.14666666666666667,
+        "majority_baseline_exact_match": 0.41333333333333333,
+        "majority_label": "rfl",
+        "n": 75,
+        "n_classes_train": 178,
+        "n_correct": 11,
+        "n_gold_in_train_vocab": 70
+      },
+      "held_out_test": {
+        "coverage_gold_in_train_vocab": 0.8888888888888888,
+        "exact_match": 0.13333333333333333,
+        "majority_baseline_exact_match": 0.4,
+        "majority_label": "rfl",
+        "n": 90,
+        "n_classes_train": 178,
+        "n_correct": 12,
+        "n_gold_in_train_vocab": 80
+      },
+      "held_out_test_lean": {
+        "exact_match_on_lean_subset": 0.2,
+        "gold_fix_compiles": 0.1,
+        "lean_workers": 4,
+        "n_evaluated": 40,
+        "n_gold_compiles": 4,
+        "n_nat_basic": 6,
+        "n_predicted_compiles": 2,
+        "nat_basic_gold_compiles": 0.6666666666666666,
+        "nat_basic_predicted_compiles": 0.3333333333333333,
+        "note": "Compile under pinned Mathlib via lake env lean. Gold compile rate < 1 on non-Nat imports means the isolated example wrapper lacks typeclass context (honest ceiling). Nat.Basic subset is the fairer compile metric.",
+        "predicted_fix_compiles": 0.05
+      },
+      "history": [
+        {
+          "epoch": 1,
+          "loss": 5.196135377883911
+        },
+        {
+          "epoch": 2,
+          "loss": 5.181490254402161
+        },
+        {
+          "epoch": 3,
+          "loss": 5.1691265344619755
+        },
+        {
+          "epoch": 4,
+          "loss": 5.136090803146362
+        },
+        {
+          "epoch": 5,
+          "loss": 4.970967030525207
+        },
+        {
+          "epoch": 6,
+          "loss": 4.532834410667419
+        },
+        {
+          "epoch": 7,
+          "loss": 4.10967389345169
+        },
+        {
+          "epoch": 8,
+          "loss": 3.776527965068817
+        },
+        {
+          "epoch": 9,
+          "loss": 3.412119436264038
+        },
+        {
+          "epoch": 10,
+          "loss": 3.128222393989563
+        },
+        {
+          "epoch": 11,
+          "loss": 2.8481930255889893
+        },
+        {
+          "epoch": 12,
+          "loss": 2.5498374462127686
+        }
+      ],
+      "improved_vs_majority": false,
+      "metric_definition": "Held-out exact match of predicted fix_proof; plus Lean compile rate of predicted fixes under pinned Mathlib (lake env lean).",
+      "n_classes": 178,
+      "n_dev": 75,
+      "n_test": 90,
+      "n_train": 635,
+      "source": "D4",
+      "status": "TRAINED_BUT_NO_BETTER_THAN_MAJORITY",
+      "task": "(signature, broken_proof, error) -> fix_proof",
+      "trained": true
+    },
+    "retriever": {
+      "baseline_test": {
+        "label": "token_overlap_baseline",
+        "mrr": 0.7140024961597542,
+        "n": 496,
+        "recall@1": 0.6108870967741935,
+        "recall@3": 0.7459677419354839,
+        "recall@5": 0.8326612903225806
+      },
+      "checkpoint": "ramanujan/train/checkpoints/retriever.pt",
+      "component": "retriever",
+      "converged": true,
+      "epochs": 7,
+      "held_out_dev": {
+        "mrr": 0.9038033395176246,
+        "n": 539,
+        "recall@1": 0.8311688311688312,
+        "recall@3": 0.9777365491651205,
+        "recall@5": 1.0
+      },
+      "held_out_test": {
+        "mrr": 0.879459485407066,
+        "n": 496,
+        "recall@1": 0.7943548387096774,
+        "recall@3": 0.9556451612903226,
+        "recall@5": 0.9899193548387096
+      },
+      "history": [
+        {
+          "epoch": 1,
+          "loss": 0.37027581564841733
+        },
+        {
+          "epoch": 2,
+          "loss": 0.17405079617615668
+        },
+        {
+          "epoch": 3,
+          "loss": 0.16215155249641788
+        },
+        {
+          "epoch": 4,
+          "loss": 0.15910695541289546
+        },
+        {
+          "epoch": 5,
+          "loss": 0.1578955756079766
+        },
+        {
+          "epoch": 6,
+          "loss": 0.15615692350172228
+        },
+        {
+          "epoch": 7,
+          "loss": 0.15422689626293798
+        }
+      ],
+      "improved_vs_baseline_mrr": true,
+      "metric_definition": "For each test D3 item, rank positive_premises \u222a negative_premises by cosine of dual encoders; report recall@k (any positive in top-k) and MRR.",
+      "n_dev": 539,
+      "n_test": 496,
+      "n_train_items": 3965,
+      "n_train_pairs": 3965,
+      "source": "D3",
+      "status": "TRAINED_AND_BEATS_BASELINE",
+      "trained": true
+    },
+    "value": {
+      "checkpoint": "ramanujan/train/checkpoints/value.pt",
+      "component": "value",
+      "converged": true,
+      "epochs": 8,
+      "held_out_dev": {
+        "closed_accuracy": 0.9631147540983607,
+        "majority_closed_baseline_accuracy": 0.7295081967213115,
+        "n": 488,
+        "remaining_steps_mae": 1.7425131358734294,
+        "train_closed_rate": 0.2914040982723236
+      },
+      "held_out_test": {
+        "closed_accuracy": 0.9688073394495413,
+        "majority_closed_baseline_accuracy": 0.7009174311926606,
+        "n": 545,
+        "remaining_steps_mae": 1.5375785503206574,
+        "train_closed_rate": 0.2914040982723236
+      },
+      "history": [
+        {
+          "epoch": 1,
+          "loss": 1.6743422054475354
+        },
+        {
+          "epoch": 2,
+          "loss": 0.851809746796085
+        },
+        {
+          "epoch": 3,
+          "loss": 0.62869890995564
+        },
+        {
+          "epoch": 4,
+          "loss": 0.5170625359300645
+        },
+        {
+          "epoch": 5,
+          "loss": 0.44729738201825847
+        },
+        {
+          "epoch": 6,
+          "loss": 0.3956757726207856
+        },
+        {
+          "epoch": 7,
+          "loss": 0.350816874734817
+        },
+        {
+          "epoch": 8,
+          "loss": 0.3219437084851726
+        }
+      ],
+      "improved_vs_majority_closed": true,
+      "metric_definition": "Held-out accuracy of P(state_after.closed) and MAE of len(state_after.remaining_tactics) from state_before.goal only.",
+      "n_dev": 488,
+      "n_test": 545,
+      "n_train": 3967,
+      "source": "D2",
+      "status": "TRAINED_AND_BEATS_MAJORITY",
+      "task": "state_before -> (closed_next, remaining_steps)",
+      "trained": true
+    }
+  },
+  "converged_components": [
+    "retriever",
+    "value"
+  ],
+  "device": "cpu",
+  "did_not_train": [],
+  "limit_consults": [
+    {
+      "action": "teacher_trace_from_math_preserve",
+      "allowed": false,
+      "blocking_limit": "L-TEACHER-01",
+      "reason": "Math-Preserve is semantically collapsed and hash-REFUSED in odyssey/launch/SUBSTRATE_CAPABILITY.json. Traces from it would teach a student to reproduce the collapse and would look like data.",
+      "role_id": "librarian"
+    },
+    {
+      "action": "run_research",
+      "allowed": false,
+      "blocking_limit": "L-LAUNCH-01",
+      "reason": "Research must be started deliberately, in a session that intends it",
+      "role_id": "director"
+    }
+  ],
+  "membership_seal_ok": true,
+  "membership_sha256": "c0c13806a1f14553dfa3cdafa747071a088c084e7c462230ed83f1f9011675ce",
+  "metrics_path": "ramanujan/train/HELD_OUT_METRICS.json",
+  "resource_policy": {
+    "cloud_training": false,
+    "fetched_model_shards": false,
+    "lean_eval_limit": 40,
+    "lean_workers": 4,
+    "max_workers": 8,
+    "nice_requested": 15,
+    "paid_apis": false,
+    "touched_mop": false
+  },
+  "schema": "hawking.ramanujan.training_receipt.v1",
+  "still_scaffold": [
+    "end_to_end_search_policy",
+    "composer_solver_curriculum",
+    "preference_rl_from_verifier",
+    "hidden_rediscovery_D8",
+    "frontier_variant_D9",
+    "math_preserve_teacher_distillation",
+    "seq2seq_proof_generation_beyond_closed_vocab",
+    "interactive_lean_state_value_from_real_goals"
+  ],
+  "teacher_from_math_preserve": false,
+  "trained_but_did_not_converge": [
+    "formalizer",
+    "prover",
+    "repair"
+  ],
+  "trained_components": [
+    "retriever",
+    "formalizer",
+    "prover",
+    "repair",
+    "value"
+  ],
+  "wall_clock_seconds": 103.52
+}

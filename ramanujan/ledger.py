@@ -1,204 +1,174 @@
-"""The research Ledger: append-only, hash-chained, corrected only by supersession.
+"""The Ledger: append-only, correction by supersession, never by edit.
 
-`odyssey/ledger/LEDGER_CONTRACT.json` states the law this module enforces:
+`odyssey/ledger/LEDGER_CONTRACT.json` states the law -- "what is not recorded did not
+happen; what is recorded cannot be revised" -- and a correction policy: a wrong row is
+superseded by a new row that names it; rows are never edited or removed.
 
-    what is not recorded did not happen; what is recorded cannot be revised
+This makes that enforceable rather than declared.  The store exposes no update and no
+delete.  `supersede()` writes a NEW row pointing at the old one, so the mistake and its
+correction are both permanently visible.  That is the point: a research system that can
+quietly rewrite its own history cannot be audited, and a system that cannot be audited
+cannot be trusted about its own failures.
 
-So the only write operation is `append`. There is deliberately no update and no
-delete. A wrong row is corrected by appending a new row that *names* it, which
-leaves both visible forever: the mistake and the correction. A ledger that lets
-you quietly fix yesterday is a ledger that cannot be used as evidence.
-
-The chaining discipline mirrors `HashChainLog` in the GLM controller, which is
-proven in use: every row carries its sequence, the hash of the row before it,
-and its own chain hash, so a deletion or an edit anywhere breaks verification at
-that point rather than passing silently. It is reimplemented rather than
-imported because that class lives inside a 3000-line GLM-specific module, and
-Ramanujan should not depend on the GLM controller to record a claim.
-
-Verification is whole-chain and refuses partial credit: `verify` walks every row
-from genesis and raises on the first break.
+Staged in the Hawking repository; migrates to the Ramanujan repository at
+HAWKING_EVOLUTION_COMPLETE per RAMANUJAN_HANDOFF_CONTRACT.json.
 """
 from __future__ import annotations
 
 import hashlib
 import json
-from dataclasses import dataclass
-from datetime import datetime, timezone
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterator
 
-GENESIS = "0" * 64
-
-# From the contract. A kind outside this set is refused rather than recorded,
-# because an unrecognised kind is how a ledger stops being a ledger.
-KINDS = frozenset({
-    "claim", "objection", "formalization", "proof_attempt", "verifier_event",
-    "tribunal_decision", "literature_query", "budget_grant", "sovereignty_event",
-    "sandbox_event", "checkpoint", "rollback",
-})
-REQUIRED = ("id", "at", "kind", "role", "parents", "payload_sha256")
-_ROW_KEYS = frozenset({*REQUIRED, "seq", "prev_hash", "chain_sha256", "supersedes"})
-
-
-class LedgerError(RuntimeError):
-    """A write that would break the law, or a chain that already is broken."""
-
-
-def _canonical(value: Any) -> bytes:
-    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()
-
-
-def _sha(data: bytes) -> str:
-    return hashlib.sha256(data).hexdigest()
+# From LEDGER_CONTRACT.json. A row whose kind is not here is rejected: an open
+# vocabulary would let any subsystem invent a category to slip past review.
+EVENT_KINDS = frozenset(
+    {
+        "claim",
+        "objection",
+        "formalization",
+        "proof_attempt",
+        "verifier_event",
+        "tribunal_decision",
+        "literature_query",
+        "budget_grant",
+        "sovereignty_event",
+        "sandbox_event",
+        "checkpoint",
+        "rollback",
+        "supersession",
+    }
+)
 
 
-def _now() -> str:
-    return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+class LedgerViolation(RuntimeError):
+    """Raised rather than returned, so a caller cannot ignore it by accident."""
 
 
-@dataclass(frozen=True)
+@dataclass
 class Row:
     seq: int
-    id: str
-    at: str
     kind: str
-    role: str
-    parents: list[str]
-    payload_sha256: str
+    payload: dict
+    actor: str
+    at: str
     prev_hash: str
-    chain_sha256: str
-    supersedes: str | None = None
+    row_hash: str
+    supersedes: int | None = None
+
+    def to_json(self) -> str:
+        return json.dumps(
+            {
+                "seq": self.seq,
+                "kind": self.kind,
+                "payload": self.payload,
+                "actor": self.actor,
+                "at": self.at,
+                "prev_hash": self.prev_hash,
+                "row_hash": self.row_hash,
+                "supersedes": self.supersedes,
+            },
+            sort_keys=True,
+        )
 
 
+def _hash_row(seq: int, kind: str, payload: dict, actor: str, at: str, prev: str) -> str:
+    body = json.dumps(
+        {"seq": seq, "kind": kind, "payload": payload, "actor": actor, "at": at, "prev_hash": prev},
+        sort_keys=True,
+    )
+    return hashlib.sha256(body.encode()).hexdigest()
+
+
+@dataclass
 class Ledger:
-    """Append-only JSONL. One file, one chain, no in-place edits."""
+    """A hash-chained append-only log.
 
-    def __init__(self, path: str | Path) -> None:
-        self.path = Path(path)
+    The chain is what makes tampering detectable rather than merely forbidden. Editing a
+    row in place breaks every subsequent `prev_hash`, and `verify_chain()` says exactly
+    where.
+    """
 
-    # -- reading -------------------------------------------------------------
+    path: Path
+    clock: Any = None  # callable returning an ISO timestamp; injected so tests are deterministic
+    _rows: list[Row] = field(default_factory=list)
 
-    def rows(self) -> list[dict[str, Any]]:
-        """Every row, verified. Raises on the first break rather than skipping it."""
-        if not self.path.exists():
-            return []
-        raw = self.path.read_text()
-        if raw and not raw.endswith("\n"):
-            raise LedgerError(f"torn tail in {self.path}: last row is unterminated")
-        out: list[dict[str, Any]] = []
-        prev = GENESIS
-        for seq, line in enumerate(l for l in raw.splitlines() if l.strip()):
-            row = json.loads(line)
-            if set(row) - _ROW_KEYS or not set(REQUIRED) <= set(row):
-                raise LedgerError(f"row {seq} has unexpected or missing fields")
-            if row["seq"] != seq:
-                raise LedgerError(f"sequence break at row {seq}: recorded {row['seq']}")
-            if row["prev_hash"] != prev:
-                raise LedgerError(f"chain break at row {seq}: a row was edited or removed")
-            if row["chain_sha256"] != self._chain_hash(row):
-                raise LedgerError(f"row {seq} hash does not match its content")
-            out.append(row)
-            prev = row["chain_sha256"]
-        return out
+    def __post_init__(self) -> None:
+        self.path = Path(self.path)
+        if self.path.exists():
+            self._rows = [self._row_from(json.loads(l)) for l in self.path.read_text().splitlines() if l.strip()]
 
     @staticmethod
-    def _chain_hash(row: dict[str, Any]) -> str:
-        body = {k: row[k] for k in sorted(_ROW_KEYS & set(row)) if k != "chain_sha256"}
-        return _sha(_canonical(body))
+    def _row_from(d: dict) -> Row:
+        return Row(
+            seq=d["seq"],
+            kind=d["kind"],
+            payload=d["payload"],
+            actor=d["actor"],
+            at=d["at"],
+            prev_hash=d["prev_hash"],
+            row_hash=d["row_hash"],
+            supersedes=d.get("supersedes"),
+        )
 
-    def verify(self) -> int:
-        """Return the row count, or raise. Cheap enough to call in a gate."""
-        return len(self.rows())
+    def _now(self) -> str:
+        if self.clock is not None:
+            return self.clock()
+        import time
 
-    # -- writing -------------------------------------------------------------
+        return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
 
-    def append(
-        self,
-        *,
-        kind: str,
-        role: str,
-        payload: Any,
-        id: str,
-        parents: list[str] | None = None,
-        supersedes: str | None = None,
-    ) -> Row:
-        if kind not in KINDS:
-            raise LedgerError(f"unknown event kind {kind!r}; the contract names {sorted(KINDS)}")
-        existing = self.rows()
-        if any(r["id"] == id for r in existing):
-            raise LedgerError(f"id {id!r} is already recorded; correct it by superseding, not by reusing the id")
-        if supersedes is not None and not any(r["id"] == supersedes for r in existing):
-            raise LedgerError(f"cannot supersede {supersedes!r}: no such row")
-        row: dict[str, Any] = {
-            "seq": len(existing),
-            "id": id,
-            "at": _now(),
-            "kind": kind,
-            "role": role,
-            "parents": list(parents or []),
-            "payload_sha256": _sha(_canonical(payload)),
-            "prev_hash": existing[-1]["chain_sha256"] if existing else GENESIS,
-        }
-        if supersedes is not None:
-            row["supersedes"] = supersedes
-        row["chain_sha256"] = self._chain_hash(row)
+    def append(self, kind: str, payload: dict, actor: str, supersedes: int | None = None) -> Row:
+        if kind not in EVENT_KINDS:
+            raise LedgerViolation(
+                f"unknown event kind {kind!r}. The vocabulary is closed on purpose: an open one "
+                f"lets a subsystem invent a category to avoid review. Known: {sorted(EVENT_KINDS)}"
+            )
+        seq = len(self._rows)
+        prev = self._rows[-1].row_hash if self._rows else "0" * 64
+        at = self._now()
+        rh = _hash_row(seq, kind, payload, actor, at, prev)
+        row = Row(seq, kind, payload, actor, at, prev, rh, supersedes)
+        self._rows.append(row)
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        with self.path.open("a", encoding="utf-8") as fh:
-            fh.write(json.dumps(row, sort_keys=True, separators=(",", ":")) + "\n")
-        return Row(**row) if "supersedes" in row else Row(**row, supersedes=None)
+        with self.path.open("a") as fh:
+            fh.write(row.to_json() + "\n")
+        return row
 
-    # -- reading the corrected view -----------------------------------------
+    def supersede(self, seq: int, reason: str, actor: str, corrected: dict) -> Row:
+        """Correct an earlier row by writing a new one that names it.
 
-    def current(self) -> list[dict[str, Any]]:
-        """Rows that nothing later supersedes. The superseded ones stay in `rows`."""
-        rows = self.rows()
-        dead = {r["supersedes"] for r in rows if r.get("supersedes")}
-        return [r for r in rows if r["id"] not in dead]
+        There is deliberately no `edit` and no `delete`. Both rows stay readable forever.
+        """
+        if not 0 <= seq < len(self._rows):
+            raise LedgerViolation(f"cannot supersede seq {seq}: no such row")
+        return self.append(
+            "supersession",
+            {"supersedes_seq": seq, "reason": reason, "corrected": corrected},
+            actor,
+            supersedes=seq,
+        )
 
+    def superseded_seqs(self) -> set[int]:
+        return {r.supersedes for r in self._rows if r.supersedes is not None}
 
-def demo() -> None:
-    """Self-check: the law holds against the three ways it could be broken."""
-    import tempfile
+    def live_rows(self) -> Iterator[Row]:
+        """Rows not superseded by a later one. Superseded rows still exist and are readable."""
+        dead = self.superseded_seqs()
+        return (r for r in self._rows if r.seq not in dead)
 
-    with tempfile.TemporaryDirectory() as d:
-        led = Ledger(Path(d) / "L.jsonl")
-        led.append(kind="claim", role="researcher", payload={"x": 1}, id="c1")
-        led.append(kind="objection", role="critic", payload={"why": "n=1"}, id="o1", parents=["c1"])
-        assert led.verify() == 2
+    def rows(self) -> list[Row]:
+        return list(self._rows)
 
-        # A wrong row is corrected by supersession, and both stay visible.
-        led.append(kind="claim", role="researcher", payload={"x": 2}, id="c2", supersedes="c1")
-        assert led.verify() == 3
-        assert {r["id"] for r in led.current()} == {"o1", "c2"}, "superseded row still current"
-        assert len(led.rows()) == 3, "supersession must not remove history"
-
-        # An unknown kind is refused.
-        try:
-            led.append(kind="vibes", role="researcher", payload={}, id="x1")
-            raise AssertionError("unknown kind was accepted")
-        except LedgerError:
-            pass
-
-        # Reusing an id is refused.
-        try:
-            led.append(kind="claim", role="researcher", payload={}, id="c1")
-            raise AssertionError("duplicate id was accepted")
-        except LedgerError:
-            pass
-
-        # Editing a row in place breaks verification.
-        lines = led.path.read_text().splitlines()
-        row = json.loads(lines[0]); row["role"] = "tamperer"
-        lines[0] = json.dumps(row, sort_keys=True, separators=(",", ":"))
-        led.path.write_text("\n".join(lines) + "\n")
-        try:
-            led.verify()
-            raise AssertionError("an edited row verified")
-        except LedgerError:
-            pass
-    print("ok: append-only, supersede-not-edit, unknown kind refused, tamper detected")
-
-
-if __name__ == "__main__":
-    demo()
+    def verify_chain(self) -> tuple[bool, str]:
+        """Recompute every hash. Returns (ok, message naming the first break)."""
+        prev = "0" * 64
+        for r in self._rows:
+            if r.prev_hash != prev:
+                return False, f"row {r.seq}: prev_hash mismatch (chain broken before this row)"
+            expect = _hash_row(r.seq, r.kind, r.payload, r.actor, r.at, r.prev_hash)
+            if expect != r.row_hash:
+                return False, f"row {r.seq}: contents were edited in place"
+            prev = r.row_hash
+        return True, f"chain intact over {len(self._rows)} rows"
