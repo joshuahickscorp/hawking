@@ -3123,9 +3123,59 @@ impl DeepSeekV2 {
         let _ = token;
         let _ = pos;
         let _ = read_back;
-        Err(Error::Model(
-            "forward_token: Wedge C preconditions not met; legacy fallback retired".into(),
-        ))
+        // Name the precondition that failed. The bare message cost four probes
+        // to narrow by hand, and every one of these is a different problem:
+        // no Metal is an environment issue, missing pinned tensors is a model
+        // that does not carry them, and an empty MLA cache is a setup order bug.
+        let mut missing: Vec<&str> = Vec::new();
+        if self.metal_ctx.is_none() {
+            missing.push("no metal context");
+        }
+        if self.decode_arena.is_none() {
+            missing.push("no decode arena");
+        }
+        if self.weights_mmap_buf.is_none() {
+            missing.push("no mmap weight buffer");
+        }
+        if self.embed_buf.is_none() {
+            missing.push("no embedding buffer");
+        }
+        if self.final_norm_buf.is_none() {
+            missing.push("no final-norm buffer");
+        }
+        if self.mla_c_kv.is_empty() {
+            missing.push("MLA compressed-KV cache empty");
+        }
+        if self.mla_c_kv_gpu.is_empty() {
+            missing.push("GPU-resident KV mirrors empty");
+        }
+        let bad_layers: Vec<usize> = self
+            .layers
+            .iter()
+            .enumerate()
+            .filter(|(_, l)| !Self::layer_has_tcb_attention(l))
+            .map(|(i, _)| i)
+            .take(4)
+            .collect();
+        let layer_note = if bad_layers.is_empty() {
+            String::new()
+        } else {
+            format!(
+                "; layers without TCB attention tensors (first few): {bad_layers:?} \
+                 — needs attn_norm, ffn_norm, kv_a_proj_with_mqa, kv_b_proj, o_proj, \
+                 kv_a_norm and either a q_lora triple or a direct q_proj"
+            )
+        };
+        Err(Error::Model(format!(
+            "forward_token: Wedge C preconditions not met; legacy fallback retired. \
+             Unmet: {}{}",
+            if missing.is_empty() {
+                "none of the top-level checks".to_string()
+            } else {
+                missing.join(", ")
+            },
+            layer_note
+        )))
     }
 
     fn profiled_greedy_enabled(&self, sampling: &crate::engine::SamplingParams) -> bool {

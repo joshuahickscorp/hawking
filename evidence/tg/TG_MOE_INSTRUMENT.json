@@ -1,0 +1,98 @@
+{
+  "schema": "hawking.tg.moe_instrument.v1",
+  "status": "ADMITTED_K0_FAILED",
+  "hawking_commit": "fbe0e7a40deb8110d2f2da062589d34e1262213a",
+  "instrument": {
+    "model": "DeepSeek-V2-Lite-Chat",
+    "arch": "deepseek2",
+    "family": "MoE",
+    "artifact": "models/DeepSeek-V2-Lite-Chat-Q4_K_M.gguf",
+    "bytes": 10364416320,
+    "fetch_mbit_s": 1692.6,
+    "source": "second-state/DeepSeek-V2-Lite-Chat-GGUF"
+  },
+  "admission_chain": [
+    {
+      "attempt": "Qwen1.5-MoE-A2.7B (qwen2moe)",
+      "result": "REFUSED at load",
+      "error": "not yet implemented: qwen-moe: lands in Phase 3 (DeepSeek-V2-Lite ships first)",
+      "note": "the arch dispatch accepts qwen2moe and qwen3moe, and the loader is a stub. 8.84 GiB was fetched and evicted."
+    },
+    {
+      "attempt": "DeepSeek-V2-Lite, no profile",
+      "result": "REFUSED at forward",
+      "error": "Wedge C preconditions not met; legacy fallback retired",
+      "diagnosis": "opaque. The message named no precondition, so this took four probes to narrow."
+    },
+    {
+      "attempt": "same, after improving the error",
+      "result": "diagnosed in one run",
+      "error": "Unmet: no decode arena",
+      "cause": "the decode arena is only built when a kernel profile requests gpu_buffer_reuse == decode-arena, so without a profile the model cannot run at all"
+    },
+    {
+      "attempt": "with profiles/deepseek-v2-lite-q4.m3pro18.json",
+      "result": "REFUSED",
+      "error": "kernel profile tensor layout mismatch: profile=6540aaa2 gguf=f8bfe40a",
+      "note": "the only shipped DeepSeek profile is for an M3 Pro and a different GGUF build"
+    },
+    {
+      "attempt": "hawking autotune, 9 minutes",
+      "result": "ADMITTED",
+      "produced": "a profile for Apple M3 Ultra, layout f8bfe40a, gpu_buffer_reuse decode-arena"
+    }
+  ],
+  "k0_truth": {
+    "verdict": "FAIL",
+    "prompt": "The capital of France is",
+    "output": "\" is is is is is is is \\u201cThe \\u201c\"",
+    "dispatches_per_forward": 0,
+    "device_id": "Apple M3 Ultra"
+  },
+  "measured": {
+    "hawking": {
+      "decode_tok_s": 35.08,
+      "decode_ms": 28.51,
+      "prefill_ms_per_token": 91.7
+    },
+    "llama_cpp_same_file": {
+      "decode_tok_s": 136.79,
+      "decode_ms": 7.31,
+      "prefill_tok_s": 1310.63,
+      "prefill_ms_per_token": 0.76,
+      "clears_TG10": true
+    },
+    "gap": {
+      "decode_x": 3.9,
+      "prefill_x": 120.7
+    }
+  },
+  "cross_family_pattern": {
+    "qwen_dense": {
+      "dispatches_per_forward": 435,
+      "k0": "PASS",
+      "decode_ms": 36.98
+    },
+    "llama": {
+      "dispatches_per_forward": 0,
+      "k0": "FAIL",
+      "decode_ms": 275.7
+    },
+    "deepseek2_moe": {
+      "dispatches_per_forward": 0,
+      "k0": "FAIL",
+      "decode_ms": 28.51
+    },
+    "finding": "dispatches_per_forward == 0 predicts degenerate output in both failing families. Only qwen_dense reaches Metal and only qwen_dense is correct.",
+    "all_three_ggufs_are_sound": "llama.cpp reads every one of them correctly, so these are adapter defects and not model or file defects"
+  },
+  "moe_grammar_proof": {
+    "status": "NOT_OBTAINED",
+    "why": "section 4 asks this instrument to prove router, expert gather, concurrent projection groups and expert-wave scheduling. A path that issues zero dispatches and returns degenerate tokens cannot demonstrate any of them, and section 4 forbids treating a zero-dispatch path as a valid comparison.",
+    "concurrent_moe_projection_win": "still unreproduced; it needs a working MoE forward first"
+  },
+  "envelope": {
+    "moe_artifact_gb": 10.4,
+    "note": "admitted within the envelope; evictable once the finding is sealed"
+  }
+}
