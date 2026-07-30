@@ -186,5 +186,23 @@
  },
  "hawking_commit": "0999e1de1f5e4773d3a4fca2abacb0a507986986",
  "cross_family_finding": "RETRACTED. dispatches_per_forward is instrumented only in qwen_dense, so a 0 elsewhere is an unset default rather than evidence that Metal was not reached. What stands is measured directly: llama and deepseek2 fail K0 with degenerate output and qwen_dense passes, while llama.cpp reads all three files correctly.",
- "contention_note": "Every number added on 2026-07-30 was taken with the 24h substrate run live. They are recorded as contended and are therefore upper bounds on latency, which is the conservative direction for a rung claim: a contended run cannot make a failed rung look passed."
+ "contention_note": "Every number added on 2026-07-30 was taken with the 24h substrate run live. They are recorded as contended and are therefore upper bounds on latency, which is the conservative direction for a rung claim: a contended run cannot make a failed rung look passed.",
+ "roofline_constant_audit": {
+  "constant": "736e9 bytes/s, used by every pct_of_roofline number in this file",
+  "declared_source": "lab/operators/gravity_flop_ledger.py:24, hard-coded, no sealed receipt",
+  "attempts_to_source_it_2026_07_30": [
+   {
+    "method": "sequential read of the 8.99 GB 14B GGUF, three trials",
+    "result": "8.0 GB/s best",
+    "verdict": "WRONG QUANTITY. This is file I/O through the page cache, not DRAM bandwidth over resident weights, which is what a decode roofline needs."
+   },
+   {
+    "method": "multi-process numpy copy over buffers larger than cache, 1/4/8/16 processes",
+    "result": "ABANDONED",
+    "why": "at 16 processes it wanted 16 GB of fresh allocation while the 24h substrate run holds the machine. It produced no output in ten minutes, which on this box reads as swapping, so it was killed to protect the run rather than left to finish."
+   }
+  ],
+  "honest_state": "the constant is still unsourced. It is about 90 percent of the M3 Ultra's 819 GB/s specification, which is a plausible sustained figure and not a measurement. Every pct_of_roofline in this file inherits that.",
+  "what_would_settle_it": "a GPU STREAM kernel through the existing Metal context, measured when the box is free. It is small, it belongs next to the kernel benchmarks rather than in a Python harness, and it needs a quiet machine."
+ }
 }
